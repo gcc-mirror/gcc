@@ -73,7 +73,7 @@ Boston, MA 02111-1307, USA.  */
 
 static struct
 {  
-  /* The number of statements sunk down the flowgraph by code sinking. */
+  /* The number of statements sunk down the flowgraph by code sinking.  */
   int sunk;
   
 } sink_stats;
@@ -106,7 +106,7 @@ find_bb_for_arg (tree phi, tree def)
    and all the other uses are in phis in the same basic block, but this
    requires some expensive checking later (you have to make sure no def/vdef
    in the statement occurs for multiple edges in the various phi nodes it's
-   used in, so that you only have one place you can sink it to. */
+   used in, so that you only have one place you can sink it to.  */
 
 static bool
 all_immediate_uses_same_place (dataflow_t imm)
@@ -266,7 +266,7 @@ nearest_common_dominator_of_uses (dataflow_t imm)
 /* Given a statement (STMT) and the basic block it is currently in (FROMBB), 
    determine the location to sink the statement to, if any.
    Return the basic block to sink it to, or NULL if we should not sink
-   it. */
+   it.  */
 
 static tree
 statement_sink_location (tree stmt, basic_block frombb)

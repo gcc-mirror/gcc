@@ -3272,7 +3272,7 @@ c_common_nodes_and_builtins (void)
 
 /* Look up the function in built_in_decls that corresponds to DECL
    and set ASMSPEC as its user assembler name.  DECL must be a
-   function decl that declares a builtin. */
+   function decl that declares a builtin.  */
 
 void
 set_builtin_user_assembler_name (tree decl, const char *asmspec)

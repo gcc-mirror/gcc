@@ -2987,7 +2987,7 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
 		int new_cost;
 		
 		/* Get the canonical version of the address so we can accept
-		   more. */
+		   more.  */
 		new = canon_for_address (new);
 		
 		new_cost = address_cost (new, mode);

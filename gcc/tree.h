@@ -751,7 +751,7 @@ extern void tree_operand_check_failed (int, enum tree_code,
 
 /* Nonzero if TYPE represents an integral type.  Note that we do not
    include COMPLEX types here.  Keep these checks in ascending code
-   order. */
+   order.  */
 
 #define INTEGRAL_TYPE_P(TYPE)  \
   (TREE_CODE (TYPE) == ENUMERAL_TYPE  \

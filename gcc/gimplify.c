@@ -4256,7 +4256,7 @@ gimplify_type_sizes (tree type, tree *list_p)
      can't easily test for.  We could pass TYPE down to gimplify_one_sizepos
      and test there, but it doesn't seem worth it.  */
 
-  /* We first do the main variant, then copy into any other variants. */
+  /* We first do the main variant, then copy into any other variants.  */
   type = TYPE_MAIN_VARIANT (type);
 
   switch (TREE_CODE (type))
