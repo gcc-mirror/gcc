@@ -1,3 +1,8 @@
+1999-12-27  Geoff Keating  <geoffk@cygnus.com>
+
+	* vasprintf.c (int_vasprintf): Don't re-read the format character
+	as this mishandles strings like '%%s'.
+
 1999-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.c (splay_tree_new): Use struct splay_tree_node_s
