@@ -540,7 +540,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	if (set && GET_CODE (SET_DEST (set)) == REG
 	    && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
 	    && regno_first_uid[REGNO (SET_DEST (set))] == INSN_UID (insn)
-	    && regno_last_uid[REGNO (SET_DEST (set))] == INSN_UID (insn)
+	    /* We use regno_last_note_uid so as not to delete the setting
+	       of a reg that's used in notes.  A subsequent optimization
+	       might arrange to use that reg for real.  */	       
+	    && regno_last_note_uid[REGNO (SET_DEST (set))] == INSN_UID (insn)
 	    && ! side_effects_p (SET_SRC (set)))
 	  delete_insn (insn);
       }
