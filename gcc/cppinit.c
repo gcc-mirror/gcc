@@ -1025,6 +1025,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("$",                        0,      OPT_dollar)                     \
   DEF_OPT("+",                        0,      OPT_plus)                       \
   DEF_OPT("-help",                    0,      OPT__help)                      \
+  DEF_OPT("-target-help",             0,      OPT_target__help)               \
   DEF_OPT("-version",                 0,      OPT__version)                   \
   DEF_OPT("A",                        no_ass, OPT_A)                          \
   DEF_OPT("C",                        0,      OPT_C)                          \
@@ -1271,6 +1272,10 @@ cpp_handle_option (pfile, argc, argv)
 	  print_help ();
 	  exit (0);  /* XXX */
 	  break;
+	case OPT_target__help:
+          /* Print if any target specific options. */
+          exit (0);
+          break;
 	case OPT__version:
 	  fprintf (stderr, _("GNU CPP version %s (cpplib)\n"), version_string);
 	  exit (0);  /* XXX */
