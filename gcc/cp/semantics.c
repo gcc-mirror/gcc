@@ -430,7 +430,7 @@ finish_expr_stmt (tree expr)
       /* Remember the type of the expression.  */
       expr_type = TREE_TYPE (expr);
 
-      if (stmts_are_full_exprs_p ())
+      if (!processing_template_decl && stmts_are_full_exprs_p ())
 	expr = convert_to_void (expr, "statement");
       
       r = add_stmt (build_stmt (EXPR_STMT, expr));
