@@ -1021,34 +1021,35 @@ will always return the function itself, and @code{OVL_NEXT} will always
 be @code{NULL_TREE}.
 
 To determine the scope of a function, you can use the
-@code{DECL_REAL_CONTEXT} macro.  This macro will return the class
+@code{DECL_CONTEXT} macro.  This macro will return the class
 (either a @code{RECORD_TYPE} or a @code{UNION_TYPE}) or namespace (a
 @code{NAMESPACE_DECL}) of which the function is a member.  For a virtual
 function, this macro returns the class in which the function was
 actually defined, not the base class in which the virtual declaration
-occurred.  If a friend function is defined in a class scope, the
-@code{DECL_CLASS_CONTEXT} macro can be used to determine the class in
+occurred.  
+
+If a friend function is defined in a class scope, the
+@code{DECL_FRIEND_CONTEXT} macro can be used to determine the class in
 which it was defined.  For example, in
 @example
 class C @{ friend void f() @{@} @};
 @end example
-the @code{DECL_REAL_CONTEXT} for @code{f} will be the
-@code{global_namespace}, but the @code{DECL_CLASS_CONTEXT} will be the
+@noindent
+the @code{DECL_CONTEXT} for @code{f} will be the
+@code{global_namespace}, but the @code{DECL_FRIEND_CONTEXT} will be the
 @code{RECORD_TYPE} for @code{C}.
 
-The @code{DECL_REAL_CONTEXT} and @code{DECL_CLASS_CONTEXT} are not
-available in C; instead you should simply use @code{DECL_CONTEXT}.  In C,
-the @code{DECL_CONTEXT} for a function maybe another function.  This
-representation indicates that the GNU nested function extension is in
-use.  For details on the semantics of nested functions, see the GCC
-Manual.  The nested function can refer to local variables in its
+In C, the @code{DECL_CONTEXT} for a function maybe another function.
+This representation indicates that the GNU nested function extension
+is in use.  For details on the semantics of nested functions, see the
+GCC Manual.  The nested function can refer to local variables in its
 containing function.  Such references are not explicitly marked in the
 tree structure; back ends must look at the @code{DECL_CONTEXT} for the
 referenced @code{VAR_DECL}.  If the @code{DECL_CONTEXT} for the
 referenced @code{VAR_DECL} is not the same as the function currently
-being processed, and neither @code{DECL_EXTERNAL} nor @code{DECL_STATIC}
-hold, then the reference is to a local variable in a containing
-function, and the back end must take appropriate action.
+being processed, and neither @code{DECL_EXTERNAL} nor
+@code{DECL_STATIC} hold, then the reference is to a local variable in
+a containing function, and the back end must take appropriate action.
 
 @menu
 * Function Basics::     Function names, linkage, and so forth.
