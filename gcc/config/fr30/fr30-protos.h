@@ -29,6 +29,9 @@ extern void  fr30_print_operand_address (FILE *, rtx);
 extern rtx   fr30_move_double (rtx *);
 #ifdef TREE_CODE
 extern rtx   fr30_va_arg (tree, tree);
+extern int   fr30_num_arg_regs (enum machine_mode, tree);
+extern int   fr30_function_arg_partial_nregs (CUMULATIVE_ARGS,
+					      enum machine_mode, tree, int);
 #endif /* TREE_CODE */
 #ifdef HAVE_MACHINE_MODES
 #define Mmode enum machine_mode
@@ -43,9 +46,3 @@ extern int   fr30_const_double_is_zero (rtx);
 #undef Mmode
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */
-
-#ifdef TREE_CODE
-extern int   fr30_num_arg_regs (int, tree);
-extern int   fr30_function_arg_partial_nregs (CUMULATIVE_ARGS, int, tree, int);
-extern void  fr30_setup_incoming_varargs (CUMULATIVE_ARGS, int, tree, int *);
-#endif /* TREE_CODE */

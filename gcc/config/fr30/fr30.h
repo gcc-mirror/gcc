@@ -817,12 +817,6 @@ enum reg_class
    If not defined, this defaults to the value 1.  */
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
-/* If the structure value address is not passed in a register, define
-   `STRUCT_VALUE' as an expression returning an RTX for the place where the
-   address is passed.  If it returns 0, the address is passed as an "invisible"
-   first argument.  */
-#define STRUCT_VALUE 0
-
 /*}}}*/ 
 /*{{{  Generating Code for Profiling.  */ 
 
@@ -844,13 +838,6 @@ enum reg_class
   fprintf (FILE, "\t call @r0\n" );		\
   fprintf (FILE, ".word\tLP%d\n", LABELNO);	\
 }
-
-/*}}}*/ 
-/*{{{  Implementing the VARARGS Macros.  */ 
-
-#define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_ARGS_SIZE, SECOND_TIME) \
-  if (! SECOND_TIME) \
-    fr30_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE)
 
 /*}}}*/ 
 /*{{{  Trampolines for Nested Functions.  */ 
