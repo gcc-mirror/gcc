@@ -1,3 +1,8 @@
+2000-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20000717-5.c: New test.
+	* gcc.c-torture/execute/20000717-1.x: Removed.
+
 2000-07-17  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/20000717-4.c: New test.

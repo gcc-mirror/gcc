@@ -191,7 +191,7 @@ static void emit_call_1		PARAMS ((rtx, tree, tree, HOST_WIDE_INT,
 static void precompute_register_parameters	PARAMS ((int,
 							 struct arg_data *,
 							 int *));
-static void store_one_arg	PARAMS ((struct arg_data *, rtx, int, int,
+static int store_one_arg	PARAMS ((struct arg_data *, rtx, int, int,
 					 int));
 static void store_unaligned_arguments_into_pseudos PARAMS ((struct arg_data *,
 							    int));
@@ -1952,10 +1952,10 @@ check_sibcall_argument_overlap_1 (x)
     {
       if (XEXP (x, 0) == current_function_internal_arg_pointer)
 	i = 0;
-      else if (GET_CODE (XEXP (x, 0)) == PLUS &&
-	       XEXP (XEXP (x, 0), 0) ==
-		 current_function_internal_arg_pointer &&
-	       GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+      else if (GET_CODE (XEXP (x, 0)) == PLUS
+	       && XEXP (XEXP (x, 0), 0) ==
+		  current_function_internal_arg_pointer
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
 	i = INTVAL (XEXP (XEXP (x, 0), 1));
       else
 	return 0;
@@ -2947,10 +2947,12 @@ expand_call (exp, target, ignore)
 	  {
 	    rtx before_arg = get_last_insn ();
 
-	    store_one_arg (&args[i], argblock, flags,
-			   adjusted_args_size.var != 0, reg_parm_stack_space);
-	    if (pass == 0 &&
-		check_sibcall_argument_overlap (before_arg, &args[i]))
+	    if (store_one_arg (&args[i], argblock, flags,
+			       adjusted_args_size.var != 0,
+			       reg_parm_stack_space)
+		|| (pass == 0
+		    && check_sibcall_argument_overlap (before_arg,
+						       &args[i])))
 	      sibcall_failure = 1;
 	  }
 
@@ -2969,10 +2971,12 @@ expand_call (exp, target, ignore)
 	    {
 	      rtx before_arg = get_last_insn ();
 
-	      store_one_arg (&args[i], argblock, flags,
-			     adjusted_args_size.var != 0, reg_parm_stack_space);
-	      if (pass == 0 &&
-		  check_sibcall_argument_overlap (before_arg, &args[i]))
+	      if (store_one_arg (&args[i], argblock, flags,
+				 adjusted_args_size.var != 0,
+				 reg_parm_stack_space)
+		  || (pass == 0
+		      && check_sibcall_argument_overlap (before_arg,
+							 &args[i])))
 		sibcall_failure = 1;
 	    }
 
@@ -4218,9 +4222,12 @@ target_for_arg (type, size, args_addr, offset)
    argument stack.  This is used if ACCUMULATE_OUTGOING_ARGS to indicate
    that we need not worry about saving and restoring the stack.
 
-   FNDECL is the declaration of the function we are calling.  */
+   FNDECL is the declaration of the function we are calling.
+   
+   Return non-zero if this arg should cause sibcall failure,
+   zero otherwise.  */
 
-static void
+static int
 store_one_arg (arg, argblock, flags, variable_size,
 	       reg_parm_stack_space)
      struct arg_data *arg;
@@ -4234,9 +4241,10 @@ store_one_arg (arg, argblock, flags, variable_size,
   int partial = 0;
   int used = 0;
   int i, lower_bound = 0, upper_bound = 0;
+  int sibcall_failure = 0;
 
   if (TREE_CODE (pval) == ERROR_MARK)
-    return;
+    return 1;
 
   /* Push a new temporary level for any temporaries we make for
      this argument.  */
@@ -4451,6 +4459,39 @@ store_one_arg (arg, argblock, flags, variable_size,
 	  size_rtx = expr_size (pval);
 	}
 
+      if ((flags & ECF_SIBCALL) && GET_CODE (arg->value) == MEM)
+	{
+	  /* emit_push_insn might not work properly if arg->value and
+	     argblock + arg->offset areas overlap.  */
+	  rtx x = arg->value;
+	  int i = 0;
+
+	  if (XEXP (x, 0) == current_function_internal_arg_pointer
+	      || (GET_CODE (XEXP (x, 0)) == PLUS
+		  && XEXP (XEXP (x, 0), 0) ==
+		     current_function_internal_arg_pointer
+		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT))
+	    {
+	      if (XEXP (x, 0) != current_function_internal_arg_pointer)
+		i = INTVAL (XEXP (XEXP (x, 0), 1));
+
+	      /* expand_call should ensure this */
+	      if (arg->offset.var || GET_CODE (size_rtx) != CONST_INT)
+		abort ();
+
+	      if (arg->offset.constant > i)
+		{
+		  if (arg->offset.constant < i + INTVAL (size_rtx))
+		    sibcall_failure = 1;
+		}
+	      else if (arg->offset.constant < i)
+		{
+		  if (i < arg->offset.constant + INTVAL (size_rtx))
+		    sibcall_failure = 1;
+		}
+	    }
+	}
+
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
 		      TYPE_ALIGN (TREE_TYPE (pval)), partial, reg, excess,
 		      argblock, ARGS_SIZE_RTX (arg->offset),
@@ -4482,4 +4523,6 @@ store_one_arg (arg, argblock, flags, variable_size,
   preserve_temp_slots (NULL_RTX);
   free_temp_slots ();
   pop_temp_slots ();
+
+  return sibcall_failure;
 }
