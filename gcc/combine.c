@@ -1547,7 +1547,9 @@ try_combine (i3, i2, i1)
 
       if (i == XVECLEN (p2, 0))
 	for (i = 0; i < XVECLEN (p2, 0); i++)
-	  if (SET_DEST (XVECEXP (p2, 0, i)) == SET_SRC (PATTERN (i3)))
+	  if ((GET_CODE (XVECEXP (p2, 0, i)) == SET
+	       || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER)
+	      && SET_DEST (XVECEXP (p2, 0, i)) == SET_SRC (PATTERN (i3)))
 	    {
 	      combine_merges++;
 
