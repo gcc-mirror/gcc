@@ -4,7 +4,7 @@
 // Message-Id: <9803091022.AA07520@drfmc.ceng.cea.fr>
 
 
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
 struct dummy { };
 
