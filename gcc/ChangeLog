@@ -1,3 +1,8 @@
+2000-01-13  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.h (ISA_HAS_INT_CONDMOVE): New.
+	* config/mips/mips.md: Use ISA_HAS_INT_CONDMOVE.
+
 2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/mips/mips.c (override_options): Don't turn on extra

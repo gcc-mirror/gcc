@@ -1,5 +1,5 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
-;;  Copyright (C) 1989, 90-98, 1999 Free Software Foundation, Inc.
+;;  Copyright (C) 1989, 90-98, 1999, 2000 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -9962,7 +9962,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE"
+  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
@@ -9977,7 +9977,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE"
+  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
@@ -10008,7 +10008,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:DI 2 "se_reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 3 "se_reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE"
+  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
@@ -10023,7 +10023,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:DI 2 "se_reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 3 "se_reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE"
+  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
@@ -10146,7 +10146,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 	(if_then_else:SI (match_dup 5)
 			 (match_operand:SI 2 "reg_or_0_operand" "")
 			 (match_operand:SI 3 "reg_or_0_operand" "")))]
-  "ISA_HAS_CONDMOVE"
+  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
   "
 {
   gen_conditional_move (operands);
@@ -10159,7 +10159,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 	(if_then_else:DI (match_dup 5)
 			 (match_operand:DI 2 "se_reg_or_0_operand" "")
 			 (match_operand:DI 3 "se_reg_or_0_operand" "")))]
-  "ISA_HAS_CONDMOVE" 
+  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE" 
   "
 {
   gen_conditional_move (operands);
