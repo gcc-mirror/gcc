@@ -1,5 +1,10 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/NetPermission.java:
+	Merged copyright with classpath.
+
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/Package.java:
 	Remerged from classpath.
 
