@@ -1840,8 +1840,18 @@ resolve_offset_ref (exp)
       if (expr == error_mark_node)
 	return error_mark_node;
 
-      expr = build (COMPONENT_REF, TREE_TYPE (member),
-		    expr, member);
+      type = TREE_TYPE (member);
+      if (TREE_CODE (type) != REFERENCE_TYPE)
+	{
+	  int quals = cp_type_quals (type) | cp_type_quals (TREE_TYPE (expr));
+
+	  if (DECL_MUTABLE_P (member))
+	    quals &= ~TYPE_QUAL_CONST;
+	  
+	  type = cp_build_qualified_type (type, quals);
+	}
+      
+      expr = build (COMPONENT_REF, type, expr, member);
       return convert_from_reference (expr);
     }
 
