@@ -1,5 +1,17 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
+	* java-tree.def (JAVA_EXC_OBJ_EXPR): New.
+	* expr.c (java_lang_expand_expr): Expand it.
+	(process_jvm_instruction): Build JAVA_EXC_OBJ_EXPR instead of
+	calling build_exception_object_ref.
+	* parse.y (catch_clause_parameter): Likewise.
+	(build_dot_class_method): Likewise.
+	(try_reference_assignconv): Likewise.
+	* check-init.c (check_init): Check JAVA_EXC_OBJ_EXPR not EXC_PTR_EXPR.
+	* jcf-write.c (generate_bytecode_insns): Likewise.
+
+2001-05-12  Richard Henderson  <rth@redhat.com>
+
 	EH merge from mainline:
 	* java-tree.h (throw_node): Define as a single member of
 	java_global_trees instead of a separate array.

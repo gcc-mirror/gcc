@@ -2451,7 +2451,7 @@ generate_bytecode_insns (exp, target, state)
 	  }
       }
       break;
-    case EXC_PTR_EXPR:
+    case JAVA_EXC_OBJ_EXPR:
       NOTE_PUSH (1);  /* Pushed by exception system. */
       break;
     case NEW_CLASS_EXPR:

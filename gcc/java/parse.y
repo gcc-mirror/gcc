@@ -1888,7 +1888,7 @@ catch_clause_parameter:
 		  tree ccpb = enter_block ();
 		  tree init = build_assignment
 		    (ASSIGN_TK, $2.location, TREE_PURPOSE ($3), 
-		     build_exception_object_ref (ptr_type_node));
+		     build (JAVA_EXC_OBJ_EXPR, ptr_type_node));
 		  declare_local_variables (0, TREE_VALUE ($3),
 					   build_tree_list (TREE_PURPOSE ($3),
 							    init));
@@ -8415,7 +8415,7 @@ build_dot_class_method (class)
   
   /* We initialize the variable with the exception handler. */
   catch = build (MODIFY_EXPR, NULL_TREE, catch_clause_param,
-		 build_exception_object_ref (ptr_type_node));
+		 build (JAVA_EXC_OBJ_EXPR, ptr_type_node));
   add_stmt_to_block (catch_block, NULL_TREE, catch);
 
   /* We add the statement throwing the new exception */
@@ -12629,7 +12629,7 @@ try_reference_assignconv (lhs_type, rhs)
       else if (valid_ref_assignconv_cast_p (rhs_type, lhs_type, 0))
 	new_rhs = rhs;
       /* This is a magic assignment that we process differently */
-      else if (TREE_CODE (rhs) == EXC_PTR_EXPR)
+      else if (TREE_CODE (rhs) == JAVA_EXC_OBJ_EXPR)
 	new_rhs = rhs;
     }
   return new_rhs;

@@ -681,7 +681,7 @@ check_init (exp, before)
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
-    case EXC_PTR_EXPR:
+    case JAVA_EXC_OBJ_EXPR:
       break;
 
     case NEW_CLASS_EXPR:
