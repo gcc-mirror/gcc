@@ -1,3 +1,7 @@
+Wed Apr 15 15:34:44 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* lex.c (init_parse): Now returns char* containing the filename.
+
 Wed Apr 15 13:20:06 1998  John Carr  <jfc@mit.edu>
 			  Jeff Law   <law@cygnus.com>
 

@@ -455,7 +455,7 @@ init_cpp_parse ()
   return token_count;
 }
 
-void
+char *
 init_parse (filename)
      char *filename;
 {
@@ -890,6 +890,8 @@ init_parse (filename)
 
   token_count = init_cpp_parse ();
   interface_unknown = 1;
+
+  return filename;
 }
 
 void
