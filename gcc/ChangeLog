@@ -1,3 +1,11 @@
+2003-06-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (QMTESTRUNFLAGS): Set for DejaGNU emulation.
+	(QMTEST_GPP_TESTS): Use "g++" by default.
+	(stamp-qmtest): Tweak database creation.
+	(QMTEST_DIR/context): Update context file format.
+	(qmtest-g++): Tweak command-line.
+
 2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (varasm.o): Don't set -Wno-error.

@@ -10,51 +10,50 @@ officially supported testing procedure.  Therefore, you must run the
 tests using DejaGNU (with "make check-g++") before committing changes
 that affect G++.
 
-Differences from DejaGNU
-========================
+QMTest emulates DejaGNU behavior very closely when running the tests.
 
-Although QMTest can be used to run the G++ test suite, it works
-somewhat differently from DejaGNU.  In particular:
+QMTest has two output modes: a DejaGNU emulation mode and a native
+QMTest mode.
 
-- In DejaGNU, a single source file contains many tests.  Each 
-  line where a diagnostic is expected is considered a separate
-  test.  Testing for successful compilation and testing for 
-  successful execution of the generated program are considered
-  separate tests.  Thus, a test "test.C" could contain, say, 
-  seven tests; some of which might pass and some of which might
-  fail.
+In the DejaGNU mode, you should receive output that is almost exactly
+the same as the DejaGNU output; in particular, you should see the same
+number of passes, failures, etc.  When using the DejaGNU-style output,
+QMTest uses the "xfail" indications in the test cases to determine
+which tests are expected to pass and which are expected to fail, and
+presents that information in the same way as DejaGNU.
 
-  With QMTest, each source file is considered a single test.  If any
-  of the seven sub-tests fail, the entire test is considered to fail.
-  However, QMTest does present information about *why* the test
-  failed, so the same information is effectively available.
+In the QMTest mode, the number of passes and failures will be
+different from that obtained when using DejaGNU.  The reason is that a
+single source file may contain multiple DejaGNU tests.  In DejaGNU,
+each line where a diagnostic is expected is considered a separate
+test.  Testing for successful compilation and testing for successful
+execution of the generated program are considered separate tests.  So,
+a single source file "test.C" could contain, say, seven tests; some of
+which might pass and some of which might fail.
 
-  It is true that, therefore, causing an already failing test to "fail
-  more" is not immediately detectable through an additional unexpected
-  failure messages when using QMTest.  On the other hand, most people
-  seem to think of each source file as "a test", not "twelve tests",
-  so the model QMTest uses may be more natural.
+In the QMTest mode, each source file is considered a single test.  If
+any of the seven sub-tests fail, the entire test is considered to
+fail.  However, QMTest does present information about *why* the test
+failed, so the same information is effectively available.
 
-- In DejaGNU, tests themselves keep track of expected and unexpected
-  failures.  The QMTest philosophy is that expected failures should be
-  stored separately from the tests themselves; in particular, that
-  tonights results can be tomorrow's expectations.  In order to
-  preserve compatibility with DejaGNU, the first time you use QMTest
-  to test G++, QMTest computes the set of expected failures indicated
-  by the tests, and then compares the actual results with these
-  results.  Therefore, if you change the expected failure notations in
-  the DejaGNU tests, you must rebuild the set of expected failures.
+In the QMTest mode, whether or not a test is expected to fail is
+determined not by an indication in the test, but rather by comparing
+the new results to the results of a previous run.  Testing for whether
+a change caused a regression is very simple: run the tests before
+making the change, run them again after making the change, and let
+QMTest compare the results.
 
-  To do this, remove the file "qmtestsuite/gpp-expected.qmr".  Then,
-  when you rerun the tests, the expected failures will be
-  automatically recalculated.
+The mode chosen only affects the output from QMTest, not how it runs
+the tests or how it stores the data.  Therefore, if you choose to run
+in the QMTest mode and later want to get the DejaGNU style output, or
+vice versa, you can do that as described below.
 
 Setting Up
 ==========
 
 You must download and install the following software:
 
-- Python 2.1 (or greater)
+- Python 2.2 (or greater)
 
   See http://www.python.org.
 
@@ -63,50 +62,35 @@ You must download and install the following software:
 
   Installation instructions are available on the web-site.
 
-- QMTest 1.1.4 (or greater)
+- A current version of QMTest.  No released version provides all of
+  the functionality required, so you must obtain QMTest from CVS.
 
-  See http://www.qmtest.com.
+  To do that, follow the instructions at:
 
-  QMTest is available at:
+    http://www.codesourcery.com/qm/qmtest_development
 
-    http://www.codesourcery.com/qm/qmtest_download
+  Installation instructions are available in the file called README
+  after you check out QMTest.
+
+- The "qmtc" and "qmtest_gcc" QMTest support packages.  These are
+  available from the same CVS repository as QMTest.  For example, to
+  check out "qmtc", do:
+
+    cvs -d :pserver:anoncvs@cvs.codesourcery.com:/home/qm/Repository \
+      co qmtc
+
+  You do not have to install these packages; you need only check them
+  out.
     
-  or:
-
-    ftp://ftp.codesourcery.com/pub/qmtest
-
-  Installation instructions are available on the web-site.
-
-- QMTC 1.1
-
-  This package is available from:
-
-  ftp://ftp.codesourcery.com/pub/qmtest/qmtc/qmtc-<version>.tar.gz
-
-  See the file called INSTALL in the distribution.
-
 Running the Tests
 =================
 
-To run the tests, run "make qmtest-g++" in the gcc directory of your
-build tree.  The first time that you do this, QMTest will calculate
-the set of tests that are expected to fail on your platform, so it
-will take several minutes before you see any test results.  After the
-first time, QMTest will start running the tests much more quickly.
+First, you must set QMTEST_CLASS_PATH so that it can find the qmtc and
+qmtest_gcc support packages:
+ 
+  export QMTEST_CLASS_PATH=/path/to/qmtc:/path/to/qmtest_gcc
 
-If the test summary printed at the test run indicates no unexpected
-failures, then G++ is behaving as expected on your target.  (Some
-unexpected passes are normal.)
-
-You can obtain detailed information about why tests failed in one 
-of two ways: 
-
-1. By invoking QMTest with the "-f full" option.  For example:
-
-     make QMTESTRUNFLAGS="-f full" qmtest-g++
-
-2. Examining the log file qmtestsuite/gpp.qmr after the tests have
-   run.
+The, run "make qmtest-g++" in the gcc directory of your build tree.
 
 Here are some more advanced usage instructions:
 
@@ -117,7 +101,7 @@ Here are some more advanced usage instructions:
 
    will run only the tests in the g++.dg subdirectory, and:
 
-     make QMTEST_GPP_TESTS="g++.dg/special/conpr1.C \
+     make QMTEST_GPP_TESTS="g++.dg/special/conpr-1.C \
                             g++.old-deja/g++.other/access2.C"
           qmtest-g++
 
@@ -132,10 +116,16 @@ Here are some more advanced usage instructions:
 
       qmtest -v run -f full ... 
 
-3. To run the compiler with particular flags, use QMTESTRUNFLAGS to
-   set the QMTest context variable "GPPTest.flags", like this:
+   (The "-f full" mode will provide detailed information about each
+   test as it runs.)
 
-      make QMTESTRUNFLAGS='-c GPPTest.flags="-funroll-loops"' qmtest-g++
+3. To run the compiler with particular flags, use QMTESTRUNFLAGS to
+   set the QMTest context variable "CompilerTable.cplusplus_options",
+   like this:
+
+      make \
+        QMTESTRUNFLAGS='-c CompilerTable.cplusplus_options="-funroll-loops"' \
+        qmtest-g++
 
    The compiler will then use the "-funroll-loops" switch when
    compiling.
@@ -149,7 +139,7 @@ Here are some more advanced usage instructions:
 
       make qmtest-gui
 
-   (Note that this will run the program called "netscape" in your path.
+   (Note that this will run the program called "mozilla" in your path.
    If you want to use another browser, you must configure qmtest as
    described in its manual.)
 
@@ -168,20 +158,11 @@ Here are some more advanced usage instructions:
    across multiple machines; for more information see the QMTest
    manual.)
 
-7. If you are testing a cross compiler, you must specify an interpreter
-   that is capable of running the generated program.  It must be a 
-   program "p" such that:
+7. If a test (say "g++.dg/abi/bitfield1.C") fails, and you want to get
+   more detailed information, you can do:
 
-      p program arg1 arg2 arg3 ...
+      cd qmtestsuite
+      qmtest summarize g++.qmr g++.dg/abi/bitfield1.C
 
-   behaves exactly like running:
-
-      program arg1 arg2 arg3 ...
-
-   would on the target machine.  You specify this program via the 
-   "CompilerTest.interpreter" context variable:
-
-      make QMTESTRUNFLAGS='-c CompilerTest.interpreter=/path/to/interpreter'
-           qmtest-g++
-
-
+   to get more information about the commands that were run and the
+   output produced.
