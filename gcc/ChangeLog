@@ -1,3 +1,7 @@
+2001-01-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_init_builtins): Re-enable builtins.
+
 Fri Jan 19 13:02:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.texi (SET, CLOBBER): Document PARALLEL as SET_DEST possibility.
