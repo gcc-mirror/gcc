@@ -7754,6 +7754,24 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
     gcc_unreachable ();
 }
 
+/* Expand a push in MODE.  This is some mode for which we do not support
+   proper push instructions, at least from the registers that we expect
+   the value to live in.  */
+
+void
+ix86_expand_push (enum machine_mode mode, rtx x)
+{
+  rtx tmp;
+
+  tmp = expand_simple_binop (Pmode, PLUS, stack_pointer_rtx,
+			     GEN_INT (-GET_MODE_SIZE (mode)),
+			     stack_pointer_rtx, 1, OPTAB_DIRECT);
+  if (tmp != stack_pointer_rtx)
+    emit_move_insn (stack_pointer_rtx, tmp);
+
+  tmp = gen_rtx_MEM (mode, stack_pointer_rtx);
+  emit_move_insn (tmp, x);
+}
 
 /* Fix up OPERANDS to satisfy ix86_binary_operator_ok.  Return the
    destination to use for the operation.  If different from the true
