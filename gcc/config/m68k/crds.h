@@ -86,7 +86,7 @@ Boston, MA 02111-1307, USA.  */
 #define NEED_PROBE (-2048)
 #endif
 
-/* use memcpy, memset instead of bcopy, etc. */
+/* use memcpy, memset instead of bcopy, etc.  */
 
 #define TARGET_MEM_FUNCTIONS
 
@@ -258,7 +258,7 @@ do {  int i;								\
        or print pair of registers as rx:ry.
    'y' for a FPA insn (print pair of registers as rx:ry).  This also outputs
        CONST_DOUBLE's as SunFPA constant RAM registers if
-       possible, so it should not be used except for the SunFPA. */
+       possible, so it should not be used except for the SunFPA.  */
 
 #undef PRINT_OPERAND_PUNCT_VALID_P
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\

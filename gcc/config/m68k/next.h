@@ -158,7 +158,7 @@ Boston, MA 02111-1307, USA.  */
    tables using pc relative addressing, since they are not in the text
    section, so we undefine CASE_VECTOR_PC_RELATIVE.  This also
    causes the compiler to use absolute addresses in the jump table,
-   so we redefine CASE_VECTOR_MODE to be SImode. */
+   so we redefine CASE_VECTOR_MODE to be SImode.  */
 
 #undef	CASE_VECTOR_MODE
 #define CASE_VECTOR_MODE SImode
@@ -177,13 +177,13 @@ Boston, MA 02111-1307, USA.  */
 #define GO_IF_INDEXABLE_BASE(X, ADDR)	\
 { if (LEGITIMATE_BASE_REG_P (X)) goto ADDR; }
 
-/* This accounts for the return pc and saved fp on the m68k. */
+/* This accounts for the return pc and saved fp on the m68k.  */
 
 #define OBJC_FORWARDING_STACK_OFFSET 8
 #define OBJC_FORWARDING_MIN_OFFSET 8
 
 /* FINALIZE_TRAMPOLINE enables executable stack.  The
-   __enable_execute_stack also clears the insn cache. */
+   __enable_execute_stack also clears the insn cache.  */
 
 #undef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP) \
@@ -191,7 +191,7 @@ Boston, MA 02111-1307, USA.  */
 		    0, VOIDmode, 1, memory_address (SImode, (TRAMP)), Pmode)
 
 /* A C expression used to clear the instruction cache from 
-   address BEG to address END.   On NeXTSTEP this i a system trap. */
+   address BEG to address END.   On NeXTSTEP this i a system trap.  */
 
 #define CLEAR_INSN_CACHE(BEG, END)   \
    asm volatile ("trap #2")

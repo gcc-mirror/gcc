@@ -49,12 +49,12 @@ Boston, MA 02111-1307, USA.  */
 #define REGISTER_PREFIX "%"
 
 /* The prefix for local (compiler generated) labels.
-   These labels will not appear in the symbol table. */
+   These labels will not appear in the symbol table.  */
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
@@ -116,7 +116,7 @@ Boston, MA 02111-1307, USA.  */
     g++ assembler names.  When this is defined, g++ uses embedded '.'
     characters and some m68k assemblers have problems with this.  The
     chances are much greater that any particular assembler will permit
-    embedded '$' characters. */
+    embedded '$' characters.  */
 
 #undef NO_DOLLAR_IN_LABEL
 
@@ -137,7 +137,7 @@ Boston, MA 02111-1307, USA.  */
 #define BSS_ASM_OP	"\t.lcomm\t"
 
 /* Register in which address to store a structure value is passed to a
-   function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0. */
+   function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0.  */
 
 #undef STRUCT_VALUE_REGNUM
 #define STRUCT_VALUE_REGNUM 8
@@ -150,7 +150,7 @@ Boston, MA 02111-1307, USA.  */
 /* Define how the m68k registers should be numbered for Dwarf output.
    The numbering provided here should be compatible with the native
    SVR4 SDB debugger in the m68k/SVR4 reference port, where d0-d7
-   are 0-7, a0-a8 are 8-15, and fp0-fp7 are 16-23. */
+   are 0-7, a0-a8 are 8-15, and fp0-fp7 are 16-23.  */
 
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
@@ -159,7 +159,7 @@ Boston, MA 02111-1307, USA.  */
    It is then overridden by m68k/sgs.h to use ".space", and again by svr4.h
    to use ".zero".  The m68k/SVR4 assembler uses ".space", so repeat the
    definition from m68k/sgs.h here.  Note that ASM_NO_SKIP_IN_TEXT is
-   defined in m68k/sgs.h, so we don't have to repeat it here. */
+   defined in m68k/sgs.h, so we don't have to repeat it here.  */
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
@@ -168,7 +168,7 @@ Boston, MA 02111-1307, USA.  */
 #if 0
 /* SVR4 m68k assembler is bitching on the `comm i,1,1' which askes for 
    1 byte alignment. Don't generate alignment for COMMON seems to be
-   safer until we the assembler is fixed. */
+   safer until we the assembler is fixed.  */
 #undef ASM_OUTPUT_ALIGNED_COMMON
 /* Same problem with this one.  */
 #undef ASM_OUTPUT_ALIGNED_LOCAL
@@ -176,7 +176,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* The `string' directive on m68k svr4 does not handle string with
    escape char (ie., `\') right. Use normal way to output ASCII bytes
-   seems to be safer. */
+   seems to be safer.  */
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
@@ -233,18 +233,18 @@ extern int switch_table_difference_label_flag;
   fprintf ((FILE), ",%u\n", (SIZE)))
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to
-   keep switch tables in the text section. */
+   keep switch tables in the text section.  */
    
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Override the definition in svr4.h. In m68k svr4, using swbeg is the 
-   standard way to do switch table. */
+   standard way to do switch table.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
   fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
 
 /* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is an
-   operand of a function call. */
+   operand of a function call.  */
 #undef LEGITIMATE_PIC_OPERAND_P
 
 #define LEGITIMATE_PIC_OPERAND_P(X)	\
@@ -256,7 +256,7 @@ extern int switch_table_difference_label_flag;
    to be done as `bsr foo@PLTPC', so it will force the assembler to create 
    the PLT entry for `foo'. Doing function cse will cause the address of `foo'
    to be loaded into a register, which is exactly what we want to avoid when
-   we are doing PIC on svr4 m68k. */
+   we are doing PIC on svr4 m68k.  */
 #undef OVERRIDE_OPTIONS
 #define OVERRIDE_OPTIONS		\
 {					\
@@ -294,7 +294,7 @@ extern int switch_table_difference_label_flag;
    specified as the number of bits.
 
    Try to use function `asm_output_aligned_bss' defined in file
-   `varasm.c' when defining this macro. */
+   `varasm.c' when defining this macro.  */
 #ifndef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)

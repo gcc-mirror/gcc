@@ -82,7 +82,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define LIB_SPEC ""
 
-/* Provide required defaults for linker. */
+/* Provide required defaults for linker.  */
  
 #define LINK_SPEC "-r"
 

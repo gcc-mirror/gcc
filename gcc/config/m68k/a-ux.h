@@ -109,7 +109,7 @@ crt2.o%s "
    and how to find (in the caller) the value returned by a function.  VALTYPE
    is the data type of the value (as a tree).  If the precise function being
    called is known, FUNC is its FUNCTION_DECL; otherwise, FUNC is 0.
-   For A/UX generate the result in d0, a0, or fp0 as appropriate. */
+   For A/UX generate the result in d0, a0, or fp0 as appropriate.  */
 
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE, FUNC)                                  \
@@ -127,7 +127,7 @@ crt2.o%s "
 /* 1 if N is a possible register number for a function value.
    For A/UX allow d0, a0, or fp0 as return registers, for integral,
    pointer, or floating types, respectively. Reject fp0 if not using a
-   68881 coprocessor. */
+   68881 coprocessor.  */
 
 #undef FUNCTION_VALUE_REGNO_P
 #define FUNCTION_VALUE_REGNO_P(N) \
@@ -144,7 +144,7 @@ crt2.o%s "
    A/UX convention is to copy the value returned for pointer functions
    from a0 to d0 in the function epilogue, so that callers that have
    neglected to properly declare the callee can still find the correct return
-   value. */
+   value.  */
 
 #define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE)				\
 {									\

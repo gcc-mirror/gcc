@@ -112,7 +112,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define if you don't want extended real, but do want to use the
    software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion. */
+   decimal <-> binary conversion.  */
 #define REAL_ARITHMETIC 
 
 #undef ASM_OUTPUT_SOURCE_FILENAME
@@ -273,7 +273,7 @@ Boston, MA 02111-1307, USA.  */
     }                                                   \
 }
 
-/* This is how to output a `long double' extended real constant. */
+/* This is how to output a `long double' extended real constant.  */
 #undef ASM_OUTPUT_LONG_DOUBLE 
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
@@ -348,7 +348,7 @@ do { long l;						\
   asm_fprintf (FILE, "\tdc.w %LL%d-%LL%d\n", VALUE, REL)
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to
-   keep switch tables in the text section. */
+   keep switch tables in the text section.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Output a float value (represented as a C double) as an immediate operand.

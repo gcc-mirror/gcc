@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  HP-UX 68010 version.  */
 
-/* See m68k.h.  0 means 68000 without 68881 and no bitfields.   */
+/* See m68k.h.  0 means 68000 without 68881 and no bitfields.  */
 #define	TARGET_DEFAULT 0
 
 #include "m68k/hp320.h"

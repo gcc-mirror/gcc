@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "m68k/m68kv4.h"
 
-/* Dollars and dots in labels are not allowed. */
+/* Dollars and dots in labels are not allowed.  */
 
 #define NO_DOLLAR_IN_LABEL
 #define NO_DOT_IN_LABEL
@@ -55,7 +55,7 @@ int switch_table_difference_label_flag;
 /* This definition of ASM_OUTPUT_ASCII is the same as the one in m68k/sgs.h,
    which has been overridden by the one in svr4.h.  However, we can't use
    the one in svr4.h because the ASV assembler croaks on some of the
-   strings that it emits (such as .string "\"%s\"\n"). */
+   strings that it emits (such as .string "\"%s\"\n").  */
 
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\

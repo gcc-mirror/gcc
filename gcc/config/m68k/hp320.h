@@ -79,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
 /* These definitions differ from those used for GAS by defining __HPUX_ASM__.
    This is needed because some programs, particularly GDB, need to
    know which assembler is being used so that the correct `asm'
-   instructions can be used. */
+   instructions can be used.  */
 
 #define CPP_SPEC \
 "%{!msoft-float:-D__HAVE_68881__ }\
@@ -133,7 +133,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define STRUCTURE_SIZE_BOUNDARY 16
 
-/* hpux doesn't use static area for struct returns. */
+/* hpux doesn't use static area for struct returns.  */
 #undef PCC_STATIC_STRUCT_RETURN
 
 /* Generate calls to memcpy, memcmp and memset.  */
@@ -621,7 +621,7 @@ do { register int i;			\
 #endif /* not HPUX_ASM */
 
 /* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is an
-   operand of a function call. */
+   operand of a function call.  */
 #undef LEGITIMATE_PIC_OPERAND_P
 #define LEGITIMATE_PIC_OPERAND_P(X) \
   ((! symbolic_operand (X, VOIDmode) \

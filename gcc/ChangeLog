@@ -1,3 +1,37 @@
+2001-11-01  Kazu Hirata  <kazu@hxi.com>
+
+	* config/m68k/3b1.h: Fix comment formatting.
+	* config/m68k/3b1g.h: Likewise.
+	* config/m68k/a-ux.h: Likewise.
+	* config/m68k/amix.h: Likewise.
+	* config/m68k/apollo68.h: Likewise.
+	* config/m68k/atari.h: Likewise.
+	* config/m68k/aux-exit.c: Likewise.
+	* config/m68k/ccur-GAS.h: Likewise.
+	* config/m68k/crds.h: Likewise.
+	* config/m68k/dpx2.h: Likewise.
+	* config/m68k/dpx2g.h: Likewise.
+	* config/m68k/hp310.h: Likewise.
+	* config/m68k/hp320.h: Likewise.
+	* config/m68k/isi.h: Likewise.
+	* config/m68k/linux.h: Likewise.
+	* config/m68k/lynx.h: Likewise.
+	* config/m68k/m68k-psos.h: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/m68k/m68k.h: Likewise.
+	* config/m68k/m68k.md: Likewise.
+	* config/m68k/m68kelf.h: Likewise.
+	* config/m68k/m68kv4.h: Likewise.
+	* config/m68k/mot3300.h: Likewise.
+	* config/m68k/news.h: Likewise.
+	* config/m68k/next.h: Likewise.
+	* config/m68k/pbb.h: Likewise.
+	* config/m68k/plexus.h: Likewise.
+	* config/m68k/sgs.h: Likewise.
+	* config/m68k/sun3.h: Likewise.
+	* config/m68k/tower.h: Likewise.
+	* config/m68k/vxm68k.h: Likewise.
+
 2001-10-31  DJ Delorie  <dj@redhat.com>
 
 	* config/mips/mips.h (mips_cache_flush_func): Prototype.

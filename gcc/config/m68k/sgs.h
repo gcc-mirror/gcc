@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "m68k/m68k.h"
 
-/* SGS specific assembler pseudo ops. */
+/* SGS specific assembler pseudo ops.  */
 
 #define	BYTE_ASM_OP		"\t.byte "
 #define WORD_ASM_OP		"\t.short "
@@ -60,12 +60,12 @@ Boston, MA 02111-1307, USA.  */
 #define REGISTER_PREFIX "%"
 
 /* The prefix for local (compiler generated) labels.
-   These labels will not appear in the symbol table. */
+   These labels will not appear in the symbol table.  */
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
@@ -103,7 +103,7 @@ Boston, MA 02111-1307, USA.  */
 #endif /* defined SUPPORT_SUN_FPA */
 
 /* This is how to output an assembler line defining an `int' constant.  */
-/* The SGS assembler doesn't understand ".word". */
+/* The SGS assembler doesn't understand ".word".  */
 
 #undef ASM_OUTPUT_SHORT
 #define ASM_OUTPUT_SHORT(FILE,VALUE)			\
@@ -153,7 +153,7 @@ do { long l;						\
    1023 bytes.  There is no "partial string op" which works like ".string"
    but doesn't append a null byte, so we can't chop the input string up
    into small pieces and use that.  Our only remaining alternative is to
-   output the string one byte at a time. */
+   output the string one byte at a time.  */
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
@@ -186,7 +186,7 @@ do {								\
 
 
 /* SGS based assemblers don't understand #NO_APP and #APP, so just don't
-   bother emitting them. */
+   bother emitting them.  */
 
 #undef ASM_APP_ON
 #define ASM_APP_ON ""
@@ -225,7 +225,7 @@ do {								\
 
 /* How to output a block of SIZE zero bytes.  Note that the `space' pseudo,
    when used in the text segment, causes SGS assemblers to output nop insns
-   rather than 0s, so we set ASM_NO_SKIP_IN_TEXT to prevent this. */
+   rather than 0s, so we set ASM_NO_SKIP_IN_TEXT to prevent this.  */
 
 #define ASM_NO_SKIP_IN_TEXT 1
 
@@ -389,7 +389,7 @@ do {								\
 /* This macro outputs the label at the start of a switch table.  The
    ".swbeg <N>" is an assembler directive that causes the switch table
    size to be inserted into the object code so that disassemblers, for
-   example, can identify that it is the start of a switch table. */
+   example, can identify that it is the start of a switch table.  */
 
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
   fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
@@ -406,7 +406,7 @@ do {								\
    we want.  This difference can be accommodated by making the assembler
    define such "LDnnn" to be either "Lnnn-LInnn-2.b", "Lnnn", or any other
    string, as necessary.  This is accomplished via the ASM_OUTPUT_CASE_END
-   macro. */
+   macro.  */
 
 #undef ASM_OUTPUT_CASE_END
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)		\
@@ -424,7 +424,7 @@ extern int switch_table_difference_label_flag;
   asm_fprintf (FILE, "%s%LL%d-%LL%d\n", WORD_ASM_OP, VALUE, REL)
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to
-   keep switch tables in the text section. */
+   keep switch tables in the text section.  */
    
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 

@@ -93,7 +93,7 @@ extern int target_flags;
    The 68040 will execute all 68030 and 68881/2 instructions, but some
    of them must be emulated in software by the OS.  When TARGET_68040 is
    turned on, these instructions won't be used.  This code will still
-   run on a 68030 and 68881/2. */
+   run on a 68030 and 68881/2.  */
 #define MASK_68040	256
 #define TARGET_68040 (target_flags & MASK_68040)
 
@@ -106,7 +106,7 @@ extern int target_flags;
    The 68060 will execute all 68030 and 68881/2 instructions, but some
    of them must be emulated in software by the OS.  When TARGET_68060 is
    turned on, these instructions won't be used.  This code will still
-   run on a 68030 and 68881/2. */
+   run on a 68030 and 68881/2.  */
 #define MASK_68060	1024
 #define TARGET_68060 (target_flags & MASK_68060)
 
@@ -137,7 +137,7 @@ extern int target_flags;
 #define MASK_PCREL	8192
 #define TARGET_PCREL	(target_flags & MASK_PCREL)
 
-/* Relax strict alignment. */
+/* Relax strict alignment.  */
 #define MASK_NO_STRICT_ALIGNMENT 16384
 #define TARGET_STRICT_ALIGNMENT  (~target_flags & MASK_NO_STRICT_ALIGNMENT)
 
@@ -290,7 +290,7 @@ extern int target_flags;
 
 /* Define if you don't want extended real, but do want to use the
    software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion. */
+   decimal <-> binary conversion.  */
 /* #define REAL_ARITHMETIC */
 
 /* Define this if most significant bit is lowest numbered
@@ -343,7 +343,7 @@ extern int target_flags;
    Most published ABIs say that ints should be aligned on 16 bit
    boundaries, but cpus with 32 bit busses get better performance
    aligned on 32 bit boundaries.  Coldfires without a misalignment
-   module require 32 bit alignment. */
+   module require 32 bit alignment.  */
 #define BIGGEST_ALIGNMENT (TARGET_ALIGN_INT ? 32 : 16)
 
 /* Set this nonzero if move instructions will actually fail to work
@@ -356,7 +356,7 @@ extern int target_flags;
 /* Align loop starts for optimal branching.  */
 #define LOOP_ALIGN(LABEL) (m68k_align_loops)
 
-/* This is how to align an instruction for optimal branching. */
+/* This is how to align an instruction for optimal branching.  */
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) (m68k_align_jumps)
 
 #define SELECT_RTX_SECTION(MODE, X, ALIGN)				\
@@ -395,7 +395,7 @@ extern int target_flags;
 #define FIRST_PSEUDO_REGISTER 56
 #endif
 
-/* This defines the register which is used to hold the offset table for PIC. */
+/* This defines the register which is used to hold the offset table for PIC.  */
 #define PIC_OFFSET_TABLE_REGNUM 13
 
 #ifndef SUPPORT_SUN_FPA
@@ -433,7 +433,7 @@ extern int target_flags;
    On the 68000, only the stack pointer is such.  */
 
 /* fpa0 is also reserved so that it can be used to move data back and
-   forth between high fpa regs and everything else. */
+   forth between high fpa regs and everything else.  */
 
 #define FIXED_REGISTERS        \
  {/* Data registers.  */       \
@@ -651,7 +651,7 @@ enum reg_class {
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
  { "NO_REGS", "DATA_REGS",              \
@@ -704,7 +704,7 @@ enum reg_class { NO_REGS, LO_FPA_REGS, FPA_REGS, FP_REGS,
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
  { "NO_REGS", "LO_FPA_REGS", "FPA_REGS", "FP_REGS",  \
@@ -754,7 +754,7 @@ extern enum reg_class regno_reg_class[];
    machine description; we zorch the constraint letters that aren't
    appropriate for a specific target.  This allows us to guarantee
    that a specific kind of register will not be used for a given target
-   without fiddling with the register classes above. */
+   without fiddling with the register classes above.  */
 
 #ifndef SUPPORT_SUN_FPA
 
@@ -957,7 +957,7 @@ extern enum reg_class regno_reg_class[];
    On the 5200 (coldfire), sp@- in a byte insn pushes just a byte.  */
 #define PUSH_ROUNDING(BYTES) (TARGET_5200 ? BYTES : ((BYTES) + 1) & ~1)
 
-/* We want to avoid trying to push bytes. */
+/* We want to avoid trying to push bytes.  */
 #define MOVE_BY_PIECES_P(SIZE, ALIGN) \
   (move_by_pieces_ninsns (SIZE, ALIGN) < MOVE_RATIO \
     && (((SIZE) >=16 && (ALIGN) >= 16) || (TARGET_5200)))
@@ -1134,7 +1134,7 @@ do							\
 while(0)
 
 /* Output assembler code to FILE to indicate return from 
-   a function during basic block profiling. */
+   a function during basic block profiling.  */
 
 #define FUNCTION_BLOCK_PROFILER_EXIT(FILE)		\
   asm_fprintf (FILE, "\tjsr %U__bb_trace_ret\n");
@@ -1209,7 +1209,7 @@ while(0)
 #endif /* __mcf5200__ */
 #endif /* MOTOROLA */
 
-/* Restore all registers saved by MACHINE_STATE_SAVE. */
+/* Restore all registers saved by MACHINE_STATE_SAVE.  */
 
 #ifdef MOTOROLA
 #if defined(__mcf5200__)
@@ -1668,7 +1668,7 @@ __transfer_from_trampoline ()					\
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
 
 /* Specify the tree operation to be used to convert reals to integers.  */
@@ -1866,7 +1866,7 @@ __transfer_from_trampoline ()					\
    an empty string, or any arbitrary string (such as ".", ".L%", etc)
    without having to make any other changes to account for the specific
    definition.  Note it is a string literal, not interpreted by printf
-   and friends. */
+   and friends.  */
 
 #define LOCAL_LABEL_PREFIX ""
 
@@ -1954,7 +1954,7 @@ __transfer_from_trampoline ()					\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
 
-/* This is how to output a `long double' extended real constant. */
+/* This is how to output a `long double' extended real constant.  */
   
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
@@ -2128,7 +2128,7 @@ do { long l;						\
        or print pair of registers as rx:ry.
    'y' for a FPA insn (print pair of registers as rx:ry).  This also outputs
        CONST_DOUBLE's as SunFPA constant RAM registers if
-       possible, so it should not be used except for the SunFPA. */
+       possible, so it should not be used except for the SunFPA.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '.' || (CODE) == '#' || (CODE) == '-'			\

@@ -84,7 +84,7 @@ void exit(int status)
       if (block == &atexit_fns)
 	break;
       /* I know what you are thinking -- we are about to exit, why free?
-	 Because it is friendly to memory leak detectors, that's why. */
+	 Because it is friendly to memory leak detectors, that's why.  */
       old_block = block;
       block = block->next;
       free(old_block);

@@ -59,10 +59,10 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k, GNU GAS syntax)");
 
-/* Discard internal local symbols beginning with 'L'. */
+/* Discard internal local symbols beginning with 'L'.  */
 #define LINK_SPEC "-X"
 
-/* Every structure or union's size must be a multiple of 4 bytes. */
+/* Every structure or union's size must be a multiple of 4 bytes.  */
 #define STRUCTURE_SIZE_BOUNDARY 16 
 
 /* No data type wants to be aligned rounder than this.  */
@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 #undef  FUNCTION_BOUNDARY
 #define FUNCTION_BOUNDARY 32
 
-/* Make strings long-word aligned so dhrystones will run faster. */
+/* Make strings long-word aligned so dhrystones will run faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) \
    (TREE_CODE (EXP) == STRING_CST \
     && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
