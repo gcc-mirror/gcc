@@ -1,3 +1,12 @@
+Thu Apr 13 00:09:16 EDT 2000  John Wehle  (john@feith.com)
+
+	* i386.c (ix86_expand_binary_operator,
+	ix86_expand_unary_operator): Check no_new_pseudos
+	instead of reload_in_progress and reload_completed.
+	(ix86_split_ashldi, ix86_split_ashrdi,
+	ix86_split_lshrdi): Check no_new_pseudos instead
+	of reload_completed.
+
 2000-04-12  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (purge_addressof): Unshare any shared rtl created by

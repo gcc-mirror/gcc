@@ -4200,7 +4200,7 @@ ix86_expand_binary_operator (code, mode, operands)
     src1 = force_reg (mode, src1);
     
   /* If optimizing, copy to regs to improve CSE */
-  if (optimize && !reload_in_progress && !reload_completed)
+  if (optimize && ! no_new_pseudos)
     {
       if (GET_CODE (dst) == MEM)
 	dst = gen_reg_rtx (mode);
@@ -4294,7 +4294,7 @@ ix86_expand_unary_operator (code, mode, operands)
     src = force_reg (mode, src);
   
   /* If optimizing, copy to regs to improve CSE */
-  if (optimize && !reload_in_progress && !reload_completed)
+  if (optimize && ! no_new_pseudos)
     {
       if (GET_CODE (dst) == MEM)
 	dst = gen_reg_rtx (mode);
@@ -5613,9 +5613,9 @@ ix86_split_ashldi (operands, scratch)
       emit_insn (gen_x86_shld_1 (high[0], low[0], operands[2]));
       emit_insn (gen_ashlsi3 (low[0], low[0], operands[2]));
 
-      if (TARGET_CMOVE && (! reload_completed || scratch))
+      if (TARGET_CMOVE && (! no_new_pseudos || scratch))
 	{
-	  if (! reload_completed)
+	  if (! no_new_pseudos)
 	    scratch = force_reg (SImode, const0_rtx);
 	  else
 	    emit_move_insn (scratch, const0_rtx);
@@ -5673,9 +5673,9 @@ ix86_split_ashrdi (operands, scratch)
       emit_insn (gen_x86_shrd_1 (low[0], high[0], operands[2]));
       emit_insn (gen_ashrsi3 (high[0], high[0], operands[2]));
 
-      if (TARGET_CMOVE && (!reload_completed || scratch))
+      if (TARGET_CMOVE && (! no_new_pseudos || scratch))
 	{
-	  if (! reload_completed)
+	  if (! no_new_pseudos)
 	    scratch = gen_reg_rtx (SImode);
 	  emit_move_insn (scratch, high[0]);
 	  emit_insn (gen_ashrsi3 (scratch, scratch, GEN_INT (31)));
@@ -5726,9 +5726,9 @@ ix86_split_lshrdi (operands, scratch)
       emit_insn (gen_lshrsi3 (high[0], high[0], operands[2]));
 
       /* Heh.  By reversing the arguments, we can reuse this pattern.  */
-      if (TARGET_CMOVE && (! reload_completed || scratch))
+      if (TARGET_CMOVE && (! no_new_pseudos || scratch))
 	{
-	  if (! reload_completed)
+	  if (! no_new_pseudos)
 	    scratch = force_reg (SImode, const0_rtx);
 	  else
 	    emit_move_insn (scratch, const0_rtx);
