@@ -1,3 +1,8 @@
+Thu Mar  4 07:56:49 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-common.c (shorten_compare): Use type_for_size, not
+	signed_or_unsigned_type, when getting bounds.
+
 Wed Mar  3 20:19:58 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* regclass.c (record_reg_classes, case 'p'): Set WIN to 1.
