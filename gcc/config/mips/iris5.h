@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Iris version 5.
-   Copyright (C) 1993, 1995, 1996, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1998, 2000,
+   2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -153,6 +154,10 @@ do {						\
   assemble_name (FILE, NAME);			\
   fputs (" .text\n", FILE);			\
 } while (0)
+
+/* To get unaligned data, we have to turn off auto alignment.  */
+#define UNALIGNED_SHORT_ASM_OP		"\t.align 0\n\t.half\t"
+#define UNALIGNED_INT_ASM_OP		"\t.align 0\n\t.word\t"
 
 /* Also do this for libcalls.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
