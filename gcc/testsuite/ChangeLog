@@ -1,3 +1,7 @@
+Fri Sep  5 00:20:39 1997  Richard Henderson  (rth@cygnus.com)
+
+	* cbrt.c: Tweak to work on more targets.
+
 Tue Sep  2 16:34:31 1997  Doug Evans  <dje@canuck.cygnus.com>
 
 	* lib/gcc-dg.exp (gcc-dg-test): Fix typos setting compile_type.
