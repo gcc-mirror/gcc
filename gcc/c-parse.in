@@ -296,7 +296,7 @@ program: /* empty */
 
 extdefs:
 	{$<ttype>$ = NULL_TREE; } extdef
-	| extdefs {$<ttype>$ = NULL_TREE; } extdef
+	| extdefs {$<ttype>$ = NULL_TREE; ggc_collect(); } extdef
 	;
 
 extdef:
