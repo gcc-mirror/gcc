@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "name-lookup.h"
 #include "timevar.h"
+#include "toplev.h"
 
 /* Compute the chain index of a binding_entry given the HASH value of its
    name and the total COUNT of chains.  COUNT is assumed to be a power
@@ -298,6 +299,93 @@ cxx_binding_free (cxx_binding *binding)
   binding->previous = free_bindings;
   free_bindings = binding;
 }
+
+/* BINDING records an existing declaration for a namein the current scope.
+   But, DECL is another declaration for that same identifier in the
+   same scope.  This is the `struct stat' hack whereby a non-typedef
+   class name or enum-name can be bound at the same level as some other
+   kind of entity.
+   3.3.7/1
+
+     A class name (9.1) or enumeration name (7.2) can be hidden by the
+     name of an object, function, or enumerator declared in the same scope.
+     If a class or enumeration name and an object, function, or enumerator
+     are declared in the same scope (in any order) with the same name, the
+     class or enumeration name is hidden wherever the object, function, or
+     enumerator name is visible.
+
+   It's the responsibility of the caller to check that
+   inserting this name is valid here.  Returns nonzero if the new binding
+   was successful.  */
+
+bool
+supplement_binding (cxx_binding *binding, tree decl)
+{
+  tree bval = binding->value;
+  bool ok = true;
+
+  timevar_push (TV_NAME_LOOKUP);
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    /* The new name is the type name.  */
+    binding->type = decl;
+  else if (!bval)
+    /* This situation arises when push_class_level_binding moves an
+       inherited type-binding out of the way to make room for a new
+       value binding.  */
+    binding->value = decl;
+  else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval))
+    {
+      /* The old binding was a type name.  It was placed in
+	 BINDING_VALUE because it was thought, at the point it was
+	 declared, to be the only entity with such a name.  Move the
+	 type name into the type slot; it is now hidden by the new
+	 binding.  */
+      binding->type = bval;
+      binding->value = decl;
+      binding->value_is_inherited = false;
+    }
+  else if (TREE_CODE (bval) == TYPE_DECL
+	   && TREE_CODE (decl) == TYPE_DECL
+	   && DECL_NAME (decl) == DECL_NAME (bval)
+	   && (same_type_p (TREE_TYPE (decl), TREE_TYPE (bval))
+	       /* If either type involves template parameters, we must
+		  wait until instantiation.  */
+	       || uses_template_parms (TREE_TYPE (decl))
+	       || uses_template_parms (TREE_TYPE (bval))))
+    /* We have two typedef-names, both naming the same type to have
+       the same name.  This is OK because of:
+
+         [dcl.typedef]
+
+	 In a given scope, a typedef specifier can be used to redefine
+	 the name of any type declared in that scope to refer to the
+	 type to which it already refers.  */
+    ok = false;
+  /* There can be two block-scope declarations of the same variable,
+     so long as they are `extern' declarations.  However, there cannot
+     be two declarations of the same static data member:
+
+       [class.mem]
+
+       A member shall not be declared twice in the
+       member-specification.  */
+  else if (TREE_CODE (decl) == VAR_DECL && TREE_CODE (bval) == VAR_DECL
+	   && DECL_EXTERNAL (decl) && DECL_EXTERNAL (bval)
+	   && !DECL_CLASS_SCOPE_P (decl))
+    {
+      duplicate_decls (decl, binding->value);
+      ok = false;
+    }
+  else
+    {
+      error ("declaration of `%#D'", decl);
+      cp_error_at ("conflicts with previous declaration `%#D'",
+		   binding->value);
+      ok = false;
+    }
+
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, ok);
+}
 
 /* Return (from the stack of) the BINDING, if any, establihsed at SCOPE.  */ 
 
@@ -382,7 +470,7 @@ set_namespace_binding (tree name, tree scope, tree val)
       || val == error_mark_node)
     BINDING_VALUE (b) = val;
   else
-    add_binding (b, val);
+    supplement_binding (b, val);
   timevar_pop (TV_NAME_LOOKUP);
 }
 

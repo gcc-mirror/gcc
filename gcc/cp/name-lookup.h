@@ -107,6 +107,7 @@ struct cxx_binding GTY(())
 
 extern cxx_binding *cxx_binding_make (tree, tree);
 extern void cxx_binding_free (cxx_binding *);
+extern bool supplement_binding (cxx_binding *, tree);
 
 /* True if SCOPE designates the global scope binding contour.  */
 #define global_scope_p(SCOPE) \
