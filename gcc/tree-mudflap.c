@@ -112,12 +112,15 @@ mf_varname_tree (tree decl)
     }
   pp_clear_output_area (buf);
 
-  /* Add FILENAME[:LINENUMBER].  */
+  /* Add FILENAME[:LINENUMBER[:COLUMNNUMBER]].  */
   {
     expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (decl));
     const char *sourcefile;
     unsigned sourceline = xloc.line;
-
+    unsigned sourcecolumn = 0;
+#ifdef USE_MAPPED_LOCATION
+    sourcecolumn = xloc.column;
+#endif
     sourcefile = xloc.file;
     if (sourcefile == NULL && current_function_decl != NULL_TREE)
       sourcefile = DECL_SOURCE_FILE (current_function_decl);
@@ -130,12 +133,18 @@ mf_varname_tree (tree decl)
       {
         pp_string (buf, ":");
         pp_decimal_int (buf, sourceline);
+
+        if (sourcecolumn != 0)
+          {
+            pp_string (buf, ":");
+            pp_decimal_int (buf, sourcecolumn);
+          }
       }
   }
 
   if (current_function_decl != NULL_TREE)
     {
-      /* Add (FUNCTION): */
+      /* Add (FUNCTION) */
       pp_string (buf, " (");
       {
         const char *funcname = NULL;
@@ -189,11 +198,11 @@ mf_file_function_line_tree (location_t location)
 {
   expanded_location xloc = expand_location (location);
   const char *file = NULL, *colon, *line, *op, *name, *cp;
-  char linebuf[18];
+  char linecolbuf[30]; /* Enough for two decimal numbers plus a colon.  */
   char *string;
   tree result;
 
-  /* Add FILENAME[:LINENUMBER].  */
+  /* Add FILENAME[:LINENUMBER[:COLUMNNUMBER]].  */
   file = xloc.file;
   if (file == NULL && current_function_decl != NULL_TREE)
     file = DECL_SOURCE_FILE (current_function_decl);
@@ -202,9 +211,14 @@ mf_file_function_line_tree (location_t location)
 
   if (xloc.line > 0)
     {
-      sprintf (linebuf, "%d", xloc.line);
+#ifdef USE_MAPPED_LOCATION
+      if (xloc.column > 0)
+        sprintf (linecolbuf, "%d:%d", xloc.line, xloc.column);
+      else
+#endif
+        sprintf (linecolbuf, "%d", xloc.line);
       colon = ":";
-      line = linebuf;
+      line = linecolbuf;
     }
   else
     colon = line = "";
@@ -674,6 +688,10 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
 
   /* Don't instrument read operations.  */
   if (dirflag == integer_zero_node && flag_mudflap_ignore_reads)
+    return;
+
+  /* Don't instrument marked nodes.  */
+  if (mf_marked_p (*tp))
     return;
 
   t = *tp;
