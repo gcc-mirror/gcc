@@ -1138,9 +1138,9 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-*-freebsdelf*)
 changequote([,])dnl
-		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
+		tm_file="i386/i386.h i386/att.h svr4.h i386/freebsd-elf.h i386/perform.h"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		tmake_file=i386/t-freebsd
+		tmake_file=t-freebsd
 		gas=yes
 		gnu_ld=yes
 		stabs=yes
@@ -1149,7 +1149,7 @@ changequote(,)dnl
 	i[34567]86-*-freebsd*)
 changequote([,])dnl
 		tm_file=i386/freebsd.h
-		tmake_file=i386/t-freebsd
+		tmake_file=t-freebsd
 		;;
 changequote(,)dnl
 	i[34567]86-*-netbsd*)

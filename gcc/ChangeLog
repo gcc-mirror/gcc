@@ -1,3 +1,16 @@
+Wed Jun  2 00:52:34 1999  David O'Brien <obrien@FreeBSD.org>
+
+	* configure.in (i[34567]86-*-freebsdelf): Don't include linux.h,
+	i386/freebsd-elf.h no longer requires it.  Instead include svr4.h.
+	* configure: Rebuilt.
+	* i386/freebsd-elf.h (DEFAULT_VTABLE_THUNKS): Define.
+	(ASM_COMMENT_START, ASM_APP_ON, ASM_APP_OFF, SET_ASM_OP): Likewise.
+	(PREFERRED_DEBUGGING_TYPE, WCHAR_UNSIGNED): Likewise.
+	(SWITCH_TAKES_ARG): Likewise.
+	* i386/freebsd.h: Remove FREEBSD_NATIVE support.
+	* config/t-freebsd: Moved from config/i386/ so it can used for all
+	FreeBSD targets.
+	
 Mon May 31 02:22:55 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* m68k/x-mot3300 (XCFLAGS): Fixed to match stb.o, not f/stb.o.

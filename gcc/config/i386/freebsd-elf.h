@@ -3,6 +3,7 @@
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
    Adapted from GNU/Linux version by John Polstra.
+   Continued development by David O'Brien <obrien@freebsd.org>
 
 This file is part of GNU CC.
 
@@ -34,6 +35,23 @@ Boston, MA 02111-1307, USA.  */
    libraries compiled with the native cc, so undef it. */
 #undef NO_DOLLAR_IN_LABEL
 
+/* Use more efficient ``thunks'' to implement C++ vtables. */
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
+
+/* Override the default comment-starter of "/".  */
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
+
+#undef ASM_APP_ON
+#define ASM_APP_ON "#APP\n"
+
+#undef ASM_APP_OFF
+#define ASM_APP_OFF "#NO_APP\n"
+
+#undef SET_ASM_OP
+#define SET_ASM_OP	".set"
+
 /* This is how to output an element of a case-vector that is relative.
    This is only used for PIC code.  See comments by the `casesi' insn in
    i386.md for an explanation of the expression this outputs. */
@@ -44,6 +62,10 @@ Boston, MA 02111-1307, USA.  */
 /* Indicate that jump tables go in the text section.  This is
    necessary when compiling PIC code.  */
 #define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
+
+/* Use stabs instead of DWARF debug format.  */
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* Copy this from the svr4 specifications... */
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -140,6 +162,9 @@ Boston, MA 02111-1307, USA.  */
   
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
+
+#undef WCHAR_UNSIGNED
+#define WCHAR_UNSIGNED 0
    
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
@@ -149,6 +174,17 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
+
+/* This defines which switch letters take arguments.  On FreeBSD, most of
+   the normal cases (defined in gcc.c) apply, and we also have -h* and
+   -z* options (for the linker) (comming from svr4).
+   We also have -R (alias --rpath), no -z, --soname (-h), --assert etc. */
+
+#define SWITCH_TAKES_ARG(CHAR) \
+  (DEFAULT_SWITCH_TAKES_ARG (CHAR) \
+   || (CHAR) == 'h' \
+   || (CHAR) == 'z' \
+   || (CHAR) == 'R')
 
 #undef	LIB_SPEC
 #if 1
