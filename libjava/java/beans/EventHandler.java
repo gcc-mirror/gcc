@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -82,7 +81,7 @@ public class EventHandler implements InvocationHandler
   private String property;
 
   // String class doesn't already have a capitalize routine.
-  final private String capitalize(String s)
+  private String capitalize(String s)
   {
     return s.substring(0, 1).toUpperCase() + s.substring(1);
   }

@@ -1,5 +1,5 @@
 /* java.beans.beancontext.BeanContextMembershipEvent
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package java.beans.beancontext;
 
-import java.util.Collection;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -48,10 +48,9 @@ import java.util.Iterator;
  * of the listener interface was called.
  *
  * @author John Keiser
- * @since JDK1.2
+ * @since 1.2
  * @see java.beans.beancontext.BeanContextMembershipListener
  */
-
 public class BeanContextMembershipEvent extends BeanContextEvent {
 	/**
 	 * The children that were added or removed.

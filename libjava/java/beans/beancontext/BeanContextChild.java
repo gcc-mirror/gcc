@@ -39,8 +39,8 @@ exception statement from your version. */
 package java.beans.beancontext;
 
 import java.beans.PropertyChangeListener;
-import java.beans.VetoableChangeListener;
 import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 
 /**
  * Beans implement this to get information about the execution environment and

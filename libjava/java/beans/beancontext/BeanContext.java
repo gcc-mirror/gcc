@@ -38,12 +38,12 @@ exception statement from your version. */
 
 package java.beans.beancontext;
 
-import java.util.Collection;
-import java.beans.Visibility;
 import java.beans.DesignMode;
-import java.net.URL;
-import java.io.InputStream;
+import java.beans.Visibility;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collection;
 
 /**
  * Acts as a container for sub-beans and as a sub-bean,
