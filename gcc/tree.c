@@ -4729,7 +4729,8 @@ get_unwidened (tree op, tree for_type)
        && TYPE_UNSIGNED (type));
   tree win = op;
 
-  while (TREE_CODE (op) == NOP_EXPR)
+  while (TREE_CODE (op) == NOP_EXPR
+	 || TREE_CODE (op) == CONVERT_EXPR)
     {
       int bitschange
 	= TYPE_PRECISION (TREE_TYPE (op))
@@ -4759,7 +4760,9 @@ get_unwidened (tree op, tree for_type)
 	  /* TYPE_UNSIGNED says whether this is a zero-extension.
 	     Let's avoid computing it if it does not affect WIN
 	     and if UNS will not be needed again.  */
-	  if ((uns || TREE_CODE (op) == NOP_EXPR)
+	  if ((uns
+	       || TREE_CODE (op) == NOP_EXPR
+	       || TREE_CODE (op) == CONVERT_EXPR)
 	      && TYPE_UNSIGNED (TREE_TYPE (op)))
 	    {
 	      uns = 1;
