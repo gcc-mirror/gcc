@@ -1850,6 +1850,8 @@ compute_coalesced_reg_partition ()
 {
   int bb;
   int changed = 0;
+  regset_head phi_set_head;
+  regset phi_set = &phi_set_head;
 
   partition p = 
     partition_new (ssa_definition->num_elements);
@@ -1861,20 +1863,21 @@ compute_coalesced_reg_partition ()
   for (bb = n_basic_blocks; --bb >= 0; )
     make_regs_equivalent_over_bad_edges (bb, p);
 
+  INIT_REG_SET (phi_set);
+
   do
     {
-      regset_head phi_set;
       conflict_graph conflicts;
 
       changed = 0;
 
       /* Build the set of registers involved in phi nodes, either as
 	 arguments to the phi function or as the target of a set.  */
-      INITIALIZE_REG_SET (phi_set);
-      mark_phi_and_copy_regs (&phi_set);
+      CLEAR_REG_SET (phi_set);
+      mark_phi_and_copy_regs (phi_set);
 
       /* Compute conflicts.  */
-      conflicts = conflict_graph_compute (&phi_set, p);
+      conflicts = conflict_graph_compute (phi_set, p);
 
       /* FIXME: Better would be to process most frequently executed
 	 blocks first, so that most frequently executed copies would
@@ -1891,6 +1894,8 @@ compute_coalesced_reg_partition ()
       conflict_graph_delete (conflicts);
     }
   while (changed > 0);
+
+  FREE_REG_SET (phi_set);
 
   return p;
 }

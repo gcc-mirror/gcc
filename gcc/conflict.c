@@ -449,19 +449,19 @@ conflict_graph_compute (regs, p)
 {
   int b;
   conflict_graph graph = conflict_graph_new (max_reg_num ());
+  regset_head live_head;
+  regset live = &live_head;
+  regset_head born_head;
+  regset born = &born_head;
+
+  INIT_REG_SET (live);
+  INIT_REG_SET (born);
 
   for (b = n_basic_blocks; --b >= 0; )
     {
       basic_block bb = BASIC_BLOCK (b);
-      regset_head live_head;
-      regset live = &live_head;
-      regset_head born_head;
-      regset born = &born_head;
       rtx insn;
       rtx head;
-
-      INIT_REG_SET (live);
-      INIT_REG_SET (born);
 
       /* Start with the regs that are live on exit, limited to those
 	 we're interested in.  */
@@ -523,6 +523,9 @@ conflict_graph_compute (regs, p)
 	    }
 	}
     }
+
+  FREE_REG_SET (live);
+  FREE_REG_SET (born);
 
   return graph;
 }
