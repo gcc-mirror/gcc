@@ -1,3 +1,8 @@
+2002-04-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/install.texi: Clarify which versions of alpha*-dec-osf*
+	are obsoleted.
+
 2002-04-23  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.c: Added --resource.  For PR java/6314.
