@@ -2701,14 +2701,14 @@
       && GET_MODE (sparc_compare_op0) == DImode
       && v9_regcmp_p (code))
     {
-      operands[1] = gen_rtx (code, DImode,
+      operands[1] = gen_rtx_fmt_ee (code, DImode,
 			     sparc_compare_op0, sparc_compare_op1);
     }
   else
     {
       rtx cc_reg = gen_compare_reg (code,
 				    sparc_compare_op0, sparc_compare_op1);
-      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+      operands[1] = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
     }
 }")
 
@@ -2731,14 +2731,14 @@
       && GET_MODE (sparc_compare_op0) == DImode
       && v9_regcmp_p (code))
     {
-      operands[1] = gen_rtx (code, DImode,
+      operands[1] = gen_rtx_fmt_ee (code, DImode,
 			     sparc_compare_op0, sparc_compare_op1);
     }
   else
     {
       rtx cc_reg = gen_compare_reg (code,
 				    sparc_compare_op0, sparc_compare_op1);
-      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+      operands[1] = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
     }
 }")
 
@@ -2816,14 +2816,14 @@
       && GET_MODE (sparc_compare_op0) == DImode
       && v9_regcmp_p (code))
     {
-      operands[1] = gen_rtx (code, DImode,
+      operands[1] = gen_rtx_fmt_ee (code, DImode,
 			     sparc_compare_op0, sparc_compare_op1);
     }
   else
     {
       rtx cc_reg = gen_compare_reg (code,
 				    sparc_compare_op0, sparc_compare_op1);
-      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+      operands[1] = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
     }
 }")
 
@@ -2846,14 +2846,14 @@
       && GET_MODE (sparc_compare_op0) == DImode
       && v9_regcmp_p (code))
     {
-      operands[1] = gen_rtx (code, DImode,
+      operands[1] = gen_rtx_fmt_ee (code, DImode,
 			     sparc_compare_op0, sparc_compare_op1);
     }
   else
     {
       rtx cc_reg = gen_compare_reg (code,
 				    sparc_compare_op0, sparc_compare_op1);
-      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+      operands[1] = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
     }
 }")
 
@@ -2876,14 +2876,14 @@
       && GET_MODE (sparc_compare_op0) == DImode
       && v9_regcmp_p (code))
     {
-      operands[1] = gen_rtx (code, DImode,
+      operands[1] = gen_rtx_fmt_ee (code, DImode,
 			     sparc_compare_op0, sparc_compare_op1);
     }
   else
     {
       rtx cc_reg = gen_compare_reg (code,
 				    sparc_compare_op0, sparc_compare_op1);
-      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+      operands[1] = gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
     }
 }")
 
@@ -3146,7 +3146,7 @@
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx (SUBREG, SImode, operand1,
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1,
 					 op1_subword),
 			  shift_16));
   emit_insn (gen_lshrsi3 (operand0, temp, shift_16));
@@ -3688,7 +3688,7 @@ return \"srl %1,0,%0\";
 				   gen_rtx_PLUS (DImode, operands[1],
 						 operands[2])),
 			  gen_rtx_CLOBBER (VOIDmode,
-				   gen_rtx_raw_REG (SImode, SPARC_ICC_REG)))));
+				   gen_rtx_REG (SImode, SPARC_ICC_REG)))));
       DONE;
     }
 }")
@@ -3872,7 +3872,7 @@ return \"srl %1,0,%0\";
 				   gen_rtx_MINUS (DImode, operands[1],
 						  operands[2])),
 			  gen_rtx_CLOBBER (VOIDmode,
-				   gen_rtx_raw_REG (SImode, SPARC_ICC_REG)))));
+				   gen_rtx_REG (SImode, SPARC_ICC_REG)))));
       DONE;
     }
 }")
@@ -4948,7 +4948,7 @@ return \"srl %1,0,%0\";
 			  gen_rtx_SET (VOIDmode, operand0,
 				   gen_rtx_NEG (DImode, operand1)),
 			  gen_rtx_CLOBBER (VOIDmode,
-				   gen_rtx_raw_REG (SImode, SPARC_ICC_REG)))));
+				   gen_rtx_REG (SImode, SPARC_ICC_REG)))));
       DONE;
     }
 }")
@@ -5628,7 +5628,7 @@ if (! TARGET_ARCH64)
 					XEXP (operands[0], 0)),
 			       GEN_INT (INTVAL (operands[3]) & 0xfff),
 			       gen_rtx_CLOBBER (VOIDmode,
-					gen_rtx_raw_REG (Pmode, 15)))));
+					gen_rtx_REG (Pmode, 15)))));
       else
 	emit_jump_insn
 	  (gen_rtx_PARALLEL (VOIDmode,
@@ -5636,7 +5636,7 @@ if (! TARGET_ARCH64)
 			       gen_rtx_SET (VOIDmode, pc_rtx,
 					XEXP (operands[0], 0)),
 			       gen_rtx_CLOBBER (VOIDmode,
-					gen_rtx_raw_REG (Pmode, 15)))));
+					gen_rtx_REG (Pmode, 15)))));
       goto finish_call;
     }
 
@@ -5660,13 +5660,13 @@ if (! TARGET_ARCH64)
 		gen_rtvec (3, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
 			   GEN_INT (INTVAL (operands[3]) & 0xfff),
 			   gen_rtx_CLOBBER (VOIDmode,
-				    gen_rtx_raw_REG (Pmode, 15)))));
+				    gen_rtx_REG (Pmode, 15)))));
   else
     emit_call_insn
       (gen_rtx_PARALLEL (VOIDmode,
 		gen_rtvec (2, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
 			   gen_rtx_CLOBBER (VOIDmode,
-				    gen_rtx_raw_REG (Pmode, 15)))));
+				    gen_rtx_REG (Pmode, 15)))));
 
  finish_call:
 #if 0
@@ -5799,7 +5799,7 @@ if (! TARGET_ARCH64)
   vec = gen_rtvec (2,
 		   gen_rtx_SET (VOIDmode, operands[0],
 			    gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx)),
-		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_raw_REG (Pmode, 15)));
+		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)));
 
   emit_call_insn (gen_rtx_PARALLEL (VOIDmode, vec));
 
@@ -5891,13 +5891,13 @@ if (! TARGET_ARCH64)
   ""
   "
 {
-  rtx valreg1 = gen_rtx_raw_REG (DImode, 24);
-  rtx valreg2 = gen_rtx_raw_REG (TARGET_ARCH64 ? TFmode : DFmode, 32);
+  rtx valreg1 = gen_rtx_REG (DImode, 24);
+  rtx valreg2 = gen_rtx_REG (TARGET_ARCH64 ? TFmode : DFmode, 32);
   rtx result = operands[0];
 
   if (! TARGET_ARCH64)
     {
-      rtx rtnreg = gen_rtx_raw_REG (SImode, (leaf_function ? 15 : 31));
+      rtx rtnreg = gen_rtx_REG (SImode, (leaf_function ? 15 : 31));
       rtx value = gen_reg_rtx (SImode);
 
       /* Fetch the instruction where we will return to and see if it's an unimp
@@ -5999,7 +5999,7 @@ if (! TARGET_ARCH64)
 
   /* Find the containing function's current nonlocal goto handler,
      which will do any cleanups and then jump to the label.  */
-  labreg = gen_rtx_raw_REG (Pmode, 8);
+  labreg = gen_rtx_REG (Pmode, 8);
   emit_move_insn (labreg, lab);
 
   /* Restore %fp from stack pointer value for containing function.
