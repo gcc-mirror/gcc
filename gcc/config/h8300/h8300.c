@@ -1106,24 +1106,30 @@ const_costs (r, c, outer_code)
   switch (c)
     {
     case CONST_INT:
-      switch (INTVAL (r))
-	{
-	case 0:
-	  return 0;
-	case 1:
-	case 2:
-	case -1:
-	case -2:
-	  return 0 + (outer_code == SET);
-	case 4:
-	case -4:
-	  if (TARGET_H8300H || TARGET_H8300S)
-	    return 0 + (outer_code == SET);
-	  else
-	    return 1;
-	default:
-	  return 1;
-	}
+      {
+	HOST_WIDE_INT n = INTVAL (r);
+
+	if (-4 <= n || n <= 4)
+	  {
+	    switch ((int) n)
+	      {
+	      case 0:
+		return 0;
+	      case 1:
+	      case 2:
+	      case -1:
+	      case -2:
+		return 0 + (outer_code == SET);
+	      case 4:
+	      case -4:
+		if (TARGET_H8300H || TARGET_H8300S)
+		  return 0 + (outer_code == SET);
+		else
+		  return 1;
+	      }
+	  }
+	return 1;
+      }
 
     case CONST:
     case LABEL_REF:
@@ -1908,7 +1914,7 @@ output_plussi (operands)
 
 	  /* See if we can finish with 2 bytes.  */
 
-	  switch (intval & 0xffffffff)
+	  switch ((unsigned int) intval & 0xffffffff)
 	    {
 	    case 0x00000001:
 	    case 0x00000002:
@@ -1968,7 +1974,7 @@ compute_plussi_length (operands)
 
 	  /* See if we can finish with 2 bytes.  */
 
-	  switch (intval & 0xffffffff)
+	  switch ((unsigned int) intval & 0xffffffff)
 	    {
 	    case 0x00000001:
 	    case 0x00000002:
@@ -2023,7 +2029,7 @@ compute_plussi_cc (operands)
 
 	  /* See if we can finish with 2 bytes.  */
 
-	  switch (intval & 0xffffffff)
+	  switch ((unsigned int) intval & 0xffffffff)
 	    {
 	    case 0x00000001:
 	    case 0x00000002:
