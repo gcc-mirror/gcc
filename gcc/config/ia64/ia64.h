@@ -27,8 +27,6 @@ Boston, MA 02111-1307, USA.  */
 /* ??? Functions containing a non-local goto target save many registers.  Why?
    See for instance execute/920428-2.c.  */
 
-/* ??? Add support for short data/bss sections.  */
-
 
 /* Run-time target specifications */
 
@@ -56,92 +54,6 @@ do {						\
 
 #define ASM_EXTRA_SPEC ""
 
-
-/* This declaration should be present.  */
-extern int target_flags;
-
-/* This series of macros is to allow compiler command arguments to enable or
-   disable the use of optional features of the target machine.  */
-
-#define MASK_BIG_ENDIAN	0x00000001	/* Generate big endian code.  */
-
-#define MASK_GNU_AS	0x00000002	/* Generate code for GNU as.  */
-
-#define MASK_GNU_LD	0x00000004	/* Generate code for GNU ld.  */
-
-#define MASK_NO_PIC	0x00000008	/* Generate code without GP reg.  */
-
-#define MASK_VOL_ASM_STOP 0x00000010	/* Emit stop bits for vol ext asm.  */
-
-#define MASK_ILP32      0x00000020      /* Generate ILP32 code.  */
-
-#define MASK_REG_NAMES	0x00000080	/* Use in/loc/out register names.  */
-
-#define MASK_NO_SDATA   0x00000100	/* Disable sdata/scommon/sbss.  */
-
-#define MASK_CONST_GP	0x00000200	/* treat gp as program-wide constant */
-
-#define MASK_AUTO_PIC	0x00000400	/* generate automatically PIC */
-
-#define MASK_INLINE_FLOAT_DIV_LAT 0x00000800 /* inline div, min latency.  */
-
-#define MASK_INLINE_FLOAT_DIV_THR 0x00001000 /* inline div, max throughput.  */
-
-#define MASK_INLINE_INT_DIV_LAT   0x00002000 /* inline div, min latency.  */
-
-#define MASK_INLINE_INT_DIV_THR   0x00004000 /* inline div, max throughput.  */
-
-#define MASK_INLINE_SQRT_LAT      0x00008000 /* inline sqrt, min latency.  */
-
-#define MASK_INLINE_SQRT_THR      0x00010000 /* inline sqrt, max throughput.  */
-
-#define MASK_DWARF2_ASM 0x00020000	/* test dwarf2 line info via gas.  */
-
-#define MASK_EARLY_STOP_BITS 0x00040000 /* tune stop bits for the model.  */
-
-#define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
-
-#define TARGET_GNU_AS		(target_flags & MASK_GNU_AS)
-
-#define TARGET_GNU_LD		(target_flags & MASK_GNU_LD)
-
-#define TARGET_NO_PIC		(target_flags & MASK_NO_PIC)
-
-#define TARGET_VOL_ASM_STOP	(target_flags & MASK_VOL_ASM_STOP)
-
-#define TARGET_ILP32            (target_flags & MASK_ILP32)
-
-#define TARGET_REG_NAMES	(target_flags & MASK_REG_NAMES)
-
-#define TARGET_NO_SDATA		(target_flags & MASK_NO_SDATA)
-
-#define TARGET_CONST_GP		(target_flags & MASK_CONST_GP)
-
-#define TARGET_AUTO_PIC		(target_flags & MASK_AUTO_PIC)
-
-#define TARGET_INLINE_FLOAT_DIV_LAT (target_flags & MASK_INLINE_FLOAT_DIV_LAT)
-
-#define TARGET_INLINE_FLOAT_DIV_THR (target_flags & MASK_INLINE_FLOAT_DIV_THR)
-
-#define TARGET_INLINE_INT_DIV_LAT   (target_flags & MASK_INLINE_INT_DIV_LAT)
-
-#define TARGET_INLINE_INT_DIV_THR   (target_flags & MASK_INLINE_INT_DIV_THR)
-
-#define TARGET_INLINE_FLOAT_DIV \
-  (target_flags & (MASK_INLINE_FLOAT_DIV_LAT | MASK_INLINE_FLOAT_DIV_THR))
-
-#define TARGET_INLINE_INT_DIV \
-  (target_flags & (MASK_INLINE_INT_DIV_LAT | MASK_INLINE_INT_DIV_THR))
-
-#define TARGET_INLINE_SQRT_LAT (target_flags & MASK_INLINE_SQRT_LAT)
-
-#define TARGET_INLINE_SQRT_THR (target_flags & MASK_INLINE_SQRT_THR)
-
-#define TARGET_INLINE_SQRT \
-  (target_flags & (MASK_INLINE_SQRT_LAT | MASK_INLINE_SQRT_THR))
-
-#define TARGET_DWARF2_ASM	(target_flags & MASK_DWARF2_ASM)
-
 /* Variables which are this size or smaller are put in the sdata/sbss
    sections.  */
 extern unsigned int ia64_section_threshold;
@@ -159,104 +71,40 @@ extern int ia64_tls_size;
 #define TARGET_TLS14		(ia64_tls_size == 14)
 #define TARGET_TLS22		(ia64_tls_size == 22)
 #define TARGET_TLS64		(ia64_tls_size == 64)
-#define TARGET_EARLY_STOP_BITS	(target_flags & MASK_EARLY_STOP_BITS)
 
 #define TARGET_HPUX		0
 #define TARGET_HPUX_LD		0
+
+#ifndef TARGET_ILP32
+#define TARGET_ILP32 0
+#endif
 
 #ifndef HAVE_AS_LTOFFX_LDXMOV_RELOCS
 #define HAVE_AS_LTOFFX_LDXMOV_RELOCS 0
 #endif
 
-/* This macro defines names of command options to set and clear bits in
-   `target_flags'.  Its definition is an initializer with a subgrouping for
-   each command option.  */
+/* Values for TARGET_INLINE_FLOAT_DIV, TARGET_INLINE_INT_DIV, and
+   TARGET_INLINE_SQRT.  */
 
-#define TARGET_SWITCHES							\
-{									\
-  { "big-endian",	MASK_BIG_ENDIAN,				\
-      N_("Generate big endian code") },					\
-  { "little-endian",	-MASK_BIG_ENDIAN,				\
-      N_("Generate little endian code") },				\
-  { "gnu-as",		MASK_GNU_AS,					\
-      N_("Generate code for GNU as") },					\
-  { "no-gnu-as",	-MASK_GNU_AS,					\
-      N_("Generate code for Intel as") },				\
-  { "gnu-ld",		MASK_GNU_LD,					\
-      N_("Generate code for GNU ld") },					\
-  { "no-gnu-ld",	-MASK_GNU_LD,					\
-      N_("Generate code for Intel ld") },				\
-  { "no-pic",		MASK_NO_PIC,					\
-      N_("Generate code without GP reg") },				\
-  { "volatile-asm-stop", MASK_VOL_ASM_STOP,				\
-      N_("Emit stop bits before and after volatile extended asms") },	\
-  { "no-volatile-asm-stop", -MASK_VOL_ASM_STOP,				\
-      N_("Don't emit stop bits before and after volatile extended asms") }, \
-  { "register-names",	MASK_REG_NAMES,					\
-      N_("Use in/loc/out register names")},				\
-  { "no-sdata",		MASK_NO_SDATA,					\
-      N_("Disable use of sdata/scommon/sbss")},				\
-  { "sdata",		-MASK_NO_SDATA,					\
-      N_("Enable use of sdata/scommon/sbss")},				\
-  { "constant-gp",	MASK_CONST_GP,					\
-      N_("gp is constant (but save/restore gp on indirect calls)") },	\
-  { "auto-pic",		MASK_AUTO_PIC,					\
-      N_("Generate self-relocatable code") },				\
-  { "inline-float-divide-min-latency", MASK_INLINE_FLOAT_DIV_LAT,	\
-      N_("Generate inline floating point division, optimize for latency") },\
-  { "inline-float-divide-max-throughput", MASK_INLINE_FLOAT_DIV_THR,	\
-      N_("Generate inline floating point division, optimize for throughput") },\
-  { "no-inline-float-divide", 						\
-      -(MASK_INLINE_FLOAT_DIV_LAT|MASK_INLINE_FLOAT_DIV_THR),		\
-      N_("Do not inline floating point division") },			\
-  { "inline-int-divide-min-latency", MASK_INLINE_INT_DIV_LAT,		\
-      N_("Generate inline integer division, optimize for latency") },	\
-  { "inline-int-divide-max-throughput", MASK_INLINE_INT_DIV_THR,	\
-      N_("Generate inline integer division, optimize for throughput") },\
-  { "no-inline-int-divide", -(MASK_INLINE_INT_DIV_LAT|MASK_INLINE_INT_DIV_THR),	\
-      N_("Do not inline integer division") },				\
-  { "inline-sqrt-min-latency", MASK_INLINE_SQRT_LAT,			\
-      N_("Generate inline square root, optimize for latency") },	\
-  { "inline-sqrt-max-throughput", MASK_INLINE_SQRT_THR,			\
-      N_("Generate inline square root, optimize for throughput") },     \
-  { "no-inline-sqrt", -(MASK_INLINE_SQRT_LAT|MASK_INLINE_SQRT_THR),	\
-      N_("Do not inline square root") },				\
-  { "dwarf2-asm", 	MASK_DWARF2_ASM,				\
-      N_("Enable Dwarf 2 line debug info via GNU as")},			\
-  { "no-dwarf2-asm", 	-MASK_DWARF2_ASM,				\
-      N_("Disable Dwarf 2 line debug info via GNU as")},		\
-  { "early-stop-bits", MASK_EARLY_STOP_BITS,				\
-      N_("Enable earlier placing stop bits for better scheduling")},	\
-  { "no-early-stop-bits", -MASK_EARLY_STOP_BITS,			\
-      N_("Disable earlier placing stop bits")},				\
-  SUBTARGET_SWITCHES							\
-  { "",			TARGET_DEFAULT | TARGET_CPU_DEFAULT,		\
-      NULL }								\
-}
+enum ia64_inline_type
+{
+  INL_NO = 0,
+  INL_MIN_LAT = 1,
+  INL_MAX_THR = 2
+};
 
 /* Default target_flags if no switches are specified  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_INLINE_FLOAT_DIV_THR)
+#define TARGET_DEFAULT (MASK_DWARF2_ASM)
 #endif
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
 #endif
 
-#ifndef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES
-#endif
-
-/* This macro is similar to `TARGET_SWITCHES' but defines names of command
-   options that have values.  Its definition is an initializer with a
-   subgrouping for each command option.  */
-
-extern const char *ia64_fixed_range_string;
-extern const char *ia64_tls_size_string;
-
 /* Which processor to schedule for. The cpu attribute defines a list
-   that mirrors this list, so changes to i64.md must be made at the
+   that mirrors this list, so changes to ia64.md must be made at the
    same time.  */
 
 enum processor_type
@@ -267,18 +115,6 @@ enum processor_type
 };
 
 extern enum processor_type ia64_tune;
-
-extern const char *ia64_tune_string;
-
-#define TARGET_OPTIONS \
-{									\
-  { "fixed-range=", 	&ia64_fixed_range_string,			\
-      N_("Specify range of registers to make fixed"), 0},		\
-  { "tls-size=",	&ia64_tls_size_string,				\
-      N_("Specify bit size of immediate TLS offsets"), 0},		\
-  { "tune=",		&ia64_tune_string,				\
-      N_("Schedule code for given CPU"), 0},				\
-}
 
 /* Sometimes certain combinations of command options do not make sense on a
    particular target machine.  You can define a macro `OVERRIDE_OPTIONS' to
