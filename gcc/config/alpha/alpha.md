@@ -3642,7 +3642,7 @@
     abort ();
 
   operands[1] = XEXP (operands[1], 0);
-  if (GET_CODE (operands[0]) != SYMBOL_REF && GET_CODE (operands[0]) != REG)
+  if (GET_CODE (operands[1]) != SYMBOL_REF && GET_CODE (operands[1]) != REG)
     operands[1] = force_reg (DImode, operands[1]);
 }")
 
