@@ -14,7 +14,7 @@
 const int ArraySize = 12;
 
 template <class Type>
-class Array {
+class Array { // ERROR - .struct Array_RC redecl.*
 friend class Array_RC;
 public:
     Array(const Type *ar, int sz) { init(ar,sz); }
@@ -97,7 +97,7 @@ try_array( Array_RC<Type> &rc )
 main()
 {
     static int ia[10] = { 12, 7, 14, 9, 128, 17, 6, 3, 27, 5 };
-    Array_RC<int> iA(ia, 10);// ERROR - .struct Array_RC redecl.*
+    Array_RC<int> iA(ia, 10);// ERROR - instantiated from here
 
     cout << "template Array_RC class" << endl;
     try_array(iA);

@@ -1,6 +1,26 @@
 1998-08-07  Mark Mitchell  <mark@markmitchell.com>
 
-	* cvt.c (cp_convert_to_pointer): Handle a NULL pointer
+	* typeck.c (require_complete_type): Use complete_type_or_else.
+	(complete_type_or_else): Always return NULL_TREE on failure, as
+	documented.
+
+	* pt.c (tsubst_aggr_type): Prototype.
+	(tsubst_decl): New function, split out from tsubst.  Set
+	input_filename and lineno as appropriate.
+	(pop_tinst_level): Restore the file and line number saved in
+	push_tinst_level.
+	(instantiate_class_template): Set input_filename and lineno as
+	appropriate.
+	(tsubst): Move _DECL processing to tsubst_decl.  Make sure the
+	context for a TYPENAME_TYPE is complete.
+
+	* decl2.c (grokbitfield): Issue errors on bitfields declared with
+	function type.
+	(do_dtors): As in do_ctors, pretend to be a member of the same
+	class as a static data member while generating a call to its
+	destructor.
+
+	* cvt.c (cp_convert_to_pointer): Handle NULL pointer
 	conversions, even in complex virtual base class hierarchies.
 
 1998-08-06  Mark Mitchell  <mark@markmitchell.com>

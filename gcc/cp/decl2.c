@@ -1845,6 +1845,17 @@ grokbitfield (declarator, declspecs, width)
       return NULL_TREE;
     }
 
+  /* Usually, finish_struct_1 catches bitifields with invalid types.
+     But, in the case of bitfields with function type, we confuse
+     ourselves into thinking they are member functions, so we must
+     check here.  */
+  if (TREE_CODE (value) == FUNCTION_DECL)
+    {
+      cp_error ("cannot declare bitfield `%D' with funcion type",
+		DECL_NAME (value));
+      return NULL_TREE;
+    }
+
   if (IS_SIGNATURE (current_class_type))
     {
       error ("field declaration not allowed in signature");
@@ -3001,6 +3012,25 @@ do_dtors ()
 	  if (! current_function_decl)
 	    start_objects ('D');
 
+	  /* Because of:
+
+	       [class.access.spec]
+
+	       Access control for implicit calls to the constructors,
+	       the conversion functions, or the destructor called to
+	       create and destroy a static data member is per- formed as
+	       if these calls appeared in the scope of the member's
+	       class.  
+
+	     we must convince enforce_access to let us access the
+	     DECL.  */
+	  if (member_p (decl))
+	    {
+	      DECL_CLASS_CONTEXT (current_function_decl)
+		= DECL_CONTEXT (decl);
+	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
+	    }
+
 	  temp = build_cleanup (decl);
 
 	  if (protect)
@@ -3015,6 +3045,11 @@ do_dtors ()
 
 	  if (protect)
 	    expand_end_cond ();
+	  
+	  /* Now that we're done with DECL we don't need to pretend to
+	     be a member of its class any longer.  */
+	  DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
+	  DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
 	}
     }
 
