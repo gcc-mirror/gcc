@@ -80,7 +80,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR)	 	\
-  (DEFAULT_WORD_SWITCH_TAKES_ARG (str) ? 1 :	\
+  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR) ? 1 :	\
    !strcmp (STR, "segalign") ? 1 :		\
    !strcmp (STR, "seg1addr") ? 1 :		\
    !strcmp (STR, "segaddr") ? 2 :		\
