@@ -1870,8 +1870,26 @@ floor_log2_wide (x)
   return log;
 }
 
+static int float_handler_set;
 int float_handled;
 jmp_buf float_handler;
+
+/* Signals actually come here.  */
+
+static void
+float_signal (signo)
+     /* If this is missing, some compilers complain.  */
+     int signo;
+{
+  if (float_handled == 0)
+    abort ();
+#if defined (USG) || defined (hpux)
+  signal (SIGFPE, float_signal);  /* re-enable the signal catcher */
+#endif
+  float_handled = 0;
+  signal (SIGFPE, float_signal);
+  longjmp (float_handler, 1);
+}
 
 /* Specify where to longjmp to when a floating arithmetic error happens.
    If HANDLER is 0, it means don't handle the errors any more.  */
@@ -1883,6 +1901,12 @@ set_float_handler (handler)
   float_handled = (handler != 0);
   if (handler)
     bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
+
+  if (float_handled && ! float_handler_set)
+    {
+      signal (SIGFPE, float_signal);
+      float_handler_set = 1;
+    }
 }
 
 /* Specify, in HANDLER, where to longjmp to when a floating arithmetic
@@ -1915,23 +1939,6 @@ pop_float_handler (handled, handler)
   float_handled = handled;
   if (handled)
     bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
-}
-
-/* Signals actually come here.  */
-
-static void
-float_signal (signo)
-     /* If this is missing, some compilers complain.  */
-     int signo;
-{
-  if (float_handled == 0)
-    abort ();
-#if defined (USG) || defined (hpux)
-  signal (SIGFPE, float_signal);  /* re-enable the signal catcher */
-#endif
-  float_handled = 0;
-  signal (SIGFPE, float_signal);
-  longjmp (float_handler, 1);
 }
 
 /* Handler for SIGPIPE.  */
