@@ -7650,18 +7650,8 @@ mem_loc_descriptor (rtl, mode)
       break;
 
     case MEM:
-      {
-	dw_loc_descr_ref deref;
-
-	mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
-
-	if (GET_MODE_SIZE (mode) == DWARF2_ADDR_SIZE)
-	  deref = new_loc_descr (DW_OP_deref, 0, 0);
-	else
-	  deref = new_loc_descr (DW_OP_deref_size, GET_MODE_SIZE (mode), 0);
-
-	add_loc_descr (&mem_loc_result, deref);
-      }
+      mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
+      add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
       break;
 
     case LABEL_REF:
