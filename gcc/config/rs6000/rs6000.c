@@ -228,7 +228,6 @@ static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
      ATTRIBUTE_UNUSED;
 static bool rs6000_binds_local_p PARAMS ((tree));
 static int rs6000_use_dfa_pipeline_interface PARAMS ((void));
-static int rs6000_multipass_dfa_lookahead PARAMS ((void));
 static int rs6000_variable_issue PARAMS ((FILE *, int, rtx, int));
 static bool rs6000_rtx_costs PARAMS ((rtx, int, int, int *));
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
@@ -386,8 +385,6 @@ static const char alt_reg_names[][8] =
 
 #undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE rs6000_use_dfa_pipeline_interface
-#undef  TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
-#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD rs6000_multipass_dfa_lookahead
 #undef  TARGET_SCHED_VARIABLE_ISSUE
 #define TARGET_SCHED_VARIABLE_ISSUE rs6000_variable_issue
 
@@ -12228,15 +12225,6 @@ rs6000_use_dfa_pipeline_interface ()
   return 1;
 }
 
-static int
-rs6000_multipass_dfa_lookahead ()
-{
-  if (rs6000_cpu == PROCESSOR_POWER4)
-    return 4;
-  else
-    return 1;
-}
-
 /* Power4 load update and store update instructions are cracked into a
    load or store and an integer insn which are executed in the same cycle.
    Branches have their own dispatch slot which does not count against the
@@ -12264,7 +12252,7 @@ rs6000_variable_issue (stream, verbose, insn, more)
       else if (type == TYPE_LOAD_U || type == TYPE_STORE_U
 	       || type == TYPE_FPLOAD_U || type == TYPE_FPSTORE_U
 	       || type == TYPE_LOAD_EXT || type == TYPE_DELAYED_CR)
-	return more - 2;
+	return more > 2 ? more - 2 : 0;
       else
 	return more - 1;
     }
@@ -12380,6 +12368,10 @@ rs6000_adjust_priority (insn, priority)
 static int
 rs6000_issue_rate ()
 {
+  /* Use issue rate of 1 for first scheduling pass to decrease degradation.  */
+  if (!reload_completed)
+    return 1;
+
   switch (rs6000_cpu_attr) {
   case CPU_RIOS1:  /* ? */
   case CPU_RS64A:
