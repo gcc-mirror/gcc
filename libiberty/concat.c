@@ -21,10 +21,10 @@ Boston, MA 02111-1307, USA.  */
 
 /*
 
-@deftypefn Extension char* concat (char *@var{s1}, char *@var{s2}, ..., @code{NULL})
+@deftypefn Extension char* concat (const char *@var{s1}, const char *@var{s2}, @dots{}, @code{NULL})
 
 Concatenate zero or more of strings and return the result in freshly
-xmalloc'd memory.  Returns @code{NULL} if insufficient memory is
+@code{xmalloc}ed memory.  Returns @code{NULL} if insufficient memory is
 available.  The argument list is terminated by the first @code{NULL}
 pointer encountered.  Pointers to empty strings are ignored.
 
@@ -174,7 +174,7 @@ concat VPARAMS ((const char *first, ...))
 
 /*
 
-@deftypefn Extension char* reconcat (char *@var{optr}, char *@var{s1}, ..., @code{NULL})
+@deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @dots{}, @code{NULL})
 
 Same as @code{concat}, except that if @var{optr} is not @code{NULL} it
 is freed after the string is created.  This is intended to be useful

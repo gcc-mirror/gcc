@@ -2,7 +2,7 @@
 
 @deftypefn Supplemental int ffs (int @var{valu})
 
-Find the first (least significant) bit set in @var{valu}. Bits are
+Find the first (least significant) bit set in @var{valu}.  Bits are
 numbered from right to left, starting with bit 1 (corresponding to the
 value 1).  If @var{valu} is zero, zero is returned.
 

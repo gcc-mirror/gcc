@@ -66,7 +66,7 @@ extern char *strdup ();		/* Duplicate a string */
 
 Duplicate an argument vector.  Simply scans through @var{vector},
 duplicating each argument until the terminating @code{NULL} is found.
-Returns a pointer to the argument vector if successful. Returns
+Returns a pointer to the argument vector if successful.  Returns
 @code{NULL} if there is insufficient memory to complete building the
 argument vector.
 
@@ -150,7 +150,7 @@ is obtained from @code{malloc}.  All of the memory can be returned to the
 system with the single function call @code{freeargv}, which takes the
 returned result of @code{buildargv}, as it's argument.
 
-Returns a pointer to the argument vector if successful. Returns
+Returns a pointer to the argument vector if successful.  Returns
 @code{NULL} if @var{sp} is @code{NULL} or if there is insufficient
 memory to complete building the argument vector.
 

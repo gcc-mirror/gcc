@@ -6,7 +6,7 @@ wildcards @code{?} to match any one character, @code{*} to match any
 zero or more characters, or a set of alternate characters in square
 brackets, like @samp{[a-gt8]}, which match one character (@code{a}
 through @code{g}, or @code{t}, or @code{8}, in this example) if that one
-character is in the set.  A set may be inverted (i.e. match anything
+character is in the set.  A set may be inverted (i.e., match anything
 except what's in the set) by giving @code{^} or @code{!} as the first
 character in the set.  To include those characters in the set, list them
 as anything other than the first character of the set.  To include a
@@ -17,7 +17,7 @@ backslash, use @samp{\\}.
 
 @code{flags} controls various aspects of the matching process, and is a
 boolean OR of zero or more of the following values (defined in
-@code{<fnmatch.h>}:
+@code{<fnmatch.h>}):
 
 @table @code
 

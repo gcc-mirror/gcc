@@ -139,7 +139,7 @@ choose_tmpdir ()
 
 Return a temporary file name (as a string) or @code{NULL} if unable to
 create one.  @var{suffix} is a suffix to append to the file name.  The
-string is malloced, and the temporary file has been created.
+string is @code{malloc}ed, and the temporary file has been created.
 
 @end deftypefn
 

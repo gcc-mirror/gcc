@@ -350,7 +350,7 @@ init_signal_tables ()
 
 /*
 
-@deftypefn Extension int signo_max ()
+@deftypefn Extension int signo_max (void)
 
 Returns the maximum signal value for which a corresponding symbolic
 name or message is available.  Note that in the case where we use the

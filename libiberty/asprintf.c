@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 /*
 
-@deftypefn Extension int asprintf (char **@var{resptr}, char *@var{format}, ...)
+@deftypefn Extension int asprintf (char **@var{resptr}, const char *@var{format}, ...)
 
 Like @code{sprintf}, but instead of passing a pointer to a buffer, you
 pass a pointer to a pointer.  This function will compute the size of
