@@ -130,7 +130,7 @@ case $basic_machine in
 	      | sh-* | powerpc-* | sparc64-*)
 		;;
 	# Recognize names of some NetBSD ports.
-	amiga-* | hp300-* | mac68k-* | sun3-* | pmax-*)
+	amiga-* | hp300-* | sun3-* | pmax-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
