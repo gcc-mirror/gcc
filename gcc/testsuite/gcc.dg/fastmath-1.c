@@ -20,5 +20,5 @@ main() {
        foo(&dists[14], 128)
 	!= 156)
     abort();
+  return 0;
 }
-
