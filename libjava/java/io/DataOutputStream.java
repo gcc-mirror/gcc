@@ -191,7 +191,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    * @see DataInput#readShort
    * @see DataInput#readUnsignedShort
    */
-  public final void writeShort (int value) throws IOException
+  public final synchronized void writeShort (int value) throws IOException
   {
     write ((byte) (0xff & (value >> 8)));
     write ((byte) (0xff & value));
@@ -217,7 +217,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @see DataInput#readChar
    */
-  public final void writeChar (int value) throws IOException
+  public final synchronized void writeChar (int value) throws IOException
   {
     write ((byte) (0xff & (value >> 8)));
     write ((byte) (0xff & value));
@@ -243,7 +243,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @see DataInput#readInt
    */
-  public final void writeInt (int value) throws IOException
+  public final synchronized void writeInt (int value) throws IOException
   {
     write ((byte) (0xff & (value >> 24)));
     write ((byte) (0xff & (value >> 16)));
@@ -275,7 +275,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @see DataInput#readLong
    */
-  public final void writeLong (long value) throws IOException
+  public final synchronized void writeLong (long value) throws IOException
   {
     write ((byte) (0xff & (value >> 56)));
     write ((byte) (0xff & (value>> 48)));
@@ -404,14 +404,14 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @see DataInput#readUTF
    */
-  public final void writeUTF (String s) throws IOException
+  public synchronized final void writeUTF (String value) throws IOException
   {
-    int len = s.length();
+    int len = value.length();
     int sum = 0;
 
     for (int i = 0; i < len && sum <= 65535; ++i)
       {
-	char c = s.charAt(i);
+	char c = value.charAt(i);
 	if (c >= '\u0001' && c <= '\u007f')
 	  sum += 1;
 	else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
@@ -427,7 +427,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
 
     for (int i = 0; i < len; ++i)
       {
-	char c = s.charAt(i);
+	char c = value.charAt(i);
 	if (c >= '\u0001' && c <= '\u007f')
 	  write (c);
 	else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))

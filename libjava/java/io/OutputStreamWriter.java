@@ -37,20 +37,51 @@ exception statement from your version. */
 
 
 package java.io;
+
 import gnu.gcj.convert.UnicodeToBytes;
 
 /**
+ * This class writes characters to an output stream that is byte oriented
+ * It converts the chars that are written to bytes using an encoding layer,
+ * which is specific to a particular encoding standard.  The desired
+ * encoding can either be specified by name, or if no encoding is specified,
+ * the system default encoding will be used.  The system default encoding
+ * name is determined from the system property <code>file.encoding</code>.
+ * The only encodings that are guaranteed to be available are "8859_1"
+ * (the Latin-1 character set) and "UTF8".  Unfortunately, Java does not
+ * provide a mechanism for listing the encodings that are supported in
+ * a given implementation.
+ * <p>
+ * Here is a list of standard encoding names that may be available:
+ * <p>
+ * <ul>
+ * <li>8859_1 (ISO-8859-1/Latin-1)
+ * <li>8859_2 (ISO-8859-2/Latin-2)
+ * <li>8859_3 (ISO-8859-3/Latin-3)
+ * <li>8859_4 (ISO-8859-4/Latin-4)
+ * <li>8859_5 (ISO-8859-5/Latin-5)
+ * <li>8859_6 (ISO-8859-6/Latin-6)
+ * <li>8859_7 (ISO-8859-7/Latin-7)
+ * <li>8859_8 (ISO-8859-8/Latin-8)
+ * <li>8859_9 (ISO-8859-9/Latin-9)
+ * <li>ASCII (7-bit ASCII)
+ * <li>UTF8 (UCS Transformation Format-8)
+ * <li>More Later
+ * </ul>
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Per Bothner <bothner@cygnus.com>
  * @date April 17, 1998.  
- */
-/* Written using "Java Class Libraries", 2nd edition, plus online
- * API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct, but only supports 8859_1.
  */
 public class OutputStreamWriter extends Writer
 {
   BufferedOutputStream out;
 
+  /**
+   * This is the byte-character encoder class that does the writing and
+   * translation of characters to bytes before writing to the underlying
+   * class.
+   */
   UnicodeToBytes converter;
 
   /* Temporary buffer. */
@@ -67,8 +98,21 @@ public class OutputStreamWriter extends Writer
     this.converter = encoder;
   }
 
-  public OutputStreamWriter(OutputStream out, String encoding_scheme)
-   throws UnsupportedEncodingException
+  /**
+   * This method initializes a new instance of <code>OutputStreamWriter</code>
+   * to write to the specified stream using a caller supplied character
+   * encoding scheme.  Note that due to a deficiency in the Java language
+   * design, there is no way to determine which encodings are supported.
+   *
+   * @param out The <code>OutputStream</code> to write to
+   * @param encoding_scheme The name of the encoding scheme to use for 
+   * character to byte translation
+   *
+   * @exception UnsupportedEncodingException If the named encoding is 
+   * not available.
+   */
+  public OutputStreamWriter (OutputStream out, String encoding_scheme) 
+    throws UnsupportedEncodingException
   {
     this(out, UnicodeToBytes.getEncoder(encoding_scheme));
   }
@@ -79,7 +123,7 @@ public class OutputStreamWriter extends Writer
    *
    * @param out The <code>OutputStream</code> to write to
    */
-  public OutputStreamWriter(OutputStream out)
+  public OutputStreamWriter (OutputStream out)
   {
     this(out, UnicodeToBytes.getDefaultEncoder());
   }
@@ -90,7 +134,7 @@ public class OutputStreamWriter extends Writer
    *
    * @exception IOException If an error occurs
    */
-  public void close() throws IOException
+  public void close () throws IOException
   {
     synchronized (lock)
       {
@@ -111,7 +155,7 @@ public class OutputStreamWriter extends Writer
    *
    * @return The encoding scheme name
    */
-  public String getEncoding()
+  public String getEncoding ()
   {
     return out != null ? converter.getName() : null;
   }
@@ -121,7 +165,7 @@ public class OutputStreamWriter extends Writer
    *
    * @exception IOException If an error occurs
    */
-  public void flush() throws IOException
+  public void flush () throws IOException
   {
     synchronized (lock)
       {
@@ -137,8 +181,18 @@ public class OutputStreamWriter extends Writer
       }
   }
 
-  public void write(char[] buf, int offset, int count)
-     throws IOException
+  /**
+   * This method writes <code>count</code> characters from the specified
+   * array to the output stream starting at position <code>offset</code>
+   * into the array.
+   *
+   * @param buf The array of character to write from
+   * @param offset The offset into the array to start writing chars from
+   * @param count The number of chars to write.
+   *
+   * @exception IOException If an error occurs
+   */
+  public void write (char[] buf, int offset, int count) throws IOException
   {
     synchronized (lock)
       {
@@ -154,8 +208,10 @@ public class OutputStreamWriter extends Writer
       }
   }
 
-  /** Writes characters through to the inferior BufferedOutputStream.
-   * Ignores wcount and the work buffer. */
+  /*
+   * Writes characters through to the inferior BufferedOutputStream.
+   * Ignores wcount and the work buffer.
+   */
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
@@ -178,8 +234,19 @@ public class OutputStreamWriter extends Writer
       }
   }
 
-  public void write(String str, int offset, int count)
-     throws IOException
+  /**
+   * This method writes <code>count</code> bytes from the specified 
+   * <code>String</code> starting at position <code>offset</code> into the
+   * <code>String</code>.
+   *
+   * @param str The <code>String</code> to write chars from
+   * @param offset The position in the <code>String</code> to start 
+   * writing chars from
+   * @param count The number of chars to write
+   *
+   * @exception IOException If an error occurs
+   */
+  public void write (String str, int offset, int count) throws IOException
   {
     synchronized (lock)
       {
@@ -217,7 +284,7 @@ public class OutputStreamWriter extends Writer
    *
    * @exception IOException If an error occurs
    */
-  public void write(int ch) throws IOException
+  public void write (int ch) throws IOException
   {
     synchronized (lock)
       {
