@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.classpath.Configuration;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
@@ -47,7 +49,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 import java.util.PropertyPermission;
-import gnu.classpath.Configuration;
 
 /**
  * System represents system-wide resources; things that represent the
