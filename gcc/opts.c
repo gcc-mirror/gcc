@@ -574,6 +574,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_rename_registers = 1;
       flag_unswitch_loops = 1;
       flag_web = 1;
+      flag_gcse_after_reload = 1;
     }
 
   if (optimize < 2 || optimize_size)
@@ -1033,6 +1034,10 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_fgcse_sm:
       flag_gcse_sm = value;
+      break;
+
+    case OPT_fgcse_after_reload:
+      flag_gcse_after_reload = value;
       break;
 
     case OPT_fgcse_las:

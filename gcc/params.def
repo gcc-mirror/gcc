@@ -131,7 +131,25 @@ DEFPARAM(PARAM_MAX_GCSE_PASSES,
 	"max-gcse-passes",
 	"The maximum number of passes to make when doing GCSE",
 	1)
-
+/* This is the threshold ratio when to perform partial redundancy
+   elimination after reload. We perform partial redundancy elimination
+   when the following holds:
+   (Redundant load execution count)
+   ------------------------------- >= GCSE_AFTER_RELOAD_PARTIAL_FRACTION
+   (Added loads execution count)					  */
+DEFPARAM(PARAM_GCSE_AFTER_RELOAD_PARTIAL_FRACTION,
+	"gcse-after-reload-partial-fraction",
+	"The threshold ratio for performing partial redundancy elimination \
+         after reload.",
+        3)
+/* This is the threshold ratio of the critical edges execution count compared to
+   the redundant loads execution count that permits performing the load
+   redundancy elimination in gcse after reload.  */
+DEFPARAM(PARAM_GCSE_AFTER_RELOAD_CRITICAL_FRACTION,
+	"gcse-after-reload-critical-fraction",
+	"The threshold ratio of critical edges execution count that permit \
+         performing redundancy elimination after reload.",
+        10)
 /* This parameter limits the number of insns in a loop that will be unrolled,
    and by how much the loop is unrolled.
    

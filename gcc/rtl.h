@@ -2289,6 +2289,7 @@ extern rtx fis_get_condition (rtx);
 #ifdef BUFSIZ
 extern int gcse_main (rtx, FILE *);
 extern int bypass_jumps (FILE *);
+extern void gcse_after_reload_main (rtx, FILE *);
 #endif
 
 /* In global.c */

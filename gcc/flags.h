@@ -672,6 +672,11 @@ extern int flag_gcse_sm;
 
 extern int flag_gcse_las;
 
+/* Nonzero if we want to perform global redundancy elimination after
+   register allocation.  */
+
+extern int flag_gcse_after_reload;
+
 /* Nonzero if value histograms should be used to optimize code.  */
 extern int flag_value_profile_transformations;
 
