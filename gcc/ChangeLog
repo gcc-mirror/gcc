@@ -1,5 +1,7 @@
 Sat Oct 27 17:32:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcse.c (insert_insn_end_bb): Don't assume PAT is a SET.
+
 	* dwarf2out.c (reg_number): Abort if pseudo.
 	(reg_loc_descriptor): Return 0 if pseudo.
 	(is_based_loc): Return 0 if pseudo.

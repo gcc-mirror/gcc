@@ -4690,7 +4690,7 @@ insert_insn_end_bb (expr, bb, pre)
     }
   else
     {
-      add_label_notes (SET_SRC (pat), new_insn);
+      add_label_notes (pat, new_insn);
 
       /* Keep register set table up to date.  */
       record_one_set (regno, new_insn);
