@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2407,8 +2407,9 @@ standard_68881_constant_p (x)
   return 0;
 #endif
 
-  /* fmovecr must be emulated on the 68040, so it shouldn't be used at all. */
-  if (TARGET_68040)
+  /* fmovecr must be emulated on the 68040 and 68060, so it shouldn't be
+     used at all on those chips. */
+  if (TARGET_68040 || TARGET_68060)
     return 0;
 
 #ifndef REAL_ARITHMETIC
