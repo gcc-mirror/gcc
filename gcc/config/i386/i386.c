@@ -579,7 +579,12 @@ const char *ix86_branch_cost_string;
 
 /* Power of two alignment for functions.  */
 const char *ix86_align_funcs_string;
+
+/* Prefix built by ASM_GENERATE_INTERNAL_LABEL.  */
+static char internal_label_prefix[16];
+static int internal_label_prefix_len;
 
+static int local_symbolic_operand PARAMS ((rtx, enum machine_mode));
 static void output_pic_addr_const PARAMS ((FILE *, rtx, int));
 static void put_condition_code PARAMS ((enum rtx_code, enum machine_mode,
 				       int, int, FILE *));
@@ -948,6 +953,15 @@ override_options ()
       && !(target_flags & MASK_NO_ACCUMULATE_OUTGOING_ARGS)
       && !optimize_size)
     target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
+
+  /* Figure out what ASM_GENERATE_INTERNAL_LABEL builds as a prefix.  */
+  {
+    char *p;
+    ASM_GENERATE_INTERNAL_LABEL (internal_label_prefix, "LX", 0);
+    p = strchr (internal_label_prefix, 'X');
+    internal_label_prefix_len = p - internal_label_prefix;
+    *p = '\0';
+  }
 }
 
 void
@@ -1527,6 +1541,41 @@ pic_symbolic_operand (op, mode)
       if (GET_CODE (op) == UNSPEC)
 	return 1;
     }
+  return 0;
+}
+
+/* Return true if OP is a symbolic operand that resolves locally.  */
+
+static int
+local_symbolic_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  if (GET_CODE (op) == LABEL_REF)
+    return 1;
+
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+    op = XEXP (XEXP (op, 0), 0);
+
+  if (GET_CODE (op) != SYMBOL_REF)
+    return 0;
+
+  /* These we've been told are local by varasm and encode_section_info
+     respectively.  */
+  if (CONSTANT_POOL_ADDRESS_P (op) || SYMBOL_REF_FLAG (op))
+    return 1;
+
+  /* There is, however, a not insubstantial body of code in the rest of
+     the compiler that assumes it can just stick the results of 
+     ASM_GENERATE_INTERNAL_LABEL in a symbol_ref and have done.  */
+  /* ??? This is a hack.  Should update the body of the compiler to
+     always create a DECL an invoke ENCODE_SECTION_INFO.  */
+  if (strncmp (XSTR (op, 0), internal_label_prefix,
+	       internal_label_prefix_len) == 0)
+    return 1;
+
   return 0;
 }
 
@@ -3218,15 +3267,16 @@ legitimate_pic_address_disp_p (disp)
     return 0;
 
   /* Must be @GOT or @GOTOFF.  */
-  if (XINT (disp, 1) != 6
-      && XINT (disp, 1) != 7)
-    return 0;
+  switch (XINT (disp, 1))
+    {
+    case 6: /* @GOT */
+      return GET_CODE (XVECEXP (disp, 0, 0)) == SYMBOL_REF;
 
-  if (GET_CODE (XVECEXP (disp, 0, 0)) != SYMBOL_REF
-      && GET_CODE (XVECEXP (disp, 0, 0)) != LABEL_REF)
-    return 0;
-
-  return 1;
+    case 7: /* @GOTOFF */
+      return local_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
+    }
+    
+  return 0;
 }
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression that is a valid
@@ -3471,10 +3521,7 @@ legitimize_pic_address (orig, reg)
   rtx new = orig;
   rtx base;
 
-  if (GET_CODE (addr) == LABEL_REF
-      || (GET_CODE (addr) == SYMBOL_REF
-	  && (CONSTANT_POOL_ADDRESS_P (addr)
-	      || SYMBOL_REF_FLAG (addr))))
+  if (local_symbolic_operand (addr, Pmode))
     {
       /* This symbol may be referenced via a displacement from the PIC
 	 base address (@GOTOFF).  */
@@ -3526,10 +3573,7 @@ legitimize_pic_address (orig, reg)
 
 	  /* Check first to see if this is a constant offset from a @GOTOFF
 	     symbol reference.  */
-	  if ((GET_CODE (op0) == LABEL_REF
-	       || (GET_CODE (op0) == SYMBOL_REF
-		   && (CONSTANT_POOL_ADDRESS_P (op0)
-		       || SYMBOL_REF_FLAG (op0))))
+	  if (local_symbolic_operand (op0, Pmode)
 	      && GET_CODE (op1) == CONST_INT)
 	    {
 	      current_function_uses_pic_offset_table = 1;
