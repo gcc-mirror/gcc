@@ -861,8 +861,7 @@ public class SecurityManager
    */
   public void checkAwtEventQueueAccess()
   {
-    // Should be: checkPermission(new AWTPermission("accessEventQueue"));
-    throw new SecurityException("Cannot access the AWT event queue.");
+    checkPermission(new AWTPermission("accessEventQueue"));
   }
 
   /**
