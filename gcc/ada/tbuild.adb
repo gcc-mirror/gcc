@@ -178,35 +178,6 @@ package body Tbuild is
               New_Reference_To (First_Tag_Component (Full_Type), Loc)));
    end Make_DT_Access;
 
-   -----------------------
-   -- Make_DT_Component --
-   -----------------------
-
-   function Make_DT_Component
-     (Loc : Source_Ptr;
-      Typ : Entity_Id;
-      N   : Positive) return Node_Id
-   is
-      X         : Node_Id;
-      Full_Type : Entity_Id := Typ;
-
-   begin
-      if Is_Private_Type (Typ) then
-         Full_Type := Underlying_Type (Typ);
-      end if;
-
-      X :=
-        First_Component
-          (Designated_Type
-             (Etype (Node (First_Elmt (Access_Disp_Table (Full_Type))))));
-
-      for J in 2 .. N loop
-         X := Next_Component (X);
-      end loop;
-
-      return New_Reference_To (X, Loc);
-   end Make_DT_Component;
-
    --------------------------------
    -- Make_Implicit_If_Statement --
    --------------------------------

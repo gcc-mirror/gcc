@@ -303,15 +303,6 @@ package body Ada.Tags is
       return Result (1 .. Length (Result));
    end External_Tag;
 
-   -----------------------
-   -- Get_Expanded_Name --
-   -----------------------
-
-   function Get_Expanded_Name (T : Tag) return System.Address is
-   begin
-      return To_Address (TSD (T).Expanded_Name);
-   end Get_Expanded_Name;
-
    ----------------------
    -- Get_External_Tag --
    ----------------------
@@ -320,15 +311,6 @@ package body Ada.Tags is
    begin
       return To_Address (TSD (T).External_Tag);
    end Get_External_Tag;
-
-   ---------------------------
-   -- Get_Inheritance_Depth --
-   ---------------------------
-
-   function Get_Inheritance_Depth (T : Tag) return Natural is
-   begin
-      return TSD (T).Idepth;
-   end Get_Inheritance_Depth;
 
    -------------------------
    -- Get_Prim_Op_Address --
@@ -518,18 +500,6 @@ package body Ada.Tags is
    begin
       TSD (T).External_Tag := To_Cstring_Ptr (Value);
    end Set_External_Tag;
-
-   ---------------------------
-   -- Set_Inheritance_Depth --
-   ---------------------------
-
-   procedure Set_Inheritance_Depth
-     (T     : Tag;
-      Value : Natural)
-   is
-   begin
-      TSD (T).Idepth := Value;
-   end Set_Inheritance_Depth;
 
    -------------------------
    -- Set_Prim_Op_Address --

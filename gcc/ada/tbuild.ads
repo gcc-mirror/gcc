@@ -69,20 +69,6 @@ package Tbuild is
    --  Must_Be_Byte_Aligned is set in the attribute reference node. The
    --  Attribute_Name must be Name_Address or Name_Unrestricted_Access.
 
-   function Make_DT_Component
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
-      N    : Positive) return Node_Id;
-   --  Gives a reference to the Nth component of the Dispatch Table of
-   --  a given Tagged Type.
-   --
-   --  N = 1    --> Inheritance_Depth
-   --  N = 2    --> Tags (array of ancestors)
-   --  N = 3, 4 --> predefined primitive
-   --            function _Size (X : Typ) return Long_Long_Integer;
-   --            function _Equality (X : Typ; Y : Typ'Class) return Boolean;
-   --  N >= 5   --> User-Defined Primitive Operations
-
    function Make_DT_Access
      (Loc : Source_Ptr; Rec : Node_Id; Typ : Entity_Id) return Node_Id;
    --  Create an access to the Dispatch Table by using the Tag field
