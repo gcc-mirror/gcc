@@ -1,3 +1,7 @@
+2005-02-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/linker-map.gnu (GLIBCXX_3.4): Add _ZNSdC* and _ZNSdD*.
+
 2005-02-07  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc: Make buf static.
