@@ -253,6 +253,7 @@ static int hard_reg_set_here_p ();
 /* static rtx forget_volatility (); */
 static rtx subst_reg_equivs ();
 static rtx subst_indexed_address ();
+void copy_replacements ();
 rtx find_equiv_reg ();
 static int find_inc_amount ();
 
@@ -3636,6 +3637,7 @@ find_reloads_address (mode, memrefloc, ad, loc, operand, ind_levels)
 	{
 	  rtx oldref = *memrefloc;
 	  *memrefloc = copy_rtx (*memrefloc);
+	  copy_replacements (tem, XEXP (*memrefloc, 0));
 	  loc = &XEXP (*memrefloc, 0);
 	  if (operand == oldref)
 	    operand = *memrefloc;
