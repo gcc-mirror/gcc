@@ -2524,7 +2524,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
        actually came from I3, so that REG_UNUSED notes from I2 will be
        properly handled.  */
 
-    if (i3_subst_into_i2 && GET_CODE (PATTERN (i2)) == PARALLEL)
+    if (i3_subst_into_i2 && single_set (i2) == 0)
       {
 	for (i = 0; i < XVECLEN (PATTERN (i2), 0); i++)
 	  if (GET_CODE (XVECEXP (PATTERN (i2), 0, i)) != USE
