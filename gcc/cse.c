@@ -4892,6 +4892,21 @@ fold_rtx (x, insn)
   switch (code)
     {
     case CONST:
+      /* If the operand is a CONSTANT_P_RTX, see if what's inside it
+	 is known to be constant and replace the whole thing with a
+	 CONST_INT of either zero or one.  Note that this code assumes
+	 that an insn that recognizes a CONST will also recognize a
+	 CONST_INT, but that seems to be a safe assumption.  */
+      if (GET_CODE (XEXP (x, 0)) == CONSTANT_P_RTX)
+	{
+	  x = equiv_constant (fold_rtx (XEXP (XEXP (x, 0), 0), 0));
+	  return (x != 0 && (GET_CODE (x) == CONST_INT
+			     || GET_CODE (x) == CONST_DOUBLE)
+		  ? const1_rtx : const0_rtx);
+	}
+
+      /* ... fall through ... */
+
     case CONST_INT:
     case CONST_DOUBLE:
     case SYMBOL_REF:
