@@ -22,8 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (x86 Cygwin)");
 
-#define TARGET_IS_PE_COFF 1
-
 #define EXTRA_OS_CPP_BUILTINS()  /* Nothing.  */
 
 #undef CPP_SPEC

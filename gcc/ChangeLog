@@ -1,3 +1,8 @@
+2004-06-16  James E Wilson  <wilson@specifixinc.com>
+
+	PR c++/14808
+	* config/i386/cygwin.h (TARGET_IS_PE_COFF): Delete duplicate macro.
+
 2004-06-16  Bernardo Innocenti  <bernie@develer.com>
 
 	Backport from mainline:
