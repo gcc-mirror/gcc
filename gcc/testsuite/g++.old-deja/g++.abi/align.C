@@ -42,7 +42,7 @@ main ()
   if (alignof (short)                   !=  2)
     return 8;
   if (sizeof  (signed short)            !=  2)
-    return 9
+    return 9;
   if (alignof (signed short)            !=  2)
     return 10;
   if (sizeof  (unsigned short)          !=  2)
