@@ -37,8 +37,11 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.peer.*;
-import java.awt.*;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.peer.WindowPeer;
 
 public class GtkWindowPeer extends GtkContainerPeer
   implements WindowPeer

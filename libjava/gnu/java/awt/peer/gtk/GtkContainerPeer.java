@@ -37,8 +37,12 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
-import java.awt.event.*;
+
+import java.awt.AWTEvent;
+import java.awt.Container;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.event.PaintEvent;
 import java.awt.peer.ContainerPeer;
 
 public class GtkContainerPeer extends GtkComponentPeer
