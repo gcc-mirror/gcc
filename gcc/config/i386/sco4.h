@@ -77,4 +77,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   -Dunix -DM_UNIX -DM_XENIX \
   -DM_SYS5 -DM_SYSV -D_M_SYSV -DM_SYS3 -DM_SYSIII \
   -DM_COFF -DM_BITFIELDS -DM_WORDSWAP \
-  %{scointl:-D_M_INTERNAT -DM_INTERNAT} -D__STDC__=0}}}"
+  %{scointl:-D_M_INTERNAT -DM_INTERNAT}}}}"
