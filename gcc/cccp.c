@@ -7067,7 +7067,10 @@ macroexpand (hp, op)
     if (i == 1) {
       register U_CHAR *bp = args[0].raw;
       register U_CHAR *lim = bp + args[0].raw_length;
-      while (bp != lim && is_space[*bp]) bp++;
+      /* cpp.texi says for foo ( ) we provide one argument.
+	 However, if foo wants just 0 arguments, treat this as 0.  */
+      if (nargs == 0)
+	while (bp != lim && is_space[*bp]) bp++;
       if (bp == lim)
 	i = 0;
     }
