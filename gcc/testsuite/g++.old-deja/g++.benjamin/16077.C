@@ -1,6 +1,7 @@
 // { dg-do assemble  }
 // 981203 bkoz
 // g++/16077
+// { dg-options "-Wconversion" }
 
 class nicaragua;
 struct colombia {

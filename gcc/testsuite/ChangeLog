@@ -1,5 +1,12 @@
 2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
+        * g++.old-deja/g++.benjamin/16077.C: Add -Wconversion  option.
+        * g++.old-deja/g++.other/conv7.C: Likewise
+        * g++.old-deja/g++.other/overcnv2.C: Likewise.
+        * g++.old-deja/g++.other/overload14.C: Likewise.
+
+2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
 	* g++.old-deja/g++.jason/conversion5.C: Adjust option.
 	* g++.old-deja/g++.bugs/900215_01.C: Likewise.
 

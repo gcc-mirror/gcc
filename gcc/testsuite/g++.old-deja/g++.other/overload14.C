@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-options "-Wconversion" }
 extern "C" void abort();
 
 struct A {
