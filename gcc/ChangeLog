@@ -1,3 +1,9 @@
+2002-07-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md: Remove scratch reg on insns using
+	addze and similar (plus (comparison r1 r2) r3) insns.  Add
+	missing scratch reg in one case.  Formatting fixes.
+
 2002-07-24  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppexp.c (parse_defined): Mark macro used.
