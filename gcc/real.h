@@ -1,5 +1,5 @@
-/* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 1991, 1994, 1996 Free Software Foundation, Inc.
+/* Definitions of floating-point access for GNU compiler.
+   Copyright (C) 1989, 1991, 1994, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -352,7 +352,7 @@ extern double (atof) ();
    size and where `float' is SFmode.  */
 
 /* Don't use REAL_VALUE_TRUNCATE directly--always call real_value_truncate.  */
-extern REAL_VALUE_TYPE real_value_truncate ();
+extern REAL_VALUE_TYPE real_value_truncate PROTO((enum machine_mode, REAL_VALUE_TYPE));
 
 #ifndef REAL_VALUE_TRUNCATE
 #define REAL_VALUE_TRUNCATE(mode, x) \
@@ -374,6 +374,10 @@ extern REAL_VALUE_TYPE real_value_truncate ();
 #ifndef REAL_VALUE_NEGATIVE
 #define REAL_VALUE_NEGATIVE(x) (target_negative (x))
 #endif
+
+extern int target_isnan			PROTO ((REAL_VALUE_TYPE));
+extern int target_isinf			PROTO ((REAL_VALUE_TYPE));
+extern int target_negative		PROTO ((REAL_VALUE_TYPE));
 
 /* Determine whether a floating-point value X is minus 0. */
 #ifndef REAL_VALUE_MINUS_ZERO
@@ -441,4 +445,9 @@ extern struct rtx_def *immed_real_const_1	PROTO((REAL_VALUE_TYPE,
 /* Replace R by 1/R in the given machine mode, if the result is exact.  */
 extern int exact_real_inverse PROTO((enum machine_mode, REAL_VALUE_TYPE *));
 
+extern void debug_real			PROTO ((REAL_VALUE_TYPE));
+
+/* In varasm.c */
+extern void assemble_real		PROTO ((REAL_VALUE_TYPE,
+						enum machine_mode));
 #endif /* Not REAL_H_INCLUDED */
