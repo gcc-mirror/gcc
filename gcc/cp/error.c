@@ -951,6 +951,8 @@ dump_decl (t, flags)
 	  {
 	    const char *name_string = operator_name_string (t);
 	    OB_PUTS ("operator");
+	    if (ISALPHA (name_string[0]))
+	      OB_PUTC (' ');
 	    OB_PUTCP (name_string);
 	  }
 	else
@@ -1282,6 +1284,8 @@ dump_function_name (t, flags)
     {
       const char *name_string = operator_name_string (name);
       OB_PUTS ("operator");
+      if (ISALPHA (name_string[0]))
+	OB_PUTC (' ');
       OB_PUTCP (name_string);
     }
   else

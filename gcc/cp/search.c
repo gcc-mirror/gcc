@@ -611,7 +611,16 @@ lookup_field_1 (type, name)
 	  else if (DECL_NAME (fields[i]) < name)
 	    lo = i + 1;
 	  else
-	    return fields[i];
+	    {
+	      /* We might have a nested class and a field with the
+		 same name; we sorted them appropriately via
+		 field_decl_cmp, so just look for the last field with
+		 this name.  */
+	      while (i + 1 < hi
+		     && DECL_NAME (fields[i+1]) == name)
+		++i;
+	      return fields[i];
+	    }
 	}
       return NULL_TREE;
     }

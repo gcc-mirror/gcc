@@ -1,3 +1,11 @@
+2000-01-06  Jason Merrill  <jason@casey.cygnus.com>
+
+	* error.c (dump_decl): operator new, not operatornew.
+
+	* class.c (field_decl_cmp): A nontype is "greater" than a type.
+	* search.c (lookup_field_1): Look for the last field with the
+	desired name.
+
 2000-01-05  Nathan Sidwell  <nathan@acm.org>
 
 	* decl2.c (lookup_arg_dependent): Deal with FNS not being a
@@ -323,7 +331,8 @@
 	(avoid_overlap): Moved here from tree.c.
 	(build_base_fields): Likewise.
 	(check_bases): New function, split out from finish_base_struct.
-	(check_bases_and_members): New function, split out from finish_struct_1.
+	(check_bases_and_members): New function, split out from 
+	finish_struct_1.
 	(struct base_info): Remove cant_have_default_ctor,
 	cant_have_const_ctor, cant_have_asn_ref.
 	(finish_base_struct): Split semantic analysis into check_bases.
