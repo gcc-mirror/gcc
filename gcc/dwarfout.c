@@ -4623,7 +4623,8 @@ output_block (stmt, depth)
 
   /* Ignore blocks never really used to make RTL.  */
 
-  if (! stmt || ! TREE_USED (stmt) || !TREE_ASM_WRITTEN (stmt))
+  if (! stmt || ! TREE_USED (stmt)
+      || (!TREE_ASM_WRITTEN (stmt) && !BLOCK_ABSTRACT (stmt)))
     return;
 
   /* Determine the "ultimate origin" of this block.  This block may be an

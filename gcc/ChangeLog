@@ -1,5 +1,8 @@
 2000-02-29  Jason Merrill  <jason@casey.cygnus.com>
 
+	* dwarfout.c (output_block): Output abstract blocks even if they
+	don't have TREE_ASM_WRITTEN set.
+
 	* calls.c (emit_library_call): Check for null REG.
 
 2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
