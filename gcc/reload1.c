@@ -6147,7 +6147,7 @@ emit_input_reload_insns (chain, rl, old, j)
 	      reg_renumber[REGNO (old)] = REGNO (rl->reg_rtx);
 	      alter_reg (REGNO (old), -1);
 	    }
-	  return;
+	  special = 1;
 	}
     }
 
@@ -6165,7 +6165,7 @@ emit_input_reload_insns (chain, rl, old, j)
      because we don't make such reloads when both the input and
      output need secondary reload registers.  */
 
-  if (rl->secondary_in_reload >= 0)
+  if (! special && rl->secondary_in_reload >= 0)
     {
       rtx second_reload_reg = 0;
       int secondary_reload = rl->secondary_in_reload;
@@ -6283,7 +6283,7 @@ emit_input_reload_insns (chain, rl, old, j)
 	    {
 	      emit_insn (GEN_FCN (icode) (reloadreg, real_oldequiv,
 					  second_reload_reg));
-	      return;
+	      special = 1;
 	    }
 	  else
 	    {
@@ -6312,7 +6312,7 @@ emit_input_reload_insns (chain, rl, old, j)
     }
 #endif
 
-  if (! rtx_equal_p (reloadreg, oldequiv))
+  if (! special && ! rtx_equal_p (reloadreg, oldequiv))
     {
       rtx real_oldequiv = oldequiv;
 
