@@ -1,3 +1,13 @@
+2003-04-23  Tom Tromey  <tromey@redhat.com>
+
+	* resolve.cc (_Jv_PrepareClass): Round size up to alignment
+	required by this object.  Search superclasses to find required
+	alignment.
+	(get_alignment_from_class): Use alignment of type as it appears
+	in a struct.
+	(ALIGNOF): New macro.
+	(struct aligner): New helper structure.
+
 2003-04-20  Scott Gilbertson  <scottg@mantatest.com>
 
 	* java/awt/Container.java (addImpl): Enable paint events if adding
