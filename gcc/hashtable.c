@@ -58,8 +58,7 @@ ht_create (unsigned int order)
   unsigned int nslots = 1 << order;
   hash_table *table;
 
-  table = xmalloc (sizeof (hash_table));
-  memset (table, 0, sizeof (hash_table));
+  table = xcalloc (1, sizeof (hash_table));
 
   /* Strings need no alignment.  */
   _obstack_begin (&table->stack, 0, 0,

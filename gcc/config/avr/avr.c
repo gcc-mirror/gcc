@@ -281,20 +281,17 @@ avr_override_options ()
 void
 avr_init_once ()
 {
-  tmp_reg_rtx = xmalloc (sizeof (struct rtx_def) + 1 * sizeof (rtunion));
-  memset (tmp_reg_rtx, 0, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
+  tmp_reg_rtx = xcalloc (1, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
   PUT_CODE (tmp_reg_rtx, REG);
   PUT_MODE (tmp_reg_rtx, QImode);
   XINT (tmp_reg_rtx, 0) = TMP_REGNO;
 
-  zero_reg_rtx = xmalloc (sizeof (struct rtx_def) + 1 * sizeof (rtunion));
-  memset (zero_reg_rtx, 0, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
+  zero_reg_rtx = xcalloc (1, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
   PUT_CODE (zero_reg_rtx, REG);
   PUT_MODE (zero_reg_rtx, QImode);
   XINT (zero_reg_rtx, 0) = ZERO_REGNO;
 
-  ldi_reg_rtx = xmalloc (sizeof (struct rtx_def) + 1 * sizeof (rtunion));
-  memset (ldi_reg_rtx, 0, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
+  ldi_reg_rtx = xcalloc (1, sizeof (struct rtx_def) + 1 * sizeof (rtunion));
   PUT_CODE (ldi_reg_rtx, REG);
   PUT_MODE (ldi_reg_rtx, QImode);
   XINT (ldi_reg_rtx, 0) = LDI_REG_REGNO;

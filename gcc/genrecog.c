@@ -316,9 +316,8 @@ extern void debug_decision_list
 static struct decision *
 new_decision (const char *position, struct decision_head *last)
 {
-  struct decision *new = xmalloc (sizeof (struct decision));
+  struct decision *new = xcalloc (1, sizeof (struct decision));
 
-  memset (new, 0, sizeof (*new));
   new->success = *last;
   new->position = xstrdup (position);
   new->number = next_number++;

@@ -2138,8 +2138,7 @@ schedule_block (int b, int rgn_n_insns)
     {
       /* It is used for first cycle multipass scheduling.  */
       temp_state = alloca (dfa_state_size);
-      ready_try = xmalloc ((rgn_n_insns + 1) * sizeof (char));
-      memset (ready_try, 0, (rgn_n_insns + 1) * sizeof (char));
+      ready_try = xcalloc ((rgn_n_insns + 1), sizeof (char));
       choice_stack = xmalloc ((rgn_n_insns + 1)
 			      * sizeof (struct choice_entry));
       for (i = 0; i <= rgn_n_insns; i++)

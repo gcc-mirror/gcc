@@ -1,3 +1,15 @@
+2003-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/avr/avr.c (avr_init_once): Use xcalloc in lieu of
+	xmalloc/memset.
+	* config/ia64/ia64.c (ia64_reorg): Likewise.
+	* conflict.c (conflict_graph_new): Likewise.
+	* fixinc/fixincl.c (run_compiles): Likewise.
+	* genattrtab.c (optimize_attrs): Likewise.
+	* genrecog.c (new_decision): Likewise.
+	* haifa-sched.c (schedule_block): Likewise.
+	* hashtable.c (ht_create): Likewise.
+
 2003-08-11  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/lib2funcs.S: Fix whitespace.

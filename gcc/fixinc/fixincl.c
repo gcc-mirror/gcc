@@ -481,11 +481,10 @@ run_compiles (void)
 {
   tFixDesc *p_fixd = fixDescList;
   int fix_ct = FIX_COUNT;
-  regex_t *p_re = xmalloc (REGEX_COUNT * sizeof (regex_t));
+  regex_t *p_re = xcalloc (REGEX_COUNT, sizeof (regex_t));
 
   /*  Make sure compile_re does not stumble across invalid data */
 
-  memset (p_re, '\0', REGEX_COUNT * sizeof (regex_t));
   memset (&incl_quote_re, '\0', sizeof (regex_t));
 
   compile_re (incl_quote_pat, &incl_quote_re, 1,

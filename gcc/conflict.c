@@ -160,9 +160,8 @@ conflict_graph_new (int num_regs)
   obstack_init (&graph->arc_obstack);
 	     
   /* Create and zero the lookup table by register number.  */
-  graph->neighbor_heads = xmalloc (num_regs * sizeof (conflict_graph_arc));
+  graph->neighbor_heads = xcalloc (num_regs, sizeof (conflict_graph_arc));
 
-  memset (graph->neighbor_heads, 0, num_regs * sizeof (conflict_graph_arc));
   return graph;
 }
 
