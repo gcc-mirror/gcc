@@ -250,19 +250,15 @@ generate_access (stream, flags)
      FILE *stream;
      JCF_u2 flags;
 {
-  /* FIXME: Java's "protected" and "no access specifier" modes don't
-     actually map to C++ "protected".  That's how we map them for now,
-     though.  */
-
-  if (! (flags & ACC_VISIBILITY))
-    flags = ACC_PROTECTED;
-
   if ((flags & ACC_VISIBILITY) == last_access)
     return;
   last_access = (flags & ACC_VISIBILITY);
 
   switch (last_access)
     {
+    case 0:
+      fputs ("public: // actually package-private\n", stream);
+      break;
     case ACC_PUBLIC:
       fputs ("public:\n", stream);
       break;
@@ -270,7 +266,7 @@ generate_access (stream, flags)
       fputs ("private:\n", stream);
       break;
     case ACC_PROTECTED:
-      fputs ("protected:\n", stream);
+      fputs ("public:  // actually protected\n", stream);
       break;
     default:
       found_error = 1;
@@ -840,7 +836,7 @@ DEFUN(process_file, (jcf, out),
 
   current_jcf = main_jcf = jcf;
 
-  last_access = 0;
+  last_access = -1;
 
   if (jcf_parse_preamble (jcf) != 0)
     {
