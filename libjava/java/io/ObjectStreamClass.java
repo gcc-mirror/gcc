@@ -621,7 +621,7 @@ public class ObjectStreamClass implements Serializable
       {
 	// Use getDeclaredField rather than getField for the same reason
 	// as above in getDefinedSUID.
-	Field f = clazz.getDeclaredField ("getSerialPersistentFields");
+	Field f = clazz.getDeclaredField ("serialPersistentFields");
 	f.setAccessible(true);
 	o = (ObjectStreamField[])f.get (null);
       }
