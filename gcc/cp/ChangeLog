@@ -1,3 +1,8 @@
+2004-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (mark_used): Don't segfault if cfun != NULL but
+	current_function_decl == NULL.
+
 2004-04-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14803
