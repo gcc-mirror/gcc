@@ -1,5 +1,11 @@
 2001-11-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* vax-protos.h (reg_was_0_p): New prototype.
+	* vax.md (movsi, movhi, movqi): Use reg_was_0_p.
+	* vax.c (follows_p, reg_was_0_p): New functions.
+
+2001-11-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* vax.md (casesi): Swap arguments in "(plus:SI (pc) (mult))". Reformat.
 	(casesi1): Likewise.  Define new pattern which arises by simplification
 	when operand 1 is a constant int.  Correct pattern which arises by

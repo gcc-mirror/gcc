@@ -184,17 +184,9 @@
   ""
   "*
 {
-  rtx link;
-  if (operands[1] == const1_rtx
-      && (link = find_reg_note (insn, REG_WAS_0, 0))
-      /* Make sure the insn that stored the 0 is still present.  */
-      && ! INSN_DELETED_P (XEXP (link, 0))
-      && GET_CODE (XEXP (link, 0)) != NOTE
-      /* Make sure cross jumping didn't happen here.  */
-      && no_labels_between_p (XEXP (link, 0), insn)
-      /* Make sure the reg hasn't been clobbered.  */
-      && ! reg_set_between_p (operands[0], XEXP (link, 0), insn))
+  if (operands[1] == const1_rtx && reg_was_0_p (insn, operands[0]))
     return \"incl %0\";
+
   if (GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == CONST)
     {
       if (push_operand (operands[0], SImode))
@@ -229,16 +221,7 @@
   ""
   "*
 {
-  rtx link;
-  if (operands[1] == const1_rtx
-      && (link = find_reg_note (insn, REG_WAS_0, 0))
-      /* Make sure the insn that stored the 0 is still present.  */
-      && ! INSN_DELETED_P (XEXP (link, 0))
-      && GET_CODE (XEXP (link, 0)) != NOTE
-      /* Make sure cross jumping didn't happen here.  */
-      && no_labels_between_p (XEXP (link, 0), insn)
-      /* Make sure the reg hasn't been clobbered.  */
-      && ! reg_set_between_p (operands[0], XEXP (link, 0), insn))
+  if (operands[1] == const1_rtx && reg_was_0_p (insn, operands[0]))
     return \"incw %0\";
 
   if (GET_CODE (operands[1]) == CONST_INT)
@@ -283,16 +266,7 @@
   ""
   "*
 {
-  rtx link;
-  if (operands[1] == const1_rtx
-      && (link = find_reg_note (insn, REG_WAS_0, 0))
-      /* Make sure the insn that stored the 0 is still present.  */
-      && ! INSN_DELETED_P (XEXP (link, 0))
-      && GET_CODE (XEXP (link, 0)) != NOTE
-      /* Make sure cross jumping didn't happen here.  */
-      && no_labels_between_p (XEXP (link, 0), insn)
-      /* Make sure the reg hasn't been clobbered.  */
-      && ! reg_set_between_p (operands[0], XEXP (link, 0), insn))
+  if (operands[1] == const1_rtx && reg_was_0_p (insn, operands[0]))
     return \"incb %0\";
 
   if (GET_CODE (operands[1]) == CONST_INT)
