@@ -1,5 +1,5 @@
 /* Loop optimization definitions for GNU C-Compiler
-   Copyright (C) 1991, 1995, 1998, 1999, 2000, 2001
+   Copyright (C) 1991, 1995, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -33,13 +33,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define LOOP_INFO(LOOP) ((struct loop_info *) (LOOP)->aux)
 
 /* Get a pointer to the loop movables structure.  */
-#define LOOP_MOVABLES(LOOP) (&LOOP_INFO (loop)->movables)
+#define LOOP_MOVABLES(LOOP) (&LOOP_INFO (LOOP)->movables)
 
 /* Get a pointer to the loop registers structure.  */
-#define LOOP_REGS(LOOP) (&LOOP_INFO (loop)->regs)
+#define LOOP_REGS(LOOP) (&LOOP_INFO (LOOP)->regs)
 
 /* Get a pointer to the loop induction variables structure.  */
-#define LOOP_IVS(LOOP) (&LOOP_INFO (loop)->ivs)
+#define LOOP_IVS(LOOP) (&LOOP_INFO (LOOP)->ivs)
 
 /* Get the luid of an insn.  Catch the error of trying to reference the LUID
    of an insn added during loop, since these don't have LUIDs.  */
