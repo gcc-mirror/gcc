@@ -21,6 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
+include $(top_srcdir)/fragment.am
 
 # Location of installation directories.
 locale_installdir = $(DESTDIR)$(datadir)/locale

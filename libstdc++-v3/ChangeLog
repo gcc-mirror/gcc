@@ -1,3 +1,23 @@
+2003-08-26  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.am:  Add comment.
+	* acinclude.m4 (GLIBCXX_CONFIGURE):  Set new glibcxx_SUBDIRS and
+	SUBDIRS variables.
+	* configure.ac:  Use them both here, instead of hardcoded lists.
+
+	* fragment.am:  Add STAMP varaible.
+	* include/Makefile.am:  Cosmetic whitespace cleanup.  Use $(LN_S)
+	instead of @LN_S@.
+	(stamp-*):  Move file creation rule outside of 'if' branches to
+	ensure the stamp-* files are actually updated.  Use $(STAMP).
+	* src/Makefile.am:  Remove now-nonexistant variable.
+	* libsupc++/Makefile.am:  Likewise.  Snap the assignment chain
+	for -prefer-pic.
+	* po/Makefile.am:  Include same fragment as all the others.
+
+	* aclocal.m4, configure, Makefile.in, include/Makefile.in,
+	libsupc++/Makefile.in, po/Makefile.in, src/Makefile.in:  Regenerated.
+
 2003-08-26  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/data/cin_unget-1.txt: New.

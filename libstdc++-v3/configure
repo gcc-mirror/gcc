@@ -969,7 +969,7 @@ ac_abs_top_srcdir=`cd "$ac_dir" && cd $ac_top_srcdir && pwd`
     else
       echo "$as_me: WARNING: no configuration information is in $ac_dir" >&2
     fi
-    cd $ac_popdir
+    cd "$ac_popdir"
   done
 fi
 
@@ -1168,7 +1168,7 @@ _ASBOX
       echo "$as_me: caught signal $ac_signal"
     echo "$as_me: exit $exit_status"
   } >&5
-  rm -f core core.* *.core &&
+  rm -f core *.core &&
   rm -rf conftest* confdefs* conf$$* $ac_clean_files &&
     exit $exit_status
      ' 0
@@ -1931,6 +1931,12 @@ INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c -s"
 # Runs configure.host, finds CC, CXX, and assorted other critical bits.  Sets
 # up critical shell variables.
 
+
+  # Keep these sync'd with the list in Makefile.am.  The first provides an
+  # expandable list at autoconf time; the second provides an expandable list
+  # (i.e., shell variable) at configure time.
+
+  SUBDIRS='include libmath libsupc++ src po testsuite'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -2758,8 +2764,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   for ac_declaration in \
-   ''\
-   '#include <stdlib.h>' \
+   '' \
    'extern "C" void std::exit (int) throw (); using std::exit;' \
    'extern "C" void std::exit (int); using std::exit;' \
    'extern "C" void exit (int) throw ();' \
@@ -2773,8 +2778,8 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <stdlib.h>
 $ac_declaration
+#include <stdlib.h>
 int
 main ()
 {
@@ -3084,8 +3089,7 @@ else
   fi
 fi
 for ac_declaration in \
-   ''\
-   '#include <stdlib.h>' \
+   '' \
    'extern "C" void std::exit (int) throw (); using std::exit;' \
    'extern "C" void std::exit (int); using std::exit;' \
    'extern "C" void exit (int) throw ();' \
@@ -3099,8 +3103,8 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <stdlib.h>
 $ac_declaration
+#include <stdlib.h>
 int
 main ()
 {
@@ -4283,7 +4287,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4286 "configure"' > conftest.$ac_ext
+  echo '#line 4290 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4852,7 +4856,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 4855 "configure"
+#line 4859 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -5452,7 +5456,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_header_stdc=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 fi
@@ -5643,7 +5647,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 enable_clocale_flag=generic
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
           fi
 
@@ -7825,7 +7829,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_sectionLDflags=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
@@ -26687,7 +26691,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_func_mmap_fixed_mapped=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 echo "$as_me:$LINENO: result: $ac_cv_func_mmap_fixed_mapped" >&5
@@ -45631,7 +45635,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_sectionLDflags=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
@@ -47636,7 +47640,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_sectionLDflags=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
@@ -49510,7 +49514,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_sectionLDflags=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
@@ -51393,7 +51397,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_sectionLDflags=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
@@ -53223,7 +53227,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_sectionLDflags=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
@@ -54952,7 +54956,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_sectionLDflags=no
 fi
-rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
@@ -57799,7 +57803,7 @@ else
 fi
 
 
-                                                                      ac_config_files="$ac_config_files Makefile include/Makefile libmath/Makefile libsupc++/Makefile po/Makefile src/Makefile testsuite/Makefile"
+                                                                      ac_config_files="$ac_config_files Makefile include/Makefile libmath/Makefile libsupc++/Makefile src/Makefile po/Makefile testsuite/Makefile"
 
           ac_config_files="$ac_config_files scripts/check_survey"
 
@@ -58407,7 +58411,9 @@ multi_basedir="$multi_basedir"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 
-# No init-vars needed so far which aren't already passed by autoconf.
+# Variables needed in config.status (file generation) which aren't already
+# passed by autoconf.
+SUBDIRS="$SUBDIRS"
 
 
 _ACEOF
@@ -58423,8 +58429,8 @@ do
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "libmath/Makefile" ) CONFIG_FILES="$CONFIG_FILES libmath/Makefile" ;;
   "libsupc++/Makefile" ) CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
-  "po/Makefile" ) CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+  "po/Makefile" ) CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
   "testsuite/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
   "scripts/check_survey" ) CONFIG_FILES="$CONFIG_FILES scripts/check_survey" ;;
   "scripts/testsuite_flags" ) CONFIG_FILES="$CONFIG_FILES scripts/testsuite_flags" ;;
@@ -59173,7 +59179,7 @@ esac ;;
    cat > vpsed << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
-   for i in libmath libsupc++ src testsuite; do
+   for i in $SUBDIRS; do
     case $CONFIG_FILES in
      *${i}/Makefile*)
        #echo "Adding MULTISUBDIR to $i/Makefile"

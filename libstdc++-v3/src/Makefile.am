@@ -166,7 +166,6 @@ demangle.o: demangle.cc
 # as the occasion calls for it.
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
-	$(LIBSUPCXX_CXXFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
 	$(CONFIG_CXXFLAGS)

@@ -61,6 +61,7 @@ dnl variables like $host.
 dnl
 dnl Sets:
 dnl  gcc_version          (x.y.z format)
+dnl  SUBDIRS
 dnl Substs:
 dnl  glibcxx_builddir     (absolute path)
 dnl  glibcxx_srcdir       (absolute path)
@@ -74,6 +75,12 @@ dnl  - default settings for all AM_CONFITIONAL test variables
 dnl  - lots of tools, like CC and CXX
 dnl
 AC_DEFUN(GLIBCXX_CONFIGURE, [
+  # Keep these sync'd with the list in Makefile.am.  The first provides an
+  # expandable list at autoconf time; the second provides an expandable list
+  # (i.e., shell variable) at configure time.
+  m4_define([glibcxx_SUBDIRS],[include libmath libsupc++ src po testsuite])
+  SUBDIRS='glibcxx_SUBDIRS'
+
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
   # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
