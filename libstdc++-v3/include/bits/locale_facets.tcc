@@ -1974,7 +1974,7 @@ namespace std
     }
 
  template<typename _CharT>
-    collate<_CharT>::string_type
+    typename collate<_CharT>::string_type
     collate<_CharT>::
     do_transform(const _CharT* __lo, const _CharT* __hi) const
     {

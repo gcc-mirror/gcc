@@ -1,3 +1,14 @@
+2001-12-27  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (collate::do_transform):
+	Adjust implicit typename.
+	* config/locale/messages_members_generic.h (messages::open,
+	messages::do_open, messages::do_get): Adjust implicit typename.
+	* config/locale/messages_members_gnu.h (messages::open,
+	messages::do_open, messages::do_get): Adjust Implicit typename.
+	* config/locale/messages_members_ieee_1003.1-200x.h (messages::open,
+	messages::do_open, messages::do_get): Adjust implicit typename.
+
 2001-12-27  Phil Edwards  <pme@gcc.gnu.org>
 
 	PR libstdc++/3829
