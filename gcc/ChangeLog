@@ -1,4 +1,10 @@
+2003-12-05  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_build_builtin_va_list): Add dummy
+	field to suppress -Wpadded warnings.
+
 2003-12-05  Stuart Hastings  <stuart@apple.com>
+
 	* config/rs6000/rs6000.md: Correct macro test of TARGET_MACHO.
 
 2003-12-05  Stuart Menefy <stuart.menefy@st.com>
