@@ -1,5 +1,5 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989, 92, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92, 94, 95, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -84,14 +84,14 @@ static HARD_REG_SET referenced_regs;
 static HARD_REG_SET this_insn_sets;
 
 
-static void mark_set_regs		PROTO((rtx, rtx, void *));
-static void mark_referenced_regs	PROTO((rtx));
-static int insert_save			PROTO((struct insn_chain *, int, int,
-					       HARD_REG_SET *));
-static int insert_restore		PROTO((struct insn_chain *, int, int,
-					       int));
-static struct insn_chain *insert_one_insn PROTO((struct insn_chain *, int,
-						 enum insn_code, rtx));
+static void mark_set_regs		PARAMS ((rtx, rtx, void *));
+static void mark_referenced_regs	PARAMS ((rtx));
+static int insert_save			PARAMS ((struct insn_chain *, int, int,
+						 HARD_REG_SET *));
+static int insert_restore		PARAMS ((struct insn_chain *, int, int,
+						 int));
+static struct insn_chain *insert_one_insn PARAMS ((struct insn_chain *, int,
+						   enum insn_code, rtx));
 
 /* Initialize for caller-save.
 

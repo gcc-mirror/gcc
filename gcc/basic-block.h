@@ -1,5 +1,5 @@
 /* Define control and data flow tables, and regsets.
-   Copyright (C) 1987, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -211,18 +211,18 @@ extern varray_type basic_block_for_insn;
 #define BLOCK_FOR_INSN(INSN)  VARRAY_BB (basic_block_for_insn, INSN_UID (INSN))
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 
-extern void compute_bb_for_insn		PROTO ((int));
-extern void set_block_for_insn		PROTO ((rtx, basic_block));
-extern void set_block_num		PROTO ((rtx, int));
+extern void compute_bb_for_insn		PARAMS ((int));
+extern void set_block_for_insn		PARAMS ((rtx, basic_block));
+extern void set_block_num		PARAMS ((rtx, int));
 
-extern void free_basic_block_vars	PROTO ((int));
+extern void free_basic_block_vars	PARAMS ((int));
 
-extern basic_block split_edge		PROTO ((edge));
-extern void insert_insn_on_edge		PROTO ((rtx, edge));
-extern void commit_edge_insertions	PROTO ((void));
-extern void remove_fake_edges		PROTO ((void));
-extern void add_noreturn_fake_exit_edges	PROTO ((void));
-extern void flow_delete_insn_chain	PROTO((rtx, rtx));
+extern basic_block split_edge		PARAMS ((edge));
+extern void insert_insn_on_edge		PARAMS ((rtx, edge));
+extern void commit_edge_insertions	PARAMS ((void));
+extern void remove_fake_edges		PARAMS ((void));
+extern void add_noreturn_fake_exit_edges	PARAMS ((void));
+extern void flow_delete_insn_chain	PARAMS ((rtx, rtx));
 
 
 /* Structure to hold information for each natural loop.  */
@@ -305,9 +305,9 @@ struct loops
   sbitmap shared_headers;
 };
 
-extern int flow_loops_find PROTO ((struct loops *));
-extern void flow_loops_free PROTO ((struct loops *));
-extern void flow_loops_dump PROTO ((const struct loops *, FILE *, int));
+extern int flow_loops_find PARAMS ((struct loops *));
+extern void flow_loops_free PARAMS ((struct loops *));
+extern void flow_loops_dump PARAMS ((const struct loops *, FILE *, int));
 
 
 /* This structure maintains an edge list vector.  */
@@ -336,15 +336,15 @@ struct edge_list
 /* Number of edges in the compressed edge list.  */
 #define NUM_EDGES(el)			((el)->num_edges)
 
-struct edge_list * create_edge_list	PROTO ((void));
-void free_edge_list			PROTO ((struct edge_list *));
-void print_edge_list			PROTO ((FILE *, struct edge_list *));
-void verify_edge_list			PROTO ((FILE *, struct edge_list *));
-int find_edge_index			PROTO ((struct edge_list *, 
-						basic_block, basic_block));
+struct edge_list * create_edge_list	PARAMS ((void));
+void free_edge_list			PARAMS ((struct edge_list *));
+void print_edge_list			PARAMS ((FILE *, struct edge_list *));
+void verify_edge_list			PARAMS ((FILE *, struct edge_list *));
+int find_edge_index			PARAMS ((struct edge_list *, 
+						 basic_block, basic_block));
 
-extern void compute_flow_dominators	PROTO ((sbitmap *, sbitmap *));
-extern void compute_immediate_dominators	PROTO ((int *, sbitmap *));
+extern void compute_flow_dominators	PARAMS ((sbitmap *, sbitmap *));
+extern void compute_immediate_dominators	PARAMS ((int *, sbitmap *));
 
 
 enum update_life_extent
@@ -364,24 +364,24 @@ enum update_life_extent
 #define PROP_AUTOINC		32	/* Create autoinc mem references.  */
 #define PROP_FINAL		63	/* All of the above.  */
 
-extern void update_life_info	PROTO ((sbitmap, enum update_life_extent,
-					int));
-extern int count_or_remove_death_notes	PROTO ((sbitmap, int));
+extern void update_life_info	PARAMS ((sbitmap, enum update_life_extent,
+					 int));
+extern int count_or_remove_death_notes	PARAMS ((sbitmap, int));
 
 /* In lcm.c */
-extern struct edge_list *pre_edge_lcm 	PROTO ((FILE *, int, sbitmap *,
-						sbitmap *, sbitmap *, 
-						sbitmap *, sbitmap **,
-						sbitmap **));
-extern struct edge_list *pre_edge_rev_lcm PROTO ((FILE *, int, sbitmap *,
-						  sbitmap *, sbitmap *, 
-						  sbitmap *, sbitmap **, 
-						  sbitmap **));
-extern void compute_available		PROTO ((sbitmap *, sbitmap *,
-						sbitmap *, sbitmap *));
+extern struct edge_list *pre_edge_lcm 	PARAMS ((FILE *, int, sbitmap *,
+						 sbitmap *, sbitmap *, 
+						 sbitmap *, sbitmap **,
+						 sbitmap **));
+extern struct edge_list *pre_edge_rev_lcm PARAMS ((FILE *, int, sbitmap *,
+						   sbitmap *, sbitmap *, 
+						   sbitmap *, sbitmap **, 
+						   sbitmap **));
+extern void compute_available		PARAMS ((sbitmap *, sbitmap *,
+						 sbitmap *, sbitmap *));
 
 /* In emit-rtl.c.  */
-extern rtx emit_block_insn_after	PROTO((rtx, rtx, basic_block));
-extern rtx emit_block_insn_before	PROTO((rtx, rtx, basic_block));
+extern rtx emit_block_insn_after	PARAMS ((rtx, rtx, basic_block));
+extern rtx emit_block_insn_before	PARAMS ((rtx, rtx, basic_block));
 
 #endif /* _BASIC_BLOCK_H */
