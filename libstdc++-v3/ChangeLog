@@ -1,3 +1,8 @@
+2004-01-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/ios_base/storage/11584.cc: Correct new and
+	delete declarations, add include and test variable.
+
 2003-01-27  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/codecvt.h, include/bits/locale_facets.h,

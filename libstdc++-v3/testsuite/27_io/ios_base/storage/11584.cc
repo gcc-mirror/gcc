@@ -22,40 +22,42 @@
 
 #include <cstdlib>
 #include <new>
+#include <iostream>
 #include <testsuite_hooks.h>
 
 int new_fails;
 
-void* operator new (size_t n)
+void* operator new(std::size_t n) throw (std::bad_alloc)
 {
-    if (new_fails)
-        throw std::bad_alloc();
-
-    return malloc(n);
+  if (new_fails)
+    throw std::bad_alloc();  
+  return malloc(n);
 }
+void* operator new[] (std::size_t n) throw (std::bad_alloc)
+{ return operator new(n); }
 
-void operator delete (void *p) { free(p); }
-void* operator new[] (size_t n) { return operator new(n); }
-void operator delete[] (void *p) { operator delete(p); }
+void operator delete (void *p) throw() { free(p); }
+void operator delete[] (void *p) throw() { operator delete(p); }
 
 int main ()
 {
-    const int i = std::ios::xalloc ();
+  bool test __attribute__((unused)) = true;
+  const int i = std::ios::xalloc ();
 
-    new_fails = 1;
-
-    // Successive accesses to failure storage clears to zero.
-    std::cout.iword(100) = 0xdeadbeef;
-    VERIFY(std::cout.iword(100) == 0);
-
-    // Access to pword failure storage shouldn't clear iword pword storage.
-    long& lr = std::cout.iword(100);
-    lr = 0xdeadbeef;
-
-    void* pv = std::cout.pword(100);
-    VERIFY(pv == 0);
-    VERIFY(lr == 0xdeadbeef);
-    
-    return 0;
+  new_fails = 1;
+  
+  // Successive accesses to failure storage clears to zero.
+  std::cout.iword(100) = 0xdeadbeef;
+  VERIFY(std::cout.iword(100) == 0);
+  
+  // Access to pword failure storage shouldn't clear iword pword storage.
+  long& lr = std::cout.iword(100);
+  lr = 0xdeadbeef;
+  
+  void* pv = std::cout.pword(100);
+  VERIFY(pv == 0);
+  VERIFY(lr == 0xdeadbeef);
+  
+  return 0;
 }
 
