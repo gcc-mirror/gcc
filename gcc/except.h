@@ -147,9 +147,13 @@ extern tree (*lang_eh_runtime_type) (tree);
 	   || (DWARF2_UNWIND_INFO			\
 	       && (defined (EH_RETURN_HANDLER_RTX)	\
 		   || defined (HAVE_eh_return)))))
-#define MUST_USE_SJLJ_EXCEPTIONS	1
+# define MUST_USE_SJLJ_EXCEPTIONS	1
 #else
-#define MUST_USE_SJLJ_EXCEPTIONS	0
+# ifdef IA64_UNWIND_INFO
+#  define MUST_USE_SJLJ_EXCEPTIONS	0
+# else
+#  define MUST_USE_SJLJ_EXCEPTIONS	(DWARF2_UNWIND_INFO == 0)
+# endif
 #endif
 
 #ifdef CONFIG_SJLJ_EXCEPTIONS
