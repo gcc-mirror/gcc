@@ -2922,6 +2922,7 @@ convert_regs (file)
 	  inserted |= convert_regs_2 (file, b);
 	}
     }
+  clear_aux_for_blocks ();
 
   fixup_abnormal_edges ();
   if (inserted)
