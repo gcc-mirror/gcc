@@ -1,3 +1,30 @@
+2004-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (mangle_type): Remove.
+	* mangle.c (globals): GTY it.
+	(mangle_obstack): New variable.
+	(name_obstack): Likewise.
+	(name_base): Likewise.
+	(write_char): Adjust accordingly.
+	(write_chars): Likewise.
+	(write_string): Likewise.
+	(start_mangling): Initialize G.substitutions only one.  Add
+	ident_p parameter.
+	(finish_mangling): Use VARRAY_CLEAR to reclaim
+	storage in G.substitutions.  Use obstack_finish.
+	(init_mangle): Adjust for changes to variable names above.
+	Initialize G.substitutions.
+	(mangle_decl_string): Adjust call to start_mangling.
+	(get_identifier_nocopy): New function.
+	(mangle_decl): Use it.
+	(mangle_type_string): Adjust call to start_mangling.
+	(mangle_special_for_type): Likewise.
+	(mangle_vtt_for_type): Likewise.
+	(mangle_ctor_vtbl_for_type): Likewise.
+	(mangle_thunk): Likewise.
+	(mangle_guard_variable): Likewise.
+	(mangle_ref_init_variable): Likewise.
+
 2004-08-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14428
