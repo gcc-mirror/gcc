@@ -65,7 +65,7 @@ getline(buf)
      line: copy this line into the buffer and return.  */
   while (c != EOF && c != '\n')
     {
-      if (count >= alloc)
+      if (count + 1 >= alloc)
 	{
 	  alloc *= 2;
 	  data = xrealloc (data, alloc);
