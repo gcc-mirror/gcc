@@ -2070,6 +2070,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	{
 	  copy = rtx_alloc (ASM_OPERANDS);
 	  copy->volatil = orig->volatil;
+	  PUT_MODE (copy, GET_MODE (orig));
 	  ASM_OPERANDS_TEMPLATE (copy) = ASM_OPERANDS_TEMPLATE (orig);
 	  ASM_OPERANDS_OUTPUT_CONSTRAINT (copy)
 	    = ASM_OPERANDS_OUTPUT_CONSTRAINT (orig);
