@@ -473,7 +473,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 22]"
+#define MIPS_VERSION "[AL 1.1, MM 23]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -2288,7 +2288,6 @@ while (0)
 									\
   case CONST:								\
     {									\
-      extern rtx eliminate_constant_term ();				\
       rtx offset = const0_rtx;						\
       rtx symref = eliminate_constant_term (X, &offset);		\
 									\
@@ -3241,7 +3240,6 @@ rdata_section ()							\
 
 #define SELECT_SECTION_MODE(MODE,RTX)					\
 {									\
-  extern int mips_section_threshold;					\
   if ((GET_MODE_SIZE(MODE) / BITS_PER_UNIT) <= mips_section_threshold	\
       && mips_section_threshold > 0)					\
     sdata_section ();							\
@@ -3251,7 +3249,6 @@ rdata_section ()							\
 
 #define SELECT_SECTION(DECL,RELOC)					\
 {									\
-  extern int mips_section_threshold;					\
   if (int_size_in_bytes (TREE_TYPE (DECL)) <= mips_section_threshold	\
       && mips_section_threshold > 0)					\
     sdata_section ();							\
