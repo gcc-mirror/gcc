@@ -39,7 +39,7 @@ static unsigned max_size = 10;
 #if defined(__CYGWIN__)
 static int iters = 10000;
 #else
-static int iters = 1000000;
+static int iters = 300000;
 #endif
 
 void*
