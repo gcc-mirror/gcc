@@ -4,7 +4,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O" } */
-/* { dg-options "-O -mtune=i686" { target i?86-*-* } } */
+/* { dg-options "-O -mtune=i686" { target { i?86-*-* && ilp32 } } } */
 /* { dg-options "-O -m32 -mtune=i686" { target x86_64-*-* } } */
 
 extern void abort();

@@ -1,3 +1,12 @@
+2005-04-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/i386-387-7.c, gcc.dg/i386-3dnowA-1.c,
+	gcc.dg/i386-3dnowA-2.c, gcc.dg/pr12092-1.c: Skip x86 tests for
+	-m64.
+	* gcc.dg/loop-3.c, gcc.dg/short-compare-1.c,
+	gcc.dg/short-compare-2.c, gcc.dg/smod-1.c,
+	gcc.dg/torture/badshift.c: Don't give 32-bit options for x86 -m64.
+
 2005-04-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20212
