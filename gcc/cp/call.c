@@ -3559,7 +3559,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	instance = resolve_offset_ref (instance);
       if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
 	instance = convert_from_reference (instance);
-      basetype = TREE_TYPE (instance);
+      basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));
 
       /* XXX this should be handled before we get here.  */
       if (! IS_AGGR_TYPE (basetype)

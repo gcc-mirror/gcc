@@ -1,3 +1,7 @@
+1999-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (build_new_method_call): Use TYPE_MAIN_VARIANT of class.
+
 1999-05-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (start_objects): Don't let static constructors and
