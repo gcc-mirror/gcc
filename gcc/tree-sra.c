@@ -1106,6 +1106,7 @@ instantiate_element (struct sra_elt *elt)
   DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (base);
   TREE_NO_WARNING (var) = TREE_NO_WARNING (base);
   DECL_ARTIFICIAL (var) = DECL_ARTIFICIAL (base);
+  DECL_IGNORED_P (var) = DECL_IGNORED_P (base);
 
   if (DECL_NAME (base) && !DECL_IGNORED_P (base))
     {
