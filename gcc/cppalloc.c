@@ -22,6 +22,8 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
 
+#include "config.h"
+
 static void
 memory_full ()
 {
