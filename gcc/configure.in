@@ -469,7 +469,7 @@ gcc_AC_C_COMPILE_ENDIAN
 gcc_AC_C_FLOAT_FORMAT
 
 # See if GNAT has been installed
-AC_CHECK_PROG(have_gnat, gnatbind, yes, no)
+gcc_AC_PROG_GNAT
 
 # See if we have the mktemp command.
 AC_CHECK_PROG(have_mktemp_command, mktemp, yes, no)

@@ -46,7 +46,7 @@ shext  =
 
 # Extra flags to pass to recursive makes.
 BOOT_ADAFLAGS= $(ADAFLAGS)
-ADAFLAGS= -gnatpg -gnata
+ADAFLAGS= -W -Wall -gnatpg -gnata
 GNATLIBFLAGS= -gnatpg
 GNATLIBCFLAGS= -g -O2
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
@@ -54,6 +54,7 @@ ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 THREAD_KIND=native
 GNATBIND = gnatbind
 ADA_FLAGS_TO_PASS = \
+	"ADA_CFLAGS=$(CFLAGS)" \
 	"ADA_FOR_BUILD=$(ADA_FOR_BUILD)" \
 	"ADA_INCLUDE_DIR=$(ADA_INCLUDE_DIR)" \
 	"ADA_RTL_OBJ_DIR=$(ADA_RTL_OBJ_DIR)" \
@@ -70,7 +71,7 @@ Ada ada: gnat1$(exeext) gnatbind$(exeext)
 
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.
-gnat1$(exeext): prefix.o $(LIBDEPS) $(BACKEND) force
+gnat1$(exeext): prefix.o attribs.o $(LIBDEPS) $(BACKEND) force
 	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
 		../gnat1$(exeext)
 
@@ -155,16 +156,20 @@ cross-gnattools: force
 	   gnatprep$(exeext) gnatpsta$(exeext) gnatpsys$(exeext) \
 	   gnatxref$(exeext) gnatfind$(exeext) $(EXTRA_GNATTOOLS)
 
+# use target-gcc
 gnatlib: force
 	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
+	   CC="../xgcc -B../" ADAC="../xgcc -B../" STAGE_PREFIX=../ \
 	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
 	   THREAD_KIND="$(THREAD_KIND)" \
 	   gnatlib
 
+# use target-gcc
 gnatlib-shared: force
 	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
+	   CC="../xgcc -B../" ADAC="../xgcc -B../" STAGE_PREFIX=../ \
 	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	   GNATLIBLDFLAGS="$(GNATLIBLDFLAGS)" \

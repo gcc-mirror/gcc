@@ -308,6 +308,57 @@ test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 AC_SUBST(INSTALL_DATA)dnl
 ])
 
+dnl Test for GNAT.
+dnl We require the gnatbind program, and a compiler driver that
+dnl understands Ada.  The user may set the driver name explicitly
+dnl with ADAC; also, the user's CC setting is tried.  Failing that,
+dnl we try gcc and cc, then a sampling of names known to be used for
+dnl the Ada driver on various systems.
+dnl
+dnl Sets the shell variable have_gnat to yes or no as appropriate, and
+dnl substitutes GNATBIND and ADAC.
+AC_DEFUN([gcc_AC_PROG_GNAT],
+[AC_REQUIRE([AC_CHECK_TOOL_PREFIX])
+AC_CHECK_TOOL(GNATBIND, gnatbind, no)
+AC_CACHE_CHECK([for compiler driver that understands Ada],
+		 gcc_cv_prog_adac,
+[cat >conftest.adb <<EOF
+procedure conftest is begin null; end conftest;
+EOF
+gcc_cv_prog_adac=no
+# Have to do ac_tool_prefix and user overrides by hand.
+user_adac=$ADAC
+user_cc=$CC
+for cand in ${ac_tool_prefix}$user_adac	$user_adac	\
+	    ${ac_tool_prefix}$user_cc	$user_cc	\
+	    ${ac_tool_prefix}gcc	gcc		\
+	    ${ac_tool_prefix}cc		cc		\
+	    ${ac_tool_prefix}gnatgcc	gnatgcc		\
+	    ${ac_tool_prefix}gnatcc	gnatcc		\
+	    ${ac_tool_prefix}adagcc	adagcc		\
+	    ${ac_tool_prefix}adacc	adacc		; do
+  # There is a bug in all released versions of GCC which causes the
+  # driver to exit successfully when the appropriate language module
+  # has not been installed.  This is fixed in 2.95.4, 3.0.2, and 3.1.
+  # Therefore we must check for the error message as well as an
+  # unsuccessful exit.
+  errors=`$cand -c conftest.adb 2>&1 || echo failure`
+  if test x"$errors" = x; then
+    gcc_cv_prog_adac=$cand
+    break
+  fi
+done
+rm -f conftest.*])
+ADAC=$gcc_cv_prog_adac
+AC_SUBST(ADAC)
+
+if test x$GNATBIND != xno && test x$ADAC != xno; then
+  have_gnat=yes
+else
+  have_gnat=no
+fi
+])
+
 #serial 1
 dnl This test replaces the one in autoconf.
 dnl Currently this macro should have the same name as the autoconf macro

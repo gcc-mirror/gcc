@@ -15,4 +15,4 @@ CRTSTUFF_T_CFLAGS_S = -fPIC
 # Compile libgcc2.a as PIC.
 TARGET_LIBGCC2_CFLAGS = -fPIC -DELF=1 -DLINUX=1
 
-ADA_CFLAGS=-mdisable-indexing
+T_ADAFLAGS=-mdisable-indexing

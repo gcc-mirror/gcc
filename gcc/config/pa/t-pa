@@ -1,4 +1,4 @@
-ADA_CFLAGS=-mdisable-indexing
+T_ADAFLAGS=-mdisable-indexing
 LIB2FUNCS_EXTRA=lib2funcs.asm quadlib.c
 
 lib2funcs.asm: $(srcdir)/config/pa/lib2funcs.asm
