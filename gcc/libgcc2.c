@@ -1097,7 +1097,7 @@ asm ("___builtin_saveregs:");
 	asm ("	bri	%r1");		/* delayed return */
 	asm ("	st.l	%r28,12(%r16)"); /* pointer to overflow args */
 
-#else /* not __SVR4__ */
+#else /* not __svr4__ */
 	asm ("	.text");
 	asm ("	.align	4");
 
@@ -1135,7 +1135,7 @@ asm ("___builtin_saveregs:");
 	asm ("	mov	r30,sp");
 				/* recover stack and pass address to start 
 				   of data.  */
-#endif /* not __SVR4__ */
+#endif /* not __svr4__ */
 #else /* not __i860__ */
 #ifdef __sparc__
 	asm (".global __builtin_saveregs");
