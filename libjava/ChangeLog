@@ -1,3 +1,9 @@
+2003-02-25  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/MappedByteFileBuffer.java,
+	gnu/java/nio/natMappedByteFileBuffer.cc:
+	New files, both are not compiled yet to get not noncompiling CVS.
+
 2003-02-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/prefs/AbstractPreferences.java (isUserNode):
