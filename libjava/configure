@@ -4386,6 +4386,10 @@ EOF
 #define HAVE_LOCALTIME_R 1
 EOF
 
+   cat >> confdefs.h <<\EOF
+#define HAVE_USLEEP_DECL 1
+EOF
+
       cat >> confdefs.h <<\EOF
 #define HAVE_PTHREAD_MUTEXATTR_INIT 1
 EOF
