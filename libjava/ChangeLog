@@ -1,3 +1,8 @@
+2004-09-12  Tom Tromey  <tromey@redhat.com>
+
+	* javax/naming/CompoundName.java (CompoundName): Don't check for
+	separator in "flat" case.
+
 2004-09-12  Michael Koch  <konqueror@gmx.de>
 
 	* libltdl/configure.ac: Fixed AM_INIT_AUTOMAKE usage and replaces
