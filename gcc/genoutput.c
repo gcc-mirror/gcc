@@ -242,7 +242,7 @@ output_epilogue ()
     int offset = 0;
     int next;
     char * last_name = 0;
-    char * next_name;
+    char * next_name = 0;
     register struct data *n;
 
     for (n = insn_data, next = 1; n; n = n->next, next++)
