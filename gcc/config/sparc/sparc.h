@@ -569,6 +569,13 @@ extern char leaf_reg_backmap[];
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN) \
   (flag_pic && pic_address_needs_scratch (IN) ? GENERAL_REGS : NO_REGS)
 
+/* On SPARC it is not possible to directly move data between 
+   GENERAL_REGS and FP_REGS.  */
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)  \
+  ((CLASS1 == FP_REGS && CLASS2 == GENERAL_REGS)	\
+   || (CLASS1 == GENERAL_REGS && CLASS2 == FP_REGS))
+	
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On SPARC, this is the size of MODE in words.  */
