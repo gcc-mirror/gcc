@@ -1,3 +1,14 @@
+2002-09-17  Nick Clifton  <nickc@redhat.com>
+
+	* machmode.def (V1DImode): New mode.  A single element vector.
+	* tree.h (TI_UV1DI_TYPE, TI_V1DI_TYPE): New tree_index enums.
+	(unsigned_V1DI_type_node, V1D1_type_node): New type nodes.
+	* tree.c (build_common_tree_nodes_2): Build
+	unsigned_V1DI_type_node and V1D1_type_node.
+	* c-common.c (c_common_type_for_mode): Return
+	unsigned_V1DI_type_node or V1D1_type_node for V1DImode.
+	* rtl.c (class_narrowest_): Start integer vector nodes with V1DImode.
+
 Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* doc/objc.texi (Constant string objects): Extended documentation
