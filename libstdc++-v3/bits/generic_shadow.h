@@ -51,7 +51,9 @@
   // Expose global C names, including non-standard ones, but shadow
   // some names and types with the std:: C++ version.
 
-  using namespace ::_C_legacy::_C_Shadow;
+  using namespace ::_C_legacy::_C_shadow;
   
 #endif /* _IN_C_LEGACY_ */
     
+
+
