@@ -1,3 +1,10 @@
+1999-06-23  Nick Clifton  <nickc@cygnus.com>
+
+	* compile/dll.c: New test case.  Check that dll attributes
+	compile.
+	* compile/dll.x: Only support the dll.c test on	ports that
+	use the COFF/PE file format.
+
 1999-05-25  Nick Clifton  <nickc@cygnus.com>
 
 	* execute/bf-sign-2.c: Explicitly declare signed bitfields as
