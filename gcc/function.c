@@ -5234,18 +5234,16 @@ expand_function_end (filename, line, end_bindings)
       emit_insns_before (seq, tail_recursion_reentry);
     }
 
-#if 0  /* I think unused parms are legitimate enough.  */
-  /* Warn about unused parms.  */
-  if (warn_unused)
+  /* Warn about unused parms if extra warnings were specified.  */
+  if (warn_unused && extra_warnings)
     {
-      rtx decl;
+      tree decl;
 
       for (decl = DECL_ARGUMENTS (current_function_decl);
 	   decl; decl = TREE_CHAIN (decl))
-	if (! TREE_USED (decl) && TREE_CODE (decl) == VAR_DECL)
+	if (! TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL)
 	  warning_with_decl (decl, "unused parameter `%s'");
     }
-#endif
 
   /* Delete handlers for nonlocal gotos if nothing uses them.  */
   if (nonlocal_goto_handler_slot != 0 && !current_function_has_nonlocal_label)
