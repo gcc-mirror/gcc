@@ -1,3 +1,31 @@
+2005-03-18  2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m32r/m32r-protos.h: Remove the prototypes for
+	call_address_operand, symbolic_operand, seth_add3_operand,
+	cmp_int16_operand, uint16_operand, reg_or_int16_operand,
+	reg_or_uint16_operand, reg_or_cmp_int16_operand,
+	two_insn_const_operand, move_src_operand,
+	move_double_src_operand, move_dest_operand,
+	eqne_comparison_operator, signed_comparison_operator,
+	large_insn_p, conditional_move_operand, carry_compare_operand,
+	m32r_block_immediate_operand, extend_operand,
+	reg_or_eq_int16_operand, int8_operand, and
+	reg_or_zero_operand.
+	* config/m32r/m32r.c (call_address_operand, symbolic_operand,
+	seth_add3_operand, int8_operand, cmp_int16_operand,
+	uint16_operand, reg_or_int16_operand, reg_or_uint16_operand,
+	reg_or_eq_int16_operand, reg_or_cmp_int16_operand,
+	reg_or_zero_operand, two_insn_const_operand, move_src_operand,
+	move_double_src_operand, move_dest_operand,
+	eqne_comparison_operator, signed_comparison_operator,
+	extend_operand, small_insn_p, large_insn_p,
+	conditional_move_operand, carry_compare_operand,
+	m32r_block_immediate_operand): Move to predicates.md.
+	(MAX_MOVE_BYTES): Move to m32r.h.
+	* config/m32r/m32r.h (PREDICATE_CODES): Remove.
+	* config/m32r/m32r.md: Include predicates.md.
+	* config/m32r/predicates.md: New.
+
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* hooks.c, hooks.h, intl.c, opts.h, prefix.c, tree-gimple.c,

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, Renesas M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
-   Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+   2005 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1740,38 +1740,9 @@ enum m32r_function_type
 
 #define M32R_INTERRUPT_P(TYPE) ((TYPE) == M32R_FUNCTION_INTERRUPT)
 
-/* Define this if you have defined special-purpose predicates in the
-   file `MACHINE.c'.  This macro is called within an initializer of an
-   array of structures.  The first field in the structure is the name
-   of a predicate and the second field is an array of rtl codes.  For
-   each predicate, list all rtl codes that can be in expressions
-   matched by the predicate.  The list should have a trailing comma.  */
-
-#define PREDICATE_CODES							\
-{ "reg_or_zero_operand",        { REG, SUBREG, CONST_INT }},            \
-{ "conditional_move_operand",	{ REG, SUBREG, CONST_INT }},		\
-{ "carry_compare_operand",	{ EQ, NE }},				\
-{ "eqne_comparison_operator",	{ EQ, NE }},				\
-{ "signed_comparison_operator", { EQ, NE, LT, LE, GT, GE }},		\
-{ "move_dest_operand",		{ REG, SUBREG, MEM }},			\
-{ "move_src_operand",		{ REG, SUBREG, MEM, CONST_INT,		\
-				  CONST_DOUBLE, LABEL_REF, CONST,	\
-				  SYMBOL_REF }},			\
-{ "move_double_src_operand",	{ REG, SUBREG, MEM, CONST_INT,		\
-				  CONST_DOUBLE }},			\
-{ "two_insn_const_operand",	{ CONST_INT }},				\
-{ "symbolic_operand",		{ SYMBOL_REF, LABEL_REF, CONST }},	\
-{ "int8_operand",		{ CONST_INT }},				\
-{ "uint16_operand",		{ CONST_INT }},				\
-{ "reg_or_int16_operand",	{ REG, SUBREG, CONST_INT }},		\
-{ "reg_or_uint16_operand",	{ REG, SUBREG, CONST_INT }},		\
-{ "reg_or_cmp_int16_operand",	{ REG, SUBREG, CONST_INT }},		\
-{ "reg_or_eq_int16_operand",	{ REG, SUBREG, CONST_INT }},		\
-{ "cmp_int16_operand",		{ CONST_INT }},				\
-{ "call_address_operand",	{ SYMBOL_REF, LABEL_REF, CONST }},	\
-{ "extend_operand",		{ REG, SUBREG, MEM }},			\
-{ "small_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},	\
-{ "m32r_block_immediate_operand",{ CONST_INT }},			\
-{ "large_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},	\
-{ "seth_add3_operand",		{ SYMBOL_REF, LABEL_REF, CONST }},
-
+/* The maximum number of bytes to copy using pairs of load/store instructions.
+   If a block is larger than this then a loop will be generated to copy
+   MAX_MOVE_BYTES chunks at a time.  The value of 32 is a semi-arbitrary choice.
+   A customer uses Dhrystome as their benchmark, and Dhrystone has a 31 byte
+   string copy in it.  */
+#define MAX_MOVE_BYTES 32
