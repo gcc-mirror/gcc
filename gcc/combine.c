@@ -6083,6 +6083,14 @@ significant_bits (x, mode)
       break;
 
     case SUBREG:
+      /* If this is a SUBREG formed for a promoted variable that has
+	 been zero-extended, we know that at least the high-order bits
+	 are zero, though others might be too.  */
+
+      if (SUBREG_PROMOTED_VAR_P (x) && SUBREG_PROMOTED_UNSIGNED_P (x))
+	significant = (GET_MODE_MASK (GET_MODE (x))
+		       & significant_bits (SUBREG_REG (x), GET_MODE (x)));
+
       /* If the inner mode is a single word for both the host and target
 	 machines, we can compute this from which bits of the inner
 	 object are known significant.  */
@@ -6220,6 +6228,14 @@ num_sign_bit_copies (x, mode)
       return (sig == 0 ? bitwidth : bitwidth - floor_log2 (sig) - 1);
 
     case SUBREG:
+      /* If this is a SUBREG for a promoted object that is sign-extended
+	 and we are looking at it in a wider mode, we know that at least the
+	 high-order bits are known to be sign bit copies.  */
+
+      if (SUBREG_PROMOTED_VAR_P (x) && ! SUBREG_PROMOTED_UNSIGNED_P (x))
+	return (GET_MODE_BITSIZE (mode) - GET_MODE_BITSIZE (GET_MODE (x))
+		+ num_sign_bit_copies (SUBREG_REG (x), GET_MODE (x)));
+
       /* For a smaller object, just ignore the high bits. */
       if (bitwidth <= GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))))
 	{
