@@ -1,3 +1,7 @@
+2000-10-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/20001017-1.c: New test.
+
 2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-xopen-1.c: Update comments; adjust for checking
