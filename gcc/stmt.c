@@ -2680,7 +2680,8 @@ expand_return (retval)
      copying a BLKmode value into registers.  We could put this code in a
      more general area (for use by everyone instead of just function
      call/return), but until this feature is generally usable it is kept here
-     (and in expand_call).  */
+     (and in expand_call).  The value must go into a pseudo in case there
+     are cleanups that will clobber the real return register.  */
 
   if (retval_rhs != 0
       && TYPE_MODE (TREE_TYPE (retval_rhs)) == BLKmode
@@ -2691,7 +2692,7 @@ expand_return (retval)
       int bytes = int_size_in_bytes (TREE_TYPE (retval_rhs));
       int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       rtx *result_pseudos = (rtx *) alloca (sizeof (rtx) * n_regs);
-      rtx result_reg = DECL_RTL (DECL_RESULT (current_function_decl));
+      rtx result_reg;
       rtx result_val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
       enum machine_mode tmpmode;
 
@@ -2733,13 +2734,6 @@ expand_return (retval)
 	    }
 	}
 
-      /* Now that the value is in pseudos, copy it to the result reg(s).  */
-      emit_queue ();
-      free_temp_slots ();
-      for (i = 0; i < n_regs; i++)
-	emit_move_insn (gen_rtx (REG, word_mode, REGNO (result_reg) + i),
-			result_pseudos[i]);
-
       /* Find the smallest integer mode large enough to hold the
 	 entire structure and use that mode instead of BLKmode
 	 on the USE insn for the return register.   */
@@ -2747,17 +2741,25 @@ expand_return (retval)
       for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	   tmpmode != MAX_MACHINE_MODE;
 	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
-      {
-	/* Have we found a large enough mode?  */
-	if (GET_MODE_SIZE (tmpmode) >= bytes)
-	  break;
-      }
+	{
+	  /* Have we found a large enough mode?  */
+	  if (GET_MODE_SIZE (tmpmode) >= bytes)
+	    break;
+	}
 
       /* No suitable mode found.  */
       if (tmpmode == MAX_MACHINE_MODE)
-      abort ();
+	abort ();
 
-      PUT_MODE (result_reg, tmpmode);
+      result_reg = gen_reg_rtx (tmpmode);
+      PUT_MODE (DECL_RTL (DECL_RESULT (current_function_decl)), tmpmode);
+
+      /* Now that the value is in pseudos, copy it to the result reg(s).  */
+      emit_queue ();
+      free_temp_slots ();
+      for (i = 0; i < n_regs; i++)
+	emit_move_insn (gen_rtx (REG, word_mode, REGNO (result_reg) + i),
+			result_pseudos[i]);
 
       expand_value_return (result_reg);
     }
