@@ -42,6 +42,7 @@
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
+#include "langhooks.h"
 
 static void d30v_print_operand_memory_reference PARAMS ((FILE *, rtx));
 static void d30v_build_long_insn PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
@@ -2202,7 +2203,7 @@ d30v_build_va_list ()
   tree f_arg_ptr, f_arg_num, record, type_decl;
   tree int_type_node;
 
-  record = make_lang_type (RECORD_TYPE);
+  record = (*lang_hooks.types.make_type) (RECORD_TYPE);
   type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
   int_type_node = make_signed_type (INT_TYPE_SIZE);
 

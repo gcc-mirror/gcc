@@ -2068,8 +2068,6 @@ extern size_t tree_size			PARAMS ((tree));
    to zero except for a few of the common fields.  */
 
 extern tree make_node			PARAMS ((enum tree_code));
-extern tree make_lang_type		PARAMS ((enum tree_code));
-extern tree (*make_lang_type_fn)		PARAMS ((enum tree_code));
 
 /* Make a copy of a node, with all the same contents except
    for TREE_PERMANENT.  (The copy is permanent

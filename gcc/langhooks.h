@@ -67,6 +67,13 @@ struct lang_hooks_for_tree_dump
   int (*type_quals) PARAMS ((tree));
 };
 
+/* Hooks related to types.  */
+
+struct lang_hooks_for_types
+{
+  tree (*make_type) PARAMS ((enum tree_code));
+};
+
 /* Language hooks related to decls and the symbol table.  */
 
 struct lang_hooks_for_decls
@@ -232,6 +239,8 @@ struct lang_hooks
   struct lang_hooks_for_tree_dump tree_dump;
 
   struct lang_hooks_for_decls decls;
+
+  struct lang_hooks_for_types types;
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */

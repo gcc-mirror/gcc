@@ -109,6 +109,9 @@ static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
 #undef LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN
 #define LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN cp_type_quals
 
+#undef LANG_HOOKS_MAKE_TYPE
+#define LANG_HOOKS_MAKE_TYPE cxx_make_type
+
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

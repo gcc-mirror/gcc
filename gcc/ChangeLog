@@ -1,3 +1,28 @@
+2002-03-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (except.o): Update.
+	* except.c: Include langhooks.h.
+	(init_eh): Use langhook.
+	* langhooks-def.h (LANG_HOOKS_MAKE_TYPE,
+	LANG_HOOKS_FOR_TYPES_INITIALIZER): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (lang_hooks_for_types): New.
+	(struct lang_hooks): Add it.
+	* tree.c (make_lang_type_fn, make_lang_type): Remove.
+	* tree.h (make_lang_type_fn, make_lang_type): Remove.
+config:
+	* alpha/alpha.c: Include langhooks.h.
+	(alpha_build_va_list): Use langhook.
+	* d30v/d30v.c: Include langhooks.h.
+	(d30v_build_va_list): Use langhook.
+	* i386/i386.c: Include langhooks.h.
+	(ix86_build_va_list): Use langhook.
+	* rs6000/rs6000.c (rs6000_build_va_list): Use langhook.
+	* s390/s390.c: Include langhooks.h.
+	(s390_build_va_list): Use langhook.
+	* stormy16/stormy16.c: Include langhooks.h.
+	(stormy16_build_va_list): Use langhook.
+
 2002-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/5964

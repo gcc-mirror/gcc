@@ -145,6 +145,13 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN \
 }
 
+/* Types hooks.  */
+#define LANG_HOOKS_MAKE_TYPE make_node
+
+#define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
+  LANG_HOOKS_MAKE_TYPE \
+}
+
 /* Declaration hooks.  */
 #define LANG_HOOKS_PUSHLEVEL	pushlevel
 #define LANG_HOOKS_POPLEVEL	poplevel
@@ -195,7 +202,8 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_SET_YYDEBUG, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER, \
   LANG_HOOKS_TREE_DUMP_INITIALIZER, \
-  LANG_HOOKS_DECLS \
+  LANG_HOOKS_DECLS, \
+  LANG_HOOKS_FOR_TYPES_INITIALIZER \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */

@@ -2980,7 +2980,7 @@ rs6000_build_va_list ()
   if (DEFAULT_ABI != ABI_V4)
     return build_pointer_type (char_type_node);
 
-  record = make_lang_type (RECORD_TYPE);
+  record = (*lang_hooks.types.make_type) (RECORD_TYPE);
   type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
   f_gpr = build_decl (FIELD_DECL, get_identifier ("gpr"), 
