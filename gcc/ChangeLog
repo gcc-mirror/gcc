@@ -1,3 +1,7 @@
+2004-04-14  James E Wilson  <wilson@specifixinc.com>
+
+	* Makefile.in (fixinc.sh): Set WARN_CFLAGS to empty string.
+
 2004-04-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* libada-mk.in: New file.
