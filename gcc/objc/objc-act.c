@@ -3539,10 +3539,6 @@ error_with_ivar (message, decl, rawdecl)
      tree decl;
      tree rawdecl;
 {
-  diagnostic_count_diagnostic (global_dc, DK_ERROR);
-
-  diagnostic_report_current_function (global_dc);
-
   error ("%H%s `%s'", &DECL_SOURCE_LOCATION (decl),
          message, gen_declaration (rawdecl, errbuf));
 
@@ -7108,11 +7104,6 @@ warn_with_method (message, mtype, method)
      int mtype;
      tree method;
 {
-  if (!diagnostic_count_diagnostic (global_dc, DK_WARNING))
-    return;
-
-  diagnostic_report_current_function (global_dc);
-
   /* Add a readable method name to the warning.  */
   warning ("%H%s `%c%s'", &DECL_SOURCE_LOCATION (method),
            message, mtype, gen_method_decl (method, errbuf));

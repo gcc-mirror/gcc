@@ -203,11 +203,12 @@ ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
       if ((ffebad_severity_ != FFEBAD_severityPEDANTIC)
 	  || !flag_pedantic_errors)
 	{
-	  if (!diagnostic_count_diagnostic (global_dc, DK_WARNING))
+	  if (!diagnostic_report_warnings_p ())
 	    {			/* User wants no warnings. */
 	      ffebad_is_temp_inhibited_ = TRUE;
 	      return FALSE;
 	    }
+	  diagnostic_kind_count (global_dc, DK_WARNING)++;
 	  break;
 	}
       /* Fall through (PEDANTIC && flag_pedantic_errors).  */
@@ -215,7 +216,7 @@ ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
     case FFEBAD_severityWEIRD:
     case FFEBAD_severitySEVERE:
     case FFEBAD_severityDISASTER:
-      diagnostic_count_diagnostic (global_dc, DK_ERROR);
+      diagnostic_kind_count (global_dc, DK_ERROR)++;
       break;
 
     default:
