@@ -1,3 +1,8 @@
+2000-10-08  Philipp Thomas  <pthomas@suse.de>
+
+	* Makefile.in (piclist): Fix sed command to also accept
+	numbers in filenames.
+
 2000-10-07  Richard Henderson  <rth@cygnus.com>
 
 	* del_op.cc, del_opnt.cc, del_opv.cc, del_opvnt.cc: New files.

@@ -89,7 +89,7 @@ piclist: stdlist
 	-rm -f tlist
 	cp stdlist tlist
 	if [ x"$(PICFLAG)" != x ]; then \
-	  sed 's,\([A-Za-z_]*\.o\),pic/\1,g' tlist > tlist2 ; \
+	  sed 's,\([A-Za-z_0-9]*\.o\),pic/\1,g' tlist > tlist2 ; \
 	  mv tlist2 tlist ; \
 	else true ; fi
 	mv tlist piclist
