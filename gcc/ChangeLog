@@ -1,3 +1,10 @@
+Sat May 23 22:31:17 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* emit_rtl.c (double_mode): New variable.  
+	(init_emit_once): Set and use it.
+	* real.c (ereal_atof, real_value_truncate): Handle double_mode not
+	being DFmode for C4x.
+	
 Sat May 23 22:19:55 1998  Mike Stump  <mrs@wrs.com>
 
 	* expr.c (expand_builtin_setjmp): Handle BUILTIN_SETJMP_FRAME_VALUE.
