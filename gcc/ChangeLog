@@ -1,7 +1,10 @@
 2001-08-05  Bernd Schmidt  <bernds@redhat.com>
 
-        * doloop.c (doloop_modify_runtime): Properly compute number of
+	* doloop.c (doloop_modify_runtime): Properly compute number of
 	iterations if loop was unrolled.
+
+	* alias.c (rtx_equal_for_memref_p): VALUEs are only identical
+	if their CSELIB_VAL_PTRs are.
 
 2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
