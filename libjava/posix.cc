@@ -15,6 +15,7 @@ details.  */
 #include <stdlib.h>
 #include <errno.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include <jvm.h>
 #include <java/lang/Thread.h>
