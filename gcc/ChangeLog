@@ -1,3 +1,15 @@
+2001-05-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("*logicalsi3_silshr16"): Use '?' instead
+	of '!' for the 'D' alternative ('!' is too strong).
+	("*logicalsi3_silshl16"): Likewise.
+	("movstricthi"): Accept 'A' when 'd' constraint, remove spurious '+'.
+	("movstrictsi"): Remove spurious '+'.
+	("movstrictqi"): Don't accept 'A' and remove spurious '+'.
+	("tstqi_1", "*lshrqi3_const1"): Put 'm' constraint before 'd'.
+	("subqi3"): Disparage with '!' the 'x' and 'y' registers to avoid
+	a reload to them.
+
 2001-05-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* calls.c (store_one_arg): Don't divide align by BITS_PER_UNIT.
