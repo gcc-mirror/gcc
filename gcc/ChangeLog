@@ -1,3 +1,9 @@
+2003-03-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*insv_si_8_8): New.
+	(*insv_si_8_8_lshiftrt_8): Likewise.
+	(a peephole2): Likewise.
+
 2003-03-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi: Add Eric Botcazou and Roger Sayle.
