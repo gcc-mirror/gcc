@@ -1021,7 +1021,7 @@ override_options ()
       if (flag_asynchronous_unwind_tables == 2)
 	flag_asynchronous_unwind_tables = 0;
       if (flag_pcc_struct_return == 2)
-	flag_pcc_struct_return = 1;
+	flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
     }
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
