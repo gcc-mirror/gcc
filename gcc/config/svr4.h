@@ -63,6 +63,7 @@ Boston, MA 02111-1307, USA.
    || (CHAR) == 'L' \
    || (CHAR) == 'A' \
    || (CHAR) == 'h' \
+   || (CHAR) == 'x' \
    || (CHAR) == 'z')
 
 /* This defines which multi-letter switches take arguments.  On svr4,
