@@ -3343,6 +3343,7 @@ extern void reinit_search_statistics		PROTO((void));
 extern tree current_scope			PROTO((void));
 extern tree lookup_conversions			PROTO((tree));
 extern tree binfo_for_vtable			PROTO((tree));
+extern int  binfo_from_vbase			PROTO((tree));
 extern tree dfs_walk                            PROTO((tree, 
 						       tree (*)(tree, void *),
 						       tree (*) (tree, void *),

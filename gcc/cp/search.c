@@ -3315,3 +3315,17 @@ binfo_for_vtable (var)
   return dfs_walk_real (TYPE_BINFO (type),
 			0, dfs_bfv_helper, dfs_bfv_queue_p, &bfvi);
 }
+
+/* Returns 1 iff BINFO is from a direct or indirect virtual base.  */
+
+int
+binfo_from_vbase (binfo)
+     tree binfo;
+{
+  for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
+    {
+      if (TREE_VIA_VIRTUAL (binfo))
+	return 1;
+    }
+  return 0;
+}

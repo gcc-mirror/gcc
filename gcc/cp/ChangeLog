@@ -1,3 +1,18 @@
+1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lookup_name_real): Set the complain flag if we're
+	looking for a namespace member.
+
+	* lex.c (real_yylex): We can have a number with no digits.
+
+	* cvt.c (cp_convert_to_pointer): Don't force pmf conversions.
+
+	* search.c (binfo_from_vbase): New fn.
+	* cp-tree.h: Declare it.
+	* cvt.c (cp_convert_to_pointer): Use it to diagnose conversion
+	from pointer to member of virtual base.  
+	* typeck.c (get_delta_difference): Likewise.
+
 1999-08-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* pt.c (tsubst): Use build_index_type to build in-template array
