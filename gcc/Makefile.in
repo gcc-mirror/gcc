@@ -1884,7 +1884,7 @@ clean: mostlyclean bytecode.clean lang.clean
 # but the spec for `make clean' requires it.
 # Using unprotoize.c is not quite right in the first place, 
 # but what better way is there?
-	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready
+	-rm -f libgcc.a libgcc1.a libgcc1-asm.a libgcc2.a libgcc2.ready
 	-rm -f libgcc1.null $(LIB2FUNCS_EXTRA)
 	-rm -f *.dvi
 	-rm -f */*.dvi
