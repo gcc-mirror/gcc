@@ -1,3 +1,14 @@
+2000-09-07  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR gcj/307:
+	* parse.y (patch_binop): Use JNUMERIC_TYPE_P, not
+	JPRIMITIVE_TYPE_P, for arithmetic operators.
+	(patch_method_invocation): Indentation fix.
+	(try_builtin_assignconv): Handle boolean specially.  Fixed typo.
+	(valid_builtin_assignconv_identity_widening_p): Handle boolean.
+	(do_unary_numeric_promotion): Cleaned up code.
+	(valid_cast_to_p): Handle boolean correctly.
+
 2000-09-27  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.c (java_read_unicode): Reset bs_count when finished with
