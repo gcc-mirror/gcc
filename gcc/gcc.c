@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2704,6 +2704,7 @@ process_command (argc, argv)
 		  n_switches++;
 		  break;
 		}
+	      goto normal_switch;
 
 	    case 'c':
 	      have_c = 1;
@@ -2712,10 +2713,10 @@ process_command (argc, argv)
 
 	    case 'o':
 	      have_o = 1;
-
-	      /* ... fall through ... */
+	      goto normal_switch;
 
 	    default:
+	    normal_switch:
 	      n_switches++;
 
 	      if (SWITCH_TAKES_ARG (c) > (p[1] != 0))
