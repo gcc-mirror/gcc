@@ -1142,11 +1142,17 @@ reload (first, global, dumpfile)
 		      new_basic_block_needs = 1;
 		    }
 
+
+		  mode = reload_inmode[i];
+		  if (GET_MODE_SIZE (reload_outmode[i]) > GET_MODE_SIZE (mode))
+		    mode = reload_outmode[i];
+		  size = CLASS_MAX_NREGS (class, mode);
+
 		  /* If this class doesn't want a group determine if
 		     we have a nongroup need or a regular need. */
 
 		  nongroup_need = 0;
-		  if (CLASS_MAX_NREGS (class, mode) == 1)
+		  if (size == 1)
 		    for (j = i + 1; j < n_reloads; j++)
 		      if (reloads_conflict (i, j)
 			  && reg_classes_intersect_p (class,
@@ -1234,10 +1240,6 @@ reload (first, global, dumpfile)
 		      break;
 		    }
 
-		  mode = reload_inmode[i];
-		  if (GET_MODE_SIZE (reload_outmode[i]) > GET_MODE_SIZE (mode))
-		    mode = reload_outmode[i];
-		  size = CLASS_MAX_NREGS (class, mode);
 		  if (size > 1)
 		    {
 		      enum machine_mode other_mode, allocate_mode;
