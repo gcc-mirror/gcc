@@ -1,3 +1,9 @@
+2002-12-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* cp-tree.h (make_unbound_class_template): Use tsubst_flags_t.
+	* decl.c (make_unbound_class_template): Adjust.  Check for tf_error.
+	* pt.c (tsubst) [OFFSET_TYPE]: Check for tf_error.
+
 2002-12-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Fix a typo.
