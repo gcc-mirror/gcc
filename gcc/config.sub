@@ -307,7 +307,6 @@ case $basic_machine in
 		basic_machine=m68k-hp
 		os=-hpux
 		;;
-	hp9k2[0-9][0-9] | hp9k31[0-9])
 		basic_machine=m68000-hp
 		;;
 	hp9k3[2-9][0-9])
@@ -662,7 +661,7 @@ case $os in
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
-	      | -cygwin32* | -pe* | -psos* | -moss* )
+	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* )
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-sunos5*)
