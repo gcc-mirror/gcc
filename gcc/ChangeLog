@@ -1,3 +1,16 @@
+Thu Oct  8 01:25:22 1998  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (find_basic_blocks): Calc upper bound for extra nops in
+	max_uids_for_flow.
+	(find_basic_blocks_1): Add a nop to the end of a basic block when
+	a trailing call insn does not have abnormal control flow.
+	* gcse.c (pre_transpout): New variable.
+	(alloc_pre_mem, free_pre_mem, dump_pre_data): Bookkeeping for it.
+	(compute_pre_transpout): Calculate it.
+	(compute_pre_ppinout): Use it to eliminate impossible placements
+	due to abnormal control flow through calls.
+	(compute_pre_data): Call compute_pre_transpout.
+
 Wed Oct  7 21:40:24 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sol2-sld-64.h (ASM_CPU_SPEC): Fix typo.
