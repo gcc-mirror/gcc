@@ -437,26 +437,26 @@ ___modsi3:
 	PUSHP	S1P
 
 	bsr	modnorm
-	bsr	divmodsi4
 #ifdef __H8300__
+	bsr	divmodsi4
 	mov	S0,A0
 	mov	S1,A1
 #else
+	bsr	___udivsi3
 	mov.l	er3,er0
 #endif
 	bra	exitdiv
 
+	;; H8/300H and H8S version of ___udivsi3 is defined later in
+	;; the file.
+#ifdef __H8300__
 	.global	___udivsi3
 ___udivsi3:
-#ifdef __H8300__
 	PUSHP	S2P
 	PUSHP	S0P
 	PUSHP	S1P
 	bsr	divmodsi4
 	bra	reti
-#else
-	bsr	divmodsi4
-	rts
 #endif
 
 	.global	___umodsi3
@@ -470,7 +470,7 @@ ___umodsi3:
 	mov	S1,A1
 	bra	reti
 #else
-	bsr	divmodsi4
+	bsr	___udivsi3
 	mov.l	er3,er0
 	rts
 #endif
@@ -481,7 +481,11 @@ ___divsi3:
 	PUSHP	S0P
 	PUSHP	S1P
 	jsr	divnorm
+#ifdef __H8300__
 	jsr	divmodsi4
+#else
+	bsr	___udivsi3
+#endif
 
 	; examine what the sign should be
 exitdiv:
@@ -592,7 +596,8 @@ setone:
 
 #else /* __H8300H__ */
 
-divmodsi4:
+	.global	___udivsi3
+___udivsi3:
 	mov.w	A1E,A1E		; denominator top word 0?
 	bne	DenHighNonZero
 
