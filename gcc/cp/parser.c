@@ -2230,7 +2230,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
 	error ("`%E' in class `%T' does not name a type",
 	       id, parser->scope);
       else
-	abort();
+	gcc_unreachable ();
     }
 }
 
@@ -3806,7 +3806,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	      = build_const_cast (type, expression);
 	    break;
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
       }
       break;
@@ -4177,7 +4177,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
     }
 
   /* We should never get here.  */
-  abort ();
+  gcc_unreachable ();
   return error_mark_node;
 }
 
@@ -4741,7 +4741,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       if (non_constant_p
@@ -14460,9 +14460,9 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
       return true;
 
     default:
-      abort ();
-      return false;
+      gcc_unreachable ();
     }
+  return false;
 }
 
 /* NUM_TEMPLATES were used in the current declaration.  If that is

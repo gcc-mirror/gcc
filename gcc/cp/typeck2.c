@@ -373,7 +373,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
       (*p_msg_at) ("`%D' has incomplete type", value);
       decl = 1;
     }
-retry:
+ retry:
   /* We must print an error message.  Be clever about what it says.  */
 
   switch (TREE_CODE (type))
@@ -423,7 +423,7 @@ retry:
       break;
     
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -509,7 +509,7 @@ split_nonconstant_init_1 (tree dest, tree init)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -568,9 +568,8 @@ store_init_value (tree decl, tree init)
 
   if (IS_AGGR_TYPE (type))
     {
-      if (! TYPE_HAS_TRIVIAL_INIT_REF (type)
-	  && TREE_CODE (init) != CONSTRUCTOR)
-	abort ();
+      gcc_assert (TYPE_HAS_TRIVIAL_INIT_REF (type)
+		  || TREE_CODE (init) == CONSTRUCTOR);
 
       if (TREE_CODE (init) == TREE_LIST)
 	{
@@ -1107,8 +1106,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 
 	  next1 = digest_init (TREE_TYPE (field),
 			       TREE_VALUE (tail), &tail1);
-	  if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
-	    abort ();
+	  gcc_assert (!tail1 || TREE_CODE (tail1) == TREE_LIST);
 	  tail = tail1;
 	}
       else

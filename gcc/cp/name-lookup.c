@@ -457,10 +457,11 @@ pop_binding (tree id, tree decl)
      binding for this identifier.  Remove that binding.  */
   if (binding->value == decl)
     binding->value = NULL_TREE;
-  else if (binding->type == decl)
-    binding->type = NULL_TREE;
   else
-    abort ();
+    {
+      gcc_assert (binding->type == decl);
+      binding->type = NULL_TREE;
+    }
 
   if (!binding->value && !binding->type)
     {
@@ -745,10 +746,7 @@ pushdecl (tree x)
 	    }
 	  else if (TREE_CODE (t) == PARM_DECL)
 	    {
-	      if (DECL_CONTEXT (t) == NULL_TREE)
-		/* This is probably caused by too many errors, but calling
-		   abort will say that if errors have occurred.  */
-		abort ();
+	      gcc_assert (DECL_CONTEXT (t));
 
 	      /* Check for duplicate params.  */
 	      if (duplicate_decls (x, t))
@@ -1759,15 +1757,12 @@ set_identifier_type_value_with_scope (tree id, tree decl, cxx_scope *b)
     {
       cxx_binding *binding =
 	binding_for_name (NAMESPACE_LEVEL (current_namespace), id);
-      if (decl)
-	{
-	  if (binding->value)
-	    supplement_binding (binding, decl);
-	  else
-	    binding->value = decl;
-	}
+      gcc_assert (decl);
+      if (binding->value)
+	supplement_binding (binding, decl);
       else
-	abort ();
+	binding->value = decl;
+      
       /* Store marker instead of real type.  */
       type = global_type_node;
     }
@@ -2098,7 +2093,7 @@ push_overloaded_decl (tree decl, int flags)
 	      }
 
 	  /* We should always find a previous binding in this case.  */
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       /* Install the new binding.  */
@@ -4476,11 +4471,10 @@ arg_assoc_type (struct arg_lookup *k, tree type)
     case TYPENAME_TYPE:
       return false;
     case LANG_TYPE:
-      if (type == unknown_type_node)
-	return false;
-      /* else fall through */
+      gcc_assert (type == unknown_type_node);
+      return false;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return false;
 }

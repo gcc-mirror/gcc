@@ -161,7 +161,7 @@ lookup_base_r (tree binfo, tree base, base_access access,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return found;

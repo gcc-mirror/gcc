@@ -1,5 +1,31 @@
 2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* name-lookup.c (pop_binding, pushdecl,
+	set_identifier_type_value_with_scope, push_overloaded_decl,
+	arg_assoc_type): Replace abort with gcc_assert or gcc_unreachable.
+	* parser.c (cp_parser_diagnose_invalid_type_name,
+	cp_parser_postfix_expression, cp_parser_unary_expression,
+	cp_parser_check_declarator_template_para): Likewise.
+	* pt.c (push_inline_template_parms_recursive,
+	check_explicit_specialization, convert_nontype_argument,
+	coerce_template_template_parms, uses_template_parms,
+	instantiate_class_template, tsubst_decl, tsubst, tsubst_copy,
+	tsubst_expr, instantiate_template,
+	maybe_adjust_types_for_deduction, type_unification_real,
+	resolve_overloaded_unification, template_decl_level,
+	type_dependent_expression_p): Likewise.
+	* search.c (lookup_base_r): Likewise.
+	* semantics.c (finish_stmt_expr, simplify_aggr_init_expr): Likewise.
+	* tree.c (lvalue_p_1, count_functions, cxx_printable_name,
+	verify_stmt_tree_r, get_type_decl, stabilize_call): Likewise.
+	* typeck.c (common_type, get_member_function_from_ptrfunc,
+	build_binary_op, build_unary_op, expand_ptrmemfunc_cst): Likewise.
+	* typeck2.c (cxx_incomplete_type_diagnostic,
+	split_nonconstant_init_1, store_init_value,
+	process_init_constructor): Likewise.
+
+2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* call.c (check_dtor_name): Replace abort with gcc_assert or
 	gcc_unreachable.
 	(build_call, add_builtin_candidate, build_new_op,

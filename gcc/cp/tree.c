@@ -126,7 +126,7 @@ lvalue_p_1 (tree ref,
 
       /* A currently unresolved scope ref.  */
     case SCOPE_REF:
-      abort ();
+      gcc_unreachable ();
     case MAX_EXPR:
     case MIN_EXPR:
       op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
@@ -796,17 +796,14 @@ int
 count_functions (tree t)
 {
   int i;
+  
   if (TREE_CODE (t) == FUNCTION_DECL)
     return 1;
-  else if (TREE_CODE (t) == OVERLOAD)
-    {
-      for (i = 0; t; t = OVL_CHAIN (t))
-	i++;
-      return i;
-    }
-
-  abort ();
-  return 0;
+  gcc_assert (TREE_CODE (t) == OVERLOAD);
+  
+  for (i = 0; t; t = OVL_CHAIN (t))
+    i++;
+  return i;
 }
 
 int
@@ -915,8 +912,7 @@ cxx_printable_name (tree decl, int v)
 	ring_counter += 1;
       if (ring_counter == PRINT_RING_SIZE)
 	ring_counter = 0;
-      if (decl_ring[ring_counter] == current_function_decl)
-	abort ();
+      gcc_assert (decl_ring[ring_counter] != current_function_decl);
     }
 
   if (print_ring[ring_counter])
@@ -1016,8 +1012,7 @@ verify_stmt_tree_r (tree* tp,
 
   /* If this statement is already present in the hash table, then
      there is a circularity in the statement tree.  */
-  if (htab_find (*statements, t))
-    abort ();
+  gcc_assert (!htab_find (*statements, t));
 
   slot = htab_find_slot (*statements, t, INSERT);
   *slot = t;
@@ -1371,13 +1366,8 @@ get_type_decl (tree t)
     return t;
   if (TYPE_P (t))
     return TYPE_STUB_DECL (t);
-  if (t == error_mark_node)
-    return t;
-
-  abort ();
-
-  /* Stop compiler from complaining control reaches end of non-void function.  */
-  return 0;
+  gcc_assert (t == error_mark_node);
+  return t;
 }
 
 /* Returns the namespace that contains DECL, whether directly or
@@ -2279,9 +2269,8 @@ stabilize_call (tree call, tree *initp)
   if (call == error_mark_node)
     return;
 
-  if (TREE_CODE (call) != CALL_EXPR
-      && TREE_CODE (call) != AGGR_INIT_EXPR)
-    abort ();
+  gcc_assert (TREE_CODE (call) == CALL_EXPR
+	      || TREE_CODE (call) == AGGR_INIT_EXPR);
 
   for (t = TREE_OPERAND (call, 1); t; t = TREE_CHAIN (t))
     if (TREE_SIDE_EFFECTS (TREE_VALUE (t)))
