@@ -24,6 +24,7 @@
 	javax/print/attribute/standard/JobPrioritySupported.java: New files.
 	* Makefile.am (javax_source_files): Added new files.
 	* Makefile.in: Regenerated.
+
 2004-01-06  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URLConnection.java
@@ -147,6 +148,28 @@
 	* gnu/java/net/protocol/http/Connection.java
 	(sendRequest): Dont encode output in default character encoding,
 	add correct version number to HTTP user agent string.
+
+2003-12-31  Graydon Hoare  <graydon@redhat.com>
+
+	* configure.in: Add --enable-gtk-cairo check.
+	* configure: Regenerate.
+	* Makefile.am: Conditionally link against cairo.
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Include PKG_CHECK_MODULES.
+	* aclocal.m4: Regenerate.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java (useGraphics2D): New method.
+	(getFontMetrics, getClasspathFontPeer):
+	* gnu/java/awt/peer/gtk/GtkCanvasPeer.java (getGraphics):
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (createImage):
+	* gnu/java/awt/peer/gtk/GtkContainerPeer.java (getGraphics):
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java (getGraphics):
+	Switch behavior depending on GtkToolkit.useGraphics2D().   
+	* gnu/java/awt/peer/gtk/GtkFontPeer.java: Extend ClasspathFontPeer.
+	* java/awt/Font.java: Switch to peer model.
+	* jni/gtk-peer/gtkcairopeer.h: Definitions of cairo stuff.
+	* jni/gtk-peer/gdkfont.h: Include gtkcairopeer.h.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c: Include gtkcairopeer.h.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetrics.c: Un-include gtkpeer.h. 
 
 2003-12-31  Guilhem Lavaux  <guilhem@kaffe.org>
 
