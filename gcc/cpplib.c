@@ -1186,15 +1186,11 @@ do_if (pfile)
 {
   const cpp_hashnode *cmacro = 0;
   int value = 0;
-  int save_only_seen_white = pfile->only_seen_white;
 
   if (! pfile->skipping)
     {
       cmacro = detect_if_not_defined (pfile);  
-
-      pfile->only_seen_white = 0;
       value = _cpp_parse_expr (pfile);
-      pfile->only_seen_white = save_only_seen_white;
     }
   push_conditional (pfile, value == 0, T_IF, cmacro);
   return 0;
