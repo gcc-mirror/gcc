@@ -748,21 +748,26 @@ emit_stack_save (save_level, psave, after)
 	abort ();
     }
 
-  if (sa != 0)
-    sa = validize_mem (sa);
-
   if (after)
     {
       rtx seq;
 
       start_sequence ();
+      /* We must validize inside the sequence, to ensure that any instructions
+	 created by the validize call also get moved to the right place.  */
+      if (sa != 0)
+	sa = validize_mem (sa);
       emit_insn (fcn (sa, stack_pointer_rtx));
       seq = gen_sequence ();
       end_sequence ();
       emit_insn_after (seq, after);
     }
   else
-    emit_insn (fcn (sa, stack_pointer_rtx));
+    {
+      if (sa != 0)
+	sa = validize_mem (sa);
+      emit_insn (fcn (sa, stack_pointer_rtx));
+    }
 }
 
 /* Restore the stack pointer for the purpose in SAVE_LEVEL.  SA is the save
