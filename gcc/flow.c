@@ -314,7 +314,6 @@ static void merge_blocks_nomove		PROTO((basic_block, basic_block));
 static int merge_blocks			PROTO((edge,basic_block,basic_block));
 static void try_merge_blocks		PROTO((void));
 static void tidy_fallthru_edge		PROTO((edge,basic_block,basic_block));
-static void calculate_loop_depth	PROTO((rtx));
 
 static int verify_wide_reg_1		PROTO((rtx *, void *));
 static void verify_wide_reg		PROTO((int, rtx, rtx));
@@ -433,10 +432,6 @@ find_basic_blocks (f, nregs, file, do_cleanup)
   /* Mark critical edges.  */
 
   mark_critical_edges ();
-
-  /* Discover the loop depth at the start of each basic block to aid
-     register allocation.  */
-  calculate_loop_depth (f);
 
   /* Kill the data we won't maintain.  */
   label_value_list = NULL_RTX;
@@ -2389,37 +2384,17 @@ tidy_fallthru_edge (e, b, c)
 
 /* Discover and record the loop depth at the head of each basic block.  */
 
-static void
-calculate_loop_depth (insns)
-     rtx insns;
+void
+calculate_loop_depth (dump)
+     FILE *dump;
 {
-  basic_block bb;
-  rtx insn;
-  int i = 0, depth = 1;
+  struct loops loops;
 
-  bb = BASIC_BLOCK (i);
-  for (insn = insns; insn ; insn = NEXT_INSN (insn))
-    {
-      if (insn == bb->head)
-	{
-	  bb->loop_depth = depth;
-	  if (++i >= n_basic_blocks)
-	    break;
-	  bb = BASIC_BLOCK (i);
-	}
-
-      if (GET_CODE (insn) == NOTE)
-	{
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	    depth++;
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	    depth--;
-
-	  /* If we have LOOP_DEPTH == 0, there has been a bookkeeping error. */
-	  if (depth == 0)
-	    abort ();
-	}
-    }
+  /* The loop infrastructure does the real job for us.  */
+  flow_loops_find (&loops);
+  if (dump)
+    flow_loops_dump (&loops, dump, 0);
+  flow_loops_free (&loops);
 }
 
 /* Perform data flow analysis.
