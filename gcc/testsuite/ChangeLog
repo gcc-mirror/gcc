@@ -1,3 +1,49 @@
+2001-01-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format/format.exp: New file.
+	* gcc.dg/c90-printf-1.c: Rename to gcc.dg/format/c90-printf-1.c.
+	* gcc.dg/c90-printf-2.c: Rename to gcc.dg/format/c90-printf-2.c.
+	* gcc.dg/c90-printf-3.c: Rename to gcc.dg/format/c90-printf-3.c.
+	* gcc.dg/c94-printf-1.c: Rename to gcc.dg/format/c94-printf-1.c.
+	* gcc.dg/c99-printf-1.c: Rename to gcc.dg/format/c99-printf-1.c.
+	* gcc.dg/c99-printf-2.c: Rename to gcc.dg/format/c99-printf-2.c.
+	* gcc.dg/c99-printf-3.c: Rename to gcc.dg/format/c99-printf-3.c.
+	* gcc.dg/c90-scanf-1.c: Rename to gcc.dg/format/c90-scanf-1.c.
+	* gcc.dg/c90-scanf-2.c: Rename to gcc.dg/format/c90-scanf-2.c.
+	* gcc.dg/c90-scanf-3.c: Rename to gcc.dg/format/c90-scanf-3.c.
+	* gcc.dg/c90-scanf-4.c: Rename to gcc.dg/format/c90-scanf-4.c.
+	* gcc.dg/c94-scanf-1.c: Rename to gcc.dg/format/c94-scanf-1.c.
+	* gcc.dg/c99-scanf-1.c: Rename to gcc.dg/format/c99-scanf-1.c.
+	* gcc.dg/c99-scanf-2.c: Rename to gcc.dg/format/c99-scanf-2.c.
+	* gcc.dg/c99-scanf-3.c: Rename to gcc.dg/format/c99-scanf-3.c.
+	* gcc.dg/c90-strftime-1.c: Rename to gcc.dg/format/c90-strftime-1.c.
+	* gcc.dg/c90-strftime-2.c: Rename to gcc.dg/format/c90-strftime-2.c.
+	* gcc.dg/c99-strftime-1.c: Rename to gcc.dg/format/c99-strftime-1.c.
+	* gcc.dg/c99-strftime-2.c: Rename to gcc.dg/format/c99-strftime-2.c.
+	* gcc.dg/format-array-1.c: Rename to gcc.dg/format/array-1.c.
+	* gcc.dg/format-attr-1.c: Rename to gcc.dg/format/attr-1.c.
+	* gcc.dg/format-branch-1.c: Rename to gcc.dg/format/branch-1.c.
+	* gcc.dg/format-diag-1.c: Rename to gcc.dg/format/diag-1.c.
+	* gcc.dg/format-errmk-1.c: Rename to gcc.dg/format/errmk-1.c.
+	* gcc.dg/format-ext-1.c: Rename to gcc.dg/format/ext-1.c.
+	* gcc.dg/format-ext-2.c: Rename to gcc.dg/format/ext-2.c.
+	* gcc.dg/format-ext-3.c: Rename to gcc.dg/format/ext-3.c.
+	* gcc.dg/format-ext-4.c: Rename to gcc.dg/format/ext-4.c.
+	* gcc.dg/format-ext-5.c: Rename to gcc.dg/format/ext-5.c.
+	* gcc.dg/format-miss-1.c: Rename to gcc.dg/format/miss-1.c.
+	* gcc.dg/format-miss-2.c: Rename to gcc.dg/format/miss-2.c.
+	* gcc.dg/format-no-exargs-1.c: Rename to gcc.dg/format/no-exargs-1.c.
+	* gcc.dg/format-no-y2k-1.c: Rename to gcc.dg/format/no-y2k-1.c.
+	* gcc.dg/format-nonlit-1.c: Rename to gcc.dg/format/nonlit-1.c.
+	* gcc.dg/format-nonlit-2.c: Rename to gcc.dg/format/nonlit-2.c.
+	* gcc.dg/format-nonlit-3.c: Rename to gcc.dg/format/nonlit-3.c.
+	* gcc.dg/format-sec-1.c: Rename to gcc.dg/format/sec-1.c.
+	* gcc.dg/format-strfmon-1.c: Rename to gcc.dg/format/strfmon-1.c.
+	* gcc.dg/format-va-1.c: Rename to gcc.dg/format/va-1.c.
+	* gcc.dg/format-warnll-1.c: Rename to gcc.dg/format/warnll-1.c.
+	* gcc.dg/format-xopen-1.c: Rename to gcc.dg/format/xopen-1.c.
+	* gcc.dg/formatz-1.c: Rename to gcc.dg/format/z-1.c.
+
 2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/991228-1.c: Take word endianness into
