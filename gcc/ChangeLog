@@ -1,3 +1,7 @@
+2003-01-22  Andreas Schwab  <schwab@suse.de>
+
+	* ra-rewrite.c (rewrite_program2): Initialize bb to avoid warning.
+
 2003-01-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_shift_needs_scratch_p): Don't
