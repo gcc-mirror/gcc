@@ -1,3 +1,12 @@
+2004-07-02  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/util/Locale.java (hashcode): Made transient.
+	(hashCode): No longer synchronized.
+	(equals): Remove comment.
+	(writeObject): No longer synchronized. Implement using writeObject 
+	calls instead of tweaking hashCode field. Update doc.
+	(readObject): Implement using readObject calls.
+
 2004-06-26  Geoffrey Keating  <geoffk@apple.com>
 	    Andreas Tobler  <a.tobler@schweiz.ch>
 
