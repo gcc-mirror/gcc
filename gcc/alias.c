@@ -2786,10 +2786,8 @@ init_alias_analysis ()
   reg_seen = (char *) xmalloc (reg_base_value_size);
   if (! reload_completed && flag_unroll_loops)
     {
-      /* ??? Why are we realloc'ing if we're just going to zero it?  */
-      alias_invariant = (rtx *)xrealloc (alias_invariant,
-					 reg_base_value_size * sizeof (rtx));
-      memset ((char *)alias_invariant, 0, reg_base_value_size * sizeof (rtx));
+      alias_invariant = (rtx *) ggc_alloc_cleared (reg_base_value_size
+						   * sizeof (rtx));
       alias_invariant_size = reg_base_value_size;
     }
 
@@ -2985,7 +2983,6 @@ end_alias_analysis ()
   reg_base_value_size = 0;
   if (alias_invariant)
     {
-      free (alias_invariant);
       alias_invariant = 0;
       alias_invariant_size = 0;
     }
