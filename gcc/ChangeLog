@@ -1,3 +1,12 @@
+2004-12-15  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* config/arm/arm.c (arm_xscale_rtx_costs): Increase cost of
+	COMPARE of MULT.
+	* config/arm/arm.md (mulsi3_compare0): Don't check
+	arm_arch_xscale.
+	(mulsi_compare0_scratch, mulsi3_addsi_compare0): Likewise.
+	(mulsi3addsi_compare0_scratch): Likewise.
+
 2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/18665

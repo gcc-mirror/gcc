@@ -1097,7 +1097,7 @@
 			 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=&r,&r")
 	(mult:SI (match_dup 2) (match_dup 1)))]
-  "TARGET_ARM && !arm_arch_xscale"
+  "TARGET_ARM"
   "mul%?s\\t%0, %2, %1"
   [(set_attr "conds" "set")
    (set_attr "insn" "muls")]
@@ -1110,7 +1110,7 @@
 			  (match_operand:SI 1 "s_register_operand" "%?r,0"))
 			 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r,&r"))]
-  "TARGET_ARM && !arm_arch_xscale"
+  "TARGET_ARM"
   "mul%?s\\t%0, %2, %1"
   [(set_attr "conds" "set")
    (set_attr "insn" "muls")]
@@ -1141,7 +1141,7 @@
    (set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r,&r")
 	(plus:SI (mult:SI (match_dup 2) (match_dup 1))
 		 (match_dup 3)))]
-  "TARGET_ARM && !arm_arch_xscale"
+  "TARGET_ARM"
   "mla%?s\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
    (set_attr "insn" "mlas")]
@@ -1156,7 +1156,7 @@
 		  (match_operand:SI 3 "s_register_operand" "?r,r,0,0"))
 	 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r,&r,&r,&r"))]
-  "TARGET_ARM && !arm_arch_xscale"
+  "TARGET_ARM"
   "mla%?s\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
    (set_attr "insn" "mlas")]
