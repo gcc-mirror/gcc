@@ -1,5 +1,12 @@
 2004-01-24  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (insert(size_type,
+	const basic_string&, size_type, size_type)): Define inline here.
+	* include/bits/basic_string.tcc (insert(size_type,
+	const basic_string&, size_type, size_type)): Move inline.
+
+2004-01-24  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (assign(const basic_string&,
 	size_type, size_type)): Define inline here.
 	(replace(size_type, size_type, const basic_string&,

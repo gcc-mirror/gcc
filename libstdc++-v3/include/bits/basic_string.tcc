@@ -295,17 +295,6 @@ namespace std
    template<typename _CharT, typename _Traits, typename _Alloc>
      basic_string<_CharT, _Traits, _Alloc>&
      basic_string<_CharT, _Traits, _Alloc>::
-     insert(size_type __pos1, const basic_string& __str,
-            size_type __pos2, size_type __n)
-     {
-       return this->insert(__pos1, __str._M_data()
-			   + __str._M_check(__pos2, "basic_string::insert"),
-			   __str._M_limit(__pos2, __n));
-     }
-
-   template<typename _CharT, typename _Traits, typename _Alloc>
-     basic_string<_CharT, _Traits, _Alloc>&
-     basic_string<_CharT, _Traits, _Alloc>::
      insert(size_type __pos, const _CharT* __s, size_type __n)
      {
        __glibcxx_requires_string_len(__s, __n);
