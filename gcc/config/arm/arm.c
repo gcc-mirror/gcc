@@ -1545,7 +1545,10 @@ current_file_function_operand (sym_ref)
   /* XXX FIXME - we need some way to determine if SYMREF has already been
      compiled.  We wanted to used SYMBOL_REF_FLAG but this is already in use
      by the constant pool generation code.  */
-  return sym_ref == XEXP (DECL_RTL (current_function_decl), 0);
+  return
+    GET_CODE (sym_ref) == SYMBOL_REF
+    && sym_ref == XEXP (DECL_RTL (current_function_decl), 0)
+    && ! DECL_WEAK (current_function_decl);
 }
 
 /* Return non-zero if a 32 bit "long call" should be generated for this
@@ -1639,17 +1642,30 @@ arm_comp_type_attributes (type1, type2)
      tree type2;
 {
   int l1, l2, s1, s2;
+  
   /* Check for mismatch of non-default calling convention.  */
   if (TREE_CODE (type1) != FUNCTION_TYPE)
     return 1;
 
   /* Check for mismatched call attributes.  */
-  l1 = ! lookup_attribute ("long_call", TYPE_ATTRIBUTES (type1));
-  l2 = ! lookup_attribute ("long_call", TYPE_ATTRIBUTES (type2));
-  s1 = ! lookup_attribute ("short_call", TYPE_ATTRIBUTES (type1));
-  s2 = ! lookup_attribute ("short_call", TYPE_ATTRIBUTES (type2));
+  l1 = lookup_attribute ("long_call", TYPE_ATTRIBUTES (type1));
+  l2 = lookup_attribute ("long_call", TYPE_ATTRIBUTES (type2));
+  s1 = lookup_attribute ("short_call", TYPE_ATTRIBUTES (type1));
+  s2 = lookup_attribute ("short_call", TYPE_ATTRIBUTES (type2));
 
-  return ! ((l1 ^ l2) || (s1 ^s2) || (l1 | s2) || (s1 | l2));
+  /* Only bother to check if an attribute is defined.  */
+  if (l1 | l2 | s1 | s2)
+    {
+      /* If one type has an attribute, the other must have the same attribute.  */
+      if ((!l1 != !l2) || (!s1 != !s2))
+	return 0;
+
+      /* Disallow mixed attributes.  */
+      if ((l1 & s2) || (l2 & s1))
+	return 0;
+    }
+  
+  return 1;
 }
 
 
