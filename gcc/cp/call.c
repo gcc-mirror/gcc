@@ -551,7 +551,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
   
   if (fn && TREE_CODE (fn) == TREE_LIST && !BASELINK_P (fn))
     {
-      error ("request for member `%D' is ambiguos", name);
+      error ("request for member `%D' is ambiguous", name);
       print_candidates (fn);
       return error_mark_node;
     }
