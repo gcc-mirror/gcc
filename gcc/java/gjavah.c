@@ -100,7 +100,7 @@ static struct method_name *method_name_list;
 
 static void print_field_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
 static void print_method_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
-static void print_c_decl PROTO ((FILE*, JCF*, int, int, JCF_u2, int, const char *));
+static void print_c_decl PROTO ((FILE*, JCF*, int, int, int, const char *));
 static void decompile_method PROTO ((FILE *, JCF *, int));
 static void add_class_decl PROTO ((FILE *, JCF *, JCF_u2));
 
@@ -426,7 +426,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	}
     }
 
-  print_c_decl (out, jcf, name_index, sig_index, flags, 0, override);
+  print_c_decl (out, jcf, name_index, sig_index, 0, override);
   fputs (";\n", out);
 
   if (override)
@@ -509,7 +509,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       if (! is_init)
 	fputs ("virtual ", out);
     }
-  print_c_decl (out, jcf, name_index, sig_index, flags, is_init, override);
+  print_c_decl (out, jcf, name_index, sig_index, is_init, override);
 
   if ((flags & ACC_ABSTRACT))
     fputs (" = 0", out);
@@ -676,10 +676,10 @@ decode_signature_piece (stream, signature, limit, need_space)
 }
 
 static void
-DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, flags, is_init,
+DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, is_init,
 		     name_override),
       FILE* stream AND JCF* jcf
-      AND int name_index AND int signature_index AND JCF_u2 flags
+      AND int name_index AND int signature_index
       AND int is_init AND const char *name_override)
 {
   if (JPOOL_TAG (jcf, signature_index) != CONSTANT_Utf8)

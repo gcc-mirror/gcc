@@ -1,3 +1,21 @@
+Tue Mar 23 10:05:27 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (print_c_decl): Remove unused argument `flags'.
+
+	* jcf-dump.c (print_access_flags): Add braces around if-else.
+
+	* jvspec.c (lang_specific_driver): Wrap variable `len' in macro
+	COMBINE_INPUTS.
+
+	* lex.c (build_wfl_node): Add static prototype.
+
+	* lex.h (build_wfl_node): Remove static prototype.
+
+	* parse.y: Include lex.c early enough to declare everything needed.
+	Ensure calls to `build_wfl_node' pass the proper arguments.
+	(create_class): Remove unused variable `super_decl'.
+	(get_printable_method_name): Initialize variable `name'.
+	
 Mon Mar 22 20:14:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Changelog: Fixed 1999-03-22 typos.

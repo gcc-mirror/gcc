@@ -59,6 +59,7 @@ static void java_unicode_2_utf8 PROTO ((unicode_t));
 static void java_lex_error PROTO ((char *, int));
 #ifndef JC1_LITE
 static int java_is_eol PROTO ((FILE *, int));
+static tree build_wfl_node PROTO ((tree));
 #endif
 static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
 static unicode_t java_parse_escape_sequence PROTO ((void));
