@@ -840,6 +840,9 @@ make_node (code)
   tree_node_sizes[(int)kind] += length;
 #endif
 
+  /* We assume here that the length of a tree node is a multiple of the
+     size of an int.  Rounding up won't work because it would clobber
+     the next object.  */
   for (i = (length / sizeof (int)) - 1; i >= 0; i--)
     ((int *) t)[i] = 0;
 
@@ -932,9 +935,7 @@ copy_node (node)
 
   t = (tree) obstack_alloc (current_obstack, length);
 
-  for (i = ((length + sizeof (int) - 1) / sizeof (int)) - 1;
-       i >= 0;
-       i--)
+  for (i = (length / sizeof (int)) - 1; i >= 0; i--)
     ((int *) t)[i] = ((int *) node)[i];
 
   TREE_CHAIN (t) = 0;
@@ -1199,12 +1200,9 @@ make_tree_vec (len)
 
   t = (tree) obstack_alloc (obstack, length);
 
-  TREE_TYPE (t) = 0;
-  TREE_CHAIN (t) = 0;
-  for (i = (length / sizeof (int)) - 1;
-       i >= sizeof (struct tree_common) / sizeof (int) - 1;
-       i--)
+  for (i = (length / sizeof (int)) - 1; i >= 0; i--)
     ((int *) t)[i] = 0;
+
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
   if (obstack == &permanent_obstack)
@@ -1563,11 +1561,12 @@ tree_cons (purpose, value, chain)
   tree_node_sizes[(int)x_kind] += sizeof (struct tree_list);
 #endif
 
-  ((int *)node)[(sizeof (struct tree_common)/sizeof (int)) - 1] = 0;
+  for (i = (sizeof (struct tree_common) / sizeof (int)) - 1; i >= 0; i--)
+    ((int *) t)[i] = 0;
+
   TREE_SET_CODE (node, TREE_LIST);
   if (current_obstack == &permanent_obstack)
     TREE_PERMANENT (node) = 1;
-  TREE_TYPE (node) = 0;
 #endif
 
   TREE_CHAIN (node) = chain;
@@ -2005,13 +2004,10 @@ build1 (code, type, node)
   tree_node_sizes[(int)kind] += length;
 #endif
 
-  TREE_TYPE (t) = type;
-  TREE_CHAIN (t) = 0;
-
-  for (i = (length / sizeof (int)) - 2;
-       i >= sizeof (struct tree_common) / sizeof (int) - 1;
-       i--)
+  for (i = (length / sizeof (int)) - 1; i >= 0; i--)
     ((int *) t)[i] = 0;
+
+  TREE_TYPE (t) = type;
   TREE_SET_CODE (t, code);
 
   if (obstack == &permanent_obstack)
