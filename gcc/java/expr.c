@@ -2492,8 +2492,7 @@ force_evaluation_order (node)
 {
   if (flag_syntax_only)
     return node;
-  if (TREE_CODE_CLASS (TREE_CODE (node)) == '2'
-      && TREE_CODE (node) == ARRAY_REF)
+  if (TREE_CODE_CLASS (TREE_CODE (node)) == '2')
     {
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (node, 1)))
 	TREE_OPERAND (node, 0) = save_expr (TREE_OPERAND (node, 0));

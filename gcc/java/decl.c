@@ -1465,8 +1465,8 @@ give_name_to_locals (jcf)
     }
 }
 
-void
-complete_start_java_method (fndecl)
+tree
+build_result_decl (fndecl)
   tree fndecl;
 {
   tree restype = TREE_TYPE (TREE_TYPE (fndecl));
@@ -1474,8 +1474,13 @@ complete_start_java_method (fndecl)
   if (INTEGRAL_TYPE_P (restype)
       && TYPE_PRECISION (restype) < TYPE_PRECISION (integer_type_node))
     restype = integer_type_node;
-  DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, restype);
+  return (DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, restype));
+}
 
+void
+complete_start_java_method (fndecl)
+  tree fndecl;
+{
   if (! flag_emit_class_files)
     {
       /* Initialize the RTL code for the function.  */
@@ -1509,9 +1514,27 @@ complete_start_java_method (fndecl)
       expand_expr_stmt (init);
     }
 
-  if (METHOD_SYNCHRONIZED (fndecl))
+  if (METHOD_SYNCHRONIZED (fndecl) && ! flag_emit_class_files
+      && DECL_FUNCTION_BODY (fndecl) != NULL_TREE)
     {
-      /* FIXME: surround the function body by a try/finally set.  */
+      /* Warp function body with a monitorenter plus monitorexit cleanup. */
+      tree function_body = DECL_FUNCTION_BODY (fndecl);
+      tree body = BLOCK_EXPR_BODY (function_body);
+      tree enter, exit, lock;
+      if (METHOD_STATIC (fndecl))
+	lock = build_class_ref (DECL_CONTEXT (fndecl));
+      else
+	lock = DECL_ARGUMENTS (fndecl);
+      BUILD_MONITOR_ENTER (enter, lock);
+      BUILD_MONITOR_EXIT (exit, lock);
+      lock = build (WITH_CLEANUP_EXPR, void_type_node,
+		    enter,  NULL_TREE, exit);
+      TREE_SIDE_EFFECTS (lock) = 1;
+      lock = build (COMPOUND_EXPR, TREE_TYPE (body), lock, body);
+      TREE_SIDE_EFFECTS (lock) = 1;
+      lock = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (body), lock);
+      TREE_SIDE_EFFECTS (lock) = 1;
+      BLOCK_EXPR_BODY (function_body) = lock;
     }
 
   /* Push local variables. Function compiled from source code are
@@ -1578,6 +1601,7 @@ start_java_method (fndecl)
   while (i < DECL_MAX_LOCALS(fndecl))
     type_map[i++] = NULL_TREE;
 
+  build_result_decl (fndecl);
   complete_start_java_method (fndecl);
 }
 

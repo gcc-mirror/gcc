@@ -509,24 +509,6 @@ static jdeplist *reverse_jdep_list ();
 			(ARG ? build_tree_list (NULL, (ARG)) : NULL_TREE))
 
 /* For exception handling, build diverse function calls */
-#define BUILD_MONITOR_ENTER(WHERE, ARG)				\
-  {								\
-    (WHERE) = build (CALL_EXPR, int_type_node,			\
-		     build_address_of (soft_monitorenter_node),	\
-		     build_tree_list (NULL_TREE, (ARG)), 	\
-		     NULL_TREE);				\
-    TREE_SIDE_EFFECTS (WHERE) = 1;				\
-  }
-
-#define BUILD_MONITOR_EXIT(WHERE, ARG)				\
-  {								\
-    (WHERE) = build (CALL_EXPR, int_type_node,			\
-		     build_address_of (soft_monitorexit_node),	\
-		     build_tree_list (NULL_TREE, (ARG)),	\
-		     NULL_TREE);				\
-    TREE_SIDE_EFFECTS (WHERE) = 1;				\
-  }
-
 #define BUILD_ASSIGN_EXCEPTION_INFO(WHERE, TO)		\
   {							\
     (WHERE) = build (MODIFY_EXPR, void_type_node, (TO),	\

@@ -5464,7 +5464,6 @@ expand_start_java_method (fndecl)
   *ptr = NULL_TREE;
   pushdecl_force_head (DECL_ARGUMENTS (fndecl));
   lineno = DECL_SOURCE_LINE_FIRST (fndecl);
-  complete_start_java_method (fndecl); 
 }
 
 /* Terminate a function and expand its body.  */
@@ -5731,6 +5730,7 @@ java_complete_expand_method (mdecl)
       tree fbody = DECL_FUNCTION_BODY (mdecl);
       tree block_body = BLOCK_EXPR_BODY (fbody);
       expand_start_java_method (mdecl);
+      build_result_decl (mdecl);
 
       current_this 
 	= (!METHOD_STATIC (mdecl) ? 
@@ -5752,6 +5752,8 @@ java_complete_expand_method (mdecl)
       if ((block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE)
 	missing_return_error (current_function_decl);
+
+      complete_start_java_method (mdecl); 
 
       /* Don't go any further if we've found error(s) during the
          expansion */
@@ -8053,7 +8055,7 @@ java_complete_lhs (node)
 	return error_mark_node;
       if (!flag_emit_class_files)
 	TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
-      return force_evaluation_order (patch_array_ref (node));
+      return patch_array_ref (node);
 
     case RECORD_TYPE:
       return node;;
@@ -9886,7 +9888,16 @@ patch_array_ref (node)
       TREE_OPERAND (node, 1) = index;
     }
   else
-    node = build_java_arrayaccess (array, array_type, index);
+    {
+      /* The save_expr is for correct evaluation order.  It would be cleaner
+	 to use force_evaluation_order (see comment there), but that is
+	 difficult when we also have to deal with bounds checking. */
+      if (TREE_SIDE_EFFECTS (index))
+	array = save_expr (array);
+      node = build_java_arrayaccess (array, array_type, index);
+      if (TREE_SIDE_EFFECTS (index))
+	node = build (COMPOUND_EXPR, array_type, array, node);
+    }
   TREE_TYPE (node) = array_type;
   return node;
 }
