@@ -973,7 +973,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define RETURN_IN_MEMORY(TYPE) \
   (TARGET_SH5 \
    ? ((TYPE_MODE (TYPE) == BLKmode \
-       ? int_size_in_bytes (TYPE) \
+       ? (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) \
        : GET_MODE_SIZE (TYPE_MODE (TYPE))) > 8) \
    : (TYPE_MODE (TYPE) == BLKmode \
       || TARGET_HITACHI && TREE_CODE (TYPE) == RECORD_TYPE))
