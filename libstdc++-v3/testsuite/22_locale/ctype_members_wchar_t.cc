@@ -1,6 +1,6 @@
 // 2000-09-01 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -92,16 +92,17 @@ void test01()
   gctype.tolower(c_array, c_array + len);
   VERIFY( !std::char_traits<char_type>::compare(c_array, strlit02, len - 1) );
 
-
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 }
 #endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
-int main() {
+int main() 
+{
 #if _GLIBCPP_USE_WCHAR_T
   test01();
-#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+#endif 
+
   return 0;
 }

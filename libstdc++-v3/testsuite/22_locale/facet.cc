@@ -159,7 +159,7 @@ public:
 };
 
 
-// 2 or if it is a class deerived from locale:;facet and containing a
+// 2 or if it is a class derived from locale:;facet and containing a
 // publicly-accessible declaration as follows:
 class gnu_facet: public std::locale::facet
 {

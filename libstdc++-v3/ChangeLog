@@ -1,3 +1,55 @@
+2001-12-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Clean up initialization and simplfy caching of underlying "C"
+	locale objects.
+	* src/localename.cc (locale::_Impl::_Impl(string, size_t):
+	Unconditionally create __clocale object for all named locales,
+	including "C" and "POSIX".
+	* config/locale/c_locale_generic.cc
+	(locale::facet::_S_create_c_locale): Always set __cloc to zero.
+	* config/locale/c_locale_gnu.cc: Always delete.
+	* include/bits/localefwd.h (locale::facet::_S_c_locale): New.
+	* src/locale.cc (locale::classic()): Initialize
+	locale::facet::_S_c_locale.
+	(locale::facet::_S_c_locale): Define.
+
+	* include/bits/locale_facets.h: Add ctype_byname<wchar_t> ctor
+	specialization.
+	* src/locale.cc: Add definition here.
+	* config/os/gnu-linux/bits/ctype_inline.h: Tweak.
+	* config/os/gnu-linux/bits/ctype_noninline.h: Adjust initializations.
+	* include/bits/locale_facets.h (ctype<char>::_M_c_locale_ctype): Add.
+	Adjust ctors, dtors. 
+	(ctype<char>::_M_toupper): Remove const&.
+	(ctype<char>::_M_tolower): Remove const&.
+	(ctype<char>::_M_ctable): Remove const&.	
+	
+	* include/bits/locale_facets.h (collate): Clean up initialization
+	of _M_c_locale_collate in ctors and dtors.
+	* config/locale/collate_members_gnu.cc: Always use extended
+	functions.
+
+	* include/bits/locale_facets.h (messages): Clean up inits in ctor/dtor.
+	(messages_byname): Same.
+	* config/locale/messages_members_generic.h (messages::~messages):
+	Remove.
+	* config/locale/messages_members_gnu.h: Same.
+
+	* include/bits/localefwd.h: Clean. Move dtor definitions to
+	* src/locale.cc: Here.
+	* testsuite/22_locale/facet.cc: Fix spelling.
+	
+	Named locale support for ctype<wchar_t>.
+        * acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Add variable
+        ctype_members_* bits.
+        * aclocal.m4: Regenerate.
+        * configure: Regenerate.
+        * src/Makefile.am (sources): Add ctype.cc.
+        * src/Makefile.in: Regenerate.
+        * config/locale/ctype_members_generic.cc: New file.
+        * config/locale/ctype_members_gnu.cc: New file.
+        * src/locale.cc: Remove ctype<wchart_t> definitions.
+
 2001-12-13  Roger Sayle <roger@eyesopen.com>
 
 	* acconfig.h: Test for __builtin_sqrt instead of

@@ -171,7 +171,7 @@ namespace std
       explicit 
       ctype(size_t __refs = 0) : __ctype_abstract_base<_CharT>(__refs) { }
 
-      static locale::id 		id;
+      static locale::id 	       	id;
 
    protected:
       virtual 
@@ -225,15 +225,16 @@ namespace std
     {
     public:
       // Types:
-      typedef char 	       char_type;
+      typedef char 	       	char_type;
 
-    private:
+    protected:
       // Data Members:
-      bool 		       _M_del;
-      __to_type const& 	       _M_toupper;
-      __to_type const& 	       _M_tolower;
-      const mask* const&       _M_ctable;
-      const mask*              _M_table;
+      __c_locale		_M_c_locale_ctype;
+      bool 		       	_M_del;
+      __to_type 	       	_M_toupper;
+      __to_type  	       	_M_tolower;
+      const mask*       	_M_ctable;
+      const mask*              	_M_table;
       
     public:
       static locale::id        id;
@@ -259,9 +260,6 @@ namespace std
       scan_not(mask __m, const char* __lo, const char* __hi) const;
      
     protected:
-      virtual 
-      ~ctype();
-
       const mask* 
       table() const throw()
       { return _M_table; }
@@ -269,6 +267,9 @@ namespace std
       const mask* 
       classic_table() throw()
       { return _M_ctable; }
+
+      virtual 
+      ~ctype();
 
       virtual bool 
       do_is(mask __m, char_type __c) const;
@@ -306,7 +307,7 @@ namespace std
 
       virtual const char_type*
       do_narrow(const char_type* __lo, const char_type* __hi,
-		 char __dfault, char* __dest) const;
+		char __dfault, char* __dest) const;
     };
  
   template<>
@@ -320,11 +321,15 @@ namespace std
     {
     public:
       // Types:
-      typedef wchar_t 	       char_type;
-      typedef wctype_t	       __wmask_type;
+      typedef wchar_t 	       	char_type;
+      typedef wctype_t	       	__wmask_type;
 
+    protected:
+      __c_locale		_M_c_locale_ctype;
+
+    public:
       // Data Members:
-      static locale::id        id;
+      static locale::id        	id;
 
       explicit 
       ctype(size_t __refs = 0);
@@ -375,7 +380,7 @@ namespace std
 
       virtual const char_type*
       do_narrow(const char_type* __lo, const char_type* __hi,
-		 char __dfault, char* __dest) const;
+		char __dfault, char* __dest) const;
 
     };
 
@@ -395,22 +400,25 @@ namespace std
       typedef _CharT 		char_type;
 
       explicit 
-      ctype_byname(const char*, size_t __refs = 0);
+      ctype_byname(const char* __s, size_t __refs = 0);
 
     protected:
       virtual 
-      ~ctype_byname() { }
+      ~ctype_byname() { };
     };
 
-  // 22.2.1.4  Class ctype_byname specialization
+  // 22.2.1.4  Class ctype_byname specializations.
   template<>
     ctype_byname<char>::ctype_byname(const char*, size_t refs);
 
+  template<>
+    ctype_byname<wchar_t>::ctype_byname(const char*, size_t refs);
 
   // 22.2.1.5  Template class codecvt
   #include <bits/codecvt.h>
 
 
+  // 22.2.2  The numeric category.
   class __num_base
   {
   public:
@@ -815,17 +823,14 @@ namespace std
 
       explicit 
       collate(size_t __refs = 0)
-      : locale::facet(__refs), _M_c_locale_collate(NULL)
-      { } 
+      : locale::facet(__refs)
+      { _M_c_locale_collate = _S_clone_c_locale(_S_c_locale); }
 
       // Non-standard.
       explicit 
       collate(__c_locale __cloc, size_t __refs = 0) 
       : locale::facet(__refs)
-      { 
-	if (__cloc)
-	  _M_c_locale_collate = _S_clone_c_locale(__cloc); 
-      }
+      { _M_c_locale_collate = _S_clone_c_locale(__cloc); }
 
       int 
       compare(const _CharT* __lo1, const _CharT* __hi1,
@@ -850,10 +855,7 @@ namespace std
   protected:
       virtual
       ~collate() 
-      {
-	if (_M_c_locale_collate)
-	  _S_destroy_c_locale(_M_c_locale_collate); 
-      }
+      { _S_destroy_c_locale(_M_c_locale_collate); }
 
       virtual int  
       do_compare(const _CharT* __lo1, const _CharT* __hi1,
@@ -899,10 +901,13 @@ namespace std
       explicit 
       collate_byname(const char* __s, size_t __refs = 0)
       : collate<_CharT>(__refs) 
-      { _S_create_c_locale(_M_c_locale_collate, __s); }
+      { 
+	_S_destroy_c_locale(_M_c_locale_collate);
+	_S_create_c_locale(_M_c_locale_collate, __s); 
+      }
 
     protected:
-      virtual 
+      virtual   
       ~collate_byname() { }
     };
 
@@ -1609,9 +1614,8 @@ namespace std
 
       explicit 
       messages(size_t __refs = 0) 
-      : locale::facet(__refs), _M_c_locale_messages(NULL), 
-      _M_name_messages("C")
-      { }
+      : locale::facet(__refs), _M_name_messages("C")
+      { _M_c_locale_messages = _S_clone_c_locale(_S_c_locale); }
 
       // Non-standard.
       explicit 
@@ -1619,8 +1623,7 @@ namespace std
       : locale::facet(__refs)
       { 
 	_M_name_messages = __name;
-	if (__cloc)
-	  _M_c_locale_messages = _S_clone_c_locale(__cloc); 
+	_M_c_locale_messages = _S_clone_c_locale(__cloc); 
       }
 
       catalog 
@@ -1641,7 +1644,8 @@ namespace std
 
     protected:
       virtual 
-      ~messages();
+      ~messages()
+       { _S_destroy_c_locale(_M_c_locale_messages); }
 
       virtual catalog 
       do_open(const basic_string<char>&, const locale&) const;
@@ -1723,8 +1727,9 @@ namespace std
       messages_byname(const char* __s, size_t __refs = 0)
       : messages<_CharT>(__refs) 
       { 
-	_S_create_c_locale(_M_c_locale_messages, __s); 
 	_M_name_messages = __s;
+	_S_destroy_c_locale(_M_c_locale_messages);
+	_S_create_c_locale(_M_c_locale_messages, __s); 
       }
 
     protected:

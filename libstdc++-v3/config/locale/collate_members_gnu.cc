@@ -43,46 +43,25 @@ namespace std
     int 
     collate<char>::_M_compare_helper(const char* __one, 
 				     const char* __two) const
-    {
-      if (_M_c_locale_collate)
-	return __strcoll_l(__one, __two, _M_c_locale_collate);
-      else
-	return strcoll(__one, __two);      
-    }
+    { return __strcoll_l(__one, __two, _M_c_locale_collate); }
   
   template<>
     size_t
     collate<char>::_M_transform_helper(char* __to, const char* __from, 
-				       size_t __n) const
-    {
-      if (_M_c_locale_collate)
-	return __strxfrm_l(__to, __from, __n, _M_c_locale_collate);
-      else
-	return strxfrm(__to, __from, __n);      
-    }
+				       size_t __n) const 
+    { return __strxfrm_l(__to, __from, __n, _M_c_locale_collate); }
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
     int 
     collate<wchar_t>::_M_compare_helper(const wchar_t* __one, 
 					const wchar_t* __two) const
-    {
-      if (_M_c_locale_collate)
-	return __wcscoll_l(__one, __two, _M_c_locale_collate);
-      else
-	return wcscoll(__one, __two);      
-    }
+    { return __wcscoll_l(__one, __two, _M_c_locale_collate); }
   
   template<>
     size_t
-    collate<wchar_t>::_M_transform_helper(wchar_t* __to, 
-					  const wchar_t* __from, 
+    collate<wchar_t>::_M_transform_helper(wchar_t* __to, const wchar_t* __from,
 					  size_t __n) const
-    {
-      if (_M_c_locale_collate)
-	return __wcsxfrm_l(__to, __from, __n, _M_c_locale_collate);
-      else
-	return wcsxfrm(__to, __from, __n);      
-    }
+    { return __wcsxfrm_l(__to, __from, __n, _M_c_locale_collate); }
 #endif
 }
