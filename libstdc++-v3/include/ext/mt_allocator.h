@@ -1,6 +1,6 @@
 // MT-optimized allocator -*- C++ -*-
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -179,11 +179,10 @@ namespace __gnu_cxx
         /*
          * Points to the next block_record for its thread_id.
          */
-        block_record* next;
+        block_record* volatile next;
 
         /*
          * The thread id of the thread which has requested this block.
-         * All blocks are initially "owned" by global pool thread id 0.
          */
         size_t thread_id;
       };
@@ -195,8 +194,8 @@ namespace __gnu_cxx
          * thread id. Memory to these "arrays" is allocated in _S_init()
          * for _S_max_threads + global pool 0.
          */
-        block_record** first;
-        block_record** last;
+        block_record** volatile first;
+        block_record** volatile last;
 
         /*
          * An "array" of counters used to keep track of the amount of blocks
@@ -204,8 +203,8 @@ namespace __gnu_cxx
          * Memory to these "arrays" is allocated in _S_init()
          * for _S_max_threads + global pool 0.
          */
-        size_t* free;
-        size_t* used;
+        size_t* volatile free;
+        size_t* volatile used;
 
         /*
          * Each bin has its own mutex which is used to ensure data integrity
@@ -221,7 +220,7 @@ namespace __gnu_cxx
        * An "array" of bin_records each of which represents a specific
        * power of 2 size. Memory to this "array" is allocated in _S_init().
        */
-      static bin_record* _S_bin;
+      static bin_record* volatile _S_bin;
 
     public:
       pointer
@@ -478,37 +477,24 @@ namespace __gnu_cxx
               }
 
             /*
-             * Did we allocate this block?
-             * - Yes, return it to our freelist
-             * - No, return it to global pool
+             * Return this block to our list and update
+             * counters and owner id as needed
              */
+            if (_S_bin[bin].first[thread_id] == NULL)
+              _S_bin[bin].first[thread_id] = block;
+            else
+              _S_bin[bin].last[thread_id]->next = block;
+
+            _S_bin[bin].last[thread_id] = block;
+
+            _S_bin[bin].free[thread_id]++;
+
             if (thread_id == block->thread_id)
-              {
-                if (_S_bin[bin].first[thread_id] == NULL)
-                  _S_bin[bin].first[thread_id] = block;
-                else
-                  _S_bin[bin].last[thread_id]->next = block;
-
-                _S_bin[bin].last[thread_id] = block;
-
-                _S_bin[bin].free[thread_id]++;
-                _S_bin[bin].used[thread_id]--;
-              }
+              _S_bin[bin].used[thread_id]--;
             else
               {
-                __gthread_mutex_lock(_S_bin[bin].mutex);
-
-                if (_S_bin[bin].first[0] == NULL)
-                  _S_bin[bin].first[0] = block;
-                else
-                  _S_bin[bin].last[0]->next = block;
-
-                _S_bin[bin].last[0] = block;
-
-                _S_bin[bin].free[0]++;
                 _S_bin[bin].used[block->thread_id]--;
-
-                __gthread_mutex_unlock(_S_bin[bin].mutex);
+                block->thread_id = thread_id;
               }
           }
         else
@@ -639,13 +625,14 @@ namespace __gnu_cxx
 
           if (!_S_bin[bin].free)
             __throw_bad_alloc();
+
           _S_bin[bin].used = (size_t*) malloc(sizeof(size_t) * __n);
 
           if (!_S_bin[bin].used)
             __throw_bad_alloc();
 
 #ifdef __GTHREADS
-          _S_bin[bin].mutex =(__gthread_mutex_t*)  malloc(sizeof(__gthread_mutex_t));
+          _S_bin[bin].mutex =(__gthread_mutex_t*) malloc(sizeof(__gthread_mutex_t));
 
 #ifdef __GTHREAD_MUTEX_INIT
 	  {
@@ -677,35 +664,6 @@ namespace __gnu_cxx
     _S_thread_key_destr(void* freelist_pos)
     {
       /*
-       * If the thread - when it dies - still has records on its
-       * freelist we return them to the global pool here.
-       */
-      for (size_t bin = 0; bin < _S_no_of_bins; bin++)
-        {
-          block_record* block =
-            _S_bin[bin].first[((thread_record*)freelist_pos)->id];
-
-          if (block != NULL)
-            {
-              __gthread_mutex_lock(_S_bin[bin].mutex);
-              while (block != NULL)
-                {
-                  if (_S_bin[bin].first[0] == NULL)
-                    _S_bin[bin].first[0] = block;
-                  else
-                    _S_bin[bin].last[0]->next = block;
-
-                  _S_bin[bin].last[0] = block;
-                  block = block->next;
-                  _S_bin[bin].free[0]++;
-                }
-
-              _S_bin[bin].last[0]->next = NULL;
-              __gthread_mutex_unlock(_S_bin[bin].mutex);
-            }
-        }
-
-      /*
        * Return this thread id record to front of thread_freelist
        */
       __gthread_mutex_lock(&_S_thread_freelist_mutex);
@@ -727,7 +685,7 @@ namespace __gnu_cxx
        */
       if (__gthread_active_p())
         {
-          thread_record* volatile freelist_pos;
+          thread_record* freelist_pos;
 
           if ((freelist_pos =
               (thread_record*)__gthread_getspecific(_S_thread_key)) == NULL)
@@ -743,21 +701,6 @@ namespace __gnu_cxx
               __gthread_mutex_unlock(&_S_thread_freelist_mutex);
 
               __gthread_setspecific(_S_thread_key, (void*)freelist_pos);
-
-              /*
-               * Since thread_ids may/will be reused (espcially in
-               * producer/consumer applications) we make sure that the
-               * list pointers and free counter is reset BUT as the
-               * "old" thread may still be owner of some memory (which
-               * is referred to by other threads and thus not freed)
-               * we don't reset the used counter.
-               */
-              for (size_t bin = 0; bin < _S_no_of_bins; bin++)
-                {
-                  _S_bin[bin].first[freelist_pos->id] = NULL;
-                  _S_bin[bin].last[freelist_pos->id] = NULL;
-                  _S_bin[bin].free[freelist_pos->id] = 0;
-                }
             }
 
           return freelist_pos->id;
@@ -839,7 +782,7 @@ namespace __gnu_cxx
 #endif
 
   template<typename _Tp> typename __mt_alloc<_Tp>::bin_record*
-  __mt_alloc<_Tp>::_S_bin = NULL;
+  volatile __mt_alloc<_Tp>::_S_bin = NULL;
 } // namespace __gnu_cxx
 
 #endif
