@@ -1,7 +1,8 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
-	* gnu/awt/j2d/DirectRasterGraphics.java
-	* gnu/java/awt/EmbeddedWindowSupport.java
+	* gnu/awt/j2d/DirectRasterGraphics.java,
+	gnu/java/awt/EmbeddedWindowSupport.java:
+	Removed redundant modifiers.
 
 2003-10-09  Michael Koch  <konqueror@gmx.de>
 
