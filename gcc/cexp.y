@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 1992, 1994 Free Software Foundation.
+   Copyright (C) 1987, 1992, 1994, 1995 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -142,8 +142,6 @@ static long right_shift ();
   struct constant {long value; int unsignedp;} integer;
   struct name {U_CHAR *address; int length;} name;
   struct arglist *keywords;
-  int voidval;
-  char *sval;
 }
 
 %type <integer> exp exp1 start
