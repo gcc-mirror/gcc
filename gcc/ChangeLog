@@ -1,5 +1,7 @@
 2000-11-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* c-dump.c (dequeue_and_dump): Dump function bodies.
+
 	* Makefile.in (C_AND_OBJC_OBJS): Add c-dump.o.
 	(c-dump.o): New target.
 	* c-common.h (flag_dump_translation_unit): New variable.

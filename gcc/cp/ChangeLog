@@ -1,5 +1,7 @@
 2000-11-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* dump.c (cp_dump_tree): Don't dump function bodies here.
+
 	* Make-lang.in (CXX_C_OBJS): Add c-dump.o.
 	(dump.o): Update dependency list.
 	* cp-tree.h (DECL_MAYBE_TEMPLATE): Remove.

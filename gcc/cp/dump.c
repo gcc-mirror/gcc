@@ -107,8 +107,6 @@ cp_dump_tree (di, t)
 	    }
 	  if (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t))
 	    dump_string (di, "pseudo tmpl");
-
-	  dump_child ("body", DECL_SAVED_TREE (t));
 	}
       else
 	{
