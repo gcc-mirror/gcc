@@ -148,12 +148,7 @@ f_open (olist * a)
   b->url = (int) a->orl;
   b->ublnk = a->oblnk && (*a->oblnk == 'z' || *a->oblnk == 'Z');
   if (a->ofm == 0)
-    {
-      if (b->url > 0)
-	b->ufmt = 0;
-      else
-	b->ufmt = 1;
-    }
+    b->ufmt = 1;
   else if (*a->ofm == 'f' || *a->ofm == 'F')
     b->ufmt = 1;
   else
