@@ -601,7 +601,7 @@ dnl LEXLIB is not useful in gcc.
 if test -f $srcdir/../flex/skel.c; then
   FLEX='$(objdir)/../flex/flex'
 else
-  AC_CHECK_PROG(FLEX, flex, flex, false)
+  AC_CHECK_PROG(FLEX, flex, flex, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing flex)
 fi
 
 # Bison?
@@ -609,7 +609,7 @@ fi
 if test -f $srcdir/../bison/bison.simple; then
   BISON='$(objdir)/../bison/bison -L $(srcdir)/../bison/'
 else
-  AC_CHECK_PROG(BISON, bison, bison, false)
+  AC_CHECK_PROG(BISON, bison, bison, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing bison)
 fi
 
 # These libraries may be used by collect2.
