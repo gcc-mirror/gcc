@@ -1,3 +1,9 @@
+Thu Jul 29 19:01:58 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* arm.h (Hint): Delete macro.
+	Substitute HOST_WIDE_INT for Hint in some prototypes.
+	* arm.c: Substitute HOST_WIDE_INT for Hint in one prototype.
+
 Thu Jul 29 09:21:42 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* builtins.c (expand_builtin_setjmp): Use force_operand to

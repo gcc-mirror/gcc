@@ -68,7 +68,7 @@ static int function_really_clobbers_lr PROTO ((rtx));
 static void emit_multi_reg_push PROTO ((int));
 static void emit_sfm PROTO ((int, int));
 static enum arm_cond_code get_arm_condition_code PROTO ((rtx));
-static int const_ok_for_op RTX_CODE_PROTO ((Hint, Rcode));
+static int const_ok_for_op RTX_CODE_PROTO ((HOST_WIDE_INT, Rcode));
 
 /* True if we are currently building a constant table. */
 int making_const_table;
