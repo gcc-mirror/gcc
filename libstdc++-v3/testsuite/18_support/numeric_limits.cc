@@ -25,6 +25,7 @@
 #include <limits>
 #include <limits.h>
 #include <float.h>
+#include <cwchar>
 #include <testsuite_hooks.h>
 
 template<typename T>
@@ -47,6 +48,10 @@ DEFINE_EXTREMA(int, INT_MIN, INT_MAX);
 DEFINE_EXTREMA(unsigned, 0U, UINT_MAX);
 DEFINE_EXTREMA(long, LONG_MIN, LONG_MAX);
 DEFINE_EXTREMA(unsigned long, 0UL, ULONG_MAX);
+
+#if _GLIBCPP_USE_WCHAR_T
+DEFINE_EXTREMA(wchar_t, WCHAR_MIN, WCHAR_MAX);
+#endif //_GLIBCPP_USE_WCHAR_T
 
 DEFINE_EXTREMA(float, FLT_MIN, FLT_MAX);
 DEFINE_EXTREMA(double, DBL_MIN, DBL_MAX);
