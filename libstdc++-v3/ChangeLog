@@ -1,5 +1,9 @@
 2000-11-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* config/c_io_stdio.h (streamsize): Make it a typedef for
+	ptrdiff_t.
+	(wstreamsize): Likewise.
+
 	* config/c_io_stdio.h: Include libio.h.
 
 Wed Nov 15 18:39:34 2000  Mark P Mitchell  <mark@codesourcery.com>
