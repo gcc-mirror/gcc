@@ -488,6 +488,11 @@ extern void abort ();
 # define STDERR_FILENO  2
 #endif
 
+/* Some systems have mkdir that takes a single argument. */
+#ifdef MKDIR_TAKES_ONE_ARG
+# define mkdir(a,b) mkdir(a)
+#endif
+
 /* Get libiberty declarations. */
 #include "libiberty.h"
 

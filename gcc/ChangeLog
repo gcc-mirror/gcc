@@ -1,3 +1,12 @@
+Thu Apr 15 02:45:19 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+        * aclocal.m4 (GCC_FUNC_MKDIR_TAKES_ONE_ARG): Define.
+        * configure.in: Use.
+        * configure: Rebuilt.
+        * acconfig.h (MKDIR_TAKES_ONE_ARG): Add.
+        * config.in: Rebuilt.
+        * system.h: Use.
+
 Thu Apr 15 01:03:21 1999  Jan Hubicka <hubicka@freesoft.cz>
 			  Jeff Law <law@cygnus.com>
 

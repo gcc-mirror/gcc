@@ -115,6 +115,9 @@
 /* Define to enable the use of a default linker. */
 #undef DEFAULT_LINKER
 
+/* Define if host mkdir takes a single argument. */
+#undef MKDIR_TAKES_ONE_ARG
+
 /* Define to the name of the distribution.  */
 #undef PACKAGE
 
@@ -295,6 +298,9 @@
 
 /* Define if you have the <argz.h> header file.  */
 #undef HAVE_ARGZ_H
+
+/* Define if you have the <direct.h> header file.  */
+#undef HAVE_DIRECT_H
 
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
