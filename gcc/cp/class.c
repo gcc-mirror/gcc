@@ -5318,7 +5318,7 @@ fixed_type_or_null (instance, nonnull, cdtorp)
   switch (TREE_CODE (instance))
     {
     case INDIRECT_REF:
-      if (POINTER_TYPE_P (instance))
+      if (POINTER_TYPE_P (TREE_TYPE (instance)))
 	return NULL_TREE;
       else
 	return fixed_type_or_null (TREE_OPERAND (instance, 0),
