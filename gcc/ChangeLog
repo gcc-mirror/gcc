@@ -1,3 +1,9 @@
+2003-08-22  bernardo innocenti  <bernie@develer.com>
+
+	* gcc/config/m68k/m68k.c (m68k_coff_asm_named_section): remove unused
+	function.
+	* gcc/config/m68k/m68k.c (-m68k_svr3_asm_out_constructor): likewise.
+
 2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/i386/i386.c (const_int_1_operand): Simplify an
