@@ -1,3 +1,8 @@
+2001-12-27  Alan Modra  <amodra@bigpond.net.au>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/linux64.h (ASM_DECLARE_FUNCTION_NAME): Simplify.
+
 2001-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* toplev.c (independent_decode_option): Re-add -aux-info option
