@@ -4167,6 +4167,7 @@ build_range_type (type, lowval, highval)
   TYPE_PRECISION (itype) = TYPE_PRECISION (type);
   TYPE_MODE (itype) = TYPE_MODE (type);
   TYPE_SIZE (itype) = TYPE_SIZE (type);
+  TYPE_SIZE_UNIT (itype) = TYPE_SIZE_UNIT (type);
   TYPE_ALIGN (itype) = TYPE_ALIGN (type);
   if (TREE_CODE (lowval) == INTEGER_CST)
     {
