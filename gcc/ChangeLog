@@ -1,3 +1,26 @@
+2003-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-linux.h (ASM_OUTPUT_ADDR_VEC_ELT): Use label in big switch ELTs.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Use label difference in big switch ELTs.
+	* pa.c (pa_adjust_insn_length): Check for btable branches using
+	attribute TYPE_BTABLE_BRANCH.
+	(pa_reorg): Simplify.
+	* pa.h (CASE_VECTOR_MODE): Change big switch mode to SImode.
+	(ASM_OUTPUT_ADDR_VEC_ELT): As above.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): As above.
+	* pa.md (btable_branch): New instruction type.
+	(in_branch_delay, in_nullified_branch_delay, in_call_delay): Disallow
+	btable branches.
+	(define_delay): Add btable branches to insn types that may have an
+	insn in the delay position.
+	(Z2, Z3): Add btable branch to list.
+	Simplify unamed pattern set copy pic_label_operand to register.  Add
+	PA 2.0 variant.
+	(short_jump): New jump for use in branch tables.
+	(casesi, casesi0): Revise for new branch table formats.
+	(casesi32, casesi32p, casesi64p): New casesi patterns.
+	(indirect_jump): Move.
+
 2003-10-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (UNITS_PER_WORD): Revert to

@@ -1550,11 +1550,14 @@ do { 									\
 
 #define FUNCTION_NAME_P(NAME)  (*(NAME) == '@')
 
-/* Specify the machine mode that this machine uses
-   for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? TImode : DImode)
+/* Specify the machine mode that this machine uses for the index in the
+   tablejump instruction.  For small tables, an element consists of a
+   ia-relative branch and its delay slot.  When -mbig-switch is specified,
+   we use a 32-bit absolute address for non-pic code, and a 32-bit offset
+   for both 32 and 64-bit pic code.  */
+#define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? SImode : DImode)
 
-/* Jump tables must be 32 bit aligned, no matter the size of the element.  */
+/* Jump tables must be 32-bit aligned, no matter the size of the element.  */
 #define ADDR_VEC_ALIGN(ADDR_VEC) 2
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
@@ -1724,35 +1727,41 @@ do { 									\
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii ((FILE), (P), (SIZE))
 
-/* This is how to output an element of a case-vector that is absolute.
-   Note that this method makes filling these branch delay slots
-   impossible.  */
+/* Jump tables are always placed in the text section.  Technically, it
+   is possible to put them in the readonly data section when -mbig-switch
+   is specified.  This has the benefit of getting the table out of .text
+   and reducing branch lengths as a result.  The downside is that an
+   additional insn (addil) is needed to access the table when generating
+   PIC code.  The address difference table also has to use 32-bit
+   pc-relative relocations.  Currently, GAS does not support these
+   relocations, although it is easily modified to do this operation.
+   The table entries need to look like "$L1+(.+8-$L0)-$PIC_pcrel$0"
+   when using ELF GAS.  A simple difference can be used when using
+   SOM GAS or the HP assembler.  The final downside is GDB complains
+   about the nesting of the label for the table when debugging.  */
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  if (TARGET_BIG_SWITCH)					\
-    fprintf (FILE, "\tstw %%r1,-16(%%r30)\n\tldil LR'L$%04d,%%r1\n\tbe RR'L$%04d(%%sr4,%%r1)\n\tldw -16(%%r30),%%r1\n", VALUE, VALUE);		\
-  else								\
-    fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
-
-/* Jump tables are executable code and live in the TEXT section on the PA.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* This is how to output an element of a case-vector that is relative.
-   This must be defined correctly as it is used when generating PIC code.
+/* This is how to output an element of a case-vector that is absolute.  */
 
-   I believe it safe to use the same definition as ASM_OUTPUT_ADDR_VEC_ELT
-   on the PA since ASM_OUTPUT_ADDR_VEC_ELT uses pc-relative jump instructions
-   rather than a table of absolute addresses.  */
-
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
-  if (TARGET_BIG_SWITCH)					\
-    fprintf (FILE, "\tstw %%r1,-16(%%r30)\n\tldw T'L$%04d(%%r19),%%r1\n\tbv %%r0(%%r1)\n\tldw -16(%%r30),%%r1\n", VALUE);				\
-  else								\
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
+  if (TARGET_BIG_SWITCH)						\
+    fprintf (FILE, "\t.word L$%04d\n", VALUE);				\
+  else									\
     fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
 
-/* This is how to output an assembler line
-   that says to advance the location counter
-   to a multiple of 2**LOG bytes.  */
+/* This is how to output an element of a case-vector that is relative. 
+   Since we always place jump tables in the text section, the difference
+   is absolute and requires no relocation.  */
+
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
+  if (TARGET_BIG_SWITCH)						\
+    fprintf (FILE, "\t.word L$%04d-L$%04d\n", VALUE, REL);		\
+  else									\
+    fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
+
+/* This is how to output an assembler line that says to advance the
+   location counter to a multiple of 2**LOG bytes.  */
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))

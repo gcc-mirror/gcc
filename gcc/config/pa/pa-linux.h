@@ -121,14 +121,14 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
   if (TARGET_BIG_SWITCH)					\
-    fprintf (FILE, "\tstw %%r1,-16(%%r30)\n\tldil LR'.L%d,%%r1\n\tbe RR'.L%d(%%sr4,%%r1)\n\tldw -16(%%r30),%%r1\n", VALUE, VALUE);		\
+    fprintf (FILE, "\t.word .L%d\n", VALUE);			\
   else								\
     fprintf (FILE, "\tb .L%d\n\tnop\n", VALUE)
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   if (TARGET_BIG_SWITCH)					\
-    fprintf (FILE, "\tstw %%r1,-16(%%r30)\n\tldw T'.L%d(%%r19),%%r1\n\tbv %%r0(%%r1)\n\tldw -16(%%r30),%%r1\n", VALUE);				\
+    fprintf (FILE, "\t.word .L%d-.L%d\n", VALUE, REL);		\
   else								\
     fprintf (FILE, "\tb .L%d\n\tnop\n", VALUE)
 
