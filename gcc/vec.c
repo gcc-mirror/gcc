@@ -29,8 +29,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct vec_prefix 
 {
-  size_t num;
-  size_t alloc;
+  unsigned num;
+  unsigned alloc;
   void *vec[1];
 };
 
@@ -57,7 +57,7 @@ vec_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
 	       MEM_STAT_DECL)
 {
   struct vec_prefix *pfx = vec;
-  size_t alloc = pfx ? pfx->num : 0;
+  unsigned alloc = pfx ? pfx->num : 0;
 
   if (reserve >= 0)
     alloc += reserve;

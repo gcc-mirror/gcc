@@ -111,7 +111,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    (by taking its address), this is noted in the descriptions.  */
 
 /* Length of vector
-   size_t VEC_T_length(const VEC(T) *v);
+   unsigned VEC_T_length(const VEC(T) *v);
 
    Return the number of active elements in V.  V can be NULL, in which
    case zero is returned.  */
@@ -127,8 +127,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define VEC_last(TDEF,V)	(VEC_OP(TDEF,last)(V VEC_CHECK_INFO))
 
 /* Index into vector
-   T VEC_T_index(VEC(T) *v, size_t ix); // Pointer
-   T *VEC_T_index(VEC(T) *v, size_t ix); // Object
+   T VEC_T_index(VEC(T) *v, unsigned ix); // Pointer
+   T *VEC_T_index(VEC(T) *v, unsigned ix); // Object
 
    Return the IX'th element.  If IX is outside the domain of V,
    abort.  */
@@ -136,8 +136,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define VEC_index(TDEF,V,I)	(VEC_OP(TDEF,index)(V,I VEC_CHECK_INFO))
 
 /* Iterate over vector
-   int VEC_T_index(VEC(T) *v, size_t ix, T &ptr); // Pointer
-   int VEC_T_index(VEC(T) *v, size_t ix, T *&ptr); // Object
+   int VEC_T_iterate(VEC(T) *v, unsigned ix, T &ptr); // Pointer
+   int VEC_T_iterate(VEC(T) *v, unsigned ix, T *&ptr); // Object
 
    Return iteration condition and update PTR to point to the IX'th
    element.  At the end of iteration, sets PTR to NULL.  Use this to
@@ -226,7 +226,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define VEC_pop(TDEF,V)			(VEC_OP(TDEF,pop)(V VEC_CHECK_INFO))
 
 /* Truncate to specific length
-   void VEC_T_truncate (VEC(T) *v, size_t len);
+   void VEC_T_truncate (VEC(T) *v, unsigned len);
    
    Set the length as specified.  This is an O(1) operation.  */
 
@@ -234,8 +234,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(TDEF,truncate)(V,I VEC_CHECK_INFO))
 
 /* Replace element
-   T VEC_T_replace (VEC(T) *v, size_t ix, T val); // Pointer
-   T *VEC_T_replace (VEC(T) *v, size_t ix, T *val);  // Object
+   T VEC_T_replace (VEC(T) *v, unsigned ix, T val); // Pointer
+   T *VEC_T_replace (VEC(T) *v, unsigned ix, T *val);  // Object
    
    Replace the IXth element of V with a new value, VAL.  For pointer
    vectors returns the original value. For object vectors returns a
@@ -247,8 +247,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(TDEF,replace)(V,I,O VEC_CHECK_INFO))
 
 /* Insert object with no reallocation
-   T *VEC_T_quick_insert (VEC(T) *v, size_t ix, T val); // Pointer
-   T *VEC_T_quick_insert (VEC(T) *v, size_t ix, T *val); // Object
+   T *VEC_T_quick_insert (VEC(T) *v, unsigned ix, T val); // Pointer
+   T *VEC_T_quick_insert (VEC(T) *v, unsigned ix, T *val); // Object
    
    Insert an element, VAL, at the IXth position of V. Return a pointer
    to the slot created.  For vectors of object, the new value can be
@@ -259,8 +259,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(TDEF,quick_insert)(V,I,O VEC_CHECK_INFO))
 
 /* Insert object with reallocation
-   T *VEC_T_safe_insert (VEC(T) *&v, size_t ix, T val); // Pointer
-   T *VEC_T_safe_insert (VEC(T) *&v, size_t ix, T *val); // Object
+   T *VEC_T_safe_insert (VEC(T) *&v, unsigned ix, T val); // Pointer
+   T *VEC_T_safe_insert (VEC(T) *&v, unsigned ix, T *val); // Object
    
    Insert an element, VAL, at the IXth position of V. Return a pointer
    to the slot created.  For vectors of object, the new value can be
@@ -271,8 +271,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(TDEF,safe_insert)(&(V),I,O VEC_CHECK_INFO MEM_STAT_INFO))
      
 /* Remove element retaining order
-   T VEC_T_ordered_remove (VEC(T) *v, size_t ix); // Pointer
-   void VEC_T_ordered_remove (VEC(T) *v, size_t ix); // Object
+   T VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Pointer
+   void VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Object
    
    Remove an element from the IXth position of V. Ordering of
    remaining elements is preserverd.  For pointer vectors returns the
@@ -282,8 +282,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(TDEF,ordered_remove)(V,I VEC_CHECK_INFO))
 
 /* Remove element destroying order
-   T VEC_T_unordered_remove (VEC(T) *v, size_t ix); // Pointer
-   void VEC_T_unordered_remove (VEC(T) *v, size_t ix); // Object
+   T VEC_T_unordered_remove (VEC(T) *v, unsigned ix); // Pointer
+   void VEC_T_unordered_remove (VEC(T) *v, unsigned ix); // Object
    
    Remove an element from the IXth position of V. Ordering of
    remaining elements is destroyed.  For pointer vectors returns the
@@ -337,8 +337,8 @@ extern void vec_assert_fail (const char *, const char * VEC_CHECK_DECL)
 #define VEC_TDEF(TDEF)							  \
 typedef struct VEC (TDEF) GTY(())					  \
 {									  \
-  size_t num;								  \
-  size_t alloc;								  \
+  unsigned num;								  \
+  unsigned alloc;							  \
   TDEF GTY ((length ("%h.num"))) vec[1];				  \
 } VEC (TDEF)
 
@@ -350,7 +350,7 @@ typedef struct VEC (TDEF) GTY(())					  \
 #define DEF_VEC_P(TDEF)							  \
 VEC_TDEF (TDEF);							  \
 									  \
-static inline size_t VEC_OP (TDEF,length)				  \
+static inline unsigned VEC_OP (TDEF,length)				  \
      (const VEC (TDEF) *vec_) 						  \
 {									  \
   return vec_ ? vec_->num : 0;						  \
@@ -365,7 +365,7 @@ static inline TDEF VEC_OP (TDEF,last)					  \
 }									  \
 									  \
 static inline TDEF VEC_OP (TDEF,index)					  \
-     (const VEC (TDEF) *vec_, size_t ix_ VEC_CHECK_DECL)		  \
+     (const VEC (TDEF) *vec_, unsigned ix_ VEC_CHECK_DECL)		  \
 {									  \
   VEC_ASSERT (vec_ && ix_ < vec_->num, "index", TDEF);			  \
   									  \
@@ -373,7 +373,7 @@ static inline TDEF VEC_OP (TDEF,index)					  \
 }									  \
 									  \
 static inline int VEC_OP (TDEF,iterate)			  	     	  \
-     (const VEC (TDEF) *vec_, size_t ix_, TDEF *ptr)			  \
+     (const VEC (TDEF) *vec_, unsigned ix_, TDEF *ptr)			  \
 {									  \
   if (vec_ && ix_ < vec_->num)						  \
     {									  \
@@ -410,7 +410,7 @@ static inline int VEC_OP (TDEF,space)	       				  \
      (VEC (TDEF) *vec_, int alloc_)					  \
 {									  \
   return vec_ ? ((vec_)->alloc - (vec_)->num				  \
-		 < (size_t)(alloc_ < 0 ? 1 : alloc_)) : alloc_ != 0;	  \
+		 < (unsigned)(alloc_ < 0 ? 1 : alloc_)) : alloc_ != 0;	  \
 }									  \
 									  \
 static inline int VEC_OP (TDEF,reserve)	       				  \
@@ -456,7 +456,7 @@ static inline TDEF VEC_OP (TDEF,pop)					  \
 }									  \
 									  \
 static inline void VEC_OP (TDEF,truncate)				  \
-     (VEC (TDEF) *vec_, size_t size_ VEC_CHECK_DECL)			  \
+     (VEC (TDEF) *vec_, unsigned size_ VEC_CHECK_DECL)			  \
 {									  \
   VEC_ASSERT (vec_ ? vec_->num >= size_ : !size_, "truncate", TDEF);	  \
   if (vec_)								  \
@@ -464,7 +464,7 @@ static inline void VEC_OP (TDEF,truncate)				  \
 }									  \
 									  \
 static inline TDEF VEC_OP (TDEF,replace)		  	     	  \
-     (VEC (TDEF) *vec_, size_t ix_, TDEF obj_ VEC_CHECK_DECL)		  \
+     (VEC (TDEF) *vec_, unsigned ix_, TDEF obj_ VEC_CHECK_DECL)		  \
 {									  \
   TDEF old_obj_;							  \
 									  \
@@ -476,7 +476,7 @@ static inline TDEF VEC_OP (TDEF,replace)		  	     	  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,quick_insert)		     	  	  \
-     (VEC (TDEF) *vec_, size_t ix_, TDEF obj_ VEC_CHECK_DECL)		  \
+     (VEC (TDEF) *vec_, unsigned ix_, TDEF obj_ VEC_CHECK_DECL)		  \
 {									  \
   TDEF *slot_;								  \
 									  \
@@ -490,7 +490,8 @@ static inline TDEF *VEC_OP (TDEF,quick_insert)		     	  	  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,safe_insert)		     	  	  \
-     (VEC (TDEF) **vec_, size_t ix_, TDEF obj_ VEC_CHECK_DECL MEM_STAT_DECL) \
+     (VEC (TDEF) **vec_, unsigned ix_, TDEF obj_ 			  \
+	VEC_CHECK_DECL MEM_STAT_DECL)					  \
 {									  \
   VEC_OP (TDEF,reserve) (vec_, -1 PASS_MEM_STAT);			  \
 									  \
@@ -498,7 +499,7 @@ static inline TDEF *VEC_OP (TDEF,safe_insert)		     	  	  \
 }									  \
 									  \
 static inline TDEF VEC_OP (TDEF,ordered_remove)				  \
-     (VEC (TDEF) *vec_, size_t ix_ VEC_CHECK_DECL)			  \
+     (VEC (TDEF) *vec_, unsigned ix_ VEC_CHECK_DECL)			  \
 {									  \
   TDEF *slot_;								  \
   TDEF obj_;								  \
@@ -512,7 +513,7 @@ static inline TDEF VEC_OP (TDEF,ordered_remove)				  \
 }									  \
 									  \
 static inline TDEF VEC_OP (TDEF,unordered_remove)			  \
-     (VEC (TDEF) *vec_, size_t ix_ VEC_CHECK_DECL)			  \
+     (VEC (TDEF) *vec_, unsigned ix_ VEC_CHECK_DECL)			  \
 {									  \
   TDEF *slot_;								  \
   TDEF obj_;								  \
@@ -542,7 +543,7 @@ struct vec_swallow_trailing_semi
 #define DEF_VEC_O(TDEF)							  \
 VEC_TDEF (TDEF);							  \
 									  \
-static inline size_t VEC_OP (TDEF,length)				  \
+static inline unsigned VEC_OP (TDEF,length)				  \
      (const VEC (TDEF) *vec_) 						  \
 {									  \
   return vec_ ? vec_->num : 0;						  \
@@ -557,7 +558,7 @@ static inline TDEF *VEC_OP (TDEF,last)					  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,index)					  \
-     (VEC (TDEF) *vec_, size_t ix_ VEC_CHECK_DECL)			  \
+     (VEC (TDEF) *vec_, unsigned ix_ VEC_CHECK_DECL)			  \
 {									  \
   VEC_ASSERT (vec_ && ix_ < vec_->num, "index", TDEF);			  \
   									  \
@@ -565,7 +566,7 @@ static inline TDEF *VEC_OP (TDEF,index)					  \
 }									  \
 									  \
 static inline int VEC_OP (TDEF,iterate)			  	     	  \
-     (VEC (TDEF) *vec_, size_t ix_, TDEF **ptr)				  \
+     (VEC (TDEF) *vec_, unsigned ix_, TDEF **ptr)			  \
 {									  \
   if (vec_ && ix_ < vec_->num)						  \
     {									  \
@@ -604,7 +605,7 @@ static inline int VEC_OP (TDEF,space)	       				  \
      (VEC (TDEF) *vec_, int alloc_)					  \
 {									  \
   return vec_ ? ((vec_)->alloc - (vec_)->num				  \
-		 < (size_t)(alloc_ < 0 ? 1 : alloc_)) : alloc_ != 0;	  \
+		 < (unsigned)(alloc_ < 0 ? 1 : alloc_)) : alloc_ != 0;	  \
 }									  \
 									  \
 static inline int VEC_OP (TDEF,reserve)	   	    			  \
@@ -649,7 +650,7 @@ static inline void VEC_OP (TDEF,pop)					  \
 }									  \
 									  \
 static inline void VEC_OP (TDEF,truncate)				  \
-     (VEC (TDEF) *vec_, size_t size_ VEC_CHECK_DECL)			  \
+     (VEC (TDEF) *vec_, unsigned size_ VEC_CHECK_DECL)			  \
 {									  \
   VEC_ASSERT (vec_ ? vec_->num >= size_ : !size_, "truncate", TDEF);	  \
   if (vec_)								  \
@@ -657,7 +658,7 @@ static inline void VEC_OP (TDEF,truncate)				  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,replace)				  \
-     (VEC (TDEF) *vec_, size_t ix_, const TDEF *obj_ VEC_CHECK_DECL)	  \
+     (VEC (TDEF) *vec_, unsigned ix_, const TDEF *obj_ VEC_CHECK_DECL)	  \
 {									  \
   TDEF *slot_;								  \
 									  \
@@ -670,7 +671,7 @@ static inline TDEF *VEC_OP (TDEF,replace)				  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,quick_insert)				  \
-     (VEC (TDEF) *vec_, size_t ix_, const TDEF *obj_ VEC_CHECK_DECL)	  \
+     (VEC (TDEF) *vec_, unsigned ix_, const TDEF *obj_ VEC_CHECK_DECL)	  \
 {									  \
   TDEF *slot_;								  \
 									  \
@@ -685,7 +686,8 @@ static inline TDEF *VEC_OP (TDEF,quick_insert)				  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,safe_insert)		     	  	  \
-     (VEC (TDEF) **vec_, size_t ix_, const TDEF *obj_ VEC_CHECK_DECL MEM_STAT_DECL)  \
+     (VEC (TDEF) **vec_, unsigned ix_, const TDEF *obj_			  \
+ 		VEC_CHECK_DECL MEM_STAT_DECL)				  \
 {									  \
   VEC_OP (TDEF,reserve) (vec_, -1 PASS_MEM_STAT);			  \
 									  \
@@ -693,7 +695,7 @@ static inline TDEF *VEC_OP (TDEF,safe_insert)		     	  	  \
 }									  \
 									  \
 static inline void VEC_OP (TDEF,ordered_remove)				  \
-     (VEC (TDEF) *vec_, size_t ix_ VEC_CHECK_DECL)			  \
+     (VEC (TDEF) *vec_, unsigned ix_ VEC_CHECK_DECL)			  \
 {									  \
   TDEF *slot_;								  \
 									  \
@@ -703,7 +705,7 @@ static inline void VEC_OP (TDEF,ordered_remove)				  \
 }									  \
 									  \
 static inline void VEC_OP (TDEF,unordered_remove)			  \
-     (VEC (TDEF) *vec_, size_t ix_ VEC_CHECK_DECL)			  \
+     (VEC (TDEF) *vec_, unsigned ix_ VEC_CHECK_DECL)			  \
 {									  \
   VEC_ASSERT (ix_ < vec_->num, "remove", TDEF);				  \
   vec_->vec[ix_] = vec_->vec[--vec_->num];				  \
