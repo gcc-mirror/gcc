@@ -1688,8 +1688,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	     treatment.  We do this here so that the ordinary,
 	     non-template, name-mangling algorithm will not be used
 	     later.  */
-	  if ((is_member_template (tmpl) || ctype == NULL_TREE)
-	      && name_mangling_version >= 1)
+	  if (is_member_template (tmpl) || ctype == NULL_TREE)
 	    set_mangled_name_for_template_decl (decl);
 
 	  if (is_friend && !have_def)
@@ -5874,8 +5873,7 @@ tsubst_decl (t, args, type)
 		
 		/* TMPL will be NULL if this is a specialization of a
 		   member function of a template class.  */
-		if (name_mangling_version < 1
-		    || tmpl == NULL_TREE
+		if (tmpl == NULL_TREE
 		    || (member && !is_member_template (tmpl)
 			&& !DECL_TEMPLATE_INFO (tmpl)))
 		  set_mangled_name_for_decl (r);

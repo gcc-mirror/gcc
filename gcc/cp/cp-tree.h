@@ -261,11 +261,6 @@ extern int flag_huge_objects;
    class).  */
 #define all_overridden_vfuns_in_vtables_p() (1)
 
-/* Nonzero if we use access type_info objects directly, and use the
-   cross-vendor layout for them. Zero if we use an accessor function
-   to get the type_info object address.  */
-#define new_abi_rtti_p() (1)
-
 /* Nonzero if primary and secondary vtables are combined into a single
    vtable.  */
 #define merge_primary_and_secondary_vtables_p() (1)
@@ -1120,15 +1115,6 @@ extern int flag_ansi;
    inline by default.  */
 
 extern int flag_default_inline;
-
-/* The name-mangling scheme to use.  Versions of gcc before 2.8 use
-   version 0.  */
-extern int name_mangling_version;
-
-/* Nonzero if squashed mangling is to be performed.
-   This uses the B and K codes to reference previously seen class types
-   and class qualifiers.       */
-extern int flag_do_squangling;
 
 /* Nonzero means generate separate instantiation control files and juggle
    them at link time.  */

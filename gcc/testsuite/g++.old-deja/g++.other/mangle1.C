@@ -1,5 +1,4 @@
 // Test for proper mangling by setting up name clashes.
-// Special g++ Options: -fno-squangle
 
 #if (!defined (__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100)
 #define NAME(OLD, NEW) OLD

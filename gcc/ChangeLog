@@ -1,3 +1,8 @@
+2001-02-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* invoke.texi (-fsquangle): Remove documentation.
+	(-fname-mangling-version): Likewise.
+
 2001-02-18  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md: Update copyright.

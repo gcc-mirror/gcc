@@ -8862,7 +8862,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   /* Plain overloading: will not be grok'd by grokclassfn.  */
   if (! ctype && ! processing_template_decl
       && (! DECL_EXTERN_C_P (decl) || DECL_OVERLOADED_OPERATOR_P (decl))
-      && (! DECL_USE_TEMPLATE (decl) || name_mangling_version < 1))
+      && ! DECL_USE_TEMPLATE (decl))
     set_mangled_name_for_decl (decl);
 
   if (funcdef_flag)
