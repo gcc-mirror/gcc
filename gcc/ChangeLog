@@ -1,3 +1,12 @@
+Fri Apr 24 11:00:18 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* dbxout.c (dbxout_type_fields): Use HOST_WIDE_INT_PRINT_DEC
+	appropriately.
+	(dbxout_type_method_1, dbxout_type): Likewise.
+	(print_int_cst_octal, print_octal, dbxout_symbol): Likewise.
+	(dbxout_type): Fix check for when to print a type range in
+	octal vs decimal.
+
 Fri Apr 24 16:45:03 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* (gen_shl_and, in case 1): Fix comparison with mask.
