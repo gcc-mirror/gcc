@@ -143,6 +143,14 @@
 	* Makefile.am: Added new files.
 	* Makefile.in: Rebuilt.
 
+2000-08-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java/lang/natClass.cc (finit_name): Initialized with `finit$'.
+	(finit_leg_name): New global.
+	(java::lang::Class::getDeclaredMethods): Test for `finit$' or
+	`$finit$'. This is a backward compatibility hack.
+	(java::lang::Class::_getMethods): Likewise.
+
 2000-08-15  Andrew Haley  <aph@cygnus.com>
 
 	* include/jvm.h (_Jv_HashCode): New hash code.
