@@ -1,3 +1,9 @@
+1999-05-12 20:22 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* configure.in: Make --enable-cpp and --with-cpp-install-dir
+	documented options.  Enable the cpp driver by default.
+	* configure: Rebuilt.
+
 Wed May 12 18:08:48 1999  David Edelsohn     <edelsohn@gnu.org>
 			  Richard Henderson  <rth@cygnus.com>
 
