@@ -1,3 +1,9 @@
+2000-12-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	* resource.c (mark_referenced_resources): Abort() before
+	attempting to mark a pseudo register.
+	(mark_set_resources): Likewise.
+
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
 	* loop.h (REG_IV_CLASS): New accessor macro.

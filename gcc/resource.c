@@ -212,14 +212,24 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	  unsigned int last_regno
 	    = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
 
+	  if (last_regno > FIRST_PSEUDO_REGISTER)
+	    abort ();
 	  for (r = regno; r < last_regno; r++)
 	    SET_HARD_REG_BIT (res->regs, r);
 	}
       return;
 
     case REG:
-      for (r = 0; r < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); r++)
-	SET_HARD_REG_BIT (res->regs, REGNO (x) + r);
+	{
+	  unsigned int regno = REGNO (x);
+	  unsigned int last_regno
+	    = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+
+	  if (last_regno > FIRST_PSEUDO_REGISTER)
+	    abort ();
+	  for (r = regno; r < last_regno; r++)
+	    SET_HARD_REG_BIT (res->regs, r);
+	}
       return;
 
     case MEM:
@@ -760,6 +770,8 @@ mark_set_resources (x, res, in_dest, mark_type)
 	      unsigned int last_regno
 		= regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
 
+	      if (last_regno > FIRST_PSEUDO_REGISTER)
+		abort ();
 	      for (r = regno; r < last_regno; r++)
 		SET_HARD_REG_BIT (res->regs, r);
 	    }
@@ -768,8 +780,16 @@ mark_set_resources (x, res, in_dest, mark_type)
 
     case REG:
       if (in_dest)
-        for (r = 0; r < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); r++)
-	  SET_HARD_REG_BIT (res->regs, REGNO (x) + r);
+	{
+	  unsigned int regno = REGNO (x);
+	  unsigned int last_regno
+	    = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+
+	  if (last_regno > FIRST_PSEUDO_REGISTER)
+	    abort ();
+	  for (r = regno; r < last_regno; r++)
+	    SET_HARD_REG_BIT (res->regs, r);
+	}
       return;
 
     case STRICT_LOW_PART:
