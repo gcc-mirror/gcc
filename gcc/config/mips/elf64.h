@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS R4000 version with
    GOFAST floating point library.
-   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2002
+   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2002, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.

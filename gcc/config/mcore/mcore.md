@@ -1,5 +1,5 @@
 ;;  Machine description the Motorola MCore
-;;  Copyright (C) 1993, 1999, 2000 Free Software Foundation, Inc.
+;;  Copyright (C) 1993, 1999, 2000, 2004 Free Software Foundation, Inc.
 ;;  Contributed by Motorola.
 
 ;; This file is part of GCC.
