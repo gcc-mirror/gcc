@@ -1,3 +1,7 @@
+2004-12-21  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/freebsd-spec.h:  Use KSE pthread lib for -pthread.
+
 2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR c/18963
