@@ -28,16 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-/* Output at beginning of assembler file.  */
-/* The .file command should always begin the output.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)						\
-  do {									\
-	mips_asm_file_start (FILE);					\
-	fprintf (FILE, "\t.version\t\"01.01\"\n");			\
-  } while (0)
-
-
 /* Required to keep collect2.c happy */
 #undef OBJECT_FORMAT_COFF
 

@@ -45,15 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-/* Output at beginning of assembler file.  */
-/* The .file command should always begin the output.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)                                            \
-  do {                                                                  \
-        output_file_directive (FILE, main_input_filename);              \
-        fprintf (FILE, "\t.version\t\"01.01\"\n");                      \
-  } while (0)
-
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static

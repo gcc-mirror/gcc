@@ -42,11 +42,7 @@ Boston, MA 02111-1307, USA.  */
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */
 #undef ASM_FILE_START
-#define ASM_FILE_START(FILE)                                            \
-  do {                                                                  \
-        output_file_directive (FILE, main_input_filename);              \
-        fprintf (FILE, "\t.version\t\"01.01\"\n");                      \
-  } while (0)
+#define ASM_FILE_START(FILE) output_file_directive (FILE, main_input_filename)
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC  "%{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}} %{static:-static}"

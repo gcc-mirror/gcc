@@ -92,27 +92,11 @@ Boston, MA 02111-1307, USA.  */
 #define USER_LABEL_PREFIX 	""	/* For ELF the default is no underscores */
 #define LOCAL_LABEL_PREFIX 	"."
 
-/* Attach a special .ident directive to the end of the file to identify
-   the version of GCC which compiled this code.  */
 #define IDENT_ASM_OP 	"\t.ident\t"
 
 /* Output #ident as a .ident.  */
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
-  
-#ifdef IDENTIFY_WITH_IDENT
-#define ASM_IDENTIFY_GCC(FILE) /* nothing */
-#define ASM_IDENTIFY_LANGUAGE(FILE)			\
- fprintf (FILE, "%s\"GCC (%s) %s\"\n", IDENT_ASM_OP,	\
-	 lang_identify (), version_string)
-#else
-#define ASM_FILE_END(FILE)					\
-do {				 				\
-     if (!flag_no_ident)					\
-	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",		\
-		 IDENT_ASM_OP, version_string);			\
-   } while (0)
-#endif
 
 /* Support const sections and the ctors and dtors sections for g++.
    Note that there appears to be two different ways to support const

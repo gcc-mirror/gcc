@@ -102,16 +102,6 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
   while (0)
 #endif
 
-#ifndef ASM_IDENTIFY_GCC
-  /* Default the definition, only if ASM_IDENTIFY_GCC is not set,
-     because if it is set, we might not want ASM_IDENTIFY_LANGUAGE
-     outputting labels, if we do want it to, then it must be defined
-     in the tm.h file.  */
-#ifndef ASM_IDENTIFY_LANGUAGE
-#define ASM_IDENTIFY_LANGUAGE(FILE) output_lang_identify (FILE);
-#endif
-#endif
-
 /* This is how we tell the assembler to equate two values.  */
 #ifdef SET_ASM_OP
 #ifndef ASM_OUTPUT_DEF

@@ -1245,10 +1245,6 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
   fprintf (FILE, "\tmov (sp)+, %s\n", reg_names[REGNO])     	\
 )
 
-
-#define ASM_IDENTIFY_GCC(FILE)			\
-    fprintf(FILE, "gcc_compiled:\n")
-
 /* trampoline - how should i do it in separate i+d ? 
    have some allocate_trampoline magic??? 
 

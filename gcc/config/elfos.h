@@ -94,22 +94,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
 
-/* Attach a special .ident directive to the end of the file to identify
-   the version of GCC which compiled this code.  The format of the
-   .ident string is patterned after the ones produced by native svr4
-   C compilers.  */
-
 #define IDENT_ASM_OP "\t.ident\t"
-
-#undef ASM_FILE_END
-#define ASM_FILE_END(FILE)				\
-  do							\
-    {				 			\
-      if (!flag_no_ident)				\
-	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",	\
-		 IDENT_ASM_OP, version_string);		\
-    }							\
-  while (0)
 
 #undef  ASM_BYTE_OP
 #define ASM_BYTE_OP	"\t.byte\t"

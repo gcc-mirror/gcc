@@ -2167,6 +2167,10 @@ dtors_section ()							\
 
 
 /* Overall Framework of an Assembler File.  */
+/* We need to have a data section we can identify so that we can set
+   the DP register back to a data pointer in the small memory model.
+   This is only required for ISRs if we are paranoid that someone
+   may have quietly changed this register on the sly.  */
 
 #define ASM_FILE_START(FILE)					\
 {								\
@@ -2189,17 +2193,8 @@ dtors_section ()							\
       }								\
     else							\
       output_quoted_string (FILE, main_input_filename);		\
-    fprintf (FILE, "\n");					\
+    fputs ("\n\t.data\ndata_sec:\n", FILE);			\
 }
-
-/* We need to have a data section we can identify so that we can set
-   the DP register back to a data pointer in the small memory model.
-   This is only required for ISRs if we are paranoid that someone
-   may have quietly changed this register on the sly.  */
-
-#define ASM_IDENTIFY_GCC(FILE) \
-    if (! TARGET_TI) fputs ("gcc2_compiled.:\n", FILE);	\
-      fputs ("\t.data\ndata_sec:\n", FILE);
 
 #define ASM_COMMENT_START ";"
 

@@ -208,11 +208,6 @@ Boston, MA 02111-1307, USA.  */
 /* Define our object format type for crtstuff.c */
 #define OBJECT_FORMAT_MACHO
 
-/* Don't use .gcc_compiled symbols to communicate with GDB;
-   They interfere with numerically sorted symbol lists. */
-
-#undef	ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(asm_out_file)
 #undef	INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP
 #undef	INVOKE__main

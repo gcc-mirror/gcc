@@ -1018,8 +1018,17 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Control the assembler format that we output.  */
 
 /* Output at beginning of assembler file.  */
+/* When debugging, we want to output an extra dummy label so that gas
+   can distinguish between D_float and G_float prior to processing the
+   .stabs directive identifying type double.  */
 
-#define ASM_FILE_START(FILE) fprintf (FILE, "#NO_APP\n");
+#define ASM_FILE_START(FILE) \
+  do {								\
+    fputs (ASM_APP_OFF, FILE);					\
+    if (write_symbols == DBX_DEBUG)				\
+      fprintf (FILE, "___vax_%c_doubles:\n", ASM_DOUBLE_CHAR);	\
+  } while (0)
+
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
@@ -1207,17 +1216,6 @@ do { char dstr[30];							\
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
-
-/* When debugging, we want to output an extra dummy label so that gas
-   can distinguish between D_float and G_float prior to processing the
-   .stabs directive identifying type double.  */
-
-#define ASM_IDENTIFY_LANGUAGE(FILE)	\
-  do {								\
-    output_lang_identify (FILE);				\
-    if (write_symbols == DBX_DEBUG)				\
-      fprintf (FILE, "___vax_%c_doubles:\n", ASM_DOUBLE_CHAR);	\
-  } while (0)
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.

@@ -1048,8 +1048,6 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 /******************  Assembler output formatting  **********************/
 
-#define ASM_IDENTIFY_GCC(FILE)  fputs ("; gcc2_compiled:\n", FILE)
-
 #define ASM_COMMENT_START  ";"
 
 #define ASM_OUTPUT_FUNNAM(FILE,NAME)	\

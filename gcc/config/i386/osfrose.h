@@ -740,11 +740,6 @@ do									\
   }									\
 while (0)
 
-/* Attach a special .ident directive to the end of the file to identify
-   the version of GCC which compiled this code.  The format of the
-   .ident string is patterned after the ones produced by native svr4
-   C compilers.  */
-
 #define IDENT_ASM_OP "\t.ident\t"
 
 /* Allow #sccs in preprocessor.  */
@@ -759,98 +754,6 @@ do									\
     if (HALF_PIC_P ())							\
       HALF_PIC_FINISH (STREAM);						\
     ix86_asm_file_end (STREAM);						\
-    if (!flag_no_ident)							\
-      {									\
-	char *fstart = main_input_filename;				\
-	char *fname;							\
-									\
-	if (!fstart)							\
-	  fstart = "<no file>";						\
-									\
-	fname = fstart + strlen (fstart) - 1;				\
-	while (fname > fstart && *fname != '/')				\
-	  fname--;							\
-									\
-	if (*fname == '/')						\
-	  fname++;							\
-									\
-	fprintf ((STREAM), "%s\"GCC: (GNU) %s %s -O%d",			\
-		 IDENT_ASM_OP, version_string, fname, optimize);	\
-									\
-	if (write_symbols == PREFERRED_DEBUGGING_TYPE)			\
-	  fprintf ((STREAM), " -g%d", (int)debug_info_level);		\
-									\
-	else if (write_symbols == DBX_DEBUG)				\
-	  fprintf ((STREAM), " -gstabs%d", (int)debug_info_level);	\
-									\
-	else if (write_symbols == DWARF_DEBUG)				\
-	  fprintf ((STREAM), " -gdwarf%d", (int)debug_info_level);	\
-									\
-	else if (write_symbols != NO_DEBUG)				\
-	  fprintf ((STREAM), " -g??%d", (int)debug_info_level);		\
-									\
-	if (flag_omit_frame_pointer)					\
-	  fprintf ((STREAM), " -fomit-frame-pointer");			\
-									\
-	if (flag_strength_reduce)					\
-	  fprintf ((STREAM), " -fstrength-reduce");			\
-									\
-	if (flag_unroll_loops)						\
-	  fprintf ((STREAM), " -funroll-loops");			\
-									\
-	if (flag_schedule_insns)					\
-	  fprintf ((STREAM), " -fschedule-insns");			\
-									\
-	if (flag_schedule_insns_after_reload)				\
-	  fprintf ((STREAM), " -fschedule-insns2");			\
-									\
-	if (flag_force_mem)						\
-	  fprintf ((STREAM), " -fforce-mem");				\
-									\
-	if (flag_force_addr)						\
-	  fprintf ((STREAM), " -fforce-addr");				\
-									\
-	if (flag_inline_functions)					\
-	  fprintf ((STREAM), " -finline-functions");			\
-									\
-	if (flag_caller_saves)						\
-	  fprintf ((STREAM), " -fcaller-saves");			\
-									\
-	if (flag_pic)							\
-	  fprintf ((STREAM), (flag_pic > 1) ? " -fPIC" : " -fpic");	\
-									\
-	if (flag_inhibit_size_directive)				\
-	  fprintf ((STREAM), " -finhibit-size-directive");		\
-									\
-	if (flag_gnu_linker)						\
-	  fprintf ((STREAM), " -fgnu-linker");				\
-									\
-	if (profile_flag)						\
-	  fprintf ((STREAM), " -p");					\
-									\
-	if (profile_block_flag)						\
-	  fprintf ((STREAM), " -a");					\
-									\
-	if (TARGET_IEEE_FP)						\
-	  fprintf ((STREAM), " -mieee-fp");				\
-									\
-	if (TARGET_HALF_PIC)						\
-	  fprintf ((STREAM), " -mhalf-pic");				\
-									\
-	if (!TARGET_MOVE)						\
-	  fprintf ((STREAM), " -mno-move");				\
-									\
-	if (TARGET_386)							\
-	  fprintf ((STREAM), " -m386");					\
-									\
-	else if (TARGET_486)						\
-	  fprintf ((STREAM), " -m486");					\
-									\
-	else								\
-	  fprintf ((STREAM), " -munknown-machine");			\
-									\
-	fprintf ((STREAM), (TARGET_ELF) ? " -melf\"\n" : " -mrose\"\n"); \
-      }									\
   }									\
 while (0)
 
@@ -865,21 +768,6 @@ while (0)
    by hand, rather than passing the argument '-lgcc' to tell the linker
    to do the search */
 #define LINK_LIBGCC_SPECIAL
-
-/* A C statement to output assembler commands which will identify the object
-  file as having been compile with GNU CC. We don't need or want this for
-  OSF1. GDB doesn't need it and kdb doesn't like it */
-#define ASM_IDENTIFY_GCC(FILE)
-
-/* Identify the front-end which produced this file.  To keep symbol
-   space down, and not confuse kdb, only do this if the language is
-   not C.  */
-
-#define ASM_IDENTIFY_LANGUAGE(STREAM)					\
-{									\
-  if (strcmp (lang_identify (), "c") != 0)				\
-    output_lang_identify (STREAM);					\
-}
 
 /* Generate calls to memcpy, etc., not bcopy, etc. */
 #define TARGET_MEM_FUNCTIONS

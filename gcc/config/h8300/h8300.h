@@ -1068,8 +1068,6 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 /* Control the assembler format that we output.  */
 
-#define ASM_IDENTIFY_GCC(FILE) /* nothing */
-
 /* Output at beginning/end of assembler file.  */
 
 #define ASM_FILE_START(FILE) asm_file_start(FILE)

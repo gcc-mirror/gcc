@@ -102,13 +102,6 @@ Boston, MA 02111-1307, USA.  */
 
 #endif /* defined SUPPORT_SUN_FPA */
 
-/* When using an SGS assembler, modify the name of the artificial label which
-   identifies this file as having been compiled with gcc, and the macro that
-   emits such a label in the assembly output, to use '%' rather than '.' */
-
-#define ASM_IDENTIFY_GCC(FILE)				\
- { fprintf ((FILE), "%s:\n", "gcc2_compiled%"); }
-
 /* This is how to output an assembler line defining an `int' constant.  */
 /* The SGS assembler doesn't understand ".word". */
 

@@ -204,21 +204,6 @@ Boston, MA 02111-1307, USA.
 
 #undef DBX_REGISTER_NUMBER
 
-/* When using stabs, gcc2_compiled must be a stabs entry, not an
-   ordinary symbol, or gdb won't see it.  The stabs entry must be
-   before the N_SO in order for gdb to find it.  */
-
-#undef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(FILE)						\
-do									\
-  {									\
-    if (write_symbols != DBX_DEBUG)					\
-      fputs ("gcc2_compiled.:\n", FILE);				\
-    else								\
-      fputs ("\t.stabs\t\"gcc2_compiled.\", 0x3c, 0, 0, 0\n", FILE);	\
-  }									\
-while (0)
-
 /* Like block addresses, stabs line numbers are relative to the
    current function.  */
 

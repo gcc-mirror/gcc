@@ -1599,9 +1599,6 @@ const_section ()                                                   \
 /* Output at beginning of assembler file.  */
 #define ASM_FILE_START(FILE) dsp16xx_file_start () 
 
-/* Prevent output of .gcc_compiled */
-#define ASM_IDENTIFY_GCC(FILE)   
-
 /* A C string constant describing how to begin a comment in the target
    assembler language. */
 /* define ASM_COMMENT_START */
