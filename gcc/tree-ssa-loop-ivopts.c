@@ -1305,7 +1305,7 @@ idx_find_step (tree base, tree *idx, void *data)
     return false;
 
   /* If base is a component ref, require that the offset of the reference
-     is invariant.  */
+     be invariant.  */
   if (TREE_CODE (base) == COMPONENT_REF)
     {
       off = component_ref_field_offset (base);

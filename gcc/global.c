@@ -695,7 +695,7 @@ global_conflicts (void)
 	 since one hard reg can be used with various sizes.
 	 Therefore, we must require that all the hard regs
 	 implicitly live as part of a multi-word hard reg
-	 are explicitly marked in basic_block_live_at_start.  */
+	 be explicitly marked in basic_block_live_at_start.  */
 
       {
 	regset old = b->global_live_at_start;

@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
    annotations up-to-date.
 
    We require that for any copy operation where the RHS and LHS have
-   a non-null memory tag that the memory tag be the same.   It is OK
+   a non-null memory tag the memory tag be the same.   It is OK
    for one or both of the memory tags to be NULL.
 
    We also require tracking if a variable is dereferenced in a load or
