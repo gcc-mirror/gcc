@@ -956,14 +956,21 @@ dbxout_range_type (type)
       dbxout_type_index (type);
     }
   if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
-    fprintf (asmfile, ";%d", 
-	     TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)));
+    {
+      fputc (';', asmfile);
+      fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
+	       TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)));
+    }
   else
     fprintf (asmfile, ";0");
   if (TYPE_MAX_VALUE (type) 
       && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST)
-    fprintf (asmfile, ";%d;", 
-	     TREE_INT_CST_LOW (TYPE_MAX_VALUE (type)));
+    {
+      fputc (';', asmfile);
+      fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
+	       TREE_INT_CST_LOW (TYPE_MAX_VALUE (type)));
+      fputc (';', asmfile);
+    }
   else
     fprintf (asmfile, ";-1;");
 }
@@ -1140,7 +1147,7 @@ dbxout_type (type, full, show_arg_types)
 	 long (it has no concept of HOST_BITS_PER_WIDE_INT).  */
       else if (use_gnu_debug_info_extensions
 	       && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
-		   || TYPE_PRECISION (type) > HOST_BITS_PER_LONG))
+		   || TYPE_PRECISION (type) >= HOST_BITS_PER_LONG))
 	{
 	  /* This used to say `r1' and we used to take care
 	     to make sure that `int' was type number 1.  */

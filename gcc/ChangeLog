@@ -1,5 +1,8 @@
 Fri Apr 24 15:57:02 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* dbxout.c (dbxout_type): Fix typo.
+	(dbxout_range_type): Another HOST_WIDE_INT_PRINT_DEC fix.
+
 	* configure.in: Use CC_FOR_BUILD, not BUILD_CC.
 
 Fri Apr 24 16:11:47 1998  John Carr  <jfc@mit.edu>
