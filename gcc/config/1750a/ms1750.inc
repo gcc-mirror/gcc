@@ -71,3 +71,44 @@ TWO 	SET  `2` + 1
 	NR    R`ONE`,R`TWO`
      ENDMACRO
 
+; Unsigned Compare Immediate
+
+     MACRO UCIM.M
+LAST	SET   `1` + 3
+	PSHM  R`1`,R`LAST`
+LO	SET   `1` + 1
+	LR    R`LO`,R`1`
+	XORR  R`1`,R`1`
+HI	SET   `1` + 2
+	XORR  R`HI`,R`HI`
+	LIM   R`LAST`,`2`
+	DCR   R`1`,R`HI`
+	POPM  R`1`,R`LAST`
+     ENDMACRO
+
+
+; Unsigned Compare Register with register
+
+     MACRO UCR.M
+	PSHM  R10,R13    ; R12 and R13 are assumed not to be input parameters
+	LR    R13,R`2`
+	LR    R11,R`1`
+	XORR  R12,R12
+	XORR  R10,R10
+	DCR   R10,R12
+	POPM  R10,R13
+     ENDMACRO
+
+
+; Unsigned Compare register with memory
+
+     MACRO UC.M
+	PSHM  R10,R13
+	L     R13,`2`
+	LR    R11,R`1`
+	XORR  R12,R12
+	XORR  R10,R10
+	DCR   R10,R12
+	POPM  R10,R13
+     ENDMACRO
+
