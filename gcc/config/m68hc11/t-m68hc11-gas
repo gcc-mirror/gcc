@@ -24,7 +24,8 @@ LIB1ASMFUNCS = _mulsi3 \
 	_regs_d3_4 _regs_d5_6 _regs_d7_8 _regs_d9_16 _regs_d17_32 \
 	_premain __exit _abort _cleanup \
 	_adddi3 _subdi3 _notdi2 \
-	_ashrhi3 _lshrhi3 _lshlhi3 _ashrqi3 _lshlqi3 _map_data _init_bss
+	_ashrhi3 _lshrhi3 _lshlhi3 _ashrqi3 _lshlqi3 _map_data _init_bss \
+	_ctor _dtor
 
 TARGET_LIBGCC2_CFLAGS = -DUSE_GAS -DIN_GCC
 
