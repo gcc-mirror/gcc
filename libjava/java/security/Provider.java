@@ -56,7 +56,7 @@ import java.util.Properties;
  */
 public abstract class Provider extends Properties implements Serializable
 {
-  static final long serialVersionUID = -4298000515446427739L;
+  private static final long serialVersionUID = -4298000515446427739L;
 
   /**
    * This is a textual description of the provider

@@ -50,7 +50,7 @@ import java.io.Serializable;
  */
 public abstract class SecureRandomSpi implements Serializable
 {
-  static final long serialVersionUID = -2991854161009191830L;
+  private static final long serialVersionUID = -2991854161009191830L;
 
   /**
      Default Constructor for SecureRandomSpi

@@ -52,7 +52,7 @@ package java.security;
  */
 public abstract class Signer extends Identity
 {
-  static final long serialVersionUID = -1763464102261361480L;
+  private static final long serialVersionUID = -1763464102261361480L;
   private PrivateKey privateKey = null;
 
   /**

@@ -142,6 +142,7 @@ import java.util.Date;
  */
 public abstract class X509Certificate extends Certificate implements X509Extension
 {
+  private static final long serialVersionUID = -2491127588187038216L;
 
   /**
    * Constructs a new certificate of the specified type.

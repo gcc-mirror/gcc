@@ -47,6 +47,7 @@ package java.security.cert;
  * @see CertPathBuilderResult
  */
 public class PKIXCertPathBuilderResult extends PKIXCertPathValidatorResult
+  implements CertPathBuilderResult
 {
 
   // Fields.

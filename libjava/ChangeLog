@@ -1,3 +1,21 @@
+2003-05-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/security/Identity.java,
+	java/security/IdentityScope.java,
+	java/security/Key.java,
+	java/security/KeyPair.java,
+	java/security/PrivateKey.java,
+	java/security/Provider.java,
+	java/security/PublicKey.java,
+	java/security/SecureRandom.java,
+	java/security/SecureRandomSpi.java,
+	java/security/SignedObject.java,
+	java/security/Signer.java,
+	java/security/cert/Certificate.java,
+	java/security/cert/PKIXCertPathBuilderResult.java,
+	java/security/cert/X509Certificate.java:
+	New versions from classpath.
+
 2003-05-09  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

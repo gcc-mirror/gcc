@@ -129,7 +129,7 @@ import java.io.Serializable;
  */
 public final class SignedObject implements Serializable
 {
-  static final long serialVersionUID = 720502720485447167L;
+  private static final long serialVersionUID = 720502720485447167L;
 
   /** @serial */
   private byte[] content;

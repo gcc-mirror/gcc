@@ -58,5 +58,5 @@ public interface PrivateKey extends Key
   /**
    * The version identifier used for serialization.
    */
-  long serialVersionUID = 6034044314589513430L;
+  public static final long serialVersionUID = 6034044314589513430L;
 } // interface PrivateKey
