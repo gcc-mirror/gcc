@@ -1,5 +1,7 @@
 2001-05-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* doc/install.texi: Update Solaris information.
+
 	* except.h (protect_cleanup_actions): Remove it.
 	(lang_protect_cleanup_actions): Declare it.
 	* except.c (protect_cleanup_actions): Remove it.
