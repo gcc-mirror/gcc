@@ -28,8 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "toplev.h"
 
-extern void compiler_error ();
-
 static tree get_identifier_list PROTO((tree));
 static tree bot_manip PROTO((tree));
 static tree perm_manip PROTO((tree));
@@ -42,6 +40,8 @@ static void propagate_binfo_offsets PROTO((tree, tree));
 static int avoid_overlap PROTO((tree, tree));
 static int lvalue_p_1 PROTO((tree, int));
 static int equal_functions PROTO((tree, tree));
+static tree no_linkage_helper PROTO((tree));
+static tree build_srcloc PROTO((char *, int));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -881,7 +881,7 @@ build_vbase_pointer_fields (rec)
       if (TREE_VIA_VIRTUAL (base_binfo))
 	{
 	  int j;
-	  char *name;
+	  const char *name;
 
 	  /* The offset for a virtual base class is only used in computing
 	     virtual function tables and for initializing virtual base
@@ -2132,17 +2132,10 @@ print_lang_statistics ()
 
 void
 __eprintf (string, expression, line, filename)
-#ifdef __STDC__
      const char *string;
      const char *expression;
      unsigned line;
      const char *filename;
-#else
-     char *string;
-     char *expression;
-     unsigned line;
-     char *filename;
-#endif
 {
   fprintf (stderr, string, expression, line, filename);
   fflush (stderr);
@@ -2604,7 +2597,7 @@ build_int_wrapper (i)
   return t;
 }
 
-tree
+static tree
 build_srcloc (file, line)
      char *file;
      int line;

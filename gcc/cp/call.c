@@ -49,7 +49,7 @@ static int compare_ics PROTO((tree, tree));
 static tree build_over_call PROTO((struct z_candidate *, tree, int));
 static tree convert_like PROTO((tree, tree));
 static void op_error PROTO((enum tree_code, enum tree_code, tree, tree,
-			    tree, char *));
+			    tree, const char *));
 static tree build_object_call PROTO((tree, tree));
 static tree resolve_args PROTO((tree));
 static struct z_candidate * build_user_type_conversion_1
@@ -90,6 +90,10 @@ static int is_subseq PROTO((tree, tree));
 static int is_properly_derived_from PROTO((tree, tree));
 static int maybe_handle_ref_bind PROTO((tree*, tree*));
 static void maybe_handle_implicit_object PROTO((tree*));
+static struct z_candidate * add_candidate PROTO((struct z_candidate *,
+						 tree, tree, int));
+static tree source_type PROTO((tree));
+static void add_warning PROTO((struct z_candidate *, struct z_candidate *));
 
 tree
 build_vfield_ref (datum, type)
@@ -2085,7 +2089,7 @@ static void
 print_z_candidates (candidates)
      struct z_candidate *candidates;
 {
-  char *str = "candidates are:";
+  const char *str = "candidates are:";
   for (; candidates; candidates = candidates->next)
     {
       if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
@@ -2518,9 +2522,9 @@ static void
 op_error (code, code2, arg1, arg2, arg3, problem)
      enum tree_code code, code2;
      tree arg1, arg2, arg3;
-     char *problem;
+     const char *problem;
 {
-  char * opname
+  const char * opname
     = (code == MODIFY_EXPR ? assignop_tab [code2] : opname_tab [code]);
 
   switch (code)

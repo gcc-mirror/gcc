@@ -456,7 +456,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	  if (! real_lvalue_p (expr)
 	      && !CP_TYPE_CONST_NON_VOLATILE_P (ttl))
 	    {
-	      char* msg;
+	      const char *msg;
 
 	      if (CP_TYPE_VOLATILE_P (ttl) && decl)
 		msg = "initialization of volatile reference type `%#T'";

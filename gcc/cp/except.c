@@ -399,7 +399,7 @@ static tree
 build_eh_type_type (type)
      tree type;
 {
-  char *typestring;
+  const char *typestring;
   tree exp;
 
   if (type == error_mark_node)
@@ -427,7 +427,7 @@ static tree
 build_eh_type_type_ref (type)
      tree type;
 {
-  char *typestring;
+  const char *typestring;
   tree exp;
 
   if (type == error_mark_node)

@@ -37,8 +37,8 @@ extern char *getpwd PROTO((void));
 
 static tree repo_get_id PROTO((tree));
 static char *extract_string PROTO((char **));
-static char *get_base_filename PROTO((char *));
-static void open_repo_file PROTO((char *));
+static char *get_base_filename PROTO((const char *));
+static void open_repo_file PROTO((const char *));
 static char *afgets PROTO((FILE *));
 static void reopen_repo_file_for_write PROTO((void));
 
@@ -239,7 +239,7 @@ extract_string (pp)
 
 static char *
 get_base_filename (filename)
-     char *filename;
+     const char *filename;
 {
   char *p = getenv ("COLLECT_GCC_OPTIONS");
   char *output = NULL;
@@ -270,10 +270,10 @@ get_base_filename (filename)
 
 static void
 open_repo_file (filename)
-     char *filename;
+     const char *filename;
 {
-  register char *p;
-  char *s = get_base_filename (filename);
+  register const char *p;
+  const char *s = get_base_filename (filename);
 
   if (s == NULL)
     return;
@@ -304,7 +304,7 @@ afgets (stream)
 
 void
 init_repo (filename)
-     char *filename;
+     const char *filename;
 {
   char *buf;
 

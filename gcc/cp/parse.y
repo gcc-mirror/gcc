@@ -60,9 +60,10 @@ extern int end_of_file;
 
 /* Contains the statement keyword (if/while/do) to include in an
    error message if the user supplies an empty conditional expression.  */
-static char *cond_stmt_keyword;
+static const char *cond_stmt_keyword;
 
 static tree empty_parms PROTO((void));
+static int parse_decl PROTO((tree, tree, tree, int, tree *));
 
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
 int have_extern_spec;

@@ -1,3 +1,114 @@
+Fri Mar 26 10:20:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (op_error): Const-ify a char*.
+	(add_candidate, source_type, add_warning): Add static prototype.
+	(print_z_candidates): Const-ify a char*.
+
+	* class.c (resolve_address_of_overloaded_function,
+	fixed_type_or_null, build_vtable_entry_ref): Add static prototype.
+	(get_vtable_name, finish_struct_1): Const-ify a char*.
+
+	* cvt.c (convert_to_reference): Likewise.
+
+	* decl.c (redeclaration_error_message, record_builtin_type,
+ 	record_unknown_type, member_function_or_else, bad_specifiers):
+ 	Likewise.
+	(find_binding, select_decl, unqualified_namespace_lookup,
+	lookup_flags, qualify_lookup, record_builtin_java_type, tag_name):
+	Add static prototype.
+	(warn_extern_redeclared_static, duplicate_decls, pushdecl,
+	implicitly_declare, record_builtin_java_type, define_function,
+	grok_op_properties, tag_name): Const-ify a char*.
+
+	* cp-tree.h (FORMAT_VBASE_NAME): Allow parameter `BUF' to be const.
+	(define_function, finish_builtin_type): Const-ify a char*.
+	(cp_error, cp_error_at, cp_warning, cp_warning_at, cp_pedwarn,
+	cp_pedwarn_at, cp_compiler_error, cp_sprintf): Add prototype args.
+	(file_name_nondirectory): Const-ify a char*.
+	(init_filename_times): Don't prototype.
+	(compiler_error): Prototype.
+	(yyerror, init_repo): Const-ify a char*.
+	(build_srcloc): Don't prototype.
+	(build_x_indirect_ref, build_indirect_ref, build_component_addr):
+ 	Const-ify a char*.
+	(warn_for_assignment): Don't prototype.
+	(convert_for_initialization, readonly_error, check_for_new_type,
+	GNU_xref_begin, GNU_xref_file, GNU_xref_ref, GNU_xref_call):
+	Const-ify a char*.
+
+	* decl2.c (acceptable_java_type, output_vtable_inherit,
+	setup_initp, start_objects, finish_objects, do_dtors, do_ctors,
+	merge_functions, decl_namespace, validate_nonmember_using_decl,
+	do_nonmember_using_decl): Add static prototype.
+	(lang_f_options): Const-ify a char*.
+	(finish_builtin_type): Likewise.
+	(add_function, arg_assoc_namespace, arg_assoc_class): Add static
+	prototype.
+
+	* errfn.c: Include cp-tree.h.
+	(cp_thing): Add static prototype.
+	(compiler_error): Don't protoptype.
+	(cp_compiler_error): Cast `compiler_error' to `errorfn' before
+	passing it to `cp_thing'.
+
+	* error.c (interesting_scope_p): Add static prototype.
+
+	* except.c (build_eh_type_type, build_eh_type_type_ref): Const-ify
+	a char*.
+
+	* init.c (compiler_error): Don't prototype.
+	(member_init_ok_or_else): Const-ify a char*.
+	(build_java_class_ref): Add static prototype.
+
+	* lex.c (compiler_error): Don't prototype.
+	(get_time_identifier, interface_strcmp, extend_token_buffer,
+	handle_cp_pragma): Const-ify a char*.
+	(is_global, init_filename_times): Add static prototype.
+	(file_name_nondirectory, cplus_tree_code_name): Const-ify a char*.
+	(compiler_error): Change from fixed args to variable args.
+	(yyerror): Const-ify a char*.
+
+	* parse.y (cond_stmt_keyword): Const-ify a char*.
+	(parse_decl): Add static prototype.
+
+	* pt.c (template_args_equal, print_template_context): Likewise.
+	(print_candidates, check_default_tmpl_args): Const-ify a char*.
+	(instantiate_class_template): Likewise.
+
+	* repo.c (get_base_filename, open_repo_file, init_repo): Likewise.
+
+	* rtti.c (call_void_fn, expand_generic_desc, expand_si_desc,
+	expand_class_desc, expand_ptr_desc, expand_attr_desc): Likewise.
+
+	* search.c (lookup_field_info, lookup_member): Likewise.
+	(lookup_member): Cast the first argument of `bzero' to a PTR.
+
+	* sig.c (compiler_error): Don't prototype.
+	(build_signature_pointer_or_reference_nam): Const-ify a char*.
+	(get_sigtable_name, build_member_function_pointer): Likewise.
+
+	* tree.c (compiler_error): Don't prototype.
+	(no_linkage_helper, build_srcloc): Add static prototype.
+	(build_vbase_pointer_fields): Const-ify a char*.
+	(__eprintf): Don't unnecessarily handle `const' when !__STDC__.
+
+	* typeck.c (compiler_error): Don't prototype.
+	(convert_for_assignment): Const-ify a char*.
+	(comp_cv_target_types): Add static prototype.
+	(build_x_indirect_ref, build_indirect_ref, convert_arguments,
+	build_component_addr, build_unary_op, convert_for_initialization):
+	Const-ify a char*.
+
+	* typeck2.c (ack): Add static prototype and change from fixed args
+	to variable args.
+	(readonly_error, check_for_new_type): Const-ify a char*.
+
+	* xref.c (_XREF_FILE, find_file, filename, fctname, declname,
+	fixname, open_xref_file, classname, GNU_xref_begin): Likewise.
+	(GNU_xref_file): Likewise.  Also use `xmalloc' instead of `malloc'.
+	(GNU_xref_end_scope, GNU_xref_ref, GNU_xref_decl, GNU_xref_call,
+	gen_assign, GNU_xref_member): Const-ify a char*.
+
 1999-03-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* gxxint.texi: Remove old discussion on copying virtual bases.

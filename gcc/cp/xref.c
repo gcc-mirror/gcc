@@ -86,8 +86,8 @@ typedef struct _XREF_SCOPE *	XREF_SCOPE;
 
 typedef struct _XREF_FILE
 {
-  char *name;
-  char *outname;
+  const char *name;
+  const char *outname;
   XREF_FILE next;
 } XREF_FILE_INFO;
 
@@ -122,19 +122,20 @@ static	tree		last_fndecl = NULL;
 /*									*/
 /************************************************************************/
 static	void		gen_assign PROTO((XREF_FILE, tree));
-static	XREF_FILE	find_file PROTO((char *));
-static	char *		filename PROTO((XREF_FILE));
-static	char *		fctname PROTO((tree));
-static	char *		declname PROTO((tree));
+static	XREF_FILE	find_file PROTO((const char *));
+static	const char *	filename PROTO((XREF_FILE));
+static	const char *	fctname PROTO((tree));
+static	const char *	declname PROTO((tree));
 static	void		simplify_type PROTO((char *));
-static	char *		fixname PROTO((char *, char *));
-static	void		open_xref_file PROTO((char *));
+static	const char *	fixname PROTO((const char *, char *));
+static	void		open_xref_file PROTO((const char *));
+static  const char *	classname PROTO((tree));
 
 /* Start cross referencing.  FILE is the name of the file we xref.  */
 
 void
 GNU_xref_begin (file)
-   char *file;
+   const char *file;
 {
   doing_xref = 1;
 
@@ -178,7 +179,7 @@ GNU_xref_end (ect)
 
 void
 GNU_xref_file (name)
-   char *name;
+   const char *name;
 {
   XREF_FILE xf;
 
@@ -209,8 +210,8 @@ GNU_xref_file (name)
   else
     {
       char *nmbuf
-	= (char *) malloc (strlen (wd_name) + strlen (FILE_NAME_JOINER)
-			   + strlen (name) + 1);
+	= (char *) xmalloc (strlen (wd_name) + strlen (FILE_NAME_JOINER)
+			    + strlen (name) + 1);
       sprintf (nmbuf, "%s%s%s", wd_name, FILE_NAME_JOINER, name);
       name = nmbuf;
       xf->outname = nmbuf;
@@ -259,7 +260,7 @@ GNU_xref_end_scope (id,inid,prm,keep)
 {
   XREF_FILE xf;
   XREF_SCOPE xs,lxs,oxs;
-  char *stype;
+  const char *stype;
 
   if (!doing_xref) return;
   xf = find_file (input_filename);
@@ -302,7 +303,7 @@ GNU_xref_end_scope (id,inid,prm,keep)
 void
 GNU_xref_ref (fndecl,name)
    tree fndecl;
-   char *name;
+   const char *name;
 {
   XREF_FILE xf;
 
@@ -322,8 +323,8 @@ GNU_xref_decl (fndecl,decl)
    tree decl;
 {
   XREF_FILE xf,xf1;
-  char *cls = 0;
-  char *name;
+  const char *cls = 0;
+  const char *name;
   char buf[10240];
   int uselin;
 
@@ -432,11 +433,11 @@ GNU_xref_decl (fndecl,decl)
 void
 GNU_xref_call (fndecl, name)
    tree fndecl;
-   char *name;
+   const char *name;
 {
   XREF_FILE xf;
   char buf[1024];
-  char *s;
+  const char *s;
 
   if (!doing_xref) return;
   xf = find_file (input_filename);
@@ -508,7 +509,7 @@ gen_assign(xf, name)
    XREF_FILE xf;
    tree name;
 {
-  char *s;
+  const char *s;
 
   s = NULL;
 
@@ -541,7 +542,7 @@ gen_assign(xf, name)
     fprintf(xref_file, "ASG %s %d %s\n", filename(xf), lineno, s);
 }
 
-static char*
+static const char *
 classname (cls)
      tree cls;
 {
@@ -590,9 +591,9 @@ GNU_xref_member(cls, fld)
    tree fld;
 {
   XREF_FILE xf;
-  char *prot;
+  const char *prot;
   int confg, pure;
-  char *d;
+  const char *d;
 #ifdef XREF_SHORT_MEMBER_NAMES
   int i;
 #endif
@@ -651,7 +652,7 @@ GNU_xref_member(cls, fld)
 
 static XREF_FILE
 find_file(name)
-   char *name;
+   const char *name;
 {
   XREF_FILE xf;
 
@@ -664,7 +665,7 @@ find_file(name)
 
 /* Return filename for output purposes.  */
 
-static char *
+static const char *
 filename(xf)
    XREF_FILE xf;
 {
@@ -682,12 +683,12 @@ filename(xf)
 
 /* Return function name for output purposes.  */
 
-static char *
+static const char *
 fctname(fndecl)
    tree fndecl;
 {
   static char fctbuf[1024];
-  char *s;
+  const char *s;
 
   if (fndecl == NULL && last_fndecl == NULL) return "*";
 
@@ -709,7 +710,7 @@ fctname(fndecl)
 
 /* Return decl name for output purposes.  */
 
-static char *
+static const char *
 declname(dcl)
    tree dcl;
 {
@@ -773,12 +774,13 @@ simplify_type(typ)
 
 /* Fixup a function name (take care of embedded spaces).  */
 
-static char *
+static const char *
 fixname(nam, buf)
-   char *nam;
+   const char *nam;
    char *buf;
 {
-  char *s, *t;
+  const char *s;
+  char *t;
   int fg;
 
   s = nam;
@@ -806,9 +808,10 @@ fixname(nam, buf)
 
 static void
 open_xref_file(file)
-   char *file;
+   const char *file;
 {
-  char *s, *t;
+  const char *s;
+  char *t;
 
 #ifdef XREF_FILE_NAME
   XREF_FILE_NAME (xref_name, file);

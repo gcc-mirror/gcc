@@ -1142,7 +1142,7 @@ struct lookup_field_info {
   /* If non-zero, RVAL was found by looking through a dependent base.  */
   int from_dep_base_p;
   /* If something went wrong, a message indicating what.  */
-  char *errstr;
+  const char *errstr;
 };
 
 /* Returns non-zero if BINFO is not hidden by the value found by the
@@ -1330,7 +1330,7 @@ lookup_member (xbasetype, name, protect, want_type)
      we know that binfo of a virtual base class will always == itself when
      found along any line.  (mrs)  */
 
-  char *errstr = 0;
+  const char *errstr = 0;
 
   if (xbasetype == current_class_type && TYPE_BEING_DEFINED (xbasetype)
       && IDENTIFIER_CLASS_VALUE (name))
@@ -1362,7 +1362,7 @@ lookup_member (xbasetype, name, protect, want_type)
   n_calls_lookup_field++;
 #endif /* GATHER_STATISTICS */
 
-  bzero (&lfi, sizeof (lfi));
+  bzero ((PTR) &lfi, sizeof (lfi));
   lfi.type = type;
   lfi.name = name;
   lfi.want_type = want_type;
