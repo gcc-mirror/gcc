@@ -151,6 +151,7 @@ extern void init_reg_sets ();
 extern void dump_flow_info ();
 extern void dump_sched_info ();
 extern void dump_local_alloc ();
+extern void regset_release_memory ();
 
 void rest_of_decl_compilation ();
 void error_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
@@ -3471,6 +3472,9 @@ rest_of_compilation (decl)
 	     final_end_function (insns, asm_out_file, optimize);
 	     assemble_end_function (decl, fnname);
 	     fflush (asm_out_file);
+
+	     /* Release all memory held by regsets now */
+	     regset_release_memory ();
 	   });
 
   /* Write DBX symbols if requested */
