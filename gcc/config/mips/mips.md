@@ -3416,7 +3416,7 @@ move\\t%0,%z4\\n\\
 
 (define_expand "reload_indi"
   [(set (match_operand:DI 0 "register_operand" "=b")
-	(match_operand:DI 1 "movdi_operand" "b"))
+	(match_operand:DI 1 "" "b"))
    (clobber (match_operand:TI 2 "register_operand" "=&d"))]
   "TARGET_64BIT"
   "
@@ -3431,10 +3431,12 @@ move\\t%0,%z4\\n\\
       if (GET_CODE (operands[1]) == MEM)
 	{
 	  rtx memword, offword, hiword, loword;
+	  rtx addr = find_replacement (&XEXP (operands[1], 0));
+	  rtx op1 = change_address (operands[1], VOIDmode, addr);
 
 	  scratch = gen_rtx (REG, SImode, REGNO (scratch));
-	  memword = change_address (operands[1], SImode, NULL_RTX);
-	  offword = change_address (adj_offsettable_operand (operands[1], 4),
+	  memword = change_address (op1, SImode, NULL_RTX);
+	  offword = change_address (adj_offsettable_operand (op1, 4),
 				    SImode, NULL_RTX);
 	  if (BYTES_BIG_ENDIAN)
 	    {
@@ -3480,7 +3482,7 @@ move\\t%0,%z4\\n\\
 ;; Handle output reloads in DImode.
 
 (define_expand "reload_outdi"
-  [(set (match_operand:DI 0 "general_operand" "=b")
+  [(set (match_operand:DI 0 "" "=b")
 	(match_operand:DI 1 "se_register_operand" "b"))
    (clobber (match_operand:DI 2 "register_operand" "=&d"))]
   "TARGET_64BIT"
@@ -3500,10 +3502,12 @@ move\\t%0,%z4\\n\\
       if (GET_CODE (operands[0]) == MEM)
 	{
 	  rtx scratch, memword, offword, hiword, loword;
+	  rtx addr = find_replacement (&XEXP (operands[0], 0));
+	  rtx op0 = change_address (operands[0], VOIDmode, addr);
 
 	  scratch = gen_rtx (REG, SImode, REGNO (operands[2]));
-	  memword = change_address (operands[0], SImode, NULL_RTX);
-	  offword = change_address (adj_offsettable_operand (operands[0], 4),
+	  memword = change_address (op0, SImode, NULL_RTX);
+	  offword = change_address (adj_offsettable_operand (op0, 4),
 				    SImode, NULL_RTX);
 	  if (BYTES_BIG_ENDIAN)
 	    {
