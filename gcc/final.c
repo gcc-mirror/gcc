@@ -59,6 +59,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "defaults.h"
 
 #include <stdio.h>
+#include <ctype.h>
 
 #include "output.h"
 

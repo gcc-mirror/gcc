@@ -45,6 +45,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "xcoffout.h"
 #endif
 
+#include <ctype.h>
+
 #ifndef ASM_STABS_OP
 #define ASM_STABS_OP ".stabs"
 #endif
