@@ -790,9 +790,8 @@ input_operand (op, mode)
   if (register_operand (op, mode))
     return 1;
 
-  /* For HImode and QImode, any constant is valid. */
-  if ((mode == HImode || mode == QImode)
-      && GET_CODE (op) == CONST_INT)
+  /* For integer modes, any constant is ok.  */
+  if (GET_CODE (op) == CONST_INT)
     return 1;
 
   /* A SYMBOL_REF referring to the TOC is valid.  */
