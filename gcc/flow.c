@@ -7253,19 +7253,19 @@ flow_loop_nodes_find (header, latch, nodes)
 
 /* Compute the depth first search order and store in the array
    DFS_ORDER, marking the nodes visited in VISITED.  Returns the
-   number of nodes visited.  */
+   number of nodes visited.  A depth first search tries to get as far
+   away from the starting point as quickly as possible.  */
 static int
 flow_depth_first_order_compute (dfs_order)
      int *dfs_order;
 {
-  edge e;
   edge *stack;
   int sp;
   int dfsnum = 0;
   sbitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = (edge *) xmalloc (n_basic_blocks * sizeof (edge));
+  stack = (edge *) xmalloc ((n_basic_blocks + 1) * sizeof (edge));
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -7274,49 +7274,55 @@ flow_depth_first_order_compute (dfs_order)
   /* None of the nodes in the CFG have been visited yet.  */
   sbitmap_zero (visited);
   
-  /* Start with the first successor edge from the entry block.  */
-  e = ENTRY_BLOCK_PTR->succ;
-  while (e)
-    {
-      basic_block src = e->src;
-      basic_block dest = e->dest;
-      
-      /* Mark that we have visited this node.  */
-      if (src != ENTRY_BLOCK_PTR)
-	SET_BIT (visited, src->index);
+  /* Push the first edge on to the stack.  */
+  stack[sp++] = ENTRY_BLOCK_PTR->succ;
 
-      /* If this node has not been visited before, push the current
-	 edge on to the stack and proceed with the first successor
-	 edge of this node.  */
-      if (dest != EXIT_BLOCK_PTR && ! TEST_BIT (visited, dest->index)
-	  && dest->succ)
+  while (sp)
+    {
+      edge e;
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      e = stack[sp - 1];
+      src = e->src;
+      dest = e->dest;
+      
+      /* Check if the edge destination has been visited yet.  */
+      if (dest != EXIT_BLOCK_PTR && ! TEST_BIT (visited, dest->index))
 	{
-	  stack[sp++] = e;
-	  e = dest->succ;
+	  /* Mark that we have visited the destination.  */
+	  SET_BIT (visited, dest->index);
+
+ 	  if (dest->succ)
+ 	    {
+ 	      /* Since the DEST node has been visited for the first
+ 		 time, check its successors.  */
+ 	      stack[sp++] = dest->succ;
+ 	    }
+ 	  else
+ 	    {
+ 	      /* There are no successors for the DEST node so assign
+ 		 its DFS number.  */
+ 	      dfs_order[n_basic_blocks - ++dfsnum] = dest->index;
+ 	    }
 	}
       else
 	{
-	  if (dest != EXIT_BLOCK_PTR && ! TEST_BIT (visited, dest->index)
-	      && ! dest->succ)
-	    {
-	      /* DEST has no successors (for example, a non-returning
-                 function is called) so do not push the current edge
-                 but carry on with its next successor.  */
-	      dfs_order[dest->index] = n_basic_blocks - ++dfsnum;
-	      SET_BIT (visited, dest->index);
-	    }
-
-	  while (! e->succ_next && src != ENTRY_BLOCK_PTR)
-	    {
-	      dfs_order[src->index] = n_basic_blocks - ++dfsnum;
-
-	      /* Pop edge off stack.  */
-	      e = stack[--sp];
-	      src = e->src;
-	    }
-	  e = e->succ_next;
+	  if (! e->succ_next && src != ENTRY_BLOCK_PTR)
+  	    {
+ 	      /* There are no more successors for the SRC node
+ 		 so assign its DFS number.  */
+ 	      dfs_order[n_basic_blocks - ++dfsnum] = src->index;
+  	    }
+	  
+	  if (e->succ_next)
+	    stack[sp - 1] = e->succ_next;
+	  else
+	    sp--;
 	}
     }
+
   free (stack);
   sbitmap_free (visited);
 
