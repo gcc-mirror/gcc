@@ -1,5 +1,9 @@
 2000-07-11  Neil Booth  <NeilB@earthling.net>
 
+	* gcc.dg/cpp/cmdlne-C.c: Fix typo.
+
+2000-07-11  Neil Booth  <NeilB@earthling.net>
+
 	* gcc.dg/cpp/cmdlne-C.c: New.
 
 2000-07-09  Neil Booth  <NeilB@earthling.net>
