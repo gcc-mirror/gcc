@@ -1,3 +1,8 @@
+2003-09-22	Joel Sherrill <joel@oarcorp.com>
+
+	* combine.c, config/mips/t-elf, config/c4x/rtems.h: Revert patches
+	which should not have been committed with other RTEMS changes.
+
 2003-09-22  Olivier Hainque  <hainque@act-europe.fr>
 
 	PR target/9786
