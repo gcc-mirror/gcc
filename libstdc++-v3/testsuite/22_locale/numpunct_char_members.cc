@@ -42,19 +42,19 @@ void test01()
   str = loc_fr.name();
   VERIFY( loc_c != loc_fr );
 
-  VERIFY( loc_us != loc_fr );
+  locale loc_de("de_DE");
+  str = loc_de.name();
+  VERIFY( loc_c != loc_de );
 
-  locale loc_combo(loc_us, loc_fr, locale::numeric);
-  str = loc_combo.name();
-  VERIFY( loc_combo != loc_fr );
-  VERIFY( loc_combo != loc_us );
-  VERIFY( loc_combo != loc_c );
+  VERIFY( loc_us != loc_fr );
+  VERIFY( loc_us != loc_de );
+  VERIFY( loc_de != loc_fr );
 
   // cache the numpunct facets
   const numpunct<char>& nump_c = use_facet<numpunct<char> >(loc_c); 
   const numpunct<char>& nump_us = use_facet<numpunct<char> >(loc_us); 
   const numpunct<char>& nump_fr = use_facet<numpunct<char> >(loc_fr); 
-  const numpunct<char>& nump_combo = use_facet<numpunct<char> >(loc_combo); 
+  const numpunct<char>& nump_de = use_facet<numpunct<char> >(loc_de); 
 
   // sanity check the data is correct.
   char dp1 = nump_c.decimal_point();
@@ -75,11 +75,27 @@ void test01()
   string t3 = nump_fr.truename();
   string f3 = nump_fr.falsename();
 
-  char dp4 = nump_combo.decimal_point();
-  char th4 = nump_combo.thousands_sep();
-  string g4 = nump_combo.grouping();
-  string t4 = nump_combo.truename();
-  string f4 = nump_combo.falsename();
+  char dp4 = nump_de.decimal_point();
+  char th4 = nump_de.thousands_sep();
+  string g4 = nump_de.grouping();
+  string t4 = nump_de.truename();
+  string f4 = nump_de.falsename();
+
+  VERIFY( dp2 != dp3 );
+  VERIFY( th2 != th3 );
+#if 0
+  // XXX isn't actually supported right now.
+  VERIFY( t2 != t3 );
+  VERIFY( f2 != f3 );
+#endif
+
+  VERIFY( dp2 != dp4 );
+  VERIFY( th2 != th4 );
+#if 0
+  // XXX isn't actually supported right now.
+  VERIFY( t2 != t3 );
+  VERIFY( f2 != f3 );
+#endif
 }
 
 int main()

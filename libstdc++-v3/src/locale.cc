@@ -362,6 +362,7 @@ namespace std
   locale::locale(const locale& __other) throw()
   { (_M_impl = __other._M_impl)->_M_add_reference(); }
 
+  // This is used to initialize global and classic locales.
   locale::locale(_Impl* __ip) throw()
   : _M_impl(__ip)
   { __ip->_M_add_reference(); }

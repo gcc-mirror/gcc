@@ -1,3 +1,16 @@
+2001-06-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.tcc (locale::combine): Clone _Impl.
+	before replacing facet.
+	* include/bits/localefwd.h (locale::_Impl::_M_remove_reference):
+	Correct decrement.
+	* src/localename.cc (locale::_Impl): Correct ctor initialization
+	lists. Initialize ref count with one. Simplify.
+	* src/locale.cc: Add comment.
+	* testsuite/22_locale/numpunct.cc (test01): Add derivation test.
+	* testsuite/22_locale/numpunct_char_members.cc (test01): Add tests.
+	* testsuite/22_locale/members.cc (test02): Fix.
+
 2001-06-27  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/backward/algo.h:  Add "GPL plus runtime exception" comment
@@ -81,7 +94,7 @@
 	* src/bitset.cc:  Likewise.
 	* src/strstream.cc:  Likewise.
 
-2001-06-26  Benjamin Kosnik  <bkoz@fillmore.constant.com>
+2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 	                     <vakatov@ncbi.nlm.nih.gov>
 
 	libstdc++/3272

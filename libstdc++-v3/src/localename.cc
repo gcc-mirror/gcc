@@ -47,7 +47,7 @@ namespace std
   // Clone existing _Impl object.
   locale::_Impl::
   _Impl(const _Impl& __imp, size_t __refs)
-  : _M_references(__refs - 1), _M_facets(0), _M_c_locale(0) // XXX
+  : _M_references(__refs), _M_facets(0), _M_c_locale(0) // XXX
   {
     try
       {  _M_facets = new __vec_facet(*(__imp._M_facets)); }
@@ -69,7 +69,7 @@ namespace std
   // Construct named _Impl, including the standard "C" locale.
   locale::_Impl::
   _Impl(string __str, size_t __refs)
-  : _M_references(__refs - 1), _M_facets(0)
+  : _M_references(__refs), _M_facets(0)
   {
     // Initialize the underlying locale model, which also checks to
     // see if the given name is valid.
@@ -184,8 +184,7 @@ namespace std
 	    // Replacing an existing facet.
 	    // Order matters, here:
 	    __fp->_M_add_reference();
-	    if (__fpr) 
-	      __fpr->_M_remove_reference();
+	    __fpr->_M_remove_reference();
 	    __fpr = __fp;
 	  }
 	else
@@ -198,4 +197,3 @@ namespace std
       }
   }
 } // namespace std
-
