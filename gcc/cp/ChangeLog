@@ -1,3 +1,10 @@
+2001-12-18  Jason Merrill  <jason@redhat.com>
+
+	* class.c (add_method): Do compare 'this' quals when trying to match a
+	used function.  Don't defer to another used function.
+
+	* optimize.c (maybe_clone_body): Fix parameter updating.
+
 2001-12-20  Release Manager
 
 	* GCC 3.0.3 Released.

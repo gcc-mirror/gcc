@@ -1130,10 +1130,10 @@ maybe_clone_body (fn)
       /* Adjust the parameter names and locations. */
       parm = DECL_ARGUMENTS (fn);
       clone_parm = DECL_ARGUMENTS (clone);
-      /* Update the `this' parameter, which is always first.
-	 Sometimes, we end update the `this' parameter twice because
-	 we process it again in the loop below.  That is harmless.  */
+      /* Update the `this' parameter, which is always first.  */
       update_cloned_parm (parm, clone_parm);
+      parm = TREE_CHAIN (parm);
+      clone_parm = TREE_CHAIN (clone_parm);
       if (DECL_HAS_IN_CHARGE_PARM_P (fn))
 	parm = TREE_CHAIN (parm);
       if (DECL_HAS_VTT_PARM_P (fn))

@@ -1264,22 +1264,38 @@ add_method (type, method, error_p)
 	      /* [over.load] Member function declarations with the
 		 same name and the same parameter types cannot be
 		 overloaded if any of them is a static member
-		 function declaration.  */
+		 function declaration.
+
+	         [namespace.udecl] When a using-declaration brings names
+		 from a base class into a derived class scope, member
+		 functions in the derived class override and/or hide member
+		 functions with the same name and parameter types in a base
+		 class (rather than conflicting).  */
 	      if ((DECL_STATIC_FUNCTION_P (fn)
 		   != DECL_STATIC_FUNCTION_P (method))
 		  || using)
 		{
 		  tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn));
 		  tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (method));
+		  int same = 1;
 
+		  /* Compare the quals on the 'this' parm.  Don't compare
+		     the whole types, as used functions are treated as
+		     coming from the using class in overload resolution.  */
+		  if (using
+		      && ! DECL_STATIC_FUNCTION_P (fn)
+		      && ! DECL_STATIC_FUNCTION_P (method)
+		      && (TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms1)))
+			  != TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms2)))))
+		    same = 0;
 		  if (! DECL_STATIC_FUNCTION_P (fn))
 		    parms1 = TREE_CHAIN (parms1);
 		  if (! DECL_STATIC_FUNCTION_P (method))
 		    parms2 = TREE_CHAIN (parms2);
 
-		  if (compparms (parms1, parms2))
+		  if (same && compparms (parms1, parms2))
 		    {
-		      if (using)
+		      if (using && DECL_CONTEXT (fn) == type)
 			/* Defer to the local function.  */
 			return;
 		      else
