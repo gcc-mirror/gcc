@@ -1,3 +1,20 @@
+2003-12-11  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gnu/java/nio/SocketChannelImpl.java
+	(write): Removed diagnostic trace.
+	* gnu/java/nio/natSelectorImplPosix.cc: Added
+	includes for java.lang.Thread and java.io.InterruptedIOException.
+	(helper_put_filedescriptors): Don't put invalid file descriptors
+	in select set.
+	(helper_get_filedescriptors): Clear invalid file descriptors
+	from select set.
+	(helper_reset): New method for clearing our file descriptor
+	array.
+	(implSelect): Correctly calculate timeout if specified and
+	legal.
+	Intercept and deal with any java.io.InterruptedIOException
+	thrown by _Jv_select().
+
 2003-12-08  Fernando Nasser  <fnasser@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c (awt_event_handler):
