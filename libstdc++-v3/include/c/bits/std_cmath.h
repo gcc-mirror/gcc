@@ -265,98 +265,77 @@ namespace std {
   inline double 
   abs(double __x) { return __builtin_fabs(__x); }
 #else
-  inline double 
-  abs(double __x) { return ::fabs(__x); }
+  extern "C" double abs(double __x);
 #endif
 
-  inline double 
-  acos(double __x) { return ::acos(__x); }
+  extern "C" double acos(double __x);
 
-  inline double 
-  asin(double __x) { return ::asin(__x); }
+  extern "C" double asin(double __x);
 
-  inline double 
-  atan(double __x) { return ::atan(__x); }
+  extern "C" double atan(double __x);
 
-  inline double 
-  atan2(double __y, double __x) { return ::atan2(__y, __x); }
+  extern "C" double atan2(double __y, double __x);
 
-  inline double 
-  ceil(double __x) { return ::ceil(__x); }
+  extern "C" double ceil(double __x);
 
 #if _GLIBCPP_HAVE___BUILTIN_COS
   inline double 
   cos(double __x) { return __builtin_cos(__x); }
 #else
-  inline double 
-  cos(double __x) { return ::cos(__x); }
+  extern "C" double cos(double __x);
 #endif
 
-  inline double cosh(double __x)
-  { return ::cosh(__x); }
+  extern "C" double cosh(double __x);
 
-  inline double 
-  exp(double __x) { return ::exp(__x); }
-
+  extern "C" double exp(double __x);
 
 #if _GLIBCPP_HAVE___BUILTIN_FABS
   inline double 
   fabs(double __x) { return __builtin_fabs(__x); }
 #else
-  inline double 
-  fabs(double __x) { return ::fabs(__x); }
+  extern "C" double fabs(double __x);
 #endif
 
-  inline double 
-  floor(double __x) { return ::floor(__x); }
+  extern "C" double floor(double __x);
 
-  inline double 
-  fmod(double __x, double __y) { return ::fmod(__x, __y); }
+  extern "C" double fmod(double __x, double __y);
 
-  inline double 
-  frexp(double __x, int* __exp) { return ::frexp(__x, __exp); }
+  extern "C" double frexp(double __x, int* __exp);
 
-  inline double 
-  ldexp(double __x, int __exp) { return ::ldexp(__x, __exp); }
+  extern "C" double ldexp(double __x, int __exp);
 
-  inline double 
-  log(double __x) { return ::log(__x); }
+  extern "C" double log(double __x);
 
-  inline double 
-  log10(double __x) { return ::log10(__x); }
+  extern "C" double log10(double __x);
 
-  inline double 
-  modf(double __x, double* __iptr) { return ::modf(__x, __iptr); }
+  extern "C" double modf(double __x, double* __iptr);
 
-  inline double 
-  pow(double __x, double __y) { return ::pow(__x, __y); }
+#if 0
+  extern "C" double pow(double __x, double __y);
 
-  double pow (double, int);
+  extern "C" double pow(double, int);
+#endif
+  using ::pow;
 
 #if _GLIBCPP_HAVE___BUILTIN_SIN
   inline double 
   sin(double __x) { return __builtin_sin(__x); }
 #else
-  inline double 
-  sin(double __x) { return ::sin(__x); }
+  extern "C" double sin(double __x);
 #endif
 
-  inline double 
-  sinh(double __x) { return ::sinh(__x); }
+  extern "C" double sinh(double __x);
 
 #if _GLIBCPP_HAVE___BUILTIN_SQRT
   inline double 
   sqrt(double __x) { return __builtin_fsqrt(__x); }
 #else
-  inline double 
-  sqrt(double __x) { return ::sqrt(__x); }
+  extern "C" double sqrt(double __x);
 #endif
 
-  inline double 
-  tan(double __x) { return ::tan(__x); }
+  extern "C" double tan(double __x);
 
-  inline double 
-  tanh(double __x) { return ::tanh(__x); }
+  extern "C" double tanh(double __x);
 
 
 #if _GLIBCPP_HAVE___BUILTIN_FABSL
