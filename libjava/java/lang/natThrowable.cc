@@ -57,9 +57,9 @@ java::lang::Throwable::fillInStackTrace (void)
   // ???  Might this cause a problem if the byte array isn't aligned?
   stackTrace = JvNewByteArray (n * sizeof p[0]);
   memcpy (elements (stackTrace), p+1, (n * sizeof p[0]));
+#endif
 
   return this;
-#endif
 }
 
 void 
