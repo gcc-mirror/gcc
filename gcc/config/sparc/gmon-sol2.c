@@ -249,6 +249,9 @@ _mcleanup()
 
 /* i7 == last ret, -> frompcindex */
 /* o7 == current ret, -> selfpc */
+/* Solaris 2 libraries use _mcount.  */
+asm(".global _mcount; _mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
+/* This is for compatibility with old versions of gcc which used mcount.  */
 asm(".global mcount; mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
 
 static internal_mcount(selfpc, frompcindex)
