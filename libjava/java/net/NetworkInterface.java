@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.classpath.Configuration;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -52,6 +53,14 @@ import java.util.Vector;
  */
 public final class NetworkInterface
 {
+  static
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+	System.loadLibrary ("javanet");
+      }
+  }
+
   private String name;
   
   private Vector inetAddresses;
@@ -185,14 +194,12 @@ public final class NetworkInterface
   public static Enumeration getNetworkInterfaces ()
     throws SocketException
   {
-    Vector networkInterfaces = getRealNetworkInterfaces ();
+    Vector networkInterfaces = getRealNetworkInterfaces();
 
-    Enumeration tmp = networkInterfaces.elements ();
+    if (networkInterfaces.isEmpty())
+      return null;
 
-    if (tmp.hasMoreElements ())
-      return tmp;
-
-    return null;
+    return networkInterfaces.elements();
   }
 
   /**

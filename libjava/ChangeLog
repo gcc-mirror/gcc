@@ -1,3 +1,13 @@
+2003-10-02  Guilhem Lavaux  <guilhem@kaffe.org>
+
+	* java/net/InetSocketAddress.java
+	(InetSocketAddress): Made exception more clear.
+	(equals): Handle case when addr is null.
+	(toString): Likewise.
+	* java/net/NetworkInterface.java
+	(static): Load native library.
+	(getNetworkInterfaces): Rewritten.
+
 2003-10-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (insets): New
