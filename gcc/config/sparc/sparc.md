@@ -1925,7 +1925,7 @@
 }")
 
 (define_insn "*movqi_insn"
-  [(set (match_operand:QI 0 "general_operand" "=r,r,m")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,m")
 	(match_operand:QI 1 "input_operand"   "rI,m,rJ"))]
   "(register_operand (operands[0], QImode)
     || reg_or_0_operand (operands[1], QImode))"
@@ -2002,7 +2002,7 @@
    (set_attr "length" "1")])
 
 (define_insn "*movhi_insn"
-  [(set (match_operand:HI 0 "general_operand" "=r,r,r,m")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
 	(match_operand:HI 1 "input_operand"   "rI,K,m,rJ"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))"
@@ -2117,7 +2117,7 @@
    (set_attr "length" "1")])
 
 (define_insn "*movsi_insn"
-  [(set (match_operand:SI 0 "general_operand" "=r,f,r,r,r,f,m,m,d")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,f,r,r,r,f,m,m,d")
 	(match_operand:SI 1 "input_operand"   "rI,!f,K,J,m,!m,rJ,!f,J"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))"
@@ -2305,7 +2305,7 @@
 ;;      (reg:DI 2 %g2))
 ;;
 (define_insn "*movdi_insn_sp32"
-  [(set (match_operand:DI 0 "general_operand" "=T,U,o,r,r,r,?T,?f,?f,?o,?f")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=T,U,o,r,r,r,?T,?f,?f,?o,?f")
         (match_operand:DI 1 "input_operand"    "U,T,r,o,i,r,f,T,o,f,f"))]
   "! TARGET_ARCH64 &&
    (register_operand (operands[0], DImode)
@@ -2346,7 +2346,7 @@
    (set_attr "length" "1")])
 
 (define_insn "*movdi_insn_sp64"
-  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,m,?e,?e,?m,b")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m,b")
         (match_operand:DI 1 "input_operand"   "rI,K,J,m,rJ,e,m,e,J"))]
   "TARGET_ARCH64 &&
    (register_operand (operands[0], DImode)
@@ -2733,7 +2733,7 @@
 ;; Floating point move insns
 
 (define_insn "*clear_sf"
-  [(set (match_operand:SF 0 "general_operand" "=f")
+  [(set (match_operand:SF 0 "register_operand" "=f")
         (match_operand:SF 1 "" ""))]
   "TARGET_VIS
    && GET_CODE (operands[1]) == CONST_DOUBLE
@@ -2744,11 +2744,9 @@
    (set_attr "length" "1")])
 
 (define_insn "*movsf_const_intreg"
-  [(set (match_operand:SF 0 "general_operand" "=f,r")
-        (match_operand:SF 1 ""                 "m,F"))]
-  "TARGET_FPU
-   && GET_CODE (operands[1]) == CONST_DOUBLE
-   && GET_CODE (operands[0]) == REG"
+  [(set (match_operand:SF 0 "register_operand" "=fr")
+        (match_operand:SF 1 "const_double_operand" "F"))]
+  "TARGET_FPU"
   "*
 {
   REAL_VALUE_TYPE r;
@@ -2788,7 +2786,7 @@
 
 (define_insn "*movsf_const_lo"
   [(set (match_operand:SF 0 "register_operand" "=r")
-        (unspec:SF [(match_operand 1 "register_operand" "r")
+        (unspec:SF [(match_operand:SF 1 "register_operand" "r")
                     (match_operand 2 "const_int_operand" "")] 17))]
   ""
   "or\\t%1, %%lo(%a2), %0"
@@ -2872,7 +2870,7 @@
 }")
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:SF 0 "general_operand" "=f,f,m,r,r,m")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,m,r,r,m")
 	(match_operand:SF 1 "input_operand"    "f,m,f,r,m,r"))]
   "TARGET_FPU
    && (register_operand (operands[0], SFmode)
@@ -2892,7 +2890,7 @@
 ;; when -mno-fpu.
 
 (define_insn "*movsf_no_f_insn"
-  [(set (match_operand:SF 0 "general_operand" "=r,r,m")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
 	(match_operand:SF 1 "input_operand"    "r,m,r"))]
   "! TARGET_FPU
    && (register_operand (operands[0], SFmode)
@@ -2905,48 +2903,33 @@
    (set_attr "length" "1")])
 
 (define_insn "*clear_df"
-  [(set (match_operand:DF 0 "general_operand" "=e")
-        (match_operand:DF 1 "" ""))]
+  [(set (match_operand:DF 0 "register_operand" "=e")
+        (match_operand:DF 1 "const_double_operand" ""))]
   "TARGET_VIS
-   && GET_CODE (operands[1]) == CONST_DOUBLE
-   && GET_CODE (operands[0]) == REG
    && fp_zero_operand (operands[1])"
   "fzero\\t%0"
   [(set_attr "type" "fpmove")
    (set_attr "length" "1")])
 
 (define_insn "*movdf_const_intreg_sp32"
-  [(set (match_operand:DF 0 "general_operand" "=e,e,r")
-        (match_operand:DF 1 ""                 "T,o,F"))]
-  "TARGET_FPU && ! TARGET_ARCH64
-   && GET_CODE (operands[1]) == CONST_DOUBLE
-   && GET_CODE (operands[0]) == REG"
-  "*
-{
-  if (which_alternative == 0)
-    return \"ldd\\t%1, %0\";
-  else
-    return \"#\";
-}"
+  [(set (match_operand:DF 0 "register_operand" "=e,r")
+        (match_operand:DF 1 "const_double_operand" "T,F"))]
+  "TARGET_FPU && ! TARGET_ARCH64"
+  "@
+   ldd\\t%1, %0
+   #"
   [(set_attr "type" "move")
-   (set_attr "length" "1,2,2")])
+   (set_attr "length" "1,2")])
 
 ;; Now that we redo life analysis with a clean slate after
 ;; instruction splitting for sched2 this can work.
 (define_insn "*movdf_const_intreg_sp64"
-  [(set (match_operand:DF 0 "general_operand" "=e,e,r")
-        (match_operand:DF 1 ""                 "m,o,F"))]
-  "TARGET_FPU
-   && TARGET_ARCH64
-   && GET_CODE (operands[1]) == CONST_DOUBLE
-   && GET_CODE (operands[0]) == REG"
-  "*
-{
-  if (which_alternative == 0)
-    return \"ldd\\t%1, %0\";
-  else
-    return \"#\";
-}"
+  [(set (match_operand:DF 0 "register_operand" "=e,r")
+        (match_operand:DF 1 "const_double_operand" "m,F"))]
+  "TARGET_FPU && TARGET_ARCH64"
+  "@
+   ldd\\t%1, %0
+   #"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
@@ -2954,7 +2937,6 @@
   [(set (match_operand:DF 0 "register_operand" "")
         (match_operand:DF 1 "const_double_operand" ""))]
   "TARGET_FPU
-   && GET_CODE (operands[1]) == CONST_DOUBLE
    && (GET_CODE (operands[0]) == REG
        && REGNO (operands[0]) < 32)
    && reload_completed"
@@ -3067,7 +3049,7 @@
 
 ;; Be careful, fmovd does not exist when !v9.
 (define_insn "*movdf_insn_sp32"
-  [(set (match_operand:DF 0 "general_operand" "=e,T,U,T,e,r,r,o,e,o")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,T,U,T,e,r,r,o,e,o")
 	(match_operand:DF 1 "input_operand"    "T,e,T,U,e,r,o,r,o,e"))]
   "TARGET_FPU
    && ! TARGET_V9
@@ -3088,7 +3070,7 @@
   (set_attr "length" "1,1,1,1,2,2,2,2,2,2")])
 
 (define_insn "*movdf_no_e_insn_sp32"
-  [(set (match_operand:DF 0 "general_operand" "=U,T,r,r,o")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=U,T,r,r,o")
 	(match_operand:DF 1 "input_operand"    "T,U,r,o,r"))]
   "! TARGET_FPU
    && ! TARGET_ARCH64
@@ -3106,7 +3088,7 @@
 ;; We have available v9 double floats but not 64-bit
 ;; integer registers.
 (define_insn "*movdf_insn_v9only"
-  [(set (match_operand:DF 0 "general_operand" "=e,e,m,U,T,r,r,o")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,m,U,T,r,r,o")
         (match_operand:DF 1 "input_operand"    "e,m,e,T,U,r,o,r"))]
   "TARGET_FPU
    && TARGET_V9
@@ -3128,7 +3110,7 @@
 ;; We have available both v9 double floats and 64-bit
 ;; integer registers.
 (define_insn "*movdf_insn_sp64"
-  [(set (match_operand:DF 0 "general_operand" "=e,e,m,r,r,m")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,m,r,r,m")
         (match_operand:DF 1 "input_operand"    "e,m,e,r,m,r"))]
   "TARGET_FPU
    && TARGET_V9
@@ -3146,7 +3128,7 @@
    (set_attr "length" "1")])
 
 (define_insn "*movdf_no_e_insn_sp64"
-  [(set (match_operand:DF 0 "general_operand" "=r,r,m")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
         (match_operand:DF 1 "input_operand"    "r,m,r"))]
   "! TARGET_FPU
    && TARGET_ARCH64
@@ -3336,7 +3318,7 @@
 ;; Be careful, fmovq and {st,ld}{x,q} do not exist when !arch64 so
 ;; we must split them all.  :-(
 (define_insn "*movtf_insn_sp32"
-  [(set (match_operand:TF 0 "general_operand" "=e,o,U,o,e,r,r,o")
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,U,o,e,r,r,o")
 	(match_operand:TF 1 "input_operand"    "o,e,o,U,e,r,o,r"))]
   "TARGET_FPU
    && ! TARGET_ARCH64
@@ -3350,7 +3332,7 @@
 ;; when -mno-fpu.
 
 (define_insn "*movtf_no_e_insn_sp32"
-  [(set (match_operand:TF 0 "general_operand" "=U,o,r,r,o")
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=U,o,r,r,o")
 	(match_operand:TF 1 "input_operand"    "o,U,r,o,r"))]
   "! TARGET_FPU
    && ! TARGET_ARCH64
@@ -3362,7 +3344,7 @@
 ;; Now handle the float reg cases directly when arch64,
 ;; hard_quad, and proper reg number alignment are all true.
 (define_insn "*movtf_insn_hq_sp64"
-  [(set (match_operand:TF 0 "general_operand" "=e,e,m,r,r,o")
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,e,m,r,r,o")
         (match_operand:TF 1 "input_operand"    "e,m,e,r,o,r"))]
   "TARGET_FPU
    && TARGET_ARCH64
@@ -3383,7 +3365,7 @@
 ;; Now we allow the integer register cases even when
 ;; only arch64 is true.
 (define_insn "*movtf_insn_sp64"
-  [(set (match_operand:TF 0 "general_operand" "=e,o,r,o,e,r")
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,r,o,e,r")
         (match_operand:TF 1 "input_operand"    "o,e,o,r,e,r"))]
   "TARGET_FPU
    && TARGET_ARCH64
@@ -3394,7 +3376,7 @@
   [(set_attr "length" "2")])
 
 (define_insn "*movtf_no_e_insn_sp64"
-  [(set (match_operand:TF 0 "general_operand" "=r,o,r")
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o,r")
         (match_operand:TF 1 "input_operand"    "o,r,r"))]
   "! TARGET_FPU
    && TARGET_ARCH64
@@ -7834,7 +7816,7 @@
 
 (define_insn "goto_handler_and_restore"
   [(unspec_volatile [(match_operand 0 "register_operand" "=r")] 2)]
-  ""
+  "GET_MODE (operands[0]) == Pmode"
   "jmp\\t%0+0\\n\\trestore"
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
@@ -7893,9 +7875,9 @@
 ;; Special pattern for the FLUSH instruction.
 
 (define_insn "flush"
-  [(unspec_volatile [(match_operand 0 "memory_operand" "m")] 4)]
+  [(unspec_volatile [(mem (match_operand 0 "address_operand" "p"))] 4)]
   ""
-  "* return TARGET_V9 ? \"flush\\t%f0\" : \"iflush\\t%f0\";"
+  "* return TARGET_V9 ? \"flush\\t%a0\" : \"iflush\\t%a0\";"
   [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
@@ -8142,7 +8124,7 @@
 ;; ! TARGET_FPU because we move complex types around by parts using
 ;; SF mode SUBREGs.
 (define_insn "*return_sf_no_fpu"
-  [(set (match_operand:SF 0 "restore_operand" "r")
+  [(set (match_operand:SF 0 "restore_operand" "=r")
 	(match_operand:SF 1 "register_operand" "r"))
    (return)]
   "! TARGET_EPILOGUE && ! TARGET_LIVE_G0"
