@@ -1,3 +1,8 @@
+2003-01-07  Andreas Schwab  <schwab@suse.de>
+
+	* class.c (layout_class_type): Don't use
+	PCC_BITFIELD_TYPE_MATTERS if not defined.
+
 2003-01-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9165
