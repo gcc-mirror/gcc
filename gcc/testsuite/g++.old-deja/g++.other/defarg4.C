@@ -1,3 +1,4 @@
+// Build don't link:
 // Origin: scott snyder <snyder@fnal.gov>
 
 class complex
