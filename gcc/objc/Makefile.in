@@ -26,7 +26,7 @@
 #    GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$$thisdir1/include
 #  Two targets are used by ../Makefile: `all' and `mostlyclean'.
 
-SHELL=sh
+SHELL=/bin/sh
 
 .SUFFIXES: .m
 
