@@ -5808,7 +5808,11 @@ store_parm_decls ()
 	  /* Traditionally, a parm declared float is actually a double.  */
 	  if (found && flag_traditional
 	      && TYPE_MAIN_VARIANT (TREE_TYPE (found)) == float_type_node)
-	    TREE_TYPE (found) = double_type_node;
+	    {
+	      TREE_TYPE (found) = double_type_node;
+	      DECL_ARG_TYPE (found) = double_type_node;
+	      layout_decl (found, 0);
+	    }
 
 	  /* If no declaration found, default to int.  */
 	  if (!found)
@@ -6090,7 +6094,11 @@ combine_parm_decls (specparms, parmlist, void_at_end)
       /* Traditionally, a parm declared float is actually a double.  */
       if (found && flag_traditional
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (found)) == float_type_node)
-	TREE_TYPE (found) = double_type_node;
+	{
+	  TREE_TYPE (found) = double_type_node;
+	  DECL_ARG_TYPE (found) = double_type_node;
+	  layout_decl (found, 0);
+	}
 
       /* If no declaration found, default to int.  */
       if (!found)
