@@ -247,6 +247,7 @@ ggc_mark_rtx_children (r)
 	    case NOTE_INSN_RANGE_BEG:
 	    case NOTE_INSN_RANGE_END:
 	    case NOTE_INSN_LIVE:
+	    case NOTE_INSN_EXPECTED_VALUE:
 	      ggc_mark_rtx (NOTE_RANGE_INFO (r));
 	      break;
 
@@ -257,7 +258,10 @@ ggc_mark_rtx_children (r)
 
 	    default:
 	      if (NOTE_LINE_NUMBER (r) >= 0)
-		ggc_mark_string (NOTE_SOURCE_FILE (r));
+		{
+	    case NOTE_INSN_DELETED_LABEL:
+		  ggc_mark_string (NOTE_SOURCE_FILE (r));
+		}
 	      break;
 	    }
 	  break;
