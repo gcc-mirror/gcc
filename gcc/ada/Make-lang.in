@@ -2516,10 +2516,10 @@ ada/live.o : ada/ada.ads ada/a-except.ads ada/alloc.ads ada/atree.ads \
    ada/table.adb ada/tree_io.ads ada/types.ads ada/uintp.ads ada/uintp.adb \
    ada/uname.ads ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads 
 
-ada/memtrack.o : ada/ada.ads ada/a-except.ads ada/system.ads \
-   ada/s-memory.ads ada/memtrack.adb ada/s-soflin.ads ada/s-stache.ads \
-   ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb ada/s-traceb.ads \
-   ada/s-traent.ads ada/s-traent.adb ada/unchconv.ads 
+ada/memtrack.o : ada/ada.ads ada/a-except.ads ada/gnat.ads ada/g-io.ads \
+   ada/system.ads ada/s-memory.ads ada/memtrack.adb ada/s-soflin.ads \
+   ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
+   ada/s-traceb.ads ada/s-traent.ads ada/s-traent.adb ada/unchconv.ads 
 
 ada/namet.o : ada/ada.ads ada/a-except.ads ada/alloc.ads ada/debug.ads \
    ada/gnat.ads ada/g-os_lib.ads ada/g-string.ads ada/gnatvsn.ads \

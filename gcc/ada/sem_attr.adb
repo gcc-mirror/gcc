@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4457,6 +4457,18 @@ package body Sem_Attr is
          Compile_Time_Known_Attribute (N, Alignment (P_Entity));
          return;
 
+      --  If this is an access attribute that is known to fail accessibility
+      --  check, rewrite accordingly.
+
+      elsif Attribute_Name (N) = Name_Access
+        and then Raises_Constraint_Error (N)
+      then
+         Rewrite (N,
+            Make_Raise_Program_Error (Loc,
+              Reason => PE_Accessibility_Check_Failed));
+         Set_Etype (N, C_Type);
+         return;
+
       --  No other cases are foldable (they certainly aren't static, and at
       --  the moment we don't try to fold any cases other than these three).
 
@@ -6501,6 +6513,9 @@ package body Sem_Attr is
                      null;  --  Nothing to check
 
                   --  Check the static accessibility rule of 3.10.2(32)
+                  --  In an instance body, if subprogram and type are both
+                  --  local, other rules prevent dangling references, and no
+                  --  warning  is needed.
 
                   elsif Attr_Id = Attribute_Access
                     and then Subprogram_Access_Level (Entity (P))
@@ -6510,7 +6525,8 @@ package body Sem_Attr is
                         Error_Msg_N
                           ("subprogram must not be deeper than access type",
                             P);
-                     else
+
+                     elsif Scope (Entity (P)) /= Scope (Btyp) then
                         Error_Msg_N
                           ("subprogram must not be deeper than access type?",
                              P);
@@ -6521,7 +6537,7 @@ package body Sem_Attr is
 
                   --  Check the restriction of 3.10.2(32) that disallows
                   --  the type of the access attribute to be declared
-                  --  outside a generic body when the attribute occurs
+                  --  outside a generic body when the subprogram is declared
                   --  within that generic body.
 
                   elsif Enclosing_Generic_Body (Entity (P))

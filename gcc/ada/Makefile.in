@@ -1703,15 +1703,16 @@ install-gnatlib: ../stamp-gnatlib
 #     of $(INSTALL_DATA). The latter may force a mode inappropriate
 #     for shared libraries on some targets, e.g. on HP-UX where the x
 #     permission is required.
-ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(targ))),)
-	-for file in rts/lib*$(soext);do \
-	    $(INSTALL) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
+	for file in gnat gnarl; do \
+	   if [ -f rts/lib$$file-$(LIBRARY_VERSION)$(soext) ]; then \
+	      $(INSTALL) rts/lib$$file-$(LIBRARY_VERSION)$(soext) \
+			 $(ADA_RTL_OBJ_DIR); \
+	   fi; \
+	   if [ -f rts/lib$$file$(soext) ]; then \
+	      $(LN_S) lib$$file-$(LIBRARY_VERSION)$(soext) \
+	      $(ADA_RTL_OBJ_DIR)/lib$$file$(soext); \
+	   fi; \
 	done
-else
-	-for file in rts/lib*-*$(soext);do \
-	    $(INSTALL) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
-	done
-endif
 # This copy must be done preserving the date on the original file.
 	for file in rts/*.adb rts/*.ads; do \
 	    $(INSTALL_DATA_DATE) $$file $(DESTDIR)$(ADA_INCLUDE_DIR); \
@@ -1898,6 +1899,8 @@ gnatlib-shared-default:
 		-o libgnarl-$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS)libgnarl-$(LIBRARY_VERSION)$(soext) $(THREADSLIB)
+	cd rts; $(LN_S) libgnat-$(LIBRARY_VERSION)$(soext) libgnat$(soext)
+	cd rts; $(LN_S) libgnarl-$(LIBRARY_VERSION)$(soext) libgnarl$(soext)
 
 gnatlib-shared-dual:
 	$(MAKE) $(FLAGS_TO_PASS) \

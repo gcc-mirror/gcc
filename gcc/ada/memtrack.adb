@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,7 @@ with Ada.Exceptions;
 with System.Soft_Links;
 with System.Traceback;
 with System.Traceback_Entries;
+with GNAT.IO;
 
 package body System.Memory is
 
@@ -78,6 +79,7 @@ package body System.Memory is
    use System.Soft_Links;
    use System.Traceback;
    use System.Traceback_Entries;
+   use GNAT.IO;
 
    function c_malloc (Size : size_t) return System.Address;
    pragma Import (C, c_malloc, "malloc");
@@ -89,10 +91,14 @@ package body System.Memory is
      (Ptr : System.Address; Size : size_t) return System.Address;
    pragma Import (C, c_realloc, "realloc");
 
-   type File_Ptr is new System.Address;
+   subtype File_Ptr is System.Address;
 
    function fopen (Path : String; Mode : String) return File_Ptr;
    pragma Import (C, fopen);
+
+   procedure OS_Exit (Status : Integer);
+   pragma Import (C, OS_Exit, "__gnat_os_exit");
+   pragma No_Return (OS_Exit);
 
    procedure fwrite
      (Ptr    : System.Address;
@@ -274,6 +280,10 @@ package body System.Memory is
       if Needs_Init then
          Needs_Init := False;
          Gmemfile := fopen (Gmemfname, "wb" & ASCII.NUL);
+         if Gmemfile = System.Null_Address then
+            Put_Line ("Couldn't open gnatmem log file for writing");
+            OS_Exit (255);
+         end if;
          fwrite ("GMEM DUMP" & ASCII.LF, 10, 1, Gmemfile);
       end if;
    end Gmem_Initialize;
