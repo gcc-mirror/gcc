@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -82,15 +82,15 @@ tree
 variable_size (size)
      tree size;
 {
-  size = save_expr (size);
-
   /* If the language-processor is to take responsibility for variable-sized
      items (e.g., languages which have elaboration procedures like Ada),
      just return SIZE unchanged.  */
   if (global_bindings_p () < 0)
     return size;
 
-  else if (global_bindings_p ())
+  size = save_expr (size);
+
+  if (global_bindings_p ())
     {
       if (TREE_CONSTANT (size))
 	error ("type size can't be explicitly evaluated");
