@@ -247,43 +247,9 @@ AC_SUBST(GCTESTSPEC)
 AC_LINK_FILES(include/$GCHDR, include/java-gc.h)
 
 
-dnl Note that this code is kept in sync with similar code in gcc/configure.in.
-dnl In particular both packages must make the same decision about which
-dnl thread package to use.
-AC_MSG_CHECKING([for threads package to use])
-AC_ARG_ENABLE(threads, [  --enable-threads=TYPE   choose threading package],
-  THREADS=$enableval,
-  dnl FIXME: figure out native threads to use here.
-  THREADS=no)
-
-if test "$THREADS" = yes; then
-   case "$host" in
-    *-*-vxworks*)
-       THREADS=vxworks
-       ;;
-    *-*-linux*)
-       # FIXME: this isn't correct in all cases.
-       THREADS=posix
-       ;;
-    *-*-win*)
-       THREADS=win32
-       ;;
-    *-*-irix*)
-       # FIXME: for now, choose POSIX, because we implement that.
-       # Later, choose irix threads.
-       THREADS=posix
-       ;;
-    *-*-solaris*)
-       # FIXME: for now, choose POSIX, because we implement that.
-       # Later, choose solaris threads.
-       THREADS=posix
-       ;;
-    *)
-       # For now.
-       THREADS=none
-       ;;
-   esac
-fi
+AC_MSG_CHECKING([for thread model used by GCC])
+THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+AC_MSG_RESULT([$THREADS])
 
 case "$THREADS" in
  no | none | single)
@@ -304,7 +270,6 @@ case "$THREADS" in
     AC_MSG_ERROR($THREADS is an unknown thread package)
     ;;
 esac
-AC_MSG_RESULT($THREADS)
 
 THREADLIBS=
 THREADINCS=

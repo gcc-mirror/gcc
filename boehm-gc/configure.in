@@ -26,44 +26,9 @@ if test "x" = "y"; then
    AC_EXEEXT
 fi
 
-AC_MSG_CHECKING([for threads package to use])
-AC_ARG_ENABLE(threads, [  --enable-threads=TYPE   choose threading package],
-  THREADS=$enableval,
-  dnl FIXME: figure out native threads to use here.
-  THREADS=no)
-
-if test "$THREADS" = yes; then
-   case "$host" in
-    *-*-vxworks*)
-       THREADS=vxworks
-       ;;
-    *-*-linux*)
-       # FIXME: this isn't correct in all cases.
-       THREADS=posix
-       ;;
-    *-*-win*)
-       THREADS=win32
-       ;;
-    *-*-irix[[1-5]].*)
-       # No built-in threads library on IRIX 5.* and older.
-       THREADS=none
-       ;;
-    *-*-irix*)
-       # FIXME: for now, choose POSIX, because we implement that.
-       # Later, choose irix threads.
-       THREADS=posix
-       ;;
-    *-*-solaris*)
-       # FIXME: for now, choose POSIX, because we implement that.
-       # Later, choose solaris threads.
-       THREADS=posix
-       ;;
-    *)
-       # For now.
-       THREADS=none
-       ;;
-   esac
-fi
+AC_MSG_CHECKING([for thread model used by GCC])
+THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+AC_MSG_RESULT([$THREADS])
 
 INCLUDES=
 THREADLIBS=
@@ -95,7 +60,6 @@ case "$THREADS" in
     AC_MSG_ERROR($THREADS is an unknown thread package)
     ;;
 esac
-AC_MSG_RESULT($THREADS)
 AC_SUBST(THREADLIBS)
 
 AC_CHECK_LIB(dl, dlopen, EXTRA_TEST_LIBS="$EXTRA_TEST_LIBS -ldl")

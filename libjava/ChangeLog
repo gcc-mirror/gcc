@@ -1,3 +1,8 @@
+2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in: Obtain THREADS with `gcc -v'.
+	* configure: Rebuilt.
+
 2001-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* java/net/natInetAddress.cc (java::net::InetAddress::aton):
