@@ -1629,6 +1629,17 @@ extern struct rtx_def *legitimize_pic_address ();
       fprintf (FILE, "\t.single 0r%.9g\n", VALUE);			\
   }
 
+/* This is how to output an assembler line defining a `long double'
+   constant.  */
+
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
+  {									\
+    long t[4];								\
+    REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);			\
+    fprintf (FILE, "\t%s\t0x%lx\n\t%s\t0x%lx\n\t%s\t0x%lx\n\t%s\t0x%lx\n", \
+      ASM_LONG, t[0], ASM_LONG, t[1], ASM_LONG, t[2], ASM_LONG, t[3]);	\
+  }
+
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
