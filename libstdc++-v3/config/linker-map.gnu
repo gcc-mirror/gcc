@@ -80,8 +80,8 @@ GLIBCPP_3.2 {
     _ZNSs12_S_empty_repEv;
     _ZNSs20_S_empty_rep_storageE;
     _ZNSbIwSt11char_traitsIwESaIwEE20_S_empty_rep_storageE;
-    _ZNSs12_S_constructEjcRKSaIcE;
-    _ZNSs13_S_copy_chars*;
+    _ZNSs12_S_constructE*;
+    _ZNSs13_S_copy_charsE*;
     _ZNSbIwSt11char_traitsIwESaIwEE[A-Ra-z]*;
     _ZNSbIwSt11char_traitsIwESaIwEE[0-9][A-Ra-z]*;
     _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9][A-Ra-z]*;
