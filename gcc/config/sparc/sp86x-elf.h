@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 /* Enable app-regs and epilogue options.  Do not enable the fpu.  */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE)
+#define TARGET_DEFAULT MASK_APP_REGS
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{v:-V} %{mlittle-endian-data:--little-endian-data} %(asm_cpu)"
