@@ -930,6 +930,19 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 
 	  start_sequence ();
 
+	  /* Final value may have form of (PLUS val1 const1_rtx).  We need
+	     to convert it into general operand, so compute the real value.  */
+
+	  if (GET_CODE (final_value) == PLUS)
+	    {
+	      final_value = expand_simple_binop (mode, PLUS,
+						 copy_rtx (XEXP (final_value, 0)),
+						 copy_rtx (XEXP (final_value, 1)),
+						 NULL_RTX, 0, OPTAB_LIB_WIDEN);
+	    }
+	  if (!nonmemory_operand (final_value, VOIDmode))
+	    final_value = force_reg (mode, copy_rtx (final_value));
+
 	  /* Calculate the difference between the final and initial values.
 	     Final value may be a (plus (reg x) (const_int 1)) rtx.
 	     Let the following cse pass simplify this if initial value is
@@ -949,7 +962,7 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 	     so we can pretend that the overflow value is 0/~0.  */
 
 	  if (cc == NE || less_p != neg_inc)
-	    diff = expand_simple_binop (mode, MINUS, copy_rtx (final_value),
+	    diff = expand_simple_binop (mode, MINUS, final_value,
 					copy_rtx (initial_value), NULL_RTX, 0,
 					OPTAB_LIB_WIDEN);
 	  else
