@@ -51,8 +51,6 @@ static int assume_compiled PARAMS ((const char *));
 static struct hash_entry *init_test_hash_newfunc PARAMS ((struct hash_entry *,
 							  struct hash_table *,
 							  hash_table_key));
-static unsigned long decl_hash PARAMS ((hash_table_key));
-static boolean decl_compare PARAMS ((hash_table_key, hash_table_key));
 
 static rtx registerClass_libfunc;
 
