@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,12 +31,11 @@
 // ISO C++ 14882: 20.5  Date and time
 //
 
-// Note: This is not a conforming implementation.
-
-#ifndef _CPP_CTIME
-#define _CPP_CTIME 1
+#ifndef _CTIME
+#define _CTIME 1
 
 #pragma GCC system_header
-#include <time.h>
+
+#include_next <time.h>
 
 #endif

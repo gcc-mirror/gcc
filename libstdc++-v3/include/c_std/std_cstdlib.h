@@ -1,6 +1,7 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,13 +41,14 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CPP_CSTDLIB
-#define _CPP_CSTDLIB 1
+#ifndef _CSTDLIB
+#define _CSTDLIB 1
+
+#pragma GCC system_header
 
 #include <bits/c++config.h>
 #include <cstddef>
 
-#pragma GCC system_header
 #include <stdlib.h>
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.

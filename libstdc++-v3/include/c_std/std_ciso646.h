@@ -1,4 +1,4 @@
-// -*- C++ -*- std header.
+// -*- C++ -*- forwarding header.
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -35,4 +35,3 @@
  *  and its contents are (mostly) the same as that header, but are all
  *  contained in the namespace @c std.
  */
-
