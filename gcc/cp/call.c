@@ -6534,81 +6534,86 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 				/*inner=*/-1,
 				/*issue_conversion_warnings=*/true,
 				/*c_cast_p=*/false);
-      if (!real_lvalue_p (expr))
+      if (error_operand_p (expr))
+	expr = error_mark_node;
+      else
 	{
-	  tree init;
-	  tree type;
-
-	  /* Create the temporary variable.  */
-	  type = TREE_TYPE (expr);
-	  var = make_temporary_var_for_ref_to_temp (decl, type);
-	  layout_decl (var, 0);
-	  /* If the rvalue is the result of a function call it will be
-	     a TARGET_EXPR.  If it is some other construct (such as a
-	     member access expression where the underlying object is
-	     itself the result of a function call), turn it into a
-	     TARGET_EXPR here.  It is important that EXPR be a
-	     TARGET_EXPR below since otherwise the INIT_EXPR will
-	     attempt to make a bitwise copy of EXPR to initialize
-	     VAR.  */
-	  if (TREE_CODE (expr) != TARGET_EXPR)
-	    expr = get_target_expr (expr);
-	  /* Create the INIT_EXPR that will initialize the temporary
-	     variable.  */
-	  init = build2 (INIT_EXPR, type, var, expr);
-	  if (at_function_scope_p ())
+	  if (!real_lvalue_p (expr))
 	    {
-	      add_decl_expr (var);
-	      *cleanup = cxx_maybe_build_cleanup (var);
+	      tree init;
+	      tree type;
 
-	      /* We must be careful to destroy the temporary only
-		 after its initialization has taken place.  If the
-		 initialization throws an exception, then the
-		 destructor should not be run.  We cannot simply
-		 transform INIT into something like:
-	     
-		     (INIT, ({ CLEANUP_STMT; }))
+	      /* Create the temporary variable.  */
+	      type = TREE_TYPE (expr);
+	      var = make_temporary_var_for_ref_to_temp (decl, type);
+	      layout_decl (var, 0);
+	      /* If the rvalue is the result of a function call it will be
+		 a TARGET_EXPR.  If it is some other construct (such as a
+		 member access expression where the underlying object is
+		 itself the result of a function call), turn it into a
+		 TARGET_EXPR here.  It is important that EXPR be a
+		 TARGET_EXPR below since otherwise the INIT_EXPR will
+		 attempt to make a bitwise copy of EXPR to initialize
+		 VAR.  */
+	      if (TREE_CODE (expr) != TARGET_EXPR)
+		expr = get_target_expr (expr);
+	      /* Create the INIT_EXPR that will initialize the temporary
+		 variable.  */
+	      init = build2 (INIT_EXPR, type, var, expr);
+	      if (at_function_scope_p ())
+		{
+		  add_decl_expr (var);
+		  *cleanup = cxx_maybe_build_cleanup (var);
 
-		 because emit_local_var always treats the
-		 initializer as a full-expression.  Thus, the
-		 destructor would run too early; it would run at the
-		 end of initializing the reference variable, rather
-		 than at the end of the block enclosing the
-		 reference variable.
+		  /* We must be careful to destroy the temporary only
+		     after its initialization has taken place.  If the
+		     initialization throws an exception, then the
+		     destructor should not be run.  We cannot simply
+		     transform INIT into something like:
 
-		 The solution is to pass back a cleanup expression
-		 which the caller is responsible for attaching to
-		 the statement tree.  */
+			 (INIT, ({ CLEANUP_STMT; }))
+
+		     because emit_local_var always treats the
+		     initializer as a full-expression.  Thus, the
+		     destructor would run too early; it would run at the
+		     end of initializing the reference variable, rather
+		     than at the end of the block enclosing the
+		     reference variable.
+
+		     The solution is to pass back a cleanup expression
+		     which the caller is responsible for attaching to
+		     the statement tree.  */
+		}
+	      else
+		{
+		  rest_of_decl_compilation (var, /*toplev=*/1, at_eof);
+		  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+		    static_aggregates = tree_cons (NULL_TREE, var,
+						   static_aggregates);
+		}
+	      /* Use its address to initialize the reference variable.  */
+	      expr = build_address (var);
+	      if (base_conv_type)
+		expr = convert_to_base (expr, 
+					build_pointer_type (base_conv_type),
+					/*check_access=*/true,
+					/*nonnull=*/true);
+	      expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
 	    }
 	  else
-	    {
-	      rest_of_decl_compilation (var, /*toplev=*/1, at_eof);
-	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-		static_aggregates = tree_cons (NULL_TREE, var,
-					       static_aggregates);
-	    }
-	  /* Use its address to initialize the reference variable.  */
-	  expr = build_address (var);
+	    /* Take the address of EXPR.  */
+	    expr = build_unary_op (ADDR_EXPR, expr, 0);
+	  /* If a BASE_CONV was required, perform it now.  */
 	  if (base_conv_type)
-	    expr = convert_to_base (expr, 
-				    build_pointer_type (base_conv_type),
-				    /*check_access=*/true,
-				    /*nonnull=*/true);
-	  expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
+	    expr = (perform_implicit_conversion 
+		    (build_pointer_type (base_conv_type), expr));
+	  expr = build_nop (type, expr);
 	}
-      else
-	/* Take the address of EXPR.  */
-	expr = build_unary_op (ADDR_EXPR, expr, 0);
-      /* If a BASE_CONV was required, perform it now.  */
-      if (base_conv_type)
-	expr = (perform_implicit_conversion 
-		(build_pointer_type (base_conv_type), expr));
-      expr = build_nop (type, expr);
     }
   else
     /* Perform the conversion.  */
     expr = convert_like (conv, expr);
-  
+
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
 

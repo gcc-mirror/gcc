@@ -3173,6 +3173,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	tree qualifying_scope;
 	tree object_scope;
 	tree scope;
+	bool done;
 
 	/* Consume the `~' token.  */
 	cp_lexer_consume_token (parser->lexer);
@@ -3229,6 +3230,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 
 	/* If there was an explicit qualification (S::~T), first look
 	   in the scope given by the qualification (i.e., S).  */
+	done = false;
 	if (scope)
 	  {
 	    cp_parser_parse_tentatively (parser);
@@ -3240,10 +3242,10 @@ cp_parser_unqualified_id (cp_parser* parser,
 					      /*class_head_p=*/false,
 					      declarator_p);
 	    if (cp_parser_parse_definitely (parser))
-	      return build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl));
+	      done = true;
 	  }
 	/* In "N::S::~S", look in "N" as well.  */
-	if (scope && qualifying_scope)
+	if (!done && scope && qualifying_scope)
 	  {
 	    cp_parser_parse_tentatively (parser);
 	    parser->scope = qualifying_scope;
@@ -3258,10 +3260,10 @@ cp_parser_unqualified_id (cp_parser* parser,
 				      /*class_head_p=*/false,
 				      declarator_p);
 	    if (cp_parser_parse_definitely (parser))
-	      return build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl));
+	      done = true;
 	  }
 	/* In "p->S::~T", look in the scope given by "*p" as well.  */
-	else if (object_scope)
+	else if (!done && object_scope)
 	  {
 	    cp_parser_parse_tentatively (parser);
 	    parser->scope = object_scope;
@@ -3276,20 +3278,23 @@ cp_parser_unqualified_id (cp_parser* parser,
 				      /*class_head_p=*/false,
 				      declarator_p);
 	    if (cp_parser_parse_definitely (parser))
-	      return build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl));
+	      done = true;
 	  }
 	/* Look in the surrounding context.  */
-	parser->scope = NULL_TREE;
-	parser->object_scope = NULL_TREE;
-	parser->qualifying_scope = NULL_TREE;
-	type_decl
-	  = cp_parser_class_name (parser,
-				  /*typename_keyword_p=*/false,
-				  /*template_keyword_p=*/false,
-				  none_type,
-				  /*check_dependency=*/false,
-				  /*class_head_p=*/false,
-				  declarator_p);
+	if (!done)
+	  {
+	    parser->scope = NULL_TREE;
+	    parser->object_scope = NULL_TREE;
+	    parser->qualifying_scope = NULL_TREE;
+	    type_decl
+	      = cp_parser_class_name (parser,
+				      /*typename_keyword_p=*/false,
+				      /*template_keyword_p=*/false,
+				      none_type,
+				      /*check_dependency=*/false,
+				      /*class_head_p=*/false,
+				      declarator_p);
+	  }
 	/* If an error occurred, assume that the name of the
 	   destructor is the same as the name of the qualifying
 	   class.  That allows us to keep parsing after running
@@ -11099,7 +11104,17 @@ cp_parser_direct_declarator (cp_parser* parser,
 						 &non_constant_p);
 	      if (!non_constant_p)
 		bounds = fold_non_dependent_expr (bounds);
-	      else if (!at_function_scope_p ())
+	      /* Normally, the array bound must be an integral constant
+		 expression.  However, as an extension, we allow VLAs
+		 in function scopes.  And, we allow type-dependent
+		 expressions in templates; sometimes we don't know for
+		 sure whether or not something is a valid integral
+		 constant expression until instantiation time.  (It
+		 doesn't make sense to check for value-dependency, as
+		 an expression is only value-dependent when it is a
+		 constant expression.)  */  
+	      else if (!type_dependent_expression_p (bounds)
+		       && !at_function_scope_p ())
 		{
 		  error ("array bound is not an integer constant");
 		  bounds = error_mark_node;
@@ -14042,10 +14057,10 @@ cp_parser_attributes_opt (cp_parser* parser)
      identifier ( identifier , expression-list )
      identifier ( expression-list )
 
-   Returns a TREE_LIST.  Each node corresponds to an attribute.  THe
-   TREE_PURPOSE of each node is the identifier indicating which
-   attribute is in use.  The TREE_VALUE represents the arguments, if
-   any.  */
+   Returns a TREE_LIST, or NULL_TREE on error.  Each node corresponds
+   to an attribute.  The TREE_PURPOSE of each node is the identifier
+   indicating which attribute is in use.  The TREE_VALUE represents
+   the arguments, if any.  */
 
 static tree
 cp_parser_attribute_list (cp_parser* parser)
@@ -14063,37 +14078,39 @@ cp_parser_attribute_list (cp_parser* parser)
       /* Look for the identifier.  We also allow keywords here; for
 	 example `__attribute__ ((const))' is legal.  */
       token = cp_lexer_peek_token (parser->lexer);
-      if (token->type != CPP_NAME
-	  && token->type != CPP_KEYWORD)
-	return error_mark_node;
-      /* Consume the token.  */
-      token = cp_lexer_consume_token (parser->lexer);
-
-      /* Save away the identifier that indicates which attribute this is.  */
-      identifier = token->value;
-      attribute = build_tree_list (identifier, NULL_TREE);
-
-      /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      /* If it's an `(', then parse the attribute arguments.  */
-      if (token->type == CPP_OPEN_PAREN)
+      if (token->type == CPP_NAME
+	  || token->type == CPP_KEYWORD)
 	{
-	  tree arguments;
+	  /* Consume the token.  */
+	  token = cp_lexer_consume_token (parser->lexer);
 
-	  arguments = (cp_parser_parenthesized_expression_list
-		       (parser, true, /*cast_p=*/false, 
-			/*non_constant_p=*/NULL));
-	  /* Save the identifier and arguments away.  */
-	  TREE_VALUE (attribute) = arguments;
+	  /* Save away the identifier that indicates which attribute
+	     this is.  */ 
+	  identifier = token->value;
+	  attribute = build_tree_list (identifier, NULL_TREE);
+
+	  /* Peek at the next token.  */
+	  token = cp_lexer_peek_token (parser->lexer);
+	  /* If it's an `(', then parse the attribute arguments.  */
+	  if (token->type == CPP_OPEN_PAREN)
+	    {
+	      tree arguments;
+
+	      arguments = (cp_parser_parenthesized_expression_list
+			   (parser, true, /*cast_p=*/false, 
+			    /*non_constant_p=*/NULL));
+	      /* Save the identifier and arguments away.  */
+	      TREE_VALUE (attribute) = arguments;
+	    }
+
+	  /* Add this attribute to the list.  */
+	  TREE_CHAIN (attribute) = attribute_list;
+	  attribute_list = attribute;
+
+	  token = cp_lexer_peek_token (parser->lexer);
 	}
-
-      /* Add this attribute to the list.  */
-      TREE_CHAIN (attribute) = attribute_list;
-      attribute_list = attribute;
-
-      /* Now, look for more attributes.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      /* If the next token isn't a `,', we're done.  */
+      /* Now, look for more attributes.  If the next token isn't a
+	 `,', we're done.  */
       if (token->type != CPP_COMMA)
 	break;
 
