@@ -356,11 +356,11 @@ _nl_normalize_codeset (codeset, name_len)
   size_t cnt;
 
   for (cnt = 0; cnt < name_len; ++cnt)
-    if (isalnum (codeset[cnt]))
+    if (isalnum ((unsigned char)codeset[cnt]))
       {
 	++len;
 
-	if (isalpha (codeset[cnt]))
+	if (isalpha ((unsigned char)codeset[cnt]))
 	  only_digit = 0;
       }
 
@@ -374,9 +374,9 @@ _nl_normalize_codeset (codeset, name_len)
 	wp = retval;
 
       for (cnt = 0; cnt < name_len; ++cnt)
-	if (isalpha (codeset[cnt]))
-	  *wp++ = tolower (codeset[cnt]);
-	else if (isdigit (codeset[cnt]))
+	if (isalpha ((unsigned char)codeset[cnt]))
+	  *wp++ = tolower ((unsigned char)codeset[cnt]);
+	else if (isdigit ((unsigned char)codeset[cnt]))
 	  *wp++ = codeset[cnt];
 
       *wp = '\0';

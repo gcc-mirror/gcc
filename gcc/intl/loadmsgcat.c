@@ -521,7 +521,7 @@ _nl_load_domain (domain_file, domainbinding)
 	  struct parse_args args;
 
 	  nplurals += 9;
-	  while (*nplurals != '\0' && isspace (*nplurals))
+	  while (*nplurals != '\0' && isspace ((unsigned char)*nplurals))
 	    ++nplurals;
 #if defined HAVE_STRTOUL || defined _LIBC
 	  n = strtoul (nplurals, &endp, 10);
