@@ -1597,8 +1597,20 @@ s390_decompose_address (addr, out)
       /* Allow integer constant in range.  */
       if (GET_CODE (disp) == CONST_INT)
         {
-          if (INTVAL (disp) < 0 || INTVAL (disp) >= 4096)
-              return FALSE;
+	  /* If the argument pointer is involved, the displacement will change
+	     later anyway as the argument pointer gets eliminated.  This could
+	     make a valid displacement invalid, but it is more likely to make
+	     an invalid displacement valid, because we sometimes access the
+	     register save area via negative offsets to the arg pointer.
+	     Thus we don't check the displacement for validity here.  If after
+	     elimination the displacement turns out to be invalid after all,
+	     this is fixed up by reload in any case.  */
+	  if ((base && REGNO (base) == ARG_POINTER_REGNUM)
+	      || (indx && REGNO (indx) == ARG_POINTER_REGNUM))
+	    ;
+
+	  else if (INTVAL (disp) < 0 || INTVAL (disp) >= 4096)
+	    return FALSE;
         }
 
       /* In the small-PIC case, the linker converts @GOT12 
