@@ -1,5 +1,16 @@
 Fri Apr 21 13:30:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* rtl.c: Use NOTE_INSN_REPEATED_LINE_NUMBER and NOTE_INSN_RANGE_BEG.
+	* rtl.h: Likewise.
+	* rtl.def: Update comment.
+	* function.c (expand_function): Use NOTE_INSN_REPEATED_LINE_NUMBER.
+	* integrate.c (expand_inline_function): Likewise.
+	* profile.c (branch_prob): Likewise.
+	* ggc-common.c (ggc_mark_rtx_children): Use NOTE_INSN_RANGE_BEG.
+	* print-rtl.c (print_rtx): Likewise.
+	* haifa-sched.c (sched_analyze, unlink_other_notes): Likewise.
+	(reemit_notes): Likewise; also use enum insn_note.
+
 	* stor-layout.c (layout_decl): Only set DECL_MODE if not already set.
 	(place_field): Properly compute know and actual alignment.
 

@@ -6533,7 +6533,7 @@ expand_function_end (filename, line, end_bindings)
      already exists a copy of this note somewhere above.  This line number
      note is still needed for debugging though, so we can't delete it.  */
   if (flag_test_coverage)
-    emit_note (NULL_PTR, NOTE_REPEATED_LINE_NUMBER);
+    emit_note (NULL_PTR, NOTE_INSN_REPEATED_LINE_NUMBER);
 
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */

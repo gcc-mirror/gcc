@@ -1156,7 +1156,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      This line number note is still needed for debugging though, so we can't
      delete it.  */
   if (flag_test_coverage)
-    emit_note (0, NOTE_REPEATED_LINE_NUMBER);
+    emit_note (0, NOTE_INSN_REPEATED_LINE_NUMBER);
 
   emit_line_note (input_filename, lineno);
 

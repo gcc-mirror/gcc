@@ -3939,7 +3939,7 @@ sched_analyze (deps, head, tail)
 	 ??? Actually, the reemit_notes just say what is done, not why.  */
 
       else if (GET_CODE (insn) == NOTE
-	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_START
+	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_END))
 	{
 	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE, NOTE_RANGE_INFO (insn),
@@ -4277,7 +4277,7 @@ unlink_other_notes (insn, tail)
       if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_SETJMP
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
-	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_RANGE_START
+	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_RANGE_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_RANGE_END
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_END)
@@ -5632,7 +5632,8 @@ reemit_notes (insn, last)
     {
       if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
 	{
-	  int note_type = INTVAL (XEXP (note, 0));
+	  enum insn_note note_type = INTVAL (XEXP (note, 0));
+
 	  if (note_type == NOTE_INSN_SETJMP)
 	    {
 	      retval = emit_note_after (NOTE_INSN_SETJMP, insn);
@@ -5640,7 +5641,7 @@ reemit_notes (insn, last)
 	      remove_note (insn, note);
 	      note = XEXP (note, 1);
 	    }
-	  else if (note_type == NOTE_INSN_RANGE_START
+	  else if (note_type == NOTE_INSN_RANGE_BEG
                    || note_type == NOTE_INSN_RANGE_END)
 	    {
 	      last = emit_note_before (note_type, last);

@@ -636,11 +636,11 @@ enum insn_note
   /* Generated whenever a duplicate line number note is output.  For example,
      one is output after the end of an inline function, in order to prevent
      the line containing the inline call from being counted twice in gcov. */
-  NOTE_REPEATED_LINE_NUMBER,
+  NOTE_INSN_REPEATED_LINE_NUMBER,
 
   /* Start/end of a live range region, where pseudos allocated on the stack
      can be allocated to temporary registers.  Uses NOTE_RANGE_INFO.  */
-  NOTE_INSN_RANGE_START,
+  NOTE_INSN_RANGE_BEG,
   NOTE_INSN_RANGE_END,
 
   /* Record which registers are currently live.  Uses NOTE_LIVE_INFO.  */

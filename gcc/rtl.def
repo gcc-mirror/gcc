@@ -818,7 +818,7 @@ DEF_RTL_EXPR(HIGH, "high", "e", 'o')
    of a constant expression.  */
 DEF_RTL_EXPR(LO_SUM, "lo_sum", "ee", 'o')
 
-/* Header for range information.  Operand 0 is the NOTE_INSN_RANGE_START insn.
+/* Header for range information.  Operand 0 is the NOTE_INSN_RANGE_BEG insn.
    Operand 1 is the NOTE_INSN_RANGE_END insn.  Operand 2 is a vector of all of
    the registers that can be substituted within this range.  Operand 3 is the
    number of calls in the range.  Operand 4 is the number of insns in the
