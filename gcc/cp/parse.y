@@ -710,14 +710,7 @@ template_parm:
 		{ $$ = build_tree_list (NULL_TREE, $1); }
 	| template_template_parm '=' template_arg
 		{
-		  if (TREE_CODE ($3) != TEMPLATE_DECL
-		      && TREE_CODE ($3) != TEMPLATE_TEMPLATE_PARM
-		      && TREE_CODE ($3) != TYPE_DECL
-		      && TREE_CODE ($3) != UNBOUND_CLASS_TEMPLATE)
-		    {
-		      error ("invalid default template argument");
-		      $3 = error_mark_node;
-		    }
+		  $3 = check_template_template_default_arg ($3);
 		  $$ = build_tree_list ($3, $1);
 		}
 	;

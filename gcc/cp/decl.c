@@ -9848,10 +9848,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    if (ctype
 		&& TREE_OPERAND (decl, 0)
 		&& (TREE_CODE (TREE_OPERAND (decl, 0)) == TYPE_DECL
-		    && ((DECL_NAME (TREE_OPERAND (decl, 0))
-			 == constructor_name_full (ctype))
-			|| (DECL_NAME (TREE_OPERAND (decl, 0))
-			    == constructor_name (ctype)))))
+		    && constructor_name_p (DECL_NAME (TREE_OPERAND (decl, 0)),
+					   ctype)))
 	      TREE_OPERAND (decl, 0) = constructor_name (ctype);
 	    next = &TREE_OPERAND (decl, 0);
 	    decl = *next;
@@ -9958,10 +9956,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		}
 
 	      if (ctype && TREE_CODE (TREE_OPERAND (decl, 1)) == TYPE_DECL
-		  && ((DECL_NAME (TREE_OPERAND (decl, 1))
-		       == constructor_name_full (ctype))
-		      || (DECL_NAME (TREE_OPERAND (decl, 1))
-			  == constructor_name (ctype))))
+		  && constructor_name_p (DECL_NAME (TREE_OPERAND (decl, 1)),
+					 ctype))
 		TREE_OPERAND (decl, 1) = constructor_name (ctype);
 	      next = &TREE_OPERAND (decl, 1);
 	      decl = *next;
@@ -9975,8 +9971,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    }
 		  else if (TREE_CODE (decl) == BIT_NOT_EXPR
 			   && TREE_CODE (TREE_OPERAND (decl, 0)) == IDENTIFIER_NODE
-			   && (constructor_name (ctype) == TREE_OPERAND (decl, 0)
-			       || constructor_name_full (ctype) == TREE_OPERAND (decl, 0)))
+			   && constructor_name_p (TREE_OPERAND (decl, 0),
+						  ctype))
 		    {
 		      sfk = sfk_destructor;
 		      ctor_return_type = ctype;

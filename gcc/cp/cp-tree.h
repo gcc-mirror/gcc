@@ -3926,6 +3926,7 @@ extern tree grokoptypename			PARAMS ((tree, tree));
 extern void cplus_decl_attributes		PARAMS ((tree *, tree, int));
 extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
+extern bool constructor_name_p                  (tree, tree);
 extern void defer_fn            		PARAMS ((tree));
 extern void finish_anon_union			PARAMS ((tree));
 extern tree finish_table			PARAMS ((tree, tree, tree, int));
@@ -4318,7 +4319,7 @@ extern void setup_vtbl_ptr			PARAMS ((tree, tree));
 extern void clear_out_block                     PARAMS ((void));
 extern tree begin_global_stmt_expr              PARAMS ((void));
 extern tree finish_global_stmt_expr             PARAMS ((tree));
-
+extern tree check_template_template_default_arg (tree);
 
 /* in spew.c */
 extern void init_spew				PARAMS ((void));

@@ -1810,6 +1810,16 @@ constructor_name (thing)
     return thing;
   return t;
 }
+
+/* Returns TRUE if NAME is the name for the constructor for TYPE.  */
+
+bool
+constructor_name_p (tree name, tree type)
+{
+  return (name == constructor_name (type)
+	  || name == constructor_name_full (type));
+}
+
 
 /* Defer the compilation of the FN until the end of compilation.  */
 

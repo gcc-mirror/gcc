@@ -1212,14 +1212,12 @@ handle_using_decl (using_decl, t)
   if (! binfo)
     return;
   
-  if (name == constructor_name (ctype)
-      || name == constructor_name_full (ctype))
+  if (constructor_name_p (name, ctype))
     {
       cp_error_at ("`%D' names constructor", using_decl);
       return;
     }
-  if (name == constructor_name (t)
-      || name == constructor_name_full (t))
+  if (constructor_name_p (name, t))
     {
       cp_error_at ("`%D' invalid in `%T'", using_decl, t);
       return;
