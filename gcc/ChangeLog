@@ -1,3 +1,7 @@
+Mon Dec  8 18:15:00 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/win-nt.h (TRAMPOLINE_TEMPLATE): Fix backported gcc-2.8 bug.
+
 Mon Dec  8 21:17:28 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* cstamp-h, auto-config.h: Delete.
