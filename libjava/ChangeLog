@@ -1,3 +1,10 @@
+2004-09-21  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/16869:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (MOSTLYCLEANFILES): Removed.
+	(mostlyclean-local): Remove header files.
+
 2004-09-21  Casey Marshall  <csm@gnu.org>
 
 	* java/security/cert/X509CRLSelector.java:
