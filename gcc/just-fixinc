@@ -1,6 +1,6 @@
 #!/bin/sh
 # This script exists for use after installing
-# the Solaris binaries from the FSF CD-ROM.
+# the Solaris binaries from a distribution tape/CDROM.
 # Use it *after* copying the directory of binaries
 # to the proper installed location.
 # It runs fixinc.svr4 to correct bugs in the Solaris header files.
@@ -10,11 +10,24 @@
 # This script does not modify the original header files in /usr/include.
 # It only modifies copies in the GCC installation directory.
 
-installed=/opt/gnu/lib/gcc-lib/sparc-sun-solaris2/2.4.2
+installed=/opt/gnu/lib/gcc-lib/sparc-sun-solaris2/2.5.0
 cd $installed/include
+
 rmdir tmpfoo > /dev/null 2>&1
 mkdir tmpfoo
 mv va-sparc.h varargs.h stdarg.h stddef.h limits.h float.h proto.h tmpfoo
+
 $installed/fixinc.svr4 $installed/include /usr/include $installed
+
+# Make sure fixed native limits.h gets renamed to syslimits.h before gcc's
+# limits.h from tmpfoo is moved back.
+if test -f limits.h ; then
+  rm -f syslimits.h
+  mv limits.h syslimits.h
+fi
+chmod a+r syslimits.h
+
 mv tmpfoo/* .
 rmdir tmpfoo
+
+# eof
