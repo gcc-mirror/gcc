@@ -1,3 +1,11 @@
+Thu Oct 30 14:40:10 1997  Doug Evans  <devans@canuck.cygnus.com>
+
+	* configure.in (sparc-*-elf*): Use sparc/elf.h, sparc/t-elf.
+	Set extra_parts.
+	(sparc*-*-*): Recognize --with-cpu=v9.
+	* sparc/elf.h: New file.
+	* sparc/t-elf: New file.
+
 Thu Oct 30 13:26:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.c (const_8bit_operand): New function.
