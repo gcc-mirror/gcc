@@ -1,5 +1,12 @@
 2003-04-10  Steve Ellcey  <sje@cup.hp.com>
 
+	* ia64-protos.h (addp4_optimize_ok): New.
+	* ia64.c (addp4_optimize_ok): New.
+	* ia64.md (*ptr_extend_plus_1): Use addp4_optimize_ok.
+	(*ptr_extend_plus_2): Ditto.
+
+2003-04-10  Steve Ellcey  <sje@cup.hp.com>
+
 	* expr.c (expand_assignment): Extend offset_rtx with convert_to_mode
 	not with convert_memory_address.
 	(store_constructor): Ditto, and same for copy_size_rtx.
