@@ -20,10 +20,10 @@ details.  */
 #include <java/lang/Class.h>
 
 JArray<jclass> *
-java::lang::VMSecurityManager::getClassContext ()
+java::lang::VMSecurityManager::getClassContext (jclass klass)
 {
   JArray<jclass> *result = 
-    _Jv_StackTrace::GetClassContext (&SecurityManager::class$);
+    _Jv_StackTrace::GetClassContext (klass);
 
   return result;
 }

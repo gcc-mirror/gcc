@@ -273,7 +273,7 @@ public class Package
   public static Package getPackage(String name)
   {
     // Get the caller's classloader
-    ClassLoader cl = VMSecurityManager.currentClassLoader();
+    ClassLoader cl = VMSecurityManager.currentClassLoader(Package.class);
     return cl != null ? cl.getPackage(name) : VMClassLoader.getPackage(name);
   }
 
@@ -286,7 +286,7 @@ public class Package
   public static Package[] getPackages()
   {
     // Get the caller's classloader
-    Class c = VMSecurityManager.getClassContext()[1];
+    Class c = VMSecurityManager.getClassContext(Package.class)[1];
     ClassLoader cl = c.getClassLoader();
     return cl != null ? cl.getPackages() : VMClassLoader.getPackages();
   }

@@ -464,19 +464,17 @@ _Jv_StackTrace::GetClassContext (jclass checkClass)
       _Jv_StackFrame *frame = &state.frames[i];
       FillInFrameInfo (frame);
       
-      if (seen_checkClass
-          && frame->klass
-	  && frame->klass != checkClass)
+      if (seen_checkClass)
 	{
-          jframe_count++;
-	  if (start_pos == -1)
-	    start_pos = i;
+	  if (frame->klass)
+	    {
+	      jframe_count++;
+	      if (start_pos == -1)
+		start_pos = i;
+	    }
 	}
-
-      if (!seen_checkClass
-          && frame->klass
-          && frame->klass == checkClass)
-        seen_checkClass = true;
+      else
+	seen_checkClass = frame->klass == checkClass;
     }
   result = (JArray<jclass> *) _Jv_NewObjectArray (jframe_count, &Class::class$, NULL);
   int pos = 0;
