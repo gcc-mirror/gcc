@@ -306,12 +306,16 @@ extern int ix86_arch;
 #ifdef __STDC__
 #if TARGET_CPU_DEFAULT == 1
 #define CPP_CPU_DEFAULT "-Di486"
-#elif TARGET_CPU_DEFAULT == 2
+#else
+#if TARGET_CPU_DEFAULT == 2
 #define CPP_CPU_DEFAULT "-Di586"
-#elif TARGET_CPU_DEFAULT == 3
+#else
+#if TARGET_CPU_DEFAULT == 3
 #define CPP_CPU_DEFAULT "-Di686"
 #else
 #define CPP_CPU_DEFAULT ""
+#endif
+#endif
 #endif /* TARGET_CPU_DEFAULT */
 
 #define CPP_CPU_SPEC "\
