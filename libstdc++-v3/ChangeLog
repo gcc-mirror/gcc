@@ -1,3 +1,9 @@
+2002-02-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/operators.cc
+	(gnu_collate::do_compare()): Add return statement to
+	suppress "no return statement" warning.
+
 2002-02-01  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/ostream_manip.cc: Enable test02.

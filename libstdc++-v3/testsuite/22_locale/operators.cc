@@ -54,7 +54,7 @@ class gnu_collate: public ccollate
 protected:
   virtual int
   do_compare(const char*, const char*, const char*, const char*) const
-  { ++gnu_count; }
+  { ++gnu_count; return 0; }
 }; 
 
 void test02()
