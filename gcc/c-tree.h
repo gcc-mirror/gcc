@@ -284,10 +284,12 @@ extern void pending_xref_error                  PROTO((void));
 extern void pop_c_function_context              PROTO((void));
 extern void pop_label_level                     PROTO((void));
 extern tree poplevel                            PROTO((int, int, int));
-extern void print_lang_decl                     PROTO((void));
+extern void print_lang_decl                     STDIO_PROTO((FILE *, tree,
+							     int))
 extern void print_lang_identifier               STDIO_PROTO((FILE *, tree,
 							     int));
-extern void print_lang_type                     PROTO((void));
+extern void print_lang_type                     STDIO_PROTO((FILE *, tree,
+							     int))
 extern void push_c_function_context             PROTO((void));
 extern void push_label_level                    PROTO((void));
 extern void push_parm_decl                      PROTO((tree));
