@@ -139,6 +139,8 @@ public final class StackTrace
     return len;
   }
 
+  public static native Class getClass(RawData ip);
+
   private static native void update();
   private static MethodRef methodAtAddress(RawData addr)
   {

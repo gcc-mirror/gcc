@@ -15,6 +15,9 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/NullPointerException.h>
+#include <gnu/gcj/runtime/StackTrace.h> 
+#include <gnu/gcj/runtime/MethodRef.h> 
+#include <gnu/gcj/RawData.h> 
 #include <gcj/cni.h>
 #include <jvm.h>
 
@@ -335,11 +338,21 @@ PERSONALITY_FUNCTION (int version,
 
 	      jclass catch_type = get_ttype_entry (context, &info, ar_filter);
 
-	      // The catch_type is either a (java::lang::Class*) or
-	      // is one more than a (Utf8Const*).
-	      if ((size_t)catch_type & 1)
-		catch_type = _Jv_FindClass ((Utf8Const*)((size_t)catch_type ^ 1), NULL);
-
+	      typedef struct {
+		int __attribute__ ((mode (pointer))) dummy; 
+		Utf8Const *utf8;
+	      } utf8_hdr;
+	      utf8_hdr *p = (utf8_hdr *)catch_type;
+	      if (p->dummy == -1)
+		{
+		  using namespace gnu::gcj::runtime;
+		  java::lang::Class *klass 
+		    = StackTrace::getClass ((gnu::gcj::RawData *)ip);
+		  java::lang::ClassLoader *loader 
+		    = klass ? klass->getClassLoaderInternal () : NULL;
+		  catch_type = _Jv_FindClass (p->utf8, loader);
+		}
+	      
 	      if (_Jv_IsInstanceOf (xh->value, catch_type))
 		{
 		  handler_switch_value = ar_filter;

@@ -124,6 +124,16 @@ gnu::gcj::runtime::StackTrace::getCompiledMethodRef (gnu::gcj::RawData *addr)
 }
 
 java::lang::Class *
+gnu::gcj::runtime::StackTrace::getClass (gnu::gcj::RawData *p)
+{
+  gnu::gcj::runtime::MethodRef *ref = getCompiledMethodRef (p);
+  if (ref)
+    return ref->klass;
+  else
+    return NULL;
+}
+
+java::lang::Class *
 gnu::gcj::runtime::StackTrace::classAt (jint n)
 {
   _Jv_frame_info *frame = GET_FRAME (n);
@@ -137,12 +147,7 @@ gnu::gcj::runtime::StackTrace::classAt (jint n)
     }
 #endif // INTERPRETER
   
-  gnu::gcj::runtime::MethodRef *ref 
-    = getCompiledMethodRef ((gnu::gcj::RawData *)frame->addr);
-  if (ref)
-    return ref->klass;
-  else
-    return NULL;
+  return getClass ((gnu::gcj::RawData *)frame->addr);
 }
 
 java::lang::String*
