@@ -2394,8 +2394,6 @@ compile_file (name)
 #endif
     }
 
- after_finish_compilation:
-
   /* Language-specific end of compilation actions.  */
 
   lang_finish ();
