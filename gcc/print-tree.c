@@ -613,6 +613,7 @@ print_node (file, prefix, node, indent)
 		    EXPR_WFL_FILENAME (node) : "(no file info)"),
 		   EXPR_WFL_LINENO (node), EXPR_WFL_COLNO (node));
 	}
+      print_node (file, "chain", BLOCK_CHAIN (node), indent + 4);
       break;
 
     case 'c':

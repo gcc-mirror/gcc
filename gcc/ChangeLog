@@ -1,3 +1,9 @@
+2000-04-26  Jason Merrill  <jason@casey.cygnus.com>
+
+	* calls.c (expand_call): Use get_callee_fndecl.
+
+	* print-tree.c (print_node): Print the chain of an _EXPR.
+
 Tue Apr 25 16:16:04 2000  Andrew MacLeod  <amacleod@cygnus.com>
 			  Jim Wilson  <wilson@cygnus.com>
 			  Andrew Haley  <aph@cygnus.com>
