@@ -188,10 +188,8 @@ static int subst_low_cuid;
 
 static int previous_num_undos;
 
-/* This is non-zero if there exists at least one nonlocal_label in the
-   current function.  This affects how basic block structure is determined.  */
-
-static rtx nonlocal_label_list;
+/* Basic block number of the block in which we are performing combines.  */
+static int this_basic_block;
 
 /* The next group of arrays allows the recording of the last value assigned
    to (hard or pseudo) register n.  We use this information to see if a
@@ -520,6 +518,7 @@ combine_instructions (f, nregs)
 
   /* Now scan all the insns in forward order.  */
 
+  this_basic_block = -1;
   label_tick = 1;
   last_call_cuid = 0;
   mem_last_set = 0;
@@ -532,18 +531,19 @@ combine_instructions (f, nregs)
 
   setup_incoming_promotions ();
 
-  nonlocal_label_list = nonlocal_label_rtx_list ();
-
   for (insn = f; insn; insn = next ? next : NEXT_INSN (insn))
     {
       next = 0;
 
+      /* If INSN starts a new basic block, update our basic block number.  */
+      if (this_basic_block < n_basic_blocks + 1
+	  && basic_block_head[this_basic_block + 1] == insn)
+	this_basic_block++;
+
       if (GET_CODE (insn) == CODE_LABEL)
 	label_tick++;
 
-      else if (GET_CODE (insn) == INSN
-	       || GET_CODE (insn) == CALL_INSN
-	       || GET_CODE (insn) == JUMP_INSN)
+      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  /* Try this insn with each insn it links back to.  */
 
@@ -1881,10 +1881,8 @@ try_combine (i3, i2, i1)
 	     which we know will be a NOTE.  */
 
 	  for (insn = NEXT_INSN (i3);
-	       insn && GET_CODE (insn) != CODE_LABEL
-	       && (GET_CODE (PREV_INSN (insn)) != CALL_INSN
-		   || nonlocal_label_list == 0)
-	       && GET_CODE (PREV_INSN (insn)) != JUMP_INSN;
+	       insn && (this_basic_block == n_basic_blocks - 1
+			|| insn != basic_block_head[this_basic_block + 1]);
 	       insn = NEXT_INSN (insn))
 	    {
 	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
@@ -2045,23 +2043,14 @@ try_combine (i3, i2, i1)
 	    && SET_DEST (XVECEXP (PATTERN (i2), 0, i)) != i2dest
 	    && ! find_reg_note (i2, REG_UNUSED,
 				SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
-	  {
-	    register rtx insn;
-
-	    for (insn = NEXT_INSN (i2); insn; insn = NEXT_INSN (insn))
-	      {
-		if (insn != i3 && GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-		  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-		    if (XEXP (link, 0) == i2)
-		      XEXP (link, 0) = i3;
-
-		if (GET_CODE (insn) == CODE_LABEL
-		    || GET_CODE (insn) == JUMP_INSN
-		    || (GET_CODE (PREV_INSN (insn)) == CALL_INSN
-			&& nonlocal_label_list != 0))
-		  break;
-	      }
-	  }
+	  for (temp = NEXT_INSN (i2);
+	       temp && (this_basic_block == n_basic_blocks - 1
+			|| basic_block_head[this_basic_block] != temp);
+	       temp = NEXT_INSN (temp))
+	    if (temp != i3 && GET_RTX_CLASS (GET_CODE (temp)) == 'i')
+	      for (link = LOG_LINKS (temp); link; link = XEXP (link, 1))
+		if (XEXP (link, 0) == i2)
+		  XEXP (link, 0) = i3;
 
     LOG_LINKS (i3) = 0;
     REG_NOTES (i3) = 0;
@@ -10053,10 +10042,8 @@ distribute_links (links)
 	 since most links don't point very far away.  */
 
       for (insn = NEXT_INSN (XEXP (link, 0));
-	   (insn && GET_CODE (insn) != CODE_LABEL
-	    && (GET_CODE (PREV_INSN (insn)) != CALL_INSN
-		|| nonlocal_label_list == 0)
-	    && GET_CODE (PREV_INSN (insn)) != JUMP_INSN);
+	   (insn && (this_basic_block == n_basic_blocks - 1
+		     || basic_block_head[this_basic_block + 1] != insn));
 	   insn = NEXT_INSN (insn))
 	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	    && reg_overlap_mentioned_p (reg, PATTERN (insn)))
