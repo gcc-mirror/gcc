@@ -2076,6 +2076,17 @@ move between operand 0 and operand 1.  Operand 2 describes the scratch
 register.  See the discussion of the @code{SECONDARY_RELOAD_CLASS}
 macro in @pxref{Register Classes}.
 
+There are special restrictions on the form of the @code{match_operand}s
+used in these patterns.  First, only the predicate for the reload 
+operand is examined, i.e. @code{reload_in} examines operand 1, but not
+the predicates for operand 0 or 2.  Second, there may only be one
+alternative in the constraints.  Third, only a single register class
+letter may be used for the constraint; subsequent constraint letters
+are ignored.  As a special exception, an empty constraint string
+matches the @code{ALL_REGS} register class.  This may relieve ports
+of the burden of defining an @code{ALL_REGS} constraint letter just
+for these patterns.
+
 @cindex @code{movstrict@var{m}} instruction pattern
 @item @samp{movstrict@var{m}}
 Like @samp{mov@var{m}} except that if operand 0 is a @code{subreg}
