@@ -225,6 +225,12 @@ now reliably aligns @emph{all} double-precision variables and arrays
 on Intel x86 targets.
 
 @item
+Even without the @samp{-malign-double} option,
+@code{g77} reliably aligns local double-precision variables
+that are not in @code{EQUIVALENCE} areas
+and not @code{SAVE}'d.
+
+@item
 A substantial portion of the @code{g77} front end's code-generation component
 was rewritten.
 It now generates code using facilities more robustly supported

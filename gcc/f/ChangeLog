@@ -1,3 +1,7 @@
+Tue Apr 20 01:38:57 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, news.texi: Clarify -malign-double situation.
+
 Tue Apr 20 01:15:25 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* stb.c (ffestb_R5282_): Convert DATA repeat count
