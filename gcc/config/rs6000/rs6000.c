@@ -1492,10 +1492,17 @@ rs6000_emit_move (dest, source, mode)
   if (! no_new_pseudos && GET_CODE (operands[0]) != REG)
     operands[1] = force_reg (mode, operands[1]);
   
-  if (mode == SFmode && ! TARGET_POWERPC && TARGET_HARD_FLOAT)
+  if (mode == SFmode && ! TARGET_POWERPC && TARGET_HARD_FLOAT
+      && GET_CODE (operands[0]) == MEM)
     {
-      int regnum = true_regnum (operands[1]);
-      /* regnum may be -1 in which case the test below will fail.  */	
+      int regnum;
+
+      if (reload_in_progress || reload_completed)
+	regnum = true_regnum (operands[1]);
+      else if (GET_CODE (operands[1]) == REG)
+	regnum = REGNO (operands[1]);
+      else
+	regnum = -1;
       
       /* If operands[1] is a register, on POWER it may have
 	 double-precision data in it, so truncate it to single
