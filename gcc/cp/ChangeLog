@@ -1,3 +1,12 @@
+1999-09-01  Alex Samuel  <samuel@codesourcery.com>
+
+	* decl2.c (arg_assoc_template_arg): New prototype.  New function.
+	(arg_assoc_class): Use arg_assoc_template_arg for template
+	arguments. 
+	(arg_assoc): Likewise.
+	* pt.c (mangle_class_name_for_template): Allow member template
+	template arguments.
+
 1999-09-02  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (build_conditional_expr): Warn on enum mismatches.

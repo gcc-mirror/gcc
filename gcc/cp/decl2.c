@@ -4544,6 +4544,7 @@ static int arg_assoc_type    PROTO((struct arg_lookup*, tree));
 static int add_function      PROTO((struct arg_lookup *, tree));
 static int arg_assoc_namespace PROTO((struct arg_lookup *, tree));
 static int arg_assoc_class   PROTO((struct arg_lookup *, tree));
+static int arg_assoc_template_arg PROTO((struct arg_lookup*, tree));
 
 /* Add a function to the lookup structure.
    Returns 1 on error.  */
@@ -4607,6 +4608,46 @@ arg_assoc_namespace (k, scope)
   return 0;
 }
 
+/* Adds everything associated with a template argument to the lookup
+   structure.  Returns 1 on error.  */
+
+static int
+arg_assoc_template_arg (k, arg)
+     struct arg_lookup* k;
+     tree arg;
+{
+  /* [basic.lookup.koenig]
+
+     If T is a template-id, its associated namespaces and classes are
+     ... the namespaces and classes associated with the types of the
+     template arguments provided for template type parameters
+     (excluding template template parameters); the namespaces in which
+     any template template arguments are defined; and the classes in
+     which any member templates used as template template arguments
+     are defined.  [Note: non-type template arguments do not
+     contribute to the set of associated namespaces.  ]  */
+
+  /* Consider first template template arguments.  */
+  if (TREE_CODE (arg) == TEMPLATE_DECL)
+    {
+      tree ctx = CP_DECL_CONTEXT (arg);
+
+      /* It's not a member template.  */
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+        return arg_assoc_namespace (k, ctx);
+      /* Otherwise, it must be member template.  */
+      else 
+        return arg_assoc_class (k, ctx);
+    }
+  /* It's not a template template argument, but it is a type template
+     argument.  */
+  else if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't')
+    return arg_assoc_type (k, arg);
+  /* It's a non-type template argument.  */
+  else
+    return 0;
+}
+
 /* Adds everything associated with class to the lookup structure.
    Returns 1 on error.  */
 
@@ -4653,8 +4694,8 @@ arg_assoc_class (k, type)
   if (CLASSTYPE_TEMPLATE_INFO (type))
     {
       list = innermost_args (CLASSTYPE_TI_ARGS (type));
-      for (i = 0; i < TREE_VEC_LENGTH (list); ++i)
-	arg_assoc (k, TREE_VEC_ELT (list, i));
+      for (i = 0; i < TREE_VEC_LENGTH (list); ++i) 
+        arg_assoc_template_arg (k, TREE_VEC_ELT (list, i));
     }
 
   return 0;
@@ -4761,14 +4802,7 @@ arg_assoc (k, n)
 
 	 If T is a template-id, its associated namespaces and classes
 	 are the namespace in which the template is defined; for
-	 member templates, the member template's class; the namespaces
-	 and classes associated with the types of the template
-	 arguments provided for template type parameters (excluding
-	 template template parameters); the namespaces in which any
-	 template template arguments are defined; and the classes in
-	 which any member templates used as template template
-	 arguments are defined.  [Note: non-type template arguments do
-	 not contribute to the set of associated namespaces.  ]   */
+	 member templates, the member template's class...  */
       tree template = TREE_OPERAND (n, 0);
       tree args = TREE_OPERAND (n, 1);
       tree ctx;
@@ -4793,24 +4827,8 @@ arg_assoc (k, n)
 
       /* Now the arguments.  */
       for (arg = args; arg != NULL_TREE; arg = TREE_CHAIN (arg))
-	{
-	  tree t = TREE_VALUE (arg);
-
-	  if (TREE_CODE (t) == TEMPLATE_DECL)
-	    {
-	      ctx = CP_DECL_CONTEXT (t);
-	      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-		{
-		  if (arg_assoc_namespace (k, ctx) == 1)
-		    return 1;
-		}
-	      else if (arg_assoc_class (k, ctx) == 1)
-		return 1;
-	    }
-	  else if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
-		   && arg_assoc_type (k, t) == 1)
-	    return 1;
-	}
+	if (arg_assoc_template_arg (k, TREE_VALUE (arg)) == 1)
+	  return 1;
     }
   else
     {
