@@ -18,6 +18,21 @@
 
 # Some common subroutines for use by opt[ch]-gen.awk.
 
+# Return nonzero if FLAGS contains a flag matching REGEX.
+function flag_set_p(regex, flags)
+{
+	return (" " flags " ") ~ (" " regex " ")
+}
+
+# Return STRING if FLAGS contains a flag matching regexp REGEX,
+# otherwise return the empty string.
+function test_flag(regex, flags, string)
+{
+	if (flag_set_p(regex, flags))
+		return string
+	return ""
+}
+
 # If FLAGS contains a "NAME(...argument...)" flag, return the value
 # of the argument.  Return the empty string otherwise.
 function opt_args(name, flags)
@@ -47,24 +62,22 @@ function nth_arg(n, s)
 # Return a bitmask of CL_* values for option flags FLAGS.
 function switch_flags (flags)
 {
-	flags = " " flags " "
 	result = "0"
 	for (j = 0; j < n_langs; j++) {
-		regex = " " langs[j] " "
+		regex = langs[j]
 		gsub ( "\\+", "\\+", regex )
-		if (flags ~ regex)
-			result = result " | " macros[j]
+		result = result test_flag(regex, flags, " | " macros[j])
 	}
-	if (flags ~ " Common ") result = result " | CL_COMMON"
-	if (flags ~ " Target ") result = result " | CL_TARGET"
-	if (flags ~ " Joined ") result = result " | CL_JOINED"
-	if (flags ~ " JoinedOrMissing ") \
-	    result = result " | CL_JOINED | CL_MISSING_OK"
-	if (flags ~ " Separate ") result = result " | CL_SEPARATE"
-	if (flags ~ " RejectNegative ") result = result " | CL_REJECT_NEGATIVE"
-	if (flags ~ " UInteger ") result = result " | CL_UINTEGER"
-	if (flags ~ " Undocumented ") result = result " | CL_UNDOCUMENTED"
-	if (flags ~ " Report ") result = result " | CL_REPORT"
+	result = result \
+	  test_flag("Common", flags, " | CL_COMMON") \
+	  test_flag("Target", flags, " | CL_TARGET") \
+	  test_flag("Joined", flags, " | CL_JOINED") \
+	  test_flag("JoinedOrMissing", flags, " | CL_JOINED | CL_MISSING_OK") \
+	  test_flag("Separate", flags, " | CL_SEPARATE") \
+	  test_flag("RejectNegative", flags, " | CL_REJECT_NEGATIVE") \
+	  test_flag("UInteger", flags, " | CL_UINTEGER") \
+	  test_flag("Undocumented", flags,  " | CL_UNDOCUMENTED") \
+	  test_flag("Report", flags, " | CL_REPORT")
 	sub( "^0 \\| ", "", result )
 	return result
 }
