@@ -1,3 +1,15 @@
+2000-12-06  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_*_DECL_AND_LINKAGE_*):  Pre-test
+	  whether the cached result is present.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+	* Makefile.in:  Regenerate.
+	* libio/Makefile.in:  Regenerate.
+	* libmath/Makefile.in:  Regenerate.
+	* libsupc++/Makefile.in:  Regenerate.
+	* src/Makefile.in:  Regenerate.
+
 2000-12-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.target (*-*-freebsd, *-*-netbsd): Correct paths to 
