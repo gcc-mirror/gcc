@@ -1,3 +1,7 @@
+2001-11-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/invoke.texi: Remove comment referring to -xf77-version.
+
 2001-11-09  Kazu Hirata  <kazu@hxi.com>
 
 	* config/convex/convex.c: Fix comment formatting.
