@@ -1,4 +1,8 @@
-i2002-12-02  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+2002-12-02  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h: Delete ifndefs with nothing inside them.
+
+2002-12-02  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* configure.in: Use "missing" script to generate warning if
 	flex or bison programs not found, instead of invoking "false".
