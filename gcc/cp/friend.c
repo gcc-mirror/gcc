@@ -354,8 +354,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    is_friend_template = processing_template_decl >
-      template_class_depth (current_class_type);
+    is_friend_template = PROCESSING_REAL_TEMPLATE_DECL_P ();
 
   if (ctype)
     {

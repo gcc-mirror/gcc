@@ -176,6 +176,7 @@ static int member_function_or_else PROTO((tree, tree, char *));
 static void bad_specifiers PROTO((tree, char *, int, int, int, int,
 				  int));
 static void lang_print_error_function PROTO((char *));
+static tree maybe_process_template_type_declaration PROTO((tree, int, struct binding_level*));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -2223,6 +2224,88 @@ pop_everything ()
 #endif
 }
 
+/* The type TYPE is being declared.  If it is a class template, or a
+   specialization of a class template, do any processing required and
+   perform error-checking.  If IS_FRIEND is non-zero, this TYPE is
+   being declared a friend.  B is the binding level at which this TYPE
+   should be bound.
+
+   Returns the TYPE_DECL for TYPE, which may have been altered by this
+   processing.  */
+
+static tree 
+maybe_process_template_type_declaration (type, globalize, b)
+     tree type;
+     int globalize;
+     struct binding_level* b;
+{
+  tree decl = TYPE_NAME (type);
+ 
+  if (processing_template_parmlist)
+    /* You can't declare a new template type in a template parameter
+       list.  But, you can declare a non-template type:
+       
+         template <class A*> struct S;
+       
+       is a forward-declaration of `A'.  */
+    ;
+  else 
+    {
+      maybe_check_template_type (type);
+
+      if (IS_AGGR_TYPE (type)
+	  && (/* If !GLOBALIZE then we are looking at a definition.
+		 It may not be a primary template.  (For example, in:
+		  
+		 template <class T>
+		 struct S1 { class S2 {}; }
+		  
+		 we have to push_template_decl for S2.)  */
+	      (processing_template_decl && !globalize)
+	      /* If we are declaring a friend template class, we will
+		 have GLOBALIZE set, since something like:
+
+		 template <class T>
+		 struct S1 {
+		   template <class U>
+		   friend class S2; 
+		 };
+
+		 declares S2 to be at global scope.  */
+	      || PROCESSING_REAL_TEMPLATE_DECL_P ()))
+	{
+	  /* This may change after the call to
+	     push_template_decl_real, but we want the original value.  */
+	  tree name = DECL_NAME (decl);
+
+	  decl = push_template_decl_real (decl, globalize);
+	  /* If the current binding level is the binding level for the
+	     template parameters (see the comment in
+	     begin_template_parm_list) and the enclosing level is a class
+	     scope, and we're not looking at a friend, push the
+	     declaration of the member class into the class scope.  In the
+	     friend case, push_template_decl will already have put the
+	     friend into global scope, if appropriate.  */
+	  if (!globalize && b->pseudo_global
+	      && b->level_chain->parm_flag == 2)
+	    {
+	      pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
+				   b->level_chain);
+	      /* Put this tag on the list of tags for the class, since
+		 that won't happen below because B is not the class
+		 binding level, but is instead the pseudo-global level.  */
+	      b->level_chain->tags = 
+		saveable_tree_cons (name, type, b->level_chain->tags);
+	      TREE_NONLOCAL_FLAG (type) = 1;
+	      if (TYPE_SIZE (current_class_type) == NULL_TREE)
+		CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
+	    }
+	}
+    }
+
+  return decl;
+}
+
 /* Push a tag name NAME for struct/class/union/enum type TYPE.
    Normally put it into the inner-most non-tag-transparent scope,
    but if GLOBALIZE is true, put it in the inner-most non-class scope.
@@ -2298,63 +2381,8 @@ pushtag (name, type, globalize)
 	  TYPE_NAME (type) = d;
 	  DECL_CONTEXT (d) = FROB_CONTEXT (context);
 
-	  if (processing_template_parmlist)
-	    /* You can't declare a new template type in a template
-	       parameter list.  But, you can declare a non-template
-	       type:
-
-	         template <class A*> struct S;
-
-	       is a forward-declaration of `A'.  */
-	    ;
-	  else if (IS_AGGR_TYPE (type)
-	      && (/* If !GLOBALIZE then we are looking at a
-		     definition.  It may not be a primary template.
-		     (For example, in:
-		  
-		       template <class T>
-		       struct S1 { class S2 {}; }
-		  
-		     we have to push_template_decl for S2.)  */
-		  (processing_template_decl && !globalize)
-		  /* If we are declaring a friend template class, we
-		     will have GLOBALIZE set, since something like:
-
-		       template <class T>
-		       struct S1 {
-		         template <class U>
-		         friend class S2; 
-		       };
-
-		     declares S2 to be at global scope.  */
-		  || (processing_template_decl > 
-		      template_class_depth (current_class_type))))
-	    {
-	      d = push_template_decl_real (d, globalize);
-	      /* If the current binding level is the binding level for
-		 the template parameters (see the comment in
-		 begin_template_parm_list) and the enclosing level is
-		 a class scope, and we're not looking at a friend,
-		 push the declaration of the member class into the
-		 class scope.  In the friend case, push_template_decl
-		 will already have put the friend into global scope,
-		 if appropriate.  */ 
-	      if (!globalize && b->pseudo_global
-		  && b->level_chain->parm_flag == 2)
-		{
-		  pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
-				       b->level_chain);
-		  /* Put this tag on the list of tags for the class,
-		     since that won't happen below because B is not
-		     the class binding level, but is instead the
-		     pseudo-global level.  */
-		  b->level_chain->tags = 
-		    saveable_tree_cons (name, type, b->level_chain->tags);
-		  TREE_NONLOCAL_FLAG (type) = 1;
-		  if (TYPE_SIZE (current_class_type) == NULL_TREE)
-		    CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
-		}
-	    }
+	  d = maybe_process_template_type_declaration (type,
+						       globalize, b);
 
 	  if (b->parm_flag == 2)
 	    d = pushdecl_class_level (d);
@@ -11349,8 +11377,7 @@ xref_tag (code_type_node, name, binfo, globalize)
     {
       if (current_class_type 
 	  && template_class_depth (current_class_type) 
-	  && (processing_template_decl 
-	      > template_class_depth (current_class_type)))
+	  && PROCESSING_REAL_TEMPLATE_DECL_P ())
       /* Since GLOBALIZE is non-zero, we are not looking at a
 	 definition of this tag.  Since, in addition, we are currently
 	 processing a (member) template declaration of a template

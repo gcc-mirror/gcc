@@ -1692,6 +1692,12 @@ extern int flag_new_for_scope;
 #define SET_CLASSTYPE_EXPLICIT_INSTANTIATION(NODE) \
   (CLASSTYPE_USE_TEMPLATE(NODE) = 3)
 
+/* Non-zero iff we are currently processing a declaration for an
+   entity with its own template parameter list, and which is not a
+   full specialization.  */
+#define PROCESSING_REAL_TEMPLATE_DECL_P() \
+  (processing_template_decl > template_class_depth (current_class_type))
+
 /* This function may be a guiding decl for a template.  */
 #define DECL_MAYBE_TEMPLATE(NODE) DECL_LANG_FLAG_4 (NODE)
 /* We know what we're doing with this decl now.  */
@@ -2794,6 +2800,7 @@ extern int template_class_depth                 PROTO((tree));
 extern int is_specialization_of                 PROTO((tree, tree));
 extern int comp_template_args                   PROTO((tree, tree));
 extern void maybe_process_partial_specialization PROTO((tree));
+extern void maybe_check_template_type           PROTO((tree));
 
 extern int processing_specialization;
 extern int processing_explicit_instantiation;

@@ -121,6 +121,7 @@ static tree most_specialized PROTO((tree, tree, tree));
 static tree most_specialized_class PROTO((tree, tree));
 static tree most_general_template PROTO((tree));
 static void set_mangled_name_for_template_decl PROTO((tree));
+static int template_class_depth_real PROTO((tree, int));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -234,12 +235,19 @@ finish_member_template_decl (template_parameters, decl)
        struct B {};
      };
 
-   A<T>::B<U> has depth two, while A<T> has depth one.  Also,
-   both A<T>::B<int> and A<int>::B<U> have depth one.  */
+   A<T>::B<U> has depth two, while A<T> has depth one.  
+   Both A<T>::B<int> and A<int>::B<U> have depth one, if
+   COUNT_SPECIALIZATIONS is 0 or if they are instantiations, not
+   specializations.  
+
+   This function is guaranteed to return 0 if passed NULL_TREE so
+   that, for example, `template_class_depth (current_class_type)' is
+   always safe.  */
 
 int 
-template_class_depth (type)
+template_class_depth_real (type, count_specializations)
      tree type;
+     int count_specializations;
 {
   int depth;
 
@@ -249,10 +257,23 @@ template_class_depth (type)
        type = TYPE_CONTEXT (type))
     if (CLASSTYPE_TEMPLATE_INFO (type)
 	&& PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
-	&& uses_template_parms (CLASSTYPE_TI_ARGS (type)))
+	&& ((count_specializations
+	     && CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
+	    || uses_template_parms (CLASSTYPE_TI_ARGS (type))))
       ++depth;
 
   return depth;
+}
+
+/* Returns the template nesting level of the indicated class TYPE.
+   Like template_class_depth_real, but instantiations do not count in
+   the depth.  */
+
+int 
+template_class_depth (type)
+     tree type;
+{
+  return template_class_depth_real (type, /*count_specializations=*/0);
 }
 
 /* Returns 1 if processing DECL as part of do_pending_inlines
@@ -742,11 +763,8 @@ register_specialization (spec, tmpl, args)
 	      }
 	    else if (DECL_TEMPLATE_SPECIALIZATION (fn))
 	      {
-		if (DECL_INITIAL (fn))
-		  cp_error ("duplicate specialization of %D", fn);
-
-		TREE_VALUE (s) = spec;
-		return spec;
+		duplicate_decls (spec, TREE_VALUE (s));
+		return TREE_VALUE (s);
 	      }
 	  }
       }
@@ -1298,6 +1316,50 @@ check_explicit_specialization (declarator, decl, template_count, flags)
     }
   
   return decl;
+}
+
+/* TYPE is being declared.  Verify that the use of template headers
+   and such is reasonable.  Issue error messages if not.  */
+
+void
+maybe_check_template_type (type)
+     tree type;
+{
+  if (template_header_count)
+    {
+      /* We are in the scope of some `template <...>' header.  */
+
+      int context_depth 
+	= template_class_depth_real (TYPE_CONTEXT (type),
+				     /*count_specializations=*/1);
+
+      if (template_header_count <= context_depth)
+	/* This is OK; the template headers are for the context.  We
+	   are actually too lenient here; like
+	   check_explicit_specialization we should consider the number
+	   of template types included in the actual declaration.  For
+	   example, 
+
+	     template <class T> struct S {
+	       template <class U> template <class V>
+	       struct I {};
+	     }; 
+
+	   is illegal, but:
+
+	     template <class T> struct S {
+	       template <class U> struct I;
+	     }; 
+
+	     template <class T> template <class U.
+	     struct S<T>::I {};
+
+	   is not.  */
+	; 
+      else if (template_header_count > context_depth + 1)
+	/* There are two many template parameter lists.  */
+	cp_error ("too many template parameter lists in declaration of `%T'", type); 
+    }
 }
 
 /* Returns 1 iff PARMS1 and PARMS2 are identical sets of template
@@ -1951,9 +2013,7 @@ push_template_decl_real (decl, is_friend)
   /* Push template declarations for global functions and types.  Note
      that we do not try to push a global template friend declared in a
      template class; such a thing may well depend on the template
-     parameters of the class.  With guiding declarations, however, we
-     push the template so that subsequent declarations of the template
-     will match this one.  */
+     parameters of the class.  */
   if (! ctx 
       && !(is_friend && template_class_depth (current_class_type) > 0))
     tmpl = pushdecl_namespace_level (tmpl);
@@ -2278,10 +2338,10 @@ convert_nontype_argument (type, expr)
 	if (TREE_CODE (type_referred_to) == FUNCTION_TYPE)
 	  {
 	    /* For a non-type template-parameter of type reference to
-	      function, no conversions apply.  If the
-	      template-argument represents a set of overloaded
-	      functions, the matching function is selected from the
-	      set (_over.over_).  */
+	       function, no conversions apply.  If the
+	       template-argument represents a set of overloaded
+	       functions, the matching function is selected from the
+	       set (_over.over_).  */
 	    tree fns = expr;
 	    tree fn;
 
@@ -3096,7 +3156,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 
       if (arg_depth == 1 && parm_depth > 1)
 	{
-	  /* We've been with an incomplete set of template arguments.
+	  /* We've been given an incomplete set of template arguments.
 	     For example, given:
 
 	       template <class T> struct S1 {
@@ -3109,8 +3169,28 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	     <class U> struct S1<T>::S2'.  We must fill in the missing
 	     arguments.  */
 	  my_friendly_assert (context != NULL_TREE, 0);
-	  while (!IS_AGGR_TYPE_CODE (TREE_CODE (context)))
+	  while (!IS_AGGR_TYPE_CODE (TREE_CODE (context))
+		 && context != global_namespace)
 	    context = DECL_REAL_CONTEXT (context);
+
+	  if (context == global_namespace)
+	    /* This is bad.  We cannot get enough arguments, even from
+	       the surrounding context, to resolve this class.  One
+	       case where this might happen is (illegal) code like:
+
+	           template <class U> 
+		   template <class T>
+		   struct S { 
+		     A(const A<T>& a) {}
+		   };  
+	    
+	       We should catch this error sooner (at the opening curly
+	       for `S', but it is better to be safe than sorry here.  */
+	    {
+	      cp_error ("invalid use of `%D'", template);
+	      return error_mark_node;
+	    }
+
 	  arglist = add_to_template_args (CLASSTYPE_TI_ARGS (context),
 					  arglist);
 	  arg_depth = TMPL_ARGS_DEPTH (arglist);
@@ -3667,8 +3747,8 @@ tsubst_friend_function (decl, args)
 						 args, NULL_TREE),
 				    tsubst (DECL_TI_ARGS (decl),
 					    args, NULL_TREE));
-      /* FIXME: The decl we create via the next tsubst be created on a
-	 temporary obstack.  */
+      /* FIXME: The decl we create via the next tsubst could be
+	 created on a temporary obstack.  */
       new_friend = tsubst (decl, args, NULL_TREE);
       tmpl = determine_specialization (template_id, new_friend,
 				       &new_args, 
@@ -4833,12 +4913,14 @@ tsubst (t, args, in_decl)
 		 };
 
 	       Here, the DECL_TI_TEMPLATE for the friend declaration
-	       will be a LOOKUP_EXPR.  We are being called from
-	       tsubst_friend_function, and we want only to create a
-	       new decl (R) with appropriate types so that we can call
-	       determine_specialization.  */
-	    my_friendly_assert (TREE_CODE (DECL_TI_TEMPLATE (t)) 
-				== LOOKUP_EXPR, 0);
+	       will be a LOOKUP_EXPR or an IDENTIFIER_NODE.  We are
+	       being called from tsubst_friend_function, and we want
+	       only to create a new decl (R) with appropriate types so
+	       that we can call determine_specialization.  */
+	    my_friendly_assert ((TREE_CODE (DECL_TI_TEMPLATE (t)) 
+				 == LOOKUP_EXPR)
+				|| (TREE_CODE (DECL_TI_TEMPLATE (t))
+				    == IDENTIFIER_NODE), 0);
 	    gen_tmpl = NULL_TREE;
 	  }
 
