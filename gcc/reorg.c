@@ -244,7 +244,7 @@ static rtx steal_delay_list_from_fallthrough PROTO((rtx, rtx, rtx, rtx,
 						    struct resources *,
 						    int, int *, int *));
 static void try_merge_delay_insns PROTO((rtx, rtx));
-static rtx redundant_insn_p	PROTO((rtx, rtx, rtx));
+static rtx redundant_insn	PROTO((rtx, rtx, rtx));
 static int own_thread_p		PROTO((rtx, rtx, int));
 static int find_basic_block	PROTO((rtx));
 static void update_block	PROTO((rtx, rtx));
@@ -1621,7 +1621,7 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
 
       /* If this insn was already done (usually in a previous delay slot),
 	 pretend we put it in our delay slot.  */
-      if (redundant_insn_p (trial, insn, new_delay_list))
+      if (redundant_insn (trial, insn, new_delay_list))
 	continue;
 
       /* We will end up re-vectoring this branch, so compute flags
@@ -1711,7 +1711,7 @@ steal_delay_list_from_fallthrough (insn, condition, seq,
 	break;
 
       /* If this insn was already done, we don't need it.  */
-      if (redundant_insn_p (trial, insn, delay_list))
+      if (redundant_insn (trial, insn, delay_list))
 	{
 	  delete_from_delay_slot (trial);
 	  continue;
@@ -1924,7 +1924,7 @@ try_merge_delay_insns (insn, thread)
    gain in rare cases.  */
 
 static rtx
-redundant_insn_p (insn, target, delay_list)
+redundant_insn (insn, target, delay_list)
      rtx insn;
      rtx target;
      rtx delay_list;
@@ -3312,7 +3312,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	  /* If TRIAL is redundant with some insn before INSN, we don't
 	     actually need to add it to the delay list; we can merely pretend
 	     we did.  */
-	  if (prior_insn = redundant_insn_p (trial, insn, delay_list))
+	  if (prior_insn = redundant_insn (trial, insn, delay_list))
 	    {
 	      if (own_thread)
 		{
@@ -3408,8 +3408,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 			     && ! insn_sets_resource_p (new_thread, &needed, 1)
 			     && ! insn_references_resource_p (new_thread,
 							      &set, 1)
-			     && redundant_insn_p (new_thread, insn,
-						  delay_list))
+			     && redundant_insn (new_thread, insn, delay_list))
 			new_thread = next_active_insn (new_thread);
 		      break;
 		    }
@@ -3827,7 +3826,7 @@ relax_delay_slots (first)
       /* See if the first insn in the delay slot is redundant with some
 	 previous insn.  Remove it from the delay slot if so; then set up
 	 to reprocess this insn.  */
-      if (redundant_insn_p (XVECEXP (pat, 0, 1), delay_insn, 0))
+      if (redundant_insn (XVECEXP (pat, 0, 1), delay_insn, 0))
 	{
 	  delete_from_delay_slot (XVECEXP (pat, 0, 1));
 	  next = prev_active_insn (next);
@@ -3862,7 +3861,7 @@ relax_delay_slots (first)
 	     insn, redirect the jump to the following insn process again.  */
 	  trial = next_active_insn (target_label);
 	  if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
-	      && redundant_insn_p (trial, insn, 0))
+	      && redundant_insn (trial, insn, 0))
 	    {
 	      trial = next_active_insn (trial);
 	      if (trial == 0)
@@ -3881,7 +3880,7 @@ relax_delay_slots (first)
 	      && GET_CODE (XVECEXP (PATTERN (trial), 0, 0)) == JUMP_INSN
 	      && (simplejump_p (XVECEXP (PATTERN (trial), 0, 0))
 		  || GET_CODE (PATTERN (XVECEXP (PATTERN (trial), 0, 0))) == RETURN)
-	      && redundant_insn_p (XVECEXP (PATTERN (trial), 0, 1), insn, 0))
+	      && redundant_insn (XVECEXP (PATTERN (trial), 0, 1), insn, 0))
 	    {
 	      target_label = JUMP_LABEL (XVECEXP (PATTERN (trial), 0, 0));
 	      if (target_label == 0)
