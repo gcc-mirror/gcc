@@ -1,3 +1,7 @@
+2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* toplev.c: Fix spelling errors.
+
 2001-10-28  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/elfos.h(_USING_ELFOS_H): Define.
