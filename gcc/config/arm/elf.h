@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with ELF obj format.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org> and
    Catherine Moore <clm@cygnus.com>
@@ -37,8 +37,13 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CPP_SPEC  "-D__ELF__"
 #endif
 
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "subtarget_extra_asm_spec",	SUBTARGET_EXTRA_ASM_SPEC },
+#endif
+
 #ifndef SUBTARGET_EXTRA_ASM_SPEC
-#define SUBTARGET_EXTRA_ASM_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC ""
 #endif
 
 #ifndef ASM_SPEC
@@ -50,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 %{mapcs-float:-mfloat} \
 %{msoft-float:-mno-fpu} \
 %{mthumb-interwork:-mthumb-interwork} \
-" SUBTARGET_EXTRA_ASM_SPEC
+%(subtarget_extra_asm_spec)"
 #endif
 
 /* The following macro defines the format used to output the second
