@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,6 +14,7 @@ import java.awt.image.ImageProducer;
 import java.awt.image.ImageObserver;
 import java.net.*;
 import java.awt.datatransfer.Clipboard;
+import java.util.Properties;
 
 import gnu.gcj.xlib.Display;
 import gnu.gcj.xlib.Screen;
@@ -292,6 +293,11 @@ public class XToolkit extends Toolkit
     return queue;
   }
     
+  public PrintJob getPrintJob (Frame frame, String title, Properties props)
+  {
+    return null;		// FIXME
+  }
+
   XGraphicsConfiguration getDefaultXGraphicsConfiguration()
   {
     if (defaultConfig == null)
