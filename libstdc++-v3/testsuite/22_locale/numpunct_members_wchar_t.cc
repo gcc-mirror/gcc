@@ -26,6 +26,7 @@
 // XXX This test is not working for non-glibc locale models.
 // { dg-do run { xfail *-*-* } }
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 void test01()
 {
   using namespace std;
@@ -79,10 +80,12 @@ void test01()
   VERIFY( dp2 != dp4 );
   VERIFY( th2 != th4 );
 }
+#endif
 
 int main()
 {
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
-
+#endif
   return 0;
 }

@@ -92,7 +92,10 @@ template<typename T>
     operator==(int i) { return i == key; }
   };
 
-struct B { };
+struct B 
+{
+  B(int i = 0) { }
+};
 
 
 bool test01()
@@ -139,6 +142,8 @@ bool test01()
 }
 
 // test linkage of the generic bits
+template struct std::numeric_limits<B>;
+
 void test02()
 {
   typedef std::numeric_limits<B> b_nl_type;
@@ -176,3 +181,9 @@ int main()
 
     return 0;
 }
+
+
+
+
+
+

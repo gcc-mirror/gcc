@@ -1,3 +1,22 @@
+2001-12-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (sources): Add ext-inst.cc.
+	* src/Makefile.in: Regenerate.
+	* src/ext-inst.cc: New file.
+	* include/bits/stl_threads.h: Format.
+	* src/globals.cc: Add instantiation for _S_swap_lock.
+
+	* testsuite/18_support/numeric_limits.cc: Add numeric_limits<B>
+	instantiation.
+
+2001-12-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* testsuite/22_locale/numpunct_members_wchar_t.cc: Only compile
+	and execute test01 if _GLIBCPP_USE_WCHAR_T is defined.
+	* testsuite/26_numerics/complex_inserters_extractors.cc: Provide
+	for explicit instantiation of class std::basic_string<char,
+	gnu_char_traits, std::allocator<char> >.
+
 2001-12-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/collate.cc: Compile-only.

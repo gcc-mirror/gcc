@@ -64,8 +64,9 @@ sources = \
 	complex_io.cc functexcept.cc globals.cc ios.cc limits.cc \
 	locale.cc locale-inst.cc localename.cc \
 	collate.cc messages.cc moneypunct.cc numpunct.cc time.cc \
+	vterminate.cc \
 	misc-inst.cc stdexcept.cc stl-inst.cc string-inst.cc strstream.cc \
-	valarray-inst.cc wstring-inst.cc concept-inst.cc vterminate.cc
+	valarray-inst.cc wstring-inst.cc concept-inst.cc ext-inst.cc
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 
