@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989, 92-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-96, 1997 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -645,10 +645,7 @@ eh_outer_context (addr)
 {
   /* First mask out any unwanted bits.  */
 #ifdef MASK_RETURN_ADDR
-  emit_insn (gen_rtx (SET, Pmode,
-		      addr,
-		      gen_rtx (AND, Pmode,
-			       addr, MASK_RETURN_ADDR)));
+  expand_and (addr, MASK_RETURN_ADDR, addr);
 #endif
 
   /* Then subtract out enough to get into the appropriate region.  If
