@@ -61,7 +61,7 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = gcjh jv-scan jcf-dump
 .PHONY: java
 
 jvspec.o: $(srcdir)/java/jvspec.c system.h $(GCC_H) $(CONFIG_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION)
 
 # Create the compiler driver for $(GCJ).

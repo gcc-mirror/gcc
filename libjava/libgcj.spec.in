@@ -9,10 +9,8 @@
 *jc1:  @DIVIDESPEC@ @EXCEPTIONSPEC@ @JC1GCSPEC@ -fasynchronous-exceptions
 
 #
-# libgcc should really be a shared library.  This is a design flaw
-# that causes no end of mysterious problems.  If we are using the
-# GNU linker, force parts of libgcc into the program file rather
-# than picking bits up from various shared libraries.
-#
+# On some systems we force in a data_start symbol so that the GC will work
+# with shared libraries.
+# 
 %rename startfile startfileorig
-*startfile: %(startfileorig) @LIBDATASTARTSPEC@ @FORCELIBGCCSPEC@
+*startfile: %(startfileorig) @LIBDATASTARTSPEC@

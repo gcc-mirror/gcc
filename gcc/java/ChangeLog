@@ -1,3 +1,10 @@
+2001-02-04  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Make-lang.in (jvspec.o): Add DRIVER_DEFINES to the list
+	of macros used when compiling jvspec.c.
+	* jvspec.c (lang_specific_driver): Link with the shared
+	libgcc by default.
+
 Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* check-init.c (check_init): Call internal_error instead of fatal.

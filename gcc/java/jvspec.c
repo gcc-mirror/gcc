@@ -1,6 +1,6 @@
  /* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -43,6 +43,9 @@ static char *find_spec_file	PARAMS ((const char *));
 
 static const char *main_class_name = NULL;
 int lang_specific_extra_outfiles = 0;
+
+/* True if we should add -shared-libgcc to the command-line.  */
+int shared_libgcc = 1;
 
 /* Once we have the proper support in jc1 (and gcc.c) working,
    set COMBINE_INPUTS to one.  This enables combining multiple *.java
@@ -305,6 +308,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      will_link = 0;
 	      continue;
 	    }
+          else if (strcmp (argv[i], "-static-libgcc") == 0
+                   || strcmp (argv[i], "-static") == 0)
+	    shared_libgcc = 0;
 	  else
 	    /* Pass other options through.  */
 	    continue;
@@ -393,6 +399,14 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   if (saw_g + saw_O == 0)
     num_args++;
   num_args++;
+
+  /* There's no point adding -shared-libgcc if we don't have a shared
+     libgcc.  */
+#ifndef ENABLE_SHARED_LIBGCC
+  shared_libgcc = 0;
+#endif  
+  
+  num_args += shared_libgcc;
 
   arglist = (const char **) xmalloc ((num_args + 1) * sizeof (char *));
 
@@ -485,6 +499,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       arglist[j++] = "NONE";
 #endif
     }
+  
+  if (shared_libgcc)
+    arglist[j++] = "-shared-libgcc";
 
   arglist[j] = NULL;
 
