@@ -93,9 +93,13 @@ extern int target_flags;
     {"no-fp-regs", -3},			\
     {"alpha-as", -MASK_GAS},		\
     {"gas", MASK_GAS},			\
-    {"", TARGET_DEFAULT} }
+    {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
 #define TARGET_DEFAULT 3
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT 0
+#endif
 
 /* Define this macro to change register usage conditional on target flags.
 
@@ -1896,7 +1900,7 @@ do {							\
    This is needed because the Alpha assembler provides no way
    of specifying such information in the assembly file.  */
 
-#if (TARGET_DEFAULT & MASK_GAS) != 0
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GAS) != 0
 
 #define ASM_FINAL_SPEC "\
 %{malpha-as: %{!mno-mips-tfile: \
