@@ -129,6 +129,7 @@ typedef struct dw_fde_struct
   char *dw_fde_current_label;
   char *dw_fde_end;
   dw_cfi_ref dw_fde_cfi;
+  int nothrow;
 }
 dw_fde_node;
 
@@ -1624,6 +1625,17 @@ output_call_frame_info (for_eh)
   /* Do we want to include a pointer to the exception table?  */
   int eh_ptr = for_eh && exception_table_p ();
 
+  /* If we don't have any functions we'll want to unwind out of, don't
+     emit any EH unwind information.  */
+  if (for_eh)
+    {
+      for (i = 0; i < fde_table_in_use; ++i)
+	if (! fde_table[i].nothrow)
+	  goto found;
+      return;
+    found:;
+    }
+
   fputc ('\n', asm_out_file);
 
   /* We're going to be generating comments, so turn on app.  */
@@ -1756,6 +1768,10 @@ output_call_frame_info (for_eh)
     {
       fde = &fde_table[i];
 
+      /* Don't emit EH unwind info for leaf functions.  */
+      if (for_eh && fde->nothrow)
+	continue;
+
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i*2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i*2);
 #ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
@@ -1873,6 +1889,9 @@ dwarf2out_begin_prologue ()
   fde->dw_fde_current_label = NULL;
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
+
+  /* Normally, only calls can throw, so a leaf function will never throw.  */
+  fde->nothrow = (current_function_is_leaf && !asynchronous_exceptions);
 
   args_size = old_args_size = 0;
 }

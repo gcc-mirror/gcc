@@ -1,5 +1,9 @@
 2000-03-08  Jason Merrill  <jason@casey.cygnus.com>
 
+	* dwarf2out.c (dw_fde_struct): Add 'nothrow'.
+	(dwarf2out_begin_prologue): Set it.
+	(output_call_frame_info): Don't emit EH unwind info for leaves.
+
 	* flow.c (count_basic_blocks, find_basic_blocks_1): A rethrow
 	can occur outside of an EH region.
 	* except.c: Correct comments about rethrow behavior.
