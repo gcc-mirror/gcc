@@ -1398,10 +1398,12 @@ main (int argc, char **argv)
       if (! exports.first)
 	*ld2++ = concat ("-bE:", export_file, NULL);
 
+#ifndef LD_INIT_SWITCH
       add_to_list (&exports, initname);
       add_to_list (&exports, fininame);
       add_to_list (&exports, "_GLOBAL__DI");
       add_to_list (&exports, "_GLOBAL__DD");
+#endif
       exportf = fopen (export_file, "w");
       if (exportf == (FILE *) 0)
 	fatal_perror ("fopen %s", export_file);
@@ -2719,7 +2721,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 			case 1:
 			  if (! is_shared)
 			    add_to_list (&constructors, name);
-#ifdef COLLECT_EXPORT_LIST
+#if defined (COLLECT_EXPORT_LIST) && !defined (LD_INIT_SWITCH)
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
 #endif
@@ -2728,7 +2730,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 			case 2:
 			  if (! is_shared)
 			    add_to_list (&destructors, name);
-#ifdef COLLECT_EXPORT_LIST
+#if defined (COLLECT_EXPORT_LIST) && !defined (LD_INIT_SWITCH)
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
 #endif
@@ -2753,7 +2755,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 			case 5:
 			  if (! is_shared)
 			    add_to_list (&frame_tables, name);
-#ifdef COLLECT_EXPORT_LIST
+#if defined (COLLECT_EXPORT_LIST) && !defined (LD_INIT_SWITCH)
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
 #endif
@@ -2761,13 +2763,14 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 
 			default:	/* not a constructor or destructor */
 #ifdef COLLECT_EXPORT_LIST
-			  /* If we are building a shared object on AIX we need
-			     to explicitly export all global symbols.  */
-			  if (shared_obj)
-			    {
-			      if (which_pass == PASS_OBJ && (! export_flag))
-				add_to_list (&exports, name);
-			    }
+			  /* Explicitly export all global symbols when
+			     building a shared object on AIX, but do not
+			     re-export symbols from another shared object
+			     and do not export symbols if the user
+			     provides an explicit export list.  */
+			  if (shared_obj && !is_shared
+			      && which_pass == PASS_OBJ && !export_flag)
+			    add_to_list (&exports, name);
 #endif
 			  continue;
 			}
