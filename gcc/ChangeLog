@@ -1,3 +1,7 @@
+2003-04-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/elf.h (ASM_OUTPUT_ALIGNED_COMMON): Remove definition.
+
 2003-04-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* expr.c (expand_expr <COMPLEX_CST, STRING_CST>): Always call
