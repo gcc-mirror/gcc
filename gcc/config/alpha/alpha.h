@@ -233,11 +233,11 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 	extern char *m88k_short_data;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
-extern char *alpha_cpu_string;  /* For -mcpu= */
-extern char *alpha_fprm_string;	/* For -mfp-rounding-mode=[n|m|c|d] */
-extern char *alpha_fptm_string;	/* For -mfp-trap-mode=[n|u|su|sui]  */
-extern char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
-extern char *alpha_mlat_string;	/* For -mmemory-latency= */
+extern const char *alpha_cpu_string;	/* For -mcpu= */
+extern const char *alpha_fprm_string;	/* For -mfp-rounding-mode=[n|m|c|d] */
+extern const char *alpha_fptm_string;	/* For -mfp-trap-mode=[n|u|su|sui]  */
+extern const char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
+extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 
 #define TARGET_OPTIONS					\
 {							\
@@ -783,6 +783,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    : (C) == 'S' ? (GET_CODE (OP) == CONST_INT				\
 		   && (unsigned HOST_WIDE_INT) INTVAL (OP) < 64)	\
    : 0)
+extern int normal_memory_operand ();
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.

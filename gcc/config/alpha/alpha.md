@@ -1691,22 +1691,22 @@
   "HOST_BITS_PER_WIDE_INT == 64
    && GET_CODE (operands[3]) == CONST_INT
    && (((unsigned HOST_WIDE_INT) 0xff << INTVAL (operands[2])
-        == INTVAL (operands[3]))
+        == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
        || ((unsigned HOST_WIDE_INT) 0xffff << INTVAL (operands[2])
-        == INTVAL (operands[3]))
+        == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
        || ((unsigned HOST_WIDE_INT) 0xffffffff << INTVAL (operands[2])
-        == INTVAL (operands[3])))"
+        == (unsigned HOST_WIDE_INT) INTVAL (operands[3])))"
   "*
 {
 #if HOST_BITS_PER_WIDE_INT == 64
   if ((unsigned HOST_WIDE_INT) 0xff << INTVAL (operands[2])
-      == INTVAL (operands[3]))
+      == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
     return \"insbl %1,%s2,%0\";
   if ((unsigned HOST_WIDE_INT) 0xffff << INTVAL (operands[2])
-      == INTVAL (operands[3]))
+      == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
     return \"inswl %1,%s2,%0\";
   if ((unsigned HOST_WIDE_INT) 0xffffffff << INTVAL (operands[2])
-      == INTVAL (operands[3]))
+      == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
     return \"insll %1,%s2,%0\";
 #endif
   abort();

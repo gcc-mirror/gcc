@@ -1,3 +1,19 @@
+Tue Mar  2 10:12:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha.c (alpha_cpu_name, alpha_cpu_string, alpha_tp_string,
+ 	alpha_fprm_string, alpha_fptm_string, alpha_mlat_string,
+	current_function_file): Add the `const' keyword.
+	(normal_memory_operand): Mark parameter `mode' with
+	ATTRIBUTE_UNUSED.
+	(alpha_expand_unaligned_load): Add a default case to a switch.
+
+	* alpha.h (alpha_cpu_string, alpha_fprm_string, alpha_fptm_string,
+	alpha_tp_string, alpha_mlat_string): Add the `const' keyword.
+	(normal_memory_operand): Add prototype.
+	
+	* alpha.md: Cast an expression to `unsigned HOST_WIDE_INT' when
+ 	comparing against one.
+
 Tue Mar  2 10:00:21 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.c (abort_with_insn): Make function static, add a prototype,
