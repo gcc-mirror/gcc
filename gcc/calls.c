@@ -739,8 +739,9 @@ expand_call (exp, target, ignore)
 
 	  if (stack_arg_under_construction || i >= 0)
 	    {
-	      rtx insn = before_call ? NEXT_INSN (before_call) : get_insns ();
-	      rtx seq;
+	      rtx first_insn
+		= before_call ? NEXT_INSN (before_call) : get_insns ();
+	      rtx insn, seq;
 
 	      /* Look for a call in the inline function code.
 		 If OUTGOING_ARGS_SIZE (DECL_SAVED_INSNS (fndecl)) is
@@ -748,7 +749,7 @@ expand_call (exp, target, ignore)
 		 to scan the insns.  */
 
 	      if (OUTGOING_ARGS_SIZE (DECL_SAVED_INSNS (fndecl)) == 0)
-		for (; insn; insn = NEXT_INSN (insn))
+		for (insn = first_insn; insn; insn = NEXT_INSN (insn))
 		  if (GET_CODE (insn) == CALL_INSN)
 		    break;
 
@@ -780,7 +781,7 @@ expand_call (exp, target, ignore)
 						NULL_RTX, BITS_PER_UNIT);
 		  seq = get_insns ();
 		  end_sequence ();
-		  emit_insns_before (seq, NEXT_INSN (before_call));
+		  emit_insns_before (seq, first_insn);
 		  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
 		}
 	    }
