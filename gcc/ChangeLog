@@ -1,3 +1,7 @@
+Sat Jan 25 22:31:59 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (local_cprop_pass): Update reg_sets table when needed.
+
 Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 			      Eric Botcazou <ebotcazou@libertysurf.fr>
 	PR opt/8492
