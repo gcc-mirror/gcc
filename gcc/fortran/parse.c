@@ -1033,7 +1033,6 @@ accept_statement (gfc_statement st)
          construct.  */
 
     case ST_ENDIF:
-    case ST_ENDDO:
     case ST_END_SELECT:
       if (gfc_statement_label != NULL)
 	{
@@ -2003,7 +2002,13 @@ loop:
 	  && s.ext.end_do_label != gfc_statement_label)
 	gfc_error_now
 	  ("Statement label in ENDDO at %C doesn't match DO label");
-      /* Fall through */
+
+      if (gfc_statement_label != NULL)
+	{
+	  new_st.op = EXEC_NOP;
+	  add_statement ();
+	}
+      break;
 
     case ST_IMPLIED_ENDDO:
       break;

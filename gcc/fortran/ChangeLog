@@ -12,6 +12,19 @@
 	* iresolve.c (gfc_resolve_mvbits): New function.
 	(gfc_resolve_random_number): Remove empty line at end of function.
 
+	* trans-const.c (gfc_build_cstring_const): New function.
+	(gfc_init_cst): Use new function.
+	* trans-const.h (gfc_build_cstring_const): Add prototype.
+	* trans-io.c (set_string, set_error_locus): Use new function.
+	* trans-stmt.c (gfc_trans_goto): Use new function.
+	
+	PR fortran/17708
+	* parse.c (accept_statement): Don't treat END DO like END IF and
+	END SELECT.
+	(parse_do_block): Generate possible END DO label inside END DO
+	block.
+
+	
 2004-10-04  Erik Schnetter  <schnetter@aei.mpg.de>
 
 	* scanner.c (preprocessor_line): Accept preprocessor lines without
