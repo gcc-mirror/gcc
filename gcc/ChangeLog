@@ -1,3 +1,10 @@
+2004-02-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c (cse_change_cc_mode_insns): Stop at any instruction
+	which modifies NEWREG.
+	(cse_condition_code_reg): Update the mode of CC_REG in
+	CC_SRC_INSN on our own.
+
 2004-02-24  Michael Matz  <matz@suse.de>
 
 	* config/i386/i386.c (ix86_comp_type_attributes): Check for
