@@ -1,5 +1,19 @@
 2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (ISA_HAS_LOAD_DELAY, ISA_HAS_XFER_DELAY,
+	ISA_HAS_FCMP_DELAY, ISA_HAS_HILO_INTERLOCKS): New macros.
+	(PREDICATE_CODES): Add hilo_operand.
+	* config/mips/mips.c (hilo_operand): New predicate.
+	(mips_adjust_insn_length): Account for the number nops that might
+	be needed to avoid hardware hazards.
+	* config/mips/mips.md (dslot): Remove attribute.
+	(hazard): New attribute.
+	(can_delay): Use it.  Check for calls, branches & jumps.
+	(muldi3): Use the standard dmult pattern for mips16 code.
+	(muldi3_internal, muldi3_internal2): Adjust conditions accordingly.
+
+2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (final_prescan_insn,
 	mips_count_memory_refs, mips_fill_delay_slot): Remove.
 	* config/mips/mips.h (delay_type, dslots_load_total,
