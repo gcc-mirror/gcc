@@ -1704,32 +1704,6 @@ try_combine (i3, i2, i1)
       insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
     }
 
-  /* See if this is an XOR.  If so, perhaps the problem is that the
-     constant is out of range.  Replace it with a complemented XOR with
-     a complemented constant; it might be in range.  */
-
-  else if (insn_code_number < 0 && GET_CODE (newpat) == SET
-	   && GET_CODE (SET_SRC (newpat)) == XOR
-	   && GET_CODE (XEXP (SET_SRC (newpat), 1)) == CONST_INT
-	   && ((temp = simplify_unary_operation (NOT,
-						 GET_MODE (SET_SRC (newpat)),
-						 XEXP (SET_SRC (newpat), 1),
-						 GET_MODE (SET_SRC (newpat))))
-	       != 0))
-    {
-      enum machine_mode i_mode = GET_MODE (SET_SRC (newpat));
-      rtx pat
-	= gen_rtx_combine (SET, VOIDmode, SET_DEST (newpat),
-			   gen_unary (NOT, i_mode,
-				      gen_binary (XOR, i_mode,
-						  XEXP (SET_SRC (newpat), 0),
-						  temp)));
-
-      insn_code_number = recog_for_combine (&pat, i3, &new_i3_notes);
-      if (insn_code_number >= 0)
-	newpat = pat;
-    }
-							
   /* If we were combining three insns and the result is a simple SET
      with no ASM_OPERANDS that wasn't recognized, try to split it into two
      insns.  There are two ways to do this.  It can be split using a 
