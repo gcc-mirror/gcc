@@ -108,12 +108,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   int is_main = strcmp ("main", p) == 0;	\
   while (!is_main && *p != '\0')		\
     {						\
-       if (*p == *__MAIN_NAME			\
-	   && strncmp (p, __MAIN_NAME, sizeof __MAIN_NAME - sizeof "") == 0) \
-	 is_main = 1;				\
-       else					\
-	 p++;					\
-     }						\
+      if (*p == *__MAIN_NAME			\
+	  && strncmp (p, __MAIN_NAME, sizeof __MAIN_NAME - sizeof "") == 0) \
+	is_main = 1;				\
+      else					\
+	p++;					\
+    }						\
   if (is_main)					\
     fprintf (FILE, "\t%s\n\t%s\n", "clrl -(sp)", "jsb _C$MAIN_ARGS");	\
 }
