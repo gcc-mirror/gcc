@@ -1,5 +1,10 @@
 2000-12-05  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/cpu/arm/bits/atomicity.h: Add support for compiling Thumb
+	code.
+
+2000-12-05  Richard Earnshaw  <rearnsha@arm.com>
+
 	Support for NetBSD.
 	* aclocal.m4: Add test for NetBSD's ctype support.
 	* configure: Regenerate.
