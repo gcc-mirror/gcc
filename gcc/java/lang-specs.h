@@ -27,7 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
   {".java",   {"@java"} },
   {".class",  {"@java"} },
   {"@java",
-   {"%{!E:jc1 %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
+   {"%{!E:jc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a}\
 		    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
 		    %{traditional} %{v:-version} %{pg:-p} %{p}\
 		    %{f*} %{+e*} %{aux-info*}\
