@@ -1,3 +1,8 @@
+2001-08-23  Lars Brinkhoff  <lars@nocrew.org>
+
+	* dyn-string.h, fibheap.h, partition.h, sort.h, splay-tree.h:
+	replace "GNU CC" with "GCC".
+
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
 	* fibheap.h: Tidy formatting.
