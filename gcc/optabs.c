@@ -3098,7 +3098,7 @@ expand_float (to, from, unsignedp)
 	 fixes the bug.  */
       offset = REAL_VALUE_LDEXP (dconst1, GET_MODE_BITSIZE (GET_MODE (from)));
       temp = expand_binop (fmode, add_optab, target,
-			   immed_real_const_1 (offset, fmode),
+			   CONST_DOUBLE_FROM_REAL_VALUE (offset, fmode),
 			   target, 0, OPTAB_LIB_WIDEN);
       if (temp != target)
 	emit_move_insn (target, temp);
@@ -3279,7 +3279,7 @@ expand_fix (to, from, unsignedp)
 
 	  bitsize = GET_MODE_BITSIZE (GET_MODE (to));
 	  offset = REAL_VALUE_LDEXP (dconst1, bitsize - 1);
-	  limit = immed_real_const_1 (offset, fmode);
+	  limit = CONST_DOUBLE_FROM_REAL_VALUE (offset, fmode);
 	  lab1 = gen_label_rtx ();
 	  lab2 = gen_label_rtx ();
 
