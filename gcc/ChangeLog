@@ -1,3 +1,7 @@
+Wed Aug 11 23:50:57 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* invoke.texi (C++ Dialect Options): Add -fms-extensions.
+
 Wed Aug 11 12:59:37 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* extend.texi (C++ Signatures): Remove node.
