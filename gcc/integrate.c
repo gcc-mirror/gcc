@@ -1372,10 +1372,17 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	{
 	  /* This is the good case where the parameter is in a register.
 	     If it is read-only and our argument is a constant, set up the
-	     constant equivalence.  */
-	  if (GET_CODE (copy) != REG && GET_CODE (copy) != SUBREG)
+	     constant equivalence.
+
+	     If LOC is REG_USERVAR_P, the usual case, COPY must also have
+	     that flag set if it is a register.  */
+
+	  if ((GET_CODE (copy) != REG && GET_CODE (copy) != SUBREG)
+	      || (GET_CODE (copy) == REG && REG_USERVAR_P (loc)
+		  && ! REG_USERVAR_P (copy)))
 	    {
 	      temp = copy_to_mode_reg (GET_MODE (loc), copy);
+	      REG_USERVAR_P (temp) = REG_USERVAR_P (loc);
 	      if (CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
 		{
 		  map->const_equiv_map[REGNO (temp)] = copy;
