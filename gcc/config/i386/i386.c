@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 
 static int ia32_use_dfa_pipeline_interface PARAMS ((void));
+static int ia32_multipass_dfa_lookahead PARAMS ((void));
 
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE ia32_use_dfa_pipeline_interface

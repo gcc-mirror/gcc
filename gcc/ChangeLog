@@ -1,5 +1,7 @@
 2002-05-13  Jeffrey A Law  (law@redhat.com)
 
+	* i386.c (ia32_multipass_dfa_lookahead): Prototype.
+
 	* i386.c (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): Define.
 	(ia32_multipass_dfa_lookahead): New function.
 
