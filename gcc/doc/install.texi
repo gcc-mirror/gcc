@@ -3157,7 +3157,7 @@ for this platform, too.
 
 GCC version 2.95 is not able to compile code correctly for
 @code{sparc64} targets.  Users of the Linux kernel, at least,
-12~can use the @code{sparc32} program to start up a new shell
+can use the @code{sparc32} program to start up a new shell
 invocation with an environment that causes @command{configure} to
 recognize (via @samp{uname -a}) the system as @var{sparc-*-*} instead.
 
