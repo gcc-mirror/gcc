@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995, 1997, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1997, 1998, 2001 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -37,6 +37,11 @@ AC_SUBST(LIBTOOL)
 
 test "$AR" || AR=ar
 AC_SUBST(AR)
+if test "$RANLIB"; then :
+  AC_SUBST(RANLIB)
+else
+  AC_PROG_RANLIB
+fi
 AC_PROG_MAKE_SET
 
 dnl Checks for libraries.
