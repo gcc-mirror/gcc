@@ -502,7 +502,7 @@ print_operand (file, x, code)
 	abort ();
       break;
     case 'L':
-      fprintf (file, "%d\n", INTVAL (x) & 0xffff);
+      fprintf (file, "%d\n", (int)(INTVAL (x) & 0xffff));
       break;
     case 'M':
       fprintf (file, "%d", exact_log2 (INTVAL (x)));
