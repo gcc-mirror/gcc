@@ -124,7 +124,7 @@ struct move_by_pieces
    as well as depth of arithmetic stack. (Notice that variables are
    stored on the machine's stack, not the arithmetic stack.) */
 
-int local_vars_size;
+extern int local_vars_size;
 extern int stack_depth;
 extern int max_stack_depth;
 extern struct obstack permanent_obstack;
