@@ -464,19 +464,6 @@ struct tree_vec
 /* In a CONSTRUCTOR node.  */
 #define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND (NODE, 1)
 
-/* In a BLOCK node.  */
-#define BLOCK_VARS(NODE) ((NODE)->exp.operands[0])
-#define BLOCK_TYPE_TAGS(NODE) ((NODE)->exp.operands[1])
-#define BLOCK_SUBBLOCKS(NODE) ((NODE)->exp.operands[2])
-#define BLOCK_SUPERCONTEXT(NODE) ((NODE)->exp.operands[3])
-/* Note: when changing this, make sure to find the places
-   that use chainon or nreverse.  */
-#define BLOCK_CHAIN(NODE) TREE_CHAIN (NODE)
-
-/* Nonzero means that this block is prepared to handle exceptions
-   listed in the BLOCK_VARS slot.  */
-#define BLOCK_HANDLER_BLOCK(NODE) TREE_PROTECTED(NODE)
-
 /* In ordinary expression nodes.  */
 #define TREE_OPERAND(NODE, I) ((NODE)->exp.operands[I])
 #define TREE_COMPLEXITY(NODE) ((NODE)->exp.complexity)
@@ -486,6 +473,35 @@ struct tree_exp
   char common[sizeof (struct tree_common)];
   int complexity;
   union tree_node *operands[1];
+};
+
+/* In a BLOCK node.  */
+#define BLOCK_VARS(NODE) ((NODE)->block.vars)
+#define BLOCK_TYPE_TAGS(NODE) ((NODE)->block.type_tags)
+#define BLOCK_SUBBLOCKS(NODE) ((NODE)->block.subblocks)
+#define BLOCK_SUPERCONTEXT(NODE) ((NODE)->block.supercontext)
+/* Note: when changing this, make sure to find the places
+   that use chainon or nreverse.  */
+#define BLOCK_CHAIN(NODE) TREE_CHAIN (NODE)
+#define BLOCK_ABSTRACT_ORIGIN(NODE) ((NODE)->block.abstract_origin)
+#define BLOCK_ABSTRACT(NODE) ((NODE)->block.abstract_flag)
+
+/* Nonzero means that this block is prepared to handle exceptions
+   listed in the BLOCK_VARS slot.  */
+#define BLOCK_HANDLER_BLOCK(NODE) ((NODE)->block.handler_block_flag)
+
+struct tree_block
+{
+  char common[sizeof (struct tree_common)];
+
+  unsigned handler_block_flag : 1;
+  unsigned abstract_flag : 1;
+
+  union tree_node *vars;
+  union tree_node *type_tags;
+  union tree_node *subblocks;
+  union tree_node *supercontext;
+  union tree_node *abstract_origin;
 };
 
 /* Define fields and accessors for nodes representing data types.  */
@@ -898,6 +914,7 @@ union tree_node
   struct tree_list list;
   struct tree_vec vec;
   struct tree_exp exp;
+  struct tree_block block;
  };
 
 /* Format for global names of constructor and destructor functions.  */
