@@ -1,5 +1,11 @@
 2003-03-18  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.md (UNSPECV_SETJMP_RECEIVER): New.
+	(builtin_setjmp_receiver): Delay call to ia64_reload_gp
+	until after reload.
+
+2003-03-18  Richard Henderson  <rth@redhat.com>
+
 	* builtins.c (expand_builtin_unop): New target_mode operand;
 	use it to convert the result to the correct mode.
 	(expand_builtin): Update all callers.
