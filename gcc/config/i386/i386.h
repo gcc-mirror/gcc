@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Intel X86
    (386, 486, Pentium).
-   Copyright (C) 1988, 1992, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -289,8 +289,8 @@ extern int ix86_arch;
 
 /* Specs for the compiler proper */
 
-#ifndef CC1_SPEC
-#define CC1_SPEC "\
+#ifndef CC1_CPU_SPEC
+#define CC1_CPU_SPEC "\
 %{!mcpu*: \
 %{m386:-mcpu=i386 -march=i386} \
 %{mno-486:-mcpu=i386 -march=i386} \
@@ -329,9 +329,13 @@ extern int ix86_arch;
 #endif /* __STDC__ */
 #endif /* CPP_CPU_SPEC */
 
-/* This macro defines names of additional specifications to put in the specs
-   that can be used in various specifications like CC1_SPEC.  Its definition
-   is an initializer with a subgrouping for each command option.
+#ifndef CC1_SPEC
+#define CC1_SPEC "%(cc1_spec) "
+#endif
+
+/* This macro defines names of additional specifications to put in the
+   specs that can be used in various specifications like CC1_SPEC.  Its
+   definition is an initializer with a subgrouping for each command option.
 
    Each subgrouping contains a string constant, that defines the
    specification name, and a string constant that used by the GNU CC driver
@@ -345,6 +349,7 @@ extern int ix86_arch;
 
 #define EXTRA_SPECS							\
   { "cpp_cpu",	CPP_CPU_SPEC },						\
+  { "cc1_cpu",  CC1_CPU_SPEC },						\
   SUBTARGET_EXTRA_SPECS
 
 /* target machine storage layout */
