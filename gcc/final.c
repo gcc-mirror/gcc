@@ -3169,6 +3169,7 @@ alter_subreg (x)
 #endif
       PUT_CODE (x, REG);
       REGNO (x) = regno;
+      ORIGINAL_REGNO (x) = ORIGINAL_REGNO (y);
       /* This field has a different meaning for REGs and SUBREGs.  Make sure
 	 to clear it!  */
       x->used = 0;

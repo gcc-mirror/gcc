@@ -228,6 +228,20 @@ rtx_htab_mark (htab)
   htab_traverse (*((htab_t *) htab), rtx_htab_mark_1, NULL);
 }
 
+/* Generate a new REG rtx.  Make sure ORIGINAL_REGNO is set properly, and
+   don't attempt to share with the various global pieces of rtl (such as
+   frame_pointer_rtx).  */
+
+rtx
+gen_raw_REG (mode, regno)
+     enum machine_mode mode;
+     int regno;
+{
+  rtx x = gen_rtx_raw_REG (mode, regno);
+  ORIGINAL_REGNO (x) = regno;
+  return x;
+}
+
 /* There are some RTL codes that require special attention; the generation
    functions do the raw handling.  If you add to this list, modify
    special_rtx in gengenrtl.c as well.  */
@@ -319,7 +333,7 @@ gen_rtx_REG (mode, regno)
 	return stack_pointer_rtx;
     }
 
-  return gen_rtx_raw_REG (mode, regno);
+  return gen_raw_REG (mode, regno);
 }
 
 rtx
@@ -569,7 +583,7 @@ gen_reg_rtx (mode)
       f->emit->regno_pointer_align_length = old_size * 2;
     }
 
-  val = gen_rtx_raw_REG (mode, reg_rtx_no);
+  val = gen_raw_REG (mode, reg_rtx_no);
   regno_reg_rtx[reg_rtx_no++] = val;
   return val;
 }
@@ -4053,22 +4067,22 @@ init_emit_once (line_numbers)
 
   pc_rtx = gen_rtx (PC, VOIDmode);
   cc0_rtx = gen_rtx (CC0, VOIDmode);
-  stack_pointer_rtx = gen_rtx_raw_REG (Pmode, STACK_POINTER_REGNUM);
-  frame_pointer_rtx = gen_rtx_raw_REG (Pmode, FRAME_POINTER_REGNUM);
+  stack_pointer_rtx = gen_raw_REG (Pmode, STACK_POINTER_REGNUM);
+  frame_pointer_rtx = gen_raw_REG (Pmode, FRAME_POINTER_REGNUM);
   if (hard_frame_pointer_rtx == 0)
-    hard_frame_pointer_rtx = gen_rtx_raw_REG (Pmode, 
-					      HARD_FRAME_POINTER_REGNUM);
+    hard_frame_pointer_rtx = gen_raw_REG (Pmode, 
+					  HARD_FRAME_POINTER_REGNUM);
   if (arg_pointer_rtx == 0)
-    arg_pointer_rtx = gen_rtx_raw_REG (Pmode, ARG_POINTER_REGNUM);
+    arg_pointer_rtx = gen_raw_REG (Pmode, ARG_POINTER_REGNUM);
   virtual_incoming_args_rtx = 
-    gen_rtx_raw_REG (Pmode, VIRTUAL_INCOMING_ARGS_REGNUM);
+    gen_raw_REG (Pmode, VIRTUAL_INCOMING_ARGS_REGNUM);
   virtual_stack_vars_rtx = 
-    gen_rtx_raw_REG (Pmode, VIRTUAL_STACK_VARS_REGNUM);
+    gen_raw_REG (Pmode, VIRTUAL_STACK_VARS_REGNUM);
   virtual_stack_dynamic_rtx = 
-    gen_rtx_raw_REG (Pmode, VIRTUAL_STACK_DYNAMIC_REGNUM);
+    gen_raw_REG (Pmode, VIRTUAL_STACK_DYNAMIC_REGNUM);
   virtual_outgoing_args_rtx = 
-    gen_rtx_raw_REG (Pmode, VIRTUAL_OUTGOING_ARGS_REGNUM); 
-  virtual_cfa_rtx = gen_rtx_raw_REG (Pmode, VIRTUAL_CFA_REGNUM);
+    gen_raw_REG (Pmode, VIRTUAL_OUTGOING_ARGS_REGNUM); 
+  virtual_cfa_rtx = gen_raw_REG (Pmode, VIRTUAL_CFA_REGNUM);
 
   /* These rtx must be roots if GC is enabled.  */
   ggc_add_rtx_root (global_rtl, GR_MAX);
@@ -4148,7 +4162,7 @@ init_emit_once (line_numbers)
 
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
   return_address_pointer_rtx
-    = gen_rtx_raw_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM);
+    = gen_raw_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM);
 #endif
 
 #ifdef STRUCT_VALUE

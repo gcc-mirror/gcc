@@ -349,7 +349,9 @@ do_replace (chain, reg)
 {
   while (chain)
     {
-      *chain->loc = gen_rtx_REG (GET_MODE (*chain->loc), reg);
+      unsigned int regno = ORIGINAL_REGNO (*chain->loc);
+      *chain->loc = gen_raw_REG (GET_MODE (*chain->loc), reg);
+      ORIGINAL_REGNO (*chain->loc) = regno;
       chain = chain->next_use;
     }
 }

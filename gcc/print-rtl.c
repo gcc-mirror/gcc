@@ -170,6 +170,12 @@ print_rtx (in_rtx)
 	   An exception is the third field of a NOTE, where it indicates
 	   that the field has several different valid contents.  */
       case '0':
+	if (i == 1 && GET_CODE (in_rtx) == REG)
+	  {
+	    if (REGNO (in_rtx) != ORIGINAL_REGNO (in_rtx))
+	      fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
+	    break;
+	  }
 	if (i == 3 && GET_CODE (in_rtx) == NOTE)
 	  {
 	    switch (NOTE_LINE_NUMBER (in_rtx))

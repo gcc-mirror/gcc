@@ -328,6 +328,7 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 
 #define X0WINT(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtwint)
 #define X0INT(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtint)
+#define X0UINT(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtuint)
 #define X0STR(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtstr)
 #define X0EXP(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtx)
 #define X0VEC(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtvec)
@@ -742,9 +743,12 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 
 #define CONTAINING_INSN(RTX) XCEXP(RTX, 2, LABEL_REF)
 
-/* For a REG rtx, REGNO extracts the register number.  */
+/* For a REG rtx, REGNO extracts the register number.  ORIGINAL_REGNO holds
+   the number the register originally had; for a pseudo register turned into
+   a hard reg this will hold the old pseudo register number.  */
 
 #define REGNO(RTX) XCUINT(RTX, 0, REG)
+#define ORIGINAL_REGNO(RTX) X0UINT(RTX, 1)
 
 /* For a REG rtx, REG_FUNCTION_VALUE_P is nonzero if the reg
    is the current function's return value.  */
@@ -1539,6 +1543,7 @@ extern rtx return_address_pointer_rtx;
 extern rtx gen_rtx_CONST_DOUBLE PARAMS ((enum machine_mode, rtx,
 				       HOST_WIDE_INT, HOST_WIDE_INT));
 extern rtx gen_rtx_CONST_INT PARAMS ((enum machine_mode, HOST_WIDE_INT));
+extern rtx gen_raw_REG PARAMS ((enum machine_mode, int));
 extern rtx gen_rtx_REG PARAMS ((enum machine_mode, int));
 extern rtx gen_rtx_MEM PARAMS ((enum machine_mode, rtx));
 
