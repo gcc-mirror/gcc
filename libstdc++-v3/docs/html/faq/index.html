@@ -686,7 +686,9 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 <hr>
    <h2><a name="5_6">5.6 Is libstdc++-v3 thread-safe?</a></h2>
-      <p>When the system's libc is itself thread-safe, libstdc++-v3
+      <p>When the system's libc is itself thread-safe, a non-generic
+         implementation of atomicity.h exists for the architecture, and
+	 gcc itself reports a thread model other than single; libstdc++-v3
          strives to be thread-safe.  The user-code must guard against
          concurrent method calls which may access any particular
          library object's state.  Typically, the application
@@ -718,22 +720,12 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 	 object_a.mutate ();
        }
          </pre>
-      <p>However, as of gcc 3.0 and point releases, beware that there
-         may be cases where shared nested or global objects (neither
-         of which are visible to user-code) are affected or used
-         without any internal locking.
-	 <!-- Is this warning still required? - Loren -->
-      </p>
-      <p>In some cases, a stronger thread-safe claim is made.  The
-	 string class is thread-safe without user-code guards (i.e. a
-	 string object may be shared and accessed between threads
-	 without user-level locking).  The IO classes are thread-safe
-	 with user-code guards whenever the same user-visible object
-	 may be accessed by multiple threads.  The container classes
-	 are thread-safe with user-code guards whenever the same
-	 container may be accessed by multiple threads.  All accesses
-	 to hidden shared objects (e.g. the global allocator objects)
-	 are believed to be properly guarded within the library.
+      <p>All library objects are safe to use in a multithreaded
+         program as long as each thread carefully locks out access by
+         any other thread while it uses any object visible to another
+         thread.  This requirement includes both read and write access
+         to objects; do not assume that two threads may read a shared
+         standard container at the same time.
       </p>
       <p>See chapters <a href="../17_intro/howto.html#3">17</a>,
          <a href="../23_containers/howto.html#3">23</a> and

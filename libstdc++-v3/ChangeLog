@@ -1,3 +1,8 @@
+2001-10-12  Loren J. Rittle  <ljrittle@acm.org>
+
+	* docs/html/faq/index.html (Is libstdc++-v3 thread-safe?): Update
+	based on Nathan's review.  Use Nathan's words.
+
 2001-10-11  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* docs/html/configopts.html: Quote StyleSheet attribute values.
