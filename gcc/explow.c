@@ -846,14 +846,18 @@ allocate_dynamic_stack_space (size, target, known_align)
 
 #ifdef MUST_ALIGN
 
-  if (GET_CODE (size) == CONST_INT)
-    size = gen_rtx (CONST_INT, VOIDmode,
-		    INTVAL (size) + (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1));
-  else
-    size = expand_binop (Pmode, add_optab, size,
-			 gen_rtx (CONST_INT, VOIDmode,
-				  BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
-			 0, 1, OPTAB_LIB_WIDEN);
+  if (known_align % BIGGEST_ALIGNMENT != 0)
+    {
+      if (GET_CODE (size) == CONST_INT)
+	size = gen_rtx (CONST_INT, VOIDmode,
+			(INTVAL (size)
+			 + (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1)));
+      else
+	size = expand_binop (Pmode, add_optab, size,
+			     gen_rtx (CONST_INT, VOIDmode,
+				      BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
+			     0, 1, OPTAB_LIB_WIDEN);
+    }
 #endif
 
 #ifdef SETJMP_VIA_SAVE_AREA

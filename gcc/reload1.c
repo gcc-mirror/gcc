@@ -5522,7 +5522,9 @@ gen_input_reload (reloadreg, in, before_insn, is_asm)
   else if (GET_RTX_CLASS (GET_CODE (in)) == 'o' || GET_CODE (in) == SUBREG)
     {
       rtx x = emit_insn_before (gen_move_insn (reloadreg, in), before_insn);
-      if (is_asm && recog_memoized (x) < 0)
+      if (is_asm
+	  && (recog_memoized (x) < 0
+	      || (insn_extract (x), ! constrain_operands (INSN_CODE (x), 1))))
 	{
 	  delete_insn (x);
 	  return 0;
@@ -5534,7 +5536,9 @@ gen_input_reload (reloadreg, in, before_insn, is_asm)
     {
       rtx x = emit_insn_before (gen_reload_load_address (reloadreg, in),
 				before_insn);
-      if (is_asm && recog_memoized (x) < 0)
+      if (is_asm
+	  && (recog_memoized (x) < 0
+	      || (insn_extract (x), ! constrain_operands (INSN_CODE (x), 1))))
 	{
 	  delete_insn (x);
 	  return 0;
@@ -5547,7 +5551,9 @@ gen_input_reload (reloadreg, in, before_insn, is_asm)
     {
       rtx x = emit_insn_before (gen_rtx (SET, VOIDmode, reloadreg, in),
 				before_insn);
-      if (is_asm && recog_memoized (x) < 0)
+      if (is_asm
+	  && (recog_memoized (x) < 0
+	      || (insn_extract (x), ! constrain_operands (INSN_CODE (x), 1))))
 	{
 	  delete_insn (x);
 	  return 0;
