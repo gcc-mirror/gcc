@@ -1,8 +1,8 @@
 #ifndef _LIMITS_H_
 #ifndef _MACH_MACHLIMITS_H_
 
-/* _MACH_MACHLIMITS.H_ is used on OSF/1.  */
-#define _LIMITS_H
+/* _MACH_MACHLIMITS_H_ is used on OSF/1.  */
+#define _LIMITS_H_
 #define _MACH_MACHLIMITS_H_
 
 /* Number of bits in a `char'.  */
@@ -68,4 +68,4 @@
 #define ULONG_MAX 4294967295UL
 
 #endif /* _MACH_MACHLIMITS_H_ */
-#endif /* _LIMITS_H */
+#endif /* _LIMITS_H_ */
