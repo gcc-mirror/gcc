@@ -8000,6 +8000,56 @@ ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
   return TRUE;
 }
 
+/* A subroutine of ix86_expand_fp_absneg_operator and copysign expanders.
+   Create a mask for the sign bit in MODE for an SSE register.  If VECT is
+   true, then replicate the mask for all elements of the vector register.
+   If INVERT is true, then create a mask excluding the sign bit.  */
+
+rtx
+ix86_build_signbit_mask (enum machine_mode mode, bool vect, bool invert)
+{
+  enum machine_mode vec_mode;
+  HOST_WIDE_INT hi, lo;
+  int shift = 63;
+  rtvec v;
+  rtx mask;
+
+  /* Find the sign bit, sign extended to 2*HWI.  */
+  if (mode == SFmode)
+    lo = 0x80000000, hi = lo < 0;
+  else if (HOST_BITS_PER_WIDE_INT >= 64)
+    lo = (HOST_WIDE_INT)1 << shift, hi = -1;
+  else
+    lo = 0, hi = (HOST_WIDE_INT)1 << (shift - HOST_BITS_PER_WIDE_INT);
+
+  if (invert)
+    lo = ~lo, hi = ~hi;
+
+  /* Force this value into the low part of a fp vector constant.  */
+  mask = immed_double_const (lo, hi, mode == SFmode ? SImode : DImode);
+  mask = gen_lowpart (mode, mask);
+
+  if (mode == SFmode)
+    {
+      if (vect)
+	v = gen_rtvec (4, mask, mask, mask, mask);
+      else
+	v = gen_rtvec (4, mask, CONST0_RTX (SFmode),
+		       CONST0_RTX (SFmode), CONST0_RTX (SFmode));
+      vec_mode = V4SFmode;
+    }
+  else
+    {
+      if (vect)
+	v = gen_rtvec (2, mask, mask);
+      else
+	v = gen_rtvec (2, mask, CONST0_RTX (DFmode));
+      vec_mode = V2DFmode;
+    }
+
+  return force_reg (vec_mode, gen_rtx_CONST_VECTOR (vec_mode, v));
+}
+
 /* Generate code for floating point ABS or NEG.  */
 
 void
@@ -8011,79 +8061,19 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
   bool use_sse = false;
   bool vector_mode = VECTOR_MODE_P (mode);
   enum machine_mode elt_mode = mode;
-  enum machine_mode vec_mode = VOIDmode;
 
   if (vector_mode)
     {
       elt_mode = GET_MODE_INNER (mode);
-      vec_mode = mode;
       use_sse = true;
     }
-  if (TARGET_SSE_MATH)
-    {
-      if (mode == SFmode)
-	{
-	  use_sse = true;
-	  vec_mode = V4SFmode;
-	}
-      else if (mode == DFmode && TARGET_SSE2)
-	{
-	  use_sse = true;
-	  vec_mode = V2DFmode;
-	}
-    }
+  else if (TARGET_SSE_MATH)
+    use_sse = SSE_REG_MODE_P (mode);
 
   /* NEG and ABS performed with SSE use bitwise mask operations.
      Create the appropriate mask now.  */
   if (use_sse)
-    {
-      HOST_WIDE_INT hi, lo;
-      int shift = 63;
-      rtvec v;
-
-      /* Find the sign bit, sign extended to 2*HWI.  */
-      if (elt_mode == SFmode)
-        lo = 0x80000000, hi = lo < 0;
-      else if (HOST_BITS_PER_WIDE_INT >= 64)
-        lo = (HOST_WIDE_INT)1 << shift, hi = -1;
-      else
-        lo = 0, hi = (HOST_WIDE_INT)1 << (shift - HOST_BITS_PER_WIDE_INT);
-
-      /* If we're looking for the absolute value, then we want
-	 the compliment.  */
-      if (code == ABS)
-        lo = ~lo, hi = ~hi;
-
-      /* Force this value into the low part of a fp vector constant.  */
-      mask = immed_double_const (lo, hi, elt_mode == SFmode ? SImode : DImode);
-      mask = gen_lowpart (elt_mode, mask);
-
-      switch (mode)
-	{
-	case SFmode:
-	  v = gen_rtvec (4, mask, CONST0_RTX (SFmode),
-			 CONST0_RTX (SFmode), CONST0_RTX (SFmode));
-	  break;
-
-	case DFmode:
-	  v = gen_rtvec (2, mask, CONST0_RTX (DFmode));
-	  break;
-
-	case V4SFmode:
-	  v = gen_rtvec (4, mask, mask, mask, mask);
-	  break;
-
-	case V4DFmode:
-	  v = gen_rtvec (2, mask, mask);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      mask = gen_rtx_CONST_VECTOR (vec_mode, v);
-      mask = force_reg (vec_mode, mask);
-    }
+    mask = ix86_build_signbit_mask (elt_mode, vector_mode, code == ABS);
   else
     {
       /* When not using SSE, we don't use the mask, but prefer to keep the
@@ -8125,6 +8115,78 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
 
   if (dst != operands[0])
     emit_move_insn (operands[0], dst);
+}
+
+/* Deconstruct a copysign operation into bit masks.  */
+
+void
+ix86_split_copysign (rtx operands[])
+{
+  enum machine_mode mode, vmode;
+  rtx dest, scratch, op0, op1, mask, nmask, x;
+
+  dest = operands[0];
+  scratch = operands[1];
+  op0 = operands[2];
+  nmask = operands[3];
+  op1 = operands[4];
+  mask = operands[5];
+
+  mode = GET_MODE (dest);
+  vmode = GET_MODE (mask);
+
+  if (rtx_equal_p (op0, op1))
+    {
+      /* Shouldn't happen often (it's useless, obviously), but when it does
+	 we'd generate incorrect code if we continue below.  */
+      emit_move_insn (dest, op0);
+      return;
+    }
+
+  if (REG_P (mask) && REGNO (dest) == REGNO (mask))	/* alternative 0 */
+    {
+      gcc_assert (REGNO (op1) == REGNO (scratch));
+
+      x = gen_rtx_AND (vmode, scratch, mask);
+      emit_insn (gen_rtx_SET (VOIDmode, scratch, x));
+
+      dest = mask;
+      op0 = simplify_gen_subreg (vmode, op0, mode, 0);
+      x = gen_rtx_NOT (vmode, dest);
+      x = gen_rtx_AND (vmode, x, op0);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+    }
+  else
+    {
+      if (REGNO (op1) == REGNO (scratch))		/* alternative 1,3 */
+	{
+	  x = gen_rtx_AND (vmode, scratch, mask);
+	}
+      else						/* alternative 2,4 */
+	{
+          gcc_assert (REGNO (mask) == REGNO (scratch));
+          op1 = simplify_gen_subreg (vmode, op1, mode, 0);
+	  x = gen_rtx_AND (vmode, scratch, op1);
+	}
+      emit_insn (gen_rtx_SET (VOIDmode, scratch, x));
+
+      if (REGNO (op0) == REGNO (dest))			/* alternative 1,2 */
+	{
+	  dest = simplify_gen_subreg (vmode, op0, mode, 0);
+	  x = gen_rtx_AND (vmode, dest, nmask);
+	}
+      else						/* alternative 3,4 */
+	{
+          gcc_assert (REGNO (nmask) == REGNO (dest));
+	  dest = nmask;
+	  op0 = simplify_gen_subreg (vmode, op0, mode, 0);
+	  x = gen_rtx_AND (vmode, dest, op0);
+	}
+      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+    }
+
+  x = gen_rtx_IOR (vmode, dest, scratch);
+  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
 }
 
 /* Return TRUE or FALSE depending on whether the first SET in INSN

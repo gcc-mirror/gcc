@@ -193,6 +193,8 @@ enum optab_index
   OTI_tan,
   /* Inverse tangent */
   OTI_atan,
+  /* Copy sign */
+  OTI_copysign,
 
   /* Compare insn; two operands.  */
   OTI_cmp,
@@ -311,6 +313,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define rint_optab (optab_table[OTI_rint])
 #define tan_optab (optab_table[OTI_tan])
 #define atan_optab (optab_table[OTI_atan])
+#define copysign_optab (optab_table[OTI_copysign])
 
 #define cmp_optab (optab_table[OTI_cmp])
 #define ucmp_optab (optab_table[OTI_ucmp])
@@ -449,6 +452,9 @@ extern rtx expand_unop (enum machine_mode, optab, rtx, rtx, int);
 /* Expand the absolute value operation.  */
 extern rtx expand_abs_nojump (enum machine_mode, rtx, rtx, int);
 extern rtx expand_abs (enum machine_mode, rtx, rtx, int, int);
+
+/* Expand the copysign operation.  */
+extern rtx expand_copysign (rtx, rtx, rtx);
 
 /* Generate an instruction with a given INSN_CODE with an output and
    an input.  */
