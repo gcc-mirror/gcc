@@ -136,6 +136,12 @@
   (UNSPEC_NSB		17)
   (UNSPEC_ALLOCO	18)
   (UNSPEC_EH_RETURN	19)
+  (UNSPEC_TLSGD		20)
+  (UNSPEC_TLSLDM	21)
+  (UNSPEC_TLSIE		22)
+  (UNSPEC_DTPOFF	23)
+  (UNSPEC_GOTTPOFF	24)
+  (UNSPEC_TPOFF		25)
 
   ;; These are used with unspec_volatile.
   (UNSPECV_BLOCKAGE	0)
@@ -211,6 +217,7 @@
 ;; ftrc_s	fix_truncsfsi2_i4
 ;; dfdiv	double precision floating point divide (or square root)
 ;; cwb		ic_invalidate_line_i
+;; tls_load     load TLS related address 
 ;; arith_media	SHmedia arithmetic, logical, and shift instructions
 ;; cbranch_media SHmedia conditional branch instructions
 ;; cmp_media	SHmedia compare instructions
@@ -241,7 +248,7 @@
 ;; nil		no-op move, will be deleted.
 
 (define_attr "type"
- "mt_group,cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,load,load_si,fload,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,pcfload,rte,sfunc,call,fp,fdiv,ftrc_s,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,fpul_gp,mac_gp,mem_fpscr,gp_fpscr,cwb,arith_media,cbranch_media,cmp_media,dfdiv_media,dfmul_media,dfparith_media,dfpconv_media,dmpy_media,fcmp_media,fdiv_media,fload_media,fmove_media,fparith_media,fpconv_media,fstore_media,gettr_media,invalidate_line_media,jump_media,load_media,pt_media,ptabs_media,store_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media,nil,other"
+ "mt_group,cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,load,load_si,fload,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,pcfload,rte,sfunc,call,fp,fdiv,ftrc_s,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,fpul_gp,mac_gp,mem_fpscr,gp_fpscr,cwb,tls_load,arith_media,cbranch_media,cmp_media,dfdiv_media,dfmul_media,dfparith_media,dfpconv_media,dmpy_media,fcmp_media,fdiv_media,fload_media,fmove_media,fparith_media,fpconv_media,fstore_media,gettr_media,invalidate_line_media,jump_media,load_media,pt_media,ptabs_media,store_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media,nil,other"
   (const_string "other"))
 
 ;; We define a new attribute namely "insn_class".We use
@@ -6800,6 +6807,142 @@
   [(const (unspec [(match_operand:SI 0 "" "")] UNSPEC_PIC))]
   ""
   "")
+
+;; TLS code generation.
+;; ??? this should be a define_insn_and_split
+;; See the thread [PATCH/RFA] SH TLS support on gcc-patches
+;; <http://gcc.gnu.org/ml/gcc-patches/2003-02/msg01898.html>
+;; for details.
+
+(define_insn "tls_global_dynamic"
+  [(set (match_operand:SI 0 "register_operand" "=&z")
+	(unspec:SI [(match_operand:SI 1 "" "")]
+		    UNSPEC_TLSGD))
+   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI PIC_REG))
+   (clobber (reg:SI PR_REG))
+   (clobber (scratch:SI))]
+  "TARGET_SH1"
+  "*
+{
+  return \"\\
+mov.l\\t1f,r4\\n\\
+\\tmova\\t2f,r0\\n\\
+\\tmov.l\\t2f,r1\\n\\
+\\tadd\\tr0,r1\\n\\
+\\tjsr\\t@r1\\n\\
+\\tadd\\tr12,r4\\n\\
+\\tbra\\t3f\\n\\
+\\tnop\\n\\
+\\t.align\\t2\\n\\
+1:\\t.long\\t%a1@TLSGD\\n\\
+2:\\t.long\\t__tls_get_addr@PLT\\n\\
+3:\";
+}"
+  [(set_attr "type" "tls_load")
+   (set_attr "length" "26")])
+
+(define_insn "tls_local_dynamic"
+  [(set (match_operand:SI 0 "register_operand" "=&z")
+	(unspec:SI [(match_operand:SI 1 "" "")]
+		    UNSPEC_TLSLDM))
+   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI PIC_REG))
+   (clobber (reg:SI PR_REG))
+   (clobber (scratch:SI))]
+  "TARGET_SH1"
+  "*
+{
+  return \"\\
+mov.l\\t1f,r4\\n\\
+\\tmova\\t2f,r0\\n\\
+\\tmov.l\\t2f,r1\\n\\
+\\tadd\\tr0,r1\\n\\
+\\tjsr\\t@r1\\n\\
+\\tadd\\tr12,r4\\n\\
+\\tbra\\t3f\\n\\
+\\tnop\\n\\
+\\t.align\\t2\\n\\
+1:\\t.long\\t%a1@TLSLDM\\n\\
+2:\\t.long\\t__tls_get_addr@PLT\\n\\
+3:\";
+}"
+  [(set_attr "type" "tls_load")
+   (set_attr "length" "26")])
+
+(define_expand "sym2DTPOFF"
+  [(const (unspec [(match_operand 0 "" "")] UNSPEC_DTPOFF))]
+  ""
+  "")
+
+(define_expand "symDTPOFF2reg"
+  [(match_operand 0 "" "") (match_operand 1 "" "") (match_operand 2 "" "")]
+  ""
+  "
+{
+  rtx dtpoffsym, insn;
+  rtx t = no_new_pseudos ? operands[0] : gen_reg_rtx (GET_MODE (operands[0]));
+
+  dtpoffsym = gen_sym2DTPOFF (operands[1]);
+  PUT_MODE (dtpoffsym, Pmode);
+  emit_move_insn (t, dtpoffsym);
+  insn = emit_move_insn (operands[0],
+			 gen_rtx_PLUS (Pmode, t, operands[2]));
+  DONE;
+}")
+
+(define_expand "sym2GOTTPOFF"
+  [(const (unspec [(match_operand 0 "" "")] UNSPEC_GOTTPOFF))]
+  ""
+  "")
+
+(define_insn "tls_initial_exec"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(unspec:SI [(match_operand:SI 1 "" "")]
+		    UNSPEC_TLSIE))
+   (use (reg:SI GBR_REG))
+   (use (reg:SI PIC_REG))
+   (clobber (reg:SI R0_REG))]
+  ""
+  "*
+{
+  return \"\\
+mov.l\\t1f,r0\\n\\
+\\tstc\\tgbr,%0\\n\\
+\\tmov.l\\t@(r0,r12),r0\\n\\
+\\tbra\\t2f\\n\\
+\\tadd\\tr0,%0\\n\\
+\\t.align\\t2\\n\\
+1:\\t.long\\t%a1\\n\\
+2:\";
+}"
+  [(set_attr "type" "tls_load")
+   (set_attr "length" "16")])
+
+(define_expand "sym2TPOFF"
+  [(const (unspec [(match_operand 0 "" "")] UNSPEC_TPOFF))]
+  ""
+  "")
+
+(define_expand "symTPOFF2reg"
+  [(match_operand 0 "" "") (match_operand 1 "" "")]
+  ""
+  "
+{
+  rtx tpoffsym, insn;
+
+  tpoffsym = gen_sym2TPOFF (operands[1]);
+  PUT_MODE (tpoffsym, Pmode);
+  insn = emit_move_insn (operands[0], tpoffsym);
+  DONE;
+}")
+
+(define_insn "load_gbr"
+  [(set (match_operand:SI 0 "register_operand" "") (reg:SI GBR_REG))
+   (use (reg:SI GBR_REG))]
+  ""
+  "stc	gbr,%0"
+  [(set_attr "type" "tls_load")])
 
 ;; case instruction for switch statements.
 

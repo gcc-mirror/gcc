@@ -2752,6 +2752,20 @@ while (0)
 ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF)	\
   && nonpic_symbol_mentioned_p (X))
 
+/* TLS.  */
+
+/* The prefix used to mark SYMBOL_REFs that refer to TLS symbols.  */
+#define SH_TLS_ENCODING "@"
+
+/* Return true if SYM_NAME starts with SH_TLS_ENCODING.  */
+#define TLS_SYMNAME_P(SYM_NAME) \
+  ((SYM_NAME)[0] == SH_TLS_ENCODING[0])
+
+/* Skip an optional SH_TLS_ENCODING in the beginning of SYM_NAME.  */
+#define STRIP_TLS_ENCODING(VAR, SYM_NAME) \
+  (VAR) = (SYM_NAME) + (TLS_SYMNAME_P (SYM_NAME) \
+			? strlen (SH_TLS_ENCODING) + 1 : 0)
+
 /* Compute extra cost of moving data between one register class
    and another.  */
 
@@ -2915,6 +2929,7 @@ while (0)
       const char * lname;				\
 							\
       STRIP_DATALABEL_ENCODING (lname, (NAME));		\
+      STRIP_TLS_ENCODING (lname, lname);		\
       if (lname[0] == '*')				\
 	fputs (lname + 1, (FILE));			\
       else						\
@@ -3052,6 +3067,18 @@ while (0)
 	  case UNSPEC_GOTPLT:						\
 	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
 	    fputs ("@GOTPLT", (STREAM));				\
+	    break;							\
+	  case UNSPEC_DTPOFF:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@DTPOFF", (STREAM));				\
+	    break;							\
+	  case UNSPEC_GOTTPOFF:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@GOTTPOFF", (STREAM));				\
+	    break;							\
+	  case UNSPEC_TPOFF:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@TPOFF", (STREAM));					\
 	    break;							\
 	  case UNSPEC_CALLER:						\
 	    {								\
