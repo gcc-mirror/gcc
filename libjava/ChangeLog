@@ -1,3 +1,7 @@
+2003-01-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/List.java: Merged with Classpath.
+
 2003-01-03  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/FileDescriptor.java (position): New private field.

@@ -113,6 +113,8 @@ private ActionListener action_listeners;
 /**
   * Initializes a new instance of <code>List</code> with no visible lines
   * and multi-select disabled.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public
 List()
@@ -127,6 +129,8 @@ List()
   * number of visible lines and multi-select disabled.
   *
   * @param lines The number of visible lines in the list.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public
 List(int rows)
@@ -143,12 +147,17 @@ List(int rows)
   * @param lines The number of visible lines in the list.
   * @param multipleMode <code>true</code> if multiple lines can be selected
   * simultaneously, <code>false</code> otherwise.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public 
 List(int rows, boolean multipleMode)
 {
   this.rows = rows;
   this.multipleMode = multipleMode;
+
+  if (GraphicsEnvironment.isHeadless())
+    throw new HeadlessException ();
 }
 
 /*************************************************************************/
