@@ -1,3 +1,8 @@
+Mon Apr 26 02:24:47 1999 "Loren J. Rittle" <rittle@supra.rsch.comm.mot.com>  
+
+	* config/freebsd.ml (LIBS): Add ARLINK.
+	* config/openbsd.ml (LIBS): Add ARLINK.
+
 Fri Apr  2 15:12:14 1999  H.J. Lu  (hjl@gnu.org)
 
 	* libstdc++/configure.in (gxx_include_dir): Handle it.
