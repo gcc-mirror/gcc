@@ -617,8 +617,8 @@ namespace std
 	    }
 
 	  // Write resulting, fully-formatted string to output iterator.
-	  for (size_type __i = 0; __i < __len; ++__i)
-	    __s = __res[__i];
+	  for (size_type __j = 0; __j < __len; ++__j)
+	    __s = __res[__j];
 	}
       __io.width(0);
       return __s; 

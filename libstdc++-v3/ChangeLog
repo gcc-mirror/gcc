@@ -1,3 +1,14 @@
+2001-09-20  Scott Johnston <scott@accom.com>
+	    Peter Schmid <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* include/backward/alloc.h: Conditionally define malloc_alloc 
+	* testsuite/backward/header_deque_h.cc: New file.
+
+2001-09-20  Sylvain Pion <Sylvain.Pion@sophia.inria.fr>
+
+	* libstdc++-v3/include/bits/locale_facets.tcc (money_put::do_put): 
+        change variable name so that it works with -fno-for-scope.
+
 2001-09-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/numpunct_members_char.cc (test01): Remove
