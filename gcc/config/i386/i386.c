@@ -427,6 +427,7 @@ static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int));
 static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
 static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
 static void ix86_sched_reorder_ppro PARAMS((rtx *, rtx *));
+static HOST_WIDE_INT ix86_GOT_alias_set PARAMS ((void));
 
 struct ix86_address
 {
@@ -2553,6 +2554,17 @@ report_error:
   return FALSE;
 }
 
+/* Return an unique alias set for the GOT.  */
+
+static HOST_WIDE_INT   
+ix86_GOT_alias_set ()
+{
+    static HOST_WIDE_INT set = -1;
+    if (set == -1)
+      set = new_alias_set ();
+    return set;
+}   
+
 /* Return a legitimate reference for ORIG (an address) using the
    register REG.  If REG is 0, a new pseudo is generated.
 
@@ -2610,6 +2622,7 @@ legitimize_pic_address (orig, reg)
       new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
       new = gen_rtx_MEM (Pmode, new);
       RTX_UNCHANGING_P (new) = 1;
+      MEM_ALIAS_SET (new) = ix86_GOT_alias_set ();	
 
       if (reg == 0)
 	reg = gen_reg_rtx (Pmode);
