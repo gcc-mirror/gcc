@@ -1214,7 +1214,10 @@ find_gr_spill (try_locals)
   if (try_locals)
     {
       regno = current_frame_info.n_local_regs;
-      if (regno < 80)
+      /* If there is a frame pointer, then we can't use loc79, because
+	 that is HARD_FRAME_POINTER_REGNUM.  In particular, see the
+	 reg_name switching code in ia64_expand_prologue.  */
+      if (regno < (80 - frame_pointer_needed))
 	{
 	  current_frame_info.n_local_regs = regno + 1;
 	  return LOC_REG (0) + regno;
@@ -1874,6 +1877,10 @@ ia64_expand_prologue ()
   /* Set the frame pointer register name.  The regnum is logically loc79,
      but of course we'll not have allocated that many locals.  Rather than
      worrying about renumbering the existing rtxs, we adjust the name.  */
+  /* ??? This code means that we can never use one local register when
+     there is a frame pointer.  loc79 gets wasted in this case, as it is
+     renamed to a register that will never be used.  See also the try_locals
+     code in find_gr_spill.  */
   if (current_frame_info.reg_fp)
     {
       const char *tmp = reg_names[HARD_FRAME_POINTER_REGNUM];
