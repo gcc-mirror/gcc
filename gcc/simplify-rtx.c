@@ -3829,6 +3829,55 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	return CONST0_RTX (outermode);
     }
 
+  /* Simplify (subreg:QI (lshiftrt:SI (sign_extend:SI (x:QI)) C), 0) into
+     to (ashiftrt:QI (x:QI) C), where C is a suitable small constant and
+     the outer subreg is effectively a truncation to the original mode.  */
+  if ((GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ASHIFTRT)
+      && SCALAR_INT_MODE_P (outermode)
+      /* Ensure that OUTERMODE is at least twice as wide as the INNERMODE
+	 to avoid the possibility that an outer LSHIFTRT shifts by more
+	 than the sign extension's sign_bit_copies and introduces zeros
+	 into the high bits of the result.  */
+      && (2 * GET_MODE_BITSIZE (outermode)) <= GET_MODE_BITSIZE (innermode)
+      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && GET_CODE (XEXP (op, 0)) == SIGN_EXTEND
+      && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
+      && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (outermode)
+      && subreg_lsb_1 (outermode, innermode, byte) == 0)
+    return simplify_gen_binary (ASHIFTRT, outermode,
+				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
+
+  /* Likewise (subreg:QI (lshiftrt:SI (zero_extend:SI (x:QI)) C), 0) into
+     to (lshiftrt:QI (x:QI) C), where C is a suitable small constant and
+     the outer subreg is effectively a truncation to the original mode.  */
+  if ((GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ASHIFTRT)
+      && SCALAR_INT_MODE_P (outermode)
+      && GET_MODE_BITSIZE (outermode) < GET_MODE_BITSIZE (innermode)
+      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
+      && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
+      && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (outermode)
+      && subreg_lsb_1 (outermode, innermode, byte) == 0)
+    return simplify_gen_binary (LSHIFTRT, outermode,
+				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
+
+  /* Likewise (subreg:QI (ashift:SI (zero_extend:SI (x:QI)) C), 0) into
+     to (ashift:QI (x:QI) C), where C is a suitable small constant and
+     the outer subreg is effectively a truncation to the original mode.  */
+  if (GET_CODE (op) == ASHIFT
+      && SCALAR_INT_MODE_P (outermode)
+      && GET_MODE_BITSIZE (outermode) < GET_MODE_BITSIZE (innermode)
+      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && (GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
+	  || GET_CODE (XEXP (op, 0)) == SIGN_EXTEND)
+      && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
+      && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (outermode)
+      && subreg_lsb_1 (outermode, innermode, byte) == 0)
+    return simplify_gen_binary (ASHIFT, outermode,
+				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
+
   return NULL_RTX;
 }
 
