@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -125,4 +125,9 @@ public abstract class AbstractGraphicsState implements Cloneable
   public abstract void scale(double scaleX, double scaleY);
   
   public abstract void shear(double shearX, double shearY);
+
+  public Object clone ()
+  {
+    return super.clone ();
+  }
 }
