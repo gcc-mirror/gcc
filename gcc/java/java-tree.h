@@ -122,7 +122,8 @@ struct JCF;
 /* True if the class whose TYPE_BINFO this is has a superclass.
    (True of all classes except Object.) */
 #define CLASS_HAS_SUPER_FLAG(BINFO) BINFO_FLAG_1 (BINFO)
-#define CLASS_HAS_SUPER(TYPE) CLASS_HAS_SUPER_FLAG (TYPE_BINFO (TYPE))
+#define CLASS_HAS_SUPER(TYPE) \
+  (TYPE_BINFO (TYPE) && CLASS_HAS_SUPER_FLAG (TYPE_BINFO (TYPE)))
 
 /* Return the supertype of class TYPE, or NULL_TREE is it has none. */
 #define CLASSTYPE_SUPER(TYPE) (CLASS_HAS_SUPER (TYPE) \
