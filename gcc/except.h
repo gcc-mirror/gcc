@@ -283,3 +283,4 @@ rtx expand_builtin_extract_return_addr	PROTO((tree));
 void expand_builtin_set_return_addr_reg PROTO((tree));
 void expand_builtin_set_eh_regs		PROTO((tree, tree));
 #endif
+rtx expand_builtin_dwarf_reg_size	PROTO((tree, rtx));
