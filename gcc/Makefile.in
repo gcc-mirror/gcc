@@ -1256,7 +1256,8 @@ reg-stack.o : reg-stack.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) \
    $(RTL_H) regs.h hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(out_file)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  $(MAYBE_TARGET_DEFAULT) $(out_file)
 
 # Build auxiliary files that support ecoff format.
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
