@@ -1,3 +1,9 @@
+Sat Nov  6 07:48:59 1999  Catherine Moore  <clm@cygnus.com>
+
+        * config/svr4.h (ASM_DECLARE_FUNCTION): Check if already
+        defined.
+        (ASM_DECLARE_FUNCTION_SIZE): Likewise.
+
 Fri Nov  5 18:33:39 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* global.c (EXECUTE_IF_SET_IN_ALLOCNO_SET): New macro.

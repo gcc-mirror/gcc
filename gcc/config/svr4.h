@@ -703,6 +703,7 @@ do {								\
    Some svr4 assemblers need to also have something extra said about the
    function's return value.  We allow for that here.  */
 
+#ifndef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
     fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
@@ -713,6 +714,7 @@ do {								\
     ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
     ASM_OUTPUT_LABEL(FILE, NAME);					\
   } while (0)
+#endif
 
 /* Write the extra assembler code needed to declare an object properly.  */
 
@@ -762,7 +764,7 @@ do {									 \
    } while (0)
 
 /* This is how to declare the size of a function.  */
-
+#ifndef ASM_DECLARE_FUNCTION_SIZE
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
   do {									\
     if (!flag_inhibit_size_directive)					\
@@ -781,7 +783,7 @@ do {									 \
 	putc ('\n', FILE);						\
       }									\
   } while (0)
-
+#endif
 /* A table of bytes codes used by the ASM_OUTPUT_ASCII and
    ASM_OUTPUT_LIMITED_STRING macros.  Each byte in the table
    corresponds to a particular byte value [0..255].  For any
