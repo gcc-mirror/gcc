@@ -100,14 +100,19 @@ struct processor_costs pentiumpro_cost = {
   17					/* cost of a divide/mod */
 };
 
+/* We use decoding time together with execution time. 
+   To get correct vale add 1 for short decodable, 2 for long decodable
+   and 4 for vector decodable instruction to execution time and divide
+   by two (because CPU is able to do two insns at a time). */
+
 struct processor_costs k6_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
   1,					/* variable shift costs */
   1,					/* constant shift costs */
-  2,					/* cost of starting a multiply */
+  3,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
-  18					/* cost of a divide/mod */
+  20					/* cost of a divide/mod */
 };
 
 struct processor_costs *ix86_cost = &pentium_cost;
