@@ -327,6 +327,9 @@ INSTALL_TARGET=install-normal
 # Source for float.h.  Overridden by cross-make.
 FLOAT_H=float.h-nat
 
+# Extra symbols for fixproto to define when parsing headers.
+FIXPROTO_DEFINES = 
+
 # End of variables for you to override.
 
 # Definition of `all' is here so that new rules inserted by sed
@@ -1620,6 +1623,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
 	  CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
+	    FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"; export FIXPROTO_DEFINES; \
 	    $(SHELL) ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
 	  touch include/fixed; \
 	fi
