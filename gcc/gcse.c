@@ -1857,6 +1857,7 @@ static void
 hash_scan_insn (insn, set_p, in_libcall_block)
      rtx insn;
      int set_p;
+     int in_libcall_block;
 {
   rtx pat = PATTERN (insn);
 
