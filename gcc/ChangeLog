@@ -1,3 +1,9 @@
+2000-12-30  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.c (arm_expand_prologue): Fix typos in error 
+	message and comment.  Note location of testcase for an unhandled
+	situation.
+
 2000-12-30  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* defaults.h (BUILD_VA_LIST_TYPE): New definition.
