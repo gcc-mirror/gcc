@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu)
+   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
 
@@ -58,6 +58,10 @@ static int inside_function = FALSE;
 int alpha_function_needs_gp;
 
 extern char *version_string;
+
+/* Declarations of static functions.  */
+static void alpha_set_memflags_1  PROTO((rtx, int, int, int));
+static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
 
@@ -1127,6 +1131,10 @@ alpha_sa_size ()
   if (size != 0 && ! regs_ever_live[26])
     size++;
 
+  /* Our size must be even (multiple of 16 bytes).  */
+  if (size & 1)
+    size ++;
+
   return size * 8;
 }
 
@@ -1162,13 +1170,16 @@ alpha_write_verstamp (file)
 }
 
 /* Write code to add constant C to register number IN_REG (possibly 31)
-   and put the result into OUT_REG.  Write the code to FILE.  */
+   and put the result into OUT_REG.  Use TEMP_REG as a scratch register;
+   usually this will be OUT_REG, but should not be if OUT_REG is 
+   STACK_POINTER_REGNUM, since it must be updated in a single instruction.
+   Write the code to FILE.  */
 
 static void
-add_long_const (file, c, in_reg, out_reg)
-     HOST_WIDE_INT c;
-     int in_reg, out_reg;
+add_long_const (file, c, in_reg, out_reg, temp_reg)
      FILE *file;
+     HOST_WIDE_INT c;
+     int in_reg, out_reg, temp_reg;
 {
   HOST_WIDE_INT low = (c & 0xffff) - 2 * (c & 0x8000);
   HOST_WIDE_INT tmp1 = c - low;
@@ -1194,17 +1205,22 @@ add_long_const (file, c, in_reg, out_reg)
 
   if (low != 0)
     {
+      int result_reg = (extra == 0 && high == 0) ? out_reg : temp_reg;
+
       if (low >= 0 && low < 255)
-	fprintf (file, "\taddq $%d,%d,$%d\n", in_reg, low, out_reg);
+	fprintf (file, "\taddq $%d,%d,$%d\n", in_reg, low, result_reg);
       else
-	fprintf (file, "\tlda $%d,%d($%d)\n", out_reg, low, in_reg);
-      in_reg = out_reg;
+	fprintf (file, "\tlda $%d,%d($%d)\n", result_reg, low, in_reg);
+
+      in_reg = result_reg;
     }
 
   if (extra)
     {
-      fprintf (file, "\tldah $%d,%d($%d)\n", out_reg, extra, in_reg);
-      in_reg = out_reg;
+      int result_reg = (high == 0) ? out_reg : temp_reg;
+
+      fprintf (file, "\tldah $%d,%d($%d)\n", result_reg, extra, in_reg);
+      in_reg = result_reg;
     }
 
   if (high)
@@ -1218,20 +1234,21 @@ output_prolog (file, size)
      FILE *file;
      int size;
 {
-  HOST_WIDE_INT vars_size = (size + 7) & ~7;
-  HOST_WIDE_INT frame_size = ((vars_size + current_function_outgoing_args_size
-			       + current_function_pretend_args_size
-			       + alpha_sa_size () + 15) & ~15);
-  HOST_WIDE_INT reg_offset = vars_size + current_function_outgoing_args_size;
+  HOST_WIDE_INT out_args_size
+    = ALPHA_ROUND (current_function_outgoing_args_size);
+  HOST_WIDE_INT sa_size = alpha_sa_size ();
+  HOST_WIDE_INT frame_size
+    = (out_args_size + sa_size
+       + ALPHA_ROUND (size + current_function_pretend_args_size));
+  HOST_WIDE_INT reg_offset = out_args_size;
   HOST_WIDE_INT start_reg_offset = reg_offset;
   HOST_WIDE_INT actual_start_reg_offset = start_reg_offset;
   int int_reg_save_area_size = 0;
   rtx insn;
-  int reg_offset_base_reg = 30;
   unsigned reg_mask = 0;
   int i;
 
-  /* Ecoff can handle multiple .file directives, put out file and lineno.
+  /* Ecoff can handle multiple .file directives, so put out file and lineno.
      We have to do that before the .ent directive as we cannot switch
      files within procedures with native ecoff because line numbers are
      linked to procedure descriptors.
@@ -1244,7 +1261,8 @@ output_prolog (file, size)
       ASM_OUTPUT_SOURCE_FILENAME (file,
 				  DECL_SOURCE_FILE (current_function_decl));
       if (debug_info_level != DINFO_LEVEL_TERSE)
-        ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
+        ASM_OUTPUT_SOURCE_LINE (file,
+				DECL_SOURCE_LINE (current_function_decl));
     }
 
   /* The assembly language programmer's guide states that the second argument
@@ -1300,14 +1318,15 @@ output_prolog (file, size)
       if (frame_size > 4096)
 	{
 	  int probed = 4096;
-	  int regnum = 2;
+	  int regnum = 1;
 
 	  fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed);
 
 	  while (probed + 8192 < frame_size)
 	    fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed += 8192);
 
-	  if (probed + 4096 < frame_size)
+	  /* We only have to do this probe if we aren't saving registers.  */
+	  if (sa_size == 0 && probed + 4096 < frame_size)
 	    fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed += 4096);
 
 	  if (regnum > 9)
@@ -1322,12 +1341,13 @@ output_prolog (file, size)
       /* Here we generate code to set R4 to SP + 4096 and set R5 to the
 	 number of 8192 byte blocks to probe.  We then probe each block
 	 in the loop and then set SP to the proper location.  If the
-	 amount remaining is > 4096, we have to do one more probe.  */
+	 amount remaining is > 4096, we have to do one more probe if we
+	 are not saving any registers.  */
 
       HOST_WIDE_INT blocks = (frame_size + 4096) / 8192;
       HOST_WIDE_INT leftover = frame_size + 4096 - blocks * 8192;
 
-      add_long_const (file, blocks, 31, 5);
+      add_long_const (file, blocks, 31, 5, 5);
 
       fprintf (file, "\tlda $4,4096($30)\n");
 
@@ -1344,31 +1364,21 @@ output_prolog (file, size)
 
       fprintf (file, "\tlda $30,-%d($4)\n", leftover);
 
-      if (leftover > 4096)
+      if (leftover > 4096 && sa_size == 0)
 	fprintf (file, "\tldq $2,%d($30)\n", leftover - 4096);
     }
 
   /* Describe our frame.  */
   fprintf (file, "\t.frame $%d,%d,$26,%d\n", 
-	   frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM,
+	   (frame_pointer_needed
+	    ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM),
 	   frame_size, current_function_pretend_args_size);
     
-  /* If reg_offset is "close enough" to 2**15 that one of the offsets would
-     overflow a store instruction, compute the base of the register save
-     area into $28.  */
-  if (reg_offset >= 32768 - alpha_sa_size () && alpha_sa_size () != 0)
-    {
-      add_long_const (file, reg_offset, 30, 28);
-      reg_offset_base_reg = 28;
-      reg_offset = start_reg_offset = 0;
-    }
-
-  /* Save register 26 if it is used or if any other register needs to
-     be saved.  */
-  if (regs_ever_live[26] || alpha_sa_size () != 0)
+  /* Save register 26 if any other register needs to be saved.  */
+  if (sa_size != 0)
     {
       reg_mask |= 1 << 26;
-      fprintf (file, "\tstq $26,%d($%d)\n", reg_offset, reg_offset_base_reg);
+      fprintf (file, "\tstq $26,%d($30)\n", reg_offset);
       reg_offset += 8;
       int_reg_save_area_size += 8;
     }
@@ -1378,8 +1388,7 @@ output_prolog (file, size)
     if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i] && i != 26)
       {
 	reg_mask |= 1 << i;
-	fprintf (file, "\tstq $%d,%d($%d)\n",
-		 i, reg_offset, reg_offset_base_reg);
+	fprintf (file, "\tstq $%d,%d($30)\n", i, reg_offset);
 	reg_offset += 8;
 	int_reg_save_area_size += 8;
       }
@@ -1397,8 +1406,7 @@ output_prolog (file, size)
 	&& regs_ever_live[i + 32])
       {
 	reg_mask |= 1 << i;
-	fprintf (file, "\tstt $f%d,%d($%d)\n",
-		 i, reg_offset, reg_offset_base_reg);
+	fprintf (file, "\tstt $f%d,%d($30)\n", i, reg_offset);
 	reg_offset += 8;
       }
 
@@ -1424,13 +1432,16 @@ output_epilog (file, size)
      int size;
 {
   rtx insn = get_last_insn ();
-  HOST_WIDE_INT vars_size = (size + 7) & ~7;
-  HOST_WIDE_INT frame_size = ((vars_size + current_function_outgoing_args_size
-			       + current_function_pretend_args_size
-			       + alpha_sa_size () + 15) & ~15);
-  HOST_WIDE_INT reg_offset = vars_size + current_function_outgoing_args_size;
+  HOST_WIDE_INT out_args_size
+    = ALPHA_ROUND (current_function_outgoing_args_size);
+  HOST_WIDE_INT sa_size = alpha_sa_size ();
+  HOST_WIDE_INT frame_size
+    = (out_args_size + sa_size
+       + ALPHA_ROUND (size + current_function_pretend_args_size));
+  HOST_WIDE_INT reg_offset = out_args_size;
   HOST_WIDE_INT frame_size_from_reg_save = frame_size - reg_offset;
-  int reg_offset_base_reg = 30;
+  int restore_fp
+    = frame_pointer_needed && regs_ever_live[HARD_FRAME_POINTER_REGNUM];
   int i;
 
   /* If the last insn was a BARRIER, we don't have to write anything except
@@ -1445,21 +1456,11 @@ output_epilog (file, size)
       if (frame_pointer_needed)
 	fprintf (file, "\tbis $15,$15,$30\n");
 
-      /* If the register save area is out of range, put its address into
-	 $28.  */
-      if (reg_offset >= 32768 - alpha_sa_size () && alpha_sa_size () != 0)
-	{
-	  add_long_const (file, reg_offset, 30, 28);
-	  reg_offset_base_reg = 28;
-	  reg_offset = 0;
-	}
-
       /* Restore all the registers, starting with the return address
 	 register.  */
-      if (regs_ever_live[26] || alpha_sa_size () != 0)
+      if (sa_size != 0)
 	{
-	  fprintf (file, "\tldq $26,%d($%d)\n",
-		   reg_offset, reg_offset_base_reg);
+	  fprintf (file, "\tldq $26,%d($30)\n", reg_offset);
 	  reg_offset += 8;
 	}
 
@@ -1471,11 +1472,10 @@ output_epilog (file, size)
 	if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i]
 	    && i != 26)
 	  {
-	    if (i == FRAME_POINTER_REGNUM && frame_pointer_needed)
+	    if (i == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
 	      fp_offset = reg_offset;
 	    else
-	      fprintf (file, "\tldq $%d,%d($%d)\n",
-		       i, reg_offset, reg_offset_base_reg);
+	      fprintf (file, "\tldq $%d,%d($30)\n", i, reg_offset);
 	    reg_offset += 8;
 	  }
 
@@ -1483,47 +1483,32 @@ output_epilog (file, size)
 	if (! fixed_regs[i + 32] && ! call_used_regs[i + 32]
 	    && regs_ever_live[i + 32])
 	  {
-	    fprintf (file, "\tldt $f%d,%d($%d)\n",
-		     i, reg_offset, reg_offset_base_reg);
+	    fprintf (file, "\tldt $f%d,%d($30)\n", i, reg_offset);
 	    reg_offset += 8;
 	  }
 
-      /* If the stack size is large, compute the size of the stack into
-	 a register because the old FP restore, stack pointer adjust,
-	 and return are required to be consecutive instructions.  
-	 However, if the new stack pointer can be computed by adding the
-	 a constant to the start of the register save area, we can do
-	 it that way.  */
-      if (frame_size > 32767
-	  && ! (reg_offset_base_reg != 30
-		&& frame_size_from_reg_save < 32768))
-	add_long_const (file, frame_size, 31, 1);
+      /* If the stack size is large and we have a frame pointer, compute the
+	 size of the stack into a register because the old FP restore, stack
+	 pointer adjust, and return are required to be consecutive
+	 instructions.   */
+      if (frame_size > 32767 && restore_fp)
+	add_long_const (file, frame_size, 31, 1, 1);
 
       /* If we needed a frame pointer and we have to restore it, do it
 	 now.  This must be done in one instruction immediately
 	 before the SP update.  */
-      if (frame_pointer_needed && regs_ever_live[FRAME_POINTER_REGNUM])
-	fprintf (file, "\tldq $15,%d($%d)\n", fp_offset, reg_offset_base_reg);
+      if (restore_fp)
+	fprintf (file, "\tldq $15,%d($30)\n", fp_offset);
 
-      /* Now update the stack pointer, if needed.  This must be done in
-	 one, stylized, instruction.  */
-      if (frame_size > 32768)
-	{
-	  if (reg_offset_base_reg != 30
-	      && frame_size_from_reg_save < 32768)
-	    {
-	      if (frame_size_from_reg_save < 255)
-		fprintf (file, "\taddq $%d,%d,$30\n",
-			 reg_offset_base_reg, frame_size_from_reg_save);
-	      else
-		fprintf (file, "\tlda %30,%d($%d)\n",
-			 frame_size_from_reg_save, reg_offset_base_reg);
-	    }
-	  else
-	    fprintf (file, "\taddq $1,$30,$30\n");
-	}
-      else if (frame_size != 0)
-	fprintf (file, "\tlda $30,%d($30)\n", frame_size);
+      /* Now update the stack pointer, if needed.  Only one instruction must
+	 modify the stack pointer.  It must be the last instruction in the
+	 sequence and must be an ADDQ or LDA instruction.  If the frame
+	 pointer was loaded above, we may only put one instruction here.  */
+
+      if (frame_size > 32768 && restore_fp)
+	fprintf  (file, "\taddq $1,$30,$30\n");
+      else
+	add_long_const (file, frame_size, 30, 30, 1);
 
       /* Finally return to the caller.  */
       fprintf (file, "\tret $31,($26),1\n");
