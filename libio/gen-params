@@ -277,7 +277,7 @@ fi
 tr '	' ' ' <TMP >dummy.out
 
 for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t ptrdiff_t sigset_t size_t ssize_t time_t uid_t va_list wchar_t wint_t int16_t uint16_t int32_t uint_32_t u_int16_t u_int32_t; do
-    IMPORTED=`eval 'echo $'"$TYPE"`
+    eval IMPORTED=\$$TYPE
     if [ -n "${IMPORTED}" ] ; then
 	eval "$TYPE='$IMPORTED'"
     else
@@ -318,9 +318,9 @@ done
 
 # Look for some standard macros.
 for NAME in BUFSIZ FOPEN_MAX FILENAME_MAX NULL; do
-    IMPORTED=`eval 'echo $'"$NAME"`
+    eval IMPORTED=\$$NAME
     if [ -n "${IMPORTED}" ] ; then
-	eval "$NAME='$IMPORTED /* specified */"
+	eval "$NAME='$IMPORTED /* specified */'"
     else
 	rm -f TMP
 	${SED} -n -e 's| *;|;|g' -e "s|long X${NAME}= *\(.*\);|\1|w TMP" \
@@ -334,9 +334,9 @@ done
 
 # These macros must be numerical constants; strip any trailing 'L's.
 for NAME in SHRT_MAX INT_MAX LONG_MAX LONG_LONG_MAX; do
-    IMPORTED=`eval 'echo $'"$NAME"`
+    eval IMPORTED=\$$NAME
     if [ -n "${IMPORTED}" ] ; then
-	eval "$NAME='$IMPORTED /* specified */"
+	eval "$NAME='$IMPORTED /* specified */'"
     else
 	rm -f TMP
 	${SED} -n -e 's| *;|;|g' -e "s|long X${NAME}= *\([0-9]*\)L* *;|\1|w TMP" \
