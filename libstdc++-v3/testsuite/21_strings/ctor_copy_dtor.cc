@@ -222,6 +222,10 @@ void test05()
 
   std::vector<char> empty;
   std::string empty2(empty.begin(), empty.end());
+
+  // libstdc++/8716 (same underlying situation, same fix)
+  char const * s = NULL;
+  std::string zero_length_built_with_NULL(s,0);
 }
 
 int main()
