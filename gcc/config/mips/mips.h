@@ -3224,7 +3224,11 @@ do									\
         SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
       }									\
 									\
-    else if (TARGET_GP_OPT && TREE_CODE (DECL) == VAR_DECL)		\
+    /* We can not perform GP optimizations on variables which are in	\
+       specific sections, except for .sdata and .sbss which are		\
+       handled above.  */						\
+    else if (TARGET_GP_OPT && TREE_CODE (DECL) == VAR_DECL		\
+	     && DECL_SECTION_NAME (DECL) == NULL_TREE)			\
       {									\
 	int size = int_size_in_bytes (TREE_TYPE (DECL));		\
 									\
