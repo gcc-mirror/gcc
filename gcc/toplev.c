@@ -2998,17 +2998,24 @@ rest_of_compilation (decl)
       close_dump_file (DFI_bp, print_rtl_with_bb, insns);
       timevar_pop (TV_BRANCH_PROB);
     }
-  if (flag_if_conversion)
+  if (optimize >= 0)
     {
-      timevar_push (TV_IFCVT);
-      if (rtl_dump_file)
-	dump_flow_info (rtl_dump_file);
       open_dump_file (DFI_ce1, decl);
+      if (flag_if_conversion)
+	{
+	  timevar_push (TV_IFCVT);
+	  if (rtl_dump_file)
+	    dump_flow_info (rtl_dump_file);
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
+	  reg_scan (insns, max_reg_num (), 0);
+	  if_convert (0);
+	  timevar_pop (TV_IFCVT);
+	}
+      timevar_push (TV_JUMP);
       cleanup_cfg (CLEANUP_EXPENSIVE);
       reg_scan (insns, max_reg_num (), 0);
-      if_convert (0);
+      timevar_pop (TV_JUMP);
       close_dump_file (DFI_ce1, print_rtl_with_bb, get_insns ());
-      timevar_pop (TV_IFCVT);
     }
   if (flag_tracer)
     {
@@ -3016,47 +3023,35 @@ rest_of_compilation (decl)
       open_dump_file (DFI_tracer, decl);
       if (rtl_dump_file)
 	dump_flow_info (rtl_dump_file);
-      cleanup_cfg (CLEANUP_EXPENSIVE);
       tracer ();
       cleanup_cfg (CLEANUP_EXPENSIVE);
+      reg_scan (insns, max_reg_num (), 0);
       close_dump_file (DFI_tracer, print_rtl_with_bb, get_insns ());
       timevar_pop (TV_TRACER);
-      reg_scan (get_insns (), max_reg_num (), 0);
     }
 
-  if (optimize > 0)
+  if (flag_rerun_cse_after_loop)
     {
       timevar_push (TV_CSE2);
       open_dump_file (DFI_cse2, decl);
       if (rtl_dump_file)
 	dump_flow_info (rtl_dump_file);
+      /* CFG is no longer maintained up-to-date.  */
+      tem = cse_main (insns, max_reg_num (), 1, rtl_dump_file);
+      purge_all_dead_edges (0);
+      delete_trivially_dead_insns (insns, max_reg_num ());
 
-      if (flag_rerun_cse_after_loop)
+      if (tem)
 	{
 	  timevar_push (TV_JUMP);
-	  reg_scan (insns, max_reg_num (), 0);
-	  timevar_pop (TV_JUMP);
-
+	  rebuild_jump_labels (insns);
 	  cleanup_cfg (CLEANUP_EXPENSIVE);
-	  /* CFG is no longer maintained up-to-date.  */
-	  reg_scan (insns, max_reg_num (), 0);
-	  tem = cse_main (insns, max_reg_num (), 1, rtl_dump_file);
-	  purge_all_dead_edges (0);
-	  delete_trivially_dead_insns (insns, max_reg_num ());
-
-	  if (tem)
-	    {
-	      timevar_push (TV_JUMP);
-	      rebuild_jump_labels (insns);
-	      cleanup_cfg (CLEANUP_EXPENSIVE);
-	      timevar_pop (TV_JUMP);
-	    }
+	  timevar_pop (TV_JUMP);
 	}
-
+      reg_scan (insns, max_reg_num (), 0);
       close_dump_file (DFI_cse2, print_rtl_with_bb, insns);
-      timevar_pop (TV_CSE2);
-
       ggc_collect ();
+      timevar_pop (TV_CSE2);
     }
 
   cse_not_expected = 1;
