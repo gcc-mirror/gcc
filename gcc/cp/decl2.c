@@ -3069,7 +3069,7 @@ mark_used (tree decl)
 		  information.  */
 	       || cp_function_chain->can_throw);
 
-      instantiate_decl (decl, defer);
+      instantiate_decl (decl, defer, /*undefined_ok=*/0);
     }
 }
 
