@@ -257,6 +257,18 @@ dw_fde_node;
 #define DWARF_OFFSET_SIZE 4
 #endif
 
+/* According to the (draft) DWARF 3 specification, the initial length
+   should either be 4 or 12 bytes.  When it's 12 bytes, the first 4
+   bytes are 0xffffffff, followed by the length stored in the next 8
+   bytes.
+
+   However, the SGI/MIPS ABI uses an initial length which is equal to
+   DWARF_OFFSET_SIZE.  It is defined (elsewhere) accordingly.  */
+
+#ifndef DWARF_INITIAL_LENGTH_SIZE
+#define DWARF_INITIAL_LENGTH_SIZE (DWARF_OFFSET_SIZE == 4 ? 4 : 12)
+#endif
+
 #define DWARF_VERSION 2
 
 /* Round SIZE up to the nearest BOUNDARY.  */
@@ -3397,7 +3409,8 @@ limbo_die_node;
    language, and compiler version.  */
 
 /* Fixed size portion of the DWARF compilation unit header.  */
-#define DWARF_COMPILE_UNIT_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 3)
+#define DWARF_COMPILE_UNIT_HEADER_SIZE \
+  (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE + 3)
 
 /* Fixed size portion of public names info.  */
 #define DWARF_PUBNAMES_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2)
@@ -6912,7 +6925,11 @@ output_die (die)
 static void
 output_compilation_unit_header ()
 {
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, next_die_offset - DWARF_OFFSET_SIZE,
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+    dw2_asm_output_data (4, 0xffffffff,
+      "Initial length escape value indicating 64-bit DWARF extension");
+  dw2_asm_output_data (DWARF_OFFSET_SIZE,
+                       next_die_offset - DWARF_INITIAL_LENGTH_SIZE,
 		       "Length of Compilation Unit Info");
   dw2_asm_output_data (2, DWARF_VERSION, "DWARF version number");
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, abbrev_section_label,
@@ -7023,6 +7040,9 @@ output_pubnames ()
   unsigned i;
   unsigned long pubnames_length = size_of_pubnames ();
 
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+    dw2_asm_output_data (4, 0xffffffff,
+      "Initial length escape value indicating 64-bit DWARF extension");
   dw2_asm_output_data (DWARF_OFFSET_SIZE, pubnames_length,
 		       "Length of Public Names Info");
   dw2_asm_output_data (2, DWARF_VERSION, "DWARF Version");
@@ -7081,6 +7101,9 @@ output_aranges ()
   unsigned i;
   unsigned long aranges_length = size_of_aranges ();
 
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+    dw2_asm_output_data (4, 0xffffffff,
+      "Initial length escape value indicating 64-bit DWARF extension");
   dw2_asm_output_data (DWARF_OFFSET_SIZE, aranges_length,
 		       "Length of Address Ranges Info");
   dw2_asm_output_data (2, DWARF_VERSION, "DWARF Version");
@@ -7526,6 +7549,9 @@ output_line_info ()
   ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL, 0);
 
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+    dw2_asm_output_data (4, 0xffffffff,
+      "Initial length escape value indicating 64-bit DWARF extension");
   dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
 			"Length of Source Line Info");
   ASM_OUTPUT_LABEL (asm_out_file, l1);

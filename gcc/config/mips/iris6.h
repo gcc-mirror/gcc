@@ -160,6 +160,13 @@ Boston, MA 02111-1307, USA.  */
    specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
 #define DWARF_OFFSET_SIZE PTR_SIZE
 
+/* The size in bytes of the initial length field in a debug info
+   section.  The DWARF 3 (draft) specification defines this to be
+   either 4 or 12 (with a 4-byte "escape" word when it's 12), but the
+   SGI/MIPS ABI predates this standard and defines it to be the same
+   as DWARF_OFFSET_SIZE.  */
+#define DWARF_INITIAL_LENGTH_SIZE DWARF_OFFSET_SIZE
+
 /* There is no GNU as port for Irix6 yet, so we set MD_EXEC_PREFIX so that
    gcc will automatically find SGI as instead of searching the user's path.
    The latter can fail when building a cross compiler if the user has . in
