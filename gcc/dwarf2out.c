@@ -10525,7 +10525,7 @@ dwarf2out_abstract_function (tree decl)
   decl = DECL_ORIGIN (decl);
 
   old_die = lookup_decl_die (decl);
-  if (old_die && get_AT_unsigned (old_die, DW_AT_inline))
+  if (old_die && get_AT (old_die, DW_AT_inline))
     /* We've already generated the abstract instance.  */
     return;
 
@@ -10602,7 +10602,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  /* We can have a normal definition following an inline one in the
 	     case of redefinition of GNU C extern inlines.
 	     It seems reasonable to use AT_specification in this case.  */
-	  && !get_AT_unsigned (old_die, DW_AT_inline))
+	  && !get_AT (old_die, DW_AT_inline))
 	{
 	  /* ??? This can happen if there is a bug in the program, for
 	     instance, if it has duplicate function definitions.  Ideally,
@@ -10672,7 +10672,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
   if (declaration)
     {
-      if (!old_die || !get_AT_unsigned (old_die, DW_AT_inline))
+      if (!old_die || !get_AT (old_die, DW_AT_inline))
 	{
 	  add_AT_flag (subr_die, DW_AT_declaration, 1);
 
@@ -10698,14 +10698,14 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  if (cgraph_function_possibly_inlined_p (decl))
             add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
 	  else
-	    abort ();
+            add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_not_inlined);
 	}
 
       equate_decl_number_to_die (decl, subr_die);
     }
   else if (!DECL_EXTERNAL (decl))
     {
-      if (!old_die || !get_AT_unsigned (old_die, DW_AT_inline))
+      if (!old_die || !get_AT (old_die, DW_AT_inline))
 	equate_decl_number_to_die (decl, subr_die);
 
       ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
