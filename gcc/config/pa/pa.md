@@ -2897,3 +2897,14 @@
   else
     return \"fmpysub,sgl %1,%2,%0,%5,%3\";
 }")
+
+;; Flush the I and D cache line found at the address in operand 0.
+;; This is used by the trampoline code for nested functions.
+;; So long as the trampoline itself is less than 32 bytes this
+;; is sufficient.
+(define_insn "cacheflush"
+  [(unspec_volatile [(const_int 1)] 0)
+   (use (match_operand:SI 0 "" ""))]
+  ""
+  "fdc %0\;sync\;fic %0\;sync\;nop\;nop\;nop\;nop\;nop\;nop\;nop"
+  [(set_attr "length" "11")])
