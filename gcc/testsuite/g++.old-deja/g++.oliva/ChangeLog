@@ -1,5 +1,7 @@
 1999-12-22  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
+	* nameret1.C: New test.
+
 	* template10.C: New test.
 
 1999-11-21  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
