@@ -228,8 +228,6 @@ namespace std {
       _M_output_unshift();
     };
 
-  typedef basic_filebuf<char> filebuf;
-  typedef basic_filebuf<wchar_t> wfilebuf;
 
   // 27.8.1.5  Template class basic_ifstream
   template<typename _CharT, typename _Traits>
@@ -285,6 +283,7 @@ namespace std {
 	  this->setstate(ios_base::failbit);	
       }
     };
+
   
   // 27.8.1.8  Template class basic_ofstream
   template<typename _CharT, typename _Traits>
@@ -343,9 +342,6 @@ namespace std {
       }
     };
 
-  typedef basic_ofstream<char> ofstream;
-  typedef basic_ofstream<wchar_t> wofstream;
-  
 
   // 27.8.1.11  Template class basic_fstream
   template<typename _CharT, typename _Traits>
@@ -404,9 +400,6 @@ namespace std {
 	  setstate (ios_base::failbit); 
       }
     };
-
-  typedef basic_fstream<char> fstream;
-  typedef basic_fstream<wchar_t> wfstream;
 
 } // namespace std
 

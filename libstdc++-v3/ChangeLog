@@ -1,3 +1,14 @@
+2000-08-14  Levente Farkas  <lfarkas@mindmaker.hu>
+
+	* bits/std_fstream.h: Remove duplicate typdefs for ofstream and
+	wofstream, filebuf, wfilebuf, fstream, wfstream.
+	* bits/std_streambuf.h: Same for streambuf, wstreambuf.
+	* bits/std_sstream.h: Same for stringstream and wstringstream.
+	Same for stringbuf, wstringbuf, istringstream, wistringstream,
+	ostringstream, wostringstream.
+	
+	* testsuite/26_numerics/valarray.cc: Add test.
+
 2000-08-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure: Regenerate after change to ../libtool.m4.
