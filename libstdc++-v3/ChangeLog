@@ -1,5 +1,12 @@
 2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/sstream.tcc (overflow): Instead of calling
+	str(), then _M_string.reserve, thus copying the contents
+	of the current buffer two times, just copy the latter in
+	a temporary, then use the 'swap trick'.
+
+2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/std/std_sstream.h (str()): Revert the best of the
 	previous 'improvement', incorrect due to the COW nature of
 	v3 basic_string; simplify.

@@ -100,11 +100,15 @@ namespace std
       // Order these tests done in is unspecified by the standard.
       if (!__testput)
 	{
-	  // Force-allocate, re-sync.
-	  _M_string = this->str();
 	  // In virtue of DR 169 (TC) we are allowed to grow more than
 	  // one char. That's easy to implement thanks to the exponential
 	  // growth policy builtin into basic_string.
+	  __string_type __tmp;
+	  __tmp.reserve(__len);
+	  __tmp.assign(_M_string.data(),
+		       this->_M_out_end - this->_M_out_beg);
+	  _M_string.swap(__tmp);
+	  // Just to be sure...
 	  _M_string.reserve(__len);
 	  _M_really_sync(const_cast<char_type*>(_M_string.data()),
 			 this->_M_in_cur - this->_M_in_beg, 
