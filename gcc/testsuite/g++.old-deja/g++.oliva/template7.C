@@ -1,9 +1,10 @@
 // Build don't link:
 
-// Copyright (C) 1999 Free Software Foundation
+// Copyright (C) 1999, 2000 Free Software Foundation
 
 // by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
 // simplified from bug report by Paul Burchard <burchard@pobox.com>
+// crash test - XFAIL *-*-*
 
 template<class> struct A {};
 template<template<class> class T> struct B {

@@ -1824,13 +1824,9 @@ resolve_offset_ref (exp)
      have been seen as static to be grok'd as non-static.  */
   if (TREE_CODE (member) == FIELD_DECL && current_class_ref == NULL_TREE)
     {
-      if (TREE_ADDRESSABLE (member) == 0)
-	{
-	  cp_error_at ("member `%D' is non-static but referenced as a static member",
-		       member);
-	  error ("at this point in file");
-	  TREE_ADDRESSABLE (member) = 1;
-	}
+      cp_error_at ("member `%D' is non-static but referenced as a static member",
+		   member);
+      error ("at this point in file");
       return error_mark_node;
     }
 
