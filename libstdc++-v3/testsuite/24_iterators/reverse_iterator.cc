@@ -1,6 +1,6 @@
 // 2001-06-21  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,6 +67,13 @@ void test02()
   5 + it02;
 }
 
+// Check data member 'current' accessible.
+class test_dm : public std::reverse_iterator<int*>
+{
+  int* p;
+public:
+  test_dm(): p(current) { }
+};
 
 int main() 
 { 
@@ -74,5 +81,3 @@ int main()
   test02();
   return 0;
 }
-
-

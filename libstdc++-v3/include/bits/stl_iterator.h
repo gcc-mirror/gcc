@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,7 +73,7 @@ namespace std
                       typename iterator_traits<_Iterator>::reference>
     {
     protected:
-      _Iterator _M_current;
+      _Iterator current;
 
     public:
       typedef _Iterator 				       iterator_type;
@@ -86,22 +86,22 @@ namespace std
       reverse_iterator() { }
 
       explicit 
-      reverse_iterator(iterator_type __x) : _M_current(__x) { }
+      reverse_iterator(iterator_type __x) : current(__x) { }
 
       reverse_iterator(const reverse_iterator& __x) 
-      : _M_current(__x._M_current) { }
+      : current(__x.current) { }
 
       template<typename _Iter>
         reverse_iterator(const reverse_iterator<_Iter>& __x)
-	: _M_current(__x.base()) { }
+	: current(__x.base()) { }
     
       iterator_type 
-      base() const { return _M_current; }
+      base() const { return current; }
 
       reference 
       operator*() const 
       {
-	_Iterator __tmp = _M_current;
+	_Iterator __tmp = current;
 	return *--__tmp;
       }
 
@@ -111,7 +111,7 @@ namespace std
       reverse_iterator& 
       operator++() 
       {
-	--_M_current;
+	--current;
 	return *this;
       }
 
@@ -119,43 +119,43 @@ namespace std
       operator++(int) 
       {
 	reverse_iterator __tmp = *this;
-	--_M_current;
+	--current;
 	return __tmp;
       }
 
       reverse_iterator& 
       operator--() 
       {
-	++_M_current;
+	++current;
 	return *this;
       }
 
       reverse_iterator operator--(int) 
       {
 	reverse_iterator __tmp = *this;
-	++_M_current;
+	++current;
 	return __tmp;
       }
       
       reverse_iterator 
       operator+(difference_type __n) const 
-      { return reverse_iterator(_M_current - __n); }
+      { return reverse_iterator(current - __n); }
 
       reverse_iterator& 
       operator+=(difference_type __n) 
       {
-	_M_current -= __n;
+	current -= __n;
 	return *this;
       }
 
       reverse_iterator 
       operator-(difference_type __n) const 
-      { return reverse_iterator(_M_current + __n); }
+      { return reverse_iterator(current + __n); }
 
       reverse_iterator& 
       operator-=(difference_type __n) 
       {
-	_M_current += __n;
+	current += __n;
 	return *this;
       }
 
@@ -217,18 +217,18 @@ namespace std
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-      _Container* _M_container;
+      _Container* container;
 
     public:
       typedef _Container          container_type;
       
       explicit 
-      back_insert_iterator(_Container& __x) : _M_container(&__x) { }
+      back_insert_iterator(_Container& __x) : container(&__x) { }
 
       back_insert_iterator&
       operator=(typename _Container::const_reference __value) 
       { 
-	_M_container->push_back(__value);
+	container->push_back(__value);
 	return *this;
       }
 
@@ -252,17 +252,17 @@ namespace std
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-      _Container* _M_container;
+      _Container* container;
 
     public:
       typedef _Container          container_type;
 
-      explicit front_insert_iterator(_Container& __x) : _M_container(&__x) { }
+      explicit front_insert_iterator(_Container& __x) : container(&__x) { }
 
       front_insert_iterator&
       operator=(typename _Container::const_reference __value) 
       { 
-	_M_container->push_front(__value);
+	container->push_front(__value);
 	return *this;
       }
 
@@ -286,19 +286,19 @@ namespace std
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-      _Container* _M_container;
+      _Container* container;
       typename _Container::iterator iter;
 
     public:
       typedef _Container          container_type;
       
       insert_iterator(_Container& __x, typename _Container::iterator __i) 
-      : _M_container(&__x), iter(__i) {}
+      : container(&__x), iter(__i) {}
    
       insert_iterator&
       operator=(const typename _Container::const_reference __value) 
       { 
-	iter = _M_container->insert(iter, __value);
+	iter = container->insert(iter, __value);
 	++iter;
 	return *this;
       }
