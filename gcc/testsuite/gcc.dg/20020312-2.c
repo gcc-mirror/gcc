@@ -72,7 +72,7 @@
 /* No pic register.  */
 #elif defined(__pj__)
 /* No pic register.  */
-#elif defined(__powerpc__)
+#elif defined(__powerpc__) || defined(__PPC__)
 # ifdef __darwin__
 #  define PIC_REG  "31"
 # else
