@@ -129,7 +129,7 @@ extern int target_flags;
 /* Compile using bitfield insns.  */
 #define TARGET_BITFIELD ((target_flags & MASK_NO_BITFIELD) == 0)
 
-#define TARGET_IEEE_FP (target_flags & MASK_IEEE_COMPARE)
+#define TARGET_IEEE_COMPARE (target_flags & MASK_IEEE_COMPARE)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -578,7 +578,8 @@ enum reg_class
    After the prologue, RA is at 4(fp) in the current frame.  */
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
-  (gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, (FRAME), GEN_INT(4))))
+  ((COUNT> 0 && flag_omit_frame_pointer)? NULL_RTX			\
+   : gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, (FRAME), GEN_INT(4))))
 
 /* A C expression whose value is an integer giving the offset, in
    bytes, from the value of the stack pointer register to the top of
@@ -743,12 +744,9 @@ enum reg_class
 {								\
   int regno;							\
   int offset = -4;						\
-  for (regno = 0; regno < L1_REGNUM; regno++)			\
+  for (regno = 0; regno < FRAME_POINTER_REGNUM; regno++)	\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       offset += 4;						\
-  for (; regno < FRAME_POINTER_REGNUM; regno++)			\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      offset += 8;						\
   if (flag_pic && current_function_uses_pic_offset_table)	\
     offset += 4;						\
   (DEPTH) = (offset + get_frame_size ()				\

@@ -1970,7 +1970,7 @@ ns32k-*-netbsdelf*)
 ns32k-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h ns32k/netbsd.h"
 	# On NetBSD, the headers are already okay, except for math.h.
-	tmake_file=t-netbsd
+	tmake_file="t-netbsd ns32k/t-ns32k"
 	use_collect2=yes
 	;;
 pdp11-*-bsd)
