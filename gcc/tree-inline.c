@@ -139,6 +139,7 @@ static tree mark_local_for_remap_r (tree *, int *, void *);
 static void unsave_expr_1 (tree);
 static tree unsave_r (tree *, int *, void *);
 static void declare_inline_vars (tree bind_expr, tree vars);
+static void remap_save_expr (tree *, void *, int *);
 
 /* Insert a tree->tree mapping for ID.  Despite the name suggests
    that the trees should be variables, it is used for more than that.  */
@@ -2282,7 +2283,7 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
    information indicating to what new SAVE_EXPR this one should be mapped,
    use that one.  Otherwise, create a new node and enter it in ST.  */
 
-void
+static void
 remap_save_expr (tree *tp, void *st_, int *walk_subtrees)
 {
   splay_tree st = (splay_tree) st_;
