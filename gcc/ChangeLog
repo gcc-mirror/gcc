@@ -1,3 +1,7 @@
+2004-07-14  Eric Christopher  <echristo@redhat.com>
+
+	* calls.c (expand_call): Fix typo in comment.
+
 2004-07-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_expand_compare): Allow ORDERED
@@ -340,7 +344,7 @@
 	* tree-data-ref.h: New file.
 	* tree.c (int_cst_value, tree_fold_gcd): New functions.
 	* tree.h (int_cst_value, tree_fold_gcd): Declared here.
-	
+
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/13926
@@ -404,7 +408,7 @@
 	* tree.h (must_pass_in_stack_var_size): Declare.
 	(must_pass_in_stack_var_size_or_pad): Declare.
 	* calls.c (must_pass_in_stack_var_size): New.
-	(must_pass_in_stack_var_size_or_pad): Rename from 
+	(must_pass_in_stack_var_size_or_pad): Rename from
 	default_must_pass_in_stack.
 	* config/alpha/alpha.c (unicosmk_must_pass_in_stack): New.
 	(TARGET_MUST_PASS_IN_STACK): New.
@@ -501,7 +505,7 @@
 	(NM_FOR_TARGET): Use $(NM) not nm for native.
 	* configure.ac: Add AC_CHECK_PROG calls for NM and AR.
 	* configure: Regenerate.
-	
+
 2004-07-12  David S. Miller  <davem@nuts.davemloft.net>
 
 	* config/sparc/sparc.md (ashlsi3): Eliminate const 1
@@ -523,7 +527,7 @@
 2004-07-12  Devang Patel  <dpatel@apple.com>
 
 	* doc/invoke.texi (Darwin Options): Document -gused and -gfull.
-	
+
 2004-07-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* function.c (expand_function_start): Ensure r_save is in Pmode.
@@ -555,11 +559,11 @@
 2004-07-12  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* cfgloop.h (struct loop): Add nb_iterations field.
-	(current_loops): Declare.  
+	(current_loops): Declare.
 	* tree-chrec.c (chrec_not_analyzed_yet,
 	chrec_dont_know, chrec_known, count_ev_in_wider_type,
 	chrec_contains_symbols_defined_in_loop): Remove the temporary
-	hooks. 
+	hooks.
 	* tree-flow-inline.h (loop_containing_stmt): New function.
 	* tree-scalar-evolution.c: Add implementation.
 	* tree-scalar-evolution.h: Add declarations.
@@ -568,7 +572,7 @@
 
 	PR rtl-optimization/15921
 	* Makefile.in (global.o): Add recog.h.
-	
+
 	* global.c (recog.h): Add the include-clause.
 	(bb_info): New member earlyclobber.
 	(allocate_bb_info, free_bb_info): Initialize/finish the new
@@ -580,7 +584,7 @@
 	New functions.
 	(calculate_local_reg_bb_info): Calculate value of earlyclobber.
 	(make_accurate_live_analysis): Modify pavin.
-	
+
 2004-07-12  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-cfg.c (find_taken_edge): Statically compute the truth
@@ -714,7 +718,7 @@
 
 2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/linux.h (MD_FALLBACK_FRAME_STATE_FOR): For SIGSEGV and 
+	* config/s390/linux.h (MD_FALLBACK_FRAME_STATE_FOR): For SIGSEGV and
 	SIGBUS signal frames, the PSW address points *to* the faulting
 	instruction, not after it.
 
@@ -725,7 +729,7 @@
 
 2004-07-11  Richard Henderson  <rth@redhat.com>
 
-	* expmed.c (init_expmed): Use stack-local structures for 
+	* expmed.c (init_expmed): Use stack-local structures for
 	temporary rtl.  Don't recognize shifts.
 
 2004-07-11  Richard Henderson  <rth@redhat.com>
@@ -960,7 +964,7 @@
 	(sparc_override_options): Set sparc_costs as appropriate.
 	(sparc_rtx_costs): Use sparc_costs instead of messy
 	conditionals.
-	
+
 2004-07-09  Steven Bosscher  <stevenb@suse.de>
 
 	* doc/md.texi (Processor pipeline description): Mention that

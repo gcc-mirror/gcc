@@ -479,7 +479,7 @@ special_function_p (tree fndecl, int flags)
          hacky imitation of DECL_ASSEMBLER_NAME.  It's (also) wrong
          because you can declare fork() inside a function if you
          wish.  */
-      && (DECL_CONTEXT (fndecl) == NULL_TREE 
+      && (DECL_CONTEXT (fndecl) == NULL_TREE
 	  || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
       && TREE_PUBLIC (fndecl))
     {
@@ -887,7 +887,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
    and may be modified by this routine.
 
    OLD_PENDING_ADJ, MUST_PREALLOCATE and FLAGS are pointers to integer
-   flags which may may be modified by this routine. 
+   flags which may may be modified by this routine.
 
    MAY_TAILCALL is cleared if we encounter an invisible pass-by-reference
    that requires allocation of stack space.
@@ -1241,7 +1241,7 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
      get extraneous instructions emitted as part of the libcall sequence.  */
   if ((flags & ECF_LIBCALL_BLOCK) == 0)
     return;
-    
+
   for (i = 0; i < num_actuals; i++)
     {
       enum machine_mode mode;
@@ -2117,7 +2117,7 @@ expand_call (tree exp, rtx target, int ignore)
 		  || (ACCUMULATE_OUTGOING_ARGS
 		      && stack_arg_under_construction
 		      && structure_value_addr == virtual_outgoing_args_rtx)
-		  ? copy_addr_to_reg (convert_memory_address 
+		  ? copy_addr_to_reg (convert_memory_address
 				      (Pmode, structure_value_addr))
 		  : structure_value_addr);
 
@@ -2223,7 +2223,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  || (!ACCUMULATE_OUTGOING_ARGS && args_size.constant)))
     structure_value_addr = copy_to_reg (structure_value_addr);
 
-  /* Tail calls can make things harder to debug, and we're traditionally
+  /* Tail calls can make things harder to debug, and we've traditionally
      pushed these optimizations into -O2.  Don't try if we're already
      expanding a call, as that means we're an argument.  Don't try if
      there's cleanups, as we know there's code to follow the call.
@@ -2342,7 +2342,7 @@ expand_call (tree exp, rtx target, int ignore)
       int sibcall_failure = 0;
       /* We want to emit any pending stack adjustments before the tail
 	 recursion "call".  That way we know any adjustment after the tail
-	 recursion call can be ignored if we indeed use the tail 
+	 recursion call can be ignored if we indeed use the tail
 	 call expansion.  */
       int save_pending_stack_adjust = 0;
       int save_stack_pointer_delta = 0;
@@ -2755,7 +2755,7 @@ expand_call (tree exp, rtx target, int ignore)
 	 structure value.  */
       if (pass != 0 && structure_value_addr && ! structure_value_addr_parm)
 	{
-	  structure_value_addr 
+	  structure_value_addr
 	    = convert_memory_address (Pmode, structure_value_addr);
 	  emit_move_insn (struct_value,
 			  force_reg (Pmode,
@@ -2840,8 +2840,8 @@ expand_call (tree exp, rtx target, int ignore)
 		  && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_SQRT
 		      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_SQRTF
 		      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_SQRTL))
-		note = gen_rtx_fmt_e (SQRT, 
-				      GET_MODE (temp), 
+		note = gen_rtx_fmt_e (SQRT,
+				      GET_MODE (temp),
 				      args[0].initial_value);
 	      else
 		{
@@ -2852,7 +2852,7 @@ expand_call (tree exp, rtx target, int ignore)
 		    note = gen_rtx_EXPR_LIST (VOIDmode,
 					      args[i].initial_value, note);
 		  note = gen_rtx_EXPR_LIST (VOIDmode, funexp, note);
-		  
+
 		  if (flags & ECF_PURE)
 		    note = gen_rtx_EXPR_LIST (VOIDmode,
 			gen_rtx_USE (VOIDmode,
@@ -3940,7 +3940,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  if (GET_CODE (valreg) == PARALLEL)
 	    {
 	      temp = gen_reg_rtx (outmode);
-	      emit_group_store (temp, valreg, NULL_TREE, 
+	      emit_group_store (temp, valreg, NULL_TREE,
 				GET_MODE_SIZE (outmode));
 	      valreg = temp;
 	    }
@@ -4317,7 +4317,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	    excess = (arg->locate.size.constant
 		      - int_size_in_bytes (TREE_TYPE (pval))
 		      + partial * GET_MODE_SIZE (GET_MODE (elt)));
-	  } 
+	  }
 	  else
 	    excess = (arg->locate.size.constant
 		      - int_size_in_bytes (TREE_TYPE (pval))
@@ -4434,7 +4434,7 @@ must_pass_in_stack_var_size (enum machine_mode mode ATTRIBUTE_UNUSED,
   return false;
 }
 
-/* Another version of the TARGET_MUST_PASS_IN_STACK hook.  This one 
+/* Another version of the TARGET_MUST_PASS_IN_STACK hook.  This one
    takes trailing padding of a structure into account.  */
 /* ??? Should be able to merge these two by examining BLOCK_REG_PADDING.  */
 
