@@ -276,9 +276,11 @@ struct machine_function GTY(())
    Normally, this is %fp, but if we are in a leaf procedure, this
    is %sp+"something".  We record "something" separately as it may
    be too big for reg+constant addressing.  */
-
 static rtx frame_base_reg;
 static HOST_WIDE_INT frame_base_offset;
+
+/* 1 if the next opcode is to be specially indented.  */
+int sparc_indent_opcode = 0;
 
 static void sparc_init_modes (void);
 static void scan_record_type (tree, int *, int *, int *);
@@ -4675,44 +4677,17 @@ output_restore (rtx pat)
 const char *
 output_return (rtx insn)
 {
-  int leaf_function_p = current_function_uses_only_leaf_regs;
-  bool delay_slot_filled_p = dbr_sequence_length () > 0;
-  /* True if the caller has placed an "unimp" insn immediately after the call.
-     This insn is used in the 32-bit ABI when calling a function that returns
-     a non zero-sized structure. The 64-bit ABI doesn't have it.  Be careful
-     to have this test be the same as that used on the call.  */
-  bool sparc_skip_caller_unimp
-    = ! TARGET_ARCH64
-      && current_function_returns_struct
-      && (TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))
-	  == INTEGER_CST)
-      && ! integer_zerop (DECL_SIZE (DECL_RESULT (current_function_decl)));
-
-  if (leaf_function_p)
+  if (current_function_uses_only_leaf_regs)
     {
       /* This is a leaf function so we don't have to bother restoring the
 	 register window, which frees us from dealing with the convoluted
 	 semantics of restore/return.  We simply output the jump to the
-	 return address and the insn in the delay slot, which usually is
-	 the substraction restoring the stack pointer %sp.  */
+	 return address and the insn in the delay slot (if any).  */
 
       if (current_function_calls_eh_return)
 	abort ();
 
-      fprintf (asm_out_file, "\tjmp\t%%o7+%d\n", sparc_skip_caller_unimp ? 12 : 8);
-
-      if (delay_slot_filled_p)
-	{
-	  rtx delay = NEXT_INSN (insn);
-	  if (! delay)
-	    abort ();
-
-	  final_scan_insn (delay, asm_out_file, 1, 0, 1, NULL);
-	  PATTERN (delay) = gen_blockage ();
-	  INSN_CODE (delay) = -1;
-	}
-      else
-	fputs ("\t nop\n", asm_out_file);
+      return "jmp\t%%o7+%)%#";
     }
   else
     {
@@ -4725,7 +4700,7 @@ output_return (rtx insn)
 	{
 	  /* If the function uses __builtin_eh_return, the eh_return
 	     machinery occupies the delay slot.  */
-	  if (delay_slot_filled_p || sparc_skip_caller_unimp)
+	  if (final_sequence)
 	    abort ();
 
 	  if (! flag_delayed_branch)
@@ -4741,7 +4716,7 @@ output_return (rtx insn)
 	  else
 	    fputs ("\t nop\n", asm_out_file);
 	}
-      else if (delay_slot_filled_p)
+      else if (final_sequence)
 	{
 	  rtx delay, pat;
 
@@ -4754,32 +4729,25 @@ output_return (rtx insn)
 	  if (TARGET_V9 && ! epilogue_renumber (&pat, 1))
 	    {
 	      epilogue_renumber (&pat, 0);
-	      fprintf (asm_out_file, "\treturn\t%%i7+%d\n",
-		       sparc_skip_caller_unimp ? 12 : 8);
-	      final_scan_insn (delay, asm_out_file, 1, 0, 1, NULL);
+	      return "return\t%%i7+%)%#";
 	    }
 	  else
 	    {
-	      fprintf (asm_out_file, "\tjmp\t%%i7+%d\n",
-		       sparc_skip_caller_unimp ? 12 : 8);
+	      output_asm_insn ("jmp\t%%i7+%)", NULL);
 	      output_restore (pat);
+	      PATTERN (delay) = gen_blockage ();
+	      INSN_CODE (delay) = -1;
 	    }
-
-	  PATTERN (delay) = gen_blockage ();
-	  INSN_CODE (delay) = -1;
 	}
       else
         {
 	  /* The delay slot is empty.  */
 	  if (TARGET_V9)
-	    fprintf (asm_out_file, "\treturn\t%%i7+%d\n\t nop\n",
-		     sparc_skip_caller_unimp ? 12 : 8);
+	    return "return\t%%i7+%)\n\t nop";
 	  else if (flag_delayed_branch)
-	    fprintf (asm_out_file, "\tjmp\t%%i7+%d\n\t restore\n",
-		     sparc_skip_caller_unimp ? 12 : 8);
+	    return "jmp\t%%i7+%)\n\t restore";
 	  else
-	    fprintf (asm_out_file, "\trestore\n\tjmp\t%%o7+%d\n\t nop\n",
-		     sparc_skip_caller_unimp ? 12 : 8);
+	    return "restore\n\tjmp\t%%o7+%)\n\t nop";
 	}
     }
 
@@ -4791,8 +4759,6 @@ output_return (rtx insn)
 const char *
 output_sibcall (rtx insn, rtx call_operand)
 {
-  int leaf_function_p = current_function_uses_only_leaf_regs;
-  bool delay_slot_filled_p = dbr_sequence_length () > 0;
   rtx operands[1];
 
   if (! flag_delayed_branch)
@@ -4800,36 +4766,23 @@ output_sibcall (rtx insn, rtx call_operand)
 
   operands[0] = call_operand;
 
-  if (leaf_function_p)
+  if (current_function_uses_only_leaf_regs)
     {
       /* This is a leaf function so we don't have to bother restoring the
 	 register window.  We simply output the jump to the function and
 	 the insn in the delay slot (if any).  */
 
-      if (LEAF_SIBCALL_SLOT_RESERVED_P && delay_slot_filled_p)
+      if (LEAF_SIBCALL_SLOT_RESERVED_P && final_sequence)
 	abort();
 
-      if (delay_slot_filled_p)
-	{
-	  rtx delay = NEXT_INSN (insn);
-	  if (! delay)
-	    abort ();
-
-	  output_asm_insn ("sethi\t%%hi(%a0), %%g1", operands);
-	  output_asm_insn ("jmp\t%%g1 + %%lo(%a0)", operands);
-	  final_scan_insn (delay, asm_out_file, 1, 0, 1, NULL);
-
-	  PATTERN (delay) = gen_blockage ();
-	  INSN_CODE (delay) = -1;
-	}
+      if (final_sequence)
+	output_asm_insn ("sethi\t%%hi(%a0), %%g1\n\tjmp\t%%g1 + %%lo(%a0)%#",
+			 operands);
       else
-	{
-	  /* Use or with rs2 %%g0 instead of mov, so that as/ld can optimize
-	     it into branch if possible.  */
-	  output_asm_insn ("or\t%%o7, %%g0, %%g1", operands);
-	  output_asm_insn ("call\t%a0, 0", operands);
-	  output_asm_insn (" or\t%%g1, %%g0, %%o7", operands);
-	}
+	/* Use or with rs2 %%g0 instead of mov, so that as/ld can optimize
+	   it into branch if possible.  */
+	output_asm_insn ("or\t%%o7, %%g0, %%g1\n\tcall\t%a0, 0\n\t or\t%%g1, %%g0, %%o7",
+			 operands);
     }
   else
     {
@@ -4839,7 +4792,7 @@ output_sibcall (rtx insn, rtx call_operand)
 
       output_asm_insn ("call\t%a0, 0", operands);
 
-      if (delay_slot_filled_p)
+      if (final_sequence)
 	{
 	  rtx delay = NEXT_INSN (insn);
 	  if (! delay)
@@ -6118,51 +6071,29 @@ const char *
 output_ubranch (rtx dest, int label, rtx insn)
 {
   static char string[64];
-  bool noop = false;
+  bool v9_form = false;
   char *p;
 
-  /* TurboSPARC is reported to have problems with
-     with
-	foo: b,a foo
-     i.e. an empty loop with the annul bit set.  The workaround is to use 
-        foo: b foo; nop
-     instead.  */
-
-  if (! TARGET_V9 && flag_delayed_branch
-      && (INSN_ADDRESSES (INSN_UID (dest))
-	  == INSN_ADDRESSES (INSN_UID (insn))))
+  if (TARGET_V9 && INSN_ADDRESSES_SET_P ())
     {
-      strcpy (string, "b\t");
-      noop = true;
+      int delta = (INSN_ADDRESSES (INSN_UID (dest))
+		   - INSN_ADDRESSES (INSN_UID (insn)));
+      /* Leave some instructions for "slop".  */
+      if (delta >= -260000 && delta < 260000)
+	v9_form = true;
     }
+
+  if (v9_form)
+    strcpy (string, "ba%*,pt\t%%xcc, ");
   else
-    {
-      bool v9_form = false;
-
-      if (TARGET_V9 && INSN_ADDRESSES_SET_P ())
-	{
-	  int delta = (INSN_ADDRESSES (INSN_UID (dest))
-		       - INSN_ADDRESSES (INSN_UID (insn)));
-	  /* Leave some instructions for "slop".  */
-	  if (delta >= -260000 && delta < 260000)
-	    v9_form = true;
-	}
-
-      if (v9_form)
-	strcpy (string, "ba%*,pt\t%%xcc, ");
-      else
-	strcpy (string, "b%*\t");
-    }
+    strcpy (string, "b%*\t");
 
   p = strchr (string, '\0');
   *p++ = '%';
   *p++ = 'l';
   *p++ = '0' + label;
   *p++ = '%';
-  if (noop)
-    *p++ = '#';
-  else
-    *p++ = '(';
+  *p++ = '(';
   *p = '\0';
 
   return string;
@@ -6177,13 +6108,11 @@ output_ubranch (rtx dest, int label, rtx insn)
 
    REVERSED is nonzero if we should reverse the sense of the comparison.
 
-   ANNUL is nonzero if we should generate an annulling branch.
-
-   NOOP is nonzero if we have to follow this branch by a noop.  */
+   ANNUL is nonzero if we should generate an annulling branch.  */
 
 const char *
 output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
-		int noop, rtx insn)
+		rtx insn)
 {
   static char string[64];
   enum rtx_code code = GET_CODE (op);
@@ -6406,18 +6335,18 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
   if (far)
     {
       strcpy (p, ".+12\n\t nop\n\tb\t");
-      if (annul || noop)
+      /* Skip the next insn if requested or
+	 if we know that it will be a nop.  */
+      if (annul || ! final_sequence)
         p[3] = '6';
       p += 14;
     }
   *p++ = '%';
   *p++ = 'l';
-  /* Set the char indicating the number of the operand containing the
-     label_ref.  */
   *p++ = label + '0';
+  *p++ = '%';
+  *p++ = '#';
   *p = '\0';
-  if (noop)
-    strcpy (p, "\n\t nop");
 
   return string;
 }
@@ -6644,13 +6573,11 @@ sparc_emit_fixunsdi (rtx *operands, enum machine_mode mode)
 
    REVERSED is nonzero if we should reverse the sense of the comparison.
 
-   ANNUL is nonzero if we should generate an annulling branch.
-
-   NOOP is nonzero if we have to follow this branch by a noop.  */
+   ANNUL is nonzero if we should generate an annulling branch.  */
 
 const char *
 output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
-		 int annul, int noop, rtx insn)
+		 int annul, rtx insn)
 {
   static char string[64];
   enum rtx_code code = GET_CODE (op);
@@ -6759,7 +6686,9 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
 	}
 
       strcpy (p, ".+12\n\t nop\n\t");
-      if (annul || noop)
+      /* Skip the next insn if requested or
+	 if we know that it will be a nop.  */
+      if (annul || ! final_sequence)
         p[3] = '6';
       p += 12;
       if (veryfar)
@@ -6776,10 +6705,9 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
   *p++ = '%';
   *p++ = 'l';
   *p++ = '0' + label;
+  *p++ = '%';
+  *p++ = '#';
   *p = '\0';
-
-  if (noop)
-    strcpy (p, "\n\t nop");
 
   return string;
 }
@@ -7077,43 +7005,55 @@ print_operand (FILE *file, rtx x, int code)
   switch (code)
     {
     case '#':
-      /* Output a 'nop' if there's nothing for the delay slot.  */
-      if (dbr_sequence_length () == 0)
+      /* Output an insn in a delay slot.  */
+      if (final_sequence)
+        sparc_indent_opcode = 1;
+      else
 	fputs ("\n\t nop", file);
       return;
     case '*':
       /* Output an annul flag if there's nothing for the delay slot and we
-	 are optimizing.  This is always used with '(' below.  */
-      /* Sun OS 4.1.1 dbx can't handle an annulled unconditional branch;
-	 this is a dbx bug.  So, we only do this when optimizing.  */
-      /* On UltraSPARC, a branch in a delay slot causes a pipeline flush.
+	 are optimizing.  This is always used with '(' below.
+         Sun OS 4.1.1 dbx can't handle an annulled unconditional branch;
+	 this is a dbx bug.  So, we only do this when optimizing.
+         On UltraSPARC, a branch in a delay slot causes a pipeline flush.
 	 Always emit a nop in case the next instruction is a branch.  */
-      if (dbr_sequence_length () == 0
-	  && (optimize && (int)sparc_cpu < PROCESSOR_V9))
+      if (! final_sequence && (optimize && (int)sparc_cpu < PROCESSOR_V9))
 	fputs (",a", file);
       return;
     case '(':
       /* Output a 'nop' if there's nothing for the delay slot and we are
 	 not optimizing.  This is always used with '*' above.  */
-      if (dbr_sequence_length () == 0
-	  && ! (optimize && (int)sparc_cpu < PROCESSOR_V9))
+      if (! final_sequence && ! (optimize && (int)sparc_cpu < PROCESSOR_V9))
 	fputs ("\n\t nop", file);
+      else if (final_sequence)
+        sparc_indent_opcode = 1;
+      return;
+    case ')':
+      /* Output the right displacement from the saved PC on function return.
+	 The caller may have placed an "unimp" insn immediately after the call
+	 so we have to account for it.  This insn is used in the 32-bit ABI
+	 when calling a function that returns a non zero-sized structure. The
+	 64-bit ABI doesn't have it.  Be careful to have this test be the same
+	 as that used on the call.  */
+     if (! TARGET_ARCH64
+	 && current_function_returns_struct
+	 && (TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))
+	     == INTEGER_CST)
+	 && ! integer_zerop (DECL_SIZE (DECL_RESULT (current_function_decl))))
+	fputs ("12", file);
+      else
+        fputc ('8', file);
       return;
     case '_':
       /* Output the Embedded Medium/Anywhere code model base register.  */
       fputs (EMBMEDANY_BASE_REG, file);
       return;
-    case '@':
-      /* Print out what we are using as the frame pointer.  This might
-	 be %fp, or might be %sp+offset.  */
-      /* ??? What if offset is too big? Perhaps the caller knows it isn't? */
-      fprintf (file, "%s+"HOST_WIDE_INT_PRINT_DEC,
-	       reg_names[REGNO (frame_base_reg)], frame_base_offset);
-      return;
     case '&':
       /* Print some local dynamic TLS name.  */
       assemble_name (file, get_some_local_dynamic_name ());
       return;
+
     case 'Y':
       /* Adjust the operand to take into account a RESTORE operation.  */
       if (GET_CODE (x) == CONST_INT)

@@ -1,3 +1,30 @@
+2004-09-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (sparc_indent_opcode): New variable.
+	(output_return): Do not test for the presence of the 'unimp' insn.
+	Use 'current_function_uses_only_leaf_regs' and 'final_sequence'
+	as predicates instead of custom ones.  Return raw strings when
+	possible.
+	(output_sibcall): Likewise.  Concatenate strings.
+	(output_ubranch): Remove kludge for TurboSPARC.
+	(output_cbranch): Remove 'noop' parameter.  Do not output 'nop'.
+	(output_v9branch): Likewise.
+	(print_operand): Use 'final_sequence' instead of 'dbr_sequence_length'.
+	<#>: Set sparc_indent_opcode if the delay slot is filled.
+	<(>: Likewise.
+	<)>: New operand to emit the displacement from the saved PC on return.
+	<@>: Remove.
+	* config/sparc/sparc.h (sparc_indent_opcode): Declare it.
+	(ASM_OUTPUT_OPCODE): New macro.
+	(PRINT_OPERAND_PUNCT_VALID_P): Remove '^' and add ')'.
+	* config/sparc/sparc.md (normal_branch, inverted_branch,
+	normal_fp_branch, inverted_fp_branch, normal_fpe_branch,
+	inverted_fpe_branch): Adjust call to output_cbranch.
+	(normal_int_branch_sp64, inverted_int_branch_sp64): Adjust
+	call to output_v9branch.
+	* config/sparc/sparc-protos.h (output_cbranch): Adjust.
+	(output_v9branch): Likewise.
+
 2004-09-08  Devang Patel  <dpatel@apple.com>
 
 	* config/darwin.h  (TARGET_OPTION_TRANSLATE_TABLE): Add -segaddr,
