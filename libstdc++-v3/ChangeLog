@@ -1,3 +1,10 @@
+2001-03-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* libsupc++/Makefile.am (CXXLINK): Add --tag disable-shared after
+	--tag CXX.
+	(LIBTOOL): Let automake take care of its definition.
+	* libsupc++/Makefile.in: Rebuilt.
+
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
 	IA-64 ABI Exception Handling:
