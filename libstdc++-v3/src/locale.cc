@@ -28,7 +28,6 @@
 
 #include <clocale>
 #include <cstring>
-#include <cassert>
 #include <cctype>
 #include <cwctype>     // For towupper, etc.
 #include <locale>

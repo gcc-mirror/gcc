@@ -1,5 +1,10 @@
 2003-02-17  Paolo Carlini  <pcarlini@unitus.it>
 
+	* src/locale-inst.cc: Do not include <cassert>.
+	* src/locale.cc: Likewise.
+
+2003-02-17  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/9580
 	* include/std/std_fstream.h: Declare underflow and uflow
 	specializations, change generic definitions to do nothing.
