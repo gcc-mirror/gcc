@@ -1,3 +1,7 @@
+2001-01-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format/attr-2.c, gcc.dg/format/attr-3.c: New tests.
+
 2000-01-08  Loren J. Rittle  <ljrittle@acm.org>
 
 	* gcc.c-torture/execute/ieee/mzero2.x: Adjust statement of
