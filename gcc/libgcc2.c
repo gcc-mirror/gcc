@@ -1663,7 +1663,7 @@ __builtin_delete (void *ptr)
 }
 #endif
 
-#ifdef L_op_vec_delete
+#ifdef L_op_vec_del
 /* operator delete [] (void *), described in 17.3.3.4.  This function is
    used by C++ programs to return to the free store a block of memory
    allocated as an array. */
