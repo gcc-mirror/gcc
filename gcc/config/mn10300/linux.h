@@ -40,15 +40,8 @@
      %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
    %{static:-static}"
 
-#undef  TARGET_SWITCHES
-#define TARGET_SWITCHES	\
-  {{ "am33",		-0x4,	N_("Target the AM33 processor") }, \
-   { "am33-2",		6,	N_("Target the AM33/2.0 processor") }, \
-   { "relax",		0,	N_("Enable linker relaxations") }, \
-   { "", TARGET_DEFAULT, NULL }}
-
-#undef  TARGET_DEFAULT
-#define TARGET_DEFAULT 6
+#undef  PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_AM33_2
 
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (AM33/2.0 GNU/Linux)");
