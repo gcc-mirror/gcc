@@ -1,3 +1,8 @@
+2004-09-21  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* decl.c (reshape_init_array): Initialize max_index_cst to fix
+	bootstrap failure.
+
 2004-09-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17530
