@@ -1,4 +1,5 @@
 2001-11-17  Christopher Faylor  <cgf@redhat.com>
+	    Corinna Vinschen  <vinschen@redhat.com>
 
 	* config/i386/cygwin.h: Search target specific include directory for
 	w32api stuff, if appropriate.
