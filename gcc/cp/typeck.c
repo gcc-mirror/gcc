@@ -6844,9 +6844,11 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	   && TYPE_PTRMEMFUNC_P (type))
     {
       tree ttl = TYPE_PTRMEMFUNC_FN_TYPE (type);
-      tree ttr = (TREE_CODE (rhstype) == POINTER_TYPE ? rhstype
-		  : TYPE_PTRMEMFUNC_FN_TYPE (rhstype));
-      int ctt = comp_target_types (ttl, ttr, 1);
+      tree ttr = (TYPE_PTRMEMFUNC_P (rhstype)
+		  ? TYPE_PTRMEMFUNC_FN_TYPE (rhstype)
+		  : rhstype);
+      int ctt = (TREE_CODE (rhstype) == INTEGER_TYPE ? 1
+		 : comp_target_types (ttl, ttr, 1));
 
       if (ctt < 0)
 	cp_pedwarn ("converting `%T' to `%T' is a contravariance violation",
