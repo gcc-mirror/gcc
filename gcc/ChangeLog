@@ -1,3 +1,9 @@
+Thu Feb 15 00:20:31 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (RETURN_IN_MEMORY): Fix formating; reject TFmodes
+
+	* invoke.texi (-mreg-alloc): Deprecate.
+
 2001-02-14  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (f_options): Clarify -fschedule-insns2 documentation.

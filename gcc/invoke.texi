@@ -6652,6 +6652,8 @@ string @var{regs} is a series of letters specifying a register.  The
 supported letters are: @code{a} allocate EAX; @code{b} allocate EBX;
 @code{c} allocate ECX; @code{d} allocate EDX; @code{S} allocate ESI;
 @code{D} allocate EDI; @code{B} allocate EBP.
+This option is deprecated and will not be supported by future releases
+of gcc.
 
 @item -mregparm=@var{num}
 Control how many registers are used to pass integer arguments.  By
