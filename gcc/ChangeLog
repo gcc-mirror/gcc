@@ -1,3 +1,7 @@
+2001-11-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* cppfiles.c (read_include_file): Add comment.
+
 2001-11-26  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (rest_of_compilation): Call free_bb_for_insn before exit.
