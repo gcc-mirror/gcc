@@ -3374,6 +3374,13 @@ allocate the entire argument block and then store the arguments into
 it.  When @code{PUSH_ARGS} is nonzero, @code{PUSH_ROUNDING} must be defined too.
 @end defmac
 
+@defmac PUSH_ARGS_REVERSED
+A C expression.  If nonzero, function arguments will be evaluated from
+last to first, rather than from first to last.  If this macro is not
+defined, it defaults to @code{PUSH_ARGS} on targets where the stack
+and args grow in opposite directions, and 0 otherwise.
+@end defmac
+
 @defmac PUSH_ROUNDING (@var{npushed})
 A C expression that is the number of bytes actually pushed onto the
 stack when an instruction attempts to push @var{npushed} bytes.

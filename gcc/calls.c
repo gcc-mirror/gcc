@@ -40,26 +40,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cgraph.h"
 #include "except.h"
 
-/* Decide whether a function's arguments should be processed
-   from first to last or from last to first.
-
-   They should if the stack and args grow in opposite directions, but
-   only if we have push insns.  */
-
-#ifdef PUSH_ROUNDING
-
-#ifndef PUSH_ARGS_REVERSED
-#if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNWARD)
-#define PUSH_ARGS_REVERSED  PUSH_ARGS
-#endif
-#endif
-
-#endif
-
-#ifndef PUSH_ARGS_REVERSED
-#define PUSH_ARGS_REVERSED 0
-#endif
-
 #ifndef STACK_POINTER_OFFSET
 #define STACK_POINTER_OFFSET    0
 #endif
