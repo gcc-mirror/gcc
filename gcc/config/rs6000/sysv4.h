@@ -250,6 +250,7 @@ do {									\
 
 /* No data type wants to be aligned rounder than this.  */
 #undef	BIGGEST_ALIGNMENT
+#undef  BIGGEST_FIELD_ALIGNMENT
 #define BIGGEST_ALIGNMENT 128
 
 /* Use ELF style section commands.  */
