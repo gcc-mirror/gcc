@@ -3,6 +3,11 @@
 	* function.c: Small formatting change to prevent compilation errors
 	on broken hpux systems.
 
+	* expr.c (protect_from_queue): Protect against subsequent calls to
+	emit_queue.
+	(expand_expr, case ADDR_EXPR): Prevent protect_from_queue from being
+	too clever.
+
 2001-04-06  Bernd Schmidt  <bernds@redhat.com>
 
 	2000-10-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
