@@ -1,5 +1,5 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1621,13 +1621,15 @@ insn_dead_p (x, needed, call_ok)
      regset needed;
      int call_ok;
 {
-  register RTX_CODE code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
+
   /* If setting something that's a reg or part of one,
      see if that register's altered value will be live.  */
 
   if (code == SET)
     {
-      register rtx r = SET_DEST (x);
+      rtx r = SET_DEST (x);
+
       /* A SET that is a subroutine call cannot be dead.  */
       if (! call_ok && GET_CODE (SET_SRC (x)) == CALL)
 	return 0;
@@ -1641,15 +1643,13 @@ insn_dead_p (x, needed, call_ok)
 	  && rtx_equal_p (r, last_mem_set))
 	return 1;
 
-      while (GET_CODE (r) == SUBREG
-	     || GET_CODE (r) == STRICT_LOW_PART
-	     || GET_CODE (r) == ZERO_EXTRACT
-	     || GET_CODE (r) == SIGN_EXTRACT)
+      while (GET_CODE (r) == SUBREG || GET_CODE (r) == STRICT_LOW_PART
+	     || GET_CODE (r) == ZERO_EXTRACT)
 	r = SUBREG_REG (r);
 
       if (GET_CODE (r) == REG)
 	{
-	  register int regno = REGNO (r);
+	  int regno = REGNO (r);
 
 	  /* Don't delete insns to set global regs.  */
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
@@ -1681,26 +1681,33 @@ insn_dead_p (x, needed, call_ok)
 	  return 1;
 	}
     }
+
   /* If performing several activities,
      insn is dead if each activity is individually dead.
      Also, CLOBBERs and USEs can be ignored; a CLOBBER or USE
      that's inside a PARALLEL doesn't make the insn worth keeping.  */
   else if (code == PARALLEL)
     {
-      register int i = XVECLEN (x, 0);
+      int i = XVECLEN (x, 0);
+
       for (i--; i >= 0; i--)
-	{
-	  rtx elt = XVECEXP (x, 0, i);
-	  if (!insn_dead_p (elt, needed, call_ok)
-	      && GET_CODE (elt) != CLOBBER
-	      && GET_CODE (elt) != USE)
-	    return 0;
-	}
+	if (GET_CODE (XVECEXP (x, 0, i)) != CLOBBER
+	    && GET_CODE (XVECEXP (x, 0, i)) != USE
+	    && ! insn_dead_p (XVECEXP (x, 0, i), needed, call_ok))
+	  return 0;
+
       return 1;
     }
-  /* We do not check CLOBBER or USE here.
-     An insn consisting of just a CLOBBER or just a USE
-     should not be deleted.  */
+
+  /* A CLOBBER of a pseudo-register that is dead serves no purpose.  That
+     is not necessarily true for hard registers.  */
+  else if (code == CLOBBER && GET_CODE (XEXP (x, 0)) == REG
+	   && REGNO (XEXP (x, 0)) >= FIRST_PSEUDO_REGISTER
+	   && ! REGNO_REG_SET_P (needed, REGNO (XEXP (x, 0))))
+    return 1;
+
+  /* We do not check other CLOBBER or USE here.  An insn consisting of just
+     a CLOBBER or just a USE should not be deleted.  */
   return 0;
 }
 
