@@ -35,7 +35,7 @@ compilation is specified by a string called a "spec".  */
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
-#include <sys/errno.h>
+#include <errno.h>
 
 #include "config.h"
 #include "obstack.h"
@@ -132,7 +132,11 @@ compilation is specified by a string called a "spec".  */
 extern void free ();
 extern char *getenv ();
 
-extern int errno, sys_nerr;
+#ifndef errno
+extern int errno;
+#endif
+
+extern int sys_nerr;
 #if defined(bsd4_4) || defined(__NetBSD__)
 extern const char *const sys_errlist[];
 #else
