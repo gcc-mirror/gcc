@@ -609,7 +609,8 @@ namespace std
       else {
 	__first = find(__first, __last, __val);
 	while (__first != __last) {
-	  _Integer __n = __count - 1;
+	  typename iterator_traits<_ForwardIter>::difference_type __n = __count;
+	  --__n;
 	  _ForwardIter __i = __first;
 	  ++__i;
 	  while (__i != __last && __n != 0 && *__i == __val) {
@@ -661,7 +662,8 @@ namespace std
 	  ++__first;
 	}
 	while (__first != __last) {
-	  _Integer __n = __count - 1;
+	  typename iterator_traits<_ForwardIter>::difference_type __n = __count;
+	  --__n;
 	  _ForwardIter __i = __first;
 	  ++__i;
 	  while (__i != __last && __n != 0 && __binary_pred(*__i, __val)) {

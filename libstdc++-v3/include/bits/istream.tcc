@@ -757,8 +757,12 @@ namespace std
       sentry __cerb(*this, true);
       if (__cerb)
 	{
-	  try 
-	    { __c = this->rdbuf()->sgetc(); }
+	  try
+	    {
+	      __c = this->rdbuf()->sgetc();
+	      if (traits_type::eq_int_type(__c, traits_type::eof()))
+		this->setstate(ios_base::eofbit);
+	    }
 	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
