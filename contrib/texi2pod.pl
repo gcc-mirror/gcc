@@ -279,9 +279,6 @@ sub postprocess
     s/\@w\{([^\}]*)\}/S<$1>/g;
     s/\@(?:dmn|math)\{([^\}]*)\}/$1/g;
 
-    # Handle @r inside bold.
-    1 while s/B<((?:[^<>]|I<[^<>]*>)*)R<([^>]*)>/B<$1>${2}B</g;
-
     # Cross references are thrown away, as are @noindent and @refill.
     # (@noindent is impossible in .pod, and @refill is unnecessary.)
     # @* is also impossible in .pod; we discard it and any newline that
@@ -303,9 +300,11 @@ sub postprocess
     s/\@uref\{([^\},]*),([^\},]*),([^\},]*)\}/$3/g;
 
     # Turn B<blah I<blah> blah> into B<blah> I<blah> B<blah> to
-    # match Texinfo semantics of @emph inside @samp.
+    # match Texinfo semantics of @emph inside @samp.  Also handle @r
+    # inside bold.
     s/&LT;/</g;
     s/&GT;/>/g;
+    1 while s/B<((?:[^<>]|I<[^<>]*>)*)R<([^>]*)>/B<$1>${2}B</g;
     1 while (s/B<([^<>]*)I<([^>]+)>/B<$1>I<$2>B</g);
     1 while (s/I<([^<>]*)B<([^>]+)>/I<$1>B<$2>I</g);
     s/[BI]<>//g;

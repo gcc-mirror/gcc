@@ -1,3 +1,7 @@
+2001-07-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* texi2pod.pl: Handle @r inside @item.
+
 2001-07-02  Zack Weinberg  <zackw@stanford.edu>
 
 	* gcc_update: Remove entries for gcc.1, cpp.1, gcov.1.
