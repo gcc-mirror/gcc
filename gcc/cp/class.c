@@ -302,8 +302,25 @@ build_base_path (enum tree_code code,
       /* Going via virtual base V_BINFO.  We need the static offset
          from V_BINFO to BINFO, and the dynamic offset from D_BINFO to
          V_BINFO.  That offset is an entry in D_BINFO's vtable.  */
-      tree v_offset = build_vfield_ref (build_indirect_ref (expr, NULL),
-					TREE_TYPE (TREE_TYPE (expr)));
+      tree v_offset;
+
+      if (fixed_type_p < 0 && in_base_initializer)
+	{
+	  /* In a base member initializer, we cannot rely on
+	     the vtable being set up. We have to use the vtt_parm.  */
+	  tree derived = BINFO_INHERITANCE_CHAIN (v_binfo);
+	  
+	  v_offset = build (PLUS_EXPR, TREE_TYPE (current_vtt_parm),
+			    current_vtt_parm, BINFO_VPTR_INDEX (derived));
+	  
+	  v_offset = build1 (INDIRECT_REF,
+			     TREE_TYPE (TYPE_VFIELD (BINFO_TYPE (derived))),
+			     v_offset);
+	  
+	}
+      else
+	v_offset = build_vfield_ref (build_indirect_ref (expr, NULL),
+				     TREE_TYPE (TREE_TYPE (expr)));
       
       v_offset = build (PLUS_EXPR, TREE_TYPE (v_offset),
 			v_offset,  BINFO_VPTR_FIELD (v_binfo));

@@ -146,7 +146,7 @@ initialize_vtbl_ptrs (addr)
   list = build_tree_list (type, addr);
 
   /* Walk through the hierarchy, initializing the vptr in each base
-     class.  We do these in pre-order because can't find the virtual
+     class.  We do these in pre-order because we can't find the virtual
      bases for a class until we've initialized the vtbl for that
      class.  */
   dfs_walk_real (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs,
@@ -664,6 +664,8 @@ emit_mem_initializers (tree mem_inits)
      initializations should be performed.  */
   mem_inits = sort_mem_initializers (current_class_type, mem_inits);
 
+  in_base_initializer = 1;
+  
   /* Initialize base classes.  */
   while (mem_inits 
 	 && TREE_CODE (TREE_PURPOSE (mem_inits)) != FIELD_DECL)
@@ -704,10 +706,11 @@ emit_mem_initializers (tree mem_inits)
 
       mem_inits = TREE_CHAIN (mem_inits);
     }
+  in_base_initializer = 0;
 
   /* Initialize the vptrs.  */
   initialize_vtbl_ptrs (current_class_ptr);
-
+  
   /* Initialize the data members.  */
   while (mem_inits)
     {
@@ -951,16 +954,15 @@ member_init_ok_or_else (field, type, member_name)
 
 /* NAME is a FIELD_DECL, an IDENTIFIER_NODE which names a field, or it
    is a _TYPE node or TYPE_DECL which names a base for that type.
-   INIT is a parameter list for that field's or base's constructor.
-   Check the validity of NAME, and return a TREE_LIST of the base
-   _TYPE or FIELD_DECL and the INIT.  If NAME is invalid, return
+   Check the validity of NAME, and return either the base _TYPE, base
+   binfo, or the FIELD_DECL of the member.  If NAME is invalid, return
    NULL_TREE and issue a diagnostic.
 
    An old style unnamed direct single base construction is permitted,
    where NAME is NULL.  */
 
 tree
-expand_member_init (tree name, tree init)
+expand_member_init (tree name)
 {
   tree basetype;
   tree field;
@@ -997,14 +999,12 @@ expand_member_init (tree name, tree init)
   else
     basetype = NULL_TREE;
 
-  my_friendly_assert (init != NULL_TREE, 0);
-
   if (basetype)
     {
       tree binfo;
 
       if (current_template_parms)
-	return build_tree_list (basetype, init);
+	return basetype;
 
       binfo = lookup_base (current_class_type, basetype, 
 			   ba_ignore, NULL);
@@ -1020,7 +1020,7 @@ expand_member_init (tree name, tree init)
 		   name, current_class_type);
 	  return NULL_TREE;
 	}
-      return build_tree_list (binfo, init);
+      return binfo;
     }
   else
     {
@@ -1030,7 +1030,7 @@ expand_member_init (tree name, tree init)
 	field = name;
 
       if (member_init_ok_or_else (field, current_class_type, name))
-	return build_tree_list (field, init);
+	return field;
     }
 
   return NULL_TREE;

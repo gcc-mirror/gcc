@@ -7236,7 +7236,8 @@ cp_parser_mem_initializer (cp_parser* parser)
 {
   tree mem_initializer_id;
   tree expression_list;
-
+  tree member;
+  
   /* Find out what is being initialized.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
@@ -7245,6 +7246,10 @@ cp_parser_mem_initializer (cp_parser* parser)
     }
   else
     mem_initializer_id = cp_parser_mem_initializer_id (parser);
+  member = expand_member_init (mem_initializer_id);
+  if (member && !DECL_P (member))
+    in_base_initializer = 1;
+  
   /* Look for the opening `('.  */
   cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
   /* Parse the expression-list.  */
@@ -7256,8 +7261,9 @@ cp_parser_mem_initializer (cp_parser* parser)
   /* Look for the closing `)'.  */
   cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 
-  return expand_member_init (mem_initializer_id,
-			     expression_list);
+  in_base_initializer = 0;
+  
+  return member ? build_tree_list (member, expression_list) : NULL_TREE;
 }
 
 /* Parse a mem-initializer-id.

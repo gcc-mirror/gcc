@@ -866,6 +866,7 @@ struct language_function GTY(())
   int returns_null;
   int returns_abnormally;
   int in_function_try_handler;
+  int in_base_initializer;
   int x_expanding_p;
 
   struct named_label_use_list *x_named_label_uses;
@@ -935,6 +936,9 @@ struct language_function GTY(())
    function.  */
 
 #define doing_semantic_analysis_p() (!expanding_p)
+
+/* Non-zero if we are processing a base initializer.  Zero elsewhere.  */
+#define in_base_initializer cp_function_chain->in_base_initializer
 
 #define in_function_try_handler cp_function_chain->in_function_try_handler
 
@@ -3915,7 +3919,7 @@ extern void add_friend                          (tree, tree);
 extern tree do_friend				(tree, tree, tree, tree, tree, enum overload_flags, tree, int);
 
 /* in init.c */
-extern tree expand_member_init			(tree, tree);
+extern tree expand_member_init			(tree);
 extern void emit_mem_initializers		(tree);
 extern tree build_aggr_init			(tree, tree, int);
 extern tree build_init				(tree, tree, int);

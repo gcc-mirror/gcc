@@ -1,3 +1,8 @@
+2003-03-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9629
+	* g++.dg/init/ctor2.C: New test.
+
 2003-03-15  Roger Sayle  <roger@eyesopen.com>
 
 	* g77.f-torture/compile/xformat.f: New test case.

@@ -1,3 +1,15 @@
+2003-03-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9629
+	* cp-tree.h (struct language_function): Add in_base_initializer.
+	(in_base_initializer): define it.
+	(expand_member_init): Remove INIT param.
+	* init.c (expand_member_init): Remove INIT param, return the member.
+	(emit_mem_initializers): Set in_base_initializer.
+	* class.c (build_base_path): Check in_base_initializer.
+	* parser.c (cp_parser_mem_initializer): Set in_base_initializer.
+	* pt.c (tsubst_initializer_list): Likewise.
+
 2003-03-16   Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* decl.c (binding_for_name): Fix initialization thinko.
@@ -596,7 +608,7 @@
 
 2003-02-21  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* search.c (bfs_walk_grow): Remove. Fold into ...
+	* search.c (grow_bfs_bases): Remove. Fold into ...
 	(bfs_walk): ... here, fix fencepost error. Fix merge lossage
 	in previous patch.
 
