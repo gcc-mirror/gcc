@@ -1,3 +1,8 @@
+2003-09-21  Graham Stott  <grahams@btinternet.com>
+
+       PR target/12353
+       * config/i386/i386.md(ffs_no_cmove): Fix operand 2 constraint.
+
 2003-09-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/12301
