@@ -1,3 +1,7 @@
+2002-06-08  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.def: Don't capitalize diagnostict descriptors.
+
 2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/m68k/netbsd-elf.h (EXTRA_SPECS): Add netbsd_entry_point.
