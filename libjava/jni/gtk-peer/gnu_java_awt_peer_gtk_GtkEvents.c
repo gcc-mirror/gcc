@@ -1,5 +1,5 @@
 /* gtkevents.c -- GDK/GTK event handlers
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -934,9 +934,9 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
 				    click_count,
 				    JNI_FALSE);
 
-	// Generate an AWT click event only if the release occured in the
-	// window it was pressed in, and the mouse has not been dragged since
-	// the last time it was pressed.
+	/* Generate an AWT click event only if the release occured in the
+	   window it was pressed in, and the mouse has not been dragged since
+	   the last time it was pressed. */
 	gdk_window_get_size (event->any.window, &width, &height);
 	if (! hasBeenDragged
 	    && event->button.x >= 0
@@ -1038,11 +1038,11 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
       break;
     case GDK_EXPOSE:
       {
-        // This filters out unwanted feedback expose events from gtk/X
-        // when we explictly invalidate and update heavyweight components,
-        // thus avoiding an infinite loop.
-        // FIXME: I'm not quite sure why we're getting these expose events. 
-        //        Maybe there is a way to avoid them?
+        /* This filters out unwanted feedback expose events from gtk/X
+           when we explictly invalidate and update heavyweight components,
+           thus avoiding an infinite loop.
+           FIXME: I'm not quite sure why we're getting these expose events. 
+                  Maybe there is a way to avoid them? */
         if((event->any.window == widget->window && event->any.send_event)
            || GTK_IS_LAYOUT(widget))
           {
@@ -1181,7 +1181,6 @@ attach_jobject (GdkWindow *window, jobject *obj)
 			 | GDK_KEY_PRESS_MASK
 			 | GDK_FOCUS_CHANGE_MASK);
 
-  //  g_print("storing obj %p property on window %p\n", obj, window);
   gdk_property_change (window,
 		       addr_atom,
 		       type_atom,
@@ -1196,10 +1195,8 @@ connect_awt_hook (JNIEnv *env, jobject peer_obj, int nwindows, ...)
 {
   va_list ap;
   jobject *obj;
-  //void *ptr = NSA_GET_PTR (env, peer_obj);
 
   obj = NSA_GET_GLOBAL_REF (env, peer_obj);
-  //g_print("Connection obj %s\n", gtk_widget_get_name (GTK_WIDGET (ptr)));
   g_assert (obj);
 
   va_start (ap, nwindows);

@@ -1,5 +1,5 @@
 /* gthread-jni.c -- JNI threading routines for GLIB
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -204,7 +204,7 @@ static void g_mutex_lock_jni_impl (GMutex *mutex __attribute__((unused))) {
 static gboolean g_mutex_trylock_jni_impl
   (GMutex *mutex __attribute__((unused)))
 {
-  // Shall we implement this in a JikesRVM-specific way under a flag?
+  /* XXX Shall we implement this in a VM-specific way under a flag? */
   return FALSE;
 }
 
