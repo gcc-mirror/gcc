@@ -640,8 +640,10 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   if (!should_stack_file (pfile, file, import))
       return false;
 
-  sysp = MAX ((pfile->map ? pfile->map->sysp : 0),
-	      (file->dir ? file->dir->sysp : 0));
+  if (pfile->buffer == NULL || file->dir == NULL)
+    sysp = 0;
+  else
+    sysp = MAX (pfile->buffer->sysp,  file->dir->sysp);
 
   /* Add the file to the dependencies on its first inclusion.  */
   if (CPP_OPTION (pfile, deps.style) > !!sysp && !file->stack_count)
@@ -658,6 +660,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   buffer = cpp_push_buffer (pfile, file->buffer, file->st.st_size,
 			    CPP_OPTION (pfile, preprocessed));
   buffer->file = file;
+  buffer->sysp = sysp;
 
   /* Initialize controlling macro state.  */
   pfile->mi_valid = true;
@@ -707,7 +710,8 @@ search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
   else if (pfile->quote_ignores_source_dir)
     dir = pfile->quote_include;
   else
-    return make_cpp_dir (pfile, dir_name_of_file (file), pfile->map->sysp);
+    return make_cpp_dir (pfile, dir_name_of_file (file),
+			 pfile->buffer ? pfile->buffer->sysp : 0);
 
   if (dir == NULL)
     cpp_error (pfile, CPP_DL_ERROR,
@@ -756,7 +760,7 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
 static void
 open_file_failed (cpp_reader *pfile, _cpp_file *file)
 {
-  int sysp = pfile->map ? pfile->map->sysp: 0;
+  int sysp = pfile->line > 1 && pfile->buffer ? pfile->buffer->sysp : 0;
   bool print_dep = CPP_OPTION (pfile, deps.style) > !!sysp;
 
   errno = file->err_no;
@@ -936,12 +940,14 @@ void
 cpp_make_system_header (cpp_reader *pfile, int syshdr, int externc)
 {
   int flags = 0;
+  const struct line_map *map = linemap_lookup (pfile->line_table, pfile->line);
 
   /* 1 = system header, 2 = system header to be treated as C.  */
   if (syshdr)
     flags = 1 + (externc != 0);
-  _cpp_do_file_change (pfile, LC_RENAME, pfile->map->to_file,
-		       SOURCE_LINE (pfile->map, pfile->line), flags);
+  pfile->buffer->sysp = flags;
+  _cpp_do_file_change (pfile, LC_RENAME, map->to_file,
+		       SOURCE_LINE (map, pfile->line), flags);
 }
 
 /* Allow the client to change the current file.  Used by the front end

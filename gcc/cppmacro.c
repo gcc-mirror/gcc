@@ -116,6 +116,7 @@ static const char * const monthnames[] =
 const uchar *
 _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 {
+  const struct line_map *map;
   const uchar *result = NULL;
   unsigned int number = 1;
 
@@ -132,7 +133,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 	unsigned int len;
 	const char *name;
 	uchar *buf;
-	const struct line_map *map = pfile->map;
+	map = linemap_lookup (pfile->line_table, pfile->line);
 
 	if (node->value.builtin == BT_BASE_FILE)
 	  while (! MAIN_FILE_P (map))
@@ -157,14 +158,15 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
       break;
 
     case BT_SPECLINE:
+      map = linemap_lookup (pfile->line_table, pfile->line);
       /* If __LINE__ is embedded in a macro, it must expand to the
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */
       if (CPP_OPTION (pfile, traditional))
 	number = pfile->line;
       else
-	number = pfile->cur_token[-1].line;
-      number = SOURCE_LINE (pfile->map, number);
+	number = pfile->cur_token[-1].src_loc;
+      number = SOURCE_LINE (map, number);
       break;
 
       /* __STDC__ has the value 1 under normal circumstances.
@@ -174,7 +176,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 	 value 0.  */
     case BT_STDC:
       {
-	if (CPP_IN_SYSTEM_HEADER (pfile)
+	if (cpp_in_system_header (pfile)
 	    && CPP_OPTION (pfile, stdc_0_in_system_headers)
 	    && !CPP_OPTION (pfile,std))
 	  number = 0;
@@ -1488,7 +1490,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   macro->count = 0;
   macro->fun_like = 0;
   /* To suppress some diagnostics.  */
-  macro->syshdr = pfile->map->sysp != 0;
+  macro->syshdr = pfile->buffer && pfile->buffer->sysp != 0;
 
   if (CPP_OPTION (pfile, traditional))
     ok = _cpp_create_trad_definition (pfile, macro);

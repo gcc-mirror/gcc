@@ -174,8 +174,7 @@ struct cpp_string
    occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */
 struct cpp_token
 {
-  fileline line;		/* Logical line of first char of token.  */
-  unsigned short col;		/* Column of first char of token.  */
+  source_location src_loc;	/* Location of first char of token.  */
   ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* token type */
   unsigned char flags;		/* flags - see above */
 
@@ -527,7 +526,6 @@ extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
    through the pointer returned from cpp_get_callbacks, or set them
    with cpp_set_callbacks.  */
 extern cpp_options *cpp_get_options (cpp_reader *);
-extern const struct line_maps *cpp_get_line_maps (cpp_reader *);
 extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 
@@ -685,7 +683,7 @@ extern void cpp_errno (cpp_reader *, int, const char *msgid);
 /* Same as cpp_error, except additionally specifies a position as a
    (translation unit) physical line and physical column.  If the line is
    zero, then no location is printed.  */
-extern void cpp_error_with_line (cpp_reader *, int, fileline, unsigned,
+extern void cpp_error_with_line (cpp_reader *, int, source_location, unsigned,
 				 const char *msgid, ...) ATTRIBUTE_PRINTF_5;
 
 /* In cpplex.c */

@@ -1,3 +1,82 @@
+
+2004-02-11  Per Bothner  <per@bothner.com>
+
+	Represent column numbers using line-map's source_location.
+	The "next available source_location" is now managed internally by
+	line-maps.c rather than by clients.
+	* line-map.h (struct line_map):  New field column_bits.
+	<from_line>:  Rename field to start_location.
+	(struct line_maps):  New fields highest_location and max_column_hint.
+	(linemap_check_files_exited):  New declaration.
+	(linemap_line_start):  New declaration.
+	(linemap_add):  Remove from_line parameter; use highest_location field.
+	(SOURCE_LINE, LAST_SOURCE_LINE):  Modify to use column_bits.
+	(SOURCE_COLUMN, LAST_SOURCE_LINE_LOCATION):  New macros.
+	(CURRENT_LINE_MAP):  Remove macro.
+	(linemap_position_for_column):  New inline function.
+	* line-map.c (linemap_init):  Clear new fields.
+	(linemap_check_files_exited):  New function, extracted from ...
+	(linemap_free):  Use linemap_check_files_exited.
+	(linemap_add):  Remove from_line parameter.  Various updates.
+	(linemap_line_start):  New function.
+	(linemap_lookeup):  Update for new field names.
+	* cpphash.h (struct cpp_reader) <map>:  Field removed.  Because
+	linemap_position_for_column may unpredictably change the current map,
+	it is cleaner and simpler for us to not cache it in cpp_reader.
+	(struct cpp_buffer):  New sysp field.
+	Changed warned_cplusplus_comments and from_stage3 to bitfields.
+	* cppinit.c (cpp_read_min_file):  pfile->map no longer exists.
+	* cpplib.c (do_line, do_linemarker, _cpp_do_file_change):  Get
+	current map using linemap_lookup.
+	(do_linemarker):  Also set buffer's sysp field.
+	(destringize_and_run):  No longer need to decrement current line.
+	* cppfiles.c (_cpp_stack_file):  Set sysp from and in buffer.
+	(search_path_head, open_file_failed):  Use buffer's sysp.
+	(cpp_make_system_header):  Get current map using linemap_lookup.
+	Also set buffer's sysp flag.
+	* cppmacro.c (_cpp_builtin_macro_text):  Likewise use linemap_lookup.
+	* cpphash.h (CPP_INCREMENT_LINE):  New macro.
+	(struct cpp_buffer):  Moved fields saved_cur, saved_rlimit to ...
+	(struct cpp_reader):  ... and adding saved_line_base field.
+	* cpptrad.c (_cpp_overlay_buffer, _cpp_remove_overlay):
+	Update accordingly.  Don't adjust line.
+	(_cpp_scan_out_logical_line):  Use CPP_INCREMENT_LINE.
+	* cpphash.c (CPP_IN_SYSTEM_HEADER):  Replaced macro by ...
+	(cpp_in_system_header):  ... new inline function, using buffer's sysp.
+	* cpperror.c (_cpp_begin_message):  Update to use cpp_in_system_header.
+	* cpplex.c (_cpp_lex_direct):  Likewise.
+	* cppmacro.c (_cpp_builtin_macro_text):  Likewise.
+	* cppmacro.c (_cpp_create_definition):  Use buffer's sysp field.
+	* cpplib.h (struct cpp_token):  Rename line field to src_loc.
+	Remove col field as it is now subsumed by src_loc.
+	* cpperror.c:  Update various field, parameter, and macro names.
+	(print_location):  If col==0, try SOURCE_COLUMN of line.
+	(cpp_error):  Use cur_token's src_loc field, rather than line+col.
+	* cpplib.c (do_diagnostic):  Token's src_loc fields replaces line+col.
+	* cpplex.c (_cpp_process_line_notes, _cpp_lex_direct,
+	_cpp_skip_block_comment):  Use CPP_INCREMENT_LINE.
+	(_cpp_temp_token):  Replace cpp_token's line+col fields by src_loc.
+	(_cpp_get_fresh_line):  Don't need to adjust line for missing newline.
+	(_cpp_lex_direct):  Use linemap_position_for_column.
+	* c-ppoutput.c (maybe_print_line, print_line):  Don't take map
+	parameter.  Instead get it from the line_table global.  Adjust callers.
+	(print):  Remove map field.  Replace line field to src_line.
+	(init_pp_output, account_for_newlines, maybe_print_line):  Adjust.
+	(cb_line_change):  Use SOURCE_COLUMN.  Minor optimizations.
+	(pp_file_change):  Use MAIN_FILE_P since we cannot checked print.map.
+	Use LAST_SOURCE_LINE_LOCATION to "catch up" after #include.
+	* cpptrad.c (copy_comment):  Rename variable.
+	* c-lex.c (map):  Remove static variable, for same reason we removed
+	cpp_reader's map field.
+	(cb_line_change, cb_def_pragma, cb_define, cb_undef):  Hence we need
+	to call linemap_lookup.
+	(cb_line_change):  Token's line field replaced by src_loc.
+	(fe_file_change):  Use MAINFILE_P and LAST_SOURCE_LINE macros.
+	Don't save new_map.
+
+	* cpphash.h, cpperror.c, cpplib.h:  Some renames of fileline to
+	source_location.
+
 2004-02-11  Hartmut Penner  <hpenner@de.ibm.com>
 	
 	* config/rs6000/altivec.md (*movv4si_internal): At least one

@@ -479,7 +479,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   if (CPP_OPTION (pfile, preprocessed))
     {
       read_original_filename (pfile);
-      fname = pfile->map->to_file;
+      fname = pfile->line_table->maps[pfile->line_table->used-1].to_file;
     }
   return fname;
 }

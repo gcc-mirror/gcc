@@ -29,14 +29,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpphash.h"
 #include "intl.h"
 
-static void print_location (cpp_reader *, fileline, unsigned int);
+static void print_location (cpp_reader *, source_location, unsigned int);
 
 /* Print the logical file location (LINE, COL) in preparation for a
    diagnostic.  Outputs the #include chain if it has changed.  A line
    of zero suppresses the include stack, and outputs the program name
    instead.  */
 static void
-print_location (cpp_reader *pfile, fileline line, unsigned int col)
+print_location (cpp_reader *pfile, source_location line, unsigned int col)
 {
   if (line == 0)
     fprintf (stderr, "%s: ", progname);
@@ -50,7 +50,11 @@ print_location (cpp_reader *pfile, fileline line, unsigned int col)
 
       lin = SOURCE_LINE (map, line);
       if (col == 0)
-	col = 1;
+	{
+	  col = SOURCE_COLUMN (map, line);
+	  if (col == 0)
+	    col = 1;
+	}
 
       if (lin == 0)
 	fprintf (stderr, "%s:", map->to_file);
@@ -64,13 +68,18 @@ print_location (cpp_reader *pfile, fileline line, unsigned int col)
 }
 
 /* Set up for a diagnostic: print the file and line, bump the error
-   counter, etc.  LINE is the logical line number; zero means to print
+   counter, etc.  SRC_LOC is the logical line number; zero means to print
    at the location of the previously lexed token, which tends to be
-   the correct place by default.  Returns 0 if the error has been
-   suppressed.  */
+   the correct place by default.  The column number can be specified either
+   using COLUMN or (if COLUMN==0) extracting SOURCE_COLUMN from SRC_LOC.
+   (This may seem redundant, but is useful when pre-scanning (cleaning) a line,
+   when we haven't yet verified whether the current line_map has a
+   big enough max_column_hint.)
+
+   Returns 0 if the error has been suppressed.  */
 int
-_cpp_begin_message (cpp_reader *pfile, int code, fileline line,
-		    unsigned int column)
+_cpp_begin_message (cpp_reader *pfile, int code,
+		    source_location src_loc, unsigned int column)
 {
   int level = CPP_DL_EXTRACT (code);
 
@@ -78,7 +87,7 @@ _cpp_begin_message (cpp_reader *pfile, int code, fileline line,
     {
     case CPP_DL_WARNING:
     case CPP_DL_PEDWARN:
-      if (CPP_IN_SYSTEM_HEADER (pfile)
+      if (cpp_in_system_header (pfile)
 	  && ! CPP_OPTION (pfile, warn_system_headers))
 	return 0;
       /* Fall through.  */
@@ -105,7 +114,7 @@ _cpp_begin_message (cpp_reader *pfile, int code, fileline line,
       break;
     }
 
-  print_location (pfile, line, column);
+  print_location (pfile, src_loc, column);
   if (CPP_DL_WARNING_P (level))
     fputs (_("warning: "), stderr);
   else if (level == CPP_DL_ICE)
@@ -125,8 +134,7 @@ _cpp_begin_message (cpp_reader *pfile, int code, fileline line,
 void
 cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
 {
-  fileline line;
-  unsigned int column;
+  source_location src_loc;
   va_list ap;
   
   va_start (ap, msgid);
@@ -134,18 +142,16 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
   if (CPP_OPTION (pfile, traditional))
     {
       if (pfile->state.in_directive)
-	line = pfile->directive_line;
+	src_loc = pfile->directive_line;
       else
-	line = pfile->line;
-      column = 0;
+	src_loc = pfile->line;
     }
   else
     {
-      line = pfile->cur_token[-1].line;
-      column = pfile->cur_token[-1].col;
+      src_loc = pfile->cur_token[-1].src_loc;
     }
 
-  if (_cpp_begin_message (pfile, level, line, column))
+  if (_cpp_begin_message (pfile, level, src_loc, 0))
     v_message (msgid, ap);
 
   va_end (ap);
@@ -154,14 +160,14 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
 /* Print an error at a specific location.  */
 void
 cpp_error_with_line (cpp_reader *pfile, int level,
-		     fileline line, unsigned int column,
+		     source_location src_loc, unsigned int column,
 		     const char *msgid, ...)
 {
   va_list ap;
   
   va_start (ap, msgid);
 
-  if (_cpp_begin_message (pfile, level, line, column))
+  if (_cpp_begin_message (pfile, level, src_loc, column))
     v_message (msgid, ap);
 
   va_end (ap);
