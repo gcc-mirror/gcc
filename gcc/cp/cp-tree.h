@@ -283,7 +283,9 @@ extern tree intQI_type_node, unsigned_intQI_type_node;
 extern tree intHI_type_node, unsigned_intHI_type_node;
 extern tree intSI_type_node, unsigned_intSI_type_node;
 extern tree intDI_type_node, unsigned_intDI_type_node;
+#if HOST_BITS_PER_WIDE_INT >= 64
 extern tree intTI_type_node, unsigned_intTI_type_node;
+#endif
 
 extern tree java_byte_type_node;
 extern tree java_short_type_node;
