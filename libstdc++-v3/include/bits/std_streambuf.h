@@ -44,9 +44,9 @@ namespace std {
 
   template<typename _CharT, typename _Traits>
     streamsize
-    _S_copy_streambufs(basic_ios<_CharT, _Traits>& _ios,
-		       basic_streambuf<_CharT, _Traits>* __sbin,
-		       basic_streambuf<_CharT, _Traits>* __sbout);
+    __copy_streambufs(basic_ios<_CharT, _Traits>& _ios,
+		      basic_streambuf<_CharT, _Traits>* __sbin,
+		      basic_streambuf<_CharT, _Traits>* __sbout);
   
   // 27.5.2 Template class basic_streambuf<_CharT, _Traits>
   template<typename _CharT, typename _Traits>
@@ -71,8 +71,8 @@ namespace std {
       friend class ostreambuf_iterator<char_type, traits_type>;
 
       friend streamsize
-      _S_copy_streambufs<>(basic_ios<char_type, traits_type>& __ios,
-			   __streambuf_type* __sbin,__streambuf_type* __sbout);
+      __copy_streambufs<>(basic_ios<char_type, traits_type>& __ios,
+			  __streambuf_type* __sbin,__streambuf_type* __sbout);
       
     protected:
 

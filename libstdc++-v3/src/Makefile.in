@@ -100,6 +100,8 @@ WFMT_FLAGS = @WFMT_FLAGS@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_basedir = @glibcpp_basedir@
+glibcpp_toolexecdir = @glibcpp_toolexecdir@
+glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
 libio_la = @libio_la@
@@ -111,14 +113,8 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
-# Install a library built with a cross compiler in tooldir, not libdir.
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@gcc_version = @gcc_version@
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@toolexecdir = $(libdir)/gcc-lib/$(target_alias)
-@USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@toolexeclibdir = $(toolexecdir)/$(gcc_version)
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_FALSE@toolexeclibdir = $(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-
+toolexecdir = @glibcpp_toolexecdir@
+toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
@@ -561,19 +557,6 @@ myinstallheaders:
           $(INSTALL_DATA) $$i $(gxx_include_dir); \
 	done; \
 	fi;
-
-# We have to handle misc-inst.cc and locale-inst.cc in a special way
-# since we cannot instantiate all classes due to missing definitions
-# for things like vptrs, type_info bits, etc. when using
-# -fno-implicit-templates.
-misc-inst.o: misc-inst.cc
-	$(CXXCOMPILE) -c $<
-misc-inst.lo: misc-inst.cc
-	$(LTCXXCOMPILE) -c $<
-locale-inst.o: locale-inst.cc
-	$(CXXCOMPILE) -c $<
-locale-inst.lo: locale-inst.cc
-	$(LTCXXCOMPILE) -c $<
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.

@@ -1,3 +1,41 @@
+2001-02-06  Benjamin Kosnik  <bkoz@fillmore.constant.com>
+
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Deal with library
+	install locations too.
+	* aclocal.m4: Regeneate.
+	* configure.in: Remove USE_LIBDIR.
+	* configure: Regenerate.
+	* src/Makefile.am (toolexecdir): Simplify, use
+	glibcpp_toolexecdir, glibcpp_toolexeclibdir.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Same.
+	* libsupc++/Makefile.in: Regenerate.
+
+	* src/Makefile.am: Just remove special rules for locale-inst.cc and
+	misc-inst.cc as no longer necessary.
+
+	Follow C++STYLE for naming non-static functions.
+	* include/bits/ostream.tcc (_S_pad_char): Not static, rename to
+	__pad_char.
+	* include/bits/streambuf.tcc: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/istream.tcc: Same.
+	* include/bits/locale_facets.tcc (_S_pad_numeric): To __pad_numeric.
+	(_S_output_float): To __output_float.
+	* include/bits/std_streambuf.h (_S_copy_streambufs): To
+	__copy_streambufs.
+	* include/bits/locale_facets.tcc (_S_build_float_format): To
+	__build_float_format.
+	(_S_format): To __output_integer.
+	(_S_fill): To __pad.
+	* src/locale.cc: Same.
+	* src/misc-inst.cc: Fix formatting. Fix signature for wchar_t. Correct
+	names.
+	* include/bits/locale_facets.tcc (_S_group_digits): To
+	__group_digits.
+	* src/locale-inst.cc: Fixup names. Add use_facet instantiations
+	for collate, numpunct.
+	
 2001-02-06  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/configopts.html:  Fix HTML markup.
@@ -53,7 +91,7 @@
 	* src/Makefile.am: Remove use of -fimplicit-templates.
 	* src/Makefile.in: Regenerated.
 	* src/locale-inst.cc: Explicitly instantiate more functions.
-	* src/msic-inst.cc: Likewise.
+	* src/misc-inst.cc: Likewise.
 	* src/string-inst.cc: Likewise.
 
 2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>

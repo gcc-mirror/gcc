@@ -15569,15 +15569,6 @@ else
 fi
 
 
-if test -z "$with_cross_host"; then
-  USE_LIBDIR_TRUE=
-  USE_LIBDIR_FALSE='#'
-else
-  USE_LIBDIR_TRUE='#'
-  USE_LIBDIR_FALSE=
-fi
-
-
 if test "$CANADIAN" = yes; then
   CANADIAN_TRUE=
   CANADIAN_FALSE='#'
@@ -15636,17 +15627,17 @@ rm -f confcache
 
   ac_safe=`echo "locale.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for locale.h""... $ac_c" 1>&6
-echo "configure:15640: checking for locale.h" >&5
+echo "configure:15631: checking for locale.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15645 "configure"
+#line 15636 "configure"
 #include "confdefs.h"
 #include <locale.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:15650: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:15641: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -15664,19 +15655,19 @@ if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
   echo "$ac_t""yes" 1>&6
   
     echo $ac_n "checking for LC_MESSAGES""... $ac_c" 1>&6
-echo "configure:15668: checking for LC_MESSAGES" >&5
+echo "configure:15659: checking for LC_MESSAGES" >&5
 if eval "test \"`echo '$''{'ac_cv_val_LC_MESSAGES'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15673 "configure"
+#line 15664 "configure"
 #include "confdefs.h"
 #include <locale.h>
 int main() {
 return LC_MESSAGES
 ; return 0; }
 EOF
-if { (eval echo configure:15680: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15671: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_val_LC_MESSAGES=yes
 else
@@ -15717,14 +15708,17 @@ INTERFACE=v3
 # Export all the install information
 
 
+glibcpp_toolexecdir=no
+glibcpp_toolexeclibdir=no
+
 echo $ac_n "checking for interface version number""... $ac_c" 1>&6
-echo "configure:15722: checking for interface version number" >&5
+echo "configure:15716: checking for interface version number" >&5
 libstdcxx_interface=$INTERFACE
 echo "$ac_t""$libstdcxx_interface" 1>&6
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:15728: checking for --with-gxx-include-dir" >&5
+echo "configure:15722: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -15748,7 +15742,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:15752: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:15746: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -15756,20 +15750,12 @@ if test "${enable_version_specific_runtime_libs+set}" = set; then
 # Need the gcc compiler version to know where to install libraries
 # and header files if --enable-version-specific-runtime-libs option
 # is selected.
-gcc_tmp=`grep version_string ${srcdir}/../gcc/version.c | awk '{print }'`
-gcc_num=`echo ${gcc_tmp} | sed 's/\"//g'`
-gcc_version=$gcc_num
-gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++'
-
-
-
-if test x"$version_specific_libs" = x"yes"; then
-  VERSION_SPECIFIC_LIBS_TRUE=
-  VERSION_SPECIFIC_LIBS_FALSE='#'
-else
-  VERSION_SPECIFIC_LIBS_TRUE='#'
-  VERSION_SPECIFIC_LIBS_FALSE=
-fi
+gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include/g++
+glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}
 
 else
   version_specific_libs=no
@@ -15777,13 +15763,30 @@ fi
 
 echo "$ac_t""$version_specific_libs" 1>&6
 
-echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:15782: checking for install location" >&5
+# Default case for install directory for include files.
 if test x"$version_specific_libs" = x"no" \
    && test x"$gxx_include_dir"=x"no"; then
-  gxx_include_dir=${prefix}/include/g++-${libstdcxx_interface}
+  gxx_include_dir='$(prefix)'/include/g++-${libstdcxx_interface}
 fi
+
+# Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
+# Install a library built with a cross compiler in tooldir, not libdir.
+if test x"$glibcpp_toolexecdir" = x"no"; then 
+  if test x"$with_cross_host" = x"yes"; then
+    glibcpp_toolexecdir='$(exec_prefix)/$(target_alias)'
+    glibcpp_toolexeclibdir='$(toolexecdir)/lib$(MULTISUBDIR)'
+  else
+    glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+    glibcpp_toolexeclibdir='$(libdir)$(MULTISUBDIR)'
+  fi
+fi
+
+echo $ac_n "checking for install location""... $ac_c" 1>&6
+echo "configure:15786: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
+
+
+
 
 
 
@@ -16057,14 +16060,11 @@ s%@NULL_TARGET_TRUE@%$NULL_TARGET_TRUE%g
 s%@NULL_TARGET_FALSE@%$NULL_TARGET_FALSE%g
 s%@NATIVE_TRUE@%$NATIVE_TRUE%g
 s%@NATIVE_FALSE@%$NATIVE_FALSE%g
-s%@USE_LIBDIR_TRUE@%$USE_LIBDIR_TRUE%g
-s%@USE_LIBDIR_FALSE@%$USE_LIBDIR_FALSE%g
 s%@CANADIAN_TRUE@%$CANADIAN_TRUE%g
 s%@CANADIAN_FALSE@%$CANADIAN_FALSE%g
-s%@gcc_version@%$gcc_version%g
-s%@VERSION_SPECIFIC_LIBS_TRUE@%$VERSION_SPECIFIC_LIBS_TRUE%g
-s%@VERSION_SPECIFIC_LIBS_FALSE@%$VERSION_SPECIFIC_LIBS_FALSE%g
 s%@gxx_include_dir@%$gxx_include_dir%g
+s%@glibcpp_toolexecdir@%$glibcpp_toolexecdir%g
+s%@glibcpp_toolexeclibdir@%$glibcpp_toolexeclibdir%g
 s%@GLIBCPP_INCLUDE_DIR@%$GLIBCPP_INCLUDE_DIR%g
 s%@TOPLEVEL_INCLUDES@%$TOPLEVEL_INCLUDES%g
 s%@LIBMATH_INCLUDES@%$LIBMATH_INCLUDES%g

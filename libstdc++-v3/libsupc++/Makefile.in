@@ -100,6 +100,8 @@ WFMT_FLAGS = @WFMT_FLAGS@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_basedir = @glibcpp_basedir@
+glibcpp_toolexecdir = @glibcpp_toolexecdir@
+glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
@@ -112,13 +114,8 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
-# Install a library built with a cross compiler in tooldir, not libdir.
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@gcc_version = @gcc_version@
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@toolexecdir = $(libdir)/gcc-lib/$(target_alias)
-@USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_TRUE@toolexeclibdir = $(toolexecdir)/$(gcc_version)
-@USE_LIBDIR_TRUE@@VERSION_SPECIFIC_LIBS_FALSE@toolexeclibdir = $(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
+toolexecdir = @glibcpp_toolexecdir@
+toolexeclibdir = @glibcpp_toolexeclibdir@
 
 # Need this library to both be part of libstdc++.a, and installed
 # separately too.

@@ -981,8 +981,8 @@ namespace std
   // implementation follows the C++ standard fairly directly as
   // outlined in 22.2.2.2 [lib.locale.num.put]
   bool
-  _S_build_float_format(ios_base& __io, char* __fptr, char __modifier,
-                        streamsize __prec)
+  __build_float_format(ios_base& __io, char* __fptr, char __modifier,
+		       streamsize __prec)
   {
     bool __incl_prec = false;
     ios_base::fmtflags __flags = __io.flags();
