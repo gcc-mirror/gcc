@@ -4387,7 +4387,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
     {
       mode = TYPE_MODE (TREE_TYPE (exp));
       if (mode == BLKmode)
-	size_tree = TREE_SIZE (TREE_TYPE (exp));
+	size_tree = TYPE_SIZE (TREE_TYPE (exp));
 
       *pbitsize = GET_MODE_BITSIZE (mode);
       *punsignedp = TREE_UNSIGNED (TREE_TYPE (exp));
