@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -108,6 +108,7 @@ namespace std
     { }
   
     _List_iterator_base()
+    : _M_node()
     { }
   
     /// Walk the %list forward.
@@ -156,6 +157,7 @@ namespace std
     { }
   
     _List_iterator()
+    : _List_iterator_base()
     { }
   
     _List_iterator(const iterator& __x)

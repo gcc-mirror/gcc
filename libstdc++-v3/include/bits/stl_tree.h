@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -191,7 +191,7 @@ namespace std
       typedef _Rb_tree_iterator<_Val, _Ref, _Ptr> _Self;
       typedef _Rb_tree_node<_Val>* _Link_type;
       
-      _Rb_tree_iterator() {}
+      _Rb_tree_iterator() { _M_node = 0; }
       _Rb_tree_iterator(_Link_type __x) { _M_node = __x; }
       _Rb_tree_iterator(const iterator& __it) { _M_node = __it._M_node; }
 

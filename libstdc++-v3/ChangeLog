@@ -1,3 +1,12 @@
+2005-01-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR libstdc++/19510
+	* include/bits/stl_list.h (_List_iterator_base): Initialize _M_node
+	in constructor.
+	(_List_iterator): Initialize _List_iterator_base in constructor.
+	* include/bits/stl_tree.h (_Rb_tree_iterator): Initialize _M_node
+	in constructor.
+
 2004-12-03  Richard Henderson  <rth@redhat.com>
 
 	PR 17856
