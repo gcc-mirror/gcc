@@ -6183,7 +6183,7 @@ base_type_die (type)
   base_type_result = new_die (DW_TAG_base_type, comp_unit_die);
   add_AT_string (base_type_result, DW_AT_name, type_name);
   add_AT_unsigned (base_type_result, DW_AT_byte_size,
-		   TYPE_PRECISION (type) / BITS_PER_UNIT);
+		   int_size_in_bytes (type));
   add_AT_unsigned (base_type_result, DW_AT_encoding, encoding);
 
   return base_type_result;
