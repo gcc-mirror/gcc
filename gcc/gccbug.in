@@ -177,7 +177,7 @@ while [ $# -gt 0 ]; do
 done
 
 # spam does not need to be listed here
-CATEGORIES="c++ c debug fortran java libf2c libobjc libstdc++ middle-end objc optimization other target web"
+CATEGORIES="c++ c debug fortran java libf2c libgcj libobjc libstdc++ middle-end objc optimization other preprocessor target web"
 
 case "$FORMAT" in
   lisp) echo "$CATEGORIES" | \
