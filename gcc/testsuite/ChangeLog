@@ -4,7 +4,7 @@
 	* g++.dg/template/error12.C: New test.
 
 	PR c++/15317
-	* g++.dg/ext/attrib14.C: New test.
+	* g++.dg/ext/attrib15.C: New test.
 
 	PR c++/15329
 	* g++.dg/template/ptrmem9.C: New test.
