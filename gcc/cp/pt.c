@@ -132,6 +132,7 @@ static int unregister_specialization PARAMS ((tree, tree));
 static tree reduce_template_parm_level PARAMS ((tree, tree, int));
 static tree build_template_decl PARAMS ((tree, tree));
 static int mark_template_parm PARAMS ((tree, void *));
+static int template_parm_this_level_p PARAMS ((tree, void *));
 static tree tsubst_friend_function PARAMS ((tree, tree));
 static tree tsubst_friend_class PARAMS ((tree, tree));
 static tree get_bindings_real PARAMS ((tree, tree, tree, int, int, int));
@@ -1579,7 +1580,8 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
 	      methods = CLASSTYPE_METHOD_VEC (ctype);
 	      if (methods)
-		for (idx = 2; idx < TREE_VEC_LENGTH (methods); ++idx) 
+		for (idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
+		     idx < TREE_VEC_LENGTH (methods); ++idx) 
 		  {
 		    tree ovl = TREE_VEC_ELT (methods, idx);
 
@@ -2496,6 +2498,26 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
     }
 }
 
+/* Worker for push_template_decl_real, called via
+   for_each_template_parm.  DATA is really an int, indicating the
+   level of the parameters we are interested in.  If T is a template
+   parameter of that level, return non-zero.  */
+
+static int
+template_parm_this_level_p (t, data)
+     tree t;
+     void *data;
+{
+  int this_level = (int)data;
+  int level;
+
+  if (TREE_CODE (t) == TEMPLATE_PARM_INDEX)
+    level = TEMPLATE_PARM_LEVEL (t);
+  else
+    level = TEMPLATE_TYPE_LEVEL (t);
+  return level == this_level;
+}
+
 /* Creates a TEMPLATE_DECL for the indicated DECL using the template
    parameters given by current_template_args, or reuses a
    previously existing one, if appropriate.  Returns the DECL, or an
@@ -2718,7 +2740,20 @@ push_template_decl_real (decl, is_friend)
     tmpl = pushdecl_namespace_level (tmpl);
 
   if (primary)
-    DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
+    {
+      DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
+      if (DECL_CONV_FN_P (tmpl))
+	{
+	  /* It is a conversion operator. See if the type converted to
+	     depends on innermost template operands.  */
+	  
+	  if (for_each_template_parm
+	      (TREE_TYPE (TREE_TYPE (tmpl)),
+	       template_parm_this_level_p,
+	       (void *)TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl))))
+	    DECL_TEMPLATE_CONV_FN_P (tmpl) = 1;
+	}
+    }
 
   info = tree_cons (tmpl, args, NULL_TREE);
 

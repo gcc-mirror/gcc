@@ -2095,7 +2095,7 @@ build_component_ref (datum, component, basetype_path, protect)
 		 now.  Otherwise, we have to wait and see what context it is
 		 used in; a component_ref involving a non-static member
 		 function can only be used in a call (expr.ref).  */
-
+	      
 	      if (TREE_CHAIN (fndecls) == NULL_TREE
 		  && TREE_CODE (TREE_VALUE (fndecls)) == FUNCTION_DECL)
 		{
@@ -2119,7 +2119,16 @@ build_component_ref (datum, component, basetype_path, protect)
 
 	      fndecls = TREE_VALUE (fndecls);
 	      
-	      if (TREE_CODE (component) == TEMPLATE_ID_EXPR)
+ 	      if (IDENTIFIER_TYPENAME_P (name))
+ 		{
+ 		  /* We want for a conversion op. We need to remember
+ 		     the actual type we wanted, in case we got a set of
+ 		     templated conversion operators back.  */
+ 		  fndecls = ovl_cons (OVL_CURRENT (fndecls),
+ 				      OVL_NEXT (fndecls));
+ 		  TREE_TYPE (fndecls) = TREE_TYPE (name);
+ 		}
+	      else if (TREE_CODE (component) == TEMPLATE_ID_EXPR)
 		fndecls = build_nt (TEMPLATE_ID_EXPR,
 				    fndecls, TREE_OPERAND (component, 1));
 	      
@@ -2684,7 +2693,12 @@ build_x_function_call (function, params, decl)
       decl = TREE_OPERAND (function, 0);
       function = TREE_OPERAND (function, 1);
 
-      if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
+      if (TREE_CODE (function) == OVERLOAD
+ 	  && TREE_TYPE (function) != unknown_type_node)
+ 	/* It was a conversion operator. We can't use DECL_NAME, as
+ 	   that might refer to a templated function.  */
+	function = mangle_conv_op_name_for_type (TREE_TYPE (function));
+      else if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
 	{
 	  my_friendly_assert (!template_id, 20011228);
 

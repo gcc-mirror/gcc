@@ -1522,8 +1522,9 @@ int
 lookup_fnfields_1 (type, name)
      tree type, name;
 {
-  tree method_vec 
-    = CLASS_TYPE_P (type) ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE;
+  tree method_vec = (CLASS_TYPE_P (type)
+		     ? CLASSTYPE_METHOD_VEC (type)
+		     : NULL_TREE);
 
   if (method_vec != 0)
     {
@@ -1586,22 +1587,19 @@ lookup_fnfields_1 (type, name)
 	}
 
       /* If we didn't find it, it might have been a template
-	 conversion operator.  (Note that we don't look for this case
-	 above so that we will always find specializations first.)  */
+	 conversion operator to a templated type.  If there are any,
+	 such template conversion operators will all be overloaded on
+	 the first conversion slot.  (Note that we don't look for this
+	 case above so that we will always find specializations
+	 first.)  */
       if (IDENTIFIER_TYPENAME_P (name)) 
 	{
-	  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
-	       i < len && methods[i]; 
-	       ++i)
+	  i = CLASSTYPE_FIRST_CONVERSION_SLOT;
+	  if (i < len && methods[i])
 	    {
 	      tmp = OVL_CURRENT (methods[i]);
-	      if (! DECL_CONV_FN_P (tmp))
-		{
-		  /* Since all conversion operators come first, we know
-		     there is no such operator.  */
-		  break;
-		}
-	      else if (TREE_CODE (tmp) == TEMPLATE_DECL)
+	      if (TREE_CODE (tmp) == TEMPLATE_DECL
+		  && DECL_TEMPLATE_CONV_FN_P (tmp))
 		return i;
 	    }
 	}

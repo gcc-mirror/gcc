@@ -856,6 +856,8 @@ add_method (type, method, error_p)
   int len;
   int slot;
   tree method_vec;
+  int template_conv_p = (TREE_CODE (method) == TEMPLATE_DECL
+			 && DECL_TEMPLATE_CONV_FN_P (method));
 
   if (!CLASSTYPE_METHOD_VEC (type))
     /* Make a new method vector.  We start with 8 entries.  We must
@@ -880,14 +882,36 @@ add_method (type, method, error_p)
     slot = CLASSTYPE_DESTRUCTOR_SLOT;
   else
     {
+      int have_template_convs_p = 0;
+      
       /* See if we already have an entry with this name.  */
       for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; slot < len; ++slot)
-	if (!TREE_VEC_ELT (method_vec, slot)
-	    || (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, 
-						      slot))) 
-		== DECL_NAME (method)))
-	  break;
-		
+	{
+	  tree m = TREE_VEC_ELT (method_vec, slot);
+
+	  if (!m)
+	    break;
+	  m = OVL_CURRENT (m);
+	  
+	  if (template_conv_p)
+	    {
+	      have_template_convs_p = (TREE_CODE (m) == TEMPLATE_DECL
+				       && DECL_TEMPLATE_CONV_FN_P (m));
+	      
+	      /* If we need to move things up, see if there's
+		 space. */
+	      if (!have_template_convs_p)
+		{
+		  slot = len - 1;
+		  if (TREE_VEC_ELT (method_vec, slot))
+		    slot++;
+		}
+	      break;
+	    }
+	  if (DECL_NAME (m) == DECL_NAME (method))
+	    break;
+	}
+      
       if (slot == len)
 	{
 	  /* We need a bigger method vector.  */
@@ -920,22 +944,27 @@ add_method (type, method, error_p)
 	     slide some of the vector elements up.  In theory, this
 	     makes this algorithm O(N^2) but we don't expect many
 	     conversion operators.  */
-	  for (slot = 2; slot < len; ++slot)
-	    {
-	      tree fn = TREE_VEC_ELT (method_vec, slot);
+	  if (template_conv_p)
+	    slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
+	  else
+	    for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; slot < len; ++slot)
+	      {
+		tree fn = TREE_VEC_ELT (method_vec, slot);
   
-	      if (!fn)
-		/* There are no more entries in the vector, so we
-		   can insert the new conversion operator here.  */
-		break;
+		if (!fn)
+		  /* There are no more entries in the vector, so we
+		     can insert the new conversion operator here.  */
+		  break;
   		  
-	      if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
-		/* We can insert the new function right at the
-		   SLOTth position.  */
-		break;
-	    }
-  
-	  if (!TREE_VEC_ELT (method_vec, slot))
+		if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+		  /* We can insert the new function right at the
+		     SLOTth position.  */
+		  break;
+	      }
+
+	  if (template_conv_p && have_template_convs_p)
+	    /*OK*/;
+	  else if (!TREE_VEC_ELT (method_vec, slot))
 	    /* There is nothing in the Ith slot, so we can avoid
 	       moving anything.  */
 		; 
@@ -1036,7 +1065,7 @@ add_method (type, method, error_p)
   TREE_VEC_ELT (method_vec, slot) 
     = build_overload (method, TREE_VEC_ELT (method_vec, slot));
 
-      /* Add the new binding.  */ 
+  /* Add the new binding.  */ 
   if (!DECL_CONSTRUCTOR_P (method)
       && !DECL_DESTRUCTOR_P (method))
     push_class_level_binding (DECL_NAME (method),

@@ -2444,7 +2444,6 @@ build_user_type_conversion_1 (totype, expr, flags)
     {
       tree fns = TREE_VALUE (convs);
       int convflags = LOOKUP_NO_CONVERSION;
-      tree ics;
 
       /* If we are called to convert to a reference type, we are trying to
 	 find an lvalue binding, so don't even consider temporaries.  If
@@ -2452,57 +2451,46 @@ build_user_type_conversion_1 (totype, expr, flags)
 	 look for a temporary binding.  */
       if (TREE_CODE (totype) == REFERENCE_TYPE)
 	convflags |= LOOKUP_NO_TEMP_BIND;
+      
+      for (; fns; fns = OVL_NEXT (fns))
+	{
+	  tree fn = OVL_CURRENT (fns);
+	  struct z_candidate *old_candidates = candidates;
+	  
+	  /* [over.match.funcs] For conversion functions, the function
+	     is considered to be a member of the class of the implicit
+	     object argument for the purpose of defining the type of
+	     the implicit object parameter.
 
-      if (TREE_CODE (OVL_CURRENT (fns)) != TEMPLATE_DECL)
-	ics = implicit_conversion
-	  (totype, TREE_TYPE (TREE_TYPE (OVL_CURRENT (fns))), 0, convflags);
-      else
-	/* We can't compute this yet.  */
-	ics = error_mark_node;
+	     So we pass fromtype as CTYPE to add_*_candidate.  */
 
-      if (TREE_CODE (totype) == REFERENCE_TYPE && ics && ICS_BAD_FLAG (ics))
-	/* ignore the near match.  */;
-      else if (ics)
-	for (; fns; fns = OVL_NEXT (fns))
-	  {
-	    tree fn = OVL_CURRENT (fns);
-	    struct z_candidate *old_candidates = candidates;
+	  if (TREE_CODE (fn) == TEMPLATE_DECL)
+	    {
+	      templates = tree_cons (NULL_TREE, fn, templates);
+	      candidates = 
+		add_template_candidate (candidates, fn, fromtype, NULL_TREE,
+					args, totype, flags,
+					DEDUCE_CONV);
+	    } 
+	  else 
+	    candidates = add_function_candidate (candidates, fn, fromtype,
+						 args, flags); 
 
-	    /* [over.match.funcs] For conversion functions, the function is
-	       considered to be a member of the class of the implicit object
-	       argument for the purpose of defining the type of the implicit
-	       object parameter.
+	  if (candidates != old_candidates)
+	    {
+	      tree ics = implicit_conversion
+		(totype, TREE_TYPE (TREE_TYPE (candidates->fn)),
+		 0, convflags);
 
-	       So we pass fromtype as CTYPE to add_*_candidate.  */
-
-	    if (TREE_CODE (fn) == TEMPLATE_DECL)
-	      {
-		templates = tree_cons (NULL_TREE, fn, templates);
-		candidates = 
-		  add_template_candidate (candidates, fn, fromtype, NULL_TREE,
-					  args, totype, flags,
-					  DEDUCE_CONV);
-	      } 
-	    else 
-	      candidates = add_function_candidate (candidates, fn, fromtype,
-						   args, flags); 
-
-	    if (candidates != old_candidates)
-	      {
-		if (TREE_CODE (fn) == TEMPLATE_DECL)
-		  ics = implicit_conversion
-		    (totype, TREE_TYPE (TREE_TYPE (candidates->fn)),
-		     0, convflags);
-
-		candidates->second_conv = ics;
-		candidates->basetype_path = TYPE_BINFO (fromtype);
-
-		if (ics == NULL_TREE)
-		  candidates->viable = 0;
-		else if (candidates->viable == 1 && ICS_BAD_FLAG (ics))
-		  candidates->viable = -1;
-	      }
-	  }
+	      candidates->second_conv = ics;
+	      candidates->basetype_path = TYPE_BINFO (fromtype);
+	      
+	      if (ics == NULL_TREE)
+		candidates->viable = 0;
+	      else if (candidates->viable == 1 && ICS_BAD_FLAG (ics))
+		candidates->viable = -1;
+	    }
+	}
     }
 
   if (! any_viable (candidates))
