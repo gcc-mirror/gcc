@@ -1,3 +1,8 @@
+1999-01-29  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.h (BUILD_APPEND): If ARG is a non-String object reference,
+	then cast it to Object before calling `append' method.
+
 Thu Jan 28 14:45:39 1999  Per Bothner  <bothner@cygnus.com>
 
 	* check-init.c (check_bool2_init, check_bool_init, check_init):

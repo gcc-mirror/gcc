@@ -498,9 +498,16 @@ static jdeplist *reverse_jdep_list ();
 #define COMPLETE_CHECK_OP_2(NODE) COMPLETE_CHECK_OP(NODE, 2)
 
 /* Building invocations: append(ARG) and StringBuffer(ARG) */
-#define BUILD_APPEND(ARG)						     \
-  build_method_invocation (wfl_append, 					     \
-			   (ARG ? build_tree_list (NULL, (ARG)): NULL_TREE))
+#define BUILD_APPEND(ARG)						      \
+  ((JSTRING_TYPE_P (TREE_TYPE (ARG)) || JPRIMITIVE_TYPE_P (TREE_TYPE (ARG)))  \
+   ? build_method_invocation (wfl_append,                                     \
+			      ARG ? build_tree_list (NULL, (ARG)) : NULL_TREE)\
+   : build_method_invocation (wfl_append,                                     \
+			      ARG ? build_tree_list (NULL,                    \
+						     build1 (CONVERT_EXPR,    \
+							     object_type_node,\
+							     (ARG)))          \
+			      : NULL_TREE))
 #define BUILD_STRING_BUFFER(ARG)					      \
   build_new_invocation (wfl_string_buffer, 				      \
 			(ARG ? build_tree_list (NULL, (ARG)) : NULL_TREE))
