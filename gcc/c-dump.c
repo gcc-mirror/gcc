@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for C-family languages.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -37,14 +37,6 @@ dump_stmt (dump_info_p di, tree t)
     dump_int (di, "line", locus->line);
 }
 
-/* Dump the next statement after STMT.  */
-
-void
-dump_next_stmt (dump_info_p di, tree t)
-{
-  dump_child ("next", TREE_CHAIN (t));
-}
-
 /* Dump any C-specific tree codes and attributes of common codes.  */
 
 bool
@@ -66,26 +58,22 @@ c_dump_tree (void *dump_info, tree t)
     case BREAK_STMT:
     case CONTINUE_STMT:
       dump_stmt (di, t);
-      dump_next_stmt (di, t);
       break;
 
     case DECL_STMT:
       dump_stmt (di, t);
       dump_child ("decl", DECL_STMT_DECL (t));
-      dump_next_stmt (di, t);
       break;
 
     case DO_STMT:
       dump_stmt (di, t);
       dump_child ("body", DO_BODY (t));
       dump_child ("cond", DO_COND (t));
-      dump_next_stmt (di, t);
       break;
 
     case EXPR_STMT:
       dump_stmt (di, t);
       dump_child ("expr", EXPR_STMT_EXPR (t));
-      dump_next_stmt (di, t);
       break;
 
     case FOR_STMT:
@@ -94,27 +82,18 @@ c_dump_tree (void *dump_info, tree t)
       dump_child ("cond", FOR_COND (t));
       dump_child ("expr", FOR_EXPR (t));
       dump_child ("body", FOR_BODY (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case RETURN_STMT:
-      dump_stmt (di, t);
-      dump_child ("expr", RETURN_STMT_EXPR (t));
-      dump_next_stmt (di, t);
       break;
 
     case SWITCH_STMT:
       dump_stmt (di, t);
       dump_child ("cond", SWITCH_COND (t));
       dump_child ("body", SWITCH_BODY (t));
-      dump_next_stmt (di, t);
       break;
 
     case WHILE_STMT:
       dump_stmt (di, t);
       dump_child ("cond", WHILE_COND (t));
       dump_child ("body", WHILE_BODY (t));
-      dump_next_stmt (di, t);
       break;
 
     case STMT_EXPR:

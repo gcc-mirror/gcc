@@ -247,14 +247,6 @@ emit_local_var (tree decl)
     }
 }
 
-/* Build the node for a return statement and return it.  */
-
-tree
-build_return_stmt (tree expr)
-{
-  return (build_stmt (RETURN_STMT, expr));
-}
-
 /* Build a break statement node and return it.  */
 
 tree

@@ -6241,7 +6241,7 @@ cp_parser_for_init_statement (cp_parser* parser)
    jump-statement:
      goto * expression ;
 
-   Returns the new BREAK_STMT, CONTINUE_STMT, RETURN_STMT, or GOTO_EXPR.  */
+   Returns the new BREAK_STMT, CONTINUE_STMT, RETURN_EXPR, or GOTO_EXPR.  */
 
 static tree
 cp_parser_jump_statement (cp_parser* parser)

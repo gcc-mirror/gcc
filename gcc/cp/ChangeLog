@@ -1,5 +1,14 @@
 2004-06-21  Richard Henderson  <rth@redhat.com>
 
+	* dump.c (cp_dump_tree): Don't use dump_next_stmt.
+	* parser.c (cp_parser_jump_statement): Update commentary.
+	* pt.c (tsubst_expr): Use RETURN_EXPR.
+	* semantics.c (finish_return_stmt): Likewise.
+	(finalize_nrv_r): Likewise.
+	* typeck.c, typeck2.c: Update file start commentary.
+
+2004-06-21  Richard Henderson  <rth@redhat.com>
+
 	* semantics.c (finish_expr_stmt): Call verify_sequence_points.
 
 2004-06-20  Richard Henderson  <rth@redhat.com>

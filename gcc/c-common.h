@@ -930,11 +930,6 @@ extern void finish_file	(void);
 #define DO_COND(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 0)
 #define DO_BODY(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 1)
 
-/* RETURN_STMT accessors. These give the expression associated with a
-   return statement, and whether it should be ignored when expanding
-   (as opposed to inlining).  */
-#define RETURN_STMT_EXPR(NODE)  TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
-
 /* EXPR_STMT accessor. This gives the expression associated with an
    expression statement.  */
 #define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
@@ -978,7 +973,7 @@ enum c_tree_code {
 
 #define c_common_stmt_codes				\
    EXPR_STMT,		DECL_STMT,	FOR_STMT,	\
-   WHILE_STMT,		DO_STMT,	RETURN_STMT,	\
+   WHILE_STMT,		DO_STMT,			\
    BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT
 
 /* TRUE if a code represents a statement.  The front end init
@@ -1012,13 +1007,11 @@ extern int anon_aggr_type_p (tree);
 
 extern void emit_local_var (tree);
 extern void make_rtl_for_local_static (tree);
-extern tree c_expand_return (tree);
 extern tree do_case (tree, tree);
 extern tree build_stmt (enum tree_code, ...);
 extern tree build_case_label (tree, tree, tree);
 extern tree build_continue_stmt (void);
 extern tree build_break_stmt (void);
-extern tree build_return_stmt (tree);
 
 extern void c_expand_asm_operands (tree, tree, tree, tree, int, location_t);
 

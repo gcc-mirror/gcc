@@ -272,6 +272,7 @@ extern void c_finish_for_stmt (tree, tree);
 extern tree c_begin_stmt_expr (void);
 extern tree c_finish_stmt_expr (tree);
 extern void c_finish_expr_stmt (tree);
+extern void c_finish_return (tree);
 extern tree build_offsetof (tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if

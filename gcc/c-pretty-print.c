@@ -1982,23 +1982,6 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
       pp_needs_newline (pp) = true;
       break;
 
-    case RETURN_STMT:
-      {
-	tree e = RETURN_STMT_EXPR (stmt);
-	pp_c_identifier (pp, "return");
-        pp_c_whitespace (pp);
-	if (e)
-          {
-            if (TREE_CODE (e) == INIT_EXPR
-                && TREE_CODE (TREE_OPERAND (e, 0)) == RESULT_DECL)
-              e = TREE_OPERAND (e, 1);
-            pp_expression (pp, e);
-          }
-	pp_c_semicolon (pp);
-	pp_needs_newline (pp) = true;
-      }
-      break;
-
     case DECL_STMT:
       pp_declaration (pp, DECL_STMT_DECL (stmt));
       pp_needs_newline (pp) = true;

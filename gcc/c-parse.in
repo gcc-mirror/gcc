@@ -2242,9 +2242,9 @@ stmt:
 		  else
 		    add_stmt (build_continue_stmt ()); }
 	| RETURN ';'
-                { stmt_count++; c_expand_return (NULL_TREE); }
+                { stmt_count++; c_finish_return (NULL_TREE); }
 	| RETURN expr ';'
-                { stmt_count++; c_expand_return ($2); }
+                { stmt_count++; c_finish_return ($2); }
 	| asm_stmt
 	| GOTO identifier ';'
 		{ tree decl;

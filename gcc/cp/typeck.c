@@ -24,11 +24,7 @@ Boston, MA 02111-1307, USA.  */
 /* This file is part of the C++ front end.
    It contains routines to build C++ expressions given their operands,
    including computing the types of the result, C and C++ specific error
-   checks, and some optimization.
-
-   There are also routines to build RETURN_STMT nodes and CASE_STMT nodes,
-   and to process initializations in declarations (since they work
-   like a strange sort of assignment).  */
+   checks, and some optimization.  */
 
 #include "config.h"
 #include "system.h"
