@@ -2449,31 +2449,12 @@ convention, in which bug reports for tool ``foo'' are sent
 to @samp{bug-foo@@gnu.org}, the address @email{bug-gcc@@gnu.org}
 may also be used; it will forward to the address given above.
 
-Please read @uref{http://www.gnu.org/software/gcc/bugs.html} for
-bug reporting instructions before you post a bug report.
-
-Often people think of posting bug reports to the newsgroup instead of
-mailing them.  This appears to work, but it has one problem which can be
-crucial: a newsgroup posting does not contain a mail path back to the
-sender.  Thus, if maintainers need more information, they may be unable
-to reach you.  For this reason, you should always send bug reports by
-mail to the proper mailing list.
-
-As a last resort, send bug reports on paper to:
-
-@example
-GNU Compiler Bugs
-Free Software Foundation
-59 Temple Place - Suite 330
-Boston, MA 02111-1307, USA
-@end example
+Please read @uref{http://gcc.gnu.org/bugs.html} for additional and/or
+more up-to-date bug reporting instructions before you post a bug report.
 
 @node Bug Reporting,gccbug,Bug Lists,Bugs
 @section How to Report Bugs
 @cindex compiler bugs, reporting
-
-You may find additional and/or more up-to-date instructions at
-@uref{http://www.gnu.org/software/gcc/bugs.html}.
 
 The fundamental principle of reporting bugs usefully is this:
 @strong{report all the facts}.  If you are not sure whether to state a
@@ -2988,7 +2969,7 @@ Send a message to a suitable network mailing list.  First try
 that brings no response, try @email{gcc@@gcc.gnu.org}.  For help
 changing GCC, ask @email{gcc@@gcc.gnu.org}.  If you think you have found
 a bug in GCC, please report it following the instructions at
-@uref{http://gcc.gnu.org/bugs.html}.
+@pxref{Bug Reporting}.
 
 @item
 Look in the service directory for someone who might help you for a fee.
@@ -3008,11 +2989,6 @@ If you would like to help pretest GCC releases to assure they work well,
 our current development sources are available by CVS (see
 @uref{http://gcc.gnu.org/cvs.html}).  Source and binary snapshots are
 also available for FTP; see @uref{http://gcc.gnu.org/snapshots.html}.
-Remember that snapshots of the current development sources may not be of
-production quality; if you find problems (whether compiler crashes,
-miscompiled code, poor optimization or any other problem), please report
-them following our bug reporting instructions at
-@uref{http://gcc.gnu.org/bugs.html}.
 
 If you would like to work on improvements to GCC, please read
 @uref{http://gcc.gnu.org/contribute.html} and
