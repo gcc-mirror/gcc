@@ -1,3 +1,16 @@
+Tue Mar  2 01:27:52 1999  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (cpp_install_dir, INSTALL_CPP, UNINSTALL_CPP): New
+	variables.
+	(install-cpp, uninstall-cpp): New targets.
+	(install-normal): Depend on $(INSTALL_CPP).
+	(uninstall): Depend on $(UNINSTALL_CPP).
+	* configure.in (cpp_install_dir): New, substitute.
+	(tmake_file): Added t-install-cpp for --enable-cpp.
+	* configure: Rebuilt.
+	* cpp.sh: New cpp script.
+	* config/t-install-cpp: New target fragment.
+
 Tue Mar  2 01:40:01 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
                           Jeffrey A Law  (law@cygnus.com)
 
