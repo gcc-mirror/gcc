@@ -165,10 +165,11 @@ public abstract class URLConnection
   protected URL url;
 
   private static Hashtable handlers = new Hashtable();
-  private static SimpleDateFormat dateFormat1;
-  private static SimpleDateFormat dateFormat2;
-  private static SimpleDateFormat dateFormat3;
+  private static SimpleDateFormat[] dateFormats;
   private static boolean dateformats_initialized;
+
+  /* Cached ParsePosition, used when parsing dates. */
+  private ParsePosition position;
 
   /**
    * Creates a URL connection to a given URL. A real connection is not made.
@@ -366,19 +367,24 @@ public abstract class URLConnection
   {
     if (! dateformats_initialized)
       initializeDateFormats();
+    
+    if (position == null)
+      position = new ParsePosition(0);
 
     long result = defaultValue;
     String str = getHeaderField(name);
 
     if (str != null)
       {
-	Date date;
-	if ((date = dateFormat1.parse(str, new ParsePosition(0))) != null)
-	  result = date.getTime();
-	else if ((date = dateFormat2.parse(str, new ParsePosition(0))) != null)
-	  result = date.getTime();
-	else if ((date = dateFormat3.parse(str, new ParsePosition(0))) != null)
-	  result = date.getTime();
+	for (int i = 0; i < dateFormats.length; i++)
+	  {
+	    SimpleDateFormat df = dateFormats[i];
+	    position.setIndex(0);
+	    position.setErrorIndex(0);
+	    Date date = df.parse(str, position);
+	    if (date != null)
+	      return date.getTime();
+	  }
       }
 
     return result;
@@ -1040,17 +1046,18 @@ public abstract class URLConnection
   // We don't put these in a static initializer, because it creates problems
   // with initializer co-dependency: SimpleDateFormat's constructors eventually 
   // depend on URLConnection (via the java.text.*Symbols classes).
-  private synchronized void initializeDateFormats()
+  private static synchronized void initializeDateFormats()
   {
     if (dateformats_initialized)
       return;
 
     Locale locale = new Locale("En", "Us", "Unix");
-    dateFormat1 =
+    dateFormats = new SimpleDateFormat[3];
+    dateFormats[0] =
       new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'", locale);
-    dateFormat2 =
+    dateFormats[1] =
       new SimpleDateFormat("EEEE, dd-MMM-yy hh:mm:ss 'GMT'", locale);
-    dateFormat3 = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
+    dateFormats[2] = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
     dateformats_initialized = true;
   }
 }
