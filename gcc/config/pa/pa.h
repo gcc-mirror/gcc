@@ -1868,6 +1868,8 @@ extern char *output_block_move ();
 extern char *output_scc_insn ();
 extern char *output_cbranch ();
 extern char *output_bb ();
+extern char *output_dbra ();
+extern char *output_movb ();
 extern char *output_return ();
 extern char *output_floatsisf2 ();
 extern char *output_floatsidf2 ();
