@@ -1,3 +1,12 @@
+2003-01-23  Phil Edwards  <pme@gcc.gnu.org>
+
+	Bulk documentation merge (copy) from trunk.
+	* docs/doxygen/tables.html, docs/doxygen/user.cfg.in,
+	docs/html/configopts.html, docs/html/debug.html,
+	docs/html/documentation.html, docs/html/17_intro/howto.html,
+	docs/html/19_diagnostics/howto.html, docs/html/ext/sgiexts.html:
+	Merge from trunk.
+
 2003-01-23  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9322
