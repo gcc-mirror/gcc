@@ -4524,11 +4524,11 @@ check_for_full_enumeration_handling (type)
 	if (!chain)
 	  {
 	    if (TYPE_NAME (type) == 0)
-	      warning ("case value `%d' not in enumerated type",
-		       TREE_INT_CST_LOW (n->low));
+	      warning ("case value `%ld' not in enumerated type",
+		       (long) TREE_INT_CST_LOW (n->low));
 	    else
-	      warning ("case value `%d' not in enumerated type `%s'",
-		       TREE_INT_CST_LOW (n->low),
+	      warning ("case value `%ld' not in enumerated type `%s'",
+		       (long) TREE_INT_CST_LOW (n->low),
 		       IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
 					    == IDENTIFIER_NODE)
 					   ? TYPE_NAME (type)
@@ -4544,11 +4544,11 @@ check_for_full_enumeration_handling (type)
 	    if (!chain)
 	      {
 		if (TYPE_NAME (type) == 0)
-		  warning ("case value `%d' not in enumerated type",
-			   TREE_INT_CST_LOW (n->high));
+		  warning ("case value `%ld' not in enumerated type",
+			   (long) TREE_INT_CST_LOW (n->high));
 		else
-		  warning ("case value `%d' not in enumerated type `%s'",
-			   TREE_INT_CST_LOW (n->high),
+		  warning ("case value `%ld' not in enumerated type `%s'",
+			   (long) TREE_INT_CST_LOW (n->high),
 			   IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
 						== IDENTIFIER_NODE)
 					       ? TYPE_NAME (type)

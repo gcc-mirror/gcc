@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "toplev.h"
 #include "dbxout.h"
+#include "sdbout.h"
 
 #include "obstack.h"
 #include "c-pragma.h"
@@ -1683,13 +1684,6 @@ assemble_static_space (size)
   char name[12];
   char *namestring;
   rtx x;
-#ifndef ASM_OUTPUT_ALIGNED_LOCAL
-  /* Round size up to multiple of BIGGEST_ALIGNMENT bits
-     so that each uninitialized object starts on such a boundary.  */
-  int rounded = ((size + (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1)
-		 / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
-		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
-#endif
 
 #if 0
   if (flag_shared_data)
@@ -1712,7 +1706,14 @@ assemble_static_space (size)
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
   ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, BIGGEST_ALIGNMENT);
 #else
-  ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+  {
+    /* Round size up to multiple of BIGGEST_ALIGNMENT bits
+       so that each uninitialized object starts on such a boundary.  */
+    int rounded = ((size + (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1)
+		   / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
+		   * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
+    ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+  }
 #endif
 #endif
   return x;

@@ -8171,7 +8171,7 @@ reload_cse_regs (first)
   init_alias_analysis ();
 
   reg_values = (rtx *) alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
-  bzero (reg_values, FIRST_PSEUDO_REGISTER * sizeof (rtx));
+  bzero ((char *)reg_values, FIRST_PSEUDO_REGISTER * sizeof (rtx));
 
   /* Create our EXPR_LIST structures on reload_obstack, so that we can
      free them when we are done.  */

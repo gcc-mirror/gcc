@@ -57,6 +57,7 @@ extern void set_float_handler PROTO((jmp_buf));
 
 #ifdef BUFSIZ
 extern void output_quoted_string	PROTO ((FILE *, char *));
+extern void output_file_directive	PROTO ((FILE *, char *));
 #endif
 
 extern void fancy_abort			PROTO ((void));
