@@ -6629,7 +6629,11 @@ make_compound_operation (x, in_code)
 	  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (tem))
 	      || (GET_MODE_SIZE (mode) >
 		  GET_MODE_SIZE (GET_MODE (XEXP (tem, 0)))))
-	    tem = gen_rtx_fmt_e (GET_CODE (tem), mode, XEXP (tem, 0));
+	    {
+	      if (! INTEGRAL_MODE_P (mode))
+		break;
+	      tem = gen_rtx_fmt_e (GET_CODE (tem), mode, XEXP (tem, 0));
+	    }
 	  else
 	    tem = gen_lowpart_for_combine (mode, XEXP (tem, 0));
 	  return tem;
