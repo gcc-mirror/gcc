@@ -1,3 +1,8 @@
+Sun Jul 21 21:36:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (do_local_cprop): Do not extend lifetimes of registers set by
+	do_local_cprop.
+
 2002-07-21  Andreas Jaeger  <aj@suse.de>
 
         * reload1.c (fixup_abnormal_edges): Remove unused variable.
