@@ -1774,7 +1774,7 @@ for NeXT-based systems, including Darwin and Mac OS X@.  The macro
 used.
 
 @item -fno-nil-receivers
-@opindex -fno-nil-receivers
+@opindex fno-nil-receivers
 Assume that all Objective-C message dispatches (e.g.,
 @code{[receiver message:arg]}) in this translation unit ensure that the receiver
 is not @code{nil}.  This allows for more efficient entry points in the runtime to be
@@ -1782,7 +1782,7 @@ used.  Currently, this option is only available in conjunction with
 the NeXT runtime on Mac OS X 10.3 and later.
 
 @item -fobjc-exceptions
-@opindex -fobjc-exceptions
+@opindex fobjc-exceptions
 Enable syntactic support for structured exception handling in Objective-C,
 similar to what is offered by C++ and Java.  Currently, this option is only
 available in conjunction with the NeXT runtime on Mac OS X 10.3 and later.
@@ -1874,7 +1874,7 @@ Unlike Java, Objective-C does not allow for entire methods to be marked
 to be unlocked properly.
 
 @item -freplace-objc-classes
-@opindex -freplace-objc-classes
+@opindex freplace-objc-classes
 Emit a special marker instructing @command{ld(1)} not to statically link in
 the resulting object file, and allow @command{dyld(1)} to load it in at
 run time instead.  This is used in conjunction with the Fix-and-Continue
@@ -1885,7 +1885,7 @@ is only available in conjunction with the NeXT runtime on Mac OS X 10.3
 and later.
 
 @item -fzero-link
-@opindex -fzero-link
+@opindex fzero-link
 When compiling for the NeXT runtime, the compiler ordinarily replaces calls
 to @code{objc_getClass("@dots{}")} (when the name of the class is known at
 compile time) with static class references that get initialized at load time,
@@ -1936,7 +1936,7 @@ compilation.  This also enforces the coding style convention
 that methods and selectors must be declared before being used.
 
 @item -print-objc-runtime-info
-@opindex -print-objc-runtime-info
+@opindex print-objc-runtime-info
 Generate C header describing the largest structure that is passed by
 value, if any.
 
@@ -6362,8 +6362,8 @@ that select a particular cpu implementation.  Those are @samp{cypress},
 
 @item -mv8plus
 @itemx -mno-v8plus
-@opindex -mv8plus
-@opindex -mno-v8plus
+@opindex mv8plus
+@opindex mno-v8plus
 With @option{-mv8plus}, GCC generates code for the SPARC-V8+ ABI.  The
 difference from the V8 ABI is that the global and out registers are
 considered 64-bit wide.  This is enabled by default on Solaris in 32-bit
@@ -6371,8 +6371,8 @@ mode for all SPARC-V9 processors.
 
 @item -mvis
 @itemx -mno-vis
-@opindex -mvis
-@opindex -mno-vis
+@opindex mvis
+@opindex mno-vis
 With @option{-mvis}, GCC generates code that takes advantage of the UltraSPARC
 Visual Instruction Set extensions.  The default is @option{-mno-vis}.
 @end table
@@ -6886,7 +6886,7 @@ doesn't the linker will give an error message---incorrect code will not be
 generated.
 
 @item -mdebug
-@opindex -mdebug
+@opindex mdebug
 Makes the M32R specific code in the compiler display some statistics
 that might help in debugging programs.
 

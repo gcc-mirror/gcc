@@ -1,3 +1,10 @@
+2004-04-28  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (Objective-C Dialect Options): Don't prefix
+	options with "-" in the option index.
+	(SPARC Options): Likewise.
+	(M32R/D Options): Likewise.
+
 2004-04-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* Makefile.in ($(DESTDIR)$(infodir)/%.info): Don't condition
