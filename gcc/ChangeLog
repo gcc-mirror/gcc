@@ -1,3 +1,7 @@
+2001-05-07  Alan Modra  <amodra@one.net.au>
+
+	* pa.c (compute_frame_size): 64-bit frame marker is 16 bytes.
+
 2001-05-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* unroll.c (loop_iterations): Don't sign-extend abs_diff;
