@@ -267,6 +267,7 @@ in the following sections.
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
 -fgcse  -fgcse-lm  -fgcse-sm -floop-optimize -fcrossjumping @gol
+-fif-conversion -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmove-all-movables  -fno-default-inline  -fno-defer-pop @gol
@@ -3521,6 +3522,18 @@ well.
 @opindex crossjumping
 Perform cross-jumping transformation. This transformation unifies equivalent code and save code size. The
 resulting code may or may not perform better than without cross-jumping.
+
+@item -fif-conversion
+@opindex if-conversion
+Attempt to transform conditional jumps into branch-less equivalents.  This
+include use of conditional moves, min, max, set flags and abs instructions, and
+some tricks doable by standard arithmetics.  The use of conditional execution
+on chips where it is available is controlled by @code{if-conversion2}.
+
+@item -fif-conversion2
+@opindex if-conversion2
+Use conditional execution (where available) to transform conditional jumps into
+branch-less equivalents.
 
 @item -fdelete-null-pointer-checks
 @opindex fdelete-null-pointer-checks
