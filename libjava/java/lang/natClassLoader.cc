@@ -106,7 +106,7 @@ void
 _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
   if (! loader)
-    loader = java::lang::ClassLoader::getSystemClassLoader();
+    loader = java::lang::ClassLoader::systemClassLoader;
   loader->loadedClasses->put(klass->name->toString(), klass);
 }
 
@@ -116,7 +116,7 @@ void
 _Jv_UnregisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
   if (! loader)
-    loader = java::lang::ClassLoader::getSystemClassLoader();
+    loader = java::lang::ClassLoader::systemClassLoader;
   loader->loadedClasses->remove(klass->name->toString());
 }
 
@@ -211,8 +211,7 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
   // See if the class was already loaded by this loader.  This handles
   // initiating loader checks, as we register classes with their
   // initiating loaders.
-  java::lang::ClassLoader *sys
-    = java::lang::ClassLoader::getSystemClassLoader ();
+  java::lang::ClassLoader *sys = java::lang::ClassLoader::systemClassLoader;
   java::lang::ClassLoader *real = loader;
   if (! real)
     real = sys;
