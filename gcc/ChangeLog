@@ -1,3 +1,25 @@
+Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
+
+	* except.c (dw2_build_landing_pads): Use word_mode, not Pmode,
+	as ncessary.
+	(expand_eh_return): Convert between word_mode and Pmode.
+	* unwind-dw2.c (extract_cie_info): Do not assume words and pointers
+	are the same size.
+	(execute_stack_op): Likewise.
+	(execute_cfa_program): Likewise.
+	(uw_frame_state_for): Likewise.
+	(uw_update_context_1): Likewise.
+	* unwind.inc (_Unwind_Reason_Code): Likewise.
+	* config/mips/mips.h (EH_RETURN_DATA_REGNO): Define.
+	(EH_RETURN_STACKADJ_RTX): Likewise.
+	* config/mips/mips.c (compute_frame_size): Make space for saving
+	EH return registers.
+	(mips_expand_epilogue): Handle EH stack adjustments.
+	* config/mips/mips.md (eh_return): New pattern.
+	(eh_set_lr_si): Likewise.
+	(eh_set_lr_di): Likewise.
+	Add splitter to perform EH return after reload.
+		
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* jump.c (mark_jump_label): Tidy previous change.

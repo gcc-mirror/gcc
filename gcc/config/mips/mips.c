@@ -6244,6 +6244,20 @@ compute_frame_size (size)
 	}
     }
 
+  /* We need to restore these for the handler.  */
+  if (current_function_calls_eh_return)
+    {
+      int i;
+      for (i = 0; ; ++i)
+	{
+	  regno = EH_RETURN_DATA_REGNO (i);
+	  if (regno == INVALID_REGNUM)
+	    break;
+	  gp_reg_size += GET_MODE_SIZE (gpr_mode);
+	  mask |= 1L << (regno - GP_REG_FIRST);
+	}
+    }
+
   /* Calculate space needed for fp registers.  */
   if (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT)
     {
@@ -7534,13 +7548,27 @@ mips_expand_epilogue ()
       if (tsize > 32767 && TARGET_MIPS16)
 	abort ();
 
+      if (current_function_calls_eh_return)
+	{
+	  rtx eh_ofs = EH_RETURN_STACKADJ_RTX;
+	  if (Pmode == DImode)
+	    emit_insn (gen_adddi3 (eh_ofs, eh_ofs, tsize_rtx));
+	  else
+	    emit_insn (gen_addsi3 (eh_ofs, eh_ofs, tsize_rtx));
+	  tsize_rtx = eh_ofs;
+	}
+
       emit_insn (gen_blockage ());
-      if (Pmode == DImode && tsize != 0)
-	emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-			       tsize_rtx));
-      else if (tsize != 0)
-	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			       tsize_rtx));
+
+      if (tsize != 0 || current_function_calls_eh_return)
+	{
+	  if (Pmode == DImode)
+	    emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+				   tsize_rtx));
+	  else
+	    emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				   tsize_rtx));
+	}
     }
 
   /* The mips16 loads the return address into $7, not $31.  */
