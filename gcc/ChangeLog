@@ -1,8 +1,21 @@
+2003-03-14  Richard Henderson  <rth@redhat.com>
+
+	PR target/9700
+	* config/alpha/alpha.c (alpha_va_start): Account for 
+	current_function_pretend_args_size in the AP offset.
+
+	* config/alpha/alpha.h (SETUP_INCOMING_VARARGS): Move out of line.
+	(INITIAL_ELIMINATION_OFFSET): Move out of line.
+	* config/alpha/alpha.c (alpha_setup_incoming_varargs): New.
+	(alpha_initial_elimination_offset) New.
+	* config/alpha/alpha-protos.h: Update.
+
 2003-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* stmt.c (expand_start_case): Call emit_queue ().
 
-2003-03-14  Chris Demetriou  <cgd@broadcom.com>, Alexandre Oliva  <aoliva@redhat.com>
+2003-03-14  Chris Demetriou  <cgd@broadcom.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.h (FUNCTION_PROFILER): _mcount() doesn't pop 2
 	words in new abis.

@@ -26,6 +26,8 @@ extern int zap_mask PARAMS ((HOST_WIDE_INT));
 extern int direct_return PARAMS ((void));
 
 extern int alpha_sa_size PARAMS ((void));
+extern HOST_WIDE_INT alpha_initial_elimination_offset PARAMS ((unsigned int,
+							       unsigned int));
 extern int alpha_pv_save_size PARAMS ((void));
 extern int alpha_using_fp PARAMS ((void));
 extern void alpha_write_verstamp PARAMS ((FILE *));
@@ -135,6 +137,8 @@ extern void alpha_initialize_trampoline PARAMS ((rtx, rtx, rtx, int, int, int));
 extern void alpha_reorg PARAMS ((rtx));
 
 extern tree alpha_build_va_list PARAMS ((void));
+extern void alpha_setup_incoming_varargs
+  PARAMS ((CUMULATIVE_ARGS, enum machine_mode, tree, int *, int));
 extern void alpha_va_start PARAMS ((tree, rtx));
 extern rtx alpha_va_arg PARAMS ((tree, tree));
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,

@@ -6558,6 +6558,53 @@ alpha_build_va_list ()
   return record;
 }
 
+/* Perform any needed actions needed for a function that is receiving a
+   variable number of arguments. 
+
+   On the Alpha, we allocate space for all 12 arg registers, but only
+   push those that are remaining.  However, if NO registers need to be
+   saved, don't allocate any space.  This is not only because we won't
+   need the space, but because AP includes the current_pretend_args_size
+   and we don't want to mess up any ap-relative addresses already made.
+
+   If we are not to use the floating-point registers, save the integer
+   registers where we would put the floating-point registers.  This is
+   not the most efficient way to implement varargs with just one register
+   class, but it isn't worth doing anything more efficient in this rare
+   case.  */
+
+void   
+alpha_setup_incoming_varargs(cum, mode, type, pretend_size, no_rtl)
+     CUMULATIVE_ARGS cum;
+     enum machine_mode mode;
+     tree type;
+     int *pretend_size;
+     int no_rtl;
+{
+  if (cum >= 6)
+    return;
+
+  if (!no_rtl)
+    {
+      int set = get_varargs_alias_set ();
+      rtx tmp;
+
+      tmp = gen_rtx_MEM (BLKmode,
+		         plus_constant (virtual_incoming_args_rtx,
+				        (cum + 6) * UNITS_PER_WORD));
+      set_mem_alias_set (tmp, set);
+      move_block_from_reg (16 + cum, tmp, 6 - cum, (6 - cum) * UNITS_PER_WORD);
+
+      tmp = gen_rtx_MEM (BLKmode,
+		         plus_constant (virtual_incoming_args_rtx,
+				        cum * UNITS_PER_WORD));
+      set_mem_alias_set (tmp, set);
+      move_block_from_reg (16 + (TARGET_FPREGS ? 32 : 0) + cum, tmp,
+			   6 - cum, (6 - cum) * UNITS_PER_WORD);
+     }
+  *pretend_size = 12 * UNITS_PER_WORD;
+}
+
 void
 alpha_va_start (valist, nextarg)
      tree valist;
@@ -6579,12 +6626,15 @@ alpha_va_start (valist, nextarg)
 
      If no integer registers need be stored, then we must subtract 48
      in order to account for the integer arg registers which are counted
-     in argsize above, but which are not actually stored on the stack.  */
+     in argsize above, but which are not actually stored on the stack.
+     Must further be careful here about structures straddling the last
+     integer argument register; that futzes with pretend_args_size, 
+     which changes the meaning of AP.  */
 
   if (NUM_ARGS <= 6)
     offset = TARGET_ABI_OPEN_VMS ? UNITS_PER_WORD : 6 * UNITS_PER_WORD;
   else
-    offset = -6 * UNITS_PER_WORD;
+    offset = -6 * UNITS_PER_WORD + current_function_pretend_args_size;
 
   if (TARGET_ABI_OPEN_VMS)
     {
@@ -7198,6 +7248,30 @@ alpha_sa_size ()
     }
 
   return sa_size * 8;
+}
+
+/* Define the offset between two registers, one to be eliminated,
+   and the other its replacement, at the start of a routine.  */
+
+HOST_WIDE_INT
+alpha_initial_elimination_offset(from, to)
+     unsigned int from, to;
+{
+  HOST_WIDE_INT ret;
+
+  ret = alpha_sa_size ();
+  ret += ALPHA_ROUND (current_function_outgoing_args_size);
+
+  if (from == FRAME_POINTER_REGNUM)
+    ;
+  else if (from == ARG_POINTER_REGNUM)
+    ret += (ALPHA_ROUND (get_frame_size ()
+			 + current_function_pretend_args_size)
+	    - current_function_pretend_args_size);
+  else
+    abort ();
+
+  return ret;
 }
 
 int
