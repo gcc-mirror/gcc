@@ -135,6 +135,9 @@ struct cpp_name
   unsigned int offset;		/* from list->namebuf */
 };
 
+/* Per token flags.  */
+#define HSPACE_BEFORE	(1 << 0)	/* token preceded by hspace */
+
 /* A preprocessing token.
    This has been carefully packed and should occupy 16 bytes on
    both 32- and 64-bit hosts.  */
@@ -146,7 +149,7 @@ struct cpp_token
 #else
   unsigned char type;
 #endif
-  unsigned char flags;			/* flags - not presently used */
+  unsigned char flags;			/* flags - see above */
   unsigned int aux;			/* hash of a NAME, or something -
 					   see uses in the code */
   union
@@ -435,7 +438,11 @@ struct cpp_options
 
 struct cpp_reader
 {
+  /* Top of buffer stack.  */
   cpp_buffer *buffer;
+
+  /* Token list used by get_directive_token.  */
+  cpp_toklist directbuf;
 
   /* A buffer used for both for cpp_get_token's output, and also internally. */
   unsigned char *token_buffer;

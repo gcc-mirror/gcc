@@ -1,5 +1,34 @@
 2000-04-21  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cpphash.c (struct arg, struct arglist): Const-ify strings.
+	(warn_trad_stringify, duplicate_arg_p): New helper functions.
+	(collect_expansion): Rewrite to scan over a token list.
+	Remove -traditional support.
+	(collect_formal_parameters): Rename to collect_params; rewrite
+	to scan over a token list.
+	(_cpp_create_definition): Adjust to scan a token list.
+	(_cpp_macroexpand): Remove -traditional support.
+	(_cpp_compare_defs): Whitespace is now canonicalized.
+	(comp_def_part): Delete function.
+
+	* cpphash.h: Update prototypes.
+	* cpplex.c (init_token_list): Don't set lineno if there is no
+	buffer.
+	(pedantic_whitespace): New function.
+	(_cpp_scan_line): Mark tokens that had hspace before.  Don't
+	consume a newline.  Use pedantic_whitespace.
+	(_cpp_lex_token): Remove support for -traditional macros.
+	(_cpp_get_define_token): Delete.
+	(_cpp_get_directive_token): Do the real work here.  Use
+	pedantic_whitespace.
+	(_cpp_init_input_buffer): Initialize pfile->directbuf.
+
+	* cpplib.c (get_macro_name): Delete.
+	(do_define): Read the entire line into pfile->directbuf, then
+	feed the token list to _cpp_create_definition.
+	* cpplib.h (HSPACE_BEFORE): new define.
+	(struct cpp_reader): Add a toklist member, "directbuf".
+
 	* predict.c (estimate_probability): New heuristic: if a jump
 	branches around a block with no successors, predict it taken.
 	Disentangle control flow.

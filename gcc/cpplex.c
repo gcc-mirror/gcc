@@ -57,6 +57,8 @@ static void bump_column		PARAMS ((cpp_printer *, unsigned int,
 static void expand_name_space	PARAMS ((cpp_toklist *));
 static void expand_token_space	PARAMS ((cpp_toklist *));
 static void init_token_list	PARAMS ((cpp_reader *, cpp_toklist *, int));
+static void pedantic_whitespace	PARAMS ((cpp_reader *, U_CHAR *,
+					 unsigned int));
 
 /* Re-allocates PFILE->token_buffer so it will hold at least N more chars.  */
 
@@ -474,7 +476,8 @@ init_token_list (pfile, list, recycle)
       list->namebuf = (unsigned char *) xmalloc (list->name_cap);
     }
 
-  list->line = pfile->buffer->lineno;
+  if (pfile->buffer)
+    list->line = pfile->buffer->lineno;
   list->dir_handler = 0;
   list->dir_flags = 0;
 }
@@ -490,11 +493,13 @@ _cpp_scan_line (pfile, list)
   int i, col;
   long written, len;
   enum cpp_ttype type;
+  int space_before;
 
   init_token_list (pfile, list, 1);
 
   written = CPP_WRITTEN (pfile);
   i = 0;
+  space_before = 0;
   for (;;)
     {
       col = CPP_BUFFER (pfile)->cur - CPP_BUFFER (pfile)->line_base;
@@ -502,17 +507,26 @@ _cpp_scan_line (pfile, list)
       len = CPP_WRITTEN (pfile) - written;
       CPP_SET_WRITTEN (pfile, written);
       if (type == CPP_HSPACE)
-	continue;
+	{
+	  if (CPP_PEDANTIC (pfile))
+	    pedantic_whitespace (pfile, pfile->token_buffer + written, len);
+	  space_before = 1;
+	  continue;
+	}
 
       if (list->tokens_used >= list->tokens_cap)
 	expand_token_space (list);
       if (list->name_used + len >= list->name_cap)
 	expand_name_space (list);
 
+      if (type == CPP_MACRO)
+	type = CPP_NAME;
+
       list->tokens_used++;
       list->tokens[i].type = type;
       list->tokens[i].col = col;
-
+      list->tokens[i].flags = space_before ? HSPACE_BEFORE : 0;
+      
       if (type == CPP_VSPACE)
 	break;
 
@@ -521,8 +535,12 @@ _cpp_scan_line (pfile, list)
       memcpy (list->namebuf + list->name_used, CPP_PWRITTEN (pfile), len);
       list->name_used += len;
       i++;
+      space_before = 0;
     }
   list->tokens[i].aux =  CPP_BUFFER (pfile)->lineno + 1;
+
+  /* XXX Temporary kluge: put back the newline.  */
+  FORWARD(-1);
 }
 
 
@@ -1034,14 +1052,8 @@ _cpp_lex_token (pfile)
 	 For -traditional, a comment is equivalent to nothing.  */
       if (!CPP_OPTION (pfile, discard_comments))
 	return CPP_COMMENT;
-      else if (CPP_TRADITIONAL (pfile)
-	       && ! is_space (PEEKC ()))
-	{
-	  if (pfile->parsing_define_directive)
-	    return CPP_COMMENT;
-	  else
-	    goto get_next;
-	}
+      else if (CPP_TRADITIONAL (pfile))
+	goto get_next;
       else
 	{
 	  CPP_PUTC (pfile, c);
@@ -1060,7 +1072,7 @@ _cpp_lex_token (pfile)
 	  return CPP_OTHER;
 	}
 
-      if (pfile->parsing_define_directive && ! CPP_TRADITIONAL (pfile))
+      if (pfile->parsing_define_directive)
 	{
 	  c2 = PEEKC ();
 	  if (c2 == '#')
@@ -1510,6 +1522,26 @@ maybe_macroexpand (pfile, written)
   return 1;
 }
 
+/* Complain about \v or \f in a preprocessing directive (constraint
+   violation, C99 6.10 para 5).  Caller has checked CPP_PEDANTIC.  */
+static void
+pedantic_whitespace (pfile, p, len)
+     cpp_reader *pfile;
+     U_CHAR *p;
+     unsigned int len;
+{
+  while (len)
+    {
+      if (*p == '\v')
+	cpp_pedwarn (pfile, "vertical tab in preprocessing directive");
+      else if (*p == '\f')
+	cpp_pedwarn (pfile, "form feed in preprocessing directive");
+      p++;
+      len--;
+    }
+}
+
+
 enum cpp_ttype
 cpp_get_token (pfile)
      cpp_reader *pfile;
@@ -1591,14 +1623,10 @@ cpp_get_non_space_token (pfile)
 }
 
 /* Like cpp_get_token, except that it does not execute directives,
-   does not consume vertical space, and automatically pops off macro
-   buffers.
-
-   XXX This function will exist only till collect_expansion doesn't
-   need to see whitespace anymore, then it'll be merged with
-   _cpp_get_directive_token (below).  */
+   does not consume vertical space, discards horizontal space, and
+   automatically pops off macro buffers.  */
 enum cpp_ttype
-_cpp_get_define_token (pfile)
+_cpp_get_directive_token (pfile)
      cpp_reader *pfile;
 {
   long old_written;
@@ -1620,18 +1648,10 @@ _cpp_get_define_token (pfile)
 
     case CPP_HSPACE:
       if (CPP_PEDANTIC (pfile))
-	{
-	  U_CHAR *p, *limit;
-	  p = pfile->token_buffer + old_written;
-	  limit = CPP_PWRITTEN (pfile);
-	  while (p < limit)
-	    {
-	      if (*p == '\v' || *p == '\f')
-		cpp_pedwarn (pfile, "%s in preprocessing directive",
-			     *p == '\f' ? "formfeed" : "vertical tab");
-	      p++;
-	    }
-	}
+	pedantic_whitespace (pfile, pfile->token_buffer + old_written,
+			     CPP_WRITTEN (pfile) - old_written);
+      CPP_SET_WRITTEN (pfile, old_written);
+      goto get_next;
       return CPP_HSPACE;
 
     case CPP_DIRECTIVE:
@@ -1657,23 +1677,6 @@ _cpp_get_define_token (pfile)
 	   callers don't have to deal.  A warning will be issued by
 	   someone else, if necessary.  */
 	return CPP_VSPACE;
-    }
-}
-
-/* Just like _cpp_get_define_token except that it discards horizontal
-   whitespace.  */
-
-enum cpp_ttype
-_cpp_get_directive_token (pfile)
-     cpp_reader *pfile;
-{
-  int old_written = CPP_WRITTEN (pfile);
-  for (;;)
-    {
-      enum cpp_ttype token = _cpp_get_define_token (pfile);
-      if (token != CPP_COMMENT && token != CPP_HSPACE)
-	return token;
-      CPP_SET_WRITTEN (pfile, old_written);
     }
 }
 
@@ -2008,6 +2011,7 @@ _cpp_init_input_buffer (pfile)
   U_CHAR *tmp;
 
   init_chartab ();
+  init_token_list (pfile, &pfile->directbuf, 0);
 
   /* Determine the appropriate size for the input buffer.  Normal C
      source files are smaller than eight K.  */
