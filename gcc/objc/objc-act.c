@@ -6130,7 +6130,10 @@ start_class (code, class_name, super_name, protocol_list)
     {
       {
         static tree implemented_classes = 0;
-        tree chain = implemented_classes;
+        tree chain;
+
+	if (!implemented_classes)
+	  ggc_add_tree_root (&implemented_classes, 1);
         for (chain = implemented_classes; chain; chain = TREE_CHAIN (chain))
            if (TREE_VALUE (chain) == class_name)
 	     {
