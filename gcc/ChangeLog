@@ -1,3 +1,9 @@
+2000-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (fold-const.o): Depend on $(GGC_H), not ggc.h.
+	(toplev.o): Likewise for $(LOOP_H)/loop.h and $(REGS_H)/regs.h.
+	(simplify-rtx.o): Likewise for $(GGC_H)/ggc.h.
+
 2000-11-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (duplicate_decls, copy_lang_decl), dwarfout.c
