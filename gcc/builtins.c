@@ -836,6 +836,22 @@ apply_args_size ()
 		    && have_insn_for (SET, mode))
 		  best_mode = mode;
 
+	    if (best_mode == VOIDmode)
+	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FLOAT);
+		   mode != VOIDmode;
+		   mode = GET_MODE_WIDER_MODE (mode))
+		if (HARD_REGNO_MODE_OK (regno, mode)
+		    && have_insn_for (SET, mode))
+		  best_mode = mode;
+
+	    if (best_mode == VOIDmode)
+	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
+		   mode != VOIDmode;
+		   mode = GET_MODE_WIDER_MODE (mode))
+		if (HARD_REGNO_MODE_OK (regno, mode)
+		    && have_insn_for (SET, mode))
+		  best_mode = mode;
+
 	    mode = best_mode;
 	    if (mode == VOIDmode)
 	      abort ();
@@ -886,6 +902,22 @@ apply_result_size ()
 
 	    if (best_mode == VOIDmode)
 	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+		   mode != VOIDmode;
+		   mode = GET_MODE_WIDER_MODE (mode))
+		if (HARD_REGNO_MODE_OK (regno, mode)
+		    && have_insn_for (SET, mode))
+		  best_mode = mode;
+
+	    if (best_mode == VOIDmode)
+	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FLOAT);
+		   mode != VOIDmode;
+		   mode = GET_MODE_WIDER_MODE (mode))
+		if (HARD_REGNO_MODE_OK (regno, mode)
+		    && have_insn_for (SET, mode))
+		      best_mode = mode;
+
+	    if (best_mode == VOIDmode)
+	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
 		   mode != VOIDmode;
 		   mode = GET_MODE_WIDER_MODE (mode))
 		if (HARD_REGNO_MODE_OK (regno, mode)
