@@ -1,3 +1,10 @@
+2004-07-19  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* g++.dg/lookup/java1.C, g++.dg/lookup/java2.C, g++.dg/other/crash-2.C,
+	g++.dg/parse/casting-operator2.C, g++.dg/parse/dtor3.C,
+	g++.dg/parse/typename6.C, g++.dg/template/dependent-expr4.C,
+	g++.dg/template/nontype3.C: Remove trailing CR from tests.
+	
 2004-07-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16623
