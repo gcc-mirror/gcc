@@ -108,7 +108,8 @@ cgraph_node (decl)
   if (!cgraph_hash)
     {
       cgraph_hash = htab_create (10, hash_node, eq_node, NULL);
-      VARRAY_TREE_INIT (known_decls, 32, "known_decls");
+      if (!known_decls)
+        VARRAY_TREE_INIT (known_decls, 32, "known_decls");
     }
 
   slot =
@@ -394,7 +395,8 @@ cgraph_varpool_node (tree decl)
   if (!cgraph_varpool_hash)
     {
       cgraph_varpool_hash = htab_create (10, cgraph_varpool_hash_node, eq_cgraph_varpool_node, NULL);
-      VARRAY_TREE_INIT (known_decls, 32, "known_decls");
+      if (!known_decls)
+        VARRAY_TREE_INIT (known_decls, 32, "known_decls");
     }
 
   slot =
