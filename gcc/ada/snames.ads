@@ -861,7 +861,7 @@ package Snames is
    --  Reserved words of GNAT Project Files
 
    Name_Project                        : constant Name_Id := N + 523;
-   Name_Modifying                      : constant Name_Id := N + 524;
+   Name_Extends                        : constant Name_Id := N + 524;
    --  Name_External is already declared as N + 161
 
    --  Names used in GNAT Project Files

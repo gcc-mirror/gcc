@@ -225,9 +225,9 @@ package body Prj is
          Std_Naming_Data.Separate_Suffix     := Default_Ada_Impl_Suffix;
          Prj.Env.Initialize;
          Prj.Attr.Initialize;
-         Set_Name_Table_Byte (Name_Project,   Token_Type'Pos (Tok_Project));
-         Set_Name_Table_Byte (Name_Modifying, Token_Type'Pos (Tok_Modifying));
-         Set_Name_Table_Byte (Name_External,  Token_Type'Pos (Tok_External));
+         Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
+         Set_Name_Table_Byte (Name_Extends,  Token_Type'Pos (Tok_Extends));
+         Set_Name_Table_Byte (Name_External, Token_Type'Pos (Tok_External));
       end if;
    end Initialize;
 

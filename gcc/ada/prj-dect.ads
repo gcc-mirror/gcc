@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2000 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -35,7 +35,7 @@ private package Prj.Dect is
    procedure Parse
      (Declarations    : out Prj.Tree.Project_Node_Id;
       Current_Project : Prj.Tree.Project_Node_Id;
-      Modifying       : Prj.Tree.Project_Node_Id);
+      Extends         : Prj.Tree.Project_Node_Id);
    --  Parse project declarative items.
 
 end Prj.Dect;

@@ -249,8 +249,7 @@ package body Prj.Nmsc is
 
                               --  We attempt to register it as a source.
                               --  However, there is no error if the file
-                              --  does not contain a valid source (as
-                              --  indicated by Error_If_Invalid => False).
+                              --  does not contain a valid source.
                               --  But there is an error if we have a
                               --  duplicate unit name.
 
@@ -2224,9 +2223,6 @@ package body Prj.Nmsc is
          Unit_Kind    => Unit_Kind,
          Needs_Pragma => Needs_Pragma);
 
-      --  If it is not a source file, report an error only if
-      --  Error_If_Invalid is true.
-
       if Unit_Name = No_Name then
          if Current_Verbosity = High then
             Write_Str  ("   """);
@@ -2271,7 +2267,7 @@ package body Prj.Nmsc is
 
             --  The unit is already in the list, but may be it is
             --  only the other unit kind (spec or body), or what is
-            --  in the unit list is a unit of a project we are modifying.
+            --  in the unit list is a unit of a project we are extending.
 
             if The_Unit /= Prj.Com.No_Unit then
                The_Unit_Data := Units.Table (The_Unit);

@@ -88,14 +88,14 @@ package body Prj.Dect is
    procedure Parse
      (Declarations    : out Project_Node_Id;
       Current_Project : Project_Node_Id;
-      Modifying       : Project_Node_Id)
+      Extends         : Project_Node_Id)
    is
       First_Declarative_Item : Project_Node_Id := Empty_Node;
 
    begin
       Declarations := Default_Project_Node (Of_Kind => N_Project_Declaration);
       Set_Location_Of (Declarations, To => Token_Ptr);
-      Set_Modified_Project_Of (Declarations, To => Modifying);
+      Set_Modified_Project_Of (Declarations, To => Extends);
       Parse_Declarative_Items
         (Declarations    => First_Declarative_Item,
          In_Zone         => In_Project,
@@ -177,7 +177,7 @@ package body Prj.Dect is
       else
          if Current_Attribute /= Empty_Attribute
            and then
-             Attributes.Table (Current_Attribute).Kind_2 = Associative_Array
+             Attributes.Table (Current_Attribute).Kind_2 /= Single
          then
             Error_Msg ("this attribute need to be an associative array",
                        Location_Of (Attribute));

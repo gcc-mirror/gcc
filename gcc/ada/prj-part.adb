@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.10 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -535,11 +535,11 @@ package body Prj.Part is
 
       end if;
 
-      if Token = Tok_Modifying then
+      if Token = Tok_Extends then
 
-         --  We are modifying another project
+         --  We are extending another project
 
-         --  Scan past "modifying"
+         --  Scan past "extends"
 
          Scan;
 
@@ -595,7 +595,7 @@ package body Prj.Part is
          Prj.Dect.Parse
            (Declarations    => Project_Declaration,
             Current_Project => Project,
-            Modifying       => Modified_Project);
+            Extends         => Modified_Project);
          Set_Project_Declaration_Of (Project, Project_Declaration);
       end;
 

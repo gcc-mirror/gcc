@@ -296,7 +296,7 @@ package Prj is
    type Project_Data is record
       First_Referred_By  : Project_Id     := No_Project;
       --  The project, if any, that was the first to be known
-      --  as importing or modifying this project.
+      --  as importing or extending this project.
       --  Set by Prj.Proc.Process.
 
       Name               : Name_Id        := No_Name;

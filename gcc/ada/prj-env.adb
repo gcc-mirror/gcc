@@ -1023,7 +1023,7 @@ package body Prj.Env is
             Action (Name_Buffer (1 .. Name_Len));
          end if;
 
-         --  If we are modifying a project, visit it
+         --  If we are extending a project, visit it
 
          if Data.Modifies /= No_Project then
             Add (Data.Modifies);
@@ -1120,7 +1120,7 @@ package body Prj.Env is
             end loop;
          end;
 
-         --  If we are modifying a project, visit it
+         --  If we are extending a project, visit it
 
          if Data.Modifies /= No_Project then
             Add (Data.Modifies);
