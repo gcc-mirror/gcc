@@ -1589,12 +1589,11 @@ c_alignof (type)
   return t;
 }
 
-/* Perform default promotions for C data used in expressions.
-   Arrays and functions are converted to pointers;
-   enumeral types or short or char, to int.
-   In addition, manifest constants symbols are replaced by their values.
+/* Perform the array-to-pointer and function-to-pointer conversions
+   for EXP.  
 
-   C++: this will automatically bash references to their target type.  */
+   In addition, references are converted to rvalues and manifest
+   constants are replaced by their values.  */
 
 tree
 decay_conversion (exp)
@@ -1628,8 +1627,15 @@ decay_conversion (exp)
   /* Constants can be used directly unless they're not loadable.  */
   if (TREE_CODE (exp) == CONST_DECL)
     exp = DECL_INITIAL (exp);
-  /* Replace a nonvolatile const static variable with its value.  */
-  else if (TREE_READONLY_DECL_P (exp))
+  /* Replace a nonvolatile const static variable with its value.  We
+     don't do this for arrays, though; we want the address of the
+     first element of the array, not the address of the first element
+     of its initializing constant.  We *do* replace variables that the
+     user isn't really supposed to know about; this is a hack to deal
+     with __PRETTY_FUNCTION__ and the like.  */
+  else if (TREE_READONLY_DECL_P (exp)
+	   && (code != ARRAY_TYPE 
+	       || (TREE_CODE (exp) == VAR_DECL && DECL_IGNORED_P (exp))))
     {
       exp = decl_constant_value (exp);
       type = TREE_TYPE (exp);
@@ -1649,9 +1655,7 @@ decay_conversion (exp)
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
   if (code == FUNCTION_TYPE || is_overloaded_fn (exp))
-    {
-      return build_unary_op (ADDR_EXPR, exp, 0);
-    }
+    return build_unary_op (ADDR_EXPR, exp, 0);
   if (code == ARRAY_TYPE)
     {
       register tree adr;

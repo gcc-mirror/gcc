@@ -1,5 +1,8 @@
 1999-02-26  Mark Mitchell  <mark@markmitchell.com>
 
+	* typeck.c (decay_conversion): Don't confuse constant array
+	variables with their intiailizers.
+
 	* decl.c (duplicate_decls): Copy DECL_TEMPLATE_INSTANTIATED when
 	merging decls.
 	* pt.c (regenerate_decl_from_template): Tweak for clarity.
