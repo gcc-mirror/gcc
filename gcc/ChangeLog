@@ -1,3 +1,8 @@
+2003-10-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.c (machopic_indirect_data_reference): Use a scratch
+	register when generating indirect address.
+
 2003-10-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_addimm_operand): MODE arguemnt is unused.
