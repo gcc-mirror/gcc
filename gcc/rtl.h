@@ -1070,7 +1070,8 @@ extern rtx static_chain_incoming_rtx;
 
 /* There are some RTL codes that require special attention; the
    generation functions included above do the raw handling.  If you
-   add to this list, modify special_rtx in gengenrtl.c as well.  */
+   add to this list, modify special_rtx in gengenrtl.c as well.  You
+   should also modify gen_rtx to use the special function.  */
 
 extern rtx gen_rtx_CONST_INT PROTO((enum machine_mode, HOST_WIDE_INT));
 extern rtx gen_rtx_REG PROTO((enum machine_mode, int));
