@@ -1,3 +1,8 @@
+2002-11-01  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/sparc/freebsd.h (TRANSFER_FROM_TRAMPOLINE): Define
+	__enable_execute_stack function.
+
 2002-11-01  Richard Earnshaw  (rearnsha@arm.com)
 
 	PR target/7856
