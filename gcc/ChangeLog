@@ -1,3 +1,9 @@
+2003-03-12  Richard Henderson  <rth@redhat.com>
+
+        PR opt/8178
+        * config/i386/i386.md (ffssi2): Tighten op1 predicate to
+        the requirements of the output insns.
+
 2003-03-12  Andrew Lewycky  <andrew@mxc.ca>
 
 	PR c++/7050
