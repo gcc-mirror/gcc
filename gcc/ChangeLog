@@ -1,3 +1,9 @@
+Sun Feb  9 23:54:59 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c (simplify_unary_operation,
+	simplify_binary_operation):  Deal with vector modes
+	(simplify_ternary_operation):  Deal with no-op VEC_MERGE.
+
 2002-02-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* toplev.c (rest_of_compilation): Recompute register usage after
