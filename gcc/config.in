@@ -203,9 +203,6 @@
 /* Define if the `long double' type works.  */
 #undef HAVE_LONG_DOUBLE
 
-/* Define if you have a working `mmap' system call.  */
-#undef HAVE_MMAP
-
 /* Define if you have the ANSI # stringizing operator in cpp. */
 #undef HAVE_STRINGIZE
 
@@ -424,4 +421,7 @@
 
 /* Define if mmap can get us zeroed pages from /dev/zero. */
 #undef HAVE_MMAP_ANYWHERE
+
+/* Define if read-only mmap of a plain file works. */
+#undef HAVE_MMAP_FILE
 

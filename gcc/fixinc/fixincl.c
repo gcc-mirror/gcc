@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
-#if HAVE_MMAP
+#if HAVE_MMAP_FILE
 #include <sys/mman.h>
 #define  BAD_ADDR ((void*)-1)
 #endif
@@ -136,7 +136,7 @@ int fixed_ct = 0;
 int altered_ct = 0;
 #endif /* DO_STATS */
 
-#ifdef HAVE_MMAP
+#ifdef HAVE_MMAP_FILE
 #define UNLOAD_DATA() do { if (curr_data_mapped) { \
   munmap ((void*)pz_curr_data, data_map_size); close (data_map_fd); } \
   else free ((void*)pz_curr_data); } while(0)
@@ -510,7 +510,7 @@ load_file ( fname )
       return (char*)NULL;
     }
 
-#ifdef HAVE_MMAP
+#ifdef HAVE_MMAP_FILE
   curr_data_mapped = BOOL_TRUE;
   res = (char*)mmap ((void*)NULL, data_map_size, PROT_READ, MAP_PRIVATE,
                      data_map_fd, 0);
