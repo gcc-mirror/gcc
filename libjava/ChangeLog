@@ -1,3 +1,8 @@
+2004-05-05  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.jni/pr11951.java: Add missing System.loadLibrary()
+	call.
+
 2004-05-05  Mark Wielaard  <mark@klomp.org>
 
 	* javax/swing/AbstractButton.java: Replace special HTML entities with
