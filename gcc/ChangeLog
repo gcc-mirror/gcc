@@ -1,3 +1,9 @@
+2003-09-28  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.c (legitimize_pic_address): Check
+	SYMBOL_REF_LOCAL_P, not ENCODED_SHORT_CALL_ATTR_P.
+	(arm_assemble_integer): Likewise.
+
 2003-09-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/pdp11/pdp11-protos.h, config/pdp11/pdp11.c,

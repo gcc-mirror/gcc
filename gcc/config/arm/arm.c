@@ -2497,7 +2497,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 
       if ((GET_CODE (orig) == LABEL_REF
 	   || (GET_CODE (orig) == SYMBOL_REF && 
-	       ENCODED_SHORT_CALL_ATTR_P (XSTR (orig, 0))))
+	       SYMBOL_REF_LOCAL_P (orig)))
 	  && NEED_GOT_RELOC)
 	pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, address);
       else
@@ -9677,7 +9677,7 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
 	{
 	  if (GET_CODE (x) == SYMBOL_REF
 	      && (CONSTANT_POOL_ADDRESS_P (x)
-		  || ENCODED_SHORT_CALL_ATTR_P (XSTR (x, 0))))
+		  || SYMBOL_REF_LOCAL_P (x)))
 	    fputs ("(GOTOFF)", asm_out_file);
 	  else if (GET_CODE (x) == LABEL_REF)
 	    fputs ("(GOTOFF)", asm_out_file);
