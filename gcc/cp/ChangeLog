@@ -1,3 +1,9 @@
+1999-03-03  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (push_overloaded_decl): Only overwrite the old binding if
+	there was one.
+	* decl2.c (do_local_using_decl): Fix loop termination.
+
 1999-03-02  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (determine_specialization): Don't declare.

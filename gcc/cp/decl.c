@@ -4274,11 +4274,12 @@ push_overloaded_decl (decl, flags)
   else
     {
       /* We only create an OVERLOAD if there was a previous binding at
-	 this level.  In that case, we need to remove the old binding
-	 and replace it with the new binding.  We must also run
-	 through the NAMES on the binding level where the name was
-	 bound to update the chain.  */
-      if (TREE_CODE (new_binding) == OVERLOAD)
+	 this level, or if decl is a template. In the former case, we
+	 need to remove the old binding and replace it with the new
+	 binding.  We must also run through the NAMES on the binding
+	 level where the name was bound to update the chain.  */
+
+      if (TREE_CODE (new_binding) == OVERLOAD && old)
 	{
 	  tree *d;
 	  
