@@ -960,11 +960,16 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	      /* Don't extend the life of a hard register unless it is
 		 user variable (if we have few registers) or it can't
 		 fit into the desired register (meaning something special
-		 is going on).  */
+		 is going on).
+		 Also avoid substituting a return register into I3, because
+		 reload can't handle a conflict with constraints of other
+		 inputs.  */
 	      || (REGNO (src) < FIRST_PSEUDO_REGISTER
 		  && (! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src))
 #ifdef SMALL_REGISTER_CLASSES
 		      || (! all_adjacent && ! REG_USERVAR_P (src))
+		      || (FUNCTION_VALUE_REGNO_P (REGNO (src))
+			  && ! REG_USERVAR_P (src))
 #endif
 		      ))))
 	return 0;
