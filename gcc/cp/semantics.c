@@ -2156,8 +2156,10 @@ cp_expand_stmt (t)
   switch (TREE_CODE (t))
     {
     case CLEANUP_STMT:
-      /* Don't destroy the chosen named return value.  */
-      if (CLEANUP_DECL (t) != current_function_return_value)
+      if (CLEANUP_DECL (t)
+	  && CLEANUP_DECL (t) == current_function_return_value)
+	/* Don't destroy the chosen named return value.  */;
+      else
 	genrtl_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
       break;
 

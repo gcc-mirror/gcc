@@ -1,3 +1,8 @@
+2001-07-10  Jason Merrill  <jason_merrill@redhat.com>
+
+	* semantics.c (cp_expand_stmt): Fix for null
+	current_function_return_value.
+
 2001-07-10  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* call.c (build_op_delete_call): Initialize fn.
@@ -6,6 +11,8 @@
 	* class.c: Add prototype for binfo_ctor_vtable.
 	(get_primary_binfo): Initialize result.
 	* init.c (build_java_class_ref): Initialize name.
+
+2001-07-09  Erik Rozendaal  <dlr@acm.org>
 
 	* typeck.c (unary_complex_lvalue): Do not duplicate the
 	argument to modify, pre-, or post-increment when used as an
