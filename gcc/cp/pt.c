@@ -396,8 +396,7 @@ maybe_begin_member_template_processing (decl)
 /* Undo the effects of begin_member_template_processing. */
 
 void 
-maybe_end_member_template_processing (decl)
-     tree decl;
+maybe_end_member_template_processing ()
 {
   if (! processing_template_decl)
     return;
@@ -1242,19 +1241,21 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	       check_specialization_scope.  */
 	    return error_mark_node;
 	  else
-	    /* It's not legal to write an explicit instantiation in
-	       class scope, e.g.:
+	    {
+	      /* It's not legal to write an explicit instantiation in
+		 class scope, e.g.:
 
-	         class C { template void f(); }
+	           class C { template void f(); }
 
-	       This case is caught by the parser.  However, on
-	       something like:
+		   This case is caught by the parser.  However, on
+		   something like:
 	       
-	         template class C { void f(); };
+		   template class C { void f(); };
 
-	       (which is illegal) we can get here.  The error will be
-	       issued later.  */
-	    ;
+		   (which is illegal) we can get here.  The error will be
+		   issued later.  */
+	      ;
+	    }
 
 	  return decl;
 	}
@@ -1712,7 +1713,7 @@ tree
 current_template_args ()
 {
   tree header;
-  tree args;
+  tree args = NULL_TREE;
   int length = TMPL_PARMS_DEPTH (current_template_parms);
   int l = length;
 
@@ -3388,7 +3389,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       int arg_depth;
       int parm_depth;
       int is_partial_instantiation;
-      tree prev_local_enum;
+      tree prev_local_enum = NULL_TREE;
 
       template = most_general_template (template);
       parmlist = DECL_TEMPLATE_PARMS (template);
@@ -4860,7 +4861,7 @@ tsubst_decl (t, args, type, in_decl)
 {
   int saved_lineno;
   char* saved_filename;
-  tree r;
+  tree r = NULL_TREE;
 
   /* Set the filename and linenumber to improve error-reporting.  */
   saved_lineno = lineno;
@@ -8362,7 +8363,7 @@ set_mangled_name_for_template_decl (decl)
      tree decl;
 {
   tree saved_namespace;
-  tree context;
+  tree context = NULL_TREE;
   tree fn_type;
   tree ret_type;
   tree parm_types;

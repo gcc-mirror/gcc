@@ -496,7 +496,11 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
 
 int   
 lang_decode_option (argc, argv)
-     int argc;
+     int argc
+#if !USE_CPPLIB
+  ATTRIBUTE_UNUSED
+#endif
+  ;
      char **argv;
 
 {
@@ -1040,8 +1044,8 @@ maybe_retrofit_in_chrg (fn)
    QUALS are the qualifiers for the this pointer.  */
 
 void
-grokclassfn (ctype, cname, function, flags, quals)
-     tree ctype, cname, function;
+grokclassfn (ctype, function, flags, quals)
+     tree ctype, function;
      enum overload_flags flags;
      tree quals;
 {
@@ -1395,8 +1399,8 @@ acceptable_java_type (type)
    Otherwise, print appropriate error messages, and return 0.  */
 
 int
-check_java_method (ctype, method)
-     tree ctype, method;
+check_java_method (method)
+     tree method;
 {
   int jerr = 0;
   tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (method));
@@ -1937,7 +1941,7 @@ grokoptypename (declspecs, declarator)
 int
 copy_assignment_arg_p (parmtype, virtualp)
      tree parmtype;
-     int virtualp;
+     int virtualp ATTRIBUTE_UNUSED;
 {
   if (current_class_type == NULL_TREE)
     return 0;
@@ -2656,7 +2660,7 @@ import_export_class (ctype)
     
 int
 finish_prevtable_vardecl (prev, vars)
-     tree prev, vars;
+     tree prev ATTRIBUTE_UNUSED, vars;
 {
   tree ctype = DECL_CONTEXT (vars);
   import_export_class (ctype);
@@ -3292,7 +3296,7 @@ do_ctors (start)
 
 	  if (IS_AGGR_TYPE (TREE_TYPE (decl))
 	      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	    expand_aggr_init (decl, init, 0, 0);
+	    expand_aggr_init (decl, init, 0);
 	  else if (TREE_CODE (init) == TREE_VEC)
 	    {
 	      expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),

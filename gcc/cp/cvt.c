@@ -36,7 +36,7 @@ extern tree static_aggregates;
 
 static tree cp_convert_to_pointer PROTO((tree, tree));
 static tree convert_to_pointer_force PROTO((tree, tree));
-static tree build_up_reference PROTO((tree, tree, int, int));
+static tree build_up_reference PROTO((tree, tree, int));
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -343,9 +343,9 @@ convert_to_pointer_force (type, expr)
    DIRECT_BIND in FLAGS controls how any temporaries are generated.  */
 
 static tree
-build_up_reference (type, arg, flags, checkconst)
+build_up_reference (type, arg, flags)
      tree type, arg;
-     int flags, checkconst;
+     int flags;
 {
   tree rval;
   tree argtype = TREE_TYPE (arg);
@@ -471,8 +471,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	    }
 	}
 
-      return build_up_reference (reftype, expr, flags,
-				 ! (convtype & CONV_CONST));
+      return build_up_reference (reftype, expr, flags);
     }
   else if ((convtype & CONV_REINTERPRET) && lvalue_p (expr))
     {
@@ -501,7 +500,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 					 "converting", 0, 0);
       if (rval == error_mark_node)
 	return error_mark_node;
-      rval = build_up_reference (reftype, rval, flags, 1);
+      rval = build_up_reference (reftype, rval, flags);
 
       if (rval && ! TYPE_READONLY (TREE_TYPE (reftype)))
 	cp_pedwarn ("initializing non-const `%T' with `%T' will use a temporary",
@@ -920,7 +919,7 @@ convert_force (type, expr, convtype)
 
 tree
 build_type_conversion (code, xtype, expr, for_sure)
-     enum tree_code code;
+     enum tree_code code ATTRIBUTE_UNUSED;
      tree xtype, expr;
      int for_sure;
 {
@@ -942,7 +941,7 @@ build_expr_type_conversion (desires, expr, complain)
      int complain;
 {
   tree basetype = TREE_TYPE (expr);
-  tree conv;
+  tree conv = NULL_TREE;
   tree winner = NULL_TREE;
 
   if (expr == null_node 

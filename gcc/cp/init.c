@@ -47,10 +47,8 @@ tree current_base_init_list, current_member_init_list;
 
 static void expand_aggr_vbase_init_1 PROTO((tree, tree, tree, tree));
 static void expand_aggr_vbase_init PROTO((tree, tree, tree, tree));
-static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int,
-				      int));
-static void expand_default_init PROTO((tree, tree, tree, tree, int,
-				       int));
+static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int));
+static void expand_default_init PROTO((tree, tree, tree, tree, int));
 static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, tree,
 				      int));
 static void perform_member_init PROTO((tree, tree, tree, int));
@@ -177,7 +175,7 @@ perform_member_init (member, name, init, explicit)
 			   array_type_nelts (type), TREE_VALUE (init), 1);
 	}
       else
-	expand_aggr_init (decl, init, 0, 0);
+	expand_aggr_init (decl, init, 0);
     }
   else
     {
@@ -589,7 +587,7 @@ emit_base_init (t, immediately)
 	  member = convert_pointer_to_real (base_binfo, current_class_ptr);
 	  expand_aggr_init_1 (base_binfo, NULL_TREE,
 			      build_indirect_ref (member, NULL_PTR), init,
-			      BINFO_OFFSET_ZEROP (base_binfo), LOOKUP_NORMAL);
+			      LOOKUP_NORMAL);
 
 	  expand_end_target_temps ();
 	  free_temp_slots ();
@@ -784,7 +782,7 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
   if (init)
     init = TREE_VALUE (init);
   /* Call constructors, but don't set up vtables.  */
-  expand_aggr_init_1 (binfo, exp, ref, init, 0, LOOKUP_COMPLAIN);
+  expand_aggr_init_1 (binfo, exp, ref, init, LOOKUP_COMPLAIN);
 
   expand_end_target_temps ();
   free_temp_slots ();
@@ -1037,9 +1035,8 @@ expand_member_init (exp, name, init)
    perform the initialization, but not both, as it would be ambiguous.  */
 
 void
-expand_aggr_init (exp, init, alias_this, flags)
+expand_aggr_init (exp, init, flags)
      tree exp, init;
-     int alias_this;
      int flags;
 {
   tree type = TREE_TYPE (exp);
@@ -1108,18 +1105,17 @@ expand_aggr_init (exp, init, alias_this, flags)
 
   TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
   expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
-		      init, alias_this, LOOKUP_NORMAL|flags);
+		      init, LOOKUP_NORMAL|flags);
   TREE_TYPE (exp) = type;
   TREE_READONLY (exp) = was_const;
   TREE_THIS_VOLATILE (exp) = was_volatile;
 }
 
 static void
-expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
+expand_default_init (binfo, true_exp, exp, init, flags)
      tree binfo;
      tree true_exp, exp;
      tree init;
-     int alias_this;
      int flags;
 {
   tree type = TREE_TYPE (exp);
@@ -1212,11 +1208,10 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
    its description.  */
 
 static void
-expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
+expand_aggr_init_1 (binfo, true_exp, exp, init, flags)
      tree binfo;
      tree true_exp, exp;
      tree init;
-     int alias_this;
      int flags;
 {
   tree type = TREE_TYPE (exp);
@@ -1247,7 +1242,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 
   /* We know that expand_default_init can handle everything we want
      at this point.  */
-  expand_default_init (binfo, true_exp, exp, init, alias_this, flags);
+  expand_default_init (binfo, true_exp, exp, init, flags);
 }
 
 /* Report an error if NAME is not the name of a user-defined,
@@ -2311,7 +2306,7 @@ build_new_1 (exp)
     }
   else
     {
-      int susp;
+      int susp = 0;
 
       if (flag_exceptions)
 	/* We will use RVAL when generating an exception handler for
@@ -2622,7 +2617,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
       /* This is the real size */
       virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
       body = build_expr_list (NULL_TREE,
-			      build_x_delete (ptype, base_tbd,
+			      build_x_delete (base_tbd,
 					      2 | use_global_delete,
 					      virtual_size));
       body = build (COND_EXPR, void_type_node,
@@ -2679,7 +2674,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 	  /* True size with header.  */
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
 	}
-      deallocate_expr = build_x_delete (ptype, base_tbd,
+      deallocate_expr = build_x_delete (base_tbd,
 					2 | use_global_delete,
 					virtual_size);
       if (auto_delete_vec != integer_one_node)
@@ -2793,7 +2788,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	  while (elts)
 	    {
 	      host_i -= 1;
-	      expand_aggr_init (baseref, TREE_VALUE (elts), 0, 0);
+	      expand_aggr_init (baseref, TREE_VALUE (elts), 0);
 
 	      expand_assignment (base, baseinc, 0, 0);
 	      elts = TREE_CHAIN (elts);
@@ -2883,7 +2878,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	  if (from_array == 2)
 	    expand_expr_stmt (build_modify_expr (to, NOP_EXPR, from));
 	  else if (TYPE_NEEDS_CONSTRUCTING (type))
-	    expand_aggr_init (to, from, 0, 0);
+	    expand_aggr_init (to, from, 0);
 	  else if (from)
 	    expand_assignment (to, from, 0, 0);
 	  else
@@ -2897,7 +2892,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 			   array_type_nelts (type), 0, 0);
 	}
       else
-	expand_aggr_init (build1 (INDIRECT_REF, type, base), init, 0, 0);
+	expand_aggr_init (build1 (INDIRECT_REF, type, base), init, 0);
 
       expand_assignment (base,
 			 build (PLUS_EXPR, build_pointer_type (type), base, size),
@@ -2975,8 +2970,8 @@ expand_vec_init (decl, base, maxindex, init, from_array)
    This does not call any destructors.  */
 
 tree
-build_x_delete (type, addr, which_delete, virtual_size)
-     tree type, addr;
+build_x_delete (addr, which_delete, virtual_size)
+     tree addr;
      int which_delete;
      tree virtual_size;
 {

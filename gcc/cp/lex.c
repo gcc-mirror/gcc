@@ -1178,7 +1178,7 @@ interface_strcmp (s)
 
 static void
 set_typedecl_interface_info (prev, vars)
-     tree prev, vars;
+     tree prev ATTRIBUTE_UNUSED, vars;
 {
   tree id = get_time_identifier (DECL_SOURCE_FILE (vars));
   tree fileinfo = IDENTIFIER_CLASS_VALUE (id);
@@ -1284,7 +1284,7 @@ process_next_inline (t)
   tree context;
   struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
   context = hack_decl_function_context (i->fndecl);  
-  maybe_end_member_template_processing (i->fndecl);
+  maybe_end_member_template_processing ();
   if (context)
     pop_cp_function_context (context);
   i = i->next;
@@ -1935,7 +1935,7 @@ do_pending_defargs ()
 
       if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
 	{
-	  maybe_end_member_template_processing (defarg_fn);
+	  maybe_end_member_template_processing ();
 	  check_default_args (defarg_fn);
 	}
 
@@ -2703,7 +2703,8 @@ readescape (ignore_ptr)
 	;
       else if ((count - 1) * 4 >= TYPE_PRECISION (integer_type_node)
 	       || (count > 1
-		   && ((1 << (TYPE_PRECISION (integer_type_node) - (count - 1) * 4))
+		   && (((unsigned)1 <<
+			(TYPE_PRECISION (integer_type_node) - (count - 1) * 4))
 		       <= firstdig)))
 	pedwarn ("hex escape out of range");
       return code;
@@ -4016,7 +4017,7 @@ real_yylex ()
 		if (ignore)
 		  goto tryagain;
 		if (width < HOST_BITS_PER_INT
-		    && (unsigned) c >= (1 << width))
+		    && (unsigned) c >= ((unsigned)1 << width))
 		  pedwarn ("escape sequence out of range for character");
 #ifdef MAP_CHARACTER
 		if (ISPRINT (c))
@@ -4177,7 +4178,7 @@ real_yylex ()
 		if (ignore)
 		  goto skipnewline;
 		if (width < HOST_BITS_PER_INT
-		    && (unsigned) c >= (1 << width))
+		    && (unsigned) c >= ((unsigned)1 << width))
 		  warning ("escape sequence out of range for character");
 	      }
 	    else if (c == '\n')
@@ -4237,7 +4238,7 @@ real_yylex ()
 		for (byte = 0; byte < WCHAR_BYTES; ++byte)
 		  {
 		    int value;
-		    if (byte >= sizeof (c))
+		    if (byte >= (int) sizeof(c))
 		      value = 0;
 		    else
 		      value = (c >> (byte * width)) & bytemask;

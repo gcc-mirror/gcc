@@ -47,7 +47,7 @@ struct token  {
 
 static int do_aggr PROTO((void));
 static int probe_obstack PROTO((struct obstack *, tree, unsigned int));
-static void scan_tokens PROTO((int));
+static void scan_tokens PROTO((unsigned int));
 
 #ifdef SPEW_DEBUG
 static int num_tokens PROTO((void));
@@ -155,9 +155,9 @@ consume_token ()
 
 static void
 scan_tokens (n)
-     int n;
+     unsigned int n;
 {
-  int i;
+  unsigned int i;
   struct token *tmp;
 
   /* We cannot read past certain tokens, so make sure we don't.  */
@@ -244,7 +244,7 @@ int
 yylex ()
 {
   struct token tmp_token;
-  tree trrr;
+  tree trrr = NULL_TREE;
   int old_looking_for_typename = 0;
 
  retry:

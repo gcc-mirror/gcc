@@ -731,7 +731,7 @@ simplify_type(typ)
   int lvl, i;
 
   i = strlen(typ);
-  while (i > 0 && ISSPACE(typ[i-1])) typ[--i] = 0;
+  while (i > 0 && ISSPACE((unsigned char) typ[i-1])) typ[--i] = 0;
 
   if (i > 7 && STREQL(&typ[i-5], "const"))
     {
