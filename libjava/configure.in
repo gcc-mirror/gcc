@@ -794,7 +794,7 @@ changequote(<<,>>)
 	 d=`echo $f | sed -e 's,/[^/]*$,,'`
 changequote([,])
 	 $srcdir/../mkinstalldirs $d
-	 : > $f
+	 echo > $f
       }
    done
 ],

@@ -1,3 +1,9 @@
+2000-12-08  Tom Tromey  <tromey@redhat.com>
+
+	From Phil Edwards:
+	* configure: Rebuilt.
+	* configure.in: Use echo, not `:', to create .d files.
+
 2000-12-08  Warren Levy  <warrenl@redhat.com>
 
 	* java/lang/StringBuffer.java (insert(int,char[])): Avoid
