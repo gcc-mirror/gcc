@@ -2377,6 +2377,7 @@ gnu/java/net/natPlainDatagramSocketImpl.cc \
 gnu/java/net/natPlainSocketImpl.cc \
 gnu/java/net/protocol/core/natCoreInputStream.cc \
 gnu/java/nio/natFileLockImpl.cc \
+gnu/java/nio/natPipeImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
 gnu/java/nio/natNIOServerSocket.cc \
 java/io/natFile.cc \
@@ -2555,14 +2556,14 @@ gnu/java/awt/natEmbeddedWindow.lo \
 gnu/java/net/natPlainDatagramSocketImpl.lo \
 gnu/java/net/natPlainSocketImpl.lo \
 gnu/java/net/protocol/core/natCoreInputStream.lo \
-gnu/java/nio/natFileLockImpl.lo gnu/java/nio/natSelectorImpl.lo \
-gnu/java/nio/natNIOServerSocket.lo java/io/natFile.lo \
-java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
-java/io/natVMObjectStreamClass.lo java/lang/natCharacter.lo \
-java/lang/natClass.lo java/lang/natClassLoader.lo \
-java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
-java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
-java/lang/natRuntime.lo java/lang/natString.lo \
+gnu/java/nio/natFileLockImpl.lo gnu/java/nio/natPipeImpl.lo \
+gnu/java/nio/natSelectorImpl.lo gnu/java/nio/natNIOServerSocket.lo \
+java/io/natFile.lo java/io/natFileDescriptor.lo \
+java/io/natObjectInputStream.lo java/io/natVMObjectStreamClass.lo \
+java/lang/natCharacter.lo java/lang/natClass.lo \
+java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
+java/lang/natDouble.lo java/lang/natFloat.lo java/lang/natMath.lo \
+java/lang/natObject.lo java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natVMSecurityManager.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
@@ -3055,7 +3056,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/charset/UTF_16LE.P \
 .deps/gnu/java/nio/charset/UTF_8.P .deps/gnu/java/nio/natFileLockImpl.P \
 .deps/gnu/java/nio/natNIOServerSocket.P \
-.deps/gnu/java/nio/natSelectorImpl.P \
+.deps/gnu/java/nio/natPipeImpl.P .deps/gnu/java/nio/natSelectorImpl.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectInputStream.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectOutputStream.P \
 .deps/gnu/java/rmi/dgc/DGCImpl.P .deps/gnu/java/rmi/dgc/DGCImpl_Skel.P \

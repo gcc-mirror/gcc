@@ -1,5 +1,27 @@
 2003-10-12  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/PipeImpl.java
+	(SourceChannelImpl): New inner class.
+	(SinkChannelImpl): New inner class.
+	(sink): New member variable.
+	(source): New member variable.
+	(PipeImpl): Add SelectorProvider argument, implemented.
+	(nativeInit): New method.
+	(sink): Return sink channel.
+	(source): Return source channel.
+	* gnu/java/nio/SelectorProviderImpl.java
+	(openPipe): Give provider as argument to PipeImpl constructor.
+	* java/nio/channels/spi/SelectorProvider.java
+	(pr): Removed.
+	(systemDefaultProvider): New member variable.
+	(provider): Made it synchronized, use property
+	java.nio.channels.spi.SelectorProvider.
+	* gnu/java/nio/natPipeImpl.cc: New file.
+	* Makefile.am (nat_source_files): Added gnu/java/nio/natPipeImpl.cc.
+	* Makefile.in: Regenerated.
+
+2003-10-12  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/table/DefaultTableModel.java,
 	javax/swing/table/TableCellEditor.java,
 	javax/swing/table/TableCellRenderer.java,

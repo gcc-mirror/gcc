@@ -1,5 +1,5 @@
 /* PipeImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,21 +37,127 @@ exception statement from your version. */
 
 package gnu.java.nio;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.Pipe;
+import java.nio.channels.spi.SelectorProvider;
 
 class PipeImpl extends Pipe
 {
-  public PipeImpl()
+  public final class SourceChannelImpl extends Pipe.SourceChannel
   {
+    private int native_fd;
+    
+    public SourceChannelImpl (SelectorProvider selectorProvider,
+                              int native_fd)
+    {
+      super (selectorProvider);
+      this.native_fd = native_fd;
+    }
+
+    protected final void implCloseSelectableChannel()
+      throws IOException
+    {
+      throw new Error ("Not implemented");
+    }
+
+    protected void implConfigureBlocking (boolean blocking)
+      throws IOException
+    {
+      throw new Error ("Not implemented");
+    }
+
+    public final int read (ByteBuffer src)
+      throws IOException
+    {
+      throw new Error ("Not implemented");
+    }
+
+    public final long read (ByteBuffer[] srcs)
+      throws IOException
+    {
+      return read (srcs, 0, srcs.length);
+    }
+
+    public final long read (ByteBuffer[] srcs, int offset, int len)
+      throws IOException
+    {
+      throw new Error ("Not implemented");
+    }
+
+    public final int getNativeFD()
+    {
+      return native_fd;
+    }
   }
+
+  public final class SinkChannelImpl extends Pipe.SinkChannel
+  {
+    private int native_fd;
+    
+    public SinkChannelImpl (SelectorProvider selectorProvider,
+                            int native_fd)
+    {
+      super (selectorProvider);
+      this.native_fd = native_fd;
+    }
+
+    protected final void implCloseSelectableChannel()
+      throws IOException
+    {
+      throw new Error ("Not implemented");
+    }
+
+    protected final void implConfigureBlocking (boolean blocking)
+      throws IOException
+    {
+      throw new Error ("Not implemented");
+    }
+
+    public final int write (ByteBuffer dst)
+      throws IOException
+    {
+      throw new Error ("Not implemented");
+    }
+
+    public final long write (ByteBuffer[] dsts)
+      throws IOException
+    {
+      return write (dsts, 0, dsts.length);
+    }
+
+    public final long write (ByteBuffer[] dsts, int offset, int len)
+      throws IOException
+    {
+      throw new Error ("Not implemented");
+    }
+
+    public final int getNativeFD()
+    {
+      return native_fd;
+    }
+  }
+
+  private SinkChannelImpl sink;
+  private SourceChannelImpl source;
+  
+  public PipeImpl (SelectorProvider provider)
+    throws IOException
+  {
+    super();
+    nativeInit (provider);
+  }
+
+  private native void nativeInit (SelectorProvider provider)
+    throws IOException;
     
   public Pipe.SinkChannel sink()
   {
-    return null;
+    return sink;
   }
 
   public Pipe.SourceChannel source()
   {
-    return null;
+    return source;
   }
 }

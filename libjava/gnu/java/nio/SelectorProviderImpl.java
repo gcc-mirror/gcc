@@ -1,5 +1,5 @@
 /* SelectorProviderImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,7 +60,7 @@ public class SelectorProviderImpl extends SelectorProvider
   public Pipe openPipe ()
     throws IOException
   {
-    return new PipeImpl ();
+    return new PipeImpl (this);
   }
     
   public AbstractSelector openSelector ()

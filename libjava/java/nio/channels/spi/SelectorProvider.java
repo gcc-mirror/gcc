@@ -1,5 +1,5 @@
 /* SelectorProvider.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import java.nio.channels.SocketChannel;
  */
 public abstract class SelectorProvider
 {
-  static SelectorProvider pr;
+  private static SelectorProvider systemDefaultProvider;
     
   /**
    * Initializes the selector provider.
@@ -95,13 +95,32 @@ public abstract class SelectorProvider
    * Returns the system-wide default selector provider for this invocation
    * of the Java virtual machine.
    */
-  public static SelectorProvider provider ()
+  public static synchronized SelectorProvider provider ()
   {
-    if (pr == null)
+    if (systemDefaultProvider == null)
       {
-        pr = new SelectorProviderImpl ();
+        String propertyValue =
+          System.getProperty ("java.nio.channels.spi.SelectorProvider");
+
+        if (propertyValue == null
+            || propertyValue.equals (""))
+          systemDefaultProvider = new SelectorProviderImpl();
+        else
+          {
+            try
+              {
+                systemDefaultProvider = (SelectorProvider) Class.forName
+                  (propertyValue).newInstance();
+              }
+            catch (Exception e)
+              {
+                System.err.println ("Could not instantiate class: "
+                                    + propertyValue);
+                systemDefaultProvider = new SelectorProviderImpl();
+              }
+          }
       }
     
-    return pr;
+    return systemDefaultProvider;
   }
 }
