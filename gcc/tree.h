@@ -2856,6 +2856,7 @@ extern void expand_main_function (void);
 extern void init_dummy_function_start (void);
 extern void expand_dummy_function_end (void);
 extern void init_function_for_compilation (void);
+extern void allocate_struct_function (tree);
 extern void init_function_start (tree);
 extern void assign_parms (tree);
 extern void put_var_into_stack (tree, int);

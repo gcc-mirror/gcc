@@ -1,3 +1,11 @@
+2003-08-29  Richard Henderson  <rth@redhat.com>
+
+	* function.c (allocate_struct_function): New, split out of ...
+	(prepare_function_start, init_function_start): ... here.
+	* expr.c (init_expr): Use ggc_alloc_cleared.
+	* stmt.c (init_stmt_for_function): Likewise.
+	* tree.h (allocate_struct_function): Declare.
+
 2003-08-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
         * config.gcc: Don't use negated character class in shell case
