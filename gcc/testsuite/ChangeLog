@@ -1,3 +1,10 @@
+1998-10-11  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/instantiate4.C: New test: -frepo does not
+	generate needed virtual table
+
+	* lib/old-dejagnu.exp (old-dejagnu): support `Build then link:'
+
 1998-10-10  Dariush Eslimi  <eslimi@loran.com>
 
 	* g++.old-deja/g++.ext/typeof1.C: New test; typeof based on
