@@ -1,4 +1,19 @@
 2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	Copy files from g77.f-torture/compile.
+	Add "{ dg-do compile}".  Other changes as noted
+	* gfortran.dg/g77/19990905-0.f: XFAIL PR 16511
+	* gfortran.dg/g77/20010519-1.f: Add dg-warning as required
+	* gfortran.dg/g77/20030115-1.f: Add dg-warning as required
+	* gfortran.dg/g77/20030326-1.f: XFAIL PR 16511
+	* gfortran.dg/g77/970125-0.f: Add dg-excess-errors.
+	* gfortran.dg/g77/980519-2.f: Declare hd_S,hd_Z,hd_T
+	* gfortran.dg/g77/990115-1.f: Declare RANK as INTEGER
+	* gfortran.dg/g77/alpha1.f: Separate declaration and DATA 
+	statement to conform to standard.  Append alpha1.x for reference. 
+	* gfortran.dg/g77/xformat.f: Add dg-warning
+
+2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
  
 	* gfortran.dg/g77/cpp.F: Copy from g77.f-torture/compile.
 	Add {dg-do compile} directive.
