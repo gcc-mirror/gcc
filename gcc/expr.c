@@ -5719,11 +5719,12 @@ expand_expr (exp, target, tmode, modifier)
 		size = (bitpos % BITS_PER_UNIT) + bitsize + BITS_PER_UNIT - 1;
 
         	/* Check the access right of the pointer.  */
-		emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-				   to, ptr_mode,
-				   GEN_INT (size / BITS_PER_UNIT),
-				   TYPE_MODE (sizetype),
-				   GEN_INT (memory_usage), QImode);
+		if (size > BITS_PER_UNIT)
+		  emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
+				     to, ptr_mode,
+				     GEN_INT (size / BITS_PER_UNIT),
+				     TYPE_MODE (sizetype),
+				     GEN_INT (memory_usage), QImode);
 	      }
 	  }
 
