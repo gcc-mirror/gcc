@@ -1,3 +1,21 @@
+2001-12-07  Dale Johannesen  <dalej@apple.com>
+
+        * config/rs6000/darwin.h: Set MAX_LONG_TYPE_SIZE to 32.
+        * config/rs6000/rs6000.c (rs6000_emit_move): In Darwin-
+        specific codegen, eliminate a register copy.
+        (print_operand_address): Add support for Darwin's lo16(constant) 
+	syntax.
+        (rs6000_machopic_legitimize_pic_address): Fix darwin-specific 
+        generation of addresses within very large data objects.
+        (s8bit_cint_operand):  New.
+        * config/rs6000/rs6000.md: Remove "iu" reference for 750/7400.
+        Move "mtjmpr" to correct functional unit for 750/7400/7450.
+        Add imul2 and imul3 insn types for multiplication by 16- and 
+	8-bit constants.
+        Change tablejump patterns to strongly discourage using LR 
+	rather than CTR.
+	Add %lo16 patterns for Darwin loads and stores.
+
 2001-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha.md: Use (HOST_WIDE_INT)1<<63 in lieu of 0x8000000000000000.
