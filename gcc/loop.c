@@ -6299,10 +6299,10 @@ express_from (g1, g2)
     return gen_rtx_PLUS (g2->mode, mult, add);
 }
 
-/* Return 1 if giv G2 can be combined with G1.  This means that G2 can use
-   (either directly or via an address expression) a register used to represent
-   G1.  Set g2->new_reg to a represtation of G1 (normally just
-   g1->dest_reg).  */
+/* Return an rtx, if any, that expresses giv G2 as a function of the register
+   represented by G1.  This indicates that G2 should be combined with G1 and
+   that G2 can use (either directly or via an address expression) a register
+   used to represent G1.  */
 
 static rtx
 combine_givs_p (g1, g2)
@@ -6313,7 +6313,7 @@ combine_givs_p (g1, g2)
   /* If these givs are identical, they can be combined.  We use the results
      of express_from because the addends are not in a canonical form, so
      rtx_equal_p is a weaker test.  */
-  if (tem == const0_rtx)
+  if (tem == g1->dest_reg)
     {
       return g1->dest_reg;
     }
