@@ -1730,7 +1730,7 @@ warn_if_unused_value (exp)
 	while (TREE_CODE (tem) == CONVERT_EXPR || TREE_CODE (tem) == NOP_EXPR)
 	  tem = TREE_OPERAND (tem, 0);
 
-	if (TREE_CODE (tem) == MODIFY_EXPR)
+	if (TREE_CODE (tem) == MODIFY_EXPR || TREE_CODE (tem) == INIT_EXPR)
 	  return 0;
       }
       /* ... fall through ... */
