@@ -105,7 +105,7 @@ case $os in
 	-scout)						# EGCS LOCAL
 		;;
 	-wrs)						# EGCS LOCAL
-		os=vxworks
+		os=-vxworks
 		basic_machine=$1
 		;;
 	-hiux*)
