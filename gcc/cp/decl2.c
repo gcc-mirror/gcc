@@ -2172,7 +2172,7 @@ finish_anon_union (anon_union_decl)
 
   if (public_p)
     {
-      error ("global anonymous unions must be declared static");
+      error ("namespace-scope anonymous aggregates must be static");
       return;
     }
 
@@ -2182,7 +2182,7 @@ finish_anon_union (anon_union_decl)
 
   if (main_decl == NULL_TREE)
     {
-      warning ("anonymous union with no members");
+      warning ("anonymous aggregate with no members");
       return;
     }
 

@@ -2189,9 +2189,7 @@ build_component_ref (datum, component, basetype_path, protect)
       tree base = context;
       while (!same_type_p (base, basetype) && TYPE_NAME (base)
 	     && ANON_AGGR_TYPE_P (base))
-	{
-	  base = TYPE_CONTEXT (base);
-	}
+	base = TYPE_CONTEXT (base);
 
       /* Handle base classes here...  */
       if (base != basetype && TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype))
