@@ -1,3 +1,7 @@
+2002-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gnu89-init-1.c: Add new tests.
+
 2002-01-15  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/i386-mmx-1.c: Also run on x86-64.

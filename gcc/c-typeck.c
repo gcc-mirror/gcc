@@ -6618,7 +6618,14 @@ process_init_element (value)
 
   /* In the case of [LO ... HI] = VALUE, only evaluate VALUE once.  */
   if (constructor_range_stack)
-    value = save_expr (value);
+    {
+      /* If value is a compound literal and we'll be just using its
+	 content, don't put it into a SAVE_EXPR.  */
+      if (TREE_CODE (value) != COMPOUND_LITERAL_EXPR
+	  || !require_constant_value
+	  || flag_isoc99)
+	value = save_expr (value);
+    }
 
   while (1)
     {

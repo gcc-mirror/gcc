@@ -28,6 +28,8 @@ struct C g[3] = { [2] = (struct C) { 13 }, [1] = (const struct C) { 12 } };
 struct D h = { .j = (struct C) { 15 }, .i = 14 };
 struct D i[2] = { [1].j = (const struct C) { 17 },
 		  [0] = { 0, (struct C) { 16 } } };
+struct C j[2][3] = { [0 ... 1] = { [0 ... 2] = (struct C) { 26 } } };
+struct C k[3][2] = { [0 ... 2][0 ... 1] = (const struct C) { 27 } };
 
 int main (void)
 {
@@ -54,6 +56,14 @@ int main (void)
   if (h.i != 14 || h.j.i != 15)
     abort ();
   if (i[0].i || i[0].j.i != 16 || i[1].i || i[1].j.i != 17)
+    abort ();
+  if (j[0][0].i != 26 || j[0][1].i != 26 || j[0][2].i != 26)
+    abort ();
+  if (j[1][0].i != 26 || j[1][1].i != 26 || j[1][2].i != 26)
+    abort ();
+  if (k[0][0].i != 27 || k[0][1].i != 27 || k[1][0].i != 27)
+    abort ();
+  if (k[1][1].i != 27 || k[2][0].i != 27 || k[2][1].i != 27)
     abort ();
   exit (0);
 }
