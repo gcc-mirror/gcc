@@ -441,7 +441,6 @@ save_for_inline_copying (fndecl)
      for the parms, prior to elimination of virtual registers.
      These values are needed for substituting parms properly.  */
 
-  max_parm_reg = max_parm_reg_num ();
   parmdecl_map = (tree *) alloca (max_parm_reg * sizeof (tree));
 
   head = initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, 1);
@@ -784,7 +783,6 @@ save_for_inline_nocopy (fndecl)
      for the parms, prior to elimination of virtual registers.
      These values are needed for substituting parms properly.  */
 
-  max_parm_reg = max_parm_reg_num ();
   parmdecl_map = (tree *) alloca (max_parm_reg * sizeof (tree));
 
   /* Make and emit a return-label if we have not already done so.  */
