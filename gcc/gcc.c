@@ -675,8 +675,7 @@ static const char *startfile_prefix_spec = STARTFILE_PREFIX_SPEC;
    call cc1 (or cc1obj in objc/lang-specs.h) from the main specs so
    that we default the front end language better.  */
 static const char *trad_capable_cpp =
-"%{traditional|ftraditional|traditional-cpp:tradcpp0}\
- %{!traditional:%{!ftraditional:%{!traditional-cpp:cc1 -E}}}";
+"cc1 -E %{traditional|ftraditional|traditional-cpp:-traditional-cpp}";
 
 static const char *cpp_unique_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\

@@ -38,7 +38,7 @@ struct block
 };
 
 #define BLOCK_HEADER_LEN offsetof (struct block, text)
-#define BLOCK_LEN(TEXT_LEN) CPP_ALIGN (BLOCK_HEADER_LEN + TEXT_LEN)
+#define BLOCK_LEN(TEXT_LEN) CPP_ALIGN (BLOCK_HEADER_LEN + (TEXT_LEN))
 
 /* Structure holding information about a function-like macro
    invocation.  */
@@ -602,8 +602,9 @@ scan_out_logical_line (pfile, macro)
 		{
 		  /* Found a parameter in the replacement text of a
 		     #define.  Remove its name from the output.  */
-		  out = pfile->out.cur = out_start;
+		  pfile->out.cur = out_start;
 		  save_replacement_text (pfile, macro, node->arg_index);
+		  out = pfile->out.base;
 		}
 	      else if (lex_state == ls_hash)
 		{

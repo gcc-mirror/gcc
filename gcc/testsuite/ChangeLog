@@ -1,3 +1,11 @@
+2002-06-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/assert_trad1.c, gcc.dg/cpp/assert_trad2.c,
+	gcc.dg/cpp/assert_trad3.c, gcc.dg/cpp/defined_trad.c,
+	gcc.dg/cpp/hash2.c, gcc.dg/cpp/tr-define.c, gcc.dg/cpp/tr-direct.c,
+	gcc.dg/cpp/tr-sign.c, gcc.dg/cpp/tr-str.c, gcc.dg/cpp/uchar-2.c:
+	Remove.
+
 2002-06-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/20020620-1.c: New test.

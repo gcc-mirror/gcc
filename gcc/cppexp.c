@@ -375,10 +375,13 @@ cpp_interpret_integer (pfile, token, type)
       if (overflow)
 	cpp_error (pfile, DL_PEDWARN,
 		   "integer constant is too large for its type");
-      else if (!result.unsignedp && !num_positive (result, precision))
+      /* If too big to be signed, consider it unsigned.  Only warn for
+	 decimal numbers.  Traditional numbers were always signed (but
+	 we still honour an explicit U suffix).  */
+      else if (!result.unsignedp
+	       && !CPP_OPTION (pfile, traditional)
+	       && !num_positive (result, precision))
 	{
-	  /* If too big to be signed, consider it unsigned.  Only warn
-	     for decimal numbers.  */
 	  if (base == 10)
 	    cpp_error (pfile, DL_WARNING,
 		       "integer constant is so large that it is unsigned");

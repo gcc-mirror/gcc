@@ -303,6 +303,8 @@ prepare_directive_trad (pfile)
       pfile->state.skipping = was_skipping;
       _cpp_overlay_buffer (pfile, pfile->out.base,
 			   pfile->out.cur - pfile->out.base);
+      /* Report diagnostics on the line of the directive.  */
+      pfile->line = pfile->directive_line;
     }
 
   /* Stop ISO C from expanding anything.  */
