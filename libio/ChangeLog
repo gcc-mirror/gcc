@@ -1,5 +1,7 @@
 Wed Jan 28 10:27:11 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* config.shared (FLAGS_TO_PASS): Add gxx_include_dir.
+
 	* stdio/configure.in, tests/configure.in: Update with yesterday's
 	toplevel configure.in changes.
 	* testsuite/configure.in: Likewise.
