@@ -2303,11 +2303,8 @@ constrain_operands (strict)
 		earlyclobber[opno] = 1;
 		break;
 
-	      case '0':
-	      case '1':
-	      case '2':
-	      case '3':
-	      case '4':
+	      case '0': case '1': case '2': case '3': case '4':
+	      case '5': case '6': case '7': case '8': case '9':
 		/* This operand must be the same as a previous one.
 		   This kind of constraint is used for instructions such
 		   as add when they take only two operands.
@@ -2319,8 +2316,19 @@ constrain_operands (strict)
 		if (strict < 0)
 		  val = 1;
 		else
-		  val = operands_match_p (recog_operand[c - '0'],
-					  recog_operand[opno]);
+		  {
+		    rtx op1 = recog_operand[c - '0'];
+		    rtx op2 = recog_operand[opno];
+
+	            /* A unary operator may be accepted by the predicate,
+		       but it is irrelevant for matching constraints.  */
+	            if (GET_RTX_CLASS (GET_CODE (op1)) == '1')
+	              op1 = XEXP (op1, 0);
+	            if (GET_RTX_CLASS (GET_CODE (op2)) == '1')
+	              op2 = XEXP (op2, 0);
+
+		    val = operands_match_p (op1, op2);
+		  }
 
 		matching_operands[opno] = c - '0';
 		matching_operands[c - '0'] = opno;

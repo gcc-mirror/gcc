@@ -1,3 +1,8 @@
+Sat Apr 10 22:12:12 1999  Jan Hubicka <hubicka@freesoft.cz>
+  
+	* recog.c (constrain_operands): Ignore unary operators when
+	matching operands.  Recognize '5'..'9' as well.
+
 Sat Apr 10 21:53:02 1999  Philipp Thomas  (kthomas@gwdg.de)
 			  Richard Henderson  <rth@cygnus.com>
 
