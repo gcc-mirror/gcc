@@ -1,3 +1,9 @@
+2004-10-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/18032
+	* config/sh/sh.c (sh_expand_epilogue): Emit a blockage insn before
+	the frame pointer adjustment when exception handling is enabled.
+
 2004-10-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* stor-layout.c: Fix a comment typo.
