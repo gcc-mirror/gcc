@@ -48,6 +48,7 @@ import java.util.EventListener;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 
 
 public class DefaultCaret extends Rectangle
