@@ -479,8 +479,6 @@ gfc_trans_code (gfc_code * code)
      the end of this gfc_code branch.  */
   for (; code; code = code->next)
     {
-      gfc_set_backend_locus (&code->loc);
-
       if (code->here != 0)
 	{
 	  res = gfc_trans_label_here (code);
@@ -625,14 +623,16 @@ gfc_trans_code (gfc_code * code)
 	  internal_error ("gfc_trans_code(): Bad statement code");
 	}
 
+      gfc_set_backend_locus (&code->loc);
+
       if (res != NULL_TREE && ! IS_EMPTY_STMT (res))
 	{
 	  if (TREE_CODE (res) == STATEMENT_LIST)
 	    annotate_all_with_locus (&res, input_location);
 	  else
 	    SET_EXPR_LOCATION (res, input_location);
-
-	  /* Add the new statemment to the block.  */
+	    
+	  /* Add the new statement to the block.  */
 	  gfc_add_expr_to_block (&block, res);
 	}
     }

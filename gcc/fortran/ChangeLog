@@ -1,3 +1,8 @@
+2004-10-30  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans.c (gfc_trans_code): Set global locus after recursing. Fix
+	comment typo.
+
 2004-10-30  Canqun Yang  <canqun@nudt.edu.cn>
 
 	* check.c (gfc_check_rand): Allow missing optional argument. 
