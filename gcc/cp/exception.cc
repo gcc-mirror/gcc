@@ -152,7 +152,7 @@ __eh_free (void *p)
 typedef void * (* rtimetype) (void);
 
 extern "C" void *
-__cplus_type_matcher (cp_eh_info *info, exception_table *matching_info, 
+__cplus_type_matcher (cp_eh_info *info, rtimetype match_info, 
                                  exception_descriptor *exception_table)
 {
   void *ret;
@@ -162,7 +162,7 @@ __cplus_type_matcher (cp_eh_info *info, exception_table *matching_info,
 
   /* we don't worry about version info yet, there is only one version! */
   
-  void *match_type = ((rtimetype) (matching_info->match_info)) ();
+  void *match_type = match_info ();
   ret = __throw_type_match_rtti (match_type, info->type, info->original_value);
   /* change value of exception */
   if (ret)

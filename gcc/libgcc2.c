@@ -3358,6 +3358,23 @@ EH_TABLE_LOOKUP
 
 #ifdef DWARF2_UNWIND_INFO
 
+
+/* Return the table version of an exception descriptor */
+
+short 
+__get_eh_table_version (exception_descriptor *table) 
+{
+  return table->lang.version;
+}
+
+/* Return the originating table language of an exception descriptor */
+
+short 
+__get_eh_table_language (exception_descriptor *table)
+{
+  return table->lang.language;
+}
+
 /* This routine takes a PC and a pointer to the exception region TABLE for
    its translation unit, and returns the address of the exception handler
    associated with the closest exception table handler entry associated
@@ -3424,7 +3441,7 @@ find_exception_handler (void *pc, exception_descriptor *table, void *eh_info)
                   /* match info but no matcher is NOT a match */
                   if (matcher) 
                     {
-                      ret = (*matcher)(eh_info, &tab[pos], table);
+                      ret = (*matcher)(eh_info, tab[pos].match_info, table);
                       if (ret)
                         return tab[pos].exception_handler;
                     }

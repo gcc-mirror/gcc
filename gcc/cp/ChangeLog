@@ -1,4 +1,9 @@
-1998-06-23  Andrew MacLeod  (amacleod@cygnus.com)
+1998-06-23  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* exception.cc (__cplus_type_matcher): Get a match_info pointer
+	instead of an exception table entry as a parameter.
+
+1998-06-23  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* parse.y (function_try_block): Don't call start_catch_handler.
 	* except.c (call_eh_info): Remove coerced field from declaration.
