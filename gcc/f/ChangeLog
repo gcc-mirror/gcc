@@ -1,3 +1,23 @@
+Tue May 19 14:52:41 1998  Craig Burley  <burley@gnu.org>
+
+	* bad.def (FFEBAD_OPEN_UNSUPPORTED, FFEBAD_INQUIRE_UNSUPPORTED,
+	FFEBAD_READ_UNSUPPORTED, FFEBAD_WRITE_UNSUPPORTED,
+	FFEBAD_QUAD_UNSUPPORTED, FFEBAD_BLOCKDATA_STMT,
+	FFEBAD_TRUNCATING_CHARACTER, FFEBAD_TRUNCATING_HOLLERITH,
+	FFEBAD_TRUNCATING_NUMERIC, FFEBAD_TRUNCATING_TYPELESS,
+	FFEBAD_TYPELESS_OVERFLOW): Change these from warnings
+	to errors.
+
+Tue May 19 14:51:59 1998  Craig Burley  <burley@gnu.org>
+
+	* Make-lang.in (f77.install-info, f77.uninstall):
+	Use install-info as appropriate.
+
+Tue May 19 12:56:54 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_init_0): Rename xargc to f__xargc,
+	in accord with same-dated change to f/runtime.
+
 Wed May 13 13:05:34 1998  Craig Burley  <burley@gnu.org>
 
 	* Make-lang.in (G77STAGESTUFF): Add g77.o, g77spec.o,
