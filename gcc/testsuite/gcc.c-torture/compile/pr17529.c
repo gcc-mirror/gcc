@@ -1,4 +1,3 @@
-/* { dg-xfail-if "PR middle-end/17529" { "*-*-*" } { "*" } { "" } } */
 
 static inline void 
 bar (const int * const x) 
