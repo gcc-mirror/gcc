@@ -1,5 +1,8 @@
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* c-common.c (pointer_int_sum): Do not complain about using
+	pointers to pointers-to-members.
+
 	* c-decl.c (grokdeclarator): Do not complain about redeclaring
 	visible "static" identifiers "extern" in a local scope.
 	* dwarf2out.c (loc_descriptor_from_tree): Handle pre- and
