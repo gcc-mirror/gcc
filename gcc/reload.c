@@ -4928,7 +4928,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 				   (context
 				    ? reload_address_index_reg_class
 				    : reload_address_base_reg_class),
-				    GET_MODE (x), GET_MODE (x), VOIDmode, 0,
+				    GET_MODE (x), GET_MODE (x), 0, 0,
 				    opnum, RELOAD_OTHER);
 		}
 	      else
@@ -4938,7 +4938,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 				   (context
 				    ? reload_address_index_reg_class
 				    : reload_address_base_reg_class),
-				   GET_MODE (x), GET_MODE (x), VOIDmode, 0,
+				   GET_MODE (x), GET_MODE (x), 0, 0,
 				   opnum, type);
 		  reload_inc[reloadnum]
 		    = find_inc_amount (PATTERN (this_insn), XEXP (x_orig, 0));
