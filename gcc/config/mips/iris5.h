@@ -79,6 +79,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef OBJECT_FORMAT_COFF
 
+/* We don't support debugging info for now. */
+#undef DBX_DEBUGGING_INFO
+#undef SDB_DEBUGGING_INFO
+#undef MIPS_DEBUGGING_INFO
+
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 5.0"
 
