@@ -52,7 +52,6 @@ Wed May  3 12:55:46 2000  Jim Wilson  <wilson@cygnus.com>
 	(DECL_POINTER_DEPTH): Add macro.
 	(tree_decl): Add pointer_depth member.
 
->>>>>>> 1.6472
 Wed May  3 22:52:53 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr-protos.h (test_hard_reg_class): Declared.
