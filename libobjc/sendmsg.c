@@ -1,6 +1,6 @@
 /* GNU Objective C Runtime message lookup 
    Copyright (C) 1993, 1995, 1996, 1997, 1998,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GCC.
@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA.  */
    covered by the GNU General Public License.  */
 
 /* FIXME: This file has no business including tm.h.  */
+/* FIXME: This should be using libffi instead of __builtin_apply
+   and friends.  */
 
 #include "tconfig.h"
 #include "coretypes.h"
@@ -35,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "encoding.h"
 #include "runtime-info.h"
 
-/* this is how we hack STRUCT_VALUE to be 1 or 0 */
+/* This is how we hack STRUCT_VALUE to be 1 or 0.   */
 #define gen_rtx(args...) 1
 #define gen_rtx_MEM(args...) 1
 #define gen_rtx_REG(args...) 1
@@ -83,7 +85,7 @@ Method_t search_for_method_in_list (MethodList_t list, SEL op);
 id nil_method (id, SEL);
 
 /* Given a selector, return the proper forwarding implementation. */
-__inline__
+inline
 IMP
 __objc_get_forward_imp (SEL sel)
 {
@@ -115,7 +117,7 @@ __objc_get_forward_imp (SEL sel)
 }
 
 /* Given a class and selector, return the selector's implementation.  */
-__inline__
+inline
 IMP
 get_imp (Class class, SEL sel)
 {
@@ -176,7 +178,7 @@ get_imp (Class class, SEL sel)
 /* Query if an object can respond to a selector, returns YES if the
 object implements the selector otherwise NO.  Does not check if the
 method can be forwarded. */
-__inline__
+inline
 BOOL
 __objc_responds_to (id object, SEL sel)
 {
@@ -201,7 +203,7 @@ __objc_responds_to (id object, SEL sel)
 /* This is the lookup function.  All entries in the table are either a 
    valid method *or* zero.  If zero then either the dispatch table
    needs to be installed or it doesn't exist and forwarding is attempted. */
-__inline__
+inline
 IMP
 objc_msg_lookup (id receiver, SEL op)
 {
@@ -463,28 +465,14 @@ __objc_update_dispatch_table_for_class (Class class)
 
    This one is only called for categories. Class objects have their
    methods installed right away, and their selectors are made into
-   SEL's by the function __objc_register_selectors_from_class. */ 
+   SEL's by the function __objc_register_selectors_from_class. */
 void
 class_add_method_list (Class class, MethodList_t list)
 {
-  int i;
-
   /* Passing of a linked list is not allowed.  Do multiple calls.  */
   assert (! list->method_next);
 
-  /* Check for duplicates.  */
-  for (i = 0; i < list->method_count; ++i)
-    {
-      Method_t method = &list->method_list[i];
-
-      if (method->method_name)  /* Sometimes these are NULL */
-	{
-	  /* This is where selector names are transmogrified to SEL's */
-	  method->method_name = 
-	    sel_register_typed_name ((const char *) method->method_name,
-				     method->method_types);
-	}
-    }
+  __objc_register_selectors_from_list(list);
 
   /* Add the methods to the class's method list.  */
   list->method_next = class->methods;
@@ -705,7 +693,7 @@ __objc_print_dtable_stats ()
 /* Returns the uninstalled dispatch table indicator.
  If a class' dispatch table points to __objc_uninstalled_dtable
  then that means it needs its dispatch table to be installed. */
-__inline__
+inline
 struct sarray *
 objc_get_uninstalled_dtable ()
 {

@@ -1,3 +1,67 @@
+2004-05-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	Merge from the libobjc-branch
+	2004-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
+	
+		* Makefile.in (OBJC_H): Change objc-deps.h to objc-decls.h.
+	
+	2004-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
+	
+		* Makefile.in (OBJC_H): Add objc-deps.h.
+	
+	2004-01-27  Nicola Pero  <n.pero@mi.flashnet.it>
+	
+		* Protocol.m ([-conformsTo:]): If the argument is nil, return NO.
+		([-hash], [-isEqual:]): New methods.
+	
+	2004-01-27  Richard Frith-Macdonald <rfm@gnu.org>
+	
+		* sarray.c (sarray_free): Add a better comment.
+	
+	2004-01-27  Adam Fedor  <fedor@gnu.org>
+	
+		* hash.c (hash_add): Cast cachep to int.
+		* selector.c (__sel_register_typed_name): Cast
+		soffset_decode to int.
+	
+	2004-01-27  Alexander Malmberg  <alexander@malmberg.org>
+	
+		* selector.c: Rename register_selectors_from_list to
+		__objc_register_selectors_from_list. Update caller.
+		(__objc_register_selectors_from_list): Lock __objc_runtime_mutex
+		while registering selectors. Use __sel_register_typed_name instead
+		of sel_register_typed_name. Check for NULL method_name:s.
+		(pool_alloc_selector): New function.
+		(__sel_register_typed_name): Use pool_alloc_selector to allocate
+		selector structures.
+		* sendmsg.c (class_add_method_list): Use
+		__objc_register_selectors_from_list.
+		* objc/runtime.h: Add __objc_register_selectors_from_list.
+	
+	2004-01-25  Adam Fedor  <fedor@gnu.org>
+	            Nicola Pero  <n.pero@mi.flashnet.it>
+	            Andrew Pinski  <pinskia@physics.uc.edu>
+	
+		* objc/objc-decls.h: New file.
+		* objc/objc-api.h (_objc_lookup_class): Mark as export.
+		(_objc_load_callback): Likewise.
+		(_objc_object_alloc): Likewise.
+		(_objc_object_copy): Likewise.
+		(_objc_object_dispose): Likewise.
+	
+	2004-01-25  Andrew Pinski  <pinskia@physics.uc.edu>
+	
+		* archive.c: s/__inline__/inline
+		* sendmsg.c: Likewise. 
+	
+		* encoding.c: Remove FIXME about the warning
+		about unused variable.
+		* sendmsg.c: Add a FIXME comment saying that
+		this should be using libffi.
+	
+		* Makefile.in (LIBTOOL): Use @LIBTOOL@ now as it works.
+	
+
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* archive.c (objc_read_class): Initialize class_name.

@@ -1,5 +1,5 @@
 /* Hash tables for Objective C internal structures
-   Copyright (C) 1993, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1996, 1997, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -154,7 +154,7 @@ hash_add (cache_ptr *cachep, const void *key, void *value)
 			      (*cachep)->compare_func);
 
     DEBUG_PRINTF ("Expanding cache %#x from %d to %d\n",
-		  *cachep, (*cachep)->size, new->size);
+		  (int) *cachep, (*cachep)->size, new->size);
 
     /* Copy the nodes from the first hash table to the new one.  */
     while ((node1 = hash_next (*cachep, node1)))

@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime internal declarations
-   Copyright (C) 1993, 1995, 1996, 1997, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GCC.
@@ -49,6 +49,7 @@ extern void __objc_init_dispatch_tables(void); /* (objc-dispatch.c) */
 extern void __objc_install_premature_dtable(Class); /* (objc-dispatch.c) */
 extern void __objc_resolve_class_links(void);  /* (objc-class.c) */
 extern void __objc_register_selectors_from_class(Class); /* (objc-sel.c) */
+extern void __objc_register_selectors_from_list (MethodList_t); /* (selector.c) */
 extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
 
 extern int  __objc_init_thread_system(void);    /* thread.c */
