@@ -14,7 +14,6 @@
 @cindex X3.159-1989
 @cindex ISO C standard
 @cindex ISO C
-@cindex ISO C89
 @cindex ISO C90
 @cindex ISO/IEC 9899
 @cindex ISO 9899

@@ -1232,7 +1232,7 @@ struct line *thisline = (struct line *)
 thisline->length = this_length;
 @end example
 
-In ISO C89, you would have to give @code{contents} a length of 1, which
+In ISO C90, you would have to give @code{contents} a length of 1, which
 means either you waste space or complicate the argument to @code{malloc}.
 
 In ISO C99, you would use a @dfn{flexible array member}, which is
@@ -4533,14 +4533,14 @@ mode.
 The ISO C99 functions @code{conj}, @code{conjf}, @code{conjl},
 @code{creal}, @code{crealf}, @code{creall}, @code{cimag}, @code{cimagf},
 @code{cimagl}, @code{llabs} and @code{imaxabs} are handled as built-in
-functions except in strict ISO C89 mode.  There are also built-in
+functions except in strict ISO C90 mode.  There are also built-in
 versions of the ISO C99 functions @code{cosf}, @code{cosl},
 @code{fabsf}, @code{fabsl}, @code{sinf}, @code{sinl}, @code{sqrtf}, and
-@code{sqrtl}, that are recognized in any mode since ISO C89 reserves
+@code{sqrtl}, that are recognized in any mode since ISO C90 reserves
 these names for the purpose to which ISO C99 puts them.  All these
 functions have corresponding versions prefixed with @code{__builtin_}.
 
-The ISO C89 functions @code{abs}, @code{cos}, @code{fabs},
+The ISO C90 functions @code{abs}, @code{cos}, @code{fabs},
 @code{fprintf}, @code{fputs}, @code{labs}, @code{memcmp}, @code{memcpy},
 @code{memset}, @code{printf}, @code{sin}, @code{sqrt}, @code{strcat},
 @code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},

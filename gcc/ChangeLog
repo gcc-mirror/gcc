@@ -1,3 +1,9 @@
+2002-07-23  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* doc/extend.texi: Say ISO C90, not ISO C89.
+	* doc/invoke.texi: Likewise.
+	* doc/standards.texi: Likewise.
+
 2002-07-23  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc/explow.c (convert_memory_address): Fix conversion of CONSTs.
