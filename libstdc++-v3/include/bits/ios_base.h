@@ -220,6 +220,9 @@ namespace std
     typedef int io_state;
     typedef int open_mode;
     typedef int seek_dir;
+    
+    typedef std::streampos streampos;
+    typedef std::streamoff streamoff;
 #endif
 
     // Callbacks;

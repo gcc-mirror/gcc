@@ -1,3 +1,10 @@
+2002-11-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/7219
+	* include/bits/ios_base.h (ios_base::streampos): Add.
+	(ios_base::streamoff): Add.
+	* testsuite/27_io/ios_base_type.cc: New.
+
 2002-11-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8466
