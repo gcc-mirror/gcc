@@ -233,7 +233,7 @@ CC_FOR_TARGET = ` \
 # variable is passed down to the gcc Makefile, where it is used to
 # build libgcc2.a.  We define it here so that it can itself be
 # overridden on the command line.
-GCC_FOR_TARGET = $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/
+GCC_FOR_TARGET = $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/ -I$(build_tooldir)/include
 
 CHILL_FOR_TARGET = ` \
   if [ -f $$r/gcc/xgcc ] ; then \
