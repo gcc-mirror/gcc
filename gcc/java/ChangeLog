@@ -1,5 +1,10 @@
 2002-03-28  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	* parse.y (resolve_package): Initialize "decl".
+	(lookup_package_type): Remove unused function.
+
+2002-03-28  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	Fix for PR java/5993:
 	* parse.y (resolve_package): Return the decl if resolution was
 	successful. Don't special case "java.lang" and "java.lang.reflect" 

@@ -7034,7 +7034,8 @@ static tree
 resolve_package (pkg, next, type_name)
      tree pkg, *next, *type_name;
 {
-  tree current, decl;
+  tree current;
+  tree decl = NULL_TREE;
   *type_name = NULL_TREE;
 
   /* The trick is to determine when the package name stops and were
@@ -7066,19 +7067,6 @@ resolve_package (pkg, next, type_name)
   return decl;
 }
 
-static tree
-lookup_package_type (name, from)
-     const char *name;
-     int from;
-{
-  char subname [128];
-  const char *sub = &name[from+1];
-  while (*sub != '.' && *sub)
-    sub++;
-  strncpy (subname, name, sub-name);
-  subname [sub-name] = '\0';
-  return get_identifier (subname);
-}
 
 /* Check accessibility of inner classes according to member access rules. 
    DECL is the inner class, ENCLOSING_DECL is the class from which the
