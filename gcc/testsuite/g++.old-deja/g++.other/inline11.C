@@ -1,3 +1,4 @@
+// Build don't link:
 // Origin: Jakub Jelinek <jakub@redhat.com>
 // Special g++ Options: -O2
 
