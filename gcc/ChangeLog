@@ -1,3 +1,29 @@
+Tue Jun 24 18:49:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (cgraph.o): Depend on output.h, not depend on
+	tree-inline.h
+	* cgraph.c: Do not include tree-inline.h; include output.h
+	(known_fns): Rename to ...
+	(known_decls): ... this one; update all uses.
+	(cgraph_varpool_hash): New static variable.
+	(cgraph_varpool_n_nodes, cgraph_varpool_nodes_queue): New global
+	variables.
+	(cgraph_varpool_hash_node, eq_cgraph_varpool_node, cgraph_varpool_node,
+	cgraph_varpool_node_for_identifier, cgraph_varpool_mark_needed_node,
+	cgraph_varpool_finalize_decl, cgraph_varpool_assemble_pending_decls):
+	New functions.
+	* cgraph.h (cgraph_varpool_node): New structure.
+	(cgraph_varpool_n_nodes, cgraph_varpool_nodes_queue): Declare.
+	(cgraph_varpool_node, cgraph_varpool_node_for_identifier,
+	cgraph_varpool_finalize_decl, cgraph_varpool_mark_needed_node,
+	cgraph_varpool_asemble_pending_decls): Declare.
+	* cgraphunit.c (record_call_1): Notice variable references.
+	(cgraph_finalize_compilation_unit): Assemble pending variables.
+	* toplev.c (wrapup_global_declarations): Use varpool.
+	(compile_file): Assemble pending declarations.
+	(rest_of_decl_compilation): Use varpool in unit-at-a-time mode.
+	* varasm.c (assemble_name): Notice varpool references.
+
 Tue Jun 24 13:52:11 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* langhooks-def.h (LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE): New macro.

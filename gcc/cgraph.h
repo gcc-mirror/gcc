@@ -97,10 +97,31 @@ struct cgraph_edge
   struct cgraph_edge *next_callee;
 };
 
+/* The cgraph_varpool data strutcture.
+   Each static variable decl has assigned cgraph_varpool_node.  */
+
+struct cgraph_varpool_node
+{
+  tree decl;
+  void *aux;
+
+  /* Set when function must be output - it is externally visible
+     or it's address is taken.  */
+  bool needed;
+  /* Set once it has been finalized so we consider it to be output.  */
+  bool finalized;
+  /* Set when function is scheduled to be assembled.  */
+  bool output;
+};
+
 extern struct cgraph_node *cgraph_nodes;
 extern int cgraph_n_nodes;
 extern bool cgraph_global_info_ready;
 extern struct cgraph_node *cgraph_nodes_queue;
+
+extern int cgraph_varpool_n_nodes;
+extern struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
+
 
 /* In cgraph.c  */
 void dump_cgraph			PARAMS ((FILE *));
@@ -113,6 +134,12 @@ bool cgraph_calls_p			PARAMS ((tree, tree));
 struct cgraph_local_info *cgraph_local_info PARAMS ((tree));
 struct cgraph_global_info *cgraph_global_info PARAMS ((tree));
 struct cgraph_rtl_info *cgraph_rtl_info PARAMS ((tree));
+
+struct cgraph_varpool_node *cgraph_varpool_node (tree decl);
+struct cgraph_varpool_node *cgraph_varpool_node_for_identifier (tree id);
+void cgraph_varpool_mark_needed_node (struct cgraph_varpool_node *);
+void cgraph_varpool_finalize_decl (tree);
+bool cgraph_varpool_assemble_pending_decls (void);
 
 /* In cgraphunit.c  */
 void cgraph_finalize_function		PARAMS ((tree, tree));

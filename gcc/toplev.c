@@ -1897,7 +1897,14 @@ wrapup_global_declarations (tree *vec, int len)
 	    {
 	      bool needed = 1;
 
-	      if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	      if (flag_unit_at_a_time
+		  && cgraph_varpool_node (decl)->finalized)
+		needed = 0;
+	      else if (flag_unit_at_a_time
+		       && (TREE_USED (decl)
+			   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
+		/* needed */;
+	      else if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 		/* needed */;
 	      else if (DECL_COMDAT (decl))
 		needed = 0;
@@ -2069,6 +2076,8 @@ compile_file (void)
 
   (*lang_hooks.decls.final_write_globals)();
 
+  cgraph_varpool_assemble_pending_decls ();
+
   /* This must occur after the loop to output deferred functions.
      Else the coverage initializer would not be emitted if all the
      functions in this compilation unit were deferred.  */
@@ -2169,7 +2178,13 @@ rest_of_decl_compilation (tree decl,
       /* Don't output anything when a tentative file-scope definition
 	 is seen.  But at end of compilation, do output code for them.  */
       if (at_end || !DECL_DEFER_OUTPUT (decl))
-	assemble_variable (decl, top_level, at_end, 0);
+	{
+	  if (flag_unit_at_a_time && TREE_CODE (decl) != FUNCTION_DECL
+	      && top_level)
+	    cgraph_varpool_finalize_decl (decl);
+	  else
+	    assemble_variable (decl, top_level, at_end, 0);
+	}
 
 #ifdef ASM_FINISH_DECLARE_OBJECT
       if (decl == last_assemble_variable_decl)

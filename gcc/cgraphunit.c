@@ -93,9 +93,11 @@ record_call_1 (tp, walk_subtrees, data)
      int *walk_subtrees;
      void *data;
 {
+  if (TREE_CODE (*tp) == VAR_DECL && TREE_STATIC (*tp))
+    cgraph_varpool_mark_needed_node (cgraph_varpool_node (*tp));
   /* Record dereferences to the functions.  This makes the functions
      reachable unconditionally.  */
-  if (TREE_CODE (*tp) == ADDR_EXPR)
+  else if (TREE_CODE (*tp) == ADDR_EXPR)
     {
       tree decl = TREE_OPERAND (*tp, 0);
       if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -144,6 +146,8 @@ cgraph_finalize_compilation_unit ()
   struct cgraph_node *node;
   struct cgraph_edge *edge;
 
+  cgraph_varpool_assemble_pending_decls ();
+
   if (!quiet_flag)
     {
       fprintf (stderr, "\n\nInitial entry points:");
@@ -188,6 +192,7 @@ cgraph_finalize_compilation_unit ()
             cgraph_mark_needed_node (edge->callee, 0);
 	}
       node->lowered = true;
+      cgraph_varpool_assemble_pending_decls ();
     }
   /* Collect entry points to the unit.  */
 
