@@ -1,5 +1,9 @@
 2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* invoke.texi: Add more options to summary list.
+
+2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* invoke.texi: Document meaning of -pedantic when -std=gnu* is
 	used.  Fixes PR c/2291.
 	* gcc.1: Regenerate.
