@@ -1,3 +1,13 @@
+Wed Aug 26 17:13:37 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gthr.h: Document __GTHREAD_MUTEX_INIT_FUNCTION.
+	* frame.c (init_object_mutex): New function.
+	(init_object_mutex_once): Likewise.
+	(find_fde): Call it.
+	(__register_frame_info): Likewise.
+	(__register_frame_info_table): Likewise.
+	(__deregister_frame_info): Likewise.
+
 Thu Aug 27 15:14:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (sched_analyze_insn): Fix thinko in last change.

@@ -1,6 +1,6 @@
 /* Threads compatibily routines for libgcc2.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -48,6 +48,12 @@ Boston, MA 02111-1307, USA.  */
      __GTHREAD_MUTEX_INIT
      		to initialize __gthread_mutex_t to get a fast
 		non-recursive mutex.
+     __GTHREAD_MUTEX_INIT_FUNCTION
+     		some systems can't initalize a mutex without a
+		function call.  On such systems, define this to a
+		function which looks like this:
+		  void __GTHREAD_MUTEX_INIT_FUNCTION (__gthread_mutex_t *)
+		Don't define __GTHREAD_MUTEX_INIT in this case
 
    The threads interface must define the following static functions:
 
