@@ -1,3 +1,8 @@
+Wed Jun  9 13:12:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * varasm.c (remove_from_pending_weak_list): Verify t->name
+        is non-NULL before passing it to strcmp.
+
 Wed Jun  9 23:01:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* invoke.texi: Add C4x invocation docs.
