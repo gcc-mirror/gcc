@@ -1,3 +1,10 @@
+2004-10-07  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/17806
+	* cfghooks.c (split_edge): Update IRREDUCIBLE_LOOP flags.
+	* cfgloopmanip.c (loop_split_edge_with): Updating of IRREDUCIBLE_LOOP
+	flags moved to split_edge.
+
 2004-10-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/17285
