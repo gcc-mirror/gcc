@@ -1,3 +1,8 @@
+2003-11-08  Andreas Schwab  <schwab@suse.de>
+
+	* dbxout.c (current_file): Also wrap inside DBX_DEBUGGING_INFO ||
+	XCOFF_DEBUGGING_INFO.
+
 2003-11-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* dbxout.c (current_file): Wrap declaration in DBX_USE_BINCL.
