@@ -46,6 +46,7 @@ do {							\
 	  {						\
 	    builtin_define("_HPUX_SOURCE");		\
 	    builtin_define("__STDC_EXT__");		\
+	    builtin_define("__STDCPP__");		\
 	  }						\
 	if (TARGET_ILP32)				\
 	  builtin_define("_ILP32");			\

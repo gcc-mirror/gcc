@@ -1,3 +1,9 @@
+2004-04-26  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/hpux.h: Predefine __STDCPP__ when compiling C++.
+	* config/pa/pa-hpux10.h: Likewise.
+	* config/pa/pa-hpux11.h: Likewise.
+
 2004-04-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (Overall Options): Document default for -o
@@ -315,7 +321,7 @@
 	(vall_value_gp): Likewise.
 
 2004-04-20  DJ Delorie  <dj@redhat.com>
-	
+
 	* dwarf2out.c (rtl_for_decl_location): Adjust rtl for byte
 	variables stored in word registers, then in memory.
 
@@ -409,31 +415,31 @@
 
 2004-04-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md (UNSPEC_MV_CR_GT): New constant.
-        (move_from_CR_gt_bit): New.
-        (cceq_ior_compare): Name previously unnamed pattern.  Disable for
-        E500.
-        (cceq_rev_compare): Name previously unnamed pattern.  Allow for
-        E500.
+	* config/rs6000/rs6000.md (UNSPEC_MV_CR_GT): New constant.
+	(move_from_CR_gt_bit): New.
+	(cceq_ior_compare): Name previously unnamed pattern.  Disable for
+	E500.
+	(cceq_rev_compare): Name previously unnamed pattern.  Allow for
+	E500.
 
-        * config/rs6000/spe.md (cmpsfeq_gpr): Rewrite as unspec.
-        (tstsfeq_gpr): Same.
-        (cmpsfgt_gpr): Same.
-        (tstsfgt_gpr): Same.
-        (cmpsflt_gpr): Same.
-        (tstsflt_gpr): Same.
-        (e500_cceq_ior_compare): New.
-        (e500_flip_gt_bit): New.
+	* config/rs6000/spe.md (cmpsfeq_gpr): Rewrite as unspec.
+	(tstsfeq_gpr): Same.
+	(cmpsfgt_gpr): Same.
+	(tstsfgt_gpr): Same.
+	(cmpsflt_gpr): Same.
+	(tstsflt_gpr): Same.
+	(e500_cceq_ior_compare): New.
+	(e500_flip_gt_bit): New.
 
-        * config/rs6000/rs6000.c (ccr_bit): Remove E500 specific code.
-        (print_operand): Add 'c' and 'D'.
-        (rs6000_generate_compare): Rewrite to generate correct rtl.
-        (rs6000_emit_sCOND): Handle E500.
-        (output_cbranch): Adjust for changes in rs6000_generate_compare.
-        (output_e500_flip_gt_bit): New.
+	* config/rs6000/rs6000.c (ccr_bit): Remove E500 specific code.
+	(print_operand): Add 'c' and 'D'.
+	(rs6000_generate_compare): Rewrite to generate correct rtl.
+	(rs6000_emit_sCOND): Handle E500.
+	(output_cbranch): Adjust for changes in rs6000_generate_compare.
+	(output_e500_flip_gt_bit): New.
 
-        * config/rs6000/rs6000-protos.h (output_e500_flip_gt_bit):
-        Protoize.
+	* config/rs6000/rs6000-protos.h (output_e500_flip_gt_bit):
+	Protoize.
 
 2004-04-19  Eric Christopher  <echristo@redhat.com>
 
