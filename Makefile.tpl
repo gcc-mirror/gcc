@@ -1069,6 +1069,9 @@ install-target-[+module+]: installdirs
 # build modules.  So GCC is a sort of hybrid.
 
 # gcc is the only module which uses GCC_FLAGS_TO_PASS.
+# Don't use shared host config.cache, as it will confuse later
+# directories; GCC wants slightly different values for some
+# precious variables.  *sigh*
 .PHONY: configure-gcc maybe-configure-gcc
 maybe-configure-gcc:
 configure-gcc:
@@ -1106,7 +1109,7 @@ configure-gcc:
 	    libsrcdir="$$s/gcc";; \
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) $${srcdiroption} --cache-file=config.cache \
 	  || exit 1
 
 # Don't 'make all' in gcc if it's already been made by 'bootstrap'; that

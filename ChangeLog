@@ -1,5 +1,8 @@
 2004-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Make GCC use a separate config.cache.
+	* Makefile.in: Regenerate.
+
 	PR bootstrap/11932, PR bootstrap/11933
 	(I don't know if it will fix either of them, but it relates
 	to them.)
