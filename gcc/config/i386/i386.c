@@ -906,6 +906,27 @@ override_options ()
 
   int const pta_size = sizeof (processor_alias_table) / sizeof (struct pta);
 
+  /* Set the default values for switches whose default depends on TARGET_64BIT
+     in case they weren't overwriten by command line options.  */
+  if (TARGET_64BIT)
+    {
+      if (flag_omit_frame_pointer == 2)
+	flag_omit_frame_pointer = 1;
+      if (flag_asynchronous_unwind_tables == 2)
+	flag_asynchronous_unwind_tables = 1;
+      if (flag_pcc_struct_return == 2)
+	flag_pcc_struct_return = 0;
+    }
+  else
+    {
+      if (flag_omit_frame_pointer == 2)
+	flag_omit_frame_pointer = 0;
+      if (flag_asynchronous_unwind_tables == 2)
+	flag_asynchronous_unwind_tables = 0;
+      if (flag_pcc_struct_return == 2)
+	flag_pcc_struct_return = 1;
+    }
+
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
@@ -1213,13 +1234,14 @@ optimization_options (level, size)
   if (level > 1)
     flag_schedule_insns = 0;
 #endif
-  if (TARGET_64BIT && optimize >= 1)
-    flag_omit_frame_pointer = 1;
-  if (TARGET_64BIT)
-    {
-      flag_pcc_struct_return = 0;
-      flag_asynchronous_unwind_tables = 1;
-    }
+  /* The default values of these switches depend on the TARGET_64BIT
+     that is not known at this moment.  Mark these values with 2 and
+     let user the to override these.  In case there is no command line option
+     specifying them, we will set the defaults in override_options.  */
+  if (optimize >= 1)
+    flag_omit_frame_pointer = 2;
+  flag_pcc_struct_return = 2;
+  flag_asynchronous_unwind_tables = 2;
 }
 
 /* Table of valid machine attributes.  */

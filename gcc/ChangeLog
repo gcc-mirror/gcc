@@ -1,3 +1,13 @@
+Thu Oct 31 18:31:22 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (override_options): Set defaults for flag_omit_frame_pointer,
+	flag_asynchronous_unwind_tables, flag_pcc_struct_return.
+	* i386.c (optimization_options): Set flag_omit_frame_pointer,
+	flag_asynchronous_unwind_tables, flag_pcc_struct_return to 2.
+	Do not clear -momit-leaf-frame-pointer when profiling.
+	(ix86_frame_pointer_required): Frame pointer is allways required when
+	profiling.
+
 2002-10-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* varasm.c (asm_output_aligned_bss): Do not call
