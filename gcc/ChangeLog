@@ -1,3 +1,14 @@
+Wed May  6 06:35:38 1998  Robert Lipe  <robertl@dgii.com>
+
+	* toplev.h: New file.   Protypes for functions in toplev.c.
+	* tree.h, rtl.h: Deleted protos for functions in toplev.c.
+	* c-common.c, c-convert.c, c-decl.c, c-iterate.c, c-lex.c, 
+	c-parse.in, c-parse.y, c-pragma.c, c-typeck.c, calls.c, 
+	convert.c, dwarf2out.c, except.c, expr.c, final.c, fold-const.c, 
+	function.c, hash.c, profile.c, real.c, reg-stack.c, regclass.c, 
+	reload.c, reload1.c, stmt.c, stor-layout.c, tlink.c, tree.c, 
+	varasm.c: include it.
+
 Wed May  6 01:09:01 1998  Jeffrey A Law  (law@cygnus.com)
 			  Jim Wilson (wilson@cygnus.com)
 
