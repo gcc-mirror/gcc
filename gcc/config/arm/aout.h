@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk)
    
 This file is part of GNU CC.
@@ -134,7 +134,7 @@ do {					\
 
 /* Make an internal label into a string.  */
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
-  sprintf (STRING, "*%s%d", PREFIX, NUM)
+  sprintf (STRING, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
 
 /* Nothing special is done about jump tables */
 /* #define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE)   */
@@ -147,10 +147,10 @@ do {					\
 
 /* Output an element of a dispatch table.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  \
-   fprintf (STREAM, "\t.word\tL%d\n", VALUE)
+   fprintf (STREAM, "\t.word\t%sL%d\n", LOCAL_LABEL_PREFIX, VALUE)
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)  \
-   fprintf (STREAM, "\tb\tL%d\n", (VALUE))
+   fprintf (STREAM, "\tb\t%sL%d\n", LOCAL_LABEL_PREFIX, (VALUE))
 
 /* Output various types of constants.  For real numbers we output hex, with
    a comment containing the "human" value, this allows us to pass NaN's which
