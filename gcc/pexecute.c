@@ -444,8 +444,13 @@ pfinish ()
 #if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
     && (defined (__CYGWIN32__) || ! defined (_WIN32))
 
+#ifdef VMS
+#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
+               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
+#else
 #ifdef USG
 #define vfork fork
+#endif
 #endif
 
 extern int execv ();
@@ -575,7 +580,11 @@ pwait (pid, status, flags)
 {
   /* ??? Here's an opportunity to canonicalize the values in STATUS.
      Needed?  */
+#ifdef VMS
+  pid = waitpid (-1, status, 0);
+#else
   pid = wait (status);
+#endif
   return pid;
 }
 
