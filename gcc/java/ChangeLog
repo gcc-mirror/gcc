@@ -304,6 +304,11 @@ Thu Apr 20 18:20:58 2000  Jason Schroeder  <shrode@subnature.com>
 	(patch_binop): New temp `cn'. Call patch_string on LHS/RHS of
 	the `==' and `!=' operators.
 
+2000-04-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (generate_bytecode_insns): At invokation time,
+	always relate an interface method to the type of its selector.
+	
 2000-04-05  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR gcj/2:
