@@ -5869,21 +5869,34 @@
 ;; reload when converting fp->int.
 
 (define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "memory_operand" "m"))
-   (set (match_operand:DI 2 "register_operand" "=r")
+  [(set (match_operand:SI 0 "hard_int_register_operand" "")
+        (match_operand:SI 1 "memory_operand" ""))
+   (set (match_operand:DI 2 "hard_int_register_operand" "")
         (sign_extend:DI (match_dup 0)))]
-  "dead_or_set_p (next_nonnote_insn (insn), operands[0])"
+  "true_regnum (operands[0]) == true_regnum (operands[2])
+   || peep2_reg_dead_p (2, operands[0])"
   [(set (match_dup 2)
 	(sign_extend:DI (match_dup 1)))]
   "")
 
 (define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "hard_fp_register_operand" "f"))
-   (set (match_operand:DI 2 "register_operand" "=r")
+  [(set (match_operand:SI 0 "hard_int_register_operand" "")
+        (match_operand:SI 1 "hard_fp_register_operand" ""))
+   (set (match_operand:DI 2 "hard_int_register_operand" "")
         (sign_extend:DI (match_dup 0)))]
-  "TARGET_FIX && dead_or_set_p (next_nonnote_insn (insn), operands[0])"
+  "TARGET_FIX
+   && (true_regnum (operands[0]) == true_regnum (operands[2])
+       || peep2_reg_dead_p (2, operands[0]))"
+  [(set (match_dup 2)
+	(sign_extend:DI (match_dup 1)))]
+  "")
+
+(define_peephole2
+  [(set (match_operand:DI 0 "hard_fp_register_operand" "")
+        (sign_extend:DI (match_operand:SI 1 "hard_fp_register_operand" "")))
+   (set (match_operand:DI 2 "hard_int_register_operand" "")
+        (match_dup 0))]
+  "TARGET_FIX && peep2_reg_dead_p (2, operands[0])"
   [(set (match_dup 2)
 	(sign_extend:DI (match_dup 1)))]
   "")
