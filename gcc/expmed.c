@@ -46,6 +46,10 @@ static rtx lshift_value ();
 
 static int sdiv_pow2_cheap, smod_pow2_cheap;
 
+#ifndef SLOW_UNALIGNED_ACCESS
+#define SLOW_UNALIGNED_ACCESS STRICT_ALIGNMENT
+#endif
+
 /* For compilers that support multiple targets with different word sizes,
    MAX_BITS_PER_WORD contains the biggest value of BITS_PER_WORD.  An example
    is the H8/300(H) compiler.  */
@@ -230,17 +234,22 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   /* Note that the adjustment of BITPOS above has no effect on whether
      BITPOS is 0 in a REG bigger than a word.  */
   if (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
-      && (! STRICT_ALIGNMENT || GET_CODE (op0) != MEM)
+      && (GET_CODE (op0) != MEM
+	  || ! SLOW_UNALIGNED_ACCESS
+	  || (offset * BITS_PER_UNIT % bitsize == 0
+	      && align % GET_MODE_SIZE (fieldmode) == 0))
       && bitpos == 0 && bitsize == GET_MODE_BITSIZE (fieldmode))
     {
       /* Storing in a full-word or multi-word field in a register
 	 can be done with just SUBREG.  */
       if (GET_MODE (op0) != fieldmode)
-	if (GET_CODE (op0) == REG)
-	  op0 = gen_rtx (SUBREG, fieldmode, op0, offset);
-	else
-	  op0 = change_address (op0, fieldmode,
-				plus_constant (XEXP (op0, 0), offset));
+	{
+	  if (GET_CODE (op0) == REG)
+	    op0 = gen_rtx (SUBREG, fieldmode, op0, offset);
+	  else
+	    op0 = change_address (op0, fieldmode,
+				  plus_constant (XEXP (op0, 0), offset));
+	}
       emit_move_insn (op0, value);
       return value;
     }
@@ -804,12 +813,16 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 #endif
 
   /* Extracting a full-word or multi-word value
-     from a structure in a register.
+     from a structure in a register or aligned memory.
      This can be done with just SUBREG.
      So too extracting a subword value in
      the least significant part of the register.  */
 
-  if (GET_CODE (op0) == REG
+  if ((GET_CODE (op0) == REG
+       || (GET_CODE (op0) == MEM
+	   && (! SLOW_UNALIGNED_ACCESS
+	       || (offset * BITS_PER_UNIT % bitsize == 0
+		   && align * BITS_PER_UNIT % bitsize == 0))))
       && ((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
 	   && bitpos % BITS_PER_WORD == 0)
 	  || (mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0) != BLKmode
@@ -824,8 +837,13 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	= mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0);
 
       if (mode1 != GET_MODE (op0))
-	op0 = gen_rtx (SUBREG, mode1, op0, offset);
-
+	{
+	  if (GET_CODE (op0) == REG)
+	    op0 = gen_rtx (SUBREG, mode1, op0, offset);
+	  else
+	    op0 = change_address (op0, mode1,
+				  plus_constant (XEXP (op0, 0), offset));
+	}
       if (mode1 != mode)
 	return convert_to_mode (tmode, op0, unsignedp);
       return op0;
