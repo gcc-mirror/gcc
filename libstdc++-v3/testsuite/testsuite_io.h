@@ -1,7 +1,7 @@
 // -*- C++ -*-
-// Testing filebuf for the C++ library testsuite.
+// Testing streambuf/filebuf/stringbuf for the C++ library testsuite.
 //
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,7 @@
 #define _GLIBCXX_TESTSUITE_IO_H
 
 #include <fstream>
+#include <sstream>
 
 namespace __gnu_test
 {  
@@ -44,34 +45,60 @@ namespace __gnu_test
   //   Joint file position
   // 27.8.1.4 - Overridden virtual functions p9
   //   If unbuffered, pbase == pptr == NULL
-  class constraint_filebuf: public std::filebuf
-  {
-  public:
-    bool
-    write_position() 
-    { 
-      bool two = this->pptr() != NULL; 
-      bool one = this->pptr() < this->epptr();
-      return one && two;
-    }
+  // 27.7.1.1 - Basic_stringbuf constructors p 1
+  // 27.8.1.2 - Basic_filebuf constructors p 1
+  //   ... , initializing the base class with basic_streambuf() 27.5.2.1
+  template<typename T>
+    class constraint_buf
+    : public T
+    {
+    public:
+      bool
+      write_position() 
+      { 
+	bool one = this->pptr() != NULL; 
+	bool two = this->pptr() < this->epptr();
+	return one && two;
+      }
+      
+      bool
+      read_position()
+      { 
+	bool one = this->gptr() != NULL; 
+	bool two = this->gptr() < this->egptr();
+	return one && two;
+      }
+      
+      bool
+      unbuffered() 
+      { 
+	bool one = this->pbase() == NULL; 
+	bool two = this->pptr() == NULL; 
+	return one && two;
+      }
+  
+      bool
+      check_pointers()
+      {
+	bool one   = this->eback() == NULL;
+	bool two   = this->gptr() == NULL;
+	bool three = this->egptr() == NULL;
+	
+	bool four  = this->pbase() == NULL;
+	bool five  = this->pptr() == NULL;
+	bool six   = this->epptr() == NULL;
+	return one && two && three && four && five && six;
+      }
+    };
 
-    bool
-    read_position()
-    { 
-      bool one = this->gptr() != NULL; 
-      bool two = this->gptr() < this->egptr();
-
-      return one && two;
-    }
-
-    bool
-    unbuffered() 
-    { 
-      bool one = this->pbase() == NULL; 
-      bool two = this->pptr() == NULL; 
-      return one && two;
-    }    
-  };
+  typedef  constraint_buf<std::streambuf>   constraint_streambuf;
+  typedef  constraint_buf<std::filebuf>     constraint_filebuf;
+  typedef  constraint_buf<std::stringbuf>   constraint_stringbuf;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  typedef  constraint_buf<std::wstreambuf>  constraint_wstreambuf;
+  typedef  constraint_buf<std::wfilebuf>    constraint_wfilebuf;
+  typedef  constraint_buf<std::wstringbuf>  constraint_wstringbuf;
+#endif
 
   // Used to check if basic_streambuf::pubsync() has been called.
   // This is useful for checking if a function creates [io]stream::sentry
