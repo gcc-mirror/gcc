@@ -2858,7 +2858,6 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		       result.  */
 		    quotient = emit_store_flag (tquotient, GEU, op0, op1,
 						compute_mode, 1, 1);
-		    /* Can emit_store_flag have failed? */
 		    if (quotient == 0)
 		      goto fail1;
 		  }
@@ -2957,10 +2956,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		else if (d == -1)
 		  quotient = expand_unop (compute_mode, neg_optab, op0,
 					  tquotient, 0);
-		else if (INTVAL (op1) == (HOST_WIDE_INT) 1 << (size - 1))
-		  /* This case is not handled correctly below.  */
-		  quotient = emit_store_flag (tquotient, EQ, op0, op1,
-					      compute_mode, 1, 1);
+		else if (abs_d == (unsigned HOST_WIDE_INT) 1 << (size - 1))
+		  {
+		    /* This case is not handled correctly below.  */
+		    quotient = emit_store_flag (tquotient, EQ, op0, op1,
+						compute_mode, 1, 1);
+		    if (quotient == 0)
+		      goto fail1;
+		  }
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (d)
 			 && (rem_flag ? smod_pow2_cheap : sdiv_pow2_cheap))
 		  ;
