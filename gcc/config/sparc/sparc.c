@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "cfglayout.h"
+#include "tree-gimple.h"
 
 /* Global variables for machine-dependent things.  */
 
@@ -181,6 +182,7 @@ static bool sparc_promote_prototypes (tree);
 static rtx sparc_struct_value_rtx (tree, int);
 static bool sparc_return_in_memory (tree, tree);
 static bool sparc_strict_argument_naming (CUMULATIVE_ARGS *);
+static tree sparc_gimplify_va_arg (tree, tree, tree *, tree *);
 
 /* Option handling.  */
 
@@ -288,6 +290,9 @@ enum processor_type sparc_cpu;
 #define TARGET_EXPAND_BUILTIN_SAVEREGS sparc_builtin_saveregs
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING sparc_strict_argument_naming
+
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR sparc_gimplify_va_arg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6040,6 +6045,96 @@ sparc_va_arg (tree valist, tree type)
     }
 
   return addr_rtx;
+}
+
+tree
+sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
+{
+  HOST_WIDE_INT size, rsize, align;
+  tree addr, incr;
+  bool indirect;
+  tree ptrtype = build_pointer_type (type);
+
+  if (function_arg_pass_by_reference (0, TYPE_MODE (type), type, 0))
+    {
+      indirect = true;
+      size = rsize = UNITS_PER_WORD;
+      align = 0;
+    }
+  else
+    {
+      indirect = false;
+      size = int_size_in_bytes (type);
+      rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+      align = 0;
+    
+      if (TARGET_ARCH64)
+	{
+	  /* For SPARC64, objects requiring 16-byte alignment get it.  */
+	  if (TYPE_ALIGN (type) >= 2 * (unsigned) BITS_PER_WORD)
+	    align = 2 * UNITS_PER_WORD;
+
+	  /* SPARC-V9 ABI states that structures up to 16 bytes in size
+	     are given whole slots as needed.  */
+	  if (AGGREGATE_TYPE_P (type))
+	    {
+	      if (size == 0)
+		size = rsize = UNITS_PER_WORD;
+	      else
+		size = rsize;
+	    }
+	}
+    }
+
+  incr = valist;
+  if (align)
+    {
+      incr = fold (build2 (PLUS_EXPR, ptr_type_node, incr,
+			   ssize_int (align - 1)));
+      incr = fold (build2 (BIT_AND_EXPR, ptr_type_node, incr,
+			   ssize_int (-align)));
+    }
+
+  gimplify_expr (&incr, pre_p, post_p, is_gimple_val, fb_rvalue);
+  addr = incr;
+
+  if (BYTES_BIG_ENDIAN && size < rsize)
+    addr = fold (build2 (PLUS_EXPR, ptr_type_node, incr,
+			 ssize_int (rsize - size)));
+
+  if (indirect)
+    {
+      addr = fold_convert (build_pointer_type (ptrtype), addr);
+      addr = build_fold_indirect_ref (addr);
+    }
+  /* If the address isn't aligned properly for the type,
+     we may need to copy to a temporary.  
+     FIXME: This is inefficient.  Usually we can do this
+     in registers.  */
+  else if (align == 0
+	   && TYPE_ALIGN (type) > BITS_PER_WORD)
+    {
+      tree tmp = create_tmp_var (type, "va_arg_tmp");
+      tree dest_addr = build_fold_addr_expr (tmp);
+
+      tree copy = build_function_call_expr
+	(implicit_built_in_decls[BUILT_IN_MEMCPY],
+	 tree_cons (NULL_TREE, dest_addr,
+		    tree_cons (NULL_TREE, addr,
+			       tree_cons (NULL_TREE, size_int (rsize),
+					  NULL_TREE))));
+
+      gimplify_and_add (copy, pre_p);
+      addr = dest_addr;
+    }
+  else
+    addr = fold_convert (ptrtype, addr);
+
+  incr = fold (build2 (PLUS_EXPR, ptr_type_node, incr, ssize_int (rsize)));
+  incr = build2 (MODIFY_EXPR, ptr_type_node, valist, incr);
+  gimplify_and_add (incr, post_p);
+
+  return build_fold_indirect_ref (addr);
 }
 
 /* Return the string to output a conditional branch to LABEL, which is
