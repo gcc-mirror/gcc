@@ -1,3 +1,8 @@
+2002-07-24  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/trad/Wunused.c, gcc.dg/cpp/trad/Wunused.h,
+	gcc.dg/cpp/Wunused.c, gcc.dg/cpp/Wunused.h: New tests.
+
 2002-07-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/va-arg-15.x, va-arg-16.x, va-arg-17.x:

@@ -545,6 +545,9 @@ do_undef (pfile)
       if (node->flags & NODE_WARN)
 	cpp_error (pfile, DL_WARNING, "undefining \"%s\"", NODE_NAME (node));
 
+      if (CPP_OPTION (pfile, warn_unused_macros))
+	_cpp_warn_if_unused_macro (pfile, node, NULL);
+
       _cpp_free_definition (node);
     }
   check_eol (pfile);
@@ -1331,10 +1334,11 @@ do_ifdef (pfile)
       const cpp_hashnode *node = lex_macro_node (pfile);
 
       if (node)
-	skip = node->type != NT_MACRO;
-
-      if (node)
-	check_eol (pfile);
+	{
+	  skip = node->type != NT_MACRO;
+	  _cpp_mark_macro_used (node);
+	  check_eol (pfile);
+	}
     }
 
   push_conditional (pfile, skip, T_IFDEF, 0);
@@ -1351,11 +1355,13 @@ do_ifndef (pfile)
   if (! pfile->state.skipping)
     {
       node = lex_macro_node (pfile);
-      if (node)
-	skip = node->type == NT_MACRO;
 
       if (node)
-	check_eol (pfile);
+	{
+	  skip = node->type == NT_MACRO;
+	  _cpp_mark_macro_used (node);
+	  check_eol (pfile);
+	}
     }
 
   push_conditional (pfile, skip, T_IFNDEF, node);

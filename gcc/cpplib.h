@@ -361,6 +361,9 @@ struct cpp_options
   /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
   unsigned char warn_undef;
 
+  /* Nonzero means warn of unused macros from the main file.  */
+  unsigned char warn_unused_macros;
+
   /* Nonzero for the 1999 C Standard, including corrigenda and amendments.  */
   unsigned char c99;
 

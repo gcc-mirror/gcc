@@ -1,3 +1,24 @@
+2002-07-24  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppexp.c (parse_defined): Mark macro used.
+	* cpphash.h (struct cpp_macro): New member "used".
+	(_cpp_mark_macro_used, _cpp_warn_if_unused_macro): New.
+	(struct cpp_reader): New member.
+	* cppinit.c (cpp_finish_options): Set first_unused_line.
+	(cpp_finish): Warn of unused macros if requested.
+	(OPT_TABLE): New switches.
+	(cpp_handle_option): Handle them.
+	* cpplib.c (do_undef): Warn if macro unused.
+	(do_ifdef, do_ifndef): Mark macro used.
+	* cpplib.h (struct cpp_options): New member.
+	* cppmacro.c (_cpp_warn_if_unused_macro): New.
+	(enter_macro_context): Mark macro used.
+	(_cpp_create_definition): Mark macro unused; warn if unused
+	when redefined.
+	* cpptrad.c (scan_out_logcial_line, push_replacement_text):
+	Mark macros used.
+	* doc/cppopts.texi: Update.
+
 2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
 
 	* dwarf2out.c (SECTION_ASM_OP,

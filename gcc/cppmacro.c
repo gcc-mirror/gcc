@@ -74,6 +74,29 @@ static void check_trad_stringification PARAMS ((cpp_reader *,
 						const cpp_macro *,
 						const cpp_string *));
 
+/* Emits a warning if NODE is a macro defined in the main file that
+   has not been used.  */
+int
+_cpp_warn_if_unused_macro (pfile, node, v)
+     cpp_reader *pfile;
+     cpp_hashnode *node;
+     void *v ATTRIBUTE_UNUSED;
+{
+  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+    {
+      cpp_macro *macro = node->value.macro;
+
+      if (!macro->used
+	  /* Skip front-end built-ins and command line macros.  */
+	  && macro->line >= pfile->first_unused_line
+	  && MAIN_FILE_P (lookup_line (&pfile->line_maps, macro->line)))
+	cpp_error_with_line (pfile, DL_WARNING, macro->line, 0,
+			     "macro \"%s\" is not used", NODE_NAME (node));
+    }
+
+  return 1;
+}
+
 /* Allocates and returns a CPP_STRING token, containing TEXT of length
    LEN, after null-terminating it.  TEXT must be in permanent storage.  */
 static const cpp_token *
@@ -727,6 +750,8 @@ enter_macro_context (pfile, node)
 
       /* Disable the macro within its expansion.  */
       node->flags |= NODE_DISABLED;
+
+      macro->used = 1;
 
       if (macro->paramc == 0)
 	push_token_context (pfile, node, macro->exp.tokens, macro->count);
@@ -1488,6 +1513,7 @@ _cpp_create_definition (pfile, node)
   macro->params = 0;
   macro->paramc = 0;
   macro->variadic = 0;
+  macro->used = 0;
   macro->count = 0;
   macro->fun_like = 0;
   /* To suppress some diagnostics.  */
@@ -1523,6 +1549,9 @@ _cpp_create_definition (pfile, node)
 
   if (node->type != NT_VOID)
     {
+      if (CPP_OPTION (pfile, warn_unused_macros))
+	_cpp_warn_if_unused_macro (pfile, node, NULL);
+
       if (warn_of_redefinition (pfile, node, macro))
 	{
 	  cpp_error_with_line (pfile, DL_PEDWARN, pfile->directive_line, 0,
