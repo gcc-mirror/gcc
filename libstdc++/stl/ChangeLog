@@ -1,3 +1,7 @@
+1999-01-20  Mark Mitchell  <mark@markmitchell.com>
+
+	* stl_config.h (__STL_USE_NAMESPACES): Define.
+
 1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* bitset: explicitly convert basic_string<...>::npos to size_t in
