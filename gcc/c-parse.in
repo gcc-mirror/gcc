@@ -27,24 +27,32 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 22
+%expect 35
 end ifobjc
 ifc
 %expect 23
 
-/* These are the 10 conflicts you should get in parse.output;
+/* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
 
-State 41 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
-State 97 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
-State 104 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
-State 108 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
-State 124 contains 1 shift/reduce conflict.  (See comment at component_decl.)
-State 191 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
-State 204 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
-State 210 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
-State 449 contains 2 shift/reduce conflicts.  (Four ways to parse this.)
-*/
+State 42 contains 1 shift/reduce conflict.  (Two ways to parse ATTRIBUTE.)
+State 44 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
+State 103 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
+State 110 contains 1 shift/reduce conflict.  (Two ways to parse ATTRIBUTE.)
+State 111 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
+State 115 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
+State 132 contains 1 shift/reduce conflict.  (See comment at component_decl.)
+State 180 contains 1 shift/reduce conflict.  (Two ways to parse ATTRIBUTE.)
+State 194 contains 2 shift/reduce conflict.  (Four ways to parse this.)
+State 202 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
+State 214 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
+State 220 contains 1 shift/reduce conflict.  (Two ways to recover from error.)
+State 304 contains 2 shift/reduce conflicts.  (Four ways to parse this.)
+State 335 contains 2 shift/reduce conflicts.  (Four ways to parse this.)
+State 347 contains 1 shift/reduce conflict.  (Two ways to parse ATTRIBUTES.)
+State 352 contains 1 shift/reduce conflict.  (Two ways to parse ATTRIBUTES.)
+State 383 contains 2 shift/reduce conflicts.  (Four ways to parse this.)
+State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)
 end ifc
 
 %{
