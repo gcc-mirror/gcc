@@ -5,7 +5,7 @@
    non-overloadable operators (like the `?:' ternary operator).  
    Writtey by Mark Mitchell <mark@codesourcery.com>
 
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,10 +45,6 @@ Boston, MA 02111-1307, USA.  */
      The mangling prefix for the operator, as a C string, and as
      mangled under the new ABI.  For `operator +', for example, this
      would be "pl".
-
-   OLD_MANGLING
-
-     Analogous, but for the old ABI.
 
    ARITY
    

@@ -1,3 +1,9 @@
+2002-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-demangle.c (demangle_operator_name): Add type_arg parameter.
+	Set it for the "st" operator.
+	(demangle_expression): Handle expressions with types as arguments.
+
 2002-06-30  Douglas Rupp  <rupp@gnat.com>
 
 	* configure.in (OUTPUT_OPTION,NO_MINUS_C_MINUS_O): Configure.
