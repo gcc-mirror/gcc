@@ -1,3 +1,7 @@
+2003-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (mathfn_built_in): Handle new math builtins.
+
 2003-08-28  Per Bothner  <per@bothner.com>
 
 	Fix (hopefully temporary) for breakage caused by my 08-21 patch.
