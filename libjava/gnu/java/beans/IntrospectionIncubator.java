@@ -1,5 +1,5 @@
 /* gnu.java.beans.IntrospectionIncubator
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,10 +57,12 @@ import java.util.Vector;
 
 /**
  ** IntrospectionIncubator takes in a bunch of Methods, and
- ** Introspects only those Methods you give it.
+ ** Introspects only those Methods you give it. 
+ ** Note that non-public and static methods are silently
+ ** discarded.
  **
  ** @author John Keiser
- ** @version 1.1.0, 30 Jul 1998
+ ** @author Robert Schuster
  ** @see gnu.java.beans.ExplicitBeanInfo
  ** @see java.beans.BeanInfo
  **/
@@ -79,7 +81,8 @@ public class IntrospectionIncubator {
 
 	/* Paving the way for automatic Introspection */
 	public void addMethod(Method method) {
-		if(Modifier.isPublic(method.getModifiers())) {
+		if(Modifier.isPublic(method.getModifiers()) &&
+			!Modifier.isStatic(method.getModifiers())) {
 			String name = ClassHelper.getTruncatedName(method.getName());
 			Class retType = method.getReturnType();
 			Class[] params = method.getParameterTypes();
