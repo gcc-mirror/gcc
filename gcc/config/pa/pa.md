@@ -846,8 +846,7 @@
 			  "=r,r,Q,!r,!fx,!fx")
 	(match_operand:SI 1 "move_operand" "rM,Q,rM,!fxy,!r,!fx"))]
   "register_operand (operands[0], SImode)
-   || register_operand (operands[1], SImode)
-   || operands[1] == const0_rtx"
+   || reg_or_0_operand (operands[1], SImode)"
   "@
    copy %r1,%0
    ldw%M1 %1,%0
@@ -1000,8 +999,7 @@
   [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!r,!*fx,!*fx")
 	(match_operand:HI 1 "move_operand" "rM,Q,rM,*fx,r,!*fx"))]
   "register_operand (operands[0], HImode)
-   || register_operand (operands[1], HImode)
-   || operands[1] == const0_rtx"
+   || reg_or_0_operand (operands[1], HImode)"
   "@
    copy %r1,%0
    ldh%M1 %1,%0
@@ -1063,8 +1061,7 @@
   [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!r,!*fx,!*fx")
 	(match_operand:QI 1 "move_operand" "rM,Q,rM,*fx,r,*fx"))]
   "register_operand (operands[0], QImode)
-   || register_operand (operands[1], QImode)
-   || operands[1] == const0_rtx"
+   || reg_or_0_operand (operands[1], QImode)"
   "@
    copy %r1,%0
    ldb%M1 %1,%0
@@ -1345,8 +1342,7 @@
 	(match_operand:DI 1 "general_operand"
 			  "r,r,Q,i,r,fx,fx"))]
   "register_operand (operands[0], DImode)
-   || register_operand (operands[1], DImode)
-   || operands[1] == const0_rtx"
+   || reg_or_0_operand (operands[1], DImode)"
   "*
 {
   if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
@@ -1673,13 +1669,16 @@
    sub %1,%2,%0
    subi %1,%2,%0")
 
-;; The mulsi3 insns set up registers for the millicode call.
+;; Clobbering a "register_operand" instead of a match_scratch
+;; in operand3 of millicode calls avoids spilling %r1 and
+;; produces better code.
 
+;; The mulsi3 insns set up registers for the millicode call.
 (define_expand "mulsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
    (parallel [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_scratch:SI 3 ""))
+	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -1698,6 +1697,7 @@
 			  gen_rtx (SUBREG, SImode, scratch, 1)));
       DONE;
     }
+  operands[3] = gen_reg_rtx(SImode);
 }")
 
 (define_insn "umulsidi3"
@@ -1710,7 +1710,7 @@
 
 (define_insn ""
   [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_scratch:SI 0 "=a"))
+   (clobber (match_operand:SI 0 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -1719,12 +1719,11 @@
   [(set_attr "type" "milli")])
 
 ;;; Division and mod.
-
 (define_expand "divsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
    (parallel [(set (reg:SI 29) (div:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_scratch:SI 3 ""))
+	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -1732,6 +1731,7 @@
   ""
   "
 {
+  operands[3] = gen_reg_rtx(SImode);
   if (!(GET_CODE (operands[2]) == CONST_INT && emit_hpdiv_const(operands, 0)))
     {
       emit_move_insn (gen_rtx (REG, SImode, 26), operands[1]);
@@ -1743,7 +1743,7 @@
 				 gen_rtx (DIV, SImode,
 					  gen_rtx (REG, SImode, 26),
 					  gen_rtx (REG, SImode, 25))),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, SImode, 0)),
+		     gen_rtx (CLOBBER, VOIDmode, operands[3]),
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
@@ -1755,7 +1755,7 @@
 (define_insn ""
   [(set (reg:SI 29)
     (div:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
-   (clobber (match_scratch:SI 1 "=a"))
+   (clobber (match_operand:SI 1 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -1768,7 +1768,7 @@
   [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
    (parallel [(set (reg:SI 29) (udiv:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_scratch:SI 3 ""))
+	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -1776,6 +1776,7 @@
   ""
   "
 {
+  operands[3] = gen_reg_rtx(SImode);
   if (!(GET_CODE (operands[2]) == CONST_INT && emit_hpdiv_const(operands, 1)))
     {
       emit_move_insn (gen_rtx (REG, SImode, 26), operands[1]);
@@ -1787,7 +1788,7 @@
 				 gen_rtx (UDIV, SImode,
 					  gen_rtx (REG, SImode, 26),
 					  gen_rtx (REG, SImode, 25))),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, SImode, 0)),
+		     gen_rtx (CLOBBER, VOIDmode, operands[3]), 
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
@@ -1799,7 +1800,7 @@
 (define_insn ""
   [(set (reg:SI 29)
     (udiv:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
-   (clobber (match_scratch:SI 1 "=a"))
+   (clobber (match_operand:SI 1 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -1812,7 +1813,7 @@
   [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
    (parallel [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_scratch:SI 3 ""))
+	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -1820,6 +1821,7 @@
   ""
   "
 {
+  operands[3] = gen_reg_rtx(SImode);
   emit_move_insn (gen_rtx (REG, SImode, 26), operands[1]);
   emit_move_insn (gen_rtx (REG, SImode, 25), operands[2]);
   emit
@@ -1829,7 +1831,7 @@
 			     gen_rtx (MOD, SImode,
 				      gen_rtx (REG, SImode, 26),
 				      gen_rtx (REG, SImode, 25))),
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, SImode, 0)),
+		 gen_rtx (CLOBBER, VOIDmode, operands[3]), 
 		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
 		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
 		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
@@ -1839,7 +1841,7 @@
 
 (define_insn ""
   [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_scratch:SI 0 "=a"))
+   (clobber (match_operand:SI 0 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -1852,7 +1854,7 @@
   [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
    (parallel [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_scratch:SI 3 ""))
+	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -1860,6 +1862,7 @@
   ""
   "
 {
+  operands[3] = gen_reg_rtx(SImode);
   emit_move_insn (gen_rtx (REG, SImode, 26), operands[1]);
   emit_move_insn (gen_rtx (REG, SImode, 25), operands[2]);
   emit
@@ -1869,7 +1872,7 @@
 			     gen_rtx (UMOD, SImode,
 				      gen_rtx (REG, SImode, 26),
 				      gen_rtx (REG, SImode, 25))),
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, SImode, 0)),
+		 gen_rtx (CLOBBER, VOIDmode, operands[3]), 
 		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
 		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
 		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
@@ -1879,7 +1882,7 @@
 
 (define_insn ""
   [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_scratch:SI 0 "=a"))
+   (clobber (match_operand:SI 0 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
