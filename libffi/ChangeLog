@@ -1,3 +1,17 @@
+2002-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.in: Add s390x-*-linux-* target.
+	* configure: Regenerate.
+	* include/ffi.h.in: Define S390X for s390x targets.
+	(FFI_CLOSURES): Define for s390/s390x.
+	(FFI_TRAMPOLINE_SIZE): Likewise.
+	(FFI_NATIVE_RAW_API): Likewise.
+	* src/prep_cif.c (ffi_prep_cif): Do not compute stack space for s390.
+	* src/types.c (FFI_TYPE_POINTER): Use 8-byte pointers on s390x.
+	* src/s390/ffi.c: Major rework of existing code.  Add support for 
+	s390x targets.  Add closure support.
+	* src/s390/sysv.S: Likewise.
+
 2002-09-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* src/arm/sysv.S: Fix typo.

@@ -164,6 +164,12 @@ extern "C" {
 #endif
 #endif
 
+#ifdef S390
+#if defined (__s390x__)
+#define S390X
+#endif
+#endif
+
 #ifndef LIBFFI_ASM
 
 /* ---- Generic type definitions ----------------------------------------- */
@@ -433,6 +439,16 @@ struct ffi_ia64_trampoline_struct {
 
 #define FFI_CLOSURES 1
 #define FFI_TRAMPOLINE_SIZE 24 /* see struct below */ 
+#define FFI_NATIVE_RAW_API 0
+
+#elif defined(S390)
+
+#define FFI_CLOSURES 1
+#ifdef S390X
+#define FFI_TRAMPOLINE_SIZE 32
+#else
+#define FFI_TRAMPOLINE_SIZE 16
+#endif
 #define FFI_NATIVE_RAW_API 0
 
 #elif defined(SH)
