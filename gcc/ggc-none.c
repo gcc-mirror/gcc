@@ -29,6 +29,7 @@
 #include "config.h"
 #include "system.h"
 #include "rtl.h"
+#include "tm_p.h"
 #include "ggc.h"
 
 /* For now, keep using the old obstack scheme in the gen* programs.  */

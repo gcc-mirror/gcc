@@ -22,10 +22,11 @@
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"
-#include "ggc.h"
+#include "tm_p.h"
 #include "flags.h"
 #include "varray.h"
 #include "hash.h"
+#include "ggc.h"
 
 /* Debugging flags.  */
 
