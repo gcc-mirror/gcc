@@ -1566,6 +1566,12 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 /* Supposedly the assembler rejects the command if there is no tab!  */
 #define TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $CODE$\n"
 
+/* Output before read-only data.  */
+
+/* Supposedly the assembler rejects the command if there is no tab!  */
+#define READONLY_DATA_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $LIT$\n"
+#define READONLY_DATA_SECTION readonly_data
+
 /* Output before writable data.  */
 
 /* Supposedly the assembler rejects the command if there is no tab!  */
@@ -1577,7 +1583,7 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 
 /* Define the .bss section for ASM_OUTPUT_LOCAL to use. */
 
-#define EXTRA_SECTIONS in_bss
+#define EXTRA_SECTIONS in_bss, in_readonly_data
 
 #define EXTRA_SECTION_FUNCTIONS						\
 void									\
@@ -1587,6 +1593,15 @@ bss_section ()								\
     {									\
       fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);		\
       in_section = in_bss;						\
+    }									\
+}									\
+void									\
+readonly_data ()							\
+{									\
+  if (in_section != in_readonly_data)					\
+    {									\
+      fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
+      in_section = in_readonly_data;					\
     }									\
 }
 
