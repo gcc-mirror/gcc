@@ -11,7 +11,7 @@ details.  */
 #include <config.h>
 
 #include <stddef.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <java/lang/Class.h>
 #include <java/lang/NullPointerException.h>
@@ -100,7 +100,7 @@ _Jv_Throw (jthrowable value)
      recover.  As is the way of such things, almost certainly we will have
      crashed before now, rather than actually being able to diagnose the
      problem.  */
-  abort ();
+  std::abort ();
 }
 
 
@@ -348,7 +348,7 @@ PERSONALITY_FUNCTION (int version,
 	      // ??? Perhaps better to make them an index into a table
 	      // of null-terminated strings instead of playing games
 	      // with Utf8Const+1 as above.
-	      abort ();
+	      std::abort ();
 	    }
 
 	  if (ar_disp == 0)
