@@ -1,3 +1,9 @@
+2004-05-07  Steven Bosscher  <stevenb@suse.de>
+
+	PR opt/14749
+	* expr.c (do_jump): If TREE_CONSTANT_OVERFLOW is set, don't
+	trust integer_zerop.  Just expand both branches.
+
 2004-04-29  Matthias Klose  <doko@debian.org>
 
 	Backport:
