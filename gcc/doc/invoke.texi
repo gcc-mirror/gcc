@@ -441,6 +441,7 @@ in the following sections.
 -mstrict-align  -mno-strict-align  -mrelocatable @gol
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
+-mdynamic-no-pic @gol
 -mcall-aix -mcall-sysv -mcall-netbsd @gol
 -maix-struct-return -msvr4-struct-return @gol
 -mabi=altivec -mabi=no-altivec @gol
@@ -7224,6 +7225,13 @@ the same as @option{-mlittle}.
 On System V.4 and embedded PowerPC systems compile code for the
 processor in big endian mode.  The @option{-mbig-endian} option is
 the same as @option{-mbig}.
+
+@item -mdynamic-no-pic
+@opindex mdynamic-no-pic
+On Darwin and Mac OS X systems, compile code so that it is not
+relocatable, but that its external references are relocatable.  The
+resulting code is suitable for applications, but not shared
+libraries.
 
 @item -mcall-sysv
 @opindex mcall-sysv

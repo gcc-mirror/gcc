@@ -35,14 +35,15 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_TOC 0
 #define TARGET_NO_TOC 1
 
+/* Darwin switches.  */
+/* Use dynamic-no-pic codegen (no picbase reg; not suitable for shlibs.)  */
+#define MASK_MACHO_DYNAMIC_NO_PIC 0x00800000
+
+#define TARGET_DYNAMIC_NO_PIC	(target_flags & MASK_MACHO_DYNAMIC_NO_PIC)
+
 /* Handle #pragma weak and #pragma pack.  */
 #define HANDLE_SYSV_PRAGMA 1
 
-/* The Darwin ABI always includes AltiVec, can't be (validly) turned
-   off.  */
-
-#define SUBTARGET_OVERRIDE_OPTIONS  \
-  rs6000_altivec_abi = 1;
 
 #define TARGET_OS_CPP_BUILTINS()                \
   do                                            \
@@ -55,12 +56,45 @@ Boston, MA 02111-1307, USA.  */
     }                                           \
   while (0)
 
+
+/*  */
+#undef	SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES						\
+  {"dynamic-no-pic",	MASK_MACHO_DYNAMIC_NO_PIC,			\
+      N_("Generate code suitable for executables (NOT shared libs)")},	\
+  {"no-dynamic-no-pic",	-MASK_MACHO_DYNAMIC_NO_PIC, ""},
+
+
+/* The Darwin ABI always includes AltiVec, can't be (validly) turned
+   off.  */
+
+#define SUBTARGET_OVERRIDE_OPTIONS				  	\
+do {									\
+  rs6000_altivec_abi = 1;						\
+  if (DEFAULT_ABI == ABI_DARWIN)					\
+  {									\
+    if (MACHO_DYNAMIC_NO_PIC_P)						\
+      {									\
+        if (flag_pic)							\
+            warning ("-mdynamic-no-pic overrides -fpic or -fPIC");	\
+        flag_pic = 0;							\
+      }									\
+    else if (flag_pic == 1)						\
+      {									\
+        /* Darwin doesn't support -fpic.  */				\
+        warning ("-fpic is not supported; -fPIC assumed");		\
+        flag_pic = 2;							\
+      }									\
+  }									\
+}while(0)
+
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
 
+
 #define CC1_SPEC "\
 %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
-%{!static:-fPIC}"
+%{!static:%{!mdynamic-no-pic:-fPIC}}"
 
 /* Make both r2 and r3 available for allocation.  */
 #define FIXED_R2 0
