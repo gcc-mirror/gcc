@@ -1,3 +1,11 @@
+Tue Nov  7 06:24:02 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* flow.c (verify_local_live_at_start): Back out last change.
+	* combine.c (distribute_notes): When parts of a hard reg are
+	neither set nor referenced in PLACE, search backwards for a
+	place to put a REG_UNUSED note; if none found, ask for flow
+	info refresh.
+
 Mon Nov  6 20:08:13 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* reload1.c (eliminate_regs_in_insn): Allow a set to be a PARALLEL

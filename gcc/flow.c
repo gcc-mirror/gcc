@@ -2888,24 +2888,11 @@ verify_local_live_at_start (new_live_at_start, bb)
 
       EXECUTE_IF_SET_IN_REG_SET (new_live_at_start, 0, i,
 	{
-          /* No pseudo registers should die.  */
+          /* No registers should die.  */
 	  if (REGNO_REG_SET_P (bb->global_live_at_start, i))
-	    {
-	      /* But hard regs can reasonably die, e.g. when we combine
-		 (insn 6 30 7 (set (reg/v:DI 83)
-				   (reg:DI 5 r5)) (nil)
-		     (expr_list:REG_DEAD (reg:DI 5 r5) (nil)))
-		 ... and ...
-		 (insn 17 15 18 (set (reg:SI 5 r5)
-				(subreg:SI (reg/v:DI 83) 1)) (insn_list 6 (nil))
-		     (expr_list:REG_DEAD (reg/v:DI 83) (nil))) .  */
-
-	      if (i >= FIRST_PSEUDO_REGISTER)
-		abort ();
-	    }
-	  else
-	    /* Verify that the now-live register is wider than word_mode.  */
-	    verify_wide_reg (i, bb->head, bb->end);
+	    abort ();
+          /* Verify that the now-live register is wider than word_mode.  */
+	  verify_wide_reg (i, bb->head, bb->end);
 	});
     }
 }

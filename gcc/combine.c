@@ -12499,6 +12499,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			   i += HARD_REGNO_NREGS (i, reg_raw_mode[i]))
 			{
 			  rtx piece = gen_rtx_REG (reg_raw_mode[i], i);
+			  basic_block bb = BASIC_BLOCK (this_basic_block);
 
 			  if (! dead_or_set_p (place, piece)
 			      && ! reg_bitfield_target_p (piece,
@@ -12510,6 +12511,34 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			      distribute_notes (new_note, place, place,
 						NULL_RTX, NULL_RTX, NULL_RTX);
 			    }
+			  else if (! refers_to_regno_p (i, i + 1,
+							PATTERN (place), 0)
+				   && ! find_regno_fusage (place, USE, i))
+			    for (tem = PREV_INSN (place); ;
+				 tem = PREV_INSN (tem))
+			      {
+				if (! INSN_P (tem))
+				  {
+				    if (tem == bb->head)
+				      {
+					SET_BIT (refresh_blocks,
+						 this_basic_block);
+					need_refresh = 1;
+					break;
+				      }
+				    continue;
+				  }
+				if (dead_or_set_p (tem, piece)
+				    || reg_bitfield_target_p (piece,
+							      PATTERN (tem)))
+				  {
+				    REG_NOTES (tem)
+				      = gen_rtx_EXPR_LIST (REG_DEAD, piece,
+							   REG_NOTES (tem));
+				    break;
+				  }
+			      }
+
 			}
 
 		      place = 0;
