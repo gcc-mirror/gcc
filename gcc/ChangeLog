@@ -1,3 +1,8 @@
+Mon Jan 24 19:49:47 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (subst_stack_regs_pat): Handle correctly USEs of
+	dead registers.
+
 Mon Jan 24 17:37:31 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (FIRST_PSEUDO_REGISTER): Set to 21.
