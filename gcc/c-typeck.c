@@ -5284,6 +5284,7 @@ push_init_level (implicit)
 	{
 	  constructor_type = TREE_TYPE (constructor_fields);
 	  push_member_name (constructor_fields);
+	  constructor_depth++;
 	  if (constructor_fields != constructor_unfilled_fields)
 	    constructor_incremental = 0;
 	}
@@ -5292,6 +5293,7 @@ push_init_level (implicit)
     {
       constructor_type = TREE_TYPE (constructor_type);
       push_array_bounds (TREE_INT_CST_LOW (constructor_index));
+      constructor_depth++;
       if (! tree_int_cst_equal (constructor_index, constructor_unfilled_index)
 	  || constructor_range_end != 0)
 	constructor_incremental = 0;
