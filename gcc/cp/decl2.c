@@ -4116,10 +4116,17 @@ build_expr_from_tree (t)
       if (TREE_CODE (TREE_OPERAND (t, 0)) == SCOPE_REF)
 	{
 	  tree ref = TREE_OPERAND (t, 0);
+	  tree name = TREE_OPERAND (ref, 1);
+	  
+	  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	    name = build_nt (TEMPLATE_ID_EXPR,
+	                     TREE_OPERAND (name, 0),
+	                     build_expr_from_tree (TREE_OPERAND (name, 1)));
+	    
 	  return build_scoped_method_call
 	    (build_expr_from_tree (TREE_OPERAND (t, 1)),
 	     build_expr_from_tree (TREE_OPERAND (ref, 0)),
-	     TREE_OPERAND (ref, 1),
+	     name,
 	     build_expr_from_tree (TREE_OPERAND (t, 2)));
 	}
       else 
@@ -4151,9 +4158,16 @@ build_expr_from_tree (t)
       if (TREE_CODE (TREE_OPERAND (t, 0)) == SCOPE_REF)
 	{
 	  tree ref = TREE_OPERAND (t, 0);
+	  tree name = TREE_OPERAND (ref, 1);
+	  
+	  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	    name = build_nt (TEMPLATE_ID_EXPR,
+	                     TREE_OPERAND (name, 0),
+	                     build_expr_from_tree (TREE_OPERAND (name, 1)));
+	    
 	  return build_member_call
 	    (build_expr_from_tree (TREE_OPERAND (ref, 0)),
-	     TREE_OPERAND (ref, 1),
+	     name,
 	     build_expr_from_tree (TREE_OPERAND (t, 1)));
 	}
       else

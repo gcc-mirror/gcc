@@ -1,5 +1,11 @@
 2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl2.c (build_expr_from_tree, case METHOD_CALL_EXPR): Build
+	explicit TEMPLATE_ID_EXPR args.
+	(build_expr_from_tree, case CALL_EXPR): Likewise.
+
+2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (check_tag_decl): Diagnose typename's which don't
 	declare anything.
 
