@@ -1,5 +1,8 @@
 Thu Aug 20 19:43:44 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* remove.c (optimize_reg_copy_3): Abort instead of silently generating
+	bogus rtl.
+
 	* jump.c (rtx_renumbered_equal_p): Do not consider PLUS commutative.
 
 Thu Aug 20 17:35:20 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>

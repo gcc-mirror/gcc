@@ -560,7 +560,10 @@ optimize_reg_copy_3 (insn, dest, src)
     {
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 	continue;
-      validate_replace_rtx (src_reg, subreg, p);
+      /* If we can not perform the replacement, then abort now
+	 to make debugging easier.  */
+      if (! validate_replace_rtx (src_reg, subreg, p))
+	abort ();
     }
   validate_replace_rtx (src, src_reg, insn);
 }
