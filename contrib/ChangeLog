@@ -1,3 +1,7 @@
+2000-11-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_update: Update a comment as we now require bison for CVS users.
+
 2000-11-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_update: Add gcov.1 to the list of generated files.
