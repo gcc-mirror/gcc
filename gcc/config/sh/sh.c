@@ -701,6 +701,11 @@ static short ext_shift_amounts[32][4] = {
   {16, 8}, {16, 1, 8}, {16, 8, 2}, {16, 8, 1, 2},
   {16, 8, 2, 2}, {16, -1, -2, 16}, {16, -2, 16}, {16, -1, 16}};
 
+/* Assuming we have a value that has been sign-extended by at least one bit,
+   can we use the ext_shift_amounts with the last shift turned to an arithmetic shift
+   to shift it by N without data loss, and quicker than by other means?  */
+#define EXT_SHIFT_SIGNED(n) (((n) | 8) == 15)
+
 /* This is used in length attributes in sh.md to help compute the length
    of arbitrary constant shift instructions.  */
 
@@ -1372,17 +1377,21 @@ shl_sext_kind (left_rtx, size_rtx, costp)
 	      best_cost = cost;
 	    }
 	}
-      if (size <= 16)
+      /* Check if we can do a sloppy shift with a final signed shift
+	 restoring the sign.  */
+      if (EXT_SHIFT_SIGNED (size - ext))
+	cost = ext_shift_insns[ext - insize] + ext_shift_insns[size - ext] + 1;
+      /* If not, maybe it's still cheaper to do the second shift sloppy,
+	 and do a final sign extend?  */
+      else if (size <= 16)
+	cost = ext_shift_insns[ext - insize] + 1
+	  + ext_shift_insns[size > ext ? size - ext : ext - size] + 1;
+      else
+	continue;
+      if (cost < best_cost)
 	{
-	  /* Maybe it's cheaper to do the second shift sloppy, and do a
-	     final sign extend?  */
-	  cost = ext_shift_insns[ext - insize] + 1
-	    + ext_shift_insns[size > ext ? size - ext : ext - size] + 1;
-	  if (cost < best_cost)
-	    {
-	      kind = ext / 8U + 2;
-	      best_cost = cost;
-	    }
+	  kind = ext / 8U + 2;
+	  best_cost = cost;
 	}
     }
   /* Check if we can sign extend in r0 */
@@ -1493,6 +1502,14 @@ gen_shl_sext (dest, left_rtx, size_rtx, source)
 	  {
 	    if (shift2 > 0)
 	      {
+		if (EXT_SHIFT_SIGNED (shift2))
+		  {
+		    operands[2] = GEN_INT (shift2 + 1);
+		    gen_shifty_op (ASHIFT, operands);
+		    operands[2] = GEN_INT (1);
+		    gen_shifty_op (ASHIFTRT, operands);
+		    break;
+		  }
 		operands[2] = GEN_INT (shift2);
 		gen_shifty_hi_op (ASHIFT, operands);
 	      }
