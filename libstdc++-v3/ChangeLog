@@ -1,5 +1,13 @@
 2004-07-06  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/16210
+	* acinclude.m4 (GLIBCXX_ENABLE_LONG_LONG): Do not check for the
+	availability of strto(u)ll, not used anymore in the iostreams.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2004-07-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/cpp_type_traits.h: Move the additions to
 	namespace __gnu_internal outside of namespace std; trivial
 	formatting fixes.

@@ -1431,28 +1431,12 @@ dnl --enable-long-long defines _GLIBCXX_USE_LONG_LONG
 dnl --disable-long-long leaves _GLIBCXX_USE_LONG_LONG undefined
 dnl  +  Usage:  GLIBCXX_ENABLE_LONG_LONG[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.
-dnl  +  If 'long long' stuff is not available, ignores DEFAULT and sets `no'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_LONG_LONG], [
   GLIBCXX_ENABLE(long-long,$1,,[enables I/O support for 'long long'])
-
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-
-  AC_MSG_CHECKING([for enabled long long I/O support])
-  # iostreams require strtoll, strtoull to compile
-  AC_TRY_COMPILE([#include <stdlib.h>],
-                 [char* tmp; strtoll("gnu", &tmp, 10);],,[enable_long_long=no])
-  AC_TRY_COMPILE([#include <stdlib.h>],
-                 [char* tmp; strtoull("gnu", &tmp, 10);],,[enable_long_long=no])
-
-  # Option parsed, now set things appropriately
   if test $enable_long_long = yes; then
     AC_DEFINE(_GLIBCXX_USE_LONG_LONG)
   fi
-  AC_MSG_RESULT($enable_long_long)
-
-  AC_LANG_RESTORE
 ])
 
 
