@@ -752,6 +752,15 @@ push_momentary ()
   expression_obstack = &momentary_obstack;
 }
 
+/* Set things up so the next clear_momentary will only clear memory
+   past our present position in momentary_obstack.  */
+
+void
+preserve_momentary ()
+{
+  momentary_stack->base = (char *) obstack_base (&momentary_obstack);
+}
+
 /* Free all the storage in the current momentary-allocation level.
    In C, this happens at the end of each statement.  */
 
