@@ -1,6 +1,6 @@
 // natClassLoader.cc - Implementation of java.lang.ClassLoader native methods.
 
-/* Copyright (C) 1999  Cygnus Solutions
+/* Copyright (C) 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -437,13 +437,11 @@ jclass _Jv_FindClass (_Jv_Utf8Const *name,
 	  // Load using a user-defined loader, jvmspec 5.3.2
 	  klass = loader->loadClass(sname, false);
 
-	  // if "loader" delegateted the loadClass operation
-	  // to another loader, register explicitly
-	  // that he is also an initiating loader of the
-	  // given class.  	  
-
+	  // If "loader" delegated the loadClass operation to another
+	  // loader, explicitly register that it is also an initiating
+	  // loader of the given class.
 	  if (klass && (klass->getClassLoader () != loader))
-	    _Jv_RegisterInitiatingLoader (klass, 0);
+	    _Jv_RegisterInitiatingLoader (klass, loader);
 	}
       else 
 	{
@@ -454,7 +452,7 @@ jclass _Jv_FindClass (_Jv_Utf8Const *name,
 	      sys = java::lang::ClassLoader::getSystemClassLoader ();
 	    }
 
-	  // Load using the bootstrap loader jmspec 5.3.1.
+	  // Load using the bootstrap loader jvmspec 5.3.1.
 	  klass = sys->loadClass (sname, false); 
 
 	  // Register that we're an initiating loader.
