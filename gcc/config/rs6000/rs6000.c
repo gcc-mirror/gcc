@@ -12253,11 +12253,9 @@ rs6000_variable_issue (stream, verbose, insn, more)
 	       || type == TYPE_FPLOAD_U || type == TYPE_FPSTORE_U
 	       || type == TYPE_LOAD_EXT || type == TYPE_DELAYED_CR)
 	return more > 2 ? more - 2 : 0;
-      else
-	return more - 1;
     }
-  else
-    return more - 1;
+
+  return more - 1;
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
