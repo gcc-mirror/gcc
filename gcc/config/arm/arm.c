@@ -796,9 +796,9 @@ int
 short_branch (from, to)
 int from, to;
 {
-  int delta = insn_addresses[from] + 2 - insn_addresses[to];
+  int delta = insn_addresses[from] + 8 - insn_addresses[to];
 
-  return abs (delta) < 245;	/* A small margin for safety */
+  return abs (delta) < 980;	/* A small margin for safety */
 }
 
 /* Check to see that the insn isn't the target of the conditionalizing
