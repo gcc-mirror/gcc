@@ -3284,18 +3284,6 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && alpha_tp == ALPHA_TP_INSN"
-  "@
-   jsr $26,($27),0\;trapb\;ldgp $29,4($26)
-   bsr $26,%0..ng\;trapb
-   jsr $26,%0\;trapb\;ldgp $29,4($26)"
-  [(set_attr "type" "jsr,jsr,ibr")])
-      
-(define_insn ""
-  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
-	 (match_operand 1 "" ""))
-   (clobber (reg:DI 27))
-   (clobber (reg:DI 26))]
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
@@ -3325,19 +3313,6 @@
    bis %2,%2,$27\;jsr $26,0\;ldq $27,0($29)
    ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)"
   [(set_attr "type" "jsr")])
-
-(define_insn ""
-  [(set (match_operand 0 "register_operand" "=rf,rf,rf")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:DI 27))
-   (clobber (reg:DI 26))]
-  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && alpha_tp == ALPHA_TP_INSN"
-  "@
-   jsr $26,($27),0\;trapb\;ldgp $29,4($26)
-   bsr $26,%1..ng\;trapb
-   jsr $26,%1\;trapb\;ldgp $29,4($26)"
-  [(set_attr "type" "jsr,jsr,ibr")])
 
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=rf,rf,rf")
@@ -4513,3 +4488,12 @@
    (clobber (reg:DI 0))]
   "TARGET_OPEN_VMS"
   "lda $0,ots$home_args\;ldq $0,8($0)\;jsr $0,ots$home_args")
+
+;; Close the trap shadow of preceeding instructions.  This is generated
+;; by alpha_reorg.
+
+(define_insn "trapb"
+  [(unspec_volatile [(const_int 0)] 3)]
+  ""
+  "trapb"
+  [(set_attr "type" "misc")])

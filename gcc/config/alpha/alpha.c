@@ -75,10 +75,6 @@ char *alpha_function_name;
 
 static int inside_function = FALSE;
 
-/* Non-zero if an instruction that may cause a trap is pending.  */
-
-static int trap_pending = 0;
-
 /* Nonzero if the current function needs gp.  */
 
 int alpha_function_needs_gp;
@@ -2599,8 +2595,6 @@ output_epilog (file, size)
       int fp_offset = 0;
       int sa_reg;
 
-      final_prescan_insn (NULL_RTX, NULL_PTR, 0);
-
       /* If we have a frame pointer, restore SP from it.  */
       if (frame_pointer_needed)
 	fprintf (file, "\tbis $15,$15,$30\n");
@@ -2791,8 +2785,8 @@ alpha_output_lineno (stream, line)
 struct shadow_summary
 {
   struct {
-    unsigned long i     : 32;	/* Mask of int regs */
-    unsigned long fp    : 32;	/* Mask of fp regs */
+    unsigned long i     : 31;	/* Mask of int regs */
+    unsigned long fp    : 31;	/* Mask of fp regs */
     unsigned long mem   :  1;	/* mem == imem | fpmem */
   } used, defd;
 };
@@ -2915,19 +2909,9 @@ summarize_insn (x, sum, set)
 	  }
     }
 }
-
-/* This function is executed just prior to the output of assembler code for
-   INSN to modify the extracted operands so they will be output differently.
 
-   OPVEC is the vector containing the operands extracted from INSN, and
-   NOPERANDS is the number of elements of the vector which contain meaningful
-   data for this insn.  The contents of this vector are what will be used to
-   convert the insn template into assembler code, so you can change the
-   assembler output by changing the contents of the vector.
-
-   We use this function to ensure a sufficient number of `trapb' instructions
-   are in the code when the user requests code with a trap precision of
-   functions or instructions.
+/* Ensure a sufficient number of `trapb' insns are in the code when the user
+   requests code with a trap precision of functions or instructions.
 
    In naive mode, when the user requests a trap-precision of "instruction", a
    trapb is needed after every instruction that may generate a trap (and after
@@ -2953,103 +2937,151 @@ summarize_insn (x, sum, set)
    (c) Within the trap shadow, no register may be used more than once as a
    destination register.  (This is to make life easier for the trap-handler.)
 
-   (d) The trap shadow may not include any branch instructions.
+   (d) The trap shadow may not include any branch instructions.  */
 
-     */
-
-void
-final_prescan_insn (insn, opvec, noperands)
-     rtx insn;
-     rtx *opvec;
-     int noperands;
+static void
+alpha_handle_trap_shadows (insns)
+     rtx insns;
 {
-  static struct shadow_summary shadow = {0, 0, 0, 0, 0};
+  struct shadow_summary shadow;
+  int trap_pending, exception_nesting;
+  rtx i;
 
-#define CLOSE_SHADOW				\
-  do						\
-    {						\
-      fputs ("\ttrapb\n", asm_out_file);	\
-      trap_pending = 0;				\
-      bzero ((char *) &shadow,  sizeof shadow);	\
-    }						\
-  while (0)
-
-  if (alpha_tp == ALPHA_TP_PROG)
+  if (alpha_tp == ALPHA_TP_PROG && !flag_exceptions)
     return;
 
-  if (trap_pending)
-    switch (alpha_tp)
-      {
-      case ALPHA_TP_FUNC:
-	/* Generate one trapb before epilogue (indicated by INSN==0) */
-	if (insn == 0)
-	  CLOSE_SHADOW;
-	break;
-
-      case ALPHA_TP_INSN:
-	if (optimize && insn != 0)
-	  {
-	    struct shadow_summary sum = {0, 0, 0};
-
-	    switch (GET_CODE(insn))
-	      {
-	      case INSN:
-		summarize_insn (PATTERN (insn), &sum, 0);
-
-		if ((sum.defd.i & shadow.defd.i)
-		    || (sum.defd.fp & shadow.defd.fp))
-		  {
-		    /* (c) would be violated */
-		    CLOSE_SHADOW;
-		    break;
-		  }
-
-		/* Combine shadow with summary of current insn: */
-		shadow.used.i     |= sum.used.i;
-		shadow.used.fp    |= sum.used.fp;
-		shadow.used.mem   |= sum.used.mem;
-		shadow.defd.i     |= sum.defd.i;
-		shadow.defd.fp    |= sum.defd.fp;
-		shadow.defd.mem   |= sum.defd.mem;
-
-		if ((sum.defd.i & shadow.used.i)
-		    || (sum.defd.fp & shadow.used.fp)
-		    || (sum.defd.mem & shadow.used.mem))
-		  {
-		    /* (a) would be violated (also takes care of (b)).  */
-		    if (get_attr_trap (insn) == TRAP_YES
-			&& ((sum.defd.i & sum.used.i)
-			    || (sum.defd.fp & sum.used.fp)))
-		      abort ();
-
-		    CLOSE_SHADOW;
-		    break;
-		  }
-		break;
-
-	      case JUMP_INSN:
-	      case CALL_INSN:
-	      case CODE_LABEL:
-		CLOSE_SHADOW;
-		break;
-
-	      default:
-		abort ();
-	      }
-	  }
-	else
-	  CLOSE_SHADOW;
-	break;
-      }
-
-  if (insn != 0 && get_attr_trap (insn) == TRAP_YES)
+  trap_pending = 0;
+  exception_nesting = 0;
+  shadow.used.i = 0;
+  shadow.used.fp = 0;
+  shadow.used.mem = 0;
+  shadow.defd = shadow.used;
+  
+  for (i = insns; i ; i = NEXT_INSN (i))
     {
-      if (optimize && !trap_pending && GET_CODE (insn) == INSN)
-	summarize_insn (PATTERN (insn), &shadow, 0);
-      trap_pending = 1;
+      if (GET_CODE (i) == NOTE)
+	{
+	  switch (NOTE_LINE_NUMBER (i))
+	    {
+	    case NOTE_INSN_EH_REGION_BEG:
+	      exception_nesting++;
+	      if (trap_pending)
+		goto close_shadow;
+	      break;
+
+	    case NOTE_INSN_EH_REGION_END:
+	      exception_nesting--;
+	      if (trap_pending)
+		goto close_shadow;
+	      break;
+
+	    case NOTE_INSN_EPILOGUE_BEG:
+	      if (trap_pending && alpha_tp >= ALPHA_TP_FUNC)
+		goto close_shadow;
+	      break;
+	    }
+	}
+      else if (trap_pending)
+	{
+	  if (alpha_tp == ALPHA_TP_FUNC)
+	    {
+	      if (GET_CODE (i) == JUMP_INSN
+		  && GET_CODE (PATTERN (i)) == RETURN)
+		goto close_shadow;
+	    }
+	  else if (alpha_tp == ALPHA_TP_INSN)
+	    {
+	      if (optimize > 0)
+		{
+		  struct shadow_summary sum;
+
+		  sum.used.i = 0;
+		  sum.used.fp = 0;
+		  sum.used.mem = 0;
+		  sum.defd = shadow.used;
+
+		  switch (GET_CODE (i))
+		    {
+		    case INSN:
+		      /* Annoyingly, get_attr_trap will abort on USE.  */
+		      if (GET_CODE (PATTERN (i)) == USE)
+			break;
+
+		      summarize_insn (PATTERN (i), &sum, 0);
+
+		      if ((sum.defd.i & shadow.defd.i)
+			  || (sum.defd.fp & shadow.defd.fp))
+			{
+			  /* (c) would be violated */
+			  goto close_shadow;
+			}
+
+		      /* Combine shadow with summary of current insn: */
+		      shadow.used.i   |= sum.used.i;
+		      shadow.used.fp  |= sum.used.fp;
+		      shadow.used.mem |= sum.used.mem;
+		      shadow.defd.i   |= sum.defd.i;
+		      shadow.defd.fp  |= sum.defd.fp;
+		      shadow.defd.mem |= sum.defd.mem;
+
+		      if ((sum.defd.i & shadow.used.i)
+			  || (sum.defd.fp & shadow.used.fp)
+			  || (sum.defd.mem & shadow.used.mem))
+			{
+			  /* (a) would be violated (also takes care of (b))  */
+			  if (get_attr_trap (i) == TRAP_YES
+			      && ((sum.defd.i & sum.used.i)
+				  || (sum.defd.fp & sum.used.fp)))
+			    abort ();
+
+			  goto close_shadow;
+			}
+		      break;
+
+		    case JUMP_INSN:
+		    case CALL_INSN:
+		    case CODE_LABEL:
+		      goto close_shadow;
+
+		    default:
+		      abort ();
+		    }
+		}
+	      else
+		{
+		close_shadow:
+		  emit_insn_before (gen_trapb (), i);
+		  trap_pending = 0;
+		  shadow.used.i = 0;
+		  shadow.used.fp = 0;
+		  shadow.used.mem = 0;
+		  shadow.defd = shadow.used;
+		}
+	    }
+	}
+
+      if (exception_nesting > 0 || alpha_tp >= ALPHA_TP_FUNC)
+	if (GET_CODE (i) == INSN
+	    && GET_CODE (PATTERN (i)) != USE
+	    && get_attr_trap (i) == TRAP_YES)
+	  {
+	    if (optimize && !trap_pending)
+	      summarize_insn (PATTERN (i), &shadow, 0);
+	    trap_pending = 1;
+	  }
     }
 }
 
+/* Machine dependant reorg pass.  */
+
+void
+alpha_reorg (insns)
+     rtx insns;
+{
+  alpha_handle_trap_shadows (insns);
+}
+
+
 /* Check a floating-point value for validity for a particular machine mode.  */
 
 static char *float_strings[] =

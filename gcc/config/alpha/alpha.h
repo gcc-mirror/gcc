@@ -1463,15 +1463,8 @@ __enable_execute_stack (addr)						\
 
 #define ADDRESS_COST(X)  0
 
-/* Define this if some processing needs to be done immediately before
-   emitting code for an insn.  */
-
-extern void final_prescan_insn ();
-#define FINAL_PRESCAN_INSN(INSN,OPERANDS,NOPERANDS) \
-  final_prescan_insn ((INSN), (OPERANDS), (NOPERANDS))
-
-/* Define this if FINAL_PRESCAN_INSN should be called for a CODE_LABEL.  */
-#define FINAL_PRESCAN_LABEL
+/* Machine-dependent reorg pass.   */
+#define MACHINE_DEPENDENT_REORG(X)	alpha_reorg(X)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
