@@ -1,4 +1,4 @@
-/* 
+/*
 
     TREELANG Compiler back end interface (treetree.c)
     Called by the parser.
@@ -9,8 +9,8 @@
     Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
     1999, 2000, 2001, 2002, 2003, Free Software Foundation, Inc.
 
-    This code is based on toy.c written by Richard Kenner. 
-    
+    This code is based on toy.c written by Richard Kenner.
+
     It was later modified by Jonathan Bartlett whose changes have all
     been removed (by Tim Josling).
 
@@ -38,7 +38,7 @@
 
     In other words, you are welcome to use, share and improve this program.
     You are forbidden to forbid anyone else to use, share and improve
-    what you give them.   Help stamp out software-hoarding!  
+    what you give them.   Help stamp out software-hoarding!
 
     ---------------------------------------------------------------------------
 
@@ -110,9 +110,9 @@ extern char **file_names;
 #define LANG_HOOKS_INIT treelang_init
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME	"GNU treelang"
-#undef LANG_HOOKS_FINISH 
+#undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH		treelang_finish
-#undef LANG_HOOKS_DECODE_OPTION	
+#undef LANG_HOOKS_DECODE_OPTION
 #define LANG_HOOKS_DECODE_OPTION treelang_decode_option
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -149,14 +149,14 @@ unsigned int tree_code_char_size = 0;
 
 /* Return the tree stuff for this type TYPE_NUM.  */
 
-tree 
-tree_code_get_type (int type_num) 
+tree
+tree_code_get_type (int type_num)
 {
   switch (type_num)
     {
     case SIGNED_CHAR:
       return signed_char_type_node;
-      
+
     case UNSIGNED_CHAR:
       return unsigned_char_type_node;
 
@@ -164,10 +164,10 @@ tree_code_get_type (int type_num)
       return integer_type_node;
 
     case UNSIGNED_INT:
-      return unsigned_type_node; 
+      return unsigned_type_node;
 
     case VOID_TYPE:
-      return void_type_node; 
+      return void_type_node;
 
     default:
       abort ();
@@ -182,9 +182,9 @@ void
 tree_code_if_start (tree exp, unsigned char* filename, int lineno)
 {
   tree cond_exp;
-  cond_exp = build (NE_EXPR, 
-                 TREE_TYPE (exp), 
-                 exp, 
+  cond_exp = build (NE_EXPR,
+                 TREE_TYPE (exp),
+                 exp,
                  build1 (CONVERT_EXPR, TREE_TYPE (exp), integer_zero_node));
   emit_line_note ((const char *)filename, lineno); /* Output the line number information.  */
   expand_start_cond (cond_exp, /* Exit-able if nonzero.  */ 0);
@@ -193,7 +193,7 @@ tree_code_if_start (tree exp, unsigned char* filename, int lineno)
 /* Output the code for the else of an if statement.  The else occurred
    at line LINENO in file FILENAME.  */
 
-void 
+void
 tree_code_if_else (unsigned char* filename, int lineno)
 {
   emit_line_note ((const char *)filename, lineno); /* Output the line number information.  */
@@ -203,7 +203,7 @@ tree_code_if_else (unsigned char* filename, int lineno)
 /* Output the code for the end_if an if statement.  The end_if (final brace) occurred
    at line LINENO in file FILENAME.  */
 
-void 
+void
 tree_code_if_end (unsigned char* filename, int lineno)
 {
   emit_line_note ((const char *)filename, lineno); /* Output the line number information.  */
@@ -214,7 +214,7 @@ tree_code_if_end (unsigned char* filename, int lineno)
    STORAGE_CLASS, type of return variable is RET_TYPE, parameter lists
    is PARMS, returns decl for this function.  */
 
-tree 
+tree
 tree_code_create_function_prototype (unsigned char* chars,
                                     unsigned int storage_class,
                                     unsigned int ret_type,
@@ -264,24 +264,24 @@ tree_code_create_function_prototype (unsigned char* chars,
 
   /* Real name (optional).  */
   SET_DECL_ASSEMBLER_NAME (fn_decl, DECL_NAME (fn_decl));
-  
+
   TREE_PUBLIC (fn_decl) = 0;
-  DECL_EXTERNAL (fn_decl) = 0; 
-  TREE_STATIC (fn_decl) = 0; 
+  DECL_EXTERNAL (fn_decl) = 0;
+  TREE_STATIC (fn_decl) = 0;
   switch (storage_class)
     {
     case STATIC_STORAGE:
-      TREE_PUBLIC (fn_decl) = 0; 
+      TREE_PUBLIC (fn_decl) = 0;
       break;
 
     case EXTERNAL_DEFINITION_STORAGE:
       TREE_PUBLIC (fn_decl) = 1;
-      TREE_STATIC (fn_decl) = 0; 
+      TREE_STATIC (fn_decl) = 0;
       DECL_EXTERNAL (fn_decl) = 0;
       break;
-  
+
     case EXTERNAL_REFERENCE_STORAGE:
-      TREE_PUBLIC (fn_decl) = 0; 
+      TREE_PUBLIC (fn_decl) = 0;
       DECL_EXTERNAL (fn_decl) = 1;
       break;
 
@@ -302,8 +302,8 @@ tree_code_create_function_prototype (unsigned char* chars,
     PREV_SAVED (as created by tree_code_create_function_prototype),
     the function is at line number LINENO in file FILENAME.  The
     parameter details are in the lists PARMS. Returns nothing.  */
-void 
-tree_code_create_function_initial (tree prev_saved, 
+void
+tree_code_create_function_initial (tree prev_saved,
                                   unsigned char* filename,
                                   int lineno,
                                   struct prod_token_parm_item* parms)
@@ -315,7 +315,7 @@ tree_code_create_function_initial (tree prev_saved,
   tree parm_decl;
   tree parm_list;
   tree resultdecl;
-  struct prod_token_parm_item* this_parm; 
+  struct prod_token_parm_item* this_parm;
   struct prod_token_parm_item* parm;
 
   fn_decl = prev_saved;
@@ -336,7 +336,7 @@ tree_code_create_function_initial (tree prev_saved,
   DECL_SOURCE_LINE (fn_decl) = lineno;
 
   /* Prepare creation of rtl for a new function.  */
-  
+
   resultdecl = DECL_RESULT (fn_decl) = build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (TREE_TYPE (fn_decl)));
   DECL_CONTEXT (DECL_RESULT (fn_decl)) = fn_decl;
   DECL_SOURCE_FILE (resultdecl) = (const char *)filename;
@@ -348,10 +348,10 @@ tree_code_create_function_initial (tree prev_saved,
   parm_list = NULL_TREE;
   for (parm = parms; parm; parm = parm->tp.par.next)
     {
-      parm_decl = build_decl (PARM_DECL, get_identifier 
-                              ((const char*) (parm->tp.par.variable_name)), 
+      parm_decl = build_decl (PARM_DECL, get_identifier
+                              ((const char*) (parm->tp.par.variable_name)),
                               get_type_for_numeric_type (parm->type));
-      
+
       /* Some languages have different nominal and real types.  */
       DECL_ARG_TYPE (parm_decl) = TREE_TYPE (parm_decl);
       if (!DECL_ARG_TYPE (parm_decl))
@@ -366,7 +366,7 @@ tree_code_create_function_initial (tree prev_saved,
 
   /* Back into reverse order as the back end likes them.  */
   parm_list = nreverse (parm_list);
-  
+
   DECL_ARGUMENTS (fn_decl) = parm_list;
 
   /* Save the decls for use when the args are referred to.  */
@@ -389,23 +389,23 @@ tree_code_create_function_initial (tree prev_saved,
   make_decl_rtl (fn_decl, NULL);
 
   /* Use filename/lineno from above.  */
-  init_function_start (fn_decl, (const char *)filename, lineno); 
-  
+  init_function_start (fn_decl, (const char *)filename, lineno);
+
   /* Create rtl for startup code of function, such as saving registers.  */
-  
+
   expand_function_start (fn_decl, 0);
-  
+
   /* Function.c requires a push at the start of the function. that
      looks like a bug to me but let's make it happy.  */
-  
+
   (*lang_hooks.decls.pushlevel) (0);
-  
+
   /* Create rtl for the start of a new scope.  */
-  
+
   expand_start_bindings (2);
 
   /* Put the parameters into the symbol table.  */
-  
+
   for (first_param = param_decl = nreverse (DECL_ARGUMENTS (fn_decl));
        param_decl;
        param_decl = next_param)
@@ -423,23 +423,23 @@ tree_code_create_function_initial (tree prev_saved,
 
   /* Force it to be output, else may be solely inlined.  */
   TREE_ADDRESSABLE (fn_decl) = 1;
-  
+
   /* Stop -O3 from deleting it.  */
   TREE_USED (fn_decl) = 1;
 
   /* Add a new level to the debugger symbol table.  */
-  
+
   (*lang_hooks.decls.pushlevel) (0);
-  
+
   /* Create rtl for the start of a new scope.  */
-  
+
   expand_start_bindings (0);
-  
+
   emit_line_note ((const char *)filename, lineno); /* Output the line number information.  */
 }
 
 /* Wrapup a function contained in file FILENAME, ending at line LINENO.  */
-void 
+void
 tree_code_create_function_wrapup (unsigned char* filename,
                                  int lineno)
 {
@@ -447,52 +447,52 @@ tree_code_create_function_wrapup (unsigned char* filename,
   tree fn_decl;
 
   fn_decl = current_function_decl;
-  
+
   emit_line_note ((const char *)filename, lineno); /* Output the line number information.  */
 
   /* Get completely built level from debugger symbol table.  */
-  
+
   block = (*lang_hooks.decls.poplevel) (1, 0, 0);
-  
+
   /* Emit rtl for end of scope.  */
-  
+
   expand_end_bindings (block, 0, 1);
-  
+
   /* Emit rtl for end of function.  */
-  
+
   expand_function_end ((const char *)filename, lineno, 0);
-  
+
   /* Pop the level.  */
 
   block = (*lang_hooks.decls.poplevel) (1, 0, 1);
 
   /* And attach it to the function.  */
-  
+
   DECL_INITIAL (fn_decl) = block;
-  
+
   /* Emit rtl for end of scope.  */
-  
+
   expand_end_bindings (block, 0, 1);
-  
+
   /* Call optimization and convert optimized rtl to assembly code.  */
-  
+
   rest_of_compilation (fn_decl);
-  
+
   /* We are not inside of any scope now.  */
-  
+
   current_function_decl = NULL_TREE;
 }
 
-/* 
-   Create a variable. 
-   
-   The storage class is STORAGE_CLASS (eg LOCAL).   
-   The name is CHARS/LENGTH.   
-   The type is EXPRESSION_TYPE (eg UNSIGNED_TYPE).  
-   The init tree is INIT.  
+/*
+   Create a variable.
+
+   The storage class is STORAGE_CLASS (eg LOCAL).
+   The name is CHARS/LENGTH.
+   The type is EXPRESSION_TYPE (eg UNSIGNED_TYPE).
+   The init tree is INIT.
 */
 
-tree 
+tree
 tree_code_create_variable (unsigned int storage_class,
                                unsigned char* chars,
                                unsigned int length,
@@ -522,10 +522,10 @@ tree_code_create_variable (unsigned int storage_class,
     DECL_INITIAL (var_decl) = build1 (CONVERT_EXPR, var_type, init);
   else
     DECL_INITIAL (var_decl) = NULL_TREE;
-      
+
   /* 4. Compute size etc.  */
   layout_decl (var_decl, 0);
-      
+
   if (TYPE_SIZE (var_type) == 0)
     abort (); /* Did not calculate size.  */
 
@@ -546,27 +546,27 @@ tree_code_create_variable (unsigned int storage_class,
       TREE_STATIC (var_decl) = 0;
       TREE_PUBLIC (var_decl) = 0;
       break;
-      
+
     case EXTERNAL_DEFINITION_STORAGE:
-      TREE_STATIC (var_decl) = 0; 
+      TREE_STATIC (var_decl) = 0;
       TREE_PUBLIC (var_decl) = 1;
       break;
-      
+
     case EXTERNAL_REFERENCE_STORAGE:
       DECL_EXTERNAL (var_decl) = 1;
       TREE_PUBLIC (var_decl) = 0;
       break;
-      
+
     default:
       abort ();
     }
-      
+
   /* This should really only be set if the variable is used.  */
   TREE_USED (var_decl) = 1;
-      
+
   /* Expand declaration and initial value if any.  */
-  
-  if (TREE_STATIC (var_decl)) 
+
+  if (TREE_STATIC (var_decl))
     rest_of_decl_compilation (var_decl, 0, 0, 0);
   else
     {
@@ -574,9 +574,9 @@ tree_code_create_variable (unsigned int storage_class,
       if (DECL_INITIAL (var_decl))
         expand_decl_init (var_decl);
     }
-  
+
   return pushdecl (copy_node (var_decl));
-  
+
 }
 
 
@@ -599,7 +599,7 @@ tree_code_generate_return (tree type, tree exp)
 
   if (exp)
     {
-      setret = build (MODIFY_EXPR, type, DECL_RESULT (current_function_decl), 
+      setret = build (MODIFY_EXPR, type, DECL_RESULT (current_function_decl),
                      build1 (CONVERT_EXPR, type, exp));
       TREE_SIDE_EFFECTS (setret) = 1;
       TREE_USED (setret) = 1;
@@ -611,12 +611,12 @@ tree_code_generate_return (tree type, tree exp)
 /* Output the code for this expression statement CODE.  */
 
 
-void 
-tree_code_output_expression_statement (tree code, 
+void
+tree_code_output_expression_statement (tree code,
                                        unsigned char* filename, int lineno)
 {
   /* Output the line number information.  */
-  emit_line_note ((const char *)filename, lineno); 
+  emit_line_note ((const char *)filename, lineno);
   TREE_USED (code) = 1;
   TREE_SIDE_EFFECTS (code) = 1;
   expand_expr_stmt (code);
@@ -625,7 +625,7 @@ tree_code_output_expression_statement (tree code,
 /* Return a tree for a constant integer value in the token TOK.  No
    size checking is done.  */
 
-tree 
+tree
 tree_code_get_integer_value (unsigned char* chars, unsigned int length)
 {
   long long int val = 0;
@@ -654,8 +654,8 @@ tree_code_get_integer_value (unsigned char* chars, unsigned int length)
 
 /* Return the tree for an expresssion, type EXP_TYPE (see treetree.h)
    with tree type TYPE and with operands1 OP1, OP2 (maybe), OP3 (maybe).  */
-tree 
-tree_code_get_expression (unsigned int exp_type, 
+tree
+tree_code_get_expression (unsigned int exp_type,
                           tree type, tree op1, tree op2, tree op3 ATTRIBUTE_UNUSED)
 {
   tree ret1;
@@ -667,8 +667,8 @@ tree_code_get_expression (unsigned int exp_type,
       if (!op1 || !op2)
         abort ();
       operator = MODIFY_EXPR;
-      ret1 = build (operator, type, 
-                 op1, 
+      ret1 = build (operator, type,
+                 op1,
                  build1 (CONVERT_EXPR, type, op2));
 
       break;
@@ -676,21 +676,21 @@ tree_code_get_expression (unsigned int exp_type,
     case EXP_PLUS:
       operator = PLUS_EXPR;
       goto binary_expression;
-      
+
     case EXP_MINUS:
       operator = MINUS_EXPR;
       goto binary_expression;
-      
+
     case EXP_EQUALS:
       operator = EQ_EXPR;
       goto binary_expression;
-      
+
       /* Expand a binary expression.  Ensure the operands are the right type.  */
     binary_expression:
       if (!op1 || !op2)
         abort ();
-      ret1  =  build (operator, type, 
-                   build1 (CONVERT_EXPR, type, op1), 
+      ret1  =  build (operator, type,
+                   build1 (CONVERT_EXPR, type, op1),
                    build1 (CONVERT_EXPR, type, op2));
       break;
 
@@ -705,7 +705,7 @@ tree_code_get_expression (unsigned int exp_type,
       else
         ret1 = build1 (CONVERT_EXPR, type, op1);
       break;
-      
+
     case EXP_FUNCTION_INVOCATION:
       if (!op1 || !op2)
         abort ();
@@ -719,13 +719,13 @@ tree_code_get_expression (unsigned int exp_type,
     default:
       abort ();
     }
-  
+
   return ret1;
 }
 
 /* Init parameter list and return empty list.  */
 
-tree 
+tree
 tree_code_init_parameters (void)
 {
   return NULL_TREE;
@@ -734,11 +734,11 @@ tree_code_init_parameters (void)
 /* Add a parameter EXP whose expression type is EXP_PROTO to list
    LIST, returning the new list.  */
 
-tree 
+tree
 tree_code_add_parameter (tree list, tree proto_exp, tree exp)
 {
   tree new_exp;
-  new_exp = tree_cons (NULL_TREE, 
+  new_exp = tree_cons (NULL_TREE,
                     build1 (CONVERT_EXPR, TREE_TYPE (proto_exp), exp),
                     NULL_TREE);
   if (!list)
@@ -751,45 +751,45 @@ tree_code_add_parameter (tree list, tree proto_exp, tree exp)
 tree
 get_type_for_numeric_type (unsigned int numeric_type)
 {
-  
+
   int size1;
   int sign1;
   switch (numeric_type)
     {
     case VOID_TYPE:
       return void_type_node;
-      
+
     case SIGNED_INT:
       size1 = tree_code_int_size;
       sign1 = 1;
       break;
-      
+
     case UNSIGNED_INT:
       size1 = tree_code_int_size;
       sign1 = 0;
       break;
-      
+
     case SIGNED_CHAR:
       size1 = tree_code_char_size;
       sign1 = 1;
       break;
-      
+
     case UNSIGNED_CHAR:
       size1 = tree_code_char_size;
       sign1 = 0;
       break;
-      
+
     default:
       abort ();
     }
 
   return tree_code_get_numeric_type (size1, sign1);
-  
+
 }
 
 /* Return tree representing a numeric type of size SIZE1 bits and
    signed if SIGN1 !=  0.  */
-tree 
+tree
 tree_code_get_numeric_type (unsigned int size1, unsigned int sign1)
 {
   tree ret1;
@@ -808,10 +808,10 @@ tree_code_get_numeric_type (unsigned int size1, unsigned int sign1)
         else
           ret1 = unsigned_char_type_node;
       }
-    else 
+    else
       abort ();
-  
-  return ret1;    
+
+  return ret1;
 }
 
 /* Garbage Collection.  */
@@ -826,7 +826,7 @@ tree_ggc_storage_always_used (void * m)
 
   if (*mm)
     ggc_mark (*mm);
-} 
+}
 
 /* Following  from c-lang.c.  */
 
@@ -857,8 +857,8 @@ check_function_format (int *status ATTRIBUTE_UNUSED,
 /* Tell the c code we are not objective C.  */
 
 int
-objc_comptypes (tree lhs ATTRIBUTE_UNUSED, 
-                tree rhs ATTRIBUTE_UNUSED, 
+objc_comptypes (tree lhs ATTRIBUTE_UNUSED,
+                tree rhs ATTRIBUTE_UNUSED,
                 int reflexive ATTRIBUTE_UNUSED)
 {
   return 0;
@@ -932,8 +932,8 @@ cpp_create_reader (enum c_lang lang ATTRIBUTE_UNUSED)
 
 /* Should not be called for treelang.   */
 
-const char *
-init_c_lex (const char *filename ATTRIBUTE_UNUSED)
+void
+init_c_lex (void)
 {
   abort ();
 }
@@ -973,7 +973,7 @@ handle_format_attribute (tree *node ATTRIBUTE_UNUSED,
                          int flags ATTRIBUTE_UNUSED,
                          bool *no_add_attrs ATTRIBUTE_UNUSED)
 {
-  return NULL_TREE; 
+  return NULL_TREE;
 }
 
 /* Should not be called for treelang.   */
@@ -1000,8 +1000,8 @@ cpp_handle_option (cpp_reader *pfile ATTRIBUTE_UNUSED,
 
 /* Should not be called for treelang.   */
 
-void 
-cpp_assert (cpp_reader * cr ATTRIBUTE_UNUSED, 
+void
+cpp_assert (cpp_reader * cr ATTRIBUTE_UNUSED,
             const char *s ATTRIBUTE_UNUSED)
 {
   abort ();
@@ -1113,7 +1113,7 @@ defer_fn (tree fn ATTRIBUTE_UNUSED)
 
 /* Should not be called for treelang.   */
 
-cpp_options 
+cpp_options
 *cpp_get_options (cpp_reader * cr ATTRIBUTE_UNUSED)
 {
   abort ();
@@ -1121,10 +1121,10 @@ cpp_options
 
 /* Should not be called for treelang.   */
 
-void 
+void
 cpp_define (cpp_reader * cr ATTRIBUTE_UNUSED, const char * c ATTRIBUTE_UNUSED)
 {
-  abort ();  
+  abort ();
 }
 
 /* Should not be called for treelang.   */
@@ -1247,7 +1247,7 @@ treelang_init_decl_processing ()
   tree id;
 
   ridpointers = (tree *) ggc_calloc ((int) RID_MAX, sizeof (tree));
-  
+
   for (i = 0; i < N_reswords; i++)
     {
       id = get_identifier (reswords[i].word);
