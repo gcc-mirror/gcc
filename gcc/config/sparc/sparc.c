@@ -160,8 +160,6 @@ static void sparc_function_prologue (FILE *, HOST_WIDE_INT, int);
 #ifdef OBJECT_FORMAT_ELF
 static void sparc_elf_asm_named_section (const char *, unsigned int);
 #endif
-static void sparc_aout_select_section (tree, int, unsigned HOST_WIDE_INT)
-     ATTRIBUTE_UNUSED;
 static void sparc_aout_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
@@ -8125,16 +8123,6 @@ sparc_init_libfuncs (void)
   gofast_maybe_init_libfuncs ();
 }
 
-/* ??? Similar to the standard section selection, but force reloc-y-ness
-   if SUNOS4_SHARED_LIBRARIES.  Unclear why this helps (as opposed to
-   pretending PIC always on), but that's what the old code did.  */
-
-static void
-sparc_aout_select_section (tree t, int reloc, unsigned HOST_WIDE_INT align)
-{
-  default_select_section (t, reloc | SUNOS4_SHARED_LIBRARIES, align);
-}
-
 /* Use text section for a constant unless we need more alignment than
    that offers.  */
 
@@ -8143,8 +8131,7 @@ sparc_aout_select_rtx_section (enum machine_mode mode, rtx x,
 			       unsigned HOST_WIDE_INT align)
 {
   if (align <= MAX_TEXT_ALIGN
-      && ! (flag_pic && (symbolic_operand (x, mode)
-			 || SUNOS4_SHARED_LIBRARIES)))
+      && ! (flag_pic && symbolic_operand (x, mode)))
     readonly_data_section ();
   else
     data_section ();

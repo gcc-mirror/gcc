@@ -801,15 +801,6 @@ if (TARGET_ARCH64				\
    because the linker fails to align the text section enough!
    Put them in the data section.  This macro is only used in this file.  */
 #define MAX_TEXT_ALIGN 32
-
-/* This forces all variables and constants to the data section when PIC.
-   This is because the SunOS 4 shared library scheme thinks everything in
-   text is a function, and patches the address to point to a loader stub.  */
-/* This is defined to zero for every system which doesn't use the a.out object
-   file format.  */
-#ifndef SUNOS4_SHARED_LIBRARIES
-#define SUNOS4_SHARED_LIBRARIES 0
-#endif
 
 /* Standard register usage.  */
 
