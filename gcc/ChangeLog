@@ -1,3 +1,10 @@
+2001-04-05  Bernd Schmidt  <bernds@redhat.com>
+
+	* ia64.c (ia64_flag_schedule_insns2): New variable.
+	(ia64_override_options): Initialize it.  Clear
+	flag_schedule_insns_after_reload.
+	(ia64_reorg): Only do scheduling if ia64_flag_schedule_insns2.
+
 Mon Apr  9 15:09:13 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (truncdfsf2_*): Add i387->int/sse reg alternatives;

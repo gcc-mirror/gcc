@@ -91,6 +91,10 @@ static const char * const ia64_output_reg_names[8] =
 /* String used with the -mfixed-range= option.  */
 const char *ia64_fixed_range_string;
 
+/* Determines whether we run our final scheduling pass or not.  We always
+   avoid the normal second scheduling pass.  */
+static int ia64_flag_schedule_insns2;
+
 /* Variables which are this size or smaller are put in the sdata/sbss
    sections.  */
 
@@ -3715,6 +3719,9 @@ ia64_override_options ()
   if (ia64_fixed_range_string)
     fix_range (ia64_fixed_range_string);
 
+  ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
+  flag_schedule_insns_after_reload = 0;
+
   ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
 
   init_machine_status = ia64_init_machine_status;
@@ -6213,7 +6220,7 @@ ia64_reorg (insns)
   find_basic_blocks (insns, max_reg_num (), NULL);
   life_analysis (insns, NULL, PROP_DEATH_NOTES);
 
-  if (optimize)
+  if (ia64_flag_schedule_insns2)
     {
       ia64_final_schedule = 1;
       schedule_ebbs (rtl_dump_file);
