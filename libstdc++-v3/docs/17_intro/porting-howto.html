@@ -34,11 +34,17 @@
 		  + second upload to libstdc++-page.
 		</td>
             </tr>
+            <tr>
+              <td align="left">Revision 0.9</td><td align="left">Wed Sep  6 02:59:32 2000</td><td align="left">fnatter</td>
+            </tr>
+            <tr>
+              <td colspan="3" align="left">5 new sections.</td>
+            </tr>
           </table>
         </div>
         <div class="abstract">
           <p>
-            <a name="N2672"></a><b>Abstract</b>
+            <a name="N2688"></a><b>Abstract</b>
           </p>
           <p>
 		Some notes on porting applications from libstdc++-2.90 (or earlier
@@ -97,7 +103,19 @@
 	  Libc-macros (i.e. <b>isspace</b> from
 	  <tt>&lt;cctype&gt;</tt>)</a>
           </dt>
-          <dt>7. <a href="#sec-about">About...</a>
+          <dt>7. <a href="#sec-stream-state">
+	  State of streams
+	</a>
+          </dt>
+          <dt>8. <a href="#sec-vector-at">vector::at is missing (i.e. gcc 2.95.2)</a>
+          </dt>
+          <dt>9. <a href="#sec-eof">Using std::char_traits&lt;char&gt;::eof()</a>
+          </dt>
+          <dt>10. <a href="#sec-string-clear">Using string::clear()/string::erase()</a>
+          </dt>
+          <dt>11. <a href="#sec-stringstream">Using stringstream's</a>
+          </dt>
+          <dt>12. <a href="#sec-about">About...</a>
           </dt>
         </dl>
       </div>
@@ -119,14 +137,14 @@
 	  <div class="itemizedlist">
             <ul>
               <li>
-                <a name="N2696"></a>
+                <a name="N2712"></a>
                 <p>wrap your code in <b>namespace std {
 			  ... }</b> =&gt; This is not an option because only symbols
 			from the standard c++-library are defined in namespace std::.
 		  </p>
               </li>
               <li>
-                <a name="N2705"></a>
+                <a name="N2721"></a>
                 <p>put a kind of
 			<i>using-declaration</i> in your source (either
 			<b>using namespace std;</b> or i.e. <b>using
@@ -135,7 +153,7 @@
 		  </p>
               </li>
               <li>
-                <a name="N2720"></a>
+                <a name="N2736"></a>
                 <p>use a <i>fully qualified name</i> for
 			each libstdc++-symbol (i.e. <b>std::string</b>,
 			<b>std::cout</b>) =&gt; can always be used
@@ -240,7 +258,7 @@
 	  </p>
           <div class="table">
             <p>
-              <a name="N2885"></a><b>Table 1. Namespace std:: in Open-Source programs</b>
+              <a name="N2901"></a><b>Table 1. Namespace std:: in Open-Source programs</b>
             </p>
             <table border="1">
               <colgroup>
@@ -269,7 +287,7 @@
           </div>
           <div class="table">
             <p>
-              <a name="N2962"></a><b>Table 2. Notations for categories</b>
+              <a name="N2978"></a><b>Table 2. Notations for categories</b>
             </p>
             <table border="1">
               <colgroup>
@@ -295,8 +313,7 @@
           <p>
 		As you can see, this currently lacks an example of a project which
 		uses libstdc++-symbols in headers in a back-portable way (except
-		for Gtk--: see the <a href="#sec-gtkmm-hack">section on the Gtk-- hack
-	</a>).
+		for Gtk--: see the <a href="#"></a>).
 	  </p>
         </div>
       </div>
@@ -328,10 +345,10 @@
         </h2>
         <p>
 	  When using libstdc++-v3, you can use
-	  <div id="N3066" class="funcsynopsis">
+	  <div id="N3082" class="funcsynopsis">
             <p>
             </p>
-            <a name="N3066"></a>
+            <a name="N3082"></a>
             <pre class="funcsynopsisinfo">
 		  #include &lt;fstream&gt;
 		</pre>
@@ -412,7 +429,7 @@
 	  <div class="itemizedlist">
             <ul>
               <li>
-                <a name="N3266"></a>
+                <a name="N3282"></a>
                 <p>you cannot do
 			<b>ostream::operator&lt;&lt;(iterator)</b> to
 			print the address of the iterator =&gt; use
@@ -420,14 +437,14 @@
 		  </p>
               </li>
               <li>
-                <a name="N3287"></a>
+                <a name="N3303"></a>
                 <p>you cannot clear an iterator's reference
 			(<b>iterator = 0</b>) =&gt; use
 			<b>iterator = iterator_type();</b> ?
 		  </p>
               </li>
               <li>
-                <a name="N3300"></a>
+                <a name="N3316"></a>
                 <p>
                   <b>if (iterator)</b> won't work any
 			more =&gt; use <b>if (iterator != iterator_type())</b>
@@ -446,7 +463,7 @@
         <p>
 	  Glibc 2.0.x and 2.1.x define the <tt>&lt;ctype.h&gt;</tt> -functionality as
 	  macros (isspace, isalpha etc.). Libstdc++-v3 "shadows" these macros
-	  as described in the <a href="#sec-cheaders">section on C-headers</a>.
+	  as described in the <a href="#"></a>.
 	</p>
         <p>
 	  Older implementations of libstdc++ (g++-2 for egcs 1.x and g++-3
@@ -499,9 +516,204 @@
 	  "
 	</p>
       </div>
+      <div class="section" id="sec-stream-state">
+        <h2 class="title" style="clear: all">
+          <a name="sec-stream-state"><b>7. 
+	  State of streams
+	</b></a>
+        </h2>
+        <p>
+	  At least some older implementations don't have
+	  <b>std::ios_base</b>, so you should use
+	  <b>std::ios::badbit</b>, <b>std::ios::failbit</b>
+	  and <b>std::ios::eofbit</b> and
+	  <b>std::ios::goodbit</b>.
+	</p>
+      </div>
+      <div class="section" id="sec-vector-at">
+        <h2 class="title" style="clear: all">
+          <a name="sec-vector-at"><b>8. vector::at is missing (i.e. gcc 2.95.2)</b></a>
+        </h2>
+        <p>
+	  For my use, I added it to
+	  <tt>prefix/include/g++-3/stl_vector.h</tt>:
+	  <pre class="programlisting">
+  reference operator[](size_type __n) { return *(begin() + __n); }
+  reference at(size_type __n) {
+    if (begin() + __n &gt;= end())
+      throw out_of_range("vector::at");
+    return *(begin() + __n);
+  }
+  const_reference operator[](size_type __n) const { return *(begin() + __n); }
+  const_reference at(size_type __n) const {
+    if (begin() + __n &gt;= end())
+      throw out_of_range("vector::at");
+    return *(begin() + __n);
+  }
+	  </pre>
+	</p>
+      </div>
+      <div class="section" id="sec-eof">
+        <h2 class="title" style="clear: all">
+          <a name="sec-eof"><b>9. Using std::char_traits&lt;char&gt;::eof()</b></a>
+        </h2>
+        <p>
+	  <pre class="programlisting">
+		#ifdef HAVE_CHAR_TRAITS
+		#define CPP_EOF std::char_traits&lt;char&gt;::eof()
+		#else
+		#define CPP_EOF EOF
+		#endif
+	  </pre>
+	</p>
+      </div>
+      <div class="section" id="sec-string-clear">
+        <h2 class="title" style="clear: all">
+          <a name="sec-string-clear"><b>10. Using string::clear()/string::erase()</b></a>
+        </h2>
+        <p>
+	  There are two functions for deleting the contents of a string:
+	  <b>clear</b> and <b>erase</b> (the latter
+	  returns the string).
+	  <pre class="programlisting">
+		void 
+		clear() { _M_mutate(0, this-&gt;size(), 0); }
+	  </pre>
+	  <pre class="programlisting">
+      basic_string&amp; 
+      erase(size_type __pos = 0, size_type __n = npos)
+      { 
+		return this-&gt;replace(_M_check(__pos), _M_fold(__pos, __n),
+			     _M_data(), _M_data()); 
+      }
+	  </pre>
+	  The implementation of <b>erase</b> seems to be more
+	  complicated (from libstdc++-v3), but <b>clear</b> is not
+	  implemented in gcc 2.95.2's libstdc++, so you should use
+	  <b>erase</b> (which is probably faster than
+	  <b>operator=(charT*)</b>).
+	</p>
+      </div>
+      <div class="section" id="sec-stringstream">
+        <h2 class="title" style="clear: all">
+          <a name="sec-stringstream"><b>11. Using stringstream's</b></a>
+        </h2>
+        <p>
+	  Libstdc++-v3 includes the new
+	  <b>i/ostringstream</b>-classes, (<tt>&lt;sstream&gt;</tt>), but with older
+	  implementations you still have to use <b>i/ostrstream</b>
+	  (<tt>&lt;strstream&gt;</tt>):
+	  <pre class="programlisting">
+		#ifdef HAVE_SSTREAM
+		#include &lt;sstream&gt;
+		#else
+		#include &lt;strstream&gt;
+		#endif
+	  </pre>
+	  <div class="itemizedlist">
+            <ul>
+              <li>
+                <a name="N3595"></a>
+                <p> <b>strstream</b> is considered to be
+			deprecated
+		  </p>
+              </li>
+              <li>
+                <a name="N3603"></a>
+                <p> <b>strstream</b> is limited to
+			<b>char</b>
+		  </p>
+              </li>
+              <li>
+                <a name="N3614"></a>
+                <p> with <b>ostringstream</b> you don't
+			have to take care of terminating the string or freeing its
+			memory
+		  </p>
+              </li>
+              <li>
+                <a name="N3622"></a>
+                <p> <b>istringstream</b> can be re-filled
+			(clear(); str(input);)
+		  </p>
+              </li>
+            </ul>
+          </div>
+	</p>
+        <p>
+	  You can then use output-stringstreams like this:
+	  <pre class="programlisting">
+		#ifdef HAVE_SSTREAM
+		std::ostringstream oss;
+		#else
+		std::ostrstream oss;
+		#endif
+		oss &lt;&lt; "Name=" &lt;&lt; m_name &lt;&lt; ", number=" &lt;&lt; m_number &lt;&lt; std::endl;
+		...
+		#ifndef HAVE_SSTREAM
+		oss &lt;&lt; std::ends; // terminate the char*-string
+		#endif
+		// str() returns char* for ostrstream and a string for ostringstream
+		// this also causes ostrstream to think that the buffer's memory
+		// is yours
+		m_label.set_text(oss.str());
+		#ifndef HAVE_SSTREAM
+		// let the ostrstream take care of freeing the memory
+		oss.freeze(false);
+		#endif
+	  </pre>
+	</p>
+        <p>
+	  Input-stringstreams can be used similarly:
+	  <pre class="programlisting">
+		std::string input;
+		...
+		#ifdef HAVE_SSTREAM
+		std::istringstream iss(input);
+		#else
+		std::istrstream iss(input.c_str());
+		#endif
+		int i;
+		iss &gt;&gt; i; 
+	  </pre>
+	  One (the only?) restriction is that an istrstream cannot be re-filled:
+	  <pre class="programlisting">
+		std::istringstream iss(numerator);
+		iss &gt;&gt; m_num;
+		// this is not possible with istrstream
+		iss.clear();
+		iss.str(denominator);
+		iss &gt;&gt; m_den;
+	  </pre>
+	  If you don't care about speed, you can put these conversions in
+	  a template-function:
+	  <pre class="programlisting">
+		template &lt;class X&gt;
+		void fromString(const string&amp; input, X&amp; any)
+		{
+		#ifdef HAVE_SSTREAM
+		std::istringstream iss(input);
+		#else
+		std::istrstream iss(input.c_str());
+		#endif
+		X temp;
+		iss &gt;&gt; temp;
+		if (iss.fail())
+		   throw runtime_error(..)
+		any = temp;
+		}
+	  </pre>
+	</p>
+        <p>
+	  I have read the Josuttis book on Standard C++, so some information
+	  comes from there. Additionally, there is information in
+	  "info iostream", which covers the old implementation that gcc 2.95.2
+	  uses.
+	</p>
+      </div>
       <div class="section" id="sec-about">
         <h2 class="title" style="clear: all">
-          <a name="sec-about"><b>7. About...</b></a>
+          <a name="sec-about"><b>12. About...</b></a>
         </h2>
         <p>
 	  Please send any experience, additions, corrections or questions to
