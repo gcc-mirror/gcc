@@ -1,3 +1,9 @@
+2003-07-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/gcov.texi (Invoking Gcov): Describe output name mangling
+	more fully.
+	(Gcov Data Files): Update.
+
 2003-07-31  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (alpha*-dec-osf[45]*): Enable POSIX thread support by
