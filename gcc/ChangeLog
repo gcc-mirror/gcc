@@ -1,3 +1,7 @@
+2003-08-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* tree.c (get_file_function_name_long): Fix size of alloca() area.
+
 2003-08-08  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* configure.in (gcc_cv_prog_cmp_skip): Flipflop make_compare_target
