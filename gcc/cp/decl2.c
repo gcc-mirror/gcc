@@ -2819,7 +2819,7 @@ start_objects (method_type, initp)
   start_function (void_list_node,
 		  make_call_declarator (fnname, void_list_node, NULL_TREE,
 					NULL_TREE),
-		  NULL_TREE, SF_DEFAULT);
+		  NULL_TREE, SF_DEFAULT | SF_EXPAND);
 
 #if defined(ASM_OUTPUT_CONSTRUCTOR) && defined(ASM_OUTPUT_DESTRUCTOR)
   /* It can be a static function as long as collect2 does not have
@@ -3008,7 +3008,7 @@ start_static_storage_duration_function ()
   start_function (/*specs=*/NULL_TREE, 
 		  ssdf_decl,
 		  /*attrs=*/NULL_TREE,
-		  SF_DEFAULT | SF_PRE_PARSED);
+		  SF_PRE_PARSED | SF_EXPAND);
 
   /* Set up the scope of the outermost block in the function.  */
   store_parm_decls ();
@@ -3640,7 +3640,7 @@ finish_file ()
   finish_repo ();
 
   /* The entire file is now complete.  If requested, dump everything
-     file.   */
+     to a file.   */
   if (flag_dump_translation_unit)
     dump_node_to_file (global_namespace, flag_dump_translation_unit);
 

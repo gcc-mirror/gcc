@@ -2732,6 +2732,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
   tree compound_stmt;
   int destroy_temps;
   tree try_block = NULL_TREE;
+  tree try_body;
   int num_initialized_elts = 0;
 
   maxindex = cp_convert (ptrdiff_type_node, maxindex);
@@ -2796,7 +2797,10 @@ build_vec_init (decl, base, maxindex, init, from_array)
   /* Protect the entire array initialization so that we can destroy
      the partially constructed array if an exception is thrown.  */
   if (flag_exceptions && TYPE_NEEDS_DESTRUCTOR (type))
-    try_block = begin_try_block ();
+    {
+      try_block = begin_try_block ();
+      try_body = begin_compound_stmt (/*has_no_scope=*/1);
+    }
 
   if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR
       && (!decl || same_type_p (TREE_TYPE (init), TREE_TYPE (decl))))
@@ -2991,10 +2995,8 @@ build_vec_init (decl, base, maxindex, init, from_array)
     {
       tree e;
 
-      /* Because CLEANUP will not be processed until later, it must go
-	 on the temporary obstack.  */
-      push_obstacks_nochange ();
-      resume_temporary_allocation ();
+      finish_compound_stmt (/*has_no_scope=*/1, try_body);
+      finish_cleanup_try_block (try_block);
       e = build_vec_delete_1 (rval,
 			      build_binary_op (MINUS_EXPR, maxindex, 
 					       iterator),
@@ -3002,7 +3004,6 @@ build_vec_init (decl, base, maxindex, init, from_array)
 			      /*auto_delete_vec=*/integer_zero_node,
 			      /*auto_delete=*/integer_zero_node,
 			      /*use_global_delete=*/0);
-      pop_obstacks ();
       finish_cleanup (e, try_block);
     }
 

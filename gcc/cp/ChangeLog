@@ -1,5 +1,31 @@
 1999-09-10  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (language_function): Rename expanding_p to
+	x_expanding_p.  Rename named_label_uses to x_named_label_uses.
+	(expanding_p): Adjust accordingly.
+	(TREE_VIA_PRIVATE): Fix typo in comment.
+	(DECL_REFERENCE_SLOT): Remove.
+	(SET_DECL_REFERENCE_SLOT): Likewise.
+	* decl.c (named_label_uses): Adjust. Remove chicken comment.
+	(push_overloaded_decl): Don't truncate the chain of bindings when
+	adding an overloaded function.
+	(grok_reference_init): Don't use DECL_REFERENCE_SLOT.
+	(initialize_local_var): Fix typo in comment.
+	(store_parm_decls): Don't set DECL_REFERENCE_SLOT.  Tidy up.
+	* decl2.c (start_objects): Make the fact that we are expanding
+	the generated function right away explicit.
+	(start_static_storage_duration_function): Likewise.
+	(finish_file): Fix typo in comment.
+	* init.c (build_vec_init): Correct bugs in handling cleanups.
+	* semantics.c (maybe_convert_cond): New function.
+	(FINISH_COND): Always store the condition, even if there's
+	a declaration.
+	(finish_if_stmt_cond): Use maybe_convert_cond.
+	(finish_while_stmt_cond): Likewise.
+	(finish_do_stmt): Likewise.
+	(finish_for_cond): Likewise.
+	(expand_cond): Adjust.
+	
 	* cp-tree.h (FN_TRY_BLOCK_P): New macro.
 	* init.c (perform_member_init): Remove obstack machinations.
 	(expand_cleanup_for_base): Likewise.
