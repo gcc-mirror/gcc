@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
-/* { dg-excess-errors "Newlib has no wchar.h" { target mmix-knuth-mmixware cris-*-elf } } */
 
 /* Compile with -Wall to get a warning if built-in and system wint_t don't
    match.  */
