@@ -980,13 +980,8 @@ begin_compound_stmt (has_no_scope)
       && !current_function_name_declared 
       && !has_no_scope)
     {
-      /* When we get callbacks from the middle-end, we need to know
-	 we're in the midst of declaring these variables.  */
-      current_function_name_declared = 2;
-      /* Actually insert the declarations.  */
-      declare_function_name ();
-      /* And now just remember that we're all done.  */
       current_function_name_declared = 1;
+      declare_function_name ();
     }
 
   return r;
@@ -2397,7 +2392,11 @@ expand_stmt (t)
 		  expand_anon_union_decl (decl, NULL_TREE, 
 					  DECL_ANON_UNION_ELEMS (decl));
 	      }
-	    else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	    else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
+	             && TREE_USED (decl))
+	      /* Do not emit unused decls. This is not just an
+                 optimization. We really do not want to emit
+                 __PRETTY_FUNCTION__ etc, if they're never used.  */
 	      make_rtl_for_local_static (decl);
 	  }
 	  break;

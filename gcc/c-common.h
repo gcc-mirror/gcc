@@ -74,6 +74,13 @@ extern tree c_global_trees[CTI_MAX];
 #define int_ftype_int			c_global_trees[CTI_INT_FTYPE_INT]
 #define ptr_ftype_sizetype		c_global_trees[CTI_PTR_FTYPE_SIZETYPE]
 
+/* Pointer to function to generate the VAR_DECL for __FUNCTION__ etc.
+   ID is the identifier to use, NAME is the string.
+   TYPE_DEP indicates whether it depends on type of the function or not
+   (i.e. __PRETTY_FUNCTION__).  */
+
+extern tree (*make_fname_decl)                  PARAMS ((tree, const char *, int));
+
 extern void declare_function_name		PARAMS ((void));
 extern void decl_attributes			PARAMS ((tree, tree, tree));
 extern void init_function_format_info		PARAMS ((void));

@@ -1,5 +1,18 @@
 2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (cp_make_fname_decl): New function.
+	(wrapup_globals_for_namespace): Don't emit unused static vars.
+	(init_decl_processing): Remove comment about use of
+	array_domain_type. Set make_fname_decl.
+	(cp_finish_decl): Remove __FUNCTION__ nadgering.
+	* semantics.c (begin_compound_stmt): Remove
+	current_function_name_declared flagging.
+	(expand_stmt): Don't emit unused local statics.
+	* typeck.c (decay_conversion): Don't treat __FUNCTION__ decls
+	specially.
+
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* typeck.c (convert_for_assignment): Don't look at array
 	initializer.
 	* call.c (convert_like_real): Likewise.	

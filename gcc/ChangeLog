@@ -1,3 +1,12 @@
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.h (make_fname_decl): Declare.
+	* c-common.c (make_fname_decl): Define.
+	(declare_hidden_char_array): Remove.
+	(declare_function_name): Use make_fname_decl.
+	* c-decl.c (c_make_fname_decl): New function.
+	(init_decl_processing): Set make_fname_decl.
+
 Tue Mar  7 23:50:31 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* cccp.c (handle_directive): Initialize backslash_newlines_p.
