@@ -1,6 +1,6 @@
 2004-06-09  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	* config/i386/winnt.c (i386_pe_output_labelref); Correct
+	* config/i386/winnt.c (i386_pe_output_labelref): Correct
 	misplaced ')'.
 
 2004-06-09  Steven Bosscher  <stevenb@suse.de>

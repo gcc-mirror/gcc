@@ -603,9 +603,9 @@ void i386_pe_output_labelref (FILE *stream, const char *name)
         }
     }
   else if ((name[0] == FASTCALL_PREFIX)
-           || (strncmp (name, DLL_EXPORT_PREFIX, strlen (DLL_EXPORT_PREFIX)
+           || (strncmp (name, DLL_EXPORT_PREFIX, strlen (DLL_EXPORT_PREFIX))
 	       == 0
-	       && name[strlen (DLL_EXPORT_PREFIX)] == FASTCALL_PREFIX)))
+	       && name[strlen (DLL_EXPORT_PREFIX)] == FASTCALL_PREFIX))
     /* A fastcall symbol.  */
     {
       fprintf (stream, "%s",
