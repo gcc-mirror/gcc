@@ -945,11 +945,14 @@ round_push (size)
      rtx size;
 {
   int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+
   if (align == 1)
     return size;
+
   if (GET_CODE (size) == CONST_INT)
     {
-      int new = (INTVAL (size) + align - 1) / align * align;
+      HOST_WIDE_INT new = (INTVAL (size) + align - 1) / align * align;
+
       if (INTVAL (size) != new)
 	size = GEN_INT (new);
     }
@@ -964,6 +967,7 @@ round_push (size)
 			    NULL_RTX, 1);
       size = expand_mult (Pmode, size, GEN_INT (align), NULL_RTX, 1);
     }
+
   return size;
 }
 

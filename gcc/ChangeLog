@@ -23,6 +23,9 @@
 
 2003-04-14  Olivier Hainque <hainque@act-europe.fr>
 
+	* explow.c (round_push): Use HOST_WIDE_INT instead of int for the
+	temporary used to round CONST_INT sizes.
+
 	* tree.c (int_fits_type_p): Extract generic checks from the case
 	of constant type bounds. Refine the checks against constant type
 	bounds to allow for possible decisions against each of these bounds
