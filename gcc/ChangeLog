@@ -1,3 +1,9 @@
+2003-03-20  Richard Henderson  <rth@redhat.com>
+
+        PR c/8602
+        * integrate.c (output_inline_function): Reset input_filename
+        and lineno from the decl before rest_of_compilation.
+
 2003-03-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR 10066

@@ -3030,6 +3030,11 @@ output_inline_function (fndecl)
       debug_hooks = &do_nothing_debug_hooks;
     }
 
+  /* Make sure warnings emitted by the optimizers (e.g. control reaches
+     end of non-void function) is not wildly incorrect.  */
+  input_filename = DECL_SOURCE_FILE (fndecl);
+  lineno = DECL_SOURCE_LINE (fndecl);
+
   /* Compile this function all the way down to assembly code.  As a
      side effect this destroys the saved RTL representation, but
      that's okay, because we don't need to inline this anymore.  */
