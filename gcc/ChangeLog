@@ -1,3 +1,11 @@
+2003-01-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.md: Remove warning.
+	(builtin_setjmp_receiver): Likewise.
+	* config/darwin.c (update_stubs): Slightly improve terrible hack
+	with identifiers.  Add comment pointing out problems with it.
+	(update_non_lazy_ptrs): Likewise.
+
 2003-01-21  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (lookup_filename): Fix printf format warning.
