@@ -105,15 +105,27 @@ package body Makegpr is
    Last_Source : Natural := 0;
    --  The index of the last valid component of Source_Indexes
 
-   Compiler_Names : array (Programming_Language) of String_Access;
+   Compiler_Names : array (First_Language_Indexes) of String_Access;
    --  The names of the compilers to be used. Set up by Get_Compiler.
    --  Used to display the commands spawned.
 
-   Compiler_Paths : array (Programming_Language) of String_Access;
+   Gnatmake_String       : constant String_Access := new String'("gnatmake");
+   GCC_String            : constant String_Access := new String'("gcc");
+   G_Plus_Plus_String    : constant String_Access := new String'("g++");
+
+   Default_Compiler_Names : constant array
+     (First_Language_Indexes range
+        Ada_Language_Index .. C_Plus_Plus_Language_Index)
+     of String_Access :=
+       (Ada_Language_Index         => Gnatmake_String,
+        C_Language_Index           => GCC_String,
+        C_Plus_Plus_Language_Index => G_Plus_Plus_String);
+
+   Compiler_Paths : array (First_Language_Indexes) of String_Access;
    --  The path names of the compiler to be used. Set up by Get_Compiler.
    --  Used to spawn compiling/linking processes.
 
-   Compiler_Is_Gcc : array (Programming_Language) of Boolean;
+   Compiler_Is_Gcc : array (First_Language_Indexes) of Boolean;
    --  An indication that a compiler is a GCC compiler, to be able to use
    --  specific GCC switches.
 
@@ -163,7 +175,7 @@ package body Makegpr is
    Current_Processor : Processor := None;
    --  This variable changes when switches -*args are used
 
-   Current_Language  : Programming_Language := Lang_Ada;
+   Current_Language  : Language_Index := Ada_Language_Index;
    --  The compiler language to consider when Processor is Compiler
 
    package Comp_Opts is new GNAT.Dynamic_Tables
@@ -172,7 +184,7 @@ package body Makegpr is
       Table_Low_Bound      => 1,
       Table_Initial        => 20,
       Table_Increment      => 100);
-   Options : array (Programming_Language) of Comp_Opts.Instance;
+   Options : array (First_Language_Indexes) of Comp_Opts.Instance;
    --  Tables to store compiling options for the different compilers
 
    package Linker_Options is new Table.Table
@@ -300,7 +312,7 @@ package body Makegpr is
    --  The environment variable to set when compiler is a GCC compiler
    --  to indicate the include directory path.
 
-   Current_Include_Paths : array (Programming_Language) of String_Access;
+   Current_Include_Paths : array (First_Language_Indexes) of String_Access;
    --  A cache for the paths of included directories, to avoid setting
    --  env var CPATH unnecessarily.
 
@@ -357,7 +369,7 @@ package body Makegpr is
 
    procedure Add_Search_Directories
      (Data     : Project_Data;
-      Language : Programming_Language);
+      Language : First_Language_Indexes);
    --  Either add to the Arguments the necessary -I switches needed to
    --  compile, or, when compiler is gcc/g++, set up the C*INCLUDE_PATH
    --  environment variable, if necessary.
@@ -368,7 +380,7 @@ package body Makegpr is
    procedure Add_Switches
      (Data      : Project_Data;
       Proc      : Processor;
-      Language  : Other_Programming_Language;
+      Language  : Language_Index;
       File_Name : Name_Id);
    --  Add to Arguments the switches, if any, for a source (attribute Switches)
    --  or language (attribute Default_Switches), coming from package Compiler
@@ -435,7 +447,7 @@ package body Makegpr is
    --  Display the command for a spawned process, if in Verbose_Mode or
    --  not in Quiet_Output.
 
-   procedure Get_Compiler (For_Language : Programming_Language);
+   procedure Get_Compiler (For_Language : First_Language_Indexes);
    --  Find the compiler name and path name for a specified programming
    --  language, if not already done. Results are in the corresponding
    --  elements of arrays Compiler_Names and Compiler_Paths. Name of compiler
@@ -877,7 +889,7 @@ package body Makegpr is
 
    procedure Add_Search_Directories
      (Data     : Project_Data;
-      Language : Programming_Language)
+      Language : First_Language_Indexes)
    is
    begin
       --  If a GNU compiler is used, set the CPATH environment variable,
@@ -901,7 +913,7 @@ package body Makegpr is
    procedure Add_Switches
      (Data      : Project_Data;
       Proc      : Processor;
-      Language  : Other_Programming_Language;
+      Language  : Language_Index;
       File_Name : Name_Id)
    is
       Switches       : Variable_Value;
@@ -953,7 +965,7 @@ package body Makegpr is
            (Name      => Name_Default_Switches,
             In_Arrays => Packages.Table (Pkg).Decl.Arrays);
          Switches := Prj.Util.Value_Of
-           (Index     => Lang_Name_Ids (Language),
+           (Index     => Language_Names.Table (Language),
             Src_Index => 0,
             In_Array  => Defaults);
       end if;
@@ -1546,7 +1558,7 @@ package body Makegpr is
          --  If there are sources in Ada, then gnatmake will build the
          --  library, so nothing to do.
 
-         if not Data.Languages (Lang_Ada) then
+         if not Data.Languages (Ada_Language_Index) then
 
             --  Get all the object files of the project
 
@@ -1574,14 +1586,14 @@ package body Makegpr is
                --  building the library may fail with unresolved symbols.
 
                if C_Plus_Plus_Is_Used then
-                  if Compiler_Names (Lang_C_Plus_Plus) = null then
-                     Get_Compiler (Lang_C_Plus_Plus);
+                  if Compiler_Names (C_Plus_Plus_Language_Index) = null then
+                     Get_Compiler (C_Plus_Plus_Language_Index);
                   end if;
 
-                  if Compiler_Is_Gcc (Lang_C_Plus_Plus) then
+                  if Compiler_Is_Gcc (C_Plus_Plus_Language_Index) then
                      Name_Len := 0;
                      Add_Str_To_Name_Buffer
-                       (Compiler_Names (Lang_C_Plus_Plus).all);
+                       (Compiler_Names (C_Plus_Plus_Language_Index).all);
                      Driver_Name := Name_Find;
                   end if;
                end if;
@@ -2022,7 +2034,9 @@ package body Makegpr is
       C_Plus_Plus_Is_Used := False;
 
       for Project in 1 .. Projects.Last loop
-         if Projects.Table (Project).Languages (Lang_C_Plus_Plus) then
+         if
+           Projects.Table (Project).Languages (C_Plus_Plus_Language_Index)
+         then
             C_Plus_Plus_Is_Used := True;
             exit;
          end if;
@@ -2171,7 +2185,8 @@ package body Makegpr is
       if Compiler_Is_Gcc (Source.Language) then
          Add_Argument (Dash_x, Verbose_Mode);
          Add_Argument
-           (Lang_Names (Source.Language), Verbose_Mode);
+           (Get_Name_String (Language_Names.Table (Source.Language)),
+            Verbose_Mode);
       end if;
 
       Add_Argument (Dash_c, True);
@@ -2293,7 +2308,8 @@ package body Makegpr is
       Project_Name : String := Get_Name_String (Data.Name);
       Dummy        : Boolean := False;
 
-      Ada_Is_A_Language : constant Boolean := Data.Languages (Lang_Ada);
+      Ada_Is_A_Language : constant Boolean :=
+                            Data.Languages (Ada_Language_Index);
 
    begin
       Ada_Mains.Init;
@@ -2398,7 +2414,7 @@ package body Makegpr is
 
       --  Get the gnatmake to invoke
 
-      Get_Compiler (Lang_Ada);
+      Get_Compiler (Ada_Language_Index);
 
       --  Specify the project file
 
@@ -2480,11 +2496,11 @@ package body Makegpr is
 
       --  If there are compiling options for Ada, transmit them to gnatmake
 
-      if Comp_Opts.Last (Options (Lang_Ada)) /= 0 then
+      if Comp_Opts.Last (Options (Ada_Language_Index)) /= 0 then
          Add_Argument (Dash_cargs, True);
 
-         for Arg in 1 .. Comp_Opts.Last (Options (Lang_Ada)) loop
-            Add_Argument (Options (Lang_Ada).Table (Arg), True);
+         for Arg in 1 .. Comp_Opts.Last (Options (Ada_Language_Index)) loop
+            Add_Argument (Options (Ada_Language_Index).Table (Arg), True);
          end loop;
       end if;
 
@@ -2513,10 +2529,11 @@ package body Makegpr is
       --  And invoke gnatmake
 
       Display_Command
-        (Compiler_Names (Lang_Ada).all, Compiler_Paths (Lang_Ada));
+        (Compiler_Names (Ada_Language_Index).all,
+         Compiler_Paths (Ada_Language_Index));
 
       Spawn
-        (Compiler_Paths (Lang_Ada).all,
+        (Compiler_Paths (Ada_Language_Index).all,
          Arguments (1 .. Last_Argument),
          Success);
 
@@ -2524,7 +2541,9 @@ package body Makegpr is
 
       if not Success then
          Report_Error
-           ("invocation of ", Compiler_Names (Lang_Ada).all, " failed");
+           ("invocation of ",
+            Compiler_Names (Ada_Language_Index).all,
+            " failed");
       end if;
 
    end Compile_Link_With_Gnatmake;
@@ -2612,7 +2631,7 @@ package body Makegpr is
 
             if not Local_Errors
               and then Data.Library
-              and then not Data.Languages (Lang_Ada)
+              and then not Data.Languages (Ada_Language_Index)
               and then not Compile_Only
             then
                Build_Library (Project, Need_To_Rebuild_Archive);
@@ -2770,7 +2789,7 @@ package body Makegpr is
    -- Get_Compiler --
    ------------------
 
-   procedure Get_Compiler (For_Language : Programming_Language) is
+   procedure Get_Compiler (For_Language : First_Language_Indexes) is
       Data : constant Project_Data := Projects.Table (Main_Project);
 
       Ide : constant Package_Id :=
@@ -2779,7 +2798,7 @@ package body Makegpr is
 
       Compiler : constant Variable_Value :=
         Value_Of
-          (Name                    => Lang_Name_Ids (For_Language),
+          (Name                    => Language_Names.Table (For_Language),
            Index                   => 0,
            Attribute_Or_Array_Name => Name_Compiler_Command,
            In_Package              => Ide);
@@ -2794,8 +2813,16 @@ package body Makegpr is
          --  IDE, use the default compiler for this language.
 
          if Compiler = Nil_Variable_Value then
-            Compiler_Names (For_Language) :=
-              Default_Compiler_Names (For_Language);
+            if For_Language in Default_Compiler_Names'Range then
+               Compiler_Names (For_Language) :=
+                 Default_Compiler_Names (For_Language);
+
+            else
+               Osint.Fail
+                 ("unknow compiler name for language """,
+                  Get_Name_String (Language_Names.Table (For_Language)),
+                  """");
+            end if;
 
          else
             Compiler_Names (For_Language) :=
@@ -2825,7 +2852,7 @@ package body Makegpr is
          --  Fail if compiler cannot be found
 
          if Compiler_Paths (For_Language) = null then
-            if For_Language = Lang_Ada then
+            if For_Language = Ada_Language_Index then
                Osint.Fail
                  ("unable to locate """,
                   Compiler_Names (For_Language).all,
@@ -2833,7 +2860,8 @@ package body Makegpr is
 
             else
                Osint.Fail
-                 ("unable to locate " & Lang_Display_Names (For_Language).all,
+                 ("unable to locate " &
+                  Get_Name_String (Language_Names.Table (For_Language)),
                   " compiler """, Compiler_Names (For_Language).all & '"');
             end if;
          end if;
@@ -3031,8 +3059,7 @@ package body Makegpr is
       Prj.Pars.Parse
         (Project           => Main_Project,
          Project_File_Name => Project_File_Name.all,
-         Packages_To_Check => Packages_To_Check,
-         Process_Languages => Other_Languages);
+         Packages_To_Check => Packages_To_Check);
 
       --  Fail if parsing/processing was unsuccessful
 
@@ -3238,9 +3265,9 @@ package body Makegpr is
 
       procedure Add_C_Plus_Plus_Link_For_Gnatmake is
       begin
-         if Compiler_Is_Gcc (Lang_C_Plus_Plus) then
+         if Compiler_Is_Gcc (C_Plus_Plus_Language_Index) then
             Add_Argument
-              ("--LINK=" & Compiler_Names (Lang_C_Plus_Plus).all,
+              ("--LINK=" & Compiler_Names (C_Plus_Plus_Language_Index).all,
                Verbose_Mode);
 
          else
@@ -3313,11 +3340,11 @@ package body Makegpr is
 
       procedure Choose_C_Plus_Plus_Link_Process is
       begin
-         if Compiler_Names (Lang_C_Plus_Plus) = null then
-            Get_Compiler (Lang_C_Plus_Plus);
+         if Compiler_Names (C_Plus_Plus_Language_Index) = null then
+            Get_Compiler (C_Plus_Plus_Language_Index);
          end if;
 
-         if not Compiler_Is_Gcc (Lang_C_Plus_Plus) then
+         if not Compiler_Is_Gcc (C_Plus_Plus_Language_Index) then
             Change_Dir (Object_Dir);
 
             declare
@@ -3332,7 +3359,7 @@ package body Makegpr is
                Put_Line (File, "LIBGCC=`gcc -print-libgcc-file-name`");
                Put_Line
                  (File,
-                  Compiler_Names (Lang_C_Plus_Plus).all &
+                  Compiler_Names (C_Plus_Plus_Language_Index).all &
                   " $* ${LIBGCC}");
 
                Close (File);
@@ -3538,7 +3565,7 @@ package body Makegpr is
 
          --  Only Ada sources in the main project, and even maybe not
 
-         if not Data.Languages (Lang_Ada) then
+         if not Data.Languages (Ada_Language_Index) then
 
             --  Fail if the main project has no source of any language
 
@@ -3568,7 +3595,7 @@ package body Makegpr is
          --  There are other language sources. First check if there are also
          --  sources in Ada.
 
-         if Data.Languages (Lang_Ada) then
+         if Data.Languages (Ada_Language_Index) then
 
             --  There is a mix of Ada and other language sources in the main
             --  project. Any main that is not a source of the other languages
@@ -3694,7 +3721,7 @@ package body Makegpr is
                --  If C++ is one of the languages, add the --LINK switch to
                --  the linking switches.
 
-               if Data.Languages (Lang_C_Plus_Plus) then
+               if Data.Languages (C_Plus_Plus_Language_Index) then
                   Add_Argument (Dash_largs, Verbose_Mode);
                   Add_C_Plus_Plus_Link_For_Gnatmake;
                   Add_Argument (Dash_margs, Verbose_Mode);
@@ -3710,15 +3737,15 @@ package body Makegpr is
 
             --  First, get the linker to invoke
 
-            if Data.Languages (Lang_C_Plus_Plus) then
-               Get_Compiler (Lang_C_Plus_Plus);
-               Linker_Name := Compiler_Names (Lang_C_Plus_Plus);
-               Linker_Path := Compiler_Paths (Lang_C_Plus_Plus);
+            if Data.Languages (C_Plus_Plus_Language_Index) then
+               Get_Compiler (C_Plus_Plus_Language_Index);
+               Linker_Name := Compiler_Names (C_Plus_Plus_Language_Index);
+               Linker_Path := Compiler_Paths (C_Plus_Plus_Language_Index);
 
             else
-               Get_Compiler (Lang_C);
-               Linker_Name := Compiler_Names (Lang_C);
-               Linker_Path := Compiler_Paths (Lang_C);
+               Get_Compiler (C_Language_Index);
+               Linker_Name := Compiler_Names (C_Language_Index);
+               Linker_Path := Compiler_Paths (C_Language_Index);
             end if;
 
             Link_Done := False;
@@ -3883,31 +3910,28 @@ package body Makegpr is
 
       --  Set the processor/language for the following switches
 
-      --  -c???args: Compiler arguments
+      --  -cargs: Ada compiler arguments
 
-      elsif Arg'Length >= 6
-        and then Arg (Arg'First .. Arg'First + 1) = "-c"
-        and then Arg (Arg'Last - 3 .. Arg'Last) = "args"
-      then
+      elsif Arg = "-cargs" then
+         Current_Language  := Ada_Language_Index;
+         Current_Processor := Compiler;
+
+      elsif Arg'Length > 7 and then Arg (1 .. 7) = "-cargs:" then
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (Arg (8 .. Arg'Last));
+         To_Lower (Name_Buffer (1 .. Name_Len));
+
          declare
-            OK          : Boolean := False;
-            Args_String : constant String :=
-                            Arg (Arg'First + 2 .. Arg'Last - 4);
-
+            Lang : constant Name_Id := Name_Find;
          begin
-            for Lang in Programming_Language loop
-               if Args_String = Lang_Args (Lang).all then
-                  OK := True;
-                  Current_Language := Lang;
-                  exit;
-               end if;
-            end loop;
+            Current_Language := Language_Indexes.Get (Lang);
 
-            if OK then
-               Current_Processor := Compiler;
-            else
-               Osint.Fail ("illegal option """, Arg, """");
+            if Current_Language = No_Language_Index then
+               Add_Language_Name (Lang);
+               Current_Language := Last_Language_Index;
             end if;
+
+            Current_Processor := Compiler;
          end;
 
       elsif Arg = "-largs" then
@@ -4045,10 +4069,8 @@ package body Makegpr is
          Osint.Write_Program_Name;
          Write_Str (" -P<project file> [opts]  [name] {");
 
-         for Lang in Programming_Language loop
-            Write_Str ("[-c");
-            Write_Str (Lang_Args (Lang).all);
-            Write_Str ("args opts] ");
+         for Lang in First_Language_Indexes loop
+            Write_Str ("[-cargs:lang opts] ");
          end loop;
 
          Write_Str ("[-largs opts] [-gargs opts]}");
@@ -4116,30 +4138,15 @@ package body Makegpr is
          Write_Eol;
          Write_Eol;
 
-         --  Lines for -c*args
+         --  Line for -cargs
 
-         for Lang in Programming_Language loop
-            declare
-               Column : Positive := 13 + Lang_Args (Lang)'Length;
-               --  "  -cargs opts" is the minimum and is 13 character long
+         Write_Line ("  -cargs opts     opts are passed to the Ada compiler");
 
-            begin
-               Write_Str ("  -c");
-               Write_Str (Lang_Args (Lang).all);
-               Write_Str ("args opts");
+         --  Line for -cargs:lang
 
-               loop
-                  Write_Char (' ');
-                  Column := Column + 1;
-                  exit when Column >= 17;
-               end loop;
-
-               Write_Str ("opts are passed to the ");
-               Write_Str (Lang_Display_Names (Lang).all);
-               Write_Str (" compiler");
-               Write_Eol;
-            end;
-         end loop;
+         Write_Line ("  -cargs:<lang> opts");
+         Write_Line ("     opts are passed to the compiler " &
+                     "for language < lang > ");
 
          --  Line for -largs
 

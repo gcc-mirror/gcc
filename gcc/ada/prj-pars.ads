@@ -24,24 +24,25 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Implements the parsing of project files.
+--  Implements the parsing of project files
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package Prj.Pars is
 
    procedure Set_Verbosity (To : Verbosity);
-   --  Set the verbosity when parsing the project files.
+   --  Set the verbosity when parsing the project files
 
    procedure Parse
      (Project           : out Project_Id;
       Project_File_Name : String;
-      Packages_To_Check : String_List_Access := All_Packages;
-      Process_Languages : Languages_Processed := Ada_Language);
+      Packages_To_Check : String_List_Access := All_Packages);
    --  Parse a project files and all its imported project files.
+   --
    --  If parsing is successful, Project_Id is the project ID
    --  of the main project file; otherwise, Project_Id is set
    --  to No_Project.
+   --
    --  Packages_To_Check indicates the packages where any unknown attribute
    --  produces an error. For other packages, an unknown attribute produces
    --  a warning.

@@ -703,7 +703,7 @@ package body Prj.Env is
                  (File, "pragma Source_File_Name_Project");
                Put_Line
                  (File, "  (Spec_File_Name  => ""*" &
-                  Namet.Get_Name_String (Data.Naming.Current_Spec_Suffix) &
+                  Namet.Get_Name_String (Data.Naming.Ada_Spec_Suffix) &
                   """,");
                Put_Line
                  (File, "   Casing          => " &
@@ -719,7 +719,7 @@ package body Prj.Env is
                  (File, "pragma Source_File_Name_Project");
                Put_Line
                  (File, "  (Body_File_Name  => ""*" &
-                  Namet.Get_Name_String (Data.Naming.Current_Body_Suffix) &
+                  Namet.Get_Name_String (Data.Naming.Ada_Body_Suffix) &
                   """,");
                Put_Line
                  (File, "   Casing          => " &
@@ -732,7 +732,7 @@ package body Prj.Env is
                --  and maybe separate
 
                if
-                 Data.Naming.Current_Body_Suffix /= Data.Naming.Separate_Suffix
+                 Data.Naming.Ada_Body_Suffix /= Data.Naming.Separate_Suffix
                then
                   Put_Line
                     (File, "pragma Source_File_Name_Project");
@@ -1186,10 +1186,10 @@ package body Prj.Env is
 
       Extended_Spec_Name : String :=
                              Name & Namet.Get_Name_String
-                                      (Data.Naming.Current_Spec_Suffix);
+                                      (Data.Naming.Ada_Spec_Suffix);
       Extended_Body_Name : String :=
                              Name & Namet.Get_Name_String
-                                      (Data.Naming.Current_Body_Suffix);
+                                      (Data.Naming.Ada_Body_Suffix);
 
       Unit : Unit_Data;
 
@@ -1674,10 +1674,10 @@ package body Prj.Env is
 
       Extended_Spec_Name : String :=
                              Name & Namet.Get_Name_String
-                                     (Data.Naming.Current_Spec_Suffix);
+                                     (Data.Naming.Ada_Spec_Suffix);
       Extended_Body_Name : String :=
                              Name & Namet.Get_Name_String
-                                     (Data.Naming.Current_Body_Suffix);
+                                     (Data.Naming.Ada_Body_Suffix);
 
       First   : Unit_Id := Units.First;
       Current : Unit_Id;
@@ -1862,10 +1862,10 @@ package body Prj.Env is
 
       Extended_Spec_Name : String :=
                              Name & Namet.Get_Name_String
-                                      (Data.Naming.Current_Spec_Suffix);
+                                      (Data.Naming.Ada_Spec_Suffix);
       Extended_Body_Name : String :=
                              Name & Namet.Get_Name_String
-                                      (Data.Naming.Current_Body_Suffix);
+                                      (Data.Naming.Ada_Body_Suffix);
 
       Unit : Unit_Data;
 

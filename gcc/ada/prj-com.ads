@@ -84,12 +84,6 @@ package Prj.Com is
       Table_Increment      => 100,
       Table_Name           => "Prj.Com.Units");
 
-   type Header_Num is range 0 .. 2047;
-
-   function Hash is new GNAT.HTable.Hash (Header_Num => Header_Num);
-
-   function Hash (Name : Name_Id) return Header_Num;
-
    function Hash (Name : String_Id) return Header_Num;
 
    package Units_Htable is new GNAT.HTable.Simple_HTable

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2000-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2000-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,13 +26,27 @@
 
 with Namet;   use Namet;
 with Osint;   use Osint;
-with Prj.Com; use Prj.Com;
+with Sdefault;
 with Types;   use Types;
 
 with GNAT.HTable;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package body Prj.Ext is
+
+   Ada_Project_Path : constant String := "ADA_PROJECT_PATH";
+   --  Name of the env. variable that contains path name(s) of directories
+   --  where project files may reside.
+
+   Prj_Path : constant String_Access := Getenv (Ada_Project_Path);
+   --  The path name(s) of directories where project files may reside.
+   --  May be empty.
+
+   No_Project_Default_Dir : constant String := "-";
+
+   Current_Project_Path : String_Access;
+   --  The project path; initialized during elaboration of package
+   --  Contains at least the current working directory.
 
    package Htable is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
@@ -91,6 +105,15 @@ package body Prj.Ext is
       return False;
    end Check;
 
+   ------------------
+   -- Project_Path --
+   ------------------
+
+   function Project_Path return String is
+   begin
+      return Current_Project_Path.all;
+   end Project_Path;
+
    -----------
    -- Reset --
    -----------
@@ -99,6 +122,16 @@ package body Prj.Ext is
    begin
       Htable.Reset;
    end Reset;
+
+   ----------------------
+   -- Set_Project_Path --
+   ----------------------
+
+   procedure Set_Project_Path (New_Path : String) is
+   begin
+      Free (Current_Project_Path);
+      Current_Project_Path := new String'(New_Path);
+   end Set_Project_Path;
 
    --------------
    -- Value_Of --
@@ -144,4 +177,77 @@ package body Prj.Ext is
       end;
    end Value_Of;
 
+begin
+   --  Initialize Current_Project_Path during package elaboration
+
+   declare
+      Add_Default_Dir : Boolean := True;
+      First           : Positive;
+      Last            : Positive;
+
+   begin
+      --  The current directory is always first
+
+      Name_Len := 1;
+      Name_Buffer (Name_Len) := '.';
+
+      --  If env. var. is defined and not empty, add its content
+
+      if Prj_Path.all /= "" then
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := Path_Separator;
+
+         Add_Str_To_Name_Buffer (Prj_Path.all);
+
+         --  Scan the directory path to see if "-" is one of the directories.
+         --  Remove each occurence of "-" and set Add_Default_Dir to False.
+
+         First := 3;
+         loop
+            while First <= Name_Len
+              and then (Name_Buffer (First) = Path_Separator)
+            loop
+               First := First + 1;
+            end loop;
+
+            exit when First > Name_Len;
+
+            Last := First;
+
+            while Last < Name_Len
+              and then Name_Buffer (Last + 1) /= Path_Separator
+            loop
+               Last := Last + 1;
+            end loop;
+
+            --  If the directory is "-", set Add_Default_Dir to False and
+            --  remove from path.
+
+            if Name_Buffer (First .. Last) = No_Project_Default_Dir then
+               Add_Default_Dir := False;
+
+               for J in Last + 1 .. Name_Len loop
+                  Name_Buffer (J - No_Project_Default_Dir'Length - 1) :=
+                    Name_Buffer (J);
+               end loop;
+
+               Name_Len := Name_Len - No_Project_Default_Dir'Length - 1;
+            end if;
+
+            First := Last + 1;
+         end loop;
+      end if;
+
+      --  Set the initial value of Current_Project_Path
+
+      if Add_Default_Dir then
+         Current_Project_Path :=
+           new String'(Name_Buffer (1 .. Name_Len) & Path_Separator &
+                       Sdefault.Search_Dir_Prefix.all & ".." &
+                       Directory_Separator & ".." & Directory_Separator &
+                       ".." & Directory_Separator & "gnat");
+      else
+         Current_Project_Path := new String'(Name_Buffer (1 .. Name_Len));
+      end if;
+   end;
 end Prj.Ext;
