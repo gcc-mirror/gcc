@@ -955,7 +955,7 @@ java_lex (java_lval)
       ctxp->ccb_indent--;
       if (ctxp->ccb_indent == 1)
         ctxp->last_ccb_indent1 = lineno;
-      return CCB_TK;
+      BUILD_OPERATOR (CCB_TK);
     case '[':
       JAVA_LEX_SEP (c);
       BUILD_OPERATOR (OSB_TK);

@@ -2,6 +2,49 @@
 
 	* Makefile.in: Remove -v from bison command lines.
 
+Fri Apr 30 17:54:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* check-init.c (check_init): Exclude a case of error when doing
+ 	xrefs.
+	* class.c (layout_class_method): Don't generate the error message
+ 	twice when compiling from source.
+	* lang-options.h: Added `-Wredundant-modifers' and
+	`-Wunusupported-jdk11' flags and help text.
+	* lang.c (lang_decode_option): Added support for
+ 	`-Wunsupported-jdk11' and `-Wredundant-modifiers'. 
+	flag_static_local_jdk11 and flag_redundant set accordingly.
+	* lex.c (java_lex): Call BUILD_OPERATOR on CCB_TK.
+	* parse.h (EXPR_WFL_ADD_COL): New macro.
+	(DECL_END_SOURCE_LINE): Likewise.
+	(DECL_INHERITED_SOURCE_LINE): Likewise.
+	* parse.y (static_ref_err): New function, prototyped.
+	(CCB_TK): Now tagged <operator>.
+	(class_body:): Remember the location of the closing '}' of a class
+ 	definition when doing xrefs.
+	(block:): Likewise.
+	(block_end:): Likewise.
+	(create_class): Remember the location of the inherited class
+ 	identifier when doing xrefs.
+	(register_fields): Added test on first operand of `init' before
+ 	testing it TREE_CODE.
+	(method_header): Store the location of the class identifier in the
+ 	class decl when doing xrefs.
+	(finish_method_declaration): Don't combine first/last method line
+ 	when doing xref.
+	(java_check_regular_methods): Warning check on not overriding
+ 	methods with default access on other packages move before check on
+ 	static methods. Initialization of `aflags' also moved up.
+	(resolve_expression_name): Call static_ref_err to report the error.
+	(static_ref_err): New function, implemented.
+	(resolve_field_access): Returned simplified static field access
+ 	when doing xrefs.
+	(resolve_qualified_expression_name): Check for illegal use of
+ 	static fields in a non static context. Call static_ref_err to
+ 	report error in various places.
+	(java_complete_tree): To not fold initialized static fields when
+ 	doing xrefs.
+	(java_complete_lhs): Likewise.
+
 1999-04-29  Anthony Green  <green@cygnus.com>
 
 	* expr.c (generate_name): Use ASM_GENERATE_INTERNAL_LABEL to

@@ -41,3 +41,6 @@ DEFINE_LANG_NAME ("Java")
   { "-fCLASSPATH", "Set class path" },
   { "-I", "Add directory to class path" },
   { "-foutput-class-dir", "Directory where class files should be written" },
+  { "-Wredundant-modifiers", 
+    "Warn if modifiers are specified when not necessary"},
+  { "-Wunsupported-jdk11", "Warn if `final' local variables are specified"},

@@ -700,6 +700,9 @@ check_init (exp, before)
       break;
       
     default:
+      /* It's OK to see that when doing xrefs. */
+      if (TREE_CODE (exp) == TYPE_DECL && flag_emit_xref)
+	break;
       fatal ("internal error in check-init: tree code not implemented: %s",
 	    tree_code_name [(int) TREE_CODE (exp)]);
     }

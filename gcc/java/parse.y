@@ -241,6 +241,7 @@ static tree patch_initialized_static_field PROTO ((tree));
 static tree fold_constant_for_init PROTO ((tree, tree));
 static tree strip_out_static_field_access_decl PROTO ((tree));
 static jdeplist *reverse_jdep_list PROTO ((struct parser_ctxt *));
+static void static_ref_err PROTO ((tree, tree, tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -431,7 +432,7 @@ static tree current_static_block = NULL_TREE;
 %token   <operator>     EQ_TK GTE_TK ZRS_TK SRS_TK GT_TK LTE_TK LS_TK 
 %token   <operator>     BOOL_AND_TK AND_TK BOOL_OR_TK OR_TK INCR_TK PLUS_TK
 %token   <operator>     DECR_TK MINUS_TK MULT_TK DIV_TK XOR_TK REM_TK NEQ_TK
-%token   <operator>     NEG_TK REL_QM_TK REL_CL_TK NOT_TK LT_TK OCB_TK
+%token   <operator>     NEG_TK REL_QM_TK REL_CL_TK NOT_TK LT_TK OCB_TK CCB_TK
 %token   <operator>     OP_TK OSB_TK DOT_TK THROW_TK INSTANCEOF_TK
 %type    <operator>	THIS_TK SUPER_TK RETURN_TK BREAK_TK CONTINUE_TK 
 %type	 <operator>     CASE_TK DEFAULT_TK TRY_TK CATCH_TK SYNCHRONIZED_TK
@@ -732,9 +733,21 @@ interface_type_list:
 
 class_body:
 	OCB_TK CCB_TK
-		{ $$ = ctxp->current_parsed_class; }
+		{ 
+		  /* Store the location of the `}' when doing xrefs */
+		  if (flag_emit_xref)
+		    DECL_END_SOURCE_LINE (ctxp->current_parsed_class) = 
+		      EXPR_WFL_ADD_COL ($2.location, 1);
+		  $$ = ctxp->current_parsed_class;
+		}
 |	OCB_TK class_body_declarations CCB_TK
-		{ $$ = ctxp->current_parsed_class; }
+		{ 
+		  /* Store the location of the `}' when doing xrefs */
+		  if (flag_emit_xref)
+		    DECL_END_SOURCE_LINE (ctxp->current_parsed_class) = 
+		      EXPR_WFL_ADD_COL ($3.location, 1);
+		  $$ = ctxp->current_parsed_class;
+		}
 ;
 
 class_body_declarations:
@@ -1148,7 +1161,13 @@ variable_initializers:
 /* 19.11 Production from 14: Blocks and Statements  */
 block:
 	OCB_TK CCB_TK
-		{ $$ = empty_stmt_node; }
+		{ 
+		  /* Store the location of the `}' when doing xrefs */
+		  if (current_function_decl && flag_emit_xref)
+		    DECL_END_SOURCE_LINE (current_function_decl) = 
+		      EXPR_WFL_ADD_COL ($2.location, 1);
+		  $$ = empty_stmt_node; 
+		}
 |	block_begin block_statements block_end
 		{ $$ = $3; }
 ;
@@ -1162,6 +1181,10 @@ block_end:
 	CCB_TK
 		{ 
 		  maybe_absorb_scoping_blocks ();
+		  /* Store the location of the `}' when doing xrefs */
+		  if (current_function_decl && flag_emit_xref)
+		    DECL_END_SOURCE_LINE (current_function_decl) = 
+		      EXPR_WFL_ADD_COL ($1.location, 1);		  
 		  $$ = exit_block ();
 		}
 ;
@@ -3014,6 +3037,11 @@ create_class (flags, id, super, interfaces)
   CLASS_COMPLETE_P (decl) = 1;
   add_superinterfaces (decl, interfaces);
 
+  /* If doing xref, store the location at which the inherited class
+     (if any) was seen. */
+  if (flag_emit_xref && super)
+    DECL_INHERITED_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (super);
+
   /* Eventually sets the @deprecated tag flag */
   CHECK_DEPRECATED (decl);
 
@@ -3183,7 +3211,8 @@ register_fields (flags, type, variable_list)
 	      TREE_CHAIN (init) = ctxp->static_initialized;
 	      ctxp->static_initialized = init;
 	      DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
-	      if (TREE_CODE (TREE_OPERAND (init, 1)) == NEW_ARRAY_INIT)
+	      if (TREE_OPERAND (init, 1) 
+		  && TREE_CODE (TREE_OPERAND (init, 1)) == NEW_ARRAY_INIT)
 		TREE_STATIC (TREE_OPERAND (init, 1)) = 1;
 	    }
 	  /* A non-static field declared with an immediate initialization is
@@ -3463,6 +3492,11 @@ method_header (flags, type, mdecl, throws)
   /* Eventually set the @deprecated tag flag */
   CHECK_DEPRECATED (meth);
 
+  /* If doing xref, store column and line number information instead
+     of the line number only. */
+  if (flag_emit_xref)
+    DECL_SOURCE_LINE (meth) = EXPR_WFL_LINECOL (id);
+
   return meth;
 }
 
@@ -3496,7 +3530,8 @@ finish_method_declaration (method_body)
   exit_block ();
   /* Merge last line of the function with first line, directly in the
      function decl. It will be used to emit correct debug info. */
-  DECL_SOURCE_LINE_MERGE (current_function_decl, ctxp->last_ccb_indent1);
+  if (!flag_emit_xref)
+    DECL_SOURCE_LINE_MERGE (current_function_decl, ctxp->last_ccb_indent1);
   /* So we don't have an irrelevant function declaration context for
      the next static block we'll see. */
   current_function_decl = NULL_TREE;
@@ -4579,12 +4614,33 @@ java_check_regular_methods (class_decl)
 	  char *t = strdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)),
 						 0));
 	  parse_error_context 
-	    (method_wfl, 
+	    (method_wfl,
 	     "Method `%s' was defined with return type `%s' in class `%s'", 
 	     lang_printable_name (found, 0), t,
 	     IDENTIFIER_POINTER 
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 	  free (t);
+	}
+
+      aflags = get_access_flags_from_decl (found);
+      /* If the method has default, access in an other package, then
+	 issue a warning that the current method doesn't override the
+	 one that was found elsewhere. Do not issue this warning when
+	 the match was found in java.lang.Object.  */
+      if (DECL_CONTEXT (found) != object_type_node
+	  && ((aflags & 0x7) == 0)
+	  && !class_in_current_package (DECL_CONTEXT (found))
+	  && flag_not_overriding)
+        {
+	  parse_warning_context 
+	    (method_wfl, "Method `%s' in class `%s' does not "
+	     "override the corresponding method in class `%s', which is "
+	     "private to a different package",
+	     lang_printable_name (found, 0),
+	     IDENTIFIER_POINTER (DECL_NAME (class_decl)),
+	     IDENTIFIER_POINTER (DECL_NAME 
+				 (TYPE_NAME (DECL_CONTEXT (found)))));
+	  continue;
 	}
 
       /* Can't override final. Can't override static. */
@@ -4603,6 +4659,7 @@ java_check_regular_methods (class_decl)
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 	  continue;
 	}
+
       /* Static method can't override instance method. */
       if (METHOD_STATIC (method))
 	{
@@ -4616,7 +4673,6 @@ java_check_regular_methods (class_decl)
 	  continue;
 	}
 
-      aflags = get_access_flags_from_decl (found);
       /* - Overriding/hiding public must be public
 	 - Overriding/hiding protected must be protected or public
          - If the overriden or hidden method has default (package)
@@ -4642,22 +4698,6 @@ java_check_regular_methods (class_decl)
       /* Overriding methods must have compatible `throws' clauses on checked
 	 exceptions, if any */
       check_throws_clauses (method, method_wfl, found);
-
-      /* If the method has default access in an other package, then
-	 issue a warning that the current method doesn't override the
-	 one that was found elsewhere. Do not issue this warning when
-	 the match was found in java.lang.Object.  */
-      if (DECL_CONTEXT (found) != object_type_node 
-	  && (!aflags || (aflags > ACC_PROTECTED))
-	  && !class_in_current_package (DECL_CONTEXT (found))
-	  && flag_not_overriding)
-	parse_warning_context 
-	  (method_wfl, "Method `%s' in class `%s' does not "
-	   "override the corresponding method in class `%s', which is "
-	   "private to a different package",
-	   lang_printable_name (found, 0),
-	   IDENTIFIER_POINTER (DECL_NAME (class_decl)),
-	   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 
       /* Inheriting multiple methods with the same signature. FIXME */
     }
@@ -6093,12 +6133,7 @@ resolve_expression_name (id, orig)
 		 a static variable. */
 	      if (!fs && METHOD_STATIC (current_function_decl))
 	        {
-		  parse_error_context 
-		    (id, "Can't make a static reference to nonstatic variable "
-		     "`%s' in class `%s'",
-		     IDENTIFIER_POINTER (name),
-		     IDENTIFIER_POINTER (DECL_NAME 
-					 (TYPE_NAME (current_class))));
+		  static_ref_err (id, name, current_class);
 		  return error_mark_node;
 		}
 	      /* Instance variables can't appear as an argument of
@@ -6141,6 +6176,17 @@ resolve_expression_name (id, orig)
 		       IDENTIFIER_POINTER (name));
 
   return error_mark_node;
+}
+
+static void
+static_ref_err (wfl, field_id, class_type)
+    tree wfl, field_id, class_type;
+{
+  parse_error_context 
+    (wfl, 
+     "Can't make a static reference to nonstatic variable `%s' in class `%s'",
+     IDENTIFIER_POINTER (field_id), 
+     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class_type))));
 }
 
 /* 15.10.1 Field Acess Using a Primary and/or Expression Name.
@@ -6188,7 +6234,8 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 	  static_final_found = 1;
 	}
       else
-	field_ref = build_field_ref ((is_static ? NULL_TREE : where_found), 
+	field_ref = build_field_ref ((is_static && !flag_emit_xref? 
+				      NULL_TREE : where_found), 
 				     type_found, DECL_NAME (decl));
       if (field_ref == error_mark_node)
 	return error_mark_node;
@@ -6198,7 +6245,7 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 	  field_ref = build_class_init (type_found, field_ref);
 	  /* If the static field was identified by an expression that
 	     needs to be generated, make the field access a compound
-	     expression whose first part of the evaluation of the
+	     expression whose first part is the evaluation of the
 	     field selector part. */
 	  if (where_found && TREE_CODE (where_found) != TYPE_DECL 
 	      && TREE_CODE (where_found) != RECORD_TYPE)
@@ -6459,8 +6506,17 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      decl = QUAL_RESOLUTION (q);
 	      if (!type)
 		{
-		  if (!FIELD_STATIC (decl))
-		    *where_found = current_this;
+		  if (TREE_CODE (decl) == FIELD_DECL && !FIELD_STATIC (decl))
+		    {
+		      if (current_this)
+			*where_found = current_this;
+		      else
+			{
+			  static_ref_err (qual_wfl, DECL_NAME (decl),
+					  current_class);
+			  return 1;
+			}
+		    }
 		  else
 		    {
 		      *where_found = TREE_TYPE (decl);
@@ -6543,11 +6599,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      if (!from_super && from_type 
 		  && !TYPE_INTERFACE_P (type) && !is_static)
 		{
-		  parse_error_context 
-		    (qual_wfl, "Can't make a static reference to nonstatic "
-		     "variable `%s' in class `%s'",
-		     IDENTIFIER_POINTER (EXPR_WFL_NODE (qual_wfl)),
-		     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+		  static_ref_err (qual_wfl, EXPR_WFL_NODE (qual_wfl), type);
 		  return 1;
 		}
 	      from_cast = from_super = 0;
@@ -7607,7 +7659,8 @@ java_complete_tree (node)
 {
   node = java_complete_lhs (node);
   if (TREE_CODE (node) == VAR_DECL && FIELD_STATIC (node)
-      && FIELD_FINAL (node) && DECL_INITIAL (node) != NULL_TREE)
+      && FIELD_FINAL (node) && DECL_INITIAL (node) != NULL_TREE
+      && !flag_emit_xref)
     {
       tree value = DECL_INITIAL (node);
       DECL_INITIAL (node) = NULL_TREE;
@@ -8092,7 +8145,8 @@ java_complete_lhs (node)
          add_field. */
       if (IS_CLINIT (current_function_decl) 
 	  && MODIFY_EXPR_FROM_INITIALIZATION_P (node)
-	  && TREE_CODE (TREE_OPERAND (node, 0)) == VAR_DECL)
+	  && TREE_CODE (TREE_OPERAND (node, 0)) == VAR_DECL
+	  && !flag_emit_xref)
 	node = patch_initialized_static_field (node);
 
       return node;

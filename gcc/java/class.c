@@ -1655,7 +1655,8 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
       if (super_method != NULL_TREE && ! METHOD_PRIVATE (super_method))
 	{
 	  DECL_VINDEX (method_decl) = DECL_VINDEX (super_method);
-	  if (DECL_VINDEX (method_decl) == NULL_TREE)
+	  if (DECL_VINDEX (method_decl) == NULL_TREE 
+	      && !CLASS_FROM_SOURCE_P (this_class))
 	    error_with_decl (method_decl,
 			     "non-static method '%s' overrides static method");
 #if 0

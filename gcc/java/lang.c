@@ -219,8 +219,18 @@ lang_decode_option (argc, argv)
     {
       flag_wall = 1;
       flag_redundant = 1;
-      flag_not_overriding = 1;
+      return 1;
+    }
+
+  if (strcmp (p, "-Wunsupported-jdk11") == 0)
+    {
       flag_static_local_jdk1_1 = 1;
+      return 1;
+    }
+
+  if (strcmp (p, "-Wredudant-modifiers") == 0)
+    {
+      flag_redundant = 1;
       return 1;
     }
 
