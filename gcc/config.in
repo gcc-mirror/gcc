@@ -529,6 +529,9 @@
 /* Define if your assembler and linker support unaligned PC relative relocs. */
 #undef HAVE_AS_SPARC_UA_PCREL
 
+/* Define if your assembler and linker support unaligned PC relative relocs against hidden symbols. */
+#undef HAVE_AS_SPARC_UA_PCREL_HIDDEN
+
 /* Define if the assembler supports 64bit sparc. */
 #undef AS_SPARC64_FLAG
 
