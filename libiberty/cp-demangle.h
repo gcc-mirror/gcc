@@ -53,10 +53,20 @@ enum d_builtin_type_print
   D_PRINT_DEFAULT,
   /* Print as integer.  */
   D_PRINT_INT,
-  /* Print as long, with trailing `l'.  */
+  /* Print as unsigned integer, with trailing "u".  */
+  D_PRINT_UNSIGNED,
+  /* Print as long, with trailing "l".  */
   D_PRINT_LONG,
+  /* Print as unsigned long, with trailing "ul".  */
+  D_PRINT_UNSIGNED_LONG,
+  /* Print as long long, with trailing "ll".  */
+  D_PRINT_LONG_LONG,
+  /* Print as unsigned long long, with trailing "ull".  */
+  D_PRINT_UNSIGNED_LONG_LONG,
   /* Print as bool.  */
   D_PRINT_BOOL,
+  /* Print as float--put value in square brackets.  */
+  D_PRINT_FLOAT,
   /* Print in usual way, but here to detect void.  */
   D_PRINT_VOID
 };

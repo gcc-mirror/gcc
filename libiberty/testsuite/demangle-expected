@@ -3591,13 +3591,13 @@ hairyfunc5
 # This is from gcc PR 8861
 --format=gnu-v3 --no-params
 _Z1fILi1ELc120EEv1AIXplT_cviLd810000000000000000703DAD7A370C5EEE
-void f<1, 120>(A<(1) + (((int)((double)810000000000000000703DAD7A370C5)))>)
-f<1, 120>
+void f<1, (char)120>(A<(1) + ((int)((double)[810000000000000000703DAD7A370C5]))>)
+f<1, (char)120>
 #
 # This is also from gcc PR 8861
 --format=gnu-v3 --no-params
 _Z1fILi1EEv1AIXplT_cvingLf3f800000EEE
-void f<1>(A<(1) + (((int)(-((float)3f800000))))>)
+void f<1>(A<(1) + ((int)(-((float)[3f800000])))>)
 f<1>
 #
 # This is from a libstdc++ debug mode patch.
@@ -3635,7 +3635,7 @@ std::operator< <file_path, std::string>
 # More hairy qualifier handling.
 --format=gnu-v3 --no-params
 _Z9hairyfuncM1YKFPVPFrPA2_PM1XKFKPA3_ilEPcEiE
-hairyfunc(int (* const (X::** (* restrict (* volatile*(Y::*)(int) const)(char*)) [2])(long) const) [3])
+hairyfunc(int (* const (X::** (* restrict (* volatile* (Y::*)(int) const)(char*)) [2])(long) const) [3])
 hairyfunc
 #
 # Check that negative numbers are handled correctly.
@@ -3680,6 +3680,24 @@ void BBd<Foo>()::Fob::Fab() const::Gob::Gab
 _ZNK5boost6spirit5matchI13rcs_deltatextEcvMNS0_4impl5dummyEFvvEEv
 boost::spirit::match<rcs_deltatext>::operator void (boost::spirit::impl::dummy::*)()() const
 boost::spirit::match<rcs_deltatext>::operator void (boost::spirit::impl::dummy::*)()
+#
+# Multi-dimensional arrays with qualifiers on the inner dimensions.
+--format=gnu-v3 --no-params
+_Z3fooIA6_KiEvA9_KT_rVPrS4_
+void foo<int const [6]>(int const [9][6], int restrict const (* volatile restrict) [9][6])
+foo<int const [6]>
+#
+# From PR libstdc++/12736
+--format=gnu-v3 --no-params
+_Z3fooIA3_iEvRKT_
+void foo<int [3]>(int const (&) [3])
+foo<int [3]>
+#
+# Related to PR libstdc++/12736
+--format=gnu-v3 --no-params
+_Z3fooIPA3_iEvRKT_
+void foo<int (*) [3]>(int (* const&) [3])
+foo<int (*) [3]>
 #
 # Test GNU V3 constructor and destructor identification.
 # 0 means it is not a constructor/destructor.

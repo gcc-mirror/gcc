@@ -1,3 +1,51 @@
+2004-02-25  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	Taken from mainline:
+
+	2004-02-24  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.h (enum d_builtin_type_print): Add D_PRINT_UNSIGNED,
+	D_PRINT_UNSIGNED_LONG, D_PRINT_LONG_LONG,
+	D_PRINT_UNSIGNED_LONG_LONG, D_PRINT_FLOAT.
+	* cp-demangle.c (cplus_demangle_builtin_types): Change char and
+	short types to D_PRINT_DEFAULT.  Change other integer types to use
+	new D_PRINT_* values where appropriate.  Change float types to
+	D_PRINT_FLOAT.
+	(d_print_comp) [LITERAL, LITERAL_NEG]: Handle new D_PRINT_*
+	values.
+	* testsuite/demangle-expected: Adjust two test cases.
+
+	* cp-demangle.c (d_print_function_type): Print a space before the
+	parenthesis around the function type in more cases.
+	* testsuite/demangle-expected: Adjust one test case.
+
+	* cp-demangle.c (d_print_comp) [UNARY]: Don't emit extra
+	parentheses around a cast.
+	* testsuite/demangle-expected: Adjust two test cases to match new
+	output.
+
+	* cp-demangle.c (__cxa_demangle): Pass DMGL_PARAMS to d_demangle.
+
+	* cp-demangle.c (d_print_comp) [RESTRICT, VOLATILE, CONST]: Don't
+	push more than one of the same CV-qualifier on the top of the
+	stack.
+	(d_print_comp) [ARRAY_TYPE]: If the array itself is CV-qualified,
+	move the CV-qualifiers to apply to the element type instead.
+	(d_print_array_type): When checking the modifiers, keep looking
+	past ones which have been printed already.
+	* testsuite/demangle-expected: Add three test cases.
+
+	2004-02-23  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (__cxa_demangle): Adjust last patch to handle
+	empty string correctly.
+
+	* cp-demangle.c (__cxa_demangle): It is not an error if status is
+	not NULL.  It is an error if the mangled name is the same as a
+	built-in type name.
+	(main): If IN_GLIBCPP_V3 is defined, test __cxa_demangle rather
+	than cplus_demangle_v3.
+
 2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* strdup.c (strdup): Constify the argument.

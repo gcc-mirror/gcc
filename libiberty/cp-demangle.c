@@ -1748,31 +1748,33 @@ CP_STATIC_IF_GLIBCPP_V3
 const struct demangle_builtin_type_info
 cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
 {
-  /* a */ { NL ("signed char"),	NL ("signed char"),	D_PRINT_INT },
+  /* a */ { NL ("signed char"),	NL ("signed char"),	D_PRINT_DEFAULT },
   /* b */ { NL ("bool"),	NL ("boolean"),		D_PRINT_BOOL },
-  /* c */ { NL ("char"),	NL ("byte"),		D_PRINT_INT },
-  /* d */ { NL ("double"),	NL ("double"),		D_PRINT_DEFAULT },
-  /* e */ { NL ("long double"),	NL ("long double"),	D_PRINT_DEFAULT },
-  /* f */ { NL ("float"),	NL ("float"),		D_PRINT_DEFAULT },
-  /* g */ { NL ("__float128"),	NL ("__float128"),	D_PRINT_DEFAULT },
-  /* h */ { NL ("unsigned char"), NL ("unsigned char"),	D_PRINT_INT },
+  /* c */ { NL ("char"),	NL ("byte"),		D_PRINT_DEFAULT },
+  /* d */ { NL ("double"),	NL ("double"),		D_PRINT_FLOAT },
+  /* e */ { NL ("long double"),	NL ("long double"),	D_PRINT_FLOAT },
+  /* f */ { NL ("float"),	NL ("float"),		D_PRINT_FLOAT },
+  /* g */ { NL ("__float128"),	NL ("__float128"),	D_PRINT_FLOAT },
+  /* h */ { NL ("unsigned char"), NL ("unsigned char"),	D_PRINT_DEFAULT },
   /* i */ { NL ("int"),		NL ("int"),		D_PRINT_INT },
-  /* j */ { NL ("unsigned int"), NL ("unsigned"),	D_PRINT_INT },
+  /* j */ { NL ("unsigned int"), NL ("unsigned"),	D_PRINT_UNSIGNED },
   /* k */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
   /* l */ { NL ("long"),	NL ("long"),		D_PRINT_LONG },
-  /* m */ { NL ("unsigned long"), NL ("unsigned long"),	D_PRINT_LONG },
+  /* m */ { NL ("unsigned long"), NL ("unsigned long"),	D_PRINT_UNSIGNED_LONG },
   /* n */ { NL ("__int128"),	NL ("__int128"),	D_PRINT_DEFAULT },
-  /* o */ { NL ("unsigned __int128"), NL ("unsigned __int128"),	D_PRINT_DEFAULT },
+  /* o */ { NL ("unsigned __int128"), NL ("unsigned __int128"),
+	    D_PRINT_DEFAULT },
   /* p */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
   /* q */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
   /* r */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
-  /* s */ { NL ("short"),	NL ("short"),		D_PRINT_INT },
-  /* t */ { NL ("unsigned short"), NL ("unsigned short"), D_PRINT_INT },
+  /* s */ { NL ("short"),	NL ("short"),		D_PRINT_DEFAULT },
+  /* t */ { NL ("unsigned short"), NL ("unsigned short"), D_PRINT_DEFAULT },
   /* u */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
   /* v */ { NL ("void"),	NL ("void"),		D_PRINT_VOID },
-  /* w */ { NL ("wchar_t"),	NL ("char"),		D_PRINT_INT },
-  /* x */ { NL ("long long"),	NL ("long"),		D_PRINT_DEFAULT },
-  /* y */ { NL ("unsigned long long"), NL ("unsigned long long"), D_PRINT_DEFAULT },
+  /* w */ { NL ("wchar_t"),	NL ("char"),		D_PRINT_DEFAULT },
+  /* x */ { NL ("long long"),	NL ("long"),		D_PRINT_LONG_LONG },
+  /* y */ { NL ("unsigned long long"), NL ("unsigned long long"),
+	    D_PRINT_UNSIGNED_LONG_LONG },
   /* z */ { NL ("..."),		NL ("..."),		D_PRINT_DEFAULT },
 };
 
@@ -3050,6 +3052,30 @@ d_print_comp (dpi, dc)
     case DEMANGLE_COMPONENT_RESTRICT:
     case DEMANGLE_COMPONENT_VOLATILE:
     case DEMANGLE_COMPONENT_CONST:
+      {
+	struct d_print_mod *pdpm;
+
+	/* When printing arrays, it's possible to have cases where the
+	   same CV-qualifier gets pushed on the stack multiple times.
+	   We only need to print it once.  */
+
+	for (pdpm = dpi->modifiers; pdpm != NULL; pdpm = pdpm->next)
+	  {
+	    if (! pdpm->printed)
+	      {
+		if (pdpm->mod->type != DEMANGLE_COMPONENT_RESTRICT
+		    && pdpm->mod->type != DEMANGLE_COMPONENT_VOLATILE
+		    && pdpm->mod->type != DEMANGLE_COMPONENT_CONST)
+		  break;
+		if (pdpm->mod->type == dc->type)
+		  {
+		    d_print_comp (dpi, d_left (dc));
+		    return;
+		  }
+	      }
+	  }
+      }
+      /* Fall through.  */
     case DEMANGLE_COMPONENT_RESTRICT_THIS:
     case DEMANGLE_COMPONENT_VOLATILE_THIS:
     case DEMANGLE_COMPONENT_CONST_THIS:
@@ -3125,23 +3151,64 @@ d_print_comp (dpi, dc)
 
     case DEMANGLE_COMPONENT_ARRAY_TYPE:
       {
-	struct d_print_mod dpm;
+	struct d_print_mod *hold_modifiers;
+	struct d_print_mod adpm[4];
+	unsigned int i;
+	struct d_print_mod *pdpm;
 
 	/* We must pass this type down as a modifier in order to print
-	   multi-dimensional arrays correctly.  */
+	   multi-dimensional arrays correctly.  If the array itself is
+	   CV-qualified, we act as though the element type were
+	   CV-qualified.  We do this by copying the modifiers down
+	   rather than fiddling pointers, so that we don't wind up
+	   with a d_print_mod higher on the stack pointing into our
+	   stack frame after we return.  */
 
-	dpm.next = dpi->modifiers;
-	dpi->modifiers = &dpm;
-	dpm.mod = dc;
-	dpm.printed = 0;
-	dpm.templates = dpi->templates;
+	hold_modifiers = dpi->modifiers;
+
+	adpm[0].next = hold_modifiers;
+	dpi->modifiers = &adpm[0];
+	adpm[0].mod = dc;
+	adpm[0].printed = 0;
+	adpm[0].templates = dpi->templates;
+
+	i = 1;
+	pdpm = hold_modifiers;
+	while (pdpm != NULL
+	       && (pdpm->mod->type == DEMANGLE_COMPONENT_RESTRICT
+		   || pdpm->mod->type == DEMANGLE_COMPONENT_VOLATILE
+		   || pdpm->mod->type == DEMANGLE_COMPONENT_CONST))
+	  {
+	    if (! pdpm->printed)
+	      {
+		if (i >= sizeof adpm / sizeof adpm[0])
+		  {
+		    d_print_error (dpi);
+		    return;
+		  }
+
+		adpm[i] = *pdpm;
+		adpm[i].next = dpi->modifiers;
+		dpi->modifiers = &adpm[i];
+		pdpm->printed = 1;
+		++i;
+	      }
+
+	    pdpm = pdpm->next;
+	  }
 
 	d_print_comp (dpi, d_right (dc));
 
-	dpi->modifiers = dpm.next;
+	dpi->modifiers = hold_modifiers;
 
-	if (dpm.printed)
+	if (adpm[0].printed)
 	  return;
+
+	while (i > 1)
+	  {
+	    --i;
+	    d_print_mod (dpi, adpm[i].mod);
+	  }
 
 	d_print_array_type (dpi, dc, dpi->modifiers);
 
@@ -3212,15 +3279,13 @@ d_print_comp (dpi, dc)
 	d_print_expr_op (dpi, d_left (dc));
       else
 	{
-	  d_append_string_constant (dpi, "((");
+	  d_append_char (dpi, '(');
 	  d_print_cast (dpi, d_left (dc));
 	  d_append_char (dpi, ')');
 	}
       d_append_char (dpi, '(');
       d_print_comp (dpi, d_right (dc));
       d_append_char (dpi, ')');
-      if (d_left (dc)->type == DEMANGLE_COMPONENT_CAST)
-	d_append_char (dpi, ')');
       return;
 
     case DEMANGLE_COMPONENT_BINARY:
@@ -3284,62 +3349,86 @@ d_print_comp (dpi, dc)
 
     case DEMANGLE_COMPONENT_LITERAL:
     case DEMANGLE_COMPONENT_LITERAL_NEG:
-      /* For some builtin types, produce simpler output.  */
-      if (d_left (dc)->type == DEMANGLE_COMPONENT_BUILTIN_TYPE)
-	{
-	  switch (d_left (dc)->u.s_builtin.type->print)
-	    {
-	    case D_PRINT_INT:
-	      if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME)
-		{
-		  if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
-		    d_append_char (dpi, '-');
-		  d_print_comp (dpi, d_right (dc));
-		  return;
-		}
-	      break;
+      {
+	enum d_builtin_type_print tp;
 
-	    case D_PRINT_LONG:
-	      if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME)
-		{
-		  if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
-		    d_append_char (dpi, '-');
-		  d_print_comp (dpi, d_right (dc));
-		  d_append_char (dpi, 'l');
-		  return;
-		}
-	      break;
+	/* For some builtin types, produce simpler output.  */
+	tp = D_PRINT_DEFAULT;
+	if (d_left (dc)->type == DEMANGLE_COMPONENT_BUILTIN_TYPE)
+	  {
+	    tp = d_left (dc)->u.s_builtin.type->print;
+	    switch (tp)
+	      {
+	      case D_PRINT_INT:
+	      case D_PRINT_UNSIGNED:
+	      case D_PRINT_LONG:
+	      case D_PRINT_UNSIGNED_LONG:
+	      case D_PRINT_LONG_LONG:
+	      case D_PRINT_UNSIGNED_LONG_LONG:
+		if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME)
+		  {
+		    if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
+		      d_append_char (dpi, '-');
+		    d_print_comp (dpi, d_right (dc));
+		    switch (tp)
+		      {
+		      default:
+			break;
+		      case D_PRINT_UNSIGNED:
+			d_append_char (dpi, 'u');
+			break;
+		      case D_PRINT_LONG:
+			d_append_char (dpi, 'l');
+			break;
+		      case D_PRINT_UNSIGNED_LONG:
+			d_append_string_constant (dpi, "ul");
+			break;
+		      case D_PRINT_LONG_LONG:
+			d_append_string_constant (dpi, "ll");
+			break;
+		      case D_PRINT_UNSIGNED_LONG_LONG:
+			d_append_string_constant (dpi, "ull");
+			break;
+		      }
+		    return;
+		  }
+		break;
 
-	    case D_PRINT_BOOL:
-	      if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME
-		  && d_right (dc)->u.s_name.len == 1
-		  && dc->type == DEMANGLE_COMPONENT_LITERAL)
-		{
-		  switch (d_right (dc)->u.s_name.s[0])
-		    {
-		    case '0':
-		      d_append_string_constant (dpi, "false");
-		      return;
-		    case '1':
-		      d_append_string_constant (dpi, "true");
-		      return;
-		    default:
-		      break;
-		    }
-		}
-	      break;
+	      case D_PRINT_BOOL:
+		if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME
+		    && d_right (dc)->u.s_name.len == 1
+		    && dc->type == DEMANGLE_COMPONENT_LITERAL)
+		  {
+		    switch (d_right (dc)->u.s_name.s[0])
+		      {
+		      case '0':
+			d_append_string_constant (dpi, "false");
+			return;
+		      case '1':
+			d_append_string_constant (dpi, "true");
+			return;
+		      default:
+			break;
+		      }
+		  }
+		break;
 
-	    default:
-	      break;
-	    }
-	}
+	      default:
+		break;
+	      }
+	  }
 
-      d_append_char (dpi, '(');
-      d_print_comp (dpi, d_left (dc));
-      d_append_char (dpi, ')');
-      if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
-	d_append_char (dpi, '-');
-      d_print_comp (dpi, d_right (dc));
+	d_append_char (dpi, '(');
+	d_print_comp (dpi, d_left (dc));
+	d_append_char (dpi, ')');
+	if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
+	  d_append_char (dpi, '-');
+	if (tp == D_PRINT_FLOAT)
+	  d_append_char (dpi, '[');
+	d_print_comp (dpi, d_right (dc));
+	if (tp == D_PRINT_FLOAT)
+	  d_append_char (dpi, ']');
+      }
       return;
 
     default:
@@ -3549,11 +3638,13 @@ d_print_function_type (dpi, dc, mods)
 {
   int need_paren;
   int saw_mod;
+  int need_space;
   struct d_print_mod *p;
   struct d_print_mod *hold_modifiers;
 
   need_paren = 0;
   saw_mod = 0;
+  need_space = 0;
   for (p = mods; p != NULL; p = p->next)
     {
       if (p->printed)
@@ -3562,15 +3653,18 @@ d_print_function_type (dpi, dc, mods)
       saw_mod = 1;
       switch (p->mod->type)
 	{
+	case DEMANGLE_COMPONENT_POINTER:
+	case DEMANGLE_COMPONENT_REFERENCE:
+	  need_paren = 1;
+	  break;
 	case DEMANGLE_COMPONENT_RESTRICT:
 	case DEMANGLE_COMPONENT_VOLATILE:
 	case DEMANGLE_COMPONENT_CONST:
 	case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
-	case DEMANGLE_COMPONENT_POINTER:
-	case DEMANGLE_COMPONENT_REFERENCE:
 	case DEMANGLE_COMPONENT_COMPLEX:
 	case DEMANGLE_COMPONENT_IMAGINARY:
 	case DEMANGLE_COMPONENT_PTRMEM_TYPE:
+	  need_space = 1;
 	  need_paren = 1;
 	  break;
 	case DEMANGLE_COMPONENT_RESTRICT_THIS:
@@ -3589,18 +3683,14 @@ d_print_function_type (dpi, dc, mods)
 
   if (need_paren)
     {
-      switch (d_last_char (dpi))
+      if (! need_space)
 	{
-	case ' ':
-	case '(':
-	case '*':
-	  break;
-
-	default:
-	  d_append_char (dpi, ' ');
-	  break;
+	  if (d_last_char (dpi) != '('
+	      && d_last_char (dpi) != '*')
+	    need_space = 1;
 	}
-
+      if (need_space && d_last_char (dpi) != ' ')
+	d_append_char (dpi, ' ');
       d_append_char (dpi, '(');
     }
 
@@ -3643,19 +3733,19 @@ d_print_array_type (dpi, dc, mods)
       need_paren = 0;
       for (p = mods; p != NULL; p = p->next)
 	{
-	  if (p->printed)
-	    break;
-
-	  if (p->mod->type == DEMANGLE_COMPONENT_ARRAY_TYPE)
+	  if (! p->printed)
 	    {
-	      need_space = 0;
-	      break;
-	    }
-	  else
-	    {
-	      need_paren = 1;
-	      need_space = 1;
-	      break;
+	      if (p->mod->type == DEMANGLE_COMPONENT_ARRAY_TYPE)
+		{
+		  need_space = 0;
+		  break;
+		}
+	      else
+		{
+		  need_paren = 1;
+		  need_space = 1;
+		  break;
+		}
 	    }
 	}
 
@@ -3944,29 +4034,46 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
   char *demangled;
   size_t alc;
 
-  if (status == NULL)
-    return NULL;
-
   if (mangled_name == NULL)
     {
-      *status = -3;
+      if (status != NULL)
+	*status = -3;
       return NULL;
     }
 
   if (output_buffer != NULL && length == NULL)
     {
-      *status = -3;
+      if (status != NULL)
+	*status = -3;
       return NULL;
     }
 
-  demangled = d_demangle (mangled_name, DMGL_TYPES, &alc);
+  /* The specification for __cxa_demangle() is that if the mangled
+     name could be either an extern "C" identifier, or an internal
+     built-in type name, then we resolve it as the identifier.  All
+     internal built-in type names are a single lower case character.
+     Frankly, this simplistic disambiguation doesn't make sense to me,
+     but it is documented, so we implement it here.  */
+  if (IS_LOWER (mangled_name[0])
+      && mangled_name[1] == '\0'
+      && cplus_demangle_builtin_types[mangled_name[0] - 'a'].name != NULL)
+    {
+      if (status != NULL)
+	*status = -2;
+      return NULL;
+    }
+
+  demangled = d_demangle (mangled_name, DMGL_PARAMS | DMGL_TYPES, &alc);
 
   if (demangled == NULL)
     {
-      if (alc == 1)
-	*status = -1;
-      else
-	*status = -2;
+      if (status != NULL)
+	{
+	  if (alc == 1)
+	    *status = -1;
+	  else
+	    *status = -2;
+	}
       return NULL;
     }
 
@@ -3990,7 +4097,8 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
 	}
     }
 
-  *status = 0;
+  if (status != NULL)
+    *status = 0;
 
   return demangled;
 }
@@ -4296,7 +4404,11 @@ main (argc, argv)
 
 	  if (dyn_string_length (mangled) > 0)
 	    {
+#ifdef IN_GLIBCPP_V3
+	      s = __cxa_demangle (dyn_string_buf (mangled), NULL, NULL, NULL);
+#else
 	      s = cplus_demangle_v3 (dyn_string_buf (mangled), options);
+#endif
 
 	      if (s != NULL)
 		{
@@ -4328,9 +4440,16 @@ main (argc, argv)
       for (i = optind; i < argc; ++i)
 	{
 	  char *s;
+#ifdef IN_GLIBCPP_V3
+	  int status;
+#endif
 
 	  /* Attempt to demangle.  */
+#ifdef IN_GLIBCPP_V3
+	  s = __cxa_demangle (argv[i], NULL, NULL, &status);
+#else
 	  s = cplus_demangle_v3 (argv[i], options);
+#endif
 
 	  /* If it worked, print the demangled name.  */
 	  if (s != NULL)
@@ -4339,7 +4458,13 @@ main (argc, argv)
 	      free (s);
 	    }
 	  else
-	    fprintf (stderr, "Failed: %s\n", argv[i]);
+	    {
+#ifdef IN_GLIBCPP_V3
+	      fprintf (stderr, "Failed: %s (status %d)\n", argv[i], status);
+#else
+	      fprintf (stderr, "Failed: %s\n", argv[i]);
+#endif
+	    }
 	}
     }
 
