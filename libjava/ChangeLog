@@ -1,3 +1,10 @@
+2001-05-14  Andrew Haley  <aph@cambridge.redhat.com>
+
+        * libgcj.spec.in (jc1): Add EXCEPTIONSPEC.
+        * configure.host (EXCEPTIONSPEC): New.
+        * configure.in (EXCEPTIONSPEC): New.
+        * configure: Rebuilt.
+
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
 	EH merge from mainline:

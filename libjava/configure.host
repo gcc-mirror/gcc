@@ -45,6 +45,7 @@ AM_RUNTESTFLAGS=
 echo "$target"
 
 DIVIDESPEC=-fuse-divide-subroutine
+EXCEPTIONSPEC=-fnon-call-exceptions
 
 case "${host}" in
   mips-tx39-*|mipstx39-unknown-*)
