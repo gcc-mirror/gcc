@@ -1,3 +1,9 @@
+2005-02-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_spe_function_arg): Multi-reg
+	arguments go on the stack.  Do not put complex doubles in odd/even
+	pairs.
+
 2005-02-02  Steven Bosscher  <stevenb@suse.de>
 
 	* doc/invoke.texi: Update the options enabled at -O1, -O2,
