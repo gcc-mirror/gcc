@@ -1,1 +1,1 @@
-x(){register*a asm("fr1");int*v[1]={a};}
+x(){register*a asm("unknown_register");int*v[1]={a};}

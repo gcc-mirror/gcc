@@ -1,3 +1,15 @@
+1999-07-27  Michael Meissner  <meissner@cygnus.com>
+
+	* execute/ieee/fp-cmp-2.c: New file, clone from fp-cmp-1.c,
+	converting double to float.
+
+	* execute/ieee/fp-cmp-3.c: New file, clone from fp-cmp-1.c,
+	converting double to long double.
+
+	* noncompile/920507-1.c (x): Rename asm register from fr1 to
+	unknown_register, since fr1 is a legitimate register on some
+	machines.
+
 1999-06-23  Nick Clifton  <nickc@cygnus.com>
 
 	* compile/dll.c: New test case.  Check that dll attributes
