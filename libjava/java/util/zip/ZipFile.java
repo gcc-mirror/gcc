@@ -141,6 +141,13 @@ public class ZipFile implements ZipConstants
 
   public String getName () { return name; }
 
+  public int size () {
+    if (entries == null)
+      throw new IllegalStateException("ZipFile already closed");
+    else
+      return numEntries;
+  }
+
   private int readu2 () throws IOException
   {
     int byte0 = file.read();

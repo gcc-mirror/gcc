@@ -24,8 +24,8 @@ public class Adler32 implements Checksum
 {
   private static int BASE = 65521; /* largest prime smaller than 65536 */
 
-  int s1;
-  int s2;
+  private int s1;
+  private int s2;
 
   public Adler32 ()
   {

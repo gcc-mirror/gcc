@@ -69,6 +69,7 @@ public class CheckedInputStream extends FilterInputStream
 	  break;
 	n -= r;
 	s += r;
+	min = (int) Math.min(n, 1024);
 	sum.update(buf, 0, r);
       }
 
