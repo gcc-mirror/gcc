@@ -1,3 +1,8 @@
+2003-11-10  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* ada/acats/run_all.sh: Add handling of unsupported (tasking) tests.
+	Clean ups.
+
 2003-11-10  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
 
 	* gcc.dg/trampoline-1.c: New test.
