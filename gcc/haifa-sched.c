@@ -6601,6 +6601,25 @@ schedule_block (bb, rgn, rgn_n_insns)
      had different notions of what the "head" insn was.  */
   get_block_head_tail (bb, &head, &tail);
 
+  /* Interblock scheduling could have moved the original head insn from this
+     block into a proceeding block.  This may also cause schedule_block and
+     compute_forward_dependences to have different notions of what the
+     "head" insn was.
+
+     If the interblock movement happened to make this block start with
+     some notes (LOOP, EH or SETJMP) before the first real insn, then
+     HEAD will have various special notes attached to it which must be
+     removed so that we don't end up with extra copies of the notes.  */
+  if (GET_RTX_CLASS (GET_CODE (head)) == 'i')
+    {
+      rtx note;
+
+      for (note = REG_NOTES (head); note; note = XEXP (note, 1))
+	if (REG_NOTE_KIND (note) == REG_DEAD
+	    && GET_CODE (XEXP (note, 0)) == CONST_INT)
+	  remove_note (head, note);
+    }
+
   next_tail = NEXT_INSN (tail);
   prev_head = PREV_INSN (head);
 
