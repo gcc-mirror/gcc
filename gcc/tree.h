@@ -269,6 +269,10 @@ struct tree_common
    requires a diagnostic when overflows occur in constant expressions.  */
 #define TREE_CONSTANT_OVERFLOW(NODE) ((NODE)->common.static_flag)
 
+/* In an IDENTIFIER_NODE, this means that assemble_name was called with
+   this string as an argument.  */
+#define TREE_SYMBOL_REFERENCED(NODE) ((NODE)->common.static_flag)
+
 /* In an INTEGER_CST, REAL_CST, of COMPLEX_CST, this means there was an
    overflow in folding, and no warning has been issued for this subexpression.
    TREE_OVERFLOW implies TREE_CONSTANT_OVERFLOW, but not vice versa.  */
