@@ -573,7 +573,6 @@ struct tree_block
 #define TYPE_MIN_VALUE(NODE) ((NODE)->type.minval)
 #define TYPE_MAX_VALUE(NODE) ((NODE)->type.maxval)
 #define TYPE_PRECISION(NODE) ((NODE)->type.precision)
-#define TYPE_PARSE_INFO(NODE) ((NODE)->type.parse_info)
 #define TYPE_SYMTAB_ADDRESS(NODE) ((NODE)->type.symtab.address)
 #define TYPE_SYMTAB_POINTER(NODE) ((NODE)->type.symtab.pointer)
 #define TYPE_NAME(NODE) ((NODE)->type.name)
@@ -628,6 +627,10 @@ struct tree_block
    the same way that the first union alternative would be passed.  */
 #define TYPE_TRANSPARENT_UNION(NODE) ((NODE)->type.transparent_union_flag)
 
+/* Indicated that objects of this type should be layed out in as
+   compact a way as possible.  */
+#define TYPE_PACKED(NODE) ((NODE)->type.packed_flag)
+
 struct tree_type
 {
   char common[sizeof (struct tree_common)];
@@ -647,6 +650,7 @@ struct tree_type
   unsigned no_force_blk_flag : 1;
   unsigned needs_constructing_flag : 1;
   unsigned transparent_union_flag : 1;
+  unsigned packed_flag : 1;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
   unsigned lang_flag_2 : 1;
@@ -654,12 +658,11 @@ struct tree_type
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
-  /* room for 5 more bits */
+  /* room for 4 more bits */
 
   unsigned int align;
   union tree_node *pointer_to;
   union tree_node *reference_to;
-  int parse_info;
   union {int address; char *pointer; } symtab;
   union tree_node *name;
   union tree_node *minval;
