@@ -70,11 +70,12 @@ Boston, MA 02111-1307, USA.  */
 #define DWARF2_DEBUGGING_INFO 1
 #endif
 
-/* The GNU tools operate better with stabs.  Since we don't have
-   any native tools to be compatible with, default to stabs.  */
+/* The GNU tools operate better with dwarf2, and it is required by some
+   psABI's.  Since we don't have any native tools to be compatible with,
+   default to dwarf2.  */
 
 #ifndef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 #endif
 
 /* All SVR4 targets use the ELF object file format.  */
