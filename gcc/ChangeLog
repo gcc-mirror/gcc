@@ -1,3 +1,8 @@
+1999-12-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* builtins.c (expand_builtin_mathfn): Make sure not to expand the
+	argument more than once.
+
 1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* stmt.c (expand_decl): Expand upper bound of a dynamic array.
