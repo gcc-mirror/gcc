@@ -5,7 +5,7 @@ set torture_eval_before_execute {
 
     set compiler_conditional_xfail_data {
 	"ifcvt transforms 2 inlined labels to the same address" \
-	"ia64-*-*" \
+	{ "ia64-*-*" "arm*-*-*" "strongarm*-*-*" "xscale*-*-*" } \
 	{ "-O3" } \
 	{ "" }
 	}

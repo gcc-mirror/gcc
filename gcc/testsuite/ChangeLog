@@ -1,3 +1,8 @@
+2002-09-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.c-torture/execute/990208-1.x: XFAIL this at -O3 for ARM-based
+	systems.
+
 2002-09-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.c-torture/execute/ieee/mzero3.c: New test.
