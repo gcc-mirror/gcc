@@ -7594,8 +7594,9 @@ gen_decl_die (decl, context_die)
          type or a formal parameter type of some function.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	{
-	  if (DECL_NAME (decl) != NULL
-	      || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
+	  if ((DECL_NAME (decl) != NULL
+	       || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
+	      && ! DECL_ARTIFICIAL (decl))
 	    {
 	      break;
 	    }
@@ -7797,8 +7798,9 @@ dwarfout_file_scope_decl (decl, set_finalizing)
          type or a formal parameter type of some function.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	{
-	  if (DECL_NAME (decl) != NULL
-	      || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
+	  if ((DECL_NAME (decl) != NULL
+	       || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
+	      && ! DECL_ARTIFICIAL (decl))
 	    {
 	      return;
 	    }
