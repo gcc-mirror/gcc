@@ -31,6 +31,8 @@
 -- CHANGE HISTORY:
 --    18 JAN 2001   PHL   Initial version
 --    15 MAR 2001   RLB   Readied for release.
+--    03 JUN 2004   RLB   Removed constraint for S0, as the subtype has
+--                        unknown discriminants.
 
 --!
 package C392014_0 is
@@ -178,7 +180,7 @@ with C392014_1.Child;
 with C392014_2;
 procedure C392014 is
 
-    subtype S0 is C392014_0.T'Class (D => Ident_Int (17));
+    subtype S0 is C392014_0.T'Class;
     subtype S1 is C392014_1.T'Class;
 
     X0 : aliased C392014_0.T'Class := C392014_0.Create (Ident_Int (5218));
