@@ -2138,6 +2138,16 @@ ix86_epilogue (do_rtl)
 
   xops[2] = stack_pointer_rtx;
 
+  /* When -fpic, we must emit a scheduling barrier, so that the instruction
+     that restores %ebx (which is PIC_OFFSET_TABLE_REGNUM), does not get
+     moved before any instruction which implicitly uses the got.  This
+     includes any instruction which uses a SYMBOL_REF or a LABEL_REF.
+
+     Alternatively, this could be fixed by making the dependence on the
+     PIC_OFFSET_TABLE_REGNUM explicit in the RTL.  */
+  if (flag_pic)
+    emit_insn (gen_blockage ());
+
   if (nregs > 1 || ! frame_pointer_needed)
     {
       if (frame_pointer_needed)
