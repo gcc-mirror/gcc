@@ -5526,17 +5526,15 @@ finish_struct (t, fieldlist, attributes)
 
   layout_type (t);
 
-  /* Delete all zero-width bit-fields from the front of the fieldlist */
-  while (fieldlist
-	 && DECL_INITIAL (fieldlist))
-    fieldlist = TREE_CHAIN (fieldlist);
-  /* Delete all such members from the rest of the fieldlist */
-  for (x = fieldlist; x;)
-    {
-      if (TREE_CHAIN (x) && DECL_INITIAL (TREE_CHAIN (x)))
-	TREE_CHAIN (x) = TREE_CHAIN (TREE_CHAIN (x));
-      else x = TREE_CHAIN (x);
-    }
+  /* Delete all zero-width bit-fields from the fieldlist */
+  {
+    tree *fieldlistp = &fieldlist;
+    while (*fieldlistp && TREE_CODE (*fieldlistp) == FIELD_DECL)
+      if (DECL_INITIAL (*fieldlistp))
+	*fieldlistp = TREE_CHAIN (*fieldlistp);
+      else
+	fieldlistp = &TREE_CHAIN (*fieldlistp);
+  }
 
   /*  Now we have the truly final field list.
       Store it in this type and in the variants.  */

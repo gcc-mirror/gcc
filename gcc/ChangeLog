@@ -1,3 +1,12 @@
+Thu Oct  7 17:02:34 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (expand_expr, TARGET_EXPR): Set TREE_USED sooner.
+
+Thu Oct  7 17:01:58 1999  Greg McGary  <gkm@gnu.org>
+
+	* c-decl.c (finish_struct): Use simpler method of
+	removing elements of a singly-linked list.
+
 Thu Oct  7 15:23:28 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* alpha.md (peephole2's): Comment out peephole2's that generate
