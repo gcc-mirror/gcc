@@ -742,7 +742,10 @@ secondary_reload_class (class, mode, in)
 
   /* Otherwise, we can place anything into GENERAL_REGS and can put
      GENERAL_REGS into anything.  */
-  if (class == GENERAL_REGS || (regno != -1 && regno < R_BP))
+  if (class == GENERAL_REGS
+      || (regno != -1
+	  && (regno < R_BP
+	      || (regno >= R_KR (0) && regno <= R_KR (31)))))
     return NO_REGS;
 
   /* We can place 16-bit constants into a special register.  */
