@@ -1,3 +1,9 @@
+2001-11-26  DJ Delorie  <dj@redhat.com>
+
+	* configure.in: Check for alloca.h (for regex.c and putenv.c).
+	* configure: Regenerate.
+	* config.h: Add HAVE_ALLOCA_H.
+
 2001-11-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* regex.c: Check defined(__STDC__) || defined(ALMOST_STDC) ||
