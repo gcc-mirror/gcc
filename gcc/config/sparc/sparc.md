@@ -4674,7 +4674,7 @@
 (define_expand "tablejump"
   [(parallel [(set (pc) (match_operand 0 "register_operand" "r"))
 	      (use (label_ref (match_operand 1 "" "")))])]
-  ""
+  "! TARGET_MEDANY"
   "
 {
   if (GET_MODE (operands[0]) != Pmode)
@@ -4735,6 +4735,40 @@
   "TARGET_PTR64"
   "call %l0%#"
   [(set_attr "type" "uncond_branch")])
+
+;; Implement a switch statement for the medium/anywhere code model.
+;; This wouldn't be necessary if we could distinguish label refs of the jump
+;; table from other label refs.  The problem is that jump tables live in the
+;; .rodata section and thus we need to add %g4 to get their address.
+
+(define_expand "casesi"
+  [(set (match_dup 5)
+	(minus:SI (match_operand:SI 0 "register_operand" "")
+		  (match_operand:SI 1 "nonmemory_operand" "")))
+   (set (reg:CC 0)
+	(compare:CC (match_dup 5)
+		    (match_operand:SI 2 "nonmemory_operand" "")))
+   (set (pc)
+	(if_then_else (gtu (reg:CC 0)
+			   (const_int 0))
+		      (label_ref (match_operand 4 "" ""))
+		      (pc)))
+   (parallel [(set (match_dup 6) (high:DI (label_ref (match_operand 3 "" ""))))
+	      (clobber (reg:DI 1))])
+   (set (match_dup 6)
+	(lo_sum:DI (match_dup 6) (label_ref (match_dup 3))))
+   (set (match_dup 6) (plus:DI (match_dup 6) (reg:DI 4)))
+   (set (match_dup 7) (zero_extend:DI (match_dup 5)))
+   (set (match_dup 7) (ashift:DI (match_dup 7) (const_int 3)))
+   (set (match_dup 7) (mem:DI (plus:DI (match_dup 6) (match_dup 7))))
+   (set (pc) (match_dup 7))]
+  "TARGET_MEDANY"
+  "
+{
+  operands[5] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (DImode);
+  operands[7] = gen_reg_rtx (DImode);
+}")
 
 ;; This pattern recognizes the "instruction" that appears in 
 ;; a function call that wants a structure value, 
