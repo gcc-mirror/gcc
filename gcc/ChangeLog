@@ -1,3 +1,9 @@
+2005-03-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (fold_ternary): New.
+	(fold): Call fold_ternary on ternary expressions.  Remove
+	handling of ternary expressions.
+
 2005-03-03  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR tree-optimization/15784

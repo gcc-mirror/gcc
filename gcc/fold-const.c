@@ -7014,6 +7014,245 @@ fold_unary (tree expr)
     } /* switch (code) */
 }
 
+/* Fold a ternary expression EXPR.  Return the folded expression if
+   folding is successful.  Otherwise, return the original
+   expression.  */
+
+static tree
+fold_ternary (tree expr)
+{
+  const tree t = expr;
+  const tree type = TREE_TYPE (expr);
+  tree tem;
+  tree arg0 = NULL_TREE, arg1 = NULL_TREE;
+  enum tree_code code = TREE_CODE (t);
+  enum tree_code_class kind = TREE_CODE_CLASS (code);
+  int i;
+
+  gcc_assert (IS_EXPR_CODE_CLASS (kind)
+	      && TREE_CODE_LENGTH (code) == 3);
+
+  /* For now, we iterate only twice even though we are handling
+     ternary expressions.  This is because we haven't defined arg2
+     yet.  */
+  for (i = 0; i < 2; i++)
+    {
+      tree op = TREE_OPERAND (t, i);
+
+      if (op == 0)
+	continue;		/* Valid for CALL_EXPR, at least.  */
+
+      /* Strip any conversions that don't change the mode.  This is
+	 safe for every expression, except for a comparison expression
+	 because its signedness is derived from its operands.  So, in
+	 the latter case, only strip conversions that don't change the
+	 signedness.
+
+	 Note that this is done as an internal manipulation within the
+	 constant folder, in order to find the simplest representation
+	 of the arguments so that their form can be studied.  In any
+	 cases, the appropriate type conversions should be put back in
+	 the tree that will get out of the constant folder.  */
+      STRIP_NOPS (op);
+
+      if (i == 0)
+	arg0 = op;
+      else if (i == 1)
+	arg1 = op;
+    }
+
+  switch (code)
+    {
+    case COMPONENT_REF:
+      if (TREE_CODE (arg0) == CONSTRUCTOR
+	  && ! type_contains_placeholder_p (TREE_TYPE (arg0)))
+	{
+	  tree m = purpose_member (arg1, CONSTRUCTOR_ELTS (arg0));
+	  if (m)
+	    return TREE_VALUE (m);
+	}
+      return t;
+
+    case COND_EXPR:
+      /* Pedantic ANSI C says that a conditional expression is never an lvalue,
+	 so all simple results must be passed through pedantic_non_lvalue.  */
+      if (TREE_CODE (arg0) == INTEGER_CST)
+	{
+	  tem = TREE_OPERAND (t, (integer_zerop (arg0) ? 2 : 1));
+	  /* Only optimize constant conditions when the selected branch
+	     has the same type as the COND_EXPR.  This avoids optimizing
+	     away "c ? x : throw", where the throw has a void type.  */
+	  if (! VOID_TYPE_P (TREE_TYPE (tem))
+	      || VOID_TYPE_P (type))
+	    return pedantic_non_lvalue (tem);
+	  return t;
+	}
+      if (operand_equal_p (arg1, TREE_OPERAND (t, 2), 0))
+	return pedantic_omit_one_operand (type, arg1, arg0);
+
+      /* If we have A op B ? A : C, we may be able to convert this to a
+	 simpler expression, depending on the operation and the values
+	 of B and C.  Signed zeros prevent all of these transformations,
+	 for reasons given above each one.
+
+         Also try swapping the arguments and inverting the conditional.  */
+      if (COMPARISON_CLASS_P (arg0)
+	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
+					     arg1, TREE_OPERAND (arg0, 1))
+	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
+	{
+	  tem = fold_cond_expr_with_comparison (type, arg0,
+						TREE_OPERAND (t, 1),
+						TREE_OPERAND (t, 2));
+	  if (tem)
+	    return tem;
+	}
+
+      if (COMPARISON_CLASS_P (arg0)
+	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
+					     TREE_OPERAND (t, 2),
+					     TREE_OPERAND (arg0, 1))
+	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 2)))))
+	{
+	  tem = invert_truthvalue (arg0);
+	  if (COMPARISON_CLASS_P (tem))
+	    {
+	      tem = fold_cond_expr_with_comparison (type, tem,
+						    TREE_OPERAND (t, 2),
+						    TREE_OPERAND (t, 1));
+	      if (tem)
+		return tem;
+	    }
+	}
+
+      /* If the second operand is simpler than the third, swap them
+	 since that produces better jump optimization results.  */
+      if (tree_swap_operands_p (TREE_OPERAND (t, 1),
+				TREE_OPERAND (t, 2), false))
+	{
+	  /* See if this can be inverted.  If it can't, possibly because
+	     it was a floating-point inequality comparison, don't do
+	     anything.  */
+	  tem = invert_truthvalue (arg0);
+
+	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
+	    return fold (build3 (code, type, tem,
+				 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1)));
+	}
+
+      /* Convert A ? 1 : 0 to simply A.  */
+      if (integer_onep (TREE_OPERAND (t, 1))
+	  && integer_zerop (TREE_OPERAND (t, 2))
+	  /* If we try to convert TREE_OPERAND (t, 0) to our type, the
+	     call to fold will try to move the conversion inside
+	     a COND, which will recurse.  In that case, the COND_EXPR
+	     is probably the best choice, so leave it alone.  */
+	  && type == TREE_TYPE (arg0))
+	return pedantic_non_lvalue (arg0);
+
+      /* Convert A ? 0 : 1 to !A.  This prefers the use of NOT_EXPR
+	 over COND_EXPR in cases such as floating point comparisons.  */
+      if (integer_zerop (TREE_OPERAND (t, 1))
+	  && integer_onep (TREE_OPERAND (t, 2))
+	  && truth_value_p (TREE_CODE (arg0)))
+	return pedantic_non_lvalue (fold_convert (type,
+						  invert_truthvalue (arg0)));
+
+      /* A < 0 ? <sign bit of A> : 0 is simply (A & <sign bit of A>).  */
+      if (TREE_CODE (arg0) == LT_EXPR
+          && integer_zerop (TREE_OPERAND (arg0, 1))
+          && integer_zerop (TREE_OPERAND (t, 2))
+          && (tem = sign_bit_p (TREE_OPERAND (arg0, 0), arg1)))
+        return fold_convert (type, fold (build2 (BIT_AND_EXPR,
+						 TREE_TYPE (tem), tem, arg1)));
+
+      /* (A >> N) & 1 ? (1 << N) : 0 is simply A & (1 << N).  A & 1 was
+	 already handled above.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && integer_onep (TREE_OPERAND (arg0, 1))
+	  && integer_zerop (TREE_OPERAND (t, 2))
+	  && integer_pow2p (arg1))
+	{
+	  tree tem = TREE_OPERAND (arg0, 0);
+	  STRIP_NOPS (tem);
+	  if (TREE_CODE (tem) == RSHIFT_EXPR
+              && TREE_CODE (TREE_OPERAND (tem, 1)) == INTEGER_CST
+              && (unsigned HOST_WIDE_INT) tree_log2 (arg1) ==
+	         TREE_INT_CST_LOW (TREE_OPERAND (tem, 1)))
+	    return fold (build2 (BIT_AND_EXPR, type,
+				 TREE_OPERAND (tem, 0), arg1));
+	}
+
+      /* A & N ? N : 0 is simply A & N if N is a power of two.  This
+	 is probably obsolete because the first operand should be a
+	 truth value (that's why we have the two cases above), but let's
+	 leave it in until we can confirm this for all front-ends.  */
+      if (integer_zerop (TREE_OPERAND (t, 2))
+	  && TREE_CODE (arg0) == NE_EXPR
+	  && integer_zerop (TREE_OPERAND (arg0, 1))
+	  && integer_pow2p (arg1)
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == BIT_AND_EXPR
+	  && operand_equal_p (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1),
+			      arg1, OEP_ONLY_CONST))
+	return pedantic_non_lvalue (fold_convert (type,
+						  TREE_OPERAND (arg0, 0)));
+
+      /* Convert A ? B : 0 into A && B if A and B are truth values.  */
+      if (integer_zerop (TREE_OPERAND (t, 2))
+	  && truth_value_p (TREE_CODE (arg0))
+	  && truth_value_p (TREE_CODE (arg1)))
+	return fold (build2 (TRUTH_ANDIF_EXPR, type, arg0, arg1));
+
+      /* Convert A ? B : 1 into !A || B if A and B are truth values.  */
+      if (integer_onep (TREE_OPERAND (t, 2))
+	  && truth_value_p (TREE_CODE (arg0))
+	  && truth_value_p (TREE_CODE (arg1)))
+	{
+	  /* Only perform transformation if ARG0 is easily inverted.  */
+	  tem = invert_truthvalue (arg0);
+	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
+	    return fold (build2 (TRUTH_ORIF_EXPR, type, tem, arg1));
+	}
+
+      /* Convert A ? 0 : B into !A && B if A and B are truth values.  */
+      if (integer_zerop (arg1)
+	  && truth_value_p (TREE_CODE (arg0))
+	  && truth_value_p (TREE_CODE (TREE_OPERAND (t, 2))))
+	{
+	  /* Only perform transformation if ARG0 is easily inverted.  */
+	  tem = invert_truthvalue (arg0);
+	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
+	    return fold (build2 (TRUTH_ANDIF_EXPR, type, tem,
+				 TREE_OPERAND (t, 2)));
+	}
+
+      /* Convert A ? 1 : B into A || B if A and B are truth values.  */
+      if (integer_onep (arg1)
+	  && truth_value_p (TREE_CODE (arg0))
+	  && truth_value_p (TREE_CODE (TREE_OPERAND (t, 2))))
+	return fold (build2 (TRUTH_ORIF_EXPR, type, arg0,
+			     TREE_OPERAND (t, 2)));
+
+      return t;
+
+    case CALL_EXPR:
+      /* Check for a built-in function.  */
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+	  && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0))
+	      == FUNCTION_DECL)
+	  && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
+	{
+	  tree tmp = fold_builtin (t, false);
+	  if (tmp)
+	    return tmp;
+	}
+      return t;
+
+    default:
+      return t;
+    } /* switch (code) */
+}
+
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -7052,6 +7291,8 @@ fold (tree expr)
 	{
 	case 1:
 	  return fold_unary (expr);
+	case 3:
+	  return fold_ternary (expr);
 	default:
 	  break;
 	}
@@ -7194,16 +7435,6 @@ fold (tree expr)
     {
     case CONST_DECL:
       return fold (DECL_INITIAL (t));
-
-    case COMPONENT_REF:
-      if (TREE_CODE (arg0) == CONSTRUCTOR
-	  && ! type_contains_placeholder_p (TREE_TYPE (arg0)))
-	{
-	  tree m = purpose_member (arg1, CONSTRUCTOR_ELTS (arg0));
-	  if (m)
-	    return TREE_VALUE (m);
-	}
-      return t;
 
     case RANGE_EXPR:
       if (TREE_CONSTANT (t) != wins)
@@ -9662,168 +9893,6 @@ fold (tree expr)
 
       return t;
 
-    case COND_EXPR:
-      /* Pedantic ANSI C says that a conditional expression is never an lvalue,
-	 so all simple results must be passed through pedantic_non_lvalue.  */
-      if (TREE_CODE (arg0) == INTEGER_CST)
-	{
-	  tem = TREE_OPERAND (t, (integer_zerop (arg0) ? 2 : 1));
-	  /* Only optimize constant conditions when the selected branch
-	     has the same type as the COND_EXPR.  This avoids optimizing
-	     away "c ? x : throw", where the throw has a void type.  */
-	  if (! VOID_TYPE_P (TREE_TYPE (tem))
-	      || VOID_TYPE_P (type))
-	    return pedantic_non_lvalue (tem);
-	  return t;
-	}
-      if (operand_equal_p (arg1, TREE_OPERAND (t, 2), 0))
-	return pedantic_omit_one_operand (type, arg1, arg0);
-
-      /* If we have A op B ? A : C, we may be able to convert this to a
-	 simpler expression, depending on the operation and the values
-	 of B and C.  Signed zeros prevent all of these transformations,
-	 for reasons given above each one.
-
-         Also try swapping the arguments and inverting the conditional.  */
-      if (COMPARISON_CLASS_P (arg0)
-	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
-					     arg1, TREE_OPERAND (arg0, 1))
-	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
-	{
-	  tem = fold_cond_expr_with_comparison (type, arg0,
-						TREE_OPERAND (t, 1),
-						TREE_OPERAND (t, 2));
-	  if (tem)
-	    return tem;
-	}
-
-      if (COMPARISON_CLASS_P (arg0)
-	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
-					     TREE_OPERAND (t, 2),
-					     TREE_OPERAND (arg0, 1))
-	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 2)))))
-	{
-	  tem = invert_truthvalue (arg0);
-	  if (COMPARISON_CLASS_P (tem))
-	    {
-	      tem = fold_cond_expr_with_comparison (type, tem,
-						    TREE_OPERAND (t, 2),
-						    TREE_OPERAND (t, 1));
-	      if (tem)
-		return tem;
-	    }
-	}
-
-      /* If the second operand is simpler than the third, swap them
-	 since that produces better jump optimization results.  */
-      if (tree_swap_operands_p (TREE_OPERAND (t, 1),
-				TREE_OPERAND (t, 2), false))
-	{
-	  /* See if this can be inverted.  If it can't, possibly because
-	     it was a floating-point inequality comparison, don't do
-	     anything.  */
-	  tem = invert_truthvalue (arg0);
-
-	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold (build3 (code, type, tem,
-				 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1)));
-	}
-
-      /* Convert A ? 1 : 0 to simply A.  */
-      if (integer_onep (TREE_OPERAND (t, 1))
-	  && integer_zerop (TREE_OPERAND (t, 2))
-	  /* If we try to convert TREE_OPERAND (t, 0) to our type, the
-	     call to fold will try to move the conversion inside
-	     a COND, which will recurse.  In that case, the COND_EXPR
-	     is probably the best choice, so leave it alone.  */
-	  && type == TREE_TYPE (arg0))
-	return pedantic_non_lvalue (arg0);
-
-      /* Convert A ? 0 : 1 to !A.  This prefers the use of NOT_EXPR
-	 over COND_EXPR in cases such as floating point comparisons.  */
-      if (integer_zerop (TREE_OPERAND (t, 1))
-	  && integer_onep (TREE_OPERAND (t, 2))
-	  && truth_value_p (TREE_CODE (arg0)))
-	return pedantic_non_lvalue (fold_convert (type,
-						  invert_truthvalue (arg0)));
-
-      /* A < 0 ? <sign bit of A> : 0 is simply (A & <sign bit of A>).  */
-      if (TREE_CODE (arg0) == LT_EXPR
-          && integer_zerop (TREE_OPERAND (arg0, 1))
-          && integer_zerop (TREE_OPERAND (t, 2))
-          && (tem = sign_bit_p (TREE_OPERAND (arg0, 0), arg1)))
-        return fold_convert (type, fold (build2 (BIT_AND_EXPR,
-						 TREE_TYPE (tem), tem, arg1)));
-
-      /* (A >> N) & 1 ? (1 << N) : 0 is simply A & (1 << N).  A & 1 was
-	 already handled above.  */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && integer_onep (TREE_OPERAND (arg0, 1))
-	  && integer_zerop (TREE_OPERAND (t, 2))
-	  && integer_pow2p (arg1))
-	{
-	  tree tem = TREE_OPERAND (arg0, 0);
-	  STRIP_NOPS (tem);
-	  if (TREE_CODE (tem) == RSHIFT_EXPR
-              && TREE_CODE (TREE_OPERAND (tem, 1)) == INTEGER_CST
-              && (unsigned HOST_WIDE_INT) tree_log2 (arg1) ==
-	         TREE_INT_CST_LOW (TREE_OPERAND (tem, 1)))
-	    return fold (build2 (BIT_AND_EXPR, type,
-				 TREE_OPERAND (tem, 0), arg1));
-	}
-
-      /* A & N ? N : 0 is simply A & N if N is a power of two.  This
-	 is probably obsolete because the first operand should be a
-	 truth value (that's why we have the two cases above), but let's
-	 leave it in until we can confirm this for all front-ends.  */
-      if (integer_zerop (TREE_OPERAND (t, 2))
-	  && TREE_CODE (arg0) == NE_EXPR
-	  && integer_zerop (TREE_OPERAND (arg0, 1))
-	  && integer_pow2p (arg1)
-	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == BIT_AND_EXPR
-	  && operand_equal_p (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1),
-			      arg1, OEP_ONLY_CONST))
-	return pedantic_non_lvalue (fold_convert (type,
-						  TREE_OPERAND (arg0, 0)));
-
-      /* Convert A ? B : 0 into A && B if A and B are truth values.  */
-      if (integer_zerop (TREE_OPERAND (t, 2))
-	  && truth_value_p (TREE_CODE (arg0))
-	  && truth_value_p (TREE_CODE (arg1)))
-	return fold (build2 (TRUTH_ANDIF_EXPR, type, arg0, arg1));
-
-      /* Convert A ? B : 1 into !A || B if A and B are truth values.  */
-      if (integer_onep (TREE_OPERAND (t, 2))
-	  && truth_value_p (TREE_CODE (arg0))
-	  && truth_value_p (TREE_CODE (arg1)))
-	{
-	  /* Only perform transformation if ARG0 is easily inverted.  */
-	  tem = invert_truthvalue (arg0);
-	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold (build2 (TRUTH_ORIF_EXPR, type, tem, arg1));
-	}
-
-      /* Convert A ? 0 : B into !A && B if A and B are truth values.  */
-      if (integer_zerop (arg1)
-	  && truth_value_p (TREE_CODE (arg0))
-	  && truth_value_p (TREE_CODE (TREE_OPERAND (t, 2))))
-	{
-	  /* Only perform transformation if ARG0 is easily inverted.  */
-	  tem = invert_truthvalue (arg0);
-	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    return fold (build2 (TRUTH_ANDIF_EXPR, type, tem,
-				 TREE_OPERAND (t, 2)));
-	}
-
-      /* Convert A ? 1 : B into A || B if A and B are truth values.  */
-      if (integer_onep (arg1)
-	  && truth_value_p (TREE_CODE (arg0))
-	  && truth_value_p (TREE_CODE (TREE_OPERAND (t, 2))))
-	return fold (build2 (TRUTH_ORIF_EXPR, type, arg0,
-			     TREE_OPERAND (t, 2)));
-
-      return t;
-
     case COMPOUND_EXPR:
       /* When pedantic, a compound expression can be neither an lvalue
 	 nor an integer constant expression.  */
@@ -9837,19 +9906,6 @@ fold (tree expr)
     case COMPLEX_EXPR:
       if (wins)
 	return build_complex (type, arg0, arg1);
-      return t;
-
-    case CALL_EXPR:
-      /* Check for a built-in function.  */
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
-	  && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0))
-	      == FUNCTION_DECL)
-	  && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-	{
-	  tree tmp = fold_builtin (t, false);
-	  if (tmp)
-	    return tmp;
-	}
       return t;
 
     default:
