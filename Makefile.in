@@ -18,10 +18,11 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-# Tell GNU make 2.79 not to run the top level in parallel.  This 
+# Tell GNU make 3.79 not to run the top level in parallel.  This 
 # prevents contention for $builddir/$target/config.cache, as well
 # as minimizing scatter in file system caches.
-.NOTPARALLEL:
+NOTPARALLEL = .NOTPARALLEL
+$(NOTPARALLEL):
 
 srcdir = .
 
@@ -1121,8 +1122,11 @@ clean-target-libgcc:
 
 # Check target.
 
-.PHONY: check
-check: $(CHECK_MODULES) \
+.PHONY: check do-check
+check:
+	$(MAKE) do-check NOTPARALLEL=parallel-ok
+
+do-check: $(CHECK_MODULES) \
 	$(CHECK_TARGET_MODULES) \
 	$(CHECK_X11_MODULES) \
 	check-gcc

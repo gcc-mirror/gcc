@@ -1,3 +1,10 @@
+2002-03-12  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (NOTPARALLEL): New.  Use it instead of explicit
+	.NOTPARALLEL tag.
+	(do-check): Rename from check.
+	(check): Allow parallel check.
+
 2002-03-12  Bob Wilson  <bob.wilson@acm.org>
 
 	* MAINTAINERS: Add myself as maintainer for xtensa port.
