@@ -3,3 +3,7 @@
 #define TARGET_DEFAULT 5
 
 #include "m68k/isi.h"
+
+/* Don't try using XFmode.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 64
