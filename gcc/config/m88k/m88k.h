@@ -204,9 +204,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"19 Mar 1992"
+#define VERSION_INFO2	"20 Mar 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.0.3.5 19 Mar 1992 12:40:46"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.0.3.6 20 Mar 1992 08:33:40"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -487,11 +487,7 @@ extern char * reg_names[];
 #define CONDITIONAL_REGISTER_USAGE			\
   {							\
     if (flag_pic)					\
-      {							\
-	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
-	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
-	global_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
-      }							\
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
   }
 
 /* These interfaces that don't apply to the m88000.  */
@@ -1433,8 +1429,8 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 			      : "section\t .tdesc,\"x\"")
 
 /* These must be constant strings for crtstuff.c.  */
-#define CTORS_SECTION_ASM_OP "section\t .ctors,\"d\""
-#define DTORS_SECTION_ASM_OP "section\t .dtors,\"d\""
+#define CTORS_SECTION_ASM_OP	"section\t .ctors,\"d\""
+#define DTORS_SECTION_ASM_OP	"section\t .dtors,\"d\""
 #define INIT_SECTION_ASM_OP	"section\t .init,\"x\""
 #define FINI_SECTION_ASM_OP	"section\t .fini,\"x\""
 
