@@ -48,6 +48,10 @@
 #define GGC_ANY_MAGIC		((unsigned int)0xa9bacbdc)
 #define GGC_ANY_MAGIC_MARK	((unsigned int)0xa9bacbdc | 1)
 
+/* Constants for general use.  */
+
+char *empty_string;
+
 /* Global lists of roots, rtxs, and trees.  */
 
 struct ggc_rtx
@@ -142,6 +146,9 @@ init_ggc PROTO ((void))
   dump = fopen ("zgcdump", "w");
   setlinebuf (dump);
 #endif
+
+  ggc_alloc_string ("", 0);
+  ggc_add_string_root (&empty_string, 1);
 }
 
 /* Start a new GGC context.  Memory allocated in previous contexts

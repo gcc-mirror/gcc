@@ -1540,7 +1540,7 @@ static void
 init_arc_profiler ()
 {
   /* Generate and save a copy of this so it can be shared.  */
-  char *name = xmalloc (20);
+  char *name = ggc_alloc_string (NULL, 20);
   ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
   profiler_label = gen_rtx_SYMBOL_REF (Pmode, name);
   ggc_add_rtx_root (&profiler_label, 1);
@@ -1678,10 +1678,11 @@ output_func_start_profiler ()
   expand_function_start (fndecl, 0);
 
   /* Actually generate the code to call __bb_init_func. */
-  name = xmalloc (20);
+  name = ggc_alloc_string (NULL, 20);
   ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 0);
   table_address = force_reg (Pmode, gen_rtx_SYMBOL_REF (Pmode, name));
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_init_func"), 0,
+  emit_library_call (gen_rtx_SYMBOL_REF 
+		     (Pmode, ggc_alloc_string ("__bb_init_func", 14)), 0,
 		     mode, 1, table_address, Pmode);
 
   expand_function_end (input_filename, lineno, 0);
