@@ -294,8 +294,8 @@ static int contains		PARAMS ((rtx, varray_type));
 static void emit_return_into_block PARAMS ((basic_block, rtx));
 #endif
 static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
-static int purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
-				      struct hash_table *));
+static bool purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
+				       struct hash_table *));
 static void purge_single_hard_subreg_set PARAMS ((rtx));
 #ifdef HAVE_epilogue
 static void keep_stack_depressed PARAMS ((rtx));
@@ -305,7 +305,7 @@ static struct hash_entry *insns_for_mem_newfunc PARAMS ((struct hash_entry *,
 							 struct hash_table *,
 							 hash_table_key));
 static unsigned long insns_for_mem_hash PARAMS ((hash_table_key));
-static boolean insns_for_mem_comp PARAMS ((hash_table_key, hash_table_key));
+static bool insns_for_mem_comp PARAMS ((hash_table_key, hash_table_key));
 static int insns_for_mem_walk   PARAMS ((rtx *, void *));
 static void compute_insns_for_mem PARAMS ((rtx, rtx, struct hash_table *));
 static void mark_temp_slot PARAMS ((struct temp_slot *));
@@ -2971,7 +2971,7 @@ static rtx purge_addressof_replacements;
    the stack.  If the function returns FALSE then the replacement could not
    be made.  */
 
-static /* boolean */ int
+static bool
 purge_addressof_1 (loc, insn, force, store, ht)
      rtx *loc;
      rtx insn;
@@ -2982,14 +2982,14 @@ purge_addressof_1 (loc, insn, force, store, ht)
   RTX_CODE code;
   int i, j;
   const char *fmt;
-  int /*boolean */ result = /* true */ 1;
+  bool result = true;
 
   /* Re-start here to avoid recursion in common cases.  */
  restart:
 
   x = *loc;
   if (x == 0)
-    return 1;
+    return true;
 
   code = GET_CODE (x);
 
@@ -3012,7 +3012,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 
       if (validate_change (insn, loc, sub, 0)
 	  || validate_replace_rtx (x, sub, insn))
-	return 1;
+	return true;
 
       start_sequence ();
       sub = force_operand (sub, NULL_RTX);
@@ -3023,7 +3023,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
       insns = gen_sequence ();
       end_sequence ();
       emit_insn_before (insns, insn);
-      return 1;
+      return true;
     }
 
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
@@ -3057,7 +3057,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		if (rtx_equal_p (x, XEXP (tem, 0)))
 		  {
 		    *loc = XEXP (XEXP (tem, 1), 0);
-		    return 1;
+		    return true;
 		  }
 
 	      /* See comment for purge_addressof_replacements.  */
@@ -3097,7 +3097,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		      z = gen_lowpart (GET_MODE (x), z);
 
 		    *loc = z;
-		    return 1;
+		    return true;
 		  }
 
 	      /* Sometimes we may not be able to find the replacement.  For
@@ -3107,7 +3107,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		 generate an example of this siutation.  Rather than complain
 		 we return false, which will prompt our caller to remove the
 		 offending note.  */
-	      return /* false */ 0;
+	      return false;
 	    }
 
 	  size_x = GET_MODE_BITSIZE (GET_MODE (x));
@@ -3193,7 +3193,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 				      purge_bitfield_addressof_replacements));
 
 	      /* We replaced with a reg -- all done.  */
-	      return 1;
+	      return true;
 	    }
 	}
 
@@ -3211,13 +3211,13 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		if (rtx_equal_p (XEXP (x, 0), XEXP (tem, 0)))
 		  {
 		    XEXP (XEXP (tem, 1), 0) = sub;
-		    return 1;
+		    return true;
 		  }
 	      purge_addressof_replacements
 		= gen_rtx (EXPR_LIST, VOIDmode, XEXP (x, 0),
 			   gen_rtx_EXPR_LIST (VOIDmode, sub,
 					      purge_addressof_replacements));
-	      return 1;
+	      return true;
 	    }
 	  goto restart;
 	}
@@ -3228,7 +3228,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
   else if (code == ADDRESSOF)
     {
       put_addressof_into_stack (x, ht);
-      return 1;
+      return true;
     }
   else if (code == SET)
     {
@@ -3282,7 +3282,7 @@ insns_for_mem_hash (k)
 
 /* Return non-zero if K1 and K2 (two REGs) are the same.  */
 
-static boolean
+static bool
 insns_for_mem_comp (k1, k2)
      hash_table_key k1;
      hash_table_key k2;

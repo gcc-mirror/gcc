@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* #defines that need visibility everywhere.  */
 
-#define FALSE 0
-#define TRUE 1
-
 #define USE_STDARGS 1
 #define USE_PROTOTYPES 1
 
@@ -59,7 +56,6 @@ extern char *alloca ();
 #include "tm.h"
 
 /* Arguments to use with `exit'.  */
-
 #define SUCCESS_EXIT_CODE	0
 #define FATAL_EXIT_CODE		12
 

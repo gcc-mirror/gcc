@@ -22,10 +22,6 @@ Boston, MA 02111-1307, USA.  */
    running Lynx.  This file should not be specified as $xm_file itself;
    instead $xm_file should be CPU/xm-lynx.h, which should include this one.  */
 
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
-
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33

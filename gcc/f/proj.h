@@ -35,28 +35,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  #error "You have to use gcc 2.x to build g77 (might be fixed in g77-0.6)."
 #endif
 
-/* Include files everyone gets.  <assert.h> is needed for assert().
-   <stddef.h> is needed for offsetof, but technically also NULL,
-   size_t, ptrdiff_t, and so on.  */
+/* Include files everyone gets.  <assert.h> is needed for assert().  */
 
 #include "assert.h"
-
-#if HAVE_STDDEF_H
-#include <stddef.h>
-#endif
-
-/* Generally useful definitions. */
-
-typedef enum
-  {
-#if !defined(false) || !defined(true)
-    false = 0, true = 1,
-#endif
-#if !defined(FALSE) || !defined(TRUE)
-    FALSE = 0, TRUE = 1,
-#endif
-    Doggone_Trailing_Comma_Dont_Work = 1
-  } bool;
 
 #ifndef UNUSED	/* Compile with -DUNUSED= if cc doesn't support this. */
 #define UNUSED ATTRIBUTE_UNUSED

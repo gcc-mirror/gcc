@@ -22,9 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* #defines that need visibility everywhere.  */
 
-#define FALSE 0
-#define TRUE 1
-
 #define USE_STDARGS 1
 #define USE_PROTOTYPES 1
 

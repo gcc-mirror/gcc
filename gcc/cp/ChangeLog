@@ -1,3 +1,7 @@
+2001-03-15  Zack Weinberg  <zackw@stanford.edu>
+
+	* decl.c: Replace all uses of 'boolean' with 'bool'.
+
 2001-03-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* except.c: Revert previous patch.

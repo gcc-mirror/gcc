@@ -41,7 +41,7 @@ hash_table_init_n (table, newfunc, hash, comp, size)
 					    struct hash_table *,
 					    hash_table_key));
      unsigned long (*hash) PARAMS ((hash_table_key));
-     boolean (*comp) PARAMS ((hash_table_key, hash_table_key));
+     bool (*comp) PARAMS ((hash_table_key, hash_table_key));
      unsigned int size;
 {
   unsigned int alloc;
@@ -66,7 +66,7 @@ hash_table_init (table, newfunc, hash, comp)
 					    struct hash_table *,
 					    hash_table_key));
      unsigned long (*hash) PARAMS ((hash_table_key));
-     boolean (*comp) PARAMS ((hash_table_key, hash_table_key));
+     bool (*comp) PARAMS ((hash_table_key, hash_table_key));
 {
   hash_table_init_n (table, newfunc, hash, comp, DEFAULT_SIZE);
 }
@@ -87,7 +87,7 @@ struct hash_entry *
 hash_lookup (table, key, create, copy)
      struct hash_table *table;
      hash_table_key key;
-     boolean create;
+     bool create;
      hash_table_key (*copy) PARAMS ((struct obstack* memory, 
 				     hash_table_key key));
 {
@@ -150,7 +150,7 @@ hash_allocate (table, size)
 void
 hash_traverse (table, func, info)
      struct hash_table *table;
-     boolean (*func) PARAMS ((struct hash_entry *, hash_table_key));
+     bool (*func) PARAMS ((struct hash_entry *, hash_table_key));
      PTR info;
 {
   unsigned int i;
@@ -193,7 +193,7 @@ string_hash (k)
 /* Compare two strings.  Return non-zero iff the two strings are
    the same.  */
 
-boolean
+bool
 string_compare (k1, k2)
      hash_table_key k1;
      hash_table_key k2;

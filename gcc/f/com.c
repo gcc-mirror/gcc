@@ -4519,21 +4519,21 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 
     case FFEINTRIN_impBTEST:
       {
-	ffetargetLogical1 true;
-	ffetargetLogical1 false;
+	ffetargetLogical1 target_true;
+	ffetargetLogical1 target_false;
 	tree true_tree;
 	tree false_tree;
 
-	ffetarget_logical1 (&true, TRUE);
-	ffetarget_logical1 (&false, FALSE);
-	if (true == 1)
+	ffetarget_logical1 (&target_true, TRUE);
+	ffetarget_logical1 (&target_false, FALSE);
+	if (target_true == 1)
 	  true_tree = convert (tree_type, integer_one_node);
 	else
-	  true_tree = convert (tree_type, build_int_2 (true, 0));
-	if (false == 0)
+	  true_tree = convert (tree_type, build_int_2 (target_true, 0));
+	if (target_false == 0)
 	  false_tree = convert (tree_type, integer_zero_node);
 	else
-	  false_tree = convert (tree_type, build_int_2 (false, 0));
+	  false_tree = convert (tree_type, build_int_2 (target_false, 0));
 
 	return
 	  ffecom_3 (COND_EXPR, tree_type,

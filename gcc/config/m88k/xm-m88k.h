@@ -20,11 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
-
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR 8
 #define HOST_BITS_PER_SHORT 16

@@ -321,7 +321,7 @@ static void
 identify_predicable_attribute ()
 {
   struct queue_elem *elem;
-  char *true, *false;
+  char *p_true, *p_false;
   const char *value;
   size_t len;
 
@@ -338,21 +338,21 @@ identify_predicable_attribute ()
  found:
   value = XSTR (elem->data, 1);
   len = strlen (value);
-  false = (char *) xmalloc (len + 1);
-  memcpy (false, value, len + 1);
+  p_false = (char *) xmalloc (len + 1);
+  memcpy (p_false, value, len + 1);
 
-  true = strchr (false, ',');
-  if (true == NULL || strchr (++true, ',') != NULL)
+  p_true = strchr (p_false, ',');
+  if (p_true == NULL || strchr (++p_true, ',') != NULL)
     {
       message_with_line (elem->lineno,
 			 "Attribute `predicable' is not a boolean");
       errors = 1;
       return;
     }
-  true[-1] = '\0';
+  p_true[-1] = '\0';
 
-  predicable_true = true;
-  predicable_false = false;
+  predicable_true = p_true;
+  predicable_false = p_false;
 
   switch (GET_CODE (XEXP (elem->data, 2)))
     {
@@ -373,9 +373,9 @@ identify_predicable_attribute ()
       return;
     }
 
-  if (strcmp (value, true) == 0)
+  if (strcmp (value, p_true) == 0)
     predicable_default = 1;
-  else if (strcmp (value, false) == 0)
+  else if (strcmp (value, p_false) == 0)
     predicable_default = 0;
   else
     {

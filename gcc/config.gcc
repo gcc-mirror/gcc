@@ -1004,7 +1004,7 @@ i[34567]86-ibm-aix*)		# IBM PS/2 running AIX
 		tm_file=i386/aix386ng.h
 		use_collect2=yes
 	fi
-	xm_file="xm-alloca.h i386/xm-aix.h ${xm_file}"
+	xm_file="xm-alloca.h ${xm_file}"
 	xm_defines=USG
 	xmake_file=i386/x-aix
 	;;
@@ -1255,7 +1255,6 @@ i[34567]86-*-osfrose*)		# 386 using OSF/rose
 		tm_file=i386/osfrose.h
 		use_collect2=yes
 	fi
-	xm_file="i386/xm-osf.h ${xm_file}"
 	xmake_file=i386/x-osfrose
 	tmake_file=i386/t-osf
 	extra_objs=halfpic.o

@@ -47,7 +47,7 @@ static tree push_jvm_slot PARAMS ((int, tree));
 static tree lookup_name_current_level PARAMS ((tree));
 static tree push_promoted_type PARAMS ((const char *, tree));
 static struct binding_level *make_binding_level PARAMS ((void));
-static boolean emit_init_test_initialization PARAMS ((struct hash_entry *,
+static bool emit_init_test_initialization PARAMS ((struct hash_entry *,
 						      hash_table_key));
 static tree create_primitive_vtable PARAMS ((const char *));
 static tree check_local_named_variable PARAMS ((tree, tree, int, int *));
@@ -1690,7 +1690,7 @@ build_result_decl (fndecl)
 /* Called for every element in DECL_FUNCTION_INIT_TEST_TABLE in order
    to emit initialization code for each test flag.  */
 
-static boolean
+static bool
 emit_init_test_initialization (entry, key)
   struct hash_entry *entry;
   hash_table_key key ATTRIBUTE_UNUSED;

@@ -1,3 +1,9 @@
+2001-03-15  Zack Weinberg  <zackw@stanford.edu>
+
+	* proj.h, intdoc.c: Delete 'bool' type.  Don't include
+	stddef.h here.
+	* com.c: Rename variables named 'true' and/or 'false'.
+
 Wed Mar 14 09:29:27 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (ffecom_member_phase_2): Use COPY_DECL_RTL,

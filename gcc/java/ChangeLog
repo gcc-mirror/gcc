@@ -1,3 +1,8 @@
+2001-03-15  Zack Weinberg  <zackw@stanford.edu>
+
+	* class.c, decl.c, java-tree.h: Replace all uses of 'boolean' with
+	'bool'.
+
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_static_field_ref): Likewise.

@@ -7957,21 +7957,21 @@ expand_expr (exp, target, tmode, modifier)
 	  && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 1), 0))
 	      == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 2), 0))))
 	{
-	  tree true = TREE_OPERAND (TREE_OPERAND (exp, 1), 0);
-	  tree false = TREE_OPERAND (TREE_OPERAND (exp, 2), 0);
+	  tree iftrue = TREE_OPERAND (TREE_OPERAND (exp, 1), 0);
+	  tree iffalse = TREE_OPERAND (TREE_OPERAND (exp, 2), 0);
 
-	  if ((TREE_CODE_CLASS (TREE_CODE (true)) == '2'
-	       && operand_equal_p (false, TREE_OPERAND (true, 0), 0))
-	      || (TREE_CODE_CLASS (TREE_CODE (false)) == '2'
-		  && operand_equal_p (true, TREE_OPERAND (false, 0), 0))
-	      || (TREE_CODE_CLASS (TREE_CODE (true)) == '1'
-		  && operand_equal_p (false, TREE_OPERAND (true, 0), 0))
-	      || (TREE_CODE_CLASS (TREE_CODE (false)) == '1'
-		  && operand_equal_p (true, TREE_OPERAND (false, 0), 0)))
+	  if ((TREE_CODE_CLASS (TREE_CODE (iftrue)) == '2'
+	       && operand_equal_p (iffalse, TREE_OPERAND (iftrue, 0), 0))
+	      || (TREE_CODE_CLASS (TREE_CODE (iffalse)) == '2'
+		  && operand_equal_p (iftrue, TREE_OPERAND (iffalse, 0), 0))
+	      || (TREE_CODE_CLASS (TREE_CODE (iftrue)) == '1'
+		  && operand_equal_p (iffalse, TREE_OPERAND (iftrue, 0), 0))
+	      || (TREE_CODE_CLASS (TREE_CODE (iffalse)) == '1'
+		  && operand_equal_p (iftrue, TREE_OPERAND (iffalse, 0), 0)))
 	    return expand_expr (build1 (NOP_EXPR, type,
-					build (COND_EXPR, TREE_TYPE (true),
+					build (COND_EXPR, TREE_TYPE (iftrue),
 					       TREE_OPERAND (exp, 0),
-					       true, false)),
+					       iftrue, iffalse)),
 				target, tmode, modifier);
 	}
 

@@ -93,7 +93,7 @@ static void bad_specifiers PARAMS ((tree, const char *, int, int, int, int,
 static tree maybe_process_template_type_declaration PARAMS ((tree, int, struct binding_level*));
 static void check_for_uninitialized_const_var PARAMS ((tree));
 static unsigned long typename_hash PARAMS ((hash_table_key));
-static boolean typename_compare PARAMS ((hash_table_key, hash_table_key));
+static bool typename_compare PARAMS ((hash_table_key, hash_table_key));
 static void push_binding PARAMS ((tree, tree, struct binding_level*));
 static int add_binding PARAMS ((tree, tree));
 static void pop_binding PARAMS ((tree, tree));
@@ -5494,7 +5494,7 @@ typename_hash (k)
 
 /* Compare two TYPENAME_TYPEs.  K1 and K2 are really of type `tree'.  */
 
-static boolean
+static bool
 typename_compare (k1, k2)
      hash_table_key k1;
      hash_table_key k2;

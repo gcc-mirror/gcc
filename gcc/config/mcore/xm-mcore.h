@@ -17,10 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
-
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR   8
 #define HOST_BITS_PER_SHORT 16
@@ -39,4 +35,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-

@@ -19,10 +19,6 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-/* #defines that need visibility everywhere.  */
-#define	FALSE	0
-#define	TRUE	1
-
 /* Define this macro if the host system is System V.  */
 /* #define USG */
 

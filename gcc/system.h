@@ -43,6 +43,10 @@ Boston, MA 02111-1307, USA.  */
 # endif
 #endif
 
+#ifdef HAVE_STDDEF_H
+# include <stddef.h>
+#endif
+
 #include <stdio.h>
 
 /* Define a generic NULL if one hasn't already been defined.  */
@@ -355,6 +359,14 @@ extern void abort PARAMS ((void));
   ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
 #endif
 
+/* 1 if we have _Bool.  */
+#ifndef HAVE__BOOL
+# define HAVE__BOOL \
+   ((GCC_VERSION >= 3000) || (__STDC_VERSION__ >= 199901L))
+#endif
+
+
+
 /* Define a STRINGIFY macro that's right for ANSI or traditional C.
    Note: if the argument passed to STRINGIFY is itself a macro, eg
    #define foo bar, STRINGIFY(foo) will produce "foo", not "bar".
@@ -532,5 +544,28 @@ extern void *alloca (__SIZE_TYPE__);
 #define __FUNCTION__ "?"
 #endif /* ! __FUNCTION__ */
 #endif
+
+/* Provide some sort of boolean type.  We use stdbool.h if it's
+  available.  This is dead last because various system headers might
+  mess us up.  */
+#undef bool
+#undef true
+#undef false
+#undef TRUE
+#undef FALSE
+
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#else
+# if !HAVE__BOOL
+typedef char _Bool;
+# endif
+# define bool _Bool
+# define true 1
+# define false 0
+#endif
+
+#define TRUE true
+#define FALSE false
 
 #endif /* __GCC_SYSTEM_H__ */

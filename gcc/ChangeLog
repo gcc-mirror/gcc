@@ -1,3 +1,50 @@
+2001-03-15  Zack Weinberg  <zackw@stanford.edu>
+
+	* config/xm-lynx.h, config/xm-std32.h, config/a29k/xm-a29k.h,
+	config/a29k/xm-unix.h, config/alpha/xm-alpha.h,
+	config/arc/xm-arc.h, config/arm/xm-arm.h, config/c4x/xm-c4x.h,
+	config/clipper/xm-clix.h, config/convex/xm-convex.h,
+	config/d30v/xm-d30v.h, config/dsp16xx/xm-dsp16xx.h,
+	config/elxsi/xm-elxsi.h, config/fr30/xm-fr30.h,
+	config/h8300/xm-h8300.h, config/i370/xm-i370.h,
+	config/i370/xm-linux.h, config/i370/xm-mvs.h,
+	config/i370/xm-oe.h, config/i386/xm-aix.h,
+	config/i386/xm-i386.h, config/i386/xm-osf.h,
+	config/i860/xm-i860.h, config/i960/xm-i960.h,
+	config/ia64/xm-ia64.h, config/m32r/xm-m32r.h,
+	config/m68k/xm-m68k.h, config/m88k/xm-m88k.h,
+	config/mcore/xm-mcore.h, config/mips/xm-mips.h,
+	config/mn10200/xm-mn10200.h, config/mn10300/xm-mn10300.h,
+	config/ns32k/xm-ns32k.h, config/pa/xm-linux.h,
+	config/pa/xm-pa.h, config/pa/xm-pa64hpux.h,
+	config/pa/xm-pahpux.h, config/pa/xm-papro.h,
+	config/pj/xm-pj.h, config/romp/xm-romp.h,
+	config/rs6000/xm-beos.h, config/rs6000/xm-rs6000.h,
+	config/rs6000/xm-sysv4.h, config/sh/xm-sh.h,
+	config/sparc/xm-sparc.h, config/sparc/xm-sysv4.h,
+	config/v850/xm-v850.h, config/vax/xm-vax.h,
+	config/vax/xm-vms.h, config/we32k/xm-we32k.h:
+	Do not define TRUE or FALSE.
+
+	* config/i386/xm-aix.h, config/i386/xm-osf.h: Delete; made
+	empty by above change.
+	* config.gcc: Remove references to these files.
+
+	* configure.in: Detect stdbool.h.
+	* configure, config.in: Regenerate.
+	* system.h: Include stddef.h here if available.  Set
+	HAVE__BOOL based on GCC_VERSION and __STDC_VERSION__.  Then
+	set up a sensible boolean type at the very end.
+
+	* combine.c, cse.c, expr.c, fold-const.c, gensupport.c,
+	config/mcore/mcore.c: Rename variables named 'true'
+	and/or 'false'.
+
+	* hash.h: Delete 'boolean' typedef and related #undefs.
+
+	* function.c, ggc-common.c, hash.h, hash.c, tlink.c,
+	Replace all uses of 'boolean' with 'bool'.
+
 2001-03-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 	    David Billinghurst <David.Billinghurst@riotinto.com>
 
@@ -23,8 +70,8 @@
 
 2001-03-14  Laurynas Biveinis  <lauras@softhome.net>
 
-        * configure.in: Use $gcc_cv_as instead of $as.
-        * configure: Regenerated.
+	* configure.in: Use $gcc_cv_as instead of $as.
+	* configure: Regenerated.
 
 Wed Mar 14 13:17:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -78,7 +125,7 @@ Wed Mar 14 13:17:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(rest_of_decl_compilation): Likewise.
 	* tree.c (simple_cst_equal): Likewise.
 	* objc/objc-act.c (generate_static_references): Likewise.
-	
+
 2001-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* reg-stack.c (stack_result): Unconditionally use
@@ -107,8 +154,8 @@ Mon Mar 12 14:05:32 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-03-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * reload1.c (reload_cse_simplify): Call reload_cse_simplify_set
-        before reload_cse_noop_set_p.
+	* reload1.c (reload_cse_simplify): Call reload_cse_simplify_set
+	before reload_cse_noop_set_p.
 
 Sat Mar 10 23:21:34 2001  kaz Kojima <kkojima@rr.iij4u.or.jp>
 
@@ -116,7 +163,7 @@ Sat Mar 10 23:21:34 2001  kaz Kojima <kkojima@rr.iij4u.or.jp>
 
 Sat Mar 10 23:16:16 2001  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
-	* config/sh/sh.md (umulhisi3_i, mulhisi3_i): Fix mnemonics. 
+	* config/sh/sh.md (umulhisi3_i, mulhisi3_i): Fix mnemonics.
 	* config/sh/lib1funcs.asm (mulsi3): Convert mulu to mulu.w.
 
 Sat Mar 10 23:03:25 2001  Alexandre Oliva  <aoliva@redhat.com>
@@ -197,9 +244,9 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-03-07  Laurynas Biveinis  <lauras@softhome.net>
 
-        * fixinc/inclhack.def (djgpp_wchar_h): New test.
-        * fixinc/fixincl.x: Regenerated.
-		
+	* fixinc/inclhack.def (djgpp_wchar_h): New test.
+	* fixinc/fixincl.x: Regenerated.
+
 2001-03-06  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Restore change that patch misapplied.
@@ -268,9 +315,9 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/m68hc11/m68hc11.c (limit_reload_class): Remove.
 	(m68hc11_override_options): Remove setting of flag_no_nonansi_builtin.
 	Set 68HC12 min offset to -65536.
-	(print_operand): Put parenthesis arround the operand if it refers 
+	(print_operand): Put parenthesis arround the operand if it refers
 	to a symbol having the same name as a register.
-	(m68hc11_z_replacement): When z register is replaced by its 
+	(m68hc11_z_replacement): When z register is replaced by its
 	equivalent soft register, force the insn to be re-recognized.
 	(m68hc11_check_z_replacement): Fix the test when destination is
 	the index register and z dies in the insn.
@@ -296,13 +343,13 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/m68hc11/m68hc11.md (*addhi3_68hc12): Fix generation
 	and use m68hc11_notice_keep_cc when using leax/leay.
-	(addhi3 split): Reject split if the insn is handled by 
+	(addhi3 split): Reject split if the insn is handled by
 	leax/leay above.
 	* config/m68hc11/m68hc11.c (m68hc11_split_move): For 68HC12 the
 	push must be handled in a special way if the source operand uses
 	sp as index register.
 	(m68hc11_notice_keep_cc): New function.
-	(m68hc11_gen_movhi): Use it when an insn changes a register but 
+	(m68hc11_gen_movhi): Use it when an insn changes a register but
 	not the flags.
 	(m68hc11_gen_movqi): Fix move for 68HC12.
 	* config/m68hc11/m68hc11-protos.h (m68hc11_notice_keep_cc): Declare.
@@ -316,7 +363,7 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/m68hc11/m68hc11.md (tsthi_1): Use cpd for 68HC12.
 	(zero_extendsi split): Simplify and use (zero_extendhi).
-	(*addhi3): Remove 'w' constraint since stack pointer is handled 
+	(*addhi3): Remove 'w' constraint since stack pointer is handled
 	by (addhi3_sp).
 	(*ashlhi3_2): Operand 2 is clobbered use '+' for its constraint.
 	(*ashlhi3, *ashrhi3, *lshrhi3): Likewise.
@@ -342,7 +389,7 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/i386/djgpp.h: Define NO_AUTO_EXE_SUFFIX.
 
 2001-03-03  David O'Brien  <obrien@FreeBSD.org>
-	
+
 	from 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 	* c-parse.gperf, c-gperf.h: Delete.
 	(c-gperf.h was accidently re-added to the CVS repo in the rev 1.16 commit
@@ -374,7 +421,7 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpp.texi: Update.
-	* cppexp.c (parse_number): Update. 
+	* cppexp.c (parse_number): Update.
 	* cpplex.c (parse_string): Pedwarn if multiline string does not
 	result from a system header's macro.
 	* cpplib.h (sys_objmacro_p): Rename sys_macro_p.
