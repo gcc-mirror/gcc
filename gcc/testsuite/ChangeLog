@@ -1,6 +1,6 @@
 2004-10-09  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/17687
+	PR c++/17867
 	* g++.dg/parse/error19.C: New test.
 
 	PR c++/17670
