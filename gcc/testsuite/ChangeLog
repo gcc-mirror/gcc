@@ -1,5 +1,7 @@
 2003-06-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/abi/vague1.C: Use xfail, rather than embedded Tcl code.
+
 	* lib/dg-pch.exp: New file.
 	* g++.dg/pch/pch.exp: Use dg-pch.exp.
 	* gcc.dg/pch/pch.exp: Likewise.
