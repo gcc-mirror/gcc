@@ -81,6 +81,10 @@ struct obstack maybepermanent_obstack;
 
 struct simple_obstack_stack *toplev_inline_obstacks;
 
+/* Former elements of toplev_inline_obstacks that have been recycled.  */
+
+struct simple_obstack_stack *extra_inline_obstacks;
+
 /* This is a list of function_maybepermanent_obstacks for inline functions
    nested in the current function that were compiled in the middle of
    compiling other functions.  */
@@ -381,12 +385,22 @@ save_tree_status (p, context)
 	  head = &f->inline_obstacks;
 	}
 
-      current = ((struct simple_obstack_stack *)
-		 xmalloc (sizeof (struct simple_obstack_stack)));
+      if (context == NULL_TREE && extra_inline_obstacks)
+	{
+	  current = extra_inline_obstacks;
+	  extra_inline_obstacks = current->next;
+	}
+      else
+	{
+	  current = ((struct simple_obstack_stack *)
+		     xmalloc (sizeof (struct simple_obstack_stack)));
 
-      current->obstack = (struct obstack *) xmalloc (sizeof (struct obstack));
+	  current->obstack
+	    = (struct obstack *) xmalloc (sizeof (struct obstack));
+	  gcc_obstack_init (current->obstack);
+	}
+
       function_maybepermanent_obstack = current->obstack;
-      gcc_obstack_init (function_maybepermanent_obstack);
 
       current->next = *head;
       *head = current;
@@ -411,8 +425,9 @@ save_tree_status (p, context)
    This is used after a nested function.  */
 
 void
-restore_tree_status (p)
+restore_tree_status (p, context)
      struct function *p;
+     tree context;
 {
   all_types_permanent = p->all_types_permanent;
   momentary_stack = p->momentary_stack;
@@ -427,6 +442,29 @@ restore_tree_status (p)
      the compilation of a nested function if we expect it to survive
      past the nested function's end.  */
   obstack_free (function_maybepermanent_obstack, maybepermanent_firstobj);
+
+  /* If we were compiling a toplevel function, we can free this space now.  */
+  if (context == NULL_TREE)
+    {
+      obstack_free (&temporary_obstack, temporary_firstobj);
+      obstack_free (&momentary_obstack, momentary_function_firstobj);
+    }
+
+  /* If we were compiling a toplevel function that we don't actually want
+     to save anything from, return the obstack to the pool.  */
+  if (context == NULL_TREE
+      && obstack_empty_p (function_maybepermanent_obstack))
+    {
+      struct simple_obstack_stack *current, **p = &toplev_inline_obstacks;
+
+      while ((*p)->obstack != function_maybepermanent_obstack)
+	p = &((*p)->next);
+      current = *p;
+      *p = current->next;
+
+      current->next = extra_inline_obstacks;
+      extra_inline_obstacks = current;
+    }
 
   obstack_free (function_obstack, 0);
   free (function_obstack);
@@ -4469,24 +4507,58 @@ decl_type_context (decl)
   return NULL_TREE;
 }
 
+/* Print debugging information about the size of the
+   toplev_inline_obstacks.  */
+
+void
+print_inline_obstack_statistics ()
+{
+  struct simple_obstack_stack *current = toplev_inline_obstacks;
+  int n_obstacks = 0;
+  unsigned long n_alloc = 0;
+  int n_chunks = 0;
+
+  for (; current; current = current->next, ++n_obstacks)
+    {
+      struct obstack *o = current->obstack;
+      struct _obstack_chunk *chunk = o->chunk;
+
+      n_alloc += o->next_free - chunk->contents;
+      chunk = chunk->prev;
+      ++n_chunks;
+      for (; chunk; chunk = chunk->prev, ++n_chunks)
+	n_alloc += chunk->limit - &chunk->contents[0];
+    }
+  fprintf (stderr, "inline obstacks: %d obstacks, %lu bytes, %d chunks\n",
+	   n_obstacks, n_alloc, n_chunks);
+}
+
+/* Print debugging information about the obstack O, named STR.  */
+
 void
 print_obstack_statistics (str, o)
      char *str;
      struct obstack *o;
 {
   struct _obstack_chunk *chunk = o->chunk;
-  int n_chunks = 0;
-  int n_alloc = 0;
+  int n_chunks = 1;
+  unsigned long n_alloc = 0;
 
+  n_alloc += o->next_free - chunk->contents;
+  chunk = chunk->prev;
   while (chunk)
     {
       n_chunks += 1;
       n_alloc += chunk->limit - &chunk->contents[0];
       chunk = chunk->prev;
     }
-  fprintf (stderr, "obstack %s: %d bytes, %d chunks\n",
+  fprintf (stderr, "obstack %s: %lu bytes, %d chunks\n",
 	   str, n_alloc, n_chunks);
 }
+
+/* Print debugging information about tree nodes generated during the compile,
+   and any language-specific information.  */
+
 void
 dump_tree_statistics ()
 {
@@ -4512,6 +4584,12 @@ dump_tree_statistics ()
 #else
   fprintf (stderr, "(No per-node statistics)\n");
 #endif
+  print_obstack_statistics ("permanent_obstack", &permanent_obstack);
+  print_obstack_statistics ("maybepermanent_obstack", &maybepermanent_obstack);
+  print_obstack_statistics ("temporary_obstack", &temporary_obstack);
+  print_obstack_statistics ("momentary_obstack", &momentary_obstack);
+  print_obstack_statistics ("temp_decl_obstack", &temp_decl_obstack);
+  print_inline_obstack_statistics ();
   print_lang_statistics ();
 }
 

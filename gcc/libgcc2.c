@@ -3733,7 +3733,7 @@ label:
 	  sub_udata = p;
 
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
-	    if (udata->saved[i])
+	    if (i != udata->retaddr_column && udata->saved[i])
 	      {
 #ifdef INCOMING_REGNO
 		/* If you modify the saved value of the return address
