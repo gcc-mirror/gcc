@@ -1,5 +1,11 @@
 2001-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/5125
+	* pt.c (push_template_decl_real): Make sure DECL has
+	DECL_LANG_SPECIFIC.
+
+2001-12-29  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/335
 	* init.c (resolve_offset_ref): Copy cv qualifiers of this pointer
 	for non-reference fields.
