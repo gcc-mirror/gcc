@@ -1,3 +1,49 @@
+Mon Aug  2 16:15:57 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000/aix43.h (SUBTARGET_SWITCHES): Use -m64 and -m32 instead of
+	-maix64 and -maix32.
+	(ASM_SPEC, ASM_CPU_SPEC, CPP_SPEC, CPP_CPU_SPEC, LIB_SPEC,
+	LINK_SPEC): Change appropriately.
+	* rs6000/rs6000.c (short_cint_operand): Use CONST_OK_FOR_LETTER_P.
+	(u_short_cint_operand): Likewise.
+	* rs6000/rs6000.md (movdi splitters): Add TARGET_POWERPC64 support
+	for 64-bit hosts.
+	* rs6000/t-aix43 (MULTILIB): Change to -m64.
+
+	* invoke.texi (RS/6000 Submodel): Document 64-bit processor options.
+
+Mon Aug  2 16:15:57 1999  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000/rs6000.c (num_insns_constant_wide): Correct
+	for type promotion.
+	(add_operand): Get test correct for 64-bit HOST_WIDE_INT.
+	(non_add_cint_operand): Likewise.
+	(logical_operand): Likewise.
+	(non_logical_cint_operand): Likewise.
+	(print_operand): Correct printf()s for 64-bit HOST_WIDE_INT.
+	(print_operand_address): Correct printf() for 64-bit HOST_WIDE_INT.
+	(rs6000_select_rtx_section): Suppress warning.
+	(small_data_operand): Suppress warning.
+	(rs6000_got_register): Suppress warning.
+	* rs6000/rs6000.md (andsi3): HOST_WIDE_INT is a signed
+	type, so `J' is generally the wrong constraint for a SImode value;
+	use `L' instead.
+	(andsi3_internal2): Likewise.
+	(andsi3_internal3): Likewise.
+	(iorsi3_internal1): Likewise.
+	(xorsi3_internal1): Likewise.
+	(movsi): Likewise.
+	(movsf_softfloat): Likewise.
+	(scc insns): Likewise.
+	(movsi+2): Preserve sign bits of SImode constant.
+	(floatsidf2_internal+1): Sign-extend SImode constant correctly.
+	(movdf+1): Sign-extend properly.
+	(movdi_32+1): Sign-extend properly.
+	(scc insns): Sign-extend properly.
+
+	* md.texi (RS/6000 EXTRA_CONSTRAINTS): Update documentation for J,
+	K, L, and T.
+
 1999-08-02  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (override_options): Move ev6 alpha_tp frobbing out of
