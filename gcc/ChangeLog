@@ -1,3 +1,8 @@
+Thu Aug 17 13:20:32 EDT 2000  John Wehle  (john@feith.com)
+
+	* rtlanal.c (rtx_unstable_p): Use CONSTANT_P.
+	(rtx_unstable_p, rtx_varies_p): Process vectors.
+
 2000-08-16  Niibe Yutaka  <gniibe@m17n.org>, Kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* config/sh/lib1funcs.asm (GLOBAL): Define.  Use for all

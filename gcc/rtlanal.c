@@ -58,7 +58,7 @@ rtx_unstable_p (x)
   if (code == QUEUED)
     return 1;
 
-  if (code == CONST || code == CONST_INT)
+  if (CONSTANT_P (x))
     return 0;
 
   if (code == REG)
@@ -70,8 +70,18 @@ rtx_unstable_p (x)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      if (rtx_unstable_p (XEXP (x, i)))
-	return 1;
+      {
+	if (rtx_unstable_p (XEXP (x, i)))
+	  return 1;
+      }
+    else if (fmt[i] == 'E')
+      {
+	int j;
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (rtx_unstable_p (XVECEXP (x, i, j)))
+	    return 1;
+      }
+
   return 0;
 }
 
@@ -121,8 +131,18 @@ rtx_varies_p (x)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      if (rtx_varies_p (XEXP (x, i)))
-	return 1;
+      {
+	if (rtx_varies_p (XEXP (x, i)))
+	  return 1;
+      }
+    else if (fmt[i] == 'E')
+      {
+	int j;
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (rtx_varies_p (XVECEXP (x, i, j)))
+	    return 1;
+      }
+
   return 0;
 }
 
