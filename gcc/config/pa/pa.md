@@ -1138,15 +1138,18 @@
    (set_attr "length" "4")])
 
 ;; lo_sum of a function address.
+;;
+;; Note since we are not supporting MPE style external calls we can
+;; use the short ldil;ldo sequence.  If one wanted to support
+;; MPE external calls you would want to generate something like
+;; ldil;ldo;extru;ldw;add.  See the HP compiler's output for details.
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
-		   (match_operand:SI 2 "function_label_operand" "")))
-   (clobber (match_operand:SI 3 "register_operand" "=r"))]
+		   (match_operand:SI 2 "function_label_operand" "")))]
   ""
-  "ldo RP'%G2(%1),%0\;extru,= %0,31,1,%3\;ldw -4(0,%%r27),%3\;add %0,%3,%0"
-  [(set_attr "type" "multi")
-   (set_attr "length" "16")])
+  "ldo RP'%G2(%1),%0"
+  [(set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
