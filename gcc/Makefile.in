@@ -2730,49 +2730,62 @@ CHECK_TARGETS = check-gcc check-g++ check-g77 check-objc @CHECK_PO@
 
 check: $(CHECK_TARGETS)
 
-testsuite/site.exp: site.exp
-	if [ -d testsuite ]; then \
-	  true; \
-	else \
-	  mkdir testsuite; \
-	fi
-	rm -rf testsuite/site.exp
-	cp site.exp testsuite/site.exp
+PAR_CHECK_TARGETS = $(CHECK_TARGETS:check-%=check/%)
 
-check-g++: testsuite/site.exp
+# The idea is to parallelize testing of multilibs, for example:
+#   make -j3 check/gcc/sh-hms-sim/{-m1,-m2,-m3,-m3e,-m4}/{,-nofpu}
+# will run 3 concurrent sessions of check-gcc, eventually testing
+# all 10 combinations.  GNU make is required, as is a shell that expands
+# alternations within braces.
+$(PAR_CHECK_TARGETS:=/%): site.exp
+	target=`echo "$@" | sed 's,/,-,;s,/.*,,'`; \
+	variant=`echo "$@" | sed 's,/,-,;s,^[^/]*/,,'`; \
+	vardots=`echo "$$variant" | sed 's,/,.,g'`; \
+	$(MAKE) TESTSUITEDIR="testsuite.$$vardots" \
+	  RUNTESTFLAGS="--target_board=$$variant $(RUNTESTFLAGS)" \
+	  "$$target"
+
+TESTSUITEDIR = testsuite
+
+$(TESTSUITEDIR)/site.exp: site.exp
+	test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
+	-rm -f $@
+	sed '/set tmpdir/ s|testsuite|$(TESTSUITEDIR)|' < site.exp > $@
+
+check-g++: $(TESTSUITEDIR)/site.exp
 	-(rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
-	cd testsuite; \
+	cd $(TESTSUITEDIR); \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool g++ $(RUNTESTFLAGS))
 
-check-gcc: testsuite/site.exp
+check-gcc: $(TESTSUITEDIR)/site.exp
 	-(rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
-	cd testsuite; \
+	cd $(TESTSUITEDIR); \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
 	   export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool gcc $(RUNTESTFLAGS))
 
-check-g77: testsuite/site.exp
+check-g77: $(TESTSUITEDIR)/site.exp
 	-(rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
-	cd testsuite; \
+	cd $(TESTSUITEDIR); \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
 	   export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool g77 $(RUNTESTFLAGS))
 
-check-objc: testsuite/site.exp
+check-objc: $(TESTSUITEDIR)/site.exp
 	-(rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
-	cd testsuite; \
+	cd $(TESTSUITEDIR); \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
