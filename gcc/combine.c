@@ -1435,10 +1435,10 @@ cant_combine_insn_p (insn)
   if (! INSN_P (insn))
     return 1;
 
-  /* Never combine loads and stores involving hard regs.  The register
-     allocator can usually handle such reg-reg moves by tying.  If we allow
-     the combiner to make substitutions of hard regs, we risk aborting in
-     reload on machines that have SMALL_REGISTER_CLASSES.
+  /* Never combine loads and stores involving hard regs that are likely
+     to be spilled.  The register allocator can usually handle such
+     reg-reg moves by tying.  If we allow the combiner to make 
+     substitutions of likely-spilled regs, we may abort in reload.
      As an exception, we allow combinations involving fixed regs; these are
      not available to the register allocator so there's no risk involved.  */
 
@@ -1453,9 +1453,11 @@ cant_combine_insn_p (insn)
     dest = SUBREG_REG (dest);
   if (REG_P (src) && REG_P (dest)
       && ((REGNO (src) < FIRST_PSEUDO_REGISTER
-	   && ! fixed_regs[REGNO (src)])
+	   && ! fixed_regs[REGNO (src)]
+	   && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (src))))
 	  || (REGNO (dest) < FIRST_PSEUDO_REGISTER
-	      && ! fixed_regs[REGNO (dest)])))
+	      && ! fixed_regs[REGNO (dest)]
+	      && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (dest))))))
     return 1;
 
   return 0;

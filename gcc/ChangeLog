@@ -1,3 +1,11 @@
+2003-04-16  J"orn Rennecke <joern.rennecke@superh.com>
+
+	Re-apply this patch:
+
+	2002-05-16  Dale Johannesen  <dalej@apple.com>
+	  * combine.c (cant_combine_insn_p):  Reenable combinations
+	  involving hard regs unless CLASS_LIKELY_SPILLED_P.
+
 2003-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR/10271
