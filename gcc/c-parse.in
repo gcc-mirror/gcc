@@ -1132,9 +1132,15 @@ initlist1:
    It may use braces.  */
 initelt:
 	  designator_list '=' initval
+		{ if (pedantic && ! flag_isoc99)
+		    pedwarn ("ISO C89 forbids specifying subobject to initialize"); }
 	| designator initval
+		{ if (pedantic)
+		    pedwarn ("obsolete use of designated initializer without `='"); }
 	| identifier ':'
-		{ set_init_label ($1); }
+		{ set_init_label ($1);
+		  if (pedantic)
+		    pedwarn ("obsolete use of designated initializer with `:'"); }
 	  initval
 	| initval
 	;
@@ -1162,7 +1168,9 @@ designator:
 	   so don't include these productions in the Objective-C grammar.  */
 ifc
 	| '[' expr_no_commas ELLIPSIS expr_no_commas ']'
-		{ set_init_index ($2, $4); }
+		{ set_init_index ($2, $4);
+		  if (pedantic)
+		    pedwarn ("ISO C forbids specifying range of elements to initialize"); }
 	| '[' expr_no_commas ']'
 		{ set_init_index ($2, NULL_TREE); }
 end ifc

@@ -5438,12 +5438,7 @@ set_init_index (first, last)
       if (last != 0 && tree_int_cst_lt (last, first))
 	error_init ("empty index range in initializer");
       else
-	{
-	  if (pedantic)
-	    pedwarn ("ISO C89 forbids specifying element to initialize");
-
-	  constructor_range_end = last ? convert (bitsizetype, last) : 0;
-	}
+	constructor_range_end = last ? convert (bitsizetype, last) : 0;
     }
 }
 
@@ -5477,11 +5472,7 @@ set_init_label (fieldname)
     error ("field `%s' already initialized",
 	   IDENTIFIER_POINTER (fieldname));
   else
-    {
-      constructor_fields = tail;
-      if (pedantic)
-	pedwarn ("ISO C89 forbids specifying structure member to initialize");
-    }
+    constructor_fields = tail;
 }
 
 /* Add a new initializer to the tree of pending initializers.  PURPOSE

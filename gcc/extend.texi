@@ -1156,19 +1156,20 @@ to a cast.
 @cindex labeled elements in initializers
 @cindex case labels in initializers
 
-Standard C requires the elements of an initializer to appear in a fixed
+Standard C89 requires the elements of an initializer to appear in a fixed
 order, the same as the order of the elements in the array or structure
 being initialized.
 
-In GNU C you can give the elements in any order, specifying the array
-indices or structure field names they apply to.  This extension is not
+In ISO C99 you can give the elements in any order, specifying the array
+indices or structure field names they apply to, and GNU C allows this as
+an extension in C89 mode as well.  This extension is not
 implemented in GNU C++.
 
-To specify an array index, write @samp{[@var{index}]} or
+To specify an array index, write
 @samp{[@var{index}] =} before the element value.  For example,
 
 @example
-int a[6] = @{ [4] 29, [2] = 15 @};
+int a[6] = @{ [4] = 29, [2] = 15 @};
 @end example
 
 @noindent
@@ -1182,8 +1183,13 @@ int a[6] = @{ 0, 0, 15, 0, 29, 0 @};
 The index values must be constant expressions, even if the array being
 initialized is automatic.
 
+An alternative syntax for this which has been obsolete since GCC 2.5 but
+GCC still accepts is to write @samp{[@var{index}]} before the element
+value, with no @samp{=}.
+
 To initialize a range of elements to the same value, write
-@samp{[@var{first} ... @var{last}] = @var{value}}.  For example,
+@samp{[@var{first} ... @var{last}] = @var{value}}.  This is a GNU
+extension.  For example,
 
 @example
 int widths[] = @{ [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 @};
@@ -1194,7 +1200,7 @@ Note that the length of the array is the highest value specified
 plus one.
 
 In a structure initializer, specify the name of a field to initialize
-with @samp{@var{fieldname}:} before the element value.  For example,
+with @samp{.@var{fieldname} =} before the element value.  For example,
 given the following structure,
 
 @example
@@ -1205,7 +1211,7 @@ struct point @{ int x, y; @};
 the following initialization
 
 @example
-struct point p = @{ y: yvalue, x: xvalue @};
+struct point p = @{ .y = yvalue, .x = xvalue @};
 @end example
 
 @noindent
@@ -1215,11 +1221,11 @@ is equivalent to
 struct point p = @{ xvalue, yvalue @};
 @end example
 
-Another syntax which has the same meaning is @samp{.@var{fieldname} =}.,
-as shown here:
+Another syntax which has the same meaning, obsolete since GCC 2.5, is
+@samp{@var{fieldname}:}, as shown here:
 
 @example
-struct point p = @{ .y = yvalue, .x = xvalue @};
+struct point p = @{ y: yvalue, x: xvalue @};
 @end example
 
 You can also use an element label (with either the colon syntax or the
@@ -1229,7 +1235,7 @@ of the union should be used.  For example,
 @example
 union foo @{ int i; double d; @};
 
-union foo f = @{ d: 4 @};
+union foo f = @{ .d = 4 @};
 @end example
 
 @noindent
@@ -1262,6 +1268,16 @@ For example:
 int whitespace[256]
   = @{ [' '] = 1, ['\t'] = 1, ['\h'] = 1,
       ['\f'] = 1, ['\n'] = 1, ['\r'] = 1 @};
+@end example
+
+You can also write a series of @samp{.@var{fieldname}} and
+@samp{[@var{index}]} element labels before an @samp{=} to specify a
+nested subobject to initialize; the list is taken relative to the
+subobject corresponding to the closest surrounding brace pair.  For
+example, with the @samp{struct point} declaration above:
+
+@example
+struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
 @end example
 
 @node Case Ranges
