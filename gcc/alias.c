@@ -148,7 +148,8 @@ static rtx *new_reg_base_value;
 static unsigned int reg_base_value_size; /* size of reg_base_value array */
 
 #define REG_BASE_VALUE(X) \
-  (REGNO (X) < reg_base_value_size ? reg_base_value[REGNO (X)] : 0)
+  (ORIGINAL_REGNO (X) < reg_base_value_size \
+   ? reg_base_value[ORIGINAL_REGNO (X)] : 0)
 
 /* Vector of known invariant relationships between registers.  Set in
    loop unrolling.  Indexed by register number, if nonzero the value
@@ -659,6 +660,7 @@ static rtx
 find_base_value (src)
      register rtx src;
 {
+  unsigned int regno;
   switch (GET_CODE (src))
     {
     case SYMBOL_REF:
@@ -666,12 +668,13 @@ find_base_value (src)
       return src;
 
     case REG:
+      regno = ORIGINAL_REGNO (src);
       /* At the start of a function, argument registers have known base
 	 values which may be lost later.  Returning an ADDRESS
 	 expression here allows optimization based on argument values
 	 even when the argument registers are used for other purposes.  */
-      if (REGNO (src) < FIRST_PSEUDO_REGISTER && copying_arguments)
-	return new_reg_base_value[REGNO (src)];
+      if (regno < FIRST_PSEUDO_REGISTER && copying_arguments)
+	return new_reg_base_value[regno];
 
       /* If a pseudo has a known base value, return it.  Do not do this
 	 for hard regs since it can result in a circular dependency
@@ -679,10 +682,10 @@ find_base_value (src)
 
 	 The test above is not sufficient because the scheduler may move
 	 a copy out of an arg reg past the NOTE_INSN_FUNCTION_BEGIN.  */
-      if (REGNO (src) >= FIRST_PSEUDO_REGISTER
-	  && (unsigned) REGNO (src) < reg_base_value_size
-	  && reg_base_value[REGNO (src)])
-	return reg_base_value[REGNO (src)];
+      if (regno >= FIRST_PSEUDO_REGISTER
+	  && regno < reg_base_value_size
+	  && reg_base_value[regno])
+	return reg_base_value[regno];
 
       return src;
 
@@ -789,7 +792,7 @@ record_set (dest, set, data)
   if (GET_CODE (dest) != REG)
     return;
 
-  regno = REGNO (dest);
+  regno = ORIGINAL_REGNO (dest);
 
   if (regno >= reg_base_value_size)
     abort ();
@@ -870,8 +873,8 @@ record_base_value (regno, val, invariant)
 
   if (GET_CODE (val) == REG)
     {
-      if (REGNO (val) < reg_base_value_size)
-	reg_base_value[regno] = reg_base_value[REGNO (val)];
+      if (ORIGINAL_REGNO (val) < reg_base_value_size)
+	reg_base_value[regno] = reg_base_value[ORIGINAL_REGNO (val)];
 
       return;
     }
@@ -889,10 +892,10 @@ canon_rtx (x)
      rtx x;
 {
   /* Recursively look for equivalences.  */
-  if (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER
-      && REGNO (x) < reg_known_value_size)
-    return reg_known_value[REGNO (x)] == x
-      ? x : canon_rtx (reg_known_value[REGNO (x)]);
+  if (GET_CODE (x) == REG && ORIGINAL_REGNO (x) >= FIRST_PSEUDO_REGISTER
+      && ORIGINAL_REGNO (x) < reg_known_value_size)
+    return reg_known_value[ORIGINAL_REGNO (x)] == x
+      ? x : canon_rtx (reg_known_value[ORIGINAL_REGNO (x)]);
   else if (GET_CODE (x) == PLUS)
     {
       rtx x0 = canon_rtx (XEXP (x, 0));
@@ -2208,17 +2211,42 @@ init_alias_analysis ()
 
 	      if (set != 0
 		  && GET_CODE (SET_DEST (set)) == REG
-		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
-		  && REG_NOTES (insn) != 0
-		  && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
-		       && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
-		      || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
-		  && GET_CODE (XEXP (note, 0)) != EXPR_LIST
-		  && ! reg_overlap_mentioned_p (SET_DEST (set), XEXP (note, 0)))
+		  && ORIGINAL_REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
 		{
-		  int regno = REGNO (SET_DEST (set));
-		  reg_known_value[regno] = XEXP (note, 0);
-		  reg_known_equiv_p[regno] = REG_NOTE_KIND (note) == REG_EQUIV;
+		  unsigned int regno = ORIGINAL_REGNO (SET_DEST (set));
+		  rtx src = SET_SRC (set);
+
+		  if (REG_NOTES (insn) != 0
+		      && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
+			   && REG_N_SETS (regno) == 1)
+			  || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
+		      && GET_CODE (XEXP (note, 0)) != EXPR_LIST
+		      && ! reg_overlap_mentioned_p (SET_DEST (set), XEXP (note, 0)))
+		    {
+		      reg_known_value[regno] = XEXP (note, 0);
+		      reg_known_equiv_p[regno] = REG_NOTE_KIND (note) == REG_EQUIV;
+		    }
+		  else if (REG_N_SETS (regno) == 1
+			   && GET_CODE (src) == PLUS
+			   && GET_CODE (XEXP (src, 0)) == REG
+			   && ORIGINAL_REGNO (XEXP (src, 0)) >= FIRST_PSEUDO_REGISTER
+			   && (reg_known_value[ORIGINAL_REGNO (XEXP (src, 0))])
+			   && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		    {
+		      rtx op0 = XEXP (src, 0);
+		      if (reg_known_value[ORIGINAL_REGNO (op0)])
+			op0 = reg_known_value[ORIGINAL_REGNO (op0)];
+		      reg_known_value[regno]
+			= plus_constant_for_output (op0,
+						    INTVAL (XEXP (src, 1)));
+		      reg_known_equiv_p[regno] = 0;
+		    }
+		  else if (REG_N_SETS (regno) == 1
+			   && ! rtx_varies_p (src, 1))
+		    {
+		      reg_known_value[regno] = src;
+		      reg_known_equiv_p[regno] = 0;
+		    }
 		}
 	    }
 	  else if (GET_CODE (insn) == NOTE
@@ -2265,7 +2293,7 @@ init_alias_analysis ()
 	  rtx base = reg_base_value[ui];
 	  if (base && GET_CODE (base) == REG)
 	    {
-	      unsigned int base_regno = REGNO (base);
+	      unsigned int base_regno = ORIGINAL_REGNO (base);
 	      if (base_regno == ui)		/* register set from itself */
 		reg_base_value[ui] = 0;
 	      else
