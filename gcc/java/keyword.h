@@ -1,5 +1,5 @@
-/* KR-C code produced by gperf version 2.7.1 (19981006 egcs) */
-/* Command-line: gperf -L KR-C -F , 0 -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$ keyword.gperf  */
+/* C code produced by gperf version 2.7.1 (19981006 egcs) */
+/* Command-line: gperf -L C -F , 0 -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$ keyword.gperf  */
 /* Keyword definition for the GNU compiler for the Java(TM) language.
    Copyright (C) 1997, 1998 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
@@ -25,7 +25,7 @@ Java and all Java-based marks are trademarks or registered trademarks
 of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
-struct java_keyword { char *name; int token; };
+struct java_keyword { const char *name; int token; };
 
 #define TOTAL_KEYWORDS 50
 #define MIN_WORD_LENGTH 2
@@ -39,7 +39,7 @@ __inline
 #endif
 static unsigned int
 hash (str, len)
-     register char *str;
+     register const char *str;
      register unsigned int len;
 {
   static unsigned char asso_values[] =
@@ -91,7 +91,7 @@ __inline
 #endif
 struct java_keyword *
 java_keyword (str, len)
-     register char *str;
+     register const char *str;
      register unsigned int len;
 {
   static struct java_keyword wordlist[] =
@@ -168,7 +168,7 @@ java_keyword (str, len)
 
       if (key <= MAX_HASH_VALUE && key >= 0)
         {
-          register char *s = wordlist[key].name;
+          register const char *s = wordlist[key].name;
 
           if (*str == *s && !strcmp (str + 1, s + 1))
             return &wordlist[key];

@@ -1,3 +1,10 @@
+Wed Mar 31 11:00:32 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Makefile.in (keyword.h): Generate using gperf language 'C', not
+        'KR-C', so gperf uses the `const' keyword on strings.
+
+        * keyword.gperf (java_keyword): Const-ify a char*.
+
 Tue Mar 30 11:31:53 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_bc_statement): Fixed identation and a bogus
