@@ -560,110 +560,26 @@ reg_number (rtl)
   return regno;
 }
 
-struct reg_size_range
+/* Generate code to initialize the register size table.  */
+
+void
+expand_builtin_init_dwarf_reg_sizes (address)
+     tree address;
 {
-  int beg;
-  int end;
-  int size;
-};
+  int i;
+  enum machine_mode mode = TYPE_MODE (char_type_node);
+  rtx addr = expand_expr (address, NULL_RTX, VOIDmode, 0);
+  rtx mem = gen_rtx_MEM (mode, addr);
 
-/* Given a register number in REG_TREE, return an rtx for its size in bytes.
-   We do this in kind of a roundabout way, by building up a list of
-   register size ranges and seeing where our register falls in one of those
-   ranges.  We need to do it this way because REG_TREE is not a constant,
-   and the target macros were not designed to make this task easy.  */
-
-rtx
-expand_builtin_dwarf_reg_size (reg_tree, target)
-     tree reg_tree;
-     rtx target;
-{
-  enum machine_mode mode;
-  int size;
-  struct reg_size_range ranges[5];
-  tree t, t2;
-
-  int i = 0;
-  int n_ranges = 0;
-  int last_size = -1;
-
-  for (; i < FIRST_PSEUDO_REGISTER; ++i)
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     {
-      /* The return address is out of order on the MIPS, and we don't use
-	 copy_reg for it anyway, so we don't care here how large it is.  */
-      if (DWARF_FRAME_REGNUM (i) == DWARF_FRAME_RETURN_COLUMN)
-	continue;
+      int offset = i * GET_MODE_SIZE (mode);
+      int size = GET_MODE_SIZE (reg_raw_mode[i]);
 
-      mode = reg_raw_mode[i];
-
-      /* CCmode is arbitrarily given a size of 4 bytes.  It is more useful
-	 to use the same size as word_mode, since that reduces the number
-	 of ranges we need.  It should not matter, since the result should
-	 never be used for a condition code register anyways.  */
-      if (GET_MODE_CLASS (mode) == MODE_CC)
-	mode = word_mode;
-
-      size = GET_MODE_SIZE (mode);
-
-      /* If this register is not valid in the specified mode and
-	 we have a previous size, use that for the size of this
-	 register to avoid making junk tiny ranges.  */
-      if (! HARD_REGNO_MODE_OK (i, mode) && last_size != -1)
-	size = last_size;
-
-      if (size != last_size)
-	{
-	  ranges[n_ranges].beg = i;
-	  ranges[n_ranges].size = last_size = size;
-	  ++n_ranges;
-	  if (n_ranges >= 5)
-	    abort ();
-	}
-      ranges[n_ranges-1].end = i;
+      emit_move_insn (change_address (mem, mode,
+				      plus_constant (addr, offset)),
+		      GEN_INT (size));
     }
-
-  /* The usual case: fp regs surrounded by general regs.  */
-  if (n_ranges == 3 && ranges[0].size == ranges[2].size)
-    {
-      if ((DWARF_FRAME_REGNUM (ranges[1].end)
-	   - DWARF_FRAME_REGNUM (ranges[1].beg))
-	  != ranges[1].end - ranges[1].beg)
-	abort ();
-      t  = fold (build (GE_EXPR, integer_type_node, reg_tree,
-			build_int_2 (DWARF_FRAME_REGNUM (ranges[1].beg), 0)));
-      t2 = fold (build (LE_EXPR, integer_type_node, reg_tree,
-			build_int_2 (DWARF_FRAME_REGNUM (ranges[1].end), 0)));
-      t = fold (build (TRUTH_ANDIF_EXPR, integer_type_node, t, t2));
-      t = fold (build (COND_EXPR, integer_type_node, t,
-		       build_int_2 (ranges[1].size, 0),
-		       build_int_2 (ranges[0].size, 0)));
-    }
-  else
-    {
-      /* Initialize last_end to be larger than any possible
-	 DWARF_FRAME_REGNUM.  */
-      int last_end = 0x7fffffff;
-      --n_ranges;
-      t = build_int_2 (ranges[n_ranges].size, 0);
-      do
-	{
-	  int beg = DWARF_FRAME_REGNUM (ranges[n_ranges].beg);
-	  int end = DWARF_FRAME_REGNUM (ranges[n_ranges].end);
-	  if (beg < 0)
-	    continue;
-	  if (end >= last_end)
-	    abort ();
-	  last_end = end;
-	  if (end - beg != ranges[n_ranges].end - ranges[n_ranges].beg)
-	    abort ();
-	  t2 = fold (build (LE_EXPR, integer_type_node, reg_tree,
-			    build_int_2 (end, 0)));
-	  t = fold (build (COND_EXPR, integer_type_node, t2,
-			   build_int_2 (ranges[n_ranges].size, 0), t));
-	}
-      while (--n_ranges >= 0);
-    }
-  return expand_expr (t, target, Pmode, 0);
 }
 
 /* Convert a DWARF call frame info. operation to its string name */

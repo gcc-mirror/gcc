@@ -3120,6 +3120,18 @@ __get_eh_info ()
   return &eh->info;
 }
 
+#ifdef DWARF2_UNWIND_INFO
+static int dwarf_reg_size_table_initialized = 0;
+static char dwarf_reg_size_table[FIRST_PSEUDO_REGISTER];
+
+static void
+init_reg_size_table ()
+{
+  __builtin_init_dwarf_reg_size_table (dwarf_reg_size_table);
+  dwarf_reg_size_table_initialized = 1;
+}
+#endif
+
 #if __GTHREADS
 static void
 eh_threads_initialize ()
@@ -3152,11 +3164,23 @@ eh_context_initialize ()
       /* Use static version of EH context. */
       get_eh_context = &eh_context_static;
     }
+#ifdef DWARF2_UNWIND_INFO
+  {
+    static __gthread_once_t once_regsizes = __GTHREAD_ONCE_INIT;
+    if (__gthread_once (&once_regsizes, init_reg_size_table) != 0
+	|| ! dwarf_reg_size_table_initialized)
+      init_reg_size_table ();
+  }
+#endif
 
 #else /* no __GTHREADS */
 
   /* Use static version of EH context. */
   get_eh_context = &eh_context_static;
+
+#ifdef DWARF2_UNWIND_INFO
+  init_reg_size_table ();
+#endif
 
 #endif /* no __GTHREADS */
 
@@ -3395,7 +3419,6 @@ EH_TABLE_LOOKUP
 
 #ifdef DWARF2_UNWIND_INFO
 
-
 /* Return the table version of an exception descriptor */
 
 short 
@@ -3620,7 +3643,7 @@ copy_reg (unsigned reg, frame_state *udata, frame_state *target_udata)
   word_type *preg = get_reg_addr (reg, udata, NULL);
   word_type *ptreg = get_reg_addr (reg, target_udata, NULL);
 
-  memcpy (ptreg, preg, __builtin_dwarf_reg_size (reg));
+  memcpy (ptreg, preg, dwarf_reg_size_table [reg]);
 }
 
 /* Retrieve the return address for frame UDATA.  */

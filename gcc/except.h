@@ -473,7 +473,7 @@ rtx expand_builtin_dwarf_fp_regnum	PROTO((void));
 #ifdef TREE_CODE
 rtx expand_builtin_frob_return_addr	PROTO((tree));
 rtx expand_builtin_extract_return_addr	PROTO((tree));
-rtx expand_builtin_dwarf_reg_size	PROTO((tree, rtx));
+void expand_builtin_init_dwarf_reg_sizes	PROTO((tree));
 void expand_builtin_eh_return		PROTO((tree, tree, tree));
 #endif
 void expand_eh_return			PROTO((void));

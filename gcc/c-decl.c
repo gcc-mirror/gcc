@@ -3068,8 +3068,8 @@ init_decl_processing ()
   builtin_function ("__builtin_dwarf_fp_regnum",
 		    build_function_type (unsigned_type_node, endlink),
 		    BUILT_IN_DWARF_FP_REGNUM, BUILT_IN_NORMAL, NULL_PTR);
-  builtin_function ("__builtin_dwarf_reg_size", int_ftype_int,
-		    BUILT_IN_DWARF_REG_SIZE, BUILT_IN_NORMAL, NULL_PTR);		    
+  builtin_function ("__builtin_init_dwarf_reg_size_table", void_ftype_ptr,
+		    BUILT_IN_INIT_DWARF_REG_SIZES, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_frob_return_addr", ptr_ftype_ptr,
 		    BUILT_IN_FROB_RETURN_ADDR, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ("__builtin_extract_return_addr", ptr_ftype_ptr,
