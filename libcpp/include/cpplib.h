@@ -52,101 +52,102 @@ struct _cpp_file;
    '='.  The lexer needs operators ending in '=', like ">>=", to be in
    the same order as their counterparts without the '=', like ">>".  */
 
-/* Positions in the table.  */
-#define CPP_LAST_EQ CPP_MAX
-#define CPP_FIRST_DIGRAPH CPP_HASH
-#define CPP_LAST_PUNCTUATOR CPP_DOT_STAR
-#define CPP_LAST_CPP_OP CPP_LESS_EQ
+#define TTYPE_TABLE							\
+  OP(EQ,		"=")						\
+  OP(NOT,		"!")						\
+  OP(GREATER,		">")	/* compare */				\
+  OP(LESS,		"<")						\
+  OP(PLUS,		"+")	/* math */				\
+  OP(MINUS,		"-")						\
+  OP(MULT,		"*")						\
+  OP(DIV,		"/")						\
+  OP(MOD,		"%")						\
+  OP(AND,		"&")	/* bit ops */				\
+  OP(OR,		"|")						\
+  OP(XOR,		"^")						\
+  OP(RSHIFT,		">>")						\
+  OP(LSHIFT,		"<<")						\
+  OP(MIN,		"<?")	/* extension */				\
+  OP(MAX,		">?")						\
+									\
+  OP(COMPL,		"~")						\
+  OP(AND_AND,		"&&")	/* logical */				\
+  OP(OR_OR,		"||")						\
+  OP(QUERY,		"?")						\
+  OP(COLON,		":")						\
+  OP(COMMA,		",")	/* grouping */				\
+  OP(OPEN_PAREN,	"(")						\
+  OP(CLOSE_PAREN,	")")						\
+  TK(EOF,		NONE)						\
+  OP(EQ_EQ,		"==")	/* compare */				\
+  OP(NOT_EQ,		"!=")						\
+  OP(GREATER_EQ,	">=")						\
+  OP(LESS_EQ,		"<=")						\
+									\
+  /* These two are unary + / - in preprocessor expressions.  */		\
+  OP(PLUS_EQ,		"+=")	/* math */				\
+  OP(MINUS_EQ,		"-=")						\
+									\
+  OP(MULT_EQ,		"*=")						\
+  OP(DIV_EQ,		"/=")						\
+  OP(MOD_EQ,		"%=")						\
+  OP(AND_EQ,		"&=")	/* bit ops */				\
+  OP(OR_EQ,		"|=")						\
+  OP(XOR_EQ,		"^=")						\
+  OP(RSHIFT_EQ,		">>=")						\
+  OP(LSHIFT_EQ,		"<<=")						\
+  OP(MIN_EQ,		"<?=")	/* extension */				\
+  OP(MAX_EQ,		">?=")						\
+  /* Digraphs together, beginning with CPP_FIRST_DIGRAPH.  */		\
+  OP(HASH,		"#")	/* digraphs */				\
+  OP(PASTE,		"##")						\
+  OP(OPEN_SQUARE,	"[")						\
+  OP(CLOSE_SQUARE,	"]")						\
+  OP(OPEN_BRACE,	"{")						\
+  OP(CLOSE_BRACE,	"}")						\
+  /* The remainder of the punctuation.	Order is not significant.  */	\
+  OP(SEMICOLON,		";")	/* structure */				\
+  OP(ELLIPSIS,		"...")						\
+  OP(PLUS_PLUS,		"++")	/* increment */				\
+  OP(MINUS_MINUS,	"--")						\
+  OP(DEREF,		"->")	/* accessors */				\
+  OP(DOT,		".")						\
+  OP(SCOPE,		"::")						\
+  OP(DEREF_STAR,	"->*")						\
+  OP(DOT_STAR,		".*")						\
+  OP(ATSIGN,		"@")  /* used in Objective-C */			\
+									\
+  TK(NAME,		IDENT)	 /* word */				\
+  TK(AT_NAME,		IDENT)	 /* @word - Objective-C */		\
+  TK(NUMBER,		LITERAL) /* 34_be+ta  */			\
+									\
+  TK(CHAR,		LITERAL) /* 'char' */				\
+  TK(WCHAR,		LITERAL) /* L'char' */				\
+  TK(OTHER,		LITERAL) /* stray punctuation */		\
+									\
+  TK(STRING,		LITERAL) /* "string" */				\
+  TK(WSTRING,		LITERAL) /* L"string" */			\
+  TK(OBJC_STRING,	LITERAL) /* @"string" - Objective-C */		\
+  TK(HEADER_NAME,	LITERAL) /* <stdio.h> in #include */		\
+									\
+  TK(COMMENT,		LITERAL) /* Only if output comments.  */	\
+				 /* SPELL_LITERAL happens to DTRT.  */	\
+  TK(MACRO_ARG,		NONE)	 /* Macro argument.  */			\
+  TK(PRAGMA,		NONE)	 /* Only if deferring pragmas */	\
+  TK(PADDING,		NONE)	 /* Whitespace for -E.	*/
 
-#define TTYPE_TABLE				\
-  OP(CPP_EQ = 0,	"=")			\
-  OP(CPP_NOT,		"!")			\
-  OP(CPP_GREATER,	">")	/* compare */	\
-  OP(CPP_LESS,		"<")			\
-  OP(CPP_PLUS,		"+")	/* math */	\
-  OP(CPP_MINUS,		"-")			\
-  OP(CPP_MULT,		"*")			\
-  OP(CPP_DIV,		"/")			\
-  OP(CPP_MOD,		"%")			\
-  OP(CPP_AND,		"&")	/* bit ops */	\
-  OP(CPP_OR,		"|")			\
-  OP(CPP_XOR,		"^")			\
-  OP(CPP_RSHIFT,	">>")			\
-  OP(CPP_LSHIFT,	"<<")			\
-  OP(CPP_MIN,		"<?")	/* extension */	\
-  OP(CPP_MAX,		">?")			\
-\
-  OP(CPP_COMPL,		"~")			\
-  OP(CPP_AND_AND,	"&&")	/* logical */	\
-  OP(CPP_OR_OR,		"||")			\
-  OP(CPP_QUERY,		"?")			\
-  OP(CPP_COLON,		":")			\
-  OP(CPP_COMMA,		",")	/* grouping */	\
-  OP(CPP_OPEN_PAREN,	"(")			\
-  OP(CPP_CLOSE_PAREN,	")")			\
-  TK(CPP_EOF,		SPELL_NONE)		\
-  OP(CPP_EQ_EQ,		"==")	/* compare */	\
-  OP(CPP_NOT_EQ,	"!=")			\
-  OP(CPP_GREATER_EQ,	">=")			\
-  OP(CPP_LESS_EQ,	"<=")			\
-\
-  /* These two are unary + / - in preprocessor expressions.  */ \
-  OP(CPP_PLUS_EQ,	"+=")	/* math */	\
-  OP(CPP_MINUS_EQ,	"-=")			\
-\
-  OP(CPP_MULT_EQ,	"*=")			\
-  OP(CPP_DIV_EQ,	"/=")			\
-  OP(CPP_MOD_EQ,	"%=")			\
-  OP(CPP_AND_EQ,	"&=")	/* bit ops */	\
-  OP(CPP_OR_EQ,		"|=")			\
-  OP(CPP_XOR_EQ,	"^=")			\
-  OP(CPP_RSHIFT_EQ,	">>=")			\
-  OP(CPP_LSHIFT_EQ,	"<<=")			\
-  OP(CPP_MIN_EQ,	"<?=")	/* extension */	\
-  OP(CPP_MAX_EQ,	">?=")			\
-  /* Digraphs together, beginning with CPP_FIRST_DIGRAPH.  */	\
-  OP(CPP_HASH,		"#")	/* digraphs */	\
-  OP(CPP_PASTE,		"##")			\
-  OP(CPP_OPEN_SQUARE,	"[")			\
-  OP(CPP_CLOSE_SQUARE,	"]")			\
-  OP(CPP_OPEN_BRACE,	"{")			\
-  OP(CPP_CLOSE_BRACE,	"}")			\
-  /* The remainder of the punctuation.  Order is not significant.  */	\
-  OP(CPP_SEMICOLON,	";")	/* structure */	\
-  OP(CPP_ELLIPSIS,	"...")			\
-  OP(CPP_PLUS_PLUS,	"++")	/* increment */	\
-  OP(CPP_MINUS_MINUS,	"--")			\
-  OP(CPP_DEREF,		"->")	/* accessors */	\
-  OP(CPP_DOT,		".")			\
-  OP(CPP_SCOPE,		"::")			\
-  OP(CPP_DEREF_STAR,	"->*")			\
-  OP(CPP_DOT_STAR,	".*")			\
-  OP(CPP_ATSIGN,	"@")  /* used in Objective-C */ \
-\
-  TK(CPP_NAME,		SPELL_IDENT)	/* word */			\
-  TK(CPP_AT_NAME,       SPELL_IDENT)    /* @word - Objective-C */       \
-  TK(CPP_NUMBER,	SPELL_LITERAL)	/* 34_be+ta  */			\
-\
-  TK(CPP_CHAR,		SPELL_LITERAL)	/* 'char' */			\
-  TK(CPP_WCHAR,		SPELL_LITERAL)	/* L'char' */			\
-  TK(CPP_OTHER,		SPELL_LITERAL)	/* stray punctuation */		\
-\
-  TK(CPP_STRING,	SPELL_LITERAL)	/* "string" */			\
-  TK(CPP_WSTRING,	SPELL_LITERAL)	/* L"string" */			\
-  TK(CPP_OBJC_STRING,   SPELL_LITERAL)  /* @"string" - Objective-C */	\
-  TK(CPP_HEADER_NAME,	SPELL_LITERAL)	/* <stdio.h> in #include */	\
-\
-  TK(CPP_COMMENT,	SPELL_LITERAL)	/* Only if output comments.  */ \
-                                        /* SPELL_LITERAL happens to DTRT.  */ \
-  TK(CPP_MACRO_ARG,	SPELL_NONE)	/* Macro argument.  */		\
-  TK(CPP_PADDING,	SPELL_NONE)	/* Whitespace for cpp0.  */
-
-#define OP(e, s) e,
-#define TK(e, s) e,
+#define OP(e, s) CPP_ ## e,
+#define TK(e, s) CPP_ ## e,
 enum cpp_ttype
 {
   TTYPE_TABLE
-  N_TTYPES
+  N_TTYPES,
+
+  /* Positions in the table.  */
+  CPP_LAST_EQ        = CPP_MAX,
+  CPP_FIRST_DIGRAPH  = CPP_HASH,
+  CPP_LAST_PUNCTUATOR= CPP_DOT_STAR,
+  CPP_LAST_CPP_OP    = CPP_LESS_EQ
 };
 #undef OP
 #undef TK
@@ -409,6 +410,10 @@ struct cpp_options
 
   /* Nonzero means __STDC__ should have the value 0 in system headers.  */
   unsigned char stdc_0_in_system_headers;
+
+  /* True means return pragmas as tokens rather than processing
+     them directly. */
+  bool defer_pragmas;
 };
 
 /* Callback for header lookup for HEADER, which is the name of a
@@ -634,6 +639,7 @@ extern unsigned char *cpp_spell_token (cpp_reader *, const cpp_token *,
 				       unsigned char *);
 extern void cpp_register_pragma (cpp_reader *, const char *, const char *,
 				 void (*) (cpp_reader *));
+extern void cpp_handle_deferred_pragma (cpp_reader *, const cpp_string *);
 extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
 			    const cpp_token *);
 extern const cpp_token *cpp_get_token (cpp_reader *);
