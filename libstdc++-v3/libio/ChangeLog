@@ -1,4 +1,8 @@
-2000-09-27  benjamin kosnik  <bkoz@haight.constant.com>
+2000-10-04  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* _G_config.h : Re-guard the __mbstate_t declaration.
+
+2000-09-27  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* libioP.h: Remove fcntl.h include.
 

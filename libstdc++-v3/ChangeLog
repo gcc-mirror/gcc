@@ -1,3 +1,7 @@
+2000-10-04  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* libio/_G_config.h : Re-guard the __mbstate_t declaration.
+
 2000-10-03  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* docs/22_locale/howto.html: Add link to proto-documentation on
