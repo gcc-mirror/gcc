@@ -324,7 +324,7 @@ get_nonpadding_token (void)
 }  
 
 int
-c_lex (tree *value)
+c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 {
   const cpp_token *tok;
   location_t atloc;
@@ -436,7 +436,15 @@ c_lex (tree *value)
       c_common_no_more_pch ();
     }
 
+  if (cpp_flags)
+    *cpp_flags = tok->flags;
   return tok->type;
+}
+
+int
+c_lex (tree *value)
+{
+  return c_lex_with_flags (value, NULL);
 }
 
 /* Returns the narrowest C-visible unsigned type, starting with the
