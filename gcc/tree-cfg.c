@@ -2650,8 +2650,6 @@ simple_goto_p (tree expr)
 static inline bool
 stmt_starts_bb_p (tree t, tree prev_t)
 {
-  enum tree_code code;
-
   if (t == NULL_TREE)
     return false;
 
@@ -2659,16 +2657,14 @@ stmt_starts_bb_p (tree t, tree prev_t)
      statement wasn't a label of the same type.  This prevents the
      creation of consecutive blocks that have nothing but a single
      label.  */
-  code = TREE_CODE (t);
-  if (code == LABEL_EXPR)
+  if (TREE_CODE (t) == LABEL_EXPR)
     {
       /* Nonlocal and computed GOTO targets always start a new block.  */
-      if (code == LABEL_EXPR
-	  && (DECL_NONLOCAL (LABEL_EXPR_LABEL (t))
-	      || FORCED_LABEL (LABEL_EXPR_LABEL (t))))
+      if (DECL_NONLOCAL (LABEL_EXPR_LABEL (t))
+	  || FORCED_LABEL (LABEL_EXPR_LABEL (t)))
 	return true;
 
-      if (prev_t && TREE_CODE (prev_t) == code)
+      if (prev_t && TREE_CODE (prev_t) == LABEL_EXPR)
 	{
 	  if (DECL_NONLOCAL (LABEL_EXPR_LABEL (prev_t)))
 	    return true;
