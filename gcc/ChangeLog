@@ -1,3 +1,16 @@
+2001-01-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinit.c (OPT_MD, OPT_MMD): Restore.
+        (cpp_handle_option): Handle them.
+        (cpp_post_options): Ensure one of -M or -MM is specified with
+        any other -M? option.
+        (init_dependency_output): Suppress output with -MG.
+
+2001-01-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpp.texi: Update.
+        * invoke.texi: Update.
+
 2001-01-09  Bernd Schmidt  <bernds@redhat.com>
 
 	* sh.md (reload_outsf): Generate recognizable patterns for
