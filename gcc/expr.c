@@ -179,6 +179,7 @@ static void do_jump_by_parts_equality_rtx PROTO((rtx, rtx, rtx));
 static void do_jump_for_compare	PROTO((rtx, rtx, rtx));
 static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
+static tree defer_cleanups_to	PROTO((tree));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -3535,6 +3536,9 @@ safe_from_p (x, exp)
 	  exp_rtl = RTL_EXPR_RTL (exp);
 	  break;
 
+	case CLEANUP_POINT_EXPR:
+	  return safe_from_p (x, TREE_OPERAND (exp, 0));
+
 	case SAVE_EXPR:
 	  exp_rtl = SAVE_EXPR_RTL (exp);
 	  break;
@@ -4609,6 +4613,14 @@ expand_expr (exp, target, tmode, modifier)
 	}
       return RTL_EXPR_RTL (exp);
 
+    case CLEANUP_POINT_EXPR:
+      {
+	tree old_cleanups = cleanups_this_call;
+	op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode, modifier);
+	expand_cleanups_to (old_cleanups);
+      }
+      return op0;
+
     case CALL_EXPR:
       /* Check for a built-in function.  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
@@ -5295,6 +5307,17 @@ expand_expr (exp, target, tmode, modifier)
 
     case COND_EXPR:
       {
+	rtx flag = NULL_RTX;
+	tree left_cleanups = NULL_TREE;
+	tree right_cleanups = NULL_TREE;
+
+	/* Used to save a pointer to the place to put the setting of
+	   the flag that indicates if this side of the conditional was
+	   taken.  We backpatch the code, if we find out later that we
+	   have any conditional cleanups that need to be performed. */
+	rtx dest_right_flag = NULL_RTX;
+	rtx dest_left_flag = NULL_RTX;
+
 	/* Note that COND_EXPRs whose type is a structure or union
 	   are required to be constructed to contain assignments of
 	   a temporary variable, so that we can evaluate them here
@@ -5306,7 +5329,6 @@ expand_expr (exp, target, tmode, modifier)
 	tree singleton = 0;
 	tree binary_op = 0, unary_op = 0;
 	tree old_cleanups = cleanups_this_call;
-	cleanups_this_call = 0;
 
 	/* If this is (A ? 1 : 0) and A is a condition, just evaluate it and
 	   convert it to our mode, if necessary.  */
@@ -5430,6 +5452,7 @@ expand_expr (exp, target, tmode, modifier)
 	NO_DEFER_POP;
 	op0 = gen_label_rtx ();
 
+	flag = gen_reg_rtx (word_mode);
 	if (singleton && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0)))
 	  {
 	    if (temp != 0)
@@ -5448,16 +5471,14 @@ expand_expr (exp, target, tmode, modifier)
 	    else
 	      expand_expr (singleton,
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    if (cleanups_this_call)
-	      {
-		sorry ("aggregate value in COND_EXPR");
-		cleanups_this_call = 0;
-	      }
+	    dest_left_flag = get_last_insn ();
 	    if (singleton == TREE_OPERAND (exp, 1))
 	      jumpif (TREE_OPERAND (exp, 0), op0);
 	    else
 	      jumpifnot (TREE_OPERAND (exp, 0), op0);
 
+	    /* Allows cleanups up to here. */
+	    old_cleanups = cleanups_this_call;
 	    if (binary_op && temp == 0)
 	      /* Just touch the other operand.  */
 	      expand_expr (TREE_OPERAND (binary_op, 1),
@@ -5472,6 +5493,7 @@ expand_expr (exp, target, tmode, modifier)
 				  make_tree (type, temp)),
 			  temp, 0);
 	    op1 = op0;
+	    dest_right_flag = get_last_insn ();
 	  }
 #if 0
 	/* This is now done in jump.c and is better done there because it
@@ -5498,9 +5520,14 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
 	      temp = gen_reg_rtx (mode);
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
+	    dest_left_flag = get_last_insn ();
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
+
+	    /* Allows cleanups up to here. */
+	    old_cleanups = cleanups_this_call;
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    op1 = op0;
+	    dest_right_flag = get_last_insn ();
 	  }
 #endif
 	/* Check for A op 0 ? A : FOO and A op 0 ? FOO : A where OP is any
@@ -5518,9 +5545,14 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
 	      temp = gen_reg_rtx (mode);
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
+	    dest_left_flag = get_last_insn ();
 	    jumpif (TREE_OPERAND (exp, 0), op0);
+
+	    /* Allows cleanups up to here. */
+	    old_cleanups = cleanups_this_call;
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    op1 = op0;
+	    dest_right_flag = get_last_insn ();
 	  }
 	else if (temp
 		 && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<'
@@ -5533,24 +5565,31 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
 	      temp = gen_reg_rtx (mode);
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
+	    dest_left_flag = get_last_insn ();
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
+
+	    /* Allows cleanups up to here. */
+	    old_cleanups = cleanups_this_call;
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    op1 = op0;
+	    dest_right_flag = get_last_insn ();
 	  }
 	else
 	  {
 	    op1 = gen_label_rtx ();
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
+
+	    /* Allows cleanups up to here. */
+	    old_cleanups = cleanups_this_call;
 	    if (temp != 0)
 	      store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    else
 	      expand_expr (TREE_OPERAND (exp, 1),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    if (cleanups_this_call)
-	      {
-		sorry ("aggregate value in COND_EXPR");
-		cleanups_this_call = 0;
-	      }
+	    dest_left_flag = get_last_insn ();
+
+	    /* Handle conditional cleanups, if any. */
+	    left_cleanups = defer_cleanups_to (old_cleanups);
 
 	    emit_queue ();
 	    emit_jump_insn (gen_jump (op1));
@@ -5561,18 +5600,58 @@ expand_expr (exp, target, tmode, modifier)
 	    else
 	      expand_expr (TREE_OPERAND (exp, 2),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
+	    dest_right_flag = get_last_insn ();
 	  }
 
-	if (cleanups_this_call)
-	  {
-	    sorry ("aggregate value in COND_EXPR");
-	    cleanups_this_call = 0;
-	  }
+	/* Handle conditional cleanups, if any. */
+	right_cleanups = defer_cleanups_to (old_cleanups);
 
 	emit_queue ();
 	emit_label (op1);
 	OK_DEFER_POP;
-	cleanups_this_call = old_cleanups;
+
+	/* Add back in, any conditional cleanups. */
+	if (left_cleanups || right_cleanups)
+	  {
+	    tree new_cleanups;
+	    tree cond;
+	    rtx last;
+
+	    /* Now that we know that a flag is needed, go back and add in the
+	       setting of the flag. */
+
+	    /* Do the left side flag. */
+	    last = get_last_insn ();
+	    /* Flag left cleanups as needed. */
+	    emit_move_insn (flag, const1_rtx);
+	    /* ??? deprecated, use sequences instead.  */
+	    reorder_insns (NEXT_INSN (last), get_last_insn (), dest_left_flag);
+
+	    /* Do the right side flag. */
+	    last = get_last_insn ();
+	    /* Flag left cleanups as needed. */
+	    emit_move_insn (flag, const0_rtx);
+	    /* ??? deprecated, use sequences instead.  */
+	    reorder_insns (NEXT_INSN (last), get_last_insn (), dest_right_flag);
+
+	    /* convert flag, which is an rtx, into a tree. */
+	    cond = make_node (RTL_EXPR);
+	    TREE_TYPE (cond) = integer_type_node;
+	    RTL_EXPR_RTL (cond) = flag;
+	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
+
+	    if (! left_cleanups)
+	      left_cleanups = integer_zero_node;
+	    if (! right_cleanups)
+	      right_cleanups = integer_zero_node;
+	    new_cleanups = build (COND_EXPR, void_type_node, cond,
+				  left_cleanups, right_cleanups);
+	    new_cleanups = fold (new_cleanups);
+
+	    /* Now add in the conditionalized cleanups. */
+	    cleanups_this_call
+	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
+	  }
 	return temp;
       }
 
@@ -8168,6 +8247,45 @@ do_pending_stack_adjust ()
 	adjust_stack (GEN_INT (pending_stack_adjust));
       pending_stack_adjust = 0;
     }
+}
+
+/* Defer the expansion all cleanups up to OLD_CLEANUPS.
+   Returns the cleanups to be performed.  */
+
+static tree
+defer_cleanups_to (old_cleanups)
+     tree old_cleanups;
+{
+  tree new_cleanups = NULL_TREE;
+  tree cleanups = cleanups_this_call;
+  tree last = NULL_TREE;
+
+  while (cleanups_this_call != old_cleanups)
+    {
+      cleanups_this_call = TREE_CHAIN (cleanups_this_call);
+    }      
+
+  if (last)
+    {
+      /* Remove the list from the chain of cleanups.  */
+      TREE_CHAIN (last) = NULL_TREE;
+
+      /* reverse them so that we can build them in the right order.  */
+      cleanups = nreverse (cleanups);
+
+      while (cleanups)
+	{
+	  if (new_cleanups)
+	    new_cleanups = build (COMPOUND_EXPR, TREE_TYPE (new_cleanups),
+				  TREE_VALUE (cleanups), new_cleanups);
+	  else
+	    new_cleanups = TREE_VALUE (cleanups);
+
+	  cleanups = TREE_CHAIN (cleanups);
+	}
+    }
+
+  return new_cleanups;
 }
 
 /* Expand all cleanups up to OLD_CLEANUPS.

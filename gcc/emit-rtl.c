@@ -2176,7 +2176,9 @@ delete_insns_since (from)
   last_insn = from;
 }
 
-/* Move a consecutive bunch of insns to a different place in the chain.
+/* This function is deprecated, please use sequences instead.
+
+   Move a consecutive bunch of insns to a different place in the chain.
    The insns to be moved are those between FROM and TO.
    They are moved to a new position after the insn AFTER.
    AFTER must not be FROM or TO or any insn in between.

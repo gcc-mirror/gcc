@@ -1995,9 +1995,12 @@ expand_call (exp, target, ignore)
     }
 #endif
 
-  /* Perform all cleanups needed for the arguments of this call
-     (i.e. destructors in C++).  */
-  expand_cleanups_to (old_cleanups);
+  if (flag_short_temps)
+    {
+      /* Perform all cleanups needed for the arguments of this call
+	 (i.e. destructors in C++).  */
+      expand_cleanups_to (old_cleanups);
+    }
 
   /* If size of args is variable or this was a constructor call for a stack
      argument, restore saved stack-pointer value.  */

@@ -436,9 +436,15 @@ DEFTREECODE (METHOD_CALL_EXPR, "method_call_expr", "e", 4)
    Operand 2 is the cleanup expression for the object.
      The RTL_EXPR is used in this expression, which is how the expression
      manages to act on the proper value.
-   The cleanup is executed when the value is no longer needed,
-   which is not at precisely the same time that this value is computed.  */
+   The cleanup is executed by the first enclosing CLEANUP_POINT_EXPR, if
+   it exists, otherwise it is the responsibility of the caller to manually
+   call expand_cleanups_to, as needed.  */
 DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", "e", 3)
+
+/* Specify a cleanup point.
+   Operand 0 is the expression that has cleanups that we want ensure are
+   cleaned up.  */
+DEFTREECODE (CLEANUP_POINT_EXPR, "cleanup_point_expr", "e", 1)
 
 /* The following two codes are used in languages that have types where
    the position and/or sizes of fields vary from object to object of the
