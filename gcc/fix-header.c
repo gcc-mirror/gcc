@@ -936,7 +936,7 @@ main (argc, argv)
   struct stat sbuf;
   int c;
   int i, done;
-  const char *cptr0, *cptr, **pptr;
+  const char *cptr, **pptr;
   int ifndef_line;
   int endif_line;
   long to_read;
@@ -996,25 +996,16 @@ main (argc, argv)
   required_functions_list = include_entry->required;
 
   /* Count and mark the prototypes required for this include file. */ 
-  for (cptr = required_functions_list, cptr0 = cptr, done = 0;
-       !done; cptr++)
+  for (cptr = required_functions_list; *cptr!= '\0'; )
     {
-      if (*cptr == '\0')
-	{
-	  if (cptr[1] == 0)
-	    break;
-	  else
-	    {
-	      struct fn_decl *fn = lookup_std_proto (cptr0, strlen (cptr0));
-	      required_unseen_count++;
-	      if (fn == NULL)
-		fprintf (stderr, "Internal error:  No prototype for %s\n",
-			 cptr0);
-	      else
-		SET_REQUIRED (fn);
-	    }
-	  cptr0 = cptr + 1;
-	}
+      int name_len = strlen (cptr);
+      struct fn_decl *fn = lookup_std_proto (cptr, name_len);
+      required_unseen_count++;
+      if (fn == NULL)
+	fprintf (stderr, "Internal error:  No prototype for %s\n", cptr);
+      else
+	SET_REQUIRED (fn);
+      cptr += name_len + 1;
     }
 
   read_scan_file (argv[2], argc - 4, argv + 4);
@@ -1197,7 +1188,7 @@ void
 fatal (str, arg)
      char *str, *arg;
 {
-  fprintf (stderr, "%s: ", progname);
+  fprintf (stderr, "%s: %s: ", progname, inc_filename);
   fprintf (stderr, str, arg);
   fprintf (stderr, "\n");
   exit (FAILURE_EXIT_CODE);
