@@ -1,3 +1,10 @@
+2001-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.am: Override gctest_OBJECTS so tests/test.c can be built.
+	(libgcjgc_la_SOURCES): Remove typo.
+	* tests/test.c: Fix struct names and includes for GC_GCJ_SUPPORT case.
+	* Makefile.in: Rebuilt.
+
 2001-05-21  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Imported version version 6.0alpha7.
