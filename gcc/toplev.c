@@ -2118,8 +2118,9 @@ pop_srcloc ()
   lineno = input_file_stack->line;
 }
 
-/* Compile an entire file of output from cpp, named NAME.
-   Write a file of assembly output and various debugging dumps.  */
+/* Compile an entire translation unit, whose primary source file is
+   named NAME.  Write a file of assembly output and various debugging
+   dumps.  */
 
 static void
 compile_file (name)
@@ -2140,7 +2141,7 @@ compile_file (name)
   init_timevar ();
   timevar_start (TV_TOTAL);
 
-  /* Open assembler code output file.  Do this even if -fsyntax-only is on,
+  /* Open assembly code output file.  Do this even if -fsyntax-only is on,
      because then the driver will have provided the name of a temporary
      file or bit bucket for us.  */
 
@@ -2324,17 +2325,12 @@ compile_file (name)
 
   /* Call the parser, which parses the entire file
      (calling rest_of_compilation for each function).  */
+  yyparse ();
 
-  if (yyparse () != 0)
-    {
-      if (errorcount == 0)
-	fnotice (stderr, "Errors detected in input file (your bison.simple is out of date)\n");
-
-      /* In case there were missing closebraces,
-	 get us back to the global binding level.  */
-      while (! global_bindings_p ())
-	poplevel (0, 0, 0);
-    }
+  /* In case there were missing block closers,
+     get us back to the global binding level.  */
+  while (! global_bindings_p ())
+    poplevel (0, 0, 0);
 
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
