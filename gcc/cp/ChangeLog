@@ -1,3 +1,7 @@
+2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cp/decl2.c (cxx_post_options): Call cpp_post_options.
+
 2001-01-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parse.y (template_datadef): Check for error_mark_node.

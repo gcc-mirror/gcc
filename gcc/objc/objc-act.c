@@ -634,6 +634,7 @@ struct lang_hooks lang_hooks = {objc_post_options};
 static void
 objc_post_options ()
 {
+  cpp_post_options (parse_in);
 }
 
 /* Some platforms pass small structures through registers versus through

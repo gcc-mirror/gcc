@@ -704,14 +704,25 @@ struct cpp_hashnode
   union tree_node *fe_value;		/* Front end value.  */
 };
 
+/* Call this first to get a handle to pass to other functions.  */
 extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
+
+/* Now call cpp_handle_option[s] to handle 1[or more] switches.  The
+   return value is the number of arguments used.  If
+   cpp_handle_options returns without using all arguments, it couldn't
+   understand the next switch.  When there are no switches left, you
+   must call cpp_post_options before calling cpp_start_read.  Only
+   after cpp_post_options are the contents of the cpp_options
+   structure reliable.  */
+extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
+extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
+extern void cpp_post_options PARAMS ((cpp_reader *));
+
 extern unsigned int cpp_token_len PARAMS ((const cpp_token *));
 extern unsigned char *cpp_token_as_text PARAMS ((cpp_reader *,
 						 const cpp_token *));
 extern unsigned char *cpp_spell_token PARAMS ((cpp_reader *, const cpp_token *,
 					       unsigned char *));
-extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
-extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern void cpp_register_pragma PARAMS ((cpp_reader *,
 					 const char *, const char *,
 					 void (*) PARAMS ((cpp_reader *))));

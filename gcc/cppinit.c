@@ -867,25 +867,6 @@ cpp_start_read (pfile, fname)
 {
   struct pending_option *p, *q;
 
-  /* -MG doesn't select the form of output and must be specified with one of
-     -M or -MM.  -MG doesn't make sense with -MD or -MMD since they don't
-     inhibit compilation.  */
-  if (CPP_OPTION (pfile, print_deps_missing_files)
-      && (CPP_OPTION (pfile, print_deps) == 0
-	  || !CPP_OPTION (pfile, no_output)))
-    {
-      cpp_fatal (pfile, "-MG must be specified with one of -M or -MM");
-      return 0;
-    }
-
-  /* -Wtraditional is not useful in C++ mode.  */
-  if (CPP_OPTION (pfile, cplusplus))
-    CPP_OPTION (pfile, warn_traditional) = 0;
-
-  /* Set this if it hasn't been set already. */
-  if (CPP_OPTION (pfile, user_label_prefix) == NULL)
-    CPP_OPTION (pfile, user_label_prefix) = USER_LABEL_PREFIX;
-
   /* Set up the include search path now.  */
   if (! CPP_OPTION (pfile, no_standard_includes))
     init_standard_includes (pfile);
@@ -906,8 +887,6 @@ cpp_start_read (pfile, fname)
       fprintf (stderr, _("End of search list.\n"));
     }
 
-  /* Open the main input file.  This must be done early, so we have a
-     buffer to stand on.  */
   if (CPP_OPTION (pfile, in_fname) == NULL
       || *CPP_OPTION (pfile, in_fname) == 0)
     {
@@ -918,10 +897,19 @@ cpp_start_read (pfile, fname)
   if (CPP_OPTION (pfile, out_fname) == NULL)
     CPP_OPTION (pfile, out_fname) = "";
 
+  if (CPP_OPTION (pfile, print_deps))
+    {
+      /* Set the default target (if there is none already).  */
+      deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
+
+      if (CPP_OPTION (pfile, in_fname))
+	deps_add_dep (pfile->deps, CPP_OPTION (pfile, in_fname));
+    }
+
+  /* Open the main input file.  This must be done early, so we have a
+     buffer to stand on.  */
   if (!_cpp_read_file (pfile, fname))
     return 0;
-
-  init_dependency_output (pfile);
 
   /* Install __LINE__, etc.  */
   init_builtins (pfile);
@@ -1050,10 +1038,9 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("H",                        0,      OPT_H)                          \
   DEF_OPT("I",                        no_dir, OPT_I)                          \
   DEF_OPT("M",                        0,      OPT_M)                          \
-  DEF_OPT("MD",                       no_fil, OPT_MD)                         \
+  DEF_OPT("MF",                       no_fil, OPT_MF)                         \
   DEF_OPT("MG",                       0,      OPT_MG)                         \
   DEF_OPT("MM",                       0,      OPT_MM)                         \
-  DEF_OPT("MMD",                      no_fil, OPT_MMD)                        \
   DEF_OPT("MP",                       0,      OPT_MP)                         \
   DEF_OPT("MQ",                       no_tgt, OPT_MQ)                         \
   DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
@@ -1448,43 +1435,22 @@ cpp_handle_option (pfile, argc, argv)
 		}
 	  }
 	  break;
-	  /* The style of the choices here is a bit mixed.
-	     The chosen scheme is a hybrid of keeping all options in one string
-	     and specifying each option in a separate argument:
-	     -M|-MM|-MD file|-MMD file [-MG].  An alternative is:
-	     -M|-MM|-MD file|-MMD file|-MG|-MMG; or more concisely:
-	     -M[M][G][D file].  This is awkward to handle in specs, and is not
-	     as extensible.  */
-	  /* ??? -MG must be specified in addition to one of -M or -MM.
-	     This can be relaxed in the future without breaking anything.
-	     The converse isn't true.  */
 
-	  /* -MG isn't valid with -MD or -MMD.  This is checked for later.  */
 	case OPT_MG:
 	  CPP_OPTION (pfile, print_deps_missing_files) = 1;
 	  break;
 	case OPT_M:
-	case OPT_MD:
-	case OPT_MM:
-	case OPT_MMD:
-	  if (opt_code == OPT_M || opt_code == OPT_MD)
-	    CPP_OPTION (pfile, print_deps) = 2;
- 	  else
-	    CPP_OPTION (pfile, print_deps) = 1;
-
-	  /* For -MD and -MMD, write deps on file named by next arg.  */
-	  /* For -M and -MM, write deps on standard output and
-	     suppress the usual output.  */
-	  if (opt_code == OPT_MD || opt_code == OPT_MMD)
-	      CPP_OPTION (pfile, deps_file) = arg;
- 	  else
-	      CPP_OPTION (pfile, no_output) = 1;
+	  CPP_OPTION (pfile, print_deps) = 2;
 	  break;
-
-	case OPT_MP:
+	case OPT_MM:
+	  CPP_OPTION (pfile, print_deps) = 1;
+	  break;
+	case OPT_MF:
+	  CPP_OPTION (pfile, deps_file) = arg;
+	  break;
+ 	case OPT_MP:
 	  CPP_OPTION (pfile, deps_phony_targets) = 1;
 	  break;
-
 	case OPT_MQ:
 	case OPT_MT:
 	  /* Add a target.  -MQ quotes for Make.  */
@@ -1680,7 +1646,35 @@ cpp_handle_options (pfile, argc, argv)
       if (strings_processed == 0)
 	break;
     }
+
   return i;
+}
+
+/* Extra processing when all options are parsed, after all calls to
+   cpp_handle_option[s].  Consistency checks etc.  */
+void
+cpp_post_options (pfile)
+     cpp_reader *pfile;
+{
+  /* -Wtraditional is not useful in C++ mode.  */
+  if (CPP_OPTION (pfile, cplusplus))
+    CPP_OPTION (pfile, warn_traditional) = 0;
+
+  /* Set this if it hasn't been set already. */
+  if (CPP_OPTION (pfile, user_label_prefix) == NULL)
+    CPP_OPTION (pfile, user_label_prefix) = USER_LABEL_PREFIX;
+
+  /* We need to do this after option processing and before
+     cpp_start_read, as cppmain.c relies on the options->no_output to
+     set its callbacks correctly before calling cpp_start_read.  */
+  init_dependency_output (pfile);
+
+  /* -MG doesn't select the form of output and must be specified with
+     one of -M or -MM.  -MG doesn't make sense unless preprocessed
+     output (and compilation) is inhibited.  */
+  if (CPP_OPTION (pfile, print_deps_missing_files)
+      && CPP_OPTION (pfile, print_deps) == 0)
+    cpp_fatal (pfile, "-MG must be specified with one of -M or -MM");
 }
 
 /* Set up dependency-file output.  */
@@ -1722,15 +1716,17 @@ init_dependency_output (pfile)
       else
 	output_file = spec;
 
-      CPP_OPTION (pfile, deps_file) = output_file;
+      /* Command line overrides environment variables.  */
+      if (CPP_OPTION (pfile, deps_file) == 0)
+	CPP_OPTION (pfile, deps_file) = output_file;
       CPP_OPTION (pfile, print_deps_append) = 1;
     }
 
-  /* Set the default target (if there is none already).  */
-  deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
-
-  if (CPP_OPTION (pfile, in_fname))
-    deps_add_dep (pfile->deps, CPP_OPTION (pfile, in_fname));
+  /* If dependencies go to standard output, we need to suppress
+     output.  The user may be requesting other stuff to stdout, with
+     -dM, -v etc.  We let them shoot themselves in the foot.  */
+  if (CPP_OPTION (pfile, deps_file) == 0)
+    CPP_OPTION (pfile, no_output) = 1;
 }
 
 static void
@@ -1799,9 +1795,13 @@ Switches:\n\
   fputs (_("\
   -M                        Generate make dependencies\n\
   -MM                       As -M, but ignore system header files\n\
-  -MD                       As -M, but put output in a .d file\n\
-  -MMD                      As -MD, but ignore system header files\n\
+  -MF <file>                Write dependency output to the given file\n\
   -MG                       Treat missing header file as generated files\n\
+"), stdout);
+  fputs (_("\
+  -MP			    Generate phony targets for all headers\n\
+  -MQ <target>              Add a MAKE-quoted target\n\
+  -MT <target>              Add an unquoted target\n\
   -g3                       Include #define and #undef directives in the output\n\
 "), stdout);
   fputs (_("\

@@ -1,3 +1,23 @@
+2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-lang.c (c_post_options): Call cpp_post_options.
+	* objc/objc-act.c (objc_post_options): Similarly.
+	* cppmain.c (main): Similarly.
+        * fix-header.c (read_scan_file): Similarly.
+        * cppinit.c (cpp_start_read): Move option consistency checks
+        to cpp_post_options.  Don't call init_dependency_output.
+        If needed, add default target and main file dependency.
+        (OPT_MD, OPT_MMD): Remove.
+        (OPT_MF): New.
+        (cpp_handle_option): Update for OPT_* changes.
+        (cpp_post_options): New.
+        (init_dependency_output): Command line -MF overrides environment
+        variables.  Don't set default target etc.  Suppress output
+        if dependencies are going to stdout.
+        (print_help): Update.
+        * cpplib.h (cpp_post_options): New.
+        * gcc.c (cpp_options): Update for -MD, -MMD, -MF.
+	
 Sun Jan  7 14:44:19 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (comparison_dominates_p): Support unordered compares.
