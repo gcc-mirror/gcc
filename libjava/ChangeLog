@@ -1,3 +1,7 @@
+2000-09-05  Tom Tromey  <tromey@cygnus.com>
+
+	* doc/cni.sgml: Updated from master copy.
+
 2000-09-05  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* gnu/gcj/convert/natIconv.cc (read): Remove unused local.
