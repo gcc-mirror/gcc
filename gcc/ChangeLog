@@ -1,3 +1,8 @@
+Sun Jan  9 01:02:55 EST 2000  John Wehle  (john@feith.com)
+
+	* fold-const.c (lshift_double, rshift_double): Handle
+	shifting by 2 * HOST_BITS_PER_WIDE_INT correctly.
+
 2000-01-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* toplev.c (rest_of_compilation): Initialize cse_not_expected as

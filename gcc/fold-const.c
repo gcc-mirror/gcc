@@ -363,7 +363,14 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
     count %= prec;
 #endif
 
-  if (count >= HOST_BITS_PER_WIDE_INT)
+  if (count >= 2 * HOST_BITS_PER_WIDE_INT)
+    {
+      /* Shifting by the host word size is undefined according to the
+	 ANSI standard, so we must handle this as a special case.  */
+      *hv = 0;
+      *lv = 0;
+    }
+  else if (count >= HOST_BITS_PER_WIDE_INT)
     {
       *hv = (unsigned HOST_WIDE_INT) l1 << (count - HOST_BITS_PER_WIDE_INT);
       *lv = 0;
@@ -398,7 +405,14 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
     count %= prec;
 #endif
 
-  if (count >= HOST_BITS_PER_WIDE_INT)
+  if (count >= 2 * HOST_BITS_PER_WIDE_INT)
+    {
+      /* Shifting by the host word size is undefined according to the
+	 ANSI standard, so we must handle this as a special case.  */
+      *hv = signmask;
+      *lv = signmask;
+    }
+  else if (count >= HOST_BITS_PER_WIDE_INT)
     {
       *hv = signmask;
       *lv = ((signmask << (2 * HOST_BITS_PER_WIDE_INT - count - 1) << 1)
