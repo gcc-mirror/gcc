@@ -6085,7 +6085,10 @@ function_prologue (file, size)
 
       fprintf (file, "\t.mask\t0x%08lx,%ld\n\t.fmask\t0x%08lx,%ld\n",
 	       current_frame_info.mask,
-	       current_frame_info.gp_save_offset,
+	       ((frame_pointer_needed && TARGET_MIPS16)
+		? (current_frame_info.gp_save_offset
+		   - current_function_outgoing_args_size)
+		: current_frame_info.gp_save_offset),
 	       current_frame_info.fmask,
 	       current_frame_info.fp_save_offset);
     }
@@ -7434,9 +7437,14 @@ mips16_fp_args (file, fp_code, from_fp_p)
 	    {
 	      if ((fparg & 1) != 0)
 		++fparg;
-	      fprintf (file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
-		       reg_names[gparg], reg_names[fparg + 1], s,
-		       reg_names[gparg + 1], reg_names[fparg]);
+	      if (TARGET_BIG_ENDIAN)
+		fprintf (file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
+			 reg_names[gparg], reg_names[fparg + 1], s,
+			 reg_names[gparg + 1], reg_names[fparg]);
+	      else
+		fprintf (file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
+			 reg_names[gparg], reg_names[fparg], s,
+			 reg_names[gparg + 1], reg_names[fparg + 1]);
 	      ++gparg;
 	      ++fparg;
 	    }
@@ -7777,12 +7785,24 @@ build_mips16_call_stub (retval, fnmem, arg_size, fp_code)
 		     reg_names[GP_REG_FIRST + 2], reg_names[FP_REG_FIRST + 0]);
 	  else
 	    {
-	      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-		       reg_names[GP_REG_FIRST + 2],
-		       reg_names[FP_REG_FIRST + 1]);
-	      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-		       reg_names[GP_REG_FIRST + 3],
-		       reg_names[FP_REG_FIRST + 0]);
+	      if (TARGET_BIG_ENDIAN)
+		{
+		  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
+			   reg_names[GP_REG_FIRST + 2],
+			   reg_names[FP_REG_FIRST + 1]);
+		  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
+			   reg_names[GP_REG_FIRST + 3],
+			   reg_names[FP_REG_FIRST + 0]);
+		}
+	      else
+		{
+		  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
+			   reg_names[GP_REG_FIRST + 2],
+			   reg_names[FP_REG_FIRST + 0]);
+		  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
+			   reg_names[GP_REG_FIRST + 3],
+			   reg_names[FP_REG_FIRST + 1]);
+		}
 	    }
 	  fprintf (asm_out_file, "\tj\t%s\n", reg_names[GP_REG_FIRST + 18]);
 	  /* As above, we can't fill the delay slot.  */

@@ -1,3 +1,11 @@
+Mon Nov  9 16:37:52 1998  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* mips.c (function_prologue): When TARGET_MIPS16, adjust the register
+	offset in the .mask pseudo to compensate for frame pointer adjustments.
+	(mips16_fp_args, build_mips16_call_stub): For little endian, do not
+	word swap arguments moved to/from FP registers.
+	* mips16.S (DFREVCMP): Reverse arguments to OPCODE.
+	
 Mon Nov 9 09:47:06 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
