@@ -299,6 +299,14 @@ retval_t objc_msg_sendv(id, SEL, arglist_t);
 */
 extern Class (*_objc_lookup_class)(const char *name);
 
+/*
+** This is a hook which is called by __objc_exec_class every time a class
+** or a category is loaded into the runtime.  This may e.g. help a
+** dynamic loader determine the classes that have been loaded when
+** an object file is dynamically linked in.
+*/
+extern void (*_objc_load_callback)(Class class, Category* category);
+
 extern id (*_objc_object_alloc)(Class class);
 
 extern id (*_objc_object_copy)(id object);
