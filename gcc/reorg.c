@@ -2475,7 +2475,8 @@ mark_target_live_regs (target, res)
 	     clobber registers used for parameters.  It isn't worth bothering
 	     with the unlikely case when it won't.  */
 	  if ((GET_CODE (real_insn) == INSN
-	       && GET_CODE (PATTERN (real_insn)) != USE)
+	       && GET_CODE (PATTERN (real_insn)) != USE
+	       && GET_CODE (PATTERN (real_insn)) != CLOBBER)
 	      || GET_CODE (real_insn) == JUMP_INSN
 	      || GET_CODE (real_insn) == CALL_INSN)
 	    {
