@@ -1225,6 +1225,26 @@
   [(set_attr "type" "fpalu,move,fpstore,store,fpload,load,fpload,load")
    (set_attr "length" "1,2,1,2,1,2,3,3")])
 
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
+				  (const_int 8))
+			 (match_operand:SI 2 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "flddx,s %1(0,%2),%0"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
+				  (const_int 8))
+			 (match_operand:SI 2 "register_operand" "r")))
+	(match_operand:DF 0 "register_operand" "fx"))]
+  "! TARGET_DISABLE_INDEXING"
+  "fstdx,s %0,%1(0,%2)"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "1")])
+
 (define_expand "movdi"
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "")
 	(match_operand:DI 1 "general_operand" ""))]
@@ -1388,6 +1408,26 @@
    stw%M0 %r1,%0"
   [(set_attr "type" "fpalu,move,load,fpload,fpload,load,fpstore,store")
    (set_attr "length" "1,1,2,2,1,1,1,1")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
+				  (const_int 4))
+			 (match_operand:SI 2 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "fldwx,s %1(0,%2),%0"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
+				  (const_int 4))
+			 (match_operand:SI 2 "register_operand" "r")))
+	(match_operand:SF 0 "register_operand" "fx"))]
+  "! TARGET_DISABLE_INDEXING"
+  "fstwx,s %0,%1(0,%2)"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "1")])
 
 ;;- zero extension instructions
 
