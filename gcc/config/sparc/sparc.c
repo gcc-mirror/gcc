@@ -274,20 +274,15 @@ enum processor_type sparc_cpu;
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
 
-/* Return TRUE if the promotion described by PROMOTE_MODE should also be done
-   for outgoing function arguments.
-   This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
-   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
-   for this value.  */
+/* This is only needed for TARGET_ARCH64, but since PROMOTE_FUNCTION_MODE is a
+   no-op for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime
+   test for this value.  */
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
 
-/* Return TRUE if the promotion described by PROMOTE_MODE should also be done
-   for the return value of functions.  If this macro is defined, FUNCTION_VALUE
-   must perform the same promotions done by PROMOTE_MODE.
-   This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
-   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
-   for this value.  */
+/* This is only needed for TARGET_ARCH64, but since PROMOTE_FUNCTION_MODE is a
+   no-op for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime
+   test for this value.  */
 #undef TARGET_PROMOTE_FUNCTION_RETURN
 #define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
 

@@ -1,3 +1,24 @@
+2004-04-08  Paul Brook  <paul@codesourcery.com>
+
+	* explow.c (promote_mode): Use PROMOTE_FUNCTION_MODE instead of
+	PROMOTE_FOR_CALL_ONLY.
+	* config/arm/arm-protos.h (arm_function_value): Declare.
+	* config/arm/arm.h (TARGET_PROMOTE_FUNCTION_ARGS): Define.
+	(TARGET_PROMOTE_PROTOTYPES): Return false.
+	(arm_function_value): New function.
+	* config/arm/arm.h (PROMOTE_FUNCTION_MODE): Define.
+	(FUNCTION_VALUE): Call arm_function_value.
+	* config/cris/cris.h (PROMOTE_MODE): Rename ...
+	(PROMOTE_FUNCTION_MODE): ... to this.
+	(PROMOTE_FOR_CALL_ONLY): Remove.
+	* config/mmix/mmix.h: Likewise.
+	* config/s390/s390.h: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sparc.c: Update comments about PROMOTE_MODE.
+	* doc/tm.texi (PROMOTE_FUNCTION_MODE): Document.
+	(TARGET_PROMOTE_FUNCTION_MODE, TARGET_PROMOTE_FUNCTION_RETURN): Update.
+	(PROMOTE_FOR_CALL_ONLY): Remove.
+
 2004-04-08  Joel Sherrill <joel@oarcorp.com>
 
 	PR ada/14538

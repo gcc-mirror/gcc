@@ -244,8 +244,10 @@ static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_false
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX arm_struct_value_rtx
@@ -2116,6 +2118,24 @@ arm_canonicalize_comparison (enum rtx_code code, rtx * op1)
 
   return code;
 }
+
+
+/* Define how to find the value returned by a function.  */
+
+rtx arm_function_value(tree type, tree func ATTRIBUTE_UNUSED)
+{
+  enum machine_mode mode;
+  int unsignedp ATTRIBUTE_UNUSED;
+  rtx r ATTRIBUTE_UNUSED;
+
+  
+  mode = TYPE_MODE (type);
+  /* Promote integer types.  */
+  if (INTEGRAL_TYPE_P (type))
+    PROMOTE_FUNCTION_MODE (mode, unsignedp, type);
+  return LIBCALL_VALUE(mode);
+}
+
 
 /* Decide whether a type should be returned in memory (true)
    or in a register (false).  This is called by the macro

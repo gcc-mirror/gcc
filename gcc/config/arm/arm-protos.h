@@ -159,6 +159,7 @@ extern rtx arm_va_arg (tree, tree);
 extern int arm_function_arg_pass_by_reference (CUMULATIVE_ARGS *,
 					       enum machine_mode, tree, int);
 extern bool arm_needs_doubleword_align (enum machine_mode, tree);
+extern rtx arm_function_value(tree, tree);
 #endif
 
 #if defined AOF_ASSEMBLER 
