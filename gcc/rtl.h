@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987, 91-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -257,13 +257,15 @@ typedef struct rtvec_def{
    not needed past this insn).  If REG is set in this insn, the REG_DEAD
    note may, but need not, be omitted.
      REG_INC means that the REG is autoincremented or autodecremented.
-     REG_EQUIV describes the insn as a whole; it says that the
-   insn sets a register to a constant value or to be equivalent to
-   a memory address.  If the
-   register is spilled to the stack then the constant value
-   should be substituted for it.  The contents of the REG_EQUIV
+     REG_EQUIV describes the insn as a whole; it says that the insn
+   sets a register to a constant value or to be equivalent to a memory
+   address.  If the register is spilled to the stack then the constant
+   value should be substituted for it.  The contents of the REG_EQUIV
    is the constant value or memory address, which may be different
-   from the source of the SET although it has the same value. 
+   from the source of the SET although it has the same value.  A
+   REG_EQUIV note may also appear on an insn which copies a register
+   parameter to a pseudo-register, if there is a memory address which
+   could be used to hold that pseudo-register throughout the function.
      REG_EQUAL is like REG_EQUIV except that the destination
    is only momentarily equal to the specified rtx.  Therefore, it
    cannot be used for substitution; but it can be used for cse.
