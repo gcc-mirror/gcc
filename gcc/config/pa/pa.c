@@ -301,6 +301,8 @@ arith11_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && INT_11_BITS (op)));
 }
 
+/* A constant integer suitable for use in a PRE_MODIFY memory 
+   reference.  */
 int
 pre_cint_operand (op, mode)
      rtx op;
@@ -308,6 +310,17 @@ pre_cint_operand (op, mode)
 {
   return (GET_CODE (op) == CONST_INT
 	  && INTVAL (op) >= -0x2000 && INTVAL (op) < 0x10);
+}
+
+/* A constant integer suitable for use in a POST_MODIFY memory 
+   reference.  */
+int
+post_cint_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && INTVAL (op) < 0x2000 && INTVAL (op) >= -0x10);
 }
 
 int
@@ -2061,6 +2074,23 @@ eligible_for_epilogue_delay (trial, slot)
     return 0;
 
   return (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
+}
+
+/* This is only valid once reload has completed because it depends on
+   knowing exactly how much (if any) frame there is and...
+
+   It's only valid if there is no frame marker to de-allocate and...
+
+   It's only valid if %r2 hasn't been saved into the caller's frame
+   (we're not profiling and %r2 isn't live anywhere).  */
+int
+hppa_can_use_return_insn_p ()
+{
+  return (reload_completed
+	  && (compute_frame_size (get_frame_size (), 0) ? 0 : 1)
+	  && ! profile_flag
+	  && ! regs_ever_live[2]
+	  && ! frame_pointer_needed);
 }
 
 void
