@@ -1,3 +1,9 @@
+2002-01-06 Andreas Tobler <a.tobler@schweiz.ch>
+
+	* configure, include/config.h.in: Rebuilt.
+	* java/lang/natSystem.cc (getSystemTimeZone): Check HAVE_TM_ZONE.
+	* configure.in: Call AC_STRUCT_TIMEZONE.
+
 2002-01-02 Andreas Tobler <a.tobler@schweiz.ch>
 
 	* configure.host: Disable the interpreter for Darwin.

@@ -1,6 +1,6 @@
 // natSystem.cc - Native code implementing System class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001 , 2002 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -242,8 +242,9 @@ java::lang::System::getSystemTimeZone (void)
 {
   struct tm *tim;
   time_t current_time;
-  char **tzinfo, *tzid;
   long tzoffset;
+  const char *tz1, *tz2;
+  char *tzid;
 
   current_time = time(0);
 
@@ -259,34 +260,28 @@ java::lang::System::getSystemTimeZone (void)
   // is available, esp. if tzname is valid.
   // Richard Earnshaw <rearnsha@arm.com> has suggested using difftime to
   // calculate between gmtime and localtime (and accounting for possible
-  // daylight savings time) as an alternative.  Also note that this same
-  // issue exists in java/util/natGregorianCalendar.cc.
+  // daylight savings time) as an alternative.
   tzoffset = 0L;
 #endif
-  tzinfo = tzname;
+
+#ifdef HAVE_TM_ZONE
+  tz1 = tim->tm_zone;
+  tz2 = "";
+#elif defined (HAVE_TZNAME)
+  tz1 = tzname[0];
+  tz2 = strcmp (tzname[0], tzname[1]) ? tzname[1] : "";
+#else
+#error Neither tm_zone nor tzname defined
+#endif
 
   if ((tzoffset % 3600) == 0)
     tzoffset = tzoffset / 3600;
 
-  if (!strcmp(tzinfo[0], tzinfo[1]))  
-    {
-      tzid = (char*) _Jv_Malloc (strlen(tzinfo[0]) + 6);
-      if (!tzid)
-        return NULL;
-
-      sprintf(tzid, "%s%ld", tzinfo[0], tzoffset);
-    }
-  else
-    {
-      tzid = (char*) _Jv_Malloc (strlen(tzinfo[0]) + strlen(tzinfo[1]) + 6);
-      if (!tzid)
-        return NULL;
-
-      sprintf(tzid, "%s%ld%s", tzinfo[0], tzoffset, tzinfo[1]);
-    }
-
+  tzid = (char*) _Jv_Malloc (strlen(tz1) + strlen(tz2) + 6);
+  sprintf(tzid, "%s%ld%s", tz1, tzoffset, tz2);
   jstring retval = JvNewStringUTF (tzid);
   _Jv_Free (tzid);
+
   return retval;
 }
 
