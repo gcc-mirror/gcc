@@ -4606,7 +4606,7 @@ absolute_filename (filename)
    It is OK to miss simplifications on non-Posix hosts,
    since this merely leads to suboptimal results.  */
 
-++ combine.c	Mon Dec  1 01:07:35 1997
+static size_t
 simplify_filename (filename)
      char *filename;
 {
