@@ -189,6 +189,10 @@ static inline void start_mangling PARAMS ((void));
 static inline const char *finish_mangling PARAMS ((void));
 static tree mangle_special_for_type PARAMS ((tree, const char *));
 
+/* Foreign language functions. */
+
+static void write_java_integer_type_codes PARAMS ((tree));
+
 /* Append a single character to the end of the mangled
    representation.  */
 #define write_char(CHAR)                                              \
@@ -1446,6 +1450,8 @@ write_builtin_type (type)
 	 integer_type_nodes.  */
       if (type == wchar_type_node)
 	write_char ('w');
+      if (TYPE_FOR_JAVA (type))
+	write_java_integer_type_codes (type);
       else
 	{
 	  size_t itk;
@@ -1473,9 +1479,11 @@ write_builtin_type (type)
       break;
 
     case REAL_TYPE:
-      if (type == float_type_node)
+      if (type == float_type_node
+	  || type == java_float_type_node)
 	write_char ('f');
-      else if (type == double_type_node)
+      else if (type == double_type_node
+	       || type == java_double_type_node)
 	write_char ('d');
       else if (type == long_double_type_node)
 	write_char ('e');
@@ -2280,3 +2288,30 @@ mangle_guard_variable (variable)
   write_name (variable, /*ignore_local_scope=*/0);
   return get_identifier (finish_mangling ());
 }
+
+
+
+/* Foreign language type mangling section.  */
+
+/* How to write the type codes for the integer Java type.  */
+
+static void
+write_java_integer_type_codes (type)
+     tree type;
+{
+  if (type == java_int_type_node)
+    write_char ('i');
+  else if (type == java_short_type_node)
+    write_char ('s');
+  else if (type == java_byte_type_node)
+    write_char ('c');
+  else if (type == java_char_type_node)
+    write_char ('w');
+  else if (type == java_long_type_node)
+    write_char ('x');
+  else if (type == java_boolean_type_node)
+    write_char ('b');
+  else
+    my_friendly_abort (20001207);
+}
+

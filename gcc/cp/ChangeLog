@@ -57,6 +57,15 @@
 	Set IDENTIFIER_CLASS_VALUE when replacing an existing binding.
 	Don't set TREE_VALUE on the class_shadowed list.
 
+2001-01-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+ 
+	* decl2.c (acceptable_java_type): Allow references too. 
+	* init.c (build_java_class_ref): When using the new ABI, search
+	`class$' and have it mangled with `mangle_decl.'
+	* mangle.c (write_java_integer_type_codes): New function.
+	(write_builtin_type): Detect and mangle Java integer and real
+	types.
+ 
 2001-01-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (grokfield): Don't accept `asm' specifiers for

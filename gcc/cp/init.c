@@ -2206,7 +2206,23 @@ build_java_class_ref (type)
 	fatal("call to Java constructor, while `jclass' undefined");
       jclass_node = TREE_TYPE (jclass_node);
     }
-  name = build_static_name (type, CL_suffix);
+
+  /* Mangle the class$ field, new and old ABI */
+  if (flag_new_abi)
+    {
+      tree field;
+      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	if (DECL_NAME (field) == CL_suffix)
+	  {
+	    name = mangle_decl (field);
+	    break;
+	  }
+      if (!field)
+	fatal ("Can't find class$");
+    }
+  else
+    name = build_static_name (type, CL_suffix);
+
   class_decl = IDENTIFIER_GLOBAL_VALUE (name);
   if (class_decl == NULL_TREE)
     {
