@@ -7,6 +7,10 @@ Wed Jan  6 17:55:19 1999  Robert Lipe  <robertlipe@usa.net>
 
 Wed Jan  6 16:08:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* calls.c (special_function_p): Push alloca test inside the large
+	conditional which excludes functions not at file scope or not
+	extern.  
+
 	* calls.c (special_function_p): New function broken out of
 	expand_call.
 	(precompute_register_parameters): Likewise.
