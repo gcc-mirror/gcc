@@ -1,5 +1,13 @@
 2003-04-29  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/Window.java
+	(show): Call super.show() instead of setVisible() to avoid endless
+	loop.
+	(hide): Call super.hide() instead of setVisible() to avoid endless
+	loop.
+
+2003-04-29  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/zip/Deflater.java,
 	java/util/zip/DeflaterOutputStream.java:
 	Partly merged with classpath.
