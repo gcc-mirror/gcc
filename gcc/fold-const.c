@@ -4110,9 +4110,11 @@ fold (expr)
 	  /* If this is A op C1 ? A : C2 with C1 and C2 constant integers,
 	     we might still be able to simplify this.  For example,
 	     if C1 is one less or one more than C2, this might have started
-	     out as a MIN or MAX and been transformed by this function.  */
+	     out as a MIN or MAX and been transformed by this function.
+	     Only good for INTEGER_TYPE, because we need TYPE_MAX_VALUE.  */
 
-	  if (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  if (TREE_CODE (type) == INTEGER_TYPE
+	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	      && TREE_CODE (arg2) == INTEGER_CST)
 	    switch (comp_code)
 	      {
