@@ -2672,6 +2672,10 @@ builtin_function (name, type, function_code, library_name)
       DECL_BUILT_IN (decl) = 1;
       DECL_SET_FUNCTION_CODE (decl, function_code);
     }
+  /* Warn if a function in the namespace for users
+     is used without an occasion to consider it declared.  */
+  if (name[0] != '_' || name[1] != '_')
+    C_DECL_ANTICIPATED (decl) = 1;
 
   return decl;
 }
