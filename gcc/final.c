@@ -1028,10 +1028,17 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    {
 	      if (GET_CODE (note) != NOTE && GET_CODE (note) != CODE_LABEL)
 		break;
+	      /* These types of notes can be significant
+		 so make sure the preceeding line number stays.  */
+	      else if (GET_CODE (note) == NOTE
+		       && (NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_BEG
+			   || NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_END
+			   || NOTE_LINE_NUMBER (note) == NOTE_INSN_FUNCTION_BEG))
+  		break;
 	      else if (GET_CODE (note) == NOTE && NOTE_LINE_NUMBER (note) > 0)
 		{
-		  /* Another note follows; we can delete this note provided
-		     no intervening line numbers have notes elsewhere.  */
+		  /* Another line note follows; we can delete this note
+		     if no intervening line numbers have notes elsewhere.  */
 		  int num;
 		  for (num = NOTE_LINE_NUMBER (insn) + 1;
 		       num < NOTE_LINE_NUMBER (note);
