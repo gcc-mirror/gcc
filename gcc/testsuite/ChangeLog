@@ -1,5 +1,14 @@
 2004-05-07  Uros Bizjak  <uros@kss-loka.si>
 
+	* gcc.dg/i386-387-1.c: Add new test for __builtin_fmod.
+	* gcc.dg/i386-387-2.c: Likewise.
+
+	* gcc.dg/i386-387-5.c: Add new tests for __builtin_log1p and
+	__builtin_drem.
+	* gcc.dg/i386-387-6.c: Likewise.
+
+2004-05-07  Uros Bizjak  <uros@kss-loka.si>
+
 	* gcc.dg/builtins-33.c:  Also check log1p*.
 
 2004-05-07  Hans-Peter Nilsson  <hp@axis.com>
