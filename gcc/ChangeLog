@@ -1,3 +1,21 @@
+2005-01-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h, c-common.c, c-cppbuiltin.c, c-lang.c,
+	c-tree.h, cfgbuild.c, cgraph.c, cgraph.h, collect2.c,
+	combine.c, config.gcc, coverage.h, cse.c, cselib.c,
+	defaults.h, df.c, dwarf2asm.c, dwarf2out.c, explow.c, expr.c,
+	flow.c, fold-const.c, gcse.c, ggc-page.c, gimple-low.c,
+	gimplify.c, ifcvt.c, langhooks-def.h, lcm.c, optabs.h,
+	output.h, postreload-gcse.c, postreload.c, recog.c,
+	resource.c, rtl.def, rtlanal.c, sched-deps.c, sched-rgn.c,
+	targhooks.h, toplev.c, tree-data-ref.c, tree-eh.c,
+	tree-flow.h, tree-loop-linear.c, tree-mudflap.h, tree-nrv.c,
+	tree-optimize.c, tree-outof-ssa.c, tree-pass.h,
+	tree-scalar-evolution.c, tree-ssa-copy.c, tree-ssa-dce.c,
+	tree-ssa-dse.c, tree-ssa-loop-ivopts.c, tree-ssa-operands.c,
+	tree-ssa-pre.c, tree-ssa.c, tree-vectorizer.c, tree.def,
+	unwind-dw2-fde-darwin.c, var-tracking.c: Update copyright.
+
 2005-01-18  Richard Henderson  <rth@redhat.com>
 
 	PR target/19496
