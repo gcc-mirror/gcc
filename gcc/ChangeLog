@@ -1,8 +1,14 @@
 Fro Nov 19 05:48:45 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* regclass.c (may_move_in_cost): Rename from may_move_cost, all
+	references updated.
+	(may_move_out_cost): New variable.
+	(init_reg_sets_1): Initialize may_move_out_cost.
+	(record_reg_classes): Use may_move_out_cost.
+
 	* regclass.c (dump_regclass): New function.
 	(regclass): New parameter DUMP, call DUMP_REGCLASS.
-	* toplev.c (rest_of_compilation): Opent lreg dump file before regclass,
+	* toplev.c (rest_of_compilation): Open lreg dump file before regclass,
 	pass rtl_dump_file to regclass.
 	* rtl.h (regclass): Update prototype.
 
