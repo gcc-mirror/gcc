@@ -709,7 +709,7 @@ definitions. For globals, structures, and arrays, we can determine from
 a statement whether a variable of these types has a killing definition. 
 If the variable does, then the statement is marked as having a
 @dfn{must definition} of that variable. However, if a statement is only
-defining a part of the variable (ie. a field in a structure), or if we
+defining a part of the variable (i.e. a field in a structure), or if we
 know that a statement might define the variable but we cannot say for sure,
 then we mark that statement as having a @dfn{may definition}.  For 
 instance, given
