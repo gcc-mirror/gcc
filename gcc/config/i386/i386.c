@@ -214,6 +214,10 @@ const int x86_read_modify = ~(m_PENT | m_PPRO);
 const int x86_split_long_moves = m_PPRO;
 const int x86_promote_QImode = m_K6 | m_PENT | m_386 | m_486;
 const int x86_single_stringop = m_386;
+const int x86_qimode_math = ~(0);
+const int x86_promote_qi_regs = 0;
+const int x86_himode_math = ~(m_PPRO);
+const int x86_promote_hi_regs = m_PPRO;
 
 #define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
 
