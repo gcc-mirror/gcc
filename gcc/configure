@@ -2445,7 +2445,7 @@ for machine in $build $host $target; do
 		tm_file=i386/sun.h
 		use_collect2=yes
 		;;
-	i[3456]86-wrs-vxworks*)
+	i[34567]86-wrs-vxworks*)
 		tm_file=i386/vxi386.h
 		tmake_file=i386/t-i386bare
 		;;
@@ -4273,6 +4273,7 @@ for machine in $build $host $target; do
 		cpu_type=v850
 		tm_file="v850/v850.h"
 		xm_file="v850/xm-v850.h"
+		tmake_file=v850/t-v850
 		if [ x$stabs = xyes ]
 		then
 			tm_file="${tm_file} dbx.h"
