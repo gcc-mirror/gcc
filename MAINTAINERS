@@ -7,6 +7,7 @@ Richard Kenner					kenner@nyu.edu
 Jeff Law					law@cygnus.com
 Michael Meissner				meissner@cygnus.com
 David S. Miller					davem@redhat.com
+Mark Mitchell					mark@codesourcery.com
 Jim Wilson					wilson@cygnus.com
 
 
@@ -38,7 +39,6 @@ arc port		Richard Kenner		kenner@nyu.edu
 fortran			Craig Burley		craig@jcb-sc.com
 fortran			Richard Henderson	rth@cygnus.com	
 c++			Jason Merrill		jason@cygnus.com
-c++                     Mark Mitchell           mark@codesourcery.com
 chill			Dave Brolley		brolley@cygnus.com
 chill			Per Bothner		bothner@cygnus.com
 java			Per Bothner		bothner@cygnus.com
@@ -81,7 +81,6 @@ Andrew Macleod					amacleod@cygnus.com
 Dave Love					d.love@dl.ac.uk
 *Toon Moene					toon@moene.indiv.nluug.nl
 *HJ Lu						hjl@lucon.org
-Mark Mitchell					mark@codesourcery.com
 Kaveh Ghazi					ghazi@caip.rutgers.edu
 Andreas Schwab					schwab@issan.informatik.uni-dortmund.de
 Manfred Hollstein				mhollstein@cygnus.com
