@@ -10300,6 +10300,9 @@ arm_regno_class (int regno)
   if (IS_IWMMXT_REGNUM (regno))
     return IWMMXT_REGS;
 
+  if (IS_IWMMXT_GR_REGNUM (regno))
+    return IWMMXT_GR_REGS;
+
   return FPA_REGS;
 }
 
