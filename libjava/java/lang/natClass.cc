@@ -398,7 +398,7 @@ java::lang::Class::initializeClass (void)
 #ifdef INTERPRETER
       if (_Jv_IsInterpretedClass (this))
 	{
-	  java::lang::ClassLoader::resolveClass (this);
+	  java::lang::ClassLoader::resolveClass0 (this);
 
 	  // Step 1.
 	  _Jv_MonitorEnter (this);

@@ -23,10 +23,6 @@ import java.util.Stack;
  * @author  Kresten Krab Thorup
  */
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * Status: Just a stub; not useful at all.
- */
-
 public abstract class ClassLoader {
 
   static private ClassLoader system;
@@ -225,16 +221,17 @@ public abstract class ClassLoader {
    * For historical reasons, this method has a name which is easily
    * misunderstood.  Java classes are never ``resolved''.  Classes are
    * linked; whereas method and field references are resolved.
-   * <P>
-   * FIXME: The JDK documentation declares this method
-   * <code>final</code>, we declare it <code>static</code> -- any
-   * objections?  This allows us to call it directly from native code
-   * with less hassle. 
    *
    * @param     clazz the class to link.
    * @exception java.lang.LinkageError
    */
-  protected static void resolveClass(Class clazz)
+  protected final void resolveClass(Class clazz)
+    throws java.lang.LinkageError
+  {
+    resolveClass0(clazz);
+  }
+
+  static void resolveClass0(Class clazz)
     throws java.lang.LinkageError
   {
     synchronized (clazz)
@@ -273,7 +270,7 @@ public abstract class ClassLoader {
    * @exception java.lang.LinkageError 
    * @exception java.lang.ClassNotFoundException 
    */
-  protected native static Class findSystemClass(String name) 
+  protected native Class findSystemClass(String name) 
     throws java.lang.ClassNotFoundException, java.lang.LinkageError;
 
   /*

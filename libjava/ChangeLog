@@ -1,3 +1,11 @@
+1999-08-14  Per Bothner  <per@bothner.com>
+
+	* resolve.cc (_Jv_PrepareClass): Use ClassLoader::resolveClass0.
+	* java/lang/natClass.cc (initializeClass): Likewise.
+	* java/lang/ClassLoader.java (resolveClass0): New static method.
+	(resolveClass): Call resolveClass0.
+	(findSystemClass): No longer static.
+
 1999-08-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* include/javaprims.h (TRUE, FALSE): Redefine as themselves.
