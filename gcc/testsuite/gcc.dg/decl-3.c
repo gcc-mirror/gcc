@@ -2,4 +2,4 @@
 /* { dg-do compile } */
 
 enum { CODES }; /* { dg-error "previous definition" } */
-enum { CODES }; /* { dg-error "conflicting types" } */
+enum { CODES }; /* { dg-error "conflicting types|redeclaration of enumerator" } */
