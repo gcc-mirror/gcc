@@ -2061,7 +2061,9 @@ package body Sem_Ch12 is
 
       Enter_Name (Id);
 
+      Set_Scope_Depth_Value (Id, Scope_Depth (Current_Scope) + 1);
       New_Scope (Id);
+      Enter_Generic_Scope (Id);
       Set_Inner_Instances (Id, New_Elmt_List);
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
 
@@ -2099,6 +2101,7 @@ package body Sem_Ch12 is
 
       End_Generic;
       End_Scope;
+      Exit_Generic_Scope (Id);
 
    end Analyze_Generic_Subprogram_Declaration;
 
@@ -2715,7 +2718,9 @@ package body Sem_Ch12 is
            and then S /= Standard_Standard
          loop
             exit when Is_Generic_Instance (S)
-                 and then In_Package_Body (S);
+                 and then (In_Package_Body (S)
+                            or else Ekind (S) = E_Procedure
+                            or else Ekind (S) = E_Function);
 
             if S = Curr_Unit
               or else (Ekind (Curr_Unit) = E_Package_Body
@@ -2725,7 +2730,7 @@ package body Sem_Ch12 is
 
                if Is_Child_Unit (S) then
                   --  Remove child unit from stack, as well as inner scopes.
-                  --  Removing its context of child unit will remove parent
+                  --  Removing the context of a child unit removes parent
                   --  units as well.
 
                   while Current_Scope /= S loop
@@ -5020,7 +5025,15 @@ package body Sem_Ch12 is
         and then
           In_Same_Declarative_Part (Freeze_Node (Par), Inst_Node)
       then
-         Insert_After (Freeze_Node (Par), F_Node);
+         if ABE_Is_Certain (Get_Package_Instantiation_Node (Par)) then
+            --  The parent was a premature instantiation. Insert freeze
+            --  node at the end the current declarative part.
+
+            Insert_After_Last_Decl (Inst_Node, F_Node);
+
+         else
+            Insert_After (Freeze_Node (Par), F_Node);
+         end if;
 
       --  The body enclosing the instance should be frozen after the body
       --  that includes the generic, because the body of the instance may
