@@ -384,7 +384,7 @@ bitmap_operation (to, from1, from2, operation)
   if (to == from1 || to == from2)
     {
       delete_list = to->first;
-      to->first = 0;
+      to->first = to->current = 0;
     }
   else
     bitmap_clear (to);
