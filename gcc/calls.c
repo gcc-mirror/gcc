@@ -1287,10 +1287,12 @@ expand_call (exp, target, ignore)
 	args[i].initial_value = args[i].value
 	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
 
-	if (GET_MODE (args[i].value ) != VOIDmode
-	    && GET_MODE (args[i].value) != args[i].mode)
-	  args[i].value = convert_to_mode (args[i].mode, args[i].value,
-					   args[i].unsignedp);
+	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != args[i].mode)
+	  args[i].value
+	    = convert_modes (args[i].mode, 
+			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+			     args[i].value, args[i].unsignedp);
+
 	preserve_temp_slots (args[i].value);
 	pop_temp_slots ();
 
@@ -2174,7 +2176,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 	 Pass it as a double instead.  */
 #ifdef LIBGCC_NEEDS_DOUBLE
       if (LIBGCC_NEEDS_DOUBLE && mode == SFmode)
-	val = convert_to_mode (DFmode, val, 0), mode = DFmode;
+	val = convert_modes (DFmode, SFmode, val, 0), mode = DFmode;
 #endif
 
       /* There's no need to call protect_from_queue, because
@@ -2525,7 +2527,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	 Pass it as a double instead.  */
 #ifdef LIBGCC_NEEDS_DOUBLE
       if (LIBGCC_NEEDS_DOUBLE && mode == SFmode)
-	val = convert_to_mode (DFmode, val, 0), mode = DFmode;
+	val = convert_modes (DFmode, SFmode, val, 0), mode = DFmode;
 #endif
 
       /* There's no need to call protect_from_queue, because
@@ -2955,9 +2957,9 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
       /* If we are promoting object (or for any other reason) the mode
 	 doesn't agree, convert the mode.  */
 
-      if (GET_MODE (arg->value) != VOIDmode
-	  && GET_MODE (arg->value) != arg->mode)
-	arg->value = convert_to_mode (arg->mode, arg->value, arg->unsignedp);
+      if (arg->mode != TYPE_MODE (TREE_TYPE (pval)))
+	arg->value = convert_modes (arg->mode, TYPE_MODE (TREE_TYPE (pval)),
+				    arg->value, arg->unsignedp);
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
       if (arg->pass_on_stack)
