@@ -410,9 +410,9 @@ checksum_string (unsigned chksum, const char *string)
 static unsigned
 compute_checksum (void)
 {
-  unsigned chksum = TREE_LINENO (current_function_decl);
+  unsigned chksum = DECL_SOURCE_LINE (current_function_decl);
 
-  chksum = checksum_string (chksum, TREE_FILENAME (current_function_decl));
+  chksum = checksum_string (chksum, DECL_SOURCE_FILE (current_function_decl));
   chksum = checksum_string
     (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
 
@@ -432,8 +432,8 @@ coverage_begin_output (void)
 
   if (!bbg_function_announced)
     {
-      const char *file = TREE_FILENAME (current_function_decl);
-      unsigned line = TREE_LINENO (current_function_decl);
+      const char *file = DECL_SOURCE_FILE (current_function_decl);
+      unsigned line = DECL_SOURCE_LINE (current_function_decl);
       unsigned long offset;
 
       if (!bbg_file_opened)

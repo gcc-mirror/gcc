@@ -1728,8 +1728,8 @@ maybe_layout_super_class (tree super_class, tree this_class)
 	    {
 	      tree this_decl = TYPE_NAME (this_class);
 	      this_wrap = build_expr_wfl (this_class,
-					  TREE_FILENAME (this_decl),
-					  TREE_LINENO (this_decl), 0);
+					  DECL_SOURCE_FILE (this_decl),
+					  DECL_SOURCE_LINE (this_decl), 0);
 	    }
 	  super_class = do_resolve_class (NULL_TREE, /* FIXME? */
 					  super_class, NULL_TREE, this_wrap);
@@ -1767,8 +1767,8 @@ layout_class (tree this_class)
 	  tree decl = TYPE_NAME (TREE_PURPOSE (current));
 	  sprintf (buffer, "\n  which inherits from `%s' (%s:%d)",
 		   IDENTIFIER_POINTER (DECL_NAME (decl)),
-		   TREE_FILENAME (decl),
-		   TREE_LINENO (decl));
+		   DECL_SOURCE_FILE (decl),
+		   DECL_SOURCE_LINE (decl));
 	  obstack_grow (&temporary_obstack, buffer, strlen (buffer));
 	}
       obstack_1grow (&temporary_obstack, '\0');
@@ -2059,6 +2059,7 @@ emit_register_classes (void)
       
       init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
       SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
+      DECL_SOURCE_LINE (init_decl) = 0;
       TREE_STATIC (init_decl) = 1;
       current_function_decl = init_decl;
       DECL_RESULT (init_decl) = build_decl (RESULT_DECL, NULL_TREE,
@@ -2083,7 +2084,7 @@ emit_register_classes (void)
       for ( t = registered_class; t; t = TREE_CHAIN (t))
 	emit_library_call (registerClass_libfunc, 0, VOIDmode, 1,
 			   XEXP (DECL_RTL (t), 0), Pmode);
-      input_location = TREE_LOCUS (init_decl);
+      input_location = DECL_SOURCE_LOCATION (init_decl);
       expand_function_end ();
       poplevel (1, 0, 1);
       rest_of_compilation (init_decl);

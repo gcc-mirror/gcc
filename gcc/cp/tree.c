@@ -2153,7 +2153,7 @@ cp_copy_res_decl_for_inlining (tree result,
 	      && DECL_NAME (var) == NULL_TREE)
 	    {
 	      DECL_NAME (var) = DECL_NAME (nrv);
-	      copy_tree_locus (var, nrv);
+	      DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (nrv);
 	      DECL_ABSTRACT_ORIGIN (var) = DECL_ORIGIN (nrv);
 	      /* Don't lose initialization info.  */
 	      DECL_INITIAL (var) = DECL_INITIAL (nrv);

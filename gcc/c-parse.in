@@ -414,7 +414,7 @@ fndef:
 		    YYERROR1;
 		}
 	  old_style_parm_decls save_location
-		{ set_tree_locus (current_function_decl, $6);
+		{ DECL_SOURCE_LOCATION (current_function_decl) = $6;
 		  store_parm_decls (); }
 	  compstmt_or_error
 		{ finish_function ();
@@ -427,7 +427,7 @@ fndef:
 		    YYERROR1;
 		}
 	  old_style_parm_decls save_location
-		{ set_tree_locus (current_function_decl, $6);
+		{ DECL_SOURCE_LOCATION (current_function_decl) = $6;
 		  store_parm_decls (); }
 	  compstmt_or_error
 		{ finish_function ();
@@ -440,7 +440,7 @@ fndef:
 		    YYERROR1;
 		}
 	  old_style_parm_decls save_location
-		{ set_tree_locus (current_function_decl, $5);
+		{ DECL_SOURCE_LOCATION (current_function_decl) = $5;
 		  store_parm_decls (); }
 	  compstmt_or_error
 		{ finish_function ();
@@ -1563,7 +1563,7 @@ nested_function:
 		}
 	   old_style_parm_decls save_location
 		{ tree decl = current_function_decl;
-		  set_tree_locus (decl, $4);
+		  DECL_SOURCE_LOCATION (decl) = $4;
 		  store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
@@ -1594,7 +1594,7 @@ notype_nested_function:
 		}
 	  old_style_parm_decls save_location
 		{ tree decl = current_function_decl;
-		  set_tree_locus (decl, $4);
+		  DECL_SOURCE_LOCATION (decl) = $4;
 		  store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',

@@ -966,9 +966,10 @@ register_specialization (tree spec, tree tmpl, tree args)
 	      else if (DECL_TEMPLATE_SPECIALIZATION (fn))
 		{
 		  if (!duplicate_decls (spec, fn) && DECL_INITIAL (spec))
-		    /* Dup decl failed, but this is a new definition.  Set the
-		       line number so any errors match this new definition.  */
-		    copy_tree_locus (fn, spec);
+		    /* Dup decl failed, but this is a new
+		       definition. Set the line number so any errors
+		       match this new definition.  */
+		    DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (spec);
 		  
 		  return fn;
 		}
@@ -1782,8 +1783,9 @@ check_explicit_specialization (tree declarator,
 	      DECL_INITIAL (DECL_TEMPLATE_RESULT (tmpl)) = NULL_TREE;
 	      if (have_def)
 		{
-		  copy_tree_locus (tmpl, decl);
-		  copy_tree_locus (DECL_TEMPLATE_RESULT (tmpl), decl);
+		  DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
+		  DECL_SOURCE_LOCATION (DECL_TEMPLATE_RESULT (tmpl))
+		    = DECL_SOURCE_LOCATION (decl);
 		}
 	      return tmpl;
 	    }
@@ -4253,7 +4255,8 @@ lookup_template_class (tree d1,
 	  type_decl = create_implicit_typedef (DECL_NAME (template), t);
 	  DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
 	  TYPE_STUB_DECL (t) = type_decl;
-	  copy_tree_locus (type_decl, TYPE_STUB_DECL (template_type));
+	  DECL_SOURCE_LOCATION (type_decl) 
+	    = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (template_type));
 	}
       else
 	type_decl = TYPE_NAME (t);
@@ -4709,7 +4712,7 @@ tsubst_friend_function (tree decl, tree args)
   tree new_friend;
   location_t saved_loc = input_location;
 
-  input_location = TREE_LOCUS (decl);
+  input_location = DECL_SOURCE_LOCATION (decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL 
       && DECL_TEMPLATE_INSTANTIATION (decl)
@@ -5150,7 +5153,7 @@ instantiate_class_template (tree type)
 
   /* Set the input location to the template definition. This is needed
      if tsubsting causes an error.  */
-  input_location = TREE_LOCUS (TYPE_NAME (pattern));
+  input_location = DECL_SOURCE_LOCATION (TYPE_NAME (pattern));
 
   TYPE_HAS_CONSTRUCTOR (type) = TYPE_HAS_CONSTRUCTOR (pattern);
   TYPE_HAS_DESTRUCTOR (type) = TYPE_HAS_DESTRUCTOR (pattern);
@@ -5299,7 +5302,7 @@ instantiate_class_template (tree type)
 		     assist in error message reporting.  Since we
 		     called push_tinst_level above, we don't need to
 		     restore these.  */
-		  input_location = TREE_LOCUS (t);
+		  input_location = DECL_SOURCE_LOCATION (t);
 
 		  if (TREE_CODE (t) == TEMPLATE_DECL)
 		    processing_template_decl++;
@@ -5408,7 +5411,7 @@ instantiate_class_template (tree type)
      implicit functions at a predictable point, and the same point
      that would be used for non-template classes.  */
   typedecl = TYPE_MAIN_DECL (type);
-  input_location = TREE_LOCUS (typedecl);
+  input_location = DECL_SOURCE_LOCATION (typedecl);
   
   unreverse_member_declarations (type);
   finish_struct_1 (type);
@@ -5705,7 +5708,7 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 
   /* Set the filename and linenumber to improve error-reporting.  */
   saved_loc = input_location;
-  input_location = TREE_LOCUS (t);
+  input_location = DECL_SOURCE_LOCATION (t);
 
   switch (TREE_CODE (t))
     {
@@ -10771,7 +10774,7 @@ instantiate_decl (tree d, int defer_ok)
   else
     pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
 
-  input_location = TREE_LOCUS (d);
+  input_location = DECL_SOURCE_LOCATION (d);
 
   if (pattern_defined)
     {
@@ -10887,7 +10890,7 @@ instantiate_decl (tree d, int defer_ok)
   /* We already set the file and line above.  Reset them now in case
      they changed as a result of calling
      regenerate_decl_from_template.  */
-  input_location = TREE_LOCUS (d);
+  input_location = DECL_SOURCE_LOCATION (d);
 
   if (TREE_CODE (d) == VAR_DECL)
     {
@@ -11175,7 +11178,8 @@ tsubst_enum (tree tag, tree newtag, tree args)
     }
 
   finish_enum (newtag);
-  copy_tree_locus (TYPE_NAME (newtag), TYPE_NAME (tag));
+  DECL_SOURCE_LOCATION (TYPE_NAME (newtag))
+    = DECL_SOURCE_LOCATION (TYPE_NAME (tag));
 }
 
 /* DECL is a FUNCTION_DECL that is a template specialization.  Return

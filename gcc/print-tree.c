@@ -368,7 +368,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       fprintf (file, " %s", GET_MODE_NAME (mode));
       fprintf (file, " file %s line %d",
-	       TREE_FILENAME (node), TREE_LINENO (node));
+	       DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
 
       print_node (file, "size", DECL_SIZE (node), indent + 4);
       print_node (file, "unit size", DECL_SIZE_UNIT (node), indent + 4);
