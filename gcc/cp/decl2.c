@@ -2608,7 +2608,6 @@ finish_vtable_vardecl (t, data)
     /* We don't know what to do with this one yet.  */
     return 0;
 
-  *t = TREE_CHAIN (vars);
   return 0;
 }
 

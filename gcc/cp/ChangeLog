@@ -1,3 +1,9 @@
+1999-11-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst_decl): Copy TREE_ASM_WRITTEN for VAR_DECLs.
+
+	* decl2.c (finish_vtable_vardecl): Don't prune vtables here.
+
 1999-11-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (pushdecl, grokdeclarator): Don't call a variadic
