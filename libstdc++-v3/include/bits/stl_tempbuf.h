@@ -81,25 +81,22 @@ __get_temporary_buffer(ptrdiff_t __len, _Tp*)
   return pair<_Tp*, ptrdiff_t>((_Tp*)0, 0);
 }
 
+/**
+ *  This is a mostly-useless wrapper around malloc().
+*/
 template <class _Tp>
 inline pair<_Tp*, ptrdiff_t> get_temporary_buffer(ptrdiff_t __len) {
   return __get_temporary_buffer(__len, (_Tp*) 0);
 }
 
-// This overload is not required by the standard; it is an extension.
-// It is supported for backward compatibility with the HP STL, and
-// because not all compilers support the language feature (explicit
-// function template arguments) that is required for the standard
-// version of get_temporary_buffer.
-template <class _Tp>
-inline pair<_Tp*, ptrdiff_t> get_temporary_buffer(ptrdiff_t __len, _Tp*) {
-  return __get_temporary_buffer(__len, (_Tp*) 0);
-}
-
+/**
+ *  The companion to get_temporary_buffer().
+*/
 template <class _Tp>
 void return_temporary_buffer(_Tp* __p) {
   free(__p);
 }
+
 
 template <class _ForwardIterator, class _Tp>
 class _Temporary_buffer {

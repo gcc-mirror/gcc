@@ -94,6 +94,15 @@ namespace std
 	}
     }
 
+  /**
+   *  @brief Copies the range [first,last) into result.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  result An output iterator.
+   *  @return   result + (first - last)
+   *
+   *  Like copy(), but does not require an initialized output range.
+  */
   template<typename _InputIter, typename _ForwardIter>
     inline _ForwardIter
     uninitialized_copy(_InputIter __first, _InputIter __last, _ForwardIter __result)
@@ -159,6 +168,15 @@ namespace std
 				    __iterator_category(__first));
     }
 
+  /**
+   *  @brief Copies the range [first,last) into result.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  result An output iterator.
+   *  @return   result + (first - last)
+   *
+   *  Like copy(), but does not require an initialized output range.
+  */
   template<typename _InputIter, typename _Size, typename _ForwardIter>
     inline pair<_InputIter, _ForwardIter>
     uninitialized_copy_n(_InputIter __first, _Size __count,
@@ -192,6 +210,15 @@ namespace std
 	}
     }
 
+  /**
+   *  @brief Copies the value x into the range [first,last).
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  x      The source value.
+   *  @return   Nothing.
+   *
+   *  Like fill(), but does not require an initialized output range.
+  */
   template<typename _ForwardIter, typename _Tp>
     inline void
     uninitialized_fill(_ForwardIter __first, _ForwardIter __last, const _Tp& __x)
@@ -229,6 +256,15 @@ namespace std
 	}
     }
 
+  /**
+   *  @brief Copies the value x into the range [first,first+n).
+   *  @param  first  An input iterator.
+   *  @param  n      The number of copies to make.
+   *  @param  x      The source value.
+   *  @return   first+n
+   *
+   *  Like fill_n(), but does not require an initialized output range.
+  */
   template<typename _ForwardIter, typename _Size, typename _Tp>
     inline _ForwardIter 
     uninitialized_fill_n(_ForwardIter __first, _Size __n, const _Tp& __x)

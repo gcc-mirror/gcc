@@ -63,6 +63,10 @@
 
 namespace std
 {
+  /**
+   *  This iterator class lets algorithms store their results into
+   *  uninitialized memory.
+  */
   template <class _ForwardIterator, class _Tp>
   class raw_storage_iterator 
     : public iterator<output_iterator_tag, void, void, void, void>

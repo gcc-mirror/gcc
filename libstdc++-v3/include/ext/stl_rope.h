@@ -122,7 +122,8 @@ class char_producer {
 // little like containers.
 
 template<class _Sequence, size_t _Buf_sz = 100>
-class sequence_buffer : public output_iterator {
+class sequence_buffer : public iterator<output_iterator_tag,void,void,void,void>
+{
     public:
         typedef typename _Sequence::value_type value_type;
     protected:
@@ -837,7 +838,8 @@ class _Rope_char_ptr_proxy {
 
 template<class _CharT, class _Alloc>
 class _Rope_iterator_base
-  : public random_access_iterator<_CharT, ptrdiff_t> {
+  : public iterator<random_access_iterator_tag, _CharT>
+{
     friend class rope<_CharT,_Alloc>;
   public:
     typedef _Alloc _allocator_type; // used in _Rope_rotate, VC++ workaround

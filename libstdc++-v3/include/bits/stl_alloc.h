@@ -49,8 +49,8 @@
 #define __GLIBCPP_INTERNAL_ALLOC_H
 
 /**
+ *  @defgroup Allocators Memory Allocators
  *  @maint
- *  @addtogroup Allocators
  *  stl_alloc.h implements some node allocators.  These are NOT the same as
  *  allocators in the C++ standard, nor in the original H-P STL.  They do not
  *  encapsulate different pointer types; we assume that there is only one
@@ -72,8 +72,10 @@
  *
  *  "SGI" allocators may be wrapped in __allocator to convert the interface
  *  into a "standard" one.
- *
  *  @endmaint
+ *
+ *  The canonical description of these classes is in docs/html/ext/howto.html
+ *  or online at http://gcc.gnu.org/onlinedocs/libstdc++/ext/howto.html#3
 */
 
 
@@ -91,8 +93,8 @@ namespace std
    *  A new-based allocator, as required by the standard.  Allocation and
    *  deallocation forward to global new and delete.  "SGI" style, minus
    *  reallocate().
-   *  (See @link Allocators allocators info @endlink for more.)
    *  @endmaint
+   *  (See @link Allocators allocators info @endlink for more.)
   */
   class __new_alloc 
   {
@@ -114,8 +116,8 @@ namespace std
    *  storage efficient.  The template argument is unused and is only present
    *  to permit multiple instantiations (but see __default_alloc_template
    *  for caveats).  "SGI" style, plus __set_malloc_handler for OOM conditions.
-   *  (See @link Allocators allocators info @endlink for more.)
    *  @endmaint
+   *  (See @link Allocators allocators info @endlink for more.)
   */
   template <int __inst>
     class __malloc_alloc_template 
@@ -212,8 +214,8 @@ namespace std
    *
    *  This is neither "standard"-conforming nor "SGI".  The _Alloc parameter
    *  must be "SGI" style.
-   *  (See @link Allocators allocators info @endlink for more.)
    *  @endmaint
+   *  (See @link Allocators allocators info @endlink for more.)
   */
   template<class _Tp, class _Alloc>
   class __simple_alloc
@@ -244,8 +246,8 @@ namespace std
    *  "There is some evidence that this can confuse Purify." - SGI comment
    *
    *  This adaptor is "SGI" style.  The _Alloc parameter must also be "SGI".
-   *  (See @link Allocators allocators info @endlink for more.)
    *  @endmaint
+   *  (See @link Allocators allocators info @endlink for more.)
   */
   template <class _Alloc>
   class __debug_alloc
@@ -317,8 +319,8 @@ typedef __mem_interface __single_client_alloc;
  *  approach.  If you do not wish to share the free lists with the main
  *  default_alloc instance, instantiate this with a non-zero __inst.
  *
- *  (See @link Allocators allocators info @endlink for more.)
  *  @endmaint
+ *  (See @link Allocators allocators info @endlink for more.)
 */
 template <bool __threads, int __inst>
 class __default_alloc_template
@@ -674,12 +676,14 @@ inline bool operator!=(const allocator<_T1>&, const allocator<_T2>&)
 
 
 /**
+ *  @maint
  *  Allocator adaptor to turn an "SGI" style allocator (e.g., __alloc,
  *  __malloc_alloc_template) into a "standard" conforming allocator.  Note
  *  that this adaptor does *not* assume that all objects of the underlying
  *  alloc class are identical, nor does it assume that all of the underlying
  *  alloc's member functions are static member functions.  Note, also, that
  *  __allocator<_Tp, __alloc> is essentially the same thing as allocator<_Tp>.
+ *  @endmaint
  *  (See @link Allocators allocators info @endlink for more.)
 */
 template <class _Tp, class _Alloc>
@@ -822,9 +826,10 @@ inline bool operator!=(const __debug_alloc<_Alloc>&,
  *  The size_t parameters are "standard" style (see top of stl_alloc.h) in
  *  that they take counts, not sizes.
  *
- *  (See @link Allocators allocators info @endlink for more.)
  *  @endmaint
+ *  (See @link Allocators allocators info @endlink for more.)
 */
+//@{
 // The fully general version.
 template <class _Tp, class _Allocator>
 struct _Alloc_traits
@@ -844,6 +849,7 @@ struct _Alloc_traits<_Tp, allocator<_Tp1> >
   typedef __simple_alloc<_Tp, __alloc> _Alloc_type;
   typedef allocator<_Tp> allocator_type;
 };
+//@}
 
 //@{
 /// Versions for the predefined "SGI" style allocators.

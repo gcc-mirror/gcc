@@ -1,10 +1,12 @@
 
-// This just provides documentation for stuff that doesn't need to be in the
-// source headers themselves.  It is a ".cc" file for the sole cheesy reason
-// that it triggers many different text editors into doing Nice Things when
-// typing comments.  However, it is mentioned nowhere except the *cfg.in files.
-// Pieces separated by '// //' lines will usually not be presented to the
-// user on the same page.
+/*
+   This just provides documentation for stuff that doesn't need to be in the
+   source headers themselves.  It is a ".cc" file for the sole cheesy reason
+   that it triggers many different text editors into doing Nice Things when
+   typing comments.  However, it is mentioned nowhere except the *cfg.in files.
+   Pieces separated by '// //' lines will usually not be presented to the
+   user on the same page.
+*/
 
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @addtogroup SGIextensions STL extensions from SGI
