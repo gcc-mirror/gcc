@@ -4074,6 +4074,9 @@ summarize_insn (x, sum, set)
 	      summarize_insn (XVECEXP (x, i, j), sum, 0);
 	    break;
 
+	  case 'i':
+	    break;
+
 	  default:
 	    abort ();
 	  }
