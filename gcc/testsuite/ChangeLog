@@ -1,3 +1,8 @@
+2003-02-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9457
+	* g++.dg/template/init1.C: New test.
+
 Sun Feb 16 23:08:19 CET 2003  Jan HUbicka  <jh@suse.cz>
 
 	* gcc.dg/c90-const-expr-3.c (DZERO): New static variable
