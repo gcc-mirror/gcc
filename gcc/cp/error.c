@@ -877,6 +877,13 @@ dump_decl (tree t, int flags)
       dump_type (t, flags);
       break;
 
+    case BIT_NOT_EXPR:
+      /* This is a pseudo distructor call which has not been folded into
+         a PSEUDO_DTOR_EXPR yet.  */
+      output_add_character (scratch_buffer, '~');
+      dump_type (TREE_OPERAND (t, 0), flags);
+      break;
+
     case TYPE_EXPR:
       abort ();
       break;
