@@ -7417,4 +7417,12 @@ A C expression that returns how many instructions can be issued at the
 same time if the machine is a superscalar machine.  This is only used by
 the @samp{Haifa} scheduler, and not the traditional scheduler.
 
+@findex MAX_INTEGER_COMPUTATION_MODE
+@item MAX_INTEGER_COMPUTATION_MODE
+Define this to the largest integer machine mode which can be used for
+operations other than load, store and copy operations.
+
+You need only define this macro if the target holds values larger than
+@code{word_mode} in general purpose registers.  Most targets should not define
+this macro.
 @end table

@@ -6,6 +6,13 @@
 
 Wed Jun 17 08:38:13 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* expr.c (check_max_integer_computation_mode): New function.
+	(expand_expr): Avoid integer computations in modes wider than
+	MAX_INTEGER_COMPUTATION_MODE.
+	* fold-const.c (fold): Likewise.
+	* tree.h (check_max_integer_computation_mode): Declare.
+	* tm.texi (MAX_INTEGER_COMPUTATION_MODE): Document it.
+
 	* configure.in (nm): Make a link to "nm" in the build tree too.
 
 	* mn10300.md (andsi3): Fix typo.
