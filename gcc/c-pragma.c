@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifdef HANDLE_SYSV_PRAGMA
 
 /* Support #pragma weak by default if WEAK_ASM_OP is defined.  */
-#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP)
+#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP) && defined (SET_ASM_OP)
 #define HANDLE_PRAGMA_WEAK 1
 #endif
 
