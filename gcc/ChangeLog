@@ -1,3 +1,10 @@
+2003-03-10  Michael Matz  <matz@suse.de>
+
+	* cfg.c (unchecked_make_edge): New.
+	(cached_make_edge): Use it.
+	* basic-block.h (unchecked_make_edge): Declare.
+	* cfglayout.c (cfg_layout_duplicate_bb): Use it.
+
 2003-03-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* fpa.md: New file.  Move all patterns relating to FPA co-processor
