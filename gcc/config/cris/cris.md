@@ -4901,17 +4901,19 @@
     [(set (match_dup 4) (match_dup 6))
      (set (match_dup 0) (plus:SI (match_dup 7) (match_dup 8)))])]
 {
-  rtx reg
+  rtx otherop
     = rtx_equal_p (operands[2], operands[0]) ? operands[3] : operands[2];
 
-  if (REG_S_P (operands[1]))
+  /* Make sure we have canonical RTX so we match the insn pattern - a
+     register or MULT in the first operand, not a constant.  */
+  if (CONSTANT_P (otherop))
     {
       operands[7] = operands[1];
-      operands[8] = reg;
+      operands[8] = otherop;
     }
   else
     {
-      operands[7] = reg;
+      operands[7] = otherop;
       operands[8] = operands[1];
     }
   operands[6]
@@ -4949,17 +4951,19 @@
     [(set (match_dup 6) (match_dup 5))
      (set (match_dup 0) (plus:SI (match_dup 7) (match_dup 8)))])]
 {
-  rtx reg
+  rtx otherop
     = rtx_equal_p (operands[2], operands[0]) ? operands[3] : operands[2];
 
-  if (REG_S_P (operands[1]))
+  /* Make sure we have canonical RTX so we match the insn pattern - a
+     register or MULT in the first operand, not a constant.  */
+  if (CONSTANT_P (otherop))
     {
       operands[7] = operands[1];
-      operands[8] = reg;
+      operands[8] = otherop;
     }
   else
     {
-      operands[7] = reg;
+      operands[7] = otherop;
       operands[8] = operands[1];
     }
   operands[6]
