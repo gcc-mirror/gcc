@@ -555,6 +555,7 @@ dbxout_typedefs (syms)
 	  tree type = TREE_TYPE (syms);
 	  if (TYPE_NAME (type)
 	      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	      && TYPE_SIZE (type) != NULL_TREE
 	      && ! TREE_ASM_WRITTEN (TYPE_NAME (type)))
 	    dbxout_symbol (TYPE_NAME (type), 0);
 	}
@@ -1783,10 +1784,7 @@ dbxout_symbol (decl, local)
 		&& !TREE_ASM_WRITTEN (TYPE_NAME (type))
 		/* Distinguish the implicit typedefs of C++
 		   from explicit ones that might be found in C.  */
-                && (!strcmp (lang_identify (), "cplusplus") 
-		    /* The following line maybe unnecessary;
-		       in 2.6, try removing it.  */
-		    || DECL_SOURCE_LINE (decl) == 0))
+                && DECL_ARTIFICIAL (decl))
 	      {
 		tree name = TYPE_NAME (type);
 		if (TREE_CODE (name) == TYPE_DECL)
