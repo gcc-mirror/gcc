@@ -1,3 +1,8 @@
+2004-12-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/18997
+	* config/i386/cygwin.h (GTHREAD_USE_WEAK): Define to 0.
+
 2004-12-16  Richard Henderson  <rth@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 

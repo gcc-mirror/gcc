@@ -33,4 +33,8 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
+#ifdef __CYGWIN__
+#define _GLIBCXX_GTHREAD_USE_WEAK 0
+#endif
+
 #endif

@@ -1,3 +1,9 @@
+2004-12-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/18997
+	* config/os/newlib/os_defines.h (_GLIBCXX_GTHREAD_USE_WEAK):
+	Define to 0 for __CYGWIN__.
+
 2004-12-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement add_const, add_volatile,
