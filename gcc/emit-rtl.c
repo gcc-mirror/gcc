@@ -692,6 +692,71 @@ gen_lowpart (mode, x)
     abort ();
 }
 
+/* Like `gen_lowpart', but refer to the most significant part. 
+   This is used to access the imaginary part of a complex number.  */
+
+rtx
+gen_highpart (mode, x)
+     enum machine_mode mode;
+     register rtx x;
+{
+  /* This case loses if X is a subreg.  To catch bugs early,
+     complain if an invalid MODE is used even in other cases.  */
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && GET_MODE_SIZE (mode) != GET_MODE_UNIT_SIZE (GET_MODE (x)))
+    abort ();
+  if (GET_CODE (x) == CONST_DOUBLE
+#if !(TARGET_FLOAT_FORMAT != HOST_FLOAT_FORMAT || defined(REAL_IS_NOT_DOUBLE))
+      && GET_MODE_CLASS (GET_MODE (x)) != MODE_FLOAT
+#endif
+      )
+    return gen_rtx (CONST_INT, VOIDmode,
+		    CONST_DOUBLE_HIGH (x) & GET_MODE_MASK (mode));
+  else if (GET_CODE (x) == CONST_INT)
+    return const0_rtx;
+  else if (GET_CODE (x) == MEM)
+    {
+      register int offset = 0;
+#if !WORDS_BIG_ENDIAN
+      offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
+		- MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+#endif
+#if !BYTES_BIG_ENDIAN
+      if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	offset -= (GET_MODE_SIZE (mode)
+		   - MIN (UNITS_PER_WORD,
+			  GET_MODE_SIZE (GET_MODE (x))));
+#endif
+      return change_address (x, mode, plus_constant (XEXP (x, 0), offset));
+    }
+  else if (GET_CODE (x) == SUBREG)
+    {
+      /* The only time this should occur is when we are looking at a
+	 multi-word item with a SUBREG whose mode is the same as that of the
+	 item.  It isn't clear what we would do if it wasn't.  */
+      if (SUBREG_WORD (x) != 0)
+	abort ();
+      return gen_highpart (mode, SUBREG_REG (x));
+    }
+  else if (GET_CODE (x) == REG)
+    {
+      int word = 0;
+
+#if !WORDS_BIG_ENDIAN
+      if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
+	word = ((GET_MODE_SIZE (GET_MODE (x))
+		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
+		/ UNITS_PER_WORD);
+#endif
+      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+	return gen_rtx (REG, mode, REGNO (x) + word);
+      else
+	return gen_rtx (SUBREG, mode, x, word);
+    }
+  else
+    abort ();
+}
+
 /* Return 1 iff X, assumed to be a SUBREG,
    refers to the least significant part of its containing reg.
    If X is not a SUBREG, always return 1 (it is its own low part!).  */
