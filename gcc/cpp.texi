@@ -2841,11 +2841,12 @@ This option is available only when you call @code{cpp} directly;
 
 @item -$
 @findex -$
-Forbid the use of @samp{$} in identifiers.  This is required for ANSI
-conformance.  @code{gcc} automatically supplies this option to the
-preprocessor if you specify @samp{-ansi}, but @code{gcc} doesn't
-recognize the @samp{-$} option itself---to use it without the other
-effects of @samp{-ansi}, you must call the preprocessor directly.
+Forbid the use of @samp{$} in identifiers.  This was formerly required
+for strict conformance to the C Standard before the standard was
+corrected.
+
+This option is available only when you call @code{cpp} directly;
+@code{gcc} will not pass it from its command line.
 
 @end table
 
