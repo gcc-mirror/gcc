@@ -115,9 +115,16 @@ static struct obstack *mangle_obstack;
    be IDENTIFIER_NODEs.  */
 static struct obstack name_obstack;
 
-  /* The first object on the name_obstack; we use this to free memory
-     allocated on the name_obstack.  */
+/* The first object on the name_obstack; we use this to free memory
+   allocated on the name_obstack.  */
 static void *name_base;
+
+/* An incomplete mangled name.  There will be no NUL terminator.  If
+   there is no incomplete mangled name, this variable is NULL.  */
+static char *partially_mangled_name;
+
+/* The number of characters in the PARTIALLY_MANGLED_NAME.  */
+static size_t partially_mangled_name_len;
 
 /* Indices into subst_identifiers.  These are identifiers used in
    special substitution rules.  */
@@ -253,6 +260,42 @@ static void write_java_integer_type_codes (const tree);
 /* Write out an unsigned quantity in base 10.  */
 #define write_unsigned_number(NUMBER) \
   write_number ((NUMBER), /*unsigned_p=*/1, 10)
+
+/* Save the current (incomplete) mangled name and release the obstack
+   storage holding it.  This function should be used during mangling
+   when making a call that could result in a call to get_identifier,
+   as such a call will clobber the same obstack being used for
+   mangling.  This function may not be called twice without an
+   intervening call to restore_partially_mangled_name.  */
+
+static void
+save_partially_mangled_name (void)
+{
+  if (mangle_obstack == &ident_hash->stack)
+    {
+      gcc_assert (!partially_mangled_name);
+      partially_mangled_name_len = obstack_object_size (mangle_obstack);
+      partially_mangled_name = xmalloc (partially_mangled_name_len);
+      memcpy (partially_mangled_name, obstack_base (mangle_obstack),
+	      partially_mangled_name_len);
+      obstack_free (mangle_obstack, obstack_finish (mangle_obstack));
+    }
+}
+
+/* Restore the incomplete mangled name saved with
+   save_partially_mangled_name.  */
+
+static void
+restore_partially_mangled_name (void)
+{
+  if (partially_mangled_name)
+    {
+      obstack_grow (mangle_obstack, partially_mangled_name,
+		    partially_mangled_name_len);
+      free (partially_mangled_name);
+      partially_mangled_name = NULL;
+    }
+}
 
 /* If DECL is a template instance, return nonzero and, if
    TEMPLATE_INFO is non-NULL, set *TEMPLATE_INFO to its template info.
@@ -702,7 +745,9 @@ write_encoding (const tree decl)
 
       if (decl_is_template_id (decl, NULL))
 	{
+	  save_partially_mangled_name ();
 	  fn_type = get_mostly_instantiated_function_type (decl);
+	  restore_partially_mangled_name ();
 	  /* FN_TYPE will not have parameter types for in-charge or
 	     VTT parameters.  Therefore, we pass NULL_TREE to
 	     write_bare_function_type -- otherwise, it will get
@@ -1063,7 +1108,10 @@ write_unqualified_name (const tree decl)
       tree type;
       if (decl_is_template_id (decl, NULL))
 	{
-	  tree fn_type = get_mostly_instantiated_function_type (decl);
+	  tree fn_type;
+	  save_partially_mangled_name ();
+	  fn_type = get_mostly_instantiated_function_type (decl);
+	  restore_partially_mangled_name ();
 	  type = TREE_TYPE (fn_type);
 	}
       else

@@ -1,3 +1,8 @@
+2004-09-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17324
+	* g++.dg/template/mangle1.C: New test.
+
 2004-09-14  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17252
