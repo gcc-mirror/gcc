@@ -5044,6 +5044,19 @@ reload_reg_free_before_p (regno, opnum, type, equiv)
 {
   int i;
 
+  /* The code to handle EQUIV below is wrong.
+
+     If we wnat to know if a value in a particular reload register is available
+     at a particular point in time during reloading, we must check *all*
+     prior reloads to see if they clobber the value.
+
+     Note this is significantly different from determining when a register is
+     free for usage in a reload!
+
+     This change is temporary.  It will go away.  */
+  if (equiv)
+    return 0;
+
   switch (type)
     {
     case RELOAD_FOR_OTHER_ADDRESS:
