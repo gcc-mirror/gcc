@@ -759,6 +759,12 @@ extern int arm_is_6_or_7;
  (TARGET_REALLY_IWMMXT				\
    && ((TREE_CODE (TYPE) == VECTOR_TYPE) || (TYPE_MODE (TYPE) == DImode) || (TYPE_MODE (TYPE) == DFmode)))
 
+/* XXX Blah -- this macro is used directly by libobjc.  Since it
+   supports no vector modes, cut out the complexity and fall back
+   on BIGGEST_FIELD_ALIGNMENT.  */
+#ifdef IN_TARGET_LIBS
+#define BIGGEST_FIELD_ALIGNMENT BIGGEST_ALIGNMENT
+#else
 /* An expression for the alignment of a structure field FIELD if the
    alignment computed in the usual way is COMPUTED.  GCC uses this
    value instead of the value in `BIGGEST_ALIGNMENT' or
@@ -767,6 +773,7 @@ extern int arm_is_6_or_7;
   (TYPE_NEEDS_IWMMXT_ALIGNMENT (TREE_TYPE (FIELD))	\
    ? IWMMXT_ALIGNMENT					\
    : (COMPUTED))
+#endif
 
 /* If defined, a C expression to compute the alignment for a static variable.
    TYPE is the data type, and ALIGN is the alignment that the object
@@ -1459,7 +1466,7 @@ enum reg_class
     }									   \
   while (0)
 
-/* ??? If an HImode FP+large_offset address is converted to an HImode
+/* XXX If an HImode FP+large_offset address is converted to an HImode
    SP+large_offset address, then reload won't know how to fix it.  It sees
    only that SP isn't valid for HImode, and so reloads the SP into an index
    register, but the resulting address is still invalid because the offset
@@ -1947,7 +1954,7 @@ typedef struct
 	   ldr		pc, [pc]
 	   .word	static chain value
 	   .word	function's address
-   ??? FIXME: When the trampoline returns, r8 will be clobbered.  */
+   XXX FIXME: When the trampoline returns, r8 will be clobbered.  */
 #define ARM_TRAMPOLINE_TEMPLATE(FILE)				\
 {								\
   asm_fprintf (FILE, "\tldr\t%r, [%r, #0]\n",			\
@@ -2603,6 +2610,8 @@ extern int making_const_table;
     asm_fprintf (STREAM, "%r!", REGNO (XEXP (X, 0)));	\
   else if (GET_CODE (X) == PLUS)			\
     {							\
+      if (GET_CODE (XEXP (X, 0)) != REG)		\
+        abort ();					\
       if (GET_CODE (XEXP (X, 1)) == CONST_INT)		\
 	asm_fprintf (STREAM, "[%r, #%wd]", 		\
 		     REGNO (XEXP (X, 0)),		\

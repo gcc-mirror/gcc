@@ -1,3 +1,12 @@
+2003-06-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.h (BIGGEST_FIELD_ALIGNMENT): Define instead
+	of ADJUST_FIELD_ALIGN if IN_TARGET_LIBS.
+        Replace occurances of '???' with 'XXX' incase they are
+	mistaken for trigraphs.
+	(THUMB_PRINT_OPERAND_ADDRESS): abort if a compound address
+	does not have a register for the first operand.
+        
 2003-06-25	Dhananjay Deshpande <dhananjayd@kpitcummins.com>
 
 	* config/sh/sh.c (sh_register_move_cost):
