@@ -319,9 +319,8 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void * /*env*/)
   return mark_stack_ptr;
 }
 
-// Return GC descriptor for interpreted class
-#ifdef INTERPRETER
-
+// Generate a GC marking descriptor for a class.
+//
 // We assume that the gcj mark proc has index 0.  This is a dubious assumption,
 // since another one could be registered first.  But the compiler also
 // knows this, so in that case everything else will break, too.
@@ -332,7 +331,6 @@ _Jv_BuildGCDescr(jclass)
   /* FIXME: We should really look at the class and build the descriptor. */
   return (void *)(GCJ_DEFAULT_DESCR);
 }
-#endif
 
 // Allocate some space that is known to be pointer-free.
 void *
