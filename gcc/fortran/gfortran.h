@@ -469,9 +469,11 @@ typedef struct gfc_linebuf
   struct gfc_file *file;
   struct gfc_linebuf *next;
 
-  char line[];
+  char line[1];
 } gfc_linebuf;
-  
+
+#define gfc_linebuf_header_size (offsetof (gfc_linebuf, line))
+
 typedef struct 
 {
   char *nextc;

@@ -1,3 +1,9 @@
+2004-09-17  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.h (struct gfc_linebuf): Don't use C99 empty arrays.
+	(gfc_linebuf_header_size): Define.
+	* scanner.c (load_file): Use it.
+
 2004-09-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* array.c, data.c, decl.c, dependency.c, error.c, f95-lang.c,
