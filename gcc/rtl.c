@@ -319,11 +319,24 @@ copy_rtx (orig)
     }
 
   copy = rtx_alloc (code);
-  PUT_MODE (copy, GET_MODE (orig));
-  copy->in_struct = orig->in_struct;
-  copy->volatil = orig->volatil;
-  copy->unchanging = orig->unchanging;
-  copy->integrated = orig->integrated;
+
+  /* Copy the various flags, and other information.  We assume that
+     all fields need copying, and then clear the fields that should
+     not be copied.  That is the sensible default behavior, and forces
+     us to explicitly document why we are *not* copying a flag.  */
+  bcopy (orig, copy, sizeof (struct rtx_def) - sizeof (rtunion));
+
+  /* We do not copy the USED flag, which is used as a mark bit during
+     walks over the RTL.  */
+  copy->used = 0;
+
+  /* We do not copy JUMP, CALL, or FRAME_RELATED for INSNs.  */
+  if (GET_RTX_CLASS (code) == 'i')
+    {
+      copy->jump = 0;
+      copy->call = 0;
+      copy->frame_related = 0;
+    }
   
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 

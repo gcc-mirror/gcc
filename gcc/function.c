@@ -394,6 +394,17 @@ struct temp_slot
   int align;
   /* The size, in units, of the slot.  */
   HOST_WIDE_INT size;
+  /* The alias set for the slot.  If the alias set is zero, we don't
+     know anything about the alias set of the slot.  We must only
+     reuse a slot if it is assigned an object of the same alias set.
+     Otherwise, the rest of the compiler may assume that the new use
+     of the slot cannot alias the old use of the slot, which is
+     false.  If the slot has alias set zero, then we can't reuse the
+     slot at all, since we have no idea what alias set may have been
+     imposed on the memory.  For example, if the stack slot is the
+     call frame for an inline functioned, we have no idea what alias
+     sets will be assigned to various pieces of the call frame.  */
+  int alias_set;
   /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
   tree rtl_expr;
   /* Non-zero if this temporary is currently in use.  */
@@ -875,7 +886,9 @@ assign_outer_stack_local (mode, size, align, function)
    with this flag.  KEEP is 2 if we allocate a longer term temporary,
    whose lifetime is controlled by CLEANUP_POINT_EXPRs.  KEEP is 3
    if we are to allocate something at an inner level to be treated as
-   a variable in the block (e.g., a SAVE_EXPR).  */
+   a variable in the block (e.g., a SAVE_EXPR).  
+
+   TYPE is the type that will be used for the stack slot.  */
 
 static rtx
 assign_stack_temp_for_type (mode, size, keep, type)
@@ -885,12 +898,21 @@ assign_stack_temp_for_type (mode, size, keep, type)
      tree type;
 {
   int align;
+  int alias_set;
   struct temp_slot *p, *best_p = 0;
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
      of a variable size.  */
   if (size == -1)
     abort ();
+
+  /* If we know the alias set for the memory that will be used, use
+     it.  If there's no TYPE, then we don't know anything about the
+     alias set for the memory.  */
+  if (type)
+    alias_set = get_alias_set (type);
+  else 
+    alias_set = 0;
 
   align = GET_MODE_ALIGNMENT (mode);
   if (mode == BLKmode)
@@ -907,6 +929,8 @@ assign_stack_temp_for_type (mode, size, keep, type)
   for (p = temp_slots; p; p = p->next)
     if (p->align >= align && p->size >= size && GET_MODE (p->slot) == mode
 	&& ! p->in_use
+	&& (!flag_strict_aliasing
+	    || (alias_set && p->alias_set == alias_set))
 	&& (best_p == 0 || best_p->size > p->size
 	    || (best_p->size == p->size && best_p->align > p->align)))
       {
@@ -924,7 +948,11 @@ assign_stack_temp_for_type (mode, size, keep, type)
       /* If there are enough aligned bytes left over, make them into a new
 	 temp_slot so that the extra bytes don't get wasted.  Do this only
 	 for BLKmode slots, so that we can be sure of the alignment.  */
-      if (GET_MODE (best_p->slot) == BLKmode)
+      if (GET_MODE (best_p->slot) == BLKmode
+	  /* We can't split slots if -fstrict-aliasing because the
+	     information about the alias set for the new slot will be
+	     lost.  */
+	  && !flag_strict_aliasing)
 	{
 	  int alignment = best_p->align / BITS_PER_UNIT;
 	  HOST_WIDE_INT rounded_size = CEIL_ROUND (size, alignment);
@@ -978,6 +1006,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
       p->slot = assign_stack_local (mode, size, align);
 
       p->align = align;
+      p->alias_set = alias_set;
 
       /* The following slot size computation is necessary because we don't
 	 know the actual size of the temporary slot until assign_stack_local
@@ -1102,6 +1131,11 @@ combine_temp_slots ()
   struct temp_slot *p, *q;
   struct temp_slot *prev_p, *prev_q;
   int num_slots;
+
+  /* We can't combine slots, because the information about which slot
+     is in which alias set will be lost.  */
+  if (flag_strict_aliasing)
+    return;
 
   /* If there are a lot of temp slots, don't do anything unless 
      high levels of optimizaton.  */
