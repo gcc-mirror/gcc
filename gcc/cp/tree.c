@@ -516,7 +516,7 @@ build_cplus_array_type_1 (elt_type, index_type)
        && index_type && TYPE_MAX_VALUE (index_type)
        && TREE_CODE (TYPE_MAX_VALUE (index_type)) != INTEGER_CST)
       || uses_template_parms (elt_type) 
-      || uses_template_parms (index_type))
+      || (index_type && uses_template_parms (index_type)))
     {
       t = make_node (ARRAY_TYPE);
       TREE_TYPE (t) = elt_type;
