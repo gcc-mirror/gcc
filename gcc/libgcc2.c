@@ -1192,6 +1192,11 @@ __gcc_bcmp (s1, s2, size)
 
 #endif
 
+#ifdef L__dummy
+void
+__dummy () {}
+#endif
+
 #ifdef L_varargs
 #ifdef __i860__
 #if defined(__svr4__) || defined(__alliant__)
