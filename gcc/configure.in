@@ -448,7 +448,6 @@ changequote([,])dnl
 		;;
 	alpha*-*-netbsd*)
 		tm_file="${tm_file} alpha/elf.h alpha/netbsd.h alpha/netbsdl-elf.h"
-		xm_file="xm-netbsd.h ${xm_file}"
 		target_cpu_default="MASK_GAS"
 		tmake_file="alpha/t-crtbe"
 		extra_parts="crtbegin.o crtend.o"
@@ -557,7 +556,7 @@ changequote([,])dnl
 		;;
 	arm*-*-netbsd*)
 		tm_file=arm/netbsd.h
-		xm_file="xm-netbsd.h ${xm_file}"
+		xm_file="arm/xm-netbsd.h ${xm_file}"
 		tmake_file="t-netbsd arm/t-netbsd"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
@@ -946,7 +945,6 @@ changequote(,)dnl
 	i[34567]86-*-netbsd*)
 changequote([,])dnl
 		tm_file=i386/netbsd.h
-		xm_file="xm-netbsd.h ${xm_file}"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
@@ -1783,7 +1781,6 @@ changequote([,])dnl
 		;;
 	m68k*-*-netbsd*)
 		tm_file=m68k/netbsd.h
-		xm_file="xm-netbsd.h ${xm_file}"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
@@ -2104,7 +2101,6 @@ changequote([,])dnl
 	      ;;
 	mipsel-*-netbsd* | mips-dec-netbsd*)    # Decstation running NetBSD
 		tm_file=mips/netbsd.h
-		xm_file="xm-netbsd.h ${xm_file}"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
@@ -2449,7 +2445,7 @@ changequote([,])dnl
 		;;
 	ns32k-*-netbsd*)
 		tm_file=ns32k/netbsd.h
-		xm_file="xm-netbsd.h ${xm_file}"
+		xm_file="ns32k/xm-netbsd.h ${xm_file}"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
@@ -2756,7 +2752,6 @@ changequote([,])dnl
 		;;
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
-		xm_file="xm-netbsd.h ${xm_file}"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
@@ -2951,7 +2946,6 @@ changequote([,])dnl
 		;;
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
-		xm_file="xm-netbsd.h ${xm_file}"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
