@@ -2416,6 +2416,7 @@ gnu/awt/xlib/XFontMetrics.java \
 gnu/awt/xlib/XFramePeer.java \
 gnu/awt/xlib/XGraphics.java \
 gnu/awt/xlib/XGraphicsConfiguration.java \
+gnu/awt/xlib/XOffScreenImage.java \
 gnu/awt/xlib/XPanelPeer.java \
 gnu/awt/xlib/XToolkit.java
 
@@ -2710,10 +2711,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/awt/xlib/XFontMetrics.P .deps/gnu/awt/xlib/XFramePeer.P \
 .deps/gnu/awt/xlib/XGraphics.P \
 .deps/gnu/awt/xlib/XGraphicsConfiguration.P \
-.deps/gnu/awt/xlib/XPanelPeer.P .deps/gnu/awt/xlib/XToolkit.P \
-.deps/gnu/classpath/Configuration.P .deps/gnu/gcj/Core.P \
-.deps/gnu/gcj/RawData.P .deps/gnu/gcj/convert/BytesToUnicode.P \
-.deps/gnu/gcj/convert/Convert.P .deps/gnu/gcj/convert/IOConverter.P \
+.deps/gnu/awt/xlib/XOffScreenImage.P .deps/gnu/awt/xlib/XPanelPeer.P \
+.deps/gnu/awt/xlib/XToolkit.P .deps/gnu/classpath/Configuration.P \
+.deps/gnu/gcj/Core.P .deps/gnu/gcj/RawData.P \
+.deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
+.deps/gnu/gcj/convert/IOConverter.P \
 .deps/gnu/gcj/convert/Input_8859_1.P \
 .deps/gnu/gcj/convert/Input_ASCII.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \

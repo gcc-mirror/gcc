@@ -214,7 +214,7 @@ public class XCanvasPeer implements CanvasPeer
   }
   public Image createImage(int width, int height)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented");
+    return new XOffScreenImage (config, window, width, height);
   }
   public void dispose()
   {

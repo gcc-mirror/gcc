@@ -1866,12 +1866,17 @@ public abstract class Component
    * @param height the height of the image
    * @return the requested image, or null if it is not supported
    */
-  public Image createImage(int width, int height)
+  public Image createImage (int width, int height)
   {
-    if (GraphicsEnvironment.isHeadless())
-      return null;
-    GraphicsConfiguration config = getGraphicsConfiguration();
-    return config == null ? null : config.createCompatibleImage(width, height);
+    Image returnValue = null;
+    if (!GraphicsEnvironment.isHeadless ())
+    {
+      if (isLightweight () && parent != null)
+        returnValue = parent.createImage (width, height);
+      else if (peer != null)
+        returnValue = peer.createImage (width, height);
+    }
+    return returnValue;
   }
 
   /**

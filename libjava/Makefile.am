@@ -2651,6 +2651,7 @@ gnu/awt/xlib/XFontMetrics.java \
 gnu/awt/xlib/XFramePeer.java \
 gnu/awt/xlib/XGraphics.java \
 gnu/awt/xlib/XGraphicsConfiguration.java \
+gnu/awt/xlib/XOffScreenImage.java \
 gnu/awt/xlib/XPanelPeer.java \
 gnu/awt/xlib/XToolkit.java
 

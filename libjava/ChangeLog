@@ -1,3 +1,47 @@
+2003-08-25  Scott Gilbertson  <scottg@mantatest.com>
+	* Makefile.am: added gnu/awt/xlib/XOffScreenImage.java.
+	* Makefile.in: re-generated.
+	* gnu/awt/j2d/IntegerGraphicsState.java
+	(ScreenCoupledImage): new interface.
+	(drawImage): detect ScreenCoupledImage instances.
+	* gnu/awt/xlib/XCanvasPeer.java (createImage) implemented.
+	* gnu/awt/xlib/XEventLoop.java
+	(createEvent): re-formatted, and rearranged to avoid null pointer.
+	* gnu/awt/xlib/XGraphics.java
+	(drawImage): added XOffScreenImage handling.
+	* gnu/awt/xlib/XOffScreenImage.java: new file.
+	* gnu/gcj/xlib/Drawable.java (getDepth): new native method.
+	* gnu/gcj/xlib/GC.java (copyArea): new native method.
+	* gnu/gcj/xlib/XAnyEvent.java
+	(TYPE_KEY_PRESS): new constant.
+	(TYPE_KEY_RELEASE): new constant.
+	(TYPE_MOTION_NOTIFY): new constant.
+	(TYPE_ENTER_NOTIFY): new constant.
+	(TYPE_LEAVE_NOTIFY): new constant.
+	(TYPE_FOCUS_IN): new constant.
+	(TYPE_FOCUS_OUT): new constant.
+	(TYPE_KEYMAP_NOTIFY): new constant.
+	(TYPE_GRAPHICS_EXPOSE): new constant.
+	(TYPE_NO_EXPOSE): new constant.
+	(TYPE_VISIBILITY_NOTIFY): new constant.
+	(TYPE_CREATE_NOTIFY): new constant.
+	(TYPE_DESTROY_NOTIFY): new constant.
+	(TYPE_MAP_REQUEST): new constant.
+	(TYPE_CONFIGURE_REQUEST): new constant.
+	(TYPE_GRAVITY_NOTIFY): new constant.
+	(TYPE_RESIZE_REQUEST): new constant.
+	(TYPE_CIRCULATE_NOTIFY): new constant.
+	(TYPE_CIRCULATE_REQUEST): new constant.
+	(TYPE_PROPERTY_NOTIFY): new constant.
+	(TYPE_SELECTION_CLEAR): new constant.
+	(TYPE_SELECTION_REQUEST): new constant.
+	(TYPE_SELECTION_NOTIFY): new constant.
+	(TYPE_COLORMAP_NOTIFY): new constant.
+	(TYPE_MAPPING_NOTIFY): new constant.
+	* gnu/gcj/xlib/natDrawable.cc (getDepth): new method.
+	* gnu/gcj/xlib/natGC.cc (copyArea): new method
+	* java/awt/Component.java (createImage): changed to use peer method.
+
 2003-08-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics.java (drawString): Pass font

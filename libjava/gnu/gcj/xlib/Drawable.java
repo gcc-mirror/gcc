@@ -79,6 +79,8 @@ public class Drawable extends XID
 
   public native Rectangle getBounds(Rectangle rv);
   
+  public native int getDepth ();
+  
   private static final String MSG_XGETSUBIMAGE_FAILED =
     "XGetSubImage() failed.";
 

@@ -43,6 +43,26 @@ jboolean gnu::gcj::xlib::Drawable::copyIntoXImageImpl(XImage* image,
   return true;
 }
 
+jint gnu::gcj::xlib::Drawable::getDepth ()
+{
+  ::Display* dpy = (::Display*) (getDisplay ()->display);
+  ::Window root;
+  int x, y;
+  unsigned int w, h, bw, depth;
+
+  Status status = XGetGeometry (dpy, getXID(), &root,
+			        &x, &y, &w, &h,
+			        &bw, &depth);
+  switch (status)
+  {
+    case BadDrawable:
+      throw new XException (display, status);
+    default:
+      ; // All OK, NOP.
+  }
+  return (jint)depth;
+}
+
 java::awt::Rectangle*
 gnu::gcj::xlib::Drawable::getBounds(java::awt::Rectangle* rv)
 {

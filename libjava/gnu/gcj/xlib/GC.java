@@ -138,6 +138,11 @@ public class GC implements Cloneable
 			      int destX, int destY,
 			      int width, int height);
 
+  public native void copyArea (Drawable source,
+                               int srcX, int srcY,
+                               int destX, int destY,
+                               int width, int height);
+  
   public Drawable getDrawable()
   {
     return target;

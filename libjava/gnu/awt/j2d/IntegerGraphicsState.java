@@ -44,6 +44,19 @@ public class IntegerGraphicsState extends AbstractGraphicsState
   DirectRasterGraphics directGfx;
   Shape clip;
   
+  /** Interface for images which are coupled to a GraphicsConfiguration,
+   * as is typically the case for an off-screen buffer used in
+   * double-buffering.  Any image which implements this interface is
+   * rendered directly by DirectRasterGraphics (i.e. by directGfx.drawImage)
+   */
+  public interface ScreenCoupledImage
+  {
+    /** Get the GraphicsConfiguration to which this image is coupled
+     * @return the GraphicsConfiguration
+     */
+    GraphicsConfiguration getGraphicsConfiguration ();
+  }
+  
   public IntegerGraphicsState(DirectRasterGraphics directGfx)
   {
     this.directGfx = directGfx;
@@ -245,66 +258,72 @@ public class IntegerGraphicsState extends AbstractGraphicsState
     x += tx;
     y += ty;
     
+    if (image instanceof ScreenCoupledImage)
+    {
+      GraphicsConfiguration config
+        = ((ScreenCoupledImage)image).getGraphicsConfiguration ();
+      if (config == frontend.config)
+        return directGfx.drawImage (image, x, y, observer);
+    }
     if (image instanceof BufferedImage)
+    {
+      BufferedImage bImage = (BufferedImage) image;
+      // FIXME: eliminate? ScreenCoupledImage is probably more efficient
+      Object config = bImage.getProperty ("java.awt.GraphicsConfiguration");
+      if (config == frontend.config)
+        return directGfx.drawImage (image, x, y, observer);
+      
+      int width = image.getWidth (null);
+      int height = image.getHeight (null);
+      
+      Rectangle bounds = new Rectangle (x, y, width, height);
+      
+      MappedRaster mr = directGfx.mapRaster (bounds);
+      
+      // manipulate raster here...
+      ColorModel colorModel = mr.getColorModel ();
+      WritableRaster raster = mr.getRaster ();
+      
+      int xEnd = x + width;
+      int yEnd = y + height;
+      
+      // FIXME: Use the following code only as a fallback. It's SLOW!
+      
+      Object rgbElem = null;
+      for (int yy=0; yy<height; yy++)
       {
-	BufferedImage bImage = (BufferedImage) image;
-	Object config =
-	  bImage.getProperty("java.awt.GraphicsConfiguration");
-	
-	if (config == frontend.config)
-	  return directGfx.drawImage(image, x, y, observer);
-	
-	int width = image.getWidth(null);
-	int height = image.getHeight(null);	
-	
-	Rectangle bounds = new Rectangle(x, y, width, height);
-	
-	MappedRaster mr = directGfx.mapRaster(bounds);
-	
-	// manipulate raster here...
-	ColorModel colorModel = mr.getColorModel();
-	WritableRaster raster = mr.getRaster();
-	
-	int xEnd = x + width;
-	int yEnd = y + height;
-	
-	// FIXME: Use the following code only as a fallback. It's SLOW!
-
-	Object rgbElem = null;
-	for (int yy=0; yy<height; yy++)
-	  {
-	    for (int xx=0; xx<width; xx++)
-	      {
-		int srgb = bImage.getRGB(xx, yy);
-		int sa = ((srgb >>> 24) & 0xff) + 1;
-		int sr = ((srgb >>> 16) & 0xff) + 1;
-		int sg = ((srgb >>> 8) & 0xff) + 1;
-		int sb = (srgb & 0xff) + 1;
-		
-		rgbElem = raster.getDataElements(xx+x, yy+y, rgbElem);
-		int drgb = colorModel.getRGB(rgbElem);
-		int dr = ((drgb >>> 16) & 0xff) + 1;
-		int dg = ((drgb >>> 8) & 0xff) + 1;
-		int db = (drgb & 0xff) + 1;		    
-		int da = 256 - sa;
-		
-		dr = ((sr*sa + dr*da) >>> 8) - 1;
-		dg = ((sg*sa + dg*da) >>> 8) - 1;
-		db = ((sb*sa + db*da) >>> 8) - 1;
-		
-		drgb = (dr<<16) | (dg<<8) | db;
-		
-		rgbElem = colorModel.getDataElements(drgb, rgbElem);
-		
-		raster.setDataElements(xx+x, yy+y, rgbElem);
-	      }
-	  }
-	directGfx.unmapRaster(mr);
-	return true;
-	
+        for (int xx=0; xx<width; xx++)
+        {
+          int srgb = bImage.getRGB (xx, yy);
+          int sa = ((srgb >>> 24) & 0xff) + 1;
+          int sr = ((srgb >>> 16) & 0xff) + 1;
+          int sg = ((srgb >>> 8) & 0xff) + 1;
+          int sb = (srgb & 0xff) + 1;
+          
+          rgbElem = raster.getDataElements (xx+x, yy+y, rgbElem);
+          int drgb = colorModel.getRGB (rgbElem);
+          int dr = ((drgb >>> 16) & 0xff) + 1;
+          int dg = ((drgb >>> 8) & 0xff) + 1;
+          int db = (drgb & 0xff) + 1;
+          int da = 256 - sa;
+          
+          dr = ((sr*sa + dr*da) >>> 8) - 1;
+          dg = ((sg*sa + dg*da) >>> 8) - 1;
+          db = ((sb*sa + db*da) >>> 8) - 1;
+          
+          drgb = (dr<<16) | (dg<<8) | db;
+          
+          rgbElem = colorModel.getDataElements (drgb, rgbElem);
+          
+          raster.setDataElements (xx+x, yy+y, rgbElem);
+        }
       }
-    throw new UnsupportedOperationException("drawing image " + image +
-					    "not implemented");
+      directGfx.unmapRaster (mr);
+      return true;
+      
+    }
+    throw new UnsupportedOperationException ("drawing image " + image +
+    "not implemented");
   }
   
 
