@@ -505,7 +505,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 	      && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
 	    {
 	      rtx temp = operand_subword (to, SUBREG_WORD (x),
-					  0, GET_MODE (x));
+					  0, GET_MODE (from));
 	      if (temp)
 		{
 		  validate_change (object, loc, temp, 1);
