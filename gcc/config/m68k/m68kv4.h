@@ -21,7 +21,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Use SGS_* macros to control compilation in m68k.md */
 
-#define SGS_SWAP_W		/* Use swap.w rather than just plain swap */
 #define SGS_SWITCH_TABLES	/* Different switch table handling */
 
 #include "m68ksgs.h"		/* The m68k/SVR4 assembler is SGS based */
