@@ -43,11 +43,11 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
   register _Atomic_word __result = *__mem;
   register _Atomic_word __temp;
   __asm__ __volatile__ ("1: move%.l %0,%1\n\t"
-			"add%.l %2,%1\n\t"
-			"cas%.l %0,%1,%3\n\t"
+			"add%.l %3,%1\n\t"
+			"cas%.l %0,%1,%2\n\t"
 			"jne 1b"
-			: "=d" (__result), "=&d" (__temp)
-			: "d" (__val), "m" (*__mem), "0" (__result)
+			: "=d" (__result), "=&d" (__temp), "+m" (*__mem)
+			: "d" (__val), "0" (__result)
 			: "memory");
   return __result;
 }

@@ -1,3 +1,9 @@
+2003-01-02  Jason Merrill  <jason@redhat.com>
+
+	* config/cpu/i486/atomicity.h (__exchange_and_add, __atomic_add):
+	*__mem is also an output.
+	* config/cpu/m68k/atomicity.h (__exchange_and_add): Likewise.
+
 2002-12-30  Loren J. Rittle  <ljrittle@acm.org>
 
 	* src/Makefile.am: Resolve non-portable use of $<.
