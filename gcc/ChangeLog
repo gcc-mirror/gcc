@@ -1,3 +1,7 @@
+2005-03-24  James E Wilson  <wilson@specifixinc.com>
+
+	* doc/install.texi (--enable-altivec): Delete docs.
+
 2005-03-24  J"orn Rennecke <joern.rennecke@st.com>
 
 	Band aid for PR target/20617:
