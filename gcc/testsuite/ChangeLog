@@ -1,3 +1,9 @@
+2004-11-10  Adam Nemet  <anemet@lnxw.com>
+
+	PR middle-end/18160  
+	* g++.dg/warn/register-var-1.C: New test.
+	* g++.dg/warn/register-var-2.C: New test.
+
 2004-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/union-2.c: New test.
