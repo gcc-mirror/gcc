@@ -1,3 +1,16 @@
+Tue Sep 14 12:22:50 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-lex.c (handle_generic_pragma): Remove unused variable `c'.
+
+	* unroll.c (find_common_reg_term, subtract_reg_term,
+	loop_find_equiv_value): Add static prototypes.
+	(unroll_loop): Wrap variable `prev' in macro HAVE_cc0.
+	(copy_loop_body): Remove unreachable break statement.
+	
+	* sparc.c (sparc_va_arg): Remove unused variable `tmp'.
+
+	* sparc.h (sparc_va_start, sparc_va_arg): Add extern prototypes.
+	
 Tue Sep 14 15:28:00 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	Undo some changes from the gcc2 merge:

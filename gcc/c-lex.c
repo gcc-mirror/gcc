@@ -871,8 +871,6 @@ static int
 handle_generic_pragma (token)
      register int token;
 {
-  register int c;
-
   for (;;)
     {
       switch (token)

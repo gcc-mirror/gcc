@@ -208,6 +208,9 @@ static int reg_dead_after_loop PROTO((rtx, rtx, rtx));
 static rtx fold_rtx_mult_add PROTO((rtx, rtx, rtx, enum machine_mode));
 static int verify_addresses PROTO((struct induction *, rtx, int));
 static rtx remap_split_bivs PROTO((rtx));
+static rtx find_common_reg_term PROTO((rtx, rtx));
+static rtx subtract_reg_term PROTO((rtx, rtx));
+static rtx loop_find_equiv_value PROTO((rtx, rtx));
 
 /* Try to unroll one loop and split induction variables in the loop.
 
@@ -339,7 +342,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	}
       else if (GET_CODE (last_loop_insn) == JUMP_INSN)
 	{
+#ifdef HAVE_cc0
 	  rtx prev = PREV_INSN (last_loop_insn);
+#endif
 	  delete_insn (last_loop_insn);
 #ifdef HAVE_cc0
 	  /* The immediately preceding insn may be a compare which must be
@@ -2157,7 +2162,6 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 
 	default:
 	  abort ();
-	  break;
 	}
 
       map->insn_map[INSN_UID (insn)] = copy;
