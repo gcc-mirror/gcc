@@ -2345,3 +2345,61 @@ toc_section ()						\
 				  GT, LEU, LTU, GEU, GTU}},	\
   {"scc_comparison_operator", {EQ, NE, LE, LT, GE,		\
 			       GT, LEU, LTU, GEU, GTU}},
+
+/* Declare functions in rs6000.c */
+extern void rs6000_override_options ();
+extern struct rtx_def *rs6000_immed_double_const ();
+extern int direct_return ();
+extern int any_operand ();
+extern int short_cint_operand ();
+extern int u_short_cint_operand ();
+extern int non_short_cint_operand ();
+extern int gpc_reg_operand ();
+extern int cc_reg_operand ();
+extern int reg_or_short_operand ();
+extern int reg_or_neg_short_operand ();
+extern int reg_or_u_short_operand ();
+extern int reg_or_cint_operand ();
+extern int easy_fp_constant ();
+extern int low_32_bit_operand ();
+extern int fp_reg_or_mem_operand ();
+extern int mem_or_easy_const_operand ();
+extern int add_operand ();
+extern int non_add_cint_operand ();
+extern int logical_operand ();
+extern int non_logical_operand ();
+extern int mask_constant ();
+extern int mask_operand ();
+extern int and_operand ();
+extern int non_and_cint_operand ();
+extern int reg_or_mem_operand ();
+extern int lwa_operand ();
+extern int call_operand ();
+extern int current_file_function_operand ();
+extern int input_operand ();
+extern int load_multiple_operation ();
+extern int store_multiple_operation ();
+extern int branch_comparison_operator ();
+extern int scc_comparison_operator ();
+extern int includes_lshift_p ();
+extern int includes_rshift_p ();
+extern int registers_ok_for_quad_peep ();
+extern int addrs_ok_for_quad_peep ();
+extern enum reg_class secondary_reload_class ();
+extern int ccr_bit ();
+extern void print_operand ();
+extern void print_operand_address ();
+extern int first_reg_to_save ();
+extern int first_fp_reg_to_save ();
+extern int must_save_cr ();
+extern int rs6000_sa_size ();
+extern int rs6000_makes_calls ();
+extern int rs6000_pushes_stack ();
+extern void svr4_traceback ();
+extern void output_prolog ();
+extern void output_epilog ();
+extern void output_toc ();
+extern void output_ascii ();
+extern void rs6000_gen_section_name ();
+extern void output_function_profiler ();
+extern int rs6000_adjust_cost ();

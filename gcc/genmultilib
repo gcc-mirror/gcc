@@ -39,7 +39,7 @@
 # identical.  The elements in the list are separated by spaces.  Each
 # element must be of the form OPTION=OPTION.  The first OPTION should
 # appear in the first argument, and the second should be a synonym for
-# it.
+# it.  Question marks are replaced with equal signs in both options.
 
 # The output looks like
 #   #define MULTILIB_MATCHES "\
@@ -132,8 +132,8 @@ fi
 # quoted spaces when expanding a variable.
 matchnegations=
 for i in ${matches}; do
-  l=`echo $i | sed -e 's/=.*$//'`
-  r=`echo $i | sed -e 's/^.*=//'`
+  l=`echo $i | sed -e 's/=.*$//' -e 's/?/=/g'`
+  r=`echo $i | sed -e 's/^.*=//' -e 's/?/=/g'`
   matchnegations="${matchnegations} -e s/;!${l};/;!${l};!${r};/"
 done
 
@@ -158,8 +158,8 @@ else
   first=$1
   shift
   dirout="${dirout}" optout="${optout}" ./tmpmultilib2 $@
-  l=`echo ${first} | sed -e 's/=.*$//'`
-  r=`echo ${first} | sed -e 's/^.*=//'`
+  l=`echo ${first} | sed -e 's/=.*$//' -e 's/?/=/g'`
+  r=`echo ${first} | sed -e 's/^.*=//' -e 's/?/=/g'`
   case " ${optout} " in
   *" ${l} "*)
     newopt=`echo " ${optout} " | sed -e "s/ ${l} / ${r} /" -e 's/^ //' -e 's/ $//'`

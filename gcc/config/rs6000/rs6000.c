@@ -186,6 +186,20 @@ rs6000_override_options ()
     target_flags = (target_flags & ~MASK_MULTIPLE) | multiple;
 }
 
+/* Create a CONST_DOUBLE like immed_double_const, except reverse the
+   two parts of the constant if the target is little endian.  */
+
+struct rtx_def *rs6000_immed_double_const (i0, i1, mode)
+     HOST_WIDE_INT i0, i1;
+     enum machine_mode mode;
+{
+  if (! WORDS_BIG_ENDIAN)
+    return immed_double_const (i1, i0, mode);
+
+  return immed_double_const (i0, i1, mode);
+}
+
+
 /* Return non-zero if this function is known to have a null epilogue.  */
 
 int
