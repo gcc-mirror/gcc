@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
   (MASK_V9 + MASK_PTR64 + MASK_64BIT /* + MASK_HARD_QUAD */ \
-   + MASK_STACK_BIAS + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+   + MASK_STACK_BIAS + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU + MASK_LONG_DOUBLE_128)
 #endif
 
 /* Output at beginning of assembler file.  */
@@ -55,6 +55,15 @@ Boston, MA 02111-1307, USA.  */
   
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC "-Av9a"
+
+#ifdef SPARC_BI_ARCH
+
+#undef CPP_ARCH32_SPEC
+#define CPP_ARCH32_SPEC "%{mlong-double-128:-D__LONG_DOUBLE_128__} \
+-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
+-D__GCC_NEW_VARARGS__ -Acpu(sparc) -Amachine(sparc)"
+
+#endif
 
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
@@ -134,6 +143,11 @@ Boston, MA 02111-1307, USA.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDLOW
 
+#undef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+{"long-double-64", -MASK_LONG_DOUBLE_128, "Use 64 bit long doubles" }, \
+{"long-double-128", MASK_LONG_DOUBLE_128, "Use 128 bit long doubles" },
+
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 
@@ -142,8 +156,22 @@ Boston, MA 02111-1307, USA.  */
 
 #undef MAX_WCHAR_TYPE_SIZE
 
+/* Define for support of TFmode long double and REAL_ARITHMETIC.
+   Sparc ABI says that long double is 4 words.  */
 #undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 128
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
+
+/* Constant which presents upper bound of the above value.  */
+#undef MAX_LONG_DOUBLE_TYPE_SIZE
+#define MAX_LONG_DOUBLE_TYPE_SIZE 128
+
+/* Define this to set long double type size to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#if defined(__arch64__) || defined(__LONG_DOUBLE_128__)
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#endif
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ELF__ -Dunix -D_LONGLONG -D__sparc__ -Dlinux -Asystem(unix) -Asystem(posix)"
@@ -227,7 +255,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
-%{m64:-mptr64 -mstack-bias \
+%{m64:-mptr64 -mstack-bias -mlong-double-128 \
   %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=ultrasparc}}}}}}} \
   %{!mno-vis:%{!mcpu=v9:-mvis}}} \
 %{!m64:%{g*:%{!gs*:%{!gd*:%{!gx*:%{!gc*:-gstabs+}}}}}} \
@@ -238,7 +266,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
-%{m32:-mptr32 -mno-stack-bias \
+%{m32:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
   %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=cypress}}}}}}} \
   %{g*:%{!gs*:%{!gd*:%{!gx*:%{!gc*:-gstabs+}}}}}} \
 %{!m32:%{!mcpu*:-mcpu=ultrasparc}} \

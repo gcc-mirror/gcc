@@ -101,13 +101,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{V} %{v:%{!V:-V}} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s %{fpic:-K PIC} %{fPIC:-K PIC}"
-
-#if 0
-/* Define for support of TFmode long double and REAL_ARITHMETIC.
-   Sparc ABI says that long double is 4 words. GNU/Linux does not support
-   long double yet.  */
-#define LONG_DOUBLE_TYPE_SIZE 128
-#endif
 
 /* No weird SPARC variants on Linux */
 #undef TARGET_LIVE_G0

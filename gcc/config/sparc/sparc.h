@@ -555,6 +555,10 @@ extern int target_flags;
 #define MASK_FASTER_STRUCTS 0x4000000
 #define TARGET_FASTER_STRUCTS (target_flags & MASK_FASTER_STRUCTS)
 
+/* Use IEEE quad long double.  */
+#define MASK_LONG_DOUBLE_128 0x8000000
+#define TARGET_LONG_DOUBLE_128 (target_flags & MASK_LONG_DOUBLE_128)
+
 /* TARGET_HARD_MUL: Use hardware multiply instructions but not %y.
    TARGET_HARD_MUL32: Use hardware multiply instructions with rd %y
    to get high 32 bits.  False in V8+ or V9 because multiply stores

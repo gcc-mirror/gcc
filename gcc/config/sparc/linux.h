@@ -87,6 +87,11 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc GNU/Linux with ELF)");
 
+#undef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+{"long-double-64", -MASK_LONG_DOUBLE_128, "Use 64 bit long doubles" }, \
+{"long-double-128", MASK_LONG_DOUBLE_128, "Use 128 bit long doubles" },
+
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
  
@@ -107,10 +112,12 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SUBTARGET_SPEC
 #ifdef USE_GNULIBC_1
 #define CPP_SUBTARGET_SPEC \
-"%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
+"%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} \
+%{mlong-double-128:-D__LONG_DOUBLE_128__}"
 #else
 #define CPP_SUBTARGET_SPEC \
-"%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+"%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} \
+%{pthread:-D_REENTRANT} %{mlong-double-128:-D__LONG_DOUBLE_128__}"
 #endif
 
 #undef LIB_SPEC
@@ -231,11 +238,19 @@ do {									\
   sprintf (LABEL, "*.L%s%d", PREFIX, NUM)
 
 
-#if 0
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
-   Sparc ABI says that long double is 4 words. GNU/Linux does not support
-   long double yet.  */
-#define LONG_DOUBLE_TYPE_SIZE 128
+   Sparc ABI says that long double is 4 words.  */
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
+
+/* Constant which presents upper bound of the above value.  */
+#define MAX_LONG_DOUBLE_TYPE_SIZE 128
+
+/* Define this to set long double type size to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#ifdef __LONG_DOUBLE_128__
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 #endif
 
 /* No weird SPARC variants on Linux */
