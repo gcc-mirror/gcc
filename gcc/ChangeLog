@@ -1,3 +1,8 @@
+Fri May  3 22:53:37 CEST 2002  Jan Hubicka <jh@suse.cz>
+
+	* i386.c  (expand_movstr, expand_clrstr): Fix inline-all-stringops
+	sequence.
+
 2002-05-03  Richard Henderson  <rth@redhat.com>
 
 	PR opt/6534
