@@ -536,9 +536,9 @@ deduce_conversion (from, to)
 
   obstack_init (&recipe_obstack);
   curr.next = (struct rl *) obstack_alloc (&recipe_obstack, sizeof (struct rl));
-  curr.next->list =
-    (struct conversion_list *) obstack_alloc (&recipe_obstack,
-					      sizeof (struct conversion_list));
+  curr.next->list
+    = (struct conversion_list *) obstack_alloc (&recipe_obstack,
+						sizeof (struct conversion_list));
   curr.next->list->opcode = -1;
   curr.next->list->to = from;
   curr.next->list->cost = 0;
@@ -638,9 +638,9 @@ bc_init_mode_to_code_map ()
 
   for (mode = 0; mode < MAX_MACHINE_MODE + 1; mode++)
     {
-      signed_mode_to_code_map[mode] = 
-	unsigned_mode_to_code_map[mode] =
-	  LAST_AND_UNUSED_TYPECODE;
+      signed_mode_to_code_map[mode]
+	= unsigned_mode_to_code_map[mode]
+	= LAST_AND_UNUSED_TYPECODE;
     }
 
 #define DEF_MODEMAP(SYM, CODE, UCODE, CONST, LOAD, STORE) \

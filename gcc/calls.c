@@ -452,10 +452,10 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size,
   if (stack_size != 0 && RETURN_POPS_ARGS (fndecl, funtype, stack_size) > 0)
     {
       if (!already_popped)
-	CALL_INSN_FUNCTION_USAGE (call_insn) =
-	   gen_rtx (EXPR_LIST, VOIDmode,
-		    gen_rtx (CLOBBER, VOIDmode, stack_pointer_rtx),
-		    CALL_INSN_FUNCTION_USAGE (call_insn));
+	CALL_INSN_FUNCTION_USAGE (call_insn)
+	  = gen_rtx (EXPR_LIST, VOIDmode,
+		     gen_rtx (CLOBBER, VOIDmode, stack_pointer_rtx),
+		     CALL_INSN_FUNCTION_USAGE (call_insn));
       stack_size -= RETURN_POPS_ARGS (fndecl, funtype, stack_size);
       stack_size_rtx = GEN_INT (stack_size);
     }
@@ -812,16 +812,16 @@ expand_call (exp, target, ignore)
   /* Unless it's a call to a specific function that isn't alloca,
      if it has one argument, we must assume it might be alloca.  */
 
-  may_be_alloca =
-    (!(fndecl != 0 && strcmp (name, "alloca"))
-     && actparms != 0
-     && TREE_CHAIN (actparms) == 0);
+  may_be_alloca
+    = (!(fndecl != 0 && strcmp (name, "alloca"))
+       && actparms != 0
+       && TREE_CHAIN (actparms) == 0);
 #else
   /* We assume that alloca will always be called by name.  It
      makes no sense to pass it as a pointer-to-function to
      anything that does not understand its behavior.  */
-  may_be_alloca =
-    (name && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
+  may_be_alloca
+    = (name && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
 		 && name[0] == 'a'
 		 && ! strcmp (name, "alloca"))
 		|| (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 16

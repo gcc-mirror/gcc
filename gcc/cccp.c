@@ -1489,10 +1489,10 @@ main (argc, argv)
 	  if (i + 1 == argc)
 	    fatal ("Filename missing after -pcp option");
 	  pcp_fname = argv[++i];
-	  pcp_outfile = 
-	    ((pcp_fname[0] != '-' || pcp_fname[1] != '\0')
-	     ? fopen (pcp_fname, "w")
-	     : stdout);
+	  pcp_outfile
+	    = ((pcp_fname[0] != '-' || pcp_fname[1] != '\0')
+	       ? fopen (pcp_fname, "w")
+	       : stdout);
 	  if (pcp_outfile == 0)
 	    pfatal_with_name (pcp_fname);
 	  no_precomp = 1;
@@ -5546,8 +5546,8 @@ create_definition (buf, limit, op)
       while (is_idchar[*bp]) {
 	bp++;
 	/* do we have a "special" rest-args extension here? */
-	if (limit - bp > REST_EXTENSION_LENGTH &&
-	    bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
+	if (limit - bp > REST_EXTENSION_LENGTH
+	    && bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
 	  rest_args = 1;
 	  temp->rest_args = 1;
 	  break;
@@ -5579,8 +5579,8 @@ create_definition (buf, limit, op)
 	struct arglist *otemp;
 
 	for (otemp = temp->next; otemp != NULL; otemp = otemp->next)
-	  if (temp->length == otemp->length &&
-	      bcmp (temp->name, otemp->name, temp->length) == 0) {
+	  if (temp->length == otemp->length
+	      && bcmp (temp->name, otemp->name, temp->length) == 0) {
 	      error ("duplicate argument name `%.*s' in `#define'",
 		     temp->length, temp->name);
 	      goto nope;
@@ -6657,8 +6657,7 @@ do_line (buf, limit, op, keyword)
       }
     }
 
-    hash_bucket =
-      &fname_table[hashf (fname, fname_length, FNAME_HASHSIZE)];
+    hash_bucket = &fname_table[hashf (fname, fname_length, FNAME_HASHSIZE)];
     for (hp = *hash_bucket; hp != NULL; hp = hp->next)
       if (hp->length == fname_length &&
 	  bcmp (hp->value.cpval, fname, fname_length) == 0) {
@@ -6947,8 +6946,8 @@ do_elif (buf, limit, op, keyword)
     if (if_stack->type != T_IF && if_stack->type != T_ELIF) {
       error ("`#elif' after `#else'");
       fprintf (stderr, " (matches line %d", if_stack->lineno);
-      if (if_stack->fname != NULL && ip->fname != NULL &&
-	  strcmp (if_stack->fname, ip->nominal_fname) != 0)
+      if (if_stack->fname != NULL && ip->fname != NULL
+	  && strcmp (if_stack->fname, ip->nominal_fname) != 0)
 	fprintf (stderr, ", file %s", if_stack->fname);
       fprintf (stderr, ")\n");
     }
@@ -7066,9 +7065,9 @@ do_xifdef (buf, limit, op, keyword)
 
     if (pcp_outfile) {
       /* Output a precondition for this macro.  */
-      if (hp &&
-	  (hp->type == T_CONST
-	   || (hp->type == T_MACRO && hp->value.defn->predefined)))
+      if (hp
+	  && (hp->type == T_CONST
+	      || (hp->type == T_MACRO && hp->value.defn->predefined)))
 	fprintf (pcp_outfile, "#define %s\n", hp->name);
       else {
 	U_CHAR *cp = buf;
