@@ -396,6 +396,9 @@
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to `long' if <sys/resource.h> doesn't define. */
+#undef rlim_t
+
 /* Define if printf supports %p. */
 #undef HAVE_PRINTF_PTR
 

@@ -1,3 +1,9 @@
+2003-03-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.in (rlim_t): Define to long if no valid definition
+	found in sys/resource.h.
+	* config.in, configure: Regenerate.
+
 2003-03-12  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/mcore/mcore-elf.h (CPP_PREDEFINES): Replace with
