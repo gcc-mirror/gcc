@@ -1,5 +1,7 @@
 2002-02-13  Jason Merrill  <jason@redhat.com>
 
+	* typeck2.c (digest_init): Do handle values of vector type.
+
 	* typeck2.c (digest_init, process_init_constructor): Treat vectors
 	like arrays.
 

@@ -598,7 +598,7 @@ digest_init (type, init, tail)
 	  return process_init_constructor (type, 0, tail);
 	}
 
-      if (CLASS_TYPE_P (type))
+      if (code != ARRAY_TYPE)
 	{
 	  int flags = LOOKUP_NORMAL;
 	  /* Initialization from { } is copy-initialization.  */
