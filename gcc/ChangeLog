@@ -1,3 +1,7 @@
+1999-02-09 10:30 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cpplib.c (do_define): Allow redefining __STDC__ with -D.
+
 1999-02-09  Jim Blandy  <jimb@zwingli.cygnus.com>
 
 	* configure.in: For PowerPC configurations, accept "401", "ec603e",
