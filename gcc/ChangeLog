@@ -1,3 +1,8 @@
+2003-06-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (call): Fix the insn lengths.
+	(call_value): Likewise.
+
 Thu Jun 26 00:13:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (handle_used_attribute): Use mark_referenced.
