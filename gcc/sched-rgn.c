@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -1028,11 +1028,11 @@ find_rgns (edge_list, dom)
   free (max_hdr);
   free (dfs_nr);
   free (stack);
-  free (passed);
-  free (header);
-  free (inner);
-  free (in_queue);
-  free (in_stack);
+  sbitmap_free (passed);
+  sbitmap_free (header);
+  sbitmap_free (inner);
+  sbitmap_free (in_queue);
+  sbitmap_free (in_stack);
 }
 
 /* Functions for regions scheduling information.  */

@@ -1,3 +1,11 @@
+2002-01-26  Graham Stott  <grahams@redhat.com>
+
+	* sched-rgn.c (passed): Use sbitmap_free.
+	(header): Likewise.
+	(inner): Likewise.
+	(in_queue): Likewise.
+	(in_stack): Likewise.
+
 2002-01-15  Eric Christopher  <echristo@redhat.com>
 
 	* flow.c (propagate_one_insn): Change to use fatal_insn.
