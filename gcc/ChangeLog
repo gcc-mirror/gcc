@@ -1,5 +1,10 @@
 2002-04-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* mklibgcc.in: Use separate libgcc.map for each multilib.
+	* Makefile.in (distclean): Don't remove libgcc.map here.
+
+2002-04-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* Makefile.in (s-mlib): Handle --disable-multilib by separate
 	genmultilib invocation.
 
