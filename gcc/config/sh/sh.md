@@ -290,6 +290,8 @@
 ;; ??? using pc is not computed transitively.
 		(ne (match_dup 0) (match_dup 0))
 		(const_int 14)
+		(ne (symbol_ref ("flag_pic")) (const_int 0))
+		(const_int 24)
 		] (const_int 16))
 	 (eq_attr "type" "jump")
 	 (cond [(eq_attr "med_branch_p" "yes")
@@ -306,6 +308,8 @@
 ;; ??? using pc is not computed transitively.
 		(ne (match_dup 0) (match_dup 0))
 		(const_int 12)
+		(ne (symbol_ref ("flag_pic")) (const_int 0))
+		(const_int 22)
 		] (const_int 14))
 	 ] (const_int 2)))
 
@@ -3674,7 +3678,8 @@
   [(set (pc) (plus:SI (match_operand:SI 0 "register_operand" "r")
 		      (label_ref (match_operand 1 "" ""))))
    (use (label_ref (match_operand 2 "" "")))]
-  "! INSN_UID (operands[1]) || prev_real_insn (operands[1]) == insn"
+  "TARGET_SH2
+   && (! INSN_UID (operands[1]) || prev_real_insn (operands[1]) == insn)"
   "braf	%0%#"
   [(set_attr "needs_delay_slot" "yes")
    (set_attr "type" "jump_ind")])

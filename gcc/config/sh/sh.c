@@ -715,6 +715,7 @@ output_far_jump (insn, op)
      rtx op;
 {
   struct { rtx lab, reg, op; } this;
+  rtx braf_base_lab;
   const char *jump;
   int far;
   int offset = branch_dest (insn) - INSN_ADDRESSES (INSN_UID (insn));
@@ -726,21 +727,28 @@ output_far_jump (insn, op)
       && offset - get_attr_length (insn) <= 32766)
     {
       far = 0;
-      jump = "mov.w	%O0,%1;braf	%1";
+      jump = "mov.w	%O0,%1; braf	%1";
     }
   else
     {
       far = 1;
       if (flag_pic)
-	jump = "mov.l	%O0,%1;braf	%1";
+	{
+	  if (TARGET_SH2)
+	    jump = "mov.l	%O0,%1; braf	%1";
+	  else
+	    jump = "mov.l	r0,@-r15; mova	%O0,r0; mov.l	@r0,%1; add	r0,%1; mov.l	@r15+,r0; jmp	@%1";
+	}
       else
-	jump = "mov.l	%O0,%1;jmp	@%1";
+	jump = "mov.l	%O0,%1; jmp	@%1";
     }
   /* If we have a scratch register available, use it.  */
   if (GET_CODE (PREV_INSN (insn)) == INSN
       && INSN_CODE (PREV_INSN (insn)) == CODE_FOR_indirect_jump_scratch)
     {
       this.reg = SET_DEST (PATTERN (PREV_INSN (insn)));
+      if (REGNO (this.reg) == R0_REG && flag_pic && ! TARGET_SH2)
+	jump = "mov.l	r1,@-r15; mova	%O0,r0; mov.l	@r0,r1; add	r1,r0; mov.l	@r15+,r1; jmp	@%1";
       output_asm_insn (jump, &this.lab);
       if (dbr_sequence_length ())
 	print_slot (final_sequence);
@@ -758,12 +766,22 @@ output_far_jump (insn, op)
       output_asm_insn (jump, &this.lab);
       output_asm_insn ("mov.l	@r15+,r13", 0);
     }
+  if (far && flag_pic && TARGET_SH2)
+    {
+      braf_base_lab = gen_label_rtx ();
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				 CODE_LABEL_NUMBER (braf_base_lab));
+    }
   if (far)
     output_asm_insn (".align	2", 0);
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (this.lab));
   this.op = op;
   if (far && flag_pic)
-    output_asm_insn (".long	%O2-%O0", &this.lab);
+    {
+      if (TARGET_SH2)
+	this.lab = braf_base_lab;
+      output_asm_insn (".long	%O2-%O0", &this.lab);
+    }
   else
     output_asm_insn (far ? ".long	%O2" : ".word %O2-%O0", &this.lab);
   return "";
