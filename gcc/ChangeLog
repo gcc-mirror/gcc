@@ -1,3 +1,9 @@
+2004-09-13  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/10528
+	* tree-inline.c (copy_body_r): Recompute bits for ADDR_EXPR,
+	after copying its argument.
+
 2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-common.c, c-decl.c, c-lex.c, c-objc-common.c, c-opts.c,

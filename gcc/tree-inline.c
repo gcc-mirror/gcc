@@ -619,6 +619,16 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	  TREE_OPERAND (*tp, 1) = TREE_OPERAND (*tp, 3);
 	  TREE_OPERAND (*tp, 3) = NULL_TREE;
 	}
+
+      /* Variable substitution need not be simple.  In particular, the
+	 INDIRECT_REF substitution above.  Make sure that TREE_CONSTANT
+	 and friends are up-to-date.  */
+      else if (TREE_CODE (*tp) == ADDR_EXPR)
+	{
+	  walk_tree (&TREE_OPERAND (*tp, 0), copy_body_r, id, NULL);
+	  recompute_tree_invarant_for_addr_expr (*tp);
+	  *walk_subtrees = 0;
+	}
     }
 
   /* Keep iterating.  */
