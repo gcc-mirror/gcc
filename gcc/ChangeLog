@@ -1,3 +1,11 @@
+2004-04-05  Jakub Jelinek  <jakuB@redhat.com>
+	  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR optimization/13424 (hppa), bootstrap/14462, c/14828
+	* pa.md: Use replace_equiv_address to retain the attributes of the
+	memory operands used in the split and peephole2 patterns for optimizing
+	the pre-reload movstrsi, movstrdi, clrstrsi and clrstrdi patterns.
+
 2004-04-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cppinit.c (cpp_read_main_file): Return file name obtained by
