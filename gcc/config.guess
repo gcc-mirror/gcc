@@ -84,7 +84,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     NILE:*:*:dcosx)
 	echo pyramid-pyramid-svr4
 	exit 0 ;;
-    sun4*:SunOS:5.*:*)
+    sun4*:SunOS:5.*:* | tadpole*:SunOS:5.*:*)
 	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
     i86pc:SunOS:5.*:*)
@@ -108,6 +108,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     sun3*:SunOS:*:*)
 	echo m68k-sun-sunos${UNAME_RELEASE}
 	exit 0 ;;
+    aushp:SunOS:*:*)
+	echo sparc-auspex-sunos${UNAME_RELEASE}
+	exit 0 ;;
     atari*:NetBSD:*:*)
 	echo m68k-atari-netbsd${UNAME_RELEASE}
 	exit 0 ;;
@@ -125,6 +128,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	exit 0 ;;
     mac68k:OpenBSD:*:*)
 	echo m68k-apple-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    RISC*:Mach:*:*)
+	echo mips-dec-mach_bsd4.3
 	exit 0 ;;
     RISC*:ULTRIX:*:*)
 	echo mips-dec-ultrix${UNAME_RELEASE}
@@ -149,7 +155,8 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	  exit (-1);
 	}
 EOF
-	${CC-cc} dummy.c -o dummy && ./dummy "${UNAME_RELEASE}" \
+	${CC-cc} dummy.c -o dummy \
+	  && ./dummy `echo "${UNAME_RELEASE}" | sed -n 's/\([0-9]*\).*/\1/p'` \
 	  && rm dummy.c dummy && exit 0
 	rm -f dummy.c dummy
 	echo mips-mips-riscos${UNAME_RELEASE}
@@ -309,6 +316,13 @@ EOF
     hp8??:OSF1:*:*)
 	echo hppa1.0-hp-osf
 	exit 0 ;;
+    i?86:OSF1:*:*)
+	if [ -x /usr/sbin/sysversion ] ; then
+	    echo ${UNAME_MACHINE}-unknown-osf1mk
+	else
+	    echo ${UNAME_MACHINE}-unknown-osf1
+	fi
+	exit 0 ;;
     parisc*:Lites*:*:*)
 	echo hppa1.1-hp-lites
 	exit 0 ;;
@@ -346,6 +360,11 @@ EOF
 	exit 0 ;;
     CRAY-2:*:*:*)
 	echo cray2-cray-unicos
+        exit 0 ;;
+    F300:UNIX_System_V:*:*)
+        FUJITSU_SYS=`uname -p | tr [A-Z] [a-z] | sed -e 's/\///'`
+        FUJITSU_REL=`echo ${UNAME_RELEASE} | sed -e 's/ /_/'`
+        echo "f300-fujitsu-${FUJITSU_SYS}${FUJITSU_REL}"
         exit 0 ;;
     hp3[0-9][05]:NetBSD:*:*)
 	echo m68k-hp-netbsd${UNAME_RELEASE}
@@ -465,16 +484,15 @@ EOF
     m68*:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
     3[34]??:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 4850:*:4.0:3.0)
-	UNAME_REL=4.3
-	if test -f /etc/.relid; then
-	  UNAME_REL=4.3.`awk '{ print $3 }' /etc/.relid`
-	fi
-        uname -p 2>/dev/null | grep 86 >/dev/null \
-          && echo i486-ncr-sysv$UNAME_REL && exit 0
-        uname -p 2>/dev/null | /bin/grep entium >/dev/null \
-          && echo i586-ncr-sysv$UNAME_REL && exit 0 ;;
+	OS_REL=''
+	test -r /etc/.relid \
+	&& OS_REL=.`sed -n 's/[^ ]* [^ ]* \([0-9][0-9]\).*/\1/p' < /etc/.relid`
+	/bin/uname -p 2>/dev/null | grep 86 >/dev/null \
+	  && echo i486-ncr-sysv4.3${OS_REL} && exit 0
+	/bin/uname -p 2>/dev/null | /bin/grep entium >/dev/null \
+	  && echo i586-ncr-sysv4.3${OS_REL} && exit 0 ;;
     3[34]??:*:4.0:* | 3[34]??,*:*:4.0:*)
-        uname -p 2>/dev/null | grep 86 >/dev/null \
+        /bin/uname -p 2>/dev/null | grep 86 >/dev/null \
           && echo i486-ncr-sysv4 && exit 0 ;;
     m68*:LynxOS:2.*:*)
 	echo m68k-unknown-lynxos${UNAME_RELEASE}
@@ -490,6 +508,9 @@ EOF
 	exit 0 ;;
     rs6000:LynxOS:2.*:* | PowerPC:LynxOS:2.*:*)
 	echo rs6000-unknown-lynxos${UNAME_RELEASE}
+	exit 0 ;;
+    SM[BE]S:UNIX_SV:*:*)
+	echo mips-dde-sysv${UNAME_RELEASE}
 	exit 0 ;;
     RM*:SINIX-*:*:*)
 	echo mips-sni-sysv4
@@ -514,7 +535,7 @@ EOF
     mc68*:A/UX:*:*)
 	echo m68k-apple-aux${UNAME_RELEASE}
 	exit 0 ;;
-    R3000:*System_V*:*:*)
+    R3000:*System_V*:*:* | R4000:UNIX_SYSV:*:*)
 	if [ -d /usr/nec ]; then
 	        echo mips-nec-sysv${UNAME_RELEASE}
 	else
@@ -564,7 +585,7 @@ main ()
 #endif
   int version;
   version=`(hostinfo | sed -n 's/.*NeXT Mach \([0-9]*\).*/\1/p') 2>/dev/null`;
-  printf ("%s-next-%s%d\n", __ARCHITECTURE__, version);
+  printf ("%s-next-nextstep%d\n", __ARCHITECTURE__, version);
   exit (0);
 #endif
 
