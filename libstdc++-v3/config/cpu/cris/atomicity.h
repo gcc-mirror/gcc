@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: CRIS version  -*- C++ -*-
 
-// Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,8 +47,8 @@ namespace __gnu_cxx
 			" move.d %2,[%3]	\n"
 			" bwf 0b		\n"
 			" clearf		\n"
-			:  "=&r" (__result), "=m" (*__mem), "=&r" (__tmp)
-			: "r" (__mem), "g" (__val), "m" (*__mem)
+			:  "=&r" (__result), "=Q" (*__mem), "=&r" (__tmp)
+			: "r" (__mem), "g" (__val), "Q" (*__mem)
 			/* The memory clobber must stay, regardless of
 			   current uses of this function.  */
 			: "memory");
@@ -60,8 +60,8 @@ namespace __gnu_cxx
 			" add.d %0,%2		\n"
 			" move.d %2,[%3]	\n"
 			" move $r9,$ccr		\n"
-			:  "=&r" (__result), "=m" (*__mem), "=&r" (__tmp)
-			: "r" (__mem), "g" (__val), "m" (*__mem)
+			:  "=&r" (__result), "=Q" (*__mem), "=&r" (__tmp)
+			: "r" (__mem), "g" (__val), "Q" (*__mem)
 			: "r9",
 			  /* The memory clobber must stay, regardless of
 			     current uses of this function.  */

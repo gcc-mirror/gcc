@@ -1,3 +1,9 @@
+2005-03-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/19065
+	* config/cpu/cris/atomicity.h (__exchange_and_add): In asm, use
+	'Q' constraint, not 'm'.
+
 2005-02-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Add the trivial is_union and is_class;
