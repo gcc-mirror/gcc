@@ -1,5 +1,5 @@
 /* Allocate registers for pseudo-registers that span basic blocks.
-   Copyright (C) 1987, 1988, 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -75,7 +75,7 @@ static int max_allocno;
 /* Indexed by (pseudo) reg number, gives the allocno, or -1
    for pseudo registers already allocated by local_allocate.  */
 
-static int *reg_allocno;
+int *reg_allocno;
 
 /* Indexed by allocno, gives the reg number.  */
 
