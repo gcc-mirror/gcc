@@ -1,5 +1,9 @@
 2003-11-14  Richard Earnshaw  <rearnsha@arm.com>
 
+	* except.c (sjlj_emit_function_enter): Mark internal label as LOCAL.
+
+2003-11-14  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c (arm_emit_vector_const, arm_output_load_gr): Use ISO C 
 	function definition syntax.
 
