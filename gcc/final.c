@@ -105,6 +105,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 rtx peephole ();
 void output_asm_insn ();
 rtx alter_subreg ();
+static rtx walk_alter_subreg ();
 static int alter_cond ();
 void output_asm_label ();
 static void output_operand ();
@@ -1895,12 +1896,18 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  {
 	    if (GET_CODE (recog_operand[i]) == SUBREG)
 	      recog_operand[i] = alter_subreg (recog_operand[i]);
+	    else if (GET_CODE (recog_operand[i]) == PLUS
+		     || GET_CODE (recog_operand[i]) == MULT)
+	      recog_operand[i] = walk_alter_subreg (recog_operand[i]);
 	  }
 
 	for (i = 0; i < insn_n_dups[insn_code_number]; i++)
 	  {
 	    if (GET_CODE (*recog_dup_loc[i]) == SUBREG)
 	      *recog_dup_loc[i] = alter_subreg (*recog_dup_loc[i]);
+	    else if (GET_CODE (*recog_dup_loc[i]) == PLUS
+		     || GET_CODE (*recog_dup_loc[i]) == MULT)
+	      *recog_dup_loc[i] = walk_alter_subreg (*recog_dup_loc[i]);
 	  }
 
 #ifdef REGISTER_CONSTRAINTS
