@@ -1,3 +1,9 @@
+2002-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* genextract.c (walk_rtx): Recurse into MATCH_PAR_DUP.
+	genoutput.c (scan_operands): Recurse into MATCH_PAR_DUP
+	and MATCH_OP_DUP.
+
 Thu Mar  7 16:54:10 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* reload1.c (reload_cse_delete_noop_set): Purge dead edges.
