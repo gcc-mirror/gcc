@@ -2457,7 +2457,28 @@ nullify_returns_r (tp, walk_subtrees, data)
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == nrv)
     CLEANUP_EH_ONLY (*tp) = 1;
-
+  /* Replace the DECL_STMT for the NRV with an initialization of the
+     RESULT_DECL, if needed.  */
+  else if (TREE_CODE (*tp) == DECL_STMT
+	   && DECL_STMT_DECL (*tp) == nrv)
+    {
+      tree init;
+      if (DECL_INITIAL (nrv)
+	  && DECL_INITIAL (nrv) != error_mark_node)
+	{
+	  init = build (INIT_EXPR, void_type_node,
+			DECL_RESULT (current_function_decl),
+			DECL_INITIAL (nrv));
+	  DECL_INITIAL (nrv) = error_mark_node;
+	}
+      else
+	init = NULL_TREE;
+      init = build_stmt (EXPR_STMT, init);
+      TREE_CHAIN (init) = TREE_CHAIN (*tp);
+      STMT_LINENO (init) = STMT_LINENO (*tp);
+      *tp = init;
+    }
+ 
   /* Keep iterating.  */
   return NULL_TREE;
 }

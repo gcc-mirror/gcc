@@ -1,5 +1,6 @@
 2004-09-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	PR c++/15857
 	Backport from gcc-3_4-branch
 	2004-08-24  Jason Merrill  <jason@redhat.com>
 	PR c++/15461

@@ -10,4 +10,4 @@ inline A foo () {
     return a;  
 } 
  
-A tv = foo(); 
+A tv = foo();
