@@ -577,7 +577,7 @@ namespace std
       size_type __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 
       const size_type __adj_size = __size + __malloc_header_size;
-      if (__adj_size > __pagesize)
+      if (__adj_size > __pagesize && __capacity > __old_capacity)
 	{
 	  const size_type __extra = __pagesize - __adj_size % __pagesize;
 	  __capacity += __extra / sizeof(_CharT);
