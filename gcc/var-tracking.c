@@ -455,7 +455,7 @@ insn_stack_adjust_offset_pre_post (rtx insn, HOST_WIDE_INT *pre,
     }
 }
 
-/* Compute stack adjustnment in basic block BB.  */
+/* Compute stack adjustment in basic block BB.  */
 
 static void
 bb_stack_adjust_offset (basic_block bb)
@@ -522,7 +522,7 @@ vt_stack_adjustments (void)
   edge *stack;
   int sp;
 
-  /* Initialize enttry block.  */
+  /* Initialize entry block.  */
   VTI (ENTRY_BLOCK_PTR)->visited = true;
   VTI (ENTRY_BLOCK_PTR)->out.stack_adjust = 0;
 
@@ -2451,7 +2451,7 @@ vt_initialize (void)
 	    }
 	}
 
-      /* Add the nicro-operations to the array.  */
+      /* Add the micro-operations to the array.  */
       VTI (bb)->mos = xmalloc (VTI (bb)->n_mos
 			       * sizeof (struct micro_operation_def));
       VTI (bb)->n_mos = 0;

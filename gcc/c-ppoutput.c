@@ -335,7 +335,7 @@ cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, fileline line,
 }
 
 /* Callback called when -fworking-director and -E to emit working
-   diretory in cpp output file. */
+   directory in cpp output file.  */
 
 void
 pp_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
