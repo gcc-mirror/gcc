@@ -405,8 +405,8 @@ ifnonnull (test, result)
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
    paper.  */
 
-tree
-build_dynamic_cast (type, expr)
+static tree
+build_dynamic_cast_1 (type, expr)
      tree type, expr;
 {
   enum tree_code tc = TREE_CODE (type);
@@ -627,6 +627,13 @@ build_dynamic_cast (type, expr)
   cp_error ("cannot dynamic_cast `%E' (of type `%#T') to type `%#T'",
 	    expr, exprtype, type);
   return error_mark_node;
+}
+
+tree
+build_dynamic_cast (type, expr)
+     tree type, expr;
+{
+  return convert_from_reference (build_dynamic_cast_1 (type, expr));
 }
 
 /* Build and initialize various sorts of descriptors.  Every descriptor

@@ -26,6 +26,7 @@ Questions and comments to Mike Stump @code{<mrs@@cygnus.com>}.
 * Copying Objects::             
 * Exception Handling::          
 * Free Store::                  
+* Mangling::  Function name mangling for C++ and Java
 * Concept Index::               
 @end menu
 
@@ -1472,7 +1473,7 @@ would do the hard work of fixing up the registers, adjusting the stack
 pointer, frame pointer, arg pointer and so on.
 
 
-@node Free Store, Concept Index, Exception Handling, Top
+@node Free Store, Mangling, Exception Handling, Top
 @section Free Store
 
 @code{operator new []} adds a magic cookie to the beginning of arrays
@@ -1518,8 +1519,246 @@ The linkage code in g++ is horribly twisted in order to meet two design goals:
 To meet the first goal, we defer emission of inlines and vtables until
 the end of the translation unit, where we can decide whether or not they
 are needed, and how to emit them if they are.
+        
+@node Mangling, Concept Index, Free Store, Top
+@section Function name mangling for C++ and Java
 
-@node Concept Index,  , Free Store, Top
+Both C++ and Jave provide overloaded function and methods,
+which are methods with the same types but different parameter lists.
+Selecting the correct version is done at compile time.
+Though the overloaded functions have the same name in the source code,
+they need to be translated into different assembler-level names,
+since typical assemblers and linkers cannot handle overloading.
+This process of encoding the parameter types with the method name
+into a unique name is called @dfn{name mangling}.  The inverse
+process is called @dfn{demangling}.
+
+It is convenient that C++ and Java use compatible mangling schemes,
+since the makes life easier for tools such as gdb, and it eases
+integration between C++ and Java.
+
+Note there is also a standard "Jave Native Interface" (JNI) which
+implements a different calling convention, and uses a different
+mangling scheme.  The JNI is a rather abstract ABI so Java can call methods
+written in C or C++; 
+we are concerned here about a lower-level interface primarily
+intended for methods written in Java, but that can also be used for C++
+(and less easily C).
+
+@subsection Method name mangling
+
+C++ mangles a method by emitting the function name, followed by @code{__},
+followed by encodings of any method qualifiers (such as @code{const}),
+followed by the mangling of the method's class,
+followed by the mangling of the parameters, in order.
+
+For example @code{Foo::bar(int, long) const} is mangled
+as @samp{bar__C3Fooil}.
+
+For a constructor, the method name is left out.
+That is @code{Foo::Foo(int, long) const}  is mangled 
+as @samp{__C3Fooil}. 
+
+GNU Java does the same.
+
+@subsection Primitive types
+
+The C++ types @code{int}, @code{long}, @code{short}, @code{char},
+and @code{long long} are mangled as @samp{i}, @samp{l},
+@samp{s}, @samp{c}, and @samp{x}, respectively.
+The corresponding unsigned types have @samp{U} prefixed
+to the mangling.  The type @code{signed char} is mangled @samp{Sc}.
+
+The C++ and Java floating-point types @code{float} and @code{double}
+are mangled as @samp{f} and @samp{d} respectively.
+
+The C++ @code{bool} type and the Java @code{boolean} type are
+mangled as @samp{b}.
+
+The C++ @code{wchar_t} and the Java @code{char} types are
+mangled as @samp{w}.
+
+The Java integral types @code{byte}, @code{short}, @code{int}
+and @code{long} are mangled as @samp{c}, @samp{s}, @samp{i},
+and @samp{x}, respectively.
+
+C++ code that has included @code{javatypes.h} will mangle
+the typedefs  @code{jbyte}, @code{jshort}, @code{jint}
+and @code{jlong} as respectively @samp{c}, @samp{s}, @samp{i},
+and @samp{x}.  (This has not been implemented yet.)
+
+@subsection Mangling of simple names
+
+A simple class, package, template, or namespace name is
+encoded as the number of characters in the name, followed by
+the actual characters.  Thus the class @code{Foo}
+is encoded as @samp{3Foo}.
+
+If any of the characters in the name are not alphanumeric
+(i.e not one of the standard ASCII letters, digits, or '_'),
+or the initial character is a digit, then the name is
+mangled as a sequence of encoded Unicode letters.
+A Unicode encoding starts with a @samp{U} to indicate
+that Unicode escapes are used, followed by the number of
+bytes used by the Unicode encoding, followed by the bytes
+representing the encoding.  ASSCI letters and
+non-initial digits are encoded without change.  However, all
+other characters (including underscore and initial digits) are
+translated into a sequence starting with an underscore,
+followed by the big-endian 4-hex-digit lower-case encoding of the character.
+
+If a method name contains Unicode-escaped characters, the
+entire mangled method name is followed by a @samp{U}.
+
+For example, the method @code{X\u0319::M\u002B(int)} is encoded as
+@samp{M_002b__U6X_0319iU}.
+
+@subsection Pointer and reference types
+
+A C++ pointer type is mangled as @samp{P} followed by the
+mangling of the type pointed to.
+
+A C++ reference type as mangled as @samp{R} followed by the
+mangling of the type referenced.
+
+A Java object reference type is equivalent
+to a C++ pointer parameter, so we mangle such an parameter type
+as @samp{P} followed by the mangling of the class name.
+
+@subsection Qualified names
+
+Both C++ and Java allow a class to be lexically nested inside another
+class.  C++ also supports namespaces (not yet implemented by G++).
+Java also supports packages.
+
+These are all mangled the same way:  First the letter @samp{Q}
+indicates that we are emitting a qualified name.
+That is followed by the number of parts in the qualified name.
+If that number is 9 or less, it is emitted with no delimiters.
+Otherwise, an underscore is written before and after the count.
+Then follows each part of the qualified name, as described above.
+
+For example @code{Foo::\u0319::Bar} is encoded as
+@samp{Q33FooU5_03193Bar}.
+
+@subsection Templates
+
+A template instantiation is encoded as the letter @samp{t},
+followed by the encoding of the template name, followed
+the number of template parameters, followed by encoding of the template
+parameters.  If a template parameter is a type, it is written
+as a @samp{Z} followed by the encoding of the type.
+
+@subsection Arrays
+
+C++ array types are mangled by emitting @samp{A}, followed by
+the length of the array, followed by an @samp{_}, followed by
+the mangling of the element type.  Of course, normally
+array parameter types decay into a pointer types, so you
+don't see this.
+
+Java arrays are objects.  A Java type @code{T[]} is mangled
+as if it were the C++ type @code{JArray<T>}.
+For example @code{java.lang.String[]} is encoded as
+@samp{Pt6JArray1ZPQ34java4lang6String}.
+
+@subsection Table of demangling code characters
+
+The following special characters are used in mangling:
+
+@table @samp
+@item A
+Indicates a C++ array type.
+
+@item b
+Encodes the C++ @code{bool} type,
+and the Java @code{boolean} type.
+
+@item c
+Encodes the C++ @code{char} type, and the Java @code{byte} type.
+
+@item C
+A modifier to indicate a @code{const} type.
+Also used to indicate a @code{const} member function
+(in which cases it precedes the encoding of the method's class).
+
+@item d
+Encodes the C++ and Java @code{double} types.
+
+@item e
+Indicates extra unknown arguments @code{...}.
+
+@item f
+Encodes the C++ and Java @code{float} types.
+
+@item F
+Used to indicate a function type.
+
+@item i
+Encodes the C++ and Java @code{int} types.
+
+@item J
+Indicates a complex type.
+
+@item l
+Encodes the C++ @code{long} type.
+
+@item P
+Indicates a pointer type.  Followed by the type pointed to.
+
+@item Q
+Used to mangle qualified names, which arise from nested classes.
+Should also be used for namespaces (?).
+In Java used to mangle package-qualified names, and inner classes.
+
+@item r
+Encodes the GNU C++ @code{long double} type.
+
+@item R
+Indicates a reference type.  Followed by the referenced type.
+
+@item s
+Encodes the C++ and java @code{short} types.
+
+@item S
+A modifier that indicates that the following integer type is signed.
+Only used with @code{char}.
+
+Also used as a modifier to indicate a static member function.
+
+@item t
+Indicates a template instantiation.
+
+@item T
+A back reference to a previously seen type.
+
+@item U
+A modifier that indicates that the following integer type is unsigned.
+Also used to indicate that the following class or namespace name
+is encoded using Unicode-mangling.
+
+@item v
+Encodes the C++ and Java @code{void} types.
+
+@item V
+A modified for a @code{const} type or method.
+
+@item w
+Encodes the C++ @code{wchar_t} type, and the Java @code{char} types.
+
+@item x
+Encodes the GNU C++ @code{long long} type, and the Java @code{long} type.
+
+@item Z
+Used for template type parameters. 
+
+@end table
+
+The letters @samp{G}, @samp{M}, @samp{O}, and @samp{p}
+also seem to be used for obscure purposes ...
+
+@node Concept Index,  , Mangling, Top
+
 @section Concept Index
 
 @printindex cp

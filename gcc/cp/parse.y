@@ -89,7 +89,10 @@ empty_parms ()
   tree parms;
 
   if (strict_prototype
-      || current_class_type != NULL)
+      /* Only go ahead with using the void list node if we're actually
+	 parsing a class in C++, not a struct in extern "C" mode.  */
+      || (current_class_type != NULL
+	  && current_lang_name == lang_name_cplusplus))
     parms = void_list_node;
   else
     parms = NULL_TREE;
@@ -201,7 +204,7 @@ empty_parms ()
 %type <ttype> declmods 
 %type <ttype> SCSPEC TYPESPEC CV_QUALIFIER maybe_cv_qualifier
 %type <itype> initdecls notype_initdecls initdcl	/* C++ modification */
-%type <ttype> init initlist maybeasm maybe_init
+%type <ttype> init initlist maybeasm maybe_init defarg defarg1
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word
@@ -236,7 +239,7 @@ empty_parms ()
 /* C++ extensions */
 %token <ttype> TYPENAME_ELLIPSIS PTYPENAME
 %token <ttype> PRE_PARSED_FUNCTION_DECL EXTERN_LANG_STRING ALL
-%token <ttype> PRE_PARSED_CLASS_DECL
+%token <ttype> PRE_PARSED_CLASS_DECL DEFARG DEFARG_MARKER
 %type <ttype> fn.def1 /* Not really! */ component_constructor_declarator
 %type <ttype> fn.def2 return_id fn.defpen constructor_declarator
 %type <itype> ctor_initializer_opt
@@ -284,13 +287,13 @@ empty_parms ()
 
 %{
 /* List of types and structure classes of the current declaration.  */
-static tree current_declspecs;
+static tree current_declspecs = NULL_TREE;
 /* List of prefix attributes in effect.
    Prefix attributes are parsed by the reserved_declspecs and declmods
    rules.  They create a list that contains *both* declspecs and attrs.  */
 /* ??? It is not clear yet that all cases where an attribute can now appear in
    a declspec list have been updated.  */
-static tree prefix_attributes;
+static tree prefix_attributes = NULL_TREE;
 
 /* When defining an aggregate, this is the most recent one being defined.  */
 static tree current_aggr;
@@ -1661,7 +1664,7 @@ decl:
 	  typespec initdecls ';'
 		{
 		  resume_momentary ($2);
-		  if (IS_AGGR_TYPE_CODE (TREE_CODE ($1.t)))
+		  if ($1.t && IS_AGGR_TYPE_CODE (TREE_CODE ($1.t)))
 		    note_got_semicolon ($1.t);
 		}
 	| typed_declspecs initdecls ';'
@@ -1907,7 +1910,8 @@ initdcl0:
 	  declarator maybeasm maybe_attribute '='
 		{ split_specs_attrs ($<ttype>0, &current_declspecs,
 				     &prefix_attributes);
-		  if (TREE_CODE (current_declspecs) != TREE_LIST)
+		  if (current_declspecs
+		      && TREE_CODE (current_declspecs) != TREE_LIST)
 		    current_declspecs = get_decl_list (current_declspecs);
 		  if (have_extern_spec && !used_extern_spec)
 		    {
@@ -1927,7 +1931,8 @@ initdcl0:
 		{ tree d;
 		  split_specs_attrs ($<ttype>0, &current_declspecs,
 				     &prefix_attributes);
-		  if (TREE_CODE (current_declspecs) != TREE_LIST)
+		  if (current_declspecs
+		      && TREE_CODE (current_declspecs) != TREE_LIST)
 		    current_declspecs = get_decl_list (current_declspecs);
 		  if (have_extern_spec && !used_extern_spec)
 		    {
@@ -2119,6 +2124,20 @@ pending_inlines:
 	  eat_saved_input
 	;
 
+/* A regurgitated default argument.  The value of DEFARG_MARKER will be
+   the TREE_LIST node for the parameter in question.  */
+defarg_again:
+	DEFARG_MARKER expr_no_commas END_OF_SAVED_INPUT
+		{ replace_defarg ($1, $2); }
+
+pending_defargs:
+	  /* empty */ %prec EMPTY
+	| pending_defargs defarg_again
+		{ do_pending_defargs (); }
+	| pending_defargs error
+		{ do_pending_defargs (); }
+	;
+
 structsp:
 	  ENUM identifier '{'
 		{ $<itype>3 = suspend_momentary ();
@@ -2188,13 +2207,22 @@ structsp:
 
 		  if (! semi)
 		    check_for_missing_semicolon ($1); 
+		  if (current_scope () == current_function_decl)
+		    do_pending_defargs ($1);
+		}
+	  pending_defargs
+		{
 		  if (pending_inlines 
 		      && current_scope () == current_function_decl)
 		    do_pending_inlines ();
 		}
 	  pending_inlines
-		{ $$.t = $<ttype>6;
-		  $$.new_type_flag = 1; }
+		{ 
+		  $$.t = $<ttype>6;
+		  $$.new_type_flag = 1; 
+		  if (current_scope () == current_function_decl)
+		    clear_inline_text_obstack (); 
+		}
 	| class_head  %prec EMPTY
 		{
 		  $$.t = $1;
@@ -3951,14 +3979,27 @@ complex_parmlist:
 		}
 	;
 
+/* A default argument to a */
+defarg:
+	  '='
+		{ maybe_snarf_defarg (); }
+	  defarg1
+		{ $$ = $3; }
+	;
+
+defarg1:
+	  DEFARG
+	| init
+	;
+
 /* A nonempty list of parameter declarations or type names.  */
 parms:
 	  named_parm
 		{ check_for_new_type ("in a parameter list", $1);
 		  $$ = build_tree_list (NULL_TREE, $1.t); }
-	| parm '=' init
+	| parm defarg
 		{ check_for_new_type ("in a parameter list", $1);
-		  $$ = build_tree_list ($3, $1.t); }
+		  $$ = build_tree_list ($2, $1.t); }
 	| parms_comma full_parm
 		{ check_for_new_type ("in a parameter list", $2);
 		  $$ = chainon ($$, $2.t); }
@@ -4005,7 +4046,10 @@ named_parm:
 	;
 
 full_parm:
-	  parm maybe_init
+	  parm
+		{ $$.t = build_tree_list (NULL_TREE, $1.t);
+		  $$.new_type_flag = $1.new_type_flag;  }
+	| parm defarg
 		{ $$.t = build_tree_list ($2, $1.t);
 		  $$.new_type_flag = $1.new_type_flag;  }
 	;

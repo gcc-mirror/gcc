@@ -51,6 +51,8 @@ extern int current_class_depth;
 
 extern tree static_ctors, static_dtors;
 
+extern int static_labelno;
+
 /* Stack of places to restore the search obstack back to.  */
    
 /* Obstack used for remembering local class declarations (like
@@ -4672,12 +4674,12 @@ init_decl_processing ()
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
 
+#ifndef __CYGWIN32__
   /* Because most segmentation signals can be traced back into user
      code, catch them and at least give the user a chance of working
      around compiler bugs.  */
   signal (SIGSEGV, signal_catch);
 
-#ifndef __CYGWIN32__
   /* We will also catch aborts in the back-end through signal_catch and
      give the user a chance to see where the error might be, and to defeat
      aborts in the back-end when there have been errors previously in their
@@ -6532,6 +6534,32 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (was_temp)
 	end_temporary_allocation ();
 
+      /* Extern inline function static data has external linkage.  */
+      if (TREE_CODE (decl) == VAR_DECL
+	  && TREE_STATIC (decl)
+	  && current_function_decl
+	  && DECL_CONTEXT (decl) == current_function_decl
+	  && DECL_THIS_INLINE (current_function_decl)
+	  && DECL_PUBLIC (current_function_decl))
+	{
+	  /* We can only do this if we can use common or weak, and we
+	     can't if it has been initialized and we don't support weak.  */
+	  if (DECL_INITIAL (decl) == NULL_TREE
+	      || DECL_INITIAL (decl) == error_mark_node)
+	    {
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_COMMON (decl) = 1;
+	    }
+	  else if (flag_weak)
+	    make_decl_one_only (decl);
+
+	  if (TREE_PUBLIC (decl))
+	    DECL_ASSEMBLER_NAME (decl)
+	      = build_static_name (current_function_decl, DECL_NAME (decl));
+	  else if (! DECL_ARTIFICIAL (decl))
+	    cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
+	}
+
       if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
 	make_decl_rtl (decl, NULL_PTR, toplev);
       else if (TREE_CODE (decl) == VAR_DECL
@@ -7067,6 +7095,7 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 {
   tree cname, decl;
   int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
+  tree t;
 
   if (ctype)
     cname = TREE_CODE (TYPE_NAME (ctype)) == TYPE_DECL
@@ -7127,6 +7156,14 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 
   if (ctype && hack_decl_function_context (decl))
       DECL_NO_STATIC_CHAIN (decl) = 1;
+
+  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
+    if (TREE_PURPOSE (t)
+	&& TREE_CODE (TREE_PURPOSE (t)) == DEFAULT_ARG)
+      {
+	add_defarg_fn (decl);
+	break;
+      }
 
   /* Caller will do the rest of this.  */
   if (check < 0)
@@ -8672,6 +8709,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    /* ANSI says that `const int foo ();'
 	       does not make the function foo const.  */
 	    type = build_function_type (type, arg_types);
+
+	    {
+	      tree t;
+	      for (t = arg_types; t; t = TREE_CHAIN (t))
+		if (TREE_PURPOSE (t)
+		    && TREE_CODE (TREE_PURPOSE (t)) == DEFAULT_ARG)
+		  {
+		    add_defarg_fn (type);
+		    break;
+		  }
+	    }
 	  }
 	  break;
 
@@ -9858,6 +9906,9 @@ grokparms (first_parm, funcdef_flag)
 			PARM_DECL_EXPR (init) = 1;
 		      else if (processing_template_decl)
 			;
+		      /* Unparsed default arg from in-class decl.  */
+		      else if (TREE_CODE (init) == DEFAULT_ARG)
+			;
 		      else if (TREE_CODE (init) == VAR_DECL
 			       || TREE_CODE (init) == PARM_DECL)
 			{
@@ -9877,6 +9928,7 @@ grokparms (first_parm, funcdef_flag)
 		      else
 			init = require_instantiated_type (type, init, integer_zero_node);
 		      if (! processing_template_decl
+			  && TREE_CODE (init) != DEFAULT_ARG
 			  && ! can_convert_arg (type, TREE_TYPE (init), init))
 			cp_pedwarn ("invalid type `%T' for default argument to `%#D'",
 				    TREE_TYPE (init), decl);
@@ -9930,6 +9982,21 @@ grokparms (first_parm, funcdef_flag)
     require_complete_types_for_parms (last_function_parms);
 
   return result;
+}
+
+/* Called from the parser to update an element of TYPE_ARG_TYPES for some
+   FUNCTION_TYPE with the newly parsed version of its default argument, which
+   was previously digested as text.  See snarf_defarg et al in lex.c.  */
+
+void
+replace_defarg (arg, init)
+     tree arg, init;
+{
+  if (! processing_template_decl
+      && ! can_convert_arg (TREE_VALUE (arg), TREE_TYPE (init), init))
+    cp_pedwarn ("invalid type `%T' for default argument to `%T'",
+		TREE_TYPE (init), TREE_VALUE (arg));
+  TREE_PURPOSE (arg) = init;
 }
 
 int
@@ -10595,13 +10662,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	      continue;
 	    }
 
-	  /* Effective C++ rule 14.  The case of virtual functions but
-	     non-virtual dtor is handled in finish_struct_1.  */
-	  if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
-	      && TYPE_HAS_DESTRUCTOR (basetype))
-	    cp_warning ("base class `%#T' has a non-virtual destructor",
-			basetype);
-
 	  /* Note that the BINFO records which describe individual
 	     inheritances are *not* shared in the lattice!  They
 	     cannot be shared because a given baseclass may be
@@ -10891,6 +10951,7 @@ build_enumerator (name, value)
 	 a function could mean local to a class method.  */
       decl = build_decl (CONST_DECL, name, integer_type_node);
       DECL_INITIAL (decl) = value;
+      TREE_READONLY (decl) = 1;
 
       pushdecl (decl);
       GNU_xref_decl (current_function_decl, decl);
@@ -10988,6 +11049,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   current_base_init_list = NULL_TREE;
   current_member_init_list = NULL_TREE;
   ctor_label = dtor_label = NULL_TREE;
+  static_labelno = 0;
 
   clear_temp_name ();
 
@@ -12606,6 +12668,7 @@ struct cp_function
   rtx result_rtx;
   struct cp_function *next;
   struct binding_level *binding_level;
+  int static_labelno;
 };
 
 static struct cp_function *cp_function_chain;
@@ -12647,6 +12710,7 @@ push_cp_function_context (context)
   p->member_init_list = current_member_init_list;
   p->current_class_ptr = current_class_ptr;
   p->current_class_ref = current_class_ref;
+  p->static_labelno = static_labelno;
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -12688,6 +12752,7 @@ pop_cp_function_context (context)
   current_member_init_list = p->member_init_list;
   current_class_ptr = p->current_class_ptr;
   current_class_ref = p->current_class_ref;
+  static_labelno = p->static_labelno;
 
   free (p);
 }

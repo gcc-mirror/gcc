@@ -1963,7 +1963,7 @@ build_offset_ref (type, name)
   if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == CONST_DECL)
     {
       mark_used (t);
-      return t;
+      return convert_from_reference (t);
     }
 
   if (TREE_CODE (t) == FIELD_DECL && DECL_BIT_FIELD (t))

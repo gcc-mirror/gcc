@@ -1,3 +1,126 @@
+Wed Jul 23 13:36:25 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (struct cp_function): Add static_labelno.
+	(push_cp_function_context): Save it.
+	(pop_cp_function_context): Restore it.
+
+Tue Jul 22 14:43:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_component_ref_1): Convert from reference.
+
+Tue Jul 22 11:06:23 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* parse.y (current_declspecs, prefix_attributes): Initialize to
+	NULL_TREE.
+
+	* parse.y (initdcl0): Make sure CURRENT_DECLSPECS is non-nil
+	before we try to force it to be a TREE_LIST.
+	(decl): Make sure $1.t is non-nil.
+
+Sun Jul 20 11:53:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (uses_template_parms): Handle template first-parse codes.
+
+	* decl.c (cp_finish_decl): Only warn about user-defined statics.
+
+Fri Jul 18 17:56:08 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (unify): Handle BOOLEAN_TYPE.
+
+	* cp-tree.h: Lose PARM_DEFAULT_FROM_TEMPLATE.
+	* pt.c (tsubst): Don't set it.
+	* call.c (build_over_call): Use uses_template_parms.
+
+Thu Jul 17 18:06:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (build_overload_nested_name): Use static_labelno
+ 	instead of var_labelno.
+	(build_qualified_name): New fn.
+	(build_overload_name): Split out from here.
+	(build_static_name): Use build_qualified_name.
+	* decl.c (cp_finish_decl): Statics in extern inline functions 
+	have comdat linkage.
+	(start_function): Initialize static_labelno.
+
+Thu Jul 17 11:20:17 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* class.c (finish_struct_methods): add check of warn_ctor_dtor_privacy
+	before "all member functions in class [] are private"
+
+Wed Jul 16 23:47:08 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (do_scoped_id): convert_from_reference.
+	* init.c (build_offset_ref): Likewise.
+
+Wed Jul 16 15:57:42 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* parse.y (empty_parms): Only use VOID_LIST_NODE for the PARMS if
+	we're in a C++ struct/class, not if we're doing `extern "C"'.
+
+Wed Jul 16 12:34:29 1997  Benjamin Kosnik  <bkoz@lisa.cygnus.com>
+
+	* error.c (dump_expr): Check TREE_OPERAND before dump_expr_list.
+
+Mon Jul 14 03:23:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (get_member_function_from_ptrfunc): Promote index
+ 	before saving it.
+
+Sun Jul 13 00:11:52 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (layout_basetypes): Move non-virtual destructor warning.
+	* decl.c (xref_basetypes): Remove non-virtual destructor warning.
+
+Sat Jul 12 12:47:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Call add_defarg_fn for the function
+	type, too.
+	* lex.c (add_defarg_fn): Adjust.
+	(do_pending_defargs): Adjust.  Don't skip the first parm.
+
+Fri Jul 11 01:39:50 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (build_enumerator): Global enumerators are also readonly.
+
+	* rtti.c (build_dynamic_cast_1): Renamed from build_dynamic_cast.
+	(build_dynamic_cast): Call it and convert_from_reference.
+
+	* lex.c (add_defarg_fn): New fn.
+	(snarf_defarg): Don't add to defarg_types.
+	(do_pending_defargs): Lose defarg_types.  All fns we process now
+	have defargs.
+	* decl.c (grokfndecl): Call add_defarg_fn.
+
+	* Makefile.in (CONFLICTS): Expect 18 s/r conflicts.
+	* cp-tree.def: Add DEFAULT_ARG.
+	* spew.c (yylex): Call snarf_defarg as appropriate.
+	* parse.y: New tokens DEFARG and DEFARG_MARKER.
+	(defarg_again, pending_defargs, defarg, defarg1): New rules.
+	(structsp): Use pending_defargs.
+	(parms, full_parm): Use defarg.
+	* lex.c (init_lex): Initialize inline_text_firstobj.
+	(do_pending_inlines): Never pass the obstack to feed_input.
+	(process_next_inline): Call end_input instead of restore_pending_input.
+	(clear_inline_text_obstack, reinit_parse_for_expr, do_pending_defargs,
+	finish_defarg, feed_defarg, snarf_defarg, maybe_snarf_defarg): New fns.
+	* input.c (end_input): New fn.
+	(sub_getch): At the end of some fed input, just keep returning EOF
+	until someone calls end_input.
+	Remove 'obstack' field from struct input_source.
+	* decl.c (grokparms): Handle DEFAULT_ARG.
+	(replace_defarg): New fn.
+	* cp-tree.h (DEFARG_LENGTH, DEFARG_POINTER): New macros.
+
+Wed Jul  9 13:44:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (implicit_conversion): If nothing else works, try binding
+	an rvalue to a reference.
+
+Wed Jul  9 13:04:38 1997  Geoffrey Noer  <noer@cygnus.com>
+
+	* decl.c (init_decl_processing): fix Jun 30 patch -- move
+	ifndef for Cygwin32 to include SIGSEGV.
+
 Thu Jul  3 01:44:05 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (finish_struct_1): Only complain about pointers without
@@ -16,10 +139,11 @@ Thu Jul  3 01:44:05 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 Mon Jun 30 17:53:21 1997  Geoffrey Noer  <noer@cygnus.com>
 
-        * decl.c: Stop trying to catch signals other than SIGABRT
-        since the Cygwin32 library doesn't support them correctly
-        yet.  This fixes a situation in which g++ causes a hang on
-        SIGSEGVs and other such signals in our Win32-hosted tools.
+        * decl.c (init_decl_processing): Stop trying to catch signals
+	other than SIGABRT since the Cygwin32 library doesn't support
+	them correctly yet.  This fixes a situation in which g++ causes
+	a hang on SIGSEGVs and other such signals in our Win32-hosted
+	tools.
 
 Mon Jun 30 14:50:01 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
