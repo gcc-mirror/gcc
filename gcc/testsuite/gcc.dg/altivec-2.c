@@ -10,10 +10,10 @@ vector int foobar;
 
 /* Only floats and integrals allowed.  We don't care if they map to SIs.  */
 struct X { int frances; };
-vector struct X hotdog;	/* { dg-bogus "invalid vector type" "case 1" } */
+vector struct X hotdog;	/* { dg-error "invalid vector type" } */
 
 /* We don't have a V2DF.  */
-vector double x;	/* { dg-bogus "no vector mode" "case 2" } */
+vector double x;	/* { dg-error "no vector mode" } */
 
 /* Arrays of vectors.  */
 vector char b[10], ouch;
