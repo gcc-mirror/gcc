@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime Miscellanious 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 Author: Kresten Krab Thorup
 
@@ -71,9 +71,8 @@ __objc_xrealloc(void* mem, size_t size)
 void*
 __objc_xcalloc(size_t nelem, size_t size)
 {
-  void* res = (void*)malloc(nelem * size);
+  void* res = (void*)calloc(nelem, size);
   if(!res)
     objc_fatal("Virtual memory exhausted\n");
-  bzero (res, nelem * size);
   return res;
 }
