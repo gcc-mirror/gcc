@@ -3142,7 +3142,7 @@ EOF
     echo $ac_n "checking for atomicity.h""... $ac_c" 1>&6
 echo "configure:3144: checking for atomicity.h" >&5
     case "$target" in
-      *-*-linux* | sparc*-*-*)
+      *-*-linux* | sparc*-*-* | *-*-freebsd*)
         ATOMICITYH=$cpu_include_dir
         ;;    
       *-*-aix* | *-*-irix*)

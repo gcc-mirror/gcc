@@ -1,3 +1,8 @@
+2000-11-12  Loren J. Rittle  <ljrittle@acm.org>
+
+        * acinclude.m4 (GLIBCPP_ENABLE_ATOMICITY): Handle FreeBSD.
+        * aclocal.m4, configure: Rebuilt.
+
 2000-11-12  Brent Verner  <brent@rcfile.org>
 
         * include/c_std/bits/wrap_langinfo.h: New file.
