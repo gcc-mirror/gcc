@@ -1,3 +1,8 @@
+2004-09-24  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/ObjectInputStream.java:
+	Re-ordered imports.
+
 2004-09-24  Casey Marshall <csm@gnu.org>
 
 	* java/io/ObjectInputStream.java (callReadMethod): re-throw
