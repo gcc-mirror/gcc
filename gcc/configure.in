@@ -405,7 +405,7 @@ case "${host}" in
   ;;
 esac
 AC_FUNC_VFORK
-AC_FUNC_MMAP
+AC_FUNC_MMAP_ANYWHERE
 
 GCC_NEED_DECLARATIONS(bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort atof strerror getcwd getwd \
@@ -4578,9 +4578,8 @@ AC_ARG_WITH(gc,
     AC_MSG_ERROR([$withval is an invalid option to --with-gc])
     ;;
 esac],
-[if test $ac_cv_func_mmap_fixed_mapped = yes; then
-  GGC=ggc-page
-elif test $ac_cv_func_valloc = yes; then
+[if test $ac_cv_func_mmap_anywhere = yes \
+    || test $ac_cv_func_valloc = yes; then
   GGC=ggc-page
 else
   GGC=ggc-simple

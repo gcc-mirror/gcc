@@ -1,5 +1,5 @@
 /* "Bag-of-pages" garbage collector for the GNU compiler.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -27,7 +27,7 @@
 #include "flags.h"
 #include "ggc.h"
 
-#ifdef HAVE_MMAP
+#ifdef HAVE_MMAP_ANYWHERE
 #include <sys/mman.h>
 #endif
 
@@ -229,7 +229,7 @@ static struct globals
   unsigned char context_depth;
 
   /* A file descriptor open to /dev/zero for reading.  */
-#if defined (HAVE_MMAP) && !defined(MAP_ANONYMOUS)
+#if defined (HAVE_MMAP_ANYWHERE) && !defined(MAP_ANONYMOUS)
   int dev_zero_fd;
 #endif
 
@@ -408,7 +408,7 @@ alloc_anon (pref, size)
 {
   char *page;
 
-#ifdef HAVE_MMAP
+#ifdef HAVE_MMAP_ANYWHERE
 #ifdef MAP_ANONYMOUS
   page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
 			MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -430,7 +430,7 @@ alloc_anon (pref, size)
       exit(1);
     }
 #endif /* HAVE_VALLOC */
-#endif /* HAVE_MMAP */
+#endif /* HAVE_MMAP_ANYWHERE */
 
   /* Remember that we allocated this memory.  */
   G.bytes_mapped += size;
@@ -533,7 +533,7 @@ free_page (entry)
 static void
 release_pages ()
 {
-#ifdef HAVE_MMAP
+#ifdef HAVE_MMAP_ANYWHERE
   page_entry *p, *next;
   char *start;
   size_t len;
@@ -579,7 +579,7 @@ release_pages ()
       free (p);
     }
 #endif /* HAVE_VALLOC */
-#endif /* HAVE_MMAP */
+#endif /* HAVE_MMAP_ANYWHERE */
 
   G.free_pages = NULL;
 }
@@ -794,7 +794,7 @@ init_ggc ()
   G.pagesize = getpagesize();
   G.lg_pagesize = exact_log2 (G.pagesize);
 
-#if defined (HAVE_MMAP) && !defined(MAP_ANONYMOUS)
+#if defined (HAVE_MMAP_ANYWHERE) && !defined(MAP_ANONYMOUS)
   G.dev_zero_fd = open ("/dev/zero", O_RDONLY);
   if (G.dev_zero_fd == -1)
     abort ();
@@ -808,7 +808,7 @@ init_ggc ()
 
   G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
-#ifdef HAVE_MMAP
+#ifdef HAVE_MMAP_ANYWHERE
   /* StunOS has an amazing off-by-one error for the first mmap allocation
      after fiddling with RLIMIT_STACK.  The result, as hard as it is to
      believe, is an unaligned page allocation, which would cause us to
