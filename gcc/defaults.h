@@ -334,16 +334,6 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #endif
 #endif
 
-/* By default, we generate a label at the beginning and end of the
-   text section, and compute the size of the text section by
-   subtracting the two.  However, on some platforms that doesn't
-   work, and we use the section itself, rather than a label at the
-   beginning of it, to indicate the start of the section.  On such
-   platforms, define this to zero.  */
-#ifndef DWARF2_GENERATE_TEXT_SECTION_LABEL
-#define DWARF2_GENERATE_TEXT_SECTION_LABEL 1
-#endif
-
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER  */
 

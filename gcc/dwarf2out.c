@@ -13262,10 +13262,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,
 			       DEBUG_ABBREV_SECTION_LABEL, 0);
-  if (DWARF2_GENERATE_TEXT_SECTION_LABEL)
-    ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
-  else
-    strcpy (text_section_label, stripattributes (TEXT_SECTION_NAME));
+  ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
 
   ASM_GENERATE_INTERNAL_LABEL (debug_info_section_label,
 			       DEBUG_INFO_SECTION_LABEL, 0);
@@ -13288,11 +13285,8 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
       ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
     }
 
-  if (DWARF2_GENERATE_TEXT_SECTION_LABEL)
-    {
-      text_section ();
-      ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
-    }
+  text_section ();
+  ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
 }
 
 /* A helper function for dwarf2out_finish called through

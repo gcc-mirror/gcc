@@ -1,3 +1,11 @@
+2004-10-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* defaults.h (DWARF2_GENERATE_TEXT_SECTION_LABEL): Remove.
+	* dwarf2out.c (dwarf2out_init): Remove references to
+	DWARF2_GENERATE_TEXT_SECTION_LABEL.
+	* system.h: Poison DWARF2_GENERATE_TEXT_SECTION_LABEL.
+	* doc/tm.texi (DWARF2_GENERATE_TEXT_SECTION_LABEL): Remove.
+
 2004-10-06  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (convert_arguments): Take expression for called
