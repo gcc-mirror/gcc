@@ -1,3 +1,10 @@
+2002-03-18  Eric Botcazou  <ebotcazou@multimania.com>
+
+	PR c++/3882
+	* pt.c (tsubst_decl): Move __PRETTY_FUNCTION__ handling...
+	(tsubst_expr) [DECL_STMT]: ...here. And substitute the initializer
+	only after recording the declaration.
+
 2002-03-18  Ashif Harji  <asharji@uwaterloo.ca>
 
 	* lang-specs.h (compiler default_compilers): Add   
