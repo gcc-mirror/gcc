@@ -224,7 +224,10 @@ public class ObjectOutputStream extends OutputStream
 	      }
 
 	    if (obj instanceof ObjectStreamClass)
-	      writeClassDescriptor ((ObjectStreamClass) obj);
+	      {
+		writeClassDescriptor ((ObjectStreamClass) obj);
+		break;
+	      }
 
 	    if ((replacementEnabled || obj instanceof Serializable)
 		&& ! replaceDone)
