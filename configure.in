@@ -1006,6 +1006,7 @@ do
 	*)
 	  lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
 	  this_lang_libs=`sed -n -e 's,^target_libs=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^target_libs=\([^ 	]*\).*$,\1,p' $lang`
+	  this_lang_dirs=`sed -n -e 's,^lang_dirs=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^lang_dirs=\([^ 	]*\).*$,\1,p' $lang`
 	  build_by_default=`sed -n -e 's,^build_by_default=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^build_by_default=\([^ 	]*\).*$,\1,p' $lang`
 	  if test "x$lang_alias" = x
 	  then
@@ -1021,7 +1022,7 @@ do
 	  if test x"${add_this_lang}" = xyes; then
 	      eval target_libs='"$target_libs "'\"$this_lang_libs\"
 	  else
-	      eval noconfigdirs='"$noconfigdirs "'\"$this_lang_libs\"
+	      eval noconfigdirs='"$noconfigdirs "'\"$this_lang_libs $this_lang_dirs\"
 	  fi
 	  ;;
 	esac

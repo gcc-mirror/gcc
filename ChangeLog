@@ -1,4 +1,8 @@
-2000-12-14  Tom Tromey  <tromey@redhat.com>
+2000-12-15  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Handle lang_dirs.
+
+2000-12-14  Tom Tromey	<tromey@redhat.com>
 
 	* MAINTAINERS: Removed brads.
 
