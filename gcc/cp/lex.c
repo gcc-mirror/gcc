@@ -508,11 +508,9 @@ init_cpp_parse ()
 {
 #ifdef GATHER_STATISTICS
 #ifdef REDUCE_LENGTH
-  reduce_count = (int *)malloc (sizeof (int) * (REDUCE_LENGTH + 1));
-  bzero (reduce_count, sizeof (int) * (REDUCE_LENGTH + 1));
+  reduce_count = (int *) xcalloc (sizeof (int), (REDUCE_LENGTH + 1));
   reduce_count += 1;
-  token_count = (int *)malloc (sizeof (int) * (TOKEN_LENGTH + 1));
-  bzero (token_count, sizeof (int) * (TOKEN_LENGTH + 1));
+  token_count = (int *) xcalloc (sizeof (int), (TOKEN_LENGTH + 1));
   token_count += 1;
 #endif
 #endif
