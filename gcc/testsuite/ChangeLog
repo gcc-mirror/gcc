@@ -1,3 +1,7 @@
+1999-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/noreturn-1.c: New test.
+
 Thu May 13 02:07:21 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.dg/990513-1.c: New test.
