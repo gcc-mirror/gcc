@@ -1158,18 +1158,17 @@ macroexpand (pfile, hp)
 
 		      if (!in_string)
 			{
+			  /* Delete "\r " and "\r-" escapes.  */
+			  if (c == '\r')
+			    {
+			      i++;
+			      continue;
+			    }
 			  /* Internal sequences of whitespace are
 			     replaced by one space except within
 			     a string or char token. */
-			  if (is_space(c))
+			  else if (is_space(c))
 			    {
-			      if (CPP_WRITTEN (pfile) > (unsigned) arg->stringified
-				  && (CPP_PWRITTEN (pfile))[-1] == '\r')
-				{
-				  /* "\r " escape markers are removed */
-				  CPP_ADJUST_WRITTEN (pfile, -1);
-				  continue;
-				}
 			      if (need_space == 0)
 				need_space = 1;
 			      continue;
