@@ -70,11 +70,12 @@ compilation is specified by a string called a "spec".  */
 
 /* By default there is no special suffix for executables.  */
 #ifndef EXECUTABLE_SUFFIX
-#if __MSDOS__
-#define EXECUTABLE_SUFFIX ".exe"
-#else
 #define EXECUTABLE_SUFFIX ""
 #endif
+
+/* By default, colon separates directories in a path.  */
+#ifndef PATH_SEPARATOR
+#define PATH_SEPARATOR ':'
 #endif
 
 #define obstack_chunk_alloc xmalloc
@@ -1073,7 +1074,6 @@ choose_temp_base ()
 putenv (str)
      char *str;
 {
-#ifndef __MSDOS__		/* not sure about MS/DOS */
 #ifndef VMS			/* nor about VMS */
 
   extern char **environ;
@@ -1109,7 +1109,6 @@ putenv (str)
   bcopy (old_environ, environ+1, sizeof (char *) * (num_envs+1));
 
 #endif	/* VMS */
-#endif	/* __MSDOS__ */
 }
 
 #endif	/* HAVE_PUTENV */
@@ -1378,7 +1377,16 @@ pexecute (func, program, argv, not_last)
     pfatal_with_name (scmd + strlen (program) + 2);
 
   for (i=1; argv[i]; i++)
-    fprintf (argfile, "%s\n", argv[i]);
+  {
+    char *cp;
+    for (cp = argv[i]; *cp; cp++)
+      {
+	if (*cp == '"' || *cp == '\'' || *cp == '\\' || isspace (*cp))
+	  fputc ('\\', argfile);
+	fputc (*cp, argfile);
+      }
+    fputc ('\n', argfile);
+  }
   fclose (argfile);
 
   i = system (scmd);
@@ -1694,7 +1702,7 @@ process_command (argc, argv)
       startp = endp = temp;
       while (1)
 	{
-	  if ((*endp == ':') || (*endp == 0))
+	  if (*endp == PATH_SEPARATOR || *endp == 0)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
@@ -1727,7 +1735,7 @@ process_command (argc, argv)
       startp = endp = temp;
       while (1)
 	{
-	  if ((*endp == ':') || (*endp == 0))
+	  if (*endp == PATH_SEPARATOR || *endp == 0)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
@@ -1763,7 +1771,7 @@ process_command (argc, argv)
       startp = endp = temp;
       while (1)
 	{
-	  if ((*endp == ':') || (*endp == 0))
+	  if (*endp == PATH_SEPARATOR || *endp == 0)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
