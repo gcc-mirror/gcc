@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1991, 1993 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1242,12 +1242,17 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  arg_vals[i] = XEXP (stack_slot, 0);
 	}
       else if (GET_CODE (loc) != MEM)
-	/* The mode if LOC and ARG can differ if LOC was a variable
-	   that had its mode promoted via PROMOTED_MODE.  */
-	arg_vals[i] = convert_to_mode (GET_MODE (loc),
-				       expand_expr (arg, NULL_RTX, mode,
-						    EXPAND_SUM),
-				       TREE_UNSIGNED (TREE_TYPE (formal)));
+	{
+	  if (GET_MODE (loc) != TYPE_MODE (TREE_TYPE (arg)))
+	    /* The mode if LOC and ARG can differ if LOC was a variable
+	       that had its mode promoted via PROMOTED_MODE.  */
+	    arg_vals[i] = convert_to_mode (GET_MODE (loc),
+					   expand_expr (arg, NULL_RTX, mode,
+							EXPAND_SUM),
+					   TREE_UNSIGNED (TREE_TYPE (formal)));
+	  else
+	    arg_vals[i] = expand_expr (arg, NULL_RTX, mode, EXPAND_SUM);
+	}
       else
 	arg_vals[i] = 0;
 
