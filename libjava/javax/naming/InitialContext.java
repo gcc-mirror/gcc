@@ -26,7 +26,7 @@ public class InitialContext implements Context
   protected boolean gotDefault = false;
   protected Hashtable myProps;
   
-  InitialContext (Hashtable environment)
+  public InitialContext (Hashtable environment)
     {
       init (environment);
     }
@@ -37,7 +37,7 @@ public class InitialContext implements Context
 	init (null);
     }
   
-  InitialContext ()
+  public InitialContext ()
     {
       init (null);
     }
@@ -116,7 +116,7 @@ public class InitialContext implements Context
   // FIXME: Is this enough?
   private static final String[] colon_list = 
   {
-    Context.OBJECT_FACTORIS,
+    Context.OBJECT_FACTORIES,
     Context.URL_PKG_PREFIXES,
     Context.STATE_FACTORIES
   };
@@ -256,12 +256,12 @@ public class InitialContext implements Context
 
   public void destroySubcontext (Name name) throws NamingException
   {
-    return getURLOrDefaultInitCtx (name).destroySubcontext (name);
+    getURLOrDefaultInitCtx (name).destroySubcontext (name);
   }
 
   public void destroySubcontext (String name) throws NamingException
   {
-    return getURLOrDefaultInitCtx (name).destroySubcontext (name);
+    getURLOrDefaultInitCtx (name).destroySubcontext (name);
   }
 
   public Context createSubcontext (Name name) throws NamingException
@@ -300,15 +300,15 @@ public class InitialContext implements Context
   }
 
   public String composeName (String name, 
-			     String prefix) throws NamingException;
+                           String prefix) throws NamingException
   {
     return getURLOrDefaultInitCtx (name).composeName (name, prefix);
   }
 
   public Object addToEnvironment (String propName, 
-				  Object propVal) throws NamingException;
+                                Object propVal) throws NamingException
   {
-    myProps.add (propName, propVal);
+    myProps.put (propName, propVal);
   }
 
   public Object removeFromEnvironment (String propName) throws NamingException
