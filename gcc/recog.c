@@ -2660,7 +2660,7 @@ split_block_insns (b, do_split)
 	      first = NEXT_INSN (first);
 #ifdef INSN_SCHEDULING
 	      update_flow_info (notes, first, last, insn);
-#endif	      
+#endif
 	      PUT_CODE (insn, NOTE);
 	      NOTE_SOURCE_FILE (insn) = 0;
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
