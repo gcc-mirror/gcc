@@ -1,3 +1,10 @@
+2002-05-17  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_regs_to_save): New function.  Also check
+	for fixed registers, possibly used for global register variables.
+	(initial_elimination_offset, avr_output_function_prologue,
+	avr_output_function_epilogue):  Move common code to avr_regs_to_save.
+
 2002-05-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in: Update for cpptrad.c.

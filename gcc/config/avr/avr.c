@@ -47,6 +47,7 @@
 static int    avr_naked_function_p PARAMS ((tree));
 static int    interrupt_function_p PARAMS ((tree));
 static int    signal_function_p    PARAMS ((tree));
+static int    avr_regs_to_save     PARAMS ((HARD_REG_SET *));
 static int    sequent_regs_live    PARAMS ((void));
 static const char * ptrreg_to_str  PARAMS ((int));
 static const char * cond_string    PARAMS ((enum rtx_code));
@@ -363,6 +364,42 @@ signal_function_p (func)
   return a != NULL_TREE;
 }
 
+/* Return the number of hard registers to push/pop in the prologue/epilogue
+   of the current function, and optionally store these registers in SET.  */
+
+static int
+avr_regs_to_save (set)
+     HARD_REG_SET *set;
+{
+  int reg, count;
+  int int_or_sig_p = (interrupt_function_p (current_function_decl)
+		      || signal_function_p (current_function_decl));
+  int leaf_func_p = leaf_function_p ();
+
+  if (set)
+    CLEAR_HARD_REG_SET (*set);
+  count = 0;
+  for (reg = 0; reg < 32; reg++)
+    {
+      /* Do not push/pop __tmp_reg__, __zero_reg__, as well as
+	 any global register variables.  */
+      if (fixed_regs[reg])
+	continue;
+
+      if ((int_or_sig_p && !leaf_func_p && call_used_regs[reg])
+	  || (regs_ever_live[reg]
+	      && (int_or_sig_p || !call_used_regs[reg])
+	      && !(frame_pointer_needed
+		   && (reg == REG_Y || reg == (REG_Y+1)))))
+	{
+	  if (set)
+	    SET_HARD_REG_BIT (*set, reg);
+	  count++;
+	}
+    }
+  return count;
+}
+
 /* Compute offset between arg_pointer and frame_pointer */
 
 int
@@ -370,31 +407,15 @@ initial_elimination_offset (from, to)
      int from;
      int to;
 {
-  int reg;
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return 0;
   else
     {
-      int interrupt_func_p = interrupt_function_p (current_function_decl);
-      int signal_func_p = signal_function_p (current_function_decl);
-      int leaf_func_p = leaf_function_p ();
-      int offset= frame_pointer_needed ? 2 : 0;
+      int offset = frame_pointer_needed ? 2 : 0;
 
-      for (reg = 0; reg < 32; ++reg)
-	{
-	  if ((!leaf_func_p && (call_used_regs[reg]
-				&& (interrupt_func_p || signal_func_p)))
-	      || (regs_ever_live[reg]
-		  && (!call_used_regs[reg] || interrupt_func_p || signal_func_p)
-		  && ! (frame_pointer_needed
-			&& (reg == REG_Y || reg == (REG_Y+1)))))
-	    {
-	      ++offset;
-	    }
-	}
+      offset += avr_regs_to_save (NULL);
       return get_frame_size () + 2 + 1 + offset;
     }
-  return 0;
 }
 
 /* This function checks sequence of live registers */
@@ -569,7 +590,6 @@ avr_output_function_prologue (file, size)
   int reg;
   int interrupt_func_p;
   int signal_func_p;
-  int leaf_func_p;
   int main_p;
   int live_seq;
   int minimize;
@@ -582,7 +602,6 @@ avr_output_function_prologue (file, size)
 
   interrupt_func_p = interrupt_function_p (current_function_decl);
   signal_func_p = signal_function_p (current_function_decl);
-  leaf_func_p = leaf_function_p ();
   main_p = MAIN_NAME_P (DECL_NAME (current_function_decl));
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES
@@ -598,7 +617,7 @@ avr_output_function_prologue (file, size)
       fprintf (file,"\tsei\n");
       ++prologue_size;
     }
-  if (interrupt_func_p | signal_func_p)
+  if (interrupt_func_p || signal_func_p)
     {
       fprintf (file, "\t"
                AS1 (push,__zero_reg__)   CR_TAB
@@ -647,20 +666,14 @@ avr_output_function_prologue (file, size)
     }
   else
     {
+      HARD_REG_SET set;
+
+      prologue_size += avr_regs_to_save (&set);
       for (reg = 0; reg < 32; ++reg)
 	{
-	  if ((!leaf_func_p
-	       && (call_used_regs[reg]
-		   && (interrupt_func_p || signal_func_p)
-		   && !(reg == TMP_REGNO || reg == ZERO_REGNO)))
-	      || (regs_ever_live[reg]
-		  && (!call_used_regs[reg]
-		      || interrupt_func_p || signal_func_p)
-		  && ! (frame_pointer_needed
-			&& (reg == REG_Y || reg == (REG_Y+1)))))
+	  if (TEST_HARD_REG_BIT (set, reg))
 	    {
 	      fprintf (file, "\t" AS1 (push,%s) "\n", avr_regnames[reg]);
-	      ++prologue_size;
 	    }
 	}
       if (frame_pointer_needed)
@@ -706,7 +719,6 @@ avr_output_function_epilogue (file, size)
   int reg;
   int interrupt_func_p;
   int signal_func_p;
-  int leaf_func_p;
   int main_p;
   int function_size;
   int live_seq;
@@ -720,7 +732,6 @@ avr_output_function_epilogue (file, size)
 
   interrupt_func_p = interrupt_function_p (current_function_decl);
   signal_func_p = signal_function_p (current_function_decl);
-  leaf_func_p = leaf_function_p ();
   main_p = MAIN_NAME_P (DECL_NAME (current_function_decl));
   function_size = (INSN_ADDRESSES (INSN_UID (get_last_insn ()))
 		   - INSN_ADDRESSES (INSN_UID (get_insns ())));
@@ -766,6 +777,8 @@ avr_output_function_epilogue (file, size)
     }
   else
     {
+      HARD_REG_SET set;
+
       if (frame_pointer_needed)
 	{
 	  if (size)
@@ -773,7 +786,7 @@ avr_output_function_epilogue (file, size)
 	      fputs ("\t", file);
 	      epilogue_size += out_adj_frame_ptr (file, -size);
 
-	      if (interrupt_func_p | signal_func_p)
+	      if (interrupt_func_p || signal_func_p)
 		{
 		  epilogue_size += out_set_stack_ptr (file, -1, 0);
 		}
@@ -788,24 +801,16 @@ avr_output_function_epilogue (file, size)
 	  epilogue_size += 2;
 	}
 
+      epilogue_size += avr_regs_to_save (&set);
       for (reg = 31; reg >= 0; --reg)
 	{
-	  if ((!leaf_func_p
-	       && (call_used_regs[reg]
-		   && (interrupt_func_p || signal_func_p)
-		   && !(reg == TMP_REGNO || reg == ZERO_REGNO)))
-	      || (regs_ever_live[reg]
-		  && (!call_used_regs[reg]
-		      || interrupt_func_p || signal_func_p)
-		  && ! (frame_pointer_needed
-			&& (reg == REG_Y || reg == (REG_Y+1)))))
+	  if (TEST_HARD_REG_BIT (set, reg))
 	    {
 	      fprintf (file, "\t" AS1 (pop,%s) "\n", avr_regnames[reg]);
-	      ++epilogue_size;
 	    }
 	}
-      
-      if (interrupt_func_p | signal_func_p)
+
+      if (interrupt_func_p || signal_func_p)
 	{
 	  fprintf (file, "\t"
 		   AS1 (pop,__tmp_reg__)      CR_TAB
