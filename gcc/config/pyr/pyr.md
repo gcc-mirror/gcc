@@ -1224,8 +1224,6 @@
 	(sign_extend:SI (match_dup 1)))
    (set (cc0)
 	(match_dup 2))]
-;; ??? This is WRONG, dead_or_set_p cannot be used after reload
-;; because the REG_DEAD notes are not maintained after reload.
   "dead_or_set_p (insn, operands[2])"
   "*
   cc_status.flags |= CC_NO_OVERFLOW;
