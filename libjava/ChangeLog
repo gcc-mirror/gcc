@@ -1,3 +1,10 @@
+2003-12-16  Fernando Nasser  <fnasser@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(pre_event_handler): Handle GtkButton widgets differently as events
+	go to its event_window.
+	(connect_awt_hook): Remove compiler warning.
+
 i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/io/ObjectInputStream.java
