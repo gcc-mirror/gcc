@@ -1,3 +1,9 @@
+2000-10-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (register_incomplete_type): Include JDEP_FIELD as a case
+	where an enclosing context can be set on the jdep.
+	(do_resolve_class): Fixed identation.
+
 2000-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (NEED_PEEK_ATTRIBUTE, NEED_SKIP_ATTRIBUTE): Define
