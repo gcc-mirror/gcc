@@ -1,3 +1,10 @@
+2001-01-05  DJ Delorie  <dj@redhat.com>
+
+	* function.c (reorder_blocks): Make sure the flags are all reset
+	before using them to mark blocks, else a second invocation will
+	corrupt the block chain.
+	(reorder_blocks_0): New, resets the flags.
+
 Fri Jan  5 20:34:06 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* cse.c (find_comparison_args): Stop if the argument is known to
