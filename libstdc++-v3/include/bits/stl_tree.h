@@ -265,9 +265,9 @@ namespace std
     { return __x._M_node != __y._M_node; }
 
   inline void 
-  _Rb_tree_rotate_left(_Rb_tree_node_base* __x, _Rb_tree_node_base*& __root)
+  _Rb_tree_rotate_left(_Rb_tree_node_base* const __x, _Rb_tree_node_base*& __root)
   {
-    _Rb_tree_node_base* __y = __x->_M_right;
+    _Rb_tree_node_base* const __y = __x->_M_right;
     __x->_M_right = __y->_M_left;
     if (__y->_M_left !=0)
       __y->_M_left->_M_parent = __x;
@@ -284,9 +284,9 @@ namespace std
   }
 
   inline void 
-  _Rb_tree_rotate_right(_Rb_tree_node_base* __x, _Rb_tree_node_base*& __root)
+  _Rb_tree_rotate_right(_Rb_tree_node_base* const __x, _Rb_tree_node_base*& __root)
   {
-    _Rb_tree_node_base* __y = __x->_M_left;
+    _Rb_tree_node_base* const __y = __x->_M_left;
     __x->_M_left = __y->_M_right;
     if (__y->_M_right != 0)
       __y->_M_right->_M_parent = __x;
@@ -309,15 +309,17 @@ namespace std
     while (__x != __root 
 	   && __x->_M_parent->_M_color == _S_red) 
       {
-	if (__x->_M_parent == __x->_M_parent->_M_parent->_M_left) 
+	_Rb_tree_node_base* const __xpp = __x->_M_parent->_M_parent;
+
+	if (__x->_M_parent == __xpp->_M_left) 
 	  {
-	    _Rb_tree_node_base* __y = __x->_M_parent->_M_parent->_M_right;
+	    _Rb_tree_node_base* const __y = __xpp->_M_right;
 	    if (__y && __y->_M_color == _S_red) 
 	      {
 		__x->_M_parent->_M_color = _S_black;
 		__y->_M_color = _S_black;
-		__x->_M_parent->_M_parent->_M_color = _S_red;
-		__x = __x->_M_parent->_M_parent;
+		__xpp->_M_color = _S_red;
+		__x = __xpp;
 	      }
 	    else 
 	      {
@@ -327,19 +329,19 @@ namespace std
 		    _Rb_tree_rotate_left(__x, __root);
 		  }
 		__x->_M_parent->_M_color = _S_black;
-		__x->_M_parent->_M_parent->_M_color = _S_red;
-		_Rb_tree_rotate_right(__x->_M_parent->_M_parent, __root);
+		__xpp->_M_color = _S_red;
+		_Rb_tree_rotate_right(__xpp, __root);
 	      }
 	  }
 	else 
 	  {
-	    _Rb_tree_node_base* __y = __x->_M_parent->_M_parent->_M_left;
+	    _Rb_tree_node_base* const __y = __xpp->_M_left;
 	    if (__y && __y->_M_color == _S_red) 
 	      {
 		__x->_M_parent->_M_color = _S_black;
 		__y->_M_color = _S_black;
-		__x->_M_parent->_M_parent->_M_color = _S_red;
-		__x = __x->_M_parent->_M_parent;
+		__xpp->_M_color = _S_red;
+		__x = __xpp;
 	      }
 	    else 
 	      {
@@ -349,8 +351,8 @@ namespace std
 		    _Rb_tree_rotate_right(__x, __root);
 		  }
 		__x->_M_parent->_M_color = _S_black;
-		__x->_M_parent->_M_parent->_M_color = _S_red;
-		_Rb_tree_rotate_left(__x->_M_parent->_M_parent, __root);
+		__xpp->_M_color = _S_red;
+		_Rb_tree_rotate_left(__xpp, __root);
 	      }
 	  }
       }
@@ -358,10 +360,10 @@ namespace std
   }
 
   inline _Rb_tree_node_base*
-  _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* __z, 
-			       _Rb_tree_node_base*& __root,
-			       _Rb_tree_node_base*& __leftmost,
-			       _Rb_tree_node_base*& __rightmost)
+  _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* const __z, 
+			       _Rb_tree_node_base*& 	 __root,
+			       _Rb_tree_node_base*& 	 __leftmost,
+			       _Rb_tree_node_base*& 	 __rightmost)
   {
     _Rb_tree_node_base* __y = __z;
     _Rb_tree_node_base* __x = 0;

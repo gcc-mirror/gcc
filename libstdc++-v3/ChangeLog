@@ -1,3 +1,8 @@
+2003-07-05  Gawain Bolton  <gp.bolton@computer.org>
+
+	* include/bits/stl_tree.h: _Rb_tree_rebalance():  Add local
+          variable for grandparent and use const
+
 2003-07-05  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* testsuite/27_io/basic_filebuf/close/char/4879.cc: xfail on cygwin
