@@ -3,7 +3,7 @@
 // Copyright (C) 2004 Free Software Foundation
 // Contributed by Kriang Lerdsuwanakij <lerdsuwa@users.sourceforge.net>
 
-// Nest class template of class template as friend
+// Nested class template of class template as friend
 
 template<class T> struct A
 {
