@@ -49,7 +49,7 @@ end ifc
 #include "output.h"
 #include "toplev.h"
 #include "ggc.h"
-  
+
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif
@@ -255,11 +255,11 @@ ifobjc
 end ifobjc
 
 %{
-/* Number of statements (loosely speaking) and compound statements 
+/* Number of statements (loosely speaking) and compound statements
    seen so far.  */
 static int stmt_count;
 static int compstmt_count;
-  
+
 /* Input file and line number of the end of the body of last simple_if;
    used by the stmt-rule immediately after simple_if returns.  */
 static const char *if_stmt_file;
@@ -320,8 +320,8 @@ static enum tree_code objc_inherit_code;
 static int objc_pq_context = 0, objc_public_flag = 0;
 
 /* The following flag is needed to contextualize ObjC lexical analysis.
-   In some cases (e.g., 'int NSObject;'), it is undesirable to bind 
-   an identifier to an ObjC class, even if a class with that name 
+   In some cases (e.g., 'int NSObject;'), it is undesirable to bind
+   an identifier to an ObjC class, even if a class with that name
    exists.  */
 static int objc_need_raw_identifier;
 #define OBJC_NEED_RAW_IDENTIFIER(VAL)	objc_need_raw_identifier = VAL
@@ -404,7 +404,7 @@ datadef:
 		{ if (pedantic)
 		    error ("ISO C forbids data definition with no type or storage class");
 		  else
-		    warning ("data definition has no type or storage class"); 
+		    warning ("data definition has no type or storage class");
 
 		  POP_DECLSPEC_STACK; }
         | declspecs_nots setspecs notype_initdecls ';'
@@ -431,7 +431,7 @@ fndef:
 	  save_filename save_lineno compstmt_or_error
 		{ DECL_SOURCE_FILE (current_function_decl) = $7;
 		  DECL_SOURCE_LINE (current_function_decl) = $8;
-		  finish_function (0, 1); 
+		  finish_function (0, 1);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -445,7 +445,7 @@ fndef:
 	  save_filename save_lineno compstmt_or_error
 		{ DECL_SOURCE_FILE (current_function_decl) = $7;
 		  DECL_SOURCE_LINE (current_function_decl) = $8;
-		  finish_function (0, 1); 
+		  finish_function (0, 1);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -459,7 +459,7 @@ fndef:
 	  save_filename save_lineno compstmt_or_error
 		{ DECL_SOURCE_FILE (current_function_decl) = $6;
 		  DECL_SOURCE_LINE (current_function_decl) = $7;
-		  finish_function (0, 1); 
+		  finish_function (0, 1);
 		  POP_DECLSPEC_STACK; }
 	| setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -667,7 +667,7 @@ primary:
 		{ $$ = fix_string_type ($$); }
 	| VAR_FUNC_NAME
 		{ $$ = fname_decl (C_RID_CODE ($$), $$); }
-	| '(' typename ')' '{' 
+	| '(' typename ')' '{'
 		{ start_init (NULL_TREE, NULL, 0);
 		  $2 = groktypename ($2);
 		  really_start_incremental_init ($2); }
@@ -1431,7 +1431,7 @@ initdcl:
 	| declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0,
 				       chainon ($3, all_prefix_attributes));
-		  finish_decl (d, NULL_TREE, $2); 
+		  finish_decl (d, NULL_TREE, $2);
                 }
 	;
 
@@ -1457,7 +1457,7 @@ maybe_attribute:
 	| attributes
 		{ $$ = $1; }
 	;
- 
+
 attributes:
       attribute
 		{ $$ = $1; }
@@ -1476,7 +1476,7 @@ attribute_list:
 	| attribute_list ',' attrib
 		{ $$ = chainon ($1, $3); }
 	;
- 
+
 attrib:
     /* empty */
 		{ $$ = NULL_TREE; }
@@ -1544,6 +1544,7 @@ initelt:
 		  if (pedantic)
 		    pedwarn ("obsolete use of designated initializer with `:'"); }
 	  initval
+		{}
 	| initval
 	;
 
@@ -1604,7 +1605,7 @@ nested_function:
 		  DECL_SOURCE_FILE (decl) = $5;
 		  DECL_SOURCE_LINE (decl) = $6;
 		  finish_function (1, 1);
-		  pop_function_context (); 
+		  pop_function_context ();
 		  add_decl_stmt (decl); }
 	;
 
@@ -1634,7 +1635,7 @@ notype_nested_function:
 		  DECL_SOURCE_FILE (decl) = $5;
 		  DECL_SOURCE_LINE (decl) = $6;
 		  finish_function (1, 1);
-		  pop_function_context (); 
+		  pop_function_context ();
 		  add_decl_stmt (decl); }
 	;
 
@@ -1755,7 +1756,7 @@ structsp_attr:
 		{ $$ = start_struct (RECORD_TYPE, $2);
 		  /* Start scope of tag before parsing components.  */
 		}
-	  component_decl_list '}' maybe_attribute 
+	  component_decl_list '}' maybe_attribute
 		{ $$ = finish_struct ($<ttype>4, $5, chainon ($1, $7)); }
 	| struct_head '{' component_decl_list '}' maybe_attribute
 		{ $$ = finish_struct (start_struct (RECORD_TYPE, NULL_TREE),
@@ -1845,8 +1846,8 @@ component_decl:
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nosc_ts setspecs save_filename save_lineno
 		{
-		  /* Support for unnamed structs or unions as members of 
-		     structs or unions (which is [a] useful and [b] supports 
+		  /* Support for unnamed structs or unions as members of
+		     structs or unions (which is [a] useful and [b] supports
 		     MS P-SDK).  */
 		  if (pedantic)
 		    pedwarn ("ISO C doesn't support unnamed structs/unions");
@@ -2102,8 +2103,8 @@ c99_block_end: /* empty */
                 { if (flag_isoc99)
 		    {
 		      tree scope_stmt = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-		      $$ = poplevel (kept_level_p (), 0, 0); 
-		      SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmt)) 
+		      $$ = poplevel (kept_level_p (), 0, 0);
+		      SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmt))
 			= SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmt))
 			= $$;
 		    }
@@ -2152,8 +2153,8 @@ compstmt_start: '{' { compstmt_count++;
 compstmt_nostart: '}'
 		{ $$ = convert (void_type_node, integer_zero_node); }
 	| pushlevel maybe_label_decls compstmt_contents_nonempty '}' poplevel
-		{ $$ = poplevel (kept_level_p (), 1, 0); 
-		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5)) 
+		{ $$ = poplevel (kept_level_p (), 1, 0);
+		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5))
 		    = SCOPE_STMT_BLOCK (TREE_VALUE ($5))
 		    = $$; }
 	;
@@ -2182,7 +2183,7 @@ compstmt_primary_start:
         ;
 
 compstmt: compstmt_start compstmt_nostart
-		{ RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); 
+		{ RECHAIN_STMTS ($1, COMPOUND_BODY ($1));
 		  last_expr_type = NULL_TREE;
                   $$ = $1; }
 	;
@@ -2209,7 +2210,7 @@ if_prefix:
           IF
                 { $<ttype>$ = c_begin_if_stmt (); }
             '(' expr ')'
-		{ c_expand_start_cond (c_common_truthvalue_conversion ($4), 
+		{ c_expand_start_cond (c_common_truthvalue_conversion ($4),
 				       compstmt_count,$<ttype>2);
 		  $<itype>$ = stmt_count;
 		  if_stmt_file = $<filename>-2;
@@ -2223,7 +2224,7 @@ do_stmt_start:
 	  DO
 		{ stmt_count++;
 		  compstmt_count++;
-		  $<ttype>$ 
+		  $<ttype>$
 		    = add_stmt (build_stmt (DO_STMT, NULL_TREE,
 					    NULL_TREE));
 		  /* In the event that a parse error prevents
@@ -2318,7 +2319,7 @@ select_or_iter_stmt:
 	  we later pass to c_finish_while_stmt_cond to fill
 	  in the condition and other tidbits.  */
 	| WHILE
-                { stmt_count++; 
+                { stmt_count++;
 		  $<ttype>$ = c_begin_while_stmt (); }
 	  '(' expr ')'
                 { $4 = c_common_truthvalue_conversion ($4);
@@ -2335,12 +2336,12 @@ select_or_iter_stmt:
 	| FOR
 		{ $<ttype>$ = build_stmt (FOR_STMT, NULL_TREE, NULL_TREE,
 					  NULL_TREE, NULL_TREE);
-		  add_stmt ($<ttype>$); } 
+		  add_stmt ($<ttype>$); }
 	  '(' for_init_stmt
 		{ stmt_count++;
 		  RECHAIN_STMTS ($<ttype>2, FOR_INIT_STMT ($<ttype>2)); }
 	  xexpr ';'
-                { if ($6) 
+                { if ($6)
 		    FOR_COND ($<ttype>2)
 		      = c_common_truthvalue_conversion ($6); }
 	  xexpr ')'
@@ -2356,7 +2357,7 @@ select_or_iter_stmt:
 
 for_init_stmt:
 	  xexpr ';'
-		{ add_stmt (build_stmt (EXPR_STMT, $1)); } 
+		{ add_stmt (build_stmt (EXPR_STMT, $1)); }
 	| decl
 		{ check_for_loop_decls (); }
 	;
@@ -2567,7 +2568,7 @@ parm:
 	| declspecs_ts setspecs notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					chainon ($4, all_prefix_attributes)); 
+					chainon ($4, all_prefix_attributes));
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs absdcl_maybe_attribute
 		{ $$ = $3;
@@ -2594,7 +2595,7 @@ firstparm:
 	| declspecs_ts_nosa setspecs_fp notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					chainon ($4, all_prefix_attributes)); 
+					chainon ($4, all_prefix_attributes));
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts_nosa setspecs_fp absdcl_maybe_attribute
 		{ $$ = $3;
@@ -2708,12 +2709,14 @@ classdecl:
 		{
 		  objc_declare_class ($2);
 		}
+	;
 
 aliasdecl:
 	  ALIAS identifier identifier ';'
 		{
 		  objc_declare_alias ($2, $3);
 		}
+	;
 
 classdef:
 	  INTERFACE identifier protocolrefs '{'
@@ -3452,7 +3455,7 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_BYCOPY */	TYPE_QUAL,
   /* RID_BYREF */	TYPE_QUAL,
   /* RID_ONEWAY */	TYPE_QUAL,
-  
+
   /* C */
   /* RID_INT */		TYPESPEC,
   /* RID_CHAR */	TYPESPEC,
@@ -3538,7 +3541,7 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_BITAND */	0,
   /* RID_BITOR */	0,
   /* RID_COMPL */	0,
-  
+
   /* Objective C */
   /* RID_ID */			OBJECTNAME,
   /* RID_AT_ENCODE */		ENCODE,
@@ -3618,12 +3621,12 @@ static int
 yylexname ()
 {
   tree decl;
-  
+
 ifobjc
   int objc_force_identifier = objc_need_raw_identifier;
   OBJC_NEED_RAW_IDENTIFIER (0);
 end ifobjc
-  
+
   if (C_IS_RESERVED_WORD (yylval.ttype))
     {
       enum rid rid_code = C_RID_CODE (yylval.ttype);
@@ -3648,13 +3651,13 @@ end ifobjc
 	    /* __FUNCTION__ and __PRETTY_FUNCTION__ get converted
 	       to string constants.  */
 	    const char *name = fname_string (rid_code);
-	  
+
 	    yylval.ttype = build_string (strlen (name) + 1, name);
 	    C_ARTIFICIAL_STRING_P (yylval.ttype) = 1;
 	    last_token = CPP_STRING;  /* so yyerror won't choke */
 	    return STRING;
 	  }
-      
+
 	/* Return the canonical spelling for this keyword.  */
 	yylval.ttype = ridpointers[(int) rid_code];
 	return yycode;
@@ -3673,8 +3676,8 @@ ifobjc
       tree objc_interface_decl = is_class_name (yylval.ttype);
       /* ObjC class names are in the same namespace as variables and
 	 typedefs, and hence are shadowed by local declarations.  */
-      if (objc_interface_decl 
-	  && (global_bindings_p () 
+      if (objc_interface_decl
+	  && (global_bindings_p ()
 	      || (!objc_force_identifier && !decl)))
 	{
 	  yylval.ttype = objc_interface_decl;
@@ -3819,7 +3822,7 @@ _yylex ()
     case CPP_STRING:
     case CPP_WSTRING:
       return yylexstring ();
-      
+
       /* This token is Objective-C specific.  It gives the next token
 	 special significance.  */
     case CPP_ATSIGN:
@@ -3885,7 +3888,7 @@ yyprint (file, yychar, yyl)
   tree t = yyl.ttype;
 
   fprintf (file, " [%s]", NAME(last_token));
-  
+
   switch (yychar)
     {
     case IDENTIFIER:

@@ -73,6 +73,7 @@ typedef_struct: ENT_TYPEDEF_STRUCT options '{' struct_fields '}' ID
 		     lexer_toplevel_done = 1;
 		   }
 		 ';'
+		   {}
 		| ENT_STRUCT options '{' struct_fields '}'
 		   {
 		     new_structure ($1->u.s.tag, UNION_P ($1), &lexer_line,
@@ -80,6 +81,7 @@ typedef_struct: ENT_TYPEDEF_STRUCT options '{' struct_fields '}' ID
 		     lexer_toplevel_done = 1;
 		   }
 		 ';'
+		   {}
 		;
 
 externstatic: ENT_EXTERNSTATIC options lasttype ID semiequal
