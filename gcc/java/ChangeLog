@@ -1,3 +1,7 @@
+2004-11-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* class.c, decl.c, expr.c: Fix comment typos.
+
 2004-11-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR java/18305

@@ -256,7 +256,7 @@ check_local_unnamed_variable (tree best, tree decl, tree type)
 	 new VAR_DECL.  
 
 	 ???: As long as verification is correct, this will be a
-	 compatible type.  But maybe we should create a dummy vribale
+	 compatible type.  But maybe we should create a dummy variable
 	 and replace all references to it with the DECL and a
 	 NOP_EXPR.
       */

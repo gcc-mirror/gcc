@@ -1609,7 +1609,7 @@ make_class_data (tree type)
 	  && ! flag_keep_inline_functions
 	  && optimize)
 	continue;
-      /* Even if we have a decl, we don't necessaily have the code.
+      /* Even if we have a decl, we don't necessarily have the code.
 	 This can happen if we inherit a method from a superclass for
 	 which we don't have a .class file.  */
       if (METHOD_DUMMY (method))
