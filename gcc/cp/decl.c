@@ -4640,6 +4640,22 @@ initialize_local_var (tree decl, tree init)
     finish_decl_cleanup (decl, cleanup);
 }
 
+/* DECL is a VAR_DECL for a compiler-generated variable with static
+   storage duration (like a virtual table) whose initializer is a
+   compile-time constant.  Initialize the variable and provide it to
+   the back end.  */
+
+void
+initialize_artificial_var (tree decl, tree init)
+{
+  DECL_INITIAL (decl) = build_constructor (NULL_TREE, init);
+  DECL_INITIALIZED_P (decl) = 1;
+  determine_visibility (decl);
+  layout_var_decl (decl);
+  maybe_commonize_var (decl);
+  make_rtl_for_nonlocal_decl (decl, init, /*asmspec=*/NULL);
+}
+
 /* Finish processing of a declaration;
    install its line number and initial value.
    If the length of an array type is not known before,
