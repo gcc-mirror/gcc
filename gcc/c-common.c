@@ -1250,7 +1250,7 @@ static format_char_info time_char_table[] = {
   { "HIMSUWdemw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
   { "Vju",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
   { "Gklsz",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
-  { "ABZza",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
+  { "ABZa",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
   { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
   { "bh",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
   { "CY",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOw" },
