@@ -1,3 +1,12 @@
+2000-11-10  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* reload.c (find_reloads_address_1, case POST_MODIFY): Use RELOAD_OTHER
+	for address reloads.  Push replacements for REG_INC notes.
+	(regno_clobbered_p): New arg SETS.  Examine SETs if it's nonzero.  All
+	callers changed.
+	* reload1.c (choose_reload_regs): Registers set in the insn can't be
+	used for RELOAD_OTHER reloads.
+
 2000-11-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-dump.h: New file.
