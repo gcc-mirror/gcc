@@ -1,3 +1,20 @@
+2004-07-12 Vladimir Makarov <vmakarov@redhat.com>
+
+	PR rtl-optimization/15921
+	* Makefile.in (global.o): Add recog.h.
+	
+	* global.c (recog.h): Add the include-clause.
+	(bb_info): New member earlyclobber.
+	(allocate_bb_info, free_bb_info): Initialize/finish the new
+	member.
+	(earlyclobber_regclass, earlyclobber_regclass_length): The new
+	global variables.
+	(check_earlyclobber, regclass_intersect,
+	mark_reg_use_for_earlyclobber, mark_reg_use_for_earlyclobber_1):
+	New functions.
+	(calculate_local_reg_bb_info): Calculate value of earlyclobber.
+	(make_accurate_live_analysis): Modify pavin.
+	
 2004-07-12  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-cfg.c (find_taken_edge): Statically compute the truth
