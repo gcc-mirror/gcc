@@ -258,7 +258,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean equals (Object obj)
   {
-    if (obj == null || ! (obj instanceof InetAddress))
+    if (! (obj instanceof InetAddress))
       return false;
     
     byte[] addr1 = addr;

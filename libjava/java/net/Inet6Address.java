@@ -243,7 +243,7 @@ public final class Inet6Address extends InetAddress
    */
   public boolean equals (Object obj)
   {
-    if (obj == null || ! (obj instanceof Inet6Address))
+    if (! (obj instanceof Inet6Address))
       return false;
 
     Inet6Address tmp = (Inet6Address) obj;

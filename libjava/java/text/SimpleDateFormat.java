@@ -374,9 +374,6 @@ public class SimpleDateFormat extends DateFormat
    */
   public boolean equals(Object o)
   {
-    if (o == null)
-      return false;
-
     if (!super.equals(o))
       return false;
 

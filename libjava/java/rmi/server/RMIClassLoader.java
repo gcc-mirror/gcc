@@ -113,8 +113,7 @@ public class RMIClassLoader
      */
     public boolean equals (Object theOther)
     {
-      if (theOther != null
-          && theOther instanceof CacheKey)
+      if (theOther instanceof CacheKey)
       {
       	CacheKey key = (CacheKey) theOther;
 	
