@@ -3085,7 +3085,7 @@ build_unary_op (code, xarg, flag)
 	  readonly_warning (arg, 
 			    ((code == PREINCREMENT_EXPR
 			      || code == POSTINCREMENT_EXPR)
-			     ? _("increment") : _("decrement")));
+			     ? "increment" : "decrement"));
 
 	if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
 	  val = boolean_increment (code, arg);

@@ -1,3 +1,8 @@
+2002-01-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-typeck.c (build_unary_op): Don't wrap msgid argument of
+	readonly_warning in _().
+
 2002-01-15  Douglas B Rupp  <rupp@gnat.com>
 
 	* gcc.c (delete_if_ordinary): Backout previous change.
