@@ -74,10 +74,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    combine anyway.  */
 
 #include "config.h"
+#include "gvarargs.h"
+
 /* Must precede rtl.h for FFS.  */
 #include <stdio.h>
 
-#include "gvarargs.h"
 #include "rtl.h"
 #include "flags.h"
 #include "regs.h"
