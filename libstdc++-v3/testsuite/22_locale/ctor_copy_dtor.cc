@@ -340,10 +340,10 @@ void test04()
     getenv("LC_CTYPE") ? strdup(getenv("LC_CTYPE")) : "";
   const char* LC_NUMERIC_orig = 
     getenv("LC_NUMERIC") ? strdup(getenv("LC_NUMERIC")) : "";
-  const char* LC_COLLATE_orig =
-    getenv("LC_COLLATE") ? strdup(getenv("LC_COLLATE")) : "";
   const char* LC_TIME_orig = 
     getenv("LC_TIME") ? strdup(getenv("LC_TIME")) : "";
+  const char* LC_COLLATE_orig =
+    getenv("LC_COLLATE") ? strdup(getenv("LC_COLLATE")) : "";
   const char* LC_MONETARY_orig = 
     getenv("LC_MONETARY") ? strdup(getenv("LC_MONETARY")) : "";
   const char* LC_MESSAGES_orig = 
@@ -397,8 +397,8 @@ void test04()
   setenv("LC_ALL", "", 1);
   setenv("LC_CTYPE", "", 1);
   setenv("LC_NUMERIC", "", 1);
-  setenv("LC_COLLATE", "", 1);
   setenv("LC_TIME", "", 1);
+  setenv("LC_COLLATE", "", 1);
   setenv("LC_MONETARY", "", 1);
   setenv("LC_MESSAGES", "", 1);
 #if _GLIBCPP_NUM_CATEGORIES
@@ -430,13 +430,13 @@ void test04()
       locale loc("");
 
 #if _GLIBCPP_NUM_CATEGORIES
-      VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_COLLATE=de_DE;"
-	      "LC_TIME=C;LC_MONETARY=C;LC_MESSAGES=C;LC_PAPER=C;"
+      VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;"
+              "LC_COLLATE=de_DE;LC_MONETARY=C;LC_MESSAGES=C;LC_PAPER=C;"
 	      "LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=C;"
 	      "LC_IDENTIFICATION=C" );
 #else
-      VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_COLLATE=de_DE;"
-	      "LC_TIME=C;LC_MONETARY=C;LC_MESSAGES=C" );
+      VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;"
+	      "LC_COLLATE=de_DE;LC_MONETARY=C;LC_MESSAGES=C" );
 #endif
     }
 
@@ -446,13 +446,13 @@ void test04()
       locale loc("");
 #if _GLIBCPP_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
-	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
+	      "LC_TIME=fr_FR;LC_COLLATE=de_DE;LC_MONETARY=fr_FR;"
 	      "LC_MESSAGES=fr_FR;LC_PAPER=fr_FR;LC_NAME=fr_FR;"
 	      "LC_ADDRESS=fr_FR;LC_TELEPHONE=fr_FR;LC_MEASUREMENT=fr_FR;"
 	      "LC_IDENTIFICATION=fr_FR" );
 #else
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
-	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
+	      "LC_TIME=fr_FR;LC_COLLATE=de_DE;LC_MONETARY=fr_FR;"
 	      "LC_MESSAGES=fr_FR" );
 #endif
     }
@@ -463,7 +463,7 @@ void test04()
     {
       locale loc("");
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
-	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
+	      "LC_TIME=fr_FR;LC_COLLATE=de_DE;LC_MONETARY=fr_FR;"
 	      "LC_MESSAGES=fr_FR;LC_PAPER=fr_FR;LC_NAME=fr_FR;"
 	      "LC_ADDRESS=fr_FR;LC_TELEPHONE=fr_FR;LC_MEASUREMENT=fr_FR;"
 	      "LC_IDENTIFICATION=it_IT" );
@@ -475,8 +475,8 @@ void test04()
   setenv("LC_ALL", LC_ALL_orig ? LC_ALL_orig : "", 1);
   setenv("LC_CTYPE", LC_CTYPE_orig ? LC_CTYPE_orig : "", 1);
   setenv("LC_NUMERIC", LC_NUMERIC_orig ? LC_NUMERIC_orig : "", 1);
-  setenv("LC_COLLATE", LC_COLLATE_orig ? LC_COLLATE_orig : "", 1);
   setenv("LC_TIME", LC_TIME_orig ? LC_TIME_orig : "", 1);
+  setenv("LC_COLLATE", LC_COLLATE_orig ? LC_COLLATE_orig : "", 1);
   setenv("LC_MONETARY", LC_MONETARY_orig ? LC_MONETARY_orig : "", 1);
   setenv("LC_MESSAGES", LC_MESSAGES_orig ? LC_MESSAGES_orig : "", 1);
 #if _GLIBCPP_NUM_CATEGORIES
