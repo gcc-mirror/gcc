@@ -860,7 +860,7 @@ all.cross: native gcc-cross xcpp$(exeext) specs \
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc$(exeext) xcpp$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
-start.encap: native xgcc$(exeext) xcpp$(exeext) specs $(LIBGCC1) \
+start.encap: native xgcc$(exeext) xcpp$(exeext) specs \
 	xlimits.h lang.start.encap
 # These can't be made until after GCC can run.
 rest.encap: $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap

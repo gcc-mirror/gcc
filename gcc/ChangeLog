@@ -1,3 +1,7 @@
+2000-05-03  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (start.encap): Do not depend on LIBGCC1.
+
 2000-05-03  Jason Merrill  <jason@casey.cygnus.com>
 
 	* Makefile.in (WARN_CFLAGS): Add -pedantic -Wno-long-long.
