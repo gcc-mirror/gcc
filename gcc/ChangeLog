@@ -1,3 +1,7 @@
+2001-10-22  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* sched-int.h: Fix typo in GCC preamble.
+
 2001-10-21  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR debug/4252
