@@ -136,10 +136,6 @@ enum c_tree_index
     CTI_SIGNED_WCHAR_TYPE,
     CTI_UNSIGNED_WCHAR_TYPE,
     CTI_WINT_TYPE,
-    CTI_C_SIZE_TYPE, /* The type used for the size_t typedef and the
-			result type of sizeof (an ordinary type without
-			TYPE_IS_SIZETYPE set, unlike the internal
-			sizetype).  */
     CTI_SIGNED_SIZE_TYPE, /* For format checking only.  */
     CTI_UNSIGNED_PTRDIFF_TYPE, /* For format checking only.  */
     CTI_INTMAX_TYPE,
@@ -193,7 +189,6 @@ struct c_common_identifier
 #define signed_wchar_type_node		c_global_trees[CTI_SIGNED_WCHAR_TYPE]
 #define unsigned_wchar_type_node	c_global_trees[CTI_UNSIGNED_WCHAR_TYPE]
 #define wint_type_node			c_global_trees[CTI_WINT_TYPE]
-#define c_size_type_node		c_global_trees[CTI_C_SIZE_TYPE]
 #define signed_size_type_node		c_global_trees[CTI_SIGNED_SIZE_TYPE]
 #define unsigned_ptrdiff_type_node	c_global_trees[CTI_UNSIGNED_PTRDIFF_TYPE]
 #define intmax_type_node		c_global_trees[CTI_INTMAX_TYPE]

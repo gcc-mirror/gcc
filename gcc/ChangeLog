@@ -1,3 +1,17 @@
+2002-12-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* builtin-types.def (BT_SIZE): Use size_type_node.
+	* builtins.c (fold_builtin): Make the builtin strlen returns a
+	size_t, not a sizetype.
+	* c-common.c (c_alignof): Use size_type_node, not c_size_type_node.
+	(c_alignof_expr): Likewise.
+	(c_common_nodes_and_builtins): Likewise.
+	* c-common.h (CTI_C_SIZE_TYPE): Remove.
+	(c_size_type_node): Likewise.
+	* c-format.c (T_ST): Use size_type_node, not c_size_type_node.
+	* tree.h (TI_SIZE_TYPE): New enumeral.
+	(size_type_node): Likewise.
+	
 2002-11-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/8524

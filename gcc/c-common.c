@@ -2425,7 +2425,7 @@ c_alignof (type)
   else
     t = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
 
-  return fold (build1 (NOP_EXPR, c_size_type_node, t));
+  return fold (build1 (NOP_EXPR, size_type_node, t));
 }
 
 /* Implement the __alignof keyword: Return the minimum required
@@ -2473,7 +2473,7 @@ c_alignof_expr (expr)
   else
     return c_alignof (TREE_TYPE (expr));
 
-  return fold (build1 (NOP_EXPR, c_size_type_node, t));
+  return fold (build1 (NOP_EXPR, size_type_node, t));
 }
 
 /* Give the specifications for the format attributes, used by C and all
@@ -2601,12 +2601,12 @@ c_common_nodes_and_builtins ()
   /* `unsigned long' is the standard type for sizeof.
      Note that stddef.h uses `unsigned long',
      and this must agree, even if long and int are the same size.  */
-  c_size_type_node =
+  size_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (SIZE_TYPE)));
-  signed_size_type_node = signed_type (c_size_type_node);
+  signed_size_type_node = signed_type (size_type_node);
   if (flag_traditional)
-    c_size_type_node = signed_size_type_node;
-  set_sizetype (c_size_type_node);
+    size_type_node = signed_size_type_node;
+  set_sizetype (size_type_node);
 
   build_common_tree_nodes_2 (flag_short_double);
 

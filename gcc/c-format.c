@@ -750,7 +750,7 @@ static const format_flag_pair strfmon_flag_pairs[] =
 #define T_WI	&wint_type_node
 #define T94_WI	{ STD_C94, "wint_t", T_WI }
 #define TEX_WI	{ STD_EXT, "wint_t", T_WI }
-#define T_ST    &c_size_type_node
+#define T_ST    &size_type_node
 #define T99_ST	{ STD_C99, "size_t", T_ST }
 #define T_SST   &signed_size_type_node
 #define T99_SST	{ STD_C99, "signed size_t", T_SST }

@@ -4068,8 +4068,13 @@ fold_builtin (exp)
       if (validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
 	{
 	  tree len = c_strlen (TREE_VALUE (arglist));
-	  if (len != 0)
-	    return len;
+	  if (len)
+	    {
+	      /* Convert from the internal "sizetype" type to "size_t".  */
+	      if (size_type_node)
+		len = convert (size_type_node, len);
+	      return len;
+	    }
 	}
       break;
 

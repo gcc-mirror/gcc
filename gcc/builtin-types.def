@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -76,7 +76,7 @@ DEF_PRIMITIVE_TYPE (BT_CONST_PTR, const_ptr_type_node)
 DEF_PRIMITIVE_TYPE (BT_TRAD_PTR, traditional_ptr_type_node)
 DEF_PRIMITIVE_TYPE (BT_TRAD_CONST_PTR, traditional_cptr_type_node)
 DEF_PRIMITIVE_TYPE (BT_PTRMODE, type_for_mode (ptr_mode, 0))
-DEF_PRIMITIVE_TYPE (BT_SIZE, c_size_type_node)
+DEF_PRIMITIVE_TYPE (BT_SIZE, size_type_node)
 DEF_PRIMITIVE_TYPE (BT_STRING, string_type_node)
 DEF_PRIMITIVE_TYPE (BT_CONST_STRING, const_string_type_node)
 DEF_PRIMITIVE_TYPE (BT_LEN, traditional_len_type_node)

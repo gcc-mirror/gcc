@@ -6659,7 +6659,7 @@ cxx_init_decl_processing ()
     ptr_ftype_sizetype 
       = build_function_type (ptr_type_node,
 			     tree_cons (NULL_TREE,
-					c_size_type_node,
+					size_type_node,
 					void_list_node));
     newtype = build_exception_variant
       (ptr_ftype_sizetype, add_exception_specifier

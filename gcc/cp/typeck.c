@@ -1544,7 +1544,7 @@ c_sizeof (type)
      TYPE_IS_SIZETYPE means that certain things (like overflow) will
      never happen.  However, this node should really have type
      `size_t', which is just a typedef for an ordinary integer type.  */
-  size = fold (build1 (NOP_EXPR, c_size_type_node, size));
+  size = fold (build1 (NOP_EXPR, size_type_node, size));
   my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (size)), 
 		      20001021);
   return size;
@@ -1613,7 +1613,7 @@ c_sizeof_nowarn (type)
      TYPE_IS_SIZETYPE means that certain things (like overflow) will
      never happen.  However, this node should really have type
      `size_t', which is just a typedef for an ordinary integer type.  */
-  size = fold (build1 (NOP_EXPR, c_size_type_node, size));
+  size = fold (build1 (NOP_EXPR, size_type_node, size));
   my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (size)), 
 		      20001021);
   return size;
