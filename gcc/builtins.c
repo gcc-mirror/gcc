@@ -1182,9 +1182,16 @@ expand_builtin_mathfn (exp, target, subtarget)
       && TREE_CODE (TREE_VALUE (arglist)) != PARM_DECL)
     {
       exp = copy_node (exp);
-      arglist = copy_node (arglist);
       TREE_OPERAND (exp, 1) = arglist;
+      /* Wrap the computation of the argument in a SAVE_EXPR.  That
+	 way, if we need to expand the argument again (as in the
+	 flag_errno_math case below where we cannot directly set
+	 errno), we will not perform side-effects more than once.
+	 Note that here we're mutating the original EXP as well as the
+	 copy; that's the right thing to do in case the original EXP
+	 is expanded later.  */
       TREE_VALUE (arglist) = save_expr (TREE_VALUE (arglist));
+      arglist = copy_node (arglist);
     }
   op0 = expand_expr (TREE_VALUE (arglist), subtarget, VOIDmode, 0);
 
