@@ -1,3 +1,8 @@
+2002-06-23  Matt Thomas  <matt@3am-software.com>
+
+	* decl.c (finish_function): Change "#ifdef VMS_TARGET" to
+	"#if VMS_TARGET".
+
 2002-06-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mangle.c (integer_type_codes): Const-ify.
