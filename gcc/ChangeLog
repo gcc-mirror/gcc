@@ -1,3 +1,8 @@
+Sat Oct 31 10:02:48 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* dwarf2out.c (output_call_frame_info): Use
+	ASM_OUTPUT_DWARF_DELTA4 for the CIE offset to match frame.c.
+
 Sat Oct 31 10:23:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Reinstall Apr 24th fix, lost during May 6th gcc2 merge:
