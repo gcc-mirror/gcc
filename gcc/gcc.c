@@ -2651,7 +2651,12 @@ execute ()
 	}
       fflush (stderr);
       if (verbose_only_flag != 0)
-	return 0;
+        {
+          /* If verbose_only_flag, then the execution_count is incremented
+             because verbose_only_flag should act as the spec was excuted.  */
+          execution_count++;
+	  return 0;
+        }
 #ifdef DEBUG
       notice ("\nGo ahead? (y or n) ");
       fflush (stderr);
