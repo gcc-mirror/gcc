@@ -1846,7 +1846,11 @@ emit_group_store (x, y)
 				 plus_constant (XEXP (x, 0),
 						INTVAL (XEXP (element, 1))));
       else if (XEXP (element, 1) == const0_rtx)
-	target = x;
+	{
+	  target = x;
+	  if (GET_MODE (target) != GET_MODE (source_reg))
+	    target = gen_lowpart (GET_MODE (source_reg), target);
+	}
       else
 	abort ();
 
