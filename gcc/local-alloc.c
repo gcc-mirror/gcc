@@ -67,7 +67,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "basic-block.h"
 #include "regs.h"
 #include "function.h"
 #include "insn-config.h"

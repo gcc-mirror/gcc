@@ -313,9 +313,6 @@ rest_of_handle_final (void)
 
     /* Release all memory allocated by flow.  */
     free_basic_block_vars ();
-
-    /* Release all memory held by regsets now.  */
-    regset_release_memory ();
   }
 
   /* Write DBX symbols if requested.  */

@@ -1,3 +1,116 @@
+2004-11-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* bitmap.h (struct bitmap_obstack): New obstack type.
+	(struct bitmap_head_def): Replace using_obstack with obstack
+	pointer.
+	(bitmap_default_obstack): New.
+	(bitmap_initialize): Make inline, does not do allocation.
+	(bitmap_release_memory): Remove.
+	(bitmap_obstack_initialize, bitmap_obstack_release): Declare.
+	(bitmap_obstack_alloc, bitmap_malloc_alloc, bitmap_gc_alloc,
+	bitmap_obstack_free, bitmap_malloc_free): Declare.
+	(BITMAP_OBSTACK_ALLOC, BITMAP_GGC_ALLOC, BITMAP_XMALLOC): Adjust.
+	(BITMAP_FREE): Replace with ...
+	(BITMAP_OBSTACK_FREE): ... this.
+	(BITMAP_XFREE): Adjust.
+	(BITMAP_INIT_ONCE): Remove.
+	* bitmap.c (bitmap_obstack, bitmap_obstack_init, bitmap_free: Remove.
+	(bitmap_default_obstack): New.
+	(bitmap_elem_to_freelist): Adjust.
+	(bitmap_element_allocate): Adjust. Break initialization into ...
+	(bitmap_obstack_initialize): ... here.
+	(bitmap_release_memory): Replace with ...
+	(bitmap_obstack_release): ... this.
+	(bitmap_obstack_alloc, bitmap_malloc_alloc, bitmap_gc_alloc,
+	bitmap_obstack_free, bitmap_malloc_free): New.
+	(bitmap_ior_and_compl, bitmap_ior_and_compl_into): Use
+	bitmap_initialize.
+	(bitmap_initialize): Move to bitmap.h.
+	* gengtype.c (open_base_files): Add obstack.h to ifiles.
+	* Makefile.in (BASIC_BLOCK_H, REGS_H): Add obstack.h.
+	* basic-block.h (INIT_REG_SET): Allocate from reg_obstack.
+	(INITIALIZE_REG_SET): Remove.
+	(FREE_REG_SET): Use BITMAP_OBSTACK_FREE.
+	(INIT_ONCE_REG_SET, MAX_REGNO_REG_SET): Remove.
+	(flow_obstack): Do not declare.
+	(reg_obstack): Declare.
+	* regs.h: Include obstack.h.
+	* tree-optimize.c (tree_rest_of_compilation): Initialize and
+	release bitmap obstack here.
+	* bb-reorder.c: #include regs, not basic-block.
+	(fix_crossing_conditional_branches): Allocate regsets from
+	reg_obstack.
+	* bt-load.c: Do not inlude bitmap.h, sbitmap.h, basic-block.h or
+	obstack.h.
+	* caller-save.c: Include regs.h earlier.
+	* cfg.c: Do not include basic-block.h or obstack.h.
+	(reg_obstack): Define.
+	* cfganal.c: Include obstack.h
+	* cfgcleanyp.c: Do not include basic-block.h. Include regs.h
+	earlier.
+	* cfglayout.c: Do not include obstack.h.
+	(flow_obstack): Remove declaration.
+	(cfg_layout_duplicate_bb): Use reg_obstack.
+	* cfgloop.c, cfgloopanal.c, cfgloopmanip.c: Include obstack.h.
+	* cfgrtl.c (rtl_split_block): Use reg_obstack.
+	(force_nonfallthru_and_redirect, rtl_split_edge): Likewise.
+	(safe_insert_insn_on_edge): Use OBSTACK_ALLOC_REG_SET, adjust.
+	(cfg_layout_split_edge): Use reg_obstack.
+	* cse.c: Include regs.h earlier.
+	* ddg.c: Do not include basic-block.h.
+	* dominance.c: Inlude obstack.h.
+	* flow.c (update_life_info): Use OBSTACK_ALLOC_REG_SET, adjust.
+	(calculate_global_regs_live): Likewise.
+	(allocate_bb_life_data): Use reg_obstack.
+	(init_propagate_block_info): Use OBSTACK_ALLOC_REGSET.
+	* global.c: Do not include basic-block.h.
+	(build_insn_chain): Use OBSTACK_ALLOC_REG_SET, adjust.
+	* graph.c: Include obstack.h.
+	* haifa-sched.c: Do not include basic-block.h.
+	* ifcvt.c: Use OBSTACK_ALLOC_REG_SET, adjust.
+	* local-alloc.c: Do not include basic-block.h.
+	* loop-init.c, loop-invariant.c: Include obstack.h.
+	* loop-iv.c: Likewise.
+	(simplify_using_initial_values): Use OBSTACK_ALLOC_REG_SET,
+	adjust.
+	* loop-unroll.c, loop-unswitch.c: Inlude obstack.h.
+	* modulo-sched.c: Do not include basic-block.h.
+	* passes.c (rest_of_handle_final): Do not call
+	regset_release_memory.
+	* ra-debug.c: Include regs.h earlier. Do not include
+	basic-block.h.
+	* recog.c (peephole2_optimize): Use OBSTACK_ALLOC_REG_SET, adjust.
+	* regclass.c (init_reg_sets): Do not call INIT_ONCE_REG_SET.
+	(allocate_reg_info): Do not call MAX_REGNO_REG_SET.
+	(regset_release_memory): Remove.
+	* resource.c: Do not include basic-block.h.
+	* rtlanal.c: Do not include basic-block.h.
+	* sbitmap.c: Include obstack.h.
+	* sched-deps.c: Do not include basic-block.h.
+	(reg_pending_sets_head, reg_pending_clobbers_head,
+	reg_pending_uses_head): Remove.
+	(init_deps_global): Use OBSTACK_ALLOC_REG_SET.
+	* sched-ebb.c: Do not include basic-block.h.
+	* sched-rgn.c: Likewise.
+	* tree-if-conv.c (get_loop_body_in_if_conv_order): Use
+	BITMAP_XFREE.
+	* tree-outof-ssa.c (perform_edge_inserts): Use BITMAP_XFREE.
+	* tree-sra.c (decide_instantiations): Adjust bitmap
+	initialization.
+	* tree-ssa-dce.c: Include obstack.h.
+	* tree-ssa-pre.c (grand_bitmap_obstack): Make a bitmap_obstack.
+	(value_insert_into_set_bitmap): Remove useless bitmap_clear.
+	(bitmap_set_new): Likewise.
+	(init_pre): Initialize bitmap obstack.
+	(fini_pre): Release bitmap obstack.
+	* tree-ssanames.c (ssa_names_to_rewrite): Make static.
+	(marked_for_rewrite_p): ssa_names_to_rewrite is never NULL.
+	(mark_for_rewrite, unmark_for_rewrite): Likewise.
+	(marked_ssa_names): Likewise.
+	(init_ssanames): Use BITMAP_XMALLOC.
+	(fini_ssanames): Use BITMAP_XFREE.
+	* web.c: Include obstack.h
+
 2004-11-22  Nick Clifton  <nickc@redhat.com>
 
 	* sbitmap.c (sbitmap_union_of_preds): Set 'e' to the next edge

@@ -489,8 +489,8 @@ rtl_split_block (basic_block bb, void *insnp)
 
   if (bb->global_live_at_start)
     {
-      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&reg_obstack);
       COPY_REG_SET (new_bb->global_live_at_end, bb->global_live_at_end);
 
       /* We now have to calculate which registers are live at the end
@@ -1095,9 +1095,9 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
       if (target->global_live_at_start)
 	{
 	  jump_block->global_live_at_start
-	    = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+	    = OBSTACK_ALLOC_REG_SET (&reg_obstack);
 	  jump_block->global_live_at_end
-	    = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+	    = OBSTACK_ALLOC_REG_SET (&reg_obstack);
 	  COPY_REG_SET (jump_block->global_live_at_start,
 			target->global_live_at_start);
 	  COPY_REG_SET (jump_block->global_live_at_end,
@@ -1383,8 +1383,8 @@ rtl_split_edge (edge edge_in)
   /* ??? This info is likely going to be out of date very soon.  */
   if (edge_in->dest->global_live_at_start)
     {
-      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&reg_obstack);
       COPY_REG_SET (bb->global_live_at_start,
 		    edge_in->dest->global_live_at_start);
       COPY_REG_SET (bb->global_live_at_end,
@@ -1459,8 +1459,7 @@ bool
 safe_insert_insn_on_edge (rtx insn, edge e)
 {
   rtx x;
-  regset_head killed_head;
-  regset killed = INITIALIZE_REG_SET (killed_head);
+  regset killed;
   rtx save_regs = NULL_RTX;
   unsigned regno;
   int noccmode;
@@ -1472,6 +1471,8 @@ safe_insert_insn_on_edge (rtx insn, edge e)
 #else
   noccmode = false;
 #endif
+
+  killed = OBSTACK_ALLOC_REG_SET (&reg_obstack);
 
   for (x = insn; x; x = NEXT_INSN (x))
     if (INSN_P (x))
@@ -2854,8 +2855,8 @@ cfg_layout_split_edge (edge e)
      create it to avoid getting an ICE later.  */
   if (e->dest->global_live_at_start)
     {
-      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&reg_obstack);
       COPY_REG_SET (new_bb->global_live_at_start,
 		    e->dest->global_live_at_start);
       COPY_REG_SET (new_bb->global_live_at_end,

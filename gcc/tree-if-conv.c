@@ -1014,7 +1014,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
       if (bb->flags & BB_IRREDUCIBLE_LOOP)
 	{
 	  free (blocks_in_bfs_order);
-	  BITMAP_FREE (visited);
+	  BITMAP_XFREE (visited);
 	  free (blocks);
 	  return NULL;
 	}

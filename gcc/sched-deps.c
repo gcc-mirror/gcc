@@ -30,7 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "tm_p.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
 #include "regs.h"
 #include "function.h"
 #include "flags.h"
@@ -44,10 +43,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cselib.h"
 #include "df.h"
 
-
-static regset_head reg_pending_sets_head;
-static regset_head reg_pending_clobbers_head;
-static regset_head reg_pending_uses_head;
 
 static regset reg_pending_sets;
 static regset reg_pending_clobbers;
@@ -1596,9 +1591,9 @@ free_dependency_caches (void)
 void
 init_deps_global (void)
 {
-  reg_pending_sets = INITIALIZE_REG_SET (reg_pending_sets_head);
-  reg_pending_clobbers = INITIALIZE_REG_SET (reg_pending_clobbers_head);
-  reg_pending_uses = INITIALIZE_REG_SET (reg_pending_uses_head);
+  reg_pending_sets = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  reg_pending_clobbers = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  reg_pending_uses = OBSTACK_ALLOC_REG_SET (&reg_obstack);
   reg_pending_barrier = NOT_A_BARRIER;
 }
 

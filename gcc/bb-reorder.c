@@ -70,7 +70,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "basic-block.h"
+#include "regs.h"
 #include "flags.h"
 #include "timevar.h"
 #include "output.h"
@@ -81,7 +81,6 @@
 #include "tm_p.h"
 #include "obstack.h"
 #include "expr.h"
-#include "regs.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
@@ -1692,9 +1691,9 @@ fix_crossing_conditional_branches (void)
 		  /* Update register liveness information.  */
 		  
 		  new_bb->global_live_at_start = 
-		    OBSTACK_ALLOC_REG_SET (&flow_obstack);
+		    OBSTACK_ALLOC_REG_SET (&reg_obstack);
 		  new_bb->global_live_at_end = 
-		    OBSTACK_ALLOC_REG_SET (&flow_obstack);
+		    OBSTACK_ALLOC_REG_SET (&reg_obstack);
 		  COPY_REG_SET (new_bb->global_live_at_end,
 				prev_bb->global_live_at_end);
 		  COPY_REG_SET (new_bb->global_live_at_start,

@@ -2975,7 +2975,6 @@ peep2_find_free_register (int from, int to, const char *class_str,
 void
 peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 {
-  regset_head rs_heads[MAX_INSNS_PER_PEEP2 + 2];
   rtx insn, prev;
   regset live;
   int i;
@@ -2989,8 +2988,8 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 
   /* Initialize the regsets we're going to use.  */
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
-    peep2_insn_data[i].live_before = INITIALIZE_REG_SET (rs_heads[i]);
-  live = INITIALIZE_REG_SET (rs_heads[i]);
+    peep2_insn_data[i].live_before = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  live = OBSTACK_ALLOC_REG_SET (&reg_obstack);
 
 #ifdef HAVE_conditional_execution
   blocks = sbitmap_alloc (last_basic_block);

@@ -24,12 +24,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-
 #include "rtl.h"
 #include "flags.h"
 #include "output.h"
 #include "function.h"
 #include "hard-reg-set.h"
+#include "obstack.h"
 #include "basic-block.h"
 #include "toplev.h"
 #include "graph.h"

@@ -27,12 +27,11 @@
 #include "recog.h"
 #include "function.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
+#include "regs.h"
 #include "df.h"
 #include "output.h"
 #include "ra.h"
 #include "tm_p.h"
-#include "regs.h"
 
 /* This file contains various dumping and debug functions for
    the graph coloring register allocator.  */

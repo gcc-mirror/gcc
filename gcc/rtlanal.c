@@ -33,7 +33,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "basic-block.h"
 #include "real.h"
 #include "regs.h"
 #include "function.h"

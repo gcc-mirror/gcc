@@ -24,13 +24,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-
 #include "machmode.h"
 #include "hard-reg-set.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "basic-block.h"
 #include "regs.h"
 #include "function.h"
 #include "insn-config.h"
@@ -1806,9 +1804,8 @@ build_insn_chain (rtx first)
   struct insn_chain **p = &reload_insn_chain;
   struct insn_chain *prev = 0;
   basic_block b = ENTRY_BLOCK_PTR->next_bb;
-  regset_head live_relevant_regs_head;
 
-  live_relevant_regs = INITIALIZE_REG_SET (live_relevant_regs_head);
+  live_relevant_regs = OBSTACK_ALLOC_REG_SET (&reg_obstack);
 
   for (; first; first = NEXT_INSN (first))
     {

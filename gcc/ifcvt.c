@@ -3124,7 +3124,6 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 that any registers modified are dead at the branch site.  */
 
       rtx insn, cond, prev;
-      regset_head merge_set_head, tmp_head, test_live_head, test_set_head;
       regset merge_set, tmp, test_live, test_set;
       struct propagate_block_info *pbi;
       unsigned i, fail = 0;
@@ -3166,10 +3165,10 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	   TEST_SET  = set of registers set between EARLIEST and the
 		       end of the block.  */
 
-      tmp = INITIALIZE_REG_SET (tmp_head);
-      merge_set = INITIALIZE_REG_SET (merge_set_head);
-      test_live = INITIALIZE_REG_SET (test_live_head);
-      test_set = INITIALIZE_REG_SET (test_set_head);
+      tmp = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      merge_set = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      test_live = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      test_set = OBSTACK_ALLOC_REG_SET (&reg_obstack);
 
       /* ??? bb->local_set is only valid during calculate_global_regs_live,
 	 so we must recompute usage for MERGE_BB.  Not so bad, I suppose,
