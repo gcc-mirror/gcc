@@ -2134,7 +2134,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 
 (define_expand "abstf2"
   [(parallel [(set (match_operand:TF 0 "register_operand" "")
-		   (neg:TF (match_operand:TF 1 "reg_or_0_operand" "")))
+		   (abs:TF (match_operand:TF 1 "reg_or_0_operand" "")))
 	      (use (match_dup 2))])]
   "TARGET_HAS_XFLOATING_LIBS"
 {
