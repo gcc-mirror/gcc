@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Solaris 2
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
    Written by Fred Fish (fnf@cygnus.com).
 
@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 /* Add "sun" to the list of symbols defined for SVR4.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-Di386 -Dunix -D__svr4__ -Dsun \
+  "-Di386 -Dunix -D__svr4__ -D__SVR4 -Dsun \
    -Asystem(unix) -Asystem(svr4) -Acpu(i386) -Amachine(i386)"
 
 #undef CPP_SPEC
