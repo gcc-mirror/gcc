@@ -1,3 +1,8 @@
+2003-05-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reload1.c (reload_cse_move2add): Revert part of my 2003-05-09's
+	patch.
+
 2003-05-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* diagnostic.c: Reorder functions for clarity, putting all the
