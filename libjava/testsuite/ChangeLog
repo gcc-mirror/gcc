@@ -1,3 +1,11 @@
+Fri Nov 24 11:25:20 2000  Anthony Green  <green@redhat.com>
+
+	* lib/libjava.exp (bytecompile_file): Change default from javac to
+ 	gcj -C.
+	(libjava_arguments): Fix classpath.
+
+	* libjava.compile/PR129_B.no-link: New file.
+
 2000-11-24  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/PR375.java: New file.  For PR gcj/375.
