@@ -108,6 +108,9 @@ case "${target}" in
    *-*-aix4.[3456789]* | *-*-aix[56789]*)
      ATOMICITYH=$os_include_dir
      ;;
+   *-*-aix*)
+     ATOMICITYH=config/cpu/generic
+     ;;
    *-*-irix*)
      ATOMICITYH=$os_include_dir
      ;;
@@ -115,5 +118,3 @@ case "${target}" in
      ATOMICITYH=$cpu_include_dir
      ;;
 esac
-    
-

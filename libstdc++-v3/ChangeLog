@@ -1,3 +1,8 @@
+2001-05-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.target (ATOMICITYH): Use cpu/generic code on earlier
+	versions of AIX.
+
 2001-05-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.target (ATOMICITYH): Don't use AIX 4.3-specific code
