@@ -6444,7 +6444,7 @@ finish_function (nested, can_defer_p)
 	     predicates depend on cfun and current_function_decl to
 	     function completely.  */
 	  timevar_push (TV_INTEGRATION);
-	  uninlinable = ! tree_inlinable_function_p (fndecl);
+	  uninlinable = ! tree_inlinable_function_p (fndecl, 0);
 	  
 	  if (! uninlinable && can_defer_p
 	      /* Save function tree for inlining.  Should return 0 if the

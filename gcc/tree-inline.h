@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 /* Function prototypes.  */
 
 void optimize_inline_calls PARAMS ((tree));
-int tree_inlinable_function_p PARAMS ((tree));
+int tree_inlinable_function_p PARAMS ((tree, int));
 tree walk_tree PARAMS ((tree*, walk_tree_fn, void*, void*));
 tree walk_tree_without_duplicates PARAMS ((tree*, walk_tree_fn, void*));
 tree copy_tree_r PARAMS ((tree*, int*, void*));

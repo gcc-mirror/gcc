@@ -1,3 +1,26 @@
+Sat Mar  8 14:13:35 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* c-decl.c: (finish_function): Update call of tree_inlinable_function_p.
+	* cgraph.h: (cgraph_local_info): Add can_inline_once
+	(cgraph_global_info): Add inline_once.
+	(cgraph_node): Add previous.
+	(cgraph_remove_node): New.
+	* cgraphunit.c (cgraph_mark_functions_to_inline_once): New static
+	function.
+	(cgraph_optimize): Call it.
+	(cgraph_finalize_function):  Set inlinable flags.
+	(cgraph_finalize_compilation_unit):  Actually remove the reclaimed nodes.
+	(cgraph_mark_functions_to_output):  Use new inlining heuristics flags.
+	(cgraph_expand_function): Likewise.
+	* cgraph.c 
+	(cgraph_node): Put nodes into doubly linked chain.
+	(cgraph_remove_node): New function.
+	* flags.h (flag_inline_functions_called_once): Declare.
+	* tree-inline.c: Include cgraph.h
+	(inlinable_functions_p): Add extra argument to bypass limits.
+	(expand_call_inline):  Obey cgraph flag.
+	* tree-inline.h (tree_inlinable_function_p): Update prototype.
+
 2003-03-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcse.c (bypass_block, bypass_conditional_jumps): Do not create
