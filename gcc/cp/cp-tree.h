@@ -524,9 +524,6 @@ struct tree_srcloc
 #define IDENTIFIER_CTOR_OR_DTOR_P(NODE) \
   TREE_LANG_FLAG_3 (NODE)
 
-/* Nonzero means reject anything that ISO standard C++ forbids.  */
-extern int pedantic;
-
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(type) TYPE_LANG_FLAG_0 (type)
 
@@ -3751,7 +3748,6 @@ extern tree convert_pointer_to			PARAMS ((tree, tree));
 extern tree ocp_convert				PARAMS ((tree, tree, int, int));
 extern tree cp_convert				PARAMS ((tree, tree));
 extern tree convert_to_void			PARAMS ((tree, const char */*implicit context*/));
-extern tree convert				PARAMS ((tree, tree));
 extern tree convert_force			PARAMS ((tree, tree, int));
 extern tree build_type_conversion		PARAMS ((tree, tree, int));
 extern tree build_expr_type_conversion		PARAMS ((int, tree, int));
@@ -3761,7 +3757,6 @@ extern void clone_function_decl                 PARAMS ((tree, int));
 
 /* decl.c */
 /* resume_binding_level */
-extern int global_bindings_p			PARAMS ((void));
 extern int toplevel_bindings_p			PARAMS ((void));
 extern int namespace_bindings_p			PARAMS ((void));
 extern void keep_next_level			PARAMS ((int));
@@ -3776,9 +3771,7 @@ extern void note_level_for_try			PARAMS ((void));
 extern void note_level_for_catch		PARAMS ((void));
 extern void resume_level			PARAMS ((struct binding_level *));
 extern void delete_block			PARAMS ((tree));
-extern void insert_block			PARAMS ((tree));
 extern void add_block_current_level		PARAMS ((tree));
-extern void set_block				PARAMS ((tree));
 extern void pushlevel_class			PARAMS ((void));
 extern void poplevel_class                      PARAMS ((void));
 extern void print_binding_stack			PARAMS ((void));
@@ -3800,7 +3793,6 @@ extern tree make_anon_name			PARAMS ((void));
 extern void clear_anon_tags			PARAMS ((void));
 extern int decls_match				PARAMS ((tree, tree));
 extern int duplicate_decls			PARAMS ((tree, tree));
-extern tree pushdecl				PARAMS ((tree));
 extern tree pushdecl_top_level			PARAMS ((tree));
 extern void pushdecl_class_level		PARAMS ((tree));
 extern tree pushdecl_namespace_level            PARAMS ((tree));
@@ -3813,8 +3805,6 @@ extern tree declare_local_label                 PARAMS ((tree));
 extern tree define_label			PARAMS ((const char *, int, tree));
 extern void check_goto				PARAMS ((tree));
 extern void define_case_label			PARAMS ((void));
-extern tree getdecls				PARAMS ((void));
-extern tree gettags				PARAMS ((void));
 extern tree binding_for_name                    PARAMS ((tree, tree));
 extern tree namespace_binding                   PARAMS ((tree, tree));
 extern void set_namespace_binding               PARAMS ((tree, tree, tree));
@@ -3839,7 +3829,6 @@ extern tree build_cp_library_fn_ptr		PARAMS ((const char *, tree));
 extern tree push_library_fn			PARAMS ((tree, tree));
 extern tree push_void_library_fn		PARAMS ((tree, tree));
 extern tree push_throw_library_fn		PARAMS ((tree, tree));
-extern void init_decl_processing		PARAMS ((void));
 extern int init_type_desc			PARAMS ((void));
 extern tree check_tag_decl			PARAMS ((tree));
 extern void shadow_tag				PARAMS ((tree));
@@ -3870,7 +3859,6 @@ extern tree finish_function			PARAMS ((int));
 extern tree start_method			PARAMS ((tree, tree, tree));
 extern tree finish_method			PARAMS ((tree));
 extern void hack_incomplete_structures		PARAMS ((tree));
-extern tree maybe_build_cleanup			PARAMS ((tree));
 extern void finish_stmt				PARAMS ((void));
 extern void print_other_binding_stack		PARAMS ((struct binding_level *));
 extern void revert_static_member_fn             PARAMS ((tree));
@@ -4073,7 +4061,6 @@ extern tree identifier_typedecl_value		PARAMS ((tree));
 extern tree build_lang_decl			PARAMS ((enum tree_code, tree, tree));
 extern void retrofit_lang_decl			PARAMS ((tree));
 extern tree copy_decl                           PARAMS ((tree));
-extern void copy_lang_decl			PARAMS ((tree));
 extern tree cp_make_lang_type			PARAMS ((enum tree_code));
 extern tree make_aggr_type			PARAMS ((enum tree_code));
 extern void compiler_error			PARAMS ((const char *, ...))
@@ -4318,7 +4305,6 @@ extern tree finish_typeof			PARAMS ((tree));
 extern void finish_decl_cleanup                 PARAMS ((tree, tree));
 extern void finish_named_return_value           PARAMS ((tree, tree));
 extern void expand_body                         PARAMS ((tree));
-extern void prep_stmt                           PARAMS ((tree));
 extern void do_pushlevel                        PARAMS ((void));
 extern tree do_poplevel                         PARAMS ((void));
 extern void finish_mem_initializers             PARAMS ((tree));
@@ -4350,8 +4336,6 @@ extern int member_p				PARAMS ((tree));
 extern cp_lvalue_kind real_lvalue_p		PARAMS ((tree));
 extern tree build_min				PARAMS ((enum tree_code, tree, ...));
 extern tree build_min_nt			PARAMS ((enum tree_code, ...));
-extern int lvalue_p				PARAMS ((tree));
-extern int lvalue_or_else			PARAMS ((tree, const char *));
 extern tree build_cplus_new			PARAMS ((tree, tree));
 extern tree get_target_expr			PARAMS ((tree));
 extern tree break_out_calls			PARAMS ((tree));
@@ -4378,7 +4362,6 @@ extern int is_aggr_type_2			PARAMS ((tree, tree));
 extern const char *lang_printable_name		PARAMS ((tree, int));
 extern tree build_exception_variant		PARAMS ((tree, tree));
 extern tree copy_template_template_parm		PARAMS ((tree, tree));
-extern void print_lang_statistics		PARAMS ((void));
 extern tree array_type_nelts_total		PARAMS ((tree));
 extern tree array_type_nelts_top		PARAMS ((tree));
 extern tree break_out_target_exprs		PARAMS ((tree));
@@ -4435,12 +4418,8 @@ extern int comp_except_specs			PARAMS ((tree, tree, int));
 extern int comptypes				PARAMS ((tree, tree, int));
 extern int comp_target_types			PARAMS ((tree, tree, int));
 extern int compparms				PARAMS ((tree, tree));
-extern int comp_target_types			PARAMS ((tree, tree, int));
 extern int comp_cv_qualification                PARAMS ((tree, tree));
 extern int comp_cv_qual_signature               PARAMS ((tree, tree));
-extern tree unsigned_type			PARAMS ((tree));
-extern tree signed_type				PARAMS ((tree));
-extern tree signed_or_unsigned_type		PARAMS ((int, tree));
 extern tree expr_sizeof				PARAMS ((tree));
 extern tree c_sizeof				PARAMS ((tree));
 extern tree c_sizeof_nowarn			PARAMS ((tree));
@@ -4457,13 +4436,11 @@ extern tree build_array_ref			PARAMS ((tree, tree));
 extern tree build_x_function_call		PARAMS ((tree, tree, tree));
 extern tree get_member_function_from_ptrfunc	PARAMS ((tree *, tree));
 extern tree build_function_call_real		PARAMS ((tree, tree, int, int));
-extern tree build_function_call			PARAMS ((tree, tree));
 extern tree build_function_call_maybe		PARAMS ((tree, tree));
 extern tree convert_arguments			PARAMS ((tree, tree, tree, int));
 extern tree build_x_binary_op			PARAMS ((enum tree_code, tree, tree));
 extern tree build_x_unary_op			PARAMS ((enum tree_code, tree));
 extern tree unary_complex_lvalue		PARAMS ((enum tree_code, tree));
-extern int mark_addressable			PARAMS ((tree));
 extern tree build_x_conditional_expr		PARAMS ((tree, tree, tree));
 extern tree build_conditional_expr		PARAMS ((tree, tree, tree));
 extern tree build_x_compound_expr		PARAMS ((tree));
@@ -4499,7 +4476,6 @@ extern tree error_not_base_type			PARAMS ((tree, tree));
 extern tree binfo_or_else			PARAMS ((tree, tree));
 extern void readonly_error			PARAMS ((tree, const char *, int));
 extern int abstract_virtuals_error		PARAMS ((tree, tree));
-extern void incomplete_type_error		PARAMS ((tree, tree));
 extern void friendly_abort			PARAMS ((int, const char *,
 							 int, const char *))
   ATTRIBUTE_NORETURN;
