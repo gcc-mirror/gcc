@@ -34,7 +34,6 @@ struct printer
   const char *syshdr_flags;	/* system header flags, if any.  */
   unsigned int lineno;		/* line currently being written.  */
   unsigned char printed;	/* nonzero if something output at lineno.  */
-  unsigned char no_line_dirs;	/* nonzero to output no line directives.  */
 };
 
 int main		PARAMS ((int, char **));
@@ -62,7 +61,9 @@ static void cb_def_pragma PARAMS ((cpp_reader *));
 static void do_pragma_implementation PARAMS ((cpp_reader *));
 
 const char *progname;		/* Needs to be global.  */
-static cpp_reader *pfile;
+static cpp_reader *pfile;	/* An opaque handle.  */
+static cpp_options *options;	/* Options of pfile.  */
+static cpp_callbacks *cb;	/* Callbacks of pfile.  */
 static struct printer print;
 
 int
@@ -75,6 +76,8 @@ main (argc, argv)
   general_init (argv[0]);
   /* Default language is GNU C89.  */
   pfile = cpp_create_reader (CLK_GNUC89);
+  options = cpp_get_options (pfile);
+  cb = cpp_get_callbacks (pfile);
   
   argi += cpp_handle_options (pfile, argc - argi , argv + argi);
   if (argi < argc && ! CPP_FATAL_ERRORS (pfile))
@@ -87,7 +90,7 @@ main (argc, argv)
      line, it will have set pfile->help_only to indicate this.  Exit
      successfully.  [The library does not exit itself, because
      e.g. cc1 needs to print its own --help message at this point.]  */
-  if (CPP_OPTION (pfile, help_only))
+  if (options->help_only)
     return (SUCCESS_EXIT_CODE);
 
   /* Open the output now.  We must do so even if no_output is on,
@@ -98,19 +101,18 @@ main (argc, argv)
 
   setup_callbacks ();
 
-  if (! cpp_start_read (pfile, CPP_OPTION (pfile, in_fname)))
+  if (! cpp_start_read (pfile, options->in_fname))
     return (FATAL_EXIT_CODE);
 
-  if (CPP_BUFFER (pfile))
-    {
-      if (CPP_OPTION (pfile, no_output))
-	cpp_scan_buffer_nooutput (pfile, 1);
-      else
-	scan_buffer (pfile);
-    }
+  /* A successful cpp_start_read guarantees that we can call
+     cpp_scan_buffer_nooutput or cpp_get_token next.  */
+  if (options->no_output)
+    cpp_scan_buffer_nooutput (pfile, 1);
+  else
+    scan_buffer (pfile);
 
   /* -dM command line option.  */
-  if (CPP_OPTION (pfile, dump_macros) == dump_only)
+  if (options->dump_macros == dump_only)
     cpp_forall_identifiers (pfile, dump_macro, NULL);
 
   cpp_finish (pfile);
@@ -120,11 +122,12 @@ main (argc, argv)
   if (print.printed)
     putc ('\n', print.outf);
   if (ferror (print.outf) || fclose (print.outf))
-    cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
+    cpp_notice_from_errno (pfile, options->out_fname);
 
-  if (pfile->errors)
-    return (FATAL_EXIT_CODE);
-  return (SUCCESS_EXIT_CODE);
+  if (cpp_errors (pfile))
+    return FATAL_EXIT_CODE;
+
+  return SUCCESS_EXIT_CODE;
 }
 
 /* Store the program name, and set the locale.  */
@@ -152,28 +155,27 @@ general_init (const char *argv0)
   (void) textdomain (PACKAGE);
 }
 
-/* Set up the callbacks and register the pragmas we handle.  */
+/* Set up the callbacks as appropriate.  */
 static void
 setup_callbacks ()
 {
-  /* Set callbacks.  */
-  if (! CPP_OPTION (pfile, no_output))
+  if (! options->no_output)
     {
-      pfile->cb.ident      = cb_ident;
-      pfile->cb.def_pragma = cb_def_pragma;
-      if (! CPP_OPTION (pfile, no_line_commands))
-	pfile->cb.file_change = cb_file_change;
+      cb->ident      = cb_ident;
+      cb->def_pragma = cb_def_pragma;
+      if (! options->no_line_commands)
+	cb->file_change = cb_file_change;
     }
 
-  if (CPP_OPTION (pfile, dump_includes))
-    pfile->cb.include  = cb_include;
+  if (options->dump_includes)
+    cb->include  = cb_include;
 
-  if (CPP_OPTION (pfile, dump_macros) == dump_names
-      || CPP_OPTION (pfile, dump_macros) == dump_definitions)
+  if (options->dump_macros == dump_names
+      || options->dump_macros == dump_definitions)
     {
-      pfile->cb.define = cb_define;
-      pfile->cb.undef  = cb_undef;
-      pfile->cb.poison = cb_def_pragma;
+      cb->define = cb_define;
+      cb->undef  = cb_undef;
+      cb->poison = cb_def_pragma;
     }
 
   /* Register one #pragma which needs special handling.  */
@@ -220,7 +222,7 @@ scan_buffer (pfile)
 	    }
 	  else if (print.printed
 		   && ! (token->flags & PREV_WHITE)
-		   && CPP_OPTION (pfile, lang) != CLK_ASM
+		   && options->lang != CLK_ASM
 		   && cpp_avoid_paste (pfile, &tokens[1 - index], token))
 	    token->flags |= PREV_WHITE;
 
@@ -255,19 +257,18 @@ printer_init (pfile)
   print.last_fname = 0;
   print.lineno = 0;
   print.printed = 0;
-  print.no_line_dirs = CPP_OPTION (pfile, no_line_commands);
 
-  if (CPP_OPTION (pfile, out_fname) == NULL)
-    CPP_OPTION (pfile, out_fname) = "";
+  if (options->out_fname == NULL)
+    options->out_fname = "";
   
-  if (CPP_OPTION (pfile, out_fname)[0] == '\0')
+  if (options->out_fname[0] == '\0')
     print.outf = stdout;
   else
     {
-      print.outf = fopen (CPP_OPTION (pfile, out_fname), "w");
+      print.outf = fopen (options->out_fname, "w");
       if (! print.outf)
 	{
-	  cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
+	  cpp_notice_from_errno (pfile, options-> out_fname);
 	  return 1;
 	}
     }
@@ -290,7 +291,7 @@ maybe_print_line (line)
       print.printed = 0;
     }
 
-  if (print.no_line_dirs)
+  if (options->no_line_commands)
     {
       print.lineno = line;
       return;
@@ -348,7 +349,7 @@ cb_define (pfile, node)
   fprintf (print.outf, "#define %s", node->name);
 
   /* -dD command line option.  */
-  if (CPP_OPTION (pfile, dump_macros) == dump_definitions)
+  if (options->dump_macros == dump_definitions)
     fputs ((const char *) cpp_macro_definition (pfile, node), print.outf);
 
   putc ('\n', print.outf);
@@ -402,7 +403,9 @@ cb_file_change (pfile, fc)
 	flags = " 1";
       else if (fc->reason == FC_LEAVE)
 	flags = " 2";
-      print_line (flags);
+
+      if (! options->no_line_commands)
+	print_line (flags);
     }
 }
 
@@ -448,7 +451,7 @@ do_pragma_implementation (pfile)
 
   /* Output?  This is nasty, but we don't have [GCC] implementation in
      the buffer.  */
-  if (pfile->cb.def_pragma)
+  if (cb->def_pragma)
     {
       maybe_print_line (cpp_get_line (pfile)->output_line);
       fputs ("#pragma GCC implementation ", print.outf);
