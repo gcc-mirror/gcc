@@ -7854,6 +7854,14 @@ mem_loc_descriptor (rtl, mode)
       mem_loc_result = int_loc_descriptor (INTVAL (rtl));
       break;
 
+    case ADDRESSOF:
+      /* If this is a MEM, return its address.  Otherwise, we can't
+	 represent this.  */
+      if (GET_CODE (XEXP (rtl, 0)) == MEM)
+	return mem_loc_descriptor (XEXP (XEXP (rtl, 0), 0), mode);
+      else
+	return 0;
+
     default:
       abort ();
     }
