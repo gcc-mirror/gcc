@@ -570,8 +570,24 @@ reg_is_remote_constant_p (reg, insn, first)
   return 0;
 }
 
+/* INSN is adding a CONST_INT to a REG.  We search backwards looking for
+   another add immediate instruction with the same source and dest registers,
+   and if we find one, we change INSN to an increment, and return 1.  If
+   no changes are made, we return 0.
+
+   This changes
+     (set (reg100) (plus reg1 offset1))
+     ...
+     (set (reg100) (plus reg1 offset2))
+   to
+     (set (reg100) (plus reg1 offset1))
+     ...
+     (set (reg100) (plus reg100 offset2-offset1))  */
+
+/* ??? What does this comment mean?  */
 /* cse disrupts preincrement / postdecrement squences when it finds a
    hard register as ultimate source, like the frame pointer.  */
+
 int
 fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
      rtx insn, dst, src, offset;
@@ -1143,6 +1159,11 @@ regmove_optimize (f, nregs, regmove_dump_file)
 #endif /* REGISTER_CONSTRAINTS */
 }
 
+/* Returns the INSN_CODE for INSN if its pattern has matching constraints for
+   any operand.  Returns -1 if INSN can't be recognized, or if the alternative
+   can't be determined.
+
+   Initialize the info in MATCHP based on the constraints.  */
 
 static int
 find_matches (insn, matchp)
@@ -1711,7 +1732,10 @@ stable_but_for_p (x, src, dst)
     }
 }
 
-/* Test if regmove seems profitable for this target.  */
+/* Test if regmove seems profitable for this target.  Regmove is useful only
+   if some common patterns are two address, i.e. require matching constraints,
+   so we check that condition here.  */
+
 int
 regmove_profitable_p ()
 {
