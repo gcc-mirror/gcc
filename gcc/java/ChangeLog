@@ -1,3 +1,10 @@
+2001-02-18  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* typeck.c (build_java_array_type): Don't try to poke a public `clone'
+	method into array types.
+	* parse.y (patch_method_invocation): Bypass access check on clone call
+	to array instance.
+	
 2001-02-15  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* expr.c (build_instanceof): Check for arrays when trying fold to
