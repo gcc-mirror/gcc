@@ -269,9 +269,7 @@ namespace std
 		  __r = _M_codecvt->in(_M_state_cur, _M_ext_next,
 				       _M_ext_end, _M_ext_next, this->eback(), 
 				       this->eback() + __buflen, __iend);
-		  if (__r == codecvt_base::ok || __r == codecvt_base::partial)
-		    __ilen = __iend - this->eback();
-		  else if (__r == codecvt_base::noconv)
+		  if (__r == codecvt_base::noconv)
 		    {
 		      size_t __avail = _M_ext_end - _M_ext_buf;
 		      __ilen = std::min(__avail, __buflen);
@@ -279,11 +277,15 @@ namespace std
 					reinterpret_cast<char_type*>(_M_ext_buf), __ilen);
 		      _M_ext_next = _M_ext_buf + __ilen;
 		    }
-		  else 
-		    {
-		      __ilen = 0;
-		      break;
-		    }
+		  else
+		    __ilen = __iend - this->eback();
+		  
+		  // _M_codecvt->in may return error while __ilen > 0: this is
+		  // ok, and actually occurs in case of mixed encodings (e.g.,
+		  // XML files).
+		  if (__r == codecvt_base::error)
+		    break;
+
 		  __rlen = 1;
 		}
 	      while (!__got_eof && __ilen == 0);
@@ -747,13 +749,13 @@ namespace std
 	  bool __testfail = false;
 	  if (this->is_open())
 	    {
-	      const bool __testbeg =
+	      const bool __testseek =
 		this->seekoff(0, ios_base::cur, this->_M_mode) ==
-		pos_type(off_type(0));
+		pos_type(off_type(-1));
 	      const bool __teststate =
 		__check_facet(_M_codecvt).encoding() == -1;
 
-	      __testfail = !__testbeg || __teststate;
+	      __testfail = __testseek || __teststate;
 	    }
 
 	  if (!__testfail)
@@ -762,13 +764,6 @@ namespace std
 		_M_codecvt = &use_facet<__codecvt_type>(__loc);
 	      else
 		_M_codecvt = 0;
-
-	      // NB This may require the reconversion of previously
-	      // converted chars. This in turn may cause the
-	      // reconstruction of the original file. YIKES!!  This
-	      // implementation interprets this requirement as requiring
-	      // the file position be at the beginning, and a stateless
-	      // encoding, or that the filebuf be closed. Opinions may differ.
 	    }
 	}
     }
