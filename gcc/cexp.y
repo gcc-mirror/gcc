@@ -82,11 +82,29 @@ struct arglist {
 #endif
 #endif
 
-#define LONG_MASK(bits) ((bits) < HOST_BITS_PER_LONG ? ~(~0L << (bits)) : ~0L)
-
 #ifndef NULL_PTR
 #define NULL_PTR ((GENERIC_PTR)0)
 #endif
+
+/* Find the largest host integer type and set its size and type.
+   Don't blindly use `long'; on some crazy hosts it is shorter than `int'.  */
+
+#ifndef HOST_BITS_PER_WIDE_INT
+
+#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#define HOST_WIDE_INT long
+#else
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
+#define HOST_WIDE_INT int
+#endif
+
+#endif
+
+#define HOST_WIDE_INT_MASK(bits) \
+  ((bits) < HOST_BITS_PER_WIDE_INT \
+   ? ~ (~ (HOST_WIDE_INT) 0 << (bits)) \
+   : ~ (HOST_WIDE_INT) 0)
 
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 6)
 # define __attribute__(x)
@@ -124,11 +142,11 @@ struct arglist {
 
 #define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 
-long parse_c_expression PROTO((char *));
+HOST_WIDE_INT parse_c_expression PROTO((char *));
 
 static int yylex PROTO((void));
 static void yyerror PROTO((char *)) __attribute__ ((noreturn));
-static long expression_value;
+static HOST_WIDE_INT expression_value;
 
 static jmp_buf parse_return_error;
 
@@ -193,7 +211,7 @@ extern int traditional;
 struct constant;
 
 GENERIC_PTR xmalloc PROTO((size_t));
-long parse_escape PROTO((char **, long));
+HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
 int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
 struct hashnode *lookup PROTO((U_CHAR *, int, int));
 void error PRINTF_PROTO_1((char *, ...));
@@ -201,8 +219,8 @@ void pedwarn PRINTF_PROTO_1((char *, ...));
 void warning PRINTF_PROTO_1((char *, ...));
 
 static int parse_number PROTO((int));
-static long left_shift PROTO((struct constant *, unsigned long));
-static long right_shift PROTO((struct constant *, unsigned long));
+static HOST_WIDE_INT left_shift PROTO((struct constant *, unsigned HOST_WIDE_INT));
+static HOST_WIDE_INT right_shift PROTO((struct constant *, unsigned HOST_WIDE_INT));
 static void integer_overflow PROTO((void));
 
 /* `signedp' values */
@@ -211,7 +229,7 @@ static void integer_overflow PROTO((void));
 %}
 
 %union {
-  struct constant {long value; int signedp;} integer;
+  struct constant {HOST_WIDE_INT value; int signedp;} integer;
   struct name {U_CHAR *address; int length;} name;
   struct arglist *keywords;
 }
@@ -293,7 +311,8 @@ exp	:	exp '*' exp
 				integer_overflow ();
 			    }
 			  else
-			    $$.value = (unsigned long) $1.value * $3.value; }
+			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+					* $3.value); }
 	|	exp '/' exp
 			{ if ($3.value == 0)
 			    {
@@ -309,7 +328,8 @@ exp	:	exp '*' exp
 				integer_overflow ();
 			    }
 			  else
-			    $$.value = (unsigned long) $1.value / $3.value; }
+			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+					/ $3.value); }
 	|	exp '%' exp
 			{ if ($3.value == 0)
 			    {
@@ -321,7 +341,8 @@ exp	:	exp '*' exp
 			  if ($$.signedp)
 			    $$.value = $1.value % $3.value;
 			  else
-			    $$.value = (unsigned long) $1.value % $3.value; }
+			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+					% $3.value); }
 	|	exp '+' exp
 			{ $$.value = $1.value + $3.value;
 			  $$.signedp = $1.signedp & $3.signedp;
@@ -357,25 +378,29 @@ exp	:	exp '*' exp
 			  if ($1.signedp & $3.signedp)
 			    $$.value = $1.value <= $3.value;
 			  else
-			    $$.value = (unsigned long) $1.value <= $3.value; }
+			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+					<= $3.value); }
 	|	exp GEQ exp
 			{ $$.signedp = SIGNED;
 			  if ($1.signedp & $3.signedp)
 			    $$.value = $1.value >= $3.value;
 			  else
-			    $$.value = (unsigned long) $1.value >= $3.value; }
+			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+					>= $3.value); }
 	|	exp '<' exp
 			{ $$.signedp = SIGNED;
 			  if ($1.signedp & $3.signedp)
 			    $$.value = $1.value < $3.value;
 			  else
-			    $$.value = (unsigned long) $1.value < $3.value; }
+			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+					< $3.value); }
 	|	exp '>' exp
 			{ $$.signedp = SIGNED;
 			  if ($1.signedp & $3.signedp)
 			    $$.value = $1.value > $3.value;
 			  else
-			    $$.value = (unsigned long) $1.value > $3.value; }
+			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+					> $3.value); }
 	|	exp '&' exp
 			{ $$.value = $1.value & $3.value;
 			  $$.signedp = $1.signedp & $3.signedp; }
@@ -454,7 +479,7 @@ parse_number (olen)
 {
   register char *p = lexptr;
   register int c;
-  register unsigned long n = 0, nd, ULONG_MAX_over_base;
+  register unsigned HOST_WIDE_INT n = 0, nd, max_over_base;
   register int base = 10;
   register int len = olen;
   register int overflow = 0;
@@ -472,7 +497,7 @@ parse_number (olen)
     }
   }
 
-  ULONG_MAX_over_base = (unsigned long) -1 / base;
+  max_over_base = (unsigned HOST_WIDE_INT) -1 / base;
 
   for (; len > 0; len--) {
     c = *p++;
@@ -519,7 +544,7 @@ parse_number (olen)
     if (largest_digit < digit)
       largest_digit = digit;
     nd = n * base + digit;
-    overflow |= (ULONG_MAX_over_base < n) | (nd < n);
+    overflow |= (max_over_base < n) | (nd < n);
     n = nd;
   }
 
@@ -530,7 +555,7 @@ parse_number (olen)
     warning ("integer constant out of range");
 
   /* If too big to be signed, consider it unsigned.  */
-  if (((long) n & yylval.integer.signedp) < 0)
+  if (((HOST_WIDE_INT) n & yylval.integer.signedp) < 0)
     {
       if (base == 10)
 	warning ("integer constant is so large that it is unsigned");
@@ -571,7 +596,7 @@ yylex ()
   register unsigned char *tokstart;
   register struct token *toktab;
   int wide_flag;
-  long mask;
+  HOST_WIDE_INT mask;
 
  retry:
 
@@ -607,21 +632,21 @@ yylex ()
       {
 	lexptr++;
 	wide_flag = 1;
-	mask = LONG_MASK (MAX_WCHAR_TYPE_SIZE);
+	mask = HOST_WIDE_INT_MASK (MAX_WCHAR_TYPE_SIZE);
 	goto char_constant;
       }
     if (lexptr[1] == '"')
       {
 	lexptr++;
 	wide_flag = 1;
-	mask = LONG_MASK (MAX_WCHAR_TYPE_SIZE);
+	mask = HOST_WIDE_INT_MASK (MAX_WCHAR_TYPE_SIZE);
 	goto string_constant;
       }
     break;
 
   case '\'':
     wide_flag = 0;
-    mask = LONG_MASK (MAX_CHAR_TYPE_SIZE);
+    mask = HOST_WIDE_INT_MASK (MAX_CHAR_TYPE_SIZE);
   char_constant:
     lexptr++;
     if (keyword_parsing) {
@@ -642,7 +667,7 @@ yylex ()
        handles multicharacter constants and wide characters.
        It is mostly copied from c-lex.c.  */
     {
-      register long result = 0;
+      register HOST_WIDE_INT result = 0;
       register num_chars = 0;
       unsigned width = MAX_CHAR_TYPE_SIZE;
       int max_chars;
@@ -679,7 +704,7 @@ yylex ()
 	  /* Merge character into result; ignore excess chars.  */
 	  if (num_chars <= max_chars)
 	    {
-	      if (width < HOST_BITS_PER_LONG)
+	      if (width < HOST_BITS_PER_WIDE_INT)
 		result = (result << width) | c;
 	      else
 		result = c;
@@ -709,10 +734,12 @@ yylex ()
 	  if (lookup ("__CHAR_UNSIGNED__", sizeof ("__CHAR_UNSIGNED__")-1, -1)
 	      || ((result >> (num_bits - 1)) & 1) == 0)
 	    yylval.integer.value
-	      = result & (~ (unsigned long) 0 >> (HOST_BITS_PER_LONG - num_bits));
+	      = result & (~ (unsigned HOST_WIDE_INT) 0
+			  >> (HOST_BITS_PER_WIDE_INT - num_bits));
 	  else
 	    yylval.integer.value
-	      = result | ~(~ (unsigned long) 0 >> (HOST_BITS_PER_LONG - num_bits));
+	      = result | ~(~ (unsigned HOST_WIDE_INT) 0
+			   >> (HOST_BITS_PER_WIDE_INT - num_bits));
 	}
       else
 	{
@@ -774,7 +801,7 @@ yylex ()
     return c;
 
   case '"':
-    mask = LONG_MASK (MAX_CHAR_TYPE_SIZE);
+    mask = HOST_WIDE_INT_MASK (MAX_CHAR_TYPE_SIZE);
   string_constant:
     if (keyword_parsing) {
       char *start_ptr = lexptr;
@@ -852,10 +879,10 @@ yylex ()
    If \ is followed by 000, we return 0 and leave the string pointer
    after the zeros.  A value of 0 does not mean end of string.  */
 
-long
+HOST_WIDE_INT
 parse_escape (string_ptr, result_mask)
      char **string_ptr;
-     long result_mask;
+     HOST_WIDE_INT result_mask;
 {
   register int c = *(*string_ptr)++;
   switch (c)
@@ -894,7 +921,7 @@ parse_escape (string_ptr, result_mask)
     case '6':
     case '7':
       {
-	register long i = c - '0';
+	register HOST_WIDE_INT i = c - '0';
 	register int count = 0;
 	while (++count < 3)
 	  {
@@ -916,7 +943,7 @@ parse_escape (string_ptr, result_mask)
       }
     case 'x':
       {
-	register unsigned long i = 0, overflow = 0;
+	register unsigned HOST_WIDE_INT i = 0, overflow = 0;
 	register int digits_found = 0, digit;
 	for (;;)
 	  {
@@ -966,31 +993,31 @@ integer_overflow ()
     pedwarn ("integer overflow in preprocessor expression");
 }
 
-static long
+static HOST_WIDE_INT
 left_shift (a, b)
      struct constant *a;
-     unsigned long b;
+     unsigned HOST_WIDE_INT b;
 {
    /* It's unclear from the C standard whether shifts can overflow.
       The following code ignores overflow; perhaps a C standard
       interpretation ruling is needed.  */
-  if (b >= HOST_BITS_PER_LONG)
+  if (b >= HOST_BITS_PER_WIDE_INT)
     return 0;
   else
-    return (unsigned long) a->value << b;
+    return (unsigned HOST_WIDE_INT) a->value << b;
 }
 
-static long
+static HOST_WIDE_INT
 right_shift (a, b)
      struct constant *a;
-     unsigned long b;
+     unsigned HOST_WIDE_INT b;
 {
-  if (b >= HOST_BITS_PER_LONG)
-    return a->signedp ? a->value >> (HOST_BITS_PER_LONG - 1) : 0;
+  if (b >= HOST_BITS_PER_WIDE_INT)
+    return a->signedp ? a->value >> (HOST_BITS_PER_WIDE_INT - 1) : 0;
   else if (a->signedp)
     return a->value >> b;
   else
-    return (unsigned long) a->value >> b;
+    return (unsigned HOST_WIDE_INT) a->value >> b;
 }
 
 /* This page contains the entry point to this file.  */
@@ -1002,7 +1029,7 @@ right_shift (a, b)
 /* We do not support C comments.  They should be removed before
    this function is called.  */
 
-long
+HOST_WIDE_INT
 parse_c_expression (string)
      char *string;
 {
@@ -1063,7 +1090,7 @@ main (argc, argv)
       n++;
     if (c == EOF)
       break;
-    printf ("parser returned %ld\n", parse_c_expression (buf));
+    printf ("parser returned %ld\n", (long) parse_c_expression (buf));
   }
 
   return 0;
