@@ -1269,9 +1269,8 @@ main (argc, argv)
 
   if (exports.first)
     {
-      char *buf = xmalloc (strlen (export_file) + 5);
-
-      sprintf (buf, "-bE:%s", export_file);
+      char *buf = concat ("-bE:", export_file, NULL);
+      
       *ld1++ = buf;
       *ld2++ = buf;
 
@@ -1435,13 +1434,7 @@ main (argc, argv)
   /* Tell the linker that we have initializer and finalizer functions.  */
 #ifdef LD_INIT_SWITCH
 #ifdef COLLECT_EXPORT_LIST
-  {
-    /* option name + functions + colons + NULL */
-    char *buf = xmalloc (strlen (LD_INIT_SWITCH)
-			 + strlen(initname) + strlen(fininame) + 3);
-    sprintf (buf, "%s:%s:%s", LD_INIT_SWITCH, initname, fininame);
-    *ld2++ = buf;
-  }
+  *ld2++ = concat (LD_INIT_SWITCH, ":", initname, ":", fininame, NULL);
 #else
   *ld2++ = LD_INIT_SWITCH;
   *ld2++ = initname;
@@ -1456,12 +1449,7 @@ main (argc, argv)
       /* If we did not add export flag to link arguments before, add it to
 	 second link phase now.  No new exports should have been added.  */
       if (! exports.first)
-	{
-	  char *buf = xmalloc (strlen (export_file) + 5);
-
-	  sprintf (buf, "-bE:%s", export_file);
-	  *ld2++ = buf;
-	}
+	*ld2++ = concat ("-bE:", export_file, NULL);
 
       add_to_list (&exports, initname);
       add_to_list (&exports, fininame);
@@ -1878,13 +1866,8 @@ write_c_file_stat (stream, name)
     notice ("\nwrite_c_file - output name is %s, prefix is %s\n",
 	    output_file, prefix);
 
-#define INIT_NAME_FORMAT "_GLOBAL__FI_%s"
-  initname = xmalloc (strlen (prefix) + sizeof (INIT_NAME_FORMAT) - 2);
-  sprintf (initname, INIT_NAME_FORMAT, prefix);
-
-#define FINI_NAME_FORMAT "_GLOBAL__FD_%s"
-  fininame = xmalloc (strlen (prefix) + sizeof (FINI_NAME_FORMAT) - 2);
-  sprintf (fininame, FINI_NAME_FORMAT, prefix);
+  initname = concat ("_GLOBAL__FI_", prefix, NULL);
+  fininame = concat ("_GLOBAL__FD_", prefix, NULL);
 
   free (prefix);
 

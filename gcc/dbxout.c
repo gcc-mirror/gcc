@@ -395,11 +395,7 @@ dbxout_init (asm_file, input_file_name, syms)
 #endif
     {
       if (!cwd && (cwd = getpwd ()) && (!*cwd || cwd[strlen (cwd) - 1] != '/'))
-	{
-	  char *wdslash = xmalloc (strlen (cwd) + sizeof (FILE_NAME_JOINER));
-	  sprintf (wdslash, "%s%s", cwd, FILE_NAME_JOINER);
-	  cwd = wdslash;
-	}
+	cwd = concat (cwd, FILE_NAME_JOINER, NULL);
       if (cwd)
 	{
 #ifdef DBX_OUTPUT_MAIN_SOURCE_DIRECTORY

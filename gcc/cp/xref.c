@@ -205,14 +205,7 @@ GNU_xref_file (name)
   if (FILE_NAME_ABSOLUTE_P (name) || ! wd_name)
     xf->outname = xf->name;
   else
-    {
-      char *nmbuf
-	= (char *) xmalloc (strlen (wd_name) + strlen (FILE_NAME_JOINER)
-			    + strlen (name) + 1);
-      sprintf (nmbuf, "%s%s%s", wd_name, FILE_NAME_JOINER, name);
-      name = nmbuf;
-      xf->outname = nmbuf;
-    }
+    xf->outname = name = concat (wd_name, FILE_NAME_JOINER, name, NULL);
 
   fprintf (xref_file, "FIL %s %s 0\n", name, wd_name);
 

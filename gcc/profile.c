@@ -1090,8 +1090,7 @@ output_func_start_profiler ()
 
   fnname = get_file_function_name ('I');
   cfnname = IDENTIFIER_POINTER (fnname);
-  name = xmalloc (strlen (cfnname) + 5);
-  sprintf (name, "%sGCOV",cfnname);
+  name = concat (cfnname, "GCOV", NULL);
   fnname = get_identifier (name);
   free (name);
 
