@@ -1,3 +1,9 @@
+Mon Nov 22 23:53:50 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* combine.c (combine_simplify_rtx): When handling a SUBREG,
+	take SUBREG_WORD into account.
+	(if_then_else_cond): Likewise.
+
 1999-11-22  Jason Merrill  <jason@casey.cygnus.com>
 
 	* gmon.c, i386/gmon-sol2.c, sparc/gmon-sol2.c: Remove advertising 
