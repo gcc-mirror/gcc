@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -1496,18 +1496,20 @@ while (0)
    call -- thus they act more like traditional CALL_INSNs.
 
    get_attr_type will try to recognize the given insn, so make sure to
-   filter out things it will not accept.  SEQUENCE and USE insns in 
-   particular.  */
+   filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
+   in particular.  */
 #define INSN_SETS_ARE_DELAYED(X) \
   ((GET_CODE (X) == INSN			\
     && GET_CODE (PATTERN (X)) != SEQUENCE	\
     && GET_CODE (PATTERN (X)) != USE		\
+    && GET_CODE (PATTERN (X)) != CLOBBER	\
     && get_attr_type (X) == TYPE_MILLI))
 
 #define INSN_REFERENCES_ARE_DELAYED(X) \
   ((GET_CODE (X) == INSN			\
     && GET_CODE (PATTERN (X)) != SEQUENCE	\
     && GET_CODE (PATTERN (X)) != USE		\
+    && GET_CODE (PATTERN (X)) != CLOBBER	\
     && get_attr_type (X) == TYPE_MILLI))	
 
 
