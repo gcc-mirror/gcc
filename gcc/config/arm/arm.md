@@ -7130,8 +7130,8 @@
 	    (const_string "no")))
    (set (attr "length") 
         (if_then_else
-	    (and (ge (minus (match_dup 0) (pc)) (const_int -2048))
-		 (le (minus (match_dup 0) (pc)) (const_int 2044)))
+	    (and (ge (minus (match_dup 0) (pc)) (const_int -2044))
+		 (le (minus (match_dup 0) (pc)) (const_int 2048)))
   	    (const_int 2)
 	    (const_int 4)))]
 )

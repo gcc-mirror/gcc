@@ -1,3 +1,12 @@
+2005-01-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/19393
+	Backport:
+	2004-03-30  Nick Clifton  <nickc@redhat.com>
+	* config/arm/arm.md (thumb_jump): Reduce the backward branch
+	range, and increase the forward branch range, to allow for
+	the fact that the PC will be off by 4.
+
 2005-01-24  Richard Henderson  <rth@redhat.com>
             Aldy Hernandez  <aldyh@redhat.com>
 
