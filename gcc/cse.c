@@ -8523,7 +8523,7 @@ cse_main (f, nregs, after_loop, file)
       max_qty = val.nsets * 2;
       
       if (file)
-	fprintf (file, ";; Processing block from %d to %d, %d sets.\n",
+	fnotice (file, ";; Processing block from %d to %d, %d sets.\n",
 		 INSN_UID (insn), val.last ? INSN_UID (val.last) : 0,
 		 val.nsets);
 
