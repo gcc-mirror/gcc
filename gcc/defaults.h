@@ -118,7 +118,7 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #ifdef SET_ASM_OP
 #ifndef ASM_OUTPUT_DEF
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
- do {	fprintf ((FILE), "\t%s\t", SET_ASM_OP);				\
+ do {	fprintf ((FILE), "%s", SET_ASM_OP);				\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, ",");						\
 	assemble_name (FILE, LABEL2);					\

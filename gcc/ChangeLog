@@ -2,7 +2,7 @@
 
 	Changes below marked "here" add TABs on either or both sides,
 	covering start of line, up to any operand for all noted .*ASM.*_OP
-	definitions.
+	definitions.  All callers changed.
 	* crtstuff.c (CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Explain
 	why these defaults don't have leading spacing.
 	* dbxout.c (ASM_STABS_OP, ASM_STABN_OP): Here.
