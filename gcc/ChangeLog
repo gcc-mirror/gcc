@@ -1,3 +1,12 @@
+2004-09-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* defaults.h (MULTIPLE_SYMBOL_SPACES): Provide default.
+	* config/arm/pecoff.h, config/i386/beos-elf.h
+	* config/i386/cygming.h, config/i386/i386-interix.h:
+	Define MULTIPLE_SYMBOL_SPACES to 1, not nothing.  Remove
+	comment cloned from manual.
+	* doc/tm.texi: Update description of MULTIPLE_SYMBOL_SPACES.
+
 2004-09-09  Frank Ch. Eigler  <fche@redhat.com>
 
 	* builtins.c (build_va_arg_indirect_ref): New function.
@@ -393,7 +402,7 @@
 	(bdesc_int_void2arg, bdesc_prefetches): New arrays.
 	(frv_init_builtins): Register the above builtins.
 	(frv_int_to_acc): Use ACC_MASK to check for valid accumulator
-	registers.  Turn the referenced accumulators into global registers.  
+	registers.  Turn the referenced accumulators into global registers.
 	(frv_read_iacc_argument): New function.
 	(frv_expand_int_void2arg, frv_expand_prefetches): New functions.
 	(frv_split_iacc_move): New function.

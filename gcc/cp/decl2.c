@@ -1438,7 +1438,7 @@ import_export_class (tree ctype)
   if (CLASSTYPE_INTERFACE_KNOWN (ctype))
     return;
 
-  /* If MULTIPLE_SYMBOL_SPACES is defined and we saw a #pragma interface,
+  /* If MULTIPLE_SYMBOL_SPACES is set and we saw a #pragma interface,
      we will have CLASSTYPE_INTERFACE_ONLY set but not
      CLASSTYPE_INTERFACE_KNOWN.  In that case, we don't want to use this
      heuristic because someone will supply a #pragma implementation
@@ -1472,10 +1472,10 @@ import_export_class (tree ctype)
 	import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
     }
 
-#ifdef MULTIPLE_SYMBOL_SPACES
-  if (import_export == -1)
+  /* When MULTIPLE_SYMBOL_SPACES is set, we cannot count on seeing
+     a definition anywhere else.  */
+  if (MULTIPLE_SYMBOL_SPACES && import_export == -1)
     import_export = 0;
-#endif
 
   /* Allow backends the chance to overrule the decision.  */
   if (targetm.cxx.import_export_class)
