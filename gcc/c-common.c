@@ -1019,7 +1019,12 @@ convert_and_check (type, expr)
 	  if (!(TREE_UNSIGNED (type) < TREE_UNSIGNED (TREE_TYPE (expr))
 		&& TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
 		&& TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (expr))))
-	    warning ("overflow in implicit constant conversion");
+	    /* If EXPR fits in the unsigned version of TYPE,
+	       don't warn unless pedantic.  */
+	    if (pedantic
+		|| TREE_UNSIGNED (type)
+		|| ! int_fits_type_p (expr, unsigned_type (type)))
+	      warning ("overflow in implicit constant conversion");
 	}
       else
 	unsigned_conversion_warning (t, expr);
