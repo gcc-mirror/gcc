@@ -1251,6 +1251,61 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       pp_c_call_argument_list (pp, TREE_OPERAND (e, 1));
       break;
 
+    case UNORDERED_EXPR:
+      pp_c_identifier (pp, flag_isoc99
+			   ? "isunordered"
+			   : "__builtin_isunordered");
+      goto two_args_fun;
+
+    case ORDERED_EXPR:
+      pp_c_identifier (pp, flag_isoc99
+			   ? "!isunordered"
+			   : "!__builtin_isunordered");
+      goto two_args_fun;
+
+    case UNLT_EXPR:
+      pp_c_identifier (pp, flag_isoc99
+			   ? "!isgreaterequal"
+			   : "!__builtin_isgreaterequal");
+      goto two_args_fun;
+
+    case UNLE_EXPR:
+      pp_c_identifier (pp, flag_isoc99
+			   ? "!isgreater"
+			   : "!__builtin_isgreater");
+      goto two_args_fun;
+
+    case UNGT_EXPR:
+      pp_c_identifier (pp, flag_isoc99
+			   ? "!islessequal"
+			   : "!__builtin_islessequal");
+      goto two_args_fun;
+
+    case UNGE_EXPR:
+      pp_c_identifier (pp, flag_isoc99
+			   ? "!isless"
+			   : "!__builtin_isless");
+      goto two_args_fun;
+
+    case UNEQ_EXPR:
+      pp_c_identifier (pp, flag_isoc99
+			   ? "!islessgreater"
+			   : "!__builtin_islessgreater");
+      goto two_args_fun;
+
+    case LTGT_EXPR:
+      pp_c_identifier (pp, flag_isoc99
+			   ? "islessgreater"
+			   : "__builtin_islessgreater");
+      goto two_args_fun;
+
+    two_args_fun:
+      pp_c_left_paren (pp);
+      pp_expression (pp, TREE_OPERAND (e, 0));
+      pp_separate_with (pp, ',');
+      pp_expression (pp, TREE_OPERAND (e, 1));
+      pp_c_right_paren (pp);
+
     case ABS_EXPR:
       pp_c_identifier (pp, "__builtin_abs");
       pp_c_left_paren (pp);
@@ -1769,6 +1824,14 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case COMPLEX_CST:
     case COMPLEX_EXPR:
     case VECTOR_CST:
+    case ORDERED_EXPR:
+    case UNORDERED_EXPR:
+    case LTGT_EXPR:
+    case UNEQ_EXPR:
+    case UNLE_EXPR:
+    case UNLT_EXPR:
+    case UNGE_EXPR:
+    case UNGT_EXPR:
     case ABS_EXPR:
     case CONSTRUCTOR:
     case COMPOUND_LITERAL_EXPR:
