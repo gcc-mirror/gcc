@@ -1,3 +1,8 @@
+2003-10-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* dbxout.c (dbxout_fptype_value): Delete.
+	(dbxout_type): Emit R3 for all COMPLEX_TYPEs.
+
 2003-10-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* output.h (compute_reloc_for_constant): Declare.
@@ -133,7 +138,7 @@
 2003-09-30  Carlo Wood  <carlo@alinoe.com>
 
 	PR debug/12319
-        * cfglayout.c (insn_scope):  Use prologue_locator and
+	* cfglayout.c (insn_scope):  Use prologue_locator and
 	epilogue_locator; return the outer function scope for
 	pro- and epilogue insns.
 
