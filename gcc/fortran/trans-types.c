@@ -1625,7 +1625,7 @@ gfc_type_for_mode (enum machine_mode mode, int unsignedp)
       return NULL_TREE;
     }
   else
-    abort ();
+    return NULL;
 
   for (i = 0; i <= MAX_REAL_KINDS; ++i)
     {
