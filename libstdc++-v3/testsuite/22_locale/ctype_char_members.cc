@@ -69,8 +69,17 @@ void test01()
   int i10 = std::ctype_base::print;
   int i11 = std::ctype_base::cntrl;
   int i12 = sizeof(std::ctype_base::mask);
-  VERIFY ( i01 != i02 != i03 != i04 != i05 != i06 != i07 != i08 != i09 );
-  VERIFY ( i01 != i10 != i11);
+  VERIFY ( i01 != i02);
+  VERIFY ( i02 != i03);
+  VERIFY ( i03 != i04);
+  VERIFY ( i04 != i05);
+  VERIFY ( i05 != i06);
+  VERIFY ( i06 != i07);
+  VERIFY ( i07 != i08);
+  VERIFY ( i08 != i09);
+  VERIFY ( i09 != i10);
+  VERIFY ( i10 != i11);
+  VERIFY ( i11 != i01);
 
   // bool is(mask m, char c) const;
   VERIFY( gctype.is(std::ctype_base::space, c30) );
@@ -118,14 +127,17 @@ void test01()
   VERIFY( gctype.is(m01[1], cc0[1]) );
   VERIFY( gctype.is(m01[2], cc0[2]) );
 
-  cc0 = strlit00;
+  cc0 = strlit01;
   cc1 = gctype.is(cc0, cc0 + 13, m02);
-  VERIFY( cc1 == strlit00 + 13);
+  VERIFY( cc1 == strlit01 + 13);
   VERIFY( m02[6] != m00 );
   VERIFY( m02[7] != m00 );
   VERIFY( m02[8] != m00 );
-  VERIFY( m02[8] != m02[6] != m02[7] );
+  VERIFY( m02[8] != m02[6] );
+  VERIFY( m02[6] != m02[7] );
   VERIFY( static_cast<bool>(m02[6] & std::ctype_base::alnum) );
+  VERIFY( static_cast<bool>(m02[6] & std::ctype_base::upper) );
+  VERIFY( static_cast<bool>(m02[6] & std::ctype_base::alpha) );
   VERIFY( static_cast<bool>(m02[7] & std::ctype_base::punct) );
   VERIFY( static_cast<bool>(m02[8] & std::ctype_base::space) );
   VERIFY( gctype.is(m02[6], cc0[6]) );
