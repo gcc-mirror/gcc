@@ -2443,6 +2443,13 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 
 	      tree comp_type = TREE_TYPE (op0);
 
+	      /* Avoid spurious warnings for comparison with enumerators.  */
+ 
+	      xop0 = orig_op0;
+	      xop1 = orig_op1;
+	      STRIP_TYPE_NOPS (xop0);
+	      STRIP_TYPE_NOPS (xop1);
+
 	      /* Give warnings for comparisons between signed and unsigned
 		 quantities that may fail.  Do not warn if the signed quantity
 		 is an unsuffixed integer literal (or some static constant
@@ -2453,10 +2460,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      /* Do the checking based on the original operand trees, so that
 		 casts will be considered, but default promotions won't be.  */
 	      if (TREE_UNSIGNED (comp_type)
-		  && ((op0_signed && (TREE_CODE (orig_op0) != INTEGER_CST
-				      || tree_int_cst_sgn (orig_op0) == -1))
-		      || (op1_signed && (TREE_CODE (orig_op1) != INTEGER_CST
-				       || tree_int_cst_sgn (orig_op1) == -1))))
+		  && ((op0_signed && (TREE_CODE (xop0) != INTEGER_CST
+				      || tree_int_cst_sgn (xop0) == -1))
+		      || (op1_signed && (TREE_CODE (xop1) != INTEGER_CST
+				       || tree_int_cst_sgn (xop1) == -1))))
 		warning ("comparison between signed and unsigned");
 	    }
 	}
