@@ -4745,10 +4745,10 @@ find_insert_position (insn, new)
   for (i = XVECLEN (PATTERN (new), 0) - 1; i >= 0; i--)
     if (GET_CODE (XVECEXP (PATTERN (new), 0, i)) == CLOBBER
 	&& reg_overlap_mentioned_p (XEXP (XVECEXP (PATTERN (new), 0, i), 0),
-				    insn))
+				    insn)
 	&& ! modified_in_p (XEXP (XVECEXP (PATTERN (new), 0, i), 0),
-			    prev)))
-     return 0;
+			    prev))
+      return 0;
 
   return (reg_mentioned_p (SET_DEST (single_set (new)), prev)) ? 0 : prev;
 }
