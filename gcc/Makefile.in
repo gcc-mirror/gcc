@@ -1475,7 +1475,7 @@ clean: mostlyclean
 	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready libgcc1.null
 	-rm -f *.dvi
 # Delete the include directory.
-	-rm -rf stmp-* include
+	-rm -rf stmp-* include objc-headers
 
 # Delete all files that users would normally create
 # while building and installing GCC.
