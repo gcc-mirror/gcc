@@ -3736,7 +3736,7 @@ if test "${enable_werror+set}" = set; then
 else
   enable_werror=no
 fi;
-if test x$enablec_werror = xyes ; then
+if test x$enable_werror = xyes ; then
   WERROR=-Werror
 fi
 

@@ -322,7 +322,7 @@ AC_SUBST(warn_cflags)
 AC_ARG_ENABLE(werror, 
 [  --enable-werror         enable -Werror in bootstrap stage2 and later], [],
 [enable_werror=no])
-if test x$enablec_werror = xyes ; then
+if test x$enable_werror = xyes ; then
   WERROR=-Werror
 fi
 AC_SUBST(WERROR)

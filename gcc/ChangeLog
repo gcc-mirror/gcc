@@ -1,5 +1,10 @@
 2004-01-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* configure.ac (enable_werror): Fixed typo.
+	* configure: Regenerate.
+
+2004-01-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* config.gcc (mips-sgi-irix6*o32): Removed.
 	* config/mips/iris6-o32-as.h: Likewise.
 	* config/mips/iris6-o32-gas.h: Likewise.
