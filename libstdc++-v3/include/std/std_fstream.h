@@ -264,7 +264,7 @@ namespace std
 	  this->setg(_M_buf, _M_buf, _M_buf);
 	if (_M_mode & ios_base::out)
 	  this->setp(_M_buf, _M_buf);
-	_M_filepos = _M_in_end;
+	_M_filepos = _M_buf;
       }
 
       void
@@ -276,7 +276,7 @@ namespace std
 	  this->setg(_M_buf, _M_buf, _M_buf + __off);
 	if (__testout)
 	  this->setp(_M_buf, _M_buf + __off);
-	_M_filepos = _M_in_end;
+	_M_filepos = _M_buf + __off;
       }
 
       bool

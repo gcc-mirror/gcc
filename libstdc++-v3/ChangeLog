@@ -1,5 +1,11 @@
 2002-04-23  Jason Merrill  <jason@redhat.com>
 
+	* include/bits/fstream.tcc (basic_filebuf::seekoff): Fix for
+	output-only filebufs.
+	* include/std/std_fstream.h (basic_filebuf::_M_set_indeterminate):
+	Likewise.
+	(basic_filebuf::_M_set_determinate): Likewise.
+
 	PR libstdc++/6414
 	* include/bits/fstream.tcc (basic_filebuf::seekoff): Adjust return
 	value properly in the trivial case.
