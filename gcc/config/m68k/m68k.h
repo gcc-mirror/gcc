@@ -1402,24 +1402,10 @@ __transfer_from_trampoline ()					\
       return COSTS_N_INSNS (3);	 /* lsr #i,dn */		\
     break;							\
   case MULT:							\
-    if (GET_CODE (XEXP (x, 1)) == CONST_INT			\
-	&& exact_log2 (INTVAL (XEXP (x, 1))) >= 0)		\
-      {								\
-	/* A shift by a big integer takes an extra instruction.  */ \
-	if (GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	    && (INTVAL (XEXP (X, 1)) == (1 << 16)))		\
-	  return COSTS_N_INSNS (2);	 /* clrw;swap */	\
-	if (GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	    && !(INTVAL (XEXP (X, 1)) > 1			\
-		 && INTVAL (XEXP (X, 1)) <= 256))		\
-	  return COSTS_N_INSNS (3);	 /* lsr #i,dn */	\
-	break;							\
-      }								\
-    else if (GET_MODE (X) == QImode || GET_MODE (X) == HImode)	\
+    if (GET_MODE (X) == QImode || GET_MODE (X) == HImode)	\
       return COSTS_N_INSNS (MULW_COST);				\
     else							\
       return COSTS_N_INSNS (MULL_COST);				\
-    break;							\
   case DIV:							\
   case UDIV:							\
   case MOD:							\
