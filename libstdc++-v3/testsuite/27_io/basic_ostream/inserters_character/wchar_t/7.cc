@@ -23,7 +23,7 @@
 #include <string>
 #include <ostream>
 #include <sstream>
-#include <fstream>
+#include <locale>
 #include <testsuite_hooks.h>
 
 // Global counter, needs to be reset after use.

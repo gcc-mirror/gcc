@@ -22,9 +22,7 @@
 
 #include <ostream>
 #include <sstream>
-#include <stdexcept>
-//#include <testsuite_hooks.h>
-#define VERIFY(x) test&=x
+#include <testsuite_hooks.h>
 
 void test01(void)
 {
