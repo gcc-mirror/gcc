@@ -1,5 +1,9 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (create_bb): Remove unnecessary memset.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-ssa-threadupdate.c (copy_phis_to_block): Remove.
 	(thread_block): Call flush_pending_stmt instead of
 	copy_phis_to_block.
