@@ -1,3 +1,7 @@
+1999-05-10  Richard Henderson  <rth@cygnus.com>
+
+	* g++.old-deja/g++.other/null1.C (g): Add overload for long.
+
 1999-05-10  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/erfc.f: Use small single-precision
