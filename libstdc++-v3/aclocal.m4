@@ -1346,6 +1346,13 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
       need_libio=no
       ;;
+    xstdio)
+      CSTDIO_H=config/c_io_stdio.h
+      CSTDIO_CC=config/c_io_stdio.cc
+      AC_MSG_RESULT(stdio)
+
+      need_libio=no
+      ;;
     *)
       echo "$enable_cstdio is an unknown io package" 1>&2
       exit 1

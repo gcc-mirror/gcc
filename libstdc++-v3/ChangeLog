@@ -1,3 +1,15 @@
+2000-11-01  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* bits/basic_file.h (_M_open_mode): Change signature, move
+	specializations to..
+	* config/c_io_libio.cc: ...here.
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Add sdtio option, remove wince.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config/c_io_stdio.h: New file.
+	* config/c_io_stdio.cc: New file.
+	* docs/configopts.html: Modify documentation.
+	
 2000-10-31  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* include/c/bits/std_cwctype.h: Add more undefs.
