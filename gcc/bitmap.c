@@ -382,44 +382,62 @@ bitmap_bit_p (head, bit)
   word_num
     = ((bit / (unsigned) HOST_BITS_PER_WIDE_INT) % BITMAP_ELEMENT_WORDS);
 
-  return
-    (ptr->bits[word_num] & (((unsigned HOST_WIDE_INT) 1) << bit_num)) != 0;
+  return (ptr->bits[word_num] >> bit_num) & 1;
 }
 
-/* Store in bitmap TO the result of combining bitmap FROM1 and
-   FROM2 using a specific bit manipulation.  */
+/* Store in bitmap TO the result of combining bitmap FROM1 and FROM2 using
+   a specific bit manipulation.  Return true if TO changes.  */
 
-void
+int
 bitmap_operation (to, from1, from2, operation)
      bitmap to;
      bitmap from1;
      bitmap from2;
      enum bitmap_bits operation;
 {
-  bitmap_element *delete_list = 0;
   bitmap_element *from1_ptr = from1->first;
   bitmap_element *from2_ptr = from2->first;
-  unsigned int indx1
-    = (from1_ptr) ? from1_ptr->indx : ~ (unsigned HOST_WIDE_INT) 0;
-  unsigned int indx2
-    = (from2_ptr) ? from2_ptr->indx : ~ (unsigned HOST_WIDE_INT) 0;
-  bitmap_element *to_ptr = 0;
+  unsigned int indx1 = (from1_ptr) ? from1_ptr->indx : -1;
+  unsigned int indx2 = (from2_ptr) ? from2_ptr->indx : -1;
+  bitmap_element *to_ptr = to->first;
   bitmap_element *from1_tmp;
   bitmap_element *from2_tmp;
+  bitmap_element *to_tmp;
   unsigned int indx;
-#if BITMAP_ELEMENT_WORDS != 2
-  int i;
+  int changed = 0;
+
+#if BITMAP_ELEMENT_WORDS == 2
+#define DOIT(OP)					\
+  do {							\
+    unsigned HOST_WIDE_INT t0, t1, f10, f11, f20, f21;	\
+    f10 = from1_tmp->bits[0];				\
+    f20 = from2_tmp->bits[0];				\
+    t0 = f10 OP f20;					\
+    changed |= (t0 != to_tmp->bits[0]);			\
+    f11 = from1_tmp->bits[1];				\
+    f21 = from2_tmp->bits[1];				\
+    t1 = f11 OP f21;					\
+    changed |= (t1 != to_tmp->bits[1]);			\
+    to_tmp->bits[0] = t0;				\
+    to_tmp->bits[1] = t1;				\
+  } while (0)
+#else
+#define DOIT(OP)					\
+  do {							\
+    unsigned HOST_WIDE_INT t, f1, f2;			\
+    int i;						\
+    for (i = 0; i < BITMAP_ELEMENT_WORDS; ++i)		\
+      {							\
+	f1 = from1_tmp->bits[i];			\
+	f2 = from2_tmp->bits[i];			\
+	t = f1 OP f2;					\
+	changed |= (t != to_tmp->bits[i]);		\
+	to_tmp->bits[i] = t;				\
+      }							\
+  } while (0)
 #endif
 
-  /* To simplify things, always create a new list.  If the old list was one
-     of the inputs, free it later.  Otherwise, free it now.  */
-  if (to == from1 || to == from2)
-    {
-      delete_list = to->first;
-      to->first = to->current = 0;
-    }
-  else
-    bitmap_clear (to);
+  to->first = to->current = 0;
 
   while (from1_ptr != 0 || from2_ptr != 0)
     {
@@ -431,9 +449,9 @@ bitmap_operation (to, from1, from2, operation)
 	  from1_tmp = from1_ptr;
 	  from2_tmp = from2_ptr;
 	  from1_ptr = from1_ptr->next;
-	  indx1 = (from1_ptr) ? from1_ptr->indx : ~ (unsigned HOST_WIDE_INT) 0;
+	  indx1 = (from1_ptr) ? from1_ptr->indx : -1;
 	  from2_ptr = from2_ptr->next;
-	  indx2 = (from2_ptr) ? from2_ptr->indx : ~ (unsigned HOST_WIDE_INT) 0;
+	  indx2 = (from2_ptr) ? from2_ptr->indx : -1;
 	}
       else if (indx1 < indx2)
 	{
@@ -441,7 +459,7 @@ bitmap_operation (to, from1, from2, operation)
 	  from1_tmp = from1_ptr;
 	  from2_tmp = &bitmap_zero;
 	  from1_ptr = from1_ptr->next;
-	  indx1 = (from1_ptr) ? from1_ptr->indx : ~ (unsigned HOST_WIDE_INT) 0;
+	  indx1 = (from1_ptr) ? from1_ptr->indx : -1;
 	}
       else
 	{
@@ -449,11 +467,26 @@ bitmap_operation (to, from1, from2, operation)
 	  from1_tmp = &bitmap_zero;
 	  from2_tmp = from2_ptr;
 	  from2_ptr = from2_ptr->next;
-	  indx2 = (from2_ptr) ? from2_ptr->indx : ~ (unsigned HOST_WIDE_INT) 0;
+	  indx2 = (from2_ptr) ? from2_ptr->indx : -1;
 	}
 
-      if (to_ptr == 0)
-	to_ptr = bitmap_element_allocate ();
+      /* Find the appropriate element from TO.  Begin by discarding
+	 elements that we've skipped. */
+      while (to_ptr && to_ptr->indx < indx)
+	{
+	  changed = 1;
+	  to_tmp = to_ptr;
+	  to_ptr = to_ptr->next;
+	  to_tmp = bitmap_free;
+	  bitmap_free = to_tmp;
+	}
+      if (to_ptr && to_ptr->indx == indx)
+	{
+	  to_tmp = to_ptr;
+	  to_ptr = to_ptr->next;
+	}
+      else
+	to_tmp = bitmap_element_allocate ();
 
       /* Do the operation, and if any bits are set, link it into the
 	 linked list.  */
@@ -463,61 +496,59 @@ bitmap_operation (to, from1, from2, operation)
 	  abort ();
 
 	case BITMAP_AND:
-#if BITMAP_ELEMENT_WORDS == 2
-	  to_ptr->bits[0] = from1_tmp->bits[0] & from2_tmp->bits[0];
-	  to_ptr->bits[1] = from1_tmp->bits[1] & from2_tmp->bits[1];
-#else
-	  for (i = BITMAP_ELEMENT_WORDS - 1; i >= 0; i--)
-	    to_ptr->bits[i] = from1_tmp->bits[i] & from2_tmp->bits[i];
-#endif
+	  DOIT (&);
 	  break;
 
 	case BITMAP_AND_COMPL:
-#if BITMAP_ELEMENT_WORDS == 2
-	  to_ptr->bits[0] = from1_tmp->bits[0] & ~ from2_tmp->bits[0];
-	  to_ptr->bits[1] = from1_tmp->bits[1] & ~ from2_tmp->bits[1];
-#else
-	  for (i = BITMAP_ELEMENT_WORDS - 1; i >= 0; i--)
-	    to_ptr->bits[i] = from1_tmp->bits[i] & ~ from2_tmp->bits[i];
-#endif
+	  DOIT (&~);
 	  break;
 
 	case BITMAP_IOR:
-#if BITMAP_ELEMENT_WORDS == 2
-	  to_ptr->bits[0] = from1_tmp->bits[0] | from2_tmp->bits[0];
-	  to_ptr->bits[1] = from1_tmp->bits[1] | from2_tmp->bits[1];
-#else
-	  for (i = BITMAP_ELEMENT_WORDS - 1; i >= 0; i--)
-	    to_ptr->bits[i] = from1_tmp->bits[i] | from2_tmp->bits[i];
-#endif
+	  DOIT (|);
+	  break;
+
+	case BITMAP_XOR:
+	  DOIT (^);
 	  break;
 	}
 
-      if (! bitmap_element_zerop (to_ptr))
+      if (! bitmap_element_zerop (to_tmp))
 	{
-	  to_ptr->indx = indx;
-	  bitmap_element_link (to, to_ptr);
-	  to_ptr = 0;
+	  to_tmp->indx = indx;
+	  bitmap_element_link (to, to_tmp);
 	}
     }
 
-  /* If we have an unallocated element due to the last element being 0,
-     release it back to the free pool.  Don't bother calling
-     bitmap_element_free since it was never linked into a bitmap.  */
-  if (to_ptr != 0)
+  /* If we have elements of TO left over, free the lot.  */
+  if (to_ptr)
     {
-      to_ptr->next = bitmap_free;
+      changed = 1;
+      for (to_tmp = to_ptr; to_tmp->next ; to_tmp = to_tmp->next)
+	continue;
+      to_tmp->next = bitmap_free;
       bitmap_free = to_ptr;
     }
 
-  /* If the output bitmap was one of the inputs, free up its
-     elements now that we're done.  */
-  for (; delete_list != 0; delete_list = to_ptr)
-    {
-      to_ptr = delete_list->next;
-      delete_list->next = bitmap_free;
-      bitmap_free = delete_list;
-    }
+#undef DOIT
+
+  return changed;
+}
+
+/* Return true if two bitmaps are identical.  */
+
+int
+bitmap_equal_p (a, b)
+     bitmap a;
+     bitmap b;
+{
+  bitmap_head c;
+  int ret;
+
+  c.first = c.current = 0;
+  ret = ! bitmap_operation (&c, a, b, BITMAP_XOR);
+  bitmap_clear (&c);
+
+  return ret;
 }
 
 /* Or into bitmap TO bitmap FROM1 and'ed with the complement of
@@ -578,7 +609,7 @@ debug_bitmap_file (file, head)
 
       for (i = 0; i < BITMAP_ELEMENT_WORDS; i++)
 	for (j = 0; j < HOST_BITS_PER_WIDE_INT; j++)
-	  if ((ptr->bits[i] & (((unsigned HOST_WIDE_INT) 1) << j)) != 0)
+	  if ((ptr->bits[i] >> j) & 1)
 	    {
 	      if (col > 70)
 		{

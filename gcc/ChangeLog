@@ -1,3 +1,13 @@
+Mon Oct  4 11:38:33 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sbitmap.c (sbitmap_ones): Don't set too many bits.
+
+	* bitmap.h (enum bitmap_bits): Add BITMAP_XOR.
+	* bitmap.c (bitmap_operation): Return true iff TO changed.
+	(bitmap_equal_p): New.
+	(bitmap_bit_p): Tidy arithmetic.
+	(debug_bitmap_file): Likewise.
+
 Mon Oct  4 11:28:37 1999  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (rest_of_compilation): Turn on cse_not_expected

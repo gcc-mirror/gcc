@@ -55,7 +55,8 @@ typedef struct bitmap_head_def {
 enum bitmap_bits {
   BITMAP_AND,			/* TO = FROM1 & FROM2 */
   BITMAP_AND_COMPL,		/* TO = FROM1 & ~ FROM2 */
-  BITMAP_IOR			/* TO = FROM1 | FROM2 */
+  BITMAP_IOR,			/* TO = FROM1 | FROM2 */
+  BITMAP_XOR			/* TO = FROM1 ^ FROM2 */
 };
 
 /* Global data */
@@ -68,8 +69,11 @@ extern void bitmap_clear PROTO((bitmap));
 /* Copy a bitmap to another bitmap. */
 extern void bitmap_copy PROTO((bitmap, bitmap));
 
+/* True if two bitmaps are identical.  */
+extern int bitmap_equal_p PROTO((bitmap, bitmap));
+
 /* Perform an operation on two bitmaps, yielding a third.  */
-extern void bitmap_operation PROTO((bitmap, bitmap, bitmap, enum bitmap_bits));
+extern int bitmap_operation PROTO((bitmap, bitmap, bitmap, enum bitmap_bits));
 
 /* `or' into one bitmap the `and' of a second bitmap witih the complement
    of a third.  */
