@@ -1915,7 +1915,8 @@ final (first, file, optimize, prescan)
       functions_tail = &new_item->next;
 
       new_item->next = 0;
-      new_item->name = xstrdup (current_function_name);
+      new_item->name = xstrdup (IDENTIFIER_POINTER
+				 (DECL_ASSEMBLER_NAME (current_function_decl)));
       new_item->cfg_checksum = profile_info.current_function_cfg_checksum;
       new_item->count_edges = profile_info.count_edges_instrumented_now;
     }

@@ -1,3 +1,9 @@
+Thu Oct  3 23:20:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (final): Use symbol name as function name for profiling.
+	* profile.c (get_exec_counts): Likewise.
+	(branch_prob): Likewise.
+
 2002-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* longlong.h (__udiv_qrnnd): Remove PARAMS from prototype.
