@@ -1,3 +1,8 @@
+2002-05-19  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (machine_dependent_reorg): Sign extend the
+	CONST_INT operand to the correct mode after adding 1 to it.
+
 2002-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* config.gcc (powerpc-wrs-windiss*): New target.
