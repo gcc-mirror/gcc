@@ -1,3 +1,10 @@
+2003-08-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in: Update substitutions to match changes to
+	configure.  Use include directives instead of @-insertions
+	to read in host and target fragments.  Add a rule to
+	regenerate ada/Makefile.
+
 2003-07-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-options.h: Remove.
@@ -142,10 +149,10 @@ Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-04  Olivier Hainque  <hainque@act-europe.fr>
 
-        PR ada/9953:
-        * 5hsystem.ads: Remove pragma Linker_Option for pthreads library,
-        and turn ZCX_By_Default back to False since the underlying support
-        is not quite there yet.
+	PR ada/9953:
+	* 5hsystem.ads: Remove pragma Linker_Option for pthreads library,
+	and turn ZCX_By_Default back to False since the underlying support
+	is not quite there yet.
 
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
@@ -173,9 +180,9 @@ Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-05-01  Laurent Guerby <guerby@acm.org>
 
-        PR ada/10546
-        * 5iosinte.ads: Increase pthread_cond_t size to match recent
-        LinuxThread and NPTL version, merge from ACT.
+	PR ada/10546
+	* 5iosinte.ads: Increase pthread_cond_t size to match recent
+	LinuxThread and NPTL version, merge from ACT.
 
 2003-04-28  Zack Weinberg  <zack@codesourcery.com>
 

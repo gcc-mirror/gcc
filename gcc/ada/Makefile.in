@@ -177,8 +177,8 @@ objdir = .
 
 target=@target@
 target_alias=@target_alias@
-xmake_file=@dep_host_xmake_file@
-tmake_file=@dep_tmake_file@
+xmake_file = @xmake_file@
+tmake_file = @tmake_file@
 host_canonical=@host@
 #version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
 #mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
@@ -217,12 +217,20 @@ all: all.indirect
 # This tells GNU Make version 3 not to put all variables in the environment.
 .NOEXPORT:
 
-# sed inserts variable overrides after the following line.
-####target overrides
-@target_overrides@
+# tmake_file and xmake_file expand to lists with entries of the form
+# $(srcdir)/config/...  but here $(srcdir) is the ada subdirectory so we
+# need to adjust the paths.  There can't be spaces in the subst arguments
+# or we get spurious spaces in the actual list of files to include.
 
-####host overrides
-@host_overrides@
+# target overrides
+ifneq ($(tmake_file),)
+include $(subst /config,/../config,$(tmake_file))
+endif
+
+# host overrides
+ifneq ($(xmake_file),)
+include $(subst /config,/../config,$(xmake_file))
+endif
 
 # Now figure out from those variables how to compile and link.
 
@@ -277,6 +285,13 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)
 	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $<
 .ads.o:
 	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $<
+
+# how to regenerate this file
+Makefile: ../config.status $(srcdir)/Makefile.in $(srcdir)/../version.c
+	cd ..; \
+	LANGUAGES="$(CONFIG_LANGUAGES)" \
+	CONFIG_HEADERS= \
+	CONFIG_FILES=ada/Makefile $(SHELL) config.status
 
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
