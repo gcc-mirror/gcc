@@ -196,7 +196,12 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectJObject
       printf("*** this is not a vbox\n");
     }
   children = gtk_container_get_children(GTK_CONTAINER(vbox));
-  layout = children->data;
+  do
+  {
+    layout = children->data;
+    children = children->next;
+  }
+  while (!GTK_IS_LAYOUT (layout) && children != NULL);
 
   if(!GTK_IS_LAYOUT(layout))
     {
