@@ -1,3 +1,24 @@
+2001-08-17  Richard Henderson  <rth@redhat.com>
+
+	* config/mips/iris6.h (TARGET_IRIX6): New.
+	(current_section_name, current_section_flags): New.
+	(ASM_OUTPUT_ALIGN, ASM_FILE_START, ASM_FILE_END): New.
+	(MAX_OFILE_ALIGNMENT): New.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Use bss_section.
+	* config/mips/mips.c (mips_make_temp_file, temp_filename): Remove.
+	(copy_file_data): Split out from 
+	(mips_asm_file_end): ... here.
+	(mips_asm_file_start): Remove extra .section directive.  Use
+	tmpfile instead of mips_make_temp_file.
+	(mips_unique_section): Use const char * as needed for warnings.
+	(iris6_asm_named_section_1): Renamed from iris6_asm_named_section;
+	re-add align parameter.
+	(iris6_asm_named_section): New.
+	(iris_section_align_entry_eq, iris_section_align_entry_hash): New.
+	(iris6_asm_output_align, iris6_section_align_1): New.
+	(iris6_asm_file_start, iris6_asm_file_end): New.
+	* config/mips/mips-protos.h: Update decls.
+
 2001-08-17  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Install GCC): Add links to build status pages.

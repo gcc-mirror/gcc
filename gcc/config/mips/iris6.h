@@ -18,6 +18,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Let mips.c know we need the Irix6 functions.  */
+#define TARGET_IRIX6 1
+
 /* Default to -mabi=n32 and -mips3.  */
 #define MIPS_ISA_DEFAULT 3
 #define MIPS_ABI_DEFAULT ABI_N32
@@ -31,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "mips/abi64.h"
 
 /* Irix6 assembler does handle DWARF2 directives.  Override setting in
- irix5.h file.  */
+   irix5.h file.  */
 #undef DWARF2_UNWIND_INFO
 
 /* The Irix6 assembler will sometimes assign labels to the wrong
@@ -130,6 +133,7 @@ Boston, MA 02111-1307, USA.  */
 /* Force the generation of dwarf .debug_frame sections even if not
    compiling -g.  This guarantees that we can unwind the stack. */
 #define DWARF2_FRAME_INFO 1
+
 /* The size in bytes of a DWARF field indicating an offset or length
    relative to a debug info section, specified to be 4 bytes in the DWARF-2
    specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
@@ -289,13 +293,61 @@ rdata_section ()							\
 	fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP_32);	\
       in_section = in_rdata;						\
     }									\
+}									\
+									\
+const char *								\
+current_section_name ()							\
+{									\
+  switch (in_section)							\
+    {									\
+    case no_section:	return NULL;					\
+    case in_text:	return ".text";					\
+    case in_data:	return ".data";					\
+    case in_sdata:	return ".sdata";				\
+    case in_bss:	return ".bss";					\
+    case in_rdata:							\
+    case in_const:							\
+      if (mips_abi != ABI_32 && mips_abi != ABI_O64)			\
+	return ".rodata";						\
+      else								\
+	return ".rdata";						\
+    case in_named:							\
+      return in_named_name;						\
+    }									\
+  abort ();								\
+}									\
+									\
+unsigned int								\
+current_section_flags ()						\
+{									\
+  switch (in_section)							\
+    {									\
+    case no_section:	return 0;					\
+    case in_text:	return SECTION_CODE;				\
+    case in_data:	return SECTION_WRITE;				\
+    case in_sdata:	return SECTION_WRITE | SECTION_SMALL;		\
+    case in_bss:	return SECTION_WRITE | SECTION_BSS;		\
+    case in_rdata:							\
+    case in_const:	return 0;					\
+    case in_named:	return get_named_section_flags (in_named_name);	\
+    }									\
+  abort ();								\
 }
 
 /* Switch into a generic section.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  iris6_asm_named_section
 
-/* ??? Perhaps just include svr4.h in this file?  */
+/* SGI assembler needs all sorts of extra help to do alignment properly.  */
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN iris6_asm_output_align
+#undef ASM_FILE_START
+#define ASM_FILE_START  iris6_asm_file_start
+#undef ASM_FILE_END
+#define ASM_FILE_END	iris6_asm_file_end
+
+#undef MAX_OFILE_ALIGNMENT
+#define MAX_OFILE_ALIGNMENT (32768*8)
 
 /* ??? SGI assembler may core dump when compiling with -g.
    Sometimes as succeeds, but then we get a linker error. (cmds.c in 072.sc)
@@ -317,11 +369,10 @@ do									   \
   {									   \
     if (mips_abi != ABI_32 && mips_abi != ABI_O64)			   \
       {									   \
-	fprintf (STREAM, "%s\n", BSS_SECTION_ASM_OP);			   \
+	bss_section ();							   \
 	mips_declare_object (STREAM, NAME, "", ":\n", 0);		   \
 	ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	   \
 	ASM_OUTPUT_SKIP (STREAM, SIZE);					   \
-	fprintf (STREAM, "%s\n", POPSECTION_ASM_OP);			   \
       }									   \
     else								   \
       mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (SIZE)); \
