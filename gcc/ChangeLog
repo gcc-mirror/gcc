@@ -1,3 +1,8 @@
+Fri Feb 20 10:39:47 1998  Michael Tiemann  <michael@impact.tiemann.org>
+
+	* ginclude/va-mips.h (va_arg): Remove trailing space after '\'
+	continuation character (line 243).
+
 Fri Feb 20 12:10:26 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* genrecog.c (main): Remove duplicated sentence in emitted comment.

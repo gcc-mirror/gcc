@@ -240,7 +240,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #ifdef __mips64
 #ifdef __MIPSEB__
 #define va_arg(__AP, __type)                                    \
-  ((__type *) (void *) (__AP = (char *)                         \ 
+  ((__type *) (void *) (__AP = (char *)                         \
                        ((((__PTRDIFF_TYPE__)__AP + 8 - 1) & -8) \
 			   + __va_rounded_size (__type))))[-1]
 #else
