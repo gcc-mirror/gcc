@@ -1,4 +1,7 @@
-2000-08-07  Nick Clifton  <nickc@cygnus.com>
+2000-08-07  Nick Clifton  <nickc@redhat.com>
+
+	* config/mips/mips.c: Fix compile time warning messages.
+	* config/mips/mips-protos.h: Add prototype for equality_op.
 
 	* mn10300.h (TARGET_SWITCHES): Document `-mam33'.
 
