@@ -1,5 +1,9 @@
 2004-10-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (thread_jumps): Speed up by using a worklist.
+
+2004-10-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (thread_jumps): Move a part of it to ...
 	(thread_jumps_from_bb): ... here.
 
