@@ -74,8 +74,10 @@ JAVAC = $(GCJ) -C
 EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
 
 WARNINGS = -W -Wall
+## We need _GNU_SOURCE defined for some Linux builds.  It doesn't hurt
+## to always define it.
 AM_CXXFLAGS = -fno-rtti -fvtable-thunks @LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ \
-	$(WARNINGS)
+	$(WARNINGS) -D_GNU_SOURCE
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
 else
@@ -227,6 +229,12 @@ java/lang/String.h: java/lang/String.class libgcj.zip
 	    -friend 'jstring _Jv_NewStringUtf8Const (_Jv_Utf8Const* str);' \
 	    -friend 'jstring _Jv_NewStringLatin1 (const char*, jsize);' \
 	    -friend 'jstring _Jv_AllocString (jsize);' \
+	    $(basename $<)
+
+java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+	    -friend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
+	    -friend 'java::lang::Class;' \
 	    $(basename $<)
 
 java/lang/reflect/Field.h: java/lang/reflect/Field.class libgcj.zip
@@ -797,6 +805,7 @@ java/lang/natString.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/reflect/natArray.cc \
+java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
 java/net/natInetAddress.cc \

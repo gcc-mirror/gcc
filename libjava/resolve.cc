@@ -321,21 +321,6 @@ _Jv_ResolveField (_Jv_Field *field, java::lang::ClassLoader *loader)
     }
 }
 
-_Jv_Method*
-_Jv_LookupDeclaredMethod (jclass klass, _Jv_Utf8Const *name,
-			_Jv_Utf8Const *signature)
-{
-  for (; klass; klass = klass->getSuperclass())
-    {
-      _Jv_Method *meth = _Jv_GetMethodLocal (klass, name, signature);
-
-      if (meth)
-	return meth;
-    }
-
-  return NULL;
-}
-
 /** FIXME: this is a terribly inefficient algorithm!  It would improve
     things if compiled classes to know vtable offset, and _Jv_Method had
     a field for this.

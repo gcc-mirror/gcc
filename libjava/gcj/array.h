@@ -11,8 +11,6 @@ details.  */
 #ifndef __GCJ_ARRAY_H__
 #define __GCJ_ARRAY_H__
 
-#pragma interface
-
 #include <java/lang/Object.h>
 
 extern "Java" {

@@ -1,6 +1,6 @@
 // Class.java - Representation of a Java class.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -36,14 +36,27 @@ public final class Class implements Serializable
 
   public native Constructor getConstructor (Class[] parameterTypes)
     throws NoSuchMethodException, SecurityException;
-  public native Constructor[] getConstructors () throws SecurityException;
 
-  public native Class[] getDeclaredClasses () throws SecurityException;
+  // This is used to implement getConstructors and
+  // getDeclaredConstructors.
+  private native Constructor[] _getConstructors (boolean declared)
+    throws SecurityException;
+
+  public Constructor[] getConstructors () throws SecurityException
+  {
+    return _getConstructors (false);
+  }
 
   public native Constructor getDeclaredConstructor (Class[] parameterTypes)
     throws NoSuchMethodException, SecurityException;
-  public native Constructor[] getDeclaredConstructors ()
-    throws SecurityException;
+
+  public native Class[] getDeclaredClasses () throws SecurityException;
+
+  public Constructor[] getDeclaredConstructors () throws SecurityException
+  {
+    return _getConstructors (true);
+  }
+
   public native Field getDeclaredField (String fieldName)
     throws NoSuchFieldException, SecurityException;
   public native Field[] getDeclaredFields () throws SecurityException;
@@ -69,9 +82,14 @@ public final class Class implements Serializable
       throw new NoSuchFieldException(fieldName);
     return fld;
   }
+
+  private native Field[] _getFields (Field[] result, int offset);
   public native Field[] getFields () throws SecurityException;
 
   public native Class[] getInterfaces ();
+
+  private final native void getSignature (StringBuffer buffer);
+  private static final native String getSignature (Class[] parameterTypes);
 
   public native Method getMethod (String methodName, Class[] parameterTypes)
     throws NoSuchMethodException, SecurityException;

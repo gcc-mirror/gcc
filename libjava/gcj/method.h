@@ -18,4 +18,11 @@ _Jv_FromReflectedMethod(java::lang::reflect::Method *method)
     ((char *) method->declaringClass->methods + method->offset);
 }
 
+extern inline jmethodID
+_Jv_FromReflectedConstructor (java::lang::reflect::Constructor *constructor)
+{
+  return (jmethodID)
+    ((char *) constructor->declaringClass->methods + constructor->offset);
+}
+
 #endif /* __GCJ_METHOD_H__ */
