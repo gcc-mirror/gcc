@@ -828,15 +828,19 @@ convert_class_to_reference (tree t, tree s, tree expr)
 					   LOOKUP_NORMAL);
 	  
 	  if (cand)
-	    /* Build a standard conversion sequence indicating the
-	       binding from the reference type returned by the
-	       function to the desired REFERENCE_TYPE.  */
-	    cand->second_conv
-	      = (direct_reference_binding 
-		 (reference_type, 
-		  build1 (IDENTITY_CONV, 
-			  TREE_TYPE (TREE_TYPE (TREE_TYPE (cand->fn))),
-			  NULL_TREE)));
+	    {
+	      /* Build a standard conversion sequence indicating the
+		 binding from the reference type returned by the
+		 function to the desired REFERENCE_TYPE.  */
+	      cand->second_conv
+		= (direct_reference_binding 
+		   (reference_type, 
+		    build1 (IDENTITY_CONV, 
+			    TREE_TYPE (TREE_TYPE (TREE_TYPE (cand->fn))),
+			    NULL_TREE)));
+	      ICS_BAD_FLAG (cand->second_conv) 
+		|= ICS_BAD_FLAG (TREE_VEC_ELT (cand->convs, 0));
+	    }
 	}
       conversions = TREE_CHAIN (conversions);
     }
