@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  SNI SINIX version.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Marco Walther (Marco.Walther@mch.sni.de).
 
 This file is part of GNU CC.
@@ -94,3 +94,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO
+#undef PREFERRED_DEBUGGING_TYPE
