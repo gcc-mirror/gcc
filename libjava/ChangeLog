@@ -1,3 +1,8 @@
+2004-01-09  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Resolve
+	a Utf8Const field before looking at its class.
+
 2004-01-09  Michael Koch  <konqueror@gmx.de>
 
 	* javax/print/attribute/standard/DocumentName.java,
