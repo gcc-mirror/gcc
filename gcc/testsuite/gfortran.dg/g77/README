@@ -117,76 +117,76 @@ cpp2.F				Y
 
 g77.f-torture/execute
 10197.f & 10197.x
-13037.f
-1832.f
-19981119-0.f
-19990313-0.f
-19990313-1.f
-19990313-2.f
-19990313-3.f
-19990325-0.f
-19990325-1.f
-19990419-1.f
-19990826-0.f
-19990826-2.f
-20000503-1.f
-20001111.f
+13037.f				Y
+1832.f				Y
+19981119-0.f			Y
+19990313-0.f			Y
+19990313-1.f			Y
+19990313-2.f			Y
+19990313-3.f			Y
+19990325-0.f			F Execution failure
+19990325-1.f			F Execution failure
+19990419-1.f			Y
+19990826-0.f			Y
+19990826-2.f			Y
+20000503-1.f			Y
+20001111.f			Y
 20001201.f & 20001201.x
-20010116.f
-20010426.f
-20010430.f
-20010610.f
-5122.f
-6177.f
+20010116.f			Y
+20010426.f renamed 20010426-1.f	Y 
+20010430.f			Y
+20010610.f			F PR 16579 Execution test fails
+5122.f				- Assembler failure
+6177.f				Y
 6367.f & 6367.x
-947.f
-970625-2.f
-970816-3.f
-971102-1.f
-980520-1.f
-980628-0.f
-980628-1.f
-980628-10.f
-980628-2.f
-980628-3.f
+947.f				Y
+970625-2.f			- Compile warnings
+970816-3.f			Y
+971102-1.f			Y
+980520-1.f			Y
+980628-0.f			Y
+980628-1.f			Y
+980628-10.f			Y
+980628-2.f			Y
+980628-3.f			Y
 980628-4.f & 980628-4.x
 980628-5.f & 980628-5.x
 980628-6.f & 980628-6.x
-980628-7.f
-980628-8.f
-980628-9.f
-980701-0.f
-980701-1.f
-CVS
+980628-7.f			Y
+980628-8.f			Y
+980628-9.f			Y
+980701-0.f			Y
+980701-1.f			Y
 alpha2.f & alpha2.x
 auto0.f & auto0.x
 auto1.f & auto1.x
-cabs.f
-claus.f
-complex_1.f
-cpp.F
-cpp2.F
-dcomplex.f
-dnrm2.f
-erfc.f
-exp.f
-f90-intrinsic-bit.f
-f90-intrinsic-mathematical.f
-f90-intrinsic-numeric.f
-int8421.f
-intrinsic-f2c-z.f
-intrinsic-unix-bessel.f
-intrinsic-unix-erf.f
-intrinsic-vax-cd.f
-intrinsic77.f
+cabs.f				Y
+claus.f				Y
+complex_1.f			Y
+cpp.F	(Renamed cpp3.F)	Y
+cpp2.F				- Compiler warnings
+dcomplex.f			Y
+dnrm2.f				Y Add dg-warning as required
+erfc.f				  Link errors
+exp.f				  Compiler warnings and fails
+f90-intrinsic-bit.f             F 16581 Compile errors
+f90-intrinsic-mathematical.f	Y 
+f90-intrinsic-numeric.f		Y
+int8421.f			Y
+intrinsic-f2c-z.f		F Execution fail
+intrinsic-unix-bessel.f		  Link errors
+intrinsic-unix-erf.f		  Link erros
+intrinsic-vax-cd.f		F Execution fail
+intrinsic77.f	 		F PR 16580 Compiler ICE
 io0.f & io0.x
 io1.f & io1.x
-labug1.f
-large_vec.f
-le.f
-select.f
-short.f
+labug1.f			Y
+large_vec.f			Y
+le.f				Y
+select.f			  Lots of compiler warnings
+short.f				Y
 u77-test.f & u77-test.x
+
 
 Directory g77.f-torture/noncompile
 19981216-0.f			Y Accepted by gfortran
