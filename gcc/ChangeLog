@@ -1,5 +1,8 @@
 Sun Oct  3 14:14:16 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* cppinit.c (is_idchar initializer): Tighten tests for when
+	to put the table into initialized memory.
+
 	* ggc-none.c (ggc_alloc_rtvec): An rtvec is an array of rtx,
 	not an array of rtunion.
 	* gcc-page.c (ggc_alloc_rtvec): Similarly.
