@@ -25,42 +25,11 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_LITTLE_ENDIAN)
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
-%{posix: -D_POSIX_SOURCE} \
-%{mrelocatable: -D_RELOCATABLE} \
-%{mcall-sysv: -D_CALL_SYSV} %{mcall-nt: -D_CALL_NT} \
-%{mcall-aix: -D_CALL_AIX} %{mcall-aixdesc: -D_CALL_AIX -D_CALL_AIXDESC} \
-%{!mcall-sysv: %{!mcall-aix: %{!mcall-aixdesc: %{!mcall-nt: -D_CALL_SYSV}}}} \
-%{msoft-float: -D_SOFT_FLOAT} %{mcpu=403: -D_SOFT_FLOAT} \
-%{mbig: -D_BIG_ENDIAN -Amachine(bigendian)} \
+#undef	CPP_ENDIAN_SPEC
+#define	CPP_ENDIAN_SPEC \
+"%{mbig: -D_BIG_ENDIAN -Amachine(bigendian)} \
 %{mbig-endian: -D_BIG_ENDIAN -Amachine(bigendian)} \
-%{!mbig: %{!mbig-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)}} \
-%{!mcpu*: \
-  %{mpower: %{!mpower2: -D_ARCH_PWR}} \
-  %{mpower2: -D_ARCH_PWR2} \
-  %{mpowerpc*: -D_ARCH_PPC} \
-  %{mno-powerpc: %{!mpower: %{!mpower2: -D_ARCH_COM}}} \
-  %{!mno-powerpc: -D_ARCH_PPC}} \
-%{mcpu=common: -D_ARCH_COM} \
-%{mcpu=power: -D_ARCH_PWR} \
-%{mcpu=power2: -D_ARCH_PWR2} \
-%{mcpu=powerpc: -D_ARCH_PPC} \
-%{mcpu=rios: -D_ARCH_PWR} \
-%{mcpu=rios1: -D_ARCH_PWR} \
-%{mcpu=rios2: -D_ARCH_PWR2} \
-%{mcpu=rsc: -D_ARCH_PWR} \
-%{mcpu=rsc1: -D_ARCH_PWR} \
-%{mcpu=403: -D_ARCH_PPC} \
-%{mcpu=505: -D_ARCH_PPC} \
-%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=602: -D_ARCH_PPC} \
-%{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=603e: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=620: -D_ARCH_PPC} \
-%{mcpu=821: -D_ARCH_PPC} \
-%{mcpu=860: -D_ARCH_PPC}"
+%{!mbig: %{!mbig-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)}}"
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
