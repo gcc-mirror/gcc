@@ -152,7 +152,7 @@ namespace std
 	    // In case of error, in order to stop at the exact place we
 	    // have to start again from the beginning with a series of
 	    // mbrtowc.
-	    for (;;)
+	    for (;; ++__to_next)
 	      {
 		const size_t __conv_err = mbrtowc(__to_next, __from,
 						  __from_end - __from,
@@ -161,7 +161,6 @@ namespace std
 		    || __conv_err == static_cast<size_t>(-2))
 		  break;
 		__from += __conv_err;
-		++__to_next;
 	      }
 	    __from_next = __from;
 	    __state = __tmp_state;	    
