@@ -1,3 +1,7 @@
+2001-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattrtab.c (attr_printf): Use VA_OPEN/VA_FIXEDARG/VA_CLOSE.
+
 2001-08-29  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (movsi_h8300hs): Make it 64-bit safe.
