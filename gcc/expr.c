@@ -9665,7 +9665,7 @@ bc_adjust_stack (nlevels)
       stack_depth -= nlevels;
     }
 
-#if defined (VALIDATE_STACK)
-  VALIDATE_STACK ();
+#if defined (VALIDATE_STACK_FOR_BC)
+  VALIDATE_STACK_FOR_BC ();
 #endif
 }
