@@ -1,3 +1,9 @@
+2004-01-16  J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR 10392
+	From Marcus Comstedt / Dan Kegel:
+	* gcc.dg/pr10392-1.c: New test.
+
 2004-01-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13478
