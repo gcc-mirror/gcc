@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler. 
    Hitachi H8/300 version generating coff 
-   Copyright (C) 1992, 93-98, 1999 Free SoftwareFoundation, Inc.
+   Copyright (C) 1992, 93-99, 2000 Free SoftwareFoundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -30,8 +30,8 @@ extern int cpu_type;
 
 /* Various globals defined in h8300.c.  */
 
-extern char *h8_push_op,*h8_pop_op,*h8_mov_op;
-extern char **h8_reg_names;
+extern const char *h8_push_op,*h8_pop_op,*h8_mov_op;
+extern const char * const *h8_reg_names;
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
@@ -367,10 +367,10 @@ enum reg_class {
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS  			\
-{      0,		/* No regs      */	\
-   0x2ff,		/* GENERAL_REGS */    	\
-   0x100,		/* MAC_REGS */    	\
-   0x3ff,		/* ALL_REGS 	*/	\
+{      {0},		/* No regs      */	\
+   {0x2ff},		/* GENERAL_REGS */    	\
+   {0x100},		/* MAC_REGS */    	\
+   {0x3ff},		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
@@ -631,7 +631,6 @@ struct cum_arg { int nbytes; struct rtx_def * libcall; };
    case the first 3 arguments are passed in registers.
    See function `function_arg'.  */
 
-struct rtx_def *function_arg();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED)
 
@@ -826,11 +825,11 @@ struct rtx_def *function_arg();
        && REG_OK_FOR_BASE_P (XEXP (OP, 0)))  \
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF \
        && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (OP, 0)))) \
-   || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == CONST \
-       && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS \
-       && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF \
-       && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT) \
-       && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0))))
+   || ((GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == CONST \
+        && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS \
+        && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF \
+        && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT) \
+        && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0)))))
  
 #define EXTRA_CONSTRAINT(OP, C) \
  ((C) == 'U' ? OK_FOR_U (OP) : 0)
@@ -958,7 +957,6 @@ struct rtx_def *function_arg();
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-extern int h8300_valid_machine_decl_attribute ();
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
 h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
@@ -1019,7 +1017,7 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 /* Control the assembler format that we output.  */
 
-#define ASM_IDENTIFY_GCC /* nothing */
+#define ASM_IDENTIFY_GCC(FILE) /* nothing */
 
 /* Output at beginning/end of assembler file.  */
 
@@ -1384,7 +1382,6 @@ do { char dstr[30];					\
    it should be pointing at the last character after the end of the pragma
    (newline or end-of-file).  */
 #define HANDLE_PRAGMA(GETC, UNGETC, NAME) handle_pragma (GETC, UNGETC, NAME)
-extern int handle_pragma ();
 
 #define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
 
@@ -1417,10 +1414,4 @@ extern int handle_pragma ();
   } while (0)
 
 #define MOVE_RATIO 3
-
-/* Declarations for functions used in insn-output.c.  */
-char *emit_a_shift ();
-int h8300_funcvec_function_p ();
-char *output_adds_subs ();
-char * output_simode_bld ();
 

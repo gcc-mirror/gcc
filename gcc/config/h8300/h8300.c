@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Hitachi H8/300.
-   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998, 1999 Free Software
+   Copyright (C) 1992, 93-99, 2000 Free Software
    Foundation, Inc. 
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
@@ -38,13 +38,15 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "function.h"
 #include "obstack.h"
+#include "toplev.h"
+#include "tm_p.h"
 
 /* Forward declarations.  */
-void print_operand_address ();
-
 static int h8300_interrupt_function_p PROTO ((tree));
 static int h8300_monitor_function_p PROTO ((tree));
 static int h8300_os_task_function_p PROTO ((tree));
+static void dosize PROTO ((FILE *, const char *, unsigned int));
+static const char *cond_string PROTO ((enum rtx_code));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -64,29 +66,26 @@ int monitor;
 /* True if a #pragma saveall has been seen for the current function.  */
 int pragma_saveall;
 
-static char *names_big[] =
+static const char *const names_big[] =
 {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
-static char *names_extended[] =
+static const char *const names_extended[] =
 {"er0", "er1", "er2", "er3", "er4", "er5", "er6", "er7"};
 
-static char *names_upper_extended[] =
+static const char *const names_upper_extended[] =
 {"e0", "e1", "e2", "e3", "e4", "e5", "e6", "e7"};
 
 /* Points to one of the above.  */
 /* ??? The above could be put in an array indexed by CPU_TYPE.  */
-char **h8_reg_names;
+const char * const *h8_reg_names;
 
 /* Various operations needed by the following, indexed by CPU_TYPE.  */
 
-static char *h8_push_ops[2] =
-{"push", "push.l"};
-static char *h8_pop_ops[2] =
-{"pop", "pop.l"};
-static char *h8_mov_ops[2] =
-{"mov.w", "mov.l"};
+static const char *const h8_push_ops[2] = {"push", "push.l"};
+static const char *const h8_pop_ops[2] = {"pop", "pop.l"};
+static const char *const h8_mov_ops[2] = {"mov.w", "mov.l"};
 
-char *h8_push_op, *h8_pop_op, *h8_mov_op;
+const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 
 /* Initialize various cpu specific globals at start up.  */
 
@@ -109,12 +108,12 @@ h8300_init_once ()
   h8_mov_op = h8_mov_ops[cpu_type];
 }
 
-char *
+const char *
 byte_reg (x, b)
      rtx x;
      int b;
 {
-  static char *names_small[] =
+  static const char *const names_small[] =
   {"r0l", "r0h", "r1l", "r1h", "r2l", "r2h", "r3l", "r3h",
    "r4l", "r4h", "r5l", "r5h", "r6l", "r6h", "r7l", "r7h"};
 
@@ -146,7 +145,7 @@ byte_reg (x, b)
 static void
 dosize (file, op, size)
      FILE *file;
-     char *op;
+     const char *op;
      unsigned int size;
 {
   /* On the h8300h and h8300s, for sizes <= 8 bytes it is as good or
@@ -238,7 +237,6 @@ function_prologue (file, size)
      FILE *file;
      int size;
 {
-  register int mask = 0;
   int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
   int idx;
 
@@ -382,8 +380,6 @@ function_epilogue (file, size)
      FILE *file;
      int size;
 {
-  register int regno;
-  register int mask = 0;
   int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
   int idx;
   rtx insn = get_last_insn ();
@@ -514,6 +510,7 @@ out:
 
 /* Output assembly code for the start of the file.  */
 
+void
 asm_file_start (file)
      FILE *file;
 {
@@ -612,7 +609,7 @@ general_operand_dst (op, mode)
 int
 o_operand (operand, mode)
      rtx operand;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (operand) == CONST_INT
 	  && CONST_OK_FOR_O (INTVAL (operand)));
@@ -623,7 +620,7 @@ o_operand (operand, mode)
 int
 p_operand (operand, mode)
      rtx operand;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (operand) == CONST_INT
 	  && CONST_OK_FOR_P (INTVAL (operand)));
@@ -634,7 +631,7 @@ p_operand (operand, mode)
 int
 call_insn_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == MEM)
     {
@@ -650,7 +647,7 @@ call_insn_operand (op, mode)
 int
 adds_subs_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == CONST_INT)
     {
@@ -676,7 +673,7 @@ adds_subs_operand (op, mode)
 int
 one_insn_adds_subs_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int val = INTVAL (op);
 
@@ -688,7 +685,7 @@ one_insn_adds_subs_operand (op, mode)
   return 0;
 }
 
-char *
+const char *
 output_adds_subs (operands)
      rtx *operands;
 {
@@ -760,7 +757,7 @@ output_adds_subs (operands)
 int
 small_call_insn_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == MEM)
     {
@@ -840,7 +837,7 @@ bit_operand (op, mode)
 int
 bit_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == MEM
 	  && EXTRA_CONSTRAINT (op, 'U'));
@@ -851,7 +848,7 @@ bit_memory_operand (op, mode)
 int
 eq_operator (x, mode)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (x) == EQ || GET_CODE (x) == NE);
 }
@@ -868,9 +865,9 @@ eq_operator (x, mode)
 
 int
 handle_pragma (p_getc, p_ungetc, pname)
-     int (*  p_getc) PROTO ((void));
-     void (* p_ungetc) PROTO ((int));
-     char * pname;
+     int (* ATTRIBUTE_UNUSED p_getc) PROTO ((void));
+     void (* ATTRIBUTE_UNUSED p_ungetc) PROTO ((int));
+     const char *pname;
 {
   int retval = 0;
 
@@ -886,7 +883,7 @@ handle_pragma (p_getc, p_ungetc, pname)
    the rtx to represent where it is passed.  CUM represents the state after
    the last argument.  NAMED is not used.  */
 
-static char *hand_list[] =
+static const char *const hand_list[] =
 {
   "__main",
   "__cmpsi2",
@@ -917,7 +914,7 @@ function_arg (cum, mode, type, named)
      int named;
 {
   rtx result = 0;
-  char *fname;
+  const char *fname;
   int regpass = 0;
 
   /* Never pass unnamed arguments in registers.  */
@@ -932,7 +929,7 @@ function_arg (cum, mode, type, named)
 
   if (cum->libcall)
     {
-      char **p;
+      const char * const *p;
 
       fname = XSTR (cum->libcall, 0);
 
@@ -1064,7 +1061,7 @@ const_costs (r, c)
 
 /* Return assembly language string which identifies a comparison type.  */
 
-static char *
+static const char *
 cond_string (code)
      enum rtx_code code;
 {
@@ -1105,7 +1102,7 @@ print_operand (file, x, code)
      int code;
 {
   /* This is used for communication between the 'P' and 'U' codes.  */
-  static char *last_p;
+  static const char *last_p;
 
   /* This is used for communication between codes V,W,Z and Y.  */
   static int bitint;
@@ -1243,6 +1240,8 @@ print_operand (file, x, code)
 	case AND:
 	  fprintf (file, "band");
 	  break;
+	default:
+	  break;
 	}
       break;
     case 'c':
@@ -1256,6 +1255,8 @@ print_operand (file, x, code)
 	  break;
 	case AND:
 	  fprintf (file, "biand");
+	  break;
+	default:
 	  break;
 	}
       break;
@@ -1294,7 +1295,7 @@ print_operand (file, x, code)
 	    REAL_VALUE_TYPE rv;
 	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
 	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
-	    fprintf (file, "#%d", ((val >> 16) & 0xffff));
+	    fprintf (file, "#%ld", ((val >> 16) & 0xffff));
 	    break;
 	  }
 	default:
@@ -1324,7 +1325,7 @@ print_operand (file, x, code)
 	    REAL_VALUE_TYPE rv;
 	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
 	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
-	    fprintf (file, "#%d", (val & 0xffff));
+	    fprintf (file, "#%ld", (val & 0xffff));
 	    break;
 	  }
 	default:
@@ -1449,9 +1450,11 @@ print_operand (file, x, code)
 	    REAL_VALUE_TYPE rv;
 	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
 	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
-	    fprintf (file, "#%d", val);
+	    fprintf (file, "#%ld", val);
 	    break;
 	  }
+	default:
+	  break;
 	}
     }
 }
@@ -1527,8 +1530,8 @@ print_operand_address (file, addr)
 
 void
 final_prescan_insn (insn, operand, num_operands)
-     rtx insn, *operand;
-     int num_operands;
+     rtx insn, *operand ATTRIBUTE_UNUSED;
+     int num_operands ATTRIBUTE_UNUSED;
 {
   /* This holds the last insn address.  */
   static int last_insn_address = 0;
@@ -1576,6 +1579,7 @@ do_movsi (operands)
 
 int
 initial_offset (from, to)
+     int from, to;
 {
   int offset = 0;
 
@@ -1603,7 +1607,7 @@ initial_offset (from, to)
 
 /* Update the condition code from the insn.  */
 
-int
+void
 notice_update_cc (body, insn)
      rtx body;
      rtx insn;
@@ -1657,7 +1661,7 @@ notice_update_cc (body, insn)
 int
 bit_operator (x, mode)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -1838,7 +1842,7 @@ bit_operator (x, mode)
 int
 nshift_operator (x, mode)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (x))
     {
@@ -1918,7 +1922,7 @@ enum shift_mode
 
 struct shift_insn
 {
-  char *assembler;
+  const char *assembler;
   int cc_valid;
 };
 
@@ -2067,6 +2071,11 @@ static const char *const rotate_two[3][3] =
       "rotl.l\t#2,%S0"
     }
 };
+
+static enum shift_alg get_shift_alg PARAMS ((enum attr_cpu, enum shift_type,
+					     enum machine_mode, int,
+					     const char **, const char **,
+					     int *));
 
 /* Given CPU, MODE, SHIFT_TYPE, and shift count COUNT, determine the best
    algorithm for doing the shift.  The assembler code is stored in ASSEMBLER.
@@ -2332,7 +2341,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	      return SHIFT_SPECIAL;
 	    }
 	}
-      else if (!TARGET_H8300 && (count == 13 || count == 14)
+      else if ((!TARGET_H8300 && (count == 13 || count == 14))
 	       || count == 15)
 	{
 	  if (count == 15 && shift_type == SHIFT_ASHIFTRT)
@@ -2586,16 +2595,15 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 
 /* Emit the assembler code for doing shifts.  */
 
-char *
+const char *
 emit_a_shift (insn, operands)
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;
      rtx *operands;
 {
   static int loopend_lab;
-  char *assembler;
-  char *assembler2;
+  const char *assembler;
+  const char *assembler2;
   int cc_valid;
-  rtx inside = PATTERN (insn);
   rtx shift = operands[3];
   enum machine_mode mode = GET_MODE (shift);
   enum rtx_code code = GET_CODE (shift);
@@ -2690,8 +2698,8 @@ emit_a_shift (insn, operands)
 	  {
 	    int m = GET_MODE_BITSIZE (mode) - n;
 	    int mask = (shift_type == SHIFT_ASHIFT
-			? ((1 << GET_MODE_BITSIZE (mode) - n) - 1) << n
-			: (1 << GET_MODE_BITSIZE (mode) - n) - 1);
+			? ((1 << (GET_MODE_BITSIZE (mode) - n)) - 1) << n
+			: (1 << (GET_MODE_BITSIZE (mode) - n)) - 1);
 	    char insn_buf[200];
 	    /* Not all possibilities of rotate are supported.  They shouldn't
 	       be generated, but let's watch for 'em.  */
@@ -2718,17 +2726,18 @@ emit_a_shift (insn, operands)
 		switch (mode)
 		  {
 		  case QImode:
-		    sprintf (insn_buf, "and #%d,%%X0",
-			     mask, n);
+		    sprintf (insn_buf, "and #%d,%%X0", mask);
 		    cc_status.value1 = operands[0];
 		    cc_status.flags |= CC_NO_CARRY;
 		    break;
 		  case HImode:
 		    sprintf (insn_buf, "and #%d,%%s0\n\tand #%d,%%t0",
-			     mask & 255, mask >> 8, n);
+			     mask & 255, mask >> 8);
 		    break;
 		  case SImode:
 		    abort ();
+		  default:
+		    break;
 		  }
 	      }
 	    else
@@ -2788,7 +2797,7 @@ emit_a_shift (insn, operands)
 int
 fix_bit_operand (operands, what, type)
      rtx *operands;
-     char what;
+     int what;
      enum rtx_code type;
 {
   /* The bit_operand predicate accepts any memory during RTL generation, but
@@ -2952,7 +2961,7 @@ h8300_tiny_data_p (decl)
 int
 h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
      tree decl;
-     tree attributes;
+     tree attributes ATTRIBUTE_UNUSED;
      tree attr;
      tree args;
 {
@@ -2994,10 +3003,11 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
 
 extern struct obstack *saveable_obstack;
 
+void
 h8300_encode_label (decl)
      tree decl;
 {
-  char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   int len = strlen (str);
   char *newstr;
 
@@ -3008,7 +3018,7 @@ h8300_encode_label (decl)
   XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 }
 
-char *
+const char *
 output_simode_bld (bild, log2, operands)
      int bild;
      int log2;
@@ -3040,9 +3050,10 @@ output_simode_bld (bild, log2, operands)
 
    We use this to get the lengths of various memory references correct.  */
 
+int
 h8300_adjust_insn_length (insn, length)
      rtx insn;
-     int length;
+     int length ATTRIBUTE_UNUSED;
 {
   rtx pat;
 
