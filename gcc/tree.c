@@ -2587,42 +2587,36 @@ simple_cst_equal (t1, t2)
 	return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
       return 0;
 
-    case BIT_FIELD_REF:
-      return (simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0))
-	      && simple_cst_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1))
-	      && simple_cst_equal (TREE_OPERAND (t1, 2), TREE_OPERAND (t2, 2)));
-
     case VAR_DECL:
     case PARM_DECL:
     case CONST_DECL:
     case FUNCTION_DECL:
       return 0;
-
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-    case MULT_EXPR:
-    case TRUNC_DIV_EXPR:
-    case TRUNC_MOD_EXPR:
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
-      cmp = simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
-      if (cmp <= 0)
-	return cmp;
-      return simple_cst_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
-
-    case NEGATE_EXPR:
-    case ADDR_EXPR:
-    case REFERENCE_EXPR:
-    case INDIRECT_REF:
-      return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
-
-    default:
-#if 0
-      return lang_simple_cst_equal (t1, t2);
-#else
-      return -1;
-#endif
     }
+
+  /* This general rule works for most tree codes.
+     All exceptions should be handled above.  */
+
+  switch (TREE_CODE_CLASS (code1))
+    {
+      int i;
+    case '1':
+    case '2':
+    case '<':
+    case 'e':
+    case 'r':
+    case 's':
+      cmp = 1;
+      for (i=0; i<tree_code_length[(int) code1]; ++i)
+	{
+	  cmp = simple_cst_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
+	  if (cmp <= 0)
+	    return cmp;
+	}
+      return cmp;
+    }
+
+  return -1;
 }
 
 /* Constructors for pointer, array and function types.
@@ -2896,10 +2890,9 @@ build_method_type (basetype, type)
   return t;
 }
 
-/* Construct, lay out and return the type of methods belonging to class
-   BASETYPE and whose arguments and values are described by TYPE.
-   If that type exists already, reuse it.
-   TYPE must be a FUNCTION_TYPE node.  */
+/* Construct, lay out and return the type of offsets to a value
+   of type TYPE, within an object of type BASETYPE.
+   If a suitable offset type exists already, reuse it.  */
 
 tree
 build_offset_type (basetype, type)
