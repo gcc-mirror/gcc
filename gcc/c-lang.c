@@ -140,18 +140,6 @@ build_objc_string (len, str)
   return NULL_TREE;
 }
 
-void
-GNU_xref_begin ()
-{
-  fatal ("GCC does not yet support XREF");
-}
-
-void
-GNU_xref_end ()
-{
-  fatal ("GCC does not yet support XREF");
-}
-
 /* Called at end of parsing, but before end-of-file processing.  */
 
 void
