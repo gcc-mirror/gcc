@@ -7,7 +7,8 @@
    MASK_STACK_BIAS + MASK_FPU + MASK_LONG_DOUBLE_128)
 
 /* Target OS builtins.  */
-#define TARGET_OS_CPP_BUILTINS()		\
+#undef TARGET_SUB_OS_CPP_BUILTINS
+#define TARGET_SUB_OS_CPP_BUILTINS()		\
   do						\
     {						\
 	builtin_define_std ("sparc");		\

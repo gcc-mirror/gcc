@@ -53,6 +53,7 @@ Boston, MA 02111-1307, USA.  */
 "
 
 /* Names to predefine in the preprocessor for this target machine.  */
+#define TARGET_SUB_OS_CPP_BUILTINS()
 #define TARGET_OS_CPP_BUILTINS()			\
     do {						\
 	builtin_define_std ("unix");			\
@@ -62,7 +63,7 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("__PRAGMA_REDEFINE_EXTNAME");	\
 	builtin_assert ("system=unix");			\
 	builtin_assert ("system=svr4");			\
-	/* For C++ we need to add some additional macro \
+	/* For C++ we need to add some additional macro	\
 	   definitions required by the C++ standard	\
 	   library.  */					\
 	if (c_language == clk_cplusplus)		\
@@ -72,6 +73,7 @@ Boston, MA 02111-1307, USA.  */
 	    builtin_define ("_LARGEFILE64_SOURCE=1");	\
 	    builtin_define ("__EXTENSIONS__");		\
 	  }						\
+	TARGET_SUB_OS_CPP_BUILTINS();			\
     } while (0)
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).

@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #define SPARC_DEFAULT_CMODEL CM_MEDMID
 
 /* Target OS builtins.  */
-#undef TARGET_OS_CPP_BUILTINS	 /* Defined in sp64-elf.h.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\

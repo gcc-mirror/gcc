@@ -1,5 +1,13 @@
 2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
 
+	* config/sol2.h: Add TARGET_SUB_OS_CPP_BUILTINS.
+	* config/sparc/liteelf.h, config/sparc/openbsd64.h,
+	config/sparc/rtemself.h, config/sparc/sol2-64.h,
+	config/sparc/sp64-elf.h, config/sparc/sp86x-elf.h:
+	Update for use of TARGET_SUB_OS_CPP_BUILTINS.
+
+2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
+
 	* i960/i960.h, i960/rtems.h: Use TARGET_OS_CPP_BUILTINS and
 	TARGET_CPU_CPP_BUILTINS in preference to CPP_PREDEFINES.
 
