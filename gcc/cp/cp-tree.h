@@ -4014,6 +4014,7 @@ extern int types_overlap_p			(tree, tree);
 extern tree get_vbase				(tree, tree);
 extern tree get_dynamic_cast_base_type          (tree, tree);
 extern int accessible_p                         (tree, tree);
+extern tree lookup_field_1                      (tree, tree, bool);
 extern tree lookup_field			(tree, tree, int, bool);
 extern int lookup_fnfields_1                    (tree, tree);
 extern tree lookup_fnfields			(tree, tree, int);

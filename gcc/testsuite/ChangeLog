@@ -1,5 +1,8 @@
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/ext/desig1.C: New test.
+	* g++.dg/ext/init1.C: Likewise.
+
 	* g++.old-deja/g++.pt/deduct5.C: Remove unnecessary initializer.
 
 2003-04-28  Mark Mitchell  <mark@codesourcery.com>

@@ -5,6 +5,11 @@
 
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10515
+	* cp-tree.h (lookup_field_1): Declare it.
+	* search.c (lookup_field_1): Make it public.
+	* decl.c (reshape_init): Handle designated initializers.
+
 	* decl.c (maybe_commonize_var): Further tweak support for systems
 	without weak symbols.
 
