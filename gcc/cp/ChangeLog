@@ -1,3 +1,8 @@
+2001-04-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (grokdeclarator): Set context of namespace scope
+	TYPE_DECLS.
+
 2001-04-24  Zack Weinberg  <zackw@stanford.edu>
 
 	* cp/optimize.c: Include hashtab.h.
