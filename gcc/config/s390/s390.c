@@ -948,11 +948,6 @@ legitimize_pic_address (orig, reg)
                   case 112:
                   case 114:
                     new = force_const_mem (SImode, orig);
-                    if (reg != 0)
-                      {
-                        emit_move_insn (reg, new);
-                        new = reg;
-                      }
                     break;
 
                   /* @GOTENT is OK as is.  */
@@ -1069,11 +1064,6 @@ legitimize_pic_address (orig, reg)
                 abort ();
 
               new = force_const_mem (SImode, orig);
-              if (reg != 0)
-                {
-                  emit_move_insn (reg, new);
-                  new = reg;
-                }
             }
 
           /* Otherwise, compute the sum.  */
@@ -1715,7 +1705,7 @@ check_and_change_labels (rtx insn, int *ltorg_uids)
 		}
 	      
 	      emit_insn_before (gen_movsi (temp_reg, target), insn);
-	      tmp = emit_jump_insn_before (gen_jump_long (jump), insn);
+	      tmp = emit_jump_insn_before (gen_indirect_jump (jump), insn);
 	      remove_insn (insn);
 	      INSN_ADDRESSES_NEW (tmp, -1);
 	      return tmp;
@@ -1751,7 +1741,7 @@ check_and_change_labels (rtx insn, int *ltorg_uids)
 		  label1 = gen_label_rtx ();
 		  emit_jump_insn_before (gen_icjump (label1, XEXP (body, 0)), insn);
 		  emit_insn_before (gen_movsi (temp_reg, target), insn);
-		  tmp = emit_jump_insn_before (gen_jump_long (jump), insn);
+		  tmp = emit_jump_insn_before (gen_indirect_jump (jump), insn);
 		  INSN_ADDRESSES_NEW (emit_label_before (label1, insn), -1);
 		  remove_insn (insn);
 		  return tmp;
@@ -1785,7 +1775,7 @@ check_and_change_labels (rtx insn, int *ltorg_uids)
 		  label1 = gen_label_rtx ();
 		  emit_jump_insn_before (gen_cjump (label1, XEXP (body, 0)), insn);
 		  emit_insn_before (gen_movsi (temp_reg, target), insn);
-		  tmp = emit_jump_insn_before (gen_jump_long (jump), insn);
+		  tmp = emit_jump_insn_before (gen_indirect_jump (jump), insn);
 		  INSN_ADDRESSES_NEW (emit_label_before (label1, insn), -1);
 		  remove_insn (insn);
 		  return tmp;
@@ -1883,7 +1873,7 @@ s390_final_chunkify (int chunkify)
 	      warning ("no code label found");
 	    }
 	} 
-      else if (GET_CODE (PATTERN (insn)) == ASM_INPUT) 
+      else if (GET_CODE (PATTERN (insn)) == ASM_INPUT && !TARGET_64BIT) 
 	{
 	  asms = XSTR (PATTERN (insn),0);
 	  
@@ -2798,7 +2788,7 @@ s390_va_start (int stdarg_p, tree valist, rtx nextarg)
   off = INTVAL (current_function_arg_offset_rtx);
   off = off < 0 ? 0 : off;
   if (! stdarg_p)
-    off = off > 0 ? off - 4 : off;
+    off = off > 0 ? off - UNITS_PER_WORD : off;
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, "va_start: n_gpr = %d, n_fpr = %d off %d\n",
 	     n_gpr, n_fpr, off);
@@ -2873,7 +2863,7 @@ s390_va_arg (tree valist, tree type)
       indirect_p = 1;
       reg = gpr;
       n_reg = 1;
-      sav_ofs = 8;
+      sav_ofs = 2 * UNITS_PER_WORD;
       sav_scale = UNITS_PER_WORD;
       size = UNITS_PER_WORD;
       max_reg = 4;
@@ -2890,7 +2880,7 @@ s390_va_arg (tree valist, tree type)
       indirect_p = 0;
       reg = fpr;
       n_reg = 1;
-      sav_ofs = 16 * UNITS_PER_WORD;;
+      sav_ofs = 16 * UNITS_PER_WORD;
       sav_scale = 8;
       /* TARGET_64BIT has up to 4 parameter in fprs */
       max_reg = TARGET_64BIT ? 3 : 1;

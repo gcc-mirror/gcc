@@ -335,8 +335,7 @@ do								\
    (GET_MODE_CLASS(MODE) == MODE_FLOAT ||                           \
     GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT) :                   \
    INT_REGNO_P(REGNO)?                                              \
-    (!((TARGET_64BIT && (MODE) == TImode) ||                        \
-     (!TARGET_64BIT && (MODE) == DImode)) || ((REGNO) & 1) == 0 ) : \
+    (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1)) :        \
    CC_REGNO_P(REGNO)?                                               \
      GET_MODE_CLASS (MODE) == MODE_CC :                             \
    0)
@@ -432,7 +431,7 @@ while (0)
 enum reg_class
 {
   NO_REGS, ADDR_REGS, GENERAL_REGS,
-  FP_REGS, CC_REGS, ALL_REGS, LIM_REG_CLASSES
+  FP_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -440,7 +439,7 @@ enum reg_class
 /* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES                                                 \
-{ "NO_REGS","ADDR_REGS", "GENERAL_REGS", "FP_REGS", "CC_REGS", "ALL_REGS" }
+{ "NO_REGS","ADDR_REGS", "GENERAL_REGS", "FP_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer for
    a vector of HARD_REG_SET of length N_REG_CLASSES.
@@ -452,7 +451,6 @@ enum reg_class
   { 0x0000fffe, 0x00000001 },	/* ADDR_REGS */		\
   { 0x0000ffff, 0x00000001 },	/* GENERAL_REGS */	\
   { 0xffff0000, 0x00000000 },	/* FP_REGS */		\
-  { 0x00000000, 0x00000002 },	/* CC_REGS */		\
   { 0xffffffff, 0x00000003 },	/* ALL_REGS */		\
 }
 
@@ -596,7 +594,8 @@ extern enum reg_class regclass_map[];	/* smalled class containing REGNO   */
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 6 : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX  gen_rtx_REG (Pmode, 10)
 #define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, -40))
+  gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, \
+                                     TARGET_64BIT? -48 : -40))
 
 /* Define this if pushing a word on the stack makes the stack pointer a
    smaller address.  */
@@ -772,10 +771,10 @@ CUMULATIVE_ARGS;
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.  */
 
-#define RETURN_IN_MEMORY(type)       		\
-  (TYPE_MODE (type) == BLKmode || 		\
-   TYPE_MODE (type) == DCmode  || 		\
-   TYPE_MODE (type) == SCmode)
+#define RETURN_IN_MEMORY(type)       				\
+  (TYPE_MODE (type) == BLKmode || 				\
+   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_INT  ||	\
+   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_FLOAT)
 
 /* Mode of stack savearea.
    FUNCTION is VOIDmode because calling convention maintains SP.
@@ -1574,7 +1573,7 @@ do {                                                                       \
        if ((OUTER_CODE == PLUS) &&                              \
 	   ((INTVAL (RTX) > 32767) ||                           \
 	   (INTVAL (RTX) < -32768))) 	                        \
-         return 3;                                              \
+         return COSTS_N_INSNS (3);                              \
   case LABEL_REF:                                               \
   case SYMBOL_REF:                                              \
   case CONST_DOUBLE:                                            \

@@ -2,6 +2,28 @@
  
  	* glimits.h (__LONG_MAX__): Add s390x as 64-bit architecture.
 
+ 	* config/s390/s390.c (legitimize_pic_address): Don't generate
+	unnecessary moves (to avoid confusing loop optimization).
+ 	(check_and_change_labels): Replace jump_long by indirect_jump.
+	(s390_final_chunkify): Don't start a new literal pool on section 
+	switch in 64-bit code.
+	(s390_va_start, s390_va_arg): Fixed incorrect sizes for 64-bit.
+	
+	* config/s390/s390.h (HARD_REGNO_MODE_OK, RETURN_IN_MEMORY):
+	Support complex integer modes correctly.
+	(reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Remove CC_REGS.
+	(EH_RETURN_HANDLER_RTX): Fixed incorrect offset for 64-bit.
+	(CONST_COSTS): Fixed incorrect costs.
+
+	* config/s390/s390.md (divsi3, modsi3): Clobber low word of
+	divmoddisi3 before shifting (to avoid confusing flow analysis).
+	(cjump_long, icjump_long, jump_long, indirect_jump, casesi_jump): 
+	Never use "address_operand" without "p" or "memory_operand" 
+	without mode.
+	(builtin_setjmp_setup, builtin_setjmp_receiver, builtin_longjmp):
+	Fixed broken setjmp/longjmp handling.
+	(do_builtin_setjmp_setup): Removed.
+
 2001-08-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* doc/install.texi (vax-dec-ultrix): Change `Vax' to VAX.
