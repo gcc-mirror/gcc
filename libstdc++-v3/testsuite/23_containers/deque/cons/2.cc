@@ -38,19 +38,6 @@ typedef std::deque<counter>   gdeque;
 
 bool test = true;
 
-// see http://gcc.gnu.org/ml/libstdc++/2001-11/msg00139.html
-void
-test01()
-{
-  assert_count (0);
-  {
-     gdeque   d(10);
-     assert_count (10);
-  }
-  assert_count (0);
-}
-
-
 // 23.2.1     required types
 //
 // A missing required type will cause a compile failure.
@@ -531,9 +518,5 @@ int main()
   fillAssignmentCheck2();
   rangeAssignmentCheck();
   rangeAssignmentCheckWithException();
-
-  // specific bug fix checks
-  test01();
-
-  return !test;
+  return 0;
 }

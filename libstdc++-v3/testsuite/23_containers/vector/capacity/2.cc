@@ -32,79 +32,6 @@ using __gnu_test::tracker_alloc;
 using __gnu_test::copy_constructor;
 using __gnu_test::assignment_operator;
 using __gnu_test::destructor;
- 
-template<typename T>
-  struct A { };
-
-struct B { };
-
-void test01()
-{
-  // non POD types
-  bool test = true;
-  std::vector< A<B> > vec01;
-  typedef std::vector< A<B> >::size_type size_type;
-
-  size_type sz01 = vec01.capacity();
-  vec01.reserve(100);
-  size_type sz02 = vec01.capacity();
-  VERIFY( sz02 >= sz01 );
-  
-  sz01 = vec01.size() + 5;
-  vec01.resize(sz01);
-  sz02 = vec01.size();
-  VERIFY( sz01 == sz02 );
-
-  sz01 = vec01.size() - 5;
-  vec01.resize(sz01);
-  sz02 = vec01.size();
-  VERIFY( sz01 == sz02 );
-}
-
-// libstdc++/8230
-void test02()
-{
-  bool test = true;
-  {
-    std::vector<int>  array;
-    const std::size_t size = array.max_size();
-    try 
-      {
-	array.reserve(size);
-      } 
-    catch (const std::length_error& error) 
-      {
-	test &= false;
-      }
-    catch (const std::bad_alloc& error)
-      {
-	test &= true;
-      }
-    catch (...)
-      {
-	test &= false;
-      }
-    VERIFY( test );
-  }
-
-  {
-    std::vector<int>  array;
-    const std::size_t size = array.max_size() + 1;
-    try 
-      {
-	array.reserve(size);
-      } 
-    catch (const std::length_error& error) 
-      {
-	test &= true;
-      }
-    catch (...)
-      {
-	test &= false;
-      }
-    VERIFY( test );
-  }
-}
 
 // Verifies basic functionality of reserve() with forced reallocation.
 void
@@ -170,8 +97,6 @@ test_reserve_exception_guarantee()
 
 int main()
 {
-  test01();
-  test02();
   test_reserve();
   test_reserve_exception_guarantee();
   return 0;

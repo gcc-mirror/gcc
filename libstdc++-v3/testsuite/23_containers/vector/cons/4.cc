@@ -30,62 +30,6 @@ using __gnu_test::allocation_tracker;
 using __gnu_test::tracker_alloc;
 using __gnu_test::copy_constructor;
 using __gnu_test::assignment_operator;
- 
-template<typename T>
-  struct A { };
-
-struct B { };
-
-void test01()
-{
-  // 1
-  std::vector< A<B> > vec01;
-  std::vector< A<B> > vec02(5);
-  typedef std::vector< A<B> >::size_type size_type;
-
-  vec01 = vec02;
-}
-
-// 2
-template class std::vector<double>;
-template class std::vector< A<B> >;
-
-
-// libstdc++/102
-void test02()
-{
-  std::vector<int> v1;
-  std::vector<int> v2 (v1);
-}
-
-// test range constructors and range-fill constructor
-void
-test03()
-{
-  bool test = true;
-  const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-  const int B[] = {7, 7, 7, 7, 7};
-  const int N = sizeof(A) / sizeof(int);
-  const int M = sizeof(B) / sizeof(int);
-  
-  std::vector<int> v3(A, A + N);
-  VERIFY(std::equal(v3.begin(), v3.end(), A));
-  
-  std::vector<int> v4(v3.begin(), v3.end());
-  VERIFY(std::equal(v4.begin(), v4.end(), A));
-  
-  std::vector<int> v5(M, 7);
-  VERIFY(std::equal(v5.begin(), v5.end(), B));
-  VERIFY(std::equal(B, B + M, v5.begin()));
-}
-
-// libstdc++/6513
-void test04()
-{
-  const char* c_strings[5] = { "1", "2", "3", "4", "5" };
-  std::vector<std::string> strings(c_strings, c_strings + 5);
-}
-
 
 // @fn test_default_ctor_exception_gurantee This test verifies that if
 // one of the vector's contained objects throws an exception from its
@@ -625,10 +569,6 @@ test_range_assign_4_exception_guarantee()
 
 int main()
 {
-  test01();
-  test02(); 
-  test03();
-  test04();
   test_default_ctor_exception_gurantee();
   test_copy_ctor_exception_gurantee();
   test_assignment_operator_1();

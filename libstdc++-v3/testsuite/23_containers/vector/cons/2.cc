@@ -1,6 +1,6 @@
-// 2002-03-05 Stephen M. Webb  <stephen.webb@bregmasoft.com>
+// 1999-06-29 bkoz
 
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999-2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,45 +18,32 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 23.2.5  class vector<bool>
+// 23.2.4.1 vector constructors, copy, and assignment
 
 #include <vector>
+#include <string>
+#include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
+ 
+template<typename T>
+  struct A { };
 
-void test01()
-{
-  std::vector<bool>::iterator i;
-  if (false)
-    ++i;
-}
+struct B { };
 
-// libstdc++/6886
+// 2
+template class std::vector<double>;
+template class std::vector< A<B> >;
+
+// libstdc++/102
 void test02()
 {
-  bool test = true;
-  typedef std::vector<bool>  bvec;
-  int  i, num = 0;
-  bvec v;
-
-  v.resize(66);
-
-  for (i = 0 ; i < 66 ; ++i)
-    v[i] = 0;
-
-  v[1]    = 1;
-  v[33]   = 1;
-  v[49]   = 1;
-  v[65]   = 1;
-
-  for (bvec::iterator j = v.begin() ; j != v.end() ; j++)
-    if (bool(*j)) ++num;
-
-  VERIFY( num == 4 );
+  std::vector<int> v1;
+  std::vector<int> v2(v1);
 }
 
 int main()
 {
-  test01();
-  test02();
+  test02(); 
+
   return 0;
 }

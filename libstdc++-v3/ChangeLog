@@ -1,3 +1,63 @@
+2003-07-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Reshuffle 23_containers testsuite.
+	* 23_containers/adaptors.cc, bitset_ctor.cc,bitset_members.cc, 
+	bitset_shift.cc, deque_ctor.cc, deque_operators.cc,
+	list_capacity.cc, list_ctor.cc, list_modifiers.cc, list_operators.cc,
+	map_insert.cc, map_operators.cc, map_operators_neg.cc, multiset.cc,
+	set_operators_neg.cc, vector_bool.cc, vector_capacity.cc,
+	vector_ctor.cc, vector_element_access.cc, vector_modifiers.cc,
+	vector_resize.cc: Split into...
+	* 23_containers/bitset/cons/1.cc: New.
+	* 23_containers/bitset/cons/6282.cc: New.
+	* 23_containers/bitset/count/6124.cc: New.
+	* 23_containers/bitset/operations/1.cc: New.
+	* 23_containers/bitset/operations/2.cc: New.
+	* 23_containers/bitset/test/1.cc: New.
+	* 23_containers/bitset/to_ulong/1.cc: New.
+	* 23_containers/deque/cons/1.cc: New.
+	* 23_containers/deque/cons/2.cc: New.
+	* 23_containers/deque/operators/1.cc: New.
+	* 23_containers/list/capacity/1.cc: New.
+	* 23_containers/list/cons/1.cc: New.
+	* 23_containers/list/cons/2.cc: New.
+	* 23_containers/list/cons/3.cc: New.
+	* 23_containers/list/cons/4.cc: New.
+	* 23_containers/list/cons/5.cc: New.
+	* 23_containers/list/cons/6.cc: New.
+	* 23_containers/list/cons/7.cc: New.
+	* 23_containers/list/cons/8.cc: New.
+	* 23_containers/list/cons/9.cc: New.
+	* 23_containers/list/modifiers/1.cc: New.
+	* 23_containers/list/modifiers/2.cc: New.
+	* 23_containers/list/modifiers/3.cc: New.
+	* 23_containers/list/operators/1.cc: New.
+	* 23_containers/list/operators/2.cc: New.
+	* 23_containers/list/operators/3.cc: New.
+	* 23_containers/list/operators/4.cc: New.
+	* 23_containers/map/insert/1.cc: New.
+	* 23_containers/map/operators/1.cc: New.
+	* 23_containers/map/operators/1_neg.cc: New.
+	* 23_containers/multiset/insert/1.cc: New.
+	* 23_containers/priority_queue/members/7161.cc: New.
+	* 23_containers/queue/members/7157.cc: New.
+	* 23_containers/set/operators/1_neg.cc: New.
+	* 23_containers/stack/members/7158.cc: New.
+	* 23_containers/vector/bool/1.cc: New.
+	* 23_containers/vector/bool/6886.cc: New.
+	* 23_containers/vector/capacity/1.cc: New.
+	* 23_containers/vector/capacity/2.cc: New.
+	* 23_containers/vector/capacity/8230.cc: New.
+	* 23_containers/vector/cons/1.cc: New.
+	* 23_containers/vector/cons/2.cc: New.
+	* 23_containers/vector/cons/3.cc: New.
+	* 23_containers/vector/cons/4.cc: New.
+	* 23_containers/vector/cons/6513.cc: New.
+	* 23_containers/vector/element_access/1.cc: New.
+	* 23_containers/vector/modifiers/1.cc: New.
+	* 23_containers/vector/modifiers/2.cc: New.
+	* 23_containers/vector/resize/1.cc: New.
+	
 2003-07-31  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/thread/pthread1.cc: Add alpha*-*-osf* to dg-do run,
