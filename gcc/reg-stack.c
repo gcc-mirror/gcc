@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -229,6 +229,7 @@ static rtx FP_mode_reg[FIRST_PSEUDO_REGISTER][(int) MAX_MACHINE_MODE];
     ? (int *)(abort() , 0)		\
     : block_number)[INSN_UID (INSN)])
 
+extern rtx forced_labels;
 extern rtx gen_jump ();
 extern rtx gen_movdf (), gen_movxf ();
 extern rtx find_regno_note ();
@@ -238,6 +239,7 @@ extern rtx emit_label_after ();
 /* Forward declarations */
 
 static void find_blocks ();
+static uses_reg_or_mem ();
 static void stack_reg_life_analysis ();
 static void change_stack ();
 static void convert_regs ();
@@ -311,7 +313,8 @@ reg_to_stack (first, file)
     for (insn = first; insn; insn = NEXT_INSN (insn))
       {
 	/* Note that this loop must select the same block boundaries
-	   as code in find_blocks. */
+	   as code in find_blocks.  Also note that this code is not the
+	   same as that used in flow.c.  */
 
 	if (INSN_UID (insn) > max_uid)
 	  max_uid = INSN_UID (insn);
@@ -322,14 +325,13 @@ reg_to_stack (first, file)
 	    || (prev_code != INSN
 		&& prev_code != CALL_INSN
 		&& prev_code != CODE_LABEL
-		&& (code == INSN || code == CALL_INSN || code == JUMP_INSN)))
+		&& GET_RTX_CLASS (code) == 'i'))
 	  blocks++;
 
 	/* Remember whether or not this insn mentions an FP regs.
 	   Check JUMP_INSNs too, in case someone creates a funny PARALLEL. */
 
-	if ((GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN
-	     || GET_CODE (insn) == JUMP_INSN)
+	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	    && stack_regs_mentioned_p (PATTERN (insn)))
 	  {
 	    stack_reg_seen = 1;
@@ -337,6 +339,9 @@ reg_to_stack (first, file)
 	  }
 	else
 	  PUT_MODE (insn, VOIDmode);
+
+	if (code == CODE_LABEL)
+	  LABEL_REFS (insn) = insn; /* delete old chain */
 
 	if (code != NOTE)
 	  prev_code = code;
@@ -1171,8 +1176,9 @@ find_blocks (first)
 {
   register rtx insn;
   register int block;
-  register RTX_CODE prev_code = BARRIER;
+  register RTX_CODE prev_code = JUMP_INSN;
   register RTX_CODE code;
+  rtx label_value_list = 0;
 
   /* Record where all the blocks start and end.
      Record which basic blocks control can drop in to. */
@@ -1181,7 +1187,8 @@ find_blocks (first)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       /* Note that this loop must select the same block boundaries
-	 as code in reg_to_stack. */
+	 as code in reg_to_stack, but that these are not the same
+	 as those selected in flow.c.  */
 
       code = GET_CODE (insn);
 
@@ -1189,19 +1196,27 @@ find_blocks (first)
 	  || (prev_code != INSN
 	      && prev_code != CALL_INSN
 	      && prev_code != CODE_LABEL
-	      && (code == INSN || code == CALL_INSN || code == JUMP_INSN)))
+	      && GET_RTX_CLASS (code) == 'i'))
 	{
 	  block_begin[++block] = insn;
 	  block_end[block] = insn;
 	  block_drops_in[block] = prev_code != BARRIER;
 	}
-      else if (code == INSN || code == CALL_INSN || code == JUMP_INSN)
+      else if (GET_RTX_CLASS (code) == 'i')
 	block_end[block] = insn;
 
-      BLOCK_NUM (insn) = block;
+      if (GET_RTX_CLASS (code) == 'i')
+	{
+	  rtx note;
 
-      if (code == CODE_LABEL)
-	LABEL_REFS (insn) = insn; /* delete old chain */
+	  /* Make a list of all labels referred to other than by jumps.  */
+	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	    if (REG_NOTE_KIND (note) == REG_LABEL)
+	      label_value_list = gen_rtx (EXPR_LIST, VOIDmode, XEXP (note, 0),
+					  label_value_list);
+	}
+
+      BLOCK_NUM (insn) = block;
 
       if (code != NOTE)
 	prev_code = code;
@@ -1216,8 +1231,82 @@ find_blocks (first)
       insn = block_end[block];
 
       if (GET_CODE (insn) == JUMP_INSN)
-	record_label_references (insn, PATTERN (insn));
+	{
+	  rtx pat = PATTERN (insn);
+	  int computed_jump = 0;
+	  rtx x;
+
+	  if (GET_CODE (pat) == PARALLEL)
+	    {
+	      int len = XVECLEN (pat, 0);
+	      int has_use_labelref = 0;
+	      int i;
+
+	      for (i = len - 1; i >= 0; i--)
+		if (GET_CODE (XVECEXP (pat, 0, i)) == USE
+		    && GET_CODE (XEXP (XVECEXP (pat, 0, i), 0)) == LABEL_REF)
+		  has_use_labelref = 1;
+
+	      if (! has_use_labelref)
+		for (i = len - 1; i >= 0; i--)
+		  if (GET_CODE (XVECEXP (pat, 0, i)) == SET
+		      && SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
+		      && uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
+		    computed_jump = 1;
+	    }
+	  else if (GET_CODE (pat) == SET
+		   && SET_DEST (pat) == pc_rtx
+		   && uses_reg_or_mem (SET_SRC (pat)))
+	    computed_jump = 1;
+		    
+	  if (computed_jump)
+	    {
+	      for (x = label_value_list; x; x = XEXP (x, 1))
+		record_label_references (insn,
+					 gen_rtx (LABEL_REF, VOIDmode,
+						  XEXP (x, 0)));
+
+	      for (x = forced_labels; x; x = XEXP (x, 1))
+		record_label_references (insn,
+					 gen_rtx (LABEL_REF, VOIDmode,
+						  XEXP (x, 0)));
+	    }
+
+	  record_label_references (insn, pat);
+	}
     }
+}
+
+/* Return 1 if X contain a REG or MEM that is not in the constant pool.  */
+
+static int
+uses_reg_or_mem (x)
+     rtx x;
+{
+  enum rtx_code code = GET_CODE (x);
+  int i, j;
+  char *fmt;
+
+  if (code == REG
+      || (code == MEM
+	  && ! (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+		&& CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))))
+    return 1;
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e'
+	  && uses_reg_or_mem (XEXP (x, i)))
+	return 1;
+
+      if (fmt[i] == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (uses_reg_or_mem (XVECEXP (x, i, j)))
+	    return 1;
+    }
+
+  return 0;
 }
 
 /* If current function returns its result in an fp stack register,
