@@ -1,5 +1,8 @@
 1999-04-21  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natString.cc (getBytes): Reverted earlier change and
+	applied correct fix from Per Bothner.
+
 	* java/lang/String.java: Don't throw
 	UnsupportedEncodingException.
 
