@@ -71,5 +71,5 @@ Boston, MA 02111-1307, USA.  */
 
 #define MD_UNWIND_SUPPORT "config/i386/linux-unwind.h"
 
-/* This macro may be overriden in i386/k*bsd-gnu.h */
+/* This macro may be overridden in i386/k*bsd-gnu.h.  */
 #define REG_NAME(reg) reg

@@ -9,7 +9,7 @@
 	* bb-reorder.c (find_traces_1_round): Speed up by using
 	EDGE_COUNT instead of FOR_EACH_EDGE.
 
-	* fold-const.c: Fix a comment typo.
+	* fold-const.c, config/i386/linux64.h: Fix comment typos.
 
 2004-11-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
