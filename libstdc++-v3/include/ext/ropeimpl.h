@@ -55,13 +55,13 @@
 
 namespace __gnu_cxx
 {
-using std::size_t;
-using std::printf;
-using std::basic_ostream;  
-using std::__throw_length_error;
-using std::__alloc;
-using std::_Destroy;
-using std::uninitialized_fill_n;
+  using std::size_t;
+  using std::printf;
+  using std::basic_ostream;  
+  using std::__throw_length_error;
+  using std::__alloc;
+  using std::_Destroy;
+  using std::uninitialized_fill_n;
 
 // Set buf_start, buf_end, and buf_ptr appropriately, filling tmp_buf
 // if necessary.  Assumes _M_path_end[leaf_index] and leaf_pos are correct.

@@ -60,9 +60,10 @@
  */
 
 #ifndef _EXT_FUNCTIONAL
-#define _EXT_FUNCTIONAL
+#define _EXT_FUNCTIONAL 1
 
 #pragma GCC system_header
+
 #include <functional>
 
 namespace __gnu_cxx
@@ -388,8 +389,7 @@ template <class _Ret, class _Tp, class _Arg>
 inline const_mem_fun1_ref_t<_Ret,_Tp,_Arg>
 mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
   { return const_mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
-
 } // namespace __gnu_cxx
 
-#endif /* _EXT_FUNCTIONAL */
+#endif 
 

@@ -83,7 +83,6 @@
 #include <cstring>
 #include <bits/functexcept.h>   // For __throw_bad_alloc
 #include <bits/stl_threads.h>
-
 #include <bits/atomicity.h>
 
 namespace std
@@ -172,8 +171,6 @@ namespace std
         }
     }
 
-  // Should not be referenced within the library anymore.
-  typedef __new_alloc                 __mem_interface;
 
   /**
    *  @if maint

@@ -31,8 +31,8 @@
  *  This file is a GNU extension to the Standard C++ Library.
  */
 
-#ifndef _EXT_STDIO_SYNC_FILEBUF
-#define _EXT_STDIO_SYNC_FILEBUF
+#ifndef _STDIO_SYNC_FILEBUF_H
+#define _STDIO_SYNC_FILEBUF_H 1
 
 #pragma GCC system_header
 
