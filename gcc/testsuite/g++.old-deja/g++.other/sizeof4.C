@@ -22,15 +22,15 @@ int main (int argc, char **argv)
   sizeof (argc ? s : s); // ERROR - incomplete
 
   sizeof (arys);        // ERROR - incomplete
-  sizeof (0, arys);     // ERROR - incomplete XFAIL
+  sizeof (0, arys);     // ERROR - incomplete
   sizeof (argc ? arys : arys); // ERROR - incomplete
 
   sizeof (aryt);        // ERROR - incomplete
-  sizeof (0, aryt);     // ERROR - incomplete XFAIL
+  sizeof (0, aryt);     // ERROR - incomplete
   sizeof (argc ? aryt : aryt); // ERROR - incomplete
   
   sizeof (fn);            // ERROR - cannot take size of function
-  sizeof (0, fn);         // ERROR - cannot take size of function XFAIL
+  sizeof (0, fn);         // ERROR - cannot take size of function
   sizeof (argc ? fn : fn); // ERROR - cannot take size of function
   
   sizeof (&fn);       // ok
