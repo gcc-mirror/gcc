@@ -418,7 +418,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    GENERAL_REGNO_P(REGNO)?                                      \
     ((GET_MODE_SIZE(MODE)+UNITS_PER_WORD-1) / UNITS_PER_WORD) : \
    ACCESS_REGNO_P(REGNO)?					\
-    ((GET_MODE_SIZE(MODE)+32-1) / 32) : 			\
+    ((GET_MODE_SIZE(MODE)+4-1) / 4) : 				\
    1)
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)                             \
@@ -447,7 +447,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
      ((CLASS) == FP_REGS ? 						\
       (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT ? 2 : 1) :  		\
       (CLASS) == ACCESS_REGS ?						\
-      (GET_MODE_SIZE (MODE) + 32 - 1) / 32 :				\
+      (GET_MODE_SIZE (MODE) + 4 - 1) / 4 :				\
       (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* If a 4-byte value is loaded into a FPR, it is placed into the
