@@ -1,3 +1,7 @@
+Mon Nov 17 13:21:40 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* t-h8300 (MULTILIB_EXCEPTIONS): Define.
+
 Fri Nov  7 15:33:11 1997  Robert Lipe (robertl@dgii.com)
 
 	* i386/sco5.h (HAVE_ATEXIT): Delete definition.
