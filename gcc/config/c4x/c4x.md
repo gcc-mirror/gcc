@@ -5338,16 +5338,29 @@
     src_mem = gen_rtx_MEM (QImode, src);
     dst_mem = gen_rtx_MEM (QImode, dst);
 
-    emit_insn (gen_movqi (tmp, src_mem));	
-    emit_insn (gen_addqi3_noclobber (src, src, const1_rtx));	
-    for (i = 1; i < len; i++)
+    if (TARGET_PARALLEL)
       {
-         emit_insn (gen_movqi_parallel (tmp, src_mem, dst_mem, tmp));
-         emit_insn (gen_addqi3_noclobber (src, src, const1_rtx));	
-         emit_insn (gen_addqi3_noclobber (dst, dst, const1_rtx));	
+        emit_insn (gen_movqi (tmp, src_mem));	
+        emit_insn (gen_addqi3_noclobber (src, src, const1_rtx));	
+        for (i = 1; i < len; i++)
+          {
+            emit_insn (gen_movqi_parallel (tmp, src_mem, dst_mem, tmp));
+            emit_insn (gen_addqi3_noclobber (src, src, const1_rtx));	
+            emit_insn (gen_addqi3_noclobber (dst, dst, const1_rtx));	
+          }
+        emit_insn (gen_movqi (dst_mem, tmp));	
+        emit_insn (gen_addqi3_noclobber (dst, dst, const1_rtx));	
       }
-    emit_insn (gen_movqi (dst_mem, tmp));	
-    emit_insn (gen_addqi3_noclobber (dst, dst, const1_rtx));	
+    else
+      {
+        for (i = 0; i < len; i++)
+          {
+	    emit_insn (gen_movqi (tmp, src_mem));	
+	    emit_insn (gen_movqi (dst_mem, tmp));	
+            emit_insn (gen_addqi3_noclobber (src, src, const1_rtx));	
+            emit_insn (gen_addqi3_noclobber (dst, dst, const1_rtx));	
+          }
+      }
     DONE;
   }
   ")
@@ -5450,7 +5463,7 @@
    operands[1] = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
    tmp = gen_reg_rtx (QImode);
    if (INTVAL (operands[2]) < 8)
-     emit_insn (gen_movstrqi_small (operands[0], operands[1], operands[2],
+     emit_insn (gen_movstrqi_small2 (operands[0], operands[1], operands[2],
                                     operands[3], tmp));
    else
      {
