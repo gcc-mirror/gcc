@@ -1,5 +1,15 @@
 2003-08-20  Gunther Nikl  <gni@gecko.de>
 
+	* config/m68k/m68k.md (anonymous define_insn): remove obsolete code
+	selected by FSGLMUL_USE_S and FSGLDIV_USE_S
+	* config/m68k/m68k.c (output_move_himode): remove SGS_NO_LI check
+	* config/m68k/m68k.md (anonymous define_insn): Likewise
+	* config/m68k/m68k.md (anonymous define_insn): remove ISI_OV check
+	* config/m68k/m68k.c (standard_68881_constant_p): remove obsolete
+	code selected by NO_ASM_FMOVECR
+
+2003-08-20  Gunther Nikl  <gni@gecko.de>
+
 	* config/m68k/m68k.c (output_move_const_into_data_reg,
 	output_move_himode): unify MOTOROLA/MIT handling of moveq
 	* config/m68k/m68k.md (movsi_const0, anonymous define_insn):
