@@ -34,7 +34,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC " %| %{fpic:-k} %{fPIC:-k}"
 
 /* Define macros to distinguish architectures.  */
-#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
+#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mf930:-D__sparclite__} \
+%{mf934:-D__sparclite__} %{mv8:-D__sparc_v8__}"
 
 /* Prevent error on `-sun4' and `-target sun4' options.  */
 /* This used to translate -dalign to -malign, but that is no good
@@ -114,7 +115,9 @@ extern int target_flags;
 /* Nonzero means that we should generate code for a v8 sparc.  */
 #define TARGET_V8 (target_flags & 64)
 
-/* Nonzero means that we should generate code for a sparclite.  */
+/* Nonzero means that we should generate code for a sparclite.
+   This enables the sparclite specific instructions, but does not affect
+   whether FPU instructions are emitted.  */
 #define TARGET_SPARCLITE (target_flags & 128)
 
 /* Nonzero means that we should generate code using a flat register window
@@ -139,6 +142,11 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
+/* The Fujitsu MB86930 is the original sparclite chip, with no fpu.
+   The Fujitsu MB86934 is the recent sparclite chip, with an fup.
+   We use -mf930 and -mf934 options to choose which.
+   ??? These should perhaps be -mcpu= options.  */
+
 #define TARGET_SWITCHES  \
   { {"fpu", 1},			\
     {"no-fpu", -1},		\
@@ -151,13 +159,14 @@ extern int target_flags;
     {"v8", 64},			\
     {"no-v8", -64},		\
     {"sparclite", 128},		\
-    {"sparclite", -1},		\
     {"no-sparclite", -128},	\
-    {"no-sparclite", 1},	\
 /*  {"frw", 256}, */		\
 /*  {"no-frw", -256}, */	\
 /*  {"frw-compat", 256+512}, */	\
 /*  {"no-frw-compat", -(256+512)}, */ \
+    {"f930", 128},		\
+    {"f930", -1},		\
+    {"f934", 128},		\
     SUBTARGET_SWITCHES		\
     { "", TARGET_DEFAULT}}
 
