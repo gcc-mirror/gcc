@@ -245,3 +245,6 @@ __enable_execute_stack (void *addr)					\
 extern GTY(()) tree solaris_pending_aligns;
 extern GTY(()) tree solaris_pending_inits;
 extern GTY(()) tree solaris_pending_finis;
+
+/* Allow macro expansion in #pragma pack.  */
+#define HANDLE_PRAGMA_PACK_WITH_EXPANSION

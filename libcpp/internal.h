@@ -205,6 +205,9 @@ struct lexer_state
   /* Nonzero to prevent macro expansion.  */
   unsigned char prevent_expansion;
 
+  /* Nonzero when handling a deferred pragma.  */
+  unsigned char in_deferred_pragma;
+
   /* Nonzero when parsing arguments to a function-like macro.  */
   unsigned char parsing_args;
 

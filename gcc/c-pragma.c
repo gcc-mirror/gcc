@@ -627,13 +627,20 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
 
 #endif
 
-/* Front-end wrapper for pragma registration to avoid dragging
+/* Front-end wrappers for pragma registration to avoid dragging
    cpplib.h in almost everywhere.  */
 void
 c_register_pragma (const char *space, const char *name,
 		   void (*handler) (struct cpp_reader *))
 {
-  cpp_register_pragma (parse_in, space, name, handler);
+  cpp_register_pragma (parse_in, space, name, handler, 0);
+}
+
+void
+c_register_pragma_with_expansion (const char *space, const char *name,
+				  void (*handler) (struct cpp_reader *))
+{
+  cpp_register_pragma (parse_in, space, name, handler, 1);
 }
 
 /* Set up front-end pragmas.  */
@@ -641,7 +648,11 @@ void
 init_pragma (void)
 {
 #ifdef HANDLE_PRAGMA_PACK
+#ifdef HANDLE_PRAGMA_PACK_WITH_EXPANSION
+  c_register_pragma_with_expansion (0, "pack", handle_pragma_pack);
+#else
   c_register_pragma (0, "pack", handle_pragma_pack);
+#endif
 #endif
 #ifdef HANDLE_PRAGMA_WEAK
   c_register_pragma (0, "weak", handle_pragma_weak);

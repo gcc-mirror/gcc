@@ -8603,7 +8603,10 @@ The Solaris target supports @code{#pragma redefine_extname}
 
 Increase the minimum alignment of each @var{variable} to @var{alignment}.
 This is the same as GCC's @code{aligned} attribute @pxref{Variable
-Attributes}).
+Attributes}).  Macro expansion occurs on the arguments to this pragma
+when compiling C and Objective-C.  It does not currently occur when
+compiling C++, but this is a bug which may be fixed in a future
+release.
 
 @item fini (@var{function} [, @var{function}]...)
 @cindex pragma, fini

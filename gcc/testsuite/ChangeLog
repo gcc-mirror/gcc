@@ -1,3 +1,8 @@
+2004-11-23  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.dg/pragma-align-2.c: Test macro expansion.
+	* gcc.dg/pragma-pack-2.c: New test.
+
 2004-11-23  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/vect/pr18425.c: Use effective target vect_long.
