@@ -21,11 +21,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "config.h"
 #include "tree.h"
 #include "function.h"
+#include "defaults.h"
 
 #ifdef HANDLE_SYSV_PRAGMA
 
-/* Support #pragma weak by default if WEAK_ASM_OP is defined.  */
-#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP) && defined (SET_ASM_OP)
+/* Support #pragma weak by default if WEAK_ASM_OP and ASM_OUTPUT_DEF
+   are defined.  */
+#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF)
 #define HANDLE_PRAGMA_WEAK 1
 #endif
 
