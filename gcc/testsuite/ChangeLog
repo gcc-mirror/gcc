@@ -1,3 +1,8 @@
+2000-07-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp/19951227-1.c, gcc.dg/cpp/assert2.c,
+	gcc.dg/cpp/if-1.c, gcc.dg/cpp/if-4.c: Tweak error regexps.
+
 2000-07-08  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/macsyntx.c: New tests.

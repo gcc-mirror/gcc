@@ -1,3 +1,22 @@
+2000-07-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c: Update all code for new lexer interface.
+	(op_t, operator codes, struct token, tokentab2, op_to_str): Remove.
+	(struct suffix, vsuf_1, vsuf_2, vsuf_3, op_to_prio): New.
+	* cpplex.c (token_names): Trim leading CPP_ from names; make
+	the strings unsigned.
+	(_cpp_spell_operator): New.
+	(is_macro_disabled): Disable all macros if rescanning
+	preprocessed text.
+	(_cpp_get_directive_token): Remove.
+
+	* cppinit.c: Don't set no_macro_expand.
+	* cpplib.c (read_line_number, do_line): Check only for EOF,
+	not VSPACE.
+	* cpphash.h: Update prototypes.
+	* cpplib.h (CPP_VSPACE): Remove.
+	(struct cpp_reader): Remove no_macro_expand.
+
 2000-07-08  Neil Booth  <NeilB@earthling.net>
 
 	* cpphash.c (is__va_args__): New function.
