@@ -738,7 +738,7 @@ c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H)
 
 # C++ language specific files.
 
-cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
+cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h cp-lex.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   `echo $(srcdir)/cp-parse.c | sed 's,^\./,,'`
 
@@ -748,31 +748,29 @@ $(srcdir)/cp-parse.c $(srcdir)/cp-parse.h : $(srcdir)/cp-parse.y
 	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' cp-parse.c >>cp-parse.h
 
 cp-spew.o : cp-spew.c $(CONFIG_H) $(CPLUS_TREE_H) \
-   $(srcdir)/cp-parse.h flags.h
+   $(srcdir)/cp-parse.h flags.h cp-lex.h
 cp-lex.o : cp-lex.c $(CONFIG_H) $(CPLUS_TREE_H) \
-   $(srcdir)/cp-parse.h $(srcdir)/cp-input.c flags.h
+   $(srcdir)/cp-parse.h $(srcdir)/cp-input.c flags.h cp-hash.h cp-lex.h
 cp-decl.o : cp-decl.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h \
   cp-lex.h cp-decl.h stack.h
 cp-decl2.o : cp-decl2.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h \
   cp-lex.h cp-decl.h
 cp-type2.o : cp-type2.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-typeck.o : cp-typeck.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-class.o : cp-class.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h \
-    cp-class.h flags.h
-cp-call.o : cp-call.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h cp-class.h \
-    flags.h
-cp-init.o : cp-init.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
+cp-typeck.o : cp-typeck.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
+cp-class.o : cp-class.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
+cp-call.o : cp-call.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
+cp-init.o : cp-init.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
 cp-method.o : cp-method.c $(CONFIG_H) $(CPLUS_TREE_H)
 cp-cvt.o : cp-cvt.c $(CONFIG_H) $(CPLUS_TREE_H)
 cp-search.o : cp-search.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h flags.h
 cp-tree.o : cp-tree.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
 cp-ptree.o : cp-ptree.c $(CONFIG_H) $(CPLUS_TREE_H)
 cp-gc.o : cp-gc.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-except.o : cp-except.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
+cp-except.o : cp-except.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
 cp-expr.o : cp-expr.c $(CONFIG_H) $(CPLUS_TREE_H) $(RTL_H) flags.h \
   expr.h insn-codes.h
 cp-edsel.o : cp-edsel.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h flags.h
-cp-xref.o : cp-xref.c $(CONFIG_H) $(CPLUS_TREE_H)
+cp-xref.o : cp-xref.c $(CONFIG_H) $(CPLUS_TREE_H) input.h
 cp-pt.o : cp-pt.c $(CONFIG_H) $(CPLUS_TREE_H) cp-decl.h cp-parse.h
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
