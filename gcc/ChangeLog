@@ -1,3 +1,8 @@
+2000-01-10  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* combine.c (expand_field_assignment): Do not discard SUBREGs
+	while computing nonzero_bits.
+
 2000-01-09  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c: Fix compile time warnings about signed vs
