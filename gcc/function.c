@@ -5511,6 +5511,16 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 {
   tree save_var = NULL_TREE;
   HOST_WIDE_INT save_constant = 0;
+  HOST_WIDE_INT sp_offset = STACK_POINTER_OFFSET;
+
+#ifdef SPARC_STACK_BOUNDARY_HACK
+  /* The sparc port has a bug.  It sometimes claims a STACK_BOUNDARY
+     higher than the real alignment of %sp.  However, when it does this,
+     the alignment of %sp+STACK_POINTER_OFFSET will be STACK_BOUNDARY.
+     This is a temporary hack while the sparc port is fixed.  */
+  if (SPARC_STACK_BOUNDARY_HACK)
+    sp_offset = 0;
+#endif
 
   int boundary_in_bytes = boundary / BITS_PER_UNIT;
 
@@ -5527,14 +5537,17 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
     {
       if (offset_ptr->var)
 	{
-	  offset_ptr->var =
+	  tree sp_offset_tree = ssize_int (sp_offset);
+	  tree offset = size_binop (PLUS_EXPR,
+				    ARGS_SIZE_TREE (*offset_ptr),
+				    sp_offset_tree);
 #ifdef ARGS_GROW_DOWNWARD
-	    round_down
+	  tree rounded = round_down (offset, boundary / BITS_PER_UNIT);
 #else
-	    round_up
+	  tree rounded = round_up   (offset, boundary / BITS_PER_UNIT);
 #endif
-	      (ARGS_SIZE_TREE (*offset_ptr),
-	       boundary / BITS_PER_UNIT);
+
+	  offset_ptr->var = size_binop (MINUS_EXPR, rounded, sp_offset_tree);
 	  /* ARGS_SIZE_TREE includes constant term.  */
 	  offset_ptr->constant = 0;
 	  if (boundary > PARM_BOUNDARY && boundary > STACK_BOUNDARY)
@@ -5543,11 +5556,11 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 	}
       else
 	{
-	  offset_ptr->constant =
+	  offset_ptr->constant = -sp_offset +
 #ifdef ARGS_GROW_DOWNWARD
-	    FLOOR_ROUND (offset_ptr->constant, boundary_in_bytes);
+	    FLOOR_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes);
 #else
-	    CEIL_ROUND (offset_ptr->constant, boundary_in_bytes);
+	    CEIL_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes);
 #endif
 	    if (boundary > PARM_BOUNDARY && boundary > STACK_BOUNDARY)
 	      alignment_pad->constant = offset_ptr->constant - save_constant;

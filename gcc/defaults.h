@@ -679,4 +679,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define MOVE_MAX_PIECES   MOVE_MAX
 #endif
 
+#ifndef STACK_POINTER_OFFSET
+#define STACK_POINTER_OFFSET    0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

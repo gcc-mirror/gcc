@@ -1,5 +1,18 @@
 2003-10-07  Geoffrey Keating  <geoffk@apple.com>
 
+	* function.c (pad_to_arg_alignment): Take STACK_POINTER_OFFSET into
+	account	when aligning arguments.
+	* calls.c (STACK_POINTER_OFFSET): Move default from here ...
+	* defaults.h (STACK_POINTER_OFFSET): ... to here.
+	* config/sparc/sparc.h (STACK_BOUNDARY): Add comment about how
+	it's wrong when TARGET_ARCH64 && TARGET_STACK_BIAS.
+	(SPARC_STACK_BOUNDARY_HACK): Define.
+	* config/rs6000/rs6000.c (function_arg): On non-SVR4 systems,
+	arrange for vector parameters to varargs functions to be passed
+	in both memory and GPRs when appropriate.
+	(rs6000_va_arg): Vector arguments passed in memory are 16-byte
+	aligned.
+
 	* hooks.c (hook_bool_tree_true): New.
 	(hook_rtx_tree_int_null): New.
 	(hook_rtx_rtx_null): Use NULL, not 0.
