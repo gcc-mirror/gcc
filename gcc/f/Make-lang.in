@@ -233,9 +233,10 @@ $(srcdir)/f/intdoc.texi: $(INTDOC_DEPS) $(srcdir)/f/intdoc.in
 	$(MAKE) f/intdoc$(build_exeext)
 	f/intdoc$(build_exeext) > $(srcdir)/f/intdoc.texi
 
-f/intdoc$(build_exeext): $(INTDOC_DEPS) f/intdoc.h0 hconfig.h $(SYSTEM_H)
+f/intdoc$(build_exeext): $(INTDOC_DEPS) f/intdoc.h0 hconfig.h $(SYSTEM_H) \
+	safe-ctype.o
 	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) \
-		  $(srcdir)/f/intdoc.c -o f/intdoc$(build_exeext)
+		  $(srcdir)/f/intdoc.c safe-ctype.o -o f/intdoc$(build_exeext)
 
 f/intdoc.h0: f/intdoc.in f/ansify$(build_exeext)
 	f/ansify$(build_exeext) $(srcdir)/f/intdoc.in \
