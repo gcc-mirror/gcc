@@ -281,6 +281,9 @@ int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 #define FL_XSCALE     (1 << 10)	      /* XScale */
 #define FL_CIRRUS     (1 << 11)	      /* Cirrus/DSP.  */
 #define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
+#define FL_ARCH6J     (1 << 12)       /* Architecture rel 6.  Adds
+					 media instructions.  */
+#define FL_VFPV2      (1 << 13)       /* Vector Floating Point V2.  */
 
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
@@ -406,6 +409,7 @@ static const struct processors all_cores[] =
   {"arm7500",	             FL_MODE26 | FL_MODE32 },
   /* Doesn't have an external co-proc, but does have embedded fpa.  */
   {"arm7500fe",	FL_CO_PROC | FL_MODE26 | FL_MODE32 },
+  /* V4 Architecture Processors */
   {"arm7tdmi",	FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB },
   {"arm710t",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB },
   {"arm720t",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB },
@@ -423,11 +427,16 @@ static const struct processors all_cores[] =
   {"strongarm110",           FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm1100",          FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm1110",          FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
+  /* V5 Architecture Processors */
   {"arm10tdmi",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED             | FL_ARCH5 },
   {"arm1020t",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED             | FL_ARCH5 },
+  {"arm926ejs",                          FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB                          | FL_ARCH5 | FL_ARCH5E },
+  {"arm1026ejs",                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB                          | FL_ARCH5 | FL_ARCH5E },
   {"xscale",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_ARCH5 | FL_ARCH5E | FL_XSCALE },
   {"iwmmxt",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_ARCH5 | FL_ARCH5E | FL_XSCALE | FL_IWMMXT },
-
+  /* V6 Architecture Processors */
+  {"arm1136js",                          FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB                          | FL_ARCH5 | FL_ARCH5E | FL_ARCH6J },
+  {"arm1136jfs",                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB                          | FL_ARCH5 | FL_ARCH5E | FL_ARCH6J | FL_VFPV2 },
   {NULL, 0}
 };
 
@@ -446,6 +455,7 @@ static const struct processors all_architectures[] =
   { "armv5",     FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 },
   { "armv5t",    FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 },
   { "armv5te",   FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 | FL_ARCH5E },
+  { "armv6j",    FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 | FL_ARCH5E | FL_ARCH6J },
   { "ep9312",				  FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_LDSCHED | FL_CIRRUS },
   {"iwmmxt",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_ARCH5 | FL_ARCH5E | FL_XSCALE | FL_IWMMXT },
   { NULL, 0 }
@@ -546,6 +556,10 @@ arm_override_options (void)
 	{ TARGET_CPU_xscale,    "xscale" },
 	{ TARGET_CPU_ep9312,    "ep9312" },
 	{ TARGET_CPU_iwmmxt,    "iwmmxt" },
+	{ TARGET_CPU_arm926ej_s, "arm926ej-s" },
+	{ TARGET_CPU_arm1026ej_s, "arm1026ej-s" },
+	{ TARGET_CPU_arm1136j_s, "arm1136j_s" },
+	{ TARGET_CPU_arm1136jf_s, "arm1136jf_s" },
 	{ TARGET_CPU_generic,   "arm" },
 	{ 0, 0 }
       };
