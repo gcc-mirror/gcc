@@ -1,5 +1,5 @@
 /* Prototypes for pa.c functions used in the md file & elsewhere.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -83,6 +83,7 @@ extern int ior_operand PARAMS ((rtx, enum machine_mode));
 extern int arith32_operand PARAMS ((rtx, enum machine_mode));
 extern int uint32_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_nonsymb_mem_operand PARAMS ((rtx, enum machine_mode));
+extern int reg_before_reload_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_0_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_0_or_nonsymb_mem_operand PARAMS ((rtx, enum machine_mode));
 extern int pre_cint_operand PARAMS ((rtx, enum machine_mode));

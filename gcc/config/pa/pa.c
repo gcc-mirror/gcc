@@ -364,6 +364,28 @@ reg_or_0_or_nonsymb_mem_operand (op, mode)
   return 0;
 }
 
+/* Return 1 if the operand is a register operand or a non-symbolic memory
+   operand after reload.  This predicate is used for branch patterns that
+   internally handle register reloading.  We need to accept non-symbolic
+   memory operands after reload to ensure that the pattern is still valid
+   if reload didn't find a hard register for the operand.  */
+
+int
+reg_before_reload_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  if (register_operand (op, mode))
+    return 1;
+
+  if (reload_completed
+      && memory_operand (op, mode)
+      && ! symbolic_memory_operand (op, mode))
+    return 1;
+
+  return 0;
+}
+
 /* Accept any constant that can be moved in one instructions into a
    general register.  */
 int
