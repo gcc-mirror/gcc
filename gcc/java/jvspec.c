@@ -469,7 +469,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
       if (strcmp (argv[i], "-R") == 0)
 	{
-	  char *ptr = argv[i+i];
 	  arglist[j] = concat ("-fcompile-resource=",
 			       *argv[i+1] == '/' ? "" : "/",
 			       argv[i+1], NULL);
