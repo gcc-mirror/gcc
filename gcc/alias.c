@@ -746,10 +746,55 @@ find_base_term (x)
     case PLUS:
     case MINUS:
       {
-	rtx tmp = find_base_term (XEXP (x, 0));
-	if (tmp)
-	  return tmp;
-	return find_base_term (XEXP (x, 1));
+	rtx tmp1 = XEXP (x, 0);
+	rtx tmp2 = XEXP (x, 1);
+
+	/* This is a litle bit tricky since we have to determine which of
+	   the two operands represents the real base address.  Otherwise this
+	   routine may return the index register instead of the base register.
+
+	   That may cause us to believe no aliasing was possible, when in
+	   fact aliasing is possible.
+
+	   We use a few simple tests to guess the base register.  Additional
+	   tests can certainly be added.  For example, if one of the operands
+	   is a shift or multiply, then it must be the index register and the
+	   other operand is the base register.  */
+	
+	/* If either operand is known to be a pointer, then use it
+	   to determine the base term.  */
+	if (REG_P (tmp1) && REGNO_POINTER_FLAG (REGNO (tmp1)))
+	  return find_base_term (tmp1);
+
+	if (REG_P (tmp2) && REGNO_POINTER_FLAG (REGNO (tmp2)))
+	  return find_base_term (tmp2);
+
+	/* Neither operand was known to be a pointer.  Go ahead and find the
+	   base term for both operands.  */
+	tmp1 = find_base_term (tmp1);
+	tmp2 = find_base_term (tmp2);
+
+	/* If either base term is named object or a special address
+	   (like an argument or stack reference), then use it for the
+	   base term.  */
+	if (tmp1
+	    && (GET_CODE (tmp1) == SYMBOL_REF
+		|| GET_CODE (tmp1) == LABEL_REF
+		|| (GET_CODE (tmp1) == ADDRESS
+		    && GET_MODE (tmp1) != VOIDmode)))
+	  return tmp1;
+
+	if (tmp2
+	    && (GET_CODE (tmp2) == SYMBOL_REF
+		|| GET_CODE (tmp2) == LABEL_REF
+		|| (GET_CODE (tmp2) == ADDRESS
+		    && GET_MODE (tmp2) != VOIDmode)))
+	  return tmp2;
+
+	/* We could not determine which of the two operands was the
+	   base register and which was the index.  So we can determine
+	   nothing from the base alias check.  */
+	return 0;
       }
 
     case AND:
