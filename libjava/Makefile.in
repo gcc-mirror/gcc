@@ -3024,7 +3024,7 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class
 
 gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class
 	$(GCJH) -classpath $(top_builddir) \
-	    -friend 'class java::lang::ClassLoader;' \
+	    -friend 'class ::java::lang::ClassLoader;' \
 	    $(basename $<)
 
 java/io/ObjectInputStream$$GetField.h: java/io/ObjectInputStream.class
