@@ -19,7 +19,9 @@
 # include <config.h>
 #endif
 
-#include <stdlib.h>
+#if defined STDC_HEADERS || defined _LIBC
+# include <stdlib.h>
+#endif
 #include <string.h>
 #include <sys/types.h>
 
