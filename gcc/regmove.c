@@ -2234,6 +2234,8 @@ try_apply_stack_adjustment (insn, memlist, new_adjust, delta)
   for (ml = memlist; ml ; ml = ml->next)
     {
       HOST_WIDE_INT c = ml->sp_offset - delta;
+      rtx new = gen_rtx_MEM (GET_MODE (*ml->mem),
+			     plus_constant (stack_pointer_rtx, c));
 
       /* Don't reference memory below the stack pointer.  */
       if (c < 0)
@@ -2242,9 +2244,8 @@ try_apply_stack_adjustment (insn, memlist, new_adjust, delta)
 	  return 0;
 	}
 
-      validate_change (ml->insn, ml->mem,
-		       gen_rtx_MEM (GET_MODE (*ml->mem),
-				    plus_constant (stack_pointer_rtx, c)), 1);
+      MEM_COPY_ATTRIBUTES (new, *ml->mem);
+      validate_change (ml->insn, ml->mem, new, 1);
     }
 
   if (apply_change_group ())

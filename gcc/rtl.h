@@ -746,8 +746,10 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 #define ASM_OPERANDS_INPUT_CONSTRAINT_VEC(RTX) XCVEC ((RTX), 4, ASM_OPERANDS)
 #define ASM_OPERANDS_INPUT(RTX, N) XCVECEXP ((RTX), 3, (N), ASM_OPERANDS)
 #define ASM_OPERANDS_INPUT_LENGTH(RTX) XCVECLEN ((RTX), 3, ASM_OPERANDS)
-#define ASM_OPERANDS_INPUT_CONSTRAINT(RTX, N) XSTR (XCVECEXP ((RTX), 4, (N), ASM_OPERANDS), 0)
-#define ASM_OPERANDS_INPUT_MODE(RTX, N) GET_MODE (XCVECEXP ((RTX), 4, (N), ASM_OPERANDS))
+#define ASM_OPERANDS_INPUT_CONSTRAINT(RTX, N) \
+			XSTR (XCVECEXP ((RTX), 4, (N), ASM_OPERANDS), 0)
+#define ASM_OPERANDS_INPUT_MODE(RTX, N)  \
+			GET_MODE (XCVECEXP ((RTX), 4, (N), ASM_OPERANDS))
 #define ASM_OPERANDS_SOURCE_FILE(RTX) XCSTR ((RTX), 5, ASM_OPERANDS)
 #define ASM_OPERANDS_SOURCE_LINE(RTX) XCINT ((RTX), 6, ASM_OPERANDS)
 
@@ -755,21 +757,14 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
    Also in an ASM_OPERANDS rtx.  */
 #define MEM_VOLATILE_P(RTX) ((RTX)->volatil)
 
-/* For a MEM rtx, 1 if it refers to a field of an aggregate.  If zero,
-   RTX may or may not refer to a field of an aggregate.  */
+/* For a MEM rtx, 1 if it refers to an aggregate, either to the
+   aggregate itself of to a field of the aggregate.  If zero, RTX may
+   or may not be such a refrence.  */
 #define MEM_IN_STRUCT_P(RTX) ((RTX)->in_struct)
 
 /* For a MEM rtx, 1 if it refers to a scalar.  If zero, RTX may or may
    not refer to a scalar.*/
 #define MEM_SCALAR_P(RTX) ((RTX)->frame_related)
-
-/* Copy the attributes that apply to memory locations from RHS to LHS.  */
-#define MEM_COPY_ATTRIBUTES(LHS, RHS)			\
-  (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),		\
-   MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),	\
-   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),		\
-   MEM_ALIAS_SET (LHS) = MEM_ALIAS_SET (RHS),		\
-   RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS))
 
 /* If VAL is non-zero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in
    RTX.  Otherwise, vice versa.  Use this macro only when you are
@@ -797,7 +792,15 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
    some front-ends, these numbers may correspond in some way to types,
    or other language-level entities, but they need not, and the
    back-end makes no such assumptions.  */
-#define MEM_ALIAS_SET(RTX) XCINT(RTX, 1, MEM)
+#define MEM_ALIAS_SET(RTX) XCWINT(RTX, 1, MEM)
+
+/* Copy the attributes that apply to memory locations from RHS to LHS.  */
+#define MEM_COPY_ATTRIBUTES(LHS, RHS)			\
+  (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),		\
+   MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),	\
+   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),		\
+   MEM_ALIAS_SET (LHS) = MEM_ALIAS_SET (RHS),		\
+   RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS))
 
 /* For a LABEL_REF, 1 means that this reference is to a label outside the
    loop containing the reference.  */
@@ -1645,7 +1648,9 @@ extern int preserve_subexpressions_p	PARAMS ((void));
 
 /* In expr.c */
 extern void init_expr_once		PARAMS ((void));
-extern void move_by_pieces		PARAMS ((rtx, rtx, int, unsigned int));
+extern void move_by_pieces		PARAMS ((rtx, rtx,
+						 unsigned HOST_WIDE_INT,
+						 unsigned int));
 
 /* In flow.c */
 extern void allocate_bb_life_data	PARAMS ((void));
@@ -1821,9 +1826,6 @@ extern void mark_constant_function	PARAMS ((void));
 extern void init_alias_once		PARAMS ((void));
 extern void init_alias_analysis		PARAMS ((void));
 extern void end_alias_analysis		PARAMS ((void));
-
-extern void record_base_value		PARAMS ((unsigned int, rtx, int));
-extern void record_alias_subset         PARAMS ((int, int));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
 
 /* In sibcall.c */

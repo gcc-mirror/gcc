@@ -204,7 +204,7 @@ struct temp_slot
      imposed on the memory.  For example, if the stack slot is the
      call frame for an inline functioned, we have no idea what alias
      sets will be assigned to various pieces of the call frame.  */
-  int alias_set;
+  HOST_WIDE_INT alias_set;
   /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
   tree rtl_expr;
   /* Non-zero if this temporary is currently in use.  */
@@ -628,6 +628,7 @@ assign_stack_local_1 (mode, size, align, function)
 
 /* Wrapper around assign_stack_local_1;  assign a local stack slot for the
    current function.  */
+
 rtx
 assign_stack_local (mode, size, align)
      enum machine_mode mode;
@@ -662,7 +663,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
      tree type;
 {
   int align;
-  int alias_set;
+  HOST_WIDE_INT alias_set;
   struct temp_slot *p, *best_p = 0;
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
@@ -684,6 +685,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 
   if (! type)
     type = type_for_mode (mode, 0);
+
   if (type)
     align = LOCAL_ALIGNMENT (type, align);
 
@@ -693,7 +695,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
   for (p = temp_slots; p; p = p->next)
     if (p->align >= align && p->size >= size && GET_MODE (p->slot) == mode
 	&& ! p->in_use
-	&& (!flag_strict_aliasing
+	&& (! flag_strict_aliasing
 	    || (alias_set && p->alias_set == alias_set))
 	&& (best_p == 0 || best_p->size > p->size
 	    || (best_p->size == p->size && best_p->align > p->align)))
@@ -712,11 +714,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
       /* If there are enough aligned bytes left over, make them into a new
 	 temp_slot so that the extra bytes don't get wasted.  Do this only
 	 for BLKmode slots, so that we can be sure of the alignment.  */
-      if (GET_MODE (best_p->slot) == BLKmode
-	  /* We can't split slots if -fstrict-aliasing because the
-	     information about the alias set for the new slot will be
-	     lost.  */
-	  && !flag_strict_aliasing)
+      if (GET_MODE (best_p->slot) == BLKmode)
 	{
 	  int alignment = best_p->align / BITS_PER_UNIT;
 	  HOST_WIDE_INT rounded_size = CEIL_ROUND (size, alignment);
@@ -734,6 +732,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 	      p->align = best_p->align;
 	      p->address = 0;
 	      p->rtl_expr = 0;
+	      p->alias_set = best_p->alias_set;
 	      p->next = temp_slots;
 	      temp_slots = p;
 
@@ -824,7 +823,11 @@ assign_stack_temp_for_type (mode, size, keep, type)
   RTX_UNCHANGING_P (p->slot) = 0;
   MEM_IN_STRUCT_P (p->slot) = 0;
   MEM_SCALAR_P (p->slot) = 0;
-  MEM_ALIAS_SET (p->slot) = 0;
+  MEM_ALIAS_SET (p->slot) = alias_set;
+
+  if (type != 0)
+    MEM_SET_IN_STRUCT_P (p->slot, AGGREGATE_TYPE_P (type));
+
   return p->slot;
 }
 
@@ -875,11 +878,10 @@ assign_temp (type, keep, memory_required, dont_promote)
 	 instead.  This is the case for Chill variable-sized strings.  */
       if (size == -1 && TREE_CODE (type) == ARRAY_TYPE
 	  && TYPE_ARRAY_MAX_SIZE (type) != NULL_TREE
-	  && TREE_CODE (TYPE_ARRAY_MAX_SIZE (type)) == INTEGER_CST)
-	size = TREE_INT_CST_LOW (TYPE_ARRAY_MAX_SIZE (type));
+	  && host_integerp (TYPE_ARRAY_MAX_SIZE (type), 1))
+	size = tree_low_cst (TYPE_ARRAY_MAX_SIZE (type), 1);
 
       tmp = assign_stack_temp_for_type (mode, size, keep, type);
-      MEM_SET_IN_STRUCT_P (tmp, AGGREGATE_TYPE_P (type));
       return tmp;
     }
 
@@ -1397,8 +1399,12 @@ put_var_into_stack (decl)
       else
 	put_reg_into_stack (function, reg, TREE_TYPE (decl),
 			    promoted_mode, decl_mode,
-			    TREE_SIDE_EFFECTS (decl), 0,
-			    TREE_USED (decl) || DECL_INITIAL (decl) != 0,
+			    (TREE_CODE (decl) != SAVE_EXPR
+			     && TREE_THIS_VOLATILE (decl)),
+			    0,
+			    (TREE_USED (decl)
+			     || (TREE_CODE (decl) != SAVE_EXPR
+				 && DECL_INITIAL (decl) != 0)),
 			    0);
     }
   else if (GET_CODE (reg) == CONCAT)
@@ -2840,9 +2846,14 @@ put_addressof_into_stack (r, ht)
     abort ();
 
   put_reg_into_stack (0, reg, TREE_TYPE (decl), GET_MODE (reg),
-		      DECL_MODE (decl), TREE_SIDE_EFFECTS (decl),
+		      GET_MODE (reg),
+		      (TREE_CODE (decl) != SAVE_EXPR
+		       && TREE_THIS_VOLATILE (decl)),
 		      ADDRESSOF_REGNO (r),
-		      TREE_USED (decl) || DECL_INITIAL (decl) != 0, ht);
+		      (TREE_USED (decl)
+		       || (TREE_CODE (decl) != SAVE_EXPR
+			   && DECL_INITIAL (decl) != 0)),
+		      ht);
 }
 
 /* List of replacements made below in purge_addressof_1 when creating
@@ -4168,7 +4179,6 @@ assign_parms (fndecl)
 
   for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
     {
-      int aggregate = AGGREGATE_TYPE_P (TREE_TYPE (parm));
       struct args_size stack_offset;
       struct args_size arg_size;
       int passed_pointer = 0;
@@ -4325,12 +4335,7 @@ assign_parms (fndecl)
 						  internal_arg_pointer,
 						  offset_rtx));
 
-	/* If this is a memory ref that contains aggregate components,
-	   mark it as such for cse and loop optimize.  Likewise if it
-	   is readonly.  */
-	MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
-	RTX_UNCHANGING_P (stack_parm) = TREE_READONLY (parm);
-	MEM_ALIAS_SET (stack_parm) = get_alias_set (parm);
+	set_mem_attributes (stack_parm, parm, 1);
       }
 
       /* If this parameter was passed both in registers and in the stack,
@@ -4435,38 +4440,6 @@ assign_parms (fndecl)
 	  && nominal_mode != BLKmode && nominal_mode != passed_mode)
 	stack_parm = 0;
 
-#if 0
-      /* Now adjust STACK_PARM to the mode and precise location
-	 where this parameter should live during execution,
-	 if we discover that it must live in the stack during execution.
-	 To make debuggers happier on big-endian machines, we store
-	 the value in the last bytes of the space available.  */
-
-      if (nominal_mode != BLKmode && nominal_mode != passed_mode
-	  && stack_parm != 0)
-	{
-	  rtx offset_rtx;
-
-	  if (BYTES_BIG_ENDIAN
-	      && GET_MODE_SIZE (nominal_mode) < UNITS_PER_WORD)
-	    stack_offset.constant += (GET_MODE_SIZE (passed_mode)
-				      - GET_MODE_SIZE (nominal_mode));
-
-	  offset_rtx = ARGS_SIZE_RTX (stack_offset);
-	  if (offset_rtx == const0_rtx)
-	    stack_parm = gen_rtx_MEM (nominal_mode, internal_arg_pointer);
-	  else
-	    stack_parm = gen_rtx_MEM (nominal_mode,
-				      gen_rtx_PLUS (Pmode,
-						    internal_arg_pointer,
-						    offset_rtx));
-
-	  /* If this is a memory ref that contains aggregate components,
-	     mark it as such for cse and loop optimize.  */
-	  MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
-	}
-#endif /* 0 */
-
       /* ENTRY_PARM is an RTX for the parameter as it arrives,
 	 in the mode in which it arrives.
 	 STACK_PARM is an RTX for a stack slot where the parameter can live
@@ -4506,17 +4479,11 @@ assign_parms (fndecl)
 		  stack_parm
 		    = assign_stack_local (GET_MODE (entry_parm),
 					  size_stored, 0);
-
-		  /* If this is a memory ref that contains aggregate
-		     components, mark it as such for cse and loop optimize.  */
-		  MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
+		  set_mem_attributes (stack_parm, parm, 1);
 		}
 
 	      else if (PARM_BOUNDARY % BITS_PER_WORD != 0)
 		abort ();
-
-	      if (TREE_READONLY (parm))
-		RTX_UNCHANGING_P (stack_parm) = 1;
 
 	      /* Handle calls that pass values in multiple non-contiguous
 		 locations.  The Irix 6 ABI has examples of this.  */
@@ -4566,7 +4533,7 @@ assign_parms (fndecl)
 	    {
 	      DECL_RTL (parm)
 		= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (passed_type)), parmreg);
-	      MEM_SET_IN_STRUCT_P (DECL_RTL (parm), aggregate);
+	      set_mem_attributes (DECL_RTL (parm), parm, 1);
 	    }
 	  else
 	    DECL_RTL (parm) = parmreg;
@@ -4672,8 +4639,7 @@ assign_parms (fndecl)
 	      else
 		copy = assign_stack_temp (TYPE_MODE (type),
 					  int_size_in_bytes (type), 1);
-	      MEM_SET_IN_STRUCT_P (copy, AGGREGATE_TYPE_P (type));
-	      RTX_UNCHANGING_P (copy) = TREE_READONLY (parm);
+	      set_mem_attributes (copy, parm);
 
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));
@@ -4824,9 +4790,7 @@ assign_parms (fndecl)
 		  stack_parm
 		    = assign_stack_local (GET_MODE (entry_parm),
 					  GET_MODE_SIZE (GET_MODE (entry_parm)), 0);
-		  /* If this is a memory ref that contains aggregate components,
-		     mark it as such for cse and loop optimize.  */
-		  MEM_SET_IN_STRUCT_P (stack_parm, aggregate);
+		  set_mem_attributes (stack_parm, parm, 1);
 		}
 
 	      if (promoted_mode != nominal_mode)
@@ -4863,19 +4827,12 @@ assign_parms (fndecl)
       if (parm == function_result_decl)
 	{
 	  tree result = DECL_RESULT (fndecl);
-	  tree restype = TREE_TYPE (result);
 
 	  DECL_RTL (result)
 	    = gen_rtx_MEM (DECL_MODE (result), DECL_RTL (parm));
 
-	  MEM_SET_IN_STRUCT_P (DECL_RTL (result), 
-			       AGGREGATE_TYPE_P (restype));
+	  set_mem_attributes (DECL_RTL (result), result, 1);
 	}
-
-      if (TREE_THIS_VOLATILE (parm))
-	MEM_VOLATILE_P (DECL_RTL (parm)) = 1;
-      if (TREE_READONLY (parm))
-	RTX_UNCHANGING_P (DECL_RTL (parm)) = 1;
     }
 
   /* Output all parameter conversion instructions (possibly including calls)
@@ -5398,7 +5355,9 @@ fix_lexical_addr (addr, var)
       addr = fix_lexical_addr (XEXP (fp->x_arg_pointer_save_area, 0), var);
       addr = memory_address (Pmode, addr);
 
-      base = copy_to_reg (gen_rtx_MEM (Pmode, addr));
+      base = gen_rtx_MEM (Pmode, addr);
+      MEM_ALIAS_SET (base) = get_frame_alias_set ();
+      base = copy_to_reg (base);
 #else
       displacement += (FIRST_PARM_OFFSET (context) - STARTING_FRAME_OFFSET);
       base = lookup_static_chain (var);
@@ -6149,10 +6108,8 @@ expand_function_start (subr, parms_have_cleanups)
 	{
 	  DECL_RTL (DECL_RESULT (subr))
 	    = gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), value_address);
-	  MEM_SET_IN_STRUCT_P (DECL_RTL (DECL_RESULT (subr)),
-			       AGGREGATE_TYPE_P (TREE_TYPE
-						 (DECL_RESULT
-						  (subr))));
+	  set_mem_attributes (DECL_RTL (DECL_RESULT (subr)),
+			      DECL_RESULT (subr), 1);
 	}
     }
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
@@ -6247,9 +6204,9 @@ expand_function_start (subr, parms_have_cleanups)
 #ifdef FRAME_GROWS_DOWNWARD
 	  last_ptr = plus_constant (last_ptr, - GET_MODE_SIZE (Pmode));
 #endif
-	  last_ptr = copy_to_reg (gen_rtx_MEM (Pmode,
-					       memory_address (Pmode,
-							       last_ptr)));
+	  last_ptr = gen_rtx_MEM (Pmode, memory_address (Pmode, last_ptr));
+	  MEM_ALIAS_SET (last_ptr) = get_frame_alias_set ();
+	  last_ptr = copy_to_reg (last_ptr);
 
 	  /* If we are not optimizing, ensure that we know that this
 	     piece of context is live over the entire function.  */

@@ -1939,11 +1939,10 @@ mode_independent_operand (op, mode)
   return 0;
 }
 
-/* Given an operand OP that is a valid memory reference
-   which satisfies offsettable_memref_p,
-   return a new memory reference whose address has been adjusted by OFFSET.
-   OFFSET should be positive and less than the size of the object referenced.
-*/
+/* Given an operand OP that is a valid memory reference which
+   satisfies offsettable_memref_p, return a new memory reference whose
+   address has been adjusted by OFFSET.  OFFSET should be positive and
+   less than the size of the object referenced.  */
 
 rtx
 adj_offsettable_operand (op, offset)
@@ -1961,7 +1960,7 @@ adj_offsettable_operand (op, offset)
 	{
 	  new = gen_rtx_MEM (GET_MODE (op),
 			     plus_constant_for_output (y, offset));
-	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (op);
+	  MEM_COPY_ATTRIBUTES (new, op);
 	  return new;
 	}
 
@@ -1981,7 +1980,7 @@ adj_offsettable_operand (op, offset)
 	}
 
       new = gen_rtx_MEM (GET_MODE (op), plus_constant_for_output (y, offset));
-      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (op);
+      MEM_COPY_ATTRIBUTES (new, op);
       return new;
     }
   abort ();

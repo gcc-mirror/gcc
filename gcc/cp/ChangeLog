@@ -1,3 +1,12 @@
+Wed May 31 14:09:00 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (decl.o): Include ../expr.h.
+	* decl.c (expr.h): Include.
+	(init_decl_processing): Call record_component_aliases for arrays.
+	(grokdeclarator): Likewise.
+	Set TREE_ADDRESSABLE for fields that aren't bitfields.
+	* tree.c (build_cplus_array_type_1): Call record_component_aliases.
+
 2000-05-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (build_cp_library_fn): Set DECL_CONTEXT.

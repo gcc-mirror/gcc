@@ -156,7 +156,6 @@ static void init_attributes		PARAMS ((void));
 static void record_function_format	PARAMS ((tree, tree, enum format_type,
 						 int, int));
 static void record_international_format	PARAMS ((tree, tree, int));
-static tree c_find_base_decl            PARAMS ((tree));
 static int default_valid_lang_attribute PARAMS ((tree, tree, tree, tree));
 
 /* Keep a stack of if statements.  We record the number of compound
@@ -3245,10 +3244,10 @@ c_apply_type_quals_to_decl (type_quals, decl)
 	     alias set for the type pointed to by the type of the
 	     decl.  */
 
-	  int pointed_to_alias_set
+	  HOST_WIDE_INT pointed_to_alias_set
 	    = get_alias_set (TREE_TYPE (TREE_TYPE (decl)));
 
-	  if (!pointed_to_alias_set)
+	  if (pointed_to_alias_set == 0)
 	    /* It's not legal to make a subset of alias set zero.  */
 	    ;
 	  else
@@ -3261,90 +3260,15 @@ c_apply_type_quals_to_decl (type_quals, decl)
     }
 }
 
-/* T is an expression with pointer type.  Find the DECL on which this
-   expression is based.  (For example, in `a[i]' this would be `a'.)
-   If there is no such DECL, or a unique decl cannot be determined,
-   NULL_TREE is retured.  */
-
-static tree
-c_find_base_decl (t)
-     tree t;
-{
-  int i;
-  tree decl;
-
-  if (t == NULL_TREE || t == error_mark_node)
-    return NULL_TREE;
-
-  if (!POINTER_TYPE_P (TREE_TYPE (t)))
-    return NULL_TREE;
-
-  decl = NULL_TREE;
-
-  if (TREE_CODE (t) == FIELD_DECL
-      || TREE_CODE (t) == PARM_DECL
-      || TREE_CODE (t) == VAR_DECL)
-    /* Aha, we found a pointer-typed declaration.  */
-    return t;
-
-  /* It would be nice to deal with COMPONENT_REFs here.  If we could
-     tell that `a' and `b' were the same, then `a->f' and `b->f' are
-     also the same.  */
-
-  /* Handle general expressions.  */
-  switch (TREE_CODE_CLASS (TREE_CODE (t)))
-    {
-    case '1':
-    case '2':
-    case '3':
-      for (i = TREE_CODE_LENGTH (TREE_CODE (t)); --i >= 0;)
-	{
-	  tree d = c_find_base_decl (TREE_OPERAND (t, i));
-	  if (d)
-	    {
-	      if (!decl)
-		decl = d;
-	      else if (d && d != decl)
-		/* Two different declarations.  That's confusing; let's
-		   just assume we don't know what's going on.  */
-		decl = NULL_TREE;
-	    }
-	}
-      break;
-
-    default:
-      break;
-    }
-
-  return decl;
-}
 
 /* Return the typed-based alias set for T, which may be an expression
-   or a type.  */
+   or a type.  Return -1 if we don't do anything special.  */
 
-int
+HOST_WIDE_INT
 c_get_alias_set (t)
      tree t;
 {
-  tree type;
   tree u;
-
-  if (t == error_mark_node)
-    return 0;
-
-  /* For a bit field reference that's not to a specific field,
-     all we can say is the aliasing information for the underlying object. */
-  if (TREE_CODE (t) == BIT_FIELD_REF)
-    t = TREE_OPERAND (t, 0);
-
-  /* If this is a type, use it, otherwise get the type of the expression.
-     If the type is an error type, say this may alias anything.  */
-  type = TYPE_P (t) ? t : TREE_TYPE (t);
-  if (type == error_mark_node)
-    return 0;
-
-  /* Deal with special cases first; for certain kinds of references
-     we're interested in more than just the type.  */
 
   /* Permit type-punning when accessing a union, provided the access
      is directly through the union.  For example, this code does not
@@ -3359,81 +3283,37 @@ c_get_alias_set (t)
 	&& TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
       return 0;
 
-  if (TREE_CODE (t) == INDIRECT_REF)
+  /* If this is a char *, the ANSI C standard says it can alias
+     anything.  */
+  else if (TREE_CODE (t) == INDIRECT_REF
+	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == INTEGER_TYPE
+	   && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
+	       == TYPE_PRECISION (char_type_node)))
+    return 0;
+
+  /* That's all the expressions we handle specially.  */
+  if (! TYPE_P (t))
+    return -1;
+
+  if (TREE_CODE (t) == INTEGER_TYPE)
     {
-      /* Check for accesses through restrict-qualified pointers.  */
-      tree op = TREE_OPERAND (t, 0);
-      tree decl = c_find_base_decl (op);
-
-      if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
-	/* We use the alias set indicated in the declaration.  */
-	return DECL_POINTER_ALIAS_SET (decl);
-
-      /* If this is a char *, the ANSI C standard says it can alias
-         anything.  */
-      if (TREE_CODE (TREE_TYPE (op)) == INTEGER_TYPE
-	  && (TYPE_PRECISION (TREE_TYPE (op))
-	      == TYPE_PRECISION (char_type_node)))
-	return 0;
-    }
-
-  /* From here on, only the type matters.  */
-
-  if (TREE_CODE (t) == COMPONENT_REF
-      && DECL_BIT_FIELD_TYPE (TREE_OPERAND (t, 1)))
-    /* Since build_modify_expr calls get_unwidened for stores to
-       component references, the type of a bit field can be changed
-       from (say) `unsigned int : 16' to `unsigned short' or from
-       `enum E : 16' to `short'.  We want the real type of the
-       bit-field in this case, not some the integral equivalent.  */
-    type = DECL_BIT_FIELD_TYPE (TREE_OPERAND (t, 1));
-
-  if (TYPE_ALIAS_SET_KNOWN_P (type))
-    /* If we've already calculated the value, just return it.  */
-    return TYPE_ALIAS_SET (type);
-  else if (TYPE_MAIN_VARIANT (type) != type)
-    /* The C standard specifically allows aliasing between
-       cv-qualified variants of types.  */
-    TYPE_ALIAS_SET (type) = c_get_alias_set (TYPE_MAIN_VARIANT (type));
-  else if (TREE_CODE (type) == INTEGER_TYPE)
-    {
-      tree signed_variant;
-
       /* The C standard specifically allows aliasing between signed and
 	 unsigned variants of the same type.  We treat the signed
 	 variant as canonical.  */
-      signed_variant = signed_type (type);
+      tree signed_variant = signed_type (t);
 
-      if (signed_variant != type)
-	TYPE_ALIAS_SET (type) = c_get_alias_set (signed_variant);
-      else if (signed_variant == signed_char_type_node)
+      if (signed_variant == signed_char_type_node)
 	/* The C standard guarantess that any object may be accessed
 	   via an lvalue that has character type.  We don't have to
 	   check for unsigned_char_type_node or char_type_node because
 	   we are specifically looking at the signed variant.  */
-	TYPE_ALIAS_SET (type) = 0;
+	return 0;
+      else if (signed_variant  != t)
+	return get_alias_set (signed_variant);
     }
-  else if (TREE_CODE (type) == ARRAY_TYPE)
-    /* Anything that can alias one of the array elements can alias
-       the entire array as well.  */
-    TYPE_ALIAS_SET (type) = c_get_alias_set (TREE_TYPE (type));
-  else if (TREE_CODE (type) == FUNCTION_TYPE)
-    /* There are no objects of FUNCTION_TYPE, so there's no point in
-       using up an alias set for them.  (There are, of course,
-       pointers and references to functions, but that's
-       different.)  */
-    TYPE_ALIAS_SET (type) = 0;
-  else if (TREE_CODE (type) == RECORD_TYPE
-	   || TREE_CODE (type) == UNION_TYPE)
-    /* If TYPE is a struct or union type then we're reading or
-       writing an entire struct.  Thus, we don't know anything about
-       aliasing.  (In theory, such an access can only alias objects
-       whose type is the same as one of the fields, recursively, but
-       we don't yet make any use of that information.)  */
-    TYPE_ALIAS_SET (type) = 0;
-  else if (POINTER_TYPE_P (type))
+  else if (POINTER_TYPE_P (t))
     {
-      tree t;
+      tree t1;
 
       /* Unfortunately, there is no canonical form of a pointer type.
 	 In particular, if we have `typedef int I', then `int *', and
@@ -3458,19 +3338,14 @@ c_get_alias_set (t)
 	 can dereference IPP and CIPP.  So, we ignore cv-qualifiers on
 	 the pointed-to types.  This issue has been reported to the
 	 C++ committee.  */
-      t = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      t = ((TREE_CODE (type) == POINTER_TYPE)
-	   ? build_pointer_type (t) : build_reference_type (t));
-      if (t != type)
-	TYPE_ALIAS_SET (type) = c_get_alias_set (t);
+      t1 = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+      t1 = ((TREE_CODE (t) == POINTER_TYPE)
+	   ? build_pointer_type (t1) : build_reference_type (t1));
+      if (t1 != t)
+	return get_alias_set (t1);
     }
 
-  if (! TYPE_ALIAS_SET_KNOWN_P (type))
-    /* TYPE is something we haven't seen before.  Put it in a new
-       alias set.  */
-    TYPE_ALIAS_SET (type) = new_alias_set ();
-
-  return TYPE_ALIAS_SET (type);
+  return -1;
 }
 
 /* Build tree nodes and builtin functions common to both C and C++ language
@@ -3480,6 +3355,7 @@ c_get_alias_set (t)
    NO_BUILTINS and NO_NONANSI_BUILTINS contain the respective values of
    the language frontend flags flag_no_builtin and
    flag_no_nonansi_builtin.  */
+
 void
 c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
     int cplus_mode, no_builtins, no_nonansi_builtins;

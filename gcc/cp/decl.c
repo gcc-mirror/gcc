@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "rtl.h"
+#include "expr.h"
 #include "flags.h"
 #include "cp-tree.h"
 #include "decl.h"
@@ -6455,9 +6456,13 @@ init_decl_processing ()
      array type.  */
   char_array_type_node
     = build_array_type (char_type_node, array_domain_type);
+
   /* Likewise for arrays of ints.  */
   int_array_type_node
     = build_array_type (integer_type_node, array_domain_type);
+
+  record_component_aliases (char_array_type_node);
+  record_component_aliases (int_array_type_node);
 
   if (flag_new_abi)
     delta_type_node = ptrdiff_type_node;
@@ -6522,6 +6527,7 @@ init_decl_processing ()
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
+  record_component_aliases (wchar_array_type_node);
 
   if (flag_vtable_thunks)
     {
@@ -11588,6 +11594,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    else
 	      {
 		decl = build_decl (FIELD_DECL, declarator, type);
+		TREE_ADDRESSABLE (decl) = ! bitfield;
 		if (RIDBIT_SETP (RID_MUTABLE, specbits))
 		  {
 		    DECL_MUTABLE_P (decl) = 1;

@@ -97,7 +97,7 @@ extern void decl_attributes			PARAMS ((tree, tree, tree));
 extern void init_function_format_info		PARAMS ((void));
 extern void check_function_format		PARAMS ((tree, tree, tree));
 extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
-extern int c_get_alias_set			PARAMS ((tree));
+extern HOST_WIDE_INT c_get_alias_set		PARAMS ((tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error			PARAMS ((enum tree_code));

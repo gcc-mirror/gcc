@@ -256,6 +256,7 @@ void
 setup_save_areas ()
 {
   int i, j, k;
+  unsigned int r;
   HARD_REG_SET hard_regs_used;
 
   /* Allocate space in the save area for the largest multi-register
@@ -267,16 +268,13 @@ setup_save_areas ()
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (reg_renumber[i] >= 0 && REG_N_CALLS_CROSSED (i) > 0)
       {
-	int regno = reg_renumber[i];
-	int endregno 
+	unsigned int regno = reg_renumber[i];
+	unsigned int endregno 
 	  = regno + HARD_REGNO_NREGS (regno, GET_MODE (regno_reg_rtx[i]));
-	int nregs = endregno - regno;
 
-	for (j = 0; j < nregs; j++)
-	  {
-	    if (call_used_regs[regno+j]) 
-	      SET_HARD_REG_BIT (hard_regs_used, regno+j);
-	  }
+	for (r = regno; r < endregno; r++)
+	  if (call_used_regs[r])
+	    SET_HARD_REG_BIT (hard_regs_used, r);
       }
 
   /* Now run through all the call-used hard-registers and allocate
@@ -322,16 +320,24 @@ setup_save_areas ()
 	  {
 	    /* This should not depend on WORDS_BIG_ENDIAN.
 	       The order of words in regs is the same as in memory.  */
-	    rtx temp = gen_rtx_MEM (regno_save_mode[i+k][1], 
+	    rtx temp = gen_rtx_MEM (regno_save_mode[i + k][1], 
 				    XEXP (regno_save_mem[i][j], 0));
 
-	    regno_save_mem[i+k][1] 
+	    regno_save_mem[i + k][1] 
 	      = adj_offsettable_operand (temp, k * UNITS_PER_WORD);
 	  }
       }
+
+  /* Now loop again and set the alias set of any save areas we made to
+     the alias set used to represent frame objects.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    for (j = MOVE_MAX_WORDS; j > 0; j--)
+      if (regno_save_mem[i][j] != 0)
+	MEM_ALIAS_SET (regno_save_mem[i][j]) = get_frame_alias_set ();
 }
 
 /* Find the places where hard regs are live across calls and save them.  */
+
 void
 save_call_clobbered_regs ()
 {
