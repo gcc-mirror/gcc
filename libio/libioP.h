@@ -138,8 +138,13 @@ typedef _IO_size_t (*_IO_xsgetn_t) __P ((_IO_FILE *FP, void *DATA,
    (MODE==1), or the end of the file (MODE==2).
    It matches the streambuf::seekoff virtual function.
    It is also used for the ANSI fseek function. */
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+typedef _IO_fpos64_t (*_IO_seekoff_t) __P ((_IO_FILE *FP, _IO_off64_t OFF,
+					  int DIR, int MODE));
+#else
 typedef _IO_fpos_t (*_IO_seekoff_t) __P ((_IO_FILE *FP, _IO_off_t OFF,
 					  int DIR, int MODE));
+#endif
 #define _IO_SEEKOFF(FP, OFF, DIR, MODE) JUMP3 (__seekoff, FP, OFF, DIR, MODE)
 
 /* The 'seekpos' hook also moves the stream position,
@@ -147,7 +152,11 @@ typedef _IO_fpos_t (*_IO_seekoff_t) __P ((_IO_FILE *FP, _IO_off_t OFF,
    It matches the streambuf::seekpos virtual function.
    It is also used for the ANSI fgetpos and fsetpos functions.  */
 /* The _IO_seek_cur and _IO_seek_end options are not allowed. */
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+typedef _IO_fpos64_t (*_IO_seekpos_t) __P ((_IO_FILE *, _IO_fpos64_t, int));
+#else
 typedef _IO_fpos_t (*_IO_seekpos_t) __P ((_IO_FILE *, _IO_fpos_t, int));
+#endif
 #define _IO_SEEKPOS(FP, POS, FLAGS) JUMP2 (__seekpos, FP, POS, FLAGS)
 
 /* The 'setbuf' hook gives a buffer to the file.
@@ -196,7 +205,11 @@ typedef _IO_ssize_t (*_IO_write_t) __P ((_IO_FILE *,const void *,_IO_ssize_t));
    It generalizes the Unix lseek(2) function.
    It matches the streambuf::sys_seek virtual function, which is
    specific to this implementation. */
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+typedef _IO_fpos64_t (*_IO_seek_t) __P ((_IO_FILE *, _IO_off64_t, int));
+#else
 typedef _IO_fpos_t (*_IO_seek_t) __P ((_IO_FILE *, _IO_off_t, int));
+#endif
 #define _IO_SYSSEEK(FP, OFFSET, MODE) JUMP2 (__seek, FP, OFFSET, MODE)
 
 /* The 'sysclose' hook is used to finalize (close, finish up) an
@@ -260,8 +273,13 @@ struct _IO_FILE_plus
 
 /* Generic functions */
 
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+extern _IO_fpos64_t _IO_seekoff __P ((_IO_FILE *, _IO_off64_t, int, int));
+extern _IO_fpos64_t _IO_seekpos __P ((_IO_FILE *, _IO_fpos64_t, int));
+#else
 extern _IO_fpos_t _IO_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
 extern _IO_fpos_t _IO_seekpos __P ((_IO_FILE *, _IO_fpos_t, int));
+#endif
 
 extern void _IO_switch_to_main_get_area __P ((_IO_FILE *));
 extern void _IO_switch_to_backup_area __P ((_IO_FILE *));
@@ -297,13 +315,24 @@ extern _IO_FILE* _IO_default_setbuf __P ((_IO_FILE *, char *, _IO_ssize_t));
 extern _IO_size_t _IO_default_xsputn __P ((_IO_FILE *, const void *,
 					   _IO_size_t));
 extern _IO_size_t _IO_default_xsgetn __P ((_IO_FILE *, void *, _IO_size_t));
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+extern _IO_fpos64_t _IO_default_seekoff __P ((_IO_FILE *,
+					      _IO_off64_t, int, int));
+extern _IO_fpos64_t _IO_default_seekpos __P ((_IO_FILE *,
+					      _IO_fpos64_t, int));
+#else
 extern _IO_fpos_t _IO_default_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
 extern _IO_fpos_t _IO_default_seekpos __P ((_IO_FILE *, _IO_fpos_t, int));
+#endif
 extern _IO_ssize_t _IO_default_write __P ((_IO_FILE *, const void *,
 					   _IO_ssize_t));
 extern _IO_ssize_t _IO_default_read __P ((_IO_FILE *, void *, _IO_ssize_t));
 extern int _IO_default_stat __P ((_IO_FILE *, void *));
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+extern _IO_fpos64_t _IO_default_seek __P ((_IO_FILE *, _IO_off64_t, int));
+#else
 extern _IO_fpos_t _IO_default_seek __P ((_IO_FILE *, _IO_off_t, int));
+#endif
 extern int _IO_default_sync __P ((_IO_FILE *));
 #define _IO_default_close ((_IO_close_t) _IO_default_sync)
 
@@ -335,7 +364,13 @@ extern void _IO_flush_all_linebuffered __P ((void));
 
 extern int _IO_file_doallocate __P ((_IO_FILE *));
 extern _IO_FILE* _IO_file_setbuf __P ((_IO_FILE *, char *, _IO_ssize_t));
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+extern _IO_fpos64_t _IO_file_seekoff __P ((_IO_FILE *, _IO_off64_t, int, int));
+extern _IO_fpos64_t _IO_file_seek __P ((_IO_FILE *, _IO_off64_t, int));
+#else
 extern _IO_fpos_t _IO_file_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
+extern _IO_fpos_t _IO_file_seek __P ((_IO_FILE *, _IO_off_t, int));
+#endif
 extern _IO_size_t _IO_file_xsputn __P ((_IO_FILE *, const void *, _IO_size_t));
 extern int _IO_file_stat __P ((_IO_FILE *, void *));
 extern int _IO_file_close __P ((_IO_FILE *));
@@ -344,13 +379,14 @@ extern int _IO_file_overflow __P ((_IO_FILE *, int));
 #define _IO_file_is_open(__fp) ((__fp)->_fileno >= 0)
 extern void _IO_file_init __P ((_IO_FILE *));
 extern _IO_FILE* _IO_file_attach __P ((_IO_FILE *, int));
+extern _IO_FILE* _IO_file_open __P ((_IO_FILE *, const char *, int, int,
+				     int, int));
 extern _IO_FILE* _IO_file_fopen __P ((_IO_FILE *, const char *, const char *));
 extern _IO_ssize_t _IO_file_write __P ((_IO_FILE *, const void *,
 					_IO_ssize_t));
 extern _IO_ssize_t _IO_file_read __P ((_IO_FILE *, void *, _IO_ssize_t));
 extern int _IO_file_sync __P ((_IO_FILE *));
 extern int _IO_file_close_it __P ((_IO_FILE *));
-extern _IO_fpos_t _IO_file_seek __P ((_IO_FILE *, _IO_off_t, int));
 extern void _IO_file_finish __P ((_IO_FILE *, int));
 
 /* Jumptable functions for proc_files. */
@@ -361,7 +397,11 @@ extern int _IO_proc_close __P ((_IO_FILE *));
 extern int _IO_str_underflow __P ((_IO_FILE *));
 extern int _IO_str_overflow __P ((_IO_FILE *, int));
 extern int _IO_str_pbackfail __P ((_IO_FILE *, int));
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+extern _IO_fpos64_t _IO_str_seekoff __P ((_IO_FILE *, _IO_off64_t, int, int));
+#else
 extern _IO_fpos_t _IO_str_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
+#endif
 extern void _IO_str_finish __P ((_IO_FILE *, int));
 
 /* Other strfile functions */
@@ -475,11 +515,19 @@ extern int _IO_vscanf __P ((const char *, _IO_va_list));
 
 /* _IO_pos_BAD is an _IO_fpos_t value indicating error, unknown, or EOF. */
 #ifndef _IO_pos_BAD
-# define _IO_pos_BAD ((_IO_fpos_t) -1)
+# if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+#  define _IO_pos_BAD ((_IO_fpos64_t) -1)
+# else
+#  define _IO_pos_BAD ((_IO_fpos_t) -1)
+# endif
 #endif
 /* _IO_pos_as_off converts an _IO_fpos_t value to an _IO_off_t value. */
 #ifndef _IO_pos_as_off
-# define _IO_pos_as_off(__pos) ((_IO_off_t) (__pos))
+# if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+#  define _IO_pos_as_off(__pos) ((_IO_off64_t) (__pos))
+# else
+#  define _IO_pos_as_off(__pos) ((_IO_off_t) (__pos))
+# endif
 #endif
 /* _IO_pos_adjust adjust an _IO_fpos_t by some number of bytes. */
 #ifndef _IO_pos_adjust
@@ -487,7 +535,11 @@ extern int _IO_vscanf __P ((const char *, _IO_va_list));
 #endif
 /* _IO_pos_0 is an _IO_fpos_t value indicating beginning of file. */
 #ifndef _IO_pos_0
-# define _IO_pos_0 ((_IO_fpos_t) 0)
+# if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+#  define _IO_pos_0 ((_IO_fpos64_t) 0)
+# else
+#  define _IO_pos_0 ((_IO_fpos_t) 0)
+# endif
 #endif
 
 #ifdef __cplusplus
