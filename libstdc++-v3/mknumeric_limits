@@ -175,7 +175,10 @@ echo "$CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H -fno-exceptions \
   exit 1
 }
 
-"$BUILD_DIR/src/gen-num-limits" >> $OUT_H-t
+"$BUILD_DIR/src/gen-num-limits" >> $OUT_H-t || {
+  echo "gen-num-limits failed to execute, exiting."
+  exit 1
+}
 
 cat <<EOF >> $OUT_H-t
 } // namespace std
