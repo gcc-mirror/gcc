@@ -3160,7 +3160,11 @@ loop_iterations (loop_start, loop_end)
 		{
 		  rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
-		  if (note && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
+		  /* Only use the REG_EQUAL note if it is a constant.
+		     Other things, divide in particular, will cause
+		     problems later if we use them.  */
+		  if (note && GET_CODE (XEXP (note, 0)) != EXPR_LIST
+		      && CONSTANT_P (XEXP (note, 0)))
 		    comparison_value = XEXP (note, 0);
 		}
 	      break;
