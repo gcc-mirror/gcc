@@ -1,5 +1,10 @@
 2000-01-10  Mark Mitchell  <mitchell@dumbledore.codesourcery.com>
 
+	* class.c (dfs_modify_vtables_queue_p): Remove.
+	(modify_all_vtables): Use dfs_unmarked_real_bases_queue_p
+	and dfs_marked_real_bases_queue_p instead of
+	dfs_modify_vtables_queue_p.
+
 	* class.c (build_vbase_path): Simplify.
 	(dfs_propagate_binfo_offsets): New function.
 	(propagate_binfo_offsets): Use it.

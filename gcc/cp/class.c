@@ -103,7 +103,6 @@ static void check_for_override PROTO((tree, tree));
 static tree get_class_offset_1 PROTO((tree, tree, tree, tree, tree));
 static tree get_class_offset PROTO((tree, tree, tree, tree));
 static void modify_one_vtable PROTO((tree, tree, tree));
-static tree dfs_modify_vtables_queue_p PROTO((tree, void *));
 static tree dfs_modify_vtables PROTO((tree, void *));
 static void modify_all_vtables PROTO((tree, tree));
 static void determine_primary_base PROTO((tree, int *));
@@ -2463,23 +2462,6 @@ modify_one_vtable (binfo, t, fndecl)
 /* Called from modify_all_vtables via dfs_walk.  */
 
 static tree
-dfs_modify_vtables_queue_p (binfo, data)
-     tree binfo;
-     void *data;
-{
-  tree list = (tree) data;
-
-  if (TREE_VIA_VIRTUAL (binfo))
-    binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), TREE_PURPOSE (list));
-
-  return (TREE_ADDRESSABLE (list) 
-	  ? markedp (binfo, NULL) 
-	  : unmarkedp (binfo, NULL));
-}
-
-/* Called from modify_all_vtables via dfs_walk.  */
-
-static tree
 dfs_modify_vtables (binfo, data)
      tree binfo;
      void *data;
@@ -2510,13 +2492,9 @@ modify_all_vtables (t, fndecl)
   tree list;
 
   list = build_tree_list (t, fndecl);
-  dfs_walk (TYPE_BINFO (t), dfs_modify_vtables, dfs_modify_vtables_queue_p,
-	    list);
-  /* Let dfs_modify_vtables_queue_p know to check that the mark is
-     present before queueing a base, rather than checking to see that
-     it is *not* present.  */
-  TREE_ADDRESSABLE (list) = 1;
-  dfs_walk (TYPE_BINFO (t), dfs_unmark, dfs_modify_vtables_queue_p, list);
+  dfs_walk (TYPE_BINFO (t), dfs_modify_vtables, 
+	    dfs_unmarked_real_bases_queue_p, list);
+  dfs_walk (TYPE_BINFO (t), dfs_unmark, dfs_marked_real_bases_queue_p, t);
 }
 
 /* Fixup all the delta entries in this one vtable that need updating.  */
