@@ -1,3 +1,8 @@
+2001-12-13  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_unique_section): Simplify and
+	correct code selecting section.
+
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
 	* except.c (sjlj_find_directly_reachable_regions): Don't

@@ -7990,7 +7990,7 @@ rs6000_select_section (decl, reloc)
    RELOC indicates whether the initial value of EXP requires
    link-time relocations.  If you do not define this macro, GCC will use
    the symbol name prefixed by `.' as the section name.  Note - this
-   macro can now be called for unitialised data items as well as
+   macro can now be called for uninitialized data items as well as
    initialised data and functions.  */
 
 void
@@ -7998,9 +7998,6 @@ rs6000_unique_section (decl, reloc)
      tree decl;
      int reloc;
 {
-  int size = int_size_in_bytes (TREE_TYPE (decl));
-  int needs_sdata;
-  int readonly;
   int len;
   int sec;
   const char *name;
@@ -8009,40 +8006,54 @@ rs6000_unique_section (decl, reloc)
 
   static const char *const prefixes[7][2] =
   {
-    { ".text.",   ".gnu.linkonce.t." },
     { ".rodata.", ".gnu.linkonce.r." },
     { ".sdata2.", ".gnu.linkonce.s2." },
     { ".data.",   ".gnu.linkonce.d." },
     { ".sdata.",  ".gnu.linkonce.s." },
     { ".bss.",    ".gnu.linkonce.b." },
-    { ".sbss.",   ".gnu.linkonce.sb." }
+    { ".sbss.",   ".gnu.linkonce.sb." },
+    { ".text.",   ".gnu.linkonce.t." }
   };
-  
-  needs_sdata = (TREE_CODE (decl) != FUNCTION_DECL
-		 && size > 0 
-		 && size <= g_switch_value
-		 && rs6000_sdata != SDATA_NONE
-		 && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)));
 
-  if (TREE_CODE (decl) == STRING_CST)
-    readonly = ! flag_writable_strings;
-  else if (TREE_CODE (decl) == VAR_DECL)
-    readonly = (! (flag_pic && reloc)
-		&& TREE_READONLY (decl)
-		&& ! TREE_SIDE_EFFECTS (decl)
-		&& DECL_INITIAL (decl)
-		&& DECL_INITIAL (decl) != error_mark_node
-		&& TREE_CONSTANT (DECL_INITIAL (decl)));
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    sec = 6;
   else
-    readonly = 1;
-  if (needs_sdata && rs6000_sdata != SDATA_EABI)
-    readonly = 0;
+    {
+      int readonly;
+      int needs_sdata;
+      int size;
 
-  sec = ((TREE_CODE (decl) == FUNCTION_DECL ? 0 : 1)
-	 + (readonly ? 0 : 2) 
-	 + (needs_sdata ? 1 : 0)
-	 + ((DECL_INITIAL (decl) == 0
-	     || DECL_INITIAL (decl) == error_mark_node) ? 4 : 0));
+      readonly = 1;
+      if (TREE_CODE (decl) == STRING_CST)
+	readonly = ! flag_writable_strings;
+      else if (TREE_CODE (decl) == VAR_DECL)
+	readonly = (! (flag_pic && reloc)
+		    && TREE_READONLY (decl)
+		    && ! TREE_SIDE_EFFECTS (decl)
+		    && TREE_CONSTANT (DECL_INITIAL (decl)));
+
+      size = int_size_in_bytes (TREE_TYPE (decl));
+      needs_sdata = (size > 0 
+		     && size <= g_switch_value
+		     && rs6000_sdata != SDATA_NONE
+		     && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)));
+
+      if (DECL_INITIAL (decl) == 0
+	  || DECL_INITIAL (decl) == error_mark_node)
+	sec = 4;
+      else if (! readonly)
+	sec = 2;
+      else
+	sec = 0;
+
+      if (needs_sdata)
+	{
+	  /* .sdata2 is only for EABI.  */
+	  if (sec == 0 && rs6000_sdata != SDATA_EABI)
+	    sec = 2;
+	  sec += 1;
+	}
+    }
 
   STRIP_NAME_ENCODING (name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
