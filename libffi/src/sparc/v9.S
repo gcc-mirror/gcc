@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   v9.S - Copyright (c) 2000 Cygnus Solutions
+   v9.S - Copyright (c) 2000, 2003 Cygnus Solutions
    
    Sparc 64bit Foreign Function Interface 
 
@@ -99,7 +99,7 @@ _ffi_call_V9:
 	cmp	%i3, FFI_TYPE_STRUCT
 	be,pn	%icc, dostruct
 
-	 cmp	%i3, FFI_TYPE_LONGDOUBLE
+	cmp	%i3, FFI_TYPE_LONGDOUBLE
 	bne,pt	%icc, done
 	 nop
 	std	%f0, [%i4+0]
@@ -124,6 +124,88 @@ dostruct:
 
 .ffi_call_V9_end:
 	.size	ffi_call_V9,.ffi_call_V9_end-ffi_call_V9
+
+
+#define	STACKFRAME	 240	/* 16*8 register window +
+				   6*8 args backing store +
+				   8*8 locals */
+#define	FP		%fp+STACK_BIAS
+
+/* ffi_closure_v9(...)
+
+   Receives the closure argument in %g1.   */
+
+	.text
+	.align 8
+	.globl ffi_closure_v9
+
+ffi_closure_v9:
+.LLFB2:
+	save	%sp, -STACKFRAME, %sp
+.LLCFI1:
+
+	! Store all of the potential argument registers in va_list format.
+	stx	%i0, [FP+128+0]
+	stx	%i1, [FP+128+8]
+	stx	%i2, [FP+128+16]
+	stx	%i3, [FP+128+24]
+	stx	%i4, [FP+128+32]
+	stx	%i5, [FP+128+40]
+
+	! Store possible floating point argument registers too.
+	std	%f0, [FP-48]
+	std	%f2, [FP-40]
+	std	%f4, [FP-32]
+	std	%f6, [FP-24]
+	std	%f8, [FP-16]
+	std	%f10, [FP-8]
+
+	! Call ffi_closure_sparc_inner to do the bulk of the work.
+	mov	%g1, %o0
+	add	%fp, STACK_BIAS-64, %o1
+	add	%fp, STACK_BIAS+128, %o2
+	call	ffi_closure_sparc_inner
+	 add	%fp, STACK_BIAS-48, %o3
+
+	! Load up the return value in the proper type.
+	cmp	%o0, FFI_TYPE_VOID
+	be,pn	%icc, done1
+
+	cmp	%o0, FFI_TYPE_FLOAT
+	be,a,pn	%icc, done1
+	 ld	[FP-64], %f0
+
+	cmp	%o0, FFI_TYPE_DOUBLE
+	be,a,pn	%icc, done1
+	 ldd	[FP-64], %f0
+
+	cmp	%o0, FFI_TYPE_LONGDOUBLE
+	be,a,pn	%icc, longdouble1
+	 ldd	[FP-64], %f0
+
+	cmp	%o0, FFI_TYPE_STRUCT
+	be,pn	%icc, struct1
+
+	! FFI_TYPE_UINT64 | FFI_TYPE_SINT64 | FFI_TYPE_POINTER
+	ldx	[FP-64], %i0
+
+done1:
+	ret
+	 restore
+
+struct1:
+	ldx [FP-56], %i2
+	ret
+	 restore
+
+longdouble1:
+	ldd	[FP-56], %f2
+	ret
+	 restore
+.LLFE2:
+
+.ffi_closure_v9_end:
+	.size	ffi_closure_v9,.ffi_closure_v9_end-ffi_closure_v9
 
 	.section	".eh_frame",#alloc,#write
 .LLframe1:
@@ -169,5 +251,27 @@ dostruct:
 	.byte	0x1f	! uleb128 0x1f
 	.align 8
 .LLEFDE1:
-
+.LLSFDE2:
+	.uaword	.LLEFDE2-.LLASFDE2	! FDE Length
+.LLASFDE2:
+	.uaword	.LLASFDE2-.LLframe1	! FDE CIE offset
+#ifdef HAVE_AS_SPARC_UA_PCREL
+	.uaword	%r_disp32(.LLFB2)
+	.uaword	.LLFE2-.LLFB2		! FDE address range
+#else
+	.align 8
+	.xword	.LLFB2
+	.uaxword	.LLFE2-.LLFB2	! FDE address range
+#endif
+	.byte	0x0	! uleb128 0x0; Augmentation size
+	.byte	0x4	! DW_CFA_advance_loc4
+	.uaword	.LLCFI1-.LLFB2
+	.byte	0xd	! DW_CFA_def_cfa_register
+	.byte	0x1e	! uleb128 0x1e
+	.byte	0x2d	! DW_CFA_GNU_window_save
+	.byte	0x9	! DW_CFA_register
+	.byte	0xf	! uleb128 0xf
+	.byte	0x1f	! uleb128 0x1f
+	.align 8
+.LLEFDE2:
 #endif
