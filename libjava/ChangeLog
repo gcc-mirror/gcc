@@ -1,3 +1,9 @@
+2000-12-18  Warren Levy  <warrenl@redhat.com>
+
+	* java/util/GregorianCalendar.java (GregorianCalendar): Constructors
+	need to set timezone to a valid non-null value.  Partial fix for
+	PR 331.
+
 2000-12-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/awt/Window.java (addNotify): Remove peer casting hack now that 
