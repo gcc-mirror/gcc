@@ -129,7 +129,7 @@ do								\
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-  sprintf ((BUF), "*.%s%d", (PREFIX), (NUMBER))
+  sprintf ((BUF), "*.%s%ld", (PREFIX), (long)(NUMBER))
 
 /* The prefix to add to user-visible assembler symbols.  */
 

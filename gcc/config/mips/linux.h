@@ -84,8 +84,10 @@ do {								\
 	size_directive_output = 1;				\
 	fprintf (FILE, "%s", SIZE_ASM_OP);			\
 	assemble_name (FILE, NAME);				\
-	fprintf (FILE, ",%d\n",					\
+	fprintf (FILE, ",");					\
+	fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,			\
 		 int_size_in_bytes (TREE_TYPE (DECL)));		\
+	fprintf (FILE, "\n");					\
       }								\
     mips_declare_object (FILE, NAME, "", ":\n", 0);		\
   } while (0)

@@ -165,6 +165,7 @@ Boston, MA 02111-1307, USA.  */
    make sure that the location counter for the .rodata section gets pro-
    perly re-aligned prior to the actual beginning of the jump table.  */
 
+#undef ALIGN_ASM_OP
 #define ALIGN_ASM_OP "\t.align\t"
 
 #ifndef ASM_OUTPUT_BEFORE_CASE_LABEL

@@ -2005,7 +2005,7 @@ do {									 \
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
-  sprintf (LABEL, TARGET_SVR4 ? "*.%s%d" : "*@%s%d", PREFIX, NUM)
+  sprintf (LABEL, TARGET_SVR4 ? "*.%s%ld" : "*@%s%ld", PREFIX, (long)(NUM))
 
 /* Internal macro to get a single precision floating point value into
    an int, so we can print its value in hex.  */
@@ -2079,7 +2079,7 @@ do {									 \
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "%s0x%x\n", CHAR_ASM_OP, (VALUE))
+  fprintf (FILE, "%s0x%x\n", CHAR_ASM_OP, (int)(VALUE))
 
 /* The single-byte pseudo-op is the default.  Override svr[34].h.  */
 #undef	ASM_BYTE_OP

@@ -11,10 +11,12 @@
    avoid conflicting with ELF directives.  These are only recognized
    by gas, anyhow, not the native assembler.  */
 #undef PUT_SDB_SIZE
-#define PUT_SDB_SIZE(a)                                       \
+#define PUT_SDB_SIZE(a)                               \
 do {                                                  \
   extern FILE *asm_out_text_file;                     \
-  fprintf (asm_out_text_file, "\t.esize\t%d;", (a));  \
+  fprintf (asm_out_text_file, "\t.esize\t");          \
+  fprintf (asm_out_text_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
+  fprintf (asm_out_text_file, ";");                   \
 } while (0)
 
 #undef PUT_SDB_TYPE

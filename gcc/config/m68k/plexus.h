@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dm68 -Dunix -Dplexus -Asystem=unix  -Acpu=m68k -Amachine=m68k"
 
 #if TARGET_DEFAULT & MASK_68020
-#define ASM_SPEC\
+#define ASM_SPEC \
 "%{m68000:-mc68000}%{mc68000:-mc68000}%{!mc68000:%{!m68000:-mc68020}}"
 #undef STRICT_ALIGNMENT
 #define STRICT_ALIGNMENT 0

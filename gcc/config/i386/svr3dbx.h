@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-    sprintf ((BUF), "*.%s%d", (PREFIX), (NUMBER))
+    sprintf ((BUF), "*.%s%ld", (PREFIX), (long)(NUMBER))
 
 /* With the current gas, .align N aligns to an N-byte boundary.
    This is done to be compatible with the system assembler.

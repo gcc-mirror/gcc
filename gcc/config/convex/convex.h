@@ -1311,7 +1311,7 @@ enum reg_class {
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tds.b %#x\n", (VALUE))
+  fprintf (FILE, "\tds.b %#x\n", (int)(VALUE))
 
 /* This is how to output a string */
 

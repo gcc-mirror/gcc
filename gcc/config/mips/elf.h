@@ -38,7 +38,9 @@ Boston, MA 02111-1307, USA.  */
 #define PUT_SDB_SIZE(a)					\
 do {							\
   extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.esize\t%d;", (a));	\
+  fprintf (asm_out_text_file, "\t.esize\t");		\
+  fprintf (asm_out_text_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
+  fprintf (asm_out_text_file, ";");		       	\
 } while (0)
 
 #undef PUT_SDB_TYPE
@@ -151,7 +153,10 @@ do {									\
 	size_directive_output = 1;					\
 	fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
-	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL)));	\
+	fprintf (FILE, ",");						\
+	fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,				\
+	  int_size_in_bytes (TREE_TYPE (DECL)));			\
+	fprintf (FILE, "\n");						\
       }									\
     mips_declare_object (FILE, NAME, "", ":\n", 0);			\
   } while (0)

@@ -865,10 +865,19 @@ extern enum cmp_type hppa_branch_type;
   STRIP_NAME_ENCODING (target_name, target_name); \
   pa_output_function_prologue (FILE, 0); \
   if (VAL_14_BITS_P (DELTA)) \
-    fprintf (FILE, "\tb %s\n\tldo %d(%%r26),%%r26\n", target_name, DELTA); \
+    { \
+      fprintf (FILE, "\tb %s\n\tldo ", target_name); \
+      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+      fprintf (FILE, "(%%r26),%%r26\n"); \
+    } \
   else \
-    fprintf (FILE, "\taddil L%%%d,%%r26\n\tb %s\n\tldo R%%%d(%%r1),%%r26\n", \
-	     DELTA, target_name, DELTA); \
+    { \
+      fprintf (FILE, "\taddil L%%"); \
+      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+      fprintf (FILE, ",%%r26\n\tb %s\n\tldo R%%", target_name); \
+      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+      fprintf (FILE, "(%%r1),%%r26\n"); \
+    } \
   fprintf (FILE, "\n\t.EXIT\n\t.PROCEND\n"); \
 }
 
@@ -1724,7 +1733,7 @@ while (0)
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%c$%s%04d", (PREFIX)[0], (PREFIX) + 1, NUM)
+  sprintf (LABEL, "*%c$%s%04ld", (PREFIX)[0], (PREFIX) + 1, (long)(NUM))
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
@@ -1770,7 +1779,7 @@ while (0)
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
+  fprintf (FILE, "\t.byte 0x%x\n", (int)(VALUE))
 
 /* C string constants giving the pseudo-op to use for a sequence of
    2, 4, and 8 byte unaligned constants.  dwarf2out.c needs these.  */
@@ -1912,7 +1921,8 @@ while (0)
       fputs (")", FILE);						\
       break;								\
     case CONST_INT:							\
-      fprintf (FILE, "%d(%%r0)", INTVAL (addr));			\
+      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, INTVAL (addr));		\
+      fprintf (FILE, "(%%r0)");						\
       break;								\
     default:								\
       output_addr_const (FILE, addr);					\

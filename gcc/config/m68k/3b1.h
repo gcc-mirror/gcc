@@ -132,14 +132,14 @@ output_file_directive ((FILE), main_input_filename)
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
 do { long l[2];						\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf (FILE, "\tlong 0x%x,0x%x\n", l[0], l[1]); \
+     fprintf (FILE, "\tlong 0x%lx,0x%lx\n", l[0], l[1]); \
    } while (0)
 
 #undef ASM_OUTPUT_LONG_DOUBLE
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\tlong 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
+     fprintf (FILE, "\tlong 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -147,7 +147,7 @@ do { long l[3];								\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
 do { long l;					\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
-     fprintf ((FILE), "\tlong 0x%x\n", l);	\
+     fprintf ((FILE), "\tlong 0x%lx\n", l);	\
    } while (0)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
@@ -348,7 +348,7 @@ do { long l;					\
     }}
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
-  sprintf ((LABEL), "%s%%%d", (PREFIX), (NUM))
+  sprintf ((LABEL), "%s%%%ld", (PREFIX), (long)(NUM))
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
     fprintf (FILE, "%s%%%d:\n", PREFIX, NUM)

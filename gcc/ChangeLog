@@ -1,3 +1,90 @@
+2001-11-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha/unicosmk.h (ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT): Fix
+	format specifier warning.
+	* convex.h (ASM_OUTPUT_BYTE): Likewise.
+	* elfos.h (ALIGN_ASM_OP): Undef before defining.
+	* i386/att.h (ASM_GENERATE_INTERNAL_LABEL): Fix format specifier
+	warning.
+	* i386/bsd.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* i386/gas.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* i386-interix.h (gen_stdcall_suffix): Prototype.
+	* i386.h (ASM_OUTPUT_BYTE): Fix format specifier warning.
+	* i386elf.h (ASM_OUTPUT_FLOAT, ASM_OUTPUT_DOUBLE,
+	ASM_OUTPUT_LONG_DOUBLE): Likewise.
+	* i386/interix.c (gen_stdcall_suffix): Const-ify.
+	* i386/next.h (ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_DOUBLE,
+	ASM_OUTPUT_FLOAT, ASM_GENERATE_INTERNAL_LABEL): Fix format
+	specifier warnings.
+	* i386/osfrose.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* i386/ptx4-i.h (ASM_OUTPUT_FLOAT, ASM_OUTPUT_DOUBLE,
+	ASM_OUTPUT_LONG_DOUBLE): Likewise.
+	* i386/sco5.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* i386/sequent.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* i386/sun386.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* i386/svr3dbx.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* m68k/3b1.h (ASM_OUTPUT_DOUBLE, ASM_OUTPUT_LONG_DOUBLE,
+	ASM_OUTPUT_FLOAT, ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* m68k/altos3068.h (ASM_OUTPUT_FLOAT_OPERAND): Likewise.
+	* m68k/amix.h (ASM_OUTPUT_ASCII, ASM_GENERATE_INTERNAL_LABEL):
+	Likewise.
+	* m68k/atari.h (ASM_OUTPUT_ASCII, ASM_GENERATE_INTERNAL_LABEL):
+	Likewise.
+	* m68k/crds.h (ASM_OUTPUT_DOUBLE, PRINT_OPERAND): Likewise.
+	* m68k/dpx2.h (ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_DOUBLE,
+	ASM_OUTPUT_FLOAT, ASM_OUTPUT_BYTE, ASM_OUTPUT_FLOAT_OPERAND):
+	Likewise.
+	* m68k/hp320.h (ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_BYTE):
+	Likewise.
+	* m68k.h (ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_BYTE):
+	Likewise.
+	* m68k/m68kv4.h (ASM_OUTPUT_ASCII): Delete unused variable.
+	* m68k/mot3300.h (ASM_OUTPUT_BYTE): Fix format specifier warning.
+	* m68k/news.h (PRINT_OPERAND): Likewise.
+	* m68k/next.h (ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT,
+	ASM_OUTPUT_FLOAT_OPERAND, ASM_OUTPUT_DOUBLE_OPERAND): Likewise.
+	* m68k/next21.h (ASM_OUTPUT_FLOAT_OPERAND): Likewise.
+	* m68k/plexus.h (ASM_SPEC): Insert space between macro name and
+	definition.
+	* m68k/sgs.h (ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_DOUBLE,
+	ASM_OUTPUT_FLOAT, ASM_OUTPUT_ASCII, ASM_OUTPUT_FLOAT_OPERAND,
+	ASM_OUTPUT_DOUBLE_OPERAND): Fix format specifier warnings.
+	* m68k/sun3.h (ASM_OUTPUT_FLOAT_OPERAND): Likewise.
+	* m68k/tower-as.h (ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_DOUBLE,
+	ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_FLOAT, ASM_OUTPUT_BYTE,
+	PRINT_OPERAND): Likewise.
+	* m88k/m88k.h (ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_BYTE):
+	Likewise.
+	* mips/elf.h (PUT_SDB_SIZE, ASM_DECLARE_OBJECT_NAME): Likewise.
+	* mips/elf64.h (PUT_SDB_SIZE, ASM_DECLARE_OBJECT_NAME): Likewise.
+	* mips/iris5gas.h (PUT_SDB_SIZE): Likewise.
+	* mips/linux.h (ASM_DECLARE_OBJECT_NAME): Likewise.
+	* mips.c (mips_output_external_libcall): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	(mips_asm_file_start): Move variable into the scope where it's
+	used.
+	* mips.h (PUT_SDB_INT_VAL, PUT_SDB_SIZE): Likewise.
+	* mips/netbsd.h (ASM_DECLARE_OBJECT_NAME): Likewise.
+	* mips/sni-gas.h (PUT_SDB_SIZE): Likewise.
+	* ns32k/encore.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* ns32k.c (print_operand): Likewise.
+	* pa.c (print_operand, output_div_insn): Likewise.
+	* pa.h (ASM_OUTPUT_MI_THUNK, ASM_GENERATE_INTERNAL_LABEL,
+	ASM_OUTPUT_BYTE, PRINT_OPERAND_ADDRESS): Likewise.
+	* pa/pa64-hpux.h (UNIQUE_SECTION): Const-ify.
+	* sparc/linux.h (ASM_GENERATE_INTERNAL_LABEL): Fix format
+	specifier warnings.
+	* sparc/linux64.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* sparc/pbd.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	(ASM_OUTPUT_SOURCE_LINE): Don't list macro arguments in undef.
+	* sparc/vxsim.h (ASM_GENERATE_INTERNAL_LABEL): Fix format
+	specifier warnings.
+	* svr3.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+
+	* sdbout.c (sdbout_end_epilogue): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	* varasm.c (assemble_global): Likewise.
+
 2001-11-11  H.J. Lu <hjl@gnu.org>
 
 	* config.gcc: Add "elfos.h svr4.h" to $tm_file for Linux/mips.

@@ -279,7 +279,7 @@ Boston, MA 02111-1307, USA.  */
 do { long l[3];								\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
      if (sizeof (int) == sizeof (long))					\
-       fprintf (FILE, "\tdc.l $%x,$%x,$%x\n", l[0], l[1], l[2]);	\
+       fprintf (FILE, "\tdc.l $%x,$%x,$%x\n", (int)l[0], (int)l[1], (int)l[2]); \
      else								\
        fprintf (FILE, "\tdc.l $%lx,$%lx,$%lx\n", l[0], l[1], l[2]);	\
    } while (0)
@@ -295,7 +295,7 @@ do { long l[3];								\
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
 do { long l[2];								\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);			        \
-     fprintf (FILE, "\tdc.l $%x,$%x\n", l[0], l[1]);            	\
+     fprintf (FILE, "\tdc.l $%lx,$%lx\n", l[0], l[1]);            	\
    } while (0)
 
 
@@ -305,7 +305,7 @@ do { long l[2];								\
 do { long l;						\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
      if (sizeof (int) == sizeof (long))			\
-       fprintf (FILE, "\tdc.l $%x\n", l);		\
+       fprintf (FILE, "\tdc.l $%x\n", (int) l);		\
      else						\
        fprintf (FILE, "\tdc.l $%lx\n", l);		\
    } while (0)
@@ -333,7 +333,7 @@ do { long l;						\
 /* This is how to output an assembler line for a numeric constant byte.  */
 #undef ASM_OUTPUT_BYTE
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tdc.b $%x\n", (VALUE))
+  fprintf (FILE, "\tdc.b $%x\n", (int)(VALUE))
 
 /* This is how to output an element of a case-vector that is absolute.
    (The 68000 does not use such vectors,
@@ -367,7 +367,7 @@ do { long l;						\
           long l;						\
           REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
           if (sizeof (int) == sizeof (long))			\
-            asm_fprintf ((FILE), "%I$%x", l);			\
+            asm_fprintf ((FILE), "%I$%x", (int) l);		\
           else							\
             asm_fprintf ((FILE), "%I$%lx", l);			\
         }							\

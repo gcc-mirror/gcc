@@ -152,9 +152,9 @@ const_section ()							\
 #define UNIQUE_SECTION(DECL,RELOC)				\
 do {								\
   int len;							\
-  char *name, *string, *prefix;					\
-								\
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+  char *string;							\
+  const char *prefix,						\
+    *const name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));\
 								\
   if (! DECL_ONE_ONLY (DECL))					\
     {								\

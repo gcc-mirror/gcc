@@ -69,7 +69,7 @@ Boston, MA 02111-1307, USA.  */
           long l;						\
           REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
           if (sizeof (int) == sizeof (long))			\
-            asm_fprintf ((FILE), "%I0x%x", l);			\
+            asm_fprintf ((FILE), "%I0x%x", (int) l);		\
           else							\
             asm_fprintf ((FILE), "%I0x%lx", l);			\
         }							\

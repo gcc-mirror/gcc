@@ -227,7 +227,7 @@ do {									\
 
 #undef  ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*.L%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*.L%s%ld", PREFIX, (long)(NUM))
 
 
 /* Define for support of TFmode long double and REAL_ARITHMETIC.

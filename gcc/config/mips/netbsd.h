@@ -152,7 +152,10 @@ Boston, MA 02111-1307, USA.  */
 	size_directive_output = 1;					\
 	fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
-	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL)));	\
+	fprintf (FILE, ",");						\
+	fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,				\
+	  int_size_in_bytes (TREE_TYPE (DECL)));			\
+	fprintf (FILE, "\n");						\
       }									\
     ASM_OUTPUT_LABEL(FILE, NAME);					\
   } while (0)

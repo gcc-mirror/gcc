@@ -232,9 +232,9 @@ do {									 \
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)			\
 do {									\
   if (TARGET_ELF)							\
-    sprintf (LABEL, "*.%s%d", (PREFIX), (NUM));				\
+    sprintf (LABEL, "*.%s%ld", (PREFIX), (long)(NUM));			\
   else									\
-    sprintf (LABEL, ".%s%d", (PREFIX), (NUM));				\
+    sprintf (LABEL, ".%s%ld", (PREFIX), (long)(NUM));			\
 } while (0)
 
 #undef ASM_OUTPUT_ALIGNED_COMMON

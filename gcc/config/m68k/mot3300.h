@@ -365,7 +365,7 @@ do { long l;					\
 
 #undef ASM_OUTPUT_BYTE
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t%s 0x%x\n", ASM_BYTE, (VALUE))
+  fprintf (FILE, "\t%s 0x%x\n", ASM_BYTE, (int)(VALUE))
 
 /* This is how to output an assembler line
    that says to advance the location counter
