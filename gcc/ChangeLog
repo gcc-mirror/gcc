@@ -1,5 +1,13 @@
 2004-05-03  Eric Christopher  <echristo@redhat.com>
 
+	* config/s390/s390.c (s390_emit_prologue): Call unspec tpf
+	prologue insn instead of setting up call.
+	(s390_emit_epilogue): Ditto.
+	* config/s390/s390.md (prologue_tpf, epilogue_tpf): New patterns.
+	(define_constants): Add numbers for above patterns.
+
+2004-05-03  Eric Christopher  <echristo@redhat.com>
+
 	* config/s390/s390.h (CONDITIONAL_REGISTER_USAGE): Move body...
 	* config/s390/s390.c (s390_conditional_register_usage): ...here.
 	* config/s390/s390-protos.h: Prototype.

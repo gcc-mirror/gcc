@@ -5683,11 +5683,8 @@ s390_emit_prologue (void)
     {
       /* Generate a BAS instruction to serve as a function
 	 entry intercept to facilitate the use of tracing
-	 algorithms located at the branch target.
-
-	 This must use register 1.  */
-      s390_emit_call (GEN_INT (0xfe0), NULL_RTX, NULL_RTX,
-		      gen_rtx_REG (Pmode, 1));
+	 algorithms located at the branch target.  */
+      emit_insn (gen_prologue_tpf ());
 
       /* Emit a blockage here so that all code
 	 lies between the profiling mechanisms.  */
@@ -5710,16 +5707,13 @@ s390_emit_epilogue (bool sibcall)
 
       /* Generate a BAS instruction to serve as a function
 	 entry intercept to facilitate the use of tracing
-	 algorithms located at the branch target.
-
-	 This must use register 1.  */
+	 algorithms located at the branch target.  */
 
       /* Emit a blockage here so that all code
          lies between the profiling mechanisms.  */
       emit_insn (gen_blockage ());
 
-      s390_emit_call (GEN_INT (0xfe6), NULL_RTX, NULL_RTX,
-		      gen_rtx_REG (Pmode, 1));
+      emit_insn (gen_epilogue_tpf ());
     }
 
   /* Check whether to use frame or stack pointer for restore.  */
