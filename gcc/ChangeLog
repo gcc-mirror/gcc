@@ -1,3 +1,8 @@
+2003-06-04  Andreas Jaeger  <aj@suse.de>
+
+	* system.h: Do not poison TDESC_SECTION_ASM_OP,
+	RDATA_SECTION_ASM_OP and SUBTARGET_PROLOGUE.
+
 2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* final.c (asm_fprintf): Update comments, accept "-+ #0" flags,
