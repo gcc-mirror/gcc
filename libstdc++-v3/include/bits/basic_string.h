@@ -283,21 +283,20 @@ namespace std
 	  _M_leak_hard();
       }
 
-      iterator
-      _M_check(size_type __pos) const
+      size_type
+      _M_check(size_type __pos, const char* __s) const
       {
 	if (__pos > this->size())
-	  __throw_out_of_range(__N("basic_string::_M_check"));
-	return _M_ibegin() + __pos;
+	  __throw_out_of_range(__N(__s));
+	return __pos;
       }
 
-      // NB: _M_fold doesn't check for a bad __pos1 value.
-      iterator
-      _M_fold(size_type __pos, size_type __off) const
+      // NB: _M_limit doesn't check for a bad __pos value.
+      size_type
+      _M_limit(size_type __pos, size_type __off) const
       {
 	const bool __testoff =  __off < this->size() - __pos;
-	const size_type __newoff = __testoff ? __off : this->size() - __pos;
-	return (_M_ibegin() + __pos + __newoff);
+	return __testoff ? __off : this->size() - __pos;
       }
 
       // _S_copy_chars is a separate template to permit specialization
@@ -979,9 +978,10 @@ namespace std
       */
       basic_string&
       insert(size_type __pos, size_type __n, _CharT __c)
-      {
-	this->insert(_M_check(__pos), __n, __c);
-	return *this;
+      { 
+	const iterator __iterator = this->_M_ibegin()
+	                            + _M_check(__pos, "basic_string::insert");
+	return this->replace(__iterator, __iterator, __n, __c);
       }
 
       /**
@@ -1002,7 +1002,7 @@ namespace std
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__p >= _M_ibegin() && __p <= _M_iend());
 	const size_type __pos = __p - _M_ibegin();
-	this->insert(_M_check(__pos), size_type(1), __c);
+	this->replace(__p, __p, size_type(1), __c);
 	_M_rep()->_M_set_leaked();
  	return this->_M_ibegin() + __pos;
       }
@@ -1043,7 +1043,8 @@ namespace std
       basic_string&
       erase(size_type __pos = 0, size_type __n = npos)
       {
-	return this->replace(_M_check(__pos), _M_fold(__pos, __n),
+	return this->replace(_M_ibegin() + _M_check(__pos, "basic_string::erase"),
+			     _M_ibegin() + __pos + _M_limit(__pos, __n),
 			     _M_data(), _M_data());
       }
 
@@ -1195,7 +1196,9 @@ namespace std
       */
       basic_string&
       replace(size_type __pos, size_type __n1, size_type __n2, _CharT __c)
-      { return this->replace(_M_check(__pos), _M_fold(__pos, __n1), __n2, __c); }
+      { return this->replace(_M_ibegin() + _M_check(__pos, "basic_string::replace"),
+			     _M_ibegin() + __pos + _M_limit(__pos, __n1),
+			     __n2, __c); }
 
       /**
        *  @brief  Replace range of characters with string.
@@ -1843,11 +1846,7 @@ namespace std
       */
       basic_string
       substr(size_type __pos = 0, size_type __n = npos) const
-      {
-	if (__pos > this->size())
-	  __throw_out_of_range(__N("basic_string::substr"));
-	return basic_string(*this, __pos, __n);
-      }
+      { return basic_string(*this, _M_check(__pos, "basic_string::substr"), __n); }
 
       /**
        *  @brief  Compare to a string.
