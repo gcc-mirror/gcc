@@ -1,3 +1,7 @@
+2000-09-14  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gcc.1: Delete documentation for -undef preprocessor option.
+
 2000-09-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP,
