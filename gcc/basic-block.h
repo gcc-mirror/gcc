@@ -621,7 +621,7 @@ ei_safe_edge (edge_iterator i)
    FOR (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
      {
 	IF (e != taken_edge)
-	  ssa_remove_edge (e);
+	  remove_edge (e);
 	ELSE
 	  ei_next (&ei);
      }

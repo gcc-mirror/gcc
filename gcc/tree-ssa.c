@@ -46,16 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-dump.h"
 #include "tree-pass.h"
 
-
-/* Remove edge E and remove the corresponding arguments from the PHI nodes
-   in E's destination block.  */
-
-void
-ssa_remove_edge (edge e)
-{
-  remove_edge (e);
-}
-
 /* Remove the corresponding arguments from the PHI nodes in E's
    destination block and redirect it to DEST.  Return redirected edge.
    The list of removed arguments is stored in PENDING_STMT (e).  */

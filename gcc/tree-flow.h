@@ -572,7 +572,6 @@ extern void debug_tree_ssa (void);
 extern void debug_def_blocks (void);
 extern void dump_tree_ssa_stats (FILE *);
 extern void debug_tree_ssa_stats (void);
-extern void ssa_remove_edge (edge);
 extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
 extern bool tree_ssa_useless_type_conversion (tree);
