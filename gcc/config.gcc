@@ -2627,6 +2627,7 @@ v850-*-*)
 	cxx_target_objs="v850-c.o"
 	;;
 vax-*-bsd*)			# VAXen running BSD
+	tm_file="${tm_file} vax/bsd.h"
 	use_collect2=yes
 	float_format=vax
 	;;

@@ -1,3 +1,20 @@
+2002-06-11  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (vax-*-bsd*): Add vax/bsd.h to ${tm_file}. 
+	* config/vax/bsd.h: New file.
+	* config/vax/netbsd.h: Add missing notice.
+	(CPP_PREDEFINES): Remove.  
+	(TARGET_OS_CPP_BUILTINS): Define.  
+	(CPP_SPEC): Use NETBSD_CPP_SPEC.   
+	* config/vax/openbsd.h: Update copyright years.
+	(CPP_PREDEFINES): Remove.
+	(TARGET_OS_CPP_BUILTINS): Define.
+	* config/vax/ultrix.h: Likewise.
+	* config/vax/vaxv.h: Likewise.
+	* config/vax/vms.h: Likewise.
+	* config/vax/vax.h (TARGET_CPU_CPP_BUILTINS): Define.
+	(CPP_PREDEFINES, CPP_SPEC): Remove.
+
 Wed Jun 12 01:50:28 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (addqi_1_slp, subqi_1_slp
