@@ -37,9 +37,8 @@ void test01()
   VERIFY( (test_category<has_trivial_destructor, int*>(true)) );
   VERIFY( (test_category<has_trivial_destructor, int(*)(int)>(true)) );
   VERIFY( (test_category<has_trivial_destructor, int (ClassType::*)>(true)) );
-  // Temporarily disabled because of c++/19076 :-(
-  // VERIFY( (test_category<has_trivial_destructor,
-  //   int (ClassType::*) (int)>(true)) );
+  VERIFY( (test_category<has_trivial_destructor,
+	   int (ClassType::*) (int)>(true)) );
   VERIFY( (test_category<has_trivial_destructor, int[2]>(true)) );
   VERIFY( (test_category<has_trivial_destructor, float[][3]>(true)) );
   VERIFY( (test_category<has_trivial_destructor, EnumType[2][3][4]>(true)) );
@@ -47,9 +46,8 @@ void test01()
   VERIFY( (test_category<has_trivial_destructor, int(*[][2])(int)>(true)) );
   VERIFY( (test_category<has_trivial_destructor,
 	   int (ClassType::*[2][3])>(true)) );
-  // Temporarily disabled because of c++/19076 :-(
-  // VERIFY( (test_category<has_trivial_destructor,
-  //   int (ClassType::*[][2][3]) (int)>(true)) );
+  VERIFY( (test_category<has_trivial_destructor,
+	   int (ClassType::*[][2][3]) (int)>(true)) );
 
   // Sanity check.
   VERIFY( (test_category<has_trivial_destructor, ClassType>(false)) );

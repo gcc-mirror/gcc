@@ -34,16 +34,16 @@ void test01()
   VERIFY( (test_category<is_member_pointer, const int (ClassType::*)>(true)) );
   VERIFY( (test_category<is_member_pointer, ClassType (ClassType::*)>(true)) );
 
-  // Temporarily disabled because of c++/19076 :-(
-
-  //VERIFY( (test_category<is_member_pointer,
-  //   int (ClassType::*) (int)>(true)) );
-  //VERIFY( (test_category<is_member_pointer,
-  //   int (ClassType::*) (int) const>(true)) );
-  //VERIFY( (test_category<is_member_function_pointer,
-  //   ClassType (ClassType::*) (ClassType)>(true)) );
-  //VERIFY( (test_category<is_member_pointer,
-  //   float (ClassType::*) (int, float, int[], int&)>(true)) );
+  VERIFY( (test_category<is_member_pointer,
+	   int (ClassType::*) (int)>(true)) );
+  VERIFY( (test_category<is_member_pointer,
+	   int (ClassType::*) (int) const>(true)) );
+  VERIFY( (test_category<is_member_pointer,
+	   int (ClassType::*) (float, ...)>(true)) );
+  VERIFY( (test_category<is_member_pointer,
+	   ClassType (ClassType::*) (ClassType)>(true)) );
+  VERIFY( (test_category<is_member_pointer,
+	   float (ClassType::*) (int, float, int[], int&)>(true)) );
   
   // Sanity check.
   VERIFY( (test_category<is_member_pointer, ClassType>(false)) );

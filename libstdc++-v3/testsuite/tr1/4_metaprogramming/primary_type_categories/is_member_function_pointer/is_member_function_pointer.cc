@@ -31,17 +31,16 @@ void test01()
   using namespace __gnu_test;
 
   // Positive tests.
-
-  // Temporarily disabled because of c++/19076 :-(
-
-  //VERIFY( (test_category<is_member_function_pointer,
-  //   int (ClassType::*) (int)>(true)) );
-  //VERIFY( (test_category<is_member_function_pointer,
-  //   int (ClassType::*) (int) const>(true)) );
-  //VERIFY( (test_category<is_member_function_pointer,
-  //   ClassType (ClassType::*) (ClassType)>(true)) );
-  //VERIFY( (test_category<is_member_function_pointer,
-  //   float (ClassType::*) (int, float, int[], int&)>(true)) );
+  VERIFY( (test_category<is_member_function_pointer,
+	   int (ClassType::*) (int)>(true)) );
+  VERIFY( (test_category<is_member_function_pointer,
+	   int (ClassType::*) (int) const>(true)) );
+  VERIFY( (test_category<is_member_function_pointer,
+	   int (ClassType::*) (float, ...)>(true)) );
+  VERIFY( (test_category<is_member_function_pointer,
+	   ClassType (ClassType::*) (ClassType)>(true)) );
+  VERIFY( (test_category<is_member_function_pointer,
+	   float (ClassType::*) (int, float, int[], int&)>(true)) );
 
   // Negative tests.
   VERIFY( (test_category<is_member_function_pointer,

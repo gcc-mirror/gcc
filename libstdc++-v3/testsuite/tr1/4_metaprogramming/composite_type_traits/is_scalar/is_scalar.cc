@@ -36,8 +36,7 @@ void test01()
   VERIFY( (test_category<is_scalar, int*>(true)) );
   VERIFY( (test_category<is_scalar, int(*)(int)>(true)) );
   VERIFY( (test_category<is_scalar, int (ClassType::*)>(true)) );
-  // Temporarily disabled because of c++/19076 :-(
-  // VERIFY( (test_category<is_scalar, int (ClassType::*) (int)>(true)) );
+  VERIFY( (test_category<is_scalar, int (ClassType::*) (int)>(true)) );
 
   // Sanity check.
   VERIFY( (test_category<is_scalar, ClassType>(false)) );
