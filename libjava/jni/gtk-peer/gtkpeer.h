@@ -465,6 +465,10 @@ extern jmethodID syncAttrsID;
 extern jclass gdkColor;
 extern jmethodID gdkColorID;
 
+extern jmethodID postInsetsChangedEventID;
+extern jmethodID windowGetWidthID;
+extern jmethodID windowGetHeightID;
+
 JNIEnv *gdk_env(void);
 
 extern double dpi_conversion_factor;
