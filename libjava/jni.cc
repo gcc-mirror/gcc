@@ -1883,8 +1883,7 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass klass,
 	  if (! strcmp (self->name->chars (), methods[j].name)
 	      && ! strcmp (self->signature->chars (), methods[j].signature))
 	    {
-	      if (! (self->accflags
-		     & java::lang::reflect::Modifier::NATIVE))
+	      if (! (self->accflags & java::lang::reflect::Modifier::NATIVE))
 		break;
 
 	      // Found a match that is native.
@@ -1900,7 +1899,7 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass klass,
 	  jstring m = JvNewStringUTF (methods[j].name);
 	  try
 	    {
-	      env->ex =new java::lang::NoSuchMethodError (m);
+	      env->ex = new java::lang::NoSuchMethodError (m);
 	    }
 	  catch (jthrowable t)
 	    {

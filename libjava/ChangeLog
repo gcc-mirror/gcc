@@ -1,5 +1,7 @@
 2004-09-28  Tom Tromey  <tromey@redhat.com>
 
+	* jni.cc (_Jv_JNI_RegisterNatives): Formatting fixlets.
+
 	PR libgcj/17222:
 	* Makefile.am (libgcj.la): Restored.
 	* Makefile.in: Rebuilt.
