@@ -1,3 +1,38 @@
+2003-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris5.h (SET_FILE_NUMBER): Moved here from iris3.h.
+	Undef before redefinition.
+	(LABEL_AFTER_LOC): Likewise.
+	(DEFAULT_SIGNED_CHAR): Likewise.
+	(ASM_OUTPUT_ASCII): Moved here from iris4.h.
+	Fix IRIX spelling.
+	
+	* config/mips/iris3.h: Remove, unused.
+	* config/mips/iris4.h: Likewise.
+
+	* config/mips/mips.h (STACK_ARGS_ADJUST): Remove, unused.
+
+	* config/mips/iris5.h (TARGET_DEFAULT): Move ...
+	* config.gcc (mips-sgi-irix6*o32, mips-sgi-irix5*): ... here to
+	target_cpu_default.
+
+	* config/mips/iris5.h: Move explicit includes ...
+	* config.gcc (mips-sgi-irix6*o32, mips-sgi-irix5*): ... here.
+	
+	* config/mips/iris6.h (MIPS_ISA_DEFAULT, MIPS_ABI_DEFAULT): Move ...
+	* config.gcc (mips-sgi-irix6*, mips-sgi-irix5cross64): ... here to
+	tm_defines.
+
+	* config/mips/iris6.h (TARGET_DEFAULT): Move ...
+	* config.gcc (mips-sgi-irix6*, mips-sgi-irix5cross64): ... here to
+	target_cpu_default.
+
+	* config/mips/iris6.h: Fix IRIX spelling.
+	(MULTILIB_DEFAULTS): Undef before redefinition.
+	
+	* config/mips/iris6.h: Move explicit includes ...
+	* config.gcc (mips-sgi-irix6*, mips-sgi-irix5cross64): ... here.
+
 Wed Jul  2 02:16:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_mark_needed_node, cgraph_varpool_mark_needed_node,
