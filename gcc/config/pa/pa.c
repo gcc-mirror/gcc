@@ -584,7 +584,9 @@ arith5_operand (op, mode)
   return register_operand (op, mode) || int5_operand (op, mode);
 }
 
-/* True iff zdepi can be used to generate this CONST_INT.  */
+/* True iff zdepi can be used to generate this CONST_INT.
+   zdepi first sign extends a 5 bit signed number to a given field
+   length, then places this field anywhere in a zero.  */
 int
 zdepi_cint_p (x)
      unsigned HOST_WIDE_INT x;
@@ -1818,7 +1820,7 @@ compute_zdepdi_operands (imm, op)
       /* Find the width of the bitstring in IMM.  */
       for (len = 5; len < HOST_BITS_PER_WIDE_INT; len++)
 	{
-	  if ((imm & ((unsigned HOST_WIDE_INT)1 << len)) == 0)
+	  if ((imm & ((unsigned HOST_WIDE_INT) 1 << len)) == 0)
 	    break;
 	}
 
@@ -1901,7 +1903,7 @@ output_move_double (operands)
 	      return "{stws|stw},ma %1,-8(%0)\n\tstw %R1,12(%0)";
 	    }
 	  else
-	    abort();
+	    abort ();
 	}
       else if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
 	{
@@ -1921,7 +1923,7 @@ output_move_double (operands)
 	      return "{stws|stw},mb %1,-8(%0)\n\tstw %R1,4(%0)";
 	    }
 	  else
-	    abort();
+	    abort ();
 	}
     }
   if (optype1 == MEMOP)
@@ -2336,7 +2338,7 @@ output_and (operands)
 	  break;
 
       if (ms0 != 32)
-	abort();
+	abort ();
 
       if (ls1 == 32)
 	{
@@ -2437,7 +2439,7 @@ output_ior (operands)
       break;
 
   if (bs1 != 32 && ((unsigned HOST_WIDE_INT) 1 << bs1) <= mask)
-    abort();
+    abort ();
 
   p = 31 - bs0;
   len = bs1 - bs0;
@@ -2678,8 +2680,8 @@ remove_useless_addtr_insns (insns, check_notes)
 		  /* Reverse our condition.  */
 		  tmp = PATTERN (insn);
 		  PUT_CODE (XEXP (tmp, 1),
-		    reverse_condition_maybe_unordered (GET_CODE (XEXP (tmp,
-		      1))));
+			    (reverse_condition_maybe_unordered
+			     (GET_CODE (XEXP (tmp, 1)))));
 		}
 	    }
 	}
@@ -2689,8 +2691,8 @@ remove_useless_addtr_insns (insns, check_notes)
 
 }
 
-/* You may have trouble believing this, but this is the 32 bit HP-PA stack
-   layout.  Wow.
+/* You may have trouble believing this, but this is the 32 bit HP-PA
+   stack layout.  Wow.
 
    Offset		Contents
 
@@ -2914,7 +2916,7 @@ output_function_prologue (file, size)
     {
       unsigned int old_total = total_code_bytes;
 
-      total_code_bytes += INSN_ADDRESSES (INSN_UID (get_last_insn()));
+      total_code_bytes += INSN_ADDRESSES (INSN_UID (get_last_insn ()));
       total_code_bytes += FUNCTION_BOUNDARY / BITS_PER_UNIT;
 
       /* Be prepared to handle overflows.  */
@@ -3935,7 +3937,7 @@ print_operand (file, x, code)
     case 'R':
       /* Print out the second register name of a register pair.
 	 I.e., R (6) => 7.  */
-      fputs (reg_names[REGNO (x)+1], file);
+      fputs (reg_names[REGNO (x) + 1], file);
       return;
     case 'r':
       /* A register or zero. */
@@ -4025,8 +4027,8 @@ print_operand (file, x, code)
 	  abort ();
 	}
       return;
-    /* For floating point comparisons. Note that the output predicates are the
-       complement of the desired mode. */
+    /* For floating point comparisons.  Note that the output
+       predicates are the complement of the desired mode.  */
     case 'Y':
       switch (GET_CODE (x))
 	{
@@ -4122,42 +4124,42 @@ print_operand (file, x, code)
 	  fprintf (file, "%d", ~INTVAL (x));
 	  return;
 	}
-      abort();
+      abort ();
     case 'Q':
       if (GET_CODE (x) == CONST_INT)
 	{
 	  fprintf (file, "%d", 64 - (INTVAL (x) & 63));
 	  return;
 	}
-      abort();
+      abort ();
     case 'L':
       if (GET_CODE (x) == CONST_INT)
 	{
 	  fprintf (file, "%d", 32 - (INTVAL (x) & 31));
 	  return;
 	}
-      abort();
+      abort ();
     case 'O':
       if (GET_CODE (x) == CONST_INT && exact_log2 (INTVAL (x)) >= 0)
 	{
 	  fprintf (file, "%d", exact_log2 (INTVAL (x)));
 	  return;
 	}
-      abort();
+      abort ();
     case 'p':
       if (GET_CODE (x) == CONST_INT)
 	{
 	  fprintf (file, "%d", 63 - (INTVAL (x) & 63));
 	  return;
 	}
-      abort();
+      abort ();
     case 'P':
       if (GET_CODE (x) == CONST_INT)
 	{
 	  fprintf (file, "%d", 31 - (INTVAL (x) & 31));
 	  return;
 	}
-      abort();
+      abort ();
     case 'I':
       if (GET_CODE (x) == CONST_INT)
 	fputs ("i", file);
@@ -4318,7 +4320,7 @@ output_global_address (file, x, round_constant)
 	  output_addr_const (file, base);
 	}
       else if (GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
-	offset = INTVAL (XEXP (XEXP (x, 0),1));
+	offset = INTVAL (XEXP (XEXP (x, 0), 1));
       else abort ();
 
       /* How bogus.  The compiler is apparently responsible for
@@ -4351,7 +4353,7 @@ output_global_address (file, x, round_constant)
       if (!read_only_operand (base, VOIDmode) && !flag_pic)
 	fputs ("-$global$", file);
       if (offset)
-	fprintf (file,"%s%d", sep, offset);
+	fprintf (file, "%s%d", sep, offset);
     }
   else
     output_addr_const (file, x);
@@ -4385,7 +4387,7 @@ output_deferred_plabels (file)
 
 enum millicodes { remI, remU, divI, divU, mulI, mulU, end1000 };
 static void import_milli			PARAMS ((enum millicodes));
-static char imported[(int)end1000];
+static char imported[(int) end1000];
 static const char * const milli_names[] = {"remI", "remU", "divI", "divU", "mulI", "mulU"};
 static char import_string[] = ".IMPORT $$....,MILLICODE";
 #define MILLI_START 10
@@ -4396,11 +4398,11 @@ import_milli (code)
 {
   char str[sizeof (import_string)];
 
-  if (!imported[(int)code])
+  if (!imported[(int) code])
     {
-      imported[(int)code] = 1;
+      imported[(int) code] = 1;
       strcpy (str, import_string);
-      strncpy (str + MILLI_START, milli_names[(int)code], 4);
+      strncpy (str + MILLI_START, milli_names[(int) code], 4);
       output_asm_insn (str, 0);
     }
 }
@@ -5104,7 +5106,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	return "ldw -16(%%r30),%%r1";
 	
       default:
-	abort();
+	abort ();
     }
   return buf;
 }
@@ -5251,7 +5253,7 @@ output_bb (operands, nullify, length, negated, insn, which)
 	break;
 
       default:
-	abort();
+	abort ();
     }
   return buf;
 }
@@ -5399,7 +5401,7 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	break;
 
       default:
-	abort();
+	abort ();
     }
   return buf;
 }
@@ -5424,8 +5426,8 @@ output_dbra (operands, insn, which_alternative)
 	return "ldo %1(%0),%0";
       else if (which_alternative == 1)
 	{
-	  output_asm_insn ("{fstws|fstw} %0,-16(%%r30)",operands);
-	  output_asm_insn ("ldw -16(%%r30),%4",operands);
+	  output_asm_insn ("{fstws|fstw} %0,-16(%%r30)", operands);
+	  output_asm_insn ("ldw -16(%%r30),%4", operands);
 	  output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(%%r30)", operands);
 	  return "{fldws|fldw} -16(%%r30),%0";
 	}
@@ -5481,7 +5483,7 @@ output_dbra (operands, insn, which_alternative)
 	    return "addi,%N2 %1,%0,%0\n\tb %3";
 	}
       else
-	abort();
+	abort ();
     }
   /* Deal with gross reload from FP register case.  */
   else if (which_alternative == 1)
@@ -5489,7 +5491,8 @@ output_dbra (operands, insn, which_alternative)
       /* Move loop counter from FP register to MEM then into a GR,
 	 increment the GR, store the GR into MEM, and finally reload
 	 the FP register from MEM from within the branch's delay slot.  */
-      output_asm_insn ("{fstws|fstw} %0,-16(%%r30)\n\tldw -16(%%r30),%4",operands);
+      output_asm_insn ("{fstws|fstw} %0,-16(%%r30)\n\tldw -16(%%r30),%4",
+		       operands);
       output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(%%r30)", operands);
       if (get_attr_length (insn) == 24)
 	return "{comb|cmpb},%S2 %%r0,%4,%3\n\t{fldws|fldw} -16(%%r30),%0";
@@ -5530,7 +5533,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	return "copy %1,%0";
       else if (which_alternative == 1)
 	{
-	  output_asm_insn ("stw %1,-16(%%r30)",operands);
+	  output_asm_insn ("stw %1,-16(%%r30)", operands);
 	  return "{fldws|fldw} -16(%%r30),%0";
 	}
       else if (which_alternative == 2)
@@ -5588,7 +5591,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	    return "or,%N2 %1,%%r0,%0\n\tb %3";
 	}
       else
-	abort();
+	abort ();
     }
   /* Deal with gross reload from FP register case.  */
   else if (which_alternative == 1)
@@ -5596,7 +5599,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
       /* Move loop counter from FP register to MEM then into a GR,
 	 increment the GR, store the GR into MEM, and finally reload
 	 the FP register from MEM from within the branch's delay slot.  */
-      output_asm_insn ("stw %1,-16(%%r30)",operands);
+      output_asm_insn ("stw %1,-16(%%r30)", operands);
       if (get_attr_length (insn) == 12)
 	return "{comb|cmpb},%S2 %%r0,%1,%3\n\t{fldws|fldw} -16(%%r30),%0";
       else
@@ -6057,7 +6060,7 @@ hppa_encode_label (sym)
   *p++ = '@';
   strcpy (p, str);
 
-  XSTR (sym,0) = ggc_alloc_string (newstr, len);
+  XSTR (sym, 0) = ggc_alloc_string (newstr, len);
 }
 
 int
@@ -6774,8 +6777,10 @@ pa_combine_instructions (insns)
 			 done with this pass.  */
 		      if (pa_can_combine_p (new, anchor, floater, 1,
 					    SET_DEST (PATTERN (floater)),
-					    XEXP (SET_SRC (PATTERN(floater)),0),
-					    XEXP(SET_SRC(PATTERN(floater)),1)))
+					    XEXP (SET_SRC (PATTERN (floater)),
+						  0),
+					    XEXP (SET_SRC (PATTERN (floater)),
+						  1)))
 			break;
 		    }
 		}
@@ -6998,15 +7003,15 @@ function_arg (cum, mode, type, named, incoming)
 	      rtx loc[8];
 	      int i, offset = 0, ub;
               ub = FUNCTION_ARG_SIZE (mode, type); 
-	      ub = MIN(ub,
-                       MAX(0, max_arg_words - cum->words - (cum->words & 1)));
+	      ub = MIN (ub,
+			MAX (0, max_arg_words - cum->words - (cum->words & 1)));
 	      gpr_reg_base -= (cum->words & 1);
 	      for (i = 0; i < ub; i++)
 		{
 		  loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
 					      gen_rtx_REG (DImode,
 							   gpr_reg_base),
-					      GEN_INT(offset));
+					      GEN_INT (offset));
 		  gpr_reg_base -= 1;
 		  offset += 8;
 		}
@@ -7015,7 +7020,7 @@ function_arg (cum, mode, type, named, incoming)
 	      else if (ub == 1)
 		return XEXP (loc[0], 0);
 	      else
-		return gen_rtx_PARALLEL(mode, gen_rtvec_v(ub, loc));
+		return gen_rtx_PARALLEL (mode, gen_rtvec_v (ub, loc));
 	    }
 	}
     }
@@ -7131,7 +7136,6 @@ function_arg_partial_nregs (cum, mode, type, named)
   else
     /* Arg is split. */
     return max_arg_words - cum->words - offset;
-
 }
 
 
