@@ -1,5 +1,5 @@
 /* Implement grant-file output & seize-file input for CHILL.
-   Copyright (C) 1992, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

@@ -1,5 +1,5 @@
 /* Definitions for CHILL parsing and type checking.
-   Copyright (C) 1992, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
