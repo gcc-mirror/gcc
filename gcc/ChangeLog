@@ -1,3 +1,15 @@
+2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/arc/arc-protos.h: Remove the prototype for
+	arc_setup_incoming_varargs.
+	* config/arc/arc.c (TARGET_ASM_EXTERNAL_LIBCALL): New.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(arc_setup_incoming_varargs): Make it static.
+	(arc_external_libcall): Likewise.
+	* config/arc/arc.h (SETUP_INCOMING_VARARGS): Remove.
+	Remove the commented-out definition of
+	ASM_OUTPUT_EXTERNAL_LIBCALL.
+
 2004-02-05  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
 
 	* config/sh/t-linux (SHLIB_INSTALL): Prepend $$(DESTDIR)
