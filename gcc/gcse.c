@@ -4128,7 +4128,7 @@ compute_pre_data ()
 
      ~(TRANSP | COMP)
 
-     This is significantly after than compute_ae_kill.  */
+     This is significantly faster than compute_ae_kill.  */
 
   for (i = 0; i < n_basic_blocks; i++)
     {
