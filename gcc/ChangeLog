@@ -1,3 +1,20 @@
+2004-03-18  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* doloop.c: Removed.
+	* loop-doloop.c: New file.
+	* Makefile.in (doloop.o): Remove.
+	(loop-doloop.o): New.
+	* cfgloop.h (get_loop_level, doloop_optimize_loops): Declare.
+	* cfgloopanal.c (get_loop_level): New function.
+	* loop-iv.c (iv_number_of_iterations): Handle case when loop
+	is leaved immediatelly.
+	* loop.c (strength_reduce): Do not call doloop optimization.
+	* loop.h (LOOP_BCT): Removed.
+	* passes.c (rest_of_handle_loop_optimize): Do not use LOOP_BCT.
+	(rest_of_handle_loop2): Call doloop_optimize_loops.
+	(rest_of_compilation): Test for optimizations moved to
+	rest_of_handle_loop2.
+
 2004-03-17  Fariborz Jahanian <fjahanian@apple.com>
 
         * config/rs6000/rs6000.c (rs6000_stack_info): correct reg_size

@@ -2281,6 +2281,10 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   simplify_using_initial_values (loop, IOR, &desc->infinite);
   simplify_using_initial_values (loop, NIL, &desc->niter_expr);
 
+  if (desc->noloop_assumptions
+      && XEXP (desc->noloop_assumptions, 0) == const_true_rtx)
+    goto zero_iter;
+
   if (GET_CODE (desc->niter_expr) == CONST_INT)
     {
       unsigned HOST_WIDEST_INT val = INTVAL (desc->niter_expr);
