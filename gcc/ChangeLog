@@ -1,3 +1,8 @@
+2003-06-07  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_setup_incoming_varargs): Fix
+	conditional compilation guard.
+
 2003-06-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* optabs.c (expand_abs): Set result_unsignedp to 1 if
