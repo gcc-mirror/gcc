@@ -1,3 +1,8 @@
+2002-04-26  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): Get closer to
+	correct for MEABI (used by mipsisa32-elf).
+
 2002-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/6445
