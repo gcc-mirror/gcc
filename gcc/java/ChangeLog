@@ -1,5 +1,6 @@
 2004-12-07  Andrew Haley  <aph@redhat.com>
 
+	PR java/18811:
 	* jcf-parse.c (load_class): Remove sanity test for missing inner
 	class file.
 	
