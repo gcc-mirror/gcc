@@ -1,3 +1,11 @@
+2000-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (call_pop): Check operands[0],
+	not operands[1]. Only check SYMBOL_REF_FLAG for a SYMBOL_REF.
+	(call): Likewise.
+	(call_value_pop): Only check SYMBOL_REF_FLAG for a SYMBOL_REF.
+	(call_value): Likewise.
+
 2000-07-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* toplev.c (pipe_closed): Delete.
