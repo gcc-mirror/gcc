@@ -20,6 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern struct rtx_def *clipper_builtin_saveregs ();
+extern int clipper_frame_size ();
 
 /* Print subsidiary information on the compiler version in use.  */
 
@@ -45,6 +46,18 @@ extern int target_flags;
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 0
 #endif
+
+/* Omit frame pointer at -O2.  Inline functions at -O3.  */
+
+#define OPTIMIZATION_OPTIONS(LEVEL)		\
+{						\
+  if ((LEVEL) >= 2)				\
+    {						\
+      flag_omit_frame_pointer = 1;		\
+    }						\
+  if ((LEVEL) >= 3)				\
+    flag_inline_functions = 1;			\
+}
 
 /* Target machine storage layout */
 
@@ -216,7 +229,8 @@ extern int target_flags;
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.  */
-#define FRAME_POINTER_REQUIRED 1
+#define FRAME_POINTER_REQUIRED \
+   (! leaf_function_p ())
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
@@ -552,12 +566,11 @@ do									\
 /* Store in the variable DEPTH the initial difference between the
    frame pointer reg contents and the stack pointer reg contents,
    as of the start of the function body.  This depends on the layout
-   of the fixed parts of the stack frame and on how registers are saved.
+   of the fixed parts of the stack frame and on how registers are saved. */
 
-   On the Clipper, FRAME_POINTER_REQUIRED is  1, so the definition of this
-   this macro doesn't matter.  But it must be defined.  */
+#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) \
+  DEPTH = clipper_frame_size (get_frame_size ())
 
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 0;
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
