@@ -75,11 +75,6 @@ extern void set_std_prefix PROTO((char *, int));
 #define exit __posix_exit
 #endif
 
-/* Define O_RDONLY if the system hasn't defined it for us.  */
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
-
 #ifdef USG
 #define vfork fork
 #endif /* USG */

@@ -104,16 +104,20 @@ extern int errno;
 # include <time.h>
 #else
 # if HAVE_SYS_TIME_H
-# include <sys/time.h>
+#  include <sys/time.h>
 # else
-#  include <time.h>
-#endif
+#  ifdef HAVE_TIME_H
+#   include <time.h>
+#  endif
+# endif
 #endif
 
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #else
-# include <sys/file.h>
+# ifdef HAVE_SYS_FILE_H
+#  include <sys/file.h>
+# endif
 #endif
 
 #ifndef SEEK_SET
@@ -126,6 +130,12 @@ extern int errno;
 # define X_OK 1
 # define W_OK 2
 # define R_OK 4
+#endif
+#ifndef O_RDONLY
+# define O_RDONLY 0
+#endif
+#ifndef O_WRONLY
+# define O_WRONLY 1
 #endif
 
 

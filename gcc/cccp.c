@@ -105,10 +105,6 @@ static void hack_vms_include_specification ();
 #define INO_T_EQ(a, b) 0
 #endif
 
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
-
 #undef MIN
 #undef MAX
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))

@@ -45,10 +45,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 extern char *update_path ();
 
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
-
 #undef MIN
 #undef MAX
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))

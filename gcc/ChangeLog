@@ -1,3 +1,10 @@
+Wed May  6 10:52:49 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Wrap time.h and sys/file.h in autoconf checks.
+	Provide default definitions for O_RDONLY and O_WRONLY here.
+
+	* cccp.c, cpplib.c, fix-header.c, gcc.c, protoize.c: Not here.
+
 1998-05-06 Mark Mitchell  <mmitchell@usa.net>
 
 	* tree.h (IS_EXPR_CODE_CLASS): Remove bogus '3'.
