@@ -70,7 +70,11 @@ bitmap_element_free (head, elt)
   /* Since the first thing we try is to insert before current,
      make current the next entry in preference to the previous.  */
   if (head->current == elt)
-    head->current = next != 0 ? next : prev;
+    {
+      head->current = next != 0 ? next : prev;
+      if (head->current)
+	head->indx = head->current->indx;
+    }
 
   elt->next = bitmap_free;
   bitmap_free = elt;

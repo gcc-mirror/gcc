@@ -1,3 +1,8 @@
+2001-10-30  Daniel Berlin  <dan@cgsoftware.com>
+
+	* bitmap.c (bitmap_element_free): Don't forget to update head->indx
+	when we update head->current.
+
 2001-10-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* tree.c (id_string_size): Remove.
