@@ -164,7 +164,7 @@ static tree fold_builtin_bitop (tree);
 static tree fold_builtin_memcpy (tree);
 static tree fold_builtin_mempcpy (tree);
 static tree fold_builtin_memmove (tree);
-static tree fold_builtin_strchr (tree, bool);
+static tree fold_builtin_strchr (tree);
 static tree fold_builtin_memcmp (tree);
 static tree fold_builtin_strcmp (tree);
 static tree fold_builtin_strncmp (tree);
@@ -178,17 +178,15 @@ static tree fold_builtin_abs (tree, tree);
 static tree fold_builtin_unordered_cmp (tree, enum tree_code, enum tree_code);
 static tree fold_builtin_1 (tree, bool);
 
-static tree simplify_builtin_strpbrk (tree);
-static tree simplify_builtin_strstr (tree);
-static tree simplify_builtin_strchr (tree);
-static tree simplify_builtin_strrchr (tree);
-static tree simplify_builtin_strcat (tree);
-static tree simplify_builtin_strncat (tree);
-static tree simplify_builtin_strspn (tree);
-static tree simplify_builtin_strcspn (tree);
-static void simplify_builtin_next_arg (tree);
-static void simplify_builtin_va_start (tree);
-static tree simplify_builtin_sprintf (tree, int);
+static tree fold_builtin_strpbrk (tree);
+static tree fold_builtin_strstr (tree);
+static tree fold_builtin_strrchr (tree);
+static tree fold_builtin_strcat (tree);
+static tree fold_builtin_strncat (tree);
+static tree fold_builtin_strspn (tree);
+static tree fold_builtin_strcspn (tree);
+static void fold_builtin_next_arg (tree);
+static tree fold_builtin_sprintf (tree, int);
 
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
@@ -4286,6 +4284,8 @@ expand_builtin_va_start (tree arglist)
   if (TREE_CHAIN (chain))
     error ("too many arguments to function %<va_start%>");
 
+  fold_builtin_next_arg (chain);
+
   nextarg = expand_builtin_next_arg (chain);
   valist = stabilize_va_list (TREE_VALUE (arglist), 1);
 
@@ -5728,7 +5728,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
       /* Return the address of the first anonymous stack arg.  */
     case BUILT_IN_NEXT_ARG:
-      simplify_builtin_next_arg (arglist);
+      fold_builtin_next_arg (arglist);
       return expand_builtin_next_arg (arglist);
 
     case BUILT_IN_CLASSIFY_TYPE:
@@ -7576,61 +7576,6 @@ fold_builtin_strncpy (tree exp, tree slen)
 		       build_function_call_expr (fn, arglist));
 }
 
-/* Fold function call to builtin strchr and strrchr.
-   Return NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_strchr (tree exp, bool actually_strrchr)
-{
-  tree arglist = TREE_OPERAND (exp, 1);
-  if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
-    return 0;
-  else
-    {
-      tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
-      const char *p1;
-
-      if (TREE_CODE (s2) != INTEGER_CST)
-	return 0;
-
-      p1 = c_getstr (s1);
-      if (p1 != NULL)
-	{
-	  char c;
-	  const char *r;
-
-	  if (target_char_cast (s2, &c))
-	    return 0;
-
-	  r = actually_strrchr ? strrchr (p1, c) : strchr (p1, c);
-
-	  if (r == NULL)
-	    return build_int_cst (TREE_TYPE (s1), 0);
-
-	  /* Return an offset into the constant string argument.  */
-	  return fold (build2 (PLUS_EXPR, TREE_TYPE (s1),
-			       s1, build_int_cst (TREE_TYPE (s1), r - p1)));
-	}
-
-      if (actually_strrchr)
-	{
-	  tree fn;
-
-	  if (!integer_zerop (s2))
-	    return 0;
-
-	  fn = implicit_built_in_decls[BUILT_IN_STRCHR];
-	  if (!fn)
-	    return 0;
-
-	  /* Transform strrchr(s1, '\0') to strchr(s1, '\0').  */
-	  return build_function_call_expr (fn, arglist);
-	}
-
-      return 0;
-    }
-}
-
 /* Fold function call to builtin memcmp.  Return
    NULL_TREE if no simplification can be made.  */
 
@@ -8210,8 +8155,70 @@ fold_builtin_1 (tree exp, bool ignore)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    case BUILT_IN_FPUTS:
+      return fold_builtin_fputs (arglist, ignore, false, NULL_TREE);
+
+    case BUILT_IN_FPUTS_UNLOCKED:
+      return fold_builtin_fputs (arglist, ignore, true, NULL_TREE);
+
+    case BUILT_IN_STRSTR:
+      return fold_builtin_strstr (arglist);
+
+    case BUILT_IN_STRCAT:
+      return fold_builtin_strcat (arglist);
+
+    case BUILT_IN_STRNCAT:
+      return fold_builtin_strncat (arglist);
+
+    case BUILT_IN_STRSPN:
+      return fold_builtin_strspn (arglist);
+
+    case BUILT_IN_STRCSPN:
+      return fold_builtin_strcspn (arglist);
+
+    case BUILT_IN_STRCHR:
+    case BUILT_IN_INDEX:
+      return fold_builtin_strchr (arglist);
+
+    case BUILT_IN_STRRCHR:
+    case BUILT_IN_RINDEX:
+      return fold_builtin_strrchr (arglist);
+
+    case BUILT_IN_STRCPY:
+      return fold_builtin_strcpy (exp, NULL_TREE);
+
+    case BUILT_IN_STRNCPY:
+      return fold_builtin_strncpy (exp, NULL_TREE);
+
+    case BUILT_IN_STRCMP:
+      return fold_builtin_strcmp (arglist);
+
+    case BUILT_IN_STRNCMP:
+      return fold_builtin_strncmp (arglist);
+
+    case BUILT_IN_STRPBRK:
+      return fold_builtin_strpbrk (arglist);
+
+    case BUILT_IN_BCMP:
+    case BUILT_IN_MEMCMP:
+      return fold_builtin_memcmp (arglist);
+
+    case BUILT_IN_SPRINTF:
+      return fold_builtin_sprintf (arglist, ignore);
+
     case BUILT_IN_CONSTANT_P:
-      return fold_builtin_constant_p (arglist);
+      {
+	tree val;
+
+	val = fold_builtin_constant_p (arglist);
+	/* Gimplification will pull the CALL_EXPR for the builtin out of
+	   an if condition.  When not optimizing, we'll not CSE it back.
+	   To avoid link error types of regressions, return false now.  */
+	if (!val && !optimize)
+	  val = integer_zero_node;
+
+	return val;
+      }
 
     case BUILT_IN_EXPECT:
       return fold_builtin_expect (arglist);
@@ -8419,29 +8426,6 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_MEMMOVE:
       return fold_builtin_memmove (exp);
 
-    case BUILT_IN_STRCPY:
-      return fold_builtin_strcpy (exp, NULL_TREE);
-
-    case BUILT_IN_STRNCPY:
-      return fold_builtin_strncpy (exp, NULL_TREE);
-
-    case BUILT_IN_INDEX:
-    case BUILT_IN_STRCHR:
-      return fold_builtin_strchr (exp, false);
-
-    case BUILT_IN_RINDEX:
-    case BUILT_IN_STRRCHR:
-      return fold_builtin_strchr (exp, true);
-
-    case BUILT_IN_MEMCMP:
-      return fold_builtin_memcmp (arglist);
-
-    case BUILT_IN_STRCMP:
-      return fold_builtin_strcmp (arglist);
-
-    case BUILT_IN_STRNCMP:
-      return fold_builtin_strncmp (arglist);
-
     case BUILT_IN_SIGNBIT:
     case BUILT_IN_SIGNBITF:
     case BUILT_IN_SIGNBITL:
@@ -8489,11 +8473,9 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_ISUNORDERED:
       return fold_builtin_unordered_cmp (exp, UNORDERED_EXPR, NOP_EXPR);
 
-    case BUILT_IN_FPUTS:
-      return fold_builtin_fputs (arglist, ignore, false, NULL_TREE);
-
-    case BUILT_IN_FPUTS_UNLOCKED:
-      return fold_builtin_fputs (arglist, ignore, true, NULL_TREE);
+      /* We do the folding for va_start in the expander.  */
+    case BUILT_IN_VA_START:
+      break;
 
     default:
       break;
@@ -8517,6 +8499,7 @@ fold_builtin (tree exp, bool ignore)
 	exp = build1 (NOP_EXPR, TREE_TYPE (exp), exp);
       TREE_NO_WARNING (exp) = 1;
     }
+
   return exp;
 }
 
@@ -8620,101 +8603,6 @@ readonly_data_expr (tree exp)
     return false;
 }
 
-/* Front-end to the simplify_builtin_XXX routines.
-
-   EXP is a call to a builtin function.  If possible try to simplify
-   that into a constant, expression or call to a more efficient
-   builtin function.
-
-   If IGNORE is nonzero, then the result of this builtin function
-   call is ignored.
-
-   If simplification is possible, return the simplified tree, otherwise
-   return NULL_TREE.  */
-
-tree
-simplify_builtin (tree exp, int ignore)
-{
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  tree arglist = TREE_OPERAND (exp, 1);
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-  tree val;
-
-  switch (fcode)
-    {
-    case BUILT_IN_FPUTS:
-      val = fold_builtin_fputs (arglist, ignore, false, NULL_TREE);
-      break;
-    case BUILT_IN_FPUTS_UNLOCKED:
-      val = fold_builtin_fputs (arglist, ignore, true, NULL_TREE);
-      break;
-    case BUILT_IN_STRSTR:
-      val = simplify_builtin_strstr (arglist);
-      break;
-    case BUILT_IN_STRCAT:
-      val = simplify_builtin_strcat (arglist);
-      break;
-    case BUILT_IN_STRNCAT:
-      val = simplify_builtin_strncat (arglist);
-      break;
-    case BUILT_IN_STRSPN:
-      val = simplify_builtin_strspn (arglist);
-      break;
-    case BUILT_IN_STRCSPN:
-      val = simplify_builtin_strcspn (arglist);
-      break;
-    case BUILT_IN_STRCHR:
-    case BUILT_IN_INDEX:
-      val = simplify_builtin_strchr (arglist);
-      break;
-    case BUILT_IN_STRRCHR:
-    case BUILT_IN_RINDEX:
-      val = simplify_builtin_strrchr (arglist);
-      break;
-    case BUILT_IN_STRCPY:
-      val = fold_builtin_strcpy (exp, NULL_TREE);
-      break;
-    case BUILT_IN_STRNCPY:
-      val = fold_builtin_strncpy (exp, NULL_TREE);
-      break;
-    case BUILT_IN_STRCMP:
-      val = fold_builtin_strcmp (arglist);
-      break;
-    case BUILT_IN_STRNCMP:
-      val = fold_builtin_strncmp (arglist);
-      break;
-    case BUILT_IN_STRPBRK:
-      val = simplify_builtin_strpbrk (arglist);
-      break;
-    case BUILT_IN_BCMP:
-    case BUILT_IN_MEMCMP:
-      val = fold_builtin_memcmp (arglist);
-      break;
-    case BUILT_IN_VA_START:
-      simplify_builtin_va_start (arglist);
-      val = NULL_TREE;
-      break;
-    case BUILT_IN_SPRINTF:
-      val = simplify_builtin_sprintf (arglist, ignore);
-      break;
-    case BUILT_IN_CONSTANT_P:
-      val = fold_builtin_constant_p (arglist);
-      /* Gimplification will pull the CALL_EXPR for the builtin out of
-	 an if condition.  When not optimizing, we'll not CSE it back.
-	 To avoid link error types of regressions, return false now.  */
-      if (!val && !optimize)
-	val = integer_zero_node;
-      break;
-    default:
-      val = NULL_TREE;
-      break;
-    }
-
-  if (val)
-    val = fold_convert (TREE_TYPE (exp), val);
-  return val;
-}
-
 /* Simplify a call to the strstr builtin.
 
    Return 0 if no simplification was possible, otherwise return the
@@ -8733,7 +8621,7 @@ simplify_builtin (tree exp, int ignore)
    form of the builtin function call.  */
 
 static tree
-simplify_builtin_strstr (tree arglist)
+fold_builtin_strstr (tree arglist)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -8797,7 +8685,7 @@ simplify_builtin_strstr (tree arglist)
    form of the builtin function call.  */
 
 static tree
-simplify_builtin_strchr (tree arglist)
+fold_builtin_strchr (tree arglist)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -8852,7 +8740,7 @@ simplify_builtin_strchr (tree arglist)
    form of the builtin function call.  */
 
 static tree
-simplify_builtin_strrchr (tree arglist)
+fold_builtin_strrchr (tree arglist)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -8914,7 +8802,7 @@ simplify_builtin_strrchr (tree arglist)
    form of the builtin function call.  */
 
 static tree
-simplify_builtin_strpbrk (tree arglist)
+fold_builtin_strpbrk (tree arglist)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -8980,7 +8868,7 @@ simplify_builtin_strpbrk (tree arglist)
    form of the builtin function call.  */
 
 static tree
-simplify_builtin_strcat (tree arglist)
+fold_builtin_strcat (tree arglist)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -9016,7 +8904,7 @@ simplify_builtin_strcat (tree arglist)
    form of the builtin function call.  */
 
 static tree
-simplify_builtin_strncat (tree arglist)
+fold_builtin_strncat (tree arglist)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -9071,7 +8959,7 @@ simplify_builtin_strncat (tree arglist)
    form of the builtin function call.  */
 
 static tree
-simplify_builtin_strspn (tree arglist)
+fold_builtin_strspn (tree arglist)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -9115,7 +9003,7 @@ simplify_builtin_strspn (tree arglist)
    form of the builtin function call.  */
 
 static tree
-simplify_builtin_strcspn (tree arglist)
+fold_builtin_strcspn (tree arglist)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -9242,18 +9130,7 @@ fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
 }
 
 static void
-simplify_builtin_va_start (tree arglist)
-{
-  tree chain = TREE_CHAIN (arglist);
-
-  if (TREE_CHAIN (chain))
-    error ("too many arguments to function %<va_start%>");
-
-  simplify_builtin_next_arg (chain);
-}
-
-static void
-simplify_builtin_next_arg (tree arglist)
+fold_builtin_next_arg (tree arglist)
 {
   tree fntype = TREE_TYPE (current_function_decl);
 
@@ -9293,7 +9170,7 @@ simplify_builtin_next_arg (tree arglist)
    the caller does not use the returned value of the function.  */
 
 static tree
-simplify_builtin_sprintf (tree arglist, int ignored)
+fold_builtin_sprintf (tree arglist, int ignored)
 {
   tree call, retval, dest, fmt;
   const char *fmt_str = NULL;

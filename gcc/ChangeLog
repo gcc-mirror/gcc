@@ -1,3 +1,15 @@
+2004-09-22  Eric Christopher  <echristo@redhat.com>
+
+	* builtins.c (simplify_builtin_va_start): Remove.
+	(simplify_builtin): Ditto.
+	(fold_builtin_strchr): Ditto.
+	(simplify_builtin_*): Rename remainders to fold_builtin_*.
+	(expand_builtin): Fix up for above changes.
+	(fold_builtin_1): Add new folders. Change for above.
+	(expand_builtin_va_start): Call fold_builtin_next_arg.
+	* gimplify.c (gimplify_call_expr): Fix calls to simplify_builtin.
+	* tree.h: Remove prototype for simplify_builtin.
+
 2004-09-23  Jan Hubicka  <jh@suse.cz>
 
 	PR debug/17389
@@ -23,7 +35,7 @@
 	(AC_ICONV, AC_LCMESSAGES, GCC_PATH_PROG): Remove.
 	* configure.ac: Add in check for iconv.h
 	* configure: Regenerate.
-	
+
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* aclocal.m4: Update for rename of gettext-sister.m4.
@@ -69,7 +81,7 @@
 
 	* config/darwin.c (darwin_make_decl_one_only)
 	Allow coalesced symbol to appear in static archive's table of contents
-	
+
 2004-09-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/17512
@@ -165,7 +177,7 @@
 	the initial lattice value.
 	(substitute_and_fold): Transfer equivalences discovered into
 	SSA_NAME_EQUIV.
- 
+
 	* tree.h (SSA_NAME_EQUIV): Add comments.
 	(SET_SSA_NAME_EQUIV): Similarly.
 
@@ -184,12 +196,12 @@
 
 	* tree.def (VEC_COND_EXPR): New tree node.
 	* tree-ssa-operands.c (get_expr_operands): Handle VEC_COND_EXPR.
-	
+
 2004-09-21  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/darwin-tramp.asm: Add __ppc64__ case.
 	* config/rs6000/darwin-world.asm: Likewise.
-	
+
 2004-09-21  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa.c (verify_def): Use print_generic_stmt,

@@ -772,7 +772,7 @@ voidify_wrapper_expr (tree wrapper, tree temp)
 	  p = tsi_end_p (i) ? NULL : tsi_stmt_ptr (i);
 	}
       else
-	{ 
+	{
 	  for (; TREE_CODE (*p) == COMPOUND_EXPR; p = &TREE_OPERAND (*p, 1))
 	    {
 	      TREE_SIDE_EFFECTS (*p) = 1;
@@ -925,7 +925,7 @@ gimplify_return_expr (tree stmt, tree *pre_p)
      Recall that aggregate_value_p is FALSE for any aggregate type that is
      returned in registers.  If we're returning values in registers, then
      we don't want to extend the lifetime of the RESULT_DECL, particularly
-     across another call.  In addition, for those aggregates for which 
+     across another call.  In addition, for those aggregates for which
      hard_function_value generates a PARALLEL, we'll abort during normal
      expansion of structure assignments; there's special code in expand_return
      to handle this case that does not exist in expand_expr.  */
@@ -1000,7 +1000,7 @@ gimplify_decl_expr (tree *stmt_p)
 	  /* All occurrences of this decl in final gimplified code will be
 	     replaced by indirection.  Setting DECL_VALUE_EXPR does two
 	     things: First, it lets the rest of the gimplifier know what
-	     replacement to use.  Second, it lets the debug info know 
+	     replacement to use.  Second, it lets the debug info know
 	     where to find the value.  */
 	  ptr_type = build_pointer_type (TREE_TYPE (decl));
 	  addr = create_tmp_var (ptr_type, get_name (decl));
@@ -1331,7 +1331,7 @@ canonicalize_component_ref (tree *expr_p)
 }
 
 /* If a NOP conversion is changing a pointer to array of foo to a pointer
-   to foo, embed that change in the ADDR_EXPR by converting 
+   to foo, embed that change in the ADDR_EXPR by converting
       T array[U];
       (T *)&array
    ==>
@@ -1389,7 +1389,7 @@ canonicalize_addr_expr (tree *expr_p)
 
 static enum gimplify_status
 gimplify_conversion (tree *expr_p)
-{  
+{
   /* If we still have a conversion at the toplevel, then strip
      away all but the outermost conversion.  */
   if (TREE_CODE (*expr_p) == NOP_EXPR || TREE_CODE (*expr_p) == CONVERT_EXPR)
@@ -1454,7 +1454,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
   int i;
 
   /* Create a stack of the subexpressions so later we can walk them in
-     order from inner to outer.  
+     order from inner to outer.
 
      This array is very memory consuming.  Don't even think of making
      it VARRAY_TREE.  */
@@ -1749,7 +1749,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 
   gcc_assert (TREE_CODE (*expr_p) == CALL_EXPR);
 
-  /* For reliable diagnostics during inlining, it is necessary that 
+  /* For reliable diagnostics during inlining, it is necessary that
      every call_expr be annotated with file and line.  */
   if (! EXPR_HAS_LOCATION (*expr_p))
     SET_EXPR_LOCATION (*expr_p, input_location);
@@ -1769,7 +1769,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   decl = get_callee_fndecl (*expr_p);
   if (decl && DECL_BUILT_IN (decl))
     {
-      tree new = simplify_builtin (*expr_p, !want_value);
+      tree new = fold_builtin (*expr_p, !want_value);
 
       if (new && new != *expr_p)
 	{
@@ -1810,7 +1810,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   /* Try this again in case gimplification exposed something.  */
   if (ret != GS_ERROR && decl && DECL_BUILT_IN (decl))
     {
-      tree new = simplify_builtin (*expr_p, !want_value);
+      tree new = fold_builtin (*expr_p, !want_value);
 
       if (new && new != *expr_p)
 	{
@@ -2088,7 +2088,7 @@ gimple_boolify (tree expr)
       /* These expressions always produce boolean results.  */
       TREE_TYPE (expr) = boolean_type_node;
       return expr;
-      
+
     default:
       /* Other expressions that get here must have boolean values, but
 	 might need to be converted to the appropriate mode.  */
@@ -2358,7 +2358,7 @@ gimplify_init_ctor_preeval (tree *expr_p, tree *pre_p, tree *post_p,
 
   /* Gimplify the constructor element to something appropriate for the rhs
      of a MODIFY_EXPR.  Given that we know the lhs is an aggregate, we know
-     the gimplifier will consider this a store to memory.  Doing this 
+     the gimplifier will consider this a store to memory.  Doing this
      gimplification now means that we won't have to deal with complicated
      language-specific trees, nor trees like SAVE_EXPR that can induce
      exponential search behavior.  */
@@ -2568,7 +2568,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	  }
 
 	/* If there are "lots" of initialized elements, even discounting
-	   those that are not address constants (and thus *must* be 
+	   those that are not address constants (and thus *must* be
 	   computed at runtime), then partition the constructor into
 	   constant and non-constant parts.  Block copy the constant
 	   parts in, then generate code for the non-constant parts.  */
@@ -2755,7 +2755,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
       case COND_EXPR:
 	/* If we're assigning to a non-register type, push the assignment
 	   down into the branches.  This is mandatory for ADDRESSABLE types,
-	   since we cannot generate temporaries for such, but it saves a 
+	   since we cannot generate temporaries for such, but it saves a
 	   copy in other cases as well.  */
 	if (!is_gimple_reg_type (TREE_TYPE (*from_p)))
 	  {
@@ -2924,10 +2924,10 @@ gimplify_boolean_expr (tree *expr_p)
 
    PRE_P points to the list where the side effects for all the
        expressions in the sequence will be emitted.
-    
+
    WANT_VALUE is true when the result of the last COMPOUND_EXPR is used.  */
 /* ??? Should rearrange to share the pre-queue with all the indirect
-   invocations of gimplify_expr.  Would probably save on creations 
+   invocations of gimplify_expr.  Would probably save on creations
    of statement_list nodes.  */
 
 static enum gimplify_status
@@ -3737,7 +3737,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	      *expr_p = NULL_TREE;
 	    }
-		  
+
 	  ret = GS_ALL_DONE;
 	  break;
 
@@ -3825,7 +3825,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	case WITH_SIZE_EXPR:
 	  {
 	    enum gimplify_status r0, r1;
-	    r0 = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, 
+	    r0 = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p,
 				post_p == &internal_post ? NULL : post_p,
 				gimple_test_f, fallback);
 	    r1 = gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p, post_p,
@@ -3837,7 +3837,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  /* ??? If this is a local variable, and it has not been seen in any
 	     outer BIND_EXPR, then it's probably the result of a duplicate
 	     declaration, for which we've already issued an error.  It would
-	     be really nice if the front end wouldn't leak these at all. 
+	     be really nice if the front end wouldn't leak these at all.
 	     Currently the only known culprit is C++ destructors, as seen
 	     in g++.old-deja/g++.jason/binding.C.  */
 	  tmp = *expr_p;
@@ -3881,7 +3881,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 		goto expr_2;
 	      ret = gimplify_variable_sized_compare (expr_p);
 	      break;
-	      
+
 	    /* If *EXPR_P does not need to be special-cased, handle it
 	       according to its class.  */
 	    case tcc_unary:
@@ -3893,21 +3893,21 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	    expr_2:
 	      {
 		enum gimplify_status r0, r1;
-		
+
 		r0 = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p,
 				    post_p, is_gimple_val, fb_rvalue);
 		r1 = gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p,
 				    post_p, is_gimple_val, fb_rvalue);
-		
+
 		ret = MIN (r0, r1);
 		break;
 	      }
-	      
+
 	    case tcc_declaration:
 	    case tcc_constant:
 	      ret = GS_ALL_DONE;
 	      goto dont_recalculate;
-	      
+
 	    default:
 	      gcc_assert (TREE_CODE (*expr_p) == TRUTH_AND_EXPR
 			  || TREE_CODE (*expr_p) == TRUTH_OR_EXPR
@@ -3919,7 +3919,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	dont_recalculate:
 	  break;
 	}
-      
+
       /* If we replaced *expr_p, gimplify again.  */
       if (ret == GS_OK && (*expr_p == NULL || *expr_p == save_expr))
 	ret = GS_ALL_DONE;
