@@ -963,7 +963,7 @@ struct fixup_replacement
    value is equal to X.  Allocate a new structure if no such entry exists. */
 
 static struct fixup_replacement *
-find_replacement (replacements, x)
+find_fixup_replacement (replacements, x)
      struct fixup_replacement **replacements;
      rtx x;
 {
@@ -1131,7 +1131,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	  /* If we already have a replacement, use it.  Otherwise, 
 	     try to fix up this address in case it is invalid.  */
 
-	  replacement = find_replacement (replacements, var);
+	  replacement = find_fixup_replacement (replacements, var);
 	  if (replacement->new)
 	    {
 	      *loc = replacement->new;
@@ -1159,7 +1159,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 
       if (reg_mentioned_p (var, x))
 	{
-	  replacement = find_replacement (replacements, x);
+	  replacement = find_fixup_replacement (replacements, x);
 	  if (replacement->new == 0)
 	    replacement->new = copy_most_rtx (x, var);
 
@@ -1285,7 +1285,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	     a SUBREG of that pseudo.  */
 	  if (GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (GET_MODE (var)))
 	    {
-	      replacement = find_replacement (replacements, var);
+	      replacement = find_fixup_replacement (replacements, var);
 	      if (replacement->new == 0)
 		replacement->new = gen_reg_rtx (GET_MODE (var));
 	      SUBREG_REG (x) = replacement->new;
@@ -1296,7 +1296,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	     If so, use it.  Otherwise, make a MEM and see if the insn
 	     is recognized.  If not, or if we should force MEM into a register,
 	     make a pseudo for this SUBREG.  */
-	  replacement = find_replacement (replacements, x);
+	  replacement = find_fixup_replacement (replacements, x);
 	  if (replacement->new)
 	    {
 	      *loc = replacement->new;
@@ -1459,7 +1459,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		    && GET_CODE (SUBREG_REG (SET_DEST (x))) == REG))
 	    && recog_memoized (insn) >= 0)
 	  {
-	    replacement = find_replacement (replacements, SET_SRC (x));
+	    replacement = find_fixup_replacement (replacements, SET_SRC (x));
 	    if (replacement->new)
 	      {
 	      SET_SRC (x) = replacement->new;
