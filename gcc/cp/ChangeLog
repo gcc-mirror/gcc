@@ -1,3 +1,12 @@
+Mon Jun 23 19:41:27 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* decl.c (register_dtor_fn): Mark cleanup as used.
+	* decl2.c (mark_vtable_entries): Skip nops.
+	* rtti.c (get_tinfo_ptr): Mark tinfo as used.
+	(build_dynamic_cast_1): Likewise.
+	(tinfo_base_init): Likewise.
+	(emit_tinfo_decl): Likewise.
+
 2003-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* mangle.c (hash_type): val is the TREE_LIST itself, not a pointer

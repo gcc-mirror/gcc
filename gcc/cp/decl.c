@@ -8486,6 +8486,7 @@ register_dtor_fn (tree decl)
 
   /* Call atexit with the cleanup function.  */
   cxx_mark_addressable (cleanup);
+  mark_used (cleanup);
   cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
   if (flag_use_cxa_atexit)
     {
