@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Sun SPARC.
-   Copyright (C) 1987, 88, 89, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -1494,6 +1494,10 @@ pic_setup_code ()
 
   start_sequence ();
 
+  /* If -O0, show the PIC register remains live before this.  */
+  if (obey_regdecls)
+    emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+    
   l1 = gen_label_rtx ();
 
   pic_pc_rtx = gen_rtx (CONST, Pmode,
