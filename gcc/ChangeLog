@@ -1,3 +1,8 @@
+2002-03-17  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_attribute_table): Move before
+	targetm definition.  Make static.
+
 2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.h (yyparse, c_common_parse_file): New.
@@ -12,8 +17,7 @@
 	* langhooks.h (struct lang_hoooks): New hook parse_file.
 	* toplev.c (compile_file): Use parse_file hook.
 	* tree.h (yyparse): Remove.
-objc:
-	* objc-lang.c (LANG_HOOKS_PARSE_FILE): Redefine.
+	* objc/objc-lang.c (LANG_HOOKS_PARSE_FILE): Redefine.
 
 2002-03-17  Hans-Peter Nilsson  <hp@bitrange.com>
 
