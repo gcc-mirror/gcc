@@ -1,3 +1,7 @@
+2000-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/20000725-1.c: New test.
+
 2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/c90-digraph-1.c: Restore { dg-do run } marker.
