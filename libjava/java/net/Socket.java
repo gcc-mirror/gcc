@@ -281,8 +281,6 @@ public class Socket
                  boolean stream) throws IOException
   {
     this();
-    this.inputShutdown = false;
-    this.outputShutdown = false;
 
     if (impl == null)
       throw new IOException("Cannot initialize Socket implementation");
@@ -291,59 +289,13 @@ public class Socket
     if (sm != null)
       sm.checkConnect(raddr.getHostName(), rport);
 
-    // create socket
-    impl.create(stream);
+    // bind/connect socket
+    bind (new InetSocketAddress (laddr, lport));
+    connect (new InetSocketAddress (raddr, rport));
 
     // FIXME: JCL p. 1586 says if localPort is unspecified, bind to any port,
     // i.e. '0' and if localAddr is unspecified, use getLocalAddress() as
     // that default.  JDK 1.2 doc infers not to do a bind.
-    
-    // bind/connect to address/port
-    if (laddr != null)
-      {
-        try
-	  {
-            impl.bind(laddr, lport);
-          }
-	catch (IOException exception)
-          {
-            impl.close();
-            throw exception;
-          }
-        catch (RuntimeException exception)
-          {
-            impl.close();
-            throw exception;
-          }
-        catch (Error error)
-          {
-            impl.close();
-            throw error;
-          }
-      }
-
-    if (raddr != null)
-      {
-        try
-          {
-            impl.connect(raddr, rport);
-          }
-        catch (IOException exception)
-          {
-            impl.close();
-            throw exception;
-          }
-        catch (RuntimeException exception)
-          {
-            impl.close();
-            throw exception;
-          }
-        catch (Error error)
-          {
-            impl.close();
-            throw error;
-          }
-      }
   }
 
   /**
@@ -362,12 +314,40 @@ public class Socket
   {
     if (closed)
       throw new SocketException ("Socket is closed");
+
+    // XXX: JDK 1.4.1 API documentation says that if bindpoint is null the
+    // socket will be bound to an ephemeral port and a valid local address.
+    if (bindpoint == null)
+      bindpoint = new InetSocketAddress (InetAddress.ANY_IF, 0);
     
     if ( !(bindpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException ();
 
     InetSocketAddress tmp = (InetSocketAddress) bindpoint;
-    impl.bind (tmp.getAddress(), tmp.getPort());
+    
+    // create socket
+    impl.create (true);
+    
+    // bind to address/port
+    try
+      {
+        impl.bind (tmp.getAddress(), tmp.getPort());
+      }
+    catch (IOException exception)
+      {
+        impl.close ();
+        throw exception;
+      }
+    catch (RuntimeException exception)
+      {
+        impl.close ();
+        throw exception;
+      }
+    catch (Error error)
+      {
+        impl.close ();
+        throw error;
+      }
   }
   
   /**
@@ -385,16 +365,7 @@ public class Socket
   public void connect (SocketAddress endpoint)
     throws IOException
   {
-    if (closed)
-      throw new SocketException ("Socket is closed");
-    
-    if (! (endpoint instanceof InetSocketAddress))
-      throw new IllegalArgumentException ("Address type not supported");
-
-    if (ch != null && !ch.isBlocking ())
-      throw new IllegalBlockingModeException ();
-    
-    impl.connect (endpoint, 0);
+    connect (endpoint, 0);
   }
 
   /**
@@ -423,8 +394,29 @@ public class Socket
 
     if (ch != null && !ch.isBlocking ())
       throw new IllegalBlockingModeException ();
-    
-    impl.connect (endpoint, timeout);
+  
+    if (!isBound ())
+      bind (null);
+
+    try
+      {
+        impl.connect (endpoint, timeout);
+      }
+    catch (IOException exception)
+      {
+        impl.close ();
+        throw exception;
+      }
+    catch (RuntimeException exception)
+      {
+        impl.close ();
+        throw exception;
+      }
+    catch (Error error)
+      {
+        impl.close ();
+        throw error;
+      }
   }
 
   /**
