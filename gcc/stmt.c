@@ -383,7 +383,6 @@ static enum br_predictor return_prediction (rtx);
 static rtx shift_return_value (rtx);
 static void expand_value_return (rtx);
 static void expand_cleanups (tree, int, int);
-static void check_seenlabel (void);
 static void do_jump_if_equal (rtx, rtx, rtx, int);
 static int estimate_case_costs (case_node_ptr);
 static bool same_case_target_p (rtx, rtx);
@@ -3823,50 +3822,6 @@ expand_start_case (int exit_flag, tree expr, tree type,
 
   start_cleanup_deferral ();
 }
-
-static void
-check_seenlabel (void)
-{
-  /* If this is the first label, warn if any insns have been emitted.  */
-  if (case_stack->data.case_stmt.line_number_status >= 0)
-    {
-      rtx insn;
-
-      restore_line_number_status
-	(case_stack->data.case_stmt.line_number_status);
-      case_stack->data.case_stmt.line_number_status = -1;
-
-      for (insn = case_stack->data.case_stmt.start;
-	   insn;
-	   insn = NEXT_INSN (insn))
-	{
-	  if (GET_CODE (insn) == CODE_LABEL)
-	    break;
-	  if (GET_CODE (insn) != NOTE
-	      && (GET_CODE (insn) != INSN || GET_CODE (PATTERN (insn)) != USE))
-	    {
-	      do
-		insn = PREV_INSN (insn);
-	      while (insn && (GET_CODE (insn) != NOTE || NOTE_LINE_NUMBER (insn) < 0));
-
-	      /* If insn is zero, then there must have been a syntax error.  */
-	      if (insn)
-                {
-                  location_t locus;
-#ifdef USE_MAPPED_LOCATION
-                  locus = NOTE_SOURCE_LOCATION (insn);
-#else
-                  locus.file = NOTE_SOURCE_FILE (insn);
-                  locus.line = NOTE_LINE_NUMBER (insn);
-#endif
-                  warning ("%Hunreachable code at beginning of %s", &locus,
-                           case_stack->data.case_stmt.printname);
-                }
-	      break;
-	    }
-	}
-    }
-}
 
 /* Accumulate one case or default label inside a case or switch statement.
    VALUE is the value of the case (a null pointer, for a default label).
@@ -3909,8 +3864,6 @@ pushcase (tree value, tree (*converter) (tree, tree), tree label,
   if (value != 0)
     value = (*converter) (nominal_type, value);
 
-  check_seenlabel ();
-
   /* Fail if this value is out of range for the actual type of the index
      (which may be narrower than NOMINAL_TYPE).  */
   if (value != 0
@@ -3951,8 +3904,6 @@ pushcase_range (tree value1, tree value2, tree (*converter) (tree, tree),
   /* If the index is erroneous, avoid more problems: pretend to succeed.  */
   if (index_type == error_mark_node)
     return 0;
-
-  check_seenlabel ();
 
   /* Convert VALUEs to type in which the comparisons are nominally done
      and replace any unspecified value with the corresponding bound.  */
@@ -4419,15 +4370,6 @@ expand_end_case_type (tree orig_index, tree orig_type)
     orig_type = TREE_TYPE (orig_index);
 
   do_pending_stack_adjust ();
-
-  /* This might get a spurious warning in the presence of a syntax error;
-     it could be fixed by moving the call to check_seenlabel after the
-     check for error_mark_node, and copying the code of check_seenlabel that
-     deals with case_stack->data.case_stmt.line_number_status /
-     restore_line_number_status in front of the call to end_cleanup_deferral;
-     However, this might miss some useful warnings in the presence of
-     non-syntax errors.  */
-  check_seenlabel ();
 
   /* An ERROR_MARK occurs for various reasons including invalid data type.  */
   if (index_type != error_mark_node)
