@@ -1,3 +1,9 @@
+2000-05-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/inclhack.def (broken_cabs): Update fix to handle comments
+	following the cabs decl which terminate on the following line.
+	Add the corresponding test_text case.
+
 2000-05-18  Neil Booth  <NeilB@earthling.net>
 
 	* cppinit.c (cpp_reader_init): Initialise col_adjust and

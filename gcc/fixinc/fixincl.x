@@ -1300,8 +1300,8 @@ tTestDesc aBroken_CabsTests[] = {
  *  Fix Command Arguments for Broken_Cabs
  */
 const char* apzBroken_CabsPatch[] = { "sed",
-    "-e", "/^extern double cabs();/d",
-    "-e", "/^extern double cabs(struct dbl_hypot);/d",
+    "-e", "s/^extern double cabs();//",
+    "-e", "s/^extern double cabs(struct dbl_hypot);//",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
