@@ -1,8 +1,13 @@
+2004-10-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-vectorizer.c (vectorizable_operation): Fail unless
+	the mode for the vector type is indeed a vector mode.
+
 2004-10-01  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-chrec.c (chrec_fold_plus_poly_poly, chrec_fold_plus_1,
 	chrec_fold_multiply): Use fold_convert or build_int_cst_type instead
-	od fonvert.
+	of convert.
 	* tree-scalar-evolution.c (compute_overall_effect_of_inner_loop,
 	add_to_evolution, set_nb_iterations_in_loop, follow_ssa_edge_in_rhs,
 	follow_ssa_edge_in_rhs): Ditto.
