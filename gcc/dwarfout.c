@@ -4196,7 +4196,22 @@ output_type (type, containing_scope)
   type = type_main_variant (type);
 
   if (TREE_ASM_WRITTEN (type))
-    return;
+    {
+      if (finalizing && AGGREGATE_TYPE_P (type))
+	{
+	  register tree member;
+
+	  /* Some of our nested types might not have been defined when we
+	     were written out before; force them out now.  */
+
+	  for (member = TYPE_FIELDS (type); member;
+	       member = TREE_CHAIN (member))
+	    if (TREE_CODE (member) == TYPE_DECL
+		&& ! TREE_ASM_WRITTEN (TREE_TYPE (member)))
+	      output_type (TREE_TYPE (member), containing_scope);
+	}
+      return;
+    }
 
   /* If this is a nested type whose containing class hasn't been
      written out yet, writing it out will cover this one, too.  */
