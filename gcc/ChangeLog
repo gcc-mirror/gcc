@@ -1,3 +1,8 @@
+Thu Apr  5 13:44:17 2001  J"orn Rennecke <amylaar@redhat.com>
+
+        * i386.md (*andsi_1+3): If used after reload, make sure the operand
+	satisfies ANY_QI_REG_P.
+
 2001-04-05  Bernd Schmidt  <bernds@redhat.com>
 
 	* config/ia64/ia64.c (rtx_needs_barrier): A PARALLEL can contain
