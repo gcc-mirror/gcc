@@ -67,6 +67,7 @@ public class BorderUIResource
      */
     public BorderUIResource(Border delegate)
     {
+	super ();
 	this.delegate = delegate;
     }
 
@@ -120,14 +121,14 @@ public class BorderUIResource
     {
 	public BevelBorderUIResource(int bevelType) 
 	{ 
-
+	    super (bevelType);
 	}
 
 	public BevelBorderUIResource(int bevelType, 
 				     Color highlight, 
 				     Color shadow) 
 	{
-	    this(bevelType);
+	    super (bevelType);
 	}
 	public BevelBorderUIResource(int bevelType,
 				     Color highlightOuter,
@@ -135,7 +136,7 @@ public class BorderUIResource
 				     Color shadowOuter,
 				     Color shadowInner) 
 	{
-	    this(bevelType);
+	    super (bevelType);
 	}
     }
 
@@ -149,7 +150,7 @@ public class BorderUIResource
 	public CompoundBorderUIResource(Border outsideBorder,
 					Border insideBorder)
 	{
-
+	  super (outsideBorder, insideBorder);
 	}
     }
 
@@ -167,7 +168,7 @@ public class BorderUIResource
 	
 	public EmptyBorderUIResource(Insets insets)
 	{
-
+	  super (insets);
 	}
     }
 
@@ -181,16 +182,16 @@ public class BorderUIResource
 	public EtchedBorderUIResource() { }
 	public EtchedBorderUIResource(int etchType) 
 	{
-
+	  super (etchType);
 	}
 	public EtchedBorderUIResource(Color highlight, Color shadow)
 	{
-
+	  super (highlight, shadow);
 	}
 	public EtchedBorderUIResource(int etchType, Color highlight, 
 				      Color shadow)
 	{
-
+	  super (etchType);
 	}
 
     }
@@ -204,12 +205,12 @@ public class BorderUIResource
     {
 	public LineBorderUIResource(Color color)
 	{
-	    
+	   super (color); 
 	}
 	public LineBorderUIResource(Color color,
 				    int thickness)
 	{
-
+	   super (color); 
 	}
     }
 
@@ -223,16 +224,16 @@ public class BorderUIResource
 	public MatteBorderUIResource(int top, int left, int bottom, 
 				     int right, Color color)
 	{
-
+	  super (top, left, bottom, right, color);
 	}
 	public MatteBorderUIResource(int top, int left, int bottom,
 				     int right, Icon tileIcon)
 	{
-
+	  super (top, left, bottom, right, tileIcon);
 	}
 	public MatteBorderUIResource(Icon tileIcon)
 	{
-
+	  super (tileIcon);
 	}
     }
 
@@ -245,32 +246,32 @@ public class BorderUIResource
     {
 	TitledBorderUIResource(String title)
 	{
-
+	  super (title);
 	}
 	TitledBorderUIResource(Border border)
 	{
-
+          super (border);
 	}
 	TitledBorderUIResource(Border border, String title)
 	{
-
+          super (border);
 	}
 	TitledBorderUIResource(Border border, String title,
 			       int titleJustification, int titlePosition)
 	{
-
+          super (border);
 	}
 	TitledBorderUIResource(Border border, String title,
 			       int titleJustification, int titlePosition,
 			       Font titleFont)
 	{
-
+          super (border);
 	}
 	TitledBorderUIResource(Border border, String title,
 			       int titleJustification, int titlePosition,
 			       Font titleFont, Color titleColor)
 	{
-
+          super (border);
 	}
     }
 }

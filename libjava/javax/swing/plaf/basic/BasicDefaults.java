@@ -48,7 +48,7 @@ class BasicBorder extends MatteBorder
 
 	BasicBorder()
 	{
-	    super(5,5,5,5, null);
+		super(5,5,5,5, Color.black);
 	}
 	
 	public void paintBorder(Component  c,
@@ -72,7 +72,7 @@ class PanelBorder extends MatteBorder
 {
     PanelBorder()
     {
-	super(5,5,5,5, null);
+	super(5,5,5,5, Color.black);
 	}
 	
 	public void paintBorder(Component  c,
