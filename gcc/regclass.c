@@ -474,7 +474,7 @@ init_reg_sets_1 ()
 	;
 #endif
       else if (0
-#ifdef CALL_REALLY_USED_REGS
+#ifdef CALL_REALLY_USED_REGISTERS
 	       || call_really_used_regs[i]
 #else
 	       || call_used_regs[i]

@@ -788,6 +788,18 @@ ar_ccv_reg_operand (op, mode)
 	  && REGNO (op) == AR_CCV_REGNUM);
 }
 
+/* Return 1 if this is the ar.pfs register.  */
+
+int
+ar_pfs_reg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_MODE (op) == mode || mode == VOIDmode)
+	  && GET_CODE (op) == REG
+	  && REGNO (op) == AR_PFS_REGNUM);
+}
+
 /* Like general_operand, but don't allow (mem (addressof)).  */
 
 int
@@ -1107,11 +1119,12 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
      rtx nextarg;
      int sibcall_p;
 {
-  rtx insn, b0, gp_save, narg_rtx;
+  rtx insn, b0, pfs, gp_save, narg_rtx;
   int narg;
 
   addr = XEXP (addr, 0);
   b0 = gen_rtx_REG (DImode, R_BR (0));
+  pfs = gen_rtx_REG (DImode, AR_PFS_REGNUM);
 
   if (! nextarg)
     narg = 0;
@@ -1124,7 +1137,7 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
   if (TARGET_NO_PIC || TARGET_AUTO_PIC)
     {
       if (sibcall_p)
-	insn = gen_sibcall_nopic (addr, narg_rtx, b0);
+	insn = gen_sibcall_nopic (addr, narg_rtx, b0, pfs);
       else if (! retval)
 	insn = gen_call_nopic (addr, narg_rtx, b0);
       else
@@ -1151,7 +1164,7 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
 		      gen_rtx_MEM (DImode, plus_constant (addr, 8)));
 
       if (sibcall_p)
-	insn = gen_sibcall_pic (dest, narg_rtx, b0);
+	insn = gen_sibcall_pic (dest, narg_rtx, b0, pfs);
       else if (! retval)
 	insn = gen_call_pic (dest, narg_rtx, b0);
       else
@@ -1164,7 +1177,7 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
   else if (TARGET_CONST_GP)
     {
       if (sibcall_p)
-	insn = gen_sibcall_nopic (addr, narg_rtx, b0);
+	insn = gen_sibcall_nopic (addr, narg_rtx, b0, pfs);
       else if (! retval)
 	insn = gen_call_nopic (addr, narg_rtx, b0);
       else
@@ -1174,7 +1187,7 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
   else
     {
       if (sibcall_p)
-	emit_call_insn (gen_sibcall_pic (addr, narg_rtx, b0));
+	emit_call_insn (gen_sibcall_pic (addr, narg_rtx, b0, pfs));
       else
 	{
 	  emit_move_insn (gp_save, pic_offset_table_rtx);
@@ -1548,6 +1561,7 @@ ia64_compute_frame_size (size)
      ar.unat as well.  */
   if (spilled_gr_p || cfun->machine->n_varargs)
     {
+      regs_ever_live[AR_UNAT_REGNUM] = 1;
       SET_HARD_REG_BIT (mask, AR_UNAT_REGNUM);
       current_frame_info.reg_save_ar_unat = find_gr_spill (spill_size == 0);
       if (current_frame_info.reg_save_ar_unat == 0)
@@ -6633,42 +6647,39 @@ int
 ia64_epilogue_uses (regno)
      int regno;
 {
-  /* When a function makes a call through a function descriptor, we
-     will write a (potentially) new value to "gp".  After returning
-     from such a call, we need to make sure the function restores the
-     original gp-value, even if the function itself does not use the
-     gp anymore.  */
-  if (regno == R_GR (1)
-      && TARGET_CONST_GP
-      && !(TARGET_AUTO_PIC || TARGET_NO_PIC))
-    return 1;
+  switch (regno)
+    {
+    case R_GR (1):
+      /* When a function makes a call through a function descriptor, we
+         will write a (potentially) new value to "gp".  After returning
+         from such a call, we need to make sure the function restores the
+         original gp-value, even if the function itself does not use the
+         gp anymore.  */
+      return (TARGET_CONST_GP && !(TARGET_AUTO_PIC || TARGET_NO_PIC));
 
-  /* For functions defined with the syscall_linkage attribute, all input
-     registers are marked as live at all function exits.  This prevents the
-     register allocator from using the input registers, which in turn makes it
-     possible to restart a system call after an interrupt without having to
-     save/restore the input registers.  This also prevents kernel data from
-     leaking to application code.  */
+    case IN_REG (0): case IN_REG (1): case IN_REG (2): case IN_REG (3):
+    case IN_REG (4): case IN_REG (5): case IN_REG (6): case IN_REG (7):
+      /* For functions defined with the syscall_linkage attribute, all
+	 input registers are marked as live at all function exits.  This
+	 prevents the register allocator from using the input registers,
+	 which in turn makes it possible to restart a system call after
+	 an interrupt without having to save/restore the input registers.
+	 This also prevents kernel data from leaking to application code.  */
+      return lookup_attribute ("syscall_linkage",
+	   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))) != NULL;
 
-  if (IN_REGNO_P (regno)
-      && lookup_attribute ("syscall_linkage",
-			   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
-    return 1;
+    case R_BR (0):
+      /* Conditional return patterns can't represent the use of `b0' as
+         the return address, so we force the value live this way.  */
+      return 1;
 
-  /* Conditional return patterns can't represent the use of `b0' as
-     the return address, so we force the value live this way.  */
-  if (regno == R_BR (0))
-    return 1;
+    case AR_PFS_REGNUM:
+      /* Likewise for ar.pfs, which is used by br.ret.  */
+      return 1;
 
-  if (regs_ever_live[AR_LC_REGNUM] && regno == AR_LC_REGNUM)
-    return 1;
-  if (! current_function_is_leaf && regno == AR_PFS_REGNUM)
-    return 1;
-  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_UNAT_REGNUM)
-      && regno == AR_UNAT_REGNUM)
-    return 1;
-
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Return true if IDENTIFIER is a valid attribute for TYPE.  */

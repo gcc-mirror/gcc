@@ -1,5 +1,21 @@
 2001-08-18  Richard Henderson  <rth@redhat.com>
 
+	* flow.c (mark_regs_live_at_end): Use regs_invalidated_by_call.
+	* regclass.c (init_reg_sets_1): Fix typo.
+	* config/ia64/ia64.c (ar_pfs_reg_operand): New.
+	(ia64_expand_call): Pass ar.pfs to sibcall expanders.
+	(ia64_compute_frame_size): Make ar.unat live when in use.
+	(ia64_epilogue_uses): Reformat; do not check current_function_is_leaf
+	for ar.pfs; remove ar.unat handling.
+	* config/ia64/ia64.h (CALL_REALLY_USED_REGISTERS): ar.unat is 
+	call-saved.
+	(PREDICATE_CODES): Add ar_pfs_reg_operand.
+	* config/ia64/ia64-protos.h: Update decls.
+	* config/ia64/ia64.md (sibcall_nopic): Use ar.pfs.
+	(sibcall_pic): Likewise.
+
+2001-08-18  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.c (ia64_sched_reorder2): Also skip past
 	pred_rel_mutex when searching for insn_group_barrier.
 	* config/ia64/ia64.md (cycle_display): Combine the expander

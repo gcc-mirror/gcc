@@ -4814,7 +4814,8 @@ mark_regs_live_at_end (set)
     {
       /* Mark all call-saved registers that we actually used.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (regs_ever_live[i] && ! call_used_regs[i] && ! LOCAL_REGNO (i))
+	if (regs_ever_live[i] && ! LOCAL_REGNO (i)
+	    && ! TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
 	  SET_REGNO_REG_SET (set, i);
     }
 
