@@ -1,5 +1,9 @@
 2000-05-06  Richard Earnshaw (reanrsha@arm.com)
 
+	* arm-protos.h (arm_dllexport_name_p, arm_dllimport_name_p): Constify.
+
+2000-05-06  Richard Earnshaw (reanrsha@arm.com)
+
 	* arm.c (arm_gen_load_multiple, arm_gen_store_mulitple): Don't add
 	bogus clobber to insns.
 	(load_multiple_operation, store_mulitple_operation): Don't check 
