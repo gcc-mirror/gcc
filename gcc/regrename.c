@@ -87,7 +87,7 @@ static void do_replace PARAMS ((struct du_chain *, int));
 static void scan_rtx_reg PARAMS ((rtx, rtx *, enum reg_class,
 				  enum scan_actions, enum op_type));
 static void scan_rtx_address PARAMS ((rtx, rtx *, enum reg_class,
-				      enum scan_actions));
+				      enum scan_actions, enum machine_mode));
 static void scan_rtx PARAMS ((rtx, rtx *, enum reg_class,
 			      enum scan_actions, enum op_type));
 static struct du_chain *build_def_use PARAMS ((basic_block, HARD_REG_SET *));
@@ -145,6 +145,8 @@ regrename_optimize ()
 	  struct du_chain *tmp, *last;
 	  HARD_REG_SET this_unavailable;
 	  int reg = REGNO (*this->loc), treg;
+	  int nregs = HARD_REGNO_NREGS (reg, GET_MODE (*this->loc));
+	  int i;
 
 	  all_chains = this->next_chain;
 
@@ -183,20 +185,22 @@ regrename_optimize ()
 	     have a closer look at each register still in there.  */
 	  for (treg = 0; treg < FIRST_PSEUDO_REGISTER; treg++)
 	    {
-	      if (TEST_HARD_REG_BIT (this_unavailable, treg)
-		  || fixed_regs[treg]
-		  || global_regs[treg]
-		  /* Can't use regs which aren't saved by the prologue.  */
-		  || (! regs_ever_live[treg]
-		      && ! call_used_regs[treg])
+	      for (i = nregs - 1; i >= 0; --i)
+	        if (TEST_HARD_REG_BIT (this_unavailable, treg+i)
+		    || fixed_regs[treg+i]
+		    || global_regs[treg+i]
+		    /* Can't use regs which aren't saved by the prologue.  */
+		    || (! regs_ever_live[treg+i] && ! call_used_regs[treg+i])
 #ifdef HARD_REGNO_RENAME_OK
-		  || ! HARD_REGNO_RENAME_OK (reg, treg)
+		    || ! HARD_REGNO_RENAME_OK (reg+i, treg+i)
 #endif
-		  )
+		    )
+		  break;
+	      if (i >= 0)
 		continue;
 
-		/* See whether it accepts all modes that occur in
-		   definition and uses.  */
+	      /* See whether it accepts all modes that occur in
+		 definition and uses.  */
 	      for (tmp = this; tmp; tmp = tmp->next_use)
 		if (! HARD_REGNO_MODE_OK (treg, GET_MODE (*tmp->loc)))
 		  break;
@@ -219,7 +223,9 @@ regrename_optimize ()
 	      continue;
 	    }
 
-	  SET_HARD_REG_BIT (unavailable, treg);
+	  
+	  for (i = nregs - 1; i >= 0; --i)
+	    SET_HARD_REG_BIT (unavailable, treg+i);
 	  do_replace (this, treg);
 
 	  if (rtl_dump_file)
@@ -364,11 +370,12 @@ scan_rtx_reg (insn, loc, class, action, type)
    BASE_REG_CLASS depending on how the register is being considered.  */
 
 static void
-scan_rtx_address (insn, loc, class, action)
+scan_rtx_address (insn, loc, class, action, mode)
      rtx insn;
      rtx *loc;
      enum reg_class class;
      enum scan_actions action;
+     enum machine_mode mode;
 {
   rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
@@ -455,9 +462,9 @@ scan_rtx_address (insn, loc, class, action)
 	  }
 
 	if (locI)
-	  scan_rtx_address (insn, locI, INDEX_REG_CLASS, action);
+	  scan_rtx_address (insn, locI, INDEX_REG_CLASS, action, mode);
 	if (locB)
-	  scan_rtx_address (insn, locB, BASE_REG_CLASS, action);
+	  scan_rtx_address (insn, locB, BASE_REG_CLASS, action, mode);
 	return;
       }
 
@@ -473,7 +480,8 @@ scan_rtx_address (insn, loc, class, action)
       break;
 
     case MEM:
-      scan_rtx_address (insn, &XEXP (x, 0), BASE_REG_CLASS, action);
+      scan_rtx_address (insn, &XEXP (x, 0), BASE_REG_CLASS, action,
+			GET_MODE (x));
       return;
 
     case REG:
@@ -488,10 +496,10 @@ scan_rtx_address (insn, loc, class, action)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	scan_rtx_address (insn, &XEXP (x, i), class, action);
+	scan_rtx_address (insn, &XEXP (x, i), class, action, mode);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  scan_rtx_address (insn, &XVECEXP (x, i, j), class, action);
+	  scan_rtx_address (insn, &XVECEXP (x, i, j), class, action, mode);
     }
 }
 
@@ -525,7 +533,8 @@ scan_rtx (insn, loc, class, action, type)
       return;
 
     case MEM:
-      scan_rtx_address (insn, &XEXP (x, 0), BASE_REG_CLASS, action);
+      scan_rtx_address (insn, &XEXP (x, 0), BASE_REG_CLASS, action,
+			GET_MODE (x));
       return;
 
     case SET:
@@ -698,7 +707,7 @@ build_def_use (bb, regs_used)
 		continue;
 
 	      if (recog_op_alt[opn][alt].is_address)
-		scan_rtx_address (insn, loc, class, mark_read);
+		scan_rtx_address (insn, loc, class, mark_read, VOIDmode);
 	      else
 		scan_rtx (insn, loc, class, mark_read, type);
 	    }
