@@ -60,6 +60,7 @@ extern void		mips_va_start PARAMS ((int, tree, rtx));
 #endif /* RTX_CODE */
 extern struct rtx_def  *mips_va_arg PARAMS ((tree, tree));
 extern void		mips_select_section PARAMS ((tree, int));
+extern void		mips_unique_section PARAMS ((tree, int));
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE

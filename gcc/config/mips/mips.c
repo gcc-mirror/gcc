@@ -9848,3 +9848,75 @@ iris6_asm_named_section (name, flags, align)
   fprintf (asm_out_file, "\t.section %s,%u,%u,%u,%u\n",
 	   name, sh_type, sh_flags, sh_entsize, align);
 }
+
+/* Cover function for UNIQUE_SECTION.  */
+
+void
+mips_unique_section (decl, reloc)
+     tree decl;
+     int reloc;
+{
+  int len, size, sec;
+  char *name, *string, *prefix;
+  static char *prefixes[4][2] = {
+    { ".text.", ".gnu.linkonce.t." },
+    { ".rodata.", ".gnu.linkonce.r." },
+    { ".data.", ".gnu.linkonce.d." },
+    { ".sdata.", ".gnu.linkonce.s." }
+  };
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  size = int_size_in_bytes (TREE_TYPE (decl));
+
+  /* Determine the base section we are interested in:
+     0=text, 1=rodata, 2=data, 3=sdata, [4=bss].  */
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    sec = 0;
+  else if (DECL_INITIAL (decl) == 0
+           || DECL_INITIAL (decl) == error_mark_node)
+    sec = 2;
+  else if ((TARGET_EMBEDDED_PIC || TARGET_MIPS16)
+      && TREE_CODE (decl) == STRING_CST
+      && !flag_writable_strings)
+    {
+      /* For embedded position independent code, put constant
+	 strings in the text section, because the data section
+	 is limited to 64K in size.  For mips16 code, put
+	 strings in the text section so that a PC relative load
+	 instruction can be used to get their address.  */
+      sec = 0;
+    }
+  else if (TARGET_EMBEDDED_DATA)
+    {
+      /* For embedded applications, always put an object in
+	 read-only data if possible, in order to reduce RAM
+	 usage.  */
+
+      if (DECL_READONLY_SECTION (decl, reloc))
+	sec = 1;
+      else if (size > 0 && size <= mips_section_threshold)
+	sec = 3;
+      else
+	sec = 2;
+    }
+  else
+    {
+      /* For hosted applications, always put an object in
+	 small data if possible, as this gives the best
+	 performance.  */
+
+      if (size > 0 && size <= mips_section_threshold)
+	sec = 3;
+      else if (DECL_READONLY_SECTION (decl, reloc))
+	sec = 1;
+      else
+	sec = 2;
+    }
+
+  prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
+  len = strlen (name) + strlen (prefix);
+  string = alloca (len + 1);
+  sprintf (string, "%s%s", prefix, name);
+
+  DECL_SECTION_NAME (decl) = build_string (len, string);
+}

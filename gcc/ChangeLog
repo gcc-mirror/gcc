@@ -1,3 +1,54 @@
+2001-08-08  H.J. Lu <hjl@gnu.org>
+
+	* config/mips/mips.c (mips_unique_section): New. Copied from
+	config/mips/elf.h.
+
+	* config/mips/mips-protos.h (mips_unique_section): New
+	prototype.
+
+	* config/mips/elf.h (UNIQUE_SECTION): Use mips_unique_section.
+
+	* config/mips/little.h: New. Generic little endian mips
+	targets. Only mips*-*-linux* is converted to use it so far.
+
+	* config/mips/linux.h: Include "gofast.h" and "mips/mips.h".
+	(WCHAR_TYPE): Defined
+	(WCHAR_TYPE_SIZE): Likewise.
+	(INIT_SUBTARGET_OPTABS): Likewise.
+	(BSS_SECTION_ASM_OP): Likewise.
+	(SBSS_SECTION_ASM_OP): Likewise.
+	(ASM_OUTPUT_ALIGNED_BSS): Likewise.
+	(ASM_DECLARE_OBJECT_NAME): Likewise.
+	(UNIQUE_SECTION): Likewise.
+	(EXTRA_SECTIONS): Likewise.
+	(ASM_OUTPUT_CONSTRUCTOR): Likewise.
+	(ASM_OUTPUT_DESTRUCTOR): Likewise.
+	(ASM_OUTPUT_DEF): Likewise.
+	(HANDLE_SYSV_PRAGMA): Removed.
+	(NO_IMPLICIT_EXTERN_C): Likewise.
+	(TARGET_MEM_FUNCTIONS): Likewise.
+	(STARTFILE_SPEC): Likewise.
+	(ENDFILE_SPEC): Likewise.
+	(LIB_SPEC): Likewise.
+	(INVOKE__main): Likewise.
+	(CTOR_LIST_BEGIN): Likewise.
+	(CTOR_LIST_END): Likewise.
+	(DTOR_LIST_BEGIN): Likewise.
+	(DTOR_LIST_END): Likewise.
+	(SET_ASM_OP): Likewise.
+	(ASM_OUTPUT_SOURCE_LINE): Likewise.
+	(ASM_OUTPUT_DEF): Likewise.
+	(ASM_OUTPUT_IDENT): Likewise.
+
+	* config/mips/mips.h (ASM_SPEC): Undefine before define.
+	(CPLUSPLUS_CPP_SPEC): Likewise.
+	(ASM_APP_ON) Redefine only if not defined.
+	(ASM_APP_OFF): Likewise.
+	(ASM_OUTPUT_SOURCE_LINE): Likewise.
+	(ASM_OUTPUT_IDENT): Likewise.
+
+	* config.gcc: Update tm_file for Linux/mips.
+
 2001-08-08  Bernd Schmidt  <bernds@redhat.com>
 
 	* cselib.c (cselib_record_sets): If insn is predicated, turn
