@@ -1,6 +1,6 @@
 // natObjectInputStream.cc - Native part of ObjectInputStream class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This ObjectInputStream is part of libgcj.
 
@@ -38,7 +38,6 @@ java::io::ObjectInputStream::allocateObject (jclass klass)
 	obj = NULL;	
       else
 	{
-	  // FIXME: will this work for String?
 	  obj = JvAllocObject (klass);
 	}
     }
@@ -51,19 +50,24 @@ java::io::ObjectInputStream::allocateObject (jclass klass)
 }
 
 
-#define ObjectClass java::lang::Object::class$
-#define ClassClass java::lang::Class::class$
-
 void 
 java::io::ObjectInputStream::callConstructor (jclass klass, jobject obj)
 { 
   jstring init_name = JvNewStringLatin1 ("<init>");
+  // This is a bit inefficient, and a bit of a hack, since we don't
+  // actually use the Method and since what is returned isn't
+  // technically a Method.  We can't use Method.invoke as it looks up
+  // the declared method.
   JArray<jclass> *arg_types
-    = (JArray<jclass> *) JvNewObjectArray (0, &ClassClass, NULL);
-  JArray<jobject> *args
-    = (JArray<jobject> *) JvNewObjectArray (0, &ObjectClass, NULL);
-  java::lang::reflect::Method *m = klass->getPrivateMethod (init_name, arg_types);
-  m->invoke (obj, args);
+    = (JArray<jclass> *) JvNewObjectArray (0, &java::lang::Class::class$,
+					   NULL);
+  java::lang::reflect::Method *m = klass->getPrivateMethod (init_name,
+							    arg_types);
+  // We lie about this being a constructor.  If we put `true' here
+  // then _Jv_CallAnyMethodA would try to allocate the object for us.
+  jmethodID meth = (jmethodID) ((char *) (klass->methods)
+				+ m->offset);
+  _Jv_CallAnyMethodA (obj, JvPrimClass (void), meth, false, arg_types, NULL);
 }
   
 java::lang::reflect::Field *

@@ -286,10 +286,10 @@ java::lang::Class::getSignature (JArray<jclass> *param_types,
 {
   java::lang::StringBuffer *buf = new java::lang::StringBuffer ();
   buf->append((jchar) '(');
-  jclass *v = elements (param_types);
   // A NULL param_types means "no parameters".
   if (param_types != NULL)
     {
+      jclass *v = elements (param_types);
       for (int i = 0; i < param_types->length; ++i)
 	v[i]->getSignature(buf);
     }
@@ -1399,7 +1399,6 @@ java::lang::Class::getPrivateMethod (jstring name, JArray<jclass> *param_types)
       int i = klass->isPrimitive () ? 0 : klass->method_count;
       while (--i >= 0)
 	{
-	  // FIXME: access checks.
 	  if (_Jv_equalUtf8Consts (klass->methods[i].name, utf_name)
 	      && _Jv_equaln (klass->methods[i].signature, partial_sig, p_len))
 	    {
