@@ -3230,7 +3230,7 @@ its maximum of 262144 bytes.  If you have root access, you can use the
 GCC does not correctly pass/return structures which are
 smaller than 16 bytes and which are not 8 bytes.  The problem is very
 involved and difficult to fix.  It affects a number of other targets also,
-but IRIX 6 is affected the most, because it is a 64 bit target, and 4 byte
+but IRIX 6 is affected the most, because it is a 64-bit target, and 4 byte
 structures are common.  The exact problem is that structures are being padded
 at the wrong end, e.g.@: a 4 byte structure is loaded into the lower 4 bytes
 of the register when it should be loaded into the upper 4 bytes of the
@@ -3446,7 +3446,7 @@ S/390 system running Linux for S/390@.
 <hr>
 @end html
 @heading @anchor{s390x-*-linux*}s390x-*-linux*
-zSeries system (64 Bit) running Linux for zSeries@.
+zSeries system (64-bit) running Linux for zSeries@.
 
 @html
 </p>
@@ -3766,7 +3766,7 @@ respects, this target is the same as the
 </p>
 <hr>
 @end html
-@heading @anchor{windows}Microsoft Windows (32 bit)
+@heading @anchor{windows}Microsoft Windows (32-bit)
 
 A port of GCC 2.95.x is included with the
 @uref{http://www.cygwin.com/,,Cygwin environment}.
