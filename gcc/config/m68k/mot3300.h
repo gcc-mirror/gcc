@@ -1,9 +1,11 @@
 /* Definitions of target machine for GNU compiler,
    SysV68 Motorola 3300 Delta Series.
-   Copyright (C) 1987, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
    Maintained by Philippe De Muyter (phdm@info.ucl.ac.be).
+   Support for GAS added by merging mot3300g.h into this file by
+   Manfred Hollstein (manfred@lts.sel.alcatel.de).
 
 This file is part of GNU CC.
 
@@ -22,11 +24,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef USE_GAS
 #define MOTOROLA		/* Use Motorola syntax rather than "MIT" */
 #define MOTOROLA_BSR		/* Use Span-dependent optimized bsr */
 #define SGS			/* Uses SGS assembler */
 #define SGS_CMP_ORDER		/* Takes cmp operands in reverse order */
 #define SGS_SWAP_W		/* Use swap.w rather than just plain swap */
+#endif /* USE_GAS */
 
 #define NO_DOLLAR_IN_LABEL
 #define NO_DOT_IN_LABEL
@@ -42,7 +46,12 @@ Boston, MA 02111-1307, USA.  */
 /* -m[c]6800 requires special flag to the assembler.  */
 
 #undef ASM_SPEC
+#ifndef USE_GAS
 #define ASM_SPEC "%{m68000:-p 000}%{mc68000:-p 000}"
+#else /* USE_GAS */
+#define ASM_SPEC \
+  "%{v:-v} %{m68000:-mc68000}%{mc68000:-mc68000}%{!mc68000:%{!m68000:-mc68020}}"
+#endif /* USE_GAS */
 
 /* NYI: FP= is equivalent to -msoft-float  */
 
@@ -52,16 +61,32 @@ Boston, MA 02111-1307, USA.  */
 /* NYI: if FP= library is -lc.  */
 /* Default for us: FP=M68881 library is -lc881  */
 #undef LIB_SPEC
-#define LIB_SPEC "%{!shlib:%{p:-L/usr/lib/libp} %{pg:-L/usr/lib/libp} -lc881}"
+#define LIB_SPEC "%{!shlib:%{!msoft-float:-lc881}%{msoft-float:-lc}}"
+#ifdef CROSS_COMPILE
+#ifndef USE_GLD
+#define DEFAULT_A_OUT_NAME "m68ka.out"
+#endif
+#endif
+
+#ifdef USE_GLD
+#undef LINK_SPEC
+#define LINK_SPEC "%{v:-v}"
+#endif /* defined (USE_GLD) */
 
 #define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__}"
 
 /* Shared libraries need to use crt0s.o  */
 
 #undef STARTFILE_SPEC
+#ifdef CROSS_COMPILE
 #define STARTFILE_SPEC \
   "%{!shlib:%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}\
-   %{shlib:crt0s.o%s shlib.ifile%s} "
+   %{shlib:crt0s.o%s shlib.ifile%s} %{p:-L"TOOLDIR_BASE_PREFIX DEFAULT_TARGET_MACHINE"/lib/libp} %{pg:-L"TOOLDIR_BASE_PREFIX DEFAULT_TARGET_MACHINE"/lib/libp} "
+#else /* CROSS_COMPILE */
+#define STARTFILE_SPEC \
+  "%{!shlib:%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}\
+   %{shlib:crt0s.o%s shlib.ifile%s} %{p:-L/usr/lib/libp} %{pg:-L/usr/lib/libp} "
+#endif /* CROSS_COMPILE */
 
 /* Generate calls to memcpy, memcmp and memset.  */
 
@@ -95,10 +120,14 @@ Boston, MA 02111-1307, USA.  */
 #undef REGISTER_PREFIX
 #define REGISTER_PREFIX "%"
 
-#if 0
 #undef LOCAL_LABEL_PREFIX
-#define LOCAL_LABEL_PREFIX "~"
+#ifdef USE_GAS
+#define LOCAL_LABEL_PREFIX ".L"
+#else
+#define LOCAL_LABEL_PREFIX "L%"
 #endif
+
+#undef USER_LABEL_PREFIX
 
 #undef IMMEDIATE_PREFIX
 #define IMMEDIATE_PREFIX "&"
@@ -117,8 +146,13 @@ Boston, MA 02111-1307, USA.  */
       asm_fprintf (FILE, "\tmov.l %Ra0,%Rd0\n"); } 
 
 #undef FUNCTION_PROFILER
+#ifndef USE_GAS
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
-    fprintf (FILE, "\tmov.l &LP%%%d,%%a0\n\tjsr mcount%%\n", (LABEL_NO))
+    asm_fprintf (FILE, "\tmov.l %ILP%%%d,%Ra0\n\tjsr mcount%%\n", (LABEL_NO))
+#else /* USE_GAS */
+#define FUNCTION_PROFILER(FILE, LABEL_NO)	\
+    asm_fprintf (FILE, "\tmov.l %I%.LP%d,%Ra0\n\tjsr mcount%%\n", (LABEL_NO))
+#endif /* USE_GAS */
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -134,6 +168,8 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   fprintf (FILE, "\tmov.l (%%sp)+,%s\n", reg_names[REGNO])
 
+#ifndef USE_GAS
+
 #undef ASM_APP_ON
 #define ASM_APP_ON ""
 
@@ -147,11 +183,83 @@ Boston, MA 02111-1307, USA.  */
 #undef ASCII_DATA_ASM_OP
 #define	ASCII_DATA_ASM_OP "byte"
 
+#endif /* USE_GAS */
+
+#ifdef USE_GLD
+/* Support the ctors and dtors sections for g++.  */
+
+#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"x\""
+#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"x\""
+
+/* A list of other sections which the compiler might be "in" at any
+   given time.  */
+
+#undef EXTRA_SECTIONS
+#define EXTRA_SECTIONS in_ctors, in_dtors
+
+/* A list of extra section function definitions.  */
+
+#undef EXTRA_SECTION_FUNCTIONS
+#define EXTRA_SECTION_FUNCTIONS						\
+  CTORS_SECTION_FUNCTION						\
+  DTORS_SECTION_FUNCTION
+
+#define CTORS_SECTION_FUNCTION						\
+void									\
+ctors_section ()							\
+{									\
+  if (in_section != in_ctors)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
+      in_section = in_ctors;						\
+    }									\
+}
+
+#define DTORS_SECTION_FUNCTION						\
+void									\
+dtors_section ()							\
+{									\
+  if (in_section != in_dtors)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
+      in_section = in_dtors;						\
+    }									\
+}
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global constructors.  */
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
+  do {									\
+    ctors_section ();							\
+    fprintf (FILE, "\t%s\t ", ASM_LONG);				\
+    assemble_name (FILE, NAME);						\
+    fprintf (FILE, "\n");						\
+  } while (0)
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global destructors.  */
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
+  do {									\
+    dtors_section ();                   				\
+    fprintf (FILE, "\t%s\t ", ASM_LONG);				\
+    assemble_name (FILE, NAME);              				\
+    fprintf (FILE, "\n");						\
+  } while (0)
+#endif /* defined (USE_GLD) */
+
 /* The file command should always begin the output.  */
 
 #undef ASM_FILE_START
+#ifndef USE_GAS
 #define ASM_FILE_START(FILE) \
-output_file_directive ((FILE), main_input_filename)
+  output_file_directive ((FILE), main_input_filename)
+#else /* USE_GAS */
+#define ASM_FILE_START(FILE) \
+    { \
+       fprintf (FILE, "%s", ASM_APP_OFF); \
+       output_file_directive ((FILE), main_input_filename); \
+    }
+#endif /* USE_GAS */
 
 /* The sysV68 assembler does not accept dots in labels.
    Let's use percent instead  */
@@ -166,15 +274,9 @@ output_file_directive ((FILE), main_input_filename)
 #define CPP_PREDEFINES "-Dm68k -Dunix -DsysV68 -D__motorola__ -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 
 #undef TARGET_VERSION
+#ifndef USE_GAS
 #define TARGET_VERSION fprintf (stderr, " (68k, SGS/AT&T sysV68 syntax)");
-
-/* Function calls save all but a0, a1, d0, d1, fp0, fp1.  */
-
-#undef CALL_USED_REGISTERS
-#define CALL_USED_REGISTERS						\
- {1, 1, 0, 0, 0, 0, 0, 0,						\
-  1, 1, 0, 0, 0, 0, 0, 1,						\
-  1, 1, 0, 0, 0, 0, 0, 0}
+#endif /* USE_GAS */
 
 /* This will return small structs in d0.  */
 #define RETURN_IN_MEMORY(type) \
@@ -223,11 +325,13 @@ output_file_directive ((FILE), main_input_filename)
 #undef NEEDS_UNTYPED_CALL
 #define NEEDS_UNTYPED_CALL 1
  
+#ifndef USE_GAS
 /* This is the command to make the user-level label named NAME
    defined for reference from other files.  */
 
 #undef GLOBAL_ASM_OP
 #define GLOBAL_ASM_OP "global"
+#endif /* USE_GAS */
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
@@ -238,6 +342,30 @@ output_file_directive ((FILE), main_input_filename)
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
   sprintf ((OUTPUT), "%s_%%%d", (NAME), (LABELNO)))
 
+#ifdef USE_GAS
+#undef ASM_LONG
+#define ASM_LONG	".long"
+#undef ASM_SHORT
+#define ASM_SHORT	".short"
+#undef ASM_CHAR
+#define ASM_CHAR	".byte"
+#undef ASM_BYTE
+#define ASM_BYTE	".byte"
+#undef ASM_BYTE_OP
+#define ASM_BYTE_OP	"\t.byte"
+#else
+#undef ASM_LONG
+#define ASM_LONG	"long"
+#undef ASM_SHORT
+#define ASM_SHORT	"short"
+#undef ASM_CHAR
+#define ASM_CHAR	"byte"
+#undef ASM_BYTE
+#define ASM_BYTE	"byte"
+#undef ASM_BYTE_OP
+#define ASM_BYTE_OP	"\tbyte"
+#endif /* USE_GAS */
+
 /* The sysV68 as doesn't know about double's and float's.  */
 /* This is how to output an assembler line defining a `double' constant.  */
 
@@ -245,14 +373,14 @@ output_file_directive ((FILE), main_input_filename)
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
 do { long l[2];						\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf (FILE, "\tlong 0x%x,0x%x\n", l[0], l[1]); \
+     fprintf (FILE, "\t%s 0x%x,0x%x\n", ASM_LONG, l[0], l[1]); \
    } while (0)
 
 #undef ASM_OUTPUT_LONG_DOUBLE
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\tlong 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
+     fprintf (FILE, "\t%s 0x%x,0x%x,0x%x\n", ASM_LONG, l[0], l[1], l[2]);	\
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -261,14 +389,14 @@ do { long l[3];								\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
 do { long l;					\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
-     fprintf ((FILE), "\tlong 0x%x\n", l);	\
+     fprintf ((FILE), "\t%s 0x%x\n", ASM_LONG, l);	\
    } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #undef ASM_OUTPUT_INT
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\tlong "),			\
+( fprintf (FILE, "\t%s ", ASM_LONG),		\
   output_addr_const (FILE, (VALUE)),		\
   fprintf (FILE, "\n"))
 
@@ -276,13 +404,13 @@ do { long l;					\
 
 #undef ASM_OUTPUT_SHORT
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\tshort "),			\
+( fprintf (FILE, "\t%s ", ASM_SHORT),		\
   output_addr_const (FILE, (VALUE)),		\
   fprintf (FILE, "\n"))
 
 #undef ASM_OUTPUT_CHAR
 #define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\tbyte "),			\
+( fprintf (FILE, "\t%s ", ASM_CHAR),		\
   output_addr_const (FILE, (VALUE)),		\
   fprintf (FILE, "\n"))
 
@@ -290,22 +418,34 @@ do { long l;					\
 
 #undef ASM_OUTPUT_BYTE
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tbyte 0x%x\n", (VALUE))
+  fprintf (FILE, "\t%s 0x%x\n", ASM_BYTE, (VALUE))
 
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
 
+#ifndef USE_GAS
+#define ALIGN_ASM_OP	"even"
+#else /* USE_GAS */
+#define ALIGN_ASM_OP	".even"
+#endif /* USE_GAS */
+
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) == 1)			\
-    fprintf (FILE, "\teven\n");		\
+    fprintf (FILE, "\t%s\n", ALIGN_ASM_OP);	\
   else if ((LOG) != 0)			\
     abort ();
 
+#ifndef USE_GAS
+#define SKIP_ASM_OP	"space"
+#else /* USE_GAS */
+#define SKIP_ASM_OP	".skip"
+#endif /* USE_GAS */
+
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\tspace %u\n", (SIZE))
+  fprintf (FILE, "\t%s %u\n", SKIP_ASM_OP, (SIZE))
 
 /* Can't use ASM_OUTPUT_SKIP in text section.  */
 
@@ -313,7 +453,10 @@ do { long l;					\
 
 /* The beginnings of sdb support...  */
 
-#undef ASM_OUTPUT_SOURCE_FILENAME
+/* Undefining these will allow `output_file_directive' (in toplev.c)
+   to default to the right thing. */
+#undef ASM_OUTPUT_MAIN_SOURCE_FILENAME
+#ifndef USE_GAS
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME) \
   do {	fprintf (FILE, "\tfile\t");		\
 	output_quoted_string (FILE, FILENAME);	\
@@ -331,7 +474,7 @@ do { long l;					\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
   do { register int sp = 0, lp = 0;				\
-    fprintf ((FILE), "\tbyte\t");				\
+    fprintf ((FILE), "%s\t", ASM_BYTE_OP);			\
   loop:								\
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\')	\
       { lp += 3;						\
@@ -347,7 +490,9 @@ do { long l;					\
 	  putc (',', (FILE));					\
 	goto loop; }						\
     putc ('\n', (FILE)); } while (0)
+#endif /* USE_GAS */
 
+#ifndef USE_GAS
 /* Output a float value (represented as a C double) as an immediate operand.
    This macro is a 68k-specific macro.  */
 
@@ -367,6 +512,7 @@ do { long l;					\
       REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
       fprintf ((FILE), "&0x%lx%08lx", l[0], l[1]);			\
     } while (0)
+#endif /* USE_GAS */
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
@@ -374,15 +520,25 @@ do { long l;					\
    This is suitable for output with `assemble_name'.  */
 
 #undef ASM_GENERATE_INTERNAL_LABEL
+#ifndef USE_GAS
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
   sprintf ((LABEL), "%s%%%d", (PREFIX), (NUM))
+#else /* USE_GAS */
+#define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
+  sprintf ((LABEL), ".%s%d", (PREFIX), (NUM))
+#endif /* USE_GAS */
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
+#ifndef USE_GAS
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
     fprintf (FILE, "%s%%%d:\n", PREFIX, NUM)
+#else /* USE_GAS */
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
+    fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
+#endif /* USE_GAS */
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
@@ -397,13 +553,15 @@ do { long l;					\
 
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)	\
-    fprintf (FILE, "\tlong L%%%d\n", (VALUE))
+    asm_fprintf (FILE, "\t%s %L%d\n", ASM_LONG, (VALUE))
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
-    fprintf (FILE, "\tshort L%%%d-L%%%d\n", (VALUE), (REL))
+    asm_fprintf (FILE, "\t%s %L%d-%L%d\n", ASM_SHORT, (VALUE), (REL))
+
+#ifndef USE_GAS
 
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLE)			\
     fprintf (FILE, "\tswbeg &%d\n%s%%%d:\n",				\
@@ -418,6 +576,18 @@ do { long l;					\
 
 #define ASM_RETURN_CASE_JUMP   return "jmp 8(%%pc,%0.w)"
 	     
+#else /* USE_GAS */
+
+/* labelno is not used here */
+#define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
+	asm_fprintf (file, "%Rpc@(6,%s:", regname)
+
+#define ASM_RETURN_CASE_JUMP return "jmp %%pc@(2,%0:w)"
+
+#endif /* USE_GAS */
+
+#ifndef USE_GAS
+
 /* Translate some opcodes to fit the sysV68 assembler syntax.  */
 /* The opcodes fdmov and fsmov are guesses.  */
 
@@ -474,6 +644,7 @@ do { long l;					\
        if ((PTR)[0] == 'a' || (PTR)[0] == 'i'	 	\
 	   || (PTR)[0] == 'm') (PTR)++; }		\
 }
+#endif /* USE_GAS */
 
 /* phdm@info.ucl.ac.be says to pass SIZE, not ROUNDED.  */
 
@@ -481,21 +652,35 @@ do { long l;					\
    to define a global common symbol.  */
 
 #undef ASM_OUTPUT_COMMON
+#ifndef USE_GAS
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs ("\tcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (SIZE)))
+#else /* USE_GAS */
+#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
+( fputs ("\t.comm ", (FILE)),			\
+  assemble_name ((FILE), (NAME)),		\
+  fprintf ((FILE), ",%u\n", (SIZE)))
+#endif /* USE_GAS */
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
 
 #undef ASM_OUTPUT_LOCAL
+#ifndef USE_GAS
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs ("\tlcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (SIZE)))
+#else /* USE_GAS */
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
+( fputs ("\t.lcomm ", (FILE)),			\
+  assemble_name ((FILE), (NAME)),		\
+  fprintf ((FILE), ",%u\n", (SIZE)))
+#endif /* USE_GAS */
 
-
+#ifndef USE_GAS
 /* Override usual definitions of SDB output macros.
    These definitions differ only in the absence of the period
    at the beginning of the name of the directive
@@ -554,6 +739,8 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 #define SDB_GENERATE_FAKE(BUFFER, NUMBER) \
   sprintf ((BUFFER), "~%dfake", (NUMBER));
 
+#endif /* USE_GAS */
+
 /* Define subroutines to call to handle multiply, divide, and remainder.
    Use the subroutines that the sysV68's library provides.
    The `*' prevents an underscore from being prepended by the compiler.  */
@@ -600,3 +787,30 @@ do {(CUM).offset = 0;\
 
 #undef FUNCTION_ARG_REGNO_P
 #define FUNCTION_ARG_REGNO_P(N) (TARGET_68020 ? 0 : (N) == 0)
+
+/* manfred@lts.sel.alcatel.de: I believe that most delta machines are configured to have
+   a 6888[12] FPU for which we need to link -lm881 instead of -lm; define ALT_LIBM to
+   tell g++.c about that.  */
+#define ALT_LIBM	"-lm881"
+
+#if (TARGET_DEFAULT & 2)      /* The default configuration has a 6888[12] FPU. */
+#define MATH_LIBRARY	"-lm881"
+#endif
+
+/* Currently we do not have the atexit() function;
+ *  so take that from libgcc2.c
+ */
+
+#define NEED_ATEXIT 1
+#define HAVE_ATEXIT 1
+
+#define EXIT_BODY	\
+  do								\
+    { extern void monitor ();					\
+      extern long mcount asm ("mcount%");			\
+      extern long etext;					\
+								\
+      if (&mcount < &etext)					\
+	monitor (0);						\
+      _cleanup ();						\
+    } while (0)
