@@ -59,7 +59,7 @@ void test_07()
   
   filebuf fb;
   sleep(1);
-  filebuf* ret = fb.open(name, ios_base::out | ios_base::trunc);
+  filebuf* ret = fb.open(name, ios_base::in | ios_base::out);
   VERIFY( ret != NULL );
   VERIFY( fb.is_open() );
 
@@ -67,7 +67,7 @@ void test_07()
   fb.sputc('a');
 
   ret = fb.close();
-  VERIFY( ret == NULL );
+  VERIFY( ret != NULL );
   VERIFY( !fb.is_open() );
 }
 
