@@ -1657,7 +1657,7 @@ vect_get_base_and_offset (struct data_reference *dr,
 
       /* Find the base and the offset from it.  */
       next_ref = get_inner_reference (expr, &pbitsize, &pbitpos, &poffset,
-				      &pmode, &punsignedp, &pvolatilep);
+				      &pmode, &punsignedp, &pvolatilep, false);
       if (!next_ref)
 	return NULL_TREE;
 
