@@ -1,3 +1,8 @@
+2005-01-28  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	PR target/19663
+	* config/sparc/rtemself.h (LINK_GCC_C_SEQUENCE_SPEC): undefine.
+
 2005-01-27  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (expand_builtin_copysign): New.
