@@ -3986,6 +3986,21 @@ lookup_field_wrapper (class, name)
   tree decl;
   java_parser_context_save_global ();
   decl = lookup_field (&type, name);
+
+  /* Last chance: if we're within the context of an inner class, we
+     might be trying to access a local variable defined in an outer
+     context. We try to look for it now. */
+  if (INNER_CLASS_TYPE_P (class) && (!decl || decl == error_mark_node))
+    {
+      char *alias_buffer;
+      MANGLE_OUTER_LOCAL_VARIABLE_NAME (alias_buffer, name);
+      name = get_identifier (alias_buffer);
+      type = class;
+      decl = lookup_field (&type, name);
+      if (decl && decl != error_mark_node)
+	FIELD_LOCAL_ALIAS_USED (decl) = 1;
+    }
+
   java_parser_context_restore_global ();
   return decl == error_mark_node ? NULL : decl;
 }
@@ -8450,25 +8465,17 @@ resolve_expression_name (id, orig)
       else 
         {
 	  decl = lookup_field_wrapper (current_class, name);
-
-	  /* Last chance: if we're within the context of an inner
-	     class, we might be trying to access a local variable
-	     defined in an outer context. We try to look for it
-	     now. */
-	  if (!decl && INNER_CLASS_TYPE_P (current_class))
-	    {
-	      char *alias_buffer;
-	      MANGLE_OUTER_LOCAL_VARIABLE_NAME (alias_buffer, name);
-	      name = get_identifier (alias_buffer);
-	      decl = lookup_field_wrapper (current_class, name);
-	      if (decl)
-		FIELD_LOCAL_ALIAS_USED (decl) = 1;
-	    }
-
 	  if (decl)
 	    {
 	      tree access = NULL_TREE;
 	      int fs = FIELD_STATIC (decl);
+
+	      /* If we're accessing an outer scope local alias, make
+		 sure we change the name of the field we're going to
+		 build access to. */
+	      if (FIELD_LOCAL_ALIAS_USED (decl))
+		name = DECL_NAME (decl);
+
 	      /* Instance variable (8.3.1.1) can't appear within
 		 static method, static initializer or initializer for
 		 a static variable. */
@@ -10154,8 +10161,9 @@ qualify_ambiguous_name (id)
 	qual = TREE_CHAIN (qual);
 	again = new_array_found = 1;
 	continue;
-      case NEW_CLASS_EXPR:
       case CONVERT_EXPR:
+	break;
+      case NEW_CLASS_EXPR:
 	qual_wfl = TREE_OPERAND (qual_wfl, 0);
 	break;
       case ARRAY_REF:
@@ -10240,10 +10248,10 @@ qualify_ambiguous_name (id)
       }
   } while (again);
   
-  /* If name appears within the scope of a location variable
-     declaration or parameter declaration, then it is an expression
-     name. We don't carry this test out if we're in the context of the
-     use of SUPER or THIS */
+  /* If name appears within the scope of a local variable declaration
+     or parameter declaration, then it is an expression name. We don't
+     carry this test out if we're in the context of the use of SUPER
+     or THIS */
   if (!this_found && !super_found 
       && TREE_CODE (name) != STRING_CST && TREE_CODE (name) != INTEGER_CST
       && (decl = IDENTIFIER_LOCAL_VALUE (name)))
@@ -10279,7 +10287,7 @@ qualify_ambiguous_name (id)
       QUAL_RESOLUTION (qual) = decl;
     }
 
-  /* Method call are expression name */
+  /* Method call, array references and cast are expression name */
   else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR
 	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF
 	   || TREE_CODE (QUAL_WFL (qual)) == CONVERT_EXPR)

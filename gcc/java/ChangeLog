@@ -47,6 +47,14 @@ Thu Apr 20 18:20:58 2000  Jason Schroeder  <shrode@subnature.com>
 
 2000-04-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* parse.y (lookup_field_wrapper): Search for final local aliases.
+	(resolve_expression_name): Let lookup_field_wrapper search for
+	final local aliases. Force the value of `name' if one is found.
+	(qualify_ambiguous_name): CONVERT_EXPR is enough to now we have
+	an expression name. Fixed comments.
+
+2000-04-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* parse.y (yyerror): `msg' can be null, don't use it in that case.
 
 2000-04-19  Tom Tromey  <tromey@cygnus.com>
