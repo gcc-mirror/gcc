@@ -2798,7 +2798,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	     emit_push_insn for BLKmode is careful to avoid it.  */
 	  excess = (arg->size.constant - int_size_in_bytes (TREE_TYPE (pval))
 		    + partial * UNITS_PER_WORD);
-	  size_rtx = expr_size (TREE_TYPE (pval));
+	  size_rtx = expr_size (pval);
 	}
 
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
