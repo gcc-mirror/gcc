@@ -1509,11 +1509,11 @@ retrofit_lang_decl (t)
 
   DECL_LANG_SPECIFIC (t) = ld;
   if (current_lang_name == lang_name_cplusplus)
-    DECL_LANGUAGE (t) = lang_cplusplus;
+    SET_DECL_LANGUAGE (t, lang_cplusplus);
   else if (current_lang_name == lang_name_c)
-    DECL_LANGUAGE (t) = lang_c;
+    SET_DECL_LANGUAGE (t, lang_c);
   else if (current_lang_name == lang_name_java)
-    DECL_LANGUAGE (t) = lang_java;
+    SET_DECL_LANGUAGE (t, lang_java);
   else my_friendly_abort (64);
 
 #ifdef GATHER_STATISTICS

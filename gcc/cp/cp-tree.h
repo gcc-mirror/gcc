@@ -1919,9 +1919,24 @@ struct lang_decl
 #define DECL_IN_MEMORY_P(NODE) \
   (DECL_RTL_SET_P (NODE) && GET_CODE (DECL_RTL (NODE)) == MEM)
 
-/* For FUNCTION_DECLs: return the language in which this decl
-   was declared.  */
-#define DECL_LANGUAGE(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.language)
+/* For a FUNCTION_DECL or a VAR_DECL, the language linkage for the
+   declaration.  Some entities (like a member function in a local
+   class, or a local variable) do not have linkage at all, and this
+   macro should not be used in those cases.
+   
+   Implementation note: A FUNCTION_DECL without DECL_LANG_SPECIFIC was
+   created by language-independent code, and has C linkage.  Most
+   VAR_DECLs have C++ linkage, and do not have DECL_LANG_SPECIFIC, but
+   we do create DECL_LANG_SPECIFIC for variables with non-C++ linkage.  */
+#define DECL_LANGUAGE(NODE) 				\
+  (DECL_LANG_SPECIFIC (NODE) 				\
+   ? DECL_LANG_SPECIFIC(NODE)->decl_flags.language	\
+   : (TREE_CODE (NODE) == FUNCTION_DECL			\
+      ? lang_c : lang_cplusplus))
+
+/* Set the language linkage for NODE to LANGUAGE.  */
+#define SET_DECL_LANGUAGE(NODE, LANGUAGE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.language = LANGUAGE)
 
 /* For FUNCTION_DECLs: nonzero means that this function is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_attr)

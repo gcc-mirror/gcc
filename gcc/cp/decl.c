@@ -3203,7 +3203,7 @@ duplicate_decls (newdecl, olddecl)
 	  /* Make the old declaration consistent with the new one so
 	     that all remnants of the builtin-ness of this function
 	     will be banished.  */
-	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
+	  SET_DECL_LANGUAGE (olddecl, DECL_LANGUAGE (newdecl));
 	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
 	  COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 	  SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (newdecl),
@@ -3362,7 +3362,7 @@ duplicate_decls (newdecl, olddecl)
 	     int foo () { bar (); }
 	     is OK.  */
 	  if (current_lang_depth () == 0)
-	    DECL_LANGUAGE (newdecl) = DECL_LANGUAGE (olddecl);
+	    SET_DECL_LANGUAGE (newdecl, DECL_LANGUAGE (olddecl));
 	  else
 	    {
 	      cp_error_at ("previous declaration of `%#D' with %L linkage",
@@ -3676,7 +3676,7 @@ duplicate_decls (newdecl, olddecl)
 
       if (! types_match)
 	{
-	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
+	  SET_DECL_LANGUAGE (olddecl, DECL_LANGUAGE (newdecl));
 	  COPY_DECL_ASSEMBLER_NAME (newdecl, olddecl);
 	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
 	}
@@ -3691,7 +3691,7 @@ duplicate_decls (newdecl, olddecl)
       if (new_defines_function)
 	/* If defining a function declared with other language
 	   linkage, use the previously declared language linkage.  */
-	DECL_LANGUAGE (newdecl) = DECL_LANGUAGE (olddecl);
+	SET_DECL_LANGUAGE (newdecl, DECL_LANGUAGE (olddecl));
       else if (types_match)
 	{
 	  /* If redeclaring a builtin function, and not a definition,
@@ -3980,7 +3980,7 @@ pushdecl (x)
       if (DECL_NON_THUNK_FUNCTION_P (x) && ! DECL_LANG_SPECIFIC (x))
 	{
 	  retrofit_lang_decl (x);
-	  DECL_LANGUAGE (x) = lang_c;
+	  SET_DECL_LANGUAGE (x, lang_c);
 	}
 
       if (DECL_NON_THUNK_FUNCTION_P (x) && ! DECL_FUNCTION_MEMBER_P (x))
@@ -6727,7 +6727,7 @@ build_library_fn_1 (name, operator_code, type)
   DECL_ARTIFICIAL (fn) = 1;
   TREE_NOTHROW (fn) = 1;
   SET_OVERLOADED_OPERATOR_CODE (fn, operator_code);
-  DECL_LANGUAGE (fn) = lang_c;
+  SET_DECL_LANGUAGE (fn, lang_c);
   return fn;
 }
 
@@ -6754,7 +6754,7 @@ build_cp_library_fn (name, operator_code, type)
   tree fn = build_library_fn_1 (name, operator_code, type);
   TREE_NOTHROW (fn) = TYPE_NOTHROW_P (type);
   DECL_CONTEXT (fn) = FROB_CONTEXT (current_namespace);
-  DECL_LANGUAGE (fn) = lang_cplusplus;
+  SET_DECL_LANGUAGE (fn, lang_cplusplus);
   set_mangled_name_for_decl (fn);
   return fn;
 }
@@ -8759,7 +8759,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       && ctype == NULL_TREE
       /* NULL_TREE means global namespace.  */
       && DECL_CONTEXT (decl) == NULL_TREE)
-    DECL_LANGUAGE (decl) = lang_c;
+    SET_DECL_LANGUAGE (decl, lang_c);
 
   /* Should probably propagate const out from type to decl I bet (mrs).  */
   if (staticp)
@@ -9031,9 +9031,13 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       else
 	context = NULL_TREE;
 
-      if (processing_template_decl && context)
-	/* For global variables, declared in a template, we need the
-	   full lang_decl.  */
+      /* For namespace-scope variables, declared in a template, we
+	 need the full lang_decl.  The same is true for
+	 namespace-scope variables that do not have C++ language
+	 linkage.  */
+      if (context 
+	  && (processing_template_decl 
+	      || current_lang_name != lang_name_cplusplus))
 	decl = build_lang_decl (VAR_DECL, declarator, type);
       else
 	decl = build_decl (VAR_DECL, declarator, type);
