@@ -1,3 +1,7 @@
+2000-02-19  Anthony Green  <green@cygnus.com>
+
+	* jcf-depend.c (add_entry): Fix test for first list entry.
+
 Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (build_class_ref, push_super_field): Set DECL_SIZE_UNIT.

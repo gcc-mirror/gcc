@@ -94,7 +94,7 @@ add_entry (entp, name)
   ent->file = xstrdup (name);
   ent->next = NULL;
 
-  if (last == ent)
+  if (last == *entp)
     {
       // This is only true the first time through, when the entry list
       // is empty.
