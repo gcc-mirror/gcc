@@ -6,6 +6,10 @@
 
 	* splay-tree.h (splay_tree_compare_ints): Declare.
 
+Wed Mar 24 12:46:29 1999  Andrew Cagney  <cagney@amy.cygnus.com>
+
+	* libiberty.h (basename): Cygwin{,32} should have the prototype.
+
 Mon Dec 14 09:53:31 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h: Don't check IN_GCC anymore.
@@ -25,6 +29,10 @@ Tue Dec  8 00:30:31 1998  Elena Zannoni  <ezannoni@kwikemart.cygnus.com>
         (HP_DEMANGLING_STYLE_STRING): new macro.
         (ARM_DEMANGLING): coerce to int.
         (HP_DEMANGLING): new macro.
+
+Fri Nov 20 13:14:00 1998  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* libiberty.h (basename): Add prototype for FreeBSD.
 
 Fri Nov 13 19:19:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
