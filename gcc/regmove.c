@@ -2457,4 +2457,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 
   if (last_sp_set && last_sp_adjust == 0)
     delete_insn (last_sp_set);
+
+  if (memlist)
+    free_csa_memlist (memlist);
 }

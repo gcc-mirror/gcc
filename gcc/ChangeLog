@@ -1,3 +1,8 @@
+2004-12-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* regmove.c (combine_stack_adjustments_for_block): Free
+	memlist if it hasn't been freed.
+
 2004-12-10  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-typeck.c (lookup_field): Check if a TYPE_LANG_SPECIFIC
