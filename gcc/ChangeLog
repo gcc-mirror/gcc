@@ -1,3 +1,36 @@
+1997-12-25  Teemu Torma  <tot@trema.com>
+
+	* Makefile.in (GTHREAD_FLAGS): New var.
+	(LIBGCC2_CFLAGS): Added $(GTHREAD_FLAGS).
+	(distclean): Remove gthr-default.h.
+
+	* configure.in: Accept dce as a thread package.
+	Check for thread.h and pthread.h.
+	Link gthr-default.h to appropriate thread file and set
+	gthread_flags.
+	(hppa1.1-*-hpux10*): If --enable-threads, use dce threads and
+	include multilib definitions from pa/t-dce-thr.
+	(sparc-*-solaris2*): Enable threads by default, if thread.h or
+	pthread.h is found, preferring posix threads over solaris ones.
+
+	* config/pa/t-dce-thr: New file.
+	* config/pa/t-pa: Removed multilibs.
+	* config/sparc/t-sol2: Ditto.
+		
+	* gthr.h: New file.
+	* gthr-single.h: New file.
+	* gthr-posix.h: New file.
+	* gthr-solaris.h: New file.
+	* gthr-dce.h: New file.
+	* libgcc-thr.h: Removed.
+	* objc/thr-dce.c: New file copied from thr-decosf1.c.
+
+	* frame.c: Include gthr.h instead of libgcc-thr.h.
+	* libgcc2.c: Include gthr.h instead of libgcc-thr.h.
+	(eh_context_initialize): If __gthread_once fails, use static eh
+	context.
+	(eh_context_free): Call __gthread_key_dtor.
+
 Wed Dec 24 23:33:17 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.h (MUST_PASS_IN_STACK): Allow target port to override.

@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2.h"
 #include <stddef.h>
 #include "frame.h"
-#include "libgcc-thr.h"
+#include "gthr.h"
 
 #ifdef __GTHREAD_MUTEX_INIT
 static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;

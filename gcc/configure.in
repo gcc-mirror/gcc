@@ -114,7 +114,7 @@ case x${enable_threads} in
 		thread_file=''
 		;;
 	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
-	xsolaris | xwin32)
+	xsolaris | xwin32 | xdce)
 		thread_file=$enable_threads
 		;;
 	*)
@@ -146,6 +146,10 @@ AC_PROG_MAKE_SET
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h fcntl.h unistd.h sys/file.h sys/time.h sys/resource.h sys/param.h sys/times.h varargs.h sys/varargs.h)
+
+# Check for thread headers.
+AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
+AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 
 # Use <inttypes.h> only if it exists,
 # doesn't clash with <sys/types.h>, and declares intmax_t.
@@ -637,9 +641,17 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
+		tmake_file=pa/t-pa
 		if [[ x$gas = xyes ]]
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
+		fi
+		if [[ x$enable_threads = x ]]; then
+		    enable_threads=$have_pthread_h
+		fi
+ 		if [[ x$enable_threads = xyes ]]; then
+			thread_file='dce'
+			tmake_file="${tmake_file} pa/t-dce-thr"
 		fi
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
@@ -2480,8 +2492,18 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.svr4
 		float_format=i128
 		broken_install=yes
- 		if [[ x$enable_threads = xyes ]]; then
+		if [[ x${enable_threads} = x ]]; then
+		    enable_threads=$have_pthread_h
+		    if [[ x${enable_threads} = x ]]; then
+			enable_threads=$have_thread_h
+		    fi
+		fi
+		if [[ x${enable_threads} = xyes ]]; then
+		    if [[ x${have_pthread_h} = xyes ]]; then
+			thread_file='posix'
+		    else
 			thread_file='solaris'
+		    fi
 		fi
 		;;
 	sparc-*-sunos4.0*)
@@ -3077,6 +3099,15 @@ do
 	*) subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([[^/]]*\)/config-lang.in$,\1,'`" ;;
 	esac
 done
+
+# Make gthr-default.h if we have a thread file.
+gthread_flags=
+if [[ $thread_file != single ]]; then
+    rm -f gthr-default.h
+    $symbolic_link gthr-${thread_file}.h gthr-default.h
+    gthread_flags=-DHAVE_GTHR_DEFAULT
+fi
+AC_SUBST(gthread_flags)
 
 # Make empty files to contain the specs and options for each language.
 # Then add #include lines to for a compiler that has specs and/or options.
