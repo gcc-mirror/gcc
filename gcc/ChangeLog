@@ -1,5 +1,8 @@
 Sat Jun 13 08:26:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* varasm.c (assemble_variable): Never put decl with specified section
+	name into bss.
+
 	* output.h (current_function_addresses_labels): Declare.
 	* function.h (struct function): New field `addresses_labels'.
 	* function.c (current_function_addresses_labels): Define.
