@@ -20,15 +20,21 @@
 # respectively.
 
 proc check_for_options {language gcc_options compiler_pattern as_pattern ld_pattern} {
+    set filename test-[pid]
+    set fd [open $filename.c w]
+    puts $fd "int main (void) \{ return 0; \}"
+    close $fd
+    remote_download host $filename.c
+
     set test "compiler driver $gcc_options option(s)"
     set gcc_options "\{additional_flags=$gcc_options -v\}"
-    set src "-x$language /dev/null"
 
     switch "$language" {
 	"c" { set compiler cc1 }
 	default { error "unknown language" }
     }
-    set gcc_output [gcc_target_compile $src /dev/null executable $gcc_options]
+    set gcc_output [gcc_target_compile $filename.c $filename.x executable $gcc_options]
+    remote_file build delete $filename.c $filename.x $filename.gcno
 
     if {![regexp -- "/$compiler -quiet.*$compiler_pattern" $gcc_output]} {
 	fail "$test (compiler options)"
