@@ -2211,6 +2211,37 @@ expand_call (exp, target, ignore)
   else
     flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
 
+  /* Warn if this value is an aggregate type,
+     regardless of which calling convention we are using for it.  */
+  if (warn_aggregate_return && AGGREGATE_TYPE_P (TREE_TYPE (exp)))
+    warning ("function call has aggregate value");
+
+  /* If the result of a pure or const function call is ignored (or void),
+     and none of its arguments are volatile, we can avoid expanding the
+     call and just evaluate the arguments for side-effects.  */
+  if ((flags & (ECF_CONST | ECF_PURE))
+      && (ignore || target == const0_rtx
+	  || TYPE_MODE (TREE_TYPE (exp)) == VOIDmode))
+    {
+      bool volatilep = false;
+      tree arg;
+
+      for (arg = actparms; arg; arg = TREE_CHAIN (arg))
+	if (TREE_THIS_VOLATILE (TREE_VALUE (arg)))
+	  {
+	    volatilep = true;
+	    break;
+	  }
+
+      if (! volatilep)
+	{
+	  for (arg = actparms; arg; arg = TREE_CHAIN (arg))
+	    expand_expr (TREE_VALUE (arg), const0_rtx,
+			 VOIDmode, EXPAND_NORMAL);
+	  return const0_rtx;
+	}
+    }
+
 #ifdef REG_PARM_STACK_SPACE
 #ifdef MAYBE_REG_PARM_STACK_SPACE
   reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
@@ -2223,11 +2254,6 @@ expand_call (exp, target, ignore)
   if (reg_parm_stack_space > 0 && PUSH_ARGS)
     must_preallocate = 1;
 #endif
-
-  /* Warn if this value is an aggregate type,
-     regardless of which calling convention we are using for it.  */
-  if (warn_aggregate_return && AGGREGATE_TYPE_P (TREE_TYPE (exp)))
-    warning ("function call has aggregate value");
 
   /* Set up a place to return a structure.  */
 
