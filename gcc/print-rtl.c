@@ -513,10 +513,7 @@ print_rtx (in_rtx)
       fputc (']', outfile);
       break;
 
-#if 0
-    /* It would be nice to do this, but it would require real.o to
-       be linked into the MD-generator programs.  Maybe we should
-       do that.  -zw 2002-03-03  */
+#ifndef GENERATOR_FILE
     case CONST_DOUBLE:
       if (FLOAT_MODE_P (GET_MODE (in_rtx)))
 	{
