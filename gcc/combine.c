@@ -5203,7 +5203,7 @@ expand_compound_operation (x)
 	  && subreg_lowpart_p (XEXP (x, 0))
 	  && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
 	  && (nonzero_bits (SUBREG_REG (XEXP (x, 0)), GET_MODE (x))
-	      & ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))) == 0)
+	      & ~ GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
 	return SUBREG_REG (XEXP (x, 0));
 
       /* (zero_extend:DI (truncate:SI foo:DI)) is just foo:DI when foo
