@@ -1,5 +1,16 @@
 2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* emit-rtl.c (last_label_num, base_label_num): Remove.
+	(max_label_num): Always return label_num.
+	(set_new_last_label_num, restore_emit_status): Remove.
+	(init_emit): Don't initialize last_label_num.
+	* function.c (pop_function_context_from): Don't call
+	restore_emit_status.
+	* function.h: Remove the prototype for restore_emit_status.
+	* rtl.h: Remove the prototype for set_new_last_label_num.
+
+2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* stmt.c (expand_decl_init): Remove.
 	* tree.h: Remove the corresponding prototype.
 

@@ -69,17 +69,6 @@ enum machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
 static GTY(()) int label_num = 1;
 
-/* Highest label number in current function.
-   Zero means use the value of label_num instead.
-   This is nonzero only when belatedly compiling an inline function.  */
-
-static int last_label_num;
-
-/* Value label_num had when set_new_last_label_num was called.
-   If label_num has not changed since then, last_label_num is valid.  */
-
-static int base_label_num;
-
 /* Nonzero means do not generate NOTEs for source line numbers.  */
 
 static int no_line_numbers;
@@ -1007,8 +996,6 @@ max_reg_num (void)
 int
 max_label_num (void)
 {
-  if (last_label_num && label_num == base_label_num)
-    return last_label_num;
   return label_num;
 }
 
@@ -2134,25 +2121,6 @@ set_new_first_and_last_insn (rtx first, rtx last)
     cur_insn_uid = MAX (cur_insn_uid, INSN_UID (insn));
 
   cur_insn_uid++;
-}
-
-/* Set the last label number found in the current function.
-   This is used when belatedly compiling an inline function.  */
-
-void
-set_new_last_label_num (int last)
-{
-  base_label_num = label_num;
-  last_label_num = last;
-}
-
-/* Restore all variables describing the current status from the structure *P.
-   This is used after a nested function.  */
-
-void
-restore_emit_status (struct function *p ATTRIBUTE_UNUSED)
-{
-  last_label_num = 0;
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared
@@ -5233,7 +5201,6 @@ init_emit (void)
   reg_rtx_no = LAST_VIRTUAL_REGISTER + 1;
   last_location = UNKNOWN_LOCATION;
   first_label_num = label_num;
-  last_label_num = 0;
   seq_stack = NULL;
 
   /* Init the tables that describe all the pseudo regs.  */

@@ -516,7 +516,6 @@ extern HOST_WIDE_INT get_func_frame_size (struct function *);
 extern struct machine_function * (*init_machine_status) (void);
 
 /* Save and restore status information for a nested function.  */
-extern void restore_emit_status (struct function *);
 extern void free_after_parsing (struct function *);
 extern void free_after_compilation (struct function *);
 

@@ -1963,7 +1963,6 @@ extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);
 extern void reverse_comparison (rtx);
 extern void set_new_first_and_last_insn (rtx, rtx);
-extern void set_new_last_label_num (int);
 extern void unshare_all_rtl (void);
 extern void unshare_all_rtl_again (rtx);
 extern void unshare_all_rtl_in_chain (rtx);
