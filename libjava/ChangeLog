@@ -1,5 +1,9 @@
 2004-09-10  Michael Koch  <konqueror@gmx.de>
 
+	* Makefile.in: Regenerate.
+
+2004-09-10  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.am: Reverted accidently commited stuff.
 	* configure: Regenerated.
 

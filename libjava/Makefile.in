@@ -513,7 +513,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/io/StringBufferInputStream.java java/io/StringReader.java \
 	java/io/StringWriter.java java/io/SyncFailedException.java \
 	java/io/UTFDataFormatException.java \
-	java/io/UnsupportedEncodingException.java java/io/VMFile.java \
+	java/io/UnsupportedEncodingException.java \
 	java/io/VMObjectStreamClass.java \
 	java/io/WriteAbortedException.java java/io/Writer.java \
 	java/util/AbstractCollection.java java/util/AbstractList.java \
@@ -2275,7 +2275,7 @@ am__objects_9 = java/lang/AbstractMethodError.lo \
 	java/io/StringBufferInputStream.lo java/io/StringReader.lo \
 	java/io/StringWriter.lo java/io/SyncFailedException.lo \
 	java/io/UTFDataFormatException.lo \
-	java/io/UnsupportedEncodingException.lo java/io/VMFile.lo \
+	java/io/UnsupportedEncodingException.lo \
 	java/io/VMObjectStreamClass.lo \
 	java/io/WriteAbortedException.lo java/io/Writer.lo \
 	java/util/AbstractCollection.lo java/util/AbstractList.lo \
@@ -5788,7 +5788,6 @@ java/io/StringWriter.java \
 java/io/SyncFailedException.java \
 java/io/UTFDataFormatException.java \
 java/io/UnsupportedEncodingException.java \
-java/io/VMFile.java \
 java/io/VMObjectStreamClass.java \
 java/io/WriteAbortedException.java \
 java/io/Writer.java \
@@ -7998,8 +7997,6 @@ java/io/SyncFailedException.lo: java/io/$(am__dirstamp) \
 java/io/UTFDataFormatException.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/UnsupportedEncodingException.lo: java/io/$(am__dirstamp) \
-	java/io/$(DEPDIR)/$(am__dirstamp)
-java/io/VMFile.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/VMObjectStreamClass.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
@@ -15106,8 +15103,6 @@ mostlyclean-compile:
 	-rm -f java/io/UTFDataFormatException.lo
 	-rm -f java/io/UnsupportedEncodingException.$(OBJEXT)
 	-rm -f java/io/UnsupportedEncodingException.lo
-	-rm -f java/io/VMFile.$(OBJEXT)
-	-rm -f java/io/VMFile.lo
 	-rm -f java/io/VMObjectStreamClass.$(OBJEXT)
 	-rm -f java/io/VMObjectStreamClass.lo
 	-rm -f java/io/WriteAbortedException.$(OBJEXT)
@@ -18863,7 +18858,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/SyncFailedException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/UTFDataFormatException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/UnsupportedEncodingException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/VMFile.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/VMObjectStreamClass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/WriteAbortedException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/Writer.Plo@am__quote@
