@@ -382,15 +382,17 @@ can_use_return_insn ()
 /* Count the number of tst insns which compare a data or address
    register with zero.  */
 static void 
-count_tst_insns (dreg_countp, areg_countp)
+count_tst_insns (dreg_countp, areg_countp, oreg_countp)
      int *dreg_countp;
      int *areg_countp;
+     int *oreg_countp;
 {
   rtx insn;
 
   /* Assume no tst insns exist.  */
   *dreg_countp = 0;
   *areg_countp = 0;
+  *oreg_countp = 0;
 
   /* If not optimizing, then quit now.  */
   if (!optimize)
@@ -424,8 +426,7 @@ count_tst_insns (dreg_countp, areg_countp)
       /* Setting an address register to zero can also be optimized,
 	 so count it just like a tst insn.  */
       if (GET_CODE (SET_DEST (pat)) == REG
-	  && GET_CODE (SET_SRC (pat)) == CONST_INT
-	  && INTVAL (SET_SRC (pat)) == 0
+	  && SET_SRC (pat) == CONST0_RTX (GET_MODE (SET_DEST (pat)))
 	  && REGNO_REG_CLASS (REGNO (SET_DEST (pat))) == ADDRESS_REGS)
 	(*areg_countp)++;
     }
@@ -447,16 +448,16 @@ expand_prologue ()
       || regs_ever_live[6] || regs_ever_live[7]
       || frame_pointer_needed)
     {
-      int dreg_count, areg_count;
+      int dreg_count, areg_count, oreg_count;
 
       /* Get a count of the number of tst insns which use address and
 	 data registers.  */
-      count_tst_insns (&dreg_count, &areg_count);
+      count_tst_insns (&dreg_count, &areg_count, &oreg_count);
 
       /* If there's more than one tst insn using a data register, then
 	 this optimization is a win.  */
-      if (dreg_count > 1
-	  && (!regs_ever_live[2] || !regs_ever_live[3]))
+      if ((dreg_count > 1 || oreg_count > 1)
+	   && (!regs_ever_live[2] || !regs_ever_live[3]))
 	{
  	  if (!regs_ever_live[2])
 	    {
@@ -474,8 +475,8 @@ expand_prologue ()
 
       /* If there's more than two tst insns using an address register,
 	 then this optimization is a win.  */
-      if (areg_count > 2
-	  && (!regs_ever_live[6] || !regs_ever_live[7]))
+      if ((areg_count > 2 || oreg_count > 1)
+	   && (!regs_ever_live[6] || !regs_ever_live[7]))
 	{
  	  if (!regs_ever_live[6])
 	    {

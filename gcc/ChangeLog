@@ -1,5 +1,9 @@
 Thu Jul 16 14:48:47 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10300.c (count_tst_insns): New arg oreg_countp.  Callers changed.
+	Simplify tests for clearing an address register.
+	(expand_prologue): Corresponding changes.
+
 	* mn10300.md (movXX patterns): Make sure the destination is an
 	ADDRESS_REG when substituting "zero_areg" for (const_int 0).
 	(logical patterns): Split into expanders + patterns
