@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5811,7 +5811,8 @@ expand_expr (exp, target, tmode, modifier)
 				!= INTEGER_CST)
 			    ? target : NULL_RTX),
 			   VOIDmode,
-			   modifier == EXPAND_INITIALIZER
+			   (modifier == EXPAND_INITIALIZER
+			    || modifier == EXPAND_CONST_ADDRESS)
 			   ? modifier : EXPAND_NORMAL);
 
 	/* If this is a constant, put it into a register if it is a
