@@ -1,5 +1,5 @@
 /* Allocate registers for pseudo-registers that span basic blocks.
-   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -573,12 +573,12 @@ allocno_compare (v1, v2)
      Multiplying this by 10000 can't overflow.  */
   register int pri1
     = (((double) (floor_log2 (allocno_n_refs[*v1]) * allocno_n_refs[*v1])
-	/ (allocno_live_length[*v1] * allocno_size[*v1]))
-       * 10000);
+	/ allocno_live_length[*v1])
+       * 10000 * allocno_size[*v1]);
   register int pri2
     = (((double) (floor_log2 (allocno_n_refs[*v2]) * allocno_n_refs[*v2])
-	/ (allocno_live_length[*v2] * allocno_size[*v2]))
-       * 10000);
+	/ allocno_live_length[*v2])
+       * 10000 * allocno_size[*v2]);
   if (pri2 - pri1)
     return pri2 - pri1;
 
