@@ -1346,7 +1346,7 @@ discard_increment (struct loop *loop)
      return false;
 
   if (INTVAL (XEXP (set_src, 1)) != -1)
-     return false;/
+     return false;
   
   /* We need to check that the register has no other uses beside the branch and
      count.  */
