@@ -234,12 +234,7 @@ void FN ()                                                            \
 #define LIB_SPEC ""
 
 #undef  STARTFILE_SPEC
-#if defined(HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES) \
-    || (MIPS_ABI_DEFAULT == ABI_MEABI)
 #define STARTFILE_SPEC "crti%O%s crtbegin%O%s"
-#else
-#define STARTFILE_SPEC "crti%O%s crtbegin%O%s %{!mno-crt0:crt0%O%s}"
-#endif
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s crtn%O%s"

@@ -2600,6 +2600,23 @@ case "$target" in
         [Define if your MIPS libgloss linker scripts consistently include STARTUP directives.])
     fi
     AC_MSG_RESULT($gcc_cv_mips_libgloss_startup)
+
+    AC_MSG_CHECKING(whether the assembler has explicit relocation support)
+    if test x$gcc_cv_mips_explicit_relocs = x; then
+      gcc_cv_mips_explicit_relocs=no
+      if test x$gcc_cv_as != x; then
+	echo '  lw $4,%gp_rel(foo)($4)' > conftest.s
+	if $gcc_cv_as conftest.s -o conftest.o > /dev/null 2>&1; then
+	  gcc_cv_mips_explicit_relocs=yes
+	fi
+	rm -f conftest.s conftest.o
+      fi
+    fi
+    if test $gcc_cv_mips_explicit_relocs = yes; then
+      test x$target_cpu_default != x || target_cpu_default=0
+      target_cpu_default="(${target_cpu_default}|MASK_EXPLICIT_RELOCS)"
+    fi
+    AC_MSG_RESULT($gcc_cv_mips_explicit_relocs)
     ;;
 esac
 
