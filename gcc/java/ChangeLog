@@ -27,13 +27,6 @@
 	(jcf_dependency_print_dummies): New function
 	(jcf_dependency_write): Call deps_dummy_targets if required.
 
-2000-10-12  Tom Tromey  <tromey@cygnus.com>
-
-	* lex.c (java_new_lexer): Initialize new fields.
-	(java_read_char): Swap bytes if required.
-	* lex.h (java_lexer): New fields read_anything and byte_swap.
-	Made out_buffer unsigned.
-
 2000-10-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* gjavah.c (add_class_decl): Removed unused variables `tname',
