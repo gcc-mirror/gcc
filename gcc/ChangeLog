@@ -1,3 +1,9 @@
+2003-04-04  Andreas Schwab  <schwab@suse.de>
+
+	* stor-layout.c (layout_decl): Avoid syntax error in last change
+	when PCC_BITFIELD_TYPE_MATTERS is defined but not
+	EMPTY_FIELD_BOUNDARY.
+
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c/10175
