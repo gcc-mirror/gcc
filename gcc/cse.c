@@ -7417,6 +7417,12 @@ cse_insn (insn, in_libcall_block)
 	      XEXP (note, 1) = REG_NOTES (prev);
 	      REG_NOTES (prev) = note;
 	    }
+
+	  /* If INSN has a REG_EQUAL note, and this note mentions REG0,
+	     then we must delete it, because the value in REG0 has changed.  */
+	  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+	  if (note && reg_mentioned_p (dest, XEXP (note, 0)))
+	    remove_note (insn, note);
 	}
     }
 
