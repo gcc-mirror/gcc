@@ -1246,7 +1246,7 @@ choose-temp.o: choose-temp.c
 pexecute.o: pexecute.c
 prefix.o: prefix.c $(CONFIG_H) Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	-DPREFIX=\"$(PREFIX)\" \
+	-DPREFIX=\"$(prefix)\" \
 	  -c `echo $(srcdir)/prefix.c | sed 's,^\./,,'`
 
 convert.o: convert.c $(CONFIG_H) $(TREE_H) flags.h convert.h
