@@ -1,3 +1,9 @@
+2004-01-12  Fernando Nasser  <fnasser@redhat.com>
+
+	* java/awt/Dialog.java (show): Enable blocking for all modal dialogs
+	and run secondary dispatch thread to process event queue while this
+	thread is blocked.
+
 2004-01-12  Graydon Hoare  <graydon@redhat.com>
 
 	* gnu/java/awt/gtk/GdkGraphics2D.java

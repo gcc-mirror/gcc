@@ -88,6 +88,12 @@ private boolean undecorated = false;
   */
 private boolean blocked = false;
 
+/**
+  * Secondary EventQueue to handle AWT events while
+  * we are blocked for modality in show
+  */
+private EventQueue eq2 = null;
+
 /*************************************************************************/
 
 /*
@@ -394,20 +400,22 @@ public synchronized void
 show()
 {
   super.show();
+  
   if (isModal())
     {
       // If already shown (and blocked) just return
       if (blocked)
 	return;
 
-      /* FIXME: Currently this thread may block forever if it called from
-         the event dispatch thread, so we only do this for FileDialog which
-         only depends on a signal which is delivered in the Gtk thread.
-         Remove this test when we add code to start another event
-         dispatch thread. */
-      if ((Thread.currentThread () instanceof EventDispatchThread) &&
-          !(this instanceof FileDialog))
-        return;
+      /* If show is called in the dispatch thread for a modal dialog it will
+         block so we must run another thread so the events keep being
+	 dispatched.*/
+      if (EventQueue.isDispatchThread ())
+        {
+	  EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
+          eq2 = new EventQueue ();
+	  eq.push (eq2);
+	}
       
       try 
         {
@@ -418,8 +426,13 @@ show()
       catch (InterruptedException e)
         {
 	  blocked = false;
-	  return;
         }
+	
+      if (eq2 != null)
+        {
+	  eq2.pop ();
+	  eq2 = null;
+	}
     }  
 }
 
