@@ -1,3 +1,7 @@
+Sun Feb  8 23:59:04 1998  scott snyder  <sss@d0linux01.fnal.gov>
+
+	* method.c (make_thunk): Avoid name buffer overflow.
+
 Sun Jan 25 13:20:00 1998  Jason Merrill  <jason@rhino.cygnus.com>
 
 	* decl.c (cp_finish_decl): When bailing on a comdat variable, also

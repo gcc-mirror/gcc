@@ -1803,7 +1803,7 @@ make_thunk (function, delta)
      tree function;
      int delta;
 {
-  char buffer[250];
+  char *buffer;
   tree thunk_id;
   tree thunk;
   char *func_name;
@@ -1814,6 +1814,7 @@ make_thunk (function, delta)
   if (TREE_CODE (func_decl) != FUNCTION_DECL)
     abort ();
   func_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (func_decl));
+  buffer = (char *)alloca (strlen (func_name) + 32);
   if (delta<=0)
     sprintf (buffer, "__thunk_%d_%s", -delta, func_name);
   else
