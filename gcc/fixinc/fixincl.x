@@ -3736,6 +3736,7 @@ const char* apzSun_MallocPatch[] = { "sed",
     "-e", "s/int[ \t][ \t]*free/void\tfree/g",
     "-e", "s/char\\([ \t]*\\*[ \t]*malloc\\)/void\\1/g",
     "-e", "s/char\\([ \t]*\\*[ \t]*realloc\\)/void\\1/g",
+    "-e", "s/char\\([ \t]*\\*[ \t]*calloc\\)/void\\1/g",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
