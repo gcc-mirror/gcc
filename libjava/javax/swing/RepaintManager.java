@@ -438,7 +438,7 @@ public class RepaintManager
     dirtyComponents.clear();
 
     // step 2: paint those roots
-    Iterator i = roots.values().iterator();
+    Iterator i = roots.entrySet().iterator();
     while(i.hasNext())
       {
         Map.Entry ent = (Map.Entry) i.next();
