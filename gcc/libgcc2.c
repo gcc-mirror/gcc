@@ -2741,7 +2741,7 @@ cacheflush (char *beg, int size, int flag)
 /* Some ELF crosses use crtstuff.c to provide __CTOR_LIST__, but use this
    code to run constructors.  In that case, we need to handle EH here, too.  */
 
-#ifdef EH_FRAME_SECTION
+#ifdef EH_FRAME_SECTION_NAME
 #include "unwind-dw2-fde.h"
 extern unsigned char __EH_FRAME_BEGIN__[];
 #endif
@@ -2761,7 +2761,7 @@ __do_global_dtors (void)
       (*(p-1)) ();
     }
 #endif
-#if defined (EH_FRAME_SECTION) && !defined (HAS_INIT_SECTION)
+#if defined (EH_FRAME_SECTION_NAME) && !defined (HAS_INIT_SECTION)
   {
     static int completed = 0;
     if (! completed)
@@ -2780,7 +2780,7 @@ __do_global_dtors (void)
 void
 __do_global_ctors (void)
 {
-#ifdef EH_FRAME_SECTION
+#ifdef EH_FRAME_SECTION_NAME
   {
     static struct object object;
     __register_frame_info (__EH_FRAME_BEGIN__, &object);

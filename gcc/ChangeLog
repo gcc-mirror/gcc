@@ -1,3 +1,8 @@
+2001-08-14  Graham Stott  <grahams@redhat.com>
+
+	* libgcc2.c (*): Replace EH_FRAME_SECTION with
+	EH_FRAME_SECTION_NAME.
+
 Tue Aug 14 14:57:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
         * genattrtab.c (simplify_test_exp_in_temp): New function.
