@@ -1374,6 +1374,7 @@ gen_lowpart (mode, x)
 
       /* The following exposes the use of "x" to CSE.  */
       if (GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
+	  && SCALAR_INT_MODE_P (GET_MODE (x))
 	  && ! no_new_pseudos)
 	return gen_lowpart (mode, force_reg (GET_MODE (x), x));
 
