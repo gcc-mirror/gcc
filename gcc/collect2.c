@@ -1,7 +1,7 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -1080,7 +1080,7 @@ main (argc, argv)
 	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
       if (strcmp (q, "-EL") == 0 || strcmp (q, "-EB") == 0)
 	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
-      if (strncmp (q, "-shared", sizeof ("-shared") - 1) == 0)
+      if (strcmp (q, "-shared") == 0)
 	shared_obj = 1;
       if (*q == '-' && q[1] == 'B')
 	{

@@ -1,3 +1,7 @@
+2002-01-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* collect2.c (main): Use strcmp when testing for "-shared".
+
 2002-01-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmacro.c: Don't include intl.h.  Update comments.
