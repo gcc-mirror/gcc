@@ -1,3 +1,24 @@
+Mon Jul 20 22:51:57 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* mips.md (reload_outsi): Added missing REGNO call.
+	(smulsi3_highpart, umulsi3_highpart): Provide prototype for
+	function pointer.
+	(mul_acc_di, mul_acc_64bit_di): Don't use match_op_dup, use
+	another match_operator and compare the codes.
+
+	* mips.h (MASK_DEBUG_E, MASK_DEBUG_I): Set to zero.
+
+	* MIPS multiply pattern fixes:
+	* mips.h (enum reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS):
+	Add union classes for HI, LO, or HILO plus general registers.
+	(GENERATE_MADD): Deleted.
+	* mips.md (mulsi3_mult3): Don't disparage output-LO alternative.
+	Add TARGET_MAD to condition.
+	(mulsi3): Test HAVE_mulsi3_mult3, not specific flags.
+	(mul_acc_si): Expand GENERATE_MADD here; it's the only use.  Use
+	"*d" for accumulator, to give preference to LO initially but not
+	during reload.
+
 Mon Jul 20 16:16:38 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* configure.in (enable_c_mbchar): New configure option.
