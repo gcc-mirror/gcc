@@ -6108,86 +6108,95 @@ static char *reload_when_needed_name[] =
 
 static char *reg_class_names[] = REG_CLASS_NAMES;
 
-/* This function is used to print the variables set by 'find_reloads' */
+/* These functions are used to print the variables set by 'find_reloads' */
 
 void
-debug_reload ()
+debug_reload_to_stream (f)
+     FILE *f;
 {
   int r;
   char *prefix;
 
+  if (! f)
+    f = stderr;
   for (r = 0; r < n_reloads; r++)
     {
-      fprintf (stderr, "Reload %d: ", r);
+      fprintf (f, "Reload %d: ", r);
 
       if (reload_in[r] != 0)
 	{
-	  fprintf (stderr, "reload_in (%s) = ",
+	  fprintf (f, "reload_in (%s) = ",
 		   GET_MODE_NAME (reload_inmode[r]));
-	  print_inline_rtx (stderr, reload_in[r], 24);
-	  fprintf (stderr, "\n\t");
+	  print_inline_rtx (f, reload_in[r], 24);
+	  fprintf (f, "\n\t");
 	}
 
       if (reload_out[r] != 0)
 	{
-	  fprintf (stderr, "reload_out (%s) = ",
+	  fprintf (f, "reload_out (%s) = ",
 		   GET_MODE_NAME (reload_outmode[r]));
-	  print_inline_rtx (stderr, reload_out[r], 24);
-	  fprintf (stderr, "\n\t");
+	  print_inline_rtx (f, reload_out[r], 24);
+	  fprintf (f, "\n\t");
 	}
 
-      fprintf (stderr, "%s, ", reg_class_names[(int) reload_reg_class[r]]);
+      fprintf (f, "%s, ", reg_class_names[(int) reload_reg_class[r]]);
 
-      fprintf (stderr, "%s (opnum = %d)",
+      fprintf (f, "%s (opnum = %d)",
 	       reload_when_needed_name[(int) reload_when_needed[r]],
 	       reload_opnum[r]);
 
       if (reload_optional[r])
-	fprintf (stderr, ", optional");
+	fprintf (f, ", optional");
 
       if (reload_inc[r] != 0)
-	fprintf (stderr, ", inc by %d", reload_inc[r]);
+	fprintf (f, ", inc by %d", reload_inc[r]);
 
       if (reload_nocombine[r])
-	fprintf (stderr, ", can't combine");
+	fprintf (f, ", can't combine");
 
       if (reload_secondary_p[r])
-	fprintf (stderr, ", secondary_reload_p");
+	fprintf (f, ", secondary_reload_p");
 
       if (reload_in_reg[r] != 0)
 	{
-	  fprintf (stderr, "\n\treload_in_reg: ");
-	  print_inline_rtx (stderr, reload_in_reg[r], 24);
+	  fprintf (f, "\n\treload_in_reg: ");
+	  print_inline_rtx (f, reload_in_reg[r], 24);
 	}
 
       if (reload_reg_rtx[r] != 0)
 	{
-	  fprintf (stderr, "\n\treload_reg_rtx: ");
-	  print_inline_rtx (stderr, reload_reg_rtx[r], 24);
+	  fprintf (f, "\n\treload_reg_rtx: ");
+	  print_inline_rtx (f, reload_reg_rtx[r], 24);
 	}
 
       prefix = "\n\t";
       if (reload_secondary_in_reload[r] != -1)
 	{
-	  fprintf (stderr, "%ssecondary_in_reload = %d",
+	  fprintf (f, "%ssecondary_in_reload = %d",
 		   prefix, reload_secondary_in_reload[r]);
 	  prefix = ", ";
 	}
 
       if (reload_secondary_out_reload[r] != -1)
-	fprintf (stderr, "%ssecondary_out_reload = %d\n",
+	fprintf (f, "%ssecondary_out_reload = %d\n",
 		 prefix, reload_secondary_out_reload[r]);
 
       prefix = "\n\t";
       if (reload_secondary_in_icode[r] != CODE_FOR_nothing)
 	{
-	  fprintf (stderr, "%ssecondary_in_icode = %s", prefix, insn_name[r]);
+	  fprintf (f, "%ssecondary_in_icode = %s", prefix, insn_name[r]);
 	  prefix = ", ";
 	}
 
       if (reload_secondary_out_icode[r] != CODE_FOR_nothing)
-	fprintf (stderr, "%ssecondary_out_icode = %s", prefix, insn_name[r]);
+	fprintf (f, "%ssecondary_out_icode = %s", prefix, insn_name[r]);
 
-      fprintf (stderr, "\n");
+      fprintf (f, "\n");
     }
+}
+
+void
+debug_reload ()
+{
+  debug_reload_to_stream (stderr);
 }
