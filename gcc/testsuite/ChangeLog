@@ -1,3 +1,7 @@
+2004-02-23  James E Wilson  <wilson@specifixinc.com>
+
+	* gcc.c-torture/execute/20040223-1.c: New.
+
 2004-02-23  Zack Weinberg  <zack@codesourcery.com>
 	    Kazu Hirata  <kazu@cs.umass.edu>
 
