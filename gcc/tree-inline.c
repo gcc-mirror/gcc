@@ -729,9 +729,11 @@ initialize_inlined_parameters (inline_data *id, tree args, tree fn, tree block)
 #ifdef INLINER_FOR_JAVA
   tree vars = NULL_TREE;
 #endif /* INLINER_FOR_JAVA */
+  int argnum = 0;
 
   /* Figure out what the parameters are.  */
-  parms = DECL_ARGUMENTS (fn);
+  parms = 
+DECL_ARGUMENTS (fn);
 
   /* Start with no initializations whatsoever.  */
   init_stmts = NULL_TREE;
@@ -749,9 +751,11 @@ initialize_inlined_parameters (inline_data *id, tree args, tree fn, tree block)
       tree value;
       tree var_sub;
 
+      ++argnum;
+
       /* Find the initializer.  */
       value = (*lang_hooks.tree_inlining.convert_parm_for_inlining)
-	      (p, a ? TREE_VALUE (a) : NULL_TREE, fn);
+	      (p, a ? TREE_VALUE (a) : NULL_TREE, fn, argnum);
 
       /* If the parameter is never assigned to, we may not need to
 	 create a new variable here at all.  Instead, we may be able

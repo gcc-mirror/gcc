@@ -3605,10 +3605,12 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
   return error_mark_node;
 }
 
-/* Convert VALUE for assignment into inlined parameter PARM.  */
+/* Convert VALUE for assignment into inlined parameter PARM.  ARGNUM
+   is used for error and waring reporting and indicates which argument
+   is being processed.  */
 
 tree
-c_convert_parm_for_inlining (tree parm, tree value, tree fn)
+c_convert_parm_for_inlining (tree parm, tree value, tree fn, int argnum)
 {
   tree ret, type;
 
@@ -3620,7 +3622,7 @@ c_convert_parm_for_inlining (tree parm, tree value, tree fn)
   type = TREE_TYPE (parm);
   ret = convert_for_assignment (type, value,
 				(char *) 0 /* arg passing  */, fn,
-				DECL_NAME (fn), 0);
+				DECL_NAME (fn), argnum);
   if (targetm.calls.promote_prototypes (TREE_TYPE (fn))
       && INTEGRAL_TYPE_P (type)
       && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))

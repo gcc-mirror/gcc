@@ -83,7 +83,7 @@ extern tree lhd_tree_inlining_copy_res_decl_for_inlining (tree, tree, tree,
 extern int lhd_tree_inlining_anon_aggr_type_p (tree);
 extern int lhd_tree_inlining_start_inlining (tree);
 extern void lhd_tree_inlining_end_inlining (tree);
-extern tree lhd_tree_inlining_convert_parm_for_inlining (tree, tree, tree);
+extern tree lhd_tree_inlining_convert_parm_for_inlining (tree, tree, tree, int);
 extern void lhd_initialize_diagnostics (struct diagnostic_context *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *, tree);
 
