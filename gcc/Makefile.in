@@ -184,6 +184,10 @@ EXTRA_PARTS =
 # compiler proper (cc1, cc1obj, cc1plus).
 EXTRA_OBJS =
 
+# List of additional header files to install.
+# Often this is edited directly by `configure'.
+EXTRA_HEADERS =
+
 # Set this to `ld' to enable use of collect2.
 # USE_COLLECT2 =
 # It is convenient for configure to add the assignment at the beginning,
@@ -386,7 +390,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 # Header files that are made available under the same name
 # to programs compiled with gcc.
 USER_H = assert.h va-hp800.h va-i860.h va-mips.h va-pyr.h va-sparc.h \
-    va-spur.h va-m88k.h va-i960.h proto.h
+    va-spur.h va-m88k.h va-i960.h proto.h $(EXTRA_HEADERS)
 
 # All the header files that are installed for users from GCC itself.
 INSTALLED_H = float.h stddef.h stdarg.h varargs.h $(USER_H) limits.h
@@ -1172,16 +1176,20 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 
 # Remake the info files.
 
-doc: $(srcdir)/cpp.info $(srcdir)/gcc.info
+doc: $(srcdir)/cpp.info $(srcdir)/gcc.info $(srcdir)/INSTALL
 
-$(srcdir)/cpp.info: $(srcdir)/cpp.texi
+$(srcdir)/cpp.info: cpp.texi
 	makeinfo `echo $(srcdir)/cpp.texi | sed 's,^\./,,'`
 
-#$(srcdir)/gplus.info: $(srcdir)/gplus.texi
+#$(srcdir)/gplus.info: gplus.texi
 #	makeinfo `echo $(srcdir)/gplus.texi | sed 's,^\./,,'`
 
-$(srcdir)/gcc.info: $(srcdir)/gcc.texi
+$(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
+		md.texi rtl.texi tm.texi 
 	makeinfo `echo $(srcdir)/gcc.texi | sed 's,^\./,,'`
+
+$(srcdir)/INSTALL: install1.texi install.texi
+	makeinfo --no-header `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
 
 # Deletion of files made during compilation.
 # There are four levels of this:
@@ -1243,7 +1251,7 @@ distclean: clean
 extraclean: distclean
 	-rm -rf =* #* *~* config/=* config/#* config/*~*
 	-rm -f *.dvi *.oaux patch* config/patch* *.orig *.rej *.d *.Z *.tar
-	-rm -f *.s *.s[0-9] *.i
+	-rm -f *.s *.s[0-9] *.i install1.texi
 
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
@@ -1335,6 +1343,7 @@ install-dir:
 	-if [ -d $(libdir)/gcc-lib/include ] ; then true ; else mkdir $(libdir)/gcc-lib/include ; fi
 	-if [ -d $(libdir)/gcc-lib/$(target) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target) ; fi
 	-if [ -d $(libdir)/gcc-lib/$(target)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version) ; fi
+	-if [ -d $(libdir)/gcc-lib/$(target)/$(version)/include ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version)/include ; fi
 	-if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; fi
 # We don't use mkdir -p to create the parents of mandir,
 # because some systems don't support it.
@@ -1425,13 +1434,13 @@ install-libgcc: libgcc.a
 install-headers: install-common-headers install-float-h install-limits-h
 
 # Install float.h for native compiler.
-install-float-h: float.h
+install-float-h: float.h install-dir
 	-rm -f $(libsubdir)/include/float.h
 	$(INSTALL_DATA) float.h $(libsubdir)/include/float.h
 	chmod a-x $(libsubdir)/include/float.h
 
 # Install limits.h, optionally inheriting from the standard system version.
-install-limits-h: limits.h limitx.h
+install-limits-h: limits.h limitx.h install-dir
 	-rm -f $(libsubdir)/include/limits.h tmp-limits.h
 	if [ -f /usr/include/limits.h ] ; then \
 	  cat $(srcdir)/limitx.h $(srcdir)/limits.h > tmp-limits.h; \
@@ -1547,6 +1556,10 @@ gcc.xtar.Z: gcc.xtar
 
 #gcc-$(version).tar:
 gcc.xtar: doc
+	if grep -s "for version ${version}" gcc.texi; \
+	then true; \
+	else echo "You must update the version number in `gcc.texi'"; \
+	fi
 	-rm -rf gcc-$(version) tmp	
 # Put all the files in a temporary subdirectory
 # which has the name that we want to have in the tar file.
