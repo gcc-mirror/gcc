@@ -3030,12 +3030,15 @@ expand_fix (to, from, unsignedp)
 	  && CODE_FOR_nothing != can_fix_p (GET_MODE (to), fmode, 0,
 					    &must_trunc))
 	{
-	  int bitsize = GET_MODE_BITSIZE (GET_MODE (to));
-	  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (dconst1, bitsize - 1);
-	  rtx limit = immed_real_const_1 (offset, fmode);
-	  rtx lab1 = gen_label_rtx ();
-	  rtx lab2 = gen_label_rtx ();
-	  rtx insn;
+	  int bitsize;
+	  REAL_VALUE_TYPE offset;
+	  rtx limit, lab1, lab2, insn;
+
+	  bitsize = GET_MODE_BITSIZE (GET_MODE (to));
+	  offset = REAL_VALUE_LDEXP (dconst1, bitsize - 1);
+	  limit = immed_real_const_1 (offset, fmode);
+	  lab1 = gen_label_rtx ();
+	  lab2 = gen_label_rtx ();
 
 	  emit_queue ();
 	  to = protect_from_queue (to, 1);
