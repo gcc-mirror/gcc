@@ -3201,7 +3201,9 @@ do {									\
 {"uns_arith_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},		    \
 {"clobbered_register", {REG}},							    \
 {"input_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, MEM}},		    \
-{"zero_operand", {CONST_INT, CONSTANT_P_RTX}},
+{"zero_operand", {CONST_INT, CONSTANT_P_RTX}},					    \
+{"const64_operand", {CONST_INT, CONST_DOUBLE, CONSTANT_P_RTX}},			    \
+{"const64_high_operand", {CONST_INT, CONST_DOUBLE, CONSTANT_P_RTX}},
 
 
 /* The number of Pmode words for the setjmp buffer.  */
@@ -3240,6 +3242,8 @@ extern int arith_operand ();
 extern int call_operand_address ();
 extern int input_operand ();
 extern int zero_operand ();
+extern int const64_operand ();
+extern int const64_high_operand ();
 extern int cc_arithop ();
 extern int cc_arithopn ();
 extern int check_pic ();
