@@ -11,16 +11,9 @@ details.  */
 #include <config.h>
 
 #include <string.h>
-#include <time.h>
 #include <stdlib.h>
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
+#include "posix.h"
 
 #ifdef HAVE_PWD_H
 #include <pwd.h>
@@ -47,10 +40,6 @@ details.  */
 extern java::lang::Class SystemClass;
 
 
-
-#if defined (ECOS)
-extern "C" unsigned long long _clock (void);
-#endif
 
 void
 java::lang::System::setErr (java::io::PrintStream *newErr)
@@ -152,24 +141,9 @@ java::lang::System::currentTimeMillis (void)
 {
   jlong r;
 
-#if defined (HAVE_GETTIMEOFDAY)
   struct timeval tv;
-  gettimeofday (&tv, NULL);
-  r = (jlong) tv.tv_sec * 1000 + tv.tv_usec / 1000;
-#elif defined (HAVE_TIME)
-  r = time (NULL) * 1000;
-#elif defined (HAVE_FTIME)
-  struct timeb t;
-  ftime (&t);
-  r = t.time * 1000 + t.millitm;
-#elif defined (ECOS)
-  r = _clock();
-#else
-  // In the absence of any function, time remains forever fixed.
-  r = 23;
-#endif
-
-  return r;
+  _Jv_gettimeofday (&tv);
+  return (jlong) tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 jint

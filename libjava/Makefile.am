@@ -118,7 +118,7 @@ javao_files = $(java_source_files:.java=.lo) \
 ## Extract the libffi object file names.
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
-libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
+libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
 	resolve.cc defineclass.cc interpret.cc name-finder.cc
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
