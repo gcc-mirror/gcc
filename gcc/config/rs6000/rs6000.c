@@ -4619,7 +4619,7 @@ function_arg_padding (enum machine_mode mode, tree type)
     {
       /* GCC used to pass structures of the same size as integer types as
 	 if they were in fact integers, ignoring FUNCTION_ARG_PADDING.
-	 ie. Structures of size 1 or 2 (or 4 when TARGET_64BIT) were
+	 i.e. Structures of size 1 or 2 (or 4 when TARGET_64BIT) were
 	 passed padded downward, except that -mstrict-align further
 	 muddied the water in that multi-component structures of 2 and 4
 	 bytes in size were passed padded upward.

@@ -4609,7 +4609,7 @@ sparc_asm_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   /* If code does not drop into the epilogue, we have to still output
      a dummy nop for the sake of sane backtraces.  Otherwise, if the
      last two instructions of a function were "call foo; dslot;" this
-     can make the return PC of foo (ie. address of call instruction
+     can make the return PC of foo (i.e. address of call instruction
      plus 8) point to the first instruction in the next function.  */
 
   rtx insn, last_real_insn;

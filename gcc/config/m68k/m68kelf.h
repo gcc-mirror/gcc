@@ -159,7 +159,7 @@ do {								\
 #endif
 
 /* The `string' directive on m68k svr4 does not handle string with
-   escape char (ie., `\') right. Use normal way to output ASCII bytes
+   escape char (i.e., `\') right. Use normal way to output ASCII bytes
    seems to be safer.  */
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
