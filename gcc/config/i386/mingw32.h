@@ -20,16 +20,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Most of this is the same as for cygwin, except for changing some
-   specs.  */
-
-/* Mingw GCC, unlike Cygwin's, must be relocatable. This macro must 
-   be defined before any other files are included.  */
-#ifndef WIN32_NO_ABSOLUTE_INST_DIRS
-#define WIN32_NO_ABSOLUTE_INST_DIRS 1
-#endif
-
-#define TARGET_EXECUTABLE_SUFFIX ".exe"
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (x86 MinGW)"); 
 
 /* See i386/crtdll.h for an alternative definition.  */
 #define EXTRA_OS_CPP_BUILTINS()					\
@@ -37,30 +29,10 @@ Boston, MA 02111-1307, USA.  */
     {								\
       builtin_define ("__MSVCRT__");				\
       builtin_define ("__MINGW32__");			   	\
+      builtin_define ("_WIN32");				\
+      builtin_define_std ("WIN32");				\
+      builtin_define_std ("WINNT");				\
     }								\
-  while (0)
-
-#undef TARGET_OS_CPP_BUILTINS	/* From cygwin.h.  */
-#define TARGET_OS_CPP_BUILTINS()					\
-  do									\
-    {									\
-	builtin_define ("_WIN32");					\
-	builtin_define_std ("WIN32");					\
-	builtin_define_std ("WINNT");					\
-	builtin_define ("_X86_=1");					\
-	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
-	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
-	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
-	builtin_define ("__declspec(x)=__attribute__((x))");		\
-	if (!flag_iso)							\
-	  {								\
-	    builtin_define ("_stdcall=__attribute__((__stdcall__))");	\
-	    builtin_define ("_fastcall=__attribute__((__fastcall__))");	\
-	    builtin_define ("_cdecl=__attribute__((__cdecl__))");	\
-	  }								\
-	EXTRA_OS_CPP_BUILTINS ();					\
-	builtin_assert ("system=winnt");				\
-    }									\
   while (0)
 
 /* Specific a different directory for the standard include files.  */
@@ -95,10 +67,6 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
   %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s}"
-
-/* MS runtime does not need a separate math library.  */
-#undef MATH_LIBRARY
-#define MATH_LIBRARY ""
 
 /* Output STRING, a string representing a filename, to FILE.
    We canonicalize it to be in Unix format (backslashes are replaced
