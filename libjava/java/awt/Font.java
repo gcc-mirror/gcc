@@ -38,9 +38,9 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.peer.FontPeer;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
+import java.awt.peer.FontPeer;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 

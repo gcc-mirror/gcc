@@ -128,7 +128,7 @@ public abstract class ColorSpace implements Serializable
 
   public boolean isCS_sRGB()
   {
-    return false;
+    return type == CS_sRGB;
   }
 
   /**

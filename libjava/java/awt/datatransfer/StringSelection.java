@@ -54,8 +54,10 @@ public class StringSelection implements Transferable, ClipboardOwner
  */
 
 // List of flavors we support
-public static final DataFlavor[] supported_flavors 
-   = { DataFlavor.plainTextFlavor };
+// XXX: DataFlavor.plainTextFlavor is deprecated.
+static final DataFlavor[] supported_flavors 
+   = { DataFlavor.stringFlavor,
+       DataFlavor.plainTextFlavor };
 
 /*************************************************************************/
 

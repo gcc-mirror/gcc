@@ -589,6 +589,11 @@ public abstract class ColorModel implements Transparency
     return sm.getTransferType() == transferType;
   }
 
+  public final int getTransferType ()
+  {
+    return transferType;
+  }
+
   public void finalize()
   {
   }
