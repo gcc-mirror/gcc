@@ -3,15 +3,15 @@
 <title>Porting libstdc++-v3</title>
 <meta http-equiv="Content-Type" content="text/html">
 <meta name=description content="Porting libstdc++-v3">
-<meta name=generator content="makeinfo 4.1">
-<link href="http://texinfo.org/" rel=generator-home>
+<meta name=generator content="makeinfo 4.2">
+<link href="http://www.gnu.org/software/texinfo/" rel=generator-home>
 </head>
 <body>
 <h1>Porting libstdc++-v3</h1>
 <p><hr>
 Node:<a name="Top">Top</a>,
-Next:<a rel=next href="#Operating%20system">Operating system</a>,
-Up:<a rel=up href="#dir">(dir)</a>
+Next:<a rel=next accesskey=n href="#Operating%20system">Operating system</a>,
+Up:<a rel=up accesskey=u href="#dir">(dir)</a>
 <br>
 
 <h2>Porting libstdc++-v3</h2>
@@ -37,20 +37,20 @@ library, but you should at least try some minimal test cases.
 <p>Here are the primary steps required to port the library:
 
 <ul>
-<li><a href="#Operating%20system">Operating system</a>:     Configuring for your operating system. 
-<li><a href="#CPU">CPU</a>:                  Configuring for your processor chip. 
-<li><a href="#Character%20types">Character types</a>:      Implementing character classification. 
-<li><a href="#Thread%20safety">Thread safety</a>:        Implementing atomic operations. 
-<li><a href="#Numeric%20limits">Numeric limits</a>: 	Implementing numeric limits. 
-<li><a href="#Libtool">Libtool</a>:              Using libtool. 
-<li><a href="#GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>:  How you can copy and share this manual. 
+<li><a accesskey=1 href="#Operating%20system">Operating system</a>:     Configuring for your operating system. 
+<li><a accesskey=2 href="#CPU">CPU</a>:                  Configuring for your processor chip. 
+<li><a accesskey=3 href="#Character%20types">Character types</a>:      Implementing character classification. 
+<li><a accesskey=4 href="#Thread%20safety">Thread safety</a>:        Implementing atomic operations. 
+<li><a accesskey=5 href="#Numeric%20limits">Numeric limits</a>: 	Implementing numeric limits. 
+<li><a accesskey=6 href="#Libtool">Libtool</a>:              Using libtool. 
+<li><a accesskey=7 href="#GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>:  How you can copy and share this manual. 
 </ul>
 
 <p><hr>
 Node:<a name="Operating%20system">Operating system</a>,
-Next:<a rel=next href="#CPU">CPU</a>,
-Previous:<a rel=previous href="#Top">Top</a>,
-Up:<a rel=up href="#Top">Top</a>
+Next:<a rel=next accesskey=n href="#CPU">CPU</a>,
+Previous:<a rel=previous accesskey=p href="#Top">Top</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
 
 <h2>Operating system</h2>
@@ -76,7 +76,7 @@ standard target triplet; e.g., the <code>solaris2.8</code> in
 <code>sparc-sun-solaris2.8</code>.
 
 <p>The first file to create in this directory, should be called
-<code>bits/os_defines.h</code>.  This file contains basic macro definitions
+<code>os_defines.h</code>.  This file contains basic macro definitions
 that are required to allow the C++ library to work with your C library. 
 This file should provide macro definitions for <code>__off_t</code>,
 <code>__off64_t</code>, and <code>__ssize_t</code>.  Typically, this just looks
@@ -124,14 +124,14 @@ this:
 #endif
 </pre>
 
-<p>We recommend copying an existing <code>bits/os_defines.h</code> to use as a
+<p>We recommend copying an existing <code>os_defines.h</code> to use as a
 starting point.
 
 <p><hr>
 Node:<a name="CPU">CPU</a>,
-Next:<a rel=next href="#Character%20types">Character types</a>,
-Previous:<a rel=previous href="#Operating%20system">Operating system</a>,
-Up:<a rel=up href="#Top">Top</a>
+Next:<a rel=next accesskey=n href="#Character%20types">Character types</a>,
+Previous:<a rel=previous accesskey=p href="#Operating%20system">Operating system</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
 
 <h2>CPU</h2>
@@ -160,9 +160,9 @@ appropriate for your chip.
 
 <p><hr>
 Node:<a name="Character%20types">Character types</a>,
-Next:<a rel=next href="#Thread%20safety">Thread safety</a>,
-Previous:<a rel=previous href="#CPU">CPU</a>,
-Up:<a rel=up href="#Top">Top</a>
+Next:<a rel=next accesskey=n href="#Thread%20safety">Thread safety</a>,
+Previous:<a rel=previous accesskey=p href="#CPU">CPU</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
 
 <h2>Character types</h2>
@@ -170,20 +170,20 @@ Up:<a rel=up href="#Top">Top</a>
 <p>The library requires that you provide three header files to implement
 character classification, analogous to that provided by the C libraries
 <code>&lt;ctype.h&gt;</code> header.  You can model these on the files provided in
-<code>config/os/generic/bits</code>.  However, these files will almost
+<code>config/os/generic</code>.  However, these files will almost
 certainly need some modification.
 
-<p>The first file to write is <code>bits/ctype_base.h</code>.  This file provides
+<p>The first file to write is <code>ctype_base.h</code>.  This file provides
 some very basic information about character classification.  The libstdc++-v3
 library assumes that your C library implements <code>&lt;ctype.h&gt;</code> by using
 a table (indexed by character code) containing integers, where each of
 these integers is a bit-mask indicating whether the character is
-upper-case, lower-case, alphabetic, etc.  The <code>bits/ctype_base.h</code>
+upper-case, lower-case, alphabetic, etc.  The <code>ctype_base.h</code>
 file gives the type of the integer, and the values of the various bit
 masks.  You will have to peer at your own <code>&lt;ctype.h&gt;</code> to figure out
 how to define the values required by this file.
 
-<p>The <code>bits/ctype_base.h</code> header file does not need include guards. 
+<p>The <code>ctype_base.h</code> header file does not need include guards. 
 It should contain a single <code>struct</code> definition called
 <code>ctype_base</code>.  This <code>struct</code> should contain two type
 declarations, and one enumeration declaration, like this example, taken
@@ -223,9 +223,9 @@ but you must still define the type.
 example, using the values from your native <code>&lt;ctype.h&gt;</code>.  They can
 be given symbolically (as above), or numerically, if you prefer.  You do
 not have to include <code>&lt;ctype.h&gt;</code> in this header; it will always be
-included before <code>bits/ctype_base.h</code> is included.
+included before <code>ctype_base.h</code> is included.
 
-<p>The next file to write is <code>bits/ctype_noninline.h</code>, which also does
+<p>The next file to write is <code>ctype_noninline.h</code>, which also does
 not require include guards.  This file defines a few member functions
 that will be included in <code>include/bits/locale_facets.h</code>.  The first
 function that must be written is the <code>ctype&lt;char&gt;::ctype</code>
@@ -296,7 +296,7 @@ ctype&lt;char&gt;::do_tolower(char* __low, const char* __high) const
 }
 </pre>
 
-<p>You must also provide the <code>bits/ctype_inline.h</code> file, which
+<p>You must also provide the <code>ctype_inline.h</code> file, which
 contains a few more functions.  On most systems, you can just copy
 <code>config/os/generic/ctype_inline.h</code> and use it on your system.
 
@@ -355,9 +355,9 @@ scan_not(mask __m, const char* __low, const char* __high) const throw()
 
 <p><hr>
 Node:<a name="Thread%20safety">Thread safety</a>,
-Next:<a rel=next href="#Numeric%20limits">Numeric limits</a>,
-Previous:<a rel=previous href="#Character%20types">Character types</a>,
-Up:<a rel=up href="#Top">Top</a>
+Next:<a rel=next accesskey=n href="#Numeric%20limits">Numeric limits</a>,
+Previous:<a rel=previous accesskey=p href="#Character%20types">Character types</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
 
 <h2>Thread safety</h2>
@@ -372,11 +372,11 @@ multi-threaded.
 are two distinct approaches.  One is to provide a version for your CPU,
 using assembly language constructs.  The other is to use the
 thread-safety primitives in your operating system.  In either case, you
-make a file called <code>bits/atomicity.h</code>, and the variable
+make a file called <code>atomicity.h</code>, and the variable
 <code>ATOMICITYH</code> must point to this file.
 
 <p>If you are using the assembly-language approach, put this code in
-<code>config/cpu/&lt;chip&gt;/bits/atomicity.h</code>, where chip is the name of
+<code>config/cpu/&lt;chip&gt;/atomicity.h</code>, where chip is the name of
 your processor (see <a href="#CPU">CPU</a>).  No additional changes are necessary to
 locate the file in this case; <code>ATOMICITYH</code> will be set by default.
 
@@ -394,7 +394,7 @@ the appropriate <code>os_include_dir</code>.  For examples of this approach,
 see the <code>atomicity.h</code> file for AIX.
 
 <p>With those bits out of the way, you have to actually write
-<code>bits/atomicity.h</code> itself.  This file should be wrapped in an
+<code>atomicity.h</code> itself.  This file should be wrapped in an
 include guard named <code>_BITS_ATOMICITY_H</code>.  It should define one
 type, and two functions.
 
@@ -430,9 +430,9 @@ __atomic_add (_Atomic_word* __mem, int __val)
 
 <p><hr>
 Node:<a name="Numeric%20limits">Numeric limits</a>,
-Next:<a rel=next href="#Libtool">Libtool</a>,
-Previous:<a rel=previous href="#Thread%20safety">Thread safety</a>,
-Up:<a rel=up href="#Top">Top</a>
+Next:<a rel=next accesskey=n href="#Libtool">Libtool</a>,
+Previous:<a rel=previous accesskey=p href="#Thread%20safety">Thread safety</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
 
 <h2>Numeric limits</h2>
@@ -453,9 +453,9 @@ your CPU configuration directory (see <a href="#CPU">CPU</a>).
 
 <p><hr>
 Node:<a name="Libtool">Libtool</a>,
-Next:<a rel=next href="#GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>,
-Previous:<a rel=previous href="#Numeric%20limits">Numeric limits</a>,
-Up:<a rel=up href="#Top">Top</a>
+Next:<a rel=next accesskey=n href="#GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>,
+Previous:<a rel=previous accesskey=p href="#Numeric%20limits">Numeric limits</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
 
 <h2>Libtool</h2>
@@ -489,8 +489,8 @@ operating system.
 
 <p><hr>
 Node:<a name="GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>,
-Previous:<a rel=previous href="#Libtool">Libtool</a>,
-Up:<a rel=up href="#Top">Top</a>
+Previous:<a rel=previous accesskey=p href="#Libtool">Libtool</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
 
 <h2>GNU Free Documentation License</h2>

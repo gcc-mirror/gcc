@@ -869,13 +869,13 @@ References
   46. ../faq/index.html#5_6
   47. ../faq/index.html#5_7
   48. ../faq/index.html#5_8
-  49. http://gcc.gnu.org/libstdc++/download.html
+  49. http://gcc.gnu.org/libstdc++/index.html#download
   50. ../faq/index.html#4_4_interface
   51. ../17_intro/DESIGN
   52. http://gcc.gnu.org/
   53. http://gcc.gnu.org/gcc-3.0/buildstat.html
   54. http://gcc.gnu.org/libstdc++/
-  55. http://gcc.gnu.org/libstdc++/download.html
+  55. http://gcc.gnu.org/libstdc++/index.html#download
   56. http://gcc.gnu.org/libstdc++/
   57. ../17_intro/contribute.html
   58. http://www.boost.org/
