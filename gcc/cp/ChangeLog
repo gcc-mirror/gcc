@@ -1,3 +1,11 @@
+2000-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_vtable): New function, split out from ...
+	(get_vtable_decl): ... here, and ...
+	(build_secondary_vtable): ... here.
+
+	* pt.c (tsubst_decl): Fix formatting.
+	
 Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (build_primary_vtable, layout_vtable_decl): Likewise.

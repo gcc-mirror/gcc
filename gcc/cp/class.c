@@ -152,6 +152,7 @@ static tree find_final_overrider PARAMS ((tree, tree, tree));
 static tree dfs_find_base PARAMS ((tree, void *));
 static int make_new_vtable PARAMS ((tree, tree));
 extern void dump_class_hierarchy PARAMS ((tree, int));
+static tree build_vtable PARAMS ((tree, tree, tree));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -989,6 +990,32 @@ set_rtti_entry (virtuals, offset, type)
   BV_FN (virtuals) = decl;
 }
 
+/* Create a VAR_DECL for a primary or secondary vtable for
+   CLASS_TYPE.  Use NAME for the name of the vtable, and VTABLE_TYPE
+   for its type.  */
+
+static tree
+build_vtable (class_type, name, vtable_type)
+     tree class_type;
+     tree name;
+     tree vtable_type;
+{
+  tree decl;
+
+  decl = build_lang_decl (VAR_DECL, name, vtable_type);
+  DECL_CONTEXT (decl) = class_type;
+  DECL_ARTIFICIAL (decl) = 1;
+  TREE_STATIC (decl) = 1;
+#ifndef WRITABLE_VTABLES
+  /* Make them READONLY by default. (mrs) */
+  TREE_READONLY (decl) = 1;
+#endif
+  DECL_VIRTUAL_P (decl) = 1;
+  import_export_vtable (decl, class_type, 0);
+
+  return decl;
+}
+
 /* Get the VAR_DECL of the vtable for TYPE. TYPE need not be polymorphic,
    or even complete.  If this does not exist, create it.  If COMPLETE is
    non-zero, then complete the definition of it -- that will render it
@@ -1010,31 +1037,18 @@ get_vtable_decl (type, complete)
       return decl;
     }
   
-  decl = build_lang_decl (VAR_DECL, name, void_type_node);
-  
-  /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
-  import_export_vtable (decl, type, 0);
-
+  decl = build_vtable (type, name, void_type_node);
   decl = pushdecl_top_level (decl);
   SET_IDENTIFIER_GLOBAL_VALUE (name, decl);
   
-  DECL_ARTIFICIAL (decl) = 1;
-  TREE_STATIC (decl) = 1;
-#ifndef WRITABLE_VTABLES
-  /* Make them READONLY by default. (mrs) */
-  TREE_READONLY (decl) = 1;
-#endif
   /* At one time the vtable info was grabbed 2 words at a time.  This
      fails on sparc unless you have 8-byte alignment.  (tiemann) */
   DECL_ALIGN (decl) = MAX (TYPE_ALIGN (double_type_node),
 			   DECL_ALIGN (decl));
 
-  DECL_VIRTUAL_P (decl) = 1;
-  
   if (complete)
     cp_finish_decl (decl, NULL_TREE, NULL_TREE, 0);
 
-  DECL_CONTEXT (decl) = type;
   return decl;
 }
 
@@ -1210,19 +1224,9 @@ build_secondary_vtable (binfo, for_type)
       buf2 = new_buf2;
     }
 
-  new_decl = build_lang_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
-  /* Remember which class this vtable is really for.  */
-  DECL_CONTEXT (new_decl) = for_type;
-
-  DECL_ARTIFICIAL (new_decl) = 1;
-  TREE_STATIC (new_decl) = 1;
-  BINFO_VTABLE (binfo) = pushdecl_top_level (new_decl);
-  DECL_VIRTUAL_P (new_decl) = 1;
-#ifndef WRITABLE_VTABLES
-  /* Make them READONLY by default. (mrs) */
-  TREE_READONLY (new_decl) = 1;
-#endif
+  new_decl = build_vtable (for_type, name, TREE_TYPE (orig_decl));
   DECL_ALIGN (new_decl) = DECL_ALIGN (orig_decl);
+  BINFO_VTABLE (binfo) = pushdecl_top_level (new_decl);
 
   /* Make fresh virtual list, so we can smash it later.  */
   BINFO_VIRTUALS (binfo) = copy_list (BINFO_VIRTUALS (binfo));
@@ -1250,9 +1254,6 @@ build_secondary_vtable (binfo, for_type)
   n_vtables += 1;
   n_vtable_elems += list_length (BINFO_VIRTUALS (binfo));
 #endif
-
-  /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
-  import_export_vtable (new_decl, for_type, 0);
 
   if (TREE_VIA_VIRTUAL (binfo))
     my_friendly_assert (binfo == BINFO_FOR_VBASE (BINFO_TYPE (binfo),
