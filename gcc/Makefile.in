@@ -592,7 +592,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c \
  s-flags s-config s-codes s-mlib s-under\
- s-output s-recog s-emit s-extract s-peep \
+ s-output s-recog s-emit s-extract s-peep s-check \
  s-attr s-attrtab s-opinit s-proto s-crt s-crtS s-crt0 \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
  genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
@@ -640,7 +640,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 # CONFIG_H = $(host_xm_file) $(tm_file)
 CONFIG_H =
 RTL_H = rtl.h rtl.def gansidecl.h machmode.h machmode.def
-TREE_H = tree.h real.h tree.def gansidecl.h machmode.h machmode.def
+TREE_H = tree.h real.h tree.def gansidecl.h machmode.h machmode.def tree-check.h
 BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 BASIC_BLOCK_H = basic-block.h bitmap.h
 DEMANGLE_H = demangle.h gansidecl.h
@@ -1259,6 +1259,16 @@ gcc.o: gcc.c $(CONFIG_H) gansidecl.h multilib.h Makefile $(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
+
+tree-check.h: s-check ; @true
+s-check : tree.def gencheck $(srcdir)/move-if-change
+	./gencheck > tmp-check.h
+	$(srcdir)/move-if-change tmp-check.h tree-check.h
+	touch s-check
+
+gencheck : gencheck.o tree.h tree.def
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
+	 gencheck.o $(HOST_LIBS)
 
 dumpvers: dumpvers.c
 
