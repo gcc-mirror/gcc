@@ -114,7 +114,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_C99_BUILTIN					
 #define DEF_C99_BUILTIN(ENUM, NAME, TYPE)		\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-   	       true, !flag_isoc99, true, ATTR_NOTHROW_LIST)
+   	       true, true, !flag_isoc99, ATTR_NOTHROW_LIST)
 
 /* Like DEF_LIB_BUILTIN, except that the function is expanded in the
    front-end.  */

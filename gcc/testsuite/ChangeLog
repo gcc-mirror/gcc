@@ -1,3 +1,7 @@
+Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/20021127.[cx]: New test.
+
 2002-11-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/init/brace2.C: New test.

@@ -1,3 +1,7 @@
+Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.def (DEF_C99_BUILTIN): Fix.
+
 2002-11-26  Andrew Haley  <aph@redhat.com>
 
 	* unwind-sjlj.c (_Unwind_FindEnclosingFunction): Rename
