@@ -3276,7 +3276,8 @@ bootstrap: stage3_build
 	@echo
 	@echo Bootstrap complete - make \"quickstrap\" to redo last build,
 	@echo \"restage1\" through \"restage3\" to rebuild specific stages,
-	@echo or \"cleanstrap\" to redo the bootstrap from scratch.
+	@echo \"restrap\" to redo the bootstrap from stage1, or
+	@echo \"cleanstrap\" to redo the bootstrap from scratch.
 
 bootstrap-lean : clean_s1 clean_s2 stage3_build
 	@echo
@@ -3343,6 +3344,16 @@ quickstrap:
 
 cleanstrap:
 	-$(MAKE) clean
+	$(MAKE) LANGUAGES="$(LANGUAGES)" bootstrap
+
+unstrap:
+	-rm -rf stage[234]*
+	$(MAKE) unstage1
+
+# Differs from cleanstrap in that it starts from the earlier stage1 build,
+# not from scratch.
+restrap:
+	$(MAKE) unstrap
 	$(MAKE) LANGUAGES="$(LANGUAGES)" bootstrap
 
 # Compare the object files in the current directory with those in the
