@@ -2273,11 +2273,14 @@ expression used to initialize that field.
 
 If the @code{TREE_TYPE} of the @code{CONSTRUCTOR} is an
 @code{ARRAY_TYPE}, then the @code{TREE_PURPOSE} of each element in the
-@code{TREE_LIST} will be an @code{INTEGER_CST}.  This constant indicates
-which element of the array (indexed from zero) is being assigned to;
-again, the @code{TREE_VALUE} is the corresponding initializer.  If the
-@code{TREE_PURPOSE} is @code{NULL_TREE}, then the initializer is for the
-next available array element.
+@code{TREE_LIST} will be an @code{INTEGER_CST} or a @code{RANGE_EXPR} of
+two @code{INTEGER_CST}s.  A single @code{INTEGER_CST} indicates which
+element of the array (indexed from zero) is being assigned to.  A
+@code{RANGE_EXPR} indicates an inclusive range of elements to
+initialize.  In both cases the @code{TREE_VALUE} is the corresponding
+initializer.  It is re-evaluated for each element of a
+@code{RANGE_EXPR}.  If the @code{TREE_PURPOSE} is @code{NULL_TREE}, then
+the initializer is for the next available array element.
 
 In the front end, you should not depend on the fields appearing in any
 particular order.  However, in the middle end, fields must appear in

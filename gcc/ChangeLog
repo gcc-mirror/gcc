@@ -1,3 +1,7 @@
+2004-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/c-tree.texi (CONSTRUCTOR): Mention RANGE_EXPRs.
+
 2004-12-16  Mark Dettinger  <dettinge@de.ibm.com>
 
 	* config/s390/s390.c (struct processor_costs): Two new fields:
@@ -704,6 +708,8 @@
 	(TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD): New.
 
 2004-12-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/c-tree.texi (CONSTRUCTOR): Mention RANGE_EXPRs.
 
 	* tree.def (SET_TYPE): Remove.
 	(CONSTRUCTOR): Update description.
