@@ -1,3 +1,12 @@
+2000-12-12  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* configure.in (HAVE_AS_DWARF2_DEBUG_LINE): Enable .file/.loc check
+	for powerpc*-*-*.
+	* configure: Regenerated.
+	* config/rs6000/linux.h (HANDLE_PRAGMA_PUSH_POP): Define.
+	* config/rs6000/rs6000.c (rs6000_unique_section): Use
+	STRIP_NAME_ENCODING.
+
 Mon Dec 11 13:51:09 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (cmpib_comparison_operator): Remove GEU and LTU.
