@@ -639,6 +639,7 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 arm*-*-uclinux*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/linux-gas.h arm/linux-elf.h arm/uclinux-elf.h"
 	tmake_file=arm/t-arm-elf
+	use_fixproto=no
 	;;
 arm*-*-ecos-elf)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"

@@ -1,5 +1,6 @@
 2003-09-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc (arm*-*-uclinux*): Disable fixproto.
 	* config.gcc (powerpc-*-eabispe*, powerpc-*-eabisimaltivec*,
 	powerpc-*-eabialtivec*): Disable fixproto.
 
