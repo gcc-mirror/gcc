@@ -1307,11 +1307,15 @@ pushtag (name, type)
    Prints an error message if appropriate.
 
    If safely possible, alter OLDDECL to look like NEWDECL, and return 1.
-   Otherwise, return 0.  */
+   Otherwise, return 0.
+
+   When DIFFERENT_BINDING_LEVEL is true, NEWDECL is an external declaration,
+   and OLDDECL is in an outer binding level and should thus not be changed.  */
 
 static int
-duplicate_decls (newdecl, olddecl)
+duplicate_decls (newdecl, olddecl, different_binding_level)
      register tree newdecl, olddecl;
+     int different_binding_level;
 {
   int types_match = comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
   int new_is_definition = (TREE_CODE (newdecl) == FUNCTION_DECL
@@ -1404,8 +1408,8 @@ duplicate_decls (newdecl, olddecl)
       else if (!types_match)
 	{
           /* Accept the return type of the new declaration if same modes.  */
-	  tree oldreturntype = TREE_TYPE (TREE_TYPE (olddecl));
-	  tree newreturntype = TREE_TYPE (TREE_TYPE (newdecl));
+	  tree oldreturntype = TREE_TYPE (oldtype);
+	  tree newreturntype = TREE_TYPE (newtype);
 
 	  /* Make sure we put the new type in the same obstack as the old ones.
 	     If the old types are not both in the same obstack, use the
@@ -1422,36 +1426,37 @@ duplicate_decls (newdecl, olddecl)
             {
 	      /* Function types may be shared, so we can't just modify
 		 the return type of olddecl's function type.  */
-	      tree newtype
+	      tree trytype
 		= build_function_type (newreturntype,
-				       TYPE_ARG_TYPES (TREE_TYPE (olddecl)));
+				       TYPE_ARG_TYPES (oldtype));
 	      
-              types_match = comptypes (TREE_TYPE (newdecl), newtype);
+              types_match = comptypes (newtype, trytype);
 	      if (types_match)
-		TREE_TYPE (olddecl) = newtype;
+		oldtype = trytype;
 	    }
 	  /* Accept harmless mismatch in first argument type also.
 	     This is for ffs.  */
 	  if (TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != 0
-	      && TYPE_ARG_TYPES (TREE_TYPE (olddecl)) != 0
-	      && TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (newdecl))) != 0
-	      && TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (olddecl))) != 0
-	      && (TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (newdecl))))
-		  ==
-		  TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (olddecl))))))
+	      && TYPE_ARG_TYPES (oldtype) != 0
+	      && TREE_VALUE (TYPE_ARG_TYPES (newtype)) != 0
+	      && TREE_VALUE (TYPE_ARG_TYPES (oldtype)) != 0
+	      && (TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (newtype)))
+		  == TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (oldtype)))))
 	    {
 	      /* Function types may be shared, so we can't just modify
 		 the return type of olddecl's function type.  */
-	      tree newtype
-		= build_function_type (TREE_TYPE (TREE_TYPE (olddecl)),
+	      tree trytype
+		= build_function_type (TREE_TYPE (oldtype),
 				       tree_cons (NULL_TREE, 
-						  TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (newdecl))),
-						  TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (olddecl)))));
+						  TREE_VALUE (TYPE_ARG_TYPES (newtype)),
+						  TREE_CHAIN (TYPE_ARG_TYPES (oldtype))));
 	      
-              types_match = comptypes (TREE_TYPE (newdecl), newtype);
+              types_match = comptypes (newtype, trytype);
 	      if (types_match)
-		TREE_TYPE (olddecl) = newtype;
+		oldtype = trytype;
 	    }
+	  if (! different_binding_level)
+	    TREE_TYPE (olddecl) = oldtype;
 
 	  pop_obstacks ();
 	}
@@ -1691,6 +1696,11 @@ duplicate_decls (newdecl, olddecl)
 
   if (types_match)
     {
+      /* When copying info to olddecl, we store into write_olddecl
+	 instead.  This allows us to avoid modifying olddecl when
+	 different_binding_level is true.  */
+      tree write_olddecl = different_binding_level ? newdecl : olddecl;
+
       /* Make sure we put the new type in the same obstack as the old ones.
 	 If the old types are not both in the same obstack, use the permanent
 	 one.  */
@@ -1704,9 +1714,18 @@ duplicate_decls (newdecl, olddecl)
 		       
       /* Merge the data types specified in the two decls.  */
       if (TREE_CODE (newdecl) != FUNCTION_DECL || !DECL_BUILT_IN (olddecl))
-	TREE_TYPE (newdecl)
-	  = TREE_TYPE (olddecl)
-	    = common_type (newtype, oldtype);
+	{
+	  if (different_binding_level)
+	    TREE_TYPE (newdecl)
+	      = build_type_attribute_variant
+		(newtype,
+		 merge_attributes (TYPE_ATTRIBUTES (newtype),
+				   TYPE_ATTRIBUTES (oldtype)));
+	  else
+	    TREE_TYPE (newdecl)
+	      = TREE_TYPE (olddecl)
+		= common_type (newtype, oldtype);
+	}
 
       /* Lay the type out, unless already done.  */
       if (oldtype != TREE_TYPE (newdecl))
@@ -1733,37 +1752,37 @@ duplicate_decls (newdecl, olddecl)
       /* Merge the type qualifiers.  */
       if (DECL_BUILT_IN_NONANSI (olddecl) && TREE_THIS_VOLATILE (olddecl)
 	  && !TREE_THIS_VOLATILE (newdecl))
-	TREE_THIS_VOLATILE (olddecl) = 0;
+	TREE_THIS_VOLATILE (write_olddecl) = 0;
       if (TREE_READONLY (newdecl))
-	TREE_READONLY (olddecl) = 1;
+	TREE_READONLY (write_olddecl) = 1;
       if (TREE_THIS_VOLATILE (newdecl))
 	{
-	  TREE_THIS_VOLATILE (olddecl) = 1;
+	  TREE_THIS_VOLATILE (write_olddecl) = 1;
 	  if (TREE_CODE (newdecl) == VAR_DECL)
 	    make_var_volatile (newdecl);
 	}
 
-      /* Keep source location of definition rather than declaration.
-	 Likewise, keep decl at outer scope.  */
-      if ((DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
-	  || (DECL_CONTEXT (newdecl) != 0 && DECL_CONTEXT (olddecl) == 0))
+      /* Keep source location of definition rather than declaration.  */
+      /* When called with different_binding_level set, keep the old
+	 information so that meaningful diagnostics can be given.  */
+      if (DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0
+	  && ! different_binding_level)
 	{
 	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
 	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
-
-	  if (DECL_CONTEXT (olddecl) == 0
-	      && TREE_CODE (newdecl) != FUNCTION_DECL)
-	    DECL_CONTEXT (newdecl) = 0;
 	}
 
       /* Merge the unused-warning information.  */
       if (DECL_IN_SYSTEM_HEADER (olddecl))
 	DECL_IN_SYSTEM_HEADER (newdecl) = 1;
       else if (DECL_IN_SYSTEM_HEADER (newdecl))
-	DECL_IN_SYSTEM_HEADER (olddecl) = 1;
+	DECL_IN_SYSTEM_HEADER (write_olddecl) = 1;
 
       /* Merge the initialization information.  */
-      if (DECL_INITIAL (newdecl) == 0)
+      /* When called with different_binding_level set, don't copy over
+	 DECL_INITIAL, so that we don't accidentally change function
+	 declarations into function definitions.  */
+      if (DECL_INITIAL (newdecl) == 0 && ! different_binding_level)
 	DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 
       /* Merge the section attribute.
@@ -1783,7 +1802,7 @@ duplicate_decls (newdecl, olddecl)
     }
   /* If cannot merge, then use the new type and qualifiers,
      and don't preserve the old rtl.  */
-  else
+  else if (! different_binding_level)
     {
       TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
       TREE_READONLY (olddecl) = TREE_READONLY (newdecl);
@@ -1799,6 +1818,8 @@ duplicate_decls (newdecl, olddecl)
       TREE_PUBLIC (newdecl) &= TREE_PUBLIC (olddecl);
       /* This is since we don't automatically
 	 copy the attributes of NEWDECL into OLDDECL.  */
+      /* No need to worry about different_binding_level here because
+	 then TREE_PUBLIC (newdecl) was true.  */
       TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
       /* If this clears `static', clear it in the identifier too.  */
       if (! TREE_PUBLIC (olddecl))
@@ -1823,33 +1844,48 @@ duplicate_decls (newdecl, olddecl)
     DECL_INLINE (olddecl) = 1;
   DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
 
-  /* Get rid of any built-in function if new arg types don't match it
-     or if we have a function definition.  */
-  if (TREE_CODE (newdecl) == FUNCTION_DECL
-      && DECL_BUILT_IN (olddecl)
-      && (!types_match || new_is_definition))
-    {
-      TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
-      DECL_BUILT_IN (olddecl) = 0;
-    }
-
-  /* If redeclaring a builtin function, and not a definition,
-     it stays built in.
-     Also preserve various other info from the definition.  */
-  if (TREE_CODE (newdecl) == FUNCTION_DECL && !new_is_definition)
+  if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       if (DECL_BUILT_IN (olddecl))
 	{
-	  DECL_BUILT_IN (newdecl) = 1;
-	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
+	  /* Get rid of any built-in function if new arg types don't match it
+	     or if we have a function definition.  */
+	  if (! types_match || new_is_definition)
+	    {
+	      if (! different_binding_level)
+		{
+		  TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
+		  DECL_BUILT_IN (olddecl) = 0;
+		}
+	    }
+	  else
+	    {
+	      /* If redeclaring a builtin function, and not a definition,
+		 it stays built in.  */
+	      DECL_BUILT_IN (newdecl) = 1;
+	      DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
+	    }
 	}
-      else
+      /* Also preserve various other info from the definition.  */
+      else if (! new_is_definition)
 	DECL_FRAME_SIZE (newdecl) = DECL_FRAME_SIZE (olddecl);
-
-      DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
-      DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
-      DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
-      DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
+      if (! new_is_definition)
+	{
+	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
+	  /* When called with different_binding_level set, don't copy over
+	     DECL_INITIAL, so that we don't accidentally change function
+	     declarations into function definitions.  */
+	  if (! different_binding_level)
+	    DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
+	  DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
+	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
+	}
+    }
+  if (different_binding_level)
+    {
+      /* Don't output a duplicate symbol for this declaration.  */
+      TREE_ASM_WRITTEN (newdecl) = 1;
+      return 0;
     }
 
   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
@@ -1900,15 +1936,21 @@ pushdecl (x)
     {
       char *file;
       int line;
-      int declared_global;
+      int different_binding_level = 0;
 
+      t = lookup_name_current_level (name);
       /* Don't type check externs here when -traditional.  This is so that
 	 code with conflicting declarations inside blocks will get warnings
 	 not errors.  X11 for instance depends on this.  */
-      if (DECL_EXTERNAL (x) && TREE_PUBLIC (x) && ! flag_traditional)
-	t = lookup_name_current_level_global (name);
-      else
-	t = lookup_name_current_level (name);
+      if (! t && DECL_EXTERNAL (x) && TREE_PUBLIC (x) && ! flag_traditional)
+	{
+	  t = IDENTIFIER_GLOBAL_VALUE (name);
+	  /* Type decls at global scope don't conflict with externs declared
+	     inside lexical blocks.  */
+	  if (t && TREE_CODE (t) == TYPE_DECL)
+	    t = 0;
+	  different_binding_level = 1;
+	}
       if (t != 0 && t == error_mark_node)
 	/* error_mark_node is 0 for a while during initialization!  */
 	{
@@ -1922,10 +1964,27 @@ pushdecl (x)
 	  line = DECL_SOURCE_LINE (t);
 	}
 
-      /* duplicate_decls might write to TREE_PUBLIC (x) and DECL_EXTERNAL (x)
-	 to make it identical to the initial declaration.  */
-      declared_global = TREE_PUBLIC (x) || DECL_EXTERNAL (x);
-      if (t != 0 && duplicate_decls (x, t))
+      /* If this decl is `static' and an implicit decl was seen previously,
+	 warn.  But don't complain if -traditional,
+	 since traditional compilers don't complain.  */
+      if (! flag_traditional && TREE_PUBLIC (name)
+	  /* Don't test for DECL_EXTERNAL, because grokdeclarator
+	     sets this for all functions.  */
+	  && ! TREE_PUBLIC (x)
+	  /* We used to warn also for explicit extern followed by static,
+	     but sometimes you need to do it that way.  */
+	  && IDENTIFIER_IMPLICIT_DECL (name) != 0)
+	{
+	  pedwarn ("`%s' was declared implicitly `extern' and later `static'",
+		   IDENTIFIER_POINTER (name));
+	  pedwarn_with_file_and_line
+	    (DECL_SOURCE_FILE (IDENTIFIER_IMPLICIT_DECL (name)),
+	     DECL_SOURCE_LINE (IDENTIFIER_IMPLICIT_DECL (name)),
+	     "previous declaration of `%s'",
+	     IDENTIFIER_POINTER (name));
+	}
+
+      if (t != 0 && duplicate_decls (x, t, different_binding_level))
 	{
 	  if (TREE_CODE (t) == PARM_DECL)
 	    {
@@ -1934,32 +1993,7 @@ pushdecl (x)
 	      TREE_ASM_WRITTEN (t) = TREE_ASM_WRITTEN (x);
 	      return t;
 	    }
-	  /* If this decl is `static' and an implicit decl was seen previously,
-	     warn.  But don't complain if -traditional,
-	     since traditional compilers don't complain.  */
-	  if (!flag_traditional && TREE_PUBLIC (name)
-
-	      /* should this be '&& ! declared_global' ?  */
-	      && ! TREE_PUBLIC (x) && ! DECL_EXTERNAL (x)
-
-	      /* We used to warn also for explicit extern followed by static,
-		 but sometimes you need to do it that way.  */
-	      && IDENTIFIER_IMPLICIT_DECL (name) != 0)
-	    {
-	      pedwarn ("`%s' was declared implicitly `extern' and later `static'",
-		       IDENTIFIER_POINTER (name));
-	      pedwarn_with_file_and_line (file, line,
-					  "previous declaration of `%s'",
-					  IDENTIFIER_POINTER (name));
-	    }
-
-	  /* If this is a global decl, and there exists a conflicting local
-	     decl in a parent block, then we can't return as yet, because we
-	     need to register this decl in the current binding block.  */
-	  /* A test for TREE_PUBLIC (x) will fail for variables that have
-	     been declared static first, and extern now.  */
-	  if (! declared_global || lookup_name (name) == t)
-	    return t;
+	  return t;
 	}
 
       /* If we are processing a typedef statement, generate a whole new
@@ -2145,6 +2179,10 @@ pushdecl (x)
 	      /* Okay to declare a non-ANSI built-in as anything.  */
 	      else if (t != 0 && DECL_BUILT_IN_NONANSI (t))
 		;
+	      /* Okay to have global type decl after an earlier extern
+		 declaration inside a lexical block.  */
+	      else if (TREE_CODE (x) == TYPE_DECL)
+		;
 	      else if (IDENTIFIER_IMPLICIT_DECL (name))
 		pedwarn ("`%s' was declared implicitly `extern' and later `static'",
 			 IDENTIFIER_POINTER (name));
@@ -2217,11 +2255,11 @@ pushdecl (x)
 	     and no file-scope declaration has yet been seen,
 	     then if we later have a file-scope decl it must not be static.  */
 	  if (oldlocal == 0
-	      && oldglobal == 0
 	      && DECL_EXTERNAL (x)
 	      && TREE_PUBLIC (x))
 	    {
-	      TREE_PUBLIC (name) = 1;
+	      if (oldglobal == 0)
+	        TREE_PUBLIC (name) = 1;
 
 	      /* Save this decl, so that we can do type checking against
 		 other decls after it falls out of scope.
@@ -2728,29 +2766,6 @@ lookup_name_current_level (name)
   for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
     if (DECL_NAME (t) == name)
       break;
-
-  return t;
-}
-
-/* Similar to `lookup_name_current_level' but also look at the global binding
-   level.  */
-
-tree
-lookup_name_current_level_global (name)
-     tree name;
-{
-  register tree t = 0;
-
-  if (current_binding_level == global_binding_level)
-    return IDENTIFIER_GLOBAL_VALUE (name);
-
-  if (IDENTIFIER_LOCAL_VALUE (name) != 0)
-    for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
-      if (DECL_NAME (t) == name)
-	break;
-
-  if (t == 0)
-    t = IDENTIFIER_GLOBAL_VALUE (name);
 
   return t;
 }
