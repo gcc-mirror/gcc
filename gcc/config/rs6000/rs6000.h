@@ -1862,10 +1862,6 @@ typedef struct rs6000_args
 #define PAD_VARARGS_DOWN \
    (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
 
-/* Define this macro to be a nonzero value if the location where a function
-   argument is passed depends on whether or not it is a named argument.  */
-#define STRICT_ARGUMENT_NAMING 1
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 

@@ -1,5 +1,9 @@
 2004-01-18  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/rs6000/rs6000.h (STRICT_ARGUMENT_NAMING): Remove.
+
+2004-01-18  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* defaults.h (ASM_OUTPUT_ADDR_VEC_ELT): Fix the computation of
 	the size of a pointer in bytes.
 
