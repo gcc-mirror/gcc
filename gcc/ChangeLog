@@ -1,3 +1,31 @@
+2004-10-01  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-chrec.c (chrec_fold_plus_poly_poly, chrec_fold_plus_1,
+	chrec_fold_multiply): Use fold_convert or build_int_cst_type instead
+	od fonvert.
+	* tree-scalar-evolution.c (compute_overall_effect_of_inner_loop,
+	add_to_evolution, set_nb_iterations_in_loop, follow_ssa_edge_in_rhs,
+	follow_ssa_edge_in_rhs): Ditto.
+	* tree-ssa-loop-ivopts.c (struct iv): Add base_object field.
+	(dump_iv): Dump base_object.
+	(dump_use, dump_cand): Use dump_iv.
+	(determine_base_object): New function.
+	(alloc_iv): Initialize base_object field.
+	(record_use): Clear the ssa_name field of iv.
+	(get_computation_cost_at): Do not use difference of addresses of
+	two different objects.
+	(may_eliminate_iv): Do not require the loop to have just single exit.
+	* tree-ssa-loop-niter.c (zero_p): Do not check for overflows.
+	(nonzero_p): New function.
+	(inverse, number_of_iterations_cond, simplify_using_outer_evolutions,
+	tree_simplify_using_condition, simplify_using_initial_conditions,
+	loop_niter_by_eval, find_loop_niter_by_eval,
+	estimate_numbers_of_iterations_loop, compare_trees,
+	upper_bound_in_type, lower_bound_in_type,
+	can_count_iv_in_wider_type_bound): Use buildN instead of build.  Use
+	fold_convert or build_int_cst_type instead of convert.  Use (non)zero_p
+	instead of integer_(non)zerop.
+
 2004-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert

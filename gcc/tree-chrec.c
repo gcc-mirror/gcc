@@ -117,7 +117,7 @@ chrec_fold_plus_poly_poly (enum tree_code code,
 	  (CHREC_VARIABLE (poly1), 
 	   chrec_fold_minus (type, poly0, CHREC_LEFT (poly1)),
 	   chrec_fold_multiply (type, CHREC_RIGHT (poly1), 
-				convert (type, integer_minus_one_node)));
+				build_int_cst_type (type, -1)));
     }
   
   if (CHREC_VARIABLE (poly0) > CHREC_VARIABLE (poly1))
@@ -282,9 +282,8 @@ chrec_fold_plus_1 (enum tree_code code,
 	    return build_polynomial_chrec 
 	      (CHREC_VARIABLE (op1), 
 	       chrec_fold_minus (type, op0, CHREC_LEFT (op1)),
-	       chrec_fold_multiply (type, CHREC_RIGHT (op1), 
-				    convert (type,
-					     integer_minus_one_node)));
+	       chrec_fold_multiply (type, CHREC_RIGHT (op1),
+				    build_int_cst_type (type, -1)));
 
 	default:
 	  if (tree_contains_chrecs (op0)
@@ -347,7 +346,7 @@ chrec_fold_multiply (tree type,
 	  if (integer_onep (op1))
 	    return op0;
 	  if (integer_zerop (op1))
-	    return convert (type, integer_zero_node);
+	    return build_int_cst_type (type, 0);
 	  
 	  return build_polynomial_chrec 
 	    (CHREC_VARIABLE (op0), 
@@ -360,7 +359,7 @@ chrec_fold_multiply (tree type,
 	return op1;
       
       if (integer_zerop (op0))
-	return convert (type, integer_zero_node);
+    	return build_int_cst_type (type, 0);
       
       switch (TREE_CODE (op1))
 	{
@@ -374,7 +373,7 @@ chrec_fold_multiply (tree type,
 	  if (integer_onep (op1))
 	    return op0;
 	  if (integer_zerop (op1))
-	    return convert (type, integer_zero_node);
+	    return build_int_cst_type (type, 0);
 	  return fold (build (MULT_EXPR, type, op0, op1));
 	}
     }
