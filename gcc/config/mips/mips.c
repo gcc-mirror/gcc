@@ -1655,6 +1655,22 @@ mips_address_cost (addr)
   return 4;
 }
 
+/* Return true if X is an address which needs a temporary register when 
+   reloaded while generating PIC code.  */
+
+int
+pic_address_needs_scratch (x)
+     rtx x;
+{
+  /* An address which is a symbolic plus a non SMALL_INT needs a temp reg.  */
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && ! SMALL_INT (XEXP (XEXP (x, 0), 1)))
+    return 1;
+
+  return 0;
+}
 
 /* Make normal rtx_code into something we can index from an array */
 
@@ -3245,8 +3261,18 @@ override_options ()
   if (TARGET_HALF_PIC)
     HALF_PIC_INIT ();
 
+  /* -fpic (-KPIC) is the default when TARGET_ABICALLS is defined.  We need
+     to set flag_pic so that the LEGITIMATE_PIC_OPERAND_P macro will work.  */
+  /* ??? -non_shared turns off pic code generation, but this is not
+     implemented.  */
   if (TARGET_ABICALLS)
-    mips_abicalls = MIPS_ABICALLS_YES;
+    {
+      mips_abicalls = MIPS_ABICALLS_YES;
+      flag_pic = 1;
+      /* ??? Is this sufficient?  */
+      if (mips_section_threshold > 0)
+	warning ("-G is incompatible with PIC code which is the default");
+    }
   else
     mips_abicalls = MIPS_ABICALLS_NO;
 
