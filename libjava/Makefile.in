@@ -84,6 +84,7 @@ GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
 INCLTDL = @INCLTDL@
+LD = @LD@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
 LIBGCJTESTSPEC = @LIBGCJTESTSPEC@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
@@ -94,7 +95,6 @@ LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
@@ -104,6 +104,7 @@ THREADINCS = @THREADINCS@
 THREADLIBS = @THREADLIBS@
 THREADOBJS = @THREADOBJS@
 THREADSPEC = @THREADSPEC@
+USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
 ZDEPS = @ZDEPS@
 ZINCS = @ZINCS@
@@ -433,6 +434,8 @@ java/io/InputStreamReader.java \
 java/io/InterruptedIOException.java \
 java/io/LineNumberInputStream.java \
 java/io/LineNumberReader.java \
+java/io/ObjectStreamException.java \
+java/io/OptionalDataException.java \
 java/io/OutputStream.java \
 java/io/OutputStreamWriter.java	\
 java/io/PipedInputStream.java \
@@ -447,6 +450,7 @@ java/io/RandomAccessFile.java \
 java/io/Reader.java \
 java/io/SequenceInputStream.java \
 java/io/Serializable.java \
+java/io/StreamCorruptedException.java \
 java/io/StreamTokenizer.java \
 java/io/StringBufferInputStream.java \
 java/io/StringReader.java \
@@ -532,6 +536,7 @@ java/lang/reflect/InvocationTargetException.java \
 java/lang/reflect/Member.java \
 java/lang/reflect/Method.java \
 java/lang/reflect/Modifier.java	\
+java/math/BigDecimal.java \
 java/math/BigInteger.java \
 java/net/BindException.java \
 java/net/ConnectException.java \
@@ -601,6 +606,23 @@ java/security/spec/KeySpec.java \
 java/security/spec/RSAPrivateCrtKeySpec.java \
 java/security/spec/RSAPrivateKeySpec.java \
 java/security/spec/RSAPublicKeySpec.java \
+java/sql/CallableStatement.java \
+java/sql/Connection.java \
+java/sql/DataTruncation.java \
+java/sql/DatabaseMetaData.java \
+java/sql/Date.java \
+java/sql/Driver.java \
+java/sql/DriverManager.java \
+java/sql/DriverPropertyInfo.java \
+java/sql/PreparedStatement.java \
+java/sql/ResultSet.java \
+java/sql/ResultSetMetaData.java \
+java/sql/SQLException.java \
+java/sql/SQLWarning.java \
+java/sql/Statement.java \
+java/sql/Time.java \
+java/sql/Timestamp.java \
+java/sql/Types.java \
 java/text/BreakIterator.java \
 java/text/CharacterIterator.java \
 java/text/ChoiceFormat.java \
@@ -833,7 +855,7 @@ libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -931,13 +953,15 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/io/InputStream.P .deps/java/io/InputStreamReader.P \
 .deps/java/io/InterruptedIOException.P \
 .deps/java/io/LineNumberInputStream.P .deps/java/io/LineNumberReader.P \
-.deps/java/io/OutputStream.P .deps/java/io/OutputStreamWriter.P \
-.deps/java/io/PipedInputStream.P .deps/java/io/PipedOutputStream.P \
-.deps/java/io/PipedReader.P .deps/java/io/PipedWriter.P \
-.deps/java/io/PrintStream.P .deps/java/io/PrintWriter.P \
-.deps/java/io/PushbackInputStream.P .deps/java/io/PushbackReader.P \
-.deps/java/io/RandomAccessFile.P .deps/java/io/Reader.P \
-.deps/java/io/SequenceInputStream.P .deps/java/io/Serializable.P \
+.deps/java/io/ObjectStreamException.P \
+.deps/java/io/OptionalDataException.P .deps/java/io/OutputStream.P \
+.deps/java/io/OutputStreamWriter.P .deps/java/io/PipedInputStream.P \
+.deps/java/io/PipedOutputStream.P .deps/java/io/PipedReader.P \
+.deps/java/io/PipedWriter.P .deps/java/io/PrintStream.P \
+.deps/java/io/PrintWriter.P .deps/java/io/PushbackInputStream.P \
+.deps/java/io/PushbackReader.P .deps/java/io/RandomAccessFile.P \
+.deps/java/io/Reader.P .deps/java/io/SequenceInputStream.P \
+.deps/java/io/Serializable.P .deps/java/io/StreamCorruptedException.P \
 .deps/java/io/StreamTokenizer.P .deps/java/io/StringBufferInputStream.P \
 .deps/java/io/StringReader.P .deps/java/io/StringWriter.P \
 .deps/java/io/SyncFailedException.P \
@@ -1015,12 +1039,13 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/w_exp.P .deps/java/lang/w_fmod.P \
 .deps/java/lang/w_log.P .deps/java/lang/w_pow.P \
 .deps/java/lang/w_remainder.P .deps/java/lang/w_sqrt.P \
-.deps/java/math/BigInteger.P .deps/java/net/BindException.P \
-.deps/java/net/ConnectException.P .deps/java/net/ContentHandler.P \
-.deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
-.deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
-.deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
-.deps/java/net/InetAddress.P .deps/java/net/JarURLConnection.P \
+.deps/java/math/BigDecimal.P .deps/java/math/BigInteger.P \
+.deps/java/net/BindException.P .deps/java/net/ConnectException.P \
+.deps/java/net/ContentHandler.P .deps/java/net/ContentHandlerFactory.P \
+.deps/java/net/DatagramPacket.P .deps/java/net/DatagramSocket.P \
+.deps/java/net/DatagramSocketImpl.P .deps/java/net/FileNameMap.P \
+.deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
+.deps/java/net/JarURLConnection.P \
 .deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
 .deps/java/net/NoRouteToHostException.P \
 .deps/java/net/PlainDatagramSocketImpl.P \
@@ -1065,6 +1090,14 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/spec/RSAPrivateCrtKeySpec.P \
 .deps/java/security/spec/RSAPrivateKeySpec.P \
 .deps/java/security/spec/RSAPublicKeySpec.P \
+.deps/java/sql/CallableStatement.P .deps/java/sql/Connection.P \
+.deps/java/sql/DataTruncation.P .deps/java/sql/DatabaseMetaData.P \
+.deps/java/sql/Date.P .deps/java/sql/Driver.P \
+.deps/java/sql/DriverManager.P .deps/java/sql/DriverPropertyInfo.P \
+.deps/java/sql/PreparedStatement.P .deps/java/sql/ResultSet.P \
+.deps/java/sql/ResultSetMetaData.P .deps/java/sql/SQLException.P \
+.deps/java/sql/SQLWarning.P .deps/java/sql/Statement.P \
+.deps/java/sql/Time.P .deps/java/sql/Timestamp.P .deps/java/sql/Types.P \
 .deps/java/text/BreakIterator.P .deps/java/text/CharacterIterator.P \
 .deps/java/text/ChoiceFormat.P \
 .deps/java/text/CollationElementIterator.P \

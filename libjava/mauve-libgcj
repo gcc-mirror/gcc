@@ -11,10 +11,10 @@ java.lang.Character.classify12
 java.lang.String.hash
 # We support 1.2 for this test.
 java.lang.reflect.Modifier.toString12
-!java.math
+java.math
 !java.rmi
-!java.security
-!java.sql
+java.security
+java.sql
 java.text.FieldPosition.Test
 java.text.ParsePosition.Test
 java.text.SimpleDateFormat.getAndSet2DigitYearStart

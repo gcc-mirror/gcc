@@ -30,12 +30,12 @@ public class MulticastSocket extends DatagramSocket
 
   public MulticastSocket() throws IOException
   {
-    super(0, null);
+    super(0, ServerSocket.ANY_IF);
   }
 
   public MulticastSocket(int port) throws IOException
   {
-    super(port, null);
+    super(port, ServerSocket.ANY_IF);
   }
 
   public InetAddress getInterface() throws SocketException
