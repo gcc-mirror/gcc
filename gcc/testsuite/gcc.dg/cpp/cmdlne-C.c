@@ -23,8 +23,8 @@
 #error not_a_macro is!
 #endif
 
-/* Check obj_like2 doesn't expect arguments, and fun_like does.  */
-obj_like2
+/* Check obj_like doesn't expect arguments, and fun_like does.  */
+obj_like
 fun_like (foo, bar)
 
 /* Check OK to redefine fun_like without comments in the params.  */
