@@ -1,3 +1,22 @@
+Sun Mar 15 15:44:41 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* cccp.c: Fix bugs relating to NUL in input file name,
+	e.g. with `#line 2 "x\0y"'.
+	(PRINTF_PROTO_4): New macro.
+	(struct {file_buf,definition,if_stack}): New member nominal_fname_len.
+	(main, expand_to_temp_buffer): Store length of input file names.
+	(finclude, create_definition, do_line, conditional_skip): Likewise.
+	(skip_if_group, macroexpand): Likewise.
+	(make_{definition,undef,assertion}): Likewise.
+	(special_symbol, do_include): Use stored length of input file names.
+	(do_define, do_elif, do_else, output_line_directive, verror): Likewise.
+	(error_from_errno, vwarning, verror_with_line): Likewise.
+	(vwarning_with_line, pedwarn_with_file_and_line): Likewise.
+	(print_containing_files): Likewise.
+	(do_line): Fix off-by-1 problem: 1 too many bytes were being allocated.
+	(quote_string, pedwarn_with_file_and_line): New arg specifies length.
+	All callers changed.
+
 Sun Mar 15 15:38:16 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* c-typeck.c: Collect pending initializers in AVL tree instead of list.
