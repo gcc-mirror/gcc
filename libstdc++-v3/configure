@@ -59,7 +59,7 @@ ac_help="$ac_help
   --enable-concept-checks use Boost-derived template checks [default=no]"
 ac_help="$ac_help
   --enable-cxx-flags=FLAGS      pass compiler FLAGS when building library;
-                                  [default=none]"
+                                  [default=]"
 ac_help="$ac_help
   --enable-debug          extra debugging, turn off optimization [default=no]"
 ac_help="$ac_help
@@ -4033,7 +4033,7 @@ if test "${enable_cxx_flags+set}" = set; then
     enable_cxx_flags="$enableval" ;;
 esac
 else
-  enable_cxx_flags=none
+  enable_cxx_flags=
 fi
 
 

@@ -1,5 +1,11 @@
 2002-12-30  Phil Edwards  <pme@gcc.gnu.org>
 
+	* configure.in (GLIBCPP_ENABLE_CXX_FLAGS):  Do not pass arguments,
+	let the defaults work.
+	* configure:  Regenerate.
+
+2002-12-30  Phil Edwards  <pme@gcc.gnu.org>
+
 	* acinclude.m4:  Remove trailing whitespace.
 	(GLIBCPP_ENABLE_CXX_FLAGS):  Fix.
 	* aclocal.m4, configure:  Regenerate.
