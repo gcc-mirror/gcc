@@ -1,3 +1,7 @@
+Wed Jan 16 17:54:22 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (minsf splitter): Fix pasto.
+
 2002-01-16  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (arm_expand_prologue): Add REG_MAYBE_DEAD note
