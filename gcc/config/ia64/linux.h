@@ -26,7 +26,7 @@
 
 
 #define DONT_USE_BUILTIN_SETJMP
-#define JMP_BUF_SIZE  (8 * 76)
+#define JMP_BUF_SIZE  76
 
 /* Output any profiling code before the prologue.  */
 
