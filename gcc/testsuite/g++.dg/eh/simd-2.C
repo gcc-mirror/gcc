@@ -7,7 +7,7 @@ typedef int __attribute__((mode(V4SI))) vecint;
 
 vecint vecfunc (vecint beachbum)
 {
-  return vecint;
+  return beachbum;
 }
 
 void f3 (void)
