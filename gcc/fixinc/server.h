@@ -90,5 +90,5 @@ pid_t proc2_open  _P_ (( t_fd_pair * p_pair, t_pchar * pp_args));
 int chain_open    _P_ (( int in_fd,
                          t_pchar * pp_args,
                          pid_t * p_child));
-
+void close_server _P_ (( void ));
 #endif /* FIXINC_SERVER_H */
