@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.200 1997/05/23 17:02:00 karl Exp karl $
+%% $Id: texinfo.tex,v 2.202 1997/06/04 21:46:06 karl Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -1041,8 +1041,9 @@ where each line of input produces a line of output.}
 % We don't need math for this one.
 \def\ttsl{\tenttsl}
 
-%% Try out Computer Modern fonts at \magstephalf
-\let\mainmagstep=\magstephalf
+% Use Computer Modern fonts at \magstephalf (11pt).
+\newcount\mainmagstep
+\mainmagstep=\magstephalf
 
 % Set the font macro #1 to the font named #2, adding on the
 % specified font prefix (normally `cm').
@@ -1337,8 +1338,9 @@ where each line of input produces a line of output.}
 \else{\tclose{\ttsl\look}}\fi
 \else{\tclose{\ttsl\look}}\fi}
 
-% @url, @email.  Quotes do not seem necessary.
+% @url, @uref, @email.  Quotes do not seem necessary.
 \let\url=\code % perhaps include a hypertex \special eventually
+\let\uref=\code
 % rms does not like the angle brackets --karl, 17may97.
 %\def\email#1{$\langle${\tt #1}$\rangle$}
 \let\email=\code
