@@ -3073,6 +3073,7 @@ fixed_type_p (exp)
 
    EXPAND_INITIALIZER is much like EXPAND_SUM except that
    it also marks a label as absolutely required (it can't be dead).
+   It also makes a ZERO_EXTEND or SIGN_EXTEND instead of emitting extend insns.
    This is used for outputting expressions used in initializers.  */
 
 rtx
@@ -3146,8 +3147,11 @@ expand_expr (exp, target, tmode, modifier)
 	else if (modifier == EXPAND_INITIALIZER)
 	  forced_labels = gen_rtx (EXPR_LIST, VOIDmode,
 				   label_rtx (exp), forced_labels);
-	return gen_rtx (MEM, FUNCTION_MODE,
+	temp = gen_rtx (MEM, FUNCTION_MODE,
 			gen_rtx (LABEL_REF, Pmode, label_rtx (exp)));
+	if (function != current_function_decl && function != 0)
+	  LABEL_REF_NONLOCAL_P (XEXP (temp, 0)) = 1;
+	return temp;
       }
 
     case PARM_DECL:
@@ -3782,9 +3786,11 @@ expand_expr (exp, target, tmode, modifier)
 	  /* Return the entire union.  */
 	  return target;
 	}
-      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), 0, mode, modifier);
       if (GET_MODE (op0) == mode || GET_MODE (op0) == VOIDmode)
 	return op0;
+      if (modifier == EXPAND_INITIALIZER)
+	return gen_rtx (unsignedp ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
       if (flag_force_mem && GET_CODE (op0) == MEM)
 	op0 = copy_to_reg (op0);
 
