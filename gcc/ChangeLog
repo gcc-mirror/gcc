@@ -1,5 +1,17 @@
 2000-01-06  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* cccp.c: Delete PATH_SEPARATOR, DIR_SEPARATOR and
+	IS_DIR_SEPARATOR macros.
+	* collect2.c: Likewise.
+	* cppinit.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* gcc.c: Likewise.
+	* gcov.c: Likewise.
+	* prefix.c: Likewise.
+	* rtl.c: Likewise.
+	* toplev.c: Likewise.
+	* system.h: And move to here.
+
 	* prefix.c (update_path): Fix typo in variable name.
 
 2000-01-06  Richard Henderson  <rth@cygnus.com>

@@ -32,10 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #define	obstack_chunk_alloc	xmalloc
 #define	obstack_chunk_free	free
 
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 /* Obstack used for allocating RTL objects.
    Between functions, this is the permanent_obstack.
    While parsing and expanding a function, this is maybepermanent_obstack

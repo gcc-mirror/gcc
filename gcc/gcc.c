@@ -65,15 +65,6 @@ extern int getrusage PROTO ((int, struct rusage *));
 #define OBJECT_SUFFIX ".o"
 #endif
 
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-#define PATH_SEPARATOR ':'
-#endif
-
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 #ifndef VMS
 /* FIXME: the location independence code for VMS is hairier than this,
    and hasn't been written.  */
@@ -81,14 +72,6 @@ extern int getrusage PROTO ((int, struct rusage *));
 #define DIR_UP ".."
 #endif /* DIR_UP */
 #endif /* VMS */
-
-/* Define IS_DIR_SEPARATOR.  */
-#ifndef DIR_SEPARATOR_2
-# define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
-#else /* DIR_SEPARATOR_2 */
-# define IS_DIR_SEPARATOR(ch) \
-	(((ch) == DIR_SEPARATOR) || ((ch) == DIR_SEPARATOR_2))
-#endif /* DIR_SEPARATOR_2 */
 
 static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 

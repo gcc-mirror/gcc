@@ -82,17 +82,6 @@ static char *lookup_key		PROTO((char *));
 static HKEY reg_key = (HKEY) INVALID_HANDLE_VALUE;
 #endif
 
-#ifndef DIR_SEPARATOR
-# define IS_DIR_SEPARATOR(ch) ((ch) == '/')
-#else /* DIR_SEPARATOR */
-# ifndef DIR_SEPARATOR_2
-#  define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
-# else /* DIR_SEPARATOR && DIR_SEPARATOR_2 */
-#  define IS_DIR_SEPARATOR(ch) \
-	(((ch) == DIR_SEPARATOR) || ((ch) == DIR_SEPARATOR_2))
-# endif /* DIR_SEPARATOR && DIR_SEPARATOR_2 */
-#endif /* DIR_SEPARATOR */
-
 /* Given KEY, as above, return its value.  */
 
 static const char *

@@ -49,18 +49,6 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "intl.h"
 
-#ifndef DIR_SEPARATOR
-# define DIR_SEPARATOR '/'
-# define IS_DIR_SEPARATOR(ch) ((ch) == '/')
-#else /* DIR_SEPARATOR */
-# ifndef DIR_SEPARATOR_2
-#  define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
-# else /* DIR_SEPARATOR && DIR_SEPARATOR_2 */
-#  define IS_DIR_SEPARATOR(ch) \
-	(((ch) == DIR_SEPARATOR) || ((ch) == DIR_SEPARATOR_2))
-# endif /* DIR_SEPARATOR && DIR_SEPARATOR_2 */
-#endif /* DIR_SEPARATOR */
-
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -648,11 +636,6 @@ is_ctor_dtor (s)
   return 0;
 }
 
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-#define PATH_SEPARATOR ':'
-#endif
-
 /* We maintain two prefix lists: one from COMPILER_PATH environment variable
    and one from the PATH variable.  */
 

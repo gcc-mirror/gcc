@@ -46,16 +46,6 @@ typedef unsigned char U_CHAR;
 # define STANDARD_INCLUDE_DIR "/usr/include"
 #endif
 
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-# define PATH_SEPARATOR ':'
-#endif
-
-/* By default, a slash separates directory names.  */
-#ifndef DIR_SEPARATOR
-# define DIR_SEPARATOR '/'
-#endif
-
 /* By default, the suffix for object files is ".o".  */
 #ifdef OBJECT_SUFFIX
 # define HAVE_OBJECT_SUFFIX

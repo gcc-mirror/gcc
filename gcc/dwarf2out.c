@@ -65,10 +65,6 @@ Boston, MA 02111-1307, USA.  */
 # define assert(e) do { if (! (e)) abort (); } while (0)
 #endif
 
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 
