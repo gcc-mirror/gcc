@@ -1,3 +1,12 @@
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/coff.h: Update copyright.
+	* config/h8300/elf.h: Likewise.
+	* config/h8300/h8300-protos.h: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/h8300/h8300.md: Likewise.
+
 2004-01-24  Hartmut Penner <hpenner@de.ibm.com>
 
 	PR target/13674
