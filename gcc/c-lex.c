@@ -402,7 +402,7 @@ check_newline ()
 	      return handle_sysv_pragma (finput, c);
 #else /* !HANDLE_SYSV_PRAGMA */
 #ifdef HANDLE_PRAGMA
-	      HANDLE_PRAGMA (finput, c);
+	      return HANDLE_PRAGMA (finput, c);
 #endif /* HANDLE_PRAGMA */
 	      goto skipline;
 #endif /* !HANDLE_SYSV_PRAGMA */
