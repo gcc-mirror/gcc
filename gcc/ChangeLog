@@ -1,5 +1,11 @@
 2004-01-02  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (cgraph_optimize_function):  Call optimize_inline_calls
+	when there is nothing to inline but warnings are requested.
+	(cgraph_decide_inlining):  Fix memory leak.
+
+2004-01-02  Jan Hubicka  <jh@suse.cz>
+
 	* expr.c (store_constructor):  Fix pasto in previous patch.
 
 2004-01-02  Kazu Hirata  <kazu@cs.umass.edu>

@@ -476,7 +476,7 @@ cgraph_optimize_function (struct cgraph_node *node)
       struct cgraph_edge *e;
 
       for (e = node->callees; e; e = e->next_callee)
-	if (e->inline_call)
+	if (e->inline_call || warn_inline)
 	  break;
       if (e)
         optimize_inline_calls (decl);
@@ -1213,17 +1213,17 @@ cgraph_decide_inlining (void)
 		}
 	    }
 	}
-
-      if (cgraph_dump_file)
-	fprintf (cgraph_dump_file,
-		 "\nInlined %i calls, eliminated %i functions, "
-		 "%i insns turned to %i insns.\n\n",
-		 ncalls_inlined, nfunctions_inlined, initial_insns,
-		 overall_insns);
-      free (order);
-      free (inlined);
-      free (inlined_callees);
     }
+
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file,
+	     "\nInlined %i calls, eliminated %i functions, "
+	     "%i insns turned to %i insns.\n\n",
+	     ncalls_inlined, nfunctions_inlined, initial_insns,
+	     overall_insns);
+  free (order);
+  free (inlined);
+  free (inlined_callees);
 }
 
 /* Decide on the inlining.  We do so in the topological order to avoid
