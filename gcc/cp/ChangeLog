@@ -1,3 +1,33 @@
+Tue Feb 10 15:30:55 EST 1998 Andrew MacLeod <amacleod@torpedo.to.cygnus.com>
+
+	* decl2.c (lang_f_options): Add -fsquangle to option processing list.
+
+	* cp-tree.h (flag_do_squangling): Add declaration.
+
+	* lang-options.h: Add -fsquangle and -fno-squangle.
+
+	* method.c: Add macros and static variables for squangling.
+	(build_overload_name): Rename to build_mangled_name, add logic for B 
+	compression, and split into process_modifiers and process_overload_item.
+	(process_modifiers): New function, to handle constant, reference, 
+	and pointer types. 
+	(process_overload_item): New function, handles issue of type codes.
+	(build_overload_name): New function, start squangling and call 
+	build_mangled_name.
+	(ALLOCATE_TYPEVEC, DEALLOCATE_TYPEVEC): Remove macro and expand inline.
+	(start_squangling): New function to initialize squangling structs.
+	(end_squangling): New function to destroy squangling structs.
+	(nrepeats): Rename variable to Nrepeats.
+	(issue_nrepeats): New function for issuing 'n' type repeats.
+	(check_ktype): New function to check for type K name compression.
+	(build_overload_nested_name): Add a check for K name compression.
+	(build_qualified_name): Add a check for K name compression and don't
+	use DECL_ASSEMBLER_NAME when squangling is on.
+	(check_btype): New function, checks for B type compression.
+	(build_static_name, build_decl_overload_real): Initiate squangling.
+	(build_typename_overload, build_overload_with_type): Initiate 
+	squangling
+
 Sun Feb  8 23:47:38 1998  scott snyder  <sss@d0linux01.fnal.gov>
 
 	* method.c (make_thunk): Avoid name buffer overflow.
