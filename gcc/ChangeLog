@@ -1,3 +1,8 @@
+Tue Sep 21 00:59:49 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* emit-rtl.c (init_emit_once): Initialize const_int_rtx before
+	other initializations that may use it for relative offsets.
+
 Mon Sep 20 21:43:25 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/i386/sol2.h (PREFERRED_DEBUGGING_TYPE): Use stabs.
