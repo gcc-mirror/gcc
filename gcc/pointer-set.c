@@ -61,11 +61,10 @@ hash1 (const void *p, unsigned long max, unsigned long logmax)
 #elif HOST_BITS_PER_LONG == 64
   const unsigned long A = 0x9e3779b97f4a7c16ul;
 #else
-  const double M = (ULONG_MAX + 1.0);
-  const double B = M / ((sqrt (5) - 1) / 2.0);
-  const unsigned long A = B - (floor (B / M) * M);
+  const unsigned long A
+    = (ULONG_MAX + 1.0L) * 0.6180339887498948482045868343656381177203L;
 #endif
-  const unsigned long shift = sizeof (unsigned long) * CHAR_BIT - logmax;
+  const unsigned long shift = HOST_BITS_PER_LONG - logmax;
 
   return ((A * (unsigned long) p) >> shift) & (max - 1);
 }

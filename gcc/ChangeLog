@@ -1,3 +1,7 @@
+2004-10-18  Richard Henderson  <rth@redhat.com>
+
+	* pointer-set.c (hash1): Don't use libm functions in fallback case.
+
 2004-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/17684
