@@ -1,4 +1,7 @@
 Fri Nov 19 06:32:19 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+	* i386.md (negs?2): Rewrite to expanders, new patterns and splitters
+	to support integer registers and memory.
+	(abss?2_integer): Likewise.
 
 	* i386.h (enum reg_class): Add FLOAT_INT_REGS.
 	(REG_CLASS_NAMES): Likewise.
