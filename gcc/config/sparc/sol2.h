@@ -145,7 +145,7 @@ do {									\
   { static int sym_lineno = 1;				\
     fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",	\
 	     line, sym_lineno, 				\
-	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)),\
+	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0), \
 	     sym_lineno);				\
     sym_lineno += 1; }
 
