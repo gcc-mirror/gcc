@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987, 1991, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -596,6 +596,7 @@ extern char *note_insn_name[];
    FUNCTION_ARGS_SIZE is the size of the argument block in the stack.
    POPS_ARGS is the number of bytes of input arguments popped by the function
    STACK_SLOT_LIST is the list of stack slots.
+   FORCED_LABELS is the list of labels whose address was taken.
    FUNCTION_FLAGS are where single-bit flags are saved.
    OUTGOING_ARGS_SIZE is the size of the largest outgoing stack parameter list.
    ORIGINAL_ARG_VECTOR is a vector of the original DECL_RTX values
@@ -616,10 +617,11 @@ extern char *note_insn_name[];
 #define FUNCTION_ARGS_SIZE(RTX) ((RTX)->fld[8].rtint)
 #define POPS_ARGS(RTX) ((RTX)->fld[9].rtint)
 #define STACK_SLOT_LIST(RTX) ((RTX)->fld[10].rtx)
-#define FUNCTION_FLAGS(RTX) ((RTX)->fld[11].rtint)
-#define OUTGOING_ARGS_SIZE(RTX) ((RTX)->fld[12].rtint)
-#define ORIGINAL_ARG_VECTOR(RTX) ((RTX)->fld[13].rtvec)
-#define ORIGINAL_DECL_INITIAL(RTX) ((RTX)->fld[14].rtx)
+#define FORCED_LABELS(RTX) ((RTX)->fld[11].rtx)
+#define FUNCTION_FLAGS(RTX) ((RTX)->fld[12].rtint)
+#define OUTGOING_ARGS_SIZE(RTX) ((RTX)->fld[13].rtint)
+#define ORIGINAL_ARG_VECTOR(RTX) ((RTX)->fld[14].rtvec)
+#define ORIGINAL_DECL_INITIAL(RTX) ((RTX)->fld[15].rtx)
 
 /* In FUNCTION_FLAGS we save some variables computed when emitting the code
    for the function and which must be `or'ed into the current flag values when
@@ -715,7 +717,9 @@ extern rtx replace_rtx			PROTO((rtx, rtx, rtx));
 extern rtvec gen_rtvec_v		PROTO((int, rtx *));
 extern rtx gen_reg_rtx			PROTO((enum machine_mode));
 extern rtx gen_label_rtx		PROTO((void));
-extern rtx gen_inline_header_rtx	PROTO((rtx, rtx, int, int, int, int, int, int, rtx, int, int, rtvec, rtx));
+extern rtx gen_inline_header_rtx	PROTO((rtx, rtx, int, int, int, int,
+					       int, int, rtx, rtx, int, int,
+					       rtvec, rtx));
 extern rtx gen_lowpart_common		PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart			PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart_if_possible	PROTO((enum machine_mode, rtx));
