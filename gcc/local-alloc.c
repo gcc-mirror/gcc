@@ -1714,17 +1714,12 @@ block_alloc (b)
 	  {
 	    if (GET_CODE (qty_scratch_rtx[q]) == REG)
 	      abort ();
-	    PUT_CODE (qty_scratch_rtx[q], REG);
-	    REGNO (qty_scratch_rtx[q]) = qty_phys_reg[q];
+
+	    qty_scratch_rtx[q] = gen_rtx (REG, GET_MODE (qty_scratch_rtx[q]),
+					  qty_phys_reg[q]);
 
 	    scratch_block[scratch_index] = b;
 	    scratch_list[scratch_index++] = qty_scratch_rtx[q];
-
-	    /* Must clear the USED field, because it will have been set by
-	       copy_rtx_if_shared, but the leaf_register code expects that
-	       it is zero in all REG rtx.  copy_rtx_if_shared does not set the
-	       used bit for REGs, but does for SCRATCHes.  */
-	    qty_scratch_rtx[q]->used = 0;
 	  }
       }
 }

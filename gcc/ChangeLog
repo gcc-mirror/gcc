@@ -1,5 +1,8 @@
 Wed Oct 22 00:34:12 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* local-alloc.c (block_alloc): Don't lose if two SCRATCH expressions
+	are shared.
+
 	* rs6000.md (*movsi_got_internal_mem): New pattern.
 	(*movsi_got_internal_mem splitter): New define_split.
 
