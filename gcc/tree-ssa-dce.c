@@ -221,7 +221,6 @@ static inline void
 mark_stmt_necessary (tree stmt, bool add_to_worklist)
 {
   gcc_assert (stmt);
-  gcc_assert (stmt != error_mark_node);
   gcc_assert (!DECL_P (stmt));
 
   if (NECESSARY (stmt))
