@@ -5892,9 +5892,11 @@ force_to_mode (x, mode, mask, reg)
 	x = gen_binary (LSHIFTRT, GET_MODE (x), XEXP (x, 0), XEXP (x, 1));
 
       /* If this is a sign-extension operation that just affects bits
-	 we don't care about, remove it.  */
+	 we don't care about, remove it.  Be sure the call above returned
+	 something that is still a shift.  */
 
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if ((GET_CODE (x) == LSHIFTRT || GET_CODE (x) == ASHIFTRT)
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) >= 0
 	  && (INTVAL (XEXP (x, 1))
 	      <= GET_MODE_BITSIZE (GET_MODE (x)) - (floor_log2 (mask) + 1))
