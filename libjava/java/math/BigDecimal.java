@@ -431,6 +431,11 @@ public class BigDecimal extends Number implements Comparable
     return scale;
   }
   
+  public BigInteger unscaledValue()
+  {
+    return intVal;
+  }
+
   public BigDecimal abs () 
   {
     return new BigDecimal (intVal.abs (), scale);

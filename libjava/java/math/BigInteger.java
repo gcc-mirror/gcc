@@ -223,6 +223,23 @@ public class BigInteger extends Number implements Comparable
       }
   }
 
+  /** 
+   *  Return a BigInteger that is bitLength bits long with a
+   *  probability < 2^-100 of being composite.
+   *
+   *  @param bitLength length in bits of resulting number
+   *  @param rnd random number generator to use
+   *  @throws ArithmeticException if bitLength < 2
+   *  @since 1.4
+   */
+  public static BigInteger probablePrime(int bitLength, Random rnd)
+  {
+    if (bitLength < 2)
+      throw new ArithmeticException();
+
+    return new BigInteger(bitLength, 100, rnd);
+  }
+
   /** Return a (possibly-shared) BigInteger with a given long value. */
   public static BigInteger valueOf(long val)
   {
