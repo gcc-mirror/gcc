@@ -219,7 +219,7 @@ WARN_CXXFLAGS = \
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 @GLIBCXX_HOSTED_TRUE@hosted_source = src po
-SUBDIRS = include libmath libsupc++ $(hosted_source) testsuite 
+SUBDIRS = include libmath libsupc++ $(hosted_source) testsuite
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -273,7 +273,7 @@ AM_MAKEFLAGS = \
 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
-	"WERROR=$(WERROR)" 
+	"WERROR=$(WERROR)"
 
 
 # Subdir rules rely on $(FLAGS_TO_PASS)

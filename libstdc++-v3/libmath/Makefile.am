@@ -26,7 +26,7 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 noinst_LTLIBRARIES = libmath.la
 
-libmath_la_LIBADD = @LIBMATHOBJS@
+libmath_la_LIBADD = $(LIBMATHOBJS)
 
 libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
 

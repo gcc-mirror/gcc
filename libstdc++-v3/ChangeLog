@@ -1,5 +1,20 @@
 2003-08-27  Phil Edwards  <pme@gcc.gnu.org>
 
+	* Makefile.am:  Remove trailing whitespace.  Remove needless
+	"foo = @foo@" assignments.  Replace direct uses of @foo@ with $(foo).
+	* include/Makefile.am:  Likewise.
+	* libmath/Makefile.am:  Likewise.
+	* libsupc++/Makefile.am:  Likewise.
+	* po/Makefile.am:  Likewise.
+	* src/Makefile.am:  Likewise.
+	* testsuite/Makefile.am:  Likewise.
+
+	* Makefile.in, include/Makefile.in, libmath/Makefile.in,
+	libsupc++/Makefile.in, po/Makefile.in, src/Makefile.in,
+	testsuite/Makefile.in:  Regenerated.
+
+2003-08-27  Phil Edwards  <pme@gcc.gnu.org>
+
 	* acinclude.m4 (GLIBCXX_EXPORT_INCLUDES):  Change quoting of
 	includedir.
 	* aclocal.m4, configure:  Regenerate.

@@ -55,26 +55,26 @@ host_sources = \
 	numeric_members.cc \
 	time_members.cc
 
-codecvt_members.cc: ${glibcxx_srcdir}/@CCODECVT_CC@
-	@LN_S@ ${glibcxx_srcdir}/@CCODECVT_CC@ . || true
+codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CCODECVT_CC) . || true
 
-collate_members.cc: ${glibcxx_srcdir}/@CCOLLATE_CC@
-	@LN_S@ ${glibcxx_srcdir}/@CCOLLATE_CC@ . || true
+collate_members.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CCOLLATE_CC) . || true
 
-ctype_members.cc: ${glibcxx_srcdir}/@CCTYPE_CC@
-	@LN_S@ ${glibcxx_srcdir}/@CCTYPE_CC@ . || true
+ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
 
-messages_members.cc: ${glibcxx_srcdir}/@CMESSAGES_CC@
-	@LN_S@ ${glibcxx_srcdir}/@CMESSAGES_CC@ . || true
+messages_members.cc: ${glibcxx_srcdir}/$(CMESSAGES_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_CC) . || true
 
-monetary_members.cc: ${glibcxx_srcdir}/@CMONEY_CC@
-	@LN_S@ ${glibcxx_srcdir}/@CMONEY_CC@ . || true
+monetary_members.cc: ${glibcxx_srcdir}/$(CMONEY_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CMONEY_CC) . || true
 
-numeric_members.cc: ${glibcxx_srcdir}/@CNUMERIC_CC@
-	@LN_S@ ${glibcxx_srcdir}/@CNUMERIC_CC@ . || true
+numeric_members.cc: ${glibcxx_srcdir}/$(CNUMERIC_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CNUMERIC_CC) . || true
 
-time_members.cc: ${glibcxx_srcdir}/@CTIME_CC@
-	@LN_S@ ${glibcxx_srcdir}/@CTIME_CC@ . || true
+time_members.cc: ${glibcxx_srcdir}/$(CTIME_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CTIME_CC) . || true
 
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
@@ -82,11 +82,11 @@ host_sources_extra = \
 	basic_file.cc \
 	c++locale.cc
 
-c++locale.cc: ${glibcxx_srcdir}/@CLOCALE_CC@
-	@LN_S@ ${glibcxx_srcdir}/@CLOCALE_CC@ ./$@ || true
+c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(CLOCALE_CC) ./$@ || true
 
-basic_file.cc: ${glibcxx_srcdir}/@BASIC_FILE_CC@
-	@LN_S@ ${glibcxx_srcdir}/@BASIC_FILE_CC@ ./$@ || true
+basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
+	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
 # Sources present in the src directory.
 sources = \
@@ -131,13 +131,13 @@ libstdc___la_LIBADD = \
 libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
 
 libstdc___la_LDFLAGS = \
-	-version-info @libtool_VERSION@ ${version_arg} \
-	-lm @LIBUNWIND_FLAG@
+	-version-info $(libtool_VERSION) ${version_arg} \
+	-lm $(LIBUNWIND_FLAG)
 
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
-GLIBCXX_INCLUDE_DIR=@glibcxx_builddir@/include
+GLIBCXX_INCLUDE_DIR=$(glibcxx_builddir)/include
 strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
@@ -199,7 +199,7 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
 CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
-	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+	  $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 # Added bits to build debug library.
@@ -228,9 +228,9 @@ stamp-debug:
 	echo `date` > stamp-debug;
 
 build_debug: stamp-debug
-	(cd ${debugdir} && $(MAKE) CXXFLAGS='@DEBUG_FLAGS@' all)
+	(cd ${debugdir} && $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' all)
 
 # Install debug library here.
 install_debug:
 	(cd ${debugdir} && $(MAKE) \
-	toolexeclibdir=@glibcxx_toolexeclibdir@/debug install)
+	toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install)

@@ -19,20 +19,20 @@
 ## You should have received a copy of the GNU General Public License
 ## along with GCC; see the file COPYING.  If not, write to
 ## the Free Software Foundation, 59 Temple Place - Suite 330,
-## Boston, MA 02111-1307, USA. 
+## Boston, MA 02111-1307, USA.
 
 include $(top_srcdir)/fragment.am
 
 # Need this library to both be part of libstdc++.a, and installed
 # separately too.
-# 1) separate libsupc++.la 
+# 1) separate libsupc++.la
 toolexeclib_LTLIBRARIES = libsupc++.la
 # 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
 noinst_LTLIBRARIES = libsupc++convenience.la
 
 
 headers = \
-	exception new typeinfo cxxabi.h exception_defines.h 
+	exception new typeinfo cxxabi.h exception_defines.h
 
 sources = \
 	del_op.cc \
@@ -62,8 +62,8 @@ sources = \
 	vec.cc \
 	vterminate.cc
 
-libsupc___la_SOURCES = $(sources) 
-libsupc__convenience_la_SOURCES = $(sources) 
+libsupc___la_SOURCES = $(sources)
+libsupc__convenience_la_SOURCES = $(sources)
 
 glibcxxinstalldir = $(gxx_include_dir)
 glibcxxinstall_HEADERS = $(headers)
@@ -72,13 +72,13 @@ glibcxxinstall_HEADERS = $(headers)
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
-# as the occasion call for it. 
+# as the occasion call for it.
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
 	$(LIBSUPCXX_PICFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS) 
+	$(CONFIG_CXXFLAGS)
 
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"
@@ -105,8 +105,8 @@ AM_MAKEFLAGS = \
 # We have to put --tag disable-shared after --tag CXX lest things
 # CXX undo the affect of disable-shared.
 LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
-               --mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+	       --mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
+	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS)
 
 # 3) We'd have a problem when building the shared libstdc++ object if
 # the rules automake generates would be used.  We cannot allow g++ to
@@ -115,8 +115,8 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
 CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared \
-          --mode=link $(CXX) \
-          @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+	  --mode=link $(CXX) \
+	  $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 # We have to have rules modified from the default to counteract SUN make
 # prepending each of $(glibcxxinstall_HEADERS) with VPATH below.

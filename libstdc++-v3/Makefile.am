@@ -29,7 +29,7 @@ if GLIBCXX_HOSTED
   hosted_source = src po
 endif
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
-SUBDIRS = include libmath libsupc++ $(hosted_source) testsuite 
+SUBDIRS = include libmath libsupc++ $(hosted_source) testsuite
 
 # These rules are messy, but are hella worth it.
 doxygen:
@@ -132,7 +132,7 @@ AM_MAKEFLAGS = \
 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
-	"WERROR=$(WERROR)" 
+	"WERROR=$(WERROR)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
