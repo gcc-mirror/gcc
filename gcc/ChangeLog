@@ -1,3 +1,7 @@
+2001-12-21  Robert Lipe  <robertlipe@usa.net>
+
+	 * system.h (PREFETCH): Explictly undefine.
+
 2001-12-21  Richard Henderson  <rth@redhat.com>
 
 	* c-parse.in (SAVE_WARN_FLAGS): Save warn_traditional.
