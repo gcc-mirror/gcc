@@ -1,3 +1,9 @@
+Fri Nov  5 12:04:02 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (schedule_block): Don't crash if there's no
+	next insn for an interblock movement.
+	(add_branch_dependences): Don't allow clobber insns to move either.
+
 Fri Nov  5 10:18:11 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (split_xf): New.
