@@ -96,7 +96,10 @@ private transient ActionListener action_listeners;
   protected class AccessibleAWTButton extends AccessibleAWTComponent
     implements AccessibleAction, AccessibleValue
   {
-    protected AccessibleAWTButton() { }
+    protected AccessibleAWTButton()
+    {
+      // Do nothing here.
+    }
 
     /* (non-Javadoc)
      * @see javax.accessibility.AccessibleAction#getAccessibleActionCount()

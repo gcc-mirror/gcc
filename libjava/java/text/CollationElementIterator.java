@@ -369,8 +369,9 @@ public final class CollationElementIterator
 		    idx_idx += idxToMove;
 		    idxToMove = 0;
 		  }
-	      } else
-		idx_idx += prefix.key.length();
+	      }
+	    else
+	      idx_idx += prefix.key.length();
 	  }
       }
     

@@ -1686,26 +1686,42 @@ public class Container extends Component
 
   static class GfxPaintVisitor extends GfxVisitor
   {
-    public void visit(Component c, Graphics gfx) { c.paint(gfx); }
     public static final GfxVisitor INSTANCE = new GfxPaintVisitor();
+    
+    public void visit(Component c, Graphics gfx)
+    {
+      c.paint(gfx);
+    }
   }
 
   static class GfxPrintVisitor extends GfxVisitor
   {
-    public void visit(Component c, Graphics gfx) { c.print(gfx); }
     public static final GfxVisitor INSTANCE = new GfxPrintVisitor();
+    
+    public void visit(Component c, Graphics gfx)
+    {
+      c.print(gfx);
+    }
   }
 
   static class GfxPaintAllVisitor extends GfxVisitor
   {
-    public void visit(Component c, Graphics gfx) { c.paintAll(gfx); }
     public static final GfxVisitor INSTANCE = new GfxPaintAllVisitor();
+
+    public void visit(Component c, Graphics gfx)
+    {
+      c.paintAll(gfx);
+    }
   }
 
   static class GfxPrintAllVisitor extends GfxVisitor
   {
-    public void visit(Component c, Graphics gfx) { c.printAll(gfx); }
     public static final GfxVisitor INSTANCE = new GfxPrintAllVisitor();
+
+    public void visit(Component c, Graphics gfx)
+    {
+      c.printAll(gfx);
+    }
   }
 
   /**

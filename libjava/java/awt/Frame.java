@@ -1,5 +1,5 @@
 /* Frame.java -- AWT toplevel window
-   Copyright (C) 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -403,10 +403,15 @@ remove(MenuComponent menu)
 /**
   * Notifies this frame that it should create its native peer.
   */
-
 private static void fireDummyEvent()
 {
-  EventQueue.invokeLater(new Runnable() { public void run() { } });
+  EventQueue.invokeLater(new Runnable()
+    {
+      public void run()
+      {
+	// Do nothing here.
+      }
+    });
 }
 
 public void
