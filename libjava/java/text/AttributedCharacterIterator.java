@@ -38,10 +38,10 @@ exception statement from your version. */
 
 package java.text;
 
-import java.io.Serializable;
 import java.io.InvalidObjectException;
-import java.util.Set;
+import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This interface extends the <code>CharacterIterator</code> interface

@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package java.text;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;

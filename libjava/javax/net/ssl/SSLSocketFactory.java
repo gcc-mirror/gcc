@@ -40,9 +40,7 @@ package javax.net.ssl;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.security.AccessController;
 import java.security.KeyStore;
-import java.security.PrivilegedAction;
 import java.security.Security;
 import javax.net.SocketFactory;
 
