@@ -1,5 +1,8 @@
 1999-05-03  Tom Tromey  <tromey@cygnus.com>
 
+	* lib/libjava.exp (libjava_arguments): Don't use -nodefaultlibs.
+	(libjava_find_lib): Add `-L' option to find the actual library.
+
 	* libjava.mauve/mauve.exp (test_mauve): Pass `link' to
 	libjava_arguments when linking.
 	(test_mauve_sim): Likewise.
