@@ -1,3 +1,7 @@
+Wed Apr  7 16:30:04 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* explow.c (probe_stack_range, [HAVE_check_stack]): Fix typo.
+
 Mon Apr  5 16:57:10 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* varasm.c (initializer_constant_valid_p, case MINUS_EXPR):
