@@ -2048,7 +2048,7 @@
   ;
 })
 
-;; Be careful, fmovd does not exist when !arch64.
+;; Be careful, fmovd does not exist when !v9.
 ;; We match MEM moves directly when we have correct even
 ;; numbered registers, but fall into splits otherwise.
 ;; The constraint ordering here is really important to
@@ -2062,9 +2062,9 @@
 
 (define_insn "*movdi_insn_sp32_v9"
   [(set (match_operand:DI 0 "nonimmediate_operand"
-					"=T,o,T,U,o,r,r,r,?T,?f,?f,?o,?f")
+					"=T,o,T,U,o,r,r,r,?T,?f,?f,?o,?f,?e,?e,?W")
         (match_operand:DI 1 "input_operand"
-					" J,J,U,T,r,o,i,r, f, T, o, f, f"))]
+					" J,J,U,T,r,o,i,r, f, T, o, f, f, e, W, e"))]
   "! TARGET_ARCH64 && TARGET_V9
    && (GET_CODE (operands[0]) != MEM || GET_CODE (operands[1]) != MEM)"
   "@
@@ -2080,9 +2080,13 @@
    ldd\t%1, %0
    #
    #
-   #"
-  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,*")
-   (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,2")])
+   #
+   fmovd\\t%1, %0
+   ldd\\t%1, %0
+   std\\t%1, %0"
+  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,*,fpmove,fpload,fpstore")
+   (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,2,*,*,*")
+   (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,*,double,*,*")])
 
 (define_insn "*movdi_insn_sp32"
   [(set (match_operand:DI 0 "nonimmediate_operand"
@@ -2388,7 +2392,14 @@
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
         (match_operand:DI 1 "const_double_operand" ""))]
-  "! TARGET_ARCH64 && reload_completed"
+  "reload_completed
+   && (! TARGET_V9
+       || (! TARGET_ARCH64
+           && ((GET_CODE (operands[0]) == REG
+                && REGNO (operands[0]) < 32)
+               || (GET_CODE (operands[0]) == SUBREG
+                   && GET_CODE (SUBREG_REG (operands[0])) == REG
+                   && REGNO (SUBREG_REG (operands[0])) < 32))))"
   [(clobber (const_int 0))]
 {
   emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),

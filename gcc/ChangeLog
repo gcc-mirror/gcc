@@ -1,3 +1,9 @@
+2002-09-30  David S. Miller  <davem@redhat.com>
+
+	PR middle-end/7151
+	* config/sparc/sparc.md (movdi_insn_sp32_v9): Accept 'e' regs.
+	(movdi reg/reg split): Match only on sparc32, and v9 when int regs.
+
 2002-10-01  Roger Sayle  <roger@eyesopen.com>
 
 	* unroll.c (loop_iterations): Revert 2002-09-08 change.
