@@ -9308,16 +9308,18 @@ recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
    An insn containing that will not be recognized.  */
 
 static rtx
-gen_lowpart_for_combine (enum machine_mode mode, rtx x)
+gen_lowpart_for_combine (enum machine_mode omode, rtx x)
 {
+  enum machine_mode imode = GET_MODE (x);
+  unsigned int osize = GET_MODE_SIZE (omode);
+  unsigned int isize = GET_MODE_SIZE (imode);
   rtx result;
 
-  if (GET_MODE (x) == mode)
+  if (omode == imode)
     return x;
 
-  /* Return identity if this is a CONST or symbolic
-     reference.  */
-  if (mode == Pmode
+  /* Return identity if this is a CONST or symbolic reference.  */
+  if (omode == Pmode
       && (GET_CODE (x) == CONST
 	  || GET_CODE (x) == SYMBOL_REF
 	  || GET_CODE (x) == LABEL_REF))
@@ -9325,13 +9327,12 @@ gen_lowpart_for_combine (enum machine_mode mode, rtx x)
 
   /* We can only support MODE being wider than a word if X is a
      constant integer or has a mode the same size.  */
-
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && ! ((GET_MODE (x) == VOIDmode
+  if (GET_MODE_SIZE (omode) > UNITS_PER_WORD
+      && ! ((imode == VOIDmode
 	     && (GET_CODE (x) == CONST_INT
 		 || GET_CODE (x) == CONST_DOUBLE))
-	    || GET_MODE_SIZE (GET_MODE (x)) == GET_MODE_SIZE (mode)))
-    return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+	    || isize == osize))
+    goto fail;
 
   /* X might be a paradoxical (subreg (mem)).  In that case, gen_lowpart
      won't know what to do.  So we will strip off the SUBREG here and
@@ -9339,11 +9340,12 @@ gen_lowpart_for_combine (enum machine_mode mode, rtx x)
   if (GET_CODE (x) == SUBREG && MEM_P (SUBREG_REG (x)))
     {
       x = SUBREG_REG (x);
-      if (GET_MODE (x) == mode)
+      if (GET_MODE (x) == omode)
 	return x;
     }
 
-  result = gen_lowpart_common (mode, x);
+  result = gen_lowpart_common (omode, x);
+
 #ifdef CANNOT_CHANGE_MODE_CLASS
   if (result != 0 && GET_CODE (result) == SUBREG)
     record_subregs_of_mode (result);
@@ -9359,33 +9361,28 @@ gen_lowpart_for_combine (enum machine_mode mode, rtx x)
       /* Refuse to work on a volatile memory ref or one with a mode-dependent
 	 address.  */
       if (MEM_VOLATILE_P (x) || mode_dependent_address_p (XEXP (x, 0)))
-	return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+	goto fail;
 
       /* If we want to refer to something bigger than the original memref,
 	 generate a paradoxical subreg instead.  That will force a reload
 	 of the original memref X.  */
-      if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode))
-	return gen_rtx_SUBREG (mode, x, 0);
+      if (isize < osize)
+	return gen_rtx_SUBREG (omode, x, 0);
 
       if (WORDS_BIG_ENDIAN)
-	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
-		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+	offset = MAX (isize, UNITS_PER_WORD) - MAX (osize, UNITS_PER_WORD);
 
+      /* Adjust the address so that the address-after-the-data is unchanged. */
       if (BYTES_BIG_ENDIAN)
-	{
-	  /* Adjust the address so that the address-after-the-data is
-	     unchanged.  */
-	  offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
-		     - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
-	}
+	offset -= MIN (UNITS_PER_WORD, osize) - MIN (UNITS_PER_WORD, isize);
 
-      return adjust_address_nv (x, mode, offset);
+      return adjust_address_nv (x, omode, offset);
     }
 
   /* If X is a comparison operator, rewrite it in a new mode.  This
      probably won't match, but may allow further simplifications.  */
   else if (COMPARISON_P (x))
-    return gen_rtx_fmt_ee (GET_CODE (x), mode, XEXP (x, 0), XEXP (x, 1));
+    return gen_rtx_fmt_ee (GET_CODE (x), omode, XEXP (x, 0), XEXP (x, 1));
 
   /* If we couldn't simplify X any other way, just enclose it in a
      SUBREG.  Normally, this SUBREG won't match, but some patterns may
@@ -9394,21 +9391,22 @@ gen_lowpart_for_combine (enum machine_mode mode, rtx x)
     {
       int offset = 0;
       rtx res;
-      enum machine_mode sub_mode = GET_MODE (x);
 
-      offset = subreg_lowpart_offset (mode, sub_mode);
-      if (sub_mode == VOIDmode)
+      offset = subreg_lowpart_offset (omode, imode);
+      if (imode == VOIDmode)
 	{
-	  sub_mode = int_mode_for_mode (mode);
-	  x = gen_lowpart_common (sub_mode, x);
-	  if (x == 0)
-	    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
+	  imode = int_mode_for_mode (omode);
+	  x = gen_lowpart_common (imode, x);
+	  if (x == NULL)
+	    goto fail;
 	}
-      res = simplify_gen_subreg (mode, x, sub_mode, offset);
+      res = simplify_gen_subreg (omode, x, imode, offset);
       if (res)
 	return res;
-      return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
     }
+
+ fail:
+  return gen_rtx_CLOBBER (imode, const0_rtx);
 }
 
 /* These routines make binary and unary operations by first seeing if they
