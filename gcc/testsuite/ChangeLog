@@ -1,3 +1,8 @@
+2004-07-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR rtl-optimization/16536
+	* gcc.c-torture/execute/restrict-1.c: New test.
+
 2004-07-14  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/16325
