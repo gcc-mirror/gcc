@@ -86,6 +86,7 @@ a register with any other reload.  */
 
 #define REG_OK_STRICT
 
+#include <stdio.h>
 #include "config.h"
 #include "rtl.h"
 #include "insn-config.h"
@@ -5669,4 +5670,111 @@ regno_clobbered_p (regno, insn)
     }
 
   return 0;
+}
+
+static char *reload_when_needed_name[] =
+{
+  "RELOAD_FOR_INPUT", 
+  "RELOAD_FOR_OUTPUT", 
+  "RELOAD_FOR_INSN",
+  "RELOAD_FOR_INPUT_ADDRESS", 
+  "RELOAD_FOR_OUTPUT_ADDRESS",
+  "RELOAD_FOR_OPERAND_ADDRESS", 
+  "RELOAD_FOR_OPADDR_ADDR",
+  "RELOAD_OTHER", 
+  "RELOAD_FOR_OTHER_ADDRESS"
+};
+
+static char *reg_class_names[] = REG_CLASS_NAMES;
+
+/* This function is used to print the variables set by 'find_reloads' */
+
+void
+debug_reload()
+{
+  int r;
+
+  fprintf (stderr, "\nn_reloads = %d\n", n_reloads);
+
+  for (r = 0; r < n_reloads; r++)
+    {
+      fprintf (stderr, "\nRELOAD %d\n", r);
+
+      if (reload_in[r])
+	{
+	  fprintf (stderr, "\nreload_in (%s) = ", mode_name[reload_inmode[r]]);
+	  debug_rtx (reload_in[r]);
+	}
+
+      if (reload_out[r])
+	{
+	  fprintf (stderr, "\nreload_out (%s) = ", mode_name[reload_outmode[r]]);
+	  debug_rtx (reload_out[r]);
+	}
+
+      fprintf (stderr, "%s, ", reg_class_names[(int) reload_reg_class[r]]);
+
+      fprintf (stderr, "%s (opnum = %d)", reload_when_needed_name[(int)reload_when_needed[r]],
+	       reload_opnum[r]);
+
+      if (reload_optional[r])
+	fprintf (stderr, ", optional");
+
+      if (reload_in[r])
+	fprintf (stderr, ", inc by %d\n", reload_inc[r]);
+
+      if (reload_nocombine[r])
+	fprintf (stderr, ", can combine", reload_nocombine[r]);
+
+      if (reload_secondary_p[r])
+	fprintf (stderr, ", secondary_reload_p");
+
+      if (reload_in_reg[r])
+	{
+	  fprintf (stderr, "\nreload_in_reg:\t\t\t");
+	  debug_rtx (reload_in_reg[r]);
+	}
+
+      if (reload_reg_rtx[r])
+	{
+	  fprintf (stderr, "\nreload_reg_rtx:\t\t\t");
+	  debug_rtx (reload_reg_rtx[r]);
+	}
+
+      if (reload_secondary_in_reload[r] != -1)
+	{
+	  fprintf (stderr, "\nsecondary_in_reload = ");
+	  fprintf (stderr, "%d ", reload_secondary_in_reload[r]);
+	}
+
+      if (reload_secondary_out_reload[r] != -1)
+	{
+	  if (reload_secondary_in_reload[r] != -1)
+	    fprintf (stderr, ", secondary_out_reload = ");
+	  else
+	    fprintf (stderr, "\nsecondary_out_reload = ");
+
+	  fprintf (stderr, "%d", reload_secondary_out_reload[r]);
+	}
+
+
+      if (reload_secondary_in_icode[r] != CODE_FOR_nothing)
+	{
+	  fprintf (stderr, "\nsecondary_in_icode = ");
+	  fprintf (stderr, "%s", insn_name[r]);
+	}
+
+      if (reload_secondary_out_icode[r] != CODE_FOR_nothing)
+	{
+	  if (reload_secondary_in_icode[r] != CODE_FOR_nothing)
+	    fprintf (stderr, ", secondary_out_icode = ");
+	  else
+	    fprintf (stderr, "\nsecondary_out_icode = ");
+
+	  fprintf (stderr, "%s ", insn_name[r]);
+	}
+      fprintf (stderr, "\n");
+    }
+
+  fprintf (stderr, "\n");
 }
