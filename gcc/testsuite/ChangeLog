@@ -1,3 +1,8 @@
+2004-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/14069
+	* gcc.dg/20040322-1.c: New test.
+
 2004-03-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/13889

@@ -5009,11 +5009,20 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (x))) == NULL_TREE)
 	{
 	  if (TREE_CODE (t) == UNION_TYPE)
-	    error ("%Jflexible array member in union", x);
+	    {
+	      error ("%Jflexible array member in union", x);
+	      TREE_TYPE (x) = error_mark_node;
+	    }
 	  else if (TREE_CHAIN (x) != NULL_TREE)
-	    error ("%Jflexible array member not at end of struct", x);
+	    {
+	      error ("%Jflexible array member not at end of struct", x);
+	      TREE_TYPE (x) = error_mark_node;
+	    }
 	  else if (! saw_named_field)
-	    error ("%Jflexible array member in otherwise empty struct", x);
+	    {
+	      error ("%Jflexible array member in otherwise empty struct", x);
+	      TREE_TYPE (x) = error_mark_node;
+	    }
 	}
 
       if (pedantic && TREE_CODE (t) == RECORD_TYPE

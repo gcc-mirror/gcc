@@ -1,3 +1,9 @@
+2004-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/14069
+	* c-decl.c (finish_struct): Change type of incorrect flexible array
+	field into error_mark_node.
+
 2004-03-22  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
 
 	PR target/14260
