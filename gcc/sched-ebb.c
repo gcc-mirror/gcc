@@ -442,10 +442,12 @@ add_deps_for_risky_insns (head, tail)
 	      {
 		bb = earliest_block_with_similiar_load (last_block, insn);
 		if (bb)
-		  bb = bb->aux;
-		if (!bb)
-		  break;
-		prev = bb->end;
+		  {
+		    bb = bb->aux;
+		    if (!bb)
+		      break;
+		    prev = bb->end;
+		  }
 	      }
 	    /* FALLTHRU */
 	  case TRAP_RISKY:
