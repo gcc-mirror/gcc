@@ -1,3 +1,12 @@
+Sun May 31 00:27:47 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* extend.texi: Bring back reference to trampoline paper.
+
+Sun May 31 00:22:34 1998  Ulrich Drepper  <drepper@cygnus.com>
+
+	* Makefile.in (USER_H): Add stdbool.h.
+	* ginclude/stdbool.h: New file.
+
 Fri May 29 01:48:25 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (thread_jumps): Do not look at the NOTE_LINE_NUMBER
