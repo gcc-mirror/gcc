@@ -547,7 +547,7 @@ df_alloc (df, n_regs)
   df->uses = xmalloc (df->use_size * sizeof (*df->uses));
 
   df->n_regs = n_regs;
-  df->n_bbs = n_basic_blocks;
+  df->n_bbs = last_basic_block;
 
   /* Allocate temporary working array used during local dataflow analysis.  */
   df->reg_def_last = xmalloc (df->n_regs * sizeof (struct ref *));
@@ -561,7 +561,7 @@ df_alloc (df, n_regs)
 
   df->flags = 0;
 
-  df->bbs = xcalloc (df->n_bbs, sizeof (struct bb_info));
+  df->bbs = xcalloc (last_basic_block, sizeof (struct bb_info));
 
   df->all_blocks = BITMAP_XMALLOC ();
   FOR_EACH_BB (bb)
@@ -2006,9 +2006,9 @@ df_analyse_1 (df, blocks, flags, update)
   df->dfs_order = xmalloc (sizeof(int) * n_basic_blocks);
   df->rc_order = xmalloc (sizeof(int) * n_basic_blocks);
   df->rts_order = xmalloc (sizeof(int) * n_basic_blocks);
-  df->inverse_dfs_map = xmalloc (sizeof(int) * n_basic_blocks);
-  df->inverse_rc_map = xmalloc (sizeof(int) * n_basic_blocks);
-  df->inverse_rts_map = xmalloc (sizeof(int) * n_basic_blocks);
+  df->inverse_dfs_map = xmalloc (sizeof(int) * last_basic_block);
+  df->inverse_rc_map = xmalloc (sizeof(int) * last_basic_block);
+  df->inverse_rts_map = xmalloc (sizeof(int) * last_basic_block);
 
   flow_depth_first_order_compute (df->dfs_order, df->rc_order);
   flow_reverse_top_sort_order_compute (df->rts_order);
@@ -2023,10 +2023,10 @@ df_analyse_1 (df, blocks, flags, update)
       /* Compute the sets of gens and kills for the defs of each bb.  */
       df_rd_local_compute (df, df->flags & DF_RD ? blocks : df->all_blocks);
       {
-	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *gen = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *kill = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *in = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *out = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *gen = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *kill = xmalloc (sizeof (bitmap) * last_basic_block);
 	FOR_EACH_BB (bb)
 	  {
 	    in[bb->index] = DF_BB_INFO (df, bb)->rd_in;
@@ -2059,10 +2059,10 @@ df_analyse_1 (df, blocks, flags, update)
 	 uses in each bb.  */
       df_ru_local_compute (df, df->flags & DF_RU ? blocks : df->all_blocks);
       {
-	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *gen = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *kill = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *in = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *out = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *gen = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *kill = xmalloc (sizeof (bitmap) * last_basic_block);
 	FOR_EACH_BB (bb)
 	  {
 	    in[bb->index] = DF_BB_INFO (df, bb)->ru_in;
@@ -2098,10 +2098,10 @@ df_analyse_1 (df, blocks, flags, update)
       /* Compute the sets of defs and uses of live variables.  */
       df_lr_local_compute (df, df->flags & DF_LR ? blocks : df->all_blocks);
       {
-	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *use = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *def = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *in = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *out = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *use = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *def = xmalloc (sizeof (bitmap) * last_basic_block);
 	FOR_EACH_BB (bb)
 	  {
 	    in[bb->index] = DF_BB_INFO (df, bb)->lr_in;
@@ -2292,7 +2292,7 @@ df_analyse (df, blocks, flags)
 
   /* We could deal with additional basic blocks being created by
      rescanning everything again.  */
-  if (df->n_bbs && df->n_bbs != (unsigned int)n_basic_blocks)
+  if (df->n_bbs && df->n_bbs != (unsigned int) last_basic_block)
     abort ();
 
   update = df_modified_p (df, blocks);
@@ -2402,10 +2402,8 @@ df_refs_unlink (df, blocks)
     }
   else
     {
-      FOR_EACH_BB (bb,
-      {
+      FOR_EACH_BB (bb)
 	df_bb_refs_unlink (df, bb);
-      });
     }
 }
 #endif
@@ -3846,8 +3844,8 @@ iterative_dataflow_sbitmap (in, out, gen, kill, blocks,
   fibheap_t worklist;
   basic_block bb;
   sbitmap visited, pending;
-  pending = sbitmap_alloc (n_basic_blocks);
-  visited = sbitmap_alloc (n_basic_blocks);
+  pending = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block);
   sbitmap_zero (pending);
   sbitmap_zero (visited);
   worklist = fibheap_new ();
@@ -3905,8 +3903,8 @@ iterative_dataflow_bitmap (in, out, gen, kill, blocks,
   fibheap_t worklist;
   basic_block bb;
   sbitmap visited, pending;
-  pending = sbitmap_alloc (n_basic_blocks);
-  visited = sbitmap_alloc (n_basic_blocks);
+  pending = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block);
   sbitmap_zero (pending);
   sbitmap_zero (visited);
   worklist = fibheap_new ();

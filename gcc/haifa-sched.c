@@ -2384,7 +2384,7 @@ sched_init (dump_file)
     {
       rtx line;
 
-      line_note_head = (rtx *) xcalloc (n_basic_blocks, sizeof (rtx));
+      line_note_head = (rtx *) xcalloc (last_basic_block, sizeof (rtx));
 
       /* Save-line-note-head:
          Determine the line-number at the start of each basic block.

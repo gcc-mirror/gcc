@@ -1016,7 +1016,7 @@ ssa_const_prop ()
   ssa_edges = sbitmap_alloc (VARRAY_SIZE (ssa_definition));
   sbitmap_zero (ssa_edges);
 
-  executable_blocks = sbitmap_alloc (n_basic_blocks);
+  executable_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (executable_blocks);
 
   executable_edges = sbitmap_alloc (NUM_EDGES (edges));

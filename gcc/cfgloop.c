@@ -600,7 +600,7 @@ flow_loop_scan (loops, loop, flags)
 
       /* Determine which loop nodes dominate all the exits
 	 of the loop.  */
-      loop->exits_doms = sbitmap_alloc (n_basic_blocks);
+      loop->exits_doms = sbitmap_alloc (last_basic_block);
       sbitmap_copy (loop->exits_doms, loop->nodes);
       for (j = 0; j < loop->num_exits; j++)
 	sbitmap_a_and_b (loop->exits_doms, loop->exits_doms,
@@ -663,7 +663,7 @@ flow_loops_find (loops, flags)
   rc_order = NULL;
 
   /* Compute the dominators.  */
-  dom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  dom = sbitmap_vector_alloc (last_basic_block, last_basic_block);
   calculate_dominance_info (NULL, dom, CDI_DOMINATORS);
 
   /* Count the number of loop edges (back edges).  This should be the
@@ -705,10 +705,10 @@ flow_loops_find (loops, flags)
       loops->array
 	= (struct loop *) xcalloc (num_loops, sizeof (struct loop));
 
-      headers = sbitmap_alloc (n_basic_blocks);
+      headers = sbitmap_alloc (last_basic_block);
       sbitmap_zero (headers);
 
-      loops->shared_headers = sbitmap_alloc (n_basic_blocks);
+      loops->shared_headers = sbitmap_alloc (last_basic_block);
       sbitmap_zero (loops->shared_headers);
 
       /* Find and record information about all the natural loops
@@ -760,7 +760,7 @@ flow_loops_find (loops, flags)
 	  SET_BIT (headers, loop->header->index);
 
 	  /* Find nodes contained within the loop.  */
-	  loop->nodes = sbitmap_alloc (n_basic_blocks);
+	  loop->nodes = sbitmap_alloc (last_basic_block);
 	  loop->num_nodes
 	    = flow_loop_nodes_find (loop->header, loop->latch, loop->nodes);
 

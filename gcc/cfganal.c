@@ -120,15 +120,15 @@ mark_dfs_back_edges ()
   bool found = false;
 
   /* Allocate the preorder and postorder number arrays.  */
-  pre = (int *) xcalloc (n_basic_blocks, sizeof (int));
-  post = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  pre = (int *) xcalloc (last_basic_block, sizeof (int));
+  post = (int *) xcalloc (last_basic_block, sizeof (int));
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = (edge *) xmalloc ((n_basic_blocks + 1) * sizeof (edge));
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (n_basic_blocks);
+  visited = sbitmap_alloc (last_basic_block);
 
   /* None of the nodes in the CFG have been visited yet.  */
   sbitmap_zero (visited);
@@ -741,7 +741,7 @@ flow_reverse_top_sort_order_compute (rts_order)
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (n_basic_blocks);
+  visited = sbitmap_alloc (last_basic_block);
 
   /* None of the nodes in the CFG have been visited yet.  */
   sbitmap_zero (visited);
@@ -812,7 +812,7 @@ flow_depth_first_order_compute (dfs_order, rc_order)
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (n_basic_blocks);
+  visited = sbitmap_alloc (last_basic_block);
 
   /* None of the nodes in the CFG have been visited yet.  */
   sbitmap_zero (visited);
@@ -918,7 +918,7 @@ flow_preorder_transversal_compute (pot_order)
   sp = 0;
 
   /* Allocate the tree.  */
-  dfst = (struct dfst_node *) xcalloc (n_basic_blocks,
+  dfst = (struct dfst_node *) xcalloc (last_basic_block,
 				       sizeof (struct dfst_node));
 
   FOR_EACH_BB (bb)
@@ -935,7 +935,7 @@ flow_preorder_transversal_compute (pot_order)
     }
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (n_basic_blocks);
+  visited = sbitmap_alloc (last_basic_block);
 
   /* None of the nodes in the CFG have been visited yet.  */
   sbitmap_zero (visited);
@@ -1002,7 +1002,7 @@ flow_preorder_transversal_compute (pot_order)
 
   /* Free the tree.  */
 
-  for (i = 0; i < n_basic_blocks; i++)
+  for (i = 0; i < last_basic_block; i++)
     if (dfst[i].node)
       free (dfst[i].node);
 
@@ -1049,7 +1049,7 @@ flow_dfs_compute_reverse_init (data)
   data->sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  data->visited_blocks = sbitmap_alloc (n_basic_blocks - (INVALID_BLOCK + 1));
+  data->visited_blocks = sbitmap_alloc (last_basic_block - (INVALID_BLOCK + 1));
 
   /* None of the nodes in the CFG have been visited yet.  */
   sbitmap_zero (data->visited_blocks);

@@ -578,7 +578,7 @@ combine_instructions (f, nregs)
 
   setup_incoming_promotions ();
 
-  refresh_blocks = sbitmap_alloc (n_basic_blocks);
+  refresh_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (refresh_blocks);
   need_refresh = 0;
 

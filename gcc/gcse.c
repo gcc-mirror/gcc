@@ -834,11 +834,11 @@ gcse_main (f, file)
 	    {
 	      free_modify_mem_tables ();
 	      modify_mem_list
-		= (rtx *) gmalloc (n_basic_blocks * sizeof (rtx));
+		= (rtx *) gmalloc (last_basic_block * sizeof (rtx));
 	      canon_modify_mem_list
-		= (rtx *) gmalloc (n_basic_blocks * sizeof (rtx));
-	      memset ((char *) modify_mem_list, 0, n_basic_blocks * sizeof (rtx));
-	      memset ((char *) canon_modify_mem_list, 0, n_basic_blocks * sizeof (rtx));
+		= (rtx *) gmalloc (last_basic_block * sizeof (rtx));
+	      memset ((char *) modify_mem_list, 0, last_basic_block * sizeof (rtx));
+	      memset ((char *) canon_modify_mem_list, 0, last_basic_block * sizeof (rtx));
 	      orig_bb_count = n_basic_blocks;
 	    }
 	  free_reg_set_mem ();
@@ -1019,14 +1019,14 @@ alloc_gcse_mem (f)
   reg_set_bitmap = BITMAP_XMALLOC ();
 
   /* Allocate vars to track sets of regs, memory per block.  */
-  reg_set_in_block = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks,
+  reg_set_in_block = (sbitmap *) sbitmap_vector_alloc (last_basic_block,
 						       max_gcse_regno);
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  */
-  modify_mem_list = (rtx *) gmalloc (n_basic_blocks * sizeof (rtx));
-  canon_modify_mem_list = (rtx *) gmalloc (n_basic_blocks * sizeof (rtx));
-  memset ((char *) modify_mem_list, 0, n_basic_blocks * sizeof (rtx));
-  memset ((char *) canon_modify_mem_list, 0, n_basic_blocks * sizeof (rtx));
+  modify_mem_list = (rtx *) gmalloc (last_basic_block * sizeof (rtx));
+  canon_modify_mem_list = (rtx *) gmalloc (last_basic_block * sizeof (rtx));
+  memset ((char *) modify_mem_list, 0, last_basic_block * sizeof (rtx));
+  memset ((char *) canon_modify_mem_list, 0, last_basic_block * sizeof (rtx));
   modify_mem_list_set = BITMAP_XMALLOC ();
   canon_modify_mem_list_set = BITMAP_XMALLOC ();
 }
@@ -1132,15 +1132,15 @@ compute_local_properties (transp, comp, antloc, setp)
   if (transp)
     {
       if (setp)
-	sbitmap_vector_zero (transp, n_basic_blocks);
+	sbitmap_vector_zero (transp, last_basic_block);
       else
-	sbitmap_vector_ones (transp, n_basic_blocks);
+	sbitmap_vector_ones (transp, last_basic_block);
     }
 
   if (comp)
-    sbitmap_vector_zero (comp, n_basic_blocks);
+    sbitmap_vector_zero (comp, last_basic_block);
   if (antloc)
-    sbitmap_vector_zero (antloc, n_basic_blocks);
+    sbitmap_vector_zero (antloc, last_basic_block);
 
   /* We use the same code for cprop, pre and hoisting.  For cprop
      we care about the set hash table, for pre and hoisting we
@@ -2495,7 +2495,7 @@ compute_hash_table (set_p)
      registers are set in which blocks.
      ??? This isn't needed during const/copy propagation, but it's cheap to
      compute.  Later.  */
-  sbitmap_vector_zero (reg_set_in_block, n_basic_blocks);
+  sbitmap_vector_zero (reg_set_in_block, last_basic_block);
 
   /* re-Cache any INSN_LIST nodes we have allocated.  */
   clear_modify_mem_tables ();
@@ -2940,16 +2940,16 @@ alloc_rd_mem (n_blocks, n_insns)
      int n_blocks, n_insns;
 {
   rd_kill = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_insns);
-  sbitmap_vector_zero (rd_kill, n_basic_blocks);
+  sbitmap_vector_zero (rd_kill, n_blocks);
 
   rd_gen = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_insns);
-  sbitmap_vector_zero (rd_gen, n_basic_blocks);
+  sbitmap_vector_zero (rd_gen, n_blocks);
 
   reaching_defs = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_insns);
-  sbitmap_vector_zero (reaching_defs, n_basic_blocks);
+  sbitmap_vector_zero (reaching_defs, n_blocks);
 
   rd_out = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_insns);
-  sbitmap_vector_zero (rd_out, n_basic_blocks);
+  sbitmap_vector_zero (rd_out, n_blocks);
 }
 
 /* Free reaching def variables.  */
@@ -3071,16 +3071,16 @@ alloc_avail_expr_mem (n_blocks, n_exprs)
      int n_blocks, n_exprs;
 {
   ae_kill = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_exprs);
-  sbitmap_vector_zero (ae_kill, n_basic_blocks);
+  sbitmap_vector_zero (ae_kill, n_blocks);
 
   ae_gen = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_exprs);
-  sbitmap_vector_zero (ae_gen, n_basic_blocks);
+  sbitmap_vector_zero (ae_gen, n_blocks);
 
   ae_in = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_exprs);
-  sbitmap_vector_zero (ae_in, n_basic_blocks);
+  sbitmap_vector_zero (ae_in, n_blocks);
 
   ae_out = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_exprs);
-  sbitmap_vector_zero (ae_out, n_basic_blocks);
+  sbitmap_vector_zero (ae_out, n_blocks);
 }
 
 static void
@@ -3285,7 +3285,7 @@ expr_reaches_here_p (occr, expr, bb, check_self_loop)
      int check_self_loop;
 {
   int rval;
-  char *visited = (char *) xcalloc (n_basic_blocks, 1);
+  char *visited = (char *) xcalloc (last_basic_block, 1);
 
   rval = expr_reaches_here_p_work (occr, expr, bb, check_self_loop, visited);
   
@@ -3675,7 +3675,7 @@ one_classic_gcse_pass (pass)
   gcse_create_count = 0;
 
   alloc_expr_hash_table (max_cuid);
-  alloc_rd_mem (n_basic_blocks, max_cuid);
+  alloc_rd_mem (last_basic_block, max_cuid);
   compute_expr_hash_table ();
   if (gcse_file)
     dump_hash_table (gcse_file, "Expression", expr_hash_table,
@@ -3685,7 +3685,7 @@ one_classic_gcse_pass (pass)
     {
       compute_kill_rd ();
       compute_rd ();
-      alloc_avail_expr_mem (n_basic_blocks, n_exprs);
+      alloc_avail_expr_mem (last_basic_block, n_exprs);
       compute_ae_gen ();
       compute_ae_kill (ae_gen, ae_kill);
       compute_available (ae_gen, ae_kill, ae_out, ae_in);
@@ -4358,7 +4358,7 @@ one_cprop_pass (pass, alter_jumps)
 		     n_sets);
   if (n_sets > 0)
     {
-      alloc_cprop_mem (n_basic_blocks, n_sets);
+      alloc_cprop_mem (last_basic_block, n_sets);
       compute_cprop_data ();
       changed = cprop (alter_jumps);
       free_cprop_mem ();
@@ -4472,7 +4472,7 @@ compute_pre_data ()
   unsigned int ui;
 
   compute_local_properties (transp, comp, antloc, 0);
-  sbitmap_vector_zero (ae_kill, n_basic_blocks);
+  sbitmap_vector_zero (ae_kill, last_basic_block);
 
   /* Collect expressions which might trap.  */
   trapping_expr = sbitmap_alloc (n_exprs);
@@ -4591,7 +4591,7 @@ pre_expr_reaches_here_p (occr_bb, expr, bb)
      basic_block bb;
 {
   int rval;
-  char *visited = (char *) xcalloc (n_basic_blocks, 1);
+  char *visited = (char *) xcalloc (last_basic_block, 1);
 
   rval = pre_expr_reaches_here_p_work (occr_bb, expr, bb, visited);
 
@@ -5111,7 +5111,7 @@ one_pre_gcse_pass (pass)
 
   if (n_exprs > 0)
     {
-      alloc_pre_mem (n_basic_blocks, n_exprs);
+      alloc_pre_mem (last_basic_block, n_exprs);
       compute_pre_data ();
       changed |= pre_gcse ();
       free_edge_list (edge_list);
@@ -5199,7 +5199,7 @@ compute_transpout ()
   unsigned int i;
   struct expr *expr;
 
-  sbitmap_vector_ones (transpout, n_basic_blocks);
+  sbitmap_vector_ones (transpout, last_basic_block);
 
   FOR_EACH_BB (bb)
     {
@@ -5281,8 +5281,8 @@ delete_null_pointer_checks_1 (block_reg, nonnull_avin,
      Note that a register can have both properties in a single block.  That
      indicates that it's killed, then later in the block a new value is
      computed.  */
-  sbitmap_vector_zero (nonnull_local, n_basic_blocks);
-  sbitmap_vector_zero (nonnull_killed, n_basic_blocks);
+  sbitmap_vector_zero (nonnull_local, last_basic_block);
+  sbitmap_vector_zero (nonnull_killed, last_basic_block);
 
   FOR_EACH_BB (current_block)
     {
@@ -5459,18 +5459,18 @@ delete_null_pointer_checks (f)
   /* We need four bitmaps, each with a bit for each register in each
      basic block.  */
   max_reg = max_reg_num ();
-  regs_per_pass = get_bitmap_width (4, n_basic_blocks, max_reg);
+  regs_per_pass = get_bitmap_width (4, last_basic_block, max_reg);
 
   /* Allocate bitmaps to hold local and global properties.  */
-  npi.nonnull_local = sbitmap_vector_alloc (n_basic_blocks, regs_per_pass);
-  npi.nonnull_killed = sbitmap_vector_alloc (n_basic_blocks, regs_per_pass);
-  nonnull_avin = sbitmap_vector_alloc (n_basic_blocks, regs_per_pass);
-  nonnull_avout = sbitmap_vector_alloc (n_basic_blocks, regs_per_pass);
+  npi.nonnull_local = sbitmap_vector_alloc (last_basic_block, regs_per_pass);
+  npi.nonnull_killed = sbitmap_vector_alloc (last_basic_block, regs_per_pass);
+  nonnull_avin = sbitmap_vector_alloc (last_basic_block, regs_per_pass);
+  nonnull_avout = sbitmap_vector_alloc (last_basic_block, regs_per_pass);
 
   /* Go through the basic blocks, seeing whether or not each block
      ends with a conditional branch whose condition is a comparison
      against zero.  Record the register compared in BLOCK_REG.  */
-  block_reg = (unsigned int *) xcalloc (n_basic_blocks, sizeof (int));
+  block_reg = (unsigned int *) xcalloc (last_basic_block, sizeof (int));
   FOR_EACH_BB (bb)
     {
       rtx last_insn = bb->end;
@@ -5586,8 +5586,8 @@ compute_code_hoist_vbeinout ()
   int changed, passes;
   basic_block bb;
 
-  sbitmap_vector_zero (hoist_vbeout, n_basic_blocks);
-  sbitmap_vector_zero (hoist_vbein, n_basic_blocks);
+  sbitmap_vector_zero (hoist_vbeout, last_basic_block);
+  sbitmap_vector_zero (hoist_vbein, last_basic_block);
 
   passes = 0;
   changed = 1;
@@ -5653,7 +5653,7 @@ hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
   if (visited == NULL)
     {
       visited_allocated_locally = 1;
-      visited = xcalloc (n_basic_blocks, 1);
+      visited = xcalloc (last_basic_block, 1);
     }
 
   for (pred = bb->pred; pred != NULL; pred = pred->pred_next)
@@ -5696,7 +5696,7 @@ hoist_code ()
   struct expr **index_map;
   struct expr *expr;
 
-  sbitmap_vector_zero (hoist_exprs, n_basic_blocks);
+  sbitmap_vector_zero (hoist_exprs, last_basic_block);
 
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
@@ -5871,7 +5871,7 @@ one_code_hoisting_pass ()
 
   if (n_exprs > 0)
     {
-      alloc_code_hoist_mem (n_basic_blocks, n_exprs);
+      alloc_code_hoist_mem (last_basic_block, n_exprs);
       compute_code_hoist_data ();
       hoist_code ();
       free_code_hoist_mem ();
@@ -6453,9 +6453,9 @@ compute_store_table ()
 
   max_gcse_regno = max_reg_num ();
 
-  reg_set_in_block = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks,
+  reg_set_in_block = (sbitmap *) sbitmap_vector_alloc (last_basic_block,
 						       max_gcse_regno);
-  sbitmap_vector_zero (reg_set_in_block, n_basic_blocks);
+  sbitmap_vector_zero (reg_set_in_block, last_basic_block);
   pre_ldst_mems = 0;
 
   /* Find all the stores we care about.  */
@@ -6654,11 +6654,11 @@ build_store_vectors ()
 
   /* Build the gen_vector. This is any store in the table which is not killed
      by aliasing later in its block.  */
-  ae_gen = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks, num_stores);
-  sbitmap_vector_zero (ae_gen, n_basic_blocks);
+  ae_gen = (sbitmap *) sbitmap_vector_alloc (last_basic_block, num_stores);
+  sbitmap_vector_zero (ae_gen, last_basic_block);
 
-  st_antloc = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks, num_stores);
-  sbitmap_vector_zero (st_antloc, n_basic_blocks);
+  st_antloc = (sbitmap *) sbitmap_vector_alloc (last_basic_block, num_stores);
+  sbitmap_vector_zero (st_antloc, last_basic_block);
 
   for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
     { 
@@ -6713,11 +6713,11 @@ build_store_vectors ()
       free_INSN_LIST_list (&store_list);
     }
 	  
-  ae_kill = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks, num_stores);
-  sbitmap_vector_zero (ae_kill, n_basic_blocks);
+  ae_kill = (sbitmap *) sbitmap_vector_alloc (last_basic_block, num_stores);
+  sbitmap_vector_zero (ae_kill, last_basic_block);
 
-  transp = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks, num_stores);
-  sbitmap_vector_zero (transp, n_basic_blocks);
+  transp = (sbitmap *) sbitmap_vector_alloc (last_basic_block, num_stores);
+  sbitmap_vector_zero (transp, last_basic_block);
 
   for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
     FOR_EACH_BB (b)
@@ -6754,10 +6754,10 @@ build_store_vectors ()
     {
       fprintf (gcse_file, "ST_avail and ST_antic (shown under loads..)\n");
       print_ldst_list (gcse_file);
-      dump_sbitmap_vector (gcse_file, "st_antloc", "", st_antloc, n_basic_blocks);
-      dump_sbitmap_vector (gcse_file, "st_kill", "", ae_kill, n_basic_blocks);
-      dump_sbitmap_vector (gcse_file, "Transpt", "", transp, n_basic_blocks);
-      dump_sbitmap_vector (gcse_file, "st_avloc", "", ae_gen, n_basic_blocks);
+      dump_sbitmap_vector (gcse_file, "st_antloc", "", st_antloc, last_basic_block);
+      dump_sbitmap_vector (gcse_file, "st_kill", "", ae_kill, last_basic_block);
+      dump_sbitmap_vector (gcse_file, "Transpt", "", transp, last_basic_block);
+      dump_sbitmap_vector (gcse_file, "st_avloc", "", ae_gen, last_basic_block);
     }
 }
 

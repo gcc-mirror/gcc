@@ -506,7 +506,7 @@ ssa_eliminate_dead_code ()
   mark_all_insn_unnecessary ();
   VARRAY_RTX_INIT (unprocessed_instructions, 64,
 		   "unprocessed instructions");
-  cdbte = control_dependent_block_to_edge_map_create (n_basic_blocks);
+  cdbte = control_dependent_block_to_edge_map_create (last_basic_block);
 
   /* Prepare for use of BLOCK_NUM ().  */
   connect_infinite_loops_to_exit ();
@@ -514,12 +514,12 @@ ssa_eliminate_dead_code ()
   compute_bb_for_insn (max_insn_uid);
 
   /* Compute control dependence.  */
-  pdom = (int *) xmalloc (n_basic_blocks * sizeof (int));
-  for (i = 0; i < n_basic_blocks; ++i)
+  pdom = (int *) xmalloc (last_basic_block * sizeof (int));
+  for (i = 0; i < last_basic_block; ++i)
     pdom[i] = INVALID_BLOCK;
   calculate_dominance_info (pdom, NULL, CDI_POST_DOMINATORS);
   /* Assume there is a path from each node to the exit block.  */
-  for (i = 0; i < n_basic_blocks; ++i)
+  for (i = 0; i < last_basic_block; ++i)
     if (pdom[i] == INVALID_BLOCK)
       pdom[i] = EXIT_BLOCK;
   el = create_edge_list ();

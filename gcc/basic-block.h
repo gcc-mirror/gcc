@@ -233,6 +233,10 @@ typedef struct basic_block_def {
 
 extern int n_basic_blocks;
 
+/* First free basic block number.  */
+
+#define last_basic_block n_basic_blocks
+
 /* Number of edges in the current function.  */
 
 extern int n_edges;

@@ -2700,7 +2700,7 @@ if_convert (x_life_data_ok)
   post_dominators = NULL;
   if (HAVE_conditional_execution || life_data_ok)
     {
-      post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+      post_dominators = sbitmap_vector_alloc (last_basic_block, last_basic_block);
       calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
     }
   if (life_data_ok)
