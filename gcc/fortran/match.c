@@ -791,17 +791,13 @@ not_yes:
 /*********************** Statement level matching **********************/
 
 /* Matches the start of a program unit, which is the program keyword
-   followed by an optional symbol.  */
+   followed by an obligatory symbol.  */
 
 match
 gfc_match_program (void)
 {
   gfc_symbol *sym;
   match m;
-
-  m = gfc_match_eos ();
-  if (m == MATCH_YES)
-    return m;
 
   m = gfc_match ("% %s%t", &sym);
 
@@ -1897,6 +1893,13 @@ gfc_match_return (void)
 {
   gfc_expr *e;
   match m;
+  gfc_compile_state s;
+
+  gfc_enclosing_unit (&s);
+  if (s == COMP_PROGRAM
+      && gfc_notify_std (GFC_STD_GNU, "RETURN statement in a main "
+			 "program at %C is an extension.") == FAILURE)
+      return MATCH_ERROR;
 
   e = NULL;
   if (gfc_match_eos () == MATCH_YES)
@@ -2295,7 +2298,7 @@ gfc_match_block_data (void)
       return MATCH_YES;
     }
 
-  m = gfc_match (" %n%t", name);
+  m = gfc_match ("% %n%t", name);
   if (m != MATCH_YES)
     return MATCH_ERROR;
 

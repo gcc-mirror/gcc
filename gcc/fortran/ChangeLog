@@ -6,6 +6,12 @@
 
 	PR fortran/16404
 	* io.c (match_io): Flag 'WRITE(...), ...' as extension.
+
+	PR fortran/16404
+	* match.c (gfc_match_program): A program name is obligatory.
+	(gfc_match_return): RETURN in main program is an extension.
+	(gfc_match_block_data): A space is required before a block data
+	name.
 	
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
