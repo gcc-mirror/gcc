@@ -1,3 +1,7 @@
+2005-02-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/20040703-1.c: Quote decimal dot.
+
 2005-02-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/gcc-dg.exp: (dg-require-weak, dg-require-visibility,
