@@ -486,6 +486,11 @@ sorry:
 	@echo Please reconfigure without --enable-bootstrap
 @endif gcc-bootstrap
 
+# Flags to pass to stage2 and later makes. -- define here so fragments can
+# override them.
+BOOT_CFLAGS= -g -O2
+
+
 # The first rule in the file had better be this one.  Don't put any above it.
 # This lives here to allow makefile fragments to contain dependencies.
 @default_target@:
@@ -28203,7 +28208,6 @@ STAGE1_LANGUAGES=@stage1_languages@
 objext = .o
 
 # Flags to pass to stage2 and later makes.
-BOOT_CFLAGS= -g -O2
 POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 	STAGE_PREFIX=$$r/stage-gcc/ \
