@@ -4754,7 +4754,7 @@ loop_givs_reduce (loop, bl)
 	      rtx insert_before;
 
 	      if (! auto_inc_opt)
-		insert_before = tv->insn;
+		insert_before = NEXT_INSN (tv->insn);
 	      else if (auto_inc_opt == 1)
 		insert_before = NEXT_INSN (v->insn);
 	      else

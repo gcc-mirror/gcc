@@ -1805,11 +1805,36 @@ set_mem_attributes_minus_bitpos (ref, t, objectp, bitpos)
 
 	  do
 	    {
+	      tree index = TREE_OPERAND (t, 1);
+	      tree array = TREE_OPERAND (t, 0);
+	      tree domain = TYPE_DOMAIN (TREE_TYPE (array));
+	      tree low_bound = (domain ? TYPE_MIN_VALUE (domain) : 0);
+	      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array)));
+
+	      /* We assume all arrays have sizes that are a multiple of a byte.
+		 First subtract the lower bound, if any, in the type of the
+		 index, then convert to sizetype and multiply by the size of the
+		 array element.  */
+	      if (low_bound != 0 && ! integer_zerop (low_bound))
+		index = fold (build (MINUS_EXPR, TREE_TYPE (index),
+				     index, low_bound));
+
+	      /* If the index has a self-referential type, pass it to a
+		 WITH_RECORD_EXPR; if the component size is, pass our
+		 component to one.  */
+	      if (! TREE_CONSTANT (index)
+		  && contains_placeholder_p (index))
+		index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, t);
+	      if (! TREE_CONSTANT (unit_size)
+		  && contains_placeholder_p (unit_size))
+		unit_size = build (WITH_RECORD_EXPR, sizetype,
+				   unit_size, array);
+
 	      off_tree
 		= fold (build (PLUS_EXPR, sizetype,
 			       fold (build (MULT_EXPR, sizetype,
-					    TREE_OPERAND (t, 1),
-					    TYPE_SIZE_UNIT (TREE_TYPE (t)))),
+					    index,
+					    unit_size)),
 			       off_tree));
 	      t = TREE_OPERAND (t, 0);
 	    }
