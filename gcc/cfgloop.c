@@ -960,7 +960,9 @@ glb_enum_p (basic_block bb, void *glb_header)
   return bb != (basic_block) glb_header;
 }
 
-/* Gets basic blocks of a loop.  */
+/* Gets basic blocks of a LOOP.  Header is the 0-th block, rest is in dfs
+   order against direction of edges from latch.  Specially, if
+   header != latch, latch is the 1-st block.  */
 basic_block *
 get_loop_body (const struct loop *loop)
 {
