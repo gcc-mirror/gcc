@@ -1,3 +1,8 @@
+1999-09-07  Jeff Garzik  <jgarzik@pobox.com>
+
+	* xmemdup.c: New xmemdup function.
+	* Makefile.in, makefile.vms, vmsbuild.com:  Use xmemdup.[co].
+
 Tue Sep  7 23:32:18 1999  Linas Vepstas  <linas@linas.org>
 
         * config.table: Add openedition target.
