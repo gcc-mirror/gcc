@@ -30,3 +30,6 @@
        %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
      %{static:crt0.o%s}} \
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+
+/* FIXME: Is a Hurd-specific fallback mechanism necessary?  */
+#undef MD_FALLBACK_FRAME_STATE_FOR
