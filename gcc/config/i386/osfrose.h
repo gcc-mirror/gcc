@@ -707,7 +707,10 @@ while (0)
   else if (TREE_CODE (DECL) != VAR_DECL)				\
     readonly_data_section ();						\
 									\
-  else if (!TREE_READONLY (DECL))					\
+  else if (!TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
+	   || !DECL_INITIAL (DECL)					\
+	   || (DECL_INITIAL (DECL) != error_mark_node			\
+	       && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
     data_section ();							\
 									\
   else									\

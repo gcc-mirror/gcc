@@ -253,7 +253,10 @@ const_section ()					\
 {									\
   if (TREE_CODE (T) == VAR_DECL)					\
     {									\
-      if (TREE_READONLY (T) && ! TREE_THIS_VOLATILE (T))		\
+      if (TREE_READONLY (T) && ! TREE_THIS_VOLATILE (T)			\
+	  && DECL_INITIAL (T)						\
+	  && (DECL_INITIAL (T) == error_mark_node			\
+	      || TREE_CONSTANT (DECL_INITIAL (T))))			\
 	{								\
 	  if (TREE_PUBLIC (T))						\
 	    const_section ();						\
