@@ -1,3 +1,8 @@
+2004-02-08  Per Bothner  <per@bothner.com>
+
+	* parse.y (resolve_qualified_expression_name):  In case of inaccessible
+	class don't use not_accessible_field_error, which can get confused.
+
 2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	Make-lang.in (po-generated):  Delete.
