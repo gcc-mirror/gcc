@@ -17,7 +17,18 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-extern int  flag_half_pic;		/* Global half-pic flag.  */
+/* Declare the variable flag_half_pic as 'int' instead of 'extern
+   int', so that BSS variables are created (even though this is not
+   strict ANSI).  This is because rtl.c now refers to the
+   CONSTANT_ADDRESS_P macro, which in turn refers to flag_half_pic,
+   and wants to call half_pic_address_p, whose address we also store
+   in in a BSS variable.  This way, the gen* programs won't get
+   unknown symbol errors when being linked (flag_half_pic will never
+   be true in the gen* programs).  */
+
+int flag_half_pic;			/* Global half-pic flag.  */
+int (*ptr_half_pic_address_p) ();	/* ptr to half_pic_address_p () */
+
 extern int  half_pic_number_ptrs;	/* # distinct pointers found */
 extern int  half_pic_number_refs;	/* # half-pic references */
 extern void half_pic_encode ();		/* encode whether half-pic */
@@ -38,7 +49,7 @@ extern struct rtx_def *half_pic_ptr ();	/* return RTX for half-pic pointer */
 #define HALF_PIC_DECLARE(NAME)	half_pic_declare (NAME)
 #define HALF_PIC_INIT()		half_pic_init ()
 #define HALF_PIC_FINISH(STREAM)	half_pic_finish (STREAM)
-#define HALF_PIC_ADDRESS_P(X)	half_pic_address_p (X)
+#define HALF_PIC_ADDRESS_P(X)	((*ptr_half_pic_address_p) (X))
 #define HALF_PIC_PTR(X)		half_pic_ptr (X)
 
 /* Prefix for half-pic names */

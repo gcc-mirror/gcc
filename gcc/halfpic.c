@@ -45,9 +45,10 @@ extern rtx eliminate_constant_term ();
 extern void assemble_name ();
 extern void output_addr_const ();
 
-int flag_half_pic;		/* Global half-pic flag.  */
-int half_pic_number_ptrs;	/* # distinct pointers found */
-int half_pic_number_refs;	/* # half-pic references */
+int flag_half_pic		= 0;	/* Global half-pic flag.  */
+int half_pic_number_ptrs	= 0;	/* # distinct pointers found */
+int half_pic_number_refs	= 0;	/* # half-pic references */
+int (*ptr_half_pic_address_p)() = half_pic_address_p;
 
 /* Obstack to hold generated pic names.  */
 static struct obstack half_pic_obstack;
