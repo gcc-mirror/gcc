@@ -29,7 +29,7 @@
 // the GNU General Public License.
 
 #include <cxxabi.h>
-#include "demangle.h"
+#include <bits/demangle.h>
 
 // __cxa_demangle
 //

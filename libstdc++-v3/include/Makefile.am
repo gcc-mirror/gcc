@@ -112,6 +112,7 @@ bits_headers = \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
 	${bits_srcdir}/cpp_type_traits.h \
+	${bits_srcdir}/demangle.h \
 	${bits_srcdir}/deque.tcc \
 	${bits_srcdir}/fpos.h \
 	${bits_srcdir}/fstream.tcc \
