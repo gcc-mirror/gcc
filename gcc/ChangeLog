@@ -1,5 +1,11 @@
 2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/19345
+	* tree-inline.c (remap_type): Remap TYPE_STUB_DECL.
+	(remap_decl): Insert type decl in map earlier.
+
+2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR tree-optimization/20640
 	* tree-ssa-dce.c (remove_dead_stmt): Don't redirect edge to
 	post-dominator if it has phi nodes.
