@@ -3112,11 +3112,18 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      if (!VOID_TYPE_P (type) && !complete_type_or_else (type, addr))
-	return error_mark_node;
       if (TREE_CODE (type) == ARRAY_TYPE)
 	goto handle_array;
-      if (! IS_AGGR_TYPE (type))
+
+      if (VOID_TYPE_P (type)
+	  /* We don't want to warn about delete of void*, only other
+	     incomplete types.  Deleting other incomplete types
+	     invokes undefined behavior, but it is not ill-formed, so
+	     compile to something that would even do The Right Thing
+	     (TM) should the type have a trivial dtor and no delete
+	     operator.  */
+	  || !complete_type_or_diagnostic (type, addr, 1)
+	  || !IS_AGGR_TYPE (type))
 	{
 	  /* Call the builtin operator delete.  */
 	  return build_builtin_delete_call (addr);

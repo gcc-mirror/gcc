@@ -1,3 +1,20 @@
+2002-05-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cp-tree.h (complete_type_or_diagnostic): Changed prototype,
+	renamed from...
+	(complete_type_or_else): ... this.  Redefined as macro.
+	(cxx_incomplete_type_diagnostic): Declare.
+	(cxx_incomplete_type_error): Define as macro.
+	* init.c (build_delete): Warn about incomplete types other than
+	void, and use the built-in operator delete for them.
+	* typeck.c (complete_type_or_diagnostic): Renamed from
+	complete_type_or_else.  Added warn_only argument, passed to...
+	* typeck2.c (cxx_incomplete_type_diagnostic): ... this.  Print
+	warnings or errors depending on new warn_only argument.  Renamed
+	from...
+	(cxx_incomplete_type_error): ... this.  New implementation in
+	terms of cxx_incomplete_type_diagnostic.
+
 2002-05-18  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (import_export_decl): If we clear
