@@ -1,5 +1,8 @@
 2004-02-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* g++.dg/opt/inline4.C (dg-final): Robustify regexp.
+	* g++.dg/opt/inline6.C (dg-final): Robustify regexp.
+
 	* gcc.dg/builtins-config.h (HAVE_C99_RUNTIME): Don't define for PA
 	HP-UX.
 
