@@ -1,5 +1,9 @@
 2001-07-11  Richard Sandiford  <rsandifo@redhat.com>
 
+	* simplify-rtx.c (simplify_gen_subreg): Return null for QUEUED rtxes.
+
+2001-07-11  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (gen_int_relational): Tell the caller not to
 	reverse a branch if a NE comparison is implemented with GTU.
 
