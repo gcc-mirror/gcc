@@ -3014,13 +3014,18 @@ mark_jump_label (x, insn, cross_jump)
 
     case LABEL_REF:
       {
-	register rtx label = XEXP (x, 0);
-	register rtx next;
+	rtx label = XEXP (x, 0);
+	rtx olabel = label;
+	rtx note;
+	rtx next;
+
 	if (GET_CODE (label) != CODE_LABEL)
 	  abort ();
+
 	/* Ignore references to labels of containing functions.  */
 	if (LABEL_REF_NONLOCAL_P (x))
 	  break;
+
 	/* If there are other labels following this one,
 	   replace it with the last of the consecutive labels.  */
 	for (next = NEXT_INSN (label); next; next = NEXT_INSN (next))
@@ -3038,12 +3043,23 @@ mark_jump_label (x, insn, cross_jump)
 			 || NOTE_LINE_NUMBER (next) == NOTE_INSN_FUNCTION_END))
 	      break;
 	  }
+
 	XEXP (x, 0) = label;
 	++LABEL_NUSES (label);
+
 	if (insn)
 	  {
 	    if (GET_CODE (insn) == JUMP_INSN)
 	      JUMP_LABEL (insn) = label;
+
+	    /* If we've changed OLABEL and we had a REG_LABEL note
+	       for it, update it as well.  */
+	    else if (label != olabel
+		     && (note = find_reg_note (insn, REG_LABEL, olabel)) != 0)
+	      XEXP (note, 0) = label;
+
+	    /* Otherwise, add a REG_LABEL note for LABEL unless there already
+	       is one.  */
 	    else if (! find_reg_note (insn, REG_LABEL, label))
 	      {
 		rtx next = next_real_insn (label);
