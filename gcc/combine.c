@@ -12124,6 +12124,15 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	  place = i3;
 	  break;
 
+	case REG_NON_LOCAL_GOTO:
+	  if (GET_CODE (i3) == JUMP_INSN)
+	    place = i3;
+	  else if (i2 && GET_CODE (i2) == JUMP_INSN)
+	    place = i2;
+	  else
+	    abort();
+	  break;
+
 	case REG_EH_REGION:
 	case REG_EH_RETHROW:
 	case REG_NORETURN:
