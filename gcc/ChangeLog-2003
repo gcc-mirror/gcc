@@ -5775,7 +5775,7 @@
 
 	* config/i386/i386.c (x86_this_parameter): Fix typo.
 
-203-10-11  Jan Hubicka  <jh@suse.cz>
+2003-10-11  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (web.o): New.
 	* web.c: New file.

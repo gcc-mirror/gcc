@@ -16664,7 +16664,7 @@
 	(xtensa_expand_block_move): Update comment.
 	(override_options): Remove initialization of xtensa_{ld,st}_opcodes.
 
-2004-08026  Richard Earnshaw  <rearnsha@arm.com>
+2004-08-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/13506
 	* toplev.c (crash_signal): If we crashed while emitting
@@ -41733,7 +41733,7 @@
 	(if_then_else (ne reg 0) (0) (const_int)) by (reg) if the
 	modes differ.
 
-2004-02017  Steven Bosscher  <stevenb@suse.de>
+2004-02-17  Steven Bosscher  <stevenb@suse.de>
 
 	* (c-decl.c, c-semantics.c, calls.c, cgraph.c, cgraphunit.c,
 	function.c, integrate.c, print-tree.c, toplev.c, tree-optimize.c,

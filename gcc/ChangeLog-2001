@@ -10283,7 +10283,7 @@ Sat Sep 22 09:09:32 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(ASM_OUTPUT_FDESC): New.
 	* doc/tm.texi: Document the new macros.
 
-21-09-2001  Richard Earnshaw  (reanrsha@arm.com)
+2001-09-21  Richard Earnshaw  (reanrsha@arm.com)
 
 	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Don't leave
 	ADDR_VEC or ADDR_DIFF_VEC jump insns as part of the basic block
@@ -10293,7 +10293,7 @@ Fri Sep 21 11:20:12 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* integrate.c (allocate_initial_values): Eliminate unused arg warning.
 
-21-09-2001  Richard Earnshaw  (reanrsha@arm.com)
+2001-09-21  Richard Earnshaw  (reanrsha@arm.com)
 
 	* cfgcleanup.c (flow_find_cross_jump): Delete any REG_EQUAL notes
 	that would be invalid after a merge.
@@ -32468,7 +32468,7 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 	(lang_finish): Remove.
 	(lang_hoooks): Update.
 
-20001-01-09  Graham Stott  <grahams@redhat.com>
+2001-01-09  Graham Stott  <grahams@redhat.com>
 
 	* cppfiles.c (_cpp_execute_include): Move `len` initialisation
 	after `ptr` is initialized.
