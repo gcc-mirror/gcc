@@ -27,46 +27,46 @@ import java.awt.image.ImageObserver;
  */
 public interface DirectRasterGraphics extends Cloneable
 {
-  public void dispose();
+  void dispose();
   
-  public void setColor(Color color);
+  void setColor(Color color);
   
-  public void setPaintMode();
+  void setPaintMode();
   
-  public void setXORMode(Color altColor);
+  void setXORMode(Color altColor);
   
-  public void setFont(Font font);
+  void setFont(Font font);
   
-  public FontMetrics getFontMetrics(Font font);
+  FontMetrics getFontMetrics(Font font);
   
   // supports rects, multi-rects and polygons
-  public void setClip(Shape clip);
+  void setClip(Shape clip);
   
-  public void copyArea(int x, int y, int width, int height,
+  void copyArea(int x, int y, int width, int height,
 		       int dx, int dy);
   
-  public void drawLine(int x1, int y1, int x2, int y2);
+  void drawLine(int x1, int y1, int x2, int y2);
   
-  public void drawRect(int x, int y, int width, int height);
+  void drawRect(int x, int y, int width, int height);
   
-  public void fillRect(int x, int y, int width, int height);
+  void fillRect(int x, int y, int width, int height);
   
-  public void drawArc(int x, int y, int width, int height,
+  void drawArc(int x, int y, int width, int height,
 		      int startAngle, int arcAngle);
   
-  public void fillArc(int x, int y, int width, int height,
+  void fillArc(int x, int y, int width, int height,
 		      int startAngle, int arcAngle);
   
-  public void drawPolyline(int[] xPoints, int[] yPoints, int nPoints);
+  void drawPolyline(int[] xPoints, int[] yPoints, int nPoints);
   
-  public void drawPolygon(int[] xPoints, int[] yPoints, int nPoints);
+  void drawPolygon(int[] xPoints, int[] yPoints, int nPoints);
   
-  public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints,
+  void fillPolygon(int[] xPoints, int[] yPoints, int nPoints,
 			  int translateX, int translateY);
   
-  public void drawString(String str, int x, int y);
+  void drawString(String str, int x, int y);
   
-  public boolean drawImage(Image image, int x, int y,
+  boolean drawImage(Image image, int x, int y,
 			   ImageObserver observer);
 
   /**
@@ -74,12 +74,12 @@ public interface DirectRasterGraphics extends Cloneable
    * raster object.  This gives read/write access to the screen
    * pixels, allowing neat alpha and composite tricks.
    */
-  public MappedRaster mapRaster(Rectangle bounds);
+  MappedRaster mapRaster(Rectangle bounds);
   
   /**
    * Detach previously mapped pixel data from a raster object.
    */
-  public void unmapRaster(MappedRaster mappedRaster);
+  void unmapRaster(MappedRaster mappedRaster);
   
-  public Object clone();
+  Object clone();
 }
