@@ -4379,8 +4379,6 @@ layout_basetypes (rec)
   for (vbase_types = CLASSTYPE_VBASECLASSES (rec); vbase_types;
        vbase_types = TREE_CHAIN (vbase_types))
     {
-      BINFO_INHERITANCE_CHAIN (vbase_types) = TYPE_BINFO (rec);
-      unshare_base_binfos (vbase_types);
       propagate_binfo_offsets (vbase_types, BINFO_OFFSET (vbase_types));
 
       if (extra_warnings)
