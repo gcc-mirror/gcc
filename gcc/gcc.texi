@@ -77,6 +77,10 @@
 
 @syncodeindex fn cp
 @syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
 @c %**end of header
 
 @c Use with @@smallbook.
@@ -242,6 +246,7 @@ bugs.  It corresponds to GCC version 3.1.
 * Portability::     Goals of GCC's portability features.
 * Interface::       Function-call interface of GCC output.
 * Passes::          Order of passes, what they do, and what each file is for.
+* Trees::           The source representation used by the C and C++ front-ends.
 * RTL::             The intermediate representation that most passes work on.
 * Machine Desc::    How to write machine description instruction patterns.
 * Target Macros::   How to write the machine description C macros.
@@ -2622,7 +2627,6 @@ send to the bug reporting address.
 A number of fields in this bug report form are specific to GCC, and are
 explained at @uref{http://gcc.gnu.org/gnats.html}.
 
-
 @node Sending Patches,, gccbug, Bugs
 @section Sending Patches for GCC
 
@@ -3829,6 +3833,7 @@ from the machine description by the program @file{genattrtab}.@refill
 @end ifset
 
 @ifset INTERNALS
+@include c-tree.texi
 @include rtl.texi
 @include md.texi
 @include tm.texi
@@ -4751,6 +4756,10 @@ consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Library General
 Public License instead of this License.
 
+@c ---------------------------------------------------------------------
+@c GFDL
+@c ---------------------------------------------------------------------
+
 @include fdl.texi
 
 @node Contributors
@@ -4758,10 +4767,18 @@ Public License instead of this License.
 @cindex contributors
 @include contrib.texi
 
+@c ---------------------------------------------------------------------
+@c Node Index
+@c ---------------------------------------------------------------------
+
 @node Index
 @unnumbered Index
 
 @printindex cp
+
+@c ---------------------------------------------------------------------
+@c Epilogue
+@c ---------------------------------------------------------------------
 
 @summarycontents
 @contents

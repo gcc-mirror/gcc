@@ -2188,40 +2188,35 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 # Remake the info files.
 
 doc: $(BUILD_INFO) gccbug
-info: $(srcdir)/cpp.info $(srcdir)/gcc.info lang.info $(srcdir)/c-tree.info $(srcdir)/cppinternals.info
+info: $(srcdir)/cpp.info $(srcdir)/gcc.info lang.info $(srcdir)/cppinternals.info
 
 $(srcdir)/cpp.info: $(srcdir)/cpp.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o cpp.info cpp.texi
 
 $(srcdir)/gcc.info: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
-	  $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi \
-	  $(srcdir)/tm.texi $(srcdir)/gcov.texi $(srcdir)/contrib.texi \
-	  $(srcdir)/objc.texi
+	 $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/c-tree.texi \
+	 $(srcdir)/rtl.texi $(srcdir)/tm.texi $(srcdir)/gcov.texi \
+	 $(srcdir)/contrib.texi $(srcdir)/objc.texi $(srcdir)/fdl.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o gcc.info gcc.texi
-
-$(srcdir)/c-tree.info: $(srcdir)/c-tree.texi
-	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o c-tree.info \
-		c-tree.texi
 
 $(srcdir)/cppinternals.info: $(srcdir)/cppinternals.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o cppinternals.info \
 		cppinternals.texi
 
-dvi: gcc.dvi cpp.dvi lang.dvi
+dvi: gcc.dvi cpp.dvi lang.dvi cppinternals.dvi
 
 # This works with GNU Make's default rule.
-gcc.dvi: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
-	 $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi \
-	 $(srcdir)/tm.texi $(srcdir)/gcov.texi $(srcdir)/contrib.texi \
-	 $(srcdir)/objc.texi
-	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex gcc.texi
-	texindex gcc.??
-	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex gcc.texi
-
 cpp.dvi: $(srcdir)/cpp.texi
-	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex cpp.texi
-	texindex cpp.??
-	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex cpp.texi
+	$(TEXI2DVI) -I $(srcdir) $(srcdir)/cpp.texi
+
+gcc.dvi: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
+	 $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/c-tree.texi \
+	 $(srcdir)/rtl.texi $(srcdir)/tm.texi $(srcdir)/gcov.texi \
+	 $(srcdir)/contrib.texi $(srcdir)/objc.texi $(srcdir)/fdl.texi
+	$(TEXI2DVI) -I $(srcdir) $(srcdir)/gcc.texi
+
+cppinternals.dvi: $(srcdir)/cppinternals.texi
+	$(TEXI2DVI) -I $(srcdir) $(srcdir)/cppinternals.texi
 
 generated-manpages: $(srcdir)/gcov.1 $(srcdir)/cpp.1 $(srcdir)/gcc.1
 
@@ -2375,7 +2370,7 @@ maintainer-clean:
 	-rm -f c-parse.y c-parse.c c-parse.output TAGS
 	-rm -f cpp.??s cpp.*aux
 	-rm -f gcc.??s gcc.*aux
-	-rm -f $(srcdir)/cpp.info* $(srcdir)/gcc.info* $(srcdir)/c-tree.info*
+	-rm -f $(srcdir)/cpp.info* $(srcdir)/gcc.info*
 	-rm -f $(srcdir)/cppinternals.info*
 	-rm -f $(srcdir)/gcov.1 $(srcdir)/cpp.1 $(srcdir)/gcc.1
 #
@@ -2547,17 +2542,17 @@ install-driver: installdirs xgcc$(exeext)
 # to do the install.
 install-info: doc installdirs lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-rm -f $(infodir)/c-tree.info* $(infodir)/cppinternals.info*
+	-rm -f $(infodir)/cppinternals.info*
 	if [ -f $(srcdir)/gcc.info ]; then \
 	  for f in $(srcdir)/cpp.info* $(srcdir)/gcc.info* \
-		$(srcdir)/c-tree.info* $(srcdir)/cppinternals.info*; do \
+		$(srcdir)/cppinternals.info*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
 	  done; \
 	else true; fi
 	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
 	  if [ -f $(infodir)/dir ] ; then \
-	    for f in cpp.info gcc.info c-tree.info cppinternals.info; do \
+	    for f in cpp.info gcc.info cppinternals.info; do \
 		if [ -f $(infodir)/$$f ]; then \
 		  install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
 		else true; fi \
@@ -2565,7 +2560,7 @@ install-info: doc installdirs lang.install-info
 	  else true; fi; \
 	else true; fi;
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-chmod a-x $(infodir)/c-tree.info* $(infodir)/cppinternals.info*
+	-chmod a-x $(infodir)/cppinternals.info*
 
 # Install the man pages.
 install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
@@ -2700,7 +2695,7 @@ uninstall: intl.uninstall lang.uninstall $(UNINSTALL_CPP)
 	-rm -rf $(man1dir)/protoize$(manext)
 	-rm -rf $(man1dir)/unprotoize$(manext)
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-rm -f $(infodir)/c-tree.info* $(infodir)/cppinternals.info*
+	-rm -f $(infodir)/cppinternals.info*
 #
 # These targets are for the dejagnu testsuites. The file site.exp
 # contains global variables that all the testsuites will use.
