@@ -1,3 +1,21 @@
+2004-06-29  Andrew Haley  <aph@redhat.com>
+
+	* except.c (expand_start_java_handler): Push a new binding level.
+	Don't build a TRY_CATCH_EXPR now, we'll do it later.  Call
+	register_exception_range() to register where we'll do it.
+	(expand_end_java_handler): Remove old bogus code.  Replace with
+	new logic that simply builds TRY_CATCH_EXPRs and inserts them at
+	the top of the expression we're curently building.
+	(maybe_end_try): Delete.
+	* decl.c (binding_level.exception_range): New field.
+	(clear_binding_level): Add field exception_range.  Reformat.
+	(poplevel): Call expand_end_java_handler().
+	(poplevel): Call java_add_stmt only if functionbody is false.
+	(maybe_poplevels): Don't call maybe_end_try() from here.
+	(end_java_method): Clear no longer used trees in function decl.
+	(register_exception_range): New function.
+	* java-tree.h (register_exception_range, struct eh_range): Declare.
+
 2004-06-28  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* jcf-write.c (get_classfile_modifiers): Formatting fixes.

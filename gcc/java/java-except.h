@@ -68,3 +68,4 @@ extern void maybe_end_try (int, int);
 extern void add_handler (int, int, tree, tree);
 extern void handle_nested_ranges (void);
 extern void expand_resume_after_catch (void);
+extern void expand_end_java_handler (struct eh_range *);
