@@ -4038,7 +4038,6 @@ build_over_call (cand, args, flags)
 	    {
 	      val = build_decl (VAR_DECL, NULL_TREE, DECL_CONTEXT (fn));
 	      val = build_target_expr (val, arg);
-	      TREE_SIDE_EFFECTS (val) = 1;
 	      return val;
 	    }
 	}
