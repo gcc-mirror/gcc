@@ -2231,7 +2231,7 @@ See @code{chdir(3)}.
 
 @emph{Caution:} Using this routine during I/O to a unit connected with a
 non-absolute file name can cause subsequent I/O on such a unit to fail
-because the I/O library may reopen files by name.
+because the I/O library might reopen files by name.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
@@ -2270,7 +2270,7 @@ See @code{chdir(3)}.
 
 @emph{Caution:} Using this routine during I/O to a unit connected with a
 non-absolute file name can cause subsequent I/O on such a unit to fail
-because the I/O library may reopen files by name.
+because the I/O library might reopen files by name.
 
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
@@ -2319,7 +2319,7 @@ If the @var{Status} argument is supplied, it contains
 
 Note that this currently works
 by actually invoking @code{/bin/chmod} (or the @code{chmod} found when
-the library was configured) and so may fail in some circumstances and
+the library was configured) and so might fail in some circumstances and
 will, anyway, be slow.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
@@ -2369,7 +2369,7 @@ Returns 0 on success or a non-zero error code otherwise.
 
 Note that this currently works
 by actually invoking @code{/bin/chmod} (or the @code{chmod} found when
-the library was configured) and so may fail in some circumstances and
+the library was configured) and so might fail in some circumstances and
 will, anyway, be slow.
 
 Due to the side effects performed by this intrinsic, the function
@@ -4237,7 +4237,7 @@ Intrinsic groups: @code{unix}.
 Description:
 
 Returns the complementary error function of @var{X}:
-@samp{ERFC(R) = 1 - ERF(R)} (except that the result may be more
+@samp{ERFC(R) = 1 - ERF(R)} (except that the result might be more
 accurate than explicitly evaluating that formulae would give).
 See @code{erfc(3m)}, which provides the implementation.
 
@@ -4896,10 +4896,10 @@ Intrinsic groups: @code{unix}.
 Description:
 
 Attempts to move Fortran unit @var{Unit} to the specified
-@var{Offset}: absolute offset if @var{Offset}=0; relative to the
-current offset if @var{Offset}=1; relative to the end of the file if
-@var{Offset}=2.
-It branches to label @var{Whence} if @var{Unit} is
+@var{Offset}: absolute offset if @var{Whence}=0; relative to the
+current offset if @var{Whence}=1; relative to the end of the file if
+@var{Whence}=2.
+It branches to label @var{ErrLab} if @var{Unit} is
 not open or if the call otherwise fails.
 
 @node FStat Intrinsic (subroutine)
@@ -5455,8 +5455,9 @@ only a function, not as a subroutine, or do not support the
 (optional) @var{Status} argument.
 
 On some systems (specifically SCO) it might be necessary to link the
-``socket'' library if you call this routine, i.e.@: append
-@samp{-lg2c -lsocket -lm} to the @code{g77} arguments.
+``socket'' library if you call this routine.
+Typically this means adding @samp{-lg2c -lsocket -lm}
+to the @code{g77} command line when linking the program.
 
 For information on other intrinsics with the same name:
 @xref{HostNm Intrinsic (function)}.
@@ -5488,8 +5489,9 @@ Fills @var{Name} with the system's host name returned by
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
 
 On some systems (specifically SCO) it might be necessary to link the
-``socket'' library if you call this routine, i.e.@: append
-@samp{-lg2c -lsocket -lm} to the @code{g77} arguments.
+``socket'' library if you call this routine.
+Typically this means adding @samp{-lg2c -lsocket -lm}
+to the @code{g77} command line when linking the program.
 
 For information on other intrinsics with the same name:
 @xref{HostNm Intrinsic (subroutine)}.
@@ -6598,11 +6600,10 @@ All bits representing @var{I} are shifted @var{Shift} places.
 indicates no shift and @samp{@var{Shift}.LT.0} indicates a right shift.
 If the absolute value of the shift count is greater than
 @samp{BIT_SIZE(@var{I})}, the result is undefined.
-Bits shifted out from the left end or the right end, as the case may be,
-are lost.
+Bits shifted out from the left end or the right end are lost.
 Zeros are shifted in from the opposite end.
 
-@xref{IShftC Intrinsic} for the circular-shift equivalent.
+@xref{IShftC Intrinsic}, for the circular-shift equivalent.
 
 @node IShftC Intrinsic
 @subsubsection IShftC Intrinsic
@@ -6644,7 +6645,7 @@ must be less than or equal to @var{Size}.
 The value of @var{Size} must be greater than or equal to one and less than 
 or equal to @samp{BIT_SIZE(@var{I})}.
 
-@xref{IShft Intrinsic} for the logical shift equivalent.
+@xref{IShft Intrinsic}, for the logical shift equivalent.
 
 @end ifset
 @ifset familyF77
@@ -9177,7 +9178,7 @@ Description:
 Returns the process's runtime in seconds in @var{Seconds}---the same value
 as the UNIX function @code{etime} returns.
 
-This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic}
+This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic},
 for a standard equivalent.
 
 For information on other intrinsics with the same name:
