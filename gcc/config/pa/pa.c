@@ -1975,9 +1975,12 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 	{
 	  rtx insn, temp;
 	  rtx op1 = operand1;
-	  HOST_WIDE_INT value = INTVAL (operand1);
+	  HOST_WIDE_INT value = 0;
 	  HOST_WIDE_INT insv = 0;
 	  int insert = 0;
+
+	  if (GET_CODE (operand1) == CONST_INT)
+	    value = INTVAL (operand1);
 
 	  if (TARGET_64BIT
 	      && GET_CODE (operand1) == CONST_INT
