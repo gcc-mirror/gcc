@@ -58,10 +58,20 @@ namespace std
   // unspecified. The behaviour in this implementation is as noted
   // below.
 
+  /**
+   *  @brief  Type used by fpos, char_traits<char>, and char_traits<wchar_t>.
+   *
+   *  @if maint
+   *  In clauses 21.1.3.1 and 27.4.1 streamoff is described as an
+   *  implementation defined type.
+   *  Note: In versions of GCC up to and including GCC 3.3, streamoff
+   *  was typedef long.
+   *  @endif
+  */  
 #ifdef _GLIBCXX_HAVE_INT64_T
-  typedef int64_t       __streamoff_base_type;
+  typedef int64_t       streamoff;
 #else
-  typedef long long     __streamoff_base_type;
+  typedef long long     streamoff;
 #endif
 
   /// Integral type for I/O operation counts and buffer sizes.
@@ -69,107 +79,6 @@ namespace std
 
   template<typename _StateT>
     class fpos;
-
-  // Class streamoff is an implementation defined type that meets the
-  // requirements for streamoff. It stores an offset as a signed
-  // integer.  Note: this class is an implementation detail.
-  class streamoff
-  {
-  private:
-    __streamoff_base_type _M_off;
-
-  public:
-    // Nothing in the standard requires that streamoff can be default
-    // constructed. In this implementation a default constructor that
-    // stores the value 0 is provided.
-    streamoff()
-    : _M_off(0) { }
-
-    // The standard only requires that streamoff can be constructed
-    // from streamsize using the constructor syntax. This
-    // implementation also allows implicit conversion from integer
-    // types to streamoff.
-    streamoff(__streamoff_base_type __off)
-    : _M_off(__off) { }
-
-    // The standard requires that streamoff can be constructed from
-    // instances of fpos using the constructor syntax, but gives no
-    // semantics for this construction. In this implementation it
-    // extracts the offset stored by the fpos object.
-    // Note: In versions of GCC up to and including GCC 3.3, implicit
-    // conversion from fpos to streamoff was allowed. This constructor
-    // has now been made explicit to improve type safety.
-    template<typename _StateT>
-      explicit
-      streamoff(const fpos<_StateT>&);
-
-    // The standard requires that streamsize can be constructed from
-    // streamoff using the constructor syntax. This implementation
-    // also allows implicit conversion. This allows streamoff objects
-    // to be used in arithmetic expressions and to be compared against
-    // each other and integer types.
-    operator __streamoff_base_type() const
-    { return _M_off; }
-
-    // This implementation allows the use of operators +=, -=, ++ and
-    // -- on streamoff objects.
-    streamoff&
-    operator+=(__streamoff_base_type __off)
-    {
-      _M_off += __off;
-      return *this;
-    }
-
-    streamoff&
-    operator-=(__streamoff_base_type __off)
-    {
-      _M_off -= __off;
-      return *this;
-    }
-
-    streamoff&
-    operator++()
-    {
-      ++_M_off;
-      return *this;
-    }
-
-    streamoff
-    operator++(int)
-    {
-      const streamoff __tmp(*this);
-      ++_M_off;
-      return __tmp;
-    }
-
-    streamoff&
-    operator--()
-    {
-      --_M_off;
-      return *this;
-    }
-
-    streamoff
-    operator--(int)
-    {
-      const streamoff __tmp(*this);
-      --_M_off;
-      return __tmp;
-    }
-  };
-
-  /**
-   *  @brief  Type used by fpos, char_traits<char>, and char_traits<wchar_t>.
-   *
-   *  @if maint
-   *  In clauses 21.1.3.1 and 27.4.1 streamoff is described as an
-   *  implementation defined type. In this implementation it is a
-   *  distinct class type.
-   *  Note: In versions of GCC up to and including GCC 3.3, streamoff
-   *  was typedef long.
-   *  @endif
-  */
-  typedef class streamoff streamoff;
 
   /**
    *  @brief  Class representing stream positions.
@@ -186,9 +95,7 @@ namespace std
     class fpos
     {
     private:
-      friend class streamoff;
-
-      __streamoff_base_type	_M_off;
+      streamoff	                _M_off;
       _StateT			_M_state;
 
     public:
@@ -199,14 +106,6 @@ namespace std
       fpos()
       : _M_off(0), _M_state() { }
 
-      // The standard requires implicit conversion from integers to
-      // fpos, but gives no meaningful semantics for this
-      // conversion. In this implementation this constructor stores
-      // the integer as the offset and default constructs the state.
-      /// Construct position from integer.
-      fpos(__streamoff_base_type __off)
-      : _M_off(__off), _M_state() { }
-
       // The standard requires that fpos objects can be constructed
       // from streamoff objects using the constructor syntax, and
       // fails to give any meaningful semantics. In this
@@ -214,8 +113,11 @@ namespace std
       // constructor stores the streamoff as the offset and default
       // constructs the state.
       /// Construct position from offset.
-      fpos(const streamoff& __off)
+      fpos(streamoff __off)
       : _M_off(__off), _M_state() { }
+
+      /// Convert to streamoff.
+      operator streamoff() const { return _M_off; }
 
       /// Remember the value of @a st.
       void
@@ -246,7 +148,7 @@ namespace std
       // argument to the stored offset and returns *this.
       /// Add offset to this position.
       fpos&
-      operator+=(const streamoff& __off)
+      operator+=(streamoff __off)
       {
 	_M_off += __off;
 	return *this;
@@ -257,7 +159,7 @@ namespace std
       // it's argument from the stored offset and returns *this.
       /// Subtract offset from this position.
       fpos&
-      operator-=(const streamoff& __off)
+      operator-=(streamoff __off)
       {
 	_M_off -= __off;
 	return *this;
@@ -270,7 +172,7 @@ namespace std
       // copy.
       /// Add position and offset.
       fpos
-      operator+(const streamoff& __off) const
+      operator+(streamoff __off) const
       {
 	fpos __pos(*this);
 	__pos += __off;
@@ -284,7 +186,7 @@ namespace std
       // copy.
       /// Subtract offset from position.
       fpos
-      operator-(const streamoff& __off) const
+      operator-(streamoff __off) const
       {
 	fpos __pos(*this);
 	__pos -= __off;
@@ -300,12 +202,6 @@ namespace std
       operator-(const fpos& __other) const
       { return _M_off - __other._M_off; }
     };
-
-  /// Construct offset from position.
-  template<typename _StateT>
-    inline
-    streamoff::streamoff(const fpos<_StateT>& __pos)
-    : _M_off(__pos._M_off) { }
 
   // Clauses 21.1.3.1 and 21.1.3.2 describe streampos and wstreampos
   // as implementation defined types, but clause 27.2 requires that
