@@ -64,7 +64,7 @@
 /* Minimum and maximum values a `signed long int' can hold.
    (Same as `int').  */
 #ifndef __LONG_MAX__
-#if defined (__alpha__) || (defined (__sparc_v9__) && defined (__arch64__))
+#if defined (__alpha__) || defined (__sparc_v9__) || defined (__sparcv9)
 #define __LONG_MAX__ 9223372036854775807L
 #else
 #define __LONG_MAX__ 2147483647L

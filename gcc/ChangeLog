@@ -1,3 +1,7 @@
+Thu Sep 10 22:02:04 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* glimits.h (__LONG_MAX__): Recognize __sparcv9 too.
+
 Thu Sep 10 21:19:10 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
 
 	* configure.in: Add check for GAS subsection -1 support.
