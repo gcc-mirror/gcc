@@ -625,7 +625,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD (! TARGET_POWERPC64 ? 4 : 8)
+#define UNITS_PER_WORD (TARGET_32BIT ? 4 : 8)
 #ifdef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD UNITS_PER_WORD
 #else
@@ -988,6 +988,8 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    POWER and PowerPC GPRs hold 32 bits worth;
    PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
 
+#define UNITS_PER_GPR_WORD (! TARGET_POWERPC64 ? 4 : 8)
+
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (FP_REGNO_P (REGNO)							\
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
@@ -995,7 +997,12 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_SPE_WORD - 1) / UNITS_PER_SPE_WORD) \
    : ALTIVEC_REGNO_P (REGNO)						\
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_ALTIVEC_WORD - 1) / UNITS_PER_ALTIVEC_WORD) \
-   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+   : ((GET_MODE_SIZE (MODE) + UNITS_PER_GPR_WORD - 1) / UNITS_PER_GPR_WORD))
+
+#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)	\
+  ((TARGET_32BIT && TARGET_POWERPC64			\
+    && (MODE == DImode || MODE == DFmode)		\
+    && INT_REGNO_P (REGNO)) ? 1 : 0)
 
 #define ALTIVEC_VECTOR_MODE(MODE)	\
 	 ((MODE) == V16QImode		\
@@ -1035,7 +1042,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    : SPE_SIMD_REGNO_P (REGNO) && TARGET_SPE && SPE_VECTOR_MODE (MODE) ? 1 \
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
    : XER_REGNO_P (REGNO) ? (MODE) == PSImode				\
-   : GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)
+   : GET_MODE_SIZE (MODE) <= UNITS_PER_GPR_WORD)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -1458,7 +1465,7 @@ enum reg_class
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
  (((CLASS) == FLOAT_REGS) 						\
   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+  : ((GET_MODE_SIZE (MODE) + UNITS_PER_GPR_WORD - 1) / UNITS_PER_GPR_WORD))
 
 
 /* Return a class of registers that cannot change FROM mode to TO mode.  */
