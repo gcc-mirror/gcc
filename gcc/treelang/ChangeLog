@@ -1,3 +1,10 @@
+2003-10-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (treelang.info): Replace with ...
+	(info): ... this.
+	* Make-lang.in (treelang.dvi): Replace with ...
+	(dvi): ... this.
+
 2003-09-21  Richard Henderson  <rth@redhat.com>
 
 	* treetree.c: Revert.

@@ -23,7 +23,6 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
 # foo.uninstall, foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -394,7 +393,7 @@ $(srcdir)/ada/gnat-style.info : $(srcdir)/ada/gnat-style.texi \
 	$(srcdir)/doc/include/fdl.texi
 	cd $(srcdir) && $(MAKEINFO) -I doc/include -I ada -o ada/gnat-style.info ada/gnat-style.texi
 
-ada.info: $(srcdir)/ada/gnat_ug_vms.info $(srcdir)/ada/gnat_ug_wnt.info \
+info:: $(srcdir)/ada/gnat_ug_vms.info $(srcdir)/ada/gnat_ug_wnt.info \
 	$(srcdir)/ada/gnat_ug_unx.info $(srcdir)/ada/gnat_ug_vxw.info \
 	$(srcdir)/ada/gnat_rm.info $(srcdir)/ada/gnat-style.info
 
@@ -455,11 +454,10 @@ ada/gnat-style.dvi : $(srcdir)/ada/gnat-style.texi \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; \
 	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat-style.dvi $$s/ada/gnat-style.texi
 
-ada.dvi: ada/gnat_ug_vms.dvi ada/gnat_ug_wnt.dvi \
+dvi:: ada/gnat_ug_vms.dvi ada/gnat_ug_wnt.dvi \
 	ada/gnat_ug_unx.dvi ada/gnat_ug_vxw.dvi \
 	ada/gnat_rm.dvi ada/gnat-style.dvi
 
-ada.generated-manpages:
 
 # Install hooks:
 # gnat1 is installed elsewhere as part of $(COMPILERS).

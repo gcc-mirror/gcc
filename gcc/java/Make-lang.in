@@ -27,7 +27,6 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
@@ -161,9 +160,9 @@ java.rest.encap:
 java.tags: force
 	cd $(srcdir)/java; etags *.y *.c *.h --language=none --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' java-tree.def
 
-java.info: $(srcdir)/java/gcj.info
-java.dvi: java/gcj.dvi
-java.generated-manpages: $(srcdir)/java/gcj.1 $(srcdir)/java/gcjh.1 \
+info:: $(srcdir)/java/gcj.info
+dvi:: java/gcj.dvi
+generated-manpages:: $(srcdir)/java/gcj.1 $(srcdir)/java/gcjh.1 \
 	$(srcdir)/java/jv-scan.1 $(srcdir)/java/jcf-dump.1 \
 	$(srcdir)/java/gij.1 $(srcdir)/java/jv-convert.1 \
 	$(srcdir)/java/rmic.1 $(srcdir)/java/rmiregistry.1

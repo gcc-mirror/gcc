@@ -548,7 +548,10 @@ setting of @code{language} in @file{config-lang.in}) for the following
 values of @code{@var{hook}}, and any other Makefile rules required to
 build those targets (which may if necessary use other Makefiles
 specified in @code{outputs} in @file{config-lang.in}, although this is
-deprecated).
+deprecated).  Some hooks are defined by using a double-colon rule for
+@code{@var{hook}}, rather than by using a target of form
+@code{@var{lang}.@var{hook}}.  These hooks are called ``double-colon
+hooks'' below.
 
 @table @code
 @item all.build
@@ -563,17 +566,20 @@ in the source tree.
 Build info documentation for the front end, in the source directory.
 This target is only called by @samp{make bootstrap} if a suitable
 version of @command{makeinfo} is available, so does not need to check
-for this, and should fail if an error occurs.
+for this, and should fail if an error occurs.  This hook is a
+double-colon hook.
 @item dvi
 Build DVI documentation for the front end, in the build directory.
 This should be done using @code{$(TEXI2DVI)}, with appropriate
 @option{-I} arguments pointing to directories of included files.
+This hook is a double-colon hook.
 @item generated-manpages
 Build generated man pages for the front end from Texinfo manuals
 (@pxref{Man Page Generation}), in the source directory.  This target
 is only called if the necessary tools are available, but should ignore
 errors so as not to stop the build if errors occur; man pages are
 optional and the tools involved may be installed in a broken way.
+This hook is a double-colon hook.
 @item install-normal
 FIXME: what is this target for?
 @item install-common

@@ -2375,7 +2375,7 @@ fi
 
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -7730,13 +7730,12 @@ do
 		check_languages="$check_languages check-$language"
 done
 
-# Since we can't use `::' targets, we link each language in
-# with a set of hooks, reached indirectly via lang.${target}.
+# We link each language in with a set of hooks, reached indirectly via
+# lang.${target}.
 
 rm -f Make-hooks
 touch Make-hooks
 target_list="all.build all.cross start.encap rest.encap tags \
-	info dvi generated-manpages \
 	install-normal install-common install-info install-man \
 	uninstall \
 	mostlyclean clean distclean extraclean maintainer-clean \

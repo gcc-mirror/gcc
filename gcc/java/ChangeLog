@@ -1,3 +1,11 @@
+2003-10-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (java.info): Replace with ...
+	(info): ... this.
+	(java.dvi): Replace with ...
+	(dvi): ... this.
+	(java.generated-manpages): Replace with ...
+
 2003-10-03  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* builtins.c, jcf.h, jvspec.c: Remove PARAMS macros.

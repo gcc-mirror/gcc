@@ -1,3 +1,10 @@
+2003-10-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (c++.info): Remove.
+	(c++.dvi): Remove.
+	(c++.generated-manpages): Replace with ...
+	(generated-manpages): ... this.
+
 2003-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (struct cp_binding_level): Move to name-lookup.h
