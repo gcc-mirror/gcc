@@ -1595,7 +1595,10 @@ do {							\
 #define FP_INC (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT ? 1 : 2)
 
 /* The largest size of value that can be held in floating-point registers.  */
-#define UNITS_PER_FPVALUE (FP_INC * UNITS_PER_FPREG)
+#define UNITS_PER_FPVALUE (TARGET_SOFT_FLOAT ? 0 : FP_INC * UNITS_PER_FPREG)
+
+/* The number of bytes in a double.  */
+#define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
 
 /* A C expression for the size in bits of the type `int' on the
    target machine.  If you don't define this, the default is one
@@ -2737,6 +2740,10 @@ extern struct mips_frame_info current_frame_info;
 
 #define RETURN_IN_MEMORY(TYPE)	\
 	mips_return_in_memory (TYPE)
+
+#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
+	(PRETEND_SIZE) = mips_setup_incoming_varargs (&(CUM), (MODE),	\
+						      (TYPE), (NO_RTL))
 
 
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
@@ -2748,32 +2755,75 @@ extern struct mips_frame_info current_frame_info;
    and about the args processed so far, enough to enable macros
    such as FUNCTION_ARG to determine where the next arg should go.
 
-   On the mips16, we need to keep track of which floating point
-   arguments were passed in general registers, but would have been
-   passed in the FP regs if this were a 32 bit function, so that we
-   can move them to the FP regs if we wind up calling a 32 bit
-   function.  We record this information in fp_code, encoded in base
-   four.  A zero digit means no floating point argument, a one digit
-   means an SFmode argument, and a two digit means a DFmode argument,
-   and a three digit is not used.  The low order digit is the first
-   argument.  Thus 6 == 1 * 4 + 2 means a DFmode argument followed by
-   an SFmode argument.  ??? A more sophisticated approach will be
-   needed if MIPS_ABI != ABI_32.  */
+   This structure has to cope with two different argument allocation
+   schemes.  Most MIPS ABIs view the arguments as a struct, of which the
+   first N words go in registers and the rest go on the stack.  If I < N,
+   the Ith word might go in Ith integer argument register or the
+   Ith floating-point one.  In some cases, it has to go in both (see
+   function_arg).  For these ABIs, we only need to remember the number
+   of words passed so far.
+
+   The EABI instead allocates the integer and floating-point arguments
+   separately.  The first N words of FP arguments go in FP registers,
+   the rest go on the stack.  Likewise, the first N words of the other
+   arguments go in integer registers, and the rest go on the stack.  We
+   need to maintain three counts: the number of integer registers used,
+   the number of floating-point registers used, and the number of words
+   passed on the stack.
+
+   We could keep separate information for the two ABIs (a word count for
+   the standard ABIs, and three separate counts for the EABI).  But it
+   seems simpler to view the standard ABIs as forms of EABI that do not
+   allocate floating-point registers.
+
+   So for the standard ABIs, the first N words are allocated to integer
+   registers, and function_arg decides on an argument-by-argument basis
+   whether that argument should really go in an integer register, or in
+   a floating-point one.  */
 
 typedef struct mips_args {
-  int gp_reg_found;		/* whether a gp register was found yet */
-  unsigned int arg_number;	/* argument number */
-  unsigned int arg_words;	/* # total words the arguments take */
-  unsigned int fp_arg_words;	/* # words for FP args (MIPS_EABI only) */
-  int last_arg_fp;		/* nonzero if last arg was FP (EABI only) */
-  int fp_code;			/* Mode of FP arguments (mips16) */
-  unsigned int num_adjusts;	/* number of adjustments made */
-				/* Adjustments made to args pass in regs.  */
-				/* ??? The size is doubled to work around a
-				   bug in the code that sets the adjustments
-				   in function_arg.  */
-  int prototype;                /* True if the function has a prototype.  */
-  struct rtx_def *adjust[MAX_ARGS_IN_REGISTERS*2];
+  /* Always true for varargs functions.  Otherwise true if at least
+     one argument has been passed in an integer register.  */
+  int gp_reg_found;
+
+  /* The number of arguments seen so far.  */
+  unsigned int arg_number;
+
+  /* For EABI, the number of integer registers used so far.  For other
+     ABIs, the number of words passed in registers (whether integer
+     or floating-point).  */
+  unsigned int gp_regs;
+
+  /* For EABI, the number of floating-point registers used so far.  */
+  unsigned int fp_regs;
+
+  /* The number of words passed on the stack.  */
+  unsigned int stack_words;
+
+  /* On the mips16, we need to keep track of which floating point
+     arguments were passed in general registers, but would have been
+     passed in the FP regs if this were a 32 bit function, so that we
+     can move them to the FP regs if we wind up calling a 32 bit
+     function.  We record this information in fp_code, encoded in base
+     four.  A zero digit means no floating point argument, a one digit
+     means an SFmode argument, and a two digit means a DFmode argument,
+     and a three digit is not used.  The low order digit is the first
+     argument.  Thus 6 == 1 * 4 + 2 means a DFmode argument followed by
+     an SFmode argument.  ??? A more sophisticated approach will be
+     needed if MIPS_ABI != ABI_32.  */
+  int fp_code;
+
+  /* True if the function has a prototype.  */
+  int prototype;
+
+  /* When a structure does not take up a full register, the argument
+     should sometimes be shifted left so that it occupies the high part
+     of the register.  These two fields describe an array of ashl
+     patterns for doing this.  See function_arg_advance, which creates
+     the shift patterns, and function_arg, which returns them when given
+     a VOIDmode argument.  */
+  unsigned int num_adjusts;
+  struct rtx_def *adjust[MAX_ARGS_IN_REGISTERS];
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -2827,6 +2877,12 @@ typedef struct mips_args {
 	: ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)			\
 		? PARM_BOUNDARY						\
 		: GET_MODE_ALIGNMENT(MODE)))
+
+/* True if using EABI and varargs can be passed in floating-point
+   registers.  Under these conditions, we need a more complex form
+   of va_list, which tracks GPR, FPR and stack arguments separately.  */
+#define EABI_FLOAT_VARARGS_P \
+	(mips_abi == ABI_EABI && UNITS_PER_FPVALUE >= UNITS_PER_DOUBLE)
 
 
 /* Tell prologue and epilogue if register REGNO should be saved / restored.  */

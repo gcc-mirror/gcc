@@ -56,16 +56,21 @@ extern unsigned int	mips_hard_regno_nregs PARAMS ((int,
 						       enum machine_mode));
 extern int              mips_return_in_memory PARAMS ((tree));
 
-extern struct rtx_def  *function_arg PARAMS ((CUMULATIVE_ARGS *,
+extern struct rtx_def  *function_arg PARAMS ((const CUMULATIVE_ARGS *,
 					      enum machine_mode, tree, int));
 extern void		function_arg_advance PARAMS ((CUMULATIVE_ARGS *,
 						      enum machine_mode,
 						      tree, int));
-extern int		function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS *,
-							    enum machine_mode,
-							    tree, int));
+extern int		function_arg_partial_nregs
+				PARAMS ((const CUMULATIVE_ARGS *,
+					 enum machine_mode,
+					 tree, int));
+extern int		mips_setup_incoming_varargs
+				PARAMS ((const CUMULATIVE_ARGS *,
+					 enum machine_mode,
+					 tree, int));
 extern int		function_arg_pass_by_reference
-				PARAMS ((CUMULATIVE_ARGS *,
+				PARAMS ((const CUMULATIVE_ARGS *,
 					 enum machine_mode, tree, int));
 extern int		mips16_constant_after_function_p PARAMS ((tree));
 extern int		mips_output_external PARAMS ((FILE *, tree,
