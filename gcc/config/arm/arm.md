@@ -2493,8 +2493,11 @@
    (match_operand:SI 2 "s_register_operand" "=&r")]
   ""
   "
-  emit_insn (gen_addsi3 (operands[2], XEXP (XEXP (operands[0], 0), 0),
-			 XEXP (XEXP (operands[0], 0), 1)));
+  if (GET_CODE (XEXP (operands[0], 0)) == REG)
+    operands[2] = XEXP (operands[0], 0);
+  else
+    emit_insn (gen_addsi3 (operands[2], XEXP (XEXP (operands[0], 0), 0),
+			   XEXP (XEXP (operands[0], 0), 1)));
   emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (MEM, DFmode, operands[2]),
 		      operands[1]));
   DONE;
