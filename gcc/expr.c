@@ -1142,12 +1142,12 @@ emit_block_move (x, y, size, align)
       emit_library_call (memcpy_libfunc, 1,
 			 VOIDmode, 3, XEXP (x, 0), Pmode,
 			 XEXP (y, 0), Pmode,
-			 size, Pmode);
+			 convert_to_mode (Pmode, size, 1), Pmode);
 #else
       emit_library_call (bcopy_libfunc, 1,
 			 VOIDmode, 3, XEXP (y, 0), Pmode,
 			 XEXP (x, 0), Pmode,
-			 size, Pmode);
+			 convert_to_mode (Pmode, size, 1), Pmode);
 #endif
     }
 }
