@@ -5003,27 +5003,29 @@ grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	 that took root before someone noticed the bug...  */
 
       tree type = declspecs->type;
+      bool type_ok = (TREE_CODE (type) == RECORD_TYPE
+		      || TREE_CODE (type) == UNION_TYPE);
+      bool ok = false;
 
-      if (type
-	  && (TREE_CODE (type) == RECORD_TYPE
-	      || TREE_CODE (type) == UNION_TYPE)
+      if (type_ok
 	  && (flag_ms_extensions || !declspecs->typedef_p))
 	{
 	  if (flag_ms_extensions)
-	    ; /* ok */
+	    ok = true;
 	  else if (flag_iso)
-	    goto warn_unnamed_field;
+	    ok = false;
 	  else if (TYPE_NAME (type) == NULL)
-	    ; /* ok */
+	    ok = true;
 	  else
-	    goto warn_unnamed_field;
+	    ok = false;
 	}
-      else
+      if (!ok)
 	{
-	warn_unnamed_field:
-	  warning ("declaration does not declare anything");
+	  pedwarn ("declaration does not declare anything");
 	  return NULL_TREE;
 	}
+      if (pedantic)
+	pedwarn ("ISO C doesn't support unnamed structs/unions");
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,
