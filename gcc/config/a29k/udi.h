@@ -20,6 +20,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "a29k/a29k.h"
 
+/* Output DBX (stabs) debugging information if doing -gstabs.  */
+
+#define DBX_DEBUGGING_INFO
+
+/* Generate SDB debugging information by default. */
+
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+
 /* Support the ctors and dtors sections for g++.  */
 
 #define CTORS_SECTION_ASM_OP	"\t.use .ctors"
