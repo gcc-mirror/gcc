@@ -2577,11 +2577,29 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  substed_operand[i] = recog_operand[i] = *recog_operand_loc[i];
 	}
       else if (code == SUBREG)
-	substed_operand[i] = recog_operand[i] = *recog_operand_loc[i]
-	  = find_reloads_toplev (recog_operand[i], i, address_type[i],
-				 ind_levels,
-				 set != 0
-				 && &SET_DEST (set) == recog_operand_loc[i]);
+	{
+	  rtx reg = SUBREG_REG (recog_operand[i]);
+	  rtx op
+	    = find_reloads_toplev (recog_operand[i], i, address_type[i],
+				   ind_levels,
+				   set != 0
+				   && &SET_DEST (set) == recog_operand_loc[i]);
+
+	  /* If we made a MEM to load (a part of) the stackslot of a pseudo
+	     that didn't get a hard register, emit a USE with a REG_EQUAL
+	     note in front so that we might inherit a previous, possibly
+	     wider reload.  */
+	     
+	  if (GET_CODE (op) == MEM
+	      && GET_CODE (reg) == REG
+	      && (GET_MODE_SIZE (GET_MODE (reg))
+		  >= GET_MODE_SIZE (GET_MODE (op))))
+            REG_NOTES (emit_insn_before (gen_rtx_USE (VOIDmode, reg), insn))
+              = gen_rtx_EXPR_LIST (REG_EQUAL,
+				   reg_equiv_memory_loc[REGNO (reg)], NULL_RTX);
+
+	  substed_operand[i] = recog_operand[i] = *recog_operand_loc[i] = op;
+	}
       else if (code == PLUS || GET_RTX_CLASS (code) == '1')
 	/* We can get a PLUS as an "operand" as a result of register
 	   elimination.  See eliminate_regs and gen_reload.  We handle
@@ -2621,16 +2639,13 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      if (rtx_varies_p (address))
 		address = copy_rtx (address);
 
-	      /* If this is an output operand, we must output a CLOBBER
-		 after INSN so find_equiv_reg knows REGNO is being written. 
-		 Mark this insn specially, do we can put our output reloads
-		 after it.  */
-
-	      if (modified[i] != RELOAD_READ)
-		PUT_MODE (emit_insn_after (gen_rtx_CLOBBER (VOIDmode,
-							    recog_operand[i]),
-					   insn),
-			  DImode);
+	      /* Emit a USE that shows what register is being used/modified.  */
+	      REG_NOTES (emit_insn_before (gen_rtx_USE (VOIDmode,
+							recog_operand[i]),
+					   insn))
+		= gen_rtx_EXPR_LIST (REG_EQUAL,
+				     reg_equiv_memory_loc[regno],
+				     NULL_RTX);
 
 	      *recog_operand_loc[i] = recog_operand[i]
 		= gen_rtx_MEM (GET_MODE (recog_operand[i]), address);

@@ -1,3 +1,14 @@
+Sat May  2 01:37:29 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_reloads): Emit USEs to mark where a pseudo
+	is reloaced with the MEM of its stack slot.
+	* reload1.c (cannot_omit_stores): Delete.
+	(reload): Don't initialize it.
+	Don't apply avoid_return_reg logic to USEs.
+	When done, remove USEs that have a REG_EQUAL note on them.
+	(emit_reload_insns): Handle case where we have inherited a MEM.
+	(delete_output_reload): Don't use cannot_omit_stores.
+
 Thu Apr 30 18:59:03 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (cpp.info, gcc.info): Put -o option before input file.

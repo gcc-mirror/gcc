@@ -204,12 +204,6 @@ static HARD_REG_SET counted_for_groups;
    as part of a group, even if it seems to be otherwise ok.  */
 static HARD_REG_SET counted_for_nongroups;
 
-/* Indexed by pseudo reg number N,
-   says may not delete stores into the real (memory) home of pseudo N.
-   This is set if we already substituted a memory equivalent in some uses,
-   which happens when we have to eliminate the fp from it.  */
-static char *cannot_omit_stores;
-
 /* Nonzero if indirect addressing is supported on the machine; this means
    that spilling (REG n) does not require reloading it into a register in
    order to do (MEM (REG n)) or (MEM (PLUS (REG n) (CONST_INT c))).  The
@@ -634,8 +628,6 @@ reload (first, global, dumpfile)
   bzero ((char *) reg_equiv_address, max_regno * sizeof (rtx));
   reg_max_ref_width = (int *) alloca (max_regno * sizeof (int));
   bzero ((char *) reg_max_ref_width, max_regno * sizeof (int));
-  cannot_omit_stores = (char *) alloca (max_regno);
-  bzero (cannot_omit_stores, max_regno);
 
   if (SMALL_REGISTER_CLASSES)
     CLEAR_HARD_REG_SET (forbidden_regs);
@@ -1111,7 +1103,8 @@ reload (first, global, dumpfile)
 		}
 	      else if (SMALL_REGISTER_CLASSES && after_call != 0
 		       && !(GET_CODE (PATTERN (insn)) == SET
-			    && SET_DEST (PATTERN (insn)) == stack_pointer_rtx))
+			    && SET_DEST (PATTERN (insn)) == stack_pointer_rtx)
+		       && GET_CODE (PATTERN (insn)) != USE)
 		{
 		  if (reg_referenced_p (after_call, PATTERN (insn)))
 		    avoid_return_reg = after_call;
@@ -2131,16 +2124,26 @@ reload (first, global, dumpfile)
 	}
     }
 
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-  /* Make a pass over all the insns and remove death notes for things that
-     are no longer registers or no longer die in the insn (e.g., an input
-     and output pseudo being tied).  */
+  /* Make a pass over all the insns and delete all USEs which we inserted
+     only to tag a REG_EQUAL note on them; if PRESERVE_DEATH_INFO_REGNO_P
+     is defined, also remove death notes for things that are no longer
+     registers or no longer die in the insn (e.g., an input and output
+     pseudo being tied).  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
 	rtx note, next;
 
+	if (GET_CODE (insn) == USE
+	    && find_reg_note (insn, REG_EQUAL, NULL_RTX))
+	  {
+	    PUT_CODE (insn, NOTE);
+	    NOTE_SOURCE_FILE (insn) = 0;
+	    NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	    continue;
+	  }
+#ifdef PRESERVE_DEATH_INFO_REGNO_P
 	for (note = REG_NOTES (insn); note; note = next)
 	  {
 	    next = XEXP (note, 1);
@@ -2149,8 +2152,8 @@ reload (first, global, dumpfile)
 		    || reg_set_p (XEXP (note, 0), PATTERN (insn))))
 	      remove_note (insn, note);
 	  }
-      }
 #endif
+      }
 
   /* If we are doing stack checking, give a warning if this function's
      frame size is larger than we expect.  */
@@ -2884,7 +2887,10 @@ eliminate_regs (x, mem_mode, insn)
 	  new = eliminate_regs (reg_equiv_memory_loc[regno], mem_mode, insn);
 	  if (new != reg_equiv_memory_loc[regno])
 	    {
-	      cannot_omit_stores[regno] = 1;
+	      if (insn != 0 && GET_CODE (insn) != EXPR_LIST
+		  && GET_CODE (insn) != INSN_LIST)
+		REG_NOTES (emit_insn_before (gen_rtx_USE (VOIDmode, x), insn))
+		  = gen_rtx_EXPR_LIST (REG_EQUAL, new, NULL_RTX);
 	      return copy_rtx (new);
 	    }
 	}
@@ -3103,16 +3109,17 @@ eliminate_regs (x, mem_mode, insn)
 	    new = SUBREG_REG (x);
 	  else
 	    {
-	      /* Otherwise, ensure NEW isn't shared in case we have to reload
-		 it.  */
-	      new = copy_rtx (new);
-
 	      /* In this case, we must show that the pseudo is used in this
 		 insn so that delete_output_reload will do the right thing.  */
 	      if (insn != 0 && GET_CODE (insn) != EXPR_LIST
 		  && GET_CODE (insn) != INSN_LIST)
-		emit_insn_before (gen_rtx_USE (VOIDmode, SUBREG_REG (x)),
-				  insn);
+		REG_NOTES (emit_insn_before (gen_rtx_USE (VOIDmode,
+							  SUBREG_REG (x)),
+							  insn))
+		  = gen_rtx_EXPR_LIST (REG_EQUAL, new, NULL_RTX);
+
+	      /* Ensure NEW isn't shared in case we have to reload it.  */
+	      new = copy_rtx (new);
 	    }
 	}
       else
@@ -4056,7 +4063,8 @@ reload_as_needed (first, live_known)
 	    }
 	  else if (SMALL_REGISTER_CLASSES && after_call != 0
 		   && !(GET_CODE (PATTERN (insn)) == SET
-			&& SET_DEST (PATTERN (insn)) == stack_pointer_rtx))
+			&& SET_DEST (PATTERN (insn)) == stack_pointer_rtx)
+		   && GET_CODE (PATTERN (insn)) != USE)
 	    {
 	      if (reg_referenced_p (after_call, PATTERN (insn)))
 		avoid_return_reg = after_call;
@@ -5465,6 +5473,7 @@ choose_reload_regs (insn, avoid_return_reg)
 	    {
 	      register int regno = -1;
 	      enum machine_mode mode;
+	      rtx in, use_insn = 0;
 
 	      if (reload_in[r] == 0)
 		;
@@ -5477,6 +5486,34 @@ choose_reload_regs (insn, avoid_return_reg)
 		{
 		  regno = REGNO (reload_in_reg[r]);
 		  mode = GET_MODE (reload_in_reg[r]);
+		}
+	      else if (GET_CODE (reload_in[r]) == MEM)
+		{
+		  rtx prev = prev_nonnote_insn (insn), note;
+
+		  if (prev && GET_CODE (prev) == INSN
+		      && GET_CODE (PATTERN (prev)) == USE
+		      && GET_CODE (XEXP (PATTERN (prev), 0)) == REG
+		      && (REGNO (XEXP (PATTERN (prev), 0))
+			  >= FIRST_PSEUDO_REGISTER)
+		      && (note = find_reg_note (prev, REG_EQUAL, NULL_RTX))
+		      && GET_CODE (XEXP (note, 0)) == MEM)
+		    {
+		      rtx addr = XEXP (XEXP (note, 0), 0);
+		      int size_diff
+			= (GET_MODE_SIZE (GET_MODE (addr))
+			   - GET_MODE_SIZE (GET_MODE (reload_in[r])));
+		      if (size_diff >= 0
+			  && rtx_equal_p ((BYTES_BIG_ENDIAN
+					   ? plus_constant (addr, size_diff)
+					   : addr),
+					  XEXP (reload_in[r], 0)))
+			{
+			  regno = REGNO (XEXP (PATTERN (prev), 0));
+			  mode = GET_MODE (reload_in[r]);
+			  use_insn = prev;
+			}
+		    }
 		}
 #if 0
 	      /* This won't work, since REGNO can be a pseudo reg number.
@@ -5995,6 +6032,7 @@ emit_reload_insns (insn)
       register rtx old;
       rtx oldequiv_reg = 0;
       rtx this_reload_insn = 0;
+      int expect_occurrences = 1;
 
       if (reload_spill_index[j] >= 0)
 	new_spill_reg_store[reload_spill_index[j]] = 0;
@@ -6428,6 +6466,19 @@ emit_reload_insns (insn)
 	  end_sequence ();
 	}
 
+      /* When inheriting a wider reload, we have a MEM in reload_in[j],
+	 e.g. inheriting a SImode output reload for
+	 (mem:HI (plus:SI (reg:SI 14 fp) (const_int 10)))  */
+      if (optimize && reload_inherited[j] && reload_in[j]
+	  && GET_CODE (reload_in[j]) == MEM
+	  && reload_spill_index[j] >= 0
+	  && TEST_HARD_REG_BIT (reg_reloaded_valid, reload_spill_index[j]))
+	{
+	  expect_occurrences
+	    = count_occurrences (PATTERN (insn), reload_in[j]) == 1 ? 0 : -1;
+	  reload_in[j]
+	    = regno_reg_rtx[reg_reloaded_contents[reload_spill_index[j]]];
+	}
       /* Add a note saying the input reload reg
 	 dies in this insn, if anyone cares.  */
 #ifdef PRESERVE_DEATH_INFO_REGNO_P
@@ -6561,7 +6612,8 @@ emit_reload_insns (insn)
 	  && dead_or_set_p (insn, reload_in[j])
 	  /* This is unsafe if operand occurs more than once in current
 	     insn.  Perhaps some occurrences weren't reloaded.  */
-	  && count_occurrences (PATTERN (insn), reload_in[j]) == 1)
+	  && (count_occurrences (PATTERN (insn), reload_in[j])
+	      == expect_occurrences))
 	delete_output_reload (insn, j,
 			      spill_reg_store[reload_spill_index[j]]);
 
@@ -7295,9 +7347,6 @@ delete_output_reload (insn, j, output_reload_insn)
 	  && reg_mentioned_p (reg, PATTERN (i1)))
 	return;
     }
-
-  if (cannot_omit_stores[REGNO (reg)])
-    return;
 
   /* If this insn will store in the pseudo again,
      the previous store can be removed.  */
