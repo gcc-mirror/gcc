@@ -1,5 +1,12 @@
 2001-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* romp-protos.h (romp_initialize_trampoline): New function.
+	* romp.c (romp_initialize_trampoline): Likewise.
+	* romp.h (INITIALIZE_TRAMPOLINE): Define in terms of
+	romp_initialize_trampoline.
+
+2001-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* m68k/3b1.h (ASM_OUTPUT_SOURCE_LINE): Don't reference `last_linenum'.
 	* m68k/auxas.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
 	* m68k/crds.h (ASM_OUTPUT_SOURCE_LINE): Likewise.

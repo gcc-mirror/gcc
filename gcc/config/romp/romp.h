@@ -785,37 +785,7 @@ struct rt_cargs {int gregs, fregs; };
    data area.  */
 
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)		\
-{								\
-  rtx _addr, _temp;						\
-  rtx _val;							\
-								\
-  _temp = expand_binop (SImode, add_optab, ADDR,		\
-			GEN_INT (4),				\
-			0, 1, OPTAB_LIB_WIDEN);			\
-  emit_move_insn (gen_rtx_MEM (SImode,				\
-			       memory_address (SImode, ADDR)), _temp); \
-								\
-  _val = force_reg (SImode, CXT);				\
-  _addr = memory_address (HImode, plus_constant (ADDR, 10));	\
-  emit_move_insn (gen_rtx_MEM (HImode, _addr),			\
-		  gen_lowpart (HImode, _val));			\
-  _temp = expand_shift (RSHIFT_EXPR, SImode, _val,		\
-			build_int_2 (16, 0), 0, 1);		\
-  _addr = memory_address (HImode, plus_constant (ADDR, 6));	\
-  emit_move_insn (gen_rtx_MEM (HImode, _addr),			\
-		  gen_lowpart (HImode, _temp));			\
-								\
-  _val = force_reg (SImode, FNADDR);				\
-  _addr = memory_address (HImode, plus_constant (ADDR, 24));	\
-  emit_move_insn (gen_rtx_MEM (HImode, _addr),			\
-		  gen_lowpart (HImode, _val));			\
-  _temp = expand_shift (RSHIFT_EXPR, SImode, _val,		\
-			build_int_2 (16, 0), 0, 1);		\
-  _addr = memory_address (HImode, plus_constant (ADDR, 20));	\
-  emit_move_insn (gen_rtx_MEM (HImode, _addr),			\
-		  gen_lowpart (HImode, _temp));			\
-								\
-}
+	romp_initialize_trampoline (ADDR, FNADDR, CXT)
 
 /* Definitions for register eliminations.
 
