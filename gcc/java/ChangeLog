@@ -1,5 +1,9 @@
 2001-05-01  Per Bothner  <per@bothner.com>
 
+	* parse.h (REGISTER_IMPORT):  Use tree_cons instead of chainon.
+
+2001-05-01  Per Bothner  <per@bothner.com>
+
 	* parse.y (java_pop_parser_context):  The TREE_VALUE of a link in the
 	import_list contains the name, not the TREE_PURPOSE.
 

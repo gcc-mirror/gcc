@@ -704,8 +704,7 @@ typedef struct _jdeplist {
 #define REGISTER_IMPORT(WHOLE, NAME)					\
 {									\
   IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P ((NAME)) = 1;			\
-  ctxp->import_list = chainon (ctxp->import_list, 			\
-			       build_tree_list ((WHOLE), (NAME)));	\
+  ctxp->import_list = tree_cons ((WHOLE), (NAME), ctxp->import_list);	\
 }
 
 /* Macro to access the osb (opening square bracket) count */
