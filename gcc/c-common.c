@@ -2833,7 +2833,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 		 are requested.  However, if OP0 is a constant that is
 		 >= 0, the signedness of the comparison isn't an issue,
 		 so suppress the warning.  */
-	      if (extra_warnings
+	      if (extra_warnings && !in_system_header
 		  && ! (TREE_CODE (primop0) == INTEGER_CST
 			&& ! TREE_OVERFLOW (convert (signed_type (type),
 						     primop0))))
@@ -2842,7 +2842,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	      break;
 
 	    case LT_EXPR:
-	      if (extra_warnings
+	      if (extra_warnings && !in_system_header
 		  && ! (TREE_CODE (primop0) == INTEGER_CST
 			&& ! TREE_OVERFLOW (convert (signed_type (type),
 						     primop0))))

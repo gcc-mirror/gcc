@@ -1,3 +1,8 @@
+2000-07-17  Chip Salzenberg  <chip@valinux.com>
+
+	* c-common.c (shorten_compare): Quiet warnings about unsigned
+	comparisons with zero when they occur in a system header.
+
 2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (check_format_info): Do not make a pedantic objection
