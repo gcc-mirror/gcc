@@ -1,3 +1,9 @@
+2001-09-19  Ben Elliston  <bje@redhat.com>
+
+	* configure.in (sparc-sun-solaris2*): Don't use /usr/bin/which on
+	Solaris when testing for the /usr/ucb/cc compiler; it has incorrect
+	semantics.  Use the shell built-in "type" command instead.
+
 2001-08-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	Merged from gcc-3_0-branch:

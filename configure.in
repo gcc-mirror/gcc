@@ -1295,7 +1295,7 @@ rm -f conftest*
 case "${host}" in
   sparc-sun-solaris2*)
       CCBASE="`echo ${CC-cc} | sed 's/ .*$//'`"
-      if [ "`/usr/bin/which $CCBASE`" = "/usr/ucb/cc" ] ; then
+      if [ "`type $CCBASE | sed 's/^[^/]*//'`" = "/usr/ucb/cc" ] ; then
           could_use=
           [ -d /opt/SUNWspro/bin ] && could_use="/opt/SUNWspro/bin"
           if [ -d /opt/cygnus/bin ] ; then
