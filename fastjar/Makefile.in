@@ -114,11 +114,11 @@ AM_MAKEFLAGS = \
 
 INCLUDES = -I. -I$(top_srcdir) $(ZINCS)
 
-bin_PROGRAMS = fastjar
+bin_PROGRAMS = jar
 EXTRA_PROGRAMS = grepjar
-fastjar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
-fastjar_LDADD = $(ZLIBS)
-fastjar_DEPENDENCIES = $(ZDEPS)
+jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
+jar_LDADD = $(ZLIBS)
+jar_DEPENDENCIES = $(ZDEPS)
 grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
 grepjar_LDADD = $(ZLIBS)
 grepjar_DEPENDENCIES = $(ZDEPS)
@@ -137,8 +137,8 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 grepjar_OBJECTS =  jargrep.o dostime.o compress.o pushback.o
 grepjar_LDFLAGS = 
-fastjar_OBJECTS =  jartool.o dostime.o compress.o pushback.o
-fastjar_LDFLAGS = 
+jar_OBJECTS =  jartool.o dostime.o compress.o pushback.o
+jar_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -152,8 +152,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-SOURCES = $(grepjar_SOURCES) $(fastjar_SOURCES)
-OBJECTS = $(grepjar_OBJECTS) $(fastjar_OBJECTS)
+SOURCES = $(grepjar_SOURCES) $(jar_SOURCES)
+OBJECTS = $(grepjar_OBJECTS) $(jar_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -251,9 +251,9 @@ grepjar: $(grepjar_OBJECTS) $(grepjar_DEPENDENCIES)
 	@rm -f grepjar
 	$(LINK) $(grepjar_LDFLAGS) $(grepjar_OBJECTS) $(grepjar_LDADD) $(LIBS)
 
-fastjar: $(fastjar_OBJECTS) $(fastjar_DEPENDENCIES)
-	@rm -f fastjar
-	$(LINK) $(fastjar_LDFLAGS) $(fastjar_OBJECTS) $(fastjar_LDADD) $(LIBS)
+jar: $(jar_OBJECTS) $(jar_DEPENDENCIES)
+	@rm -f jar
+	$(LINK) $(jar_LDFLAGS) $(jar_OBJECTS) $(jar_LDADD) $(LIBS)
 
 tags: TAGS
 
