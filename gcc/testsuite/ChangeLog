@@ -1,3 +1,12 @@
+2004-01-29  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/tc1: New directory.
+	* g++.dg/tc1/dr108.C, g++.dg/tc1/dr128.C, g++.dg/tc1/dr147.C,
+	g++.dg/tc1/dr179.C, g++.dg/tc1/dr1.C, g++.dg/tc1/dr213.C,
+	g++.dg/tc1/dr74.C, g++.dg/tc1/dr90.C, g++.dg/tc1/dr127.C,
+	g++.dg/tc1/dr137.C, g++.dg/tc1/dr164.C, g++.dg/tc1/dr185.C,
+	g++.dg/tc1/dr20.C, g++.dg/tc1/dr52.C, g++.dg/tc1/dr85.C: New tests.
+
 2004-01-28  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.dg/parse/error11.C: New test.
