@@ -1565,7 +1565,8 @@ s390_short_displacement (rtx disp)
   /* GOT offset is not OK, the GOT can be large.  */
   if (GET_CODE (disp) == CONST
       && GET_CODE (XEXP (disp, 0)) == UNSPEC
-      && XINT (XEXP (disp, 0), 1) == UNSPEC_GOT)
+      && (XINT (XEXP (disp, 0), 1) == UNSPEC_GOT
+          || XINT (XEXP (disp, 0), 1) == UNSPEC_GOTNTPOFF))
     return 0;
 
   /* All other symbolic constants are literal pool references,
