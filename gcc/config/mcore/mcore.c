@@ -44,9 +44,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "toplev.h"
 #include "mcore-protos.h"
 
-static int const_ok_for_mcore  PARAMS ((int));
-static int try_constant_tricks PARAMS ((long, int *, int *));
-
 /* Maximum size we are allowed to grow the stack in a single operation.
    If we want more, we must do it in increments of at most this size.
    If this value is 0, we don't check at all.  */
@@ -88,6 +85,54 @@ enum reg_class reg_class_from_letter[] =
   /* y */ NO_REGS, /* z */ NO_REGS
 };
 
+struct mcore_frame
+{
+  int arg_size;			/* stdarg spills (bytes) */
+  int reg_size;			/* non-volatile reg saves (bytes) */
+  int reg_mask;			/* non-volatile reg saves */
+  int local_size;		/* locals */
+  int outbound_size;		/* arg overflow on calls out */
+  int pad_outbound;
+  int pad_local;
+  int pad_reg;
+  /* Describe the steps we'll use to grow it.  */
+#define	MAX_STACK_GROWS	4	/* gives us some spare space */
+  int growth[MAX_STACK_GROWS];
+  int arg_offset;
+  int reg_offset;
+  int reg_growth;
+  int local_growth;
+};
+
+typedef enum
+{
+  COND_NO,
+  COND_MOV_INSN,
+  COND_CLR_INSN,
+  COND_INC_INSN,
+  COND_DEC_INSN,
+  COND_BRANCH_INSN
+}
+cond_type;
+
+static void       output_stack_adjust          PARAMS ((int, int));
+static int        calc_live_regs               PARAMS ((int *));
+static int        const_ok_for_mcore           PARAMS ((int));
+static int        try_constant_tricks          PARAMS ((long, int *, int *));
+static const char *     output_inline_const          PARAMS ((enum machine_mode, rtx *));
+static void       block_move_sequence          PARAMS ((rtx, rtx, rtx, rtx, int, int, int));
+static void       layout_mcore_frame           PARAMS ((struct mcore_frame *));
+static cond_type  is_cond_candidate            PARAMS ((rtx));
+static rtx        emit_new_cond_insn           PARAMS ((rtx, int));
+static rtx        conditionalize_block         PARAMS ((rtx));
+static void       conditionalize_optimization  PARAMS ((rtx));
+static void       mcore_add_gc_roots           PARAMS ((void));
+static rtx        handle_structs_in_regs       PARAMS ((enum machine_mode, tree, int));
+static void       mcore_mark_dllexport         PARAMS ((tree));
+static void       mcore_mark_dllimport         PARAMS ((tree));
+static int        mcore_dllexport_p            PARAMS ((tree));
+static int        mcore_dllimport_p            PARAMS ((tree));
+
 /* Adjust the stack and return the number of bytes taken to do it.  */
 static void
 output_stack_adjust (direction, size)
@@ -507,6 +552,7 @@ mcore_call_address_operand (x, mode)
 }
 
 /* Functions to output assembly code for a function call.  */
+
 char *
 mcore_output_call (operands, index)
      rtx operands[];
@@ -831,7 +877,7 @@ mcore_halfword_offset (mask)
 }
 
 /* Output a series of bseti's corresponding to mask.  */
-char *
+const char *
 mcore_output_bseti (dst, mask)
      rtx dst;
      int mask;
@@ -856,7 +902,7 @@ mcore_output_bseti (dst, mask)
 }
 
 /* Output a series of bclri's corresponding to mask.  */
-char *
+const char *
 mcore_output_bclri (dst, mask)
      rtx dst;
      int mask;
@@ -884,7 +930,7 @@ mcore_output_bclri (dst, mask)
 /* Output a conditional move of two constants that are +/- 1 within each
    other.  See the "movtK" patterns in mcore.md.   I'm not sure this is
    really worth the effort.  */
-char *
+const char *
 mcore_output_cmov (operands, cmp_t, test)
      rtx operands[];
      int cmp_t;
@@ -953,14 +999,14 @@ mcore_output_cmov (operands, cmp_t, test)
 
 /* Outputs the peephole for moving a constant that gets not'ed followed 
    by an and (i.e. combine the not and the and into andn) BRC */
-char *
+const char *
 mcore_output_andn (insn, operands)
      rtx insn ATTRIBUTE_UNUSED;
      rtx operands[];
 {
   int x, y;
   rtx out_operands[3];
-  char * load_op;
+  const char * load_op;
   char buf[256];
 
   if (try_constant_tricks (INTVAL (operands[1]), &x, &y) != 2)
@@ -988,7 +1034,7 @@ mcore_output_andn (insn, operands)
 }
 
 /* Output an inline constant.  */
-static char *
+static const char *
 output_inline_const (mode, operands)
      enum machine_mode mode;
      rtx operands[];
@@ -998,7 +1044,7 @@ output_inline_const (mode, operands)
   rtx out_operands[3];
   char buf[256];
   char load_op[256];
-  char *dst_fmt;
+  const char *dst_fmt;
   int value;
 
   value = INTVAL (operands[1]);
@@ -1086,7 +1132,7 @@ output_inline_const (mode, operands)
 }
 
 /* Output a move of a word or less value.  */
-char *
+const char *
 mcore_output_move (insn, operands, mode)
      rtx insn ATTRIBUTE_UNUSED;
      rtx operands[];
@@ -1139,7 +1185,7 @@ mcore_output_move (insn, operands, mode)
    Useful for things where we've gotten into trouble and think we'd
    be doing an lrw into r15 (forbidden). This lets us get out of
    that pickle even after register allocation.  */
-char *
+const char *
 mcore_output_inline_const_forced (insn, operands, mode)
      rtx insn ATTRIBUTE_UNUSED;
      rtx operands[];
@@ -1226,7 +1272,7 @@ mcore_output_inline_const_forced (insn, operands, mode)
 /* Return a sequence of instructions to perform DI or DF move.
    Since the MCORE cannot move a DI or DF in one instruction, we have
    to take care when we see overlapping source and dest registers.  */
-char *
+const char *
 mcore_output_movedouble (operands, mode)
      rtx operands[];
      enum machine_mode mode ATTRIBUTE_UNUSED;
@@ -1658,7 +1704,7 @@ mcore_expand_insv (operands)
      We don't have to mask if we're shifting this up against the
      MSB of the register (e.g., the shift will push out any hi-order
      bits. */
-  if (width + posn != GET_MODE_SIZE (SImode))
+  if (width + posn != (int) GET_MODE_SIZE (SImode))
     {
       ereg = force_reg (SImode, GEN_INT ((1 << width) - 1));      
       emit_insn (gen_rtx (SET, SImode, sreg,
@@ -1705,9 +1751,9 @@ mcore_load_multiple_operation (op, mode)
       if (GET_CODE (elt) != SET
 	  || GET_CODE (SET_DEST (elt)) != REG
 	  || GET_MODE (SET_DEST (elt)) != SImode
-	  || REGNO (SET_DEST (elt)) != dest_regno + i
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_MODE (SET_SRC (elt)) != SImode
+	  || REGNO (SET_DEST (elt))    != (unsigned) (dest_regno + i)
+	  || GET_CODE (SET_SRC (elt))  != MEM
+	  || GET_MODE (SET_SRC (elt))  != SImode
 	  || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
 	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
 	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
@@ -1746,7 +1792,7 @@ mcore_store_multiple_operation (op, mode)
       if (GET_CODE (elt) != SET
 	  || GET_CODE (SET_SRC (elt)) != REG
 	  || GET_MODE (SET_SRC (elt)) != SImode
-	  || REGNO (SET_SRC (elt)) != src_regno + i
+	  || REGNO (SET_SRC (elt)) != (unsigned) (src_regno + i)
 	  || GET_CODE (SET_DEST (elt)) != MEM
 	  || GET_MODE (SET_DEST (elt)) != SImode
 	  || GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
@@ -1916,30 +1962,9 @@ static int number_of_regs_before_varargs;
    for a varargs function.  */
 static int current_function_anonymous_args;
 
-
 #define	STACK_BYTES (STACK_BOUNDARY/BITS_PER_UNIT)
 #define	STORE_REACH (64)	/* Maximum displace of word store + 4.  */
 #define	ADDI_REACH (32)		/* Maximum addi operand. */
-
-struct mcore_frame
-{
-  int arg_size;			/* stdarg spills (bytes) */
-  int reg_size;			/* non-volatile reg saves (bytes) */
-  int reg_mask;			/* non-volatile reg saves */
-  int local_size;		/* locals */
-  int outbound_size;		/* arg overflow on calls out */
-  int pad_outbound;
-  int pad_local;
-  int pad_reg;
-
-  /* describe the steps we'll use to grow it */
-#define	MAX_STACK_GROWS	4	/* gives us some spare space */
-  int growth[MAX_STACK_GROWS];
-  int arg_offset;
-  int reg_offset;
-  int reg_growth;
-  int local_growth;
-};
 
 static void
 layout_mcore_frame (infp)
@@ -2150,7 +2175,7 @@ layout_mcore_frame (infp)
       infp->local_growth = growths;
     }
 
-  /* Anything else that we've forgotten?, plus a few consistency checks. */
+  /* Anything else that we've forgotten?, plus a few consistency checks.  */
  finish:
   assert (infp->reg_offset >= 0);
   assert (growths <= MAX_STACK_GROWS);
@@ -2369,12 +2394,13 @@ mcore_expand_epilog ()
   int offs;
   int growth = MAX_STACK_GROWS - 1 ;
 
+    
   /* Find out what we're doing.  */
   layout_mcore_frame(&fi);
 
   if (mcore_naked_function_p ())
     return;
-  
+
   /* If we had a frame pointer, restore the sp from that.  */
   if (frame_pointer_needed)
     {
@@ -2508,7 +2534,7 @@ static int pool_size;
 
 /* Dump out any constants accumulated in the final pass.  These
    will only be labels.  */
-char *
+const char *
 mcore_output_jump_label_table ()
 {
   int i;
@@ -2596,17 +2622,6 @@ mcore_dependent_simplify_rtx (x, int_op0_mode, last, in_dest, general_simplify)
   return x;
 }
 #endif
-
-typedef enum
-{
-  COND_NO,
-  COND_MOV_INSN,
-  COND_CLR_INSN,
-  COND_INC_INSN,
-  COND_DEC_INSN,
-  COND_BRANCH_INSN
-}
-cond_type;
 
 /* Check whether insn is a candidate for a conditional.  */
 static cond_type
@@ -3540,7 +3555,7 @@ mcore_unique_section (decl, reloc)
   int len;
   char * name;
   char * string;
-  char * prefix;
+  const char * prefix;
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   
