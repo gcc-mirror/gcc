@@ -39,7 +39,7 @@ SUBDIRS =@subdirs@
 
 # Selection of languages to be made.
 # This is overridden by configure.
-LANGUAGES = c proto gcov @all_languages@
+LANGUAGES = c proto gcov$(exeext) @all_languages@
 
 # Selection of languages to be made during stage1 build.
 # This is overridden by configure.
@@ -1868,7 +1868,9 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 
 gcov.o: gcov.c gcov-io.h
 
-gcov: gcov.o $(LIBDEPS)
+# Only one of 'gcov' or 'gcov.exe' is actually built, depending
+# upon whether $(exeext) is empty or not.
+gcov$(exeext): gcov.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) gcov.o $(LIBS) -o $@
 #
 # Build the include directory.  The stamp files are stmp-* rather than
