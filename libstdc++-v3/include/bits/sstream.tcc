@@ -115,7 +115,7 @@ namespace std
   template <class _CharT, class _Traits, class _Alloc>
     typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
     basic_stringbuf<_CharT, _Traits, _Alloc>::
-    _M_underflow(bool __bump)
+    underflow()
     {
       int_type __ret = traits_type::eof();
       const bool __testin = this->_M_mode & ios_base::in;
@@ -125,11 +125,7 @@ namespace std
 	  _M_update_egptr();
 
 	  if (this->gptr() < this->egptr())
-	    {
-	      __ret = traits_type::to_int_type(*this->gptr());
-	      if (__bump)
-		this->gbump(1);
-	    }
+	    __ret = traits_type::to_int_type(*this->gptr());
 	}
       return __ret;
     }

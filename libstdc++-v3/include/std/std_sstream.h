@@ -85,6 +85,13 @@ namespace std
       //@}
 
     protected:
+      /**
+       *  @if maint
+       *  Place to stash in || out || in | out settings for current stringbuf.
+       *  @endif
+      */
+      ios_base::openmode 	_M_mode;
+
       // Data Members:
       /**
        *  @if maint
@@ -179,18 +186,9 @@ namespace std
 	_M_sync(const_cast<char_type*>(_M_string.data()), 0, __len);
       }
 
-      int_type
-      _M_underflow(bool __bump);
-
       // [documentation is inherited]
       virtual int_type
-      underflow()
-      { return _M_underflow(false); }
-
-      // [documentation is inherited]
-      virtual int_type
-      uflow()
-      { return _M_underflow(true); }
+      underflow();
 
       // [documentation is inherited]
       virtual int_type

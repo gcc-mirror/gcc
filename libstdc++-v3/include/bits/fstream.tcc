@@ -69,11 +69,11 @@ namespace std
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf() : __streambuf_type(), _M_file(&_M_lock), 
-    _M_state_cur(__state_type()), _M_state_beg(__state_type()),
-    _M_buf(NULL), _M_buf_size(BUFSIZ), _M_buf_allocated(false),
-    _M_reading(false), _M_writing(false), _M_last_overflowed(false),
-    _M_pback_cur_save(0), _M_pback_end_save(0), _M_pback_init(false),
-    _M_codecvt(0)
+    _M_mode(ios_base::openmode(0)), _M_state_cur(__state_type()),
+    _M_state_beg(__state_type()), _M_buf(NULL), _M_buf_size(BUFSIZ),
+    _M_buf_allocated(false), _M_reading(false), _M_writing(false),
+    _M_last_overflowed(false), _M_pback_cur_save(0), _M_pback_end_save(0),
+    _M_pback_init(false), _M_codecvt(0)
     { 
       if (has_facet<__codecvt_type>(this->_M_buf_locale))
 	_M_codecvt = &use_facet<__codecvt_type>(this->_M_buf_locale);
@@ -180,7 +180,7 @@ namespace std
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
-    _M_underflow(bool __bump)
+    underflow()
     {
       int_type __ret = traits_type::eof();
       const bool __testin = this->_M_mode & ios_base::in;
@@ -194,12 +194,7 @@ namespace std
 	  _M_destroy_pback();
 
 	  if (this->gptr() < this->egptr())
-	    {
-	      __ret = traits_type::to_int_type(*this->gptr());
-	      if (__bump)
-		this->gbump(1);
-	      return __ret;
-	    }
+	    return traits_type::to_int_type(*this->gptr());
 
 	  // Get and convert input sequence.
 	  const size_t __buflen = this->_M_buf_size > 1
@@ -247,8 +242,6 @@ namespace std
 	      _M_set_buffer(__ilen);
 	      _M_reading = true;
 	      __ret = traits_type::to_int_type(*this->gptr());
-	      if (__bump)
-		this->gbump(1);
 	    }
 	  else if (__elen == 0)
 	    {
