@@ -4711,6 +4711,20 @@ pedwarn_init (format, local, ofwhat)
   pedwarn (format, buffer);
 }
 
+/* Keep a pointer to the last free TREE_LIST node as we digest an initializer,
+   so that we can reuse it.  This is set in digest_init, and used in
+   process_init_constructor.
+
+   We will never keep more than one free TREE_LIST node here.  This is for
+   two main reasons.  First, we take elements off the old list and add them
+   to the new list one at a time, thus there should never be more than
+   one free TREE_LIST at a time, and thus even if there is, we will never
+   need more than one.  Secondly, to avoid dangling pointers to freed obstacks,
+   we want to always ensure that we have either a pointer to a valid TREE_LIST
+   within the current initializer, or else a pointer to null.  */
+
+static tree free_tree_list = NULL_TREE;
+
 /* Digest the parser output INIT as an initializer for type TYPE.
    Return a C expression of type TYPE to represent the initial value.
 
@@ -4750,13 +4764,21 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
     partial_bracket_mentioned = 0;
 
   /* By default, assume we use one element from a list.
-     We correct this later in the sole case where it is not true.  */
+     We correct this later in the cases where it is not true.
+
+     Thus, we update TAIL now to point to the next element, and save the
+     old value in OLD_TAIL_CONTENTS.  If we didn't actually use the first
+     element, then we will reset TAIL before proceeding.  FREE_TREE_LIST
+     is handled similarly.  */
 
   if (tail)
     {
       old_tail_contents = *tail;
       *tail = TREE_CHAIN (*tail);
+      free_tree_list = old_tail_contents;
     }
+  else
+    free_tree_list = 0;
 
   if (init == error_mark_node)
     return init;
@@ -4933,6 +4955,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
       else if (tail != 0)
 	{
 	  *tail = old_tail_contents;
+	  free_tree_list = NULL_TREE;
 	  result = process_init_constructor (type, NULL_TREE, tail,
 					     require_constant,
 					     constructor_constant, ofwhat);
@@ -5030,6 +5053,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
       else if (tail != 0)
 	{
 	  *tail = old_tail_contents;
+	  free_tree_list = NULL_TREE;
 	  return process_init_constructor (type, NULL_TREE, tail,
 					   constructor_constant,
 					   constructor_constant, ofwhat);
@@ -5120,38 +5144,47 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      tree min_index, max_index, current_index, members_index;
-      tree bound_type;
-      tree one;
+      tree min_index, max_index;
       /* These are non-zero only within a range initializer.  */
       tree start_index = 0, end_index = 0;
       /* Within a range, this is the value for the elts in the range.  */
       tree range_val = 0;
+      /* Do arithmetic using double integers, but don't use fold/build,
+	 because these allocate a new tree object everytime they are called,
+	 thus resulting in gcc using too much memory for large
+	 initializers.  */
+      union tree_node current_index_node, members_index_node;
+      tree current_index = &current_index_node;
+      tree members_index = &members_index_node;
+      TREE_TYPE (current_index) = integer_type_node;
+      TREE_TYPE (members_index) = integer_type_node;
 
       /* If we have array bounds, set our bounds from that.  Otherwise,
-	 we have a lower bound of zero and an unknown upper bound.  Also
-	 set the type of the bounds; use "int" as default.  */
+	 we have a lower bound of zero and an unknown upper bound.  */
       if (TYPE_DOMAIN (type))
 	{
-	  min_index = members_index = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+	  min_index = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
 	  max_index = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-	  bound_type = TREE_TYPE (min_index);
 	}
       else
 	{
-	  min_index = members_index = integer_zero_node;
+	  min_index = integer_zero_node;
 	  max_index = 0;
-	  bound_type = integer_type_node;
 	}
 
-      one = convert (bound_type, integer_one_node);
+      TREE_INT_CST_LOW (members_index) = TREE_INT_CST_LOW (min_index);
+      TREE_INT_CST_HIGH (members_index) = TREE_INT_CST_HIGH (min_index);
 
       /* Don't leave the loop based on index if the next item has an explicit
 	 index value that will override it. */
 
-      for (current_index = min_index; tail != 0 || end_index;
-	   current_index = fold (build (PLUS_EXPR, bound_type,
-					current_index, one)))
+      for (TREE_INT_CST_LOW (current_index) = TREE_INT_CST_LOW (min_index),
+	   TREE_INT_CST_HIGH (current_index) = TREE_INT_CST_HIGH (min_index);
+	   tail != 0 || end_index;
+	   add_double (TREE_INT_CST_LOW (current_index),
+		       TREE_INT_CST_HIGH (current_index), 1, 0,
+		       &TREE_INT_CST_LOW (current_index),
+		       &TREE_INT_CST_HIGH (current_index)))
 	{
 	  register tree next1 = 0;
 
@@ -5304,20 +5337,38 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	     Make the list longer if necessary.  */
 	  while (! tree_int_cst_lt (current_index, members_index))
 	    {
-	      members = tree_cons (NULL_TREE, NULL_TREE, members);
-	      members_index = fold (build (PLUS_EXPR, bound_type,
-					   members_index, one));
+	      if (free_tree_list)
+		{
+		  TREE_CHAIN (free_tree_list) = members;
+		  TREE_PURPOSE (free_tree_list) = NULL_TREE;
+		  TREE_VALUE (free_tree_list) = NULL_TREE;
+		  members = free_tree_list;
+		  free_tree_list = NULL_TREE;
+		}
+	      else
+		members = tree_cons (NULL_TREE, NULL_TREE, members);
+	      add_double (TREE_INT_CST_LOW (members_index),
+			  TREE_INT_CST_HIGH (members_index), 1, 0,
+			  &TREE_INT_CST_LOW (members_index),
+			  &TREE_INT_CST_HIGH (members_index));
 	    }
 
 	  {
 	    tree temp;
-	    tree idx;
+	    union tree_node idx_node;
+	    tree idx = &idx_node;
+	    TREE_TYPE (idx) = integer_type_node;
 
 	    temp = members;
-	    for (idx = fold (build (MINUS_EXPR, bound_type,
-				    members_index, one));
+	    for (add_double (TREE_INT_CST_LOW (members_index),
+			     TREE_INT_CST_HIGH (members_index), -1, -1,
+			     &TREE_INT_CST_LOW (idx),
+			     &TREE_INT_CST_HIGH (idx));
 		 tree_int_cst_lt (current_index, idx);
-		 idx = fold (build (MINUS_EXPR, bound_type, idx, one)))
+		 add_double (TREE_INT_CST_LOW (idx),
+			     TREE_INT_CST_HIGH (idx), -1, -1,
+			     &TREE_INT_CST_LOW (idx),
+			     &TREE_INT_CST_HIGH (idx)))
 	      temp = TREE_CHAIN (temp);
 	    TREE_VALUE (temp) = next1;
 	  }
@@ -5405,7 +5456,16 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	     Make the list longer if necessary.  */
 	  while (i >= members_length)
 	    {
-	      members = tree_cons (NULL_TREE, NULL_TREE, members);
+	      if (free_tree_list)
+		{
+		  TREE_CHAIN (free_tree_list) = members;
+		  TREE_PURPOSE (free_tree_list) = NULL_TREE;
+		  TREE_VALUE (free_tree_list) = NULL_TREE;
+		  members = free_tree_list;
+		  free_tree_list = NULL_TREE;
+		}
+	      else
+		members = tree_cons (NULL_TREE, NULL_TREE, members);
 	      members_length++;
 	    }
 	  {
@@ -5493,8 +5553,17 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
       else if (!TREE_CONSTANT (next1))
 	allconstant = 0;
       else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
-	allsimple = 0;
-      members = tree_cons (field, next1, members);
+	allsimple = 0; 
+     if (free_tree_list)
+	{
+	  TREE_CHAIN (free_tree_list) = members;
+	  TREE_PURPOSE (free_tree_list) = field;
+	  TREE_VALUE (free_tree_list) = next1;
+	  members = free_tree_list;
+	  free_tree_list = NULL_TREE;
+	}
+      else
+	members = tree_cons (field, next1, members);
     }
 
   /* If arguments were specified as a list, just remove the ones we used.  */
@@ -5525,7 +5594,16 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
   if (erroneous)
     return error_mark_node;
 
-  result = build (CONSTRUCTOR, type, NULL_TREE, nreverse (members));
+  if (elts)
+    result = build (CONSTRUCTOR, type, NULL_TREE, nreverse (members));
+  else
+    {
+      result = init;
+      CONSTRUCTOR_ELTS (result) = nreverse (members);
+      TREE_TYPE (result) = type;
+      TREE_CONSTANT (result) = 0;
+      TREE_STATIC (result) = 0;
+    }
   if (allconstant) TREE_CONSTANT (result) = 1;
   if (allconstant && allsimple) TREE_STATIC (result) = 1;
   return result;
