@@ -28,10 +28,9 @@ LIB1ASMFUNCS = _mulsi3 \
 
 TARGET_LIBGCC2_CFLAGS = -DUSE_GAS -DIN_GCC
 
-# 32-bit div/mod from the mn10200 port.  Prototypes have been added
-# to avoid problems in passing 16/32-bit int (last param of udivmodsi4).
-LIB2FUNCS_EXTRA = $(srcdir)/config/m68hc11/udivmodsi4.c \
-	$(srcdir)/config/m68hc11/divmod.c $(srcdir)/config/m68hc11/udivmod.c
+# C implementation of 32-bit div/mod.
+LIB2FUNCS_EXTRA = $(srcdir)/config/udivmodsi4.c \
+	$(srcdir)/config/divmod.c $(srcdir)/config/udivmod.c
 
 # Don't compile with -g1 this reduces the size of some sections (.eh_frame).
 LIBGCC2_DEBUG_CFLAGS =
