@@ -75,8 +75,10 @@ reorg			Jeff Law		law@redhat.com
 caller-save.c		Jeff Law		law@redhat.com
 debugging code		Jim Wilson		wilson@redhat.com
 dwarf debugging code	Jason Merrill		jason@redhat.com
-c++ runtime libs	Ulrich Drepper		drepper@redhat.com
 c++ runtime libs        Gabriel Dos Reis        dosreis@cmla.ens-cachan.fr
+c++ runtime libs	Ulrich Drepper		drepper@redhat.com
+c++ runtime libs	Phil Edwards		pedwards@jaj.com
+c++ runtime libs	Benjamin Kosnik		bkoz@redhat.com
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
@@ -112,7 +114,6 @@ Hans Boehm					hboehm@gcc.gnu.org
 Andrew cagney					cagney@redhat.com
 Eric Christopher				echristo@redhat.com
 William Cohen					wcohen@redhat.com
-Phil Edwards                                    pedwards@jaj.com
 *Paul Eggert					eggert@twinsun.com
 Ben Elliston					bje@redhat.com
 Marc Espie					espie@cvs.openbsd.org
@@ -129,7 +130,6 @@ Jakub Jelinek					jakub@redhat.com
 Klaus Kaempf					kkaempf@progis.de
 Brendan Kehoe					brendan@redhat.com
 Mumit Khan					khan@xraylith.wisc.edu
-Benjamin Kosnik					bkoz@redhat.com
 Marc Lehmann					pcg@goof.com
 Alan Lehotsky					apl@alum.mit.edu
 Warren Levy					warrenl@redhat.com
