@@ -1,3 +1,8 @@
+2004-04-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for __s390__
+	and __s390x__ hosts.
+
 2004-03-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (LIBGCOV): Add _gcov_fork, _gcov_execl, _gcov_execlp,
