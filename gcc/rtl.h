@@ -1391,7 +1391,7 @@ extern int subreg_realpart_p			PROTO ((rtx));
 extern void reverse_comparison			PROTO ((rtx));
 extern void set_new_first_and_last_insn		PROTO ((rtx, rtx));
 extern void set_new_first_and_last_label_num	PROTO ((int, int));
-extern void unshare_all_rtl			PROTO ((rtx));
+extern void unshare_all_rtl_again		PROTO ((rtx));
 extern void set_last_insn			PROTO ((rtx));
 extern void link_cc0_insns			PROTO ((rtx));
 extern void add_insn				PROTO ((rtx));

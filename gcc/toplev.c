@@ -3816,7 +3816,7 @@ rest_of_compilation (decl)
 
   /* Copy any shared structure that should not be shared.  */
 
-  unshare_all_rtl (insns);
+  unshare_all_rtl (current_function_decl, insns);
 
 #ifdef SETJMP_VIA_SAVE_AREA
   /* This must be performed before virutal register instantiation.  */

@@ -248,6 +248,9 @@ extern int emit_lineno;
 static rtx make_jump_insn_raw		PROTO((rtx));
 static rtx make_call_insn_raw		PROTO((rtx));
 static rtx find_line_note		PROTO((rtx));
+static void unshare_all_rtl_1		PROTO((rtx));
+static void unshare_all_decls		PROTO((tree));
+static void reset_used_decls		PROTO((tree));
 
 rtx
 gen_rtx_CONST_INT (mode, arg)
@@ -1767,23 +1770,29 @@ restore_emit_status (p)
   free_insn = 0;
 }
 
-/* Go through all the RTL insn bodies and copy any invalid shared structure.
-   It does not work to do this twice, because the mark bits set here
-   are not cleared afterwards.  */
+/* Go through all the RTL insn bodies and copy any invalid shared 
+   structure.  This routine should only be called once.  */
 
 void
-unshare_all_rtl (insn)
-     register rtx insn;
+unshare_all_rtl (fndecl, insn)
+     tree fndecl;
+     rtx insn;
 {
-  for (; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
-	|| GET_CODE (insn) == CALL_INSN)
-      {
-	PATTERN (insn) = copy_rtx_if_shared (PATTERN (insn));
-	REG_NOTES (insn) = copy_rtx_if_shared (REG_NOTES (insn));
-	LOG_LINKS (insn) = copy_rtx_if_shared (LOG_LINKS (insn));
-      }
+  tree decl;
 
+  /* Make sure that virtual stack slots are not shared.  */
+  reset_used_decls (DECL_INITIAL (current_function_decl));
+
+  /* Make sure that virtual parameters are not shared.  */
+  for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
+    DECL_RTL (decl) = copy_rtx_if_shared (DECL_RTL (decl));
+
+  /* Make sure that virtual stack slots are not shared.  */
+  unshare_all_decls (DECL_INITIAL (fndecl));
+
+  /* Unshare just about everything else.  */
+  unshare_all_rtl_1 (insn);
+  
   /* Make sure the addresses of stack slots found outside the insn chain
      (such as, in DECL_RTL of a variable) are not shared
      with the insn chain.
@@ -1791,8 +1800,76 @@ unshare_all_rtl (insn)
      This special care is necessary when the stack slot MEM does not
      actually appear in the insn chain.  If it does appear, its address
      is unshared from all else at that point.  */
+  stack_slot_list = copy_rtx_if_shared (stack_slot_list);
+}
 
-  copy_rtx_if_shared (stack_slot_list);
+/* Go through all the RTL insn bodies and copy any invalid shared 
+   structure, again.  This is a fairly expensive thing to do so it
+   should be done sparingly.  */
+
+void
+unshare_all_rtl_again (insn)
+     rtx insn;
+{
+  rtx p;
+  for (p = insn; p; p = NEXT_INSN (p))
+    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+      {
+	reset_used_flags (PATTERN (p));
+	reset_used_flags (REG_NOTES (p));
+	reset_used_flags (LOG_LINKS (p));
+      }
+  unshare_all_rtl_1 (insn);
+}
+
+/* Go through all the RTL insn bodies and copy any invalid shared structure.
+   Assumes the mark bits are cleared at entry.  */
+
+static void
+unshare_all_rtl_1 (insn)
+     rtx insn;
+{
+  for (; insn; insn = NEXT_INSN (insn))
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      {
+	PATTERN (insn) = copy_rtx_if_shared (PATTERN (insn));
+	REG_NOTES (insn) = copy_rtx_if_shared (REG_NOTES (insn));
+	LOG_LINKS (insn) = copy_rtx_if_shared (LOG_LINKS (insn));
+      }
+}
+
+/* Go through all virtual stack slots of a function and copy any
+   shared structure.  */
+static void
+unshare_all_decls (blk)
+     tree blk;
+{
+  tree t;
+
+  /* Copy shared decls.  */
+  for (t = BLOCK_VARS (blk); t; t = TREE_CHAIN (t))
+    DECL_RTL (t)  = copy_rtx_if_shared (DECL_RTL (t));
+
+  /* Now process sub-blocks.  */
+  for (t = BLOCK_SUBBLOCKS (blk); t; t = TREE_CHAIN (t))
+    unshare_all_decls (t);
+}
+
+/* Go through all virtual stack slots of a function and mark them as
+   not shared. */
+static void
+reset_used_decls (blk)
+     tree blk;
+{
+  tree t;
+
+  /* Mark decls.  */
+  for (t = BLOCK_VARS (blk); t; t = TREE_CHAIN (t))
+    reset_used_flags (DECL_RTL (t));
+
+  /* Now process sub-blocks.  */
+  for (t = BLOCK_SUBBLOCKS (blk); t; t = TREE_CHAIN (t))
+    reset_used_decls (t);
 }
 
 /* Mark ORIG as in use, and return a copy of it if it was already in use.

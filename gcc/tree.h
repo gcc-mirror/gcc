@@ -2207,6 +2207,7 @@ extern tree reorder_blocks		PROTO ((tree *, tree,
 						struct rtx_def *));
 extern void free_temps_for_rtl_expr	PROTO ((tree));
 extern void instantiate_virtual_regs	PROTO ((tree, struct rtx_def *));
+extern void unshare_all_rtl		PROTO ((tree, struct rtx_def *));
 extern int max_parm_reg_num		PROTO ((void));
 extern void push_function_context	PROTO ((void));
 extern void pop_function_context	PROTO ((void));

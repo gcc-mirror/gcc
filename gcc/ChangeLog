@@ -4,6 +4,33 @@
 	constant pool, also put it on forced_labels list so that it won't
 	be deleted.
 
+	2000-05-25  Alexandre Oliva  <aoliva@cygnus.com>
+	* emit-rtl.c (reset_used_decls): New function.
+	(unshare_all_rtl_again): Call it.
+
+	2000-05-24  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+	* emit-rtl.c (unshare_all_decls): New function.
+	(unshare_all_rtl): Call it.
+
+	2000-05-20  Alexandre Oliva  <aoliva@cygnus.com>
+	* emit-rtl.c (unshare_all_rtl): Store the copied rtx.
+
+	2000-04-15  Richard Earnshaw (rearnsah@arm.com)
+	* emit-rtl.c (unshare_all_rtl_again): Unmark everything, then
+	call unshare_all_rtl.
+
+	2000-01-27  Geoffrey Keating  <geoffk@cygnus.com>
+	* emit-rtl.c (unshare_all_rtl): Unshare virtual parameters too.
+	Use unshare_all_rtl_1.
+	(unshare_all_rtl_again): New function.
+	(unshare_all_rtl_1): New function split out of unshare_all_rtl.
+	* function.c (purge_addressof_1): Use unshare_all_rtl_again
+	rather than resetting the 'used' flags ourself.
+	* toplev.c (rest_of_compilation): Add current_function_decl
+	to the unshare_all_rtl call.
+	* tree.h: Prototype unshare_all_rtl.
+	* rtl.h: Prototype unshare_all_rtl_again here.
+
 2001-01-12  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* version.c: Bump.
