@@ -1,3 +1,8 @@
+Sun Jun 28 00:49:42 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* stl_config.h (__STL_PTHREADS): Don't define for glibc 2 if
+	_G_USING_THUNKS is not defined.
+
 1998-04-07 18:32  Ulrich Drepper  <drepper@cygnus.com>
 
 	* stl_hashtable.h (__stl_prime_list): Mark last two numbers as
