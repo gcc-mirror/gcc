@@ -1,3 +1,9 @@
+2003-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR middle-end/8866
+	* cfgtrl.c (try_redirect_by_replacing_jump): Do not delete
+	jumptables.
+
 2003-04-16  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (sdata_symbolic_operand): Use
