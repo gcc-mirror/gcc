@@ -387,9 +387,9 @@ arith_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op)));
 }
 
-/* Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
-   can fit in a 13 bit immediate field.  This is an acceptable DImode operand
-   for most 3 address instructions.  */
+/* Return true if OP is a register, is a CONST_INT that fits in a 13 bit
+   immediate field, or is a CONST_DOUBLE whose both parts fit in a 13 bit
+   immediate field.  */
 
 int
 arith_double_operand (op, mode)
@@ -397,16 +397,10 @@ arith_double_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op))
 	  || (GET_CODE (op) == CONST_DOUBLE
-	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x1000) < 0x2000
-	      && ((CONST_DOUBLE_HIGH (op) == -1
-		   && (CONST_DOUBLE_LOW (op) & 0x1000) == 0x1000)
-		  || (CONST_DOUBLE_HIGH (op) == 0
-		      && (CONST_DOUBLE_LOW (op) & 0x1000) == 0)))
-	  || (GET_CODE (op) == CONST_INT
-	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
-	      && (unsigned) (INTVAL (op) + 0x1000) < 0x2000));
+	      && (unsigned) (CONST_DOUBLE_HIGH (op) + 0x1000) < 0x2000));
 }
 
 /* Return truth value of whether OP is a integer which fits the
