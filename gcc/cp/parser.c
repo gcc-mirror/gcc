@@ -13961,19 +13961,23 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
   if (!cp_parser_require (parser, CPP_LESS, "`<'"))
     return;
       
-  /* Parse the template parameters.  */
-  begin_template_parm_list ();
   /* If the next token is `>', then we have an invalid
      specialization.  Rather than complain about an invalid template
      parameter, issue an error message here.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
     {
       cp_parser_error (parser, "invalid explicit specialization");
+      begin_specialization ();
       parameter_list = NULL_TREE;
     }
   else
-    parameter_list = cp_parser_template_parameter_list (parser);
-  parameter_list = end_template_parm_list (parameter_list);
+    {
+      /* Parse the template parameters.  */
+      begin_template_parm_list ();
+      parameter_list = cp_parser_template_parameter_list (parser);
+      parameter_list = end_template_parm_list (parameter_list);
+    }
+
   /* Look for the `>'.  */
   cp_parser_skip_until_found (parser, CPP_GREATER, "`>'");
   /* We just processed one more parameter list.  */

@@ -1,3 +1,9 @@
+2003-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12403
+	* parser.c (cp_parser_template_declaration_after_export): Set up
+	template specialization scope in case of explicit specialization.
+
 2003-12-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13081

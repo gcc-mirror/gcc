@@ -12,4 +12,4 @@ class bug {
 };
 template <class X> 
 template <>			// { dg-error "" } invalid specialization
-class bug<X>::a<char> {};	
+class bug<X>::a<char> {};	// { dg-error "" }

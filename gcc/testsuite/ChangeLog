@@ -1,3 +1,9 @@
+2003-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12403
+	* g++.dg/parse/explicit1.C: New test.
+	* g++.old-deja/g++.pt/explicit71.C: Adjust expected error.
+
 2003-12-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13081
