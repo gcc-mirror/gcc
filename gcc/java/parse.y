@@ -7429,10 +7429,6 @@ add_stmt_to_block (tree b, tree type, tree stmt)
 static tree
 add_stmt_to_compound (tree existing, tree type, tree stmt)
 {
-  /* Keep track of this for inlining.  */
-  if (current_function_decl)
-    ++DECL_NUM_STMTS (current_function_decl);
-
   if (existing)
     return build (COMPOUND_EXPR, type, existing, stmt);
   else

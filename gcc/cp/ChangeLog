@@ -1,3 +1,13 @@
+Wed Jul  9 02:28:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cp-lang.c (LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS): New.
+	* decl.c (duplicate_decls): Use DECL_ESTIMATED_INSNS.
+	(start_function): Use DECL_ESTIMATED_INSNS.
+	* optimize.c (maybe_clone_body): Use DECL_ESTIMATED_INSNS.
+
+	* decl2.c (maybe_emit_vtables): Fix marking vtables as needed in
+	unit-at-a-time
+
 2003-07-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11030

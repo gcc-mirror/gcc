@@ -254,7 +254,7 @@ maybe_clone_body (tree fn)
 
       /* There are as many statements in the clone as in the
 	 original.  */
-      DECL_NUM_STMTS (clone) = DECL_NUM_STMTS (fn);
+      DECL_ESTIMATED_INSNS (clone) = DECL_ESTIMATED_INSNS (fn);
 
       /* Clean up.  */
       splay_tree_delete (decl_map);

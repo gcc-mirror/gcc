@@ -1,3 +1,12 @@
+Wed Jul  9 02:29:15 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* java-tree.h (DECL_NUM_STMTS): Rename to...
+	(DECL_ESTIMATED_INSNS): ... this.
+	* lang.c (java_estimate_num_insns, java_estimate_num_insns_1):
+	New static functions.
+	(LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS): Define.
+	* parser.y (add_stmt_to_compound): Do not account statements.
+
 2003-07-08  Mark Wielaard  <mark@klomp.org>
 
 	* gcj.texi: CNI now expands to Compiled Native Interface.

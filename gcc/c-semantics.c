@@ -102,10 +102,6 @@ add_stmt (tree t)
      statements are full-expressions.  We record that fact here.  */
   STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p ();
 
-  /* Keep track of the number of statements in this function.  */
-  if (current_function_decl)
-    ++DECL_NUM_STMTS (current_function_decl);
-
   return t;
 }
 

@@ -5881,4 +5881,114 @@ check_function_arguments_recurse (void (*callback)
   (*callback) (ctx, param, param_num);
 }
 
+/* Used by estimate_num_insns.  Estimate number of instructions seen
+   by given statement.  */
+static tree
+c_estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
+{
+  int *count = data;
+  tree x = *tp;
+
+  if (TYPE_P (x) || DECL_P (x))
+    {
+      *walk_subtrees = 0;
+      return NULL;
+    }
+  /* Assume that constants and references counts nothing.  These should
+     be majorized by amount of operations amoung them we count later
+     and are common target of CSE and similar optimizations.  */
+  if (TREE_CODE_CLASS (TREE_CODE (x)) == 'c'
+      || TREE_CODE_CLASS (TREE_CODE (x)) == 'r')
+    return NULL;
+  switch (TREE_CODE (x))
+    { 
+    /* Reconginze assignments of large structures and constructors of
+       big arrays.  */
+    case MODIFY_EXPR:
+    case CONSTRUCTOR:
+      {
+	int size = int_size_in_bytes (TREE_TYPE (x));
+
+	if (!size || size > MOVE_MAX_PIECES)
+	  *count += 10;
+	else
+	  *count += 2 * (size + MOVE_MAX - 1) / MOVE_MAX;
+	return NULL;
+      }
+      break;
+    /* Few special cases of expensive operations.  This is usefull
+       to avoid inlining on functions having too many of these.  */
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+    case RDIV_EXPR:
+    case CALL_EXPR:
+    case METHOD_CALL_EXPR:
+      *count += 10;
+      break;
+    /* Various containers that will produce no code themselves.  */
+    case INIT_EXPR:
+    case TARGET_EXPR:
+    case BIND_EXPR:
+    case BLOCK:
+    case TREE_LIST:
+    case TREE_VEC:
+    case IDENTIFIER_NODE:
+    case PLACEHOLDER_EXPR:
+    case WITH_CLEANUP_EXPR:
+    case CLEANUP_POINT_EXPR:
+    case NOP_EXPR:
+    case VIEW_CONVERT_EXPR:
+    case SAVE_EXPR:
+    case UNSAVE_EXPR:
+    case COMPLEX_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case TRY_CATCH_EXPR:
+    case TRY_FINALLY_EXPR:
+    case LABEL_EXPR:
+    case EXIT_EXPR:
+    case LABELED_BLOCK_EXPR:
+    case EXIT_BLOCK_EXPR:
+    case EXPR_WITH_FILE_LOCATION:
+
+    case EXPR_STMT:
+    case COMPOUND_STMT:
+    case RETURN_STMT:
+    case LABEL_STMT:
+    case SCOPE_STMT:
+    case FILE_STMT:
+    case CASE_LABEL:
+    case STMT_EXPR:
+    case CLEANUP_STMT:
+
+    case SIZEOF_EXPR:
+    case ARROW_EXPR:
+    case ALIGNOF_EXPR:
+      break;
+    case DECL_STMT:
+      /* Do not account static initializers.  */
+      if (TREE_STATIC (TREE_OPERAND (x, 0)))
+	*walk_subtrees = 0;
+      break;
+    default:
+      (*count)++;
+    }
+  return NULL;
+}
+
+/*  Estimate number of instructions that will be created by expanding the body.  */
+int
+c_estimate_num_insns (tree decl)
+{
+  int num = 0;
+  walk_tree_without_duplicates (&DECL_SAVED_TREE (decl), c_estimate_num_insns_1, &num);
+  return num;
+}
+
 #include "gt-c-common.h"
