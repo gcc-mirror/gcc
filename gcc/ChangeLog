@@ -1,3 +1,7 @@
+Tue Jul 28 23:17:39 1998  Peter Gerwinski <peter@gerwinski.de>
+
+        * tree.c (build_range_type): Copy TYPE_SIZE_UNIT.
+
 Tue Jul 28 22:31:12 1998  Craig Burley  <burley@gnu.org>
 
 	* gcc.c: Fix commentary describing %g, %u, %U, and %O.
