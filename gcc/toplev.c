@@ -64,6 +64,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ssa.h"
 #include "params.h"
 #include "reload.h"
+#include "dwarf2asm.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
@@ -2736,7 +2737,7 @@ rest_of_compilation (decl)
 	  }
 
       /* If requested, consider whether to make this function inline.  */
-      if ((DECL_INLINE (decl) && !flag_no_inline) 
+      if ((DECL_INLINE (decl) && !flag_no_inline)
 	  || flag_inline_functions)
 	{
 	  timevar_push (TV_INTEGRATION);
@@ -3110,7 +3111,7 @@ rest_of_compilation (decl)
 	  timevar_pop (TV_CSE);
 	  cse_not_expected = !flag_rerun_cse_after_loop;
 	}
-      
+
       /* If gcse or cse altered any jumps, rerun jump optimizations to clean
 	 things up.  Then possibly re-run CSE again.  */
       while (tem || tem2)
@@ -4117,7 +4118,7 @@ decode_f_option (arg)
   else if ((option_value = skip_leading_substring (arg, "inline-limit-"))
 	   || (option_value = skip_leading_substring (arg, "inline-limit=")))
     {
-      int val = 
+      int val =
 	read_integral_parameter (option_value, arg - 2,
 				 MAX_INLINE_INSNS);
       set_param_value ("max-inline-insns", val);
@@ -4422,9 +4423,9 @@ independent_decode_option (argc, argv)
       arg = argv[1];
       /* Look for the `='.  */
       equal = strchr (arg, '=');
-      if (!equal) 
+      if (!equal)
 	error ("invalid --param option: %s", arg);
-      else 
+      else
 	{
 	  int val;
 
@@ -4440,7 +4441,7 @@ independent_decode_option (argc, argv)
 
       return 2;
     }
-      
+
   if (*arg == 'Y')
     arg++;
 
@@ -4607,7 +4608,7 @@ independent_decode_option (argc, argv)
    Decode command args, then call compile_file.
    Exit code is FATAL_EXIT_CODE if can't open files or if there were
    any errors, or SUCCESS_EXIT_CODE if compilation succeeded.
-   
+
    It is not safe to call this function more than once.  */
 
 int
