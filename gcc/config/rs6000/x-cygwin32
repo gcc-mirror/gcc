@@ -2,5 +2,3 @@
 STMP_FIXPROTO =
 # Don't need collect2
 USE_COLLECT2 =
-# We use .exe.
-exeext=.exe
