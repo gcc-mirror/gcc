@@ -1,5 +1,5 @@
 /* Print RTL for GNU C Compiler.
-   Copyright (C) 1987, 1988, 1992, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -244,6 +244,22 @@ print_rtx (in_rtx)
 	    {
 	      fputc (' ', outfile);
 	      DEBUG_PRINT_REG (in_rtx, 0, outfile);
+	    }
+	  else if (GET_CODE (in_rtx) == REG && value <= LAST_VIRTUAL_REGISTER)
+	    {
+	      if (value == VIRTUAL_INCOMING_ARGS_REGNUM)
+		fprintf (outfile, " %d virtual-incoming-args", value);
+	      else if (value == VIRTUAL_STACK_VARS_REGNUM)
+		fprintf (outfile, " %d virtual-stack-vars", value);
+	      else if (value == VIRTUAL_STACK_DYNAMIC_REGNUM)
+		fprintf (outfile, " %d virtual-stack-dynamic", value);
+	      else if (value == VIRTUAL_OUTGOING_ARGS_REGNUM)
+		fprintf (outfile, " %d virtual-outgoing-args", value);
+	      else if (value == VIRTUAL_CFA_REGNUM)
+		fprintf (outfile, " %d virtual-cfa", value);
+	      else
+		fprintf (outfile, " %d virtual-reg-%d", value,
+			 value-FIRST_VIRTUAL_REGISTER);
 	    }
 	  else if (flag_dump_unnumbered
 		   && (is_insn || GET_CODE (in_rtx) == NOTE))
