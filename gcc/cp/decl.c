@@ -2073,7 +2073,7 @@ use_label (tree decl)
       || named_label_uses->label_decl != decl)
     {
       struct named_label_use_list *new_ent;
-      new_ent = ggc_alloc (sizeof (struct named_label_use_list));
+      new_ent = GGC_NEW (struct named_label_use_list);
       new_ent->label_decl = decl;
       new_ent->names_in_scope = current_binding_level->names;
       new_ent->binding_level = current_binding_level;
@@ -2109,7 +2109,7 @@ lookup_label (tree id)
   /* Record this label on the list of labels used in this function.
      We do this before calling make_label_decl so that we get the
      IDENTIFIER_LABEL_VALUE before the new label is declared.  */
-  ent = ggc_alloc_cleared (sizeof (struct named_label_list));
+  ent = GGC_CNEW (struct named_label_list);
   ent->old_value = IDENTIFIER_LABEL_VALUE (id);
   ent->next = named_labels;
   named_labels = ent;
@@ -10025,7 +10025,7 @@ save_function_data (tree decl)
 		      19990908);
 
   /* Make a copy.  */
-  f = ggc_alloc (sizeof (struct language_function));
+  f = GGC_NEW (struct language_function);
   memcpy (f, cp_function_chain, sizeof (struct language_function));
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 
@@ -10672,8 +10672,7 @@ revert_static_member_fn (tree decl)
 void
 cxx_push_function_context (struct function * f)
 {
-  struct language_function *p
-    = ggc_alloc_cleared (sizeof (struct language_function));
+  struct language_function *p = GGC_CNEW (struct language_function);
   f->language = p;
 
   /* Whenever we start a new function, we destroy temporaries in the

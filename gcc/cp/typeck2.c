@@ -263,7 +263,7 @@ abstract_virtuals_error (tree decl, tree type)
       slot = htab_find_slot_with_hash (abstract_pending_vars, type,
 				      (hashval_t)TYPE_UID (type), INSERT);
 
-      pat = ggc_alloc (sizeof (struct pending_abstract_type));
+      pat = GGC_NEW (struct pending_abstract_type);
       pat->type = type;
       pat->decl = decl;
       pat->locus = ((decl && DECL_P (decl))

@@ -85,7 +85,7 @@ binding_entry_make (tree name, tree type)
       free_binding_entry = entry->chain;
     }
   else
-    entry = ggc_alloc (sizeof (struct binding_entry_s));
+    entry = GGC_NEW (struct binding_entry_s);
 
   entry->name = name;
   entry->type = type;
@@ -127,8 +127,7 @@ binding_table_construct (binding_table table, size_t chain_count)
 {
   table->chain_count = chain_count;
   table->entry_count = 0;
-  table->chain = ggc_alloc_cleared
-    (table->chain_count * sizeof (binding_entry));
+  table->chain = GGC_CNEWVEC (binding_entry, table->chain_count);
 }
 
 /* Make TABLE's entries ready for reuse.  */
@@ -161,7 +160,7 @@ binding_table_free (binding_table table)
 static inline binding_table
 binding_table_new (size_t chain_count)
 {
-  binding_table table = ggc_alloc (sizeof (struct binding_table_s));
+  binding_table table = GGC_NEW (struct binding_table_s);
   table->chain = NULL;
   binding_table_construct (table, chain_count);
   return table;
@@ -351,7 +350,7 @@ cxx_binding_make (tree value, tree type)
       free_bindings = binding->previous;
     }
   else
-    binding = ggc_alloc (sizeof (cxx_binding));
+    binding = GGC_NEW (cxx_binding);
 
   cxx_binding_init (binding, value, type);
 
@@ -1309,7 +1308,7 @@ begin_scope (scope_kind kind, tree entity)
       free_binding_level = scope->level_chain;
     }
   else
-    scope = ggc_alloc (sizeof (cxx_scope));
+    scope = GGC_NEW (cxx_scope);
   memset (scope, 0, sizeof (cxx_scope));
 
   scope->this_entity = entity;
@@ -4941,7 +4940,7 @@ push_to_top_level (void)
   int need_pop;
 
   timevar_push (TV_NAME_LOOKUP);
-  s = ggc_alloc_cleared (sizeof (struct saved_scope));
+  s = GGC_CNEW (struct saved_scope);
 
   b = scope_chain ? current_binding_level : 0;
 
