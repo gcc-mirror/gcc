@@ -1,3 +1,9 @@
+2001-08-30  Eric Christopher  <echristo@redhat.com>
+	    Jason Eckhardt  <jle@redhat.com>
+
+	* config.guess: Merge from master sources.
+	* config.sub: Merge from master sources, add support for mipsisa32.
+
 2001-08-25  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config.sub: Merge from master sources, rev 1.219.
