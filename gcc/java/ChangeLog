@@ -1,11 +1,11 @@
-Thu Nov  4 16:27:01 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
-
-	* parse.y (resolve_qualified_expression_name): Handle PLUS_EXPR.
-	(qualify_ambiguous_name): Likewise.
-	
 1999-11-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (emit_handlers): Zero catch_clauses after emitting them.
+
+Tue Nov 23 10:55:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (catch_clause_parameter:): Still set `$$' to NULL_TREE
+ 	in case of error. Error message tuned.
 
 1999-11-21  Anthony Green  <green@cygnus.com>
 
@@ -49,6 +49,11 @@ Tue Nov  9 12:12:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* class.c (finish_class): Emit inlined methods if any native
 	methods exist in the class.  Fixes PR gcj/85.
 
+Thu Nov  4 16:27:01 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_qualified_expression_name): Handle PLUS_EXPR.
+	(qualify_ambiguous_name): Likewise.
+	
 Wed Nov  3 15:20:02 MST 1999  Godmar Back <gback@cs.utah.edu>
 
 	* typeck.c: (lookup_java_method):  search all inherited
