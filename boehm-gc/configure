@@ -6587,7 +6587,7 @@ else
   multilib_arg=
 fi
 
-          ac_config_headers="$ac_config_headers include/gc_config.h"
+                    ac_config_headers="$ac_config_headers include/config.h include/gc_config.h"
 
 
                     ac_config_files="$ac_config_files Makefile include/Makefile"
@@ -7184,6 +7184,7 @@ do
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
+  "include/config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS include/config.h" ;;
   "include/gc_config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS include/gc_config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
