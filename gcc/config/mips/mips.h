@@ -147,7 +147,9 @@ extern int		mips_epilogue_delay_slots ();
 extern char	       *mips_fill_delay_slot ();
 extern char	       *mips_move_1word ();
 extern char	       *mips_move_2words ();
+extern void		mips_output_double ();
 extern int		mips_output_external ();
+extern void		mips_output_float ();
 extern void		mips_output_filename ();
 extern void		mips_output_lineno ();
 extern char	       *output_block_move ();
@@ -426,7 +428,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 18]"
+#define MIPS_VERSION "[AL 1.1, MM 19]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -3006,21 +3008,14 @@ while (0)
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #define ASM_OUTPUT_DOUBLE(STREAM,VALUE)					\
-{									\
-  union { double d; long l[2]; } u2;					\
-  u2.d = VALUE;								\
-  fprintf (STREAM, "\t.word\t0x%08lx\t\t# %.20g\n\t.word\t0x%08lx\n",	\
-	   u2.l[0], u2.d, u2.l[1]);					\
-}
+  mips_output_double (STREAM, VALUE)
+
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
 #define ASM_OUTPUT_FLOAT(STREAM,VALUE)					\
-{									\
-  union { float f; long l; } u2;					\
-  u2.f = VALUE;								\
-  fprintf (STREAM, "\t.word\t0x%08lx\t\t# %.12g\n", u2.l, u2.f);	\
-}
+  mips_output_float (STREAM, VALUE)
+
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
