@@ -75,13 +75,12 @@ prefix=/usr/local
 # Think THREE TIMES before specifying any other value for this!
 # DO NOT make this use $prefix!
 local_prefix=/usr/local
-# CYGNUS LOCAL: for our purposes, this must be prefix.  This is apparently
+# For our purposes, this must be prefix.  This is apparently
 # only done for the benefit of glibc, and we don't use glibc.
 local_prefix='$(prefix)'
 # Default is to let the Makefile set exec_prefix from $(prefix)
 exec_prefix='$(prefix)'
 
-# CYGNUS LOCAL.  Default to nothing.
 program_transform_name=
 program_transform_set=
 site=
@@ -134,7 +133,7 @@ do
     exec_prefix=$arg
     next_arg=
     ;;
-  --program-transform-name) # CYGNUS LOCAL
+  --program-transform-name)
     # Double any backslashes or dollar signs in the argument.
     if [ -n "${arg}" ] ; then
       program_transform_name="${program_transform_name} -e `echo ${arg} | sed -e 's/\\\\/\\\\\\\\/g' -e 's/\\\$/$$/g'`"
@@ -142,21 +141,21 @@ do
     program_transform_set=yes
     next_arg=
     ;;    
-  --program-prefix) # CYGNUS LOCAL
+  --program-prefix)
     if [ -n "${arg}" ]; then
       program_transform_name="${program_transform_name} -e s,^,`echo ${arg} | sed -e 's/\\\\/\\\\\\\\/g' -e 's/\\\$/$$/g'`,"
     fi
     program_transform_set=yes
     next_arg=
     ;;
-  --program-suffix) # CYGNUS LOCAL
+  --program-suffix)
     if [ -n "${arg}" ]; then
       program_transform_name="${program_transform_name} -e s,\$\$,`echo ${arg} | sed -e 's/\\\\/\\\\\\\\/g' -e 's/\\\$/$$/g'`,"
     fi
     program_transform_set=yes
     next_arg=
     ;;
-  --site) # CYGNUS LOCAL
+  --site)
     site=${arg}
     next_arg=
     ;;
@@ -220,7 +219,6 @@ do
 	| --program-trans | --program-tran | --program-tra \
 	| --program-tr | --program-t)
 	next_arg=--program-transform-name
-	# CYGNUS LOCAL
 	;;
      -program-transform-name=* | --program-transform-name=* \
 	| --program-transform-nam=* | --program-transform-na=* \
@@ -228,7 +226,6 @@ do
 	| --program-transform=* | --program-transfor=* | --program-transfo=* \
 	| --program-transf=* | --program-trans=* | --program-tran=* \
 	| --program-tra=* | --program-tr=* | --program-t=*)
-	# CYGNUS LOCAL
 	arg=`echo ${arg} | sed -e 's/^[-a-z_]*=//'`
 	# Double any \ or $ in the argument.
 	if [ -n "${arg}" ] ; then
@@ -240,12 +237,10 @@ do
 	| --program-pref | --program-pre | --program-pr \
 	| --program-p)
 	next_arg=--program-prefix
-	# CYGNUS LOCAL
 	;;
      -program-prefix=* | --program-prefix=* | --program-prefi=* \
 	| --program-pref=* | --program-pre=* | --program-pr=* \
 	| --program-p=*)
-	# CYGNUS LOCAL
 	arg=`echo ${arg} | sed -e 's/^[-a-z_]*=//'`
 	if [ -n "${arg}" ]; then
 	  program_transform_name="${program_transform_name} -e s,^,`echo ${arg} | sed -e 's/\\\\/\\\\\\\\/g' -e 's/\\\$/$$/g'`,"
@@ -256,22 +251,20 @@ do
 	| --program-suff | --program-suf | --program-su \
 	| --program-s)
 	next_arg=--program-suffix
-	# CYGNUS LOCAL
 	;;
      -program-suffix=* | --program-suffix=* | --program-suffi=* \
 	| --program-suff=* | --program-suf=* | --program-su=* \
 	| --program-s=*)
-	# CYGNUS LOCAL
 	arg=`echo ${arg} | sed -e 's/^[-a-z_]*=//'`
 	if [ -n "${arg}" ]; then
 	  program_transform_name="${program_transform_name} -e s,\$\$,`echo ${arg} | sed -e 's/\\\\/\\\\\\\\/g' -e 's/\\\$/$$/g'`,"
 	fi
 	program_transform_set=yes
 	;;
-     -site | --site | --sit) # CYGNUS LOCAL
+     -site | --site | --sit)
 	next_arg=--site
 	;;
-     -site=* | --site=* | --sit=* | --si=*) # CYGNUS LOCAL
+     -site=* | --site=* | --sit=* | --si=*)
 	site=`echo ${arg} | sed 's/^[-a-z]*=//'`
 	;;
      -with-gnu-ld | --with-gnu-ld | --with-gnu-l)
@@ -517,7 +510,6 @@ EOF
 		tmake_file=../Makefile.in
 	fi
 	
-	# CYGNUS LOCAL
 	# Conditionalize the makefile for this site.
 	if [ -f ${mainsrcdir}/config/ms-${site} ]
 	then
@@ -528,7 +520,6 @@ EOF
 		mv Makefile.xx Makefile.tem
 	fi
 	
-	# CYGNUS LOCAL
 	# If this is a cross compilation, and we have newlib in the build
 	# tree, then define inhibit_libc in LIBGCC2_CFLAGS.  This will cause
 	# __eprintf to be left out of libgcc.a, but that's OK because newlib
@@ -544,7 +535,6 @@ EOF
 	# `tmake_file', `prefix', `local_prefix', `exec_prefix', `FIXINCLUDES'
 	# and `INSTALL_HEADERS_DIR' values in the Makefile from the values
 	# they have in this script.
-	# CYGNUS LOCAL: FLOAT_H, CROSS_FLOAT_H, objdir
 	rm -f Makefile.xx
 	sed -e "s///" -e "s/^target=.*$/target=${target}/" \
 	    -e "s|^xmake_file=.*$|xmake_file=${host_xmake_file}|" \

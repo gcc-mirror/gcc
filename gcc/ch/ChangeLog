@@ -1,3 +1,9 @@
+2000-11-02  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* Make-lang.in: Remove 'CYGNUS LOCAL' markers.
+	* Makefile.in: Likewise.
+	* configure: Likewise.
+
 2000-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in ($(srcdir)/hash.h): Refer to GNU FTP site for

@@ -75,7 +75,7 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 # These are used because `configure' appends `cross-make'
 # to the makefile when making a cross-compiler.
 
-# CYGNUS LOCAL: we don't use cross-make.  Instead we use the tools
+# We don't use cross-make.  Instead we use the tools
 # from the build tree, if they are available.
 # program_transform_name and objdir are set by configure.in.
 program_transform_name =
@@ -91,7 +91,6 @@ tmake_file=@dep_tmake_file@
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-# CYGNUS LOCAL
 # Directory where texinfo.tex lives
 # texidir = $(srcdir)/../../texinfo
 
