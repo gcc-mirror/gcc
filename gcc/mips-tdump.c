@@ -1,5 +1,5 @@
 /* Read and manage MIPS symbol tables from object modules.
-   Copyright (C) 1991, 1994, 1995, 1997, 1998, 1999, 2000
+   Copyright (C) 1991, 1994, 1995, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by hartzell@boulder.colorado.edu,
    Rewritten by meissner@osf.org.
@@ -60,11 +60,11 @@ void fatal PARAMS ((const char *)) ATTRIBUTE_NORETURN;
 void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
   
 void
-fatal(s)
+fatal (s)
   const char *s;
 {
-  fprintf(stderr, "%s\n", s);
-  exit(FATAL_EXIT_CODE);
+  fprintf (stderr, "%s\n", s);
+  exit (FATAL_EXIT_CODE);
 }
 
 /* Due to size_t being defined in sys/types.h and different
