@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Little endian MIPS
    version with GOFAST floating point library.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_ENDIAN_DEFAULT 0
 
+#include "mips/mips.h"
+#include "gofast.h"
 #include "mips/ecoff.h"
 
 #undef CPP_PREDEFINES
