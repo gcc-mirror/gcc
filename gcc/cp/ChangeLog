@@ -1,3 +1,10 @@
+2003-01-21  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	PR c++/47
+	* cp-tree.h (lookup_nested_field): Add declaration.
+	* decl.c (lookup_name_real): Call lookup_nested_field.
+	* search.c (lookup_nested_field): Add function.
+
 2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/8503

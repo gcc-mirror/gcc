@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002  Free Software Foundation, Inc.
+   2001, 2002, 2003  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -6172,6 +6172,10 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	    break;
 	}
     }
+
+  /* The name might be from an enclosing class of the current scope.  */
+  if (!val && !nonclass && current_class_type)
+    val = qualify_lookup (lookup_nested_field (name, !yylex), flags);
 
   /* Now lookup in namespace scopes.  */
   if (!val || val_is_implicit_typename)

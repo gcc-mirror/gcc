@@ -1,7 +1,7 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1511,6 +1511,70 @@ lookup_fnfields (xbasetype, name, protect)
     return NULL_TREE;
 
   return rval;
+}
+
+/* Try to find NAME inside a nested class.  */
+
+tree
+lookup_nested_field (name, complain)
+     tree name;
+     int complain;
+{
+  register tree t;
+
+  tree id = NULL_TREE;
+  if (TYPE_MAIN_DECL (current_class_type))
+    {
+      /* Climb our way up the nested ladder, seeing if we're trying to
+	 modify a field in an enclosing class.  If so, we should only
+	 be able to modify if it's static.  */
+      for (t = TYPE_MAIN_DECL (current_class_type);
+	   t && DECL_CONTEXT (t);
+	   t = TYPE_MAIN_DECL (DECL_CONTEXT (t)))
+	{
+	  if (TREE_CODE (DECL_CONTEXT (t)) != RECORD_TYPE)
+	    break;
+
+	  /* N.B.: lookup_field will do the access checking for us */
+	  id = lookup_field (DECL_CONTEXT (t), name, complain, 0);
+	  if (id == error_mark_node)
+	    {
+	      id = NULL_TREE;
+	      continue;
+	    }
+
+	  if (id != NULL_TREE)
+	    {
+	      if (TREE_CODE (id) == FIELD_DECL
+		  && ! TREE_STATIC (id)
+		  && TREE_TYPE (id) != error_mark_node)
+		{
+		  if (complain)
+		    {
+		      /* At parse time, we don't want to give this error, since
+			 we won't have enough state to make this kind of
+			 decision properly.  But there are times (e.g., with
+			 enums in nested classes) when we do need to call
+			 this fn at parse time.  So, in those cases, we pass
+			 complain as a 0 and just return a NULL_TREE.  */
+		      error ("assignment to non-static member `%D' of enclosing class `%T'",
+				id, DECL_CONTEXT (t));
+		      /* Mark this for do_identifier().  It would otherwise
+			 claim that the variable was undeclared.  */
+		      TREE_TYPE (id) = error_mark_node;
+		    }
+		  else
+		    {
+		      id = NULL_TREE;
+		      continue;
+		    }
+		}
+	      break;
+	    }
+	}
+    }
+
+  return id;
 }
 
 /* TYPE is a class type. Return the index of the fields within
