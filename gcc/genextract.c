@@ -110,8 +110,8 @@ gen_insn (insn)
   for (; i >= 0; i--)
     if (!operand_seen[i])
       {
-	printf ("      recog_operand[%d] = const0_rtx;\n", i);
-	printf ("      recog_operand_loc[%d] = &junk;\n", i);
+	printf ("      ro[%d] = const0_rtx;\n", i);
+	printf ("      ro_loc[%d] = &junk;\n", i);
       }
   printf ("      break;\n");
 }
@@ -158,7 +158,7 @@ walk_rtx (x, path)
     case MATCH_OPERAND:
     case MATCH_SCRATCH:
       mark_operand_seen (XINT (x, 0));
-      printf ("      recog_operand[%d] = *(recog_operand_loc[%d]\n        = &",
+      printf ("      ro[%d] = *(ro_loc[%d] = &",
 	      XINT (x, 0), XINT (x, 0));
       print_path (path);
       printf (");\n");
@@ -175,7 +175,7 @@ walk_rtx (x, path)
 
     case MATCH_OPERATOR:
       mark_operand_seen (XINT (x, 0));
-      printf ("      recog_operand[%d] = *(recog_operand_loc[%d]\n        = &",
+      printf ("      ro[%d] = *(ro_loc[%d]\n        = &",
 	      XINT (x, 0), XINT (x, 0));
       print_path (path);
       printf (");\n");
@@ -190,7 +190,7 @@ walk_rtx (x, path)
 
     case MATCH_PARALLEL:
       mark_operand_seen (XINT (x, 0));
-      printf ("      recog_operand[%d] = *(recog_operand_loc[%d]\n        = &",
+      printf ("      ro[%d] = *(ro_loc[%d]\n        = &",
 	      XINT (x, 0), XINT (x, 0));
       print_path (path);
       printf (");\n");
@@ -350,11 +350,14 @@ from the machine description file `md'.  */\n\n");
   printf ("extern rtx *recog_operand_loc[];\n");
   printf ("extern rtx *recog_dup_loc[];\n");
   printf ("extern char recog_dup_num[];\n");
-  printf ("extern void fatal_insn_not_found ();\n\n");
+  printf ("extern\n#ifdef __GNUC__\nvolatile\n#endif\n");
+  printf ("void fatal_insn_not_found ();\n\n");
 
   printf ("void\ninsn_extract (insn)\n");
   printf ("     rtx insn;\n");
   printf ("{\n");
+  printf ("  register rtx *ro = recog_operand;\n");
+  printf ("  register rtx **ro_loc = recog_operand_loc;\n");
   printf ("  int insn_code = INSN_CODE (insn);\n");
   printf ("  if (insn_code == -1) fatal_insn_not_found (insn);\n");
   printf ("  insn = PATTERN (insn);\n");
@@ -401,7 +404,7 @@ from the machine description file `md'.  */\n\n");
       printf ("#if __GNUC__ > 1 && !defined (bcopy)\n");
       printf ("#define bcopy(FROM,TO,COUNT) __builtin_memcpy(TO,FROM,COUNT)\n");
       printf ("#endif\n");
-      printf ("      bcopy (&XVECEXP (insn, 0, 0), recog_operand,\n");
+      printf ("      bcopy (&XVECEXP (insn, 0, 0), ro,\n");
       printf ("             sizeof (rtx) * XVECLEN (insn, 0));\n");
       printf ("      break;\n");
     }

@@ -110,3 +110,4 @@ extern void find_reloads ();
 extern void subst_reloads ();
 extern rtx eliminate_regs ();
 extern rtx gen_input_reload ();
+extern rtx find_replacement ();
