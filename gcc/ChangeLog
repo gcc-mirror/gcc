@@ -1,3 +1,20 @@
+2001-11-03  Kazu Hirata  <kazu@hxi.com>
+
+	* config/sparc/linux-aout.h: Fix comment formatting.
+	* config/sparc/linux.h: Likewise.
+	* config/sparc/linux64.h: Likewise.
+	* config/sparc/lynx.h: Likewise.
+	* config/sparc/pbd.h: Likewise.
+	* config/sparc/sol2-sld-64.h: Likewise.
+	* config/sparc/sol2.h: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sparc.md: Likewise.
+	* config/sparc/sunos4.h: Likewise.
+	* config/sparc/vxsim.h: Likewise.
+	* config/sparc/vxsparc.h: Likewise.
+	* config/sparc/vxsparc64.h: Likewise.
+
 Sat Nov  3 10:37:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cselib.c (cselib_subst_to_values, case CONST_DOUBLE): Remove

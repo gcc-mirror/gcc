@@ -1359,7 +1359,7 @@ enum reg_class { NO_REGS, FPCC_REGS, I64_REGS, GENERAL_REGS, FP_REGS,
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
   { "NO_REGS", "FPCC_REGS", "I64_REGS", "GENERAL_REGS", "FP_REGS",	\
@@ -1448,7 +1448,7 @@ extern const char leaf_reg_remap[];
    .md file for v8 and v9.
    'd' and 'b' are used for single and double precision VIS operations,
    if TARGET_VIS.
-   'h' is used for V8+ 64 bit global and out registers. */
+   'h' is used for V8+ 64 bit global and out registers.  */
 
 #define REG_CLASS_FROM_LETTER(C)		\
 (TARGET_V9					\
@@ -1655,7 +1655,7 @@ extern const char leaf_reg_remap[];
 /* When a parameter is passed in a register, stack space is still
    allocated for it.
    !v9: All 6 possible integer registers have backing store allocated.
-   v9: Only space for the arguments passed is allocated. */
+   v9: Only space for the arguments passed is allocated.  */
 /* ??? Ideally, we'd use zero here (as the minimum), but zero has special
    meaning to the backend.  Further, we need to be able to detect if a
    varargs/unprototyped function is called, as they may want to spill more
@@ -1698,7 +1698,7 @@ extern const char leaf_reg_remap[];
    ? (TARGET_FPU && FLOAT_MODE_P (MODE) ? 32 : 8)		\
    : 8)
 
-/* ??? FIXME -- seems wrong for v9 structure passing... */
+/* ??? FIXME -- seems wrong for v9 structure passing...  */
 #define BASE_INCOMING_ARG_REG(MODE)				\
   (TARGET_ARCH64						\
    ? (TARGET_FPU && FLOAT_MODE_P (MODE) ? 32			\
@@ -2023,7 +2023,7 @@ LFLGNN"ID":"					\
    We use some combination of instructions to produce the
    proper condition codes, but some flag combinations can not
    be generated in this way. If this happens an unimplemented
-   instruction will be executed to abort the program. */
+   instruction will be executed to abort the program.  */
 
 #if TARGET_ARCH32
 
@@ -2182,7 +2182,7 @@ LFLGRET"ID":\n\
 #define RETURN_ADDR_IN_PREVIOUS_FRAME
 
 /* This is the offset of the return address to the true next instruction to be
-   executed for the current function. */
+   executed for the current function.  */
 #define RETURN_ADDR_OFFSET \
   (8 + 4 * (! TARGET_ARCH64 && current_function_returns_struct))
 
@@ -2431,7 +2431,7 @@ LFLGRET"ID":\n\
 		 of a movtf pattern are both MEMs with	\
 		 REG+REG address, then only one of them	\
 		 gets converted to an offsetable	\
-		 address. */				\
+		 address.  */				\
  	       && (MODE != TFmode			\
 		   || (TARGET_FPU && TARGET_ARCH64	\
 		       && TARGET_V9			\
@@ -2441,7 +2441,7 @@ LFLGRET"ID":\n\
 		 because then mem_min_alignment is	\
 		 likely to be zero after reload and the \
 		 forced split would lack a matching	\
-		 splitter pattern. */			\
+		 splitter pattern.  */			\
 	       && (TARGET_ARCH64 || optimize		\
 		   || (MODE != DFmode			\
 		       && MODE != DImode)))		\
@@ -2451,7 +2451,7 @@ LFLGRET"ID":\n\
       else if (RTX_OK_FOR_BASE_P (op1))			\
 	{						\
 	  if ((RTX_OK_FOR_INDEX_P (op0)			\
- 	      /* See the previous comment. */		\
+ 	      /* See the previous comment.  */		\
  	       && (MODE != TFmode			\
 		  || (TARGET_FPU && TARGET_ARCH64	\
 		      && TARGET_V9			\
@@ -2495,7 +2495,7 @@ LFLGRET"ID":\n\
 	  && CONSTANT_P (op1)				\
 	  /* We can't allow TFmode, because an offset	\
 	     greater than or equal to the alignment (8)	\
-	     may cause the LO_SUM to overflow if !v9. */\
+	     may cause the LO_SUM to overflow if !v9.  */\
 	  && (MODE != TFmode || TARGET_V9))		\
 	goto ADDR;					\
     }							\
@@ -2604,7 +2604,7 @@ do {                                                                    \
 (! TARGET_PTR64 ? SImode : flag_pic ? SImode : TARGET_CM_MEDLOW ? SImode : DImode)
 #else
 /* If assembler does not have working .subsection -1, we use DImode for pic, as otherwise
-   we have to sign extend which slows things down. */
+   we have to sign extend which slows things down.  */
 #define CASE_VECTOR_MODE \
 (! TARGET_PTR64 ? SImode : flag_pic ? DImode : TARGET_CM_MEDLOW ? SImode : DImode)
 #endif
@@ -2612,7 +2612,7 @@ do {                                                                    \
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 /* #define CASE_VECTOR_PC_RELATIVE 1 */
 
 /* Specify the tree operation to be used to convert reals to integers.  */
@@ -2663,7 +2663,7 @@ do {                                                                    \
 #define PROMOTE_PROTOTYPES (TARGET_ARCH32)
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. */
+   few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
@@ -2903,7 +2903,7 @@ do {									\
 #define ASM_BYTE_OP	"\t.byte\t"
 #define ASM_FLOAT	".single"
 #define ASM_DOUBLE	".double"
-#define ASM_LONGDOUBLE	".xxx"		/* ??? Not known (or used yet). */
+#define ASM_LONGDOUBLE	".xxx"		/* ??? Not known (or used yet).  */
 
 /* Output before read-only data.  */
 
@@ -2973,7 +2973,7 @@ do {									\
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs ("\t.global ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX "_"
 

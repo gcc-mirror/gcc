@@ -77,7 +77,7 @@ Boston, MA 02111-1307, USA.  */
 /* similar to default, but allows for the table defined by ld with gcc.ifile. 
    nptrs is always 0.  So we need to instead check that __DTOR_LIST__[1] != 0.
    The old check is left in so that the same macro can be used if and when  
-   a future version of gas does support section directives. */
+   a future version of gas does support section directives.  */
 
 #define DO_GLOBAL_DTORS_BODY {int nptrs = *(int *)__DTOR_LIST__; int i; \
   if (nptrs == -1 || (__DTOR_LIST__[0] == 0 && __DTOR_LIST__[1] != 0))  \
@@ -102,7 +102,7 @@ Boston, MA 02111-1307, USA.  */
   }
  */
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""

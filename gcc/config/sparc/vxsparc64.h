@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 /* We need to prohibit dots in constructor labels so that we can build a
    table of { string, address } entries for each non-static name in a
    program.  The address, being of the form &name, it cannot contain a dot or
-   C will try to parse it as a &struct.field phrase. */
+   C will try to parse it as a &struct.field phrase.  */
 #undef NO_DOLLAR_IN_LABEL
 #undef DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 1

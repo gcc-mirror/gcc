@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC ""
 
-/* Provide required defaults for linker -e. */
+/* Provide required defaults for linker -e.  */
 #undef LINK_SPEC
 #define LINK_SPEC "%{!nostdlib:%{!r*:%{!e*:-e start}}}"
 

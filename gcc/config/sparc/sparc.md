@@ -2152,7 +2152,7 @@
 	}
     }
 
-  /* This makes sure we will not get rematched due to splittage. */
+  /* This makes sure we will not get rematched due to splittage.  */
   if (! CONSTANT_P (operands[1]) || input_operand (operands[1], HImode))
     ;
   else if (CONSTANT_P (operands[1])
@@ -2250,7 +2250,7 @@
     operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
 						 operands[1]));
 
-  /* This makes sure we will not get rematched due to splittage. */
+  /* This makes sure we will not get rematched due to splittage.  */
   if (! CONSTANT_P (operands[1]) || input_operand (operands[1], SImode))
     ;
   else if (CONSTANT_P (operands[1])
@@ -2428,7 +2428,7 @@
     operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
 						 operands[1]));
 
-  /* This makes sure we will not get rematched due to splittage. */
+  /* This makes sure we will not get rematched due to splittage.  */
   if (! CONSTANT_P (operands[1]) || input_operand (operands[1], DImode))
     ;
   else if (TARGET_ARCH64
@@ -3560,7 +3560,7 @@
   ""
   "
 {
-  /* Force TFmode constants into memory. */
+  /* Force TFmode constants into memory.  */
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
@@ -3578,7 +3578,7 @@
     }
 
   /* Handle MEM cases first, note that only v9 guarentees
-     full 16-byte alignment for quads. */
+     full 16-byte alignment for quads.  */
   if (GET_CODE (operands[0]) == MEM)
     {
       if (register_operand (operands[1], TFmode)
