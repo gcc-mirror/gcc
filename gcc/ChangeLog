@@ -1,3 +1,8 @@
+Sat Apr  3 22:02:56 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* acconfig.h (ENABLE_CHECKING): Remove redundant #undef.
+	* config.in: Rebuilt.
+
 Sat Apr  3 16:22:59 1999  Toshiyasu Morita  (tm@netcom.com)
 
 	* gcc.texi: Add info on regmove pass
