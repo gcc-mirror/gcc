@@ -1,3 +1,8 @@
+2004-03-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	__LONGDOUBLE128 on AIX.
+
 2004-03-10  Andrew Haley  <aph@redhat.com>
 
 	PR optimization/14381

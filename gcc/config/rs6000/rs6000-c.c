@@ -113,7 +113,11 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   RS6000_CPU_CPP_ENDIAN_BUILTINS();
 
   if (TARGET_LONG_DOUBLE_128)
-    builtin_define ("__LONG_DOUBLE_128__");
+    {
+      builtin_define ("__LONG_DOUBLE_128__");
+      if (TARGET_AIX && TARGET_XCOFF)
+	builtin_define ("__LONGDOUBLE128");
+    }
 
   switch (rs6000_current_abi)
     {
