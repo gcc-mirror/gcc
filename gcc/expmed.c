@@ -1698,7 +1698,9 @@ mask_rtx (mode, bitpos, bitsize, complement)
 {
   HOST_WIDE_INT masklow, maskhigh;
 
-  if (bitpos < HOST_BITS_PER_WIDE_INT)
+  if (bitsize == 0)
+    masklow = 0;
+  else if (bitpos < HOST_BITS_PER_WIDE_INT)
     masklow = (HOST_WIDE_INT) -1 << bitpos;
   else
     masklow = 0;
@@ -1712,7 +1714,9 @@ mask_rtx (mode, bitpos, bitsize, complement)
   else
     maskhigh = (HOST_WIDE_INT) -1 << (bitpos - HOST_BITS_PER_WIDE_INT);
 
-  if (bitpos + bitsize > HOST_BITS_PER_WIDE_INT)
+  if (bitsize == 0)
+    maskhigh = 0;
+  else if (bitpos + bitsize > HOST_BITS_PER_WIDE_INT)
     maskhigh &= ((unsigned HOST_WIDE_INT) -1
 		 >> (2 * HOST_BITS_PER_WIDE_INT - bitpos - bitsize));
   else

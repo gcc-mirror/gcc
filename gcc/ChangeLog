@@ -1,3 +1,7 @@
+2003-04-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (mask_rtx): Avoid undefined shifts for BITSIZE of 0.
+
 2003-04-18  Olivier Hainque <hainque@act-europe.fr>
 
 	* calls.c (expand_call): Move special case for constructor calls
