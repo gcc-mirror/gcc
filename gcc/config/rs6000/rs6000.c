@@ -1040,14 +1040,6 @@ print_operand (file, x, code)
 	print_operand (file, x, 0);
       return;
 
-    case 'H':
-      /* X must be a constant.  Output the low order 5 bits plus 24.  */
-      if (! INT_P (x))
-	output_operand_lossage ("invalid %%H value");
-
-      fprintf (file, "%d", (INT_LOWPART (x) + 24) & 31);
-      return;
-
     case 'I':
       /* Print `i' if this is a constant, else nothing.  */
       if (INT_P (x))
@@ -1220,14 +1212,6 @@ print_operand (file, x, code)
 	output_operand_lossage ("invalid %%s value");
 
       fprintf (file, "%d", (32 - INT_LOWPART (x)) & 31);
-      return;
-
-    case 'S':
-      /* Low 5 bits of 31 - value */
-      if (! INT_P (x))
-	output_operand_lossage ("invalid %%S value");
-
-      fprintf (file, "%d", (31 - INT_LOWPART (x)) & 31);
       return;
 
     case 't':
