@@ -2926,7 +2926,7 @@ Usage: %s [-_] [-n] [-s {gnu,lucid,arm}] [--strip-underscores]\n\
 char mbuffer[MBUF_SIZE];
 
 /* Defined in the automatically-generated underscore.c.  */
-int prepends_underscore;
+extern int prepends_underscore;
 
 int strip_underscore = 0;
 
@@ -2952,7 +2952,7 @@ main (argc, argv)
 
   strip_underscore = prepends_underscore;
 
-  while ((c = getopt_long (argc, argv, "_nsj:", long_options, (int *) 0)) != EOF)
+  while ((c = getopt_long (argc, argv, "_ns:j", long_options, (int *) 0)) != EOF)
     {
       switch (c)
 	{

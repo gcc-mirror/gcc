@@ -1,3 +1,7 @@
+Tue Aug 19 17:10:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cplus-dem.c: Add 'extern' to prepends_underscore.
+
 Tue Aug 19 09:34:57 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (ISSUE_RATE): Renamed from MACHINE_issue_rate.
