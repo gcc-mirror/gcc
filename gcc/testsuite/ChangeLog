@@ -1,3 +1,8 @@
+
+Tue Mar 10 00:31:51 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
+
+        * g++.old-deja/g++.other/friend1.C: New test.
+
 1998-02-18  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/dnrm2.f (dnrm2): Avoid uninitialized (and
