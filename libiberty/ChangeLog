@@ -1,3 +1,12 @@
+1998-04-01  Mark Mitchell  <mmitchell@usa.net>
+
+	* cplus-dem.c (optable): Add sizeof.
+	(demangle_template_value_parm): New function containing code
+	previously found in demangle_template.
+	(demangle_integral_value): New function which handles complicated 
+	integral expressions.
+	(demangle_template): Use them.
+
 Thu Mar  5 09:23:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* config.table: Make locating frag files failsafe even for the
