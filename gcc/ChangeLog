@@ -1,5 +1,22 @@
 2000-09-12  Michael Hayes  <mhayes@cygnus.com>
 
+	* loop.h (LOOP_IVS): New macro.
+	(REG_IV_TYPE, REG_IV_INFO): Add ivs argument.
+	(struct loop_ivs): New.
+	(struct loop_info): Add ivs field.
+	(reg_iv_type, reg_iv_info): Delete prototype.
+	(reg_biv_class, loop_iv_list): Likewise.
+	* loop.c (record_biv, find_life_end): Pass loop argument.
+	(reg_iv_type): Remove global array and use
+	field in loop_regs structure within loop_ivs structure.
+	(reg_iv_info, reg_biv_class, loop_iv_list): Likewise.
+	(first_increment_giv, last_increment_giv): Use entry in
+	loop_ivs structure.
+	(record_initial): Pass ivs pointer.
+	* unroll.c (copy_loop_body, remap_split_bivs): Add loop argument.
+
+2000-09-12  Michael Hayes  <mhayes@cygnus.com>
+
 	* loop.h (LOOP_REGS): New macro.
 	(struct loop_regs): New.
 	(struct loop_info): Add regs field.

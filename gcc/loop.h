@@ -32,6 +32,9 @@ Boston, MA 02111-1307, USA.  */
 /* Get a pointer to the loop registers structure.  */
 #define LOOP_REGS(LOOP) (&LOOP_INFO (loop)->regs)
 
+/* Get a pointer to the loop induction variables structure.  */
+#define LOOP_IVS(LOOP) (&LOOP_INFO (loop)->ivs)
+
 /* Get the luid of an insn.  Catch the error of trying to reference the LUID
    of an insn added during loop, since these don't have LUIDs.  */
 
@@ -176,6 +179,34 @@ typedef struct loop_mem_info
 } loop_mem_info;
 
 
+struct loop_ivs
+{
+  /* Indexed by register number, indicates whether or not register is
+     an induction variable, and if so what type.  */
+  varray_type reg_iv_type;
+  
+  /* Indexed by register number, contains pointer to `struct
+     induction' if register is an induction variable.  This holds
+     general info for all induction variables.  */
+  varray_type reg_iv_info;
+
+  /* Indexed by register number, contains pointer to `struct iv_class'
+     if register is a basic induction variable.  This holds info
+     describing the class (a related group) of induction variables
+     that the biv belongs to.  */
+  struct iv_class **reg_biv_class;
+  
+  /* The head of a list which links together (via the next field)
+     every iv class for the current loop.  */
+  struct iv_class *loop_iv_list;
+
+  /* Givs made from biv increments are always splittable for loop
+     unrolling.  Since there is no regscan info for them, we have to
+     keep track of them separately.  */
+  unsigned int first_increment_giv;
+  unsigned int last_increment_giv;
+};
+
 
 struct loop_regs
 {
@@ -285,6 +316,8 @@ struct loop_info
   rtx first_loop_store_insn;
   /* The registers used the in loop.  */
   struct loop_regs regs;
+  /* The induction variable information in loop.  */
+  struct loop_ivs ivs;
 };
 
 /* Definitions used by the basic induction variable discovery code.  */
@@ -299,18 +332,10 @@ extern unsigned int max_reg_before_loop;
 extern struct loop **uid_loop;
 extern FILE *loop_dump_stream;
 
-extern varray_type reg_iv_type;
-extern varray_type reg_iv_info;
-
-#define REG_IV_TYPE(n) \
-  (*(enum iv_mode *) &VARRAY_INT(reg_iv_type, (n)))
-#define REG_IV_INFO(n) \
-  (*(struct induction **) &VARRAY_GENERIC_PTR(reg_iv_info, (n)))
-
-extern struct iv_class **reg_biv_class;
-extern struct iv_class *loop_iv_list;
-
-extern unsigned int first_increment_giv, last_increment_giv;
+#define REG_IV_TYPE(ivs, n) \
+  (*(enum iv_mode *) &VARRAY_INT(ivs->reg_iv_type, (n)))
+#define REG_IV_INFO(ivs, n) \
+  (*(struct induction **) &VARRAY_GENERIC_PTR(ivs->reg_iv_info, (n)))
 
 /* Forward declarations for non-static functions declared in loop.c and
    unroll.c.  */
