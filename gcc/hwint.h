@@ -27,6 +27,29 @@
 
 /* Find the largest host integer type and set its size and type.  */
 
+/* Use long long on the host if the target has a wider long type than
+   the host.  */
+
+#if ! defined HOST_BITS_PER_WIDE_INT \
+    && defined HOST_BITS_PER_LONGLONG \
+    && (HOST_BITS_PER_LONGLONG > HOST_BITS_PER_LONG) \
+    && (defined (LONG_LONG_MAX) || defined (LONGLONG_MAX) \
+        || defined (LLONG_MAX) || defined (__GNUC__))
+
+# ifdef MAX_LONG_TYPE_SIZE
+#  if MAX_LONG_TYPE_SIZE > HOST_BITS_PER_LONG
+#   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONGLONG
+#   define HOST_WIDE_INT long long
+#  endif
+# else
+#  if LONG_TYPE_SIZE > HOST_BITS_PER_LONG
+#   define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONGLONG
+#   define HOST_WIDE_INT long long
+#  endif
+# endif
+
+#endif
+
 #ifndef HOST_BITS_PER_WIDE_INT
 
 # if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
