@@ -1,3 +1,9 @@
+2005-03-25  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR tree-optimization/20470
+	* fold-const.c (fold_cond_expr_with_comparison): Recognize/fold
+	ABS(x-y).
+
 2005-03-25  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Don't allow 0
