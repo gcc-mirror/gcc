@@ -45,11 +45,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SDB_DEBUGGING_INFO
 
-/* Specify predefined symbols in preprocessor.  */
-
-#define CPP_PREDEFINES "-Dunix"
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
-
 /* Allow #sccs in preprocessor.  */
 
 #define SCCS_DIRECTIVE

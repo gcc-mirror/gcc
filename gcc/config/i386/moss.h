@@ -19,8 +19,20 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dmoss -Asystem=posix"
+#undef TARGET_OS_CPP_BUILTINS /* config.gcc includes i386/linux.h.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("moss");		\
+	builtin_define ("__ELF__");		\
+	builtin_assert ("system=posix");	\
+	if (flag_pic)				\
+	  {					\
+	    builtin_define ("__PIC__");		\
+	    builtin_define ("__pic__");		\
+	  }					\
+    }						\
+  while (0)
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC  "crt0.o%s"

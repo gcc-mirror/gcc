@@ -67,17 +67,26 @@ Boston, MA 02111-1307, USA.  */
    
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
+
+#define TARGET_OS_CPP_BUILTINS()					\
+  do									\
+    {									\
+	builtin_define ("__ELF__");					\
+	builtin_define ("__BEOS__");					\
+	builtin_define ("__INTEL__");					\
+	builtin_define ("_X86_");					\
+	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
+	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
+	builtin_define ("__declspec(x)=__attribute__((x))");		\
+	builtin_assert ("system=beos");					\
+	if (flag_pic)							\
+	  {								\
+	    builtin_define ("__PIC__");					\
+	    builtin_define ("__pic__");					\
+	  }								\
+    }									\
+  while (0)
     
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -D__BEOS__ -D__INTEL__ -D_X86_=1 \
--D__stdcall=__attribute__((__stdcall__)) \
--D__cdecl=__attribute__((__cdecl__)) \
--D__declspec(x)=__attribute__((x)) \
--Asystem=beos"
-
-#undef CPP_SPEC
-#define CPP_SPEC "%{!no-fPIC:%{!no-fpic:-D__PIC__ -D__pic__}}"
-
 /* BeOS uses lots of multichars, so don't warn about them unless the
    user explicitly asks for the warnings with -Wmultichar.  Note that
    CC1_SPEC is used for both cc1 and cc1plus.  */

@@ -1,3 +1,12 @@
+2002-06-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+config:
+	* alpha/gnu.h: Undef TARGET_OS_CPP_BUILTINS.
+	* i386/beos-elf.h: Use TARGET_OS_CPP_BUILTINS rather than
+	CPP_PREDEFINES and part of CPP_SPEC.
+	i386/freebsd-aout.h, i386/gas.h, i386/gnu.h, i386/linux-aout.h,
+	i386/linux.h, i386/moss.h, i386/xm-vsta.h: Similarly.
+
 Wed Jun  5 15:20:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (reg_to_stack): Do not call find_basic_blocks.
