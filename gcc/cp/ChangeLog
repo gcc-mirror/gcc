@@ -1,3 +1,14 @@
+2000-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_type): Remove has_nonpublic_ctor and
+	has_nonpublic_assign_ref.
+	(TYPE_HAS_NONPUBLIC_CTOR): Don't declare.
+	(TYPE_HAS_NONPUBLIC_ASSIGN_REF): Likewise.
+	* class.c (finish_struct_methods): Don't set
+	TYPE_HAS_NONPUBLIC_CTOR or TYPE_HAS_NONPUBLIC_ASSIGN_REF.
+	(interface_only): Don't declare.
+	(interface_unknown): Likewise.
+
 2000-04-11  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* tree.h (HAVE_TEMPLATES): Remove definition.
