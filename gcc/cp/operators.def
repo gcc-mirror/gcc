@@ -98,7 +98,7 @@ DEF_SIMPLE_OPERATOR ("++", PREINCREMENT_EXPR, "pp", "__pp", 1)
 DEF_SIMPLE_OPERATOR ("--", PREDECREMENT_EXPR, "mm", "__mm", 1)
 DEF_SIMPLE_OPERATOR ("sizeof", SIZEOF_EXPR, "sz", "__sz", 1)
 /* This is an extension.  */
-DEF_SIMPLE_OPERATOR ("alignof", ALIGNOF_EXPR, "vx7alignof", "__al", 1)
+DEF_SIMPLE_OPERATOR ("alignof", ALIGNOF_EXPR, "v17alignof", "__al", 1)
 
 /* The cast operator.  */
 DEF_SIMPLE_OPERATOR ("", TYPE_EXPR, "cv", OPERATOR_TYPENAME_FORMAT, 1)
@@ -129,8 +129,8 @@ DEF_SIMPLE_OPERATOR ("[]", ARRAY_REF, "ix", "__vc", 2)
 DEF_SIMPLE_OPERATOR ("++", POSTINCREMENT_EXPR, "pp", "__pp", 2)
 DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", "__mm", 2)
 /* These are extensions.  */
-DEF_SIMPLE_OPERATOR ("<?", MIN_EXPR, "vx3min", "__mn", 2)
-DEF_SIMPLE_OPERATOR (">?", MAX_EXPR, "vx3max", "__mx", 2)
+DEF_SIMPLE_OPERATOR ("<?", MIN_EXPR, "v23min", "__mn", 2)
+DEF_SIMPLE_OPERATOR (">?", MAX_EXPR, "v23max", "__mx", 2)
 /* This one is needed for mangling.  */
 DEF_SIMPLE_OPERATOR ("::", SCOPE_REF, "sr", NULL, 2);
 
