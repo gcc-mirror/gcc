@@ -760,8 +760,8 @@ binfo is given by @code{BINFO_TYPE}.  It is always the case that
 qualifiers.  However, it is not always the case that @code{TYPE_BINFO
 (BINFO_TYPE (y))} is always the same binfo as @code{y}.  The reason is
 that if @code{y} is a binfo representing a base-class @code{B} of a
-derived class @code{D}, then @code{BINFO_TYPE (y)} will be @code{B}, and
-@code{TYPE_INFO (BINFO_TYPE (y))} will be @code{B} as its own
+derived class @code{D}, then @code{BINFO_TYPE (y)} will be @code{B},
+and @code{TYPE_BINFO (BINFO_TYPE (y))} will be @code{B} as its own
 base-class, rather than as a base-class of @code{D}.
 
 The @code{BINFO_BASETYPES} is a @code{TREE_VEC} (@pxref{Containers}).
