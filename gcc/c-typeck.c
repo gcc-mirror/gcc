@@ -5736,7 +5736,8 @@ output_init_element (value, type, field, pending)
 
   if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
       || (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
-	  && comptypes (TREE_TYPE (value), type)))
+	  && !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (value)),
+			 TYPE_MAIN_VARIANT (type))))
     value = default_conversion (value);
 
   if (value == error_mark_node)
