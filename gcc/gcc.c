@@ -51,6 +51,15 @@ compilation is specified by a string called a "spec".  */
 #define X_OK 1
 #endif
 
+/* Add prototype support.  */
+#ifndef PROTO
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define PROTO(ARGS) ARGS
+#else
+#define PROTO(ARGS) ()
+#endif
+#endif
+
 #ifndef VPROTO
 #ifdef __STDC__
 #define VPROTO(ARGS)		ARGS
@@ -183,27 +192,31 @@ static struct obstack collect_obstack;
 
 extern char *version_string;
 
-static void set_spec ();
-static struct compiler *lookup_compiler ();
-static char *find_a_file ();
-static void add_prefix ();
-static char *skip_whitespace ();
-static void record_temp_file ();
-static char *handle_braces ();
-static char *save_string ();
-static char *concat ();
-static int do_spec ();
-static int do_spec_1 ();
-static char *find_file ();
-static int is_directory ();
-static void validate_switches ();
-static void validate_all_switches ();
-static void give_switch ();
-static void pfatal_with_name ();
-static void perror_with_name ();
-static void perror_exec ();
-static void fatal ();
-static void error ();
+/* Forward declaration for prototypes.  */
+struct path_prefix;
+
+static void set_spec		PROTO((char *, char *));
+static struct compiler *lookup_compiler PROTO((char *, int, char *));
+static char *find_a_file	PROTO((struct path_prefix *, char *, int));
+static void add_prefix		PROTO((struct path_prefix *, char *, int, int, int *));
+static char *skip_whitespace	PROTO((char *));
+static void record_temp_file	PROTO((char *, int, int));
+static char *handle_braces	PROTO((char *));
+static char *save_string	PROTO((char *, int));
+static char *concat		PROTO((char *, char *, char *));
+static int do_spec		PROTO((char *));
+static int do_spec_1		PROTO((char *, int, char *));
+static char *find_file		PROTO((char *));
+static int is_directory		PROTO((char *, char *, int));
+static void validate_switches	PROTO((char *));
+static void validate_all_switches PROTO((void));
+static void give_switch		PROTO((int, int));
+static void pfatal_with_name	PROTO((char *));
+static void perror_with_name	PROTO((char *));
+static void perror_exec		PROTO((char *));
+static void fatal		PROTO((char *, ...));
+static void error		PROTO((char *, ...));
+
 void fancy_abort ();
 char *xmalloc ();
 char *xrealloc ();
