@@ -1,3 +1,8 @@
+2002-05-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (_cpp_lex_direct): When in a directive at EOF
+	fake a newline.
+
 2002-05-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_default_long_calls,

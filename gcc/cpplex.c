@@ -930,7 +930,7 @@ _cpp_lex_direct (pfile)
       /* EOF.  */
       buffer->cur--;
       buffer->saved_flags = BOL;
-      if (!pfile->state.parsing_args && !pfile->state.in_directive)
+      if (!pfile->state.parsing_args)
 	{
 	  if (buffer->cur != buffer->line_base)
 	    {
@@ -942,7 +942,7 @@ _cpp_lex_direct (pfile)
 	    }
 
 	  /* Don't pop the last buffer.  */
-	  if (buffer->prev)
+	  if (!pfile->state.in_directive && buffer->prev)
 	    {
 	      unsigned char stop = buffer->return_at_eof;
 
