@@ -2641,6 +2641,12 @@ This is used to specify the ratio of branches to non-branches of a
 branch insn according to the profile data.  The value is stored as a
 value between 0 and REG_BR_PROB_BASE; larger values indicate a higher
 probability that the branch will be taken.
+
+@findex REG_BR_PRED
+@item REG_BR_PRED
+These notes are found in JUMP insns after delayed branch scheduling
+has taken place.  They indicate both the direction and the likelyhood
+of the JUMP.  The format is a bitmask of ATTR_FLAG_* values.
 @end table
 
 For convenience, the machine mode in an @code{insn_list} or
