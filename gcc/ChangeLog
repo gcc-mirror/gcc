@@ -1,3 +1,9 @@
+2005-01-31  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	2004-09-22  Mark Mitchell  <mark@codesourcery.com>
+	* gcc/dwarf2out.c (scope_die_for): If the containing scope is a
+	TRANSLATION_UNIT_DECL, consider it to be a global.
+
 2005-01-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* unwind-dw2.c (execute_stack_op): Add missing cases for
