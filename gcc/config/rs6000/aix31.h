@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 running AIX version 3.1.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993,1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -30,3 +30,12 @@ Boston, MA 02111-1307, USA.  */
 /* AIX 3.1 uses bit 15 in CROR as the magic nop.  */
 #undef RS6000_CALL_GLUE
 #define RS6000_CALL_GLUE "cror 15,15,15"
+
+/* AIX 3.1 does not prepend underscores to itrunc, uitrunc, or mcount.  */
+#undef RS6000_ITRUNC
+#define RS6000_ITRUNC "itrunc"
+#undef RS6000_UITRUNC
+#define RS6000_UITRUNC "uitrunc"
+#undef RS6000_MCOUNT
+#define RS6000_MCOUNT ".mcount"
+
