@@ -1,3 +1,14 @@
+2001-02-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppfiles.c (stack_include_file): Generate dependencies
+        here, and manage include_count here too.
+        (PRINT_THIS_DEP): Delete.
+        (_cpp_execute_include): Do not generate dependencies here,
+        apart from the case of a missing header.  Do not manage
+        include_count.
+        (_cpp_read_file): Leave dependency generation to
+        stack_include_file.
+
 Mon Feb 19 10:17:47 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config.gcc (hppa*64*-*-hpux11*): Add MASK_GAS to
