@@ -3798,6 +3798,10 @@ allocate_struct_function (tree fndecl)
        && TYPE_ARG_TYPES (fntype) != 0
        && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 	   != void_type_node));
+
+  /* Assume all registers in stdarg functions need to be saved.  */
+  cfun->va_list_gpr_size = VA_LIST_MAX_GPR_SIZE;
+  cfun->va_list_fpr_size = VA_LIST_MAX_FPR_SIZE;
 }
 
 /* Reset cfun, and other non-struct-function variables to defaults as
