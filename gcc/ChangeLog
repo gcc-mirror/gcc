@@ -1,3 +1,14 @@
+2001-11-19  Jason Merrill  <jason@redhat.com>
+
+	* cppmacro.c (_cpp_backup_tokens): Pop cur_run before decrementing
+	cur_token, not after.
+
+	* config/clipper/clix.h, config/h8300/elf.h, config/mips/linux.h:
+	Lose ASM_OUTPUT_CONSTRUCTOR.
+	* system.h: Poison it and INT_ASM_OP.
+	* c-lang.c (finish_file): Don't check for it.
+	* libgcc2.c (L_ctors): Check TARGET_ASM_CONSTRUCTOR instead.
+
 2001-11-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mmix.c (mmix_cc1_ignored_option): Const-ify.
