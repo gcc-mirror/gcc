@@ -485,6 +485,9 @@ _fpadd_parts (fp_number_type * a,
     }
   if (isinf (a))
     {
+      /* Adding infinities with opposite signs yields a NaN.  */
+      if (isinf (b) && a->sign != b->sign)
+	return nan ();
       return a;
     }
   if (isinf (b))
