@@ -22,7 +22,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#define SGS_SWAP_W		/* Use swap.w rather than just plain swap */
 #define SGS_SWITCH_TABLES	/* Different switch table handling */
 
 #include "hp320.h"
@@ -377,6 +376,11 @@ do { union { float f; long l;} tem;			\
       while (*(PTR) != ' ')				\
 	{ putc (*(PTR), (FILE)); ++(PTR); }		\
       fprintf ((FILE), ".w"); }				\
+  else if ((PTR)[0] == 's')				\
+    {							\
+      if (!strncmp ((PTR), "swap", 4))			\
+	{ fprintf ((FILE), "swap.w"); (PTR) += 4; }	\
+    }							\
   else if ((PTR)[0] == 'f')				\
     {							\
       if (!strncmp ((PTR), "fmove", 5))			\
@@ -388,20 +392,20 @@ do { union { float f; long l;} tem;			\
   else if ((PTR)[0] == 'm' && (PTR)[1] == 'o'		\
 	   && (PTR)[2] == 'v' && (PTR)[3] == 'e')	\
     { fprintf ((FILE), "mov"); (PTR) += 4;		\
-       if ((PTR)[0] == 'q' || (PTR)[0] == 'a' ||	\
-	   (PTR)[0] == 'c') (PTR)++; }			\
+       if ((PTR)[0] == 'q' || (PTR)[0] == 'a'		\
+	   || (PTR)[0] == 'c') (PTR)++; }		\
 /* SUB, SUBQ, SUBA, SUBI ==> SUB */			\
   else if ((PTR)[0] == 's' && (PTR)[1] == 'u' 		\
 	   && (PTR)[2] == 'b')				\
     { fprintf ((FILE), "sub"); (PTR) += 3;		\
-       if ((PTR)[0] == 'q' || (PTR)[0] == 'i' || 	\
-	   (PTR)[0] == 'a') (PTR)++; }			\
+       if ((PTR)[0] == 'q' || (PTR)[0] == 'i'	 	\
+	   || (PTR)[0] == 'a') (PTR)++; }		\
 /* CMP, CMPA, CMPI, CMPM ==> CMP	*/		\
   else if ((PTR)[0] == 'c' && (PTR)[1] == 'm'		\
 	   && (PTR)[2] == 'p')				\
     { fprintf ((FILE), "cmp"); (PTR) += 3;		\
-       if ((PTR)[0] == 'a' || (PTR)[0] == 'i' || 	\
-	   (PTR)[0] == 'm') (PTR)++; }			\
+       if ((PTR)[0] == 'a' || (PTR)[0] == 'i'	 	\
+	   || (PTR)[0] == 'm') (PTR)++; }		\
 }
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
