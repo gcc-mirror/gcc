@@ -1,3 +1,7 @@
+2004-02-17  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_prologue_using_move, x86_epilogue_using_move): Disable for P4.
+
 2004-02-18  Alan Modra  <amodra@bigpond.net.au>
 
 	PR optimization/14119
