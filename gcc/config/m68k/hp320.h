@@ -345,30 +345,25 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
     fprintf (FILE, "%s%d:\n", PREFIX, NUM);		\
 } while(0)
 
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)					\
-  fprintf (FILE, "\tdouble 0f%.20g\n", (VALUE))
+#define ASM_OUTPUT_DOUBLE(FILE, VALUE)			\
+  do { char dstr[30];					\
+       REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);	\
+       fprintf (FILE, "\tdouble 0f%s\n", dstr);		\
+     } while (0)
 
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)					\
-  fprintf (FILE, "\tfloat 0f%.9g\n", (VALUE))
+#define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
+  do { char dstr[30];					\
+       REAL_VALUE_TO_DECIMAL (VALUE, "%.9g", dstr);	\
+       fprintf (FILE, "\tfloat 0f%s\n", dstr);		\
+     } while (0)
 
-#ifdef AS_BUG_FLOATING_CONSTANT
-#undef  ASM_OUTPUT_DOUBLE_OPERAND
-#define ASM_OUTPUT_DOUBLE_OPERAND(FILE, VALUE)                  \
-  do {								\
-    union { double d; int i[2]; } dummy_u;			\
-    dummy_u.d = (VALUE);					\
-    asm_fprintf (FILE, "%I0x%x%08x", dummy_u.i[0], dummy_u.i[1]); \
-  } while (0)
-
-#undef  ASM_OUTPUT_FLOAT_OPERAND
-#define ASM_OUTPUT_FLOAT_OPERAND(FILE, VALUE)                   \
-  do {								\
-    union { float f; int i; } dummy_u;				\
-    dummy_u.f = (VALUE);					\
-    asm_fprintf (FILE, "%I0x%08x", dummy_u.i);			\
-  } while (0)
-#endif /* AS_BUG_FLOATING_CONSTANT */
-
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
+do { long l[3];								\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
+     fprintf (FILE, "\tlong 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
+   } while (0)
+  
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
@@ -412,14 +407,20 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)
 
 #ifdef AS_BUG_FLOATING_CONSTANT
-#define PRINT_OPERAND_FLOAT(FILE,CODE,FLOAT,INT)	\
-  fprintf (FILE, "&0x%x", (INT))
+#define PRINT_OPERAND_FLOAT(CODE,FILE,VALUE,INT)	\
+ do { REAL_VALUE_TO_TARGET_SINGLE (VALUE, INT);		\
+      fprintf (FILE, "&0x%x", INT); } while (0)
 #else
-#define PRINT_OPERAND_FLOAT(FILE,CODE,FLOAT,INT)	\
-  if (CODE == 'f')					\
-    fprintf (FILE, "&0f%.9g", (FLOAT));			\
-  else							\
-    fprintf (FILE, "&0x%x", (INT))
+#define PRINT_OPERAND_FLOAT(CODE,FILE,VALUE,INT)	\
+ do { if (CODE == 'f')					\
+        { char dstr[30];				\
+          REAL_VALUE_TO_DECIMAL (VALUE, "%.9g", dstr);	\
+          fprintf (FILE, "&0f%s", dstr);		\
+        }						\
+      else						\
+        {						\
+          REAL_VALUE_TO_TARGET_SINGLE (VALUE, INT);	\
+          fprintf (FILE, "&0x%x", INT); } } while (0)
 #endif /* AS_BUG_FLOATING_CONSTANT */
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
@@ -436,15 +437,19 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
-    { union { double d; int i[2]; } u;					\
-      union { float f; int i; } u1;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      u1.f = u.d;							\
-      PRINT_OPERAND_FLOAT (FILE,CODE, u1.f, u1.i); }			\
+    { REAL_VALUE_TYPE r;  long l;					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      PRINT_OPERAND_FLOAT (CODE, FILE, r, l); }				\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
-    { union { double d; int i[2]; } u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      fprintf (FILE, "&0f%.20g", u.d); }				\
+    { REAL_VALUE_TYPE r;  char dstr[30];				\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_DECIMAL (r, "%.20g", dstr);				\
+      fprintf (FILE, "&0f%s", dstr); }					\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
+    { REAL_VALUE_TYPE r;  char dstr[30];				\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_DECIMAL (r, "%.20g", dstr);				\
+      fprintf (FILE, "&0f%s", dstr); }					\
   else { putc ('&', FILE); output_addr_const (FILE, X); }}
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
