@@ -1,3 +1,8 @@
+2005-03-01  Ben Elliston  <bje@au.ibm.com>
+
+	* hashtab.c (htab_find_slot_with_hash): Make function
+	documentation clearer.
+
 2005-02-13  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (__cxa_demangle): Change resolution of ambiguous

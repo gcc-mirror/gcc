@@ -621,11 +621,11 @@ htab_find (htab, element)
 
 /* This function searches for a hash table slot containing an entry
    equal to the given element.  To delete an entry, call this with
-   INSERT = 0, then call htab_clear_slot on the slot returned (possibly
-   after doing some checks).  To insert an entry, call this with
-   INSERT = 1, then write the value you want into the returned slot.
-   When inserting an entry, NULL may be returned if memory allocation
-   fails.  */
+   insert=NO_INSERT, then call htab_clear_slot on the slot returned
+   (possibly after doing some checks).  To insert an entry, call this
+   with insert=INSERT, then write the value you want into the returned
+   slot.  When inserting an entry, NULL may be returned if memory
+   allocation fails.  */
 
 PTR *
 htab_find_slot_with_hash (htab, element, hash, insert)
