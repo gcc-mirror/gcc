@@ -1,3 +1,12 @@
+2003-06-25  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/event/AncestorEvent.java
+	javax/swing/event/HyperlinkEvent.java
+	javax/swing/event/InternalFrameEvent.java
+	javax/swing/event/ListDataEvent.java
+	javax/swing/event/TableModelEvent.java:
+	Compile fixes.
+
 2003-06-24  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URL.java:

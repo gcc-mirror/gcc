@@ -46,7 +46,7 @@ import java.util.EventObject;
  */
 public class ListDataEvent extends EventObject
 {
-  private static final serialVersionUID = -7131487416250401903L;
+  private static final long serialVersionUID = -7131487416250401903L;
   
   public static int CONTENTS_CHANGED = 0;
   public static int INTERVAL_ADDED = 1;
