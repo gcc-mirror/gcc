@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987-1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -266,6 +266,7 @@ static struct elim_table
   int can_eliminate_previous;	/* Value of CAN_ELIMINATE in previous scan over
 				   insns made by reload. */
   int offset;			/* Current offset between the two regs. */
+  int max_offset;		/* Maximum offset between the two regs. */
   int previous_offset;		/* Offset at end of previous insn. */
   int ref_outside_mem;		/* "to" has been referenced outside a MEM. */
   rtx from_rtx;			/* REG rtx for the register to be eliminated.
@@ -493,7 +494,8 @@ reload (first, global, dumpfile)
   int something_needs_reloads;
   int something_needs_elimination;
   int new_basic_block_needs;
-  int caller_save_needs_spill;
+  enum reg_class caller_save_spill_class = NO_REGS;
+  int caller_save_group_size = 1;
 
   /* The basic block number currently being processed for INSN.  */
   int this_block;
@@ -516,9 +518,9 @@ reload (first, global, dumpfile)
   bzero (spill_stack_slot, sizeof spill_stack_slot);
   bzero (spill_stack_slot_width, sizeof spill_stack_slot_width);
 
-  /* If caller-saves are requested, initialize the required save areas.  */
-  if (flag_caller_saves)
-    init_save_areas ();
+  /* Initialize the save area information for caller-save, in case some
+     are needed.  */
+  init_save_areas ();
     
   /* Compute which hard registers are now in use
      as homes for pseudo registers.
@@ -566,7 +568,12 @@ reload (first, global, dumpfile)
       if (set != 0 && GET_CODE (SET_DEST (set)) == REG)
 	{
 	  rtx note = find_reg_note (insn, REG_EQUIV, 0);
-	  if (note)
+	  if (note
+#ifdef LEGITIMATE_PIC_OPERAND_P
+	      && (! CONSTANT_P (XEXP (note, 0)) || ! flag_pic 
+		  || LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0)))
+#endif
+	      )
 	    {
 	      rtx x = XEXP (note, 0);
 	      i = REGNO (SET_DEST (set));
@@ -792,7 +799,8 @@ reload (first, global, dumpfile)
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	{
 	  INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, ep->initial_offset);
-	  ep->previous_offset = ep->offset = ep->initial_offset;
+	  ep->previous_offset = ep->offset
+	    = ep->max_offset = ep->initial_offset;
 	}
 #else
 #ifdef INITIAL_FRAME_POINTER_OFFSET
@@ -802,7 +810,7 @@ reload (first, global, dumpfile)
 	abort ();
       reg_eliminate[0].initial_offset = 0;
 #endif
-      reg_eliminate[0].previous_offset
+      reg_eliminate[0].previous_offset = reg_eliminate[0].max_offset
 	= reg_eliminate[0].offset = reg_eliminate[0].initial_offset;
 #endif
 
@@ -877,6 +885,15 @@ reload (first, global, dumpfile)
       if (something_changed)
 	continue;
 
+      /* If caller-saves needs a group, initialize the group to include
+	 the size and mode required for caller-saves.  */
+
+      if (caller_save_group_size > 1)
+	{
+	  group_mode[(int) caller_save_spill_class] = Pmode;
+	  group_size[(int) caller_save_spill_class] = caller_save_group_size;
+	}
+
       /* Compute the most additional registers needed by any instruction.
 	 Collect information separately for each class of regs.  */
 
@@ -926,14 +943,6 @@ reload (first, global, dumpfile)
 	      int insn_needs_for_operands[N_REG_CLASSES];
 	      int insn_groups_for_operands[N_REG_CLASSES];
 	      int insn_total_groups_for_operands = 0;
-
-	      for (i = 0; i < N_REG_CLASSES; i++)
-		{
-		  insn_needs[i] = 0, insn_groups[i] = 0;
-		  insn_needs_for_inputs[i] = 0, insn_groups_for_inputs[i] = 0;
-		  insn_needs_for_outputs[i] = 0, insn_groups_for_outputs[i] = 0;
-		  insn_needs_for_operands[i] = 0, insn_groups_for_operands[i] = 0;
-		}
 
 #if 0  /* This wouldn't work nowadays, since optimize_bit_field
 	  looks for non-strict memory addresses.  */
@@ -1014,10 +1023,24 @@ reload (first, global, dumpfile)
 		  something_needs_elimination = 1;
 		}
 
-	      if (n_reloads == 0)
+	      /* If this insn has no reloads, we need not do anything except
+		 in the case of a CALL_INSN when we have caller-saves and 
+		 caller-save needs reloads.  */
+
+	      if (n_reloads == 0
+		  && ! (GET_CODE (insn) == CALL_INSN
+			&& caller_save_spill_class != NO_REGS))
 		continue;
 
 	      something_needs_reloads = 1;
+
+	      for (i = 0; i < N_REG_CLASSES; i++)
+		{
+		  insn_needs[i] = 0, insn_groups[i] = 0;
+		  insn_needs_for_inputs[i] = 0, insn_groups_for_inputs[i] = 0;
+		  insn_needs_for_outputs[i] = 0, insn_groups_for_outputs[i] = 0;
+		  insn_needs_for_operands[i] = 0, insn_groups_for_operands[i] = 0;
+		}
 
 	      /* Count each reload once in every class
 		 containing the reload's own class.  */
@@ -1145,17 +1168,58 @@ reload (first, global, dumpfile)
 		  if (insn_groups_for_operands[i] > this_max)
 		    this_max = insn_groups_for_operands[i];
 		  insn_groups[i] += this_max;
-
-		  if (global && (insn_needs[i] || insn_groups[i])
-		      && ! basic_block_needs[i][this_block])
-		    {
-		      new_basic_block_needs = 1;
-		      basic_block_needs[i][this_block] = 1;
-		    }
 		}
+
 	      insn_total_groups += MAX (insn_total_groups_for_inputs,
 					MAX (insn_total_groups_for_outputs,
 					     insn_total_groups_for_operands));
+
+	      /* If this is a CALL_INSN and caller-saves will need
+		 a spill register, act as if the spill register is
+		 needed for this insn.   However, the spill register
+		 can be used by any reload of this insn, so we only
+		 need do something if no need for that class has
+		 been recorded. 
+
+		 The assumption that every CALL_INSN will trigger a
+		 caller-save is highly conservative, however, the number
+		 of cases where caller-saves will need a spill register but
+		 a block containing a CALL_INSN won't need a spill register
+		 of that class should be quite rare.
+
+		 If a group is needed, the size and mode of the group will
+		 have been set up at the begining of this loop.  */
+
+	      if (GET_CODE (insn) == CALL_INSN
+		  && caller_save_spill_class != NO_REGS)
+		{
+		  int *caller_save_needs
+		    = (caller_save_group_size > 1 ? insn_groups : insn_needs);
+
+		  if (caller_save_needs[(int) caller_save_spill_class] == 0)
+		    {
+		      register enum reg_class *p
+			= reg_class_superclasses[(int) caller_save_spill_class];
+
+		      caller_save_needs[(int) caller_save_spill_class]++;
+
+		      while (*p != LIM_REG_CLASSES)
+			caller_save_needs[*p++] += 1;
+		    }
+
+		  if (caller_save_group_size > 1)
+		    insn_total_groups = MAX (insn_total_groups, 1);
+		}
+
+	      /* Update the basic block needs.  */
+
+	      for (i = 0; i < N_REG_CLASSES; i++)
+		if (global && (insn_needs[i] || insn_groups[i])
+		    && ! basic_block_needs[i][this_block])
+		  {
+		    new_basic_block_needs = 1;
+		    basic_block_needs[i][this_block] = 1;
+		  }
 
 #ifdef SMALL_REGISTER_CLASSES
 	      /* If this insn stores the value of a function call,
@@ -1205,20 +1269,21 @@ reload (first, global, dumpfile)
 	}
 
       /* If we have caller-saves, set up the save areas and see if caller-save
-	 will need a spill register.  If it will and we don't already have a
-	 need of class BASE_REG_CLASS, create such a need.  */
+	 will need a spill register.  */
 
       if (caller_save_needed
-	  && 0 != (caller_save_needs_spill
-		   = ! setup_save_areas (&something_changed))
-	  && max_needs[(int) BASE_REG_CLASS] == 0)
+	  && ! setup_save_areas (&something_changed)
+	  && caller_save_spill_class  == NO_REGS)
 	{
-	  register enum reg_class *p
-	    = reg_class_superclasses[(int) BASE_REG_CLASS];
+	  /* The class we will need depends on whether the machine
+	     supports the sum of two registers for an address; see
+	     find_address_reloads for details.  */
 
-	  max_needs[(int) BASE_REG_CLASS] = 1;
-	  while (*p != LIM_REG_CLASSES)
-	    max_needs[(int) *p++] += 1;
+	  caller_save_spill_class 
+	    = double_reg_address_ok ? INDEX_REG_CLASS : BASE_REG_CLASS;
+	  caller_save_group_size
+	    = CLASS_MAX_NREGS (caller_save_spill_class, Pmode);
+	  something_changed = 1;
 	}
 
       /* Now deduct from the needs for the registers already
@@ -1569,22 +1634,13 @@ reload (first, global, dumpfile)
   reload_in_progress = 1;
 
   /* Insert code to save and restore call-clobbered hard regs
-     around calls.  If caller-save needs a spill register, find one
-     for it to use.  */
+     around calls.  Tell if what mode to use so that we will process
+     those insns in reload_as_needed if we have to.  */
 
   if (caller_save_needed)
-    {
-      register int regno = -1;
-
-      if (caller_save_needs_spill)
-	for (i = 0; i < n_spills; i++)
-	  if (TEST_HARD_REG_BIT (reg_class_contents[(int) BASE_REG_CLASS],
-				spill_regs[i])
-	      && HARD_REGNO_MODE_OK (spill_regs[i], Pmode))
-	    regno = spill_regs[i];
-
-      save_call_clobbered_regs (regno);
-    }
+    save_call_clobbered_regs (num_eliminable ? QImode
+			      : caller_save_spill_class != NO_REGS ? HImode
+			      : VOIDmode);
 
   /* If a pseudo has no hard reg, delete the insns that made the equivalence.
      If that insn didn't set the register (i.e., it copied the register to
@@ -1611,7 +1667,9 @@ reload (first, global, dumpfile)
      by generating move instructions to move the must-be-register
      values into or out of the reload registers.  */
 
-  if (something_needs_reloads || something_needs_elimination)
+  if (something_needs_reloads || something_needs_elimination
+      || (caller_save_needed && num_eliminable)
+      || caller_save_spill_class != NO_REGS)
     reload_as_needed (first, global);
 
   reload_in_progress = 0;
@@ -2765,6 +2823,9 @@ eliminate_regs_in_insn (insn, replace)
   /* Loop through all elimination pairs.  See if any have changed and
      recalculate the number not at initial offset.
 
+     Compute the maximum offset (minimum offset if the stack does not
+     grow downward) for each elimination pair.
+
      We also detect a cases where register elimination cannot be done,
      namely, if a register would be both changed and referenced outside a MEM
      in the resulting insn since such an insn is often undefined and, even if
@@ -2788,6 +2849,12 @@ eliminate_regs_in_insn (insn, replace)
       ep->previous_offset = ep->offset;
       if (ep->can_eliminate && ep->offset != ep->initial_offset)
 	num_not_at_initial_offset++;
+
+#ifdef STACK_GROWS_DOWNWARD
+      ep->max_offset = MAX (ep->max_offset, ep->offset);
+#else
+      ep->max_offset = MIN (ep->max_offset, ep->offset);
+#endif
     }
 
  done:
@@ -4362,12 +4429,23 @@ emit_reload_insns (insn)
 {
   register int j;
   rtx following_insn = NEXT_INSN (insn);
+  rtx before_insn = insn;
   rtx first_output_reload_insn = NEXT_INSN (insn);
   rtx first_other_reload_insn = insn;
   rtx first_operand_address_reload_insn = insn;
   int special;
   /* Values to be put in spill_reg_store are put here first.  */
   rtx new_spill_reg_store[FIRST_PSEUDO_REGISTER];
+
+  /* If this is a CALL_INSN preceeded by USE insns, any reload insns
+     must go in front of the first USE insn, not in front of INSN.  */
+
+  if (GET_CODE (insn) == CALL_INSN && GET_CODE (PREV_INSN (insn)) == INSN
+      && GET_CODE (PATTERN (PREV_INSN (insn))) == USE)
+    while (GET_CODE (PREV_INSN (before_insn)) == INSN
+	   && GET_CODE (PATTERN (PREV_INSN (before_insn))) == USE)
+      first_other_reload_insn = first_operand_address_reload_insn
+	= before_insn = PREV_INSN (before_insn);
 
   /* Now output the instructions to copy the data into and out of the
      reload registers.  Do these in the order that the reloads were reported,
@@ -4520,7 +4598,7 @@ emit_reload_insns (insn)
 	      where = first_output_reload_insn;
 	      break;
 	    case RELOAD_FOR_OPERAND_ADDRESS:
-	      where = insn;
+	      where = before_insn;
 	    }
 
 	  special = 0;
@@ -4761,9 +4839,9 @@ emit_reload_insns (insn)
 		  first_other_reload_insn = this_reload_insn;
 		break;
 	      case RELOAD_FOR_OPERAND_ADDRESS:
-		if (first_operand_address_reload_insn == insn)
+		if (first_operand_address_reload_insn == before_insn)
 		  first_operand_address_reload_insn = this_reload_insn;
-		if (first_other_reload_insn == insn)
+		if (first_other_reload_insn == before_insn)
 		  first_other_reload_insn = this_reload_insn;
 	      }
 

@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987-1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -649,22 +649,21 @@ extern rtx pc_rtx;
 extern rtx cc0_rtx;
 extern rtx const0_rtx;
 extern rtx const1_rtx;
+extern rtx const2_rtx;
 extern rtx constm1_rtx;
 extern rtx const_true_rtx;
-extern rtx fconst0_rtx;
-extern rtx fconst1_rtx;
-extern rtx fconst2_rtx;
-extern rtx dconst0_rtx;
-extern rtx dconst1_rtx;
-extern rtx dconst2_rtx;
 
-/* Returns a constant 0 rtx in mode MODE.  */
+extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
 
-#define CONST0_RTX(MODE) \
- ((MODE == SFmode) ? fconst0_rtx			\
-  : ((MODE == DFmode) ? dconst0_rtx			\
-     : ((GET_MODE_CLASS (MODE) == MODE_INT) ? const0_rtx	\
-        : (abort (), NULL_RTX))))
+/* Returns a constant 0 rtx in mode MODE.  Integer modes are treated the 
+   same as VOIDmode.  */
+
+#define CONST0_RTX(MODE) (const_tiny_rtx[0][(int) (MODE)])
+
+/* Likewise, for the constants 1 and 2.  */
+
+#define CONST1_RTX(MODE) (const_tiny_rtx[1][(int) (MODE)])
+#define CONST2_RTX(MODE) (const_tiny_rtx[2][(int) (MODE)])
 
 /* All references to certain hard regs, except those created
    by allocating pseudo regs into them (when that's possible),

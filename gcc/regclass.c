@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987-1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -327,7 +327,7 @@ fix_register (name, fixed, call_used)
      the register info.  */
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (!strcmp (reg_names[i], name))
+    if (reg_names[i][0] && ! strcmp (reg_names[i], name))
       {
 	fixed_regs[i] = fixed;
 	call_used_regs[i] = call_used;
