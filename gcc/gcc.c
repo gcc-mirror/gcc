@@ -2509,7 +2509,7 @@ process_command (argc, argv)
 
 #ifdef LANG_SPECIFIC_DRIVER
   /* Do language-specific adjustment/addition of flags.  */
-  lang_specific_driver (&fatal, &argc, &argv);
+  lang_specific_driver (fatal, &argc, &argv);
 #endif
 
   /* Scan argv twice.  Here, the first time, just count how many switches
