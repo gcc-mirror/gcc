@@ -53,8 +53,7 @@ For instructions on reporting bugs, see
 script to report bugs is recommended.
 @c man end
 @c man begin AUTHOR
-See the Info entry for @file{g77}, or
-@w{@uref{http://gcc.gnu.org/thanks.html}}, for contributors to GCC and G77@.
+See the Info entry for @command{g77} for contributors to GCC and G77@.
 @c man end
 @end ignore
 
