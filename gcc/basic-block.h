@@ -184,46 +184,6 @@ extern regset regs_live_at_setjmp;
 #define REG_BLOCK_GLOBAL -2
 
 #define REG_BASIC_BLOCK(N) (VARRAY_REG (reg_n_info, N)->basic_block)
-
-/* List of integers.
-   These are used for storing things like predecessors, etc.
-
-   This scheme isn't very space efficient, especially on 64 bit machines.
-   The interface is designed so that the implementation can be replaced with
-   something more efficient if desirable.  */
-
-typedef struct int_list {
-  struct int_list *next;
-  int val;
-} int_list;
-
-typedef int_list *int_list_ptr;
-
-/* Integer list elements are allocated in blocks to reduce the frequency
-   of calls to malloc and to reduce the associated space overhead.  */
-
-typedef struct int_list_block {
-  struct int_list_block *next;
-  int nodes_left;
-#define INT_LIST_NODES_IN_BLK 500
-  struct int_list nodes[INT_LIST_NODES_IN_BLK];
-} int_list_block;
-
-/* Given a pointer to the list, return pointer to first element.  */
-#define INT_LIST_FIRST(il) (il)
-
-/* Given a pointer to a list element, return pointer to next element.  */
-#define INT_LIST_NEXT(p) ((p)->next)
-
-/* Return non-zero if P points to the end of the list.  */
-#define INT_LIST_END(p) ((p) == NULL)
-
-/* Return element pointed to by P.  */
-#define INT_LIST_VAL(p) ((p)->val)
-
-#define INT_LIST_SET_VAL(p, new_val) ((p)->val = (new_val))
-
-extern void free_int_list               PROTO ((int_list_block **));
 
 /* Stuff for recording basic block info.  */
 
@@ -247,7 +207,6 @@ extern void compute_bb_for_insn		PROTO ((int));
 extern void set_block_for_insn		PROTO ((rtx, basic_block));
 extern void set_block_num		PROTO ((rtx, int));
 
-extern void free_bb_mem			PROTO ((void));
 extern void free_basic_block_vars	PROTO ((int));
 
 extern basic_block split_edge		PROTO ((edge));
@@ -290,8 +249,6 @@ void verify_edge_list			PROTO ((FILE *, struct edge_list *));
 int find_edge_index			PROTO ((struct edge_list *, 
 						basic_block, basic_block));
 
-extern void compute_preds_succs		PROTO ((int_list_ptr *, int_list_ptr *,
-						int *, int *));
 extern void compute_flow_dominators	PROTO ((sbitmap *, sbitmap *));
 extern void compute_immediate_dominators	PROTO ((int *, sbitmap *));
 

@@ -813,8 +813,6 @@ gcse_main (f, file)
   obstack_free (&gcse_obstack, NULL_PTR);
   /* Free reg_set_table.  */
   free_reg_set_mem ();
-  /* Free storage used to record predecessor/successor data.  */
-  free_bb_mem ();
   /* Free storage allocated by find_basic_blocks.  */
   free_basic_block_vars (0);
   return run_jump_opt_after_gcse;
