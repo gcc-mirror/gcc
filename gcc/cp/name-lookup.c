@@ -387,7 +387,7 @@ new_class_binding (tree name, tree value, tree type, cxx_scope *scope)
 	  size_t i;
 	  
 	  for (i = 0;
-	       (cb = VEC_iterate (cp_class_binding, scope->class_shadowed, i));
+	       VEC_iterate (cp_class_binding, scope->class_shadowed, i, cb);
 	       i++)
 	    {
 	      cxx_binding **b;
@@ -1656,9 +1656,7 @@ print_binding_level (struct cp_binding_level* lvl)
       cp_class_binding *b;
       fprintf (stderr, " class-shadowed:");
       for (i = 0; 
-	   (b = VEC_iterate(cp_class_binding, 
-			    lvl->class_shadowed,
-			    i));
+	   VEC_iterate(cp_class_binding, lvl->class_shadowed, i, b);
 	   ++i) 
 	fprintf (stderr, " %s ", IDENTIFIER_POINTER (b->identifier));
       fprintf (stderr, "\n");
@@ -2617,7 +2615,7 @@ poplevel_class (void)
   if (level->class_shadowed)
     {
       for (i = 0;
-	   (cb = VEC_iterate (cp_class_binding, level->class_shadowed, i));
+	   VEC_iterate (cp_class_binding, level->class_shadowed, i, cb);
 	   ++i)
 	IDENTIFIER_BINDING (cb->identifier) = cb->base.previous;
       ggc_free (level->class_shadowed);
@@ -4924,9 +4922,7 @@ store_class_bindings (VEC(cp_class_binding) *names,
   cp_class_binding *cb;
 
   timevar_push (TV_NAME_LOOKUP);
-  for (i = 0; 
-       (cb = VEC_iterate(cp_class_binding, names, i));
-       ++i)
+  for (i = 0; VEC_iterate(cp_class_binding, names, i, cb); ++i)
     store_binding (cb->identifier, old_bindings);
   timevar_pop (TV_NAME_LOOKUP);
 }
@@ -4982,9 +4978,7 @@ push_to_top_level (void)
 	SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (t), TREE_VALUE (t));
     }
 
-  for (i = 0;
-       (sb = VEC_iterate (cxx_saved_binding, s->old_bindings, i));
-       ++i)
+  for (i = 0; VEC_iterate (cxx_saved_binding, s->old_bindings, i, sb); ++i)
     IDENTIFIER_MARKED (sb->identifier) = 0;
 
   s->prev = scope_chain;
@@ -5015,9 +5009,7 @@ pop_from_top_level (void)
   current_lang_base = 0;
 
   scope_chain = s->prev;
-  for (i = 0; 
-       (saved = VEC_iterate (cxx_saved_binding, s->old_bindings, i));
-       ++i)
+  for (i = 0; VEC_iterate (cxx_saved_binding, s->old_bindings, i, saved); ++i)
     {
       tree id = saved->identifier;
 
