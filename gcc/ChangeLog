@@ -1,5 +1,10 @@
 2002-06-10  Roger Sayle  <roger@eyesopen.com>
 
+	* simplify-rtx.c (simplify_replace_rtx): Allow replacement
+	of matching registers.
+
+2002-06-10  Roger Sayle  <roger@eyesopen.com>
+
 	* toplev.c (rest_of_compilation): Disable early if-conversion pass.
 	* gcse.c (bypass_conditional_jumps): Fix typo in setcc test.
 
