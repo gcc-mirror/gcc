@@ -1,3 +1,7 @@
+2001-05-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* objc/execute/formal_protocol-6.cexp: XFAIL it.
+
 2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/crash41.C: New test.
