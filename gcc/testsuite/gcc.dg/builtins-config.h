@@ -9,6 +9,9 @@
    indicating whether or not TARGET_C99_FUNCTIONS is set, but it does
    not presently do that.)  */
 
+#if defined(__hppa) && defined(__hpux)
+/* PA HP-UX doesn't have the entire C99 runtime.  */
+#else
 #if defined(sun)
 /* Solaris doesn't have the entire C99 runtime.  */
 #else
@@ -25,5 +28,6 @@
 #ifdef _NEWLIB_VERSION
 #else
 #define HAVE_C99_RUNTIME
+#endif
 #endif
 #endif
