@@ -1,3 +1,10 @@
+1999-07-05  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+            Jerry Quinn <jquinn@nortelnetworks.com>
+
+	* egcs_update (touch_files, apply_patch): New functions.
+	Use them.  New command-line option --patch.  Split test of local
+	tree into two parts.  Add comments.
+
 1999-07-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_summary: If Target is `unix{*}', append the Target variants 

@@ -9,14 +9,18 @@
 # reads --nostdflags, $UPDATE_OPTIONS as well as this parameter itself
 # are omitted. 
 # 
+# If the first parameter reads --patch, the second parameter is considered
+# a patch file.
+# 
 # Examples:
 #
 # contrib/egcs_update -r egcs_latest_snapshot
 # contrib/egcs_update -A
 # contrib/egcs_update --nostdflags -P -r egcs_1_1_branch gcc/testsuite
+# contrib/egcs_update --patch some-patch
 #
 #
-# (C) 1998 Free Software Foundation
+# (C) 1998-1999 Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -24,22 +28,92 @@
 # its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
 
 
+# Default options used when updating via CVS.
 UPDATE_OPTIONS=-P
 # Add -d to create any directories that exist in the repository but not
 #        locally.
 # Add -A to reset any sticky tags, dates, or `-k' options.
 
 
+# This function touches generated files such that the ``end'' user does
+# not have to rebuild them.
+#
+# Please also update the FAQ accordingly if you change the list of
+# files below.  Note that generated files should be touched only
+# after the corresponding *.y files.
+touch_files()
+{
+    touch `find . -name configure -print`
+    touch `find texinfo -name Makefile.in -print`
+    touch `find texinfo -name \*.pot -print`
+    touch `find texinfo -name \*.gmo -print`
+    for f in gcc/c-parse.y \
+	     gcc/c-parse.h \
+	     gcc/c-parse.c \
+	     gcc/cstamp-h.in \
+	     gcc/c-gperf.h \
+	     gcc/cexp.c \
+	     gcc/cp/parse.c \
+	     gcc/cp/parse.h \
+	     gcc/objc/objc-parse.y \
+	     gcc/objc/objc-parse.c \
+	     gcc/java/parse.h \
+	     gcc/java/parse.c \
+	     gcc/java/parse-scan.c \
+	     libf2c/libU77/stamp-h.in \
+	     contrib/fixinc/fixincl.x \
+	     contrib/fixinc/inclhack.sh \
+	     contrib/fixinc/fixincl.sh \
+	     gcc/fixinc/fixincl.x \
+	     gcc/fixinc/inclhack.sh \
+	     gcc/fixinc/fixincl.sh
+    do
+	if [ -f $f ]; then
+	    touch $f
+	fi
+    done
+}
+
+
+# This functions applies a patch to an existing tree.
+apply_patch()
+{
+    if [ -f $1 ]; then
+	echo "Applying patch file $1"
+	case "$1" in
+	*gz)
+	    gzip -d -c $1 | patch -p1 ;;
+	*)
+	    cat $1 | patch -p1 ;;
+	esac
+    fi
+    echo "Updating file timestamps"
+    touch_files
+}
+
+
+# This is where the actual processing starts.
 echo "Current directory is `pwd`."
 
-# First of all, check whether this indeed looks like a local CVS of egcs.
-if [ ! -d CVS ] || [ ! -f gcc/version.c ]; then
-	echo "This does not seem to be an egcs CVS tree!"
-	exit
+# Check whether this indeed looks like a local tree.
+if [ ! -f gcc/version.c ]; then
+    echo "This does not seem to be an egcs tree!"
+    exit
+fi
+
+# First of all, check whether we are going to process a patch.
+if [ x"${1}"x = x"--patch"x ]; then
+    apply_patch ${2}
+    exit 0
+fi
+
+# Check whether this indeed looks like a local CVS tree.
+if [ ! -d CVS ]; then
+    echo "This does not seem to be an egcs CVS tree!"
+    exit
 fi
 
 # Check command-line options
-
 if [ x"${1}"x = x"--nostdflags"x ]; then
     shift
 else
@@ -63,7 +137,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-
 echo "Pass 2: Updating full tree"
 cvs -q update ${1+"$@"}
 if [ $? -ne 0 ]; then 
@@ -72,35 +145,4 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Pass 3: Fixing local tree"
-# Please also update the FAQ accordingly if you change the list of
-# files below. Note that generated files should be touched only
-# after the corresponding *.y files.
-touch `find . -name configure -print`
-touch `find texinfo -name Makefile.in -print`
-touch `find texinfo -name \*.pot -print`
-touch `find texinfo -name \*.gmo -print`
-for f in gcc/c-parse.y \
-	 gcc/c-parse.h \
-	 gcc/c-parse.c \
-	 gcc/cstamp-h.in \
-	 gcc/c-gperf.h \
-	 gcc/cexp.c \
-	 gcc/cp/parse.c \
-	 gcc/cp/parse.h \
-	 gcc/objc/objc-parse.y \
-	 gcc/objc/objc-parse.c \
-	 gcc/java/parse.h \
-	 gcc/java/parse.c \
-	 gcc/java/parse-scan.c \
-	 libf2c/libU77/stamp-h.in \
-	 contrib/fixinc/fixincl.x \
-	 contrib/fixinc/inclhack.sh \
-	 contrib/fixinc/fixincl.sh \
-	 gcc/fixinc/fixincl.x \
-	 gcc/fixinc/inclhack.sh \
-	 gcc/fixinc/fixincl.sh
-do
-	if [ -f $f ]; then
-		touch $f
-	fi
-done
+touch_files
