@@ -31,6 +31,7 @@
 #include "tm.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "c-common.h"
 #include "tree-inline.h"
 #include "tree-mudflap.h"
 #include "except.h"
@@ -1088,7 +1089,13 @@ finish_compound_stmt (tree stmt)
   else if (STATEMENT_LIST_NO_SCOPE (stmt))
     stmt = pop_stmt_list (stmt);
   else
-    stmt = do_poplevel (stmt);
+    {
+      /* Destroy any ObjC "super" receivers that may have been
+	 created.  */
+      objc_clear_super_receiver ();
+
+      stmt = do_poplevel (stmt);
+    }
 
   /* ??? See c_end_compound_stmt wrt statement expressions.  */
   add_stmt (stmt);
