@@ -1,3 +1,7 @@
+2004-03-11  Alan Modra  <amodra@bigpond.net.au>
+
+	* real.c (encode_ibm_extended): Do round low word.
+
 2004-03-11  Ben Elliston  <bje@wasabisystems.com>
 
 	* config/arm/arm.md (is_xscale): Comment this attribute and move
