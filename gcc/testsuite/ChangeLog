@@ -1,5 +1,7 @@
 2004-11-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/template/deduce3.C: New test. 
+
 	PR c++/18586
 	* g++.dg/template/crash27.C: New test. 
 

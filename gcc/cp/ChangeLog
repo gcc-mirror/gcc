@@ -1,5 +1,8 @@
 2004-11-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* pt.c (tsubst_function_type): Do not permit function types which
+	return arrays or functions.
+
 	PR c++/18586
 	* parser.c (cp_parser_init_declarator): Do not pop scope twice.
 
