@@ -1,5 +1,10 @@
 2002-02-26  Aldy Hernandez  <aldyh@redhat.com>
 
+        * c-typeck.c (really_start_incremental_init): Use
+        bitsize_zero_node for vectors.
+
+2002-02-26  Aldy Hernandez  <aldyh@redhat.com>
+
         * config/rs6000/rs6000.md (get_vrsave_internal): Fix typo.
         ("*set_vrsave_internal"): Same.
 

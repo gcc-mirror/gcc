@@ -5235,7 +5235,7 @@ really_start_incremental_init (type)
       /* Vectors are like simple fixed-size arrays.  */
       constructor_max_index =
 	build_int_2 (TYPE_VECTOR_SUBPARTS (constructor_type) - 1, 0);
-      constructor_index = convert (bitsizetype, integer_zero_node);
+      constructor_index = convert (bitsizetype, bitsize_zero_node);
       constructor_unfilled_index = constructor_index;
     }
   else
