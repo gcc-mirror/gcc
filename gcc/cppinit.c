@@ -111,7 +111,7 @@ static struct default_include
   int cplusplus;		/* Only look here if we're compiling C++.  */
   int cxx_aware;		/* Includes in this directory don't need to
 				   be wrapped in extern "C" when compiling
-				   C++.  This is not used anymore.  */
+				   C++.  */
 }
 include_defaults_array[]
 #ifdef INCLUDE_DEFAULTS
@@ -193,14 +193,15 @@ static void path_include		PARAMS ((cpp_reader *,
 static void initialize_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 struct cpp_pending *,
-						 char *, int));
+						 char *, int, int));
 static char *base_name			PARAMS ((const char *));
 static void dump_special_to_buffer	PARAMS ((cpp_reader *, const char *));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
+static void initialize_standard_includes PARAMS ((cpp_reader *));
 static void new_pending_define		PARAMS ((struct cpp_options *,
 						 const char *));
 
-/* Last argument to append_include_chain: chain to use */
+/* Fourth argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 
 /* If gcc is in use (stage2/stage3) we can make this table initialized data. */
@@ -289,7 +290,7 @@ path_include (pfile, pend, list, path)
 	  name[q - p] = 0;
 	}
 
-      append_include_chain (pfile, pend, name, path);
+      append_include_chain (pfile, pend, name, path, 0);
 
       /* Advance past this name.  */
       if (*q == 0)
@@ -325,11 +326,12 @@ base_name (fname)
 /* Append DIR to include path PATH.  DIR must be permanently allocated
    and writable. */
 static void
-append_include_chain (pfile, pend, dir, path)
+append_include_chain (pfile, pend, dir, path, cxx_aware)
      cpp_reader *pfile;
      struct cpp_pending *pend;
      char *dir;
      int path;
+     int cxx_aware;
 {
   struct file_name_list *new;
   struct stat st;
@@ -361,7 +363,10 @@ append_include_chain (pfile, pend, dir, path)
   new->nlen = len;
   new->ino  = st.st_ino;
   new->dev  = st.st_dev;
-  new->sysp = (path == SYSTEM);
+  if (path == SYSTEM)
+    new->sysp = cxx_aware ? 1 : 2;
+  else
+    new->sysp = 0;
   new->name_map = NULL;
   new->next = NULL;
   new->alloc = NULL;
@@ -384,7 +389,7 @@ dump_special_to_buffer (pfile, macro_name)
      cpp_reader *pfile;
      const char *macro_name;
 {
-  static char define_directive[] = "#define ";
+  static const char define_directive[] = "#define ";
   int macro_name_length = strlen (macro_name);
   output_line_command (pfile, same_file);
   CPP_RESERVE (pfile, sizeof(define_directive) + macro_name_length);
@@ -513,7 +518,7 @@ static const struct builtin builtin_array[] =
   { "__TIME__",			0, T_TIME,		DUMP },
   { "__DATE__",			0, T_DATE,		DUMP },
   { "__FILE__",			0, T_FILE,		0    },
-  { "__BASE_FILE__",		0, T_BASE_FILE,		DUMP },
+  { "__BASE_FILE__",		0, T_BASE_FILE,		0    },
   { "__LINE__",			0, T_SPECLINE,		0    },
   { "__INCLUDE_LEVEL__",	0, T_INCLUDE_LEVEL,	0    },
   { "__VERSION__",		0, T_VERSION,		DUMP },
@@ -656,6 +661,99 @@ initialize_dependency_output (pfile)
     }
 }
 
+/* And another subroutine.  This one sets up the standard include path.  */
+static void
+initialize_standard_includes (pfile)
+     cpp_reader *pfile;
+{
+  cpp_options *opts = CPP_OPTIONS (pfile);
+  char *path;
+  struct default_include *p = include_defaults_array;
+  char *specd_prefix = opts->include_prefix;
+
+  /* Several environment variables may add to the include search path.
+     CPATH specifies an additional list of directories to be searched
+     as if specified with -I, while C_INCLUDE_PATH, CPLUS_INCLUDE_PATH,
+     etc. specify an additional list of directories to be searched as
+     if specified with -isystem, for the language indicated.  */
+
+  GET_ENV_PATH_LIST (path, "CPATH");
+  if (path != 0 && *path != 0)
+    path_include (pfile, opts->pending, path, BRACKET);
+
+  switch ((opts->objc << 1) + opts->cplusplus)
+    {
+    case 0:
+      GET_ENV_PATH_LIST (path, "C_INCLUDE_PATH");
+      break;
+    case 1:
+      GET_ENV_PATH_LIST (path, "CPLUS_INCLUDE_PATH");
+      break;
+    case 2:
+      GET_ENV_PATH_LIST (path, "OBJC_INCLUDE_PATH");
+      break;
+    case 3:
+      GET_ENV_PATH_LIST (path, "OBJCPLUS_INCLUDE_PATH");
+      break;
+    }
+  if (path != 0 && *path != 0)
+    path_include (pfile, opts->pending, path, SYSTEM);
+
+  /* Search "translated" versions of GNU directories.
+     These have /usr/local/lib/gcc... replaced by specd_prefix.  */
+  if (specd_prefix != 0)
+    {
+      char *default_prefix = alloca (sizeof GCC_INCLUDE_DIR - 7);
+      /* Remove the `include' from /usr/local/lib/gcc.../include.
+	 GCC_INCLUDE_DIR will always end in /include. */
+      int default_len = sizeof GCC_INCLUDE_DIR - 8;
+      int specd_len = strlen (specd_prefix);
+
+      memcpy (default_prefix, GCC_INCLUDE_DIR, default_len);
+      default_prefix[default_len] = '\0';
+
+      for (p = include_defaults_array; p->fname; p++)
+	{
+	  /* Some standard dirs are only for C++.  */
+	  if (!p->cplusplus
+	      || (opts->cplusplus
+		  && !opts->no_standard_cplusplus_includes))
+	    {
+	      /* Does this dir start with the prefix?  */
+	      if (!strncmp (p->fname, default_prefix, default_len))
+		{
+		  /* Yes; change prefix and add to search list.  */
+		  int flen = strlen (p->fname);
+		  int this_len = specd_len + flen - default_len;
+		  char *str = (char *) xmalloc (this_len + 1);
+		  memcpy (str, specd_prefix, specd_len);
+		  memcpy (str + specd_len,
+			  p->fname + default_len,
+			  flen - default_len + 1);
+
+		  append_include_chain (pfile, opts->pending,
+					str, SYSTEM, p->cxx_aware);
+		}
+	    }
+	}
+    }
+
+  /* Search ordinary names for GNU include directories.  */
+  for (p = include_defaults_array; p->fname; p++)
+    {
+      /* Some standard dirs are only for C++.  */
+      if (!p->cplusplus
+	  || (opts->cplusplus
+	      && !opts->no_standard_cplusplus_includes))
+	{
+	  /* XXX Potential memory leak! */
+	  char *str = xstrdup (update_path (p->fname, p->component));
+	  append_include_chain (pfile, opts->pending, str, SYSTEM,
+				p->cxx_aware);
+	}
+    }
+}
+
 /* This is called after options have been processed.
  * Check options for consistency, and setup for processing input
  * from the file named FNAME.  (Use standard input if FNAME==NULL.)
@@ -669,9 +767,6 @@ cpp_start_read (pfile, fname)
 {
   struct cpp_options *opts = CPP_OPTIONS (pfile);
   struct pending_option *p, *q;
-  int f;
-  cpp_buffer *fp;
-  struct include_hash *ih_fake;
 
   /* -MG doesn't select the form of output and must be specified with one of
      -M or -MM.  -MG doesn't make sense with -MD or -MMD since they don't
@@ -693,6 +788,11 @@ cpp_start_read (pfile, fname)
   /* Set this if it hasn't been set already. */
   if (user_label_prefix == NULL)
     user_label_prefix = USER_LABEL_PREFIX;
+
+  /* Don't bother trying to do macro expansion if we've already done
+     preprocessing.  */
+  if (opts->preprocessed)
+    pfile->no_macro_expand++;
   
   /* Now that we know dollars_in_ident, we can initialize the syntax
      tables. */
@@ -702,30 +802,52 @@ cpp_start_read (pfile, fname)
   if (opts->dollars_in_ident)
     IStable['$'] = ISidstart|ISidnum;
 
-  /* Do partial setup of input buffer for the sake of generating
-     early #line directives (when -g is in effect).  */
-  fp = cpp_push_buffer (pfile, NULL, 0);
-  if (!fp)
-    return 0;
+  /* Set up the include search path now.  */
+  if (! opts->no_standard_includes)
+    initialize_standard_includes (pfile);
+
+  merge_include_chains (opts);
+
+  /* With -v, print the list of dirs to search.  */
+  if (opts->verbose)
+    {
+      struct file_name_list *l;
+      fprintf (stderr, _("#include \"...\" search starts here:\n"));
+      for (l = opts->quote_include; l; l = l->next)
+	{
+	  if (l == opts->bracket_include)
+	    fprintf (stderr, _("#include <...> search starts here:\n"));
+	  fprintf (stderr, " %s\n", l->name);
+	}
+      fprintf (stderr, _("End of search list.\n"));
+    }
+
+  initialize_dependency_output (pfile);
+  
+  /* Open the main input file.  This must be done before -D processing
+     so we have a buffer to stand on.  */
   if (opts->in_fname == NULL || *opts->in_fname == 0)
     {
       opts->in_fname = fname;
       if (opts->in_fname == NULL)
 	opts->in_fname = "";
     }
-  fp->nominal_fname = fp->fname = opts->in_fname;
-  fp->lineno = 0;
 
-  /* Install __LINE__, etc.  Must follow initialize_char_syntax
-     and option processing.  */
+  if (!cpp_read_file (pfile, fname))
+    return 0;
+
+  /* -D and friends may produce output, which should be identified
+     as line 0.  */
+
+  CPP_BUFFER (pfile)->lineno = 0;
+
+  /* Install __LINE__, etc.  */
   initialize_builtins (pfile);
 
   /* Do -U's, -D's and -A's in the order they were seen.  */
   p = opts->pending->define_head;
   while (p)
     {
-      if (opts->debug_output)
-	output_line_command (pfile, same_file);
       if (p->undef)
 	cpp_undef (pfile, p->arg);
       else
@@ -739,8 +861,6 @@ cpp_start_read (pfile, fname)
   p = opts->pending->assert_head;
   while (p)
     {
-      if (opts->debug_output)
-	output_line_command (pfile, same_file);
       if (p->undef)
 	cpp_unassert (pfile, p->arg);
       else
@@ -752,152 +872,8 @@ cpp_start_read (pfile, fname)
     }
   
   opts->done_initializing = 1;
+  CPP_BUFFER (pfile)->lineno = 1;
 
-  /* Several environment variables may add to the include search path.
-     CPATH specifies an additional list of directories to be searched
-     as if specified with -I, while C_INCLUDE_PATH, CPLUS_INCLUDE_PATH,
-     etc. specify an additional list of directories to be searched as
-     if specified with -isystem, for the language indicated.
-
-     These variables are ignored if -nostdinc is on.  */
-  if (! opts->no_standard_includes)
-    {
-      char *path;
-      GET_ENV_PATH_LIST (path, "CPATH");
-      if (path != 0 && *path != 0)
-	path_include (pfile, opts->pending, path, BRACKET);
-
-      switch ((opts->objc << 1) + opts->cplusplus)
-	{
-	case 0:
-	  GET_ENV_PATH_LIST (path, "C_INCLUDE_PATH");
-	  break;
-	case 1:
-	  GET_ENV_PATH_LIST (path, "CPLUS_INCLUDE_PATH");
-	  break;
-	case 2:
-	  GET_ENV_PATH_LIST (path, "OBJC_INCLUDE_PATH");
-	  break;
-	case 3:
-	  GET_ENV_PATH_LIST (path, "OBJCPLUS_INCLUDE_PATH");
-	  break;
-	}
-      if (path != 0 && *path != 0)
-	path_include (pfile, opts->pending, path, SYSTEM);
-    }
-
-  /* Unless -nostdinc, add the compiled-in include path to the list,
-     translating prefixes. */
-  if (!opts->no_standard_includes)
-    {
-      struct default_include *p = include_defaults_array;
-      char *specd_prefix = opts->include_prefix;
-
-      /* Search "translated" versions of GNU directories.
-	 These have /usr/local/lib/gcc... replaced by specd_prefix.  */
-      if (specd_prefix != 0)
-	{
-	  char *default_prefix = alloca (sizeof GCC_INCLUDE_DIR - 7);
-	  /* Remove the `include' from /usr/local/lib/gcc.../include.
-	     GCC_INCLUDE_DIR will always end in /include. */
-	  int default_len = sizeof GCC_INCLUDE_DIR - 8;
-	  int specd_len = strlen (specd_prefix);
-
-	  memcpy (default_prefix, GCC_INCLUDE_DIR, default_len);
-	  default_prefix[default_len] = '\0';
-
-	  for (p = include_defaults_array; p->fname; p++)
-	    {
-	      /* Some standard dirs are only for C++.  */
-	      if (!p->cplusplus
-		  || (opts->cplusplus
-		      && !opts->no_standard_cplusplus_includes))
-		{
-		  /* Does this dir start with the prefix?  */
-		  if (!strncmp (p->fname, default_prefix, default_len))
-		    {
-		      /* Yes; change prefix and add to search list.  */
-		      int flen = strlen (p->fname);
-		      int this_len = specd_len + flen - default_len;
-		      char *str = (char *) xmalloc (this_len + 1);
-		      memcpy (str, specd_prefix, specd_len);
-		      memcpy (str + specd_len,
-			      p->fname + default_len,
-			      flen - default_len + 1);
-
-		      append_include_chain (pfile, opts->pending,
-					    str, SYSTEM);
-		    }
-		}
-	    }
-	}
-
-      /* Search ordinary names for GNU include directories.  */
-      for (p = include_defaults_array; p->fname; p++)
-	{
-	  /* Some standard dirs are only for C++.  */
-	  if (!p->cplusplus
-	      || (opts->cplusplus
-		  && !opts->no_standard_cplusplus_includes))
-	    {
-	      /* XXX Potential memory leak! */
-	      char *str = xstrdup (update_path (p->fname, p->component));
-	      append_include_chain (pfile, opts->pending, str, SYSTEM);
-	    }
-	}
-    }
-
-  merge_include_chains (opts);
-
-  /* With -v, print the list of dirs to search.  */
-  if (opts->verbose)
-    {
-      struct file_name_list *p;
-      fprintf (stderr, _("#include \"...\" search starts here:\n"));
-      for (p = opts->quote_include; p; p = p->next)
-	{
-	  if (p == opts->bracket_include)
-	    fprintf (stderr, _("#include <...> search starts here:\n"));
-	  fprintf (stderr, " %s\n", p->name);
-	}
-      fprintf (stderr, _("End of search list.\n"));
-    }
-
-  /* Don't bother trying to do macro expansion if we've already done
-     preprocessing.  */
-  if (opts->preprocessed)
-    pfile->no_macro_expand++;
-
-  /* Open the main input file.
-     We do this in nonblocking mode so we don't get stuck here if
-     someone clever has asked cpp to process /dev/rmt0;
-     finclude() will check that we have a real file to work with.  */
-  if (fname == NULL || *fname == 0)
-    {
-      fname = "";
-      f = 0;
-    }
-  else if ((f = open (fname, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666)) < 0)
-    {
-      cpp_notice_from_errno (pfile, fname);
-      return 0;
-    }
-
-  initialize_dependency_output (pfile);
-
-  /* Must call finclude() on the main input before processing
-     -include switches; otherwise the -included text winds up
-     after the main input. */
-  ih_fake = (struct include_hash *) xmalloc (sizeof (struct include_hash));
-  ih_fake->next = 0;
-  ih_fake->next_this_file = 0;
-  ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
-  ih_fake->name = fname;
-  ih_fake->control_macro = 0;
-  ih_fake->buf = (char *)-1;
-  ih_fake->limit = 0;
-  if (!finclude (pfile, f, ih_fake))
-    return 0;
   if (opts->preprocessed)
     /* If we've already processed this code, we want to trust the #line
        directives in the input.  But we still need to update our line
@@ -911,82 +887,29 @@ cpp_start_read (pfile, fname)
      have to be pushed onto the include stack and processed later,
      in the main loop calling cpp_get_token.  */
   
-  pfile->no_record_file++;
   opts->no_output++;
   p = opts->pending->imacros_head;
   while (p)
     {
-      int fd = open (p->arg, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
-      if (fd < 0)
-	{
-	  cpp_notice_from_errno (pfile, p->arg);
-	  return 0;
-	}
-      if (!cpp_push_buffer (pfile, NULL, 0))
-	return 0;
-
-      ih_fake = (struct include_hash *)
-	xmalloc (sizeof (struct include_hash));
-      ih_fake->next = 0;
-      ih_fake->next_this_file = 0;
-      ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
-      ih_fake->name = p->arg;
-      ih_fake->control_macro = 0;
-      ih_fake->buf = (char *)-1;
-      ih_fake->limit = 0;
-      if (finclude (pfile, fd, ih_fake))
-	{
-	  if (CPP_PRINT_DEPS (pfile))
-	    deps_output (pfile, ih_fake->name, ' ');
-
-	  cpp_scan_buffer (pfile);
-	}
-      else
-	cpp_pop_buffer (pfile);
-      free (ih_fake);
+      if (cpp_read_file (pfile, p->arg))
+	cpp_scan_buffer (pfile);
 
       q = p->next;
       free (p);
       p = q;
     }
-
   opts->no_output--;
 
   p = opts->pending->include_head;
   while (p)
     {
-      int fd = open (p->arg, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
-      if (fd < 0)
-	{
-	  cpp_notice_from_errno (pfile, p->arg);
-	  return 0;
-	}
-      if (!cpp_push_buffer (pfile, NULL, 0))
-	return 0;
+      if (cpp_read_file (pfile, p->arg))
+	output_line_command (pfile, enter_file);
 
-      ih_fake = (struct include_hash *)
-	xmalloc (sizeof (struct include_hash));
-      ih_fake->next = 0;
-      ih_fake->next_this_file = 0;
-      ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
-      ih_fake->name = p->arg;
-      ih_fake->control_macro = 0;
-      ih_fake->buf = (char *)-1;
-      ih_fake->limit = 0;
-      if (finclude (pfile, fd, ih_fake))
-	{
-	  if (CPP_PRINT_DEPS (pfile))
-	    deps_output (pfile, ih_fake->name, ' ');
-	  
-	  output_line_command (pfile, enter_file);
-	}
-      else
-	cpp_pop_buffer (pfile);
       q = p->next;
       free (p);
       p = q;
     }
-  pfile->no_record_file--;
 
   free (opts->pending);
   opts->pending = NULL;
@@ -1141,7 +1064,7 @@ cpp_handle_option (pfile, argc, argv)
 	    else
 	      fname = argv[++i];
 	    append_include_chain (pfile, opts->pending,
-				  xstrdup (fname), BRACKET);
+				  xstrdup (fname), BRACKET, 0);
 	  }
 	break;
 
@@ -1153,7 +1076,7 @@ cpp_handle_option (pfile, argc, argv)
 	    if (i + 1 == argc)
 	      goto missing_filename;
 	    append_include_chain (pfile, opts->pending,
-				  xstrdup (argv[++i]), SYSTEM);
+				  xstrdup (argv[++i]), SYSTEM, 0);
 	  }
 	else if (!strcmp (argv[i], "-include"))
 	  {
@@ -1210,7 +1133,7 @@ cpp_handle_option (pfile, argc, argv)
 		memcpy (fname + sizeof GCC_INCLUDE_DIR - 9, argv[i], len + 1);
 	      }
 	  
-	    append_include_chain (pfile, opts->pending, fname, SYSTEM);
+	    append_include_chain (pfile, opts->pending, fname, SYSTEM, 0);
 	  }
 	/* Add directory to main path for includes,
 	   with the default prefix at the front of its name.  */
@@ -1236,7 +1159,7 @@ cpp_handle_option (pfile, argc, argv)
 		memcpy (fname + sizeof GCC_INCLUDE_DIR - 9, argv[i], len + 1);
 	      }
 	  
-	    append_include_chain (pfile, opts->pending, fname, BRACKET);
+	    append_include_chain (pfile, opts->pending, fname, BRACKET, 0);
 	  }
 	/* Add directory to end of path for includes.  */
 	else if (!strcmp (argv[i], "-idirafter"))
@@ -1244,7 +1167,7 @@ cpp_handle_option (pfile, argc, argv)
 	    if (i + 1 == argc)
 	      goto missing_dirname;
 	    append_include_chain (pfile, opts->pending,
-				  xstrdup (argv[++i]), AFTER);
+				  xstrdup (argv[++i]), AFTER, 0);
 	  }
 	else if (!strcmp (argv[i], "-iprefix"))
 	  {

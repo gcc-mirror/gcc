@@ -1,3 +1,34 @@
+2000-03-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (cpp_read_file): New function.
+
+	* cpphash.c (collect_expansion): Make sure to reset last_token
+	to NORM when we hit a string.  Handle trailing whitespace
+	properly when the expansion is empty.
+	(create_definition): Disable line commands while parsing the
+	directive line.
+	(dump_definition): If pfile->lineno == 0, output a line
+	command ahead of the dump, and add a trailing newline.
+
+	* cppinit.c (append_include_chain): Add fifth argument, which
+	indicates whether or not system headers are C++ aware.
+	(initialize_standard_includes): New function,
+	broken out of read_and_prescan.  Pass 'cxx_aware' value from
+	the include_defaults_array on to append_include_chain.
+	(dump_special_to_buffer): Const-ify char array.
+	(builtin_array): Don't dump __BASE_FILE__.
+	(cpp_start_read): Use cpp_read_file.  Reorder code for
+	clarity.  Don't output line commands here for -D/-A/-U
+	switches.  Don't call deps_output for files included with
+	-include or -imacros.
+
+	* cpplib.c (do_define): Don't pay any attention to the second
+	argument.
+	(cpp_expand_to_buffer): Disable line commands while scanning.
+	(output_line_command): Work in the file buffer.
+	* cpplib.h: Remove no_record_file flag from struct cpp_reader.
+	Fix formatting of comments.  Prototype cpp_read_file.
+
 Thu Mar  2 13:29:46 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-common.c (c_common_nodes_and_builtins): Make sizetype_endlink

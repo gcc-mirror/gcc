@@ -654,7 +654,7 @@ get_macro_name (pfile)
 static int
 do_define (pfile, keyword)
      cpp_reader *pfile;
-     const struct directive *keyword;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   HASHNODE *hp;
   DEFINITION *def;
@@ -728,14 +728,11 @@ do_define (pfile, keyword)
   else
     cpp_install (pfile, sym, len, T_MACRO, (char *) def);
 
-  if (keyword != NULL && keyword->type == T_DEFINE)
-    {
-      if (CPP_OPTIONS (pfile)->debug_output
-	  || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
-	dump_definition (pfile, sym, len, def);
-      else if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
-	pass_thru_directive (sym, len, pfile, keyword);
-    }
+  if (CPP_OPTIONS (pfile)->debug_output
+      || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
+    dump_definition (pfile, sym, len, def);
+  else if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
+    pass_thru_directive (sym, len, pfile, keyword);
 
   return 0;
 }
@@ -876,7 +873,9 @@ cpp_expand_to_buffer (pfile, buf, length)
   /* Scan the input, create the output.  */
   save_no_output = CPP_OPTIONS (pfile)->no_output;
   CPP_OPTIONS (pfile)->no_output = 0;
+  CPP_OPTIONS (pfile)->no_line_commands++;
   cpp_scan_buffer (pfile);
+  CPP_OPTIONS (pfile)->no_line_commands--;
   CPP_OPTIONS (pfile)->no_output = save_no_output;
 
   CPP_NUL_TERMINATE (pfile);
@@ -926,16 +925,14 @@ output_line_command (pfile, file_change)
      enum file_change_code file_change;
 {
   long line;
-  cpp_buffer *ip = CPP_BUFFER (pfile);
-
-  if (ip->fname == NULL)
-    return;
+  cpp_buffer *ip;
 
   if (CPP_OPTIONS (pfile)->no_line_commands
       || CPP_OPTIONS (pfile)->no_output)
     return;
 
-  cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, NULL);
+  ip = cpp_file_buffer (pfile);
+  cpp_buf_line_and_col (ip, &line, NULL);
 
   /* If the current file has not changed, we omit the #line if it would
      appear to be a no-op, and we output a few newlines instead
