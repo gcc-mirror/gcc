@@ -1215,6 +1215,8 @@ putenv_from_prefixes (paths, env_var)
      char *env_var;
 {
   int suffix_len = (machine_suffix) ? strlen (machine_suffix) : 0;
+  int just_suffix_len
+    = (just_machine_suffix) ? strlen (just_machine_suffix) : 0;
   int first_time = TRUE;
   struct prefix_list *pprefix;
 
@@ -1227,7 +1229,7 @@ putenv_from_prefixes (paths, env_var)
       if (machine_suffix)
 	{
 	  if (!first_time)
-	    obstack_grow (&collect_obstack, ":", 1);
+	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
 	    
 	  first_time = FALSE;
 	  obstack_grow (&collect_obstack, pprefix->prefix, len);
@@ -1237,23 +1239,24 @@ putenv_from_prefixes (paths, env_var)
       if (just_machine_suffix && pprefix->require_machine_suffix == 2)
 	{
 	  if (!first_time)
-	    obstack_grow (&collect_obstack, ":", 1);
+	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
 	    
 	  first_time = FALSE;
 	  obstack_grow (&collect_obstack, pprefix->prefix, len);
-	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);
+	  obstack_grow (&collect_obstack, just_machine_suffix,
+			just_suffix_len);
 	}
 
       if (!pprefix->require_machine_suffix)
 	{
 	  if (!first_time)
-	    obstack_grow (&collect_obstack, ":", 1);
+	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
 
 	  first_time = FALSE;
 	  obstack_grow (&collect_obstack, pprefix->prefix, len);
 	}
     }
-  obstack_grow (&collect_obstack, "\0", 1);
+  obstack_1grow (&collect_obstack, '\0');
   putenv (obstack_finish (&collect_obstack));
 }
 
