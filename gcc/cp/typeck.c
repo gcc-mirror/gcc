@@ -2858,7 +2858,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	{
 	  idx = build_binary_op (TRUNC_DIV_EXPR, 
 				 build1 (NOP_EXPR, vtable_index_type, e3),
-				 integer_two_node);
+				 TYPE_SIZE_UNIT (vtable_entry_type));
 	  e1 = build_binary_op (BIT_AND_EXPR,
 				build1 (NOP_EXPR, vtable_index_type, e3),
 				integer_one_node);
@@ -6332,11 +6332,12 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
 	}
       else
 	{
-	  /* Under the new ABI, we set PFN to twice the index, plus
-	     one.  */
+	  /* Under the new ABI, we set PFN to the vtable offset, plus
+	     one, at which the function can be found.  */
 	  *idx = NULL_TREE;
 	  *pfn = fold (build (MULT_EXPR, integer_type_node,
-			      DECL_VINDEX (fn), integer_two_node));
+			      DECL_VINDEX (fn), 
+			      TYPE_SIZE_UNIT (vtable_entry_type)));
 	  *pfn = fold (build (PLUS_EXPR, integer_type_node, *pfn,
 			      integer_one_node));
 	  *pfn = fold (build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type),

@@ -82,16 +82,16 @@ main ()
   if (xp->adj != delta)
     return 8;
 
-  // For a virtual function, we should see twice the vtable index,
-  // plus one.  `T::h' is in the third slot: there's the RTTI entry,
-  // then the two virtual functions.
+  // For a virtual function, we should see the vtable offset, plus
+  // one.  `T::h' is in the second slot: the vtable pointer points to
+  // the first virtual function.
   y = &T::h;
-  if ((ptrdiff_t) yp->ptr != 7)
+  if ((ptrdiff_t) yp->ptr != sizeof (void *) + 1)
     return 9;
   if (yp->adj != 0)
     return 10;
   x = (sp) y;
-  if ((ptrdiff_t) xp->ptr != 7)
+  if ((ptrdiff_t) xp->ptr != sizeof (void *) + 1)
     return 11;
   if (xp->adj != delta)
     return 12;
@@ -103,9 +103,14 @@ main ()
   if (__alignof__ (sdp) != __alignof__ (ptrdiff_t))
     return 14;
 
+  // The value of a pointer-to-data member should be the offset from
+  // the start of the structure.
   sdp z = &S::j;
-  if ((char *) &s.j - (char *) &s != *((ptrdiff_t *) &z) - 1)
+  if ((char *) &s.j - (char *) &s != *((ptrdiff_t *) &z))
     return 15;
+  z = 0;
+  if (*((ptrdiff_t *) &z) != -1)
+    return 16;
 }
 
 #else /* !(defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100) */

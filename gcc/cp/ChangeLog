@@ -1,5 +1,20 @@
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (CLEAR_DECL_C_BIT_FIELD): New macro.
+	* class.c (check_bitfield_decl): Turn illegal bitfields into
+	non-bitfields.
+	(dfs_propagate_binfo_offsets): Adjust for new size_binop
+	semantics.
+	(dfs_offset_for_unshared_vbases): Likewise.
+	* cvt.c (cp_convert_to_pointer): Convert NULL to a
+	pointer-to-member correctly under the new ABI.
+	* expr.c (cplus_expand_constant): Don't use cp_convert when
+	turning an offset into a pointer-to-member.
+	* init.c (resolve_offset_ref): Don't adjust pointers-to-members
+	when dereferencing them under the new ABI.
+	* typeck.c (get_member_function_from_ptrfunc): Tweak calculation
+	of pointers-to-members under the new ABI.
+	
 	* class.c (check_bitfield_decl): Remove restriction on really long
 	bitfields.
 	(layout_class_type): Implement new ABI handling of bitfields
