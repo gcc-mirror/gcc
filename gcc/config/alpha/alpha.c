@@ -4056,10 +4056,8 @@ alpha_does_function_need_gp ()
   if (TARGET_WINDOWS_NT || TARGET_OPEN_VMS)
     return 0;
 
-#ifdef TARGET_PROFILING_NEEDS_GP
-  if (profile_flag)
+  if (TARGET_PROFILING_NEEDS_GP && profile_flag)
     return 1;
-#endif
 
 #ifdef ASM_OUTPUT_MI_THUNK
   if (current_function_is_thunk)
@@ -4190,6 +4188,13 @@ alpha_expand_prologue ()
 	emit_insn (gen_prologue_ldgp ());
     }
 
+  /* TARGET_PROFILING_NEEDS_GP actually implies that we need to insert
+     the call to mcount ourselves, rather than having the linker do it
+     magically in response to -pg.  Since _mcount has special linkage,
+     don't represent the call as a call.  */
+  if (TARGET_PROFILING_NEEDS_GP && profile_flag)
+    emit_insn (gen_prologue_mcount ());
+      
   /* Adjust the stack by the frame size.  If the frame size is > 4096
      bytes, we need to be sure we probe somewhere in the first and last
      4096 bytes (we can probably get away without the latter test) and

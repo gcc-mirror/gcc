@@ -41,6 +41,9 @@
 ;;	5	prologue_stack_probe_loop
 ;;	6	realign
 ;;	7	exception_receiver
+;;	8	prologue_mcount
+;;	9	prologue_ldgp_1
+;;	10	prologue_ldgp_2
 
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
@@ -5612,6 +5615,17 @@
   [(unspec_volatile [(const_int 0)] 10)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
   "")
+
+;; The _mcount profiling hook has special calling conventions, and
+;; does not clobber all the registers that a normal call would.  So
+;; hide the fact this is a call at all.
+
+(define_insn "prologue_mcount"
+  [(unspec_volatile [(const_int 0)] 8)]
+  ""
+  "lda $28,_mcount\;jsr $28,($28),_mcount"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
 
 (define_insn "init_fp"
   [(set (match_operand:DI 0 "register_operand" "=r")

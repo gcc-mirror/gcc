@@ -1,5 +1,16 @@
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
+	* config/alpha/alpha.c (alpha_does_function_need_gp): Test
+	TARGET_PROFILING_NEEDS_GP in the if, instead of with an ifdef.
+	(alpha_expand_prologue): Emit prologue_mcount if needed.
+	* config/alpha/alpha.h (TARGET_PROFILING_NEEDS_GP): Default to 0.
+	* config/alpha/alpha.md (prologue_mcount): New.
+	* config/alpha/linux.h (FUNCTION_PROFILER): Remove.
+	(TARGET_PROFILING_NEEDS_GP): Undef before redefining.
+	* config/alpha/netbsd.h: Likewise.
+
+2000-05-27  Richard Henderson  <rth@cygnus.com>
+
 	* config/alpha/elf.h (SELECT_SECTION): Mirror Kenner's May 19
 	change to config/elfos.h.
 
