@@ -2666,9 +2666,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      && GET_CODE (reg) == REG
 	      && (GET_MODE_SIZE (GET_MODE (reg))
 		  >= GET_MODE_SIZE (GET_MODE (op))))
-	    REG_NOTES (emit_insn_before (gen_rtx_USE (VOIDmode, reg), insn))
-	      = gen_rtx_EXPR_LIST (REG_EQUAL,
-				   reg_equiv_memory_loc[REGNO (reg)], NULL_RTX);
+	    set_unique_reg_note (emit_insn_before (gen_rtx_USE (VOIDmode, reg),
+						   insn),
+				 REG_EQUAL, reg_equiv_memory_loc[REGNO (reg)]);
 
 	  substed_operand[i] = recog_data.operand[i] = op;
 	}

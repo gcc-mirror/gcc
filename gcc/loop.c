@@ -1831,9 +1831,9 @@ move_movables (loop, movables, threshold, insn_count)
 
 		  i1 = loop_insn_hoist (loop, seq);
 		  if (! find_reg_note (i1, REG_EQUAL, NULL_RTX))
-		    REG_NOTES (i1)
-		      = gen_rtx_EXPR_LIST (m->is_equiv ? REG_EQUIV : REG_EQUAL,
-					   m->set_src, REG_NOTES (i1));
+		    set_unique_reg_note (i1,
+					 m->is_equiv ? REG_EQUIV : REG_EQUAL,
+					 m->set_src);
 
 		  if (loop_dump_stream)
 		    fprintf (loop_dump_stream, " moved to %d", INSN_UID (i1));
@@ -1991,10 +1991,8 @@ move_movables (loop, movables, threshold, insn_count)
 
 			  i1 = loop_insn_hoist (loop, seq);
 			  if (! find_reg_note (i1, REG_EQUAL, NULL_RTX))
-			    REG_NOTES (i1)
-			      = gen_rtx_EXPR_LIST ((m->is_equiv ? REG_EQUIV
-						    : REG_EQUAL),
-						   m->set_src, REG_NOTES (i1));
+			    set_unique_reg_note (i1, m->is_equiv ? REG_EQUIV
+						     : REG_EQUAL, m->set_src);
 			}
 		      else
 			i1 = loop_insn_hoist (loop, PATTERN (p));
@@ -9136,9 +9134,7 @@ load_mems (loop)
 	    }
 
 	  if (const_equiv)
-	    REG_NOTES (set) = gen_rtx_EXPR_LIST (REG_EQUAL,
-						 copy_rtx (const_equiv->loc),
-						 REG_NOTES (set));
+	    set_unique_reg_note (set, REG_EQUAL, copy_rtx (const_equiv->loc));
 
 	  if (written)
 	    {

@@ -3929,8 +3929,7 @@ try_replace_reg (from, to, insn)
   /* If we've failed to do replacement, have a single SET, and don't already
      have a note, add a REG_EQUAL note to not lose information.  */
   if (!success && note == 0 && set != 0)
-    note = REG_NOTES (insn)
-      = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
+    note = set_unique_reg_note (insn, REG_EQUAL, src);
 
   /* If there is already a NOTE, update the expression in it with our
      replacement.  */

@@ -1409,7 +1409,7 @@ extern enum machine_mode choose_hard_reg_mode PARAMS ((unsigned int,
 						       unsigned int));
 
 /* In emit-rtl.c  */
-extern void set_unique_reg_note         PARAMS ((rtx, enum reg_note, rtx));
+extern rtx set_unique_reg_note		PARAMS ((rtx, enum reg_note, rtx));
 
 /* Functions in rtlanal.c */
 

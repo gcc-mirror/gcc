@@ -2774,8 +2774,7 @@ emit_move_insn (x, y)
   last_insn = emit_move_insn_1 (x, y);
 
   if (y_cst && GET_CODE (x) == REG)
-    REG_NOTES (last_insn)
-      = gen_rtx_EXPR_LIST (REG_EQUAL, y_cst, REG_NOTES (last_insn));
+    set_unique_reg_note (last_insn, REG_EQUAL, y_cst);
 
   return last_insn;
 }
