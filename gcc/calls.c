@@ -698,6 +698,7 @@ expand_call (exp, target, ignore)
 	else
 	  {
 	    /* Assign a temporary to hold the value.  */
+	    tree d;
 
 	    /* For variable-sized objects, we must be called with a target
 	       specified.  If we were to allocate space on the stack here,
@@ -706,23 +707,12 @@ expand_call (exp, target, ignore)
 	    if (struct_value_size < 0)
 	      abort ();
 
-	    /* If the type fits in a register, try putting it there.  */
-	    if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
-	      {
-		tree type = TREE_TYPE (exp);
-		int unsignedp = TREE_UNSIGNED (type);
-		enum machine_mode reg_mode
-		  = promote_mode (type, TYPE_MODE (type), &unsignedp, 0);
-
-		/* FIXME make it work for promoted modes too */
-		if (reg_mode == TYPE_MODE (type))
-		  structure_value_addr
-		    = XEXP (gen_mem_addressof (gen_reg_rtx (reg_mode), type), 0);
-	      }
-
-	    if (! structure_value_addr)
-	      structure_value_addr
-		= XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
+	    /* This DECL is just something to feed to mark_addressable;
+	       it doesn't get pushed.  */
+	    d = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
+	    DECL_RTL (d) = assign_temp (TREE_TYPE (exp), 1, 0, 1);
+	    mark_addressable (d);
+	    structure_value_addr = XEXP (DECL_RTL (d), 0);
 	    MEM_IN_STRUCT_P (structure_value_addr)
 	      = AGGREGATE_TYPE_P (TREE_TYPE (exp));
 	    target = 0;
