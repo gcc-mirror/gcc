@@ -27,7 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "assert.h"
 
 #include "objc/hash.h"
-#include "objc/objc.h"
 
 #include "runtime.h"		/* for DEBUG_PRINTF */
 
@@ -245,7 +244,7 @@ hash_value_for_key (cache_ptr cache, const void *key)
     do {
       if ((*cache->compare_func)(node->key, key)) {
         retval = node->value;
-              break;
+	break;
       } else
         node = node->next;
     } while (!retval && node);
