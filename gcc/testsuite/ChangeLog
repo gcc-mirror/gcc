@@ -1,3 +1,9 @@
+2002-06-04  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/alpha-base-1.c: Add ext/ins/msk/umulh cases.
+	* gcc.dg/alpha-max-1.c, gcc.dg/alpha-max-2.c: Use -mcpu=ev67.
+	* gcc.dg/alpha-cix-1.c, gcc.dg/alpha-cix-2.c: New.
+
 2002-06-04  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-2.c: Remove test for invalid vector type V2DF.
