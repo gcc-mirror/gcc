@@ -628,14 +628,18 @@ package body Prj.Nmsc is
             --  Check Specification_Suffix
 
             declare
-               Ada_Spec_Suffix : constant Name_Id :=
+               Ada_Spec_Suffix : constant Variable_Value :=
                  Prj.Util.Value_Of
                    (Index => Name_Ada,
                     In_Array => Data.Naming.Specification_Suffix);
 
             begin
-               if Ada_Spec_Suffix /= No_Name then
-                  Data.Naming.Current_Spec_Suffix := Ada_Spec_Suffix;
+               if Ada_Spec_Suffix.Kind = Single
+                 and then String_Length (Ada_Spec_Suffix.Value) /= 0
+               then
+                  String_To_Name_Buffer (Ada_Spec_Suffix.Value);
+                  Data.Naming.Current_Spec_Suffix := Name_Find;
+                  Data.Naming.Spec_Suffix_Loc := Ada_Spec_Suffix.Location;
 
                else
                   Data.Naming.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
@@ -652,14 +656,18 @@ package body Prj.Nmsc is
             --  Check Implementation_Suffix
 
             declare
-               Ada_Impl_Suffix : constant Name_Id :=
+               Ada_Impl_Suffix : constant Variable_Value :=
                  Prj.Util.Value_Of
                    (Index => Name_Ada,
                     In_Array => Data.Naming.Implementation_Suffix);
 
             begin
-               if Ada_Impl_Suffix /= No_Name then
-                  Data.Naming.Current_Impl_Suffix := Ada_Impl_Suffix;
+               if Ada_Impl_Suffix.Kind = Single
+                 and then String_Length (Ada_Impl_Suffix.Value) /= 0
+               then
+                  String_To_Name_Buffer (Ada_Impl_Suffix.Value);
+                  Data.Naming.Current_Impl_Suffix := Name_Find;
+                  Data.Naming.Impl_Suffix_Loc := Ada_Impl_Suffix.Location;
 
                else
                   Data.Naming.Current_Impl_Suffix := Default_Ada_Impl_Suffix;
@@ -920,9 +928,9 @@ package body Prj.Nmsc is
       end if;
    end Check_Ada_Name;
 
-   -------------------------
-   -- Check_Naming_Scheme --
-   -------------------------
+   -----------------------------
+   -- Check_Ada_Naming_Scheme --
+   -----------------------------
 
    procedure Check_Ada_Naming_Scheme (Naming : Naming_Data) is
    begin
@@ -982,24 +990,24 @@ package body Prj.Nmsc is
             --   - start with an '_' followed by an alphanumeric
 
             if Is_Illegal_Append (Specification_Suffix) then
+               Error_Msg_Name_1 := Naming.Current_Spec_Suffix;
                Error_Msg
-                 ('"' & Specification_Suffix &
-                  """ is illegal for Specification_Suffix.",
+                 ("{ is illegal for Specification_Suffix",
                   Naming.Spec_Suffix_Loc);
             end if;
 
             if Is_Illegal_Append (Implementation_Suffix) then
+               Error_Msg_Name_1 := Naming.Current_Impl_Suffix;
                Error_Msg
-                 ('"' & Implementation_Suffix &
-                  """ is illegal for Implementation_Suffix.",
+                 ("% is illegal for Implementation_Suffix",
                   Naming.Impl_Suffix_Loc);
             end if;
 
             if Implementation_Suffix /= Separate_Suffix then
                if Is_Illegal_Append (Separate_Suffix) then
+                  Error_Msg_Name_1 := Naming.Separate_Suffix;
                   Error_Msg
-                    ('"' & Separate_Suffix &
-                     """ is illegal for Separate_Append.",
+                    ("{ is illegal for Separate_Append",
                      Naming.Sep_Suffix_Loc);
                end if;
             end if;
@@ -1039,6 +1047,7 @@ package body Prj.Nmsc is
             end if;
          end;
       end if;
+
    end Check_Ada_Naming_Scheme;
 
    ---------------
@@ -1430,6 +1439,7 @@ package body Prj.Nmsc is
    begin
       return This'Length = 0
         or else Is_Alphanumeric (This (This'First))
+        or else Index (This, ".") = 0
         or else (This'Length >= 2
                  and then This (This'First) = '_'
                  and then Is_Alphanumeric (This (This'First + 1)));
@@ -1701,7 +1711,7 @@ package body Prj.Nmsc is
          Write_Line ("Starting to look for directories");
       end if;
 
-      --  Let's check the object directory
+      --  Check the object directory
 
       declare
          Object_Dir : Variable_Value :=
@@ -1753,6 +1763,62 @@ package body Prj.Nmsc is
          else
             Write_Str ("Object directory: """);
             Write_Str (Get_Name_String (Data.Object_Directory));
+            Write_Line ("""");
+         end if;
+      end if;
+
+      --  Check the exec directory
+
+      declare
+         Exec_Dir : Variable_Value :=
+                      Util.Value_Of (Name_Exec_Dir, Data.Decl.Attributes);
+
+      begin
+         pragma Assert (Exec_Dir.Kind = Single,
+                        "Exec_Dir is not a single string");
+
+         --  We set the object directory to its default
+
+         Data.Exec_Directory := Data.Object_Directory;
+
+         if not String_Equal (Exec_Dir.Value, Empty_String) then
+
+            String_To_Name_Buffer (Exec_Dir.Value);
+
+            if Name_Len = 0 then
+               Error_Msg ("Exec_Dir cannot be empty",
+                          Exec_Dir.Location);
+
+            else
+               --  We check that the specified object directory
+               --  does exist.
+
+               Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+
+               declare
+                  Dir_Id : constant Name_Id := Name_Find;
+
+               begin
+                  Data.Exec_Directory :=
+                    Locate_Directory (Dir_Id, Data.Directory);
+
+                  if Data.Exec_Directory = No_Name then
+                     Error_Msg_Name_1 := Dir_Id;
+                     Error_Msg
+                       ("the exec directory { cannot be found",
+                        Data.Location);
+                  end if;
+               end;
+            end if;
+         end if;
+      end;
+
+      if Current_Verbosity = High then
+         if Data.Exec_Directory = No_Name then
+            Write_Line ("No exec directory");
+         else
+            Write_Str ("Exec directory: """);
+            Write_Str (Get_Name_String (Data.Exec_Directory));
             Write_Line ("""");
          end if;
       end if;

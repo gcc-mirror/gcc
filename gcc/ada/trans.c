@@ -3993,6 +3993,15 @@ process_freeze_entity (gnat_node)
 	  && Present (Equivalent_Type (gnat_entity))))
     return;
 
+  /* Don't do anything for subprograms that may have been elaborated before
+     their freeze nodes.  This can happen, for example because of an inner call
+     in an instance body.  */
+  if (gnu_old != 0
+       && TREE_CODE (gnu_old) == FUNCTION_DECL
+       && (Ekind (gnat_entity) == E_Function
+          || Ekind (gnat_entity) == E_Procedure))
+    return;
+
   /* If we have a non-dummy type old tree, we have nothing to do.   Unless
      this is the public view of a private type whose full view was not
      delayed, this node was never delayed as it should have been.

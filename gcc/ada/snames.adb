@@ -566,36 +566,37 @@ package body Snames is
      "requeue#" &
      "tagged#" &
      "raise_exception#" &
-     "project#" &
+     "binder#" &
+     "builder#" &
+     "compiler#" &
+     "cross_reference#" &
+     "default_switches#" &
+     "exec_dir#" &
      "extends#" &
+     "finder#" &
+     "gnatls#" &
+     "gnatstub#" &
+     "implementation#" &
+     "implementation_exceptions#" &
+     "implementation_suffix#" &
+     "languages#" &
+     "library_dir#" &
+     "library_elaboration#" &
+     "library_kind#" &
+     "library_name#" &
+     "library_version#" &
+     "linker#" &
      "naming#" &
      "object_dir#" &
-     "source_dirs#" &
-     "specification#" &
-     "implementation#" &
-     "specification_exceptions#" &
-     "implementation_exceptions#" &
-     "specification_suffix#" &
-     "implementation_suffix#" &
+     "project#" &
      "separate_suffix#" &
+     "source_dirs#" &
      "source_files#" &
      "source_list_file#" &
-     "default_switches#" &
+     "specification#" &
+     "specification_exceptions#" &
+     "specification_suffix#" &
      "switches#" &
-     "library_dir#" &
-     "library_name#" &
-     "library_kind#" &
-     "library_version#" &
-     "library_elaboration#" &
-     "languages#" &
-     "builder#" &
-     "gnatls#" &
-     "cross_reference#" &
-     "finder#" &
-     "binder#" &
-     "linker#" &
-     "compiler#" &
-     "gnatstub#" &
       "#";
 
    ---------------------
