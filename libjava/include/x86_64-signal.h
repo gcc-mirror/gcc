@@ -10,13 +10,13 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 
+#ifdef __x86_64__
+
 #ifndef JAVA_SIGNAL_H
 #define JAVA_SIGNAL_H 1
 
 #include <signal.h>
 #include <sys/syscall.h>
-
-#ifdef __x86_64__
 
 #define HANDLE_SEGV 1
 
@@ -80,16 +80,13 @@ while (0)
  * go away if all systems ever have pthreads libraries that are
  * compiled with unwind info.  */
 
+#endif /* JAVA_SIGNAL_H */
+
 #else /* __x86_64__ */
 
-/* This is for the 32-bit subsystem on on x86-64.  Catching signals
-   doesn't yet work on that target.  */
+/* This is for the 32-bit subsystem on on x86-64.  */
 
-#undef HANDLE_SEGV
-#undef HANDLE_FPE
-
-#define INIT_SEGV   do {} while (0)
-#define INIT_FPE   do {} while (0)
+#define sigcontext_struct sigcontext
+#include <java-signal-aux.h>
 
 #endif /* __x86_64__ */
-#endif /* JAVA_SIGNAL_H */

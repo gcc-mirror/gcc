@@ -13,13 +13,15 @@ details.  */
 #ifndef JAVA_SIGNAL_H
 # define JAVA_SIGNAL_H 1
 
-# include <signal.h>
-# include <sys/syscall.h>
+# ifndef __powerpc64__
 
-# define HANDLE_SEGV 1
-# undef HANDLE_FPE
+#  include <signal.h>
+#  include <sys/syscall.h>
 
-# define SIGNAL_HANDLER(_name)						\
+#  define HANDLE_SEGV 1
+#  undef HANDLE_FPE
+
+#  define SIGNAL_HANDLER(_name)						\
   static void _name (int /* _signal */, struct sigcontext *_sc)
 
 /* PPC either leaves PC pointing at a faulting instruction or the
@@ -27,7 +29,7 @@ details.  */
    the former, so we adjust the saved PC to point to the following
    instruction. This is what the handler in libgcc expects.  */
 
-# define MAKE_THROW_FRAME(_exception)					\
+#  define MAKE_THROW_FRAME(_exception)					\
 do									\
   {									\
     _sc->regs->nip += 4;						\
@@ -58,7 +60,7 @@ struct kernel_old_sigaction {
   void (*k_sa_restorer) (void);
 };
 
-# define INIT_SEGV							\
+#  define INIT_SEGV							\
 do									\
   {									\
     struct kernel_old_sigaction kact;					\
@@ -69,7 +71,7 @@ do									\
   }									\
 while (0)  
 
-# define INIT_FPE							\
+#  define INIT_FPE							\
 do									\
   {									\
     struct kernel_old_sigaction kact;					\
@@ -78,7 +80,15 @@ do									\
     kact.k_sa_flags = 0;						\
     syscall (SYS_sigaction, SIGFPE, &kact, NULL);			\
   }									\
-while (0)  
+while (0)
+
+# else
+
+#  undef HANDLE_SEGV
+#  undef HANDLE_FPE
+
+#  define INIT_SEGV   do {} while (0)
+#  define INIT_FPE   do {} while (0)
+# endif
 
 #endif /* JAVA_SIGNAL_H */
-

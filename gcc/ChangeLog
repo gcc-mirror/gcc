@@ -1,3 +1,8 @@
+2004-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/linux64.h (MD_FALLBACK_FRAME_STATE_FOR)
+	[!__powerpc64__]: Corrected to handle kernels with changed ucontext.
+
 2003-11-30  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_emit_restore_regs_using_mov):  Deal with large offsets.

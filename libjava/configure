@@ -9015,6 +9015,7 @@ test -n "$PERL" || PERL="false"
 
 
 SYSDEP_SOURCES=
+SIGNAL_HANDLER_AUX=
 
 case "${host}" in
  i?86-*-linux*)
@@ -9030,7 +9031,7 @@ case "${host}" in
  ia64-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
- powerpc-*-linux*)
+ powerpc*-*-linux*)
     SIGNAL_HANDLER=include/powerpc-signal.h
     ;;
  alpha*-*-linux*)
@@ -9041,6 +9042,7 @@ case "${host}" in
     ;;
  x86_64*-*-linux*)
     SIGNAL_HANDLER=include/x86_64-signal.h
+    SIGNAL_HANDLER_AUX=include/i386-signal.h
     ;;
  sparc*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
@@ -9062,6 +9064,7 @@ esac
 # If we're using sjlj exceptions, forget what we just learned.
 if test "$enable_sjlj_exceptions" = yes; then
    SIGNAL_HANDLER=include/default-signal.h
+   SIGNAL_HANDLER_AUX=
 fi
 
 # Define here any compiler flags that you need in order to make backtrace() work.
@@ -9074,6 +9077,10 @@ esac
 
 
 
+
+if test -z "$SIGNAL_HANDLER_AUX"; then
+  SIGNAL_HANDLER_AUX=$SIGNAL_HANDLER
+fi
 
 
 
@@ -9573,8 +9580,8 @@ fi; done
 EOF
 
 cat >> $CONFIG_STATUS <<EOF
-ac_sources="include/$PLATFORMH java/io/natFile${FILE-${PLATFORM}}.cc java/io/natFileDescriptor${FILE-${PLATFORM}}.cc java/lang/${PLATFORM}Process.java java/lang/nat${PLATFORM}Process.cc java/net/natInetAddress${PLATFORMNET}.cc java/net/natNetworkInterface${PLATFORMNET}.cc gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc gnu/java/nio/natPipeImpl${PLATFORM}.cc gnu/java/nio/natSelectorImpl${PLATFORM}.cc include/$GCHDR include/$THREADH sysdep/$sysdeps_dir/locks.h $SIGNAL_HANDLER"
-ac_dests="include/platform.h java/io/natFile.cc java/io/natFileDescriptor.cc java/lang/ConcreteProcess.java java/lang/natConcreteProcess.cc java/net/natInetAddress.cc java/net/natNetworkInterface.cc gnu/java/net/natPlainSocketImpl.cc gnu/java/net/natPlainDatagramSocketImpl.cc gnu/java/nio/natPipeImpl.cc gnu/java/nio/natSelectorImpl.cc include/java-gc.h include/java-threads.h sysdep/locks.h include/java-signal.h"
+ac_sources="include/$PLATFORMH java/io/natFile${FILE-${PLATFORM}}.cc java/io/natFileDescriptor${FILE-${PLATFORM}}.cc java/lang/${PLATFORM}Process.java java/lang/nat${PLATFORM}Process.cc java/net/natInetAddress${PLATFORMNET}.cc java/net/natNetworkInterface${PLATFORMNET}.cc gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc gnu/java/nio/natPipeImpl${PLATFORM}.cc gnu/java/nio/natSelectorImpl${PLATFORM}.cc include/$GCHDR include/$THREADH sysdep/$sysdeps_dir/locks.h $SIGNAL_HANDLER $SIGNAL_HANDLER_AUX"
+ac_dests="include/platform.h java/io/natFile.cc java/io/natFileDescriptor.cc java/lang/ConcreteProcess.java java/lang/natConcreteProcess.cc java/net/natInetAddress.cc java/net/natNetworkInterface.cc gnu/java/net/natPlainSocketImpl.cc gnu/java/net/natPlainDatagramSocketImpl.cc gnu/java/nio/natPipeImpl.cc gnu/java/nio/natSelectorImpl.cc include/java-gc.h include/java-threads.h sysdep/locks.h include/java-signal.h include/java-signal-aux.h"
 EOF
 
 cat >> $CONFIG_STATUS <<\EOF

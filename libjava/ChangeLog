@@ -1,3 +1,18 @@
+2004-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/powerpc-signal.h: Add #ifndef __powerpc64__ around the
+	header.  For __powerpc64__ provide the default-signal.h definitions
+	for now.
+	* include/x86_64-signal.h [!__x86_64__]: Include java-signal-aux.h
+	instead of the dummy definitions.
+	* configure.host (x86_64-*): Remove CHECKREFSPEC, add DIVIDESPEC.
+	(powerpc64*-*): Remove with_libffi_default.
+	Only add -mminimal-toc for 64-bit compilations.
+	* configure.in: Use powerpc-signal.h on powerpc64 as well.
+	(x86_64-*-linux*): Set SIGNAL_HANDLER_AUX.
+	Link SIGNAL_HANDLER_AUX to include/java-signal-aux.h.
+	* configure: Rebuilt.
+
 2004-01-21  Tom Tromey  <tromey@redhat.com>
 
 	PR java/13468:
