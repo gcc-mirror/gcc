@@ -8,7 +8,7 @@ details.  */
 
 #include <config.h>
 
-#include<platform.h>
+#include <platform.h>
 
 #ifdef WIN32
 #include <errno.h>
@@ -16,6 +16,13 @@ details.  */
 #ifndef ENOPROTOOPT
 #define ENOPROTOOPT 109
 #endif
+
+static inline int
+close(int s)
+{
+  return closesocket(s);
+}
+
 #else /* WIN32 */
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
