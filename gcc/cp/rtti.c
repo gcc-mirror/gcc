@@ -351,8 +351,10 @@ get_tinfo_var (type)
   TREE_PUBLIC (tdecl) = 1;
   DECL_EXTERNAL (tdecl) = 1;
   DECL_ARTIFICIAL (tdecl) = 1;
-  pushdecl_top_level (tdecl);
+  push_to_top_level ();
+  pushdecl (tdecl);
   cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
+  pop_from_top_level ();
 
   pop_obstacks ();
 
@@ -734,7 +736,7 @@ expand_si_desc (tdecl, type)
   tree name_string = combine_strings (build_string (strlen (name)+1, name));
 
   type = BINFO_TYPE (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0));
-  expand_expr_stmt (get_typeid_1 (type));
+  finish_expr_stmt (get_typeid_1 (type));
   t = decay_conversion (get_tinfo_var (type));
   elems = tree_cons
     (NULL_TREE, decay_conversion (tdecl), tree_cons
@@ -766,7 +768,7 @@ expand_si_desc (tdecl, type)
 
   mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
-  expand_expr_stmt (fn);
+  finish_expr_stmt (fn);
 }
 
 /* Build an initializer for a __class_type_info node.  */
@@ -832,7 +834,7 @@ expand_class_desc (tdecl, type)
     {
       tree binfo = TREE_VEC_ELT (binfos, i);
 
-      expand_expr_stmt (get_typeid_1 (BINFO_TYPE (binfo)));
+      finish_expr_stmt (get_typeid_1 (BINFO_TYPE (binfo)));
       base = decay_conversion (get_tinfo_var (BINFO_TYPE (binfo)));
 
       if (TREE_VIA_VIRTUAL (binfo))
@@ -947,7 +949,7 @@ expand_class_desc (tdecl, type)
 
   mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
-  expand_expr_stmt (fn);
+  finish_expr_stmt (fn);
 }
 
 /* Build an initializer for a __pointer_type_info node.  */
@@ -962,7 +964,7 @@ expand_ptr_desc (tdecl, type)
   tree name_string = combine_strings (build_string (strlen (name)+1, name));
 
   type = TREE_TYPE (type);
-  expand_expr_stmt (get_typeid_1 (type));
+  finish_expr_stmt (get_typeid_1 (type));
   t = decay_conversion (get_tinfo_var (type));
   elems = tree_cons
     (NULL_TREE, decay_conversion (tdecl), tree_cons
@@ -994,7 +996,7 @@ expand_ptr_desc (tdecl, type)
 
   mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
-  expand_expr_stmt (fn);
+  finish_expr_stmt (fn);
 }
 
 /* Build an initializer for a __attr_type_info node.  */
@@ -1009,7 +1011,7 @@ expand_attr_desc (tdecl, type)
   tree name_string = combine_strings (build_string (strlen (name)+1, name));
   tree attrval = build_int_2 (TYPE_QUALS (type), 0);
 
-  expand_expr_stmt (get_typeid_1 (TYPE_MAIN_VARIANT (type)));
+  finish_expr_stmt (get_typeid_1 (TYPE_MAIN_VARIANT (type)));
   t = decay_conversion (get_tinfo_var (TYPE_MAIN_VARIANT (type)));
   elems = tree_cons
     (NULL_TREE, decay_conversion (tdecl), tree_cons
@@ -1042,7 +1044,7 @@ expand_attr_desc (tdecl, type)
 
   mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
-  expand_expr_stmt (fn);
+  finish_expr_stmt (fn);
 }
 
 /* Build an initializer for a type_info node that just has a name.  */
@@ -1082,7 +1084,7 @@ expand_generic_desc (tdecl, type, fnname)
 
   mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
-  expand_expr_stmt (fn);
+  finish_expr_stmt (fn);
 }
 
 /* Generate the code for a type_info initialization function.
@@ -1104,6 +1106,9 @@ synthesize_tinfo_fn (fndecl)
 {
   tree type = TREE_TYPE (DECL_NAME (fndecl));
   tree tmp, addr, tdecl;
+  tree compound_stmt;
+  tree if_stmt;
+  tree then_clause;
 
   if (at_eof)
     {
@@ -1112,6 +1117,7 @@ synthesize_tinfo_fn (fndecl)
 	return;
     }
 
+  /* Declare the static typeinfo variable.  */
   tdecl = get_tinfo_var (type);
   DECL_EXTERNAL (tdecl) = 0;
   TREE_STATIC (tdecl) = 1;
@@ -1120,19 +1126,30 @@ synthesize_tinfo_fn (fndecl)
   DECL_ALIGN (tdecl) = TYPE_ALIGN (ptr_type_node);
   cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
 
+  /* Begin processing the function.  */
   start_function (NULL_TREE, fndecl, NULL_TREE, 
 		  SF_DEFAULT | SF_PRE_PARSED);
   store_parm_decls ();
   clear_last_expr ();
+
+  /* Begin the body of the function.  */
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+
+  /* For convenience, we save away the address of the static
+     variable.  Since we will process expression-statements between
+     here and the end of the function, we must call push_momentary to
+     keep ADDR from being overwritten.  */
+  addr = decay_conversion (tdecl);
   push_momentary ();
 
   /* If the first word of the array (the vtable) is non-zero, we've already
      initialized the object, so don't do it again.  */
-  addr = decay_conversion (tdecl);
+  if_stmt = begin_if_stmt ();
   tmp = cp_convert (build_pointer_type (ptr_type_node), addr);
   tmp = build_indirect_ref (tmp, 0);
   tmp = build_binary_op (EQ_EXPR, tmp, integer_zero_node);
-  expand_start_cond (tmp, 0);
+  finish_if_stmt_cond (tmp, if_stmt);
+  then_clause = begin_compound_stmt (/*has_no_scope=*/0);
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
     expand_generic_desc (tdecl, type, "__rtti_func");
@@ -1167,12 +1184,17 @@ synthesize_tinfo_fn (fndecl)
   else
     my_friendly_abort (252);
 
-  expand_end_cond ();
+  finish_compound_stmt (/*has_no_scope=*/0, then_clause);
+  finish_then_clause (if_stmt);
+  finish_if_stmt ();
 
   /* OK, now return the type_info object.  */
   tmp = cp_convert (build_pointer_type (type_info_type_node), addr);
   tmp = build_indirect_ref (tmp, 0);
-  c_expand_return (tmp);
+  finish_return_stmt (tmp);
+  /* Undo the call to push_momentary above.  */
   pop_momentary ();
+  /* Finish the function body.  */
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
   finish_function (lineno, 0);
 }
