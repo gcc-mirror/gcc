@@ -40,8 +40,8 @@ gnu::gcj::util::Debug::getDeclaredFields (::java::lang::Class *c)
 }
 
 static void *
-::getField (::java::lang::Object *obj, 
-	    ::java::lang::reflect::Field *field)
+getField (::java::lang::Object *obj, 
+	  ::java::lang::reflect::Field *field)
 {
   using namespace java::lang::reflect;
   

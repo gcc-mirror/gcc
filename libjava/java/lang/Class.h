@@ -61,6 +61,7 @@ struct _Jv_Field;
 struct _Jv_VTable;
 union _Jv_word;
 struct _Jv_ArrayVTable;
+class _Jv_Linker;
 class _Jv_ExecutionEngine;
 class _Jv_CompiledEngine;
 class _Jv_InterpreterEngine;
@@ -185,6 +186,10 @@ jobject _Jv_AllocObject (jclass);
 void *_Jv_AllocObj (jint, jclass);
 void *_Jv_AllocPtrFreeObj (jint, jclass);
 void *_Jv_AllocArray (jint, jclass);
+
+bool _Jv_getInterfaceMethod(jclass, jclass&, int&, 
+			    const _Jv_Utf8Const*,
+			    const _Jv_Utf8Const*);
 
 jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID,
 				  jboolean);
@@ -454,9 +459,9 @@ private:
   friend jboolean (::_Jv_CheckAccess) (jclass self_klass, jclass other_klass,
 				   jint flags);
   
-  friend bool _Jv_getInterfaceMethod(jclass, jclass&, int&, 
-				     const _Jv_Utf8Const*,
-				     const _Jv_Utf8Const*);
+  friend bool (::_Jv_getInterfaceMethod) (jclass, jclass&, int&, 
+					  const _Jv_Utf8Const*,
+					  const _Jv_Utf8Const*);
 
   friend jclass (::_Jv_GetArrayClass) (jclass klass,
 				       java::lang::ClassLoader *loader);
@@ -478,10 +483,10 @@ private:
   friend class gnu::gcj::runtime::StackTrace;
   friend class java::io::VMObjectStreamClass;
 
-  friend class _Jv_Linker;
-  friend class _Jv_ExecutionEngine;
-  friend class _Jv_CompiledEngine;
-  friend class _Jv_InterpreterEngine;
+  friend class ::_Jv_Linker;
+  friend class ::_Jv_ExecutionEngine;
+  friend class ::_Jv_CompiledEngine;
+  friend class ::_Jv_InterpreterEngine;
 
   friend void ::_Jv_sharedlib_register_hook (jclass klass);
 
