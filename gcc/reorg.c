@@ -432,8 +432,12 @@ mark_set_resources (x, res, in_dest, include_called_routine)
     case SYMBOL_REF:
     case CONST:
     case PC:
-    case CC0:
       /* These don't set any resources.  */
+      return;
+
+    case CC0:
+      if (in_dest)
+	res->cc = 1;
       return;
 
     case CALL_INSN:
