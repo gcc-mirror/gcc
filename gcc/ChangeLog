@@ -1,4 +1,4 @@
-2005-02-28  Hans-Peter Nilsson  <hp@axis.com>
+2005-03-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/19065.
 	* config/cris/cris.h (EXTRA_CONSTRAINT_Q): Accept only (mem (reg)),
