@@ -1,3 +1,8 @@
+2002-09-12  Jason Merrill  <jason@redhat.com>
+
+	* calls.c (store_one_arg): Use size_in_bytes to determine the
+	amount of space to push.
+
 2002-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/linux64.h (STARTFILE_SPEC32): Fix a typo.
@@ -2720,12 +2725,8 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* testsuite/gcc.dg/tls/diag-3.c: New.
 
-2002-08-06  Jason Merrill  <jason@redhat.com>
-
-	* c-common.c (c_expand_expr) [STMT_EXPR]: If the last expression is
-	a VAR_DECL with RTL that matches the target, just return that RTL.
-
 2002-08-06  Dale Johannesen  <dalej@apple.com>
+
 	* c-common.c (fname_decl): Use line number 0 for
 	__func__, to avoid confusing debuggers.
 
