@@ -3145,7 +3145,9 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	 look up names in "X<T>::I" in order to determine that "Y" is
 	 a template.  So, if we have a typename at this point, we make
 	 an effort to look through it.  */
-      if (is_declaration && parser->scope 
+      if (is_declaration 
+	  && !typename_keyword_p
+	  && parser->scope 
 	  && TREE_CODE (parser->scope) == TYPENAME_TYPE)
 	parser->scope = resolve_typename_type (parser->scope, 
 					       /*only_current_p=*/false);
