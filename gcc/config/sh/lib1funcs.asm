@@ -1217,13 +1217,27 @@ trivial:
 L1:
 	.double 2147483648
 
-#elif defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__) || (defined (__SH5__) && ! defined __SH4_NOFPU__)
+#elif defined (__SH5__) && ! defined (__SH4_NOFPU__)
+#if ! __SH5__ || __SH5__ == 32
+!! args in r4 and r5, result in fpul, clobber r20, r21, dr0, fr33
+	.mode	SHmedia
+	.global	GLOBAL(udivsi3_i4)
+GLOBAL(udivsi3_i4):
+	addz.l	r4,r63,r20
+	addz.l	r5,r63,r21
+	fmov.qd	r20,dr0
+	fmov.qd	r21,dr32
+	ptabs	r18,tr0
+	float.qd dr0,dr0
+	float.qd dr32,dr32
+	fdiv.d	dr0,dr32,dr0
+	ftrc.dq dr0,dr32
+	fmov.s fr33,fr32
+	blink tr0,r63
+#endif /* ! __SH5__ || __SH5__ == 32 */
+#elif defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
 !! args in r4 and r5, result in fpul, clobber r0, r1, r4, r5, dr0, dr2, dr4
 
-#if ! __SH5__ || __SH5__ == 32
-#if __SH5__
-	.mode	SHcompact
-#endif
 	.global	GLOBAL(udivsi3_i4)
 GLOBAL(udivsi3_i4):
 	mov #1,r1
@@ -1273,7 +1287,6 @@ L1:
 #endif
 	.double 2147483648
 
-#endif /* ! __SH5__ || __SH5__ == 32 */
 #endif /* ! __SH4__ */
 #endif
 
