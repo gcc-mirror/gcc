@@ -1,3 +1,8 @@
+2002-05-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/pa/milli32.S, config/pa/lib1funcs.asm,
+	config/sparc/sol2-g1.asm: Delete unused files.
+
 2002-05-28  Richard Henderson  <rth@redhat.com>
 
 	* cfg.c (dump_flow_info): Print bb->index, not i, for block number.
