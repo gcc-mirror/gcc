@@ -1,6 +1,6 @@
 Wed Jan  1 17:54:47 1998  J.J. van der Heijden <J.J.vanderHeijden@student.utwente.nl>
 
-        * pexecute.c (pexecute, [_WIN32]): Yes, mask termstat for mingw32.
+	* pexecute.c (pexecute, [_WIN32]): Yes, mask termstat for mingw32.
 
 Mon Dec 22 18:59:34 1997  Pascal Obry  <pascal.obry@der.edfgdf.fr>
 
@@ -74,7 +74,7 @@ Tue Sep  9 18:23:57 1997  Doug Evans  <dje@cygnus.com>
 1997-08-08  Paul Eggert  <eggert@twinsun.com>
 
 	* choose-temp.c, pexecute.c:
- 	Include "config.h" first, as per autoconf manual.
+	Include "config.h" first, as per autoconf manual.
 
 1997-08-01  Richard Stallman  <rms@psilocin.gnu.ai.mit.edu>
 
@@ -208,7 +208,7 @@ Wed Jan 15 22:36:59 1997  Jim Meyering  <meyering@kropotkin.gnu.ai.mit.edu>
 Tue Jan  7 14:29:37 1997  David J. MacKenzie  <djm@geech.gnu.ai.mit.edu>
 
 	* config.guess: Add hppa1.1-hitachi-hiuxmpp support, passed along
- 	by rms.
+	by rms.
 
 Sat Jan  4 22:43:21 1997  Miles Bader  <miles@gnu.ai.mit.edu>
 
@@ -312,7 +312,7 @@ Fri Nov  8 11:34:58 1996  David J. MacKenzie  <djm@geech.gnu.ai.mit.edu>
 	LynxOs is not a hardware supplier.
 
 	* config.guess: Contributions from bug-gnu-utils to add support for:
- 	OpenBSD like NetBSD.
+	OpenBSD like NetBSD.
 	Stratus systems.
 	More Pyramid systems.
 	i[n>4]86 Intel chips.
@@ -385,7 +385,7 @@ Fri Jun 28 13:29:05 1996  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Tue Jun 25 22:43:48 1996  Doug Evans  <dje@cygnus.com>
 
-        * pexecute.c (PEXECUTE_VERBOSE): Define.
+	* pexecute.c (PEXECUTE_VERBOSE): Define.
 	(MPW pexecute): Check flags & PEXECUTE_VERBOSE instead of verbose_flag.
 
 Mon Jun 24 14:32:22 1996  Jim Wilson  <wilson@cygnus.com>
@@ -434,7 +434,7 @@ Wed May 22 17:20:59 1996  Roland McGrath  <roland@delasyd.gnu.ai.mit.edu>
 Tue May 21 18:55:59 1996  Roland McGrath  <roland@delasyd.gnu.ai.mit.edu>
 
 	* config.sub: Restore `hp9k2[0-9][0-9] | hp9k31[0-9])' case line
- 	apparently accidentally removed in the last change.
+	apparently accidentally removed in the last change.
 
 Mon May 20 11:58:15 1996  Jeffrey A. Law  <law@cygnus.com>
 
@@ -442,8 +442,8 @@ Mon May 20 11:58:15 1996  Jeffrey A. Law  <law@cygnus.com>
 
 Fri May  3 02:35:56 1996  Noah Friedman  <friedman@prep.ai.mit.edu>
 
-        * mkinstalldirs: Don't report an error if mkdir fails because
-        a directory was created by another process.
+	* mkinstalldirs: Don't report an error if mkdir fails because
+	a directory was created by another process.
 
 Sun Apr 21 09:50:09 1996  Stephen L Moshier  (moshier@world.std.com)
 
@@ -452,9 +452,9 @@ Sun Apr 21 09:50:09 1996  Stephen L Moshier  (moshier@world.std.com)
 Tue Apr  9 14:37:31 1996  Ulrich Drepper  <drepper@cygnus.com>
 
 	* obstack.h [__STDC__] (obstack_init, obstack_begin,
- 	obstack_specify_allocation, obstack_specify_allocation_with_arg,
- 	obstack_chunkfun, obstack_freefun): Duplicate definition with complete
- 	type cast.
+	obstack_specify_allocation, obstack_specify_allocation_with_arg,
+	obstack_chunkfun, obstack_freefun): Duplicate definition with complete
+	type cast.
 
 Wed Apr 17 14:28:43 1996  Doug Evans  <dje@cygnus.com>
 
@@ -544,7 +544,7 @@ Thu Feb 22 15:51:09 1996  Karl Heuer  <kwzh@gnu.ai.mit.edu>
 Tue Feb 13 13:20:32 1996  Miles Bader  <miles@gnu.ai.mit.edu>
 
 	* getopt.c (_getopt_internal): Give FIRST_NONOPT & LAST_NONOPT
- 	 rational values if OPTIND has been moved back by the user.
+	rational values if OPTIND has been moved back by the user.
 
 Mon Feb 12 18:23:35 1996  Doug Evans  <dje@cygnus.com>
 
@@ -714,7 +714,7 @@ Fri Aug  4 10:27:54 1995  Jim Meyering  (meyering@comco.com)
 Tue Aug  1 14:29:43 1995  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
 	* getloadavg.c (getloadavg): Set FD_CLOEXEC flag on /dev/kmem file
- 	descriptor.
+	descriptor.
 
 Wed Jul 26 00:26:34 1995  David J. MacKenzie  <djm@geech.gnu.ai.mit.edu>
 
@@ -735,12 +735,12 @@ Thu Jun 22 18:36:42 1995  Uwe Seimet  (seimet@iris1.chemie.uni-kl.de)
 Tue Jun 20 02:41:41 1995  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
 	* getloadavg.c [convex] (LOAD_AVE_TYPE, LDAV_CVT): Define to
- 	double, no conversion.
+	double, no conversion.
 
 	* obstack.c (OBSTACK_INTERFACE_VERSION): New macro.  Rewrote
- 	conditionals to use that macro to ensure that the installed GNU
- 	libc supports the interface the obstack.h corresponding to this
- 	obstack.c needs, and only then elide the code in this file.
+	conditionals to use that macro to ensure that the installed GNU
+	libc supports the interface the obstack.h corresponding to this
+	obstack.c needs, and only then elide the code in this file.
 
 Sun May 28 18:53:29 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
@@ -795,13 +795,13 @@ Thu Apr 27 13:11:11 1995  Jim Meyering  (meyering@comco.com)
 
 Thu Apr 27 09:22:33 1995  Peder Chr. Norgaard <pcn@tbit.dk>
 
-        * config.guess (i[34]86:*:3.2:*) test for /usr/options/cb.name
+	* config.guess (i[34]86:*:3.2:*) test for /usr/options/cb.name
 	before calling uname.
 
 Wed Apr 26 17:19:34 1995  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
 	* signame.c [HAVE_UNISTD_H]: Include unistd.h so it can declare
- 	sys_siglist.
+	sys_siglist.
 
 Wed Apr 26 14:00:00 1995  Michael Meissner  (meissner@cygnus.com)
 
@@ -828,8 +828,8 @@ Thu Apr  6 19:55:54 1995  Richard Stallman  <rms@mole.gnu.ai.mit.edu>
 Fri Mar 24 00:52:31 1995  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
 	* getopt.c (_getopt_internal): When optind is zero, bump it to 1
- 	after initializing; we don't want to scan ARGV[0], which is the
- 	program name.
+	after initializing; we don't want to scan ARGV[0], which is the
+	program name.
 
 Tue Mar 21 16:44:37 1995  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
@@ -897,7 +897,7 @@ Wed Dec 21 15:51:08 1994  Warner Losh  (imp@boulder.openware.com)
 Tue Dec  6 02:29:42 1994  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
 	* config.guess (dummy.c) [sony]: Include <sys/param.h> and emit
-        newsos4 #ifdef NEWSOS4.
+	newsos4 #ifdef NEWSOS4.
 
 Tue Nov 29 17:01:29 1994  Mark Dapoz  (md@bsc.no)
 
@@ -949,18 +949,18 @@ Tue Nov  1 14:24:39 1994  Per Bothner  (bothner@spiff.gnu.ai.mit.edu)
 Mon Oct 31 07:02:15 1994  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
 	* getopt.h: Change #if __STDC__ to #if defined (__STDC__) &&
-        __STDC__.
+	__STDC__.
 	* getopt.c: Change #ifndef __STDC__ to #if !defined (__STDC__) ||
-        !__STDC__.
+	!__STDC__.
 	* getopt1.c: Likewise.
 	* obstack.c: Change #ifdef __STDC__ to #if defined (__STDC__) &&
-        __STDC__.
+	__STDC__.
 	* obstack.h: Likewise.
 
 Wed Oct 26 20:34:59 1994  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
 	* getloadavg.c [alliant && i860] (FSCALE): Move defn before
-        #ifndef FSCALE.
+	#ifndef FSCALE.
 
 Tue Oct 25 19:10:41 1994  Paul Eggert  <eggert@twinsun.com>
 
@@ -971,7 +971,7 @@ Tue Oct 25 19:10:41 1994  Paul Eggert  <eggert@twinsun.com>
 Tue Oct 25 11:22:30 1994  David J. MacKenzie  <djm@duality.gnu.ai.mit.edu>
 
 	* xmalloc.c (xmalloc, xrealloc): If 0 bytes requested, pretend
-        it's 1, for diff.
+	it's 1, for diff.
 
 Thu Oct 20 18:47:53 1994  Per Bothner  (bothner@wombat.gnu.ai.mit.edu)
 
@@ -1036,7 +1036,7 @@ Thu Sep 29 18:47:34 1994  Jerry Frain  (jerry@sneffels.tivoli.com)
 Wed Sep 28 17:00:12 1994  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
 	* getloadavg.c [alliant && i860] (LOAD_AVE_TYPE, FSCALE,
-        NLIST_STRUCT): Define.
+	NLIST_STRUCT): Define.
 
 Mon Sep 26 17:53:05 1994  David J. MacKenzie  (djm@churchy.gnu.ai.mit.edu)
 
@@ -1204,7 +1204,7 @@ Mon Jun  6 04:59:28 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 Sat Jun  4 01:24:59 1994  Roland McGrath  (roland@geech.gnu.ai.mit.edu)
 
 	* getloadavg.c: Put #include of errno.h and decl of errno before
-        #ifndef HAVE_GETLOADAVG.
+	#ifndef HAVE_GETLOADAVG.
 
 Thu Jun  2 13:42:39 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
@@ -1268,8 +1268,8 @@ Fri Apr 15 22:46:59 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
 Tue Apr 12 15:05:08 1994  Noah Friedman  (friedman@prep.ai.mit.edu)
 
-        * config.guess: Merge rms' new entry for i486-ncr-sysv4 with the
-          previously existing one.
+	* config.guess: Merge rms' new entry for i486-ncr-sysv4 with the
+	previously existing one.
 
 Mon Apr 11 00:54:33 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
@@ -1302,13 +1302,13 @@ Tue Mar  1 21:53:03 1994  Karl Heuer  (kwzh@hal.gnu.ai.mit.edu)
 
 Thu Feb 24 14:54:23 1994  David J. MacKenzie  (djm@goldman.gnu.ai.mit.edu)
 
-        * getopt.c: Remove #ifdef GETOPT_COMPAT and #if 0 code.
-         (_getopt_initialize): New function, broken out of _getopt_internal.
-         (_getopt_internal):
-         If long_only and the ARGV-element has the form "-f", where f is
-         a valid short option, don't consider it an abbreviated form of
-         a long option that starts with f.  Otherwise there would be no
-         way to give the -f short option.
+	* getopt.c: Remove #ifdef GETOPT_COMPAT and #if 0 code.
+	(_getopt_initialize): New function, broken out of _getopt_internal.
+	(_getopt_internal):
+	If long_only and the ARGV-element has the form "-f", where f is
+	a valid short option, don't consider it an abbreviated form of
+	a long option that starts with f.  Otherwise there would be no
+	way to give the -f short option.
 
 Thu Feb 10 14:44:16 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
@@ -1326,20 +1326,20 @@ Wed Feb  9 00:14:00 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
 Tue Feb  8 14:14:31 1994  David J. MacKenzie  (djm at douglas.gnu.ai.mit.edu)
 
-        Handle obstack_chunk_alloc returning NULL.  This allows
-        obstacks to be used by libraries, without forcing them
-        to call exit or longjmp.
-        * obstack.c (_obstack_begin, _obstack_begin_1, _obstack_newchunk):
-        If CALL_CHUNKFUN returns NULL, set alloc_failed, else clear it.
-        (_obstack_begin, _obstack_begin_1): Return 1 if successful, 0 if not.
-        * obstack.h (struct obstack): Add alloc_failed flag.
-        _obstack_begin, _obstack_begin_1): Declare to return int, not void.
-        (obstack_finish): If alloc_failed, return NULL.
-        (obstack_base, obstack_next_free, objstack_object_size):
-        If alloc_failed, return 0.
-        (obstack_grow, obstack_grow0, obstack_1grow, obstack_ptr_grow,
-        obstack_int_grow, obstack_blank): If alloc_failed, do nothing that
-        could corrupt the obstack.
+	Handle obstack_chunk_alloc returning NULL.  This allows
+	obstacks to be used by libraries, without forcing them
+	to call exit or longjmp.
+	* obstack.c (_obstack_begin, _obstack_begin_1, _obstack_newchunk):
+	If CALL_CHUNKFUN returns NULL, set alloc_failed, else clear it.
+	(_obstack_begin, _obstack_begin_1): Return 1 if successful, 0 if not.
+	* obstack.h (struct obstack): Add alloc_failed flag.
+	_obstack_begin, _obstack_begin_1): Declare to return int, not void.
+	(obstack_finish): If alloc_failed, return NULL.
+	(obstack_base, obstack_next_free, objstack_object_size):
+	If alloc_failed, return 0.
+	(obstack_grow, obstack_grow0, obstack_1grow, obstack_ptr_grow,
+	obstack_int_grow, obstack_blank): If alloc_failed, do nothing that
+	could corrupt the obstack.
 	(obstack_chunkfun, obstack_freefun): New macros, used in GDB.
 
 Sun Jan 30 17:58:06 1994  Ken Raeburn  (raeburn@cujo.cygnus.com)
@@ -1368,7 +1368,7 @@ Sun Dec 26 03:58:32 1993  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
 Fri Dec 24 19:43:00 1993  Noah Friedman  (friedman@nutrimat.gnu.ai.mit.edu)
 
-        * getopt.c (_NO_PROTO): Define before config.h is included.
+	* getopt.c (_NO_PROTO): Define before config.h is included.
 
 Wed Dec 22 17:01:19 1993  Jim Meyering  (meyering@comco.com)
 
@@ -1383,7 +1383,7 @@ Tue Dec 07 14:52:39 1993  Jim Meyering  (meyering@comco.com)
 
 Sat Nov 20 17:47:50 1993  Noah Friedman  (friedman@gnu.ai.mit.edu)
 
-        * error.c (error): fflush stdout before writing to stderr.
+	* error.c (error): fflush stdout before writing to stderr.
 
 Tue Nov 09 10:05:48 1993  Jim Meyering  (meyering@comco.com)
 
@@ -1392,7 +1392,7 @@ Tue Nov 09 10:05:48 1993  Jim Meyering  (meyering@comco.com)
 Thu Nov  4 12:59:19 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 
 	* config.guess: add support for {i386,m68k,sparc} LynxOS; Hitachi
-	  HPPA machines; Acorn Risc Machines; DG/UX; Motorola SVr3 on m88k
+	HPPA machines; Acorn Risc Machines; DG/UX; Motorola SVr3 on m88k
 
 Wed Nov  3 08:06:08 1993  Roland McGrath  (roland@churchy.gnu.ai.mit.edu)
 
@@ -1660,8 +1660,8 @@ Sun May 23 13:53:12 1993  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
 Sun May 23 05:47:31 1993  Noah Friedman  (friedman@nutrimat.gnu.ai.mit.edu)
 
-        * mkinstalldirs (errstatus): New variable.
-        Use inner `for' loop instead of `while test' on $#.
+	* mkinstalldirs (errstatus): New variable.
+	Use inner `for' loop instead of `while test' on $#.
 
 Sat May 22 20:14:23 1993  Roland McGrath  (roland@churchy.gnu.ai.mit.edu)
 
@@ -2045,8 +2045,8 @@ Sat Nov  7 13:50:27 1992  David J. MacKenzie  (djm@goldman.gnu.ai.mit.edu)
 
 Sat Nov  7 03:28:08 1992  Jim Blandy  (jimb@apple-gunkies.gnu.ai.mit.edu)
 
-        * getdate.y [emacs]: Include <config.h>; under Emacs, we get
-        some additional configuration information from that.
+	* getdate.y [emacs]: Include <config.h>; under Emacs, we get
+	some additional configuration information from that.
 
 Sat Nov  7 00:53:35 1992  David J. MacKenzie  (djm@goldman.gnu.ai.mit.edu)
 
@@ -2100,13 +2100,13 @@ Wed Sep 30 13:54:36 1992  Michael I Bushnell  (mib@geech.gnu.ai.mit.edu)
 
 Tue Sep 29 07:36:29 1992  Noah Friedman  (friedman@nutrimat.gnu.ai.mit.edu)
 
-        * getloadavg.c: if symbol `sony_news' is defined, define
-          NLIST_STRUCT and declare LOAD_AVE_TYPE as long.
+	* getloadavg.c: if symbol `sony_news' is defined, define
+	NLIST_STRUCT and declare LOAD_AVE_TYPE as long.
 
 Thu Sep 17 20:10:03 1992  Karl Berry  (karl@geech.gnu.ai.mit.edu)
 
-        * regex.[ch]: made links into ../regex/, per rms' suggestion.
-          Please put further ChangeLog entries there.
+	* regex.[ch]: made links into ../regex/, per rms' suggestion.
+	Please put further ChangeLog entries there.
 
 Tue Sep 15 20:13:30 1992  Michael I Bushnell  (mib@geech.gnu.ai.mit.edu)
 
@@ -2131,7 +2131,7 @@ Fri Sep 11 10:42:24 1992  David J. MacKenzie  (djm@nutrimat.gnu.ai.mit.edu)
 
 Fri Sep 11 07:46:21 1992  Karl Berry  (karl@hal.gnu.ai.mit.edu)
 
-        * regex.h (_RE_ARGS) [!__STDC__]: expand to empty parens.
+	* regex.h (_RE_ARGS) [!__STDC__]: expand to empty parens.
 
 Fri Sep 11 00:57:56 1992  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
@@ -2156,13 +2156,13 @@ Thu Sep 10 16:35:10 1992  Jim Blandy  (jimb@wookumz.gnu.ai.mit.edu)
 
 Wed Sep  9 21:49:20 1992  Karl Berry  (karl@apple-gunkies.gnu.ai.mit.edu)
 
-        * regex.[ch]: version 0.10, incorporating below changes and
-        more.  See /gd/gnu/lib/regex-*/ChangeLog.
+	* regex.[ch]: version 0.10, incorporating below changes and
+	more.  See /gd/gnu/lib/regex-*/ChangeLog.
 
 Wed Sep  9 03:09:55 1992  Noah Friedman  (friedman@nutrimat.gnu.ai.mit.edu)
 
-        * malloc.c: if USG, define macros for bcopy and bzero.
-        Don't redefine USG for hpux if already defined.
+	* malloc.c: if USG, define macros for bcopy and bzero.
+	Don't redefine USG for hpux if already defined.
 
 Tue Sep  1 16:46:47 1992  Jim Blandy  (jimb@pogo.cs.oberlin.edu)
 
@@ -2233,8 +2233,8 @@ Sat Aug  1 00:11:25 1992  Fred Fish  (fnf at fishpond)
 
 Wed Jul 29 18:53:13 1992  Karl Berry  (karl@hal)
 
-        * regex.c: version 0.9; fixes bug wrt always finding the longest
-          match.  See /gd/gnu/lib/regex-*/ChangeLog.
+	* regex.c: version 0.9; fixes bug wrt always finding the longest
+	match.  See /gd/gnu/lib/regex-*/ChangeLog.
 
 Sun Jul 26 18:24:13 1992  Roland McGrath  (roland@churchy.gnu.ai.mit.edu)
 
@@ -2302,8 +2302,8 @@ Sat Jul 11 13:24:12 1992  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
 Fri Jul 10 15:01:25 1992  Karl Berry  (karl@hal)
 
-        * regex.[ch]: new version (0.8), incorporating the changes
-          below.  See /gd/gnu/regex/ChangeLog.
+	* regex.[ch]: new version (0.8), incorporating the changes
+	below.  See /gd/gnu/regex/ChangeLog.
 
 Fri Jul 10 03:46:24 1992  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
@@ -2341,7 +2341,7 @@ Wed Jul  8 12:38:37 1992  Jim Blandy  (jimb@wookumz.gnu.ai.mit.edu)
 
 Sat Jul  4 07:53:45 1992  Karl Berry  (karl@hal)
 
-        * regex.c (re_compile_fastmap): init succeed_n_p (to false).
+	* regex.c (re_compile_fastmap): init succeed_n_p (to false).
 
 Fri Jul  3 14:45:29 1992  David J. MacKenzie  (djm@nutrimat.gnu.ai.mit.edu)
 
@@ -2354,7 +2354,7 @@ Thu Jul  2 15:47:20 1992  David J. MacKenzie  (djm@wookumz.gnu.ai.mit.edu)
 
 Wed Jul  1 11:48:37 1992  Karl Berry  (karl@hal)
 
-        * regex.[ch]: new version (0.7).  See /gd/gnu/regex/ChangeLog.
+	* regex.[ch]: new version (0.7).  See /gd/gnu/regex/ChangeLog.
 
 Sun Jun 28 06:05:39 1992  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
@@ -2394,7 +2394,7 @@ Mon Jun  8 18:03:28 1992  Jim Blandy  (jimb@pogo.cs.oberlin.edu)
 
 Wed Jun  3 16:59:49 1992  Karl Berry  (karl@geech.gnu.ai.mit.edu)
 
-        * regex.[ch]: new version (0.6).  See ~karl/regex/ChangeLog.
+	* regex.[ch]: new version (0.6).  See ~karl/regex/ChangeLog.
 
 Sat May 23 22:28:54 1992  Roland McGrath  (roland@geech.gnu.ai.mit.edu)
 
@@ -2409,7 +2409,7 @@ Fri May 22 14:50:25 1992  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
 Thu May 14 16:50:28 1992  Karl Berry  (karl@kropotkin.gnu.ai.mit.edu)
 
-        * regex.c, regex.h: new version (0.5).  See ~karl/regex/ChangeLog.
+	* regex.c, regex.h: new version (0.5).  See ~karl/regex/ChangeLog.
 
 Tue May 12 03:27:19 1992  David J. MacKenzie  (djm@churchy.gnu.ai.mit.edu)
 
@@ -2496,7 +2496,7 @@ Sun Mar 15 22:50:30 1992  Roland McGrath  (roland@geech.gnu.ai.mit.edu)
 
 Thu Mar 12 14:26:48 1992  Karl Berry  (karl@apple-gunkies.gnu.ai.mit.edu)
 
-        * regex.[ch]: new version (0.4).  See ~karl/regex/ChangeLog.
+	* regex.[ch]: new version (0.4).  See ~karl/regex/ChangeLog.
 
 Tue Mar 10 22:26:14 1992  Roland McGrath  (roland@geech.gnu.ai.mit.edu)
 
@@ -2515,8 +2515,8 @@ Tue Feb 25 21:23:50 1992  Roland McGrath  (roland@wookumz.gnu.ai.mit.edu)
 
 Thu Feb 20 13:04:57 1992  Karl Berry  (karl@wombat.gnu.ai.mit.edu)
 
-        * regex.[ch]: new version (0.3).  See ~karl/regex/ChangeLog for all
-          the details.
+	* regex.[ch]: new version (0.3).  See ~karl/regex/ChangeLog for all
+	the details.
 
 Wed Feb 19 23:04:05 1992  Charles Hannum  (mycroft@gnu.ai.mit.edu)
 
@@ -2577,8 +2577,8 @@ Tue Jan  7 02:08:10 1992  Richard Stallman  (rms at mole.gnu.ai.mit.edu)
 
 Mon Jan  6 12:53:42 1992  Karl Berry  (karl at apple-gunkies.gnu.ai.mit.edu)
 
-        * regex.[ch]: new versions.  See ~karl/regex/ChangeLog for all
-          the details.
+	* regex.[ch]: new versions.  See ~karl/regex/ChangeLog for all
+	the details.
 
 Tue Dec 24 22:42:59 1991  Richard Stallman  (rms at mole.gnu.ai.mit.edu)
 
@@ -2669,9 +2669,9 @@ Sat Sep 28 02:01:45 1991  David J. MacKenzie  (djm at churchy.gnu.ai.mit.edu)
 
 Wed Sep  4 17:32:51 1991  Kathryn A. Hargreaves  (letters at apple-gunkies)
 
-        * regex.[ch]: Put current version (0.1) here, after backing up old
-          files.  For ChangeLog details, please refer to the ChangeLog
-          file in my regex directory.
+	* regex.[ch]: Put current version (0.1) here, after backing up old
+	files.  For ChangeLog details, please refer to the ChangeLog
+	file in my regex directory.
 
 Sat Aug 24 04:22:01 1991  David J. MacKenzie  (djm at apple-gunkies)
 
@@ -3096,61 +3096,61 @@ Mon Mar 26 00:36:52 1990  David J. MacKenzie  (djm at spike.ai.mit.edu)
 Sun Mar  4 12:11:31 1990  Kathy Hargreaves  (kathy at hayley)
 
 	* regex.h: Added syntax bit RE_NO_EMPTY_RANGES which is set if
-        an ending range point has to collate higher or equal to the
-        starting range point.
-        Added syntax bit RE_NO_HYPHEN_RANGE_END which is set if a hyphen
-        can't be an ending range point.
-        Set to two above bits in RE_SYNTAX_POSIX_BASIC and
-        RE_SYNTAX_POSIX_EXTENDED.
+	an ending range point has to collate higher or equal to the
+	starting range point.
+	Added syntax bit RE_NO_HYPHEN_RANGE_END which is set if a hyphen
+	can't be an ending range point.
+	Set to two above bits in RE_SYNTAX_POSIX_BASIC and
+	RE_SYNTAX_POSIX_EXTENDED.
 
-        regex.c: (re_compile_pattern): Don't allow empty ranges if the
-        RE_NO_EMPTY_RANGES syntax bit is set.
-        Don't let a hyphen be a range end if the RE_NO_HYPHEN_RANGE_END
+	regex.c: (re_compile_pattern): Don't allow empty ranges if the
+	RE_NO_EMPTY_RANGES syntax bit is set.
+	Don't let a hyphen be a range end if the RE_NO_HYPHEN_RANGE_END
 	syntax bit is set.
 	(ESTACK_PUSH_2): renamed this PUSH_FAILURE_POINT and made it
-        push all the used registers on the stack, as well as the number
-        of the highest numbered register used, and (as before) the two
-        failure points.
+	push all the used registers on the stack, as well as the number
+	of the highest numbered register used, and (as before) the two
+	failure points.
 	(re_match_2): Fixed up comments.
-        Added arrays best_regstart[], best_regstart_seg1[], best_regend[],
-        and best_regend_seg1[] to keep track of the best match so far
-        whenever reach the end of the pattern but not the end of the
-        string, and there are still failure points on the stack with
-        which to backtrack; if so, do the saving and force a fail.
+	Added arrays best_regstart[], best_regstart_seg1[], best_regend[],
+	and best_regend_seg1[] to keep track of the best match so far
+	whenever reach the end of the pattern but not the end of the
+	string, and there are still failure points on the stack with
+	which to backtrack; if so, do the saving and force a fail.
 	If reach the end of the pattern but not the end of the string,
-        but there are no more failure points to try, restore the best
-        match so far, set the registers and return.
+	but there are no more failure points to try, restore the best
+	match so far, set the registers and return.
 	Compacted some code.
 	In stop_memory case, if the subexpression we've just left is in
-        a loop, push onto the stack the loop's on_failure_jump failure
-        point along with the current pointer into the string (d).
-        In finalize_jump case, in addition to popping the failure
-        points, pop the saved registers.
+	a loop, push onto the stack the loop's on_failure_jump failure
+	point along with the current pointer into the string (d).
+	In finalize_jump case, in addition to popping the failure
+	points, pop the saved registers.
 	In the fail case, restore the registers, as well as the failure
-        points.
+	points.
 
 
 Sun Feb 18 15:08:10 1990  Kathy Hargreaves  (kathy at hayley)
 
 	* regex.c: (global): Defined a macro GET_BUFFER_SPACE which
 	makes sure you have a specified number of buffer bytes
-        allocated.
-        Redefined the macro BUFPUSH to use this.
-        Added comments.
+	allocated.
+	Redefined the macro BUFPUSH to use this.
+	Added comments.
 
-        (re_compile_pattern): Call GET_BUFFER_SPACE before storing or
-        inserting any jumps.
+	(re_compile_pattern): Call GET_BUFFER_SPACE before storing or
+	inserting any jumps.
 
 	(re_match_2): Set d to string1 + pos and dend to end_match_1
-        only if string1 isn't null.
+	only if string1 isn't null.
 	Force exit from a loop if it's around empty parentheses.
-        In stop_memory case, if found some jumps, increment p2 before
-        extracting address to which to jump. Also, don't need to know
-        how many more times can jump_n.
+	In stop_memory case, if found some jumps, increment p2 before
+	extracting address to which to jump. Also, don't need to know
+	how many more times can jump_n.
 	In begline case, d must equal string1 or string2, in that order,
-        only if they are not null.
-        In maybe_finalize_jump case, skip over start_memorys' and
-        stop_memorys' register numbers, too.
+	only if they are not null.
+	In maybe_finalize_jump case, skip over start_memorys' and
+	stop_memorys' register numbers, too.
 
 Thu Feb 15 15:53:55 1990  Kathy Hargreaves  (kathy at hayley)
 
@@ -3164,178 +3164,178 @@ Wed Jan 24 17:07:46 1990  Kathy Hargreaves  (kathy at hayley)
 	Added to some comments.
 
 	regex.c: (re_compile_pattern): Tried to bulletproof some code,
-        i.e., checked if backward references (e.g., p[-1]) were within
-        the range of pattern.
+	i.e., checked if backward references (e.g., p[-1]) were within
+	the range of pattern.
 
-        (re_compile_fastmap): Fixed a bug in succeed_n part where was
-        getting the amount to jump instead of how many times to jump.
+	(re_compile_fastmap): Fixed a bug in succeed_n part where was
+	getting the amount to jump instead of how many times to jump.
 
-        (re_search_2): Changed the name of the variable ``total'' to
-        ``total_size.''
-        Condensed some code.
+	(re_search_2): Changed the name of the variable ``total'' to
+	``total_size.''
+	Condensed some code.
 
 	(re_match_2): Moved the comment about duplicate from above the
-        start_memory case to above duplicate case.
+	start_memory case to above duplicate case.
 
-        (global): Rewrote some comments.
-        Added commandline arguments to testing.
+	(global): Rewrote some comments.
+	Added commandline arguments to testing.
 
 
 Wed Jan 17 11:47:27 1990  Kathy Hargreaves  (kathy at hayley)
 
 	* regex.c: (global): Defined a macro STORE_NUMBER which stores a
-        number into two contiguous bytes.  Also defined STORE_NUMBER_AND_INCR
+	number into two contiguous bytes.  Also defined STORE_NUMBER_AND_INCR
 	which does the same thing and then increments the pointer to the
 	storage place to point after the number.
-        Defined a macro EXTRACT_NUMBER which extracts a number from two
-        continguous bytes.  Also defined EXTRACT_NUMBER_AND_INCR which
-        does the same thing and then increments the pointer to the
-        source to point to after where the number was.
+	Defined a macro EXTRACT_NUMBER which extracts a number from two
+	continguous bytes.  Also defined EXTRACT_NUMBER_AND_INCR which
+	does the same thing and then increments the pointer to the
+	source to point to after where the number was.
 
 
 Tue Jan 16 12:09:19 1990  Kathy Hargreaves  (kathy at hayley)
 
 	* regex.h: Incorporated rms' changes.
 	Defined RE_NO_BK_REFS syntax bit which is set when want to
-        interpret back reference patterns as literals.
-        Defined RE_NO_EMPTY_BRACKETS syntax bit which is set when want
-        empty bracket expressions to be illegal.
-        Defined RE_CONTEXTUAL_ILLEGAL_OPS syntax bit which is set when want
+	interpret back reference patterns as literals.
+	Defined RE_NO_EMPTY_BRACKETS syntax bit which is set when want
+	empty bracket expressions to be illegal.
+	Defined RE_CONTEXTUAL_ILLEGAL_OPS syntax bit which is set when want
 	it to be illegal for *, +, ? and { to be first in an re or come
-        immediately after a | or a (, and for ^ not to appear in a
-        nonleading position and $ in a nontrailing position (outside of
-        bracket expressions, that is).
-        Defined RE_LIMITED_OPS syntax bit which is set when want +, ?
-        and | to always be literals instead of ops.
-        Fixed up the Posix syntax.
-        Changed the syntax bit comments from saying, e.g., ``0 means...''
-        to ``If this bit is set, it means...''.
-        Changed the syntax bit defines to use shifts instead of integers.
+	immediately after a | or a (, and for ^ not to appear in a
+	nonleading position and $ in a nontrailing position (outside of
+	bracket expressions, that is).
+	Defined RE_LIMITED_OPS syntax bit which is set when want +, ?
+	and | to always be literals instead of ops.
+	Fixed up the Posix syntax.
+	Changed the syntax bit comments from saying, e.g., ``0 means...''
+	to ``If this bit is set, it means...''.
+	Changed the syntax bit defines to use shifts instead of integers.
 
-        * regex.c: (global): Incorporated rms' changes.
+	* regex.c: (global): Incorporated rms' changes.
 
-        (re_compile_pattern): Incorporated rms' changes
-        Made it illegal for a $ to appear anywhere but inside a bracket
-        expression or at the end of an re when RE_CONTEXTUAL_ILLEGAL_OPS
-        is set. Made the same hold for $ except it has to be at the
-        beginning of an re instead of the end.
+	(re_compile_pattern): Incorporated rms' changes
+	Made it illegal for a $ to appear anywhere but inside a bracket
+	expression or at the end of an re when RE_CONTEXTUAL_ILLEGAL_OPS
+	is set. Made the same hold for $ except it has to be at the
+	beginning of an re instead of the end.
 	Made the re "[]" illegal if RE_NO_EMPTY_BRACKETS is set.
-        Made it illegal for | to be first or last in an re, or immediately
-        follow another | or a (.
-        Added and embellished some comments.
+	Made it illegal for | to be first or last in an re, or immediately
+	follow another | or a (.
+	Added and embellished some comments.
 	Allowed \{ to be interpreted as a literal if RE_NO_BK_CURLY_BRACES
-        is set.
-        Made it illegal for *, +, ?, and { to appear first in an re, or
-        immediately follow a | or a ( when RE_CONTEXTUAL_ILLEGAL_OPS is set.
+	is set.
+	Made it illegal for *, +, ?, and { to appear first in an re, or
+	immediately follow a | or a ( when RE_CONTEXTUAL_ILLEGAL_OPS is set.
 	Made back references interpreted as literals if RE_NO_BK_REFS is set.
-        Made recursive intervals either illegal (if RE_NO_BK_CURLY_BRACES
-        isn't set) or interpreted as literals (if is set), if RE_INTERVALS
-        is set.
+	Made recursive intervals either illegal (if RE_NO_BK_CURLY_BRACES
+	isn't set) or interpreted as literals (if is set), if RE_INTERVALS
+	is set.
 	Made it treat +, ? and | as literals if RE_LIMITED_OPS is set.
-        Cleaned up some code.
+	Cleaned up some code.
 
 
 Thu Dec 21 15:31:32 1989  Kathy Hargreaves  (kathy at hayley)
 
 	* regex.c: (global): Moved RE_DUP_MAX to regex.h and made it
 	equal 2^15 - 1 instead of 1000.
-        Defined NULL to be zero.
-        Moved the definition of BYTEWIDTH to regex.h.
-        Made the global  variable obscure_syntax nonstatic so the tests in
-        another file could use it.
+	Defined NULL to be zero.
+	Moved the definition of BYTEWIDTH to regex.h.
+	Made the global  variable obscure_syntax nonstatic so the tests in
+	another file could use it.
 
-        (re_compile_pattern): Defined a maximum length (CHAR_CLASS_MAX_LENGTH)
-        for character class strings (i.e., what's between the [: and the
-        :]'s).
+	(re_compile_pattern): Defined a maximum length (CHAR_CLASS_MAX_LENGTH)
+	for character class strings (i.e., what's between the [: and the
+	:]'s).
 	Defined a macro SET_LIST_BIT(c) which sets the bit for C in a
-        character set list.
-        Took out comments that EXTEND_BUFFER clobbers C.
-        Made the string "^" match itself, if not RE_CONTEXT_IND_OPS.
+	character set list.
+	Took out comments that EXTEND_BUFFER clobbers C.
+	Made the string "^" match itself, if not RE_CONTEXT_IND_OPS.
 	Added character classes to bracket expressions.
-        Change the laststart pointer saved with the start of each
-        subexpression to point to start_memory instead of after the
-        following register number.  This is because the subexpression
-        might be in a loop.
-        Added comments and compacted some code.
+	Change the laststart pointer saved with the start of each
+	subexpression to point to start_memory instead of after the
+	following register number.  This is because the subexpression
+	might be in a loop.
+	Added comments and compacted some code.
 	Made intervals only work if preceded by an re matching a single
-        character or a subexpression.
-        Made back references to nonexistent subexpressions illegal if
-        using POSIX syntax.
+	character or a subexpression.
+	Made back references to nonexistent subexpressions illegal if
+	using POSIX syntax.
 	Made intervals work on the last preceding character of a
-        concatenation of characters, e.g., ab{0,} matches abbb, not abab.
+	concatenation of characters, e.g., ab{0,} matches abbb, not abab.
 	Moved macro PREFETCH to outside the routine.
 
 	(re_compile_fastmap): Added succeed_n to work analogously to
-        on_failure_jump if n is zero and jump_n to work analogously to
-        the other backward jumps.
+	on_failure_jump if n is zero and jump_n to work analogously to
+	the other backward jumps.
 
-        (re_match_2): Defined macro SET_REGS_MATCHED to set which
-        current subexpressions had matches within them.
-        Changed some comments.
+	(re_match_2): Defined macro SET_REGS_MATCHED to set which
+	current subexpressions had matches within them.
+	Changed some comments.
 	Added reg_active and reg_matched_something arrays to keep track
-        of in which subexpressions currently have matched something.
-        Defined MATCHING_IN_FIRST_STRING and replaced ``dend == end_match_1''
-        with it to make code easier to understand.
+	of in which subexpressions currently have matched something.
+	Defined MATCHING_IN_FIRST_STRING and replaced ``dend == end_match_1''
+	with it to make code easier to understand.
 	Fixed so can apply * and intervals to arbitrarily nested
-        subexpressions.  (Lots of previous bugs here.)
+	subexpressions.  (Lots of previous bugs here.)
 	Changed so won't match a newline if syntax bit RE_DOT_NOT_NULL is set.
-        Made the upcase array nonstatic so the testing file could use it also.
+	Made the upcase array nonstatic so the testing file could use it also.
 
-        (main.c): Moved the tests out to another file.
+	(main.c): Moved the tests out to another file.
 
 	(tests.c): Moved all the testing stuff here.
 
 
 Sat Nov 18 19:30:30 1989  Kathy Hargreaves  (kathy at hayley)
 
-        * regex.c: (re_compile_pattern): Defined RE_DUP_MAX, the maximum
-        number of times an interval can match a pattern.
-        Added macro GET_UNSIGNED_NUMBER (used to get below):
-        Added variables lower_bound and upper_bound for upper and lower
-        bounds of intervals.
-        Added variable num_fetches so intervals could do backtracking.
+	* regex.c: (re_compile_pattern): Defined RE_DUP_MAX, the maximum
+	number of times an interval can match a pattern.
+	Added macro GET_UNSIGNED_NUMBER (used to get below):
+	Added variables lower_bound and upper_bound for upper and lower
+	bounds of intervals.
+	Added variable num_fetches so intervals could do backtracking.
 	Added code to handle '{' and "\{" and intervals.
 	Added to comments.
 
-        (store_jump_n): (Added) Stores a jump with a number following the
-        relative address (for intervals).
+	(store_jump_n): (Added) Stores a jump with a number following the
+	relative address (for intervals).
 
-        (insert_jump_n): (Added) Inserts a jump_n.
+	(insert_jump_n): (Added) Inserts a jump_n.
 
-        (re_match_2): Defined a macro ESTACK_PUSH_2 for the error stack;
-        it checks for overflow and reallocates if necessary.
+	(re_match_2): Defined a macro ESTACK_PUSH_2 for the error stack;
+	it checks for overflow and reallocates if necessary.
 
 	* regex.h: Added bits (RE_INTERVALS and RE_NO_BK_CURLY_BRACES)
 	to obscure syntax to indicate whether or not
 	a syntax handles intervals and recognizes either \{ and
 	\} or { and } as operators.  Also added two syntaxes
 	RE_SYNTAX_POSIX_BASIC and RE_POSIX_EXTENDED and two command codes
-        to the enumeration regexpcode; they are succeed_n and jump_n.
+	to the enumeration regexpcode; they are succeed_n and jump_n.
 
 
 Sat Nov 18 19:30:30 1989  Kathy Hargreaves  (kathy at hayley)
 
 	* regex.c: (re_compile_pattern): Defined INIT_BUFF_SIZE to get rid
-        of repeated constants in code.  Tested with value 1.
+	of repeated constants in code.  Tested with value 1.
 	Renamed PATPUSH as BUFPUSH, since it pushes things onto the
-        buffer, not the pattern.  Also made this macro extend the buffer
-        if it's full (so could do the following):
-        Took out code at top of loop that checks to see if buffer is going
-        to be full after 10 additions (and reallocates if necessary).
+	buffer, not the pattern.  Also made this macro extend the buffer
+	if it's full (so could do the following):
+	Took out code at top of loop that checks to see if buffer is going
+	to be full after 10 additions (and reallocates if necessary).
 
-        (insert_jump): Rearranged declaration lines so comments would read
-        better.
+	(insert_jump): Rearranged declaration lines so comments would read
+	better.
 
 	(re_match_2): Compacted exactn code and added more comments.
 
 	(main): Defined macros TEST_MATCH and MATCH_SELF to do
-        testing; took out loop so could use these instead.
+	testing; took out loop so could use these instead.
 
 
 Tue Oct 24 20:57:18 1989  Kathy Hargreaves  (kathy at hayley)
 
 	* regex.c (re_set_syntax): Gave argument `syntax' a type.
-        (store_jump, insert_jump): made them void functions.
+	(store_jump, insert_jump): made them void functions.
 
 Tue Mar  6 23:29:26 1990  Jim Kingdon  (kingdon at pogo.ai.mit.edu)
 

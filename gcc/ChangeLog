@@ -22,17 +22,17 @@ Sat Mar  3 19:47:13 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpplex.c (parse_string): Unconditionally pedwarn.
+	* cpplex.c (parse_string): Unconditionally pedwarn.
 
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpp.texi: Update.
-        * cppexp.c (parse_number): Update. 
-        * cpplex.c (parse_string): Pedwarn if multiline string does not
-        result from a system header's macro.
-        * cpplib.h (sys_objmacro_p): Rename sys_macro_p.
-        * cppmacro.c (sys_objmacro_p): Rename sys_macro_p.  Return true
-        for function-like macros too.
+	* cpp.texi: Update.
+	* cppexp.c (parse_number): Update. 
+	* cpplex.c (parse_string): Pedwarn if multiline string does not
+	result from a system header's macro.
+	* cpplib.h (sys_objmacro_p): Rename sys_macro_p.
+	* cppmacro.c (sys_objmacro_p): Rename sys_macro_p.  Return true
+	for function-like macros too.
 	* c-lex.c (lex_number): Update.
 
 2001-03-03  Richard Henderson  <rth@redhat.com>
@@ -3084,7 +3084,7 @@ Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-01-16  Phil Edwards  <pme@sources.redhat.com>
 
 	* gcc.c:  Revert previous -fsyntax-only-related change; move
-	  to cp/g++spec.c.
+	to cp/g++spec.c.
 
 2001-01-16  Jakub Jelinek  <jakub@redhat.com>
 
@@ -3111,7 +3111,7 @@ Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-01-16  Phil Edwards  <pme@sources.redhat.com>
 
 	* gcc.c:  When -fsyntax-only is given, do not complain about
-	  unused libraries.
+	unused libraries.
 
 2001-01-15  Richard Henderson  <rth@redhat.com>
 
@@ -3619,7 +3619,7 @@ Sat Jan 13 09:53:32 MET 2001  Jan Hubicka  <jh@suse.cz>
 2001-01-12  Phil Edwards  <pme@sources.redhat.com>
 
 	* extend.texi:  Move C++-extension-related node from the C section
-	  into the C++ section.
+	into the C++ section.
 
 2001-01-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -3742,9 +3742,9 @@ Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2000-01-11  Mark Elbrecht  <snowball3@bigfoot.com>
 
-	 * cppfiles.c (cpp_included, find_include_file, _cpp_execute_include)
-	   (read_name_map): Use IS_ABSOLUTE_PATH.
-	 * tradcpp.c (get_filename): Likewise.
+	* cppfiles.c (cpp_included, find_include_file, _cpp_execute_include)
+	(read_name_map): Use IS_ABSOLUTE_PATH.
+	* tradcpp.c (get_filename): Likewise.
 
 2001-01-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
@@ -4027,7 +4027,7 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 2001-01-09  Alan Lehotsky  <lehotsky@tiac.net>
 
 	* reload.c (find_reloads_address): Check for eliminable registers
-		  when substituting a constant expression for a pseudo.
+	when substituting a constant expression for a pseudo.
 
 2001-01-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -5212,7 +5212,7 @@ Tue Jan  2 10:47:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.
 2000-12-27  Phil Edwards  <pme@sources.redhat.com>
 
 	* extend.texi (C++ Extensions):  New node for C++ attributes;
-	  describe init_priority and com_interface.
+	describe init_priority and com_interface.
 	* invoke.texi:  Remove -finit-priority as it now has zero effect.
 	* install.texi:  Fix xref syntax.
 	* md.texi:  Likewise.
