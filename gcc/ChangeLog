@@ -1,5 +1,11 @@
 2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR c/9928
+	* c-decl.c (duplicate_decls): Discard the initializer of the new decl
+	only if it is a VAR_DECL.
+
+2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR optimization/9888
 	* config/i386/i386.md (jcc_1): Fix range.
 	(jcc_2): Likewise.
