@@ -6318,8 +6318,18 @@ expand_expr (exp, target, tmode, modifier)
       return DECL_RTL (exp);
 
     case INTEGER_CST:
-      return immed_double_const (TREE_INT_CST_LOW (exp),
+      temp = immed_double_const (TREE_INT_CST_LOW (exp),
 				 TREE_INT_CST_HIGH (exp), mode);
+
+      /* ??? If overflow is set, fold will have done an incomplete job,
+	 which can result in (plus xx (const_int 0)), which can get
+	 simplified by validate_replace_rtx during virtual register
+	 instantiation, which can result in unrecognizable insns.
+	 Avoid this by forcing all overflows into registers.  */
+      if (TREE_CONSTANT_OVERFLOW (exp))
+	temp = force_reg (mode, temp);
+
+      return temp;
 
     case CONST_DECL:
       return expand_expr (DECL_INITIAL (exp), target, VOIDmode, 0);
