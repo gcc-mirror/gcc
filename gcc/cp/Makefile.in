@@ -92,9 +92,6 @@ srcdir = .
 # system library.
 OBSTACK=obstack.o
 
-# Directory to link to, when using the target `maketest'.
-DIR = ../gcc
-
 # Choose the real default target.
 ALL=all
 
