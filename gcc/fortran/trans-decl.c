@@ -1180,7 +1180,25 @@ gfc_build_function_decl (gfc_symbol * sym)
           if (!f->sym->ts.cl->length)
 	    {
 	      TREE_USED (length) = 1;
-	      f->sym->ts.cl->backend_decl = length;
+	      if (!f->sym->ts.cl->backend_decl)
+		f->sym->ts.cl->backend_decl = length;
+	      else
+		{
+		  /* there is already another variable using this
+		     gfc_charlen node, build a new one for this variable
+		     and chain it into the list of gfc_charlens.
+		     This happens for e.g. in the case
+		     CHARACTER(*)::c1,c2
+		     since CHARACTER declarations on the same line share
+		     the same gfc_charlen node.  */
+		  gfc_charlen *cl;
+		  
+		  cl = gfc_get_charlen ();
+		  cl->backend_decl = length;
+		  cl->next = f->sym->ts.cl->next;
+		  f->sym->ts.cl->next = cl;
+		  f->sym->ts.cl = cl;
+		}
 	    }
 
           parm = TREE_CHAIN (parm);
