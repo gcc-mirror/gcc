@@ -1,3 +1,8 @@
+2002-04-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	PR middle-end/6180
+	* reorg.c (dbr_schedule): Don't reposition prologue and epilogue notes.
+
 2002-04-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR opt/5120
