@@ -736,6 +736,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 #define XER_REGNO    76
 #define FIRST_ALTIVEC_REGNO	77
 #define LAST_ALTIVEC_REGNO	108
+#define TOTAL_ALTIVEC_REGS	(LAST_ALTIVEC_REGNO - FIRST_ALTIVEC_REGNO)
 #define VRSAVE_REGNO		109
 
 /* List the order in which to allocate registers.  Each register must be
@@ -1265,16 +1266,20 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
 typedef struct rs6000_stack {
   int first_gp_reg_save;	/* first callee saved GP register used */
   int first_fp_reg_save;	/* first callee saved FP register used */
+  int first_altivec_reg_save;	/* first callee saved AltiVec register used */
   int lr_save_p;		/* true if the link reg needs to be saved */
   int cr_save_p;		/* true if the CR reg needs to be saved */
+  unsigned int vrsave_mask;	/* mask of vec registers to save */
   int toc_save_p;		/* true if the TOC needs to be saved */
   int push_p;			/* true if we need to allocate stack space */
   int calls_p;			/* true if the function makes any calls */
   enum rs6000_abi abi;		/* which ABI to use */
   int gp_save_offset;		/* offset to save GP regs from initial SP */
   int fp_save_offset;		/* offset to save FP regs from initial SP */
+  int altivec_save_offset;	/* offset to save AltiVec regs from inital SP */
   int lr_save_offset;		/* offset to save LR from initial SP */
   int cr_save_offset;		/* offset to save CR from initial SP */
+  int vrsave_save_offset;	/* offset to save VRSAVE from initial SP */
   int toc_save_offset;		/* offset to save the TOC pointer */
   int varargs_save_offset;	/* offset to save the varargs registers */
   int ehrd_offset;		/* offset to EH return data */
@@ -1286,8 +1291,12 @@ typedef struct rs6000_stack {
   int fixed_size;		/* fixed size of stack frame */
   int gp_size;			/* size of saved GP registers */
   int fp_size;			/* size of saved FP registers */
+  int altivec_size;		/* size of saved AltiVec registers */
   int cr_size;			/* size to hold CR if not in save_size */
   int lr_size;			/* size to hold LR if not in save_size */
+  int vrsave_size;		/* size to hold VRSAVE if not in save_size */
+  int altivec_padding_size;	/* size of altivec alignment padding if
+				   not in save_size */
   int toc_size;			/* size to hold TOC if not in save_size */
   int total_size;		/* total bytes allocated for stack */
 } rs6000_stack_t;
@@ -1685,6 +1694,7 @@ typedef struct rs6000_args
 
 #define	EPILOGUE_USES(REGNO)					\
   ((reload_completed && (REGNO) == LINK_REGISTER_REGNUM)	\
+   || (REGNO) == VRSAVE_REGNO					\
    || (current_function_calls_eh_return				\
        && TARGET_AIX						\
        && (REGNO) == TOC_REGISTER))
@@ -2792,6 +2802,7 @@ do {									\
 		     CONST_DOUBLE, SYMBOL_REF}},			   \
   {"load_multiple_operation", {PARALLEL}},				   \
   {"store_multiple_operation", {PARALLEL}},				   \
+  {"vrsave_operation", {PARALLEL}},					   \
   {"branch_comparison_operator", {EQ, NE, LE, LT, GE,			   \
 				  GT, LEU, LTU, GEU, GTU,		   \
 				  UNORDERED, ORDERED,			   \
