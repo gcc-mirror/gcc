@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  
+/* Definitions of target machine for GNU compiler.
    Encore Multimax (OSF/1 with OSF/rose) version.
    Copyright (C) 1991 Free Software Foundation, Inc.
 
@@ -45,20 +45,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386"
 
-#ifdef  CPP_SPEC  
+#ifdef  CPP_SPEC
 #undef  CPP_SPEC
 #endif
-#define CPP_SPEC       "%{.S:	-D__LANGUAGE_ASSEMBLY__			\
-				-D_LANGUAGE_ASSEMBLY			\
-				%{!ansi:-DLANGUAGE_ASSEMBLY}}		\
-			 %{!.S:	-D__LANGUAGE_C__			\
-				-D_LANGUAGE_C				\
-				%{!ansi:-DLANGUAGE_C}}"
+#define CPP_SPEC "\
+%{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C} \
+%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
 #ifdef  CC1_SPEC
 #undef  CC1_SPEC
 #endif
 #define CC1_SPEC       ""
+
+#ifndef CC1PLUS_SPEC
+#define CC1PLUS_SPEC "%{!fgnu-binutils: -fno-gnu-binutils}"
+#endif
 
 #ifdef ASM_SPEC
 #undef ASM_SPEC
@@ -87,7 +92,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #define LIBG_SPEC      ""
 
-#ifdef  STARTFILE_SPEC  
+#ifdef  STARTFILE_SPEC
 #undef  STARTFILE_SPEC
 #endif
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
@@ -99,17 +104,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MACHINE_TYPE   ((!TARGET_486) ? "80386 running OSF/1 with OSF/rose objects" :  \
                                         "80486 running OSF/1 with OSF/rose objects")
 
-#if 0
-#ifdef  MD_EXEC_PREFIX  
+#ifdef  MD_EXEC_PREFIX
 #undef  MD_EXEC_PREFIX
 #endif
 #define MD_EXEC_PREFIX		"/usr/ccs/gcc/"
 
-#ifdef  MD_STARTFILE_PREFIX  
+#ifdef  MD_STARTFILE_PREFIX
 #undef  MD_STARTFILE_PREFIX
 #endif
 #define MD_STARTFILE_PREFIX	"/usr/ccs/lib/"
-#endif
 
 /* Tell final.c we don't need a label passed to mcount.  */
 #define NO_PROFILE_DATA
@@ -119,9 +122,27 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Tell collect that the object format is OSF/rose.  */
 #define OBJECT_FORMAT_ROSE
-
 
-/* Defines to be able to build gnulib with GCC.  */
+/* Use atexit for static constructors/destructors, instead of defining
+   our own exit function.  */
+#define HAVE_ATEXIT
+
+/* If defined, a C string constant for the assembler operation to
+   identify the following data as initialization code.  If not
+   defined, GNU CC will assume such a section does not exist.
+
+   OSF/rose doesn't presently have an init section, but this macro
+   also controls whether or not __main is called from main, collect
+   will however build an initialization section directly.  */
+
+#define INIT_SECTION_ASM_OP ".init"
+
+/* Define this macro meaning that gcc should find the library 'libgcc.a'
+   by hand, rather than passing the argeument '-lgcc' to tell the linker
+   to do the search */
+#define LINK_LIBGCC_SPECIAL
+
+/* Defines to be able to build libgcc.a with GCC.  */
 
 #define perform_udivsi3(a,b)						\
 {									\
@@ -134,7 +155,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   return ax;								\
 }
 
-#define perform_divsi3(a,b)							\
+#define perform_divsi3(a,b)						\
 {									\
   register int dx asm("dx");						\
   register int ax asm("ax");						\
@@ -155,7 +176,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   return dx;								\
 }
 
-#define perform_modsi3(a,b)							\
+#define perform_modsi3(a,b)						\
 {									\
   register int dx asm("dx");						\
   register int ax asm("ax");						\
@@ -165,7 +186,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   return dx;								\
 }
 
-#define perform_fix_truncdfsi2(a)						\
+#define perform_fixdfsi(a)						\
 {									\
   auto unsigned short ostatus;						\
   auto unsigned short nstatus;						\
@@ -180,7 +201,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   asm volatile ("fldcw %0" : /* no outputs */ : "m" (nstatus));		\
   asm volatile ("fldl %0" : /* no outputs */ : "m" (a));		\
   asm volatile ("fistpl %0" : "=m" (ret));				\
-  asm volatile ("fldcw %0" : /* no outputs */ : "m" (nstatus));		\
+  asm volatile ("fldcw %0" : /* no outputs */ : "m" (ostatus));		\
 									\
   return ret;								\
 }
