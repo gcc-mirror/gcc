@@ -1,3 +1,7 @@
+2001-11-25  Laurent Guerby  <guerby@acm.org>
+
+	* sysdep.c (rts_get_*): Fix style.
+
 2001-11-19  Laurent Guerby  <guerby@acm.org>
 
 	* Makefile.in (INCLUDES_FOR_SUBDIR): Remove redundant system include

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.3 $
+ *                            $Revision: 1.4 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -526,10 +526,29 @@ char *rts_get_hPrevInstance PARAMS ((void));
 char *rts_get_lpCommandLine PARAMS ((void));
 int   rts_get_nShowCmd      PARAMS ((void));
 
-char *rts_get_hInstance     () { return (GetModuleHandleA (0)); }
-char *rts_get_hPrevInstance () { return (0); }
-char *rts_get_lpCommandLine () { return (GetCommandLineA ()); }
-int   rts_get_nShowCmd      () { return (1); }
+char *
+rts_get_hInstance () 
+{ 
+  return GetModuleHandleA (0); 
+}
+
+char *
+rts_get_hPrevInstance () 
+{ 
+  return 0; 
+}
+
+char *
+rts_get_lpCommandLine () 
+{ 
+  return GetCommandLineA (); 
+}
+
+int   
+rts_get_nShowCmd () 
+{ 
+  return 1; 
+}
 
 #endif /* WINNT */
 #ifdef VMS
