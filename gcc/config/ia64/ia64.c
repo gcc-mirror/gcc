@@ -1467,11 +1467,7 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
     }
 
   if (sibcall_p)
-    {
-      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), b0);
-      use_reg (&CALL_INSN_FUNCTION_USAGE (insn),
-	       gen_rtx_REG (DImode, AR_PFS_REGNUM));
-    }
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), b0);
 }
 void
 ia64_reload_gp ()
@@ -1524,7 +1520,7 @@ ia64_split_call (retval, addr, retaddr, scratch_r, scratch_b,
 
   /* If we find we're calling through a register, then we're actually
      calling through a descriptor, so load up the values.  */
-  if (REG_P (addr))
+  if (REG_P (addr) && GR_REGNO_P (REGNO (addr)))
     {
       rtx tmp;
       bool addr_dead_p;
@@ -2746,7 +2742,7 @@ ia64_expand_epilogue (sibcall_p)
       reg = gen_rtx_REG (DImode, AR_PFS_REGNUM);
       emit_move_insn (reg, alt_reg);
     }
-  else if (! current_function_is_leaf)
+  else if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_PFS_REGNUM))
     {
       alt_regno = next_scratch_gr_reg ();
       alt_reg = gen_rtx_REG (DImode, alt_regno);

@@ -1,3 +1,21 @@
+2003-07-29  Richard Henderson  <rth@redhat.com>
+
+	PR target/10681
+
+	2003-06-27  J"orn Rennecke <joern.rennecke@superh.com>
+        * flow.c (propagate_one_insn): Use proper test for a register
+        being part of the return value.
+
+	2003-06-26  Richard Henderson  <rth@redhat.com>
+        * flow.c (propagate_one_insn): Preserve live-at-end registers
+        across tail calls.
+
+	2003-06-26  Richard Henderson  <rth@redhat.com>
+        * config/ia64/ia64.c (ia64_expand_call): Don't add ar.pfs for sibcalls.
+        (ia64_split_call): Only load descriptor for GP register inputs.
+        (ia64_expand_epilogue): Check current_frame_info.mask not
+        current_function_is_leaf to restore ar.pfs.
+
 2003-07-26  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Testing): Adjust required versions of DejaGnu.
