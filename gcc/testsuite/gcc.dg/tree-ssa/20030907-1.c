@@ -6,6 +6,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-optimized" } */
 
+extern void abort (void);
+extern void exit (int);
+
 int main() 
 { 
    int i; 

@@ -6,6 +6,8 @@
    { dg-options "" }
 */
 
+extern void abort (void);
+
 struct A
 {
   char c;

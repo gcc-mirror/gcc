@@ -5,6 +5,8 @@
    fail to terminate when there is a nontrivial cycle in the corresponding
    ssa graph.  */
 
+extern __SIZE_TYPE__ strlen (const char *);
+
 void foo(int i)
 {
   char *s = "abcde";

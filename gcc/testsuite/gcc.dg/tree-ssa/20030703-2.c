@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-dom3" } */
-                                                                                
+
+extern void abort (void);
+
 union tree_node;
 typedef union tree_node *tree;
 extern const char tree_code_type[];

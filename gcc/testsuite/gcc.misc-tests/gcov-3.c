@@ -4,6 +4,9 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
 /* { dg-do run { target native } } */
 
+extern void abort (void);
+extern void exit (int);
+
 int expect_do1 = 1, expect_do2 = 2;
  
 static int doit(int x){

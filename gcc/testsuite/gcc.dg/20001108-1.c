@@ -1,6 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
+extern void abort (void);
+extern void exit (int);
+
 void die (long) __attribute__ ((noreturn));
 
 void die (long e)

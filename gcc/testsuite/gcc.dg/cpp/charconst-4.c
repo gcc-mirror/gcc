@@ -13,6 +13,8 @@
 
 #include <limits.h>
 
+extern void abort (void);
+
 #if INT_MAX == 32767
 # define LONG_CHARCONST '!\234a'
 # define SHORT_CHARCONST '\234a'

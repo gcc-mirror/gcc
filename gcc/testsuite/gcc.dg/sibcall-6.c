@@ -9,6 +9,9 @@
 /* { dg-do run { target i?86-*-* s390*-*-* x86_64-*-*} } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */
 
+extern void abort (void);
+extern void exit (int);
+
 int foo (int);
 int bar (int);
 

@@ -1,6 +1,7 @@
 /* { dg-do compile { target i?86-*-* } } */
 /* { dg-options -O2 } */
 
+extern int printf (const char *, ...);
 extern double bar (double);
 
 int

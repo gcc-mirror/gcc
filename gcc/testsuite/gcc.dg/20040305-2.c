@@ -1,6 +1,8 @@
 /* PR target/14262 */
 /* { dg-do run } */
 
+extern void abort (void);
+
 typedef char   ACS;
 typedef char   LSM;
 typedef char   PANEL;

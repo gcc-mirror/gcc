@@ -5,6 +5,8 @@
 /* { dg-final { scan-assembler "fptan" } } */
 /* { dg-final { scan-assembler-not "fld1" } } */
 
+extern double tan (double);
+
 double f1(double x)
 {
   return 1.0 / tan(x);

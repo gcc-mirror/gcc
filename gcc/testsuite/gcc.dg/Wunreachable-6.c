@@ -2,6 +2,9 @@
 /* { dg-do compile } */
 /* { dg-options "-Wunreachable-code" } */
 
+extern int printf (const char *, ...);
+extern void exit (int);
+
 int main(int argc, char *argv[])
 {
   if (argc != 1)

@@ -15,6 +15,7 @@ int
 main (void)
 {
   volatile int i = 0;
+  extern void exit (int);
   if (i)
     tabort ();
   if (i)
@@ -60,6 +61,7 @@ t_exit (void)
 void
 _exit (int i)
 {
+  extern void abort (void);
   abort ();
 }
 
@@ -81,5 +83,6 @@ t_Exit (void)
 void
 _Exit (int i)
 {
+  extern void abort (void);
   abort ();
 }

@@ -4,6 +4,7 @@
 /* { dg-options "-lobjc" } */
 /* { dg-do run } */
 #include <stdio.h>
+#include <stdlib.h>
 #include <objc/objc.h>
 #include <objc/Object.h>
 

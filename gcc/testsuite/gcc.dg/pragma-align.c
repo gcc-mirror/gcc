@@ -2,6 +2,8 @@
 
 /* { dg-do run { target i?86-*-linux* i?86-*-*bsd* i?86-*-sco3.2v5* *-*-solaris2.* } } */
 
+extern void abort (void);
+
 struct {
         char one;
         long two;

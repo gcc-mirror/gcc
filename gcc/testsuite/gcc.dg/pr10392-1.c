@@ -13,6 +13,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -m4" { target sh4-*-* } } */
+extern void abort (void);
 const char *dont_optimize_function_away;
 
 const char *use(const char *str)

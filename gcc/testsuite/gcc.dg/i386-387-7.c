@@ -3,6 +3,9 @@
 /* { dg-options "-O -ffast-math -march=i686" } */
 /* { dg-final { scan-assembler "fsincos" } } */
 
+extern double sin (double);
+extern double cos (double);
+
 double f1(double x)
 {
   return sin(x) + cos (x);

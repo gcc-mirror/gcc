@@ -2,6 +2,7 @@
 /* { dg-do run { target i?86-*-* } } */
 /* { dg-options "-O2" } */
 
+extern void abort (void);
 static int bar(int x) __asm__("bar") __attribute__((regparm(1)));
 static int __attribute__((regparm(1), noinline, used))
 bar(int x)

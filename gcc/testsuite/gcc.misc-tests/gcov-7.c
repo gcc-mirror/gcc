@@ -6,6 +6,9 @@
 
 #include <setjmp.h>
 
+extern void abort (void);
+extern void exit (int);
+
 jmp_buf env;
 int val;
 int longjmp_taken;

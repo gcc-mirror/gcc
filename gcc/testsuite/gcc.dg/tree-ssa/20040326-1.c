@@ -4,6 +4,9 @@
    a .GLOBAL_VAR to model the side effects of functions.  Without it,
    we were moving the call to Faref() inside the second call to
    Faset().  */
+extern void abort (void);
+extern void exit (int);
+
 main ()
 {
   int table, c, elt;

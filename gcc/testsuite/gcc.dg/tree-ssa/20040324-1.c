@@ -10,6 +10,9 @@
    Therefore, DOM did not see that i was modified between the two ifs
    and optimized away the second if.  */
 
+extern void abort (void);
+extern void exit (int);
+
 struct x
 {
   unsigned b:1;

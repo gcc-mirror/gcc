@@ -4,6 +4,8 @@
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -fPIC" { target s390*-*-* } } */
 
+extern void abort (void);
+
 int count = 0;
 char *str;
 

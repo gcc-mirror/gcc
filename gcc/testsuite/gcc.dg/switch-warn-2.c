@@ -2,6 +2,9 @@
 /* { dg-do run } */
 /* { dg-options "-O0" } */
 
+extern void abort (void);
+extern void exit (int);
+
 int
 foo (unsigned int i)
 {

@@ -10,6 +10,10 @@
 /* { dg-do run { target "i?86-*-*" } } */
 /* { dg-options "-O2 -minline-all-stringops" } */
 
+extern void *memset (void *, int, __SIZE_TYPE__);
+extern void abort (void);
+extern void exit (int);
+
 #ifndef MAX_OFFSET
 #define MAX_OFFSET (sizeof (long long))
 #endif

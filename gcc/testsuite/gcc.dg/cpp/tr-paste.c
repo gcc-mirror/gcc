@@ -5,6 +5,8 @@
 /* { dg-do compile } */
 /* { dg-options "-traditional-cpp" } */
 
+extern int printf (const char *, ...);
+
 #define A(name) X/**/name
 
 #define B(name) \

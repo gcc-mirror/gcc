@@ -11,7 +11,7 @@
 extern void link_error(void);
 
 extern double exp(double);
-
+extern double atan(double);
 
 int main()
 {

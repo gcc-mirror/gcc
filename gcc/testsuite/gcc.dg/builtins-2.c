@@ -8,6 +8,28 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math" } */
 
+extern double atan (double);
+extern float atanf (float);
+extern long double atanl (long double);
+extern double exp (double);
+extern float expf (float);
+extern long double expl (long double);
+extern double fabs (double);
+extern float fabsf (float);
+extern long double fabsl (long double);
+extern double log (double);
+extern float logf (float);
+extern long double logl (long double);
+extern double pow (double, double);
+extern float powf (float, float);
+extern long double powl (long double, long double);
+extern double sqrt (double);
+extern float sqrtf (float);
+extern long double sqrtl (long double);
+extern double tan (double);
+extern float tanf (float);
+extern long double tanl (long double);
+
 double test1(double x)
 {
   return log(exp(x));

@@ -1,6 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -finstrument-functions" } */
 
+extern void abort (void);
+extern void exit (int);
+
 double
 foo (double a, double b)
 {

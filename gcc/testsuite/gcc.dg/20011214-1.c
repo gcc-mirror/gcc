@@ -1,5 +1,8 @@
 /* { dg-do run } */
 
+extern void abort (void);
+extern void exit (int);
+
 #define small   __attribute__((mode(QI))) int
 int main()
 {

@@ -11,6 +11,9 @@
    marker.  Self-recursion tail calls are optimized for all targets,
    regardless of presence of sibcall patterns.  */
 
+extern void abort (void);
+extern void exit (int);
+
 extern void recurser_void (int);
 extern void track (int);
 

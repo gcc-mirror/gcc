@@ -7,6 +7,34 @@
 
 /* { dg-do link } */
 
+extern double atan (double);
+extern float atanf (float);
+extern long double atanl (long double);
+extern double cbrt (double);
+extern float cbrtf (float);
+extern long double cbrtl (long double);
+extern double cos (double);
+extern float cosf (float);
+extern long double cosl (long double);
+extern double exp (double);
+extern float expf (float);
+extern long double expl (long double);
+extern double log (double);
+extern float logf (float);
+extern long double logl (long double);
+extern double pow (double, double);
+extern float powf (float, float);
+extern long double powl (long double, long double);
+extern double sin (double);
+extern float sinf (float);
+extern long double sinl (long double);
+extern double sqrt (double);
+extern float sqrtf (float);
+extern long double sqrtl (long double);
+extern double tan (double);
+extern float tanf (float);
+extern long double tanl (long double);
+
 /* All references to link_error should go away at compile-time.  */
 extern void link_error(void);
 

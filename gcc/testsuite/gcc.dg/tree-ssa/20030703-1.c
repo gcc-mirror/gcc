@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-dom3" } */
   
-
+extern void abort (void);
 extern int blah[];
 
 foo(int index)

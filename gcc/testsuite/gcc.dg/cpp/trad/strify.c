@@ -4,6 +4,7 @@
 #define foo(a, b) c="a"; d="b";
 
 extern void abort ();
+extern void exit (int);
 
 int main ()
 {

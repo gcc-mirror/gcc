@@ -1,3 +1,4 @@
+extern int printf(const char *, ...);
 typedef unsigned short          ushort;
 struct sembuf {
   ushort  sem_num;         

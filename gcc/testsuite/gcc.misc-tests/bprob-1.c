@@ -4,6 +4,8 @@
    This test is the same as gcov-4.c.  The "count" comments are left in to
    make comparisons easier; they are ignored for this test. */
 
+extern void abort (void);
+
 int do_something (int i)
 {
   return i;

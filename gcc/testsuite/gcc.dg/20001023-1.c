@@ -1,6 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
+extern void abort (void);
+extern void exit (int);
+
 unsigned char a[256], b[256], c[256], d[256];
 
 void foo(unsigned char *x, int y, unsigned char *z)

@@ -2,6 +2,8 @@
 /* { dg-options "-O2 -march=k8" } */
 /* { dg-final { scan-assembler "sbb" } } */
 
+extern void abort (void);
+
 /* Conditional increment is best done using sbb $-1, val.  */
 int t[]={0,0,0,0,1,1,1,1,1,1};
 q()

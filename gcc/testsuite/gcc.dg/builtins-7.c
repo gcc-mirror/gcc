@@ -8,6 +8,16 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -ffast-math" } */
 
+extern double pow (double, double);
+extern float powf (float, float);
+extern long double powl (long double, long double);
+extern double tan (double);
+extern float tanf (float);
+extern long double tanl (long double);
+extern double atan (double);
+extern float atanf (float);
+extern long double atanl (long double);
+
 extern void link_error(void);
 
 void test(double x)

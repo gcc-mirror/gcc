@@ -1,6 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-O1 -fdump-tree-optimized" } */
 
+extern void abort (void);
+extern void exit (int);
+
 int sum (int n)
 {
   if (n == 0)

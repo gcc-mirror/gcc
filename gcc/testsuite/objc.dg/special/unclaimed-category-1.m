@@ -4,6 +4,8 @@
 #include <objc/objc-api.h>
 #include <objc/Object.h>
 
+extern void abort (void);
+
 /* Test loading unclaimed categories - categories of a class defined
    separately from the class itself.  */
 

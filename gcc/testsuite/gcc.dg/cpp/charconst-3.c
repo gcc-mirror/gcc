@@ -9,6 +9,8 @@
 
 #include <limits.h>
 
+extern void abort (void);
+
 int main ()
 {
   /* These tests require at least 2-byte ints.  8-)  */
