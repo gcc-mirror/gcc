@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA. */
   -D__MINGW32__ -DWINNT  -D_X86_=1 -D__STDC__=1\
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
+  -D__declspec(x)=__attribute__((x)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
 /* Specific a different directory for the standard include files.  */
