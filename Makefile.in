@@ -1826,8 +1826,8 @@ install-sid: install-tcl install-tk
 ### other supporting targets
 
 MAKEDIRS= \
-	$(prefix) \
-	$(exec_prefix)
+	$(DESTDIR)$(prefix) \
+	$(DESTDIR)$(exec_prefix)
 .PHONY: installdirs
 installdirs: mkinstalldirs
 	$(SHELL) $(srcdir)/mkinstalldirs $(MAKEDIRS)
