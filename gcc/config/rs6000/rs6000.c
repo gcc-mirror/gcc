@@ -74,6 +74,100 @@ int rs6000_pic_labelno;
 /* Whether a System V.4 varargs area was created.  */
 int rs6000_sysv_varargs_p;
 
+/* Print the options used in the assembly file.  */
+
+extern char *version_string, *language_string;
+
+struct option
+{
+  char *string;
+  int *variable;
+  int on_value;
+};
+
+#define MAX_LINE 79
+
+static int
+output_option (file, type, name, pos)
+     FILE *file;
+     char *type;
+     char *name;
+     int pos;
+{
+  int type_len = strlen (type);
+  int name_len = strlen (name);
+
+  if (1 + type_len + name_len + pos > MAX_LINE)
+    {
+      fprintf (file, "\n # %s%s", type, name);
+      return 3 + type_len + name_len;
+    }
+  fprintf (file, " %s%s", type, name);
+  return pos + 1 + type_len + name_len;
+}
+
+static struct { char *name; int value; } m_options[] = TARGET_SWITCHES;
+
+void
+output_options (file, f_options, f_len, W_options, W_len)
+     FILE *file;
+     struct option *f_options;
+     int f_len;
+     struct option *W_options;
+     int W_len;
+{
+  int j;
+  int flags = target_flags;
+  int pos = 32767;
+
+  fprintf (file, " # %s %s", language_string, version_string);
+
+  if (optimize)
+    {
+      char opt_string[20];
+      sprintf (opt_string, "%d", optimize);
+      pos = output_option (file, "-O", opt_string, pos);
+    }
+
+  if (profile_flag)
+    pos = output_option (file, "-p", "", pos);
+
+  if (profile_block_flag)
+    pos = output_option (file, "-a", "", pos);
+
+  if (inhibit_warnings)
+    pos = output_option (file, "-w", "", pos);
+
+  for (j = 0; j < f_len; j++)
+    {
+      if (*f_options[j].variable == f_options[j].on_value)
+	pos = output_option (file, "-f", f_options[j].string, pos);
+    }
+
+  for (j = 0; j < W_len; j++)
+    {
+      if (*W_options[j].variable == W_options[j].on_value)
+	pos = output_option (file, "-W", W_options[j].string, pos);
+    }
+
+  for (j = 0; j < sizeof m_options / sizeof m_options[0]; j++)
+    {
+      if (m_options[j].name[0] != '\0'
+	  && m_options[j].value > 0
+	  && ((m_options[j].value & flags) == m_options[j].value))
+	{
+	  pos = output_option (file, "-m", m_options[j].name, pos);
+	  flags &= ~ m_options[j].value;
+	}
+    }
+
+  if (rs6000_cpu_string != (char *)0)
+    pos = output_option (file, "-mcpu=", rs6000_cpu_string, pos);
+
+  fputs ("\n\n", file);
+}
+
+
 /* Override command line options.  Mostly we process the processor
    type and sometimes adjust other TARGET_ options.  */
 
@@ -194,6 +288,18 @@ rs6000_override_options ()
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 }
+
+/* Create a CONST_DOUBLE from a string.  */
+
+struct rtx_def *
+rs6000_float_const (string, mode)
+     char *string;
+     enum machine_mode mode;
+{
+  REAL_VALUE_TYPE value = REAL_VALUE_ATOF (string, mode);
+  return immed_real_const_1 (value, mode);
+}
+
 
 /* Create a CONST_DOUBLE like immed_double_const, except reverse the
    two parts of the constant if the target is little endian.  */
@@ -2193,7 +2299,7 @@ rs6000_stack_info ()
   static rs6000_stack_t info, zero_info;
   rs6000_stack_t *info_ptr = &info;
   int reg_size = TARGET_64BIT ? 8 : 4;
-  int v4_call_p = 0;
+  enum rs6000_abi abi;
 
   /* Zero all fields portably */
   info = zero_info;
@@ -2201,8 +2307,12 @@ rs6000_stack_info ()
   /* Select which calling sequence */
 #ifdef TARGET_V4_CALLS
   if (TARGET_V4_CALLS)
-    info_ptr->v4_call_p = v4_call_p = 1;
+    abi = ABI_V4;
+  else
 #endif
+    abi = ABI_AIX;
+
+  info_ptr->abi = abi;
 
   /* Calculate which registers need to be saved & save area size */
   info_ptr->first_gp_reg_save = first_reg_to_save ();
@@ -2221,7 +2331,7 @@ rs6000_stack_info ()
 #endif
       || (info_ptr->first_fp_reg_save != 64
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
-      || (v4_call_p && current_function_calls_alloca)
+      || (abi == ABI_V4 && current_function_calls_alloca)
       || info_ptr->calls_p)
     {
       info_ptr->lr_save_p = 1;
@@ -2232,7 +2342,7 @@ rs6000_stack_info ()
   if (regs_ever_live[70] || regs_ever_live[71] || regs_ever_live[72])
     {
       info_ptr->cr_save_p = 1;
-      if (v4_call_p)
+      if (abi == ABI_V4)
 	info_ptr->cr_size = reg_size;
     }
 
@@ -2260,7 +2370,7 @@ rs6000_stack_info ()
   if (info_ptr->calls_p)
     info_ptr->push_p = 1;
 
-  else if (v4_call_p)
+  else if (abi == ABI_V4)
     info_ptr->push_p = (info_ptr->total_size > info_ptr->fixed_size
 			|| info_ptr->lr_save_p);
 
@@ -2272,15 +2382,17 @@ rs6000_stack_info ()
   /* Calculate the offsets */
   info_ptr->fp_save_offset = - info_ptr->fp_size;
   info_ptr->gp_save_offset = info_ptr->fp_save_offset - info_ptr->gp_size;
-  if (v4_call_p)
+  switch (abi)
     {
-      info_ptr->cr_save_offset = info_ptr->gp_save_offset - reg_size;
-      info_ptr->lr_save_offset = reg_size;
-    }
-  else
-    {
+    default:
       info_ptr->cr_save_offset = 4;
       info_ptr->lr_save_offset = 8;
+      break;
+
+    case ABI_V4:
+      info_ptr->cr_save_offset = info_ptr->gp_save_offset - reg_size;
+      info_ptr->lr_save_offset = reg_size;
+      break;
     }
 
   /* Zero offsets if we're not saving those registers */
@@ -2303,6 +2415,8 @@ void
 debug_stack_info (info)
      rs6000_stack_t *info;
 {
+  char *abi_string;
+
   if (!info)
     info = rs6000_stack_info ();
 
@@ -2310,6 +2424,16 @@ debug_stack_info (info)
 	   ((current_function_decl && DECL_NAME (current_function_decl))
 	    ? IDENTIFIER_POINTER (DECL_NAME (current_function_decl))
 	    : "<unknown>"));
+
+  switch (info->abi)
+    {
+    default:	   abi_string = "Unknown";	break;
+    case ABI_NONE: abi_string = "NONE";		break;
+    case ABI_AIX:  abi_string = "AIX";		break;
+    case ABI_V4:   abi_string = "V.4";		break;
+    }
+
+  fprintf (stderr, "\tABI                 = %5s\n", abi_string);
 
   if (info->first_gp_reg_save != 32)
     fprintf (stderr, "\tfirst_gp_reg_save   = %5d\n", info->first_gp_reg_save);
@@ -2328,9 +2452,6 @@ debug_stack_info (info)
 
   if (info->calls_p)
     fprintf (stderr, "\tcalls_p             = %5d\n", info->calls_p);
-
-  if (info->v4_call_p)
-    fprintf (stderr, "\tv4_call_p           = %5d\n", info->v4_call_p);
 
   if (info->gp_save_offset)
     fprintf (stderr, "\tgp_save_offset      = %5d\n", info->gp_save_offset);
