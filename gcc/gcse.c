@@ -524,20 +524,6 @@ static int global_copy_prop_count;
 
 /* For available exprs */
 static sbitmap *ae_kill, *ae_gen;
-
-/* Objects of this type are passed around by the null-pointer check
-   removal routines.  */
-struct null_pointer_info
-{
-  /* The basic block being processed.  */
-  basic_block current_block;
-  /* The first register to be handled in this pass.  */
-  unsigned int min_reg;
-  /* One greater than the last register to be handled in this pass.  */
-  unsigned int max_reg;
-  sbitmap *nonnull_local;
-  sbitmap *nonnull_killed;
-};
 
 static void compute_can_copy (void);
 static void *gmalloc (size_t) ATTRIBUTE_MALLOC;

@@ -13,6 +13,8 @@
 	(cgraph_varpool_node): Don't access cgraph_varpool_n_nodes.
 	* cgraph.h: Remove the corresponding declaration.
 
+	* gcse.c (null_pointer_info): Remove.
+
 2005-01-23  Roger Sayle  <roger@eyesopen.com>
 	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
