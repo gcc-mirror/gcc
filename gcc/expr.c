@@ -5672,7 +5672,7 @@ expand_expr (exp, target, tmode, modifier)
 	MEM_IN_STRUCT_P (op0) = 1;
 	MEM_VOLATILE_P (op0) |= volatilep;
 	if (mode == mode1 || mode1 == BLKmode || mode1 == tmode
-	    || modifier == EXPAND_CONST_ADDRESS || modifier == EXPAND_SUM
+	    || modifier == EXPAND_CONST_ADDRESS
 	    || modifier == EXPAND_INITIALIZER)
 	  return op0;
 	else if (target == 0)
