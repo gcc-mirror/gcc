@@ -390,8 +390,7 @@ specifier to the string type description of the instance variable named
 as argument.
 
 @c =========================================================================
-@node Constant string objects,  , Garbage Collection, Top
-@comment  node-name,  next,  previous,  up
+@node Constant string objects
 @section Constant string objects
 
 GNU Objective-C provides constant string objects that are generated

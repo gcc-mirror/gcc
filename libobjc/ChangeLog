@@ -1,3 +1,9 @@
+2001-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* fdl.texi: New file.
+	* objc-features.texi: Simplify.
+	* Makefile.in: Adjust accordingly.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* objc-features.texi: Use the GFDL.
