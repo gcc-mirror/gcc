@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time target specifications */
 
 #define EXTRA_SPECS \
-  { "cpp_cpu", CPP_CPU_SPEC },
+  { "cpp_cpu", CPP_CPU_SPEC }, \
   { "asm_extra", ASM_EXTRA_SPEC },
 
 #define CPP_CPU_SPEC " \
