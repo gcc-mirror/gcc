@@ -77,10 +77,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    reload needs, spilling, assigning reload registers to use for
    fixing up each insn, and generating the new insns to copy values
    into the reload registers.  */
-
-#ifndef LOCAL_REGNO
-#define LOCAL_REGNO(REGNO)  0
-#endif
 
 /* During reload_as_needed, element N contains a REG rtx for the hard reg
    into which reg N has been reloaded (perhaps for a previous insn).  */

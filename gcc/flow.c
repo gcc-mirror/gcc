@@ -159,9 +159,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HAVE_sibcall_epilogue 0
 #endif
 
-#ifndef LOCAL_REGNO
-#define LOCAL_REGNO(REGNO)  0
-#endif
 #ifndef EPILOGUE_USES
 #define EPILOGUE_USES(REGNO)  0
 #endif

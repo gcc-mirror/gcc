@@ -685,4 +685,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
   fprintf ((FILE), "%s", reg_names[REGNO (RTX)])
 #endif
 
+#ifndef LOCAL_REGNO
+#define LOCAL_REGNO(REGNO)  0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */
