@@ -564,7 +564,7 @@ also passed through to the output file where the macro is expanded.
 In addition to the side-effects of the @option{-C} option, the
 @option{-CC} option causes all C++-style comments inside a macro
 to be converted to C-style comments.  This is to prevent later use
-of that macro from inadvertently commenting out the remainer of
+of that macro from inadvertently commenting out the remainder of
 the source line.
 
 The @option{-CC} option is generally used to support lint comments.

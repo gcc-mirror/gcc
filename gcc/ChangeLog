@@ -1,3 +1,9 @@
+2003-01-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* doc/cppopts.texi: Fix typo.
+	* doc/objc.texi: Likewise.
+	* doc/passes.texi: Likewise.
+
 2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* real.c (ibm_extended_format): Add 53 to minimum exponent.
