@@ -1391,7 +1391,7 @@ extern struct rtx_def *legitimize_pic_address ();
    be clobbered by an asm.  No such register actually exists.  Condition
    codes are partly stored in the PSR and partly in the FSR.  */
 
-#define ADDITIONAL_REGISTER_NAMES	{"ccr", 0}
+#define ADDITIONAL_REGISTER_NAMES	{"ccr", 0, "cc", 0}
 
 /* How to renumber registers for dbx and gdb.  */
 
