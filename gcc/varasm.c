@@ -3040,9 +3040,16 @@ output_constructor (exp, size)
        field = field ? TREE_CHAIN (field) : 0)
     {
       tree val = TREE_VALUE (link);
+      tree index = 0;
+
       /* the element in a union constructor specifies the proper field.  */
-      if (TREE_PURPOSE (link) != 0)
+
+      if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE)
 	field = TREE_PURPOSE (link);
+
+      if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+	index = TREE_PURPOSE (link);
 
       /* Eliminate the marker that makes a cast not be an lvalue.  */
       if (val != 0)
@@ -3050,15 +3057,20 @@ output_constructor (exp, size)
 
       if (field == 0 || !DECL_BIT_FIELD (field))
 	{
+	  /* An element that is not a bit-field.  */
+
 	  register int fieldsize;
 	  /* Since this structure is static,
 	     we know the positions are constant.  */
 	  int bitpos = (field ? (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
 				 / BITS_PER_UNIT)
 			: 0);
+	  if (index != 0)
+	    bitpos = (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (val)))
+		      / BITS_PER_UNIT
+		      * TREE_INT_CST_LOW (index));
 
-	  /* An element that is not a bit-field.
-	     Output any buffered-up bit-fields preceding it.  */
+	  /* Output any buffered-up bit-fields preceding this element.  */
 	  if (byte_buffer_in_use)
 	    {
 	      ASM_OUTPUT_BYTE (asm_out_file, byte);
@@ -3069,7 +3081,7 @@ output_constructor (exp, size)
 	  /* Advance to offset of this element.
 	     Note no alignment needed in an array, since that is guaranteed
 	     if each element has the proper size.  */
-	  if (field != 0 && bitpos != total_bytes)
+	  if ((field != 0 || index != 0) && bitpos != total_bytes)
 	    {
 	      assemble_zeros (bitpos - total_bytes);
 	      total_bytes = bitpos;
