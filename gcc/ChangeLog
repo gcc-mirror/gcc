@@ -1,4 +1,4 @@
-2003-04-09  Janis Johnson  <janis187@us.ibm.com>
+2003-04-17  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Suites): Document support for testing
 	binary compatibility (moved from testsuite/README.compat).
