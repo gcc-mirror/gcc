@@ -1,3 +1,17 @@
+2001-01-12  Laurynas Biveinis  <lauras@softhome.net>
+
+	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): check for DJGPP <ctype.h>
+	(LIB_AC_PROG_CXX): replace [/\\] with [\\/] to work around older
+	bash bug.
+	* aclocal.m4: regenerated.
+	* configure.target: set os_include_dir to config/os/djgpp under DJGPP.
+	* configure: regenerated.
+	* config/os/djgpp, config/os/djgpp/bits: new directories.
+	* config/os/djgpp/bits/ctype_base.h, 
+	config/os/djgpp/bits/ctype_inline.h, 
+	config/os/djgpp/bits/ctype_noninline.h,
+	config/os/djgpp/bits/os_defines.h: new files.
+
 2001-01-11   Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* include/c_std/bits/std_cstdio.h: Undef printf.

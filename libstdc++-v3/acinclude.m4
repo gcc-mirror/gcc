@@ -152,7 +152,7 @@ LIB_AC_PROG_CXX
   . [$]{glibcpp_basedir}/configure.host
 
   case [$]{glibcpp_basedir} in
-    /* | [A-Za-z]:[/\\]*) libgcj_flagbasedir=[$]{glibcpp_basedir} ;;
+    /* | [A-Za-z]:[\\/]*) libgcj_flagbasedir=[$]{glibcpp_basedir} ;;
     *) glibcpp_flagbasedir='[$](top_builddir)/'[$]{glibcpp_basedir} ;;
   esac
 
@@ -949,6 +949,23 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     AC_MSG_RESULT($ctype_newlib)
     if test $ctype_newlib = "yes"; then
       ctype_include_dir="config/os/newlib"
+      ctype_default=no
+    fi
+    fi
+
+    dnl Test for <ctype> functionality -- DJGPP
+    dnl FIXME: this test won't work if __dj_ENFORCE_FUNCTION_CALLS
+    dnl is defined.
+    if test $ctype_default = "yes"; then
+    AC_MSG_CHECKING([<ctype> for DJGPP])
+    AC_TRY_COMPILE([#include <ctype.h>],
+    [int
+    foo (int a)
+    { return __dj_ctype_flags[0] + __dj_ctype_flags[1];}], \
+    ctype_djgpp=yes, ctype_djgpp=no)
+    AC_MSG_RESULT($ctype_djgpp)
+    if test $ctype_djgpp = "yes"; then
+      ctype_include_dir="config/os/djgpp"
       ctype_default=no
     fi
     fi
