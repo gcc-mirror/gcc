@@ -362,7 +362,7 @@ or with constant text in a single argument.
 	arguments.  CC considers `-o foo' as being one switch whose
 	name starts with `o'.  %{o*} would substitute this text,
 	including the space; thus, two arguments would be generated.
- %{S*^} likewise, but don't put a blank between a switch and any args.
+ %{^S*} likewise, but don't put a blank between a switch and any args.
  %{S*:X} substitutes X if one or more switches whose names start with -S are
 	specified to CC.  Note that the tail part of the -S option
 	(i.e. the part matched by the `*') will be substituted for each
@@ -3749,6 +3749,11 @@ handle_braces (p)
   int pipe_p = 0;
   int negate = 0;
   int suffix = 0;
+  int include_blanks = 1;
+
+  if (*p == '^')
+    /* A '^' after the open-brace means to not give blanks before args.  */
+    include_blanks = 0, ++p;
 
   if (*p == '|')
     /* A `|' after the open-brace means,
@@ -3814,19 +3819,7 @@ handle_braces (p)
       for (i = 0; i < n_switches; i++)
 	if (!strncmp (switches[i].part1, filter, p - filter)
 	    && check_live_switch (i, p - filter))
-	  give_switch (i, 0, 1);
-    }
-  else if (p[-1] == '*' && p[0] == '^' && p[1] == '}')
-    {
-      /* Substitute all matching switches as separate args, but don't
-	 write a blank between the first part and any args, even if they
-	 were present.  */
-      register int i;
-      --p;
-      for (i = 0; i < n_switches; i++)
-	if (!strncmp (switches[i].part1, filter, p - filter)
-	    && check_live_switch (i, p - filter))
-	  give_switch (i, 0, 0);
+	  give_switch (i, 0, include_blanks);
     }
   else
     {
@@ -3909,7 +3902,7 @@ handle_braces (p)
 	{
 	  if (*p == '}')
 	    {
-	      give_switch (i, 0, 1);
+	      give_switch (i, 0, include_blanks);
 	    }
 	  else
 	    {
