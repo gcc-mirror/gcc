@@ -5677,19 +5677,25 @@ check_final_value (loop, v)
 	  if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
 	      || GET_CODE (p) == CALL_INSN)
 	    {
-	      if (biv_increment_seen)
+	      /* It is possible for the BIV increment to use the GIV if we
+		 have a cycle.  Thus we must be sure to check each insn for
+		 both BIV and GIV uses, and we must check for BIV uses
+		 first.  */
+
+	      if (! biv_increment_seen
+		  && reg_set_p (v->src_reg, PATTERN (p)))
+		biv_increment_seen = 1;
+		
+	      if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
 		{
-		  if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
+		  if (biv_increment_seen)
 		    {
 		      v->replaceable = 0;
 		      v->not_replaceable = 1;
 		      break;
 		    }
+		  last_giv_use = p;
 		}
-	      else if (reg_set_p (v->src_reg, PATTERN (p)))
-		biv_increment_seen = 1;
-	      else if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
-		last_giv_use = p;
 	    }
 	}
 
