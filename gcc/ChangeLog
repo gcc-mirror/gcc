@@ -1,3 +1,9 @@
+2002-02-06  Janis Johnson  <janis187@us.ibm.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (remove_constant_addition): Avoid clobbering a shared
+	CONST expression.
+
 2002-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.gcc (s390x-*-linux*): Add t-linux64 makefile fragment.

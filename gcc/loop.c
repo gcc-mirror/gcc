@@ -3683,8 +3683,19 @@ remove_constant_addition (x)
   HOST_WIDE_INT addval = 0;
   rtx exp = *x;
 
+  /* Avoid clobbering a shared CONST expression.  */
   if (GET_CODE (exp) == CONST)
-    exp = XEXP (exp, 0);
+    {
+      if (GET_CODE (XEXP (exp, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (exp, 0), 0)) == SYMBOL_REF
+	  && GET_CODE (XEXP (XEXP (exp, 0), 1)) == CONST_INT)
+	{
+	  *x = XEXP (XEXP (exp, 0), 0);
+	  return INTVAL (XEXP (XEXP (exp, 0), 1));
+	}
+      return 0;
+    }
+
   if (GET_CODE (exp) == CONST_INT)
     {
       addval = INTVAL (exp);
