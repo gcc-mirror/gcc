@@ -629,6 +629,9 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 #define NO_DOLLAR_IN_LABEL
 #define NO_DOT_IN_LABEL
 
+/* The usual definitions don't work because neither $ nor . is allowed.  */
+#define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_%%I%%%s"
+
 /* Define a few machine-specific details
    of the implementation of constructors.
 
