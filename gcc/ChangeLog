@@ -1,3 +1,10 @@
+2001-07-30  H.J. Lu <hjl@gnu.org>
+
+	* config/mips/linux.h (CPLUSPLUS_CPP_SPEC): Add -D_GNU_SOURCE.
+	(ASM_DECLARE_FUNCTION_NAME): Defined.
+	(ASM_DECLARE_FUNCTION_SIZE): Likewise.
+	(FUNCTION_NAME_ALREADY_DECLARED): Likewise.
+
 2001-07-30  Janis Johnson  <janis@us.ibm.com>
 
 	* profile.c (branch_prob): Fix .bbg info for computed gotos
