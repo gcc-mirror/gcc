@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 2001-06-11  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.in.in: Take --defines switch off of xgettext   

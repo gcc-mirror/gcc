@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 2001-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* configure.in (auxdir): Replace by ...

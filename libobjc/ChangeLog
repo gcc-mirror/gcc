@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 2001-06-08  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* THREADS: Explain that when we compile libobjc inside GCC, we

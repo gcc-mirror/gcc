@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 2001-06-07  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* Make-lang.in ($(srcdir)/java/gcj.info): Added dependencies on

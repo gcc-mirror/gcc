@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 2001-05-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* delete3.C: XFAIL it.

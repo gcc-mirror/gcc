@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 2001-06-15  Andreas Jaeger  <aj@suse.de>
 
 	* doc/install.texi (Specific): Mention that glibc cannot be

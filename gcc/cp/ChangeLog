@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 2001-06-14  Jason Merrill  <jason_merrill@redhat.com>
 
 	* class.c (update_vtable_entry_for_fn): Uncomment optimization to use

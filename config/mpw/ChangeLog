@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 Tue Nov 26 12:34:12 1996  Stan Shebs  <shebs@andros.cygnus.com>
 
 	* g-mpw-make.sed: Fix some comments.

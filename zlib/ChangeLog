@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 
 		ChangeLog file for zlib
 
@@ -215,7 +219,7 @@ Changes in 1.0.6 (19 Jan 1998)
 - use _fdopen instead of fdopen for MSC >= 6.0 (Thomas Fanslau)
 - added makelcc.bat for lcc-win32 (Tom St Denis)
 - in Makefile.dj2, use copy and del instead of install and rm (Frank Donahoe)
-- Avoid expanded $Id$. Use "rcs -kb" or "cvs admin -kb" to avoid Id expansion.
+- Avoid expanded $Id: ChangeLog,v 1.1 1999/05/04 19:30:26 tromey Exp $. Use "rcs -kb" or "cvs admin -kb" to avoid Id expansion.
 - check for unistd.h in configure (for off_t)
 - remove useless check parameter in inflate_blocks_free
 - avoid useless assignment of s->check to itself in inflate_blocks_new

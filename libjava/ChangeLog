@@ -1,3 +1,7 @@
+20010617 Release Manager
+
+        * GCC 3.0 Released.
+
 2001-06-13  Tom Tromey  <tromey@redhat.com>
 
 	* configure.host: Don't use -fno-use-divide-subroutine on x86.
