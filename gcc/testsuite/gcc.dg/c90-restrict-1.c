@@ -4,4 +4,4 @@
 /* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
 
 char *restrict foo; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "parse error|no type" "restrict not in C90" { target *-*-* } 6 } */
+/* { dg-error "(parse|syntax) error|no type" "restrict not in C90" { target *-*-* } 6 } */
