@@ -1,3 +1,7 @@
+2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/pack-test-3.c: New test.
+
 2003-07-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/compat.exp: Handle dg-options per source file.
