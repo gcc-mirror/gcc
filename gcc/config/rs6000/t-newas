@@ -1,6 +1,7 @@
 # Do not build libgcc1.
 LIBGCC1 =
 CROSS_LIBGCC1 =
+LIBGCC1_TEST =
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
