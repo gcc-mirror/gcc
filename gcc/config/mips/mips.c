@@ -3177,19 +3177,11 @@ override_options ()
       else if (TARGET_LONG64)
 	fatal ("Only MIPS-III CPUs can support 64 bit longs");
 
-      else if (TARGET_LLONG128)
-	fatal ("Only MIPS-III CPUs can support 128 bit long longs");
-
       else if (TARGET_FLOAT64)
 	fatal ("Only MIPS-III CPUs can support 64 bit fp registers");
 
       else if (TARGET_64BIT)
 	fatal ("Only MIPS-III CPUs can support 64 bit gp registers");
-    }
-  else
-    {
-      if (TARGET_LLONG128)
-	fatal ("128 bit long longs are not supported");
     }
 
   /* Tell halfpic.c that we have half-pic code if we do.  */
