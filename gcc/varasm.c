@@ -922,6 +922,10 @@ make_decl_rtl (decl, asmspec)
       && DECL_COMMON (decl))
     DECL_COMMON (decl) = 0;
 
+  /* Variables can't be both common and weak.  */
+  if (TREE_CODE (decl) == VAR_DECL && DECL_WEAK (decl))
+    DECL_COMMON (decl) = 0;
+
   /* Can't use just the variable's own name for a variable
      whose scope is less than the whole file, unless it's a member
      of a local class (which will already be unambiguous).

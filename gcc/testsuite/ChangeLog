@@ -1,3 +1,7 @@
+2002-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc/testsuite/gcc.dg/weak-8.c: New test.
+
 Thu May 23 11:09:26 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/weak-2.c: Allow optional leading underscore
