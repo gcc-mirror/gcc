@@ -50,21 +50,21 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(F2C_H_DIR)/libI77 -I$(G2C_H_DIR) \
 G77DIR = ../../../gcc/
 
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .lo
 
-.c.o:
+.c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
-OBJS =  VersionU.o gerror_.o perror_.o ierrno_.o itime_.o time_.o \
-	unlink_.o fnum_.o getpid_.o getuid_.o getgid_.o kill_.o rand_.o \
-	srand_.o irand_.o sleep_.o idate_.o ctime_.o etime_.o \
-	dtime_.o  isatty_.o ltime_.o fstat_.o stat_.o \
-	lstat_.o access_.o link_.o getlog_.o ttynam_.o getcwd_.o symlnk_.o \
-        vxttime_.o vxtidate_.o gmtime_.o fdate_.o secnds_.o \
-	bes.o dbes.o \
-	chdir_.o chmod_.o lnblnk_.o hostnm_.o rename_.o fgetc_.o fputc_.o \
-        umask_.o sys_clock_.o date_.o second_.o flush1_.o mclock_.o \
-	alarm_.o datetime_.o
+OBJS =  VersionU.lo gerror_.lo perror_.lo ierrno_.lo itime_.lo time_.lo \
+	unlink_.lo fnum_.lo getpid_.lo getuid_.lo getgid_.lo kill_.lo rand_.lo \
+	srand_.lo irand_.lo sleep_.lo idate_.lo ctime_.lo etime_.lo \
+	dtime_.lo  isatty_.lo ltime_.lo fstat_.lo stat_.lo \
+	lstat_.lo access_.lo link_.lo getlog_.lo ttynam_.lo getcwd_.lo symlnk_.lo \
+        vxttime_.lo vxtidate_.lo gmtime_.lo fdate_.lo secnds_.lo \
+	bes.lo dbes.lo \
+	chdir_.lo chmod_.lo lnblnk_.lo hostnm_.lo rename_.lo fgetc_.lo fputc_.lo \
+        umask_.lo sys_clock_.lo date_.lo second_.lo flush1_.lo mclock_.lo \
+	alarm_.lo datetime_.lo
 SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	unlink_.c fnum_.c getpid_.c getuid_.c getgid_.c kill_.c rand_.c \
 	srand_.c irand_.c sleep_.c idate_.c ctime_.c etime_.c \
@@ -83,7 +83,7 @@ all: ../s-libu77
 
 objlist:
 	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
-	   x=`echo $$i | sed -e "s/\.o$$/.lo/g"` ;\
+	   x=`echo $$i` ;\
 	   objs="$$objs libU77/$$x" ;\
 	done ; \
 	echo -n $$objs > ../objlist
@@ -109,67 +109,67 @@ stamp-h: config.hin config.status
 	$(SHELL) config.status
 	echo timestamp > stamp-h
 
-VersionU.o: Version.c
+VersionU.lo: Version.c
 	@LIBTOOL@ --mode=compile $(CC) -c $(ALL_CFLAGS) $(srcdir)/Version.c -o $@
 
 $(OBJS): $(F2C_H_DIR)/f2c.h $(G2C_H_DIR)/g2c.h config.h
-access_.o: access_.c
-ctime_.o: ctime_.c
-dtime_.o: dtime_.c
-etime_.o: etime_.c
-fnum_.o: fnum_.c $(F2C_H_DIR)/libI77/fio.h
-fstat_.o: fstat_.c
-gerror_.o: gerror_.c
-getcwd_.o: getcwd_.c
-getgid_.o: getgid_.c
-getlog_.o: getlog_.c
-getpid_.o: getpid_.c
-getuid_.o: getuid_.c
-idate_.o: idate_.c
-ierrno_.o: ierrno_.c
-irand_.o: irand_.c
-isatty_.o: isatty_.c $(F2C_H_DIR)/libI77/fio.h
-itime_.o: itime_.c
-kill_.o: kill_.c
-link_.o: link_.c
-loc_.o: loc_.c
-lstat_.o: lstat_.c
-ltime_.o: ltime_.c
-perror_.o: perror_.c
-qsort.o: qsort.c
-qsort_.o: qsort_.c
-rand_.o: rand_.c
-rename_.o: rename_.c
-second_.o: second_.c
-sleep_.o: sleep_.c
-srand_.o: srand_.c
-stat_.o: stat_.c
-symlnk_.o: symlnk_.c
-time_.o: time_.c
-ttynam_.o: ttynam_.c
-unlink_.o: unlink_.c
-wait_.o: wait_.c
-vxttime_.o: vxttime_.c
-vtxidate_.o: vxtidate_.c
-fdate_.o: fdate_.c
-gmtime_.o: gmtime_.c
-secnds_.o: secnds_.c
-bes.o: bes.c
-dbes.o: dbes.c
-lnblnk_.o: lnblnk_.c
-chmod_.o: chmod_.c
-chdir_.o: chdir_.c
-hostnm_.o: hostnm_.c
-rename_.o: rename_.c
-fputc_.o: fputc_.c
-fgetc_.o: fgetc_.c
-sys_clock_.o: sys_clock_.c
-date_.o: date_.c
-umask_.o: umask_.c
-flush1_.o: flush1_.c
-mclock_.o: mclock_.c
-alarm_.o: alarm_.c
-datetime_.o: datetime_.c
+access_.lo: access_.c
+ctime_.lo: ctime_.c
+dtime_.lo: dtime_.c
+etime_.lo: etime_.c
+fnum_.lo: fnum_.c $(F2C_H_DIR)/libI77/fio.h
+fstat_.lo: fstat_.c
+gerror_.lo: gerror_.c
+getcwd_.lo: getcwd_.c
+getgid_.lo: getgid_.c
+getlog_.lo: getlog_.c
+getpid_.lo: getpid_.c
+getuid_.lo: getuid_.c
+idate_.lo: idate_.c
+ierrno_.lo: ierrno_.c
+irand_.lo: irand_.c
+isatty_.lo: isatty_.c $(F2C_H_DIR)/libI77/fio.h
+itime_.lo: itime_.c
+kill_.lo: kill_.c
+link_.lo: link_.c
+loc_.lo: loc_.c
+lstat_.lo: lstat_.c
+ltime_.lo: ltime_.c
+perror_.lo: perror_.c
+qsort.lo: qsort.c
+qsort_.lo: qsort_.c
+rand_.lo: rand_.c
+rename_.lo: rename_.c
+second_.lo: second_.c
+sleep_.lo: sleep_.c
+srand_.lo: srand_.c
+stat_.lo: stat_.c
+symlnk_.lo: symlnk_.c
+time_.lo: time_.c
+ttynam_.lo: ttynam_.c
+unlink_.lo: unlink_.c
+wait_.lo: wait_.c
+vxttime_.lo: vxttime_.c
+vtxidate_.lo: vxtidate_.c
+fdate_.lo: fdate_.c
+gmtime_.lo: gmtime_.c
+secnds_.lo: secnds_.c
+bes.lo: bes.c
+dbes.lo: dbes.c
+lnblnk_.lo: lnblnk_.c
+chmod_.lo: chmod_.c
+chdir_.lo: chdir_.c
+hostnm_.lo: hostnm_.c
+rename_.lo: rename_.c
+fputc_.lo: fputc_.c
+fgetc_.lo: fgetc_.c
+sys_clock_.lo: sys_clock_.c
+date_.lo: date_.c
+umask_.lo: umask_.c
+flush1_.lo: flush1_.c
+mclock_.lo: mclock_.c
+alarm_.lo: alarm_.c
+datetime_.lo: datetime_.c
 
 check:
 	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f \

@@ -45,33 +45,33 @@ SHELL = /bin/sh
 ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) $(DEFS) $(CFLAGS)
 
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .lo
 
-.c.o:
+.c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
-MISC =	F77_aloc.o VersionF.o s_rnge.o abort_.o getarg_.o iargc_.o\
-	getenv_.o signal_.o s_stop.o s_paus.o system_.o cabs.o\
-	derf_.o derfc_.o erf_.o erfc_.o sig_die.o exit_.o setarg.o setsig.o
-POW =	pow_ci.o pow_dd.o pow_di.o pow_hh.o pow_ii.o  pow_ri.o pow_zi.o pow_zz.o \
-	pow_qq.o
-CX =	c_abs.o c_cos.o c_div.o c_exp.o c_log.o c_sin.o c_sqrt.o
-DCX =	z_abs.o z_cos.o z_div.o z_exp.o z_log.o z_sin.o z_sqrt.o
-REAL =	r_abs.o r_acos.o r_asin.o r_atan.o r_atn2.o r_cnjg.o r_cos.o\
-	r_cosh.o r_dim.o r_exp.o r_imag.o r_int.o\
-	r_lg10.o r_log.o r_mod.o r_nint.o r_sign.o\
-	r_sin.o r_sinh.o r_sqrt.o r_tan.o r_tanh.o
-DBL =	d_abs.o d_acos.o d_asin.o d_atan.o d_atn2.o\
-	d_cnjg.o d_cos.o d_cosh.o d_dim.o d_exp.o\
-	d_imag.o d_int.o d_lg10.o d_log.o d_mod.o\
-	d_nint.o d_prod.o d_sign.o d_sin.o d_sinh.o\
-	d_sqrt.o d_tan.o d_tanh.o
-INT =	i_abs.o i_dim.o i_dnnt.o i_indx.o i_len.o i_mod.o i_nint.o i_sign.o
-HALF =	h_abs.o h_dim.o h_dnnt.o h_indx.o h_len.o h_mod.o  h_nint.o h_sign.o
-CMP =	l_ge.o l_gt.o l_le.o l_lt.o hl_ge.o hl_gt.o hl_le.o hl_lt.o
-EFL =	ef1asc_.o ef1cmc_.o
-CHAR =	s_cat.o s_cmp.o s_copy.o
-F90BIT = lbitbits.o lbitshft.o qbitbits.o qbitshft.o
+MISC =	F77_aloc.lo VersionF.lo s_rnge.lo abort_.lo getarg_.lo iargc_.lo\
+	getenv_.lo signal_.lo s_stop.lo s_paus.lo system_.lo cabs.lo\
+	derf_.lo derfc_.lo erf_.lo erfc_.lo sig_die.lo exit_.lo setarg.lo setsig.lo
+POW =	pow_ci.lo pow_dd.lo pow_di.lo pow_hh.lo pow_ii.lo  pow_ri.lo pow_zi.lo pow_zz.lo \
+	pow_qq.lo
+CX =	c_abs.lo c_cos.lo c_div.lo c_exp.lo c_log.lo c_sin.lo c_sqrt.lo
+DCX =	z_abs.lo z_cos.lo z_div.lo z_exp.lo z_log.lo z_sin.lo z_sqrt.lo
+REAL =	r_abs.lo r_acos.lo r_asin.lo r_atan.lo r_atn2.lo r_cnjg.lo r_cos.lo\
+	r_cosh.lo r_dim.lo r_exp.lo r_imag.lo r_int.lo\
+	r_lg10.lo r_log.lo r_mod.lo r_nint.lo r_sign.lo\
+	r_sin.lo r_sinh.lo r_sqrt.lo r_tan.lo r_tanh.lo
+DBL =	d_abs.lo d_acos.lo d_asin.lo d_atan.lo d_atn2.lo\
+	d_cnjg.lo d_cos.lo d_cosh.lo d_dim.lo d_exp.lo\
+	d_imag.lo d_int.lo d_lg10.lo d_log.lo d_mod.lo\
+	d_nint.lo d_prod.lo d_sign.lo d_sin.lo d_sinh.lo\
+	d_sqrt.lo d_tan.lo d_tanh.lo
+INT =	i_abs.lo i_dim.lo i_dnnt.lo i_indx.lo i_len.lo i_mod.lo i_nint.lo i_sign.lo
+HALF =	h_abs.lo h_dim.lo h_dnnt.lo h_indx.lo h_len.lo h_mod.lo  h_nint.lo h_sign.lo
+CMP =	l_ge.lo l_gt.lo l_le.lo l_lt.lo hl_ge.lo hl_gt.lo hl_le.lo hl_lt.lo
+EFL =	ef1asc_.lo ef1cmc_.lo
+CHAR =	s_cat.lo s_cmp.lo s_copy.lo
+F90BIT = lbitbits.lo lbitshft.lo qbitbits.lo qbitshft.lo
 
 OBJS = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
 	 $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT)
@@ -83,7 +83,7 @@ all: ../s-libf77 ../frtbegin.o
 
 objlist:
 	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
-	   x=`echo $$i | sed -e "s/\.o$$/.lo/g"` ;\
+	   x=`echo $$i` ;\
 	   objs="$$objs libF77/$$x" ;\
 	done ; \
 	echo -n $$objs > ../objlist
@@ -100,132 +100,132 @@ ${srcdir}/configure: configure.in
 	rm -f config.cache
 	cd ${srcdir} && autoconf
 
-VersionF.o: Version.c
+VersionF.lo: Version.c
 	@LIBTOOL@ --mode=compile $(CC) -c $(ALL_CFLAGS) $(srcdir)/Version.c -o $@
 
 ../frtbegin.o : main.c
 	$(CC) -c $(ALL_CFLAGS) $(srcdir)/main.c -o $@
 
-F77_aloc.o: F77_aloc.c
-s_rnge.o: s_rnge.c
-abort_.o: abort_.c
-getarg_.o: getarg_.c
-iargc_.o: iargc_.c
-getenv_.o: getenv_.c
-signal_.o: signal_.c
-s_stop.o: s_stop.c
-s_paus.o: s_paus.c
-system_.o: system_.c
-cabs.o: cabs.c
-derf_.o: derf_.c
-derfc_.o: derfc_.c
-erf_.o: erf_.c
-erfc_.o: erfc_.c
-sig_die.o: sig_die.c
-exit_.o: exit_.c
-setarg.o: setarg.c
-setsig.o: setsig.c
-pow_ci.o: pow_ci.c
-pow_dd.o: pow_dd.c
-pow_di.o: pow_di.c
-pow_hh.o: pow_hh.c
-pow_ii.o: pow_ii.c
-pow_ri.o:  pow_ri.c
-pow_zi.o: pow_zi.c
-pow_zz.o: pow_zz.c
-pow_qq.o:  pow_qq.c
-c_abs.o: c_abs.c
-c_cos.o: c_cos.c
-c_div.o: c_div.c
-c_exp.o: c_exp.c
-c_log.o: c_log.c
-c_sin.o: c_sin.c
-c_sqrt.o: c_sqrt.c
-z_abs.o: z_abs.c
-z_cos.o: z_cos.c
-z_div.o: z_div.c
-z_exp.o: z_exp.c
-z_log.o: z_log.c
-z_sin.o: z_sin.c
-z_sqrt.o: z_sqrt.c
-r_abs.o: r_abs.c
-r_acos.o: r_acos.c
-r_asin.o: r_asin.c
-r_atan.o: r_atan.c
-r_atn2.o: r_atn2.c
-r_cnjg.o: r_cnjg.c
-r_cos.o: r_cos.c
-r_cosh.o: r_cosh.c
-r_dim.o: r_dim.c
-r_exp.o: r_exp.c
-r_imag.o: r_imag.c
-r_int.o: r_int.c
-r_lg10.o: r_lg10.c
-r_log.o: r_log.c
-r_mod.o: r_mod.c
-r_nint.o: r_nint.c
-r_sign.o: r_sign.c
-r_sin.o: r_sin.c
-r_sinh.o: r_sinh.c
-r_sqrt.o: r_sqrt.c
-r_tan.o: r_tan.c
-r_tanh.o: r_tanh.c
-d_abs.o: d_abs.c
-d_acos.o: d_acos.c
-d_asin.o: d_asin.c
-d_atan.o: d_atan.c
-d_atn2.o: d_atn2.c
-d_cnjg.o: d_cnjg.c
-d_cos.o: d_cos.c
-d_cosh.o: d_cosh.c
-d_dim.o: d_dim.c
-d_exp.o: d_exp.c
-d_imag.o: d_imag.c
-d_int.o: d_int.c
-d_lg10.o: d_lg10.c
-d_log.o: d_log.c
-d_mod.o: d_mod.c
-d_nint.o: d_nint.c
-d_prod.o: d_prod.c
-d_sign.o: d_sign.c
-d_sin.o: d_sin.c
-d_sinh.o: d_sinh.c
-d_sqrt.o: d_sqrt.c
-d_tan.o: d_tan.c
-d_tanh.o: d_tanh.c
-i_abs.o: i_abs.c
-i_dim.o: i_dim.c
-i_dnnt.o: i_dnnt.c
-i_indx.o: i_indx.c
-i_len.o: i_len.c
-i_mod.o: i_mod.c
-i_nint.o: i_nint.c
-i_sign.o: i_sign.c
-h_abs.o:  h_abs.c
-h_dim.o: h_dim.c
-h_dnnt.o: h_dnnt.c
-h_indx.o: h_indx.c
-h_len.o: h_len.c
-h_mod.o: h_mod.c
-h_nint.o:  h_nint.c
-h_sign.o: h_sign.c
-l_ge.o: l_ge.c
-l_gt.o: l_gt.c
-l_le.o: l_le.c
-l_lt.o: l_lt.c
-hl_ge.o: hl_ge.c
-hl_gt.o: hl_gt.c
-hl_le.o: hl_le.c
-hl_lt.o: hl_lt.c
-ef1asc_.o: ef1asc_.c
-ef1cmc_.o: ef1cmc_.c
-s_cat.o: s_cat.c
-s_cmp.o: s_cmp.c
-s_copy.o: s_copy.c
-lbitbits.o: lbitbits.c
-lbitshft.o: lbitshft.c
-qbitbits.o: qbitbits.c
-qbitshft.o: qbitshft.c
+F77_aloc.lo: F77_aloc.c
+s_rnge.lo: s_rnge.c
+abort_.lo: abort_.c
+getarg_.lo: getarg_.c
+iargc_.lo: iargc_.c
+getenv_.lo: getenv_.c
+signal_.lo: signal_.c
+s_stop.lo: s_stop.c
+s_paus.lo: s_paus.c
+system_.lo: system_.c
+cabs.lo: cabs.c
+derf_.lo: derf_.c
+derfc_.lo: derfc_.c
+erf_.lo: erf_.c
+erfc_.lo: erfc_.c
+sig_die.lo: sig_die.c
+exit_.lo: exit_.c
+setarg.lo: setarg.c
+setsig.lo: setsig.c
+pow_ci.lo: pow_ci.c
+pow_dd.lo: pow_dd.c
+pow_di.lo: pow_di.c
+pow_hh.lo: pow_hh.c
+pow_ii.lo: pow_ii.c
+pow_ri.lo:  pow_ri.c
+pow_zi.lo: pow_zi.c
+pow_zz.lo: pow_zz.c
+pow_qq.lo:  pow_qq.c
+c_abs.lo: c_abs.c
+c_cos.lo: c_cos.c
+c_div.lo: c_div.c
+c_exp.lo: c_exp.c
+c_log.lo: c_log.c
+c_sin.lo: c_sin.c
+c_sqrt.lo: c_sqrt.c
+z_abs.lo: z_abs.c
+z_cos.lo: z_cos.c
+z_div.lo: z_div.c
+z_exp.lo: z_exp.c
+z_log.lo: z_log.c
+z_sin.lo: z_sin.c
+z_sqrt.lo: z_sqrt.c
+r_abs.lo: r_abs.c
+r_acos.lo: r_acos.c
+r_asin.lo: r_asin.c
+r_atan.lo: r_atan.c
+r_atn2.lo: r_atn2.c
+r_cnjg.lo: r_cnjg.c
+r_cos.lo: r_cos.c
+r_cosh.lo: r_cosh.c
+r_dim.lo: r_dim.c
+r_exp.lo: r_exp.c
+r_imag.lo: r_imag.c
+r_int.lo: r_int.c
+r_lg10.lo: r_lg10.c
+r_log.lo: r_log.c
+r_mod.lo: r_mod.c
+r_nint.lo: r_nint.c
+r_sign.lo: r_sign.c
+r_sin.lo: r_sin.c
+r_sinh.lo: r_sinh.c
+r_sqrt.lo: r_sqrt.c
+r_tan.lo: r_tan.c
+r_tanh.lo: r_tanh.c
+d_abs.lo: d_abs.c
+d_acos.lo: d_acos.c
+d_asin.lo: d_asin.c
+d_atan.lo: d_atan.c
+d_atn2.lo: d_atn2.c
+d_cnjg.lo: d_cnjg.c
+d_cos.lo: d_cos.c
+d_cosh.lo: d_cosh.c
+d_dim.lo: d_dim.c
+d_exp.lo: d_exp.c
+d_imag.lo: d_imag.c
+d_int.lo: d_int.c
+d_lg10.lo: d_lg10.c
+d_log.lo: d_log.c
+d_mod.lo: d_mod.c
+d_nint.lo: d_nint.c
+d_prod.lo: d_prod.c
+d_sign.lo: d_sign.c
+d_sin.lo: d_sin.c
+d_sinh.lo: d_sinh.c
+d_sqrt.lo: d_sqrt.c
+d_tan.lo: d_tan.c
+d_tanh.lo: d_tanh.c
+i_abs.lo: i_abs.c
+i_dim.lo: i_dim.c
+i_dnnt.lo: i_dnnt.c
+i_indx.lo: i_indx.c
+i_len.lo: i_len.c
+i_mod.lo: i_mod.c
+i_nint.lo: i_nint.c
+i_sign.lo: i_sign.c
+h_abs.lo:  h_abs.c
+h_dim.lo: h_dim.c
+h_dnnt.lo: h_dnnt.c
+h_indx.lo: h_indx.c
+h_len.lo: h_len.c
+h_mod.lo: h_mod.c
+h_nint.lo:  h_nint.c
+h_sign.lo: h_sign.c
+l_ge.lo: l_ge.c
+l_gt.lo: l_gt.c
+l_le.lo: l_le.c
+l_lt.lo: l_lt.c
+hl_ge.lo: hl_ge.c
+hl_gt.lo: hl_gt.c
+hl_le.lo: hl_le.c
+hl_lt.lo: hl_lt.c
+ef1asc_.lo: ef1asc_.c
+ef1cmc_.lo: ef1cmc_.c
+s_cat.lo: s_cat.c
+s_cmp.lo: s_cmp.c
+s_copy.lo: s_copy.c
+lbitbits.lo: lbitbits.c
+lbitshft.lo: lbitshft.c
+qbitbits.lo: qbitbits.c
+qbitshft.lo: qbitshft.c
 
 # Not quite all these actually do depend on f2c.h...
 $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) $(HALF) $(CMP) $(EFL) \

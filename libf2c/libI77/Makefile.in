@@ -46,16 +46,16 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) \
              $(DEFS) $(CFLAGS)
 
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .lo
 
-.c.o:
+.c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs -DAllow_TYQUAD $(ALL_CFLAGS) $<
 
-OBJS =	VersionI.o backspace.o close.o dfe.o dolio.o due.o endfile.o err.o \
-	fmt.o fmtlib.o iio.o ilnw.o inquire.o lread.o lwrite.o open.o \
-	rdfmt.o rewind.o rsfe.o rsli.o rsne.o sfe.o sue.o typesize.o uio.o \
-	util.o wref.o wrtfmt.o wsfe.o wsle.o wsne.o xwsne.o \
-	ftell_.o
+OBJS =	VersionI.lo backspace.lo close.lo dfe.lo dolio.lo due.lo endfile.lo err.lo \
+	fmt.lo fmtlib.lo iio.lo ilnw.lo inquire.lo lread.lo lwrite.lo open.lo \
+	rdfmt.lo rewind.lo rsfe.lo rsli.lo rsne.lo sfe.lo sue.lo typesize.lo uio.lo \
+	util.lo wref.lo wrtfmt.lo wsfe.lo wsle.lo wsne.lo xwsne.lo \
+	ftell_.lo
 
 all: ../s-libi77
 
@@ -64,7 +64,7 @@ all: ../s-libi77
 
 objlist:
 	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
-	   x=`echo $$i | sed -e "s/\.o$$/.lo/g"` ;\
+	   x=`echo $$i` ;\
 	   objs="$$objs libI77/$$x" ;\
 	done ; \
 	echo -n $$objs > ../objlist
@@ -93,64 +93,64 @@ stamp-h: config.h.in config.status
 	CONFIG_FILES= CONFIG_HEADERS=config.h $(SHELL) config.status
 	echo timestamp > stamp-h
 
-VersionI.o: Version.c
+VersionI.lo: Version.c
 	@LIBTOOL@ --mode=compile $(CC) -c $(ALL_CFLAGS) $(srcdir)/Version.c -o $@
 
-backspace.o:	backspace.c fio.h config.h
-close.o:	close.c fio.h config.h
-dfe.o:		fio.h config.h
-dfe.o:		dfe.c fmt.h
-dolio.o:	dolio.c config.h
-due.o:		due.c fio.h config.h
-endfile.o:	endfile.c fio.h rawio.h config.h
-err.o:		err.c fio.h rawio.h config.h
-fmt.o:		fio.h config.h
-fmt.o:		fmt.c fmt.h
-fmtlib.o:	fmtlib.c config.h
-ftell_.o:	ftell_.c fio.h config.h
-iio.o:		fio.h
-iio.o:		iio.c fmt.h
-ilnw.o:		fio.h config.h
-ilnw.o:		ilnw.c lio.h
-inquire.o:	inquire.c fio.h config.h
-lread.o:	fio.h config.h
-lread.o:	fmt.h
-lread.o:	lio.h
-lread.o:	lread.c fp.h
-lwrite.o:	fio.h
-lwrite.o:	fmt.h
-lwrite.o:	lwrite.c lio.h
-open.o:		open.c fio.h rawio.h config.h
-rdfmt.o:	fio.h config.h
-rdfmt.o:	fmt.h
-rdfmt.o:	rdfmt.c fp.h
-rewind.o:	rewind.c fio.h config.h
-rsfe.o:		fio.h config.h
-rsfe.o:		rsfe.c fmt.h
-rsli.o:		fio.h
-rsli.o:		rsli.c lio.h
-rsne.o:		fio.h config.h
-rsne.o:		rsne.c lio.h
-sfe.o:		sfe.c fio.h config.h
-sue.o:		sue.c fio.h config.h
-typesize.o:	typesize.c config.h
-uio.o:		uio.c fio.h
-util.o:		util.c fio.h config.h
-wref.o:		fio.h
-wref.o:		fmt.h
-wref.o:		wref.c fp.h
-wrtfmt.o:	fio.h config.h
-wrtfmt.o:	wrtfmt.c fmt.h
-wsfe.o:		fio.h config.h
-wsfe.o:		wsfe.c fmt.h
-wsle.o:		fio.h config.h
-wsle.o:		fmt.h
-wsle.o:		wsle.c lio.h
-wsne.o:		fio.h
-wsne.o:		wsne.c lio.h
-xwsne.o:	fio.h config.h
-xwsne.o:	lio.h
-xwsne.o:	xwsne.c fmt.h
+backspace.lo:	backspace.c fio.h config.h
+close.lo:	close.c fio.h config.h
+dfe.lo:		fio.h config.h
+dfe.lo:		dfe.c fmt.h
+dolio.lo:	dolio.c config.h
+due.lo:		due.c fio.h config.h
+endfile.lo:	endfile.c fio.h rawio.h config.h
+err.lo:		err.c fio.h rawio.h config.h
+fmt.lo:		fio.h config.h
+fmt.lo:		fmt.c fmt.h
+fmtlib.lo:	fmtlib.c config.h
+ftell_.lo:	ftell_.c fio.h config.h
+iio.lo:		fio.h
+iio.lo:		iio.c fmt.h
+ilnw.lo:		fio.h config.h
+ilnw.lo:		ilnw.c lio.h
+inquire.lo:	inquire.c fio.h config.h
+lread.lo:	fio.h config.h
+lread.lo:	fmt.h
+lread.lo:	lio.h
+lread.lo:	lread.c fp.h
+lwrite.lo:	fio.h
+lwrite.lo:	fmt.h
+lwrite.lo:	lwrite.c lio.h
+open.lo:		open.c fio.h rawio.h config.h
+rdfmt.lo:	fio.h config.h
+rdfmt.lo:	fmt.h
+rdfmt.lo:	rdfmt.c fp.h
+rewind.lo:	rewind.c fio.h config.h
+rsfe.lo:		fio.h config.h
+rsfe.lo:		rsfe.c fmt.h
+rsli.lo:		fio.h
+rsli.lo:		rsli.c lio.h
+rsne.lo:		fio.h config.h
+rsne.lo:		rsne.c lio.h
+sfe.lo:		sfe.c fio.h config.h
+sue.lo:		sue.c fio.h config.h
+typesize.lo:	typesize.c config.h
+uio.lo:		uio.c fio.h
+util.lo:		util.c fio.h config.h
+wref.lo:		fio.h
+wref.lo:		fmt.h
+wref.lo:		wref.c fp.h
+wrtfmt.lo:	fio.h config.h
+wrtfmt.lo:	wrtfmt.c fmt.h
+wsfe.lo:		fio.h config.h
+wsfe.lo:		wsfe.c fmt.h
+wsle.lo:		fio.h config.h
+wsle.lo:		fmt.h
+wsle.lo:		wsle.c lio.h
+wsne.lo:		fio.h
+wsne.lo:		wsne.c lio.h
+xwsne.lo:	fio.h config.h
+xwsne.lo:	lio.h
+xwsne.lo:	xwsne.c fmt.h
 
 # May be pessimistic:
 $(OBJS): $(F2C_H_DIR)/f2c.h $(G2C_H_DIR)/g2c.h
