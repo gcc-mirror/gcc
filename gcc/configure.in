@@ -623,7 +623,7 @@ extra_objs="${host_extra_objs} ${extra_objs}"
 if test x"$tm_file" = x
 then tm_file=$cpu_type/$cpu_type.h; fi
 
-if test x$extra_headers = x
+if test x"$extra_headers" = x
 then extra_headers=; fi
 
 if test x"$xm_file" = x
