@@ -24,6 +24,7 @@ arm port		Richard Earnshaw	rearnsha@arm.com
 avr port		Denis Chertykov		denisc@overta.ru
 avr port		Marek Michalkiewicz	marekm@linux.org.pl
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
+cris port		Hans-Peter Nilsson	hp@axis.com
 fr30 port		Nick Clifton		niclc@redhat.com
 h8 port			Jeff Law		law@redhat.com
 h8 port			Kazu Hirata		kazu@hxi.com
@@ -37,6 +38,8 @@ m32r port		Michael Meissner	meissner@redhat.com
 m68hc11 port		Stephane Carrez		Stephane.Carrez@worldnet.fr
 m68k port (?)		Jeff Law		law@redhat.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
+mcore port		Nick Clifton		nickc@redhat.com
+mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
@@ -73,7 +76,6 @@ cpplib			Neil Booth		neil@daikokuya.demon.co.uk
 java			Per Bothner		per@bothner.com
 java			Alexandre Petit-Bianco	apbianco@redhat.com
 mercury			Fergus Henderson	fjh@cs.mu.oz.au
-mcore			Nick Clifton		nickc@redhat.com
 objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 alias analysis		John Carr		jfc@mit.edu
@@ -118,8 +120,6 @@ mips port               Eric Christopher        echristo@redhat.com
 predict.def		Jan Hubicka		jh@suse.cz
 Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
-CRIS port		Hans-Peter Nilsson	hp@axis.com
-MMIX port		Hans-Peter Nilsson	hp@bitrange.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
