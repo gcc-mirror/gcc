@@ -2366,7 +2366,9 @@ decode_addr_const (exp, value)
     case COMPLEX_CST:
     case CONSTRUCTOR:
     case INTEGER_CST:
-      x = TREE_CST_RTL (target);
+      /* This constant should have been output already, but we can't simply
+	 use TREE_CST_RTL since INTEGER_CST doesn't have one.  */
+      x = output_constant_def (target, 1);
       break;
 
     default:

@@ -1,5 +1,8 @@
 Sat Dec 29 15:48:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* varasm.c (decode_addr_const, case INTEGER_CST): Call
+	output_constant_def instead of looking at TREE_CST_RTL.
+
 	* expr.c (convert_move): If -fforce-mem, force FROM to not be memory.
 
 	* stor-layout.c (layout_decl): Don't misalign field of variable size
