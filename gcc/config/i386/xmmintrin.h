@@ -37,6 +37,9 @@
 /* We need type definitions from the MMX header file.  */
 #include <mmintrin.h>
 
+/* Get _mm_malloc () and _mm_free ().  */
+#include <mm_malloc.h>
+
 /* The data type intended for user use.  */
 typedef float __m128 __attribute__ ((vector_size (16)));
 
