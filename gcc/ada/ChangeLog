@@ -1,3 +1,8 @@
+2003-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* ada/Make-lang.in: Disable -Werror for tracebak.c and
+	b_gnatb.c.
+
 2003-01-09  Geoffrey Keating  <geoffk@apple.com>
 
 	* gnat_rm.texi: Remove RCS version number.
