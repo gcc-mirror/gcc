@@ -4,6 +4,11 @@
 	* g++.old-deja/g++.abi/align.C: Likewise.
 	* g++.old-deja/g++.abi/bitfields.C: Likewise.
 
+	* gcc.c-torture/execute/ieee/rbug.c: Force FP to extended-precision
+	on FreeBSD/i386.
+	* gcc.c-torture/execute/ieee/rbug.x: Remove all XFAIL markers for
+	FreeBSD.
+
 2002-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020104-1.c: New test.
