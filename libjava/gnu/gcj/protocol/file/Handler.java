@@ -1,6 +1,6 @@
 // Handler.java - URLStreamHandler for file protocol.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -37,7 +37,7 @@ public class Handler extends URLStreamHandler
 	// Reset the protocol (and implicitly the handler) for this URL.
 	// Then have the URL attempt the connection again, as it will
 	// get the changed handler the next time around.
-	url.set("ftp", url.getHost(), url.getPort(), url.getFile(),
+	setURL (url, "ftp", url.getHost(), url.getPort(), url.getFile(),
 		url.getRef());
 	// Until the ftp protocol handler is written, this will cause
 	// a NullPointerException.
