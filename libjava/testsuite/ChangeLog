@@ -1,7 +1,7 @@
-Thu Jul  1 15:36:13 1999  Anthony Green  <green@cygnus.com>
+Thu Jul  1 16:22:19 1999  Anthony Green  <green@cygnus.com>
 
-	* libjava.mauve/mauve.exp: Don't stop counting test results just
-	because the harness returns non 0 value.
+	* libjava.mauve/mauve.exp: Don't stop counting test results
+ 	prematurely.
 
 1999-06-23  Tom Tromey  <tromey@cygnus.com>
 
