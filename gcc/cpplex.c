@@ -2116,7 +2116,7 @@ _cpp_get_buff (pfile, min_size)
       size = result->limit - result->base;
       /* Return a buffer that's big enough, but don't waste one that's
          way too big.  */
-      if (size >= min_size && size < BUFF_SIZE_UPPER_BOUND (min_size))
+      if (size >= min_size && size <= BUFF_SIZE_UPPER_BOUND (min_size))
 	break;
     }
 
