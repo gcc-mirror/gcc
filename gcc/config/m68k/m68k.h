@@ -201,6 +201,11 @@ extern int target_flags;
 #define MASK_NO_STRICT_ALIGNMENT (1<<15)
 #define TARGET_STRICT_ALIGNMENT  (~target_flags & MASK_NO_STRICT_ALIGNMENT)
 
+/* Compile using rtd insn calling sequence.
+   This will not work unless you use prototypes at least
+   for all functions that can take varying numbers of args.  */
+#define MASK_RTD	(1<<16)
+#define TARGET_RTD	(target_flags & MASK_RTD)
 
 /* Compile for a CPU32.  A 68020 without bitfields is a good
    heuristic for a CPU32.  */
@@ -306,6 +311,10 @@ extern int target_flags;
       N_("Do not use unaligned memory references") },			\
     { "no-strict-align", MASK_NO_STRICT_ALIGNMENT,			\
       N_("Use unaligned memory references") },				\
+    { "rtd", MASK_RTD,							\
+      N_("Use different calling convention using 'rtd'") },		\
+    { "nortd", - MASK_RTD,						\
+      N_("Use normal calling convention") },				\
     SUBTARGET_SWITCHES							\
     { "", TARGET_DEFAULT, "" }}
 /* TARGET_DEFAULT is defined in m68k-none.h, netbsd.h, etc.  */
@@ -790,9 +799,21 @@ enum reg_class {
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.
 
-   On the m68k, the caller must always pop the args. */
+   On the 68000, the RTS insn cannot pop anything.
+   On the 68010, the RTD insn may be used to pop them if the number
+     of args is fixed, but if the number is variable then the caller
+     must pop them all.  RTD can't be used for library calls now
+     because the library is compiled with the Unix compiler.
+   Use of RTD is a selectable option, since it is incompatible with
+   standard Unix calling sequences.  If the option is not selected,
+   the caller must always pop the args.  */
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
+  ((TARGET_RTD && (!(FUNDECL) || TREE_CODE (FUNDECL) != IDENTIFIER_NODE)	\
+    && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
+	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
+	    == void_type_node)))				\
+   ? (SIZE) : 0)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

@@ -1,3 +1,8 @@
+2003-09-22  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.h (MASK_RTD, TARGET_RTD, RETURN_POPS_ARGS):
+	Resurrect -mrtd option.
+
 2003-09-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/12281
