@@ -587,7 +587,7 @@ comp_target_types (ttl, ttr)
 {
   int val;
 
-  /* Give maybe_objc_comptypes a crack at letting these types through.  */
+  /* Give objc_comptypes a crack at letting these types through.  */
   if ((val = objc_comptypes (ttl, ttr, 1)) >= 0)
     return val;
 

@@ -195,12 +195,6 @@ objc_message_selector ()
   return 0;
 }
 
-int
-recognize_objc_keyword ()
-{
-  return 0;
-}
-
 /* Used by c-typeck.c (build_external_ref), but only for objc.  */
 
 tree
