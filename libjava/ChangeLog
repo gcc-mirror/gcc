@@ -1,5 +1,25 @@
 2001-01-07  Anthony Green  <green@redhat.com>
 
+	* Makefile.am (texinfo): Add texinfo target for generating texinfo
+	documentation.
+	* Makefile.in: Rebuilt.
+
+	* scripts/TexinfoDoclet.java: New file.
+
+	* doc/java-applet.texi, doc/java-lang-reflect.texi,
+	doc/java-awt-color.texi, doc/java-lang.texi,
+	doc/java-awt-datatransfer.texi, doc/java-math.texi,
+	doc/java-awt-event.texi, doc/java-net.texi,
+	doc/java-awt-geom.texi, doc/java-security-spec.texi,
+	doc/java-awt-image.texi, doc/java-security.texi,
+	doc/java-awt-peer.texi, doc/java-sql.texi, doc/java-awt.texi,
+	doc/java-text.texi, doc/java-beans-beancontext.texi,
+	doc/java-util-jar.texi, doc/java-beans.texi,
+	doc/java-util-zip.texi, doc/java-io.texi, doc/java-util.texi,
+	doc/java-lang-ref.texi: New files.
+
+2001-01-07  Anthony Green  <green@redhat.com>
+
 	* java/net/URLConnection.java (setDoOutput): URLConnection's may
 	be used for both input and output, so don't clear doInput.
 
