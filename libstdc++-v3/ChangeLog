@@ -1,3 +1,10 @@
+2002-11-20  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/21_strings/howto.html: Fix example code, cite Gaby's
+	explanation of "<unknown type>" error with toupper/tolower.
+	* docs/html/22_locale/howto.html: Be more consistent with
+	example in 21_strings.
+
 2002-11-19  John Gustafsson  <forgoil@rsn.bth.se>
 
 	* docs/html/20_util/howto.html: Fix typo.

@@ -168,18 +168,18 @@
    #include &lt;algorithm&gt;
    #include &lt;cctype&gt;      // old &lt;ctype.h&gt;
 
-   struct Toupper
+   struct ToUpper
    {
-       Toupper(std::locale const&amp; l) : loc(l) {;}
-       char operator() (char c)  { return std::toupper(c,loc); }
+       ToUpper(std::locale const&amp; l) : loc(l) {;}
+       char operator() (char c) const  { return std::toupper(c,loc); }
    private:
        std::locale const&amp; loc;
    };
    
-   struct Tolower
+   struct ToLower
    {
-       Tolower(std::locale const&amp; l) : loc(l) {;}
-       char operator() (char c)  { return std::tolower(c,loc); }
+       ToLower(std::locale const&amp; l) : loc(l) {;}
+       char operator() (char c) const  { return std::tolower(c,loc); }
    private:
        std::locale const&amp; loc;
    };
@@ -187,9 +187,9 @@
    int main ()
    {
       std::string  s("Some Kind Of Initial Input Goes Here");
-      std::locale loc_c("C");
-      Toupper      up(loc_c);
-      Tolower      down(loc_c);
+      std::locale  loc_c("C");
+      ToUpper      up(loc_c);
+      ToLower      down(loc_c);
    
       // Change everything into upper case.
       std::transform(s.begin(), s.end(), s.begin(), up);
@@ -202,6 +202,10 @@
       std::string  capital_s;
       std::transform(s.begin(), s.end(), std::back_inserter(capital_s), up);
    }</pre>
+   <p>The <code>ToUpper</code> and <code>ToLower</code> structs can be
+      generalized for other character types by making <code>operator()</code>
+      a member function template.
+   </p>
    <p>The final version of the code uses <code>bind2nd</code> to eliminate
       the wrapper structs, but the resulting code is tricky.  I have not
       shown it here because no compilers currently available to me will
