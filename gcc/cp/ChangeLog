@@ -1,3 +1,10 @@
+2004-02-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	DR206
+	PR c++/13813
+	* decl.c (grokdeclarator): Check immediatly type completeness for
+	non-dependent types.
+
 2004-01-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13113
