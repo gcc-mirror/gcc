@@ -196,7 +196,7 @@ struct _Refcount_Base
 // possibly concurrent updates use _Atomic_swap.
 // In some cases the operation is emulated with a lock.
 // GCC extension begin
-#ifdef __STL_GTHREADS
+#if defined (__STL_GTHREADS) && defined (__GTHREAD_MUTEX_INIT)
 // We don't provide an _Atomic_swap in this configuration.  This only
 // affects the use of ext/rope with threads.  Someone could add this
 // later, if required.  You can start by cloning the __STL_PTHREADS
