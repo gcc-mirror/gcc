@@ -400,6 +400,9 @@ extern int arm_arch4;
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
 /* Every structures size must be a multiple of 32 bits.  */
+/* This is for compatibility with ARMCC.  ARM SDT Reference Manual
+   (ARM DUI 0020D) page 2-20 says "Structures are aligned on word
+   boundaries".  */
 #define STRUCTURE_SIZE_BOUNDARY 32
 
 /* Non-zero if move instructions will actually fail to work
