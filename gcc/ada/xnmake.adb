@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.27 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -104,7 +104,6 @@ procedure XNmake is
 
    GetT_Rev : Pattern := BreakX ('$') & "$Rev" & "ision: " &
                            Break (' ') * Temp_Rev;
-
 
    Body_Only : Pattern := BreakX (' ') * X & Span (' ') & "--  body only";
    Spec_Only : Pattern := BreakX (' ') * X & Span (' ') & "--  spec only";
@@ -208,7 +207,7 @@ procedure XNmake is
 begin
    --  Capture our revision (following line updated by RCS)
 
-   Match ("$Revision: 1.27 $", "$Rev" & "ision: " & Break (' ') * XNmake_Rev);
+   Match ("$Revision$", "$Rev" & "ision: " & Break (' ') * XNmake_Rev);
 
    Lineno := 0;
    NWidth := 28;
@@ -219,7 +218,7 @@ begin
          Arg : constant String := Argument (ArgN);
 
       begin
-         if Arg (1) = '/' or else Arg (1) = '-' then
+         if Arg (1) = '-' then
             if Arg'Length = 2
               and then (Arg (2) = 'b' or else Arg (2) = 'B')
             then
@@ -248,10 +247,10 @@ begin
       raise Err;
 
    elsif Given_File /= Nul then
-      if FileS = Nul then
+      if FileB = Nul then
          FileS := Given_File;
 
-      elsif FileB = Nul then
+      elsif FileS = Nul then
          FileB := Given_File;
 
       else
