@@ -2940,7 +2940,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	    }
 
 	  if (TREE_CODE (decl) != FUNCTION_DECL)
-	    add_decl_stmt (decl);
+	    add_stmt (build_stmt (DECL_STMT, decl));
 	}
 
       if (!DECL_FILE_SCOPE_P (decl))
@@ -2967,7 +2967,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     {
       if (!DECL_FILE_SCOPE_P (decl)
 	  && variably_modified_type_p (TREE_TYPE (decl)))
-	add_decl_stmt (decl);
+	add_stmt (build_stmt (DECL_STMT, decl));
 
       rest_of_decl_compilation (decl, NULL, DECL_FILE_SCOPE_P (decl), 0);
     }

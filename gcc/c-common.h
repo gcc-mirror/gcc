@@ -294,7 +294,6 @@ extern tree push_stmt_list (void);
 extern tree re_push_stmt_list (tree);
 extern tree pop_stmt_list (tree);
 extern tree add_stmt (tree);
-extern void add_decl_stmt (tree);
 extern void push_cleanup (tree, tree, bool);
 
 extern tree walk_stmt_tree (tree *, walk_tree_fn, void *);

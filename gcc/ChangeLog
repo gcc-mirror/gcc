@@ -1,5 +1,14 @@
 2004-06-20  Richard Henderson  <rth@redhat.com>
 
+	* c-common.h (add_decl_stmt): Move to cp-tree.h.
+	* c-decl.c (finish_decl): Don't use add_decl_stmt.
+	* c-parse.in: Likewise.
+	* c-gimplify.c (gimplify_expr_stmt): Don't build CLEANUP_POINT_EXPR.
+	(gimplify_c_loop, gimplify_return_stmt, gimplify_decl_stmt): Likewise.
+	* c-semantics.c (add_decl_stmt): Move to cp/semantics.c.
+
+2004-06-20  Richard Henderson  <rth@redhat.com>
+
 	* c-common.def (IF_STMT, CLEANUP_STMT): Move to cp-tree.def.
 	* c-common.h (IF_COND, THEN_CLAUSE, ELSE_CLAUSE, CLEANUP_BODY,
 	CLEANUP_EXPR, CLEANUP_DECL): Move to cp-tree.h.

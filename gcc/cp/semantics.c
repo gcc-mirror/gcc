@@ -304,6 +304,27 @@ current_stmt_tree (void)
 	  : &scope_chain->x_stmt_tree);
 }
 
+/* If statements are full expressions, wrap STMT in a CLEANUP_POINT_EXPR.  */
+
+static tree
+maybe_cleanup_point_expr (tree expr)
+{
+  if (!processing_template_decl && stmts_are_full_exprs_p ())
+    expr = fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (expr), expr));
+  return expr;
+}
+
+/* Create a declaration statement for the declaration given by the DECL.  */
+
+void
+add_decl_stmt (tree decl)
+{
+  tree r = build_stmt (DECL_STMT, decl);
+  if (DECL_INITIAL (decl))
+    r = maybe_cleanup_point_expr (r);
+  add_stmt (r);
+}
+
 /* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
    flag for this because "A union for which objects or pointers are
    declared is not an anonymous union" [class.union].  */
@@ -478,8 +499,13 @@ finish_expr_stmt (tree expr)
 
       /* Simplification of inner statement expressions, compound exprs,
 	 etc can result in the us already having an EXPR_STMT.  */
-      if (TREE_CODE (expr) != EXPR_STMT)
-	expr = build_stmt (EXPR_STMT, expr);
+      if (TREE_CODE (expr) != CLEANUP_POINT_EXPR)
+	{
+	  if (TREE_CODE (expr) != EXPR_STMT)
+	    expr = build_stmt (EXPR_STMT, expr);
+	  expr = maybe_cleanup_point_expr (expr);
+	}
+
       r = add_stmt (expr);
     }
 
@@ -636,7 +662,10 @@ finish_return_stmt (tree expr)
 	  return finish_goto_stmt (dtor_label);
 	}
     }
-  r = add_stmt (build_stmt (RETURN_STMT, expr));
+
+  r = build_stmt (RETURN_STMT, expr);
+  r = maybe_cleanup_point_expr (r);
+  r = add_stmt (r);
   finish_stmt ();
 
   return r;
@@ -690,13 +719,16 @@ finish_for_cond (tree cond, tree for_stmt)
 void
 finish_for_expr (tree expr, tree for_stmt)
 {
+  if (!expr)
+    return;
   /* If EXPR is an overloaded function, issue an error; there is no
      context available to use to perform overload resolution.  */
-  if (expr && type_unknown_p (expr))
+  if (type_unknown_p (expr))
     {
       cxx_incomplete_type_error (expr, TREE_TYPE (expr));
       expr = error_mark_node;
     }
+  expr = maybe_cleanup_point_expr (expr);
   FOR_EXPR (for_stmt) = expr;
 }
 
@@ -777,7 +809,7 @@ finish_switch_cond (tree cond, tree switch_stmt)
 
 	     Integral promotions are performed.  */
 	  cond = perform_integral_promotions (cond);
-	  cond = fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (cond), cond));
+	  cond = maybe_cleanup_point_expr (cond);
 	}
 
       if (cond != error_mark_node)
@@ -1499,8 +1531,7 @@ finish_stmt_expr (tree stmt_expr, bool has_no_scope)
       init = TREE_OPERAND (target_expr, 1);
       type = TREE_TYPE (init);
 
-      if (stmts_are_full_exprs_p ())
-	init = fold (build1 (CLEANUP_POINT_EXPR, type, init));
+      init = maybe_cleanup_point_expr (init);
       *result_stmt_p = init;
 
       if (VOID_TYPE_P (type))
@@ -2995,10 +3026,8 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 	  DECL_INITIAL (dp->var) = error_mark_node;
 	}
       else
-	init = NULL_TREE;
-      init = build_stmt (EXPR_STMT, init);
+	init = build_empty_stmt ();
       SET_EXPR_LOCUS (init, EXPR_LOCUS (*tp));
-      TREE_CHAIN (init) = TREE_CHAIN (*tp);
       *tp = init;
     }
   /* And replace all uses of the NRV with the RESULT_DECL.  */
