@@ -612,7 +612,11 @@ package body System.Task_Primitives.Operations is
 
    function RT_Resolution return Duration is
    begin
-      return 1.0 / 1024.0; --  Clock on DEC Alpha ticks at 1024 Hz
+      --  Returned value must be an integral multiple of Duration'Small (1 ns)
+      --  The following is the best approximation of 1/1024. The clock on the
+      --  DEC Alpha ticks at 1024 Hz.
+
+      return 0.000_976_563;
    end RT_Resolution;
 
    ------------

@@ -1025,6 +1025,11 @@ package Opt is
    --  Set to True to get verbose mode (full error message text and location
    --  information sent to standard output, also header, copyright and summary)
 
+   Warn_On_Bad_Fixed_Value : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for static fixed-point expression
+   --  values that are not an exact multiple of the small value of the type.
+
    Warn_On_Constant : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings for variables that could be declared

@@ -168,7 +168,9 @@ package body Sem_Res is
    --  by other node rewriting procedures.
 
    procedure Resolve_Actuals (N : Node_Id; Nam : Entity_Id);
-   --  Resolve actuals of call, and add default expressions for missing ones
+   --  Resolve actuals of call, and add default expressions for missing ones.
+   --  N is the Node_Id for the subprogram call, and Nam is the entity of the
+   --  called subprogram.
 
    procedure Resolve_Entry_Call (N : Node_Id; Typ : Entity_Id);
    --  Called from Resolve_Call, when the prefix denotes an entry or element
@@ -626,7 +628,6 @@ package body Sem_Res is
 
          F := First_Formal (Subp);
          A := First_Actual (N);
-
          while Present (F) and then Present (A) loop
             if not Is_Entity_Name (A)
               or else Entity (A) /= F
@@ -787,6 +788,42 @@ package body Sem_Res is
    procedure Check_Parameterless_Call (N : Node_Id) is
       Nam : Node_Id;
 
+      function Prefix_Is_Access_Subp return Boolean;
+      --  If the prefix is of an access_to_subprogram type, the node must be
+      --  rewritten as a call. Ditto if the prefix is overloaded and all its
+      --  interpretations are access to subprograms.
+
+      ---------------------------
+      -- Prefix_Is_Access_Subp --
+      ---------------------------
+
+      function Prefix_Is_Access_Subp return Boolean is
+         I   : Interp_Index;
+         It  : Interp;
+
+      begin
+         if not Is_Overloaded (N) then
+            return
+              Ekind (Etype (N)) = E_Subprogram_Type
+                and then Base_Type (Etype (Etype (N))) /= Standard_Void_Type;
+         else
+            Get_First_Interp (N, I, It);
+            while Present (It.Typ) loop
+               if Ekind (It.Typ) /= E_Subprogram_Type
+                 or else Base_Type (Etype (It.Typ)) = Standard_Void_Type
+               then
+                  return False;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+
+            return True;
+         end if;
+      end Prefix_Is_Access_Subp;
+
+   --  Start of processing for Check_Parameterless_Call
+
    begin
       --  Defend against junk stuff if errors already detected
 
@@ -832,9 +869,7 @@ package body Sem_Res is
       --  procedure or entry.
 
       or else
-        (Nkind (N) = N_Explicit_Dereference
-          and then Ekind (Etype (N)) = E_Subprogram_Type
-          and then Base_Type (Etype (Etype (N))) /= Standard_Void_Type)
+        (Nkind (N) = N_Explicit_Dereference and then Prefix_Is_Access_Subp)
 
       --  Rewrite as call if it is a selected component which is a function,
       --  this is the case of a call to a protected function (which may be
@@ -858,7 +893,7 @@ package body Sem_Res is
          then
             Nam := New_Copy (N);
 
-            --  If overloaded, overload set belongs to new copy.
+            --  If overloaded, overload set belongs to new copy
 
             Save_Interps (N, Nam);
 
@@ -2515,7 +2550,6 @@ package body Sem_Res is
    begin
       A := First_Actual (N);
       F := First_Formal (Nam);
-
       while Present (F) loop
          if No (A) and then Needs_No_Actuals (Nam) then
             null;
@@ -4796,9 +4830,11 @@ package body Sem_Res is
    ----------------------------------
 
    procedure Resolve_Explicit_Dereference (N : Node_Id; Typ : Entity_Id) is
-      P  : constant Node_Id := Prefix (N);
-      I  : Interp_Index;
-      It : Interp;
+      Loc   : constant Source_Ptr := Sloc (N);
+      New_N : Node_Id;
+      P     : constant Node_Id := Prefix (N);
+      I     : Interp_Index;
+      It    : Interp;
 
    begin
       --  Now that we know the type, check that this is not a
@@ -4824,7 +4860,39 @@ package body Sem_Res is
             Get_Next_Interp (I, It);
          end loop;
 
-         Resolve (P, It.Typ);
+         if Present (It.Typ) then
+            Resolve (P, It.Typ);
+         else
+            --  If no interpretation covers the designated type of the
+            --  prefix, this is the pathological case where not all
+            --  implementations of the prefix allow the interpretation
+            --  of the node as a call. Now that the expected type is known,
+            --  Remove other interpretations from prefix, rewrite it as
+            --  a call, and resolve again, so that the proper call node
+            --  is generated.
+
+            Get_First_Interp (P, I, It);
+            while Present (It.Typ) loop
+               if Ekind (It.Typ) /= E_Access_Subprogram_Type then
+                  Remove_Interp (I);
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+
+            New_N :=
+              Make_Function_Call (Loc,
+                Name =>
+                  Make_Explicit_Dereference (Loc,
+                    Prefix => P),
+                Parameter_Associations => New_List);
+
+            Save_Interps (N, New_N);
+            Rewrite (N, New_N);
+            Analyze_And_Resolve (N, Typ);
+            return;
+         end if;
+
          Set_Etype (N, Designated_Type (It.Typ));
 
       else
@@ -5667,6 +5735,16 @@ package body Sem_Res is
                   Error_Msg_N ("value has extraneous low order digits", N);
                end if;
 
+               --  Generate a warning if literal from source
+
+               if Is_Static_Expression (N)
+                 and then Warn_On_Bad_Fixed_Value
+               then
+                  Error_Msg_N
+                    ("static fixed-point value is not a multiple of Small?",
+                     N);
+               end if;
+
                --  Replace literal by a value that is the exact representation
                --  of a value of the type, i.e. a multiple of the small value,
                --  by truncation, since Machine_Rounds is false for all GNAT
@@ -5678,6 +5756,8 @@ package body Sem_Res is
                    Realval => Small_Value (Typ) * Cint));
 
                Set_Is_Static_Expression (N, Stat);
+
+
             end if;
 
             --  In all cases, set the corresponding integer field
@@ -6351,8 +6431,7 @@ package body Sem_Res is
                Set_Etype (Operand, Standard_Duration);
             end if;
 
-            --  Resolve the real operand with largest available precision.
-
+            --  Resolve the real operand with largest available precision
             if Etype (Right_Opnd (Operand)) = Universal_Real then
                Rop := New_Copy_Tree (Right_Opnd (Operand));
             else
@@ -6787,7 +6866,7 @@ package body Sem_Res is
 
       T1 := Standard_Duration;
 
-      --  Look for fixed-point types in enclosing scopes.
+      --  Look for fixed-point types in enclosing scopes
 
       Scop := Current_Scope;
       while Scop /= Standard_Standard loop
@@ -7219,19 +7298,16 @@ package body Sem_Res is
       elsif (Ekind (Target_Type) = E_Access_Subprogram_Type
                or else
              Ekind (Target_Type) = E_Anonymous_Access_Subprogram_Type)
+        and then No (Corresponding_Remote_Type (Opnd_Type))
         and then Conversion_Check
                    (Ekind (Base_Type (Opnd_Type)) = E_Access_Subprogram_Type,
                     "illegal operand for access subprogram conversion")
       then
          --  Check that the designated types are subtype conformant
 
-         if not Subtype_Conformant (Designated_Type (Opnd_Type),
-                                    Designated_Type (Target_Type))
-         then
-            Error_Msg_N
-              ("operand type is not subtype conformant with target type",
-               Operand);
-         end if;
+         Check_Subtype_Conformant (New_Id  => Designated_Type (Target_Type),
+                                   Old_Id  => Designated_Type (Opnd_Type),
+                                   Err_Loc => N);
 
          --  Check the static accessibility rule of 4.6(20)
 
