@@ -3676,7 +3676,7 @@ c_do_switch_warnings (splay_tree cases, tree switch_stmt)
   else
     switch_location = input_location;
 
-  type = SWITCH_TYPE (switch_stmt);
+  type = SWITCH_STMT_TYPE (switch_stmt);
 
   default_node = splay_tree_lookup (cases, (splay_tree_key) NULL);
   if (warn_switch_default && !default_node)
@@ -3688,7 +3688,7 @@ c_do_switch_warnings (splay_tree cases, tree switch_stmt)
      default case, or when -Wswitch-enum was specified.  */
   if (((warn_switch && !default_node) || warn_switch_enum)
       && type && TREE_CODE (type) == ENUMERAL_TYPE
-      && TREE_CODE (SWITCH_COND (switch_stmt)) != INTEGER_CST)
+      && TREE_CODE (SWITCH_STMT_COND (switch_stmt)) != INTEGER_CST)
     {
       tree chain;
 

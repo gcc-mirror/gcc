@@ -2383,7 +2383,7 @@ finish_case_label (tree low_value, tree high_value)
     }
 
   /* Find the condition on which this switch statement depends.  */
-  cond = SWITCH_COND (switch_stack->switch_stmt);
+  cond = SWITCH_STMT_COND (switch_stack->switch_stmt);
   if (cond && TREE_CODE (cond) == TREE_LIST)
     cond = TREE_VALUE (cond);
 

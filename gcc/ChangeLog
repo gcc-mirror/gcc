@@ -1,3 +1,20 @@
+2005-01-27  Steven Bosscher  <stevenb@suse.de>
+
+	* tree.h (SWITCH_COND, SWITCH_BODY, SWITCH_LABELS, CASE_LOW,
+	CASE_HIGH, CASE_LABEL, ASM_STRING, ASM_OUTPUTS, ASM_INPUTS,
+	ASM_CLOBBERS): Add tree checks.
+
+	* c-common.h (SWITCH_TYPE): Rename to SWITCH_STMT_TYPE.
+	(SWITCH_STMT_COND, SWITCH_STMT_BODY): New.
+	* c-common.def (SWITCH_STMT): Update to match.
+	* c-common.c (c_do_switch_warnings): Use SWITCH_STMT accessor
+	macros instead of SWITCH_EXPR ones.
+	* c-dump.c (c_dump_tree): Likewise.
+	* c-gimplify.c (gimplify_switch_stmt): Likewise.
+	* c-typeck.c (c_start_case, do_case, c_finish_case): Likewise.
+
+	* doc/c-tree.texi (SWITCH_STMT): Update accessor macro names.
+
 2005-01-27  Alan Modra  <amodra@bigpond.net.au>
 
 	* unwind-dw2.c (execute_stack_op): Add missing cases for
@@ -97,9 +114,9 @@
 
 	2004-11-11  Eric Christopher  <echristo@redhat.com>
 
-        * config/frv/frv.md: Add fr400_integer automaton. Don't
-        allow TYPE_MUL, TYPE_MACC, or TYPE_CUT to issue in parallel
-        to TYPE_MACC.
+	* config/frv/frv.md: Add fr400_integer automaton. Don't
+	allow TYPE_MUL, TYPE_MACC, or TYPE_CUT to issue in parallel
+	to TYPE_MACC.
 
 2005-01-26  Steven Bosscher  <stevenb@suse.de>
 

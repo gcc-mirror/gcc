@@ -52,7 +52,7 @@ DEFTREECODE (BREAK_STMT, "break_stmt", tcc_expression, 0)
 DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_expression, 0)
 
 /* Used to represent a 'switch' statement. The operands are
-   SWITCH_COND, SWITCH_BODY and SWITCH_TYPE, respectively.  */
+   SWITCH_STMT_COND, SWITCH_STMT_BODY and SWITCH_STMT_TYPE, respectively.  */
 DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_expression, 3)
 
 /* A STMT_EXPR represents a statement-expression.  The

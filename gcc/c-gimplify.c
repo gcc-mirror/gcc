@@ -454,12 +454,12 @@ gimplify_switch_stmt (tree *stmt_p)
 
   break_block = begin_bc_block (bc_break);
 
-  body = SWITCH_BODY (stmt);
+  body = SWITCH_STMT_BODY (stmt);
   if (!body)
     body = build_empty_stmt ();
 
-  *stmt_p = build3 (SWITCH_EXPR, SWITCH_TYPE (stmt), SWITCH_COND (stmt),
-		    body, NULL_TREE);
+  *stmt_p = build3 (SWITCH_EXPR, SWITCH_STMT_TYPE (stmt),
+		    SWITCH_STMT_COND (stmt), body, NULL_TREE);
   SET_EXPR_LOCATION (*stmt_p, stmt_locus);
   gimplify_stmt (stmt_p);
 

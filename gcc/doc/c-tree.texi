@@ -1573,11 +1573,11 @@ cleanups must be executed in the reverse order in which they appear.
 
 @item SWITCH_STMT
 
-Used to represent a @code{switch} statement.  The @code{SWITCH_COND} is
-the expression on which the switch is occurring.  See the documentation
+Used to represent a @code{switch} statement.  The @code{SWITCH_STMT_COND}
+is the expression on which the switch is occurring.  See the documentation
 for an @code{IF_STMT} for more information on the representation used
-for the condition.  The @code{SWITCH_BODY} is the body of the switch
-statement.   The @code{SWITCH_TYPE} is the original type of switch
+for the condition.  The @code{SWITCH_STMT_BODY} is the body of the switch
+statement.   The @code{SWITCH_STMT_TYPE} is the original type of switch
 expression as given in the source, before any compiler conversions.
 
 @item TRY_BLOCK

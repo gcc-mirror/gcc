@@ -8192,9 +8192,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case SWITCH_STMT:
       stmt = begin_switch_stmt ();
-      tmp = tsubst_expr (SWITCH_COND (t), args, complain, in_decl);
+      tmp = tsubst_expr (SWITCH_STMT_COND (t), args, complain, in_decl);
       finish_switch_cond (tmp, stmt);
-      tsubst_expr (SWITCH_BODY (t), args, complain, in_decl);
+      tsubst_expr (SWITCH_STMT_BODY (t), args, complain, in_decl);
       finish_switch_stmt (stmt);
       break;
 
