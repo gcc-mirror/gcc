@@ -1,6 +1,14 @@
 2004-05-29  Peter Barada  <peter@the-baradas.com>
 
-	* config/m68k/m68k.h(EXTRA_CONSTRAINT): add 'U' for register offset
+	* config/m68k/m68k.c (CONST_METHOD): Add MVZ, MVS.
+	* config/m68k/m68k.c (const_method): Likewise.
+	* config/m68k/m68k.c (const_int_cost): Likewise.
+	* config/m68k/m68k.c (const_int_cost): Likewise.
+	* config/m68k/m68k.c (output_move_const_into_data_reg): Likewise.
+
+2004-05-29  Peter Barada  <peter@the-baradas.com>
+
+	* config/m68k/m68k.h (EXTRA_CONSTRAINT): add 'U' for register offset
 	addressing.
 	* config/m68k/m68k.md: Add 'U,U' alternative to ColdFire variants of
 	movsi,movhi,movqi insn patterns.

@@ -1470,7 +1470,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 
-typedef enum { MOVL, SWAP, NEGW, NOTW, NOTB, MOVQ } CONST_METHOD;
+typedef enum { MOVL, SWAP, NEGW, NOTW, NOTB, MOVQ, MVS, MVZ } CONST_METHOD;
 
 static CONST_METHOD const_method (rtx);
 
@@ -1505,6 +1505,16 @@ const_method (rtx constant)
       if (USE_MOVQ ((u >> 16) | (u << 16)))
 	return SWAP;
     }
+
+  if (TARGET_CFV4)
+    {
+      /* Try using MVZ/MVS with an immedaite value to load constants.   */
+      if (i >= 0 && i <= 65535)
+	return MVZ;
+      if (i >= -32768 && i <= 32767)
+	return MVS;
+    }
+
   /* Otherwise, use move.l */
   return MOVL;
 }
@@ -1517,6 +1527,8 @@ const_int_cost (rtx constant)
       case MOVQ :
       /* Constants between -128 and 127 are cheap due to moveq */
 	return 0;
+      case MVZ:
+      case MVS:
       case NOTB :
       case NOTW :
       case NEGW :
@@ -1661,6 +1673,10 @@ output_move_const_into_data_reg (rtx *operands)
   i = INTVAL (operands[1]);
   switch (const_method (operands[1]))
     {
+    case MVZ:
+      return "mvsw %1,%0";
+    case MVS:
+      return "mvzw %1,%0";
     case MOVQ :
       return "moveq %1,%0";
     case NOTB :
