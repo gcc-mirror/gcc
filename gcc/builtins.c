@@ -149,7 +149,8 @@ static rtx expand_builtin_strchr	PARAMS ((tree, rtx,
 static rtx expand_builtin_strrchr	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
-static rtx expand_builtin_unop		PARAMS ((tree, rtx, rtx, optab));
+static rtx expand_builtin_unop		PARAMS ((enum machine_mode,
+						 tree, rtx, rtx, optab));
 static rtx expand_builtin_frame_address	PARAMS ((tree));
 static rtx expand_builtin_fputs		PARAMS ((tree, int, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
@@ -3714,7 +3715,8 @@ expand_builtin_alloca (arglist, target)
    SUBTARGET may be used as the target for computing one of EXP's operands.  */
 
 static rtx
-expand_builtin_unop (arglist, target, subtarget, op_optab)
+expand_builtin_unop (target_mode, arglist, target, subtarget, op_optab)
+     enum machine_mode target_mode;
      tree arglist;
      rtx target, subtarget;
      optab op_optab;
@@ -3731,7 +3733,8 @@ expand_builtin_unop (arglist, target, subtarget, op_optab)
 			op_optab, op0, target, 1);
   if (target == 0)
     abort ();
-  return target;
+
+  return convert_to_mode (target_mode, target, 0);
 }
 
 /* If the string passed to fputs is a constant and is one character
@@ -4011,6 +4014,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+  enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
 
   /* Perform postincrements before expanding builtin functions.  */
   emit_queue ();
@@ -4254,7 +4258,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_FFS:
     case BUILT_IN_FFSL:
     case BUILT_IN_FFSLL:
-      target = expand_builtin_unop (arglist, target, subtarget, ffs_optab);
+      target = expand_builtin_unop (target_mode, arglist, target,
+				    subtarget, ffs_optab);
       if (target)
 	return target;
       break;
@@ -4262,7 +4267,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_CLZ:
     case BUILT_IN_CLZL:
     case BUILT_IN_CLZLL:
-      target = expand_builtin_unop (arglist, target, subtarget, clz_optab);
+      target = expand_builtin_unop (target_mode, arglist, target,
+				    subtarget, clz_optab);
       if (target)
 	return target;
       break;
@@ -4270,7 +4276,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_CTZ:
     case BUILT_IN_CTZL:
     case BUILT_IN_CTZLL:
-      target = expand_builtin_unop (arglist, target, subtarget, ctz_optab);
+      target = expand_builtin_unop (target_mode, arglist, target,
+				    subtarget, ctz_optab);
       if (target)
 	return target;
       break;
@@ -4278,8 +4285,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_POPCOUNT:
     case BUILT_IN_POPCOUNTL:
     case BUILT_IN_POPCOUNTLL:
-      target = expand_builtin_unop (arglist, target, subtarget,
-				    popcount_optab);
+      target = expand_builtin_unop (target_mode, arglist, target,
+				    subtarget, popcount_optab);
       if (target)
 	return target;
       break;
@@ -4287,7 +4294,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_PARITY:
     case BUILT_IN_PARITYL:
     case BUILT_IN_PARITYLL:
-      target = expand_builtin_unop (arglist, target, subtarget, parity_optab);
+      target = expand_builtin_unop (target_mode, arglist, target,
+				    subtarget, parity_optab);
       if (target)
 	return target;
       break;

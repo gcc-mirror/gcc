@@ -1,3 +1,9 @@
+2003-03-18  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (expand_builtin_unop): New target_mode operand;
+	use it to convert the result to the correct mode.
+	(expand_builtin): Update all callers.
+
 2003-03-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("movti", "movhi", "movqi"): Add "type" attribute.
