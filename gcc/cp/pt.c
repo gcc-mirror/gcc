@@ -5294,10 +5294,10 @@ instantiate_class_template (tree type)
 	      tree r;
 	      
 	      if (TREE_CODE (t) == TEMPLATE_DECL)
-		processing_template_decl++;
+		++processing_template_decl;
 	      r = tsubst (t, args, tf_error, NULL_TREE);
 	      if (TREE_CODE (t) == TEMPLATE_DECL)
-		processing_template_decl--;
+		--processing_template_decl;
 	      set_current_access_from_decl (r);
 	      grok_special_member_properties (r);
 	      finish_member_declaration (r);
@@ -5317,10 +5317,10 @@ instantiate_class_template (tree type)
 		  input_location = DECL_SOURCE_LOCATION (t);
 
 		  if (TREE_CODE (t) == TEMPLATE_DECL)
-		    processing_template_decl++;
+		    ++processing_template_decl;
 		  r = tsubst (t, args, tf_error | tf_warning, NULL_TREE);
 		  if (TREE_CODE (t) == TEMPLATE_DECL)
-		    processing_template_decl--;
+		    --processing_template_decl;
 		  if (TREE_CODE (r) == VAR_DECL)
 		    {
 		      tree init;
@@ -5412,9 +5412,17 @@ instantiate_class_template (tree type)
 		--processing_template_decl;
 	    }
 	  else
-	    /* Build new DECL_FRIENDLIST.  */
-	    add_friend (type, tsubst_friend_function (t, args),
-			/*complain=*/false);
+	    {
+	      /* Build new DECL_FRIENDLIST.  */
+	      tree r;
+
+	      if (TREE_CODE (t) == TEMPLATE_DECL)
+		++processing_template_decl;
+	      r = tsubst_friend_function (t, args);
+	      if (TREE_CODE (t) == TEMPLATE_DECL)
+		--processing_template_decl;
+	      add_friend (type, r, /*complain=*/false);
+	    }
 	}
     }
 
@@ -11246,9 +11254,11 @@ get_mostly_instantiated_function_type (tree decl)
 	 specialized or not.  */
       push_access_scope (decl);
 
+      ++processing_template_decl;
       /* Now, do the (partial) substitution to figure out the
 	 appropriate function type.  */
       fn_type = tsubst (fn_type, partial_args, tf_error, NULL_TREE);
+      --processing_template_decl;
 
       /* Substitute into the template parameters to obtain the real
 	 innermost set of parameters.  This step is important if the

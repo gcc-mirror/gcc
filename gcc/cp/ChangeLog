@@ -1,3 +1,16 @@
+2003-10-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/2513
+	* decl.c (make_typename_type): Use dependent_type_p.
+	(make_unbound_class_template): Likewise.
+	* pt.c (instantiate_class_template): Increment
+	processing_template_decl during substitution of template friend
+	function.  Preincrement processing_template_decl rather than
+	postincrement.
+	(get_mostly_instantiated_function_type): Increment
+	processing_template_decl during partial substitution of function
+	type.
+
 2003-10-15  Jan Hubicka  <jh@suse.cz>
 
 	pr c++/12574
