@@ -3003,9 +3003,17 @@ exit (int status)
   _exit (status);
 }
 
-#else
+#else /* ON_EXIT defined */
 int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
-#endif
+
+# ifndef HAVE_ATEXIT
+/* Provide a fake for atexit() using ON_EXIT.  */
+int atexit (func_ptr func)
+{
+  return ON_EXIT (func, NULL);
+}
+# endif /* HAVE_ATEXIT */
+#endif /* ON_EXIT defined */
 
 #endif /* L_exit */
 
