@@ -1,3 +1,33 @@
+2002-01-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.in: Set stage1_cflags for powerpc-*-darwin*.
+	* configure: Regenerate.
+
+	* config/interix.h: Set DO_GLOBAL_CTORS_BODY and
+	DO_GLOBAL_DTORS_BODY here, not in xm-interix.h.
+	* config/alpha/vms.h: Set INCLUDE_DEFAULTS here, not in
+	alpha/xm-vms.h.
+	* config/m68k/t-next: Set OTHER_FIXINCLUDES_DIRS and
+	LIMITS_H_TEST here, not in m68k/x-next.
+	* config/rs6000/beos.h: Set STANDARD_INCLUDE_DIR and
+	SYSTEM_INCLUDE_DIR here, not in rs6000/xm-beos.h.
+
+	* config/x-interix: Don't set RANLIB, RANLIB_TEST, SHELL,
+	LIBGCC2_INCLUDES, or SYSTEM_HEADER_DIR.
+	* config/alpha/x-vms: Don't set USE_COLLECT2.  Add comments.
+
+	* config/i386/x-djgpp: Renamed i386/t-djgpp.
+	* config/m88k/x-dolph: Renamed m88k/t-dolph.
+	* config/m88k/x-texXD88: Renamed m88k/t-texXD88.
+	* config/pa/x-pa-mpeix: Renamed pa/t-mpeix.  Update for
+	replacement of quadlib.asm with quadlib.c.
+
+	* config/x-interix3, config/xm-interix.h, config/i386/x-beos,
+	config/i386/xm-osf1elf.h, config/rs6000/x-darwin,
+	config/rs6000/xm-beos.h: Delete file.
+
+	* config.gcc: Update to match above changes.
+
 2002-01-10  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h: Fix comment typos.
@@ -150,7 +180,7 @@ Thu Jan 10 11:19:18 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-01-20  Graham Stott  <grahams@redhat.com>
 
 	* dwarf2out.c (indirect_string_alloc, output_indirect_string):
-        Move prototype into DWARF2_DEBUGGING_INFO conditional block. 
+        Move prototype into DWARF2_DEBUGGING_INFO conditional block.
 
 2002-01-10  Richard Henderson  <rth@redhat.com>
 

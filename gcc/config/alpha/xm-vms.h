@@ -27,15 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #define VMS
 #endif
 
-/* Specify the list of include file directories.  */
-#define INCLUDE_DEFAULTS		\
-{					\
-  { "/gnu_gxx_include", 0, 1, 1 },	\
-  { "/gnu_cc_include", 0, 0, 0 },	\
-  { "/gnu/include", 0, 0, 0 },	        \
-  { 0, 0, 0, 0 }			\
-}
-
 /* Define a local equivalent (sort of) for unlink */
 #define unlink remove
 

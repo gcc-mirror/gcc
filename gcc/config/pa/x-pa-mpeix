@@ -1,5 +1,0 @@
-LIB2FUNCS_EXTRA= quadlib.asm
-
-quadlib.asm: $(srcdir)/config/pa/quadlib.asm
-	rm -f quadlib.asm
-	cp $(srcdir)/config/pa/quadlib.asm .
