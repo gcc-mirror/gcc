@@ -1,3 +1,244 @@
+Tue May 19 11:08:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (print-rtl.o): Depend on bitmap.h.
+	(dbxout.o): Depend on toplev.h.
+	($(SCHED_PREFIX)sched.o): Likewise.
+	($(out_object_file)): Likewise for system.h and toplev.h.
+	(cppmain.o): Depend on gansidecl.h.
+	(cpplib.o): Likewise.
+	(cpperror.o): Likewise.
+	(cppexp.o): Likewise.
+	(cpphash.o): Likewise.
+	(cppalloc.o): Likewise.
+	(fix-header.o): Depend on cpplib.h and cpphash.h.
+	(scan-decls.o): Depend on gansidecl.h.
+
+	* basic-block.h (free_regset_vector): Add prototype.
+
+	* cccp.c (check_precompiled): Mark parameter `fname' with
+	ATTRIBUTE_UNUSED.
+	(do_assert): Likewise for `op' and `keyword'.
+	(do_unassert): Likewise.
+	(do_line): Likewise for `keyword'.
+	(do_error): Likewise for `op' and `keyword'.
+	(do_warning): Likewise.
+	(do_ident): Likewise for `keyword'.
+	(do_pragma): Likewise for `limit', `op' and `keyword'.
+	(do_sccs): Likewise.
+	(do_if): Likewise for `keyword'.
+	(do_elif): Likewise.
+	(do_else): Likewise.
+	(do_endif): Likewise.
+
+	* collect2.c (getenv): Remove redundant prototype.
+	(collect_exit, collect_execute, dump_file): Likewise.
+	(dump_list): Wrap prototype and definition in COLLECT_EXPORT_LIST.
+	(dump_prefix_list): Hide prototype and definition.
+
+	* sparc.c: Include toplev.h.
+	(intreg_operand): Mark parameter `mode' with ATTRIBUTE_UNUSED.
+	(symbolic_memory_operand): Likewise.
+	(sp64_medium_pic_operand): Likewise.
+	(data_segment_operand): Likewise.
+	(text_segment_operand): Likewise.
+	(splittable_symbolic_memory_operand): Likewise.
+	(splittable_immediate_memory_operand): Likewise.
+	(eq_or_neq): Likewise.
+	(normal_comp_operator): Likewise.
+	(noov_compare_op): Likewise.
+	(v9_regcmp_op): Likewise.
+	(v8plus_regcmp_op): Likewise.
+	(extend_op): Likewise.
+	(cc_arithop): Likewise.
+	(cc_arithopn): Likewise.
+	(small_int): Likewise.
+	(uns_small_int): Likewise.
+	(clobbered_register): Likewise.
+	(legitimize_pic_address): Likewise.
+	(delay_operand): Likewise.
+	(sparc_builtin_saveregs): Remove unused variable `stdarg'.
+
+	* sparc.h (order_regs_for_local_alloc, eligible_for_return_delay,
+	sparc_issue_rate, v8plus_regcmp_p): Add prototypes.
+
+	* sparc.md (cmpdi_v8plus): Add abort for default case in switch.
+
+	* cppalloc.c: Include gansidecl.h.
+
+	* cpperror.c: Include stdarg.h/varargs.h and gansidecl.h.
+	(cpp_file_line_for_message): Mark parameter `pfile' with
+	ATTRIBUTE_UNUSED.
+	(v_cpp_message): New function.
+	(cpp_message): Use it.  Also convert to variable arguments.
+	(cpp_fatal): Likewise.
+	(cpp_pfatal_with_name): Constify parameter `name'.
+
+	* cppexp.c: Move gansidecl.h before cpplib.h.
+	* cpphash.c: Likewise.
+	* cpphash.h (hashf, delete_macro): Add prototypes.
+
+	* cpplib.c: Include stdarg.h/varargs.h and move gansidecl.h before
+	cpplib.h.  Don't include errno.h.
+	(update_path): Add arguments to prototype.
+	(cpp_fatal, cpp_file_line_for_message, cpp_message, delete_macro,
+	cpp_print_containing_files): Remove redundant prototypes.
+	(cpp_hash_cleanup, add_import, append_include_chain,
+ 	make_assertion, path_include, initialize_builtins,
+ 	initialize_char_syntax, finclude, validate_else, comp_def_part,
+ 	lookup_import, redundant_include_p, is_system_include,
+ 	read_name_map, read_filename_string, open_include_file,
+ 	check_macro_name, compare_defs, compare_token_lists,
+ 	eval_if_expression, change_newlines): Add prototype arguments.
+	(hashf): Remove redundant prototype.
+	(read_token_list, free_token_list, safe_read, xcalloc, savestring,
+	conditional_skip, skip_if_group): Add prototype arguments.
+	(fdopen): Remove redundant prototype.
+	(do_define, do_line, do_include, do_undef, do_error, do_pragma,
+	do_ident, do_if, do_xifdef, do_else, do_elif, do_endif, do_sccs,
+	do_once, do_assert, do_unassert, do_warning): Add prototype arguments.
+	(struct directive): Add prototype arguments to function pointer
+ 	member `func'.
+	(handle_directive): Add missing arguments to call to `do_line'.
+	(do_include): Mark parameters `unused1' and `unused2' with
+	ATTRIBUTE_UNUSED.
+	(do_line): Likewise for `keyword' and new parameters `unused1' and
+	`unused2'.
+	(do_error): Likewise for `keyword'.
+	(do_warning): Likewise.  Also add missing argument `pfile' in call
+	to cpp_pedwarn.
+	(do_once): Mark parameter `keyword', `unused1' and `unused2' with
+	ATTRIBUTE_UNUSED. 
+	(do_ident): Likewise for `keyword', `buf' and `limit'.
+	(do_pragma): Likewise.  Also add missing arguments in call to do_once.
+	(do_sccs): Mark parameter `keyword', `buf' and `limit' with
+	ATTRIBUTE_UNUSED. 
+	(do_if): Likewise for `keyword'.
+	(do_elif): Likewise.
+	(eval_if_expression): Likewise for `buf' and `length'.
+	(do_xifdef): Likewise for `unused1' and `unused2'.
+	(do_else): Likewise for `keyword', `buf' and `limit'.
+	(do_endif): Likewise.
+	(parse_name): Add missing argument `pfile' in call to cpp_pedwarn.
+	(cpp_handle_options): Remove superfluous NULL argument in call to
+	cpp_fatal.
+	(cpp_handle_options): Likewise.
+	(do_assert): Mark parameter `keyword', `buf' and `limit' with
+	ATTRIBUTE_UNUSED.
+	(do_unassert): Likewise.
+	(cpp_print_file_and_line): Add missing argument `pfile' in call to
+	cpp_file_line_for_message.
+	(v_cpp_error): New function.
+	(cpp_error): Use it. Also accept variable arguments.
+	(v_cpp_warning): New function.
+	(cpp_warning): Use it. Also accept variable arguments.
+	(cpp_pedwarn): Accept variable arguments.
+	(v_cpp_error_with_line): New function
+	(cpp_error_with_line): Use it.  Accept variable arguments.
+	(v_cpp_warning_with_line): New function.
+	(cpp_warning_with_line): Use it.  Accept variable arguments.  Hide
+	definition.
+	(cpp_pedwarn_with_line): Accept variable arguments.
+	(cpp_pedwarn_with_file_and_line): Likewise.
+	(cpp_error_from_errno): Constify parameter `name'.  Add missing
+	argument `pfile' in call to cpp_file_line_for_message.
+	(cpp_perror_with_name): Constify parameter `name'.
+
+	* cpplib.h: Define PARAMS() in terms of PROTO().
+	(fatal): Remove redundant prototype.
+	(cpp_error, cpp_warning, cpp_pedwarn, cpp_error_with_line,
+	cpp_pedwarn_with_line, cpp_pedwarn_with_file_and_line,
+	cpp_error_from_errno, cpp_perror_with_name, cpp_pfatal_with_name, 
+	cpp_fatal, cpp_message, cpp_pfatal_with_name,
+	cpp_file_line_for_message, cpp_print_containing_files): Add
+	arguments to prototypes.
+	(scan_decls, cpp_finish): Add prototypes.
+
+	* cppmain.c: Include gansidecl.h.
+	(main): Remove unused variable `i'.
+	
+	* dbxout.c: Include toplev.h.
+
+	* demangle.h (do_tlink, collect_execute, collect_exit,
+	collect_wait, dump_file, file_exists): Add prototype.
+
+	* dwarf2out.c (dwarf_type_encoding_name, decl_start_label): Hide
+	prototype and definition.
+	(gen_unspecified_parameters_die): Don't assign results of call to
+	function new_die() to unused variable `parm_die'.
+	(dwarf2out_line): Mark parameter `filename' with ATTRIBUTE_UNUSED.
+	(dwarf2out_define): Likewise for `lineno' and `buffer'.
+
+	* dwarfout.c (output_unsigned_leb128, output_signed_leb128): Hide
+	prototype and definition.
+	(output_die): Add prototype arguments to function pointer arg.
+	(output_unspecified_parameters_die): Mark parameter `arg' with
+	ATTRIBUTE_UNUSED.
+
+	* except.c (output_exception_table_entry): Remove unused variable
+	`eh_entry'.
+
+	* except.h (expand_fixup_region_start, expand_fixup_region_end):
+	Add prototypes.
+
+	* expr.c (do_jump_by_parts_equality_rtx): Remove prototype.
+
+	* expr.h (do_jump_by_parts_equality_rtx): Add prototype.
+
+	* fix-header.c: Include stdarg.h/varargs.h, move gansidecl.h
+	before cpplib.h, include cpphash.h, remove redundant prototype of
+	cpp_fatal, don't define `const', add a prototype for `fatal'.
+	(cpp_file_line_for_message): Add missing arguments `pfile'.
+	(v_cpp_message): New function.
+	(cpp_message): Use it.
+	(v_fatal): New function.
+	(fatal, cpp_fatal): Use it.
+	(cpp_pfatal_with_name): Constify parameter `name'.
+
+	* flow.c (free_regset_vector): Remove redundant prototype.
+
+	* function.c (round_down): Wrap prototype and definition with
+	macro ARGS_GROW_DOWNWARD.
+	(record_insns): Wrap prototype and definition with
+ 	defined (HAVE_prologue) || defined (HAVE_epilogue).
+
+	* gansidecl.h (ATTRIBUTE_PRINTF_4, ATTRIBUTE_PRINTF_5): New macros.
+
+	* gen-protos.c: Include gansidecl.h.
+	(hashf): Don't make it static, constify parameter `name'.
+
+	* genattrtab.c (check_attr_test): Change XEXP() to XSTR() to match
+	specifier %s in calls to function `fatal'.
+
+	* haifa-sched.c: Include toplev.h.
+	(find_rgns): Remove unused variable `j'.
+
+	* integrate.c (note_modified_parmregs): Mark parameter `x' with
+	ATTRIBUTE_UNUSED.
+	(mark_stores): Likewise.
+
+	* jump.c (mark_modified_reg): Likewise.
+
+	* output.h (insn_current_reference_address): Add prototype.
+	(eh_frame_section): Likewise.
+
+	* print-rtl.c: Include bitmap.h.
+
+	* reload1.c (reload): Wrap variables `note' and `next' in macro
+	PRESERVE_DEATH_INFO_REGNO_P.
+	(forget_old_reloads_1): Mark parameter `ignored' with
+	ATTRIBUTE_UNUSED.
+	(choose_reload_regs): Remove unused variable `in'.
+	(reload_cse_invalidate_mem): Mark parameter `ignore' with
+	ATTRIBUTE_UNUSED.
+	(reload_cse_check_clobber): Likewise.
+
+	* rtl.h (expand_null_return, reg_classes_intersect_p): Add prototype.
+	(mark_elimination): Fix typo in prototype.
+
+	* scan-decls.c: Include gansidecl.h.
+
+	* tree.h (using_eh_for_cleanups, supports_one_only): Add prototype.
+	
 Mon May 18 22:37:33 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (identify_blocks): Fix thinko when setting the

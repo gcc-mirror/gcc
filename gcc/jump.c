@@ -4347,7 +4347,7 @@ static int modified_mem;
 static void
 mark_modified_reg (dest, x)
      rtx dest;
-     rtx x;
+     rtx x ATTRIBUTE_UNUSED;
 {
   int regno, i;
 

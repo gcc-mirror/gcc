@@ -314,8 +314,10 @@ static char *dwarf_fund_type_name	PROTO((unsigned));
 static tree decl_ultimate_origin	PROTO((tree));
 static tree block_ultimate_origin	PROTO((tree));
 static tree decl_class_context 		PROTO((tree));
+#if 0
 static void output_unsigned_leb128	PROTO((unsigned long));
 static void output_signed_leb128	PROTO((long));
+#endif
 static inline int is_body_block		PROTO((tree));
 static int fundamental_type_code	PROTO((tree));
 static tree root_type_1			PROTO((tree, int));
@@ -413,7 +415,7 @@ static void output_typedef_die		PROTO((void *));
 static void output_union_type_die	PROTO((void *));
 static void output_unspecified_parameters_die PROTO((void *));
 static void output_padded_null_die	PROTO((void *));
-static void output_die			PROTO((void (*) (), void *));
+static void output_die			PROTO((void (*) PROTO((void *)), void *));
 static void end_sibling_chain		PROTO((void));
 static void output_formal_types		PROTO((tree));
 static void pend_type			PROTO((tree));
@@ -1213,6 +1215,7 @@ decl_class_context (decl)
   return context;
 }
 
+#if 0
 static void
 output_unsigned_leb128 (value)
      register unsigned long value;
@@ -1266,6 +1269,7 @@ output_signed_leb128 (value)
     }
   while (more);
 }
+#endif
 
 /**************** utility functions for attribute functions ******************/
 
@@ -3922,7 +3926,7 @@ output_unspecified_parameters_die (arg)
 
 static void
 output_padded_null_die (arg)
-     register void *arg;
+     register void *arg ATTRIBUTE_UNUSED;
 {
   ASM_OUTPUT_ALIGN (asm_out_file, 2);	/* 2**2 == 4 */
 }
@@ -3937,7 +3941,7 @@ output_padded_null_die (arg)
 
 static void
 output_die (die_specific_output_function, param)
-     register void (*die_specific_output_function)();
+     register void (*die_specific_output_function) PROTO ((void *));
      register void *param;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];

@@ -164,6 +164,7 @@
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "except.h"
+#include "toplev.h"
 
 extern char *reg_known_equiv_p;
 extern rtx *reg_known_value;
@@ -1471,7 +1472,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 {
   int *max_hdr, *dfs_nr, *stack, *queue, *degree;
   char no_loops = 1;
-  int node, child, loop_head, i, j, head, tail;
+  int node, child, loop_head, i, head, tail;
   int count = 0, sp, idx = 0, current_edge = out_edges[0];
   int num_bbs, num_insns, unreachable;
   int too_large_failure;

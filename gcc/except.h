@@ -364,6 +364,11 @@ extern int protect_cleanup_actions_with_terminate;
 extern tree protect_with_terminate		PROTO((tree));
 #endif
 
+extern void expand_fixup_region_start	PROTO((void));
+#ifdef TREE_CODE
+extern void expand_fixup_region_end	PROTO((tree));
+#endif
+
 /* Various hooks for the DWARF 2 __throw routine.  */
 
 void expand_builtin_unwind_init		PROTO((void));

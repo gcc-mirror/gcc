@@ -23,6 +23,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #ifndef EMACS
 #include "config.h"
 #include "system.h"
+#include "gansidecl.h"
 #else
 #include <stdio.h>
 
@@ -54,7 +55,6 @@ main (argc, argv)
      char **argv;
 {
   char *p;
-  int i;
   int argi = 1;  /* Next argument to handle.  */
   struct cpp_options *opts = &options;
 

@@ -36,3 +36,5 @@ static HASHNODE *hashtab[HASHSIZE];
 #define MAKE_POS(v) (v & 0x7fffffff) /* make number positive */
 
 extern HASHNODE *install PARAMS ((U_CHAR *,int,enum node_type, int,char *,int));
+extern int hashf PARAMS ((const U_CHAR *, int, int));
+extern void delete_macro PARAMS ((HASHNODE *));

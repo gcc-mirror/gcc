@@ -567,6 +567,8 @@
       if (sparc_check_64 (operands[1], insn) <= 0)
 	output_asm_insn (\"srl %L1,0,%L1\", operands);
       return \"sllx %H1,32,%3\;or %L0,%2,%2\;or %L1,%3,%3\;cmp %2,%3\";
+    default:
+      abort();
     }
 }"
   [(set_attr "length" "3,4,7")])

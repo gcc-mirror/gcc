@@ -2108,7 +2108,9 @@ reload (first, global, dumpfile)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
+#ifdef PRESERVE_DEATH_INFO_REGNO_P
 	rtx note, next;
+#endif
 
 	if (GET_CODE (PATTERN (insn)) == USE
 	    && find_reg_note (insn, REG_EQUAL, NULL_RTX))
@@ -4215,7 +4217,7 @@ reload_as_needed (first, live_known)
 static void
 forget_old_reloads_1 (x, ignored)
      rtx x;
-     rtx ignored;
+     rtx ignored ATTRIBUTE_UNUSED;
 {
   register int regno;
   int nr;
@@ -5448,7 +5450,6 @@ choose_reload_regs (insn, avoid_return_reg)
 	    {
 	      register int regno = -1;
 	      enum machine_mode mode;
-	      rtx in;
 
 	      if (reload_in[r] == 0)
 		;
@@ -7912,7 +7913,7 @@ reload_cse_invalidate_mem (mem_rtx)
 static void
 reload_cse_invalidate_rtx (dest, ignore)
      rtx dest;
-     rtx ignore;
+     rtx ignore ATTRIBUTE_UNUSED;
 {
   while (GET_CODE (dest) == STRICT_LOW_PART
 	 || GET_CODE (dest) == SIGN_EXTRACT
@@ -8602,7 +8603,7 @@ static rtx reload_cse_check_src;
 static void
 reload_cse_check_clobber (dest, ignore)
      rtx dest;
-     rtx ignore;
+     rtx ignore ATTRIBUTE_UNUSED;
 {
   if (reg_overlap_mentioned_p (dest, reload_cse_check_src))
     reload_cse_check_clobbered = 1;

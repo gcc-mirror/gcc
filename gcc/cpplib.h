@@ -69,11 +69,7 @@ enum cpp_token {
 };
 
 #ifndef PARAMS
-#ifdef __STDC__
-#define PARAMS(P) P
-#else
-#define PARAMS(P) ()
-#endif
+#define PARAMS(P) PROTO(P)
 #endif /* !PARAMS */
 
 typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
@@ -644,16 +640,20 @@ extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
 extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader *));
 extern void cpp_define PARAMS ((cpp_reader*, unsigned char *));
 
-extern void cpp_error ();
-extern void cpp_warning ();
-extern void cpp_pedwarn ();
-extern void cpp_error_with_line ();
-extern void cpp_pedwarn_with_line ();
-extern void cpp_pedwarn_with_file_and_line ();
-extern void fatal ();
-extern void cpp_error_from_errno ();
-extern void cpp_perror_with_name ();
-extern void cpp_pfatal_with_name ();
+extern void cpp_error PVPROTO ((cpp_reader *, const char *, ...))
+  ATTRIBUTE_PRINTF_2;
+extern void cpp_warning PVPROTO ((cpp_reader *, const char *, ...))
+  ATTRIBUTE_PRINTF_2;
+extern void cpp_pedwarn PVPROTO ((cpp_reader *, const char *, ...))
+  ATTRIBUTE_PRINTF_2;
+extern void cpp_error_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
+  ATTRIBUTE_PRINTF_4;
+extern void cpp_pedwarn_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
+  ATTRIBUTE_PRINTF_4;
+extern void cpp_pedwarn_with_file_and_line PVPROTO ((cpp_reader *, char *, int, const char *, ...))
+  ATTRIBUTE_PRINTF_4;
+extern void cpp_error_from_errno PROTO ((cpp_reader *, const char *));
+extern void cpp_perror_with_name PROTO ((cpp_reader *, const char *));
 
 extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern int cpp_parse_escape PARAMS ((cpp_reader *, char **));
@@ -667,7 +667,18 @@ extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern void cpp_options_init PARAMS ((cpp_options *));
 extern int cpp_start_read PARAMS ((cpp_reader *, char *));
 extern int cpp_read_check_assertion PARAMS ((cpp_reader *));
+extern int scan_decls PARAMS ((cpp_reader *, int, char **));
 extern void skip_rest_of_line PARAMS ((cpp_reader *));
+extern void cpp_finish PARAMS ((cpp_reader *));
+
+/* From cpperror.c */
+extern void cpp_fatal PVPROTO ((cpp_reader *, const char *, ...))
+  ATTRIBUTE_PRINTF_2;
+extern void cpp_message PVPROTO ((cpp_reader *, int, const char *, ...))
+  ATTRIBUTE_PRINTF_3;
+extern void cpp_pfatal_with_name PROTO ((cpp_reader *, const char *));
+extern void cpp_file_line_for_message PROTO ((cpp_reader *, char *, int, int));
+extern void cpp_print_containing_files PROTO ((cpp_reader *));
 
 #ifdef __cplusplus
 }

@@ -1797,7 +1797,6 @@ output_exception_table_entry (file, n)
 {
   char buf[256];
   rtx sym;
-  int eh_entry;
   struct handler_info *handler;
 
   handler = get_first_handler (n);
