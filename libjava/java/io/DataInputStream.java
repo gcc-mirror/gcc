@@ -279,6 +279,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final void readFully (byte[] buf, int offset, int len) throws IOException
   {
+    if (len < 0)
+      throw new IndexOutOfBoundsException("Negative length: " + len);
+    
     while (len > 0)
       {
 	// in.read will block until some data is available.

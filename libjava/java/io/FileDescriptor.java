@@ -39,9 +39,10 @@ exception statement from your version. */
 
 package java.io;
 
+import gnu.java.nio.channels.FileChannelImpl;
+
 import java.nio.channels.ByteChannel;
 import java.nio.channels.FileChannel;
-import gnu.java.nio.channels.FileChannelImpl;
 
 /**
  * This class represents an opaque file handle as a Java class.  It should
