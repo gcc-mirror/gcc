@@ -30,24 +30,19 @@ extern "C"
 #include <private/gc_pmark.h>
 #include <gc_gcj.h>
 
+#ifdef THREAD_LOCAL_ALLOC
+# define GC_REDIRECT_TO_LOCAL
+# include <gc_local_alloc.h>
+#endif
+
   // These aren't declared in any Boehm GC header.
   void GC_finalize_all (void);
   ptr_t GC_debug_generic_malloc (size_t size, int k, GC_EXTRA_PARAMS);
 };
 
-// FIXME: this should probably be defined in some GC header.
-#ifdef GC_DEBUG
-#  define GC_GENERIC_MALLOC(Size, Type) \
-    GC_debug_generic_malloc (Size, Type, GC_EXTRAS)
-#else
-#  define GC_GENERIC_MALLOC(Size, Type) GC_generic_malloc (Size, Type)
-#endif
-
 // We must check for plausibility ourselves.
 #define MAYBE_MARK(Obj, Top, Limit, Source, Exit)  \
-      if ((ptr_t) (Obj) >= GC_least_plausible_heap_addr \
-	  && (ptr_t) (Obj) <= GC_greatest_plausible_heap_addr) \
-        PUSH_CONTENTS (Obj, Top, Limit, Source, Exit)
+	Top=GC_MARK_AND_PUSH((GC_PTR)Obj, Top, Limit, (GC_PTR *)Source)
 
 
 
@@ -312,7 +307,7 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void * /*env*/)
 # endif
   // Mark the object's class.
   p = (ptr_t) klass;
-  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj, o2label);
+  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, &(dt -> clas), o2label);
 
   for (int i = 0; i < JvGetArrayLength (array); ++i)
     {
@@ -374,7 +369,7 @@ _Jv_AllocArray (jsize size, jclass klass)
   if (size < min_heap_addr) 
     obj = GC_MALLOC(size);
   else 
-    obj = GC_GENERIC_MALLOC (size, array_kind_x);
+    obj = GC_generic_malloc (size, array_kind_x);
 #endif
   *((_Jv_VTable **) obj) = klass->vtable;
   return obj;
