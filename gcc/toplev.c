@@ -528,6 +528,10 @@ int flag_no_peephole = 0;
 
 /* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
    operations in the interest of optimization.  For example it allows
+/* ... and similar for data.  */
+ 
+int flag_data_sections = 0;
+
    GCC to assume arguments to sqrt are nonnegative numbers, allowing
    faster code for sqrt to be generated.  */
 
@@ -932,6 +936,8 @@ documented_lang_options[] =
      enabled by default.  */
 
   { "-ansi", "Compile just for ANSI C" },
+  {"data-sections", &flag_data_sections, 1,
+   "place data items into their own section" },
   { "-fallow-single-precision",
     "Do not promote floats to double if using -traditional" },
 
@@ -2809,6 +2815,12 @@ compile_file (name)
 
     for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
       vec[len - i - 1] = decl;
+  if (flag_data_sections)
+    {
+      warning ("-fdata-sections not supported for this target.");
+      flag_data_sections = 0;
+    }
+
 
     for (i = 0; i < len; i++)
       {

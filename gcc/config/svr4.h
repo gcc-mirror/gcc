@@ -655,7 +655,15 @@ do {								\
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
 								\
   if (! DECL_ONE_ONLY (DECL))					\
-    prefix = ".";						\
+    {								\
+      prefix = ".";                                             \
+      if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+	prefix = ".text.";					\
+      else if (DECL_READONLY_SECTION (DECL, RELOC))		\
+	prefix = ".rodata.";					\
+      else							\
+	prefix = ".data.";					\
+    }								\
   else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
     prefix = ".gnu.linkonce.t.";				\
   else if (DECL_READONLY_SECTION (DECL, RELOC))			\
@@ -669,7 +677,6 @@ do {								\
 								\
   DECL_SECTION_NAME (DECL) = build_string (len, string);	\
 } while (0)
-
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\

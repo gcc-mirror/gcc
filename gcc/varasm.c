@@ -1464,7 +1464,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     reloc = output_addressed_constants (DECL_INITIAL (decl));
 
 #ifdef ASM_OUTPUT_SECTION_NAME
-  if (UNIQUE_SECTION_P (decl))
+  if ((flag_data_sections != 0
+       && DECL_SECTION_NAME (decl) == NULL_TREE)
+      || UNIQUE_SECTION_P (decl))
     UNIQUE_SECTION (decl, reloc);
 #endif
 

@@ -151,9 +151,9 @@ in the following sections.
 -fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
 -fdelayed-branch   -fexpensive-optimizations
 -ffast-math  -ffloat-store  -fforce-addr  -fforce-mem
--ffunction-sections  -fgcse -finline-functions
--fkeep-inline-functions  -fno-default-inline
--fno-defer-pop  -fno-function-cse
+-fdata-sections -ffunction-sections  -fgcse 
+-finline-functions -fkeep-inline-functions
+-fno-default-inline -fno-defer-pop  -fno-function-cse
 -fno-inline  -fno-peephole  -fomit-frame-pointer -fregmove
 -frerun-cse-after-loop  -frerun-loop-opt -fschedule-insns
 -fschedule-insns2  -fstrength-reduce  -fthread-jumps
@@ -2340,18 +2340,20 @@ especially useful on machines with a relatively small number of
 registers and where memory load instructions take more than one cycle.
 
 @item -ffunction-sections
-Place each function into its own section in the output file if the
-target supports arbitrary sections.  The function's name determines
-the section's name in the output file.
+@item -fdata-sections
+Place each function or data item into its own section in the output
+file if the target supports arbitrary sections.  The name of the
+function or the name of the data item determines the section's name
+in the output file.
 
-Use this option on systems where the linker can perform optimizations
+Use these options on systems where the linker can perform optimizations
 to improve locality of reference in the instruction space.  HPPA
 processors running HP-UX and Sparc processors running Solaris 2 have
 linkers with such optimizations.  Other systems using the ELF object format
 as well as AIX may have these optimizations in the future.
 
-Only use this option when there are significant benefits from doing
-so.  When you specify this option, the assembler and linker will
+Only use these options when there are significant benefits from doing
+so.  When you specify these options, the assembler and linker will
 create larger object and executable files and will also be slower.
 You will not be able to use @code{gprof} on all systems if you
 specify this option and you may have problems with debugging if

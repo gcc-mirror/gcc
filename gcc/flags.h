@@ -398,6 +398,10 @@ extern int flag_inhibit_size_directive;
 
 extern int flag_function_sections;
 
+/* ... and similar for data.  */
+ 
+extern int flag_data_sections;
+
 /* -fverbose-asm causes extra commentary information to be produced in
    the generated assembly code (to make it more readable).  This option
    is generally only of use to those who actually need to read the
