@@ -601,35 +601,13 @@ lang_decode_option (argc, argv)
 	}
       else if (!strncmp (p, "template-depth-", 15))
 	{
-	  char *endp = p + 15;
-	  while (*endp)
-	    {
-	      if (*endp >= '0' && *endp <= '9')
-		endp++;
-	      else
-		{
-		  error ("Invalid option `%s'", p - 2);
-		  goto template_depth_lose;
-		}
-	    }
-	  max_tinst_depth = atoi (p + 15);
-	template_depth_lose: ;
+	  max_tinst_depth =
+	  	read_integral_parameter (p + 15, p - 2, max_tinst_depth);
 	}
       else if (!strncmp (p, "name-mangling-version-", 22))
 	{
-	  char *endp = p + 22;
-	  while (*endp)
-	    {
-	      if (*endp >= '0' && *endp <= '9')
-		endp++;
-	      else
-		{
-		  error ("Invalid option `%s'", p - 2);
-		  goto mangling_version_lose;
-		}
-	    }
-	  name_mangling_version = atoi (p + 22);
-	mangling_version_lose: ;
+	  name_mangling_version =
+	  	read_integral_parameter (p + 22, p - 2, name_mangling_version);
 	}
       else for (j = 0;
 		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
