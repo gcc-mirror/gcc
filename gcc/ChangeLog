@@ -1,3 +1,8 @@
+Sun Dec  6 01:19:46 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alias.c (memrefs_conflict_p): A second ANDed address
+	disables the aligned address optimization.
+
 Sat Dec  5 18:48:25 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_emit_set_const_1): Fix parenthesis error
