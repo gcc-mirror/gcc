@@ -4570,9 +4570,6 @@ print_fcc_operand (FILE *file, rtx op, enum rtx_code code,
    't'  like 'T', but with the EQ/NE cases reversed
    'Z'  print register and a comma, but print nothing for $fcc0
    'R'  print the reloc associated with LO_SUM
-   'Y'  Check if the fcc register number is even.  Then print the fcc register 
-        plus 1.
-   'y'  Check if the fcc register number is even.  Then print the fcc register.
    'V'  Check if the fcc register number divided by 4 is zero.  Then print 
         the fcc register plus 2.
    'v'  Check if the fcc register number divided by 4 is zero.  Then print 
@@ -4811,12 +4808,6 @@ print_operand (FILE *file, rtx op, int letter)
 
   else if (letter == 'Z')
     print_fcc_operand (file, op, code, 1, 0, 1);
-
-  else if (letter == 'Y')
-    print_fcc_operand (file, op, code, 2, 1, 0);
-
-  else if (letter == 'y')
-    print_fcc_operand (file, op, code, 2, 0, 0);
 
   else if (letter == 'V')
     print_fcc_operand (file, op, code, 4, 2, 0);
@@ -10690,8 +10681,6 @@ mips_expand_ps_cond_move_builtin (enum mips_cmp_choice cmp_choice,
   rtx temp_target;
   rtx src1;
   rtx src2;
-  enum rtx_code test_code;
-  int compare_value;
 
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
@@ -10741,8 +10730,6 @@ mips_expand_ps_cond_move_builtin (enum mips_cmp_choice cmp_choice,
   /* Copy op2 to target */
   emit_insn (gen_rtx_SET (tmode, target, op2)); 
 
-  test_code = EQ;
-  compare_value = 0;
   switch (cmp_choice)
     {
     case MIPS_CMP_MOVT:
@@ -10793,7 +10780,6 @@ mips_expand_4s_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
   rtx label1;
   rtx label2;
   rtx if_then_else;
-  enum rtx_code test_code;
   int compare_value;
 
   if (target == 0 || GET_MODE (target) != SImode)
@@ -10832,27 +10818,26 @@ mips_expand_4s_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
   if (!pat)
     return 0;
 
-  /* We fake the value of CCV4 to be
-     0, if ANY is true    <-->  NOT 0, if ALL is false
-     1, if ALL is true    <-->  NOT 1, if ANY is false
+  /* We fake the value of CCV4 to be:
+     0 if all registers are false.
+     -1 if all registers are true.
+     an indeterminate value otherse.
  
      Thus, we can map "enum mips_cmp_choice" to RTL comparison operators:
-     MIPS_CMP_ANY ->   (EQ 0)
-     MIPS_CMP_ALL ->   (EQ 1)
+     MIPS_CMP_ANY ->   (NE 0)
+     MIPS_CMP_ALL ->   (EQ -1).
 
      However, because MIPS doesn't have "branch_all" instructions, 
-     for MIPS_CMP_ALL, we will use (NE 1) and reverse the assignment of 
+     for MIPS_CMP_ALL, we will use (NE -1) and reverse the assignment of
      the target to 1 first and then 0.  */
   switch (cmp_choice)
     {
     case MIPS_CMP_ANY:
-      test_code = EQ;
       compare_value = 0;
       break;
 
     case MIPS_CMP_ALL:
-      test_code = NE;
-      compare_value = 1;
+      compare_value = -1;
       break;
 
     default:
@@ -10870,7 +10855,7 @@ mips_expand_4s_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
   label2 = gen_label_rtx ();
   if_then_else 
     = gen_rtx_IF_THEN_ELSE (VOIDmode,
-			    gen_rtx_fmt_ee (test_code, CCV4mode, temp_target, 
+			    gen_rtx_fmt_ee (NE, CCV4mode, temp_target,
 				            GEN_INT (compare_value)),
 			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
 
@@ -10986,7 +10971,6 @@ mips_expand_ps_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
   rtx label1;
   rtx label2;
   rtx if_then_else;
-  enum rtx_code test_code;
   int compare_value;
 
   if (target == 0 || GET_MODE (target) != SImode)
@@ -11013,41 +10997,39 @@ mips_expand_ps_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
   if (!pat)
     return 0;
 
-  /* We fake the value of CCV2 to be
-     0, if ANY is true    <-->  NOT 0, if ALL is false
-     1, if UPPER is true  <-->  NOT 1, if UPPER is false
-     2, if LOWER is true  <-->  NOT 2, if LOWER is false
-     3, if ALL is true    <-->  NOT 3, if ANY is false
+  /* We fake the value of CCV2 to be:
+     0 if all registers are false.
+     -1 if all registers are true.
+     an indeterminate value otherse.
  
      Thus, we can map "enum mips_cmp_choice" to RTL comparison operators:
-     MIPS_CMP_ANY ->   (EQ 0)
-     MIPS_CMP_UPPER -> (EQ 1)
-     MIPS_CMP_LOWER -> (EQ 2)
-     MIPS_CMP_ALL ->   (EQ 3)
+     MIPS_CMP_ANY ->   (NE 0)
+     MIPS_CMP_ALL ->   (EQ -1).
 
-     However, because MIPS doesn't have "branch_all" instructions, 
-     for MIPS_CMP_ALL, we will use (NE 3) and reverse the assignment of 
-     the target to 1 fisrt and then 0.  */
+     However, because MIPS doesn't have "branch_all" instructions,
+     for MIPS_CMP_ALL, we will use (NE -1) and reverse the assignment of
+     the target to 1 first and then 0.
+
+     We handle MIPS_CMP_LOWER and MIPS_CMP_UPPER by taking the appropriate
+     CCmode subreg and comparing against zero in the normal way.  */
   switch (cmp_choice)
     {
     case MIPS_CMP_ANY:
-      test_code = EQ;
       compare_value = 0;
       break;
 
     case MIPS_CMP_UPPER:
-      test_code = EQ;
-      compare_value = 1;
+      temp_target = simplify_gen_subreg (CCmode, temp_target, CCV2mode, 4);
+      compare_value = 0;
       break;
 
     case MIPS_CMP_LOWER:
-      test_code = EQ;
-      compare_value = 2;
+      temp_target = simplify_gen_subreg (CCmode, temp_target, CCV2mode, 0);
+      compare_value = 0;
       break;
 
     case MIPS_CMP_ALL:
-      test_code = NE;
-      compare_value = 3;
+      compare_value = -1;
       break;
 
     default:
@@ -11066,8 +11048,9 @@ mips_expand_ps_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
 
   if_then_else 
     = gen_rtx_IF_THEN_ELSE (VOIDmode,
-			    gen_rtx_fmt_ee (test_code, CCV2mode, temp_target, 
-				            GEN_INT (compare_value)),
+			    gen_rtx_fmt_ee (NE, GET_MODE (temp_target),
+					    temp_target,
+					    GEN_INT (compare_value)),
 			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
 
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else)); 

@@ -56,8 +56,8 @@
 		     UNSPEC_MOVE_TF_PS))]
   "TARGET_PAIRED_SINGLE_FLOAT"
   "@
-    movt.ps\t%0,%1,%y3
-    movf.ps\t%0,%2,%y3"
+    movt.ps\t%0,%1,%Q3
+    movf.ps\t%0,%2,%Q3"
   [(set_attr "type" "condmove")
    (set_attr "mode" "SF")])
 
@@ -1374,7 +1374,7 @@
 ; Branch on Any of Four Floating Point Condition Codes True
 (define_insn "bc1any4t"
   [(set (pc)
-	(if_then_else (eq:CCV4 (match_operand:CCV4 0 "register_operand" "z")
+	(if_then_else (ne:CCV4 (match_operand:CCV4 0 "register_operand" "z")
 			       (const_int 0))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
@@ -1387,7 +1387,7 @@
 (define_insn "bc1any4f"
   [(set (pc)
 	(if_then_else (ne:CCV4 (match_operand:CCV4 0 "register_operand" "z")
-			       (const_int 1))
+			       (const_int -1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   "TARGET_MIPS3D"
@@ -1398,7 +1398,7 @@
 ; Branch on Any of Two Floating Point Condition Codes True
 (define_insn "bc1any2t"
   [(set (pc)
-	(if_then_else (eq:CCV2 (match_operand:CCV2 0 "register_operand" "z")
+	(if_then_else (ne:CCV2 (match_operand:CCV2 0 "register_operand" "z")
 			       (const_int 0))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
@@ -1407,64 +1407,15 @@
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
-; Branch on Upper of Two Floating Point Condition Codes True
-(define_insn "bc1upper2t"
-  [(set (pc)
-	(if_then_else (eq:CCV2 (match_operand:CCV2 0 "register_operand" "z")
-			       (const_int 1))
-		      (label_ref (match_operand 1 "" ""))
-		      (pc)))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "%*bc1t\t%Y0,%1%/"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
-
-; Branch on Lower of Two Floating Point Condition Codes True
-(define_insn "bc1lower2t"
-  [(set (pc)
-	(if_then_else (eq:CCV2 (match_operand:CCV2 0 "register_operand" "z")
-			       (const_int 2))
-		      (label_ref (match_operand 1 "" ""))
-		      (pc)))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "%*bc1t\t%y0,%1%/"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
-
-
 ; Branch on Any of Two Floating Point Condition Codes False
 (define_insn "bc1any2f"
   [(set (pc)
 	(if_then_else (ne:CCV2 (match_operand:CCV2 0 "register_operand" "z")
-			       (const_int 3))
+			       (const_int -1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   "TARGET_MIPS3D"
   "%*bc1any2f\t%Q0,%1%/"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
-
-; Branch on Upper of Two Floating Point Condition Codes False
-(define_insn "bc1upper2f"
-  [(set (pc)
-	(if_then_else (ne:CCV2 (match_operand:CCV2 0 "register_operand" "z")
-			       (const_int 1))
-		      (label_ref (match_operand 1 "" ""))
-		      (pc)))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "%*bc1f\t%Y0,%1%/"
-  [(set_attr "type" "branch")
-   (set_attr "mode" "none")])
-
-; Branch on Lower of Two Floating Point Condition Codes False
-(define_insn "bc1lower2f"
-  [(set (pc)
-	(if_then_else (ne:CCV2 (match_operand:CCV2 0 "register_operand" "z")
-			       (const_int 2))
-		      (label_ref (match_operand 1 "" ""))
-		      (pc)))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "%*bc1f\t%y0,%1%/"
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
