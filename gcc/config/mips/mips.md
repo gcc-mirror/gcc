@@ -23,9 +23,6 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
-;; ??? Currently does not have define_function_unit support for the R8000.
-;; Must include new entries for fmadd in addition to existing entries.
-
 (define_constants
   [(UNSPEC_LOAD_DF_LOW		 0)
    (UNSPEC_LOAD_DF_HIGH		 1)

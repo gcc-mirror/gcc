@@ -1,5 +1,9 @@
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md: Delete outdated comment.
+
+2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (get_float_compare_codes): Delete.
 	(mips_emit_compare): New function, mostly extracted from
 	get_float_compare_codes and gen_conditional_branch.
