@@ -1,3 +1,7 @@
+2000-12-09  Anthony Green  <green@redhat.com>
+
+	* configure.host: Enable interpreter for Alpha.
+
 2000-12-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.am (data_DATA): libgcj.jar replaces libgcj.zip.
