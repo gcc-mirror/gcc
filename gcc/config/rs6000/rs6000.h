@@ -89,6 +89,10 @@ extern int target_flags;
    TOC overflows.  */
 #define MASK_NO_FP_IN_TOC	0x40
 
+/* Disable placing symbol+offset constants in the TOC; can be turned on when
+   the TOC overflows.  */
+#define MASK_NO_SUM_IN_TOC	0x80
+
 /* Output only one TOC entry per module.  Normally linking fails if
    there are more than 16K unique variables/constants in an executable.  With
    this option, linking fails only if there are more than 16K modules, or
@@ -96,7 +100,7 @@ extern int target_flags;
 
    This is at the cost of having 2 extra loads and one extra store per
    function, and one less allocatable register.  */
-#define MASK_MINIMAL_TOC	0x80
+#define MASK_MINIMAL_TOC	0x100
 
 #define TARGET_POWER			(target_flags & MASK_POWER)
 #define TARGET_POWER2			(target_flags & MASK_POWER2)
@@ -105,6 +109,7 @@ extern int target_flags;
 #define TARGET_POWERPC64		(target_flags & MASK_POWERPC64)
 #define TARGET_NEW_MNEMONICS		(target_flags & MASK_NEW_MNEMONICS)
 #define TARGET_NO_FP_IN_TOC		(target_flags & MASK_NO_FP_IN_TOC)
+#define TARGET_NO_SUM_IN_TOC		(target_flags & MASK_NO_SUM_IN_TOC)
 #define TARGET_MINIMAL_TOC		(target_flags & MASK_MINIMAL_TOC)
 
 /* Run-time compilation parameters selecting different hardware subsets.
@@ -128,10 +133,14 @@ extern int target_flags;
   {"no-powerpc64",	-MASK_POWERPC64},			\
   {"new-mnemonics",	MASK_NEW_MNEMONICS},			\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS},			\
-  {"normal-toc",	- (MASK_NO_FP_IN_TOC | MASK_MINIMAL_TOC)}, \
+  {"full-toc",		- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC \
+			   | MASK_MINIMAL_TOC)},		\
   {"fp-in-toc",		- MASK_NO_FP_IN_TOC},			\
   {"no-fp-in-toc",	MASK_NO_FP_IN_TOC},			\
+  {"sum-in-toc",	- MASK_NO_SUM_IN_TOC},			\
+  {"no-sum-in-toc",	MASK_NO_SUM_IN_TOC},			\
   {"minimal-toc",	MASK_MINIMAL_TOC},			\
+  {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)}, \
   {"no-minimal-toc",	- MASK_MINIMAL_TOC},			\
   {"",			TARGET_DEFAULT}}
 
