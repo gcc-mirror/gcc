@@ -279,6 +279,8 @@ void gcc_obstack_init ();
 
 void (*lang_unsave_expr_now) PROTO((tree));
 
+tree global_trees[TI_MAX];
+
 /* Init the principal obstacks.  */
 
 void
@@ -311,6 +313,7 @@ init_obstacks ()
   ggc_add_root (type_hash_table, TYPE_HASH_SIZE, 
 		sizeof(struct type_hash *),
 		mark_type_hash);
+  ggc_add_tree_root (global_trees, TI_MAX);
 }
 
 void
@@ -5068,4 +5071,186 @@ new_alias_set ()
     return ++last_alias_set;
   else
     return 0;
+}
+
+#ifndef CHAR_TYPE_SIZE
+#define CHAR_TYPE_SIZE BITS_PER_UNIT
+#endif
+
+#ifndef SHORT_TYPE_SIZE
+#define SHORT_TYPE_SIZE (BITS_PER_UNIT * MIN ((UNITS_PER_WORD + 1) / 2, 2))
+#endif
+
+#ifndef INT_TYPE_SIZE
+#define INT_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef LONG_TYPE_SIZE
+#define LONG_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef LONG_LONG_TYPE_SIZE
+#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+#ifndef FLOAT_TYPE_SIZE
+#define FLOAT_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef DOUBLE_TYPE_SIZE
+#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+#ifndef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+/* Create nodes for all integer types (and error_mark_node) using the sizes
+   of C datatypes.  The caller should call set_sizetype soon after calling
+   this function to select one of the types as sizetype.  */
+   
+void
+build_common_tree_nodes (signed_char)
+     int signed_char;
+{
+  error_mark_node = make_node (ERROR_MARK);
+  TREE_TYPE (error_mark_node) = error_mark_node;
+
+  /* Define both `signed char' and `unsigned char'.  */
+  signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);
+  unsigned_char_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
+
+  /* Define `char', which is like either `signed char' or `unsigned char'
+     but not the same as either.  */
+  char_type_node
+    = (signed_char
+       ? make_signed_type (CHAR_TYPE_SIZE)
+       : make_unsigned_type (CHAR_TYPE_SIZE));
+
+  short_integer_type_node = make_signed_type (SHORT_TYPE_SIZE);
+  short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
+  integer_type_node = make_signed_type (INT_TYPE_SIZE);
+  /* Define an unsigned integer first.  make_unsigned_type and make_signed_type
+     both call set_sizetype for the first type that we create, and we want this
+     to be large enough to hold the sizes of various types until we switch to
+     the real sizetype.  */
+  unsigned_type_node = make_unsigned_type (INT_TYPE_SIZE);
+  long_integer_type_node = make_signed_type (LONG_TYPE_SIZE);
+  long_unsigned_type_node = make_unsigned_type (LONG_TYPE_SIZE);
+  long_long_integer_type_node = make_signed_type (LONG_LONG_TYPE_SIZE);
+  long_long_unsigned_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
+
+  intQI_type_node = make_signed_type (GET_MODE_BITSIZE (QImode));
+  intHI_type_node = make_signed_type (GET_MODE_BITSIZE (HImode));
+  intSI_type_node = make_signed_type (GET_MODE_BITSIZE (SImode));
+  intDI_type_node = make_signed_type (GET_MODE_BITSIZE (DImode));
+  intTI_type_node = make_signed_type (GET_MODE_BITSIZE (TImode));
+
+  unsigned_intQI_type_node = make_unsigned_type (GET_MODE_BITSIZE (QImode));
+  unsigned_intHI_type_node = make_unsigned_type (GET_MODE_BITSIZE (HImode));
+  unsigned_intSI_type_node = make_unsigned_type (GET_MODE_BITSIZE (SImode));
+  unsigned_intDI_type_node = make_unsigned_type (GET_MODE_BITSIZE (DImode));
+  unsigned_intTI_type_node = make_unsigned_type (GET_MODE_BITSIZE (TImode));
+}
+
+/* For type TYPE, fill in the proper type for TYPE_SIZE and
+   TYPE_SIZE_UNIT.  */
+static void
+fix_sizetype (type)
+     tree type;
+{
+  TREE_TYPE (TYPE_SIZE (type)) = sizetype;
+  TREE_TYPE (TYPE_SIZE_UNIT (type)) = bitsizetype;
+}
+
+/* Call this function after calling build_common_tree_nodes and set_sizetype.
+   It will fix the previously made nodes to have proper references to
+   sizetype, and it will create several other common tree nodes.  */
+void
+build_common_tree_nodes_2 (short_double)
+     int short_double;
+{
+  fix_sizetype (signed_char_type_node);
+  fix_sizetype (unsigned_char_type_node);
+  fix_sizetype (char_type_node);
+  fix_sizetype (short_integer_type_node);
+  fix_sizetype (short_unsigned_type_node);
+  fix_sizetype (integer_type_node);
+  fix_sizetype (unsigned_type_node);
+  fix_sizetype (long_unsigned_type_node);
+  fix_sizetype (long_integer_type_node);
+  fix_sizetype (long_long_integer_type_node);
+  fix_sizetype (long_long_unsigned_type_node);
+
+  fix_sizetype (intQI_type_node);
+  fix_sizetype (intHI_type_node);
+  fix_sizetype (intSI_type_node);
+  fix_sizetype (intDI_type_node);
+  fix_sizetype (intTI_type_node);
+  fix_sizetype (unsigned_intQI_type_node);
+  fix_sizetype (unsigned_intHI_type_node);
+  fix_sizetype (unsigned_intSI_type_node);
+  fix_sizetype (unsigned_intDI_type_node);
+  fix_sizetype (unsigned_intTI_type_node);
+
+  integer_zero_node = build_int_2 (0, 0);
+  TREE_TYPE (integer_zero_node) = integer_type_node;
+  integer_one_node = build_int_2 (1, 0);
+  TREE_TYPE (integer_one_node) = integer_type_node;
+
+  size_zero_node = build_int_2 (0, 0);
+  TREE_TYPE (size_zero_node) = sizetype;
+  size_one_node = build_int_2 (1, 0);
+  TREE_TYPE (size_one_node) = sizetype;
+
+  void_type_node = make_node (VOID_TYPE);
+  layout_type (void_type_node);	/* Uses size_zero_node */
+  /* We are not going to have real types in C with less than byte alignment,
+     so we might as well not have any types that claim to have it.  */
+  TYPE_ALIGN (void_type_node) = BITS_PER_UNIT;
+
+  null_pointer_node = build_int_2 (0, 0);
+  TREE_TYPE (null_pointer_node) = build_pointer_type (void_type_node);
+  layout_type (TREE_TYPE (null_pointer_node));
+
+  ptr_type_node = build_pointer_type (void_type_node);
+  const_ptr_type_node
+    = build_pointer_type (build_type_variant (void_type_node, 1, 0));
+
+  float_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (float_type_node) = FLOAT_TYPE_SIZE;
+  layout_type (float_type_node);
+
+  double_type_node = make_node (REAL_TYPE);
+  if (short_double)
+    TYPE_PRECISION (double_type_node) = FLOAT_TYPE_SIZE;
+  else
+    TYPE_PRECISION (double_type_node) = DOUBLE_TYPE_SIZE;
+  layout_type (double_type_node);
+
+  long_double_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (long_double_type_node) = LONG_DOUBLE_TYPE_SIZE;
+  layout_type (long_double_type_node);
+
+  complex_integer_type_node = make_node (COMPLEX_TYPE);
+  TREE_TYPE (complex_integer_type_node) = integer_type_node;
+  layout_type (complex_integer_type_node);
+
+  complex_float_type_node = make_node (COMPLEX_TYPE);
+  TREE_TYPE (complex_float_type_node) = float_type_node;
+  layout_type (complex_float_type_node);
+
+  complex_double_type_node = make_node (COMPLEX_TYPE);
+  TREE_TYPE (complex_double_type_node) = double_type_node;
+  layout_type (complex_double_type_node);
+
+  complex_long_double_type_node = make_node (COMPLEX_TYPE);
+  TREE_TYPE (complex_long_double_type_node) = long_double_type_node;
+  layout_type (complex_long_double_type_node);
+
+#ifdef BUILD_VA_LIST_TYPE
+  BUILD_VA_LIST_TYPE(va_list_type_node);
+#else
+  va_list_type_node = ptr_type_node;
+#endif
 }

@@ -238,8 +238,6 @@ struct _ffecom_symbol_
 /* Global objects accessed by users of this module. */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-extern tree long_integer_type_node;
-extern tree complex_double_type_node;
 extern tree string_type_node;
 extern tree ffecom_integer_type_node;
 extern tree ffecom_integer_zero_node;

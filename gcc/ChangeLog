@@ -1,3 +1,33 @@
+Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* c-common.c (c_common_nodes_and_builtins): Don't build
+	va_list_type_node.
+	* c-common.h (enum c_tree_index and related accesor macros): Remove
+	everything now declared in tree.h.
+	* c-decl.c (CHAR_TYPE_SIZE, SHORT_TYPE_SIZE, INT_TYPE_SIZE,
+	LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE, WCHAR_UNSIGNED, FLOAT_TYPE_SIZE,
+	DOUBLE_TYPE_SIZE, LONG_DOUBLE_TYPE_SIZE): Don't provide defaults.
+	(error_mark_node, void_type_node, char_type_node, integer_type_node,
+	unsigned_type_node, ptr_type_node, va_list_type_node,
+	integer_zero_node, null_pointer_node, integer_one_node): Delete.
+	(init_decl_processing): Call build_common_tree_nodes and
+	build_common_tree_nodes_2 instead of building their nodes here.
+	Don't add roots for these nodes.
+	* stor-layout.c (size_zero_node, size_one_node): Delete.
+	(set_sizetype): Make a new node for bitsizetype each time.
+	* tree.c (global_trees): New variable.
+	(init_obstacks): Add a gc root for it.
+	(CHAR_TYPE_SIZE, SHORT_TYPE_SIZE, INT_TYPE_SIZE,
+	LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE, FLOAT_TYPE_SIZE,
+	DOUBLE_TYPE_SIZE, LONG_DOUBLE_TYPE_SIZE): Provide defaults.
+	(build_common_tree_nodes): New function.
+	(fix_sizetype): New function.
+	(build_common_tree_nodes_2): New function.
+	* tree.h (enum tree_index): New.
+	(global_trees): Declare.
+	Add accessor macros for all nodes now moved to global_trees.
+	Delete their declarations.
+
 Thu Sep  9 20:15:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-decl.c (finish_function): When processing a nested function,

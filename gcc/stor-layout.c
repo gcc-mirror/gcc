@@ -37,14 +37,6 @@ Boston, MA 02111-1307, USA.  */
 
 struct sizetype_tab sizetype_tab;
 
-/* An integer constant with value 0 whose type is sizetype.  */
-
-tree size_zero_node;
-
-/* An integer constant with value 1 whose type is sizetype.  */
-
-tree size_one_node;
-
 /* If nonzero, this is an upper limit on alignment of structure fields.
    The value is measured in bits.  */
 int maximum_field_alignment;
@@ -1220,22 +1212,15 @@ set_sizetype (type)
   sizetype = type;
 
   /* The *bitsizetype types use a precision that avoids overflows when
-     calculating signed sizes / offsets in bits.
-
-     We are allocating bitsizetype once and change it in place when
-     we decide later that we want to change it.  This way, we avoid the
-     hassle of changing all the TYPE_SIZE (TREE_TYPE (sometype))
-     individually in each front end.  */
-  if (! bitsizetype)
-    bitsizetype = make_node (INTEGER_TYPE);
-  if (TYPE_NAME (sizetype) && ! TYPE_NAME (bitsizetype))
-    TYPE_NAME (bitsizetype) = TYPE_NAME (sizetype);
-
+     calculating signed sizes / offsets in bits.  */
   precision = oprecision + BITS_PER_UNIT_LOG + 1;
   /* However, when cross-compiling from a 32 bit to a 64 bit host,
      we are limited to 64 bit precision.  */
   if (precision > 2 * HOST_BITS_PER_WIDE_INT)
     precision = 2 * HOST_BITS_PER_WIDE_INT;
+
+  bitsizetype = make_node (INTEGER_TYPE);
+  TYPE_NAME (bitsizetype) = TYPE_NAME (type);
   TYPE_PRECISION (bitsizetype) = precision;
   if (TREE_UNSIGNED (type))
     fixup_unsigned_type (bitsizetype);
@@ -1257,6 +1242,7 @@ set_sizetype (type)
       usizetype = make_unsigned_type (oprecision);
       ubitsizetype = make_unsigned_type (precision);
     }
+  TYPE_NAME (bitsizetype) = TYPE_NAME (sizetype);
 
   ggc_add_tree_root ((tree*) &sizetype_tab, sizeof(sizetype_tab)/sizeof(tree));
 }

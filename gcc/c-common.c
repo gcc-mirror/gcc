@@ -3482,11 +3482,6 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   tree va_list_ptr_type_node;
   tree va_list_arg_type_node;
 
-#ifdef BUILD_VA_LIST_TYPE
-  BUILD_VA_LIST_TYPE(va_list_type_node);
-#else
-  va_list_type_node = ptr_type_node;
-#endif
   pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
 			va_list_type_node));
 

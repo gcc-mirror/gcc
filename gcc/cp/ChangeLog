@@ -1,3 +1,15 @@
+Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* cp-tree.h: Delete declarations for all tree nodes now moved to
+	global_trees.
+	* decl.c: Delete their definitions.
+	(SHORT_TYPE_SIZE, INT_TYPE_SIZE, LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE,
+	FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE, LONG_DOUBLE_TYPE_SIZE): Don't
+	provide defaults.
+	(init_decl_processing): Call build_common_tree_nodes and
+	build_common_tree_nodes_2 instead of building their nodes here.
+	Don't add gc roots for them.
+
 1999-09-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (language_function): Rename expanding_p to
