@@ -1,3 +1,7 @@
+Sun Jun 27 02:39:08 1999  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1): Validate the cmov copy to a temporary.
+
 Sat Jun 26 17:18:18 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (print_operand, case 'L'): Use plus_constant_for_output.
