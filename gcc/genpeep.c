@@ -48,7 +48,6 @@ struct link
 
 char *xmalloc ();
 static void match_rtx ();
-static void gen_exp ();
 static void fatal ();
 void fancy_abort ();
 
