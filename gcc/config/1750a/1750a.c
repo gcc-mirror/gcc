@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIL-STD-1750.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
@@ -111,7 +111,6 @@ function_arg (cum, mode, type, named)
      int named;
 {
   int size;
-  rtx result;
 
   if (MUST_PASS_IN_STACK (mode, type))
     return (rtx) 0;
@@ -187,21 +186,30 @@ char *
 movcnt_regno_adjust (op)
      rtx *op;
 {
-  static char outstr[40];
-  int cntreg = REGNO (op[2]), cntreg_1750 = REGNO (op[0]) + 1;
-  int dstreg = REGNO (op[0]), srcreg = REGNO (op[1]);
+  static char outstr[80];
+  int op0r = REGNO (op[0]), op1r = REGNO (op[1]), op2r = REGNO (op[2]);
+#define dstreg op0r
+#define srcreg op1r
+#define cntreg op2r
+#define cntreg_1750 (op0r + 1)
 
   if (cntreg == cntreg_1750)
-    sprintf (outstr, "mov r%%0,r%%1");
-  else if (dstreg + 1 == srcreg && srcreg == cntreg + 2)
-    sprintf (outstr, "xwr r%d,r%d\n\tmov r%%0,r%%1", cntreg, dstreg);
-  else if (dstreg + 1 == srcreg && srcreg < cntreg)
-    sprintf (outstr, "xwr r%d,r%d\n\tmov r%%0,r%%1", srcreg, cntreg);
-  else if (srcreg + 1 == cntreg && dstreg > cntreg)
-    sprintf (outstr, "xwr r%d,r%d\n\tmov r%%0,r%%1", srcreg, dstreg);
+    sprintf (outstr, "mov r%d,r%d", op0r, op1r);
+  else if (dstreg + 1 == srcreg && cntreg > srcreg)
+    sprintf (outstr, "xwr r%d,r%d\n\tmov r%d,r%d", op2r, op1r, op0r, op2r);
+  else if (dstreg == cntreg + 1)
+    sprintf (outstr, "xwr r%d,r%d\n\tmov r%d,r%d", op0r, op2r, op2r, op1r);
+  else if (dstreg == srcreg + 1)
+    sprintf (outstr, "xwr r%d,r%d\n\txwr r%d,r%d\n\tmov r%d,r%d",
+	     op0r, op1r, op0r, op2r, op1r, op2r);
+  else if (cntreg + 1 == srcreg)
+    sprintf (outstr, "xwr r%d,r%d\n\txwr r%d,r%d\n\tmov r%d,r%d",
+	     op2r, op1r, op0r, op2r, op2r, op0r);
+  else if (cntreg == srcreg + 1)
+    sprintf (outstr, "xwr r%d,r%d\n\tmov r%d,r%d", op0r, op1r, op1r, op0r);
   else
-    sprintf (outstr, "xwr r%d,r%d\n\tmov r%%0,%%1\n\txwr r%d,r%d",
-	     cntreg, cntreg_1750, cntreg_1750, cntreg);
+    sprintf (outstr, "xwr r%d,r%d\n\tmov r%d,%d\n\txwr r%d,r%d",
+	     op2r, cntreg_1750, op0r, op1r, op2r, cntreg_1750);
   return outstr;
 }
 
@@ -280,6 +288,15 @@ nonindirect_operand (op, mode)
   return 1;
 }
 
+/* predicate for the MOV instruction: */
+int
+mov_memory_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == REG);
+}
+
 /* predicate for the STC instruction: */
 int
 small_nonneg_const (op, mode)
@@ -289,6 +306,15 @@ small_nonneg_const (op, mode)
   if (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) <= 15)
     return 1;
   return 0;
+}
+
+/* predicate for constant zero: */
+int
+zero_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return op == CONST0_RTX (mode);
 }
 
 
@@ -301,6 +327,8 @@ b_mode_operand (op)
   if (GET_CODE (op) == MEM)
     {
       rtx inner = XEXP (op, 0);
+      if (GET_CODE (inner) == REG && REG_OK_FOR_INDEX_P (inner))
+	return 1;
       if (GET_CODE (inner) == PLUS)
 	{
 	  rtx plus_op0 = XEXP (inner, 0);
@@ -316,6 +344,92 @@ b_mode_operand (op)
     }
   return 0;
 }
+
+/* predicate needed for adding 1 to mem (short before output) */
+int
+simple_memory_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  rtx inner;
+  if (GET_CODE (op) != MEM)
+    return 0;
+  inner = XEXP (op, 0);
+  switch (GET_CODE (inner))
+    {
+    case REG:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 1;
+    case PLUS:
+      if (GET_CODE (XEXP (inner, 1)) != CONST_INT)
+        return 0;
+      inner = (XEXP (inner, 0));
+      switch (GET_CODE (inner))
+	{
+	case REG:
+	case SYMBOL_REF:
+	case LABEL_REF:
+	  return 1;
+	case PLUS:
+	  if (GET_CODE (XEXP (inner, 1)) != CONST_INT)
+            return 0;
+	  switch (GET_CODE (XEXP (inner, 0)))
+	    {
+	    case SYMBOL_REF:
+	    case LABEL_REF:
+	      return 1;
+	    }
+	}
+    }
+  return 0;
+}
+
+/* destructively add one to memory address */
+add_1_to_mem (opnd)	/* returns 1 for success, 0 for failure */
+     rtx opnd;		/* OPND must be a MEM rtx */
+{
+  rtx inner = XEXP (opnd, 0);
+
+  if (GET_CODE (opnd) != MEM)
+    return 0;  /* failure */
+first:
+  switch (GET_CODE (inner))
+    {
+    case CONST:
+      inner = XEXP (inner, 0);
+      goto first;
+    case REG:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      inner = gen_rtx (PLUS, Pmode, inner, const1_rtx);
+      return 1;
+    case PLUS:
+      inner = XEXP (inner, 1);
+second:
+      switch (GET_CODE (inner))
+	{
+	case CONST:
+	  inner = XEXP (inner, 0);
+	  goto second;
+	case CONST_INT:
+	  INTVAL (inner) += 1;
+	  return 1;
+	case SYMBOL_REF:
+	case LABEL_REF:
+	  inner = gen_rtx (PLUS, Pmode, inner, const1_rtx);
+	  return 1;
+	case PLUS:
+	  inner = XEXP (inner, 1);
+	  if (GET_CODE (inner) != CONST_INT)
+	    return 0;
+	  INTVAL (inner) += 1;
+	  return 1;
+	}
+    }
+  return 0;
+}
+
 
 /* Decide whether to output a conditional jump as a "Jump Conditional"
    or as a "Branch Conditional": */
@@ -411,9 +525,21 @@ print_operand (file, x, kode)
     case CONST:
     case MEM:
       if (kode == 'Q')
-	fprintf (file, "r%d,%d",
-		 REGNO (XEXP (XEXP (x, 0), 0)),
-		 INTVAL (XEXP (XEXP (x, 0), 1)));
+	{
+	  rtx inner = XEXP (x, 0);
+	  switch (GET_CODE (inner))
+	    {
+	    case REG:
+	      fprintf (file, "r%d,0", REGNO (inner));
+	      break;
+	    case PLUS:
+	      fprintf (file, "r%d,%d", REGNO (XEXP (inner, 0)),
+		       INTVAL (XEXP (inner, 1)));
+	      break;
+	    default:
+	      fprintf (file, "[ill Q code=%d]", GET_CODE (inner));
+	    }
+	}
       else
         output_address (XEXP (x, 0));
       break;
@@ -496,7 +622,7 @@ print_operand (file, x, kode)
 	  switch (op0code)
 	    {
 	    case REG:
-	      fprintf (file, "%d,r%d  ; p_o_PLUS for REG and CONST",
+	      fprintf (file, "%d,r%d  ; p_o_PLUS for REG and CONST_INT",
 		       INTVAL (op1), REGNO (op0));
 	      break;
 	    case SYMBOL_REF:
