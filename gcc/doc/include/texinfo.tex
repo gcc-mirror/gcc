@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2001-05-24.08}
+\def\texinfoversion{2002-01-04.07}
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
 %               2000, 01 Free Software Foundation, Inc.
@@ -30,14 +30,17 @@
 % Please try the latest version of texinfo.tex before submitting bug
 % reports; you can get the latest version from:
 %   ftp://ftp.gnu.org/gnu/texinfo.tex
-%   (and all GNU mirrors, see http://www.gnu.org/order/ftp.html)
-%   ftp://texinfo.org/tex/texinfo.tex
-%   ftp://us.ctan.org/macros/texinfo/texinfo.tex
-%   (and all CTAN mirrors, finger ctan@us.ctan.org for a list).
-%   /home/gd/gnu/doc/texinfo.tex on the GNU machines.
+%     (and all GNU mirrors, see http://www.gnu.org/order/ftp.html)
+%   ftp://texinfo.org/texinfo/texinfo.tex
+%   ftp://tug.org/tex/texinfo.tex
+%     (and all CTAN mirrors, see http://www.ctan.org),
+%   and /home/gd/gnu/doc/texinfo.tex on the GNU machines.
+% 
 % The texinfo.tex in any given Texinfo distribution could well be out
 % of date, so if that's what you're using, please check.
-% Texinfo has a small home page at http://texinfo.org/.
+% 
+% Texinfo has a small home page at http://texinfo.org/ and also
+% http://www.gnu.org/software/texinfo.
 %
 % Send bug reports to bug-texinfo@gnu.org.  Please include including a
 % complete document in each bug report with which we can reproduce the
@@ -441,7 +444,7 @@
   % environments.  --karl, 6may93
   %{\advance \baselineskip by -\singlespaceskip
   %\kern \baselineskip}%
-  \setleading \singlespaceskip
+  \setleading\singlespaceskip
 }
 
 %% Simple single-character @ commands
@@ -927,10 +930,12 @@ where each line of input produces a line of output.}
   \def\dopdfimage#1#2#3{%
     \def\imagewidth{#2}%
     \def\imageheight{#3}%
+    % without \immediate, pdftex seg faults when the same image is
+    % included twice.  (Version 3.14159-pre-1.0-unofficial-20010704.)
     \ifnum\pdftexversion < 14
-      \pdfimage
+      \immediate\pdfimage
     \else
-      \pdfximage
+      \immediate\pdfximage
     \fi
       \ifx\empty\imagewidth\else width \imagewidth \fi
       \ifx\empty\imageheight\else height \imageheight \fi
@@ -942,8 +947,8 @@ where each line of input produces a line of output.}
     \ifnum\pdftexversion < 14 \else
       \pdfrefximage \pdflastximage
     \fi}
-  \def\pdfmkdest#1{\pdfdest name{#1} xyz}
-  \def\pdfmkpgn#1{#1@}
+  \def\pdfmkdest#1{{\normalturnoffactive \pdfdest name{#1} xyz}}
+  \def\pdfmkpgn#1{#1}
   \let\linkcolor = \Blue  % was Cyan, but that seems light?
   \def\endlink{\Black\pdfendlink}
   % Adding outlines to PDF; macros for calculating structure of outlines
@@ -1068,9 +1073,8 @@ where each line of input produces a line of output.}
   \def\makelink{\addtokens{\toksB}%
     {\noexpand\pdflink{\the\toksC}}\toksC={}\global\countA=0}
   \def\pdflink#1{%
-    \startlink attr{/Border [0 0 0]} goto name{\mkpgn{#1}}
+    \startlink attr{/Border [0 0 0]} goto name{\pdfmkpgn{#1}}
     \linkcolor #1\endlink}
-  \def\mkpgn#1{#1@} 
   \def\done{\edef\st{\global\noexpand\toksA={\the\toksB}}\st}
 \fi % \ifx\pdfoutput
 
@@ -1087,9 +1091,29 @@ where each line of input produces a line of output.}
 % We don't need math for this one.
 \def\ttsl{\tenttsl}
 
+% Default leading.
+\newdimen\textleading  \textleading = 13.2pt
+
+% Set the baselineskip to #1, and the lineskip and strut size
+% correspondingly.  There is no deep meaning behind these magic numbers
+% used as factors; they just match (closely enough) what Knuth defined.
+%
+\def\lineskipfactor{.08333}
+\def\strutheightpercent{.70833}
+\def\strutdepthpercent {.29167}
+%
+\def\setleading#1{%
+  \normalbaselineskip = #1\relax
+  \normallineskip = \lineskipfactor\normalbaselineskip
+  \normalbaselines
+  \setbox\strutbox =\hbox{%
+    \vrule width0pt height\strutheightpercent\baselineskip
+                    depth \strutdepthpercent \baselineskip
+  }%
+}
+
 % Use Computer Modern fonts at \magstephalf (11pt).
-\newcount\mainmagstep
-\mainmagstep=\magstephalf
+\newcount\mainmagstep \mainmagstep=\magstephalf
 
 % Set the font macro #1 to the font named #2, adding on the
 % specified font prefix (normally `cm').
@@ -1155,6 +1179,18 @@ where each line of input produces a line of output.}
 \setfont\smallttsl\ttslshape{10}{900}
 \font\smalli=cmmi9
 \font\smallsy=cmsy9
+
+% Fonts for small examples (8pt).
+\setfont\smallerrm\rmshape{8}{1000}
+\setfont\smallertt\ttshape{8}{1000}
+\setfont\smallerbf\bfshape{10}{800}
+\setfont\smallerit\itshape{8}{1000}
+\setfont\smallersl\slshape{8}{1000}
+\setfont\smallersf\sfshape{8}{1000}
+\setfont\smallersc\scshape{10}{800}
+\setfont\smallerttsl\ttslshape{10}{800}
+\font\smalleri=cmmi8
+\font\smallersy=cmsy8
 
 % Fonts for title page:
 \setfont\titlerm\rmbshape{12}{\magstep3}
@@ -1244,7 +1280,7 @@ where each line of input produces a line of output.}
   \let\tenrm=\textrm \let\tenit=\textit \let\tensl=\textsl
   \let\tenbf=\textbf \let\tentt=\texttt \let\smallcaps=\textsc
   \let\tensf=\textsf \let\teni=\texti \let\tensy=\textsy \let\tenttsl=\textttsl
-  \resetmathfonts}
+  \resetmathfonts \setleading{\textleading}}
 \def\titlefonts{%
   \let\tenrm=\titlerm \let\tenit=\titleit \let\tensl=\titlesl
   \let\tenbf=\titlebf \let\tentt=\titlett \let\smallcaps=\titlesc
@@ -1273,7 +1309,14 @@ where each line of input produces a line of output.}
   \let\tenbf=\smallbf \let\tentt=\smalltt \let\smallcaps=\smallsc
   \let\tensf=\smallsf \let\teni=\smalli \let\tensy=\smallsy
   \let\tenttsl=\smallttsl
-  \resetmathfonts \setleading{11pt}}
+  \resetmathfonts \setleading{10.5pt}}
+\def\smallerfonts{%
+  \let\tenrm=\smallerrm \let\tenit=\smallerit \let\tensl=\smallersl
+  \let\tenbf=\smallerbf \let\tentt=\smallertt \let\smallcaps=\smallersc
+  \let\tensf=\smallersf \let\teni=\smalleri \let\tensy=\smallersy
+  \let\tenttsl=\smallerttsl
+  \resetmathfonts \setleading{9.5pt}}
+\let\smallexamplefonts = \smallerfonts
 
 % Set up the default fonts, so we can use them for creating boxes.
 %
@@ -1576,6 +1619,10 @@ where each line of input produces a line of output.}
    \oldpage
    \endgroup
    %
+   % Need this before the \...aftertitlepage checks so that if they are
+   % in effect the toc pages will come out with page numbers.
+   \HEADINGSon
+   %
    % If they want short, they certainly want long too.
    \ifsetshortcontentsaftertitlepage
      \shortcontents
@@ -1591,8 +1638,6 @@ where each line of input produces a line of output.}
    \fi
    %
    \ifpdf \pdfmakepagedesttrue \fi
-   %
-   \HEADINGSon
 }
 
 \def\finishtitlepage{%
@@ -2354,13 +2399,15 @@ width0pt\relax} \fi
 %
 \def\ignore{\doignore{ignore}}
 
-% Ignore @ifinfo, @ifhtml, @ifnottex, @html, @menu, and @direntry text.
+% Also ignore @ifinfo, @ifhtml, @ifnottex, @html, @menu,
+% @documentdescription, and @direntry text.
 %
 \def\ifinfo{\doignore{ifinfo}}
 \def\ifhtml{\doignore{ifhtml}}
 \def\ifnottex{\doignore{ifnottex}}
 \def\html{\doignore{html}}
 \def\menu{\doignore{menu}}
+\def\documentdescription{\doignore{documentdescription}}
 \def\direntry{\doignore{direntry}}
 
 % @dircategory CATEGORY  -- specify a category of the dir file
@@ -2467,10 +2514,14 @@ width0pt\relax} \fi
     \let\tenrm=\nullfont \let\tenit=\nullfont \let\tensl=\nullfont
     \let\tenbf=\nullfont \let\tentt=\nullfont \let\smallcaps=\nullfont
     \let\tensf=\nullfont
-    % Similarly for index fonts (mostly for their use in smallexample).
+    % Similarly for index fonts.
     \let\smallrm=\nullfont \let\smallit=\nullfont \let\smallsl=\nullfont
     \let\smallbf=\nullfont \let\smalltt=\nullfont \let\smallsc=\nullfont
     \let\smallsf=\nullfont
+    % Similarly for smallexample fonts.
+    \let\smallerrm=\nullfont \let\smallerit=\nullfont \let\smallersl=\nullfont
+    \let\smallerbf=\nullfont \let\smallertt=\nullfont \let\smallersc=\nullfont
+    \let\smallersf=\nullfont
     %
     % Don't complain when characters are missing from the fonts.
     \tracinglostchars = 0
@@ -4299,7 +4350,7 @@ width0pt\relax} \fi
 \def\smalllispx{\begingroup
   \def\Esmalllisp{\nonfillfinish\endgroup}%
   \def\Esmallexample{\nonfillfinish\endgroup}%
-  \smallfonts
+  \smallexamplefonts
   \lisp
 }
 
@@ -4310,12 +4361,12 @@ width0pt\relax} \fi
   \let\Edisplay = \nonfillfinish
   \gobble
 }
-
+%
 % @smalldisplay (when @smallbook): @display plus smaller fonts.
 %
 \def\smalldisplayx{\begingroup
   \def\Esmalldisplay{\nonfillfinish\endgroup}%
-  \smallfonts \rm
+  \smallexamplefonts \rm
   \display
 }
 
@@ -4327,12 +4378,12 @@ width0pt\relax} \fi
   \let\Eformat = \nonfillfinish
   \gobble
 }
-
+%
 % @smallformat (when @smallbook): @format plus smaller fonts.
 %
 \def\smallformatx{\begingroup
   \def\Esmallformat{\nonfillfinish\endgroup}%
-  \smallfonts \rm
+  \smallexamplefonts \rm
   \format
 }
 
@@ -5483,13 +5534,15 @@ width0pt\relax} \fi
   \ifpdf
     \leavevmode
     \getfilename{#4}%
-    \ifnum\filenamelength>0
-      \startlink attr{/Border [0 0 0]}%
-        goto file{\the\filename.pdf} name{#1@}%
-    \else
-      \startlink attr{/Border [0 0 0]}%
-        goto name{#1@}%
-    \fi
+    {\normalturnoffactive
+     \ifnum\filenamelength>0
+       \startlink attr{/Border [0 0 0]}%
+         goto file{\the\filename.pdf} name{#1}%
+     \else
+       \startlink attr{/Border [0 0 0]}%
+         goto name{#1}%
+     \fi
+    }%
     \linkcolor
   \fi
   %
@@ -5751,8 +5804,15 @@ width0pt\relax} \fi
   %
   \smallfonts \rm
   %
-  % Hang the footnote text off the number.
-  \hang
+  % Because we use hanging indentation in footnotes, a @noindent appears
+  % to exdent this text, so make it be a no-op.  makeinfo does not use
+  % hanging indentation so @noindent can still be needed within footnote
+  % text after an @example or the like (not that this is good style).
+  \let\noindent = \relax
+  %
+  % Hang the footnote text off the number.  Use \everypar in case the
+  % footnote extends for more than one paragraph.
+  \everypar = {\hang}%
   \textindent{\thisfootno}%
   %
   % Don't crash into the line above the footnote text.  Since this
@@ -5768,24 +5828,6 @@ width0pt\relax} \fi
 \def\@foot{\strut\par\egroup}
 
 }%end \catcode `\@=11
-
-% Set the baselineskip to #1, and the lineskip and strut size
-% correspondingly.  There is no deep meaning behind these magic numbers
-% used as factors; they just match (closely enough) what Knuth defined.
-%
-\def\lineskipfactor{.08333}
-\def\strutheightpercent{.70833}
-\def\strutdepthpercent {.29167}
-%
-\def\setleading#1{%
-  \normalbaselineskip = #1\relax
-  \normallineskip = \lineskipfactor\normalbaselineskip
-  \normalbaselines
-  \setbox\strutbox =\hbox{%
-    \vrule width0pt height\strutheightpercent\baselineskip
-                    depth \strutdepthpercent \baselineskip
-  }%
-}
 
 % @| inserts a changebar to the left of the current line.  It should
 % surround any changed text.  This approach does *not* work if the
@@ -5851,41 +5893,44 @@ width0pt\relax} \fi
       \global\warnednoepsftrue
     \fi
   \else
-    \imagexxx #1,,,\finish
+    \imagexxx #1,,,,,\finish
   \fi
 }
 %
 % Arguments to @image:
 % #1 is (mandatory) image filename; we tack on .eps extension.
 % #2 is (optional) width, #3 is (optional) height.
-% #4 is just the usual extra ignored arg for parsing this stuff.
-\def\imagexxx#1,#2,#3,#4\finish{%
+% #4 is (ignored optional) html alt text.
+% #5 is (ignored optional) extension.
+% #6 is just the usual extra ignored arg for parsing this stuff.
+\newif\ifimagevmode
+\def\imagexxx#1,#2,#3,#4,#5,#6\finish{\begingroup \loggingall
+  \catcode`\^^M = 5     % in case we're inside an example
+  \normalturnoffactive  % allow _ et al. in names
+  % If the image is by itself, center it.
+  \ifvmode
+    \imagevmodetrue
+    \nobreak\bigskip
+    % Usually we'll have text after the image which will insert
+    % \parskip glue, so insert it here too to equalize the space
+    % above and below. 
+    \nobreak\vskip\parskip
+    \nobreak
+    \line\bgroup\hss
+  \fi
+  %
+  % Output the image.
   \ifpdf
-    \centerline{\dopdfimage{#1}{#2}{#3}}%
+    \dopdfimage{#1}{#2}{#3}%
   \else
     % \epsfbox itself resets \epsf?size at each figure.
     \setbox0 = \hbox{\ignorespaces #2}\ifdim\wd0 > 0pt \epsfxsize=#2\relax \fi
     \setbox0 = \hbox{\ignorespaces #3}\ifdim\wd0 > 0pt \epsfysize=#3\relax \fi
-    \begingroup
-      \catcode`\^^M = 5     % in case we're inside an example
-      \normalturnoffactive  % allow _ et al. in names
-      % If the image is by itself, center it.
-      \ifvmode
-        \nobreak\bigskip
-        % Usually we'll have text after the image which will insert
-        % \parskip glue, so insert it here too to equalize the space
-        % above and below. 
-        \nobreak\vskip\parskip
-        \nobreak
-        \centerline{\epsfbox{#1.eps}}%
-        \bigbreak
-      \else
-        % In the middle of a paragraph, no extra space.
-        \epsfbox{#1.eps}%
-      \fi
-    \endgroup
+    \epsfbox{#1.eps}%
   \fi
-}
+  %
+  \ifimagevmode \hss \egroup \bigbreak \fi  % space after the image
+\endgroup}
 
 
 \message{localization,}
@@ -5954,8 +5999,9 @@ should work if nowhere else does.}
 }
 
 % Parameters in order: 1) textheight; 2) textwidth; 3) voffset;
-% 4) hoffset; 5) binding offset; 6) topskip.  Then whoever calls us can
-% set \parskip and call \setleading for \baselineskip.
+% 4) hoffset; 5) binding offset; 6) topskip.  We also call
+% \setleading{\textleading}, so the caller should define \textleading.
+% The caller should also set \parskip.
 %
 \def\internalpagesizes#1#2#3#4#5#6{%
   \voffset = #3\relax
@@ -5976,6 +6022,8 @@ should work if nowhere else does.}
   \normaloffset = #4\relax
   \bindingoffset = #5\relax
   %
+  \setleading{\textleading}
+  %
   \parindent = \defaultparindent
   \setemergencystretch
 }
@@ -5992,7 +6040,7 @@ should work if nowhere else does.}
 % @letterpaper (the default).
 \def\letterpaper{{\globaldefs = 1
   \parskip = 3pt plus 2pt minus 1pt
-  \setleading{13.2pt}%
+  \textleading = 13.2pt
   %
   % If page is nothing but text, make it come out even.
   \internalpagesizes{46\baselineskip}{6in}{\voffset}{.25in}{\bindingoffset}{36pt}%
@@ -6001,7 +6049,7 @@ should work if nowhere else does.}
 % Use @smallbook to reset parameters for 7x9.5 (or so) format.
 \def\smallbook{{\globaldefs = 1
   \parskip = 2pt plus 1pt
-  \setleading{12pt}%
+  \textleading = 12pt
   %
   \internalpagesizes{7.5in}{5.in}{\voffset}{.25in}{\bindingoffset}{16pt}%
   %
@@ -6016,8 +6064,8 @@ should work if nowhere else does.}
 
 % Use @afourpaper to print on European A4 paper.
 \def\afourpaper{{\globaldefs = 1
-  \setleading{12pt}%
   \parskip = 3pt plus 2pt minus 1pt
+  \textleading = 12pt
   %
   \internalpagesizes{53\baselineskip}{160mm}{\voffset}{4mm}{\bindingoffset}{44pt}%
   %
@@ -6029,8 +6077,8 @@ should work if nowhere else does.}
 % From romildo@urano.iceb.ufop.br, 2 July 2000.
 % He also recommends making @example and @lisp be small.
 \def\afivepaper{{\globaldefs = 1
-  \setleading{12.5pt}%
   \parskip = 2pt plus 1pt minus 0.1pt
+  \textleading = 12.5pt
   %
   \internalpagesizes{166mm}{120mm}{\voffset}{-8mm}{\bindingoffset}{8pt}%
   %
@@ -6048,11 +6096,13 @@ should work if nowhere else does.}
 % A specific text layout, 24x15cm overall, intended for A4 paper.  Top margin
 % 29mm, hence bottom margin 28mm, nominal side margin 3cm.
 \def\afourlatex{{\globaldefs = 1
-  \setleading{13.6pt}%
+  \textleading = 13.6pt
   %
   \afourpaper
   \internalpagesizes{237mm}{150mm}{3.6mm}{3.6mm}{3mm}{7mm}%
   %
+  % Must explicitly reset to 0 because we call \afourpaper, apparently,
+  % although this does not entirely make sense.
   \globaldefs = 0
 }}
 
@@ -6060,8 +6110,6 @@ should work if nowhere else does.}
 \def\afourwide{%
   \afourpaper
   \internalpagesizes{6.5in}{9.5in}{\hoffset}{\normaloffset}{\bindingoffset}{7mm}%
-  %
-  \globaldefs = 0
 }
 
 % @pagesizes TEXTHEIGHT[,TEXTWIDTH]
@@ -6075,7 +6123,7 @@ should work if nowhere else does.}
   \globaldefs = 1
   %
   \parskip = 3pt plus 2pt minus 1pt
-  \setleading{13.2pt}%
+  \setleading{\textleading}%
   %
   \internalpagesizes{#1}{\hsize}{\voffset}{\normaloffset}{\bindingoffset}{44pt}%
 }}
