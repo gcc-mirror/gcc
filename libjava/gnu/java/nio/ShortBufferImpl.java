@@ -70,26 +70,6 @@ public final class ShortBufferImpl extends ShortBuffer
     readOnly = copy.isReadOnly ();
   }
 
-  private static native short[] nio_cast (byte[] copy);
-
-  ShortBufferImpl (byte[] copy)
-  {
-    super (copy.length, copy.length, 0, 0);
-    this.backing_buffer = copy != null ? nio_cast (copy) : null;
-    readOnly = false;
-  }
-  
-  private static native byte nio_get_Byte (ShortBufferImpl b, int index, int limit);
-  
-  private static native void nio_put_Byte (ShortBufferImpl b, int index, int limit, byte value);
-  
-  public ByteBuffer asByteBuffer ()
-  {
-    ByteBufferImpl res = new ByteBufferImpl (backing_buffer);
-    res.limit ((limit () * 1) / 2);
-    return res;
-  }
-
   public boolean isReadOnly()
   {
     return readOnly;

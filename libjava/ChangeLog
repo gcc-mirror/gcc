@@ -1,5 +1,57 @@
 2003-05-09  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/ByteBufferImpl.java
+	(nio_cast): Removed.
+	(ByteBufferImpl): Removed.
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+	(asByteBuffer): Removed.
+	(asCharBuffer): Removed implementation and throw exception.
+	(asShortBuffer): Likewise.
+	(asIntBuffer): Likewise.
+	(asLongBuffer): Likewise.
+	(asFloatBuffer): Likewise.
+	(asDoubleBuffer): Likewise.
+	* gnu/java/nio/CharBufferImpl.java
+	(CharBufferImpl): Removed.
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+	(asByteBuffer): Removed.
+	* gnu/java/nio/DoubleBufferImpl.java
+	(DoubleBufferImpl): Removed.
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+	(asByteBuffer): Removed.
+	* gnu/java/nio/FloatBufferImpl.java
+	(FloatBufferImpl): Removed.
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+	(asByteBuffer): Removed.
+	* gnu/java/nio/IntBufferImpl.java
+	(IntBufferImpl): Removed.
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+	(asByteBuffer): Removed.
+	* gnu/java/nio/LongBufferImpl.java
+	(LongBufferImpl): Removed.
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+	(asByteBuffer): Removed.
+	* gnu/java/nio/ShortBufferImpl.java
+	(ShortBufferImpl): Removed.
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+	(asByteBuffer): Removed.
+	* gnu/java/nio/natByteBufferImpl.cc
+	(nio_cast): Removed.
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+	* gnu/java/nio/natCharBufferImpl.cc
+	(nio_get_Byte): Removed.
+	(nio_put_Byte): Removed.
+
+2003-05-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/JarURLConnection.java
 	(getJarEntry): Merged documentation from classpath.
 	(getJarFile): Likewise.
