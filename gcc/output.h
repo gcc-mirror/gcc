@@ -18,33 +18,103 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#ifndef STDIO_PROTO
-#ifdef BUFSIZ
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
-#endif
-#endif
+/* Initialize data in final at the beginning of a compilation.  */
+extern void init_final		PROTO((char *));
+
+/* Called at end of source file,
+   to output the block-profiling table for this entire compilation.  */
+extern void end_final		PROTO((char *));
+
+/* Enable APP processing of subsequent output.
+   Used before the output from an `asm' statement.  */
+extern void app_enable		PROTO((void));
+
+/* Disable APP processing of subsequent output.
+   Called from varasm.c before most kinds of output.  */
+extern void app_disable		PROTO((void));
+
+/* Return the number of slots filled in the current 
+   delayed branch sequence (we don't count the insn needing the
+   delay slot).   Zero if not in a delayed branch sequence.  */
+extern int dbr_sequence_length	PROTO((void));
+
+/* Indicate that branch shortening hasn't yet been done.  */
+extern void init_insn_lengths	PROTO((void));
+
+/* Obtain the current length of an insn.  If branch shortening has been done,
+   get its actual length.  Otherwise, get its maximum length.  */
+extern int get_attr_length	PROTO((rtx));
+
+/* Make a pass over all insns and compute their actual lengths by shortening
+   any branches of variable length if possible.  */
+extern void shorten_branches	PROTO((rtx));
+
+/* Output assembler code for the start of a function,
+   and initialize some of the variables in this file
+   for the new function.  The label for the function and associated
+   assembler pseudo-ops have already been output in
+   `assemble_start_function'.  */
+extern void final_start_function  STDIO_PROTO((rtx, FILE *, int));
+
+/* Output assembler code for the end of a function.
+   For clarity, args are same as those of `final_start_function'
+   even though not all of them are needed.  */
+extern void final_end_function  STDIO_PROTO((rtx, FILE *, int));
+
+/* Output assembler code for some insns: all or part of a function.  */
+extern void final		STDIO_PROTO((rtx, FILE *, int, int));
+
+/* The final scan for one insn, INSN.  Args are same as in `final', except
+   that INSN is the insn being scanned.  Value returned is the next insn to
+   be scanned.  */
+extern rtx final_scan_insn	STDIO_PROTO((rtx, FILE *, int, int, int));
+
+/* Replace a SUBREG with a REG or a MEM, based on the thing it is a
+   subreg of.  */
+extern rtx alter_subreg PROTO((rtx));
+
+/* Report inconsistency between the assembler template and the operands.
+   In an `asm', it's the user's fault; otherwise, the compiler's fault.  */
+extern void output_operand_lossage  PROTO((char *));
 
 /* Output a string of assembler code, substituting insn operands.
    Defined in final.c.  */
-extern void output_asm_insn PROTO((char *, rtx *));
+extern void output_asm_insn	PROTO((char *, rtx *));
 
-/* Output a string of assembler code, substituting numbers, strings
-   and fixed syntactic prefixes.  */
-extern void asm_fprintf STDIO_PROTO(PVPROTO((FILE *file, char *p, ...)));
+/* Output a LABEL_REF, or a bare CODE_LABEL, as an assembler symbol.  */
+extern void output_asm_label	PROTO((rtx));
+
+/* Print a memory reference operand for address X
+   using machine-dependent assembler syntax.  */
+extern void output_address	PROTO((rtx));
 
 /* Print an integer constant expression in assembler syntax.
    Addition and subtraction are the only arithmetic
    that may appear in these expressions.  */
 extern void output_addr_const STDIO_PROTO((FILE *, rtx));
 
+/* Output a string of assembler code, substituting numbers, strings
+   and fixed syntactic prefixes.  */
+extern void asm_fprintf		STDIO_PROTO(PVPROTO((FILE *file,
+						     char *p, ...)));
+
+/* Split up a CONST_DOUBLE or integer constant rtx into two rtx's for single
+   words.  */
+extern void split_double	PROTO((rtx, rtx *, rtx *));
+
+/* Return nonzero if this function has no function calls.  */
+extern int leaf_function_p	PROTO((void));
+
+/* Return 1 if this function uses only the registers that can be
+   safely renumbered.  */
+extern int only_leaf_regs_used	PROTO((void));
+
+/* Scan IN_RTX and its subexpressions, and renumber all regs into those
+   available in leaf functions.  */
+extern void leaf_renumber_regs_insn PROTO((rtx));
+
 /* Output a name (as found inside a symbol_ref) in assembler syntax.  */
 extern void assemble_name STDIO_PROTO((FILE *, char *));
-
-/* Replace a SUBREG with a REG or a MEM, based on the thing it is a
-   subreg of.  */
-extern rtx alter_subreg PROTO((rtx));
 
 /* When outputting assembler code, indicates which alternative
    of the constraints was actually satisfied.  */
