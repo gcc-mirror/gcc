@@ -1173,13 +1173,18 @@ estimate_bb_frequencies (loops)
     counts_to_freqs ();
   else
     {
-      sreal_init (&real_zero, 0, 0);
-      sreal_init (&real_one, 1, 0);
-      sreal_init (&real_br_prob_base, REG_BR_PROB_BASE, 0);
-      sreal_init (&real_bb_freq_max, BB_FREQ_MAX, 0);
-      sreal_init (&real_one_half, 1, -1);
-      sreal_div (&real_inv_br_prob_base, &real_one, &real_br_prob_base);
-      sreal_sub (&real_almost_one, &real_one, &real_inv_br_prob_base);
+      static int real_values_initialized = 0;
+
+      if (!real_values_initialized)
+        {
+	  sreal_init (&real_zero, 0, 0);
+	  sreal_init (&real_one, 1, 0);
+	  sreal_init (&real_br_prob_base, REG_BR_PROB_BASE, 0);
+	  sreal_init (&real_bb_freq_max, BB_FREQ_MAX, 0);
+	  sreal_init (&real_one_half, 1, -1);
+	  sreal_div (&real_inv_br_prob_base, &real_one, &real_br_prob_base);
+	  sreal_sub (&real_almost_one, &real_one, &real_inv_br_prob_base);
+	}
 
       mark_dfs_back_edges ();
       /* Fill in the probability values in flowgraph based on the REG_BR_PROB

@@ -1,3 +1,8 @@
+2003-03-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* predict.c (estimate_bb_frequencies): Initialize the sreal
+	constants once per compilation.
+
 2003-02-28  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (flag_eliminate_unused_debug_types): Enable by default.
