@@ -233,7 +233,8 @@ namespace std
 
   template
     bool
-    __verify_grouping<C>(const basic_string<C>&, basic_string<C>&);
+    __verify_grouping<C>(const basic_string<C>&,
+			 const basic_string<C>&);
 
   template class __pad<C, char_traits<C> >;
 

@@ -144,51 +144,50 @@ namespace std
       const _CharT* __lit = __lc->_M_atoms_in;
 
       // First check for sign.
-      int __pos = 0;
-      char_type  __c = *__beg;
-      const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
-      if ((__plus || __traits_type::eq(__c, __lit[_S_iminus])) 
-	  && __beg != __end)
+      if (__beg != __end)
 	{
-	  __xtrc += __plus ? _S_atoms_in[_S_iplus] : _S_atoms_in[_S_iminus];
-	  ++__pos;
-	  __c = *(++__beg);
+	  const char_type __c = *__beg;
+	  const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
+	  if (__plus || __traits_type::eq(__c, __lit[_S_iminus]))
+	    {
+	      __xtrc += __plus ? _S_atoms_in[_S_iplus]
+		               : _S_atoms_in[_S_iminus];
+	      ++__beg;
+	    }
 	}
-
-      // Next, strip leading zeros.
-      bool __found_zero = false;
-      while (__traits_type::eq(__c, __lit[_S_izero]) && __beg != __end)
-	{
-	  __c = *(++__beg);
-	  __found_zero = true;
-	}
-      if (__found_zero)
+	  
+      // Next, look for a zero...
+      bool __found_mantissa = false;
+      if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
 	{
 	  __xtrc += _S_atoms_in[_S_izero];
-	  ++__pos;
+	  __found_mantissa = true;
+	  ++__beg;
+	  // ... and skip the additional ones.
+	  for (; __beg != __end
+		 && __traits_type::eq(*__beg, __lit[_S_izero]); ++__beg);
 	}
 
       // Only need acceptable digits for floating point numbers.
       bool __found_dec = false;
       bool __found_sci = false;
       string __found_grouping;
-      const size_t __len = _S_iE - _S_izero + 1;
       int __sep_pos = 0;
       bool __e;
       while (__beg != __end)
         {
 	  // Only look in digits.
+	  const char_type __c = *__beg;
           const char_type* __p = __traits_type::find(__lit + _S_izero, 10, 
 						     __c);
-
-          // NB: strchr returns true for __c == 0x0
+          // NB: strchr returns true for *__beg == 0x0
           if (__p && !__traits_type::eq(__c, char_type()))
 	    {
 	      // Try first for acceptable digit; record it if found.
-	      ++__pos;
 	      __xtrc += _S_atoms_in[__p - __lit];
+	      __found_mantissa = true;
 	      ++__sep_pos;
-	      __c = *(++__beg);
+	      ++__beg;
 	    }
           else if (__traits_type::eq(__c, __lc->_M_thousands_sep) 
 		   && __lc->_M_use_grouping && !__found_dec)
@@ -199,7 +198,7 @@ namespace std
                 {
                   __found_grouping += static_cast<char>(__sep_pos);
                   __sep_pos = 0;
-		  __c = *(++__beg);
+		  ++__beg;
                 }
               else
 		{
@@ -215,28 +214,28 @@ namespace std
 	      // must be adjusted only if __dec comes after some __sep.
 	      if (__found_grouping.size())
 		__found_grouping += static_cast<char>(__sep_pos);
-	      ++__pos;
 	      __xtrc += '.';
-	      __c = *(++__beg);
 	      __found_dec = true;
+	      ++__beg;
 	    }
 	  else if ((__e = __traits_type::eq(__c, __lit[_S_ie]) 
 		    || __traits_type::eq(__c, __lit[_S_iE])) 
-		   && !__found_sci && __pos)
+		   && __found_mantissa && !__found_sci)
 	    {
 	      // Scientific notation.
-	      ++__pos;
 	      __xtrc += __e ? _S_atoms_in[_S_ie] : _S_atoms_in[_S_iE];
-	      __c = *(++__beg);
-
+	      ++__beg;
+	      
 	      // Remove optional plus or minus sign, if they exist.
-	      const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
-	      if (__plus || __traits_type::eq(__c, __lit[_S_iminus]))
+	      if (__beg != __end)
 		{
-		  ++__pos;
-		  __xtrc += __plus ? _S_atoms_in[_S_iplus] 
-		                   : _S_atoms_in[_S_iminus];
-		  __c = *(++__beg);
+		  const bool __plus = __traits_type::eq(*__beg, __lit[_S_iplus]);
+		  if (__plus || __traits_type::eq(*__beg, __lit[_S_iminus]))
+		    {
+		      __xtrc += __plus ? _S_atoms_in[_S_iplus] 
+			               : _S_atoms_in[_S_iminus];
+		      ++__beg;
+		    }
 		}
 	      __found_sci = true;
 	    }
@@ -288,55 +287,62 @@ namespace std
 	__base = 10;
 
       // First check for sign.
-      char_type  __c = *__beg;
-      const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
-      if ((__plus || __traits_type::eq(__c, __lit[_S_iminus])) 
-	  && __beg != __end)
+      if (__beg != __end)
 	{
-	  __xtrc += __plus ? _S_atoms_in[_S_iplus] : _S_atoms_in[_S_iminus];
-	  __c = *(++__beg);
+	  const char_type __c = *__beg;
+	  const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
+	  if (__plus || __traits_type::eq(__c, __lit[_S_iminus]))
+	    {
+	      __xtrc += __plus ? _S_atoms_in[_S_iplus]
+		               : _S_atoms_in[_S_iminus];
+	      ++__beg;
+	    }
 	}
 
-      // Next, strip leading zeros and check required digits for base formats.
-      if (__base == 10)
+      // Next, look for leading zeros and check required digits for base formats.
+      if (__builtin_expect(__base == 10, true))
 	{
-	  bool __found_zero = false;
-	  while (__traits_type::eq(__c, __lit[_S_izero]) && __beg != __end)
-	    {
-	      __c = *(++__beg);
-	      __found_zero = true;
-	    }
-	  if (__found_zero)
+	  // Look for a zero...
+	  if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
 	    {
 	      __xtrc += _S_atoms_in[_S_izero];
-	      if (__basefield == 0)
-		{	      
-		  const bool __x = __traits_type::eq(__c, __lit[_S_ix]);
-		  if ((__x || __traits_type::eq(__c, __lit[_S_iX]))
-		      && __beg != __end)
+	      ++__beg;
+	      // ... and skip the additional ones.
+	      for (; __beg != __end
+		     && __traits_type::eq(*__beg, __lit[_S_izero]); ++__beg);
+	      
+	      // Check required digits.
+	      if (__beg != __end && __basefield == 0)
+		{	  
+		  const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
+		  if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
 		    {
-		      __xtrc += __x ? _S_atoms_in[_S_ix] : _S_atoms_in[_S_iX];
-		      __c = *(++__beg);
+		      __xtrc += __x ? _S_atoms_in[_S_ix] 
+			            : _S_atoms_in[_S_iX];
 		      __base = 16;
+		      ++__beg;		      
 		    }
 		  else 
 		    __base = 8;
-		}
+		}	      
 	    }
 	}
       else if (__base == 16)
 	{
-	  if (__traits_type::eq(__c, __lit[_S_izero]) && __beg != __end)
+	  if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
 	    {
 	      __xtrc += _S_atoms_in[_S_izero];
-	      __c = *(++__beg); 
-
-	      const bool __x = __traits_type::eq(__c, __lit[_S_ix]);
-	      if ((__x || __traits_type::eq(__c, __lit[_S_iX]))
-		  && __beg != __end)
+	      ++__beg; 
+	      
+	      if (__beg != __end)
 		{
-		  __xtrc += __x ? _S_atoms_in[_S_ix] : _S_atoms_in[_S_iX];
-		  __c = *(++__beg);
+		  const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
+		  if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
+		    {
+		      __xtrc += __x ? _S_atoms_in[_S_ix] 
+			            : _S_atoms_in[_S_iX];
+		      ++__beg;
+		    }
 		}
 	    }
 	}
@@ -347,22 +353,21 @@ namespace std
 
       // Extract.
       string __found_grouping;
-      const char_type __sep = __lc->_M_thousands_sep;
       int __sep_pos = 0;
-      while (__beg != __end)
+      for (; __beg != __end; ++__beg)
         {
-          const char_type* __p = __traits_type::find(__lit + _S_izero, 
-						     __len,  __c);
-
+	  const char_type __c = *__beg;
+          const char_type* __p = __traits_type::find(__lit + _S_izero,
+						     __len, __c);
           // NB: strchr returns true for __c == 0x0
           if (__p && !__traits_type::eq(__c, char_type()))
 	    {
 	      // Try first for acceptable digit; record it if found.
 	      __xtrc += _S_atoms_in[__p - __lit];
 	      ++__sep_pos;
-	      __c = *(++__beg);
 	    }
-          else if (__traits_type::eq(__c, __sep) && __lc->_M_use_grouping)
+          else if (__traits_type::eq(__c, __lc->_M_thousands_sep)
+		   && __lc->_M_use_grouping)
 	    {
               // NB: Thousands separator at the beginning of a string
               // is a no-no, as is two consecutive thousands separators.
@@ -370,7 +375,6 @@ namespace std
                 {
                   __found_grouping += static_cast<char>(__sep_pos);
                   __sep_pos = 0;
-		  __c = *(++__beg);
                 }
               else
 		{
@@ -1609,6 +1613,18 @@ namespace std
 		  _M_extract_num(__beg, __end, __tm->tm_mday, 1, 31, 2, 
 				 __ctype, __err);
 		  break;
+		case 'e':
+		  // Day [1, 31], with single digits preceded by
+		  // space. [tm_mday]
+		  if (__ctype.is(ctype_base::space, *__beg))
+		    _M_extract_num(++__beg, __end, __tm->tm_mday, 1, 9, 1,
+				   __ctype, __err);
+		  else if (*__beg != __ctype.widen('0'))
+		    _M_extract_num(__beg, __end, __tm->tm_mday, 10, 31, 2,
+				   __ctype, __err);		    
+		  else
+		    __err |= ios_base::failbit;
+		  break;		    
 		case 'D':
 		  // Equivalent to %m/%d/%y.[tm_mon, tm_mday, tm_year]
 		  __cs = "%m/%d/%y";
@@ -1660,7 +1676,7 @@ namespace std
 		  if (__ctype.narrow(*__beg, 0) == '\t')
 		    ++__beg;
 		  else
-		__err |= ios_base::failbit;
+		    __err |= ios_base::failbit;
 		  break;
 		case 'T':
 		  // Equivalent to (%H:%M:%S).
@@ -1707,10 +1723,9 @@ namespace std
 				      14, __err);
 		      
 		      // GMT requires special effort.
-		      char_type __c = *__beg;
-		      if (!__err && __tmp == 0 
-			  && (__c == __ctype.widen('-') 
-			      || __c == __ctype.widen('+')))
+		      if (__beg != __end && !__err && __tmp == 0
+			  && (*__beg == __ctype.widen('-') 
+			      || *__beg == __ctype.widen('+')))
 			{
 			  _M_extract_num(__beg, __end, __tmp, 0, 23, 2,
 					  __ctype, __err);
@@ -2245,7 +2260,7 @@ namespace std
   template<typename _CharT>
     bool
     __verify_grouping(const basic_string<_CharT>& __grouping, 
-		      basic_string<_CharT>& __grouping_tmp)
+		      const basic_string<_CharT>& __grouping_tmp)
     {         
       size_t __i = 0;
       size_t __j = 0;
