@@ -4683,7 +4683,7 @@ mtherr (name, code)
    */
   if ((code <= 0) || (code >= NMSGS))
     code = 0;
-  sprintf (errstr, "\n%s %s error\n", name, ermsg[code]);
+  sprintf (errstr, " %s %s error", name, ermsg[code]);
   if (extra_warnings)
     warning (errstr);
   /* Set global error message word */
