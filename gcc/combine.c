@@ -5614,7 +5614,18 @@ force_to_mode (x, mode, mask, reg)
   /* If X is a CONST_INT, return a new one.  Do this here since the
      test below will fail.  */
   if (GET_CODE (x) == CONST_INT)
-    return GEN_INT (INTVAL (x) & mask);
+    {
+      HOST_WIDE_INT cval = INTVAL (x) & mask;
+      int width = GET_MODE_BITSIZE (mode);
+
+      /* If MODE is narrower that HOST_WIDE_INT and CVAL is a negative
+	 number, sign extend it.  */
+      if (width > 0 && width < HOST_BITS_PER_WIDE_INT
+	  && (cval & ((HOST_WIDE_INT) 1 << (width - 1))) != 0)
+	cval |= (HOST_WIDE_INT) -1 << width;
+	
+      return GEN_INT (cval);
+    }
 
   /* If X is narrower than MODE, just get X in the proper mode.  */
   if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode))
