@@ -1,5 +1,9 @@
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
+        * toplev.c: Use ISO C90 prototypes.
+
+        * toplev.h: Use ISO C90 prototypes.
+
 	* genrecog.c: Use ISO C90 prototypes.
 	(nodes_identical): Correct declaration to match prototype.
 	(maybe_both_true): Likewise.
