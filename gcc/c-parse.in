@@ -1896,7 +1896,8 @@ select_or_iter_stmt:
 		{ stmt_count++;
 		  RECHAIN_STMTS ($<ttype>2, FOR_INIT_STMT ($<ttype>2)); }
 	  xexpr ';'
-                { FOR_COND ($<ttype>2) = $6; }
+                { if ($6) 
+		    FOR_COND ($<ttype>2) = truthvalue_conversion ($6); }
 	  xexpr ')'
 		{ FOR_EXPR ($<ttype>2) = $9; }
 	  c99_block_lineno_labeled_stmt

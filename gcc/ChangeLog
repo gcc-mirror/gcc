@@ -1,3 +1,9 @@
+2000-12-28  Geoffrey Keating  <geoffk@redhat.com>
+
+	* c-parse.in (select_or_iter_stmt): Use truthvalue_conversion
+	on the condition of a FOR statement, so that it gets typechecked
+	and optimised.
+
 2000-12-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-decl.c (grokdeclarator): Prevent crash in case of overflow in

@@ -4,6 +4,8 @@
 
 2000-12-28  Geoffrey Keating  <geoffk@redhat.com>
 
+	* gcc.dg/noncompile/20001228-1.c: New test.
+
 	* gcc.dg/20001228-1.c: New test.
 	
 	* gcc.c-torture/execute/20001228-1.c: New test.
