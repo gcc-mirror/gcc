@@ -1,5 +1,7 @@
-#   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+# Primary test file for libstdc++.
 
+# Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -18,36 +20,9 @@
 
 # Initialization.
 dg-init
-v3-init
-
-# If a libstdc++ test file doesn't have special options, use DEFAULT_CXXFLAGS.
-# Use this variable if the behavior
-# 1) only applies to libstdc++ testing
-# 2) might need to be negated 
-# In particular, some tests have to be run without precompiled
-# headers, or without assertions.
-global blddir
-global target_triplet
-global DEFAULT_CXXFLAGS
-if ![info exists DEFAULT_CXXFLAGS] then {
-    set DEFAULT_CXXFLAGS "-D_GLIBCXX_ASSERT"
-
-    # Set up includes for stdc++.h.gch, the precompiled header file.
-    set flags_file "${blddir}/scripts/testsuite_flags"
-    if { [file exists $flags_file] } {
-	set cxxpchflags [exec sh $flags_file --cxxpchflags]
-    } else {
-	set cxxpchflags ""
-    }
-    append DEFAULT_CXXFLAGS " ${cxxpchflags}"
-
-    # Host specific goo here.
-    if { [string match "powerpc-*-darwin*" $target_triplet] } {
-	append DEFAULT_CXXFLAGS " -multiply_defined suppress"
-    } 
-}
 
 # Main loop.
+global DEFAULT_CXXFLAGS
 dg-runtest [v3-list-tests testsuite_files] "" $DEFAULT_CXXFLAGS
 #dg-runtest [v3-list-tests testsuite_files_interactive] "" $DEFAULT_CXXFLAGS
 

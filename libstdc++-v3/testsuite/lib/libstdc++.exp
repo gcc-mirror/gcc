@@ -1,5 +1,7 @@
-# Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+# libstdc++ "tool init file" for DejaGNU
 
+# Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -14,11 +16,46 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-# Define callbacks for dg.exp.  This file is loaded early.
 
+# Define callbacks and load other libraries.  This file is loaded relatively
+# early, and before any other file we write ourselves.  "load_lib" will
+# find anything in the DejaGNU installation tree, or in our lib directory.
+# "load_gcc_lib" will search the core compiler's .exp collection instead.
+#
+# The naming rule is that dg.exp looks for "tool-" and runtest.exp looks
+# for "tool_" when finding callbacks.  Utility routines we define for
+# our callbacks begin with "v3-".
+#
+# libstdc++_* callbacks we don't define, but could:
+# ..._option_help           prints additional --help output
+# ..._option_proc (--foo)   process our own options
+# ..._exit                  cleanup routines (do we need any?)
+# ..._init (normal.exp)     called once per test file
+# ..._finish                bracketing function for libstdc++_init
+# ...-dg-prune              removing output text, see top of system dg.exp
+#
+# Useful hook:  if ${hostname}_init exists, it will be called, almost
+# the last thing before testing begins.  This can be defined in, e.g.,
+# ~/.dejagnurc or $DEJAGNU.
+
+proc load_gcc_lib { filename } {
+    global srcdir
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+}
+
+# system routines
 load_lib dg.exp
 load_lib libgloss.exp
+# compiler routines, then ours
 load_lib prune.exp
+load_lib dg-options.exp
+
+# Useful for debugging.  Pass the name of a variable and the verbosity
+# threshold (number of -v's on the command line).
+proc v3track { var n } {
+    upvar $var val
+    verbose "++ $var is $val" $n
+}
 
 # Called by v3-init below.  "Static" to this file.
 proc v3-copy-files {srcfiles dstdir} {
@@ -36,22 +73,44 @@ proc v3-copy-files {srcfiles dstdir} {
     }
 }
 
-# Called once, from libstdc++/dg.exp.
-proc v3-init { args } {
-    global srcdir
-    global outdir
-    global blddir
-    global cxx
-    global includes
-    global cxxflags
-    global objdir
-    global gluefile wrap_flags
+# Called once, during runtest.exp setup.
+proc libstdc++_init { testfile } {
     global env
-    global ld_library_path
-    global original_ld_library_path
-    global tool_root_dir
+    global srcdir outdir blddir objdir tool_root_dir
+    global cxx cxxflags
+    global includes
+    global gluefile wrap_flags
+    global ld_library_path original_ld_library_path
+    global target_triplet
 
     set blddir [lookfor_file [get_multilibs] libstdc++-v3]
+    set flags_file "${blddir}/scripts/testsuite_flags"
+    v3track flags_file 2
+
+    # If a test doesn't have special options, use DEFAULT_CXXFLAGS.
+    # Use this variable if the behavior
+    #   1) only applies to libstdc++ testing
+    #   2) might need to be negated 
+    # In particular, some tests have to be run without precompiled
+    # headers, or without assertions.
+    global DEFAULT_CXXFLAGS
+    if ![info exists DEFAULT_CXXFLAGS] then {
+	set DEFAULT_CXXFLAGS "-D_GLIBCXX_ASSERT"
+
+	# Set up includes for stdc++.h.gch, the precompiled header file.
+	if { [file exists $flags_file] } {
+	    set cxxpchflags [exec sh $flags_file --cxxpchflags]
+	} else {
+	    set cxxpchflags ""
+	}
+	append DEFAULT_CXXFLAGS " ${cxxpchflags}"
+
+	# Host specific goo here.
+	if { [string match "powerpc-*-darwin*" $target_triplet] } {
+	    append DEFAULT_CXXFLAGS " -multiply_defined suppress"
+	} 
+    }
+    v3track DEFAULT_CXXFLAGS 2
 
     # By default, we assume we want to run program images.
     global dg-do-what-default
@@ -87,6 +146,7 @@ proc v3-init { args } {
     if {$gccdir != ""} {
         set gccdir [file dirname $gccdir]
     }
+    v3track gccdir 3
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
     set ld_library_path ""
@@ -138,7 +198,6 @@ proc v3-init { args } {
       set includes "-I./"
     } else {
         # If we find a testsuite_flags file, we're testing in the build dir.
-        set flags_file "${blddir}/scripts/testsuite_flags"
         if { [file exists $flags_file] } {
             set cxx [exec sh $flags_file --build-cxx]
             set cxxflags [exec sh $flags_file --cxxflags]
@@ -166,7 +225,6 @@ proc v3-init { args } {
 # Callback from system dg-test.
 proc libstdc++-dg-test { prog do_what extra_tool_flags } {
     # Set up the compiler flags, based on what we're going to do.
-
     switch $do_what {
         "preprocess" {
             set compile_type "preprocess"
@@ -204,6 +262,8 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
         lappend options "additional_flags=$extra_tool_flags"
     }
 
+    # There is a libstdc++_compile made for us by default (via the tool-
+    # and-target file), but the defaults are lacking in goodness.
     set comp_output [v3_target_compile "$prog" "$output_file" "$compile_type" $options];
     set comp_output [ prune_g++_output $comp_output ];
 
@@ -242,7 +302,7 @@ proc v3_target_compile { source dest type options } {
 }
 
 
-# Called once, from libstdc++*/dg.exp.
+# Called once, from libstdc++/normal.exp.
 proc v3-list-tests { filename } {
     global srcdir
     global outdir

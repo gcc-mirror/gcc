@@ -1,3 +1,15 @@
+2004-02-27  Phil Edwards  <phil@codesourcery.com>
+
+	* testsuite/config/default.exp:  Update with comments.
+	(${tool}_target_compile):  New wrapper routine.
+	* testsuite/lib/dg-options.exp:  New file, with dg-require-iconv.
+	* testsuite/lib/libstdc++.exp:  Update with comments and cosmetic
+	fixes.
+	(load_gcc_lib, v3track):  New routines.
+	(v3-init):  Rename to libstdc++_init.
+	* testsuite/libstdc++-dg/normal.exp:  No longer call v3-init.
+	Move DEFAULT_CXXFLAGS handling into libstdc++_init.
+
 2004-02-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/cpu/hppa/atomicity.h: Include c++config.h to get defines.
