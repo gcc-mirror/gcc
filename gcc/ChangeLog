@@ -1,3 +1,10 @@
+2003-03-28  Olivier Hainque  <hainque@act-europe.fr>
+
+	PR ada/9953
+	* ada/Makefile.in (gnatlib configuration for HPUX): Split
+	the general section for HPUX into specific sections for
+	HPUX 10 and HPUX 11.
+
 2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/10067
