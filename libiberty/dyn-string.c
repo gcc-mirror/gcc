@@ -305,6 +305,30 @@ dyn_string_insert_cstr (dest, pos, src)
   return 1;
 }
 
+/* Inserts character C into DEST starting at position POS.  DEST is
+   expanded as necessary.  Returns 1 on success.  On failure,
+   RETURN_ON_ALLOCATION_FAILURE, deletes DEST and returns 0.  */
+
+int
+dyn_string_insert_char (dest, pos, c)
+     dyn_string_t dest;
+     int pos;
+     int c;
+{
+  int i;
+
+  if (dyn_string_resize (dest, dest->length + 1) == NULL)
+    return 0;
+  /* Make room for the insertion.  Be sure to copy the NUL.  */
+  for (i = dest->length; i >= pos; --i)
+    dest->s[i + 1] = dest->s[i];
+  /* Add the new character.  */
+  dest->s[pos] = c;
+  /* Compute the new length.  */
+  ++dest->length;
+  return 1;
+}
+     
 /* Append S to DS, resizing DS if necessary.  Returns 1 on success.
    On failure, if RETURN_ON_ALLOCATION_FAILURE, deletes DEST and
    returns 0.  */
