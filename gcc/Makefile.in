@@ -1309,6 +1309,11 @@ cplus-dem.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
 	$(LN_S) $(srcdir)/../libiberty/cplus-dem.c cplus-dem.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) cplus-dem.c
 
+pexecute.o: $(srcdir)/../libiberty/pexecute.c $(CONFIG_H) system.h gansidecl.h
+	rm -f pexecute.c
+	$(LN_S) $(srcdir)/../libiberty/pexecute.c pexecute.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) pexecute.c
+
 underscore.c: s-under ; @true
 
 s-under: $(GCC_PASSES)
@@ -1362,7 +1367,6 @@ version.o: version.c
 obstack.o: obstack.c $(CONFIG_H)
 choose-temp.o: choose-temp.c $(CONFIG_H) gansidecl.h system.h
 mkstemp.o: mkstemp.c $(CONFIG_H) gansidecl.h system.h
-pexecute.o: pexecute.c $(CONFIG_H) system.h gansidecl.h
 prefix.o: prefix.c $(CONFIG_H) system.h gansidecl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	-DPREFIX=\"$(prefix)\" \
@@ -1800,9 +1804,9 @@ $(HOST_PREFIX_1)obstack.o: obstack.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/obstack.c > $(HOST_PREFIX)obstack.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c
 
-$(HOST_PREFIX_1)vfprintf.o: vfprintf.c
+$(HOST_PREFIX_1)vfprintf.o: $(srcdir)/../libiberty/vfprintf.c
 	rm -f $(HOST_PREFIX)vfprintf.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/vfprintf.c > $(HOST_PREFIX)vfprintf.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)../libiberty/vfprintf.c > $(HOST_PREFIX)vfprintf.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)vfprintf.c
 
 $(HOST_PREFIX_1)doprint.o: doprint.c
