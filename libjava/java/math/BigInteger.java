@@ -21,7 +21,7 @@ import java.util.Random;
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * 
- * Based primarily on IntNum.java by Per Bothner <per@bothner.com>
+ * Based primarily on IntNum.java BitOps.java by Per Bothner <per@bothner.com>
  * (found in Kawa 1.6.62).
  *
  * Status:  Believed complete and correct.
@@ -68,6 +68,18 @@ public class BigInteger extends Number implements Comparable
   private BigInteger(int value)
   {
     ival = value;
+  }
+
+  public BigInteger(String val, int radix)
+  {
+    BigInteger result = valueOf(val, radix);
+    this.ival = result.ival;
+    this.words = result.words;
+  }
+
+  public BigInteger(String val)
+  {
+    this(val, 10);
   }
 
   /* Create a new (non-shared) BigInteger, and initialize from a byte array. */
@@ -184,7 +196,7 @@ public class BigInteger extends Number implements Comparable
       word = (word << 8) | (((int) bytes[bptr]) & 0xff);
     words[--nwords] = word;
 
-    // Elements remaining in byte[] is a  multiple of 4.
+    // Elements remaining in byte[] are a multiple of 4.
     while (nwords > 0)
       words[--nwords] = bytes[bptr++] << 24 |
 			(((int) bytes[bptr++]) & 0xff) << 16 |
@@ -339,13 +351,13 @@ public class BigInteger extends Number implements Comparable
     return this;
   }
 
-  /** Add two ints, yielding an BigInteger. */
+  /** Add two ints, yielding a BigInteger. */
   private static final BigInteger add(int x, int y)
   {
     return BigInteger.make((long) x + (long) y);
   }
 
-  /** Add an BigInteger and an int, yielding a new BigInteger. */
+  /** Add a BigInteger and an int, yielding a new BigInteger. */
   private static BigInteger add(BigInteger x, int y)
   {
     if (x.words == null)
@@ -1183,15 +1195,6 @@ public class BigInteger extends Number implements Comparable
       }
   }
 
-  public BigInteger not()
-  {
-    BigInteger result = new BigInteger();
-    result.ival = ival;
-    result.words = words;
-    result.setInvert();
-    return result;
-  }
-
   private void setShiftLeft(BigInteger x, int count)
   {
     int[] xwords;
@@ -1419,6 +1422,51 @@ public class BigInteger extends Number implements Comparable
     return BigInteger.equals(this, (BigInteger) obj);
   }
 
+  private static BigInteger valueOf(String s, int radix)
+       throws NumberFormatException
+  {
+    int len = s.length();
+    // Testing (len < MPN.chars_per_word(radix)) would be more accurate,
+    // but slightly more expensive, for little practical gain.
+    if (len <= 15 && radix <= 16)
+      return BigInteger.make(Long.parseLong(s, radix));
+    
+    int byte_len = 0;
+    byte[] bytes = new byte[len];
+    boolean negative = false;
+    for (int i = 0;  i < len;  i++)
+      {
+	char ch = s.charAt(i);
+	if (ch == '-')
+	  negative = true;
+	else if (ch == '_' || (byte_len == 0 && (ch == ' ' || ch == '\t')))
+	  continue;
+	else
+	  {
+	    int digit = Character.digit(ch, radix);
+	    if (digit < 0)
+	      break;
+	    bytes[byte_len++] = (byte) digit;
+	  }
+      }
+    return valueOf(bytes, byte_len, negative, radix);
+  }
+
+  private static BigInteger valueOf(byte[] digits, int byte_len,
+				    boolean negative, int radix)
+  {
+    int chars_per_word = MPN.chars_per_word(radix);
+    int[] words = new int[byte_len / chars_per_word + 1];
+    int size = MPN.set_str(words, digits, byte_len, radix);
+    if (size == 0)
+      return ZERO;
+    if (words[size-1] < 0)
+      words[size++] = 0;
+    if (negative)
+      negate(words, words, size);
+    return make(words, size);
+  }
+
   public double doubleValue()
   {
     if (words == null)
@@ -1632,21 +1680,307 @@ public class BigInteger extends Number implements Comparable
       return MPN.intLength(words, ival);
   }
 
-/* TODO:
+  public byte[] toByteArray()
+  {
+    // Determine number of bytes needed.  The method bitlength returns
+    // the size without the sign bit, so add one bit for that and then
+    // add 7 more to emulate the ceil function using integer math.
+    byte[] bytes = new byte[(bitLength() + 1 + 7) / 8];
+    int nbytes = bytes.length;
 
-  public BigInteger(String val, int radix)
+    int wptr = 0;
+    int word;
 
-  public BigInteger(String val)
+    // Deal with words array until one word or less is left to process.
+    // If BigInteger is an int, then it is in ival and nbytes will be <= 4.
+    while (nbytes > 4)
+      {
+	word = words[wptr++];
+	for (int i = 4; i > 0; --i, word >>= 8)
+          bytes[--nbytes] = (byte) word;
+      }
 
-  public BigInteger(int bitLength, int certainty, Random rnd)
+    // Deal with the last few bytes.  If BigInteger is an int, use ival.
+    word = (words == null) ? ival : words[wptr];
+    for ( ; nbytes > 0; word >>= 8)
+      bytes[--nbytes] = (byte) word;
 
-  public BigInteger and(BigInteger val)
+    return bytes;
+  }
 
-  public BigInteger or(BigInteger val)
+  /** Return the boolean opcode (for bitOp) for swapped operands.
+   * I.e. bitOp(swappedOp(op), x, y) == bitOp(op, y, x).
+   */
+  private static int swappedOp(int op)
+  {
+    return
+    "\000\001\004\005\002\003\006\007\010\011\014\015\012\013\016\017"
+    .charAt(op);
+  }
 
-  public BigInteger xor(BigInteger val
+  /** Do one the the 16 possible bit-wise operations of two BigIntegers. */
+  private static BigInteger bitOp(int op, BigInteger x, BigInteger y)
+  {
+    switch (op)
+      {
+        case 0:  return ZERO;
+        case 1:  return x.and(y);
+        case 3:  return x;
+        case 5:  return y;
+        case 15: return smallFixNums[-1 - minFixNum];	// Returns -1.
+      }
+    BigInteger result = new BigInteger();
+    setBitOp(result, op, x, y);
+    return result.canonicalize();
+  }
+
+  /** Do one the the 16 possible bit-wise operations of two BigIntegers. */
+  private static void setBitOp(BigInteger result, int op,
+			       BigInteger x, BigInteger y)
+  {
+    if (y.words == null) ;
+    else if (x.words == null || x.ival < y.ival)
+      {
+	BigInteger temp = x;  x = y;  y = temp;
+	op = swappedOp(op);
+      }
+    int xi;
+    int yi;
+    int xlen, ylen;
+    if (y.words == null)
+      {
+	yi = y.ival;
+	ylen = 1;
+      }
+    else
+      {
+	yi = y.words[0];
+	ylen = y.ival;
+      }
+    if (x.words == null)
+      {
+	xi = x.ival;
+	xlen = 1;
+      }
+    else
+      {
+	xi = x.words[0];
+	xlen = x.ival;
+      }
+    if (xlen > 1)
+      result.realloc(xlen);
+    int[] w = result.words;
+    int i = 0;
+    // Code for how to handle the remainder of x.
+    // 0:  Truncate to length of y.
+    // 1:  Copy rest of x.
+    // 2:  Invert rest of x.
+    int finish = 0;
+    int ni;
+    switch (op)
+      {
+      case 0:  // clr
+	ni = 0;
+	break;
+      case 1: // and
+	for (;;)
+	  {
+	    ni = xi & yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	if (yi < 0) finish = 1;
+	break;
+      case 2: // andc2
+	for (;;)
+	  {
+	    ni = xi & ~yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	if (yi >= 0) finish = 1;
+	break;
+      case 3:  // copy x
+	ni = xi;
+	finish = 1;  // Copy rest
+	break;
+      case 4: // andc1
+	for (;;)
+	  {
+	    ni = ~xi & yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	if (yi < 0) finish = 2;
+	break;
+      case 5: // copy y
+	for (;;)
+	  {
+	    ni = yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	break;
+      case 6:  // xor
+	for (;;)
+	  {
+	    ni = xi ^ yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	finish = yi < 0 ? 2 : 1;
+	break;
+      case 7:  // ior
+	for (;;)
+	  {
+	    ni = xi | yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	if (yi >= 0) finish = 1;
+	break;
+      case 8:  // nor
+	for (;;)
+	  {
+	    ni = ~(xi | yi);
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	if (yi >= 0)  finish = 2;
+	break;
+      case 9:  // eqv [exclusive nor]
+	for (;;)
+	  {
+	    ni = ~(xi ^ yi);
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	finish = yi >= 0 ? 2 : 1;
+	break;
+      case 10:  // c2
+	for (;;)
+	  {
+	    ni = ~yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	break;
+      case 11:  // orc2
+	for (;;)
+	  {
+	    ni = xi | ~yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	if (yi < 0)  finish = 1;
+	break;
+      case 12:  // c1
+	ni = ~xi;
+	finish = 2;
+	break;
+      case 13:  // orc1
+	for (;;)
+	  {
+	    ni = ~xi | yi;
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	if (yi >= 0) finish = 2;
+	break;
+      case 14:  // nand
+	for (;;)
+	  {
+	    ni = ~(xi & yi);
+	    if (i+1 >= ylen) break;
+	    w[i++] = ni;  xi = x.words[i];  yi = y.words[i];
+	  }
+	if (yi < 0) finish = 2;
+	break;
+      default:
+      case 15:  // set
+	ni = -1;
+	break;
+      }
+    // Here i==ylen-1; w[0]..w[i-1] have the correct result;
+    // and ni contains the correct result for w[i+1].
+    if (i+1 == xlen)
+      finish = 0;
+    switch (finish)
+      {
+      case 0:
+	if (i == 0 && w == null)
+	  {
+	    result.ival = ni;
+	    return;
+	  }
+	w[i++] = ni;
+	break;
+      case 1:  w[i] = ni;  while (++i < xlen)  w[i] = x.words[i];  break;
+      case 2:  w[i] = ni;  while (++i < xlen)  w[i] = ~x.words[i];  break;
+      }
+    result.ival = i;
+  }
+
+  /** Return the logical (bit-wise) "and" of a BigInteger and an int. */
+  private static BigInteger and(BigInteger x, int y)
+  {
+    if (x.words == null)
+      return BigInteger.make(x.ival & y);
+    if (y >= 0)
+      return BigInteger.make(x.words[0] & y);
+    int len = x.ival;
+    int[] words = new int[len];
+    words[0] = x.words[0] & y;
+    while (--len > 0)
+      words[len] = x.words[len];
+    return BigInteger.make(words, x.ival);
+  }
+
+  /** Return the logical (bit-wise) "and" of two BigIntegers. */
+  public BigInteger and(BigInteger y)
+  {
+    if (y.words == null)
+      return and(this, y.ival);
+    else if (words == null)
+      return and(y, ival);
+
+    BigInteger x = this;
+    if (ival < y.ival)
+      {
+        BigInteger temp = this;  x = y;  y = temp;
+      }
+    int i;
+    int len = y.isNegative() ? x.ival : y.ival;
+    int[] words = new int[len];
+    for (i = 0;  i < y.ival;  i++)
+      words[i] = x.words[i] & y.words[i];
+    for ( ; i < len;  i++)
+      words[i] = x.words[i];
+    return BigInteger.make(words, len);
+  }
+
+  /** Return the logical (bit-wise) "(inclusive) or" of two BigIntegers. */
+  public BigInteger or(BigInteger y)
+  {
+    return bitOp(7, this, y);
+  }
+
+  /** Return the logical (bit-wise) "exclusive or" of two BigIntegers. */
+  public BigInteger xor(BigInteger y)
+  {
+    return bitOp(6, this, y);
+  }
+
+  /** Return the logical (bit-wise) negation of a BigInteger. */
+  public BigInteger not()
+  {
+    return bitOp(12, this, ZERO);
+  }
 
   public BigInteger andNot(BigInteger val)
+  {
+    return and(val.not());
+  }
 
   public BigInteger clearBit(int n)
   {
@@ -1664,20 +1998,62 @@ public class BigInteger extends Number implements Comparable
     return or(ONE.shiftLeft(n));
   }
 
+  // bit4count[I] is number of '1' bits in I.
+  private static final byte[] bit4_count = { 0, 1, 1, 2,  1, 2, 2, 3,
+					     1, 2, 2, 3,  2, 3, 3, 4};
+
+  private static int bitCount(int i)
+  {
+    int count = 0;
+    while (i != 0)
+      {
+	count += bit4_count[i & 15];
+	i >>>= 4;
+      }
+    return count;
+  }
+
+  private static int bitCount(int[] x, int len)
+  {
+    int count = 0;
+    while (--len >= 0)
+      count += bitCount(x[len]);
+    return count;
+  }
+
+  /** Count one bits in a BigInteger.
+   * If argument is negative, count zero bits instead. */
+  public int bitCount()
+  {
+    int i, x_len;
+    int[] x_words = words;
+    if (x_words == null)
+      {
+	x_len = 1;
+	i = bitCount(ival);
+      }
+    else
+      {
+	x_len = ival;
+	i = bitCount(x_words, x_len);
+      }
+    return isNegative() ? x_len * 32 - i : i;
+  }
+
+/* TODO:
+
+  public BigInteger(int bitLength, int certainty, Random rnd)
+
   public boolean testBit(int n)
 
   public BigInteger flipBit(int n)
 
   public int getLowestSetBit()
 
-  public int bitCount()
-
   public boolean isProbablePrime(int certainty)
 
   public BigInteger min(BigInteger val)
 
   public BigInteger max(BigInteger val)
-
-  public byte[] toByteArray()
 */
 }

@@ -1,3 +1,21 @@
+2000-02-04  Warren Levy  <warrenl@cygnus.com>
+
+	* java/math/BigInteger.java(BigInteger(String, int)): New constructor.
+	(BigInteger(String)): New constructor.
+	(not): Rewritten using version from Kawa's BitOps class.
+	(valueOf): New private methods from Kawa's BitOps class.
+	(swappedOp): ditto.
+	(bitOp): ditto.
+	(setBitOp): ditto.
+	(and): Implemented.
+	(or): Implemented.
+	(xor): Implemented.
+	(andNot): Implemented.
+	(clearBit): Implemented.
+	(setBit): Implemented.
+	(bitCount): Implemented.
+	(toByteArray): Implemented.
+
 2000-02-11  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/File.java (nextValue): Now synchronized.
