@@ -6603,7 +6603,7 @@ output_pic_addr_const (file, x, code)
 
     case SYMBOL_REF:
       assemble_name (file, XSTR (x, 0));
-      if (!TARGET_MACHO && code == 'P' && ! SYMBOL_REF_FLAG (x))
+      if (!TARGET_MACHO && code == 'P' && ! SYMBOL_REF_LOCAL_P (x))
 	fputs ("@PLT", file);
       break;
 
@@ -11643,7 +11643,7 @@ ix86_expand_call (retval, fnaddr, callarg1, callarg2, pop, sibcall)
   /* Static functions and indirect calls don't need the pic register.  */
   if (! TARGET_64BIT && flag_pic
       && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
-      && ! SYMBOL_REF_FLAG (XEXP (fnaddr, 0)))
+      && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
     use_reg (&use, pic_offset_table_rtx);
 
   if (TARGET_64BIT && INTVAL (callarg2) >= 0)
@@ -14854,7 +14854,7 @@ ix86_rtx_costs (x, code, outer_code, total)
 	       && (!TARGET_64BIT
 		   || (!GET_CODE (x) != LABEL_REF
 		       && (GET_CODE (x) != SYMBOL_REF
-		           || !SYMBOL_REF_FLAG (x)))))
+		           || !SYMBOL_REF_LOCAL_P (x)))))
 	*total = 1;
       else
 	*total = 0;

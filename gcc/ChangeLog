@@ -1,3 +1,8 @@
+2003-04-26  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (output_pic_addr_const): Use SYMBOL_REF_LOCAL_P.
+	(ix86_expand_call, ix86_rtx_consts): Likewise.
+
 2003-04-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/md.texi (cmpstr): Document additional restrictions.
