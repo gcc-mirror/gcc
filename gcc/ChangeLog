@@ -1,3 +1,7 @@
+2000-10-13  Richard Earnshaw <rearnsha@arm.com>
+
+	* tree.h (struct obstack): Declare.
+
 2000-10-12  Mark Mitchell  <mark@codesourcery.com>
 
 	Remove obstacks.  
