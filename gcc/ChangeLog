@@ -1,4 +1,4 @@
-Thu Aug 30 16:22:41 2001  J"orn Rennecke <amylaar@redhat.com>
+Thu Aug 30 19:22:15 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* config.gcc (h8300-*-elf*): New case.
 	* h8300.h (CPP_SPEC): Add subtarget_cpp_spec.
