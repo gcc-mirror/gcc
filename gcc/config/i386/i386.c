@@ -7926,9 +7926,17 @@ ix86_expand_move (mode, operands)
 
 	  if (strict)
 	    ;
-	  else if (GET_CODE (op1) == CONST_DOUBLE
-		   && register_operand (op0, mode))
-	    op1 = validize_mem (force_const_mem (mode, op1));
+	  else if (GET_CODE (op1) == CONST_DOUBLE)
+	    {
+	      op1 = validize_mem (force_const_mem (mode, op1));
+	      if (!register_operand (op0, mode))
+		{
+		  rtx temp = gen_reg_rtx (mode);
+		  emit_insn (gen_rtx_SET (VOIDmode, temp, op1));
+		  emit_move_insn (op0, temp);
+		  return;
+		}
+	    }
 	}
     }
 

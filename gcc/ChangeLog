@@ -1,3 +1,9 @@
+2003-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR optimization/9016
+	* config/i386/i386.c (ix86_expand_move): Force more CONST_DOUBLEs
+	into the constant pool.
+
 2003-03-16  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
         PR target/9164
