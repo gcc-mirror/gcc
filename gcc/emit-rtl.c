@@ -1897,6 +1897,23 @@ get_max_uid ()
 {
   return cur_insn_uid;
 }
+
+void
+renumber_insns ()
+{
+  rtx insn;
+  int old_max_uid = cur_insn_uid;
+
+  /* If there aren't that many instructions, then it's not really
+     worth renumbering them.  */
+  if (get_max_uid () < 25000)
+    return;
+
+  cur_insn_uid = 1;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    INSN_UID (insn) = cur_insn_uid++;
+}
 
 /* Return the next insn.  If it is a SEQUENCE, return the first insn
    of the sequence.  */
@@ -2568,6 +2585,33 @@ reorder_insns_with_line_notes (from, to, after)
 			  NOTE_LINE_NUMBER (after_line),
 			  to);
 }
+
+/* Remove unncessary notes from the instruction stream.  */
+
+void
+remove_unncessary_notes ()
+{
+  rtx insn;
+  rtx next;
+  varray_type block_stack;
+
+  /* Remove NOTE_INSN_DELETED notes.  We must not remove the first
+     instruction in the function because the compiler depends on the
+     first instruction being a note.  */
+  for (insn = NEXT_INSN (get_insns ()); insn; insn = next)
+    {
+      /* Remember what's next.  */
+      next = NEXT_INSN (insn);
+
+      /* We're only interested in notes.  */
+      if (GET_CODE (insn) != NOTE)
+	continue;
+
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
+	remove_insn (insn);
+    }
+}
+
 
 /* Emit an insn of given code and pattern
    at a specified place within the doubly-linked list.  */
