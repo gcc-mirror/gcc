@@ -114,6 +114,9 @@
 /* Get Single Unix Specification semantics */
 #undef _XOPEN_SOURCE
 
+/* Get Single Unix Specification semantics */
+#undef _XOPEN_SOURCE_EXTENDED
+
 /* Get 64-bit file size support */
 #undef _FILE_OFFSET_BITS
 
