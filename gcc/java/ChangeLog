@@ -1,5 +1,17 @@
 2001-01-17  Tom Tromey  <tromey@redhat.com>
 
+	Changes suggested by Per Bothner:
+	* gcj.texi (Input Options): Don't mention input files.
+	(Code Generation): Updated --main information.
+	(Invoking jcf-dump): Mention that --javap is incomplete.
+	From Alexandre Petit-Bianco:
+	(Warnings): Don't mention -Wunsupported-jdk11.
+	My stuff:
+	(Compatibility): Mention JDK 1.2-ness of libraries.
+	(Resources): Mention resources used when writing gcj.
+
+2001-01-17  Tom Tromey  <tromey@redhat.com>
+
 	* gcj.texi: New file.
 	* Make-lang.in ($(srcdir)/java/gcj.info): New target.
 	(java.info): Depend on gcj.info.

@@ -61,7 +61,7 @@ gcc, Using the GNU Compiler Collection}.  This manual only documents the
 options specific to @code{gcj}.
 
 @menu
-* Input Options::		How to find input files
+* Input Options::		How gcj finds files
 * Encodings::                   Options controlling source file encoding
 * Warnings::			Options controlling warnings specific to gcj
 * Code Generation::		Options controlling the output of gcj
@@ -74,14 +74,16 @@ options specific to @code{gcj}.
 
 @cindex class path
 
-@code{gcj} has options to control where it looks to find input files.
-Like other compilers for the Java language, @code{gcj} has a notion of a
-@dfn{class path}.  There are several options and environment variables
-which can be used to manipulate the class path.  When @code{gcj} looks
-for a given class, it searches the class path looking for the
-corresponding @file{.class} file.  @code{gcj} comes with a built-in
-class path which points at the installed @file{libgcj.jar}, a file which
-contains all the standard classes.
+@code{gcj} has options to control where it looks to find files it needs.
+For instance, @code{gcj} might need to load a class that is referenced
+by the file it has been asked to compile.  Like other compilers for the
+Java language, @code{gcj} has a notion of a @dfn{class path}.  There are
+several options and environment variables which can be used to
+manipulate the class path.  When @code{gcj} looks for a given class, it
+searches the class path looking for the corresponding @file{.class}
+file.  @code{gcj} comes with a built-in class path which points at the
+installed @file{libgcj.jar}, a file which contains all the standard
+classes.
 
 In the below, a directory or path component can refer either to an
 actual directory on the filesystem, or to a @file{.zip} or @file{.jar}
@@ -169,11 +171,6 @@ document the form of the warning which will have an effect -- the
 default being the opposite of what is listed.
 
 @table @code
-@item -Wunsupported-jdk11
-This will cause @code{gcj} to warn that @code{final} local variables are
-being treated as non-final.
-@c FIXME: why do we want this?  Is it just not implemented yet?
-
 @item -Wredundant-modifiers
 With this flag, @code{gcj} will warn about redundant modifiers.  For
 instance, it will warn if an interface method is declared @code{public}.
@@ -204,13 +201,13 @@ In addition to the many @code{gcc} options controlling code generation,
 
 @table @code
 @item --main=@var{CLASSNAME}
-This option is used when linking.  Since the linker expects to find a
-method simply named @code{main}, and since Java programs won't have such
-a method (due to name mangling), at link time @code{gcj} will generate a
-stub @code{main} function which will initialize the runtime and then
-invoke the @code{main} method of the appropriate class.  This option is
-used to specify the name of the class whose @code{main} method should be
-invoked when the resulting executable is run.
+This option is used when linking to specify the name of the class whose
+@code{main} method should be invoked when the resulting executable is
+run.  @footnote{The linker by default looks for a global function named
+@code{main}.  Since Java does not have global functions, and a
+collection of Java classes may have more than one class with a
+@code{main} method, you need to let the linker know which of those
+@code{main} methods it should invoke when starting the application.}
 
 @item -D@var{name}[=@var{value}]
 This option can only be used with @code{--main}.  It defines a system
@@ -228,9 +225,6 @@ When used with @code{-C}, this causes all generated @file{.class} files
 to be put in the appropriate subdirectory of @var{directory}.  By
 default they will be put in subdirectories of the current working
 directory.
-
-@c @item -fassume-compiled
-@c Nobody is sure what this does and anyway it doesn't work.
 
 @item -fno-bounds-check
 By default, @code{gcj} generates code which checks the bounds of all
@@ -278,7 +272,7 @@ dividing by zero.
 
 
 @node Compatibility
-@chapter Compatibility
+@chapter Compatibility with the Java Platform
 
 As we believe it is important that the Java platform not be fragmented,
 @code{gcj} and @code{libgcj} try to conform to the relevant Java
@@ -296,7 +290,11 @@ Java 2 @code{strictfp} keyword (it recognizes the keyword but ignores
 it).
 
 @item
-@code{libgcj} is missing many packages, most notably @code{java.awt}.
+@code{libgcj} is largely compatible with the JDK 1.2 libraries.
+However, @code{libgcj} is missing many packages, most notably
+@code{java.awt}.  There are also individual missing classes and methods.
+We currently do not have a list showing differences between
+@code{libgcj} and the Java 2 platform.
 
 @item
 Sometimes the @code{libgcj} implementation of a method or class differs
@@ -407,7 +405,8 @@ or file name.
 Disassemble method bodies.  By default method bodies are not printed.
 
 @item --javap
-Generate output in @code{javap} format.
+Generate output in @code{javap} format.  The implementation of this
+feature is very incomplete.
 
 @item --classpath=@var{path}
 @itemx --CLASSPATH=@var{path}
@@ -467,6 +466,13 @@ as the name of a jar file, not a class.
 
 @node Resources
 @chapter Resources
+
+While writing @code{gcj} and @code{libgcj} we have, of course, relied
+heavily on documentation from Sun Microsystems.  In particular we have
+used The Java Language Specification (both first and second editions),
+the Java Class Libraries (volumes one and two), and the Java Virtual
+Machine Specification.  In addition we've used the online documentation
+at @uref{http://java.sun.com/}.
 
 The current @code{gcj} home page is
 @uref{http://sources.redhat.com/java/}.  This is likely to change in the
