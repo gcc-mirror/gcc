@@ -3873,7 +3873,7 @@ assign_parms (fndecl, second_time)
   /* See how many bytes, if any, of its args a function should try to pop
      on return.  */
 
-  current_function_pops_args = RETURN_POPS_ARGS (TREE_TYPE (fndecl),
+  current_function_pops_args = RETURN_POPS_ARGS (fndecl, TREE_TYPE (fndecl),
 						 current_function_args_size);
 
   /* For stdarg.h function, save info about
