@@ -1,3 +1,13 @@
+Mon May 15 21:45:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (condjump_p):  Mark as depreached.
+	(any_condump_p): New.
+	(any_uncondump_p): New.
+	(pc_set): New.
+	(safe_to_remove_jump_p): New.
+	* rtl.h (any_condump_p, any_uncondjump_p, pc_set
+	safe_to_remove_jump_p): Declare.
+
 Mon May 15 21:07:20 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c: Re-install both patches reverted by last patch.

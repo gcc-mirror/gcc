@@ -1511,6 +1511,10 @@ extern void cse_end_of_basic_block	PARAMS ((rtx,
 /* In jump.c */
 extern int comparison_dominates_p	PARAMS ((enum rtx_code, enum rtx_code));
 extern int condjump_p			PARAMS ((rtx));
+extern int any_condjump_p		PARAMS ((rtx));
+extern int any_uncondjump_p		PARAMS ((rtx));
+extern int safe_to_remove_jump_p	PARAMS ((rtx));
+extern rtx pc_set			PARAMS ((rtx));
 extern rtx condjump_label		PARAMS ((rtx));
 extern int simplejump_p			PARAMS ((rtx));
 extern int returnjump_p			PARAMS ((rtx));
