@@ -1,3 +1,7 @@
+2000-11-29  Neil Booth  <neilb@earthling.net>
+
+        * c-pragma.c (init_pragma): Update for parse_in type change.
+
 2000-11-29  Laurynas Biveinis  <lauras@softhome.net>
 
 	* configure.in: recognize DOS-style absolute paths.
