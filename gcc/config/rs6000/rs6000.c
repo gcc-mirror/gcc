@@ -2645,6 +2645,7 @@ rs6000_emit_move (dest, source, mode)
     case V4HImode:
     case V2SFmode:
     case V2SImode:
+    case V1DImode:
       if (CONSTANT_P (operands[1])
 	  && !easy_vector_constant (operands[1]))
 	operands[1] = force_const_mem (mode, operands[1]);
