@@ -2253,7 +2253,7 @@ bc_expand_start_cond (cond, exitflag)
 
   thiscond->data.case_stmt.nominal_type = cond;
   bc_expand_expr (cond);
-  bc_emit_bytecode (jumpifnot);
+  bc_emit_bytecode (xjumpifnot);
   bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (thiscond->exit_label));
 
 #ifdef DEBUG_PRINT_CODE
@@ -2547,7 +2547,8 @@ expand_exit_loop_if_false (whichloop, cond)
   if (output_bytecode)
     {
       bc_expand_expr (cond);
-      bc_expand_goto_internal (jumpifnot, BYTECODE_BC_LABEL (whichloop->exit_label),
+      bc_expand_goto_internal (xjumpifnot,
+			       BYTECODE_BC_LABEL (whichloop->exit_label),
 			       NULL_RTX);
     }
   else
