@@ -1882,18 +1882,18 @@ private:
     // Verify exception handlers.
     for (int i = 0; i < current_method->exc_count; ++i)
       {
-	if (! (flags[exception[i].handler_pc] & FLAG_INSN_START))
+	if (! (flags[exception[i].handler_pc.i] & FLAG_INSN_START))
 	  verify_fail ("exception handler not at instruction start",
-		       exception[i].handler_pc);
-	if (! (flags[exception[i].start_pc] & FLAG_INSN_START))
+		       exception[i].handler_pc.i);
+	if (! (flags[exception[i].start_pc.i] & FLAG_INSN_START))
 	  verify_fail ("exception start not at instruction start",
-		       exception[i].start_pc);
-	if (exception[i].end_pc != current_method->code_length
-	    && ! (flags[exception[i].end_pc] & FLAG_INSN_START))
+		       exception[i].start_pc.i);
+	if (exception[i].end_pc.i != current_method->code_length
+	    && ! (flags[exception[i].end_pc.i] & FLAG_INSN_START))
 	  verify_fail ("exception end not at instruction start",
-		       exception[i].end_pc);
+		       exception[i].end_pc.i);
 
-	flags[exception[i].handler_pc] |= FLAG_BRANCH_TARGET;
+	flags[exception[i].handler_pc.i] |= FLAG_BRANCH_TARGET;
       }
   }
 
@@ -2186,12 +2186,12 @@ private:
 	// through them all.
 	for (int i = 0; i < current_method->exc_count; ++i)
 	  {
-	    if (PC >= exception[i].start_pc && PC < exception[i].end_pc)
+	    if (PC >= exception[i].start_pc.i && PC < exception[i].end_pc.i)
 	      {
 		type handler (&java::lang::Throwable::class$);
-		if (exception[i].handler_type != 0)
-		  handler = check_class_constant (exception[i].handler_type);
-		push_exception_jump (handler, exception[i].handler_pc);
+		if (exception[i].handler_type.i != 0)
+		  handler = check_class_constant (exception[i].handler_type.i);
+		push_exception_jump (handler, exception[i].handler_pc.i);
 	      }
 	  }
 

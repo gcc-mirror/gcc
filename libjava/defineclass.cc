@@ -1258,6 +1258,7 @@ void _Jv_ClassReader::handleCodeAttribute
   method->exc_count      = exc_table_length;
   method->defining_class = def;
   method->self           = &def->methods[method_index];
+  method->prepared       = NULL;
 
   // grab the byte code!
   memcpy ((void*) method->bytecode (),
@@ -1267,7 +1268,7 @@ void _Jv_ClassReader::handleCodeAttribute
   def->interpreted_methods[method_index] = method;
 }
 
-void _Jv_ClassReader::handleExceptionTableEntry 
+void _Jv_ClassReader::handleExceptionTableEntry
   (int method_index, int exc_index, 
    int start_pc, int end_pc, int handler_pc, int catch_type)
 {
@@ -1275,10 +1276,10 @@ void _Jv_ClassReader::handleExceptionTableEntry
     (def->interpreted_methods[method_index]);
   _Jv_InterpException *exc = method->exceptions ();
 
-  exc[exc_index].start_pc     = start_pc;
-  exc[exc_index].end_pc       = end_pc;
-  exc[exc_index].handler_pc   = handler_pc;
-  exc[exc_index].handler_type = catch_type;
+  exc[exc_index].start_pc.i     = start_pc;
+  exc[exc_index].end_pc.i       = end_pc;
+  exc[exc_index].handler_pc.i   = handler_pc;
+  exc[exc_index].handler_type.i = catch_type;
 }
 
 void _Jv_ClassReader::handleMethodsEnd ()

@@ -1,6 +1,6 @@
 // java-interp.h - Header file for the bytecode interpreter.  -*- c++ -*-
 
-/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -49,14 +49,22 @@ void _Jv_VerifyMethod (_Jv_InterpMethod *method);
 
 class _Jv_InterpClass;
 class _Jv_InterpMethod;
-class _Jv_InterpMethodInvocation;
+
+// Before a method is "compiled" we store values as the bytecode PC,
+// an int.  Afterwards we store them as pointers into the prepared
+// code itself.
+union _Jv_InterpPC
+{
+  int i;
+  void *p;
+};
 
 class _Jv_InterpException
 {
-  int  start_pc;
-  int  end_pc;
-  int  handler_pc;
-  int  handler_type;
+  _Jv_InterpPC start_pc;
+  _Jv_InterpPC end_pc;
+  _Jv_InterpPC handler_pc;
+  _Jv_InterpPC handler_type;
 
   friend class _Jv_ClassReader;
   friend class _Jv_InterpMethod;
@@ -92,6 +100,8 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 
   _Jv_ushort       exc_count;
 
+  void *prepared;
+
   unsigned char* bytecode () 
   {
     return 
@@ -99,7 +109,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
       + ROUND((sizeof (_Jv_InterpMethod)
 	       + exc_count*sizeof (_Jv_InterpException)), 4);
   }
-    
+
   _Jv_InterpException * exceptions ()
   {
     return (_Jv_InterpException*) (this+1);
@@ -115,40 +125,23 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 
   // return the method's invocation pointer (a stub).
   void *ncode ();
-  void continue1 (_Jv_InterpMethodInvocation *inv);
+  void compile (const void * const *);
 
   static void run_normal (ffi_cif*, void*, ffi_raw*, void*);
   static void run_synch_object (ffi_cif*, void*, ffi_raw*, void*);
   static void run_synch_class (ffi_cif*, void*, ffi_raw*, void*);
 
-  inline jobject run (ffi_cif*, void*, ffi_raw*, 
-		      _Jv_InterpMethodInvocation*);
-
-  bool find_exception (jobject ex,
-		       _Jv_InterpMethodInvocation *inv);
+  void run (void*, ffi_raw *);
 
  public:
   static void dump_object(jobject o);
 
   friend class _Jv_ClassReader;
-  friend class _Jv_InterpMethodInvocation;
   friend class _Jv_BytecodeVerifier;
 
   friend void _Jv_PrepareClass(jclass);
 };
 
-class _Jv_InterpMethodInvocation {
-  _Jv_InterpMethod *running;
-  _Jv_word         *sp;
-  unsigned char    *pc;
-  _Jv_word          state[0];
-
-  _Jv_word*         stack_base () { return &state[0]; }
-  _Jv_word*         local_base () { return &state[running->max_stack]; }
-
-  friend class _Jv_InterpMethod;
-};
-  
 class _Jv_InterpClass : public java::lang::Class
 {
   _Jv_MethodBase **interpreted_methods;
