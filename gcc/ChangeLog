@@ -1,3 +1,11 @@
+2001-05-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-parse.in (parm_declarator): Split into
+	parm_declarator_starttypename and parm_declarator_nostarttypename.
+	(parm_declarator_starttypename, parm_declarator_nostarttypename):
+	New.  Allow parenthesised sub-declarators which don't begin with a
+	TYPENAME.  Fixes PR c/166.
+
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* defaults.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER): New

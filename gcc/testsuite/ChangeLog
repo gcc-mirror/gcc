@@ -1,3 +1,7 @@
+2001-05-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/compile/20010114-1.x: Remove.
+
 2001-05-18  Stan Shebs  <shebs@apple.com>
 
 	* gcc.c-torture/compile/20010518-1.c: New test.
