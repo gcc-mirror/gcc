@@ -1,3 +1,7 @@
+2000-11-24  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* gcc.dg/sequence-point-1.c: Add some new tests.
+
 2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/vaarg4.C: New test.

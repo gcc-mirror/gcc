@@ -5962,7 +5962,9 @@ fold (expr)
       /* If either arg is constant true, drop it.  */
       if (TREE_CODE (arg0) == INTEGER_CST && ! integer_zerop (arg0))
 	return non_lvalue (convert (type, arg1));
-      if (TREE_CODE (arg1) == INTEGER_CST && ! integer_zerop (arg1))
+      if (TREE_CODE (arg1) == INTEGER_CST && ! integer_zerop (arg1)
+	  /* Preserve sequence points.  */
+	  && (code != TRUTH_ANDIF_EXPR || ! TREE_SIDE_EFFECTS (arg0)))
 	return non_lvalue (convert (type, arg0));
       /* If second arg is constant zero, result is zero, but first arg
 	 must be evaluated.  */
@@ -6048,7 +6050,9 @@ fold (expr)
       /* If either arg is constant zero, drop it.  */
       if (TREE_CODE (arg0) == INTEGER_CST && integer_zerop (arg0))
 	return non_lvalue (convert (type, arg1));
-      if (TREE_CODE (arg1) == INTEGER_CST && integer_zerop (arg1))
+      if (TREE_CODE (arg1) == INTEGER_CST && integer_zerop (arg1)
+	  /* Preserve sequence points.  */
+	  && (code != TRUTH_ORIF_EXPR || ! TREE_SIDE_EFFECTS (arg0)))
 	return non_lvalue (convert (type, arg0));
       /* If second arg is constant true, result is true, but we must
 	 evaluate first arg.  */

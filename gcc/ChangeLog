@@ -3,6 +3,20 @@
 	* combine.c (cant_combine_insn_p): New function.
 	(try_combine): Use it.
 
+	* Makefile.in (c-common.o): Depend on $(OBSTACK_H).
+	* c-common.c (c-obstack.c): Include "obstack.h".
+	(struct reverse_tree): Delete.
+	(reverse_list, reverse_max_depth): Delete.
+	(build_reverse_tree, common_ancestor, modify_ok): Delete functions.
+	(struct tlist, struct tlist_cache): New.
+	(tlist_obstack, tlist_firstobj, warned_ids, save_expr_cache): New.
+	(add_tlist, merge_tlist, verify_tree, warning_candidate_p,
+	warn_for_collisions, warn_for_collisions_1, new_tlist): New
+	static functions.
+	(verify_sequence_points): Rewritten.
+	* fold-const.c (fold): Don't lose possibly important sequence
+	points when removing one arm of TRUTH_ORIF_EXPRs or TRUTH_ANDIF_EXPRs.
+
 2000-11-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc/cse.c (cse_insn): Removed conversion of REG_EQUIV to REG_EQUAL

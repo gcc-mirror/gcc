@@ -1214,7 +1214,7 @@ s-under: $(GCC_PASSES)
 
 # A file used by all variants of C.
 
-c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) \
+c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) $(OBSTACK_H) \
 	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H) diagnostic.h
 
