@@ -6,6 +6,10 @@
 
 	* GCC 3.3 Released.
 
+2003-05-13  Release Manager
+
+	* GCC 3.3 Released.
+
 2002-12-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* Makefile.am (AM_CFLAGS): Remove DEBUG_FLAGS.
