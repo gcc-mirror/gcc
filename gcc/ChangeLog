@@ -1,5 +1,8 @@
 2000-05-20  Alexandre Oliva  <aoliva@cygnus.com>
 
+	* config/mn10300/mn10300.md (movdi, movdf): 64-bit clean-up.
+	* config/mn10300/mn10300.c (print_operand): Likewise.
+
 	* final.c (split_double): Right shift of negative values is not
 	portable.
 
