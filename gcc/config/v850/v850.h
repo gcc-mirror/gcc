@@ -1262,6 +1262,9 @@ do {									\
 
 #define ASM_APP_OFF "#NO_APP\n"
 
+#undef  USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
+
 /* This is how to output an assembler line defining a `double' constant.
    It is .double or .float, depending.  */
 
@@ -1341,19 +1344,15 @@ do { char dstr[30];					\
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#define ASM_GLOBALIZE_LABEL(FILE, NAME)	\
-  do { fputs ("\t.global ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
+#define ASM_GLOBALIZE_LABEL(FILE, NAME)		\
+  do						\
+    {						\
+      fputs ("\t.global ", FILE);		\
+      assemble_name (FILE, NAME);		\
+      fputs ("\n", FILE);			\
+    }						\
+  while (0)
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE, NAME)	          \
-  do {                                            \
-  const char * real_name;                         \
-  STRIP_NAME_ENCODING (real_name, (NAME));        \
-  fprintf (FILE, "_%s", real_name);               \
-  } while (0)           
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
@@ -1608,11 +1607,11 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 #define SDA_NAME_P(NAME) (*(NAME) == SDA_NAME_FLAG_CHAR)
 
 #define ENCODED_NAME_P(SYMBOL_NAME)    \
-  (ZDA_NAME_P (SYMBOL_NAME)            \
+  (   ZDA_NAME_P (SYMBOL_NAME)         \
    || TDA_NAME_P (SYMBOL_NAME)         \
    || SDA_NAME_P (SYMBOL_NAME))
 
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
+#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME) \
      (VAR) = (SYMBOL_NAME) + (ENCODED_NAME_P (SYMBOL_NAME) || *(SYMBOL_NAME) == '*')
 
 /* Define this if you have defined special-purpose predicates in the

@@ -1,3 +1,20 @@
+2001-01-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (ra_rtx): Delete.
+        (v850_save_machine_status): Delete.
+	(v850_restore_machine_status): Delete.
+	(v850_init_machine_status): New function.
+	(v850_mark_machine_status): New function.
+	(v850_free_machine_status): New function.
+	(v850_return_addr): Use ra_rtx field in machine structure.
+	(v850_init_expanders): Use new functions.
+
+	* config/v850/v850-protos.h: Fix prototypes for v850_output_*
+	* config/v850/v850.c: Change arguments to v850_output+* functions
+	to take a const char *, to avoid compile time warning.
+	* config/v850/v850.h (ASM_OUTPUT_LABELREF): Undefine, not needed.
+	(USER_LABEL_PREFIX): Redefine.
+	
 2000-01-08  Jim Wilson  <wilson@redhat.com>
 
 	* sched-rgn.c (BITSET_ADD, BITSET_REMOVE, bitset_member): Cast
