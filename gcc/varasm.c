@@ -1326,7 +1326,7 @@ immed_double_const (i0, i1, mode)
 
   /* Don't touch const_double_chain in nested function;
      see force_const_mem.  */
-  if (outer_function_chain != 0)
+  if (outer_function_chain == 0)
     {
       CONST_DOUBLE_CHAIN (r) = const_double_chain;
       const_double_chain = r;
@@ -1397,7 +1397,7 @@ immed_real_const_1 (d, mode)
 
   /* Don't touch const_double_chain in nested function;
      see force_const_mem.  */
-  if (outer_function_change != 0)
+  if (outer_function_chain == 0)
     {
       CONST_DOUBLE_CHAIN (r) = const_double_chain;
       const_double_chain = r;
