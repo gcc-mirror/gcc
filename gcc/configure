@@ -1325,6 +1325,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
           ac_config_headers="$ac_config_headers auto-host.h:config.in"
 
 
@@ -4967,7 +4968,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:4970: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:4971: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
@@ -12069,7 +12070,10 @@ fi
 # Create the Makefile
 # and configure language subdirectories
           ac_config_files="$ac_config_files $all_outputs"
+
+
           ac_config_commands="$ac_config_commands default"
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
