@@ -1425,17 +1425,6 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
   return temp;
 }
 
-/* This macro is used to determine what the largest unit size that
-   move_by_pieces can use is.  */
-
-/* MOVE_MAX_PIECES is the number of bytes at a time which we can
-   move efficiently, as opposed to  MOVE_MAX which is the maximum
-   number of bytes we can move with a single instruction.  */
-
-#ifndef MOVE_MAX_PIECES
-#define MOVE_MAX_PIECES   MOVE_MAX
-#endif
-
 /* STORE_MAX_PIECES is the number of bytes at a time that we can
    store efficiently.  Due to internal GCC limitations, this is
    MOVE_MAX_PIECES limited by the number of bytes GCC can represent

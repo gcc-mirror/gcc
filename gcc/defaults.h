@@ -664,4 +664,15 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define STORE_FLAG_VALUE  1
 #endif
 
+/* This macro is used to determine what the largest unit size that
+   move_by_pieces can use is.  */
+
+/* MOVE_MAX_PIECES is the number of bytes at a time which we can
+   move efficiently, as opposed to  MOVE_MAX which is the maximum
+   number of bytes we can move with a single instruction.  */
+
+#ifndef MOVE_MAX_PIECES
+#define MOVE_MAX_PIECES   MOVE_MAX
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

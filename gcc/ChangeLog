@@ -1,3 +1,8 @@
+2003-07-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* expr.c (MOVE_MAX_PIECES): Move from here...
+	* defaults.h (MOVE_MAX_PIECES): ... to here.
+
 2003-07-08  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* Makefile.in (stage1-start): Handle an empty SUBDIRS.
