@@ -192,6 +192,14 @@ extern int flag_test_coverage;
 
 extern int flag_branch_probabilities;
 
+/* Nonzero if basic blocks should be reordered.  */
+
+extern int flag_reorder_blocks;
+
+/* Nonzero if registers should be renamed.  */
+
+extern int flag_rename_registers;
+
 /* Nonzero for -pedantic switch: warn about anything
    that standard C forbids.  */
 
