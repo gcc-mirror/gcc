@@ -1,3 +1,9 @@
+2005-03-16  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-inline.c (walk_type_fields, walk_tree,
+	walk_tree_without_duplicates): Move from here...
+	* tree.c: ...to here.
+
 2005-03-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* BASE-VER, DATESTAMP, DEV-PHASE: New files.
