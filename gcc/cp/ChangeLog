@@ -1,6 +1,6 @@
 2003-01-10  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/9120
+	PR c++/9099
 	* parser.c (cp_parser_scope_through_which_access_occurs): Handle
 	an object_type which is not a class type.
 
