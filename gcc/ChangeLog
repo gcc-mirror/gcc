@@ -1,5 +1,15 @@
 2004-07-11  Richard Henderson  <rth@redhat.com>
 
+	PR tree-opt/16383
+	* tree-ssa-ccp.c (fold_stmt_r): Split out...
+	* tree.c (fields_compatible_p, find_compatible_field): ... new.
+	* tree.h (fields_compatible_p, find_compatible_field): Declare.
+	* tree-sra.c (sra_hash_tree): Hash fields by offset.
+	(sra_elt_eq): Use fields_compatible_p.
+	(generate_one_element_ref): Use find_compatible_field.
+
+2004-07-11  Richard Henderson  <rth@redhat.com>
+
 	PR tree-opt/16422
 	* tree-sra.c (generate_one_element_init): New.
 	(generate_element_init): Use it.

@@ -3481,6 +3481,9 @@ extern void build_common_tree_nodes_2 (int);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_range_type (tree, tree, tree);
 
+extern bool fields_compatible_p (tree, tree);
+extern tree find_compatible_field (tree, tree);
+
 /* In function.c */
 extern void expand_main_function (void);
 extern void init_dummy_function_start (void);
