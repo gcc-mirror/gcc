@@ -981,6 +981,7 @@ javax/swing/plaf/RootPaneUI.java \
 javax/swing/plaf/ScrollBarUI.java \
 javax/swing/plaf/SeparatorUI.java \
 javax/swing/plaf/SliderUI.java \
+javax/swing/plaf/SpinnerUI.java \
 javax/swing/plaf/SplitPaneUI.java \
 javax/swing/plaf/TableHeaderUI.java \
 javax/swing/plaf/TableUI.java \
@@ -4094,7 +4095,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/swing/plaf/ScrollBarUI.P \
 .deps/javax/swing/plaf/ScrollPaneUI.P \
 .deps/javax/swing/plaf/SeparatorUI.P .deps/javax/swing/plaf/SliderUI.P \
-.deps/javax/swing/plaf/SplitPaneUI.P \
+.deps/javax/swing/plaf/SpinnerUI.P .deps/javax/swing/plaf/SplitPaneUI.P \
 .deps/javax/swing/plaf/TabbedPaneUI.P \
 .deps/javax/swing/plaf/TableHeaderUI.P .deps/javax/swing/plaf/TableUI.P \
 .deps/javax/swing/plaf/TextUI.P .deps/javax/swing/plaf/ToolBarUI.P \
