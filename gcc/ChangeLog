@@ -1,3 +1,13 @@
+Sun Feb  8 13:21:38 1998  John Carr  <jfc@mit.edu>
+
+	* bitmap.c (bitmap_debug_file): HOST_PTR_PRINTF converts a pointer,
+	not a HOST_WIDE_INT.
+
+	* calls.c (expand_call): Change test of expand_inline_function
+	return value to stop compiler warning.
+
+	* genattrtab.c (RTL_HASH): Cast pointer to long, not HOST_WIDE_INT.
+
 Sun Feb  8 12:04:24 1998  Jim Wilson  (wilson@cygnus.com)
 			  Jeff Law (law@cygnus.com)
 
