@@ -12053,6 +12053,7 @@ java_complete_lhs (tree node)
 	  int from_super = (EXPR_WFL_NODE (TREE_OPERAND (node, 0)) ==
                            super_identifier_node);
 	  tree arguments;
+	  int location = EXPR_WFL_LINECOL (node);
 
 	  node = patch_method_invocation (node, NULL_TREE, NULL_TREE,
 					  from_super, 0, &decl);
@@ -12064,8 +12065,7 @@ java_complete_lhs (tree node)
 	    arguments = TREE_VALUE (TREE_OPERAND (node, 1));
 	  else
 	    arguments = NULL_TREE;
-	  check_thrown_exceptions (EXPR_WFL_LINECOL (node), decl,
-				   arguments);
+	  check_thrown_exceptions (location, decl, arguments);
 	  /* If we call this(...), register signature and positions */
 	  if (in_this)
 	    DECL_CONSTRUCTOR_CALLS (current_function_decl) =
