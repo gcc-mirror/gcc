@@ -68,6 +68,7 @@ if [ "${shared}" = "yes" ]; then
   esac
   case "${target}" in
     *-*-aix*)		frags="${frags} aix.ml" ;;
+    *-*-beos*)		frags="${frags} beos.ml" ;;
     *-dec-osf*)		frags="${frags} dec-osf.ml";;
     *-*-freebsd2*)	;;
     *-*-freebsd*)	frags="${frags} freebsd.ml" ;;
