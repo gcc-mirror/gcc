@@ -1,3 +1,7 @@
+2000-03-21  Richard Henderson  <rth@cygnus.com>
+
+        * flow.c (delete_block): Fix typo last change.
+
 2000-03-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (c_expand_expr_stmt): Use COMPLETE_TYPE_OR_VOID_P,
