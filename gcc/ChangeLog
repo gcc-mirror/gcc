@@ -1,3 +1,9 @@
+Fri May 18 07:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dbxout.c (dbxout_type): Use host_integerp.
+	(dbxout_symbol, case TYPE_DECL): Don't generate tag for records of
+	variable size.
+
 2001-05-18  Stan Shebs  <shebs@apple.com>
 
 	* configure.in (gcc_cv_as_eh_frame): Cope with old assemblers.
