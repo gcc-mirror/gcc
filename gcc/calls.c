@@ -4080,7 +4080,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
     {
       rtx insns;
 
-      if (valreg == 0 || GET_CODE (valreg) == PARALLEL)
+      if (valreg == 0)
 	{
 	  insns = get_insns ();
 	  end_sequence ();
@@ -4089,8 +4089,17 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
       else
 	{
 	  rtx note = 0;
-	  rtx temp = gen_reg_rtx (GET_MODE (valreg));
+	  rtx temp;
 	  int i;
+
+	  if (GET_CODE (valreg) == PARALLEL)
+	    {
+	      temp = gen_reg_rtx (outmode);
+	      emit_group_store (temp, valreg, outmode);
+	      valreg = temp;
+	    }
+
+	  temp = gen_reg_rtx (GET_MODE (valreg));
 
 	  /* Construct an "equal form" for the value which mentions all the
 	     arguments in order as well as the function name.  */
@@ -4124,6 +4133,12 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	    value = mem_value;
 	  if (value != mem_value)
 	    emit_move_insn (value, mem_value);
+	}
+      else if (GET_CODE (valreg) == PARALLEL)
+	{
+	  if (value == 0)
+	    value = gen_reg_rtx (outmode);
+	  emit_group_store (value, valreg, outmode);
 	}
       else if (value != 0)
 	emit_move_insn (value, valreg);

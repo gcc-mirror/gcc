@@ -1,5 +1,8 @@
 2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* calls.c (emit_library_call_value_1): Handle return values
+	in a PARALLEL.
+
 	* rtl.c (get_mode_alignment): Moved to...
 	* stor-layout.c: ... here.
 
