@@ -4110,12 +4110,14 @@ default_get_pch_validity (size_t *len)
   char *result, *r;
   
   *len = sizeof (target_flags) + 2;
+#ifdef TARGET_OPTIONS
   for (i = 0; i < ARRAY_SIZE (target_options); i++)
     {
       *len += 1;
       if (*target_options[i].variable)
 	*len += strlen (*target_options[i].variable);
     }
+#endif
 
   result = r = xmalloc (*len);
   r[0] = flag_pic;
@@ -4124,6 +4126,7 @@ default_get_pch_validity (size_t *len)
   memcpy (r, &target_flags, sizeof (target_flags));
   r += sizeof (target_flags);
   
+#ifdef TARGET_OPTIONS
   for (i = 0; i < ARRAY_SIZE (target_options); i++)
     {
       const char *str = *target_options[i].variable;
@@ -4134,6 +4137,7 @@ default_get_pch_validity (size_t *len)
       memcpy (r, str, l);
       r += l;
     }
+#endif
 
   return result;
 }
@@ -4179,6 +4183,7 @@ default_pch_valid_p (const void *data_p, size_t len)
   len -= sizeof (target_flags);
   
   /* Check string options.  */
+#ifdef TARGET_OPTIONS
   for (i = 0; i < ARRAY_SIZE (target_options); i++)
     {
       const char *str = *target_options[i].variable;
@@ -4194,6 +4199,7 @@ default_pch_valid_p (const void *data_p, size_t len)
       data += l;
       len -= l;
     }
+#endif
 
   return NULL;
   
