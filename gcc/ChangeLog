@@ -1,7 +1,13 @@
 2000-05-14  Geoffrey Keating  <geoffk@cygnus.com>
 
-	* rs6000.c (output_cbranch): Don't output prediction codes
-	when old mnemonics are in use.  Print register names
+	* config/rs6000/rs6000.md (movsi): Don't modify RTL in-place.
+	(movdi): Make similar to movsi.
+	* config/rs6000/rs6000.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): There
+	is no such thing as a DImode CONST_DOUBLE.
+	* config/rs6000/rs6000.c (output_toc): Likewise.
+	
+	* config/rs6000/rs6000.c (output_cbranch): Don't output prediction
+	codes when old mnemonics are in use.  Print register names
 	for cc registers when requested.
 
 	* optabs.c (expand_float): Don't allow mode widening that causes

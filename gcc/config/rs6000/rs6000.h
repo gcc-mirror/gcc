@@ -2355,7 +2355,7 @@ extern int toc_initialized;
        || (! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)		\
 	   && GET_CODE (X) == CONST_DOUBLE				\
 	   && (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
-	       || (TARGET_POWERPC64 && GET_MODE (X) == DImode)))))
+	       || TARGET_POWERPC64))))
 #if 0
 	   && BITS_PER_WORD == HOST_BITS_PER_INT)))
 #endif

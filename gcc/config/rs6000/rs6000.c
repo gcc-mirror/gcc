@@ -6228,7 +6228,7 @@ output_toc (file, x, labelno)
 	  return;
 	}
     }
-  else if (GET_MODE (x) == DImode
+  else if (GET_MODE (x) == VOIDmode
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
 	   && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
     {
