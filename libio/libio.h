@@ -71,6 +71,9 @@
 # define const
 #endif
 #define _IO_UNIFIED_JUMPTABLES 1
+#ifndef _G_HAVE_PRINTF_FP
+# define _IO_USE_DTOA 1
+#endif
 
 #if 0
 # ifdef _IO_NEED_STDARG_H

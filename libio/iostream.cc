@@ -42,6 +42,10 @@ extern "C" int __printf_fp (_IO_FILE *, const struct printf_info *,
 			    const void *const *);
 #else
 #include "floatio.h"
+# ifndef _IO_USE_DTOA
+int __cvt_double(double number, register int prec, int flags, int *signp,
+                 int fmtch, char *startp, char *endp)
+# endif
 #endif
 
 #define	BUF		(MAXEXP+MAXFRACT+1)	/* + decimal point */
