@@ -1,3 +1,9 @@
+1998-11-19  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* Makefile.in (mandir): Set to @mandir@.
+	(man1dir): New variable to hold the former value of $(mandir).
+	Replace all uses of $(mandir) by $(man1dir).
+
 Wed Nov 18 16:31:28 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* reload.c (find_reloads_address_part): If have a CONST_INT, create

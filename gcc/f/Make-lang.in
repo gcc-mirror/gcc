@@ -384,13 +384,13 @@ f77.install-man: $(srcdir)/f/g77.1
 	esac
 	-if [ -f lang-f77 -a -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
-	    rm -f $(mandir)/$(G77_CROSS_NAME)$(manext); \
-	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(mandir)/$(G77_CROSS_NAME)$(manext); \
-	    chmod a-x $(mandir)/$(G77_CROSS_NAME)$(manext); \
+	    rm -f $(man1dir)/$(G77_CROSS_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(man1dir)/$(G77_CROSS_NAME)$(manext); \
+	    chmod a-x $(man1dir)/$(G77_CROSS_NAME)$(manext); \
 	  else \
-	    rm -f $(mandir)/$(G77_INSTALL_NAME)$(manext); \
-	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(mandir)/$(G77_INSTALL_NAME)$(manext); \
-	    chmod a-x $(mandir)/$(G77_INSTALL_NAME)$(manext); \
+	    rm -f $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
+	    chmod a-x $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
 	  fi; \
 	else true; fi
 
@@ -408,8 +408,8 @@ f77.uninstall:
 	-if [ -f lang-f77 ]; then \
 	  rm -rf $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
 	  rm -rf $(bindir)/$(G77_CROSS_NAME)$(exeext); \
-	  rm -rf $(mandir)/$(G77_INSTALL_NAME)$(manext); \
-	  rm -rf $(mandir)/$(G77_CROSS_NAME)$(manext); \
+	  rm -rf $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
+	  rm -rf $(man1dir)/$(G77_CROSS_NAME)$(manext); \
 	  rm -rf $(infodir)/g77.info*; \
 	fi
 #

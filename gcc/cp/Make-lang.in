@@ -246,13 +246,13 @@ c++.install-info:
 c++.install-man: $(srcdir)/cp/g++.1
 	-if [ -f cc1plus$(exeext) ] ; then \
 	  if [ -f g++-cross$(exeext) ] ; then \
-	    rm -f $(mandir)/$(GXX_CROSS_NAME)$(manext); \
-	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(mandir)/$(GXX_CROSS_NAME)$(manext); \
-	    chmod a-x $(mandir)/$(GXX_CROSS_NAME)$(manext); \
+	    rm -f $(man1dir)/$(GXX_CROSS_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(man1dir)/$(GXX_CROSS_NAME)$(manext); \
+	    chmod a-x $(man1dir)/$(GXX_CROSS_NAME)$(manext); \
 	  else \
-	    rm -f $(mandir)/$(GXX_INSTALL_NAME)$(manext); \
-	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(mandir)/$(GXX_INSTALL_NAME)$(manext); \
-	    chmod a-x $(mandir)/$(GXX_INSTALL_NAME)$(manext); \
+	    rm -f $(man1dir)/$(GXX_INSTALL_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(man1dir)/$(GXX_INSTALL_NAME)$(manext); \
+	    chmod a-x $(man1dir)/$(GXX_INSTALL_NAME)$(manext); \
 	  fi; \
 	else true; fi
 
@@ -263,8 +263,8 @@ c++.uninstall:
 	-rm -rf $(bindir)/$(GXX_CROSS_NAME)$(exeext)
 	-rm -rf $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext)
-	-rm -rf $(mandir)/$(GXX_INSTALL_NAME)$(manext)
-	-rm -rf $(mandir)/$(GXX_CROSS_NAME)$(manext)
+	-rm -rf $(man1dir)/$(GXX_INSTALL_NAME)$(manext)
+	-rm -rf $(man1dir)/$(GXX_CROSS_NAME)$(manext)
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
