@@ -2444,13 +2444,6 @@
   ;
 }")
 
-(define_insn "*movdi_zero"
-  [(set (match_operand:DI 0 "memory_operand" "")
-	(const_int 0))]
-  "TARGET_V9"
-  "stx\\t%%g0, %0"
-  [(set_attr "type" "store")])
-
 ;; Be careful, fmovd does not exist when !arch64.
 ;; We match MEM moves directly when we have correct even
 ;; numbered registers, but fall into splits otherwise.
@@ -2462,12 +2455,38 @@
 ;;                       (const_int -5016)))
 ;;      (reg:DI 2 %g2))
 ;;
+
+(define_insn "*movdi_insn_sp32_v9"
+  [(set (match_operand:DI 0 "nonimmediate_operand"
+					"=m,T,U,o,r,r,r,?T,?f,?f,?o,?f")
+        (match_operand:DI 1 "input_operand"
+					" J,U,T,r,o,i,r, f, T, o, f, f"))]
+  "! TARGET_ARCH64 && TARGET_V9
+   && (GET_CODE (operands[0]) != MEM || GET_CODE (operands[1]) != MEM)"
+  "@
+   stx\\t%%g0, %0
+   std\\t%1, %0
+   ldd\\t%1, %0
+   #
+   #
+   #
+   #
+   std\\t%1, %0
+   ldd\\t%1, %0
+   #
+   #
+   #"
+  [(set_attr "type" "store,store,load,*,*,*,*,fpstore,fpload,*,*,*")
+   (set_attr "length" "*,*,*,2,2,2,2,*,*,2,2,2")])
+
 (define_insn "*movdi_insn_sp32"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=T,U,o,r,r,r,?T,?f,?f,?o,?f")
-        (match_operand:DI 1 "input_operand"    "U,T,r,o,i,r,f,T,o,f,f"))]
-  "! TARGET_ARCH64 &&
-   (register_operand (operands[0], DImode)
-    || register_operand (operands[1], DImode))"
+  [(set (match_operand:DI 0 "nonimmediate_operand"
+				"=T,U,o,r,r,r,?T,?f,?f,?o,?f")
+        (match_operand:DI 1 "input_operand"
+				" U,T,r,o,i,r, f, T, o, f, f"))]
+  "! TARGET_ARCH64
+   && (register_operand (operands[0], DImode)
+       || register_operand (operands[1], DImode))"
   "@
    std\\t%1, %0
    ldd\\t%1, %0
