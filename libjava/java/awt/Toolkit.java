@@ -807,7 +807,7 @@ public abstract class Toolkit
   /**
    * Returns the event queue that is suitable for the calling context.
    *
-   * <p>Despite the word “System” in the name of this
+   * <p>Despite the word &#x201c;System&#x201d; in the name of this
    * method, a toolkit may provide different event queues for each
    * applet. There is no guarantee that the same queue is shared
    * system-wide.
@@ -842,7 +842,7 @@ public abstract class Toolkit
   /**
    * Returns the event queue that is suitable for the calling context.
    *
-   * <p>Despite the word “,System”, in the name of this
+   * <p>Despite the word &#x201c;System&#x201d; in the name of this
    * method, a toolkit may provide different event queues for each
    * applet. There is no guarantee that the same queue is shared
    * system-wide.

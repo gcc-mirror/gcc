@@ -1,3 +1,8 @@
+2003-09-18  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/Toolkit.java (getSystemEventQueue, getSystemEventQueueImpl):
+	Replace UTF-8 characters in Javadoc by XML/HTML escape sequence.
+
 2003-09-18  Tom Tromey  <tromey@redhat.com>
 
 	* javax/naming/InitialContext.java: Reindented.
