@@ -5790,6 +5790,10 @@ expand_expr (exp, target, tmode, modifier)
 	  op0 = trampoline_address (TREE_OPERAND (exp, 0));
 	  op0 = force_operand (op0, target);
 	}
+      /* If we are taking the address of something erroneous, just
+	 return a zero.  */
+      else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ERROR_MARK)
+	return const0_rtx;
       else
 	{
 	  /* We make sure to pass const0_rtx down if we came in with
@@ -5801,7 +5805,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	  /* We would like the object in memory.  If it is a constant,
 	     we can have it be statically allocated into memory.  For
-	     a non-constant (REG or SUBREG), we need to allocate some
+	     a non-constant (REG, SUBREG or CONCAT), we need to allocate some
 	     memory and store the value into it.  */
 
 	  if (CONSTANT_P (op0))
@@ -5810,11 +5814,8 @@ expand_expr (exp, target, tmode, modifier)
 	  else if (GET_CODE (op0) == MEM)
 	    temp = XEXP (op0, 0);
 
-	  /* These cases happen in Fortran.  Is that legitimate?
-	     Should Fortran work in another way?
-	     Do they happen in C?  */
-	  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
-	      || GET_CODE (op0) == CONCAT)
+	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
+		   || GET_CODE (op0) == CONCAT)
 	    {
 	      /* If this object is in a register, it must be not
 		 be BLKmode. */
