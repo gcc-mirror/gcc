@@ -6705,59 +6705,56 @@ maybe_warn_about_returning_address_of_local (retval)
      tree retval;
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
+  tree whats_returned = retval;
+
+  for (;;)
+    {
+      if (TREE_CODE (whats_returned) == COMPOUND_EXPR)
+	whats_returned = TREE_OPERAND (whats_returned, 1);
+      else if (TREE_CODE (whats_returned) == CONVERT_EXPR
+	       || TREE_CODE (whats_returned) == NON_LVALUE_EXPR
+	       || TREE_CODE (whats_returned) == NOP_EXPR)
+	whats_returned = TREE_OPERAND (whats_returned, 0);
+      else
+	break;
+    }
+
+  if (TREE_CODE (whats_returned) != ADDR_EXPR)
+    return;
+  whats_returned = TREE_OPERAND (whats_returned, 0);      
 
   if (TREE_CODE (valtype) == REFERENCE_TYPE)
     {
-      tree whats_returned;
-
-      /* Sort through common things to see what it is
-	 we are returning.  */
-      whats_returned = retval;
-      if (TREE_CODE (whats_returned) == COMPOUND_EXPR)
+      if (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
+	  || TREE_CODE (whats_returned) == TARGET_EXPR)
 	{
-	  whats_returned = TREE_OPERAND (whats_returned, 1);
-	  if (TREE_CODE (whats_returned) == ADDR_EXPR)
-	    whats_returned = TREE_OPERAND (whats_returned, 0);
-	}
-      while (TREE_CODE (whats_returned) == CONVERT_EXPR
-	     || TREE_CODE (whats_returned) == NOP_EXPR)
-	whats_returned = TREE_OPERAND (whats_returned, 0);
-      if (TREE_CODE (whats_returned) == ADDR_EXPR)
-	{
+	  /* Get the target.  */
 	  whats_returned = TREE_OPERAND (whats_returned, 0);
-	  while (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
-		 || TREE_CODE (whats_returned) == TARGET_EXPR)
-	    {
-	      /* Get the target.  */
-	      whats_returned = TREE_OPERAND (whats_returned, 0);
-	      warning ("returning reference to temporary");
-	    }
+	  warning ("returning reference to temporary");
+	  return;
 	}
-
       if (TREE_CODE (whats_returned) == VAR_DECL 
-	  && DECL_NAME (whats_returned))
+	  && DECL_NAME (whats_returned)
+	  && TEMP_NAME_P (DECL_NAME (whats_returned)))
 	{
-	  if (TEMP_NAME_P (DECL_NAME (whats_returned)))
-	    warning ("reference to non-lvalue returned");
-	  else if (TREE_CODE (TREE_TYPE (whats_returned)) != REFERENCE_TYPE
-		   && DECL_FUNCTION_SCOPE_P (whats_returned)
-		   && !(TREE_STATIC (whats_returned)
-			|| TREE_PUBLIC (whats_returned)))
-	    cp_warning_at ("reference to local variable `%D' returned", 
-			   whats_returned);
+	  warning ("reference to non-lvalue returned");
+	  return;
 	}
     }
-  else if (TREE_CODE (retval) == ADDR_EXPR)
-    {
-      tree whats_returned = TREE_OPERAND (retval, 0);
 
-      if (TREE_CODE (whats_returned) == VAR_DECL
-	  && DECL_NAME (whats_returned)
-	  && DECL_FUNCTION_SCOPE_P (whats_returned)
-	  && !(TREE_STATIC (whats_returned)
-	       || TREE_PUBLIC (whats_returned)))
+  if (TREE_CODE (whats_returned) == VAR_DECL
+      && DECL_NAME (whats_returned)
+      && DECL_FUNCTION_SCOPE_P (whats_returned)
+      && !(TREE_STATIC (whats_returned)
+	   || TREE_PUBLIC (whats_returned)))
+    {
+      if (TREE_CODE (valtype) == REFERENCE_TYPE)
+	cp_warning_at ("reference to local variable `%D' returned", 
+		       whats_returned);
+      else
 	cp_warning_at ("address of local variable `%D' returned", 
 		       whats_returned);
+      return;
     }
 }
 

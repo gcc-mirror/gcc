@@ -1,3 +1,8 @@
+2000-03-01  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* typeck.c (maybe_warn_about_returning_address_of_local): Reorganize
+	to merge reference/pointer code and fix incorrect warnings.
+
 2000-02-29  Jason Merrill  <jason@casey.cygnus.com>
 
 	* search.c (protected_accessible_p): Use context_for_name_lookup.
