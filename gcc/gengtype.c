@@ -42,6 +42,34 @@ error_at_line VPARAMS ((struct fileloc *pos, const char *msg, ...))
   VA_CLOSE (ap);
 }
 
+/* vasprintf, but produces fatal message on out-of-memory.  */
+int
+xvasprintf (result, format, args)
+     char ** result;
+     const char *format;
+     va_list args;
+{
+  int ret = vasprintf (result, format, args);
+  if (*result == NULL || ret < 0)
+    {
+      fputs ("gengtype: out of memory", stderr);
+      xexit (1);
+    }
+  return ret;
+}
+
+/* Wrapper for xvasprintf.  */
+char *
+xasprintf VPARAMS ((const char *format, ...))
+{
+  char *result;
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
+  xvasprintf (&result, format, ap);
+  VA_CLOSE (ap);
+  return result;
+}
+
 /* The one and only TYPE_STRING.  */
 
 struct type string_type = {
@@ -479,23 +507,12 @@ set_gc_used (variables)
    (but some output files have many input files), and there is one .h file
    for the whole build.  */
 
-typedef struct filemap *filemap_p;
-
-struct filemap {
-  filemap_p next;
-  const char *input_name;
-  const char *output_name;
-  FILE *output;
-};
-
 /* The list of output files.  */
-
-static filemap_p files;
+static outf_p output_files;
 
 /* The output header file that is included into pretty much every
    source file.  */
-
-FILE * header_file;
+outf_p header_file;
 
 enum {
   BASE_FILE_C,
@@ -509,16 +526,18 @@ static const char *lang_names[] = {
   "c", "objc", "cp", "treelang", "cobol", "f", "ada", "java"
 };
 #define NUM_BASE_FILES (sizeof (lang_names) / sizeof (lang_names[0]))
-FILE *base_files[NUM_BASE_FILES];
+outf_p base_files[NUM_BASE_FILES];
 
-static FILE * create_file PARAMS ((const char *));
+static outf_p create_file PARAMS ((const char *, const char *));
 static const char * get_file_basename PARAMS ((const char *));
 
-/* Create and return a FILE* for a new header file to be called NAME.  */
+/* Create and return an outf_p for a new file for NAME, to be called
+   ONAME.  */
 
-static FILE *
-create_file (name)
+static outf_p
+create_file (name, oname)
      const char *name;
+     const char *oname;
 {
   static const char *const hdr[] = {
     "   Copyright (C) 2002 Free Software Foundation, Inc.\n",
@@ -542,19 +561,47 @@ create_file (name)
     "\n",
     "/* This file is machine generated.  Do not edit.  */\n"
   };
-  FILE *f;
+  outf_p f;
   size_t i;
   
-  f = tmpfile();
-  if (f == NULL)
-    {
-      perror ("couldn't create temporary file");
-      exit (1);
-    }
-  fprintf (f, "/* Type information for %s.\n", name);
+  f = xcalloc (sizeof (*f), 1);
+  f->next = output_files;
+  f->name = oname;
+  output_files = f;
+
+  oprintf (f, "/* Type information for %s.\n", name);
   for (i = 0; i < sizeof(hdr)/sizeof(hdr[0]); i++)
-    fputs (hdr[i], f);
+    oprintf (f, "%s", hdr[i]);
   return f;
+}
+
+/* Print, like fprintf, to O.  */
+void 
+oprintf VPARAMS ((outf_p o, const char *format, ...))
+{
+  char *s;
+  size_t slength;
+  
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, outf_p, o);
+  VA_FIXEDARG (ap, const char *, format);
+  slength = xvasprintf (&s, format, ap);
+  VA_CLOSE (ap);
+
+  if (o->bufused + slength > o->buflength)
+    {
+      size_t new_len = o->buflength;
+      if (new_len == 0)
+	new_len = 1024;
+      do {
+	new_len *= 2;
+      } while (o->bufused + slength >= new_len);
+      o->buf = xrealloc (o->buf, new_len);
+      o->buflength = new_len;
+    }
+  memcpy (o->buf + o->bufused, s, slength);
+  o->bufused += slength;
+  free (s);
 }
 
 /* Open the global header file and the language-specific header files.  */
@@ -564,22 +611,30 @@ open_base_files (void)
 {
   size_t i;
   
-  header_file = create_file ("GCC");
+  header_file = create_file ("GCC", "gtype-desc.h");
 
   for (i = 0; i < NUM_BASE_FILES; i++)
-    {
-      filemap_p newf;
-      char *s;
+    base_files[i] = create_file (lang_names[i], 
+				 xasprintf ("gtype-%s.h", lang_names[i]));
+
+  /* gtype-desc.c is a little special, so we create it here.  */
+  {
+    /* The order of files here matters very much.  */
+    static const char *const ifiles [] = {
+      "config.h", "system.h", "varray.h", "hashtab.h",
+      "bitmap.h", "tree.h", "rtl.h", "function.h", "insn-config.h",
+      "expr.h", "hard-reg-set.h", "basic-block.h", "cselib.h",
+      "insn-addr.h", "ssa.h", "optabs.h", "libfuncs.h",
+      "debug.h", "ggc.h",
+      NULL
+    };
+    const char *const *ifp;
+    outf_p gtype_desc_c;
       
-      base_files[i] = create_file (lang_names[i]);
-      newf = xmalloc (sizeof (*newf));
-      newf->next = files;
-      files = newf;
-      newf->input_name = NULL;
-      newf->output = base_files[i];
-      newf->output_name = s = xmalloc (16);
-      sprintf (s, "gtype-%s.h", lang_names[i]);
-    }
+    gtype_desc_c = create_file ("GCC", "gtype-desc.c");
+    for (ifp = ifiles; *ifp; ifp++)
+      oprintf (gtype_desc_c, "#include \"%s\"\n", *ifp);
+  }
 }
 
 #define startswith(len, c, s)  \
@@ -664,25 +719,22 @@ get_base_file_bitmap (input_file)
    made in INPUT_FILE and is linked into every language that uses
    INPUT_FILE.  */
 
-FILE *
+outf_p
 get_output_file_with_visibility (input_file)
      const char *input_file;
 {
-  filemap_p fm, fmo;
+  outf_p r;
   size_t len;
   const char *basename;
+  const char *for_name;
+  const char *output_name;
 
-  /* Do we already know the file?  */
-  for (fm = files; fm; fm = fm->next)
-    if (input_file == fm->input_name)
-      return fm->output;
+  /* This can happen when we need a file with visibility on a
+     structure that we've never seen.  We have to just hope that it's
+     globally visible.  */
+  if (input_file == NULL)
+    input_file = "system.h";
 
-  /* No, we'll be creating a new filemap.  */
-  fm = xmalloc (sizeof (*fm));
-  fm->next = files;
-  files = fm;
-  fm->input_name = input_file;
-  
   /* Determine the output file name.  */
   basename = get_file_basename (input_file);
 
@@ -693,72 +745,39 @@ get_output_file_with_visibility (input_file)
     {
       char *s;
       
-      fm->output_name = s = xmalloc (sizeof ("gt-") + len);
-      sprintf (s, "gt-%s", basename);
+      output_name = s = xasprintf ("gt-%s", basename);
       for (; *s != '.'; s++)
 	if (! ISALNUM (*s) && *s != '-')
 	  *s = '-';
       memcpy (s, ".h", sizeof (".h"));
+      for_name = basename;
     }
   else if (strcmp (basename, "c-common.h") == 0)
-    fm->output_name = "gt-c-common.h";
+    output_name = "gt-c-common.h", for_name = "c-common.c";
   else if (strcmp (basename, "c-tree.h") == 0)
-    fm->output_name = "gt-c-decl.h";
+    output_name = "gt-c-decl.h", for_name = "c-decl.c";
   else 
     {
       size_t i;
       
-      fm->output_name = "gtype-desc.c";
       for (i = 0; i < NUM_BASE_FILES; i++)
 	if (memcmp (basename, lang_names[i], strlen (lang_names[i])) == 0
 	    && basename[strlen(lang_names[i])] == '/')
-	  {
-	    char *s;
-	    
-	    s = xmalloc (16);
-	    sprintf (s, "gtype-%s.h", lang_names[i]);
-	    fm->output_name = s;
-	    break;
-	  }
+	  return base_files[i];
+
+      output_name = "gtype-desc.c";
+      for_name = NULL;
     }
 
   /* Look through to see if we've ever seen this output filename before.  */
-  for (fmo = fm->next; fmo; fmo = fmo->next)
-    if (strcmp (fmo->output_name, fm->output_name) == 0)
-      {
-	fm->output = fmo->output;
-	break;
-      }
+  for (r = output_files; r; r = r->next)
+    if (strcmp (r->name, output_name) == 0)
+      return r;
 
   /* If not, create it.  */
-  if (fmo == NULL)
-    {
-      fm->output = create_file (fm->output_name);
-      if (strcmp (fm->output_name, "gtype-desc.c") == 0)
-	{
-	  fputs ("#include \"config.h\"\n", fm->output);
-	  fputs ("#include \"system.h\"\n", fm->output);
-	  fputs ("#include \"varray.h\"\n", fm->output);
-	  fputs ("#include \"hashtab.h\"\n", fm->output);
-	  fputs ("#include \"bitmap.h\"\n", fm->output);
-	  fputs ("#include \"tree.h\"\n", fm->output);
-	  fputs ("#include \"rtl.h\"\n", fm->output);
-	  fputs ("#include \"function.h\"\n", fm->output);
-	  fputs ("#include \"insn-config.h\"\n", fm->output);
-	  fputs ("#include \"expr.h\"\n", fm->output);
-	  fputs ("#include \"hard-reg-set.h\"\n", fm->output);
-	  fputs ("#include \"basic-block.h\"\n", fm->output);
-	  fputs ("#include \"cselib.h\"\n", fm->output);
-	  fputs ("#include \"insn-addr.h\"\n", fm->output);
-	  fputs ("#include \"ssa.h\"\n", fm->output);
-	  fputs ("#include \"optabs.h\"\n", fm->output);
-	  fputs ("#include \"libfuncs.h\"\n", fm->output);
-	  fputs ("#include \"debug.h\"\n", fm->output);
-	  fputs ("#include \"ggc.h\"\n", fm->output);
-	}
-    }
+  r = create_file (for_name, output_name);
 
-  return fm->output;
+  return r;
 }
 
 /* The name of an output file, suitable for definitions, that can see
@@ -769,82 +788,57 @@ const char *
 get_output_file_name (input_file)
      const char *input_file;
 {
-  filemap_p fm;
-
-  for (fm = files; fm; fm = fm->next)
-    if (input_file == fm->input_name)
-      return fm->output_name;
-  (void) get_output_file_with_visibility (input_file);
-  return get_output_file_name (input_file);
+  return get_output_file_with_visibility (input_file)->name;
 }
 
-/* Close all output files and copy them to their final destinations,
+/* Copy the output to its final destination,
    but don't unnecessarily change modification times.  */
 
 static void
 close_output_files PARAMS ((void))
 {
-  filemap_p fm;
-  struct filemap header;
-  header.next = files;
-  header.output_name = "gtype-desc.h";
-  header.output = header_file;
+  outf_p of;
   
-  for (fm = &header; fm; fm = fm->next)
+  for (of = output_files; of; of = of->next)
     {
-      int no_write_p;
-      filemap_p ofm;
-      FILE *newfile;
-      
-      /* Handle each output file once.  */
-      if (fm->output == NULL)
-	continue;
-      
-      for (ofm = fm->next; ofm; ofm = ofm->next)
-	if (fm->output == ofm->output)
-	  ofm->output = NULL;
-      
-      /* Compare the output file with the file to be created, avoiding
-	 unnecessarily changing timestamps.  */
-      newfile = fopen (fm->output_name, "r");
-      if (newfile != NULL)
-	{
-	  int ch1, ch2;
-	  
-	  rewind (fm->output);
-	  do {
-	    ch1 = fgetc (fm->output);
-	    ch2 = fgetc (newfile);
-	  } while (ch1 != EOF && ch1 == ch2);
+      FILE * newfile;
 
+      newfile = fopen (of->name, "r");
+      if (newfile != NULL )
+	{
+	  int no_write_p;
+	  size_t i;
+
+	  for (i = 0; i < of->bufused; i++)
+	    {
+	      int ch;
+	      ch = fgetc (newfile);
+	      if (ch == EOF || ch != (unsigned char) of->buf[i])
+		break;
+	    }
+	  no_write_p = i == of->bufused && fgetc (newfile) == EOF;
 	  fclose (newfile);
-	  
-	  no_write_p = ch1 == ch2;
-	}
-      else
-	no_write_p = 0;
-     
-      /* Nothing interesting to do.  Close the output file.  */
-      if (no_write_p)
-	{
-	  fclose (fm->output);
-	  continue;
+
+	  if (no_write_p)
+	    continue;
 	}
 
-      newfile = fopen (fm->output_name, "w");
+      newfile = fopen (of->name, "w");
       if (newfile == NULL)
 	{
 	  perror ("opening output file");
 	  exit (1);
 	}
-      {
-	int ch;
-	rewind (fm->output);
-	while ((ch = fgetc (fm->output)) != EOF)
-	  fputc (ch, newfile);
-      }
-      fclose (newfile);
-      fclose (fm->output);
+      if (fwrite (of->buf, 1, of->bufused, newfile) != of->bufused)
+	{
+	  perror ("writing output file");
+	  exit (1);
+	}
+      if (fclose (newfile) != 0)
+	{
+	  perror ("closing output file");
+	  exit (1);
+	}
     }
 }
 
@@ -852,22 +846,22 @@ struct flist {
   struct flist *next;
   int started_p;
   const char *name;
-  FILE *f;
+  outf_p f;
 };
 
-static void output_escaped_param PARAMS ((FILE *, const char *, const char *,
+static void output_escaped_param PARAMS ((outf_p , const char *, const char *,
 					  const char *, const char *,
 					  struct fileloc *));
 static void write_gc_structure_fields 
-  PARAMS ((FILE *, type_p, const char *, const char *, options_p, 
+  PARAMS ((outf_p , type_p, const char *, const char *, options_p, 
 	   int, struct fileloc *, lang_bitmap, type_p));
 static void write_gc_marker_routine_for_structure PARAMS ((type_p, type_p));
 static void write_gc_types PARAMS ((type_p structures, type_p param_structs));
-static void put_mangled_filename PARAMS ((FILE *, const char *));
+static void put_mangled_filename PARAMS ((outf_p , const char *));
 static void finish_root_table PARAMS ((struct flist *flp, const char *pfx, 
 				       const char *tname, const char *lastname,
 				       const char *name));
-static void write_gc_root PARAMS ((FILE *, pair_p, type_p, const char *, int,
+static void write_gc_root PARAMS ((outf_p , pair_p, type_p, const char *, int,
 				   struct fileloc *, const char *));
 static void write_gc_roots PARAMS ((pair_p));
 
@@ -879,7 +873,7 @@ static int gc_counter;
 
 static void
 output_escaped_param (of, param, val, prev_val, oname, line)
-     FILE *of;
+     outf_p of;
      const char *param;
      const char *val;
      const char *prev_val;
@@ -890,13 +884,13 @@ output_escaped_param (of, param, val, prev_val, oname, line)
   
   for (p = param; *p; p++)
     if (*p != '%')
-      fputc (*p, of);
+      oprintf (of, "%c", *p);
     else if (*++p == 'h')
-      fprintf (of, "(%s)", val);
+      oprintf (of, "(%s)", val);
     else if (*p == '0')
-      fputs ("(*x)", of);
+      oprintf (of, "(*x)");
     else if (*p == '1')
-      fprintf (of, "(%s)", prev_val);
+      oprintf (of, "(%s)", prev_val);
     else
       error_at_line (line, "`%s' option contains bad escape %c%c",
 		     oname, '%', *p);
@@ -912,7 +906,7 @@ output_escaped_param (of, param, val, prev_val, oname, line)
 static void
 write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 			   param)
-     FILE *of;
+     outf_p of;
      type_p s;
      const char *val;
      const char *prev_val;
@@ -948,11 +942,11 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 	  error_at_line (line, "missing `desc' option");
 	}
 
-      fprintf (of, "%*s{\n", indent, "");
+      oprintf (of, "%*s{\n", indent, "");
       indent += 2;
-      fprintf (of, "%*sunsigned int tag%d = (", indent, "", tagcounter);
+      oprintf (of, "%*sunsigned int tag%d = (", indent, "", tagcounter);
       output_escaped_param (of, tagexpr, val, prev_val, "desc", line);
-      fputs (");\n", of);
+      oprintf (of, ");\n");
     }
   
   for (f = s->u.s.fields; f; f = f->next)
@@ -1034,7 +1028,7 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 	      error_at_line (&f->line, "field `%s' has no tag", f->name);
 	      continue;
 	    }
-	  fprintf (of, "%*sif (tag%d == (%s)) {\n", indent, "", 
+	  oprintf (of, "%*sif (tag%d == (%s)) {\n", indent, "", 
 		   tagcounter, tagid);
 	  indent += 2;
 	}
@@ -1067,8 +1061,7 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 	  {
 	    char *newval;
 
-	    newval = xmalloc (strlen (val) + sizeof (".") + strlen (f->name));
-	    sprintf (newval, "%s.%s", val, f->name);
+	    newval = xasprintf ("%s.%s", val, f->name);
 	    write_gc_structure_fields (of, t, newval, val, f->opt, indent, 
 				       &f->line, bitmap, param);
 	    free (newval);
@@ -1080,13 +1073,13 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 	    {
 	      if (maybe_undef_p
 		  && t->u.p->u.s.line.file == NULL)
-		fprintf (of, "%*sif (%s.%s) abort();\n", indent, "",
+		oprintf (of, "%*sif (%s.%s) abort();\n", indent, "",
 			 val, f->name);
 	      else if (UNION_OR_STRUCT_P (t->u.p))
-		fprintf (of, "%*sgt_ggc_m_%s (%s.%s);\n", indent, "", 
+		oprintf (of, "%*sgt_ggc_m_%s (%s.%s);\n", indent, "", 
 			 t->u.p->u.s.tag, val, f->name);
 	      else if (t->u.p->kind == TYPE_PARAM_STRUCT)
-		fprintf (of, "%*sgt_ggc_mm_%d%s_%s (%s.%s);\n", indent, "",
+		oprintf (of, "%*sgt_ggc_mm_%d%s_%s (%s.%s);\n", indent, "",
 			 (int) strlen (t->u.p->u.param_struct.param->u.s.tag),
 			 t->u.p->u.param_struct.param->u.s.tag,
 			 t->u.p->u.param_struct.stru->u.s.tag,
@@ -1098,22 +1091,22 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 	    }
 	  else if (t->u.p->kind == TYPE_SCALAR
 		   || t->u.p->kind == TYPE_STRING)
-	    fprintf (of, "%*sggc_mark (%s.%s);\n", indent, "", 
+	    oprintf (of, "%*sggc_mark (%s.%s);\n", indent, "", 
 		     val, f->name);
 	  else
 	    {
 	      int loopcounter = ++gc_counter;
 	      
-	      fprintf (of, "%*sif (%s.%s != NULL) {\n", indent, "",
+	      oprintf (of, "%*sif (%s.%s != NULL) {\n", indent, "",
 		       val, f->name);
 	      indent += 2;
-	      fprintf (of, "%*ssize_t i%d;\n", indent, "", loopcounter);
-	      fprintf (of, "%*sggc_set_mark (%s.%s);\n", indent, "", 
+	      oprintf (of, "%*ssize_t i%d;\n", indent, "", loopcounter);
+	      oprintf (of, "%*sggc_set_mark (%s.%s);\n", indent, "", 
 		       val, f->name);
-	      fprintf (of, "%*sfor (i%d = 0; i%d < (", indent, "", 
+	      oprintf (of, "%*sfor (i%d = 0; i%d < (", indent, "", 
 		       loopcounter, loopcounter);
 	      output_escaped_param (of, length, val, prev_val, "length", line);
-	      fprintf (of, "); i%d++) {\n", loopcounter);
+	      oprintf (of, "); i%d++) {\n", loopcounter);
 	      indent += 2;
 	      switch (t->u.p->kind)
 		{
@@ -1122,8 +1115,8 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 		  {
 		    char *newval;
 		    
-		    newval = xmalloc (strlen (val) + 8 + strlen (f->name));
-		    sprintf (newval, "%s.%s[i%d]", val, f->name, loopcounter);
+		    newval = xasprintf ("%s.%s[i%d]", val, f->name, 
+					loopcounter);
 		    write_gc_structure_fields (of, t->u.p, newval, val,
 					       f->opt, indent, &f->line,
 					       bitmap, param);
@@ -1132,7 +1125,7 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 		  }
 		case TYPE_POINTER:
 		  if (UNION_OR_STRUCT_P (t->u.p->u.p))
-		    fprintf (of, "%*sgt_ggc_m_%s (%s.%s[i%d]);\n", indent, "", 
+		    oprintf (of, "%*sgt_ggc_m_%s (%s.%s[i%d]);\n", indent, "", 
 			     t->u.p->u.p->u.s.tag, val, f->name,
 			     loopcounter);
 		  else
@@ -1147,9 +1140,9 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 		  break;
 		}
 	      indent -= 2;
-	      fprintf (of, "%*s}\n", indent, "");
+	      oprintf (of, "%*s}\n", indent, "");
 	      indent -= 2;
-	      fprintf (of, "%*s}\n", indent, "");
+	      oprintf (of, "%*s}\n", indent, "");
 	    }
 	  break;
 
@@ -1173,37 +1166,37 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 		|| ta->kind == TYPE_STRING)
 	      break;
 
-	    fprintf (of, "%*s{\n", indent, "");
+	    oprintf (of, "%*s{\n", indent, "");
 	    indent += 2;
 
 	    if (special != NULL && strcmp (special, "tree_exp") == 0)
 	      {
-		fprintf (of, "%*sconst size_t tree_exp_size = (",
+		oprintf (of, "%*sconst size_t tree_exp_size = (",
                          indent, "");
 		output_escaped_param (of, length, val, prev_val,
 				      "length", line);
-		fputs (");\n", of);
+		oprintf (of, ");\n");
 
 		length = "first_rtl_op (TREE_CODE ((tree)&%h))";
 	      }
 
 	    for (ta = t, i = 0; ta->kind == TYPE_ARRAY; ta = ta->u.a.p, i++)
 	      {
-		fprintf (of, "%*ssize_t i%d_%d;\n", 
+		oprintf (of, "%*ssize_t i%d_%d;\n", 
 			 indent, "", loopcounter, i);
-		fprintf (of, "%*sconst size_t ilimit%d_%d = (",
+		oprintf (of, "%*sconst size_t ilimit%d_%d = (",
 			 indent, "", loopcounter, i);
 		if (i == 0 && length != NULL)
 		  output_escaped_param (of, length, val, prev_val, 
 					"length", line);
 		else
-		  fputs (ta->u.a.len, of);
-		fputs (");\n", of);
+		  oprintf (of, "%s", ta->u.a.len);
+		oprintf (of, ");\n");
 	      }
 		
 	    for (ta = t, i = 0; ta->kind == TYPE_ARRAY; ta = ta->u.a.p, i++)
 	      {
-		fprintf (of, 
+		oprintf (of, 
 		 "%*sfor (i%d_%d = 0; i%d_%d < ilimit%d_%d; i%d_%d++) {\n",
 			 indent, "", loopcounter, i, loopcounter, i,
 			 loopcounter, i, loopcounter, i);
@@ -1214,13 +1207,13 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 		&& (ta->u.p->kind == TYPE_STRUCT
 		    || ta->u.p->kind == TYPE_UNION))
 	      {
-		fprintf (of, "%*sgt_ggc_m_%s (%s.%s", 
+		oprintf (of, "%*sgt_ggc_m_%s (%s.%s", 
 			 indent, "", ta->u.p->u.s.tag, val, f->name);
 		for (ta = t, i = 0; 
 		     ta->kind == TYPE_ARRAY; 
 		     ta = ta->u.a.p, i++)
-		  fprintf (of, "[i%d_%d]", loopcounter, i);
-		fputs (");\n", of);
+		  oprintf (of, "[i%d_%d]", loopcounter, i);
+		oprintf (of, ");\n");
 	      }
 	    else if (ta->kind == TYPE_STRUCT || ta->kind == TYPE_UNION)
 	      {
@@ -1245,7 +1238,7 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 	      }
 	    else if (ta->kind == TYPE_POINTER && ta->u.p->kind == TYPE_SCALAR
 		     && use_param_p && param == NULL)
-	      fprintf (of, "%*sabort();\n", indent, "");
+	      oprintf (of, "%*sabort();\n", indent, "");
 	    else
 	      error_at_line (&f->line, 
 			     "field `%s' is array of unimplemented type",
@@ -1253,21 +1246,21 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 	    for (ta = t, i = 0; ta->kind == TYPE_ARRAY; ta = ta->u.a.p, i++)
 	      {
 		indent -= 2;
-		fprintf (of, "%*s}\n", indent, "");
+		oprintf (of, "%*s}\n", indent, "");
 	      }
 
 	    if (special != NULL && strcmp (special, "tree_exp") == 0)
 	      {
-		fprintf (of, 
+		oprintf (of, 
 		 "%*sfor (; i%d_0 < tree_exp_size; i%d_0++)\n",
 			 indent, "", loopcounter, loopcounter);
-		fprintf (of, "%*s  gt_ggc_m_rtx_def (%s.%s[i%d_0]);\n",
+		oprintf (of, "%*s  gt_ggc_m_rtx_def (%s.%s[i%d_0]);\n",
 			 indent, "", val, f->name, loopcounter);
 		special = NULL;
 	      }
 
 	    indent -= 2;
-	    fprintf (of, "%*s}\n", indent, "");
+	    oprintf (of, "%*s}\n", indent, "");
 	    break;
 	  }
 
@@ -1281,7 +1274,7 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
       if (s->kind == TYPE_UNION && ! always_p )
 	{
 	  indent -= 2;
-	  fprintf (of, "%*s}\n", indent, "");
+	  oprintf (of, "%*s}\n", indent, "");
 	}
       if (special)
 	error_at_line (&f->line, "unhandled special `%s'", special);
@@ -1289,7 +1282,7 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
   if (s->kind == TYPE_UNION)
     {
       indent -= 2;
-      fprintf (of, "%*s}\n", indent, "");
+      oprintf (of, "%*s}\n", indent, "");
     }
 }
 
@@ -1301,33 +1294,33 @@ write_gc_marker_routine_for_structure (s, param)
      type_p s;
      type_p param;
 {
-  FILE *f;
+  outf_p f;
   if (param == NULL)
     f = get_output_file_with_visibility (s->u.s.line.file);
   else
     f = get_output_file_with_visibility (param->u.s.line.file);
   
-  fputc ('\n', f);
-  fputs ("void\n", f);
+  oprintf (f, "%c", '\n');
+  oprintf (f, "void\n");
   if (param == NULL)
-    fprintf (f, "gt_ggc_mx_%s (x_p)\n", s->u.s.tag);
+    oprintf (f, "gt_ggc_mx_%s (x_p)\n", s->u.s.tag);
   else
-    fprintf (f, "gt_ggc_mm_%d%s_%s (x_p)\n", (int) strlen (param->u.s.tag),
+    oprintf (f, "gt_ggc_mm_%d%s_%s (x_p)\n", (int) strlen (param->u.s.tag),
 	     param->u.s.tag, s->u.s.tag);
-  fputs ("      void *x_p;\n", f);
-  fputs ("{\n", f);
-  fprintf (f, "  %s %s * const x = (%s %s *)x_p;\n",
+  oprintf (f, "      void *x_p;\n");
+  oprintf (f, "{\n");
+  oprintf (f, "  %s %s * const x = (%s %s *)x_p;\n",
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag);
-  fputs ("  if (! ggc_test_and_set_mark (x))\n", f);
-  fputs ("    return;\n", f);
+  oprintf (f, "  if (! ggc_test_and_set_mark (x))\n");
+  oprintf (f, "    return;\n");
   
   gc_counter = 0;
   write_gc_structure_fields (f, s, "(*x)", "not valid postage",
 			     s->u.s.opt, 2, &s->u.s.line, s->u.s.bitmap,
 			     param);
   
-  fputs ("}\n", f);
+  oprintf (f, "}\n");
 }
 
 /* Write out marker routines for STRUCTURES and PARAM_STRUCTS.  */
@@ -1339,7 +1332,7 @@ write_gc_types (structures, param_structs)
 {
   type_p s;
   
-  fputs ("\n/* GC marker procedures.  */\n", header_file);
+  oprintf (header_file, "\n/* GC marker procedures.  */\n");
   for (s = structures; s; s = s->next)
     if (s->gc_used == GC_POINTED_TO
 	|| s->gc_used == GC_MAYBE_POINTED_TO)
@@ -1350,11 +1343,11 @@ write_gc_types (structures, param_structs)
 	    && s->u.s.line.file == NULL)
 	  continue;
 
-	fprintf (header_file,
+	oprintf (header_file,
 		 "#define gt_ggc_m_%s(X) do { \\\n", s->u.s.tag);
-	fprintf (header_file,
+	oprintf (header_file,
 		 "  if (X != NULL) gt_ggc_mx_%s (X);\\\n", s->u.s.tag);
-	fprintf (header_file,
+	oprintf (header_file,
 		 "  } while (0)\n");
 	
 	for (opt = s->u.s.opt; opt; opt = opt->next)
@@ -1364,7 +1357,7 @@ write_gc_types (structures, param_structs)
 	      if (t->kind == TYPE_STRUCT 
 		  || t->kind == TYPE_UNION
 		  || t->kind == TYPE_LANG_STRUCT)
-		fprintf (header_file,
+		oprintf (header_file,
 			 "#define gt_ggc_mx_%s gt_ggc_mx_%s\n",
 			 s->u.s.tag, t->u.s.tag);
 	      else
@@ -1376,7 +1369,7 @@ write_gc_types (structures, param_structs)
 	  continue;
 
 	/* Declare the marker procedure only once.  */
-	fprintf (header_file, 
+	oprintf (header_file, 
 		 "extern void gt_ggc_mx_%s PARAMS ((void *));\n",
 		 s->u.s.tag);
   
@@ -1412,7 +1405,7 @@ write_gc_types (structures, param_structs)
 	  }
 	
 	/* Declare the marker procedure.  */
-	fprintf (header_file, 
+	oprintf (header_file, 
 		 "extern void gt_ggc_mm_%d%s_%s PARAMS ((void *));\n",
 		 (int) strlen (param->u.s.tag), param->u.s.tag,
 		 stru->u.s.tag);
@@ -1439,15 +1432,15 @@ write_gc_types (structures, param_structs)
 
 static void
 put_mangled_filename (f, fn)
-     FILE *f;
+     outf_p f;
      const char *fn;
 {
   const char *name = get_output_file_name (fn);
   for (; *name != 0; name++)
     if (ISALNUM (*name))
-      fputc (*name, f);
+      oprintf (f, "%c", *name);
     else
-      fputc ('_', f);
+      oprintf (f, "%c", '_');
 }
 
 /* Finish off the currently-created root tables in FLP.  PFX, TNAME,
@@ -1468,8 +1461,8 @@ finish_root_table (flp, pfx, lastname, tname, name)
   for (fli2 = flp; fli2; fli2 = fli2->next)
     if (fli2->started_p)
       {
-	fprintf (fli2->f, "  %s\n", lastname);
-	fputs ("};\n\n", fli2->f);
+	oprintf (fli2->f, "  %s\n", lastname);
+	oprintf (fli2->f, "};\n\n");
       }
 
   for (fli2 = flp; fli2; fli2 = fli2->next)
@@ -1481,11 +1474,11 @@ finish_root_table (flp, pfx, lastname, tname, name)
 	for (fnum = 0; bitmap != 0; fnum++, bitmap >>= 1)
 	  if (bitmap & 1)
 	    {
-	      fprintf (base_files[fnum],
+	      oprintf (base_files[fnum],
 		       "extern const struct %s gt_ggc_%s_",
 		       tname, pfx);
 	      put_mangled_filename (base_files[fnum], fli2->name);
-	      fputs ("[];\n", base_files[fnum]);
+	      oprintf (base_files[fnum], "[];\n");
 	    }
       }
 
@@ -1502,14 +1495,14 @@ finish_root_table (flp, pfx, lastname, tname, name)
 	    {
 	      if (! (started_bitmap & (1 << fnum)))
 		{
-		  fprintf (base_files [fnum],
+		  oprintf (base_files [fnum],
 			   "const struct %s * const %s[] = {\n",
 			   tname, name);
 		  started_bitmap |= 1 << fnum;
 		}
-	      fprintf (base_files[fnum], "  gt_ggc_%s_", pfx);
+	      oprintf (base_files[fnum], "  gt_ggc_%s_", pfx);
 	      put_mangled_filename (base_files[fnum], fli2->name);
-	      fputs (",\n", base_files[fnum]);
+	      oprintf (base_files[fnum], ",\n");
 	    }
       }
 
@@ -1520,8 +1513,8 @@ finish_root_table (flp, pfx, lastname, tname, name)
     for (bitmap = started_bitmap, fnum = 0; bitmap != 0; fnum++, bitmap >>= 1)
       if (bitmap & 1)
 	{
-	  fputs ("  NULL\n", base_files[fnum]);
-	  fputs ("};\n\n", base_files[fnum]);
+	  oprintf (base_files[fnum], "  NULL\n");
+	  oprintf (base_files[fnum], "};\n\n");
 	}
   }
 }
@@ -1533,7 +1526,7 @@ finish_root_table (flp, pfx, lastname, tname, name)
 
 static void
 write_gc_root (f, v, type, name, has_length, line, if_marked)
-     FILE *f;
+     outf_p f;
      pair_p v;
      type_p type;
      const char *name;
@@ -1590,10 +1583,8 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
 		if (validf != NULL)
 		  {
 		    char *newname;
-		    newname = xmalloc (strlen (name) + 3 + strlen (fld->name)
-				       + strlen (validf->name));
-		    sprintf (newname, "%s.%s.%s", 
-			     name, fld->name, validf->name);
+		    newname = xasprintf ("%s.%s.%s", 
+					 name, fld->name, validf->name);
 		    write_gc_root (f, v, validf->type, newname, 0, line,
 				   if_marked);
 		    free (newname);
@@ -1606,8 +1597,7 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
 	    else
 	      {
 		char *newname;
-		newname = xmalloc (strlen (name) + 2 + strlen (fld->name));
-		sprintf (newname, "%s.%s", name, fld->name);
+		newname = xasprintf ("%s.%s", name, fld->name);
 		write_gc_root (f, v, fld->type, newname, 0, line, if_marked);
 		free (newname);
 	      }
@@ -1618,8 +1608,7 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
     case TYPE_ARRAY:
       {
 	char *newname;
-	newname = xmalloc (strlen (name) + 4);
-	sprintf (newname, "%s[0]", name);
+	newname = xasprintf ("%s[0]", name);
 	write_gc_root (f, v, type->u.a.p, newname, has_length, line, if_marked);
 	free (newname);
       }
@@ -1629,31 +1618,31 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
       {
 	type_p ap, tp;
 	
-	fputs ("  {\n", f);
-	fprintf (f, "    &%s,\n", name);
-	fputs ("    1", f);
+	oprintf (f, "  {\n");
+	oprintf (f, "    &%s,\n", name);
+	oprintf (f, "    1");
 	
 	for (ap = v->type; ap->kind == TYPE_ARRAY; ap = ap->u.a.p)
 	  if (ap->u.a.len[0])
-	    fprintf (f, " * (%s)", ap->u.a.len);
+	    oprintf (f, " * (%s)", ap->u.a.len);
 	  else if (ap == v->type)
-	    fprintf (f, " * (sizeof (%s) / sizeof (%s[0]))",
+	    oprintf (f, " * (sizeof (%s) / sizeof (%s[0]))",
 		     v->name, v->name);
-	fputs (",\n", f);
-	fprintf (f, "    sizeof (%s", v->name);
+	oprintf (f, ",\n");
+	oprintf (f, "    sizeof (%s", v->name);
 	for (ap = v->type; ap->kind == TYPE_ARRAY; ap = ap->u.a.p)
-	  fputs ("[0]", f);
-	fputs ("),\n", f);
+	  oprintf (f, "[0]");
+	oprintf (f, "),\n");
 	
 	tp = type->u.p;
 	
 	if (! has_length && UNION_OR_STRUCT_P (tp))
 	  {
-	    fprintf (f, "    &gt_ggc_mx_%s\n", tp->u.s.tag);
+	    oprintf (f, "    &gt_ggc_mx_%s\n", tp->u.s.tag);
 	  }
 	else if (! has_length && tp->kind == TYPE_PARAM_STRUCT)
 	  {
-	    fprintf (f, "    &gt_ggc_mm_%d%s_%s",
+	    oprintf (f, "    &gt_ggc_mm_%d%s_%s",
 		     (int) strlen (tp->u.param_struct.param->u.s.tag),
 		     tp->u.param_struct.param->u.s.tag,
 		     tp->u.param_struct.stru->u.s.tag);
@@ -1661,7 +1650,7 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
 	else if (has_length
 		 && (tp->kind == TYPE_POINTER || UNION_OR_STRUCT_P (tp)))
 	  {
-	    fprintf (f, "    &gt_ggc_ma_%s", name);
+	    oprintf (f, "    &gt_ggc_ma_%s", name);
 	  }
 	else
 	  {
@@ -1670,8 +1659,8 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
 			   name);
 	  }
 	if (if_marked)
-	  fprintf (f, ",\n    &%s", if_marked);
-	fputs ("\n  },\n", f);
+	  oprintf (f, ",\n    &%s", if_marked);
+	oprintf (f, "\n  },\n");
       }
       break;
 
@@ -1697,7 +1686,7 @@ write_gc_roots (variables)
 
   for (v = variables; v; v = v->next)
     {
-      FILE *f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (v->line.file);
       struct flist *fli;
       const char *length = NULL;
       int deletable_p = 0;
@@ -1729,7 +1718,7 @@ write_gc_roots (variables)
 	  fli->name = v->line.file;
 	  flp = fli;
 
-	  fputs ("\n/* GC roots.  */\n\n", f);
+	  oprintf (f, "\n/* GC roots.  */\n\n");
 	}
 
       if (! deletable_p
@@ -1738,22 +1727,22 @@ write_gc_roots (variables)
 	  && (v->type->u.p->kind == TYPE_POINTER
 	      || v->type->u.p->kind == TYPE_STRUCT))
 	{
-	  fprintf (f, "static void gt_ggc_ma_%s PARAMS ((void *));\n",
+	  oprintf (f, "static void gt_ggc_ma_%s PARAMS ((void *));\n",
 		   v->name);
-	  fprintf (f, "static void\ngt_ggc_ma_%s (x_p)\n      void *x_p;\n",
+	  oprintf (f, "static void\ngt_ggc_ma_%s (x_p)\n      void *x_p;\n",
 		   v->name);
-	  fputs ("{\n", f);
-	  fputs ("  size_t i;\n", f);
+	  oprintf (f, "{\n");
+	  oprintf (f, "  size_t i;\n");
 
 	  if (v->type->u.p->kind == TYPE_POINTER)
 	    {
 	      type_p s = v->type->u.p->u.p;
 
-	      fprintf (f, "  %s %s ** const x = (%s %s **)x_p;\n",
+	      oprintf (f, "  %s %s ** const x = (%s %s **)x_p;\n",
 		       s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,
 		       s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag);
-	      fputs ("  if (ggc_test_and_set_mark (x))\n", f);
-	      fprintf (f, "    for (i = 0; i < (%s); i++)\n", length);
+	      oprintf (f, "  if (ggc_test_and_set_mark (x))\n");
+	      oprintf (f, "    for (i = 0; i < (%s); i++)\n", length);
 	      if (s->kind != TYPE_STRUCT && s->kind != TYPE_UNION)
 		{
 		  error_at_line (&v->line, 
@@ -1762,31 +1751,31 @@ write_gc_roots (variables)
 		  continue;
 		}
 
-	      fprintf (f, "      gt_ggc_m_%s (x[i]);\n", s->u.s.tag);
+	      oprintf (f, "      gt_ggc_m_%s (x[i]);\n", s->u.s.tag);
 	    }
 	  else
 	    {
 	      type_p s = v->type->u.p;
 
-	      fprintf (f, "  %s %s * const x = (%s %s *)x_p;\n",
+	      oprintf (f, "  %s %s * const x = (%s %s *)x_p;\n",
 		       s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,
 		       s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag);
-	      fputs ("  if (ggc_test_and_set_mark (x))\n", f);
-	      fprintf (f, "    for (i = 0; i < (%s); i++)\n", length);
-	      fputs ("      {\n", f);
+	      oprintf (f, "  if (ggc_test_and_set_mark (x))\n");
+	      oprintf (f, "    for (i = 0; i < (%s); i++)\n", length);
+	      oprintf (f, "      {\n");
 	      write_gc_structure_fields (f, s, "x[i]", "x[i]",
 					 v->opt, 8, &v->line, s->u.s.bitmap,
 					 NULL);
-	      fputs ("      }\n", f);
+	      oprintf (f, "      }\n");
 	    }
 
-	  fputs ("}\n\n", f);
+	  oprintf (f, "}\n\n");
 	}
     }
 
   for (v = variables; v; v = v->next)
     {
-      FILE *f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (v->line.file);
       struct flist *fli;
       int skip_p = 0;
       int length_p = 0;
@@ -1809,9 +1798,9 @@ write_gc_roots (variables)
 	{
 	  fli->started_p = 1;
 
-	  fputs ("const struct ggc_root_tab gt_ggc_r_", f);
+	  oprintf (f, "const struct ggc_root_tab gt_ggc_r_");
 	  put_mangled_filename (f, v->line.file);
-	  fputs ("[] = {\n", f);
+	  oprintf (f, "[] = {\n");
 	}
 
       write_gc_root (f, v, v->type, v->name, length_p, &v->line, NULL);
@@ -1822,7 +1811,7 @@ write_gc_roots (variables)
 
   for (v = variables; v; v = v->next)
     {
-      FILE *f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (v->line.file);
       struct flist *fli;
       int skip_p = 1;
       options_p o;
@@ -1843,12 +1832,12 @@ write_gc_roots (variables)
 	{
 	  fli->started_p = 1;
 
-	  fputs ("const struct ggc_root_tab gt_ggc_rd_", f);
+	  oprintf (f, "const struct ggc_root_tab gt_ggc_rd_");
 	  put_mangled_filename (f, v->line.file);
-	  fputs ("[] = {\n", f);
+	  oprintf (f, "[] = {\n");
 	}
       
-      fprintf (f, "  { &%s, 1, sizeof (%s), NULL },\n",
+      oprintf (f, "  { &%s, 1, sizeof (%s), NULL },\n",
 	       v->name, v->name);
     }
   
@@ -1857,7 +1846,7 @@ write_gc_roots (variables)
 
   for (v = variables; v; v = v->next)
     {
-      FILE *f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (v->line.file);
       struct flist *fli;
       const char *if_marked = NULL;
       int length_p = 0;
@@ -1887,9 +1876,9 @@ write_gc_roots (variables)
 	{
 	  fli->started_p = 1;
 
-	  fputs ("const struct ggc_cache_tab gt_ggc_rc_", f);
+	  oprintf (f, "const struct ggc_cache_tab gt_ggc_rc_");
 	  put_mangled_filename (f, v->line.file);
-	  fputs ("[] = {\n", f);
+	  oprintf (f, "[] = {\n");
 	}
       
       write_gc_root (f, v, create_pointer (v->type->u.p->u.param_struct.param),

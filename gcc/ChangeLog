@@ -1,3 +1,28 @@
+2002-06-12  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gengtype.h (xvasprintf): New prototype.
+	(xasprintf): New prototype.
+	(struct outf): New.
+	(get_output_file): Return an outf_p.
+	(header_file): Is now an outf_p.
+	(base_files): Now are outf_p.
+	(oprintf): New.
+	* gengtype.c: Replace all output FILE * with outf_p; use oprintf
+	rather than stdio operations.  Use xasprintf in a few places,
+	when appropriate.
+	(xvasprintf): New.
+	(xasprintf): New.
+	(struct filemap): Delete.
+	(files): Delete.
+	(output_files): New.
+	(oprintf): New.
+	(create_file): Create an outf_p.  Add parameter to indicate output
+	file name, change all callers.
+	(open_base_files): Create gtype-desc.c here.
+	(get_output_file_with_visibility): Rewrite.
+	(get_output_file_name): Just look at 'name' field in struct outf.
+	(close_output_files): Rewrite.
+
 2002-06-12  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/vax/vax.h (MASK_UNIX_ASM, MASK_VAXC_ALIGNMENT)

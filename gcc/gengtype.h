@@ -111,6 +111,13 @@ extern struct fileloc lexer_line;
 extern void error_at_line 
   PARAMS ((struct fileloc *pos, const char *msg, ...)) ATTRIBUTE_PRINTF_2;
 
+/* Combines xmalloc() and vasprintf().  */
+extern int xvasprintf PARAMS ((char **, const char *, va_list))
+     ATTRIBUTE_PRINTF (2, 0);
+/* Like the above, but more convenient for quick coding.  */
+extern char * xasprintf PARAMS ((const char *, ...))
+     ATTRIBUTE_PRINTF_1;
+
 /* Constructor routines for types.  */
 extern void do_typedef PARAMS ((const char *s, type_p t, struct fileloc *pos));
 extern type_p resolve_typedef PARAMS ((const char *s, struct fileloc *pos));
@@ -135,23 +142,38 @@ extern void parse_file PARAMS ((char *name));
 
 /* Output file handling.  */
 
-FILE *get_output_file PARAMS ((const char *input_file));
-const char *get_output_file_name PARAMS ((const char *));
+/* Structure representing an output file.  */
+struct outf 
+{
+  struct outf *next;
+  const char *name;
+  size_t buflength;
+  size_t bufused;
+  char *buf;
+};
+
+typedef struct outf * outf_p;
 
 /* The output header file that is included into pretty much every
    source file.  */
-extern FILE *header_file;
+extern outf_p header_file;
 
 /* An output file, suitable for definitions, that can see declarations
    made in INPUT_FILE and is linked into every language that uses
    INPUT_FILE.  */
-extern FILE *get_output_file_with_visibility PARAMS ((const char *input_file));
+extern outf_p get_output_file_with_visibility 
+   PARAMS ((const char *input_file));
+const char *get_output_file_name PARAMS ((const char *));
 
 /* A list of output files suitable for definitions.  There is one
    BASE_FILES entry for each language.  */
-extern FILE *base_files[];
+extern outf_p base_files[];
 
 /* A bitmap that specifies which of BASE_FILES should be used to
    output a definition that is different for each language and must be
    defined once in each language that uses INPUT_FILE.  */
 extern lang_bitmap get_base_file_bitmap PARAMS ((const char *input_file));
+
+/* Print, like fprintf, to O.  */
+extern void oprintf PARAMS ((outf_p o, const char *S, ...))
+     ATTRIBUTE_PRINTF_2;
