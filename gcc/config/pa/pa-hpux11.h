@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP PA-RISC 1.1
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,12 +33,11 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:\
-       %{!pg:\
-         %{!threads:-lc}\
-         %{threads:-lcma -lc_r}}\
-       %{p: -L/lib/libp/ -lc}\
-       %{pg: -L/lib/libp/ -lc}}}"
+     %{!p:%{!pg:\
+       %{!threads:-lc}\
+       %{threads:-lcma -lc_r}}}\
+     %{p: -L/lib/libp/ -lc}\
+     %{pg: -L/lib/libp/ -lc}}"
 
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
@@ -48,12 +47,14 @@ Boston, MA 02111-1307, USA.  */
 #define MD_EXEC_PREFIX "/usr/ccs/bin/"
 #endif
 
-/* Under hpux11 the normal location of the various *crt*.o files is the
-   /usr/ccs/lib directory.  */
+/* Under hpux11 the normal location of the various *crt*.o files is
+   the /usr/ccs/lib directory.  However, the profiling files are in
+   /opt/langtools/lib.  */
 
 #ifndef CROSS_COMPILE
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
+#define MD_STARTFILE_PREFIX_1 "/opt/langtools/lib/"
 #endif
 
 /* hpux11 has the new HP assembler.  It's still lousy, but it's a whole lot

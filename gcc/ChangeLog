@@ -1,3 +1,8 @@
+Thu Feb  3 17:17:32 2000  Steve Ellcey <sje@cup.hp.com>
+
+	* config/pa/pa-hpux11.h (LIB_SPEC): Correct typo in !p case.
+	(MD_STARTFILE_PREFIX_1): New macro.
+
 Thu Feb  3 15:08:13 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movstrsi, clrstrsi): Support variable sized copies, align
