@@ -25,9 +25,12 @@
 # 	thread
 #
 # J'ai des doutes pour :
-# 	inline 		= en-ligne (pas systématiquement)
-# 	section attribute	attribut de section
-# 	wide char		caractère long
+# 	inline 		= enligne (pas systématiquement)
+#                         oui dans le contexte du langage C par exemple MR
+#                         non autrement ...de manière générale MR
+# 	section attribute	attribut de section OK MR
+# 	wide char		caractère long  ...non mieux caractère large MR 
+#                               plus conforme à l'esprit.
 #
 # ------
 # 	literals		littéral, ou mot composé ?
@@ -75,6 +78,7 @@
 #
 # A faire:
 #   - s/en ligne/en-ligne/  modifié 9-janv-2004 MR
+#   - s/en-ligne/enligne/  modifié 18-février-2004 MR pcq expression ou terme enlignage vs inlining
 #   - hors gamme  a été changé pour hors limite ...MR 09-jan-2004
 #   - literal
 #   - chaine de format => formatage
@@ -114,7 +118,7 @@ msgstr ""
 "Project-Id-Version: GNU gcc 3.4-b20040206\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-02-06 01:40+0000\n"
-"PO-Revision-Date: 2004-02-18 08:00-0500\n"
+"PO-Revision-Date: 2004-02-19 08:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -797,15 +801,15 @@ msgstr "%Jdéclaration en-ligne de « %D » suit la déclaration avec un attribut no
 
 #: c-decl.c:1187
 msgid "%Jdeclaration of '%D' with attribute noinline follows inline declaration "
-msgstr "%Jéclaration de « %D » avec un attribut non en-glien suit une déclaration en-ligne"
+msgstr "%Jéclaration de « %D » avec un attribut non enligne suit une déclaration enligne"
 
 #: c-decl.c:1199
 msgid "%J'%D' declared inline after being called"
-msgstr "%J'%D' déclaré en-ligne après avoir été appelé"
+msgstr "%J'%D' déclaré enligne après avoir été appelé"
 
 #: c-decl.c:1205
 msgid "%J'%D' declared inline after its definition"
-msgstr "%J'%D' déclaré en-ligne après sa définition"
+msgstr "%J'%D' déclaré enligne après sa définition"
 
 #: c-decl.c:1217
 msgid "%Jvolatile declaration of '%D' follows non-volatile declaration"
@@ -962,7 +966,7 @@ msgstr "les éléments du tableau « %s » ont des types incomplets"
 
 #: c-decl.c:2640 c-decl.c:5426 cp/decl.c:3748 cp/decl.c:10156
 msgid "%Jinline function '%D' given attribute noinline"
-msgstr "%J fonction en-ligne « %D » a reçu l'attribut non en-ligne"
+msgstr "%J fonction enligne « %D » a reçu l'attribut non enligne"
 
 #: c-decl.c:2716
 msgid "%Jinitializer fails to determine size of '%D'"
@@ -1313,7 +1317,7 @@ msgstr "fonction marquée « noreturn » retourne une valeur n'étant pas de type « 
 
 #: c-decl.c:4362
 msgid "cannot inline function `main'"
-msgstr "ne peut transformer « main » en fonction en-ligne"
+msgstr "ne peut transformer « main » en fonction enligne"
 
 #: c-decl.c:4415
 msgid "variable previously declared `static' redeclared `extern'"
@@ -1934,7 +1938,7 @@ msgstr "chaîne de format de longueur nulle %s"
 
 #: c-format.c:1468
 msgid "format is a wide character string"
-msgstr "le format est une chaîne de caractères longs (wide characters)"
+msgstr "le format est une chaîne large de caractères"
 
 #: c-format.c:1471
 msgid "unterminated format string"
@@ -3269,11 +3273,11 @@ msgstr "(près de l'initialisation de « %s »)"
 
 #: c-typeck.c:4052 cp/typeck2.c:559
 msgid "char-array initialized from wide string"
-msgstr "tableau de caractères initialisé à l'aide d'une chaîne de caractères longs"
+msgstr "tableau de caractères initialisé à l'aide d'une chaîne large de caractères"
 
 #: c-typeck.c:4059 cp/typeck2.c:566
 msgid "int-array initialized from non-wide string"
-msgstr "tableau d'entier initialisé à l'aide d'un chaîne de caractères courts"
+msgstr "tableau d'entier initialisé à l'aide d'une chaîne non-large"
 
 #: c-typeck.c:4077 cp/typeck2.c:581
 msgid "initializer-string for array of chars is too long"
@@ -4095,7 +4099,7 @@ msgstr "« %s » est de version « %.4s », version « %.4s » attendue"
 #: coverage.c:255 coverage.c:263
 #, c-format
 msgid "coverage mismatch for function %u while reading execution counters."
-msgstr ""
+msgstr "non concordance de la couverture pour la fonction %u lors de la lecture des compteurs d'exécution"
 
 #: coverage.c:257 coverage.c:340
 #, c-format
@@ -4108,19 +4112,19 @@ msgid "number of counters is %d instead of %d"
 msgstr "nombre de compteurs est %d au lieu de %d"
 
 #: coverage.c:271
-#, fuzzy, c-format
+#, c-format
 msgid "cannot merge separate %s counters for function %u"
-msgstr "ne peut utiliser va-start dans une fonction d'interruption"
+msgstr "ne peut faire la fusion séparée des compteurs %s pour la fonction %u"
 
 #: coverage.c:296
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' has overflowed"
-msgstr "débordement de la pile de l'analyseur syntaxique"
+msgstr "« %s » a déborbé"
 
 #: coverage.c:296
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is corrupted"
-msgstr "« %s » est obsolète"
+msgstr "« %s » est corrompu"
 
 #: coverage.c:319
 #, c-format
@@ -4128,45 +4132,44 @@ msgid "file %s not found, execution counts assumed to be zero"
 msgstr "fichier %s non repéré, compteur d'exécution assumé être à zéro"
 
 #: coverage.c:329
-#, fuzzy, c-format
+#, c-format
 msgid "no coverage for function '%s' found."
-msgstr "classe de stockage invalide pour la fonction « %s »"
+msgstr "pas de couverture repérée pour la fonction « %s »"
 
 #: coverage.c:337 coverage.c:345
 #, c-format
 msgid "coverage mismatch for function '%s' while reading counter '%s'."
-msgstr ""
+msgstr "non concordance de la couverture pour la fonction « %s » lors de la lecture des compteurs d'exécution « %s »"
 
 #: coverage.c:492
-#, fuzzy, c-format
+#, c-format
 msgid "cannot open %s"
 msgstr "ne peut ouvrir %s"
 
 #: coverage.c:527
-#, fuzzy, c-format
+#, c-format
 msgid "error writing `%s'"
 msgstr "erreur d'écriture dans %s"
 
 #. XXX should be DL_SORRY
 #: cppcharset.c:653
-#, fuzzy, c-format
+#, c-format
 msgid "conversion from %s to %s not supported by iconv"
-msgstr "conversion de NaN en un int non signé"
+msgstr "conversion de %s vers %s n'est pas supporté par iconv"
 
 #: cppcharset.c:656
 msgid "iconv_open"
-msgstr ""
+msgstr "iconv_open"
 
 #. XXX should be DL_SORRY
 #: cppcharset.c:664
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
-msgstr ""
+msgstr "pas d'implantation iconv, ne peut convertir de %s vers %s"
 
 #: cppcharset.c:808
-#, fuzzy
 msgid "universal character names are only valid in C++ and C99"
-msgstr "nom-de-caractère-universel « \\U%08x » invalide dans l'identificcateur"
+msgstr "noms de caractère universel sont seulement valides en C++ et C89"
 
 #: cppcharset.c:811
 #, c-format
@@ -4175,34 +4178,32 @@ msgstr "la signification de « \\%c » est différente en C traditionel"
 
 # FIXME
 #: cppcharset.c:837
-#, fuzzy, c-format
+#, c-format
 msgid "incomplete universal character name %.*s"
-msgstr "nom-de-caractère-universel incomplet"
+msgstr "nom de caractère universel incomplet %.*s"
 
 #: cppcharset.c:849
-#, fuzzy, c-format
+#, c-format
 msgid "%.*s is not a valid universal character"
-msgstr "«%T::%D» n'est pas un déclarateur valide"
+msgstr "%.*s n'est pas un caractère universel valide"
 
 #: cppcharset.c:859
-#, fuzzy, c-format
+#, c-format
 msgid "universal character %.*s is not valid in an identifier"
-msgstr "nom-de-caractère-universel « \\U%08x » invalide dans l'identificcateur"
+msgstr "caractère universel %.*s n'est pas valide dans un identificcateur"
 
 #: cppcharset.c:863
-#, fuzzy, c-format
+#, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
-msgstr "nom-de-caractère-universel « \\U%08x » invalide dans l'identificcateur"
+msgstr "caractère universel %.*s n'est pas valide au début d'un identificcateur"
 
 #: cppcharset.c:898
-#, fuzzy
 msgid "converting UCN to source character set"
-msgstr "conversion d'un NULL vers un type non pointeur"
+msgstr "conversion UCN vers le jeu source de caractères"
 
 #: cppcharset.c:902
-#, fuzzy
 msgid "converting UCN to execution character set"
-msgstr "conversion d'un NULL vers un type non pointeur"
+msgstr "conversion UCN vers le jeu d'exécution de caractères"
 
 #: cppcharset.c:967
 msgid "the meaning of '\\x' is different in traditional C"
@@ -4240,13 +4241,12 @@ msgid "unknown escape sequence: '\\%03o'"
 msgstr "séquence d'échappement « \\%03o » inconnue"
 
 #: cppcharset.c:1122
-#, fuzzy
 msgid "converting escape sequence to execution character set"
-msgstr "séquence d'échappement octale hors limite"
+msgstr "conversion d'une séquence d'échappement vers un jeu d'exécution de caractères"
 
 #: cppcharset.c:1181
 msgid "converting to execution character set"
-msgstr ""
+msgstr "conversion vers un jeu d'exécution de caractères"
 
 #: cppcharset.c:1244 cppcharset.c:1307
 msgid "character constant too long for its type"
@@ -4261,9 +4261,9 @@ msgid "empty character constant"
 msgstr "constante caractère vide"
 
 #: cppcharset.c:1378
-#, fuzzy, c-format
+#, c-format
 msgid "failure to convert %s to %s"
-msgstr "ne peut convertir « %E » vers « %T »"
+msgstr "échec de conversion de %s vers %s"
 
 #: cpperror.c:110 diagnostic.def:5
 msgid "warning: "
@@ -4458,9 +4458,9 @@ msgid "%s is shorter than expected"
 msgstr "%s est plus petit que prévu"
 
 #: cppfiles.c:696
-#, fuzzy, c-format
+#, c-format
 msgid "no include path in which to search for %s"
-msgstr "aucun chemin d'inclusion ne permet de trouver %s"
+msgstr "aucun chemin d'inclusion dans lequel on pourrait repérer %s"
 
 # FIXME
 #: cppfiles.c:956
@@ -4499,7 +4499,7 @@ msgstr "les demi-entiers de CPP sont plus petit que les caractères de CPP"
 #: cppinit.c:418
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
-msgstr "CPP sur cette machine ne peut gérer les caractères longs constants de plus de %lu bits, mais la cible requière %lu bits"
+msgstr "CPP sur cette machine ne peut gérer les constantes larges de caractères de plus de %lu bits, mais la cible requière %lu bits"
 
 # I18N
 #: cpplex.c:410
@@ -4507,9 +4507,8 @@ msgid "null character(s) ignored"
 msgstr "caractère(s) nul(s) ignoré(s)"
 
 #: cpplex.c:445
-#, fuzzy
 msgid "'$' in identifier or number"
-msgstr "caractère(s) « $ » dans un identificateur ou un nombre"
+msgstr "« $ » dans un identificateur ou un nombre"
 
 # FIXME
 #: cpplex.c:492
@@ -4688,9 +4687,9 @@ msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header ignorée en dehors du fichier d'inclusion"
 
 #: cpplib.c:1255
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find source file %s"
-msgstr "impossible de trouver le source %s"
+msgstr "impossible de trouver le fichier source %s"
 
 #: cpplib.c:1259
 #, c-format
@@ -4844,26 +4843,26 @@ msgstr "type de hachage %d invalide dans cpp_macro_definition"
 
 #: cpppch.c:84 cpppch.c:332 cpppch.c:356 cpppch.c:365
 msgid "while writing precompiled header"
-msgstr ""
+msgstr "lors de l'écriture de l'en-tête pré-compilée"
 
 #: cpppch.c:463
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `%.*s' not defined"
-msgstr "étiquette « %s » utilisée mais non définie"
+msgstr "%s: n'est pas utilisé parce que « %.*s » n'est pas définie"
 
 #: cpppch.c:475
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
-msgstr ""
+msgstr "%s: n'est pas utilisé parce que « %.*s » est défini en tant « %s » et non pas « %.*s »"
 
 #: cpppch.c:516
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `%s' is defined"
-msgstr "« %s » utilisé mais n'a jamais été défini"
+msgstr "%s: non utilisé parce que « %s » est défini"
 
 #: cpppch.c:529 cpppch.c:715
 msgid "while reading precompiled header"
-msgstr ""
+msgstr "lors de la lecture de l'en-tête pré-compilée"
 
 #: cppspec.c:106
 #, c-format
@@ -4880,9 +4879,8 @@ msgid "detected recursion whilst expanding macro \"%s\""
 msgstr "récursion détectée lors de l'expansion de la macro « %s »"
 
 #: cpptrad.c:911
-#, fuzzy
 msgid "syntax error in macro parameter list"
-msgstr "erreur de syntaxe dans la liste de noms de paramètres"
+msgstr "erreur de syntaxe dans la liste de paramètres macro"
 
 # FIXME: Initialisé, ou ensembles?
 #: cse.c:7040
@@ -4929,13 +4927,12 @@ msgid "can't access imaginary part of complex value in hard register"
 msgstr "ne peut accéder à la partie imaginaire d'une valeur complexe dans un registre matériel"
 
 #: emit-rtl.c:2263
-#, fuzzy
 msgid "Invalid rtl sharing found in the insn"
-msgstr "opérande invalide dans l'instruction"
+msgstr "partage rtl invalide repéré dans l'insn"
 
 #: emit-rtl.c:2265
 msgid "Shared rtx"
-msgstr ""
+msgstr "rtx partagé"
 
 #: emit-rtl.c:3400
 msgid "ICE: emit_insn used where emit_jump_insn needed:\n"
@@ -4965,12 +4962,11 @@ msgstr "les limites de la pile ne sont pas supportées sur cette cible"
 
 #: expr.c:2965
 msgid "function using short complex types cannot be inline"
-msgstr "un foncton utilisant un type « complex short » ne peut être en-ligne"
+msgstr "un foncton utilisant un type « complex short » ne peut être enligne"
 
 #: expr.c:6311
-#, fuzzy
 msgid "%Jprior parameter's size depends on '%D'"
-msgstr "taille du paramètre précédent dépend de « %s »"
+msgstr "%Jtaille du paramètre précédent dépend de « %D »"
 
 #: expr.c:6678
 msgid "returned value in block_exit_expr"
@@ -5304,14 +5300,12 @@ msgid "  -Wl,<options>            Pass comma-separated <options> on to the linke
 msgstr "  -Wl,<options>            passer les <options> séparées par des virgules  à l'éditeur de liens\n"
 
 #: gcc.c:2996
-#, fuzzy
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler\n"
-msgstr "  -Xlinker <argument>      passer l'<argument> à l'éditeur de liens\n"
+msgstr "  -Xassembler <arg>        passer l'<arg>ument à l'assembleur\n"
 
 #: gcc.c:2997
-#, fuzzy
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"
-msgstr "  -Xlinker <argument>      passer l'<argument> à l'éditeur de liens\n"
+msgstr "  -Xpreprocessor <arg>     passer l'<arg>ument au pré-processeur\n"
 
 #: gcc.c:2998
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker\n"
@@ -5429,22 +5423,20 @@ msgid "argument to `-Xlinker' is missing"
 msgstr "argument de «-Xlinker» est manquant"
 
 #: gcc.c:3461
-#, fuzzy
 msgid "argument to `-Xpreprocessor' is missing"
-msgstr "argument de «-specs» est manquant"
+msgstr "argument de « -Xpreprocessor » est manquant"
 
 #: gcc.c:3468
-#, fuzzy
 msgid "argument to `-Xassembler' is missing"
-msgstr "argument de «-Xlinker» est manquant"
+msgstr "argument de « -Xassembler » est manquant"
 
 #: gcc.c:3475
 msgid "argument to `-l' is missing"
-msgstr "argument pour «-l» est manquant"
+msgstr "argument pour « -l » est manquant"
 
 #: gcc.c:3491
 msgid "argument to `-specs' is missing"
-msgstr "argument de «-specs» est manquant"
+msgstr "argument de « -specs » est manquant"
 
 #: gcc.c:3505
 msgid "argument to `-specs=' is missing"
@@ -5603,9 +5595,8 @@ msgid "%s: linker input file unused because linking not done"
 msgstr "%s: fichier d'entrée d'édition de liens n'est pas utilisé parce l'édition de lien n'a pas été faite"
 
 #: gcc.c:6320
-#, fuzzy
 msgid "cannot specify -o with -c or -S and multiple languages"
-msgstr "ne peut spécifier -o avec -c ou -S et de multiples compilations"
+msgstr "ne peut spécifier -o avec -c ou -S et de multiples langages"
 
 #: gcc.c:6355
 #, c-format
@@ -5714,57 +5705,56 @@ msgid "Copyright (C) 2003 Free Software Foundation, Inc.\n"
 msgstr "Copyright © 2003 Free Software Foundation, Inc.\n"
 
 #: gcov.c:425
-#, fuzzy
 msgid ""
 "This is free software; see the source for copying conditions.\n"
 "There is NO warranty; not even for MERCHANTABILITY or \n"
 "FITNESS FOR A PARTICULAR PURPOSE.\n"
 "\n"
 msgstr ""
-"Ce logiciel est libre; voir les sources pour les conditions de copie.  Il n'y a PAS\n"
-"GARANTIE; ni implicite pour le MARCHANDAGE ou pour un BUT PARTICULIER.\n"
+"Ce logiciel est libre; voir les sources pour les conditions de copie. \n"
+"Il n'y a PAS GARANTIE; ni implicite pour le MARCHANDAGE ou\n"
+"pour un BUT PARTICULIER.\n"
 "\n"
 
 #: gcov.c:515
-#, fuzzy, c-format
+#, c-format
 msgid "%s:no functions found\n"
-msgstr "aucun cmd_strings trouvé"
+msgstr "%s: aucune fonction repérée\n"
 
 # I18N
 #: gcov.c:536 gcov.c:564
-#, fuzzy
 msgid "\n"
-msgstr ":\n"
+msgstr "\n"
 
 #: gcov.c:551
-#, fuzzy, c-format
+#, c-format
 msgid "%s:creating `%s'\n"
-msgstr "création de %s"
+msgstr "%s: création de « %s »\n"
 
 #: gcov.c:555
-#, fuzzy, c-format
+#, c-format
 msgid "%s:error writing output file `%s'\n"
-msgstr "ERREUR d'écriture dans le fichier de sortie %s.\n"
+msgstr "%s: ERREUR d'écriture dans le fichier de sortie « %s ».\n"
 
 #: gcov.c:560
-#, fuzzy, c-format
+#, c-format
 msgid "%s:could not open output file `%s'\n"
-msgstr "N'a pu ouvrir le fichier d'entrée %s.\n"
+msgstr "%s: ne peut ouvrir le fichier de sortie « %s ».\n"
 
 #: gcov.c:711
-#, fuzzy, c-format
+#, c-format
 msgid "%s:cannot open graph file\n"
-msgstr "%s : ne peut ouvrir en tant que fichier COFF"
+msgstr "%s: ne peut ouvrir le fichier de graphe\n"
 
 #: gcov.c:717
-#, fuzzy, c-format
+#, c-format
 msgid "%s:not a gcov graph file\n"
-msgstr "%s : n'est pas un fichier COFF"
+msgstr "%s: n'est pas un fichier de graphe gcov\n"
 
 #: gcov.c:730
 #, c-format
 msgid "%s:version `%.4s', prefer `%.4s'\n"
-msgstr ""
+msgstr "%s:version `%.4s', préfère `%.4s'\n"
 
 #: gcov.c:782
 #, c-format
@@ -5777,19 +5767,19 @@ msgid "%s:corrupted\n"
 msgstr ""
 
 #: gcov.c:976
-#, fuzzy, c-format
+#, c-format
 msgid "%s:cannot open data file\n"
-msgstr "%s : ne peut ouvrir en tant que fichier COFF"
+msgstr "%s: ne peut ouvrir le fichier de données\n"
 
 #: gcov.c:981
-#, fuzzy, c-format
+#, c-format
 msgid "%s:not a gcov data file\n"
-msgstr "%s : n'est pas un fichier COFF"
+msgstr "%s: n'est pas un fichier de données gcov\n"
 
 #: gcov.c:994
 #, c-format
 msgid "%s:version `%.4s', prefer version `%.4s'\n"
-msgstr ""
+msgstr "%s:version `%.4s', préfère la version `%.4s'\n"
 
 #: gcov.c:1000
 #, c-format
@@ -5797,89 +5787,86 @@ msgid "%s:stamp mismatch with graph file\n"
 msgstr ""
 
 #: gcov.c:1026
-#, fuzzy, c-format
+#, c-format
 msgid "%s:unknown function `%u'\n"
-msgstr "spécification de fonction inconnue « %s »:"
+msgstr "%s: fonction inconnue « %u »\n"
 
 #: gcov.c:1039
-#, fuzzy, c-format
+#, c-format
 msgid "%s:profile mismatch for `%s'\n"
-msgstr "autorisation précédente pour « %s »"
+msgstr "%s: profile ne concorde pas pour « %s »\n"
 
 #: gcov.c:1062
-#, fuzzy, c-format
+#, c-format
 msgid "%s:overflowed\n"
-msgstr "%s: erreur de débordement de bornes"
+msgstr "%s: débordement\n"
 
 #: gcov.c:1085
 #, c-format
 msgid "%s:`%s' lacks entry and/or exit blocks\n"
-msgstr ""
+msgstr "%s:`%s' manque de blocs d'entrée et/ou de sortie\n"
 
 #: gcov.c:1090
 #, c-format
 msgid "%s:`%s' has arcs to entry block\n"
-msgstr ""
+msgstr "%s:`%s' possède des arcs vers un bloc d'entrée\n"
 
 #: gcov.c:1098
 #, c-format
 msgid "%s:`%s' has arcs from exit block\n"
-msgstr ""
+msgstr "%s:`%s' possèdes des arcs à partir du bloc de sortie\n"
 
 #: gcov.c:1306
 #, c-format
 msgid "%s:graph is unsolvable for `%s'\n"
-msgstr ""
+msgstr "%s: graphe n'a pas de solution pour « %s »\n"
 
 #: gcov.c:1386
-#, fuzzy, c-format
+#, c-format
 msgid "%s `%s'\n"
-msgstr "Dans %s « %s »:"
+msgstr "%s « %s »\n"
 
 #: gcov.c:1389
-#, fuzzy, c-format
+#, c-format
 msgid "Lines executed:%s of %d\n"
-msgstr "%s de %d de lignes sources exécutées dans %s %s\n"
+msgstr "Lignes exécutées: %s de %d\n"
 
 #: gcov.c:1393
-#, fuzzy
 msgid "No executable lines"
-msgstr "Pas de ligne exécutable dans le fichier %s %s\n"
+msgstr "Auncue ligne exécutable"
 
 #: gcov.c:1399
-#, fuzzy, c-format
+#, c-format
 msgid "Branches executed:%s of %d\n"
-msgstr "%s de %d branchements exécutés dans %s %s\n"
+msgstr "Branchements exécutés: %s de %d\n"
 
 #: gcov.c:1403
-#, fuzzy, c-format
+#, c-format
 msgid "Taken at least once:%s of %d\n"
-msgstr "%s de %d branchements pris au moins une fois dans %s %s\n"
+msgstr "Branchements pris au moins une fois: %s de %d\n"
 
 #: gcov.c:1409
-#, fuzzy
 msgid "No branches\n"
-msgstr "Pas de branchement dans %s %s\n"
+msgstr "Pas de branchement\n"
 
 #: gcov.c:1411
-#, fuzzy, c-format
+#, c-format
 msgid "Calls executed:%s of %d\n"
-msgstr "%s de %d d'appels exécutés dans %s %s\n"
+msgstr "Appels exécutés: %s de %d\n"
 
 #: gcov.c:1415
-#, fuzzy
 msgid "No calls\n"
-msgstr "Pas d'appel dans %s %s\n"
+msgstr "Pas d'appel\n"
 
 #: gcov.c:1556
-#, fuzzy, c-format
+#, c-format
 msgid "%s:no lines for `%s'\n"
-msgstr "%s avant « %s »"
+msgstr "%s: pas de ligne pour « %s »\n"
 
 #: gcov.c:1751
-#, fuzzy, c-format
+#, c-format
 msgid "call   %2d returned %s\n"
-msgstr "appel %2d a retourné %s\n"
+msgstr "appel  %2d a retourné %s\n"
 
 # FIXME: c'est de l'assembleur ?
 #: gcov.c:1756
@@ -5888,9 +5875,9 @@ msgid "call   %2d never executed\n"
 msgstr "call   %2d n'est jamais été exécuté\n"
 
 #: gcov.c:1761
-#, fuzzy, c-format
+#, c-format
 msgid "branch %2d taken %s%s\n"
-msgstr "branchement %2d a pris %s\n"
+msgstr "branchement %2d a pris %s%s\n"
 
 #: gcov.c:1765
 #, c-format
@@ -5898,102 +5885,100 @@ msgid "branch %2d never executed\n"
 msgstr "branchement %2d n'a jamais été exécuté\n"
 
 #: gcov.c:1770
-#, fuzzy, c-format
+#, c-format
 msgid "unconditional %2d taken %s\n"
-msgstr "branchement %2d a pris %s\n"
+msgstr "inconditionnel %2d a pris %s\n"
 
 # FIXME: c'est de l'assembleur ?
 #: gcov.c:1773
-#, fuzzy, c-format
+#, c-format
 msgid "unconditional %2d never executed\n"
-msgstr "call   %2d n'est jamais été exécuté\n"
+msgstr "inconditionnel %2d n'a jamais été exécuté\n"
 
 #: gcov.c:1805
-#, fuzzy, c-format
+#, c-format
 msgid "%s:cannot open source file\n"
-msgstr "%s : ne peut ouvrir en tant que fichier COFF"
+msgstr "%s: ne peut ouvrir le fichier source\n"
 
 #: gcov.c:1815
-#, fuzzy, c-format
+#, c-format
 msgid "%s:source file is newer than graph file `%s'\n"
-msgstr "Attention : le fichier source %s est plus récent que %s\n"
+msgstr "%s: fichier source est plus récent que le fichier graphe « %s »\n"
 
 #. Return if there's nothing to do, or it is too expensive.
 #: gcse.c:747
 msgid "GCSE disabled"
-msgstr ""
+msgstr "GCSE désactivé"
 
 #: gcse.c:6108
 msgid "NULL pointer checks disabled"
-msgstr ""
+msgstr "vérification des pointeurs NULS désactivée"
 
 #. Return if there's nothing to do, or it is too expensive.
 #: gcse.c:7994
-#, fuzzy
 msgid "jump bypassing disabled"
-msgstr "option -g désactivée"
+msgstr "saut d'évitement désactivé"
 
 #: gcse.c:8055
-#, fuzzy, c-format
+#, c-format
 msgid "%s: %d basic blocks and %d edges/basic block"
-msgstr "GCSE désactivé: %d > 1000 blocs de base et %d >= 20 blocs edges/basic"
+msgstr "%s: %d blocs de base et %d blocs edges/basic"
 
 #: gcse.c:8068
-#, fuzzy, c-format
+#, c-format
 msgid "%s: %d basic blocks and %d registers"
-msgstr "GCSE désactivé: %d vlocs de base et %d registres"
+msgstr "%s: %d blocs basic et %d registres"
 
 #: ggc-common.c:398 ggc-common.c:406 ggc-common.c:487 ggc-common.c:507
 #: ggc-page.c:2030 ggc-page.c:2062 ggc-page.c:2069 ggc-zone.c:1361
 #: ggc-zone.c:1367 ggc-zone.c:1372 ggc-zone.c:1379
-#, fuzzy, c-format
+#, c-format
 msgid "can't write PCH file: %m"
-msgstr "ne peut écrire dans %s"
+msgstr "ne peut écrire le fichier PCH: %m"
 
 #: ggc-common.c:500
-#, fuzzy, c-format
+#, c-format
 msgid "can't get position in PCH file: %m"
-msgstr "ne peut créer le fichier « %s » pour dépôt d'informations"
+msgstr "ne peut obtenir la position dans le fichier PCH: %m"
 
 #: ggc-common.c:510
-#, fuzzy, c-format
+#, c-format
 msgid "can't write padding to PCH file: %m"
-msgstr "ne peut écrire dans le fichier de sortie"
+msgstr "ne peut écrire de remplissage dans le fichier PCH: %m"
 
 #: ggc-common.c:563 ggc-common.c:571 ggc-common.c:578 ggc-common.c:581
 #: ggc-common.c:654 ggc-common.c:657 ggc-page.c:2157 ggc-zone.c:1389
-#, fuzzy, c-format
+#, c-format
 msgid "can't read PCH file: %m"
-msgstr "ne peut lire du fichier temporaire"
+msgstr "ne peut lire le fichier PCH: %m"
 
 #: ggc-common.c:681
 msgid "had to relocate PCH"
-msgstr ""
+msgstr "a dû relocaliser PCH"
 
 #: ggc-page.c:1325
-#, fuzzy, c-format
+#, c-format
 msgid "open /dev/zero: %m"
-msgstr "ouverture de /dev/zero"
+msgstr "ouverture de /dev/zero: %m"
 
 #: ggc-page.c:2047 ggc-page.c:2053
-#, fuzzy
 msgid "can't write PCH file"
-msgstr "ne peut écrire dans le fichier de sortie"
+msgstr "ne peut écrire dans le fichier PCH"
 
 #: ggc-simple.c:506
 msgid "Generating PCH files is not supported when using ggc-simple.c"
-msgstr ""
+msgstr "Génération des ficheirs PCH n'est pas supporté lors de l'utilisation de ggc-simple.c"
 
 #: global.c:356 global.c:369 global.c:383
-#, fuzzy, c-format
+#, c-format
 msgid "%s cannot be used in asm here"
-msgstr "« %s » ne peut être utilisé comme nom de macro"
+msgstr "%s ne peut être utilisé dans asm ici"
 
 #: graph.c:403 toplev.c:1481 toplev.c:4408 f/com.c:14202 java/jcf-parse.c:883
 #: java/jcf-parse.c:1030 java/lex.c:1828 objc/objc-act.c:503
-#, fuzzy, c-format
+#, c-format
 msgid "can't open %s: %m"
-msgstr "ne peut ouvrir %s"
+msgstr "ne peut ouvrir %s: %m"
 
 #: haifa-sched.c:196
 #, c-format
@@ -6002,24 +5987,23 @@ msgstr "fix_sched_param: paramètre inconnu: %s"
 
 #: integrate.c:166
 msgid "function cannot be inline"
-msgstr "fonction ne pas pas être en-ligne"
+msgstr "fonction ne pas pas être enligne"
 
 #: integrate.c:170
 msgid "varargs function cannot be inline"
-msgstr "varargs de fonction ne peuvent par être en-ligne"
+msgstr "varargs de fonction ne peuvent par être enligne"
 
 #: integrate.c:173
 msgid "function using alloca cannot be inline"
-msgstr "fonction utilisant alloca ne pas pas être en-ligne"
+msgstr "fonction utilisant alloca ne pas pas être enligne"
 
 #: integrate.c:176
-#, fuzzy
 msgid "function using longjmp cannot be inline"
-msgstr "fonction utilisant setjmp ne pas pas être en-ligne"
+msgstr "fonction utilisant longjmp ne peut pas être enligne"
 
 #: integrate.c:179
 msgid "function using setjmp cannot be inline"
-msgstr "fonction utilisant setjmp ne pas pas être en-ligne"
+msgstr "fonction utilisant setjmp ne peut pas être enligne"
 
 #: integrate.c:182
 msgid "function uses __builtin_eh_return"
@@ -6027,47 +6011,47 @@ msgstr "fonction utilise « __builtin_eh_return »"
 
 #: integrate.c:185
 msgid "function with nested functions cannot be inline"
-msgstr "fonction avec fonctions imbriquées ne peut pas être en-ligne"
+msgstr "fonction avec fonctions imbriquées ne peut pas être enligne"
 
 #: integrate.c:189
 msgid "function with label addresses used in initializers cannot inline"
-msgstr "un fonction avec étiquette d'adresses utilisée pour l'initialisation ne peut pas être en-ligne (inline)"
+msgstr "un fonction avec étiquette d'adresses utilisée pour l'initialisation ne peut pas être enligne (inline)"
 
 #: integrate.c:196 integrate.c:240
 msgid "function too large to be inline"
-msgstr "fonction trop grande pour être en-ligne"
+msgstr "fonction trop grande pour être enligne"
 
 #: integrate.c:206
 msgid "no prototype, and parameter address used; cannot be inline"
-msgstr "pas de prototpe, et de adresse de paramètre utilisée; ne peut pas être en-ligne"
+msgstr "pas de prototpe, et de adresse de paramètre utilisée; ne peut pas être enligne"
 
 #: integrate.c:213 integrate.c:258
 msgid "inline functions not supported for this return value type"
-msgstr "fonctions en-ligne ne peuvent pas être supportées pour ce type de valeur retournée"
+msgstr "fonctions enligne ne peuvent pas être supportées pour ce type de valeur retournée"
 
 #: integrate.c:218
 msgid "function with varying-size return value cannot be inline"
-msgstr "fonction avec une valeur retournée de taille variable ne peut pas être en-ligne"
+msgstr "fonction avec une valeur retournée de taille variable ne peut pas être enligne"
 
 #: integrate.c:225
 msgid "function with varying-size parameter cannot be inline"
-msgstr "fonction avec un paramètre de taille variable ne peut pas être en-ligne"
+msgstr "fonction avec un paramètre de taille variable ne peut pas être enligne"
 
 #: integrate.c:228
 msgid "function with transparent unit parameter cannot be inline"
-msgstr "fonction avec une unité transparente de paramètre ne peut pas être en-ligne"
+msgstr "fonction avec une unité transparente de paramètre ne peut pas être enligne"
 
 #: integrate.c:247
 msgid "function with computed jump cannot inline"
-msgstr "fonction avec un saut calculé ne peut pas être en-ligne"
+msgstr "fonction avec un saut calculé ne peut pas être enligne"
 
 #: integrate.c:251
 msgid "function with nonlocal goto cannot be inline"
-msgstr "fonction avec un goto non local ne peut pas être en-ligne"
+msgstr "fonction avec un goto non local ne peut pas être enligne"
 
 #: integrate.c:265
 msgid "function with target specific attribute(s) cannot be inlined"
-msgstr "fonction avec des attributs spécifiques à la cible ne peut pas être en-ligne"
+msgstr "fonction avec des attributs spécifiques à la cible ne peut pas être enligne"
 
 # FIXME: c'est de l'assembleur ?
 #: jump.c:1896
@@ -6103,81 +6087,79 @@ msgstr ""
 #. What to print when a switch has no documentation.
 #: opts.c:149
 msgid "This switch lacks documentation"
-msgstr ""
+msgstr "Cette option manque de documentation"
 
 #. Eventually this should become a hard error IMO.
 #: opts.c:318
-#, fuzzy, c-format
+#, c-format
 msgid "command line option \"%s\" is valid for %s but not for %s"
-msgstr "\"-%c%s%s\" est valide pour %s mais pas pour %s"
+msgstr "l'option de la ligne de commande \"%s\" est valide pour %s mais pas pour %s"
 
 #: opts.c:406
-#, fuzzy, c-format
+#, c-format
 msgid "missing argument to \"%s\""
-msgstr "argument manquant à « -%s »"
+msgstr "argument manquant à \"%s\""
 
 #: opts.c:416
-#, fuzzy, c-format
+#, c-format
 msgid "argument to \"%s\" should be a non-negative integer"
-msgstr "opérande à bin doit être un litéral entier non négatif"
+msgstr "argument de \"%s\" doit être un entier non négatif"
 
 #: opts.c:463
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized command line option \"%s\""
-msgstr "option « %s » de la ligne de commande est ignorée"
+msgstr "option \"%s\" de la ligne de commande non reconnue"
 
 #: opts.c:646
 msgid "-Wuninitialized is not supported without -O"
 msgstr "-Wuninitialized n'est pas supporté sans -O"
 
 #: opts.c:1350
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized register name \"%s\""
-msgstr "nom de registre non reconnue « %s »"
+msgstr "nom de registre non reconnue \"%s\""
 
 #: opts.c:1394
-#, fuzzy, c-format
+#, c-format
 msgid "unknown tls-model \"%s\""
-msgstr "« %s »: option tls-model inconnue"
+msgstr "tls-model  \"%s\" inconnu"
 
 #: opts.c:1450
-#, fuzzy
 msgid "-fwritable-strings is deprecated; see documentation for details"
-msgstr "l'option %s est obsolète, reportez-vous à la documentation pour les détails"
+msgstr "-fwritable-strings est obsolète, voir la documentation pour les détails"
 
 #: opts.c:1534
 #, c-format
 msgid "%s: --param arguments should be of the form NAME=VALUE"
-msgstr ""
+msgstr "%s: arguments de --param devrait être de la forme NOM=VALEUR"
 
 #: opts.c:1539
-#, fuzzy, c-format
+#, c-format
 msgid "invalid --param value `%s'"
-msgstr "valeur du paramètre invalide « %s »"
+msgstr "valeur de --param invalide « %s »"
 
 #: opts.c:1635
-#, fuzzy
 msgid "target system does not support debug output"
-msgstr "le format cible ne supporte pas l'infini"
+msgstr "le ssytème cible ne supporte pas la sortie pour mise au pointe"
 
 #: opts.c:1642
-#, fuzzy, c-format
+#, c-format
 msgid "debug format \"%s\" conflicts with prior selection"
-msgstr "la zone de données de « %s » entre en conflit avec un déclaration précédente"
+msgstr "le format de mise au point \"%s\" entre en conflit avec une sélection précédente"
 
 #: opts.c:1658
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognised debug output level \"%s\""
-msgstr "nom de section non reconnue « %s »"
+msgstr "niveau de sortie de mise au point non reconnu \"%s\""
 
 #: opts.c:1660
 #, c-format
 msgid "debug output level %s is too high"
-msgstr ""
+msgstr "niveau de sortie de mise au point %s est trop élevé"
 
 #: opts.c:1679
 msgid "The following options are language-independent:\n"
-msgstr ""
+msgstr "Les options suivantes sont indépendantes du langage:\n"
 
 #: opts.c:1686
 #, c-format
@@ -6185,10 +6167,12 @@ msgid ""
 "The %s front end recognizes the following options:\n"
 "\n"
 msgstr ""
+"L'interface %s reconnaît les options suivantes:\n"
+"\n"
 
 #: opts.c:1700
 msgid "The --param option recognizes the following as parameters:\n"
-msgstr ""
+msgstr "L'option --param reconnaît les paramètres suivant:\n"
 
 #. If we didn't find this parameter, issue an error message.
 #: params.c:76
@@ -6198,26 +6182,26 @@ msgstr "paramètre invalide « %s »"
 
 #: profile.c:288
 msgid "corrupted profile info: run_max * runs < sum_max"
-msgstr ""
+msgstr "profile info corrompu: run_max * runs < sum_max"
 
 #: profile.c:294
 msgid "corrupted profile info: sum_all is smaller than sum_max"
-msgstr ""
+msgstr "info profile corrompu: sum_all est plus petit que sum_max"
 
 #: profile.c:336
-#, fuzzy, c-format
+#, c-format
 msgid "corrupted profile info: edge from %i to %i exceeds maximal count"
-msgstr "info de profilage corrompu: prob pour %d-%d pense être %d "
+msgstr "info de profilage corrompu: bordure (edge) %i à %i excède le compte maximal"
 
 #: profile.c:499
-#, fuzzy, c-format
+#, c-format
 msgid "corrupted profile info: number of iterations for basic block %d thought to be %i"
-msgstr "info de profilage corrompu: prob pour %d-%d pense être %d "
+msgstr "info de profilage corrompu: nombre d'itérations pour un bloc basic %d devrait être %i"
 
 #: profile.c:526
-#, fuzzy, c-format
+#, c-format
 msgid "corrupted profile info: number of executions for edge %d-%d thought to be %i"
-msgstr "info de profilage corrompu: prob pour %d-%d pense être %d "
+msgstr "info de profilage corrompu: nombre d'exécutions pour bordures (edge) %d-%d devrait être %i"
 
 #: protoize.c:534
 #, c-format
@@ -6743,9 +6727,8 @@ msgid "matching constraint not valid in output operand"
 msgstr "contrainte concordante n'est pas valide dans une opérande de sortie"
 
 #: stmt.c:1260
-#, fuzzy
 msgid "read-write constraint does not allow a register"
-msgstr "constante de caractères en hexadémical ne peut être insérée dans un octet"
+msgstr "contrainte de lecture-éccriture ne permet pas de registre"
 
 #: stmt.c:1292
 #, c-format
@@ -6762,9 +6745,8 @@ msgid "invalid punctuation `%c' in constraint"
 msgstr "ponctuation invalide « %c » dans la contrainte"
 
 #: stmt.c:1396
-#, fuzzy
 msgid "matching constraint does not allow a register"
-msgstr "contrainte concordante n'est pas valide dans une opérande de sortie"
+msgstr "contrainte de concordance ne permet pas de reigstre"
 
 #: stmt.c:1424
 #, c-format
@@ -6777,9 +6759,9 @@ msgid "unknown register name `%s' in `asm'"
 msgstr "nom de registre inconnu « %s » dans «asm »"
 
 #: stmt.c:1522
-#, fuzzy, c-format
+#, c-format
 msgid "PIC register `%s' clobbered in `asm'"
-msgstr "nom de registre inconnu « %s » dans «asm »"
+msgstr "registre PIC « %s » est maltraité dans «asm »"
 
 #: stmt.c:1571
 #, c-format
@@ -6981,9 +6963,9 @@ msgid " %s"
 msgstr " %s"
 
 #: toplev.c:1293
-#, fuzzy, c-format
+#, c-format
 msgid "invalid option argument `%s'"
-msgstr "option invalide « %s »"
+msgstr "argument de l'option invalide « %s »"
 
 #: toplev.c:1356
 #, c-format
@@ -7045,9 +7027,9 @@ msgstr ""
 "Options spécifiques à la cible:\n"
 
 #: toplev.c:3703 toplev.c:3722
-#, fuzzy, c-format
+#, c-format
 msgid "  -m%-23s [undocumented]\n"
-msgstr "  -m%-23.23s [non documenté]\n"
+msgstr "  -m%-23s [non documenté]\n"
 
 #: toplev.c:3731
 #, c-format
@@ -7098,9 +7080,9 @@ msgid "options enabled: "
 msgstr "options autorisées: "
 
 #: toplev.c:4011 java/jcf-write.c:3422
-#, fuzzy, c-format
+#, c-format
 msgid "can't open %s for writing: %m"
-msgstr "ne peut ouvrir %s en écriture"
+msgstr "ne peut ouvrir %s en écriture: %m"
 
 #: toplev.c:4094 config/sh/sh.c:6883
 msgid "created and used with different settings of -fpic"
@@ -7133,9 +7115,9 @@ msgid "-f%sleading-underscore not supported on this target machine"
 msgstr "-f%sleading-underscore n'est pas supporté sur cette machine cible"
 
 #: toplev.c:4398
-#, fuzzy, c-format
+#, c-format
 msgid "target system does not support the \"%s\" debug format"
-msgstr "%s ne supporte par le format «%%%s%c» %s"
+msgstr "système cible ne supporte par le format \"%s\" de mise au point"
 
 #: toplev.c:4415
 msgid "-ffunction-sections not supported for this target"
@@ -7166,14 +7148,14 @@ msgid "-ffunction-sections may affect debugging on some targets"
 msgstr "-ffunction-sections peut affecter la mise au point sur quelques machines cibles."
 
 #: toplev.c:4557
-#, fuzzy, c-format
+#, c-format
 msgid "error writing to %s: %m"
-msgstr "erreur d'écriture dans %s"
+msgstr "erreur d'écriture dans %s: %m"
 
 #: toplev.c:4559 java/jcf-parse.c:902 java/jcf-write.c:3429
-#, fuzzy, c-format
+#, c-format
 msgid "error closing %s: %m"
-msgstr "erreur de fermeture %s"
+msgstr "erreur de fermeture %s: %m"
 
 #: tree-dump.c:692
 #, c-format
@@ -7181,41 +7163,41 @@ msgid "could not open dump file `%s'"
 msgstr "ne peut ouvrir le fichier de vidange « %s »"
 
 #: tree-dump.c:763
-#, fuzzy, c-format
+#, c-format
 msgid "ignoring unknown option `%.*s' in `-fdump-%s'"
-msgstr "option inconnue «%.*s» ignorée dans «-f%s»"
+msgstr "option inconnue « %.*s » ignorée dans «-fdump-%s»"
 
 #: tree-inline.c:1016
 msgid "%Jfunction '%F' can never be inlined because it uses alloca (override using the always_inline attribute)"
-msgstr ""
+msgstr "%Jfonction '%F' ne peut être enligne parce qu'elle utilise alloca (écrasant l'utiliastion de l'attribut always_inline)"
 
 #: tree-inline.c:1029
 msgid "%Jfunction '%F' can never be inlined because it uses setjmp"
-msgstr ""
+msgstr "%Jfonction '%F' ne peut être enligne parce qu'elle utilise setjmp"
 
 #: tree-inline.c:1044
 msgid "%Jfunction '%F' can never be inlined because it uses variable argument lists"
-msgstr ""
+msgstr "%Jfonction '%F' ne peut être enligne parce qu'elle utilise une liste variable d'arguments"
 
 #: tree-inline.c:1060
 msgid "%Jfunction '%F' can never be inlined because it uses setjmp-longjmp exception handling"
-msgstr ""
+msgstr "%Jfonction '%F' ne peut être enligne parce qu'elle utilise le traitement d'exception setjmp-longjmp"
 
 #: tree-inline.c:1078
 msgid "%Jfunction '%F' can never be inlined because it contains a nested function"
-msgstr ""
+msgstr "%Jfonction '%F' ne peut être enligne parce qu'elle contient une fonction imbriquée"
 
 #: tree-inline.c:1095
 msgid "%Jfunction '%F' can never be inlined because it contains a computed goto"
-msgstr ""
+msgstr "%Jfonction '%F' ne peut être enligne parce qu'elle contient un goto calculé"
 
 #: tree-inline.c:1105
 msgid "%Jfunction '%F' can never be inlined because it contains a nonlocal goto"
-msgstr ""
+msgstr "%Jfonction '%F' ne peut être enligne parce qu'elle contient un goto qui n'est pas local"
 
 #: tree-inline.c:1128
 msgid "%Jfunction '%F' can never be inlined because it uses variable sized variables"
-msgstr ""
+msgstr "%Jfonction '%F' ne peut être enligne parce qu'elle utilise une taille variable de variables"
 
 #: tree-inline.c:1338 tree-inline.c:1345
 msgid "%Jinlining failed in call to '%F': %s"
@@ -7257,14 +7239,13 @@ msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr "vérification de l'arbre: accès de elt %d de tree-vec avec %d elts dans %s, à %s:%d"
 
 #: tree.c:4774
-#, fuzzy, c-format
+#, c-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
-msgstr "vérification de l'arbre: accès de elt %d de tree-vec avec %d elts dans %s, à %s:%d"
+msgstr "vérification de l'arbre: opérande accédé %d de %s avec %d opérandes dans %s, à %s:%d"
 
 #: varasm.c:434
-#, fuzzy
 msgid "%J%D causes a section type conflict"
-msgstr "%s cause un conflit du type de section"
+msgstr "%J%D cause un conflit du type de section"
 
 #: varasm.c:796
 msgid "%Jregister name not specified for '%D'"
@@ -7291,9 +7272,8 @@ msgid "volatile register variables don't work as you might wish"
 msgstr "variables resgistres volatiles ne fonctionne pas comme vous le souhaiteriez"
 
 #: varasm.c:848
-#, fuzzy
 msgid "%Jregister name given for non-register variable '%D'"
-msgstr "nom de registre donné pour une variable non registre « %s »"
+msgstr "%Jnom de registre donné pour une variable non registre « %D »"
 
 #: varasm.c:1380
 msgid "%Jstorage size of `%D' isn't known"
@@ -7308,9 +7288,8 @@ msgid "thread-local COMMON data not implemented"
 msgstr "thread-local COMMON data n'est pas implanté"
 
 #: varasm.c:1505
-#, fuzzy
 msgid "%Jrequested alignment for '%D' is greater than implemented alignment of %d"
-msgstr "alignement requis pour %s est plus grand que l'alignement implanté de %d"
+msgstr "%Jrequête d'alignement pour '%D' est plus grand que l'alignement implanté de %d"
 
 #: varasm.c:3787
 msgid "initializer for integer value is too complicated"
@@ -7330,24 +7309,20 @@ msgid "invalid initial value for member `%s'"
 msgstr "valeur initiale invalide pour le membre « %s »"
 
 #: varasm.c:4264 varasm.c:4308
-#, fuzzy
 msgid "%Jweak declaration of '%D' must precede definition"
-msgstr "déclaraion faible de « %s » qui doit être précédée d'une définition"
+msgstr "%Jdéclaration faible de « %D » qui doit être précédée d'une définition"
 
 #: varasm.c:4272
-#, fuzzy
 msgid "%Jweak declaration of '%D' after first use results in unspecified behavior"
-msgstr "déclaraion faible de « %s » après une première utilisation des résultats d'un comportement non spécifié"
+msgstr "%Jdéclaration faible de « %D » après une première utilisation des résultats d'un comportement non spécifié"
 
 #: varasm.c:4306
-#, fuzzy
 msgid "%Jweak declaration of '%D' must be public"
-msgstr "déclaration faible de « %s » doit être publique"
+msgstr "%Jdéclaration faible de « %D » doit être publique"
 
 #: varasm.c:4315
-#, fuzzy
 msgid "%Jweak declaration of '%D' not supported"
-msgstr "déclaration faible de « %s » n'est pas supportée"
+msgstr "%Jdéclaration faible de « %D » n'est pas supportée"
 
 #: varasm.c:4344 varasm.c:4434
 msgid "only weak aliases are supported in this configuration"
@@ -7383,37 +7358,32 @@ msgstr "pas de sclass pour le stab %s (0x%x)\n"
 #. End:
 #.
 #: diagnostic.def:1
-#, fuzzy
 msgid "fatal error: "
-msgstr "erreur interne : "
+msgstr "erreur fatale: "
 
 #: diagnostic.def:2
-#, fuzzy
 msgid "internal compiler error: "
-msgstr "erreur interne : "
+msgstr "erreur interne du compilateur: "
 
 #: diagnostic.def:3
-#, fuzzy
 msgid "error: "
-msgstr "erreur interne : "
+msgstr "erreur: "
 
 #: diagnostic.def:4
-#, fuzzy
 msgid "sorry, unimplemented: "
 msgstr "désolé, pas implanté: "
 
 #: diagnostic.def:6
 msgid "anachronism: "
-msgstr ""
+msgstr "anachronisme: "
 
 #: diagnostic.def:7
-#, fuzzy
 msgid "note: "
-msgstr "note :"
+msgstr "note: "
 
 #: diagnostic.def:8
 msgid "debug: "
-msgstr ""
+msgstr "mise au point: "
 
 #: params.def:53
 msgid "The maximum number of instructions in a single function eligible for inlining"
@@ -7441,16 +7411,15 @@ msgstr "La longueur maximale de la liste des opération en attente d'ordonnanceme
 
 #: params.def:112
 msgid "The size of function body to be considered large"
-msgstr ""
+msgstr "La taille du corps de la fonction est considéré comme étant grande"
 
 #: params.def:116
-#, fuzzy
 msgid "Maximal growth due to inlining of large function (in percent)"
-msgstr "Croissance maximal du code en raison de duplication de queue (en pourcent)"
+msgstr "Croissance maximal en raison de l'enlignage d'une grande fonction (en pourcent)"
 
 #: params.def:120
 msgid "how much can given compilation unit grow because of the inlining (in percent)"
-msgstr ""
+msgstr "quelle croissance d'une unité de compilation peut être tolérée en raison de l'enlignage (en pourcent)"
 
 #: params.def:127
 msgid "The maximum amount of memory to be allocated by GCSE"
@@ -7467,7 +7436,7 @@ msgstr "Le nombre maximum d'instructions à considérer à embarquer dans une boucl
 #: params.def:145
 #, fuzzy
 msgid "The maximum number of instructions to consider to unroll in a loop on average"
-msgstr "Le nombre maximum d'instructions à considérer à embarquer dans une boucle"
+msgstr "Le nombre maximum d'instructions à considérer à embarquer dans une boucle en moyenne"
 
 #: params.def:150
 #, fuzzy
@@ -7526,33 +7495,28 @@ msgid "The percentage of function, weighted by execution frequency, that must be
 msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profilage n'est disponible"
 
 #: params.def:211
-#, fuzzy
 msgid "Maximal code growth caused by tail duplication (in percent)"
 msgstr "Croissance maximal du code en raison de duplication de queue (en pourcent)"
 
 #: params.def:215
-#, fuzzy
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)"
-msgstr "Stopper la croissance renversée si la probabilité inverse des meilleures bordures est inférieure que ce seuil (en pourcent)"
+msgstr "Stopper la croissance renversée si la probabilité inverse des meilleures bordures est inférieure à ce seuil (en pourcent)"
 
 #: params.def:220
-#, fuzzy
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available"
-msgstr "Stopper la croissance avant si la probabilité des meilleures bordures est inférieure que ce seuil (en pourcent). Utilisé lorsque le feedback par profilage est disponible"
+msgstr "Stopper la croissance anticipée si la probabilité des meilleures bordures est inférieure à ce seuil (en pourcent). Utilisé lorsque le feedback par profilage est disponible"
 
 #: params.def:225
-#, fuzzy
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available"
-msgstr "Stopper la croissance avant si la probabilité des meilleures bordures est inférieure que ce seuil (en pourcent). Utilisé lorsque le feedback par profilage n'est pas disponible"
+msgstr "Stopper la croissance anticipée si la probabilité des meilleures bordures est inférieure à ce seuil (en pourcent). Utilisé lorsque le feedback par profilage n'est pas disponible"
 
 #: params.def:232
 msgid "The maximum number of incoming edges to consider for crossjumping"
 msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
 
 #: params.def:238
-#, fuzzy
 msgid "The maximum length of path considered in cse"
-msgstr "La longueur maximale de la liste des opération en attente d'ordonnancement"
+msgstr "La longueur maximale des chemins considérés dans cse"
 
 #: params.def:243
 #, fuzzy
@@ -9618,7 +9582,7 @@ msgstr "fonction « %s » est définie après un déclaration antérieure en tant que 
 #: config/i386/winnt.c:258
 #, fuzzy
 msgid "%Jinline function '%D' is declared as dllimport: attribute ignored."
-msgstr "fonction en-ligne « %s » est déclarée en tant que dllimport: attribut ignoré."
+msgstr "fonction enligne « %s » est déclarée en tant que dllimport: attribut ignoré."
 
 #: config/i386/winnt.c:270
 #, fuzzy
@@ -10269,29 +10233,29 @@ msgstr "Générer du code auto-relocalisable"
 
 #: config/ia64/ia64.h:202
 msgid "Generate inline floating point division, optimize for latency"
-msgstr "Générer la division en-ligne en point flottant, optimiser pour la latence"
+msgstr "Générer la division enligne en point flottant, optimiser pour la latence"
 
 #: config/ia64/ia64.h:204
 msgid "Generate inline floating point division, optimize for throughput"
-msgstr "Générer la division en point flottant en-ligne, optimiser pour la quantité produite"
+msgstr "Générer la division en point flottant enligne, optimiser pour la quantité produite"
 
 #: config/ia64/ia64.h:206
 msgid "Generate inline integer division, optimize for latency"
-msgstr "Générer la division entière en-ligne, optimiser pour la latence"
+msgstr "Générer la division entière enligne, optimiser pour la latence"
 
 #: config/ia64/ia64.h:208
 msgid "Generate inline integer division, optimize for throughput"
-msgstr "Générer la divisions entière en-ligne, optimiser pour la quantité produite"
+msgstr "Générer la divisions entière enligne, optimiser pour la quantité produite"
 
 #: config/ia64/ia64.h:210
 #, fuzzy
 msgid "Generate inline square root, optimize for latency"
-msgstr "Générer la division entière en-ligne, optimiser pour la latence"
+msgstr "Générer la division entière enligne, optimiser pour la latence"
 
 #: config/ia64/ia64.h:212
 #, fuzzy
 msgid "Generate inline square root, optimize for throughput"
-msgstr "Générer la divisions entière en-ligne, optimiser pour la quantité produite"
+msgstr "Générer la divisions entière enligne, optimiser pour la quantité produite"
 
 #: config/ia64/ia64.h:214
 msgid "Enable Dwarf 2 line debug info via GNU as"
@@ -10812,11 +10776,11 @@ msgstr "opton invalide «-mstack-increment=%s'"
 
 #: config/mcore/mcore.h:121
 msgid "Inline constants if it can be done in 2 insns or less"
-msgstr "Constante en-ligne si elle peut être dans 2 insn ou moins"
+msgstr "Constante enligne si elle peut être dans 2 insn ou moins"
 
 #: config/mcore/mcore.h:123
 msgid "Inline constants if it only takes 1 instruction"
-msgstr "Constante en-ligne si elle prend seulement 1 instruction"
+msgstr "Constante enligne si elle prend seulement 1 instruction"
 
 #: config/mcore/mcore.h:125
 msgid "Set maximum alignment to 4"
@@ -13910,12 +13874,12 @@ msgstr "après la déclaration précédente dans «%#D»"
 
 #: cp/decl.c:1504
 msgid "`%#D' was used before it was declared inline"
-msgstr "«%#D» a été utilisé avant qu'il ne soit déclaré en-ligne"
+msgstr "«%#D» a été utilisé avant qu'il ne soit déclaré enligne"
 
 #: cp/decl.c:1505
 #, fuzzy
 msgid "%Jprevious non-inline declaration here"
-msgstr "déclaration précédente non en-ligne ici"
+msgstr "déclaration précédente non enligne ici"
 
 #: cp/decl.c:1558
 msgid "redundant redeclaration of `%D' in same scope"
@@ -14149,7 +14113,7 @@ msgstr "taille de stockage de « %D » n'est pas une constante"
 
 #: cp/decl.c:4120
 msgid "sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)"
-msgstr "désolé: sémantique de fonction en-ligne de données statiques «%#D» est erronée (vous obtiendrez de multiples copies)"
+msgstr "désolé: sémantique de fonction enligne de données statiques «%#D» est erronée (vous obtiendrez de multiples copies)"
 
 #: cp/decl.c:4121
 #, fuzzy
@@ -14262,7 +14226,7 @@ msgstr "ne peut déclarer « ::main » comme étant un patron"
 
 #: cp/decl.c:5546
 msgid "cannot declare `::main' to be inline"
-msgstr "ne peut déclarer «::main» à être en-ligne"
+msgstr "ne peut déclarer «::main» à être enligne"
 
 #: cp/decl.c:5548
 msgid "cannot declare `::main' to be static"
@@ -15194,7 +15158,7 @@ msgstr "« operator delete » prend le type «%T » comme premier paramètre"
 
 #: cp/decl2.c:2814
 msgid "inline function `%D' used but never defined"
-msgstr "fonction en-ligne « %D » utilisé mais n'a jamais été défini"
+msgstr "fonction enligne « %D » utilisé mais n'a jamais été défini"
 
 #: cp/decl2.c:2960
 msgid "default argument missing for parameter %P of `%+#D'"
@@ -19916,7 +19880,7 @@ msgstr ""
 
 #: options.c:219
 msgid "Warn when an inlined function cannot be inlined"
-msgstr "Avertir lorsque des fonctions en ligne ne peuvent être en-ligne"
+msgstr "Avertir lorsque des fonctions en ligne ne peuvent être enligne"
 
 #: options.c:222
 #, fuzzy
@@ -20390,7 +20354,7 @@ msgstr "Produire des information spéciales de mise au point pour COMMON et EQUIV
 #: options.c:600
 #, fuzzy
 msgid "Inline member functions by default"
-msgstr "Ne pas rendre en-ligne un membre de fonction par défaut"
+msgstr "Ne pas rendre enligne un membre de fonction par défaut"
 
 #: options.c:603
 msgid "Defer popping functions args from stack until later"
@@ -20415,9 +20379,8 @@ msgid "Allow '$' in symbol names"
 msgstr "Permettre $ dans les noms de symboles"
 
 #: options.c:618
-#, fuzzy
 msgid "Permit '$' as an identifier character"
-msgstr "le format est une chaîne de caractères longs (wide characters)"
+msgstr "Autoriser '$' comme identificateur de caractère"
 
 #: options.c:624
 msgid "Suppress output of instruction numbers and line number notes in debugging dumps"
@@ -20662,12 +20625,12 @@ msgstr "Exporter les fonctions même si elles peuvent être inline"
 #: options.c:831
 #, fuzzy
 msgid "Emit implicit instantiations of inline templates"
-msgstr "Produire les instanciations explicites de patrons en-ligne"
+msgstr "Produire les instanciations explicites de patrons enligne"
 
 #: options.c:834
 #, fuzzy
 msgid "Emit implicit instantiations of templates"
-msgstr "Produire les instanciations explicites de patrons en-ligne"
+msgstr "Produire les instanciations explicites de patrons enligne"
 
 #: options.c:837
 msgid "Use offset tables for virtual method calls"
@@ -20724,7 +20687,7 @@ msgstr "Présumer que les fonctions natives sont implantées et qu'elles utilisent
 #: options.c:879
 #, fuzzy
 msgid "Generate code for functions even if they are fully inlined"
-msgstr "Générer le code pour les fonctions même si elles sont complètement en-ligne"
+msgstr "Générer le code pour les fonctions même si elles sont complètement enligne"
 
 #: options.c:882
 msgid "Emit static const variables even if they are not used"
@@ -21265,9 +21228,8 @@ msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned"
 msgstr ""
 
 #: options.c:1302
-#, fuzzy
 msgid "Make \"char\" unsigned by default"
-msgstr "Rendre les « char » non signés par défaut"
+msgstr "Rendre les \"char\" non signés par défaut"
 
 #: options.c:1305
 #, fuzzy
@@ -21287,14 +21249,12 @@ msgid "Add extra commentary to assembler output"
 msgstr "Ajouter des commentaires additionnels à la sortie de l'assembleur"
 
 #: options.c:1323
-#, fuzzy
 msgid "Print g77-specific version information and run internal tests"
-msgstr "Afficher les informations de version du compilateur g77-specific, exécuter les tests internes"
+msgstr "Afficher les informations de version spécifiques du compilateur g77, exécuter les tests internes"
 
 #: options.c:1326
-#, fuzzy
 msgid "Use expression value profiles in optimizations"
-msgstr "l'expression n'est pas une action"
+msgstr "Utiliser le profile de la valeur d'expression dans l'optimisation"
 
 #: options.c:1329
 msgid "Discard unused virtual functions"
@@ -21310,16 +21270,15 @@ msgstr "Programme est écrit en Fortran VXT (forme de Digital)"
 
 #: options.c:1338
 msgid "Delete non-FORTRAN-77 intrinsics VXT FORTRAN supports"
-msgstr "Détruire les supports VXT Fortran des intrinsèques non Fortran-77"
+msgstr "Détruire les supports VXT Fortran intrinsèques non Fortran-77"
 
 #: options.c:1341
 msgid "Disable non-FORTRAN-77 intrinsics VXT FORTRAN supports"
-msgstr "Désactiver les supports VXT Fortran des intrinsèques non Fortran-77"
+msgstr "Désactiver les supports VXT Fortran intrinsèques non Fortran-77"
 
 #: options.c:1344
-#, fuzzy
 msgid "Enable non-FORTRAN-77 intrinsics VXT FORTRAN supports"
-msgstr "Désactiver les supports VXT Fortran des intrinsèques non Fortran-77"
+msgstr "Désactiver les supports VXT Fortran intrinsèques non Fortran-77"
 
 #: options.c:1347
 msgid "Hide non-FORTRAN-77 intrinsics VXT FORTRAN supports"
@@ -21335,7 +21294,7 @@ msgstr ""
 
 #: options.c:1359
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
-msgstr ""
+msgstr "-fwide-exec-charset=<cset>\tconvertir toutes les chaînes et les constantes larges de caractères en jeux de caractères <cset>"
 
 #: options.c:1362
 msgid "Generate a #line directive pointing at the current working directory"
@@ -21354,7 +21313,6 @@ msgid "Emit cross referencing information"
 msgstr "Produire l'information des références croisées"
 
 #: options.c:1374
-#, fuzzy
 msgid "Print internal debugging-related information"
 msgstr "Afficher les informations internes reliées à la mise au point"
 
@@ -21371,58 +21329,48 @@ msgid "Treat initial values of 0 like non-zero values"
 msgstr "Traiter les valeurs initiales de 0 comme des valeurs non zéros"
 
 #: options.c:1386
-#, fuzzy
 msgid "Generate debug information in default format"
-msgstr "Générer les information de mise au point dans le format par défaut"
+msgstr "Générer les informations de mise au point dans le format par défaut"
 
 #: options.c:1392
-#, fuzzy
 msgid "Generate debug information in COFF format"
-msgstr "Générer les information de mise au point dans le format par défaut"
+msgstr "Générer les informations de mise au point dans le format COFF"
 
 #: options.c:1395
-#, fuzzy
 msgid "Generate debug information in DWARF v2 format"
-msgstr "Générer les information de mise au point dans le format par défaut"
+msgstr "Générer les informations de mise au point dans le format DWARF v2"
 
 #: options.c:1398
-#, fuzzy
 msgid "Dump declarations to a .decl file"
-msgstr "Vidange des déclaration dans un fichier .decl"
+msgstr "Vidanger les déclarations dans un fichier .decl"
 
 #: options.c:1401
-#, fuzzy
 msgid "Generate debug information in default extended format"
-msgstr "Générer les information de mise au point dans le format étendu"
+msgstr "Générer les informations de mise au point dans le format étendu par défaut"
 
 #: options.c:1404
 msgid "-gnat<options>\tSpecify options to GNAT"
-msgstr ""
+msgstr "-gnat<options>\tSpécifier les options pour GNAT"
 
 #: options.c:1407
-#, fuzzy
 msgid "Generate debug information in STABS format"
-msgstr "Générer les information de mise au point dans le format par défaut"
+msgstr "Générer les informations de mise au point dans le format STABS"
 
 #: options.c:1410
-#, fuzzy
 msgid "Generate debug information in extended STABS format"
-msgstr "Générer les information de mise au point dans le format étendu"
+msgstr "Générer les informations de mise au point dans le format étendu STABS"
 
 #: options.c:1413
-#, fuzzy
 msgid "Generate debug information in VMS format"
-msgstr "Générer les information de mise au point dans le format par défaut"
+msgstr "Générer les informations de mise au point dans le format VMS"
 
 #: options.c:1416
-#, fuzzy
 msgid "Generate debug information in XCOFF format"
-msgstr "Générer les information de mise au point dans le format par défaut"
+msgstr "Générer les information de mise au point dans le format XCOFF"
 
 #: options.c:1419
-#, fuzzy
 msgid "Generate debug information in extended XCOFF format"
-msgstr "Générer les information de mise au point dans le format étendu"
+msgstr "Générer les informations de mise au point dans le format étendu XCOFF"
 
 #: options.c:1422
 msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path"
@@ -21465,33 +21413,28 @@ msgid "Do not search standard system include directories for C++"
 msgstr ""
 
 #: options.c:1464
-#, fuzzy
 msgid "-o <file>\tPlace output into <file>"
-msgstr "  -o <fichier>            produire la sortie dans le <fichier> \n"
+msgstr "-o <fichier>\tproduire la sortie dans le <fichier>"
 
 #: options.c:1467
-#, fuzzy
 msgid "Enable function profiling"
-msgstr "profilage de fonction mips16"
+msgstr "Autoriser le profilage de fonction"
 
 #: options.c:1470
-#, fuzzy
 msgid "Issue warnings needed for strict compliance to the standard"
-msgstr "  -pedantic               émettre les avertissements nécessaires pour être conforme de façon stricte au C ISO\n"
+msgstr "Émettre les avertissements nécessaires pour être conforme au standard"
 
 #: options.c:1473
 msgid "Like -pedantic but issue them as errors"
-msgstr ""
+msgstr "Identique à -pedantic mais les marque comme des erreurs"
 
 #: options.c:1476
-#, fuzzy
 msgid "Generate C header of platform-specific features"
-msgstr "Générer des en-têtes C pour les options spécifiques de la plate-forme"
+msgstr "Générer les en-têtes C pour les options spécifiques à la plate-forme"
 
 #: options.c:1479
-#, fuzzy
 msgid "Do not display functions compiled or elapsed time"
-msgstr "  -quiet                 ne pas afficher les fonctions compilées ou le temps écoulé\n"
+msgstr "Ne pas afficher les fonctions compilées ou le temps écoulé"
 
 #: options.c:1482
 #, fuzzy
@@ -21500,56 +21443,55 @@ msgstr "nom de fichier vide dans #%s"
 
 #: options.c:1485
 msgid "Conform to the ISO 1998 C++ standard"
-msgstr ""
+msgstr "Conforme au standard ISO C++ de 1998"
 
 #: options.c:1488
 msgid "Conform to the ISO 1990 C standard"
-msgstr ""
+msgstr "Conforme au standard ISO C de 1990"
 
 #: options.c:1491
 msgid "Conform to the ISO 1999 C standard"
-msgstr ""
+msgstr "Conforme au standard ISO C de 1999"
 
 #: options.c:1494 options.c:1515 options.c:1518
 msgid "Deprecated in favor of -std=c99"
-msgstr ""
+msgstr "Déprécié à la faveur de l'option -std=c99"
 
 #: options.c:1497
 msgid "Conform to the ISO 1998 C++ standard with GNU extensions"
-msgstr ""
+msgstr "Conforme au standard ISO C++ de 1998 avec les extensions de GNU"
 
 #: options.c:1500
 msgid "Conform to the ISO 1990 C standard with GNU extensions"
-msgstr ""
+msgstr "Conforme au standard ISO C de 1990 avec les extensions de GNU"
 
 #: options.c:1503
 msgid "Conform to the ISO 1999 C standard with GNU extensions"
-msgstr ""
+msgstr "Conforme au standard ISO C de 1999 avec les extensions de GNU"
 
 #: options.c:1506
 msgid "Deprecated in favor of -std=gnu99"
-msgstr ""
+msgstr "Déprécié à la faveur de l'option -std=gnu99"
 
 #: options.c:1509
 msgid "Deprecated in favor of -std=c89"
-msgstr ""
+msgstr "Déprécié à la faveur de l'option -std=c89"
 
 #: options.c:1512
 msgid "Conform to the ISO 1990 C standard as amended in 1994"
-msgstr ""
+msgstr "Conforme au standard ISO C de 1990 tel amendé en 1994"
 
 #: options.c:1521
-#, fuzzy
 msgid "Enable traditional preprocessing"
-msgstr "Autoriser le sondage de la pile"
+msgstr "Autoriser le traitement traditionnel"
 
 #: options.c:1524
 msgid "-trigraphs\tSupport ISO C trigraphs"
-msgstr ""
+msgstr "-trigraphs\tSupporter les tri-graphes ISO C"
 
 #: options.c:1527
 msgid "Do not predefine system-specific and GCC-specific macros"
-msgstr ""
+msgstr "Ne pas prédéfinir les macros spécifiques au système ou à GCC"
 
 #: options.c:1530
 #, fuzzy
@@ -21557,18 +21499,16 @@ msgid "Enable verbose output"
 msgstr "Autoriser la sortie lors de la mise au point"
 
 #: options.c:1536
-#, fuzzy
 msgid "Suppress warnings"
-msgstr "%s: AVERTISSEMENT: "
+msgstr "Supprimer les avertissement"
 
 #: config/rs6000/darwin.h:98
 msgid " conflicting code gen style switches are used"
 msgstr " code de génération de style de switches utilisées est en conflit"
 
 #: gcc.c:743
-#, fuzzy
 msgid "GCC does not support -C or -CC without -E"
-msgstr "GNU C ne supporte pas -CC sans utiliser -E"
+msgstr "GCC ne supporte pas -C ou -CC sans utiliser -E"
 
 #: gcc.c:767 java/jvspec.c:80 ada/lang-specs.h:34
 msgid "-pg and -fomit-frame-pointer are incompatible"
@@ -21659,14 +21599,12 @@ msgid "-pg or -p and -fomit-frame-pointer are incompatible"
 msgstr "-pg et -p et -fomit-frame-pointer sont incompatibles"
 
 #: f/lang-specs.h:38
-#, fuzzy
 msgid "GCC does not support -C without using -E"
-msgstr "GNU C ne supporte pas -C sans utiliser -E"
+msgstr "GCC ne supporte pas -C sans utiliser -E"
 
 #: f/lang-specs.h:39
-#, fuzzy
 msgid "GCC does not support -CC without using -E"
-msgstr "GNU C ne supporte pas -CC sans utiliser -E"
+msgstr "GCC ne supporte pas -CC sans utiliser -E"
 
 #: config/mips/r3900.h:35
 msgid "-mhard-float not supported"
@@ -21696,13 +21634,12 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 
 #: ada/lang-specs.h:36
 msgid "one of -c, -S, -gnatc, -gnatz, or -gnats is required for Ada"
-msgstr ""
+msgstr "une parmi -c, -S, -gnatc, -gnatz ou -gnats est requise pour Ada"
 
 #: config/sparc/sol2-bi.h:167 config/sparc/sol2-bi.h:172
 #: config/sparc/sol2-gld-bi.h:17 config/sparc/sol2-gld-bi.h:22
-#, fuzzy
 msgid "does not support multilib"
-msgstr "%s ne supporte pas %s"
+msgstr "ne supporte pas multilib"
 
 #: java/lang-specs.h:34
 msgid "-fjni and -femit-class-files are incompatible"
@@ -22579,7 +22516,6 @@ msgstr "Le m210 ne supporte pas le code pour système à octets de poids faible"
 #~ msgid "#`%s' not supported by %s#"
 #~ msgstr "« %s » n'est pas supporté par %s#"
 
-#, fuzzy
 #~ msgid "The maximuem number of instructions by repeated inlining before gcc starts to throttle inlining"
 #~ msgstr "Le nombre maximum d'instructions par type inline répété avant l'exécution de gcc au « throttle » enligne"
 
@@ -23123,7 +23059,6 @@ msgstr "Le m210 ne supporte pas le code pour système à octets de poids faible"
 #~ msgid "ISO C++ forbids defining types within %s"
 #~ msgstr "le C++ ISO interdit la définition de types à l'intérieur de %s"
 
-#, fuzzy
 #~ msgid "Only emit explicit template instatiations"
 #~ msgstr "Produire seulement des instanciations explicites du patron"
 
@@ -26285,7 +26220,6 @@ msgstr "Le m210 ne supporte pas le code pour système à octets de poids faible"
 #~ msgid "no file-scope type named `%D'"
 #~ msgstr "pas de type de portée de fichier nommé `%D'"
 
-#, fuzzy
 #~ msgid "%T is not a class type"
 #~ msgstr "« %T » n'est pas un type de classe"
 
