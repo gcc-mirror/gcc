@@ -1,3 +1,9 @@
+2005-01-24  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/18058
+	* genconditions.c (write_header, write_conditions): Elide file if
+	not GCC >= 3.0.1.
+
 2005-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-opts.c, expmed.c, gengtype.c, tree-complex.c,
