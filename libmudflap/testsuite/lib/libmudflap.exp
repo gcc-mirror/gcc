@@ -83,7 +83,7 @@ proc libmudflap-init { language } {
 
     set libs "-L${blddir}/.libs"
     set cxxflags "-ggdb3 -DDEBUG_ASSERT"
-    set includes "-I${srcdir} -I.."
+    set includes "-I${srcdir} -I${srcdir}/.. -I.."
 
     if {$language == "c++"} {
         if {[file exists $cxxflags_file]} then {

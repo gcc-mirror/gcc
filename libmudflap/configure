@@ -6854,7 +6854,7 @@ else
   multilib_arg=
 fi
 
-                                        ac_config_files="$ac_config_files Makefile testsuite/Makefile testsuite/mfconfig.exp mf-runtime.h"
+                                        ac_config_files="$ac_config_files Makefile testsuite/Makefile testsuite/mfconfig.exp"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7433,7 +7433,6 @@ do
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "testsuite/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
   "testsuite/mfconfig.exp" ) CONFIG_FILES="$CONFIG_FILES testsuite/mfconfig.exp" ;;
-  "mf-runtime.h" ) CONFIG_FILES="$CONFIG_FILES mf-runtime.h" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;

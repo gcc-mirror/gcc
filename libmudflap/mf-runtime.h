@@ -3,17 +3,9 @@
 #ifndef MF_RUNTIME_H
 #define MF_RUNTIME_H
 
-#if @MF_HAVE_STDINT_H@ /* autoconf HAVE_STDINT_H */
-#include <stdint.h>
-#endif
-#include <sys/types.h>
-#if ! @MF_HAVE_UINTPTR_T@
-typedef unsigned long uintptr_t;
-#define HAVE_UINTPTR_T 1
-/* Define this here, in case an autoconf application was run
-   without CFLAGS=-fmudflap but is being compiled with -fmudflap.  */
-#endif
-
+typedef void *__mf_ptr_t;
+typedef unsigned int __mf_uintptr_t __attribute__ ((__mode__ (__pointer__)));
+typedef __SIZE_TYPE__ __mf_size_t;
 
 /* Global declarations used by instrumentation.  When _MUDFLAP is
    defined, these have been auto-declared by the compiler and we
@@ -22,9 +14,9 @@ typedef unsigned long uintptr_t;
    library's, but the C++ front end has no mechanism for allowing
    the re-definition of a structure type).  */
 #ifndef _MUDFLAP
-struct __mf_cache { uintptr_t low; uintptr_t high; };
+struct __mf_cache { __mf_uintptr_t low; __mf_uintptr_t high; };
 extern struct __mf_cache __mf_lookup_cache [];
-extern uintptr_t __mf_lc_mask;
+extern __mf_uintptr_t __mf_lc_mask;
 extern unsigned char __mf_lc_shift;
 #endif
 
@@ -57,14 +49,14 @@ extern unsigned char __mf_lc_shift;
 extern "C" {
 #endif
 
-extern void __mf_check (void *ptr, size_t sz, int type, const char *location)
+extern void __mf_check (void *ptr, __mf_size_t sz, int type, const char *location)
        __attribute((nothrow));
-extern void __mf_register (void *ptr, size_t sz, int type, const char *name) 
+extern void __mf_register (void *ptr, __mf_size_t sz, int type, const char *name) 
        __attribute((nothrow));
-extern void __mf_unregister (void *ptr, size_t sz, int type)
+extern void __mf_unregister (void *ptr, __mf_size_t sz, int type)
        __attribute((nothrow));
-extern unsigned __mf_watch (void *ptr, size_t sz);
-extern unsigned __mf_unwatch (void *ptr, size_t sz);
+extern unsigned __mf_watch (void *ptr, __mf_size_t sz);
+extern unsigned __mf_unwatch (void *ptr, __mf_size_t sz);
 extern void __mf_report ();
 extern int __mf_set_options (const char *opts);
 

@@ -1,6 +1,6 @@
 /* Implementation header for mudflap runtime library.
    Mudflap: narrow-pointer bounds-checking by tree rewriting.  
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.  
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.  
    Contributed by Frank Ch. Eigler <fche@redhat.com> 
    and Graydon Hoare <graydon@redhat.com>
    
@@ -43,6 +43,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #error "Cannot build libmudflapth without pthread.h."
 #endif
 
+#if HAVE_STDINT_H
+#include <stdint.h>
+#else
+typedef __mf_uintptr_t uintptr_t;
+#endif
 
 /* Private definitions related to mf-runtime.h  */
 

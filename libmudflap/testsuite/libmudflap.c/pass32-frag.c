@@ -13,6 +13,6 @@ int main ()
 {
 struct foo k;
 char *n = get_z (& k);
-srand ((int)(uintptr_t) n); /* use the pointer value */
+srand ((int)(__mf_uintptr_)t n); /* use the pointer value */
 return 0;
 }
