@@ -3595,7 +3595,7 @@ store_constructor (exp, target, cleared)
 	       && GET_MODE_SIZE (GET_MODE (target)) <= UNITS_PER_WORD)
 	{
 	  if (! cleared)
-	    emit_move_insn (target, const0_rtx);
+	    emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
 
 	  cleared = 1;
 	}
