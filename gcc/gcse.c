@@ -389,7 +389,8 @@ static int max_uid;
 
 /* Get the cuid of an insn.  */
 #ifdef ENABLE_CHECKING
-#define INSN_CUID(INSN) (INSN_UID (INSN) > max_uid ? (abort (), 0) : uid_cuid[INSN_UID (INSN)])
+#define INSN_CUID(INSN) \
+  (gcc_assert (INSN_UID (INSN) <= max_uid), uid_cuid[INSN_UID (INSN)])
 #else
 #define INSN_CUID(INSN) (uid_cuid[INSN_UID (INSN)])
 #endif
@@ -1644,9 +1645,7 @@ insert_set_in_table (rtx x, rtx insn, struct hash_table *table)
   struct expr *cur_expr, *last_expr = NULL;
   struct occr *cur_occr, *last_occr = NULL;
 
-  if (GET_CODE (x) != SET
-      || ! REG_P (SET_DEST (x)))
-    abort ();
+  gcc_assert (GET_CODE (x) == SET && REG_P (SET_DEST (x)));
 
   hash = hash_set (REGNO (SET_DEST (x)), table->size);
 
@@ -2796,8 +2795,7 @@ find_avail_set (int regno, rtx insn)
       if (set == 0)
 	break;
 
-      if (GET_CODE (set->expr) != SET)
-	abort ();
+      gcc_assert (GET_CODE (set->expr) == SET);
 
       src = SET_SRC (set->expr);
 
@@ -3013,8 +3011,7 @@ cprop_insn (rtx insn, int alter_jumps)
 
       pat = set->expr;
       /* ??? We might be able to handle PARALLELs.  Later.  */
-      if (GET_CODE (pat) != SET)
-	abort ();
+      gcc_assert (GET_CODE (pat) == SET);
 
       src = SET_SRC (pat);
 
@@ -3155,8 +3152,11 @@ do_local_cprop (rtx x, rtx insn, int alter_jumps, rtx *libcall_sp)
 	     or fix delete_trivially_dead_insns to preserve the setting insn,
 	     or make it delete the REG_EUAQL note, and fix up all passes that
 	     require the REG_EQUAL note there.  */
-	  if (!adjust_libcall_notes (x, newcnst, insn, libcall_sp))
-	    abort ();
+	  bool adjusted;
+
+	  adjusted = adjust_libcall_notes (x, newcnst, insn, libcall_sp);
+	  gcc_assert (adjusted);
+	  
 	  if (gcse_file != NULL)
 	    {
 	      fprintf (gcse_file, "LOCAL CONST-PROP: Replacing reg %d in ",
@@ -3245,8 +3245,7 @@ local_cprop_pass (int alter_jumps)
 
 	  if (note)
 	    {
-	      if (libcall_sp == libcall_stack)
-		abort ();
+	      gcc_assert (libcall_sp != libcall_stack);
 	      *--libcall_sp = XEXP (note, 0);
 	    }
 	  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
@@ -3520,8 +3519,7 @@ find_bypass_set (int regno, int bb)
       if (set == 0)
 	break;
 
-      if (GET_CODE (set->expr) != SET)
-	abort ();
+      gcc_assert (GET_CODE (set->expr) == SET);
 
       src = SET_SRC (set->expr);
       if (gcse_constant_p (src))
@@ -4004,8 +4002,13 @@ process_insert_insn (struct expr *expr)
   /* Otherwise, make a new insn to compute this expression and make sure the
      insn will be recognized (this also adds any needed CLOBBERs).  Copy the
      expression to make sure we don't have any sharing issues.  */
-  else if (insn_invalid_p (emit_insn (gen_rtx_SET (VOIDmode, reg, exp))))
-    abort ();
+  else
+    {
+      rtx insn = emit_insn (gen_rtx_SET (VOIDmode, reg, exp));
+
+      gcc_assert (!insn_invalid_p (insn));
+    }
+  
 
   pat = get_insns ();
   end_sequence ();
@@ -4031,8 +4034,7 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
   rtx pat, pat_end;
 
   pat = process_insert_insn (expr);
-  if (pat == NULL_RTX || ! INSN_P (pat))
-    abort ();
+  gcc_assert (pat && INSN_P (pat));
 
   pat_end = pat;
   while (NEXT_INSN (pat_end) != NULL_RTX)
@@ -4052,10 +4054,9 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
       /* It should always be the case that we can put these instructions
 	 anywhere in the basic block with performing PRE optimizations.
 	 Check this.  */
-      if (NONJUMP_INSN_P (insn) && pre
-	  && !TEST_BIT (antloc[bb->index], expr->bitmap_index)
-	  && !TEST_BIT (transp[bb->index], expr->bitmap_index))
-	abort ();
+      gcc_assert (!NONJUMP_INSN_P (insn) || !pre
+		  || TEST_BIT (antloc[bb->index], expr->bitmap_index)
+		  || TEST_BIT (transp[bb->index], expr->bitmap_index));
 
       /* If this is a jump table, then we can't insert stuff here.  Since
 	 we know the previous real insn must be the tablejump, we insert
@@ -4097,10 +4098,9 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
 	 anywhere in the basic block with performing PRE optimizations.
 	 Check this.  */
 
-      if (pre
-	  && !TEST_BIT (antloc[bb->index], expr->bitmap_index)
-	  && !TEST_BIT (transp[bb->index], expr->bitmap_index))
-	abort ();
+      gcc_assert (!pre
+		  || TEST_BIT (antloc[bb->index], expr->bitmap_index)
+		  || TEST_BIT (transp[bb->index], expr->bitmap_index));
 
       /* Since different machines initialize their parameter registers
 	 in different orders, assume nothing.  Collect the set of all
@@ -4257,10 +4257,13 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
   int i;
 
   /* This block matches the logic in hash_scan_insn.  */
-  if (GET_CODE (pat) == SET)
-    set = pat;
-  else if (GET_CODE (pat) == PARALLEL)
+  switch (GET_CODE (pat))
     {
+    case SET:
+      set = pat;
+      break;
+
+    case PARALLEL:
       /* Search through the parallel looking for the set whose
 	 source was the expression that we're interested in.  */
       set = NULL_RTX;
@@ -4274,9 +4277,11 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
 	      break;
 	    }
 	}
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
 
   if (REG_P (SET_DEST (set)))
     {
@@ -4970,15 +4975,10 @@ hoist_code (void)
 		      while (BLOCK_FOR_INSN (occr->insn) != dominated && occr)
 			occr = occr->next;
 
-		      /* Should never happen.  */
-		      if (!occr)
-			abort ();
-
+		      gcc_assert (occr);
 		      insn = occr->insn;
-
 		      set = single_set (insn);
-		      if (! set)
-			abort ();
+		      gcc_assert (set);
 
 		      /* Create a pseudo-reg to store the result of reaching
 			 expressions into.  Get the mode for the new pseudo
@@ -5556,7 +5556,7 @@ extract_mentioned_regs_helper (rtx x, rtx accum)
     case POST_DEC:
     case POST_INC:
       /* We do not run this function with arguments having side effects.  */
-      abort ();
+      gcc_unreachable ();
 
     case PC:
     case CC0: /*FIXME*/
@@ -5830,8 +5830,7 @@ compute_store_table (void)
 #ifdef ENABLE_CHECKING
       /* last_set_in should now be all-zero.  */
       for (regno = 0; regno < max_gcse_regno; regno++)
-	if (last_set_in[regno] != 0)
-	  abort ();
+	gcc_assert (!last_set_in[regno]);
 #endif
 
       /* Clear temporary marks.  */
@@ -6204,8 +6203,8 @@ insert_store (struct ls_expr * expr, edge e)
     if (!(tmp->flags & EDGE_FAKE))
       {
 	int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
-	if (index == EDGE_INDEX_NO_EDGE)
-	  abort ();
+	
+	gcc_assert (index != EDGE_INDEX_NO_EDGE);
 	if (! TEST_BIT (pre_insert_map[index], expr->index))
 	  break;
       }

@@ -398,14 +398,8 @@ clean_graph_dump_file (const char *base)
   if (fp == NULL)
     fatal_error ("can't open %s: %m", buf);
 
-  switch (graph_dump_format)
-    {
-    case vcg:
-      fputs ("graph: {\nport_sharing: no\n", fp);
-      break;
-    case no_graph:
-      abort ();
-    }
+  gcc_assert (graph_dump_format == vcg);
+  fputs ("graph: {\nport_sharing: no\n", fp);
 
   fclose (fp);
 }
@@ -426,15 +420,8 @@ finish_graph_dump_file (const char *base)
   fp = fopen (buf, "a");
   if (fp != NULL)
     {
-      switch (graph_dump_format)
-	{
-	case vcg:
-	  fputs ("}\n", fp);
-	  break;
-	case no_graph:
-	  abort ();
-	}
-
+      gcc_assert (graph_dump_format == vcg);
+      fputs ("}\n", fp);
       fclose (fp);
     }
 }

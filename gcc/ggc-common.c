@@ -197,16 +197,14 @@ ggc_calloc (size_t s1, size_t s2)
 void *
 ggc_splay_alloc (int sz, void *nl)
 {
-  if (nl != NULL)
-    abort ();
+  gcc_assert (!nl);
   return ggc_alloc (sz);
 }
 
 void
 ggc_splay_dont_free (void * x ATTRIBUTE_UNUSED, void *nl)
 {
-  if (nl != NULL)
-    abort ();
+  gcc_assert (!nl);
 }
 
 /* Print statistics that are independent of the collector in use.  */
@@ -266,9 +264,8 @@ gt_pch_note_object (void *obj, void *note_ptr_cookie,
 			      INSERT);
   if (*slot != NULL)
     {
-      if ((*slot)->note_ptr_fn != note_ptr_fn
-	  || (*slot)->note_ptr_cookie != note_ptr_cookie)
-	abort ();
+      gcc_assert ((*slot)->note_ptr_fn == note_ptr_fn
+		  && (*slot)->note_ptr_cookie == note_ptr_cookie);
       return 0;
     }
 
@@ -295,9 +292,7 @@ gt_pch_note_reorder (void *obj, void *note_ptr_cookie,
     return;
 
   data = htab_find_with_hash (saving_htab, obj, POINTER_HASH (obj));
-  if (data == NULL
-      || data->note_ptr_cookie != note_ptr_cookie)
-    abort ();
+  gcc_assert (data && data->note_ptr_cookie == note_ptr_cookie);
 
   data->reorder_fn = reorder_fn;
 }
@@ -376,8 +371,7 @@ relocate_ptrs (void *ptr_p, void *state_p)
     return;
 
   result = htab_find_with_hash (saving_htab, *ptr, POINTER_HASH (*ptr));
-  if (result == NULL)
-    abort ();
+  gcc_assert (result);
   *ptr = result->new_addr;
 }
 
@@ -873,8 +867,7 @@ ggc_record_overhead (size_t allocated, size_t overhead, void *ptr,
   if (!ptr_hash)
     ptr_hash = htab_create (10, hash_ptr, eq_ptr, NULL);
   slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr), INSERT);
-  if (*slot)
-    abort ();
+  gcc_assert (!*slot);
   *slot = p;
 
   loc->times++;
