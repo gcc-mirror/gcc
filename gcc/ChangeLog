@@ -67,6 +67,7 @@
 
 2004-07-25  David Edelsohn  <edelsohn@gnu.org>
 
+	PR target/16239
 	* config/rs6000/rs6000.md (movdi_internal64): Further disparage
 	f->f.
 
