@@ -1670,10 +1670,9 @@ output_move_qimode (operands)
     }
   if (GET_CODE (operands[1]) != CONST_INT && CONSTANT_P (operands[1]))
     return "move%.l %1,%0";
-  /* 68k family doesn't support byte moves to from address registers.  The
-     5200 (coldfire) does not have this restriction.  */
-  if ((ADDRESS_REG_P (operands[0]) || ADDRESS_REG_P (operands[1]))
-      && ! TARGET_5200)
+  /* 68k family (including the 5200 coldfire) does not support byte moves to
+     from address registers.  */
+  if (ADDRESS_REG_P (operands[0]) || ADDRESS_REG_P (operands[1]))
     return "move%.w %1,%0";
   return "move%.b %1,%0";
 }
