@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -73,6 +73,7 @@ struct function
   int args_size;
   int pretend_args_size;
   rtx arg_offset_rtx;
+  int varargs;
   int max_parm_reg;
   rtx *parm_reg_stack_loc;
   int outgoing_args_size;
