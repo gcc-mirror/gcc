@@ -1,3 +1,13 @@
+2005-02-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/17807
+	* c-decl.c (undef_nested_function): New variable.
+	(pop_scope): Diagnose undefined nested functions.
+	(finish_function): Don't attempt cgraph processing or genericizing
+	if current top-level function contained an undefined nested
+	function.  Reset undef_nested_function at the end of a top-level
+	function.
+
 2005-02-02  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree.c (build_int_cst_type): Take sign of the value into account
