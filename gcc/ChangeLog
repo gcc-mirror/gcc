@@ -1,3 +1,10 @@
+2003-01-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (function_arg_pass_by_reference):
+	Return true for variable sized types.
+	(rs6000_va_arg): Handle variable sized types passed by reference
+	on non-SVR4 ABI.
+
 2003-01-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_legtimize_address): New function.
