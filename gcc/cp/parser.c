@@ -1882,7 +1882,7 @@ cp_parser_dependent_type_p (type)
 	value-dependent.  */
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      if (TYPE_DOMAIN (TREE_TYPE (type))
+      if (TYPE_DOMAIN (type)
 	  && ((cp_parser_value_dependent_expression_p 
 	       (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
 	      || (cp_parser_type_dependent_expression_p
