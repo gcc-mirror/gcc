@@ -1,3 +1,8 @@
+2004-11-23  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in, configure, aclocal.m4: Regenerate with automake 1.9.3.
+	* testsuite/Makefile.in: Likewise.
+
 2004-11-01  Andreas Schwab  <schwab@suse.de>
 
 	* configure.ac: (target_alias): Default to $host_alias, not
