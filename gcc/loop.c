@@ -4160,19 +4160,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 				 INSN_LUID (p));
 		}
 	      /* Remove this biv from the chain.  */
-	      if (bl->next)
-		{
-		  /* We move the following giv from *bl->next into *bl.
-		     We have to update reg_biv_class for that moved biv
-		     to point to its new address.  */
-		  *bl = *bl->next;
-		  reg_biv_class[bl->regno] = bl;
-		}
-	      else
-		{
-		  *backbl = 0;
-		  break;
-		}
+	      *backbl = bl->next;
 	    }
 
 	  /* If we can't make it a giv,
