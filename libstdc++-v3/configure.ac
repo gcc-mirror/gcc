@@ -2,7 +2,7 @@
 # aclocal && autoconf && autoheader && automake
 
 AC_PREREQ(2.57)
-AC_INIT(libstdc++, version-unused)
+AC_INIT(package-unused, version-unused,, libstdc++)
 AC_CONFIG_SRCDIR(src/ios.cc)
 AC_CONFIG_HEADER(config.h)
 
@@ -44,16 +44,12 @@ target_alias=${target_alias-$host_alias}
 #  1.x:  minimum required version
 #  no-define:  PACKAGE and VERSION will not be #define'd in config.h (a bunch
 #              of other PACKAGE_* variables will, however, and there's nothing
-#              we can do about that)
+#              we can do about that; they come from AC_INIT).
 #  foreign:  we don't follow the normal rules for GNU packages (no COPYING
 #            file in the top srcdir, etc, etc), so stop complaining.
 #  no-dependencies:  turns off auto dependency generation (just for now)
 #  -Wall:  turns on all automake warnings
 AM_INIT_AUTOMAKE([1.7.6 no-define foreign no-dependencies -Wall])
-
-# AM_INIT_AUTOMAKE sets this to the "smashed" format.  Calling the library
-# "libstdc--" causes remarkable amounts of breakage.  Thanks, automake.
-PACKAGE='libstdc++'
 
 # Runs configure.host, finds CC, CXX, and assorted other critical bits.  Sets
 # up critical shell variables.
@@ -332,4 +328,3 @@ AC_CONFIG_COMMANDS([default],
 
 dnl And this actually makes things happen:
 AC_OUTPUT
-
