@@ -3348,6 +3348,7 @@ compute_insns_for_mem (insns, last_insn, ht)
 
 /* Helper function for purge_addressof called through for_each_rtx.
    Returns true iff the rtl is an ADDRESSOF.  */
+
 static int
 is_addressof (rtl, data)
      rtx *rtl;
