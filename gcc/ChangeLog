@@ -1,3 +1,14 @@
+2003-04-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov.c (struct arc_info): Replace local_span with cycle.
+	(struct block_info): Replace u.span with u.cycle. Add is_call_return.
+	(solve_flow_graph): Set is_call_return.
+	(add_line_counts): Adjust. In block mode, blocks attach to last line.
+	(accumulate_line_counts): Find graph cycles, not spanning tree.
+	(output_branch_count): Adjust.
+	(output_lines): Adjust.
+	* doc/gcov.texi: Update.
+
 2003-04-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*zero_extendqisi2_h8300hs): Change

@@ -152,11 +152,7 @@ and exit without doing any further processing.
 Write individual execution counts for every basic block. Normally gcov
 outputs execution counts only for the main blocks of a line. With this
 option you can determine if blocks within a single line are not being
-executed. In this mode each block is shown, and contributes to the
-occupancy and execution count of, the first line of source that it
-contains. A multi-line block will only contribute to that first line,
-and other lines will not be show to contain code, unless a subsequent
-block begins on those lines.
+executed.
 
 @item -b
 @itemx --branch-probabilities
@@ -327,6 +323,17 @@ function main called 1 returned 1 blocks executed 75%
         -:   17:@}
 @end smallexample
 
+In this mode, each basic block is only shown on one line -- the last
+line of the block. A multi-line block will only contribute to the
+execution count of that last line, and other lines will not be shown
+to contain code, unless previous blocks end on those lines.
+The total execution count of a line is shown and subsequent lines show
+the execution counts for individual blocks that end on that line. After each
+block, the branch and call counts of the block will be shown, if the
+@option{-b} option is given.
+
+Because of the way gcc instruments calls, a call count can be shown
+after a line with no individual blocks.
 As you can see, line 13 contains a basic block that was not executed.
 
 @need 450

@@ -96,9 +96,9 @@ typedef struct arc_info
   /* Is an unconditional branch.  */
   unsigned int is_unconditional : 1;
 
-  /* Arc on the local block spanning tree. */
-  unsigned int local_span : 1;
-  
+  /* Loop making arc.  */
+  unsigned int cycle : 1;
+
   /* Next branch on line.  */
   struct arc_info *line_next;
   
@@ -128,7 +128,8 @@ typedef struct block_info
   unsigned invalid_chain : 1;
 
   /* Block is a call instrumenting site.  */
-  unsigned is_call_site : 1;
+  unsigned is_call_site : 1; /* Does the call.  */
+  unsigned is_call_return : 1; /* Is the return.  */
 
   /* Block is a landing pad for longjmp or throw.  */
   unsigned is_nonlocal_return : 1;
@@ -146,10 +147,11 @@ typedef struct block_info
     } line; /* Valid until blocks are linked onto lines */
     struct
     {
-      /* Single line spanning tree workspace.  Used for all-blocks mode. */
-      struct block_info *root;
-      unsigned siblings;
-    } span; /* Used in all-blocks mode, after blocks are linked onto
+      /* Single line graph cycle workspace.  Used for all-blocks
+	 mode. */
+      arc_t *arc;
+      unsigned ident;
+    } cycle; /* Used in all-blocks mode, after blocks are linked onto
 	       lines. */
   } u;
 
@@ -1185,17 +1187,15 @@ solve_flow_graph (fn)
 		arc->is_unconditional = 1;
 		/* If this block is instrumenting a call, it might be
 		   an artifical block. It is not artificial if it has
-		   a non-fallthrough exit, or the destination of the
-		   exit has more than one entry.  */
-		if (!arc->fall_through
-		    || arc->dst->pred != arc || arc->pred_next)
-		  blk->is_call_site = 0;
+		   a non-fallthrough exit, or the destination of this
+		   arc has more than one entry.  Mark the destination
+		   block as a return site, if none of those conditions
+		   hold.  */
+		if (blk->is_call_site && arc->fall_through
+		    && arc->dst->pred == arc && !arc->pred_next)
+		  arc->dst->is_call_return = 1;
 	      }
 	}
-      else
-	/* If there is more than one exit, it cannot be an artificial
-	   call instrumenting site.  */
-	blk->is_call_site = 0;
       
       /* Sort the successor arcs into ascending dst order. profile.c
 	 normally produces arcs in the right order, but sometimes with
@@ -1558,7 +1558,6 @@ add_line_counts (coverage, fn)
       unsigned *encoding;
       const source_t *src = NULL;
       unsigned jx;
-      line_t *first_line = NULL;
 
       if (block->count && ix && ix + 1 != fn->num_blocks)
 	fn->blocks_executed++;
@@ -1585,23 +1584,19 @@ add_line_counts (coverage, fn)
 	      }
 	    line->exists = 1;
 	    line->count += block->count;
-	    if (!first_line)
-	      first_line = line;
 	  }
       free (block->u.line.encoding);
-      block->u.span.root = NULL;
-      if (!first_line)
-	first_line = line;
-	  
+      block->u.cycle.arc = NULL;
+      block->u.cycle.ident = ~0U;
+      
       if (!ix || ix + 1 == fn->num_blocks)
 	/* Entry or exit block */;
       else if (flag_all_blocks)
 	{
-	  if (!first_line)
-	    first_line = &fn->src->lines[fn->line];
+	  line_t *block_line = line ? line : &fn->src->lines[fn->line];
 	  
-	  block->chain = first_line->u.blocks;
-	  first_line->u.blocks = block;
+	  block->chain = block_line->u.blocks;
+	  block_line->u.blocks = block;
 	}
       else if (flag_branches)
 	{
@@ -1661,10 +1656,10 @@ accumulate_line_counts (src)
 	  /* The user expects the line count to be the number of times
 	     a line has been executed. Simply summing the block count
 	     will give an artificially high number.  The Right Thing
-	     is to generate the spanning tree of the blocks on this
-	     line, and the sum the entry arcs to that tree.  */
+	     is to sum the entry counts to the graph of blocks on this
+	     line, then find the elementary cycles of the local graph
+	     and add the transition counts of those cycles.  */
 	  block_t *block, *block_p, *block_n;
-	  int changes = 1;
 	  gcov_type count = 0;
 	  
 	  /* Reverse the block information */
@@ -1673,77 +1668,110 @@ accumulate_line_counts (src)
 	    {
 	      block_n = block->chain;
 	      block->chain = block_p;
-	      /* Each block is it's own spanning tree, with no siblings  */
-	      block->u.span.root = block;
-	      block->u.span.siblings = 0;
+	      block->u.cycle.ident = ix;
 	    }
 	  line->u.blocks = block_p;
-
-	  while (changes)
-	    {
-	      changes = 0;
-	      
-	      for (block = line->u.blocks; block; block = block->chain)
-		{
-		  arc_t *arc;
-		  
-		  for (arc = block->succ; arc; arc = arc->succ_next)
-		    {
-		      block_t *dst = arc->dst;
-		      
-		      if (!dst->u.span.root)
-			/* Not on this line.  */;
-		      else if (dst->u.span.root == block->u.span.root)
-			/* Same spanning tree.  */;
-		      else
-			{
-			  block_t *root = block->u.span.root;
-			  block_t *dst_root = dst->u.span.root;
-
-			  /* Join spanning trees */
-			  if (root->u.span.siblings
-			      && !dst_root->u.span.siblings)
-			    {
-			      root = dst->u.span.root;
-			      dst_root = block->u.span.root;
-			    }
-			  
-			  dst_root->u.span.root = root;
-			  root->u.span.siblings
-			    += 1 + dst_root->u.span.siblings;
-			  
-			  if (dst_root->u.span.siblings)
-			    {
-			      block_t *dst_sib;
-			      
-			      dst_root->u.span.siblings = 0;
-			      for (dst_sib = line->u.blocks; dst_sib;
-				   dst_sib = dst_sib->chain)
-				if (dst_sib->u.span.root == dst_root)
-				  dst_sib->u.span.root = root;
-			    }
-			  arc->local_span = 1;
-			  changes = 1;
-			}
-		    }
-		}
-	    }
-
-	  /* Now sum the entry counts */
+	  
+	  /* Sum the entry arcs.  */
 	  for (block = line->u.blocks; block; block = block->chain)
 	    {
 	      arc_t *arc;
 
-	      for (arc = block->succ; arc; arc = arc->succ_next)
+	      for (arc = block->pred; arc; arc = arc->pred_next)
 		{
-		  if (!arc->local_span)
+		  if (arc->src->u.cycle.ident != ix)
 		    count += arc->count;
 		  if (flag_branches)
 		    add_branch_counts (&src->coverage, arc);
 		}
-	      block->u.span.root = NULL;
 	    }
-	  
+
+	  /* Find the loops. This uses the algorithm described in
+	     Tiernan 'An Efficient Search Algorithm to Find the
+	     Elementary Circuits of a Graph', CACM Dec 1970. We hold
+	     the P array by having each block point to the arc that
+	     connects to the previous block. The H array is implicitly
+	     held because of the arc ordering, and the block's
+	     previous arc pointer.
+
+	     Although the algorithm is O(N^3) for highly connected
+	     graphs, at worst we'll have O(N^2), as most blocks have
+	     only one or two exits. Most graphs will be small.
+
+	     For each loop we find, locate the arc with the smallest
+	     transition count, and add that to the cumulative
+	     count. Remove the arc from consideration.  */
+	  for (block = line->u.blocks; block; block = block->chain)
+	    {
+	      block_t *head = block;
+	      arc_t *arc;
+	      
+	    next_vertex:;
+	      arc = head->succ;
+	    current_vertex:;
+	      while (arc)
+		{
+		  block_t *dst = arc->dst;
+		  if (/* Already used that arc.  */
+		      arc->cycle
+		      /* Not to same graph, or before first vertex.  */
+		      || dst->u.cycle.ident != ix
+		      /* Already in path.  */
+		      || dst->u.cycle.arc)
+		    {
+		      arc = arc->succ_next;
+		      continue;
+		    }
+		  
+		  if (dst == block)
+		    {
+		      /* Found a closing arc.  */
+		      gcov_type cycle_count = arc->count;
+		      arc_t *cycle_arc = arc;
+		      arc_t *probe_arc;
+		      
+		      /* Locate the smallest arc count of the loop. */
+		      for (dst = head; (probe_arc = dst->u.cycle.arc);
+			   dst = probe_arc->src)
+			if (cycle_count > probe_arc->count)
+			  {
+			    cycle_count = probe_arc->count;
+			    cycle_arc = probe_arc;
+			  }
+		      
+		      count += cycle_count;
+		      cycle_arc->cycle = 1;
+		      /* Unwind to the cyclic arc.  */
+		      while (head != cycle_arc->src)
+			{
+			  arc = head->u.cycle.arc;
+			  head = arc->src;
+			}
+		      /* Move on.  */
+		      arc = arc->succ_next;
+		      continue;
+		    }
+		  
+		  /* Add new block to chain.  */
+		  dst->u.cycle.arc = arc;
+		  head = dst;
+		  goto next_vertex;
+		}
+	      /* We could not add another vertex to the path. Remove
+		 the last vertex from the list.  */
+	      arc = head->u.cycle.arc;
+	      if (arc)
+		{
+		  /* It was not the first vertex. Move onto next arc. */
+		  head->u.cycle.arc = NULL;
+		  head = arc->src;
+		  arc = arc->succ_next;
+		  goto current_vertex;
+		}
+	      /* Mark this block as unusable.  */
+	      block->u.cycle.ident = ~0U;
+	    }
+
 	  line->count = count;
 	}
       
@@ -1786,7 +1814,7 @@ output_branch_count (gcov_file, ix, arc)
       else
 	fnotice (gcov_file, "branch %2d never executed\n", ix);
     }
-  else if (flag_unconditional && !arc->src->is_call_site)
+  else if (flag_unconditional && !arc->dst->is_call_return)
     {
       if (arc->src->count)
 	fnotice (gcov_file, "unconditional %2d taken %s\n", ix,
@@ -1895,17 +1923,17 @@ output_lines (gcov_file, src)
       if (flag_all_blocks)
 	{
 	  block_t *block;
+	  arc_t *arc;
 	  int ix, jx;
 	  
 	  for (ix = jx = 0, block = line->u.blocks; block;
 	       block = block->chain)
 	    {
-	      arc_t *arc;
-
-	      if (!block->is_call_site)
+	      if (!block->is_call_return)
 		fprintf (gcov_file, "%9s:%5u-block %2d\n",
 			 !line->exists ? "-" : !block->count ? "$$$$$"
-			 : format_gcov (block->count, 0, -1), line_num, ix++);
+			 : format_gcov (block->count, 0, -1),
+			 line_num, ix++);
 	      if (flag_branches)
 		for (arc = block->succ; arc; arc = arc->succ_next)
 		  jx += output_branch_count (gcov_file, jx, arc);
