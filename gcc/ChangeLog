@@ -1,5 +1,18 @@
 2003-04-16  Richard Henderson  <rth@redhat.com>
 
+	* config/frv/frv.c (symbol_ref_small_data_p): Remove.  Replace
+	all users with SYMBOL_REF_SMALL_P.
+	(const_small_data_p): Use SYMBOL_REF_SMALL_P.
+	(frv_encode_section_info): Remove.
+	(frv_strip_name_encoding): Remove.
+	(frv_in_small_data_p): Merge tests from encode_section_info.
+	(frv_print_operand): Use '@' not SDATA_FLAG_CHAR.
+	* config/frv/frv.h (SDATA_FLAG_CHAR): Remove.
+	(SDATA_NAME_P): Remove.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Use SIZE not SDATA_NAME_P.
+	(ASM_OUTPUT_LABELREF): Remove.
+	(PRINT_OPERAND_PUNCT_VALID_P): Use '@' not SDATA_FLAG_CHAR.
+
 	* config/frv/frv.c (frv_asm_out_constructor): New.
 	(frv_asm_out_destructor): New.
 	* config/frv/frv.h (CTORS_SECTION_ASM_OP): New.
