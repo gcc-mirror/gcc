@@ -27,10 +27,29 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "diagnostic.h"
 
+enum pad { none, before, after };
+
+/* This data structure bundles altogether, all the information necessary
+   for pretty-printing a C++ source-level entity represented by a tree.  */
+typedef struct
+{
+  tree decl;
+  int flags;
+  enum pad pad;
+} tree_formatting_info, *tfi_t;
+
+#define tree_being_formatted(TFI) (TFI)->decl
+#define tree_formatting_flags(TFI) (TFI)->flags
+#define put_whitespace(TFI) (TFI)->pad
+
 typedef const char *cp_printer ();
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
+
+#define print_tree_identifier(BUFFER, TID) \
+   output_add_string (BUFFER, IDENTIFIER_POINTER (TID))
+#define print_identifier(BUFFER, ID) output_add_string (BUFFER, ID)
 
 /* Obstack where we build text strings for overloading, etc.  */
 static struct obstack scratch_obstack;
@@ -55,8 +74,6 @@ static char *scratch_firstobj;
    ? OB_PUTC (' ') : (void)0), OB_PUTC ('>'))
 
 # define NEXT_CODE(t) (TREE_CODE (TREE_TYPE (t)))
-
-enum pad { none, before, after };
 
 static const char *args_to_string		PARAMS ((tree, int));
 static const char *assop_to_string		PARAMS ((enum tree_code, int));
@@ -109,6 +126,15 @@ static void cp_diagnostic_finalizer PARAMS ((output_buffer *,
 static void cp_print_error_function PARAMS ((output_buffer *,
                                              diagnostic_context *));
 
+static int cp_tree_printer PARAMS ((output_buffer *));
+static void print_function_argument_list PARAMS ((output_buffer *, tfi_t));
+static void print_declaration PARAMS ((output_buffer *, tfi_t));
+static void print_expression PARAMS ((output_buffer *, tfi_t));
+static void print_function_declaration PARAMS ((output_buffer *, tfi_t));
+static void print_function_parameter PARAMS ((output_buffer *, int));
+static void print_type PARAMS ((output_buffer *, tfi_t));
+static void print_cv_qualifier PARAMS ((output_buffer *, tfi_t));
+
 
 #define A args_to_string
 #define C code_to_string
@@ -156,6 +182,8 @@ init_error ()
   print_error_function = lang_print_error_function;
   lang_diagnostic_starter = cp_diagnostic_starter;
   lang_diagnostic_finalizer = cp_diagnostic_finalizer;
+
+  lang_printer = cp_tree_printer;
 }
 
 /* Dump a scope, if deemed necessary.  */
@@ -2595,4 +2623,162 @@ print_instantiation_context ()
   print_instantiation_partial_context
     (diagnostic_buffer, current_instantiation (), input_filename, lineno);
   flush_diagnostic_buffer ();
+}
+
+/* Called from output_format -- during diagnostic message processing --
+   to handle C++ specific format specifier with the following meanings:
+   %A   function argument-list.
+   %D   declaration.
+   %E   expression.
+   %F   function declaration.
+   %P   function parameter whose position is indicated by an integer.
+   %T   type.
+   %V   cv-qualifier.  */
+static int
+cp_tree_printer (buffer)
+     output_buffer *buffer;
+{
+  int be_verbose = 0;
+  tree_formatting_info tfi;
+  
+  put_whitespace (&tfi) = none;
+
+  if (*output_buffer_text_cursor (buffer) == '+')
+    ++output_buffer_text_cursor (buffer);
+  if (*output_buffer_text_cursor (buffer) == '#')
+    {
+      be_verbose = 1;
+      ++output_buffer_text_cursor (buffer);
+    }
+
+  if (*output_buffer_text_cursor (buffer) == 'P')
+      print_function_parameter
+        (buffer, va_arg (output_buffer_format_args (buffer), int));
+  else
+    {
+      tree_being_formatted (&tfi) =
+        va_arg (output_buffer_format_args (buffer), tree);
+
+      switch (*output_buffer_text_cursor (buffer))
+        {
+        case 'A':
+          print_function_argument_list (buffer, &tfi);
+          break;
+
+        case 'D':
+          print_declaration (buffer, &tfi);
+          break;
+
+        case 'E':
+          print_expression (buffer, &tfi);
+          break;
+          
+        case 'F':
+          print_function_declaration (buffer, &tfi);
+          break;
+
+        case 'T':
+          print_type (buffer, &tfi);
+          break;
+          
+        case 'V':
+          print_cv_qualifier (buffer, &tfi);
+          break;
+          
+        default:
+          return 0;
+        }
+    }
+  
+  return 1;
+}
+
+/* Print a function argument-list represented by tree_being_formatted (TFI)
+   onto BUFFER.  */
+static void
+print_function_argument_list (buffer, tfi)
+     output_buffer *buffer __attribute__ ((__unused__));
+     tfi_t tfi __attribute__  ((__unused__));
+{
+}
+
+/* Print a declaration represented by tree_being_formatted (TFI)
+   onto buffer.  */   
+static void
+print_declaration (buffer, tfi)
+     output_buffer *buffer __attribute__ ((__unused__));
+     tfi_t tfi __attribute__ ((__unused__));
+{
+}
+
+/* Print an expression represented by tree_being_formatted (TFI)
+   onto BUFFER.  */
+static void
+print_expression (buffer, tfi)
+     output_buffer *buffer __attribute__ ((__unused__));
+     tfi_t tfi __attribute__ ((__unused__));
+{
+}
+
+/* Print a function declaration represented by tree_being_formatted (TFI)
+   onto BUFFER.  */
+static void
+print_function_declaration (buffer, tfi)
+     output_buffer *buffer __attribute__ ((__unused__));
+     tfi_t tfi __attribute__ ((__unused__));
+{
+}
+
+/* Print a type represented by tree_being_formattted (TFI) onto BUFFER.  */
+static void
+print_type (buffer, tfi)
+     output_buffer *buffer __attribute__ ((__unused__));
+     tfi_t tfi __attribute__ ((__unused__));
+{
+}
+
+/* Print the N'th function parameter onto BUFFER.  A negative value of N
+   means the implicit "this" parameter of a member function.  */
+static void
+print_function_parameter (buffer, n)
+     output_buffer *buffer;
+     int n;
+{
+  if (n < 0)
+    print_identifier (buffer, "this");
+  else
+    output_decimal (buffer, n + 1);
+}
+
+/* Print the cv-quafilers of tree_being_formatted (TFI) onto BUFFER.  */
+static void
+print_cv_qualifier (buffer, tfi)
+     output_buffer *buffer;
+     tree_formatting_info *tfi;
+{
+  int cv = TYPE_QUALS (tree_being_formatted (tfi));
+  int pad_after = after == put_whitespace (tfi);
+  static const int mask[]
+    = {TYPE_QUAL_CONST, TYPE_QUAL_VOLATILE, TYPE_QUAL_RESTRICT};
+  static const char *const qualifier[]
+    = { "const", "volatile", "__restrict__" };
+
+  if (cv != 0)
+    {
+      int i;
+      for (i = 0; i != 3; ++i)
+        if (mask[i] & cv)
+          {
+            if (put_whitespace (tfi) == before)
+              output_add_space (buffer);
+            print_identifier (buffer, qualifier[i]);
+            put_whitespace (tfi) = before;
+          }
+      
+      if (pad_after)
+        {
+          output_add_space (buffer);
+          put_whitespace (tfi) = none;
+        }
+    }
 }
