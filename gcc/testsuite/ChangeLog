@@ -1,3 +1,7 @@
+2002-07-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.c-torture/compile/20020709-1.c: New test.
+
 2002-07-07  Roger Sayle  <roger@eyesopen.com>
 
 	* g++.dg/template/qualttp21.C: New test case.
