@@ -679,12 +679,12 @@ echo "Using \`$srcdir/config/$md_file' as machine description file."
 # If any of the xm_file variables contain nonexistent files, warn
 # about them and drop them.  But $cpu/xm-$cpu.h is allowed not to
 # exist, if we have nothing for it to do.
-
+changequote(,)dnl
 bx=
 for x in $build_xm_file; do
   if    test -f $srcdir/config/$x
   then      bx="$bx $x"
-  elif  echo $x | grep '\([a-z0-9][a-z0-9]*\)/xm-\1\.h' >/dev/null
+  elif  expr $x : '\([^/]*\)/xm-\1\.h' >/dev/null
   then      :
   else      AC_MSG_WARN($srcdir/config/$x does not exist.)
   fi
@@ -695,7 +695,7 @@ hx=
 for x in $host_xm_file; do
   if    test -f $srcdir/config/$x
   then      hx="$hx $x"
-  elif  echo $x | grep '\([a-z0-9][a-z0-9]*\)/xm-\1\.h' >/dev/null
+  elif  expr $x : '\([^/]*\)/xm-\1\.h' >/dev/null
   then      :
   else      AC_MSG_WARN($srcdir/config/$x does not exist.)
   fi
@@ -706,12 +706,13 @@ tx=
 for x in $xm_file; do
   if    test -f $srcdir/config/$x
   then      tx="$tx $x"
-  elif  echo $x | grep '\([a-z0-9][a-z0-9]*\)/xm-\1\.h' >/dev/null
+  elif  expr $x : '\([^/]*\)/xm-\1\.h' >/dev/null
   then      :
   else      AC_MSG_WARN($srcdir/config/$x does not exist.)
   fi
 done
 xm_file="$tx"
+changequote([,])dnl
 
 count=a
 for f in $tm_file; do

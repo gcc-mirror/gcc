@@ -1,3 +1,31 @@
+2001-03-11  Zack Weinberg  <zackw@stanford.edu>
+
+	* config.gcc: Where xm-host.h used to include another
+	xm-host.h, list the nested header directly in xm_file.  Remove
+	references to deleted files.  Can now use sparc/xm-sp64.h for
+	sparcv9-*-solaris*.
+
+	* config/xm-linux.h, config/arm/xm-linux.h,
+	config/i386/xm-dos.h, config/i386/xm-gnu.h,
+	config/i386/xm-linux.h, config/i386/xm-openbsd.h,
+	config/i860/xm-fx2800.h, config/m68k/xm-atari.h,
+	config/m68k/xm-linux.h, config/m68k/xm-sun3.h,
+	config/sparc/xm-linux.h, config/sparc/xm-sysv4-64.h:
+	Delete.
+
+	* config/alpha/xm-alpha-interix.h: Don't include alpha/xm-alpha.h.
+	* config/mips/xm-iris5.h: Don't include mips/xm-mips.h.  Don't
+	bother to wrap #undef in #ifdef.
+	* config/pa/xm-linux.h, config/rs6000/xm-sysv4.h:
+	Don't include xm-linux.h.
+	* config/sparc/xm-sp64.h: Don't include sparc/xm-sparc.h.
+
+	* configure.in: Wrap regexps using [] in changequote block.
+	Use expr : not echo | grep.  Simplify regexps.
+	* configure: Regenerate.
+
+	56 xm-files remain, 22 xm-arch.
+
 2001-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips-tfile.c: Cast arg to PTR when specifier is HOST_PTR_PRINTF.
@@ -95,7 +123,7 @@ Sat Mar 10 14:34:59 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* fixinc/server.c (load_data, run_shell): Use xmalloc, xrealloc &
 	xcalloc in lieu of malloc, realloc & calloc.
-	
+
 	* gencheck.c (xmalloc): Use really_call_malloc, not malloc.
 
 	* gengenrtl.c (xmalloc): Likewise.

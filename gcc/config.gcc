@@ -357,7 +357,7 @@ alpha-*-interix)
 	target_cpu_default="MASK_GAS|MASK_IEEE_CONFORMANT"
 
 	xm_defines=USG
-	xm_file="alpha/xm-alpha-interix.h xm-interix.h"
+	xm_file="alpha/xm-alpha.h alpha/xm-alpha-interix.h xm-interix.h"
 	xmake_file=x-interix
 	tmake_file="alpha/t-alpha alpha/t-interix alpha/t-ieee"
 	if test x$enable_threads = xyes ; then
@@ -537,7 +537,6 @@ arm*-*-netbsd*)
 	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	xm_file=arm/xm-linux.h
 	xmake_file=x-linux
 	tm_file="arm/linux-elf.h"
 	tmake_file="t-linux arm/t-linux"
@@ -647,6 +646,7 @@ h8300-*-*)
 hppa*-*-linux*)
 	target_cpu_default="(MASK_PA_11 | MASK_GAS | MASK_JUMP_IN_DELAY)"
 	tm_file="${tm_file} pa/elf.h linux.h pa/pa-linux.h"
+	xm_file=pa/xm-linux.h
 	tmake_file="t-linux pa/t-linux"
 	extra_parts="crtbegin.o crtend.o"
 	xmake_file=none
@@ -951,7 +951,7 @@ i370-*-mvs*)
 	tmake_file=i370/t-mvs
 	;;
 i370-*-linux*)
-	xm_file="xm-linux.h i370/xm-linux.h"
+	xm_file=i370/xm-linux.h
 	xmake_file=x-linux
 	tm_file="i370/linux.h ${tm_file}"
 	tmake_file="t-linux i370/t-linux"
@@ -2150,7 +2150,7 @@ mips-wrs-vxworks)
 mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 	tm_file="mips/iris6.h mips/cross64.h"
 	xm_defines=USG
-	xm_file="mips/xm-iris5.h"
+	xm_file="mips/xm-mips.h mips/xm-iris5.h"
 	xmake_file=mips/x-iris
 	tmake_file=mips/t-cross64
 	# See comment in mips/iris[56].h files.
@@ -2191,7 +2191,7 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 		tm_file=mips/iris5.h
 	fi
 	xm_defines=USG
-	xm_file="mips/xm-iris5.h"
+	xm_file="mips/xm-mips.h mips/xm-iris5.h"
 	xmake_file=mips/x-iris
 	# mips-tfile doesn't work yet
 	tmake_file=mips/t-mips-gas
@@ -2979,13 +2979,11 @@ sparc-*-elf*)
 	float_format=i64
 	;;
 sparc-*-linux*aout*)		# Sparc's running GNU/Linux, a.out
-	xm_file="${xm_file} sparc/xm-linux.h"
 	tm_file=sparc/linux-aout.h
 	xmake_file=x-linux
 	gnu_ld=yes
 	;;
 sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
-	xm_file="${xm_file} sparc/xm-linux.h"
 	xmake_file=x-linux
 	tm_file=sparc/linux.h
 	tmake_file="t-linux t-linux-gnulibc1"
@@ -2994,7 +2992,6 @@ sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 	float_format=sparc
 	;;
 sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
-	xm_file="${xm_file} sparc/xm-linux.h"
 	xmake_file=x-linux
 	tm_file=sparc/linux.h
 	tmake_file="t-linux"
@@ -3039,7 +3036,7 @@ sparcv9-*-solaris2*)
 	else
 		tm_file=sparc/sol2-sld-64.h
 	fi
-	xm_file="sparc/xm-sysv4-64.h"
+	xm_file="sparc/xm-sysv4.h sparc/xm-sp64.h"
 	xm_defines="USG POSIX"
 	tmake_file="sparc/t-sol2 sparc/t-sol2-64"
 	if test x$gnu_ld = xyes; then
@@ -3207,7 +3204,7 @@ sparc64-*-elf*)
 	;;
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	tmake_file="t-linux sparc/t-linux64"
-	xm_file="sparc/xm-sp64.h sparc/xm-linux.h"
+	xm_file="sparc/xm-sparc.h sparc/xm-sp64.h"
 	tm_file=sparc/linux64.h
 	xmake_file=x-linux
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
