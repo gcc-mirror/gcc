@@ -1,3 +1,30 @@
+Thu Sep 11 17:14:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lookup_name_real): Add implicit 'typename' to types from
+	base classes.
+
+	* pt.c (most_specialized_class): Fix typo.
+	(tsubst): Move constant folding to TREE_VEC case.
+
+Thu Sep 11 10:08:45 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (do_poplevel): Don't warn about unused local variables
+	while processing_template_decl since we don't always know whether
+	or not they will need constructing/destructing.
+
+	* pt.c (uses_template_parms): Check the values of an enumeration
+	type to make sure they don't depend on template parms.
+
+	* decl.c (make_typename_type): Don't lookup the field if the
+	context uses template parms, even if we're not
+	processing_template_decl at the moment.
+
+	* pt.c (coerce_template_parms): Avoid looking at the
+	TYPE_LANG_DECL portion of a typename type, since there won't be
+	one. 
+	(tsubst): Do constant folding as necessary to make sure that
+	arguments passed to lookup_template_class really are constants. 
+
 Tue Sep  9 19:49:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (unify): Just return 0 for a TYPENAME_TYPE.
