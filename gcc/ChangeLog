@@ -1,5 +1,16 @@
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR debug/16261
+	Backport from mainline:
+	2004-01-27  Devang Patel  <dpatel@apple.com>
+        
+	* dwarf2out.c: (remove_child_TAG): New function.
+	(gen_subprogram_die): Do not remove all children dies while reusing
+	declaration die for definition.  Instead, selectively remove only
+	formal parameters.
+
+2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR rtl-optimization/19296
 	* combine.c (simplify_comparison): Rewrite the condition under
 	which a non-paradoxical SUBREG of a PLUS can be lifted when

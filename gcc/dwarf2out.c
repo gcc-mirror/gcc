@@ -3649,6 +3649,7 @@ static bool is_java (void);
 static bool is_fortran (void);
 static bool is_ada (void);
 static void remove_AT (dw_die_ref, enum dwarf_attribute);
+static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
 static inline void free_die (dw_die_ref);
 static void remove_children (dw_die_ref);
 static void add_child_die (dw_die_ref, dw_die_ref);
@@ -5052,6 +5053,34 @@ remove_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
 
       if (removed != 0)
 	free_AT (removed);
+    }
+}
+
+/* Remove child die whose die_tag is specified tag.  */
+
+static void
+remove_child_TAG (dw_die_ref die, enum dwarf_tag tag)
+{
+  dw_die_ref current, prev, next;
+  current = die->die_child;
+  prev = NULL;
+  while (current != NULL)
+    {
+      if (current->die_tag == tag)
+	{
+	  next = current->die_sib;
+	  if (prev == NULL)
+	    die->die_child = next;
+	  else
+	    prev->die_sib = next;
+	  free_die (current);
+	  current = next;
+	}
+      else
+	{
+	  prev = current;
+	  current = current->die_sib;
+	}
     }
 }
 
@@ -10872,9 +10901,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	{
 	  subr_die = old_die;
 
-	  /* Clear out the declaration attribute and the parm types.  */
+	  /* Clear out the declaration attribute and the formal parameters.  */
 	  remove_AT (subr_die, DW_AT_declaration);
-	  remove_children (subr_die);
+	  remove_child_TAG (subr_die, DW_TAG_formal_parameter);
 	}
       else
 	{

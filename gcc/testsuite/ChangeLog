@@ -1,5 +1,9 @@
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* g++.dg/debug/typedef3.C: New test.
+
+2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/short-compare-1.c: New test.
 	* gcc.dg/short-compare-2.c: Likewise.
 
