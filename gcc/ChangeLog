@@ -1,3 +1,8 @@
+2000-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* extend.texi: Add commentary on statement-expressions and their
+	interactions with C++.
+
 2000-08-03  Nick Clifton  <nickc@cygnus.com>
 
 	* dwarf2.h (DW_LANG_Java): Change value to 0x000b.
