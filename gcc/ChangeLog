@@ -15,6 +15,10 @@
 	* tree-cfg.c (tree_redirect_edge_and_branch): Call find_edge
 	only when needed.
 
+	* cfg.c (flow_obstack): Remove.
+	(flow_firstobj): Likewise.
+	(init_flow): Remove all uses of flow_obstack.
+
 2004-11-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* varasm.c (default_elf_select_section_1): Only pass DECL_P decl
