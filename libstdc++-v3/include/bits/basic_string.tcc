@@ -578,7 +578,7 @@ namespace std
       // Iff appending itself, string needs to pre-reserve the
       // correct size so that _M_mutate does not clobber the
       // iterators formed here.
-      size_type __len = std::min(size_type (__str.size() - __pos),
+      size_type __len = std::min(size_type(__str.size() - __pos),
 				 __n) + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
@@ -710,7 +710,7 @@ namespace std
       size_type __size = this->size();
       if (__n <= __size)
 	{
-	  __pos = std::min(size_type (__size - __n), __pos);
+	  __pos = std::min(size_type(__size - __n), __pos);
 	  const _CharT* __data = _M_data();
 	  do 
 	    {
@@ -849,7 +849,7 @@ namespace std
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __rsize= std::min(size_type (__size - __pos), __n);
+      size_type __rsize= std::min(size_type(__size - __pos), __n);
       size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __str.data(), __len);
       if (!__r)
@@ -868,8 +868,8 @@ namespace std
       if (__pos1 > __size || __pos2 > __osize)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __rsize = std::min(size_type (__size - __pos1), __n1);
-      size_type __rosize = std::min(size_type (__osize - __pos2), __n2);
+      size_type __rsize = std::min(size_type(__size - __pos1), __n1);
+      size_type __rosize = std::min(size_type(__osize - __pos2), __n2);
       size_type __len = std::min(__rsize, __rosize);
       int __r = traits_type::compare(_M_data() + __pos1, 
 				     __str.data() + __pos2, __len);
@@ -904,7 +904,7 @@ namespace std
 	__throw_out_of_range("basic_string::compare");
       
       size_type __osize = traits_type::length(__s);
-      size_type __rsize = std::min(size_type (__size - __pos), __n1);
+      size_type __rsize = std::min(size_type(__size - __pos), __n1);
       size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __s, __len);
       if (!__r)
@@ -923,7 +923,7 @@ namespace std
 	__throw_out_of_range("basic_string::compare");
       
       size_type __osize = std::min(traits_type::length(__s), __n2);
-      size_type __rsize = std::min(size_type (__size - __pos), __n1);
+      size_type __rsize = std::min(size_type(__size - __pos), __n1);
       size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __s, __len);
       if (!__r)
