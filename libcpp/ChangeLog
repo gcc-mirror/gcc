@@ -1,3 +1,9 @@
+2004-11-28  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR preprocessor/17610 
+	* directives.c (do_include_common): Error out if an empty filename
+	is given for #include (or #include_next or #import).
+
 2004-11-27  Roger Sayle  <roger@eyesopen.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
