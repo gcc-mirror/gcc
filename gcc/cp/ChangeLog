@@ -1,3 +1,8 @@
+2003-07-22  Wolfgang Bangerth  <bangerth@dealii.org>
+
+	* lex.c (unqualified_fn_lookup_error): Mention that the error
+	message needs to be kept in synch with the manual.
+
 2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11614

@@ -708,8 +708,14 @@ unqualified_fn_lookup_error (tree name)
     {
       /* In a template, it is invalid to write "f()" or "f(3)" if no
 	 declaration of "f" is available.  Historically, G++ and most
-	 other compilers accepted that usage; explain to the user what
-	 is going wrong.  */
+	 other compilers accepted that usage since they deferred all name
+	 lookup until instantiation time rather than doing unqualified
+	 name lookup at template definition time; explain to the user what 
+	 is going wrong.
+
+	 Note that we have the exact wording of the following message in
+	 the manual (trouble.texi, node "Name lookup"), so they need to
+	 be kept in synch.  */
       pedwarn ("there are no arguments to `%D' that depend on a template "
 	       "parameter, so a declaration of `%D' must be available", 
 	       name, name);
