@@ -1995,13 +1995,6 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
   register rtx dest;
   register rtx note;
 
-  /* This can happen when scanning insns referenced by certain notes.
-
-     It is unclear if we should be scanning such insns; until someone can
-     say for sure this seems like the safest fix.  */
-  if (x == NULL_RTX)
-    return;
-
   code = GET_CODE (x);
   switch (code)
     {
