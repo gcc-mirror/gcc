@@ -634,6 +634,9 @@ ostream& ostream::operator<<(double n)
 				      group: 0,
 #if defined __GLIBC__ && __GLIBC__ >= 2
 				      extra: 0,
+#if __GLIBC_MINOR__ >= 1
+				      is_char: 0,
+#endif
 #endif
 				      pad: fill()
 	  };
@@ -737,6 +740,9 @@ ostream& ostream::operator<<(long double n)
 				  group: 0,
 #if defined __GLIBC__ && __GLIBC__ >= 2
 				  extra: 0,
+#if __GLIBC_MINOR__ >= 1
+				  is_char: 0,
+#endif
 #endif
 				  pad: fill()
       };

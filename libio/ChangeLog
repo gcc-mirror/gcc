@@ -1,3 +1,24 @@
+1998-02-24  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	Changes for _G_IO_IO_FILE_VERSION == 0x20001:
+	* libioP.h (_IO_showmanyc_t, _IO_SHOWMANYC, _IO_imbue_t,
+	_IO_IMBUE): New definitions.
+	(struct _IO_jump_t): Add __showmanyc and __imbue fields.
+	(_IO_file_fopen): Add new fourth argument.
+	* filebuf.cc (filebuf::open): Pass new fourth argument to
+	_IO_file_fopen.
+	* iolibio.h (_IO_freopen): Likewise.
+	* streambuf.cc (streambuf::showmanyc, streambuf::imbue): New
+	functions.
+	* streambuf.h (_IO_wchar_t): Define to _G_wchar_t.
+	(ios::fill): Remove casts.
+	(struct streambuf): Add showmanyc and imbue members.
+
+	* iostream.cc (ostream::operator<<(double n)) [__GLIBC_MINOR__ >=
+	1]: Initialize new fields is_char of struct printf_info.
+	(ostream::operator<<(long double n)) [__GLIBC_MINOR__ >= 1]:
+	Likewise.
+
 Tue Feb 24 20:57:39 1998  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (topsrcdir): New.
