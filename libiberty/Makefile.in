@@ -152,15 +152,15 @@ INSTALL_DEST = @INSTALL_DEST@
 install: install_to_$(INSTALL_DEST) install-subdir
 
 install_to_libdir: all
-	$(INSTALL_DATA) $(TARGETLIB) $(libdir)$(MULTISUBDIR)/$(TARGETLIB).n
-	( cd $(libdir)$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB).n )
-	mv -f $(libdir)$(MULTISUBDIR)/$(TARGETLIB).n $(libdir)$(MULTISUBDIR)/$(TARGETLIB)
+	$(INSTALL_DATA) $(TARGETLIB) $(libdir)$(MULTISUBDIR)/$(TARGETLIB)n
+	( cd $(libdir)$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
+	mv -f $(libdir)$(MULTISUBDIR)/$(TARGETLIB)n $(libdir)$(MULTISUBDIR)/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 install_to_tooldir: all
-	$(INSTALL_DATA) $(TARGETLIB) $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB).n
-	( cd $(tooldir)/lib$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB).n )
-	mv -f $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB).n $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)
+	$(INSTALL_DATA) $(TARGETLIB) $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)n
+	( cd $(tooldir)/lib$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
+	mv -f $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)n $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 # needed-list is used by libstdc++.  NEEDED is the list of functions

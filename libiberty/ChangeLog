@@ -44,6 +44,26 @@ Thu Mar 16 01:33:58 2000  Jeffrey A Law  (law@cygnus.com)
 	entry vector.
 	(htab_find_slot): Simplify logic.
 
+1999-08-03  Ian Lance Taylor  <ian@zembu.com>
+
+	* floatformat.c: Add casts to avoid signed/unsigned warnings.
+	* pexecute.c: Add ATTRIBUTE_UNUSED as needed on Unix.
+
+	* Makefile.in (install_to_libdir): Change $(TARGETLIB).n to
+	$(TARGETLIB)n so it works on MSDOS.
+	(install_to_tooldir): Likewise.
+
+1999-07-21  Ian Lance Taylor  <ian@zembu.com>
+
+	From Mark Elbrecht:
+	* makefile.dos: Remove; obsolete.
+	* configure.bat: Remove; obsolete.
+
+1999-07-11  Ian Lance Taylor  <ian@zembu.com>
+
+	* splay-tree.c (splay_tree_insert): Add initialization to avoid
+	warning.
+
 2000-01-04  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* pexecute.c: Conditionally include string.h.
