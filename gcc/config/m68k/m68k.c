@@ -1635,7 +1635,7 @@ print_operand (file, op, letter)
    we want.  This difference can be accommodated by using an assembler
    define such "LDnnn" to be either "Lnnn-LInnn-2.b", "Lnnn", or any other
    string, as necessary.  This is accomplished via the ASM_OUTPUT_CASE_END
-   macro.  See m68ksgs.h for an example; for versions without the bug.
+   macro.  See m68k/sgs.h for an example; for versions without the bug.
 
    They also do not like things like "pea 1.w", so we simple leave off
    the .w on small constants. 
