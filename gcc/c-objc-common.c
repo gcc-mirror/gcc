@@ -80,7 +80,7 @@ c_cannot_inline_tree_fn (tree *fnp)
     {
       if (do_warning)
 	warning ("%Jfunction '%F' can never be inlined because it "
-		 "is supressed using -fno-inline", fn, fn);
+		 "is suppressed using -fno-inline", fn, fn);
       goto cannot_inline;
     }
 

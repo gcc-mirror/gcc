@@ -601,7 +601,7 @@ static bool fixed_base_plus_p (rtx x);
 static int notreg_cost (rtx, enum rtx_code);
 static int approx_reg_cost_1 (rtx *, void *);
 static int approx_reg_cost (rtx);
-static int preferrable (int, int, int, int);
+static int preferable (int, int, int, int);
 static void new_basic_block (void);
 static void make_new_qty (unsigned int, enum machine_mode);
 static void make_regs_eqv (unsigned int, unsigned int);
@@ -761,7 +761,7 @@ approx_reg_cost (rtx x)
    Return a positive value if A is less desirable, or 0 if the two are
    equally good.  */
 static int
-preferrable (int cost_a, int regcost_a, int cost_b, int regcost_b)
+preferable (int cost_a, int regcost_a, int cost_b, int regcost_b)
 {
   /* First, get rid of cases involving expressions that are entirely
      unwanted.  */
@@ -1513,7 +1513,7 @@ lookup_as_function (rtx x, enum rtx_code code)
    If necessary, update table showing constant values of quantities.  */
 
 #define CHEAPER(X, Y) \
- (preferrable ((X)->cost, (X)->regcost, (Y)->cost, (Y)->regcost) < 0)
+ (preferable ((X)->cost, (X)->regcost, (Y)->cost, (Y)->regcost) < 0)
 
 static struct table_elt *
 insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mode)
@@ -5424,14 +5424,14 @@ cse_insn (rtx insn, rtx libcall_insn)
 	     of equal cost, use this order:
 	     src_folded, src, src_eqv, src_related and hash table entry.  */
 	  if (src_folded
-	      && preferrable (src_folded_cost, src_folded_regcost,
-			      src_cost, src_regcost) <= 0
-	      && preferrable (src_folded_cost, src_folded_regcost,
-			      src_eqv_cost, src_eqv_regcost) <= 0
-	      && preferrable (src_folded_cost, src_folded_regcost,
-			      src_related_cost, src_related_regcost) <= 0
-	      && preferrable (src_folded_cost, src_folded_regcost,
-			      src_elt_cost, src_elt_regcost) <= 0)
+	      && preferable (src_folded_cost, src_folded_regcost,
+			     src_cost, src_regcost) <= 0
+	      && preferable (src_folded_cost, src_folded_regcost,
+			     src_eqv_cost, src_eqv_regcost) <= 0
+	      && preferable (src_folded_cost, src_folded_regcost,
+			     src_related_cost, src_related_regcost) <= 0
+	      && preferable (src_folded_cost, src_folded_regcost,
+			     src_elt_cost, src_elt_regcost) <= 0)
 	    {
 	      trial = src_folded, src_folded_cost = MAX_COST;
 	      if (src_folded_force_flag)
@@ -5442,22 +5442,22 @@ cse_insn (rtx insn, rtx libcall_insn)
 		}
 	    }
 	  else if (src
-		   && preferrable (src_cost, src_regcost,
-				   src_eqv_cost, src_eqv_regcost) <= 0
-		   && preferrable (src_cost, src_regcost,
-				   src_related_cost, src_related_regcost) <= 0
-		   && preferrable (src_cost, src_regcost,
-				   src_elt_cost, src_elt_regcost) <= 0)
+		   && preferable (src_cost, src_regcost,
+				  src_eqv_cost, src_eqv_regcost) <= 0
+		   && preferable (src_cost, src_regcost,
+				  src_related_cost, src_related_regcost) <= 0
+		   && preferable (src_cost, src_regcost,
+				  src_elt_cost, src_elt_regcost) <= 0)
 	    trial = src, src_cost = MAX_COST;
 	  else if (src_eqv_here
-		   && preferrable (src_eqv_cost, src_eqv_regcost,
-				   src_related_cost, src_related_regcost) <= 0
-		   && preferrable (src_eqv_cost, src_eqv_regcost,
-				   src_elt_cost, src_elt_regcost) <= 0)
+		   && preferable (src_eqv_cost, src_eqv_regcost,
+				  src_related_cost, src_related_regcost) <= 0
+		   && preferable (src_eqv_cost, src_eqv_regcost,
+				  src_elt_cost, src_elt_regcost) <= 0)
 	    trial = copy_rtx (src_eqv_here), src_eqv_cost = MAX_COST;
 	  else if (src_related
-		   && preferrable (src_related_cost, src_related_regcost,
-				   src_elt_cost, src_elt_regcost) <= 0)
+		   && preferable (src_related_cost, src_related_regcost,
+				  src_elt_cost, src_elt_regcost) <= 0)
 	    trial = copy_rtx (src_related), src_related_cost = MAX_COST;
 	  else
 	    {
