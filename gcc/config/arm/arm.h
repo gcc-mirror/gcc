@@ -409,7 +409,8 @@ extern enum floating_point_type arm_fpu;
    If we have to have a frame pointer we might as well make use of it.
    APCS says that the frame pointer does not need to be pushed in leaf
    functions.  */
-#define FRAME_POINTER_REQUIRED	(TARGET_APCS && !leaf_function_p ())
+#define FRAME_POINTER_REQUIRED		\
+  (current_function_has_nonlocal_label || (TARGET_APCS && !leaf_function_p ()))
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM	26
