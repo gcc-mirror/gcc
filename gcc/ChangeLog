@@ -1,3 +1,7 @@
+2005-04-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (LIBGCC2_CFLAGS): Revert -pipe change.
+
 2005-04-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/v850/v850-protos.h (override_options): Delete.
