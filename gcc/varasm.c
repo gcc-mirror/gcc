@@ -1245,7 +1245,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       /* If the target can't output uninitialized but not common global data
 	 in .bss, then we have to use .data.  */
 #if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
-      && (DECL_COMMON (decl) || ! TREE_PUBLIC (decl))
+      && DECL_COMMON (decl)
 #endif
       && ! dont_output_data)
     {
