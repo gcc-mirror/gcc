@@ -30,6 +30,8 @@
 ;;  j  Branch condition.
 ;;  k  Reverse branch condition.
 ;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
+;;  p  POST_INC or PRE_DEC address as a pointer (X, Y, Z)
+;;  r  POST_INC or PRE_DEC address as a register (r26, r28, r30)
 ;;  ~  Output 'r' if not AVR_MEGA.
 
 ;; UNSPEC usage:

@@ -1,3 +1,10 @@
+2005-03-06  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	PR target/20288
+	* config/avr/avr.c (print_operand): Add 'p' and 'r'.
+	(out_movhi_r_mr): Read low byte of volatile MEM first.
+	(out_movhi_mr_r): Write high byte of volatile MEM first.
+
 2005-03-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cselib.c (reg_values, reg_values_size): Make them static.
