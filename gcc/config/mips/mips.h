@@ -4243,22 +4243,6 @@ while (0)
 	$Lc[0-9]+	Label for use in s<xx> operation.
 	$Le[0-9]+	End blocks for MIPS debug support  */
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.
-
-   If we are optimizing the gp, remember that this label has been put
-   out, so we know not to emit an .extern for it in mips_asm_file_end.
-   We use one of the common bits in the IDENTIFIER tree node for this,
-   since those bits seem to be unused, and we don't have any method
-   of getting the decl nodes from the name.  */
-
-#define ASM_OUTPUT_LABEL(STREAM,NAME)					\
-do {									\
-  assemble_name (STREAM, NAME);						\
-  fputs (":\n", STREAM);						\
-} while (0)
-
-
 /* A C statement (sans semicolon) to output to the stdio stream
    STREAM any text necessary for declaring the name NAME of an
    initialized variable which is being defined.  This macro must

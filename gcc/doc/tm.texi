@@ -6397,7 +6397,8 @@ A C statement (sans semicolon) to output to the stdio stream
 @var{stream} the assembler definition of a label named @var{name}.
 Use the expression @code{assemble_name (@var{stream}, @var{name})} to
 output the name itself; before and after that, output the additional
-assembler syntax for defining the name, and a newline.
+assembler syntax for defining the name, and a newline.  A default
+definition of this macro is provided which is correct for most systems.
 
 @findex SIZE_ASM_OP
 @item SIZE_ASM_OP

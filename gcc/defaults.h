@@ -140,6 +140,14 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
 #endif
 #endif
 
+/* This is how to output the definition of a user-level label named
+   NAME, such as the label on a static function or variable NAME.  */
+
+#ifndef ASM_OUTPUT_LABEL
+#define ASM_OUTPUT_LABEL(FILE,NAME) \
+  do { assemble_name ((FILE), (NAME)); fputs (":\n", (FILE)); } while (0)
+#endif
+
 /* This is how to output a reference to a user-level label named NAME.  */
 
 #ifndef ASM_OUTPUT_LABELREF

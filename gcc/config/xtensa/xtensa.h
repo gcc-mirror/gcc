@@ -1542,15 +1542,6 @@ typedef struct xtensa_args {
       goto FAIL;							\
   } while (0)
 
-
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME. */
-#define ASM_OUTPUT_LABEL(STREAM, NAME)					\
-  do {									\
-    assemble_name (STREAM, NAME);					\
-    fputs (":\n", STREAM);						\
-  } while (0)
-
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 #define ASM_GLOBALIZE_LABEL(STREAM, NAME)				\

@@ -680,9 +680,6 @@ extern int rs6000_pic_labelno;
 #define	ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
   asm_fprintf (FILE, "%L%s", PREFIX)
 
-#define	ASM_OUTPUT_LABEL(FILE,NAME)	\
-  (assemble_name (FILE, NAME), fputs (":\n", FILE))
-
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 

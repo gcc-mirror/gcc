@@ -1312,12 +1312,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 	fprintf((FILE),"\t.stabd	68,0,%d\n",(LINE));	\
   } }
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.  */
-
-#define ASM_OUTPUT_LABEL(FILE,NAME)	\
-  do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
-
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 

@@ -161,10 +161,6 @@ do { text_section ();							\
       }								\
   } while (0)
 
-#undef ASM_OUTPUT_LABEL
-#define ASM_OUTPUT_LABEL(FILE,NAME)	\
-  do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
-
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.space %d\n", SIZE)
 

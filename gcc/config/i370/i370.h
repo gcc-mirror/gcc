@@ -1845,11 +1845,6 @@ abort(); \
 
 #define ASM_DOUBLE "\t.double"     
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.  */
-#define ASM_OUTPUT_LABEL(FILE,NAME)     \
-   (assemble_name (FILE, NAME), fputs (":\n", FILE))
- 
 /* #define ASM_OUTPUT_LABELREF(FILE, NAME) */	/* use gas -- defaults.h */
 
 /* Generate internal label.  Since we can branch here from off page, we

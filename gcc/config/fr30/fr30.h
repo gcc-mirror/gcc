@@ -1165,19 +1165,6 @@ do										\
 /*}}}*/ 
 /*{{{  Output and Generation of Labels.  */ 
 
-/* A C statement (sans semicolon) to output to the stdio stream STREAM the
-   assembler definition of a label named NAME.  Use the expression
-   `assemble_name (STREAM, NAME)' to output the name itself; before and after
-   that, output the additional assembler syntax for defining the name, and a
-   newline.  */
-#define ASM_OUTPUT_LABEL(STREAM, NAME)	\
-  do					\
-    {					\
-      assemble_name (STREAM, NAME);	\
-      fputs (":\n", STREAM);		\
-    }					\
-  while (0)
-
 /* A C statement (sans semicolon) to output to the stdio stream STREAM some
    commands that will make the label NAME global; that is, available for
    reference from other files.  Use the expression `assemble_name (STREAM,

@@ -2121,17 +2121,6 @@ do {							\
    This macro controls how the assembler definitions of uninitialized
    static variables are output.  */
 
-#define ASM_OUTPUT_LABEL(STREAM, NAME)		\
-do {						\
-  assemble_name ((STREAM), (NAME));		\
-  fprintf ((STREAM), ":\n");			\
-} while (0)
-/* A C statement (sans semicolon) to output to the stdio stream
-   STREAM the assembler definition of a label named NAME.  Use the
-   expression `assemble_name (STREAM, NAME)' to output the name
-   itself; before and after that, output the additional assembler
-   syntax for defining the name, and a newline.  */
-
 #undef WEAK_ASM_OP
 #define WEAK_ASM_OP	".weak"
 
