@@ -1,3 +1,22 @@
+Sun Oct 20 00:31:31 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (classify_argument): Pass MMX arguments in memory
+	(ix86_expand_builtin): Expand proper address mode for cflush.
+	* i386.md (movdqa): Fix typo.
+	(sse2_cflush): Accept DImode addresses.
+
+	* xmmintrin.h (_mm_sqrt_sd): Accept two arguments.
+	(_mm_max_sd): Fix pasto.
+	(_mm_storeh_pd, _mm_storel_pd): Fix.
+
+	* i386.c (bdesc_comi): Fix to match specification.
+	(ix86_expand_sse_comi): Emit the comparison properly.
+	* i386.md (sse_comi, sse2_comi, sse_ucomi, sse2_ucomi):
+	Do not use comparison operator.
+	(vnmaskcmp): Fix template.
+
+	* xmmintrin.h (_mm_cvtps_pi16): Fix.
+
 2002-10-19  Sebastian Pop  <s.pop@laposte.net>
 
 	* dependence.c : Removed.
