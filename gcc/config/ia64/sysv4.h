@@ -22,6 +22,11 @@
 #undef ASCII_DATA_ASM_OP
 #define ASCII_DATA_ASM_OP "\tstring\t"
 
+/* ia64-specific options for gas
+   ??? ia64 gas doesn't accept standard svr4 assembler options?  */
+#undef ASM_SPEC
+#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic} %(asm_extra)"
+
 /* ??? Unfortunately, .lcomm doesn't work, because it puts things in either
    .bss or .sbss, and we can't control the decision of which is used.  When
    I use .lcomm, I get a cryptic "Section group has no member" error from
