@@ -1,3 +1,7 @@
+2002-02-02  H.J. Lu  (hjl@gnu.org)
+
+	* demangle.h (cplus_demangle_v3_type): New prototype.
+
 2002-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (C_alloca): Add ATTRIBUTE_MALLOC.
