@@ -1494,15 +1494,15 @@ print_operand (file, x, code)
 
     case CONST_INT:
       if (code == 'b')
-        fprintf (file, "%d", INTVAL (x) & 0xff);
+        fprintf (file, "%d", (int)(INTVAL (x) & 0xff));
       else if (code == 'X')
-        fprintf (file, "%d", INTVAL (x) & 0xff);
+        fprintf (file, "%d", (int)(INTVAL (x) & 0xff));
       else if (code == 'x')
-        fprintf (file, "0x%x", INTVAL (x) & 0xffff);
+        fprintf (file, "0x%x", (int)(INTVAL (x) & 0xffff));
       else if (code == 'h')
-        fprintf (file, "%d", (INTVAL (x) << 16) >> 16);
+        fprintf (file, "%d", (int)(INTVAL (x) << 16) >> 16);
       else
-        fprintf (file, "%d", INTVAL (x));
+        fprintf (file, "%d", (int)INTVAL (x));
       break;
 
     default:
@@ -2404,7 +2404,7 @@ s390_function_prologue (file, lsize)
       fprintf (file, "%s\tleaf function           %d\n", ASM_COMMENT_START,
 	       leaf_function_p ());
       fprintf (file, "%s\tautomatics              %d\n", ASM_COMMENT_START,
-	       lsize);
+	       (int)lsize);
       fprintf (file, "%s\toutgoing args           %d\n", ASM_COMMENT_START,
 	       current_function_outgoing_args_size);
       fprintf (file, "%s\tneed frame pointer      %d\n", ASM_COMMENT_START,
@@ -2934,7 +2934,7 @@ s390_va_start (stdarg_p, valist, nextarg)
     off = off > 0 ? off - UNITS_PER_WORD : off;
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, "va_start: n_gpr = %d, n_fpr = %d off %d\n",
-	     n_gpr, n_fpr, off);
+	     (int)n_gpr, (int)n_fpr, off);
 
   t = build (PLUS_EXPR, TREE_TYPE (ovf), t, build_int_2 (off, 0));
 

@@ -1,3 +1,8 @@
+2001-08-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (print_operand, s390_function_prologue,
+	s390_va_start): Fixed HOST_WIDE_INT type mismatch.
+
 2001-08-13  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/xcoff.h (EH_FRAME_IN_DATA_SECTION): New.
