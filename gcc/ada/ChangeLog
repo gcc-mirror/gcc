@@ -1,3 +1,9 @@
+2004-06-08  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/15568
+
+	* Makefile.in: Remove target specific SO_OPT on IRIX
+
 2004-06-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ada-tree.def (TRANSFORM_EXPR, ALLOCATE_EXPR, USE_EXPR): Deleted.

@@ -926,7 +926,6 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
   TOOLS_TARGET_PAIRS = mlib-tgt.adb<mlib-tgt-irix.adb
   TGT_LIB = -lexc
   MISCLIB = -lexc
-  SO_OPTS = -Wl,-all,-set_version,sgi1.0,-update_registry,../so_locations,-soname,
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
