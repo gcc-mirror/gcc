@@ -1,6 +1,6 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "insn-config.h"
 #include "integrate.h"
+#include "defaults.h"
 
 static tree bot_manip PARAMS ((tree *, int *, void *));
 static tree bot_replace PARAMS ((tree *, int *, void *));
@@ -2312,8 +2313,16 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
 	    ("requested init_priority is reserved for internal use");
 	}
 
-      DECL_INIT_PRIORITY (decl) = pri;
-      return 1;
+      if (SUPPORTS_INIT_PRIORITY)
+	{
+	  DECL_INIT_PRIORITY (decl) = pri;
+	  return 1;
+	}
+      else
+	{
+	  error ("init_priority attribute is not supported on this platform");
+	  return 0;
+	}
     }
 
   return 0;
