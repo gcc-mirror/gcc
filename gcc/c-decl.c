@@ -6733,6 +6733,7 @@ finish_function (nested)
 	 function.  For a nested function, this value is used in
 	 pop_c_function_context and then reset via pop_function_context.  */
       current_function_decl = NULL;
+      c_function_name_declared_p = 0;
     }
 }
 
