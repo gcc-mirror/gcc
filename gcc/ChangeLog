@@ -1,3 +1,9 @@
+2003-07-31  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* inclhack.def (stdio_va_list): Avoid bogus replacement which
+	triggers on Interix.
+	* fixincl.x: Regenerate.
+
 2003-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (legitimate_pic_address_disp_p): Disallow TLS
