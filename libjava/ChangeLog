@@ -1,3 +1,8 @@
+2005-03-07  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/VMCompiler.java (md5Digest): New field.
+	(compileClass): Clone md5Digest instead of looking up a new one.
+
 2005-03-06  Tom Tromey  <tromey@redhat.com>
 
 	PR java/20215:
