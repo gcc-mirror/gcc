@@ -3015,16 +3015,23 @@ assign_parms (fndecl, second_time)
 	  continue;
 	}
 
+      /* See if this arg was passed by invisible reference.  It is if
+	 it is an object whose size depends on the contents of the
+	 object itself or if the machine requires these objects be passed
+	 that way.  */
+
+      if ((TREE_CODE (TYPE_SIZE (passed_type)) != INTEGER_CST
+	   && contains_placeholder_p (TYPE_SIZE (passed_type)))
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
-      /* See if this arg was passed by invisible reference.  */
-      if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, passed_mode,
-					  passed_type, ! last_named))
+	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, passed_mode,
+					      passed_type, ! last_named)
+#endif
+	  )
 	{
 	  passed_type = build_pointer_type (passed_type);
 	  passed_pointer = 1;
 	  passed_mode = nominal_mode = Pmode;
 	}
-#endif
 
       promoted_mode = passed_mode;
 
