@@ -925,4 +925,6 @@ void add_framework_path (char *);
 #define TARGET_C99_FUNCTIONS 0
 #endif
 
+#define WINT_TYPE "int"
+
 #endif /* CONFIG_DARWIN_H */

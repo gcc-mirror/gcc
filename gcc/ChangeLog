@@ -1,3 +1,8 @@
+2004-07-14  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.h (WINT_TYPE): Define to be int to match
+        system header files.
+
 2004-07-14  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (function_arg_advance): Check for args
