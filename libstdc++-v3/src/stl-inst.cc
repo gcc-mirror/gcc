@@ -39,9 +39,5 @@ namespace std
   template class allocator<char>;
   template class allocator<wchar_t>;
 
-#ifdef __USE_MALLOC
-  template class __malloc_alloc_template<0>;
-#else
   template class __default_alloc_template<true, 0>;
-#endif
 } // namespace std
