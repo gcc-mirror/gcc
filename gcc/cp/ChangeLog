@@ -1,3 +1,22 @@
+2004-10-05  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	Convert diagnostics to use quoting flag q 6/n
+	* pt.c (finish_member_template_decl, check_specialization_scope, 
+	maybe_process_partial_specialization, determine_specialization, 
+	check_explicit_specialization, maybe_check_template_type, 
+	process_partial_specialization, check_default_tmpl_args, 
+	push_template_decl_real, redeclare_class_template, 
+	convert_nontype_argument, coerce_template_parms, 
+	lookup_template_class, push_tinst_level, 
+	instantiate_class_template, tsubst_arg_types, 
+	tsubst_function_type, tsubst, tsubst_qualified_id, 
+	tsubst_copy_and_build, check_instantiated_args, 
+	do_decl_instantiation, do_type_instantiation, 
+	invalid_nontype_parm_type_p, check_specialization_namespace, 
+	convert_template_argument, determine_specialization, 
+	check_template_shadow, tsubst_decl 
+	instantiate_pending_templates): Use quoting marks.
+
 2004-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17829
@@ -6,7 +25,7 @@
 
 2004-10-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	Convert diagnostics to use quoting flag q 4/n
+	Convert diagnostics to use quoting flag q 5/n
 	* parser.c (cp_parser_name_lookup_error, 
 	cp_parser_diagnose_invalid_type_name, 
 	cp_parser_primary_expression, cp_parser_unqualified_id, 
