@@ -2009,7 +2009,12 @@ canon_hash (x, mode)
 
 	/* On some machines, we can't record any non-fixed hard register,
 	   because extending its life will cause reload problems.  We
-	   consider ap, fp, and sp to be fixed for this purpose.
+	   consider ap, fp, and sp to be fixed for this purpose. 
+
+	   We also consider CCmode registers to be fixed for this purpose;
+	   failure to do so leads to failure to simplify 0<100 type of
+	   conditionals.
+
 	   On all machines, we can't record any global registers.  */
 
 	if (regno < FIRST_PSEUDO_REGISTER
@@ -2019,7 +2024,8 @@ canon_hash (x, mode)
 		    && regno != FRAME_POINTER_REGNUM
 		    && regno != HARD_FRAME_POINTER_REGNUM
 		    && regno != ARG_POINTER_REGNUM
-		    && regno != STACK_POINTER_REGNUM)))
+		    && regno != STACK_POINTER_REGNUM
+		    && GET_MODE_CLASS (GET_MODE (x)) != MODE_CC)))
 	  {
 	    do_not_record = 1;
 	    return 0;
