@@ -191,6 +191,12 @@ extern char * reg_names[];
       }							\
   } while (0)
 
+/* If -m88100 is in effect, add -D__m88100__; similarly for -m88110.
+   Here, the CPU_DEFAULT is assumed to be -m88100.  */
+#undef	CPP_SPEC
+#define	CPP_SPEC "%{!m88000:%{!m88100:%{m88110:-D__m88110__}}} \
+		  %{!m88000:%{!m88110:-D__m88100__}}"
+
 /* LIB_SPEC, LINK_SPEC, and STARTFILE_SPEC defined in svr3.h.
    ASM_SPEC, ASM_FINAL_SPEC, LIB_SPEC, LINK_SPEC, and STARTFILE_SPEC redefined
    in svr4.h.
@@ -209,9 +215,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"10/07/92"
+#define VERSION_INFO2	"10/15/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.13.1 10/07/92 06:31:59"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.13.2 10/15/92 08:00:51"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

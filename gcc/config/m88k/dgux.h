@@ -70,17 +70,21 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -DDGUX -D__CLASSIFY_TYPE__=2\
    -D__svr4__ -Asystem(unix) -Acpu(m88k) -Amachine(m88k)"
 
-/* If not -ansi, -traditional, or restricting include files to one
-   specific source target, specify full DG/UX features.  */
+/* If -m88100 is in effect, add -Dm88100; similarly for -m88110.
+   Here, the CPU_DEFAULT is assumed to be -m88000.  If not -ansi,
+   -traditional, or restricting include files to one specific source
+   target, specify full DG/UX features.  */
 #undef	CPP_SPEC
-#define	CPP_SPEC "%{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}}"
+#define	CPP_SPEC "%{!m88000:%{!m88100:%{m88110:-D__m88110__}}} \
+		  %{!m88000:%{!m88110:%{m88100:-D__m88100__}}} \
+		  %{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}}"
 
 /* Assembler support (-V, silicon filter, legends for mxdb).  */
 #undef	ASM_SPEC
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe: - %{msvr4:%{mversion-03.00:-KV3}}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-2.2.12\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-h\"gcc-2.2.13\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
