@@ -1,6 +1,11 @@
-2002-01-22  Jason Merrill  <jason@redhat.com>
+2002-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/3331
+	* init.c (resolve_offset_ref): Use build_indirect_ref.
 
 	* decl2.c (grokclassfn): Don't set DECL_REGISTER on 'this'.
+
+2002-01-22  Jason Merrill  <jason@redhat.com>
 
 	* parse.y (function_body): Suppress the block for the outermost
 	curly braces.
