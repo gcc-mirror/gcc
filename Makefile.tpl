@@ -641,7 +641,7 @@ local-clean:
 
 local-distclean:
 	-rm -f Makefile config.status config.cache mh-frag mt-frag
-	-rm -f multilib.out multilib.ts multilib.tmp maybedep.tmp serdep.tmp
+	-rm -f multilib.out multilib.tmp maybedep.tmp serdep.tmp
 	-if [ "$(TARGET_SUBDIR)" != "." ]; then \
 	  rm -rf $(TARGET_SUBDIR); \
 	else true; fi
@@ -789,9 +789,10 @@ TAGS: do-TAGS
 [+ FOR build_modules +]
 .PHONY: configure-build-[+module+] maybe-configure-build-[+module+]
 maybe-configure-build-[+module+]:
-configure-build-[+module+]: $(BUILD_SUBDIR)/[+module+]/Makefile
-$(BUILD_SUBDIR)/[+module+]/Makefile: config.status
-	@[ -d $(BUILD_SUBDIR)/[+module+] ] || mkdir $(BUILD_SUBDIR)/[+module+];\
+configure-build-[+module+]:
+	@test ! -f $(BUILD_SUBDIR)/[+module+]/Makefile || exit 0; \
+	    [ -d $(BUILD_SUBDIR)/[+module+] ] || \
+		mkdir $(BUILD_SUBDIR)/[+module+];\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    AR="$(AR_FOR_BUILD)"; export AR; \
@@ -862,10 +863,9 @@ all-build-[+module+]: configure-build-[+module+]
 [+ FOR host_modules +]
 .PHONY: configure-[+module+] maybe-configure-[+module+]
 maybe-configure-[+module+]:
-configure-[+module+]: [+module+]/Makefile
-
-[+module+]/Makefile: config.status
-	@[ -d [+module+] ] || mkdir [+module+]; \
+configure-[+module+]:
+	@test ! -f [+module+]/Makefile || exit 0; \
+	[ -d [+module+] ] || mkdir [+module+]; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -964,15 +964,18 @@ install-[+module+]: installdirs
 [+ FOR target_modules +]
 .PHONY: configure-target-[+module+] maybe-configure-target-[+module+]
 maybe-configure-target-[+module+]:
-configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/[+module+]/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/[+module+] ] || mkdir $(TARGET_SUBDIR)/[+module+];\
+	@[ -d $(TARGET_SUBDIR)/[+module+] ] || \
+	    mkdir $(TARGET_SUBDIR)/[+module+]; \
+	rm -f $(TARGET_SUBDIR)/[+module+]/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/[+module+]/multilib.out
 
-$(TARGET_SUBDIR)/[+module+]/Makefile: config.status $(TARGET_SUBDIR)/[+module+]/multilib.out
-	@[ -d $(TARGET_SUBDIR)/[+module+] ] || mkdir $(TARGET_SUBDIR)/[+module+];\
+configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/[+module+]/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/[+module+] ] || \
+		mkdir $(TARGET_SUBDIR)/[+module+];\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -1092,10 +1095,9 @@ install-target-[+module+]: installdirs
 # gcc is the only module which uses GCC_FLAGS_TO_PASS.
 .PHONY: configure-gcc maybe-configure-gcc
 maybe-configure-gcc:
-configure-gcc: gcc/Makefile
-
-gcc/Makefile: config.status
-	@[ -d gcc ] || mkdir gcc; \
+configure-gcc:
+	@test ! -f gcc/Makefile || exit 0; \
+	[ -d gcc ] || mkdir gcc; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1395,17 +1397,11 @@ configure-target-qthreads: $(ALL_GCC_C)
 # work around various timestamp bugs on some systems.
 # We use move-if-change so that it's only considered updated when it
 # actually changes, because it has to depend on a phony target.
-multilib.out: multilib.ts
-	@if [ -f multilib.out ] ; then : else \
-	  rm -f multilib.ts; $(MAKE) multilib.ts; \
-	fi
-
-multilib.ts: maybe-all-gcc
+multilib.out: maybe-all-gcc
 	@r=`${PWD}`; export r; \
 	echo "Checking multilib configuration..."; \
 	$(CC_FOR_TARGET) --print-multi-lib > multilib.tmp 2> /dev/null ; \
 	$(SHELL) $(srcdir)/move-if-change multilib.tmp multilib.out ; \
-	echo timestamp > multilib.ts
 
 # Rebuilding Makefile.in, using autogen.
 AUTOGEN = autogen

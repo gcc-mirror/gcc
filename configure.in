@@ -112,7 +112,7 @@ else
         ;;
       * )
         # Add to all subconfigure arguments: build, host, and target.
-        ac_configure_args="--with-gcc-version-trigger=$gcc_version_trigger $ac_configure_args"
+        ac_configure_args="$ac_configure_args --with-gcc-version-trigger=$gcc_version_trigger"
         ;;
     esac
   fi
@@ -1686,6 +1686,7 @@ esac
 
 # Create the 'maybe dependencies'.  This uses a temporary file.
 rm -f maybedep.tmp
+echo '# maybedep.tmp' > maybedep.tmp
 for item in ${all_build_modules} ${all_host_modules} ${all_target_modules} \
 	${install_host_modules} ${install_target_modules} \
 	${configure_build_modules} ${configure_host_modules} ${configure_target_modules} \
@@ -1697,45 +1698,61 @@ AC_SUBST_FILE(maybe_dependencies)
 
 # Create the serialization dependencies.  This uses a temporary file.
 
+AC_ARG_ENABLE([serial-configure],
+[  --disable-serial-[{host,target,build}-]configure
+                          Don't force sequential configuration of
+                          sub-packages for the host, target or build
+			  machine, or of any sub-packages at all])
+
 # These force 'configure's to be done one at a time, to avoid problems
 # with contention over a shared config.cache.
 rm -f serdep.tmp
+echo '# serdep.tmp' > serdep.tmp
 olditem=
+test "x${enable_serial_configure}" = xno ||
+test "x${enable_serial_build_configure}" = xno ||
 for item in ${build_configdirs} ; do
   case ${olditem} in
     "") ;;
-    *) echo "\$(BUILD_SUBDIR)/${item}/Makefile: \$(BUILD_SUBDIR)/${olditem}/Makefile" >> serdep.tmp ;;
+    *) echo "configure-build-${item}: configure-build-${olditem}" >> serdep.tmp ;;
   esac
   olditem=${item}
 done
 olditem=
+test "x${enable_serial_configure}" = xno ||
+test "x${enable_serial_host_configure}" = xno ||
 for item in ${configdirs} ; do
   case ${olditem} in
     "") ;;
-    *) echo "${item}/Makefile: ${olditem}/Makefile" >> serdep.tmp ;;
+    *) echo "configure-${item}: configure-${olditem}" >> serdep.tmp ;;
   esac
   olditem=${item}
 done
 olditem=
+test "x${enable_serial_configure}" = xno ||
+test "x${enable_serial_target_configure}" = xno ||
 for item in ${target_configdirs} ; do
   case ${olditem} in
     "") ;;
-    *) echo "\$(TARGET_SUBDIR)/${item}/Makefile: \$(TARGET_SUBDIR)/${olditem}/Makefile" >> serdep.tmp ;;
+    *) echo "configure-target-${item}: configure-target-${olditem}" >> serdep.tmp ;;
   esac
   olditem=${item}
 done
 serialization_dependencies=serdep.tmp
 AC_SUBST_FILE(serialization_dependencies)
 
-# Base args.  Strip norecursion, cache-file, srcdir, host, build, target.
-# These are the ones we might not want to pass down to subconfigures.
-baseargs=`echo "${ac_configure_args}" | \
-	sed -e 's/--no[[^ 	]]*//' \
-	    -e 's/--cache[[a-z-]]*=[[^ 	]]*//' \
-	    -e 's/--sr[[a-z-]]*=[[^ 	]]*//' \
-	    -e 's/--ho[[a-z-]]*=[[^ 	]]*//' \
-	    -e 's/--bu[[a-z-]]*=[[^ 	]]*//' \
-	    -e 's/--ta[[a-z-]]*=[[^ 	]]*//'`
+# Base args.  Strip norecursion, cache-file, srcdir, host, build,
+# target and nonopt.  These are the ones we might not want to pass
+# down to subconfigures.
+baseargs=`echo " ${ac_configure_args} " | \
+	sed -e 's/ --no[[^ ]]* / /' \
+	    -e 's/ --cache[[a-z-]]*=[[^ ]]* / /' \
+	    -e 's/ --sr[[a-z-]]*=[[^ ]]* / /' \
+	    -e 's/ --ho[[a-z-]]*=[[^ ]]* / /' \
+	    -e 's/ --bu[[a-z-]]*=[[^ ]]* / /' \
+	    -e 's/ --ta[[a-z-]]*=[[^ ]]* / /' \
+	    -e 's/ [[^-][^ ]*] / /' \
+	    -e 's/^ *//;s/ *$//'`
 
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
