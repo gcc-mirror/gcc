@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 89, 92, 93, 94, 96, 1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2443,7 +2443,7 @@ limit from a global or thread-specific variable or register.
 Emit code to generate a non-local goto, e.g., a jump from one function
 to a label in an outer function.  This pattern has four arguments,
 each representing a value to be used in the jump.  The first
-argument is to be loadedd into the frame pointer, the second is
+argument is to be loaded into the frame pointer, the second is
 the address to branch to (code to dispatch to the actual label),
 the third is the address of a location where the stack is saved,
 and the last is the address of the label, to be placed in the

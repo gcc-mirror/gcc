@@ -1,6 +1,7 @@
 Sun Apr 19 18:48:07 1998  K. Richard Pixley  <rich@kyoto.noir.com>
 
 	* fixincludes: Discard empty C++ comments.
+	Special case more files with C++ comments nested in C comments.
 
 Sun Apr 19 18:30:11 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
