@@ -1,3 +1,10 @@
+2001-02-15  Anthony Green  <green@redhat.com>
+
+        * acinclude.m4 (glibcpp_toolexeclibdir): Fix test for cross
+        compilation.
+        * aclocal.m4: Regenerate.
+        * configure: Regenerate.
+
 2001-02-15  Rodney Brown  <RodneyBrown@mynd.com>
 
         * acinclude.m4 (GLIBCPP_CHECK_MATH_DECL_1):
