@@ -1,3 +1,13 @@
+2002-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/5661
+	* cp-tree.h (variably_modified_type_p): New function.
+	(grokdeclarator) Tighten check for variably modified types as
+	fields.
+	* pt.c (convert_template_argument): Do not allow variably modified
+	types as template arguments.
+	* tree.c (variably_modified_type_p): New function.	
+
 2002-10-11  Jason Molenda  <jmolenda@apple.com>
 
 	* init.c (build_field_list): Provide uses_unions_p with a default

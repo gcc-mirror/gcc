@@ -10710,19 +10710,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    type = create_array_type_for_decl (dname, type, size);
 
-	    /* VLAs never work as fields. */
-	    if (decl_context == FIELD && !processing_template_decl
-		&& TREE_CODE (type) == ARRAY_TYPE
-		&& TYPE_DOMAIN (type) != NULL_TREE
-		&& !TREE_CONSTANT (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
-	      {
-		error ("size of member `%D' is not constant", dname);
-		/* Proceed with arbitrary constant size, so that offset
-		   computations don't get confused. */
-		type = create_array_type_for_decl (dname, TREE_TYPE (type),
-						   integer_one_node);
-	      }
-
 	    ctype = NULL_TREE;
 	  }
 	  break;
@@ -11207,6 +11194,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       error ("size of array `%s' is too large", name);
       /* If we proceed with the array type as it is, we'll eventually
 	 crash in tree_low_cst().  */
+      type = error_mark_node;
+    }
+
+  if (decl_context == FIELD 
+      && !processing_template_decl 
+      && variably_modified_type_p (type))
+    {
+      error ("data member may not have variably modified type `%T'", type);
       type = error_mark_node;
     }
 

@@ -3430,6 +3430,16 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
 		       val, t);
 		  return error_mark_node;
 		}
+
+	      /* In order to avoid all sorts of complications, we do
+		 not allow variably-modified types as template
+		 arguments.  */
+	      if (variably_modified_type_p (val))
+		{
+		  error ("template-argument `%T' is a variably modified type",
+			 val);
+		  return error_mark_node;
+		}
 	    }
 	}
     }
