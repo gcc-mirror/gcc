@@ -1013,12 +1013,6 @@ do {									\
    at run-time.  This is used in `cpp'.  */
 /* #define MAX_WCHAR_TYPE_SIZE */
 
-/* Define this macro if the type of Objective C selectors should be `int'.
-
-   If this macro is not defined, then selectors should have the type `struct
-   objc_selector *'.  */
-/* #define OBJC_INT_SELECTORS */
-
 /* Define this macro if the compiler can group all the selectors together into
    a vector and use just one label at the beginning of the vector.  Otherwise,
    the compiler must give each selector its own assembler label.

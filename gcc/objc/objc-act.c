@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
    code generation `options':
 
-   - OBJC_INT_SELECTORS  */
+   */
 
 #include "config.h"
 #include "system.h"
@@ -1276,15 +1276,10 @@ synth_module_prologue ()
 
   /* Declare type of selector-objects that represent an operation name.  */
 
-#ifdef OBJC_INT_SELECTORS
-  /* `unsigned int' */
-  selector_type = unsigned_type_node;
-#else
   /* `struct objc_selector *' */
   selector_type
     = build_pointer_type (xref_tag (RECORD_TYPE,
 				    get_identifier (TAG_SELECTOR)));
-#endif /* not OBJC_INT_SELECTORS */
 
   /* Forward declare type, or else the prototype for msgSendSuper will
      complain.  */
@@ -2807,18 +2802,10 @@ build_method_prototype_template ()
   proto_record
     = start_struct (RECORD_TYPE, get_identifier (UTAG_METHOD_PROTOTYPE));
 
-#ifdef OBJC_INT_SELECTORS
-  /* unsigned int _cmd; */
-  decl_specs
-    = tree_cons (NULL_TREE, ridpointers[(int) RID_UNSIGNED], NULL_TREE);
-  decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_INT], decl_specs);
-  field_decl = get_identifier ("_cmd");
-#else /* OBJC_INT_SELECTORS */
   /* struct objc_selector *_cmd; */
   decl_specs = tree_cons (NULL_TREE, xref_tag (RECORD_TYPE,
 		          get_identifier (TAG_SELECTOR)), NULL_TREE);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("_cmd"));
-#endif /* OBJC_INT_SELECTORS */
 
   field_decl
     = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
@@ -4047,20 +4034,12 @@ build_method_template ()
 
   _SLT_record = start_struct (RECORD_TYPE, get_identifier (UTAG_METHOD));
 
-#ifdef OBJC_INT_SELECTORS
-  /* unsigned int _cmd; */
-  decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_UNSIGNED],
-			  NULL_TREE);
-  decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_INT], decl_specs);
-  field_decl = get_identifier ("_cmd");
-#else /* not OBJC_INT_SELECTORS */
   /* struct objc_selector *_cmd; */
   decl_specs = tree_cons (NULL_TREE,
 			  xref_tag (RECORD_TYPE,
 				    get_identifier (TAG_SELECTOR)),
 			  NULL_TREE);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("_cmd"));
-#endif /* not OBJC_INT_SELECTORS */
 
   field_decl = grokfield (input_filename, lineno, field_decl,
 			  decl_specs, NULL_TREE);
@@ -6559,13 +6538,11 @@ encode_pointer (type, curtype, format)
 	      obstack_1grow (&util_obstack, '#');
 	      return;
 	    }
-#ifndef OBJC_INT_SELECTORS
 	  else if (strcmp (name, TAG_SELECTOR) == 0) /* ':' */
 	    {
 	      obstack_1grow (&util_obstack, ':');
 	      return;
 	    }
-#endif /* OBJC_INT_SELECTORS */
 	}
     }
   else if (TREE_CODE (pointer_to) == INTEGER_TYPE
@@ -6981,12 +6958,6 @@ start_method_def (method)
 				    build1 (INDIRECT_REF, NULL_TREE, self_id)),
 		   build_tree_list (unused_list, NULL_TREE)));
 
-#ifdef OBJC_INT_SELECTORS
-  decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_UNSIGNED]);
-  decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_INT], decl_specs);
-  push_parm_decl (build_tree_list (build_tree_list (decl_specs, ucmd_id),
-				   build_tree_list (unused_list, NULL_TREE)));
-#else /* not OBJC_INT_SELECTORS */
   decl_specs = build_tree_list (NULL_TREE,
 				xref_tag (RECORD_TYPE,
 					  get_identifier (TAG_SELECTOR)));
@@ -6994,7 +6965,6 @@ start_method_def (method)
 		  (build_tree_list (decl_specs,
 				    build1 (INDIRECT_REF, NULL_TREE, ucmd_id)),
 		   build_tree_list (unused_list, NULL_TREE)));
-#endif /* not OBJC_INT_SELECTORS */
 
   /* Generate argument declarations if a keyword_decl.  */
   if (METHOD_SEL_ARGS (method))
