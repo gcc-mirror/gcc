@@ -202,10 +202,10 @@ public:
 
 template <class _Operation, class _Tp>
 inline binder1st<_Operation> 
-bind1st(const _Operation& __opr, const _Tp& __x) 
+bind1st(const _Operation& __oper, const _Tp& __x) 
 {
   typedef typename _Operation::first_argument_type _Arg1_type;
-  return binder1st<_Operation>(__opr, _Arg1_type(__x));
+  return binder1st<_Operation>(__oper, _Arg1_type(__x));
 }
 
 template <class _Operation> 
@@ -227,10 +227,10 @@ public:
 
 template <class _Operation, class _Tp>
 inline binder2nd<_Operation> 
-bind2nd(const _Operation& __opr, const _Tp& __x) 
+bind2nd(const _Operation& __oper, const _Tp& __x) 
 {
   typedef typename _Operation::second_argument_type _Arg2_type;
-  return binder2nd<_Operation>(__opr, _Arg2_type(__x));
+  return binder2nd<_Operation>(__oper, _Arg2_type(__x));
 }
 
 // unary_compose and binary_compose (extensions, not part of the standard).
