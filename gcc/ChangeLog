@@ -1,3 +1,9 @@
+2003-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.h (EPILOGUE_USES): Use register 2,
+	instead of TOC_REGISTER in epilogue in
+	current_function_calls_eh_return functions.
+
 2003-04-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/extend.texi (Empty Structures): Correct description of G++'s
