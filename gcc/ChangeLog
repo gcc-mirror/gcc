@@ -1,3 +1,23 @@
+2003-07-03  Roger Sayle  <roger@eyesopen.com>
+
+	* real.c (real_trunc, real_floor, real_ceil): New functions
+	to implement trunc, floor and ceil respectively.
+	* real.h (real_trunc, real_floor, real_ceil): Prototype here.
+	* builtins.c (integer_valued_real_p): New function to test if
+	a floating point expression has an integer valued result.
+	(fold_trunc_transparent_mathfn): Optimize foo(foo(x)) as
+	foo(x) where foo is an integer rounding function.  Similarly,
+	optimize foo(bar(x)) as bar(x), and foo((double)(int)x) as
+	(double)(int)x when both foo and bar are integer rounding
+	functions and we don't need to honor errno.
+	(fold_builtin_trunc, fold_builtin_floor, fold_builtin_ceil):
+	New functions to fold trunc, floor and ceil.
+	(fold_builtin): Use fold_builtin_trunc to fold BUILT_IN_TRUNC*,
+	fold_builtin_floor to fold BUILT_IN_FLOOR* and fold_builtin_ceil
+	to fold BUILT_IN_CEIL*.
+	* fold-const.c (tree_expr_nonnegative_p): Handle FLOAT_EXPR and
+	the remaining integer rounding functions.
+
 2003-07-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_partial_nregs): Use

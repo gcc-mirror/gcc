@@ -149,12 +149,16 @@ static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_inf (tree, int);
 static tree fold_builtin_nan (tree, tree, int);
 static int validate_arglist (tree, ...);
+static bool integer_valued_real_p (tree);
 static tree fold_trunc_transparent_mathfn (tree);
 static bool readonly_data_expr (tree);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_cabs (tree, rtx);
 static void init_builtin_dconsts (void);
 static tree fold_builtin_cabs (tree, tree, tree);
+static tree fold_builtin_trunc (tree);
+static tree fold_builtin_floor (tree);
+static tree fold_builtin_ceil (tree);
 
 /* Initialize mathematical constants for constant folding builtins.
    These constants need to be given to at least 160 bits precision.  */
@@ -5347,19 +5351,118 @@ fold_builtin_nan (tree arglist, tree type, int quiet)
   return build_real (type, real);
 }
 
-/* EXP is assumed to me builtin call where truncation can be propagated
+/* Return true if the floating point expression T has an integer value.
+   We also allow +Inf, -Inf and NaN to be considered integer values.  */
+
+static bool
+integer_valued_real_p (tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case FLOAT_EXPR:
+      return true;
+
+    case ABS_EXPR:
+    case SAVE_EXPR:
+    case NON_LVALUE_EXPR:
+      return integer_valued_real_p (TREE_OPERAND (t, 0));
+
+    case COMPOUND_EXPR:
+    case MODIFY_EXPR:
+    case BIND_EXPR:
+      return integer_valued_real_p (TREE_OPERAND (t, 1));
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case MIN_EXPR:
+    case MAX_EXPR:
+      return integer_valued_real_p (TREE_OPERAND (t, 0))
+	     && integer_valued_real_p (TREE_OPERAND (t, 1));
+
+    case COND_EXPR:
+      return integer_valued_real_p (TREE_OPERAND (t, 1))
+	     && integer_valued_real_p (TREE_OPERAND (t, 2));
+
+    case REAL_CST:
+      if (! TREE_CONSTANT_OVERFLOW (t))
+      {
+        REAL_VALUE_TYPE c, cint;
+
+	c = TREE_REAL_CST (t);
+	real_trunc (&cint, TYPE_MODE (TREE_TYPE (t)), &c);
+	return real_identical (&c, &cint);
+      }
+
+    case NOP_EXPR:
+      {
+	tree type = TREE_TYPE (TREE_OPERAND (t, 0));
+	if (TREE_CODE (type) == INTEGER_TYPE)
+	  return true;
+	if (TREE_CODE (type) == REAL_TYPE)
+	  return integer_valued_real_p (TREE_OPERAND (t, 0));
+	break;
+      }
+
+    case CALL_EXPR:
+      switch (builtin_mathfn_code (t))
+	{
+	case BUILT_IN_CEIL:
+	case BUILT_IN_CEILF:
+	case BUILT_IN_CEILL:
+	case BUILT_IN_FLOOR:
+	case BUILT_IN_FLOORF:
+	case BUILT_IN_FLOORL:
+	case BUILT_IN_NEARBYINT:
+	case BUILT_IN_NEARBYINTF:
+	case BUILT_IN_NEARBYINTL:
+	case BUILT_IN_ROUND:
+	case BUILT_IN_ROUNDF:
+	case BUILT_IN_ROUNDL:
+	case BUILT_IN_TRUNC:
+	case BUILT_IN_TRUNCF:
+	case BUILT_IN_TRUNCL:
+	  return true;
+
+	default:
+	  break;
+	}
+      break;
+
+    default:
+      break;
+    }
+  return false;
+}
+
+/* EXP is assumed to be builtin call where truncation can be propagated
    across (for instance floor((double)f) == (double)floorf (f).
    Do the transformation.  */
+
 static tree
 fold_trunc_transparent_mathfn (tree exp)
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+  tree arg;
 
-  if (optimize && validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+  if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+  /* Integer rounding functions are idempotent.  */
+  if (fcode == builtin_mathfn_code (arg))
+    return arg;
+
+  /* If argument is already integer valued, and we don't need to worry
+     about setting errno, there's no need to perform rounding.  */
+  if (! flag_errno_math && integer_valued_real_p (arg))
+    return arg;
+
+  if (optimize)
     {
-      tree arg0 = strip_float_extensions (TREE_VALUE (arglist));
+      tree arg0 = strip_float_extensions (arg);
       tree ftype = TREE_TYPE (exp);
       tree newtype = TREE_TYPE (arg0);
       tree decl;
@@ -5459,6 +5562,97 @@ fold_builtin_cabs (tree fndecl, tree arglist, tree type)
     }
 
   return NULL_TREE;
+}
+
+/* Fold function call to builtin trunc, truncf or truncl.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_trunc (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg;
+
+  if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  /* Optimize trunc of constant value.  */
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      REAL_VALUE_TYPE r, x;
+      tree type = TREE_TYPE (exp);
+
+      x = TREE_REAL_CST (arg);
+      real_trunc (&r, TYPE_MODE (type), &x);
+      return build_real (type, r);
+    }
+
+  return fold_trunc_transparent_mathfn (exp);
+}
+
+/* Fold function call to builtin floor, floorf or floorl.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_floor (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg;
+
+  if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  /* Optimize floor of constant value.  */
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      REAL_VALUE_TYPE x;
+
+      x = TREE_REAL_CST (arg);
+      if (! REAL_VALUE_ISNAN (x) || ! flag_errno_math)
+	{
+	  tree type = TREE_TYPE (exp);
+	  REAL_VALUE_TYPE r;
+
+	  real_floor (&r, TYPE_MODE (type), &x);
+	  return build_real (type, r);
+	}
+    }
+
+  return fold_trunc_transparent_mathfn (exp);
+}
+
+/* Fold function call to builtin ceil, ceilf or ceill.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_ceil (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg;
+
+  if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  /* Optimize ceil of constant value.  */
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      REAL_VALUE_TYPE x;
+
+      x = TREE_REAL_CST (arg);
+      if (! REAL_VALUE_ISNAN (x) || ! flag_errno_math)
+	{
+	  tree type = TREE_TYPE (exp);
+	  REAL_VALUE_TYPE r;
+
+	  real_ceil (&r, TYPE_MODE (type), &x);
+	  return build_real (type, r);
+	}
+    }
+
+  return fold_trunc_transparent_mathfn (exp);
 }
 
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
@@ -5918,12 +6112,18 @@ fold_builtin (tree exp)
     case BUILT_IN_FLOOR:
     case BUILT_IN_FLOORF:
     case BUILT_IN_FLOORL:
+      return fold_builtin_floor (exp);
+
     case BUILT_IN_CEIL:
     case BUILT_IN_CEILF:
     case BUILT_IN_CEILL:
+      return fold_builtin_ceil (exp);
+
     case BUILT_IN_TRUNC:
     case BUILT_IN_TRUNCF:
     case BUILT_IN_TRUNCL:
+      return fold_builtin_trunc (exp);
+
     case BUILT_IN_ROUND:
     case BUILT_IN_ROUNDF:
     case BUILT_IN_ROUNDL:
