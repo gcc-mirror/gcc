@@ -4100,6 +4100,13 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
 	  {
 	    rtx mem = SET_DEST (PATTERN (insn));
 
+	    /* This optimization is performed by faking a store to the
+	       memory at the end of the block.  This doesn't work for
+	       unchanging memories because multiple stores to unchanging
+	       memory is illegal and alias analysis doesn't consider it.  */
+	    if (RTX_UNCHANGING_P (mem))
+	      continue;
+
 	    if (XEXP (mem, 0) == frame_pointer_rtx
 		|| (GET_CODE (XEXP (mem, 0)) == PLUS
 		    && XEXP (XEXP (mem, 0), 0) == frame_pointer_rtx
