@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -810,20 +810,6 @@ int zdepi_cint_p ();
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
   (!TARGET_SNAKE && (CLASS) == FP_REGS ? 1 :				\
    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
-/* We do not want to record equivalences for expressions which are
-   likely to cause a spill of %r1 if they are used by reload.
-
-   Nor do we want to record an equivalence of a constant expression
-   that the target can not handle appearing in an insn, but which
-   also must be accepted by LEGITIMATE_CONSTANT_P.
-
-   On the PA, these two goals are the same -- don't record any equivalences
-   for symbolic operands that are not read_only_operands.  */
-#define DONT_RECORD_EQUIVALENCE(NOTE) \
-  (symbolic_operand (XEXP (NOTE, 0), VOIDmode) \
-   && !read_only_operand (XEXP (NOTE, 0), VOIDmode))
-
 
 /* Stack layout; function entry, exit and calling.  */
 

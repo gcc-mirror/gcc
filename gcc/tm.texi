@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,97,1998 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,96,97,98,1999 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -4389,16 +4389,6 @@ an immediate operand on the target machine.  You can assume that
 @var{x} satisfies @code{CONSTANT_P}, so you need not check this.  In fact,
 @samp{1} is a suitable definition for this macro on machines where
 anything @code{CONSTANT_P} is valid.@refill
-
-@findex DONT_RECORD_EQUIVALENCE
-@item DONT_RECORD_EQUIVALENCE (@var{note})
-A C expression that is nonzero if the @code{REG_EQUAL} note @var{x} should not
-be promoted to a @code{REG_EQUIV} note.
-
-Define this macro if @var{note} refers to a constant that must be accepted
-by @code{LEGITIMATE_CONSTANT_P}, but must not appear as an immediate operand.
-
-Most machine descriptions do not need to define this macro.
 @end table
 
 @node Condition Code
