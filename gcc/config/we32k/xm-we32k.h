@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for AT&T we32000 Family.
-   Contributed by John Wehle (john@feith1.uucp)
    Copyright (C) 1991, 1992, 1993, 1996 Free Software Foundation, Inc.
+   Contributed by John Wehle (john@feith1.uucp)
 
 This file is part of GNU CC.
 
@@ -47,5 +47,3 @@ Boston, MA 02111-1307, USA.  */
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 512
 #endif
-
-#include "xm-svr3.h"
