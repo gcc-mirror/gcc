@@ -1,3 +1,9 @@
+2004-01-16  Andrew Haley  <aph@redhat.com>
+
+	* configure.in (NO_EXECUTE_PERMISSION): Remove global declaration;
+	add for ia64; remove for MIPS.
+	* configure: Regnerated.
+	
 2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in: Add in AC_PREREQ(2.13)
