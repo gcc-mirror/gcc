@@ -130,6 +130,8 @@ extern int		se_uns_arith_operand PARAMS ((rtx, enum machine_mode));
 extern int		se_arith_operand PARAMS ((rtx, enum machine_mode));
 extern int		se_nonmemory_operand PARAMS ((rtx, enum machine_mode));
 extern int		se_nonimmediate_operand PARAMS ((rtx, enum machine_mode));
+extern int              mips_legitimate_address_p PARAMS ((enum machine_mode, rtx, int));
+extern int              mips_reg_mode_ok_for_base_p PARAMS ((rtx, enum machine_mode, int));
 extern int              extend_operator PARAMS ((rtx, enum machine_mode));
 extern int              highpart_shift_operator PARAMS ((rtx, enum machine_mode));
 extern int		m16_uimm3_b PARAMS ((rtx, enum machine_mode));
