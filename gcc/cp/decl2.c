@@ -3260,6 +3260,11 @@ finish_file ()
 		  {
 		    DECL_EXTERNAL (decl) = 0;
 		    reconsider = 1;
+		    /* We can't inline this function after it's been
+                       emitted.  We want a variant of
+                       output_inline_function that doesn't prevent
+                       subsequent integration...  */
+		    DECL_INLINE (decl) = 0;
 		    output_inline_function (decl);
 		    permanent_allocation (1);
 		  }

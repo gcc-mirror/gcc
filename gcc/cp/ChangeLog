@@ -1,3 +1,7 @@
+Fri Nov  7 11:57:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Put back some code.
+
 Thu Nov  6 11:28:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_file): Remove redundant code.
