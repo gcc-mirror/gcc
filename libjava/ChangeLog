@@ -1,3 +1,11 @@
+2000-12-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natMath.cc: Declare fabsf() function.
+	* java/lang/mprec.h: Don't include math.h.
+	* java/lang/dtoa.c: Include string.h.
+	* java/lang/natString.cc (toLowerCase): Initialize `ch' to prevent
+	compiler warning.
+
 2000-12-01  Warren Levy  <warrenl@cygnus.com>
 
 	* Makefile.am: Added entries for new java.sql modules.

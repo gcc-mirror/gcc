@@ -768,7 +768,7 @@ java::lang::String::toLowerCase (java::util::Locale *locale)
 {
   jint i;
   jchar* chrs = JvGetStringChars(this);
-  jchar ch;
+  jchar ch = 0;
 
   bool handle_tr = false;
   if (locale != NULL)
