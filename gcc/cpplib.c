@@ -99,6 +99,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 /* This defines "errno" properly for VMS, and gives us EACCES.  */
 #include <errno.h>
 
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+
 #ifdef NEED_DECLARATION_INDEX
 extern char *index ();
 #endif
