@@ -167,7 +167,7 @@ namespace std
     if (_S_ios_base_init == 0)
       {
 	// Standard streams default to synced with "C" operations.
-	ios_base::Init::_S_synced_with_stdio = true;
+	_S_synced_with_stdio = true;
 
 	new (&buf_cout_sync) stdio_sync_filebuf<char>(stdout);
 	new (&buf_cin_sync) stdio_sync_filebuf<char>(stdin);

@@ -1,4 +1,9 @@
-2003-08-09  Bernardo Innocenti  <bernie@develer.com>
+2003-09-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* src/ios.cc (ios_base::Init::Init): Remove unnecessary
+	qualifier from _S_synced_with_stdio.
+
+2003-09-09  Bernardo Innocenti  <bernie@develer.com>
 
 	* include/c_std/std_cstdlib.h: Avoid using missing C library symbols.
 
