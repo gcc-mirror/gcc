@@ -230,7 +230,7 @@ find_function_data (tree decl)
     if (p->decl == decl)
       return p;
 
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Save the current context for compilation of a nested function.
@@ -604,12 +604,10 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
      of a variable size.  */
-  if (size == -1)
-    abort ();
+  gcc_assert (size != -1);
 
   /* These are now unused.  */
-  if (keep > 1)
-    abort ();
+  gcc_assert (keep <= 1);
 
   if (mode == BLKmode)
     align = BIGGEST_ALIGNMENT;
@@ -695,8 +693,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
 	 So for requests which depended on the rounding of SIZE, we go ahead
 	 and round it now.  We also make sure ALIGNMENT is at least
 	 BIGGEST_ALIGNMENT.  */
-      if (mode == BLKmode && align < BIGGEST_ALIGNMENT)
-	abort ();
+      gcc_assert (mode != BLKmode || align == BIGGEST_ALIGNMENT);
       p->slot = assign_stack_local (mode,
 				    (mode == BLKmode
 				     ? CEIL_ROUND (size, (int) align / BITS_PER_UNIT)
@@ -1434,13 +1431,9 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
 static void
 instantiate_virtual_regs_lossage (rtx insn)
 {
-  if (asm_noperands (PATTERN (insn)) >= 0)
-    {
-      error_for_asm (insn, "impossible constraint in `asm'");
-      delete_insn (insn);
-    }
-  else
-    abort ();
+  gcc_assert (asm_noperands (PATTERN (insn)) >= 0);
+  error_for_asm (insn, "impossible constraint in `asm'");
+  delete_insn (insn);
 }
 /* Given a pointer to a piece of rtx and an optional pointer to the
    containing object, instantiate any virtual registers present in it.
@@ -1862,7 +1855,7 @@ aggregate_value_p (tree exp, tree fntype)
 	break;
       default:
 	/* We don't expect other rtl types here.  */
-	abort();
+	gcc_unreachable ();
       }
 
   if (TREE_CODE (type) == VOID_TYPE)
@@ -2309,8 +2302,7 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 
 	  /* We assume at most one partial arg, and it must be the first
 	     argument on the stack.  */
-	  if (all->extra_pretend_bytes || all->pretend_args_size)
-	    abort ();
+	  gcc_assert (!all->extra_pretend_bytes && !all->pretend_args_size);
 
 	  pretend_bytes = partial * UNITS_PER_WORD;
 	  all->pretend_args_size = CEIL_ROUND (pretend_bytes, STACK_BYTES);
@@ -2567,8 +2559,8 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
 	}
       else if (GET_CODE (entry_parm) == PARALLEL)
 	;
-      else if (size != 0 && PARM_BOUNDARY % BITS_PER_WORD != 0)
-	abort ();
+      else
+	gcc_assert (!size || !(PARM_BOUNDARY % BITS_PER_WORD));
 
       mem = validize_mem (stack_parm);
 
@@ -4029,10 +4021,11 @@ expand_function_start (tree subr)
 	 so we may see a PARALLEL or a REG.  */
       if (REG_P (hard_reg))
 	SET_DECL_RTL (DECL_RESULT (subr), gen_reg_rtx (GET_MODE (hard_reg)));
-      else if (GET_CODE (hard_reg) == PARALLEL)
-	SET_DECL_RTL (DECL_RESULT (subr), gen_group_rtx (hard_reg));
       else
-	abort ();
+	{
+	  gcc_assert (GET_CODE (hard_reg) == PARALLEL);
+	  SET_DECL_RTL (DECL_RESULT (subr), gen_group_rtx (hard_reg));
+	}
 
       /* Set DECL_REGISTER flag so that expand_function_end will copy the
 	 result to the real return register(s).  */
@@ -4321,8 +4314,7 @@ expand_function_end (void)
 	  rtx real_decl_rtl = current_function_return_rtx;
 
 	  /* This should be set in assign_parms.  */
-	  if (! REG_FUNCTION_VALUE_P (real_decl_rtl))
-	    abort ();
+	  gcc_assert (REG_FUNCTION_VALUE_P (real_decl_rtl));
 
 	  /* If this is a BLKmode structure being returned in registers,
 	     then use the mode computed in expand_return.  Note that if
@@ -4680,19 +4672,27 @@ keep_stack_depressed (rtx insns)
 	      insn = next;
 	      continue;
 	    }
-	  else if (MEM_P (retaddr)
-		   && REG_P (XEXP (retaddr, 0)))
-	    base = gen_rtx_REG (Pmode, REGNO (XEXP (retaddr, 0))), offset = 0;
-	  else if (MEM_P (retaddr)
-		   && GET_CODE (XEXP (retaddr, 0)) == PLUS
-		   && REG_P (XEXP (XEXP (retaddr, 0), 0))
-		   && GET_CODE (XEXP (XEXP (retaddr, 0), 1)) == CONST_INT)
-	    {
-	      base = gen_rtx_REG (Pmode, REGNO (XEXP (XEXP (retaddr, 0), 0)));
-	      offset = INTVAL (XEXP (XEXP (retaddr, 0), 1));
-	    }
 	  else
-	    abort ();
+	    {
+	      rtx ret_ptr;
+	      gcc_assert (MEM_P (retaddr));
+
+	      ret_ptr = XEXP (retaddr, 0);
+	      
+	      if (REG_P (ret_ptr))
+		{
+		  base = gen_rtx_REG (Pmode, REGNO (ret_ptr));
+		  offset = 0;
+		}
+	      else
+		{
+		  gcc_assert (GET_CODE (ret_ptr) == PLUS
+			      && REG_P (XEXP (ret_ptr, 0))
+			      && GET_CODE (XEXP (ret_ptr, 1)) == CONST_INT);
+		  base = gen_rtx_REG (Pmode, REGNO (XEXP (ret_ptr, 0)));
+		  offset = INTVAL (XEXP (ret_ptr, 1));
+		}
+	    }
 
 	  /* If the base of the location containing the return pointer
 	     is SP, we must update it with the replacement address.  Otherwise,
@@ -4727,8 +4727,7 @@ keep_stack_depressed (rtx insns)
 		    && info.const_equiv[regno] == 0)
 		  break;
 
-	      if (regno == FIRST_PSEUDO_REGISTER)
-		abort ();
+	      gcc_assert (regno < FIRST_PSEUDO_REGISTER);
 
 	      reg = gen_rtx_REG (Pmode, regno);
 	      emit_move_insn (reg, retaddr);
@@ -4740,10 +4739,8 @@ keep_stack_depressed (rtx insns)
 
 	  /* Show the SET in the above insn is a RETURN.  */
 	  jump_set = single_set (jump_insn);
-	  if (jump_set == 0)
-	    abort ();
-	  else
-	    SET_IS_RETURN_P (jump_set) = 1;
+	  gcc_assert (jump_set);
+	  SET_IS_RETURN_P (jump_set) = 1;
 	}
 
       /* If SP is not mentioned in the pattern and its equivalent register, if
@@ -4758,11 +4755,13 @@ keep_stack_depressed (rtx insns)
 	       && (info.sp_equiv_reg == stack_pointer_rtx
 		   || !reg_set_p (info.sp_equiv_reg, insn)))
 	{
-	  if (! validate_replace_rtx (stack_pointer_rtx,
-				      plus_constant (info.sp_equiv_reg,
-						     info.sp_offset),
-				      insn))
-	    abort ();
+	  int changed;
+
+	  changed = validate_replace_rtx (stack_pointer_rtx,
+					  plus_constant (info.sp_equiv_reg,
+							 info.sp_offset),
+					  insn);
+	  gcc_assert (changed);
 
 	  add_insn (insn);
 	}
@@ -4802,21 +4801,22 @@ handle_epilogue_set (rtx set, struct epi_info *p)
      set from.  If unknown, abort.  */
   if (reg_set_p (stack_pointer_rtx, set))
     {
-      if (SET_DEST (set) != stack_pointer_rtx)
-	abort ();
+      gcc_assert (SET_DEST (set) == stack_pointer_rtx);
 
       if (GET_CODE (SET_SRC (set)) == PLUS)
 	{
 	  p->new_sp_equiv_reg = XEXP (SET_SRC (set), 0);
 	  if (GET_CODE (XEXP (SET_SRC (set), 1)) == CONST_INT)
 	    p->new_sp_offset = INTVAL (XEXP (SET_SRC (set), 1));
-	  else if (REG_P (XEXP (SET_SRC (set), 1))
-		   && REGNO (XEXP (SET_SRC (set), 1)) < FIRST_PSEUDO_REGISTER
-		   && p->const_equiv[REGNO (XEXP (SET_SRC (set), 1))] != 0)
-	    p->new_sp_offset
-	      = INTVAL (p->const_equiv[REGNO (XEXP (SET_SRC (set), 1))]);
 	  else
-	    abort ();
+	    {
+	      gcc_assert (REG_P (XEXP (SET_SRC (set), 1))
+			  && (REGNO (XEXP (SET_SRC (set), 1))
+			      < FIRST_PSEUDO_REGISTER)
+			  && p->const_equiv[REGNO (XEXP (SET_SRC (set), 1))]);
+	      p->new_sp_offset
+		= INTVAL (p->const_equiv[REGNO (XEXP (SET_SRC (set), 1))]);
+	    }
 	}
       else
 	p->new_sp_equiv_reg = SET_SRC (set), p->new_sp_offset = 0;
@@ -4828,8 +4828,7 @@ handle_epilogue_set (rtx set, struct epi_info *p)
 	  p->new_sp_offset += p->sp_offset;
 	}
 
-      if (p->new_sp_equiv_reg == 0 || !REG_P (p->new_sp_equiv_reg))
-	abort ();
+      gcc_assert (p->new_sp_equiv_reg && REG_P (p->new_sp_equiv_reg));
 
       return;
     }
@@ -4844,17 +4843,16 @@ handle_epilogue_set (rtx set, struct epi_info *p)
      Pmode).  */
   else if (p->new_sp_equiv_reg != 0 && reg_set_p (p->new_sp_equiv_reg, set))
     {
-      if (p->equiv_reg_src != 0
-	  || !REG_P (p->new_sp_equiv_reg)
-	  || !REG_P (SET_DEST (set))
-	  || GET_MODE_BITSIZE (GET_MODE (SET_DEST (set))) > BITS_PER_WORD
-	  || REGNO (p->new_sp_equiv_reg) != REGNO (SET_DEST (set)))
-	abort ();
-      else
-	p->equiv_reg_src
-	  = simplify_replace_rtx (SET_SRC (set), stack_pointer_rtx,
-				  plus_constant (p->sp_equiv_reg,
-						 p->sp_offset));
+      gcc_assert (!p->equiv_reg_src
+		  && REG_P (p->new_sp_equiv_reg)
+		  && REG_P (SET_DEST (set))
+		  && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (set)))
+		      <= BITS_PER_WORD)
+		  && REGNO (p->new_sp_equiv_reg) == REGNO (SET_DEST (set)));
+      p->equiv_reg_src
+	= simplify_replace_rtx (SET_SRC (set), stack_pointer_rtx,
+				plus_constant (p->sp_equiv_reg,
+					       p->sp_offset));
     }
 
   /* Otherwise, replace any references to SP in the insn to its new value
@@ -4966,8 +4964,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
       /* Can't deal with multiple successors of the entry block
          at the moment.  Function should always have at least one
          entry point.  */
-      if (!ENTRY_BLOCK_PTR->succ || ENTRY_BLOCK_PTR->succ->succ_next)
-	abort ();
+      gcc_assert (ENTRY_BLOCK_PTR->succ && !ENTRY_BLOCK_PTR->succ->succ_next);
 
       insert_insn_on_edge (seq, ENTRY_BLOCK_PTR->succ);
       inserted = 1;

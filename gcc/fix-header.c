@@ -397,8 +397,7 @@ lookup_std_proto (const char *name, int name_length)
 	  && strncmp (fn->fname, name, name_length) == 0)
 	return fn;
       i = (i+1) % HASH_SIZE;
-      if (i == i0)
-	abort ();
+      gcc_assert (i != i0);
     }
 }
 
