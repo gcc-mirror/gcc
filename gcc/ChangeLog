@@ -1,3 +1,8 @@
+Tue Jun  9 07:24:01 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* regmove.c ({next,prev}_insn_for_regmove): Properly handle end of
+ 	function.
+
 Mon Jun  8 15:26:49 1998  Juha Sarlin <juha@c3l.tyreso.se>
 
 	* h8300.c (get_shift_alg): Add special cases for shifts of 8 and 24.
