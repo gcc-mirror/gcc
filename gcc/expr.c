@@ -4018,7 +4018,9 @@ store_constructor (exp, target, cleared)
      int cleared;
 {
   tree type = TREE_TYPE (exp);
+#ifdef WORD_REGISTER_OPERATIONS
   rtx exp_size = expr_size (exp);
+#endif
 
   /* We know our target cannot conflict, since safe_from_p has been called.  */
 #if 0
@@ -6955,7 +6957,7 @@ expand_expr (exp, target, tmode, modifier)
 	      constant_part
 		= immed_double_const (TREE_INT_CST_LOW (TREE_OPERAND (exp, 0)),
 				      (HOST_WIDE_INT) 0,
-				      GET_MODE (op1));
+				      TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 1))));
 	      op1 = plus_constant (op1, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op1 = force_operand (op1, target);
