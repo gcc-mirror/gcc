@@ -1,5 +1,3 @@
-// execution test - XFAIL *-*-*
-
 // Reduced from a testcase by Yotam Medini <yotam@avanticorp.com>
 
 // egcs 1.1 seems to generate code that deletes a NULL pointer.
