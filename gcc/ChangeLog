@@ -1,3 +1,8 @@
+2002-09-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (extzv): Check predicates before emitting extzv_32.
+	(insv): Likewise.
+
 2002-09-10  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (MOVE_MAX): Define to correct value.
