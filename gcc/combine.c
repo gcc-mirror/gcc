@@ -1240,6 +1240,7 @@ try_combine (i3, i2, i1)
   rtx i2pat;
   /* Indicates if I2DEST or I1DEST is in I2SRC or I1_SRC.  */
   int i2dest_in_i2src = 0, i1dest_in_i1src = 0, i2dest_in_i1src = 0;
+  int i1dest_in_i2src = 0;
   int i1_feeds_i3 = 0;
   /* Notes that must be added to REG_NOTES in I3 and I2.  */
   rtx new_i3_notes, new_i2_notes;
@@ -1423,6 +1424,7 @@ try_combine (i3, i2, i1)
   i2dest_in_i2src = reg_overlap_mentioned_p (i2dest, i2src);
   i1dest_in_i1src = i1 && reg_overlap_mentioned_p (i1dest, i1src);
   i2dest_in_i1src = i1 && reg_overlap_mentioned_p (i2dest, i1src);
+  i1dest_in_i2src = i1 && reg_overlap_mentioned_p (i1dest, i2src);
 
   /* See if I1 directly feeds into I3.  It does if I1DEST is not used
      in I2SRC.  */
@@ -2146,10 +2148,12 @@ try_combine (i3, i2, i1)
     rtx i3links, i2links, i1links = 0;
     rtx midnotes = 0;
     register int regno;
-    /* Compute which registers we expect to eliminate.  */
-    rtx elim_i2 = (newi2pat || i2dest_in_i2src || i2dest_in_i1src
+    /* Compute which registers we expect to eliminate.  newi2pat may be setting
+       either i3dest or i2dest, so we must check it.  */
+    rtx elim_i2 = ((newi2pat && reg_set_p (i2dest, newi2pat))
+		   || i2dest_in_i2src || i2dest_in_i1src
 		   ? 0 : i2dest);
-    rtx elim_i1 = i1 == 0 || i1dest_in_i1src ? 0 : i1dest;
+    rtx elim_i1 = i1 == 0 || i1dest_in_i1src || i1dest_in_i2src ? 0 : i1dest;
 
     /* Get the old REG_NOTES and LOG_LINKS from all our insns and
        clear them.  */
@@ -2317,7 +2321,7 @@ try_combine (i3, i2, i1)
 	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
 				     NULL_RTX),
 			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			    NULL_RTX, NULL_RTX);
+			    elim_i2, elim_i1);
       }
 
     if (i2dest_in_i2src)
