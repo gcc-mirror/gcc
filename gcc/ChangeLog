@@ -1,3 +1,11 @@
+2002-04-02  Eric Botcazou  <ebotcazou@multimania.com>
+            Richard Henderson  <rth@redhat.com>
+
+        PR c/5484
+        * function.c (assign_temp): Accept either type or decl argument.
+        Detect variables whose size is too large to fit into an integer.
+        * stmt.c (expand_decl): Pass the decl, not the type.
+
 2002-04-02  David O'Brien  <obrien@FreeBSD.org>
 
 	* protoize.c: Match include directory usage with cppdefault.c.

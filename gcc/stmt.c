@@ -3968,7 +3968,7 @@ expand_decl (decl)
 			   : GET_MODE_BITSIZE (DECL_MODE (decl)));
       DECL_USER_ALIGN (decl) = 0;
 
-      x = assign_temp (TREE_TYPE (decl), 1, 1, 1);
+      x = assign_temp (decl, 1, 1, 1);
       set_mem_attributes (x, decl, 1);
       SET_DECL_RTL (decl, x);
 

@@ -844,7 +844,10 @@ assign_stack_temp (mode, size, keep)
   return assign_stack_temp_for_type (mode, size, keep, NULL_TREE);
 }
 
-/* Assign a temporary of given TYPE.
+/* Assign a temporary.
+   If TYPE_OR_DECL is a decl, then we are doing it on behalf of the decl
+   and so that should be used in error messages.  In either case, we
+   allocate of the given type.
    KEEP is as for assign_stack_temp.
    MEMORY_REQUIRED is 1 if the result must be addressable stack memory;
    it is 0 if a register is OK.
@@ -852,15 +855,26 @@ assign_stack_temp (mode, size, keep)
    to wider modes.  */
 
 rtx
-assign_temp (type, keep, memory_required, dont_promote)
-     tree type;
+assign_temp (type_or_decl, keep, memory_required, dont_promote)
+     tree type_or_decl;
      int keep;
      int memory_required;
      int dont_promote ATTRIBUTE_UNUSED;
 {
-  enum machine_mode mode = TYPE_MODE (type);
+  tree type, decl;
+  enum machine_mode mode;
 #ifndef PROMOTE_FOR_CALL_ONLY
-  int unsignedp = TREE_UNSIGNED (type);
+  int unsignedp;
+#endif
+
+  if (DECL_P (type_or_decl))
+    decl = type_or_decl, type = TREE_TYPE (decl);
+  else
+    decl = NULL, type = type_or_decl;
+
+  mode = TYPE_MODE (type);
+#ifndef PROMOTE_FOR_CALL_ONLY
+  unsignedp = TREE_UNSIGNED (type);
 #endif
 
   if (mode == BLKmode || memory_required)
@@ -881,6 +895,17 @@ assign_temp (type, keep, memory_required, dont_promote)
 	  && TYPE_ARRAY_MAX_SIZE (type) != NULL_TREE
 	  && host_integerp (TYPE_ARRAY_MAX_SIZE (type), 1))
 	size = tree_low_cst (TYPE_ARRAY_MAX_SIZE (type), 1);
+
+      /* The size of the temporary may be too large to fit into an integer.  */
+      /* ??? Not sure this should happen except for user silliness, so limit
+	 this to things that aren't compiler-generated temporaries.  The 
+	 rest of the time we'll abort in assign_stack_temp_for_type.  */
+      if (decl && size == -1
+	  && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST)
+	{
+	  error_with_decl (decl, "size of variable `%s' is too large");
+	  size = 1;
+	}
 
       tmp = assign_stack_temp_for_type (mode, size, keep, type);
       return tmp;
