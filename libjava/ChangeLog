@@ -1,3 +1,13 @@
+2004-05-05  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/text/AttributedString.java,
+	java/text/AttributedStringIterator.java,
+	java/text/Collator.java,
+	java/text/DecimalFormatSymbols.java,
+	java/text/NumberFormat.java,
+	java/text/RuleBasedCollator.java:
+	Cleaned up imports.
+
 2004-05-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/Format.java: Cleaned up imports.

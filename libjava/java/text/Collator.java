@@ -1,5 +1,5 @@
 /* Collator.java -- Perform locale dependent String comparisons.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,10 @@ exception statement from your version. */
 
 package java.text;
 
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.Comparator;
 
 /**
  * This class is the abstract superclass of classes which perform 
