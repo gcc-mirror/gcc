@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "integrate.h"
 #include "varray.h"
 #include "hashtab.h"
+#include "pointer-set.h"
 #include "splay-tree.h"
 #include "langhooks.h"
 #include "cgraph.h"
@@ -1877,7 +1878,7 @@ save_body (tree fn, tree *arg_copy, tree *sc_copy)
 #define WALK_SUBTREE(NODE)				\
   do							\
     {							\
-      result = walk_tree (&(NODE), func, data, htab);	\
+      result = walk_tree (&(NODE), func, data, pset);	\
       if (result)					\
 	return result;					\
     }							\
@@ -1888,7 +1889,8 @@ save_body (tree fn, tree *arg_copy, tree *sc_copy)
    value are as for walk_tree.  */
 
 static tree
-walk_type_fields (tree type, walk_tree_fn func, void *data, void *htab)
+walk_type_fields (tree type, walk_tree_fn func, void *data,
+		  struct pointer_set_t *pset)
 {
   tree result = NULL_TREE;
 
@@ -1906,7 +1908,7 @@ walk_type_fields (tree type, walk_tree_fn func, void *data, void *htab)
       if (POINTER_TYPE_P (TREE_TYPE (type))
 	  && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (type)))
 	  && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (TREE_TYPE (type))))
-	  && !htab)
+	  && !pset)
 	{
 	  result = walk_tree_without_duplicates (&TREE_TYPE (type),
 						 func, data);
@@ -1971,13 +1973,12 @@ walk_type_fields (tree type, walk_tree_fn func, void *data, void *htab)
 /* Apply FUNC to all the sub-trees of TP in a pre-order traversal.  FUNC is
    called with the DATA and the address of each sub-tree.  If FUNC returns a
    non-NULL value, the traversal is aborted, and the value returned by FUNC
-   is returned.  If HTAB is non-NULL it is used to record the nodes visited,
+   is returned.  If PSET is non-NULL it is used to record the nodes visited,
    and to avoid visiting a node more than once.  */
 
 tree
-walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
+walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 {
-  htab_t htab = (htab_t) htab_;
   enum tree_code code;
   int walk_subtrees;
   tree result;
@@ -1995,17 +1996,10 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
   if (!*tp)
     return NULL_TREE;
 
-  if (htab)
-    {
-      void **slot;
-
-      /* Don't walk the same tree twice, if the user has requested
-         that we avoid doing so.  */
-      slot = htab_find_slot (htab, *tp, INSERT);
-      if (*slot)
-	return NULL_TREE;
-      *slot = *tp;
-    }
+  /* Don't walk the same tree twice, if the user has requested
+     that we avoid doing so.  */
+  if (pset && pointer_set_insert (pset, *tp))
+    return NULL_TREE;
 
   /* Call the function.  */
   walk_subtrees = 1;
@@ -2029,7 +2023,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
     }
 
   result = lang_hooks.tree_inlining.walk_subtrees (tp, &walk_subtrees, func,
-						   data, htab);
+						   data, pset);
   if (result || ! walk_subtrees)
     return result;
 
@@ -2053,7 +2047,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
       if (result || !walk_subtrees)
 	return NULL_TREE;
 
-      result = walk_type_fields (*type_p, func, data, htab_);
+      result = walk_type_fields (*type_p, func, data, pset);
       if (result)
 	return result;
 
@@ -2124,7 +2118,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
   /* If this is a type, walk the needed fields in the type.  */
   else if (TYPE_P (*tp))
     {
-      result = walk_type_fields (*tp, func, data, htab_);
+      result = walk_type_fields (*tp, func, data, pset);
       if (result)
 	return result;
     }
@@ -2227,11 +2221,11 @@ tree
 walk_tree_without_duplicates (tree *tp, walk_tree_fn func, void *data)
 {
   tree result;
-  htab_t htab;
+  struct pointer_set_t *pset;
 
-  htab = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
-  result = walk_tree (tp, func, data, htab);
-  htab_delete (htab);
+  pset = pointer_set_create ();
+  result = walk_tree (tp, func, data, pset);
+  pointer_set_destroy (pset);
   return result;
 }
 

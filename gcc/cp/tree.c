@@ -1929,7 +1929,7 @@ cp_build_type_attribute_variant (tree type, tree attributes)
 
 tree
 cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
-		  void *data, void *htab)
+		  void *data, struct pointer_set_t *pset)
 {
   enum tree_code code = TREE_CODE (*tp);
   location_t save_locus;
@@ -1938,7 +1938,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 #define WALK_SUBTREE(NODE)				\
   do							\
     {							\
-      result = walk_tree (&(NODE), func, data, htab);	\
+      result = walk_tree (&(NODE), func, data, pset);	\
       if (result) goto out;				\
     }							\
   while (0)

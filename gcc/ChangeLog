@@ -1,3 +1,27 @@
+2004-10-14  Matt Austern  <austern@apple.com>
+
+	* pointer-set.c: New file, special-purpose hash table.
+	* pointer-set.h: New file.
+	* tree.h (struct pointer_set_t): Declare as opaque type.
+	(tree_walk): Last argument is pointer_set_t* now.
+	* tree-inline.c (WALK_SUBTREE): Convert from htab to pset.
+	(walk_type_fields): 
+	(walk_tree): Convert from htab_t to pointer_set_t for keeping
+	track of which nodes have already been visited.
+	(walk_tree_without_duplicates): Convert from htab_t to pointer_set_t.
+	* cgraphunit.c (cgraph_create_edges): Likewise.
+	(cgraph_characterize_statics_local): Likewise.
+	* tree-dfa.c (collect_dfa_stats): Likewise.
+	* langhooks-def.h (lhd_tree_inlining_walk_subtrees): Last arg is
+	pointer_set_t* now.
+	* langhooks.c (lhd_tree_inlining_walk_subtrees): Likewise.
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Last arg type
+	of walk_subtrees is pointer_set_t* now.
+	* Makefile.in (OBJS-common): add pointer-set.o
+	(tree-inline.o): Depends on pointer-set.h
+	(tree-dfa.o): Likewise
+	(cgraphunit.o): Likewise
+	
 2004-10-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/darwin.h (ASM_SPEC): Delete.

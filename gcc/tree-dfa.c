@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "hashtab.h"
+#include "pointer-set.h"
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
@@ -759,7 +760,7 @@ debug_dfa_stats (void)
 static void
 collect_dfa_stats (struct dfa_stats_d *dfa_stats_p)
 {
-  htab_t htab;
+  struct pointer_set_t *pset;
   basic_block bb;
   block_stmt_iterator i;
 
@@ -769,13 +770,13 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p)
 
   /* Walk all the trees in the function counting references.  Start at
      basic block 0, but don't stop at block boundaries.  */
-  htab = htab_create (30, htab_hash_pointer, htab_eq_pointer, NULL);
+  pset = pointer_set_create ();
 
   for (i = bsi_start (BASIC_BLOCK (0)); !bsi_end_p (i); bsi_next (&i))
     walk_tree (bsi_stmt_ptr (i), collect_dfa_stats_r, (void *) dfa_stats_p,
-	       (void *) htab);
+	       pset);
 
-  htab_delete (htab);
+  pointer_set_destroy (pset);
 
   FOR_EACH_BB (bb)
     {

@@ -298,7 +298,7 @@ lhd_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
 				 int *subtrees ATTRIBUTE_UNUSED,
 				 walk_tree_fn func ATTRIBUTE_UNUSED,
 				 void *data ATTRIBUTE_UNUSED,
-				 void *htab ATTRIBUTE_UNUSED)
+				 struct pointer_set_t *pset ATTRIBUTE_UNUSED)
 {
   return NULL_TREE;
 }

@@ -35,7 +35,7 @@ struct lang_hooks_for_tree_inlining
 {
   tree (*walk_subtrees) (tree *, int *,
 			 tree (*) (tree *, int *, void *),
-			 void *, void *);
+			 void *, struct pointer_set_t*);
   int (*cannot_inline_tree_fn) (tree *);
   int (*disregard_inline_limits) (tree);
   tree (*add_pending_fn_decls) (void *, tree);
