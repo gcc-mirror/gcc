@@ -113,7 +113,7 @@ static char direct_store[NUM_MACHINE_MODES];
    a block move.  */
 
 #ifndef MOVE_RATIO
-#if defined (HAVE_movstrqi) || defined (HAVE_movstrhi) || defined (HAVE_movstrsi) || defined (HAVE_movstrdi)
+#if defined (HAVE_movstrqi) || defined (HAVE_movstrhi) || defined (HAVE_movstrsi) || defined (HAVE_movstrdi) || defined (HAVE_movstrti)
 #define MOVE_RATIO 2
 #else
 /* A value of around 6 would minimize code size; infinity would minimize
@@ -122,6 +122,9 @@ static char direct_store[NUM_MACHINE_MODES];
 #endif
 #endif
 
+/* This array records the insn_code of insns to perform block moves.  */
+static enum insn_code movstr_optab[NUM_MACHINE_MODES];
+
 /* SLOW_UNALIGNED_ACCESS is non-zero if unaligned accesses are very slow. */
 
 #ifndef SLOW_UNALIGNED_ACCESS
@@ -129,7 +132,7 @@ static char direct_store[NUM_MACHINE_MODES];
 #endif
 
 /* This is run once per compilation to set up which modes can be used
-   directly in memory.  */
+   directly in memory and to initialize the block move optab.  */
 
 void
 init_expr_once ()
@@ -169,9 +172,32 @@ init_expr_once ()
       SET_SRC (pat) = reg;
       SET_DEST (pat) = mem;
       direct_store[(int) mode] = (recog (pat, insn, &num_clobbers)) >= 0;
+
+      movstr_optab[(int) mode] = CODE_FOR_nothing;
     }
 
   end_sequence ();
+
+#ifdef HAVE_movstrqi
+  if (HAVE_movstrqi)
+    movstr_optab[(int) QImode] = CODE_FOR_movstrqi;
+#endif
+#ifdef HAVE_movstrhi
+  if (HAVE_movstrhi)
+    movstr_optab[(int) HImode] = CODE_FOR_movstrhi;
+#endif
+#ifdef HAVE_movstrsi
+  if (HAVE_movstrsi)
+    movstr_optab[(int) SImode] = CODE_FOR_movstrsi;
+#endif
+#ifdef HAVE_movstrdi
+  if (HAVE_movstrdi)
+    movstr_optab[(int) DImode] = CODE_FOR_movstrdi;
+#endif
+#ifdef HAVE_movstrti
+  if (HAVE_movstrti)
+    movstr_optab[(int) TImode] = CODE_FOR_movstrti;
+#endif
 }
       
 /* This is run at the start of compiling a function.  */
@@ -1142,56 +1168,39 @@ emit_block_move (x, y, size, align)
       /* Try the most limited insn first, because there's no point
 	 including more than one in the machine description unless
 	 the more limited one has some advantage.  */
-#ifdef HAVE_movstrqi
-      if (HAVE_movstrqi
-	  && GET_CODE (size) == CONST_INT
-	  && ((unsigned) INTVAL (size)
-	      < (1 << (GET_MODE_BITSIZE (QImode) - 1))))
+
+      enum machine_mode mode;
+
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
 	{
-	  rtx insn = gen_movstrqi (x, y, size, GEN_INT (align));
-	  if (insn)
+	  enum insn_code code = movstr_optab[(int) mode];
+	  rtx opalign = GEN_INT (align);
+
+	  if (code != CODE_FOR_nothing
+	      && GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT
+	      && (unsigned) INTVAL (size) <= GET_MODE_MASK (mode)
+	      && (*insn_operand_predicate[(int) code][0]) (x, Pmode)
+	      && (*insn_operand_predicate[(int) code][1]) (y, Pmode)
+	      && (*insn_operand_predicate[(int) code][3]) (opalign, VOIDmode))
 	    {
-	      emit_insn (insn);
-	      return;
+	      rtx op2 = size;
+	      rtx last = get_last_insn ();
+	      rtx pat;
+
+	      if (! (*insn_operand_predicate[(int) code][2]) (op2, mode))
+		op2 = copy_to_mode_reg (mode, op2);
+
+	      pat = GEN_FCN ((int) code) (x, y, op2, opalign);
+	      if (pat)
+		{
+		  emit_insn (pat);
+		  return;
+		}
+	      else
+		delete_insns_since (last);
 	    }
 	}
-#endif
-#ifdef HAVE_movstrhi
-      if (HAVE_movstrhi
-	  && GET_CODE (size) == CONST_INT
-	  && ((unsigned) INTVAL (size)
-	      < (1 << (GET_MODE_BITSIZE (HImode) - 1))))
-	{
-	  rtx insn = gen_movstrhi (x, y, size, GEN_INT (align));
-	  if (insn)
-	    {
-	      emit_insn (insn);
-	      return;
-	    }
-	}
-#endif
-#ifdef HAVE_movstrsi
-      if (HAVE_movstrsi)
-	{
-	  rtx insn = gen_movstrsi (x, y, size, GEN_INT (align));
-	  if (insn)
-	    {
-	      emit_insn (insn);
-	      return;
-	    }
-	}
-#endif
-#ifdef HAVE_movstrdi
-      if (HAVE_movstrdi)
-	{
-	  rtx insn = gen_movstrdi (x, y, size, GEN_INT (align));
-	  if (insn)
-	    {
-	      emit_insn (insn);
-	      return;
-	    }
-	}
-#endif
 
 #ifdef TARGET_MEM_FUNCTIONS
       emit_library_call (memcpy_libfunc, 1,
