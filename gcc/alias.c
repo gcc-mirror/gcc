@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
+#include "output.h"
 #include "toplev.h"
 
 static rtx canon_rtx			PROTO((rtx));
@@ -58,11 +59,14 @@ static rtx find_base_value		PROTO((rtx));
 #endif
 
 /* Returns nonzero if MEM1 and MEM2 do not alias because they are in
-   different alias sets.  */
-#define DIFFERENT_ALIAS_SETS_P(MEM1, MEM2)		\
-  (CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2),	\
-   MEM_ALIAS_SET (MEM1) && MEM_ALIAS_SET (MEM2)		\
-   && MEM_ALIAS_SET (MEM1) != MEM_ALIAS_SET (MEM2))
+   different alias sets.  We ignore alias sets in functions making use
+   of variable arguments because the va_arg macros on some systems are
+   not legal ANSI C.  */
+#define DIFFERENT_ALIAS_SETS_P(MEM1, MEM2)			\
+  (CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2),		\
+   MEM_ALIAS_SET (MEM1) && MEM_ALIAS_SET (MEM2)			\
+   && MEM_ALIAS_SET (MEM1) != MEM_ALIAS_SET (MEM2)		\
+   && !current_function_stdarg && !current_function_varargs)
 
 /* Cap the number of passes we make over the insns propagating alias
    information through set chains.
