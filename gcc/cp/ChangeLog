@@ -101,6 +101,9 @@
 	
 2003-03-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/9798
+	* decl.c (push_using_directive): Push before recursing.
+
 	PR c++/9868
 	* call.c (resolve_scoped_fn_name): Handle the case of a function
 	pointer member.
