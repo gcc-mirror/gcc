@@ -1,3 +1,22 @@
+Sun Nov 28 21:39:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_file_, ffecom_file, file_buf,
+	ffecom_open_include_): Constify a char*.
+	(ffecom_possible_partial_overlap_): Mark parameter `expr2' with
+	ATTRIBUTE_UNUSED.
+	(ffecom_init_0): Use a fully prototyped cast in call to bsearch.
+	(lang_print_error_function): ANSI-fy.
+
+	* com.h (ffecom_file): Constify a char*.
+
+	* fini.c (main): Call return, not exit.
+
+	* g77spec.c (lang_specific_driver): Use non-const *in_argv in
+	assignment.
+
+	* intrin.c (ffeintrin_cmp_name_): Don't needlessly cast away
+	const-ness.
+	
 Sun Nov 28 21:15:29 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (ffecom_get_invented_identifier): Rewrite to take an ellipses.
