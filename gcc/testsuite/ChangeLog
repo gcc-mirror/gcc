@@ -1,3 +1,8 @@
+2004-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-config.h: Use underscore macro style for __sun
+	system type.  Add check for irix6 which doesn't have c99 runtime.
+
 2004-03-03  Bob Wilson  <bob.wilson@acm.org>
 
 	* gcc.dg/const-elim-1.c: xfail for xtensa.
