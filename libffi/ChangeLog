@@ -1,3 +1,18 @@
+2001-03-23  Tom Tromey  <tromey@redhat.com>
+
+	* src/powerpc/ppc_closure.S: New file.
+	* src/powerpc/ffi.c (ffi_prep_args): Fixed ABI compatibility bug
+	involving long long and register pairs.
+	(ffi_prep_closure): New function.
+	(flush_icache): Likewise.
+	(ffi_closure_helper_SYSV): Likewise.
+	* include/ffi.h.in (FFI_CLOSURES): Define on PPC.
+	(FFI_TRAMPOLINE_SIZE): Likewise.
+	(FFI_NATIVE_RAW_API): Likewise.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (EXTRA_DIST): Added src/powerpc/ppc_closure.S.
+	(TARGET_SRC_POWERPC): Likewise.
+
 2001-03-19  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

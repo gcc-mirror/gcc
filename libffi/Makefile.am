@@ -10,7 +10,8 @@ EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/x86/ffi.c src/x86/sysv.S \
 		src/alpha/ffi.c src/alpha/osf.S \
 		src/m68k/ffi.c src/m68k/sysv.S \
-		src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/asm.h \
+		src/powerpc/ffi.c src/powerpc/sysv.S \
+                src/powerpc/ppc_closure.S src/powerpc/asm.h \
 		src/arm/ffi.c src/arm/sysv.S
 
 VPATH = @srcdir@:@srcdir@/src:@srcdir@/src/@TARGETDIR@
@@ -93,7 +94,7 @@ TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
 TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
 TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
 TARGET_SRC_M68K = src/m68k/ffi.c src/m68k/sysv.S
-TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S
+TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
 TARGET_SRC_ARM =  src/arm/sysv.S src/arm/ffi.c
 
 ##libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c $(TARGET_SRC_@TARGET@)
