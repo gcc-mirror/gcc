@@ -7582,5 +7582,6 @@ indirect_jump_in_function_p (start)
   for (insn = start; insn; insn = NEXT_INSN (insn))
     if (computed_jump_p (insn))
       return 1;
+
+  return 0;
 }
-/* END CYGNUS LOCAL haifa */
