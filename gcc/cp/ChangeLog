@@ -1,5 +1,12 @@
 2005-01-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/19555
+	* cp-tree.h (DECL_USE_TEMPLATE): Expand documentation.
+	* decl.c (duplicate_decls): Do not discard
+	DECL_IMPLICIT_INSTANTIATION when merging declarations.
+	(start_decl): Do not SET_DECL_TEMPLATE_SPECIALIZATION for
+	variables that do not have DECL_USE_TEMPLATE.
+
 	PR c++/19395
 	* decl.c (grokdeclarator): Refactor code so that qualified names
 	are never allowed as the declarator in a typedef.

@@ -1669,6 +1669,13 @@ duplicate_decls (tree newdecl, tree olddecl)
       DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
       DECL_TEMPLATE_INSTANTIATED (newdecl)
 	|= DECL_TEMPLATE_INSTANTIATED (olddecl);
+      /* If the OLDDECL is an implicit instantiation, then the NEWDECL
+	 must be too.  But, it may not yet be marked as such if the
+	 caller has created NEWDECL, but has not yet figured out that
+	 it is a redeclaration.  */
+      if (DECL_IMPLICIT_INSTANTIATION (olddecl)
+	  && !DECL_USE_TEMPLATE (newdecl))
+	SET_DECL_IMPLICIT_INSTANTIATION (newdecl);
       /* Don't really know how much of the language-specific
 	 values we should copy from old to new.  */
       DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
@@ -3695,10 +3702,15 @@ start_decl (const cp_declarator *declarator,
 
       /* cp_finish_decl sets DECL_EXTERNAL if DECL_IN_AGGR_P is set.  */
       DECL_IN_AGGR_P (decl) = 0;
-      if ((DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
+      if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl)
 	  || CLASSTYPE_TEMPLATE_INSTANTIATION (context))
 	{
-	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+	  /* Do not mark DECL as an explicit specialization if it was
+	     not already marked as an instantiation; a declaration
+	     should never be marked as a specialization unless we know
+	     what template is being specialized.  */ 
+	  if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
+	    SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 	  /* [temp.expl.spec] An explicit specialization of a static data
 	     member of a template is a definition if the declaration
 	     includes an initializer; otherwise, it is a declaration.
