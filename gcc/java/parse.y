@@ -8963,8 +8963,7 @@ java_expand_classes ()
   java_layout_classes ();
   java_parse_abort_on_error ();
 
-  cur_ctxp = ctxp_for_generation;
-  for (; cur_ctxp; cur_ctxp = cur_ctxp->next)
+  for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
       ctxp = cur_ctxp;
       input_filename = ctxp->filename;
@@ -8976,7 +8975,7 @@ java_expand_classes ()
 
   /* Find anonymous classes and expand their constructor, now they
      have been fixed. */
-  for (cur_ctxp = ctxp_for_generation;  cur_ctxp;  cur_ctxp = cur_ctxp->next)
+  for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
       tree current;
       ctxp = cur_ctxp;
@@ -9009,7 +9008,25 @@ java_expand_classes ()
     return;
 
   /* Now things are stable, go for generation of the class data. */
-  for (cur_ctxp = ctxp_for_generation;  cur_ctxp;  cur_ctxp = cur_ctxp->next)
+
+  /* We pessimistically marked all fields external until we knew
+     what set of classes we were planning to compile.  Now mark
+     those that will be generated locally as not external.  */
+  for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
+    {
+      tree current;
+      for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
+	{
+	  tree class = TREE_TYPE (current);
+	  tree field;
+	  for (field = TYPE_FIELDS (class); field ; field = TREE_CHAIN (field))
+	    if (FIELD_STATIC (field))
+	      DECL_EXTERNAL (field) = 0;
+	}
+    }
+
+  /* Compile the classes.  */
+  for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
       tree current;
       ctxp = cur_ctxp;

@@ -1,3 +1,11 @@
+2002-02-02  Richard Henderson  <rth@redhat.com>
+
+	* class.c (add_field): Mark static fields external.
+	(build_class_ref): Remove redundant set.
+	* parse.y (java_expand_classes): Mark static fields of classes
+	to be compiled as local.
+	* jcf-parse.c (parse_class_file): Likewise.
+
 2002-02-02  Nic Ferrier  <nferrier@tapsellferrier.co.uk>
 
 	* gcj.texi (About CNI): New node.
@@ -89,22 +97,22 @@
 	(Invoking jv-convert): New node.
 
 2001-01-10  Jeff Sturm  <jsturm@one-point.com>
-            Martin Kahlert  <martin.kahlert@infineon.com>
+	    Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* jcf-parse.c (get_constant): Don't swap lo/hi for big
 	endian targets when HOST_BITS_PER_WIDE_INT >= 64.
 
 2002-01-03  Graham Stott  <grahams@redhat.com>
 
-        * class.c (compile_resource_file): Update copyright date.
-        Constify filename parameter.
-        (java-tree.h): Update copyright date.
-        (compile_resource_file): Constify filename parameter.
+	* class.c (compile_resource_file): Update copyright date.
+	Constify filename parameter.
+	(java-tree.h): Update copyright date.
+	(compile_resource_file): Constify filename parameter.
 
 2002-01-03  Graham Stott  <grahams@redhat.com>
 
-        * gcc/jcf-parse.c: Update copyright date.
-        (yyparse): Constify resource_filename.
+	* gcc/jcf-parse.c: Update copyright date.
+	(yyparse): Constify resource_filename.
 
 2002-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

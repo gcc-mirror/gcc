@@ -793,7 +793,7 @@ init_outgoing_cpool ()
 static void
 parse_class_file ()
 {
-  tree method;
+  tree method, field;
   const char *save_input_filename = input_filename;
   int save_lineno = lineno;
 
@@ -808,8 +808,13 @@ parse_class_file ()
      compiling from class files.  */
   always_initialize_class_p = 1;
 
-  for ( method = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (current_class));
-	method != NULL_TREE; method = TREE_CHAIN (method))
+  for (field = TYPE_FIELDS (CLASS_TO_HANDLE_TYPE (current_class));
+       field != NULL_TREE; field = TREE_CHAIN (field))
+    if (FIELD_STATIC (field))
+      DECL_EXTERNAL (field) = 0;
+
+  for (method = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (current_class));
+       method != NULL_TREE; method = TREE_CHAIN (method))
     {
       JCF *jcf = current_jcf;
 
