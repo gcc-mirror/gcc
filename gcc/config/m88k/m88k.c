@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 88000.
-   Copyright (C) 1988, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -261,17 +261,17 @@ emit_move_sequence (operands, mode, scratch)
   /* Simplify the source if we need to.  */
   if (GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
     {
-	if (GET_CODE (operand1) != CONST_INT
-	    && GET_CODE (operand1) != CONST_DOUBLE)
-	  {
-	    rtx temp = ((reload_in_progress || reload_completed)
-			? operand0 : 0);
-	    operands[1] = legitimize_address (flag_pic
-					      && symbolic_address_p (operand1),
-					      operand1, temp, scratch);
-	    if (mode != SImode)
-	      operands[1] = gen_rtx (SUBREG, mode, operands[1], 0);
-	  }
+      if (GET_CODE (operand1) != CONST_INT
+	  && GET_CODE (operand1) != CONST_DOUBLE)
+	{
+	  rtx temp = ((reload_in_progress || reload_completed)
+		      ? operand0 : 0);
+	  operands[1] = legitimize_address (flag_pic
+					    && symbolic_address_p (operand1),
+					    operand1, temp, scratch);
+	  if (mode != SImode)
+	    operands[1] = gen_rtx (SUBREG, mode, operands[1], 0);
+	}
     }
 
   /* Now have insn-emit do whatever it normally does.  */
@@ -1635,7 +1635,7 @@ output_ascii (file, opcode, max, p, size)
 	  fprintf (file, "\\%03o", c);
 	  num += 4;
 	}
-      else if (c >= ' ' && c < 0177)
+      else if ((c >= ' ' && c < 0177) || (c == '\t'))
 	{
 	  putc (c, file);
 	  num++;
@@ -1646,7 +1646,6 @@ output_ascii (file, opcode, max, p, size)
 	  switch (c)
 	    {
 	      /* Some assemblers can't handle \a, \v, or \?.  */
-	    case '\t': c = 't'; goto escape;
 	    case '\f': c = 'f'; goto escape;
 	    case '\b': c = 'b'; goto escape;
 	    case '\r': c = 'r'; goto escape;
@@ -1933,6 +1932,9 @@ m88k_begin_prologue (stream, size)
      FILE *stream;
      int size;
 {
+  if (TARGET_OMIT_LEAF_FRAME_POINTER && ! quiet_flag && leaf_function_p ())
+    fprintf (stderr, "$");\
+
   m88k_prologue_done = 1;	/* it's ok now to put out ln directives */
 }
 
@@ -2040,6 +2042,17 @@ m88k_end_epilogue (stream, size)
     insn = prev_nonnote_insn (insn);
   if (insn == 0 || GET_CODE (insn) != BARRIER)
     fprintf (stream, "\tjmp\t %s\n", reg_names[1]);
+
+  /* If the last insn is a barrier, and the insn before that is a call,
+     then add a nop instruction so that tdesc can walk the stack correctly
+     even though there is no epilogue. (Otherwise, the label for the
+     end of the tdesc region ends up at the start of the next function. */
+  if (insn && GET_CODE (insn) == BARRIER)
+    {
+      insn = prev_nonnote_insn (insn);
+      if (insn && GET_CODE (insn) == CALL_INSN)
+        fprintf (stream, "\tor\t %s,%s,%s\n",reg_names[0],reg_names[0],reg_names[0]);
+    }
 
   output_short_branch_defs (stream);
 
@@ -2476,12 +2489,12 @@ output_block_profiler (file, blockno)
   /* @@ Need to deal with PIC.  I'm not sure what the requirements are on
      register usage, so I used r26/r27 to be safe.  */
   fprintf (file, "\tor.u\t %s,%s,%shi16(%s+%d)\n", reg_names[27], reg_names[0],
-		 m88k_pound_sign, &block[1], 4 * blockno);
+	   m88k_pound_sign, &block[1], 4 * blockno);
   fprintf (file, "\tld\t %s,%s,%slo16(%s+%d)\n", reg_names[26], reg_names[27],
-		 m88k_pound_sign, &block[1], 4 * blockno);
+	   m88k_pound_sign, &block[1], 4 * blockno);
   fprintf (file, "\taddu\t %s,%s,1\n", reg_names[26], reg_names[26]);
   fprintf (file, "\tst\t %s,%s,%slo16(%s+%d)\n", reg_names[26], reg_names[27],
-		 m88k_pound_sign, &block[1], 4 * blockno);
+	   m88k_pound_sign, &block[1], 4 * blockno);
 }
 
 /* Determine whether a function argument is passed in a register, and

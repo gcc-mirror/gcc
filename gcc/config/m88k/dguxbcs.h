@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 89, 90, 91, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -36,36 +36,25 @@ Boston, MA 02111-1307, USA.  */
 
 /* Assembler support (-V, silicon filter, legends for mxdb).  */
 #undef	ASM_SPEC
-#define ASM_SPEC "\
-%{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
-%{msvr4:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}\
-%{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-s\"%i\"\
-%{traditional:,-lc}%{!traditional:,-lansi-c}\
-%{mstandard:,-keep-std}\
-%{mkeep-coff:,-keep-coff}\
-%{mexternal-legend:,-external}\
-%{mocs-frame-position:,-ocs}}"
+#define ASM_SPEC "%(asm_cpu) %{msvr4:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}"
 
 /* If -m88100 is in effect, add -Dm88100; similarly for -m88110.
    Here, the CPU_DEFAULT is assumed to be -m88000.  If not -ansi,
    -traditional, or restricting include files to one specific source
    target, specify full DG/UX features.  */
 #undef	CPP_SPEC
-#define	CPP_SPEC "%{!m88000:%{!m88100:%{m88110:-D__m88110__}}} \
-		  %{!m88000:%{!m88110:%{m88100:-D__m88100__}}} \
-		  %{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}} \
+#define	CPP_SPEC "%(cpp_cpu) 
 		  %{!msvr4:-D_M88KBCS_TARGET} %{msvr4:-D_DGUX_TARGET}"
 
 /* Linker and library spec's.
    -msvr3 is the default if -msvr4 is not specified. */
 #undef	LIB_SPEC
 #define LIB_SPEC "%{msvr4:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}}"
+
 #undef	STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared:%{!symbolic:%{pg:gcrt0.o%s} \
-			 %{!pg:%{p:/lib/mcrt0.o}%{!p:/lib/crt0.o}} \
+#define STARTFILE_SPEC "%(startfile_default)"
+
+#undef  STARTFILE_CRTBEGIN_SPEC
+#define STARTFILE_CRTBEGIN_SPEC "\
 			 %{!msvr4:m88kdgux.ld%s bcscrtbegin.o%s} \
-			 %{msvr4:crtbegin.o%s} \
-			 %{svr4:%{ansi:/lib/values-Xc.o} \
-			  %{!ansi:%{traditional:/lib/values-Xt.o} \
-			   %{!traditional:/usr/lib/values-Xa.o}}}}}"
+			 %{msvr4:crtbegin.o%s}"
