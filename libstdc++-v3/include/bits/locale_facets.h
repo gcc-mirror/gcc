@@ -1250,9 +1250,34 @@ namespace std
   template<typename _CharT>
     locale::id __timepunct<_CharT>::id;
 
+  // Specializations.
   template<> 
     const char*
     __timepunct<char>::_S_timezones[14];
+
+  template<> 
+    void
+    __timepunct<char>::_M_initialize_timepunct(__c_locale __cloc);
+
+  template<>
+    void
+    __timepunct<char>::_M_put_helper(char*, size_t, const char*, 
+				     const tm*) const;
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    const wchar_t*
+    __timepunct<wchar_t>::_S_timezones[14];
+
+  template<> 
+    void
+    __timepunct<wchar_t>::_M_initialize_timepunct(__c_locale __cloc);
+
+  template<>
+    void
+    __timepunct<wchar_t>::_M_put_helper(wchar_t*, size_t, const wchar_t*, 
+					const tm*) const;
+#endif
 
   // Generic.
   template<typename _CharT>
@@ -1270,20 +1295,6 @@ namespace std
     __timepunct<_CharT>::_M_put_helper(_CharT*, size_t, const _CharT*, 
 				       const tm*) const
     { }
-
-  template<> 
-    void
-    __timepunct<char>::_M_initialize_timepunct(__c_locale __cloc);
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<> 
-    const wchar_t*
-    __timepunct<wchar_t>::_S_timezones[14];
-
-  template<> 
-    void
-    __timepunct<wchar_t>::_M_initialize_timepunct(__c_locale __cloc);
-#endif
 
   template<typename _CharT, typename _InIter>
     class time_get : public locale::facet, public time_base
