@@ -63,25 +63,6 @@ static char *ada_demangle  PARAMS ((const char *, int));
 
 extern void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
 
-static const char *mystrstr PARAMS ((const char *, const char *));
-
-static const char *
-mystrstr (s1, s2)
-     const char *s1, *s2;
-{
-  register const char *p = s1;
-  register int len = strlen (s2);
-
-  for (; (p = strchr (p, *s2)) != 0; p++)
-    {
-      if (strncmp (p, s2, len) == 0)
-	{
-	  return (p);
-	}
-    }
-  return (0);
-}
-
 /* In order to allow a single demangler executable to demangle strings
    using various common values of CPLUS_MARKER, as well as any specific
    one set at compile time, we maintain a string containing all the
@@ -2253,7 +2234,7 @@ arm_pt (work, mangled, n, anchor, args)
 {
   /* Check if ARM template with "__pt__" in it ("parameterized type") */
   /* Allow HP also here, because HP's cfront compiler follows ARM to some extent */
-  if ((ARM_DEMANGLING || HP_DEMANGLING) && (*anchor = mystrstr (mangled, "__pt__")))
+  if ((ARM_DEMANGLING || HP_DEMANGLING) && (*anchor = strstr (mangled, "__pt__")))
     {
       int len;
       *args = *anchor + 6;
@@ -2268,9 +2249,9 @@ arm_pt (work, mangled, n, anchor, args)
     }
   if (AUTO_DEMANGLING || EDG_DEMANGLING)
     {
-      if ((*anchor = mystrstr (mangled, "__tm__"))
-          || (*anchor = mystrstr (mangled, "__ps__"))
-          || (*anchor = mystrstr (mangled, "__pt__")))
+      if ((*anchor = strstr (mangled, "__tm__"))
+          || (*anchor = strstr (mangled, "__ps__"))
+          || (*anchor = strstr (mangled, "__pt__")))
         {
           int len;
           *args = *anchor + 6;
@@ -2283,7 +2264,7 @@ arm_pt (work, mangled, n, anchor, args)
               return 1;
             }
         }
-      else if ((*anchor = mystrstr (mangled, "__S")))
+      else if ((*anchor = strstr (mangled, "__S")))
         {
  	  int len;
  	  *args = *anchor + 3;
@@ -2584,7 +2565,7 @@ iterate_demangle_function (work, mangled, declp, scan)
   /* Do not iterate for some demangling modes, or if there's only one
      "__"-sequence.  This is the normal case.  */
   if (ARM_DEMANGLING || LUCID_DEMANGLING || HP_DEMANGLING || EDG_DEMANGLING
-      || mystrstr (scan + 2, "__") == NULL)
+      || strstr (scan + 2, "__") == NULL)
     {
       demangle_function_name (work, mangled, declp, scan);
       return 1;
@@ -2727,7 +2708,7 @@ demangle_prefix (work, mangled, declp)
 
   /*  This block of code is a reduction in strength time optimization
       of:
-      scan = mystrstr (*mangled, "__"); */
+      scan = strstr (*mangled, "__"); */
 
   {
     scan = *mangled;
@@ -2819,7 +2800,7 @@ demangle_prefix (work, mangled, declp)
 	    {
 	      scan++;
 	    }
-	  if ((scan = mystrstr (scan, "__")) == NULL || (*(scan + 2) == '\0'))
+	  if ((scan = strstr (scan, "__")) == NULL || (*(scan + 2) == '\0'))
 	    {
 	      /* No separator (I.E. "__not_mangled"), or empty signature
 		 (I.E. "__not_mangled_either__") */
