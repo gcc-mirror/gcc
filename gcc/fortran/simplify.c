@@ -967,6 +967,7 @@ gfc_simplify_exp (gfc_expr * x)
 gfc_expr *
 gfc_simplify_exponent (gfc_expr * x)
 {
+  int i;
   mpfr_t tmp;
   gfc_expr *result;
 
@@ -990,6 +991,12 @@ gfc_simplify_exponent (gfc_expr * x)
   mpfr_log2 (tmp, tmp, GFC_RND_MODE);
 
   gfc_mpfr_to_mpz (result->value.integer, tmp);
+
+  /* The model number for tiny(x) is b**(emin - 1) where b is the base and emin
+     is the smallest exponent value.  So, we need to add 1 if x is tiny(x).  */
+  i = gfc_validate_kind (x->ts.type, x->ts.kind, false);
+  if (mpfr_cmp (x->value.real, gfc_real_kinds[i].tiny) == 0)
+    mpz_add_ui (result->value.integer,result->value.integer, 1);
 
   mpfr_clear (tmp);
 
