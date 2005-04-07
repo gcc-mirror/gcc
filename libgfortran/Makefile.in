@@ -266,6 +266,7 @@ datadir = @datadir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+extra_ldflags_libgfortran = @extra_ldflags_libgfortran@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -297,7 +298,7 @@ AM_CFLAGS = -std=gnu99
 ACLOCAL_AMFLAGS = -I ../config
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
-libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm
+libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm $(extra_ldflags_libgfortran)
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 AM_CPPFLAGS = -iquote$(srcdir)/io

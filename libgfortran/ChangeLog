@@ -1,3 +1,12 @@
+2005-04-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libfortran/20766
+	* configure.ac (extra_ldflags_libgfortran): Set for *-darwin* to
+	"-Wl,-single_module".
+	* configure: Regenerate.
+	* Makefile.am (libgfortran_la_LDFLAGS): Add extra_ldflags_libgfortran.
+	* Makefile.in: Regenerate.
+
 2005-04-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20755
