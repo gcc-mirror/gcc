@@ -1,3 +1,11 @@
+2005-04-07  Ian Lance Taylor  <ian@airs.com>
+
+	* config/iq2000/iq2000.h (DONT_ACCESS_GBLS_AFTER_EPILOGUE): Don't
+	define.
+	* config/mips/mips.h (DONT_ACCESS_GBLS_AFTER_EPILOGUE): Likewise.
+	* config/sparc/sparc.h (DONT_ACCESS_GBLS_AFTER_EPILOGUE):
+	Likewise.
+
 2005-04-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-sink.c (nearest_common_dominator_of_uses): Consider
