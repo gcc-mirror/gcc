@@ -1,7 +1,3 @@
-2005-04-07  Mike Stump  <mrs@apple.com>
-
-	* configure: Regenerate.
-
 2005-04-06  Andrew Haley  <aph@redhat.com>
 
 	* testsuite/libjava.lang/bytearray.java: New file.
