@@ -1,3 +1,8 @@
+2005-04-07  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.dg/eor_1.f90:  Fix dg-do run line
+	* gfortran.dg/open_new.f90:  Fix dg-do run line
+
 2005-04-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/target-supports.exp (get_compiler_messages): Support
