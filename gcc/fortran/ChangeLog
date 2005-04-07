@@ -1,3 +1,7 @@
+2005-04-07  Steven G. Kargl  <kargls@comcast.net>
+
+	* simplify.c (gfc_simplify_exponent): Fix exponent(tiny(x))
+
 2005-04-06  Steven G. Kargl  <kargls@comcast.net>
 
 	* invoke.texi: Remove documentation of -std=f90.
