@@ -42,6 +42,7 @@ arm port		Richard Earnshaw	rearnsha@arm.com
 arm port		Paul Brook		paul@codesourcery.com
 avr port		Denis Chertykov		denisc@overta.ru
 avr port		Marek Michalkiewicz	marekm@amelek.gda.pl
+bfin port		Bernd Schmidt		bernd.schmidt@analog.com
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 cris port		Hans-Peter Nilsson	hp@axis.com
 fr30 port		Nick Clifton		nickc@redhat.com
