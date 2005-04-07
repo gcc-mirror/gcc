@@ -1,3 +1,8 @@
+2005-04-07  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/tiny_1.f90: New test.
+	* gfortran.dg/tiny_2.f90: ditto.
+
 2005-04-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/eor_1.f90:  Fix dg-do run line
