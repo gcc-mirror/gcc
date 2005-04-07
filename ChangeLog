@@ -1,3 +1,7 @@
+2005-04-04  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2005-04-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* MAINTAINERS (Port Maintainers): Add self for Blackfin.
