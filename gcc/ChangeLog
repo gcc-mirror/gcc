@@ -1,3 +1,14 @@
+2005-04-07  Andreas Schwab  <schwab@suse.de>
+
+	Backport from mainline:
+
+	2005-04-03  Steven Bosscher  <stevenb@suse.de>
+
+	PR middle-end/20648
+	* bb-reorder.c (duplicate_computed_gotos): Do not unfactor
+	a computed goto if the edge to the computed goto block has
+	incoming abnormal edges.  Clarify how the function works.
+
 2005-04-07  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR target/20093

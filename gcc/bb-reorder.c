@@ -2033,32 +2033,49 @@ duplicate_computed_gotos (void)
   max_size = uncond_jump_length * PARAM_VALUE (PARAM_MAX_GOTO_DUPLICATION_INSNS);
   candidates = BITMAP_ALLOC (NULL);
 
-  /* Build the reorder chain for the original order of blocks.
-     Look for a computed jump while we are at it.  */
+  /* Look for blocks that end in a computed jump, and see if such blocks
+     are suitable for unfactoring.  If a block is a candidate for unfactoring,
+     mark it in the candidates.  */
   FOR_EACH_BB (bb)
     {
+      rtx insn;
+      edge e;
+      edge_iterator ei;
+      int size, all_flags;
+
+      /* Build the reorder chain for the original order of blocks.  */
       if (bb->next_bb != EXIT_BLOCK_PTR)
 	bb->rbi->next = bb->next_bb;
 
-      /* If the block ends in a computed jump and it is small enough,
-	 make it a candidate for duplication.  */
-      if (computed_jump_p (BB_END (bb)))
-	{
-	  rtx insn;
-	  int size = 0;
+      /* Obviously the block has to end in a computed jump.  */
+      if (!computed_jump_p (BB_END (bb)))
+	continue;
 
-	  FOR_BB_INSNS (bb, insn)
-	    if (INSN_P (insn))
-	      {
-		size += get_attr_length (insn);
-		if (size > max_size)
-		  break;
-	      }
+      /* Only consider blocks that can be duplicated.  */
+      if (find_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX)
+	  || !can_duplicate_block_p (bb))
+	continue;
 
-	  if (size <= max_size
-	      && can_duplicate_block_p (bb))
-	    bitmap_set_bit (candidates, bb->index);
-	}
+      /* Make sure that the block is small enough.  */
+      size = 0;
+      FOR_BB_INSNS (bb, insn)
+	if (INSN_P (insn))
+	  {
+	    size += get_attr_length (insn);
+	    if (size > max_size)
+	       break;
+	  }
+      if (size > max_size)
+	continue;
+
+      /* Final check: there must not be any incoming abnormal edges.  */
+      all_flags = 0;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	all_flags |= e->flags;
+      if (all_flags & EDGE_COMPLEX)
+	continue;
+
+      bitmap_set_bit (candidates, bb->index);
     }
 
   /* Nothing to do if there is no computed jump here.  */
