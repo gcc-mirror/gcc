@@ -1,3 +1,8 @@
+2005-04-07  Thomas Koenig  <Thomas.Koenig@online.de>
+
+        * gfortran.dg/eor_1.f90:  Fix dg-do run line
+        * gfortran.dg/open_new.f90:  Fix dg-do run line
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/vmx/darwin-abi-3.c: Delete.

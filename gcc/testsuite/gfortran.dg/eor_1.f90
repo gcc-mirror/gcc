@@ -1,4 +1,4 @@
-! { dg do-run }
+! { dg-do run }
 ! PR 19451: The test for advance='NO' with eor used to be reversed.
 program main
   character*2 c
