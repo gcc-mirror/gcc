@@ -1,3 +1,11 @@
+2005-04-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/vax/vax.h (target_flags, MASK_UNIX_ASM, MASK_VAXC_ALIGNMENT)
+	(MASK_G_FLOAT, TARGET_UNIX_ASM, TARGET_VAXC_ALIGNMENT, TARGET_G_FLOAT)
+	(TARGET_SWITCHES): Delete.
+	* config/vax/vax.c (TARGET_DEFAULT_TARGET_FLAGS): Override default.
+	* config/vax/vax.opt: New file.
+
 2005-04-07  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-dse.c (dse_optimize_stmt): Fix incorrect comment.

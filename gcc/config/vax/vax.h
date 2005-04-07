@@ -60,49 +60,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
-extern int target_flags;
-
-#define MASK_UNIX_ASM		1
-#define MASK_VAXC_ALIGNMENT	2
-#define MASK_G_FLOAT		4
-
-
-/* Macros used in the machine description to test the flags.  */
-
-/* Nonzero if compiling code that Unix assembler can assemble.  */
-#define TARGET_UNIX_ASM (target_flags & MASK_UNIX_ASM)
-
-/* Nonzero if compiling with VAX-11 "C" style structure alignment */
-#define	TARGET_VAXC_ALIGNMENT (target_flags & MASK_VAXC_ALIGNMENT)
-
-/* Nonzero if compiling with `G'-format floating point */
-#define TARGET_G_FLOAT (target_flags & MASK_G_FLOAT)
-
 /* Nonzero if ELF.  Redefined by vax/elf.h.  */
 #define TARGET_ELF 0
-
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#define TARGET_SWITCHES						\
-  { {"unix", MASK_UNIX_ASM,					\
-     "Generate code for UNIX assembler"},  			\
-    {"gnu", -MASK_UNIX_ASM,					\
-     "Generate code for GNU assembler (gas)"},  		\
-    {"vaxc-alignment", MASK_VAXC_ALIGNMENT,			\
-     "Use VAXC structure conventions"}, 			\
-    {"g", MASK_G_FLOAT,						\
-     "Generate GFLOAT double precision code"},			\
-    {"g-float", MASK_G_FLOAT,					\
-     "Generate GFLOAT double precision code"},			\
-    {"d", -MASK_G_FLOAT,					\
-     "Generate DFLOAT double precision code"},			\
-    {"d-float", -MASK_G_FLOAT,					\
-     "Generate DFLOAT double precision code"},			\
-    { "", TARGET_DEFAULT, 0}}
 
 /* Default target_flags if no switches specified.  */
 
