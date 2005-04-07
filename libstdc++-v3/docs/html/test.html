@@ -45,13 +45,16 @@
 
 <h2><a name="org">Testsuite organization and naming conventions</a></h2>
    <p>
-      The directory <em>libsrcdir/testsuite</em> contains the test
-      files, test harness, and utility information for verifying the
-      correctness of C++ library on a given host. It includes the
-      following directories, each named after a specific chapter of
-      the C++ standard, and each containing test files or
-      subdirectories of test files that test for that particular part
-      of the standard.
+      The directory <em>libsrcdir/testsuite</em> contains the
+      individual test cases organized in sub-directories corresponding
+      to chapters of the C++ standard (detailed below), the dejagnu
+      test harness support files, and sources to various testsuite
+      utilities that are packaged in a separate testing library.
+   </p>
+
+   <p> All test cases for functionality required by the runtime
+   components of the C++ standard (ISO 14882) are files within the
+   following directories.
    </p>
 
    <pre>
@@ -72,6 +75,7 @@
    </p>
 
    <pre>
+tr1		  Tests for components as described by the Technical Report on Standard Library Extensions (TR1).
 backward	  Tests for backwards compatibility and deprecated features.
 demangle	  Tests for __cxa_demangle, the IA 64 C++ ABI demangler
 ext		  Tests for extensions.
@@ -93,12 +97,12 @@ data		  Sample text files for testing input and output.
 
    <p>
       Within a directory that includes test files, there may be
-      additional subdirectories, or files: this particular point is in
-      flux. Originally, test cases were appended to one file that
-      represented a particular section of the chapter under test, and
-      was named accordingly. For instance, to test items related to
-      <code> 21.3.6.1 - basic_string::find [lib.string::find]</code>
-      in the standard, the following was used:
+      additional subdirectories, or files.  Originally, test cases
+      were appended to one file that represented a particular section
+      of the chapter under test, and was named accordingly. For
+      instance, to test items related to <code> 21.3.6.1 -
+      basic_string::find [lib.string::find]</code> in the standard,
+      the following was used:
    </p>
    <pre>
 21_strings/find.cc
@@ -109,10 +113,10 @@ data		  Sample text files for testing input and output.
       functionality (like wide characters or named locales) became
       frustrating, leading to aggressive pruning of test cases on some
       platforms that covered up implementation errors. Now, the test
-      suite is converging on a policy of one file, one test case,
-      which solves the above issues and gives finer grained results
-      and more manageable error debugging. As an example, the test case
-      quoted above becomes:
+      suite has a policy of one file, one test case, which solves the
+      above issues and gives finer grained results and more manageable
+      error debugging. As an example, the test case quoted above
+      becomes:
    </p>
    <pre>
 21_strings/basic_string/find/char/1.cc
@@ -125,10 +129,7 @@ data		  Sample text files for testing input and output.
 
    <p>
       All new tests should be written with the policy of one test
-      case, one file in mind. At some point the entire testsuite will
-      be converted: the current status is that the 21_string,
-      22_locale, 23_containers, 27_io, and demangle directories have all been
-      transitioned.
+      case, one file in mind. 
    </p>
 
    <p>
@@ -185,6 +186,15 @@ cat 27_io/objects/char/3_xin.in | a.out
    </p>
 </li>
 <li>
+   <em>thread</em>
+   <p>
+      This can either be a directory name or part of a longer file
+      name, and indicates that this file, or the files within this
+      directory are testing situations where multiple threads are
+      being used.
+   </p>
+</li>
+<li>
    <em>performance</em>
    <p>
       This can either be an enclosing directory name or part of a
@@ -197,15 +207,15 @@ cat 27_io/objects/char/3_xin.in | a.out
 </ul>
 
 <hr />
-<h2><a name="util">Utilities: abicheck and libv3test</a></h2>
+<h2><a name="util">Utilities: abi_check and libv3test</a></h2>
   <p>
    The testsuite directory also contains some files that implement
    functionality that is intended to make writing test cases easier,
    or to avoid duplication, or to provide error checking in a way that
    is consistent across platforms and test harnesses. A stand-alone
    executable, called <em>abi_check</em>, and a static library called
-   <em>libv3test</em> are constructed during the build. Both of these
-   items are not installed, and only used during testing.
+   <em>libv3test</em> are constructed. Both of these items are not
+   installed, and only used during testing.
   </p>
 
   <p>
@@ -214,24 +224,38 @@ cat 27_io/objects/char/3_xin.in | a.out
 
   <ul>
      <li>
-       <em>abi_check.cc</em>
+       <em>testsuite_abi.h</em>,
+       <em>testsuite_abi.cc</em>,
+       <em>testsuite_abi_check.cc</em>
        <p>
         Creates the executable <em>abi_check</em>.
         Used to check correctness of symbol versioning, visibility of
         exported symbols, and compatibility on symbols in the shared
         library, for hosts that support this feature. More information
-        can be found in the ABI documentation <a href="abi.txt"> here</a>
+        can be found in the ABI documentation <a href="abi.html"> here</a>
        </p>
      </li>
      <li>
-       <em>testsuite_allocator.h and </em>
+       <em>testsuite_allocator.h</em>,
        <em>testsuite_allocator.cc</em>
        <p>
-        Specialized allocators that keep track of construction and destruction
+        Contains specialized allocators that keep track of construction
+        and destruction. Also, support for overriding global new and
+        delete operators, including verification that new and delete
+        are called during execution, and that allocation over max_size
+        fails.
        </p>
      </li>
      <li>
-       <em>testsuite_hooks.h and </em>
+       <em>testsuite_character.h</em>
+       <p>
+        Contains <code>std::char_traits</code> and
+        <code>std::codecvt</code> specializations for a user-defined
+        POD.
+       </p>
+     </li>
+     <li>
+       <em>testsuite_hooks.h</em>,
        <em>testsuite_hooks.cc</em>
        <p>
        A large number of utilities, including:
@@ -243,14 +267,29 @@ cat 27_io/objects/char/3_xin.in | a.out
          <li>run_tests_wrapped_locale</li>
          <li>run_tests_wrapped_env</li>
          <li>try_named_locale</li>
+         <li>try_mkfifo</li>
+         <li>func_callback</li>
          <li>counter</li>
+         <li>copy_tracker</li>
          <li>copy_constructor</li>
          <li>assignment_operator</li>
          <li>destructor</li>
-         <li>copy_tracker</li>
          <li>pod_char, pod_int and associated char_traits specializations</li>
        </ul>
        <p></p>
+     </li>
+     <li>
+       <em>testsuite_io.h</em>
+       <p>
+       Error, exception, and constraint checking for
+       <code>std::streambuf, std::basic_stringbuf, std::basic_filebuf</code>.
+       </p>
+     </li>
+     <li>
+       <em>testsuite_iterators.h</em>
+       <p>
+       Wrappers for various iterators.
+       </p>
      </li>
      <li>
        <em>testsuite_performance.h</em>
@@ -264,13 +303,6 @@ cat 27_io/objects/char/3_xin.in | a.out
          <li>report_performance</li>
       </ul>
        <p></p> 
-     </li>
-     <li>
-       <em>printnow.c</em>
-       <p>
-        A cross-platform timer for use in one of the older harnesses
-        to determine compilation and link time.
-       </p>
      </li>
   </ul>
 
@@ -407,9 +439,11 @@ normal.exp file.
 <hr />
 <h2><a name="check">Options for running the tests</a></h2>
 
-   <p> There are several ways to run the testsuite. There are two
-   harnesses, one using dejagnu and one using bash. In addition, there
-   is a special rule for checking the ABI of the shared library.
+   <p> There are several options for running tests, including testing
+   the regression tests, testing a subset of the regression tests,
+   testing the performance tests, testing just compilation, testing
+   installed tools, etc. In addition, there is a special rule for
+   checking the exported symbols of the shared library.
    </p>
 
    <p>You can check the status of the build without installing it
@@ -421,17 +455,74 @@ normal.exp file.
    <p>in the <em>gccbuilddir</em> directory.</p>
 
    <p>
-      These commands are equivalent and will create a 'testsuite'
-      directory underneath <em>libbuilddir</em> containing the results
-      of the tests. Two results files will be generated: <em>
-      libstdc++-v3.sum</em>, which is a PASS/FAIL summary for each
+      These commands are functionally equivalent and will create a
+      'testsuite' directory underneath <em>libbuilddir</em> containing
+      the results of the tests. Two results files will be generated:
+      <em> libstdc++.sum</em>, which is a PASS/FAIL summary for each
       test, and <em>libstdc++.log</em> which is a log of the exact
       command line passed to the compiler, the compiler output, and
-      the executable output (if any). In addition, four files are
-      generated that determine what test files are run. These files
-      are:
+      the executable output (if any).
    </p>
 
+
+<p>
+To debug the dejagnu test harness during runs, try invoking with a
+specific argument to the variable RUNTESTFLAGS, as below.
+</p>
+
+<pre>
+make check-target-libstdc++-v3 RUNTESTFLAGS="-v"
+</pre>
+or
+<pre>
+make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
+</pre>
+
+<p> To run a subset of the library tests, try using a command like the
+following from the <em>libbuilddir/testsuite</em> directory:
+</p>
+<pre>
+runtest --tool libstdc++ normal.exp="`find $srcdir/17_intro -name *.cc`"
+</pre>
+
+
+<p>
+There are two ways to run on a simulator: set up DEJAGNU to point to a
+specially crafted site.exp, or pass down --target_board flags.
+</p>
+Example flags to pass down for various embedded builds are as follows:
+<pre>
+--target=powerpc-eabism (libgloss/sim)
+make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=powerpc-sim"
+
+--target=calmrisc32 (libgloss/sid)
+make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
+
+--target=xscale-elf (newlib/sim)
+make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
+</pre>
+
+<p> Also, here is an example of how to run the libstdc++ testsuite for a
+multilibed build directory with different ABI settings:
+</p>
+<pre>
+make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
+</pre>
+ 
+
+   <p> In addition, there are some testing options that are mostly of
+   interest to library maintainers and system integrators. As such,
+   these tests may not work on all cpu and host combinations, and may need to
+   be executed in the <em>libbuilddir/testsuite</em> directory.  These options
+   include, but are not necessarily limited to, the following:
+   </p>
+
+   <pre>
+   make testsuite_files</pre>
+  <p>
+    Five files are generated that determine what test files
+    are run. These files are:
+  </p>
    <ul>
      <li>
      <em>testsuite_files </em>
@@ -456,7 +547,14 @@ normal.exp file.
      </li>
 
      <li>
-     <em>testsuite_wchar_t </em>
+     <em>testsuite_thread</em>
+     <p> This file indicates that the host system can run tests which
+     incolved multiple threads.
+     </p>
+     </li>
+
+     <li>
+     <em>testsuite_wchar_t</em>
      <p> This file indicates that the host system can run the wchar_t
      tests, and corresponds to the macro definition <code>
      _GLIBCXX_USE_WCHAR_T</code> in the file c++config.h.
@@ -464,83 +562,15 @@ normal.exp file.
      </li>
     </ul>
 
-<p>
-To debug the dejagnu test harness during runs, try invoking with a
-specific argument to the variable RUNTESTFLAGS, as below.
-</p>
-
-<pre>
-make check-target-libstdc++-v3 RUNTESTFLAGS="-v"
-</pre>
-or
-<pre>
-make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
-</pre>
-
-
-There are two ways to run on a simulator: set up DEJAGNU to point to a
-specially crafted site.exp, or pass down --target_board flags.
-
-Example flags to pass down for various embedded builds are as follows:
-<pre>
---target=powerpc-eabism (libgloss/sim)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=powerpc-sim"
-
---target=calmrisc32 (libgloss/sid)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
-
---target=xscale-elf (newlib/sim)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
-</pre>
-
-<p> Also, here is an example of how to run the libstdc++ testsuite for a
-multilibed build directory with different ABI settings:
-</p>
-<pre>
-make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
-</pre>
- 
-  <p> To run a subset of the library tests, simply edit the generated
-  file, <em>testsuite_files </em>, to include only the files that are
-  desired instead of all available test cases.
-  </p>
-
-   <p> In addition, there are some testing options that are mostly of
-   interest to library maintainers and system integrators. As such,
-   these tests may not work on all cpu and host combinations, and must
-   be executed in the <em>libbuilddir/testsuite</em> directory.  These options
-   include, but are not necessarily limited to, the following:
-   </p>
-
-   <p>
-   The library can also be tested using a bash script, instead of
-   the default dejagnu test harness.
-   </p> 
-   <pre>
-   make check-script</pre>
-   <p>
-      These commands use the generated test_file lists as above, but
-      run all the tests using both shared and static linking, and in
-      addition provide some additional diffing of expected output
-      files for the input/output tests. (This added diff may or may
-      not be useful or necessary at the moment.) In addition, these
-      tests provide size information for all the generated test cases,
-      so that size data for new compiler or linker features can be
-      collected. At one time timing information was attempted, so that
-      compile speeds, link speeds, etc. could be measured, however at
-      the moment all timing information is currently disabled.
-   </p>
-
-   <pre>
-   make check-script-install</pre>
-   <p> As directly above, but tests an installed library, not the
-      library and compiler in the build tree.
-   </p>
-
    <pre>
    make check-abi</pre>
    <p>The library ABI can be tested. This involves testing the shared
-   library against an ABI-defining previous version. </p>
+   library against an ABI-defining previous version of symbol exports. </p>
+
+  <pre>
+   make check-compile</pre>
+   <p>This rule compiles, but does not link or execute, the
+   <em>testsuite_files</em> test cases and displays the output on stdout.</p>
 
    <pre>
    make check-performance</pre>
