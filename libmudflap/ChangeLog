@@ -2,6 +2,10 @@
 
 	* mf-runtime.c (__mfu_unregister): Warning fix for char unsigned.
 
+2005-03-31  Mike Stump  <mrs@apple.com>
+
+	* mf-runtime.h: Add libmudflap copyright clause.
+
 2005-03-21  Mike Stump  <mrs@apple.com>
 
 	* mf-heuristics.c: Fix whitespace at end of line.
