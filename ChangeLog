@@ -1,3 +1,7 @@
+2005-04-07  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* MAINTAINERS (Port Maintainers): Add self for Blackfin.
+
 2005-04-06  Paolo Bonzini  <bonzini@gnu.org>
 
         * Makefile.tpl (BUILD_CONFIGARGS): Include --with-build-subdir.
