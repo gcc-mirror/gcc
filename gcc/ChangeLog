@@ -1,3 +1,8 @@
+2005-04-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-sink.c (nearest_common_dominator_of_uses): Consider
+	all immediate uses in PHI nodes.
+
 2005-04-07  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (arm_const_double_inline_cost): Handle any constant by
