@@ -570,7 +570,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && SUBREG_PROMOTED_UNSIGNED_P (op)
+	  && SUBREG_PROMOTED_UNSIGNED_P (op) > 0
 	  && GET_MODE (XEXP (op, 0)) == mode)
 	return XEXP (op, 0);
 

@@ -1,3 +1,9 @@
+2005-04-07  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR target/20093
+	* simplify-rtx.c (simplify_unary_operation_1): Check
+	SUBREG_PROMOTED_UNSIGNED_P (op) > 0 for zero-extension.
+
 2005-04-06  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/20717
