@@ -489,6 +489,7 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
 	}
       break;
 
+    case FDESC_EXPR:
     case ADDR_EXPR:
       if (flag_unit_at_a_time)
 	{
