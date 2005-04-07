@@ -1,3 +1,7 @@
+2005-04-07  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-dse.c (dse_optimize_stmt): Fix incorrect comment.
+
 2005-04-07  Ian Lance Taylor  <ian@airs.com>
 
 	* config/iq2000/iq2000.h (DONT_ACCESS_GBLS_AFTER_EPILOGUE): Don't

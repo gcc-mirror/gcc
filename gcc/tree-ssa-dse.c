@@ -181,7 +181,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
   get_stmt_operands (stmt);
   v_may_defs = V_MAY_DEF_OPS (ann);
 
-  /* If this statement has no virtual uses, then there is nothing
+  /* If this statement has no virtual defs, then there is nothing
      to do.  */
   if (NUM_V_MAY_DEFS (v_may_defs) == 0)
     return;
