@@ -1,3 +1,11 @@
+2005-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/18659
+	PR ada/18819
+	* misc.c (tree_sra_requested): New global.
+	(gnat_init_options): Detect -ftree-sra.
+	(gnat_post_options): Enable Tree-SRA only if specifically requested.
+
 2005-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/19956
