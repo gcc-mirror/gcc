@@ -1,0 +1,43 @@
+# Copyright (C) 2005 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# If there is no baseline file, or we can't find the library, skip
+# this test.
+if { ![info exists baseline_file] \
+	 || ![file exists $baseline_file] \
+	 || ![file exists "../src/.libs/libstdc++.so"] } {
+    return
+}
+
+# Figure out what symbols are defined by the active build of the library.
+remote_exec "build" "$srcdir/../scripts/extract_symvers" \
+    [list "../src/.libs/libstdc++.so" "current_symbols.txt"]
+
+# Build the support objects.
+v3-build_support
+
+# Build the abi_check program.
+if { [v3_target_compile "$srcdir/testsuite_abi_check.cc" "abi_check" \
+      "executable" [list "additional_flags=-w"]] != "" } {
+    error "could not compile testsuite_abi_check.cc"
+}
+
+remote_download "target" $baseline_file "baseline_symbols.txt"
+remote_download "target" "current_symbols.txt" "current_symbols.txt"
+set result [${tool}_load "./abi_check" \
+		[list "--check-verbose" "current_symbols.txt" \
+		     "baseline_symbols.txt"]]
+[lindex $result 0] "abi_check"
