@@ -1,4 +1,4 @@
-! { dg do-run }
+! { dg-do run }
 ! PR 18982:  verifies that opening an existing file with
 !            status="new" is an error
 program main
