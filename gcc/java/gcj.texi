@@ -1009,9 +1009,9 @@ compatibility with existing application launch scripts:
 @c man begin SYNOPSIS gcj-dbtool
 gcj-dbtool @option{OPTION} @var{DBFILE} [@option{MORE}] @dots{}
 
-gcj-dbtool [@option{-n}] [@option{-a}] [@option{-f}]
+gcj-dbtool [@option{-0}] [@option{-}] [@option{-n}] [@option{-a}] [@option{-f}]
   [@option{-t}] [@option{-l}] [@option{-p} [@var{LIBDIR}]]
-  [@option{-v}] [@option{--version}] [@option{--help}]
+  [@option{-v}] [@option{-m}] [@option{--version}] [@option{--help}]
 
 @c man end
 @c man begin SEEALSO gij
@@ -1055,6 +1055,18 @@ signature and the compiled form of the class is looked for in the
 corresponding shared library.  The @option{-a} option will verify
 that @var{LIB} exists before adding it to the database; @option{-f}
 skips this check.
+
+@item [@option{-}][@option{-0}] -m @var{DBFILE} @var{DBFILE},[@var{DBFILE}]
+Merge a number of databases.  The output database overwrites any
+existing database.  To add databases into an existing database,
+include the destination in the list of sources.
+
+If @option{-} or @option{-0} are used, the list of files to read is
+taken from standard input instead of the command line.  For
+@option{-0}, Input filenames are terminated by a null character
+instead of by whitespace.  Useful when arguments might contain white
+space.  The GNU find -print0 option produces input suitable for this
+mode.
 
 @item -t @var{DBFILE}
 Test a database.
