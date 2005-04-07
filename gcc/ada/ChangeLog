@@ -1,3 +1,10 @@
+2005-04-07  Laurent GUERBY  <laurent@guerby.net>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* Makefile.in: Add make ifeq define for hppa linux tasking support.
+	* system-hpux.ads: Define Signed_Zeros to be True.
+	* system-linux-hppa.ads, s-osinte-linux-hppa.ads: New files.
+
 2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* adaint.c, cal.c, decl.c, gigi.h, gmem.c, init.c, link.c,

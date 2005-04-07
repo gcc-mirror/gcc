@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                             (HP-UX Version)                              --
+--                          (GNU/Linux-HPPA Version)                        --
 --                                                                          --
 --          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -58,7 +58,7 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := 0.01;
+   Tick                  : constant := 0.000_001;
 
    --  Storage-related Declarations
 
@@ -118,7 +118,6 @@ private
    Backend_Divide_Checks     : constant Boolean := False;
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
-   Compiler_System_Version   : constant Boolean := False;
    Configurable_Run_Time     : constant Boolean := False;
    Denorm                    : constant Boolean := True;
    Duration_32_Bits          : constant Boolean := False;
@@ -148,81 +147,5 @@ private
 
    High_Integrity_Mode       : constant Boolean := False;
    Long_Shifts_Inlined       : constant Boolean := False;
-
-   --------------------------
-   -- Underlying Priorities --
-   ---------------------------
-
-   --  Important note: this section of the file must come AFTER the
-   --  definition of the system implementation parameters to ensure
-   --  that the value of these parameters is available for analysis
-   --  of the declarations here (using Rtsfind at compile time).
-
-   --  The underlying priorities table provides a generalized mechanism
-   --  for mapping from Ada priorities to system priorities. In some
-   --  cases a 1-1 mapping is not the convenient or optimal choice.
-
-   --  For HP/UX DCE Threads, we use the full range of 31 priorities
-   --  in the Ada model, but map them by compression onto the more limited
-   --  range of priorities available in HP/UX.
-   --  For POSIX Threads, this table is ignored.
-
-   --  To replace the default values of the Underlying_Priorities mapping,
-   --  copy this source file into your build directory, edit the file to
-   --  reflect your desired behavior, and recompile with the command:
-
-   --     $ gcc -c -O2 -gnatpgn system.ads
-
-   --  then recompile the run-time parts that depend on this package:
-
-   --     $ gnatmake -a -gnatn -O2 <your application>
-
-   --  then force rebuilding your application if you need different options:
-
-   --     $ gnatmake -f <your options> <your application>
-
-   type Priorities_Mapping is array (Any_Priority) of Integer;
-   pragma Suppress_Initialization (Priorities_Mapping);
-   --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
-
-   Underlying_Priorities : constant Priorities_Mapping :=
-
-     (Priority'First => 16,
-
-      1  => 17,
-      2  => 18,
-      3  => 18,
-      4  => 18,
-      5  => 18,
-      6  => 19,
-      7  => 19,
-      8  => 19,
-      9  => 20,
-      10 => 20,
-      11 => 21,
-      12 => 21,
-      13 => 22,
-      14 => 23,
-
-      Default_Priority   => 24,
-
-      16 => 25,
-      17 => 25,
-      18 => 25,
-      19 => 26,
-      20 => 26,
-      21 => 26,
-      22 => 27,
-      23 => 27,
-      24 => 27,
-      25 => 28,
-      26 => 28,
-      27 => 29,
-      28 => 29,
-      29 => 30,
-
-      Priority'Last      => 30,
-
-      Interrupt_Priority => 31);
 
 end System;
