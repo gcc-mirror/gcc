@@ -140,6 +140,15 @@ FC="$GFORTRAN"
 AC_PROG_FC(gfortran)
 FCFLAGS="$FCFLAGS -Wall -fno-repack-arrays -fno-underscoring"
 
+# extra LD Flags which are required for targets
+case "${host}" in
+  *-darwin*)
+    # Darwin needs -single_module when linking libgfortran
+    extra_ldflags_libgfortran=-Wl,-single_module
+    ;;
+esac
+AC_SUBST(extra_ldflags_libgfortran)
+
 AC_SYS_LARGEFILE
 AC_FUNC_MMAP
 AC_TYPE_OFF_T
