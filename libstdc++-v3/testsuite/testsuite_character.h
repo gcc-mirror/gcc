@@ -1,8 +1,9 @@
 // -*- C++ -*-
+
 // Testing character type and state type with char_traits and codecvt
 // specializations for the C++ library testsuite.
 //
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,9 +33,10 @@
 #ifndef _GLIBCXX_TESTSUITE_CHARACTER_H
 #define _GLIBCXX_TESTSUITE_CHARACTER_H
 
+#include <climits>
 #include <string> // for char_traits
 #include <locale> // for codecvt
-#include <climits>
+#include <ext/pod_char_traits.h>
 
 namespace __gnu_test
 {  
@@ -60,12 +62,37 @@ namespace __gnu_test
   {
     unsigned int state;
   };
+
+  // Test data types.
+  struct pod_char
+  {
+    unsigned char c;
+  };
+
+  inline bool
+  operator==(const pod_char& lhs, const pod_char& rhs)
+  { return lhs.c == rhs.c; }
+  
+  struct pod_int
+  {
+    int i;
+  };
+  
+  struct state
+  {
+    unsigned long l;
+    unsigned long l2;
+  };
+
+  typedef unsigned short				value_type;
+  typedef unsigned int					int_type;
+  typedef __gnu_cxx::character<value_type, int_type>	pod_type;
 }; // namespace __gnu_test
 
 namespace std
 {
-  // char_traits specialization. Meets the additional requirements for
-  // basic_filebuf.
+  // A std::char_traits specialization. Meets the additional
+  // requirements for basic_filebuf.
   template<>
     struct char_traits<__gnu_test::character>
     {
@@ -411,8 +438,99 @@ namespace std
       { return 11; }
     };
 
-  locale::id
-  codecvt<__gnu_test::character, char, __gnu_test::conversion_state>::id;
+
+  // A std::char_traits specialization with POD types for char_type,
+  // int_type, and state_type.
+  template<>
+    struct char_traits<__gnu_test::pod_char>
+    {
+      typedef __gnu_test::pod_char	char_type;
+      typedef __gnu_test::pod_int  	int_type;
+      typedef __gnu_test::state   	state_type;
+      typedef fpos<state_type> 		pos_type;
+      typedef streamoff 		off_type;
+      
+      static void 
+      assign(char_type& c1, const char_type& c2)
+      { c1.c = c2.c; }
+
+      static bool 
+      eq(const char_type& c1, const char_type& c2)
+      { return c1.c == c2.c; }
+
+      static bool 
+      lt(const char_type& c1, const char_type& c2)
+      { return c1.c < c2.c; }
+
+      static int 
+      compare(const char_type* s1, const char_type* s2, size_t n)
+      { return memcmp(s1, s2, n); }
+
+      static size_t
+      length(const char_type* s)
+      { return strlen(reinterpret_cast<const char*>(s)); }
+
+      static const char_type* 
+      find(const char_type* s, size_t n, const char_type& a)
+      { return static_cast<const char_type*>(memchr(s, a.c, n)); }
+
+      static char_type* 
+      move(char_type* s1, const char_type* s2, size_t n)
+      {
+	memmove(s1, s2, n);
+	return s1;
+      }
+
+      static char_type* 
+      copy(char_type* s1, const char_type* s2, size_t n)
+      {
+	memcpy(s1, s2, n);
+	return s1;
+      }
+
+      static char_type* 
+      assign(char_type* s, size_t n, char_type a)
+      {
+	memset(s, a.c, n);
+	return s;
+      }
+
+      static char_type 
+      to_char_type(const int_type& c)
+      {
+	char_type ret;
+	ret.c = static_cast<unsigned char>(c.i);
+	return ret;
+      }
+
+      static int_type 
+      to_int_type(const char_type& c)
+      {
+	int_type ret;
+	ret.i = c.c;
+	return ret;
+      }
+
+      static bool 
+      eq_int_type(const int_type& c1, const int_type& c2)
+      { return c1.i == c2.i; }
+
+      static int_type 
+      eof()
+      {
+	int_type n;
+	n.i = -10;
+	return n;
+      }
+
+      static int_type 
+      not_eof(const int_type& c)
+      {
+	if (eq_int_type(c, eof()))
+	  return int_type();
+	return c;
+      }
+    };
 } // namespace std
 
 #endif // _GLIBCXX_TESTSUITE_CHARACTER_H

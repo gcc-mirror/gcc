@@ -1,6 +1,6 @@
 // 2003-04-07 bkoz
 
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,7 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
+#include <testsuite_character.h>
 
 // { dg-do compile }
 
