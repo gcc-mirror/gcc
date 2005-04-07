@@ -423,6 +423,7 @@ push_class (tree class_type, tree class_name)
 #endif
   CLASS_P (class_type) = 1;
   decl = build_decl (TYPE_DECL, class_name, class_type);
+  TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
 
   /* dbxout needs a DECL_SIZE if in gstabs mode */
   DECL_SIZE (decl) = integer_zero_node;
@@ -1906,6 +1907,7 @@ finish_class (void)
   java_expand_catch_classes (current_class);
 
   current_function_decl = NULL_TREE;
+  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (current_class)) = 0;
   make_class_data (current_class);
   register_class ();
   rest_of_decl_compilation (TYPE_NAME (current_class), 1, 0);
