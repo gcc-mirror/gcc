@@ -1069,11 +1069,6 @@ extern void		sbss_section  (void);
 #define SDATA_SECTION_ASM_OP	"\t.sdata"	/* Small data.  */
 
 
-/* See iq2000_expand_prologue's use of loadgp for when this should be
-   true.  */
-
-#define DONT_ACCESS_GBLS_AFTER_EPILOGUE 0
-
 /* List of all IQ2000 punctuation characters used by print_operand.  */
 extern char iq2000_print_operand_punct[256];
 
