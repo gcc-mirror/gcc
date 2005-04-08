@@ -1,3 +1,18 @@
+2005-04-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (TINST_LEVEL): Document TINST_IN_SYSTEM_HEADER_P.
+	* cp-tree.h (struct tinst_level): Add in_system_header_p.
+	(TINST_IN_SYSTEM_HEADER_P): New macro.
+	(make_tinst_level): Remove.
+	* pt.c (lookup_template_class): Preserve DECL_IN_SYSTEM_HEADER on
+	the instantiated class.
+	(push_tinst_level): Do not use make_tinst_level.  Set
+	TINST_IN_SYSTEM_HEADER_P.
+	(pop_tinst_level): Likewise.
+	(instantiate_class_template): Set in_system_header.
+	(instantiate_pending_templates): Likewise.
+	* tree.c (make_tinst_level): Remove.
+
 2005-04-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* decl.c (start_decl): Apply pending #pragma weak regardless of

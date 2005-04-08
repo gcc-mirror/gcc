@@ -289,6 +289,7 @@ DEFTREECODE (TAG_DEFN, "tag_defn", tcc_expression, 0)
 
    TINST_DECL contains the original DECL node.
    TINST_LOCATION contains the location where the template is instantiated.
+   TINST_IN_SYSTEM_HEADER_P is true if the location is in a system header.
 
    A stack of template instantiation nodes is kept through the TREE_CHAIN
    fields of these nodes.  */

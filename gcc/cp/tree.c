@@ -1851,17 +1851,6 @@ handle_init_priority_attribute (tree* node,
     }
 }
 
-/* Return a new TINST_LEVEL for DECL at location locus.  */
-tree
-make_tinst_level (tree decl, location_t locus)
-{
-  tree tinst_level = make_node (TINST_LEVEL);
-  TREE_CHAIN (tinst_level) = NULL_TREE;
-  TINST_DECL (tinst_level) = decl;
-  TINST_LOCATION (tinst_level) = locus;
-  return tinst_level;
-}
-
 /* Return a new PTRMEM_CST of the indicated TYPE.  The MEMBER is the
    thing pointed to by the constant.  */
 
