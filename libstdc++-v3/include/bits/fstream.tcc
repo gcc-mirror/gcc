@@ -171,7 +171,15 @@ namespace std
 	  // For a stateful encoding (-1) the pending sequence might be just
 	  // shift and unshift prefixes with no actual character.
 	  __ret = this->egptr() - this->gptr();
+
+#if _GLIBCXX_HAVE_DOS_BASED_FILESYSTEM
+	  // About this workaround, see libstdc++/20806.
+	  const bool __testbinary = _M_mode & ios_base::binary;
+	  if (__check_facet(_M_codecvt).encoding() >= 0
+	      && __testbinary)
+#else
 	  if (__check_facet(_M_codecvt).encoding() >= 0)
+#endif
 	    __ret += _M_file.showmanyc() / _M_codecvt->max_length();
 	}
       return __ret;
@@ -521,10 +529,17 @@ namespace std
        // future: when __n > __buflen we read directly instead of using the
        // buffer repeatedly.
        const bool __testin = _M_mode & ios_base::in;
-       const streamsize __buflen = _M_buf_size > 1 ? _M_buf_size - 1
-	                                                 : 1;
+       const streamsize __buflen = _M_buf_size > 1 ? _M_buf_size - 1 : 1;
+
+#if _GLIBCXX_HAVE_DOS_BASED_FILESYSTEM
+       // About this workaround, see libstdc++/20806.
+       const bool __testbinary = _M_mode & ios_base::binary;
+       if (__n > __buflen && __check_facet(_M_codecvt).always_noconv()
+	   && __testin && __testbinary && !_M_writing)
+#else
        if (__n > __buflen && __check_facet(_M_codecvt).always_noconv()
 	   && __testin && !_M_writing)
+#endif
 	 {
 	   // First, copy the chars already present in the buffer.
 	   const streamsize __avail = this->egptr() - this->gptr();
