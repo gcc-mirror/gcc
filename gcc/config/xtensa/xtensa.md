@@ -371,7 +371,7 @@
 	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "%f")
 			  (match_operand:SF 2 "register_operand" "f"))
 		 (match_operand:SF 3 "register_operand" "0")))]
-  "TARGET_HARD_FLOAT && !TARGET_NO_FUSED_MADD"
+  "TARGET_HARD_FLOAT && TARGET_FUSED_MADD"
   "madd.s\t%0, %1, %2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")
@@ -382,7 +382,7 @@
 	(minus:SF (match_operand:SF 1 "register_operand" "0")
 		  (mult:SF (match_operand:SF 2 "register_operand" "%f")
 			   (match_operand:SF 3 "register_operand" "f"))))]
-  "TARGET_HARD_FLOAT && !TARGET_NO_FUSED_MADD"
+  "TARGET_HARD_FLOAT && TARGET_FUSED_MADD"
   "msub.s\t%0, %2, %3"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")

@@ -1,3 +1,13 @@
+2005-04-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/xtensa/xtensa.h (target_flags, MASK_NO_FUSED_MADD)
+	(MASK_CONST16, TARGET_NO_FUSED_MADD, TARGET_CONST16)
+	(TARGET_SWITCHES): Delete.
+	* config/xtensa/xtensa.c (TARGET_DEFAULT_TARGET_FLAGS): Define.
+	* config/xtensa/xtensa.md (muladdsf3, mulsubsf3): Check
+	TARGET_FUSED_MADD instead of !TARGET_NO_FUSED_MADD.
+	* config/xtensa/xtensa.opt: New file.
+
 2005-04-08  Ben Elliston  <bje@au.ibm.com>
 
 	* config/fp-bit.c: Include L_mul_tf in #endif comment.
