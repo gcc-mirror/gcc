@@ -1,3 +1,7 @@
+2005-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Revert last change.
+
 2005-04-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/xtensa/xtensa.h (target_flags, MASK_NO_FUSED_MADD)

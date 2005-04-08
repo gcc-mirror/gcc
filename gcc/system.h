@@ -675,14 +675,13 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #undef ANSI_PROTOTYPES
 #undef PTR_CONST
 #undef LONG_DOUBLE
-#undef PARAMS
 #undef VPARAMS
 #undef VA_OPEN
 #undef VA_FIXEDARG
 #undef VA_CLOSE
 #undef VA_START
- #pragma GCC poison ANSI_PROTOTYPES PTR_CONST LONG_DOUBLE PARAMS VPARAMS \
-  VA_OPEN VA_FIXEDARG VA_CLOSE VA_START
+ #pragma GCC poison ANSI_PROTOTYPES PTR_CONST LONG_DOUBLE VPARAMS VA_OPEN \
+  VA_FIXEDARG VA_CLOSE VA_START
 #endif /* IN_GCC */
 
 /* Note: not all uses of the `index' token (e.g. variable names and
