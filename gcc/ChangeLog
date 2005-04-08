@@ -14,6 +14,14 @@
 
 	* tree.h (STRIP_MAIN_TYPE_NOPS): Remove.
 
+	* genattrtab.c (attr_desc): Remove negative_ok and unsigned_p.
+	(check_attr_value, write_attr_get, write_expr_attr_cache,
+	find_attr, make_internal_attr): Don't reference negative_ok or
+	unsigned_p.
+	* genattrtab.h (ATTR_NEGATIVE_OK, ATTR_UNSIGNED,
+	ATTR_FUNC_UNITS, ATTR_BLOCKAGE): Remove.
+	(ATTR_STATIC): Adjust the value.
+
 2005-04-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/tpf.h (ASM_SPEC): Define.

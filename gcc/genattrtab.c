@@ -184,8 +184,6 @@ struct attr_desc
   struct attr_value *default_val; /* Default value for this attribute.  */
   int lineno : 24;		/* Line number.  */
   unsigned is_numeric	: 1;	/* Values of this attribute are numeric.  */
-  unsigned negative_ok	: 1;	/* Allow negative numeric values.  */
-  unsigned unsigned_p	: 1;	/* Make the output function unsigned int.  */
   unsigned is_const	: 1;	/* Attribute value constant for each run.  */
   unsigned is_special	: 1;	/* Don't call `write_attr_set'.  */
   unsigned static_p	: 1;	/* Make the output function static.  */
@@ -967,7 +965,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  break;
 	}
 
-      if (INTVAL (exp) < 0 && ! attr->negative_ok)
+      if (INTVAL (exp) < 0)
 	{
 	  message_with_line (attr->lineno,
 			     "negative numeric value specified for attribute %s",
@@ -984,8 +982,6 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       if (attr == 0 || attr->is_numeric)
 	{
 	  p = XSTR (exp, 0);
-	  if (attr && attr->negative_ok && *p == '-')
-	    p++;
 	  for (; *p; p++)
 	    if (! ISDIGIT (*p))
 	      {
@@ -1088,8 +1084,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	    have_error = 1;
 	  }
 	else if (attr
-		 && (attr->is_numeric != attr2->is_numeric
-		     || (! attr->negative_ok && attr2->negative_ok)))
+		 && attr->is_numeric != attr2->is_numeric)
 	  {
 	    message_with_line (attr->lineno,
 		"numeric attribute mismatch calling `%s' from `%s'",
@@ -3716,8 +3711,6 @@ write_attr_get (struct attr_desc *attr)
     printf ("static ");
   if (!attr->is_numeric)
     printf ("enum attr_%s\n", attr->name);
-  else if (attr->unsigned_p)
-    printf ("unsigned int\n");
   else
     printf ("int\n");
 
@@ -3965,8 +3958,6 @@ write_expr_attr_cache (rtx p, struct attr_desc *attr)
 
       if (!attr->is_numeric)
 	printf ("  enum attr_%s ", attr->name);
-      else if (attr->unsigned_p)
-	printf ("  unsigned int ");
       else
 	printf ("  int ");
 
@@ -4278,8 +4269,8 @@ find_attr (const char **name_p, int create)
   attr = oballoc (sizeof (struct attr_desc));
   attr->name = DEF_ATTR_STRING (name);
   attr->first_value = attr->default_val = NULL;
-  attr->is_numeric = attr->negative_ok = attr->is_const = attr->is_special = 0;
-  attr->unsigned_p = attr->static_p = 0;
+  attr->is_numeric = attr->is_const = attr->is_special = 0;
+  attr->static_p = 0;
   attr->next = attrs[index];
   attrs[index] = attr;
 
@@ -4301,8 +4292,6 @@ make_internal_attr (const char *name, rtx value, int special)
   attr->is_numeric = 1;
   attr->is_const = 0;
   attr->is_special = (special & ATTR_SPECIAL) != 0;
-  attr->negative_ok = (special & ATTR_NEGATIVE_OK) != 0;
-  attr->unsigned_p = (special & ATTR_UNSIGNED) != 0;
   attr->static_p = (special & ATTR_STATIC) != 0;
   attr->default_val = get_attr_value (value, attr, -2);
 }
