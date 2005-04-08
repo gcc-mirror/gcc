@@ -30,13 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define C_SIZEOF_STRUCT_LANG_IDENTIFIER \
   (sizeof (struct c_common_identifier) + 3 * sizeof (void *))
 
-/* For gc purposes, return the most likely link for the longest chain.  */
-#define C_LANG_TREE_NODE_CHAIN_NEXT(T)				\
-  ((union lang_tree_node *)					\
-   (TREE_CODE (T) == INTEGER_TYPE ? TYPE_NEXT_VARIANT (T)	\
-    : TREE_CODE (T) == COMPOUND_EXPR ? TREE_OPERAND (T, 1)	\
-    : TREE_CHAIN (T)))
-
 /* Language-specific declaration information.  */
 
 struct lang_decl GTY(())
