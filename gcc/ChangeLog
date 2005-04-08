@@ -1,3 +1,12 @@
+2005-04-08  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/20814
+	* config/rs6000/predicates.md (altivec_register_operand): Accept
+	SUBREG. 
+	(and64_operand): Do not limit CONST_INT to mask64_operand.
+	(and64_2_operand): Do not limit CONST_INT to mask64_1or2_operand.
+	(and_operand): Do not limit CONST_INT to mask_operand.
+
 2005-04-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/20466
