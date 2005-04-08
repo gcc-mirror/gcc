@@ -169,7 +169,7 @@ indirect_data (rtx sym_ref)
 
   lprefix = (((name[0] == '*' || name[0] == '&')
               && (name[1] == 'L' || (name[1] == '"' && name[2] == 'L')))
-             || (strncmp (name, "_OBJC_", 6)));
+             || (strncmp (name, "_OBJC_", 6) == 0));
 
   return ! lprefix;
 }
