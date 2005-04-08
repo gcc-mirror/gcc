@@ -7418,6 +7418,41 @@ arm_const_double_inline_cost (rtx val)
 			      NULL_RTX, NULL_RTX, 0, 0));
 }
 
+/* Return true if it is worthwile to split a 64-bit constant into two
+   32-bit operations.  This is the case if optimizing for size, or
+   if we have load delay slots, or if one 32-bit part can be done with
+   a single data operation.  */
+bool
+arm_const_double_by_parts (rtx val)
+{
+  enum machine_mode mode = GET_MODE (val);
+  rtx part;
+
+  if (optimize_size || arm_ld_sched)
+    return true;
+
+  if (mode == VOIDmode)
+    mode = DImode;
+  
+  part = gen_highpart_mode (SImode, mode, val);
+  
+  gcc_assert (GET_CODE (part) == CONST_INT);
+  
+  if (const_ok_for_arm (INTVAL (part))
+      || const_ok_for_arm (~INTVAL (part)))
+    return true;
+  
+  part = gen_lowpart (SImode, val);
+  
+  gcc_assert (GET_CODE (part) == CONST_INT);
+  
+  if (const_ok_for_arm (INTVAL (part))
+      || const_ok_for_arm (~INTVAL (part)))
+    return true;
+  
+  return false;
+}
+
 /* Scan INSN and note any of its operands that need fixing.
    If DO_PUSHES is false we do not actually push any of the fixups
    needed.  The function returns TRUE if any fixups were needed/pushed.

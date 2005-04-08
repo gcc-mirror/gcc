@@ -1,3 +1,9 @@
+2005-04-08  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.c (arm_const_double_by_parts): New function.
+	* arm-protos.h (arm_const_double_by_parts): Add prototype.
+	* arm.md (define_split for 64-bit constants): Add another one.
+
 2005-04-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-operands.c (correct_use_link): Remove linear scan.
