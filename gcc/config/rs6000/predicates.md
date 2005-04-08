@@ -34,9 +34,11 @@
   
 ;; Return 1 if op is an Altivec register.
 (define_predicate "altivec_register_operand"
-  (and (match_code "reg")
-       (match_test "ALTIVEC_REGNO_P (REGNO (op))
-		    || REGNO (op) > LAST_VIRTUAL_REGISTER")))
+  (and (match_code "reg,subreg")
+       (and (match_operand 0 "register_operand")
+	    (match_test "GET_CODE (op) != REG
+			 || ALTIVEC_REGNO_P (REGNO (op))
+			 || REGNO (op) > LAST_VIRTUAL_REGISTER"))))
 
 ;; Return 1 if op is XER register.
 (define_predicate "xer_operand"
@@ -531,29 +533,27 @@
 ;; Return 1 if the operand is either a non-special register or a constant
 ;; that can be used as the operand of a PowerPC64 logical AND insn.
 (define_predicate "and64_operand"
-  (if_then_else (match_code "const_int")
-    (match_operand 0 "mask64_operand")
-    (if_then_else (match_test "fixed_regs[CR0_REGNO]")
-      (match_operand 0 "gpc_reg_operand")
-      (match_operand 0 "logical_operand"))))
+  (ior (match_operand 0 "mask64_operand")
+       (if_then_else (match_test "fixed_regs[CR0_REGNO]")
+	 (match_operand 0 "gpc_reg_operand")
+	 (match_operand 0 "logical_operand"))))
 
 ;; Like and64_operand, but also match constants that can be implemented
 ;; with two rldicl or rldicr insns.
 (define_predicate "and64_2_operand"
-  (if_then_else (match_code "const_int")
-    (match_test "mask64_1or2_operand (op, mode, true)")
-    (if_then_else (match_test "fixed_regs[CR0_REGNO]")
-      (match_operand 0 "gpc_reg_operand")
-      (match_operand 0 "logical_operand"))))
+  (ior (and (match_code "const_int")
+	    (match_test "mask64_1or2_operand (op, mode, true)"))
+       (if_then_else (match_test "fixed_regs[CR0_REGNO]")
+	 (match_operand 0 "gpc_reg_operand")
+	 (match_operand 0 "logical_operand"))))
 
 ;; Return 1 if the operand is either a non-special register or a
 ;; constant that can be used as the operand of a logical AND.
 (define_predicate "and_operand"
-  (if_then_else (match_code "const_int")
-    (match_operand 0 "mask_operand")
-    (if_then_else (match_test "fixed_regs[CR0_REGNO]")
-      (match_operand 0 "gpc_reg_operand")
-      (match_operand 0 "logical_operand"))))
+  (ior (match_operand 0 "mask_operand")
+       (if_then_else (match_test "fixed_regs[CR0_REGNO]")
+	 (match_operand 0 "gpc_reg_operand")
+	 (match_operand 0 "logical_operand"))))
 
 ;; Return 1 if the operand is a general non-special register or memory operand.
 (define_predicate "reg_or_mem_operand"
