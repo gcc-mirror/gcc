@@ -1,3 +1,9 @@
+2005-04-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-flow.h: Remove the prototype for
+	redirect_immediate_uses.
+	(TDFA_USE_OPS, TDFA_USE_VOPS): Remove.
+
 2005-04-08  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (arm_const_double_by_parts): New function.
