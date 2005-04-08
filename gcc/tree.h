@@ -720,17 +720,6 @@ extern void tree_operand_check_failed (int, enum tree_code,
 	     == TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
     (EXP) = TREE_OPERAND (EXP, 0)
 
-/* Like STRIP_NOPS, but don't alter the TREE_TYPE main variant either.  */
-
-#define STRIP_MAIN_TYPE_NOPS(EXP)					\
-  while ((TREE_CODE (EXP) == NOP_EXPR					\
-	  || TREE_CODE (EXP) == CONVERT_EXPR				\
-	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)			\
-	 && TREE_OPERAND (EXP, 0) != error_mark_node			\
-	 && (TYPE_MAIN_VARIANT (TREE_TYPE (EXP))			\
-	     == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (EXP, 0)))))	\
-    (EXP) = TREE_OPERAND (EXP, 0)
-
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
 
 #define STRIP_TYPE_NOPS(EXP) \
