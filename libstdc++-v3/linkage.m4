@@ -27,6 +27,7 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_1], [
   AC_MSG_RESULT($glibcxx_cv_func_$1_use)
 ])
 
+
 dnl
 dnl Check to see if the (math function) argument passed is
 dnl 1) declared when using the c++ compiler
@@ -59,19 +60,35 @@ dnl of functions at once.  It's an all-or-nothing check -- either
 dnl HAVE_XYZ is defined for each of the functions, or for none of them.
 dnl Doing it this way saves significant configure time.
 AC_DEFUN([GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1], [
+  define([funclist],patsubst($3,\(\w+\)\(\W*\),\1 ))dnl
   AC_MSG_CHECKING([for $1 functions])
   AC_CACHE_VAL(glibcxx_cv_func_$2_use, [
     AC_LANG_SAVE
     AC_LANG_CPLUSPLUS
     AC_TRY_COMPILE([#include <math.h>],
-                   [ `for x in $3; do echo "$x (0);"; done` ],
+                   patsubst(funclist,[\w+],[\& (0);]),
                    [glibcxx_cv_func_$2_use=yes],
                    [glibcxx_cv_func_$2_use=no])
     AC_LANG_RESTORE])
   AC_MSG_RESULT($glibcxx_cv_func_$2_use)
   if test x$glibcxx_cv_func_$2_use = x"yes"; then
-    AC_CHECK_FUNCS($3)
+    AC_CHECK_FUNCS(funclist)
+  else
+    AC_MSG_CHECKING([for _$1 functions])
+    AC_CACHE_VAL(glibcxx_cv_func__$2_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>],
+                     patsubst(funclist,[\w+],[_\& (0);]),
+                     [glibcxx_cv_func__$2_use=yes],
+                     [glibcxx_cv_func__$2_use=no])
+      AC_LANG_RESTORE])
+    AC_MSG_RESULT($glibcxx_cv_func__$2_use)
+    if test x$glibcxx_cv_func__$2_use = x"yes"; then
+      AC_CHECK_FUNCS(patsubst(funclist,[\w+],[_\&]))
+    fi
   fi
+  undefine([funclist])
 ])
 
 dnl
@@ -450,27 +467,6 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_SUPPORT], [
   dnl keep this sync'd with the one above. And if you add any new symbol,
   dnl please add the corresponding block in the @BOTTOM@ section of acconfig.h.
   dnl Check to see if certain C math functions exist.
-
-  dnl Check to see if basic C math functions have float versions.
-  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(_float trig,
-                                          _float_trig,
-                                          _acosf _asinf _atanf \
-                                          _cosf _sinf _tanf \
-                                          _coshf _sinhf _tanhf)
-  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(_float round,
-                                          _float_round,
-                                          _ceilf _floorf)
-
-  dnl Check to see if basic C math functions have long double versions.
-  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double trig,
-                                          _long_double_trig,
-                                          _acosl _asinl _atanl \
-                                          _cosl _sinl _tanl \
-                                          _coshl _sinhl _tanhl)
-  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double round,
-                                          _long_double_round,
-                                          _ceill _floorl)
-
   LIBS="$ac_save_LIBS"
   CXXFLAGS="$ac_save_CXXFLAGS"
 ])
