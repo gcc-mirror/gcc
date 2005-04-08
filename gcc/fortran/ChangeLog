@@ -1,3 +1,7 @@
+2005-04-08  Diego Novillo  <dnovillo@redhat.com>
+
+	* match.c (gfc_match_arithmetic_if): Declare static.
+
 2005-04-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/17229

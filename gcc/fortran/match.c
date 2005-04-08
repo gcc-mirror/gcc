@@ -903,7 +903,7 @@ cleanup:
  * when just after having encountered a simple IF statement. This code
  * is really duplicate with parts of the gfc_match_if code, but this is
  * *much* easier.  */
-match
+static match
 gfc_match_arithmetic_if (void)
 {
   gfc_st_label *l1, *l2, *l3;
