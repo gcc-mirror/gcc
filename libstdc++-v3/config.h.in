@@ -1,9 +1,6 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 // Symbols and macros for libstdc++ -*- C++ -*-
 
-// Define if <float.h> exists.
-#undef HAVE_FLOAT_H
-
 
 /* Define to 1 if you have the `acosf' function. */
 #undef HAVE_ACOSF
