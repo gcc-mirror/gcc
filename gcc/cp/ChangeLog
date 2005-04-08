@@ -1,5 +1,17 @@
 2005-04-08  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/20905
+	* parser.c (cp_parser_type_specifier_seq): Add is_condition
+	parameter.
+	(cp_parser_new_type_id): Pass it.
+	(cp_parser_condition): Likewise.
+	(cp_parser_conversion_type_id): Likewise.
+	(cp_parser_type_id): Likewise.
+	(cp_parser_type_specifier_seq): In a condition, do not allow
+	invalid type-specifier combinations.
+	(cp_parser_exception_declaration): Adjust call to
+	cp_parser_type_specifier_seq. 
+
 	* cp-tree.def (TINST_LEVEL): Document TINST_IN_SYSTEM_HEADER_P.
 	* cp-tree.h (struct tinst_level): Add in_system_header_p.
 	(TINST_IN_SYSTEM_HEADER_P): New macro.

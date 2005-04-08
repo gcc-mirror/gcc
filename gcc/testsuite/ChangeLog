@@ -1,5 +1,10 @@
 2005-04-08  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/20905
+	* g++.dg/parse/cond2.C: New test.
+
+2005-04-08  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/20145
 	* g++.dg/warn/Wdtor1.C: New test.
 
