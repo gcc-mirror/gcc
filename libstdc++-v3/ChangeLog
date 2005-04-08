@@ -1,3 +1,14 @@
+2005-04-08  Danny Smith  <dannysmith@users.sourceforge.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+	    		
+	PR libstdc++/20806
+	* config/os/mingw32/os_defines.h: Define
+	_GLIBCXX_HAVE_DOS_BASED_FILESYSTEM.
+	* config/os/newlib/os_defines.h: Likewise, for __CYGWIN__.
+	* include/bits/fstream.tcc (basic_filebuf<>::showmanyc()):
+	Use it.
+	(basic_filebuf<>::xsgetn(_CharT*, streamsize)): Likewise.
+
 2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* acconfig.h: Sort the bottom section.

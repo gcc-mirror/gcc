@@ -1,6 +1,6 @@
 // Specific definitions for newlib  -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +35,9 @@
 
 #ifdef __CYGWIN__
 #define _GLIBCXX_GTHREAD_USE_WEAK 0
+
+// See libstdc++/20806.
+#define _GLIBCXX_HAVE_DOS_BASED_FILESYSTEM 1
 #endif
 
 #endif
