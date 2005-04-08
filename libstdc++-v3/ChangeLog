@@ -1,5 +1,17 @@
 2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* linkage.m4 (GLIBCXX_MAYBE_UNDERSCORED_FUNCS): New macro.
+	(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1,
+	GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2,
+	GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3,
+	GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1,
+	GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2): Use it.
+	(GLIBCXX_CHECK_MATH_SUPPORT): Delete obsolete comment.
+	* acconfig.h: Delete redundant macros.
+	* config.h.in, configure: Regenerate.
+
+2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* linkage.m4 (GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1): Eliminate
 	a subshell and if test fails, test for same functions with 
 	leading underscore.

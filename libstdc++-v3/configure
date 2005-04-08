@@ -8665,6 +8665,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isnan declaration" >&5
 echo $ECHO_N "checking for isnan declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isnan_use+set} != xset; then
@@ -9039,6 +9042,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -9419,6 +9425,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for copysign declaration" >&5
 echo $ECHO_N "checking for copysign declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_copysign_use+set} != xset; then
@@ -9788,6 +9797,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincos declaration" >&5
 echo $ECHO_N "checking for sincos declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincos_use+set} != xset; then
@@ -10154,6 +10166,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -10534,6 +10549,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for qfpclass declaration" >&5
 echo $ECHO_N "checking for qfpclass declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_qfpclass_use+set} != xset; then
@@ -10911,6 +10929,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypot declaration" >&5
 echo $ECHO_N "checking for hypot declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypot_use+set} != xset; then
@@ -11277,6 +11298,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -11656,6 +11680,17 @@ done
 
 
 
+
+
+
+
+
+
+
+
+
+
+
     echo "$as_me:$LINENO: checking for float round functions" >&5
 echo $ECHO_N "checking for float round functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_float_round_use+set}" = set; then
@@ -12015,6 +12050,10 @@ done
 
     fi
   fi
+
+
+
+
 
 
 
@@ -12396,6 +12435,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isnanf declaration" >&5
 echo $ECHO_N "checking for isnanf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isnanf_use+set} != xset; then
@@ -12770,6 +12812,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -13150,6 +13195,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for atan2f declaration" >&5
 echo $ECHO_N "checking for atan2f declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_atan2f_use+set} != xset; then
@@ -13516,6 +13564,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -13896,6 +13947,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fmodf declaration" >&5
 echo $ECHO_N "checking for fmodf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fmodf_use+set} != xset; then
@@ -14262,6 +14316,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -14634,6 +14691,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypotf declaration" >&5
 echo $ECHO_N "checking for hypotf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypotf_use+set} != xset; then
@@ -15003,6 +15063,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for ldexpf declaration" >&5
 echo $ECHO_N "checking for ldexpf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_ldexpf_use+set} != xset; then
@@ -15369,6 +15432,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -15749,6 +15815,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for log10f declaration" >&5
 echo $ECHO_N "checking for log10f declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_log10f_use+set} != xset; then
@@ -16126,6 +16195,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for modff declaration" >&5
 echo $ECHO_N "checking for modff declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_modff_use+set} != xset; then
@@ -16492,6 +16564,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -16864,6 +16939,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for powf declaration" >&5
 echo $ECHO_N "checking for powf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_powf_use+set} != xset; then
@@ -17230,6 +17308,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -17610,6 +17691,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincosf declaration" >&5
 echo $ECHO_N "checking for sincosf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincosf_use+set} != xset; then
@@ -17976,6 +18060,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -18356,6 +18443,9 @@ done
 
 
 
+
+
+
     echo "$as_me:$LINENO: checking for long double trig functions" >&5
 echo $ECHO_N "checking for long double trig functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_long_double_trig_use+set}" = set; then
@@ -18732,6 +18822,17 @@ done
 
 
 
+
+
+
+
+
+
+
+
+
+
+
     echo "$as_me:$LINENO: checking for long double round functions" >&5
 echo $ECHO_N "checking for long double round functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_long_double_round_use+set}" = set; then
@@ -19091,6 +19192,10 @@ done
 
     fi
   fi
+
+
+
+
 
 
 
@@ -19472,6 +19577,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isinfl declaration" >&5
 echo $ECHO_N "checking for isinfl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isinfl_use+set} != xset; then
@@ -19849,6 +19957,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for copysignl declaration" >&5
 echo $ECHO_N "checking for copysignl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_copysignl_use+set} != xset; then
@@ -20218,6 +20329,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for atan2l declaration" >&5
 echo $ECHO_N "checking for atan2l declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_atan2l_use+set} != xset; then
@@ -20584,6 +20698,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -20964,6 +21081,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fabsl declaration" >&5
 echo $ECHO_N "checking for fabsl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fabsl_use+set} != xset; then
@@ -21341,6 +21461,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fmodl declaration" >&5
 echo $ECHO_N "checking for fmodl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fmodl_use+set} != xset; then
@@ -21707,6 +21830,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -22079,6 +22205,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypotl declaration" >&5
 echo $ECHO_N "checking for hypotl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypotl_use+set} != xset; then
@@ -22448,6 +22577,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for ldexpl declaration" >&5
 echo $ECHO_N "checking for ldexpl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_ldexpl_use+set} != xset; then
@@ -22814,6 +22946,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -23194,6 +23329,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for log10l declaration" >&5
 echo $ECHO_N "checking for log10l declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_log10l_use+set} != xset; then
@@ -23571,6 +23709,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for modfl declaration" >&5
 echo $ECHO_N "checking for modfl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_modfl_use+set} != xset; then
@@ -23940,6 +24081,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for powl declaration" >&5
 echo $ECHO_N "checking for powl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_powl_use+set} != xset; then
@@ -24306,6 +24450,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -24686,6 +24833,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincosl declaration" >&5
 echo $ECHO_N "checking for sincosl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincosl_use+set} != xset; then
@@ -25052,6 +25202,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -25431,7 +25584,10 @@ done
   fi
 
 
-          LIBS="$ac_save_LIBS"
+
+
+
+  LIBS="$ac_save_LIBS"
   CXXFLAGS="$ac_save_CXXFLAGS"
 
 
@@ -28743,6 +28899,9 @@ done
   fi
 
 
+
+
+
   echo "$as_me:$LINENO: checking for strtof declaration" >&5
 echo $ECHO_N "checking for strtof declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_strtof_use+set} != xset; then
@@ -28924,6 +29083,9 @@ fi
 done
 
   fi
+
+
+
 
 
   CXXFLAGS="$ac_save_CXXFLAGS"
@@ -31256,6 +31418,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isnan declaration" >&5
 echo $ECHO_N "checking for isnan declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isnan_use+set} != xset; then
@@ -31630,6 +31795,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -32010,6 +32178,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for copysign declaration" >&5
 echo $ECHO_N "checking for copysign declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_copysign_use+set} != xset; then
@@ -32379,6 +32550,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincos declaration" >&5
 echo $ECHO_N "checking for sincos declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincos_use+set} != xset; then
@@ -32745,6 +32919,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -33125,6 +33302,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for qfpclass declaration" >&5
 echo $ECHO_N "checking for qfpclass declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_qfpclass_use+set} != xset; then
@@ -33502,6 +33682,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypot declaration" >&5
 echo $ECHO_N "checking for hypot declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypot_use+set} != xset; then
@@ -33868,6 +34051,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -34247,6 +34433,17 @@ done
 
 
 
+
+
+
+
+
+
+
+
+
+
+
     echo "$as_me:$LINENO: checking for float round functions" >&5
 echo $ECHO_N "checking for float round functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_float_round_use+set}" = set; then
@@ -34606,6 +34803,10 @@ done
 
     fi
   fi
+
+
+
+
 
 
 
@@ -34987,6 +35188,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isnanf declaration" >&5
 echo $ECHO_N "checking for isnanf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isnanf_use+set} != xset; then
@@ -35361,6 +35565,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -35741,6 +35948,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for atan2f declaration" >&5
 echo $ECHO_N "checking for atan2f declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_atan2f_use+set} != xset; then
@@ -36107,6 +36317,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -36487,6 +36700,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fmodf declaration" >&5
 echo $ECHO_N "checking for fmodf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fmodf_use+set} != xset; then
@@ -36853,6 +37069,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -37225,6 +37444,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypotf declaration" >&5
 echo $ECHO_N "checking for hypotf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypotf_use+set} != xset; then
@@ -37594,6 +37816,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for ldexpf declaration" >&5
 echo $ECHO_N "checking for ldexpf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_ldexpf_use+set} != xset; then
@@ -37960,6 +38185,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -38340,6 +38568,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for log10f declaration" >&5
 echo $ECHO_N "checking for log10f declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_log10f_use+set} != xset; then
@@ -38717,6 +38948,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for modff declaration" >&5
 echo $ECHO_N "checking for modff declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_modff_use+set} != xset; then
@@ -39083,6 +39317,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -39455,6 +39692,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for powf declaration" >&5
 echo $ECHO_N "checking for powf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_powf_use+set} != xset; then
@@ -39821,6 +40061,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -40201,6 +40444,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincosf declaration" >&5
 echo $ECHO_N "checking for sincosf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincosf_use+set} != xset; then
@@ -40567,6 +40813,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -40947,6 +41196,9 @@ done
 
 
 
+
+
+
     echo "$as_me:$LINENO: checking for long double trig functions" >&5
 echo $ECHO_N "checking for long double trig functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_long_double_trig_use+set}" = set; then
@@ -41323,6 +41575,17 @@ done
 
 
 
+
+
+
+
+
+
+
+
+
+
+
     echo "$as_me:$LINENO: checking for long double round functions" >&5
 echo $ECHO_N "checking for long double round functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_long_double_round_use+set}" = set; then
@@ -41682,6 +41945,10 @@ done
 
     fi
   fi
+
+
+
+
 
 
 
@@ -42063,6 +42330,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isinfl declaration" >&5
 echo $ECHO_N "checking for isinfl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isinfl_use+set} != xset; then
@@ -42440,6 +42710,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for copysignl declaration" >&5
 echo $ECHO_N "checking for copysignl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_copysignl_use+set} != xset; then
@@ -42809,6 +43082,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for atan2l declaration" >&5
 echo $ECHO_N "checking for atan2l declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_atan2l_use+set} != xset; then
@@ -43175,6 +43451,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -43555,6 +43834,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fabsl declaration" >&5
 echo $ECHO_N "checking for fabsl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fabsl_use+set} != xset; then
@@ -43932,6 +44214,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fmodl declaration" >&5
 echo $ECHO_N "checking for fmodl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fmodl_use+set} != xset; then
@@ -44298,6 +44583,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -44670,6 +44958,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypotl declaration" >&5
 echo $ECHO_N "checking for hypotl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypotl_use+set} != xset; then
@@ -45039,6 +45330,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for ldexpl declaration" >&5
 echo $ECHO_N "checking for ldexpl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_ldexpl_use+set} != xset; then
@@ -45405,6 +45699,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -45785,6 +46082,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for log10l declaration" >&5
 echo $ECHO_N "checking for log10l declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_log10l_use+set} != xset; then
@@ -46162,6 +46462,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for modfl declaration" >&5
 echo $ECHO_N "checking for modfl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_modfl_use+set} != xset; then
@@ -46531,6 +46834,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for powl declaration" >&5
 echo $ECHO_N "checking for powl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_powl_use+set} != xset; then
@@ -46897,6 +47203,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -47277,6 +47586,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincosl declaration" >&5
 echo $ECHO_N "checking for sincosl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincosl_use+set} != xset; then
@@ -47643,6 +47955,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -48022,7 +48337,10 @@ done
   fi
 
 
-          LIBS="$ac_save_LIBS"
+
+
+
+  LIBS="$ac_save_LIBS"
   CXXFLAGS="$ac_save_CXXFLAGS"
 
 
@@ -51334,6 +51652,9 @@ done
   fi
 
 
+
+
+
   echo "$as_me:$LINENO: checking for strtof declaration" >&5
 echo $ECHO_N "checking for strtof declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_strtof_use+set} != xset; then
@@ -51515,6 +51836,9 @@ fi
 done
 
   fi
+
+
+
 
 
   CXXFLAGS="$ac_save_CXXFLAGS"
@@ -52998,6 +53322,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isnan declaration" >&5
 echo $ECHO_N "checking for isnan declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isnan_use+set} != xset; then
@@ -53372,6 +53699,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -53752,6 +54082,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for copysign declaration" >&5
 echo $ECHO_N "checking for copysign declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_copysign_use+set} != xset; then
@@ -54121,6 +54454,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincos declaration" >&5
 echo $ECHO_N "checking for sincos declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincos_use+set} != xset; then
@@ -54487,6 +54823,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -54867,6 +55206,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for qfpclass declaration" >&5
 echo $ECHO_N "checking for qfpclass declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_qfpclass_use+set} != xset; then
@@ -55244,6 +55586,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypot declaration" >&5
 echo $ECHO_N "checking for hypot declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypot_use+set} != xset; then
@@ -55610,6 +55955,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -55989,6 +56337,17 @@ done
 
 
 
+
+
+
+
+
+
+
+
+
+
+
     echo "$as_me:$LINENO: checking for float round functions" >&5
 echo $ECHO_N "checking for float round functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_float_round_use+set}" = set; then
@@ -56348,6 +56707,10 @@ done
 
     fi
   fi
+
+
+
+
 
 
 
@@ -56729,6 +57092,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isnanf declaration" >&5
 echo $ECHO_N "checking for isnanf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isnanf_use+set} != xset; then
@@ -57103,6 +57469,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -57483,6 +57852,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for atan2f declaration" >&5
 echo $ECHO_N "checking for atan2f declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_atan2f_use+set} != xset; then
@@ -57849,6 +58221,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -58229,6 +58604,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fmodf declaration" >&5
 echo $ECHO_N "checking for fmodf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fmodf_use+set} != xset; then
@@ -58595,6 +58973,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -58967,6 +59348,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypotf declaration" >&5
 echo $ECHO_N "checking for hypotf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypotf_use+set} != xset; then
@@ -59336,6 +59720,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for ldexpf declaration" >&5
 echo $ECHO_N "checking for ldexpf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_ldexpf_use+set} != xset; then
@@ -59702,6 +60089,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -60082,6 +60472,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for log10f declaration" >&5
 echo $ECHO_N "checking for log10f declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_log10f_use+set} != xset; then
@@ -60459,6 +60852,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for modff declaration" >&5
 echo $ECHO_N "checking for modff declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_modff_use+set} != xset; then
@@ -60825,6 +61221,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -61197,6 +61596,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for powf declaration" >&5
 echo $ECHO_N "checking for powf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_powf_use+set} != xset; then
@@ -61563,6 +61965,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -61943,6 +62348,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincosf declaration" >&5
 echo $ECHO_N "checking for sincosf declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincosf_use+set} != xset; then
@@ -62309,6 +62717,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -62689,6 +63100,9 @@ done
 
 
 
+
+
+
     echo "$as_me:$LINENO: checking for long double trig functions" >&5
 echo $ECHO_N "checking for long double trig functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_long_double_trig_use+set}" = set; then
@@ -63065,6 +63479,17 @@ done
 
 
 
+
+
+
+
+
+
+
+
+
+
+
     echo "$as_me:$LINENO: checking for long double round functions" >&5
 echo $ECHO_N "checking for long double round functions... $ECHO_C" >&6
   if test "${glibcxx_cv_func_long_double_round_use+set}" = set; then
@@ -63424,6 +63849,10 @@ done
 
     fi
   fi
+
+
+
+
 
 
 
@@ -63805,6 +64234,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for isinfl declaration" >&5
 echo $ECHO_N "checking for isinfl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_isinfl_use+set} != xset; then
@@ -64182,6 +64614,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for copysignl declaration" >&5
 echo $ECHO_N "checking for copysignl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_copysignl_use+set} != xset; then
@@ -64551,6 +64986,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for atan2l declaration" >&5
 echo $ECHO_N "checking for atan2l declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_atan2l_use+set} != xset; then
@@ -64917,6 +65355,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -65297,6 +65738,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fabsl declaration" >&5
 echo $ECHO_N "checking for fabsl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fabsl_use+set} != xset; then
@@ -65674,6 +66118,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for fmodl declaration" >&5
 echo $ECHO_N "checking for fmodl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_fmodl_use+set} != xset; then
@@ -66040,6 +66487,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -66412,6 +66862,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for hypotl declaration" >&5
 echo $ECHO_N "checking for hypotl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_hypotl_use+set} != xset; then
@@ -66781,6 +67234,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for ldexpl declaration" >&5
 echo $ECHO_N "checking for ldexpl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_ldexpl_use+set} != xset; then
@@ -67147,6 +67603,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -67527,6 +67986,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for log10l declaration" >&5
 echo $ECHO_N "checking for log10l declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_log10l_use+set} != xset; then
@@ -67904,6 +68366,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for modfl declaration" >&5
 echo $ECHO_N "checking for modfl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_modfl_use+set} != xset; then
@@ -68273,6 +68738,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for powl declaration" >&5
 echo $ECHO_N "checking for powl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_powl_use+set} != xset; then
@@ -68639,6 +69107,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -69019,6 +69490,9 @@ done
 
 
 
+
+
+
   echo "$as_me:$LINENO: checking for sincosl declaration" >&5
 echo $ECHO_N "checking for sincosl declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_sincosl_use+set} != xset; then
@@ -69385,6 +69859,9 @@ done
 
     fi
   fi
+
+
+
 
 
 
@@ -69764,7 +70241,10 @@ done
   fi
 
 
-          LIBS="$ac_save_LIBS"
+
+
+
+  LIBS="$ac_save_LIBS"
   CXXFLAGS="$ac_save_CXXFLAGS"
 
 
@@ -73076,6 +73556,9 @@ done
   fi
 
 
+
+
+
   echo "$as_me:$LINENO: checking for strtof declaration" >&5
 echo $ECHO_N "checking for strtof declaration... $ECHO_C" >&6
   if test x${glibcxx_cv_func_strtof_use+set} != xset; then
@@ -73257,6 +73740,9 @@ fi
 done
 
   fi
+
+
+
 
 
   CXXFLAGS="$ac_save_CXXFLAGS"
