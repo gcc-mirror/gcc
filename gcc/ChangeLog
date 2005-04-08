@@ -1,3 +1,7 @@
+2005-04-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-operands.c (correct_use_link): Remove linear scan.
+
 2005-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h: Revert last change.

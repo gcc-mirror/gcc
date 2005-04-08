@@ -456,7 +456,8 @@ finalize_ssa_defs (def_optype *old_ops_p, tree stmt)
    changed what this pointer points to via TREE_OPERANDS (exp, 0) = <...>.
    THe contents are different, but the the pointer is still the same.  This
    routine will check to make sure PTR is in the correct list, and if it isn't
-   put it in the correct list.  */
+   put it in the correct list.  We cannot simply check the previous node 
+   because all nodes in the same stmt might have be changed.  */
 
 static inline void
 correct_use_link (ssa_imm_use_t *ptr, tree stmt)
@@ -471,10 +472,28 @@ correct_use_link (ssa_imm_use_t *ptr, tree stmt)
   prev = ptr->prev;
   if (prev)
     {
-      /* find the root, which has a non-NULL stmt, and a NULL use.  */
-      while (prev->stmt == NULL || prev->use != NULL)
-        prev = prev->prev;
-      root = prev->stmt;
+      bool stmt_mod = true;
+      /* Find the first element which isn't a SAFE iterator, is in a sifferent
+	 stmt, and is not a a modified stmt,  That node is in the correct list,
+	 see if we are too.  */
+
+      while (stmt_mod)
+	{
+	  while (prev->stmt == stmt || prev->stmt == NULL)
+	    prev = prev->prev;
+	  if (prev->use == NULL)
+	    stmt_mod = false;
+	  else
+	    if ((stmt_mod = stmt_modified_p (prev->stmt)))
+	      prev = prev->prev;
+	}
+
+      /* Get the ssa_name of the list the node is in.  */
+      if (prev->use == NULL)
+	root = prev->stmt;
+      else
+	root = *(prev->use);
+      /* If its the right list, simply return.  */
       if (root == *(ptr->use))
 	return;
     }
