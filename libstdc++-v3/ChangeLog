@@ -1,3 +1,11 @@
+2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* linkage.m4 (GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1): Eliminate
+	a subshell and if test fails, test for same functions with 
+	leading underscore.
+	(GLIBCXX_CHECK_MATH_SUPPORT): Eliminate seperate checks for _funcs.
+	* configure: Regenerate.
+
 2005-04-08  Danny Smith  <dannysmith@users.sourceforge.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 	    		
