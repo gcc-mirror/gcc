@@ -1,5 +1,10 @@
 2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* acconfig.h: Remove redundant HAVE_FLOAT_H.
+	* config.h.in: Regenerate.
+
+2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* configure.ac: Create template for PACKAGE and VERSION.
 	Update comment on how to regenerate file.  Update minimum
 	automake version to 1.9.3.

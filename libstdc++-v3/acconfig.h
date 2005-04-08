@@ -1,8 +1,5 @@
 // Symbols and macros for libstdc++ -*- C++ -*-
 
-// Define if <float.h> exists.
-#undef HAVE_FLOAT_H
-
 // @BOTTOM@
 //
 // Define symbol versioning in assember directives. If symbol
