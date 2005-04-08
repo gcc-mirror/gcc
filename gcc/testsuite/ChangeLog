@@ -1,3 +1,8 @@
+2005-04-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/17229
+	* gfortran.dg/pr17229.f: New test.
+
 2005-04-07  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/tiny_1.f90: New test.
@@ -5,8 +10,8 @@
 
 2005-04-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
-        * gfortran.dg/eor_1.f90:  Fix dg-do run line
-        * gfortran.dg/open_new.f90:  Fix dg-do run line
+	* gfortran.dg/eor_1.f90:  Fix dg-do run line
+	* gfortran.dg/open_new.f90:  Fix dg-do run line
 
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 

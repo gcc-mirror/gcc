@@ -1,3 +1,11 @@
+2005-04-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/17229
+	* match.c (gfc_match_arithmetic_if): New function to match an
+	arithmetic IF statement.
+	(gfc_match_if): Use gfc_match_arithmetic_if to match an
+	arithmetic IF statement embedded in a simple IF statement.
+
 2005-04-07  Steven G. Kargl  <kargls@comcast.net>
 
 	* simplify.c (gfc_simplify_exponent): Fix exponent(tiny(x))
