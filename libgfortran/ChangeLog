@@ -1,3 +1,8 @@
+2005-04-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* io/backspace.c (unformatted_backspace): Do not dereference
+	the pointer to the stream.
+
 2005-04-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libfortran/20766
@@ -1476,7 +1481,7 @@
 	* libgfortan.h,intrinsics/random.c: Made random_seed visible.
 	* runtime/main.c(init): Call random_seed as part of MAIN init.
 
-2004-05-13  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-13  Tobias Schlter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* io/format.c: (parse_format_list): No comma is required after
 	P descriptor.
@@ -1933,7 +1938,7 @@
 	(calculate_G_format): Rewrite it to eliminate an infinte loop and set
 	the scale_factor to 0 for F editing.
 
-2003-05-11  Tobias Schlüter  <innenminister@gmx.de>
+2003-05-11  Tobias Schlter  <innenminister@gmx.de>
 
 	* libgfor.h: Only include stdint.h if it exists.
 
@@ -1948,11 +1953,11 @@
 	* libgfor.h (offsetof): Define if nobody else does.
 	* runtime/memory.c (HEADER_SIZE): Use it.
 
-2003-05-01  Tobias Schlüter  <innenminister@gmx.de>
+2003-05-01  Tobias Schlter  <innenminister@gmx.de>
 
 	* configure.in: Require autoconf 2.54.
 
-2003-04-28  Tobias Schlüter  <innenminister@gmx.de>
+2003-04-28  Tobias Schlter  <innenminister@gmx.de>
 	Paul Brook  <paul@nowt.org>
 
 	* intrinsics/reshape_generic.c: Copy the whole element, not just the
@@ -1966,7 +1971,7 @@
 	* io/format.c (parse_format_list): Allow 'X' without integer
 	prefix.  This is an extension.  Interpretation is '1X'.
 
-2003-04-18  Tobias Schlüter  <Tobias.Schlueter@physik.uni-muenchen.de>
+2003-04-18  Tobias Schlter  <Tobias.Schlueter@physik.uni-muenchen.de>
 
 	* io/format.c (parse_format_list): Allow '0P'.
 
