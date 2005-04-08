@@ -1,3 +1,8 @@
+2005-04-08  Ben Elliston  <bje@au.ibm.com>
+
+	* config/fp-bit.c: Include L_mul_tf in #endif comment.
+	* config/fp-bit.h: Tidy comments.
+
 2005-04-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h: Poison PARAMS.
