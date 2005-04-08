@@ -28,6 +28,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include <string.h>
 #include "libgfortran.h"
 #include "io.h"
 
@@ -101,17 +102,19 @@ formatted_backspace (void)
 static void
 unformatted_backspace (void)
 {
-  gfc_offset *p, new;
+  gfc_offset m, new;
   int length;
+  char *p;
 
   length = sizeof (gfc_offset);
 
-  p = (gfc_offset *) salloc_r_at (current_unit->s, &length,
-				file_position (current_unit->s) - length);
+  p = salloc_r_at (current_unit->s, &length,
+		   file_position (current_unit->s) - length);
   if (p == NULL)
     goto io_error;
 
-  new = file_position (current_unit->s) - *p - 2*length;
+  memcpy (&m, p, sizeof (gfc_offset));
+  new = file_position (current_unit->s) - m - 2*length;
   if (sseek (current_unit->s, new) == FAILURE)
     goto io_error;
 
