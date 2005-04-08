@@ -1,9 +1,5 @@
 // Symbols and macros for libstdc++ -*- C++ -*-
 
-// Defines libstdc++ version.
-#undef PACKAGE
-#undef VERSION
-
 // Define if <float.h> exists.
 #undef HAVE_FLOAT_H
 

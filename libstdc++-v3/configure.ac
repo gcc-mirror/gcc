@@ -1,5 +1,4 @@
-# Process this file with autoconf to produce a configure script, like so:
-# aclocal && autoconf && autoheader && automake
+# Process this file with autoreconf to produce a configure script.
 
 AC_PREREQ(2.59)
 AC_INIT(package-unused, version-unused,, libstdc++)
@@ -58,7 +57,9 @@ fi
 #  no-dependencies:  turns off auto dependency generation (just for now)
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is now required.
-AM_INIT_AUTOMAKE([1.9.1 no-define foreign no-dependencies -Wall -Wno-portability -Wno-override])
+AM_INIT_AUTOMAKE([1.9.3 no-define foreign no-dependencies -Wall -Wno-portability -Wno-override])
+AH_TEMPLATE(PACKAGE, [Name of package])
+AH_TEMPLATE(VERSION, [Version number of package])
 
 # Runs configure.host, finds CC, CXX, and assorted other critical bits.  Sets
 # up critical shell variables.
