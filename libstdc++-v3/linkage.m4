@@ -28,6 +28,22 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_1], [
 ])
 
 
+dnl 
+dnl Define autoheader template for using the underscore functions
+dnl For each parameter, create a macro where if func doesn't exist,
+dnl but _func does, then it will "#define func _func".
+dnl
+dnl GLIBCXX_MAYBE_UNDERSCORED_FUNCS
+AC_DEFUN([GLIBCXX_MAYBE_UNDERSCORED_FUNCS], 
+[AC_FOREACH([glibcxx_ufunc], [$1],
+  [AH_VERBATIM(_[]glibcxx_ufunc,
+[#if defined (]AS_TR_CPP(HAVE__[]glibcxx_ufunc)[) && ! defined (]AS_TR_CPP(HAVE_[]glibcxx_ufunc)[)
+# define ]AS_TR_CPP(HAVE_[]glibcxx_ufunc)[ 1
+# define ]glibcxx_ufunc[ _]glibcxx_ufunc[
+#endif])])
+])
+
+
 dnl
 dnl Check to see if the (math function) argument passed is
 dnl 1) declared when using the c++ compiler
@@ -51,6 +67,7 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1], [
       AC_CHECK_FUNCS(_$1)
     fi
   fi
+  GLIBCXX_MAYBE_UNDERSCORED_FUNCS($1)
 ])
 
 
@@ -88,6 +105,7 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1], [
       AC_CHECK_FUNCS(patsubst(funclist,[\w+],[_\&]))
     fi
   fi
+  GLIBCXX_MAYBE_UNDERSCORED_FUNCS(funclist)
   undefine([funclist])
 ])
 
@@ -134,6 +152,7 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2], [
       AC_CHECK_FUNCS(_$1)
     fi
   fi
+  GLIBCXX_MAYBE_UNDERSCORED_FUNCS($1)
 ])
 
 
@@ -180,6 +199,7 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3], [
       AC_CHECK_FUNCS(_$1)
     fi
   fi
+  GLIBCXX_MAYBE_UNDERSCORED_FUNCS($1)
 ])
 
 
@@ -238,6 +258,7 @@ AC_DEFUN([GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2], [
   if test x$glibcxx_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)
   fi
+  GLIBCXX_MAYBE_UNDERSCORED_FUNCS($1)
 ])
 
 
@@ -463,10 +484,6 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_SUPPORT], [
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3(sincosl)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(finitel)
 
-  dnl Some runtimes have these functions with a preceding underscore. Please
-  dnl keep this sync'd with the one above. And if you add any new symbol,
-  dnl please add the corresponding block in the @BOTTOM@ section of acconfig.h.
-  dnl Check to see if certain C math functions exist.
   LIBS="$ac_save_LIBS"
   CXXFLAGS="$ac_save_CXXFLAGS"
 ])

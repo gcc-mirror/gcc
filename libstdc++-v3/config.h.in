@@ -693,21 +693,7 @@
 
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T
-//
-// Define symbol versioning in assember directives. If symbol
-// versioning is beigng used, and the assembler supports this kind of
-// thing, then use it.
-// NB: _GLIBCXX_AT_AT is a hack to work around quoting issues in m4.
-#if _GLIBCXX_SYMVER
-  #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
-   asm (".symver " #cur "," #old _GLIBCXX_AT_AT #version);
-#else
-  #define _GLIBCXX_ASM_SYMVER(cur, old, version)
-#endif
 
-// Systems that have certain non-standard functions prefixed with an
-// underscore, we'll handle those here. Must come after config.h.in.
-//
 #if defined (HAVE__ACOSF) && ! defined (HAVE_ACOSF)
 # define HAVE_ACOSF 1
 # define acosf _acosf
@@ -728,6 +714,16 @@
 # define asinl _asinl
 #endif
 
+#if defined (HAVE__ATAN2F) && ! defined (HAVE_ATAN2F)
+# define HAVE_ATAN2F 1
+# define atan2f _atan2f
+#endif
+
+#if defined (HAVE__ATAN2L) && ! defined (HAVE_ATAN2L)
+# define HAVE_ATAN2L 1
+# define atan2l _atan2l
+#endif
+
 #if defined (HAVE__ATANF) && ! defined (HAVE_ATANF)
 # define HAVE_ATANF 1
 # define atanf _atanf
@@ -740,12 +736,12 @@
 
 #if defined (HAVE__CEILF) && ! defined (HAVE_CEILF)
 # define HAVE_CEILF 1
-# define aceil _ceilf
+# define ceilf _ceilf
 #endif
 
 #if defined (HAVE__CEILL) && ! defined (HAVE_CEILL)
 # define HAVE_CEILL 1
-# define aceil _ceill
+# define ceill _ceill
 #endif
 
 #if defined (HAVE__COPYSIGN) && ! defined (HAVE_COPYSIGN)
@@ -848,6 +844,21 @@
 # define frexpl _frexpl
 #endif
 
+#if defined (HAVE__HYPOT) && ! defined (HAVE_HYPOT)
+# define HAVE_HYPOT 1
+# define hypot _hypot
+#endif
+
+#if defined (HAVE__HYPOTF) && ! defined (HAVE_HYPOTF)
+# define HAVE_HYPOTF 1
+# define hypotf _hypotf
+#endif
+
+#if defined (HAVE__HYPOTL) && ! defined (HAVE_HYPOTL)
+# define HAVE_HYPOTL 1
+# define hypotl _hypotl
+#endif
+
 #if defined (HAVE__ISINF) && ! defined (HAVE_ISINF)
 # define HAVE_ISINF 1
 # define isinf _isinf
@@ -913,9 +924,14 @@
 # define modf _modf
 #endif
 
-#if defined (HAVE__MODL) && ! defined (HAVE_MODL)
-# define HAVE_MODL 1
-# define modl _modl
+#if defined (HAVE__MODFF) && ! defined (HAVE_MODFF)
+# define HAVE_MODFF 1
+# define modff _modff
+#endif
+
+#if defined (HAVE__MODFL) && ! defined (HAVE_MODFL)
+# define HAVE_MODFL 1
+# define modfl _modfl
 #endif
 
 #if defined (HAVE__POWF) && ! defined (HAVE_POWF)
@@ -926,11 +942,6 @@
 #if defined (HAVE__POWL) && ! defined (HAVE_POWL)
 # define HAVE_POWL 1
 # define powl _powl
-#endif
-
-#if defined (HAVE__QFINITE) && ! defined (HAVE_QFINITE)
-# define HAVE_QFINITE 1
-# define qfinite _qfinite
 #endif
 
 #if defined (HAVE__QFPCLASS) && ! defined (HAVE_QFPCLASS)
@@ -1011,4 +1022,15 @@
 #if defined (HAVE__TANL) && ! defined (HAVE_TANL)
 # define HAVE_TANL 1
 # define tanl _tanl
+#endif
+//
+// Define symbol versioning in assember directives. If symbol
+// versioning is beigng used, and the assembler supports this kind of
+// thing, then use it.
+// NB: _GLIBCXX_AT_AT is a hack to work around quoting issues in m4.
+#if _GLIBCXX_SYMVER
+  #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
+   asm (".symver " #cur "," #old _GLIBCXX_AT_AT #version);
+#else
+  #define _GLIBCXX_ASM_SYMVER(cur, old, version)
 #endif
