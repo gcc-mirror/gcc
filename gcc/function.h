@@ -393,10 +393,6 @@ struct function GTY(())
      can throw.  */
   unsigned int all_throwers_are_sibcalls : 1;
 
-  /* Nonzero if instrumentation calls for function entry and exit should be
-     generated.  */
-  unsigned int instrument_entry_exit : 1;
-
   /* Nonzero if profiling code should be generated.  */
   unsigned int profile : 1;
 
@@ -458,7 +454,6 @@ extern int trampolines_created;
 #define current_function_stdarg (cfun->stdarg)
 #define current_function_internal_arg_pointer (cfun->internal_arg_pointer)
 #define current_function_return_rtx (cfun->return_rtx)
-#define current_function_instrument_entry_exit (cfun->instrument_entry_exit)
 #define current_function_profile (cfun->profile)
 #define current_function_funcdef_no (cfun->funcdef_no)
 #define current_function_limit_stack (cfun->limit_stack)
