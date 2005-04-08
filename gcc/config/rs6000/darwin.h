@@ -406,7 +406,7 @@ extern const char *darwin_one_byte_bool;
 #define HAS_MD_FALLBACK_FRAME_STATE_FOR 1
 
 /* True, iff we're generating fast turn around debugging code.  When
-   true, we arrange for function prologues to start with 4 nops so
+   true, we arrange for function prologues to start with 5 nops so
    that gdb may insert code to redirect them, and for data to be
    accessed indirectly.  The runtime uses this indirection to forward
    references for data to the original instance of that data.  */
