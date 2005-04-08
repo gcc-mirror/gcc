@@ -1,3 +1,7 @@
+2005-04-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Poison PARAMS.
+
 2005-04-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/vax/vax.h (target_flags, MASK_UNIX_ASM, MASK_VAXC_ALIGNMENT)
