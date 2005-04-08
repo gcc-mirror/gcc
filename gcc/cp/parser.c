@@ -1510,7 +1510,7 @@ static tree cp_parser_declarator_id
 static tree cp_parser_type_id
   (cp_parser *);
 static void cp_parser_type_specifier_seq
-  (cp_parser *, cp_decl_specifier_seq *);
+  (cp_parser *, bool, cp_decl_specifier_seq *);
 static cp_parameter_declarator *cp_parser_parameter_declaration_clause
   (cp_parser *);
 static cp_parameter_declarator *cp_parser_parameter_declaration_list
@@ -4973,7 +4973,8 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
   parser->type_definition_forbidden_message
     = "types may not be defined in a new-type-id";
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, &type_specifier_seq);
+  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				&type_specifier_seq);
   /* Restore the old message.  */
   parser->type_definition_forbidden_message = saved_message;
   /* Parse the new-declarator.  */
@@ -6305,7 +6306,8 @@ cp_parser_condition (cp_parser* parser)
   parser->type_definition_forbidden_message
     = "types may not be defined in conditions";
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, &type_specifiers);
+  cp_parser_type_specifier_seq (parser, /*is_condition==*/true,
+				&type_specifiers);
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
   /* If all is well, we might be looking at a declaration.  */
@@ -7564,7 +7566,8 @@ cp_parser_conversion_type_id (cp_parser* parser)
   /* Parse the attributes.  */
   attributes = cp_parser_attributes_opt (parser);
   /* Parse the type-specifiers.  */
-  cp_parser_type_specifier_seq (parser, &type_specifiers);
+  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				&type_specifiers);
   /* If that didn't work, stop.  */
   if (type_specifiers.type == error_mark_node)
     return error_mark_node;
@@ -11503,7 +11506,8 @@ cp_parser_type_id (cp_parser* parser)
   cp_declarator *abstract_declarator;
 
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, &type_specifier_seq);
+  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				&type_specifier_seq);
   if (type_specifier_seq.type == error_mark_node)
     return error_mark_node;
 
@@ -11531,13 +11535,18 @@ cp_parser_type_id (cp_parser* parser)
    type-specifier-seq:
      attributes type-specifier-seq [opt]
 
+   If IS_CONDITION is true, we are at the start of a "condition",
+   e.g., we've just seen "if (".
+
    Sets *TYPE_SPECIFIER_SEQ to represent the sequence.  */
 
 static void
 cp_parser_type_specifier_seq (cp_parser* parser,
+			      bool is_condition,
 			      cp_decl_specifier_seq *type_specifier_seq)
 {
   bool seen_type_specifier = false;
+  cp_parser_flags flags = CP_PARSER_FLAGS_OPTIONAL;
 
   /* Clear the TYPE_SPECIFIER_SEQ.  */
   clear_decl_specs (type_specifier_seq);
@@ -11546,6 +11555,7 @@ cp_parser_type_specifier_seq (cp_parser* parser,
   while (true)
     {
       tree type_specifier;
+      bool is_cv_qualifier;
 
       /* Check for attributes first.  */
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_ATTRIBUTE))
@@ -11558,25 +11568,45 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 
       /* Look for the type-specifier.  */
       type_specifier = cp_parser_type_specifier (parser,
-						 CP_PARSER_FLAGS_OPTIONAL,
+						 flags,
 						 type_specifier_seq,
 						 /*is_declaration=*/false,
 						 NULL,
-						 NULL);
-      /* If the first type-specifier could not be found, this is not a
-	 type-specifier-seq at all.  */
-      if (!seen_type_specifier && !type_specifier)
+						 &is_cv_qualifier);
+      if (!type_specifier)
 	{
-	  cp_parser_error (parser, "expected type-specifier");
-	  type_specifier_seq->type = error_mark_node;
-	  return;
+	  /* If the first type-specifier could not be found, this is not a
+	     type-specifier-seq at all.  */
+	  if (!seen_type_specifier)
+	    {
+	      cp_parser_error (parser, "expected type-specifier");
+	      type_specifier_seq->type = error_mark_node;
+	      return;
+	    }
+	  /* If subsequent type-specifiers could not be found, the
+	     type-specifier-seq is complete.  */
+	  break;
 	}
-      /* If subsequent type-specifiers could not be found, the
-	 type-specifier-seq is complete.  */
-      else if (seen_type_specifier && !type_specifier)
-	break;
 
       seen_type_specifier = true;
+      /* The standard says that a condition can be:
+
+            type-specifier-seq declarator = assignment-expression
+      
+	 However, given:
+
+	   struct S {};
+	   if (int S = ...)
+
+         we should treat the "S" as a declarator, not as a
+         type-specifier.  The standard doesn't say that explicitly for
+         type-specifier-seq, but it does say that for
+         decl-specifier-seq in an ordinary declaration.  Perhaps it
+         would be clearer just to allow a decl-specifier-seq here, and
+         then add a semantic restriction that if any decl-specifiers
+         that are not type-specifiers appear, the program is invalid.  */
+      if (is_condition && !is_cv_qualifier)
+	flags |= CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES; 
     }
 
   return;
@@ -13830,7 +13860,8 @@ cp_parser_exception_declaration (cp_parser* parser)
     = "types may not be defined in exception-declarations";
 
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, &type_specifiers);
+  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				&type_specifiers);
   /* If it's a `)', then there is no declarator.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
     declarator = NULL;
