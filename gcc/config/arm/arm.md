@@ -4192,6 +4192,30 @@
   "
 )
 
+; If optimizing for size, or if we have load delay slots, then 
+; we want to split the constant into two separate operations. 
+; In both cases this may split a trivial part into a single data op
+; leaving a single complex constant to load.  We can also get longer
+; offsets in a LDR which means we get better chances of sharing the pool
+; entries.  Finally, we can normally do a better job of scheduling
+; LDR instructions than we can with LDM.
+; This pattern will only match if the one above did not.
+(define_split
+  [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
+	(match_operand:ANY64 1 "const_double_operand" ""))]
+  "TARGET_ARM && reload_completed
+   && arm_const_double_by_parts (operands[1])"
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 2) (match_dup 3))]
+  "
+  operands[2] = gen_highpart (SImode, operands[0]);
+  operands[3] = gen_highpart_mode (SImode, GET_MODE (operands[0]),
+				   operands[1]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  "
+)
+
 (define_split
   [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
 	(match_operand:ANY64 1 "arm_general_register_operand" ""))]
