@@ -59,8 +59,8 @@ Boston, MA 02111-1307, USA.  */
    existed in the unit to be replaced, and from the new translation
    unit, for new data.
 
-   The changes are to insert 4 nops at the beginning of all functions
-   and to use indirection to get at static duration data.  The 4 nops
+   The changes are to insert 5 nops at the beginning of all functions
+   and to use indirection to get at static duration data.  The 5 nops
    are required by consumers of the generated code.  Currently, gdb
    uses this to patch in a jump to the overriding function, this
    allows all uses of the old name to forward to the replacement,

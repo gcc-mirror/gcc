@@ -8,6 +8,9 @@
 2005-04-08  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.c (indirect_data): Fix typo in strncmp logic.
+	
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Use 5 nops,
+	instead of 4.
 
 2005-04-08  Kazu Hirata  <kazu@cs.umass.edu>
 
