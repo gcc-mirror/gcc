@@ -1,3 +1,7 @@
+2005-04-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/tpf.h (ASM_SPEC): Define.
+
 2005-04-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-flow.h: Remove the prototype for
