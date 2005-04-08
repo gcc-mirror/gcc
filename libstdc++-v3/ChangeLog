@@ -1,3 +1,13 @@
+2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.ac: Create template for PACKAGE and VERSION.
+	Update comment on how to regenerate file.  Update minimum
+	automake version to 1.9.3.
+	* acconfig.h: Remove PACKAGE and VERSION.
+	* aclocal.m4, configure, Makefile.in, po/Makefile.in, 
+	src/Makefile.in, include/Makefile.in, libmath/Makefile.in, 
+	testsuite/Makefile.in, config.h.in: Regenerate.
+
 2005-04-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/test.html: Update.
