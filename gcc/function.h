@@ -473,7 +473,6 @@ extern int trampolines_created;
 #define used_temp_slots (cfun->x_used_temp_slots)
 #define avail_temp_slots (cfun->x_avail_temp_slots)
 #define temp_slot_level (cfun->x_temp_slot_level)
-#define nonlocal_labels (cfun->x_nonlocal_labels)
 #define nonlocal_goto_handler_labels (cfun->x_nonlocal_goto_handler_labels)
 
 /* Given a function decl for a containing function,
