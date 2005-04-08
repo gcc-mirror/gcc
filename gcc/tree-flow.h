@@ -548,12 +548,7 @@ extern void mark_new_vars_to_rename (tree, bitmap);
 extern void find_new_referenced_vars (tree *);
 void mark_call_clobbered_vars_to_rename (void);
 
-extern void redirect_immediate_uses (tree, tree);
 extern tree make_rename_temp (tree, const char *);
-
-/* Flags used when computing reaching definitions and reached uses.  */
-#define TDFA_USE_OPS		(1 << 0)
-#define TDFA_USE_VOPS		(1 << 1)
 
 /* In gimple-low.c  */
 extern void record_vars (tree);
