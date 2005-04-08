@@ -16,51 +16,6 @@
 // Systems that have certain non-standard functions prefixed with an
 // underscore, we'll handle those here. Must come after config.h.in.
 //
-#if defined (HAVE__ISNAN) && ! defined (HAVE_ISNAN)
-# define HAVE_ISNAN 1
-# define isnan _isnan
-#endif
-
-#if defined (HAVE__ISNANF) && ! defined (HAVE_ISNANF)
-# define HAVE_ISNANF 1
-# define isnanf _isnanf
-#endif
-
-#if defined (HAVE__ISNANL) && ! defined (HAVE_ISNANL)
-# define HAVE_ISNANL 1
-# define isnanl _isnanl
-#endif
-
-#if defined (HAVE__ISINF) && ! defined (HAVE_ISINF)
-# define HAVE_ISINF 1
-# define isinf _isinf
-#endif
-
-#if defined (HAVE__ISINFF) && ! defined (HAVE_ISINFF)
-# define HAVE_ISINFF 1
-# define isinff _isinff
-#endif
-
-#if defined (HAVE__ISINFL) && ! defined (HAVE_ISINFL)
-# define HAVE_ISINFL 1
-# define isinfl _isinfl
-#endif
-
-#if defined (HAVE__COPYSIGN) && ! defined (HAVE_COPYSIGN)
-# define HAVE_COPYSIGN 1
-# define copysign _copysign
-#endif
-
-#if defined (HAVE__COPYSIGNL) && ! defined (HAVE_COPYSIGNL)
-# define HAVE_COPYSIGNL 1
-# define copysignl _copysignl
-#endif
-
-#if defined (HAVE__COSF) && ! defined (HAVE_COSF)
-# define HAVE_COSF 1
-# define cosf _cosf
-#endif
-
 #if defined (HAVE__ACOSF) && ! defined (HAVE_ACOSF)
 # define HAVE_ACOSF 1
 # define acosf _acosf
@@ -101,24 +56,34 @@
 # define aceil _ceill
 #endif
 
+#if defined (HAVE__COPYSIGN) && ! defined (HAVE_COPYSIGN)
+# define HAVE_COPYSIGN 1
+# define copysign _copysign
+#endif
+
+#if defined (HAVE__COPYSIGNL) && ! defined (HAVE_COPYSIGNL)
+# define HAVE_COPYSIGNL 1
+# define copysignl _copysignl
+#endif
+
+#if defined (HAVE__COSF) && ! defined (HAVE_COSF)
+# define HAVE_COSF 1
+# define cosf _cosf
+#endif
+
 #if defined (HAVE__COSHF) && ! defined (HAVE_COSHF)
 # define HAVE_COSHF 1
 # define coshf _coshf
 #endif
 
-#if defined (HAVE__COSL) && ! defined (HAVE_COSL)
-# define HAVE_COSL 1
-# define cosl _cosl
-#endif
-
-#if defined (HAVE__LOGF) && ! defined (HAVE_LOGF)
-# define HAVE_LOGF 1
-# define logf _logf
-#endif
-
 #if defined (HAVE__COSHL) && ! defined (HAVE_COSHL)
 # define HAVE_COSHL 1
 # define coshl _coshl
+#endif
+
+#if defined (HAVE__COSL) && ! defined (HAVE_COSL)
+# define HAVE_COSL 1
+# define cosl _cosl
 #endif
 
 #if defined (HAVE__EXPF) && ! defined (HAVE_EXPF)
@@ -141,6 +106,21 @@
 # define fabsl _fabsl
 #endif
 
+#if defined (HAVE__FINITE) && ! defined (HAVE_FINITE)
+# define HAVE_FINITE 1
+# define finite _finite
+#endif
+
+#if defined (HAVE__FINITEF) && ! defined (HAVE_FINITEF)
+# define HAVE_FINITEF 1
+# define finitef _finitef
+#endif
+
+#if defined (HAVE__FINITEL) && ! defined (HAVE_FINITEL)
+# define HAVE_FINITEL 1
+# define finitel _finitel
+#endif
+
 #if defined (HAVE__FLOORF) && ! defined (HAVE_FLOORF)
 # define HAVE_FLOORF 1
 # define floorf _floorf
@@ -161,6 +141,11 @@
 # define fmodl _fmodl
 #endif
 
+#if defined (HAVE__FPCLASS) && ! defined (HAVE_FPCLASS)
+# define HAVE_FPCLASS 1
+# define fpclass _fpclass
+#endif
+
 #if defined (HAVE__FREXPF) && ! defined (HAVE_FREXPF)
 # define HAVE_FREXPF 1
 # define frexpf _frexpf
@@ -169,6 +154,36 @@
 #if defined (HAVE__FREXPL) && ! defined (HAVE_FREXPL)
 # define HAVE_FREXPL 1
 # define frexpl _frexpl
+#endif
+
+#if defined (HAVE__ISINF) && ! defined (HAVE_ISINF)
+# define HAVE_ISINF 1
+# define isinf _isinf
+#endif
+
+#if defined (HAVE__ISINFF) && ! defined (HAVE_ISINFF)
+# define HAVE_ISINFF 1
+# define isinff _isinff
+#endif
+
+#if defined (HAVE__ISINFL) && ! defined (HAVE_ISINFL)
+# define HAVE_ISINFL 1
+# define isinfl _isinfl
+#endif
+
+#if defined (HAVE__ISNAN) && ! defined (HAVE_ISNAN)
+# define HAVE_ISNAN 1
+# define isnan _isnan
+#endif
+
+#if defined (HAVE__ISNANF) && ! defined (HAVE_ISNANF)
+# define HAVE_ISNANF 1
+# define isnanf _isnanf
+#endif
+
+#if defined (HAVE__ISNANL) && ! defined (HAVE_ISNANL)
+# define HAVE_ISNANL 1
+# define isnanl _isnanl
 #endif
 
 #if defined (HAVE__LDEXPF) && ! defined (HAVE_LDEXPF)
@@ -186,19 +201,19 @@
 # define log10f _log10f
 #endif
 
-#if defined (HAVE__LOGL) && ! defined (HAVE_LOGL)
-# define HAVE_LOGL 1
-# define logl _logl
-#endif
-
-#if defined (HAVE__POWF) && ! defined (HAVE_POWF)
-# define HAVE_POWF 1
-# define powf _powf
-#endif
-
 #if defined (HAVE__LOG10L) && ! defined (HAVE_LOG10L)
 # define HAVE_LOG10L 1
 # define log10l _log10l
+#endif
+
+#if defined (HAVE__LOGF) && ! defined (HAVE_LOGF)
+# define HAVE_LOGF 1
+# define logf _logf
+#endif
+
+#if defined (HAVE__LOGL) && ! defined (HAVE_LOGL)
+# define HAVE_LOGL 1
+# define logl _logl
 #endif
 
 #if defined (HAVE__MODF) && ! defined (HAVE_MODF)
@@ -211,9 +226,9 @@
 # define modl _modl
 #endif
 
-#if defined (HAVE__SINF) && ! defined (HAVE_SINF)
-# define HAVE_SINF 1
-# define sinf _sinf
+#if defined (HAVE__POWF) && ! defined (HAVE_POWF)
+# define HAVE_POWF 1
+# define powf _powf
 #endif
 
 #if defined (HAVE__POWL) && ! defined (HAVE_POWL)
@@ -221,59 +236,14 @@
 # define powl _powl
 #endif
 
-#if defined (HAVE__SINHF) && ! defined (HAVE_SINHF)
-# define HAVE_SINHF 1
-# define sinhf _sinhf
+#if defined (HAVE__QFINITE) && ! defined (HAVE_QFINITE)
+# define HAVE_QFINITE 1
+# define qfinite _qfinite
 #endif
 
-#if defined (HAVE__SINL) && ! defined (HAVE_SINL)
-# define HAVE_SINL 1
-# define sinl _sinl
-#endif
-
-#if defined (HAVE__SQRTF) && ! defined (HAVE_SQRTF)
-# define HAVE_SQRTF 1
-# define sqrtf _sqrtf
-#endif
-
-#if defined (HAVE__SINHL) && ! defined (HAVE_SINHL)
-# define HAVE_SINHL 1
-# define sinhl _sinhl
-#endif
-
-#if defined (HAVE__TANF) && ! defined (HAVE_TANF)
-# define HAVE_TANF 1
-# define tanf _tanf
-#endif
-
-#if defined (HAVE__SQRTL) && ! defined (HAVE_SQRTL)
-# define HAVE_SQRTL 1
-# define sqrtl _sqrtl
-#endif
-
-#if defined (HAVE__TANHF) && ! defined (HAVE_TANHF)
-# define HAVE_TANHF 1
-# define tanhf _tanhf
-#endif
-
-#if defined (HAVE__TANL) && ! defined (HAVE_TANL)
-# define HAVE_TANL 1
-# define tanl _tanl
-#endif
-
-#if defined (HAVE__STRTOF) && ! defined (HAVE_STRTOF)
-# define HAVE_STRTOF 1
-# define strtof _strtof
-#endif
-
-#if defined (HAVE__TANHL) && ! defined (HAVE_TANHL)
-# define HAVE_TANHL 1
-# define tanhl _tanhl
-#endif
-
-#if defined (HAVE__STRTOLD) && ! defined (HAVE_STRTOLD)
-# define HAVE_STRTOLD 1
-# define strtold _strtold
+#if defined (HAVE__QFPCLASS) && ! defined (HAVE_QFPCLASS)
+# define HAVE_QFPCLASS 1
+# define qfpclass _qfpclass
 #endif
 
 #if defined (HAVE__SINCOS) && ! defined (HAVE_SINCOS)
@@ -291,33 +261,62 @@
 # define sincosl _sincosl
 #endif
 
-#if defined (HAVE__FINITE) && ! defined (HAVE_FINITE)
-# define HAVE_FINITE 1
-# define finite _finite
+#if defined (HAVE__SINF) && ! defined (HAVE_SINF)
+# define HAVE_SINF 1
+# define sinf _sinf
 #endif
 
-#if defined (HAVE__FINITEF) && ! defined (HAVE_FINITEF)
-# define HAVE_FINITEF 1
-# define finitef _finitef
+#if defined (HAVE__SINHF) && ! defined (HAVE_SINHF)
+# define HAVE_SINHF 1
+# define sinhf _sinhf
 #endif
 
-#if defined (HAVE__FINITEL) && ! defined (HAVE_FINITEL)
-# define HAVE_FINITEL 1
-# define finitel _finitel
+#if defined (HAVE__SINHL) && ! defined (HAVE_SINHL)
+# define HAVE_SINHL 1
+# define sinhl _sinhl
 #endif
 
-#if defined (HAVE__QFINITE) && ! defined (HAVE_QFINITE)
-# define HAVE_QFINITE 1
-# define qfinite _qfinite
+#if defined (HAVE__SINL) && ! defined (HAVE_SINL)
+# define HAVE_SINL 1
+# define sinl _sinl
 #endif
 
-#if defined (HAVE__FPCLASS) && ! defined (HAVE_FPCLASS)
-# define HAVE_FPCLASS 1
-# define fpclass _fpclass
+#if defined (HAVE__SQRTF) && ! defined (HAVE_SQRTF)
+# define HAVE_SQRTF 1
+# define sqrtf _sqrtf
 #endif
 
-#if defined (HAVE__QFPCLASS) && ! defined (HAVE_QFPCLASS)
-# define HAVE_QFPCLASS 1
-# define qfpclass _qfpclass
+#if defined (HAVE__SQRTL) && ! defined (HAVE_SQRTL)
+# define HAVE_SQRTL 1
+# define sqrtl _sqrtl
 #endif
 
+#if defined (HAVE__STRTOF) && ! defined (HAVE_STRTOF)
+# define HAVE_STRTOF 1
+# define strtof _strtof
+#endif
+
+#if defined (HAVE__STRTOLD) && ! defined (HAVE_STRTOLD)
+# define HAVE_STRTOLD 1
+# define strtold _strtold
+#endif
+
+#if defined (HAVE__TANF) && ! defined (HAVE_TANF)
+# define HAVE_TANF 1
+# define tanf _tanf
+#endif
+
+#if defined (HAVE__TANHF) && ! defined (HAVE_TANHF)
+# define HAVE_TANHF 1
+# define tanhf _tanhf
+#endif
+
+#if defined (HAVE__TANHL) && ! defined (HAVE_TANHL)
+# define HAVE_TANHL 1
+# define tanhl _tanhl
+#endif
+
+#if defined (HAVE__TANL) && ! defined (HAVE_TANL)
+# define HAVE_TANL 1
+# define tanl _tanl
+#endif
