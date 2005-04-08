@@ -242,20 +242,9 @@ find_function_data (tree decl)
    variables.  */
 
 void
-push_function_context_to (tree context)
+push_function_context_to (tree context ATTRIBUTE_UNUSED)
 {
   struct function *p;
-
-  if (context)
-    {
-      if (context == current_function_decl)
-	cfun->contains_functions = 1;
-      else
-	{
-	  struct function *containing = find_function_data (context);
-	  containing->contains_functions = 1;
-	}
-    }
 
   if (cfun == 0)
     init_dummy_function_start ();

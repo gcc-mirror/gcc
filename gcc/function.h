@@ -380,9 +380,6 @@ struct function GTY(())
      function.  */
   unsigned int has_nonlocal_goto : 1;
 
-  /* Nonzero if function being compiled contains nested functions.  */
-  unsigned int contains_functions : 1;
-
   /* Nonzero if the current function is a thunk, i.e., a lightweight
      function implemented by the output_mi_thunk hook) that just
      adjusts one of its arguments and forwards to another
@@ -452,7 +449,6 @@ extern int trampolines_created;
 #define current_function_calls_setjmp (cfun->calls_setjmp)
 #define current_function_calls_alloca (cfun->calls_alloca)
 #define current_function_calls_eh_return (cfun->calls_eh_return)
-#define current_function_contains_functions (cfun->contains_functions)
 #define current_function_is_thunk (cfun->is_thunk)
 #define current_function_args_info (cfun->args_info)
 #define current_function_args_size (cfun->args_size)

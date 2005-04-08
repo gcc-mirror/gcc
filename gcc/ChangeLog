@@ -2,6 +2,11 @@
 
 	* c-tree.h (C_LANG_TREE_NODE_CHAIN_NEXT): Remove.
 
+	* function.c (push_function_context_to): Don't set
+	contains_functions.
+	* function.h (function): Remove contains_functions.
+	(current_function_contains_functions): Remove.
+
 2005-04-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/tpf.h (ASM_SPEC): Define.
