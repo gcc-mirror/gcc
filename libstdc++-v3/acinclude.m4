@@ -1764,6 +1764,20 @@ case $enable_symvers in
     ;;
 esac
 
+AH_VERBATIM([_GLIBCXX_SYMVERextra],
+[/* Define symbol versioning in assember directives. If symbol
+   versioning is being used, and the assembler supports this kind of
+   thing, then use it.
+   
+   NB: _GLIBCXX_AT_AT is a hack to work around quoting issues in m4. */
+
+#if _GLIBCXX_SYMVER
+  #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
+   asm (".symver " #cur "," #old _GLIBCXX_AT_AT #version);
+#else
+  #define _GLIBCXX_ASM_SYMVER(cur, old, version)
+#endif])
+
 AC_SUBST(SYMVER_MAP)
 AC_SUBST(port_specific_symbol_files)
 GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
