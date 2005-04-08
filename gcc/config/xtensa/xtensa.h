@@ -24,7 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Standard GCC variables that we reference.  */
 extern int current_function_calls_alloca;
-extern int target_flags;
 extern int optimize;
 
 /* External variables defined in xtensa.c.  */
@@ -41,10 +40,6 @@ enum cmp_type {
 extern struct rtx_def * branch_cmp[2];	/* operands for compare */
 extern enum cmp_type branch_type;	/* what type of branch to use */
 extern unsigned xtensa_current_frame_size;
-
-/* Masks for the -m switches */
-#define MASK_NO_FUSED_MADD	0x00000001	/* avoid f-p mul/add */
-#define MASK_CONST16		0x00000002	/* use CONST16 instruction */
 
 /* Macros used in the machine description to select various Xtensa
    configuration options.  */
@@ -66,38 +61,8 @@ extern unsigned xtensa_current_frame_size;
 #define TARGET_ABS		XCHAL_HAVE_ABS
 #define TARGET_ADDX		XCHAL_HAVE_ADDX
 
-/* Macros controlled by command-line options.  */
-#define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
-#define TARGET_CONST16		(target_flags & MASK_CONST16)
-
 #define TARGET_DEFAULT (						\
   (XCHAL_HAVE_L32R	? 0 : MASK_CONST16))
-
-#define TARGET_SWITCHES							\
-{									\
-  {"const16",			MASK_CONST16,				\
-    N_("Use CONST16 instruction to load constants")},			\
-  {"no-const16",		-MASK_CONST16,				\
-    N_("Use PC-relative L32R instruction to load constants")},		\
-  {"no-fused-madd",		MASK_NO_FUSED_MADD,			\
-    N_("Disable fused multiply/add and multiply/subtract FP instructions")}, \
-  {"fused-madd",		-MASK_NO_FUSED_MADD,			\
-    N_("Enable fused multiply/add and multiply/subtract FP instructions")}, \
-  {"text-section-literals",	0,					\
-    N_("Intersperse literal pools with code in the text section")},	\
-  {"no-text-section-literals",	0,					\
-    N_("Put literal pools in a separate literal section")},		\
-  {"target-align",		0,					\
-    N_("Automatically align branch targets to reduce branch penalties")}, \
-  {"no-target-align",		0,					\
-    N_("Do not automatically align branch targets")},			\
-  {"longcalls",			0,					\
-    N_("Use indirect CALLXn instructions for large programs")},		\
-  {"no-longcalls",		0,					\
-    N_("Use direct CALLn instructions for fast calls")},		\
-  {"",				TARGET_DEFAULT, 0}			\
-}
-
 
 #define OVERRIDE_OPTIONS override_options ()
 
