@@ -1,5 +1,11 @@
 2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Define _GLIBCXX_ASM_SYMVER.
+	* acconfig.h: Delete file.
+	* Makefile.in, acinclude.m4, configure: Regenerate.
+
+2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* linkage.m4 (GLIBCXX_MAYBE_UNDERSCORED_FUNCS): New macro.
 	(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1,
 	GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2,
