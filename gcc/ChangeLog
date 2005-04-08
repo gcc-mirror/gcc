@@ -1,3 +1,7 @@
+2005-04-08  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.c (indirect_data): Fix typo in strncmp logic.
+
 2005-04-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-tree.h (C_LANG_TREE_NODE_CHAIN_NEXT): Remove.
