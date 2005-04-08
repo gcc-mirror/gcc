@@ -1,3 +1,8 @@
+2005-04-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/17229
+	* gfortran.dg/pr17229.f: New test.
+
 2005-04-07  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/tiny_1.f90: New test.
