@@ -1,3 +1,10 @@
+2005-04-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/20466
+	* flow.c (invalidate_mems_from_set): Handle a MEM by checking it
+	for overlap of the address of each list member.
+	(mark_set_1): Call invalidate_mems_from_set for MEMs too.
+
 2005-04-08  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.c (indirect_data): Fix typo in strncmp logic.

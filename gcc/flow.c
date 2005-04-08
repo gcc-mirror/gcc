@@ -2530,7 +2530,8 @@ invalidate_mems_from_autoinc (rtx *px, void *data)
   return 0;
 }
 
-/* EXP is a REG.  Remove any dependent entries from pbi->mem_set_list.  */
+/* EXP is a REG or MEM.  Remove any dependent entries from
+   pbi->mem_set_list.  */
 
 static void
 invalidate_mems_from_set (struct propagate_block_info *pbi, rtx exp)
@@ -2542,7 +2543,12 @@ invalidate_mems_from_set (struct propagate_block_info *pbi, rtx exp)
   while (temp)
     {
       next = XEXP (temp, 1);
-      if (reg_overlap_mentioned_p (exp, XEXP (temp, 0)))
+      if ((REG_P (exp) && reg_overlap_mentioned_p (exp, XEXP (temp, 0)))
+	  /* When we get an EXP that is a mem here, we want to check if EXP
+	     overlaps the *address* of any of the mems in the list (i.e. not
+	     whether the mems actually overlap; that's done elsewhere).  */
+	  || (MEM_P (exp)
+	      && reg_overlap_mentioned_p (exp, XEXP (XEXP (temp, 0), 0))))
 	{
 	  /* Splice this entry out of the list.  */
 	  if (prev)
@@ -2748,11 +2754,12 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
       break;
     }
 
-  /* If this set is a MEM, then it kills any aliased writes.
+  /* If this set is a MEM, then it kills any aliased writes and any
+     other MEMs which use it.
      If this set is a REG, then it kills any MEMs which use the reg.  */
   if (optimize && (flags & PROP_SCAN_DEAD_STORES))
     {
-      if (REG_P (reg))
+      if (REG_P (reg) || MEM_P (reg))
 	invalidate_mems_from_set (pbi, reg);
 
       /* If the memory reference had embedded side effects (autoincrement
