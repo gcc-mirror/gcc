@@ -221,6 +221,7 @@ struct tinst_level_s GTY(())
   struct tree_common common;
   tree decl;
   location_t locus;
+  int in_system_header_p;
 };
 typedef struct tinst_level_s * tinst_level_t;
 
@@ -3122,6 +3123,8 @@ typedef enum unification_kind_t {
   (((tinst_level_t) TINST_LEVEL_CHECK (NODE))->decl)
 #define TINST_LOCATION(NODE) \
   (((tinst_level_t) TINST_LEVEL_CHECK (NODE))->locus)
+#define TINST_IN_SYSTEM_HEADER_P(NODE) \
+  (((tinst_level_t) TINST_LEVEL_CHECK (NODE))->in_system_header_p)
 
 /* in class.c */
 
@@ -4244,7 +4247,6 @@ extern tree build_dummy_object			(tree);
 extern tree maybe_dummy_object			(tree, tree *);
 extern int is_dummy_object			(tree);
 extern const struct attribute_spec cxx_attribute_table[];
-extern tree make_tinst_level                    (tree, location_t);
 extern tree make_ptrmem_cst                     (tree, tree);
 extern tree cp_build_type_attribute_variant     (tree, tree);
 extern tree cp_build_qualified_type_real        (tree, int, tsubst_flags_t);
