@@ -1,3 +1,8 @@
+2005-04-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	Backport from mainline:
+	* config/s390/tpf.h (ASM_SPEC): Define.
+
 2005-04-06  Dale Johannesen  <dalej@apple.com>
 
         PR middle-end/19225

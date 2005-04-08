@@ -92,6 +92,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 
+#undef  ASM_SPEC
+#define ASM_SPEC "%{m31&m64}%{mesa&mzarch}%{march=*}"
+
 #undef  LIB_SPEC
 #define LIB_SPEC "%{pthread:-lpthread} -lc"
 
