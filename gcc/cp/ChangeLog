@@ -4,6 +4,9 @@
 
 	* cp-tree.h (DECL_ARRAY_DELETE_OPERATOR_P): Remove.
 
+	* cp-tree.h (EXCEPTION_CLEANUP_NAME, B_SET, B_CLR, B_TST,
+	CONV_STATIC_CAST): Remove.
+
 2005-04-08  Ian Lance Taylor  <ian@airs.com>
 
 	* cp-tree.def: Define FOR_STMT, WHILE_STMT, DO_STMT, BREAK_STMT,

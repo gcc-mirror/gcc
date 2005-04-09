@@ -3245,8 +3245,6 @@ extern GTY(()) varray_type local_classes;
 #define VTABLE_DELTA_NAME	"__delta"
 #define VTABLE_PFN_NAME		"__pfn"
 
-#define EXCEPTION_CLEANUP_NAME	"exception cleanup"
-
 #if !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL)
 
 #define VPTR_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == JOINER \
@@ -3292,11 +3290,6 @@ extern GTY(()) tree static_ctors;
 extern GTY(()) tree static_dtors;
 
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
-
-/* Some macros for char-based bitfields.  */
-#define B_SET(A,X) ((A)[(X)>>3] |=  (1 << ((X)&7)))
-#define B_CLR(A,X) ((A)[(X)>>3] &= ~(1 << ((X)&7)))
-#define B_TST(A,X) ((A)[(X)>>3] &   (1 << ((X)&7)))
 
 /* These are uses as bits in flags passed to build_new_method_call
    to control its error reporting behavior.
@@ -3365,7 +3358,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define CONV_PRIVATE	 16
 /* #define CONV_NONCONVERTING 32 */
 #define CONV_FORCE_TEMP  64
-#define CONV_STATIC_CAST (CONV_IMPLICIT | CONV_STATIC | CONV_FORCE_TEMP)
 #define CONV_OLD_CONVERT (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
 			  | CONV_REINTERPRET)
 #define CONV_C_CAST      (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
