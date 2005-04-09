@@ -386,6 +386,8 @@ static int thumb_call_reg_needed;
 #define FL_ARCH6      (1 << 12)       /* Architecture rel 6.  Adds
 					 media instructions.  */
 #define FL_VFPV2      (1 << 13)       /* Vector Floating Point V2.  */
+#define FL_WBUF	      (1 << 14)	      /* Schedule for write buffer ops.
+					 Note: ARM6 & 7 derivatives only.  */
 
 #define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
 
@@ -438,7 +440,7 @@ int arm_arch6 = 0;
 int arm_ld_sched = 0;
 
 /* Nonzero if this chip is a StrongARM.  */
-int arm_is_strong = 0;
+int arm_tune_strongarm = 0;
 
 /* Nonzero if this chip is a Cirrus variant.  */
 int arm_arch_cirrus = 0;
@@ -452,8 +454,9 @@ int arm_arch_xscale = 0;
 /* Nonzero if tuning for XScale  */
 int arm_tune_xscale = 0;
 
-/* Nonzero if this chip is an ARM6 or an ARM7.  */
-int arm_is_6_or_7 = 0;
+/* Nonzero if we want to tune for stores that access the write-buffer. 
+   This typicallly means an ARM6 or ARM7 with MMU or MPU.  */
+int arm_tune_wbuf = 0;
 
 /* Nonzero if generating Thumb instructions.  */
 int thumb_code = 0;
@@ -980,10 +983,9 @@ arm_override_options (void)
   arm_arch_cirrus = (insn_flags & FL_CIRRUS) != 0;
 
   arm_ld_sched = (tune_flags & FL_LDSCHED) != 0;
-  arm_is_strong = (tune_flags & FL_STRONG) != 0;
+  arm_tune_strongarm = (tune_flags & FL_STRONG) != 0;
   thumb_code = (TARGET_ARM == 0);
-  arm_is_6_or_7 = (((tune_flags & (FL_MODE26 | FL_MODE32))
-		    && !(tune_flags & FL_ARCH4))) != 0;
+  arm_tune_wbuf = (tune_flags & FL_WBUF) != 0;
   arm_tune_xscale = (tune_flags & FL_XSCALE) != 0;
   arm_arch_iwmmxt = (insn_flags & FL_IWMMXT) != 0;
 
@@ -1182,7 +1184,7 @@ arm_override_options (void)
 
       /* StrongARM has early execution of branches, so a sequence
          that is worth skipping is shorter.  */
-      if (arm_is_strong)
+      if (arm_tune_strongarm)
         max_insns_skipped = 3;
     }
 
@@ -1396,7 +1398,7 @@ use_return_insn (int iscond, rtx sibling)
 
   /* On StrongARM, conditional returns are expensive if they aren't
      taken and multiple registers have been stacked.  */
-  if (iscond && arm_is_strong)
+  if (iscond && arm_tune_strongarm)
     {
       /* Conditional return when just the LR is stored is a simple
 	 conditional-load instruction, that's not expensive.  */
