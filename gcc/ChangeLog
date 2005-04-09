@@ -1,3 +1,30 @@
+2005-04-09  Uros Bizjak  <uros@kss-loka.si>
+
+	* builtins.def (BUILT_IN_LFLOOR, BUILT_IN_LFLOORF, BUILT_IN_LFLOORL)
+	(BUILT_IN_LLFLOOR, BUILT_IN_LLFLOORF, BUILT_IN_LLFLOORL): New.
+	* optabs.h (enum optab_index): Add new OTI_lfloor.
+	(lfloor_optab): Define corresponding macro.
+	* optabs.c (init_optabs): Initialize lfloor_optab.
+	* genopinit.c (optabs): Implement lfloor_optab using lfloorsi2
+	and lfloordi2 patterns.
+	* builtins.c (expand_builtin_int_roundingfn): New prototype.
+	(expand_builtin_int_roundingfn): New function.
+	(fold_builtin_int_roundingfn): New prototype.
+	(fold_builtin_int_roundingfn): New function, renamed from
+	fold_builtin_lround.
+	Handle BUILT_IN_LROUND{,F,L}, BUILT_IN_LLROUND{,F,L} and
+	BUILT_IN_LFLOOR{,F,L}, BUILT_IN_LLFLOOR{,F,L}.
+	(fold_builtin_1): Fold BUILT_IN_LFLOOR{,F,L} and
+	BUILT_IN_LLFLOOR{,F,L} using fold_builtin_int_roundingfn.
+	(mathfn_built_in): Handle BUILT_IN LFLOOR and BUILT_IN_LLFLOOR.
+	(expand_builtin): Expand BUILT_IN_LFLOOR{,F,L} and
+	BUILT_IN_LLFLOOR{,F,L} using expand_builtin_int_roundingfn.
+	* convert.c (convert_to_integer): Convert (long int)floor{,f,l},
+	into lfloor built-in function and (long long int)floor{,f,l} into
+	llfloor built-in function.
+	* fold-const.c (tree_expr_nonnegative_p): Add BUILT_IN_LFLOOR and
+	BUILT_IN_LLFLOOR.
+
 2005-04-08  Ian Lance Taylor  <ian@airs.com>
 
 	* c-common.def: Move FOR_STMT, WHILE_STMT, DO_STMT, BREAK_STMT,
@@ -987,7 +1014,7 @@
 	* tree-chrec.c (chrec_convert): Return chrec_dont_know for constants
 	that don't fit in their type after conversion.
 
-2005-04-05 Uros Bizjak <uros@kss-loka.si>
+2005-04-05  Uros Bizjak <uros@kss-loka.si>
 
 	PR target/20421
 	* config/i386/i386.md (frndintxf2_floor, frndintxf2_ceil)

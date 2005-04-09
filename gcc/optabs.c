@@ -5033,6 +5033,7 @@ init_optabs (void)
   parity_optab = init_optab (PARITY);
   sqrt_optab = init_optab (SQRT);
   floor_optab = init_optab (UNKNOWN);
+  lfloor_optab = init_optab (UNKNOWN);
   ceil_optab = init_optab (UNKNOWN);
   round_optab = init_optab (UNKNOWN);
   btrunc_optab = init_optab (UNKNOWN);

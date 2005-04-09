@@ -119,6 +119,7 @@ static const char * const optabs[] =
   "copysign_optab->handlers[$A].insn_code = CODE_FOR_$(copysign$F$a3$)",
   "sqrt_optab->handlers[$A].insn_code = CODE_FOR_$(sqrt$a2$)",
   "floor_optab->handlers[$A].insn_code = CODE_FOR_$(floor$a2$)",
+  "lfloor_optab->handlers[$A].insn_code = CODE_FOR_$(lfloor$a2$)",
   "ceil_optab->handlers[$A].insn_code = CODE_FOR_$(ceil$a2$)",
   "round_optab->handlers[$A].insn_code = CODE_FOR_$(round$a2$)",
   "btrunc_optab->handlers[$A].insn_code = CODE_FOR_$(btrunc$a2$)",
