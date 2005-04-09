@@ -3708,11 +3708,16 @@ match_case_to_enum (splay_tree_node node, void *data)
   return 0;
 }
 
-/* Common code for -Wswitch*.  */
+/* Handle -Wswitch*.  Called from the front end after parsing the
+   switch construct.  */
+/* ??? Should probably be somewhere generic, since other languages
+   besides C and C++ would want this.  At the moment, however, C/C++
+   are the only tree-ssa languages that support enumerations at all,
+   so the point is moot.  */
 
-static void
-c_do_switch_warnings_1 (splay_tree cases, location_t switch_location,
-			tree type, tree cond)
+void
+c_do_switch_warnings (splay_tree cases, location_t switch_location,
+		      tree type, tree cond)
 {
   splay_tree_node default_node;
 
@@ -3771,45 +3776,6 @@ c_do_switch_warnings_1 (splay_tree cases, location_t switch_location,
 
       splay_tree_foreach (cases, match_case_to_enum, type);
     }
-}
-
-/* Handle -Wswitch* for a SWITCH_STMT.  Called from the front end
-   after parsing the switch construct.  */
-/* ??? Should probably be somewhere generic, since other languages besides
-   C and C++ would want this.  We'd want to agree on the data structure,
-   however, which is a problem.  Alternately, we operate on gimplified
-   switch_exprs, which I don't especially like.  At the moment, however,
-   C/C++ are the only tree-ssa languages that support enumerations at all,
-   so the point is moot.  */
-
-void
-c_do_switch_warnings (splay_tree cases, tree switch_stmt)
-{
-  location_t switch_location;
-
-  if (EXPR_HAS_LOCATION (switch_stmt))
-    switch_location = EXPR_LOCATION (switch_stmt);
-  else
-    switch_location = input_location;
-  c_do_switch_warnings_1 (cases, switch_location,
-			  SWITCH_STMT_TYPE (switch_stmt),
-			  SWITCH_STMT_COND (switch_stmt));
-}
-
-/* Like c_do_switch_warnings, but takes a SWITCH_EXPR rather than a
-   SWITCH_STMT.  */
-
-void
-c_do_switch_expr_warnings (splay_tree cases, tree switch_expr)
-{
-  location_t switch_location;
-
-  if (EXPR_HAS_LOCATION (switch_expr))
-    switch_location = EXPR_LOCATION (switch_expr);
-  else
-    switch_location = input_location;
-  c_do_switch_warnings_1 (cases, switch_location, TREE_TYPE (switch_expr),
-			  SWITCH_COND (switch_expr));
 }
 
 /* Finish an expression taking the address of LABEL (an

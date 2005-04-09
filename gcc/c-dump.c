@@ -54,40 +54,9 @@ c_dump_tree (void *dump_info, tree t)
 	dump_string (di, "bitfield");
       break;
 
-    case BREAK_STMT:
-    case CONTINUE_STMT:
-      dump_stmt (di, t);
-      break;
-
-    case DO_STMT:
-      dump_stmt (di, t);
-      dump_child ("body", DO_BODY (t));
-      dump_child ("cond", DO_COND (t));
-      break;
-
     case EXPR_STMT:
       dump_stmt (di, t);
       dump_child ("expr", EXPR_STMT_EXPR (t));
-      break;
-
-    case FOR_STMT:
-      dump_stmt (di, t);
-      dump_child ("init", FOR_INIT_STMT (t));
-      dump_child ("cond", FOR_COND (t));
-      dump_child ("expr", FOR_EXPR (t));
-      dump_child ("body", FOR_BODY (t));
-      break;
-
-    case SWITCH_STMT:
-      dump_stmt (di, t);
-      dump_child ("cond", SWITCH_STMT_COND (t));
-      dump_child ("body", SWITCH_STMT_BODY (t));
-      break;
-
-    case WHILE_STMT:
-      dump_stmt (di, t);
-      dump_child ("cond", WHILE_COND (t));
-      dump_child ("body", WHILE_BODY (t));
       break;
 
     case STMT_EXPR:

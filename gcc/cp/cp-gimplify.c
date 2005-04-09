@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -31,6 +31,100 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-gimple.h"
 #include "hashtab.h"
 #include "pointer-set.h"
+
+/* Local declarations.  */
+
+enum bc_t { bc_break = 0, bc_continue = 1 };
+
+static struct cp_gimplify_ctx
+{
+  /* Stack of labels which are targets for "break" or "continue",
+     linked through TREE_CHAIN.  */
+  tree current_label[2];
+} *ctxp;
+
+static void
+push_context (void)
+{
+  gcc_assert (!ctxp);
+  ctxp = ((struct cp_gimplify_ctx *)
+	  xcalloc (1, sizeof (struct cp_gimplify_ctx)));
+}
+
+static void
+pop_context (void)
+{
+  gcc_assert (ctxp
+	      && !ctxp->current_label[0]
+	      && !ctxp->current_label[1]);
+  free (ctxp);
+  ctxp = NULL;
+}
+
+/* Begin a scope which can be exited by a break or continue statement.  BC
+   indicates which.
+
+   Just creates a label and pushes it into the current context.  */
+
+static tree
+begin_bc_block (enum bc_t bc)
+{
+  tree label = create_artificial_label ();
+  TREE_CHAIN (label) = ctxp->current_label[bc];
+  ctxp->current_label[bc] = label;
+  return label;
+}
+
+/* Finish a scope which can be exited by a break or continue statement.
+   LABEL was returned from the most recent call to begin_bc_block.  BODY is
+   an expression for the contents of the scope.
+
+   If we saw a break (or continue) in the scope, append a LABEL_EXPR to
+   body.  Otherwise, just forget the label.  */
+
+static tree
+finish_bc_block (enum bc_t bc, tree label, tree body)
+{
+  gcc_assert (label == ctxp->current_label[bc]);
+
+  if (TREE_USED (label))
+    {
+      tree t, sl = NULL;
+
+      t = build1 (LABEL_EXPR, void_type_node, label);
+
+      append_to_statement_list (body, &sl);
+      append_to_statement_list (t, &sl);
+      body = sl;
+    }
+
+  ctxp->current_label[bc] = TREE_CHAIN (label);
+  TREE_CHAIN (label) = NULL_TREE;
+  return body;
+}
+
+/* Build a GOTO_EXPR to represent a break or continue statement.  BC
+   indicates which.  */
+
+static tree
+build_bc_goto (enum bc_t bc)
+{
+  tree label = ctxp->current_label[bc];
+
+  if (label == NULL_TREE)
+    {
+      if (bc == bc_break)
+	error ("break statement not within loop or switch");
+      else
+	error ("continue statement not within loop or switch");
+
+      return NULL_TREE;
+    }
+
+  /* Mark the label used for finish_bc_block.  */
+  TREE_USED (label) = 1;
+  return build1 (GOTO_EXPR, void_type_node, label);
+}
 
 /* Genericize a TRY_BLOCK.  */
 
@@ -104,6 +198,144 @@ gimplify_if_stmt (tree *stmt_p)
   else
     stmt = build3 (COND_EXPR, void_type_node, cond, then_, else_);
   *stmt_p = stmt;
+}
+
+/* Build a generic representation of one of the C loop forms.  COND is the
+   loop condition or NULL_TREE.  BODY is the (possibly compound) statement
+   controlled by the loop.  INCR is the increment expression of a for-loop,
+   or NULL_TREE.  COND_IS_FIRST indicates whether the condition is
+   evaluated before the loop body as in while and for loops, or after the
+   loop body as in do-while loops.  */
+
+static tree
+gimplify_cp_loop (tree cond, tree body, tree incr, bool cond_is_first)
+{
+  tree top, entry, exit, cont_block, break_block, stmt_list, t;
+  location_t stmt_locus;
+
+  stmt_locus = input_location;
+  stmt_list = NULL_TREE;
+  entry = NULL_TREE;
+
+  break_block = begin_bc_block (bc_break);
+  cont_block = begin_bc_block (bc_continue);
+
+  /* If condition is zero don't generate a loop construct.  */
+  if (cond && integer_zerop (cond))
+    {
+      top = NULL_TREE;
+      exit = NULL_TREE;
+      if (cond_is_first)
+	{
+	  t = build_bc_goto (bc_break);
+	  append_to_statement_list (t, &stmt_list);
+	}
+    }
+  else
+    {
+      /* If we use a LOOP_EXPR here, we have to feed the whole thing
+	 back through the main gimplifier to lower it.  Given that we
+	 have to gimplify the loop body NOW so that we can resolve
+	 break/continue stmts, seems easier to just expand to gotos.  */
+      top = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
+
+      /* If we have an exit condition, then we build an IF with gotos either
+	 out of the loop, or to the top of it.  If there's no exit condition,
+	 then we just build a jump back to the top.  */
+      exit = build_and_jump (&LABEL_EXPR_LABEL (top));
+      if (cond && !integer_nonzerop (cond))
+	{
+	  t = build_bc_goto (bc_break);
+	  exit = build3 (COND_EXPR, void_type_node, cond, exit, t);
+	  exit = fold (exit);
+	  gimplify_stmt (&exit);
+
+	  if (cond_is_first)
+	    {
+	      if (incr)
+		{
+		  entry = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
+		  t = build_and_jump (&LABEL_EXPR_LABEL (entry));
+		}
+	      else
+		t = build_bc_goto (bc_continue);
+	      append_to_statement_list (t, &stmt_list);
+	    }
+	}
+    }
+
+  gimplify_stmt (&body);
+  gimplify_stmt (&incr);
+
+  body = finish_bc_block (bc_continue, cont_block, body);
+
+  append_to_statement_list (top, &stmt_list);
+  append_to_statement_list (body, &stmt_list);
+  append_to_statement_list (incr, &stmt_list);
+  append_to_statement_list (entry, &stmt_list);
+  append_to_statement_list (exit, &stmt_list);
+
+  annotate_all_with_locus (&stmt_list, stmt_locus);
+
+  return finish_bc_block (bc_break, break_block, stmt_list);
+}
+
+/* Gimplify a FOR_STMT node.  Move the stuff in the for-init-stmt into the
+   prequeue and hand off to gimplify_cp_loop.  */
+
+static void
+gimplify_for_stmt (tree *stmt_p, tree *pre_p)
+{
+  tree stmt = *stmt_p;
+
+  if (FOR_INIT_STMT (stmt))
+    gimplify_and_add (FOR_INIT_STMT (stmt), pre_p);
+
+  *stmt_p = gimplify_cp_loop (FOR_COND (stmt), FOR_BODY (stmt),
+			      FOR_EXPR (stmt), 1);
+}
+
+/* Gimplify a WHILE_STMT node.  */
+
+static void
+gimplify_while_stmt (tree *stmt_p)
+{
+  tree stmt = *stmt_p;
+  *stmt_p = gimplify_cp_loop (WHILE_COND (stmt), WHILE_BODY (stmt),
+			      NULL_TREE, 1);
+}
+
+/* Gimplify a DO_STMT node.  */
+
+static void
+gimplify_do_stmt (tree *stmt_p)
+{
+  tree stmt = *stmt_p;
+  *stmt_p = gimplify_cp_loop (DO_COND (stmt), DO_BODY (stmt),
+			      NULL_TREE, 0);
+}
+
+/* Genericize a SWITCH_STMT by turning it into a SWITCH_EXPR.  */
+
+static void
+gimplify_switch_stmt (tree *stmt_p)
+{
+  tree stmt = *stmt_p;
+  tree break_block, body;
+  location_t stmt_locus = input_location;
+
+  break_block = begin_bc_block (bc_break);
+
+  body = SWITCH_STMT_BODY (stmt);
+  if (!body)
+    body = build_empty_stmt ();
+
+  *stmt_p = build3 (SWITCH_EXPR, SWITCH_STMT_TYPE (stmt),
+		    SWITCH_STMT_COND (stmt), body, NULL_TREE);
+  SET_EXPR_LOCATION (*stmt_p, stmt_locus);
+  gimplify_stmt (stmt_p);
+
+  *stmt_p = finish_bc_block (bc_break, break_block, *stmt_p);
 }
 
 /* Gimplify initialization from an AGGR_INIT_EXPR.  */
@@ -254,6 +486,36 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
       ret = GS_OK;
       break;
 
+    case FOR_STMT:
+      gimplify_for_stmt (expr_p, pre_p);
+      ret = GS_ALL_DONE;
+      break;
+
+    case WHILE_STMT:
+      gimplify_while_stmt (expr_p);
+      ret = GS_ALL_DONE;
+      break;
+
+    case DO_STMT:
+      gimplify_do_stmt (expr_p);
+      ret = GS_ALL_DONE;
+      break;
+
+    case SWITCH_STMT:
+      gimplify_switch_stmt (expr_p);
+      ret = GS_ALL_DONE;
+      break;
+
+    case CONTINUE_STMT:
+      *expr_p = build_bc_goto (bc_continue);
+      ret = GS_ALL_DONE;
+      break;
+
+    case BREAK_STMT:
+      *expr_p = build_bc_goto (bc_break);
+      ret = GS_ALL_DONE;
+      break;
+
     default:
       ret = c_gimplify_expr (expr_p, pre_p, post_p);
       break;
@@ -369,5 +631,7 @@ cp_genericize (tree fndecl)
   pointer_set_destroy (p_set);
 
   /* Do everything else.  */
+  push_context ();
   c_genericize (fndecl);
+  pop_context ();
 }

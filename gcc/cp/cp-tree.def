@@ -2,7 +2,7 @@
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
    Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998, 2003, 2004, 2005, 
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -282,6 +282,28 @@ DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", tcc_expression, 3)
 /* ??? It is currently still necessary to distinguish between IF_STMT 
    and COND_EXPR for the benefit of templates.  */
 DEFTREECODE (IF_STMT, "if_stmt", tcc_expression, 3)
+
+/* Used to represent a `for' statement. The operands are
+   FOR_INIT_STMT, FOR_COND, FOR_EXPR, and FOR_BODY, respectively.  */
+DEFTREECODE (FOR_STMT, "for_stmt", tcc_expression, 4)
+
+/* Used to represent a 'while' statement. The operands are WHILE_COND
+   and WHILE_BODY, respectively.  */
+DEFTREECODE (WHILE_STMT, "while_stmt", tcc_expression, 2)
+
+/* Used to represent a 'do' statement. The operands are DO_BODY and
+   DO_COND, respectively.  */
+DEFTREECODE (DO_STMT, "do_stmt", tcc_expression, 2)
+
+/* Used to represent a 'break' statement.  */
+DEFTREECODE (BREAK_STMT, "break_stmt", tcc_expression, 0)
+
+/* Used to represent a 'continue' statement.  */
+DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_expression, 0)
+
+/* Used to represent a 'switch' statement. The operands are
+   SWITCH_STMT_COND, SWITCH_STMT_BODY and SWITCH_STMT_TYPE, respectively.  */
+DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_expression, 3)
 
 DEFTREECODE (TAG_DEFN, "tag_defn", tcc_expression, 0)
 

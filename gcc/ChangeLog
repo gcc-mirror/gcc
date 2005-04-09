@@ -1,3 +1,37 @@
+2005-04-08  Ian Lance Taylor  <ian@airs.com>
+
+	* c-common.def: Move FOR_STMT, WHILE_STMT, DO_STMT, BREAK_STMT,
+	CONTINUE_STMT, and SWITCH_STMT to cp/cp-tree.def.
+	* c-common.h (WHILE_COND, WHILE_BODY): Move to cp/cp-tree.h.
+	(DO_COND, DO_BODY): Likewise.
+	(FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY): Likewise.
+	(SWITCH_STMT_COND, SWITCH_STMT_BODY, SWITCH_STMT_TYPE): Likewise.
+	(c_common_stmt_codes): Remove FOR_STMT, WHILE_STMT, DO_STMT,
+	BREAK_STMT, CONTINUE_STMT, and SWITCH_STMT.
+	(build_continue_stmt, build_break_stmt): Don't declare.
+	(c_do_switch_warnings): Update declaration.
+	* c-gimplify.c (enum bc_t): Remove.
+	(struct c_gimplify_ctx, ctxp): Remove.
+	(push_context, pop_context): Remove static functions.
+	(c_genericize): Don't call push_context or pop_context.
+	(begin_bc_block, finish_bc_block): Remove static functions.
+	(build_bc_goto): Likewise.
+	(gimplify_c_loop): Likewise.
+	(gimplify_for_stmt, gimplify_while_stmt): Likewise.
+	(gimplify_do_stmt, gimplify_switch_stmt): Likewise.
+	(c_gimplify_expr): Remove handling of FOR_STMT, WHILE_STMT,
+	DO_STMT, SWITCH_STMT, CONTINUE_STMT, BREAK_STMT.
+	* c-common.c (c_do_switch_warnings): Rename from
+	c_do_switch_warnings_1.
+	(c_do_switch_warnings) [old version]: Remove.
+	(c_do_switch_expr_warnings): Remove.
+	* c-typeck.c (c_finish_case): Call new c_do_switch_warnings
+	function instead of c_do_switch_expr_warnings.
+	* c-dump.c (c_dump_tree): Remove handling of BREAK_STMT,
+	CONTINUE_STMT, DO_STMT, FOR_STMT, SWITCH_STMT, and WHILE_STMT.
+	* c-pretty-print.c (pp_c_statement): Likewise.
+	* c-semantics.c (build_break_stmt, build_continue_stmt): Remove.
+
 2005-04-08  Diego Novillo  <dnovillo@redhat.com>
 
 	Merge from tree-cleanup-branch: VRP, store CCP, store
