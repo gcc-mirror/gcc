@@ -1,3 +1,12 @@
+2005-04-08  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/20909
+	* include/bits/locale_facets.tcc (num_put<>::_M_insert_float):
+	Don't even try to group numbers like 2e20, i.e., no decimal
+	point, scientific notation.
+	* testsuite/22_locale/num_put/put/char/20909.cc: New.
+	* testsuite/22_locale/num_put/put/wchar_t/20909.cc: Likewise.
+
 2005-04-08  Danny Smith  <dannysmith@users.sourceforge.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 	    		
