@@ -1795,10 +1795,6 @@ struct lang_decl GTY(())
 #define DECL_HAS_IN_CHARGE_PARM_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.has_in_charge_parm_p)
 
-/* Nonzero if NODE is an overloaded `operator delete[]' function.  */
-#define DECL_ARRAY_DELETE_OPERATOR_P(NODE) \
-  (DECL_OVERLOADED_OPERATOR_P (NODE) == VEC_DELETE_EXPR)
-
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
    detecting circularity in case members are multiply defined.  In the

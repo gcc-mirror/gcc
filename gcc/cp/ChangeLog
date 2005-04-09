@@ -2,6 +2,8 @@
 
 	* cp-tree.h (cxx_alignof): Remove.
 
+	* cp-tree.h (DECL_ARRAY_DELETE_OPERATOR_P): Remove.
+
 2005-04-08  Ian Lance Taylor  <ian@airs.com>
 
 	* cp-tree.def: Define FOR_STMT, WHILE_STMT, DO_STMT, BREAK_STMT,
