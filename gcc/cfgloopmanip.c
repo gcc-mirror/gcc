@@ -252,7 +252,7 @@ fix_irreducible_loops (basic_block from)
   int stack_top;
   sbitmap on_stack;
   edge *edges, e;
-  unsigned n_edges, i;
+  unsigned num_edges, i;
 
   if (!(from->flags & BB_IRREDUCIBLE_LOOP))
     return;
@@ -278,16 +278,16 @@ fix_irreducible_loops (basic_block from)
 
       bb->flags &= ~BB_IRREDUCIBLE_LOOP;
       if (bb->loop_father->header == bb)
-	edges = get_loop_exit_edges (bb->loop_father, &n_edges);
+	edges = get_loop_exit_edges (bb->loop_father, &num_edges);
       else
 	{
-	  n_edges = EDGE_COUNT (bb->succs);
-	  edges = xmalloc (n_edges * sizeof (edge));
+	  num_edges = EDGE_COUNT (bb->succs);
+	  edges = xmalloc (num_edges * sizeof (edge));
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    edges[ei.index] = e;
 	}
 
-      for (i = 0; i < n_edges; i++)
+      for (i = 0; i < num_edges; i++)
 	{
 	  e = edges[i];
 
@@ -574,7 +574,7 @@ unloop (struct loops *loops, struct loop *loop)
   unsigned i, n;
   basic_block latch = loop->latch;
   edge *edges;
-  unsigned n_edges;
+  unsigned num_edges;
 
   /* This is relatively straightforward.  The dominators are unchanged, as
      loop header dominates loop latch, so the only thing we have to care of
@@ -583,7 +583,7 @@ unloop (struct loops *loops, struct loop *loop)
      its work.  */
 
   body = get_loop_body (loop);
-  edges = get_loop_exit_edges (loop, &n_edges);
+  edges = get_loop_exit_edges (loop, &num_edges);
   n = loop->num_nodes;
   for (i = 0; i < n; i++)
     if (body[i]->loop_father == loop)
@@ -612,10 +612,10 @@ unloop (struct loops *loops, struct loop *loop)
      update the irreducible marks inside its body.  While it is certainly
      possible to do, it is a bit complicated and this situation should be
      very rare, so we just remark all loops in this case.  */
-  for (i = 0; i < n_edges; i++)
+  for (i = 0; i < num_edges; i++)
     if (edges[i]->flags & EDGE_IRREDUCIBLE_LOOP)
       break;
-  if (i != n_edges)
+  if (i != num_edges)
     mark_irreducible_loops (loops);
   free (edges);
 }
