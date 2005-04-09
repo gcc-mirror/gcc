@@ -349,6 +349,13 @@ convert_to_integer (tree type, tree expr)
       
       switch (fcode)
         {
+	case BUILT_IN_FLOOR: case BUILT_IN_FLOORF: case BUILT_IN_FLOORL:
+	  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (long_long_integer_type_node))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LLFLOOR);
+	  else
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LFLOOR);
+	  break;
+
 	case BUILT_IN_ROUND: case BUILT_IN_ROUNDF: case BUILT_IN_ROUNDL:
 	  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (long_long_integer_type_node))
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LLROUND);

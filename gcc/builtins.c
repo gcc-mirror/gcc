@@ -98,6 +98,7 @@ static void expand_errno_check (tree, rtx);
 static rtx expand_builtin_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
+static rtx expand_builtin_int_roundingfn (tree, rtx, rtx);
 static rtx expand_builtin_args_info (tree);
 static rtx expand_builtin_next_arg (void);
 static rtx expand_builtin_va_start (tree);
@@ -161,6 +162,7 @@ static tree fold_builtin_trunc (tree, tree);
 static tree fold_builtin_floor (tree, tree);
 static tree fold_builtin_ceil (tree, tree);
 static tree fold_builtin_round (tree, tree);
+static tree fold_builtin_int_roundingfn (tree, tree);
 static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_memcpy (tree, tree);
 static tree fold_builtin_mempcpy (tree, tree, int);
@@ -1548,7 +1550,9 @@ mathfn_built_in (tree type, enum built_in_function fn)
       CASE_MATHFN (BUILT_IN_J1)
       CASE_MATHFN (BUILT_IN_JN)
       CASE_MATHFN (BUILT_IN_LDEXP)
+      CASE_MATHFN (BUILT_IN_LFLOOR)
       CASE_MATHFN (BUILT_IN_LGAMMA)
+      CASE_MATHFN (BUILT_IN_LLFLOOR)
       CASE_MATHFN (BUILT_IN_LLRINT)
       CASE_MATHFN (BUILT_IN_LLROUND)
       CASE_MATHFN (BUILT_IN_LOG)
@@ -2108,6 +2112,100 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
     }
 
   target = expand_call (exp, target, target == const0_rtx);
+
+  return target;
+}
+
+/* Expand a call to one of the builtin rounding functions (lfloor).
+   If expanding via optab fails, lower expression to (int)(floor(x)).
+   EXP is the expression that is a call to the builtin function;
+   if convenient, the result should be placed in TARGET.  SUBTARGET may
+   be used as the target for computing one of EXP's operands.  */
+
+static rtx
+expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
+{
+  optab builtin_optab;
+  rtx op0, insns, tmp;
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum built_in_function fallback_fn;
+  tree fallback_fndecl;
+  enum machine_mode mode;
+  tree arg, narg;
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    gcc_unreachable ();
+
+  arg = TREE_VALUE (arglist);
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_LFLOOR:
+    case BUILT_IN_LFLOORF:
+    case BUILT_IN_LFLOORL:
+    case BUILT_IN_LLFLOOR:
+    case BUILT_IN_LLFLOORF:
+    case BUILT_IN_LLFLOORL:
+      builtin_optab = lfloor_optab;
+      fallback_fn = BUILT_IN_FLOOR;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Make a suitable register to place result in.  */
+  mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Before working hard, check whether the instruction is available.  */
+  if (builtin_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      target = gen_reg_rtx (mode);
+
+      /* Wrap the computation of the argument in a SAVE_EXPR, as we may
+	 need to expand the argument again.  This way, we will not perform
+	 side-effects more the once.  */
+      narg = builtin_save_expr (arg);
+      if (narg != arg)
+	{
+	  arg = narg;
+	  arglist = build_tree_list (NULL_TREE, arg);
+	  exp = build_function_call_expr (fndecl, arglist);
+	}
+
+      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+      start_sequence ();
+
+      /* Compute into TARGET.
+	 Set TARGET to wherever the result comes back.  */
+      target = expand_unop (mode, builtin_optab, op0, target, 0);
+
+      if (target != 0)
+	{
+	  /* Output the entire sequence.  */
+	  insns = get_insns ();
+	  end_sequence ();
+	  emit_insn (insns);
+	  return target;
+	}
+
+      /* If we were unable to expand via the builtin, stop the sequence
+	 (without outputting the insns).  */
+      end_sequence ();
+    }
+
+  /* Fall back to floating point rounding optab.  */
+  fallback_fndecl = mathfn_built_in (TREE_TYPE (arg), fallback_fn);
+  exp = build_function_call_expr (fallback_fndecl, arglist);
+
+  tmp = expand_builtin_mathfn (exp, NULL_RTX, NULL_RTX);
+
+  /* Truncate the result of floating point optab to integer
+     via expand_fix ().  */
+  target = gen_reg_rtx (mode);
+  expand_fix (target, tmp, 0);
 
   return target;
 }
@@ -5278,6 +5376,17 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+    case BUILT_IN_LFLOOR:
+    case BUILT_IN_LFLOORF:
+    case BUILT_IN_LFLOORL:
+    case BUILT_IN_LLFLOOR:
+    case BUILT_IN_LLFLOORF:
+    case BUILT_IN_LLFLOORL:
+      target = expand_builtin_int_roundingfn (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_POW:
     case BUILT_IN_POWF:
     case BUILT_IN_POWL:
@@ -6627,11 +6736,11 @@ fold_builtin_round (tree fndecl, tree arglist)
 }
 
 /* Fold function call to builtin lround, lroundf or lroundl (or the
-   corresponding long long versions).  Return NULL_TREE if no
-   simplification can be made.  */
+   corresponding long long versions) and other rounding functions.
+   Return NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_lround (tree fndecl, tree arglist)
+fold_builtin_int_roundingfn (tree fndecl, tree arglist)
 {
   tree arg;
 
@@ -6651,7 +6760,30 @@ fold_builtin_lround (tree fndecl, tree arglist)
 	  HOST_WIDE_INT hi, lo;
 	  REAL_VALUE_TYPE r;
 
-	  real_round (&r, TYPE_MODE (ftype), &x);
+	  switch (DECL_FUNCTION_CODE (fndecl))
+	    {
+	    case BUILT_IN_LFLOOR:
+	    case BUILT_IN_LFLOORF:
+	    case BUILT_IN_LFLOORL:
+	    case BUILT_IN_LLFLOOR:
+	    case BUILT_IN_LLFLOORF:
+	    case BUILT_IN_LLFLOORL:
+	      real_floor (&r, TYPE_MODE (ftype), &x);
+	      break;
+
+	    case BUILT_IN_LROUND:
+	    case BUILT_IN_LROUNDF:
+	    case BUILT_IN_LROUNDL:
+	    case BUILT_IN_LLROUND:
+	    case BUILT_IN_LLROUNDF:
+	    case BUILT_IN_LLROUNDL:
+	      real_round (&r, TYPE_MODE (ftype), &x);
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+
 	  REAL_VALUE_TO_INT (&lo, &hi, r);
 	  result = build_int_cst_wide (NULL_TREE, lo, hi);
 	  if (int_fits_type_p (result, itype))
@@ -8196,13 +8328,19 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     case BUILT_IN_RINTL:
       return fold_trunc_transparent_mathfn (fndecl, arglist);
 
+    case BUILT_IN_LFLOOR:
+    case BUILT_IN_LFLOORF:
+    case BUILT_IN_LFLOORL:
+    case BUILT_IN_LLFLOOR:
+    case BUILT_IN_LLFLOORF:
+    case BUILT_IN_LLFLOORL:
     case BUILT_IN_LROUND:
     case BUILT_IN_LROUNDF:
     case BUILT_IN_LROUNDL:
     case BUILT_IN_LLROUND:
     case BUILT_IN_LLROUNDF:
     case BUILT_IN_LLROUNDL:
-      return fold_builtin_lround (fndecl, arglist);
+      return fold_builtin_int_roundingfn (fndecl, arglist);
 
     case BUILT_IN_LRINT:
     case BUILT_IN_LRINTF:
