@@ -5,10 +5,17 @@ program testmmloc
    integer, dimension (3) :: b
    logical, dimension (3, 3) :: m
    integer i
+   character(len=10) line
 
    a = reshape ((/1, 2, 3, 5, 4, 6, 9, 8, 7/), (/3, 3/));
 
    b = minloc (a, 1)
+   if (b(1) .ne. 1) call abort
+   if (b(2) .ne. 2) call abort
+   if (b(3) .ne. 3) call abort
+   b = -1
+   write (line, 9000) minloc(a,1)
+   read (line, 9000) b
    if (b(1) .ne. 1) call abort
    if (b(2) .ne. 2) call abort
    if (b(3) .ne. 3) call abort
@@ -20,16 +27,40 @@ program testmmloc
    if (b(1) .ne. 2) call abort
    if (b(2) .ne. 2) call abort
    if (b(3) .ne. 3) call abort
+   b = -1
+   write (line, 9000) minloc(a, 1, m)
+   read (line, 9000) b
+   if (b(1) .ne. 2) call abort
+   if (b(2) .ne. 2) call abort
+   if (b(3) .ne. 3) call abort
 
    b(1:2) = minloc(a)
    if (b(1) .ne. 1) call abort
    if (b(2) .ne. 1) call abort
+   b = -1
+   write (line, 9000) minloc(a)
+   read (line, 9000) b
+   if (b(1) .ne. 1) call abort
+   if (b(2) .ne. 1) call abort
+   if (b(3) .ne. 0) call abort
 
    b(1:2) = minloc(a, mask=m)
    if (b(1) .ne. 2) call abort
    if (b(2) .ne. 1) call abort
+   b = -1
+   write (line, 9000) minloc(a, mask=m)
+   read (line, 9000) b
+   if (b(1) .ne. 2) call abort
+   if (b(2) .ne. 1) call abort
+   if (b(3) .ne. 0) call abort
 
    b = maxloc (a, 1)
+   if (b(1) .ne. 3) call abort
+   if (b(2) .ne. 3) call abort
+   if (b(3) .ne. 1) call abort
+   b = -1
+   write (line, 9000) maxloc(a, 1)
+   read (line, 9000) b
    if (b(1) .ne. 3) call abort
    if (b(2) .ne. 3) call abort
    if (b(3) .ne. 1) call abort
@@ -41,12 +72,31 @@ program testmmloc
    if (b(1) .ne. 3) call abort
    if (b(2) .ne. 3) call abort
    if (b(3) .ne. 2) call abort
+   b = -1
+   write (line, 9000) maxloc(a, 1, m)
+   read (line, 9000) b
+   if (b(1) .ne. 3) call abort
+   if (b(2) .ne. 3) call abort
+   if (b(3) .ne. 2) call abort
 
    b(1:2) = maxloc(a)
+   if (b(1) .ne. 1) call abort
+   if (b(2) .ne. 3) call abort
+   b = -1
+   write (line, 9000) maxloc(a)
+   read (line, 9000) b
    if (b(1) .ne. 1) call abort
    if (b(2) .ne. 3) call abort
 
    b(1:2) = maxloc(a, mask=m)
    if (b(1) .ne. 2) call abort
    if (b(2) .ne. 3) call abort
+   b = -1
+   write (line, 9000) maxloc(a, mask=m)
+   read (line, 9000) b
+   if (b(1) .ne. 2) call abort
+   if (b(2) .ne. 3) call abort
+   if (b(3) .ne. 0) call abort
+
+9000 format (3I3)
 end program
