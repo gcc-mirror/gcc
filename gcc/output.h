@@ -453,11 +453,6 @@ enum in_section { no_section, in_text, in_unlikely_executed_text, in_data,
 #endif
 };
 
-extern char *unlikely_section_label;
-extern char *hot_section_label;
-extern char *hot_section_end_label;
-extern char *cold_section_end_label;
-extern char *unlikely_text_section_name;
 extern const char *last_text_section_name;
 extern enum in_section last_text_section;
 extern bool first_function_block_is_cold;

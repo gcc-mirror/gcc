@@ -329,11 +329,6 @@ rest_of_handle_final (void)
 
   timevar_push (TV_SYMOUT);
   (*debug_hooks->function_decl) (current_function_decl);
-  if (unlikely_text_section_name)
-    {
-      free (unlikely_text_section_name);
-      unlikely_text_section_name = NULL;
-    }
   timevar_pop (TV_SYMOUT);
 
   ggc_collect ();

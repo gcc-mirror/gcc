@@ -101,40 +101,6 @@ tree last_assemble_variable_decl;
 
 bool first_function_block_is_cold;
 
-/* The following global variable indicates the label name to be put at
-   the start of the first cold section within each function, when
-   partitioning basic blocks into hot and cold sections.  Used for
-   debug info.  */
-
-char *unlikely_section_label;
-
-/* The following global variable indicates the label name to be put at
-   the start of the first hot section within each function, when
-   partitioning basic blocks into hot and cold sections.  Used for
-   debug info.  */
-
-char *hot_section_label;
-
-/* The following global variable indicates the label name to be put at
-   the end of the last hot section within each function, when
-   partitioning basic blocks into hot and cold sections.  Used for
-   debug info.  */
-
-char *hot_section_end_label;
-
-/* The following global variable indicates the label name to be put at
-   the end of the last cold section within each function, when
-   partitioning basic blocks into hot and cold sections.  Used for 
-   debug info.*/
-
-char *cold_section_end_label;
- 
-/* The following global variable indicates the section name to be used
-   for the current cold section, when partitiong hot and cold basic 
-   blocks into separate sections.  */
-
-char *unlikely_text_section_name;
-
 /* We give all constants their own alias set.  Perhaps redundant with
    MEM_READONLY_P, but pre-dates it.  */
 
@@ -210,29 +176,38 @@ EXTRA_SECTION_FUNCTIONS
 static void
 initialize_cold_section_name (void)
 {
-  const char* name;
+  const char *name;
+  const char *stripped_name;
+  char *buffer;
   int len;
+  struct function *cfun;
 
-  if (! unlikely_text_section_name)
+  if (current_function_decl)
     {
-      if (DECL_SECTION_NAME (current_function_decl)
-	  && (strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME
-					   (current_function_decl)),
-		      HOT_TEXT_SECTION_NAME) != 0)
-	  && (strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME
-					   (current_function_decl)),
-		      UNLIKELY_EXECUTED_TEXT_SECTION_NAME) != 0))
+      cfun = DECL_STRUCT_FUNCTION (current_function_decl);
+      if (!cfun->unlikely_text_section_name)
 	{
-	  name = TREE_STRING_POINTER (DECL_SECTION_NAME 
-				                   (current_function_decl));
-	  len = strlen (name);
-	  unlikely_text_section_name = xmalloc (len + 10);
-	  sprintf (unlikely_text_section_name, "%s%s", name, "_unlikely");
+	  if (flag_function_sections
+	      && DECL_SECTION_NAME (current_function_decl))
+	    {
+	      name = xstrdup (TREE_STRING_POINTER (DECL_SECTION_NAME 
+						   (current_function_decl)));
+	      stripped_name = targetm.strip_name_encoding (name);
+	      len = strlen (stripped_name);
+	      buffer = (char *) xmalloc (len + 10);
+	      sprintf (buffer, "%s%s", stripped_name, "_unlikely");
+	      cfun->unlikely_text_section_name = ggc_strdup (buffer);
+	      free (buffer);
+	      free ((char *) name);
+	    }
+	  else
+	    cfun->unlikely_text_section_name = 
+	                                UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
 	}
-      else
-	unlikely_text_section_name = 
-	                      xstrdup (UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
     }
+  else
+   internal_error 
+     ("initialize_cold_section_name called without valid current_function_decl.");
 }
 
 /* Tell assembler to switch to text section.  */
@@ -253,14 +228,25 @@ text_section (void)
 void
 unlikely_text_section (void)
 {
-  if (! unlikely_text_section_name)
-    initialize_cold_section_name ();
-
-  if ((in_section != in_unlikely_executed_text)
-      &&  (in_section != in_named 
-	   || strcmp (in_named_name, unlikely_text_section_name) != 0))
+  if (current_function_decl)
     {
-      named_section (NULL_TREE, unlikely_text_section_name, 0);
+      struct function *cfun = DECL_STRUCT_FUNCTION (current_function_decl);
+
+      if (!cfun->unlikely_text_section_name)
+	initialize_cold_section_name ();
+
+      if ((in_section != in_unlikely_executed_text)
+	  &&  (in_section != in_named 
+	       || strcmp (in_named_name, cfun->unlikely_text_section_name) != 0))
+	{
+	  named_section (NULL_TREE, cfun->unlikely_text_section_name, 0);
+	  in_section = in_unlikely_executed_text;
+	  last_text_section = in_unlikely_executed_text;
+	}
+    }
+  else
+    {
+      named_section (NULL_TREE, UNLIKELY_EXECUTED_TEXT_SECTION_NAME, 0);
       in_section = in_unlikely_executed_text;
       last_text_section = in_unlikely_executed_text;
     }
@@ -314,11 +300,25 @@ int
 in_unlikely_text_section (void)
 {
   bool ret_val;
+  struct function *cfun;
 
-  ret_val = ((in_section == in_unlikely_executed_text)
-	     || (in_section == in_named
-		 && unlikely_text_section_name
-		 && strcmp (in_named_name, unlikely_text_section_name) == 0));
+  if (current_function_decl)
+    {
+      cfun = DECL_STRUCT_FUNCTION (current_function_decl);
+
+      ret_val = ((in_section == in_unlikely_executed_text)
+		 || (in_section == in_named
+		     && cfun->unlikely_text_section_name
+		     && strcmp (in_named_name, 
+				cfun->unlikely_text_section_name) == 0));
+    }
+  else
+    {
+      ret_val = ((in_section == in_unlikely_executed_text)
+		 || (in_section == in_named
+		     && strcmp (in_named_name,
+				UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0));
+    }
 
   return ret_val;
 }
@@ -463,9 +463,12 @@ named_section (tree decl, const char *name, int reloc)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 
   if (strcmp (name, UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0
-      && !unlikely_text_section_name)
-      unlikely_text_section_name =
-	xstrdup (UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
+      && current_function_decl
+      && !(DECL_STRUCT_FUNCTION (current_function_decl))->unlikely_text_section_name)
+    {
+      struct function *cfun = DECL_STRUCT_FUNCTION (current_function_decl);
+      cfun->unlikely_text_section_name = UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
+    }
 
   flags = targetm.section_type_flags (decl, name, reloc);
 
@@ -574,16 +577,17 @@ asm_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 void
 function_section (tree decl)
 {
-  bool unlikely = false;
+  int reloc = 0;
     
   if (first_function_block_is_cold)
-    unlikely = true;
+    reloc = 1;
   
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
-  targetm.asm_out.select_section (decl, unlikely, DECL_ALIGN (decl));
+  targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
 #else
   if (decl != NULL_TREE
-      && DECL_SECTION_NAME (decl) != NULL_TREE)
+      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && targetm.have_named_sections)
     named_section (decl, (char *) 0, 0);
   else
     text_section ();
@@ -594,16 +598,20 @@ void
 current_function_section (tree decl)
 {
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
-  bool unlikely = (in_unlikely_text_section () 
-		   || (last_text_section == in_unlikely_executed_text));
-  
-  targetm.asm_out.select_section (decl, unlikely, DECL_ALIGN (decl));
+  int reloc = 0; 
+
+  if (in_unlikely_text_section () 
+      || last_text_section == in_unlikely_executed_text)
+    reloc = 1;
+ 
+  targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
 #else
   if (last_text_section == in_unlikely_executed_text)
     unlikely_text_section ();
   else if (last_text_section == in_text)
     text_section ();
-  else if (last_text_section == in_named)
+  else if (last_text_section == in_named
+	   && targetm.have_named_sections)
     named_section (NULL_TREE, last_text_section_name, 0);
   else
     function_section (decl);
@@ -1224,18 +1232,32 @@ void
 assemble_start_function (tree decl, const char *fnname)
 {
   int align;
+  char tmp_label[100];
   bool hot_label_written = false;
+  struct function *cfun = DECL_STRUCT_FUNCTION (decl);
 
-  unlikely_text_section_name = NULL;
-  
+  cfun->unlikely_text_section_name = NULL;
+ 
   first_function_block_is_cold = false;
-  hot_section_label = reconcat (hot_section_label, fnname, ".hot_section", NULL);
-  unlikely_section_label = reconcat (unlikely_section_label, 
-				     fnname, ".unlikely_section", NULL);
-  hot_section_end_label = reconcat (hot_section_end_label,
-				    fnname, ".end", NULL);
-  cold_section_end_label = reconcat (cold_section_end_label,
-				    fnname, ".end.cold", NULL);
+  if (flag_reorder_blocks_and_partition)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "HOTB", const_labelno);
+      cfun->hot_section_label = ggc_strdup (tmp_label);
+      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "COLDB", const_labelno);
+      cfun->cold_section_label = ggc_strdup (tmp_label);
+      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "HOTE", const_labelno);
+      cfun->hot_section_end_label = ggc_strdup (tmp_label);
+      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "COLDE", const_labelno);
+      cfun->cold_section_end_label = ggc_strdup (tmp_label);
+      const_labelno++;
+    }
+  else
+    {
+      cfun->hot_section_label = NULL;
+      cfun->cold_section_label = NULL;
+      cfun->hot_section_end_label = NULL;
+      cfun->cold_section_end_label = NULL;
+    }
 
   /* The following code does not need preprocessing in the assembler.  */
 
@@ -1253,7 +1275,7 @@ assemble_start_function (tree decl, const char *fnname)
     {
       unlikely_text_section ();
       assemble_align (FUNCTION_BOUNDARY);
-      ASM_OUTPUT_LABEL (asm_out_file, unlikely_section_label);
+      ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_label);
       if (BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
 	{
 	  /* Since the function starts with a cold section, we need to
@@ -1261,7 +1283,7 @@ assemble_start_function (tree decl, const char *fnname)
 	     section label.  */
 	  text_section ();
 	  assemble_align (FUNCTION_BOUNDARY);
-	  ASM_OUTPUT_LABEL (asm_out_file, hot_section_label);
+	  ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_label);
 	  hot_label_written = true;
 	  first_function_block_is_cold = true;
 	}
@@ -1291,8 +1313,8 @@ assemble_start_function (tree decl, const char *fnname)
 	s[i] = (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)))[i];
       s[len] = '\0';
       
-      if (unlikely_text_section_name 
-	  && (strcmp (s, unlikely_text_section_name) == 0))
+      if (cfun->unlikely_text_section_name 
+	  && (strcmp (s, cfun->unlikely_text_section_name) == 0))
 	first_function_block_is_cold = true;
     }
 
@@ -1303,8 +1325,8 @@ assemble_start_function (tree decl, const char *fnname)
   /* Switch to the correct text section for the start of the function.  */
 
   function_section (decl);
-  if (!hot_label_written)
-    ASM_OUTPUT_LABEL (asm_out_file, hot_section_label);
+  if (flag_reorder_blocks_and_partition && !hot_label_written)
+    ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_label);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
@@ -1366,7 +1388,6 @@ assemble_start_function (tree decl, const char *fnname)
 void
 assemble_end_function (tree decl, const char *fnname)
 {
-  enum in_section save_text_section;
 #ifdef ASM_DECLARE_FUNCTION_SIZE
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
 #endif
@@ -1377,13 +1398,19 @@ assemble_end_function (tree decl, const char *fnname)
     }
   /* Output labels for end of hot/cold text sections (to be used by
      debug info.)  */
-  save_text_section = in_section;
-  unlikely_text_section ();
-  ASM_OUTPUT_LABEL (asm_out_file, cold_section_end_label);
-  text_section ();
-  ASM_OUTPUT_LABEL (asm_out_file, hot_section_end_label);
-  if (save_text_section == in_unlikely_executed_text)
-    unlikely_text_section ();
+  if (flag_reorder_blocks_and_partition)
+    {
+      enum in_section save_text_section;
+      struct function *cfun = DECL_STRUCT_FUNCTION (decl);
+
+      save_text_section = in_section;
+      unlikely_text_section ();
+      ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_end_label);
+      text_section ();
+      ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_end_label);
+      if (save_text_section == in_unlikely_executed_text)
+	unlikely_text_section ();
+    }
 }
 
 /* Assemble code to leave SIZE bytes of zeros.  */
@@ -4766,14 +4793,23 @@ default_section_type_flags_1 (tree decl, const char *name, int reloc,
 			      int shlib)
 {
   unsigned int flags;
+  struct function *cfun = NULL;
+
+  if (current_function_decl)
+    cfun = DECL_STRUCT_FUNCTION (current_function_decl);
 
   if (decl && TREE_CODE (decl) == FUNCTION_DECL)
     flags = SECTION_CODE;
   else if (decl && decl_readonly_section_1 (decl, reloc, shlib))
     flags = 0;
-  else if (unlikely_text_section_name
-	   && strcmp (name, unlikely_text_section_name) == 0)
+  else if (current_function_decl
+	   && cfun->unlikely_text_section_name
+	   && strcmp (name, cfun->unlikely_text_section_name) == 0)
     flags = SECTION_CODE;
+  else if (!decl 
+	   && !current_function_decl
+	   && strcmp (name, UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0)
+    flags = SECTION_CODE; 
   else
     flags = SECTION_WRITE;
 
