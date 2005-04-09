@@ -339,7 +339,7 @@
 ;; Return 1 if the operand is in volatile memory.  Note that during the
 ;; RTL generation phase, memory_operand does not return TRUE for volatile
 ;; memory references.  So this function allows us to recognize volatile
-;; references where its safe.
+;; references where it's safe.
 (define_predicate "volatile_mem_operand"
   (and (and (match_code "mem")
 	    (match_test "MEM_VOLATILE_P (op)"))

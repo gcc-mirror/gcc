@@ -2000,7 +2000,7 @@ vrp_meet (value_range *vr0, value_range *vr1)
 	  if (compare_values (vr0->min, vr1->min) == 1)
 	    min = vr1->min;
 
-	  /* The upper limit of the new range is the maximium of the
+	  /* The upper limit of the new range is the maximum of the
 	     two ranges.  */
 	  if (compare_values (vr0->max, vr1->max) == -1)
 	    max = vr1->max;
