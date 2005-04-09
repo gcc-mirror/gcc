@@ -1,3 +1,8 @@
+2005-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR fortran/13257
+	* comma_format_extension_[1234].f: New tests.
+
 2005-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/stdarg-1.c: New test.
