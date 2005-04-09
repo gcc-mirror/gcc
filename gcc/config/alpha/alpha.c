@@ -53,6 +53,8 @@ Boston, MA 02111-1307, USA.  */
 #include <splay-tree.h>
 #include "cfglayout.h"
 #include "tree-gimple.h"
+#include "tree-flow.h"
+#include "tree-stdarg.h"
 
 /* Specify which cpu to schedule for.  */
 enum processor_type alpha_tune;
@@ -5576,7 +5578,154 @@ alpha_build_builtin_va_list (void)
   TYPE_FIELDS (record) = base;
   layout_type (record);
 
+  va_list_gpr_counter_field = ofs;
   return record;
+}
+
+/* Helper function for alpha_stdarg_optimize_hook.  Skip over casts
+   and constant additions.  */
+
+static tree
+va_list_skip_additions (tree lhs)
+{
+  tree rhs, stmt;
+
+  if (TREE_CODE (lhs) != SSA_NAME)
+    return lhs;
+
+  for (;;)
+    {
+      stmt = SSA_NAME_DEF_STMT (lhs);
+
+      if (TREE_CODE (stmt) == PHI_NODE)
+	return stmt;
+
+      if (TREE_CODE (stmt) != MODIFY_EXPR
+	  || TREE_OPERAND (stmt, 0) != lhs)
+	return lhs;
+
+      rhs = TREE_OPERAND (stmt, 1);
+      if (TREE_CODE (rhs) == WITH_SIZE_EXPR)
+	rhs = TREE_OPERAND (rhs, 0);
+
+      if ((TREE_CODE (rhs) != NOP_EXPR
+	   && TREE_CODE (rhs) != CONVERT_EXPR
+	   && (TREE_CODE (rhs) != PLUS_EXPR
+	       || TREE_CODE (TREE_OPERAND (rhs, 1)) != INTEGER_CST
+	       || !host_integerp (TREE_OPERAND (rhs, 1), 1)))
+	  || TREE_CODE (TREE_OPERAND (rhs, 0)) != SSA_NAME)
+	return rhs;
+
+      lhs = TREE_OPERAND (rhs, 0);
+    }
+}
+
+/* Check if LHS = RHS statement is
+   LHS = *(ap.__base + ap.__offset + cst)
+   or
+   LHS = *(ap.__base
+	   + ((ap.__offset + cst <= 47)
+	      ? ap.__offset + cst - 48 : ap.__offset + cst) + cst2).
+   If the former, indicate that GPR registers are needed,
+   if the latter, indicate that FPR registers are needed.
+   On alpha, cfun->va_list_gpr_size is used as size of the needed
+   regs and cfun->va_list_fpr_size is a bitmask, bit 0 set if
+   GPR registers are needed and bit 1 set if FPR registers are needed.
+   Return true if va_list references should not be scanned for the current
+   statement.  */
+
+static bool
+alpha_stdarg_optimize_hook (struct stdarg_info *si, tree lhs, tree rhs)
+{
+  tree base, offset, arg1, arg2;
+  int offset_arg = 1;
+
+  if (TREE_CODE (rhs) != INDIRECT_REF
+      || TREE_CODE (TREE_OPERAND (rhs, 0)) != SSA_NAME)
+    return false;
+
+  lhs = va_list_skip_additions (TREE_OPERAND (rhs, 0));
+  if (lhs == NULL_TREE
+      || TREE_CODE (lhs) != PLUS_EXPR)
+    return false;
+
+  base = TREE_OPERAND (lhs, 0);
+  if (TREE_CODE (base) == SSA_NAME)
+    base = va_list_skip_additions (base);
+
+  if (TREE_CODE (base) != COMPONENT_REF
+      || TREE_OPERAND (base, 1) != TYPE_FIELDS (va_list_type_node))
+    {
+      base = TREE_OPERAND (lhs, 0);
+      if (TREE_CODE (base) == SSA_NAME)
+	base = va_list_skip_additions (base);
+
+      if (TREE_CODE (base) != COMPONENT_REF
+	  || TREE_OPERAND (base, 1) != TYPE_FIELDS (va_list_type_node))
+	return false;
+
+      offset_arg = 0;
+    }
+
+  base = get_base_address (base);
+  if (TREE_CODE (base) != VAR_DECL
+      || !bitmap_bit_p (si->va_list_vars, var_ann (base)->uid))
+    return false;
+
+  offset = TREE_OPERAND (lhs, offset_arg);
+  if (TREE_CODE (offset) == SSA_NAME)
+    offset = va_list_skip_additions (offset);
+
+  if (TREE_CODE (offset) == PHI_NODE)
+    {
+      HOST_WIDE_INT sub;
+
+      if (PHI_NUM_ARGS (offset) != 2)
+	goto escapes;
+
+      arg1 = va_list_skip_additions (PHI_ARG_DEF (offset, 0));
+      arg2 = va_list_skip_additions (PHI_ARG_DEF (offset, 1));
+      if (TREE_CODE (arg1) != COMPONENT_REF)
+	{
+	  tree tem = arg1;
+
+	  arg1 = arg2;
+	  arg2 = tem;
+	}
+
+      if ((TREE_CODE (arg2) != MINUS_EXPR
+	   && TREE_CODE (arg2) != PLUS_EXPR)
+	  || !host_integerp (TREE_OPERAND (arg2, 1), 0))
+	goto escapes;
+
+      sub = tree_low_cst (TREE_OPERAND (arg2, 1), 0);
+      if (TREE_CODE (arg2) == MINUS_EXPR)
+	sub = -sub;
+      if (sub < -48 || sub > -32)
+	goto escapes;
+
+      arg2 = va_list_skip_additions (TREE_OPERAND (arg2, 0));
+      if (arg1 != arg2
+	  || TREE_CODE (arg1) != COMPONENT_REF
+	  || TREE_OPERAND (arg1, 1) != va_list_gpr_counter_field
+	  || get_base_address (arg1) != base)
+	goto escapes;
+
+      /* Need floating point regs.  */
+      cfun->va_list_fpr_size |= 2;
+    }
+  else if (TREE_CODE (offset) != COMPONENT_REF
+	   || TREE_OPERAND (offset, 1) != va_list_gpr_counter_field
+	   || get_base_address (offset) != base)
+    goto escapes;
+  else
+    /* Need general regs.  */
+    cfun->va_list_fpr_size |= 1;
+  return false;
+
+escapes:
+  si->va_list_escapes = true;
+  return false;
 }
 
 /* Perform any needed actions needed for a function that is receiving a
@@ -10204,6 +10353,9 @@ alpha_init_libfuncs (void)
   (TARGET_DEFAULT | TARGET_CPU_DEFAULT | TARGET_DEFAULT_EXPLICIT_RELOCS)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION alpha_handle_option
+
+#undef TARGET_STDARG_OPTIMIZE_HOOK
+#define TARGET_STDARG_OPTIMIZE_HOOK alpha_stdarg_optimize_hook
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -50,6 +50,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "tm.h"
 #include "insn-modes.h"
 
+struct stdarg_info;
+
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
@@ -505,6 +507,12 @@ struct gcc_target
        (set (reg) (unspec_volatile [...] UNSPECV_INDEX))
      to let the backend emit the call frame instructions.  */
   void (* dwarf_handle_frame_unspec) (const char *, rtx, int);
+
+  /* Perform architecture specific checking of statements gimplified
+     from VA_ARG_EXPR.  LHS is left hand side of MODIFY_EXPR, RHS
+     is right hand side.  Returns true if the statements doesn't need
+     to be checked for va_list references.  */
+  bool (*stdarg_optimize_hook) (struct stdarg_info *ai, tree lhs, tree rhs);
 
   /* Functions relating to calls - argument passing, returns, etc.  */
   struct calls {
