@@ -1,3 +1,9 @@
+2005-04-09  Steven G. Kargl  <kargls@comcast.net>
+
+	* simplify.c (gfc_simplify_anint): Use mpfr_round()
+	(gfc_simplify_dnint): ditto.
+	(gfc_simplify_nint): ditto.
+
 2005-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/13257
