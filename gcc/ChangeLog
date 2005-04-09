@@ -1,5 +1,11 @@
 2005-04-09  Uros Bizjak  <uros@kss-loka.si>
 
+	* config/i386/i386.md (*fp_jcc_7_387): Use 'const0_operand' instead
+	of 'const_double_operand' in operand 2 constraints.  Update enable
+	condition.
+
+2005-04-09  Uros Bizjak  <uros@kss-loka.si>
+
 	* builtins.def (BUILT_IN_LFLOOR, BUILT_IN_LFLOORF, BUILT_IN_LFLOORL)
 	(BUILT_IN_LLFLOOR, BUILT_IN_LLFLOORF, BUILT_IN_LLFLOORL): New.
 	* optabs.h (enum optab_index): Add new OTI_lfloor.
