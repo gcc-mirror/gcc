@@ -1,3 +1,11 @@
+2005-04-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/predicates.md (altivec_register_operand): Remove
+	redundant match_code test.
+	(gpc_reg_operand): Same.
+	(cc_reg_operand): Same.
+	(cc_reg_not_cr0_operand): Same.
+
 2005-04-09  Jan Hubicka  <jh@suse.cz>
 
 	Forgotten hunk from my last merge patch:
