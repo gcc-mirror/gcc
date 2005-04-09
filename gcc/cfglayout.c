@@ -1228,7 +1228,7 @@ end:
 
 void
 copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
-	  edge *edges, unsigned n_edges, edge *new_edges,
+	  edge *edges, unsigned num_edges, edge *new_edges,
 	  struct loop *base)
 {
   unsigned i, j;
@@ -1267,7 +1267,7 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
     }
 
   /* Redirect edges.  */
-  for (j = 0; j < n_edges; j++)
+  for (j = 0; j < num_edges; j++)
     new_edges[j] = NULL;
   for (i = 0; i < n; i++)
     {
@@ -1277,7 +1277,7 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
 
       FOR_EACH_EDGE (e, ei, new_bb->succs)
 	{
-	  for (j = 0; j < n_edges; j++)
+	  for (j = 0; j < num_edges; j++)
 	    if (edges[j] && edges[j]->src == bb && edges[j]->dest == e->dest)
 	      new_edges[j] = e;
 

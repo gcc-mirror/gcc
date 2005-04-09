@@ -1640,14 +1640,14 @@ static struct opt_info *
 analyze_insns_in_loop (struct loop *loop)
 {
   basic_block *body, bb;
-  unsigned i, n_edges = 0;
+  unsigned i, num_edges = 0;
   struct opt_info *opt_info = xcalloc (1, sizeof (struct opt_info));
   rtx insn;
   struct iv_to_split *ivts = NULL;
   struct var_to_expand *ves = NULL;
   PTR *slot1;
   PTR *slot2;
-  edge *edges = get_loop_exit_edges (loop, &n_edges);
+  edge *edges = get_loop_exit_edges (loop, &num_edges);
   bool can_apply = false;
   
   iv_analysis_loop_init (loop);
@@ -1667,7 +1667,7 @@ analyze_insns_in_loop (struct loop *loop)
   else
     opt_info->loop_preheader = loop_preheader_edge (loop)->src;
   
-  if (n_edges == 1
+  if (num_edges == 1
       && !(edges[0]->flags & EDGE_COMPLEX))
     {
       opt_info->loop_exit = loop_split_edge_with (edges[0], NULL_RTX);
