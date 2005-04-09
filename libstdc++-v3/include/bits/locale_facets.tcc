@@ -1153,7 +1153,11 @@ namespace std
 	__ws[__p - __ws] = __dec;
 
       // Add grouping, if necessary.
-      if (__lc->_M_use_grouping)
+      // N.B. Make sure to not group things like 2e20, i.e., no decimal
+      // point, scientific notation.
+      if (__lc->_M_use_grouping
+	  && (__p || __len < 3 || (__cs[1] != 'e' && __cs[2] != 'e'
+				   && __cs[1] != 'E' && __cs[2] != 'E')))
 	{
 	  // Grouping can add (almost) as many separators as the
 	  // number of digits, but no more.
