@@ -86,7 +86,6 @@ static htab_t local_specializations;
 #define UNIFY_ALLOW_OUTER_LEVEL 16
 #define UNIFY_ALLOW_OUTER_MORE_CV_QUAL 32
 #define UNIFY_ALLOW_OUTER_LESS_CV_QUAL 64
-#define UNIFY_ALLOW_MAX_CORRECTION 128
 
 static void push_access_scope (tree);
 static void pop_access_scope (tree);
