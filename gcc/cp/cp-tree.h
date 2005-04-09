@@ -3881,14 +3881,6 @@ extern void mark_needed (tree);
 extern bool decl_needed_p (tree);
 extern void note_vague_linkage_fn (tree);
 
-/* XXX Not i18n clean.  */
-#define cp_deprecated(STR)						\
-  do {									\
-    if (warn_deprecated)						\
-      warning ("%s is deprecated, please see the documentation for details", \
-	       (STR));							\
-  } while (0)
-
 /* in error.c */
 extern void init_error				(void);
 extern const char *type_as_string		(tree, int);
