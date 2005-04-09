@@ -1,3 +1,9 @@
+2005-04-09  Thomas Koenig <Thomas.Koenig@online.de>
+
+	PR libfortran/20163
+	* runtime/string.c (compare0): Use fstrlen() to 
+	strip trailing blanks from option string.
+
 2005-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/13257
