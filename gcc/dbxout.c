@@ -938,11 +938,14 @@ dbxout_function_end (tree decl)
 #else
   if (flag_reorder_blocks_and_partition)
     {
+      struct function *cfun = DECL_STRUCT_FUNCTION (decl);
+
       dbxout_begin_empty_stabs (N_FUN);
-      dbxout_stab_value_label_diff (hot_section_end_label, hot_section_label);
+      dbxout_stab_value_label_diff (cfun->hot_section_end_label, 
+				    cfun->hot_section_label);
       dbxout_begin_empty_stabs (N_FUN);
-      dbxout_stab_value_label_diff (cold_section_end_label, 
-				    unlikely_section_label);
+      dbxout_stab_value_label_diff (cfun->cold_section_end_label, 
+				    cfun->cold_section_label);
     }
   else
     {
