@@ -297,9 +297,6 @@ proc v3_target_compile { source dest type options } {
 }
 
 
-# XXX Fix me.
-# This is a complete hack: why do we build libv3test.a and then not use it?
-# This duplicates all the make logic. Boo: pick one way to do it, not two.
 # Build the support objects linked in with the libstdc++ tests.  In
 # addition, set v3-wchar_t, v3-threads, and v3-test_objs
 # appropriately.
