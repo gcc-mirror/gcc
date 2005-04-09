@@ -1,3 +1,7 @@
+2005-04-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* doc/tree-ssa.texi: Add immediate use documentation.
+
 2005-04-09  Richard Earnshaw <richard.earnshaw@arm.com>
 
 	* arm.c (FL_WBUF): Define.
