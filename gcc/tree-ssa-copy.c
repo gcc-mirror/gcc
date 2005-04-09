@@ -430,7 +430,7 @@ get_last_copy_of (tree var)
 
 
 /* Set FIRST to be the first variable in the copy-of chain for DEST.
-   If DEST's copy-of value or its copy-of chain have changed, return
+   If DEST's copy-of value or its copy-of chain has changed, return
    true.
 
    MEM_REF is the memory reference where FIRST is stored.  This is

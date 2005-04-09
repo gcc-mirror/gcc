@@ -71,7 +71,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef _LIBOBJC
 
 /* This is necessary to prevent windef.h (included from windows.h) from
-   defining it's own BOOL as a typedef.  */
+   defining its own BOOL as a typedef.  */
 #ifndef __OBJC__
 #define __OBJC__
 #endif

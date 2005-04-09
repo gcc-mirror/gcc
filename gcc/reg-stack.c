@@ -1424,7 +1424,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	    if (pat != PATTERN (insn))
 	      {
 		/* The fix_truncdi_1 pattern wants to be able to allocate
-		   it's own scratch register.  It does this by clobbering
+		   its own scratch register.  It does this by clobbering
 		   an fp reg so that it is assured of an empty reg-stack
 		   register.  If the register is live, kill it now.
 		   Remove the DEAD/UNUSED note so we don't try to kill it

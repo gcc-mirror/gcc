@@ -30,7 +30,7 @@
 
    The algorithm computes this dominator tree implicitly by computing for
    each block its immediate dominator.  We use tree balancing and path
-   compression, so its the O(e*a(e,v)) variant, where a(e,v) is the very
+   compression, so it's the O(e*a(e,v)) variant, where a(e,v) is the very
    slowly growing functional inverse of the Ackerman function.  */
 
 #include "config.h"

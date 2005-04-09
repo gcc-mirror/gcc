@@ -5402,7 +5402,7 @@ default_valid_pointer_mode (enum machine_mode mode)
 }
 
 /* Default function to output code that will globalize a label.  A
-   target must define GLOBAL_ASM_OP or provide it's own function to
+   target must define GLOBAL_ASM_OP or provide its own function to
    globalize a label.  */
 #ifdef GLOBAL_ASM_OP
 void

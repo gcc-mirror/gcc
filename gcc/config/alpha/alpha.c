@@ -8418,7 +8418,7 @@ alphaev4_next_group (rtx insn, int *pin_use, int *plen)
 	  if (in_use)
 	    goto done;
 
-	  /* If this is a completely unrecognized insn, its an asm.
+	  /* If this is a completely unrecognized insn, it's an asm.
 	     We don't know how long it is, so record length as -1 to
 	     signal a needed realignment.  */
 	  if (recog_memoized (insn) < 0)
@@ -8516,7 +8516,7 @@ alphaev5_next_group (rtx insn, int *pin_use, int *plen)
 	  if (in_use)
 	    goto done;
 
-	  /* If this is a completely unrecognized insn, its an asm.
+	  /* If this is a completely unrecognized insn, it's an asm.
 	     We don't know how long it is, so record length as -1 to
 	     signal a needed realignment.  */
 	  if (recog_memoized (insn) < 0)

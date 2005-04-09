@@ -67,7 +67,7 @@ Boston, MA 02111-1307, USA.  */
    on each of the 5 operand vectors which have been built up.
 
    If the stmt had a previous operand cache, the finalization routines 
-   attempt to match up the new operands with the old ones.  If its a perfect 
+   attempt to match up the new operands with the old ones.  If it's a perfect 
    match, the old vector is simply reused.  If it isn't a perfect match, then 
    a new vector is created and the new operands are placed there.  For 
    virtual operands, if the previous cache had SSA_NAME version of a 
@@ -473,7 +473,7 @@ correct_use_link (ssa_imm_use_t *ptr, tree stmt)
   if (prev)
     {
       bool stmt_mod = true;
-      /* Find the first element which isn't a SAFE iterator, is in a sifferent
+      /* Find the first element which isn't a SAFE iterator, is in a different
 	 stmt, and is not a a modified stmt,  That node is in the correct list,
 	 see if we are too.  */
 
@@ -493,7 +493,7 @@ correct_use_link (ssa_imm_use_t *ptr, tree stmt)
 	root = prev->stmt;
       else
 	root = *(prev->use);
-      /* If its the right list, simply return.  */
+      /* If it's the right list, simply return.  */
       if (root == *(ptr->use))
 	return;
     }

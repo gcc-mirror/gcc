@@ -1,3 +1,10 @@
+2005-04-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dominance.c, gthr-win32.h, reg-stack.c, tree-ssa-copy.c,
+	tree-ssa-operands.c, tree-ssa.c, tree-vrp.c, varasm.c,
+	config/alpha/alpha.c, config/arm/arm.c, config/m32r/m32r.h,
+	config/rs6000/predicates.md: Fix comment typos.
+
 2005-04-09  Jan Hubicka  <jh@suse.cz>
 	    Steven Bosscher  <stevenb@suse.de>
 

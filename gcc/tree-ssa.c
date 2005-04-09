@@ -261,7 +261,7 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
     }
 
   /* Make sure the use is in an appropriate list by checking the previous 
-     element to make sure its the same.  */
+     element to make sure it's the same.  */
   if (use_p->prev == NULL)
     {
       error ("No immediate_use list");
