@@ -699,8 +699,7 @@ Annotations are defined and documented in @file{tree-flow.h}.
 @cindex operands
 @cindex virtual operands
 @cindex real operands
-@findex get_stmt_operands
-@findex modify_stmt
+@findex update_stmt
 
 Almost every GIMPLE statement will contain a reference to a variable
 or memory location.  Since statements come in different shapes and
@@ -860,7 +859,6 @@ print_ops (tree stmt)
   stmt_ann_t ann;
   size_t i;
 
-  get_stmt_operands (stmt);
   ann = stmt_ann (stmt);
 
   defs = DEF_OPS (ann);
@@ -888,11 +886,15 @@ print_ops (tree stmt)
 @}
 @end smallexample
 
-To collect the operands, you first need to call
-@code{get_stmt_operands}.  Since that is a potentially expensive
-operation, statements are only scanned if they have been marked
-modified by a call to @code{modify_stmt}.  So, if your pass replaces
-operands in a statement, make sure to call @code{modify_stmt}.
+Operands use to be updated lazily via calls to @code{get_stmt_operands}.  
+This function is now deprecated and operands are updated as soon as the stmt is
+finished via a call to @code{update_stmt}.  If statement elements are
+changed via @code{SET_USE} or @code{SET_DEF}, no further action need be 
+taken (ie, those macros take care of whatever updating is required).  If
+changes are made by manipulating the statement's tree directly, then a call 
+must be made to @code{update_stmt} when complete.  Calling one of the 
+@code{bsi_insert} routines or @code{bsi_replace} performs an implicit call
+to @code{update_stmt}.
 
 @subsection Operand Iterators
 @cindex Operand Iterators
@@ -909,7 +911,6 @@ print_ops (tree stmt)
   ssa_op_iter;
   tree var;
 
-  get_stmt_operands (stmt);
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_OPERANDS)
     print_generic_expr (stderr, var, 0);
 @}
@@ -1023,6 +1024,87 @@ this one.
 There are many examples in the code as well, as well as the
 documentation in @file{tree-ssa-operands.h}.
 
+
+@subsection Immediate Uses
+@cindex Immediate Uses
+
+Immediate use information is now always available.  Using the immediate use 
+iterators, you may examine every use of any @code{SSA_NAME}. For instance,
+to change each use of @code{ssa_var} to @code{ssa_var2}:
+
+@smallexample
+  FOR_EACH_IMM_USE_SAFE (imm_use_p, iterator, ssa_var)
+    SET_USE (imm_use_p, ssa_var_2);
+@end smallexample
+
+There are 2 iterators which can be used. @code{FOR_EACH_IMM_USE_FAST} is used 
+when the immediate uses are not changed, ie. you are looking at the uses, but 
+not setting them.  
+
+If they do get changed, then care must be taken that things are not changed 
+under the iterators, so use the @code{FOR_EACH_IMM_USE_SAFE} iterator.  It 
+attempts to preserve the sanity of the use list by moving an iterator element
+through the use list, preventing insertions and deletions in the list from
+resulting in invalid pointers.  This is a little slower since it adds a
+placeholder element and moves it through the list.  This element must be 
+also be removed if the loop is terminated early.  A macro 
+(@code{BREAK_FROM SAFE_IMM_USE} is provided for this:
+
+@smallexample
+  FOR_EACH_IMM_USE_SAFE (use_p, iter, var)
+    @{
+      if (var == last_var)
+        BREAK_FROM_SAFE_IMM_USE (iter);
+      else
+        SET_USE (use_p, var2);
+    @}
+@end smallexample
+
+There are checks in @code{verify_ssa} which verify that the immediate use list
+is up to date, as well as checking that an optimization didn't break from the 
+loop without using this macro.  It is safe to simply 'break'; from a 
+@code{FOR_EACH_IMM_USE_FAST} traverse.
+
+Some useful functions and macros:
+@enumerate
+@item  @code{has_zero_uses (ssa_var)} : Returns true if there are no uses of
+@code{ssa_var}.
+@item   @code{has_single_use (ssa_var)} : Returns true if there is only a 
+single use of @code{ssa_var}.
+@item   @code{single_imm_use (ssa_var, use_operand_p *ptr, tree *stmt)} :
+Returns true if there is only a single use of @code{ssa_var}, and also returns
+the use pointer and stmt it occurs in in the second and third parameters.
+@item   @code{num_imm_uses (ssa_var)} : Returns the number of immediate uses of
+@code{ssa_var}. Its better not to use this if possible since it simply
+utilizes a loop to count the uses.
+@item  @code{PHI_ARG_INDEX_FROM_USE (use_p)} : Given a use within a @code{PHI}
+node, return the index number for the use.  An assert is triggered if the use
+isn't located in a @code{PHI} node.
+@item  @code{USE_STMT (use_p)} : Return the stmt a use occurs in.
+@end enumerate
+
+Note that uses are not put into an immediate use list until their statement is
+actually inserted into the instruction stream via a @code{bsi_*} routine.  
+
+It is also still possible to utilize lazy updating of stmts, but this should be used only when absolutely required.  Both alias analysis and the dominator 
+optimizations currently do this.  
+
+When lazy updating is being used, the immediate use information is out of date 
+and cannot be used reliably.  Lazy updating is acheived by simply marking stmts 
+modified via calls to @code{mark_stmt_modified} instead of @code{update_stmt}.
+When lazy updating is no longer required, all the modified stmts must have 
+@code{update_stmt} called in order to bring them up to date.  This must be done before the optimization is finished, or @code{verify_ssa} will trigger an abort.
+
+This is done with a simple loop over the instruction stream:
+@smallexample
+  block_stmt_iterator bsi;
+  basic_block bb;
+  FOR_EACH_BB (bb)
+    @{
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+        update_stmt_if_modified (bsi_stmt (bsi));
+    @}
+@end smallexample
 
 @node SSA
 @section Static Single Assignment
