@@ -1455,17 +1455,6 @@ struct lang_type GTY(())
 #define CLASSTYPE_TYPEINFO_VAR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->typeinfo_var)
 
-/* Accessor macros for the vfield slots in structures.  */
-
-/* Get the BINFO that introduced this vtable into the hierarchy (will
-   be NULL for those created at this level, or from a primary
-   hierarchy).  */
-#define VF_BINFO_VALUE(NODE) TREE_PURPOSE (NODE)
-
-/* Get the TYPE that introduced this vtable into the hierarchy (always
-   non-NULL).  */
-#define VF_BASETYPE_VALUE(NODE) TREE_VALUE (NODE)
-
 /* Accessor macros for the BINFO_VIRTUALS list.  */
 
 /* The number of bytes by which to adjust the `this' pointer when

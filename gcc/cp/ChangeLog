@@ -9,6 +9,8 @@
 
 	* pt.c (UNIFY_ALLOW_MAX_CORRECTION): Remove.
 
+	* cp-tree.h (VF_BINFO_VALUE, VF_BASETYPE_VALUE): Remove.
+
 2005-04-08  Ian Lance Taylor  <ian@airs.com>
 
 	* cp-tree.def: Define FOR_STMT, WHILE_STMT, DO_STMT, BREAK_STMT,
