@@ -28,29 +28,6 @@ include $(top_srcdir)/fragment.am
 AM_MAKEFLAGS = -j1
 AM_RUNTESTFLAGS =
 
-## CXX is actually a "C" compiler. These are real C++ programs.
-testsuite_flags_script=${glibcxx_builddir}/scripts/testsuite_flags
-CXX         = $(shell ${SHELL} ${testsuite_flags_script} --build-cxx)
-GLIBCXX_INCLUDES = $(shell ${SHELL} ${testsuite_flags_script} \
-  --build-includes)
-AM_CXXFLAGS = $(shell ${SHELL} ${testsuite_flags_script} --cxxflags)
-
-GLIBGCC_DIR=`$(CC) -print-libgcc-file-name | sed 's,/[^/]*$$,,'`
-GLIBCXX_DIR=${glibcxx_builddir}/src/.libs
-
-CXXLINK = \
-	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
-	-R $(GLIBGCC_DIR) -R $(GLIBCXX_DIR) \
-	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -lv3test -L. -o $@
-
-## Build support library.
-noinst_LIBRARIES = libv3test.a
-libv3test_a_SOURCES = \
-	testsuite_abi.cc \
-	testsuite_allocator.cc \
-	testsuite_character.cc \
-	testsuite_hooks.cc 
-
 all-local: stamp_wchar stamp_thread
 
 # Enable wchar_t tests if capable.
