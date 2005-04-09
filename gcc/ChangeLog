@@ -1,3 +1,19 @@
+2005-04-09  Richard Earnshaw <richard.earnshaw@arm.com>
+
+	* arm.c (FL_WBUF): Define.
+	(arm_tune_strongarm): Renamed from arm_is_strong.  All uses changed.
+	(arm_is_6_or_7): Delete.
+	(arm_tune_wbuf): New.
+	(arm_override_options): Set arm_tune_wbuf.
+	* arm.h (arm_tune_strongarm): Renamed from arm_is_strong.
+	(arm_is_6_or_7): Delete declaration.
+	(arm_tune_wbuf): New declartion.
+	* arm.md (is_strongarm): Derive from arm_tune_strongarm.
+	(model_wbuf): Derive from arm_tune_wbuf.
+	* arm-cores.def (arm600, arm610, arm620, arm700, arm700i, arm710)
+	(arm720, arm710c, arm7100, arm7500, arm7500fe, arm710t, arm720t)
+	(arm740t): Mark CPUs as having a write buffer.
+
 2005-04-09  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.md (*fp_jcc_7_387): Use 'const0_operand' instead

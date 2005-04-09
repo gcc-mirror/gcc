@@ -135,7 +135,7 @@
 
 ; IS_STRONGARM is set to 'yes' when compiling for StrongARM, it affects
 ; scheduling decisions for the load unit and the multiplier.
-(define_attr "is_strongarm" "no,yes" (const (symbol_ref "arm_is_strong")))
+(define_attr "is_strongarm" "no,yes" (const (symbol_ref "arm_tune_strongarm")))
 
 ; IS_XSCALE is set to 'yes' when compiling for XScale.
 (define_attr "is_xscale" "no,yes" (const (symbol_ref "arm_tune_xscale")))
@@ -267,7 +267,7 @@
 ; have one.  Later ones, such as StrongARM, have write-back caches, so don't
 ; suffer blockages enough to warrant modelling this (and it can adversely
 ; affect the schedule).
-(define_attr "model_wbuf" "no,yes" (const (symbol_ref "arm_is_6_or_7")))
+(define_attr "model_wbuf" "no,yes" (const (symbol_ref "arm_tune_wbuf")))
 
 ; WRITE_CONFLICT implies that a read following an unrelated write is likely
 ; to stall the processor.  Used with model_wbuf above.

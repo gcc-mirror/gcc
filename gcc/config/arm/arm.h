@@ -525,7 +525,7 @@ extern int arm_ld_sched;
 extern int thumb_code;
 
 /* Nonzero if this chip is a StrongARM.  */
-extern int arm_is_strong;
+extern int arm_tune_strongarm;
 
 /* Nonzero if this chip is a Cirrus variant.  */
 extern int arm_arch_cirrus;
@@ -536,11 +536,11 @@ extern int arm_arch_iwmmxt;
 /* Nonzero if this chip is an XScale.  */
 extern int arm_arch_xscale;
 
-/* Nonzero if tuning for XScale  */
+/* Nonzero if tuning for XScale.  */
 extern int arm_tune_xscale;
 
-/* Nonzero if this chip is an ARM6 or an ARM7.  */
-extern int arm_is_6_or_7;
+/* Nonzero if tuning for stores via the write buffer.  */
+extern int arm_tune_wbuf;
 
 /* Nonzero if we should define __THUMB_INTERWORK__ in the
    preprocessor.
