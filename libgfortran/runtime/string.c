@@ -41,17 +41,11 @@ static int
 compare0 (const char *s1, int s1_len, const char *s2)
 {
   int i;
+  int len;
 
-  if (strncasecmp (s1, s2, s1_len) != 0)
-    return 0;
-
-  /* The rest of s1 needs to be blanks for equality.  */
-
-  for (i = strlen (s2); i < s1_len; i++)
-    if (s1[i] != ' ')
-      return 0;
-
-  return 1;
+  /* Strip trailing blanks from the Fortran string.  */
+  len = fstrlen(s1, s1_len);
+  return strncasecmp(s1,s2,len) == 0;
 }
 
 
