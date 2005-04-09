@@ -900,11 +900,11 @@ cleanup:
 
 
 /* We try to match an easy arithmetic IF statement. This only happens
- * when just after having encountered a simple IF statement. This code
- * is really duplicate with parts of the gfc_match_if code, but this is
- * *much* easier.  */
+   when just after having encountered a simple IF statement. This code
+   is really duplicate with parts of the gfc_match_if code, but this is
+   *much* easier.  */
 static match
-gfc_match_arithmetic_if (void)
+match_arithmetic_if (void)
 {
   gfc_st_label *l1, *l2, *l3;
   gfc_expr *expr;
@@ -1069,7 +1069,7 @@ gfc_match_if (gfc_statement * if_type)
     match ("exit", gfc_match_exit, ST_EXIT)
     match ("forall", match_simple_forall, ST_FORALL)
     match ("go to", gfc_match_goto, ST_GOTO)
-    match ("if", gfc_match_arithmetic_if, ST_ARITHMETIC_IF)
+    match ("if", match_arithmetic_if, ST_ARITHMETIC_IF)
     match ("inquire", gfc_match_inquire, ST_INQUIRE)
     match ("nullify", gfc_match_nullify, ST_NULLIFY)
     match ("open", gfc_match_open, ST_OPEN)
