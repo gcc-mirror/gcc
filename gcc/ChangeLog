@@ -1,3 +1,8 @@
+2005-04-09  Jan Hubicka  <jh@suse.cz>
+
+	Forgotten hunk from my last merge patch:
+	* final.c (output_addr_const): Do not call mark_referenced.
+
 2005-04-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* doc/tree-ssa.texi: Add immediate use documentation.
