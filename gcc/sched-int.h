@@ -208,10 +208,6 @@ struct haifa_insn_data
      the ready queue when its counter reaches zero.  */
   int dep_count;
 
-  /* An encoding of the blockage range function.  Both unit and range
-     are coded.  This member is used only for old pipeline interface.  */
-  unsigned int blockage;
-
   /* Number of instructions referring to this insn.  */
   int ref_count;
 
@@ -220,10 +216,6 @@ struct haifa_insn_data
   int tick;
 
   short cost;
-
-  /* An encoding of the function units used.  This member is used only
-     for old pipeline interface.  */
-  short units;
 
   /* This weight is an estimation of the insn's contribution to
      register pressure.  */
@@ -252,24 +244,7 @@ extern struct haifa_insn_data *h_i_d;
 #define INSN_PRIORITY(INSN)	(h_i_d[INSN_UID (INSN)].priority)
 #define INSN_PRIORITY_KNOWN(INSN) (h_i_d[INSN_UID (INSN)].priority_known)
 #define INSN_COST(INSN)		(h_i_d[INSN_UID (INSN)].cost)
-#define INSN_UNIT(INSN)		(h_i_d[INSN_UID (INSN)].units)
 #define INSN_REG_WEIGHT(INSN)	(h_i_d[INSN_UID (INSN)].reg_weight)
-
-#define INSN_BLOCKAGE(INSN)	(h_i_d[INSN_UID (INSN)].blockage)
-#define UNIT_BITS		5
-#define BLOCKAGE_MASK		((1 << BLOCKAGE_BITS) - 1)
-#define ENCODE_BLOCKAGE(U, R)			\
-  (((U) << BLOCKAGE_BITS			\
-    | MIN_BLOCKAGE_COST (R)) << BLOCKAGE_BITS	\
-   | MAX_BLOCKAGE_COST (R))
-#define UNIT_BLOCKED(B)		((B) >> (2 * BLOCKAGE_BITS))
-#define BLOCKAGE_RANGE(B)                                                \
-  (((((B) >> BLOCKAGE_BITS) & BLOCKAGE_MASK) << (HOST_BITS_PER_INT / 2)) \
-   | ((B) & BLOCKAGE_MASK))
-
-/* Encodings of the `<name>_unit_blockage_range' function.  */
-#define MIN_BLOCKAGE_COST(R) ((R) >> (HOST_BITS_PER_INT / 2))
-#define MAX_BLOCKAGE_COST(R) ((R) & ((1 << (HOST_BITS_PER_INT / 2)) - 1))
 
 extern FILE *sched_dump;
 extern int sched_verbose;

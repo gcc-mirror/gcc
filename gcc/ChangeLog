@@ -5,6 +5,11 @@
 	config/alpha/alpha.c, config/arm/arm.c, config/m32r/m32r.h,
 	config/rs6000/predicates.md: Fix comment typos.
 
+	* sched-int.h (haifa_insn_data): Remove blockage and units.
+	(INSN_UNIT, INSN_BLOCKAGE, UNIT_BITS, BLOCKAGE_MASK,
+	ENCODE_BLOCKAGE, UNIT_BLOCKED, BLOCKAGE_RANGE,
+	MIN_BLOCKAGE_COST, MAX_BLOCKAGE_COST): Remove.
+
 2005-04-09  Jan Hubicka  <jh@suse.cz>
 	    Steven Bosscher  <stevenb@suse.de>
 
