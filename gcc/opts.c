@@ -524,6 +524,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_tree_sra = 1;
       flag_tree_copyrename = 1;
       flag_tree_fre = 1;
+      flag_tree_copy_prop = 1;
       flag_tree_sink = 1;
       flag_tree_salias = 1;
 
@@ -562,6 +563,9 @@ decode_options (unsigned int argc, const char **argv)
       flag_reorder_blocks = 1;
       flag_reorder_functions = 1;
       flag_unit_at_a_time = 1;
+      flag_tree_store_ccp = 1;
+      flag_tree_store_copy_prop = 1;
+      flag_tree_vrp = 1;
 
       if (!optimize_size)
 	{

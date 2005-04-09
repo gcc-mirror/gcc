@@ -197,10 +197,8 @@ ideal_phi_node_len (int len)
   return new_len;
 }
 
-/* Return a PHI node for variable VAR defined in statement STMT.
-   STMT may be an empty statement for artificial references (e.g., default
-   definitions created when a variable is used without a preceding
-   definition).  */
+
+/* Return a PHI node with LEN argument slots for variable VAR.  */
 
 static tree
 make_phi_node (tree var, int len)
@@ -468,57 +466,29 @@ remove_phi_node (tree phi, tree prev)
 }
 
 
-/* Remove all the PHI nodes for variables in the VARS bitmap.  */
+/* Find the first PHI node P in basic block BB for symbol SYM.  If
+   PREV_P is given, the PHI node preceding P is stored in *PREV_P.  */
 
-void
-remove_all_phi_nodes_for (bitmap vars)
+tree
+find_phi_node_for (basic_block bb, tree sym, tree *prev_p)
 {
-  basic_block bb;
+  tree phi;
 
-  FOR_EACH_BB (bb)
+  if (prev_p)
+    *prev_p = NULL_TREE;
+
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
-      /* Build a new PHI list for BB without variables in VARS.  */
-      tree phi, new_phi_list, next;
-      tree *lastp = &new_phi_list;
+      if (SSA_NAME_VAR (PHI_RESULT (phi)) == sym)
+	return phi;
 
-      for (phi = phi_nodes (bb); phi; phi = next)
-	{
-	  tree var = SSA_NAME_VAR (PHI_RESULT (phi));
-
-	  next = PHI_CHAIN (phi);
-	  /* Only add PHI nodes for variables not in VARS.  */
-	  if (!bitmap_bit_p (vars, var_ann (var)->uid))
-	    {
-	      /* If we're not removing this PHI node, then it must have
-		 been rewritten by a previous call into the SSA rewriter.
-		 Note that fact in PHI_REWRITTEN.  */
-	      PHI_REWRITTEN (phi) = 1;
-
-	      *lastp = phi;
-	      lastp = &PHI_CHAIN (phi);
-	    }
-	  else
-	    {
-	      /* If we are deleting the PHI node, then we should release the
-		 SSA_NAME node so that it can be reused.  */
-	      release_phi_node (phi);
-	      release_ssa_name (PHI_RESULT (phi));
-	    }
-	}
-
-      /* Make sure the last node in the new list has no successors.  */
-      *lastp = NULL;
-      bb_ann (bb)->phi_nodes = new_phi_list;
-
-#if defined ENABLE_CHECKING
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	{
-	  tree var = SSA_NAME_VAR (PHI_RESULT (phi));
-	  gcc_assert (!bitmap_bit_p (vars, var_ann (var)->uid));
-	}
-#endif
+      if (prev_p)
+	*prev_p = phi;
     }
+
+  return NULL_TREE;
 }
+
 
 /* Reverse the order of PHI nodes in the chain PHI.
    Return the new head of the chain (old last PHI node).  */
@@ -537,4 +507,3 @@ phi_reverse (tree phi)
 }
 
 #include "gt-tree-phinodes.h"
-

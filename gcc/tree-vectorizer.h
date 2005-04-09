@@ -176,7 +176,11 @@ typedef struct _stmt_vec_info {
   /* Information about the data-ref (access function, etc).  */
   struct data_reference *data_ref_info;
 
-  /* Aliasing information.  */
+  /* Aliasing information.  This field represents the symbol that
+     should be aliased by a pointer holding the address of this data
+     reference.  If the original data reference was a pointer
+     dereference, then this field contains the memory tag that should
+     be used by the new vector-pointer.  */
   tree memtag;
   struct ptr_info_def *ptr_info;
   subvar_t subvars;

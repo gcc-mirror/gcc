@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fno-tree-dominator-opts -fdump-tree-ccp" } */
+/* { dg-options "-O1 -fno-tree-dominator-opts -fdump-tree-store_ccp" } */
 
 extern int printf (const char *, ...); 
 
@@ -20,5 +20,5 @@ main ()
 
 
 /* The argument to "printf" should be a constant, not a variable.  */
-/* { dg-final { scan-tree-dump-times "printf.*, 0" 1 "ccp"} } */
-/* { dg-final { cleanup-tree-dump "ccp" } } */
+/* { dg-final { scan-tree-dump-times "printf.*, 0" 1 "store_ccp"} } */
+/* { dg-final { cleanup-tree-dump "store_ccp" } } */

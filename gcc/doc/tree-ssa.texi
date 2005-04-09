@@ -83,8 +83,7 @@ perfectly happy to take it as input and spit out GIMPLE@.
 
 GIMPLE is a simplified subset of GENERIC for use in optimization.  The
 particular subset chosen (and the name) was heavily influenced by the
-SIMPLE IL used by the McCAT compiler project at McGill University
-(@uref{http://www-acaps.cs.mcgill.ca/info/McCAT/McCAT.html}),
+SIMPLE IL used by the McCAT compiler project at McGill University,
 though we have made some different choices.  For one thing, SIMPLE
 doesn't support @code{goto}; a production compiler can't afford that
 kind of restriction.
@@ -1111,18 +1110,129 @@ Returns the @code{SSA_NAME} for the @var{i}th argument of @var{phi}.
 
 
 @subsection Preserving the SSA form
-@findex vars_to_rename
+@findex update_ssa
 @cindex preserving SSA form
 Some optimization passes make changes to the function that
 invalidate the SSA property.  This can happen when a pass has
-added new variables or changed the program so that variables that
-were previously aliased aren't anymore.
+added new symbols or changed the program so that variables that
+were previously aliased aren't anymore.  Whenever something like this
+happens, the affected symbols must be renamed into SSA form again.  
+Transformations that emit new code or replicate existing statements
+will also need to update the SSA form@.
 
-Whenever something like this happens, the affected variables must
-be renamed into SSA form again.  To do this, you should mark the
-new variables in the global bitmap @code{vars_to_rename}.  Once
-your pass has finished, the pass manager will invoke the SSA
-renamer to put the program into SSA once more.
+Since GCC implements two different SSA forms for register and virtual
+variables, keeping the SSA form up to date depends on whether you are
+updating register or virtual names.  In both cases, the general idea
+behind incremental SSA updates is similar: when new SSA names are
+created, they typically are meant to replace other existing names in
+the program@.
+
+For instance, given the following code:
+
+@smallexample
+     1	L0:
+     2	x_1 = PHI (0, x_5)
+     3	if (x_1 < 10)
+     4	  if (x_1 > 7)
+     5	    y_2 = 0
+     6	  else
+     7	    y_3 = x_1 + x_7
+     8	  endif
+     9	  x_5 = x_1 + 1
+     10   goto L0;
+     11	endif
+@end smallexample
+
+Suppose that we insert new names @code{x_10} and @code{x_11} (lines
+@code{4} and @code{8})@.
+
+@smallexample
+     1	L0:
+     2	x_1 = PHI (0, x_5)
+     3	if (x_1 < 10)
+     4	  x_10 = ...
+     5	  if (x_1 > 7)
+     6	    y_2 = 0
+     7	  else
+     8	    x_11 = ...
+     9	    y_3 = x_1 + x_7
+     10	  endif
+     11	  x_5 = x_1 + 1
+     12	  goto L0;
+     13	endif
+@end smallexample
+
+We want to replace all the uses of @code{x_1} with the new definitions
+of @code{x_10} and @code{x_11}.  Note that the only uses that should
+be replaced are those at lines @code{5}, @code{9} and @code{11}.
+Also, the use of @code{x_7} at line @code{9} should @emph{not} be
+replaced (this is why we cannot just mark symbol @code{x} for
+renaming)@.
+
+Additionally, we may need to insert a PHI node at line @code{11}
+because that is a merge point for @code{x_10} and @code{x_11}.  So the
+use of @code{x_1} at line @code{11} will be replaced with the new PHI
+node.  The insertion of PHI nodes is optional.  They are not strictly
+necessary to preserve the SSA form, and depending on what the caller
+inserted, they may not even be useful for the optimizers@.
+
+Updating the SSA form is a two step process.  First, the pass has to
+identify which names need to be updated and/or which symbols need to
+be renamed into SSA form for the first time.  When new names are
+introduced to replace existing names in the program, the mapping
+between the old and the new names are registered by calling
+@code{register_new_name_mapping} (note that if your pass creates new
+code by duplicating basic blocks, the call to @code{tree_duplicate_bb}
+will set up the necessary mappings automatically).  On the other hand,
+if your pass exposes a new symbol that should be put in SSA form for
+the first time, the new symbol should be registered with
+@code{mark_sym_for_renaming}.
+
+After the replacement mappings have been registered and new symbols
+marked for renaming, a call to @code{update_ssa} makes the registered
+changes.  This can be done with an explicit call or by creating
+@code{TODO} flags in the @code{tree_opt_pass} structure for your pass.
+There are several @code{TODO} flags that control the behaviour of
+@code{update_ssa}:
+
+@itemize @bullet
+@item @code{TODO_update_ssa}.  Update the SSA form inserting PHI nodes
+      for newly exposed symbols and virtual names marked for updating.
+      When updating real names, only insert PHI nodes for a real name
+      @code{O_j} in blocks reached by all the new and old definitions for
+      @code{O_j}.  If the iterated dominance frontier for @code{O_j}
+      is not pruned, we may end up inserting PHI nodes in blocks that
+      have one or more edges with no incoming definition for
+      @code{O_j}.  This would lead to uninitialized warnings for
+      @code{O_j}'s symbol@.
+
+@item @code{TODO_update_ssa_no_phi}.  Update the SSA form without
+      inserting any new PHI nodes at all.  This is used by passes that
+      have either inserted all the PHI nodes themselves or passes that
+      need only to patch use-def and def-def chains for virtuals
+      (e.g., DCE)@.
+
+
+@item @code{TODO_update_ssa_full_phi}.  Insert PHI nodes everywhere
+      they are needed.  No prunning of the IDF is done.  This is used
+      by passes that need the PHI nodes for @code{O_j} even if it
+      means that some arguments will come from the default definition
+      of @code{O_j}'s symbol (e.g., @code{pass_linear_transform})@.
+
+      WARNING: If you need to use this flag, chances are that your
+      pass may be doing something wrong.  Inserting PHI nodes for an
+      old name where not all edges carry a new replacement may lead to
+      silent codegen errors or spurious uninitialized warnings@.
+
+@item @code{TODO_update_ssa_only_virtuals}.  Passes that update the
+      SSA form on their own may want to delegate the updating of
+      virtual names to the generic updater.  Since FUD chains are
+      easier to maintain, this simplifies the work they need to do.
+      NOTE: If this flag is used, any OLD->NEW mappings for real names
+      are explicitly destroyed and only the symbols marked for
+      renaming are processed@.
+@end itemize
+
 
 @subsection Examining @code{SSA_NAME} nodes
 @cindex examining SSA_NAMEs

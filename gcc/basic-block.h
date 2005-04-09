@@ -896,6 +896,8 @@ extern void calculate_dominance_info (enum cdi_direction);
 extern void free_dominance_info (enum cdi_direction);
 extern basic_block nearest_common_dominator (enum cdi_direction,
 					     basic_block, basic_block);
+extern basic_block nearest_common_dominator_for_set (enum cdi_direction, 
+						     bitmap);
 extern void set_immediate_dominator (enum cdi_direction, basic_block,
 				     basic_block);
 extern basic_block get_immediate_dominator (enum cdi_direction, basic_block);

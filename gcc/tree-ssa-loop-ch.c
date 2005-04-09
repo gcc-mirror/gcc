@@ -237,10 +237,6 @@ copy_loop_headers (void)
   free (bbs);
   free (copied_bbs);
 
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
-#endif
-
   loop_optimizer_finalize (loops, NULL);
 }
 

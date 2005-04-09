@@ -1430,6 +1430,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_printf (buffer, "VH.%d", VALUE_HANDLE_ID (node));
       break;
 
+    case ASSERT_EXPR:
+      pp_string (buffer, "ASSERT_EXPR <");
+      dump_generic_node (buffer, ASSERT_EXPR_VAR (node), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, ASSERT_EXPR_COND (node), spc, flags, false);
+      pp_string (buffer, ">");
+      break;
+
     case SCEV_KNOWN:
       pp_string (buffer, "scev_known");
       break;

@@ -174,6 +174,8 @@ struct opt_stats_d
   long num_stmts;
   long num_exprs_considered;
   long num_re;
+  long num_const_prop;
+  long num_copy_prop;
 };
 
 static struct opt_stats_d opt_stats;
@@ -299,6 +301,7 @@ static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 static void restore_nonzero_vars_to_original_value (void);
 static inline bool unsafe_associative_fp_binop (tree);
 
+
 /* Local version of fold that doesn't introduce cruft.  */
 
 static tree
@@ -403,6 +406,7 @@ tree_ssa_dominator_optimize (void)
      structure.  */
   walk_data.global_data = NULL;
   walk_data.block_local_data_size = 0;
+  walk_data.interesting_blocks = NULL;
 
   /* Now initialize the dominator walker.  */
   init_walk_dominator_tree (&walk_data);
@@ -442,11 +446,7 @@ tree_ssa_dominator_optimize (void)
 	 interactions between rewriting of _DECL nodes into SSA form
 	 and rewriting SSA_NAME nodes into SSA form after block
 	 duplication and CFG manipulation.  */
-      if (!bitmap_empty_p (vars_to_rename))
-	{
-	  rewrite_into_ssa (false);
-	  bitmap_clear (vars_to_rename);
-	}
+      update_ssa (TODO_update_ssa);
 
       free_all_edge_infos ();
 
@@ -572,7 +572,8 @@ struct tree_opt_pass pass_dominator =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_rename_vars
+  TODO_dump_func
+    | TODO_update_ssa
     | TODO_verify_ssa,			/* todo_flags_finish */
   0					/* letter */
 };
@@ -1200,7 +1201,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	break;
 
       VEC_pop (tree_on_heap, stmts_to_rescan);
-      mark_new_vars_to_rename (stmt, vars_to_rename);
+      mark_new_vars_to_rename (stmt);
     }
 }
 
@@ -1386,6 +1387,10 @@ dump_dominator_optimization_stats (FILE *file)
   fprintf (file, "    Redundant expressions eliminated:         %6ld (%.0f%%)\n",
 	   opt_stats.num_re, PERCENT (opt_stats.num_re,
 				      n_exprs));
+  fprintf (file, "    Constants propagated:                     %6ld\n",
+	   opt_stats.num_const_prop);
+  fprintf (file, "    Copies propagated:                        %6ld\n",
+	   opt_stats.num_copy_prop);
 
   fprintf (file, "\nHash table statistics:\n");
 
@@ -1600,7 +1605,7 @@ record_const_or_copy_1 (tree x, tree y, tree prev_x)
    will be relatively correct, and as more passes are taught to keep loop info
    up to date, the result will become more and more accurate.  */
 
-static int
+int
 loop_depth_of_name (tree x)
 {
   tree defstmt;
@@ -2229,9 +2234,9 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 		     Similarly the high value for the merged range is the
 		     minimum of the previous high value and the high value of
 		     this record.  */
-		  low = (tree_int_cst_compare (low, tmp_low) == 1
+		  low = (low && tree_int_cst_compare (low, tmp_low) == 1
 			 ? low : tmp_low);
-		  high = (tree_int_cst_compare (high, tmp_high) == -1
+		  high = (high && tree_int_cst_compare (high, tmp_high) == -1
 			  ? high : tmp_high);
 		}
 
@@ -2424,12 +2429,11 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
 	     ORIG_P with its value in our constant/copy table.  */
 	  new = SSA_NAME_VALUE (orig);
 	  if (new
+	      && new != orig
 	      && (TREE_CODE (new) == SSA_NAME
 		  || is_gimple_min_invariant (new))
 	      && may_propagate_copy (orig, new))
-	    {
-	      propagate_value (orig_p, new);
-	    }
+	    propagate_value (orig_p, new);
 	}
     }
 }
@@ -2624,7 +2628,6 @@ static void
 propagate_to_outgoing_edges (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 			     basic_block bb)
 {
-  
   record_edge_info (bb);
   cprop_into_successor_phis (bb, nonzero_vars);
 }
@@ -2756,24 +2759,7 @@ record_equivalences_from_stmt (tree stmt,
 	      || is_gimple_min_invariant (rhs)))
 	SSA_NAME_VALUE (lhs) = rhs;
 
-      /* alloca never returns zero and the address of a non-weak symbol
-	 is never zero.  NOP_EXPRs and CONVERT_EXPRs can be completely
-	 stripped as they do not affect this equivalence.  */
-      while (TREE_CODE (rhs) == NOP_EXPR
-	     || TREE_CODE (rhs) == CONVERT_EXPR)
-        rhs = TREE_OPERAND (rhs, 0);
-
-      if (alloca_call_p (rhs)
-          || (TREE_CODE (rhs) == ADDR_EXPR
-	      && DECL_P (TREE_OPERAND (rhs, 0))
-	      && ! DECL_WEAK (TREE_OPERAND (rhs, 0))))
-	record_var_is_nonzero (lhs);
-
-      /* IOR of any value with a nonzero value will result in a nonzero
-	 value.  Even if we do not know the exact result recording that
-	 the result is nonzero is worth the effort.  */
-      if (TREE_CODE (rhs) == BIT_IOR_EXPR
-	  && integer_nonzerop (TREE_OPERAND (rhs, 1)))
+      if (expr_computes_nonzero (rhs))
 	record_var_is_nonzero (lhs);
     }
 
@@ -2875,7 +2861,7 @@ cprop_operand (tree stmt, use_operand_p op_p)
      copy of some other variable, use the value or copy stored in
      CONST_AND_COPIES.  */
   val = SSA_NAME_VALUE (op);
-  if (val && TREE_CODE (val) != VALUE_HANDLE)
+  if (val && val != op && TREE_CODE (val) != VALUE_HANDLE)
     {
       tree op_type, val_type;
 
@@ -2885,8 +2871,9 @@ cprop_operand (tree stmt, use_operand_p op_p)
 	 statement.  Also only allow the new value to be an SSA_NAME
 	 for propagation into virtual operands.  */
       if (!is_gimple_reg (op)
-	  && (get_virtual_var (val) != get_virtual_var (op)
-	      || TREE_CODE (val) != SSA_NAME))
+	  && (TREE_CODE (val) != SSA_NAME
+	      || is_gimple_reg (val)
+	      || get_virtual_var (val) != get_virtual_var (op)))
 	return false;
 
       /* Do not replace hard register operands in asm statements.  */
@@ -2951,6 +2938,11 @@ cprop_operand (tree stmt, use_operand_p op_p)
 	  || (POINTER_TYPE_P (TREE_TYPE (op))
 	      && is_gimple_min_invariant (val)))
 	may_have_exposed_new_symbols = true;
+
+      if (TREE_CODE (val) != SSA_NAME)
+	opt_stats.num_const_prop++;
+      else
+	opt_stats.num_copy_prop++;
 
       propagate_value (op_p, val);
 

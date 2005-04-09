@@ -105,6 +105,14 @@ struct dom_walk_data
 
   /* Stack of available block local structures.  */
   varray_type free_block_data;
+
+  /* Interesting blocks to process.  If this field is not NULL, this
+     set is used to determine which blocks to walk.  If we encounter
+     block I in the dominator traversal, but block I is not present in
+     INTERESTING_BLOCKS, then none of the callback functions are
+     invoked on it.  This is useful when a particular traversal wants
+     to filter out non-interesting blocks from the dominator tree.  */
+  sbitmap interesting_blocks;
 };
 
 void walk_dominator_tree (struct dom_walk_data *, basic_block);

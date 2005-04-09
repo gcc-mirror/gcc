@@ -28,8 +28,6 @@ extern FILE *dump_file;
 extern int dump_flags;
 extern const char *dump_file_name;
 
-extern struct bitmap_head_def *vars_to_rename;
-
 /* Return the dump_file_info for the given phase.  */
 extern struct dump_file_info *get_dump_file_info (enum tree_dump_index);
 
@@ -101,18 +99,59 @@ struct dump_file_info
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh)
 
 /* To-do flags.  */
-#define TODO_dump_func		(1 << 0)	/* pass doesn't dump itself */
-#define TODO_rename_vars	(1 << 1)	/* rewrite new vars to ssa */
-#define TODO_ggc_collect	(1 << 2)	/* run the collector */
-#define TODO_verify_ssa		(1 << 3)
-#define TODO_verify_flow	(1 << 4)
-#define TODO_verify_stmts	(1 << 5)
-#define TODO_fix_def_def_chains (1 << 6)        /* rewrite def-def chains  */
-#define TODO_cleanup_cfg        (1 << 7)        /* cleanup the cfg.  */
+#define TODO_dump_func			(1 << 0)
+#define TODO_ggc_collect		(1 << 1)
+#define TODO_verify_ssa			(1 << 2) 
+#define TODO_verify_flow		(1 << 3)
+#define TODO_verify_stmts		(1 << 4)
+#define TODO_cleanup_cfg        	(1 << 5)
+#define TODO_verify_loops		(1 << 6)
+
+/* To-do flags for calls to update_ssa.  */
+
+/* Update the SSA form inserting PHI nodes for newly exposed symbols
+   and virtual names marked for updating.  When updating real names,
+   only insert PHI nodes for a real name O_j in blocks reached by all
+   the new and old definitions for O_j.  If the iterated dominance
+   frontier for O_j is not pruned, we may end up inserting PHI nodes
+   in blocks that have one or more edges with no incoming definition
+   for O_j.  This would lead to uninitialized warnings for O_j's
+   symbol.  */
+#define TODO_update_ssa			(1 << 7)
+
+/* Update the SSA form without inserting any new PHI nodes at all.
+   This is used by passes that have either inserted all the PHI nodes
+   themselves or passes that need only to patch use-def and def-def
+   chains for virtuals (e.g., DCE).  */
+#define TODO_update_ssa_no_phi		(1 << 8)
+
+/* Insert PHI nodes everywhere they are needed.  No prunning of the
+   IDF is done.  This is used by passes that need the PHI nodes for
+   O_j even if it means that some arguments will come from the default
+   definition of O_j's symbol (e.g., pass_linear_transform).
+   
+   WARNING: If you need to use this flag, chances are that your pass
+   may be doing something wrong.  Inserting PHI nodes for an old name
+   where not all edges carry a new replacement may lead to silent
+   codegen errors or spurious uninitialized warnings.  */
+#define TODO_update_ssa_full_phi	(1 << 9)
+
+/* Passes that update the SSA form on their own may want to delegate
+   the updating of virtual names to the generic updater.  Since FUD
+   chains are easier to maintain, this simplifies the work they need
+   to do.  NOTE: If this flag is used, any OLD->NEW mappings for real
+   names are explicitly destroyed and only the symbols marked for
+   renaming are processed.  */
+#define TODO_update_ssa_only_virtuals	(1 << 10)
+
+#define TODO_update_ssa_any		\
+    (TODO_update_ssa			\
+     | TODO_update_ssa_no_phi		\
+     | TODO_update_ssa_full_phi		\
+     | TODO_update_ssa_only_virtuals)
 
 #define TODO_verify_all \
   (TODO_verify_ssa | TODO_verify_flow | TODO_verify_stmts)
-
 
 extern struct tree_opt_pass pass_mudflap_1;
 extern struct tree_opt_pass pass_mudflap_2;
@@ -167,6 +206,10 @@ extern struct tree_opt_pass pass_rest_of_compilation;
 extern struct tree_opt_pass pass_sink_code;
 extern struct tree_opt_pass pass_fre;
 extern struct tree_opt_pass pass_linear_transform;
+extern struct tree_opt_pass pass_copy_prop;
+extern struct tree_opt_pass pass_store_ccp;
+extern struct tree_opt_pass pass_store_copy_prop;
+extern struct tree_opt_pass pass_vrp;
 extern struct tree_opt_pass pass_create_structure_vars;
 
 #endif /* GCC_TREE_PASS_H */

@@ -1176,6 +1176,17 @@ op_iter_init_maydef (ssa_op_iter *ptr, tree stmt, use_operand_p *use,
   op_iter_next_maydef (use, def, ptr);
 }
 
+/* Return true if VAR cannot be modified by the program.  */
+
+static inline bool
+unmodifiable_var_p (tree var)
+{
+  if (TREE_CODE (var) == SSA_NAME)
+    var = SSA_NAME_VAR (var);
+  return TREE_READONLY (var) && (TREE_STATIC (var) || DECL_EXTERNAL (var));
+}
+
+
 /* Initialize iterator PTR to the operands in STMT.  Return the first operands
    in KILL and DEF.  */
 static inline void

@@ -1282,8 +1282,7 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
       && DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
     return false;
 
-  /* There may be no phi nodes at the start of b.  Most of these degenerate
-     phi nodes should be cleaned up by kill_redundant_phi_nodes.  */
+  /* There may be no PHI nodes at the start of B.  */
   if (phi_nodes (b))
     return false;
 
@@ -3424,6 +3423,15 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       if (SSA_NAME_IN_FREE_LIST (t))
 	{
 	  error ("SSA name in freelist but still referenced");
+	  return *tp;
+	}
+      break;
+
+    case ASSERT_EXPR:
+      x = fold (ASSERT_EXPR_COND (t));
+      if (x == boolean_false_node)
+	{
+	  error ("ASSERT_EXPR with an always-false condition");
 	  return *tp;
 	}
       break;

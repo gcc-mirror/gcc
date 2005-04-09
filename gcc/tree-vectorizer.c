@@ -1836,10 +1836,6 @@ vectorize_loops (struct loops *loops)
       return;
     }
 
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
-#endif
-
   /*  ----------- Analyze loops. -----------  */
 
   /* If some loop was duplicated, it gets bigger number 

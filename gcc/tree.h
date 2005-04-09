@@ -1283,6 +1283,10 @@ struct tree_vec GTY(())
 #define OBJ_TYPE_REF_OBJECT(NODE) TREE_OPERAND (OBJ_TYPE_REF_CHECK (NODE), 1)
 #define OBJ_TYPE_REF_TOKEN(NODE)  TREE_OPERAND (OBJ_TYPE_REF_CHECK (NODE), 2)
 
+/* ASSERT_EXPR accessors.  */
+#define ASSERT_EXPR_VAR(NODE)	TREE_OPERAND (ASSERT_EXPR_CHECK (NODE), 0)
+#define ASSERT_EXPR_COND(NODE)	TREE_OPERAND (ASSERT_EXPR_CHECK (NODE), 1)
+
 struct tree_exp GTY(())
 {
   struct tree_common common;
@@ -1329,12 +1333,17 @@ struct tree_exp GTY(())
 #define SSA_NAME_VALUE(N) \
    SSA_NAME_CHECK (N)->ssa_name.value_handle
 
+/* Range information for SSA_NAMEs.  */
+#define SSA_NAME_VALUE_RANGE(N) \
+    SSA_NAME_CHECK (N)->ssa_name.value_range
+
 /* Auxiliary pass-specific data.  */
 #define SSA_NAME_AUX(N) \
    SSA_NAME_CHECK (N)->ssa_name.aux
 
 #ifndef _TREE_FLOW_H
 struct ptr_info_def;
+struct value_range_def;
 #endif
 
 
@@ -1372,6 +1381,9 @@ struct tree_ssa_name GTY(())
      as well.  */
   tree value_handle;
 
+  /* Value range information.  */
+  struct value_range_def *value_range;
+
   /* Auxiliary information stored with the ssa name.  */
   PTR GTY((skip)) aux;
 
@@ -1395,9 +1407,6 @@ struct tree_ssa_name GTY(())
    the link to the next PHI is in PHI_CHAIN.  */
 #define PHI_CHAIN(NODE)		TREE_CHAIN (PHI_NODE_CHECK (NODE))
 
-/* Nonzero if the PHI node was rewritten by a previous pass through the
-   SSA renamer.  */
-#define PHI_REWRITTEN(NODE)		PHI_NODE_CHECK (NODE)->phi.rewritten
 #define PHI_NUM_ARGS(NODE)		PHI_NODE_CHECK (NODE)->phi.num_args
 #define PHI_ARG_CAPACITY(NODE)		PHI_NODE_CHECK (NODE)->phi.capacity
 #define PHI_ARG_ELT(NODE, I)		PHI_NODE_ELT_CHECK (NODE, I)
@@ -1421,10 +1430,6 @@ struct tree_phi_node GTY(())
   tree result;
   int num_args;
   int capacity;
-
-  /* Nonzero if the PHI node was rewritten by a previous pass through the
-     SSA renamer.  */
-  int rewritten;
 
   /* Basic block to that the phi node belongs.  */
   struct basic_block_def *bb;

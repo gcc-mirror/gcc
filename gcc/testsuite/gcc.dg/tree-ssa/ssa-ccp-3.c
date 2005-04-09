@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-ccp" } */
+/* { dg-options "-O1 -fdump-tree-store_ccp" } */
 
 extern void link_error (void);
 
@@ -131,5 +131,5 @@ int* test666 (int * __restrict__ rp1, int * __restrict__ rp2, int *p1)
    optimization has failed */
 /* ??? While we indeed don't handle some of these, a couple of the
    restrict tests are incorrect.  */
-/* { dg-final { scan-tree-dump-times "link_error" 0 "ccp" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "ccp" } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "store_ccp" { xfail *-*-* } } } */
+/* { dg-final { cleanup-tree-dump "store_ccp" } } */

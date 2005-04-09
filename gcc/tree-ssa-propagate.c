@@ -1,5 +1,5 @@
 /* Generic SSA value propagation engine.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
    This file is part of GCC.
@@ -459,6 +459,7 @@ ssa_prop_init (void)
   edge e;
   edge_iterator ei;
   basic_block bb;
+  size_t i;
 
   /* Worklists of SSA edges.  */
   interesting_ssa_edges = VEC_alloc (tree, 20);
@@ -475,7 +476,12 @@ ssa_prop_init (void)
 
   VARRAY_BB_INIT (cfg_blocks, 20, "cfg_blocks");
 
-  /* Initially assume that every edge in the CFG is not executable
+  /* Initialize the values for every SSA_NAME.  */
+  for (i = 1; i < num_ssa_names; i++)
+    if (ssa_name (i))
+      SSA_NAME_VALUE (ssa_name (i)) = NULL_TREE;
+
+  /* Initially assume that every edge in the CFG is not executable.
      (including the edges coming out of ENTRY_BLOCK_PTR).  */
   FOR_ALL_BB (bb)
     {
@@ -666,4 +672,409 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
   ssa_prop_fini ();
 }
 
+
+/* Return the first V_MAY_DEF or V_MUST_DEF operand for STMT.  */
+
+tree
+first_vdef (tree stmt)
+{
+  if (NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) > 0)
+    return V_MAY_DEF_RESULT (STMT_V_MAY_DEF_OPS (stmt), 0);
+  else if (NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt)) > 0)
+    return V_MUST_DEF_RESULT (STMT_V_MUST_DEF_OPS (stmt), 0);
+  else
+    gcc_unreachable ();
+}
+
+
+/* Return true if STMT is of the form 'LHS = mem_ref', where 'mem_ref'
+   is a non-volatile pointer dereference, a structure reference or a
+   reference to a single _DECL.  Ignore volatile memory references
+   because they are not interesting for the optimizers.  */
+
+bool
+stmt_makes_single_load (tree stmt)
+{
+  tree rhs;
+
+  if (TREE_CODE (stmt) != MODIFY_EXPR)
+    return false;
+
+  if (NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0
+      && NUM_VUSES (STMT_VUSE_OPS (stmt)) == 0)
+    return false;
+
+  rhs = TREE_OPERAND (stmt, 1);
+  STRIP_NOPS (rhs);
+
+  return (!TREE_THIS_VOLATILE (rhs)
+	  && (DECL_P (rhs)
+	      || TREE_CODE_CLASS (TREE_CODE (rhs)) == tcc_reference));
+}
+
+
+/* Return true if STMT is of the form 'mem_ref = RHS', where 'mem_ref'
+   is a non-volatile pointer dereference, a structure reference or a
+   reference to a single _DECL.  Ignore volatile memory references
+   because they are not interesting for the optimizers.  */
+
+bool
+stmt_makes_single_store (tree stmt)
+{
+  tree lhs;
+
+  if (TREE_CODE (stmt) != MODIFY_EXPR)
+    return false;
+
+  if (NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0
+      && NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt)) == 0)
+    return false;
+
+  lhs = TREE_OPERAND (stmt, 0);
+  STRIP_NOPS (lhs);
+
+  return (!TREE_THIS_VOLATILE (lhs)
+          && (DECL_P (lhs)
+	      || TREE_CODE_CLASS (TREE_CODE (lhs)) == tcc_reference));
+}
+
+
+/* If STMT makes a single memory load and all the virtual use operands
+   have the same value in array VALUES, return it.  Otherwise, return
+   NULL.  */
+
+prop_value_t *
+get_value_loaded_by (tree stmt, prop_value_t *values)
+{
+  ssa_op_iter i;
+  tree vuse;
+  prop_value_t *prev_val = NULL;
+  prop_value_t *val = NULL;
+
+  FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, i, SSA_OP_VIRTUAL_USES)
+    {
+      val = &values[SSA_NAME_VERSION (vuse)];
+      if (prev_val && prev_val->value != val->value)
+	return NULL;
+      prev_val = val;
+    }
+
+  return val;
+}
+
+
+/* Propagation statistics.  */
+struct prop_stats_d
+{
+  long num_const_prop;
+  long num_copy_prop;
+};
+
+static struct prop_stats_d prop_stats;
+
+/* Replace USE references in statement STMT with the values stored in
+   PROP_VALUE. Return true if at least one reference was replaced.  If
+   REPLACED_ADDRESSES_P is given, it will be set to true if an address
+   constant was replaced.  */
+
+bool
+replace_uses_in (tree stmt, bool *replaced_addresses_p,
+		 prop_value_t *prop_value)
+{
+  bool replaced = false;
+  use_operand_p use;
+  ssa_op_iter iter;
+
+  FOR_EACH_SSA_USE_OPERAND (use, stmt, iter, SSA_OP_USE)
+    {
+      tree tuse = USE_FROM_PTR (use);
+      tree val = prop_value[SSA_NAME_VERSION (tuse)].value;
+
+      if (val == tuse || val == NULL_TREE)
+	continue;
+
+      if (TREE_CODE (stmt) == ASM_EXPR
+	  && !may_propagate_copy_into_asm (tuse))
+	continue;
+
+      if (!may_propagate_copy (tuse, val))
+	continue;
+
+      if (TREE_CODE (val) != SSA_NAME)
+	prop_stats.num_const_prop++;
+      else
+	prop_stats.num_copy_prop++;
+
+      propagate_value (use, val);
+
+      replaced = true;
+      if (POINTER_TYPE_P (TREE_TYPE (tuse)) && replaced_addresses_p)
+	*replaced_addresses_p = true;
+    }
+
+  return replaced;
+}
+
+
+/* Replace the VUSE references in statement STMT with the values
+   stored in PROP_VALUE.  Return true if a reference was replaced.  If
+   REPLACED_ADDRESSES_P is given, it will be set to true if an address
+   constant was replaced.
+
+   Replacing VUSE operands is slightly more complex than replacing
+   regular USEs.  We are only interested in two types of replacements
+   here:
+   
+   1- If the value to be replaced is a constant or an SSA name for a
+      GIMPLE register, then we are making a copy/constant propagation
+      from a memory store.  For instance,
+
+      	# a_3 = V_MAY_DEF <a_2>
+	a.b = x_1;
+	...
+ 	# VUSE <a_3>
+	y_4 = a.b;
+
+      This replacement is only possible iff STMT is an assignment
+      whose RHS is identical to the LHS of the statement that created
+      the VUSE(s) that we are replacing.  Otherwise, we may do the
+      wrong replacement:
+
+      	# a_3 = V_MAY_DEF <a_2>
+	# b_5 = V_MAY_DEF <b_4>
+	*p = 10;
+	...
+	# VUSE <b_5>
+	x_8 = b;
+
+      Even though 'b_5' acquires the value '10' during propagation,
+      there is no way for the propagator to tell whether the
+      replacement is correct in every reached use, because values are
+      computed at definition sites.  Therefore, when doing final
+      substitution of propagated values, we have to check each use
+      site.  Since the RHS of STMT ('b') is different from the LHS of
+      the originating statement ('*p'), we cannot replace 'b' with
+      '10'.
+
+      Similarly, when merging values from PHI node arguments,
+      propagators need to take care not to merge the same values
+      stored in different locations:
+
+     		if (...)
+		  # a_3 = V_MAY_DEF <a_2>
+		  a.b = 3;
+		else
+		  # a_4 = V_MAY_DEF <a_2>
+		  a.c = 3;
+		# a_5 = PHI <a_3, a_4>
+
+      It would be wrong to propagate '3' into 'a_5' because that
+      operation merges two stores to different memory locations.
+
+
+   2- If the value to be replaced is an SSA name for a virtual
+      register, then we simply replace each VUSE operand with its
+      value from PROP_VALUE.  This is the same replacement done by
+      replace_uses_in.  */
+
+static bool
+replace_vuses_in (tree stmt, bool *replaced_addresses_p,
+                  prop_value_t *prop_value)
+{
+  bool replaced = false;
+  ssa_op_iter iter;
+  use_operand_p vuse;
+
+  if (stmt_makes_single_load (stmt))
+    {
+      /* If STMT is an assignment whose RHS is a single memory load,
+	 see if we are trying to propagate a constant or a GIMPLE
+	 register (case #1 above).  */
+      prop_value_t *val = get_value_loaded_by (stmt, prop_value);
+      tree rhs = TREE_OPERAND (stmt, 1);
+
+      if (val
+	  && val->value
+	  && (is_gimple_reg (val->value)
+	      || is_gimple_min_invariant (val->value))
+	  && simple_cst_equal (rhs, val->mem_ref) == 1)
+
+	{
+	  /* If we are replacing a constant address, inform our
+	     caller.  */
+	  if (TREE_CODE (val->value) != SSA_NAME
+	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 1)))
+	      && replaced_addresses_p)
+	    *replaced_addresses_p = true;
+
+	  /* We can only perform the substitution if the load is done
+	     from the same memory location as the original store.
+	     Since we already know that there are no intervening
+	     stores between DEF_STMT and STMT, we only need to check
+	     that the RHS of STMT is the same as the memory reference
+	     propagated together with the value.  */
+	  TREE_OPERAND (stmt, 1) = val->value;
+
+	  if (TREE_CODE (val->value) != SSA_NAME)
+	    prop_stats.num_const_prop++;
+	  else
+	    prop_stats.num_copy_prop++;
+
+	  /* Since we have replaced the whole RHS of STMT, there
+	     is no point in checking the other VUSEs, as they will
+	     all have the same value.  */
+	  return true;
+	}
+    }
+
+  /* Otherwise, the values for every VUSE operand must be other
+     SSA_NAMEs that can be propagated into STMT.  */
+  FOR_EACH_SSA_USE_OPERAND (vuse, stmt, iter, SSA_OP_VIRTUAL_USES)
+    {
+      tree var = USE_FROM_PTR (vuse);
+      tree val = prop_value[SSA_NAME_VERSION (var)].value;
+
+      if (val == NULL_TREE || var == val)
+	continue;
+
+      /* Constants and copies propagated between real and virtual
+	 operands are only possible in the cases handled above.  They
+	 should be ignored in any other context.  */
+      if (is_gimple_min_invariant (val) || is_gimple_reg (val))
+	continue;
+
+      propagate_value (vuse, val);
+      prop_stats.num_copy_prop++;
+      replaced = true;
+    }
+
+  return replaced;
+}
+
+
+/* Replace propagated values into all the arguments for PHI using the
+   values from PROP_VALUE.  */
+
+static void
+replace_phi_args_in (tree phi, prop_value_t *prop_value)
+{
+  int i;
+
+  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+    {
+      tree arg = PHI_ARG_DEF (phi, i);
+
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  tree val = prop_value[SSA_NAME_VERSION (arg)].value;
+
+	  if (val && val != arg && may_propagate_copy (arg, val))
+	    {
+	      if (TREE_CODE (val) != SSA_NAME)
+		prop_stats.num_const_prop++;
+	      else
+		prop_stats.num_copy_prop++;
+
+	      propagate_value (PHI_ARG_DEF_PTR (phi, i), val);
+
+	      /* If we propagated a copy and this argument flows
+		 through an abnormal edge, update the replacement
+		 accordingly.  */
+	      if (TREE_CODE (val) == SSA_NAME
+		  && PHI_ARG_EDGE (phi, i)->flags & EDGE_ABNORMAL)
+		SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
+	    }
+	}
+    }
+}
+
+
+/* Perform final substitution and folding of propagated values.  */
+
+void
+substitute_and_fold (prop_value_t *prop_value)
+{
+  basic_block bb;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+	     "\nSubstituing values and folding statements\n\n");
+
+  memset (&prop_stats, 0, sizeof (prop_stats));
+
+  /* Substitute values in every statement of every basic block.  */
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator i;
+      tree phi;
+
+      /* Propagate our known values into PHI nodes.  */
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Replaced ");
+	      print_generic_stmt (dump_file, phi, TDF_SLIM);
+	    }
+
+	  replace_phi_args_in (phi, prop_value);
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, " with ");
+	      print_generic_stmt (dump_file, phi, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+
+      for (i = bsi_start (bb); !bsi_end_p (i); bsi_next (&i))
+	{
+          bool replaced_address, did_replace;
+	  tree stmt = bsi_stmt (i);
+
+	  get_stmt_operands (stmt);
+
+	  /* Replace the statement with its folded version and mark it
+	     folded.  */
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Replaced ");
+	      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+	    }
+
+	  replaced_address = false;
+	  did_replace = replace_uses_in (stmt, &replaced_address, prop_value);
+	  did_replace |= replace_vuses_in (stmt, &replaced_address, prop_value);
+	  if (did_replace)
+	    {
+	      fold_stmt (bsi_stmt_ptr (i));
+	      stmt = bsi_stmt(i);
+
+	      /* If we folded a builtin function, we'll likely
+		 need to rename VDEFs.  */
+	      mark_new_vars_to_rename (stmt);
+
+              /* If we cleaned up EH information from the statement,
+                 remove EH edges.  */
+	      if (maybe_clean_eh_stmt (stmt))
+		tree_purge_dead_eh_edges (bb);
+	    }
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, " with ");
+	      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_STATS))
+    {
+      fprintf (dump_file, "Constants propagated: %6ld\n",
+	       prop_stats.num_const_prop);
+      fprintf (dump_file, "Copies propagated:    %6ld\n",
+	       prop_stats.num_copy_prop);
+    }
+}
 #include "gt-tree-ssa-propagate.h"

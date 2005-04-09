@@ -1,3 +1,276 @@
+2005-04-08  Diego Novillo  <dnovillo@redhat.com>
+
+	Merge from tree-cleanup-branch: VRP, store CCP, store
+	    copy-prop, incremental SSA updating of FUD chains and
+	    newly exposed symbols.
+
+	* Makefile.in (tree-ssa-copy.o): Depend on tree-ssa-propagate.h.
+	(OBJS-common): Add tree-vrp.o.
+	(tree-vrp.o): New rule.
+	* basic-block.h (nearest_common_dominator_for_set): Declare.
+	* common.opt (ftree-store-ccp): New flag.
+	(ftree-copy-prop): New flag.
+	(ftree-vrp): New flag.
+	(ftree-store-copy-prop): New flag.
+	* dominance.c (nearest_common_dominator_for_set): New.
+	* domwalk.c (walk_dominator_tree): Only traverse
+	statements in blocks marked in walk_data->interesting_blocks.
+	* domwalk.h (struct dom_walk_data): Add field interesting_blocks.
+	* fold-const.c (fold): Handle ASSERT_EXPR.
+	* opts.c (decode_options): Set flag_tree_copy_prop at -O1.
+	Set flag_tree_store_ccp, flag_tree_store_copy_prop and
+	flag_tree_vrp at -O2.
+	* timevar.def (TV_TREE_VRP): Define.
+	(TV_TREE_COPY_PROP): Define.
+	(TV_TREE_STORE_COPY_PROP): Define.
+	(TV_TREE_SSA_INCREMENTAL): Define.
+	(TV_TREE_STORE_CCP): Define.
+	* tree-cfg.c (tree_can_merge_blocks_p): Remove reference
+	to kill_redundant_phi_nodes from comment.
+	(verify_expr): Handle ASSERT_EXPR.
+	* tree-dfa.c (mark_new_vars_to_rename): Remove second
+	argument.  Update all users.
+	(mark_call_clobbered_vars_to_rename): Remove.  Update all
+	users.
+	* tree-flow-inline.h (unmodifiable_var_p): New.
+	* tree-flow.h (enum value_range_type): Declare.
+	(struct value_range_def): Declare.
+	(value_range): Declare.
+	(remove_all_phi_nodes_for): Remove.  Update all users.
+	(find_phi_node_for): Declare.
+	(add_type_alias): Declare.
+	(count_uses_and_derefs): Declare.
+	(kill_redundant_phi_nodes): Remove.
+	(rewrite_into_ssa): Remove.
+	(rewrite_def_def_chains): Remove.
+	(update_ssa, register_new_name_mapping, create_new_def_for,
+	need_ssa_update_p, name_registered_for_update_p,
+	release_ssa_name_after_update_ssa, dump_repl_tbl,
+	debug_repl_tbl, dump_names_replaced_by,
+	debug_names_replaced_by, mark_sym_for_renaming,
+	mark_set_for_renaming, get_current_def, set_current_def,
+	get_value_range, dump_value_range, debug_value_range,
+	dump_all_value_ranges, debug_all_value_ranges,
+	expr_computes_nonzero, loop_depth_of_name,
+	unmodifiable_var_p): Declare.
+	* tree-gimple.c (is_gimple_formal_tmp_rhs): Handle
+	ASSERT_EXPR.
+	* tree-into-ssa.c (block_defs_stack): Update comment.
+	(old_ssa_names, new_ssa_names, old_virtual_ssa_names,
+	syms_to_rename, names_to_release, repl_tbl,
+	need_to_initialize_update_ssa_p, need_to_update_vops_p,
+	need_to_replace_names_p): New locals.
+	(NAME_SETS_GROWTH_FACTOR): Define.
+	(struct repl_map_d): Declare.
+	(struct mark_def_sites_global_data): Add field
+	interesting_blocks.
+	(enum rewrite_mode): Declare.
+	(REGISTER_DEFS_IN_THIS_STMT): Define.
+	(compute_global_livein): Use last_basic_block instead of
+	n_basic_blocks.
+	(set_def_block): Remove last argument.  Update all callers.
+	(prepare_use_operand_for_rename): Remove.  Update all callers.
+	(prepare_def_operand_for_rename): Remove.  Update all callers.
+	(symbol_marked_for_renaming): New.
+	(is_old_name): New.
+	(is_new_name): New.
+	(repl_map_hash): New.
+	(repl_map_eq): New.
+	(repl_map_free): New.
+	(names_replaced_by): New.
+	(add_to_repl_tbl): New.
+	(add_new_name_mapping): New.
+	(mark_def_sites): Assume that all the operands in the
+	statement are in normal form.
+	(find_idf): Assert that the block in the stack is valid.
+	(get_default_def_for): New.
+	(insert_phi_nodes_for): Add new argument 'update_p'.
+	Add documentation.
+	If update_p is true, add a new mapping between the LHS of
+	each new PHI and the name that it replaces.
+	(insert_phi_nodes_1): Only call find_idf if needed.
+	(get_reaching_def): Call get_default_def_for.
+	(rewrite_operand): Remove.
+	(rewrite_stmt): Do nothing if REGISTER_DEFS_IN_THIS_STMT
+	and REWRITE_THIS_STMT are false.
+	Assume that all the operands in the statement are in
+	normal form.
+	(rewrite_add_phi_arguments): Don't use PHI_REWRITTEN.
+	(rewrite_virtual_phi_arguments): Remove.
+	(invalidate_name_tags): Remove.
+	(register_new_update_single, register_new_update_set,
+	rewrite_update_init_block, replace_use,
+	rewrite_update_fini_block, rewrite_update_stmt,
+	rewrite_update_phi_arguments): New.
+	rewrite_blocks): Remove argument 'fix_virtual_phis'.
+	Add arguments 'entry', 'what' and 'blocks'.
+	Initialize the dominator walker according to 'what' and
+	'blocks'.
+	Start the dominator walk at 'entry'.
+	(mark_def_site_blocks): Add argument 'interesting_blocks'.
+	Use it to configure the dominator walker.
+	(rewrite_into_ssa): Remove argument 'all'.
+	Make internal.
+	(rewrite_all_into_ssa): Remove.
+	(rewrite_def_def_chains): Remove.
+	(mark_def_interesting, mark_use_interesting,
+	prepare_phi_args_for_update, prepare_block_for_update,
+	prepare_def_site_for, prepare_def_sites,
+	dump_names_replaced_by, debug_names_replaced_by,
+	dump_repl_tbl, debug_repl_tbl, init_update_ssa,
+	delete_update_ssa, create_new_def_for,
+	register_new_name_mapping, mark_sym_for_renaming,
+	mark_set_for_renaming, need_ssa_update_p,
+	name_registered_for_update_p, ssa_names_to_replace,
+	release_ssa_name_after_update_ssa,
+	insert_updated_phi_nodes_for, update_ssa): New.
+	* tree-loop-linear.c (linear_transform_loops): Call
+	update_ssa instead of rewrite_into_ssa.
+	* tree-optimize.c (vars_to_rename): Remove.
+	Update all users.
+	(init_tree_optimization_passes): Replace
+	pass_redundant_phi with pass_copy_prop.
+	Add pass_vrp.
+	Replace pass_ccp with pass_store_ccp.
+	Add pass_store_copy_prop after pass_store_ccp.
+	(execute_todo): If the TODO_ flags don't include updating
+	the SSA form, assert that it does not need to be updated.
+	Call update_ssa instead of rewrite_into_ssa and
+	rewrite_def_def_chains.
+	If TODO_verify_loops is set, call verify_loop_closed_ssa.
+	(tree_rest_of_compilation):
+	* tree-pass.h (TODO_dump_func, TODO_ggc_collect,
+	TODO_verify_ssa, TODO_verify_flow, TODO_verify_stmts,
+	TODO_cleanup_cfg): Renumber.
+	(TODO_verify_loops, TODO_update_ssa,
+	TODO_update_ssa_no_phi, TODO_update_ssa_full_phi,
+	TODO_update_ssa_only_virtuals): Define.
+	(pass_copy_prop, pass_store_ccp, pass_store_copy_prop, pass_vrp):
+	Declare.
+	* tree-phinodes.c (make_phi_node): Update documentation.
+	(remove_all_phi_nodes_for): Remove.
+	(find_phi_node_for): New.
+	* tree-pretty-print.c (dump_generic_node): Handle ASSERT_EXPR.
+	* tree-scalar-evolution.c (follow_ssa_edge_in_rhs): Likewise.
+	(interpret_rhs_modify_expr): Likewise.
+	* tree-sra.c (decide_instantiations): Mark all symbols in
+	SRA_CANDIDATES for renaming.
+	(mark_all_v_defs_1): Rename from mark_all_v_defs.
+	(mark_all_v_defs): New function.  Update all users to call it 
+	with the whole list of scalarized statements, not just the
+	first one.
+	* tree-ssa-alias.c (count_ptr_derefs): Make extern.
+	(compute_flow_insensitive_aliasing): If the tag is
+	unmodifiable and the variable isn't or vice-versa, don't
+	make them alias of each other.
+	(setup_pointers_and_addressables): If the type tag for
+	VAR is about to change, mark the old one for renaming.
+	(add_type_alias): New.
+	* tree-ssa-ccp.c: Document SSA-CCP and STORE-CCP.
+	(ccp_lattice_t): Rename from latticevalue.
+	(value): Remove.  Update all users.
+	(const_val): New local variable.
+	(do_store_ccp): New local variable.
+	(dump_lattice_value): Handle UNINITIALIZED.
+	(debug_lattice_value): New.
+	(get_default_value): Re-write.
+	(set_lattice_value): Re-write.
+	(def_to_varying): Remove.  Update all users.
+	(likely_value): Return VARYING for statements that make
+	stores when STORE_CCP is false.
+	Return VARYING for any statement other than MODIFY_EXPR,
+	COND_EXPR and SWITCH_EXPR.
+	(ccp_initialize): Re-write.
+	(replace_uses_in, replace_vuse_in, substitute_and_fold):
+	Move to tree-ssa-propagate.c.
+	(ccp_lattice_meet): Handle memory stores when
+	DO_STORE_CCP is true.
+	(ccp_visit_phi_node): Likewise.
+	(ccp_fold): Likewise.
+	(evaluate_stmt): Likewise.
+	(visit_assignment): Likewise.
+	(ccp_visit_stmt): Likewise.
+	(execute_ssa_ccp): Add argument 'store_ccp'.  Copy it
+	into DO_STORE_CCP.
+	(do_ssa_ccp): New.
+	(pass_ccp): Use it.
+	(do_ssa_store_ccp): New.
+	(gate_store_ccp): New.
+	(pass_store_ccp): Declare.
+	* tree-ssa-copy.c: Include tree-ssa-propagate.h.
+	(may_propagate_copy): Reformat.
+	Don't abort if ORIG is a virtual and DEST isn't.
+	If NEW does not have alias information but DEST does,
+	copy it.
+	(copy_of, cached_last_copy_of, do_store_copy_prop, enum
+	copy_prop_kind, which_copy_prop): Declare.
+	(stmt_may_generate_copy, get_copy_of_val,
+	get_last_copy_of, set_copy_of_val, dump_copy_of,
+	copy_prop_visit_assignment, copy_prop_visit_cond_stmt,
+	copy_prop_visit_stmt, copy_prop_visit_phi_node,
+	init_copy_prop, fini_copy_prop, execute_copy_prop,
+	gate_copy_prop, do_copy_prop, gate_store_copy_prop,
+	store_copy_prop): New.
+	(pass_copy_prop, pass_store_copy_prop): Declare.
+	* tree-ssa-dom.c (struct opt_stats_d): Add fields
+	'num_const_prop' and 'num_copy_prop'.
+	(cprop_operand): Update them.
+	(dump_dominator_optimization_stats): Dump them.
+	(tree_ssa_dominator_optimize): Call update_ssa instead of
+	rewrite_into_ssa.
+	(loop_depth_of_name): Declare extern.
+	(simplify_cond_and_lookup_avail_expr): Guard against NULL
+	values for LOW or HIGH.
+	(cprop_into_successor_phis): Only propagate if NEW != ORIG.
+	(record_equivalences_from_stmt): Call expr_computes_nonzero.
+	(cprop_operand): Only propagate if VAL != OP.
+	* tree-ssa-dse.c (dse_optimize_stmt): Mark symbols in removed
+	statement for renaming.
+	* tree-ssa-loop-im.c (move_computations): Call update_ssa.
+	* tree-ssa-loop-ivopts.c (rewrite_address_base): Call
+	add_type_alias if necessary.
+	Call mark_new_vars_to_rename.
+	(tree_ssa_iv_optimize): If new symbols need to be renamed,
+	mark every statement updated, call update_ssa and
+	rewrite_into_loop_closed_ssa.
+	* tree-ssa-loop-manip.c (add_exit_phis): Do not remove DEF_BB
+	from LIVEIN if VAR is a virtual.
+	* tree-ssa-loop.c (tree_loop_optimizer_init): Call update_ssa.
+	* tree-ssa-operands.c (get_expr_operands): Handle ASSERT_EXPR.
+	(get_call_expr_operands): Reformat statement.
+	(add_stmt_operand): Don't create V_MAY_DEFs for read-only
+	symbols.
+	* tree-ssa-propagate.c (ssa_prop_init): Initialize
+	SSA_NAME_VALUE for every name.
+	(first_vdef, stmt_makes_single_load, stmt_makes_single_store,
+	get_value_loaded_by): New.
+	(replace_uses_in, replace_vuses_in, replace_phi_args_in,
+	substitute_and_fold): Move from tree-ssa-ccp.c.
+	* tree-ssa-propagate.h (struct prop_value_d, prop_value_t,
+	first_vdef, stmt_makes_single_load, stmt_makes_single_store,
+	get_value_loaded_by, replace_uses_in, substitute_and_fold):
+	Declare.
+	* tree-ssa.c (verify_use): Fix error message.
+	(propagate_into_addr, replace_immediate_uses, get_eq_name,
+	check_phi_redundancy, kill_redundant_phi_nodes,
+	pass_redundant_phi): Remove.  Update all users.
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Call
+	add_type_alias, if necessary.
+	* tree-vectorizer.h (struct _stmt_vect_info): Update
+	documentation for field 'memtag'.
+	* tree-vrp.c: New file.
+	* tree.def (ASSERT_EXPR): Define.
+	* tree.h (ASSERT_EXPR_VAR): Define.
+	(ASSERT_EXPR_COND): Define.
+	(SSA_NAME_VALUE_RANGE): Define.
+	(struct tree_ssa_name): Add field 'value_range'.
+	(PHI_REWRITTEN): Remove.
+	(struct tree_phi_node): Remove field 'rewritten'.
+	* doc/invoke.texi (-fdump-tree-storeccp, -ftree-copy-prop,
+	-ftree-store-copy-prop): Document.
+	* doc/tree-ssa.texi: Remove broken link to McCAT's compiler.
+	Document usage of update_ssa.
+
 2005-04-08  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/20814

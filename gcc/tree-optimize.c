@@ -52,7 +52,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Global variables used to communicate with passes.  */
 int dump_flags;
-bitmap vars_to_rename;
 bool in_gimple_form;
 
 /* The root of the compilation pass tree, once constructed.  */
@@ -355,8 +354,9 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_early_warn_uninitialized);
   NEXT_PASS (pass_dce);
   NEXT_PASS (pass_dominator);
-  NEXT_PASS (pass_redundant_phi);
+  NEXT_PASS (pass_copy_prop);
   NEXT_PASS (pass_dce);
+  NEXT_PASS (pass_vrp);
   NEXT_PASS (pass_merge_phi);
   NEXT_PASS (pass_forwprop);
   NEXT_PASS (pass_phiopt);
@@ -371,14 +371,14 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_rename_ssa_copies);
   NEXT_PASS (pass_dominator);
-  NEXT_PASS (pass_redundant_phi);
+  NEXT_PASS (pass_copy_prop);
   NEXT_PASS (pass_dce);
   NEXT_PASS (pass_dse);
   NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_forwprop);
   NEXT_PASS (pass_phiopt);
-  NEXT_PASS (pass_ccp);
-  NEXT_PASS (pass_redundant_phi);
+  NEXT_PASS (pass_store_ccp);
+  NEXT_PASS (pass_store_copy_prop);
   NEXT_PASS (pass_fold_builtins);
   /* FIXME: May alias should a TODO but for 4.0.0,
      we add may_alias right after fold builtins
@@ -389,7 +389,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_sink_code);
   NEXT_PASS (pass_loop);
   NEXT_PASS (pass_dominator);
-  NEXT_PASS (pass_redundant_phi);
+  NEXT_PASS (pass_copy_prop);
   /* FIXME: If DCE is not run before checking for uninitialized uses,
      we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
      However, this also causes us to misdiagnose cases that should be
@@ -415,6 +415,7 @@ init_tree_optimization_passes (void)
 
   p = &pass_loop.sub;
   NEXT_PASS (pass_loop_init);
+  NEXT_PASS (pass_copy_prop);
   NEXT_PASS (pass_lim);
   NEXT_PASS (pass_unswitch);
   NEXT_PASS (pass_record_bounds);
@@ -443,15 +444,15 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
   int properties 
     = use_required ? pass->properties_required : pass->properties_provided;
 
-  if (flags & TODO_rename_vars)
+#if defined ENABLE_CHECKING
+  if (need_ssa_update_p ())
+    gcc_assert (flags & TODO_update_ssa_any);
+#endif
+
+  if (flags & TODO_update_ssa_any)
     {
-      rewrite_into_ssa (false);
-      bitmap_clear (vars_to_rename);
-    }
-  if (flags & TODO_fix_def_def_chains)
-    {
-      rewrite_def_def_chains ();
-      bitmap_clear (vars_to_rename);
+      unsigned update_flags = flags & TODO_update_ssa_any;
+      update_ssa (update_flags);
     }
 
   if (flags & TODO_cleanup_cfg)
@@ -482,15 +483,16 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
       ggc_collect ();
     }
 
-#ifdef ENABLE_CHECKING
+#if defined ENABLE_CHECKING
   if ((pass->properties_required & PROP_ssa)
       && !(pass->properties_destroyed & PROP_ssa))
-    verify_ssa  (true);
-
+    verify_ssa (true);
   if (flags & TODO_verify_flow)
     verify_flow_info ();
   if (flags & TODO_verify_stmts)
     verify_stmts ();
+  if (flags & TODO_verify_loops)
+    verify_loop_closed_ssa ();
 #endif
 }
 
@@ -686,8 +688,6 @@ tree_rest_of_compilation (tree fndecl)
   /* Initialize the default bitmap obstack.  */
   bitmap_obstack_initialize (NULL);
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
-  
-  vars_to_rename = BITMAP_ALLOC (NULL);
   
   /* Perform all tree transforms and optimizations.  */
   execute_pass_list (all_passes);

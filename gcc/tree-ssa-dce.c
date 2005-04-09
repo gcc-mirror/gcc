@@ -779,8 +779,7 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 			    SSA_OP_VIRTUAL_DEFS | SSA_OP_VIRTUAL_KILLS)
     {
       tree def = DEF_FROM_PTR (def_p);
-      bitmap_set_bit (vars_to_rename,
-		      var_ann (SSA_NAME_VAR (def))->uid);
+      mark_sym_for_renaming (SSA_NAME_VAR (def));
     }
   bsi_remove (i);  
   release_defs (t); 
@@ -942,7 +941,11 @@ struct tree_opt_pass pass_dce =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_fix_def_def_chains | TODO_cleanup_cfg | TODO_ggc_collect | TODO_verify_ssa,	/* todo_flags_finish */
+  TODO_dump_func 
+    | TODO_update_ssa_no_phi 
+    | TODO_cleanup_cfg
+    | TODO_ggc_collect
+    | TODO_verify_ssa,			/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -959,8 +962,12 @@ struct tree_opt_pass pass_cd_dce =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_fix_def_def_chains | TODO_cleanup_cfg | TODO_ggc_collect | TODO_verify_ssa | TODO_verify_flow,
-					/* todo_flags_finish */
+  TODO_dump_func
+    | TODO_update_ssa_no_phi
+    | TODO_cleanup_cfg
+    | TODO_ggc_collect
+    | TODO_verify_ssa
+    | TODO_verify_flow,			/* todo_flags_finish */
   0					/* letter */
 };
 

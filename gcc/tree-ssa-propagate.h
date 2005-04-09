@@ -1,6 +1,6 @@
 /* Data structures and function declarations for the SSA value propagation
    engine.
-   Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 /* Lattice values used for propagation purposes.  Specific instances
    of a propagation engine must return these values from the statement
    and PHI visit functions to direct the engine.  */
-
 enum ssa_prop_result {
     /* The statement produces nothing of interest.  No edges will be
        added to the work lists.  */
@@ -51,12 +50,43 @@ enum ssa_prop_result {
 };
 
 
+struct prop_value_d {
+    /* Lattice value.  Each propagator is free to define its own
+       lattice and this field is only meaningful while propagating.
+       It will not be used by substitute_and_fold.  */
+    unsigned lattice_val;
+
+    /* Propagated value.  */
+    tree value;
+
+    /* If this value is held in an SSA name for a non-register
+       variable, this field holds the actual memory reference
+       associated with this value.  This field is taken from 
+       the LHS of the assignment that generated the associated SSA
+       name.  However, in the case of PHI nodes, this field is copied
+       from the PHI arguments (assuming that all the arguments have
+       the same memory reference).  See replace_vuses_in for a more
+       detailed description.  */
+    tree mem_ref;
+};
+
+typedef struct prop_value_d prop_value_t;
+
+
 /* Call-back functions used by the value propagation engine.  */
 typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (tree, edge *, tree *);
 typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (tree);
 
+
+/* In tree-ssa-propagate.c  */
 void ssa_propagate (ssa_prop_visit_stmt_fn, ssa_prop_visit_phi_fn);
 tree get_rhs (tree);
 bool set_rhs (tree *, tree);
+tree first_vdef (tree);
+bool stmt_makes_single_load (tree);
+bool stmt_makes_single_store (tree);
+prop_value_t *get_value_loaded_by (tree, prop_value_t *);
+bool replace_uses_in (tree, bool *, prop_value_t *);
+void substitute_and_fold (prop_value_t *);
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

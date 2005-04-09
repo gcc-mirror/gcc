@@ -1065,8 +1065,8 @@ follow_ssa_edge_in_rhs (struct loop *loop,
      - an INTEGER_CST,
      - a PLUS_EXPR, 
      - a MINUS_EXPR,
-     - other cases are not yet handled. 
-  */
+     - an ASSERT_EXPR,
+     - other cases are not yet handled.  */
   switch (TREE_CODE (rhs))
     {
     case NOP_EXPR:
@@ -1246,6 +1246,20 @@ follow_ssa_edge_in_rhs (struct loop *loop,
 	res = false;
       
       break;
+
+    case ASSERT_EXPR:
+      {
+	/* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
+	   It must be handled as a copy assignment of the form a_1 = a_2.  */
+	tree op0 = ASSERT_EXPR_VAR (rhs);
+	if (TREE_CODE (op0) == SSA_NAME)
+	  res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (op0),
+				 halting_phi, evolution_of_loop);
+	else
+	  res = false;
+	break;
+      }
+
 
     default:
       res = false;
@@ -1700,6 +1714,11 @@ interpret_rhs_modify_expr (struct loop *loop,
       
     case SSA_NAME:
       res = chrec_convert (type, analyze_scalar_evolution (loop, opnd1));
+      break;
+
+    case ASSERT_EXPR:
+      opnd10 = ASSERT_EXPR_VAR (opnd1);
+      res = chrec_convert (type, analyze_scalar_evolution (loop, opnd10));
       break;
       
     case NOP_EXPR:

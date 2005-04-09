@@ -215,8 +215,9 @@ make_rename_temp (tree type, const char *prefix)
   if (referenced_vars)
     {
       add_referenced_tmp_var (t);
-      bitmap_set_bit (vars_to_rename, var_ann (t)->uid);
+      mark_sym_for_renaming (t);
     }
+
   return t;
 }
 
@@ -617,11 +618,11 @@ add_referenced_tmp_var (tree var)
 }
 
 
-/* Add all the non-SSA variables found in STMT's operands to the bitmap
-   VARS_TO_RENAME.  */
+/* Mark all the non-SSA variables found in STMT's operands to be
+   processed by update_ssa.  */
 
 void
-mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
+mark_new_vars_to_rename (tree stmt)
 {
   ssa_op_iter iter;
   tree val;
@@ -660,13 +661,11 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
   v_must_defs_after = NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt));
 
   FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_ALL_OPERANDS)
-    {
-      if (DECL_P (val))
-	{
-	  found_exposed_symbol = true;
-	  bitmap_set_bit (vars_to_rename, var_ann (val)->uid);
-	}
-    }
+    if (DECL_P (val))
+      {
+	found_exposed_symbol = true;
+	mark_sym_for_renaming (val);
+      }
 
   /* If we found any newly exposed symbols, or if there are fewer VDEF
      operands in the statement, add the variables we had set in
@@ -676,7 +675,7 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
   if (found_exposed_symbol
       || v_may_defs_before > v_may_defs_after
       || v_must_defs_before > v_must_defs_after)
-    bitmap_ior_into (vars_to_rename, vars_in_vops_to_rename);
+    mark_set_for_renaming (vars_in_vops_to_rename);
 
   BITMAP_FREE (vars_in_vops_to_rename);
 }
@@ -691,7 +690,10 @@ find_new_referenced_vars_1 (tree *tp, int *walk_subtrees,
   tree t = *tp;
 
   if (TREE_CODE (t) == VAR_DECL && !var_ann (t))
-    add_referenced_tmp_var (t);
+    {
+      add_referenced_tmp_var (t);
+      mark_sym_for_renaming (t);
+    }
 
   if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
@@ -705,20 +707,6 @@ find_new_referenced_vars (tree *stmt_p)
   walk_tree (stmt_p, find_new_referenced_vars_1, NULL, NULL);
 }
 
-
-/* Mark all call-clobbered variables for renaming.  */
-
-void
-mark_call_clobbered_vars_to_rename (void)
-{
-  unsigned i;
-  bitmap_iterator bi;
-  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
-    {
-      tree var = referenced_var (i);
-      bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
-    }
-}
 
 /* If REF is a COMPONENT_REF for a structure that can have sub-variables, and
    we know where REF is accessing, return the variable in REF that has the
