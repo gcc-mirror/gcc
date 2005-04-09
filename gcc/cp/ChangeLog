@@ -1,3 +1,33 @@
+2005-04-08  Ian Lance Taylor  <ian@airs.com>
+
+	* cp-tree.def: Define FOR_STMT, WHILE_STMT, DO_STMT, BREAK_STMT,
+	CONTINUE_STMT, SWITCH_STMT.
+	* cp-tree.h (cp_stmt_codes): Add FOR_STMT, WHILE_STMT, DO_STMT,
+	BREAK_STMT, CONTINUE_STMT, SWITCH_STMT.
+	(WHILE_COND, WHILE_BODY): Define.
+	(DO_COND, DO_BODY): Define.
+	(FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY): Define.
+	(SWITCH_STMT_COND, SWITCH_STMT_BODY, SWITCH_STMT_TYPE): Define.
+	* cp-gimplify.c (enum bc_t): Define.
+	(struct cp_gimplify_ctx, ctxp): Define.
+	(push_context, pop_context): New static functions.
+	(begin_bc_block, finish_bc_block): New static functions.
+	(build_bc_goto): New static function.
+	(gimplify_cp_loop, gimplify_for_stmt): New static functions.
+	(gimplify_while_stmt, gimplify_do_stmt): Likewise.
+	(gimplify_switch_stmt): Likewise.
+	(cp_gimplify_expr): Handle FOR_STMT, WHILE_STMT, DO_STMT,
+	SWITCH_STMT, CONTINUE_STMT, BREAK_STMT.
+	(cp_genericize): Call push_context and pop_context.
+	* semantics.c (finish_break_stmt): Just call build_stmt
+	(BREAK_STMT) rather than build_break_stmt.
+	(finish_continue_stmt): Corresponding change.
+	* decl.c (pop_switch): Update call to c_do_switch_warnings for new
+	parameters.
+	* cxx-pretty-print.c (pp_cxx_statement): Handle SWITCH_STMT,
+	WHILE_STMT, DO_STMT, FOR_STMT, BREAK_STMT, CONTINUE_STMT.
+	* dump.c (cp_dump_tree): Likewise.
+
 2005-04-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20905

@@ -1551,6 +1551,84 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
 	}
       break;
 
+    case SWITCH_STMT:
+      pp_cxx_identifier (pp, "switch");
+      pp_space (pp);
+      pp_cxx_left_paren (pp);
+      pp_expression (pp, SWITCH_STMT_COND (t));
+      pp_cxx_right_paren (pp);
+      pp_indentation (pp) += 3;
+      pp_needs_newline (pp) = true;
+      pp_statement (pp, SWITCH_STMT_BODY (t));
+      pp_newline_and_indent (pp, -3);
+      break;
+
+      /* iteration-statement:
+            while ( expression ) statement
+            do statement while ( expression ) ;
+            for ( expression(opt) ; expression(opt) ; expression(opt) ) statement
+            for ( declaration expression(opt) ; expression(opt) ) statement  */
+    case WHILE_STMT:
+      pp_cxx_identifier (pp, "while");
+      pp_space (pp);
+      pp_cxx_left_paren (pp);
+      pp_expression (pp, WHILE_COND (t));
+      pp_cxx_right_paren (pp);
+      pp_newline_and_indent (pp, 3);
+      pp_statement (pp, WHILE_BODY (t));
+      pp_indentation (pp) -= 3;
+      pp_needs_newline (pp) = true;
+      break;
+
+    case DO_STMT:
+      pp_cxx_identifier (pp, "do");
+      pp_newline_and_indent (pp, 3);
+      pp_statement (pp, DO_BODY (t));
+      pp_newline_and_indent (pp, -3);
+      pp_cxx_identifier (pp, "while");
+      pp_space (pp);
+      pp_cxx_left_paren (pp);
+      pp_expression (pp, DO_COND (t));
+      pp_cxx_right_paren (pp);
+      pp_cxx_semicolon (pp);
+      pp_needs_newline (pp) = true;
+      break;
+
+    case FOR_STMT:
+      pp_cxx_identifier (pp, "for");
+      pp_space (pp);
+      pp_cxx_left_paren (pp);
+      if (FOR_INIT_STMT (t))
+        pp_statement (pp, FOR_INIT_STMT (t));
+      else
+        pp_cxx_semicolon (pp);
+      pp_needs_newline (pp) = false;
+      pp_cxx_whitespace (pp);
+      if (FOR_COND (t))
+	pp_expression (pp, FOR_COND (t));
+      pp_cxx_semicolon (pp);
+      pp_needs_newline (pp) = false;
+      pp_cxx_whitespace (pp);
+      if (FOR_EXPR (t))
+	pp_expression (pp, FOR_EXPR (t));
+      pp_cxx_right_paren (pp);
+      pp_newline_and_indent (pp, 3);
+      pp_statement (pp, FOR_BODY (t));
+      pp_indentation (pp) -= 3;
+      pp_needs_newline (pp) = true;
+      break;
+
+      /* jump-statement:
+            goto identifier;
+            continue ;
+            return expression(opt) ;  */
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      pp_identifier (pp, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
+      pp_cxx_semicolon (pp);
+      pp_needs_newline (pp) = true;
+      break;
+
     case CLEANUP_STMT:
       pp_cxx_identifier (pp, "try");
       pp_newline_and_indent (pp, 2);

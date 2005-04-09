@@ -1,5 +1,6 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -421,6 +422,37 @@ cp_dump_tree (void* dump_info, tree t)
       dump_child ("cond", IF_COND (t));
       dump_child ("then", THEN_CLAUSE (t));
       dump_child ("else", ELSE_CLAUSE (t));
+      break;
+
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      dump_stmt (di, t);
+      break;
+
+    case DO_STMT:
+      dump_stmt (di, t);
+      dump_child ("body", DO_BODY (t));
+      dump_child ("cond", DO_COND (t));
+      break;
+
+    case FOR_STMT:
+      dump_stmt (di, t);
+      dump_child ("init", FOR_INIT_STMT (t));
+      dump_child ("cond", FOR_COND (t));
+      dump_child ("expr", FOR_EXPR (t));
+      dump_child ("body", FOR_BODY (t));
+      break;
+
+    case SWITCH_STMT:
+      dump_stmt (di, t);
+      dump_child ("cond", SWITCH_STMT_COND (t));
+      dump_child ("body", SWITCH_STMT_BODY (t));
+      break;
+
+    case WHILE_STMT:
+      dump_stmt (di, t);
+      dump_child ("cond", WHILE_COND (t));
+      dump_child ("body", WHILE_BODY (t));
       break;
 
     default:

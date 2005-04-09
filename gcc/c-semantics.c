@@ -193,22 +193,6 @@ emit_local_var (tree decl)
     }
 }
 
-/* Build a break statement node and return it.  */
-
-tree
-build_break_stmt (void)
-{
-  return (build_stmt (BREAK_STMT));
-}
-
-/* Build a continue statement node and return it.  */
-
-tree
-build_continue_stmt (void)
-{
-  return (build_stmt (CONTINUE_STMT));
-}
-
 /* Create a CASE_LABEL_EXPR tree node and return it.  */
 
 tree

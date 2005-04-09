@@ -33,28 +33,6 @@ DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", tcc_unary, 1)
    obtain the expression.  */
 DEFTREECODE (EXPR_STMT, "expr_stmt", tcc_expression, 1)
 
-/* Used to represent a `for' statement. The operands are
-   FOR_INIT_STMT, FOR_COND, FOR_EXPR, and FOR_BODY, respectively.  */
-DEFTREECODE (FOR_STMT, "for_stmt", tcc_expression, 4)
-
-/* Used to represent a 'while' statement. The operands are WHILE_COND
-   and WHILE_BODY, respectively.  */
-DEFTREECODE (WHILE_STMT, "while_stmt", tcc_expression, 2)
-
-/* Used to represent a 'do' statement. The operands are DO_BODY and
-   DO_COND, respectively.  */
-DEFTREECODE (DO_STMT, "do_stmt", tcc_expression, 2)
-
-/* Used to represent a 'break' statement.  */
-DEFTREECODE (BREAK_STMT, "break_stmt", tcc_expression, 0)
-
-/* Used to represent a 'continue' statement.  */
-DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_expression, 0)
-
-/* Used to represent a 'switch' statement. The operands are
-   SWITCH_STMT_COND, SWITCH_STMT_BODY and SWITCH_STMT_TYPE, respectively.  */
-DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_expression, 3)
-
 /* A STMT_EXPR represents a statement-expression.  The
    STMT_EXPR_STMT is the statement given by the expression.  */
 DEFTREECODE (STMT_EXPR, "stmt_expr", tcc_expression, 1)

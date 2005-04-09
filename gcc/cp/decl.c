@@ -2369,9 +2369,16 @@ void
 pop_switch (void)
 {
   struct cp_switch *cs = switch_stack;
+  location_t switch_location;
 
   /* Emit warnings as needed.  */
-  c_do_switch_warnings (cs->cases, cs->switch_stmt);
+  if (EXPR_HAS_LOCATION (cs->switch_stmt))
+    switch_location = EXPR_LOCATION (cs->switch_stmt);
+  else
+    switch_location = input_location;
+  c_do_switch_warnings (cs->cases, switch_location,
+			SWITCH_STMT_TYPE (cs->switch_stmt),
+			SWITCH_STMT_COND (cs->switch_stmt));
 
   splay_tree_delete (cs->cases);
   switch_stack = switch_stack->next;

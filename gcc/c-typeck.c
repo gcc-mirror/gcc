@@ -6728,13 +6728,20 @@ void
 c_finish_case (tree body)
 {
   struct c_switch *cs = c_switch_stack;
+  location_t switch_location;
 
   SWITCH_BODY (cs->switch_expr) = body;
 
   gcc_assert (!cs->blocked_stmt_expr);
 
   /* Emit warnings as needed.  */
-  c_do_switch_expr_warnings (cs->cases, cs->switch_expr);
+  if (EXPR_HAS_LOCATION (cs->switch_expr))
+    switch_location = EXPR_LOCATION (cs->switch_expr);
+  else
+    switch_location = input_location;
+  c_do_switch_warnings (cs->cases, switch_location,
+			TREE_TYPE (cs->switch_expr),
+			SWITCH_COND (cs->switch_expr));
 
   /* Pop the stack.  */
   c_switch_stack = cs->next;

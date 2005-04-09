@@ -834,7 +834,7 @@ finish_for_stmt (tree for_stmt)
 tree
 finish_break_stmt (void)
 {
-  return add_stmt (build_break_stmt ());
+  return add_stmt (build_stmt (BREAK_STMT));
 }
 
 /* Finish a continue-statement.  */
@@ -842,7 +842,7 @@ finish_break_stmt (void)
 tree
 finish_continue_stmt (void)
 {
-  return add_stmt (build_continue_stmt ());
+  return add_stmt (build_stmt (CONTINUE_STMT));
 }
 
 /* Begin a switch-statement.  Returns a new SWITCH_STMT if
