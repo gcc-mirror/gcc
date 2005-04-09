@@ -1,5 +1,9 @@
 2005--4-09  Steven G. Kargl  <kargls@comcast.net>
 
+	* gfortran.dg/nint_1.f90:  Fix dg-do directive
+
+2005--4-09  Steven G. Kargl  <kargls@comcast.net>
+
 	* gfortran.dg/nint_1.f90: New test.
 
 2005-04-09  Thomas Koenig  <Thomas.Koenig@online.de>

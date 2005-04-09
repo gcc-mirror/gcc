@@ -1,3 +1,4 @@
+! { dg-do run }
 program nint_1
   if (int(anint(8388609.0)) /= 8388609) call abort
   if (int(anint(0.49999997)) /= 0) call abort
