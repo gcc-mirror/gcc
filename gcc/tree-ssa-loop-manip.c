@@ -157,7 +157,10 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
   basic_block def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (var));
   bitmap_iterator bi;
 
-  bitmap_clear_bit (livein, def_bb->index);
+  if (is_gimple_reg (var))
+    bitmap_clear_bit (livein, def_bb->index);
+  else
+    bitmap_set_bit (livein, def_bb->index);
 
   def = BITMAP_ALLOC (NULL);
   bitmap_set_bit (def, def_bb->index);

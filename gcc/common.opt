@@ -828,6 +828,10 @@ ftree-ccp
 Common Report Var(flag_tree_ccp)
 Enable SSA-CCP optimization on trees
 
+ftree-store-ccp
+Common Report Var(flag_tree_store_ccp)
+Enable SSA-CCP optimization for stores and loads
+
 ftree-ch
 Common Report Var(flag_tree_ch)
 Enable loop header copying on trees
@@ -839,6 +843,14 @@ Coalesce memory temporaries in the SSA->normal pass
 ftree-copyrename
 Common Report Var(flag_tree_copyrename)
 Replace SSA temporaries with better names in copies.
+
+ftree-copy-prop
+Common Report Var(flag_tree_copy_prop)
+Enable copy propagation on trees
+
+ftree-store-copy-prop
+Common Report Var(flag_tree_store_copy_prop)
+Enable copy propagation for stores and loads
 
 ftree-dce
 Common Report Var(flag_tree_dce)
@@ -895,6 +907,10 @@ Replace temporary expressions in the SSA->normal pass
 ftree-lrs
 Common Report Var(flag_tree_live_range_split)
 Perform live range splitting during the SSA->normal pass.
+
+ftree-vrp
+Common Report Var(flag_tree_vrp) Init(0)
+Perform Value Range Propagation on trees
 
 funit-at-a-time
 Common Report Var(flag_unit_at_a_time)

@@ -10005,6 +10005,21 @@ fold (tree expr)
     case CONST_DECL:
       return fold (DECL_INITIAL (t));
 
+    case ASSERT_EXPR:
+      {
+	/* Given ASSERT_EXPR <Y, COND>, return Y if COND can be folded
+	   to boolean_true_node.  If COND folds to boolean_false_node,
+	   return ASSERT_EXPR <Y, 0>.  Otherwise, return the original
+	   expression.  */
+	tree c = fold (ASSERT_EXPR_COND (t));
+	if (c == boolean_true_node)
+	  return ASSERT_EXPR_VAR (t);
+	else if (c == boolean_false_node)
+	  return build (ASSERT_EXPR, TREE_TYPE (t), ASSERT_EXPR_VAR (t), c);
+	else
+	  return t;
+      }
+
     default:
       return t;
     } /* switch (code) */

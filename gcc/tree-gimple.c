@@ -73,6 +73,7 @@ is_gimple_formal_tmp_rhs (tree t)
     case COMPLEX_CST:
     case VECTOR_CST:
     case OBJ_TYPE_REF:
+    case ASSERT_EXPR:
       return true;
 
     default:

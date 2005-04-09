@@ -117,7 +117,8 @@ static void add_to_predicate_list (basic_block, tree);
 static tree add_to_dst_predicate_list (struct loop * loop, basic_block, tree, tree,
 				       block_stmt_iterator *);
 static void clean_predicate_lists (struct loop *loop);
-static basic_block find_phi_replacement_condition (basic_block, tree *,
+static basic_block find_phi_replacement_condition (struct loop *loop,
+						   basic_block, tree *,
 						   block_stmt_iterator *);
 static void replace_phi_with_cond_modify_expr (tree, tree, basic_block,
                                                block_stmt_iterator *);
@@ -677,7 +678,8 @@ clean_predicate_lists (struct loop *loop)
    whose phi arguments are selected when cond is true.  */
 
 static basic_block
-find_phi_replacement_condition (basic_block bb, tree *cond,
+find_phi_replacement_condition (struct loop *loop, 
+				basic_block bb, tree *cond,
                                 block_stmt_iterator *bsi)
 {
   edge e;
@@ -702,12 +704,22 @@ find_phi_replacement_condition (basic_block bb, tree *cond,
   tmp_cond = p1->aux;
   if (TREE_CODE (tmp_cond) == TRUTH_NOT_EXPR)
     {
-      *cond  = p2->aux;
+      /* If p2 is loop->header than its aux field does not have useful
+	 info. Instead use !(cond) where cond is p1's aux field.  */
+      if (p2 == loop->header)
+	*cond = invert_truthvalue (unshare_expr (p1->aux));
+      else
+	*cond  = p2->aux;
       true_bb = p2;
     }
   else
     {
-      *cond  = p1->aux;
+      /* If p1 is loop->header than its aux field does not have useful
+	 info. Instead use !(cond) where cond is p2's aux field.  */
+      if (p1 == loop->header)
+	*cond = invert_truthvalue (unshare_expr (p2->aux));
+      else
+	*cond  = p1->aux;
       true_bb = p1;
     }
 
@@ -828,7 +840,7 @@ process_phi_nodes (struct loop *loop)
       /* BB has two predecessors. Using predecessor's aux field, set
 	 appropriate condition for the PHI node replacement.  */
       if (phi)
-	true_bb = find_phi_replacement_condition (bb, &cond, &bsi);
+	true_bb = find_phi_replacement_condition (loop, bb, &cond, &bsi);
 
       while (phi)
 	{
@@ -1113,20 +1125,17 @@ gate_tree_if_conversion (void)
 
 struct tree_opt_pass pass_if_conversion =
 {
-  "ifcvt",                           /* name */
-  gate_tree_if_conversion,           /* gate */
-  main_tree_if_conversion,           /* execute */
-  NULL,                              /* sub */
-  NULL,                              /* next */
-  0,                                 /* static_pass_number */
-  0,                                 /* tv_id */
-  PROP_cfg | PROP_ssa | PROP_alias,  /* properties_required */
-  0,                                 /* properties_provided */
-  0,                                 /* properties_destroyed */
-  TODO_dump_func,                    /* todo_flags_start */
-  TODO_dump_func
-    | TODO_verify_ssa
-    | TODO_verify_stmts
-    | TODO_verify_flow,              /* todo_flags_finish */
-  0				     /* letter */
+  "ifcvt",				/* name */
+  gate_tree_if_conversion,		/* gate */
+  main_tree_if_conversion,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg | PROP_ssa | PROP_alias,	/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_verify_loops,	/* todo_flags_finish */
+  0					/* letter */
 };

@@ -4810,7 +4810,7 @@ unshare_and_remove_ssa_names (tree ref)
 static void
 rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
 {
-  tree bvar, var, new_var, new_name, copy, name;
+  tree bvar, var, new_name, copy, name;
   tree orig;
 
   var = bvar = get_base_address (*op);
@@ -4832,24 +4832,27 @@ rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
   else
     goto do_rewrite;
     
-  if (var_ann (var)->type_mem_tag)
-    var = var_ann (var)->type_mem_tag;
-
   /* We need to add a memory tag for the variable.  But we do not want
      to add it to the temporary used for the computations, since this leads
      to problems in redundancy elimination when there are common parts
      in two computations referring to the different arrays.  So we copy
      the variable to a new temporary.  */
   copy = build2 (MODIFY_EXPR, void_type_node, NULL_TREE, with);
+
   if (name)
     new_name = duplicate_ssa_name (name, copy);
   else
     {
-      new_var = create_tmp_var (TREE_TYPE (with), "ruatmp");
-      add_referenced_tmp_var (new_var);
-      var_ann (new_var)->type_mem_tag = var;
-      new_name = make_ssa_name (new_var, copy);
+      tree tag = var_ann (var)->type_mem_tag;
+      tree new_ptr = create_tmp_var (TREE_TYPE (with), "ruatmp");
+      add_referenced_tmp_var (new_ptr);
+      if (tag)
+	var_ann (new_ptr)->type_mem_tag = tag;
+      else
+	add_type_alias (new_ptr, var);
+      new_name = make_ssa_name (new_ptr, copy);
     }
+
   TREE_OPERAND (copy, 0) = new_name;
   update_stmt (copy);
   bsi_insert_before (bsi, copy, BSI_SAME_STMT);
@@ -4870,6 +4873,10 @@ do_rewrite:
 
   /* Record the original reference, for purposes of alias analysis.  */
   REF_ORIGINAL (*op) = orig;
+
+  /* Virtual operands in the original statement may have to be renamed
+     because of the replacement.  */
+  mark_new_vars_to_rename (bsi_stmt (*bsi));
 }
 
 /* Rewrites USE (address that is an iv) using candidate CAND.  */
@@ -5377,11 +5384,6 @@ tree_ssa_iv_optimize (struct loops *loops)
   while (loop->inner)
     loop = loop->inner;
 
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
-  verify_stmts ();
-#endif
-
   /* Scan the loops, inner ones first.  */
   while (loop != loops->tree_root)
     {
@@ -5400,10 +5402,27 @@ tree_ssa_iv_optimize (struct loops *loops)
 	loop = loop->outer;
     }
 
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
-  verify_stmts ();
-#endif
+  /* FIXME.  IV opts introduces new aliases and call-clobbered
+     variables, which need to be renamed.  However, when we call the
+     renamer, not all statements will be scanned for operands.  In
+     particular, the newly introduced aliases may appear in statements
+     that are considered "unmodified", so the renamer will not get a
+     chance to rename those operands.
 
+     Work around this problem by forcing an operand re-scan on every
+     statement.  This will not be necessary once the new operand
+     scanner is implemented.  */
+  if (need_ssa_update_p ())
+    {
+      basic_block bb;
+      block_stmt_iterator si;
+      FOR_EACH_BB (bb)
+	for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+	  update_stmt (bsi_stmt (si));
+
+      update_ssa (TODO_update_ssa);
+    }
+
+  rewrite_into_loop_closed_ssa (NULL);
   tree_ssa_iv_optimize_finalize (loops, &data);
 }

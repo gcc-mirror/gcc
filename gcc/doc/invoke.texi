@@ -269,6 +269,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-salias @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -ftree-vectorizer-verbose=@var{n} @gol
+-fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
 -feliminate-unused-debug-symbols -fmem-report -fprofile-arcs -ftree-based-profiling @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
@@ -324,6 +325,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
 -ftree-salias -fweb @gol
+-ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -3879,6 +3881,11 @@ appending @file{.alias} to the source file name.
 Dump each function after CCP@.  The file name is made by appending
 @file{.ccp} to the source file name.
 
+@item storeccp
+@opindex fdump-tree-storeccp
+Dump each function after STORE-CCP.  The file name is made by appending
+@file{.storeccp} to the source file name.
+
 @item pre
 @opindex fdump-tree-pre
 Dump trees after partial redundancy elimination.  The file name is made
@@ -3888,6 +3895,16 @@ by appending @file{.pre} to the source file name.
 @opindex fdump-tree-fre
 Dump trees after full redundancy elimination.  The file name is made
 by appending @file{.fre} to the source file name.
+
+@item copyprop
+@opindex fdump-tree-copyprop
+Dump trees after copy propagation.  The file name is made
+by appending @file{.copyprop} to the source file name.
+
+@item store_copyprop
+@opindex fdump-tree-store_copyprop
+Dump trees after store copy-propagation.  The file name is made
+by appending @file{.store_copyprop} to the source file name.
 
 @item dce
 @opindex fdump-tree-dce
@@ -4745,6 +4762,17 @@ that are computed on all paths leading to the redundant computation.
 This analysis faster than PRE, though it exposes fewer redundancies.
 This flag is enabled by default at @option{-O} and higher.
 
+@item -ftree-copy-prop
+Perform copy propagation on trees.  This pass eliminates unnecessary
+copy operations.  This flag is enabled by default at @option{-O} and
+higher.
+
+@item -ftree-store-copy-prop
+Perform copy propagation of memory loads and stores.  This pass
+eliminates unnecessary copy operations in memory references
+(structures, global variables, arrays, etc).  This flag is enabled by
+default at @option{-O2} and higher.
+
 @item -ftree-salias
 Perform structural alias analysis on trees.  This flag
 is enabled by default at @option{-O} and higher.
@@ -4754,8 +4782,15 @@ Perform forward store motion  on trees.  This flag is
 enabled by default at @option{-O} and higher.
 
 @item -ftree-ccp
-Perform sparse conditional constant propagation (CCP) on trees.  This flag
-is enabled by default at @option{-O} and higher.
+Perform sparse conditional constant propagation (CCP) on trees.  This
+pass only operates on local scalar variables and is enabled by default
+at @option{-O} and higher.
+
+@item -ftree-store-ccp
+Perform sparse conditional constant propagation (CCP) on trees.  This
+pass operates on both local scalar variables and memory stores and
+loads (global variables, structures, arrays, etc).  This flag is
+enabled by default at @option{-O2} and higher.
 
 @item -ftree-dce
 Perform dead code elimination (DCE) on trees.  This flag is enabled by

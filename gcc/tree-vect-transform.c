@@ -349,9 +349,18 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   
   tag = STMT_VINFO_MEMTAG (stmt_info);
   gcc_assert (tag);
-  get_var_ann (vect_ptr)->type_mem_tag = tag;
-  get_var_ann (vect_ptr)->subvars = STMT_VINFO_SUBVARS (stmt_info);
 
+  /* If the memory tag of the original reference was not a type tag or
+     if the pointed-to type of VECT_PTR has an alias set number
+     different than TAG's, then we need to create a new type tag for
+     VECT_PTR and add TAG to its alias set.  */
+  if (var_ann (tag)->mem_tag_kind == NOT_A_TAG
+      || get_alias_set (tag) != get_alias_set (TREE_TYPE (vect_ptr_type)))
+    add_type_alias (vect_ptr, tag);
+  else
+    var_ann (vect_ptr)->type_mem_tag = tag;
+  
+  var_ann (vect_ptr)->subvars = STMT_VINFO_SUBVARS (stmt_info);
 
   /** (3) Calculate the initial address the vector-pointer, and set
           the vector-pointer to point to it before the loop:  **/

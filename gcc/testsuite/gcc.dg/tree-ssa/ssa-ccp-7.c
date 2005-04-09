@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-ccp" } */
+/* { dg-options "-O1 -fdump-tree-store_ccp" } */
 
 extern void link_error (void);
 
@@ -23,5 +23,5 @@ int test7 (int a)
 
 /* There should be not link_error calls, if there is any the
    optimization has failed */
-/* { dg-final { scan-tree-dump-times "link_error" 0 "ccp"} } */
-/* { dg-final { cleanup-tree-dump "ccp" } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "store_ccp"} } */
+/* { dg-final { cleanup-tree-dump "store_ccp" } } */

@@ -584,6 +584,9 @@ struct tree_opt_pass pass_sink_code =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_rename_vars | TODO_dump_func | TODO_ggc_collect | TODO_verify_ssa, /* todo_flags_finish */
+  TODO_update_ssa 
+    | TODO_dump_func
+    | TODO_ggc_collect
+    | TODO_verify_ssa,			/* todo_flags_finish */
   0					/* letter */
 };

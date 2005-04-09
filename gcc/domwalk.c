@@ -145,6 +145,14 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
   void *bd = NULL;
   basic_block dest;
   block_stmt_iterator bsi;
+  bool is_interesting;
+
+  /* If block BB is not interesting to the caller, then none of the
+     callbacks that walk the statements in BB are going to be
+     executed.  */
+  is_interesting = bb->index < 0
+		   || walk_data->interesting_blocks == NULL
+		   || TEST_BIT (walk_data->interesting_blocks, bb->index);
 
   /* Callback to initialize the local data structure.  */
   if (walk_data->initialize_block_local_data)
@@ -179,7 +187,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
     (*walk_data->before_dom_children_before_stmts) (walk_data, bb);
 
   /* Statement walk before walking dominator children.  */
-  if (walk_data->before_dom_children_walk_stmts)
+  if (is_interesting && walk_data->before_dom_children_walk_stmts)
     {
       if (walk_data->walk_stmts_backward)
 	for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_prev (&bsi))
@@ -211,7 +219,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
     (*walk_data->after_dom_children_before_stmts) (walk_data, bb);
 
   /* Statement walk after walking dominator children.  */
-  if (walk_data->after_dom_children_walk_stmts)
+  if (is_interesting && walk_data->after_dom_children_walk_stmts)
     {
       if (walk_data->walk_stmts_backward)
 	for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_prev (&bsi))

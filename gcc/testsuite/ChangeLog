@@ -1,3 +1,20 @@
+2005-04-08  Diego Novillo  <dnovillo@redhat.com>
+
+	* g++.dg/tree-ssa/pr18178.C: New test.
+	* gcc.c-torture/execute/20030216-1.x: Ignore at -O1.
+	* gcc.c-torture/execute/20041019-1.c: New test.
+	* gcc.dg/tree-ssa/20041008-1.c: New test.
+	* gcc.dg/tree-ssa/ssa-ccp-12.c: New test.
+	* gcc.dg/tree-ssa/20030731-2.c: Update to use -fdump-tree-store_ccp.
+	* gcc.dg/tree-ssa/20030917-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030917-3.c: Likewise.
+	* gcc.dg/tree-ssa/20040721-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-9.c: Likewise.
+
 2005-04-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/20466

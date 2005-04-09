@@ -371,9 +371,6 @@ linear_transform_loops (struct loops *loops)
       free_data_refs (datarefs);
     }
   scev_reset ();
-  rewrite_into_ssa (false);
+  update_ssa (TODO_update_ssa);
   rewrite_into_loop_closed_ssa (NULL);
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
-#endif
 }
