@@ -34,11 +34,10 @@
   
 ;; Return 1 if op is an Altivec register.
 (define_predicate "altivec_register_operand"
-  (and (match_code "reg,subreg")
-       (and (match_operand 0 "register_operand")
-	    (match_test "GET_CODE (op) != REG
-			 || ALTIVEC_REGNO_P (REGNO (op))
-			 || REGNO (op) > LAST_VIRTUAL_REGISTER"))))
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || ALTIVEC_REGNO_P (REGNO (op))
+		     || REGNO (op) > LAST_VIRTUAL_REGISTER")))
 
 ;; Return 1 if op is XER register.
 (define_predicate "xer_operand"
@@ -74,28 +73,25 @@
 
 ;; Return 1 if op is a register that is not special.
 (define_predicate "gpc_reg_operand"
-  (and (match_code "reg,subreg")
-       (and (match_operand 0 "register_operand")
-	    (match_test "GET_CODE (op) != REG
-			 || (REGNO (op) >= ARG_POINTER_REGNUM
-			     && !XER_REGNO_P (REGNO (op)))
-			 || REGNO (op) < MQ_REGNO"))))
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || (REGNO (op) >= ARG_POINTER_REGNUM
+			 && !XER_REGNO_P (REGNO (op)))
+		     || REGNO (op) < MQ_REGNO")))
 
 ;; Return 1 if op is a register that is a condition register field.
 (define_predicate "cc_reg_operand"
-  (and (match_code "reg,subreg")
-       (and (match_operand 0 "register_operand")
-	    (match_test "GET_CODE (op) != REG
-			 || REGNO (op) > LAST_VIRTUAL_REGISTER
-			 || CR_REGNO_P (REGNO (op))"))))
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || REGNO (op) > LAST_VIRTUAL_REGISTER
+		     || CR_REGNO_P (REGNO (op))")))
 
 ;; Return 1 if op is a register that is a condition register field not cr0.
 (define_predicate "cc_reg_not_cr0_operand"
-  (and (match_code "reg,subreg")
-       (and (match_operand 0 "register_operand")
-	    (match_test "GET_CODE (op) != REG
-			 || REGNO (op) > LAST_VIRTUAL_REGISTER
-			 || CR_REGNO_NOT_CR0_P (REGNO (op))"))))
+   (and (match_operand 0 "register_operand")
+	(match_test "GET_CODE (op) != REG
+		     || REGNO (op) > LAST_VIRTUAL_REGISTER
+		     || CR_REGNO_NOT_CR0_P (REGNO (op))")))
 
 ;; Return 1 if op is a constant integer valid for D field
 ;; or non-special register register.
