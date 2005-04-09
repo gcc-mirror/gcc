@@ -1,5 +1,14 @@
 2005-04-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/tree-ssa/stdarg-1.c: New test.
+	* gcc.dg/tree-ssa/stdarg-2.c: New test.
+	* gcc.dg/tree-ssa/stdarg-3.c: New test.
+	* gcc.dg/tree-ssa/stdarg-4.c: New test.
+	* gcc.dg/tree-ssa/stdarg-5.c: New test.
+	* gcc.c-torture/execute/stdarg-4.c: New test.
+
+	* gcc.dg/vmx/varargs-1.c (f1, f2, f3): Add missing va_end.
+
 	PR target/20795
 	* g++.dg/abi/param2.C: New test.
 
