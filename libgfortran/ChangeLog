@@ -6,7 +6,6 @@
 	PR libfortran/20005
 	PR libfortran/20092
 	PR libfortran/20131
-	PR libfortran/20138
 	PR libfortran/20661
 	PR libfortran/20744
 	* io/transfer.c (top level): eor_condition: New static variable.
