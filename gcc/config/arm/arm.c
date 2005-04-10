@@ -455,7 +455,7 @@ int arm_arch_xscale = 0;
 int arm_tune_xscale = 0;
 
 /* Nonzero if we want to tune for stores that access the write-buffer. 
-   This typicallly means an ARM6 or ARM7 with MMU or MPU.  */
+   This typically means an ARM6 or ARM7 with MMU or MPU.  */
 int arm_tune_wbuf = 0;
 
 /* Nonzero if generating Thumb instructions.  */

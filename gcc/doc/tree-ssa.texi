@@ -1090,7 +1090,7 @@ It is also still possible to utilize lazy updating of stmts, but this should be 
 optimizations currently do this.  
 
 When lazy updating is being used, the immediate use information is out of date 
-and cannot be used reliably.  Lazy updating is acheived by simply marking stmts 
+and cannot be used reliably.  Lazy updating is achieved by simply marking stmts 
 modified via calls to @code{mark_stmt_modified} instead of @code{update_stmt}.
 When lazy updating is no longer required, all the modified stmts must have 
 @code{update_stmt} called in order to bring them up to date.  This must be done before the optimization is finished, or @code{verify_ssa} will trigger an abort.

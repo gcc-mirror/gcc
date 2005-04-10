@@ -1,3 +1,8 @@
+2005-04-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/arm/arm.c: Fix a comment typo.
+	* doc/tree-ssa.texi: Fix a typo.
+
 2005-04-10  Steven Bosscher  <stevenb@suse.de>
 
 	* cselib.c (clear_table): Rename to cselib_clear_table.
