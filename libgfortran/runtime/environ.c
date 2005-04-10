@@ -495,7 +495,7 @@ static variable variable_table[] = {
    "Print optional plus signs in numbers where permitted.  Default FALSE."},
 
   {"GFORTRAN_DEFAULT_RECL", DEFAULT_RECL, &options.default_recl,
-   init_integer, show_unsigned_integer,
+   init_unsigned_integer, show_integer,
    "Default maximum record length for sequential files.  Most useful for\n"
    "adjusting line length of preconnected units.  Default "
    stringize (DEFAULT_RECL)},
