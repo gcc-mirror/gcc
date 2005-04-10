@@ -41,7 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    Generic interfaces:
      The generic name points to a linked list of symbols.  Each symbol
-     has an explicit interface.  Each explicit interface has it's own
+     has an explicit interface.  Each explicit interface has its own
      namespace containing the arguments.  Module procedures are symbols in
      which the interface is added later when the module procedure is parsed.
 
