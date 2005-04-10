@@ -1,3 +1,23 @@
+2005-04-10  Steven Bosscher  <stevenb@suse.de>
+
+	* cselib.c (clear_table): Rename to cselib_clear_table.
+	* cselib.h (cselib_clear_table): Add prototype.
+	* gcse.c (gcse_main): Make 'f' argument unused.
+	(alloc_gcse_mem): Do not walk the insn chain, walk the contents
+	of each basic block instead.
+	(compute_sets, compute_hash_table_work): Likewise.
+	(constprop_register): Change int 'alter_jumps' argument to bool.
+	(do_local_cprop): Likewise.
+	(local_cprop_pass): Likewise.  Also walk basic blocks instead of
+	the insn chain.  Explicitly clear the cselib tables after finishing
+	one basic block.  Make sure there are no unterminated libcall blocks.
+	Update compute_sets call.
+	(cprop): Walk basic blocks instead of the insn chain.
+	(one_cprop_pass, compute_ld_motion_mems, compute_store_table):
+	Likewise.
+	(bypass_jumps): Update alloc_gcse_mem, compute_sets, and
+	one_cprop_pass calls.
+
 2005-04-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* combine.c (combine_simplify_rtx): Remove a transformation that
@@ -1201,7 +1221,7 @@
 	* config/mn10300/mn10300.opt: New file.
 
 2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Sebastian Pop <sebastian.pop@cri.ensmp.fr>
+	    Sebastian Pop <sebastian.pop@cri.ensmp.fr>
 
 	PR tree-optimization/19903
 	* tree-chrec.c (chrec_convert): Return chrec_dont_know for constants
@@ -1284,7 +1304,7 @@
 	CRIS epilogue as RTL.
 	* config/cris/cris.md: Change all 0 in unspec 0 to
 	CRIS_UNSPEC_PLT.
- 	(CRIS_UNSPEC_PLT, CRIS_UNSPEC_FRAME_DEALLOC): New constants.
+	(CRIS_UNSPEC_PLT, CRIS_UNSPEC_FRAME_DEALLOC): New constants.
 	("*cris_load_multiple", "cris_frame_deallocated_barrier"): New
 	patterns.
 	("return"): Change to define_expand.  Call cris_expand_return for

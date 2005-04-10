@@ -522,13 +522,13 @@ static void *gmalloc (size_t) ATTRIBUTE_MALLOC;
 static void *gcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
 static void *grealloc (void *, size_t);
 static void *gcse_alloc (unsigned long);
-static void alloc_gcse_mem (rtx);
+static void alloc_gcse_mem (void);
 static void free_gcse_mem (void);
 static void alloc_reg_set_mem (int);
 static void free_reg_set_mem (void);
 static void record_one_set (int, rtx);
 static void record_set_info (rtx, rtx, void *);
-static void compute_sets (rtx);
+static void compute_sets (void);
 static void hash_scan_insn (rtx, struct hash_table *, int);
 static void hash_scan_set (rtx, rtx, struct hash_table *);
 static void hash_scan_clobber (rtx, rtx, struct hash_table *);
@@ -578,8 +578,8 @@ static void canon_list_insert (rtx, rtx, void *);
 static int cprop_insn (rtx, int);
 static int cprop (int);
 static void find_implicit_sets (void);
-static int one_cprop_pass (int, int, int);
-static bool constprop_register (rtx, rtx, rtx, int);
+static int one_cprop_pass (int, bool, bool);
+static bool constprop_register (rtx, rtx, rtx, bool);
 static struct expr *find_bypass_set (int, int);
 static bool reg_killed_on_edge (rtx, edge);
 static int bypass_block (basic_block, rtx, rtx);
@@ -645,9 +645,9 @@ static void clear_modify_mem_tables (void);
 static void free_modify_mem_tables (void);
 static rtx gcse_emit_move_after (rtx, rtx, rtx);
 static void local_cprop_find_used_regs (rtx *, void *);
-static bool do_local_cprop (rtx, rtx, int, rtx*);
+static bool do_local_cprop (rtx, rtx, bool, rtx*);
 static bool adjust_libcall_notes (rtx, rtx, rtx, rtx*);
-static void local_cprop_pass (int);
+static void local_cprop_pass (bool);
 static bool is_too_expensive (const char *);
 
 
@@ -656,7 +656,7 @@ static bool is_too_expensive (const char *);
    change is mode.  */
 
 int
-gcse_main (rtx f, FILE *file)
+gcse_main (rtx f ATTRIBUTE_UNUSED, FILE *file)
 {
   int changed, pass;
   /* Bytes used at start of pass.  */
@@ -704,7 +704,7 @@ gcse_main (rtx f, FILE *file)
      information about memory sets when we build the hash tables.  */
 
   alloc_reg_set_mem (max_gcse_regno);
-  compute_sets (f);
+  compute_sets ();
 
   pass = 0;
   initial_bytes_used = bytes_used;
@@ -724,12 +724,12 @@ gcse_main (rtx f, FILE *file)
       /* Each pass may create new registers, so recalculate each time.  */
       max_gcse_regno = max_reg_num ();
 
-      alloc_gcse_mem (f);
+      alloc_gcse_mem ();
 
       /* Don't allow constant propagation to modify jumps
 	 during this pass.  */
       timevar_push (TV_CPROP1);
-      changed = one_cprop_pass (pass + 1, 0, 0);
+      changed = one_cprop_pass (pass + 1, false, false);
       timevar_pop (TV_CPROP1);
 
       if (optimize_size)
@@ -749,7 +749,7 @@ gcse_main (rtx f, FILE *file)
 	    }
 	  free_reg_set_mem ();
 	  alloc_reg_set_mem (max_reg_num ());
-	  compute_sets (f);
+	  compute_sets ();
 	  run_jump_opt_after_gcse = 1;
 	  timevar_pop (TV_PRE);
 	}
@@ -771,7 +771,7 @@ gcse_main (rtx f, FILE *file)
 	{
 	  timevar_push (TV_HOIST);
 	  max_gcse_regno = max_reg_num ();
-	  alloc_gcse_mem (f);
+	  alloc_gcse_mem ();
 	  changed |= one_code_hoisting_pass ();
 	  free_gcse_mem ();
 
@@ -794,10 +794,10 @@ gcse_main (rtx f, FILE *file)
      conditional jumps.  */
 
   max_gcse_regno = max_reg_num ();
-  alloc_gcse_mem (f);
+  alloc_gcse_mem ();
   /* This time, go ahead and allow cprop to alter jumps.  */
   timevar_push (TV_CPROP2);
-  one_cprop_pass (pass + 1, 1, 0);
+  one_cprop_pass (pass + 1, true, false);
   timevar_pop (TV_CPROP2);
   free_gcse_mem ();
 
@@ -923,32 +923,39 @@ gcse_alloc (unsigned long size)
    This is called at the start of each pass.  */
 
 static void
-alloc_gcse_mem (rtx f)
+alloc_gcse_mem (void)
 {
   int i;
+  basic_block bb;
   rtx insn;
 
   /* Find the largest UID and create a mapping from UIDs to CUIDs.
      CUIDs are like UIDs except they increase monotonically, have no gaps,
-     and only apply to real insns.  */
+     and only apply to real insns.
+     (Actually, there are gaps, for insn that are not inside a basic block.
+     but we should never see those anyway, so this is OK.)  */
 
   max_uid = get_max_uid ();
   uid_cuid = gcalloc (max_uid + 1, sizeof (int));
-  for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	uid_cuid[INSN_UID (insn)] = i++;
-      else
-	uid_cuid[INSN_UID (insn)] = i;
-    }
+  i = 0;
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      {
+	if (INSN_P (insn))
+	  uid_cuid[INSN_UID (insn)] = i++;
+	else
+	  uid_cuid[INSN_UID (insn)] = i;
+      }
 
   /* Create a table mapping cuids to insns.  */
 
   max_cuid = i;
   cuid_insn = gcalloc (max_cuid + 1, sizeof (rtx));
-  for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
-      CUID_INSN (i++) = insn;
+  i = 0;
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      if (INSN_P (insn))
+	CUID_INSN (i++) = insn;
 
   /* Allocate vars to track sets of regs.  */
   reg_set_bitmap = BITMAP_ALLOC (NULL);
@@ -1141,13 +1148,15 @@ record_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED, void *data)
    `reg_set_table' for further documentation.  */
 
 static void
-compute_sets (rtx f)
+compute_sets (void)
 {
+  basic_block bb;
   rtx insn;
 
-  for (insn = f; insn != 0; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
-      note_stores (PATTERN (insn), record_set_info, insn);
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      if (INSN_P (insn))
+	note_stores (PATTERN (insn), record_set_info, insn);
 }
 
 /* Hash table support.  */
@@ -2038,9 +2047,7 @@ compute_hash_table_work (struct hash_table *table)
 	 ??? hard-reg reg_set_in_block computation
 	 could be moved to compute_sets since they currently don't change.  */
 
-      for (insn = BB_HEAD (current_bb);
-	   insn && insn != NEXT_INSN (BB_END (current_bb));
-	   insn = NEXT_INSN (insn))
+      FOR_BB_INSNS (current_bb, insn)
 	{
 	  if (! INSN_P (insn))
 	    continue;
@@ -2064,10 +2071,8 @@ compute_hash_table_work (struct hash_table *table)
 		       BB_HEAD (current_bb), table);
 
       /* The next pass builds the hash table.  */
-
-      for (insn = BB_HEAD (current_bb), in_libcall_block = 0;
-	   insn && insn != NEXT_INSN (BB_END (current_bb));
-	   insn = NEXT_INSN (insn))
+      in_libcall_block = 0;
+      FOR_BB_INSNS (current_bb, insn)
 	if (INSN_P (insn))
 	  {
 	    if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
@@ -2852,7 +2857,7 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
 }
 
 static bool
-constprop_register (rtx insn, rtx from, rtx to, int alter_jumps)
+constprop_register (rtx insn, rtx from, rtx to, bool alter_jumps)
 {
   rtx sset;
 
@@ -3030,7 +3035,7 @@ local_cprop_find_used_regs (rtx *xptr, void *data)
    their REG_EQUAL notes need updating.  */
 
 static bool
-do_local_cprop (rtx x, rtx insn, int alter_jumps, rtx *libcall_sp)
+do_local_cprop (rtx x, rtx insn, bool alter_jumps, rtx *libcall_sp)
 {
   rtx newreg = NULL, newcnst = NULL;
 
@@ -3148,9 +3153,14 @@ adjust_libcall_notes (rtx oldreg, rtx newval, rtx insn, rtx *libcall_sp)
 
 #define MAX_NESTED_LIBCALLS 9
 
+/* Do local const/copy propagation (i.e. within each basic block).
+   If ALTER_JUMPS is true, allow propagating into jump insns, which
+   could modify the CFG.  */
+
 static void
-local_cprop_pass (int alter_jumps)
+local_cprop_pass (bool alter_jumps)
 {
+  basic_block bb;
   rtx insn;
   struct reg_use *reg_used;
   rtx libcall_stack[MAX_NESTED_LIBCALLS + 1], *libcall_sp;
@@ -3159,51 +3169,62 @@ local_cprop_pass (int alter_jumps)
   cselib_init (false);
   libcall_sp = &libcall_stack[MAX_NESTED_LIBCALLS];
   *libcall_sp = 0;
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+  FOR_EACH_BB (bb)
     {
-      if (INSN_P (insn))
+      FOR_BB_INSNS (bb, insn)
 	{
-	  rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
+	  if (INSN_P (insn))
+	    {
+	      rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
 
-	  if (note)
-	    {
-	      gcc_assert (libcall_sp != libcall_stack);
-	      *--libcall_sp = XEXP (note, 0);
-	    }
-	  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
-	  if (note)
-	    libcall_sp++;
-	  note = find_reg_equal_equiv_note (insn);
-	  do
-	    {
-	      reg_use_count = 0;
-	      note_uses (&PATTERN (insn), local_cprop_find_used_regs, NULL);
 	      if (note)
-		local_cprop_find_used_regs (&XEXP (note, 0), NULL);
+		{
+		  gcc_assert (libcall_sp != libcall_stack);
+		  *--libcall_sp = XEXP (note, 0);
+		}
+	      note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
+	      if (note)
+		libcall_sp++;
+	      note = find_reg_equal_equiv_note (insn);
+	      do
+		{
+		  reg_use_count = 0;
+		  note_uses (&PATTERN (insn), local_cprop_find_used_regs,
+			     NULL);
+		  if (note)
+		    local_cprop_find_used_regs (&XEXP (note, 0), NULL);
 
-	      for (reg_used = &reg_use_table[0]; reg_use_count > 0;
-		   reg_used++, reg_use_count--)
-		if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps,
-		    libcall_sp))
-		  {
-		    changed = true;
+		  for (reg_used = &reg_use_table[0]; reg_use_count > 0;
+		       reg_used++, reg_use_count--)
+		    if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps,
+			libcall_sp))
+		      {
+			changed = true;
+			break;
+		      }
+		  if (INSN_DELETED_P (insn))
 		    break;
-		  }
-	      if (INSN_DELETED_P (insn))
-		break;
+		}
+	      while (reg_use_count);
 	    }
-	  while (reg_use_count);
+	  cselib_process_insn (insn);
 	}
-      cselib_process_insn (insn);
+
+      /* Forget everything at the end of a basic block.  Make sure we are
+	 not inside a libcall, they should never cross basic blocks.  */
+      cselib_clear_table ();
+      gcc_assert (libcall_sp == &libcall_stack[MAX_NESTED_LIBCALLS]);
     }
+
   cselib_finish ();
+
   /* Global analysis may get into infinite loops for unreachable blocks.  */
   if (changed && alter_jumps)
     {
       delete_unreachable_blocks ();
       free_reg_set_mem ();
       alloc_reg_set_mem (max_reg_num ());
-      compute_sets (get_insns ());
+      compute_sets ();
     }
 }
 
@@ -3232,9 +3253,7 @@ cprop (int alter_jumps)
 	 start of the block].  */
       reset_opr_set_tables ();
 
-      for (insn = BB_HEAD (bb);
-	   insn != NULL && insn != NEXT_INSN (BB_END (bb));
-	   insn = NEXT_INSN (insn))
+      FOR_BB_INSNS (bb, insn)
 	if (INSN_P (insn))
 	  {
 	    changed |= cprop_insn (insn, alter_jumps);
@@ -3358,7 +3377,7 @@ find_implicit_sets (void)
    perform conditional jump bypassing optimizations.  */
 
 static int
-one_cprop_pass (int pass, int cprop_jumps, int bypass_jumps)
+one_cprop_pass (int pass, bool cprop_jumps, bool bypass_jumps)
 {
   int changed = 0;
 
@@ -3665,9 +3684,7 @@ bypass_conditional_jumps (void)
       if (!single_pred_p (bb))
 	{
 	  setcc = NULL_RTX;
-	  for (insn = BB_HEAD (bb);
-	       insn != NULL && insn != NEXT_INSN (BB_END (bb));
-	       insn = NEXT_INSN (insn))
+	  FOR_BB_INSNS (bb, insn)
 	    if (NONJUMP_INSN_P (insn))
 	      {
 		if (setcc)
@@ -5221,9 +5238,7 @@ compute_ld_motion_mems (void)
 
   FOR_EACH_BB (bb)
     {
-      for (insn = BB_HEAD (bb);
-	   insn && insn != NEXT_INSN (BB_END (bb));
-	   insn = NEXT_INSN (insn))
+      FOR_BB_INSNS (bb, insn)
 	{
 	  if (INSN_P (insn))
 	    {
@@ -5678,9 +5693,7 @@ compute_store_table (void)
       /* First compute the registers set in this block.  */
       regvec = last_set_in;
 
-      for (insn = BB_HEAD (bb);
-	   insn != NEXT_INSN (BB_END (bb));
-	   insn = NEXT_INSN (insn))
+      FOR_BB_INSNS (bb, insn)
 	{
 	  if (! INSN_P (insn))
 	    continue;
@@ -5703,9 +5716,7 @@ compute_store_table (void)
       /* Now find the stores.  */
       memset (already_set, 0, sizeof (int) * max_gcse_regno);
       regvec = already_set;
-      for (insn = BB_HEAD (bb);
-	   insn != NEXT_INSN (BB_END (bb));
-	   insn = NEXT_INSN (insn))
+      FOR_BB_INSNS (bb, insn)
 	{
 	  if (! INSN_P (insn))
 	    continue;
@@ -6477,11 +6488,11 @@ bypass_jumps (FILE *file)
      information about memory sets when we build the hash tables.  */
 
   alloc_reg_set_mem (max_gcse_regno);
-  compute_sets (get_insns ());
+  compute_sets ();
 
   max_gcse_regno = max_reg_num ();
-  alloc_gcse_mem (get_insns ());
-  changed = one_cprop_pass (MAX_GCSE_PASSES + 2, 1, 1);
+  alloc_gcse_mem ();
+  changed = one_cprop_pass (MAX_GCSE_PASSES + 2, true, true);
   free_gcse_mem ();
 
   if (file)
