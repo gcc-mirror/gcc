@@ -1,3 +1,7 @@
+2005-04-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/20050410-1.c: New test.
+
 2005-04-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/pr20126.c: New.

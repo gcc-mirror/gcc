@@ -1,5 +1,10 @@
 2005-04-10  Richard Sandiford  <rsandifo@redhat.com>
 
+	* combine.c (combine_simplify_rtx): Remove a transformation that
+	relies on an invalid assumption about rtl sign-extension semantics.
+
+2005-04-10  Richard Sandiford  <rsandifo@redhat.com>
+
 	* value-prof.c (tree_divmod_fixed_value_transform): Fix arguments
 	to build_int_cst_wide.
 
