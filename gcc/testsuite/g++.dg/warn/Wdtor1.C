@@ -5,10 +5,14 @@
 # 1 "<command line>"
 # 1 "t.cc"
 # 1 "include/t.h" 1 3 4
+// Declare the template with explicit C++ linkage in case system
+// headers have implicit C linkage.
+extern "C++" {
 template <int> class t
 {
   virtual void f();
 };
+}
 # 2 "t.cc" 2
 
 void f(void)
