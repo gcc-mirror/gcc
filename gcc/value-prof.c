@@ -1243,7 +1243,8 @@ tree_divmod_fixed_value_transform (tree stmt)
   prob = (count * REG_BR_PROB_BASE + all / 2) / all;
 
   tree_val = build_int_cst_wide (get_gcov_type (),
-				 val & 0xffffffffull, val >> 32);
+				 (unsigned HOST_WIDE_INT) val,
+				 val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1);
   result = tree_divmod_fixed_value (stmt, op, op1, op2, tree_val, prob, count, all);
 
   TREE_OPERAND (modify, 1) = result;

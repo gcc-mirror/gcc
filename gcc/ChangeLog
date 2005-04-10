@@ -1,3 +1,8 @@
+2005-04-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* value-prof.c (tree_divmod_fixed_value_transform): Fix arguments
+	to build_int_cst_wide.
+
 2005-04-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/20126
