@@ -1,3 +1,8 @@
+2005-04-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/warn/Wdtor1.C: Declare template in system header with
+	explicit C++ linkage.
+
 2005-04-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/pr17229.f: Take care of the new obsolescence
