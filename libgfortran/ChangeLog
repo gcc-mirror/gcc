@@ -1,3 +1,28 @@
+2005-04-10  Thomas Koenig <Thomas.Koenig@online.de>
+
+	PR libfortran/17992
+	PR libfortran/19568
+	PR libfortran/19595
+	PR libfortran/20005
+	PR libfortran/20092
+	PR libfortran/20131
+	PR libfortran/20138
+	PR libfortran/20661
+	PR libfortran/20744
+	* io/transfer.c (top level): eor_condition: New static variable.
+	(read_sf): Remove unnecessary zeroing of buffer (there is enough
+	information in its length).
+	Return a string of length 0 (to be padded by caller) if EOR was
+	seen previously.
+	Remove erroneous special casing of EOR for standard input.
+	Set eor_condition for non-advancing I/O if an end of line was
+	detected.
+	Increment ioparm.size if necessary.
+	(formatted_transfer):  Skip the function if there is an EOR condition.
+	(data_transfer_init):  Initialize eor_condition to zero (false).
+	(next_record_r):  Clear sf_seen_eor if a \n has been seen already.
+	(finalize_transfer):  If there is an EOR condition, raise the error.
+
 2005-04-09  Bud Davis  <bdavis@gfortran.org>
             Steven G. Kargl <kargls@comcast.net>
 

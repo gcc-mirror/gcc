@@ -1,3 +1,13 @@
+2005-04-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* eor_handling_1.f90: New test case.
+	* eor_handling_2.f90: New test case.
+	* eor_handling_3.f90: New test case.
+	* eor_handling_4.f90: New test case.
+	* eor_handling_5.f90: New test case.
+	* noadv_size.f90: New test case.
+	* pad_no.f90: New test case.
+
 2005-04-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20050410-1.c: New test.
