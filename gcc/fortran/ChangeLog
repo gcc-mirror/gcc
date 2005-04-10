@@ -1,3 +1,7 @@
+2005-04-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* interface.c: Fix a comment typo.
+
 2005-04-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* match.c (match_arithmetic_if): Arithmetic IF is obsolete in
