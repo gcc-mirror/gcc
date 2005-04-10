@@ -1,3 +1,13 @@
+2005-04-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/20126
+	* loop.c (loop_givs_rescan): If replacement of DEST_ADDR failed,
+	set the original address pseudo to the correct value before the
+	original insn, if possible, and leave the insn alone, otherwise
+	create a new pseudo, set it and replace it in the insn.
+	* recog.c (validate_change_maybe_volatile): New.
+	* recog.h (validate_change_maybe_volatile): Declare.
+
 2005-04-09  Caroline Tice  <ctice@apple.com>
 
 	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):

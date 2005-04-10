@@ -5476,9 +5476,31 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 	mark_reg_pointer (v->new_reg, 0);
 
       if (v->giv_type == DEST_ADDR)
-	/* Store reduced reg as the address in the memref where we found
-	   this giv.  */
-	validate_change (v->insn, v->location, v->new_reg, 0);
+	{
+	  /* Store reduced reg as the address in the memref where we found
+	     this giv.  */
+	  if (validate_change_maybe_volatile (v->insn, v->location,
+					      v->new_reg))
+	    /* Yay, it worked!  */;
+	  /* Not replaceable; emit an insn to set the original
+	     giv reg from the reduced giv.  */
+	  else if (REG_P (*v->location))
+	    loop_insn_emit_before (loop, 0, v->insn,
+				   gen_move_insn (*v->location,
+						  v->new_reg));
+	  else
+	    {
+	      /* If it wasn't a reg, create a pseudo and use that.  */
+	      rtx reg, seq;
+	      start_sequence ();
+	      reg = force_reg (v->mode, *v->location);
+	      seq = get_insns ();
+	      end_sequence ();
+	      loop_insn_emit_before (loop, 0, v->insn, seq);
+	      if (!validate_change_maybe_volatile (v->insn, v->location, reg))
+		gcc_unreachable ();
+	    }
+	}
       else if (v->replaceable)
 	{
 	  reg_map[REGNO (v->dest_reg)] = v->new_reg;
