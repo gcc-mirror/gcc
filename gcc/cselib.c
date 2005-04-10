@@ -50,7 +50,6 @@ static struct elt_loc_list *new_elt_loc_list (struct elt_loc_list *, rtx);
 static void unchain_one_value (cselib_val *);
 static void unchain_one_elt_list (struct elt_list **);
 static void unchain_one_elt_loc_list (struct elt_loc_list **);
-static void clear_table (void);
 static int discard_useless_locs (void **, void *);
 static int discard_useless_values (void **, void *);
 static void remove_useless_values (void);
@@ -106,11 +105,11 @@ static unsigned int reg_values_size;
 #define REG_VALUES(i) reg_values[i]
 
 /* The largest number of hard regs used by any entry added to the
-   REG_VALUES table.  Cleared on each clear_table() invocation.  */
+   REG_VALUES table.  Cleared on each cselib_clear_table() invocation.  */
 static unsigned int max_value_regs;
 
 /* Here the set of indices I with REG_VALUES(I) != 0 is saved.  This is used
-   in clear_table() for fast emptying.  */
+   in cselib_clear_table() for fast emptying.  */
 static unsigned int *used_regs;
 static unsigned int n_used_regs;
 
@@ -200,8 +199,8 @@ unchain_one_value (cselib_val *v)
    initialization.  If CLEAR_ALL isn't set, then only clear the entries
    which are known to have been used.  */
 
-static void
-clear_table (void)
+void
+cselib_clear_table (void)
 {
   unsigned int i;
 
@@ -1362,7 +1361,7 @@ cselib_process_insn (rtx insn)
     {
       if (find_reg_note (insn, REG_RETVAL, NULL))
         cselib_current_insn_in_libcall = false;
-      clear_table ();
+      cselib_clear_table ();
       return;
     }
 
@@ -1464,7 +1463,7 @@ cselib_finish (void)
   free_alloc_pool (elt_loc_list_pool);
   free_alloc_pool (cselib_val_pool);
   free_alloc_pool (value_pool);
-  clear_table ();
+  cselib_clear_table ();
   htab_delete (hash_table);
   free (used_regs);
   used_regs = 0;
