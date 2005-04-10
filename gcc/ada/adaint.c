@@ -1308,7 +1308,7 @@ __gnat_set_env_value (char *name, char *value)
 	*next = 0;
 	ile_array[i].len = strlen (curr);
 
-	/* Code 2 from lnmdef.h means its a string.  */
+	/* Code 2 from lnmdef.h means it's a string.  */
 	ile_array[i].code = 2;
 	ile_array[i].adr = curr;
 
@@ -2204,7 +2204,7 @@ __gnat_to_canonical_dir_spec (char *dirspec, int prefixflag)
 }
 
 /* Translate a VMS syntax file specification into Unix syntax.
-   If no indicators of VMS syntax found, check if its an uppercase
+   If no indicators of VMS syntax found, check if it's an uppercase
    alphanumeric_ name and if so try it out as an environment
    variable (logical name). If all else fails return the
    input string.  */

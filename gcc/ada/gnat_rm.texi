@@ -521,7 +521,7 @@ of project files.
 @ref{Obsolescent Features} documents implementation dependent features,
 including pragmas and attributes, which are considered obsolescent, since
 there are other preferred ways of achieving the same results. These
-obsolescent forms are retained for backwards compatibilty.
+obsolescent forms are retained for backwards compatibility.
 
 @end itemize
 
@@ -12939,7 +12939,7 @@ example see the body of @code{GNAT.Tables}).
 @node System.Partition_Interface (s-parint.ads)
 @section @code{System.Partition_Interface} (@file{s-parint.ads})
 @cindex @code{System.Partition_Interface} (@file{s-parint.ads})
-@cindex Partition intefacing functions
+@cindex Partition interfacing functions
 
 @noindent
 This package provides facilities for partition interfacing.  It
@@ -14603,7 +14603,7 @@ of the @command{gnatls} utility to be used to retrieve information about the
 predefined path; e.g., @code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
 
 @item VCS_Kind
-This is a simple atribute. Is value is a string used to specify the
+This is a simple attribute. Is value is a string used to specify the
 Version Control System (VCS) to be used for this project, e.g CVS, RCS
 ClearCase or Perforce.
 

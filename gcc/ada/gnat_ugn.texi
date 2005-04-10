@@ -2962,7 +2962,7 @@ in section B.3 of the Ada 95 Reference Manual.
 
 @findex C varargs function
 @cindex Intefacing to C varargs function
-@cindex varargs function intefacs
+@cindex varargs function interfaces
 @item C varargs function
 In C, @code{varargs} allows a function to take a variable number of
 arguments. There is no direct equivalent in this to Ada. One
@@ -4721,7 +4721,7 @@ such warnings are not generated.
 
 In addition to the above cases, warnings are also generated for
 GNAT features that have been provided in past versions but which
-have been superceded (typically by features in the new Ada standard).
+have been superseded (typically by features in the new Ada standard).
 For example, @code{pragma Ravenscar} will be flagged since its
 function is replaced by @code{pragma Profile(Ravenscar)}.
 
@@ -9295,7 +9295,7 @@ the compiler optimizer can "know" that the value @code{Int1V.all} is constant
 for all iterations of the loop and avoid the extra memory reference
 required to dereference it each time through the loop.
 
-This kind of optimziation, called strict aliasing analysis, is
+This kind of optimization, called strict aliasing analysis, is
 triggered by specifying an optimization level of @option{-O2} or
 higher and allows @code{GNAT} to generate more efficient code
 when access values are involved.
@@ -12583,7 +12583,7 @@ Additionally, you may define the library-related attributes
 
 The @code{Library_Name} attribute has a string value. There is no restriction
 on the name of a library. It is the responsability of the developer to
-choose a name that will be accepted by the platform. It is recommanded to
+choose a name that will be accepted by the platform. It is recommended to
 choose names that could be Ada identifiers; such names are almost guaranteed
 to be acceptable on all platforms.
 
@@ -15453,7 +15453,7 @@ for this subword
 
 @item
 if the whole name does not contain any ``_'' inside, and if for this name
-the dictionaty contains two entries - one of the form @var{identifier},
+the dictionary contains two entries - one of the form @var{identifier},
 and another - of the form *@var{simple_identifier}*, then the first one
 is applied to define the casing of this name
 
@@ -16000,7 +16000,7 @@ an explicit list of files.
 @cindex @option{^-v^/VERBOSE^} (@code{gnatmetric})
 Verbose mode;
 @command{gnatmetric} generates version information and then
-a trace of sources being procesed.
+a trace of sources being processed.
 
 @item ^-dv^/DEBUG_OUTPUT^
 @cindex @option{^-dv^/DEBUG_OUTPUT^} (@code{gnatmetric})
