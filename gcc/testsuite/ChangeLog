@@ -1,3 +1,8 @@
+2005-04-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/pr17229.f: Take care of the new obsolescence
+	warning for arithmetic IF statements.
+
 2005-04-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* eor_handling_1.f90: New test case.
