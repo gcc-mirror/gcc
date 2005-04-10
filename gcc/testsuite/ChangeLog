@@ -1,8 +1,13 @@
-2005--4-09  Steven G. Kargl  <kargls@comcast.net>
+2005-04-09  Bud Davis  <bdavis@gfortran.org>
+            Steven G. Kargl <kargls@comcast.net>
+
+	* gfortran.dg/PR19872.f: New test.
+
+2005-04-09  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/nint_1.f90:  Fix dg-do directive
 
-2005--4-09  Steven G. Kargl  <kargls@comcast.net>
+2005-04-09  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/nint_1.f90: New test.
 
