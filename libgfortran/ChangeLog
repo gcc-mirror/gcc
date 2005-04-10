@@ -1,3 +1,11 @@
+2005-04-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20788
+	* runtime/environ.c (init_unsigned_integer): Function for
+	environment variables we want to be positive.
+	(init_integer): Function to allow negative environment
+	variables (e.g. for GFORTRAN_STDIN_UNIT).
+	
 2005-04-10  Thomas Koenig <Thomas.Koenig@online.de>
 
 	PR libfortran/17992
