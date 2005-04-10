@@ -235,6 +235,46 @@ validate_change (rtx object, rtx *loc, rtx new, int in_group)
     return apply_change_group ();
 }
 
+
+/* Function to be passed to for_each_rtx to test whether a piece of
+   RTL contains any mem/v.  */
+static int
+volatile_mem_p (rtx *x, void *data ATTRIBUTE_UNUSED)
+{
+  return (MEM_P (*x) && MEM_VOLATILE_P (*x));
+}
+
+/* Same as validate_change, but doesn't support groups, and it accepts
+   volatile mems if they're already present in the original insn.  */
+
+int
+validate_change_maybe_volatile (rtx object, rtx *loc, rtx new)
+{
+  int result;
+
+  if (validate_change (object, loc, new, 0))
+    return 1;
+
+  if (volatile_ok
+      /* If there isn't a volatile MEM, there's nothing we can do.  */
+      || !for_each_rtx (&PATTERN (object), volatile_mem_p, 0)
+      /* Make sure we're not adding or removing volatile MEMs.  */
+      || for_each_rtx (loc, volatile_mem_p, 0)
+      || for_each_rtx (&new, volatile_mem_p, 0)
+      || !insn_invalid_p (object))
+    return 0;
+
+  volatile_ok = 1;
+
+  gcc_assert (!insn_invalid_p (object));
+
+  result = validate_change (object, loc, new, 0);
+
+  volatile_ok = 0;
+
+  return result;
+}
+
 /* This subroutine of apply_change_group verifies whether the changes to INSN
    were valid; i.e. whether INSN can still be recognized.  */
 
