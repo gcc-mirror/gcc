@@ -97,10 +97,38 @@ var_source (variable * v)
 }
 
 
-/* init_integer()-- Initialize an integer environment variable */
+/* init_integer()-- Initialize an integer environment variable.  */
 
 static void
 init_integer (variable * v)
+{
+  char *p, *q;
+
+  p = getenv (v->name);
+  if (p == NULL)
+    goto set_default;
+
+  for (q = p; *q; q++)
+    if (!isdigit (*q) && (p != q || *q != '-'))
+      {
+	v->bad = 1;
+	goto set_default;
+      }
+
+  *v->var = atoi (p);
+  return;
+
+ set_default:
+  *v->var = v->value;
+  return;
+}
+
+
+/* init_unsigned_integer()-- Initialize an integer environment variable
+   which has to be positive.  */
+
+static void
+init_unsigned_integer (variable * v)
 {
   char *p, *q;
 
@@ -467,7 +495,7 @@ static variable variable_table[] = {
    "Print optional plus signs in numbers where permitted.  Default FALSE."},
 
   {"GFORTRAN_DEFAULT_RECL", DEFAULT_RECL, &options.default_recl,
-   init_integer, show_integer,
+   init_integer, show_unsigned_integer,
    "Default maximum record length for sequential files.  Most useful for\n"
    "adjusting line length of preconnected units.  Default "
    stringize (DEFAULT_RECL)},
