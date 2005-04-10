@@ -1,3 +1,10 @@
+2005-04-09  Bud Davis  <bdavis@gfortran.org>
+            Steven G. Kargl <kargls@comcast.net>
+
+	PR fortran/19872
+	* io/transfer.c (data_transfer_init): truncate an existing
+	file on the first write.
+
 2005-04-09  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/19106
