@@ -1318,7 +1318,7 @@ long __gnat_error_handler (int *, void *);
    still need to be handled by such handlers, however, in which case
    __gnat_error_handler needs to return SS$_RESIGNAL.  Consider for
    instance the use of a third party library compiled with DECAda and
-   performing it's own exception handling internally.
+   performing its own exception handling internally.
 
    To allow some user-level flexibility, which conditions should be
    resignaled is controlled by a predicate function, provided with the

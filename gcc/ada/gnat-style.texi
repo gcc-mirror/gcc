@@ -332,7 +332,7 @@ sufficient, as comments.
 @node    Declarations and Types, Expressions and Names, Lexical Elements,Top
 @section Declarations and Types
 @c  -------------------------------------------------------------------------
-@cindex Declarationa and Types
+@cindex Declarations and Types
 
 @itemize @bullet
 @item

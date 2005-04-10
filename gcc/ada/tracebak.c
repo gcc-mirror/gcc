@@ -212,7 +212,7 @@ struct layout
    function is located in it's caller's frame, and the save operation only
    takes place if the function performs a call.
 
-   To have __gnat_backtrace retrieve it's own return address, we then
+   To have __gnat_backtrace retrieve its own return address, we then
    define ... */
 
 #define FORCE_CALL
