@@ -390,7 +390,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
             }
           STMT_VINFO_VECTYPE (stmt_info) = vectype;
 
-          nunits = GET_MODE_NUNITS (TYPE_MODE (vectype));
+          nunits = TYPE_VECTOR_SUBPARTS (vectype);
           if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
             fprintf (vect_dump, "nunits = %d", nunits);
 

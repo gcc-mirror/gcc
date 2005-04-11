@@ -1,3 +1,10 @@
+2005-04-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-vect-analyze (vect_determine_vectorization_factor):
+	Do not use GET_MODE_NUNITS.
+	* tree-vect-transform.c (vect_get_vec_def_for_operand,
+	(vectorizable_load, vect_transform_loop): Likewise.
+
 2005-04-11  Uros Bizjak  <uros@kss-loka.si>
 
 	* builtins.def (BUILT_IN_LCEIL, BUILT_IN_LCEILF, BUILT_IN_LCEILL)

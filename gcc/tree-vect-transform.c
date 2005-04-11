@@ -514,7 +514,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt)
   stmt_vec_info def_stmt_info = NULL;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
-  int nunits = GET_MODE_NUNITS (TYPE_MODE (vectype));
+  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block bb;
@@ -1073,7 +1073,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
       /* <2> Create lsq = *(floor(p2')) in the loop  */ 
       offset = build_int_cst (integer_type_node, 
-			      GET_MODE_NUNITS (TYPE_MODE (vectype)));
+			      TYPE_VECTOR_SUBPARTS (vectype));
       offset = int_const_binop (MINUS_EXPR, offset, integer_one_node, 1);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       dataref_ptr = vect_create_data_ref_ptr (stmt, bsi, offset, &dummy, false);
@@ -1826,7 +1826,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	  /* FORNOW: Verify that all stmts operate on the same number of
 	             units and no inner unrolling is necessary.  */
 	  gcc_assert 
-		(GET_MODE_NUNITS (TYPE_MODE (STMT_VINFO_VECTYPE (stmt_info)))
+		(TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
 		 == vectorization_factor);
 #endif
 	  /* -------- vectorize statement ------------ */
