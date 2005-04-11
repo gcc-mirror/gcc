@@ -1,3 +1,12 @@
+2005-04-11  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/20920
+	* tree-pretty-print.c (dump_generic_node): Show '(ab)' if an
+	SSA_NAME flows through an abnormal edge.
+	* tree-vrp.c (infer_value_range): Ignore SSA names that flow
+	through abnormal edges.
+	(maybe_add_assert_expr): Likewise.
+
 2005-04-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/s390/s390.h (s390_tune_string, s390_arch_string)

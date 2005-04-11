@@ -1416,6 +1416,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       dump_generic_node (buffer, SSA_NAME_VAR (node), spc, flags, false);
       pp_string (buffer, "_");
       pp_decimal_int (buffer, SSA_NAME_VERSION (node));
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (node))
+	pp_string (buffer, "(ab)");
       break;
 
     case WITH_SIZE_EXPR:
