@@ -1,3 +1,27 @@
+2005-04-11  Uros Bizjak  <uros@kss-loka.si>
+
+	* builtins.def (BUILT_IN_LCEIL, BUILT_IN_LCEILF, BUILT_IN_LCEILL)
+	(BUILT_IN_LLCEIL, BUILT_IN_LLCEILF, BUILT_IN_LLCEILL): New.
+	* optabs.h (enum optab_index): Add new OTI_lceil.
+	(lceil_optab): Define corresponding macro.
+	* optabs.c (init_optabs): Initialize lceil_optab.
+	* genopinit.c (optabs): Implement lceil_optab using lceilsi2
+	and lceildi2 patterns.
+	* builtins.c (expand_builtin_int_roundingfn): Handle
+	BUILT_IN_LCEIL{,F,L} and BUILT_IN_LLCEIL{,F,L}.
+	(fold_builtin_int_roundingfn): Handle BUILT_IN_LCEIL{,F,L} and
+	BUILT_IN_LLCEIL{,F,L}.
+	(fold_builtin_1): Fold BUILT_IN_LCEIL{,F,L} and
+	BUILT_IN_LLCEIL{,F,L} using fold_builtin_int_roundingfn.
+	(mathfn_built_in): Handle BUILT_IN LCEIL and BUILT_IN_LLCEIL.
+	(expand_builtin): Expand BUILT_IN_LCEIL{,F,L} and
+	BUILT_IN_LLCEIL{,F,L} using expand_builtin_int_roundingfn.
+	* convert.c (convert_to_integer): Convert (long int)ceil{,f,l},
+	into lceil built-in function and (long long int)ceil{,f,l} into
+	llceil built-in function.
+	* fold-const.c (tree_expr_nonnegative_p): Add BUILT_IN_LCEIL and
+	BUILT_IN_LLCEIL.
+
 2005-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/quadlib.c (_U_Qfneg): Toggle sign bit instead of subtracting from
