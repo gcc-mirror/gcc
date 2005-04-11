@@ -1,5 +1,5 @@
 /* Subroutines for long double support.
-   Copyright (C) 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -160,11 +160,19 @@ _U_Qfcomp (long double a, long double b)
 }
 
 
-/* This violates the IEEE standard.  It is better to multiply by -1.0L.  */
+/* Negate long double A.  */
 long double
 _U_Qfneg (long double a)
 {
-  return (0.0L - a);
+  union
+   {
+     long double ld;
+     int i[4];
+   } u;
+
+  u.ld = a;
+  u.i[0] ^= 0x80000000;
+  return u.ld;
 }
 
 #ifdef __LP64__

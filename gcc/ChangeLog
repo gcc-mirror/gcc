@@ -1,3 +1,8 @@
+2005-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/quadlib.c (_U_Qfneg): Toggle sign bit instead of subtracting from
+	zero.
+
 2005-04-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/arm/arm.c: Fix a comment typo.
