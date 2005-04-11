@@ -2,6 +2,8 @@
 
 	* tree-vrp.c (maybe_add_assert_expr): Move a comment.
 
+	* tree-vrp.c: Fix a comment typo.
+
 2005-04-11  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/20920

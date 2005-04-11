@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-chrec.h"
 
 /* Set of SSA names found during the dominator traversal of a
-   sub-graph in maybe_add_assert_expr_on_edges.  */
+   sub-graph in maybe_add_assert_expr.  */
 static sbitmap found;
 
 /* Loop structure of the program.  Used to analyze scalar evolutions
