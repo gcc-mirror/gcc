@@ -707,16 +707,37 @@ verify_ssa (bool check_modified_stmt)
 	      goto err;
 	    }
 
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && TREE_CODE (TREE_OPERAND (stmt, 0)) != SSA_NAME)
+	    {
+	      tree lhs, base_address;
 
-	      if (stmt_ann (stmt)->makes_aliased_stores 
-		  && NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0)
+	      lhs = TREE_OPERAND (stmt, 0);
+	      base_address = get_base_address (lhs);
+
+	      if (base_address
+		  && SSA_VAR_P (base_address)
+		  && NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0
+		  && NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt)) == 0)
 		{
-		  error ("Statement makes aliased stores, but has no V_MAY_DEFS");
+		  error ("Statement makes a memory store, but has no "
+			 "V_MAY_DEFS nor V_MUST_DEFS");
 		  print_generic_stmt (stderr, stmt, TDF_VOPS);
 		  goto err;
 		}
+	    }
 
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
+
+	  if (stmt_ann (stmt)->makes_aliased_stores 
+	      && NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0)
+	    {
+	      error ("Statement makes aliased stores, but has no V_MAY_DEFS");
+	      print_generic_stmt (stderr, stmt, TDF_VOPS);
+	      goto err;
+	    }
+
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter,
+	                            SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
 	    {
 	      op = USE_FROM_PTR (use_p);
 	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],

@@ -1001,10 +1001,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	  if (!tag_stored_p && !var_stored_p)
 	    continue;
 
-	  if ((unmodifiable_var_p (tag) && !unmodifiable_var_p (var))
-	      || (unmodifiable_var_p (var) && !unmodifiable_var_p (tag)))
-	    continue;
-
 	  if (may_alias_p (p_map->var, p_map->set, var, v_map->set))
 	    {
 	      subvar_t svars;
@@ -1719,6 +1715,16 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
       return false;
     }
 
+  /* If either MEM or VAR is a read-only global and the other one
+     isn't, then PTR cannot point to VAR.  */
+  if ((unmodifiable_var_p (mem) && !unmodifiable_var_p (var))
+      || (unmodifiable_var_p (var) && !unmodifiable_var_p (mem)))
+    {
+      alias_stats.alias_noalias++;
+      alias_stats.simple_resolved++;
+      return false;
+    }
+
   m_ann = var_ann (mem);
 
   gcc_assert (m_ann->mem_tag_kind == TYPE_TAG);
@@ -2319,9 +2325,11 @@ get_tmt_for (tree ptr, struct alias_info *ai)
   for (i = 0, tag = NULL_TREE; i < ai->num_pointers; i++)
     {
       struct alias_map_d *curr = ai->pointers[i];
-      if (tag_set == curr->set)
+      tree curr_tag = var_ann (curr->var)->type_mem_tag;
+      if (tag_set == curr->set
+	  && TYPE_READONLY (tag_type) == TYPE_READONLY (TREE_TYPE (curr_tag)))
 	{
-	  tag = var_ann (curr->var)->type_mem_tag;
+	  tag = curr_tag;
 	  break;
 	}
     }
@@ -2355,6 +2363,10 @@ get_tmt_for (tree ptr, struct alias_info *ai)
   /* Make sure that the type tag has the same alias set as the
      pointed-to type.  */
   gcc_assert (tag_set == get_alias_set (tag));
+
+  /* If PTR's pointed-to type is read-only, then TAG's type must also
+     be read-only.  */
+  gcc_assert (TYPE_READONLY (tag_type) == TYPE_READONLY (TREE_TYPE (tag)));
 
   return tag;
 }
