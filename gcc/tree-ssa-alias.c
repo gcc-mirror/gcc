@@ -1708,6 +1708,16 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
       alias_stats.simple_resolved++;
       return false;
     }
+  
+  /* If -fargument-noalias-global is >1, pointer arguments may
+     not point to global variables.  */
+  if (flag_argument_noalias > 1 && is_global_var (var)
+      && TREE_CODE (ptr) == PARM_DECL)
+    {
+      alias_stats.alias_noalias++;
+      alias_stats.simple_resolved++;
+      return false;
+    }
 
   m_ann = var_ann (mem);
 
