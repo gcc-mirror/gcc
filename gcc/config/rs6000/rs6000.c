@@ -10676,9 +10676,11 @@ rs6000_emit_vector_select (rtx dest, rtx op1, rtx op2, rtx mask)
 
   temp = gen_reg_rtx (dest_mode);
 
+  /* For each vector element, select op1 when mask is 1 otherwise 
+     select op2.  */
   t = gen_rtx_fmt_ee (SET, VOIDmode, temp,
 		      gen_rtx_fmt_Ei (UNSPEC, dest_mode,
-				      gen_rtvec (3, op1, op2, mask),
+				      gen_rtvec (3, op2, op1, mask),
 				      vsel_insn_index));
   emit_insn (t);
   emit_move_insn (dest, temp);
