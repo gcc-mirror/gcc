@@ -1503,11 +1503,6 @@ maybe_add_assert_expr (basic_block bb)
       
       cond = COND_EXPR_COND (last);
 
-      /* Remove the COND_EXPR operand from the FOUND bitmap.
-	 Otherwise, when we finish traversing each of the sub-graphs,
-	 we won't know whether the variables were found in the
-	 sub-graphs or if they had been found in a block upstream from
-	 BB.  */
       op = USE_OP (uses, 0);
 
       /* Do not attempt to infer anything in names that flow through
@@ -1515,6 +1510,11 @@ maybe_add_assert_expr (basic_block bb)
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
 	return false;
 
+      /* Remove the COND_EXPR operand from the FOUND bitmap.
+	 Otherwise, when we finish traversing each of the sub-graphs,
+	 we won't know whether the variables were found in the
+	 sub-graphs or if they had been found in a block upstream from
+	 BB.  */
       RESET_BIT (found, SSA_NAME_VERSION (op));
 
       /* Look for uses of the operands in each of the sub-graphs
