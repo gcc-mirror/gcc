@@ -1,3 +1,7 @@
+2005-04-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* simplify.c (gfc_simplify_nearest): Overhaul.
+
 2005-04-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* interface.c: Fix a comment typo.

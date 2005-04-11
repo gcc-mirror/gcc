@@ -2263,64 +2263,82 @@ gfc_expr *
 gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
 {
   gfc_expr *result;
-  float rval;
-  double val, eps;
-  int p, i, k, match_float;
+  mpfr_t tmp;
+  int direction, sgn;
 
-  /* FIXME: This implementation is dopey and probably not quite right,
-     but it's a start.  */
-
-  if (x->expr_type != EXPR_CONSTANT)
+  if (x->expr_type != EXPR_CONSTANT || s->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
+  gfc_set_model_kind (x->ts.kind);
+  result = gfc_copy_expr (x);
 
-  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  direction = mpfr_sgn (s->value.real);
 
-  val = mpfr_get_d (x->value.real, GFC_RND_MODE);
-  p = gfc_real_kinds[k].digits;
-
-  eps = 1.;
-  for (i = 1; i < p; ++i)
+  if (direction == 0)
     {
-      eps = eps / 2.;
+      gfc_error ("Second argument of NEAREST at %L may not be zero",
+		 &s->where);
+      gfc_free (result);
+      return &gfc_bad_expr;
     }
 
-  /* TODO we should make sure that 'float' matches kind 4 */
-  match_float = gfc_real_kinds[k].kind == 4;
-  if (mpfr_cmp_ui (s->value.real, 0) > 0)
+  /* TODO: Use mpfr_nextabove and mpfr_nextbelow once we move to a
+     newer version of mpfr.  */
+
+  sgn = mpfr_sgn (x->value.real);
+
+  if (sgn == 0)
     {
-      if (match_float)
-	{
-	  rval = (float) val;
-	  rval = rval + eps;
-	  mpfr_set_d (result->value.real, rval, GFC_RND_MODE);
-	}
+      int k = gfc_validate_kind (BT_REAL, x->ts.kind, 0);
+
+      if (direction > 0)
+	mpfr_add (result->value.real,
+		  x->value.real, gfc_real_kinds[k].tiny, GFC_RND_MODE);
       else
-	{
-	  val = val + eps;
-	  mpfr_set_d (result->value.real, val, GFC_RND_MODE);
-	}
-    }
-  else if (mpfr_cmp_ui (s->value.real, 0) < 0)
-    {
-      if (match_float)
-	{
-	  rval = (float) val;
-	  rval = rval - eps;
-	  mpfr_set_d (result->value.real, rval, GFC_RND_MODE);
-	}
-      else
-	{
-	  val = val - eps;
-	  mpfr_set_d (result->value.real, val, GFC_RND_MODE);
-	}
+	mpfr_sub (result->value.real,
+		  x->value.real, gfc_real_kinds[k].tiny, GFC_RND_MODE);
+
+#if 0
+      /* FIXME: This gives an arithmetic error because we compare
+	 against tiny when range-checking.  Also, it doesn't give the
+	 right value.  */
+      /* TINY is the smallest model number, we want the smallest
+	 machine representable number.  Therefore we have to shift the
+	 value to the right by the number of digits - 1.  */
+      mpfr_div_2ui (result->value.real, result->value.real,
+		    gfc_real_kinds[k].precision - 1, GFC_RND_MODE);
+#endif
     }
   else
     {
-      gfc_error ("Invalid second argument of NEAREST at %L", &s->where);
-      gfc_free (result);
-      return &gfc_bad_expr;
+      if (sgn < 0)
+	{
+	  direction = -direction;
+	  mpfr_neg (result->value.real, result->value.real, GFC_RND_MODE);
+	}
+
+      if (direction > 0)
+	mpfr_add_one_ulp (result->value.real, GFC_RND_MODE);
+      else
+	{
+	  /* In this case the exponent can shrink, which makes us skip
+	     over one number because we substract one ulp with the
+	     larger exponent.  Thus we need to compensate for this.  */
+	  mpfr_init_set (tmp, result->value.real, GFC_RND_MODE);
+
+	  mpfr_sub_one_ulp (result->value.real, GFC_RND_MODE);
+	  mpfr_add_one_ulp (result->value.real, GFC_RND_MODE);
+
+	  /* If we're back to where we started, the spacing is one
+	     ulp, and we get the correct result by subtracting.  */
+	  if (mpfr_cmp (tmp, result->value.real) == 0)
+	    mpfr_sub_one_ulp (result->value.real, GFC_RND_MODE);
+
+	  mpfr_clear (tmp);
+	}
+
+      if (sgn < 0)
+	mpfr_neg (result->value.real, result->value.real, GFC_RND_MODE);
     }
 
   return range_check (result, "NEAREST");
