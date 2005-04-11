@@ -54,6 +54,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 static bool s390_assemble_integer (rtx, unsigned int, int);
+static bool s390_handle_option (size_t, const char *, int);
 static void s390_encode_section_info (tree, rtx, int);
 static bool s390_cannot_force_const_mem (rtx);
 static rtx s390_delegitimize_address (rtx);
@@ -197,6 +198,11 @@ struct processor_costs z990_cost =
 #undef  TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN ""
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_FUSED_MADD)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION s390_handle_option
+
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
 
@@ -293,23 +299,14 @@ struct s390_address
 };
 
 /* Which cpu are we tuning for.  */
-enum processor_type s390_tune;
+enum processor_type s390_tune = PROCESSOR_max;
 enum processor_flags s390_tune_flags;
 /* Which instruction set architecture to use.  */
 enum processor_type s390_arch;
 enum processor_flags s390_arch_flags;
-
-/* Strings to hold which cpu and instruction set architecture  to use.  */
-const char *s390_tune_string;		/* for -mtune=<xxx> */
-const char *s390_arch_string;		/* for -march=<xxx> */
-
-const char *s390_warn_framesize_string;
-const char *s390_warn_dynamicstack_string;
-const char *s390_stack_size_string;
-const char *s390_stack_guard_string;
+static const char *s390_arch_string;
 
 HOST_WIDE_INT s390_warn_framesize = 0;
-bool s390_warn_dynamicstack_p = 0;
 HOST_WIDE_INT s390_stack_size = 0;
 HOST_WIDE_INT s390_stack_guard = 0;
 
@@ -1244,10 +1241,14 @@ optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
   flag_asynchronous_unwind_tables = 1;
 }
 
-void
-override_options (void)
+/* Return true if ARG is the name of a processor.  Set *TYPE and *FLAGS
+   to the associated processor_type and processor_flags if so.  */
+
+static bool
+s390_handle_arch_option (const char *arg,
+			 enum processor_type *type,
+			 enum processor_flags *flags)
 {
-  int i;
   static struct pta
     {
       const char *const name;		/* processor name or nickname.  */
@@ -1262,9 +1263,57 @@ override_options (void)
       {"z990", PROCESSOR_2084_Z990, PF_IEEE_FLOAT | PF_ZARCH
 				    | PF_LONG_DISPLACEMENT},
     };
+  size_t i;
 
-  int const pta_size = ARRAY_SIZE (processor_alias_table);
+  for (i = 0; i < ARRAY_SIZE (processor_alias_table); i++)
+    if (strcmp (arg, processor_alias_table[i].name) == 0)
+      {
+	*type = processor_alias_table[i].processor;
+	*flags = processor_alias_table[i].flags;
+	return true;
+      }
+  return false;
+}
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+s390_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_march_:
+      s390_arch_string = arg;
+      return s390_handle_arch_option (arg, &s390_arch, &s390_arch_flags);
+
+    case OPT_mstack_guard_:
+      if (sscanf (arg, HOST_WIDE_INT_PRINT_DEC, &s390_stack_guard) != 1)
+	return false;
+      if (exact_log2 (s390_stack_guard) == -1)
+	error ("stack guard value must be an exact power of 2");
+      return true;
+
+    case OPT_mstack_size_:
+      if (sscanf (arg, HOST_WIDE_INT_PRINT_DEC, &s390_stack_size) != 1)
+	return false;
+      if (exact_log2 (s390_stack_size) == -1)
+	error ("stack size must be an exact power of 2");
+      return true;
+
+    case OPT_mtune_:
+      return s390_handle_arch_option (arg, &s390_tune, &s390_tune_flags);
+
+    case OPT_mwarn_framesize_:
+      return sscanf (arg, HOST_WIDE_INT_PRINT_DEC, &s390_warn_framesize) == 1;
+
+    default:
+      return true;
+    }
+}
+
+void
+override_options (void)
+{
   /* Acquire a unique set number for our register saves and restores.  */
   s390_sr_alias_set = new_alias_set ();
 
@@ -1282,36 +1331,16 @@ override_options (void)
 
   /* Determine processor architectural level.  */
   if (!s390_arch_string)
-    s390_arch_string = TARGET_ZARCH? "z900" : "g5";
-
-  for (i = 0; i < pta_size; i++)
-    if (! strcmp (s390_arch_string, processor_alias_table[i].name))
-      {
-	s390_arch = processor_alias_table[i].processor;
-	s390_arch_flags = processor_alias_table[i].flags;
-	break;
-      }
-  if (i == pta_size)
-    error ("Unknown cpu used in -march=%s.", s390_arch_string);
+    {
+      s390_arch_string = TARGET_ZARCH? "z900" : "g5";
+      s390_handle_arch_option (s390_arch_string, &s390_arch, &s390_arch_flags);
+    }
 
   /* Determine processor to tune for.  */
-  if (!s390_tune_string)
+  if (s390_tune == PROCESSOR_max)
     {
       s390_tune = s390_arch;
       s390_tune_flags = s390_arch_flags;
-      s390_tune_string = s390_arch_string;
-    }
-  else
-    {
-      for (i = 0; i < pta_size; i++)
-	if (! strcmp (s390_tune_string, processor_alias_table[i].name))
-	  {
-	    s390_tune = processor_alias_table[i].processor;
-	    s390_tune_flags = processor_alias_table[i].flags;
-	    break;
-	  }
-      if (i == pta_size)
-	error ("Unknown cpu used in -mtune=%s.", s390_tune_string);
     }
 
   /* Sanity checks.  */
@@ -1332,42 +1361,14 @@ override_options (void)
     error ("-mbackchain -mpacked-stack -mhard-float are not supported "
 	   "in combination.");
 
-  if (s390_warn_framesize_string)
+  if (s390_stack_size)
     {
-      if (sscanf (s390_warn_framesize_string, HOST_WIDE_INT_PRINT_DEC,
-		  &s390_warn_framesize) != 1)
-	error ("invalid value for -mwarn-framesize");
-    }
-
-  if (s390_warn_dynamicstack_string)
-    s390_warn_dynamicstack_p = 1;
-  
-  if (s390_stack_size_string)
-    {
-      if (sscanf (s390_stack_size_string, HOST_WIDE_INT_PRINT_DEC, 
-		  &s390_stack_size) != 1)
-	error ("invalid value for -mstack-size");
-      
-      if (exact_log2 (s390_stack_size) == -1)
-	error ("stack size must be an exact power of 2");
-      
-      if (s390_stack_guard_string)
-	{
-	  if (sscanf (s390_stack_guard_string, HOST_WIDE_INT_PRINT_DEC, 
-		      &s390_stack_guard) != 1)
-	    error ("invalid value for -mstack-guard");
-	  
-	  if (s390_stack_guard >= s390_stack_size)
-	    error ("stack size must be greater than the stack guard value");
- 
-	  if (exact_log2 (s390_stack_guard) == -1)
-	    error ("stack guard value must be an exact power of 2");
-	}
-      else
+      if (!s390_stack_guard)
 	error ("-mstack-size implies use of -mstack-guard");
+      else if (s390_stack_guard >= s390_stack_size)
+	error ("stack size must be greater than the stack guard value");
     }
-  
-  if (s390_stack_guard_string && !s390_stack_size_string)
+  else if (s390_stack_guard)
     error ("-mstack-guard implies use of -mstack-size"); 
 }
 
