@@ -193,3 +193,7 @@ do {									\
 #undef TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS  1
 
+#ifndef _AIX52
+extern long long int    atoll(const char *);  
+#endif
+
