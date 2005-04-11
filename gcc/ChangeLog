@@ -350,6 +350,11 @@
 	* c-pretty-print.c (pp_c_statement): Likewise.
 	* c-semantics.c (build_break_stmt, build_continue_stmt): Remove.
 
+2005-04-08  Devang Patel  <dpatel@apple.com>
+
+	* tree-if-conv.c (find_phi_replacement_condition): New parameter, loop.
+	While selecting replacement condition pay attention to loop header.
+
 2005-04-08  Diego Novillo  <dnovillo@redhat.com>
 
 	Merge from tree-cleanup-branch: VRP, store CCP, store
