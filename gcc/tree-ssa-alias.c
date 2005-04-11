@@ -2704,6 +2704,7 @@ add_type_alias (tree ptr, tree var)
   varray_type aliases;
   tree tag;
   var_ann_t ann = var_ann (ptr);
+  subvar_t svars;
 
   if (ann->type_mem_tag == NULL_TREE)
     {
@@ -2748,7 +2749,18 @@ found_tag:
      for PTR's type tag.  */
   gcc_assert (var_ann (var)->type_mem_tag == NOT_A_TAG);
   tag = ann->type_mem_tag;
-  add_may_alias (tag, var);
+
+  /* If VAR has subvars, add the subvars to the tag instead of the
+     actual var.  */
+  if (var_can_have_subvars (var)
+      && (svars = get_subvars_for_var (var)))
+    {
+      subvar_t sv;      
+      for (sv = svars; sv; sv = sv->next)
+	add_may_alias (tag, sv->var);
+    }
+  else
+    add_may_alias (tag, var);
 
   /* TAG and its set of aliases need to be marked for renaming.  */
   mark_sym_for_renaming (tag);

@@ -1,3 +1,9 @@
+2005-04-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/20926
+	
+	* tree-ssa-alias.c (add_type_alias): Handle subvars.
+	
 2005-04-11  Devang Patel  <dpatel@apple.com>
 
 	* config/rs6000.c (rs6000_emit_vector_select): Fix vector select
