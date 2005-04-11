@@ -986,7 +986,10 @@ expand_vector_operations (void)
   FOR_EACH_BB (bb)
     {
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	expand_vector_operations_1 (&bsi);
+	{
+	  expand_vector_operations_1 (&bsi);
+	  update_stmt_if_modified (bsi_stmt (bsi));
+	}
     }
 }
 
