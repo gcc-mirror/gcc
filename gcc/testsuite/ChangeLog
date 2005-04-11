@@ -1,3 +1,7 @@
+2005-04-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/fold_nearest.f90: New test.
+
 2005-04-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/tree-ssa/alias-1.c: New test.
