@@ -1,3 +1,11 @@
+2005-04-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* fold-const.c (fold_binary_op_with_conditional_arg):
+	use fold_buildN instead of "fold (buildN" in some
+	non obvious places.
+	(fold_unary): Likewise.
+	(fold_binary): Likewise.
+
 2005-04-11  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/20612
