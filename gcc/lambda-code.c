@@ -1874,6 +1874,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       lambda_linear_expression offset;
       tree type;
       bool insert_after;
+      tree inc_stmt;
 
       oldiv = VEC_index (tree, old_ivs, i);
       type = TREE_TYPE (oldiv);
@@ -1922,7 +1923,20 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       create_iv (newlowerbound,
 		 build_int_cst (type, LL_STEP (newloop)),
 		 ivvar, temp, &bsi, insert_after, &ivvar,
-		 &ivvarinced);
+		 NULL);
+
+      /* Unfortunately, the incremented ivvar that create_iv inserted may not
+	 dominate the block containing the exit condition.
+	 So we simply create our own incremented iv to use in the new exit
+	 test,  and let redundancy elimination sort it out.  */
+      inc_stmt = build (PLUS_EXPR, type, 
+			ivvar, build_int_cst (type, LL_STEP (newloop)));
+      inc_stmt = build (MODIFY_EXPR, void_type_node, SSA_NAME_VAR (ivvar),
+			inc_stmt);
+      ivvarinced = make_ssa_name (SSA_NAME_VAR (ivvar), inc_stmt);
+      TREE_OPERAND (inc_stmt, 0) = ivvarinced;
+      bsi = bsi_for_stmt (exitcond);
+      bsi_insert_before (&bsi, inc_stmt, BSI_SAME_STMT);
 
       /* Replace the exit condition with the new upper bound
          comparison.  */
@@ -2375,7 +2389,6 @@ perfect_nestify (struct loops *loops,
   add_bb_to_loop (latchbb, newloop);
   add_bb_to_loop (bodybb, newloop);
   add_bb_to_loop (headerbb, newloop);
-  add_bb_to_loop (preheaderbb, olddest->loop_father);
   set_immediate_dominator (CDI_DOMINATORS, bodybb, headerbb);
   set_immediate_dominator (CDI_DOMINATORS, headerbb, preheaderbb);
   set_immediate_dominator (CDI_DOMINATORS, preheaderbb, 

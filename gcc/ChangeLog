@@ -1,3 +1,11 @@
+2005-04-11  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/20612
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Fix increment
+	handling
+	(perfect_nestify): preheaderbb is *not* part of loop of the
+	old destination.
+
 2005-04-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-ssa-alias.c (may_alias_p): If the variable
