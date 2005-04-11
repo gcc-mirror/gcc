@@ -1,3 +1,10 @@
+2005-04-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-ssa-alias.c (may_alias_p): If the variable
+	is a global variable and the pointer is parameter
+	and -fargument-noalias-global is used, then
+	the pointer cannot alias the variable.
+
 2005-04-11  James A. Morrison  <phython@gcc.gnu.org>
 
 	* config/sparc/sparc.c: Use gcc_assert and gcc_unreachable.
