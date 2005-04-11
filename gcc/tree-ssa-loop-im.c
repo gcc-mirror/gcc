@@ -37,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "params.h"
 #include "tree-pass.h"
 #include "flags.h"
+#include "real.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -562,7 +563,7 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 {
   enum move_pos pos;
   block_stmt_iterator bsi;
-  tree stmt;
+  tree stmt, rhs;
   bool maybe_never = ALWAYS_EXECUTED_IN (bb) == NULL;
   struct loop *outermost = ALWAYS_EXECUTED_IN (bb);
 
@@ -586,6 +587,47 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	      outermost = NULL;
 	    }
 	  continue;
+	}
+
+      /* If divisor is invariant, convert a/b to a*(1/b), allowing reciprocal
+	 to be hoisted out of loop, saving expensive divide.  */
+      if (pos == MOVE_POSSIBLE
+	  && (rhs = TREE_OPERAND (stmt, 1)) != NULL
+	  && TREE_CODE (rhs) == RDIV_EXPR
+	  && flag_unsafe_math_optimizations
+	  && outermost_invariant_loop_expr (TREE_OPERAND (rhs, 1),
+					    loop_containing_stmt (stmt)) != NULL
+	  && outermost_invariant_loop_expr (rhs,
+					    loop_containing_stmt (stmt)) == NULL)
+	{
+	  tree lhs, stmt1, stmt2, var, name;
+
+	  lhs = TREE_OPERAND (stmt, 0);
+
+	  /* stmt must be MODIFY_EXPR.  */
+	  var = create_tmp_var (TREE_TYPE (rhs), "reciptmp");
+	  add_referenced_tmp_var (var);
+
+	  stmt1 = build2 (MODIFY_EXPR, void_type_node, var,
+			  build2 (RDIV_EXPR, TREE_TYPE (rhs),
+				  build_real (TREE_TYPE (rhs), dconst1),
+				  TREE_OPERAND (rhs, 1)));
+	  name = make_ssa_name (var, stmt1);
+	  TREE_OPERAND (stmt1, 0) = name;
+	  stmt2 = build2 (MODIFY_EXPR, void_type_node, lhs,
+			  build2 (MULT_EXPR, TREE_TYPE (rhs),
+				  name, TREE_OPERAND (rhs, 0)));
+
+	  /* Replace division stmt with reciprocal and multiply stmts.
+	     The multiply stmt is not invariant, so update iterator
+	     and avoid rescanning.  */
+	  bsi_replace (&bsi, stmt1, true);
+	  get_stmt_operands (stmt1);  /* Should not be necessary.  */
+	  bsi_insert_after (&bsi, stmt2, BSI_NEW_STMT);
+	  SSA_NAME_DEF_STMT (lhs) = stmt2;
+
+	  /* Continue processing with invariant reciprocal statment.  */
+	  stmt = stmt1;
 	}
 
       stmt_ann (stmt)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));

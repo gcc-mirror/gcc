@@ -1,3 +1,11 @@
+2005-04-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* tree-ssa-loop-im.c: Include real.h.
+	(determine_invariantness_stmt): If real division divisor is
+	invariant and flag_unsafe_math_optimizations enabled, generate
+	invariant reciprocal for hoisting.
+	* Makefile.in (tree-ssa-loop-im.o): Add real.h dependency.
+
 2005-04-11  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/20926
