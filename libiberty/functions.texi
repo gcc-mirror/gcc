@@ -362,6 +362,16 @@ and inode numbers.
 
 @end deftypefn
 
+@c fopen_unlocked.c:32
+@deftypefn Extension FILE * fdopen_unlocked (int @var{fildes}, const char * @var{mode})
+
+Opens and returns a @code{FILE} pointer via @code{fdopen}.  If the
+operating system supports it, ensure that the stream is setup to avoid
+any multi-threaded locking.  Otherwise return the @code{FILE} pointer
+unchanged.
+
+@end deftypefn
+
 @c ffs.c:3
 @deftypefn Supplemental int ffs (int @var{valu})
 
@@ -421,6 +431,16 @@ Ignores case when performing the comparison.
 
 @end deftypefn
 
+@c fopen_unlocked.c:23
+@deftypefn Extension FILE * fopen_unlocked (const char *@var{path}, const char * @var{mode})
+
+Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
+operating system supports it, ensure that the stream is setup to avoid
+any multi-threaded locking.  Otherwise return the @code{FILE} pointer
+unchanged.
+
+@end deftypefn
+
 @c argv.c:94
 @deftypefn Extension void freeargv (char **@var{vector})
 
@@ -428,6 +448,16 @@ Free an argument vector that was built using @code{buildargv}.  Simply
 scans through @var{vector}, freeing the memory for each argument until
 the terminating @code{NULL} is found, and then frees @var{vector}
 itself.
+
+@end deftypefn
+
+@c fopen_unlocked.c:41
+@deftypefn Extension FILE * freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
+
+Opens and returns a @code{FILE} pointer via @code{freopen}.  If the
+operating system supports it, ensure that the stream is setup to avoid
+any multi-threaded locking.  Otherwise return the @code{FILE} pointer
+unchanged.
 
 @end deftypefn
 

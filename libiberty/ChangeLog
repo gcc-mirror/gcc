@@ -1,3 +1,15 @@
+2005-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (CFILES): Add fopen_unlocked.c.
+	(REQUIRED_OFILES): Add ./fopen_unlocked.o.
+	Regenerate dependencies.
+
+	* configure.ac: Check for stdio_ext.h and __fsetlocking.
+
+	* fopen_unlocked.c: New file.
+
+	* functions.texi, configure, config.in: Regenerate.
+
 2005-04-04  Ian Lance Taylor  <ian@airs.com>
 
 	* testsuite/test-pexecute.c (TEST_PEX_RUN): Move variable

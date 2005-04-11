@@ -151,6 +151,9 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
+/* Define to 1 if you have the <stdio_ext.h> header file. */
+#undef HAVE_STDIO_EXT_H
+
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
@@ -321,6 +324,9 @@
 
 /* Define if you have the _system_configuration variable. */
 #undef HAVE__SYSTEM_CONFIGURATION
+
+/* Define to 1 if you have the `__fsetlocking' function. */
+#undef HAVE___FSETLOCKING
 
 /* Define if the host machine stores words of multi-word integers in
    big-endian order. */
