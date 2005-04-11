@@ -1387,7 +1387,7 @@
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
 #       define CPP_WORDSZ 64
-#       define STACKBOTTOM ((ptr_t) 0x120000000)
+#       define LINUX_STACKBOTTOM
 #       ifdef __ELF__
 #	  define SEARCH_FOR_DATA_START
 #	  define DATASTART GC_data_start
