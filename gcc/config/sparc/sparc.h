@@ -2571,10 +2571,9 @@ extern int sparc_indent_opcode;
 	base = XEXP (addr, 0), index = XEXP (addr, 1);		\
       if (GET_CODE (base) == LO_SUM)				\
 	{							\
-	  if (! USE_AS_OFFSETABLE_LO10				\
-	      || TARGET_ARCH32					\
-	      || TARGET_CM_MEDMID)				\
-	    abort ();						\
+	  gcc_assert (USE_AS_OFFSETABLE_LO10			\
+	      	      && TARGET_ARCH64				\
+		      && ! TARGET_CM_MEDMID);			\
 	  output_operand (XEXP (base, 0), 0);			\
 	  fputs ("+%lo(", FILE);				\
 	  output_address (XEXP (base, 1));			\
@@ -2590,7 +2589,7 @@ extern int sparc_indent_opcode;
 	  else if (GET_CODE (index) == SYMBOL_REF		\
 		   || GET_CODE (index) == CONST)		\
 	    fputc ('+', FILE), output_addr_const (FILE, index);	\
-	  else abort ();					\
+	  else gcc_unreachable ();				\
 	}							\
     }								\
   else if (GET_CODE (addr) == MINUS				\

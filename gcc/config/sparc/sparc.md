@@ -2083,8 +2083,7 @@
 
       if (GET_CODE (operands[1]) == LABEL_REF)
         {
-          if (! TARGET_ARCH64)
-            abort ();
+          gcc_assert (TARGET_ARCH64);
           emit_insn (gen_movdi_pic_label_ref (operands[0], operands[1]));
           DONE;
         }
@@ -2639,7 +2638,7 @@
     case 8:
       return "st\t%r1, %0";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "fpmove,*,*,*,*,load,fpload,fpstore,store")])
@@ -2686,7 +2685,7 @@
     case 9:
       return "st\t%r1, %0";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "fpmove,fga,*,*,*,*,load,fpload,fpstore,store")])
@@ -2731,7 +2730,7 @@
     case 5:
       return "st\t%r1, %0";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "*,*,*,*,load,store")])
@@ -3533,7 +3532,7 @@
       dest2 = adjust_address (set_dest, DFmode, 8);
       break;
     default:
-      abort ();      
+      gcc_unreachable ();      
     }
 
   emit_insn (gen_movdf (dest1, CONST0_RTX (DFmode)));
@@ -7358,8 +7357,7 @@
 	      (use (label_ref (match_operand 1 "" "")))])]
   ""
 {
-  if (GET_MODE (operands[0]) != CASE_VECTOR_MODE)
-    abort ();
+  gcc_assert (GET_MODE (operands[0]) == CASE_VECTOR_MODE);
 
   /* In pic mode, our address differences are against the base of the
      table.  Add that base value back in; CSE ought to be able to combine
@@ -7402,11 +7400,9 @@
 {
   rtx fn_rtx;
 
-  if (GET_MODE (operands[0]) != FUNCTION_MODE)
-    abort ();
+  gcc_assert (GET_MODE (operands[0]) == FUNCTION_MODE);
 
-  if (GET_CODE (operands[3]) != CONST_INT)
-    abort();
+  gcc_assert (GET_CODE (operands[3]) == CONST_INT);
 
   if (GET_CODE (XEXP (operands[0], 0)) == LABEL_REF)
     {
@@ -7568,8 +7564,7 @@
   rtx fn_rtx;
   rtvec vec;
 
-  if (GET_MODE (operands[1]) != FUNCTION_MODE)
-    abort ();
+  gcc_assert (GET_MODE (operands[1]) == FUNCTION_MODE);
 
   fn_rtx = operands[1];
 
@@ -8241,10 +8236,8 @@
   int read_or_write = INTVAL (operands[1]);
   int locality = INTVAL (operands[2]);
 
-  if (read_or_write != 0 && read_or_write != 1)
-    abort ();
-  if (locality < 0 || locality > 3)
-    abort ();
+  gcc_assert (read_or_write == 0 || read_or_write == 1);
+  gcc_assert (locality >= 0 && locality < 4);
   return prefetch_instr [read_or_write][locality == 0 ? 0 : 1];
 }
   [(set_attr "type" "load")])
@@ -8268,10 +8261,8 @@
   int read_or_write = INTVAL (operands[1]);
   int locality = INTVAL (operands[2]);
 
-  if (read_or_write != 0 && read_or_write != 1)
-    abort ();
-  if (locality < 0 || locality > 3)
-    abort ();
+  gcc_assert (read_or_write == 0 || read_or_write == 1);
+  gcc_assert (locality >= 0 && locality < 4);
   return prefetch_instr [read_or_write][locality == 0 ? 0 : 1];
 }
   [(set_attr "type" "load")])

@@ -1,3 +1,9 @@
+2005-04-11  James A. Morrison  <phython@gcc.gnu.org>
+
+	* config/sparc/sparc.c: Use gcc_assert and gcc_unreachable.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sparc.md: Likewise.
+
 2005-04-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-vrp.c (maybe_add_assert_expr): Move a comment.
