@@ -145,6 +145,9 @@
 /* Define to 1 if you have the `atoq' function. */
 #undef HAVE_ATOQ
 
+/* Define to 1 if you have the `clearerr_unlocked' function. */
+#undef HAVE_CLEARERR_UNLOCKED
+
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
 
@@ -169,6 +172,10 @@
    */
 #undef HAVE_DECL_CALLOC
 
+/* Define to 1 if we found a declaration for 'clearerr_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_CLEARERR_UNLOCKED
+
 /* Define to 1 if we found a declaration for 'clock', otherwise define to 0.
    */
 #undef HAVE_DECL_CLOCK
@@ -177,13 +184,45 @@
    */
 #undef HAVE_DECL_ERRNO
 
+/* Define to 1 if we found a declaration for 'feof_unlocked', otherwise define
+   to 0. */
+#undef HAVE_DECL_FEOF_UNLOCKED
+
+/* Define to 1 if we found a declaration for 'ferror_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_FERROR_UNLOCKED
+
+/* Define to 1 if we found a declaration for 'fflush_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_FFLUSH_UNLOCKED
+
+/* Define to 1 if we found a declaration for 'fgetc_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_FGETC_UNLOCKED
+
+/* Define to 1 if we found a declaration for 'fgets_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_FGETS_UNLOCKED
+
+/* Define to 1 if we found a declaration for 'fileno_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_FILENO_UNLOCKED
+
 /* Define to 1 if we found a declaration for 'fprintf_unlocked', otherwise
    define to 0. */
 #undef HAVE_DECL_FPRINTF_UNLOCKED
 
+/* Define to 1 if we found a declaration for 'fputc_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_FPUTC_UNLOCKED
+
 /* Define to 1 if we found a declaration for 'fputs_unlocked', otherwise
    define to 0. */
 #undef HAVE_DECL_FPUTS_UNLOCKED
+
+/* Define to 1 if we found a declaration for 'fread_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_FREAD_UNLOCKED
 
 /* Define to 1 if we found a declaration for 'free', otherwise define to 0. */
 #undef HAVE_DECL_FREE
@@ -192,9 +231,17 @@
    define to 0. */
 #undef HAVE_DECL_FWRITE_UNLOCKED
 
+/* Define to 1 if we found a declaration for 'getchar_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_GETCHAR_UNLOCKED
+
 /* Define to 1 if we found a declaration for 'getcwd', otherwise define to 0.
    */
 #undef HAVE_DECL_GETCWD
+
+/* Define to 1 if we found a declaration for 'getc_unlocked', otherwise define
+   to 0. */
+#undef HAVE_DECL_GETC_UNLOCKED
 
 /* Define to 1 if we found a declaration for 'getenv', otherwise define to 0.
    */
@@ -227,6 +274,10 @@
 /* Define to 1 if we found a declaration for 'malloc', otherwise define to 0.
    */
 #undef HAVE_DECL_MALLOC
+
+/* Define to 1 if we found a declaration for 'putchar_unlocked', otherwise
+   define to 0. */
+#undef HAVE_DECL_PUTCHAR_UNLOCKED
 
 /* Define to 1 if we found a declaration for 'putc_unlocked', otherwise define
    to 0. */
@@ -272,6 +323,24 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
+/* Define to 1 if you have the `feof_unlocked' function. */
+#undef HAVE_FEOF_UNLOCKED
+
+/* Define to 1 if you have the `ferror_unlocked' function. */
+#undef HAVE_FERROR_UNLOCKED
+
+/* Define to 1 if you have the `fflush_unlocked' function. */
+#undef HAVE_FFLUSH_UNLOCKED
+
+/* Define to 1 if you have the `fgetc_unlocked' function. */
+#undef HAVE_FGETC_UNLOCKED
+
+/* Define to 1 if you have the `fgets_unlocked' function. */
+#undef HAVE_FGETS_UNLOCKED
+
+/* Define to 1 if you have the `fileno_unlocked' function. */
+#undef HAVE_FILENO_UNLOCKED
+
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
@@ -283,6 +352,9 @@
 
 /* Define to 1 if you have the `fputs_unlocked' function. */
 #undef HAVE_FPUTS_UNLOCKED
+
+/* Define to 1 if you have the `fread_unlocked' function. */
+#undef HAVE_FREAD_UNLOCKED
 
 /* Define to 1 if you have the `fwrite_unlocked' function. */
 #undef HAVE_FWRITE_UNLOCKED
@@ -320,6 +392,12 @@
 
 /* Define if your assembler supports .weak. */
 #undef HAVE_GAS_WEAK
+
+/* Define to 1 if you have the `getchar_unlocked' function. */
+#undef HAVE_GETCHAR_UNLOCKED
+
+/* Define to 1 if you have the `getc_unlocked' function. */
+#undef HAVE_GETC_UNLOCKED
 
 /* Define to 1 if you have the `getrlimit' function. */
 #undef HAVE_GETRLIMIT
@@ -420,6 +498,9 @@
 
 /* Define if printf supports "%p". */
 #undef HAVE_PRINTF_PTR
+
+/* Define to 1 if you have the `putchar_unlocked' function. */
+#undef HAVE_PUTCHAR_UNLOCKED
 
 /* Define to 1 if you have the `putc_unlocked' function. */
 #undef HAVE_PUTC_UNLOCKED

@@ -977,11 +977,15 @@ fi
 dnl Disabled until we have a complete test for buggy enum bitfields.
 dnl gcc_AC_C_ENUM_BF_UNSIGNED
 
+define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
+  ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked dnl
+  fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked dnl
+  fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked dnl
+  putchar_unlocked putc_unlocked)
 AC_CHECK_FUNCS(times clock dup2 kill getrlimit setrlimit atoll atoq \
-	sysconf strsignal putc_unlocked fputc_unlocked fputs_unlocked \
-	fwrite_unlocked fprintf_unlocked getrusage nl_langinfo \
-        scandir alphasort gettimeofday mbstowcs wcswidth mmap mincore \
-        setlocale)
+	sysconf strsignal getrusage nl_langinfo scandir alphasort \
+	gettimeofday mbstowcs wcswidth mmap mincore setlocale \
+	gcc_UNLOCKED_FUNCS)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
@@ -1048,10 +1052,9 @@ AM_LANGINFO_CODESET
 # We will need to find libiberty.h and ansidecl.h
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
-gcc_AC_CHECK_DECLS(getenv atol sbrk abort atof getcwd getwd \
-	strsignal putc_unlocked fputs_unlocked fwrite_unlocked \
-        fprintf_unlocked strstr errno snprintf vasprintf \
-	malloc realloc calloc free basename getopt clock getpagesize, , ,[
+gcc_AC_CHECK_DECLS(getenv atol sbrk abort atof getcwd getwd strsignal \
+	strstr errno snprintf vasprintf malloc realloc calloc free \
+	basename getopt clock getpagesize gcc_UNLOCKED_FUNCS, , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
