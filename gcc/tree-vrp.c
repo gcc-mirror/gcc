@@ -1280,6 +1280,11 @@ fp_predicate (tree expr)
 static tree
 infer_value_range (tree stmt, tree op)
 {
+  /* Do not attempt to infer anything in names that flow through
+     abnormal edges.  */
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    return NULL_TREE;
+
   if (POINTER_TYPE_P (TREE_TYPE (op)))
     {
       bool is_store;
@@ -1385,7 +1390,7 @@ has_assert_expr (tree op, tree cond)
 
       d) Mark X and Y in FOUND.
 
-   3- If BB does not end in a conditional expression, then we recurse
+   4- If BB does not end in a conditional expression, then we recurse
       into BB's dominator children.
    
    At the end of the recursive traversal, ASSERT_EXPRs will have been
@@ -1441,7 +1446,7 @@ maybe_add_assert_expr (basic_block bb)
 	  if (!cond)
 	    continue;
 
-	  /* Step 3.  If OP is used in such a way that we can infer a
+	  /* Step 2.  If OP is used in such a way that we can infer a
 	     value range for it, create a new ASSERT_EXPR for OP
 	     (unless OP already has an ASSERT_EXPR).  */
 	  gcc_assert (!is_ctrl_stmt (stmt));
@@ -1504,6 +1509,12 @@ maybe_add_assert_expr (basic_block bb)
 	 sub-graphs or if they had been found in a block upstream from
 	 BB.  */
       op = USE_OP (uses, 0);
+
+      /* Do not attempt to infer anything in names that flow through
+	 abnormal edges.  */
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+	return false;
+
       RESET_BIT (found, SSA_NAME_VERSION (op));
 
       /* Look for uses of the operands in each of the sub-graphs
@@ -1546,7 +1557,7 @@ maybe_add_assert_expr (basic_block bb)
     }
   else
     {
-      /* Step 3.  Recurse into the dominator children of BB.  */
+      /* Step 4.  Recurse into the dominator children of BB.  */
       basic_block son;
 
       for (son = first_dom_son (CDI_DOMINATORS, bb);
