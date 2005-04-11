@@ -630,8 +630,7 @@ sparc_override_options (void)
   for (def = &cpu_default[0]; def->name; ++def)
     if (def->cpu == TARGET_CPU_DEFAULT)
       break;
-  if (! def->name)
-    abort ();
+  gcc_assert (def->name);
   sparc_select[0].string = def->name;
 
   for (sel = &sparc_select[0]; sel->name; ++sel)
@@ -974,8 +973,7 @@ icc_or_fcc_reg_operand (rtx op, enum machine_mode mode)
 int
 call_operand (rtx op, enum machine_mode mode)
 {
-  if (GET_CODE (op) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (op) == MEM);
   op = XEXP (op, 0);
   return (symbolic_operand (op, mode) || memory_address_p (Pmode, op));
 }
@@ -1631,9 +1629,8 @@ sparc_emit_set_const32 (rtx op0, rtx op1)
     {
       HOST_WIDE_INT value = INTVAL (op1);
 
-      if (SPARC_SETHI_P (value & GET_MODE_MASK (mode))
-	  || SPARC_SIMM13_P (value))
-	abort ();
+      gcc_assert (! SPARC_SETHI_P (value & GET_MODE_MASK (mode))
+	  	  && ! SPARC_SIMM13_P (value));
     }
 
   /* Full 2-insn decomposition is needed.  */
@@ -1772,10 +1769,8 @@ sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
 	     it TImode).  Pick the other one to use as our scratch.  */
 	  if (rtx_equal_p (temp, op0))
 	    {
-	      if (ti_temp)
-		temp = gen_rtx_REG (DImode, REGNO (temp) + 1);
-	      else
-		abort();
+	      gcc_assert (ti_temp);
+	      temp = gen_rtx_REG (DImode, REGNO (temp) + 1);
 	    }
 	  temp1 = op0;
 	  temp2 = temp;  /* op0 is _not_ allowed, see above.  */
@@ -1846,10 +1841,8 @@ sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
 		 it TImode).  Pick the other one to use as our scratch.  */
 	      if (rtx_equal_p (temp, op0))
 		{
-		  if (ti_temp)
-		    temp = gen_rtx_REG (DImode, REGNO (temp) + 1);
-		  else
-		    abort();
+		  gcc_assert (ti_temp);
+		  temp = gen_rtx_REG (DImode, REGNO (temp) + 1);
 		}
 	      temp1 = op0;
 	      temp2 = temp;  /* op0 is _not_ allowed, see above.  */
@@ -1878,7 +1871,7 @@ sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
       break;
 
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
 
@@ -2166,9 +2159,7 @@ analyze_64bit_constant (unsigned HOST_WIDE_INT high_bits,
     }
   /* If there are no bits set this should have gone out
      as one instruction!  */
-  if (lowest_bit_set == -1
-      || highest_bit_set == -1)
-    abort ();
+  gcc_assert (lowest_bit_set != -1 && highest_bit_set != -1);
   all_bits_between_are_set = 1;
   for (i = lowest_bit_set; i <= highest_bit_set; i++)
     {
@@ -2238,8 +2229,7 @@ create_simple_focus_bits (unsigned HOST_WIDE_INT high_bits,
       lo = 0;
       hi = ((high_bits >> (lowest_bit_set - 32)) << shift);
     }
-  if (hi & lo)
-    abort ();
+  gcc_assert (! (hi & lo));
   return (hi | lo);
 }
 
@@ -2256,15 +2246,13 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
   rtx temp = 0;
 
   /* Sanity check that we know what we are working with.  */
-  if (! TARGET_ARCH64)
-    abort ();
+  gcc_assert (TARGET_ARCH64);
 
   if (GET_CODE (op0) != SUBREG)
     {
-      if (GET_CODE (op0) != REG
-	  || (REGNO (op0) >= SPARC_FIRST_FP_REG
-	      && REGNO (op0) <= SPARC_LAST_V9_FP_REG))
-	abort ();
+      gcc_assert (GET_CODE (op0) == REG
+		  && (REGNO (op0) < SPARC_FIRST_FP_REG
+	      	      || REGNO (op0) > SPARC_LAST_V9_FP_REG));
     }
 
   if (reload_in_progress || reload_completed)
@@ -2340,8 +2328,8 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
       else if (lowest_bit_set == 0)
 	shift = -(63 - highest_bit_set);
 
-      if (! SPARC_SIMM13_P (the_const))
-	abort ();
+      gcc_assert (SPARC_SIMM13_P (the_const));
+      gcc_assert (shift != 0);
 
       emit_insn (gen_safe_SET64 (temp, the_const));
       if (shift > 0)
@@ -2356,8 +2344,6 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
 				gen_rtx_LSHIFTRT (DImode,
 						  temp,
 						  GEN_INT (-shift))));
-      else
-	abort ();
       return;
     }
 
@@ -2373,8 +2359,8 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
 	create_simple_focus_bits (high_bits, low_bits,
 				  lowest_bit_set, 10);
 
-      if (! SPARC_SETHI_P (focus_bits))
-	 abort ();
+      gcc_assert (SPARC_SETHI_P (focus_bits));
+      gcc_assert (lowest_bit_set != 10);
 
       sparc_emit_set_safe_HIGH64 (temp, focus_bits);
 
@@ -2389,8 +2375,6 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
 				op0,
 				gen_rtx_ASHIFT (DImode, temp,
 						GEN_INT (lowest_bit_set - 10))));
-      else
-	abort ();
       return;
     }
 
@@ -2488,9 +2472,7 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
 				  lowest_bit_set, 0);
 
       /* We can't get here in this state.  */
-      if (highest_bit_set < 32
-	  || lowest_bit_set >= 32)
-	abort ();
+      gcc_assert (highest_bit_set >= 32 && lowest_bit_set < 32);
 
       /* So what we know is that the set bits straddle the
 	 middle of the 64-bit word.  */
@@ -2552,7 +2534,7 @@ select_cc_mode (enum rtx_code op, rtx x, rtx y ATTRIBUTE_UNUSED)
 	  return CCFPEmode;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   else if (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
@@ -2727,7 +2709,7 @@ gen_v9_scc (enum rtx_code compare_code, register rtx *operands)
 	  case CCFPmode :
 	    break;
 	  default :
-	    abort ();
+	    gcc_unreachable ();
 	}
       emit_insn (gen_rtx_SET (VOIDmode, operands[0], const0_rtx));
       emit_insn (gen_rtx_SET (VOIDmode, operands[0],
@@ -2781,8 +2763,7 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
   int i;
 
   /* We only expect to be called for conversions, unary, and binary ops.  */
-  if (nargs < 2 || nargs > 3)
-    abort ();
+  gcc_assert (nargs == 2 || nargs == 3);
 
   for (i = 0; i < nargs; ++i)
     {
@@ -2845,8 +2826,7 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
     {
       rtx ret;
 
-      if (nargs != 2)
-	abort ();
+      gcc_assert (nargs == 2);
 
       ret = emit_library_call_value (func_sym, operands[0], LCT_NORMAL,
 				     GET_MODE (operands[0]), 1,
@@ -2879,7 +2859,7 @@ emit_soft_tfmode_binop (enum rtx_code code, rtx *operands)
       func = "_Qp_div";
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   emit_soft_tfmode_libcall (func, 3, operands);
@@ -2890,14 +2870,8 @@ emit_soft_tfmode_unop (enum rtx_code code, rtx *operands)
 {
   const char *func;
 
-  switch (code)
-    {
-    case SQRT:
-      func = "_Qp_sqrt";
-      break;
-    default:
-      abort ();
-    }
+  gcc_assert (code == SQRT);
+  func = "_Qp_sqrt";
 
   emit_soft_tfmode_libcall (func, 2, operands);
 }
@@ -2919,7 +2893,7 @@ emit_soft_tfmode_cvt (enum rtx_code code, rtx *operands)
 	  func = "_Qp_dtoq";
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -2933,7 +2907,7 @@ emit_soft_tfmode_cvt (enum rtx_code code, rtx *operands)
 	  func = "_Qp_qtod";
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -2947,7 +2921,7 @@ emit_soft_tfmode_cvt (enum rtx_code code, rtx *operands)
 	  func = "_Qp_xtoq";
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -2961,7 +2935,7 @@ emit_soft_tfmode_cvt (enum rtx_code code, rtx *operands)
 	  func = "_Qp_uxtoq";
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -2975,7 +2949,7 @@ emit_soft_tfmode_cvt (enum rtx_code code, rtx *operands)
 	  func = "_Qp_qtox";
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -2989,12 +2963,12 @@ emit_soft_tfmode_cvt (enum rtx_code code, rtx *operands)
 	  func = "_Qp_qtoux";
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   emit_soft_tfmode_libcall (func, 2, operands);
@@ -3356,7 +3330,7 @@ sparc_cannot_force_const_mem (rtx x)
     case UNSPEC:
       return true;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3374,14 +3348,13 @@ check_pic (int i)
   switch (flag_pic)
     {
     case 1:
-      if (GET_CODE (recog_data.operand[i]) == SYMBOL_REF
-	  || (GET_CODE (recog_data.operand[i]) == CONST
-	      && ! (GET_CODE (XEXP (recog_data.operand[i], 0)) == MINUS
-		    && (XEXP (XEXP (recog_data.operand[i], 0), 0)
-			== global_offset_table)
-		    && (GET_CODE (XEXP (XEXP (recog_data.operand[i], 0), 1))
-			== CONST))))
-	abort ();
+      gcc_assert (GET_CODE (recog_data.operand[i]) != SYMBOL_REF
+	  	  && (GET_CODE (recog_data.operand[i]) != CONST
+	          || (GET_CODE (XEXP (recog_data.operand[i], 0)) == MINUS
+		      && (XEXP (XEXP (recog_data.operand[i], 0), 0)
+			  == global_offset_table)
+		      && (GET_CODE (XEXP (XEXP (recog_data.operand[i], 0), 1))
+			  == CONST))));
     case 2:
     default:
       return 1;
@@ -3660,8 +3633,7 @@ legitimize_tls_address (rtx addr)
 {
   rtx temp1, temp2, temp3, ret, o0, got, insn;
 
-  if (no_new_pseudos)
-    abort ();
+  gcc_assert (! no_new_pseudos);
 
   if (GET_CODE (addr) == SYMBOL_REF)
     switch (SYMBOL_REF_TLS_MODEL (addr))
@@ -3777,11 +3749,11 @@ legitimize_tls_address (rtx addr)
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
       }
 
   else
-    abort ();  /* for now ... */
+    gcc_unreachable ();  /* for now ... */
 
   return ret;
 }
@@ -3803,10 +3775,8 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 
       if (reg == 0)
 	{
-	  if (reload_in_progress || reload_completed)
-	    abort ();
-	  else
-	    reg = gen_reg_rtx (Pmode);
+	  gcc_assert (! reload_in_progress && ! reload_completed);
+	  reg = gen_reg_rtx (Pmode);
 	}
 
       if (flag_pic == 2)
@@ -3857,20 +3827,14 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 
       if (reg == 0)
 	{
-	  if (reload_in_progress || reload_completed)
-	    abort ();
-	  else
-	    reg = gen_reg_rtx (Pmode);
+	  gcc_assert (! reload_in_progress && ! reload_completed);
+	  reg = gen_reg_rtx (Pmode);
 	}
 
-      if (GET_CODE (XEXP (orig, 0)) == PLUS)
-	{
-	  base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
-	  offset = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
-					 base == reg ? 0 : reg);
-	}
-      else
-	abort ();
+      gcc_assert (GET_CODE (XEXP (orig, 0)) == PLUS);
+      base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
+      offset = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
+			 	       base == reg ? 0 : reg);
 
       if (GET_CODE (offset) == CONST_INT)
 	{
@@ -3880,7 +3844,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 	    offset = force_reg (Pmode, offset);
 	  else
 	    /* If we reach here, then something is seriously wrong.  */
-	    abort ();
+	    gcc_unreachable ();
 	}
       return gen_rtx_PLUS (Pmode, base, offset);
     }
@@ -4653,8 +4617,7 @@ static void
 sparc_asm_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
   /* Check that the assumption we made in sparc_expand_prologue is valid.  */
-  if (sparc_leaf_function_p != current_function_uses_only_leaf_regs)
-    abort();
+  gcc_assert (sparc_leaf_function_p == current_function_uses_only_leaf_regs);
 
   sparc_output_scratch_registers (file);
 }
@@ -4738,8 +4701,7 @@ output_restore (rtx pat)
       return;
     }
 
-  if (GET_CODE (pat) != SET)
-    abort ();
+  gcc_assert (GET_CODE (pat) == SET);
 
   operands[0] = SET_DEST (pat);
   pat = SET_SRC (pat);
@@ -4758,8 +4720,7 @@ output_restore (rtx pat)
 	break;
       case ASHIFT:
 	operands[1] = XEXP (pat, 0);
-	if (XEXP (pat, 1) != const1_rtx)
-	  abort();
+	gcc_assert (XEXP (pat, 1) == const1_rtx);
 	output_asm_insn (" restore %r1, %r1, %Y0", operands);
 	break;
       default:
@@ -4781,8 +4742,7 @@ output_return (rtx insn)
 	 semantics of restore/return.  We simply output the jump to the
 	 return address and the insn in the delay slot (if any).  */
 
-      if (current_function_calls_eh_return)
-	abort ();
+      gcc_assert (! current_function_calls_eh_return);
 
       return "jmp\t%%o7+%)%#";
     }
@@ -4797,8 +4757,7 @@ output_return (rtx insn)
 	{
 	  /* If the function uses __builtin_eh_return, the eh_return
 	     machinery occupies the delay slot.  */
-	  if (final_sequence)
-	    abort ();
+	  gcc_assert (! final_sequence);
 
 	  if (! flag_delayed_branch)
 	    fputs ("\tadd\t%fp, %g1, %fp\n", asm_out_file);
@@ -4818,8 +4777,7 @@ output_return (rtx insn)
 	  rtx delay, pat;
 
 	  delay = NEXT_INSN (insn);
-	  if (! delay)
-	    abort ();
+	  gcc_assert (delay);
 
 	  pat = PATTERN (delay);
 
@@ -4858,8 +4816,7 @@ output_sibcall (rtx insn, rtx call_operand)
 {
   rtx operands[1];
 
-  if (! flag_delayed_branch)
-    abort();
+  gcc_assert (flag_delayed_branch);
 
   operands[0] = call_operand;
 
@@ -4869,8 +4826,7 @@ output_sibcall (rtx insn, rtx call_operand)
 	 register window.  We simply output the jump to the function and
 	 the insn in the delay slot (if any).  */
 
-      if (LEAF_SIBCALL_SLOT_RESERVED_P && final_sequence)
-	abort();
+      gcc_assert (!(LEAF_SIBCALL_SLOT_RESERVED_P && final_sequence));
 
       if (final_sequence)
 	output_asm_insn ("sethi\t%%hi(%a0), %%g1\n\tjmp\t%%g1 + %%lo(%a0)%#",
@@ -4892,8 +4848,7 @@ output_sibcall (rtx insn, rtx call_operand)
       if (final_sequence)
 	{
 	  rtx delay = NEXT_INSN (insn);
-	  if (! delay)
-	    abort ();
+	  gcc_assert (delay);
 
 	  output_restore (PATTERN (delay));
 
@@ -5155,8 +5110,7 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
       if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
 	{
 	  /* The SPARC port defines no floating-point vector modes.  */
-	  if (mode != BLKmode)
-	    abort ();
+	  gcc_assert (mode == BLKmode);
 	}
       else
 	{
@@ -5164,8 +5118,7 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 	     mode or an integral mode, because we are guaranteed
 	     by pass_by_reference that their size is not greater
 	     than 16 bytes and TImode is 16-byte wide.  */
-	  if (mode == BLKmode)
-	    abort ();
+	  gcc_assert (mode != BLKmode);
 
 	  /* Vector integers are handled like floats according to
 	     the Sun VIS SDK.  */
@@ -5202,8 +5155,7 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 	/* MODE is VOIDmode when generating the actual call.  */
 	return -1;
 
-      if (mode != BLKmode)
-	abort ();
+      gcc_assert (mode == BLKmode);
 
       /* For SPARC64, objects requiring 16-byte alignment get it.  */
       if (TARGET_ARCH64
@@ -5252,7 +5204,7 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
       break;
 
     default :
-      abort ();
+      gcc_unreachable ();
     }
 
   *pregno = regno;
@@ -5609,8 +5561,7 @@ function_arg_record_value (tree type, enum machine_mode mode,
       if (nregs + slotno > SPARC_INT_ARG_MAX)
 	nregs = SPARC_INT_ARG_MAX - slotno;
     }
-  if (nregs == 0)
-    abort ();
+  gcc_assert (nregs != 0);
 
   parms.ret = gen_rtx_PARALLEL (mode, rtvec_alloc (parms.stack + nregs));
 
@@ -5630,8 +5581,7 @@ function_arg_record_value (tree type, enum machine_mode mode,
   function_arg_record_value_2 (type, 0, &parms, false);
   function_arg_record_value_3 (typesize * BITS_PER_UNIT, &parms);
 
-  if (parms.nregs != nregs)
-    abort ();
+  gcc_assert (parms.nregs == nregs);
 
   return parms.ret;
 }
@@ -5747,8 +5697,7 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
       /* Structures up to 16 bytes in size are passed in arg slots on the
 	 stack and are promoted to registers where possible.  */
 
-      if (int_size_in_bytes (type) > 16)
-	abort (); /* shouldn't get here */
+      gcc_assert (int_size_in_bytes (type) <= 16);
 
       return function_arg_record_value (type, mode, slotno, named, regbase);
     }
@@ -5756,8 +5705,7 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
 
-      if (size > 16)
-	abort (); /* shouldn't get here */
+      gcc_assert (size <= 16);
 
       return function_arg_union_value (size, mode, slotno, regno);
     }
@@ -5768,8 +5716,7 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
 	 instructions are enabled.  */
       HOST_WIDE_INT size = int_size_in_bytes (type);
 
-      if (size > 16)
-	abort (); /* shouldn't get here */
+      gcc_assert (size <= 16);
 
       if (mode == BLKmode)
 	return function_arg_vector_value (size,
@@ -6124,8 +6071,8 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	 instructions are enabled.  */
       HOST_WIDE_INT size = int_size_in_bytes (type);
 
-      if ((TARGET_ARCH32 && size > 8) || (TARGET_ARCH64 && size > 32))
-	abort (); /* shouldn't get here */
+      gcc_assert ((TARGET_ARCH32 && size <= 8)
+		  || (TARGET_ARCH64 && size <= 32));
 
       if (mode == BLKmode)
 	return function_arg_vector_value (size,
@@ -6141,8 +6088,7 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	  /* Structures up to 32 bytes in size are passed in registers,
 	     promoted to fp registers where possible.  */
 
-	  if (int_size_in_bytes (type) > 32)
-	    abort (); /* shouldn't get here */
+	  gcc_assert (int_size_in_bytes (type) <= 32);
 
 	  return function_arg_record_value (type, mode, 0, 1, regbase);
 	}
@@ -6150,8 +6096,7 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	{
 	  HOST_WIDE_INT size = int_size_in_bytes (type);
 
-	  if (size > 32)
-	    abort (); /* shouldn't get here */
+	  gcc_assert (size <= 32);
 
 	  return function_arg_union_value (size, mode, 0, regbase);
 	}
@@ -6161,8 +6106,7 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	     in a mode corresponding to the size of the type.  */
 	  HOST_WIDE_INT bytes = int_size_in_bytes (type);
 
-	  if (bytes > 32)
-	    abort (); /* shouldn't get here */
+	  gcc_assert (bytes <= 32);
 
 	  mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
 
@@ -6474,7 +6418,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       /* ??? !v9: FP branches cannot be preceded by another floating point
@@ -6529,7 +6473,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       strcpy (string, branch);
     }
@@ -6566,17 +6510,14 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 	  labelno = v9_fcc_labelno;
 	  if (v8)
 	    {
-	      if (REGNO (cc_reg) == SPARC_FCC_REG)
-		labelno = "";
-	      else
-		abort ();
+	      gcc_assert (REGNO (cc_reg) == SPARC_FCC_REG);
+	      labelno = "";
 	    }
 	}
       else if (mode == CCXmode || mode == CCX_NOOVmode)
 	{
 	  labelno = "%%xcc, ";
-	  if (v8)
-	    abort ();
+	  gcc_assert (! v8);
 	}
       else
 	{
@@ -6672,8 +6613,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
       break;
 
     default:
-      abort();
-      break;
+      gcc_unreachable ();
     }
 
   if (TARGET_ARCH64)
@@ -6885,8 +6825,7 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
     code = reverse_condition (code);
 
   /* Only 64 bit versions of these instructions exist.  */
-  if (mode != DImode)
-    abort ();
+  gcc_assert (mode == DImode);
 
   /* Start by writing the branch condition.  */
 
@@ -6917,7 +6856,7 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   p = strchr (string, '\0');
@@ -7093,8 +7032,7 @@ int
 sparc_splitdi_legitimate (rtx reg, rtx mem)
 {
   /* Punt if we are here by mistake.  */
-  if (! reload_completed)
-    abort ();
+  gcc_assert (reload_completed);
 
   /* We must have an offsettable memory reference.  */
   if (! offsettable_memref_p (mem))
@@ -7378,7 +7316,7 @@ print_operand (FILE *file, rtx x, int code)
 	  else if (GET_MODE (x) == CCXmode)
 	    fputs ("%xcc", file);
 	  else
-	    abort ();
+	    gcc_unreachable ();
 	}
       else
 	/* %fccN register */
@@ -7730,7 +7668,7 @@ sparc_type_code (register tree type)
 	  return qualifiers;
   
 	default:
-	  abort ();		/* Not a type! */
+	  gcc_unreachable ();		/* Not a type! */
         }
     }
 
@@ -8227,8 +8165,7 @@ sparc_check_64 (rtx x, rtx insn)
   int set_once = 0;
   rtx y = x;
 
-  if (GET_CODE (x) != REG)
-    abort ();
+  gcc_assert (GET_CODE (x) == REG);
 
   if (GET_MODE (x) == DImode)
     y = gen_rtx_REG (SImode, REGNO (x) + WORDS_BIG_ENDIAN);
@@ -8988,8 +8925,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       rtx vcall_offset_rtx = GEN_INT (vcall_offset);
       rtx scratch = gen_rtx_REG (Pmode, 1);
 
-      if (vcall_offset >= 0)
-	abort ();
+      gcc_assert (vcall_offset < 0);
 
       /* SCRATCH = *THIS.  */
       emit_move_insn (scratch, gen_rtx_MEM (Pmode, this));
@@ -9098,7 +9034,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	      break;
 
 	    default:
-	      abort();
+	      gcc_unreachable ();
 	    }
 	}
 
@@ -9160,7 +9096,7 @@ get_some_local_dynamic_name (void)
 	&& for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
       return cfun->machine->some_ld_name;
 
-  abort ();
+  gcc_unreachable ();
 }
 
 static int
@@ -9206,7 +9142,7 @@ sparc_output_dwarf_dtprel (FILE *file, int size, rtx x)
       fputs ("\t.xword\t%r_tls_dtpoff64(", file);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   output_addr_const (file, x);
   fputs (")", file);
