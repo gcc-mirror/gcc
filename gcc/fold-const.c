@@ -5519,14 +5519,18 @@ fold_binary_op_with_conditional_arg (enum tree_code code,
   if (lhs == 0)
     {
       true_value = fold_convert (cond_type, true_value);
-      lhs = fold (cond_first_p ? build2 (code, type, true_value, arg)
-			     : build2 (code, type, arg, true_value));
+      if (cond_first_p)
+	lhs = fold_build2 (code, type, true_value, arg);
+      else
+	lhs = fold_build2 (code, type, arg, true_value);
     }
   if (rhs == 0)
     {
       false_value = fold_convert (cond_type, false_value);
-      rhs = fold (cond_first_p ? build2 (code, type, false_value, arg)
-			     : build2 (code, type, arg, false_value));
+      if (cond_first_p)
+	rhs = fold_build2 (code, type, false_value, arg);
+      else
+	rhs = fold_build2 (code, type, arg, false_value);
     }
 
   test = fold_build3 (COND_EXPR, type, test, lhs, rhs);
@@ -6856,9 +6860,9 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	{
 	  /* Don't leave an assignment inside a conversion
 	     unless assigning a bitfield.  */
-	  tem = build1 (code, type, TREE_OPERAND (op0, 1));
+	  tem = fold_build1 (code, type, TREE_OPERAND (op0, 1));
 	  /* First do the assignment, then return converted constant.  */
-	  tem = build2 (COMPOUND_EXPR, TREE_TYPE (tem), op0, fold (tem));
+	  tem = build2 (COMPOUND_EXPR, TREE_TYPE (tem), op0, tem);
 	  TREE_NO_WARNING (tem) = 1;
 	  TREE_USED (tem) = 1;
 	  return tem;
@@ -7949,10 +7953,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      if (fcode0 == fcode1 && BUILTIN_EXPONENT_P (fcode0))
 		{
 		  tree expfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
-		  tree arg = build2 (PLUS_EXPR, type,
-				     TREE_VALUE (TREE_OPERAND (arg0, 1)),
-				     TREE_VALUE (TREE_OPERAND (arg1, 1)));
-		  tree arglist = build_tree_list (NULL_TREE, fold (arg));
+		  tree arg = fold_build2 (PLUS_EXPR, type,
+					  TREE_VALUE (TREE_OPERAND (arg0, 1)),
+					  TREE_VALUE (TREE_OPERAND (arg1, 1)));
+		  tree arglist = build_tree_list (NULL_TREE, arg);
 		  return build_function_call_expr (expfn, arglist);
 		}
 
@@ -7972,8 +7976,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  if (operand_equal_p (arg01, arg11, 0))
 		    {
 		      tree powfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
-		      tree arg = build2 (MULT_EXPR, type, arg00, arg10);
-		      tree arglist = tree_cons (NULL_TREE, fold (arg),
+		      tree arg = fold_build2 (MULT_EXPR, type, arg00, arg10);
+		      tree arglist = tree_cons (NULL_TREE, arg,
 						build_tree_list (NULL_TREE,
 								 arg01));
 		      return build_function_call_expr (powfn, arglist);
@@ -9543,11 +9547,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		      return omit_one_operand (type, integer_one_node, arg0);
 		    }
 
-		  tem = build2 (code, type, cval1, cval2);
 		  if (save_p)
-		    return save_expr (tem);
+		    return save_expr (build2 (code, type, cval1, cval2));
 		  else
-		    return fold (tem);
+		    return fold_build2 (code, type, cval1, cval2);
 		}
 	    }
 	}
