@@ -1,3 +1,8 @@
+2005-04-11  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/20933
+	* gcc.dg/tree-ssa/pr20933.c: New test.
+
 2005-04-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/fold_nearest.f90: New test.

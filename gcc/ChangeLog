@@ -1,3 +1,15 @@
+2005-04-11  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/20933
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Move
+	logic to reject aliases between read-only and writable
+	variables ...
+	(may_alias_p): ... here.
+	(get_tmt_for): Do not associate read-only tags to pointers
+	whose pointed-to type is not read-only.
+	* tree-ssa.c (verify_ssa): Check that memory stores have at
+	least one V_MAY_DEF or V_MUST_DEF.
+
 2005-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR/17092
