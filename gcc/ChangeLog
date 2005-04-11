@@ -1,3 +1,26 @@
+2005-04-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/s390/s390.h (s390_tune_string, s390_arch_string)
+	(s390_warn_framesize_string, s390_warn_dynamicstack_string)
+	(s390_stack_size_string, s390_stack_guard_string, target_flags)
+	(MASK_HARD_FLOAT, MASK_SMALL_EXEC, MASK_DEBUG_ARG, MASK_64BIT)
+	(MASK_ZARCH, MASK_MVCLE, MASK_TPF_PROFILING, MASK_NO_FUSED_MADD)
+	(MASK_BACKCHAIN, MASK_PACKED_STACK, TARGET_HARD_FLOAT)
+	(TARGET_SOFT_FLOAT, TARGET_SMALL_EXEC, TARGET_DEBUG_ARG)
+	(TARGET_64BIT, TARGET_ZARCH, TARGET_MVCLE, TARGET_TPF_PROFILING)
+	(TARGET_NO_FUSED_MADD, TARGET_FUSED_MADD, TARGET_BACKCHAIN)
+	(TARGET_PACKED_STACK, TARGET_SWITCHES, TARGET_OPTIONS): Delete.
+	* config/s390/s390.c (TARGET_DEFAULT_TARGET_FLAGS): Override default.
+	(TARGET_HANDLE_OPTION): Likewise.
+	(s390_tune): Initialize to PROCESSOR_max.
+	(s390_arch_string): Make static.
+	(s390_tune_string, s390_warn_framesize_string): Delete.
+	(s390_warn_dynamicstack_string, s390_stack_size_string): Delete.
+	(s390_stack_guard_string, s390_warn_dynamicstack_p): Delete.
+	(s390_handle_arch_option, s390_handle_option): New functions.
+	(override_options): Remove parsing of option strings.
+	* config/s390/s390.opt: New file.
+
 2005-04-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-complex.c (expand_vector_operations): Call
