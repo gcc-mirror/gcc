@@ -1,5 +1,10 @@
 2005-04-11  Paolo Bonzini  <bonzini@gnu.org>
 
+	* tree-complex.c (expand_vector_operations): Call
+	update_stmt_if_modified.
+
+2005-04-11  Paolo Bonzini  <bonzini@gnu.org>
+
 	* tree-vect-analyze (vect_determine_vectorization_factor):
 	Do not use GET_MODE_NUNITS.
 	* tree-vect-transform.c (vect_get_vec_def_for_operand,
