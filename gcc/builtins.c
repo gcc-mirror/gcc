@@ -1549,9 +1549,11 @@ mathfn_built_in (tree type, enum built_in_function fn)
       CASE_MATHFN (BUILT_IN_J0)
       CASE_MATHFN (BUILT_IN_J1)
       CASE_MATHFN (BUILT_IN_JN)
+      CASE_MATHFN (BUILT_IN_LCEIL)
       CASE_MATHFN (BUILT_IN_LDEXP)
       CASE_MATHFN (BUILT_IN_LFLOOR)
       CASE_MATHFN (BUILT_IN_LGAMMA)
+      CASE_MATHFN (BUILT_IN_LLCEIL)
       CASE_MATHFN (BUILT_IN_LLFLOOR)
       CASE_MATHFN (BUILT_IN_LLRINT)
       CASE_MATHFN (BUILT_IN_LLROUND)
@@ -2141,6 +2143,16 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    case BUILT_IN_LCEIL:
+    case BUILT_IN_LCEILF:
+    case BUILT_IN_LCEILL:
+    case BUILT_IN_LLCEIL:
+    case BUILT_IN_LLCEILF:
+    case BUILT_IN_LLCEILL:
+      builtin_optab = lceil_optab;
+      fallback_fn = BUILT_IN_CEIL;
+      break;
+
     case BUILT_IN_LFLOOR:
     case BUILT_IN_LFLOORF:
     case BUILT_IN_LFLOORL:
@@ -5376,6 +5388,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+    case BUILT_IN_LCEIL:
+    case BUILT_IN_LCEILF:
+    case BUILT_IN_LCEILL:
+    case BUILT_IN_LLCEIL:
+    case BUILT_IN_LLCEILF:
+    case BUILT_IN_LLCEILL:
     case BUILT_IN_LFLOOR:
     case BUILT_IN_LFLOORF:
     case BUILT_IN_LFLOORL:
@@ -6769,6 +6787,15 @@ fold_builtin_int_roundingfn (tree fndecl, tree arglist)
 	    case BUILT_IN_LLFLOORF:
 	    case BUILT_IN_LLFLOORL:
 	      real_floor (&r, TYPE_MODE (ftype), &x);
+	      break;
+
+	    case BUILT_IN_LCEIL:
+	    case BUILT_IN_LCEILF:
+	    case BUILT_IN_LCEILL:
+	    case BUILT_IN_LLCEIL:
+	    case BUILT_IN_LLCEILF:
+	    case BUILT_IN_LLCEILL:
+	      real_ceil (&r, TYPE_MODE (ftype), &x);
 	      break;
 
 	    case BUILT_IN_LROUND:
@@ -8328,6 +8355,12 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     case BUILT_IN_RINTL:
       return fold_trunc_transparent_mathfn (fndecl, arglist);
 
+    case BUILT_IN_LCEIL:
+    case BUILT_IN_LCEILF:
+    case BUILT_IN_LCEILL:
+    case BUILT_IN_LLCEIL:
+    case BUILT_IN_LLCEILF:
+    case BUILT_IN_LLCEILL:
     case BUILT_IN_LFLOOR:
     case BUILT_IN_LFLOORF:
     case BUILT_IN_LFLOORL:

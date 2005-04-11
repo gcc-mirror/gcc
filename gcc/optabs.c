@@ -5035,6 +5035,7 @@ init_optabs (void)
   floor_optab = init_optab (UNKNOWN);
   lfloor_optab = init_optab (UNKNOWN);
   ceil_optab = init_optab (UNKNOWN);
+  lceil_optab = init_optab (UNKNOWN);
   round_optab = init_optab (UNKNOWN);
   btrunc_optab = init_optab (UNKNOWN);
   nearbyint_optab = init_optab (UNKNOWN);

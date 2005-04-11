@@ -1,3 +1,8 @@
+2005-04-11  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.dg/builtins-53.c: Also check (int)ceil* and
+	(long long int)ceil*.
+	
 2005-04-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/warn/Wdtor1.C: Declare template in system header with
@@ -72,6 +77,10 @@
 
 	PR target/20795
 	* g++.dg/abi/param2.C: New test.
+
+2005-04-09  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.dg/builtins-53.c: Also check lceil* and llceil*.
 
 2005-04-09  Uros Bizjak  <uros@kss-loka.si>
 

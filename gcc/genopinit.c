@@ -121,6 +121,7 @@ static const char * const optabs[] =
   "floor_optab->handlers[$A].insn_code = CODE_FOR_$(floor$a2$)",
   "lfloor_optab->handlers[$A].insn_code = CODE_FOR_$(lfloor$a2$)",
   "ceil_optab->handlers[$A].insn_code = CODE_FOR_$(ceil$a2$)",
+  "lceil_optab->handlers[$A].insn_code = CODE_FOR_$(lceil$a2$)",
   "round_optab->handlers[$A].insn_code = CODE_FOR_$(round$a2$)",
   "btrunc_optab->handlers[$A].insn_code = CODE_FOR_$(btrunc$a2$)",
   "nearbyint_optab->handlers[$A].insn_code = CODE_FOR_$(nearbyint$a2$)",
