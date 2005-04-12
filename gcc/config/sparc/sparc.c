@@ -3554,7 +3554,7 @@ legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
 
       /* We can't allow TFmode in 32-bit mode, because an offset greater
 	 than the alignment (8) may cause the LO_SUM to overflow.  */
-      if (mode == TFmode && !TARGET_64BIT)
+      if (mode == TFmode && TARGET_ARCH32)
 	return 0;
     }
   else if (GET_CODE (addr) == CONST_INT && SMALL_INT (addr))
