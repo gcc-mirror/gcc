@@ -3,11 +3,13 @@ program testforall
    implicit none
    integer, dimension (3, 3) :: a
    integer, dimension (3) :: b
-   logical, dimension (3, 3) :: m
+   logical, dimension (3, 3) :: m, tr
    integer i
    character(len=9) line
 
    a = reshape ((/1, 2, 3, 4, 5, 6, 7, 8, 9/), (/3, 3/));
+
+   tr = .true.
 
    if (sum(a) .ne. 45) call abort
    write (line, 9000) sum(a)
@@ -24,11 +26,17 @@ program testforall
    m(2, 1) = .false.
 
    if (sum (a, mask=m) .ne. 42) call abort
+   if (sum (a, mask=m .and. tr) .ne. 42) call abort
 
    write(line, 9000) sum (a, mask=m)
    if (line .ne. ' 42      ') call abort
 
    b = sum (a, 2, m)
+   if (b(1) .ne. 11) call abort
+   if (b(2) .ne. 13) call abort
+   if (b(3) .ne. 18) call abort
+
+   b = sum (a, 2, m .and. tr)
    if (b(1) .ne. 11) call abort
    if (b(2) .ne. 13) call abort
    if (b(3) .ne. 18) call abort
