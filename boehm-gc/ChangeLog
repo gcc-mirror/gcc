@@ -1,3 +1,7 @@
+2005-04-12  Richard Henderson  <rth@redhat.com>
+
+	* include/private/gcconfig.h (alpha-linux): Use LINUX_STACKBOTTOM.
+
 2005-03-23  Mike Stump  <mrs@apple.com>
 
 	* darwin_stop_world.c: Update for -m64 multilib.
