@@ -5,7 +5,7 @@ dg-init
 
 global srcdir
 
-foreach flags [list {} {-static} {-O2} {-O3}] {
+foreach flags [list {} {-static} {-O} {-O2} {-O3}] {
     foreach srcfile [lsort [glob -nocomplain ${srcdir}/libmudflap.c++/*frag.cxx]] {
 	set bsrc [file tail $srcfile]
 	setenv MUDFLAP_OPTIONS "-viol-segv"
