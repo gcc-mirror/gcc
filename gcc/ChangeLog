@@ -1,3 +1,10 @@
+2004-04-12  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md (UNSPEC_FIX, UNSPEC_MOVA, UNSPEC_SHUFFLE,
+	UNSPEC_PSHUFLW, UNSPEC_PSHUFHW, UNSPEC_ADDSUB, UNSPEC_HADD,
+	UNSPEC_HSUB, UNSPEC_MOVSHDUP, UNSPEC_MOVSLDUP, UNSPEC_MOVDDUP): Remove.
+	(UNSPEC_*, UNSPECV_*): Renumber.
+
 2005-04-12  Frank Ch. Eigler  <fche@redhat.com>
 
 	PR mudflap/19266
