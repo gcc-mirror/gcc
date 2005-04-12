@@ -1544,7 +1544,7 @@
 #   endif
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
-#       define STACKBOTTOM ((ptr_t) 0x120000000)
+#       define LINUX_STACKBOTTOM
 #       ifdef __ELF__
 #	  define SEARCH_FOR_DATA_START
 #         define DYNAMIC_LOADING
