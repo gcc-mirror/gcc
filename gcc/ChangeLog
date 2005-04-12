@@ -1,3 +1,13 @@
+2005-04-12  Caroline Tice  <ctice@apple.com>
+
+	Temporary fix for partitioning problems.
+	* passes.c (rest_of_handle_final): Remove code that 
+	frees unlikely_text_section_name,
+	* varasm.c (assemble_start_function): Test for partitioning
+	flag before writing out section labels.
+	(assemble_end_function): Test for partitioning flag before
+	writing out section labels.
+	
 2005-04-12  Steven Bosscher  <stevenb@suse.de>
 	    Stuart Hastings <stuart@apple.com>
 	    Jan Hubicka  <jh@suse.cz>

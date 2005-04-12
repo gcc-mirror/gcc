@@ -1303,7 +1303,8 @@ assemble_start_function (tree decl, const char *fnname)
   /* Switch to the correct text section for the start of the function.  */
 
   function_section (decl);
-  if (!hot_label_written)
+  if (flag_reorder_blocks_and_partition 
+      && !hot_label_written)
     ASM_OUTPUT_LABEL (asm_out_file, hot_section_label);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
@@ -1377,13 +1378,16 @@ assemble_end_function (tree decl, const char *fnname)
     }
   /* Output labels for end of hot/cold text sections (to be used by
      debug info.)  */
-  save_text_section = in_section;
-  unlikely_text_section ();
-  ASM_OUTPUT_LABEL (asm_out_file, cold_section_end_label);
-  text_section ();
-  ASM_OUTPUT_LABEL (asm_out_file, hot_section_end_label);
-  if (save_text_section == in_unlikely_executed_text)
-    unlikely_text_section ();
+  if (flag_reorder_blocks_and_partition)
+    {
+      save_text_section = in_section;
+      unlikely_text_section ();
+      ASM_OUTPUT_LABEL (asm_out_file, cold_section_end_label);
+      text_section ();
+      ASM_OUTPUT_LABEL (asm_out_file, hot_section_end_label);
+      if (save_text_section == in_unlikely_executed_text)
+	unlikely_text_section ();
+    }
 }
 
 /* Assemble code to leave SIZE bytes of zeros.  */
