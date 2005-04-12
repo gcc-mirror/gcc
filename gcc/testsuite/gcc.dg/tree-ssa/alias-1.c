@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fargument-noalias-global -fdump-tree-optimizated" } */
+/* { dg-options "-O2 -fargument-noalias-global -fdump-tree-optimized" } */
 int f;
 void link_error ();
 

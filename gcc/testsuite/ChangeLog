@@ -1,3 +1,7 @@
+2005-04-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/tree-ssa/alias-1.c: Fix spelling of optimized.
+
 2005-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* target-def.h (TARGET_CXX_EXPORT_CLASS_DATA): Remove.
