@@ -1,3 +1,9 @@
+2005-04-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR middle-end/20917
+	* config/s390/s390.md ("*set_tp"): Use SET in pattern.
+	("set_tp_64", "set_tp_31"): Adapt expanded pattern.
+
 2004-04-12  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (UNSPEC_FIX, UNSPEC_MOVA, UNSPEC_SHUFFLE,
