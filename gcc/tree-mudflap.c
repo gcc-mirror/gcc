@@ -497,40 +497,25 @@ mf_build_check_statement_for (tree base, tree limit,
   block_stmt_iterator bsi;
   basic_block cond_bb, then_bb, join_bb;
   edge e;
-  tree cond, t, u, v, l1, l2;
+  tree cond, t, u, v;
   tree mf_base;
   tree mf_elem;
   tree mf_limit;
 
   /* We first need to split the current basic block, and start altering
      the CFG.  This allows us to insert the statements we're about to
-     construct into the right basic blocks.  The label l1 is the label
-     of the block for the THEN clause of the conditional jump we're
-     about to construct, and l2 is the ELSE clause, which is just the
-     continuation of the old statement stream.  */
-  l1 = create_artificial_label ();
-  l2 = create_artificial_label ();
+     construct into the right basic blocks.  */
+
   cond_bb = bb_for_stmt (bsi_stmt (*instr_bsi));
   bsi = *instr_bsi;
   bsi_prev (&bsi);
   if (! bsi_end_p (bsi))
-    {
-      /* We're processing a statement in the middle of the block, so
-         we need to split the block.  This creates a new block and a new
-         fallthrough edge.  */
-      e = split_block (cond_bb, bsi_stmt (bsi));
-      cond_bb = e->src;
-      join_bb = e->dest;
-    }
+    e = split_block (cond_bb, bsi_stmt (bsi));
   else
-    {
-      /* We're processing the first statement in the block, so we need
-         to split the incoming edge.  This also creates a new block
-         and a new fallthrough edge.  */
-      join_bb = cond_bb;
-      cond_bb = split_edge (find_edge (join_bb->prev_bb, join_bb));
-    }
-  
+    e = split_block_after_labels (cond_bb);
+  cond_bb = e->src;
+  join_bb = e->dest;
+
   /* A recap at this point: join_bb is the basic block at whose head
      is the gimple statement for which this check expression is being
      built.  cond_bb is the (possibly new, synthetic) basic block the
@@ -721,7 +706,7 @@ mf_decl_eligible_p (tree decl)
           /* The decl must have its address taken.  In the case of
              arrays, this flag is also set if the indexes are not
              compile-time known valid constants.  */
-          && TREE_ADDRESSABLE (decl)
+          && TREE_ADDRESSABLE (decl)    /* XXX: not sufficient: return-by-value structs! */
           /* The type of the variable must be complete.  */
           && COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (decl))
 	  /* The decl hasn't been decomposed somehow.  */
