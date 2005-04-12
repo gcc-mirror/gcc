@@ -1,5 +1,20 @@
 2005-04-12  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/ns32k/ns32k.h (target_flags, MASK_32081, MASK_RTD)
+	(MASK_REGPARM, MASK_32532, MASK_32332, MASK_NO_SB, MASK_NO_BITFIELD)
+	(MASK_HIMEM, MASK_32381, MASK_MULT_ADD, MASK_SRC, MASK_IEEE_COMPARE)
+	(TARGET_32081, TARGET_32381, TARGET_MULT_ADD, TARGET_RTD)
+	(TARGET_REGPARM, TARGET_32532, TARGET_32332, TARGET_SB, TARGET_HIMEM)
+	(TARGET_BITFIELD, TARGET_IEEE_COMPARE, TARGET_SWITCHES): Delete.
+	(OVERRIDE_OPTIONS): Clear MASK_SB instead of setting MASK_NO_SB.
+	* config/ns32k/netbsd.h (TARGET_DEFAULT): Remove MASK_NO_SB and
+	MASK_NO_BITFIELD.
+	* config/ns32k/ns32k.c (ns32k_handle_option): New function.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	* config/ns32k/ns32k.opt: New file.
+
+2005-04-12  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config.gcc (m68k-*-linux*): Add m68k/ieee.opt to $extra_options.
 	* config/m68k/m68k.h (target_flags, MASK_68020, TARGET_68020)
 	(MASK_68030, TARGET_68030, MASK_68040, TARGET_68040, MASK_68040_ONLY)
