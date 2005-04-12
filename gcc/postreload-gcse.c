@@ -1008,6 +1008,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
   gcov_type ok_count = 0; /* Redundant load execution count.  */
   gcov_type critical_count = 0; /* Execution count of critical edges.  */
   edge_iterator ei;
+  bool critical_edge_split = false;
 
   /* The execution count of the loads to be added to make the
      load fully redundant.  */
@@ -1028,6 +1029,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
       rtx next_pred_bb_end;
 
       avail_insn = NULL_RTX;
+      avail_reg = NULL_RTX;
       pred_bb = pred->src;
       next_pred_bb_end = NEXT_INSN (BB_END (pred_bb));
       for (a_occr = get_bb_avail_insn (pred_bb, expr->avail_occr); a_occr;
@@ -1064,6 +1066,15 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
 	{
 	  npred_ok++;
 	  ok_count += pred->count;
+	  if (! set_noop_p (PATTERN (gen_move_insn (copy_rtx (dest),
+						    copy_rtx (avail_reg)))))
+	    {
+	      /* Check if there is going to be a split.  */
+	      if (EDGE_CRITICAL_P (pred))
+		critical_edge_split = true;
+	    }
+	  else /* Its a dead move no need to generate.  */
+	    continue;
 	  occr = (struct unoccr *) obstack_alloc (&unoccr_obstack,
 						  sizeof (struct occr));
 	  occr->insn = avail_insn;
@@ -1075,6 +1086,9 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
 	}
       else
 	{
+	  /* Adding a load on a critical edge will cuase a split.  */
+	  if (EDGE_CRITICAL_P (pred))
+	    critical_edge_split = true;
 	  not_ok_count += pred->count;
 	  unoccr = (struct unoccr *) obstack_alloc (&unoccr_obstack,
 						    sizeof (struct unoccr));
@@ -1090,7 +1104,12 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
   if (/* No load can be replaced by copy.  */
       npred_ok == 0
       /* Prevent exploding the code.  */ 
-      || (optimize_size && npred_ok > 1))
+      || (optimize_size && npred_ok > 1)
+      /* If we don't have profile information we cannot tell if splitting 
+         a critical edge is profitable or not so don't do it.  */
+      || ((! profile_info || ! flag_branch_probabilities
+	   || targetm.cannot_modify_jumps_p ())
+	  && critical_edge_split))
     goto cleanup;
 
   /* Check if it's worth applying the partial redundancy elimination.  */
@@ -1150,7 +1169,17 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
        a_occr = get_bb_avail_insn (bb, a_occr->next));
 
   if (!a_occr)
-    delete_insn (insn);
+    {
+      stats.insns_deleted++;
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "deleting insn:\n");
+          print_rtl_single (dump_file, insn);
+          fprintf (dump_file, "\n");
+	}
+      delete_insn (insn);
+    }
   else
     a_occr->deleted_p = 1;
 
@@ -1275,9 +1304,6 @@ delete_redundant_insns (void)
 void
 gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
 {
-
-  if (targetm.cannot_modify_jumps_p ())
-    return;
 
   memset (&stats, 0, sizeof (stats));
 
