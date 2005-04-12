@@ -57,6 +57,7 @@ static tree vect_get_vec_def_for_operand (tree, tree);
 static tree vect_init_vector (tree, tree);
 static void vect_finish_stmt_generation 
   (tree stmt, tree vec_stmt, block_stmt_iterator *bsi);
+static bool vect_is_simple_cond (tree, loop_vec_info); 
 static void update_vuses_to_preheader (tree, struct loop*);
 
 /* Utility function dealing with loop peeling (not peeling itself).  */
@@ -1141,6 +1142,145 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   return true;
 }
 
+/* Function vect_is_simple_cond.
+  
+   Input:
+   LOOP - the loop that is being vectorized.
+   COND - Condition that is checked for simple use.
+
+   Returns whether a COND can be vectorized. Checkes whether
+   condition operands are supportable using vec_is_simple_use.  */
+
+static bool
+vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo)
+{
+  tree lhs, rhs;
+
+  if (TREE_CODE_CLASS (TREE_CODE (cond)) != tcc_comparison)
+    return false;
+
+  lhs = TREE_OPERAND (cond, 0);
+  rhs = TREE_OPERAND (cond, 1);
+
+  if (TREE_CODE (lhs) == SSA_NAME)
+    {
+      tree lhs_def_stmt = SSA_NAME_DEF_STMT (lhs);
+      if (!vect_is_simple_use (lhs, loop_vinfo, &lhs_def_stmt))
+	return false;
+    }
+  else if (TREE_CODE (lhs) != INTEGER_CST && TREE_CODE (lhs) != REAL_CST)
+    return false;
+
+  if (TREE_CODE (rhs) == SSA_NAME)
+    {
+      tree rhs_def_stmt = SSA_NAME_DEF_STMT (rhs);
+      if (!vect_is_simple_use (rhs, loop_vinfo, &rhs_def_stmt))
+	return false;
+    }
+  else if (TREE_CODE (rhs) != INTEGER_CST  && TREE_CODE (rhs) != REAL_CST)
+    return false;
+
+  return true;
+}
+
+/* vectorizable_condition.
+
+   Check if STMT is conditional modify expression that can be vectorized. 
+   If VEC_STMT is also passed, vectorize the STMT: create a vectorized 
+   stmt using VEC_COND_EXPR  to replace it, put it in VEC_STMT, and insert it 
+   at BSI.
+
+   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+
+bool
+vectorizable_condition (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
+{
+  tree scalar_dest = NULL_TREE;
+  tree vec_dest = NULL_TREE;
+  tree op = NULL_TREE;
+  tree cond_expr, then_clause, else_clause;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vec_cond_lhs, vec_cond_rhs, vec_then_clause, vec_else_clause;
+  tree vec_compare, vec_cond_expr;
+  tree new_temp;
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  enum machine_mode vec_mode;
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  if (TREE_CODE (stmt) != MODIFY_EXPR)
+    return false;
+
+  op = TREE_OPERAND (stmt, 1);
+
+  if (TREE_CODE (op) != COND_EXPR)
+    return false;
+
+  cond_expr = TREE_OPERAND (op, 0);
+  then_clause = TREE_OPERAND (op, 1);
+  else_clause = TREE_OPERAND (op, 2);
+
+  if (!vect_is_simple_cond (cond_expr, loop_vinfo))
+    return false;
+
+  if (TREE_CODE (then_clause) == SSA_NAME)
+    {
+      tree then_def_stmt = SSA_NAME_DEF_STMT (then_clause);
+      if (!vect_is_simple_use (then_clause, loop_vinfo, &then_def_stmt))
+	return false;
+    }
+  else if (TREE_CODE (then_clause) != INTEGER_CST 
+	   && TREE_CODE (then_clause) != REAL_CST)
+    return false;
+
+  if (TREE_CODE (else_clause) == SSA_NAME)
+    {
+      tree else_def_stmt = SSA_NAME_DEF_STMT (else_clause);
+      if (!vect_is_simple_use (else_clause, loop_vinfo, &else_def_stmt))
+	return false;
+    }
+  else if (TREE_CODE (else_clause) != INTEGER_CST 
+	   && TREE_CODE (else_clause) != REAL_CST)
+    return false;
+
+
+  vec_mode = TYPE_MODE (vectype);
+
+  if (!vec_stmt) 
+    {
+      STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
+      return expand_vec_cond_expr_p (op, vec_mode);
+    }
+
+  /* Transform */
+
+  /* Handle def.  */
+  scalar_dest = TREE_OPERAND (stmt, 0);
+  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+
+  /* Handle cond expr.  */
+  vec_cond_lhs = 
+    vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 0), stmt);
+  vec_cond_rhs = 
+    vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 1), stmt);
+  vec_then_clause = vect_get_vec_def_for_operand (then_clause, stmt);
+  vec_else_clause = vect_get_vec_def_for_operand (else_clause, stmt);
+
+  /* Arguments are ready. create the new vector stmt.  */
+  vec_compare = build2 (TREE_CODE (cond_expr), vectype, 
+			vec_cond_lhs, vec_cond_rhs);
+  vec_cond_expr = build (VEC_COND_EXPR, vectype, 
+			 vec_compare, vec_then_clause, vec_else_clause);
+
+  *vec_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, vec_cond_expr);
+  new_temp = make_ssa_name (vec_dest, *vec_stmt);
+  TREE_OPERAND (*vec_stmt, 0) = new_temp;
+  vect_finish_stmt_generation (stmt, *vec_stmt, bsi);
+  
+  return true;
+}
 
 /* Function vect_transform_stmt.
 
@@ -1176,6 +1316,12 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi)
       gcc_assert (done);
       is_store = true;
       break;
+
+    case condition_vec_info_type:
+      done = vectorizable_condition (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
+
     default:
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
         fprintf (vect_dump, "stmt not supported.");

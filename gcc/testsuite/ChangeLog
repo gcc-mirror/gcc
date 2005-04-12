@@ -1,3 +1,20 @@
+2004-04-11  Devang Patel  <dpatel@apple.com>
+
+        * lib/target-supports.exp (check_effective_target_vect_condition): New.
+        * gcc.dg/vect/vect-ifcvt-1.c: New test.
+        * gcc.dg/vect/vect-ifcvt-2.c: New test.
+        * gcc.dg/vect/vect-ifcvt-3.c: New test.
+        * gcc.dg/vect/vect-ifcvt-4.c: New test.
+        * gcc.dg/vect/vect-ifcvt-5.c: New test.
+        * gcc.dg/vect/vect-ifcvt-6.c: New test.
+        * gcc.dg/vect/vect-ifcvt-7.c: New test.
+        * gcc.dg/vect/vect-none.c: Now one loop is vectorized.
+	
+2004-04-11  Devang Patel  <dpatel@apple.com>
+
+        * gcc.dg/vect/vect-dv-1.c: New test.
+        * gcc.dg/vect/vect-dv-2.c: New test.
+	
 2005-04-11  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/20933

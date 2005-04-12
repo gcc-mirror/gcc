@@ -646,7 +646,7 @@ all_chrecs_equal_p (tree chrec)
 /* Determine for each subscript in the data dependence relation DDR
    the distance.  */
 
-static void
+void
 compute_subscript_distance (struct data_dependence_relation *ddr)
 {
   if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
@@ -1769,7 +1769,7 @@ subscript_dependence_tester (struct data_dependence_relation *ddr)
    starting at FIRST_LOOP_DEPTH. 
    Return TRUE otherwise.  */
 
-static bool
+bool
 build_classic_dist_vector (struct data_dependence_relation *ddr, 
 			   int nb_loops, int first_loop_depth)
 {
