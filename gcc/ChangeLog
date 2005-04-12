@@ -1,3 +1,29 @@
+2005-04-12  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (m68k-*-linux*): Add m68k/ieee.opt to $extra_options.
+	* config/m68k/m68k.h (target_flags, MASK_68020, TARGET_68020)
+	(MASK_68030, TARGET_68030, MASK_68040, TARGET_68040, MASK_68040_ONLY)
+	(TARGET_68040_ONLY, MASK_68060, TARGET_68060, MASK_5200, TARGET_5200)
+	(MASK_CFV3, TARGET_CFV3, MASK_CFV4, TARGET_CFV4, MASK_528x)
+	(TARGET_528x, MASK_CF_HWDIV, TARGET_CF_HWDIV, MASK_68881, TARGET_68881)
+	(MASK_BITFIELD, TARGET_BITFIELD, MASK_SHORT, TARGET_SHORT)
+	(MASK_ALIGN_INT, TARGET_ALIGN_INT, MASK_PCREL, TARGET_PCREL)
+	(MASK_NO_STRICT_ALIGNMENT, TARGET_STRICT_ALIGNMENT, MASK_RTD)
+	(TARGET_RTD, MASK_SEP_DATA, TARGET_SEP_DATA, MASK_ID_SHARED_LIBRARY)
+	(TARGET_ID_SHARED_LIBRARY, MASK_ALL_CF_BITS, TARGET_SWITCHES)
+	(TARGET_OPTIONS, SUBTARGET_SWITCHES, SUBTARGET_OPTIONS): Delete.
+	(MASK_COLDFIRE): Formatting fixes.
+	(TARGET_COLDFIRE): Turn into a boolean value for consistency.
+	* config/m68k/linux.h (SUBTARGET_SWITCHES): Delete.
+	* config/m68k/m68k.c (m68k_library_id_string): Initialize to
+	"_current_shared_library_a5_offset_".
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(MASK_ALL_CPU_BITS): New macro.
+	(m68k_handle_option): New function.
+	(override_options): Remove handling of m68k_library_id_string.
+	* config/m68k/m68k.opt: New file.
+	* config/m68k/ieee.opt: New file.
+
 2005-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* target-def.h (TARGET_CXX_EXPORT_CLASS_DATA): Remove.
