@@ -1,3 +1,9 @@
+2005-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (determine_visibility): Don't use export_class_data.
+	(import_export_decl): Honor TARGET_CXX_CLASS_DATA_ALWAYS_WEAK and
+	TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY. 
+
 2005-04-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.h (cxx_alignof): Remove.

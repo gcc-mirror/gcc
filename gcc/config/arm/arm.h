@@ -2108,6 +2108,12 @@ typedef struct
 #define ASM_OUTPUT_LABELREF(FILE, NAME)		\
    arm_asm_output_labelref (FILE, NAME)
 
+/* True if the operating system can merge entities with vague linkage
+   (e.g., symbols in COMDAT group) during dynamic linking.  */
+#ifndef TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P
+#define TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P true
+#endif
+
 /* Set the short-call flag for any function compiled in the current
    compilation unit.  We skip this for functions with the section
    attribute when long-calls are in effect as this tells the compiler

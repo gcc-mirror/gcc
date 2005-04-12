@@ -589,10 +589,20 @@ struct gcc_target
        itself.  Returning true is the behavior required by the Itanium
        C++ ABI.  */
     bool (*key_method_may_be_inline) (void);
-    /* Returns true if all class data (virtual tables, type info,
-       etc.) should be exported from the current DLL, even when the
-       associated class is not exported.  */
-    bool (*export_class_data) (void);
+    /* DECL is a virtual table, virtual table table, typeinfo object,
+       or other similar implicit class data object that will be
+       emitted with external linkage in this translation unit.  No ELF
+       visibility has been explicitly specified.  If the target needs
+       to specify a visibility other than that of the containing class,
+       use this hook to set DECL_VISIBILITY and
+       DECL_VISIBILITY_SPECIFIED.  */ 
+    void (*determine_class_data_visibility) (tree decl);
+    /* Returns true (the default) if virtual tables and other
+       similar implicit class data objects are always COMDAT if they
+       have external linkage.  If this hook returns false, then
+       class data for classes whose virtual table will be emitted in
+       only one translation unit will not be COMDAT.  */
+    bool (*class_data_always_comdat) (void);
   } cxx;
 
   /* Leave the boolean fields at the end.  */

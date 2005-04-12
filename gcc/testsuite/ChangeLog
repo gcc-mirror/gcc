@@ -1,5 +1,26 @@
 2005-04-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* target-def.h (TARGET_CXX_EXPORT_CLASS_DATA): Remove.
+	(TARGET_CXX_DETERMINE_CLASS_VISIBILITY): New macro.
+	(TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT): Likewise.
+	(TARGET_CXX): Adjust accordingly.
+	* target.h (struct gcc_target): Remove epxort_class_data.  Add
+	determine_class_data_visibility and class_data_always_comdat.
+	* doc/tm.texi (TARGET_CXX_EXPORT_CLASS_DATA): Remove.
+	(TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY): Document.
+	(TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT): Likewise.
+	* config/arm/arm.c (arm_cxx_export_class_data): Remove.
+	(arm_cxx_determine_class_data_visibility): New.
+	(arm_cxx_class_data_always_comdat): Likewise.
+	(TARGET_CXX_EXPORT_CLASS_DATA): Remove.
+	(TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY): Define.
+	(TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT): Likewise.
+	* config/arm/arm.h (TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P): Define.
+	* config/arm/symbian.h (TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P):
+	Define.
+
+2005-04-11  Mark Mitchell  <mark@codesourcery.com>
+
 	* lib/wrapper.exp (${tool}_maybe_build_wrapper): Don't unset gluefile.
 
 2005-04-11  Geoffrey Keating  <geoffk@apple.com>
