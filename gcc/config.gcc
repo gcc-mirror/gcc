@@ -1359,6 +1359,7 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
 	tm_file="m68k/m68k.h dbxelf.h elfos.h svr4.h linux.h m68k/linux.h"
+	extra_options="${extra_options} m68k/ieee.opt"
 	tm_defines="MOTOROLA USE_GAS"
 	# if not configured with --enable-sjlj-exceptions, bump the
 	# libgcc version number

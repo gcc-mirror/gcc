@@ -103,6 +103,7 @@ struct m68k_frame
 /* Current frame information calculated by m68k_compute_frame_layout().  */
 static struct m68k_frame current_frame;
 
+static bool m68k_handle_option (size_t, const char *, int);
 static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
 static void m68k_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -124,7 +125,7 @@ static bool m68k_rtx_costs (rtx, int, int, int *);
 
 
 /* Specify the identification number of the library being built */
-const char *m68k_library_id_string;
+const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 
 /* Nonzero if the last compare/test insn had FP operands.  The
    sCC expanders peek at this to determine what to do for the
@@ -174,6 +175,11 @@ int m68k_last_compare_had_fp_operands;
 #undef TARGET_ASM_FILE_START_APP_OFF
 #define TARGET_ASM_FILE_START_APP_OFF true
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_STRICT_ALIGNMENT)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION m68k_handle_option
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m68k_rtx_costs
 
@@ -195,6 +201,107 @@ static const struct attribute_spec m68k_attribute_table[] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* These bits are controlled by all CPU selection options.  Many options
+   also control MASK_68881, but some (notably -m68020) leave it alone.  */
+
+#define MASK_ALL_CPU_BITS \
+  (MASK_COLDFIRE | MASK_CF_HWDIV | MASK_68060 | MASK_68040 \
+   | MASK_68040_ONLY | MASK_68030 | MASK_68020 | MASK_BITFIELD)
+
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+m68k_handle_option (size_t code, const char *arg, int value)
+{
+  switch (code)
+    {
+    case OPT_m5200:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      target_flags |= MASK_5200;
+      return true;
+
+    case OPT_m5206e:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      target_flags |= MASK_5200 | MASK_CF_HWDIV;
+      return true;
+
+    case OPT_m528x:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      target_flags |= MASK_528x | MASK_CF_HWDIV;
+      return true;
+
+    case OPT_m5307:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      target_flags |= MASK_CFV3 | MASK_CF_HWDIV;
+      return true;
+
+    case OPT_m5407:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      target_flags |= MASK_CFV4 | MASK_CF_HWDIV;
+      return true;
+
+    case OPT_m68000:
+    case OPT_mc68000:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      return true;
+
+    case OPT_m68020:
+    case OPT_mc68020:
+      target_flags &= ~MASK_ALL_CPU_BITS;
+      target_flags |= MASK_68020 | MASK_BITFIELD;
+      return true;
+
+    case OPT_m68020_40:
+      target_flags &= ~MASK_ALL_CPU_BITS;
+      target_flags |= MASK_BITFIELD | MASK_68881 | MASK_68020 | MASK_68040;
+      return true;
+
+    case OPT_m68020_60:
+      target_flags &= ~MASK_ALL_CPU_BITS;
+      target_flags |= (MASK_BITFIELD | MASK_68881 | MASK_68020
+		       | MASK_68040 | MASK_68060);
+      return true;
+
+    case OPT_m68030:
+      target_flags &= ~MASK_ALL_CPU_BITS;
+      target_flags |= MASK_68020 | MASK_68030 | MASK_BITFIELD;
+      return true;
+
+    case OPT_m68040:
+      target_flags &= ~MASK_ALL_CPU_BITS;
+      target_flags |= (MASK_68020 | MASK_68881 | MASK_BITFIELD
+		       | MASK_68040_ONLY | MASK_68040);
+      return true;
+
+    case OPT_m68060:
+      target_flags &= ~MASK_ALL_CPU_BITS;
+      target_flags |= (MASK_68020 | MASK_68881 | MASK_BITFIELD
+		       | MASK_68040_ONLY | MASK_68060);
+      return true;
+
+    case OPT_m68302:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      return true;
+
+    case OPT_m68332:
+    case OPT_mcpu32:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      target_flags |= MASK_68020;
+      return true;
+
+    case OPT_mshared_library_id_:
+      if (value > MAX_LIBRARY_ID)
+	error ("-mshared-library-id=%s is not between 0 and %d",
+	       arg, MAX_LIBRARY_ID);
+      else
+	asprintf ((char **) &m68k_library_id_string, "%d", (value * -4) - 4);
+      return true;
+
+    default:
+      return true;
+    }
+}
+
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
@@ -207,25 +314,6 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 override_options (void)
 {
-  /* Library identification */
-  if (m68k_library_id_string)
-    {
-      int id;
-
-      if (! TARGET_ID_SHARED_LIBRARY)
-	error ("-mshared-library-id= specified without -mid-shared-library");
-      id = atoi (m68k_library_id_string);
-      if (id < 0 || id > MAX_LIBRARY_ID)
-	error ("-mshared-library-id=%d is not between 0 and %d", id, MAX_LIBRARY_ID);
-
-      /* From now on, m68k_library_id_string will contain the library offset.  */
-      asprintf ((char **)&m68k_library_id_string, "%d", (id * -4) - 4);
-    }
-  else
-    /* If TARGET_ID_SHARED_LIBRARY is enabled, this will point to the
-       current library.  */
-    m68k_library_id_string = "_current_shared_library_a5_offset_";
-
   /* Sanity check to ensure that msep-data and mid-sahred-library are not
    * both specified together.  Doing so simply doesn't make sense.
    */
