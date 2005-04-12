@@ -1,3 +1,7 @@
+2005-04-12  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-cfg.c (tree_verify_flow_info): Use LABEL_EXPR_LABEL.
+
 2005-04-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_library_id_string): Remove.
