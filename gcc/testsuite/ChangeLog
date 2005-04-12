@@ -1,3 +1,7 @@
+2005-04-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/i386-darwin-fpmath.c: New.
+
 2004-04-11  Devang Patel  <dpatel@apple.com>
 
         * lib/target-supports.exp (check_effective_target_vect_condition): New.
