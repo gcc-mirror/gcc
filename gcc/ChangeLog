@@ -26,6 +26,9 @@
 	
 2005-04-11  Geoffrey Keating  <geoffk@apple.com>
 
+	* dwarf2out.c (output_line_info): Don't try to dereference
+	a NULL current_function_decl.
+
 	* config/t-slibgcc-darwin: Don't put shared libraries in
 	directories other than $(slibdir).
 	* config/rs6000/darwin.h: Find -m64 libgcc under the name the

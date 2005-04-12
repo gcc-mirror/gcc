@@ -7662,7 +7662,7 @@ output_line_info (void)
   long line_delta;
   unsigned long current_file;
   unsigned long function;
-  struct function *cfun = DECL_STRUCT_FUNCTION (current_function_decl);
+  struct function *cfun;
 
   ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL, 0);
@@ -7732,6 +7732,11 @@ output_line_info (void)
      a series of state machine operations.  */
   current_file = 1;
   current_line = 1;
+  
+  if (current_function_decl)
+    cfun = DECL_STRUCT_FUNCTION (current_function_decl);
+  else
+    cfun = NULL;
   if (last_text_section == in_unlikely_executed_text
       || (last_text_section == in_named
 	  && last_text_section_name == cfun->unlikely_text_section_name))
