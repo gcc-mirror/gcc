@@ -1,5 +1,5 @@
 /* Target definitions for x86 running Darwin.
-   Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -25,6 +25,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (i686 Darwin)");
 
+#undef TARGET_FPMATH_DEFAULT
+#define TARGET_FPMATH_DEFAULT (TARGET_SSE ? FPMATH_SSE : FPMATH_387)
+
 #define TARGET_OS_CPP_BUILTINS()                \
   do                                            \
     {                                           \
@@ -43,13 +46,12 @@ Boston, MA 02111-1307, USA.  */
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }}"
 
 #undef ASM_SPEC
-#define ASM_SPEC "-arch i686 -force_cpusubtype_ALL"
+#define ASM_SPEC "-arch i386 -force_cpusubtype_ALL"
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS					\
-  { "darwin_arch", "i686" },					\
-  { "darwin_subarch", "%{march=pentium3:pentIIm3;:i686}" },
-   
+  { "darwin_arch", "i386" },					\
+  { "darwin_subarch", "i386" },
 
 /* Use the following macro for any Darwin/x86-specific command-line option
    translation.  */

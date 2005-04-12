@@ -26,6 +26,13 @@
 	
 2005-04-11  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/i386/i386.h (TARGET_FPMATH_DEFAULT): New.
+	* config/i386/darwin.h (TARGET_FPMATH_DEFAULT): New.
+	* config/i386/i386.c (override_options): Use TARGET_FPMATH_DEFAULT.
+
+	* config/i386/darwin.h (ASM_SPEC): Use -arch i386 not -arch i686.
+	(SUBTARGET_EXTRA_SPECS): Always 'i386'.
+
 	* dwarf2out.c (output_line_info): Don't try to dereference
 	a NULL current_function_decl.
 

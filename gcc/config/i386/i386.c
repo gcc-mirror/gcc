@@ -1516,18 +1516,16 @@ override_options (void)
       target_flags
 	|= ((MASK_SSE2 | MASK_SSE | MASK_MMX | MASK_128BIT_LONG_DOUBLE)
 	    & ~target_flags_explicit);
-
-      if (TARGET_SSE)
-	ix86_fpmath = FPMATH_SSE;
      }
   else
     {
-      ix86_fpmath = FPMATH_387;
       /* i386 ABI does not specify red zone.  It still makes sense to use it
          when programmer takes care to stack from being destroyed.  */
       if (!(target_flags_explicit & MASK_NO_RED_ZONE))
         target_flags |= MASK_NO_RED_ZONE;
     }
+
+  ix86_fpmath = TARGET_FPMATH_DEFAULT;
 
   if (ix86_fpmath_string != 0)
     {
