@@ -1,3 +1,7 @@
+2005-04-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-vect-transform.c: Fix comment typos.
+
 2005-04-12 Mostafa Hagog <mustafa@il.ibm.com>
 
 	* postreload-gcse.c (eliminate_partially_redundant_load): Don't

@@ -1148,7 +1148,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
    LOOP - the loop that is being vectorized.
    COND - Condition that is checked for simple use.
 
-   Returns whether a COND can be vectorized. Checkes whether
+   Returns whether a COND can be vectorized.  Checks whether
    condition operands are supportable using vec_is_simple_use.  */
 
 static bool
@@ -1982,7 +1982,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	  is_store = vect_transform_stmt (stmt, &si);
 	  if (is_store)
 	    {
-	      /* free the attached stmt_vec_info and remove the stmt.  */
+	      /* Free the attached stmt_vec_info and remove the stmt.  */
 	      stmt_ann_t ann = stmt_ann (stmt);
 	      free (stmt_info);
 	      set_stmt_info (ann, NULL);
