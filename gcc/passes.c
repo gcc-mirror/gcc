@@ -78,7 +78,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "opts.h"
 #include "coverage.h"
 #include "value-prof.h"
-#include "alloc-pool.h"
 #include "tree-pass.h"
 #include "tree-dump.h"
 

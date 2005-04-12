@@ -60,7 +60,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"
 #include "toplev.h"
 #include "tm_p.h"
-#include "alloc-pool.h"
+#include "obstack.h"
 #include "timevar.h"
 #include "ggc.h"
 
@@ -68,33 +68,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct bitmap_obstack reg_obstack;
 
-/* Number of basic blocks in the current function.  */
-
-int n_basic_blocks;
-
-/* First free basic block number.  */
-
-int last_basic_block;
-
-/* Number of edges in the current function.  */
-
-int n_edges;
-
-/* The basic block array.  */
-
-varray_type basic_block_info;
-
-/* The special entry and exit blocks.  */
-basic_block ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR;
-
-/* Memory alloc pool for bb member rbi.  */
-static alloc_pool rbi_pool;
-
 void debug_flow_info (void);
 static void free_edge (edge);
-
-/* Indicate the presence of the profile.  */
-enum profile_status profile_status;
 
 #define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
 
@@ -103,11 +78,10 @@ enum profile_status profile_status;
 void
 init_flow (void)
 {
-  n_edges = 0;
 
-  ENTRY_BLOCK_PTR = ggc_alloc_cleared (sizeof (*ENTRY_BLOCK_PTR));
+  ENTRY_BLOCK_PTR = ggc_alloc_cleared (sizeof (struct basic_block_def));
   ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
-  EXIT_BLOCK_PTR = ggc_alloc_cleared (sizeof (*EXIT_BLOCK_PTR));
+  EXIT_BLOCK_PTR = ggc_alloc_cleared (sizeof (struct basic_block_def));
   EXIT_BLOCK_PTR->index = EXIT_BLOCK;
   ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
   EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
@@ -158,24 +132,6 @@ alloc_block (void)
   return bb;
 }
 
-/* Create memory pool for rbi_pool.  */
-
-void
-alloc_rbi_pool (void)
-{
-  rbi_pool = create_alloc_pool ("rbi pool", 
-				sizeof (struct reorder_block_def),
-				n_basic_blocks + 2);
-}
-
-/* Free rbi_pool.  */
-
-void
-free_rbi_pool (void)
-{
-  free_alloc_pool (rbi_pool);
-}
-
 /* Initialize rbi (the structure containing data used by basic block
    duplication and reordering) for the given basic block.  */
 
@@ -183,8 +139,7 @@ void
 initialize_bb_rbi (basic_block bb)
 {
   gcc_assert (!bb->rbi);
-  bb->rbi = pool_alloc (rbi_pool);
-  memset (bb->rbi, 0, sizeof (struct reorder_block_def));
+  bb->rbi = ggc_alloc_cleared (sizeof (struct reorder_block_def));
 }
 
 /* Link block B to chain after AFTER.  */
@@ -522,7 +477,6 @@ dump_flow_info (FILE *file)
   /* There are no pseudo registers after reload.  Don't dump them.  */
   if (reg_n_info && !reload_completed)
     {
-      int max_regno = max_reg_num ();
       fprintf (file, "%d registers.\n", max_regno);
       for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
 	if (REG_N_REFS (i))

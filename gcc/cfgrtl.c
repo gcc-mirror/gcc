@@ -2652,6 +2652,9 @@ cfg_layout_delete_block (basic_block bb)
     to = &bb->next_bb->rbi->header;
   else
     to = &cfg_layout_function_footer;
+
+  bb->rbi = NULL;
+
   rtl_delete_block (bb);
 
   if (prev)

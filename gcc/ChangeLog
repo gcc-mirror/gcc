@@ -1,3 +1,43 @@
+2005-04-12  Steven Bosscher  <stevenb@suse.de>
+	    Stuart Hastings <stuart@apple.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in: Add function.h to BASIC_BLOCK_H.  Remove all
+	references to gt-tree-cfg.h.
+	* basic-block.h (struct basic_block_def): Don't skip rbi
+	for garbage collection.
+	(struct reorder_block_def): Make GTY-able.
+	(struct control_flow_graph): New structure.
+	(n_edges, n_basic_blocks, last_basic_block, basic_block_info,
+	BASIC_BLOCK, EXIT_BLOCK_PTR, ENTRY_BLOCK_PTR): No longer vars,
+	but instead defines to the control_flow_graph for cfun.
+	(label_to_block_map): New define, points to the label map of
+	the control_flow_graph for cfun.
+	(n_edges_for_function, n_basic_blocks_for_function,
+	last_basic_block_for_function, basic_block_info_for_function,
+	EXIT_BLOCK_PTR_FOR_FUNCTION, ENTRY_BLOCK_PTR_FOR_FUNCTION,
+	basic_block_info_for_function, label_to_block_map_for_function):
+	Counterparts for the above, taking a struct function as an extra
+	argument.
+	(alloc_rbi_pool, free_rbi_pool): Remove prototypes.
+	* cfg.c: (n_edges, n_basic_blocks, last_basic_block,
+	basic_block_info, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR): Remove.
+	(alloc_rbi_pool, free_rbi_pool): Remove.
+	(initialize_bb_rbi): Use ggc_alloc_cleared instead of pool_alloc.
+	* cfglayout.c: (cfg_layout_initialize): Don't allocate the rbi pool
+	here...
+	(cfg_layout_finalize) ... and don't free it here.
+	* cfgrtl.c (cfg_layout_delete_block): Zero out rbi so it gets
+	garbage collected.
+	* flow.c (free_basic_block_vars): Set label_to_block_map and
+	n_edges to zero too.
+	* function.h (struct function): Add cfg field.
+	* function.c (allocate_struct_function): Allocate the cfg.
+	* tree-cfg.c (label_to_block_map): Remove.
+	(build_tree_cfg): Don't allocate the rbi pool here...
+	(delete_tree_cfg_annotations): ...and don't free it here.
+	Also don't nullify label_to_block_map for cfun.
+
 2005-04-12  Caroline Tice  <ctice@apple.com>
 
 	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
