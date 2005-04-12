@@ -1,3 +1,10 @@
+2005-04-12  Aaron Luchko  <aluchko@redhat.com>
+
+	PR libgcj/20975
+	* scripts/TexinfoDoclet.java: Removed.
+	* Makefile.am (texinfo): Removed.
+	* Makefile.in: Regenerated.
+
 2005-04-11  Michael Koch  <konqueror@gmx.de>
 
 	* javax/imageio/ImageIO.java (ReaderFormatFilter.filter):
