@@ -87,3 +87,7 @@
       builtin_define ("__symbian__");		\
     }						\
   while (false)
+
+
+/* SymbianOS cannot merge entities with vague linkage at runtime.  */
+#define TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P false

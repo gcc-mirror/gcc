@@ -8718,12 +8718,21 @@ some variants of the ABI, an inline function can never be the key
 method.  The default is to return @code{true}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_CXX_EXPORT_CLASS_DATA (void)
-If this hook returns false (the default), then virtual tables and RTTI
-data structures will have the ELF visibility of their containing
-class.  If this hook returns true, then these data structures will
-have ELF ``default'' visibility, independently of the visibility of
-the containing class.
+@deftypefn {Target Hook} void TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY (tree @var{decl})
+@var{decl} is a virtual table, virtual table table, typeinfo object,
+or other similar implicit class data object that will be emitted with
+external linkage in this translation unit.  No ELF visibility has been
+explicitly specified.  If the target needs to specify a visibility
+other than that of the containing class, use this hook to set
+@code{DECL_VISIBILITY} and @code{DECL_VISIBILITY_SPECIFIED}.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT (void)
+This hook returns true (the default) if virtual tables and other
+similar implicit class data objects are always COMDAT if they have
+external linkage.  If this hook returns false, then class data for
+classes whose virtual table will be emitted in only one translation
+unit will not be COMDAT.
 @end deftypefn
 
 @node Misc

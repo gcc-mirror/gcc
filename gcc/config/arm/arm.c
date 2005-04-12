@@ -172,7 +172,8 @@ static tree arm_get_cookie_size (tree);
 static bool arm_cookie_has_size (void);
 static bool arm_cxx_cdtor_returns_this (void);
 static bool arm_cxx_key_method_may_be_inline (void);
-static bool arm_cxx_export_class_data (void);
+static void arm_cxx_determine_class_data_visibility (tree);
+static bool arm_cxx_class_data_always_comdat (void);
 static void arm_init_libfuncs (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 
@@ -307,8 +308,12 @@ static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 #undef TARGET_CXX_KEY_METHOD_MAY_BE_INLINE
 #define TARGET_CXX_KEY_METHOD_MAY_BE_INLINE arm_cxx_key_method_may_be_inline
 
-#undef TARGET_CXX_EXPORT_CLASS_DATA
-#define TARGET_CXX_EXPORT_CLASS_DATA arm_cxx_export_class_data
+#undef TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY
+#define TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY \
+  arm_cxx_determine_class_data_visibility
+
+#undef TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT
+#define TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT arm_cxx_class_data_always_comdat
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -14318,15 +14323,28 @@ arm_cxx_key_method_may_be_inline (void)
   return !TARGET_AAPCS_BASED;
 }
 
-/* The EABI says that the virtual table, etc., for a class must be
-   exported if it has a key method.  The EABI does not specific the
-   behavior if there is no key method, but there is no harm in
-   exporting the class data in that case too.  */
-
-static bool
-arm_cxx_export_class_data (void)
+static void
+arm_cxx_determine_class_data_visibility (tree decl)
 {
-  return TARGET_AAPCS_BASED;
+  if (!TARGET_AAPCS_BASED)
+    return;
+
+  /* In general, \S 3.2.5.5 of the ARM EABI requires that class data
+     is exported.  However, on systems without dynamic vague linkage,
+     \S 3.2.5.6 says that COMDAT class data has hidden linkage.  */
+  if (!TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P && DECL_COMDAT (decl))
+    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+  else
+    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+}
+  
+static bool
+arm_cxx_class_data_always_comdat (void)
+{
+  /* \S 3.2.5.4 of the ARM C++ ABI says that class data only have
+     vague linkage if the class has no key function.  */
+  return !TARGET_AAPCS_BASED;
 }
 
 void
