@@ -1,3 +1,8 @@
+2005-04-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR middle-end/20917
+	* gcc.dg/20050409-1.c: New test.
+
 2005-04-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/tree-ssa/alias-1.c: Fix spelling of optimized.
