@@ -78,99 +78,6 @@ Boston, MA 02111-1307, USA.  */
 #define PUT_EXTERNAL_PREFIX(FILE)
 #endif
 
-/* Run-time compilation parameters selecting different hardware subsets.  */
-
-extern int target_flags;
-
-/* Masks for target_flags */
-#define MASK_32081		1
-#define MASK_RTD		2
-#define MASK_REGPARM		4
-#define MASK_32532		8
-#define MASK_32332		16
-#define MASK_NO_SB		32
-#define MASK_NO_BITFIELD	64
-#define MASK_HIMEM		128
-#define MASK_32381		256
-#define MASK_MULT_ADD		512
-#define MASK_SRC		1024
-#define MASK_IEEE_COMPARE 2048
-
-/* Macros used in the machine description to test the flags.  */
-
-/* Compile 32081 insns for floating point (not library calls). */
-#define TARGET_32081 (target_flags & MASK_32081)
-#define TARGET_32381 (target_flags & MASK_32381)
-
-/* The use of multiply-add instructions is optional because there may
- * be cases where it produces worse code.
- */
-
-#define TARGET_MULT_ADD (target_flags & MASK_MULT_ADD)
-
-/* Compile using rtd insn calling sequence.
-   This will not work unless you use prototypes at least
-   for all functions that can take varying numbers of args.  */
-#define TARGET_RTD (target_flags & MASK_RTD)
-
-/* Compile passing first two args in regs 0 and 1.  */
-#define TARGET_REGPARM (target_flags & MASK_REGPARM)
-
-/* Options to select type of CPU, for better optimization.
-   The output is correct for any kind of 32000 regardless of these options.  */
-#define TARGET_32532 (target_flags & MASK_32532)
-#define TARGET_32332 (target_flags & MASK_32332)
-
-/* Ok to use the static base register (and presume it's 0) */
-#define TARGET_SB    ((target_flags & MASK_NO_SB) == 0)
-
-#define TARGET_HIMEM (target_flags & MASK_HIMEM)
-
-/* Compile using bit-field insns.  */
-#define TARGET_BITFIELD ((target_flags & MASK_NO_BITFIELD) == 0)
-
-#define TARGET_IEEE_COMPARE (target_flags & MASK_IEEE_COMPARE)
-
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-#define TARGET_SWITCHES							\
-  { { "32081", MASK_32081, N_("Use hardware fp")},			\
-    { "soft-float", -(MASK_32081|MASK_32381),				\
-      N_("Don't use hardware fp")},					\
-    { "rtd", MASK_RTD, N_("Alternative calling convention")},		\
-    { "nortd", -MASK_RTD, N_("Use normal calling convention")},		\
-    { "regparm", MASK_REGPARM, N_("Pass some arguments in registers")},	\
-    { "noregparm", -MASK_REGPARM, N_("Pass all arguments on stack")},	\
-    { "32532", MASK_32532|MASK_32332, N_("Optimize for 32532 cpu")},	\
-    { "32332", MASK_32332, N_("Optimize for 32332 cpu")},		\
-    { "32332", -MASK_32532, 0},						\
-    { "32032", -(MASK_32532|MASK_32332), N_("Optimize for 32032")},	\
-    { "sb", -MASK_NO_SB,						\
-      N_("Register sb is zero. Use for absolute addressing")},		\
-    { "nosb", MASK_NO_SB, N_("Do not use register sb")},		\
-    { "bitfield", -MASK_NO_BITFIELD,					\
-      N_("Use bit-field instructions")},				\
-    { "nobitfield", MASK_NO_BITFIELD,					\
-      N_("Do not use bit-field instructions")},				\
-    { "himem", MASK_HIMEM, N_("Generate code for high memory")},	\
-    { "nohimem", -MASK_HIMEM, N_("Generate code for low memory")},	\
-    { "32381", MASK_32381, N_("32381 fpu")},				\
-    { "mult-add", MASK_MULT_ADD,					\
-      N_("Use multiply-accumulate fp instructions")},			\
-    { "nomult-add", -MASK_MULT_ADD,					\
-      N_("Do not use multiply-accumulate fp instructions") },		\
-    { "src", MASK_SRC, N_("\"Small register classes\" kludge")},	\
-    { "nosrc", -MASK_SRC, N_("No \"Small register classes\" kludge")},	\
-    { "ieee-compare", MASK_IEEE_COMPARE, N_("Use IEEE math for fp comparisons")},	\
-    { "noieee-compare", -MASK_IEEE_COMPARE,					\
-      N_("Do not use IEEE math for fp comparisons")},			\
-    { "", TARGET_DEFAULT, 0}}
-
-/* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */
-
 /* When we are generating PIC, the sb is used as a pointer
    to the GOT. 32381 is a superset of 32081  */
 
@@ -179,7 +86,7 @@ extern int target_flags;
   if (target_flags & MASK_32532)		\
     target_flags |= MASK_32332; 		\
   if (flag_pic || TARGET_HIMEM)			\
-    target_flags |= MASK_NO_SB;			\
+    target_flags &= ~MASK_SB;			\
   if (TARGET_32381)				\
     target_flags |= MASK_32081;			\
   else						\

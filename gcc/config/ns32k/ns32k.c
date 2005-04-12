@@ -64,6 +64,7 @@ const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 
 static const char *const ns32k_out_reg_names[] = OUTPUT_REGISTER_NAMES;
 
+static bool ns32k_handle_option (size_t, const char *, int);
 static rtx gen_indexed_expr (rtx, rtx, rtx);
 static const char *singlemove_string (rtx *);
 static void move_tail (rtx[], int, int);
@@ -94,6 +95,11 @@ static int ns32k_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ns32k_output_function_epilogue
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION ns32k_handle_option
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ns32k_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -109,6 +115,35 @@ static int ns32k_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_ASM_FILE_START_APP_OFF true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+ns32k_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
+		     int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_m32081:
+      target_flags &= ~MASK_32381;
+      return true;
+
+    case OPT_msoft_float:
+      target_flags &= ~(MASK_32081 | MASK_32381);
+      return true;
+
+    case OPT_m32332:
+      target_flags &= ~MASK_32532;
+      return true;
+
+    case OPT_m32032:
+      target_flags &= ~(MASK_32332 | MASK_32532);
+      return true;
+
+    default:
+      return true;
+    }
+}
 
 /* Generate the assembly code for function entry.  FILE is a stdio
    stream to output the code to.  SIZE is an int: how many units of
