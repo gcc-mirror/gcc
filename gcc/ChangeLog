@@ -1,3 +1,16 @@
+2005-04-12  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_library_id_string): Remove.
+	(bfin_library_id): New variable.
+	(bfin_expand_prologue): Use bfin_library_id and bfin_lib_id_given
+	instead of bfin_library_id_string.
+	(bfin_handle_option): New function.
+	(override_options): Remove most code to deal with shared library IDs,
+	just check they aren't used without -mid-shared-library.
+	(TARGET_HANDLE_OPTION): Define.
+	* config/bfin/bfin.h (TARGET_OPTIONS): Delete macro.
+	* config/bfin/bfin.opt (mshared-library-id=): New.
+
 2005-04-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-vect-transform.c: Fix comment typos.

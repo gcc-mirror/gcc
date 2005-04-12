@@ -67,7 +67,8 @@ const char *byte_reg_names[]   =  BYTE_REGISTER_NAMES;
 
 static int arg_regs[] = FUNCTION_ARG_REGISTERS;
 
-const char *bfin_library_id_string;
+/* The value passed to -mshared-library-id=.  */
+static int bfin_library_id;
 
 static void
 bfin_globalize_label (FILE *stream, const char *name)
@@ -776,8 +777,8 @@ bfin_expand_prologue (void)
     {
       rtx addr;
       
-      if (bfin_library_id_string)
-	addr = plus_constant (pic_offset_table_rtx, atoi (bfin_library_id_string));
+      if (bfin_lib_id_given)
+	addr = plus_constant (pic_offset_table_rtx, -4 - bfin_library_id * 4);
       else
 	addr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 			     gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
@@ -1711,6 +1712,26 @@ secondary_output_reload_class (enum reg_class class, enum machine_mode mode,
   return secondary_input_reload_class (class, mode, x);
 }
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+bfin_handle_option (size_t code, const char *arg, int value)
+{
+  switch (code)
+    {
+    case OPT_mshared_library_id_:
+      if (value > MAX_LIBRARY_ID)
+	error ("-mshared-library-id=%s is not between 0 and %d",
+	       arg, MAX_LIBRARY_ID);
+      else
+	bfin_library_id = value;
+      return true;
+
+    default:
+      return true;
+    }
+}
+
 /* Implement the macro OVERRIDE_OPTIONS.  */
 
 void
@@ -1720,19 +1741,8 @@ override_options (void)
     flag_omit_frame_pointer = 1;
 
   /* Library identification */
-  if (bfin_library_id_string)
-    {
-      int id;
-
-      if (! TARGET_ID_SHARED_LIBRARY)
-	error ("-mshared-library-id= specified without -mid-shared-library");
-      id = atoi (bfin_library_id_string);
-      if (id < 0 || id > MAX_LIBRARY_ID)
-	error ("-mshared-library-id=%d is not between 0 and %d", id, MAX_LIBRARY_ID);
-
-      /* From now on, bfin_library_id_string will contain the library offset.  */
-      asprintf ((char **)&bfin_library_id_string, "%d", (id * -4) - 4);
-    }
+  if (bfin_lib_id_given && ! TARGET_ID_SHARED_LIBRARY)
+    error ("-mshared-library-id= specified without -mid-shared-library");
 
   if (TARGET_ID_SHARED_LIBRARY)
     /* ??? Provide a way to use a bigger GOT.  */
@@ -2724,5 +2734,8 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P bfin_vector_mode_supported_p
+
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION bfin_handle_option
 
 struct gcc_target targetm = TARGET_INITIALIZER;
