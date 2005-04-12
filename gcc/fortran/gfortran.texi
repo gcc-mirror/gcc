@@ -174,9 +174,18 @@ designed initially as a free replacement for,
 or alternative to, the unix @command{f95} command;
 @command{gfortran} is command you'll use to invoke the compiler.
 
-Gfortran is still in an early state of development.
-@command{gfortran} can generate code for most constructs and expressions,
-but much work remains to be done.
+@emph{Gfortran is not yet a fully conformant Fortran 95 compiler}.
+It can generate code for most constructs and expressions,
+but work remains to be done.  In particular, there are known
+deficiencies with ENTRY, NAMELIST, and sophisticated use of
+MODULES, POINTERS and DERIVED TYPES.  For those whose Fortran
+codes conform to either the Fortran 77 standard or the
+GNU Fortran 77 language, we recommend to use @command{g77}
+from GCC 3.4.  We recommend that distributors continue to provide
+packages of g77-3.4 until we announce that @command{gfortran}
+fully replaces @command{g77}.
+The gfortran developers welcome any feedback on user experience
+with @command{gfortran} at @email{fortran@@gcc.gnu.org}.
 
 When @command{gfortran} is finished,
 it will do everything you expect from any decent compiler: 

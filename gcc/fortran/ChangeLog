@@ -1,3 +1,9 @@
+2005-04-12  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* gfortran.texi: Warn about the limited abilities
+	of gfortran at this release.
+	* invoke.texi: Ditto.
+
 2005-04-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* match.c (match_arithmetic_if): Remove gfc_ prefix and correct
