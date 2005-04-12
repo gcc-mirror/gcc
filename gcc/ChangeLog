@@ -1,3 +1,29 @@
+2005-04-11  Devang Patel  <dpatel@apple.com>
+
+        * tree-data-ref.c (build_classic_dist_vector,
+        compute_subscript_distance): Make externally visible.
+        * tree-data-ref.h (build_classic_dist_vector,
+        compute_subscript_distance): Same.
+        * tree-vect-analyze.c (vect_analyze_data_ref_dependence):
+        Check distance vector against vectorization factor.
+        (vect_analyze_loop): Determine vectorizaion factor before
+        analyzing data dependences.
+        * tree-vectorizer.c (loops_num): Make it externally visible and
+        rename ...
+        * tree-vectorizer.c (vect_loops_num): ... new name.
+        * tree-vectorizer.h  (vect_loops_num): New.
+
+2005-04-11  Devang Patel  <dpatel@apple.com>
+
+        * tree-vect-analyze.c (vect_analyze_operations): Check
+        vectorizable codition.
+        * tree-vect-transform.c (vect_is_simple_cond): New function.
+        (vectorizable_condition): New function.
+        (vect_transform_stmt): Handle condition_vec_info_type.
+        * tree-vectorizer.h (enum stmt_vec_info_type): Add
+        condition_vec_info_type.
+        (vectorizable_condition): New.
+	
 2005-04-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/t-slibgcc-darwin: Don't put shared libraries in

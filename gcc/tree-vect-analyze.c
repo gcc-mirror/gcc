@@ -494,7 +494,8 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	  ok = (vectorizable_operation (stmt, NULL, NULL)
 		|| vectorizable_assignment (stmt, NULL, NULL)
 		|| vectorizable_load (stmt, NULL, NULL)
-		|| vectorizable_store (stmt, NULL, NULL));
+		|| vectorizable_store (stmt, NULL, NULL)
+		|| vectorizable_condition (stmt, NULL, NULL));
 
 	  if (!ok)
 	    {
@@ -774,6 +775,12 @@ vect_analyze_data_ref_dependence (struct data_reference *dra,
 {
   bool differ_p; 
   struct data_dependence_relation *ddr;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  int dist = 0;
+  unsigned int loop_depth = 0;
+  struct loop *loop_nest = loop;  
+
   
   if (!vect_base_addr_differ_p (dra, drb, &differ_p))
     {
@@ -797,7 +804,65 @@ vect_analyze_data_ref_dependence (struct data_reference *dra,
 
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     return false;
-  
+
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+                                LOOP_LOC (loop_vinfo)))
+        {
+          fprintf (vect_dump, 
+                   "not vectorized: can't determine dependence between "); 
+          print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
+          fprintf (vect_dump, " and ");
+          print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+        }
+      return true;
+    }
+
+  /* Find loop depth.  */
+  while (loop_nest)
+    {
+      if (loop_nest->outer && loop_nest->outer->outer)
+	{
+	  loop_nest = loop_nest->outer;
+	  loop_depth++;
+	}
+      else
+	break;
+    }
+
+  /* Compute distance vector.  */
+  compute_subscript_distance (ddr);
+  build_classic_dist_vector (ddr, vect_loops_num, loop_nest->depth);
+
+  if (!DDR_DIST_VECT (ddr))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+				LOOP_LOC (loop_vinfo)))
+	{
+	  fprintf (vect_dump, "not vectorized: bad dist vector for ");
+	  print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
+	  fprintf (vect_dump, " and ");
+	  print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	}      
+      return true;
+    }
+
+  dist = DDR_DIST_VECT (ddr)[loop_depth];
+
+  /* Same loop iteration.  */
+  if (dist == 0)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+	fprintf (vect_dump, "dependence distance 0.");
+      return false;
+    }
+
+  if (dist >= vectorization_factor)
+    /* Dependence distance does not create dependence, as far as vectorization
+       is concerned, in this case.  */
+    return false;
+    
   if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
 			    LOOP_LOC (loop_vinfo)))
     {
@@ -815,10 +880,7 @@ vect_analyze_data_ref_dependence (struct data_reference *dra,
 /* Function vect_analyze_data_ref_dependences.
 
    Examine all the data references in the loop, and make sure there do not
-   exist any data dependences between them.
-
-   TODO: dependences which distance is greater than the vectorization factor
-         can be ignored.  */
+   exist any data dependences between them.  */
 
 static bool
 vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo)
@@ -2567,6 +2629,15 @@ vect_analyze_loop (struct loop *loop)
       return NULL;
     }
 
+  ok = vect_determine_vectorization_factor (loop_vinfo);
+  if (!ok)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+        fprintf (vect_dump, "can't determine vectorization factor.");
+      destroy_loop_vec_info (loop_vinfo);
+      return NULL;
+    }
+
   /* Analyze data dependences between the data-refs in the loop. 
      FORNOW: fail at the first data dependence that we encounter.  */
 
@@ -2587,15 +2658,6 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
 	fprintf (vect_dump, "bad data access.");
-      destroy_loop_vec_info (loop_vinfo);
-      return NULL;
-    }
-
-  ok = vect_determine_vectorization_factor (loop_vinfo);
-  if (!ok)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
-        fprintf (vect_dump, "can't determine vectorization factor.");
       destroy_loop_vec_info (loop_vinfo);
       return NULL;
     }

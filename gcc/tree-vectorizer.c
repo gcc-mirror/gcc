@@ -178,7 +178,8 @@ FILE *vect_dump;
    to mark that it's uninitialized.  */
 enum verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
 
-
+/* Number of loops, at the beginning of vectorization.  */
+unsigned int vect_loops_num;
 
 /*************************************************************************
   Simple Loop Peeling Utilities
@@ -1821,7 +1822,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
 void
 vectorize_loops (struct loops *loops)
 {
-  unsigned int i, loops_num;
+  unsigned int i;
   unsigned int num_vectorized_loops = 0;
 
   /* Fix the verbosity level if not defined explicitly by the user.  */
@@ -1841,8 +1842,8 @@ vectorize_loops (struct loops *loops)
   /* If some loop was duplicated, it gets bigger number 
      than all previously defined loops. This fact allows us to run 
      only over initial loops skipping newly generated ones.  */
-  loops_num = loops->num;
-  for (i = 1; i < loops_num; i++)
+  vect_loops_num = loops->num;
+  for (i = 1; i < vect_loops_num; i++)
     {
       loop_vec_info loop_vinfo;
       struct loop *loop = loops->parray[i];
@@ -1866,7 +1867,7 @@ vectorize_loops (struct loops *loops)
 
   /*  ----------- Finalize. -----------  */
 
-  for (i = 1; i < loops_num; i++)
+  for (i = 1; i < vect_loops_num; i++)
     {
       struct loop *loop = loops->parray[i];
       loop_vec_info loop_vinfo;
