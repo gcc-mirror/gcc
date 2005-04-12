@@ -1680,7 +1680,7 @@ extern char leaf_reg_remap[];
 /* Define the size of space to allocate for the return value of an
    untyped_call.  */
 
-#define APPLY_RESULT_SIZE 16
+#define APPLY_RESULT_SIZE (TARGET_ARCH64 ? 24 : 16)
 
 /* 1 if N is a possible register number for function argument passing.
    On SPARC, these are the "output" registers.  v9 also uses %f0-%f31.  */

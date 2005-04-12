@@ -7626,21 +7626,22 @@
 (define_expand "untyped_call"
   [(parallel [(call (match_operand 0 "" "")
 		    (const_int 0))
-	      (match_operand 1 "" "")
+	      (match_operand:BLK 1 "memory_operand" "")
 	      (match_operand 2 "" "")])]
   ""
 {
-  int i;
+  rtx valreg1 = gen_rtx_REG (DImode, 8);
+  rtx valreg2 = gen_rtx_REG (TARGET_ARCH64 ? TFmode : DFmode, 32);
+  rtx result = operands[1];
 
   /* Pass constm1 to indicate that it may expect a structure value, but
      we don't know what size it is.  */
   emit_call_insn (GEN_CALL (operands[0], const0_rtx, NULL, constm1_rtx));
 
-  for (i = 0; i < XVECLEN (operands[2], 0); i++)
-    {
-      rtx set = XVECEXP (operands[2], 0, i);
-      emit_move_insn (SET_DEST (set), SET_SRC (set));
-    }
+  /* Save the function value registers.  */
+  emit_move_insn (adjust_address (result, DImode, 0), valreg1);
+  emit_move_insn (adjust_address (result, TARGET_ARCH64 ? TFmode : DFmode, 8),
+				  valreg2);
 
   /* The optimizer does not know that the call sets the function value
      registers we stored in the result block.  We avoid problems by

@@ -1,3 +1,10 @@
+2005-04-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.h (APPLY_RESULT_SIZE): Set to 24 in 64-bit mode.
+	* config/sparc/sparc.md (untyped_call): Save the registers manually.
+
+	* config/sparc/sparc.c (legitimate_address_p): Use TARGET_ARCH32.
+
 2005-04-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR middle-end/20917
