@@ -3880,7 +3880,7 @@ tree_verify_flow_info (void)
 	  if (TREE_CODE (stmt) == LABEL_EXPR)
 	    {
 	      error ("Label %s in the middle of basic block %d\n",
-		     IDENTIFIER_POINTER (DECL_NAME (stmt)),
+		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
 		     bb->index);
 	      err = 1;
 	    }
