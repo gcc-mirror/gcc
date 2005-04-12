@@ -1,5 +1,11 @@
 2005-04-12  Aaron Luchko  <aluchko@redhat.com>
 
+	PR libgcj/20958
+	* gnu/gcj/runtime/PersistentByteMap.java (close): Throw IOException.
+	* gnu/gcj/tools/gcj_dbtool/Main.java (addJar): Make 'length' an int.
+
+2005-04-12  Aaron Luchko  <aluchko@redhat.com>
+
 	PR libgcj/20975
 	* scripts/TexinfoDoclet.java: Removed.
 	* Makefile.am (texinfo): Removed.
