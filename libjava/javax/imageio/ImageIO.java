@@ -80,7 +80,7 @@ public final class ImageIO
     {
       if (provider instanceof ImageReaderSpi)
         {
-          ImageWriterSpi spi = (ImageWriterSpi) provider;
+          ImageReaderSpi spi = (ImageReaderSpi) provider;
           String[] formatNames = spi.getFormatNames();
 
           for (int i = formatNames.length - 1; i >= 0; --i)
