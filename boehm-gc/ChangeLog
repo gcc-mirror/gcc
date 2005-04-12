@@ -1,3 +1,7 @@
+2005-04-11  Richard Henderson  <rth@redhat.com>
+
+	* include/private/gcconfig.h (alpha-linux): Use LINUX_STACKBOTTOM.
+
 2005-02-22  Bryce McKinlay  <mckinlay@redhat.com>
 
         PR libgcj/19823
