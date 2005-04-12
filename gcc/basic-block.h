@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "predict.h"
 #include "vec.h"
 #include "errors.h"
+#include "function.h"
 
 /* Head of register set linked list.  */
 typedef bitmap_head regset_head;
@@ -242,7 +243,7 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   struct basic_block_def *next_bb;
 
   /* The data used by basic block copying and reordering functions.  */
-  struct reorder_block_def * GTY ((skip (""))) rbi;
+  struct reorder_block_def * rbi;
 
   /* Annotations used at the tree level.  */
   struct bb_ann_d *tree_annotations;
@@ -261,27 +262,38 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
 
   /* Various flags.  See BB_* below.  */
   int flags;
+
+  /* Which section block belongs in, when partitioning basic blocks.  */
+  int partition;
 };
 
 typedef struct basic_block_def *basic_block;
 
 /* Structure to hold information about the blocks during reordering and
-   copying.  */
+   copying.  Needs to be put on a diet.  */
 
-typedef struct reorder_block_def
+struct reorder_block_def GTY(())
 {
   rtx header;
   rtx footer;
+
   basic_block next;
-  basic_block original;
-  /* Used by loop copying.  */
-  basic_block copy;
+
+  /* These pointers may be unreliable as the first is only used for
+     debugging (and should probably be removed, and the second is only
+     used by copying.  The basic blocks pointed to may be removed and
+     that leaves these pointers pointing to garbage.  */
+  basic_block GTY ((skip (""))) original;
+  basic_block GTY ((skip (""))) copy;
+
   int duplicated;
   int copy_number;
 
-  /* These fields are used by bb-reorder pass.  */
+  /* This field is used by the bb-reorder and tracer passes.  */
   int visited;
-} *reorder_block_def_p;
+};
+
+typedef struct reorder_block_def *reorder_block_def;
 
 #define BB_FREQ_MAX 10000
 
@@ -338,45 +350,81 @@ enum
 #define BB_COPY_PARTITION(dstbb, srcbb) \
   BB_SET_PARTITION (dstbb, BB_PARTITION (srcbb))
 
-/* Number of basic blocks in the current function.  */
+/* A structure to group all the per-function control flow graph data.
+   The x_* prefixing is necessary because otherwise references to the
+   fields of this struct are interpreted as the defines for backward
+   source compatibility following the definition of this struct.  */
+struct control_flow_graph GTY(())
+{
+  /* Block pointers for the exit and entry of a function.
+     These are always the head and tail of the basic block list.  */
+  basic_block x_entry_block_ptr;
+  basic_block x_exit_block_ptr;
 
-extern int n_basic_blocks;
+  /* Index by basic block number, get basic block struct info.  */
+  varray_type x_basic_block_info;
 
-/* First free basic block number.  */
+  /* Number of basic blocks in this flow graph.  */
+  int x_n_basic_blocks;
 
-extern int last_basic_block;
+  /* Number of edges in this flow graph.  */
+  int x_n_edges;
 
-/* Number of edges in the current function.  */
+  /* The first free basic block number.  */
+  int x_last_basic_block;
 
-extern int n_edges;
+  /* Mapping of labels to their associated blocks.  At present
+     only used for the tree CFG.  */
+  varray_type x_label_to_block_map;
+
+  enum profile_status {
+    PROFILE_ABSENT,
+    PROFILE_GUESSED,
+    PROFILE_READ
+  } x_profile_status;
+};
+
+/* Defines for accessing the fields of the CFG structure for function FN.  */
+#define ENTRY_BLOCK_PTR_FOR_FUNCTION(FN)     ((FN)->cfg->x_entry_block_ptr)
+#define EXIT_BLOCK_PTR_FOR_FUNCTION(FN)	     ((FN)->cfg->x_exit_block_ptr)
+#define basic_block_info_for_function(FN)    ((FN)->cfg->x_basic_block_info)
+#define n_basic_blocks_for_function(FN)	     ((FN)->cfg->x_n_basic_blocks)
+#define n_edges_for_function(FN)	     ((FN)->cfg->x_n_edges)
+#define last_basic_block_for_function(FN)    ((FN)->cfg->x_last_basic_block)
+#define label_to_block_map_for_function(FN)  ((FN)->cfg->x_label_to_block_map)
+
+#define BASIC_BLOCK_FOR_FUNCTION(FN,N) \
+  (VARRAY_BB (basic_block_info_for_function(FN), (N)))
+
+/* Defines for texual backward source compatibility.  */
+#define ENTRY_BLOCK_PTR		(cfun->cfg->x_entry_block_ptr)
+#define EXIT_BLOCK_PTR		(cfun->cfg->x_exit_block_ptr)
+#define basic_block_info	(cfun->cfg->x_basic_block_info)
+#define n_basic_blocks		(cfun->cfg->x_n_basic_blocks)
+#define n_edges			(cfun->cfg->x_n_edges)
+#define last_basic_block	(cfun->cfg->x_last_basic_block)
+#define label_to_block_map	(cfun->cfg->x_label_to_block_map)
+#define profile_status		(cfun->cfg->x_profile_status)
+
+#define BASIC_BLOCK(N)		(VARRAY_BB (basic_block_info, (N)))
 
 /* TRUE if we should re-run loop discovery after threading jumps, FALSE
    otherwise.  */
 extern bool rediscover_loops_after_threading;
 
-/* Signalize the status of profile information in the CFG.  */
-extern enum profile_status
-{
-  PROFILE_ABSENT,
-  PROFILE_GUESSED,
-  PROFILE_READ
-} profile_status;
-
-/* Index by basic block number, get basic block struct info.  */
-
-extern GTY(()) varray_type basic_block_info;
-
-#define BASIC_BLOCK(N)  (VARRAY_BB (basic_block_info, (N)))
-
 /* For iterating over basic blocks.  */
 #define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \
   for (BB = FROM; BB != TO; BB = BB->DIR)
 
-#define FOR_EACH_BB(BB) \
-  FOR_BB_BETWEEN (BB, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR, next_bb)
+#define FOR_EACH_BB_FN(BB, FN) \
+  FOR_BB_BETWEEN (BB, (FN)->cfg->x_entry_block_ptr->next_bb, (FN)->cfg->x_exit_block_ptr, next_bb)
 
-#define FOR_EACH_BB_REVERSE(BB) \
-  FOR_BB_BETWEEN (BB, EXIT_BLOCK_PTR->prev_bb, ENTRY_BLOCK_PTR, prev_bb)
+#define FOR_EACH_BB(BB) FOR_EACH_BB_FN (BB, cfun)
+
+#define FOR_EACH_BB_REVERSE_FN(BB, FN) \
+  FOR_BB_BETWEEN (BB, (FN)->cfg->x_exit_block_ptr->prev_bb, (FN)->cfg->x_entry_block_ptr, prev_bb)
+
+#define FOR_EACH_BB_REVERSE(BB) FOR_EACH_BB_REVERSE_FN(BB, cfun)
 
 /* For iterating over insns in basic block.  */
 #define FOR_BB_INSNS(BB, INSN)			\
@@ -424,10 +472,6 @@ extern bitmap_obstack reg_obstack;
 
 /* Special block number not valid for any block.  */
 #define INVALID_BLOCK (-3)
-
-/* Similarly, block pointers for the edge list.  */
-extern GTY(()) basic_block ENTRY_BLOCK_PTR;
-extern GTY(()) basic_block EXIT_BLOCK_PTR;
 
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 #define set_block_for_insn(INSN, BB)  (BLOCK_FOR_INSN (INSN) = BB)
@@ -870,9 +914,7 @@ extern void duplicate_computed_gotos (void);
 extern void partition_hot_cold_basic_blocks (void);
 
 /* In cfg.c */
-extern void alloc_rbi_pool (void);
 extern void initialize_bb_rbi (basic_block bb);
-extern void free_rbi_pool (void);
 
 /* In dominance.c */
 

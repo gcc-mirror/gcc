@@ -419,7 +419,7 @@ expected_loop_iterations (const struct loop *loop)
   edge e;
   edge_iterator ei;
 
-  if (loop->header->count)
+  if (loop->latch->count || loop->header->count)
     {
       gcov_type count_in, count_latch, expected;
 

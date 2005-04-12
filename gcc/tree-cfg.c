@@ -54,10 +54,6 @@ Boston, MA 02111-1307, USA.  */
 /* Initial capacity for the basic block array.  */
 static const int initial_cfg_capacity = 20;
 
-/* Mapping of labels to their associated blocks.  This can greatly speed up
-   building of the CFG in code with lots of gotos.  */
-static GTY(()) varray_type label_to_block_map;
-
 /* This hash table allows us to efficiently lookup all CASE_LABEL_EXPRs
    which use a particular edge.  The CASE_LABEL_EXPRs are chained together
    via their TREE_CHAIN field, which we clear after we're done with the
@@ -149,9 +145,6 @@ build_tree_cfg (tree *tp)
 {
   /* Register specific tree functions.  */
   tree_register_cfg_hooks ();
-
-  /* Initialize rbi_pool.  */
-  alloc_rbi_pool ();
 
   /* Initialize the basic block array.  */
   init_flow ();
@@ -812,7 +805,7 @@ make_switch_expr_edges (basic_block bb)
 /* Return the basic block holding label DEST.  */
 
 basic_block
-label_to_block (tree dest)
+label_to_block_fn (struct function *ifun, tree dest)
 {
   int uid = LABEL_DECL_UID (dest);
 
@@ -828,9 +821,8 @@ label_to_block (tree dest)
       bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
       uid = LABEL_DECL_UID (dest);
     }
-  return VARRAY_BB (label_to_block_map, uid);
+  return VARRAY_BB (ifun->cfg->x_label_to_block_map, uid);
 }
-
 
 /* Create edges for a goto statement at block BB.  */
 
@@ -2898,7 +2890,6 @@ delete_tree_cfg_annotations (void)
     free_blocks_annotations ();
 
   label_to_block_map = NULL;
-  free_rbi_pool ();
   FOR_EACH_BB (bb)
     bb->rbi = NULL;
 }
@@ -6052,5 +6043,3 @@ struct tree_opt_pass pass_warn_function_return =
   0,					/* todo_flags_finish */
   0					/* letter */
 };
-
-#include "gt-tree-cfg.h"

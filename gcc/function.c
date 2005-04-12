@@ -317,6 +317,7 @@ free_after_compilation (struct function *f)
   f->emit = NULL;
   f->varasm = NULL;
   f->machine = NULL;
+  f->cfg = NULL;
 
   f->x_avail_temp_slots = NULL;
   f->x_used_temp_slots = NULL;
@@ -3908,6 +3909,9 @@ allocate_struct_function (tree fndecl)
   tree fntype = fndecl ? TREE_TYPE (fndecl) : NULL_TREE;
 
   cfun = ggc_alloc_cleared (sizeof (struct function));
+  cfun->cfg = ggc_alloc_cleared (sizeof (struct control_flow_graph));
+
+  n_edges = 0;
 
   cfun->stack_alignment_needed = STACK_BOUNDARY;
   cfun->preferred_stack_boundary = STACK_BOUNDARY;

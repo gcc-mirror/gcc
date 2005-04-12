@@ -1097,10 +1097,6 @@ cfg_layout_initialize (unsigned int flags)
 {
   basic_block bb;
 
-  /* Our algorithm depends on fact that there are no dead jumptables
-     around the code.  */
-  alloc_rbi_pool ();
-
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     initialize_bb_rbi (bb);
 
@@ -1162,8 +1158,6 @@ cfg_layout_finalize (void)
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
 #endif
-  
-  free_rbi_pool ();
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     bb->rbi = NULL;
 

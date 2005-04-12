@@ -760,6 +760,9 @@ free_basic_block_vars (void)
     }
   n_basic_blocks = 0;
   last_basic_block = 0;
+  n_edges = 0;
+
+  label_to_block_map = NULL;
 
   ENTRY_BLOCK_PTR->aux = NULL;
   ENTRY_BLOCK_PTR->global_live_at_end = NULL;
