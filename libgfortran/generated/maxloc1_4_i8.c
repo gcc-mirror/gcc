@@ -200,6 +200,9 @@ mmaxloc1_4_i8 (gfc_array_i4 * retarray, gfc_array_i8 * array,
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
+  if (mask->dim[0].stride == 0)
+    mask->dim[0].stride = 1;
+
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   if (len <= 0)
     return;

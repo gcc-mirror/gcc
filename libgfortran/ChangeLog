@@ -1,3 +1,67 @@
+2005-04-13  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/19106
+	* m4/iforeach.c (name`'rtype_qual`_'atype_code):  Add TODO
+	that setting correct strides is a front end job.
+	(`m'name`'rtype_qual`_'atype_code):  Likewise.  If mask has
+	a lowest stride of 0, adjust to 1.
+	* m4/ifunction.c (name`'rtype_qual`_'atype_code):  Add TODO
+	that setting correct strides is a front end job.
+	(`m'name`'rtype_qual`_'atype_code):  Likewise.  If mask has
+	a lowest stride of 0, adjust to 1.
+	* maxloc0_4_i4.c: Regenerated
+	* maxloc0_4_i8.c: Regenerated
+	* maxloc0_4_r4.c: Regenerated
+	* maxloc0_4_r8.c: Regenerated
+	* maxloc0_8_i4.c: Regenerated
+	* maxloc0_8_i8.c: Regenerated
+	* maxloc0_8_r4.c: Regenerated
+	* maxloc0_8_r8.c: Regenerated
+	* maxloc1_4_i4.c: Regenerated
+	* maxloc1_4_i8.c: Regenerated
+	* maxloc1_4_r4.c: Regenerated
+	* maxloc1_4_r8.c: Regenerated
+	* maxloc1_8_i4.c: Regenerated
+	* maxloc1_8_i8.c: Regenerated
+	* maxloc1_8_r4.c: Regenerated
+	* maxloc1_8_r8.c: Regenerated
+	* maxval_i4.c: Regenerated
+	* maxval_i8.c: Regenerated
+	* maxval_r4.c: Regenerated
+	* maxval_r8.c: Regenerated
+	* minloc0_4_i4.c: Regenerated
+	* minloc0_4_i8.c: Regenerated
+	* minloc0_4_r4.c: Regenerated
+	* minloc0_4_r8.c: Regenerated
+	* minloc0_8_i4.c: Regenerated
+	* minloc0_8_i8.c: Regenerated
+	* minloc0_8_r4.c: Regenerated
+	* minloc0_8_r8.c: Regenerated
+	* minloc1_4_i4.c: Regenerated
+	* minloc1_4_i8.c: Regenerated
+	* minloc1_4_r4.c: Regenerated
+	* minloc1_4_r8.c: Regenerated
+	* minloc1_8_i4.c: Regenerated
+	* minloc1_8_i8.c: Regenerated
+	* minloc1_8_r4.c: Regenerated
+	* minloc1_8_r8.c: Regenerated
+	* minval_i4.c: Regenerated
+	* minval_i8.c: Regenerated
+	* minval_r4.c: Regenerated
+	* minval_r8.c: Regenerated
+	* product_c4.c: Regenerated
+	* product_c8.c: Regenerated
+	* product_i4.c: Regenerated
+	* product_i8.c: Regenerated
+	* product_r4.c: Regenerated
+	* product_r8.c: Regenerated
+	* sum_c4.c: Regenerated
+	* sum_c8.c: Regenerated
+	* sum_i4.c: Regenerated
+	* sum_i8.c: Regenerated
+	* sum_r4.c: Regenerated
+	* sum_r8.c: Regenerated
+
 2005-04-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20788

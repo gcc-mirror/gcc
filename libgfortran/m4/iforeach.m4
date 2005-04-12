@@ -43,6 +43,9 @@ name`'rtype_qual`_'atype_code (rtype * retarray, atype *array)
       if (retarray->dim[0].stride == 0)
 	retarray->dim[0].stride = 1;
     }
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
@@ -151,8 +154,13 @@ void
 	retarray->dim[0].stride = 1;
     }
 
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
+
+  if (mask->dim[0].stride == 0)
+    mask->dim[0].stride = 1;
 
   dstride = retarray->dim[0].stride;
   dest = retarray->data;

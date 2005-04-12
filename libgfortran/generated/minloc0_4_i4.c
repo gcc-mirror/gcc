@@ -195,6 +195,9 @@ mminloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array,
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
+  if (mask->dim[0].stride == 0)
+    mask->dim[0].stride = 1;
+
   dstride = retarray->dim[0].stride;
   dest = retarray->data;
   for (n = 0; n < rank; n++)
@@ -238,7 +241,7 @@ mminloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array,
     {
       {
         /* Implementation start.  */
-
+  printf("mbase = %p, *mbase = %d, *base=%d\n");
   if (*mbase && *base < minval)
     {
       minval = *base;

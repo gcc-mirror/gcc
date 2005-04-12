@@ -192,6 +192,9 @@ mproduct_r4 (gfc_array_r4 * retarray, gfc_array_r4 * array,
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
+  if (mask->dim[0].stride == 0)
+    mask->dim[0].stride = 1;
+
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   if (len <= 0)
     return;

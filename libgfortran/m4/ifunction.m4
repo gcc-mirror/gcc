@@ -40,6 +40,9 @@ name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
@@ -174,8 +177,14 @@ void
 
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
+
+  if (mask->dim[0].stride == 0)
+    mask->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   if (len <= 0)
