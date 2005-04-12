@@ -452,7 +452,7 @@ public class PersistentByteMap
 
   // Close the map.  Once this has been done, the map can no longer be
   // used.
-  public void close()
+  public void close() throws IOException
   {
     force();
     fc.close();

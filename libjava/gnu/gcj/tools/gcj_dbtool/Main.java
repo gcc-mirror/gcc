@@ -375,7 +375,7 @@ public class Main
 	if (classfile.getName().endsWith(".class"))
 	  {
 	    InputStream str = jar.getInputStream(classfile);
-	    long length = classfile.getSize();
+	    int length = (int) classfile.getSize();
 	    if (length == -1)
 	      throw new EOFException();
 
@@ -383,7 +383,7 @@ public class Main
 	    int pos = 0;
 	    while (length - pos > 0)
 	      {
-		int len = str.read(data, pos, (int)(length - pos));
+		int len = str.read(data, pos, length - pos);
 		if (len == -1)
 		  throw new EOFException("Not enough data reading from: "
 					 + classfile.getName());
