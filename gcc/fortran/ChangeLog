@@ -1,3 +1,7 @@
+2005-04-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* lang.opt: Refer to the GCC internals documentation instead of c.opt.
+
 2005-04-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* simplify.c (gfc_simplify_nearest): Overhaul.

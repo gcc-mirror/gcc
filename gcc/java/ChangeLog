@@ -1,3 +1,7 @@
+2005-04-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* lang.opt: Refer to the GCC internals documentation instead of c.opt.
+
 2005-04-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* java-tree.h: Don't use PARAMS().
