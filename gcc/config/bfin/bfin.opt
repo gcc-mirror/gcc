@@ -34,3 +34,7 @@ Avoid speculative loads by inserting CSYNC or equivalent
 mid-shared-library
 Target Report Mask(ID_SHARED_LIBRARY)
 Enabled ID based shared library
+
+mshared-library-id=
+Target RejectNegative Joined UInteger Var(bfin_lib_id_given)
+ID of shared library to build

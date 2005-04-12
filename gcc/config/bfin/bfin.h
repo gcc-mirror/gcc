@@ -50,20 +50,6 @@ extern int target_flags;
 
 #define TARGET_DEFAULT MASK_CSYNC
 
-/* This macro is similar to `TARGET_SWITCHES' but defines names of
-   command options that have values.  Its definition is an
-   initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   fixed part of the option name, and the address of a variable.  The
-   variable, type `char *', is set to the variable part of the given
-   option if the fixed part matches.  The actual option name is made
-   by appending `-m' to the specified name.  */
-#define TARGET_OPTIONS							\
-{ { "shared-library-id=",	&bfin_library_id_string,		\
-    "ID of shared library to build", 0}					\
-}
-
 /* Maximum number of library ids we permit */
 #define MAX_LIBRARY_ID 255
 
