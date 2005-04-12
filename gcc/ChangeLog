@@ -1,3 +1,42 @@
+2005-04-12  Caroline Tice  <ctice@apple.com>
+
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	Revert my patch from April 9.
+	(fix_edges_for_rarely_executed_code): Revert my patch from April 9.
+	(reorder_basic_blocks): Revert my patch from April 9.
+	(insert_section_boundary_note): Revert my patch from April 9.
+	* dbxout.c (dbxout_function_end): Revert my patch from April 9.
+	* dwarf2out.c (COLD_TEXT_SECTION_LABEL): Revert my patch from April 9.
+	(COLD_END_LABEL):  Revert my patch from April 9.
+	(cold_text_section_label):  Revert my patch from April 9.
+	(cold_end_label): Revert my patch from April 9.
+	(dwarf2out_switch_text_section): Revert my patch from April 9.
+	(output_aranges): Revert my patch from April 9.
+	(output_ranges):  Revert my patch from April 9.
+	(output_line_info): Revert my patch from April 9.
+	(add_location_or_const_value_attribute):  Revert my patch from April 9.
+	(dwarf2out_var_location): Revert my patch from April 9.
+	(dwarf2out_init):  Revert my patch from April 9.
+	(dwarf2out_finish): Revert my patch from April 9.
+	* function.h (struct function): Revert my patch from April 9.
+	* opts.c (decode_options): Revert my patch from April 9.
+	* output.h (unlikely_section_label, hot_section_label,
+	hot_section_end_label, cold_section_end_label, 
+	unlikely_text_section_name): Revert my patch from April 9.
+	* passes.c (rest_of_handle_final): Revert my patch from April 9.
+	* varasm.c (unlikely_section_label, hot_section_label,
+	hot_section_end_label, cold_section_end_label,
+	unlikely_text_section_name): Revert my patch from April 9.
+	(initialize_cold_section_name): Revert my patch from April 9.
+	(unlikely_text_section): Revert my patch from April 9.
+	(in_unlikely_text_section): Revert my patch from April 9.
+	(named_section): Revert my patch from April 9.
+	(function_section): Revert my patch from April 9.
+	(current_function_section): Revert my patch from April 9.
+	(assemble_start_function): Revert my patch from April 9.
+	(assemble_end_function): Revert my patch from April 9.
+	(default_section_type_flags_1): Revert my patch from April 9.
+	
 2005-04-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.h (APPLY_RESULT_SIZE): Set to 24 in 64-bit mode.
