@@ -1,3 +1,7 @@
+2005-04-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* simplify.c: Fix a comment typo.
+
 2005-04-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* lang.opt: Refer to the GCC internals documentation instead of c.opt.

@@ -2322,7 +2322,7 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
       else
 	{
 	  /* In this case the exponent can shrink, which makes us skip
-	     over one number because we substract one ulp with the
+	     over one number because we subtract one ulp with the
 	     larger exponent.  Thus we need to compensate for this.  */
 	  mpfr_init_set (tmp, result->value.real, GFC_RND_MODE);
 
