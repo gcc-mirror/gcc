@@ -35,8 +35,6 @@ proc ${tool}_maybe_build_wrapper { filename } {
 	if { $result != "" } {
 	    set gluefile [lindex $result 0]
 	    set wrap_flags [lindex $result 1]
-	} else {
-	    unset gluefile
 	}
     }
 }

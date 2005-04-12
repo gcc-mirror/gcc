@@ -1,3 +1,7 @@
+2005-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/wrapper.exp (${tool}_maybe_build_wrapper): Don't unset gluefile.
+
 2005-04-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/i386-darwin-fpmath.c: New.
