@@ -4122,9 +4122,6 @@ static int maybe_emit_file (int);
 #ifndef TEXT_SECTION_LABEL
 #define TEXT_SECTION_LABEL		"Ltext"
 #endif
-#ifndef COLD_TEXT_SECTION_LABEL
-#define COLD_TEXT_SECTION_LABEL         "Ltext_cold"
-#endif
 #ifndef DEBUG_LINE_SECTION_LABEL
 #define DEBUG_LINE_SECTION_LABEL	"Ldebug_line"
 #endif
@@ -4152,8 +4149,6 @@ static int maybe_emit_file (int);
 
 static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char text_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
-static char cold_text_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
-static char cold_end_label[MAX_ARTIFICIAL_LABEL_BYTES]; 
 static char abbrev_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char debug_info_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -4163,9 +4158,6 @@ static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef TEXT_END_LABEL
 #define TEXT_END_LABEL		"Letext"
-#endif
-#ifndef COLD_END_LABEL
-#define COLD_END_LABEL          "Letext_cold"
 #endif
 #ifndef BLOCK_BEGIN_LABEL
 #define BLOCK_BEGIN_LABEL	"LBB"
@@ -6807,14 +6799,13 @@ static void
 dwarf2out_switch_text_section (void)
 {
   dw_fde_ref fde;
-  struct function *cfun = DECL_STRUCT_FUNCTION (current_function_decl);
 
   fde = &fde_table[fde_table_in_use - 1];
   fde->dw_fde_switched_sections = true;
-  fde->dw_fde_hot_section_label = cfun->hot_section_label;
-  fde->dw_fde_hot_section_end_label = cfun->hot_section_end_label;
-  fde->dw_fde_unlikely_section_label = cfun->cold_section_label;
-  fde->dw_fde_unlikely_section_end_label = cfun->cold_section_end_label;
+  fde->dw_fde_hot_section_label = xstrdup (hot_section_label);
+  fde->dw_fde_hot_section_end_label = xstrdup (hot_section_end_label);
+  fde->dw_fde_unlikely_section_label = xstrdup (unlikely_section_label);
+  fde->dw_fde_unlikely_section_end_label = xstrdup (cold_section_end_label);
   separate_line_info_table_in_use++;
 }
 
@@ -7244,15 +7235,14 @@ output_aranges (void)
     }
 
   dw2_asm_output_addr (DWARF2_ADDR_SIZE, text_section_label, "Address");
-  dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
-			text_section_label, "Length");
-  if (flag_reorder_blocks_and_partition)
-    {
-      dw2_asm_output_addr (DWARF2_ADDR_SIZE, cold_text_section_label, 
-			   "Address");
-      dw2_asm_output_delta (DWARF2_ADDR_SIZE, cold_end_label,
-			    cold_text_section_label, "Length");
-    }
+  if (last_text_section == in_unlikely_executed_text
+      || (last_text_section == in_named
+	  && last_text_section_name == unlikely_text_section_name))
+    dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
+			  unlikely_section_label, "Length");
+  else
+    dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
+			  text_section_label, "Length");
 
   for (i = 0; i < arange_table_in_use; i++)
     {
@@ -7342,11 +7332,24 @@ output_ranges (void)
 	     base of the text section.  */
 	  if (separate_line_info_table_in_use == 0)
 	    {
-	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, blabel,
-				    text_section_label,
-				    fmt, i * 2 * DWARF2_ADDR_SIZE);
-	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, elabel,
-				    text_section_label, NULL);
+	      if (last_text_section == in_unlikely_executed_text
+		  || (last_text_section == in_named
+		      && last_text_section_name == unlikely_text_section_name))
+		{
+		  dw2_asm_output_delta (DWARF2_ADDR_SIZE, blabel,
+					unlikely_section_label,
+					fmt, i * 2 * DWARF2_ADDR_SIZE);
+		  dw2_asm_output_delta (DWARF2_ADDR_SIZE, elabel,
+					unlikely_section_label, NULL);
+		}
+	      else
+		{
+		  dw2_asm_output_delta (DWARF2_ADDR_SIZE, blabel,
+					text_section_label,
+					fmt, i * 2 * DWARF2_ADDR_SIZE);
+		  dw2_asm_output_delta (DWARF2_ADDR_SIZE, elabel,
+					text_section_label, NULL);
+		}
 	    }
 
 	  /* Otherwise, we add a DW_AT_entry_pc attribute to force the
@@ -7662,7 +7665,6 @@ output_line_info (void)
   long line_delta;
   unsigned long current_file;
   unsigned long function;
-  struct function *cfun;
 
   ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL, 0);
@@ -7733,14 +7735,10 @@ output_line_info (void)
   current_file = 1;
   current_line = 1;
   
-  if (current_function_decl)
-    cfun = DECL_STRUCT_FUNCTION (current_function_decl);
-  else
-    cfun = NULL;
   if (last_text_section == in_unlikely_executed_text
       || (last_text_section == in_named
-	  && last_text_section_name == cfun->unlikely_text_section_name))
-    strcpy (prev_line_label, cfun->cold_section_label);
+	  && last_text_section_name == unlikely_text_section_name))
+    strcpy (prev_line_label, unlikely_section_label);
   else
     strcpy (prev_line_label, text_section_label);
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
@@ -10113,7 +10111,6 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       const char *endname;
       dw_loc_list_ref list;
       rtx varloc;
-      struct function *cfun = DECL_STRUCT_FUNCTION (current_function_decl);
 
 
       /* We need to figure out what section we should use as the base
@@ -10139,8 +10136,8 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	}
       else if (last_text_section == in_unlikely_executed_text
 	       || (last_text_section == in_named
-		   && last_text_section_name == cfun->unlikely_text_section_name))
-	secname = cfun->cold_section_label;
+		   && last_text_section_name == unlikely_text_section_name))
+	secname = unlikely_section_label;
       else
 	secname = text_section_label;
 
@@ -13233,7 +13230,6 @@ dwarf2out_var_location (rtx loc_note)
   static rtx last_insn;
   static const char *last_label;
   tree decl;
-  struct function *cfun = DECL_STRUCT_FUNCTION (current_function_decl);
 
   if (!DECL_P (NOTE_VAR_LOCATION_DECL (loc_note)))
     return;
@@ -13262,8 +13258,8 @@ dwarf2out_var_location (rtx loc_note)
 
   if (last_text_section == in_unlikely_executed_text
       || (last_text_section == in_named
-	  && last_text_section_name == cfun->unlikely_text_section_name))
-    newloc->section_label = cfun->cold_section_label;
+	  && last_text_section_name == unlikely_text_section_name))
+    newloc->section_label = unlikely_section_label;
   else
     newloc->section_label = text_section_label;
 
@@ -13501,9 +13497,6 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,
 			       DEBUG_ABBREV_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (cold_text_section_label, 
-			       COLD_TEXT_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (cold_end_label, COLD_END_LABEL, 0);
 
   ASM_GENERATE_INTERNAL_LABEL (debug_info_section_label,
 			       DEBUG_INFO_SECTION_LABEL, 0);
@@ -13528,11 +13521,6 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 
   text_section ();
   ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
-  if (flag_reorder_blocks_and_partition)
-    {
-      unlikely_text_section ();
-      ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
-    }
 }
 
 /* A helper function for dwarf2out_finish called through
@@ -13864,11 +13852,6 @@ dwarf2out_finish (const char *filename)
   /* Output a terminator label for the .text section.  */
   text_section ();
   targetm.asm_out.internal_label (asm_out_file, TEXT_END_LABEL, 0);
-  if (flag_reorder_blocks_and_partition)
-    {
-      unlikely_text_section ();
-      targetm.asm_out.internal_label (asm_out_file, COLD_END_LABEL, 0);
-    }
 
   /* Output the source line correspondence table.  We must do this
      even if there is no line information.  Otherwise, on an empty
