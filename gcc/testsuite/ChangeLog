@@ -1,3 +1,9 @@
+2005-04-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/torture/cris-torture.exp: New driver in new
+	directory.
+	* gcc.target/cris/torture/no-pro-epi-1.c: New test.
+
 2005-04-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/ucnid-[23456].c: XFAIL on AIX.
