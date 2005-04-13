@@ -90,8 +90,6 @@ enum rtx_class  {
 #define RTX_COMMUTATIVE_MASK (~2)
 #define RTX_COMMUTATIVE_RESULT (RTX_COMM_COMPARE & RTX_COMMUTATIVE_MASK)
 #define RTX_NON_COMMUTATIVE_RESULT (RTX_COMPARE & RTX_COMMUTATIVE_MASK)
-#define RTX_EXPR_FIRST (RTX_COMPARE)
-#define RTX_EXPR_LAST (RTX_UNARY)
 
 extern const unsigned char rtx_length[NUM_RTX_CODE];
 #define GET_RTX_LENGTH(CODE)		(rtx_length[(int) (CODE)])
