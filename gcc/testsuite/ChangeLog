@@ -1,3 +1,8 @@
+2005-04-13  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/torture/pr19683-1.c: Guard with #ifndef __mips16.
+	* gcc.target/mips/asm-1.c: Likewise.
+
 2005-04-13  Dale Johannesen  <dalej@apple.com>
 
 	* objc.dg/objc-fast-4.m:  New.
