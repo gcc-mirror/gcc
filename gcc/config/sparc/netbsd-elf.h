@@ -195,13 +195,6 @@ Boston, MA 02111-1307, USA.  */
   { "netbsd_entry_point",	NETBSD_ENTRY_POINT },
 
 
-/* What extra switches do we need?  */
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-  {"long-double-64", -MASK_LONG_DOUBLE_128, N_("Use 64 bit long doubles") }, \
-  {"long-double-128", MASK_LONG_DOUBLE_128, N_("Use 128 bit long doubles") },
-
-
 /* Build a compiler that supports -m32 and -m64?  */
 
 #ifdef SPARC_BI_ARCH

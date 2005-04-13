@@ -1924,6 +1924,7 @@ sh-*-*)
 	;;
 sparc-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	extra_options="${extra_options} sparc/long-double-switch.opt"
 	;;
 sparc-*-openbsd*)
 	tm_defines=OBSD_OLD_GAS
@@ -1935,6 +1936,7 @@ sparc-*-openbsd*)
 	;;
 sparc64-*-openbsd*)
 	tm_file="sparc/openbsd1-64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp64-elf.h openbsd.h sparc/openbsd64.h"
+	extra_options="${extra_options} sparc/little-endian.opt"
 	gas=yes gnu_ld=yes
 	with_cpu=ultrasparc
 	;;
@@ -1946,6 +1948,7 @@ sparc-*-elf*)
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
+	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-crtfm"
 	;;
 sparc-*-rtems*)
@@ -2044,12 +2047,14 @@ sparc-*-sysv4*)
 	;;
 sparc64-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp64-elf.h"
+	extra_options="${extra_options} sparc/little-endian.opt"
 	tmake_file="${tmake_file} sparc/t-crtfm"
 	extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
 	;;
 sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/freebsd.h"
+	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-crtfm"
 	case "x$with_cpu" in
 		xultrasparc) ;;
@@ -2059,13 +2064,15 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	need_64bit_hwint=yes
 	;;
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
-	tmake_file="${tmake_file} sparc/t-linux64 sparc/t-crtfm"
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
+	extra_options="${extra_options} sparc/long-double-switch.opt"
+	tmake_file="${tmake_file} sparc/t-linux64 sparc/t-crtfm"
 	;;
 sparc64-*-netbsd*)
-	tmake_file="${tmake_file} sparc/t-netbsd64"
 	tm_file="sparc/biarch64.h ${tm_file}"
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	extra_options="${extra_options} sparc/long-double-switch.opt"
+	tmake_file="${tmake_file} sparc/t-netbsd64"
 	;;
 strongarm-*-elf*)
 	tm_file="arm/strongarm-elf.h dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"

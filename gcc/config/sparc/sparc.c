@@ -299,6 +299,7 @@ static HOST_WIDE_INT frame_base_offset;
 /* 1 if the next opcode is to be specially indented.  */
 int sparc_indent_opcode = 0;
 
+static bool sparc_handle_option (size_t, const char *, int);
 static void sparc_init_modes (void);
 static void scan_record_type (tree, int *, int *, int *);
 static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
@@ -372,6 +373,7 @@ const struct attribute_spec sparc_attribute_table[];
 
 /* Code model option as passed by user.  */
 const char *sparc_cmodel_string;
+
 /* Parsed value.  */
 enum cmodel sparc_cmodel;
 
@@ -388,7 +390,10 @@ struct sparc_cpu_select sparc_select[] =
 
 /* CPU type.  This is set from TARGET_CPU_DEFAULT and -m{cpu,tune}=xxx.  */
 enum processor_type sparc_cpu;
-
+
+/* Whetheran FPU option was specified.  */
+static bool fpu_option_set = false;
+
 /* Initialize the GCC target structure.  */
 
 /* The sparc default is to use .half rather than .short for aligned
@@ -506,11 +511,45 @@ enum processor_type sparc_cpu;
 #undef TARGET_RELAXED_ORDERING
 #define TARGET_RELAXED_ORDERING SPARC_RELAXED_ORDERING
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION sparc_handle_option
+
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END sparc_file_end
 
 struct gcc_target targetm = TARGET_INITIALIZER;
-
+
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+sparc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_mfpu:
+    case OPT_mhard_float:
+    case OPT_msoft_float:
+      fpu_option_set = true;
+      break;
+
+    case OPT_mcpu_:
+      sparc_select[1].string = arg;
+      break;
+
+    case OPT_mtune_:
+      sparc_select[2].string = arg;
+      break;
+
+    case OPT_mcmodel_:
+      sparc_cmodel_string = arg;
+      break;
+    }
+
+  return true;
+}
+
 /* Validate and override various options, and do some machine dependent
    initialization.  */
 
@@ -657,13 +696,9 @@ sparc_override_options (void)
     }
 
   /* If -mfpu or -mno-fpu was explicitly used, don't override with
-     the processor default.  Clear MASK_FPU_SET to avoid confusing
-     the reverse mapping from switch values to names.  */
-  if (TARGET_FPU_SET)
-    {
-      target_flags = (target_flags & ~MASK_FPU) | fpu;
-      target_flags &= ~MASK_FPU_SET;
-    }
+     the processor default.  */
+  if (fpu_option_set)
+    target_flags = (target_flags & ~MASK_FPU) | fpu;
 
   /* Don't allow -mvis if FPU is disabled.  */
   if (! TARGET_FPU)

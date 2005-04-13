@@ -72,11 +72,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Definitions for 64-bit SPARC running systems with ELF. */
 
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES						    \
-  {"long-double-64", -MASK_LONG_DOUBLE_128, N_("Use 64 bit long doubles") },  \
-  {"long-double-128", MASK_LONG_DOUBLE_128, N_("Use 128 bit long doubles") },
-
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (FreeBSD/sparc64 ELF)");
 
