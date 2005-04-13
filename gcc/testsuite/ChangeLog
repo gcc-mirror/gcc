@@ -1,6 +1,8 @@
 2005-04-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/ucnid-[23456].c: XFAIL on AIX.
+	* gcc.dg/ppc-vector-memcpy.c: XFAIL on AIX and SPE.
+	* gcc.dg/ppc-vector-memset.c: XFAIL on AIX and SPE.
 
 2005-04-13  Kazu Hirata  <kazu@cs.umass.edu>
 

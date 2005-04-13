@@ -1,4 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } } */
 /* { dg-options "-O -maltivec" } */
 /* { dg-final { scan-assembler "lvx" } } */
 
