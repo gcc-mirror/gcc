@@ -6,6 +6,8 @@
 	* genattrtab.c (NULL_ATTR): Remove.
 	* ifcvt.c (NULL_EDGE): Likewise.
 
+	* rtl.h (RTX_EXPR_FIRST, RTX_EXPR_LAST): Remove.
+
 2005-04-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure.ac (gcc_AC_CHECK_DECLS): Add vsnprintf.
