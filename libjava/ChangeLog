@@ -1,3 +1,8 @@
+2005-04-13  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	java.class.path to CLASSPATH if not already set.
+
 2005-04-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* prims.cc (parse_verbose_args): Fix verbose argument parsing.
