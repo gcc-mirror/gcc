@@ -1,3 +1,7 @@
+2005-04-13  Julian Brown  <julian@codesourcery.com>
+
+	* decl.c (finish_method): Give methods once-only linkage.
+
 2005-04-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* lang.opt: Refer to the GCC internals documentation instead of c.opt.
