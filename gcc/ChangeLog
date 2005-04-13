@@ -1,3 +1,10 @@
+2005-04-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_lib_id_given): New static variable.
+	(bfin_handle_options): Set it if -mshared-library-id= is seen.
+	* config/bfin/bfin.opt (mshared-library-id=): Lose
+	Var(bfin_lib_id_given).
+
 2005-04-13  Matt Thomas  <matt@3am-software.com>
  
  	* config/rs6000/sysv4.h (NO_IMPLICIT_EXTERN_C): undefine before
