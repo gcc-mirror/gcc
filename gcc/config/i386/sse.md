@@ -774,7 +774,7 @@
    (set_attr "mode" "V4SF")])
 
 ;; Also define scalar versions.  These are used for abs, neg, and
-;; conditional move.  Using subregs into vector modes causes regiser
+;; conditional move.  Using subregs into vector modes causes register
 ;; allocation lossage.  These patterns do not allow memory operands
 ;; because the native instructions read the full 128-bits.
 
