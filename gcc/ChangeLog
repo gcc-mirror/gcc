@@ -1,3 +1,13 @@
+2005-04-13  Dale Johannesen  <dalej@apple.com>
+
+        * objc/Make-lang.in (objc-lang.o):  Depend on tree-gimple.h.
+        (objc-act.o):  Ditto.
+        * objc/objc-act.c (objc_gimplify_expr):  New.
+        (objc_get_callee_fndecl):  New.
+        * objc/objc-act.h:  Include tree-gimple.h.  Declare new functions.
+        * objc/objc-lang.c (LANG_HOOKS_GIMPLIFY_EXPR):  Define.
+        (LANG_HOOKS_GET_CALLEE_FNDECL):  Define.
+
 2005-04-13  Devang Patel  <dpatel@apple.com>
 
 	* tree-if-conv.c (tree_if_convert_cond_expr): Do not create extra

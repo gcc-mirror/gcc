@@ -47,6 +47,10 @@ enum c_language_kind c_language = clk_objc;
 #define LANG_HOOKS_DECL_PRINTABLE_NAME objc_printable_name
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P objc_types_compatible_p
+#undef LANG_HOOKS_GIMPLIFY_EXPR 
+#define LANG_HOOKS_GIMPLIFY_EXPR objc_gimplify_expr
+#undef LANG_HOOKS_GET_CALLEE_FNDECL
+#define LANG_HOOKS_GET_CALLEE_FNDECL	objc_get_callee_fndecl
 
 /* Each front end provides its own lang hook initializer.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;

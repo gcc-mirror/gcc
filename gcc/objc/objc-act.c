@@ -8569,4 +8569,53 @@ objc_lookup_ivar (tree other, tree id)
   return build_ivar_reference (id);
 }
 
+/* Look for the special case of OBJC_TYPE_REF with the address of
+   a function in OBJ_TYPE_REF_EXPR (presumably objc_msgSend or one
+   of its cousins).  */
+
+enum gimplify_status objc_gimplify_expr (tree *expr_p, tree *pre_p, 
+					 tree *post_p)
+{
+  enum gimplify_status r0, r1;
+  if (TREE_CODE (*expr_p) == OBJ_TYPE_REF 
+      && TREE_CODE (OBJ_TYPE_REF_EXPR (*expr_p)) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (OBJ_TYPE_REF_EXPR (*expr_p), 0)) 
+	    == FUNCTION_DECL)
+    {
+      /* Postincrements in OBJ_TYPE_REF_OBJECT don't affect the
+	 value of the OBJ_TYPE_REF, so force them to be emitted
+	 during subexpression evaluation rather than after the
+	 OBJ_TYPE_REF. This permits objc_msgSend calls in Objective
+	 C to use direct rather than indirect calls when the
+	 object expression has a postincrement.  */
+      r0 = gimplify_expr (&OBJ_TYPE_REF_OBJECT (*expr_p), pre_p, NULL,
+			  is_gimple_val, fb_rvalue);
+      r1 = gimplify_expr (&OBJ_TYPE_REF_EXPR (*expr_p), pre_p, post_p,
+			  is_gimple_val, fb_rvalue);
+      return MIN (r0, r1);
+    }
+  return c_gimplify_expr (expr_p, pre_p, post_p);
+}
+
+/* Given a CALL expression, find the function being called.  The ObjC
+   version looks for the OBJ_TYPE_REF_EXPR which is used for objc_msgSend.  */
+
+tree
+objc_get_callee_fndecl (tree call_expr)
+{
+  tree addr = TREE_OPERAND (call_expr, 0);
+  if (TREE_CODE (addr) != OBJ_TYPE_REF)
+    return 0;
+
+  addr = OBJ_TYPE_REF_EXPR (addr);
+
+  /* If the address is just `&f' for some function `f', then we know
+     that `f' is being called.  */
+  if (TREE_CODE (addr) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (addr, 0)) == FUNCTION_DECL)
+    return TREE_OPERAND (addr, 0);
+
+  return 0;
+}
+
 #include "gt-objc-objc-act.h"
