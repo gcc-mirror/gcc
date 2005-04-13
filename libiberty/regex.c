@@ -6174,7 +6174,7 @@ byte_re_match_2_internal (struct re_pattern_buffer *bufp,
 #endif /* WCHAR */
 	    boolean negate = (re_opcode_t) *(p - 1) == charset_not;
 
-            DEBUG_PRINT2 ("EXECUTING charset%s.\n", not ? "_not" : "");
+            DEBUG_PRINT2 ("EXECUTING charset%s.\n", negate ? "_not" : "");
 	    PREFETCH ();
 	    c = TRANSLATE (*d); /* The character to match.  */
 #ifdef WCHAR
@@ -6544,7 +6544,7 @@ byte_re_match_2_internal (struct re_pattern_buffer *bufp,
 	    negate = !negate;
 
 	  char_set_matched:
-	    if (not) goto fail;
+	    if (negate) goto fail;
 #else
             /* Cast to `unsigned' instead of `unsigned char' in case the
                bit list is a full 32 bytes long.  */
