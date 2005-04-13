@@ -1,3 +1,9 @@
+2005-04-13 Fariborz Jahanian <fjahanian@apple.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Return
+	scalar or vector of constant 0, depending on the xor's 
+	mode.
+
 2005-04-13  Dale Johannesen  <dalej@apple.com>
 
         * objc/Make-lang.in (objc-lang.o):  Depend on tree-gimple.h.
