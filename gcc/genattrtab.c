@@ -189,8 +189,6 @@ struct attr_desc
   unsigned static_p	: 1;	/* Make the output function static.  */
 };
 
-#define NULL_ATTR (struct attr_desc *) NULL
-
 /* Structure for each DEFINE_DELAY.  */
 
 struct delay_desc
