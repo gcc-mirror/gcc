@@ -626,9 +626,16 @@ copy_prop_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 	  print_generic_stmt (dump_file, cond, 0);
 	}
 
-      *taken_edge_p = find_taken_edge (bb_for_stmt (stmt), cond);
-      if (*taken_edge_p)
-	retval = SSA_PROP_INTERESTING;
+      /* We can fold COND only and get a useful result only when we
+	 have the same SSA_NAME on both sides of a comparison
+	 operator.  */
+      if (TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME
+	  && TREE_OPERAND (cond, 0) == TREE_OPERAND (cond, 1))
+	{
+	  *taken_edge_p = find_taken_edge (bb_for_stmt (stmt), fold (cond));
+	  if (*taken_edge_p)
+	    retval = SSA_PROP_INTERESTING;
+	}
 
       /* Restore the original operands.  */
       for (i = 0; i < NUM_USES (uses); i++)
