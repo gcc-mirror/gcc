@@ -593,6 +593,18 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
       // LD_LIBRARY_PATH, etc.
       SET ("java.library.path", "");
     }
+
+  // If java.class.path is still not set then set it according to the
+  // CLASSPATH environment variable if given.  See gij.cc main () and
+  // prims.cc _Jv_CreateJavaVM () for all the ways this could have
+  // been set much earlier.
+  path = newprops->getProperty(JvNewStringLatin1("java.class.path"));
+  if (!path)
+    {
+      char *classpath = getenv("CLASSPATH");
+      if (classpath)
+	SET ("java.class.path", classpath);
+    }
 }
 
 java::lang::Process *
