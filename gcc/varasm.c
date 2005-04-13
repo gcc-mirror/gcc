@@ -129,8 +129,8 @@ char *hot_section_end_label;
 
 char *cold_section_end_label;
  
-/* The following global variable indicates the seciton name to be used
-   for the current cold section, when partitiong hot and cold basic 
+/* The following global variable indicates the section name to be used
+   for the current cold section, when partitioning hot and cold basic 
    blocks into separate sections.  */
 
 char *unlikely_text_section_name;

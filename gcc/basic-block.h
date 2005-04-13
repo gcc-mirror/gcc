@@ -396,7 +396,7 @@ struct control_flow_graph GTY(())
 #define BASIC_BLOCK_FOR_FUNCTION(FN,N) \
   (VARRAY_BB (basic_block_info_for_function(FN), (N)))
 
-/* Defines for texual backward source compatibility.  */
+/* Defines for textual backward source compatibility.  */
 #define ENTRY_BLOCK_PTR		(cfun->cfg->x_entry_block_ptr)
 #define EXIT_BLOCK_PTR		(cfun->cfg->x_exit_block_ptr)
 #define basic_block_info	(cfun->cfg->x_basic_block_info)
