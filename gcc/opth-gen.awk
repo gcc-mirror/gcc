@@ -26,7 +26,8 @@
 BEGIN {
 	n_opts = 0
 	n_langs = 0
-        quote = "\042"
+	n_extra_masks = 0
+	quote = "\042"
 	comma = ","
 	FS=SUBSEP
 }
@@ -38,10 +39,16 @@ BEGIN {
 			n_langs++;
 		}
 		else {
-			opts[n_opts]  = $1
-			flags[n_opts] = $2
-			help[n_opts]  = $3
-			n_opts++;
+			name = opt_args("Mask", $1)
+			if (name == "") {
+				opts[n_opts]  = $1
+				flags[n_opts] = $2
+				help[n_opts]  = $3
+				n_opts++;
+			}
+			else {
+				extra_masks[n_extra_masks++] = name
+			}
 		}
 	}
 
@@ -54,6 +61,7 @@ print "#ifndef OPTIONS_H"
 print "#define OPTIONS_H"
 print ""
 print "extern int target_flags;"
+print ""
 
 for (i = 0; i < n_opts; i++) {
 	name = var_name(flags[i]);
@@ -73,6 +81,9 @@ for (i = 0; i < n_opts; i++) {
 	if (name != "" && !flag_set_p("MaskExists", flags[i]))
 		print "#define MASK_" name " (1 << " masknum++ ")"
 }
+for (i = 0; i < n_extra_masks; i++) {
+	print "#define MASK_" extra_masks[i] " (1 << " masknum++ ")"
+}
 if (masknum > 31)
 	print "#error too many target masks"
 print ""
@@ -82,6 +93,10 @@ for (i = 0; i < n_opts; i++) {
 	if (name != "" && !flag_set_p("MaskExists", flags[i]))
 		print "#define TARGET_" name \
 		      " ((target_flags & MASK_" name ") != 0)"
+}
+for (i = 0; i < n_extra_masks; i++) {
+	print "#define TARGET_" extra_masks[i] \
+	      " ((target_flags & MASK_" extra_masks[i] ") != 0)"
 }
 print ""
 

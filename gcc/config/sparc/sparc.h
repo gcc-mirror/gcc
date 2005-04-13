@@ -483,121 +483,13 @@ extern enum cmodel sparc_cmodel;
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
 
+/* Option handling.  */
+
 #define OVERRIDE_OPTIONS  sparc_override_options ()
 
-/* Run-time compilation parameters selecting different hardware subsets.  */
-
-extern int target_flags;
-
-/* Nonzero if we should generate code to use the fpu.  */
-#define MASK_FPU 1
-#define TARGET_FPU (target_flags & MASK_FPU)
-
-/* Nonzero if we should assume that double pointers might be unaligned.
-   This can happen when linking gcc compiled code with other compilers,
-   because the ABI only guarantees 4 byte alignment.  */
-#define MASK_UNALIGNED_DOUBLES 4
-#define TARGET_UNALIGNED_DOUBLES (target_flags & MASK_UNALIGNED_DOUBLES)
-
-/* Nonzero means that we should generate code for a v8 sparc.  */
-#define MASK_V8 0x8
-#define TARGET_V8 (target_flags & MASK_V8)
-
-/* Nonzero means that we should generate code for a sparclite.
-   This enables the sparclite specific instructions, but does not affect
-   whether FPU instructions are emitted.  */
-#define MASK_SPARCLITE 0x10
-#define TARGET_SPARCLITE (target_flags & MASK_SPARCLITE)
-
-/* Nonzero if we're compiling for the sparclet.  */
-#define MASK_SPARCLET 0x20
-#define TARGET_SPARCLET (target_flags & MASK_SPARCLET)
-
-/* Nonzero if we're compiling for v9 sparc.
-   Note that v9's can run in 32 bit mode so this doesn't necessarily mean
-   the word size is 64.  */
-#define MASK_V9 0x40
-#define TARGET_V9 (target_flags & MASK_V9)
-
-/* Nonzero to generate code that uses the instructions deprecated in
-   the v9 architecture.  This option only applies to v9 systems.  */
-/* ??? This isn't user selectable yet.  It's used to enable such insns
-   on 32 bit v9 systems and for the moment they're permanently disabled
-   on 64 bit v9 systems.  */
-#define MASK_DEPRECATED_V8_INSNS 0x80
-#define TARGET_DEPRECATED_V8_INSNS (target_flags & MASK_DEPRECATED_V8_INSNS)
-
 /* Mask of all CPU selection flags.  */
 #define MASK_ISA \
 (MASK_V8 + MASK_SPARCLITE + MASK_SPARCLET + MASK_V9 + MASK_DEPRECATED_V8_INSNS)
-
-/* Nonzero means don't pass `-assert pure-text' to the linker.  */
-#define MASK_IMPURE_TEXT 0x100
-#define TARGET_IMPURE_TEXT (target_flags & MASK_IMPURE_TEXT)
-
-/* 0x200 is unused */
-
-/* Nonzero means use the registers that the SPARC ABI reserves for
-   application software.  This must be the default to coincide with the
-   setting in FIXED_REGISTERS.  */
-#define MASK_APP_REGS 0x400
-#define TARGET_APP_REGS (target_flags & MASK_APP_REGS)
-
-/* Option to select how quad word floating point is implemented.
-   When TARGET_HARD_QUAD is true, we use the hardware quad instructions.
-   Otherwise, we use the SPARC ABI quad library functions.  */
-#define MASK_HARD_QUAD 0x800
-#define TARGET_HARD_QUAD (target_flags & MASK_HARD_QUAD)
-
-/* Nonzero on little-endian machines.  */
-/* ??? Little endian support currently only exists for sparc86x-elf and
-   sparc64-elf configurations.  May eventually want to expand the support
-   to all targets, but for now it's kept local to only those two.  */
-#define MASK_LITTLE_ENDIAN 0x1000
-#define TARGET_LITTLE_ENDIAN (target_flags & MASK_LITTLE_ENDIAN)
-
-/* 0x2000, 0x4000 are unused */
-
-/* Nonzero if pointers are 64 bits.  */
-#define MASK_PTR64 0x8000
-#define TARGET_PTR64 (target_flags & MASK_PTR64)
-
-/* Nonzero if generating code to run in a 64 bit environment.
-   This is intended to only be used by TARGET_ARCH{32,64} as they are the
-   mechanism used to control compile time or run time selection.  */
-#define MASK_64BIT 0x10000
-#define TARGET_64BIT (target_flags & MASK_64BIT)
-
-/* 0x20000,0x40000 unused */
-
-/* Nonzero means use a stack bias of 2047.  Stack offsets are obtained by
-   adding 2047 to %sp.  This option is for v9 only and is the default.  */
-#define MASK_STACK_BIAS 0x80000
-#define TARGET_STACK_BIAS (target_flags & MASK_STACK_BIAS)
-
-/* 0x100000,0x200000 unused */
-
-/* Nonzero means -m{,no-}fpu was passed on the command line.  */
-#define MASK_FPU_SET 0x400000
-#define TARGET_FPU_SET (target_flags & MASK_FPU_SET)
-
-/* Use the UltraSPARC Visual Instruction Set extensions.  */
-#define MASK_VIS 0x1000000
-#define TARGET_VIS (target_flags & MASK_VIS)
-
-/* Compile for Solaris V8+.  32 bit Solaris preserves the high bits of
-   the current out and global registers and Linux 2.2+ as well.  */
-#define MASK_V8PLUS 0x2000000
-#define TARGET_V8PLUS (target_flags & MASK_V8PLUS)
-
-/* Force a the fastest alignment on structures to take advantage of
-   faster copies.  */
-#define MASK_FASTER_STRUCTS 0x4000000
-#define TARGET_FASTER_STRUCTS (target_flags & MASK_FASTER_STRUCTS)
-
-/* Use IEEE quad long double.  */
-#define MASK_LONG_DOUBLE_128 0x8000000
-#define TARGET_LONG_DOUBLE_128 (target_flags & MASK_LONG_DOUBLE_128)
 
 /* TARGET_HARD_MUL: Use hardware multiply instructions but not %y.
    TARGET_HARD_MUL32: Use hardware multiply instructions with rd %y
@@ -613,78 +505,10 @@ extern int target_flags;
   (TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET	\
    || TARGET_DEPRECATED_V8_INSNS || TARGET_V8PLUS)
 
-
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#define TARGET_SWITCHES  \
-  { {"fpu", MASK_FPU | MASK_FPU_SET,					\
-     N_("Use hardware fp") },						\
-    {"no-fpu", -MASK_FPU,						\
-     N_("Do not use hardware fp") },					\
-    {"no-fpu", MASK_FPU_SET,				NULL, },	\
-    {"hard-float", MASK_FPU | MASK_FPU_SET,				\
-     N_("Use hardware fp") },						\
-    {"soft-float", -MASK_FPU,						\
-     N_("Do not use hardware fp") },					\
-    {"soft-float", MASK_FPU_SET,			NULL },		\
-    {"unaligned-doubles", MASK_UNALIGNED_DOUBLES,			\
-     N_("Assume possible double misalignment") },			\
-    {"no-unaligned-doubles", -MASK_UNALIGNED_DOUBLES,			\
-     N_("Assume all doubles are aligned") },				\
-    {"impure-text", MASK_IMPURE_TEXT,					\
-     N_("Pass -assert pure-text to linker") }, 				\
-    {"no-impure-text", -MASK_IMPURE_TEXT,				\
-     N_("Do not pass -assert pure-text to linker") }, 			\
-    {"app-regs", MASK_APP_REGS,						\
-     N_("Use ABI reserved registers") },				\
-    {"no-app-regs", -MASK_APP_REGS,					\
-     N_("Do not use ABI reserved registers") }, 			\
-    {"hard-quad-float", MASK_HARD_QUAD,					\
-     N_("Use hardware quad fp instructions") }, 			\
-    {"soft-quad-float", -MASK_HARD_QUAD,				\
-     N_("Do not use hardware quad fp instructions") }, 			\
-    {"v8plus", MASK_V8PLUS,						\
-     N_("Compile for v8plus ABI") },					\
-    {"no-v8plus", -MASK_V8PLUS,						\
-     N_("Do not compile for v8plus ABI") }, 				\
-    {"vis", MASK_VIS,							\
-     N_("Utilize Visual Instruction Set") }, 				\
-    {"no-vis", -MASK_VIS,						\
-     N_("Do not utilize Visual Instruction Set") }, 			\
-    {"ptr64", MASK_PTR64,						\
-     N_("Pointers are 64-bit") }, 					\
-    {"ptr32", -MASK_PTR64,						\
-     N_("Pointers are 32-bit") }, 					\
-    {"32", -MASK_64BIT,							\
-     N_("Use 32-bit ABI") }, 						\
-    {"64", MASK_64BIT,							\
-     N_("Use 64-bit ABI") }, 						\
-    {"stack-bias", MASK_STACK_BIAS,					\
-     N_("Use stack bias") }, 						\
-    {"no-stack-bias", -MASK_STACK_BIAS,					\
-     N_("Do not use stack bias") }, 					\
-    {"faster-structs", MASK_FASTER_STRUCTS,				\
-     N_("Use structs on stronger alignment for double-word copies") }, 	\
-    {"no-faster-structs", -MASK_FASTER_STRUCTS,				\
-     N_("Do not use structs on stronger alignment for double-word copies") }, \
-    {"relax", 0,							\
-     N_("Optimize tail call instructions in assembler and linker") },	\
-    {"no-relax", 0,							\
-     N_("Do not optimize tail call instructions in assembler or linker") }, \
-    SUBTARGET_SWITCHES			\
-    { "", TARGET_DEFAULT, ""}}
-
 /* MASK_APP_REGS must always be the default because that's what
    FIXED_REGISTERS is set to and -ffixed- is processed before
    CONDITIONAL_REGISTER_USAGE is called (where we process -mno-app-regs).  */
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_FPU)
-
-/* This is meant to be redefined in target specific files.  */
-#define SUBTARGET_SWITCHES
 
 /* Processor type.
    These must match the values for the cpu attribute in sparc.md.  */
@@ -711,20 +535,6 @@ extern enum processor_type sparc_cpu;
 /* Recast the cpu class to be the cpu attribute.
    Every file includes us, but not every file includes insn-attr.h.  */
 #define sparc_cpu_attr ((enum attr_cpu) sparc_cpu)
-
-#define TARGET_OPTIONS \
-{								\
-  { "cpu=",  &sparc_select[1].string,				\
-    N_("Use features of and schedule code for given CPU"), 0},	\
-  { "tune=", &sparc_select[2].string,				\
-    N_("Schedule code for given CPU"), 0},			\
-  { "cmodel=", &sparc_cmodel_string,				\
-    N_("Use given SPARC code model"), 0},			\
-  SUBTARGET_OPTIONS 						\
-}
-
-/* This is meant to be redefined in target specific files.  */
-#define SUBTARGET_OPTIONS
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-cpu is ignored if -mcpu is specified.

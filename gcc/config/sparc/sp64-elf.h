@@ -81,12 +81,6 @@ crtbegin.o%s \
    || (CHAR) == 'h' \
    || (CHAR) == 'z')
 
-/* V9 chips can handle either endianness.  */
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-{"big-endian", -MASK_LITTLE_ENDIAN, N_("Generate code for big endian") }, \
-{"little-endian", MASK_LITTLE_ENDIAN, N_("Generate code for little endian") },
-
 #undef BYTES_BIG_ENDIAN
 #define BYTES_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
 

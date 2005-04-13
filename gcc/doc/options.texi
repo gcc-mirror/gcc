@@ -25,15 +25,17 @@ blank lines.  Comments may appear on their own line anywhere within
 the file and are preceded by semicolons.  Whitespace is allowed before
 the semicolon.
 
-The files can contain two types of record: language definitions and
-option definitions.
+The files can contain the following types of record:
 
-A language definition record has two fields: the string
-@samp{Language} and the name of the language.  Once a language has
-been declared in this way, it can be used as an option property.
+@itemize @bullet
+@item
+A language definition record.  These records have two fields: the
+string @samp{Language} and the name of the language.  Once a language
+has been declared in this way, it can be used as an option property.
 @xref{Option properties}.
 
-An option definition record has the following fields:
+@item
+An option definition record.  These records have the following fields:
 
 @enumerate
 @item
@@ -58,6 +60,21 @@ help text contains a tab character, the text to the left of the tab is
 used instead of the option's name and the text to the right of the
 tab forms the help text.  This allows you to elaborate on what type
 of argument the option takes.
+
+@item
+A target mask record.  These records have one field of the form
+@samp{Mask(@var{x})}.  The options-processing script will automatically
+allocate a bit in @code{target_flags} (@pxref{Run-time Target}) for
+each mask name @var{x} and set the macro @code{MASK_@var{x}} to the
+appropriate bitmask.  It will also declare a @code{TARGET_@var{x}}
+macro that has the value 1 when bit @code{MASK_@var{x}} is set and
+0 otherwise.
+
+They are primarily intended to declare target masks that are not
+associated with user options, either because these masks represent
+internal switches or because the options are not available on all
+configurations and yet the masks always need to be defined.
+@end itemize
 
 @node Option properties
 @section Option properties

@@ -106,11 +106,6 @@ Boston, MA 02111-1307, USA.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDLOW
 
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES						    \
-{"long-double-64", -MASK_LONG_DOUBLE_128, N_("Use 64 bit long doubles") },  \
-{"long-double-128", MASK_LONG_DOUBLE_128, N_("Use 128 bit long doubles") },
-
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 

@@ -42,10 +42,13 @@ BEGIN {
 			n_langs++;
 		}
 		else {
-			opts[n_opts]  = $1
-			flags[n_opts] = $2
-			help[n_opts]  = $3
-			n_opts++;
+			name = opt_args("Mask", $1)
+			if (name == "") {
+				opts[n_opts]  = $1
+				flags[n_opts] = $2
+				help[n_opts]  = $3
+				n_opts++;
+			}
 		}
 	}
 
