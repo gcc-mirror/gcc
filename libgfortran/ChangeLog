@@ -1,3 +1,7 @@
+2005-04-12  Mike Stump  <mrs@apple.com>
+
+	* configure: Regenerate.
+
 2005-04-13  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/19106

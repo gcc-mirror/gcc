@@ -1,3 +1,7 @@
+2005-04-12  Mike Stump  <mrs@apple.com>
+
+	* configure: Regenerate.
+
 2005-04-12  Richard Henderson  <rth@redhat.com>
 
 	* include/private/gcconfig.h (alpha-linux): Use LINUX_STACKBOTTOM.
