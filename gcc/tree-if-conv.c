@@ -277,15 +277,6 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
 
   c = COND_EXPR_COND (stmt);
 
-  /* Create temp. for condition.  */
-  if (!is_gimple_condexpr (c))
-    {
-      tree new_stmt;
-      new_stmt = ifc_temp_var (TREE_TYPE (c), unshare_expr (c));
-      bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
-      c = TREE_OPERAND (new_stmt, 0);
-    }
-
   extract_true_false_edges_from_block (bb_for_stmt (stmt),
  				       &true_edge, &false_edge);
 
@@ -294,14 +285,6 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   /* If 'c' is true then TRUE_EDGE is taken.  */
   add_to_dst_predicate_list (loop, true_edge->dest, cond,
 			     unshare_expr (c), bsi);
-
-  if (!is_gimple_reg(c) && is_gimple_condexpr (c))
-    {
-      tree new_stmt;
-      new_stmt = ifc_temp_var (TREE_TYPE (c), unshare_expr (c));
-      bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
-      c = TREE_OPERAND (new_stmt, 0);
-    }
 
   /* If 'c' is false then FALSE_EDGE is taken.  */
   c2 = invert_truthvalue (unshare_expr (c));

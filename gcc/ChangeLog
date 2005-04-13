@@ -1,3 +1,8 @@
+2005-04-13  Devang Patel  <dpatel@apple.com>
+
+	* tree-if-conv.c (tree_if_convert_cond_expr): Do not create extra
+	temp variables.
+	
 2005-04-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	CRIS prologue as RTL.
