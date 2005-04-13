@@ -1,3 +1,9 @@
+2005-04-13  Julian Brown  <julian@codesourcery.com>
+
+	* config/elfos.h (MAKE_DECL_ONE_ONLY): Redefined to stop DECL_WEAK from
+	being used for symbols with vague linkage when HAVE_GAS_COMDAT_GROUP
+	is true. 
+
 2005-04-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h, tree-ssa-uncprop.c, varasm.c,
