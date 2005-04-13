@@ -2576,18 +2576,9 @@ do {									\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
 } while (0)
 
-/* When generating mips16 code we want to put the jump table in the .text
-   section.  In all other cases, we want to put the jump table in the .rdata
-   section.  Unfortunately, we can't use JUMP_TABLES_IN_TEXT_SECTION, because
-   it is not conditional.  Instead, we use ASM_OUTPUT_CASE_LABEL to switch back
-   to the .text section if appropriate.  */
-#undef ASM_OUTPUT_CASE_LABEL
-#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, INSN)			\
-do {									\
-  if (TARGET_MIPS16)							\
-    function_section (current_function_decl);				\
-  (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);		\
-} while (0)
+/* When generating MIPS16 code, we want the jump table to be in the text
+   section so that we can load its address using a PC-relative addition.  */
+#define JUMP_TABLES_IN_TEXT_SECTION TARGET_MIPS16
 
 /* This is how to output an assembler line
    that says to advance the location counter
