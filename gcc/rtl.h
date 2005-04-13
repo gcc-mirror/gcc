@@ -581,19 +581,6 @@ extern void rtl_check_failed_flag (const char *, rtx, const char *,
 #define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	(RTX)
 #endif
 
-#define CLEAR_RTX_FLAGS(RTX)	\
-do {				\
-  rtx const _rtx = (RTX);	\
-  _rtx->jump = 0;		\
-  _rtx->call = 0;		\
-  _rtx->unchanging = 0;		\
-  _rtx->volatil = 0;		\
-  _rtx->in_struct = 0;		\
-  _rtx->used = 0;		\
-  _rtx->frame_related = 0;	\
-  _rtx->return_val = 0;		\
-} while (0)
-
 #define XINT(RTX, N)	(RTL_CHECK2 (RTX, N, 'i', 'n').rt_int)
 #define XSTR(RTX, N)	(RTL_CHECK2 (RTX, N, 's', 'S').rt_str)
 #define XEXP(RTX, N)	(RTL_CHECK2 (RTX, N, 'e', 'u').rt_rtx)
