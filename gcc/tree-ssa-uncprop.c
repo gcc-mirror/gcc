@@ -258,7 +258,7 @@ associate_equivalences_with_edges (void)
    COND_EXPRs and SWITCH_EXPRs.
 
    We want to do those propagations as they can sometimes allow
-   the SSA optimziers to do a better job.  However, in the cases
+   the SSA optimizers to do a better job.  However, in the cases
    where such propagations do not result in further optimization,
    we would like to "undo" the propagation to avoid the redundant
    copies and constant initializations.
@@ -507,7 +507,7 @@ uncprop_into_successor_phis (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	      /* Walk every equivalence with the same value.  If we find
 		 one with the same underlying variable as the PHI result,
 		 then replace the value in the argument with its equivalent
-		 SSA_NAME.  Use the most recent equivlance as hopefully
+		 SSA_NAME.  Use the most recent equivalence as hopefully
 		 that results in shortest lifetimes.  */
 	      for (j = VARRAY_ACTIVE_SIZE (elt->equivalences) - 1; j >= 0; j--)
 		{

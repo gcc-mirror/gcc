@@ -1,3 +1,8 @@
+2005-04-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h, tree-ssa-uncprop.c, varasm.c,
+	config/i386/sse.md: Fix comment typos.
+
 2005-04-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure.ac (gcc_AC_CHECK_DECLS): Add vsnprintf.
