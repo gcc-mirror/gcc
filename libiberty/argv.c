@@ -77,7 +77,7 @@ dupargv (char **argv)
   for (argc = 0; argv[argc] != NULL; argc++)
     {
       int len = strlen (argv[argc]);
-      copy[argc] = malloc (sizeof (char *) * (len + 1));
+      copy[argc] = (char *) malloc (len + 1);
       if (copy[argc] == NULL)
 	{
 	  freeargv (copy);

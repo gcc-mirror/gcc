@@ -1,3 +1,8 @@
+2005-04-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* argv.c (dupargv): Mallocate space of argv[argc], not 
+	sizeof(char *) of that amuont.  Cast result to char *.
+
 2005-04-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* regex.c (wcs_re_match_2_internal, byte_re_match_2_internal):
