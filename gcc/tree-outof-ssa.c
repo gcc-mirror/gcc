@@ -2508,10 +2508,6 @@ rewrite_out_of_ssa (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_tree_cfg (dump_file, dump_flags & ~TDF_DETAILS);
 
-  /* Do some cleanups which reduce the amount of data the
-     tree->rtl expanders deal with.  */
-  cfg_remove_useless_stmts ();
-
   /* Flush out flow graph and SSA data.  */
   delete_var_map (map);
 

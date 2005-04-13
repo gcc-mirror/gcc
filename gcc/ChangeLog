@@ -1,3 +1,16 @@
+2005-04-12  Jeff Law  <law@redhat.com>
+
+	* Makefile.in (OBJS-common): Add tree-ssa-uncprop.o.
+	(tree-ssa-uncprop.o): Add dependencies.
+	* tree-cfg.c (remove_useless_stmts_bb, remove_useless_stmts): Remove.
+	* tree-flow.h (remove_useless_stmts): Remove prototype.
+	* tree-outof-ssa.c (rewrite_out_of_ssa): Remove call to
+	remove_useless_stmts.
+	* timevar.def (TV_TREE_SSA_UNCPROP): New timevar.
+	* tree-optimize.c (init_tree_optimization_passes): Add uncprop pass.
+	* tree-pass.h (pass_uncprop): Declare.
+	* tree-ssa-uncprop.c: New file.
+
 2005-04-12  James E. Wilson  <wilson@specifixinc.com>
 
 	PR target/20670
