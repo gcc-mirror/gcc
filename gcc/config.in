@@ -314,6 +314,10 @@
    0. */
 #undef HAVE_DECL_VASPRINTF
 
+/* Define to 1 if we found a declaration for 'vsnprintf', otherwise define to
+   0. */
+#undef HAVE_DECL_VSNPRINTF
+
 /* Define to 1 if you have the <direct.h> header file. */
 #undef HAVE_DIRECT_H
 

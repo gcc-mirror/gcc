@@ -1053,8 +1053,8 @@ AM_LANGINFO_CODESET
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
 gcc_AC_CHECK_DECLS(getenv atol sbrk abort atof getcwd getwd strsignal \
-	strstr errno snprintf vasprintf malloc realloc calloc free \
-	basename getopt clock getpagesize gcc_UNLOCKED_FUNCS, , ,[
+	strstr errno snprintf vsnprintf vasprintf malloc realloc calloc \
+	free basename getopt clock getpagesize gcc_UNLOCKED_FUNCS, , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
