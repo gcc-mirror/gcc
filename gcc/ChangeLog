@@ -1,5 +1,12 @@
 2005-04-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* configure.ac (gcc_AC_CHECK_DECLS): Add vsnprintf.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* system.h: Declare vsnprintf if not already declared.
+
+2005-04-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* optc-gen.awk: Handle stand-alone Mask records.
 	* opth-gen.awk: Likewise.
 	* doc/options.texi (Option file format): Document them.

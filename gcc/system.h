@@ -438,6 +438,10 @@ extern void abort (void);
 extern int snprintf (char *, size_t, const char *, ...);
 #endif
 
+#if defined (HAVE_DECL_VSNPRINTF) && !HAVE_DECL_VSNPRINTF
+extern int vsnprintf(char *, size_t, const char *, va_list);
+#endif
+
 /* 1 if we have C99 designated initializers.  */
 #if !defined(HAVE_DESIGNATED_INITIALIZERS)
 #define HAVE_DESIGNATED_INITIALIZERS \
