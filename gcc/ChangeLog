@@ -1,3 +1,14 @@
+2005-04-13  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/20924
+	* config/ia64/ia64.md (divsf3_internal_lat): Generate frcpa with
+	fpsr 0 instead of fpsr 1.
+	(divsf3_internal_thr): Ditto.
+	(divdf3_internal_lat): Ditto.
+	(divdf3_internal_thr): Ditto.
+	(divxf3_internal_lat): Ditto.
+	(divxf3_internal_thr): Ditto.
+
 2005-04-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/20913
