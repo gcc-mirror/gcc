@@ -1,5 +1,10 @@
 2005-04-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* regex.c (wcs_re_match_2_internal, byte_re_match_2_internal):
+	Replace not with negate. 
+
+2005-04-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* configure.ac: Check declarations for basename, ffs, asprintf,
 	vasprintf.
 	* configure: Regenerate.
