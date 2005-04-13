@@ -59,11 +59,12 @@
 ;; 0 PLT reference from call expansion: operand 0 is the address,
 ;;   the mode is VOIDmode.  Always wrapped in CONST.
 ;; 1 Stack frame deallocation barrier.
+;; 2 The address of the global offset table as a source operand.
 
 (define_constants
   [(CRIS_UNSPEC_PLT 0)
-   (CRIS_UNSPEC_FRAME_DEALLOC 1)])
-
+   (CRIS_UNSPEC_FRAME_DEALLOC 1)
+   (CRIS_UNSPEC_GOT 2)])
 
 ;; Register numbers.
 (define_constants
@@ -1067,21 +1068,33 @@
 	}
       return \"move.d %1,%0\";
 
-      case 8:
-	/* FIXME: Try and split this into pieces GCC makes better code of,
-	   than this multi-insn pattern.  Synopsis: wrap the GOT-relative
-	   symbol into an unspec, and when PIC, recognize the unspec
-	   everywhere a symbol is normally recognized.  (The PIC register
-	   should be recognized by GCC as pic_offset_table_rtx when needed
-	   and similar for PC.)  Each component can then be optimized with
-	   the rest of the code; it should be possible to have a constant
-	   term added on an unspec.  Don't forget to add a REG_EQUAL (or
-	   is it REG_EQUIV) note to the destination.  It might not be
-	   worth it.  Measure.
+    case 8:
+      /* FIXME: Try and split this into pieces GCC makes better code of,
+	 than this multi-insn pattern.  Synopsis: wrap the GOT-relative
+	 symbol into an unspec, and when PIC, recognize the unspec
+	 everywhere a symbol is normally recognized.  (The PIC register
+	 should be recognized by GCC as pic_offset_table_rtx when needed
+	 and similar for PC.)  Each component can then be optimized with
+	 the rest of the code; it should be possible to have a constant
+	 term added on an unspec.  Don't forget to add a REG_EQUAL (or
+	 is it REG_EQUIV) note to the destination.  It might not be
+	 worth it.  Measure.
 
-	   Note that the 'v' modifier makes PLT references be output as
-	   sym:PLT rather than [rPIC+sym:GOTPLT].  */
-	return \"move.d %v1,%0\;add.d %P1,%0\";
+	 Note that the 'v' modifier makes PLT references be output as
+	 sym:PLT rather than [rPIC+sym:GOTPLT].  */
+      if (GET_CODE (operands[1]) == UNSPEC
+	  && XINT (operands[1], 1) == CRIS_UNSPEC_GOT)
+	{
+	  /* We clobber cc0 rather than set it to GOT.  Should not
+             matter, though.  */
+	  CC_STATUS_INIT;
+	  if (REGNO (operands[0]) != PIC_OFFSET_TABLE_REGNUM)
+	    abort ();
+
+	  return \"move.d $pc,%0\;sub.d .:GOTOFF,%0\";
+	}
+
+      return \"move.d %v1,%0\;add.d %P1,%0\";
 
     default:
       return \"BOGUS: %1 to %0\";
@@ -1387,8 +1400,8 @@
    move %1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no,no,yes,yes,yes,no,yes,no")])
 
-;; Note that the order of the registers is the reverse of that of the
-;; standard pattern "load_multiple".
+;; Note that the memory layout of the registers is the reverse of that
+;; of the standard patterns "load_multiple" and "store_multiple".
 (define_insn "*cris_load_multiple"
   [(match_parallel 0 "cris_load_multiple_op"
 		   [(set (match_operand:SI 1 "register_operand" "=r,r")
@@ -1404,6 +1417,15 @@
    ;; FIXME: temporary change until all insn lengths are correctly
    ;; described.  FIXME: have better target control over bb-reorder.
    (set_attr "length" "0")])
+
+(define_insn "*cris_store_multiple"
+  [(match_parallel 0 "cris_store_multiple_op"
+		   [(set (match_operand:SI 2 "memory_operand" "=Q,m")
+			 (match_operand:SI 1 "register_operand" "r,r"))])]
+  ""
+  "movem %o0,%O0"
+  [(set_attr "cc" "none")
+   (set_attr "slottable" "yes,no")])
 
 
 ;; Sign- and zero-extend insns with standard names.
@@ -3514,6 +3536,11 @@
  	     (const_int 0))
  	 (const_string "no")
 	 (const_string "has_slot")))])
+
+(define_expand "prologue"
+  [(const_int 0)]
+  "TARGET_PROLOGUE_EPILOGUE"
+  "cris_expand_prologue (); DONE;")
 
 ;; Note that the (return) from the expander itself is always the last
 ;; insn in the epilogue.
