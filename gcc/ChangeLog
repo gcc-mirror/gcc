@@ -1,3 +1,8 @@
+2005-04-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("epilogue"): Conditionalize on
+	TARGET_PROLOGUE_EPILOGUE.
+
 2005-04-13  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/20924

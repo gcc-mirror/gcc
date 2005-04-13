@@ -3519,7 +3519,7 @@
 ;; insn in the epilogue.
 (define_expand "epilogue"
   [(const_int 0)]
-  ""
+  "TARGET_PROLOGUE_EPILOGUE"
   "cris_expand_epilogue (); DONE;")
 
 ;; Conditional branches.
