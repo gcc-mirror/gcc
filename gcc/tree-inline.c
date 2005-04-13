@@ -117,11 +117,6 @@ typedef struct inline_data
 
 /* Prototypes.  */
 
-/* The approximate number of instructions per statement.  This number
-   need not be particularly accurate; it is used only to make
-   decisions about when a function is too big to inline.  */
-#define INSNS_PER_STMT (10)
-
 static tree copy_body_r (tree *, int *, void *);
 static tree copy_body (inline_data *);
 static tree expand_call_inline (tree *, int *, void *);
