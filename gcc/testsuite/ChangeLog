@@ -3,6 +3,9 @@
 	PR tree-optimization/20913
 	* gcc.dg/tree-ssa/pr20913.c: New.
 
+	PR tree-optimization/20702
+	* gcc.dg/tree-ssa/pr20702.c: New.
+
 2005-04-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/13744
