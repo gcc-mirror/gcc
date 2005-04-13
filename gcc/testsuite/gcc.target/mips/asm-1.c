@@ -2,6 +2,7 @@
    of the call.  */
 /* { dg-do assemble } */
 /* { dg-options "-O" } */
+#ifndef __mips16
 int foo (int n)
 {
   register int k asm ("$16") = n;
@@ -12,3 +13,4 @@ int foo (int n)
     }
   return k;
 }
+#endif
