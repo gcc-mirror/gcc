@@ -1,4 +1,5 @@
-/* { dg-do run } */
+/* { dg-do run */
+/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
 /* { dg-options "-std=c99" } */
 void abort (void);
 
