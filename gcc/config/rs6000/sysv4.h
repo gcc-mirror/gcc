@@ -21,6 +21,7 @@
    MA 02111-1307, USA.  */
 
 /* Header files should be C++ aware in general.  */
+#undef  NO_IMPLICIT_EXTERN_C
 #define NO_IMPLICIT_EXTERN_C
 
 /* Yes!  We are ELF.  */

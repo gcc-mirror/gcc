@@ -1,3 +1,8 @@
+2005-04-13  Matt Thomas  <matt@3am-software.com>
+ 
+ 	* config/rs6000/sysv4.h (NO_IMPLICIT_EXTERN_C): undefine before
+ 	defining.
+
 2005-04-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* rtl.h (CLEAR_RTX_FLAGS): Remove.
