@@ -10025,6 +10025,180 @@ ix86_expand_int_movcc (rtx operands[])
   return 1; /* DONE */
 }
 
+/* Swap, force into registers, or otherwise massage the two operands
+   to an sse comparison with a mask result.  Thus we differ a bit from
+   ix86_prepare_fp_compare_args which expects to produce a flags result.
+
+   The DEST operand exists to help determine whether to commute commutative
+   operators.  The POP0/POP1 operands are updated in place.  The new
+   comparison code is returned, or UNKNOWN if not implementable.  */
+
+static enum rtx_code
+ix86_prepare_sse_fp_compare_args (rtx dest, enum rtx_code code,
+				  rtx *pop0, rtx *pop1)
+{
+  rtx tmp;
+
+  switch (code)
+    {
+    case LTGT:
+    case UNEQ:
+      /* We have no LTGT as an operator.  We could implement it with
+	 NE & ORDERED, but this requires an extra temporary.  It's
+	 not clear that it's worth it.  */
+      return UNKNOWN;
+
+    case LT:
+    case LE:
+    case UNGT:
+    case UNGE:
+      /* These are supported directly.  */
+      break;
+
+    case EQ:
+    case NE:
+    case UNORDERED:
+    case ORDERED:
+      /* For commutative operators, try to canonicalize the destination
+	 operand to be first in the comparison - this helps reload to
+	 avoid extra moves.  */
+      if (!dest || !rtx_equal_p (dest, *pop1))
+	break;
+      /* FALLTHRU */
+
+    case GE:
+    case GT:
+    case UNLE:
+    case UNLT:
+      /* These are not supported directly.  Swap the comparison operands
+	 to transform into something that is supported.  */
+      tmp = *pop0;
+      *pop0 = *pop1;
+      *pop1 = tmp;
+      code = swap_condition (code);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return code;
+}
+
+/* Detect conditional moves that exactly match min/max operational
+   semantics.  Note that this is IEEE safe, as long as we don't
+   interchange the operands.
+
+   Returns FALSE if this conditional move doesn't match a MIN/MAX,
+   and TRUE if the operation is successful and instructions are emitted.  */
+
+static bool
+ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
+			   rtx cmp_op1, rtx if_true, rtx if_false)
+{
+  enum machine_mode mode;
+  bool is_min;
+  rtx tmp;
+
+  if (code == LT)
+    ;
+  else if (code == UNGE)
+    {
+      tmp = if_true;
+      if_true = if_false;
+      if_false = tmp;
+    }
+  else
+    return false;
+
+  if (rtx_equal_p (cmp_op0, if_true) && rtx_equal_p (cmp_op1, if_false))
+    is_min = true;
+  else if (rtx_equal_p (cmp_op1, if_true) && rtx_equal_p (cmp_op0, if_false))
+    is_min = false;
+  else
+    return false;
+
+  mode = GET_MODE (dest);
+
+  /* We want to check HONOR_NANS and HONOR_SIGNED_ZEROS here,
+     but MODE may be a vector mode and thus not appropriate.  */
+  if (!flag_finite_math_only || !flag_unsafe_math_optimizations)
+    {
+      int u = is_min ? UNSPEC_IEEE_MIN : UNSPEC_IEEE_MAX;
+      rtvec v;
+
+      if_true = force_reg (mode, if_true);
+      v = gen_rtvec (2, if_true, if_false);
+      tmp = gen_rtx_UNSPEC (mode, v, u);
+    }
+  else
+    {
+      code = is_min ? SMIN : SMAX;
+      tmp = gen_rtx_fmt_ee (code, mode, if_true, if_false);
+    }
+
+  emit_insn (gen_rtx_SET (VOIDmode, dest, tmp));
+  return true;
+}
+
+static void
+ix86_expand_sse_movcc (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
+		       rtx op_true, rtx op_false)
+{
+  enum machine_mode mode = GET_MODE (dest);
+  rtx t1, t2, t3, x;
+
+  cmp_op0 = force_reg (mode, cmp_op0);
+  if (!nonimmediate_operand (cmp_op1, mode))
+    cmp_op1 = force_reg (mode, cmp_op1);
+
+  if (optimize
+      || reg_overlap_mentioned_p (dest, op_true)
+      || reg_overlap_mentioned_p (dest, op_false))
+    t1 = gen_reg_rtx (mode);
+  else
+    t1 = dest;
+
+  x = gen_rtx_fmt_ee (code, mode, cmp_op0, cmp_op1);
+  gcc_assert (sse_comparison_operator (x, VOIDmode));
+  emit_insn (gen_rtx_SET (VOIDmode, t1, x));
+
+  if (op_false == CONST0_RTX (mode))
+    {
+      op_true = force_reg (mode, op_true);
+      x = gen_rtx_AND (mode, t1, op_true);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+    }
+  else if (op_true == CONST0_RTX (mode))
+    {
+      op_false = force_reg (mode, op_false);
+      x = gen_rtx_NOT (mode, t1);
+      x = gen_rtx_AND (mode, x, op_false);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+    }
+  else
+    {
+      op_true = force_reg (mode, op_true);
+      op_false = force_reg (mode, op_false);
+
+      t2 = gen_reg_rtx (mode);
+      if (optimize)
+	t3 = gen_reg_rtx (mode);
+      else
+	t3 = dest;
+
+      x = gen_rtx_AND (mode, op_true, t1);
+      emit_insn (gen_rtx_SET (VOIDmode, t2, x));
+
+      x = gen_rtx_NOT (mode, t1);
+      x = gen_rtx_AND (mode, x, op_false);
+      emit_insn (gen_rtx_SET (VOIDmode, t3, x));
+
+      x = gen_rtx_IOR (mode, t3, t2);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+    }
+}
+
 int
 ix86_expand_fp_movcc (rtx operands[])
 {
@@ -10034,88 +10208,30 @@ ix86_expand_fp_movcc (rtx operands[])
 
   if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
     {
-      rtx cmp_op0, cmp_op1, if_true, if_false;
-      rtx clob;
-      enum machine_mode vmode, cmode;
-      bool is_minmax = false;
-
-      cmp_op0 = ix86_compare_op0;
-      cmp_op1 = ix86_compare_op1;
-      if_true = operands[2];
-      if_false = operands[3];
+      enum machine_mode cmode;
 
       /* Since we've no cmove for sse registers, don't force bad register
 	 allocation just to gain access to it.  Deny movcc when the
 	 comparison mode doesn't match the move mode.  */
-      cmode = GET_MODE (cmp_op0);
+      cmode = GET_MODE (ix86_compare_op0);
       if (cmode == VOIDmode)
-	cmode = GET_MODE (cmp_op1);
+	cmode = GET_MODE (ix86_compare_op1);
       if (cmode != mode)
 	return 0;
 
-      /* We have no LTGT as an operator.  We could implement it with
-	 NE & ORDERED, but this requires an extra temporary.  It's
-	 not clear that it's worth it.  */
-      if (code == LTGT || code == UNEQ)
+      code = ix86_prepare_sse_fp_compare_args (operands[0], code,
+					       &ix86_compare_op0,
+					       &ix86_compare_op1);
+      if (code == UNKNOWN)
 	return 0;
 
-      /* Massage condition to satisfy sse_comparison_operator.  Try
-	 to canonicalize the destination operand to be first in the
-	 comparison - this helps reload to avoid extra moves.  */
-      if (!sse_comparison_operator (operands[1], VOIDmode)
-	  || (COMMUTATIVE_P (operands[1])
-	      && rtx_equal_p (operands[0], cmp_op1)))
-	{
-	  tmp = cmp_op0;
-	  cmp_op0 = cmp_op1;
-	  cmp_op1 = tmp;
-	  code = swap_condition (code);
-	}
+      if (ix86_expand_sse_fp_minmax (operands[0], code, ix86_compare_op0,
+				     ix86_compare_op1, operands[2],
+				     operands[3]))
+	return 1;
 
-      /* Detect conditional moves that exactly match min/max operational
-	 semantics.  Note that this is IEEE safe, as long as we don't
-	 interchange the operands.  Which is why we keep this in the form
-	 if an IF_THEN_ELSE instead of reducing to SMIN/SMAX.  */
-      if ((code == LT || code == UNGE) && REG_P (cmp_op0) && REG_P (cmp_op1))
-	{
-	  if (((cmp_op0 == if_true && cmp_op1 == if_false)
-	      || (cmp_op0 == if_false && cmp_op1 == if_true)))
-	    {
-	      is_minmax = true;
-	      if (code == UNGE)
-		{
-		  code = LT;
-		  tmp = if_true;
-		  if_true = if_false;
-		  if_false = tmp;
-		}
-	    }
-	}
-
-      if (mode == SFmode)
-	vmode = V4SFmode;
-      else if (mode == DFmode)
-	vmode = V2DFmode;
-      else
-	gcc_unreachable ();
-
-      cmp_op0 = force_reg (mode, cmp_op0);
-      if (!nonimmediate_operand (cmp_op1, mode))
-	cmp_op1 = force_reg (mode, cmp_op1);
-
-      tmp = gen_rtx_fmt_ee (code, mode, cmp_op0, cmp_op1);
-      gcc_assert (sse_comparison_operator (tmp, VOIDmode));
-
-      tmp = gen_rtx_IF_THEN_ELSE (mode, tmp, if_true, if_false);
-      tmp = gen_rtx_SET (VOIDmode, operands[0], tmp);
-
-      if (!is_minmax)
-	{
-	  clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (vmode));
-	  tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
-	}
-
-      emit_insn (tmp);
+      ix86_expand_sse_movcc (operands[0], code, ix86_compare_op0,
+			     ix86_compare_op1, operands[2], operands[3]);
       return 1;
     }
 
@@ -10164,100 +10280,6 @@ ix86_expand_fp_movcc (rtx operands[])
 						  operands[2], operands[0])));
 
   return 1;
-}
-
-void
-ix86_split_sse_movcc (rtx operands[])
-{
-  rtx dest, scratch, cmp, op_true, op_false, x;
-  enum machine_mode mode, vmode;
-
-  /* Note that the operator CMP has been set up with matching constraints
-     such that dest is valid for the comparison.  Unless one of the true
-     or false operands are zero, the true operand has already been placed
-     in SCRATCH.  */
-  dest = operands[0];
-  scratch = operands[1];
-  op_true = operands[2];
-  op_false = operands[3];
-  cmp = operands[4];
-
-  mode = GET_MODE (dest);
-  vmode = GET_MODE (scratch);
-
-  /* We need to make sure that the TRUE and FALSE operands are out of the
-     way of the destination.  Marking the destination earlyclobber doesn't
-     work, since we want matching constraints for the actual comparison, so
-     at some point we always wind up having to do a copy ourselves here.
-     We very much prefer the TRUE value to be in SCRATCH.  If it turns out
-     that FALSE overlaps DEST, then we invert the comparison so that we
-     still only have to do one move.  */
-  if (rtx_equal_p (op_false, dest))
-    {
-      enum rtx_code code;
-
-      if (rtx_equal_p (op_true, dest))
-	{
-	  /* ??? Really ought not happen.  It means some optimizer managed
-	     to prove the operands were identical, but failed to fold the
-	     conditional move to a straight move.  Do so here, because 
-	     otherwise we'll generate incorrect code.  And since they're
-	     both already in the destination register, nothing to do.  */
-	  return;
-	}
-
-      x = gen_rtx_REG (mode, REGNO (scratch));
-      emit_move_insn (x, op_false);
-      op_false = op_true;
-      op_true = x;
-
-      code = GET_CODE (cmp);
-      code = reverse_condition_maybe_unordered (code);
-      cmp = gen_rtx_fmt_ee (code, mode, XEXP (cmp, 0), XEXP (cmp, 1));
-    }
-  else if (op_true == CONST0_RTX (mode))
-    ;
-  else if (op_false == CONST0_RTX (mode) && !rtx_equal_p (op_true, dest))
-    ;
-  else
-    {
-      x = gen_rtx_REG (mode, REGNO (scratch));
-      emit_move_insn (x, op_true);
-      op_true = x;
-    }
-
-  emit_insn (gen_rtx_SET (VOIDmode, dest, cmp));
-  dest = simplify_gen_subreg (vmode, dest, mode, 0);
-
-  if (op_false == CONST0_RTX (mode))
-    {
-      op_true = simplify_gen_subreg (vmode, op_true, mode, 0);
-      x = gen_rtx_AND (vmode, dest, op_true);
-      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
-    }
-  else
-    {
-      op_false = simplify_gen_subreg (vmode, op_false, mode, 0);
-
-      if (op_true == CONST0_RTX (mode))
-	{
-	  x = gen_rtx_NOT (vmode, dest);
-	  x = gen_rtx_AND (vmode, x, op_false);
-	  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
-	}
-      else
-	{
-	  x = gen_rtx_AND (vmode, scratch, dest);
-	  emit_insn (gen_rtx_SET (VOIDmode, scratch, x));
-
-	  x = gen_rtx_NOT (vmode, dest);
-	  x = gen_rtx_AND (vmode, x, op_false);
-	  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
-
-	  x = gen_rtx_IOR (vmode, dest, scratch);
-	  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
-	}
-    }
 }
 
 /* Expand conditional increment or decrement using adb/sbb instructions.

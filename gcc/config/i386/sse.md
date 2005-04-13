@@ -773,6 +773,47 @@
   [(set_attr "type" "sselog")
    (set_attr "mode" "V4SF")])
 
+;; Also define scalar versions.  These are used for abs, neg, and
+;; conditional move.  Using subregs into vector modes causes regiser
+;; allocation lossage.  These patterns do not allow memory operands
+;; because the native instructions read the full 128-bits.
+
+(define_insn "*andsf3"
+  [(set (match_operand:SF 0 "register_operand" "=x")
+	(and:SF (match_operand:SF 1 "register_operand" "0")
+		(match_operand:SF 2 "register_operand" "x")))]
+  "TARGET_SSE"
+  "andps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*nandsf3"
+  [(set (match_operand:SF 0 "register_operand" "=x")
+	(and:SF (not:SF (match_operand:SF 1 "register_operand" "0"))
+		(match_operand:SF 2 "register_operand" "x")))]
+  "TARGET_SSE"
+  "andnps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*iorsf3"
+  [(set (match_operand:SF 0 "register_operand" "=x")
+	(ior:SF (match_operand:SF 1 "register_operand" "0")
+		(match_operand:SF 2 "register_operand" "x")))]
+  "TARGET_SSE"
+  "orps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*xorsf3"
+  [(set (match_operand:SF 0 "register_operand" "=x")
+	(xor:SF (match_operand:SF 1 "register_operand" "0")
+		(match_operand:SF 2 "register_operand" "x")))]
+  "TARGET_SSE"
+  "xorps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "mode" "V4SF")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point conversion operations
@@ -1624,7 +1665,7 @@
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(and:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "%0")
 		  (match_operand:V2DF 2 "nonimmediate_operand" "xm")))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (AND, V4SFmode, operands)"
+  "TARGET_SSE2 && ix86_binary_operator_ok (AND, V2DFmode, operands)"
   "andpd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "mode" "V2DF")])
@@ -1666,6 +1707,47 @@
 	(xor:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "%0")
 		  (match_operand:V2DF 2 "nonimmediate_operand" "xm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (XOR, V2DFmode, operands)"
+  "xorpd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "mode" "V2DF")])
+
+;; Also define scalar versions.  These are used for abs, neg, and
+;; conditional move.  Using subregs into vector modes causes regiser
+;; allocation lossage.  These patterns do not allow memory operands
+;; because the native instructions read the full 128-bits.
+
+(define_insn "*anddf3"
+  [(set (match_operand:DF 0 "register_operand" "=x")
+	(and:DF (match_operand:DF 1 "register_operand" "0")
+		(match_operand:DF 2 "register_operand" "x")))]
+  "TARGET_SSE2"
+  "andpd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "*nanddf3"
+  [(set (match_operand:DF 0 "register_operand" "=x")
+	(and:DF (not:DF (match_operand:DF 1 "register_operand" "0"))
+		(match_operand:DF 2 "register_operand" "x")))]
+  "TARGET_SSE2"
+  "andnpd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "*iordf3"
+  [(set (match_operand:DF 0 "register_operand" "=x")
+	(ior:DF (match_operand:DF 1 "register_operand" "0")
+		(match_operand:DF 2 "register_operand" "x")))]
+  "TARGET_SSE2"
+  "orpd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "*xordf3"
+  [(set (match_operand:DF 0 "register_operand" "=x")
+	(xor:DF (match_operand:DF 1 "register_operand" "0")
+		(match_operand:DF 2 "register_operand" "x")))]
+  "TARGET_SSE2"
   "xorpd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "mode" "V2DF")])
