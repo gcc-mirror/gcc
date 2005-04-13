@@ -773,11 +773,6 @@ extern const char * const reg_note_name[];
   (GET_CODE (INSN) == NOTE				\
    && NOTE_LINE_NUMBER (INSN) == NOTE_INSN_BASIC_BLOCK)
 
-/* Algorithm and flags for prediction.  */
-#define NOTE_PREDICTION_ALG(INSN)   (XCINT(INSN, 4, NOTE)>>8)
-#define NOTE_PREDICTION_FLAGS(INSN) (XCINT(INSN, 4, NOTE)&0xff)
-#define NOTE_PREDICT(ALG,FLAGS)     ((ALG<<8)+(FLAGS))
-
 /* Variable declaration and the location of a variable.  */
 #define NOTE_VAR_LOCATION_DECL(INSN)	(XCTREE (XCEXP (INSN, 4, NOTE), \
 						 0, VAR_LOCATION))

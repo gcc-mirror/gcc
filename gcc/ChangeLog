@@ -8,6 +8,9 @@
 
 	* rtl.h (RTX_EXPR_FIRST, RTX_EXPR_LAST): Remove.
 
+	* rtl.h (NOTE_PREDICTION_ALG, NOTE_PREDICTION_FLAGS,
+	NOTE_PREDICT): Remove.
+
 2005-04-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure.ac (gcc_AC_CHECK_DECLS): Add vsnprintf.
