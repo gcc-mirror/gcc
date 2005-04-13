@@ -22,13 +22,18 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_OBJC_ACT_H
 #define GCC_OBJC_ACT_H
 
+/* For enum gimplify_status */
+#include "tree-gimple.h"
+
 /*** Language hooks ***/
 
 bool objc_init (void);
 const char *objc_printable_name (tree, int);
+tree objc_get_callee_fndecl (tree);
 void objc_finish_file (void);
 tree objc_fold_obj_type_ref (tree, tree);
 int objc_types_compatible_p (tree, tree);
+enum gimplify_status objc_gimplify_expr (tree *, tree *, tree *);
 
 /* NB: The remaining public functions are prototyped in c-common.h, for the
    benefit of stub-objc.c and objc-act.c.  */

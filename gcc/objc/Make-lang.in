@@ -60,13 +60,13 @@ objc/objc-lang.o : objc/objc-lang.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(C_TREE_H) $(C_PRETTY_PRINT_H) $(DIAGNOSTIC_H) \
    $(GGC_H) langhooks.h $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-objc.h \
-   c-objc-common.h objc/objc-act.h
+   c-objc-common.h objc/objc-act.h tree-gimple.h
 
 objc/objc-act.o : objc/objc-act.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(TM_P_H) \
    $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h toplev.h flags.h \
    objc/objc-act.h input.h function.h output.h debug.h langhooks.h \
-   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-pragma.h gt-objc-objc-act.h
+   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-pragma.h gt-objc-objc-act.h tree-gimple.h
 
 objc.srcextra:
 
