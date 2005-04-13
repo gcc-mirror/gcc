@@ -1500,6 +1500,7 @@ maybe_add_assert_expr (basic_block bb)
       edge e;
       edge_iterator ei;
       tree op, cond;
+      basic_block son;
       
       cond = COND_EXPR_COND (last);
 
@@ -1554,6 +1555,17 @@ maybe_add_assert_expr (basic_block bb)
 
       /* Finally, mark all the COND_EXPR operands as found.  */
       SET_BIT (found, SSA_NAME_VERSION (op));
+
+      /* Recurse into the dominator children of BB that are not BB's
+	 immediate successors.  Note that we have already visited BB's
+	 other dominator children above.  */
+      for (son = first_dom_son (CDI_DOMINATORS, bb);
+	   son;
+	   son = next_dom_son (CDI_DOMINATORS, son))
+	{
+	  if (find_edge (bb, son) == NULL)
+	    added |= maybe_add_assert_expr (son);
+	}
     }
   else
     {
