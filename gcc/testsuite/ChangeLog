@@ -1,3 +1,7 @@
+2005-04-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/ucnid-[23456].c: XFAIL on AIX.
+
 2005-04-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/20913
