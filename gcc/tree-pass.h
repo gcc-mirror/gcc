@@ -212,5 +212,6 @@ extern struct tree_opt_pass pass_store_ccp;
 extern struct tree_opt_pass pass_store_copy_prop;
 extern struct tree_opt_pass pass_vrp;
 extern struct tree_opt_pass pass_create_structure_vars;
+extern struct tree_opt_pass pass_uncprop;
 
 #endif /* GCC_TREE_PASS_H */
