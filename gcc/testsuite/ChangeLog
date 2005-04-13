@@ -1,3 +1,8 @@
+2005-04-13  Thomas Koenig  <Thomas.Koenig@online.de>
+
+        PR libfortran/20163
+        * gfortran.dg/open-options-blanks.f:  New test.
+
 2005-04-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR middle-end/20917

@@ -1,3 +1,10 @@
+2005-04-13  Thomas Koenig <Thomas.Koenig@online.de>
+
+        PR libfortran/20163
+	* runtime/string.c (compare0): Use fstrlen() to
+        strip trailing blanks from option string.
+
+
 2005-04-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* io/backspace.c (unformatted_backspace): Do not dereference
