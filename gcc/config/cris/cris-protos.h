@@ -45,9 +45,11 @@ extern void cris_asm_output_symbol_ref (FILE *, rtx);
 extern bool cris_output_addr_const_extra (FILE *, rtx);
 extern int cris_cfun_uses_pic_table (void);
 extern rtx cris_gen_movem_load (rtx, rtx, int);
+extern rtx cris_emit_movem_store (rtx, rtx, int, bool);
 #endif /* RTX_CODE */
 extern void cris_asm_output_label_ref (FILE *, char *);
 extern void cris_target_asm_named_section (const char *, unsigned int, tree);
+extern void cris_expand_prologue (void);
 extern void cris_expand_epilogue (void);
 extern void cris_expand_return (bool);
 extern bool cris_return_address_on_stack_for_return (void);

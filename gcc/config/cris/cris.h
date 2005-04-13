@@ -854,8 +854,13 @@ enum reg_class
 		  && BIAP_INDEX_P (XEXP (XEXP (X, 0), 0))))))		\
  )
 
-#define EXTRA_CONSTRAINT_S(X) \
- (flag_pic && CONSTANT_P (X) && cris_gotless_symbol (X))
+/* We're kind of out of constraints, so we use "S" for both gotless
+   symbols and the GOT-address load.  Both must go in a general register
+   only: for pre-V32, arithmetic is done on the destination.  */
+#define EXTRA_CONSTRAINT_S(X)						\
+ (flag_pic								\
+  && ((CONSTANT_P (X) && cris_gotless_symbol (X))			\
+      || (GET_CODE (X) == UNSPEC && XINT ((X), 1) == CRIS_UNSPEC_GOT)))
 
 #define EXTRA_CONSTRAINT_U(X) \
  (flag_pic && CONSTANT_P (X) && cris_got_symbol (X))
@@ -1629,6 +1634,8 @@ struct cum_args {int regs;};
   {MEM}},						\
  {"cris_load_multiple_op",				\
   {PARALLEL}},						\
+ {"cris_store_multiple_op",				\
+  {PARALLEL}},						\
  {"cris_bdap_operand",					\
   {SUBREG, REG, LABEL_REF, SYMBOL_REF, MEM, CONST_INT,	\
    CONST_DOUBLE, CONST, SIGN_EXTEND}},			\
@@ -1637,7 +1644,7 @@ struct cum_args {int regs;};
    CONST_DOUBLE, CONST, SIGN_EXTEND, MULT}},		\
  {"cris_general_operand_or_gotless_symbol",		\
   {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,		\
-   LABEL_REF, SUBREG, REG, MEM}},			\
+   LABEL_REF, SUBREG, REG, MEM, UNSPEC}},		\
  {"cris_general_operand_or_symbol",			\
   {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,		\
    LABEL_REF, SUBREG, REG, MEM}},			\

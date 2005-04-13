@@ -1,5 +1,36 @@
 2005-04-13  Hans-Peter Nilsson  <hp@axis.com>
 
+	CRIS prologue as RTL.
+	* config/cris/cris-protos.h (cris_emit_movem_store)
+	(cris_expand_prologue): Prototype.
+	* config/cris/cris.c (struct machine_function): New member
+	stdarg_regs.
+	(cfa_label_num, cris_target_asm_function_prologue): Remove.
+	(TARGET_ASM_FUNCTION_PROLOGUE): Don't override.
+	(cris_general_operand_or_gotless_symbol): Accept CRIS_UNSPEC_GOT.
+	(cris_load_multiple_op, cris_return_address_on_stack)
+	(cris_return_address_on_stack_for_return): ISO-Cify.
+	(cris_store_multiple_op): New predicate function.
+	(cris_expand_prologue, cris_emit_movem_store): New functions.
+	(cris_print_operand) <case 'O'>: Handle modifications other than
+	post-increment.
+	(cris_symbol, cris_got_symbol): Return 0 for CRIS_UNSPEC_GOT.
+	(cris_gotless_symbol): Return 1 for CRIS_UNSPEC_GOT.
+	(cris_gen_movem_load): Rearrange slightly to make local variable
+	src a parameter, removing osrc.
+	(cris_setup_incoming_varargs): Set machine_function member
+	stdarg_regs to correspond to the number of registers that need to
+	be saved.
+	* config/cris/cris.h (EXTRA_CONSTRAINT_S): Accept
+	CRIS_UNSPEC_GOT.
+	(PREDICATE_CODES): Add cris_store_multiple_op.  Make
+	cris_general_operand_or_gotless_symbol accept UNSPEC.
+	* config/cris/cris.md (CRIS_UNSPEC_GOT): New constant.
+	("*movsi_internal") <alternative 8>: Handle CRIS_UNSPEC_GOT.
+	("*cris_store_multiple"): New pattern.  Tweak common comment above
+	this and "*cris_load_multiple".
+	("prologue"): New define_expand.
+
 	* config/cris/cris.md ("epilogue"): Conditionalize on
 	TARGET_PROLOGUE_EPILOGUE.
 
