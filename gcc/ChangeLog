@@ -1,3 +1,39 @@
+2005-04-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* optc-gen.awk: Handle stand-alone Mask records.
+	* opth-gen.awk: Likewise.
+	* doc/options.texi (Option file format): Document them.
+	* config.gcc (sparc-*-netbsdelf*, sparc-*-linux*, sparc64-*-freebsd*,
+	sparc64-*-linux*, sparc64-*-netbsd*): Add long-double-switch.opt.
+	(sparc64-*-openbsd*, sparc64-*-elf*): Add little-endian.opt.
+	* config/sparc/sparc.h (MASK_FPU, MASK_UNALIGNED_DOUBLES,
+	MASK_V8, MASK_SPARCLITE, MASK_SPARCLET, MASK_V9,
+	MASK_DEPRECATED_V8_INSNS, MASK_IMPURE_TEXT, MASK_APP_REGS,
+	MASK_HARD_QUAD, MASK_LITTLE_ENDIAN, MASK_PTR64, MASK_64BIT,
+	MASK_STACK_BIAS, MASK_FPU_SET, MASK_VIS, MASK_V8PLUS,
+	MASK_FASTER_STRUCTS, MASK_LONG_DOUBLE_128): Delete.
+	(TARGET_FPU, TARGET_UNALIGNED_DOUBLES, TARGET_V8, TARGET_SPARCLITE,
+	TARGET_SPARCLET, TARGET_V9, TARGET_DEPRECATED_V8_INSNS,
+	TARGET_IMPURE_TEXT, TARGET_APP_REGS, MASK_HARD_QUAD,
+	TARGET_LITTLE_ENDIAN, TARGET_PTR64, TARGET_64BIT, MASK_STACK_BIAS,
+	TARGET_FPU_SET, TARGET_VIS, TARGET_V8PLUS, TARGET_FASTER_STRUCTS,
+	TARGET_LONG_DOUBLE_128): Likewise.
+	(TARGET_SWITCHES, SUBTARGET_SWITCHES): Likewise.
+	(TARGET_OPTIONS, SUBTARGET_OPTIONS): Likewise.
+	* config/sparc/freebsd.h (SUBTARGET_SWITCHES): Likewise.
+	* config/sparc/linux.h (SUBTARGET_SWITCHES): Likewise.
+	* config/sparc/linux64.h (SUBTARGET_SWITCHES): Likewise.
+	* config/sparc/netbsd-elf.h (SUBTARGET_SWITCHES): Likewise.
+	* config/sparc/sp64-elf.h (SUBTARGET_SWITCHES): Likewise.
+	* config/sparc/sparc.c (fpu_option_set): New global.
+	(sparc_handle_option): New function.
+	(sparc_override_options): Test fpu_option_set.
+	(TARGET_DEFAULT_TARGET_FLAGS): Set to TARGET_DEFAULT.
+	(TARGET_HANDLE_OPTION): Set to sparc_handle_option.
+	* config/sparc/sparc.opt: New file.
+	* config/sparc/little-endian.opt: Likewise.
+	* config/sparc/long-double-switch.opt: Likewise.
+
 2005-04-13  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_lib_id_given): New static variable.
