@@ -1,3 +1,10 @@
+2005-04-13  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_CASE_LABEL): Delete.
+	(JUMP_TABLES_IN_TEXT_SECTION): Define.
+	* config/mips/mips.c (mips16_insn_length): Remove reference to
+	JUMP_TABLES_IN_TEXT_SECTION.
+
 2005-04-13 Fariborz Jahanian <fjahanian@apple.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Return
