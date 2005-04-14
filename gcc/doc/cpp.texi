@@ -4045,7 +4045,7 @@ they generally represent bugs in the snapshots.
 
 @item -I- deprecated
 
-This option has been deprecated in 3.5.  @option{-iquote} is meant to
+This option has been deprecated in 4.0.  @option{-iquote} is meant to
 replace the need for this option.
 
 @item Order of evaluation of @samp{#} and @samp{##} operators
