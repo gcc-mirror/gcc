@@ -150,6 +150,8 @@ extern void ix86_expand_branch (enum rtx_code, rtx);
 extern int ix86_expand_setcc (enum rtx_code, rtx);
 extern int ix86_expand_int_movcc (rtx[]);
 extern int ix86_expand_fp_movcc (rtx[]);
+extern bool ix86_expand_fp_vcond (rtx[]);
+extern bool ix86_expand_int_vcond (rtx[], bool);
 extern int ix86_expand_int_addcc (rtx[]);
 extern void ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
 extern void x86_initialize_trampoline (rtx, rtx, rtx);
