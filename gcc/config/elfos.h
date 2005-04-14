@@ -212,15 +212,7 @@ Boston, MA 02111-1307, USA.  */
   fprintf ((FILE), "%s\n", ASM_SECTION_START_OP)
 #endif
 
-/* Don't use weak for entities with vague linkage when HAVE_GAS_COMDAT_GROUP
-   is true.  */
-#define MAKE_DECL_ONE_ONLY(DECL)			\
-  do							\
-    {							\
-      if (!HAVE_GAS_COMDAT_GROUP)			\
-	DECL_WEAK(DECL) = 1;				\
-    }							\
-  while (0)
+#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
