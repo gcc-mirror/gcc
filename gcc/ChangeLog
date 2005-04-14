@@ -1,3 +1,8 @@
+2005-04-14  Julian Brown  <julian@codesourcery.com>
+
+	* Revert elfos.h part of my patch from 2005-04-13 for causing libstdc++
+	link failures on ppc64 Linux.
+
 2005-04-14  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config.gcc: Set cpu_type for s390.
