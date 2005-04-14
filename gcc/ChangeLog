@@ -1,3 +1,7 @@
+2005-04-14  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config.gcc: Set cpu_type for s390.
+
 2005-04-14  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/20963
