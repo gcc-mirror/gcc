@@ -23,6 +23,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* 256-bit integer mode is needed for STACK_SAVEAREA_MODE.  */
 INT_MODE (OI, 32);
 
+/* Define TFmode to work around reload problem PR 20927.  */
+FLOAT_MODE (TF, 16, ieee_quad_format);
+
 /* Add any extra modes needed to represent the condition code.  */
 
 /*
