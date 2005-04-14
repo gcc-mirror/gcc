@@ -70,6 +70,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Return Address::      Getting the return or frame address of a function.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Offsetof::            Special syntax for implementing @code{offsetof}.
+* Atomic Builtins::	Built-in functions for atomic memory access.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
@@ -4580,6 +4581,133 @@ This extension is sufficient such that
 is a suitable definition of the @code{offsetof} macro.  In C++, @var{type}
 may be dependent.  In either case, @var{member} may consist of a single
 identifier, or a sequence of member accesses and array references.
+
+@node Atomic Builtins
+@section Built-in functions for atomic memory access
+
+The following builtins are intended to be compatible with those described
+in the @cite{Intel Itanium Processor-specific Application Binary Interface},
+section 7.4.  As such, they depart from the normal GCC practice of using
+the ``__builtin_'' prefix, and further that they are overloaded such that
+they work on multiple types.
+
+The definition given in the Intel documentation allows only for the use of
+the types @code{int}, @code{long}, @code{long long} as well as their unsigned
+counterparts.  GCC will allow any integral scalar or pointer type that is
+1, 2, 4 or 8 bytes in length.
+
+Not all operations are supported by all target processors.  If a particular
+operation cannot be implemented on the target processor, a warning will be
+generated and a call an external function will be generated.  The external
+function will carry the same name as the builtin, with an additional suffix
+@samp{_@var{n}} where @var{n} is the size of the data type.
+
+@c ??? Should we have a mechanism to suppress this warning?  This is almost
+@c useful for implementing the operation under the control of an external
+@c mutex.
+
+In most cases, these builtins are considered a @dfn{full barrier}.  That is,
+no memory operand will be moved across the operation, either forward or
+backward.  Further, instructions will be issued as necessary to prevent the
+processor from speculating loads across the operation and from queuing stores
+after the operation.
+
+All of the routines are are described in the Intel documentation to take
+``an optional list of variables protected by the memory barrier''.  It's
+not clear what is meant by that; it could mean that @emph{only} the
+following variables are protected, or it could mean that these variables
+should in addition be protected.  At present GCC ignores this list and
+protects all variables which are globally accessible.  If in the future
+we make some use of this list, an empty list will continue to mean all
+globally accessible variables.
+
+@table @code
+@item @var{type} __sync_fetch_and_add (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_fetch_and_sub (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_fetch_and_or (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_fetch_and_and (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_fetch_and_xor (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_fetch_and_nand (@var{type} *ptr, @var{type} value, ...)
+@findex __sync_fetch_and_add
+@findex __sync_fetch_and_sub
+@findex __sync_fetch_and_or
+@findex __sync_fetch_and_and
+@findex __sync_fetch_and_xor
+@findex __sync_fetch_and_nand
+These builtins perform the operation suggested by the name, and
+returns the value that had previously been in memory.  That is,
+
+@smallexample
+@{ tmp = *ptr; *ptr @var{op}= value; return tmp; @}
+@end smallexample
+
+The builtin @code{__sync_fetch_and_nand} could be implemented by
+@code{__sync_fetch_and_and(ptr, ~value)}.
+
+@item @var{type} __sync_add_and_fetch (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_sub_and_fetch (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_or_and_fetch (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_and_and_fetch (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_xor_and_fetch (@var{type} *ptr, @var{type} value, ...)
+@itemx @var{type} __sync_nand_and_fetch (@var{type} *ptr, @var{type} value, ...)
+@findex __sync_add_and_fetch
+@findex __sync_sub_and_fetch
+@findex __sync_or_and_fetch
+@findex __sync_and_and_fetch
+@findex __sync_xor_and_fetch
+@findex __sync_nand_and_fetch
+These builtins perform the operation suggested by the name, and
+return the new value.  That is,
+
+@smallexample
+@{ *ptr @var{op}= value; return *ptr; @}
+@end smallexample
+
+@item bool __sync_bool_compare_and_swap (@var{type} *ptr, @var{type} oldval @var{type} newval, ...)
+@itemx @var{type} __sync_val_compare_and_swap (@var{type} *ptr, @var{type} oldval @var{type} newval, ...)
+@findex __sync_bool_compare_and_swap
+@findex __sync_val_compare_and_swap
+These builtins perform an atomic compare and swap.  That is, if the current
+value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
+@code{*@var{ptr}}.
+
+The ``bool'' version returns true if the comparison is successful and 
+@var{newval} was written.  The ``val'' version returns the contents
+of @code{*@var{ptr}} after the operation.
+
+@item __sync_synchronize (...)
+@findex __sync_synchronize
+This builtin issues a full memory barrier.
+
+@item @var{type} __sync_lock_test_and_set (@var{type} *ptr, @var{type} value, ...)
+@findex __sync_lock_test_and_set
+This builtin, as described by Intel, is not a traditional test-and-set
+operation, but rather an atomic exchange operation.  It writes @var{value}
+into @code{*@var{ptr}}, and returns the previous contents of
+@code{*@var{ptr}}.
+
+Many targets have only minimal support for such locks, and do not support
+a full exchange operation.  In this case, a target may support reduced
+functionality here by which the @emph{only} valid value to store is the
+immediate constant 1.  The exact value actually stored in @code{*@var{ptr}}
+is implementation defined.
+
+This builtin is not a full barrier, but rather an @dfn{acquire barrier}.
+This means that references after the builtin cannot move to (or be
+speculated to) before the builtin, but previous memory stores may not
+be globally visible yet, and previous memory loads may not yet be 
+satisfied.
+
+@item void __sync_lock_release (@var{type} *ptr, ...)
+@findex __sync_lock_release
+This builtin releases the lock acquired by @code{__sync_lock_test_and_set}.
+Normally this means writing the constant 0 to @code{*@var{ptr}}.
+
+This builtin is not a full barrier, but rather a @dfn{release barrier}.
+This means that all previous memory stores are globally visible, and all
+previous memory loads have been satisfied, but following memory reads
+are not prevented from being speculated to before the barrier.
+@end table
 
 @node Other Builtins
 @section Other built-in functions provided by GCC

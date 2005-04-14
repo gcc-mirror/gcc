@@ -310,6 +310,11 @@ int can_conditionally_move_p (enum machine_mode mode);
 rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx, enum machine_mode,
 			  rtx, rtx, enum machine_mode, int);
 
+rtx expand_val_compare_and_swap (rtx, rtx, rtx, rtx);
+rtx expand_bool_compare_and_swap (rtx, rtx, rtx, rtx);
+rtx expand_sync_operation (rtx, rtx, enum rtx_code);
+rtx expand_sync_fetch_operation (rtx, rtx, enum rtx_code, bool, rtx);
+rtx expand_sync_lock_test_and_set (rtx, rtx, rtx);
 
 /* Functions from expmed.c:  */
 

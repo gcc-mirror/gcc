@@ -3242,8 +3242,9 @@ c_common_nodes_and_builtins (void)
     {									\
       tree decl;							\
 									\
-      gcc_assert (!strncmp (NAME, "__builtin_",				\
-			    strlen ("__builtin_")));			\
+      gcc_assert ((!BOTH_P && !FALLBACK_P)				\
+		  || !strncmp (NAME, "__builtin_",			\
+			       strlen ("__builtin_")));			\
 									\
       if (!BOTH_P)							\
 	decl = lang_hooks.builtin_function (NAME, builtin_types[TYPE],	\
@@ -5834,6 +5835,172 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 
   *ptype = type;
   return failure;
+}
+
+
+/* Used to help initialize the builtin-types.def table.  When a type of
+   the correct size doesn't exist, use error_mark_node instead of NULL.
+   The later results in segfaults even when a decl using the type doesn't
+   get invoked.  */
+
+tree
+builtin_type_for_size (int size, bool unsignedp)
+{
+  tree type = lang_hooks.types.type_for_size (size, unsignedp);
+  return type ? type : error_mark_node;
+}
+
+/* A helper function for resolve_overloaded_builtin in resolving the
+   overloaded __sync_ builtins.  Returns a positive power of 2 if the
+   first operand of PARAMS is a pointer to a supported data type.
+   Returns 0 if an error is encountered.  */
+
+static int
+sync_resolve_size (tree function, tree params)
+{
+  tree type;
+  int size;
+
+  if (params == NULL)
+    {
+      error ("too few arguments to function %qE", function);
+      return 0;
+    }
+
+  type = TREE_TYPE (TREE_VALUE (params));
+  if (TREE_CODE (type) != POINTER_TYPE)
+    goto incompatible;
+
+  type = TREE_TYPE (type);
+  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+    goto incompatible;
+
+  size = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  if (size == 1 || size == 2 || size == 4 || size == 8)
+    return size;
+
+ incompatible:
+  error ("incompatible type for argument %d of %qE", 1, function);
+  return 0;
+}
+
+/* A helper function for resolve_overloaded_builtin.  Adds casts to 
+   PARAMS to make arguments match up with those of FUNCTION.  Drops
+   the variadic arguments at the end.  Returns false if some error
+   was encountered; true on success.  */
+
+static bool
+sync_resolve_params (tree orig_function, tree function, tree params)
+{
+  tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
+  tree ptype;
+  int number;
+
+  /* We've declared the implementation functions to use "volatile void *"
+     as the pointer parameter, so we shouldn't get any complaints from the
+     call to check_function_arguments what ever type the user used.  */
+  arg_types = TREE_CHAIN (arg_types);
+  ptype = TREE_TYPE (TREE_TYPE (TREE_VALUE (params)));
+  number = 2;
+
+  /* For the rest of the values, we need to cast these to FTYPE, so that we
+     don't get warnings for passing pointer types, etc.  */
+  while (arg_types != void_list_node)
+    {
+      tree val;
+
+      params = TREE_CHAIN (params);
+      if (params == NULL)
+	{
+	  error ("too few arguments to function %qE", orig_function);
+	  return false;
+	}
+
+      /* ??? Ideally for the first conversion we'd use convert_for_assignment
+	 so that we get warnings for anything that doesn't match the pointer
+	 type.  This isn't portable across the C and C++ front ends atm.  */
+      val = TREE_VALUE (params);
+      val = convert (ptype, val);
+      val = convert (TREE_VALUE (arg_types), val);
+      TREE_VALUE (params) = val;
+
+      arg_types = TREE_CHAIN (arg_types);
+      number++;
+    }
+
+  /* The definition of these primitives is variadic, with the remaining
+     being "an optional list of variables protected by the memory barrier".
+     No clue what that's supposed to mean, precisely, but we consider all
+     call-clobbered variables to be protected so we're safe.  */
+  TREE_CHAIN (params) = NULL;
+
+  return true;
+}
+
+/* A helper function for resolve_overloaded_builtin.  Adds a cast to 
+   RESULT to make it match the type of the first pointer argument in
+   PARAMS.  */
+
+static tree
+sync_resolve_return (tree params, tree result)
+{
+  tree ptype = TREE_TYPE (TREE_TYPE (TREE_VALUE (params)));
+  return convert (ptype, result);
+}
+
+/* Some builtin functions are placeholders for other expressions.  This
+   function should be called immediately after parsing the call expression
+   before surrounding code has committed to the type of the expression.
+
+   FUNCTION is the DECL that has been invoked; it is known to be a builtin.
+   PARAMS is the argument list for the call.  The return value is non-null
+   when expansion is complete, and null if normal processing should
+   continue.  */
+
+tree
+resolve_overloaded_builtin (tree function, tree params)
+{
+  enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
+  switch (orig_code)
+    {
+    case BUILT_IN_FETCH_AND_ADD_N:
+    case BUILT_IN_FETCH_AND_SUB_N:
+    case BUILT_IN_FETCH_AND_OR_N:
+    case BUILT_IN_FETCH_AND_AND_N:
+    case BUILT_IN_FETCH_AND_XOR_N:
+    case BUILT_IN_FETCH_AND_NAND_N:
+    case BUILT_IN_ADD_AND_FETCH_N:
+    case BUILT_IN_SUB_AND_FETCH_N:
+    case BUILT_IN_OR_AND_FETCH_N:
+    case BUILT_IN_AND_AND_FETCH_N:
+    case BUILT_IN_XOR_AND_FETCH_N:
+    case BUILT_IN_NAND_AND_FETCH_N:
+    case BUILT_IN_BOOL_COMPARE_AND_SWAP_N:
+    case BUILT_IN_VAL_COMPARE_AND_SWAP_N:
+    case BUILT_IN_LOCK_TEST_AND_SET_N:
+    case BUILT_IN_LOCK_RELEASE_N:
+      {
+	int n = sync_resolve_size (function, params);
+	tree new_function, result;
+
+	if (n == 0)
+	  return error_mark_node;
+
+	new_function = built_in_decls[orig_code + exact_log2 (n) + 1];
+	if (!sync_resolve_params (function, new_function, params))
+	  return error_mark_node;
+
+	result = build_function_call (new_function, params);
+	if (orig_code != BUILT_IN_BOOL_COMPARE_AND_SWAP_N
+	    && orig_code != BUILT_IN_LOCK_RELEASE_N)
+	  result = sync_resolve_return (params, result);
+
+	return result;
+      }
+
+    default:
+      return NULL;
+    }
 }
 
 #include "gt-c-common.h"

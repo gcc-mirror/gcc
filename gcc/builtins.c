@@ -48,9 +48,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "tree-mudflap.h"
 
-#define CALLED_AS_BUILT_IN(NODE) \
-   (!strncmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__builtin_", 10))
-
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
 #endif
@@ -191,6 +188,19 @@ static tree fold_builtin_strspn (tree);
 static tree fold_builtin_strcspn (tree);
 static tree fold_builtin_sprintf (tree, int);
 
+/* Return true if NODE should be considered for inline expansion regardless
+   of the optimization level.  This means whenever a function is invoked with
+   its "internal" name, which normally contains the prefix "__builtin".  */
+
+static bool called_as_built_in (tree node)
+{
+  const char *name = IDENTIFIER_POINTER (DECL_NAME (node));
+  if (strncmp (name, "__builtin_", 10) == 0)
+    return true;
+  if (strncmp (name, "__sync_", 7) == 0)
+    return true;
+  return false;
+}
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -5225,6 +5235,166 @@ expand_builtin_fork_or_exec (tree fn, tree arglist, rtx target, int ignore)
 
   return expand_call (call, target, ignore);
 }
+
+
+/* Expand the __sync_xxx_and_fetch and __sync_fetch_and_xxx intrinsics.
+   ARGLIST is the operands list to the function.  CODE is the rtx code 
+   that corresponds to the arithmetic or logical operation from the name;
+   an exception here is that NOT actually means NAND.  TARGET is an optional
+   place for us to store the results; AFTER is true if this is the
+   fetch_and_xxx form.  IGNORE is true if we don't actually care about
+   the result of the operation at all.  */
+
+static rtx
+expand_builtin_sync_operation (tree arglist, enum rtx_code code, bool after,
+			       rtx target, bool ignore)
+{
+  enum machine_mode mode;
+  rtx addr, val, mem;
+
+  /* Expand the operands.  */
+  addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_SUM);
+  mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_VALUE (arglist))));
+
+  arglist = TREE_CHAIN (arglist);
+  val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
+
+  /* Note that we explicitly do not want any alias information for this
+     memory, so that we kill all other live memories.  Otherwise we don't
+     satisfy the full barrier semantics of the intrinsic.  */
+  mem = validize_mem (gen_rtx_MEM (mode, addr));
+  MEM_VOLATILE_P (mem) = 1;
+
+  if (ignore)
+    return expand_sync_operation (mem, val, code);
+  else
+    return expand_sync_fetch_operation (mem, val, code, after, target);
+}
+
+/* Expand the __sync_val_compare_and_swap and __sync_bool_compare_and_swap
+   intrinsics.  ARGLIST is the operands list to the function.  IS_BOOL is
+   true if this is the boolean form.  TARGET is a place for us to store the
+   results; this is NOT optional if IS_BOOL is true.  */
+
+static rtx
+expand_builtin_compare_and_swap (tree arglist, bool is_bool, rtx target)
+{
+  enum machine_mode mode;
+  rtx addr, old_val, new_val, mem;
+
+  /* Expand the operands.  */
+  addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_SUM);
+  mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_VALUE (arglist))));
+
+  arglist = TREE_CHAIN (arglist);
+  old_val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
+
+  arglist = TREE_CHAIN (arglist);
+  new_val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
+
+  /* Note that we explicitly do not want any alias information for this
+     memory, so that we kill all other live memories.  Otherwise we don't
+     satisfy the full barrier semantics of the intrinsic.  */
+  mem = validize_mem (gen_rtx_MEM (mode, addr));
+  MEM_VOLATILE_P (mem) = 1;
+
+  if (is_bool)
+    return expand_bool_compare_and_swap (mem, old_val, new_val, target);
+  else
+    return expand_val_compare_and_swap (mem, old_val, new_val, target);
+}
+
+/* Expand the __sync_lock_test_and_set intrinsic.  Note that the most
+   general form is actually an atomic exchange, and some targets only
+   support a reduced form with the second argument being a constant 1.
+   ARGLIST is the operands list to the function; TARGET is an optional
+   place for us to store the results.  */
+
+static rtx
+expand_builtin_lock_test_and_set (tree arglist, rtx target)
+{
+  enum machine_mode mode;
+  rtx addr, val, mem;
+
+  /* Expand the operands.  */
+  addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_NORMAL);
+  mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_VALUE (arglist))));
+
+  arglist = TREE_CHAIN (arglist);
+  val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
+
+  /* Note that we explicitly do not want any alias information for this
+     memory, so that we kill all other live memories.  Otherwise we don't
+     satisfy the barrier semantics of the intrinsic.  */
+  mem = validize_mem (gen_rtx_MEM (mode, addr));
+  MEM_VOLATILE_P (mem) = 1;
+
+  return expand_sync_lock_test_and_set (mem, val, target);
+}
+
+/* Expand the __sync_synchronize intrinsic.  */
+
+static void
+expand_builtin_synchronize (void)
+{
+  rtx body;
+
+#ifdef HAVE_memory_barrier
+  if (HAVE_memory_barrier)
+    {
+      emit_insn (gen_memory_barrier ());
+      return;
+    }
+#endif
+
+  /* If no explicit memory barrier instruction is available, create an empty
+     asm stmt that will prevent compiler movement across the barrier.  */
+  body = gen_rtx_ASM_INPUT (VOIDmode, "");
+  MEM_VOLATILE_P (body) = 1;
+  emit_insn (body);
+}
+
+/* Expand the __sync_lock_release intrinsic.  ARGLIST is the operands list
+   to the function.  */
+
+static void
+expand_builtin_lock_release (tree arglist)
+{
+  enum machine_mode mode;
+  enum insn_code icode;
+  rtx addr, val, mem, insn;
+
+  /* Expand the operands.  */
+  addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_NORMAL);
+  mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_VALUE (arglist))));
+  val = const0_rtx;
+
+  /* Note that we explicitly do not want any alias information for this
+     memory, so that we kill all other live memories.  Otherwise we don't
+     satisfy the barrier semantics of the intrinsic.  */
+  mem = validize_mem (gen_rtx_MEM (mode, addr));
+  MEM_VOLATILE_P (mem) = 1;
+
+  /* If there is an explicit operation in the md file, use it.  */
+  icode = sync_lock_release[mode];
+  if (icode != CODE_FOR_nothing)
+    {
+      if (!insn_data[icode].operand[1].predicate (val, mode))
+	val = force_reg (mode, val);
+
+      insn = GEN_FCN (icode) (mem, val);
+      if (insn)
+	{
+	  emit_insn (insn);
+	  return;
+	}
+    }
+
+  /* Otherwise we can implement this operation by emitting a barrier
+     followed by a store of zero.  */
+  expand_builtin_synchronize ();
+  emit_move_insn (mem, val);
+}
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -5247,7 +5417,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
   /* When not optimizing, generate calls to library functions for a certain
      set of builtins.  */
   if (!optimize
-      && !CALLED_AS_BUILT_IN (fndecl)
+      && !called_as_built_in (fndecl)
       && DECL_ASSEMBLER_NAME_SET_P (fndecl)
       && fcode != BUILT_IN_ALLOCA)
     return expand_call (exp, target, ignore);
@@ -5880,6 +6050,166 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       if (target)
 	return target;
       break;
+
+    case BUILT_IN_FETCH_AND_ADD_1:
+    case BUILT_IN_FETCH_AND_ADD_2:
+    case BUILT_IN_FETCH_AND_ADD_4:
+    case BUILT_IN_FETCH_AND_ADD_8:
+      target = expand_builtin_sync_operation (arglist, PLUS,
+					      false, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FETCH_AND_SUB_1:
+    case BUILT_IN_FETCH_AND_SUB_2:
+    case BUILT_IN_FETCH_AND_SUB_4:
+    case BUILT_IN_FETCH_AND_SUB_8:
+      target = expand_builtin_sync_operation (arglist, MINUS,
+					      false, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FETCH_AND_OR_1:
+    case BUILT_IN_FETCH_AND_OR_2:
+    case BUILT_IN_FETCH_AND_OR_4:
+    case BUILT_IN_FETCH_AND_OR_8:
+      target = expand_builtin_sync_operation (arglist, IOR,
+					      false, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FETCH_AND_AND_1:
+    case BUILT_IN_FETCH_AND_AND_2:
+    case BUILT_IN_FETCH_AND_AND_4:
+    case BUILT_IN_FETCH_AND_AND_8:
+      target = expand_builtin_sync_operation (arglist, AND,
+					      false, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FETCH_AND_XOR_1:
+    case BUILT_IN_FETCH_AND_XOR_2:
+    case BUILT_IN_FETCH_AND_XOR_4:
+    case BUILT_IN_FETCH_AND_XOR_8:
+      target = expand_builtin_sync_operation (arglist, XOR,
+					      false, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FETCH_AND_NAND_1:
+    case BUILT_IN_FETCH_AND_NAND_2:
+    case BUILT_IN_FETCH_AND_NAND_4:
+    case BUILT_IN_FETCH_AND_NAND_8:
+      target = expand_builtin_sync_operation (arglist, NOT,
+					      false, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_ADD_AND_FETCH_1:
+    case BUILT_IN_ADD_AND_FETCH_2:
+    case BUILT_IN_ADD_AND_FETCH_4:
+    case BUILT_IN_ADD_AND_FETCH_8:
+      target = expand_builtin_sync_operation (arglist, PLUS,
+					      true, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_SUB_AND_FETCH_1:
+    case BUILT_IN_SUB_AND_FETCH_2:
+    case BUILT_IN_SUB_AND_FETCH_4:
+    case BUILT_IN_SUB_AND_FETCH_8:
+      target = expand_builtin_sync_operation (arglist, MINUS,
+					      true, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_OR_AND_FETCH_1:
+    case BUILT_IN_OR_AND_FETCH_2:
+    case BUILT_IN_OR_AND_FETCH_4:
+    case BUILT_IN_OR_AND_FETCH_8:
+      target = expand_builtin_sync_operation (arglist, IOR,
+					      true, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_AND_AND_FETCH_1:
+    case BUILT_IN_AND_AND_FETCH_2:
+    case BUILT_IN_AND_AND_FETCH_4:
+    case BUILT_IN_AND_AND_FETCH_8:
+      target = expand_builtin_sync_operation (arglist, AND,
+					      true, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_XOR_AND_FETCH_1:
+    case BUILT_IN_XOR_AND_FETCH_2:
+    case BUILT_IN_XOR_AND_FETCH_4:
+    case BUILT_IN_XOR_AND_FETCH_8:
+      target = expand_builtin_sync_operation (arglist, XOR,
+					      true, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_NAND_AND_FETCH_1:
+    case BUILT_IN_NAND_AND_FETCH_2:
+    case BUILT_IN_NAND_AND_FETCH_4:
+    case BUILT_IN_NAND_AND_FETCH_8:
+      target = expand_builtin_sync_operation (arglist, NOT,
+					      true, target, ignore);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_BOOL_COMPARE_AND_SWAP_1:
+    case BUILT_IN_BOOL_COMPARE_AND_SWAP_2:
+    case BUILT_IN_BOOL_COMPARE_AND_SWAP_4:
+    case BUILT_IN_BOOL_COMPARE_AND_SWAP_8:
+      if (!target || !register_operand (target, mode))
+	target = gen_reg_rtx (mode);
+      target = expand_builtin_compare_and_swap (arglist, true, target);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_VAL_COMPARE_AND_SWAP_1:
+    case BUILT_IN_VAL_COMPARE_AND_SWAP_2:
+    case BUILT_IN_VAL_COMPARE_AND_SWAP_4:
+    case BUILT_IN_VAL_COMPARE_AND_SWAP_8:
+      target = expand_builtin_compare_and_swap (arglist, false, target);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_LOCK_TEST_AND_SET_1:
+    case BUILT_IN_LOCK_TEST_AND_SET_2:
+    case BUILT_IN_LOCK_TEST_AND_SET_4:
+    case BUILT_IN_LOCK_TEST_AND_SET_8:
+      target = expand_builtin_lock_test_and_set (arglist, target);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_LOCK_RELEASE_1:
+    case BUILT_IN_LOCK_RELEASE_2:
+    case BUILT_IN_LOCK_RELEASE_4:
+    case BUILT_IN_LOCK_RELEASE_8:
+      expand_builtin_lock_release (arglist);
+      return const0_rtx;
+
+    case BUILT_IN_SYNCHRONIZE:
+      expand_builtin_synchronize ();
+      return const0_rtx;
 
     default:	/* just do library call, if unknown builtin */
       break;
