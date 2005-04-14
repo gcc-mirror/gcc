@@ -1,3 +1,8 @@
+2005-04-14  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* doc/cpp.texi, doc/install.texi: Change references to GCC 3.5 to
+	refer to 4.0.
+
 2005-04-14  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/20924
