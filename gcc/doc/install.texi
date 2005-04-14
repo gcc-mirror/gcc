@@ -442,7 +442,7 @@ Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
 The full distribution includes the C, C++, Objective-C, Fortran 77, Fortran
-(in case of GCC 3.5 and later), Java, and Ada (in case of GCC 3.1 and later)
+(in case of GCC 4.0 and later), Java, and Ada (in case of GCC 3.1 and later)
 compilers.  The full distribution also includes runtime libraries for C++,
 Objective-C, Fortran 77, Fortran, and Java.  In GCC 3.0 and later versions,
 GNU compiler testsuites are also included in the full distribution.
@@ -2685,7 +2685,7 @@ configuring if you want a model other than PROCESSOR_8000.  The macro
 TARGET_SCHED_DEFAULT can be defined in BOOT_CFLAGS if a different
 default scheduling model is desired.
 
-As of GCC 3.5, GCC uses the UNIX 95 namespace for HP-UX 10.10
+As of GCC 4.0, GCC uses the UNIX 95 namespace for HP-UX 10.10
 through 11.00, and the UNIX 98 namespace for HP-UX 11.11 and later.
 This namespace change might cause problems when bootstrapping with
 an earlier version of GCC or the HP compiler as essentially the same
@@ -2726,10 +2726,10 @@ the 3-stage comparison test to fail during a @samp{make bootstrap}.
 You should be able to continue by saying @samp{make all} after getting
 the failure from @samp{make bootstrap}.
 
-GCC 3.5 requires CVS binutils as of April 28, 2004 or later.  Earlier
+GCC 4.0 requires CVS binutils as of April 28, 2004 or later.  Earlier
 versions require binutils 2.8 or later.
 
-The C++ ABI has changed incompatibly in GCC 3.5.  COMDAT subspaces are
+The C++ ABI has changed incompatibly in GCC 4.0.  COMDAT subspaces are
 used for one-only code and data.  This resolves many of the previous
 problems in using C++ on this target.  However, the ABI is not compatible
 with the one implemented under HP-UX 11 using secondary definitions.
@@ -2802,7 +2802,7 @@ This has been been reported to sometimes occur in unified builds of
 binutils and GCC@.
 
 GCC 3.0 through 3.2 require binutils 2.11 or above.  GCC 3.3 through
-GCC 3.5 require binutils 2.14 or later.
+GCC 4.0 require binutils 2.14 or later.
 
 Although the HP assembler can be used for an initial build, it shouldn't
 be used with any languages other than C and perhaps Fortran due to its
