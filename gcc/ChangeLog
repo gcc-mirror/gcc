@@ -1,5 +1,22 @@
 2005-04-14  Uros Bizjak  <uros@kss-loka.si>
 
+	* reg-stack.c (subst_stack_regs_pat): Handle <UNSPEC_FIST_FLOOR> and
+	<UNSPEC_FIST_CEIL> case.
+
+	* config/i386/i386.md (UNSPEC_FIST_FLOOR, UNSPEC_FIST_CEIL): New.
+	(*fist<mode>2_floor_1, fistdi2_floor, fistdi2_floor_with_temp)
+	(fist<mode>2_floor, fist<mode>2_floor_with_temp): New isns patterns
+	to implement lfloor and llfloor built-ins as x87 intrinsic function.
+	(fistdi2_floor, fist<mode>2_floor splitters): New splitters.
+	(lfloor<mode>2): New expanders.
+	(*fist<mode>2_ceil_1, fistdi2_ceil, fistdi2_ceil_with_temp)
+	(fist<mode>2_ceil, fist<mode>2_ceil_with_temp): New isns patterns
+	to implement lceil and llceil built-ins as x87 intrinsic function.
+	(fistdi2_ceil, fist<mode>2_ceil splitters): New splitters.
+	(lceil<mode>2): New expanders.
+
+2005-04-14  Uros Bizjak  <uros@kss-loka.si>
+
 	* convert.c (convert_to_integer): Convert (long int)trunc{,f,l},
 	and (long long int)ceil{,f,l} into FIX_TRUNC_EXPR.
 

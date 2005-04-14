@@ -1671,6 +1671,10 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	    switch (XINT (pat_src, 1))
 	      {
 	      case UNSPEC_FIST:
+
+	      case UNSPEC_FIST_FLOOR:
+	      case UNSPEC_FIST_CEIL:
+
 		/* These insns only operate on the top of the stack.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
