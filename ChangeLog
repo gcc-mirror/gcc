@@ -1,3 +1,7 @@
+2005-04-14  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* MAINTAINERS (Various Maintainers): Add self as i18n maintainer.
+
 2005-04-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
         * MAINTAINERS (Write After Approval): Add myself.
