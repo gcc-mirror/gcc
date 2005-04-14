@@ -1,3 +1,10 @@
+2005-04-14  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.h (gfc_real_info): Add subnormal struct member.
+	* arith.c (gfc_arith_init_1): Set it.
+	(gfc_check_real_range): Use it.
+	* simplify.c (gfc_simplify_nearest): Fix nearest(0.,1.).
+
 2005-04-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* simplify.c: Fix a comment typo.

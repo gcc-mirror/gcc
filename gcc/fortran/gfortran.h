@@ -1146,7 +1146,7 @@ extern gfc_logical_info gfc_logical_kinds[];
 
 typedef struct
 {
-  mpfr_t epsilon, huge, tiny;
+  mpfr_t epsilon, huge, tiny, subnormal;
   int kind, radix, digits, min_exponent, max_exponent;
   int range, precision;
 
