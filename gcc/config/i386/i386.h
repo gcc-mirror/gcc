@@ -253,6 +253,7 @@ extern const int x86_sse_typeless_stores, x86_sse_load0_by_pxor;
 extern const int x86_use_ffreep;
 extern const int x86_inter_unit_moves, x86_schedule;
 extern const int x86_use_bt;
+extern const int x86_cmpxchg, x86_xadd;
 extern int x86_prefetch_sse;
 
 #define TARGET_USE_LEAVE (x86_use_leave & TUNEMASK)
@@ -332,6 +333,9 @@ extern int x86_prefetch_sse;
 
 #define TARGET_GNU_TLS (ix86_tls_dialect == TLS_DIALECT_GNU)
 #define TARGET_SUN_TLS (ix86_tls_dialect == TLS_DIALECT_SUN)
+
+#define TARGET_CMPXCHG (x86_cmpxchg & (1 << ix86_arch))
+#define TARGET_XADD (x86_xadd & (1 << ix86_arch))
 
 /* WARNING: Do not mark empty strings for translation, as calling
             gettext on an empty string does NOT return an empty
@@ -2463,6 +2467,7 @@ extern enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER];
 
 extern rtx ix86_compare_op0;	/* operand 0 for comparisons */
 extern rtx ix86_compare_op1;	/* operand 1 for comparisons */
+extern rtx ix86_compare_emitted;
 
 /* To properly truncate FP values into integers, we need to set i387 control
    word.  We can't emit proper mode switching code before reload, as spills

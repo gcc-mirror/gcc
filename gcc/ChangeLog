@@ -1,5 +1,20 @@
 2004-04-14  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (x86_cmpxchg, x86_xadd): New.
+	(ix86_compare_emitted): New.
+	(ix86_expand_compare): Use ix86_compare_emitted if set.
+	(ix86_expand_setcc): Only emit REG_EQUAL if both ix86_compare_op0
+	and ix86_compare_op0 are set.
+	* config/i386/i386.h (x86_cmpxchg, x86_xadd): Declare.
+	(TARGET_CMPXCHG, TARGET_XADD): New.
+	(ix86_compare_emitted): Declare.
+	* config/i386/i386.md: Include sync.md
+	(UNSPECV_CMPXCHG_1, UNSPECV_CMPXCHG_2): New.
+	(UNSPECV_XCHG, UNSPECV_LOCK): New.
+	* config/i386/sync.md: New file.
+
+2004-04-14  Richard Henderson  <rth@redhat.com>
+
 	PR middle-end/14311
 	* builtin-types.def (BT_BOOL, BT_VOLATILE_PTR, BT_I1, BT_I2,
 	BT_I4, BT_I8, BT_FN_VOID_VPTR, BT_FN_I1_VPTR_I1, BT_FN_I2_VPTR_I2,

@@ -584,6 +584,10 @@ const int x86_ext_80387_constants = m_K6 | m_ATHLON | m_PENT4 | m_NOCONA | m_PPR
 const int x86_four_jump_limit = m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
 const int x86_schedule = m_PPRO | m_ATHLON_K8 | m_K6 | m_PENT;
 const int x86_use_bt = m_ATHLON_K8;
+/* Compare and exchange was added for 80486.  */
+const int x86_cmpxchg = ~m_386;
+/* Exchange and add was added for 80486.  */
+const int x86_xadd = ~m_386;
 
 /* In case the average insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
@@ -727,6 +731,7 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 
 rtx ix86_compare_op0 = NULL_RTX;
 rtx ix86_compare_op1 = NULL_RTX;
+rtx ix86_compare_emitted = NULL_RTX;
 
 #define MAX_386_STACK_LOCALS 3
 /* Size of the register save area.  */
@@ -9049,7 +9054,12 @@ ix86_expand_compare (enum rtx_code code, rtx *second_test, rtx *bypass_test)
   if (bypass_test)
     *bypass_test = NULL_RTX;
 
-  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
+  if (ix86_compare_emitted)
+    {
+      ret = gen_rtx_fmt_ee (code, VOIDmode, ix86_compare_emitted, const0_rtx);
+      ix86_compare_emitted = NULL_RTX;
+    }
+  else if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     ret = ix86_expand_fp_compare (code, op0, op1, NULL_RTX,
 				  second_test, bypass_test);
   else
@@ -9378,10 +9388,13 @@ ix86_expand_setcc (enum rtx_code code, rtx dest)
     }
 
   /* Attach a REG_EQUAL note describing the comparison result.  */
-  equiv = simplify_gen_relational (code, QImode,
-				   GET_MODE (ix86_compare_op0),
-				   ix86_compare_op0, ix86_compare_op1);
-  set_unique_reg_note (get_last_insn (), REG_EQUAL, equiv);
+  if (ix86_compare_op0 && ix86_compare_op1)
+    {
+      equiv = simplify_gen_relational (code, QImode,
+				       GET_MODE (ix86_compare_op0),
+				       ix86_compare_op0, ix86_compare_op1);
+      set_unique_reg_note (get_last_insn (), REG_EQUAL, equiv);
+    }
 
   return 1; /* DONE */
 }
