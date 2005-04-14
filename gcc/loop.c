@@ -5478,9 +5478,20 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 	mark_reg_pointer (v->new_reg, 0);
 
       if (v->giv_type == DEST_ADDR)
-	/* Store reduced reg as the address in the memref where we found
-	   this giv.  */
-	validate_change (v->insn, v->location, v->new_reg, 0);
+	{
+	  /* Store reduced reg as the address in the memref where we found
+	     this giv.  */
+	  if (!validate_change (v->insn, v->location, v->new_reg, 0))
+	    {
+	      if (loop_dump_stream)
+		fprintf (loop_dump_stream,
+			 "unable to reduce iv to register in insn %d\n",
+			 INSN_UID (v->insn));
+	      bl->all_reduced = 0;
+	      v->ignore = 1;
+	      continue;
+	    }
+	}
       else if (v->replaceable)
 	{
 	  reg_map[REGNO (v->dest_reg)] = v->new_reg;

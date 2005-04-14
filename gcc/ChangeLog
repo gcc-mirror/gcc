@@ -1,3 +1,10 @@
+2005-04-14  Alexandre Oliva  <aoliva@redhat.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR target/20126
+	* loop.c (loop_givs_rescan): If replacement of DEST_ADDR failed,
+	signal that all GIVs couldn't be reduced.
+
 2005-04-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.h (APPLY_RESULT_SIZE): Set to 24 in 64-bit mode.

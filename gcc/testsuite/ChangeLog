@@ -1,3 +1,9 @@
+2005-04-14  Alexandre Oliva  <aoliva@redhat.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR target/20126
+	* gcc.c-torture/execute/20050414-1.c: New.
+
 2005-04-13  Thomas Koenig  <Thomas.Koenig@online.de>
 
         PR libfortran/20163
