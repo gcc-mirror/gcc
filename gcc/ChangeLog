@@ -1,3 +1,7 @@
+2005-04-14  Dale Johannesen  <dalej@apple.com>
+
+	* cp/tree.c (cp_tree_equal):  Handle SSA_NAME.
+
 2005-04-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/cpp.texi, doc/install.texi: Change references to GCC 3.5 to
