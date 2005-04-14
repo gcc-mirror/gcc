@@ -1,3 +1,8 @@
+2005-04-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md: Replace references to (reg:SI 16) with
+	(reg:SI CRIS_SRP_REGNUM).
+
 2005-04-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/20657

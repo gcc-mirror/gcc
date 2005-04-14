@@ -3914,8 +3914,7 @@
 (define_expand "call"
   [(parallel [(call (match_operand:QI 0 "cris_mem_call_operand" "")
 		    (match_operand 1 "general_operand" ""))
-	      ;; 16 is the srp (can't use the symbolic name here)
-	      (clobber (reg:SI 16))])]
+	      (clobber (reg:SI CRIS_SRP_REGNUM))])]
   ""
   "
 {
@@ -3964,7 +3963,7 @@
   [(call (mem:QI (match_operand:SI
 		  0 "cris_general_operand_or_plt_symbol" "r,Q>,g,S"))
 	 (match_operand 1 "" ""))
-   (clobber (reg:SI 16))] ;; 16 is the srp (can't use symbolic name)
+   (clobber (reg:SI CRIS_SRP_REGNUM))]
   "! TARGET_AVOID_GOTPLT"
   "jsr %0")
 
@@ -3974,7 +3973,7 @@
   [(call (mem:QI (match_operand:SI
 		  0 "cris_general_operand_or_plt_symbol" "r,Q>,g"))
 	 (match_operand 1 "" ""))
-   (clobber (reg:SI 16))] ;; 16 is the srp (can't use symbolic name)
+   (clobber (reg:SI CRIS_SRP_REGNUM))]
   "TARGET_AVOID_GOTPLT"
   "jsr %0")
 
@@ -3982,8 +3981,7 @@
   [(parallel [(set (match_operand 0 "" "")
 		   (call (match_operand:QI 1 "cris_mem_call_operand" "")
 			 (match_operand 2 "" "")))
-	      ;; 16 is the srp (can't use symbolic name)
-	      (clobber (reg:SI 16))])]
+	      (clobber (reg:SI CRIS_SRP_REGNUM))])]
   ""
   "
 {
@@ -4034,7 +4032,7 @@
 	(call (mem:QI (match_operand:SI
 		       1 "cris_general_operand_or_plt_symbol" "r,Q>,g,S"))
 	      (match_operand 2 "" "")))
-   (clobber (reg:SI 16))]
+   (clobber (reg:SI CRIS_SRP_REGNUM))]
   "! TARGET_AVOID_GOTPLT"
   "Jsr %1"
   [(set_attr "cc" "clobber")])
@@ -4046,7 +4044,7 @@
 	(call (mem:QI (match_operand:SI
 		       1 "cris_general_operand_or_plt_symbol" "r,Q>,g"))
 	      (match_operand 2 "" "")))
-   (clobber (reg:SI 16))]
+   (clobber (reg:SI CRIS_SRP_REGNUM))]
   "TARGET_AVOID_GOTPLT"
   "Jsr %1"
   [(set_attr "cc" "clobber")])
