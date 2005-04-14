@@ -1963,10 +1963,11 @@ compute_avail (void)
 	      vuse_optype vuses = STMT_VUSE_OPS (stmt);
 
 	      STRIP_USELESS_TYPE_CONVERSION (rhs);
-	      if (UNARY_CLASS_P (rhs)
+	      if ((UNARY_CLASS_P (rhs)
 		  || BINARY_CLASS_P (rhs)
 		  || COMPARISON_CLASS_P (rhs)
 		  || REFERENCE_CLASS_P (rhs))
+		  && !TREE_INVARIANT (rhs))
 		{
 		  /* For binary, unary, and reference expressions,
 		     create a duplicate expression with the operands
