@@ -1,3 +1,8 @@
+2005-04-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cp-tree.h (SET_TMPL_ARG, ENUM_TI_TEMPLATE, ENUM_TI_ARGS,
+	CLASSTYPE_TEMPLATE_LEVEL): Remove.
+
 2005-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (determine_visibility): Don't use export_class_data.
