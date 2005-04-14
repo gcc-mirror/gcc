@@ -2293,21 +2293,10 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
 
       if (direction > 0)
 	mpfr_add (result->value.real,
-		  x->value.real, gfc_real_kinds[k].tiny, GFC_RND_MODE);
+		  x->value.real, gfc_real_kinds[k].subnormal, GFC_RND_MODE);
       else
 	mpfr_sub (result->value.real,
-		  x->value.real, gfc_real_kinds[k].tiny, GFC_RND_MODE);
-
-#if 0
-      /* FIXME: This gives an arithmetic error because we compare
-	 against tiny when range-checking.  Also, it doesn't give the
-	 right value.  */
-      /* TINY is the smallest model number, we want the smallest
-	 machine representable number.  Therefore we have to shift the
-	 value to the right by the number of digits - 1.  */
-      mpfr_div_2ui (result->value.real, result->value.real,
-		    gfc_real_kinds[k].precision - 1, GFC_RND_MODE);
-#endif
+		  x->value.real, gfc_real_kinds[k].subnormal, GFC_RND_MODE);
     }
   else
     {
