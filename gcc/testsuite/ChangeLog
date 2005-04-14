@@ -1,3 +1,15 @@
+2005-04-14  Janis Johnson  <janis187@us.ibm.com
+
+	PR testsuite/21010
+	* gcc.dg/vect/vect-ifcvt-1.c: Remove dg-do, add cleanup.
+	* gcc.dg/vect/vect-ifcvt-2.c: Ditto.
+	* gcc.dg/vect/vect-ifcvt-3.c: Ditto.
+	* gcc.dg/vect/vect-ifcvt-4.c: Ditto.
+	* gcc.dg/vect/vect-ifcvt-5.c: Ditto.
+	* gcc.dg/vect/vect-ifcvt-6.c: Ditto.
+	* gcc.dg/vect/vect-ifcvt-7.c: Ditto.
+	* gcc.dg/vect/vect-ifcvt-9.c: Ditto.
+
 2005-04-14  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_condition):
