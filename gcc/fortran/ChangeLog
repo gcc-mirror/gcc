@@ -35,6 +35,8 @@
 
 	* match.c (match_arithmetic_if): Remove gfc_ prefix and correct
 	comment according to GNU coding style.
+	(gfc_match_if): Remove gfc_ prefix in call to
+	match_arithmetic_if.
 
 2005-04-08  Diego Novillo  <dnovillo@redhat.com>
 
