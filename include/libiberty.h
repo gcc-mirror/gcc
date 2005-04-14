@@ -52,9 +52,9 @@ extern "C" {
    the stream is setup to avoid any multi-threaded locking.  Otherwise
    return the FILE pointer unchanged.  */
 
-extern FILE *fopen_unlocked (const char *path, const char *mode);
-extern FILE *fdopen_unlocked (int fildes, const char *mode);
-extern FILE *freopen_unlocked (const char *path, const char *mode, FILE *stream);
+extern FILE *fopen_unlocked (const char *, const char *);
+extern FILE *fdopen_unlocked (int, const char *);
+extern FILE *freopen_unlocked (const char *, const char *, FILE *);
 
 /* Build an argument vector from a string.  Allocates memory using
    malloc.  Use freeargv to free the vector.  */
