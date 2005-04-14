@@ -381,6 +381,13 @@ convert_to_integer (tree type, tree expr)
 	  else
             fn = mathfn_built_in (s_intype, BUILT_IN_LRINT);
 	  break;
+
+	case BUILT_IN_TRUNC: case BUILT_IN_TRUNCF: case BUILT_IN_TRUNCL:
+	  {
+	    tree arglist = TREE_OPERAND (s_expr, 1);
+	    return convert_to_integer (type, TREE_VALUE (arglist));
+	  }
+
 	default:
 	  break;
 	}

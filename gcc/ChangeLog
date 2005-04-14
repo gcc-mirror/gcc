@@ -1,3 +1,8 @@
+2005-04-14  Uros Bizjak  <uros@kss-loka.si>
+
+	* convert.c (convert_to_integer): Convert (long int)trunc{,f,l},
+	and (long long int)ceil{,f,l} into FIX_TRUNC_EXPR.
+
 2005-04-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/20927

@@ -13,12 +13,15 @@
 
 extern double floor(double);
 extern double ceil(double);
+extern double trunc(double);
 
 extern float floorf(float);
 extern float ceilf(float);
+extern float truncf(float);
 
 extern long double floorl(long double);
 extern long double ceill(long double);
+extern long double truncl(long double);
 
 
 long int test1(double x)
@@ -41,6 +44,16 @@ long long int test4(double x)
   return ceil(x);
 }
 
+long int test5(double x)
+{
+  return trunc(x);
+}
+
+long long int test6(double x)
+{
+  return trunc(x);
+}
+
 long int test1f(float x)
 {
   return floorf(x);
@@ -61,6 +74,16 @@ long long int test4f(float x)
   return ceilf(x);
 }
 
+long int test5f(float x)
+{
+  return truncf(x);
+}
+
+long long int test6f(float x)
+{
+  return truncf(x);
+}
+
 long int test1l(long double x)
 {
   return floorl(x);
@@ -79,4 +102,14 @@ long int test3l(long double x)
 long long int test4l(long double x)
 {
   return ceill(x);
+}
+
+long int test5l(long double x)
+{
+  return truncl(x);
+}
+
+long long int test6l(long double x)
+{
+  return truncl(x);
 }
