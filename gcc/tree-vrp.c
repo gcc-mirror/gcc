@@ -830,6 +830,8 @@ extract_range_from_expr (value_range *vr, tree expr)
     extract_range_from_unary_expr (vr, expr);
   else if (expr_computes_nonzero (expr))
     set_value_range_to_nonnull (vr, TREE_TYPE (expr));
+  else if (TREE_CODE (expr) == INTEGER_CST)
+    set_value_range (vr, VR_RANGE, expr, expr);
   else
     set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
 }
