@@ -1,3 +1,11 @@
+2005-04-14  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/20963
+	* tree-ssa-pre.c (compute_avail): Remove special case for
+	TREE_INVARIANT. 
+	(create_expression_by_pieces): Add value numbers for forced out
+	statements.
+
 2005-04-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md: Replace references to (reg:SI 16) with
