@@ -1341,6 +1341,18 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
 	if (forced_stmts)
 	  {
+	    tsi = tsi_start (forced_stmts);
+	    for (; !tsi_end_p (tsi); tsi_next (&tsi))
+	      {
+		tree stmt = tsi_stmt (tsi);
+		tree forcedname = TREE_OPERAND (stmt, 0);
+		tree forcedexpr = TREE_OPERAND (stmt, 1);
+		tree val = vn_lookup_or_add (forcedexpr, NULL);
+		vn_add (forcedname, val, NULL);		
+		bitmap_value_replace_in_set (NEW_SETS (block), forcedname); 
+		bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
+	      }
+
 	    tsi = tsi_last (stmts);
 	    tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
 	  }
@@ -1371,6 +1383,17 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
 	if (forced_stmts)
 	  {
+	    tsi = tsi_start (forced_stmts);
+	    for (; !tsi_end_p (tsi); tsi_next (&tsi))
+	      {
+		tree stmt = tsi_stmt (tsi);
+		tree forcedname = TREE_OPERAND (stmt, 0);
+		tree forcedexpr = TREE_OPERAND (stmt, 1);
+		tree val = vn_lookup_or_add (forcedexpr, NULL);
+		vn_add (forcedname, val, NULL);		
+		bitmap_value_replace_in_set (NEW_SETS (block), forcedname); 
+		bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
+	      }
 	    tsi = tsi_last (stmts);
 	    tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
 	  }
@@ -1960,7 +1983,6 @@ compute_avail (void)
 		}
 	      else if (TREE_CODE (rhs) == SSA_NAME
 		       || is_gimple_min_invariant (rhs)
-		       || TREE_INVARIANT (rhs)
 		       || TREE_CODE (rhs) == ADDR_EXPR
 		       || DECL_P (rhs))
 		{
