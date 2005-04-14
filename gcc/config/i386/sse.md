@@ -710,6 +710,22 @@
   [(set_attr "type" "ssecomi")
    (set_attr "mode" "SF")])
 
+(define_expand "vcondv4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "")
+        (if_then_else:V4SF
+          (match_operator 3 ""
+            [(match_operand:V4SF 4 "nonimmediate_operand" "")
+             (match_operand:V4SF 5 "nonimmediate_operand" "")])
+          (match_operand:V4SF 1 "general_operand" "")
+          (match_operand:V4SF 2 "general_operand" "")))]
+  "TARGET_SSE"
+{
+  if (ix86_expand_fp_vcond (operands))
+    DONE;
+  else
+    FAIL;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point logical operations
@@ -1647,6 +1663,22 @@
   "ucomisd\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecomi")
    (set_attr "mode" "DF")])
+
+(define_expand "vcondv2df"
+  [(set (match_operand:V2DF 0 "register_operand" "")
+        (if_then_else:V2DF
+          (match_operator 3 ""
+            [(match_operand:V2DF 4 "nonimmediate_operand" "")
+             (match_operand:V2DF 5 "nonimmediate_operand" "")])
+          (match_operand:V2DF 1 "general_operand" "")
+          (match_operand:V2DF 2 "general_operand" "")))]
+  "TARGET_SSE2"
+{
+  if (ix86_expand_fp_vcond (operands))
+    DONE;
+  else
+    FAIL;
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -2601,6 +2633,38 @@
   "pcmpgt<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssecmp")
    (set_attr "mode" "TI")])
+
+(define_expand "vcond<mode>"
+  [(set (match_operand:SSEMODE124 0 "register_operand" "")
+        (if_then_else:SSEMODE124
+          (match_operator 3 ""
+            [(match_operand:SSEMODE124 4 "nonimmediate_operand" "")
+             (match_operand:SSEMODE124 5 "nonimmediate_operand" "")])
+          (match_operand:SSEMODE124 1 "general_operand" "")
+          (match_operand:SSEMODE124 2 "general_operand" "")))]
+  "TARGET_SSE2"
+{
+  if (ix86_expand_int_vcond (operands, false))
+    DONE;
+  else
+    FAIL;
+})
+
+(define_expand "vcondu<mode>"
+  [(set (match_operand:SSEMODE12 0 "register_operand" "")
+        (if_then_else:SSEMODE12
+          (match_operator 3 ""
+            [(match_operand:SSEMODE12 4 "nonimmediate_operand" "")
+             (match_operand:SSEMODE12 5 "nonimmediate_operand" "")])
+          (match_operand:SSEMODE12 1 "general_operand" "")
+          (match_operand:SSEMODE12 2 "general_operand" "")))]
+  "TARGET_SSE2"
+{
+  if (ix86_expand_int_vcond (operands, true))
+    DONE;
+  else
+    FAIL;
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

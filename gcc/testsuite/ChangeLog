@@ -1,3 +1,8 @@
+2005-04-14  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_condition):
+	Add ia64, i?86, and x86_64.
+
 2005-04-14  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/underflow.f90: Use tiny(x)/huge(x).

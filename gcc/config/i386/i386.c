@@ -10141,12 +10141,14 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
   return true;
 }
 
-static void
-ix86_expand_sse_movcc (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
-		       rtx op_true, rtx op_false)
+/* Expand an sse vector comparison.  Return the register with the result.  */
+
+static rtx
+ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
+		     rtx op_true, rtx op_false)
 {
   enum machine_mode mode = GET_MODE (dest);
-  rtx t1, t2, t3, x;
+  rtx x;
 
   cmp_op0 = force_reg (mode, cmp_op0);
   if (!nonimmediate_operand (cmp_op1, mode))
@@ -10155,24 +10157,33 @@ ix86_expand_sse_movcc (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
   if (optimize
       || reg_overlap_mentioned_p (dest, op_true)
       || reg_overlap_mentioned_p (dest, op_false))
-    t1 = gen_reg_rtx (mode);
-  else
-    t1 = dest;
+    dest = gen_reg_rtx (mode);
 
   x = gen_rtx_fmt_ee (code, mode, cmp_op0, cmp_op1);
-  gcc_assert (sse_comparison_operator (x, VOIDmode));
-  emit_insn (gen_rtx_SET (VOIDmode, t1, x));
+  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+
+  return dest;
+}
+
+/* Expand DEST = CMP ? OP_TRUE : OP_FALSE into a sequence of logical
+   operations.  This is used for both scalar and vector conditional moves.  */
+
+static void
+ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
+{
+  enum machine_mode mode = GET_MODE (dest);
+  rtx t2, t3, x;
 
   if (op_false == CONST0_RTX (mode))
     {
       op_true = force_reg (mode, op_true);
-      x = gen_rtx_AND (mode, t1, op_true);
+      x = gen_rtx_AND (mode, cmp, op_true);
       emit_insn (gen_rtx_SET (VOIDmode, dest, x));
     }
   else if (op_true == CONST0_RTX (mode))
     {
       op_false = force_reg (mode, op_false);
-      x = gen_rtx_NOT (mode, t1);
+      x = gen_rtx_NOT (mode, cmp);
       x = gen_rtx_AND (mode, x, op_false);
       emit_insn (gen_rtx_SET (VOIDmode, dest, x));
     }
@@ -10187,10 +10198,10 @@ ix86_expand_sse_movcc (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
       else
 	t3 = dest;
 
-      x = gen_rtx_AND (mode, op_true, t1);
+      x = gen_rtx_AND (mode, op_true, cmp);
       emit_insn (gen_rtx_SET (VOIDmode, t2, x));
 
-      x = gen_rtx_NOT (mode, t1);
+      x = gen_rtx_NOT (mode, cmp);
       x = gen_rtx_AND (mode, x, op_false);
       emit_insn (gen_rtx_SET (VOIDmode, t3, x));
 
@@ -10198,6 +10209,8 @@ ix86_expand_sse_movcc (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
       emit_insn (gen_rtx_SET (VOIDmode, dest, x));
     }
 }
+
+/* Expand a floating-point conditional move.  Return true if successful.  */
 
 int
 ix86_expand_fp_movcc (rtx operands[])
@@ -10230,8 +10243,9 @@ ix86_expand_fp_movcc (rtx operands[])
 				     operands[3]))
 	return 1;
 
-      ix86_expand_sse_movcc (operands[0], code, ix86_compare_op0,
-			     ix86_compare_op1, operands[2], operands[3]);
+      tmp = ix86_expand_sse_cmp (operands[0], code, ix86_compare_op0,
+				 ix86_compare_op1, operands[2], operands[3]);
+      ix86_expand_sse_movcc (operands[0], tmp, operands[2], operands[3]);
       return 1;
     }
 
@@ -10280,6 +10294,124 @@ ix86_expand_fp_movcc (rtx operands[])
 						  operands[2], operands[0])));
 
   return 1;
+}
+
+/* Expand a floating-point vector conditional move; a vcond operation
+   rather than a movcc operation.  */
+
+bool
+ix86_expand_fp_vcond (rtx operands[])
+{
+  enum rtx_code code = GET_CODE (operands[3]);
+  rtx cmp;
+
+  code = ix86_prepare_sse_fp_compare_args (operands[0], code,
+					   &operands[4], &operands[5]);
+  if (code == UNKNOWN)
+    return false;
+
+  if (ix86_expand_sse_fp_minmax (operands[0], code, operands[4],
+				 operands[5], operands[1], operands[2]))
+    return true;
+
+  cmp = ix86_expand_sse_cmp (operands[0], code, operands[4], operands[5],
+			     operands[1], operands[2]);
+  ix86_expand_sse_movcc (operands[0], cmp, operands[1], operands[2]);
+  return true;
+}
+
+/* Expand a signed integral vector conditional move.  */
+
+bool
+ix86_expand_int_vcond (rtx operands[], bool unsignedp)
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+  enum rtx_code code = GET_CODE (operands[3]);
+  rtx cmp, x;
+
+  if (unsignedp)
+    code = signed_condition (code);
+  if (code == NE || code == LE || code == GE)
+    {
+      /* Inverse of a supported code.  */
+      x = operands[1];
+      operands[1] = operands[2];
+      operands[2] = x;
+      code = reverse_condition (code);
+    }
+  if (code == LT)
+    {
+      /* Swap of a supported code.  */
+      x = operands[4];
+      operands[4] = operands[5];
+      operands[5] = x;
+      code = swap_condition (code);
+    }
+  gcc_assert (code == EQ || code == GT);
+
+  /* Unlike floating-point, we can rely on the optimizers to have already
+     converted to MIN/MAX expressions, so we don't have to handle that.  */
+
+  /* Unsigned GT is not directly supported.  We can zero-extend QI and
+     HImode elements to the next wider element size, use a signed compare,
+     then repack.  For three extra instructions, this is definitely a win.  */
+  if (code == GT && unsignedp)
+    {
+      rtx o0l, o0h, o1l, o1h, cl, ch, zero;
+      enum machine_mode wider;
+      rtx (*unpackl) (rtx, rtx, rtx);
+      rtx (*unpackh) (rtx, rtx, rtx);
+      rtx (*pack) (rtx, rtx, rtx);
+
+      switch (mode)
+	{
+	case V16QImode:
+	  wider = V8HImode;
+	  unpackl = gen_sse2_punpcklbw;
+	  unpackh = gen_sse2_punpckhbw;
+	  pack = gen_sse2_packsswb;
+	  break;
+	case V8HImode:
+	  wider = V4SImode;
+	  unpackl = gen_sse2_punpcklwd;
+	  unpackh = gen_sse2_punpckhwd;
+	  pack = gen_sse2_packssdw;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      operands[4] = force_reg (mode, operands[4]);
+      operands[5] = force_reg (mode, operands[5]);
+
+      o0l = gen_reg_rtx (wider);
+      o0h = gen_reg_rtx (wider);
+      o1l = gen_reg_rtx (wider);
+      o1h = gen_reg_rtx (wider);
+      cl = gen_reg_rtx (wider);
+      ch = gen_reg_rtx (wider);
+      cmp = gen_reg_rtx (mode);
+      zero = force_reg (mode, CONST0_RTX (mode));
+
+      emit_insn (unpackl (gen_lowpart (mode, o0l), operands[4], zero));
+      emit_insn (unpackh (gen_lowpart (mode, o0h), operands[4], zero));
+      emit_insn (unpackl (gen_lowpart (mode, o1l), operands[5], zero));
+      emit_insn (unpackh (gen_lowpart (mode, o1h), operands[5], zero));
+
+      x = gen_rtx_GT (wider, o0l, o1l);
+      emit_insn (gen_rtx_SET (VOIDmode, cl, x));
+
+      x = gen_rtx_GT (wider, o0h, o1h);
+      emit_insn (gen_rtx_SET (VOIDmode, ch, x));
+
+      emit_insn (pack (cmp, cl, ch));
+    }
+  else
+    cmp = ix86_expand_sse_cmp (operands[0], code, operands[4], operands[5],
+			       operands[1], operands[2]);
+
+  ix86_expand_sse_movcc (operands[0], cmp, operands[1], operands[2]);
+  return true;
 }
 
 /* Expand conditional increment or decrement using adb/sbb instructions.

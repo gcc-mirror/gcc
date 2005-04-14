@@ -1,3 +1,14 @@
+2005-04-14  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_sse_cmp): Split out from ...
+	(ix86_expand_sse_movcc): ... here.  Take cmp as a pre-computed
+	register.
+	(ix86_expand_fp_movcc): Update to match.
+	(ix86_expand_fp_vcond, ix86_expand_int_vcond): New.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/sse.md (vcondv4sf, vcondv2df): New.
+	(vcond<SSEMODE124>, vcondu<SSEMODE12>): New.
+
 2005-04-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/cpp.texi, doc/install.texi: Change references to GCC 3.5 to
