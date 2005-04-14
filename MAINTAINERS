@@ -161,6 +161,7 @@ build status lists	Janis Johnson		janis187@us.ibm.com
 config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pthomas@suse.de
+i18n			Joseph Myers		jsm@polyomino.org.uk
 diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
 libiberty		DJ Delorie		dj@redhat.com
 libiberty		Ian Lance Taylor	ian@airs.com
