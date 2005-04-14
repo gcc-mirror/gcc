@@ -208,6 +208,30 @@ enum insn_code clrmem_optab[NUM_MACHINE_MODES];
 enum insn_code cmpstr_optab[NUM_MACHINE_MODES];
 enum insn_code cmpmem_optab[NUM_MACHINE_MODES];
 
+/* Synchronization primitives.  */
+enum insn_code sync_add_optab[NUM_MACHINE_MODES];
+enum insn_code sync_sub_optab[NUM_MACHINE_MODES];
+enum insn_code sync_ior_optab[NUM_MACHINE_MODES];
+enum insn_code sync_and_optab[NUM_MACHINE_MODES];
+enum insn_code sync_xor_optab[NUM_MACHINE_MODES];
+enum insn_code sync_nand_optab[NUM_MACHINE_MODES];
+enum insn_code sync_old_add_optab[NUM_MACHINE_MODES];
+enum insn_code sync_old_sub_optab[NUM_MACHINE_MODES];
+enum insn_code sync_old_ior_optab[NUM_MACHINE_MODES];
+enum insn_code sync_old_and_optab[NUM_MACHINE_MODES];
+enum insn_code sync_old_xor_optab[NUM_MACHINE_MODES];
+enum insn_code sync_old_nand_optab[NUM_MACHINE_MODES];
+enum insn_code sync_new_add_optab[NUM_MACHINE_MODES];
+enum insn_code sync_new_sub_optab[NUM_MACHINE_MODES];
+enum insn_code sync_new_ior_optab[NUM_MACHINE_MODES];
+enum insn_code sync_new_and_optab[NUM_MACHINE_MODES];
+enum insn_code sync_new_xor_optab[NUM_MACHINE_MODES];
+enum insn_code sync_new_nand_optab[NUM_MACHINE_MODES];
+enum insn_code sync_compare_and_swap[NUM_MACHINE_MODES];
+enum insn_code sync_compare_and_swap_cc[NUM_MACHINE_MODES];
+enum insn_code sync_lock_test_and_set[NUM_MACHINE_MODES];
+enum insn_code sync_lock_release[NUM_MACHINE_MODES];
+
 /* SLOW_UNALIGNED_ACCESS is nonzero if unaligned accesses are very slow.  */
 
 #ifndef SLOW_UNALIGNED_ACCESS

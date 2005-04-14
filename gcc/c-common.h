@@ -798,6 +798,8 @@ extern void c_do_switch_warnings (splay_tree, location_t, tree, tree);
 
 extern tree build_function_call (tree, tree);
 
+extern tree resolve_overloaded_builtin (tree, tree);
+
 extern tree finish_label_address_expr (tree);
 
 /* Same function prototype, but the C and C++ front ends have
@@ -859,6 +861,8 @@ enum lvalue_use {
 extern void lvalue_error (enum lvalue_use);
 
 extern int complete_array_type (tree *, tree, bool);
+
+extern tree builtin_type_for_size (int, bool);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);

@@ -1978,6 +1978,13 @@ build_function_call (tree function, tree params)
   /* Convert anything with function type to a pointer-to-function.  */
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
+      if (DECL_BUILT_IN_CLASS (function) == BUILT_IN_NORMAL)
+	{
+	  tem = resolve_overloaded_builtin (function, params);
+	  if (tem)
+	    return tem;
+	}
+
       name = DECL_NAME (function);
 
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE

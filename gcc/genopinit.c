@@ -171,12 +171,35 @@ static const char * const optabs[] =
   "clrmem_optab[$A] = CODE_FOR_$(clrmem$a$)",
   "cmpstr_optab[$A] = CODE_FOR_$(cmpstr$a$)",
   "cmpmem_optab[$A] = CODE_FOR_$(cmpmem$a$)",
+  "sync_add_optab[$A] = CODE_FOR_$(sync_add$I$a$)",
+  "sync_sub_optab[$A] = CODE_FOR_$(sync_sub$I$a$)",
+  "sync_ior_optab[$A] = CODE_FOR_$(sync_ior$I$a$)",
+  "sync_and_optab[$A] = CODE_FOR_$(sync_and$I$a$)",
+  "sync_xor_optab[$A] = CODE_FOR_$(sync_xor$I$a$)",
+  "sync_nand_optab[$A] = CODE_FOR_$(sync_nand$I$a$)",
+  "sync_old_add_optab[$A] = CODE_FOR_$(sync_old_add$I$a$)",
+  "sync_old_sub_optab[$A] = CODE_FOR_$(sync_old_sub$I$a$)",
+  "sync_old_ior_optab[$A] = CODE_FOR_$(sync_old_ior$I$a$)",
+  "sync_old_and_optab[$A] = CODE_FOR_$(sync_old_and$I$a$)",
+  "sync_old_xor_optab[$A] = CODE_FOR_$(sync_old_xor$I$a$)",
+  "sync_old_nand_optab[$A] = CODE_FOR_$(sync_old_nand$I$a$)",
+  "sync_new_add_optab[$A] = CODE_FOR_$(sync_new_add$I$a$)",
+  "sync_new_sub_optab[$A] = CODE_FOR_$(sync_new_sub$I$a$)",
+  "sync_new_ior_optab[$A] = CODE_FOR_$(sync_new_ior$I$a$)",
+  "sync_new_and_optab[$A] = CODE_FOR_$(sync_new_and$I$a$)",
+  "sync_new_xor_optab[$A] = CODE_FOR_$(sync_new_xor$I$a$)",
+  "sync_new_nand_optab[$A] = CODE_FOR_$(sync_new_nand$I$a$)",
+  "sync_compare_and_swap[$A] = CODE_FOR_$(sync_compare_and_swap$I$a$)",
+  "sync_compare_and_swap_cc[$A] = CODE_FOR_$(sync_compare_and_swap_cc$I$a$)",
+  "sync_lock_test_and_set[$A] = CODE_FOR_$(sync_lock_test_and_set$I$a$)",
+  "sync_lock_release[$A] = CODE_FOR_$(sync_lock_release$I$a$)",
   "vec_set_optab->handlers[$A].insn_code = CODE_FOR_$(vec_set$a$)",
   "vec_extract_optab->handlers[$A].insn_code = CODE_FOR_$(vec_extract$a$)",
   "vec_init_optab->handlers[$A].insn_code = CODE_FOR_$(vec_init$a$)",
   "vec_realign_load_optab->handlers[$A].insn_code = CODE_FOR_$(vec_realign_load_$a$)",
   "vcond_gen_code[$A] = CODE_FOR_$(vcond$a$)",
-  "vcondu_gen_code[$A] = CODE_FOR_$(vcondu$a$)" };
+  "vcondu_gen_code[$A] = CODE_FOR_$(vcondu$a$)"
+};
 
 static void gen_insn (rtx);
 

@@ -5093,6 +5093,29 @@ init_optabs (void)
       cmpstr_optab[i] = CODE_FOR_nothing;
       cmpmem_optab[i] = CODE_FOR_nothing;
 
+      sync_add_optab[i] = CODE_FOR_nothing;
+      sync_sub_optab[i] = CODE_FOR_nothing;
+      sync_ior_optab[i] = CODE_FOR_nothing;
+      sync_and_optab[i] = CODE_FOR_nothing;
+      sync_xor_optab[i] = CODE_FOR_nothing;
+      sync_nand_optab[i] = CODE_FOR_nothing;
+      sync_old_add_optab[i] = CODE_FOR_nothing;
+      sync_old_sub_optab[i] = CODE_FOR_nothing;
+      sync_old_ior_optab[i] = CODE_FOR_nothing;
+      sync_old_and_optab[i] = CODE_FOR_nothing;
+      sync_old_xor_optab[i] = CODE_FOR_nothing;
+      sync_old_nand_optab[i] = CODE_FOR_nothing;
+      sync_new_add_optab[i] = CODE_FOR_nothing;
+      sync_new_sub_optab[i] = CODE_FOR_nothing;
+      sync_new_ior_optab[i] = CODE_FOR_nothing;
+      sync_new_and_optab[i] = CODE_FOR_nothing;
+      sync_new_xor_optab[i] = CODE_FOR_nothing;
+      sync_new_nand_optab[i] = CODE_FOR_nothing;
+      sync_compare_and_swap[i] = CODE_FOR_nothing;
+      sync_compare_and_swap_cc[i] = CODE_FOR_nothing;
+      sync_lock_test_and_set[i] = CODE_FOR_nothing;
+      sync_lock_release[i] = CODE_FOR_nothing;
+
 #ifdef HAVE_SECONDARY_RELOADS
       reload_in_optab[i] = reload_out_optab[i] = CODE_FOR_nothing;
 #endif
@@ -5486,4 +5509,517 @@ expand_vec_cond_expr (tree vec_cond_expr, rtx target)
 
   return target;
 }
+
+
+/* This is an internal subroutine of the other compare_and_swap expanders.
+   MEM, OLD_VAL and NEW_VAL are as you'd expect for a compare-and-swap
+   operation.  TARGET is an optional place to store the value result of
+   the operation.  ICODE is the particular instruction to expand.  Return
+   the result of the operation.  */
+
+static rtx
+expand_val_compare_and_swap_1 (rtx mem, rtx old_val, rtx new_val,
+			       rtx target, enum insn_code icode)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx insn;
+
+  if (!target || !insn_data[icode].operand[0].predicate (target, mode))
+    target = gen_reg_rtx (mode);
+
+  if (GET_MODE (old_val) != VOIDmode && GET_MODE (old_val) != mode)
+    old_val = convert_modes (mode, GET_MODE (old_val), old_val, 1);
+  if (!insn_data[icode].operand[2].predicate (old_val, mode))
+    old_val = force_reg (mode, old_val);
+
+  if (GET_MODE (new_val) != VOIDmode && GET_MODE (new_val) != mode)
+    new_val = convert_modes (mode, GET_MODE (new_val), new_val, 1);
+  if (!insn_data[icode].operand[3].predicate (new_val, mode))
+    new_val = force_reg (mode, new_val);
+
+  insn = GEN_FCN (icode) (target, mem, old_val, new_val);
+  if (insn == NULL_RTX)
+    return NULL_RTX;
+  emit_insn (insn);
+
+  return target;
+}
+
+/* Expand a compare-and-swap operation and return its value.  */
+
+rtx
+expand_val_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code icode = sync_compare_and_swap[mode];
+
+  if (icode == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  return expand_val_compare_and_swap_1 (mem, old_val, new_val, target, icode);
+}
+
+/* Expand a compare-and-swap operation and store true into the result if
+   the operation was successful and false otherwise.  Return the result.
+   Unlike other routines, TARGET is not optional.  */
+
+rtx
+expand_bool_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code icode;
+  rtx subtarget, label0, label1;
+
+  /* If the target supports a compare-and-swap pattern that simultaneously
+     sets some flag for success, then use it.  Otherwise use the regular
+     compare-and-swap and follow that immediately with a compare insn.  */
+  icode = sync_compare_and_swap_cc[mode];
+  switch (icode)
+    {
+    default:
+      subtarget = expand_val_compare_and_swap_1 (mem, old_val, new_val,
+						 NULL_RTX, icode);
+      if (subtarget != NULL_RTX)
+	break;
+
+      /* FALLTHRU */
+    case CODE_FOR_nothing:
+      icode = sync_compare_and_swap[mode];
+      if (icode == CODE_FOR_nothing)
+	return NULL_RTX;
+
+      subtarget = expand_val_compare_and_swap_1 (mem, old_val, new_val,
+						 NULL_RTX, icode);
+      if (subtarget == NULL_RTX)
+	return NULL_RTX;
+
+      emit_cmp_insn (subtarget, new_val, EQ, const0_rtx, mode, true);
+    }
+
+  /* If the target has a sane STORE_FLAG_VALUE, then go ahead and use a
+     setcc instruction from the beginning.  We don't work too hard here,
+     but it's nice to not be stupid about initial code gen either.  */
+  if (STORE_FLAG_VALUE == 1)
+    {
+      icode = setcc_gen_code[EQ];
+      if (icode != CODE_FOR_nothing)
+	{
+	  enum machine_mode cmode = insn_data[icode].operand[0].mode;
+	  rtx insn;
+
+	  subtarget = target;
+	  if (!insn_data[icode].operand[0].predicate (target, cmode))
+	    subtarget = gen_reg_rtx (cmode);
+
+	  insn = GEN_FCN (icode) (subtarget);
+	  if (insn)
+	    {
+	      emit_insn (insn);
+	      if (GET_MODE (target) != GET_MODE (subtarget))
+		{
+	          convert_move (target, subtarget, 1);
+		  subtarget = target;
+		}
+	      return subtarget;
+	    }
+	}
+    }
+
+  /* Without an appropriate setcc instruction, use a set of branches to 
+     get 1 and 0 stored into target.  Presumably if the target has a 
+     STORE_FLAG_VALUE that isn't 1, then this will get cleaned up by ifcvt.  */
+
+  label0 = gen_label_rtx ();
+  label1 = gen_label_rtx ();
+
+  emit_jump_insn (bcc_gen_fctn[EQ] (label0));
+  emit_move_insn (target, const0_rtx);
+  emit_jump_insn (gen_jump (label1));
+  emit_label (label0);
+  emit_move_insn (target, const1_rtx);
+  emit_label (label1);
+
+  return target;
+}
+
+/* This is a helper function for the other atomic operations.  This function
+   emits a loop that contains SEQ that iterates until a compare-and-swap
+   operation at the end succeeds.  MEM is the memory to be modified.  SEQ is
+   a set of instructions that takes a value from OLD_REG as an input and
+   produces a value in NEW_REG as an output.  Before SEQ, OLD_REG will be
+   set to the current contents of MEM.  After SEQ, a compare-and-swap will
+   attempt to update MEM with NEW_REG.  The function returns true when the
+   loop was generated successfully.  */
+
+static bool
+expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code icode;
+  rtx label, subtarget;
+
+  /* The loop we want to generate looks like
+
+	old_reg = mem;
+      label:
+	seq;
+	old_reg = compare-and-swap(mem, old_reg, new_reg)
+	if (old_reg != new_reg)
+	  goto label;
+
+     Note that we only do the plain load from memory once.  Subsequent
+     iterations use the value loaded by the compare-and-swap pattern.  */
+
+  label = gen_label_rtx ();
+
+  emit_move_insn (old_reg, mem);
+  emit_label (label);
+  if (seq)
+    emit_insn (seq);
+
+  /* If the target supports a compare-and-swap pattern that simultaneously
+     sets some flag for success, then use it.  Otherwise use the regular
+     compare-and-swap and follow that immediately with a compare insn.  */
+  icode = sync_compare_and_swap_cc[mode];
+  switch (icode)
+    {
+    default:
+      subtarget = expand_val_compare_and_swap_1 (mem, old_reg, new_reg,
+						 old_reg, icode);
+      if (subtarget != NULL_RTX)
+	break;
+
+      /* FALLTHRU */
+    case CODE_FOR_nothing:
+      icode = sync_compare_and_swap[mode];
+      if (icode == CODE_FOR_nothing)
+	return false;
+
+      subtarget = expand_val_compare_and_swap_1 (mem, old_reg, new_reg,
+						 old_reg, icode);
+      if (subtarget == NULL_RTX)
+	return false;
+
+      emit_cmp_insn (subtarget, new_reg, EQ, const0_rtx, mode, true);
+    }
+
+  /* ??? Mark this jump predicted not taken?  */
+  emit_jump_insn (bcc_gen_fctn[NE] (label));
+
+  return true;
+}
+
+/* This function generates the atomic operation MEM CODE= VAL.  In this
+   case, we do not care about any resulting value.  Returns NULL if we 
+   cannot generate the operation.  */
+
+rtx
+expand_sync_operation (rtx mem, rtx val, enum rtx_code code)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code icode;
+  rtx insn;
+
+  /* Look to see if the target supports the operation directly.  */
+  switch (code)
+    {
+    case PLUS:
+      icode = sync_add_optab[mode];
+      break;
+    case IOR:
+      icode = sync_ior_optab[mode];
+      break;
+    case XOR:
+      icode = sync_xor_optab[mode];
+      break;
+    case AND:
+      icode = sync_and_optab[mode];
+      break;
+
+    case MINUS:
+      icode = sync_sub_optab[mode];
+      if (icode == CODE_FOR_nothing)
+	{
+	  icode = sync_add_optab[mode];
+	  if (icode != CODE_FOR_nothing)
+	    {
+	      val = expand_simple_unop (mode, NEG, val, NULL_RTX, 1);
+	      code = PLUS;
+	    }
+	}
+      break;
+
+    case NOT:
+      icode = sync_nand_optab[mode];
+      if (icode != CODE_FOR_nothing)
+	{
+	  icode = sync_and_optab[mode];
+	  if (icode != CODE_FOR_nothing)
+	    {
+	      val = expand_simple_unop (mode, NOT, val, NULL_RTX, 1);
+	      code = AND;
+	    }
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Generate the direct operation, if present.  */
+  if (icode != CODE_FOR_nothing)
+    {
+      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
+	val = convert_modes (mode, GET_MODE (val), val, 1);
+      if (!insn_data[icode].operand[1].predicate (val, mode))
+	val = force_reg (mode, val);
+      
+      insn = GEN_FCN (icode) (mem, val);
+      if (insn)
+	{
+	  emit_insn (insn);
+	  return const0_rtx;
+	}
+    }
+
+  /* Failing that, generate a compare-and-swap loop in which we perform the
+     operation with normal arithmetic instructions.  */
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+    {
+      rtx t0 = gen_reg_rtx (mode), t1;
+
+      start_sequence ();
+
+      if (code == NOT)
+	{
+	  val = expand_simple_unop (mode, NOT, val, NULL_RTX, true);
+	  code = AND;
+	}
+      t1 = expand_simple_binop (mode, code, t0, val, NULL_RTX,
+				true, OPTAB_LIB_WIDEN);
+
+      insn = get_insns ();
+      end_sequence ();
+
+      if (t1 != NULL && expand_compare_and_swap_loop (mem, t0, t1, insn))
+	return const0_rtx;
+    }
+
+  return NULL_RTX;
+}
+
+/* This function generates the atomic operation MEM CODE= VAL.  In this
+   case, we do care about the resulting value: if AFTER is true then
+   return the value MEM holds after the operation, if AFTER is false 
+   then return the value MEM holds before the operation.  TARGET is an
+   optional place for the result value to be stored.  */
+
+rtx
+expand_sync_fetch_operation (rtx mem, rtx val, enum rtx_code code,
+			     bool after, rtx target)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code old_code, new_code, icode;
+  bool compensate;
+  rtx insn;
+
+  /* Look to see if the target supports the operation directly.  */
+  switch (code)
+    {
+    case PLUS:
+      old_code = sync_old_add_optab[mode];
+      new_code = sync_new_add_optab[mode];
+      break;
+    case IOR:
+      old_code = sync_old_ior_optab[mode];
+      new_code = sync_new_ior_optab[mode];
+      break;
+    case XOR:
+      old_code = sync_old_xor_optab[mode];
+      new_code = sync_new_xor_optab[mode];
+      break;
+    case AND:
+      old_code = sync_old_and_optab[mode];
+      new_code = sync_new_and_optab[mode];
+      break;
+
+    case MINUS:
+      old_code = sync_old_sub_optab[mode];
+      new_code = sync_new_sub_optab[mode];
+      if (old_code == CODE_FOR_nothing && new_code == CODE_FOR_nothing)
+	{
+	  old_code = sync_old_add_optab[mode];
+	  new_code = sync_new_add_optab[mode];
+	  if (old_code != CODE_FOR_nothing || new_code != CODE_FOR_nothing)
+	    {
+	      val = expand_simple_unop (mode, NEG, val, NULL_RTX, 1);
+	      code = PLUS;
+	    }
+	}
+      break;
+
+    case NOT:
+      old_code = sync_old_nand_optab[mode];
+      new_code = sync_new_nand_optab[mode];
+      if (old_code == CODE_FOR_nothing && new_code == CODE_FOR_nothing)
+	{
+	  old_code = sync_old_sub_optab[mode];
+	  new_code = sync_new_sub_optab[mode];
+	  if (old_code != CODE_FOR_nothing || new_code != CODE_FOR_nothing)
+	    {
+	      val = expand_simple_unop (mode, NOT, val, NULL_RTX, 1);
+	      code = AND;
+	    }
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* If the target does supports the proper new/old operation, great.  But
+     if we only support the opposite old/new operation, check to see if we
+     can compensate.  In the case in which the old value is supported, then
+     we can always perform the operation again with normal arithmetic.  In
+     the case in which the new value is supported, then we can only handle
+     this in the case the operation is reversible.  */
+  compensate = false;
+  if (after)
+    {
+      icode = new_code;
+      if (icode == CODE_FOR_nothing)
+	{
+	  icode = old_code;
+	  if (icode != CODE_FOR_nothing)
+	    compensate = true;
+	}
+    }
+  else
+    {
+      icode = old_code;
+      if (icode == CODE_FOR_nothing
+	  && (code == PLUS || code == MINUS || code == XOR))
+	{
+	  icode = new_code;
+	  if (icode != CODE_FOR_nothing)
+	    compensate = true;
+	}
+    }
+
+  /* If we found something supported, great.  */
+  if (icode != CODE_FOR_nothing)
+    {
+      if (!target || !insn_data[icode].operand[0].predicate (target, mode))
+	target = gen_reg_rtx (mode);
+
+      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
+	val = convert_modes (mode, GET_MODE (val), val, 1);
+      if (!insn_data[icode].operand[2].predicate (val, mode))
+	val = force_reg (mode, val);
+      
+      insn = GEN_FCN (icode) (target, mem, val);
+      if (insn)
+	{
+	  emit_insn (insn);
+
+	  /* If we need to compensate for using an operation with the
+	     wrong return value, do so now.  */
+	  if (compensate)
+	    {
+	      if (!after)
+		{
+		  if (code == PLUS)
+		    code = MINUS;
+		  else if (code == MINUS)
+		    code = PLUS;
+		}
+	      target = expand_simple_binop (mode, code, target, val, NULL_RTX,
+					    true, OPTAB_LIB_WIDEN);
+	    }
+
+	  return target;
+	}
+    }
+
+  /* Failing that, generate a compare-and-swap loop in which we perform the
+     operation with normal arithmetic instructions.  */
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+    {
+      rtx t0 = gen_reg_rtx (mode), t1;
+
+      if (!target || !register_operand (target, mode))
+	target = gen_reg_rtx (mode);
+
+      start_sequence ();
+
+      if (code == NOT)
+	{
+	  val = expand_simple_unop (mode, NOT, val, NULL_RTX, true);
+	  code = AND;
+	}
+      if (!after)
+	emit_move_insn (target, t0);
+      t1 = expand_simple_binop (mode, code, t0, val, NULL_RTX,
+				true, OPTAB_LIB_WIDEN);
+      if (after)
+	emit_move_insn (target, t1);
+
+      insn = get_insns ();
+      end_sequence ();
+
+      if (t1 != NULL && expand_compare_and_swap_loop (mem, t0, t1, insn))
+	return target;
+    }
+
+  return NULL_RTX;
+}
+
+/* This function expands a test-and-set operation.  Ideally we atomically
+   store VAL in MEM and return the previous value in MEM.  Some targets
+   may not support this operation and only support VAL with the constant 1;
+   in this case while the return value will be 0/1, but the exact value 
+   stored in MEM is target defined.  TARGET is an option place to stick
+   the return value.  */
+
+rtx
+expand_sync_lock_test_and_set (rtx mem, rtx val, rtx target)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum insn_code icode;
+  rtx insn;
+
+  /* If the target supports the test-and-set directly, great.  */
+  icode = sync_lock_test_and_set[mode];
+  if (icode != CODE_FOR_nothing)
+    {
+      if (!target || !insn_data[icode].operand[0].predicate (target, mode))
+	target = gen_reg_rtx (mode);
+
+      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
+	val = convert_modes (mode, GET_MODE (val), val, 1);
+      if (!insn_data[icode].operand[2].predicate (val, mode))
+	val = force_reg (mode, val);
+
+      insn = GEN_FCN (icode) (target, mem, val);
+      if (insn)
+	{
+	  emit_insn (insn);
+	  return target;
+	}
+    }
+
+  /* Otherwise, use a compare-and-swap loop for the exchange.  */
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+    {
+      if (!target || !register_operand (target, mode))
+	target = gen_reg_rtx (mode);
+      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
+	val = convert_modes (mode, GET_MODE (val), val, 1);
+      if (expand_compare_and_swap_loop (mem, target, val, NULL_RTX))
+	return target;
+    }
+
+  return NULL_RTX;
+}
+
 #include "gt-optabs.h"

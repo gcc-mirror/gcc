@@ -1,3 +1,89 @@
+2004-04-14  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/14311
+	* builtin-types.def (BT_BOOL, BT_VOLATILE_PTR, BT_I1, BT_I2,
+	BT_I4, BT_I8, BT_FN_VOID_VPTR, BT_FN_I1_VPTR_I1, BT_FN_I2_VPTR_I2,
+	BT_FN_I4_VPTR_I4, BT_FN_I8_VPTR_I8, BT_FN_BOOL_VPTR_I1_I1,
+	BT_FN_BOOL_VPTR_I2_I2, BT_FN_BOOL_VPTR_I4_I4, BT_FN_BOOL_VPTR_I8_I8,
+	BT_FN_I1_VPTR_I1_I1, BT_FN_I2_VPTR_I2_I2, BT_FN_I4_VPTR_I4_I4,
+	BT_FN_I8_VPTR_I8_I8): New.
+	* builtins.def (DEF_SYNC_BUILTIN): New.
+	(BUILT_IN_FETCH_AND_ADD_N, BUILT_IN_FETCH_AND_ADD_1,
+	BUILT_IN_FETCH_AND_ADD_2, BUILT_IN_FETCH_AND_ADD_4,
+	BUILT_IN_FETCH_AND_ADD_8, BUILT_IN_FETCH_AND_SUB_N,
+	BUILT_IN_FETCH_AND_SUB_1, BUILT_IN_FETCH_AND_SUB_2,
+	BUILT_IN_FETCH_AND_SUB_4, BUILT_IN_FETCH_AND_SUB_8,
+	BUILT_IN_FETCH_AND_OR_N, BUILT_IN_FETCH_AND_OR_1,
+	BUILT_IN_FETCH_AND_OR_2, BUILT_IN_FETCH_AND_OR_4,
+	BUILT_IN_FETCH_AND_OR_8, BUILT_IN_FETCH_AND_AND_N,
+	BUILT_IN_FETCH_AND_AND_1, BUILT_IN_FETCH_AND_AND_2,
+	BUILT_IN_FETCH_AND_AND_4, BUILT_IN_FETCH_AND_AND_8,
+	BUILT_IN_FETCH_AND_XOR_N, BUILT_IN_FETCH_AND_XOR_1,
+	BUILT_IN_FETCH_AND_XOR_2, BUILT_IN_FETCH_AND_XOR_4,
+	BUILT_IN_FETCH_AND_XOR_8, BUILT_IN_FETCH_AND_NAND_N,
+	BUILT_IN_FETCH_AND_NAND_1, BUILT_IN_FETCH_AND_NAND_2,
+	BUILT_IN_FETCH_AND_NAND_4, BUILT_IN_FETCH_AND_NAND_8,
+	BUILT_IN_ADD_AND_FETCH_N, BUILT_IN_ADD_AND_FETCH_1,
+	BUILT_IN_ADD_AND_FETCH_2, BUILT_IN_ADD_AND_FETCH_4,
+	BUILT_IN_ADD_AND_FETCH_8, BUILT_IN_SUB_AND_FETCH_N,
+	BUILT_IN_SUB_AND_FETCH_1, BUILT_IN_SUB_AND_FETCH_2,
+	BUILT_IN_SUB_AND_FETCH_4, BUILT_IN_SUB_AND_FETCH_8,
+	BUILT_IN_OR_AND_FETCH_N, BUILT_IN_OR_AND_FETCH_1,
+	BUILT_IN_OR_AND_FETCH_2, BUILT_IN_OR_AND_FETCH_4,
+	BUILT_IN_OR_AND_FETCH_8, BUILT_IN_AND_AND_FETCH_N,
+	BUILT_IN_AND_AND_FETCH_1, BUILT_IN_AND_AND_FETCH_2,
+	BUILT_IN_AND_AND_FETCH_4, BUILT_IN_AND_AND_FETCH_8,
+	BUILT_IN_XOR_AND_FETCH_N, BUILT_IN_XOR_AND_FETCH_1,
+	BUILT_IN_XOR_AND_FETCH_2, BUILT_IN_XOR_AND_FETCH_4,
+	BUILT_IN_XOR_AND_FETCH_8, BUILT_IN_NAND_AND_FETCH_N,
+	BUILT_IN_NAND_AND_FETCH_1, BUILT_IN_NAND_AND_FETCH_2,
+	BUILT_IN_NAND_AND_FETCH_4, BUILT_IN_NAND_AND_FETCH_8,
+	BUILT_IN_BOOL_COMPARE_AND_SWAP_N, BUILT_IN_BOOL_COMPARE_AND_SWAP_1,
+	BUILT_IN_BOOL_COMPARE_AND_SWAP_2, BUILT_IN_BOOL_COMPARE_AND_SWAP_4,
+	BUILT_IN_BOOL_COMPARE_AND_SWAP_8, BUILT_IN_VAL_COMPARE_AND_SWAP_N,
+	BUILT_IN_VAL_COMPARE_AND_SWAP_1, BUILT_IN_VAL_COMPARE_AND_SWAP_2,
+	BUILT_IN_VAL_COMPARE_AND_SWAP_4, BUILT_IN_VAL_COMPARE_AND_SWAP_8,
+	BUILT_IN_LOCK_TEST_AND_SET_N, BUILT_IN_LOCK_TEST_AND_SET_1,
+	BUILT_IN_LOCK_TEST_AND_SET_2, BUILT_IN_LOCK_TEST_AND_SET_4,
+	BUILT_IN_LOCK_TEST_AND_SET_8, BUILT_IN_LOCK_RELEASE_N,
+	BUILT_IN_LOCK_RELEASE_1, BUILT_IN_LOCK_RELEASE_2,
+	BUILT_IN_LOCK_RELEASE_4, BUILT_IN_LOCK_RELEASE_8,
+	BUILT_IN_SYNCHRONIZE: New.
+	* builtins.c (called_as_built_in): Rewrite from CALLED_AS_BUILT_IN
+	as a function.  Accept __sync_ as a prefix as well.
+	(expand_builtin_sync_operation, expand_builtin_compare_and_swap,
+	expand_builtin_lock_test_and_set, expand_builtin_synchronize,
+	expand_builtin_lock_release): New.
+	(expand_builtin): Call them.
+	* c-common.c (DEF_BUILTIN): Don't require __builtin_ prefix if
+	neither BOTH_P nor FALLBACK_P are defined.
+	(builtin_type_for_size): New.
+	(sync_resolve_size, sync_resolve_params, sync_resolve_return): New.
+	(resolve_overloaded_builtin): New.
+	* c-common.h (resolve_overloaded_builtin): Declare.
+	(builtin_type_for_size): Declare.
+	* c-typeck.c (build_function_call): Invoke resolve_overloaded_builtin.
+	* expr.c (sync_add_optab, sync_sub_optab, sync_ior_optab,
+	sync_and_optab, sync_xor_optab, sync_nand_optab, sync_old_add_optab,
+	sync_old_sub_optab, sync_old_ior_optab, sync_old_and_optab,
+	sync_old_xor_optab, sync_old_nand_optab, sync_new_add_optab,
+	sync_new_sub_optab, sync_new_ior_optab, sync_new_and_optab,
+	sync_new_xor_optab, sync_new_nand_optab, sync_compare_and_swap,
+	sync_compare_and_swap_cc, sync_lock_test_and_set,
+	sync_lock_release): New.
+	* optabs.h: Declare them.
+	* expr.h (expand_val_compare_and_swap, expand_bool_compare_and_swap,
+	expand_sync_operation, expand_sync_fetch_operation,
+	expand_sync_lock_test_and_set): Declare.
+	* genopinit.c (optabs): Add sync optabs.
+	* optabs.c (init_optabs): Initialize sync optabs.
+	(expand_val_compare_and_swap_1, expand_val_compare_and_swap,
+	expand_bool_compare_and_swap, expand_compare_and_swap_loop,
+	expand_sync_operation, expand_sync_fetch_operation,
+	expand_sync_lock_test_and_set): New.
+	* doc/extend.texi (Atomic Builtins): New section
+	* doc/md.texi (Standard Names): Add sync patterns.
+
 2005-04-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-eh.c (lower_try_finally_copy): Generate new code in
@@ -91,13 +177,13 @@
 
 2005-04-13  Dale Johannesen  <dalej@apple.com>
 
-        * objc/Make-lang.in (objc-lang.o):  Depend on tree-gimple.h.
-        (objc-act.o):  Ditto.
-        * objc/objc-act.c (objc_gimplify_expr):  New.
-        (objc_get_callee_fndecl):  New.
-        * objc/objc-act.h:  Include tree-gimple.h.  Declare new functions.
-        * objc/objc-lang.c (LANG_HOOKS_GIMPLIFY_EXPR):  Define.
-        (LANG_HOOKS_GET_CALLEE_FNDECL):  Define.
+	* objc/Make-lang.in (objc-lang.o):  Depend on tree-gimple.h.
+	(objc-act.o):  Ditto.
+	* objc/objc-act.c (objc_gimplify_expr):  New.
+	(objc_get_callee_fndecl):  New.
+	* objc/objc-act.h:  Include tree-gimple.h.  Declare new functions.
+	* objc/objc-lang.c (LANG_HOOKS_GIMPLIFY_EXPR):  Define.
+	(LANG_HOOKS_GET_CALLEE_FNDECL):  Define.
 
 2005-04-13  Devang Patel  <dpatel@apple.com>
 
@@ -489,29 +575,29 @@
 
 2005-04-11  Devang Patel  <dpatel@apple.com>
 
-        * tree-data-ref.c (build_classic_dist_vector,
-        compute_subscript_distance): Make externally visible.
-        * tree-data-ref.h (build_classic_dist_vector,
-        compute_subscript_distance): Same.
-        * tree-vect-analyze.c (vect_analyze_data_ref_dependence):
-        Check distance vector against vectorization factor.
-        (vect_analyze_loop): Determine vectorizaion factor before
-        analyzing data dependences.
-        * tree-vectorizer.c (loops_num): Make it externally visible and
-        rename ...
-        * tree-vectorizer.c (vect_loops_num): ... new name.
-        * tree-vectorizer.h  (vect_loops_num): New.
+	* tree-data-ref.c (build_classic_dist_vector,
+	compute_subscript_distance): Make externally visible.
+	* tree-data-ref.h (build_classic_dist_vector,
+	compute_subscript_distance): Same.
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependence):
+	Check distance vector against vectorization factor.
+	(vect_analyze_loop): Determine vectorizaion factor before
+	analyzing data dependences.
+	* tree-vectorizer.c (loops_num): Make it externally visible and
+	rename ...
+	* tree-vectorizer.c (vect_loops_num): ... new name.
+	* tree-vectorizer.h  (vect_loops_num): New.
 
 2005-04-11  Devang Patel  <dpatel@apple.com>
 
-        * tree-vect-analyze.c (vect_analyze_operations): Check
-        vectorizable codition.
-        * tree-vect-transform.c (vect_is_simple_cond): New function.
-        (vectorizable_condition): New function.
-        (vect_transform_stmt): Handle condition_vec_info_type.
-        * tree-vectorizer.h (enum stmt_vec_info_type): Add
-        condition_vec_info_type.
-        (vectorizable_condition): New.
+	* tree-vect-analyze.c (vect_analyze_operations): Check
+	vectorizable codition.
+	* tree-vect-transform.c (vect_is_simple_cond): New function.
+	(vectorizable_condition): New function.
+	(vect_transform_stmt): Handle condition_vec_info_type.
+	* tree-vectorizer.h (enum stmt_vec_info_type): Add
+	condition_vec_info_type.
+	(vectorizable_condition): New.
 	
 2005-04-11  Geoffrey Keating  <geoffk@apple.com>
 
