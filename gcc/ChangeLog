@@ -1,3 +1,10 @@
+2005-04-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-eh.c (lower_try_finally_copy): Generate new code in
+	response to goto_queue entries as if the queue was sorted by
+	index, not pointers.
+	(lower_try_finally_switch): Likewise.
+
 2005-04-14  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_sse_cmp): Split out from ...
