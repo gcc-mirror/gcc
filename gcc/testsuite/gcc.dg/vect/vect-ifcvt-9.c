@@ -1,5 +1,4 @@
 /* { dg-require-effective-target vect_condition } */
-/* { dg-do run } */
 
 #include <stdarg.h>
 #include <signal.h>
@@ -34,3 +33,4 @@ int main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" } } */
+/* { dg-final { cleanup-tree-dump "vect" } } */
