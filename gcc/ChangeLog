@@ -1,3 +1,9 @@
+2005-04-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/20657
+	* tree-vrp.c (extract_range_from_expr): Notice INTEGER_CST to
+	create an appropriate range from it.
+
 2005-04-14  Uros Bizjak  <uros@kss-loka.si>
 
 	* reg-stack.c (subst_stack_regs_pat): Handle <UNSPEC_FIST_FLOOR> and
