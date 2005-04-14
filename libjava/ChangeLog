@@ -1,3 +1,10 @@
+2005-04-14  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_FindClass): Use system loader,
+	not boot loader.
+	(_Jv_RegisterInitiatingLoader): Likewise.
+	(_Jv_UnregisterInitiatingLoader): Likewise.
+
 2005-04-13  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/natRuntime.cc (insertSystemProperties): Set

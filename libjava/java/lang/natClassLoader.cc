@@ -117,7 +117,7 @@ void
 _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
   if (! loader)
-    loader = java::lang::VMClassLoader::bootLoader;
+    loader = java::lang::ClassLoader::systemClassLoader;
   loader->loadedClasses->put(klass->name->toString(), klass);
 }
 
@@ -127,7 +127,7 @@ void
 _Jv_UnregisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
   if (! loader)
-    loader = java::lang::VMClassLoader::bootLoader;
+    loader = java::lang::ClassLoader::systemClassLoader;
   loader->loadedClasses->remove(klass->name->toString());
 }
 
@@ -223,7 +223,8 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
   // initiating loader checks, as we register classes with their
   // initiating loaders.
 
-  java::lang::ClassLoader *boot = java::lang::VMClassLoader::bootLoader;
+  // Note: this is incorrect, but compatible with older GCJ usage.
+  java::lang::ClassLoader *boot = java::lang::ClassLoader::systemClassLoader;
   java::lang::ClassLoader *real = loader;
   if (! real)
     real = boot;
@@ -252,7 +253,9 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
       else if (boot)
 	{
 	  // Load using the bootstrap loader jvmspec 5.3.1.
-	  klass = java::lang::VMClassLoader::loadClass (sname, false); 
+	  // klass = java::lang::VMClassLoader::loadClass (sname, false); 
+	  // Note again that we're actually using the system loader here.
+	  klass = boot->loadClass (sname);
 
 	  // Register that we're an initiating loader.
 	  if (klass)
