@@ -1,3 +1,8 @@
+2005-04-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/20927
+	* gcc.dg/pr20927.c: New test.
+
 2005-04-13  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/torture/pr19683-1.c: Guard with #ifndef __mips16.
