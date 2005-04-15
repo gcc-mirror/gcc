@@ -1,3 +1,10 @@
+2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21031
+	* tree-ssa-forwprop.c (ssa_name_defined_by_comparison_p): New.
+	(forward_propagate_into_cond_1): Call it.  Forward propagate
+	integer-integer casts into COND_EXPRs.
+
 2005-04-15  Dave Korn  <dave.korn@artimi.com>
 
 	* gcc.c (default_compilers): Clarify obscure error message when

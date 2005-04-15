@@ -109,6 +109,23 @@ Boston, MA 02111-1307, USA.  */
 
    This will (of course) be extended as other needs arise.  */
 
+/* Given an SSA_NAME VAR, return true if and only if VAR is defined by
+   a comparison.  */
+
+static bool
+ssa_name_defined_by_comparison_p (tree var)
+{
+  tree def = SSA_NAME_DEF_STMT (var);
+
+  if (TREE_CODE (def) == MODIFY_EXPR)
+    {
+      tree rhs = TREE_OPERAND (def, 1);
+      return COMPARISON_CLASS_P (rhs);
+    }
+
+  return 0;
+}
+
 /* Forward propagate a single-use variable into COND once.  Return a
    new condition if successful.  Return NULL_TREE otherwise.  */
 
@@ -302,6 +319,12 @@ forward_propagate_into_cond_1 (tree cond, tree *test_var_p)
 	       && INTEGRAL_TYPE_P (inner_type))
 	      || (TREE_CODE (inner_type) == BOOLEAN_TYPE
 		  && INTEGRAL_TYPE_P (outer_type)))
+	    ;
+	  else if (INTEGRAL_TYPE_P (outer_type)
+		   && INTEGRAL_TYPE_P (inner_type)
+		   && TREE_CODE (TREE_OPERAND (def_rhs, 0)) == SSA_NAME
+		   && ssa_name_defined_by_comparison_p (TREE_OPERAND (def_rhs,
+								      0)))
 	    ;
 	  else
 	    return NULL_TREE;
