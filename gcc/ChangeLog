@@ -1,3 +1,8 @@
+2005-04-15  Dave Korn  <dave.korn@artimi.com>
+
+	* gcc.c (default_compilers): Clarify obscure error message when
+	reading from standard input.
+
 2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h (PROP_EQUAL_NOTES): Remove.
@@ -8,7 +13,7 @@
 
 2005-04-15  Andrew MacLeod  <amacleod@redhat.com>
 
-	* tree-vect-analyze.c (vect_stmt_relevant_p): Process immediate uses 
+	* tree-vect-analyze.c (vect_stmt_relevant_p): Process immediate uses
 	of non-virtual PHI nodes like we use to.
 
 2005-05-15  Paolo Bonzini  <bonzini@gnu.org>
@@ -30,9 +35,9 @@
 
 	* tree-ssa-pre.c (compute_avail): It's okay to have
 	TREE_INVARIANT's here, and value number the resulting expressions.
-	(create_expression_by_pieces): Make sure operands that were 
+	(create_expression_by_pieces): Make sure operands that were
 	min_invariant when we started, stay that way.
-	
+
 2005-04-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (*-ibm-aix*): Add comment about system limits.
@@ -248,7 +253,7 @@
 
 	Fix PR tree-optimization/20963
 	* tree-ssa-pre.c (compute_avail): Remove special case for
-	TREE_INVARIANT. 
+	TREE_INVARIANT.
 	(create_expression_by_pieces): Add value numbers for forced out
 	statements.
 
@@ -300,7 +305,7 @@
 2005-04-13 Fariborz Jahanian <fjahanian@apple.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Return
-	scalar or vector of constant 0, depending on the xor's 
+	scalar or vector of constant 0, depending on the xor's
 	mode.
 
 2005-04-13  Dale Johannesen  <dalej@apple.com>
@@ -317,7 +322,7 @@
 
 	* tree-if-conv.c (tree_if_convert_cond_expr): Do not create extra
 	temp variables.
-	
+
 2005-04-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	CRIS prologue as RTL.
@@ -378,7 +383,7 @@
 
 	* config/elfos.h (MAKE_DECL_ONE_ONLY): Redefined to stop DECL_WEAK from
 	being used for symbols with vague linkage when HAVE_GAS_COMDAT_GROUP
-	is true. 
+	is true.
 
 2005-04-13  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -444,7 +449,7 @@
 	Var(bfin_lib_id_given).
 
 2005-04-13  Matt Thomas  <matt@3am-software.com>
- 
+
  	* config/rs6000/sysv4.h (NO_IMPLICIT_EXTERN_C): undefine before
  	defining.
 
@@ -467,7 +472,7 @@
 2005-04-12  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_prepare_sse_fp_compare_args): Split ...
-	(ix86_expand_sse_fp_minmax): ... from ... 
+	(ix86_expand_sse_fp_minmax): ... from ...
 	(ix86_expand_fp_movcc): ... here.
 	(ix86_expand_sse_movcc): Rewrite from ix86_split_sse_movcc.
 	* config/i386/i386-protos.h: Update.
@@ -500,13 +505,13 @@
 2005-04-12  Caroline Tice  <ctice@apple.com>
 
 	Temporary fix for partitioning problems.
-	* passes.c (rest_of_handle_final): Remove code that 
+	* passes.c (rest_of_handle_final): Remove code that
 	frees unlikely_text_section_name,
 	* varasm.c (assemble_start_function): Test for partitioning
 	flag before writing out section labels.
 	(assemble_end_function): Test for partitioning flag before
 	writing out section labels.
-	
+
 2005-04-12  Steven Bosscher  <stevenb@suse.de>
 	    Stuart Hastings <stuart@apple.com>
 	    Jan Hubicka  <jh@suse.cz>
@@ -570,7 +575,7 @@
 	* function.h (struct function): Revert my patch from April 9.
 	* opts.c (decode_options): Revert my patch from April 9.
 	* output.h (unlikely_section_label, hot_section_label,
-	hot_section_end_label, cold_section_end_label, 
+	hot_section_end_label, cold_section_end_label,
 	unlikely_text_section_name): Revert my patch from April 9.
 	* passes.c (rest_of_handle_final): Revert my patch from April 9.
 	* varasm.c (unlikely_section_label, hot_section_label,
@@ -585,7 +590,7 @@
 	(assemble_start_function): Revert my patch from April 9.
 	(assemble_end_function): Revert my patch from April 9.
 	(default_section_type_flags_1): Revert my patch from April 9.
-	
+
 2005-04-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.h (APPLY_RESULT_SIZE): Set to 24 in 64-bit mode.
@@ -726,7 +731,7 @@
 	* tree-vectorizer.h (enum stmt_vec_info_type): Add
 	condition_vec_info_type.
 	(vectorizable_condition): New.
-	
+
 2005-04-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/i386/i386.h (TARGET_FPMATH_DEFAULT): New.
@@ -765,7 +770,7 @@
 	fflush, fgetc, fgets, ferror, fread): Redefine to the associated
 	_unlocked function.
 	(fwrite_unlocked): Fix prototype.
-	
+
 	* configure, config.in: Regenerate.
 
 2005-04-11  David Edelsohn  <edelsohn@gnu.org>
@@ -779,14 +784,14 @@
 2005-04-11  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/20926
-	
+
 	* tree-ssa-alias.c (add_type_alias): Handle subvars.
-	
+
 2005-04-11  Devang Patel  <dpatel@apple.com>
 
 	* config/rs6000.c (rs6000_emit_vector_select): Fix vector select
 	operand ordering.
-	
+
 2005-04-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* fold-const.c (fold_binary_op_with_conditional_arg):
@@ -796,7 +801,7 @@
 	(fold_binary): Likewise.
 
 2005-04-11  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/20612
 	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Fix increment
 	handling
@@ -1000,7 +1005,7 @@
 	(current_function_section): Likewise.
 	(assemble_start_function): Modify to get/put unlikely_text_section_name
 	in current function struct; modify to get hot/cold section labels
-	from function struct; initialize labels using 
+	from function struct; initialize labels using
 	ASM_GENERATE_INTERNAL_LABEL;
 	test partitioning flag before writing out hot section label.
 	(assemble_end_function): Test partitioning flag before writing out
@@ -1337,7 +1342,7 @@
 	* tree-sra.c (decide_instantiations): Mark all symbols in
 	SRA_CANDIDATES for renaming.
 	(mark_all_v_defs_1): Rename from mark_all_v_defs.
-	(mark_all_v_defs): New function.  Update all users to call it 
+	(mark_all_v_defs): New function.  Update all users to call it
 	with the whole list of scalarized statements, not just the
 	first one.
 	* tree-ssa-alias.c (count_ptr_derefs): Make extern.
@@ -1456,7 +1461,7 @@
 
 	PR target/20814
 	* config/rs6000/predicates.md (altivec_register_operand): Accept
-	SUBREG. 
+	SUBREG.
 	(and64_operand): Do not limit CONST_INT to mask64_operand.
 	(and64_2_operand): Do not limit CONST_INT to mask64_1or2_operand.
 	(and_operand): Do not limit CONST_INT to mask_operand.
@@ -1471,7 +1476,7 @@
 2005-04-08  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.c (indirect_data): Fix typo in strncmp logic.
-	
+
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Use 5 nops,
 	instead of 4.
 
@@ -1575,7 +1580,7 @@
 	using gen_lowpart and gen_highpart_mode.
 	(note_invalid_constants): All constants in an RTX with a constraint
 	that permits memory are now pushed to the constant pool.
-	(output_move_double): Delete code to handle reg to reg and 
+	(output_move_double): Delete code to handle reg to reg and
 	constant to reg moves.
 	(const_double_needs_minipool, output_mov_immediate): Delete.
 	* arm.h (EXTRA_CONSTRAINT_STR_ARM): All 'D' variants now handle
@@ -1725,7 +1730,7 @@
 2005-04-06  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vect-analyze.c (vect_analyze_loop_form): Call
-	split_loop_exit_edge instead of loop_split_edge_with. 
+	split_loop_exit_edge instead of loop_split_edge_with.
 
 2005-04-06  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -1858,12 +1863,12 @@
 	dump_immediate_uses_for, debug_immediate_uses_for): Delete.
 	(mark_new_vars_to_rename): Call update_stmt.
 	* tree-dump.c (dump_option_value_in): Add "stmtaddr".
-	* tree-flow-inline.h (modify_stmt): Rename to mark_stmt_modified.  
+	* tree-flow-inline.h (modify_stmt): Rename to mark_stmt_modified.
 	Ignore PHI nodes.
 	(unmodify_stmt): Delete.
 	(update_stmt): New.  Force an update of a stmt.
 	(update_stmt_if_modified): update a stmt if it is out of date.
-	(get_stmt_operands): Verify stmt is NOT modified. 
+	(get_stmt_operands): Verify stmt is NOT modified.
 	(stmt_modified_p): Update comment.
 	(delink_imm_use): Remove a use node from its immuse list.
 	(link_imm_use_to_list): Link a use node to a specific list.
@@ -1888,7 +1893,7 @@
 	(num_imm_uses): New.  Return the number of immediate uses.
 	(get_v_must_def_ops): Use is now a pointer.
 	(use_operand_p, get_v_may_def_op_ptr, get_vuse_op_ptr,
-	get_v_must_def_kill_ptr, get_phi_arg_def_ptr): Return the address of 
+	get_v_must_def_kill_ptr, get_phi_arg_def_ptr): Return the address of
 	the use node.
 	(get_immediate_uses, num_immediate_uses, immediate_use): Delete.
 	(delink_stmt_imm_use): Delink all immuses from a stmt.
@@ -1897,19 +1902,19 @@
 	(immediate_use_iterator_d): New.  Immediate use iterator struct.
 	(FOR_EACH_IMM_USE_FAST): New.  Macro for read only immuse iteration.
 	(FOR_EACH_IMM_USE_SAFE): New.  Macro for write-safe immuse iteration.
-	(BREAK_FROM_SAFE_IMM_USE): New.  Macro for earlyu exit from write-safe 
+	(BREAK_FROM_SAFE_IMM_USE): New.  Macro for earlyu exit from write-safe
 	iteration.
 	(struct stmt_ann_d): Remove dataflow_t from struct.
 	* tree-if-conv.c (tree_if_conversion).  Don't call free_df.
 	(if_convertible_phi_p): Use FAST immuse iterator.
 	(if_convertible_loop_p): Don't call compute_immediate_uses.
 	(replace_phi_with_cond_modify_expr): Call update_stmt.
-	* tree-into-ssa.c (mark_def_sites, ssa_mark_def_sites): Call 
+	* tree-into-ssa.c (mark_def_sites, ssa_mark_def_sites): Call
 	update_stmt_if_modified.
 	(rewrite_all_into_ssa): Initialize ssa operands.
 	* tree-loop-linear.c (linear_transform_loops): Don't call free_df or
 	compute_immediate_uses.
-	* tree-optimize.c (execute_todo): Call verify_ssa whenever the 
+	* tree-optimize.c (execute_todo): Call verify_ssa whenever the
 	ssa_property is available.
 	(execute_one_pass):  Change parameters passed to execute_todo.
 	* tree-outof-ssa.c (rewrite_trees): Don't call modify_stmt.
@@ -1929,7 +1934,7 @@
 	* tree-ssa-cpp.c (need_imm_uses_for): Delete.
 	(ccp_initialize): Remove call to compute_immediate_uses.
 	(substitute_and_fold, execute_fold_all_builtins): Call update_stmt.
-	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Update all modified 
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Update all modified
 	stmts.
 	(simplify_cond_and_lookup_avail_expr): Call mark_stmt_modified.
 	(simplify_switch_and_lookup_avail_expr): Call mark_stmt_modified.
@@ -1943,7 +1948,7 @@
 	(substitute_single_use_vars): Use new immuse interface.
 	(tree_ssa_forward_propagate_single_use_vars): Remove calls to free_df
 	and compute_immediate_uses.
-	* tree-ssa-loop-im.c (single_reachable_address): Use new immuse 
+	* tree-ssa-loop-im.c (single_reachable_address): Use new immuse
 	interface.
 	(rewrite_mem_refs): Call update_stmt.
 	(determine_lsm): Remove call to compute_imm_uses and free_df.
@@ -1954,7 +1959,7 @@
 	(compute_phi_arg_on_exit): Insert each stmt before trying to process.
 	(rewrite_use) : Call update_stmt.
 	* tree-ssa-loop-manip.c (verify_loop_closed_ssa): Add arg to call.
-	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Call 
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Call
 	update_stmt.
 	* tree-ssa-operands.c (NULL_USE_OPERAND_P): Remove declaration.
 	(allocate_use_optype, allocate_vuse_optype): Adjust allocation size.
@@ -1991,7 +1996,7 @@
 	(SET_USE): Call set_ssa_use_from_ptr.
 	(USE_STMT): Define.
 	(PHI_ARG_INDEX_FROM_USE): Define.
-	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Set the phi 
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Set the phi
 	argument via SET_USE, not PHI_ARG_DEF_TREE.
 	* tree-ssa-pre.c (eliminate): Call update_stmt.
 	* tree-ssa-propagate.c (cfg_blocks_get): Use imm_use iterators.  Don't
@@ -2011,7 +2016,7 @@
 	was changed.
 	(replace_immediate_uses): Use imm_use iterator, call update_stmt.
 	(check_phi_redundancy): Use imm_use iterator.
-	(kill_redundant_phi_nodes): Don't call compute_immediate_uses or 
+	(kill_redundant_phi_nodes): Don't call compute_immediate_uses or
 	free_df.
 	* tree-ssanames.c (make_ssa_name): Initialize imm_use node.
 	(release_ssa_name): Delink node and all elements in its imm_use list.
@@ -2049,7 +2054,7 @@
 	* c-decl.c (finish_function): If USE_MAPPED_LOCATION set the location
 	of the artification 'return 0' in main() to BUILTINS_LOCATION.
 	* tree-cfg.c (remove_bb): Check that location isn't BUILTINS_LOCATION
-	before warning.	
+	before warning.
 
 2004-04-05  Devang Patel  <dpatel@apple.com>
 
@@ -2059,7 +2064,7 @@
 	(ashr<mode>3): ... new name.
 	* config/rs6000/rs6000.c (builtin_description): Rename shift
 	operations.
-	
+
 2004-04-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (RTL_HOOKS_GEN_LOWPART_NO_EMIT): Use
@@ -2103,7 +2108,7 @@
 	* config.gcc: Add bfin*-* and bfin*-elf configurations.
 
 2005-04-05  Olivier Hainque  <hainque@adacore.com>
-	
+
 	* config/mips/iris6.h (DWARF_FRAME_RETURN_COLUMN): Redefine to
 	match what the system unwinder expects.
 	* config/mips/mips.c (mips_frame_set): If we're saving the return
@@ -2140,7 +2145,7 @@
 	* config/i386/i386.md (frndintxf2_floor, frndintxf2_ceil)
 	(frndintxf2_trunc, frndintxf2_mask_pm): Add FLAGS_REG clobber.
 	Allocate local stack slots here.  Set ix86_optimize_mode_switching.
-	flag here. Implement using define_insn_and_split.  
+	flag here. Implement using define_insn_and_split.
 	(frndintxf2_floor_i387, frndintxf2_ceil_i387, frndintxf2_trunc_i387)
 	(frndintxf2_mask_pm_i387): New insn patterns.
 	(floorsf2, floordf2, floorxf2): Remove local stack slot allocations.
@@ -2314,10 +2319,10 @@
 
 2005-04-02  Daniel Berlin  <dberlin@dberlin.org>
 	    Diego Novillo <dnovillo@redhat.com>
-	    
+
 	Fix PR tree-optimization/20703
 	Fix PR tree-optimization/20725
-	
+
 	* tree-ssa-pre.c (phi_translate): Handle tcc_comparison.
 	(create_expression_by_pieces): Ditto.
 	(valid_in_set): Ditto. Also handle tcc_declaration.
@@ -2433,7 +2438,7 @@
 	attribute.
 	("imul"): Removed from "type" attribute.
 	("*muldi3_sign", "muldi3"): Changed type to imuldi.
-	("mulsi3/1", "mulsi3/3", "mulsi/4", "mulsidi3", "umulsidi3"): 
+	("mulsi3/1", "mulsi3/3", "mulsi/4", "mulsidi3", "umulsidi3"):
 	Changed type to imulsi.
 	("*mulsi3_sign", "mulsi3/2"): Changed type to imulhi.
 
@@ -2543,7 +2548,7 @@
 	(compare_negsi_si): New pattern.
 	(cmpsi_negshiftsi_si): New pattern.
 	(negated_cbranchsi4): Restrict to equality_operator.
-	
+
 	* arm.md (movhi_insn_arch4): delete trailing white space from assembler
 	template.
 
@@ -2934,7 +2939,7 @@
 
 	* doc/md.texi: Remove remark about impossibility to query unit
 	presence in non nondeterministic automaton state.
-	
+
 	* config/ia64/ia64.c (get_template): Change order of unit querying.
 
 2005-03-31  Kazu Hirata  <kazu@cs.umass.edu>
@@ -2999,30 +3004,30 @@
 	cold blocks to last round.
 	(find_traces): Remove code that added extra round of trace finding
 	when doing partitioning.
-	(find_traces_1_round) :  Remove variable last_round;  add code to 
-	update new struct field, in_trace; correct trace_length where it was 
-	incorrect before (after call to copy_bb); change code that pushed all 
-	cold blocks to last round. Instead verify that all blocks going into 
+	(find_traces_1_round) :  Remove variable last_round;  add code to
+	update new struct field, in_trace; correct trace_length where it was
+	incorrect before (after call to copy_bb); change code that pushed all
+	cold blocks to last round. Instead verify that all blocks going into
 	a trace belong in the same partition.
 	(connect_traces): Modify to connect the traces in two passes, if the
-	function contains both hot and cold blocks.  The first pass connects 
-	all the traces for blocks in the partition that the first block in 
-	the function belongs to; the second pass connnects all the traces 
+	function contains both hot and cold blocks.  The first pass connects
+	all the traces for blocks in the partition that the first block in
+	the function belongs to; the second pass connnects all the traces
 	containing blocks that belong in the other partition.
 	(find_rarely_executed_basic_blocks_and_crossing_edges):  Remove
 	code that automatically put the first block in a function into the
 	hot partition if the function had any hot blocks.
-	(fix_crossing_unconditional_branches): Check number of succ edges 
+	(fix_crossing_unconditional_branches): Check number of succ edges
 	before attempting to get one.
 	(fix_edges_for_rarely_executed_code):  Update comment describing
 	function.
 	(reorder_basic_blocks):  Add code to initialize new field (in_trace);
-	remove call to add_unlikely_executed_notes; add call to 
+	remove call to add_unlikely_executed_notes; add call to
 	verify_hot_cold_block_grouping.
-	(duplicate_computed_gotos): Don't change computed goto if it's a 
+	(duplicate_computed_gotos): Don't change computed goto if it's a
 	crossing edge.
 	(partition_hot_cold_basic_blocks):  Update function comment.
-	* cfgcleanup.c (try_simplify_condjump): Remove redundacy from 
+	* cfgcleanup.c (try_simplify_condjump): Remove redundacy from
 	condition.
 	(try_forward_edges): Likewise.
 	(merge_blocks_move_predecessor_nojumps): Likewise.
@@ -3044,7 +3049,7 @@
 	UNLIKELY_EXECUTED_CODE notes to cold bb's.
 	(commit_one_edge_insertion): Likewise.
 	(cfg_layout_can_merge_blocks_p): Remove redundancy from condition.
-	* dbxout.c (FORCE_TEXT): Replace function_section with 
+	* dbxout.c (FORCE_TEXT): Replace function_section with
 	current_function_section.
 	(struct dbx_debug_h): Add do_nothing function for new debug_hooks
 	function, switch_text_section.
@@ -3055,16 +3060,16 @@
 	for new debug_hooks funciton, switch_text_section..
 	* debug.h (struct gcc_debug_hooks):  Add new function to debug_hooks,
 	switch_text_section.
-	* dwarf2out.c (struct dw_fde_struct):  Add five new fields: 
-	dw_fde_hot_section_label, dw_fde_hot_section_end_label, 
-	dw_fde_unlikely_section_label, dw_fde_unlikely_section_end_label and 
+	* dwarf2out.c (struct dw_fde_struct):  Add five new fields:
+	dw_fde_hot_section_label, dw_fde_hot_section_end_label,
+	dw_fde_unlikely_section_label, dw_fde_unlikely_section_end_label and
 	dw_fde_switched_sections.
 	(output_call_frame_info):  Add test to see if function switches text
-	sections in the middle; if so, use appropriate extra hot and cold 
+	sections in the middle; if so, use appropriate extra hot and cold
 	section labels to compute size deltas for the hot and cold sections.
-	(dwarf2out_begin_prologue): Add code to initialize new fields in 
+	(dwarf2out_begin_prologue): Add code to initialize new fields in
 	dw_fde_struct.
-	(dwarf2out_switch_text_section): New function (invoked through 
+	(dwarf2out_switch_text_section): New function (invoked through
 	debug_hook); updates new fields in dw_fde_struct appropriately and
 	increments separate_line_info_table_in_use.
 	(dwarf2_debug_hooks): Initialize switch_text_section function to be
@@ -3081,19 +3086,19 @@
 	current_function_section.
 	(dwarf2out_end_block): Likewise.
 	(dwarf2out_source_line): Likewise.
-	(dwarf2out_var_location): Add code to check whether in hot or cold 
+	(dwarf2out_var_location): Add code to check whether in hot or cold
 	section and use the appropriate label.
-	* except.c (output_function_exception_table): Change call to 
+	* except.c (output_function_exception_table): Change call to
 	function_section into call to current_function_section.
 	* final.c (profile_function): Likewise.
 	(scan_ahead_for_unlikely_executed_note): Remove function.
-	(final_scan_insn):  Remove calls to 
-	scan_ahead_for_unlikely_executed_note, and related code for switching 
-	to cold section, except for the single time 
-	NOTE_INSN_SWITCH_TEXT_SECTIONS may be encountered;  add calls to 
-	debug_hooks->switch_text_sections; replace appropriate calls to 
+	(final_scan_insn):  Remove calls to
+	scan_ahead_for_unlikely_executed_note, and related code for switching
+	to cold section, except for the single time
+	NOTE_INSN_SWITCH_TEXT_SECTIONS may be encountered;  add calls to
+	debug_hooks->switch_text_sections; replace appropriate calls to
 	function_section with calls to current_function_section.
-	* ifcvt.c (find_if_case_1): Remove redundancy from condition, add 
+	* ifcvt.c (find_if_case_1): Remove redundancy from condition, add
 	test_bb to condition.
 	(find_if_case_2): Likewise.
 	* insn-notes.def: Change NOTE_INSN_UNLIKELY_EXECUTED_CODE to
@@ -3114,9 +3119,9 @@
 	* passes.c (rest_of_handle_final): Free unlikely_text_section_name.
 	* print-rtl.c (print_rtx): Change NOTE_INSN_UNLIKELY_EXECUTED_CODE
 	to NOTE_INSN_SWITCH_TEXT_SECTIONS.
-	* reg-stack.c (emit_swap_insn): Remove UNLIKELY_EXECUTED_CODE note 
+	* reg-stack.c (emit_swap_insn): Remove UNLIKELY_EXECUTED_CODE note
 	insn from consideration.
-	* sdbout.c (sdb_debug_hooks): Add do_nothing for new function, 
+	* sdbout.c (sdb_debug_hooks): Add do_nothing for new function,
 	switch_text_section.
 	* varasm.c (basic-block.h): Add new include.
 	(unlikely_section_label_printed): Remove global variable.
@@ -3131,27 +3136,27 @@
 	(initialize_cold_section_name): New function.
 	(enum in_section): Move declaration to output.h.
 	(text_section): Update last_text_section.
-	(unlikely_text_section): Replace code to determine cold section name 
-	with call to initialize_cold_section_name; Add code to update 
+	(unlikely_text_section): Replace code to determine cold section name
+	with call to initialize_cold_section_name; Add code to update
 	last_text_section; remove code for printing out label.
-	(named_section_real): Add code to update last_text_section and 
+	(named_section_real): Add code to update last_text_section and
 	last_text_section_name as appropriate.
 	(function_section): Change test for 'unlikely' to depend on
-	first_function_block_is_cold (moved old test to 
+	first_function_block_is_cold (moved old test to
 	current_function_section).
 	(current_function_section): New function.
-	(assemble_start_function): Move code that frees 
-	unlikely_text_section_name; initialize hot_section_end_label; 
-	print hot and cold section labels at the start of the function; 
+	(assemble_start_function): Move code that frees
+	unlikely_text_section_name; initialize hot_section_end_label;
+	print hot and cold section labels at the start of the function;
 	set first_function_block_is_cold, if appropriate; initialize l
 	ast_text_section; add call to insert_section_boundary_note.
 	(assemble_end_function):  Add code to write out hot and cold section
 	end labels.
 	*vmsdbgout.c (vmsdbg_debug_hooks): Add do_nothing for new function,
 	switch_text_section.
-	* config/darwin.c (machopic_select_section): Replace incorrect 
+	* config/darwin.c (machopic_select_section): Replace incorrect
 	function in base_funs; update reloc for cold sections if necessary.
-	* config/darwin.h (SECTION_FUNCTION):  Add code to update 
+	* config/darwin.h (SECTION_FUNCTION):  Add code to update
 	last_text_section if appropriate.
 	(text_unlikely_section): Remove.
 	* config/sparc/sparc.c (sparc_output_deferred_case_vectors): Likewise.
@@ -3168,7 +3173,7 @@
 
 	PR c++/18644
 	* doc/invoke.texi (-Wsynth): Don't document, as it now is void of
-	semantics. 
+	semantics.
 
 2005-03-31  Alan Modra  <amodra@bigpond.net.au>
 
@@ -3189,7 +3194,7 @@
 
 	* tree-sra.c (decide_block_copy): Disable scalarization of
 	sub-elements.
-	
+
 2005-03-30  Stuart Hastings  <stuart@apple.com>
 	    Dale Johannesen  <dalej@apple.com>
 
