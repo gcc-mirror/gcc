@@ -1,3 +1,8 @@
+2005-04-14  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gij.cc (version): Properly quote java version.
+	(main): Fix typo in comment.
+
 2005-04-13  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/natRuntime.cc (insertSystemProperties): Set
