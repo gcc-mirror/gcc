@@ -1071,7 +1071,7 @@ visit_assignment (tree stmt, tree *output_p)
 			       TREE_TYPE (TREE_OPERAND (orig_lhs, 0)),
 			       val.value));
 
-	orig_lhs = TREE_OPERAND (orig_lhs, 1);
+	orig_lhs = TREE_OPERAND (orig_lhs, 0);
 	if (w && is_gimple_min_invariant (w))
 	  val.value = w;
 	else
