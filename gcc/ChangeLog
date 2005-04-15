@@ -1,3 +1,10 @@
+2005-04-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-eh.c (lower_try_finally_copy): Generate new code in
+	response to goto_queue entries as if the queue was sorted by
+	index, not pointers.
+	(lower_try_finally_switch): Likewise.
+
 2005-04-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (ASM_OUTPUT_CASE_LABEL): Delete.
