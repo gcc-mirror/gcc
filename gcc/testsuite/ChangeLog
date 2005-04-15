@@ -1,5 +1,10 @@
 2005-04-15  Thomas Koenig  <Thomas.Koenig@online.de>
 
+	* gfortran.fortran-torture/execute/intrinsic_spread.f90:
+	corrected typo where the wrong variables had been compared.
+
+2005-04-15  Thomas Koenig  <Thomas.Koenig@online.de>
+
 	PR libfortran/18495
 	* gfortran.fortran-torture/execute/intrinsic_spread.f90:
 	Test callee-allocated version of return array with a write

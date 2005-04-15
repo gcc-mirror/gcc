@@ -12,6 +12,6 @@ program foo
    write(line2, 9000) spread (a, 1, 2)
    if (line1 /= line2) call abort
    write(line3, 9000) spread (a, 1, 2) + 0
-   if (line1 /= line2) call abort
+   if (line1 /= line3) call abort
 9000 format(12I3)
 end program
