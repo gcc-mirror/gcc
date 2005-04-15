@@ -950,6 +950,10 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
     }
 }
 
+/* For each expression in SET, translate the value handles through phi nodes
+   in PHIBLOCK using edge PHIBLOCK->PRED, and store the resulting
+   expressions in DEST.  */
+
 static void
 phi_translate_set (value_set_t dest, value_set_t set, basic_block pred,
 		   basic_block phiblock)
@@ -1370,7 +1374,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
     case tcc_unary:
       {
 	tree_stmt_iterator tsi;
-	tree forced_stmts;
+	tree forced_stmts = NULL;
 	tree genop1;
 	tree temp;
 	tree folded;
@@ -1380,7 +1384,14 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	add_referenced_tmp_var (temp);
 	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
 			      genop1));
-	newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
+	/* If the generated operand  is already GIMPLE min_invariant
+	   just use it instead of calling force_gimple_operand on it,
+	   since that may make it not invariant by copying it into an
+	   assignment.  */
+	if (!is_gimple_min_invariant (genop1))
+	  newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
+	else
+	  newexpr = genop1;
 	if (forced_stmts)
 	  {
 	    tsi = tsi_start (forced_stmts);
@@ -1963,11 +1974,10 @@ compute_avail (void)
 	      vuse_optype vuses = STMT_VUSE_OPS (stmt);
 
 	      STRIP_USELESS_TYPE_CONVERSION (rhs);
-	      if ((UNARY_CLASS_P (rhs)
+	      if (UNARY_CLASS_P (rhs)
 		  || BINARY_CLASS_P (rhs)
 		  || COMPARISON_CLASS_P (rhs)
 		  || REFERENCE_CLASS_P (rhs))
-		  && !TREE_INVARIANT (rhs))
 		{
 		  /* For binary, unary, and reference expressions,
 		     create a duplicate expression with the operands
@@ -1985,6 +1995,7 @@ compute_avail (void)
 	      else if (TREE_CODE (rhs) == SSA_NAME
 		       || is_gimple_min_invariant (rhs)
 		       || TREE_CODE (rhs) == ADDR_EXPR
+		       || TREE_INVARIANT (rhs)
 		       || DECL_P (rhs))
 		{
 		  /* Compute a value number for the RHS of the statement
