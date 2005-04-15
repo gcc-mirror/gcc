@@ -235,9 +235,7 @@ BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)'$(CLASSPATH_SEPARATOR)'
 libgij_la_SOURCES = gij.cc
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
 ## See jv_convert_LDADD.
-libgij_la_LIBADD = -L$(here)/.libs libgcj.la \
-	external/sax/libsax-gcj.la \
-	external/w3c_dom/libw3c-gcj.la
+libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 ## The mysterious backslash in the grep pattern is consumed by make.
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
@@ -257,7 +255,9 @@ libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
 libgcj0_convenience_la_LIBADD = \
 	gnu-xml.lo javax-imageio.lo \
-	javax-xml.lo gnu-java-beans.lo
+	javax-xml.lo gnu-java-beans.lo \
+	external/sax/libsax-gcj.la \
+	external/w3c_dom/libw3c-gcj.la
 
 noinst_LTLIBRARIES = libgcj0_convenience.la
 
