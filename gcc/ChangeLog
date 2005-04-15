@@ -1,3 +1,10 @@
+2005-04-14  Daniel Berlin <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (compute_avail): It's okay to have
+	TREE_INVARIANT's here, and value number the resulting expressions.
+	(create_expression_by_pieces): Make sure operands that were 
+	min_invariant when we started, stay that way.
+	
 2005-04-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (*-ibm-aix*): Add comment about system limits.
