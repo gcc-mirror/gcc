@@ -1,6 +1,6 @@
 /* POSIX threads dummy routines for systems without weak definitions.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,6 +75,12 @@ pthread_create (pthread_t *thread ATTRIBUTE_UNUSED,
 }
 
 int
+pthread_cancel(pthread_t thread ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+int
 pthread_mutex_lock (pthread_mutex_t *mutex ATTRIBUTE_UNUSED)
 {
   return 0;
@@ -88,6 +94,25 @@ pthread_mutex_trylock (pthread_mutex_t *mutex ATTRIBUTE_UNUSED)
 
 int
 pthread_mutex_unlock (pthread_mutex_t *mutex ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+int
+pthread_mutexattr_init (pthread_mutexattr_t *attr ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+int
+pthread_mutexattr_settype (pthread_mutexattr_t *attr ATTRIBUTE_UNUSED,
+			   int type ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+int
+pthread_mutexattr_destroy (pthread_mutexattr_t *attr ATTRIBUTE_UNUSED)
 {
   return 0;
 }
