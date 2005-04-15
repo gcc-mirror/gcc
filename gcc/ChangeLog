@@ -1,3 +1,8 @@
+2005-04-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vect-analyze.c (vect_stmt_relevant_p): Process immediate uses 
+	of non-virtual PHI nodes like we use to.
+
 2005-05-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* genattrtab.c (ATTR_EQ_ATTR_P): Remove.

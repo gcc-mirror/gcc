@@ -2126,16 +2126,30 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo)
     return true;
 
   /* changing memory.  */
-  if (TREE_CODE (stmt) != PHI_NODE)
+  if (TREE_CODE (stmt) == PHI_NODE)
     {
-      v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
-      v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
-      if (v_may_defs || v_must_defs)
+      if (!is_gimple_reg (PHI_RESULT (stmt)))
+        return false;
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, PHI_RESULT (stmt))
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	    fprintf (vect_dump, "vec_stmt_relevant_p: stmt has vdefs.");
-	  return true;
+	  basic_block bb = bb_for_stmt (USE_STMT (use_p));
+	  if (!flow_bb_inside_loop_p (loop, bb))
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+		fprintf (vect_dump, "vec_stmt_relevant_p: used out of loop.");
+	      return true;
+	    }
 	}
+      return false;
+    }
+
+  v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
+  v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
+  if (v_may_defs || v_must_defs)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	fprintf (vect_dump, "vec_stmt_relevant_p: stmt has vdefs.");
+      return true;
     }
 
   /* uses outside the loop.  */
