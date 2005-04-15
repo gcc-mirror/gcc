@@ -34,65 +34,67 @@
 namespace std
 {
   locale::id
-  codecvt<__gnu_test::character, char, __gnu_test::conversion_state>::id;
+  codecvt<__gnu_test::pod_uchar, char, __gnu_test::pod_state>::id;
+
+  locale::id 
+  ctype<__gnu_test::pod_uchar>::id;
 
   // Member specializations for the existing facet classes.  
   // NB: This isn't especially portable. Perhaps a better way would be
   // to just specialize all of numpunct and ctype.
-  using __gnu_test::int_type;
-  using __gnu_test::value_type;
-  using __gnu_test::pod_type;
+  using __gnu_test::pod_ushort;
+  typedef pod_ushort::value_type value_type;
 
   template<>
     bool 
-    ctype<pod_type>::
+    ctype<pod_ushort>::
     do_is(mask, char_type) const { return true; }
 
   template<>
-    const pod_type*
-    ctype<pod_type>::
+    const pod_ushort*
+    ctype<pod_ushort>::
     do_is(const char_type* __lo, const char_type*, mask*) const
     { return __lo; }
 
   template<>
-    const pod_type*
-    ctype<pod_type>::
+    const pod_ushort*
+    ctype<pod_ushort>::
     do_scan_is(mask, const char_type* __lo, const char_type*) const
     { return __lo; }
 
   template<>
-    const pod_type*
-    ctype<pod_type>::
+    const pod_ushort*
+    ctype<pod_ushort>::
     do_scan_not(mask, const char_type* __lo, const char_type*) const
     { return __lo; }
 
   template<>
-    pod_type 
-    ctype<pod_type>::
+    pod_ushort 
+    ctype<pod_ushort>::
     do_toupper(char_type __c) const
     { return __c; }
 
   template<>
-    const pod_type*
-    ctype<pod_type>::
+    const pod_ushort*
+    ctype<pod_ushort>::
     do_toupper(char_type*, const char_type* __hi) const
     { return __hi; }
 
   template<>
-    pod_type 
-    ctype<pod_type>::
+    pod_ushort 
+    ctype<pod_ushort>::
     do_tolower(char_type __c) const
     { return __c; }
 
   template<>
-    const pod_type*
-    ctype<pod_type>::
+    const pod_ushort*
+    ctype<pod_ushort>::
     do_tolower(char_type*, const char_type* __hi) const
     { return __hi; }
 
   template<>
-    pod_type
-    ctype<pod_type>::
+    pod_ushort
+    ctype<pod_ushort>::
     do_widen(char __c) const
     { 
       char_type ret = { value_type(__c) };
@@ -101,7 +103,7 @@ namespace std
 
   template<>
     const char*
-    ctype<pod_type>::
+    ctype<pod_ushort>::
     do_widen(const char* __lo, const char* __hi, char_type* __dest) const
     {
       while (__lo < __hi)
@@ -115,14 +117,14 @@ namespace std
 
   template<>
     char
-    ctype<pod_type>::
+    ctype<pod_ushort>::
     do_narrow(char_type __wc, char) const
     { return static_cast<char>(__wc.value); }
 
   template<>
-    const pod_type*
-    ctype<pod_type>::
-    do_narrow(const pod_type* __lo, const pod_type* __hi, 
+    const pod_ushort*
+    ctype<pod_ushort>::
+    do_narrow(const pod_ushort* __lo, const pod_ushort* __hi, 
 	      char, char* __dest) const
     {
       while (__lo < __hi)
@@ -135,14 +137,14 @@ namespace std
     }
 
   template<>
-    ctype<pod_type>::~ctype() { }
+    ctype<pod_ushort>::~ctype() { }
 
   template<>
     void
-    numpunct<pod_type>::_M_initialize_numpunct(__c_locale)
+    numpunct<pod_ushort>::_M_initialize_numpunct(__c_locale)
     {
       if (!_M_data)
-	_M_data = new __numpunct_cache<pod_type>;
+	_M_data = new __numpunct_cache<pod_ushort>;
 
       _M_data->_M_grouping = "";
       _M_data->_M_use_grouping = false;
@@ -155,33 +157,33 @@ namespace std
 	  value_type v = __num_base::_S_atoms_out[i];
 	  _M_data->_M_atoms_out[i].value = v;
 	}
-      _M_data->_M_atoms_out[__num_base::_S_oend] = pod_type();
+      _M_data->_M_atoms_out[__num_base::_S_oend] = pod_ushort();
       
       for (size_t j = 0; j < __num_base::_S_iend; ++j)
 	_M_data->_M_atoms_in[j].value = value_type(__num_base::_S_atoms_in[j]);
-      _M_data->_M_atoms_in[__num_base::_S_iend] = pod_type();
+      _M_data->_M_atoms_in[__num_base::_S_iend] = pod_ushort();
 
       // "true"
-      pod_type* __truename = new pod_type[4 + 1];
+      pod_ushort* __truename = new pod_ushort[4 + 1];
       __truename[0].value = value_type('t');
       __truename[1].value = value_type('r');
       __truename[2].value = value_type('u');
       __truename[3].value = value_type('e');
-      __truename[4] = pod_type();
+      __truename[4] = pod_ushort();
       _M_data->_M_truename = __truename;
 
       // "false"
-      pod_type* __falsename = new pod_type[5 + 1];
+      pod_ushort* __falsename = new pod_ushort[5 + 1];
       __falsename[0].value = value_type('f');
       __falsename[1].value = value_type('a');
       __falsename[2].value = value_type('l');
       __falsename[3].value = value_type('s');
       __falsename[4].value = value_type('e');
-      __falsename[5] = pod_type();
+      __falsename[5] = pod_ushort();
       _M_data->_M_falsename = __falsename;
     }
 
   template<>
-    numpunct<pod_type>::~numpunct()
+    numpunct<pod_ushort>::~numpunct()
     { delete _M_data; }
 } // namespace std
