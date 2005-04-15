@@ -7757,11 +7757,7 @@ dump_constants (struct mips16_constant *constants, rtx insn)
   emit_barrier_after (insn);
 }
 
-/* Return the length of instruction INSN.
-
-   ??? MIPS16 switch tables go in .text, but we don't define
-   JUMP_TABLES_IN_TEXT_SECTION, so get_attr_length will not
-   compute their lengths correctly.  */
+/* Return the length of instruction INSN.  */
 
 static int
 mips16_insn_length (rtx insn)
