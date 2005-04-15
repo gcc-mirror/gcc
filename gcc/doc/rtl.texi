@@ -3517,7 +3517,7 @@ on these machines should have a body which is a @code{parallel}
 that contains both the @code{call} expression and @code{clobber}
 expressions that indicate which registers are destroyed.  Similarly,
 if the call instruction requires some register other than the stack
-pointer that is not explicitly mentioned it its RTL, a @code{use}
+pointer that is not explicitly mentioned in its RTL, a @code{use}
 subexpression should mention that register.
 
 Functions that are called are assumed to modify all registers listed in

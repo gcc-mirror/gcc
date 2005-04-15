@@ -5566,7 +5566,7 @@ used to set a chunk of memory to a constant value, or whether some other
 mechanism will be used.  Used by @code{__builtin_memset} when storing
 values other than constant zero and by @code{__builtin_strcpy} when
 when called with a constant source string.
-Defaults to to 1 if @code{move_by_pieces_ninsns} returns less
+Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{MOVE_RATIO}.
 @end defmac
 
@@ -9261,7 +9261,7 @@ arguments of @samp{#pragma pack}.
 
 @defmac TARGET_DEFAULT_PACK_STRUCT
 If your target requires a structure packing default other than 0 (meaning
-the machine default), define this macro the the necessary value (in bytes).
+the machine default), define this macro to the necessary value (in bytes).
 This must be a value that would also valid to be used with
 @samp{#pragma pack()} (that is, a small power of two).
 @end defmac
