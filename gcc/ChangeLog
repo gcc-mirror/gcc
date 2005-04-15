@@ -1,3 +1,15 @@
+2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfgrtl.c (purge_all_dead_edge): Remove an unused argument.
+	* basic-block.h: Update the prototype for
+	purge_all_dead_edges.
+	* cfgexpand.c (tree_expand_cfg): Update a call to
+	purge_all_dead_edges.
+	* combine.c (combine_instructions): Likewise.
+	* passes.c (rest_of_handle_old_regalloc, rest_of_handle_cse,
+	rest_of_handle_cse2, rest_of_handle_gcse,
+	rest_of_handle_postreload): likewise.
+
 2005-04-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/20739

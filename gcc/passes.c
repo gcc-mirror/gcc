@@ -459,7 +459,7 @@ rest_of_handle_old_regalloc (void)
       timevar_push (TV_JUMP);
 
       rebuild_jump_labels (get_insns ());
-      purge_all_dead_edges (0);
+      purge_all_dead_edges ();
       delete_unreachable_blocks ();
 
       timevar_pop (TV_JUMP);
@@ -978,7 +978,7 @@ rest_of_handle_cse (void)
   tem = cse_main (get_insns (), max_reg_num (), dump_file);
   if (tem)
     rebuild_jump_labels (get_insns ());
-  if (purge_all_dead_edges (0))
+  if (purge_all_dead_edges ())
     delete_unreachable_blocks ();
 
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
@@ -1018,7 +1018,7 @@ rest_of_handle_cse2 (void)
      bypassed safely.  */
   cse_condition_code_reg ();
 
-  purge_all_dead_edges (0);
+  purge_all_dead_edges ();
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
 
   if (tem)
@@ -1061,7 +1061,7 @@ rest_of_handle_gcse (void)
       timevar_push (TV_CSE);
       reg_scan (get_insns (), max_reg_num ());
       tem2 = cse_main (get_insns (), max_reg_num (), dump_file);
-      purge_all_dead_edges (0);
+      purge_all_dead_edges ();
       delete_trivially_dead_insns (get_insns (), max_reg_num ());
       timevar_pop (TV_CSE);
       cse_not_expected = !flag_rerun_cse_after_loop;
@@ -1409,7 +1409,7 @@ rest_of_handle_postreload (void)
   /* reload_cse_regs can eliminate potentially-trapping MEMs.
      Remove any EH edges associated with them.  */
   if (flag_non_call_exceptions)
-    purge_all_dead_edges (0);
+    purge_all_dead_edges ();
 
   close_dump_file (DFI_postreload, print_rtl_with_bb, get_insns ());
   timevar_pop (TV_RELOAD_CSE_REGS);
