@@ -1,3 +1,7 @@
+2005-04-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (legitimate_address_p): Use TARGET_ARCH32.
+
 2005-04-11  David Edelsohn  <edelsohn@gnu.org>
 
 	Backport from mainline:
