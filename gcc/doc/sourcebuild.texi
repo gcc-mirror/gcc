@@ -1272,7 +1272,7 @@ bugs in libgcj that had caused Mauve test failures.
 The @uref{http://sources.redhat.com/mauve/,,
 Jacks} project provides a testsuite for Java compilers that can be used
 to test changes that affect the GCJ front end.  This testsuite is run as
-part of Java testing by placing the Jacks tree within the the libjava
+part of Java testing by placing the Jacks tree within the libjava
 testsuite sources at @file{libjava/testsuite/libjava.jacks/jacks}.
 
 We encourage developers to contribute test cases to Mauve and Jacks.
