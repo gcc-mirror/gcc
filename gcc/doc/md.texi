@@ -1681,7 +1681,7 @@ A memory reference suitable for VFP load/store insns (reg+constant offset)
 A memory reference suitable for iWMMXt load/store instructions.
 
 @item Uq
-A memory reference suitable for for the ARMv4 ldrsb instruction.
+A memory reference suitable for the ARMv4 ldrsb instruction.
 
 @item AVR family---@file{avr.h}
 @table @code
@@ -6341,7 +6341,7 @@ can be used for @acronym{RISC} processors, too.
 separated by commas.
 
 @var{patterns} is a string giving patterns of functional units
-separated by comma.  Currently pattern is is one unit or units
+separated by comma.  Currently pattern is one unit or units
 separated by white-spaces.
 
 The first construction (@samp{exclusion_set}) means that each
