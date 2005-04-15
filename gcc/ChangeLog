@@ -1,3 +1,10 @@
+2005-04-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gthr-posix.c (pthread_cancel): Define.
+	(pthread_mutexattr_init): Likewise.
+	(pthread_mutexattr_settype): Likewise.
+	(pthread_mutexattr_destroy): Likewise.
+
 2005-04-15  David S. Miller  <davem@davemloft.net>
 
 	PR target/20673
