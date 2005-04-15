@@ -11,6 +11,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math" } */
 
+#include "builtins-config.h"
+
 extern double floor(double);
 extern double ceil(double);
 extern double trunc(double);
@@ -54,6 +56,7 @@ long long int test6(double x)
   return trunc(x);
 }
 
+#ifdef HAVE_C99_RUNTIME
 long int test1f(float x)
 {
   return floorf(x);
@@ -73,6 +76,7 @@ long long int test4f(float x)
 {
   return ceilf(x);
 }
+#endif
 
 long int test5f(float x)
 {
@@ -84,6 +88,7 @@ long long int test6f(float x)
   return truncf(x);
 }
 
+#ifdef HAVE_C99_RUNTIME
 long int test1l(long double x)
 {
   return floorl(x);
@@ -103,6 +108,7 @@ long long int test4l(long double x)
 {
   return ceill(x);
 }
+#endif
 
 long int test5l(long double x)
 {
