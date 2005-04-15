@@ -479,7 +479,13 @@ next_statement (void)
       gfc_buffer_error (1);
 
       if (gfc_at_eol ())
-	gfc_advance_line ();
+	{
+	  if (gfc_option.warn_line_truncation
+	      && gfc_current_locus.lb->truncated)
+	    gfc_warning_now ("Line truncated at %C");
+
+	  gfc_advance_line ();
+	}
 
       gfc_skip_comments ();
 

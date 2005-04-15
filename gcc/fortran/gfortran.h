@@ -481,6 +481,8 @@ typedef struct gfc_linebuf
   struct gfc_file *file;
   struct gfc_linebuf *next;
 
+  int truncated;
+
   char line[1];
 } gfc_linebuf;
 

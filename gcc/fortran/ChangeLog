@@ -1,3 +1,14 @@
+2005-04-15  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR fortran/14569
+	* gfortran.h (gfc_linebuf): Add truncated field.
+	* parse.c (next_statement): Handle warning for truncated
+	lines.
+	* scanner.c (load_line): Return if line was truncated.
+	No longer warn for truncated lines.  Remove unused parameters.
+	(load_file): Store load_line return value to linebuf.
+	(gfc_error_recovery): Do not advance line at the end.
+
 2005-04-14  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.h (gfc_real_info): Add subnormal struct member.

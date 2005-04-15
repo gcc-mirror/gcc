@@ -631,21 +631,17 @@ gfc_error_recovery (void)
 	  if (c == delim)
 	    break;
 	  if (c == '\n')
-	    goto done;
+	    return;
 	  if (c == '\\')
 	    {
 	      c = next_char ();
 	      if (c == '\n')
-		goto done;
+		return;
 	    }
 	}
       if (gfc_at_eof ())
 	break;
     }
-
-done:
-  if (c == '\n')
-    gfc_advance_line ();
 }
 
 
@@ -677,12 +673,14 @@ gfc_gobble_whitespace (void)
    need be.
    In fixed mode, we expand a tab that occurs within the statement
    label region to expand to spaces that leave the next character in
-   the source region.  */
+   the source region.
+   load_line returns wether the line was truncated.  */
 
-static void
-load_line (FILE * input, char **pbuf, char *filename, int linenum)
+static int
+load_line (FILE * input, char **pbuf)
 {
-  int c, maxlen, i, trunc_flag, preprocessor_flag;
+  int c, maxlen, i, preprocessor_flag;
+  int trunc_flag = 0;
   static int buflen = 0;
   char *buffer;
 
@@ -767,15 +765,6 @@ load_line (FILE * input, char **pbuf, char *filename, int linenum)
 	      c = fgetc (input);
 	      if (c == '\n' || c == EOF)
 		break;
-
-	      if (gfc_option.warn_line_truncation
-		  && trunc_flag
-		  && !gfc_is_whitespace (c))
-		{
-		  gfc_warning_now ("%s:%d: Line is being truncated",
-				   filename, linenum);
-		  trunc_flag = 0;
-		}
 	    }
 
 	  ungetc ('\n', input);
@@ -791,6 +780,8 @@ load_line (FILE * input, char **pbuf, char *filename, int linenum)
       *buffer++ = ' ';
 
   *buffer = '\0';
+
+  return trunc_flag;
 }
 
 
@@ -1034,7 +1025,7 @@ load_file (char *filename, bool initial)
 
   for (;;) 
     {
-      load_line (input, &line, filename, current_file->line);
+      int trunc = load_line (input, &line);
 
       len = strlen (line);
       if (feof (input) && len == 0)
@@ -1066,6 +1057,7 @@ load_file (char *filename, bool initial)
       b->linenum = current_file->line++;
 #endif
       b->file = current_file;
+      b->truncated = trunc;
       strcpy (b->line, line);
 
       if (line_head == NULL)
