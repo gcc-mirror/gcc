@@ -505,21 +505,7 @@ init_alias_info (void)
   if (aliases_computed_p)
     {
       unsigned i;
-      basic_block bb;
   
-     /* Make sure that every statement has a valid set of operands.
-	If a statement needs to be scanned for operands while we
-	compute aliases, it may get erroneous operands because all
-	the alias relations are not built at that point.
-	FIXME: This code will become obsolete when operands are not
-	lazily updated.  */
-      FOR_EACH_BB (bb)
-	{
-	  block_stmt_iterator si;
-	  for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
-	    get_stmt_operands (bsi_stmt (si));
-	}
-
       /* Similarly, clear the set of addressable variables.  In this
 	 case, we can just clear the set because addressability is
 	 only computed here.  */
