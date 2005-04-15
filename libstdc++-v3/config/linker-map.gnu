@@ -299,8 +299,6 @@ GLIBCXX_3.4.4 {
     _ZN9__gnu_cxx6__poolILb[01]EE16_M_reclaim_blockEPc[jm];
     _ZN9__gnu_cxx6__poolILb[01]EE10_M_destroyEv;
 
-    _ZN9__gnu_cxx9free_list12_S_free_listE;
-    _ZN9__gnu_cxx9free_list12_S_bfl_mutexE;
     _ZN9__gnu_cxx9free_list6_M_getE*;
     _ZN9__gnu_cxx9free_list8_M_clearEv;
 
