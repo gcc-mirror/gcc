@@ -1,6 +1,6 @@
 // POD character, std::char_traits specialization -*- C++ -*-
 
-// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,24 +41,47 @@
 
 namespace __gnu_cxx
 {
+  // POD character abstraction.
+  // NB: The char_type parameter is a subset of int_type, as to allow
+  // int_type to properly hold the full range of char_type values as
+  // well as EOF.
   /// @brief A POD class that serves as a character abstraction class.
   template<typename V, typename I, typename S = mbstate_t>
     struct character
     {
-      typedef V		value_type;
-      typedef I		int_type;
-      typedef S		state_type;
+      typedef V				value_type;
+      typedef I				int_type;
+      typedef S				state_type;
+      typedef character<V, I, S>	char_type;
+
       value_type	value;
+
+      template<typename V2>
+        static char_type
+        from(const V2& v)
+        {
+	  char_type ret = { static_cast<value_type>(v) };
+	  return ret;
+	}
+
+      template<typename V2>
+        static V2
+        to(const char_type& c)
+        {
+	  V2 ret = { static_cast<V2>(c.value) };
+	  return ret;
+	}
+
     };
 
-  template<typename V, typename I>
+  template<typename V, typename I, typename S>
     inline bool
-    operator==(const character<V, I>& lhs, const character<V, I>& rhs)
+    operator==(const character<V, I, S>& lhs, const character<V, I, S>& rhs)
     { return lhs.value == rhs.value; }
 
-  template<typename V, typename I>
+  template<typename V, typename I, typename S>
     inline bool
-    operator<(const character<V, I>& lhs, const character<V, I>& rhs)
+    operator<(const character<V, I, S>& lhs, const character<V, I, S>& rhs)
     { return lhs.value < rhs.value; }
 } // namespace __gnu_cxx
 
@@ -69,13 +92,6 @@ namespace std
     struct char_traits<__gnu_cxx::character<V, I, S> >
     {
       typedef __gnu_cxx::character<V, I, S>	char_type;
-
-      // NB: This type should be bigger than char_type, so as to
-      // properly hold EOF values in addition to the full range of
-      // char_type values.
-      // Also, assumes
-      // int_type(value_type) is valid.
-      // int_type(-1) is possible.
       typedef typename char_type::int_type	int_type;
       typedef typename char_type::state_type	state_type;
       typedef fpos<state_type>			pos_type;
@@ -122,41 +138,47 @@ namespace std
 
       static char_type*
       move(char_type* __s1, const char_type* __s2, size_t __n)
-      { return (char_type*) memmove(__s1, __s2, __n * sizeof(char_type)); }
+      { 
+	return static_cast<char_type*>(std::memmove(__s1, __s2, 
+						    __n * sizeof(char_type))); 
+      }
 
       static char_type*
       copy(char_type* __s1, const char_type* __s2, size_t __n)
-      { return (char_type*) memcpy(__s1, __s2, __n * sizeof(char_type)); }
+      {
+	std::copy(__s2, __s2 + __n, __s1);
+	return __s1;
+      }
 
       static char_type*
       assign(char_type* __s, size_t __n, char_type __a)
       {
-	for (char_type* __p = __s; __p < __s + __n; ++__p)
-	  assign(*__p, __a);
+	std::fill_n(__s, __n, __a);
         return __s;
       }
 
       static char_type
-      to_char_type(const int_type& __c)
-      {
-	char_type __r = { __c };
-	return __r;
-      }
+      to_char_type(const int_type& __i)
+      { return char_type::template from(__i); }
 
       static int_type
       to_int_type(const char_type& __c)
-      { return int_type(__c.value); }
+      { return char_type::template to<int_type>(__c); }
 
       static bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
       static int_type
-      eof() { return static_cast<int_type>(-1); }
+      eof() 
+      {
+	int_type __r = { -1 };
+	return __r;
+      }
 
       static int_type
       not_eof(const int_type& __c)
-      { return eq_int_type(__c, eof()) ? int_type(0) : __c; }
+      { return eq_int_type(__c, eof()) ? int_type() : __c; }
     };
 }
 

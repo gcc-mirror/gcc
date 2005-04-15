@@ -40,176 +40,78 @@
 
 namespace __gnu_test
 {  
-  // Character type
-  struct character
-  {
-    unsigned char val;
-
-    static character from_char(char c)
-    {
-      character ret;
-      ret.val = c;
-      return ret;
-    }
-  };
-
-  inline bool
-  operator==(const character& lhs, const character& rhs)
-  { return lhs.val == rhs.val; }
-
-  // State type.
-  struct conversion_state
-  {
-    unsigned int state;
-  };
-
-  // Test data types.
-  struct pod_char
-  {
-    unsigned char c;
-  };
-
-  inline bool
-  operator==(const pod_char& lhs, const pod_char& rhs)
-  { return lhs.c == rhs.c; }
-  
   struct pod_int
   {
-    int i;
+    int value;
   };
   
-  struct state
+  inline bool
+  operator==(const pod_int& lhs, const pod_int& rhs)
+  { return lhs.value == rhs.value; }
+  
+  inline bool
+  operator<(const pod_int& lhs, const pod_int& rhs)
+  { return lhs.value < rhs.value; }
+
+  struct pod_state
   {
-    unsigned long l;
-    unsigned long l2;
+    unsigned long value;
   };
 
-  typedef unsigned short				value_type;
-  typedef unsigned int					int_type;
-  typedef __gnu_cxx::character<value_type, int_type>	pod_type;
+  inline bool
+  operator==(const pod_state& lhs, const pod_state& rhs)
+  { return lhs.value == rhs.value; }
+
+  inline bool
+  operator<(const pod_state& lhs, const pod_state& rhs)
+  { return lhs.value < rhs.value; }
+
+  // Alternate character types.
+  using __gnu_cxx::character;
+  typedef character<unsigned char, pod_int, pod_state>  	pod_char;
+  typedef character<unsigned char, unsigned int, pod_state>  	pod_uchar;
+  typedef character<unsigned short, unsigned int>	   	pod_ushort;
+
+  // Specializations.
+  // pod_char
+  template<>
+    template<typename V2>
+      inline pod_char::char_type
+      pod_char::char_type::from(const V2& v)
+      {
+	char_type ret = { static_cast<value_type>(v.value) };
+	return ret;
+      }
+
+  template<>
+    template<typename V2>
+      inline V2
+      pod_char::char_type::to(const char_type& c)
+      {
+	V2 ret = { c.value };
+	return ret;
+      }
+  
+  // pod_uchar
+  template<>
+    template<typename V2>
+      inline pod_uchar::char_type
+      pod_uchar::char_type::from(const V2& v)
+      {
+	char_type ret;
+	ret.value = (v >> 5);
+	return ret;
+      }
+
+  template<>
+    template<typename V2>
+      inline V2
+      pod_uchar::char_type::to(const char_type& c)
+      { return static_cast<V2>(c.value << 5); }
 }; // namespace __gnu_test
 
 namespace std
 {
-  // A std::char_traits specialization. Meets the additional
-  // requirements for basic_filebuf.
-  template<>
-    struct char_traits<__gnu_test::character>
-    {
-      typedef __gnu_test::character char_type;
-      typedef unsigned int int_type;
-      typedef __gnu_test::conversion_state state_type;
-      typedef streamoff off_type;
-      typedef fpos<state_type> pos_type;
-
-      static void
-      assign(char_type& c1, const char_type& c2)
-      { c1 = c2; }
-
-      static bool
-      eq(const char_type& c1, const char_type& c2)
-      { return c1.val == c2.val; }
-
-      static bool
-      lt(const char_type& c1, const char_type& c2)
-      { return c1.val < c2.val; }
-
-      static int
-      compare(const char_type* s1, const char_type* s2, size_t n)
-      {
-	for (size_t i = 0; i < n; ++i)
-	  {
-	    if (lt(s1[i], s2[i]))
-	      return -1;
-	    else if (lt(s2[i], s1[i]))
-	      return 1;
-	  }
-	return 0;
-      }
-
-      static size_t
-      length(const char_type* s)
-      {
-	size_t n = 0;
-	while (!eq(s[n], char_type()))
-	  ++n;
-	return n;
-      }
-
-      static const char_type*
-      find(const char_type* s, size_t n, const char_type& a)
-      {
-	for (size_t i = 0; i < n; ++i)
-	  {
-	    if (eq(s[i], a))
-	      return s + i;
-	  }
-	return NULL;
-      }
-
-      static char_type*
-      move(char_type* s1, const char_type* s2, size_t n)
-      {
-	if (s1 > s2)
-	  {
-	    for (size_t i = 0; i < n; ++i)
-	      assign(s1[n - i - 1], s2[n - i - 1]);
-	  }
-	else
-	  {
-	    for (size_t i = 0; i < n; ++i)
-	      assign(s1[i], s2[i]);
-	  }
-	return s1;
-      }
-
-      static char_type*
-      copy(char_type* s1, const char_type* s2, size_t n)
-      {
-	for (size_t i = 0; i < n; ++i)
-	  assign(s1[i], s2[i]);
-	return s1;
-      }
-
-      static char_type*
-      assign(char_type* s, size_t n, char_type a)
-      {
-	for (size_t i = 0; i < n; ++i)
-	  assign(s[i], a);
-	return s;
-      }
-
-      static int_type
-      not_eof(const int_type& c)
-      {
-	if (eq_int_type(c, eof()))
-	  return 0;
-	return c;
-      }
-
-      // Note non-trivial conversion to maximize chance of catching bugs
-      static char_type
-      to_char_type(const int_type& c)
-      {
-	char_type ret;
-	ret.val = (c >> 5);
-	return ret;
-      }
-
-      static int_type
-      to_int_type(const char_type& c)
-      {
-	return c.val << 5;
-      }
-
-      static bool
-      eq_int_type(const int_type& c1, const int_type& c2)
-      { return c1 == c2; }
-
-      static int_type eof()
-      { return 0xf; }
-    };
-
   // codecvt specialization
   //
   // The conversion performed by the specialization is not supposed to
@@ -227,57 +129,20 @@ namespace std
   //    state. Output those bytes.
   // 3. tmp becomes the new value of state.
   template<>
-    class codecvt<__gnu_test::character, char, __gnu_test::conversion_state>
-      : public locale::facet, public codecvt_base
+    class codecvt<__gnu_test::pod_uchar, char, __gnu_test::pod_state>
+    : public __codecvt_abstract_base<__gnu_test::pod_uchar, char, 
+				     __gnu_test::pod_state>
     {
     public:
-      typedef __gnu_test::character intern_type;
-      typedef char extern_type;
-      typedef __gnu_test::conversion_state state_type;
+      typedef codecvt_base::result	result;
+      typedef __gnu_test::pod_uchar 	intern_type;
+      typedef char 			extern_type;
+      typedef __gnu_test::pod_state 	state_type;
+      typedef __codecvt_abstract_base<intern_type, extern_type, state_type>
+      base_type;
 
-      explicit codecvt(size_t refs = 0)
-      : locale::facet(refs)
+      explicit codecvt(size_t refs = 0) : base_type(refs)
       { }
-
-      result
-      out(state_type& state, const intern_type* from,
-	  const intern_type* from_end, const intern_type*& from_next,
-	  extern_type* to, extern_type* to_limit, extern_type*& to_next) const
-      {
-	return do_out(state, from, from_end, from_next,
-		      to, to_limit, to_next);
-      }
-
-      result
-      unshift(state_type& state, extern_type* to, extern_type* to_limit,
-	      extern_type*& to_next) const
-      { return do_unshift(state, to, to_limit, to_next); }
-
-      result
-      in(state_type& state, const extern_type* from,
-	 const extern_type* from_end, const extern_type*& from_next,
-	 intern_type* to, intern_type* to_limit, intern_type*& to_next) const
-      {
-	return do_in(state, from, from_end, from_next,
-		     to, to_limit, to_next);
-      }
-
-      int
-      encoding() const throw()
-      { return do_encoding(); }
-
-      bool
-      always_noconv() const throw()
-      { return do_always_noconv(); }
-      
-      int
-      length(state_type& state, const extern_type* from,
-	     const extern_type* end, size_t max) const
-      { return do_length(state, from, end, max); }
-      
-      int
-      max_length() const throw()
-      { return do_max_length(); }
 
       static locale::id id;
 
@@ -293,8 +158,8 @@ namespace std
       {
 	while (from < from_end && to < to_limit)
 	  {
-	    unsigned char tmp = (state.state ^ from->val);
-	    if (state.state & 0x8)
+	    unsigned char tmp = (state.value ^ from->value);
+	    if (state.value & 0x8)
 	      {
 		if (to >= to_limit - 2)
 		  break;
@@ -309,7 +174,7 @@ namespace std
 		*to++ = (tmp & 0xf);
 		*to++ = ((tmp >> 4) & 0xf);
 	      }
-	    state.state = tmp;
+	    state.value = tmp;
 	    ++from;
 	  }
 
@@ -330,13 +195,13 @@ namespace std
 	    if (c & 0xc0)
 	      {
 		// Unshift sequence
-		state.state &= c;
+		state.value &= c;
 		++from;
 		continue;
 	      }
 
 	    unsigned char tmp;
-	    if (state.state & 0x8)
+	    if (state.value & 0x8)
 	      {
 		if (from >= from_end - 2)
 		  break;
@@ -351,8 +216,8 @@ namespace std
 		tmp = (*from++ & 0xf);
 		tmp |= ((*from++ << 4) & 0xf0);
 	      }
-	    to->val = (tmp ^ state.state);
-	    state.state = tmp;
+	    to->value = (tmp ^ state.value);
+	    state.value = tmp;
 	    ++to;
 	  }
 
@@ -368,7 +233,7 @@ namespace std
 	for (unsigned int i = 0; i < CHAR_BIT; ++i)
 	  {
 	    unsigned int mask = (1 << i);
-	    if (state.state & mask)
+	    if (state.value & mask)
 	      {
 		if (to == to_limit)
 		  {
@@ -376,13 +241,13 @@ namespace std
 		    return partial;
 		  }
 
-		state.state &= ~mask;
+		state.value &= ~mask;
 		*to++ = static_cast<unsigned char>(~mask);
 	      }
 	  }
 
 	to_next = to;
-	return state.state == 0 ? ok : error;
+	return state.value == 0 ? ok : error;
       }
 
       virtual int
@@ -404,13 +269,13 @@ namespace std
 	    if (c & 0xc0)
 	      {
 		// Unshift sequence
-		state.state &= c;
+		state.value &= c;
 		++from;
 		continue;
 	      }
 
 	    unsigned char tmp;
-	    if (state.state & 0x8)
+	    if (state.value & 0x8)
 	      {
 		if (from >= end - 2)
 		  break;
@@ -425,7 +290,7 @@ namespace std
 		tmp = (*from++ & 0xf);
 		tmp |= ((*from++ << 4) & 0xf0);
 	      }
-	    state.state = tmp;
+	    state.value = tmp;
 	    --max;
 	  }
 	return from - beg;
@@ -438,97 +303,78 @@ namespace std
       { return 11; }
     };
 
-
-  // A std::char_traits specialization with POD types for char_type,
-  // int_type, and state_type.
   template<>
-    struct char_traits<__gnu_test::pod_char>
+    class ctype<__gnu_test::pod_uchar>
+    : public __ctype_abstract_base<__gnu_test::pod_uchar>
     {
-      typedef __gnu_test::pod_char	char_type;
-      typedef __gnu_test::pod_int  	int_type;
-      typedef __gnu_test::state   	state_type;
-      typedef fpos<state_type> 		pos_type;
-      typedef streamoff 		off_type;
-      
-      static void 
-      assign(char_type& c1, const char_type& c2)
-      { c1.c = c2.c; }
+    public:
+      typedef __gnu_test::pod_uchar char_type;
 
-      static bool 
-      eq(const char_type& c1, const char_type& c2)
-      { return c1.c == c2.c; }
+      explicit ctype(size_t refs  = 0)
+      : __ctype_abstract_base<__gnu_test::pod_uchar>(refs) { }
 
-      static bool 
-      lt(const char_type& c1, const char_type& c2)
-      { return c1.c < c2.c; }
+      static locale::id id;
 
-      static int 
-      compare(const char_type* s1, const char_type* s2, size_t n)
-      { return memcmp(s1, s2, n); }
+    protected:
+      ~ctype()
+      { }
 
-      static size_t
-      length(const char_type* s)
-      { return strlen(reinterpret_cast<const char*>(s)); }
+      virtual bool
+      do_is(mask m, char_type c) const
+      { return false; }
 
-      static const char_type* 
-      find(const char_type* s, size_t n, const char_type& a)
-      { return static_cast<const char_type*>(memchr(s, a.c, n)); }
-
-      static char_type* 
-      move(char_type* s1, const char_type* s2, size_t n)
+      virtual const char_type*
+      do_is(const char_type* low, const char_type* high, mask* vec) const
       {
-	memmove(s1, s2, n);
-	return s1;
+	fill_n(vec, high - low, mask());
+	return high;
       }
 
-      static char_type* 
-      copy(char_type* s1, const char_type* s2, size_t n)
+      virtual const char_type*
+      do_scan_is(mask m, const char_type* low, const char_type* high) const
+      { return high; }
+
+      virtual const char_type*
+      do_scan_not(mask m, const char_type* low, const char_type* high) const
+      { return low; }
+
+      virtual char_type
+      do_toupper(char_type c) const
+      { return c; }
+
+      virtual const char_type*
+      do_toupper(char_type*  low, const char_type*  high) const
+      { return high; }
+
+      virtual char_type
+      do_tolower(char_type c) const
+      { return c; }
+
+      virtual const char_type*
+      do_tolower(char_type*  low, const char_type*  high) const
+      { return high; }
+
+      virtual char_type
+      do_widen(char c) const
+      { return __gnu_test::pod_uchar::from<char>(c); }
+
+      virtual const char* 
+      do_widen(const char* low, const char* high, char_type* dest) const
       {
-	memcpy(s1, s2, n);
-	return s1;
+	transform(low, high, dest, &__gnu_test::pod_uchar::from<char>);
+	return high;
       }
 
-      static char_type* 
-      assign(char_type* s, size_t n, char_type a)
-      {
-	memset(s, a.c, n);
-	return s;
-      }
+      virtual char
+      do_narrow(char_type, char dfault) const
+      { return dfault; }
 
-      static char_type 
-      to_char_type(const int_type& c)
+      virtual const char_type*
+      do_narrow(const char_type* low, const char_type* high,
+		char dfault, char*  dest) const
       {
-	char_type ret;
-	ret.c = static_cast<unsigned char>(c.i);
-	return ret;
-      }
-
-      static int_type 
-      to_int_type(const char_type& c)
-      {
-	int_type ret;
-	ret.i = c.c;
-	return ret;
-      }
-
-      static bool 
-      eq_int_type(const int_type& c1, const int_type& c2)
-      { return c1.i == c2.i; }
-
-      static int_type 
-      eof()
-      {
-	int_type n;
-	n.i = -10;
-	return n;
-      }
-
-      static int_type 
-      not_eof(const int_type& c)
-      {
-	if (eq_int_type(c, eof()))
-	  return int_type();
-	return c;
+	fill_n(dest, high - low, dfault);
+	return high;
       }
     };
 } // namespace std
