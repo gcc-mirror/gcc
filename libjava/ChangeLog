@@ -1,3 +1,9 @@
+2005-04-15  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgij_la_LIBADD): Moved SAX and DOM...
+	(libgcj0_convenience_la_LIBADD): ... here.
+
 2005-04-14  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gij.cc (version): Properly quote java version.

@@ -234,7 +234,8 @@ am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2)
 am_libgcj_la_OBJECTS =
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 libgcj0_convenience_la_DEPENDENCIES = gnu-xml.lo javax-imageio.lo \
-	javax-xml.lo gnu-java-beans.lo
+	javax-xml.lo gnu-java-beans.lo external/sax/libsax-gcj.la \
+	external/w3c_dom/libw3c-gcj.la
 am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
 	gnu/gcj/natCore.cc gnu/gcj/convert/JIS0208_to_Unicode.cc \
@@ -4508,10 +4509,7 @@ AM_CPPFLAGS = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)'$(CLASSPATH_SEPARATOR)'$(srcdir)/external/w3c_dom'$(CLASSPATH_SEPARATOR)'$(srcdir)/external/sax
 libgij_la_SOURCES = gij.cc
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
-libgij_la_LIBADD = -L$(here)/.libs libgcj.la \
-	external/sax/libsax-gcj.la \
-	external/w3c_dom/libw3c-gcj.la
-
+libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
@@ -4532,7 +4530,9 @@ libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 
 libgcj0_convenience_la_LIBADD = \
 	gnu-xml.lo javax-imageio.lo \
-	javax-xml.lo gnu-java-beans.lo
+	javax-xml.lo gnu-java-beans.lo \
+	external/sax/libsax-gcj.la \
+	external/w3c_dom/libw3c-gcj.la
 
 noinst_LTLIBRARIES = libgcj0_convenience.la
 libgcj_la_SOURCES = 
