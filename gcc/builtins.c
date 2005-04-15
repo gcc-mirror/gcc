@@ -2220,6 +2220,9 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
 
   /* Fall back to floating point rounding optab.  */
   fallback_fndecl = mathfn_built_in (TREE_TYPE (arg), fallback_fn);
+  /* We shouldn't get here on targets without TARGET_C99_FUNCTIONS.
+     ??? Perhaps convert (int)floorf(x) into (int)floor((double)x).  */
+  gcc_assert (fallback_fndecl != NULL_TREE);
   exp = build_function_call_expr (fallback_fndecl, arglist);
 
   tmp = expand_builtin_mathfn (exp, NULL_RTX, NULL_RTX);

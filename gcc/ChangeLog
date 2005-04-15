@@ -1,3 +1,11 @@
+2005-04-15  Uros Bizjak  <uros@kss-loka.si>
+
+	PR tree-optimization/21004
+	* convert.c (convert_to_integer): Convert ceilf, ceill, floorf
+	and floorl in c99 mode only.
+	* builtins.c (expand_builtin_int_roundingfn): Assert that
+	fallback_fndecl is not NULL_TREE.
+
 2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgrtl.c (purge_all_dead_edge): Remove an unused argument.
