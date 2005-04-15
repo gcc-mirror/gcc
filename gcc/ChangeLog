@@ -1,3 +1,9 @@
+2005-04-14  Mike Stump  <mrs@apple.com>
+
+	* config/darwin-c.c (framework_construct_pathname): We must
+	find all headers of a framework in the first instance of it
+	found in the seach path.
+
 2005-04-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21021
