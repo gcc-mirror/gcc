@@ -1,3 +1,8 @@
+2005-04-15  Dave Korn  <dave.korn@artimi.com>
+
+	* gcc.c (default_compilers): Clarify obscure error message when
+	reading from standard input.
+
 2005-04-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (legitimate_address_p): Use TARGET_ARCH32.
@@ -14,9 +19,9 @@
 
 2005-04-06  Dale Johannesen  <dalej@apple.com>
 
-        PR middle-end/19225
-        * calls.c (expand_call):  Flush pending deferrals before
-        throwing call.
+	PR middle-end/19225
+	* calls.c (expand_call):  Flush pending deferrals before
+	throwing call.
 
 2005-04-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -35,11 +40,11 @@
 	-mlittle-endian is not supported on Linux either.
 
 2005-03-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
-	 
-        PR c++/18644
-        * doc/invoke.texi (-Wsynth): Don't document, as it now is void of
-        semantics. 
-	
+
+	PR c++/18644
+	* doc/invoke.texi (-Wsynth): Don't document, as it now is void of
+	semantics.
+
 2005-03-31  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/20611
@@ -1077,7 +1082,7 @@
 
 	Backport from mainline:
 	2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
-	            Roger Sayle  <roger@eyesopen.com>
+		    Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17813
 	* dojump.c (discard_pending_stack_adjust): New function.
