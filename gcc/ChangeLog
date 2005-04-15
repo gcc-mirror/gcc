@@ -1,3 +1,7 @@
+2005-04-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi (*-ibm-aix*): Add comment about system limits.
+
 2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/20936.
