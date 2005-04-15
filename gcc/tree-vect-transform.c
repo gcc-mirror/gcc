@@ -856,8 +856,8 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   enum machine_mode vec_mode;
   tree dummy;
   enum dr_alignment_support alignment_support_cheme;
-  v_may_def_optype v_may_defs;
-  int nv_may_defs, i;
+  ssa_op_iter iter;
+  tree def;
 
   /* Is vectorizable store? */
 
@@ -915,20 +915,16 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   *vec_stmt = build2 (MODIFY_EXPR, vectype, data_ref, vec_oprnd1);
   vect_finish_stmt_generation (stmt, *vec_stmt, bsi);
 
-  /* Copy the V_MAY_DEFS representing the aliasing of the original array
-     element's definition to the vector's definition then update the
-     defining statement.  The original is being deleted so the same
-     SSA_NAMEs can be used.  */
-  copy_virtual_operands (*vec_stmt, stmt);
-  v_may_defs = STMT_V_MAY_DEF_OPS (*vec_stmt);
-  nv_may_defs = NUM_V_MAY_DEFS (v_may_defs);
+  /* Mark all non-SSA variables in the statement for rewriting.  */
+  mark_new_vars_to_rename (*vec_stmt);
 	    
-  for (i = 0; i < nv_may_defs; i++)
-    {
-      tree ssa_name = V_MAY_DEF_RESULT (v_may_defs, i);
-      SSA_NAME_DEF_STMT (ssa_name) = *vec_stmt;
-    }
-
+  /* The new vectorized statement will have better aliasing
+     information, so some of the virtual definitions of the old
+     statement will likely disappear from the IL.  Mark them to have
+     their SSA form updated.  */
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_VMAYDEF)
+    mark_sym_for_renaming (SSA_NAME_VAR (def));
+ 
   return true;
 }
 

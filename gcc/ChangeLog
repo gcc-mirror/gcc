@@ -1,3 +1,9 @@
+2005-04-15  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-vect-transform.c (vectorizable_store): Mark necessary
+	objects in the vectorized store needing renaming.  Update the
+	SSA graph for V_MAY_DEF operands in the original store.
+
 2005-04-14  Daniel Berlin <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (compute_avail): It's okay to have
