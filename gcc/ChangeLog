@@ -1,3 +1,8 @@
+2005-05-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* genattrtab.c (ATTR_EQ_ATTR_P): Remove.
+	(attr_copy_rtx): Do not use it.
+
 2005-04-15  Andrew Macleod  <amacleod@redhat.com>
 
 	* doc/tree-ssa.texi: Grammer/abbreviation updates.

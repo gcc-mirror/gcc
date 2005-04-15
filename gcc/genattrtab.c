@@ -90,14 +90,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    `in_struct' (ATTR_CURR_SIMPLIFIED_P): This rtx is fully simplified
       for the insn code currently being processed (see optimize_attrs).
    `return_val' (ATTR_PERMANENT_P): This rtx is permanent and unique
-      (see attr_rtx).
-   `volatil' (ATTR_EQ_ATTR_P): During simplify_by_exploding the value of an
-      EQ_ATTR rtx is true if !volatil and false if volatil.  */
+      (see attr_rtx).  */
 
 #define ATTR_IND_SIMPLIFIED_P(RTX) (RTX_FLAG((RTX), unchanging))
 #define ATTR_CURR_SIMPLIFIED_P(RTX) (RTX_FLAG((RTX), in_struct))
 #define ATTR_PERMANENT_P(RTX) (RTX_FLAG((RTX), return_val))
-#define ATTR_EQ_ATTR_P(RTX) (RTX_FLAG((RTX), volatil))
 
 #if 0
 #define strcmp_check(S1, S2) ((S1) == (S2)		\
@@ -731,7 +728,6 @@ attr_copy_rtx (rtx orig)
   ATTR_IND_SIMPLIFIED_P (copy) = ATTR_IND_SIMPLIFIED_P (orig);
   ATTR_CURR_SIMPLIFIED_P (copy) = ATTR_CURR_SIMPLIFIED_P (orig);
   ATTR_PERMANENT_P (copy) = ATTR_PERMANENT_P (orig);
-  ATTR_EQ_ATTR_P (copy) = ATTR_EQ_ATTR_P (orig);
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
