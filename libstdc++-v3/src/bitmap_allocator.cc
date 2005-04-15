@@ -48,25 +48,20 @@ namespace __gnu_cxx
      size_t const&, free_list::_LT_pointer_compare);
   }
 
-#if defined __GTHREADS
-  _Mutex free_list::_S_bfl_mutex;
-#endif
-  free_list::vector_type free_list::_S_free_list;
-
   size_t*
   free_list::
   _M_get(size_t __sz) throw(std::bad_alloc)
   {
 #if defined __GTHREADS
-    _Lock __bfl_lock(&_S_bfl_mutex);
+    _Lock __bfl_lock(_M_get_mutex());
     __bfl_lock._M_lock();
 #endif
     iterator __temp = 
       __gnu_cxx::balloc::__lower_bound
-      (_S_free_list.begin(), _S_free_list.end(), 
+      (_M_get_free_list().begin(), _M_get_free_list().end(), 
        __sz, _LT_pointer_compare());
 
-    if (__temp == _S_free_list.end() || !_M_should_i_give(**__temp, __sz))
+    if (__temp == _M_get_free_list().end() || !_M_should_i_give(**__temp, __sz))
       {
 	// We release the lock here, because operator new is
 	// guaranteed to be thread-safe by the underlying
@@ -101,7 +96,7 @@ namespace __gnu_cxx
     else
       {
 	size_t* __ret = *__temp;
-	_S_free_list.erase(__temp);
+	_M_get_free_list().erase(__temp);
 #if defined __GTHREADS
 	__bfl_lock._M_unlock();
 #endif
@@ -114,15 +109,16 @@ namespace __gnu_cxx
   _M_clear()
   {
 #if defined __GTHREADS
-    _Auto_Lock __bfl_lock(&_S_bfl_mutex);
+    _Auto_Lock __bfl_lock(_M_get_mutex());
 #endif
-    iterator __iter = _S_free_list.begin();
-    while (__iter != _S_free_list.end())
+    vector_type& __free_list = _M_get_free_list();
+    iterator __iter = __free_list.begin();
+    while (__iter != __free_list.end())
       {
 	::operator delete((void*)*__iter);
 	++__iter;
       }
-    _S_free_list.clear();
+    __free_list.clear();
   }
 
   // Instantiations.

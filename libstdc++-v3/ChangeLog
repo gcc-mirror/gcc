@@ -1,3 +1,13 @@
+2005-04-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/bitmap_allocator.h
+	(__gnu_cxx::free_list::_M_get_mutex): New.
+	(__gnu_cxx::free_list::_M_get_free_list): New.
+	(__gnu_cxx::free_list::_S_bfl_mutex): Remove.
+	(__gnu_cxx::free_list::_S_free_list): Remove.
+	* src/bitmap_allocator.cc: Same.
+	* config/linker-map.gnu: Remove free_list and mutex export.
+
 2005-04-08  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/20909
