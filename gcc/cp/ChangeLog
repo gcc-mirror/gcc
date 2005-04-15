@@ -1,3 +1,10 @@
+2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cp-tree.h (lang_type_class): Remove redefined.  Move
+	java_interface into where redefined was.  Increment the width
+	of dummy.
+	(TYPE_REDEFINED): Remove.
+
 2005-04-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.h (SET_TMPL_ARG, ENUM_TI_TEMPLATE, ENUM_TI_ARGS,
