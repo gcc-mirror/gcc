@@ -1,3 +1,8 @@
+2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h (PROP_EQUAL_NOTES): Remove.
+	* flow.c (propagate_one_insn): Don't use PROP_EQUAL_NOTES.
+
 2005-04-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-vect-analyze.c (vect_stmt_relevant_p): Process immediate uses 
