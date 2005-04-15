@@ -886,13 +886,13 @@ print_ops (tree stmt)
 @}
 @end smallexample
 
-Operands use to be updated lazily via calls to @code{get_stmt_operands}.  
-This function is now deprecated and operands are updated as soon as the stmt is
-finished via a call to @code{update_stmt}.  If statement elements are
-changed via @code{SET_USE} or @code{SET_DEF}, no further action need be 
-taken (ie, those macros take care of whatever updating is required).  If
-changes are made by manipulating the statement's tree directly, then a call 
-must be made to @code{update_stmt} when complete.  Calling one of the 
+Operands were once updated lazily via calls to @code{get_stmt_operands}.
+This function is now deprecated and operands are updated as soon as the
+statement is finished via a call to @code{update_stmt}.  If statement elements
+are changed via @code{SET_USE} or @code{SET_DEF}, then no further action is
+required (ie, those macros take care of updating the statement).  If
+changes are made by manipulating the statement's tree directly, then a call
+must be made to @code{update_stmt} when complete.  Calling one of the
 @code{bsi_insert} routines or @code{bsi_replace} performs an implicit call
 to @code{update_stmt}.
 
@@ -1033,6 +1033,10 @@ iterators, you may examine every use of any @code{SSA_NAME}. For instance,
 to change each use of @code{ssa_var} to @code{ssa_var2}:
 
 @smallexample
+  use_operand_p imm_use_p;
+  imm_use_iterator iterator;
+  tree ssa_var
+
   FOR_EACH_IMM_USE_SAFE (imm_use_p, iterator, ssa_var)
     SET_USE (imm_use_p, ssa_var_2);
 @end smallexample
@@ -1073,27 +1077,30 @@ Some useful functions and macros:
 single use of @code{ssa_var}.
 @item   @code{single_imm_use (ssa_var, use_operand_p *ptr, tree *stmt)} :
 Returns true if there is only a single use of @code{ssa_var}, and also returns
-the use pointer and stmt it occurs in in the second and third parameters.
+the use pointer and statement it occurs in in the second and third parameters.
 @item   @code{num_imm_uses (ssa_var)} : Returns the number of immediate uses of
-@code{ssa_var}. Its better not to use this if possible since it simply
+@code{ssa_var}. It is better not to use this if possible since it simply
 utilizes a loop to count the uses.
 @item  @code{PHI_ARG_INDEX_FROM_USE (use_p)} : Given a use within a @code{PHI}
 node, return the index number for the use.  An assert is triggered if the use
 isn't located in a @code{PHI} node.
-@item  @code{USE_STMT (use_p)} : Return the stmt a use occurs in.
+@item  @code{USE_STMT (use_p)} : Return the statement a use occurs in.
 @end enumerate
 
 Note that uses are not put into an immediate use list until their statement is
 actually inserted into the instruction stream via a @code{bsi_*} routine.  
 
-It is also still possible to utilize lazy updating of stmts, but this should be used only when absolutely required.  Both alias analysis and the dominator 
-optimizations currently do this.  
+It is also still possible to utilize lazy updating of statements, but this 
+should be used only when absolutely required.  Both alias analysis and the 
+dominator optimizations currently do this.  
 
 When lazy updating is being used, the immediate use information is out of date 
-and cannot be used reliably.  Lazy updating is achieved by simply marking stmts 
-modified via calls to @code{mark_stmt_modified} instead of @code{update_stmt}.
-When lazy updating is no longer required, all the modified stmts must have 
-@code{update_stmt} called in order to bring them up to date.  This must be done before the optimization is finished, or @code{verify_ssa} will trigger an abort.
+and cannot be used reliably.  Lazy updating is achieved by simply marking
+statements modified via calls to @code{mark_stmt_modified} instead of 
+@code{update_stmt}.  When lazy updating is no longer required, all the 
+modified statements must have @code{update_stmt} called in order to bring them 
+up to date.  This must be done before the optimization is finished, or 
+@code{verify_ssa} will trigger an abort.
 
 This is done with a simple loop over the instruction stream:
 @smallexample
