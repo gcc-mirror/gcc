@@ -1320,7 +1320,7 @@ tree_expand_cfg (void)
   blocks = sbitmap_alloc (last_basic_block);
   sbitmap_ones (blocks);
   find_many_sub_basic_blocks (blocks);
-  purge_all_dead_edges (0);
+  purge_all_dead_edges ();
   sbitmap_free (blocks);
 
   compact_blocks ();

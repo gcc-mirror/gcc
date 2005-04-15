@@ -861,7 +861,7 @@ extern int delete_noop_moves (void);
 extern basic_block force_nonfallthru (edge);
 extern rtx block_label (basic_block);
 extern bool forwarder_block_p (basic_block);
-extern bool purge_all_dead_edges (int);
+extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
 extern void find_many_sub_basic_blocks (sbitmap);
 extern void rtl_make_eh_edge (sbitmap, basic_block, rtx);
