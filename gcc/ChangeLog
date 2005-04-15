@@ -1,3 +1,9 @@
+2005-04-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/20739
+	* gimplify.c (gimplify_addr_expr): Compensate for removal of
+	e.g. cv-qualification conversions.
+
 2005-04-14  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-c.c (framework_construct_pathname): We must
