@@ -291,6 +291,10 @@
 	* parser.c (cp_parser_postfix_expression) <case RID_TYPENAME>:
 	Check the return value of cp_parser_nested_name_specifier.
 
+2005-03-18  Dale Johannesen <dalej@apple.com>
+
+	* cp/tree.c (cp_tree_equal):  Handle SSA_NAME.
+
 2005-03-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/20463
