@@ -1,3 +1,11 @@
+2005-04-15  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/18495
+	* gfortran.fortran-torture/execute/intrinsic_spread.f90:
+	Test callee-allocated version of return array with a write
+	statement.
+	Test spread with a temporary with another write statement.
+
 2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21031

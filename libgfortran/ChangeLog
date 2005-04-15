@@ -1,3 +1,20 @@
+2005-04-15  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/18495
+	* intrinsics/spread_generic.c (spread):  Remove const from
+	return array descriptor.
+	New variables: rrank (rank of return array),  rs (for
+	calculating the size of the return array), srank (rank
+	of the source array).
+	Generate runtime error if the dim= argument is larger than
+	the rank of the return array.
+	Generate runtime error if the needed rank of the return
+	array is larger than 7.
+	If ret->data is null, populate the return array descriptor
+	and initialize the variables for the actual operation.
+	Otherwise, set ret->dim[0].stride to one if it is zero.
+	Change second, independent use of variable dim to srank.
+
 2005-04-12  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.
