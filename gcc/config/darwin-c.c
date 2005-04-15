@@ -270,6 +270,26 @@ framework_construct_pathname (const char *fname, cpp_dir *dir)
   strncpy (&frname[frname_len], ".framework/", strlen (".framework/"));
   frname_len += strlen (".framework/");
 
+  if (fast_dir == 0)
+    {
+      frname[frname_len-1] = 0;
+      if (stat (frname, &st) == 0)
+	{
+	  /* As soon as we find the first instance of the framework,
+	     we stop and never use any later instance of that
+	     framework.  */
+	  add_framework (fname, fname_len, dir);
+	}
+      else
+	{
+	  /* If we can't find the parent directory, no point looking
+	     further.  */
+	  free (frname);
+	  return 0;
+	}
+      frname[frname_len-1] = '/';
+    }
+
   /* Append framework_header_dirs and header file name */
   for (i = 0; framework_header_dirs[i].dirName; i++)
     {
@@ -280,11 +300,7 @@ framework_construct_pathname (const char *fname, cpp_dir *dir)
 	      &fname[fname_len]);
 
       if (stat (frname, &st) == 0)
-	{
-	  if (fast_dir == 0)
-	    add_framework (fname, fname_len, dir);
-	  return frname;
-	}
+	return frname;
     }
 
   free (frname);
