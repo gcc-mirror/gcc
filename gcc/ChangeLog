@@ -1,3 +1,9 @@
+2005-04-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21021
+	* tree-vrp.c (compare_values): Work around a bug in the front
+	end that produces a comparison of mismatched types.
+
 2004-04-14  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.h (enum fetchop_code): Remove.
