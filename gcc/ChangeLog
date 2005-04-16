@@ -1,3 +1,10 @@
+2005-04-15  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_relational_hi_lo): Delete function and prototype.
+	(fold_binary): Update comment mentioning fold_relational_hi_lo.
+	(fold_binary_to_constant): Simplify using fold_binary.
+	(fold_unary_to_constant): Likewise, simplify using fold_unary.
+
 2005-04-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gthr-posix.c (pthread_cancel): Define.
