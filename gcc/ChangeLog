@@ -1,3 +1,8 @@
+2005-04-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h: Adjust the value of PROP_SCAN_DEAD_STORES,
+	PROP_ASM_SCAN.
+
 2005-04-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Avoid using asterisks in @anchor
