@@ -5196,8 +5196,8 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
       break;
 
     case SUBREG:
-      x = SUBREG_REG (x);
-      /* FALLTHRU */
+      need_barrier |= rtx_needs_barrier (SUBREG_REG (x), flags, pred);
+      break;
     case REG:
       if (REGNO (x) == AR_UNAT_REGNUM)
 	{
