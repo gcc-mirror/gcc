@@ -48,6 +48,12 @@ extern "C" {
 
 #include <stdio.h>
 
+/* If the OS supports it, ensure that the supplied stream is setup to
+   avoid any multi-threaded locking.  Otherwise leave the FILE pointer
+   unchanged.  If the stream is NULL do nothing.  */
+
+extern void unlock_stream (FILE *);
+
 /* Open and return a FILE pointer.  If the OS supports it, ensure that
    the stream is setup to avoid any multi-threaded locking.  Otherwise
    return the FILE pointer unchanged.  */

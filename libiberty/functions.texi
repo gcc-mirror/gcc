@@ -362,7 +362,7 @@ and inode numbers.
 
 @end deftypefn
 
-@c fopen_unlocked.c:32
+@c fopen_unlocked.c:40
 @deftypefn Extension FILE * fdopen_unlocked (int @var{fildes}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fdopen}.  If the
@@ -431,7 +431,7 @@ Ignores case when performing the comparison.
 
 @end deftypefn
 
-@c fopen_unlocked.c:23
+@c fopen_unlocked.c:31
 @deftypefn Extension FILE * fopen_unlocked (const char *@var{path}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
@@ -451,7 +451,7 @@ itself.
 
 @end deftypefn
 
-@c fopen_unlocked.c:41
+@c fopen_unlocked.c:49
 @deftypefn Extension FILE * freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
 
 Opens and returns a @code{FILE} pointer via @code{freopen}.  If the
@@ -1198,6 +1198,15 @@ Unlinks the named file, unless it is special (e.g. a device file).
 Returns 0 when the file was unlinked, a negative value (and errno set) when
 there was an error deleting the file, and a positive value if no attempt
 was made to unlink the file because it is special.
+
+@end deftypefn
+
+@c fopen_unlocked.c:23
+@deftypefn Extension void unlock_stream (FILE * @var{stream})
+
+If the OS supports it, ensure that the supplied stream is setup to
+avoid any multi-threaded locking.  Otherwise leave the @code{FILE}
+pointer unchanged.  If the @var{stream} is @code{NULL} do nothing.
 
 @end deftypefn
 
