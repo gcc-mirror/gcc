@@ -1,3 +1,8 @@
+2005-04-15  Dave Korn <dave.korn@artimi.com>
+
+	* gcc.c (default_compilers): Clarify obscure error message when
+	reading from standard input.
+
 2005-04-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gthr-posix.c (pthread_cancel): Define.
@@ -150,7 +155,7 @@
 	* config/i386/i386.md (frndintxf2_floor, frndintxf2_ceil)
 	(frndintxf2_trunc, frndintxf2_mask_pm): Add FLAGS_REG clobber.
 	Allocate local stack slots here.  Set ix86_optimize_mode_switching.
-	flag here. Implement using define_insn_and_split.  
+	flag here. Implement using define_insn_and_split.
 	(frndintxf2_floor_i387, frndintxf2_ceil_i387, frndintxf2_trunc_i387)
 	(frndintxf2_mask_pm_i387): New insn patterns.
 	(floorsf2, floordf2, floorxf2): Remove local stack slot allocations.
@@ -188,7 +193,7 @@
 
 	* doc/invoke.texi (Optimize Options): Mention -ftree-lrs, not
 	-ftree-live_range_split.  Perhaps renamed at some point?
-	
+
 2005-04-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/19317
@@ -222,7 +227,7 @@
 	overriding.
 
 2005-04-05  Olivier Hainque  <hainque@adacore.com>
-	
+
 	* config/mips/iris6.h (DWARF_FRAME_RETURN_COLUMN): Redefine to
 	match what the system unwinder expects.
 	* config/mips/mips.c (mips_frame_set): If we're saving the return
@@ -292,11 +297,11 @@
 	an INTEGER_CST.
 
 2005-04-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
-	 
+
 	PR c++/18644
 	* doc/invoke.texi (-Wsynth): Don't document, as it now is void of
-	semantics. 
-	
+	semantics.
+
 2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/19345
@@ -423,7 +428,7 @@
 
 	* dwarf2out.c (dwarf2out_frame_finish): Honor DWARF2_FRAME_INFO
 	defined and non-zero.
-	
+
 2005-03-31  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/20611
