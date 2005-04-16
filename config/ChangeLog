@@ -1,3 +1,7 @@
+2005-04-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* acx.m4 (ACX_PROG_GNAT): Remove spurious break.
+
 2005-01-23  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* warnings.m4 (ACX_PROG_CC_WARNING_ALMOST_PEDANTIC): Don't do

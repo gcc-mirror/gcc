@@ -1,3 +1,7 @@
+2005-04-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure: Regenerate after change to config/acx.m4.
+
 2005-04-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* MAINTAINERS (Various Maintainers): Add self as i18n maintainer.
