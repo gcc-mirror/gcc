@@ -6178,6 +6178,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_BOOL_COMPARE_AND_SWAP_2:
     case BUILT_IN_BOOL_COMPARE_AND_SWAP_4:
     case BUILT_IN_BOOL_COMPARE_AND_SWAP_8:
+      if (mode == VOIDmode)
+	mode = TYPE_MODE (boolean_type_node);
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);
       target = expand_builtin_compare_and_swap (arglist, true, target);
