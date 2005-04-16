@@ -1,3 +1,8 @@
+2005-04-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-scalar-evolution.c (interpret_rhs_modify_expr): Fix typo in
+	comment.
+
 2005-04-16  Roger Sayle  <roger@eyesopen.com>
 	    Steven Bosscher  <stevenb@suse.de>
 
