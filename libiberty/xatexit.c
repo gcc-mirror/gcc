@@ -22,6 +22,9 @@ failure.  If you use @code{xatexit} to register functions, you must use
 /* Adapted from newlib/libc/stdlib/{,at}exit.[ch].
    If you use xatexit, you must call xexit instead of exit.  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "ansidecl.h"
 #include "libiberty.h"
 

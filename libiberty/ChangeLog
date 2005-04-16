@@ -1,5 +1,18 @@
 2005-04-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* asprintf.c: Include config.h.
+	* basename.c: Likewise.
+	* fdmatch.c: Likewise.
+	* hex.c: Likewise.
+	* lbasename.c: Likewise.
+	* spaces.c: Likewise.
+	* xatexit.c:Likewise.
+	* configure.ac:  Do check declarations for basename, ffs, asprintf 
+	and vasprintf for real.
+	* configure: Regenerate.
+
+2005-04-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* argv.c (dupargv): Allocate space of argv[argc], not 
 	sizeof(char *) of that amount.  Cast result to char *.
 

@@ -18,6 +18,9 @@ not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>  /* for EOF */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "libiberty.h"
 #include "safe-ctype.h" /* for HOST_CHARSET_ASCII */
 

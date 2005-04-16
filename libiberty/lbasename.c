@@ -37,6 +37,9 @@ and a path ending in @code{/} returns the empty string after it.
 
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "ansidecl.h"
 #include "libiberty.h"
 #include "safe-ctype.h"
