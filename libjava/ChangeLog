@@ -1,3 +1,8 @@
+2005-04-16  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/xml/pipeline/ValidationConsumer.java (Recognizer): Make
+	'ANY' package-private.
+
 2005-04-15  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
