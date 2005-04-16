@@ -114,7 +114,7 @@
 
 (define_expand "sync_lock_release<mode>"
   [(set (match_operand:I48MODE 0 "memory_operand" "")
-        (const_int 0))]
+	(match_operand:I48MODE 1 "gr_reg_or_0_operand" ""))]
   ""
 {
   gcc_assert (MEM_VOLATILE_P (operands[0]));

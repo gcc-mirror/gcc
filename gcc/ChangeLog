@@ -1,3 +1,10 @@
+2005-04-16  Richard Henderson  <rth@redhat.com>
+
+	PR target/21051
+	* builtins.c (expand_builtin) <BUILT_IN_BOOL_COMPARE_AND_SWAP_*>:
+	Use the mode of boolean_type_node when the user doesn't provide one.
+	* config/ia64/sync.md (sync_lock_release<I48MODE>): Use operand 1.
+
 2005-04-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/20126
