@@ -1,3 +1,9 @@
+2005-04-16  Roger Sayle  <roger@eyesopen.com>
+	    Steven Bosscher  <stevenb@suse.de>
+
+	* fold-const.c (fold_binary_to_constant): Delete obsolete comment.
+	(fold_unary_to_constant): Likewise.
+
 2005-04-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h: Adjust the value of PROP_SCAN_DEAD_STORES,

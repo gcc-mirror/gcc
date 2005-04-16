@@ -10794,12 +10794,7 @@ tree_expr_nonzero_p (tree t)
 
    If the expression could be simplified to a constant, then return
    the constant.  If the expression would not be simplified to a
-   constant, then return NULL_TREE.
-
-   Note this is primarily designed to be called after gimplification
-   of the tree structures and when at least one operand is a constant.
-   As a result of those simplifying assumptions this routine is far
-   simpler than the generic fold routine.  */
+   constant, then return NULL_TREE.  */
 
 tree
 fold_binary_to_constant (enum tree_code code, tree type, tree op0, tree op1)
@@ -10814,12 +10809,7 @@ fold_binary_to_constant (enum tree_code code, tree type, tree op0, tree op1)
 
    If the expression could be simplified to a constant, then return
    the constant.  If the expression would not be simplified to a
-   constant, then return NULL_TREE.
-
-   Note this is primarily designed to be called after gimplification
-   of the tree structures and when op0 is a constant.  As a result
-   of those simplifying assumptions this routine is far simpler than
-   the generic fold routine.  */
+   constant, then return NULL_TREE.  */
 
 tree
 fold_unary_to_constant (enum tree_code code, tree type, tree op0)
