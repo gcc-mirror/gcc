@@ -1,3 +1,10 @@
+2005-04-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Avoid using asterisks in @anchor
+	names related to target triplets.
+	Remove i?86-*-esix from platform directory.
+	Remove powerpc-*-eabiaix from platform directory.
+
 2005-04-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR middle-end/20491
