@@ -1,3 +1,8 @@
+2005-04-15  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/14311
+	* semantics.c (finish_call_expr): Call resolve_overloaded_builtin.
+
 2005-04-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.h (lang_type_class): Remove redefined.  Move
