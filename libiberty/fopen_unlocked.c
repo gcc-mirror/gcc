@@ -20,6 +20,14 @@ Boston, MA 02111-1307, USA.  */
 
 /*
 
+@deftypefn Extension void unlock_stream (FILE * @var{stream})
+
+If the OS supports it, ensure that the supplied stream is setup to
+avoid any multi-threaded locking.  Otherwise leave the @code{FILE}
+pointer unchanged.  If the @var{stream} is @code{NULL} do nothing.
+
+@end deftypefn
+
 @deftypefn Extension FILE * fopen_unlocked (const char *@var{path}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
@@ -59,14 +67,29 @@ unchanged.
 
 #include "libiberty.h"
 
-FILE *
-fopen_unlocked (const char *path, const char *mode)		
+/* This is an inline helper function to consolidate attempts to unlock
+   a stream.  */
+
+static inline void
+unlock_1 (FILE *const fp ATTRIBUTE_UNUSED)
 {
-  FILE *const fp = fopen (path, mode);
 #if defined(HAVE___FSETLOCKING) && defined(FSETLOCKING_BYCALLER)
   if (fp)
     __fsetlocking (fp, FSETLOCKING_BYCALLER);
 #endif
+}
+
+void
+unlock_stream(FILE *fp)
+{
+  unlock_1 (fp);
+}
+
+FILE *
+fopen_unlocked (const char *path, const char *mode)		
+{
+  FILE *const fp = fopen (path, mode);
+  unlock_1 (fp);
   return fp;
 }
 
@@ -74,10 +97,7 @@ FILE *
 fdopen_unlocked (int fildes, const char *mode)
 {
   FILE *const fp = fdopen (fildes, mode);
-#if defined(HAVE___FSETLOCKING) && defined(FSETLOCKING_BYCALLER)
-  if (fp)
-    __fsetlocking (fp, FSETLOCKING_BYCALLER);
-#endif
+  unlock_1 (fp);
   return fp;
 }
 
@@ -85,9 +105,6 @@ FILE *
 freopen_unlocked (const char *path, const char *mode, FILE *stream)
 {
   FILE *const fp = freopen (path, mode, stream);
-#if defined(HAVE___FSETLOCKING) && defined(FSETLOCKING_BYCALLER)
-  if (fp)
-    __fsetlocking (fp, FSETLOCKING_BYCALLER);
-#endif
+  unlock_1 (fp);
   return fp;
 }
