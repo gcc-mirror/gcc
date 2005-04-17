@@ -239,9 +239,6 @@ c_parse_init (void)
 /* A keyword.  */
 #define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
 
-/* The number of token types, including C-specific ones.  */
-#define N_C_TTYPES ((int) (CPP_KEYWORD + 1))
-
 /* More information about the type of a CPP_NAME token.  */
 typedef enum c_id_kind {
   /* An ordinary identifier.  */
