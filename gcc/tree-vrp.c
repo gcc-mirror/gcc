@@ -1446,6 +1446,14 @@ maybe_add_assert_expr (basic_block bb)
 	{
 	  tree cond;
 
+	  /* If OP is used only once, namely in this STMT, don't
+	     bother inserting an ASSERT_EXPR for it.  Such an
+	     ASSERT_EXPR would do nothing but increase compile time.
+	     Experiments show that with this simple check, we can save
+	     more than 20% of ASSERT_EXPRs.  */
+	  if (has_single_use (op))
+	    continue;
+
 	  SET_BIT (found, SSA_NAME_VERSION (op));
 
 	  cond = infer_value_range (stmt, op);
