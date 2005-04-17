@@ -36,9 +36,6 @@ enum prediction
    TAKEN
 };
 
-/* Flags for NOTE_PREDICTION */
-#define IS_TAKEN 1		/* Predict edges to the block as taken.  */
-
 extern void predict_insn_def (rtx, enum br_predictor, enum prediction);
 extern int counts_to_freqs (void);
 
