@@ -1,3 +1,10 @@
+2005-04-17  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* scanner.c (gfc_next_char_literal): Reset truncation flag
+	for lines ending in a comment for both fixed and free form.
+	(load_line): Do not set truncated flag if only truncating
+	the EOL marker.
+
 2005-04-15  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR fortran/14569
