@@ -48,25 +48,25 @@ reshape (parray *ret, parray *source, shape_type *shape,
 	 parray *pad, shape_type *order)
 {
   /* r.* indicates the return array.  */
-  index_type rcount[GFC_MAX_DIMENSIONS - 1];
-  index_type rextent[GFC_MAX_DIMENSIONS - 1];
-  index_type rstride[GFC_MAX_DIMENSIONS - 1];
+  index_type rcount[GFC_MAX_DIMENSIONS];
+  index_type rextent[GFC_MAX_DIMENSIONS];
+  index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type rdim;
   index_type rsize;
   char *rptr;
   /* s.* indicates the source array.  */
-  index_type scount[GFC_MAX_DIMENSIONS - 1];
-  index_type sextent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
+  index_type scount[GFC_MAX_DIMENSIONS];
+  index_type sextent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;
   index_type sdim;
   index_type ssize;
   const char *sptr;
   /* p.* indicates the pad array.  */
-  index_type pcount[GFC_MAX_DIMENSIONS - 1];
-  index_type pextent[GFC_MAX_DIMENSIONS - 1];
-  index_type pstride[GFC_MAX_DIMENSIONS - 1];
+  index_type pcount[GFC_MAX_DIMENSIONS];
+  index_type pextent[GFC_MAX_DIMENSIONS];
+  index_type pstride[GFC_MAX_DIMENSIONS];
   index_type pdim;
   index_type psize;
   const char *pptr;

@@ -47,25 +47,25 @@ reshape_4 (gfc_array_i4 * ret, gfc_array_i4 * source, shape_type * shape,
                       gfc_array_i4 * pad, shape_type * order)
 {
   /* r.* indicates the return array.  */
-  index_type rcount[GFC_MAX_DIMENSIONS - 1];
-  index_type rextent[GFC_MAX_DIMENSIONS - 1];
-  index_type rstride[GFC_MAX_DIMENSIONS - 1];
+  index_type rcount[GFC_MAX_DIMENSIONS];
+  index_type rextent[GFC_MAX_DIMENSIONS];
+  index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type rdim;
   index_type rsize;
   GFC_INTEGER_4 *rptr;
   /* s.* indicates the source array.  */
-  index_type scount[GFC_MAX_DIMENSIONS - 1];
-  index_type sextent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
+  index_type scount[GFC_MAX_DIMENSIONS];
+  index_type sextent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;
   index_type sdim;
   index_type ssize;
   const GFC_INTEGER_4 *sptr;
   /* p.* indicates the pad array.  */
-  index_type pcount[GFC_MAX_DIMENSIONS - 1];
-  index_type pextent[GFC_MAX_DIMENSIONS - 1];
-  index_type pstride[GFC_MAX_DIMENSIONS - 1];
+  index_type pcount[GFC_MAX_DIMENSIONS];
+  index_type pextent[GFC_MAX_DIMENSIONS];
+  index_type pstride[GFC_MAX_DIMENSIONS];
   index_type pdim;
   index_type psize;
   const GFC_INTEGER_4 *pptr;

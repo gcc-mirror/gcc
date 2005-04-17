@@ -1,3 +1,13 @@
+2005-04-17  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21075
+	* m4/reshape.m4 (reshape_`'rtype_kind):  Change dimension
+	of auxiliary arrays from GFC_MAX_DIMENSIONS - 1 to
+	GFC_MAX_DIMENSIONS.
+	* intrinsics/reshape_generic.c (reshape_generic):  Likewise.
+	* generated/reshape_i4.c:  Regenerated.
+	* generated/reshape_i8.c:  Regenerated.
+
 2005-04-17 Paul Thomas <pault@gcc.gnu.org>
 
 * io/list_read.c (eat_separator): at_eol = 1 replaced(zapped at some time?).
