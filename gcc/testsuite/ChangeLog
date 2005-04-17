@@ -1,3 +1,8 @@
+2005-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21025
+	* g++.dg/template/sizeof9.C: New test.
+
 2005-04-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/20927
