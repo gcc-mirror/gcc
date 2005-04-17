@@ -1,3 +1,12 @@
+2005-04-17  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/20490
+	Fix PR tree-optimization/20929
+
+	* tree-ssa-pre.c (create_expression_by_pieces): Use
+	force_gimple_operand on result of fold, value number
+	gimple_operand result.
+
 2005-04-17  Joseph S. Myers  <joseph@codesourcery.com>
 
 	Merge from mainline:

@@ -1317,16 +1317,37 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
     case tcc_binary:
       {
 	tree_stmt_iterator tsi;
+	tree forced_stmts;
 	tree genop1, genop2;
 	tree temp;
+	tree folded;
 	tree op1 = TREE_OPERAND (expr, 0);
 	tree op2 = TREE_OPERAND (expr, 1);
 	genop1 = find_or_generate_expression (block, op1, stmts);
 	genop2 = find_or_generate_expression (block, op2, stmts);
 	temp = create_tmp_var (TREE_TYPE (expr), "pretmp");
 	add_referenced_tmp_var (temp);
-	newexpr = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
-			       genop1, genop2));
+	
+	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
+			      genop1, genop2));
+	newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
+	if (forced_stmts)
+	  {
+	    tsi = tsi_start (forced_stmts);
+	    for (; !tsi_end_p (tsi); tsi_next (&tsi))
+	      {
+		tree stmt = tsi_stmt (tsi);
+		tree forcedname = TREE_OPERAND (stmt, 0);
+		tree forcedexpr = TREE_OPERAND (stmt, 1);
+		tree val = vn_lookup_or_add (forcedexpr, NULL);
+		vn_add (forcedname, val, NULL);		
+		bitmap_value_replace_in_set (NEW_SETS (block), forcedname); 
+		bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
+	      }
+
+	    tsi = tsi_last (stmts);
+	    tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
+	  }
 	newexpr = build (MODIFY_EXPR, TREE_TYPE (expr),
 			 temp, newexpr);
 	NECESSARY (newexpr) = 0;
@@ -1341,14 +1362,40 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
     case tcc_unary:
       {
 	tree_stmt_iterator tsi;
+	tree forced_stmts = NULL;
 	tree genop1;
 	tree temp;
+	tree folded;
 	tree op1 = TREE_OPERAND (expr, 0);
 	genop1 = find_or_generate_expression (block, op1, stmts);
 	temp = create_tmp_var (TREE_TYPE (expr), "pretmp");
 	add_referenced_tmp_var (temp);
-	newexpr = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
-			       genop1));
+	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
+			      genop1));
+	/* If the generated operand  is already GIMPLE min_invariant
+	   just use it instead of calling force_gimple_operand on it,
+	   since that may make it not invariant by copying it into an
+	   assignment.  */
+	if (!is_gimple_min_invariant (genop1))
+	  newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
+	else
+	  newexpr = genop1;
+	if (forced_stmts)
+	  {
+	    tsi = tsi_start (forced_stmts);
+	    for (; !tsi_end_p (tsi); tsi_next (&tsi))
+	      {
+		tree stmt = tsi_stmt (tsi);
+		tree forcedname = TREE_OPERAND (stmt, 0);
+		tree forcedexpr = TREE_OPERAND (stmt, 1);
+		tree val = vn_lookup_or_add (forcedexpr, NULL);
+		vn_add (forcedname, val, NULL);		
+		bitmap_value_replace_in_set (NEW_SETS (block), forcedname); 
+		bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
+	      }
+	    tsi = tsi_last (stmts);
+	    tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
+	  }
 	newexpr = build (MODIFY_EXPR, TREE_TYPE (expr),
 			 temp, newexpr);
 	name = make_ssa_name (temp, newexpr);
