@@ -2740,7 +2740,7 @@ update_ssa (unsigned update_flags)
     {
       if (sbitmap_first_set_bit (old_ssa_names) >= 0)
 	{
-	  /* insert_update_phi_nodes_for will call
+	  /* insert_updated_phi_nodes_for will call
 	     add_new_name_mapping when inserting new PHI nodes, so the
 	     set OLD_SSA_NAMES will grow while we are traversing it
 	     (but it will not gain any new members).  Copy
