@@ -1,3 +1,7 @@
+2005-04-17  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gennews (files): Update for GCC 4.0.
+
 2005-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	Merge from mainline:
