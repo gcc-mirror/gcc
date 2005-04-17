@@ -91,10 +91,6 @@
 	* config/mips/mips.c (mips16_insn_length): Remove reference to
 	JUMP_TABLES_IN_TEXT_SECTION.
 
-2005-04-14  Dale Johannesen  <dalej@apple.com>
-
-	* cp/tree.c (cp_tree_equal):  Handle SSA_NAME.
-
 2005-04-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/cpp.texi, doc/install.texi: Change references to GCC 3.5 to

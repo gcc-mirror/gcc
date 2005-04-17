@@ -5,6 +5,10 @@
 	which sizeof/alignof is dependent, rather than just whether we are
 	processing_template_decl.
 	
+2005-04-14  Dale Johannesen  <dalej@apple.com>
+
+	* tree.c (cp_tree_equal):  Handle SSA_NAME.
+
 2005-04-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20905
