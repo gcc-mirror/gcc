@@ -105,8 +105,6 @@ typedef struct ps_insn *ps_insn_ptr;
 #define PS_STAGE_COUNT(ps) ((PS_MAX_CYCLE (ps) - PS_MIN_CYCLE (ps) \
 			     + 1 + (ps)->ii - 1) / (ps)->ii)
 
-#define CFG_HOOKS cfg_layout_rtl_cfg_hooks
-
 /* A single instruction in the partial schedule.  */
 struct ps_insn
 {
