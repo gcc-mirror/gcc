@@ -1325,7 +1325,7 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
   if test $enable_libstdcxx_allocator_flag = auto; then
     case ${target_os} in
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
-        enable_libstdcxx_allocator_flag=mt
+        enable_libstdcxx_allocator_flag=new
         ;;
       *)
         enable_libstdcxx_allocator_flag=new
