@@ -1,3 +1,8 @@
+2005-04-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-vrp.c (compare_values): Check that VAL1 and VAL2 are
+	both pointers or both integers.
+
 2005-04-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/iris6.h (DRIVER_SELF_SPECS): Check -march as well as
