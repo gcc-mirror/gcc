@@ -1,3 +1,8 @@
+2005-04-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* combine.c (combine_simplify_rtx): Remove a transformation that
+	relies on an invalid assumption about rtl sign-extension semantics.
+
 2005-04-17  Richard Henderson  <rth@redhat.com>
 
 	PR target/20375

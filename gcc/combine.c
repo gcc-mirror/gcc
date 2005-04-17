@@ -3740,47 +3740,6 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
       SUBST (XEXP (x, 1), temp);
     }
 
-  /* If this is a PLUS, MINUS, or MULT, and the first operand is the
-     sign extension of a PLUS with a constant, reverse the order of the sign
-     extension and the addition. Note that this not the same as the original
-     code, but overflow is undefined for signed values.  Also note that the
-     PLUS will have been partially moved "inside" the sign-extension, so that
-     the first operand of X will really look like:
-         (ashiftrt (plus (ashift A C4) C5) C4).
-     We convert this to
-         (plus (ashiftrt (ashift A C4) C2) C4)
-     and replace the first operand of X with that expression.  Later parts
-     of this function may simplify the expression further.
-
-     For example, if we start with (mult (sign_extend (plus A C1)) C2),
-     we swap the SIGN_EXTEND and PLUS.  Later code will apply the
-     distributive law to produce (plus (mult (sign_extend X) C1) C3).
-
-     We do this to simplify address expressions.  */
-
-  if ((code == PLUS || code == MINUS || code == MULT)
-      && GET_CODE (XEXP (x, 0)) == ASHIFTRT
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == ASHIFT
-      && GET_CODE (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 1)) == CONST_INT
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-      && XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 1) == XEXP (XEXP (x, 0), 1)
-      && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
-      && (temp = simplify_binary_operation (ASHIFTRT, mode,
-					    XEXP (XEXP (XEXP (x, 0), 0), 1),
-					    XEXP (XEXP (x, 0), 1))) != 0)
-    {
-      rtx new
-	= simplify_shift_const (NULL_RTX, ASHIFT, mode,
-				XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 0),
-				INTVAL (XEXP (XEXP (x, 0), 1)));
-
-      new = simplify_shift_const (NULL_RTX, ASHIFTRT, mode, new,
-				  INTVAL (XEXP (XEXP (x, 0), 1)));
-
-      SUBST (XEXP (x, 0), simplify_gen_binary (PLUS, mode, new, temp));
-    }
-
   /* If this is a simple operation applied to an IF_THEN_ELSE, try
      applying it to the arms of the IF_THEN_ELSE.  This often simplifies
      things.  Check for cases where both arms are testing the same
