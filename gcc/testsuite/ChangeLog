@@ -1,3 +1,8 @@
+2005-04-17  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* gfortran.dg/wtruncate.f: New testcase.
+	* gfortran.dg/wtruncate.f90: New testcase.
+
 2005-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21025

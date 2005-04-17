@@ -458,6 +458,9 @@ restart:
 	    }
 	  while (c != '\n');
 
+	  /* Avoid truncation warnings for comment ending lines.  */
+	  gfc_current_locus.lb->truncated = 0;
+
 	  goto done;
 	}
 
@@ -525,6 +528,9 @@ restart:
 	      c = next_char ();
 	    }
 	  while (c != '\n');
+
+	  /* Avoid truncation warnings for comment ending lines.  */
+	  gfc_current_locus.lb->truncated = 0;
 	}
 
       if (c != '\n')
@@ -758,13 +764,13 @@ load_line (FILE * input, char **pbuf)
       else if (i >= buflen)
 	{			
 	  /* Truncate the rest of the line.  */
-	  trunc_flag = 1;
-
 	  for (;;)
 	    {
 	      c = fgetc (input);
 	      if (c == '\n' || c == EOF)
 		break;
+
+	      trunc_flag = 1;
 	    }
 
 	  ungetc ('\n', input);
