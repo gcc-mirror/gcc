@@ -1,3 +1,10 @@
+2005-04-17  David S. Miller  <davem@davemloft.net>
+
+	* include/private/gcconfig.h (sparc-linux): Use LINUX_STACKBOTTOM.
+	* os_dep.c (GC_linux_stack_base): Check for bug present in some
+	Sparc glibc variants where __libc_stack_end is erroneously set
+	to "1".  Fallback to procfs code in that case.
+
 2005-04-12  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.
