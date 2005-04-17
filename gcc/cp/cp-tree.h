@@ -3272,8 +3272,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
      matching the arguments is found.
    LOOKUP_NORMAL is just a combination of these two.
    LOOKUP_NONVIRTUAL means make a direct call to the member function found
-   LOOKUP_GLOBAL means search through the space of overloaded functions,
-     as well as the space of member functions.
    LOOKUP_ONLYCONVERTING means that non-conversion constructors are not tried.
    DIRECT_BIND means that if a temporary is created, it should be created so
      that it lives as long as the current variable bindings; otherwise it
@@ -3297,16 +3295,15 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define LOOKUP_COMPLAIN (1 << 1)
 #define LOOKUP_NORMAL (LOOKUP_PROTECT | LOOKUP_COMPLAIN)
 #define LOOKUP_NONVIRTUAL (1 << 2)
-#define LOOKUP_GLOBAL (1 << 3)
-#define LOOKUP_ONLYCONVERTING (1 << 4)
-#define DIRECT_BIND (1 << 5)
-#define LOOKUP_NO_CONVERSION (1 << 6)
-#define LOOKUP_DESTRUCTOR (1 << 7)
-#define LOOKUP_NO_TEMP_BIND (1 << 8)
-#define LOOKUP_PREFER_TYPES (1 << 9)
-#define LOOKUP_PREFER_NAMESPACES (1 << 10)
+#define LOOKUP_ONLYCONVERTING (1 << 3)
+#define DIRECT_BIND (1 << 4)
+#define LOOKUP_NO_CONVERSION (1 << 5)
+#define LOOKUP_DESTRUCTOR (1 << 6)
+#define LOOKUP_NO_TEMP_BIND (1 << 7)
+#define LOOKUP_PREFER_TYPES (1 << 8)
+#define LOOKUP_PREFER_NAMESPACES (1 << 9)
 #define LOOKUP_PREFER_BOTH (LOOKUP_PREFER_TYPES | LOOKUP_PREFER_NAMESPACES)
-#define LOOKUP_CONSTRUCTOR_CALLABLE (1 << 11)
+#define LOOKUP_CONSTRUCTOR_CALLABLE (1 << 10)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
