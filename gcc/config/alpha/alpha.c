@@ -5732,22 +5732,24 @@ escapes:
    variable number of arguments.  */
 
 static void
-alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum,
-			      enum machine_mode mode ATTRIBUTE_UNUSED,
-			      tree type ATTRIBUTE_UNUSED,
-			      int *pretend_size, int no_rtl)
+alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+			      tree type, int *pretend_size, int no_rtl)
 {
+  CUMULATIVE_ARGS cum = *pcum;
+
+  /* Skip the current argument.  */
+  FUNCTION_ARG_ADVANCE (cum, mode, type, 1);
+
 #if TARGET_ABI_UNICOSMK
   /* On Unicos/Mk, the standard subroutine __T3E_MISMATCH stores all register
      arguments on the stack. Unfortunately, it doesn't always store the first
      one (i.e. the one that arrives in $16 or $f16). This is not a problem
      with stdargs as we always have at least one named argument there.  */
-  int num_reg_words = pcum->num_reg_words;
-  if (num_reg_words < 6)
+  if (cum.num_reg_words < 6)
     {
       if (!no_rtl)
 	{
-	  emit_insn (gen_umk_mismatch_args (GEN_INT (num_reg_words + 1)));
+	  emit_insn (gen_umk_mismatch_args (GEN_INT (cum.num_reg_words)));
 	  emit_insn (gen_arg_home_umk ());
 	}
       *pretend_size = 0;
@@ -5759,7 +5761,7 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum,
      This is not only because we won't need the space, but because AP
      includes the current_pretend_args_size and we don't want to mess up
      any ap-relative addresses already made.  */
-  if (pcum->num_args < 6)
+  if (cum.num_args < 6)
     {
       if (!no_rtl)
 	{
@@ -5780,8 +5782,6 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum,
      not the most efficient way to implement varargs with just one register
      class, but it isn't worth doing anything more efficient in this rare
      case.  */
-  CUMULATIVE_ARGS cum = *pcum;
-
   if (cum >= 6)
     return;
 
@@ -5791,18 +5791,17 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum,
       rtx tmp;
 
       tmp = gen_rtx_MEM (BLKmode,
-		         plus_constant (virtual_incoming_args_rtx,
-				        (cum + 6) * UNITS_PER_WORD));
+			 plus_constant (virtual_incoming_args_rtx,
+					(cum + 6) * UNITS_PER_WORD));
       set_mem_alias_set (tmp, set);
       move_block_from_reg (16 + cum, tmp, 6 - cum);
 
       tmp = gen_rtx_MEM (BLKmode,
-		         plus_constant (virtual_incoming_args_rtx,
-				        cum * UNITS_PER_WORD));
+			 plus_constant (virtual_incoming_args_rtx,
+					cum * UNITS_PER_WORD));
       set_mem_alias_set (tmp, set);
-      move_block_from_reg (16 + (TARGET_FPREGS ? 32 : 0) + cum, tmp,
-			   6 - cum);
-     }
+      move_block_from_reg (16 + cum + TARGET_FPREGS*32, tmp, 6 - cum);
+    }
   *pretend_size = 12 * UNITS_PER_WORD;
 #endif
 }
@@ -5831,7 +5830,7 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
      integer argument register; that futzes with pretend_args_size,
      which changes the meaning of AP.  */
 
-  if (NUM_ARGS <= 6)
+  if (NUM_ARGS < 6)
     offset = TARGET_ABI_OPEN_VMS ? UNITS_PER_WORD : 6 * UNITS_PER_WORD;
   else
     offset = -6 * UNITS_PER_WORD + current_function_pretend_args_size;

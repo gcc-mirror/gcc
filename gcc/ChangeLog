@@ -1,3 +1,11 @@
+2005-04-17  Richard Henderson  <rth@redhat.com>
+
+	PR target/20375
+	* config/alpha/alpha.c (alpha_setup_incoming_varargs): Advance a copy
+	of CUMULATIVE_ARGS past the last named argument.
+	(alpha_va_start): Expect pretend_args_size only if strictly less than
+	6 named arguments.
+
 2005-04-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR middle-end/21024
