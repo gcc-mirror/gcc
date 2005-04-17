@@ -1,3 +1,11 @@
+2005-04-16  Anthony Green  <green@redhat.com>
+
+	* Makefile.am (gnu-xml.lo, javax-imageio.lo, javax-xml.lo,
+	gnu-java-beans.lo, gtk-awt-peer.lo) : Sort the output of all
+	"find" output in order to work around the libtool bug described in
+	PR libgcj/20693.
+	* Makefile.in: Rebuilt.
+
 2005-04-16  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/xml/pipeline/ValidationConsumer.java (Recognizer): Make

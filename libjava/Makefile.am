@@ -667,7 +667,7 @@ gnu-xml.lo: $(gnu_xml_source_files)
 ## touched.
 	$(MAKE) classes.stamp
 	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-xml.lo \
-		`find gnu/xml -name '*.class' -print`
+		`find gnu/xml -name '*.class' -print | sort -r`
 
 ## Depend on the sources, even though we are going to compile the
 ## classes.
@@ -678,7 +678,7 @@ javax-imageio.lo: $(javax_imageio_source_files)
 ## touched.
 	$(MAKE) classes.stamp
 	$(LTGCJCOMPILE) -findirect-dispatch -c -o javax-imageio.lo \
-		`find javax/imageio -name '*.class' -print`
+		`find javax/imageio -name '*.class' -print | sort -r`
 
 ## Depend on the sources, even though we are going to compile the
 ## classes.
@@ -689,7 +689,7 @@ javax-xml.lo: $(javax_xml_source_files)
 ## touched.
 	$(MAKE) classes.stamp
 	$(LTGCJCOMPILE) -findirect-dispatch -c -o javax-xml.lo \
-		`find javax/xml -name '*.class' -print`
+		`find javax/xml -name '*.class' -print | sort -r`
 
 ## Depend on the sources, even though we are going to compile the
 ## classes.
@@ -700,7 +700,7 @@ gnu-java-beans.lo: $(gnu_java_beans_source_files)
 ## touched.
 	$(MAKE) classes.stamp
 	$(LTGCJCOMPILE) -findirect-dispatch -c -o gnu-java-beans.lo \
-		`find gnu/java/beans -name '*.class' -print`
+		`find gnu/java/beans -name '*.class' -print | sort -r`
 
 ## Depend on the sources, even though we are going to compile the
 ## classes.
@@ -711,7 +711,7 @@ gtk-awt-peer.lo: $(gtk_awt_peer_sources)
 ## touched.
 	$(MAKE) classes.stamp
 	$(LTGCJCOMPILE) -findirect-dispatch -fjni -c -o gtk-awt-peer.lo \
-		`find gnu/java/awt/peer/gtk -name '*.class' -print`
+		`find gnu/java/awt/peer/gtk -name '*.class' -print | sort -r`
 
 ## ################################################################
 
