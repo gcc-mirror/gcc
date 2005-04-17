@@ -636,7 +636,7 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern tree c_common_truthvalue_conversion (tree);
 extern void c_apply_type_quals_to_decl (int, tree);
-extern tree c_sizeof_or_alignof_type (tree, enum tree_code, int);
+extern tree c_sizeof_or_alignof_type (tree, bool, int);
 extern tree c_alignof_expr (tree);
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
@@ -649,8 +649,8 @@ extern void overflow_warning (tree);
 extern void unsigned_conversion_warning (tree, tree);
 extern bool c_determine_visibility (tree);
 
-#define c_sizeof(T)  c_sizeof_or_alignof_type (T, SIZEOF_EXPR, 1)
-#define c_alignof(T) c_sizeof_or_alignof_type (T, ALIGNOF_EXPR, 1)
+#define c_sizeof(T)  c_sizeof_or_alignof_type (T, true, 1)
+#define c_alignof(T) c_sizeof_or_alignof_type (T, false, 1)
 
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types

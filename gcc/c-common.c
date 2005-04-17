@@ -2786,19 +2786,19 @@ c_common_get_alias_set (tree t)
    second parameter indicates which OPERATOR is being applied.  The COMPLAIN
    flag controls whether we should diagnose possibly ill-formed
    constructs or not.  */
+
 tree
-c_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
+c_sizeof_or_alignof_type (tree type, bool is_sizeof, int complain)
 {
   const char *op_name;
   tree value = NULL;
   enum tree_code type_code = TREE_CODE (type);
 
-  gcc_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR);
-  op_name = op == SIZEOF_EXPR ? "sizeof" : "__alignof__";
+  op_name = is_sizeof ? "sizeof" : "__alignof__";
 
   if (type_code == FUNCTION_TYPE)
     {
-      if (op == SIZEOF_EXPR)
+      if (is_sizeof)
 	{
 	  if (complain && (pedantic || warn_pointer_arith))
 	    pedwarn ("invalid application of %<sizeof%> to a function type");
@@ -2823,7 +2823,7 @@ c_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
     }
   else
     {
-      if (op == (enum tree_code) SIZEOF_EXPR)
+      if (is_sizeof)
 	/* Convert in case a char is more than one unit.  */
 	value = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
 			    size_int (TYPE_PRECISION (char_type_node)

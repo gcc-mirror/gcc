@@ -490,6 +490,11 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_unqualified_id (pp, TREE_OPERAND (t, 2));
       break;
 
+    case ARROW_EXPR:
+      pp_cxx_postfix_expression (pp, TREE_OPERAND (t, 0));
+      pp_cxx_arrow (pp);
+      break;
+
     default:
       pp_c_postfix_expression (pp_c_base (pp), t);
       break;
@@ -615,6 +620,20 @@ pp_cxx_unary_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_delete_expression (pp, t);
       break;
       
+    case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
+      pp_cxx_identifier (pp, code == SIZEOF_EXPR ? "sizeof" : "__alignof__");
+      pp_cxx_whitespace (pp);
+      if (TYPE_P (TREE_OPERAND (t, 0)))
+	{
+	  pp_cxx_left_paren (pp);
+	  pp_cxx_type_id (pp, TREE_OPERAND (t, 0));
+	  pp_cxx_right_paren (pp);
+	}
+      else
+	pp_unary_expression (pp, TREE_OPERAND (t, 0));
+      break;
+
     default:
       pp_c_unary_expression (pp_c_base (pp), t);
       break;
@@ -859,6 +878,7 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
     case TYPEID_EXPR:
     case PSEUDO_DTOR_EXPR:
     case AGGR_INIT_EXPR:
+    case ARROW_EXPR:
       pp_cxx_postfix_expression (pp, t);
       break;
 
@@ -870,6 +890,11 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
     case DELETE_EXPR:
     case VEC_DELETE_EXPR:
       pp_cxx_delete_expression (pp, t);
+      break;
+
+    case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
+      pp_cxx_unary_expression (pp, t);
       break;
 
     case CAST_EXPR:

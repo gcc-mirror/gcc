@@ -1,3 +1,14 @@
+2005-04-17  Ian Lance Taylor  <ian@airs.com>
+
+	* cp-tree.def: Add SIZEOF_EXPR, ARROW_EXPR and ALIGNOF_EXPR.
+	* cxx-pretty-print.c (pp_cxx_postfix_expression): Handle
+	ARROW_EXPR.
+	(pp_cxx_unary_expression): Handle SIZEOF_EXPR and ALIGNOF_EXPR.
+	(pp_cxx_expression): Handle ARROW_EXPR, SIZEOF_EXPR, and
+	ALIGNOF_EXPR.
+	* typeck.c (cxx_sizeof_or_alignof_type): Update call to
+	c_sizeof_or_alignof_type for change in parameter type.
+
 2005-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21025
