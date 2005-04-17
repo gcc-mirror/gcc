@@ -1,3 +1,14 @@
+2005-04-17  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (va_list_skip_additions): Only define if
+	TARGET_ABI_OSF.
+	(TARGET_STDARG_OPTIMIZE_HOOK): Likewise.
+	(alpha_stdarg_optimize_hook): Likewise.  Allow for one more round
+	of indirection through ssa names while looking for the gpr counter
+	field.
+	(alpha_setup_incoming_varargs) <TARGET_ABI_OSF>: Make use of the
+	saved va_list_gpr_size and va_list_fpr_size.
+
 2005-04-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-vrp.c (compare_values): Check that VAL1 and VAL2 are
