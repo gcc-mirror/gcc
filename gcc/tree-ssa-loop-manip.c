@@ -256,8 +256,6 @@ find_uses_to_rename_stmt (tree stmt, bitmap *use_blocks)
   tree var;
   basic_block bb = bb_for_stmt (stmt);
 
-  get_stmt_operands (stmt);
-
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
     find_uses_to_rename_use (bb, var, use_blocks);
 }
@@ -401,8 +399,6 @@ check_loop_closed_ssa_stmt (basic_block bb, tree stmt)
 {
   ssa_op_iter iter;
   tree var;
-
-  get_stmt_operands (stmt);
 
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
     check_loop_closed_ssa_use (bb, var);

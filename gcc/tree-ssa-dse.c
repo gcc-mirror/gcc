@@ -178,7 +178,6 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
   stmt_ann_t ann = stmt_ann (stmt);
   v_may_def_optype v_may_defs;
 
-  get_stmt_operands (stmt);
   v_may_defs = V_MAY_DEF_OPS (ann);
 
   /* If this statement has no virtual defs, then there is nothing

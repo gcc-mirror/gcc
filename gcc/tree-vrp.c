@@ -1443,7 +1443,6 @@ maybe_add_assert_expr (basic_block bb)
       ssa_op_iter i;
       
       stmt = bsi_stmt (si);
-      get_stmt_operands (stmt);
 
       /* Mark all the SSA names used by STMT in bitmap FOUND.  If STMT
 	 is inside the sub-graph of a conditional block, when we

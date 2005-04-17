@@ -930,10 +930,7 @@ tree_ssa_useless_type_conversion (tree expr)
 bool
 stmt_references_memory_p (tree stmt)
 {
-  stmt_ann_t ann;
-
-  get_stmt_operands (stmt);
-  ann = stmt_ann (stmt);
+  stmt_ann_t ann = stmt_ann (stmt);
 
   if (ann->has_volatile_ops)
     return true;

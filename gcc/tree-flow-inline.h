@@ -172,27 +172,6 @@ update_stmt_if_modified (tree t)
     update_stmt_operands (t);
 }
 
-static inline void 
-get_stmt_operands (tree stmt ATTRIBUTE_UNUSED)
-{
-#ifdef ENABLE_CHECKING
-  stmt_ann_t ann;
-                                                                                
-  /* The optimizers cannot handle statements that are nothing but a
-     _DECL.  This indicates a bug in the gimplifier.  */
-  gcc_assert (!SSA_VAR_P (stmt));
-                                                                                
-  /* Ignore error statements.  */
-  if (TREE_CODE (stmt) == ERROR_MARK)
-    return;
-                                                                                
-  ann = get_stmt_ann (stmt);
-  gcc_assert (!ann->modified);
-
-  return;
-#endif
-}
-
 /* Return true if T is marked as modified, false otherwise.  */
 static inline bool
 stmt_modified_p (tree t)

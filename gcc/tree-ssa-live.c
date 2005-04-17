@@ -367,7 +367,6 @@ create_ssa_var_map (int flags)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
         {
 	  stmt = bsi_stmt (bsi);
-	  get_stmt_operands (stmt);
 
 	  /* Register USE and DEF operands in each statement.  */
 	  FOR_EACH_SSA_TREE_OPERAND (use , stmt, iter, SSA_OP_USE)
@@ -612,7 +611,6 @@ calculate_live_on_entry (var_map map)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
         {
 	  stmt = bsi_stmt (bsi);
-	  get_stmt_operands (stmt);
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
 	    {
@@ -1323,8 +1321,6 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
         {
 	  bool is_a_copy = false;
 	  tree stmt = bsi_stmt (bsi);
-
-	  get_stmt_operands (stmt);
 
 	  /* A copy between 2 partitions does not introduce an interference 
 	     by itself.  If they did, you would never be able to coalesce 

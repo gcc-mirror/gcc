@@ -220,8 +220,6 @@ movement_possibility (tree stmt)
     {
       /* If we perform unswitching, force the operands of the invariant
 	 condition to be moved out of the loop.  */
-      get_stmt_operands (stmt);
-
       return MOVE_POSSIBLE;
     }
 
@@ -230,8 +228,6 @@ movement_possibility (tree stmt)
 
   if (stmt_ends_bb_p (stmt))
     return MOVE_IMPOSSIBLE;
-
-  get_stmt_operands (stmt);
 
   if (stmt_ann (stmt)->has_volatile_ops)
     return MOVE_IMPOSSIBLE;
@@ -622,7 +618,6 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	     The multiply stmt is not invariant, so update iterator
 	     and avoid rescanning.  */
 	  bsi_replace (&bsi, stmt1, true);
-	  get_stmt_operands (stmt1);  /* Should not be necessary.  */
 	  bsi_insert_after (&bsi, stmt2, BSI_NEW_STMT);
 	  SSA_NAME_DEF_STMT (lhs) = stmt2;
 

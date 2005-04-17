@@ -1885,7 +1885,6 @@ rewrite_trees (var_map map, tree *values)
 	  stmt_ann_t ann;
 	  ssa_op_iter iter;
 
-	  get_stmt_operands (stmt);
 	  ann = stmt_ann (stmt);
 	  changed = false;
 

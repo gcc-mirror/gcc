@@ -1294,7 +1294,6 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
   phi = SSA_NAME_DEF_STMT (inductionvar);
   if (TREE_CODE (phi) != PHI_NODE)
     {
-      get_stmt_operands (phi);
       uses = STMT_USE_OPS (phi);
 
       if (!uses)

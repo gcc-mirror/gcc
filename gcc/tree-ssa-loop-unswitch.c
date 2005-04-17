@@ -128,7 +128,6 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
     return NULL_TREE;
 
   /* Condition must be invariant.  */
-  get_stmt_operands (stmt);
   uses = STMT_USE_OPS (stmt);
   for (i = 0; i < NUM_USES (uses); i++)
     {

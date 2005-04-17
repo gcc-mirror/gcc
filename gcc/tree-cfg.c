@@ -4730,9 +4730,6 @@ tree_duplicate_bb (basic_block bb)
       if (TREE_CODE (stmt) == LABEL_EXPR)
 	continue;
 
-      /* Record the definitions.  */
-      get_stmt_operands (stmt);
-
       FOR_EACH_SSA_TREE_OPERAND (val, stmt, op_iter, SSA_OP_ALL_DEFS)
 	mark_for_rewrite (val);
 
@@ -4946,7 +4943,6 @@ rewrite_to_new_ssa_names_bb (basic_block bb, htab_t map)
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
       stmt = bsi_stmt (bsi);
-      get_stmt_operands (stmt);
       ann = stmt_ann (stmt);
 
       uses = USE_OPS (ann);

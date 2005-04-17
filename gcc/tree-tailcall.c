@@ -394,8 +394,6 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (TREE_CODE (stmt) == LABEL_EXPR)
 	continue;
 
-      get_stmt_operands (stmt);
-
       /* Check for a call.  */
       if (TREE_CODE (stmt) == MODIFY_EXPR)
 	{
@@ -687,7 +685,6 @@ eliminate_tail_call (struct tailcall *t)
   block_stmt_iterator bsi;
 
   stmt = bsi_stmt (t->call_bsi);
-  get_stmt_operands (stmt);
   ann = stmt_ann (stmt);
   bb = t->call_block;
 

@@ -1553,7 +1553,6 @@ find_invariants_stmt (struct ivopts_data *data, tree stmt)
     n = PHI_NUM_ARGS (stmt);
   else
     {
-      get_stmt_operands (stmt);
       uses = STMT_USE_OPS (stmt);
       n = NUM_USES (uses);
     }
@@ -4993,8 +4992,6 @@ protect_loop_closed_ssa_form (edge exit, tree stmt)
   vuse_optype vuses;
   v_may_def_optype v_may_defs;
   unsigned i;
-
-  get_stmt_operands (stmt);
 
   uses = STMT_USE_OPS (stmt);
   for (i = 0; i < NUM_USES (uses); i++)

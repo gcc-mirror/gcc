@@ -355,8 +355,6 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
       return;
     }
 
-  get_stmt_operands (stmt);
-
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
     {
       if (is_global_var (SSA_NAME_VAR (def)))
@@ -538,8 +536,6 @@ propagate_necessity (struct edge_list *el)
 	     which feed this statement's uses as necessary.  */
 	  ssa_op_iter iter;
 	  tree use;
-
-	  get_stmt_operands (i);
 
 	  /* The operands of V_MAY_DEF expressions are also needed as they
 	     represent potential definitions that may reach this
