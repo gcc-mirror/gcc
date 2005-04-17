@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
    easier to write.  Default to the mips2 ISA for the O32 ABI.  */
 #define DRIVER_SELF_SPECS \
   "%{!mabi=*: -mabi=n32}", \
-  "%{mabi=32: %{!mips*: -mips2}}"
+  "%{mabi=32: %{!mips*: %{!march*: -mips2}}}"
 
 /* Force the generation of dwarf .debug_frame sections even if not
    compiling -g.  This guarantees that we can unwind the stack.  */

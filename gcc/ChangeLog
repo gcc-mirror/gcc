@@ -1,3 +1,8 @@
+2005-04-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/iris6.h (DRIVER_SELF_SPECS): Check -march as well as
+	-mipsN before forcing a default of -mips2.
+
 2005-04-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* predict.h (IS_TAKEN): Remove.
