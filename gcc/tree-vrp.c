@@ -286,14 +286,13 @@ compare_values (tree val1, tree val2)
   if (val1 == val2)
     return 0;
 
+  /* Below we rely on the fact that VAL1 and VAL2 are both pointers or
+     both integers.  */
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (val1))
+	      == POINTER_TYPE_P (TREE_TYPE (val2)));
+
   /* Do some limited symbolic comparisons.  */
-  /* FIXME: The second check of POINTER_TYPE_P should not be necessary
-     because we should be comparing values of the same type here, but
-     for whatever reason, the front end throws us a type mismatched
-     comparison.  For now, work around the problem by checking both
-     types.  See PR 21021 and PR 21024.  */
-  if (!POINTER_TYPE_P (TREE_TYPE (val1))
-      && !POINTER_TYPE_P (TREE_TYPE (val2)))
+  if (!POINTER_TYPE_P (TREE_TYPE (val1)))
     {
       /* We can determine some comparisons against +INF and -INF even
 	 if the other value is an expression.  */
@@ -406,13 +405,7 @@ compare_values (tree val1, tree val2)
   if (!is_gimple_min_invariant (val1) || !is_gimple_min_invariant (val2))
     return -2;
 
-  /* FIXME: The second check of POINTER_TYPE_P should not be necessary
-     because we should be comparing values of the same type here, but
-     for whatever reason, the front end throws us a type mismatched
-     comparison.  For now, work around the problem by checking both
-     types.  See PR 21021 and PR 21024.  */
-  if (!POINTER_TYPE_P (TREE_TYPE (val1))
-      && !POINTER_TYPE_P (TREE_TYPE (val2)))
+  if (!POINTER_TYPE_P (TREE_TYPE (val1)))
     return tree_int_cst_compare (val1, val2);
   else
     {
