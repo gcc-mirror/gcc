@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004
+@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005
 @c Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
@@ -530,12 +530,14 @@ ignored.  The default is 8.
 
 @item -fexec-charset=@var{charset}
 @opindex fexec-charset
+@cindex character set, execution
 Set the execution character set, used for string and character
 constants.  The default is UTF-8.  @var{charset} can be any encoding
 supported by the system's @code{iconv} library routine.
 
 @item -fwide-exec-charset=@var{charset}
 @opindex fwide-exec-charset
+@cindex character set, wide execution
 Set the wide execution character set, used for wide string and
 character constants.  The default is UTF-32 or UTF-16, whichever
 corresponds to the width of @code{wchar_t}.  As with
@@ -545,6 +547,7 @@ problems with encodings that do not fit exactly in @code{wchar_t}.
 
 @item -finput-charset=@var{charset}
 @opindex finput-charset
+@cindex character set, input
 Set the input character set, used for translation from the character
 set of the input file to the source character set used by GCC@.  If the
 locale does not specify, or GCC cannot get this information from the

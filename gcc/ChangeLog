@@ -1,3 +1,24 @@
+2005-04-17  Joseph S. Myers  <joseph@codesourcery.com>
+
+	Merge from mainline:
+
+	2005-02-28  Geert Bosch  <bosch@gnat.com>
+
+		PR ada/15977
+		* doc/contrib.texi: List contributors for Ada front end
+
+	2005-03-14  Geoffrey Keating  <geoffk@apple.com>
+
+		* doc/cppopts.texi (-fexec-charset): Add concept index
+		entry.
+		(-fwide-exec-charset): Likewise.
+		(-finput-charset): Likewise.
+
+	2005-04-15  David Edelsohn  <edelsohn@gnu.org>
+
+		* doc/install.texi (*-ibm-aix*): Add comment about system
+		limits.
+
 2005-04-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* combine.c (combine_simplify_rtx): Remove a transformation that

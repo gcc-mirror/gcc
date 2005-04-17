@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,
-@c 2001,2002,2003,2004 Free Software Foundation, Inc.
+@c 2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -981,6 +981,153 @@ Xiaoqiang Zhang for work on gfortran.
 Gilles Zunino for help porting Java to Irix.
 
 @end itemize
+
+The following people are recognized for their contributions to GNAT,
+the Ada front end of GCC:
+@itemize @bullet
+@item
+Bernard Banner
+
+@item
+Romain Berrendonner
+
+@item
+Geert Bosch
+
+@item
+Emmanuel Briot
+
+@item
+Joel Brobecker
+
+@item
+Ben Brosgol
+
+@item
+Vincent Celier
+
+@item
+Arnaud Charlet
+
+@item
+Chien Chieng
+
+@item
+Cyrille Comar
+
+@item
+Cyrille Crozes
+
+@item
+Robert Dewar
+
+@item
+Gary Dismukes
+
+@item
+Robert Duff
+
+@item
+Ed Falis
+
+@item
+Ramon Fernandez
+
+@item
+Sam Figueroa
+
+@item
+Vasiliy Fofanov
+
+@item
+Michael Friess
+
+@item
+Franco Gasperoni
+
+@item
+Ted Giering
+
+@item
+Matthew Gingell
+
+@item
+Laurent Guerby
+
+@item
+Jerome Guitton
+
+@item
+Olivier Hainque
+
+@item
+Jerome Hugues
+
+@item
+Hristian Kirtchev
+
+@item
+Jerome Lambourg
+
+@item
+Bruno Leclerc
+
+@item
+Albert Lee
+
+@item
+Sean McNeil
+
+@item
+Javier Miranda
+
+@item
+Laurent Nana
+
+@item
+Pascal Obry
+
+@item
+Dong-Ik Oh
+
+@item
+Laurent Pautet
+
+@item
+Brett Porter
+
+@item
+Thomas Quinot
+
+@item
+Nicolas Roche
+
+@item
+Pat Rogers
+
+@item
+Jose Ruiz
+
+@item
+Douglas Rupp
+
+@item
+Sergey Rybin
+
+@item
+Gail Schenker
+
+@item
+Ed Schonberg
+
+@item
+Nicolas Setton
+
+@item
+Samuel Tardieu
+
+@end itemize
+
 
 In addition to the above, all of which also contributed time and energy in
 testing GCC, we would like to thank the following for their contributions
