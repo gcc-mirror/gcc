@@ -5582,6 +5582,7 @@ alpha_build_builtin_va_list (void)
   return record;
 }
 
+#if TARGET_ABI_OSF
 /* Helper function for alpha_stdarg_optimize_hook.  Skip over casts
    and constant additions.  */
 
@@ -5685,17 +5686,16 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, tree lhs, tree rhs)
 
       arg1 = va_list_skip_additions (PHI_ARG_DEF (offset, 0));
       arg2 = va_list_skip_additions (PHI_ARG_DEF (offset, 1));
-      if (TREE_CODE (arg1) != COMPONENT_REF)
+      if (TREE_CODE (arg2) != MINUS_EXPR && TREE_CODE (arg2) != PLUS_EXPR)
 	{
 	  tree tem = arg1;
-
 	  arg1 = arg2;
 	  arg2 = tem;
-	}
 
-      if ((TREE_CODE (arg2) != MINUS_EXPR
-	   && TREE_CODE (arg2) != PLUS_EXPR)
-	  || !host_integerp (TREE_OPERAND (arg2, 1), 0))
+	  if (TREE_CODE (arg2) != MINUS_EXPR && TREE_CODE (arg2) != PLUS_EXPR)
+	    goto escapes;
+	}
+      if (!host_integerp (TREE_OPERAND (arg2, 1), 0))
 	goto escapes;
 
       sub = tree_low_cst (TREE_OPERAND (arg2, 1), 0);
@@ -5705,8 +5705,13 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, tree lhs, tree rhs)
 	goto escapes;
 
       arg2 = va_list_skip_additions (TREE_OPERAND (arg2, 0));
-      if (arg1 != arg2
-	  || TREE_CODE (arg1) != COMPONENT_REF
+      if (arg1 != arg2)
+	goto escapes;
+
+      if (TREE_CODE (arg1) == SSA_NAME)
+	arg1 = va_list_skip_additions (arg1);
+
+      if (TREE_CODE (arg1) != COMPONENT_REF
 	  || TREE_OPERAND (arg1, 1) != va_list_gpr_counter_field
 	  || get_base_address (arg1) != base)
 	goto escapes;
@@ -5727,6 +5732,7 @@ escapes:
   si->va_list_escapes = true;
   return false;
 }
+#endif
 
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments.  */
@@ -5787,21 +5793,38 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 
   if (!no_rtl)
     {
-      int set = get_varargs_alias_set ();
+      int count, set = get_varargs_alias_set ();
       rtx tmp;
 
-      tmp = gen_rtx_MEM (BLKmode,
-			 plus_constant (virtual_incoming_args_rtx,
-					(cum + 6) * UNITS_PER_WORD));
-      set_mem_alias_set (tmp, set);
-      move_block_from_reg (16 + cum, tmp, 6 - cum);
+      count = cfun->va_list_gpr_size / UNITS_PER_WORD;
+      if (count > 6 - cum)
+	count = 6 - cum;
 
-      tmp = gen_rtx_MEM (BLKmode,
-			 plus_constant (virtual_incoming_args_rtx,
-					cum * UNITS_PER_WORD));
-      set_mem_alias_set (tmp, set);
-      move_block_from_reg (16 + cum + TARGET_FPREGS*32, tmp, 6 - cum);
-    }
+      /* Detect whether integer registers or floating-point registers
+	 are needed by the detected va_arg statements.  See above for
+	 how these values are computed.  Note that the "escape" value
+	 is VA_LIST_MAX_FPR_SIZE, which is 255, which has both of 
+	 these bits set.  */
+      gcc_assert ((VA_LIST_MAX_FPR_SIZE & 3) == 3);
+
+      if (cfun->va_list_fpr_size & 1)
+	{
+	  tmp = gen_rtx_MEM (BLKmode,
+			     plus_constant (virtual_incoming_args_rtx,
+					    (cum + 6) * UNITS_PER_WORD));
+	  set_mem_alias_set (tmp, set);
+	  move_block_from_reg (16 + cum, tmp, count);
+	}
+
+      if (cfun->va_list_fpr_size & 2)
+	{
+	  tmp = gen_rtx_MEM (BLKmode,
+			     plus_constant (virtual_incoming_args_rtx,
+					    cum * UNITS_PER_WORD));
+	  set_mem_alias_set (tmp, set);
+	  move_block_from_reg (16 + cum + TARGET_FPREGS*32, tmp, count);
+	}
+     }
   *pretend_size = 12 * UNITS_PER_WORD;
 #endif
 }
@@ -10300,6 +10323,8 @@ alpha_init_libfuncs (void)
 #define TARGET_ASM_OUTPUT_MI_THUNK alpha_output_mi_thunk_osf
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+#undef TARGET_STDARG_OPTIMIZE_HOOK
+#define TARGET_STDARG_OPTIMIZE_HOOK alpha_stdarg_optimize_hook
 #endif
 
 #undef TARGET_RTX_COSTS
@@ -10352,9 +10377,6 @@ alpha_init_libfuncs (void)
   (TARGET_DEFAULT | TARGET_CPU_DEFAULT | TARGET_DEFAULT_EXPLICIT_RELOCS)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION alpha_handle_option
-
-#undef TARGET_STDARG_OPTIMIZE_HOOK
-#define TARGET_STDARG_OPTIMIZE_HOOK alpha_stdarg_optimize_hook
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
