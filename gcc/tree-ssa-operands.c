@@ -50,8 +50,6 @@ Boston, MA 02111-1307, USA.  */
    The routines in this file are concerned with creating this operand cache 
    from a stmt tree.
 
-   get_stmt_operands() in the primary entry point. 
-
    The operand tree is the parsed by the various get_* routines which look 
    through the stmt tree for the occurrence of operands which may be of 
    interest, and calls are made to the append_* routines whenever one is 
@@ -81,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
 */
 
 
-/* Flags to describe operand properties in get_stmt_operands and helpers.  */
+/* Flags to describe operand properties in helpers.  */
 
 /* By default, operands are loaded.  */
 #define opf_none	0
@@ -520,9 +518,7 @@ finalize_ssa_uses (use_optype *old_ops_p, tree stmt)
   {
     unsigned x;
     /* If the pointer to the operand is the statement itself, something is
-       wrong.  It means that we are pointing to a local variable (the 
-       initial call to get_stmt_operands does not pass a pointer to a 
-       statement).  */
+       wrong.  It means that we are pointing to a local variable.  */
     for (x = 0; x < num; x++)
       gcc_assert (*(VARRAY_TREE_PTR (build_uses, x)) != stmt);
   }
@@ -1219,9 +1215,7 @@ swap_tree_operands (tree *exp0, tree *exp1)
   *exp1 = op0;
 }
 
-/* Get the operands of statement STMT.  Note that repeated calls to
-   get_stmt_operands for the same statement will do nothing until the
-   statement is marked modified by a call to mark_stmt_modified().  */
+/* Get the operands of statement STMT.  */
 
 void
 update_stmt_operands (tree stmt)
@@ -1229,8 +1223,7 @@ update_stmt_operands (tree stmt)
   stmt_ann_t ann;
   stmt_operands_t old_operands;
 
-  /* If get_stmt_operands is called before SSA is initialized, dont
-  do anything.  */
+  /* Don't do anything if we are called before SSA is initialized.  */
   if (build_defs == NULL)
     return;
   /* The optimizers cannot handle statements that are nothing but a
@@ -1249,9 +1242,7 @@ update_stmt_operands (tree stmt)
   build_ssa_operands (stmt, ann, &old_operands, &(ann->operands));
   free_ssa_operands (&old_operands);
 
-  /* Clear the modified bit for STMT.  Subsequent calls to
-     get_stmt_operands for this statement will do nothing until the
-     statement is marked modified by a call to mark_stmt_modified().  */
+  /* Clear the modified bit for STMT.  */
   ann->modified = 0;
 
   timevar_pop (TV_TREE_OPS);

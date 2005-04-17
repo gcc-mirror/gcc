@@ -462,7 +462,6 @@ sink_code_in_bb (basic_block bb)
       tree stmt = bsi_stmt (bsi);	
       block_stmt_iterator tobsi;
       tree sinkstmt;
-      get_stmt_operands (stmt);
       
       sinkstmt = statement_sink_location (stmt, bb);
       if (!sinkstmt)

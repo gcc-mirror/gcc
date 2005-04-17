@@ -146,7 +146,6 @@ vect_create_index_for_vector_ref (loop_vec_info loop_vinfo)
   create_iv (init, step, NULL_TREE, loop, &incr_bsi, insert_after,
 	&indx_before_incr, &indx_after_incr);
   incr = bsi_stmt (incr_bsi);
-  get_stmt_operands (incr);
   set_stmt_info (stmt_ann (incr), new_stmt_vec_info (incr, loop_vinfo));
 
   return indx_before_incr;

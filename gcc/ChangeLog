@@ -7,6 +7,14 @@
 
 	* c-parser.c (N_C_TTYPES): Remove.
 
+	* tree-flow-inline.h (get_stmt_operands): Remove.
+	* lambda-code.c, tree-ssa-loop-unswitch.c,
+	tree-ssa-operands.c, tree-ssa-pre.c, tree-ssa-propagate.c,
+	tree-ssa-sink.c, tree-ssa.c, tree-tailcall.c,
+	tree-vect-transform.c, tree-vectorizer.c, tree-vrp.c): Remove
+	calls to get_stmt_operands.
+	* doc/tree-ssa.texi: Don't mention get_stmt_operands.
+
 2005-04-17  Richard Henderson  <rth@redhat.com>
 
 	PR target/20375

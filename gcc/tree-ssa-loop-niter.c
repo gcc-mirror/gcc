@@ -1028,7 +1028,6 @@ chain_of_csts_start (struct loop *loop, tree x)
   if (TREE_CODE (stmt) != MODIFY_EXPR)
     return NULL_TREE;
 
-  get_stmt_operands (stmt);
   if (NUM_VUSES (STMT_VUSE_OPS (stmt)) > 0)
     return NULL_TREE;
   if (NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) > 0)

@@ -1032,8 +1032,6 @@ substitute_and_fold (prop_value_t *prop_value)
           bool replaced_address, did_replace;
 	  tree stmt = bsi_stmt (i);
 
-	  get_stmt_operands (stmt);
-
 	  /* Replace the statement with its folded version and mark it
 	     folded.  */
 	  if (dump_file && (dump_flags & TDF_DETAILS))

@@ -1958,7 +1958,6 @@ compute_avail (void)
 
 	  stmt = bsi_stmt (bsi);
 	  ann = stmt_ann (stmt);
-	  get_stmt_operands (stmt);
 
 	  /* We are only interested in assignments of the form
 	     X_i = EXPR, where EXPR represents an "interesting"
@@ -2175,8 +2174,6 @@ remove_dead_inserted_code (void)
 	     which feed this statement's uses as necessary.  */
 	  ssa_op_iter iter;
 	  tree use;
-
-	  get_stmt_operands (t);
 
 	  /* The operands of V_MAY_DEF expressions are also needed as they
 	     represent potential definitions that may reach this

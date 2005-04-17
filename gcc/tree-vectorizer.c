@@ -282,7 +282,6 @@ rename_variables_in_bb (basic_block bb)
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
       stmt = bsi_stmt (bsi);
-      get_stmt_operands (stmt);
       ann = stmt_ann (stmt);
 
       uses = USE_OPS (ann);
@@ -1485,7 +1484,6 @@ new_loop_vec_info (struct loop *loop)
 	  tree stmt = bsi_stmt (si);
 	  stmt_ann_t ann;
 
-	  get_stmt_operands (stmt);
 	  ann = stmt_ann (stmt);
 	  set_stmt_info (ann, new_stmt_vec_info (stmt, res));
 	}

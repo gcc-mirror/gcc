@@ -475,8 +475,6 @@ likely_value (tree stmt)
       && TREE_CODE (stmt) != SWITCH_EXPR)
     return VARYING;
 
-  get_stmt_operands (stmt);
-
   found_constant = false;
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE|SSA_OP_VUSE)
     {
@@ -524,8 +522,6 @@ ccp_initialize (void)
         {
 	  bool is_varying = false;
 	  tree stmt = bsi_stmt (i);
-
-	  get_stmt_operands (stmt);
 
 	  if (likely_value (stmt) == VARYING)
 

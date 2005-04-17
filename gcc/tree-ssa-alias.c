@@ -656,7 +656,6 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	     statement.  Note that this will miss all the addresses taken
 	     in PHI nodes (those are discovered while following the use-def
 	     chains).  */
-	  get_stmt_operands (stmt);
 	  addr_taken = addresses_taken (stmt);
 	  if (addr_taken)
 	    EXECUTE_IF_SET_IN_BITMAP (addr_taken, 0, i, bi)
