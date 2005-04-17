@@ -6998,44 +6998,36 @@ msgid "Statement makes aliased stores, but has no V_MAY_DEFS"
 msgstr "Anweisung erzeugt Alias-Speicherzugriffe, hat aber kein V_MAY_DEFS"
 
 #: tree-ssa.c:710
-#, fuzzy
 msgid "verify_ssa failed."
-msgstr "verify_flow_info gescheitert"
+msgstr "verify_ssa gescheitert."
 
 #: tree-ssa.c:1376
-#, fuzzy
 msgid "%H%qD is used uninitialized in this function"
-msgstr "%J»%D« könnte in dieser Funktion uninitialisiert bleiben"
+msgstr "%J%qD wird in dieser Funktion uninitialisiert verwendet"
 
 #: tree-ssa.c:1401
-#, fuzzy
 msgid "%H%qD may be used uninitialized in this function"
-msgstr "%J»%D« könnte in dieser Funktion uninitialisiert bleiben"
+msgstr "%H%qD könnte in dieser Funktion uninitialisiert verwendet werden"
 
 #: tree-vect-transform.c:598
-#, fuzzy
 msgid "no support for reduction/induction"
-msgstr "Eingebaute 3DNow!-Funktionen nicht unterstützen"
+msgstr "keine Unterstützung für Reduktion/Induktion"
 
 #: tree-vect-transform.c:624
-#, fuzzy
 msgid "unsupported defining stmt"
-msgstr "nicht unterstützte Kombination: %s"
+msgstr "nicht unterstützte Definitionsanweisung"
 
 #: tree.c:3272
-#, fuzzy
 msgid "%Jfunction %qD definition is marked dllimport."
-msgstr "%JFunktionsdefinition von »%D« ist als »dllimport« markiert"
+msgstr "%JFunktionsdefinition von %qD ist als »dllimport« markiert."
 
 #: tree.c:3280
-#, fuzzy
 msgid "%Jvariable %qD definition is marked dllimport."
-msgstr "%JVariablendefinition von »%d« ist als dllimport markiert."
+msgstr "%JVariablendefinition von %qD ist als dllimport markiert."
 
 #: tree.c:3300
-#, fuzzy
 msgid "%Jexternal linkage required for symbol %qD because of %qs attribute."
-msgstr "%Jfür Symbol »%D« wird wegen des Attributes »%s« externe Bindung benötigt"
+msgstr "%Jfür Symbol %qD wird wegen des Attributes %qs externe Bindung benötigt"
 
 #: tree.c:4453
 msgid "arrays of functions are not meaningful"
@@ -7050,19 +7042,19 @@ msgid "invalid initializer for bit string"
 msgstr "ungültige Initialisierung für Bitstring"
 
 #: tree.c:5482
-#, fuzzy, c-format
+#, c-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
-msgstr "Baumprüfung: %s erwartet, haben %s in %s, bei %s:%d"
+msgstr "Baumprüfung: %s, haben %s in %s, bei %s:%d"
 
 #: tree.c:5519
-#, fuzzy, c-format
+#, c-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
-msgstr "Baumprüfung: %s erwartet, haben %s in %s, bei %s:%d"
+msgstr "Baumprüfung: nichts von %s erwartet, haben %s in %s, bei %s:%d"
 
 #: tree.c:5532
-#, fuzzy, c-format
+#, c-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "Baumprüfung: Klasse %c erwartet, haben '%c' (%s) in %s, bei %s:%d"
+msgstr "Baumprüfung: Klasse %qs erwartet, haben %qs (%s) in %s, bei %s:%d"
 
 #: tree.c:5546
 #, c-format
@@ -7070,9 +7062,9 @@ msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr "Baumprüfung: auf Elt %d von tree_vec mit %d Elts in %s bei %s:%d zugegriffen"
 
 #: tree.c:5558
-#, fuzzy, c-format
+#, c-format
 msgid "tree check: accessed elt %d of phi_node with %d elts in %s, at %s:%d"
-msgstr "Baumprüfung: auf Elt %d von tree_vec mit %d Elts in %s bei %s:%d zugegriffen"
+msgstr "Baumprüfung: auf Elt %d von phi_node mit %d Elts in %s bei %s:%d zugegriffen"
 
 #: tree.c:5570
 #, c-format
@@ -7084,62 +7076,52 @@ msgid "%J%D causes a section type conflict"
 msgstr "%J%D löst einen Abschnittstypkonflikt aus"
 
 #: varasm.c:911
-#, fuzzy
 msgid "%Jregister name not specified for %qD"
-msgstr "%Jfür »%D« wurde kein Registername angegeben"
+msgstr "%Jfür %qD wurde kein Registername angegeben"
 
 #: varasm.c:913
-#, fuzzy
 msgid "%Jinvalid register name for %qD"
-msgstr "%Jungültiger Registername für »%D«"
+msgstr "%Jungültiger Registername für %qD"
 
 #: varasm.c:915
-#, fuzzy
 msgid "%Jdata type of %qD isn%'t suitable for a register"
-msgstr "%JDatentyp von »%D« eignet sich nicht für Register"
+msgstr "%JDatentyp von %qD ist nicht für Register geeignet"
 
 #: varasm.c:918
-#, fuzzy
 msgid "%Jregister specified for %qD isn%'t suitable for data type"
-msgstr "%Jfür »%D« angegebenes Register eignet sich nicht für Datentyp"
+msgstr "%Jfür %qD angegebenes Register eignet sich nicht für Datentyp"
 
 #: varasm.c:928
 msgid "global register variable has initial value"
-msgstr "globle Registervariable hat Anfangswert"
+msgstr "globale Registervariable hat Anfangswert"
 
 #: varasm.c:931
-#, fuzzy
 msgid "volatile register variables don%'t work as you might wish"
-msgstr "»volatile«-Registervariablen funktionieren oft nicht so wie erhofft"
+msgstr "»volatile«-Registervariablen funktionieren nicht so wie erhofft"
 
 #: varasm.c:968
-#, fuzzy
 msgid "%Jregister name given for non-register variable %qD"
-msgstr "%JRegistername für Nicht-Registervariable »%D« verwendet"
+msgstr "%JRegistername für Nicht-Registervariable %qD angegeben"
 
 #: varasm.c:1046
-#, fuzzy
 msgid "global destructors not supported on this target"
-msgstr "Kellergrenzen nicht für dieses Ziel unterstützt"
+msgstr "globale Destrukoren werden für dieses Ziel nicht unterstützt"
 
 #: varasm.c:1107
-#, fuzzy
 msgid "global constructors not supported on this target"
-msgstr "Kellergrenzen nicht für dieses Ziel unterstützt"
+msgstr "globale Konstruktoren werden für dieses Ziel nicht unterstützt"
 
 #: varasm.c:1607
-#, fuzzy
 msgid "%Jalignment of %qD is greater than maximum object file alignment.  Using %d"
-msgstr "%JAusrichtung von »%D ist größer als maximale Objektdateiausrichtung. %d verwendet«"
+msgstr "%JAusrichtung von %qD ist größer als maximale Objektdateiausrichtung. %d verwendet«"
 
 #: varasm.c:1646
 msgid "thread-local COMMON data not implemented"
 msgstr "Thread-lokale COMMON-Daten nicht implementiert"
 
 #: varasm.c:1671
-#, fuzzy
 msgid "%Jrequested alignment for %qD is greater than implemented alignment of %d"
-msgstr "%Jangeforderte Ausrichtung für »%D« ist größer als die implementierte Ausrichtung von %d"
+msgstr "%Jangeforderte Ausrichtung für %qD ist größer als die implementierte Ausrichtung von %d"
 
 #: varasm.c:3772
 msgid "initializer for integer value is too complicated"
@@ -7150,29 +7132,25 @@ msgid "initializer for floating value is not a floating constant"
 msgstr "Initialisierung für Gleitkommawert ist keine Gleitkommakonstante"
 
 #: varasm.c:4046
-#, fuzzy, c-format
+#, c-format
 msgid "invalid initial value for member %qs"
-msgstr "ungültiger Anfangswert für Element »%s«"
+msgstr "ungültiger Anfangswert für Element %qs"
 
 #: varasm.c:4233 varasm.c:4277
-#, fuzzy
 msgid "%Jweak declaration of %qD must precede definition"
-msgstr "%Jschwache Deklaration von »%D« muss der Definition vorangehen"
+msgstr "%Jschwache Deklaration von %qD muss der Definition vorangehen"
 
 #: varasm.c:4241
-#, fuzzy
 msgid "%Jweak declaration of %qD after first use results in unspecified behavior"
-msgstr "%Jschwache Deklaration von »%D« nach erster Benutzung führt zu undefiniertem Verhalten"
+msgstr "%Jschwache Deklaration von %qD nach erster Benutzung führt zu undefiniertem Verhalten"
 
 #: varasm.c:4275
-#, fuzzy
 msgid "%Jweak declaration of %qD must be public"
-msgstr "%Jschwache Deklaration von »%D« muss öffentlich sein"
+msgstr "%Jschwache Deklaration von %qD muss öffentlich sein"
 
 #: varasm.c:4284
-#, fuzzy
 msgid "%Jweak declaration of %qD not supported"
-msgstr "%Jschwache Deklaration von »%D« wird nicht unterstützt"
+msgstr "%Jschwache Deklaration von %qD wird nicht unterstützt"
 
 #: varasm.c:4313 varasm.c:4462
 msgid "only weak aliases are supported in this configuration"
@@ -7183,9 +7161,8 @@ msgid "alias definitions not supported in this configuration; ignored"
 msgstr "Alias-Definitionen werden in dieser Konfiguration nicht unterstützt; ignoriert"
 
 #: varasm.c:4504
-#, fuzzy
 msgid "%qD aliased to undefined symbol %qE"
-msgstr "»%D« ist bereits in »%T« definiert"
+msgstr "%qD als Alias für undefiniertes Symbol %qE"
 
 #: varasm.c:4532
 msgid "visibility attribute not supported in this configuration; ignored"
@@ -7204,7 +7181,7 @@ msgstr "Unterlauf im virtuellen Feld %s in %s bei %s:%d"
 #: vec.c:146
 #, c-format
 msgid "vector %s %s domain error, in %s at %s:%u"
-msgstr ""
+msgstr "Bereichsfehler im Vektor %s %s, in %s bei %s:%u"
 
 #. Print an error message for unrecognized stab codes.
 #: xcoffout.c:187
@@ -7251,11 +7228,11 @@ msgstr "zur Fehlersuche: "
 
 #: params.def:44
 msgid "The maximum structure size (in bytes) at which GCC will do block copies"
-msgstr ""
+msgstr "Die höchste Strukturgröße (in Bytes), bei der GCC Block-Kopien macht"
 
 #: params.def:54
 msgid "The threshold ratio between instantiated fields and the total structure size"
-msgstr ""
+msgstr "Der Anteil-Schwellwert zwischen instanzierten Feldern und der Gesamt-Strukturgröße"
 
 #: params.def:72
 msgid "The maximum number of instructions in a single function eligible for inlining"
@@ -7266,26 +7243,24 @@ msgid "The maximum number of instructions when automatically inlining"
 msgstr "Die Höchstzahl der Anweisungen für automatisches »inline«"
 
 #: params.def:89
-#, fuzzy
 msgid "The maximum number of instructions inline function can grow to via recursive inlining"
-msgstr "Die Höchstzahl der Anweisungen in einer einzelnen für »inline« geeigneten Funktion"
+msgstr "Die Höchstzahl der Anweisungen, bis zu der eine Inline-Funktion per Rekursion wachsen kann"
 
 #: params.def:94
-#, fuzzy
 msgid "The maximum number of instructions non-inline function can grow to via recursive inlining"
-msgstr "Die Höchstzahl der Anweisungen in einer einzelnen für »inline« geeigneten Funktion"
+msgstr "Die Höchstzahl der Anweisungen, bis zu der eine Nicht-Inline-Funktion per Rekursion wachsen kann"
 
 #: params.def:99
 msgid "The maximum depth of recursive inlining for inline functions"
-msgstr ""
+msgstr "Größte Tiefe mit rekursivem Inline für Inline-Funktionen"
 
 #: params.def:104
 msgid "The maximum depth of recursive inlining for non-inline functions"
-msgstr ""
+msgstr "Größte Tiefe mit rekursivem Inline für Nicht-Inline-Funktionen"
 
 #: params.def:111
 msgid "If -fvariable-expansion-in-unroller is used, the maximum number of            times that an individual variable will be expanded            during loop unrolling"
-msgstr ""
+msgstr "Wenn -fvariable-expansion-in-unroller verwendet wird, die Höchstzahl der Fälle, dass eine bestimmte Variable während Loop-Unrolling expandiert wird"
 
 #: params.def:124
 msgid "The maximum number of instructions to consider to fill a delay slot"
@@ -7321,11 +7296,11 @@ msgstr "Die Höchstzahl der Durchläufe für GCSE"
 
 #: params.def:180
 msgid "The threshold ratio for performing partial redundancy elimination after reload."
-msgstr ""
+msgstr "Der Anteil-Schwellwert für die Ausführung partieller Redundanzbeseitigung nach dem Neuladen."
 
 #: params.def:187
 msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload."
-msgstr ""
+msgstr "Der Anteil-Schwellwert des Zählers kritischer Kanten, die Redundanzbeseitigung nach dem Neuladen erlauben"
 
 #: params.def:198
 msgid "The maximum number of instructions to consider to unroll in a loop"
@@ -7369,23 +7344,23 @@ msgstr "Die Höchstzahl der Abschaltungen in einer einzelnen Schleife"
 
 #: params.def:252
 msgid "Bound on the number of iterations the brute force # of iterations analysis algorithm evaluates"
-msgstr ""
+msgstr "Schranke für die Anzahl der Iterationen, die der Brute-Force-Algorithmus zur Auswertung der Anzahl von Iterationen auswertet"
 
 #: params.def:257
 msgid "Maximum number of loops to perform swing modulo scheduling on (mainly for debugging)"
-msgstr ""
+msgstr "Höchstzahl der Schleifen für die Anwendung von Swing-Modulo-Scheduling (hauptsächlich zur Fehlersuche)"
 
 #: params.def:263
 msgid "A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop"
-msgstr ""
+msgstr "Ein Faktor, um die obere Schranke des Swing-Modulo-Schedulers für Schleifenplanung einzustellen"
 
 #: params.def:267
 msgid "The number of cycles the swing modulo scheduler considers when \t  checking conflicts using DFA"
-msgstr ""
+msgstr "Anzahl der Durchläufe, die der Swing-Modulo-Scheduler bei \t  Konfliktprüfung mit DFA betrachtet"
 
 #: params.def:272
 msgid "A threshold on the average loop count considered by the swing modulo scheduler"
-msgstr ""
+msgstr "Schwellwert für vom Swing-Modulo-Scheduler betrachteten Durchschnitts-Schleifen-Zähler"
 
 #: params.def:277
 msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot"
@@ -7424,14 +7399,12 @@ msgid "The maximum number of incoming edges to consider for crossjumping"
 msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung"
 
 #: params.def:317
-#, fuzzy
 msgid "The minimum number of matching instructions to consider for crossjumping"
-msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung"
+msgstr "Mindestanzahl der passenden zu betrachtenden Anweisungen für Kreuzsprung"
 
 #: params.def:323
-#, fuzzy
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos"
-msgstr "Die Höchstzahl der Befehle einer ungeschalteten Schleife"
+msgstr "Die Höchstzahl der zu vervielfältigenden Anweisungen, wenn berechnete Gotos expandiert werden"
 
 #: params.def:329
 msgid "The maximum length of path considered in cse"
@@ -7439,23 +7412,23 @@ msgstr "Größte Länge des betrachteten Pfades in cse"
 
 #: params.def:336
 msgid "The minimum cost of an expensive expression in the loop invariant motion"
-msgstr ""
+msgstr "Die Mindestkosten eines teuren Ausdrucks in der Schleifeninvariantenbewegung"
 
 #: params.def:345
 msgid "Bound on number of candidates below that all candidates are considered in iv optimizations"
-msgstr ""
+msgstr "Schranke für Anzahl der Kandidaten, unter der alle Kandidaten in IV-Optimierungen betrachtet werden"
 
 #: params.def:353
 msgid "Bound on number of iv uses in loop optimized in iv optimizations"
-msgstr ""
+msgstr "Schranke für Anzahl der IV-Verwendungen in bei IV-Optimierungen optimierter Schleife"
 
 #: params.def:361
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization"
-msgstr ""
+msgstr "Wenn die Anzahl der Kandidaten in der Menge kleiner ist, wird immer versucht, ungenutzte IVs während ihrer Optimierung zu entfernen"
 
 #: params.def:368
 msgid "Given N calls and V call-clobbered vars in a function.  Use .GLOBAL_VAR if NxV is larger than this limit"
-msgstr ""
+msgstr "Mit N Aufrufen und V rufmarkierten Variablen in einer Funktion: .GLOBAL_VAR verwenden, wenn NxV größer als diese Grenze ist."
 
 #: params.def:373
 msgid "The maximum memory locations recorded by cselib"
@@ -7475,35 +7448,32 @@ msgstr "Höchstzahl der rückwärts zu suchenden Anweisungen, wenn nach äquival
 
 #: params.def:404
 msgid "The maximum number of virtual operands allowed to represent aliases before triggering alias grouping."
-msgstr ""
+msgstr "Höchstzahl der erlaubten virtuellen Operanden, um Aliase vor Auslösen des Alias-Grouping zu repräsentieren"
 
 #: params.def:409
-#, fuzzy
 msgid "The maximum number of blocks in a region to be considered for interblock scheduling"
-msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung"
+msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Blöcke in einer Region"
 
 #: params.def:414
-#, fuzzy
 msgid "The maximum number of insns in a region to be considered for interblock scheduling"
-msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung"
+msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Anweisungen in einer Region"
 
 #: params.def:419
 msgid "The maximum number of RTL nodes that can be recorded as combiner's last value"
-msgstr ""
+msgstr "Höchstzahl der RTL-Knoten, die als letzte Werte des Kombinierers aufgezeichnet werden können"
 
 #: params.def:427
-#, fuzzy
 msgid "The upper bound for sharing integer constants"
-msgstr "Aufzählungswert für »%s« ist keine Ganzzahlkonstante"
+msgstr "Obere Schranke zum gemeinsamen Verwenden von Ganzzahlkonstanten"
 
 #: config/darwin-c.c:84
 msgid "too many #pragma options align=reset"
-msgstr "zu viele #pragma-Optionen align=reset"
+msgstr "zu viele #pragma options align=reset"
 
 #: config/darwin-c.c:104 config/darwin-c.c:107 config/darwin-c.c:109
 #: config/darwin-c.c:111
 msgid "malformed '#pragma options', ignoring"
-msgstr "Falsch geformte '#pragma options', ignoriert"
+msgstr "Falsch geformtes '#pragma options', ignoriert"
 
 #: config/darwin-c.c:114
 msgid "junk at end of '#pragma options'"
@@ -7511,7 +7481,7 @@ msgstr "Ausschuss am Ende von '#pragma options'"
 
 #: config/darwin-c.c:124
 msgid "malformed '#pragma options align={mac68k|power|reset}', ignoring"
-msgstr "Falsch geformte '#pragma options align={mac68k|power|reset}', ignoriert"
+msgstr "Falsch geformtes '#pragma options align={mac68k|power|reset}', ignoriert"
 
 #: config/darwin-c.c:136
 msgid "missing '(' after '#pragma unused', ignoring"
@@ -7528,85 +7498,71 @@ msgstr "Ausschuss am Ende von '#pragma unused'"
 #: config/darwin-c.c:367
 #, c-format
 msgid "subframework include %s conflicts with framework include"
-msgstr ""
+msgstr "Unter-Framework-Include %s steht mit Framework-Include in Konflikt"
 
 #: config/darwin.c:1350
-#, fuzzy
 msgid "internal and protected visibility attributes not supported in this configuration; ignored"
 msgstr "interne und geschützte Sichtbarkeitsattribute werden in dieser Konfiguration nicht unterstützt; ignoriert"
 
 #: config/sol2-c.c:94 config/sol2-c.c:110
-#, fuzzy
 msgid "malformed %<#pragma align%>, ignoring"
-msgstr "Falsch geformtes #pragma align - ignoriert"
+msgstr "Falsch geformtes %<#pragma align%> - ignoriert"
 
 #: config/sol2-c.c:103
-#, fuzzy
 msgid "invalid alignment for %<#pragma align%>, ignoring"
-msgstr "Falsch geformtes #pragma align - ignoriert"
+msgstr "ungültige Ausrichtung for %<#pragma align%> - ignoriert"
 
 #: config/sol2-c.c:118
 msgid "%<#pragma align%> must appear before the declaration of %D, ignoring"
-msgstr ""
+msgstr "%<#pragma align%> muss vor der Deklaration von %D auftreten, ignoriert"
 
 #: config/sol2-c.c:130 config/sol2-c.c:142
-#, fuzzy
 msgid "malformed %<#pragma align%>"
-msgstr "Falsch geformtes #pragma builtin"
+msgstr "Falsch geformtes %<#pragma align%>"
 
 #: config/sol2-c.c:137
-#, fuzzy
 msgid "junk at end of %<#pragma align%>"
-msgstr "Ausschuss am Ende von #pragma %s"
+msgstr "Ausschuss am Ende von %<#pragma align%>"
 
 #: config/sol2-c.c:158 config/sol2-c.c:165
-#, fuzzy
 msgid "malformed %<#pragma init%>, ignoring"
-msgstr "Falsch geformte '#pragma options', ignoriert"
+msgstr "Falsch geformtes %<#pragma init%>', ignoriert"
 
 #: config/sol2-c.c:188 config/sol2-c.c:200
-#, fuzzy
 msgid "malformed %<#pragma init%>"
-msgstr "Falsch geformtes #pragma builtin"
+msgstr "Falsch geformtes %<#pragma init%>"
 
 #: config/sol2-c.c:195
-#, fuzzy
 msgid "junk at end of %<#pragma init%>"
-msgstr "Ausschuss am Ende von #pragma %s"
+msgstr "Ausschuss am Ende von %<#pragma init%>"
 
 #: config/sol2-c.c:216 config/sol2-c.c:223
-#, fuzzy
 msgid "malformed %<#pragma fini%>, ignoring"
-msgstr "Falsch geformte '#pragma options', ignoriert"
+msgstr "Falsch geformtes %<#pragma fini%>, ignoriert"
 
 #: config/sol2-c.c:246 config/sol2-c.c:258
-#, fuzzy
 msgid "malformed %<#pragma fini%>"
-msgstr "Falsch geformtes #pragma builtin"
+msgstr "Falsch geformtes %<#pragma fini%>"
 
 #: config/sol2-c.c:253
-#, fuzzy
 msgid "junk at end of %<#pragma fini%>"
-msgstr "Ausschuss am Ende von #pragma %s"
+msgstr "Ausschuss am Ende von %<#pragma fini%>"
 
 #: config/sol2.c:54
 msgid "%Jignoring %<#pragma align%> for explicitly aligned %<%D%>"
-msgstr ""
+msgstr "%J%<#pragma align%> wird für explizit ausgerichtetes %<%D%> ignoriert"
 
 #: config/darwin.h:155
-#, fuzzy
 msgid "Set sizeof(bool) to 1"
-msgstr "sizeof(long double) ist 16"
+msgstr "sizeof(bool) auf 1 setzen"
 
 #: config/darwin.h:157
-#, fuzzy
 msgid "Generate code suitable for fast turn around debugging"
-msgstr "Code für ausführbare Dateien (NICHT Shared Libraries) erzeugen"
+msgstr "Für schnelles Debugging geeigneten Code erzeugen"
 
 #: config/darwin.h:159
-#, fuzzy
 msgid "Don't generate code suitable for fast turn around debugging"
-msgstr "Keinen Code für eine Bitverarbeitungseinheit erzeugen"
+msgstr "Keinen für schnelles Debugging geeigneten Code erzeugen"
 
 #. Mach-O supports 'weak imports', and 'weak definitions' in coalesced
 #. sections.  machopic_select_section ensures that weak variables go in
@@ -7614,22 +7570,20 @@ msgstr "Keinen Code für eine Bitverarbeitungseinheit erzeugen"
 #. not supported.  Weak symbols that aren't visible outside the .s file
 #. are not supported.
 #: config/darwin.h:395
-#, fuzzy
 msgid "alias definitions not supported in Mach-O; ignored"
-msgstr "Alias-Definitionen werden in dieser Konfiguration nicht unterstützt; ignoriert"
+msgstr "Alias-Definitionen werden nicht in Mach-O unterstützt; ignoriert"
 
 #: config/lynx.h:137
-#, fuzzy
 msgid "Use shared libraries"
-msgstr "ID-basierte Shared Library einschalten"
+msgstr "Shared Libraries verwenden"
 
 #: config/lynx.h:138
 msgid "Support multi-threading"
-msgstr ""
+msgstr "Multi-Threading unterstützen"
 
 #: config/lynx.h:139
 msgid "Support legacy multi-threading"
-msgstr ""
+msgstr "Altes Multi-Threading unterstützen"
 
 #: config/windiss.h:37
 msgid "profiler support for WindISS"
@@ -7649,29 +7603,29 @@ msgid "-mieee-with-inexact not supported on Unicos/Mk"
 msgstr "-mieee-with-inexact für Unicos/Mk nicht unterstützt"
 
 #: config/alpha/alpha.c:306
-#, fuzzy, c-format
+#, c-format
 msgid "bad value %qs for -mtrap-precision switch"
-msgstr "falscher Wert »%s« für Schalter -mtrap-precision"
+msgstr "falscher Wert %qs für Schalter -mtrap-precision"
 
 #: config/alpha/alpha.c:320
-#, fuzzy, c-format
+#, c-format
 msgid "bad value %qs for -mfp-rounding-mode switch"
-msgstr "Falscher Wert »%s« für Schalter -mfp-rounding-mode"
+msgstr "Falscher Wert %qs für Schalter -mfp-rounding-mode"
 
 #: config/alpha/alpha.c:335
-#, fuzzy, c-format
+#, c-format
 msgid "bad value %qs for -mfp-trap-mode switch"
-msgstr "Falscher Wert »%s« für Schalter -mfp-trap-mode"
+msgstr "Falscher Wert %qs für Schalter -mfp-trap-mode"
 
 #: config/alpha/alpha.c:347 config/rs6000/rs6000.c:1720
-#, fuzzy, c-format
+#, c-format
 msgid "bad value %qs for -mtls-size switch"
-msgstr "Falscher Wert »%s« für Schalter -mtls-size"
+msgstr "Falscher Wert %qs für Schalter -mtls-size"
 
 #: config/alpha/alpha.c:366 config/alpha/alpha.c:378
-#, fuzzy, c-format
+#, c-format
 msgid "bad value %qs for -mcpu switch"
-msgstr "Falscher Wert (%s) für Schalter -mcpu"
+msgstr "Falscher Wert %qs für Schalter -mcpu"
 
 #: config/alpha/alpha.c:385
 msgid "trap mode not supported on Unicos/Mk"
@@ -7699,9 +7653,9 @@ msgid "L%d cache latency unknown for %s"
 msgstr "L%d Cache-Wartezeit unbekannt für %s"
 
 #: config/alpha/alpha.c:460
-#, fuzzy, c-format
+#, c-format
 msgid "bad value %qs for -mmemory-latency"
-msgstr "Falscher Wert »%s« für -mmemory-latency"
+msgstr "Falscher Wert %qs für -mmemory-latency"
 
 #: config/alpha/alpha.c:4764
 #, c-format
@@ -7940,14 +7894,14 @@ msgid "bad value (%s) for -mcpu switch"
 msgstr "Falscher Wert (%s) für Schalter -mcpu"
 
 #: config/arc/arc.c:394
-#, fuzzy, c-format
+#, c-format
 msgid "argument of %qs attribute is not a string constant"
-msgstr "Argument des Attributes »%s« ist keine Zeichenkettenkonstante"
+msgstr "Argument des Attributes %qs ist keine Zeichenkettenkonstante"
 
 #: config/arc/arc.c:401
-#, fuzzy, c-format
+#, c-format
 msgid "argument of %qs attribute is not \"ilink1\" or \"ilink2\""
-msgstr "Argument des Attributes »%s« ist nicht \"ilink1\" oder \"ilink2\""
+msgstr "Argument des Attributes %qs ist nicht \"ilink1\" oder \"ilink2\""
 
 #: config/arc/arc.c:1739 config/m32r/m32r.c:2141
 #, c-format
@@ -8026,20 +7980,20 @@ msgid "passing floating point arguments in fp regs not yet supported"
 msgstr "Die Übergabe von Fließkommaargumenten in FP-Registern wird noch nicht unterstützt"
 
 #: config/arm/arm.c:1018
-#, fuzzy, c-format
+#, c-format
 msgid "invalid ABI option: -mabi=%s"
-msgstr "ungültige Option »%s«"
+msgstr "ungültige ABI-Option -mabi=%s"
 
 #: config/arm/arm.c:1024
 msgid "iwmmxt requires an AAPCS compatible ABI for proper operation"
-msgstr ""
+msgstr "iwmmxt erfordert ein AAPCS-komptibles ABI für den richtigen Einsatz"
 
 #: config/arm/arm.c:1027
 msgid "iwmmxt abi requires an iwmmxt capable cpu"
-msgstr ""
+msgstr "iwmmxt ABI erfordert eine iwmmxt-fähige CPU"
 
 #: config/arm/arm.c:1037
-#, fuzzy, c-format
+#, c-format
 msgid "invalid floating point emulation option: -mfpe=%s"
 msgstr "Ungültige Option für Fließkommaemulation: -mfpe-%s"
 
