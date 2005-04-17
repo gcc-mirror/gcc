@@ -25,10 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Tree nodes relevant to both C and C++. These were originally in
 cp-tree.def in the cp subdir.  */
 
-DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_unary, 1)
-DEFTREECODE (ARROW_EXPR, "arrow_expr", tcc_expression, 1)
-DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", tcc_unary, 1)
-
 /* Used to represent an expression statement.  Use `EXPR_STMT_EXPR' to
    obtain the expression.  */
 DEFTREECODE (EXPR_STMT, "expr_stmt", tcc_expression, 1)

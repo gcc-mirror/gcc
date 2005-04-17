@@ -1240,7 +1240,9 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       value = size_one_node;
     }
   else
-    value = c_sizeof_or_alignof_type (complete_type (type), op, complain);
+    value = c_sizeof_or_alignof_type (complete_type (type),
+				      op == SIZEOF_EXPR,
+				      complain);
 
   return value;
 }
