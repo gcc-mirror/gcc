@@ -1,3 +1,17 @@
+2005-04-17  Richard Henderson  <rth@redhat.com>
+
+	PR target/20375
+	* config/alpha/alpha.c (alpha_setup_incoming_varargs): Advance a copy
+	of CUMULATIVE_ARGS past the last named argument.
+	(alpha_va_start): Expect pretend_args_size only if strictly less than
+	6 named arguments.
+	* config/alpha/alpha.h (TARGET_FP, TARGET_FPREGS, TARGET_GAS,
+	TARGET_IEEE_CONFORMANT, TARGET_IEEE, TARGET_IEEE_WITH_INEXACT,
+	TARGET_BUILD_CONSTANTS, TARGET_FLOAT_VAX, TARGET_BWX, TARGET_MAX,
+	TARGET_FIX, TARGET_CIX, TARGET_EXPLICIT_RELOCS, TARGET_SMALL_DATA,
+	TARGET_TLS_KERNEL, TARGET_SMALL_TEXT, TARGET_LONG_DOUBLE_128,
+	TARGET_CPU_EV5, TARGET_CPU_EV6, TARGET_SUPPORT_ARCH): Booleanize.
+
 2005-04-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/20739

@@ -156,99 +156,99 @@ extern int alpha_tls_size;
 /* This means that floating-point support exists in the target implementation
    of the Alpha architecture.  This is usually the default.  */
 #define MASK_FP		(1 << 0)
-#define TARGET_FP	(target_flags & MASK_FP)
+#define TARGET_FP	((target_flags & MASK_FP) != 0)
 
 /* This means that floating-point registers are allowed to be used.  Note
    that Alpha implementations without FP operations are required to
    provide the FP registers.  */
 
 #define MASK_FPREGS	(1 << 1)
-#define TARGET_FPREGS	(target_flags & MASK_FPREGS)
+#define TARGET_FPREGS	((target_flags & MASK_FPREGS) != 0)
 
 /* This means that gas is used to process the assembler file.  */
 
 #define MASK_GAS	(1 << 2)
-#define TARGET_GAS	(target_flags & MASK_GAS)
+#define TARGET_GAS	((target_flags & MASK_GAS) != 0)
 
 /* This means that we should mark procedures as IEEE conformant.  */
 
 #define MASK_IEEE_CONFORMANT (1 << 3)
-#define TARGET_IEEE_CONFORMANT	(target_flags & MASK_IEEE_CONFORMANT)
+#define TARGET_IEEE_CONFORMANT	((target_flags & MASK_IEEE_CONFORMANT) != 0)
 
 /* This means we should be IEEE-compliant except for inexact.  */
 
 #define MASK_IEEE	(1 << 4)
-#define TARGET_IEEE	(target_flags & MASK_IEEE)
+#define TARGET_IEEE	((target_flags & MASK_IEEE) != 0)
 
 /* This means we should be fully IEEE-compliant.  */
 
 #define MASK_IEEE_WITH_INEXACT (1 << 5)
-#define TARGET_IEEE_WITH_INEXACT (target_flags & MASK_IEEE_WITH_INEXACT)
+#define TARGET_IEEE_WITH_INEXACT ((target_flags & MASK_IEEE_WITH_INEXACT) != 0)
 
 /* This means we must construct all constants rather than emitting
    them as literal data.  */
 
 #define MASK_BUILD_CONSTANTS (1 << 6)
-#define TARGET_BUILD_CONSTANTS (target_flags & MASK_BUILD_CONSTANTS)
+#define TARGET_BUILD_CONSTANTS ((target_flags & MASK_BUILD_CONSTANTS) != 0)
 
 /* This means we handle floating points in VAX F- (float)
    or G- (double) Format.  */
 
 #define MASK_FLOAT_VAX	(1 << 7)
-#define TARGET_FLOAT_VAX (target_flags & MASK_FLOAT_VAX)
+#define TARGET_FLOAT_VAX ((target_flags & MASK_FLOAT_VAX) != 0)
 
 /* This means that the processor has byte and half word loads and stores
    (the BWX extension).  */
 
 #define MASK_BWX	(1 << 8)
-#define TARGET_BWX	(target_flags & MASK_BWX)
+#define TARGET_BWX	((target_flags & MASK_BWX) != 0)
 
 /* This means that the processor has the MAX extension.  */
 #define MASK_MAX	(1 << 9)
-#define TARGET_MAX	(target_flags & MASK_MAX)
+#define TARGET_MAX	((target_flags & MASK_MAX) != 0)
 
 /* This means that the processor has the FIX extension.  */
 #define MASK_FIX	(1 << 10)
-#define TARGET_FIX	(target_flags & MASK_FIX)
+#define TARGET_FIX	((target_flags & MASK_FIX) != 0)
 
 /* This means that the processor has the CIX extension.  */
 #define MASK_CIX	(1 << 11)
-#define TARGET_CIX	(target_flags & MASK_CIX)
+#define TARGET_CIX	((target_flags & MASK_CIX) != 0)
 
 /* This means use !literal style explicit relocations.  */
 #define MASK_EXPLICIT_RELOCS (1 << 12)
-#define TARGET_EXPLICIT_RELOCS (target_flags & MASK_EXPLICIT_RELOCS)
+#define TARGET_EXPLICIT_RELOCS ((target_flags & MASK_EXPLICIT_RELOCS) != 0)
 
 /* This means use 16-bit relocations to .sdata/.sbss.  */
 #define MASK_SMALL_DATA (1 << 13)
-#define TARGET_SMALL_DATA (target_flags & MASK_SMALL_DATA)
+#define TARGET_SMALL_DATA ((target_flags & MASK_SMALL_DATA) != 0)
 
 /* This means emit thread pointer loads for kernel not user.  */
 #define MASK_TLS_KERNEL	(1 << 14)
-#define TARGET_TLS_KERNEL (target_flags & MASK_TLS_KERNEL)
+#define TARGET_TLS_KERNEL ((target_flags & MASK_TLS_KERNEL) != 0)
 
 /* This means use direct branches to local functions.  */
 #define MASK_SMALL_TEXT (1 << 15)
-#define TARGET_SMALL_TEXT (target_flags & MASK_SMALL_TEXT)
+#define TARGET_SMALL_TEXT ((target_flags & MASK_SMALL_TEXT) != 0)
 
 /* This means use IEEE quad-format for long double.  Assumes the
    presence of the GEM support library routines.  */
 #define MASK_LONG_DOUBLE_128 (1 << 16)
-#define TARGET_LONG_DOUBLE_128 (target_flags & MASK_LONG_DOUBLE_128)
+#define TARGET_LONG_DOUBLE_128 ((target_flags & MASK_LONG_DOUBLE_128) != 0)
 
 /* This means that the processor is an EV5, EV56, or PCA56.
    Unlike alpha_cpu this is not affected by -mtune= setting.  */
 #define MASK_CPU_EV5	(1 << 28)
-#define TARGET_CPU_EV5	(target_flags & MASK_CPU_EV5)
+#define TARGET_CPU_EV5	((target_flags & MASK_CPU_EV5) != 0)
 
 /* Likewise for EV6.  */
 #define MASK_CPU_EV6	(1 << 29)
-#define TARGET_CPU_EV6	(target_flags & MASK_CPU_EV6)
+#define TARGET_CPU_EV6	((target_flags & MASK_CPU_EV6) != 0)
 
 /* This means we support the .arch directive in the assembler.  Only
    defined in TARGET_CPU_DEFAULT.  */
 #define MASK_SUPPORT_ARCH (1 << 30)
-#define TARGET_SUPPORT_ARCH	(target_flags & MASK_SUPPORT_ARCH)
+#define TARGET_SUPPORT_ARCH	((target_flags & MASK_SUPPORT_ARCH) != 0)
 
 /* These are for target os support and cannot be changed at runtime.  */
 #define TARGET_ABI_WINDOWS_NT 0
