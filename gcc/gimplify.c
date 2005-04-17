@@ -3231,6 +3231,9 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	 builtins like __builtin_va_end).  */
       /* Caution: the silent array decomposition semantics we allow for
 	 ADDR_EXPR means we can't always discard the pair.  */
+      /* Gimplification of the ADDR_EXPR operand may drop
+	 cv-qualification conversions, so make sure we add them if
+	 needed.  */
       {
 	tree op00 = TREE_OPERAND (op0, 0);
 	tree t_expr = TREE_TYPE (expr);
@@ -3240,9 +3243,9 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	  {
 #ifdef ENABLE_CHECKING
 	    tree t_op0 = TREE_TYPE (op0);
-	    gcc_assert (TREE_CODE (t_op0) == ARRAY_TYPE
-			&& POINTER_TYPE_P (t_expr)
-			&& cpt_same_type (TREE_TYPE (t_op0),
+	    gcc_assert (POINTER_TYPE_P (t_expr)
+			&& cpt_same_type (TREE_CODE (t_op0) == ARRAY_TYPE
+					  ? TREE_TYPE (t_op0) : t_op0,
 					  TREE_TYPE (t_expr))
 			&& POINTER_TYPE_P (t_op00)
 			&& cpt_same_type (t_op0, TREE_TYPE (t_op00)));
