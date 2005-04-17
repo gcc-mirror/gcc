@@ -7250,11 +7250,15 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     case PLUS_EXPR:
       /* A + (-B) -> A - B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold_build2 (MINUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0));
+	return fold_build2 (MINUS_EXPR, type,
+			    fold_convert (type, arg0),
+			    fold_convert (type, TREE_OPERAND (arg1, 0)));
       /* (-A) + B -> B - A */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && reorder_operands_p (TREE_OPERAND (arg0, 0), arg1))
-	return fold_build2 (MINUS_EXPR, type, arg1, TREE_OPERAND (arg0, 0));
+	return fold_build2 (MINUS_EXPR, type,
+			    fold_convert (type, arg1),
+			    fold_convert (type, TREE_OPERAND (arg0, 0)));
       /* Convert ~A + 1 to -A.  */
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (arg0) == BIT_NOT_EXPR
@@ -7390,7 +7394,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				    fold_build2 (PLUS_EXPR, type,
 						 fold_convert (type, alt0),
 						 fold_convert (type, alt1)),
-				    same);
+				    fold_convert (type, same));
 	    }
 
 	  /* Try replacing &a[i1] + c * i2 with &a[i1 + i2], if c is step
@@ -8786,7 +8790,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     case GE_EXPR:
       /* If one arg is a real or integer constant, put it last.  */
       if (tree_swap_operands_p (arg0, arg1, true))
-	return fold_build2 (swap_tree_comparison (code), type, arg1, arg0);
+	return fold_build2 (swap_tree_comparison (code), type, op1, op0);
 
       /* If this is an equality comparison of the address of a non-weak
 	 object against zero, then we know the result.  */

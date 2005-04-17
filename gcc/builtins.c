@@ -3810,7 +3810,8 @@ expand_builtin_strcat (tree arglist, tree type, rtx target, enum machine_mode mo
 		fold (build_function_call_expr (strlen_fn,
 						build_tree_list (NULL_TREE,
 								 dst)));
-	      /* Create (dst + strlen (dst)).  */
+	      /* Create (dst + (cast) strlen (dst)).  */
+	      newdst = fold_convert (TREE_TYPE (dst), newdst);
 	      newdst = fold (build2 (PLUS_EXPR, TREE_TYPE (dst), dst, newdst));
 
 	      /* Prepend the new dst argument.  */

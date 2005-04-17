@@ -1,3 +1,13 @@
+2005-04-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR middle-end/21024
+	* builtins.c (expand_builtin_strcat): Convert the result of
+	strlen to the right type.
+	* fold-const.c (fold_binary) <PLUS_EXPR>: Use fold_convert to
+	avoid creating type mismatches.
+	<GE_EXPR>: Pass op0 and op1 to fold_build2 to avoid creating
+	type mismatches.
+
 2005-04-16  Richard Henderson  <rth@redhat.com>
 
 	PR target/21051
