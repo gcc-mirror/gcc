@@ -8,6 +8,8 @@
 	<GE_EXPR>: Pass op0 and op1 to fold_build2 to avoid creating
 	type mismatches.
 
+	* c-lex.c (WCHAR_TYPE_SIZE, WCHAR_BYTES): Remove.
+
 2005-04-16  Richard Henderson  <rth@redhat.com>
 
 	PR target/21051

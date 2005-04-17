@@ -46,12 +46,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int header_time, body_time;
 static splay_tree file_info_tree;
 
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
-
-/* Number of bytes in a wide character.  */
-#define WCHAR_BYTES (WCHAR_TYPE_SIZE / BITS_PER_UNIT)
-
 int pending_lang_change; /* If we need to switch languages - C++ only */
 int c_header_level;	 /* depth in C headers - C++ only */
 
