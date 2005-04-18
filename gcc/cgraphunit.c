@@ -813,7 +813,7 @@ cgraph_finalize_compilation_unit (void)
       node->next_needed = NULL;
 
       /* ??? It is possible to create extern inline function and later using
-	 weak alas attribute to kill its body. See
+	 weak alias attribute to kill its body. See
 	 gcc.c-torture/compile/20011119-1.c  */
       if (!DECL_SAVED_TREE (decl))
 	continue;
