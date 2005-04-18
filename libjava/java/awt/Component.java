@@ -4441,7 +4441,9 @@ p   * <li>the set of backward traversal keys
   {
     if (o == null)
       throw new NullPointerException();
+    ComponentOrientation oldOrientation = orientation;
     orientation = o;
+    firePropertyChange("componentOrientation", oldOrientation, o);
   }
 
   /**

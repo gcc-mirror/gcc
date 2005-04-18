@@ -1,5 +1,11 @@
 2005-04-18  Roman Kennke  <roman@kennke.org>
 
+	* java/awt/Compmonent.java
+	(setComponentOrientation): Made this property firing a
+	PropertyChangeEvent.
+
+2005-04-18  Roman Kennke  <roman@kennke.org>
+
 	* java/awt/BorderLayout.java
 	(calcSize): Check for overflow when component sizes are added.
 
