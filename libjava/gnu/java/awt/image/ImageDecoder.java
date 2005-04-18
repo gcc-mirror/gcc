@@ -1,4 +1,4 @@
-/* ImageDecoder.java
+/* ImageDecoder.java --
    Copyright (C) 1999, 2000, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,8 +41,8 @@ import java.awt.image.ImageConsumer;
 import java.awt.image.ImageProducer;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Vector;
 

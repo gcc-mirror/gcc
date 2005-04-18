@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002, 2004  Free Software Foundation
+/* Buffers.java --
+   Copyright (C) 2000, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -34,9 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.awt;
 
-import java.awt.image.*;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferDouble;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
 
 /** 
  * Utility class for creating and accessing data buffers of arbitrary

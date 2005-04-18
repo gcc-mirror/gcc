@@ -40,10 +40,10 @@ package gnu.java.rmi;
 
 import gnu.java.rmi.server.RMIObjectOutputStream;
 
-import java.io.OutputStream;
-import java.io.ObjectOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
 /**
  * This class is only for java.rmi.MarshalledObject to serialize object and 

@@ -39,16 +39,16 @@ exception statement from your version. */
 package gnu.java.net.protocol.http;
 
 import gnu.classpath.Configuration;
+import gnu.java.net.EmptyX509TrustManager;
 import gnu.java.net.protocol.http.event.ConnectionEvent;
 import gnu.java.net.protocol.http.event.ConnectionListener;
 import gnu.java.net.protocol.http.event.RequestEvent;
 import gnu.java.net.protocol.http.event.RequestListener;
-import gnu.java.net.EmptyX509TrustManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;

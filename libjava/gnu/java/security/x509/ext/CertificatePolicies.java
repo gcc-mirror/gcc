@@ -38,9 +38,13 @@ exception statement from your version. */
 
 package gnu.java.security.x509.ext;
 
+import gnu.java.security.OID;
+import gnu.java.security.der.DER;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+
 import java.io.IOException;
 import java.security.cert.PolicyQualifierInfo;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,11 +52,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import gnu.java.security.OID;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
 
 public class CertificatePolicies extends Extension.Value
 {

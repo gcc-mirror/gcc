@@ -38,11 +38,15 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
+import gnu.java.security.OID;
+import gnu.java.security.der.DER;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+import gnu.java.security.der.DERWriter;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import java.math.BigInteger;
-
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
@@ -52,14 +56,7 @@ import java.security.SignatureException;
 import java.security.SignatureSpi;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-
 import java.util.ArrayList;
-
-import gnu.java.security.OID;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
-import gnu.java.security.der.DERWriter;
 
 public abstract class RSA extends SignatureSpi implements Cloneable
 {

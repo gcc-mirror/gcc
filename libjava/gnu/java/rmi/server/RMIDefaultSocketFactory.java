@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* RMIDefaultSocketFactory.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,10 @@ exception statement from your version. */
 
 package gnu.java.rmi.server;
 
-import java.rmi.server.RMISocketFactory;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.rmi.server.RMISocketFactory;
 
 public class RMIDefaultSocketFactory
 	extends RMISocketFactory {

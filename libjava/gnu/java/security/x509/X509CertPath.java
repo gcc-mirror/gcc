@@ -38,30 +38,27 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
+import gnu.java.security.OID;
+import gnu.java.security.der.DER;
+import gnu.java.security.der.DEREncodingException;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
-
+import java.io.InputStream;
 import java.math.BigInteger;
-
+import java.security.cert.CertPath;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertPath;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import gnu.java.security.OID;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DEREncodingException;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
 
 /**
  * A certificate path (or certificate chain) of X509Certificates.

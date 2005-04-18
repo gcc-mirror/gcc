@@ -39,8 +39,8 @@ exception statement from your version. */
 package gnu.java.net.protocol.http;
 
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ProtocolException;
 
 /**

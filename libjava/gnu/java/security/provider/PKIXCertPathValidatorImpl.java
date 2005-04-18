@@ -41,8 +41,8 @@ package gnu.java.security.provider;
 import gnu.java.security.OID;
 import gnu.java.security.x509.GnuPKIExtension;
 import gnu.java.security.x509.PolicyNodeImpl;
-import gnu.java.security.x509.X509CertSelectorImpl;
 import gnu.java.security.x509.X509CRLSelectorImpl;
+import gnu.java.security.x509.X509CertSelectorImpl;
 import gnu.java.security.x509.ext.BasicConstraints;
 import gnu.java.security.x509.ext.CertificatePolicies;
 import gnu.java.security.x509.ext.Extension;
@@ -50,12 +50,10 @@ import gnu.java.security.x509.ext.KeyUsage;
 import gnu.java.security.x509.ext.PolicyConstraint;
 
 import java.io.IOException;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
-
-import java.security.cert.CertificateException;
+import java.security.cert.CRL;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathParameters;
 import java.security.cert.CertPathValidatorException;
@@ -63,16 +61,15 @@ import java.security.cert.CertPathValidatorResult;
 import java.security.cert.CertPathValidatorSpi;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
-import java.security.cert.CRL;
+import java.security.cert.CertificateException;
 import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
-import java.security.cert.X509Certificate;
 import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;

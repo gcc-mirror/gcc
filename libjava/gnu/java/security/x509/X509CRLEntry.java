@@ -38,12 +38,14 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
+import gnu.java.security.OID;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+import gnu.java.security.x509.ext.Extension;
+
 import java.io.IOException;
-
 import java.math.BigInteger;
-
 import java.security.cert.CRLException;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -51,10 +53,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import gnu.java.security.OID;
-import gnu.java.security.der.*;
-import gnu.java.security.x509.ext.*;
 
 /**
  * A single entry in a X.509 certificate revocation list.

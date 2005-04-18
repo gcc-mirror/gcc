@@ -42,8 +42,8 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.Pipe;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
 import java.nio.channels.spi.AbstractSelector;
+import java.nio.channels.spi.SelectorProvider;
 
 public class SelectorProviderImpl extends SelectorProvider
 {

@@ -41,8 +41,8 @@ package gnu.java.security;
 import gnu.java.security.der.DEREncodingException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.StringTokenizer;
 
 /**

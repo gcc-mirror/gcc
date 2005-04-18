@@ -44,9 +44,7 @@ import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 
 import java.io.IOException;
-
 import java.math.BigInteger;
-
 import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -54,10 +52,9 @@ import java.security.KeyFactorySpi;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-
 import java.security.spec.DSAParameterSpec;
-import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;

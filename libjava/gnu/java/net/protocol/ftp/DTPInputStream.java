@@ -39,8 +39,8 @@ exception statement from your version. */
 package gnu.java.net.protocol.ftp;
 
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * An input stream that notifies a DTP on completion.

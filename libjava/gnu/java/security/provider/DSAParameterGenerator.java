@@ -38,9 +38,11 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
+import gnu.java.security.util.Prime;
+
 import java.math.BigInteger;
-import java.security.AlgorithmParameters;
 import java.security.AlgorithmParameterGeneratorSpi;
+import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -48,8 +50,6 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.DSAParameterSpec;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.Random;
-
-import gnu.java.security.util.Prime;
 
 public class DSAParameterGenerator extends AlgorithmParameterGeneratorSpi
 {

@@ -38,28 +38,26 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
+import gnu.java.io.Base64InputStream;
+import gnu.java.security.x509.X509CRL;
+import gnu.java.security.x509.X509CertPath;
+import gnu.java.security.x509.X509Certificate;
+
 import java.io.BufferedInputStream;
 import java.io.EOFException;
-import java.io.InputStream;
 import java.io.IOException;
-
+import java.io.InputStream;
+import java.security.cert.CRL;
+import java.security.cert.CRLException;
+import java.security.cert.CertPath;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactorySpi;
-import java.security.cert.CertPath;
-import java.security.cert.CRL;
-import java.security.cert.CRLException;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import gnu.java.io.Base64InputStream;
-import gnu.java.security.x509.X509Certificate;
-import gnu.java.security.x509.X509CertPath;
-import gnu.java.security.x509.X509CRL;
 
 public class X509CertificateFactory extends CertificateFactorySpi
 {

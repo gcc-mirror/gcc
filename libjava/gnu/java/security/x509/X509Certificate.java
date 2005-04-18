@@ -38,14 +38,24 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
-import java.io.InputStream;
+import gnu.java.security.OID;
+import gnu.java.security.der.BitString;
+import gnu.java.security.der.DER;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+import gnu.java.security.x509.ext.BasicConstraints;
+import gnu.java.security.x509.ext.ExtendedKeyUsage;
+import gnu.java.security.x509.ext.Extension;
+import gnu.java.security.x509.ext.IssuerAlternativeNames;
+import gnu.java.security.x509.ext.KeyUsage;
+import gnu.java.security.x509.ext.SubjectAlternativeNames;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-
 import java.math.BigInteger;
-
 import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -55,20 +65,17 @@ import java.security.Principal;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
-
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
-
 import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 import java.security.spec.DSAParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
-
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -80,10 +87,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
-
-import gnu.java.security.OID;
-import gnu.java.security.der.*;
-import gnu.java.security.x509.ext.*;
 
 /**
  * An implementation of X.509 certificates.

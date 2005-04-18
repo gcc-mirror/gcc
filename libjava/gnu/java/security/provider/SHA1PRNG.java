@@ -38,11 +38,11 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
-import java.util.Random;
-import java.security.SecureRandomSpi;
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.io.Serializable;
+import java.security.SecureRandomSpi;
+import java.util.Random;
 
 public class SHA1PRNG extends SecureRandomSpi implements Serializable
 {

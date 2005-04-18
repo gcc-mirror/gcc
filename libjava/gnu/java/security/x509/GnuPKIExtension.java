@@ -38,11 +38,11 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
-import java.security.cert.X509Extension;
-import java.util.Collection;
-
 import gnu.java.security.OID;
 import gnu.java.security.x509.ext.Extension;
+
+import java.security.cert.X509Extension;
+import java.util.Collection;
 
 public interface GnuPKIExtension extends X509Extension
 {

@@ -45,13 +45,10 @@ import gnu.java.security.der.DERWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import java.math.BigInteger;
-
-import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPrivateKey;
 import java.security.spec.DSAParameterSpec;
-
 import java.util.ArrayList;
 
 public class GnuDSAPrivateKey implements DSAPrivateKey

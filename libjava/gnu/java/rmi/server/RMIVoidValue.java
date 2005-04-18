@@ -1,5 +1,5 @@
-/* RMIVoidValue.java
-  Copyright (c) 2003 Free Software Foundation, Inc.
+/* RMIVoidValue.java --
+   Copyright (c) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
