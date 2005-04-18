@@ -1673,6 +1673,7 @@ nml_touch_nodes (namelist_info * nl)
       else
 	break;
     }
+  free_mem (ext_name);
   return;
 }
 
@@ -1914,10 +1915,16 @@ nml_read_obj (namelist_info * nl, index_type offset)
 	      {
 
 		if (nml_read_obj (cmp, (index_type)(pdata - nl->mem_pos)) == FAILURE)
-		  return FAILURE;
+		  {
+		    free_mem (obj_name);
+		    return FAILURE;
+		  }
 
 		if (input_complete)
-		  return SUCCESS;
+		  {
+		    free_mem (obj_name);
+		    return SUCCESS;
+		  }
 	      }
 
 	    free_mem (obj_name);
@@ -2105,6 +2112,7 @@ get_name:
       strcpy (ext_name, root_nl->var_name);
       strcat (ext_name, saved_string);
       nl = find_nml_node (ext_name);
+      free_mem (ext_name);
     }
   else
     nl = find_nml_node (saved_string);
