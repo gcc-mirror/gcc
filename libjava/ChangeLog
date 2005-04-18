@@ -1,3 +1,7 @@
+2005-04-18  Chris Burdess  <dog@gnu.org>
+
+	* gnu/java/net/BASE64.java: Truncate encoded byte array.
+
 2005-04-18  Michael Koch  <konqueror@gmx.de>
 
 	gnu/java/awt/EmbeddedWindowSupport.java,

@@ -1,5 +1,5 @@
 /* BASE.java --
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -108,6 +108,12 @@ public final class BASE64
             bt[ti++] = src[(b2 << 2 & 0x3c) + (b3 >>> 6 & 0x3)];
             bt[ti++] = src[b3 & 0x3f];
           }
+      }
+     if (ti < bt.length)
+      {
+	byte[] tmp = new byte[ti];
+	System.arraycopy(bt, 0, tmp, 0, ti);
+	bt = tmp;
       }
     /*while (ti < bt.length)
       {
