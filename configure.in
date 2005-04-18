@@ -481,9 +481,14 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} gcc gdb newlib"
     ;;
   cris-*-* | crisv32-*-*)
+    libgcj_ex_libffi=`echo ${libgcj} | sed -e 's/target-libffi//'`
     case "${target}" in
-      *-*-elf | *-*-aout)
+      *-*-aout)
 	noconfigdirs="$noconfigdirs ${libgcj}";;
+      *-*-elf)
+	noconfigdirs="$noconfigdirs ${libgcj_ex_libffi}";;
+      *-*-linux*)
+	noconfigdirs="$noconfigdirs ${libgcj_ex_libffi} target-newlib target-libgloss";;
       *)
 	noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss";;
     esac
