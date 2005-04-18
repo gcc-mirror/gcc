@@ -1,5 +1,8 @@
 2005-04-18  Nick Clifton  <nickc@redhat.com>
 
+	* config/arc/arc.c (arc_output_function_epilogue): Remove prescan
+	parameter from calls to final_scan_insn.
+
 	* config.gcc (m68hc12): Use the m68hc11.opt file for target
 	specific options.
 	(v850e, v850e1): Use the v850.opt file for target specific
