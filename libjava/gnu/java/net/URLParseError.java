@@ -46,7 +46,7 @@ package gnu.java.net;
  * The main drawback is that it uses the Error mechanism which should not
  * be used for that type of error reporting.
  *
- * @author Guilhem Lavaux <guilhem@kaffe.org>
+ * @author Guilhem Lavaux (guilhem@kaffe.org)
  */
 public class URLParseError extends Error
 {

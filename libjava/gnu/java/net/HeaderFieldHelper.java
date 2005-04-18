@@ -45,7 +45,7 @@ import java.util.Vector;
 /**
  * This class manages header field keys and values.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class HeaderFieldHelper
 {
