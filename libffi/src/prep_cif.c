@@ -81,6 +81,11 @@ static ffi_status initialize_aggregate(/*@out@*/ ffi_type *arg)
   /*@=usedef@*/
 }
 
+#ifndef __CRIS__
+/* The CRIS ABI specifies structure elements to have byte
+   alignment only, so it completely overrides this functions,
+   which assumes "natural" alignment and padding.  */
+
 /* Perform machine independent ffi_cif preparation, then call
    machine dependent routine. */
 
@@ -158,3 +163,4 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   /* Perform machine dependent cif processing */
   return ffi_prep_cif_machdep(cif);
 }
+#endif /* not __CRIS__ */
