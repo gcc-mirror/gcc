@@ -8848,6 +8848,77 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    }
 	}
 
+      /* Transform comparisons of the form X +- C CMP X.  */
+      if ((code != EQ_EXPR && code != NE_EXPR)
+	  && (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	  && ((TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
+	       && !HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0))))
+	      || (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	          && !TYPE_UNSIGNED (TREE_TYPE (arg1))
+		  && !(flag_wrapv || flag_trapv))))
+	{
+	  tree arg01 = TREE_OPERAND (arg0, 1);
+	  enum tree_code code0 = TREE_CODE (arg0);
+	  int is_positive;
+
+	  if (TREE_CODE (arg01) == REAL_CST)
+	    is_positive = REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg01)) ? -1 : 1;
+	  else
+	    is_positive = tree_int_cst_sgn (arg01);
+
+	  /* (X - c) > X becomes false.  */
+	  if (code == GT_EXPR
+	      && ((code0 == MINUS_EXPR && is_positive >= 0)
+		  || (code0 == PLUS_EXPR && is_positive <= 0)))
+	    return constant_boolean_node (0, type);
+
+	  /* Likewise (X + c) < X becomes false.  */
+	  if (code == LT_EXPR
+	      && ((code0 == PLUS_EXPR && is_positive >= 0)
+		  || (code0 == MINUS_EXPR && is_positive <= 0)))
+	    return constant_boolean_node (0, type);
+
+	  /* Convert (X - c) <= X to true.  */
+	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1)))
+	      && code == LE_EXPR
+	      && ((code0 == MINUS_EXPR && is_positive >= 0)
+		  || (code0 == PLUS_EXPR && is_positive <= 0)))
+	    return constant_boolean_node (1, type);
+
+	  /* Convert (X + c) >= X to true.  */
+	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1)))
+	      && code == GE_EXPR
+	      && ((code0 == PLUS_EXPR && is_positive >= 0)
+		  || (code0 == MINUS_EXPR && is_positive <= 0)))
+	    return constant_boolean_node (1, type);
+
+	  if (TREE_CODE (arg01) == INTEGER_CST)
+	    {
+	      /* Convert X + c > X and X - c < X to true for integers.  */
+	      if (code == GT_EXPR
+	          && ((code0 == PLUS_EXPR && is_positive > 0)
+		      || (code0 == MINUS_EXPR && is_positive < 0)))
+		return constant_boolean_node (1, type);
+
+	      if (code == LT_EXPR
+	          && ((code0 == MINUS_EXPR && is_positive > 0)
+		      || (code0 == PLUS_EXPR && is_positive < 0)))
+		return constant_boolean_node (1, type);
+
+	      /* Convert X + c <= X and X - c >= X to false for integers.  */
+	      if (code == LE_EXPR
+	          && ((code0 == PLUS_EXPR && is_positive > 0)
+		      || (code0 == MINUS_EXPR && is_positive < 0)))
+		return constant_boolean_node (0, type);
+
+	      if (code == GE_EXPR
+	          && ((code0 == MINUS_EXPR && is_positive > 0)
+		      || (code0 == PLUS_EXPR && is_positive < 0)))
+		return constant_boolean_node (0, type);
+	    }
+	}
+
       if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
 	{
 	  tree targ0 = strip_float_extensions (arg0);

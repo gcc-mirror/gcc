@@ -1,3 +1,13 @@
+2005-04-18  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR tree-optimization/20922
+	* gcc.dg/pr20922-1.c: New test.
+	* gcc.dg/pr20922-2.c: New test.
+	* gcc.dg/pr20922-3.c: New test.
+	* gcc.dg/pr20922-4.c: New test.
+	* gcc.dg/pr20922-5.c: New test.
+	* gcc.dg/pr20922-6.c: New test.
+
 2005-04-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20950

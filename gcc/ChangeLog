@@ -1,5 +1,11 @@
 2005-04-18  James A. Morrison  <phython@gcc.gnu.org>
 
+	PR tree-optimization/20922
+	* fold-const.c (fold_binary): Fold X - c > X and X + c < X to false.
+	Fold X + c >= X and fold X - c <= X to true.
+
+2005-04-18  James A. Morrison  <phython@gcc.gnu.org>
+
 	* config/ia64/unwind-ia64.c (emergency_reg_state_free): Make an
 	unsigned int.
 	(emergency_labeled_state_free): Likewise.
