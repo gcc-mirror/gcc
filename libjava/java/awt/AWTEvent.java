@@ -1,5 +1,5 @@
 /* AWTEvent.java -- the root event in AWT
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation
+   Copyright (C) 1999, 2000, 2002, 2005 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -246,6 +246,9 @@ public abstract class AWTEvent extends EventObject
     else if (source instanceof MenuComponent)
       string = getClass ().getName () + "[" + paramString () + "] on "
         + ((MenuComponent) source).getName ();
+    else 
+      string = getClass ().getName () + "[" + paramString () + "] on "
+    + source;
 
     return string;
   }
