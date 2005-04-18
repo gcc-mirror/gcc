@@ -1,3 +1,33 @@
+2005-04-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.target/mips/mips.exp: Minor formatting.  Call setup_mips_tests.
+	(setup_mips_tests, dg-mips-options): New procedures.
+	* gcc.target/mips/asm-1.c, gcc.target/mips/fix-vr4130-1.c,
+	* gcc.target/mips/fix-vr4130-2.c, gcc.target/mips/fix-vr4130-3.c
+	* gcc.target/mips/fix-vr4130-4.c, gcc.target/mips/mips-3d-1.c,
+	* gcc.target/mips/mips-3d-2.c, gcc.target/mips/mips-3d-3.c,
+	* gcc.target/mips/mips-3d-4.c, gcc.target/mips/mips-3d-5.c,
+	* gcc.target/mips/mips-3d-6.c, gcc.target/mips/mips-3d-7.c,
+	* gcc.target/mips/mips-3d-8.c, gcc.target/mips/mips-3d-9.c,
+	* gcc.target/mips/mips-3d-2.c, gcc.target/mips/mips-3d-3.c,
+	* gcc.target/mips/mips-ps-1.c, gcc.target/mips/mips-ps-2.c,
+	* gcc.target/mips/mips-ps-3.c, gcc.target/mips/mips-ps-4.c,
+	* gcc.target/mips/mips-ps-type.c, gcc.target/mips/sb1-1.c: Use
+	dg-mips-options instead of dg-options.  Remove now-redundant
+	preprocessor guards.
+	* gcc.dg/mips-args-1.c, gcc.dg/mips-args-2.c, gcc.dg/mips-args-3.c,
+	* gcc.dg/mips-movcc-1.c, gcc.dg/mips-movcc-2.c, gcc.dg/mips-movcc-3.c,
+	* gcc.dg/mips-nmadd-1.c, gcc.dg/mips-nmadd-2.c, gcc.dg/mips-rsqrt-1.c,
+	* gcc.dg/mips-rsqrt-2.c, gcc.dg/mips-rsqrt-3.c, gcc.dg/vr-mult-1.c,
+	* gcc.dg/vr-mult-2.c: Delete.
+	* gcc.target/mips/args-1.c, gcc.target/mips/args-2.c,
+	* gcc.target/mips/args-3.c, gcc.target/mips/movcc-1.c,
+	* gcc.target/mips/movcc-2.c, gcc.target/mips/movcc-3.c,
+	* gcc.target/mips/nmadd-1.c, gcc.target/mips/nmadd-2.c,
+	* gcc.target/mips/rsqrt-1.c, gcc.target/mips/rsqrt-2.c,
+	* gcc.target/mips/rsqrt-3.c, gcc.target/mips/vr-mult-1.c,
+	* gcc.target/mips/vr-mult-2.c: New tests, based on the old gcc.dg ones.
+
 2005-04-18  Laurent GUERBY  <laurent@guerby.net>
 
 	* ada/acats/run_all.sh: Use sync when executable not present.

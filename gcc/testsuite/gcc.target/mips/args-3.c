@@ -1,6 +1,6 @@
 /* __mips, and related defines, guarantee that certain assembly
    instructions can be used.  Check a few examples.  */
-/* { dg-do run { target mips*-*-* } } */
+/* { dg-do run } */
 extern void abort (void);
 extern void exit (int);
 

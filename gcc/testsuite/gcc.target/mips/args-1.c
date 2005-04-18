@@ -1,6 +1,6 @@
 /* Check that certain preprocessor macros are defined, and do some
    consistency checks.  */
-/* { dg-do compile { target mips*-*-* } } */
+/* { dg-do compile } */
 
 const char *compiled_for = _MIPS_ARCH;
 const char *optimized_for = _MIPS_TUNE;

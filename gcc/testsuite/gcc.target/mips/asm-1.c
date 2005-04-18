@@ -1,8 +1,7 @@
 /* PR target/17565.  GCC used to put the asm into the delay slot
    of the call.  */
 /* { dg-do assemble } */
-/* { dg-options "-O" } */
-#ifndef __mips16
+/* { dg-mips-options "-O -mno-mips16" } */
 int foo (int n)
 {
   register int k asm ("$16") = n;
@@ -13,4 +12,3 @@ int foo (int n)
     }
   return k;
 }
-#endif

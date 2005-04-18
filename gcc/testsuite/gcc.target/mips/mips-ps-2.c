@@ -1,5 +1,5 @@
 /* { dg-do run { target mipsisa64*-*-* } } */
-/* { dg-options "-mips64 -O2 -mpaired-single -mhard-float -mfp64" } */
+/* { dg-mips-options "-mips64 -O2 -mpaired-single -mhard-float -mgp64" } */
 
 /* Test MIPS paired-single builtin functions */
 #include <stdlib.h>

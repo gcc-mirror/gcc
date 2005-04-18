@@ -1,5 +1,5 @@
 /* Check the _MIPSEB and _MIPSEL macros are accurate.  */
-/* { dg-do run { target mips*-*-* } } */
+/* { dg-do run } */
 extern void abort (void);
 extern void exit (int);
 

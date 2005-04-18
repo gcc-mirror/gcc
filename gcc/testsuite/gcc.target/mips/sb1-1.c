@@ -1,6 +1,6 @@
 /* Test SB-1 v2sf extensions.  */
-/* { dg-do compile { target mipsisa64*-*-* } } */ 
-/* { dg-options "-march=sb1 -O2 -mpaired-single -mhard-float -mfp64 -ffast-math" } */ 
+/* { dg-do compile } */ 
+/* { dg-mips-options "-march=sb1 -O2 -mpaired-single -mhard-float -mgp64 -ffast-math" } */ 
 /* { dg-final { scan-assembler "div.ps" } } */ 
 /* { dg-final { scan-assembler "recip.ps" } } */ 
 /* { dg-final { scan-assembler "sqrt.ps" } } */ 
