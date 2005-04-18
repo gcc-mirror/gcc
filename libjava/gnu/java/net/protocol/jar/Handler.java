@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.net.protocol.jar;
 
 import gnu.java.net.URLParseError;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,7 +47,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
 /**
- * @author Kresten Krab Thorup <krab@gnu.org>
+ * @author Kresten Krab Thorup (krab@gnu.org)
  */
 public class Handler extends URLStreamHandler
 {

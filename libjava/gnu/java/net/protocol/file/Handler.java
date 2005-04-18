@@ -49,7 +49,7 @@ import java.net.URLStreamHandler;
  * this package).  All other methods are inherited
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  */
 public class Handler extends URLStreamHandler
 {

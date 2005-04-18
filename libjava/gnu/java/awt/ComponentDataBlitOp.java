@@ -53,7 +53,7 @@ import java.awt.image.WritableRaster;
  * @throws java.lang.ClassCastException if the sample models of the
  * rasters are not of type ComponentSampleModel.
  * 
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public class ComponentDataBlitOp implements RasterOp
 {

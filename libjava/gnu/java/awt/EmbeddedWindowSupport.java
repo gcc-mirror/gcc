@@ -51,7 +51,7 @@ import gnu.java.awt.peer.EmbeddedWindowPeer;
  * @see gnu.java.awt.EmbeddedWindow
  * @see java.awt.Toolkit
  *
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public interface EmbeddedWindowSupport
 {

@@ -1,5 +1,14 @@
 2005-04-18  Michael Koch  <konqueror@gmx.de>
 
+	gnu/java/awt/EmbeddedWindowSupport.java,
+	gnu/java/net/HeaderFieldHelper.java,
+	gnu/java/net/URLParseError.java,
+	gnu/java/net/protocol/file/Handler.java,
+	gnu/java/net/protocol/jar/Handler.java:
+	Fixed usage of @author tag.
+
+2005-04-18  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/xml/aelfred2/XmlParser.java:
 	Reverted my typo fix.
 
