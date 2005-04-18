@@ -1,5 +1,25 @@
 2005-04-18  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_split_atomic_op): New.
+	(alphaev5_insn_pipe): Add LD_L, ST_C, MB types.
+	(alphaev4_insn_pipe): Likewise.  Correct IST and LDSYM pipes.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.md (UNSPECV_MB, UNSPECV_LL, UNSPECV_SC): New.
+	(UNSPECV_ATOMIC, UNSPECV_CMPXCHG, UNSPECV_XCHG): New.
+	(attr type): Add ld_l, st_c, mb.
+	(andsi_internal, andnotsi3, iorsi_internal, one_cmplsi_internal,
+	iornotsi3, xorsi_internal, xornotsi3): New.
+	* config/alpha/ev4.md (ev4_ld): Add ld_l.
+	(ev4_ist_c, ev4_mb): New.
+	* config/alpha/ev5.md (ev5_st): Add st_c, mb.
+	(ev5_ld_l): New.
+	* config/alpha/ev6.md (ev6_ild): Add ld_l.
+	(ev6_ist): Add st_c.
+	(ev6_mb): New.
+	* config/alpha/sync.md: New file.
+
+2005-04-18  Richard Henderson  <rth@redhat.com>
+
 	* builtins.c (expand_builtin_sync_operation): Fold nand to and
 	for constants.
 

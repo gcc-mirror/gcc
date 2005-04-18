@@ -43,7 +43,7 @@
 
 (define_insn_reservation "ev5_st" 1
   (and (eq_attr "tune" "ev5")
-       (eq_attr "type" "ist,fst"))
+       (eq_attr "type" "ist,fst,st_c,mb"))
   "ev5_e0+ev5_st")
 
 ; Loads from L0 complete in two cycles.  adjust_cost still factors
@@ -52,6 +52,11 @@
   (and (eq_attr "tune" "ev5")
        (eq_attr "type" "ild,fld,ldsym"))
   "ev5_e01+ev5_ld")
+
+(define_insn_reservation "ev5_ld_l" 1
+  (and (eq_attr "tune" "ev5")
+       (eq_attr "type" "ld_l"))
+  "ev5_e0+ev5_ld")
 
 ; Integer branches slot only to E1.
 (define_insn_reservation "ev5_ibr" 1
@@ -129,7 +134,7 @@
 ; Model this instead with increased latency on the input instruction.
 
 (define_bypass 3
-  "ev5_ld,ev5_shift,ev5_mvi,ev5_cmov,ev5_iadd,ev5_ilogcmp"
+  "ev5_ld,ev5_ld_l,ev5_shift,ev5_mvi,ev5_cmov,ev5_iadd,ev5_ilogcmp"
   "ev5_imull,ev5_imulq,ev5_imulh")
 
 (define_bypass  9 "ev5_imull" "ev5_imull,ev5_imulq,ev5_imulh")

@@ -76,6 +76,12 @@
    (UNSPECV_SET_TP	12)
    (UNSPECV_RPCC	13)
    (UNSPECV_SETJMPR_ER	14)	; builtin_setjmp_receiver fragment
+   (UNSPECV_MB		15)
+   (UNSPECV_LL		16)	; load-locked
+   (UNSPECV_SC		17)	; store-conditional
+   (UNSPECV_ATOMIC	18)
+   (UNSPECV_CMPXCHG	19)
+   (UNSPECV_XCHG	20)
   ])
 
 ;; Where necessary, the suffixes _le and _be are used to distinguish between
@@ -97,7 +103,8 @@
 
 (define_attr "type"
   "ild,fld,ldsym,ist,fst,ibr,callpal,fbr,jsr,iadd,ilog,shift,icmov,fcmov,
-   icmp,imul,fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
+   icmp,imul,fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,mb,ld_l,st_c,
+   multi,none"
   (const_string "iadd"))
 
 ;; Describe a user's asm statement.
@@ -1100,7 +1107,20 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
-;; Next are the basic logical operations.  These only exist in DImode.
+;; Next are the basic logical operations.  We only expose the DImode operations
+;; to the rtl expanders, but SImode versions exist for combine as well as for
+;; the atomic operation splitters.
+
+(define_insn "*andsi_internal"
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
+	(and:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,rJ,rJ")
+		(match_operand:SI 2 "and_operand" "rI,N,MH")))]
+  ""
+  "@
+   and %r1,%2,%0
+   bic %r1,%N2,%0
+   zapnot %r1,%m2,%0"
+  [(set_attr "type" "ilog,ilog,shift")])
 
 (define_insn "anddi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
@@ -1275,12 +1295,30 @@
   "zapnot %1,15,%0"
   [(set_attr "type" "shift")])
 
+(define_insn "*andnotsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (not:SI (match_operand:SI 1 "reg_or_8bit_operand" "rI"))
+		(match_operand:SI 2 "reg_or_0_operand" "rJ")))]
+  ""
+  "bic %r2,%1,%0"
+  [(set_attr "type" "ilog")])
+
 (define_insn "andnotdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (not:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI"))
 		(match_operand:DI 2 "reg_or_0_operand" "rJ")))]
   ""
   "bic %r2,%1,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "*iorsi_internal"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(ior:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,rJ")
+		(match_operand:SI 2 "or_operand" "rI,N")))]
+  ""
+  "@
+   bis %r1,%2,%0
+   ornot %r1,%N2,%0"
   [(set_attr "type" "ilog")])
 
 (define_insn "iordi3"
@@ -1293,6 +1331,13 @@
    ornot %r1,%N2,%0"
   [(set_attr "type" "ilog")])
 
+(define_insn "*one_cmplsi_internal"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(not:SI (match_operand:SI 1 "reg_or_8bit_operand" "rI")))]
+  ""
+  "ornot $31,%1,%0"
+  [(set_attr "type" "ilog")])
+
 (define_insn "one_cmpldi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(not:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI")))]
@@ -1300,12 +1345,30 @@
   "ornot $31,%1,%0"
   [(set_attr "type" "ilog")])
 
-(define_insn "*iornot"
+(define_insn "*iornotsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ior:SI (not:SI (match_operand:SI 1 "reg_or_8bit_operand" "rI"))
+		(match_operand:SI 2 "reg_or_0_operand" "rJ")))]
+  ""
+  "ornot %r2,%1,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "*iornotdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ior:DI (not:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI"))
 		(match_operand:DI 2 "reg_or_0_operand" "rJ")))]
   ""
   "ornot %r2,%1,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "*xorsi_internal"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(xor:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,rJ")
+		(match_operand:SI 2 "or_operand" "rI,N")))]
+  ""
+  "@
+   xor %r1,%2,%0
+   eqv %r1,%N2,%0"
   [(set_attr "type" "ilog")])
 
 (define_insn "xordi3"
@@ -1318,7 +1381,15 @@
    eqv %r1,%N2,%0"
   [(set_attr "type" "ilog")])
 
-(define_insn "*xornot"
+(define_insn "*xornotsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(not:SI (xor:SI (match_operand:SI 1 "register_operand" "%rJ")
+			(match_operand:SI 2 "register_operand" "rI"))))]
+  ""
+  "eqv %r1,%2,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "*xornotdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(not:DI (xor:DI (match_operand:DI 1 "register_operand" "%rJ")
 			(match_operand:DI 2 "register_operand" "rI"))))]
@@ -7704,6 +7775,8 @@
   "TARGET_MAX"
   "unpkbw %r1,%0"
   [(set_attr "type" "mvi")])
+
+(include "sync.md")
 
 ;; The call patterns are at the end of the file because their
 ;; wildcard operand0 interferes with nice recognition.
