@@ -1,3 +1,8 @@
+2005-04-18  Robert Schuster <thebohemian@gmx.net>
+
+	* java/awt/AWTEvent.java (toString): Added case
+	for source not being an AWT component.
+
 2005-04-18  Chris Burdess  <dog@gnu.org>
 
 	* gnu/java/net/BASE64.java: Truncate encoded byte array.
