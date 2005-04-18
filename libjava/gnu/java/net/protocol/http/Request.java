@@ -38,12 +38,12 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import gnu.java.net.protocol.http.event.RequestEvent;
 import gnu.java.net.BASE64;
 import gnu.java.net.LineInputStream;
+import gnu.java.net.protocol.http.event.RequestEvent;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ProtocolException;
 import java.security.MessageDigest;

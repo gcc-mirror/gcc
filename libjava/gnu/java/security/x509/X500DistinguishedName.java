@@ -38,14 +38,17 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
+import gnu.java.security.OID;
+import gnu.java.security.der.DER;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+
 import java.io.EOFException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-
 import java.security.Principal;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -55,11 +58,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
-import gnu.java.security.OID;
 
 public class X500DistinguishedName implements Principal
 {

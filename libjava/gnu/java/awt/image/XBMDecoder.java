@@ -1,4 +1,4 @@
-/* XBMDecoder -- Decodes X-bitmaps
+/* XBMDecoder.java -- Decodes X-bitmaps
    Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,9 +41,9 @@ package gnu.java.awt.image;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageConsumer;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 import java.util.StringTokenizer;

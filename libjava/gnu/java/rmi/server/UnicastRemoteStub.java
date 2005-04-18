@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* UnicastRemoteStub.java --
+   Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,8 +37,8 @@ exception statement from your version. */
 
 package gnu.java.rmi.server;
 
-import java.rmi.server.RemoteStub;
 import java.rmi.server.RemoteRef;
+import java.rmi.server.RemoteStub;
 
 public class UnicastRemoteStub
 	extends RemoteStub {

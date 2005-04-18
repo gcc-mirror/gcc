@@ -40,8 +40,8 @@ package gnu.java.net.protocol.http;
 
 import gnu.java.net.LineInputStream;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Collection;

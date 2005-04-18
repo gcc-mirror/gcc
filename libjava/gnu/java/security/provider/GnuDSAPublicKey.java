@@ -46,13 +46,10 @@ import gnu.java.security.der.DERWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import java.math.BigInteger;
-
-import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPublicKey;
 import java.security.spec.DSAParameterSpec;
-
 import java.util.ArrayList;
 
 public class GnuDSAPublicKey implements DSAPublicKey

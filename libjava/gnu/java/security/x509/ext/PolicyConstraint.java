@@ -38,12 +38,12 @@ exception statement from your version. */
 
 package gnu.java.security.x509.ext;
 
-import java.io.IOException;
-import java.math.BigInteger;
-
 import gnu.java.security.OID;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
+
+import java.io.IOException;
+import java.math.BigInteger;
 
 public class PolicyConstraint extends Extension.Value
 {

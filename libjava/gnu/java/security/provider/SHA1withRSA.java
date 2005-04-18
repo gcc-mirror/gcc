@@ -38,10 +38,10 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
+import gnu.java.security.OID;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import gnu.java.security.OID;
 
 public class SHA1withRSA extends RSA
 {

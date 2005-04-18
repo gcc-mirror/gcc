@@ -38,14 +38,24 @@ exception statement from your version. */
 
 package gnu.java.awt.peer;
 
-import java.awt.*;
-import java.awt.peer.*;
-import java.awt.font.*;
-import java.awt.geom.*;
-import java.text.*;
-import java.util.*;
-import gnu.java.awt.*;
+import gnu.java.awt.ClasspathToolkit;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Toolkit;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.font.LineMetrics;
+import java.awt.font.TextAttribute;
+import java.awt.font.TransformAttribute;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.awt.peer.FontPeer;
+import java.text.AttributedCharacterIterator;
+import java.text.CharacterIterator;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * A peer for fonts that are used inside Classpath. The purpose of

@@ -1,4 +1,4 @@
-/* GeneralNames.java -- the GeneralNames object.
+/* GeneralNames.java -- the GeneralNames object
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,21 +38,19 @@ exception statement from your version. */
 
 package gnu.java.security.x509.ext;
 
+import gnu.java.security.OID;
+import gnu.java.security.der.DER;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+import gnu.java.security.x509.X500DistinguishedName;
+
 import java.io.IOException;
-
 import java.net.InetAddress;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import gnu.java.security.OID;
-import gnu.java.security.x509.X500DistinguishedName;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
 
 public class GeneralNames
 {

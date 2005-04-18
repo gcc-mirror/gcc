@@ -1,5 +1,6 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+/* DGCImpl.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,14 +38,14 @@ exception statement from your version. */
 
 package gnu.java.rmi.dgc;
 
+import gnu.java.rmi.server.UnicastServerRef;
+
+import java.rmi.RemoteException;
 import java.rmi.dgc.DGC;
 import java.rmi.dgc.Lease;
 import java.rmi.dgc.VMID;
 import java.rmi.server.ObjID;
-import java.rmi.RemoteException;
 import java.rmi.server.RMISocketFactory;
-import gnu.java.rmi.server.UnicastServerRef;
-
 import java.util.Hashtable;
 
 /**

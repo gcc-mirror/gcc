@@ -1,5 +1,6 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+/* UnicastRef.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 

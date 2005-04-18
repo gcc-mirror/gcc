@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
-import java.math.BigInteger;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.RSAPublicKeySpec;
-import java.util.ArrayList;
-
 import gnu.java.security.OID;
 import gnu.java.security.der.BitString;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERValue;
+
+import java.math.BigInteger;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.ArrayList;
 
 class GnuRSAPublicKey implements RSAPublicKey
 {

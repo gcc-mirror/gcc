@@ -38,16 +38,14 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
-import java.math.BigInteger;
-
-import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.spec.RSAPrivateCrtKeySpec;
-
-import java.util.ArrayList;
-
 import gnu.java.security.OID;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERValue;
+
+import java.math.BigInteger;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.spec.RSAPrivateCrtKeySpec;
+import java.util.ArrayList;
 
 class GnuRSAPrivateKey implements RSAPrivateCrtKey
 {

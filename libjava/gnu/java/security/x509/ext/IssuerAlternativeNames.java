@@ -38,9 +38,10 @@ exception statement from your version. */
 
 package gnu.java.security.x509.ext;
 
+import gnu.java.security.OID;
+
 import java.io.IOException;
 import java.util.List;
-import gnu.java.security.OID;
 
 public class IssuerAlternativeNames extends Extension.Value
 {

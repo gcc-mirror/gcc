@@ -1,4 +1,4 @@
-/* DefaultPolicy.java 
+/* DefaultPolicy.java --
    Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,7 +37,12 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
-import java.security.*;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.Permission;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.security.Policy;
 
 /** 
   * This is just a stub policy implementation which grants all permissions

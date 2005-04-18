@@ -39,12 +39,10 @@ exception statement from your version. */
 package gnu.java.security.x509;
 
 import java.io.IOException;
-
 import java.security.Principal;
-import java.security.cert.Certificate;
 import java.security.cert.CertSelector;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;

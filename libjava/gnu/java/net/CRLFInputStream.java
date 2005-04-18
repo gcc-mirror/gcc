@@ -39,8 +39,8 @@ exception statement from your version. */
 package gnu.java.net;
 
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * An input stream that filters out CR/LF pairs into LFs.

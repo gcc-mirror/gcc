@@ -38,17 +38,16 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
-import java.math.BigInteger;
-
-import java.util.ArrayList;
-
-import javax.crypto.interfaces.DHPublicKey;
-import javax.crypto.spec.DHParameterSpec;
-
 import gnu.java.security.OID;
 import gnu.java.security.der.BitString;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERValue;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+
+import javax.crypto.interfaces.DHPublicKey;
+import javax.crypto.spec.DHParameterSpec;
 
 public class GnuDHPublicKey implements DHPublicKey
 {
