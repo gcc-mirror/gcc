@@ -710,7 +710,16 @@ ptr_t GC_get_stack_base()
 
     /* First try the easy way.  This should work for glibc 2.2	*/
       if (0 != &__libc_stack_end) {
+#	ifdef SPARC
+	/* Older versions of glibc for 64-bit Sparc do not set
+	 * this variable correctly, it gets set to either zero
+	 * or one.
+	 */
+	if (__libc_stack_end != (ptr_t) (unsigned long)0x1)
+	  return __libc_stack_end;
+#	else
 	return __libc_stack_end;
+#	endif
       }
     f = open("/proc/self/stat", O_RDONLY);
     if (f < 0 || STAT_READ(f, stat_buf, STAT_BUF_SIZE) < 2 * STAT_SKIP) {
