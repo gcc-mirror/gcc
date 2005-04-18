@@ -5183,7 +5183,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 	}
     }
 
-  if (basic_block_info)
+  if (cfun && cfun->cfg && basic_block_info)
     {
       /* Make a CFG based dump.  */
       check_bb_profile (ENTRY_BLOCK_PTR, file);
