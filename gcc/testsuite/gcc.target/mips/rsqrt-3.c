@@ -1,5 +1,5 @@
-/* { dg-do compile { target "mips*-*-*" } } */
-/* { dg-options "-O2 -mips4" } */
+/* { dg-do compile } */
+/* { dg-mips-options "-O2 -mips4 -mhard-float" } */
 /* { dg-final { scan-assembler-not "rsqrt.d" } } */
 /* { dg-final { scan-assembler-not "rsqrt.s" } } */
 
@@ -25,4 +25,3 @@ float barf(float x)
 {
   return sqrtf(1.0f/x);
 }
-

@@ -17,25 +17,160 @@
 # GCC testsuite that uses the `dg.exp' driver.
 
 # Exit immediately if this isn't a MIPS target.
-if ![istarget mips*-*-*] then {
+if ![istarget mips*-*-*] {
   return
 }
 
 # Load support procs.
 load_lib gcc-dg.exp
 
-# If a testcase doesn't have special options, use these.
-global DEFAULT_CFLAGS
-if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+# Find out which target is selected by the default compiler flags.
+# Also remember which aspects of the target are forced on the command
+# line (as opposed to being overridable defaults).
+#
+#    $mips_isa:		 the ISA level specified by __mips
+#    $mips_arch:	 the architecture specified by _MIPS_ARCH
+#    $mips_mips16:	 true if MIPS16 mode is selected
+#    $mips_mips64:	 true if 64-bit output is selected
+#    $mips_float:	 "hard" or "soft"
+#
+#    $mips_forced_isa:	 true if the command line uses -march=* or -mips*
+#    $mips_forced_abi:	 true if the command line uses -mabi=* or -mgp*
+#    $mips_forced_float: true if the command line uses -mhard/soft-float
+proc setup_mips_tests {} {
+    global mips_isa
+    global mips_arch
+    global mips_mips16
+    global mips_mips64
+    global mips_float
+
+    global mips_forced_isa
+    global mips_forced_abi
+    global mips_forced_float
+
+    global compiler_flags
+    global tool
+
+    set src dummy[pid].c
+    set f [open $src "w"]
+    puts $f {
+	int isa = __mips;
+	const char *arch = _MIPS_ARCH;
+	#ifdef __mips16
+	int mips16 = 1;
+	#endif
+	#ifdef __mips64
+	int mips64 = 1;
+	#endif
+	#ifdef __mips_hard_float
+	const char *float = "hard";
+	#else
+	const char *float = "soft";
+	#endif
+    }
+    close $f
+    set output [${tool}_target_compile $src "" preprocess ""]
+    file delete $src
+
+    regexp {isa = ([^;]*)} $output dummy mips_isa
+    regexp {arch = "([^"]*)} $output dummy mips_arch
+    set mips_mips16 [regexp {mips16 = 1} $output]
+    set mips_mips64 [regexp {mips64 = 1} $output]
+    regexp {float = "([^"]*)} $output dummy mips_float
+
+    set mips_forced_isa [regexp -- {(-mips|-march)} $compiler_flags]
+    set mips_forced_abi [regexp -- {(-mgp|-mabi)} $compiler_flags]
+    set mips_forced_float [regexp -- {-m(hard|soft)-float} $compiler_flags]
 }
 
-# Initialize `dg'.
+# Like dg-options, but treats certain MIPS-specific options specially:
+#
+#    -mgp32
+#	Force 32-bit code.  Skip the test if the multilib flags force
+#	a 64-bit ABI.
+#
+#    -mgp64
+#	Force 64-bit code.  Also force a 64-bit target architecture
+#	if the other flags don't do so.  Skip the test if the multilib
+#	flags force a 32-bit ABI or a 32-bit architecture.
+#
+#    -mno-mips16
+#	Skip the test for MIPS16 targets.
+#
+#    -march=*
+#    -mips*
+#	Select the target architecture.  Skip the test for MIPS16 targets
+#	or if the multilib flags force a different architecture.
+#
+#    -msoft-float
+#    -mhard-float
+#	Select the given floating-point mode.  Skip the test if the
+#	multilib flags force a different selection.
+proc dg-mips-options {args} {
+    upvar dg-extra-tool-flags extra_tool_flags
+    upvar dg-do-what do_what
+
+    global mips_isa
+    global mips_arch
+    global mips_mips16
+    global mips_mips64
+    global mips_float
+
+    global mips_forced_isa
+    global mips_forced_abi
+    global mips_forced_float
+
+    set flags [lindex $args 1]
+    set matches 1
+
+    # First handle the -mgp* options.  Add an architecture option if necessary.
+    foreach flag $flags {
+	if {$flag == "-mgp32" && $mips_mips64} {
+	    if {$mips_forced_abi} {
+		set matches 0
+	    } else {
+		append flags " -mabi=32"
+	    }
+	} elseif {$flag == "-mgp64" && !$mips_mips64} {
+	    if {$mips_forced_abi} {
+		set matches 0
+	    } else {
+		append flags " -mabi=o64"
+		if {[lsearch -regexp $flags {^(-mips|-march)}] < 0} {
+		    append flags " -mips3"
+		}
+	    }
+	}
+    }
+    # Handle the other options.
+    foreach flag $flags {
+	if {$flag == "-mno-mips16"} {
+	    if {$mips_mips16} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-march=(.*)} $flag dummy arch]} {
+	    if {$mips_mips16 || ($arch != $mips_arch && $mips_forced_isa)} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-mips(.*)} $flag dummy isa] && $isa != 16} {
+	    if {$mips_mips16 || ($isa != $mips_isa && $mips_forced_isa)} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-m(hard|soft)-float} $flag dummy float]} {
+	    if {$mips_float != $float && $mips_forced_float} {
+		set matches 0
+	    }
+	}
+    }
+    if {$matches} {
+	set extra_tool_flags $flags
+    } else {
+	set do_what [list [lindex $do_what 0] "N" "P"]
+    }
+}
+
+setup_mips_tests
+
 dg-init
-
-# Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-	"" $DEFAULT_CFLAGS
-
-# All done.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" ""
 dg-finish

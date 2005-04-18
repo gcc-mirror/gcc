@@ -1,5 +1,7 @@
-/* { dg-do compile { target "mips*-*-*" } } */
-/* { dg-options "-O2 -mips4" } */
+/* { dg-do compile } */
+/* { dg-mips-options "-O2 -mips4 -mhard-float" } */
+/* { dg-final { scan-assembler "movt" } } */
+/* { dg-final { scan-assembler "movf" } } */
 /* { dg-final { scan-assembler "movz.s" } } */
 /* { dg-final { scan-assembler "movn.s" } } */
 /* { dg-final { scan-assembler "movt.s" } } */
@@ -7,11 +9,22 @@
 /* { dg-final { scan-assembler "movn.d" } } */
 /* { dg-final { scan-assembler "movf.d" } } */
 
-#if __mips < 4 || __mips_soft_float
-asm ("# movz.s movn.s movt.s movz.d movn.d movf.d");
-#else
+void ext_int (int);
+void ext_long (long);
 void ext_float (float);
 void ext_double (double);
+
+int
+sub3 (int i, int j, float f)
+{
+  ext_int (f ? i : j);
+}
+
+long
+sub6 (long i, long j, float f)
+{
+  ext_long (!f ? i : j);
+}
 
 float
 sub7 (float f, float g, int i)
@@ -48,4 +61,3 @@ subc (double f, double g, double h)
 {
   ext_double (!h ? f : g);
 }
-#endif
