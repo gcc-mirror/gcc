@@ -1,3 +1,7 @@
+2005-04-18  Laurent GUERBY  <laurent@guerby.net>
+
+	* ada/acats/run_all.sh: Use sync when executable not present.
+	
 2005-04-18  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/vect/vect-11.c: Require effective target vect_int_mult.
