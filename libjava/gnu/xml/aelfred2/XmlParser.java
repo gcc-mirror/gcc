@@ -3382,7 +3382,7 @@ loop:
       {
         if (ids.systemId.indexOf('#') != -1)
           {
-            handler.verror("SYSTEM id has an URI fragment: " + ids.systemId);
+            handler.verror("SYSTEM id has a URI fragment: " + ids.systemId);
           }
         ids.baseUri = handler.getSystemId();
         if (ids.baseUri == null && uriWarnings)
