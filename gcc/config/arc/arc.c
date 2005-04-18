@@ -1347,7 +1347,7 @@ arc_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
       /* ??? If stack intactness is important, always emit now.  */
       if (MUST_SAVE_RETURN_ADDR && epilogue_delay != NULL_RTX)
 	{
-	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, 0, 1, NULL);
+	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, 1, NULL);
 	  epilogue_delay = NULL_RTX;
 	}
 
@@ -1379,8 +1379,7 @@ arc_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
 	{
 	  if (epilogue_delay)
 	    {
-	      final_scan_insn (XEXP (epilogue_delay, 0), file, 1, 0, 1,
-			       NULL);
+	      final_scan_insn (XEXP (epilogue_delay, 0), file, 1, 1, NULL);
 	    }
 	}
 
@@ -1405,7 +1404,7 @@ arc_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
 	    abort ();
 	  if (restored < size)
 	    abort ();
-	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, 0, 1, NULL);
+	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, 1, NULL);
 	}
       else if (frame_pointer_needed && !fp_restored_p)
 	{
