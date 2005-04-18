@@ -1,3 +1,8 @@
+2005-04-19  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (Optimize Options): Refer to the correct
+	optimisation flag -ftree-dominator-opts, not -ftree-dom.
+
 2005-04-18  Christopher Jaillet <christophe.jaillet@wanadoo.fr>
 
 	* config/rs6000/rs6000.c (machopic_output_stub):  Increase
