@@ -1,5 +1,11 @@
 2005-04-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/geom/CubicCurve2D.java,
+	java/awt/geom/QuadCurve2D.java:
+	Fixed mentioning of Brian Gouph.
+
+2005-04-18  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/Buffers.java,
 	gnu/java/awt/image/ImageDecoder.java,
 	gnu/java/awt/image/XBMDecoder.java,

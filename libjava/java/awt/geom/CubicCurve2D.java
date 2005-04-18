@@ -689,7 +689,7 @@ public abstract class CubicCurve2D implements Shape, Cloneable
    * result of -1 indicates that the equation is constant (i.e.,
    * always or never zero).
    *
-   * @author Brain Gouph (bjg@network-theory.com)
+   * @author Brian Gough (bjg@network-theory.com)
    * (original C implementation in the <a href=
    * "http://www.gnu.org/software/gsl/">GNU Scientific Library</a>)
    *
