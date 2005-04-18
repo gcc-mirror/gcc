@@ -1,3 +1,9 @@
+2005-04-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21001
+	* tree-optimize.c (init_tree_optimization_passes): Move the
+	first pass_forwprop immediately before pass_vrp.
+
 2005-04-17  Ian Lance Taylor  <ian@airs.com>
 
 	* c-common.def (SIZEOF_EXPR, ARROW_EXPR, ALIGNOF_EXPR): Remove.

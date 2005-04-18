@@ -1,3 +1,8 @@
+2005-04-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21001
+	* gcc.dg/tree-ssa/pr21001.c: New.
+
 2005-04-17  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21075
