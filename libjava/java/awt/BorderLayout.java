@@ -700,6 +700,10 @@ calcSize(Container target, int what)
       Dimension cdim = calcCompSize(center, what);
 
       int width = edim.width + cdim.width + wdim.width + (hgap * 2);
+      // check for overflow
+      if (width < edim.width || width < cdim.width || width < cdim.width)
+          width = Integer.MAX_VALUE;
+
       if (ndim.width > width)
 	width = ndim.width;
       if (sdim.width > width)
@@ -713,7 +717,13 @@ calcSize(Container target, int what)
       if (wdim.height > height)
 	height = wdim.height;
 
-      height += (ndim.height + sdim.height + (vgap * 2) + ins.top + ins.bottom);
+      int addedHeight = height + (ndim.height + sdim.height + (vgap * 2)
+                                  + ins.top + ins.bottom);
+      // check for overflow
+      if (addedHeight < height)
+          height = Integer.MAX_VALUE;
+      else
+          height = addedHeight;
 
       return(new Dimension(width, height));
     }
