@@ -897,12 +897,10 @@
       extern ptr_t GC_SysVGetDataStart();
 #     ifdef __arch64__
 #	define DATASTART GC_SysVGetDataStart(0x100000, _etext)
-	/* libc_stack_end is not set reliably for sparc64 */
-#       define STACKBOTTOM ((ptr_t) 0x80000000000ULL)
 #     else
 #       define DATASTART GC_SysVGetDataStart(0x10000, _etext)
-#	define LINUX_STACKBOTTOM
 #     endif
+#     define LINUX_STACKBOTTOM
 #   endif
 #   ifdef OPENBSD
 #     define OS_TYPE "OPENBSD"
