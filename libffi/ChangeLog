@@ -3,7 +3,8 @@
 
 	* Makefile.am: Add CRIS support.
 	* configure.ac: Likewise.
-	* Makefile.in, configure, testsuite/Makefile.in: Regenerate.
+	* Makefile.in, configure, testsuite/Makefile.in,
+	include/Makefile.in: Regenerate.
 	* src/cris: New directory.
 	* src/cris/ffi.c, src/cris/sysv.S, src/cris/ffitarget.h: New files.
 	* src/prep_cif.c (ffi_prep_cif): Wrap in #ifndef __CRIS__.
