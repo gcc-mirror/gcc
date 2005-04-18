@@ -285,10 +285,10 @@ atomic_free (unsigned int *mask, int bit)
 #define PTR_IN(X, P)	((P) >= (X) && (P) < (X) + SIZE (X))
 
 static struct unw_reg_state emergency_reg_state[32];
-static int emergency_reg_state_free = MASK_FOR (emergency_reg_state);
+static unsigned int emergency_reg_state_free = MASK_FOR (emergency_reg_state);
 
 static struct unw_labeled_state emergency_labeled_state[8];
-static int emergency_labeled_state_free = MASK_FOR (emergency_labeled_state);
+static unsigned int emergency_labeled_state_free = MASK_FOR (emergency_labeled_state);
 
 #ifdef ENABLE_MALLOC_CHECKING
 static int reg_state_alloced;
