@@ -1,5 +1,10 @@
 2005-04-18  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/xml/aelfred2/XmlParser.java:
+	Reverted my typo fix.
+
+2005-04-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/geom/CubicCurve2D.java,
 	java/awt/geom/QuadCurve2D.java:
 	Fixed mentioning of Brian Gouph.
