@@ -1,3 +1,8 @@
+2005-04-19  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (Optimize Options): Refer to the correct
+	optimisation flag -ftree-dominator-opts, not -ftree-dom.
+
 2005-04-17  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/20490
