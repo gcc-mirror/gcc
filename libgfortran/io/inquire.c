@@ -87,13 +87,16 @@ inquire_via_unit (gfc_unit * u)
 
   if (ioparm.sequential != NULL)
     {
-      /* disallow an open direct access file to be accessed
-         sequentially */
-      if (u->flags.access==ACCESS_DIRECT)
-        p = "NO";
-      else   
-        p = (u == NULL) ? inquire_sequential (NULL, 0) :
-        inquire_sequential (u->file, u->file_len);
+      if (u == NULL)
+	p = inquire_sequential (NULL, 0);
+      else
+	{
+          /* disallow an open direct access file to be accessed sequentially */
+          if (u->flags.access == ACCESS_DIRECT)
+            p = "NO";
+          else   
+            p = inquire_sequential (u->file, u->file_len);
+	}
 
       cf_strcpy (ioparm.sequential, ioparm.sequential_len, p);
     }
