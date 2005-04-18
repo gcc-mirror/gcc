@@ -5751,7 +5751,7 @@ expand_sync_operation (rtx mem, rtx val, enum rtx_code code)
 
     case NOT:
       icode = sync_nand_optab[mode];
-      if (icode != CODE_FOR_nothing)
+      if (icode == CODE_FOR_nothing)
 	{
 	  icode = sync_and_optab[mode];
 	  if (icode != CODE_FOR_nothing)

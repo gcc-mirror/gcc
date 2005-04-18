@@ -3,6 +3,8 @@
 	* builtins.c (expand_builtin_sync_operation): Fold nand to and
 	for constants.
 
+	* optabs.c (expand_sync_operation): Fix typo expanding nand to and.
+
 2005-04-18  Devang Patel  <dpatel@apple.com>
 
 	* config/rs6000/atlivec.md (mulv4si3): New pattern.
