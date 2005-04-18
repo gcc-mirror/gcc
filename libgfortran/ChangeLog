@@ -1,3 +1,9 @@
+2005-04-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20950
+	* io/inquire.c (inquire_via_unit): Check for the gfc_unit being
+	NULL when setting ioparm.sequential.
+
 2005-04-17  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21075
