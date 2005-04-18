@@ -3141,7 +3141,6 @@ extern GTY(()) varray_type local_classes;
 
 #define JOINER '$'
 
-#define VPTR_NAME "$v"
 #define THROW_NAME "$eh_throw"
 #define AUTO_VTABLE_NAME "__vtbl$me__"
 #define AUTO_TEMP_NAME "_$tmp_"
@@ -3160,7 +3159,6 @@ extern GTY(()) varray_type local_classes;
 
 #define JOINER '.'
 
-#define VPTR_NAME ".v"
 #define THROW_NAME ".eh_throw"
 #define AUTO_VTABLE_NAME "__vtbl.me__"
 #define AUTO_TEMP_NAME "_.tmp_"
@@ -3176,9 +3174,6 @@ extern GTY(()) varray_type local_classes;
 
 #else /* NO_DOT_IN_LABEL */
 
-#define VPTR_NAME "__vptr"
-#define VPTR_NAME_P(ID_NODE) \
-  (!strncmp (IDENTIFIER_POINTER (ID_NODE), VPTR_NAME, sizeof (VPTR_NAME) - 1))
 #define THROW_NAME "__eh_throw"
 #define IN_CHARGE_NAME "__in_chrg"
 #define AUTO_VTABLE_NAME "__vtbl_me__"
@@ -3219,9 +3214,6 @@ extern GTY(()) varray_type local_classes;
 #define VTABLE_PFN_NAME		"__pfn"
 
 #if !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL)
-
-#define VPTR_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == JOINER \
-			      && IDENTIFIER_POINTER (ID_NODE)[1] == 'v')
 
 #define VTABLE_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[1] == 'v' \
   && IDENTIFIER_POINTER (ID_NODE)[2] == 't' \

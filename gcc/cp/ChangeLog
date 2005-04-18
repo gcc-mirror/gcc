@@ -3,6 +3,8 @@
 	* decl.c (expand_static_init): Call build2 and build3 instead
 	of build.
 
+	* cp-tree.h (VPTR_NAME, VPTR_NAME_P): Remove.
+
 2005-04-17  Ian Lance Taylor  <ian@airs.com>
 
 	* cp-tree.def: Add SIZEOF_EXPR, ARROW_EXPR and ALIGNOF_EXPR.
