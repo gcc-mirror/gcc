@@ -5292,15 +5292,15 @@ expand_static_init (tree decl, tree init)
 	  flag = TARGET_EXPR_SLOT (begin);
 
 	  TARGET_EXPR_CLEANUP (begin)
-	    = build (COND_EXPR, void_type_node, flag,
-		     void_zero_node,
-		     build_call (abort_fn, guard_addr_list));
+	    = build3 (COND_EXPR, void_type_node, flag,
+		      void_zero_node,
+		      build_call (abort_fn, guard_addr_list));
 	  CLEANUP_EH_ONLY (begin) = 1;
 
 	  /* Do the initialization itself.  */
 	  init = add_stmt_to_compound (begin, init);
 	  init = add_stmt_to_compound
-	    (init, build (MODIFY_EXPR, void_type_node, flag, boolean_true_node));
+	    (init, build2 (MODIFY_EXPR, void_type_node, flag, boolean_true_node));
 	  init = add_stmt_to_compound
 	    (init, build_call (release_fn, guard_addr_list));
 	}
