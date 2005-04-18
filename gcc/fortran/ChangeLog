@@ -5,14 +5,16 @@
 	PR fortran/18396
 	PR fortran/19467
 	PR fortran/19657
-	* fortran/trans-io.c (gfc_build_io_library_fndecls): Create declaration for
-	st_set_nml_var and st_set_nml_var_dim. Remove declarations of old
-	namelist functions.
+	* fortran/trans-io.c (gfc_build_io_library_fndecls): Create
+	declaration for	st_set_nml_var and st_set_nml_var_dim. Remove
+	declarations of old namelist functions.
 	(build_dt): Simplified call to transfer_namelist_element.
-	(nml_get_addr_expr): Generates address expression for start of object data. New function.
-	(nml_full_name): Qualified name for derived type components. New function.
-	(transfer_namelist_element): Modified for calls to new functions and improved derived
-	type handling.
+	(nml_get_addr_expr): Generates address expression for start of 
+	object data. New function.
+	(nml_full_name): Qualified name for derived type components. New 
+	function.
+	(transfer_namelist_element): Modified for calls to new functions 
+	and improved derived type handling.
 
 2005-04-17  Richard Guenther  <rguenth@gcc.gnu.org>
 
