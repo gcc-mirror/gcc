@@ -1,5 +1,6 @@
 2005-04-18  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR middle-end/21049
 	* tree-cfg.c (dump_function_to_file): Do not crash if cfun or
 	cfun->cfg are NULL.
 
