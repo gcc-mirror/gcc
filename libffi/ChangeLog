@@ -1,4 +1,12 @@
-2005-04-18  Hans-Peter Nilsson  <hp@axis.com>
+2005-04-18  Simon Posnjak <simon.posnjak@siol.net> 
+	    Hans-Peter Nilsson  <hp@axis.com>
+
+	* Makefile.am: Add CRIS support.
+	* configure.ac: Likewise.
+	* Makefile.in, configure, testsuite/Makefile.in: Regenerate.
+	* src/cris: New directory.
+	* src/cris/ffi.c, src/cris/sysv.S, src/cris/ffitarget.h: New files.
+	* src/prep_cif.c (ffi_prep_cif): Wrap in #ifndef __CRIS__.
 
 	* testsuite/lib/libffi-dg.exp (libffi-dg-test-1): Replace \n with
 	\r?\n in output tests.
