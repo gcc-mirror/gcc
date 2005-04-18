@@ -1,3 +1,20 @@
+2005-04-18  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/color/CieXyzConverter.java,
+	gnu/java/awt/color/ClutProfileConverter.java,
+	gnu/java/awt/color/ColorLookUpTable.java,
+	gnu/java/awt/color/ColorSpaceConverter.java,
+	gnu/java/awt/color/GrayProfileConverter.java,
+	gnu/java/awt/color/GrayScaleConverter.java,
+	gnu/java/awt/color/LinearRGBConverter.java,
+	gnu/java/awt/color/ProfileHeader.java,
+	gnu/java/awt/color/PyccConverter.java,
+	gnu/java/awt/color/RgbProfileConverter.java,
+	gnu/java/awt/color/SrgbConverter.java,
+	gnu/java/awt/color/TagEntry.java,
+	gnu/java/awt/color/ToneReproductionCurve.java:
+	Standardized file headers.
+
 2005-04-16  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/xml/pipeline/ValidationConsumer.java (Recognizer): Make
