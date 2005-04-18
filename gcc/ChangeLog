@@ -1,3 +1,8 @@
+2005-04-18  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (expand_builtin_sync_operation): Fold nand to and
+	for constants.
+
 2005-04-18  Devang Patel  <dpatel@apple.com>
 
 	* config/rs6000/atlivec.md (mulv4si3): New pattern.
