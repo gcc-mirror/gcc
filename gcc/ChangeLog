@@ -1,3 +1,8 @@
+2005-04-18  Christopher Jaillet <christophe.jaillet@wanadoo.fr>
+
+	* config/rs6000/rs6000.c (machopic_output_stub):  Increase
+	alloca argument to be big enough.
+
 2005-04-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/21049
