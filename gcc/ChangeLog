@@ -1,3 +1,9 @@
+2005-04-18  James A. Morrison  <phython@gcc.gnu.org>
+
+	* config/ia64/unwind-ia64.c (emergency_reg_state_free): Make an
+	unsigned int.
+	(emergency_labeled_state_free): Likewise.
+
 2005-04-18  Nick Clifton  <nickc@redhat.com>
 
 	* config/h8300/h8300.md (jump): Remove prescan parameter from
