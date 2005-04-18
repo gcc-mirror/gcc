@@ -1,3 +1,10 @@
+2005-04-18  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (m68hc12): Use the m68hc11.opt file for target
+	specific options.
+	(v850e, v850e1): Use the v850.opt file for target specific
+	options.
+
 2005-04-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21001

@@ -1311,6 +1311,7 @@ m68hc12-*-*|m6812-*-*)
 	md_file="m68hc11/m68hc11.md"
 	out_file="m68hc11/m68hc11.c"
 	tmake_file="m68hc11/t-m68hc11-gas"
+	extra_options="${extra_options} m68hc11/m68hc11.opt"
 	use_fixproto=yes
         ;;
 m68k-*-aout*)
@@ -2106,6 +2107,7 @@ v850e1-*-*)
 	tmake_file=v850/t-v850e
 	md_file=v850/v850.md
 	out_file=v850/v850.c
+	extra_options="${extra_options} v850/v850.opt"
 	if test x$stabs = xyes
 	then
 		tm_file="${tm_file} dbx.h"
@@ -2122,6 +2124,7 @@ v850e-*-*)
 	tmake_file=v850/t-v850e
 	md_file=v850/v850.md
 	out_file=v850/v850.c
+	extra_options="${extra_options} v850/v850.opt"
 	if test x$stabs = xyes
 	then
 		tm_file="${tm_file} dbx.h"
