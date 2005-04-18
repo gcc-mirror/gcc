@@ -4173,7 +4173,7 @@ compilation time.
 -fif-conversion2 @gol
 -ftree-ccp @gol
 -ftree-dce @gol
--ftree-dom @gol
+-ftree-dominator-opts @gol
 -ftree-dse @gol
 -ftree-ter @gol
 -ftree-lrs @gol
@@ -4816,7 +4816,7 @@ performance and allow further loop optimizations to take place.
 
 @item -ftree-loop-im
 Perform loop invariant motion on trees.  This pass moves only invariants that
-would be hard to handle on rtl level (function calls, operations that expand to
+would be hard to handle at RTL level (function calls, operations that expand to
 nontrivial sequences of insns).  With @option{-funswitch-loops} it also moves
 operands of conditions that are invariant out of the loop, so that we can use
 just trivial invariantness analysis in loop unswitching.  The pass also includes
