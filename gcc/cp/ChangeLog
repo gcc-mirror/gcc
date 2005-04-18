@@ -1,3 +1,8 @@
+2005-04-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* decl.c (expand_static_init): Call build2 and build3 instead
+	of build.
+
 2005-04-17  Ian Lance Taylor  <ian@airs.com>
 
 	* cp-tree.def: Add SIZEOF_EXPR, ARROW_EXPR and ALIGNOF_EXPR.
