@@ -4469,6 +4469,64 @@ alpha_expand_builtin_vector_binop (rtx (*gen) (rtx, rtx, rtx),
 
   emit_insn ((*gen) (op0, op1, op2));
 }
+
+/* Expand an an atomic fetch-and-operate pattern.  CODE is the binary operation
+   to perform.  MEM is the memory on which to operate.  VAL is the second 
+   operand of the binary operator.  BEFORE and AFTER are optional locations to
+   return the value of MEM either before of after the operation.  SCRATCH is
+   a scratch register.  */
+
+void
+alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
+		       rtx before, rtx after, rtx scratch)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx label, cond, x;
+  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+
+  emit_insn (gen_memory_barrier ());
+
+  label = gen_label_rtx ();
+  emit_label (label);
+  label = gen_rtx_LABEL_REF (DImode, label);
+
+  if (before == NULL)
+    before = scratch;
+
+  if (mode == SImode)
+    emit_insn (gen_load_locked_si (before, mem));
+  else if (mode == DImode)
+    emit_insn (gen_load_locked_di (before, mem));
+  else
+    gcc_unreachable ();
+
+  if (code == NOT)
+    {
+      x = gen_rtx_NOT (mode, val);
+      x = gen_rtx_AND (mode, x, before);
+    }
+  else
+    x = gen_rtx_fmt_ee (code, mode, before, val);
+
+  emit_insn (gen_rtx_SET (VOIDmode, scratch, x));
+  if (after)
+    emit_insn (gen_rtx_SET (VOIDmode, after, copy_rtx (x)));
+
+  cond = gen_rtx_REG (DImode, REGNO (scratch));
+  if (mode == SImode)
+    emit_insn (gen_store_conditional_si (cond, mem, scratch));
+  else if (mode == DImode)
+    emit_insn (gen_store_conditional_di (cond, mem, scratch));
+  else
+    gcc_unreachable ();
+
+  x = gen_rtx_EQ (DImode, cond, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label, pc_rtx);
+  x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
+  REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
+
+  emit_insn (gen_memory_barrier ());
+}
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
@@ -8479,21 +8537,22 @@ alphaev4_insn_pipe (rtx insn)
   switch (get_attr_type (insn))
     {
     case TYPE_ILD:
+    case TYPE_LDSYM:
     case TYPE_FLD:
+    case TYPE_LD_L:
       return EV4_IBX;
 
-    case TYPE_LDSYM:
     case TYPE_IADD:
     case TYPE_ILOG:
     case TYPE_ICMOV:
     case TYPE_ICMP:
-    case TYPE_IST:
     case TYPE_FST:
     case TYPE_SHIFT:
     case TYPE_IMUL:
     case TYPE_FBR:
       return EV4_IB0;
 
+    case TYPE_IST:
     case TYPE_MISC:
     case TYPE_IBR:
     case TYPE_JSR:
@@ -8503,6 +8562,8 @@ alphaev4_insn_pipe (rtx insn)
     case TYPE_FADD:
     case TYPE_FDIV:
     case TYPE_FMUL:
+    case TYPE_ST_C:
+    case TYPE_MB:
       return EV4_IB1;
 
     default:
@@ -8535,6 +8596,9 @@ alphaev5_insn_pipe (rtx insn)
     case TYPE_IMUL:
     case TYPE_MISC:
     case TYPE_MVI:
+    case TYPE_LD_L:
+    case TYPE_ST_C:
+    case TYPE_MB:
       return EV5_E0;
 
     case TYPE_IBR:

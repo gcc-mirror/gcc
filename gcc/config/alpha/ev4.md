@@ -39,7 +39,7 @@
 ; in user-specified memory latency, so return 1 here.
 (define_insn_reservation "ev4_ld" 1
   (and (eq_attr "tune" "ev4")
-       (eq_attr "type" "ild,fld,ldsym"))
+       (eq_attr "type" "ild,fld,ldsym,ld_l"))
   "ev4_ib01+ev4_abox")
 
 ; Stores can issue before the data (but not address) is ready.
@@ -48,10 +48,25 @@
        (eq_attr "type" "ist"))
   "ev4_ib1+ev4_abox")
 
+; ??? Separate from ev4_ist because store_data_bypass_p can't handle
+; the patterns with multiple sets, like store-conditional.
+(define_insn_reservation "ev4_ist_c" 1
+  (and (eq_attr "tune" "ev4")
+       (eq_attr "type" "st_c"))
+  "ev4_ib1+ev4_abox")
+
 (define_insn_reservation "ev4_fst" 1
   (and (eq_attr "tune" "ev4")
        (eq_attr "type" "fst"))
   "ev4_ib0+ev4_abox")
+
+; Memory barrier blocks ABOX insns until it's acknowledged by the external
+; memory bus.  This may be *quite* slow.  Setting this to 4 cycles gets
+; about all the benefit without making the DFA too large.
+(define_insn_reservation "ev4_mb" 4
+  (and (eq_attr "tune" "ev4")
+       (eq_attr "type" "mb"))
+  "ev4_ib1+ev4_abox,ev4_abox*3")
 
 ; Branches have no delay cost, but do tie up the unit for two cycles.
 (define_insn_reservation "ev4_ibr" 2

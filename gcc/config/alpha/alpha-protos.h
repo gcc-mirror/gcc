@@ -101,6 +101,7 @@ extern rtx alpha_emit_setcc (enum rtx_code);
 extern int alpha_split_conditional_move (enum rtx_code, rtx, rtx, rtx, rtx);
 extern void alpha_emit_xfloating_arith (enum rtx_code, rtx[]);
 extern void alpha_emit_xfloating_cvt (enum rtx_code, rtx[]);
+extern void alpha_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 #endif
 
 extern rtx alpha_need_linkage (const char *, int);
