@@ -1,3 +1,7 @@
+2005-04-18  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/stl_algo.h (rotate_copy): Add missing std qualification.
+
 2005-04-17  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/20914
