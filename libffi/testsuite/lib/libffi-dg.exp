@@ -28,6 +28,22 @@ load_gcc_lib wrapper.exp
 # Define libffi callbacks for dg.exp.
 
 proc libffi-dg-test-1 { target_compile prog do_what extra_tool_flags } {
+
+    # To get all \n in dg-output test strings to match printf output
+    # in a system that outputs it as \015\012 (i.e. not just \012), we
+    # need to change all \n into \r?\n.  As there is no dejagnu flag
+    # or hook to do that, we simply change the text being tested.
+    # Unfortunately, we have to know that the variable is called
+    # dg-output-text and lives in the caller of libffi-dg-test, which
+    # is two calls up.  Overriding proc dg-output would be longer and
+    # would necessarily have the same assumption.
+    upvar 2 dg-output-text output_match
+
+    if { [llength $output_match] > 1 } {
+	set x [regsub -all "\n" [lindex $output_match 1] "\r?\n"]
+	set output_match [lreplace $output_match 1 1 $x]
+    }
+
     # Set up the compiler flags, based on what we're going to do.
 
     set options [list]
