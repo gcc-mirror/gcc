@@ -1,3 +1,8 @@
+2005-04-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (fopen, fdopen, freopen): Define these to the unlocked
+	libiberty functions.
+
 2005-04-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21096

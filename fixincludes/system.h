@@ -38,6 +38,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define NULL 0
 #endif
 
+/* Use the unlocked open routines from libiberty.  */
+#define fopen(PATH,MODE) fopen_unlocked(PATH,MODE)
+#define fdopen(FILDES,MODE) fdopen_unlocked(FILDES,MODE)
+#define freopen(PATH,MODE,STREAM) freopen_unlocked(PATH,MODE,STREAM)
+
 /* fixincludes is not a multi-threaded application and therefore we
    do not have to use the locking functions.  In fact, using the locking
    functions can cause the compiler to be significantly slower under
