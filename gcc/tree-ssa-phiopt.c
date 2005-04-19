@@ -301,7 +301,7 @@ empty_block_p (basic_block bb)
   return true;
 }
 
-/* Replace PHI node element whoes edge is E in block BB with variable NEW.
+/* Replace PHI node element whose edge is E in block BB with variable NEW.
    Remove the edge from COND_BLOCK which does not lead to BB (COND_BLOCK
    is known to have two edges, one of which must reach BB).  */
 

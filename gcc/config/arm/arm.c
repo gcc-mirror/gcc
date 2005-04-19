@@ -12694,7 +12694,7 @@ is_called_in_ARM_mode (tree func)
   if (TREE_CODE (func) != FUNCTION_DECL)
     abort ();
 
-  /* Ignore the problem about functions whoes address is taken.  */
+  /* Ignore the problem about functions whose address is taken.  */
   if (TARGET_CALLEE_INTERWORKING && TREE_PUBLIC (func))
     return TRUE;
 
