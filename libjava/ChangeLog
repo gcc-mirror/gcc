@@ -1,3 +1,50 @@
+2005-04-19  Roman Kennke  <roman@ontographics.com>
+
+	* javax/swing/JList.java
+	(getPreferredScrollableViewportSize):
+	The previous implementation was merely guessing the size,
+	now it respects layoutOrientation, visibleRowCount
+	and preferredSize.
+	(getScrollableTracksViewportHeight):
+	Reimplemented so that layoutOrientation, visibleRowCount
+	and preferred size are respected.
+	(getScrollableTracksViewportWidth):
+	Reimplemented so that layoutOrientation, visibleRowCount
+	and preferred size are respected.
+	* javax/swing/plaf/basic/BasicListUI.java
+	(getPreferredSize):
+	Improved calculation of preferredSize when JList is
+	set to HORIZONTAL_WRAP or VERTICAL_WRAP.
+	(getCellBounds):
+	The previous implementation assumed a layoutOrientation of
+	JList.VERTICAL, now also ok with JList.HORIZONTAL_WRAP and
+	JList.VERTICAL_WRAP.
+
+2005-04-19  Roman Kennke  <roman@ontographics.com>
+
+	* javax/swing/plaf/basic/BasicListUI.java
+	(paintCell): use CellRendererPane for painting the cells.
+
+2005-04-19  Roman Kennke  <roman@ontographics.com>
+
+	* javax/swing/plaf/basic/BasicListUI:
+	fixed modifiers of several fields, methods and inner
+	classes to match the 'spec'.
+	(getMaximumSize): removed. It's not in the spec and the
+	implementations was superfluous.
+
+2005-04-19  Roman Kennke  <roman@ontographics.com>
+
+	* javax/swing/plaf/basic/BasicListUI:
+	make BasicListUI capable of wrapping lists
+	(layoutOrientation property of javax.swing.JList)
+
+2005-04-19  Roman Kennke  <roman@ontographics.com>
+
+	* javax/swing/plaf/basic/BasicListUI
+	(updateLayoutState,paint): make BasicListUI aware of the
+	width of the rendered JList.
+
 2005-04-19  Roman Kennke  <roman@kennke.org>
 
 	* javax/swing/ImageIcon.java
