@@ -1,5 +1,17 @@
 2005-04-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/FontMetrics.java: Reformatted.
+	(getFontRenderContext): Handle case when java.awt.Graphics context is
+	given.
+
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/FontMetrics.java
+	(getStringBounds): New methods.
+
+
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/security/x509/X509Certificate.java
 	(parse): Handle val == null case.
 
