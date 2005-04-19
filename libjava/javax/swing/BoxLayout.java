@@ -42,6 +42,7 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.io.Serializable;
 
@@ -146,8 +147,9 @@ public class BoxLayout implements LayoutManager2, Serializable
     if (parent != container)
       throw new AWTError("invalid parent");
 
-    int x = 0;
-    int y = 0;
+    Insets insets = parent.getInsets();
+    int x = insets.left + insets.right;
+    int y = insets.bottom + insets.top;
 
     Component[] children = parent.getComponents();
 
@@ -191,8 +193,9 @@ public class BoxLayout implements LayoutManager2, Serializable
     if (parent != container)
       throw new AWTError("invalid parent");
 
-    int x = 0;
-    int y = 0;
+    Insets insets = parent.getInsets();
+    int x = insets.left + insets.right;
+    int y = insets.bottom + insets.top;
 
     Component[] children = parent.getComponents();
 
@@ -235,53 +238,155 @@ public class BoxLayout implements LayoutManager2, Serializable
       throw new AWTError("invalid parent");
 
     Dimension size = parent.getSize();
-
+    Insets insets = parent.getInsets();
+    Dimension innerSize = new Dimension(size.width - insets.left
+                                        - insets.right, size.height
+                                        - insets.bottom - insets.top);
     Component[] children = parent.getComponents();
+    boolean[] laidOut = new boolean[children.length];
+    for (int index = 0; index < laidOut.length; index++)
+      laidOut[index] = false;
 
     if (isHorizontalIn(parent))
       {
-        int x = 0;
+        // compute overall preferred width
+        int preferredWidthAll = 0;
+        for (int index = 0; index < children.length; index++)
+          {
+            preferredWidthAll += children[index].getPreferredSize().width;
+          }
+        double widthFactor = (double) innerSize.width /
+          (double) preferredWidthAll;
+
+        // sort out components that are constrained by minimum or maximum size
+        int widthRemain = innerSize.width;
         for (int index = 0; index < children.length; index++)
           {
             Component comp = children[index];
             Dimension sz = comp.getPreferredSize();
-            int width = sz.width;
-            int height = sz.height;
-            int cy = 0;
-            if (height > size.height)
+            Dimension minSize = comp.getMinimumSize();
+            Dimension maxSize = comp.getMaximumSize();
+            int width = (int) (sz.width * widthFactor);
+            int height = Math.min(innerSize.height, maxSize.height);
+            // check min size
+            if (width < minSize.width)
               {
-                height = size.height;
+                width = minSize.width;
+                comp.setSize(width, height);
+                laidOut[index] = true;
+                preferredWidthAll -= sz.width;
+                widthRemain -= width;
+                continue;
+              }
+            // check max size
+            if (width > maxSize.width)
+              {
+                width = maxSize.width;
+                comp.setSize(width, height);
+                laidOut[index] = true;
+                preferredWidthAll -= sz.width;
+                widthRemain -= width;
+                continue;
+              }
+
+          }
+
+        // recompute widthFactor for remaining components
+        widthFactor = (double) widthRemain / (double) preferredWidthAll;
+
+        int x = insets.left;
+
+        // lay out remaining comonents
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            int width = 0;
+
+            if (!laidOut[index])
+              {
+                Dimension sz = comp.getPreferredSize();
+                Dimension maxSize = comp.getMaximumSize();
+                width = (int) (sz.width * widthFactor);
+                int height = Math.min(innerSize.height, maxSize.height);
+                comp.setSize(width, height);
               }
             else
-              {
-                cy = (int) ((size.height - height) * comp.getAlignmentY());
-              }
-            
-            comp.setSize(width, height);
+                width = comp.getWidth();
+
+            int cy = (int) ((innerSize.height - comp.getHeight())
+              * comp.getAlignmentY() + insets.top);
             comp.setLocation(x, cy);
             x = x + width;            
           }
       }
     else
       {
-        int y = 0;        
+        // compute overall preferred height
+        int preferredHeightAll = 0;
+        for (int index = 0; index < children.length; index++)
+          {
+            preferredHeightAll += children[index].getPreferredSize().height;
+          }
+        double heightFactor = (double) innerSize.height /
+          (double) preferredHeightAll;
+
+        // sort out components that are constrained by minimum or maximum size
+        int heightRemain = innerSize.height;
         for (int index = 0; index < children.length; index++)
           {
             Component comp = children[index];
             Dimension sz = comp.getPreferredSize();
-            int width = sz.width;
-            int height = sz.height;
-            int cx = 0;
-            if (width > size.width)
+            Dimension minSize = comp.getMinimumSize();
+            Dimension maxSize = comp.getMaximumSize();
+            int height = (int) (sz.height * heightFactor);
+            int width = Math.min(innerSize.width, maxSize.width);
+            // check min size
+            if (height < minSize.height)
               {
-                width = size.width;
+                height = minSize.height;
+                comp.setSize(width, height);
+                laidOut[index] = true;
+                preferredHeightAll -= sz.height;
+                heightRemain -= height;
+                continue;
+              }
+            // check max size
+            if (height > maxSize.height)
+              {
+                height = maxSize.height;
+                comp.setSize(width, height);
+                laidOut[index] = true;
+                preferredHeightAll -= sz.height;
+                heightRemain -= height;
+                continue;
+              }
+
+          }
+
+        // recompute heightFactor for remaining components
+        heightFactor = (double) heightRemain / (double) preferredHeightAll;
+
+        int y = insets.top;
+
+        // lay out remaining comonents
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            int height = 0;
+
+            if (!laidOut[index])
+              {
+                Dimension sz = comp.getPreferredSize();
+                Dimension maxSize = comp.getMaximumSize();
+                height = (int) (sz.height * heightFactor);
+                int width = Math.min(innerSize.width, maxSize.width);
+                comp.setSize(width, height);
               }
             else
-              {
-                cx = (int) ((size.width - width) * comp.getAlignmentX());
-              }
-            
-            comp.setSize(width, height);
+              height = comp.getHeight();
+
+            int cx = (int) ((innerSize.width - comp.getWidth())
+              * comp.getAlignmentX() + insets.left);
             comp.setLocation(cx, y);
             y = y + height;            
           }
@@ -352,8 +457,9 @@ public class BoxLayout implements LayoutManager2, Serializable
     if (parent != container)
       throw new AWTError("invalid parent");
 
-    int x = 0;
-    int y = 0;
+    Insets insets = parent.getInsets();
+    int x = insets.left + insets.right;
+    int y = insets.top + insets.bottom;
 
     Component[] children = parent.getComponents();
 
