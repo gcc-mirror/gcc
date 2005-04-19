@@ -203,7 +203,11 @@ public class StyleContext
 
     public void setResolveParent(AttributeSet parent)
     {
-      attributes = StyleContext.this.addAttribute(attributes, ResolveAttribute, parent);
+      if (parent != null)
+        {
+          attributes = StyleContext.this.addAttribute
+            (attributes, ResolveAttribute, parent);
+        }
       fireStateChanged();
     }
       
