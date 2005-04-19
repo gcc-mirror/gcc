@@ -329,12 +329,22 @@ This currently includes @option{-Wunused-labels}, @option{-Waliasing},
 @cindex options, -Waliasing
 @item -Waliasing
 @cindex aliasing
-Warn about possible aliasing of dummy arguments. The following example
-will trigger the warning as it would be illegal to @code{bar} to
-modify either parameter.
+Warn about possible aliasing of dummy arguments. Specifically, it warns
+if the same actual argument is associated with a dummy argument with
+@code{intent(in)} and a dummy argument with @code{intent(out)} in a call
+with an explicit interface.
+
+The following example will trigger the warning.
 @smallexample
-  INTEGER A
-  CALL BAR(A,A)
+  interface
+    subroutine bar(a,b)
+      integer, intent(in) :: a
+      integer, intent(out) :: b
+    end subroutine
+  end interface
+  integer :: a
+
+  call bar(a,a)
 @end smallexample
 
 
