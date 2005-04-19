@@ -1,5 +1,10 @@
 2005-04-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/server/RemoteObject.java:
+	Removed unused import statement.
+
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URL.java: Formatting cleanups.
 
 2005-04-19  Michael Koch  <konqueror@gmx.de>
