@@ -1582,6 +1582,28 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	javax/swing/plaf/basic/BasicBorders.java \
 	javax/swing/plaf/basic/BasicIconFactory.java \
 	javax/swing/plaf/basic/ComboPopup.java \
+	javax/swing/plaf/metal/MetalBorders.java \
+	javax/swing/plaf/metal/MetalButtonUI.java \
+	javax/swing/plaf/metal/MetalCheckBoxUI.java \
+	javax/swing/plaf/metal/MetalComboBoxUI.java \
+	javax/swing/plaf/metal/MetalDesktopIconUI.java \
+	javax/swing/plaf/metal/MetalInternalFrameUI.java \
+	javax/swing/plaf/metal/MetalLabelUI.java \
+	javax/swing/plaf/metal/MetalPopupMenuSeparatorUI.java \
+	javax/swing/plaf/metal/MetalProgressBarUI.java \
+	javax/swing/plaf/metal/MetalRadioButtonUI.java \
+	javax/swing/plaf/metal/MetalRootPaneUI.java \
+	javax/swing/plaf/metal/MetalScrollBarUI.java \
+	javax/swing/plaf/metal/MetalScrollPaneUI.java \
+	javax/swing/plaf/metal/MetalSeparatorUI.java \
+	javax/swing/plaf/metal/MetalSliderUI.java \
+	javax/swing/plaf/metal/MetalSplitPaneUI.java \
+	javax/swing/plaf/metal/MetalTabbedPaneUI.java \
+	javax/swing/plaf/metal/MetalTextFieldUI.java \
+	javax/swing/plaf/metal/MetalToggleButtonUI.java \
+	javax/swing/plaf/metal/MetalToolBarUI.java \
+	javax/swing/plaf/metal/MetalToolTipUI.java \
+	javax/swing/plaf/metal/MetalTreeUI.java \
 	javax/swing/plaf/BorderUIResource.java \
 	javax/swing/plaf/UIResource.java \
 	javax/swing/plaf/ButtonUI.java \
@@ -2870,6 +2892,28 @@ am__objects_10 = gnu/awt/LightweightRedirector.lo \
 	javax/swing/plaf/basic/BasicBorders.lo \
 	javax/swing/plaf/basic/BasicIconFactory.lo \
 	javax/swing/plaf/basic/ComboPopup.lo \
+	javax/swing/plaf/metal/MetalBorders.lo \
+	javax/swing/plaf/metal/MetalButtonUI.lo \
+	javax/swing/plaf/metal/MetalCheckBoxUI.lo \
+	javax/swing/plaf/metal/MetalComboBoxUI.lo \
+	javax/swing/plaf/metal/MetalDesktopIconUI.lo \
+	javax/swing/plaf/metal/MetalInternalFrameUI.lo \
+	javax/swing/plaf/metal/MetalLabelUI.lo \
+	javax/swing/plaf/metal/MetalPopupMenuSeparatorUI.lo \
+	javax/swing/plaf/metal/MetalProgressBarUI.lo \
+	javax/swing/plaf/metal/MetalRadioButtonUI.lo \
+	javax/swing/plaf/metal/MetalRootPaneUI.lo \
+	javax/swing/plaf/metal/MetalScrollBarUI.lo \
+	javax/swing/plaf/metal/MetalScrollPaneUI.lo \
+	javax/swing/plaf/metal/MetalSeparatorUI.lo \
+	javax/swing/plaf/metal/MetalSliderUI.lo \
+	javax/swing/plaf/metal/MetalSplitPaneUI.lo \
+	javax/swing/plaf/metal/MetalTabbedPaneUI.lo \
+	javax/swing/plaf/metal/MetalTextFieldUI.lo \
+	javax/swing/plaf/metal/MetalToggleButtonUI.lo \
+	javax/swing/plaf/metal/MetalToolBarUI.lo \
+	javax/swing/plaf/metal/MetalToolTipUI.lo \
+	javax/swing/plaf/metal/MetalTreeUI.lo \
 	javax/swing/plaf/BorderUIResource.lo \
 	javax/swing/plaf/UIResource.lo javax/swing/plaf/ButtonUI.lo \
 	javax/swing/plaf/ComponentUI.lo javax/swing/plaf/LabelUI.lo \
@@ -5353,6 +5397,28 @@ javax/swing/plaf/basic/BasicLookAndFeel.java \
 javax/swing/plaf/basic/BasicBorders.java \
 javax/swing/plaf/basic/BasicIconFactory.java \
 javax/swing/plaf/basic/ComboPopup.java \
+javax/swing/plaf/metal/MetalBorders.java \
+javax/swing/plaf/metal/MetalButtonUI.java \
+javax/swing/plaf/metal/MetalCheckBoxUI.java \
+javax/swing/plaf/metal/MetalComboBoxUI.java \
+javax/swing/plaf/metal/MetalDesktopIconUI.java \
+javax/swing/plaf/metal/MetalInternalFrameUI.java \
+javax/swing/plaf/metal/MetalLabelUI.java \
+javax/swing/plaf/metal/MetalPopupMenuSeparatorUI.java \
+javax/swing/plaf/metal/MetalProgressBarUI.java \
+javax/swing/plaf/metal/MetalRadioButtonUI.java \
+javax/swing/plaf/metal/MetalRootPaneUI.java \
+javax/swing/plaf/metal/MetalScrollBarUI.java \
+javax/swing/plaf/metal/MetalScrollPaneUI.java \
+javax/swing/plaf/metal/MetalSeparatorUI.java \
+javax/swing/plaf/metal/MetalSliderUI.java \
+javax/swing/plaf/metal/MetalSplitPaneUI.java \
+javax/swing/plaf/metal/MetalTabbedPaneUI.java \
+javax/swing/plaf/metal/MetalTextFieldUI.java \
+javax/swing/plaf/metal/MetalToggleButtonUI.java \
+javax/swing/plaf/metal/MetalToolBarUI.java \
+javax/swing/plaf/metal/MetalToolTipUI.java \
+javax/swing/plaf/metal/MetalTreeUI.java \
 javax/swing/plaf/BorderUIResource.java \
 javax/swing/plaf/UIResource.java \
 javax/swing/plaf/ButtonUI.java \
@@ -12436,6 +12502,78 @@ javax/swing/plaf/basic/BasicIconFactory.lo:  \
 javax/swing/plaf/basic/ComboPopup.lo:  \
 	javax/swing/plaf/basic/$(am__dirstamp) \
 	javax/swing/plaf/basic/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/$(am__dirstamp):
+	@$(mkdir_p) javax/swing/plaf/metal
+	@: > javax/swing/plaf/metal/$(am__dirstamp)
+javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) javax/swing/plaf/metal/$(DEPDIR)
+	@: > javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalBorders.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalButtonUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalCheckBoxUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalComboBoxUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalDesktopIconUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalInternalFrameUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalLabelUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalPopupMenuSeparatorUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalProgressBarUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalRadioButtonUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalRootPaneUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalScrollBarUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalScrollPaneUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalSeparatorUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalSliderUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalSplitPaneUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalTabbedPaneUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalTextFieldUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalToggleButtonUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalToolBarUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalToolTipUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
+javax/swing/plaf/metal/MetalTreeUI.lo:  \
+	javax/swing/plaf/metal/$(am__dirstamp) \
+	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
 javax/swing/plaf/$(am__dirstamp):
 	@$(mkdir_p) javax/swing/plaf
 	@: > javax/swing/plaf/$(am__dirstamp)
@@ -12469,12 +12607,6 @@ javax/swing/plaf/TreeUI.lo: javax/swing/plaf/$(am__dirstamp) \
 	javax/swing/plaf/$(DEPDIR)/$(am__dirstamp)
 javax/swing/plaf/ViewportUI.lo: javax/swing/plaf/$(am__dirstamp) \
 	javax/swing/plaf/$(DEPDIR)/$(am__dirstamp)
-javax/swing/plaf/metal/$(am__dirstamp):
-	@$(mkdir_p) javax/swing/plaf/metal
-	@: > javax/swing/plaf/metal/$(am__dirstamp)
-javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) javax/swing/plaf/metal/$(DEPDIR)
-	@: > javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
 javax/swing/plaf/metal/DefaultMetalTheme.lo:  \
 	javax/swing/plaf/metal/$(am__dirstamp) \
 	javax/swing/plaf/metal/$(DEPDIR)/$(am__dirstamp)
@@ -19175,10 +19307,54 @@ mostlyclean-compile:
 	-rm -f javax/swing/plaf/basic/ComboPopup.lo
 	-rm -f javax/swing/plaf/metal/DefaultMetalTheme.$(OBJEXT)
 	-rm -f javax/swing/plaf/metal/DefaultMetalTheme.lo
+	-rm -f javax/swing/plaf/metal/MetalBorders.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalBorders.lo
+	-rm -f javax/swing/plaf/metal/MetalButtonUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalButtonUI.lo
+	-rm -f javax/swing/plaf/metal/MetalCheckBoxUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalCheckBoxUI.lo
+	-rm -f javax/swing/plaf/metal/MetalComboBoxUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalComboBoxUI.lo
+	-rm -f javax/swing/plaf/metal/MetalDesktopIconUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalDesktopIconUI.lo
+	-rm -f javax/swing/plaf/metal/MetalInternalFrameUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalInternalFrameUI.lo
+	-rm -f javax/swing/plaf/metal/MetalLabelUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalLabelUI.lo
 	-rm -f javax/swing/plaf/metal/MetalLookAndFeel.$(OBJEXT)
 	-rm -f javax/swing/plaf/metal/MetalLookAndFeel.lo
+	-rm -f javax/swing/plaf/metal/MetalPopupMenuSeparatorUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalPopupMenuSeparatorUI.lo
+	-rm -f javax/swing/plaf/metal/MetalProgressBarUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalProgressBarUI.lo
+	-rm -f javax/swing/plaf/metal/MetalRadioButtonUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalRadioButtonUI.lo
+	-rm -f javax/swing/plaf/metal/MetalRootPaneUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalRootPaneUI.lo
+	-rm -f javax/swing/plaf/metal/MetalScrollBarUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalScrollBarUI.lo
+	-rm -f javax/swing/plaf/metal/MetalScrollPaneUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalScrollPaneUI.lo
+	-rm -f javax/swing/plaf/metal/MetalSeparatorUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalSeparatorUI.lo
+	-rm -f javax/swing/plaf/metal/MetalSliderUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalSliderUI.lo
+	-rm -f javax/swing/plaf/metal/MetalSplitPaneUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalSplitPaneUI.lo
+	-rm -f javax/swing/plaf/metal/MetalTabbedPaneUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalTabbedPaneUI.lo
+	-rm -f javax/swing/plaf/metal/MetalTextFieldUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalTextFieldUI.lo
 	-rm -f javax/swing/plaf/metal/MetalTheme.$(OBJEXT)
 	-rm -f javax/swing/plaf/metal/MetalTheme.lo
+	-rm -f javax/swing/plaf/metal/MetalToggleButtonUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalToggleButtonUI.lo
+	-rm -f javax/swing/plaf/metal/MetalToolBarUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalToolBarUI.lo
+	-rm -f javax/swing/plaf/metal/MetalToolTipUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalToolTipUI.lo
+	-rm -f javax/swing/plaf/metal/MetalTreeUI.$(OBJEXT)
+	-rm -f javax/swing/plaf/metal/MetalTreeUI.lo
 	-rm -f javax/swing/table/AbstractTableModel.$(OBJEXT)
 	-rm -f javax/swing/table/AbstractTableModel.lo
 	-rm -f javax/swing/table/DefaultTableCellRenderer.$(OBJEXT)
@@ -21821,8 +21997,30 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/basic/$(DEPDIR)/BasicViewportUI.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/basic/$(DEPDIR)/ComboPopup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/DefaultMetalTheme.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalBorders.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalButtonUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalCheckBoxUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalComboBoxUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalDesktopIconUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalInternalFrameUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalLabelUI.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalLookAndFeel.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalPopupMenuSeparatorUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalProgressBarUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalRadioButtonUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalRootPaneUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalScrollBarUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalScrollPaneUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalSeparatorUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalSliderUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalSplitPaneUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalTabbedPaneUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalTextFieldUI.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalTheme.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalToggleButtonUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalToolBarUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalToolTipUI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/plaf/metal/$(DEPDIR)/MetalTreeUI.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/table/$(DEPDIR)/AbstractTableModel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/table/$(DEPDIR)/DefaultTableCellRenderer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/table/$(DEPDIR)/DefaultTableColumnModel.Plo@am__quote@
