@@ -894,11 +894,30 @@ public abstract class JTextComponent extends JComponent
   private Insets margin;
   private boolean dragEnabled;
 
+  /** Issues repaint request on document changes. */
+  private DocumentListener repaintListener;
+
   /**
    * Creates a new <code>JTextComponent</code> instance.
    */
   public JTextComponent()
   {
+    repaintListener = new DocumentListener()
+      {
+	public void changedUpdate(DocumentEvent ev)
+	{
+	  repaint();
+	}
+	public void insertUpdate(DocumentEvent ev)
+	{
+	  repaint();
+	}
+	public void removeUpdate(DocumentEvent ev)
+	{
+	  repaint();
+	}
+      };
+
     Keymap defkeymap = getKeymap(DEFAULT_KEYMAP);
     boolean creatingKeymap = false;
     if (defkeymap == null)
@@ -932,6 +951,13 @@ public abstract class JTextComponent extends JComponent
   {
     Document oldDoc = doc;
     doc = newDoc;
+
+    // setup document listener
+    if (oldDoc != null)
+      oldDoc.removeDocumentListener(repaintListener);
+    if (newDoc != null)
+      newDoc.addDocumentListener(repaintListener);
+
     firePropertyChange("document", oldDoc, newDoc);
     revalidate();
     repaint();

@@ -110,7 +110,6 @@ public class DefaultEditorKit extends EditorKit
               t.getDocument().insertString(t.getCaret().getDot(), event.getActionCommand(), null);
               t.getCaret().setDot(Math.min(t.getCaret().getDot() + 1,
                                            t.getDocument().getEndPosition().getOffset()));
-              t.repaint();
             }
           catch (BadLocationException be)
             {
@@ -251,7 +250,6 @@ public class DefaultEditorKit extends EditorKit
                 if (pos < t.getDocument().getEndPosition().getOffset())
                   {
                     t.getDocument().remove(t.getCaret().getDot(), 1);
-                    t.repaint();
                   }
               }
             catch (BadLocationException e)
@@ -275,7 +273,6 @@ public class DefaultEditorKit extends EditorKit
                   {
                     t.getDocument().remove(pos - 1, 1);
                     t.getCaret().setDot(pos - 1);
-                    t.repaint();
                   }
               }
             catch (BadLocationException e)
