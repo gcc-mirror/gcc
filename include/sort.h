@@ -35,7 +35,7 @@ extern "C" {
 
 /* Sort an array of pointers.  */
 
-extern void sort_pointers PARAMS ((size_t, void **, void **));
+extern void sort_pointers (size_t, void **, void **);
 
 #ifdef __cplusplus
 }
