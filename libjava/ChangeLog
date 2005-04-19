@@ -1,3 +1,8 @@
+2005-04-19  Guilhem Lavaux  <guilhem@kaffe.org>
+
+	* java/awt/image/IndexColorModel.java
+	(getRGB): Check if pixel is negative.
+
 2005-04-19  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/image/RasterOp.java:
