@@ -44,14 +44,19 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
@@ -71,11 +76,27 @@ import javax.swing.plaf.ListUI;
  */
 public class BasicListUI extends ListUI
 {
+
+  /**
+   * A helper class which listens for {@link ComponentEvent}s from
+   * the JList.
+   */
+  private class ComponentHandler extends ComponentAdapter {
+
+    /**
+     * Called when the component is hidden. Invalidates the internal
+     * layout.
+     */
+    public void componentResized(ComponentEvent ev) {
+      BasicListUI.this.damageLayout();
+    }
+  }
+
   /**
    * A helper class which listens for {@link FocusEvents}
    * from the JList.
    */
-  class FocusHandler implements FocusListener
+  public class FocusHandler implements FocusListener
   {
     /**
      * Called when the JList acquires focus.
@@ -112,7 +133,7 @@ public class BasicListUI extends ListUI
    *
    * @see javax.swing.JList#model
    */
-  class ListDataHandler implements ListDataListener
+  public class ListDataHandler implements ListDataListener
   {
     /**
      * Called when a general change has happened in the model which cannot
@@ -150,7 +171,7 @@ public class BasicListUI extends ListUI
    * A helper class which listens for {@link ListSelectionEvent}s
    * from the {@link JList}'s {@link ListSelectionModel}.
    */
-  class ListSelectionHandler implements ListSelectionListener
+  public class ListSelectionHandler implements ListSelectionListener
   {
     /**
      * Called when the list selection changes.  
@@ -166,7 +187,7 @@ public class BasicListUI extends ListUI
    * A helper class which listens for {@link MouseEvent}s 
    * from the {@link JList}.
    */
-  class MouseInputHandler implements MouseInputListener
+  public class MouseInputHandler implements MouseInputListener
   {
     /**
      * Called when a mouse button press/release cycle completes
@@ -186,11 +207,12 @@ public class BasicListUI extends ListUI
      */
     public void mousePressed(MouseEvent event)
     {
-      int row = BasicListUI.this.convertYToRow(event.getY());
-      if (row == -1)
+      Point click = event.getPoint();
+      int index = BasicListUI.this.locationToIndex(list, click);
+      if (index == -1)
         return;
 
-      BasicListUI.this.list.setSelectedIndex(row);
+      BasicListUI.this.list.setSelectedIndex(index);
     }
 
     /**
@@ -248,7 +270,7 @@ public class BasicListUI extends ListUI
    * Helper class which listens to {@link PropertyChangeEvent}s
    * from the {@link JList}.
    */
-  class PropertyChangeHandler implements PropertyChangeListener
+  public class PropertyChangeHandler implements PropertyChangeListener
   {
     /**
      * Called when the {@link JList} changes one of its bound properties.
@@ -282,41 +304,50 @@ public class BasicListUI extends ListUI
   }
 
   /** The current focus listener. */
-  FocusHandler focusListener;
+  protected FocusHandler focusListener;
 
   /** The data listener listening to the model. */
-  ListDataHandler listDataListener;
+  protected ListDataHandler listDataListener;
 
   /** The selection listener listening to the selection model. */
-  ListSelectionHandler listSelectionListener;
+  protected ListSelectionHandler listSelectionListener;
 
   /** The mouse listener listening to the list. */
-  MouseInputHandler mouseInputListener;
+  protected MouseInputHandler mouseInputListener;
 
   /** The property change listener listening to the list. */
-  PropertyChangeHandler propertyChangeListener;
+  protected PropertyChangeHandler propertyChangeListener;
+
+  /** The component listener that receives notification for resizing the
+   * JList component.*/
+  private ComponentListener componentListener;
 
   /** Saved reference to the list this UI was created for. */
-  JList list;
+  protected JList list;
 
   /** The height of a single cell in the list. */
-  int cellHeight;
+  protected int cellHeight;
 
   /** The width of a single cell in the list. */
-  int cellWidth;
+  protected int cellWidth;
 
   /** 
    * An array of varying heights of cells in the list, in cases where each
    * cell might have a different height.
    */
-  int[] cellHeights;
+  protected int[] cellHeights;
 
   /**
    * A simple counter. When nonzero, indicates that the UI class is out of
    * date with respect to the underlying list, and must recalculate the
    * list layout before painting or performing size calculations.
    */
-  int updateLayoutStateNeeded;
+  protected int updateLayoutStateNeeded;
+
+  /**
+   * The {@link CellRendererPane} that is used for painting.
+   */
+  protected CellRendererPane rendererPane;
 
   /**
    * Calculate the height of a particular row. If there is a fixed {@link
@@ -328,7 +359,7 @@ public class BasicListUI extends ListUI
    *
    * @return The height, in pixels, of the specified row
    */
-  int getRowHeight(int row)
+  protected int getRowHeight(int row)
   {
     if (row < 0 || row >= cellHeights.length)
       return -1;
@@ -356,14 +387,21 @@ public class BasicListUI extends ListUI
     if (l != list || cellWidth == -1)
       return null;
 
-    int lo = Math.min(index1, index2);
-    int hi = Math.max(index1, index2);
-    Rectangle lobounds = new Rectangle(0, convertRowToY(lo), cellWidth,
-                                       getRowHeight(lo));
-    Rectangle hibounds = new Rectangle(0, convertRowToY(hi), cellWidth,
-                                       getRowHeight(hi));
+    int minIndex = Math.min(index1, index2);
+    int maxIndex = Math.max(index1, index2);
+    Point loc = indexToLocation(list, minIndex);
+    Rectangle bounds = new Rectangle(loc.x, loc.y, cellWidth,
+                                     getRowHeight(minIndex));
 
-    return lobounds.union(hibounds);
+    for (int i = minIndex + 1; i <= maxIndex; i++)
+      {
+        Point hiLoc = indexToLocation(list, i);
+        Rectangle hibounds = new Rectangle(hiLoc.x, hiLoc.y, cellWidth,
+                                       getRowHeight(i));
+        bounds = bounds.union(hibounds);
+      }
+
+    return bounds;
   }
 
   /**
@@ -376,7 +414,7 @@ public class BasicListUI extends ListUI
    * @return The Y coordinate of the specified row, or <code>-1</code> if
    * the specified row number is invalid
    */
-  int convertRowToY(int row)
+  protected int convertRowToY(int row)
   {
     int y = 0;
     for (int i = 0; i < row; ++i)
@@ -399,7 +437,7 @@ public class BasicListUI extends ListUI
    * @return The row number containing the specified Y value, or <code>-1</code>
    * if the specified Y coordinate is invalid
    */
-  int convertYToRow(int y0)
+  protected int convertYToRow(int y0)
   {
     for (int row = 0; row < cellHeights.length; ++row)
       {
@@ -417,7 +455,7 @@ public class BasicListUI extends ListUI
    * #cellWidth} properties by examining the variouis properties of the
    * {@link JList}.
    */
-  void updateLayoutState()
+  protected void updateLayoutState()
   {
     int nrows = list.getModel().getSize();
     cellHeight = -1;
@@ -436,7 +474,11 @@ public class BasicListUI extends ListUI
                                                                     false);
             Dimension dim = flyweight.getPreferredSize();
             cellHeights[i] = dim.height;
+            // compute average cell height (little hack here)
+            cellHeight = (cellHeight * i + cellHeights[i]) / (i + 1);
             cellWidth = Math.max(cellWidth, dim.width);
+            if (list.getLayoutOrientation() == JList.VERTICAL)
+                cellWidth = Math.max(cellWidth, list.getSize().width);
           }
       }
     else
@@ -452,7 +494,7 @@ public class BasicListUI extends ListUI
    *
    * @see #updateLayoutStateNeeded
    */
-  void damageLayout()
+  private void damageLayout()
   {
     updateLayoutStateNeeded = 1;
     list.revalidate();
@@ -462,7 +504,7 @@ public class BasicListUI extends ListUI
    * Calls {@link #updateLayoutState} if {@link #updateLayoutStateNeeded}
    * is nonzero, then resets {@link #updateLayoutStateNeeded} to zero.
    */
-  void maybeUpdateLayoutState()
+  protected void maybeUpdateLayoutState()
   {
     if (updateLayoutStateNeeded != 0)
       {
@@ -481,7 +523,9 @@ public class BasicListUI extends ListUI
     listSelectionListener = new ListSelectionHandler();
     mouseInputListener = new MouseInputHandler();
     propertyChangeListener = new PropertyChangeHandler();
+    componentListener = new ComponentHandler();
     updateLayoutStateNeeded = 1;
+    rendererPane = new CellRendererPane();
   }
 
   /**
@@ -490,7 +534,7 @@ public class BasicListUI extends ListUI
    *
    * @see #uninstallDefaults
    */
-  void installDefaults()
+  protected void installDefaults()
   {
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
     list.setForeground(defaults.getColor("List.foreground"));
@@ -504,7 +548,7 @@ public class BasicListUI extends ListUI
    * Resets to <code>null</code> those defaults which were installed in 
    * {@link #installDefaults}
    */
-  void uninstallDefaults()
+  protected void uninstallDefaults()
   {
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
     list.setForeground(null);
@@ -519,7 +563,7 @@ public class BasicListUI extends ListUI
    *
    * @see #uninstallListeners
    */
-  void installListeners()
+  protected void installListeners()
   {
     list.addFocusListener(focusListener);
     list.getModel().addListDataListener(listDataListener);
@@ -527,12 +571,13 @@ public class BasicListUI extends ListUI
     list.addMouseListener(mouseInputListener);
     list.addMouseMotionListener(mouseInputListener);
     list.addPropertyChangeListener(propertyChangeListener);
+    list.addComponentListener(componentListener);
   }
 
   /**
    * Detaches all the listeners we attached in {@link #installListeners}.
    */
-  void uninstallListeners()
+  protected void uninstallListeners()
   {
     list.removeFocusListener(focusListener);
     list.getModel().removeListDataListener(listDataListener);
@@ -545,14 +590,14 @@ public class BasicListUI extends ListUI
   /**
    * Installs keyboard actions for this UI in the {@link JList}.
    */
-  void installKeyboardActions()
+  protected void installKeyboardActions()
   {
   }
 
   /**
    * Uninstalls keyboard actions for this UI in the {@link JList}.
    */
-  void uninstallKeyboardActions()
+  protected void uninstallKeyboardActions()
   {
   }
 
@@ -591,18 +636,6 @@ public class BasicListUI extends ListUI
   }
 
   /**
-   * Gets the maximum size this list can assume.
-   *
-   * @param c The component to measure the size of
-   *
-   * @return A new Dimension representing the component's maximum size
-   */
-  public Dimension getMaximumSize(JComponent c)
-  {
-    return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
-  }
-
-  /**
    * Gets the size this list would prefer to assume. This is calculated by
    * calling {@link #getCellBounds} over the entire list.
    *
@@ -612,10 +645,34 @@ public class BasicListUI extends ListUI
    */
   public Dimension getPreferredSize(JComponent c)
   {
-    if (list.getModel().getSize() == 0)
+    int size = list.getModel().getSize();
+    if (size == 0)
       return new Dimension(0, 0);
+    int visibleRows = list.getVisibleRowCount();
+    int layoutOrientation = list.getLayoutOrientation();
     Rectangle bounds = getCellBounds(list, 0, list.getModel().getSize() - 1);
-    return bounds.getSize();
+    Dimension retVal = bounds.getSize();
+    Component parent = list.getParent();
+    if ((visibleRows == -1) && (parent instanceof JViewport))
+      {
+        JViewport viewport = (JViewport) parent;
+
+        if (layoutOrientation == JList.HORIZONTAL_WRAP)
+          {
+            int h = viewport.getSize().height;
+            int cellsPerCol = h / cellHeight;
+            int w = size / cellsPerCol * cellWidth;
+            retVal = new Dimension(w, h);
+          }
+        else if (layoutOrientation == JList.VERTICAL_WRAP)
+          {
+            int w = viewport.getSize().width;
+            int cellsPerRow = Math.max(w / cellWidth, 1);
+            int h = size / cellsPerRow * cellHeight;
+            retVal = new Dimension(w, h);
+          }
+      }
+    return retVal;
   }
 
   /**
@@ -625,7 +682,7 @@ public class BasicListUI extends ListUI
    * @param g The graphics context to paint in
    * @param c The component to paint the background of
    */
-  public void paintBackground(Graphics g, JComponent c)
+  private void paintBackground(Graphics g, JComponent c)
   {
     Dimension size = getPreferredSize(c);
     Color save = g.getColor();
@@ -647,18 +704,18 @@ public class BasicListUI extends ListUI
    * @param sel A selection model to provide to the cell renderer
    * @param lead The lead selection index of the list
    */
-  void paintCell(Graphics g, int row, Rectangle bounds, ListCellRenderer rend,
-                 ListModel data, ListSelectionModel sel, int lead)
+  protected void paintCell(Graphics g, int row, Rectangle bounds,
+                 ListCellRenderer rend, ListModel data,
+                 ListSelectionModel sel, int lead)
   {
     boolean is_sel = list.isSelectedIndex(row);
     boolean has_focus = false;
     Component comp = rend.getListCellRendererComponent(list,
                                                        data.getElementAt(row),
                                                        0, is_sel, has_focus);
-    g.translate(bounds.x, bounds.y);
-    comp.setBounds(new Rectangle(0, 0, bounds.width, bounds.height));
-    comp.paint(g);
-    g.translate(-bounds.x, -bounds.y);
+    //comp.setBounds(new Rectangle(0, 0, bounds.width, bounds.height));
+    //comp.paint(g);
+    rendererPane.paintComponent(g, comp, list, bounds);
   }
 
   /**
@@ -690,13 +747,123 @@ public class BasicListUI extends ListUI
       }
   }
 
+  /**
+   * Computes the index of a list cell given a point within the list.
+   *
+   * @param list the list which on which the computation is based on
+   * @param location the coordinates
+   *
+   * @return the index of the list item that is located at the given
+   *         coordinates or <code>null</code> if the location is invalid
+   */
   public int locationToIndex(JList list, Point location)
   {
-    return convertYToRow(location.y);
+    int layoutOrientation = list.getLayoutOrientation();
+    int index = -1;
+    switch (layoutOrientation)
+      {
+      case JList.VERTICAL:
+        index = convertYToRow(location.y);
+        break;
+      case JList.HORIZONTAL_WRAP:
+        // determine visible rows and cells per row
+        int visibleRows = list.getVisibleRowCount();
+        int cellsPerRow = -1;
+        int numberOfItems = list.getModel().getSize();
+        Dimension listDim = list.getSize();
+        if (visibleRows <= 0)
+          {
+            try
+              {
+                cellsPerRow = listDim.width / cellWidth;
+              }
+            catch (ArithmeticException ex)
+              {
+                cellsPerRow = 1;
+              }
+          }
+        else
+          {
+            cellsPerRow = numberOfItems / visibleRows + 1;
+          }
+
+        // determine index for the given location
+        int cellsPerColumn = numberOfItems / cellsPerRow + 1;
+        int gridX = Math.min(location.x / cellWidth, cellsPerRow - 1);
+        int gridY = Math.min(location.y / cellHeight, cellsPerColumn);
+        index = gridX + gridY * cellsPerRow;
+        break;
+      case JList.VERTICAL_WRAP:
+        // determine visible rows and cells per column
+        int visibleRows2 = list.getVisibleRowCount();
+        if (visibleRows2 <= 0)
+          {
+            Dimension listDim2 = list.getSize();
+            visibleRows2 = listDim2.height / cellHeight;
+          }
+        int numberOfItems2 = list.getModel().getSize();
+        int cellsPerRow2 = numberOfItems2 / visibleRows2 + 1;
+
+        Dimension listDim2 = list.getSize();
+        int gridX2 = Math.min(location.x / cellWidth, cellsPerRow2 - 1);
+        int gridY2 = Math.min(location.y / cellHeight, visibleRows2);
+        index = gridY2 + gridX2 * visibleRows2;
+        break;
+      }
+    return index;
   }
 
   public Point indexToLocation(JList list, int index)
   {
-    return new Point(0, convertRowToY(index));
+    int layoutOrientation = list.getLayoutOrientation();
+    Point loc = null;
+    switch (layoutOrientation)
+      {
+      case JList.VERTICAL:
+        loc = new Point(0, convertRowToY(index));
+        break;
+      case JList.HORIZONTAL_WRAP:
+        // determine visible rows and cells per row
+        int visibleRows = list.getVisibleRowCount();
+        int numberOfCellsPerRow = -1;
+        if (visibleRows <= 0)
+          {
+            Dimension listDim = list.getSize();
+            numberOfCellsPerRow = Math.max(listDim.width / cellWidth, 1);
+          }
+        else
+          {
+            int numberOfItems = list.getModel().getSize();
+            numberOfCellsPerRow = numberOfItems / visibleRows + 1;
+          }
+        // compute coordinates inside the grid
+        int gridX = index % numberOfCellsPerRow;
+        int gridY = index / numberOfCellsPerRow;
+        int locX = gridX * cellWidth;
+        int locY = gridY * cellHeight;
+        loc = new Point(locX, locY);
+        break;
+      case JList.VERTICAL_WRAP:
+        // determine visible rows and cells per column
+        int visibleRows2 = list.getVisibleRowCount();
+        if (visibleRows2 <= 0)
+          {
+            Dimension listDim2 = list.getSize();
+            visibleRows2 = listDim2.height / cellHeight;
+          }
+        // compute coordinates inside the grid
+        if (visibleRows2 > 0)
+          {
+            int gridY2 = index % visibleRows2;
+            int gridX2 = index / visibleRows2;
+            int locX2 = gridX2 * cellWidth;
+            int locY2 = gridY2 * cellHeight;
+            loc = new Point(locX2, locY2);
+          }
+        else
+          loc = new Point(0, convertRowToY(index));
+        break;
+      }
+    return loc;
   }
 }

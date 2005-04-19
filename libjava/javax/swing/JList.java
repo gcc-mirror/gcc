@@ -1029,32 +1029,20 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public Dimension getPreferredScrollableViewportSize()
   {
-    int vis = getVisibleRowCount();
-    int nrows = getModel() == null ? 0 : getModel().getSize();
-    // FIXME: this is a somewhat arbitrary default, but.. ?
-    Dimension single = new Dimension(10, 10);;
-    Rectangle bounds = null;
 
-    if (vis > nrows)
+    Dimension retVal = getPreferredSize();
+    if (getLayoutOrientation() == VERTICAL)
       {
-        if (fixedCellWidth != -1 && 
-            fixedCellHeight != -1)
+        if (fixedCellHeight != -1)
           {
-            single = new Dimension(fixedCellWidth, fixedCellHeight);
-          }
-        else if (nrows != 0 && getUI() != null)
-          {
-            Rectangle tmp = getUI().getCellBounds(this, 0, 0);
-            if (tmp != null)
-              single = tmp.getSize();
-          }
+            if (fixedCellWidth != -1)
+              {
+                int size = getModel().getSize();
+                retVal = new Dimension(fixedCellWidth, size * fixedCellHeight);
+              } // TODO: add else clause (preferredSize is ok for now)
+          } // TODO: add else clause (preferredSize is ok for now)
       }
-    else if (getUI() != null)
-      {
-        return getUI().getCellBounds(this, 0, vis - 1).getSize();
-      }
-
-    return new Dimension(single.width, single.height * vis);
+    return retVal;
   }
 
   /**
@@ -1193,7 +1181,19 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public boolean getScrollableTracksViewportWidth()
   {
-    return false;
+    Component parent = getParent();
+    boolean retVal = false;
+    if (parent instanceof JViewport)
+      {
+        JViewport viewport = (JViewport) parent;
+        Dimension pref = getPreferredSize();
+        if (viewport.getSize().width > pref.width)
+          retVal = true;
+        if ((getLayoutOrientation() == HORIZONTAL_WRAP)
+            && (getVisibleRowCount() <= 0))
+          retVal = true;
+      }
+    return retVal;
   }
 
   /**
@@ -1206,7 +1206,19 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public boolean getScrollableTracksViewportHeight()
   {
-    return false;
+    Component parent = getParent();
+    boolean retVal = false;
+    if (parent instanceof JViewport)
+      {
+        JViewport viewport = (JViewport) parent;
+        Dimension pref = getPreferredSize();
+        if (viewport.getSize().height > pref.height)
+          retVal = true;
+        if ((getLayoutOrientation() == VERTICAL_WRAP)
+            && (getVisibleRowCount() <= 0))
+          retVal = true;
+      }
+    return retVal;
   }
 
   public int getAnchorSelectionIndex()
