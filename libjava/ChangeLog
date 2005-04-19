@@ -1,5 +1,9 @@
 2005-04-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URL.java: Formatting cleanups.
+
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/FontMetrics.java: Reformatted.
 	(getFontRenderContext): Handle case when java.awt.Graphics context is
 	given.
