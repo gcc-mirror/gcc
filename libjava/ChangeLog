@@ -1,3 +1,8 @@
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/image/ConvolveOp.java:
+	Removed comment added by eclipse.
+
 2005-04-19  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* java/awt/image/IndexColorModel.java
