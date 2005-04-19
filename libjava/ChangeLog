@@ -1,3 +1,31 @@
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics.java
+	(getClipBounds): Handle clip being null.
+	(setClip): Likewise.
+	* java/beans/beancontext/BeanContextSupport.java
+	(add): Implemented.
+	(addAll): Likewise.
+	(clear): Likewise.
+	(removeAll): Likewise.
+	(retainAll): Likewise.
+
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
+	* java/beans/beancontext/BeanContextServicesSupport.java
+	(BeanContextServicesSupport): Reimplemented.
+	(addBeanContextServicesListener): Implemented.
+	(initialize): Likewise.
+	(removeBeanContextServicesListener): Likewise.
+	* java/beans/beancontext/BeanContextSupport.java
+	(add): Likewise.
+	(addBeanContextMembershipListener): Likewise.
+	(getLocale): Likewise.
+	(initialize): Likewise.
+	(iterator): Likewise.
+	(remove): Likewise.
+	(toArray): Likewise.
+
 2005-04-19  Roman Kennke  <roman@kennke.org>
 
 	* java/awt/MediaTracker.java:

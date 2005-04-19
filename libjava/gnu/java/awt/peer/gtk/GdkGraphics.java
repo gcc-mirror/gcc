@@ -404,7 +404,10 @@ public class GdkGraphics extends Graphics
 
   public Rectangle getClipBounds ()
   {
-    return new Rectangle (clip.x, clip.y, clip.width, clip.height);
+    if (clip == null)
+      return null;
+    else
+      return clip.getBounds();
   }
 
   public Color getColor ()
@@ -445,7 +448,8 @@ public class GdkGraphics extends Graphics
 
   public void setClip (Shape clip)
   {
-    setClip (clip.getBounds ());
+    if (clip != null)
+      setClip(clip.getBounds());
   }
 
   private native void setFGColor(int red, int green, int blue);
