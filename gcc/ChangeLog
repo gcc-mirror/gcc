@@ -1,3 +1,8 @@
+2005-04-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21096
+	* tree-ssa-copy.c (fini_copy_prop): Free cached_last_copy_of.
+
 2005-04-19  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/21098

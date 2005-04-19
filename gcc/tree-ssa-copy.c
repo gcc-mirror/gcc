@@ -901,6 +901,7 @@ fini_copy_prop (void)
 
   substitute_and_fold (copy_of);
 
+  free (cached_last_copy_of);
   free (copy_of);
 }
 
