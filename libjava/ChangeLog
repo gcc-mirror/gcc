@@ -1,3 +1,50 @@
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* java/awt/MediaTracker.java:
+	Reindented tabs to spaces.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* java/awt/MediaTracker.java
+	(MediaEntry.imageUpdate): Removed check for SOMEBITS, this
+	confused the media tracker and lead to lockups. The LOADING
+	bit is handled on other places.
+	(addImage): Removed the 'start image tracking' stuff. This
+	is not necessary and could confuse the media tracker.
+	(checkAll): Improved the check for image status so that
+	images that already complete images are detected. Also now
+	are really all images checked and if necessary loaded. Before
+	the method bailed out after the first incomplete image.
+	(statusAll): Detect images that are complete after the
+	call to Component.prepareImage(..).
+	(checkID): The same as in checkAll.
+	(statusID): The same as in statusAll.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* java/awt/MediaTracker.java
+	(addImage): Synchronized list access.
+	(waitForAll): Fixed comparison of time (changed < to >).
+	(waitForID): Fixed comparison of time (changed < to >).
+	(removeImage): Synchronized list access.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* java/awt/MediaTracker.java
+	Added API documentation.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* java/awt/MediaTracker.java
+	(MediaEntry.imageUpdate): Fixed flags. The different flags
+	must not be ORed together.
+	(checkAll): Modified to handle different meaning of the flags.
+	(waitForAll): Fixed so that it waits maximum the
+	specified amount of milliseconds.
+	(statusAll): Modified to handle different meaning of the flags.
+	(waitForID): Fixed so that it waits maximum the
+	specified amount of milliseconds.
+
 2005-04-19  vid Gilbert <david.gilbert@object-refinery.com>
 
 	* java/awt/Font.java (decode): Handle null argument and allow
