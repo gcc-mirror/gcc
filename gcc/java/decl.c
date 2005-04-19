@@ -2057,13 +2057,6 @@ finish_method (tree fndecl)
 		    build2 (TRY_FINALLY_EXPR, void_type_node, *tp, exit));
     }
 
-  /* Ensure non-abstract non-static non-private members are defined only once
-     when linking. This is an issue when using CNI to interface with C++ object
-     files.  */
-  if (! METHOD_STATIC (fndecl) && ! METHOD_PRIVATE (fndecl)
-      && ! METHOD_ABSTRACT (fndecl) && ! METHOD_FINAL (fndecl))
-    make_decl_one_only (fndecl);
-
   /* Prepend class initialization for static methods reachable from
      other classes.  */
   if (METHOD_STATIC (fndecl)
