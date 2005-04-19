@@ -216,7 +216,7 @@ java::lang::VMClassLoader::loadClass(jstring name, jboolean resolve)
       // It isn't clear from the spec, but this is what other
       // implementations do in practice.
       if (resolve)
-	_Jv_InitClass (klass);
+	resolveClass (klass);
       else
 	_Jv_Linker::wait_for_state (klass, JV_STATE_LOADING);
 
