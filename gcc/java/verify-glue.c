@@ -487,7 +487,7 @@ verify_jvm_instructions_new (JCF *jcf, const unsigned char *byte_ops,
       instruction_bits[handler_pc] |= BCODE_EXCEPTION_TARGET;
     }
 
-  handle_nested_ranges ();
+  gcc_assert (sanity_check_exception_range (&whole_range));
 
   method.method = current_function_decl;
   method.signature = build_java_signature (TREE_TYPE (current_function_decl));
