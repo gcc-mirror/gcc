@@ -1,3 +1,8 @@
+2005-04-19  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.in (libgcc.mk): Pass GCC_FOR_TARGET.
+	* mklibgcc.in: Use $GCC_FOR_TARGET instead of ./xgcc.
+
 2005-04-19  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_init_libfuncs): Clear mod optabs. 

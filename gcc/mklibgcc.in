@@ -40,6 +40,7 @@
 # SHLIB_INSTALL
 # MULTILIB_OSDIRNAMES
 # ASM_HIDDEN_OP
+# GCC_FOR_TARGET
 
 # Make needs VPATH to be literal.
 echo 'srcdir = @srcdir@'
@@ -178,7 +179,7 @@ for ml in $MULTILIBS; do
     if [ "$LIBUNWIND" ]; then
       libunwind_so=$dir/libunwind${SHLIB_EXT}
     fi
-    os_multilib_dir=`./xgcc -B./ $flags --print-multi-os-directory`
+    os_multilib_dir=`$GCC_FOR_TARGET $flags --print-multi-os-directory`
     if [ "$os_multilib_dir" != . ]; then
       shlib_slibdir_qual="/$os_multilib_dir"
     fi
@@ -804,7 +805,7 @@ for ml in $MULTILIBS; do
     echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcc_eh.a
 
     shlib_slibdir_qual=
-    os_multilib_dir=`./xgcc -B./ $flags --print-multi-os-directory`
+    os_multilib_dir=`$GCC_FOR_TARGET $flags --print-multi-os-directory`
     if [ "$os_multilib_dir" != . ]; then
       shlib_slibdir_qual="/$os_multilib_dir"
     fi

@@ -1262,6 +1262,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 	SHLIB_NM_FLAGS='$(SHLIB_NM_FLAGS)' \
 	MULTILIB_OSDIRNAMES='$(MULTILIB_OSDIRNAMES)' \
 	ASM_HIDDEN_OP='$(ASM_HIDDEN_OP)' \
+	GCC_FOR_TARGET='$(GCC_FOR_TARGET)' \
 	mkinstalldirs='$(mkinstalldirs)' \
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
 	mv tmp-libgcc.mk libgcc.mk
