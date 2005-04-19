@@ -1,3 +1,9 @@
+2005-04-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	java.class.path to CLASSPATH only when not empty. Fall back to
+	default path "." when java.class.path is empty.
+
 2005-04-16  Anthony Green  <green@redhat.com>
 
 	* Makefile.am (gnu-xml.lo, javax-imageio.lo, javax-xml.lo,
