@@ -215,6 +215,30 @@
         }
 #       define GC_TEST_AND_SET_DEFINED
 #    endif /* ARM32 */
+#    ifdef CRIS
+        inline static int GC_test_and_set(volatile unsigned int *addr) {
+	  /* Ripped from linuxthreads/sysdeps/cris/pt-machine.h.	*/
+	  /* Included with Hans-Peter Nilsson's permission.		*/
+	  register unsigned long int ret;
+
+	  /* Note the use of a dummy output of *addr to expose the write.
+	   * The memory barrier is to stop *other* writes being moved past
+	   * this code.
+	   */
+	    __asm__ __volatile__("clearf\n"
+        		         "0:\n\t"
+                    		 "movu.b [%2],%0\n\t"
+                    		 "ax\n\t"
+                    		 "move.b %3,[%2]\n\t"
+                    		 "bwf 0b\n\t"
+                    		 "clearf"
+                    		 : "=&r" (ret), "=m" (*addr)
+                    		 : "r" (addr), "r" ((int) 1), "m" (*addr)
+                    		 : "memory");
+	    return ret;
+        }
+#       define GC_TEST_AND_SET_DEFINED
+#    endif /* CRIS */
 #    ifdef S390
        inline static int GC_test_and_set(volatile unsigned int *addr) {
          int ret;
