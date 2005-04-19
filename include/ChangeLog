@@ -1,3 +1,10 @@
+2005-04-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hashtab.h, libiberty.h, objalloc.h, splay-tree.h, ternary.h:
+	Don't use the PTR macro.
+
+	* sort.h: Don't use the PARAMS macro.
+
 2005-04-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (unlock_stream): New.

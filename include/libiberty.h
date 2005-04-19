@@ -259,18 +259,18 @@ extern void xmalloc_failed (size_t) ATTRIBUTE_NORETURN;
    message to stderr (using the name set by xmalloc_set_program_name,
    if any) and then call xexit.  */
 
-extern PTR xmalloc (size_t) ATTRIBUTE_MALLOC;
+extern void *xmalloc (size_t) ATTRIBUTE_MALLOC;
 
 /* Reallocate memory without fail.  This works like xmalloc.  Note,
    realloc type functions are not suitable for attribute malloc since
    they may return the same address across multiple calls. */
 
-extern PTR xrealloc (PTR, size_t);
+extern void *xrealloc (void *, size_t);
 
 /* Allocate memory without fail and set it to zero.  This works like
    xmalloc.  */
 
-extern PTR xcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
+extern void *xcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
 
 /* Copy a string into a memory buffer without fail.  */
 
@@ -282,7 +282,7 @@ extern char *xstrndup (const char *, size_t) ATTRIBUTE_MALLOC;
 
 /* Copy an existing memory buffer to a new memory buffer without fail.  */
 
-extern PTR xmemdup (const PTR, size_t, size_t) ATTRIBUTE_MALLOC;
+extern void *xmemdup (const void *, size_t, size_t) ATTRIBUTE_MALLOC;
 
 /* Physical memory routines.  Return values are in BYTES.  */
 extern double physmem_total (void);
@@ -530,7 +530,7 @@ extern int vasprintf (char **, const char *, va_list)
    USE_C_ALLOCA yourself.  The canonical autoconf macro C_ALLOCA is
    also set/unset as it is often used to indicate whether code needs
    to call alloca(0).  */
-extern PTR C_alloca (size_t) ATTRIBUTE_MALLOC;
+extern void *C_alloca (size_t) ATTRIBUTE_MALLOC;
 #undef alloca
 #if GCC_VERSION >= 2000 && !defined USE_C_ALLOCA
 # define alloca(x) __builtin_alloca(x)
