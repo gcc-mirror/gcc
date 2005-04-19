@@ -432,7 +432,7 @@ public class IndexColorModel extends ColorModel
    */
   public final int getRGB (int pixel)
   {
-    if (pixel < map_size)
+    if (pixel >= 0 && pixel < map_size)
 	    return rgb[pixel];
     
     return 0;
