@@ -1,3 +1,7 @@
+2005-04-18  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/pr21085.c: New test.
+
 2005-04-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.target/mips/mips.exp: Minor formatting.  Call setup_mips_tests.
