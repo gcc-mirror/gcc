@@ -469,8 +469,8 @@ public class JTextArea extends JTextComponent
 
     try
       {
-	doc.remove(start, end);
-	doc.insertString(start, text, null);
+        doc.remove(start, end - start);
+        doc.insertString(start, text, null);
       }
     catch (BadLocationException e)
       {
