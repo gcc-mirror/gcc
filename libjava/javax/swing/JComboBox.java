@@ -185,6 +185,9 @@ public class JComboBox extends JComponent implements ItemSelectable,
   public JComboBox(Object[] itemArray)
   {
     this(new DefaultComboBoxModel(itemArray));
+    
+    if (itemArray.length > 0) 
+      setSelectedIndex(0);
   }
 
   /**
@@ -195,6 +198,9 @@ public class JComboBox extends JComponent implements ItemSelectable,
   public JComboBox(Vector itemVector)
   {
     this(new DefaultComboBoxModel(itemVector));
+
+    if (itemVector.size() > 0)
+      setSelectedIndex(0);
   }
 
   /**
