@@ -83,7 +83,26 @@ public class UIManager implements Serializable
   static LookAndFeel[] aux_installed;
   
   static LookAndFeel look_and_feel = new MetalLookAndFeel();
-    
+
+  static
+  {
+    String defaultlaf = System.getProperty("swing.defaultlaf");
+    try {
+      if (defaultlaf != null)
+        {
+          Class lafClass = Class.forName(defaultlaf);
+          LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
+          setLookAndFeel(laf);
+        }
+    }
+    catch (Exception ex)
+      {
+        System.err.println("cannot initialize Look and Feel: " + defaultlaf);
+        System.err.println("errot: " + ex.getMessage());
+        System.err.println("falling back to Metal Look and Feel");
+      }
+  }
+
   public UIManager()
   {
     // Do nothing here.
