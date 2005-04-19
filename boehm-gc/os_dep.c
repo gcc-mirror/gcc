@@ -2519,7 +2519,11 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #               if defined(ARM32)
                   char * addr = (char *)sc.fault_address;
 #               else
-		  --> architecture not supported
+#		  if defined(CRIS)
+		    char * addr = (char *)sc.regs.csraddr;
+#		  else
+		    --> architecture not supported
+#		  endif
 #               endif
 #	      endif
 #	    endif

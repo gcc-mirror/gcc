@@ -1,3 +1,9 @@
+2005-04-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	* os_dep.c, include/private/gc_locks.h: Import CRIS port by
+	Simon Posnjak from gc6.4.
+	* include/private/gcconfig.h: Ditto.  Add M32R note from gc6.4.
+
 2005-04-17  David S. Miller  <davem@davemloft.net>
 
 	* include/private/gcconfig.h (sparc-linux): Use LINUX_STACKBOTTOM.
