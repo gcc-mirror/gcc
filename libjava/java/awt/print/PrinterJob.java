@@ -152,6 +152,16 @@ public abstract class PrinterJob
     throws HeadlessException;
 
   /**
+   * @since 1.4
+   */
+  public PageFormat pageDialog(PrintRequestAttributeSet attributes)
+    throws HeadlessException
+  {
+    // FIXME: Implement this for real.
+    return pageDialog((PageFormat) null);
+  }
+  
+  /**
    * Prints the pages.
    */
   public abstract void print () throws PrinterException;
@@ -179,8 +189,12 @@ public abstract class PrinterJob
    * @return <code>false</code> if the user cancels the dialog box,
    * <code>true</code> otherwise.
    */
-  public abstract boolean printDialog(PrintRequestAttributeSet attributes)
-    throws HeadlessException;
+  public boolean printDialog(PrintRequestAttributeSet attributes)
+    throws HeadlessException
+  {
+    // FIXME: Implement this for real.
+    return printDialog();
+  }
 
   /**
    * This sets the pages that are to be printed.
