@@ -1,3 +1,7 @@
+2005-04-18  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* varasm.c (assemble_start_function): Remove reset of in_section.
+
 2005-04-18  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR tree-optimization/21085
