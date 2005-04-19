@@ -1,5 +1,17 @@
 2005-04-19  Roman Kennke  <roman@kennke.org>
 
+	* javax/swing/text/JTextComponent.java
+	(JTextComponent): Added repaintListener which issues repaint
+	requests when the underlying document changes.
+	(setDocument): Adds repaintListener to document when the
+	document is changed.
+	* javax/swing/text/DefaultEditorKit.java:
+	Removed repaint calls on JTextComponent. This is now handled
+	through a DocumentListener in JTextComponent that repaints
+	the component when needed.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
 	PR libgcj/21064
 	* javax/swing/text/StyleContext.java
 	(NamedStyle.setResolveParent): Added null
