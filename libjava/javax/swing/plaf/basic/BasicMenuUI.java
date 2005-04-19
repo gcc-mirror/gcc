@@ -179,7 +179,7 @@ public class BasicMenuUI extends BasicMenuItemUI
    */
   public Dimension getMaximumSize(JComponent c)
   {
-    return null;
+    return c.getPreferredSize();
   }
 
   protected String getPropertyPrefix()
