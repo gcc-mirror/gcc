@@ -230,7 +230,7 @@ split_range (struct eh_range *range, int pc)
   first_child = &range->first_child;
   second_child = &h->first_child;
 
-  /* Distribute the sub-ranges bewteen the two new ranges.  */
+  /* Distribute the sub-ranges between the two new ranges.  */
   for (ptr = range->first_child; ptr; ptr = ptr->next_sibling)
     {
       if (ptr->start_pc < pc)
