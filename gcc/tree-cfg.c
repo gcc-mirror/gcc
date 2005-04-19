@@ -5167,7 +5167,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 
   /* When GIMPLE is lowered, the variables are no longer available in
      BIND_EXPRs, so display them separately.  */
-  if (cfun && cfun->unexpanded_var_list)
+  if (cfun && cfun->decl == fn && cfun->unexpanded_var_list)
     {
       ignore_topmost_bind = true;
 
@@ -5183,7 +5183,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 	}
     }
 
-  if (cfun && cfun->cfg && basic_block_info)
+  if (cfun && cfun->decl == fn && cfun->cfg && basic_block_info)
     {
       /* Make a CFG based dump.  */
       check_bb_profile (ENTRY_BLOCK_PTR, file);
