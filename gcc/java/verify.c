@@ -491,7 +491,6 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
     }
 
   free (starts);
-  handle_nested_ranges ();
 
   for (PC = 0;;)
     {

@@ -1,3 +1,18 @@
+2005-04-18  Andrew Haley  <aph@redhat.com>
+
+	* java-except.h (struct eh_range.handler): Remove unused field.
+	(handle_nested_ranges): Remove function declaration.
+	(sanity_check_exception_range): Add function declaration.	
+	* verify.c (verify_jvm_instructions): Remove call to
+	handle_nested_ranges.
+	* verify-glue.c (verify_jvm_instructions_new): Call
+	sanity_check_exception_range.
+	* except.c (link_handler, eh_range_freelist, link_handler,
+	handle_nested_ranges): Remove.
+	(add_handler): Rewrite.
+	(sanity_check_exception_range): New function.
+	(print_ranges): New function.
+
 2005-04-13  Julian Brown  <julian@codesourcery.com>
 
 	* decl.c (finish_method): Give methods once-only linkage.

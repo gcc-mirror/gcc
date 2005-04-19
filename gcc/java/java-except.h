@@ -54,8 +54,6 @@ struct eh_range
 
     /* The TRY_CATCH_EXPR for this EH range.  */
     tree stmt;
-
-    tree handler;
   };
 
 /* A dummy range that represents the entire method. */
@@ -67,5 +65,5 @@ extern struct eh_range * find_handler (int);
 extern void method_init_exceptions (void);
 extern void maybe_start_try (int, int);
 extern void add_handler (int, int, tree, tree);
-extern void handle_nested_ranges (void);
 extern void expand_end_java_handler (struct eh_range *);
+extern bool sanity_check_exception_range (struct eh_range *);
