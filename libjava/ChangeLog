@@ -1,5 +1,17 @@
 2005-04-19  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/text/rtf/ControlWordToken.java,
+	javax/swing/text/rtf/RTFEditorKit.java,
+	javax/swing/text/rtf/RTFParseException.java,
+	javax/swing/text/rtf/RTFParser.java,
+	javax/swing/text/rtf/RTFScanner.java,
+	javax/swing/text/rtf/TextToken.java,
+	javax/swing/text/rtf/Token.java: New files.
+	* Makefile.am: Added new files.
+	* Makefile.in: Regenerated.
+
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/geom/QuadCurve2D.java:
 	Fixed Brian Gough's name for real.
 
