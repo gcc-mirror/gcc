@@ -115,7 +115,7 @@ public class InetAddress implements Serializable
 
   /**
    * Initializes this object's addr instance variable from the passed in
-   * int array.  Note that this constructor is protected and is called
+   * byte array.  Note that this constructor is protected and is called
    * only by static methods in this class.
    *
    * @param ipaddr The IP number of this address as an array of bytes
@@ -541,15 +541,33 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * If host is a valid numeric IP address, return the numeric address.
+   * If hostname  is a valid numeric IP address, return the numeric address.
    * Otherwise, return null.
+   *
+   * @param hostname the name of the host
    */
-  private static native byte[] aton (String host);
+  private static native byte[] aton(String hostname);
 
+  /**
+   * Looks up all addresses of a given host.
+   *
+   * @param hostname the host to lookup
+   * @param ipaddr FIXME
+   * @param all FIXME
+   *
+   * @return an array with all found addresses
+   */
   private static native InetAddress[] lookup (String hostname,
-		                              InetAddress addr, boolean all);
+		                              InetAddress ipaddr, boolean all);
 
-  private static native int getFamily (byte[] address);
+  /**
+   * Returns tha family type of an IP address.
+   *
+   * @param addr the IP address
+   *
+   * @return the family
+   */
+  private static native int getFamily (byte[] ipaddr);
 
   /**
    * Returns an InetAddress object representing the IP address of the given
