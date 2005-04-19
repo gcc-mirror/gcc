@@ -399,11 +399,11 @@ public class ServerSocket
   }
 
   /**
-   * Returns the unique ServerSocketChannel object
+   * Returns the unique <code>ServerSocketChannel</code> object
    * associated with this socket, if any.
    *
-   * The socket only has a ServerSocketChannel if its created
-   * by ServerSocketChannel.open.
+   * <p>The socket only has a <code>ServerSocketChannel</code> if its created
+   * by <code>ServerSocketChannel.open()</code>.</p>
    *
    * @return the associated socket channel, null if none exists
    * 
