@@ -1,5 +1,19 @@
 2005-04-19  Roman Kennke  <roman@kennke.org>
 
+	* javax/swing/BoxLayout.java:
+	(layoutContainer): Made this layout manager respect the
+	minimum, maximum and preferred size more correctly.
+
+2005-04-19  Roman Kennke  <roman@ontographics.com>
+
+	* javax/swing/BoxLayout.java:
+	(preferredLayoutSize,minimumLayoutSize,maximumLayoutSize,
+	layoutContainer): Make these methods and thereby the
+	BoxLayout respect the insets (like borders) of the
+	component that is laid out.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
 	* javax/swing/JComponent.java:
 	Modified alignmentX and alignmentY to be 0.5 instead of 0.0.
 	Untabified the file.
