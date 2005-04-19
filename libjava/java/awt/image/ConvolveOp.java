@@ -1,4 +1,5 @@
-/* Copyright (C) 2004 Free Software Foundation -- ConvolveOp
+/* ConvolveOp.java --
+   Copyright (C) 2004 Free Software Foundation -- ConvolveOp
 
 This file is part of GNU Classpath.
 
@@ -34,12 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-/*
- * Created on Nov 1, 2004
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
+
 package java.awt.image;
 
 import java.awt.Graphics2D;
