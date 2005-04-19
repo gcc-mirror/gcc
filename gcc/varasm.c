@@ -1297,7 +1297,6 @@ assemble_start_function (tree decl, const char *fnname)
     }
 
   last_text_section = no_section;
-  in_section = no_section;
   resolve_unique_section (decl, 0, flag_function_sections);
 
   /* Switch to the correct text section for the start of the function.  */
