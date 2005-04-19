@@ -1,3 +1,9 @@
+2005-04-19  Audrius Meskauskas  <audriusa@bluewin.ch>
+
+	* javax/swing/JComboBox.java (constructors): selecting the
+	first item if the box was constructed from the provided
+	non - empty array or vector.
+
 2005-04-19  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics.java
