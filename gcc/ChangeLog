@@ -1,3 +1,9 @@
+2005-04-19  Andrew Haley  <aph@redhat.com>
+
+	PR java/21022
+	* dbxout.c (dbxout_type_fields): Check DECL_IGNORED_P before
+	looking at a field's bitpos.
+
 2005-04-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (fopen, fdopen, freopen): Define these to the unlocked
