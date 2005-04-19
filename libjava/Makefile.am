@@ -1886,6 +1886,13 @@ javax/swing/text/View.java \
 javax/swing/text/ViewFactory.java \
 javax/swing/text/html/HTML.java \
 javax/swing/text/html/parser/ParserDelegator.java \
+javax/swing/text/rtf/ControlWordToken.java \
+javax/swing/text/rtf/RTFEditorKit.java \
+javax/swing/text/rtf/RTFParseException.java \
+javax/swing/text/rtf/RTFParser.java \
+javax/swing/text/rtf/RTFScanner.java \
+javax/swing/text/rtf/TextToken.java \
+javax/swing/text/rtf/Token.java \
 javax/swing/tree/TreeNode.java \
 javax/swing/tree/AbstractLayoutCache.java \
 javax/swing/tree/DefaultMutableTreeNode.java \
