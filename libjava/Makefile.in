@@ -1218,6 +1218,29 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/java/awt/peer/GLightweightPeer.java \
 	gnu/java/awt/peer/ClasspathFontPeer.java \
 	gnu/java/awt/peer/ClasspathTextLayoutPeer.java \
+	gnu/javax/swing/text/html/parser/support/gnuStringIntMapper.java \
+	gnu/javax/swing/text/html/parser/support/parameterDefaulter.java \
+	gnu/javax/swing/text/html/parser/support/Parser.java \
+	gnu/javax/swing/text/html/parser/support/textPreProcessor.java \
+	gnu/javax/swing/text/html/parser/support/low/Buffer.java \
+	gnu/javax/swing/text/html/parser/support/low/Constants.java \
+	gnu/javax/swing/text/html/parser/support/low/Location.java \
+	gnu/javax/swing/text/html/parser/support/low/node.java \
+	gnu/javax/swing/text/html/parser/support/low/ParseException.java \
+	gnu/javax/swing/text/html/parser/support/low/pattern.java \
+	gnu/javax/swing/text/html/parser/support/low/Queue.java \
+	gnu/javax/swing/text/html/parser/support/low/ReaderTokenizer.java \
+	gnu/javax/swing/text/html/parser/support/low/Token.java \
+	gnu/javax/swing/text/html/parser/gnuDTD.java \
+	gnu/javax/swing/text/html/parser/HTML_401F.java \
+	gnu/javax/swing/text/html/parser/htmlAttributeSet.java \
+	gnu/javax/swing/text/html/parser/htmlValidator.java \
+	gnu/javax/swing/text/html/parser/models/list.java \
+	gnu/javax/swing/text/html/parser/models/node.java \
+	gnu/javax/swing/text/html/parser/models/noTagModel.java \
+	gnu/javax/swing/text/html/parser/models/PCDATAonly_model.java \
+	gnu/javax/swing/text/html/parser/models/TableRowContentModel.java \
+	gnu/javax/swing/text/html/parser/models/transformer.java \
 	java/applet/Applet.java java/applet/AppletStub.java \
 	java/applet/AppletContext.java java/applet/AudioClip.java \
 	java/awt/AWTError.java java/awt/AWTEvent.java \
@@ -1753,6 +1776,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	javax/swing/text/AttributeSet.java \
 	javax/swing/text/BadLocationException.java \
 	javax/swing/text/Caret.java \
+	javax/swing/text/ChangedCharSetException.java \
 	javax/swing/text/ComponentView.java \
 	javax/swing/text/DefaultCaret.java \
 	javax/swing/text/DefaultEditorKit.java \
@@ -1786,7 +1810,19 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	javax/swing/text/Utilities.java javax/swing/text/View.java \
 	javax/swing/text/ViewFactory.java \
 	javax/swing/text/html/HTML.java \
+	javax/swing/text/html/HTMLDocument.java \
+	javax/swing/text/html/HTMLEditorKit.java \
+	javax/swing/text/html/HTMLFrameHyperlinkEvent.java \
+	javax/swing/text/html/parser/AttributeList.java \
+	javax/swing/text/html/parser/ContentModel.java \
+	javax/swing/text/html/parser/DTD.java \
+	javax/swing/text/html/parser/DTDConstants.java \
+	javax/swing/text/html/parser/DocumentParser.java \
+	javax/swing/text/html/parser/Element.java \
+	javax/swing/text/html/parser/Entity.java \
+	javax/swing/text/html/parser/Parser.java \
 	javax/swing/text/html/parser/ParserDelegator.java \
+	javax/swing/text/html/parser/TagElement.java \
 	javax/swing/text/rtf/ControlWordToken.java \
 	javax/swing/text/rtf/RTFEditorKit.java \
 	javax/swing/text/rtf/RTFParseException.java \
@@ -2555,6 +2591,29 @@ am__objects_10 = gnu/awt/LightweightRedirector.lo \
 	gnu/java/awt/peer/GLightweightPeer.lo \
 	gnu/java/awt/peer/ClasspathFontPeer.lo \
 	gnu/java/awt/peer/ClasspathTextLayoutPeer.lo \
+	gnu/javax/swing/text/html/parser/support/gnuStringIntMapper.lo \
+	gnu/javax/swing/text/html/parser/support/parameterDefaulter.lo \
+	gnu/javax/swing/text/html/parser/support/Parser.lo \
+	gnu/javax/swing/text/html/parser/support/textPreProcessor.lo \
+	gnu/javax/swing/text/html/parser/support/low/Buffer.lo \
+	gnu/javax/swing/text/html/parser/support/low/Constants.lo \
+	gnu/javax/swing/text/html/parser/support/low/Location.lo \
+	gnu/javax/swing/text/html/parser/support/low/node.lo \
+	gnu/javax/swing/text/html/parser/support/low/ParseException.lo \
+	gnu/javax/swing/text/html/parser/support/low/pattern.lo \
+	gnu/javax/swing/text/html/parser/support/low/Queue.lo \
+	gnu/javax/swing/text/html/parser/support/low/ReaderTokenizer.lo \
+	gnu/javax/swing/text/html/parser/support/low/Token.lo \
+	gnu/javax/swing/text/html/parser/gnuDTD.lo \
+	gnu/javax/swing/text/html/parser/HTML_401F.lo \
+	gnu/javax/swing/text/html/parser/htmlAttributeSet.lo \
+	gnu/javax/swing/text/html/parser/htmlValidator.lo \
+	gnu/javax/swing/text/html/parser/models/list.lo \
+	gnu/javax/swing/text/html/parser/models/node.lo \
+	gnu/javax/swing/text/html/parser/models/noTagModel.lo \
+	gnu/javax/swing/text/html/parser/models/PCDATAonly_model.lo \
+	gnu/javax/swing/text/html/parser/models/TableRowContentModel.lo \
+	gnu/javax/swing/text/html/parser/models/transformer.lo \
 	java/applet/Applet.lo java/applet/AppletStub.lo \
 	java/applet/AppletContext.lo java/applet/AudioClip.lo \
 	java/awt/AWTError.lo java/awt/AWTEvent.lo \
@@ -3050,7 +3109,9 @@ am__objects_10 = gnu/awt/LightweightRedirector.lo \
 	javax/swing/ActionMap.lo javax/swing/text/AbstractDocument.lo \
 	javax/swing/text/AttributeSet.lo \
 	javax/swing/text/BadLocationException.lo \
-	javax/swing/text/Caret.lo javax/swing/text/ComponentView.lo \
+	javax/swing/text/Caret.lo \
+	javax/swing/text/ChangedCharSetException.lo \
+	javax/swing/text/ComponentView.lo \
 	javax/swing/text/DefaultCaret.lo \
 	javax/swing/text/DefaultEditorKit.lo \
 	javax/swing/text/DefaultHighlighter.lo \
@@ -3079,7 +3140,19 @@ am__objects_10 = gnu/awt/LightweightRedirector.lo \
 	javax/swing/text/TabStop.lo javax/swing/text/TextAction.lo \
 	javax/swing/text/Utilities.lo javax/swing/text/View.lo \
 	javax/swing/text/ViewFactory.lo javax/swing/text/html/HTML.lo \
+	javax/swing/text/html/HTMLDocument.lo \
+	javax/swing/text/html/HTMLEditorKit.lo \
+	javax/swing/text/html/HTMLFrameHyperlinkEvent.lo \
+	javax/swing/text/html/parser/AttributeList.lo \
+	javax/swing/text/html/parser/ContentModel.lo \
+	javax/swing/text/html/parser/DTD.lo \
+	javax/swing/text/html/parser/DTDConstants.lo \
+	javax/swing/text/html/parser/DocumentParser.lo \
+	javax/swing/text/html/parser/Element.lo \
+	javax/swing/text/html/parser/Entity.lo \
+	javax/swing/text/html/parser/Parser.lo \
 	javax/swing/text/html/parser/ParserDelegator.lo \
+	javax/swing/text/html/parser/TagElement.lo \
 	javax/swing/text/rtf/ControlWordToken.lo \
 	javax/swing/text/rtf/RTFEditorKit.lo \
 	javax/swing/text/rtf/RTFParseException.lo \
@@ -4950,6 +5023,29 @@ gnu/java/awt/peer/EmbeddedWindowPeer.java \
 gnu/java/awt/peer/GLightweightPeer.java \
 gnu/java/awt/peer/ClasspathFontPeer.java \
 gnu/java/awt/peer/ClasspathTextLayoutPeer.java \
+gnu/javax/swing/text/html/parser/support/gnuStringIntMapper.java \
+gnu/javax/swing/text/html/parser/support/parameterDefaulter.java \
+gnu/javax/swing/text/html/parser/support/Parser.java \
+gnu/javax/swing/text/html/parser/support/textPreProcessor.java \
+gnu/javax/swing/text/html/parser/support/low/Buffer.java \
+gnu/javax/swing/text/html/parser/support/low/Constants.java \
+gnu/javax/swing/text/html/parser/support/low/Location.java \
+gnu/javax/swing/text/html/parser/support/low/node.java \
+gnu/javax/swing/text/html/parser/support/low/ParseException.java \
+gnu/javax/swing/text/html/parser/support/low/pattern.java \
+gnu/javax/swing/text/html/parser/support/low/Queue.java \
+gnu/javax/swing/text/html/parser/support/low/ReaderTokenizer.java \
+gnu/javax/swing/text/html/parser/support/low/Token.java \
+gnu/javax/swing/text/html/parser/gnuDTD.java \
+gnu/javax/swing/text/html/parser/HTML_401F.java \
+gnu/javax/swing/text/html/parser/htmlAttributeSet.java \
+gnu/javax/swing/text/html/parser/htmlValidator.java \
+gnu/javax/swing/text/html/parser/models/list.java \
+gnu/javax/swing/text/html/parser/models/node.java \
+gnu/javax/swing/text/html/parser/models/noTagModel.java \
+gnu/javax/swing/text/html/parser/models/PCDATAonly_model.java \
+gnu/javax/swing/text/html/parser/models/TableRowContentModel.java \
+gnu/javax/swing/text/html/parser/models/transformer.java \
 java/applet/Applet.java \
 java/applet/AppletStub.java \
 java/applet/AppletContext.java \
@@ -5596,6 +5692,7 @@ javax/swing/text/AbstractDocument.java \
 javax/swing/text/AttributeSet.java \
 javax/swing/text/BadLocationException.java \
 javax/swing/text/Caret.java \
+javax/swing/text/ChangedCharSetException.java \
 javax/swing/text/ComponentView.java \
 javax/swing/text/DefaultCaret.java \
 javax/swing/text/DefaultEditorKit.java \
@@ -5634,7 +5731,19 @@ javax/swing/text/Utilities.java \
 javax/swing/text/View.java \
 javax/swing/text/ViewFactory.java \
 javax/swing/text/html/HTML.java \
+javax/swing/text/html/HTMLDocument.java \
+javax/swing/text/html/HTMLEditorKit.java \
+javax/swing/text/html/HTMLFrameHyperlinkEvent.java \
+javax/swing/text/html/parser/AttributeList.java \
+javax/swing/text/html/parser/ContentModel.java \
+javax/swing/text/html/parser/DTD.java \
+javax/swing/text/html/parser/DTDConstants.java \
+javax/swing/text/html/parser/DocumentParser.java \
+javax/swing/text/html/parser/Element.java \
+javax/swing/text/html/parser/Entity.java \
+javax/swing/text/html/parser/Parser.java \
 javax/swing/text/html/parser/ParserDelegator.java \
+javax/swing/text/html/parser/TagElement.java \
 javax/swing/text/rtf/ControlWordToken.java \
 javax/swing/text/rtf/RTFEditorKit.java \
 javax/swing/text/rtf/RTFParseException.java \
@@ -6440,6 +6549,63 @@ gnu/xml/dom/DomEvent.java \
 gnu/xml/dom/DomEntity.java \
 gnu/xml/dom/DomCDATASection.java \
 gnu/xml/dom/DomDOMException.java \
+gnu/xml/dom/html2/DomHTMLAnchorElement.java \
+gnu/xml/dom/html2/DomHTMLAppletElement.java \
+gnu/xml/dom/html2/DomHTMLAreaElement.java \
+gnu/xml/dom/html2/DomHTMLBaseElement.java \
+gnu/xml/dom/html2/DomHTMLBaseFontElement.java \
+gnu/xml/dom/html2/DomHTMLBodyElement.java \
+gnu/xml/dom/html2/DomHTMLBRElement.java \
+gnu/xml/dom/html2/DomHTMLButtonElement.java \
+gnu/xml/dom/html2/DomHTMLCollection.java \
+gnu/xml/dom/html2/DomHTMLDirectoryElement.java \
+gnu/xml/dom/html2/DomHTMLDivElement.java \
+gnu/xml/dom/html2/DomHTMLDListElement.java \
+gnu/xml/dom/html2/DomHTMLDocument.java \
+gnu/xml/dom/html2/DomHTMLElement.java \
+gnu/xml/dom/html2/DomHTMLFieldSetElement.java \
+gnu/xml/dom/html2/DomHTMLFontElement.java \
+gnu/xml/dom/html2/DomHTMLFormElement.java \
+gnu/xml/dom/html2/DomHTMLFrameElement.java \
+gnu/xml/dom/html2/DomHTMLFrameSetElement.java \
+gnu/xml/dom/html2/DomHTMLHeadElement.java \
+gnu/xml/dom/html2/DomHTMLHeadingElement.java \
+gnu/xml/dom/html2/DomHTMLHRElement.java \
+gnu/xml/dom/html2/DomHTMLHtmlElement.java \
+gnu/xml/dom/html2/DomHTMLIFrameElement.java \
+gnu/xml/dom/html2/DomHTMLImageElement.java \
+gnu/xml/dom/html2/DomHTMLImpl.java \
+gnu/xml/dom/html2/DomHTMLInputElement.java \
+gnu/xml/dom/html2/DomHTMLIsIndexElement.java \
+gnu/xml/dom/html2/DomHTMLLabelElement.java \
+gnu/xml/dom/html2/DomHTMLLegendElement.java \
+gnu/xml/dom/html2/DomHTMLLIElement.java \
+gnu/xml/dom/html2/DomHTMLLinkElement.java \
+gnu/xml/dom/html2/DomHTMLMapElement.java \
+gnu/xml/dom/html2/DomHTMLMenuElement.java \
+gnu/xml/dom/html2/DomHTMLMetaElement.java \
+gnu/xml/dom/html2/DomHTMLModElement.java \
+gnu/xml/dom/html2/DomHTMLObjectElement.java \
+gnu/xml/dom/html2/DomHTMLOListElement.java \
+gnu/xml/dom/html2/DomHTMLOptGroupElement.java \
+gnu/xml/dom/html2/DomHTMLOptionElement.java \
+gnu/xml/dom/html2/DomHTMLParagraphElement.java \
+gnu/xml/dom/html2/DomHTMLParamElement.java \
+gnu/xml/dom/html2/DomHTMLParser.java \
+gnu/xml/dom/html2/DomHTMLPreElement.java \
+gnu/xml/dom/html2/DomHTMLQuoteElement.java \
+gnu/xml/dom/html2/DomHTMLScriptElement.java \
+gnu/xml/dom/html2/DomHTMLSelectElement.java \
+gnu/xml/dom/html2/DomHTMLStyleElement.java \
+gnu/xml/dom/html2/DomHTMLTableCaptionElement.java \
+gnu/xml/dom/html2/DomHTMLTableCellElement.java \
+gnu/xml/dom/html2/DomHTMLTableColElement.java \
+gnu/xml/dom/html2/DomHTMLTableElement.java \
+gnu/xml/dom/html2/DomHTMLTableRowElement.java \
+gnu/xml/dom/html2/DomHTMLTableSectionElement.java \
+gnu/xml/dom/html2/DomHTMLTextAreaElement.java \
+gnu/xml/dom/html2/DomHTMLTitleElement.java \
+gnu/xml/dom/html2/DomHTMLUListElement.java \
 gnu/xml/transform/GenerateIdFunction.java \
 gnu/xml/transform/FormatNumberFunction.java \
 gnu/xml/transform/ValueOfNode.java \
@@ -11368,6 +11534,99 @@ gnu/java/awt/peer/ClasspathFontPeer.lo:  \
 gnu/java/awt/peer/ClasspathTextLayoutPeer.lo:  \
 	gnu/java/awt/peer/$(am__dirstamp) \
 	gnu/java/awt/peer/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/$(am__dirstamp):
+	@$(mkdir_p) gnu/javax/swing/text/html/parser/support
+	@: > gnu/javax/swing/text/html/parser/support/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/javax/swing/text/html/parser/support/$(DEPDIR)
+	@: > gnu/javax/swing/text/html/parser/support/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/gnuStringIntMapper.lo:  \
+	gnu/javax/swing/text/html/parser/support/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/parameterDefaulter.lo:  \
+	gnu/javax/swing/text/html/parser/support/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/Parser.lo:  \
+	gnu/javax/swing/text/html/parser/support/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/textPreProcessor.lo:  \
+	gnu/javax/swing/text/html/parser/support/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp):
+	@$(mkdir_p) gnu/javax/swing/text/html/parser/support/low
+	@: > gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)
+	@: > gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/Buffer.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/Constants.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/Location.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/node.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/ParseException.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/pattern.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/Queue.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/ReaderTokenizer.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/support/low/Token.lo:  \
+	gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/$(am__dirstamp):
+	@$(mkdir_p) gnu/javax/swing/text/html/parser
+	@: > gnu/javax/swing/text/html/parser/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/javax/swing/text/html/parser/$(DEPDIR)
+	@: > gnu/javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/gnuDTD.lo:  \
+	gnu/javax/swing/text/html/parser/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/HTML_401F.lo:  \
+	gnu/javax/swing/text/html/parser/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/htmlAttributeSet.lo:  \
+	gnu/javax/swing/text/html/parser/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/htmlValidator.lo:  \
+	gnu/javax/swing/text/html/parser/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/models/$(am__dirstamp):
+	@$(mkdir_p) gnu/javax/swing/text/html/parser/models
+	@: > gnu/javax/swing/text/html/parser/models/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/javax/swing/text/html/parser/models/$(DEPDIR)
+	@: > gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/models/list.lo:  \
+	gnu/javax/swing/text/html/parser/models/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/models/node.lo:  \
+	gnu/javax/swing/text/html/parser/models/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/models/noTagModel.lo:  \
+	gnu/javax/swing/text/html/parser/models/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/models/PCDATAonly_model.lo:  \
+	gnu/javax/swing/text/html/parser/models/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/models/TableRowContentModel.lo:  \
+	gnu/javax/swing/text/html/parser/models/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp)
+gnu/javax/swing/text/html/parser/models/transformer.lo:  \
+	gnu/javax/swing/text/html/parser/models/$(am__dirstamp) \
+	gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp)
 java/applet/$(am__dirstamp):
 	@$(mkdir_p) java/applet
 	@: > java/applet/$(am__dirstamp)
@@ -13031,6 +13290,9 @@ javax/swing/text/BadLocationException.lo:  \
 	javax/swing/text/$(DEPDIR)/$(am__dirstamp)
 javax/swing/text/Caret.lo: javax/swing/text/$(am__dirstamp) \
 	javax/swing/text/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/ChangedCharSetException.lo:  \
+	javax/swing/text/$(am__dirstamp) \
+	javax/swing/text/$(DEPDIR)/$(am__dirstamp)
 javax/swing/text/ComponentView.lo: javax/swing/text/$(am__dirstamp) \
 	javax/swing/text/$(DEPDIR)/$(am__dirstamp)
 javax/swing/text/DefaultCaret.lo: javax/swing/text/$(am__dirstamp) \
@@ -13120,13 +13382,49 @@ javax/swing/text/html/$(DEPDIR)/$(am__dirstamp):
 	@: > javax/swing/text/html/$(DEPDIR)/$(am__dirstamp)
 javax/swing/text/html/HTML.lo: javax/swing/text/html/$(am__dirstamp) \
 	javax/swing/text/html/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/HTMLDocument.lo:  \
+	javax/swing/text/html/$(am__dirstamp) \
+	javax/swing/text/html/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/HTMLEditorKit.lo:  \
+	javax/swing/text/html/$(am__dirstamp) \
+	javax/swing/text/html/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/HTMLFrameHyperlinkEvent.lo:  \
+	javax/swing/text/html/$(am__dirstamp) \
+	javax/swing/text/html/$(DEPDIR)/$(am__dirstamp)
 javax/swing/text/html/parser/$(am__dirstamp):
 	@$(mkdir_p) javax/swing/text/html/parser
 	@: > javax/swing/text/html/parser/$(am__dirstamp)
 javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) javax/swing/text/html/parser/$(DEPDIR)
 	@: > javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/AttributeList.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/ContentModel.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/DTD.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/DTDConstants.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/DocumentParser.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/Element.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/Entity.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/Parser.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
 javax/swing/text/html/parser/ParserDelegator.lo:  \
+	javax/swing/text/html/parser/$(am__dirstamp) \
+	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+javax/swing/text/html/parser/TagElement.lo:  \
 	javax/swing/text/html/parser/$(am__dirstamp) \
 	javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
 javax/swing/text/rtf/$(am__dirstamp):
@@ -15699,6 +15997,52 @@ mostlyclean-compile:
 	-rm -f gnu/java/util/prefs/NodeReader.lo
 	-rm -f gnu/java/util/prefs/NodeWriter.$(OBJEXT)
 	-rm -f gnu/java/util/prefs/NodeWriter.lo
+	-rm -f gnu/javax/swing/text/html/parser/HTML_401F.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/HTML_401F.lo
+	-rm -f gnu/javax/swing/text/html/parser/gnuDTD.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/gnuDTD.lo
+	-rm -f gnu/javax/swing/text/html/parser/htmlAttributeSet.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/htmlAttributeSet.lo
+	-rm -f gnu/javax/swing/text/html/parser/htmlValidator.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/htmlValidator.lo
+	-rm -f gnu/javax/swing/text/html/parser/models/PCDATAonly_model.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/models/PCDATAonly_model.lo
+	-rm -f gnu/javax/swing/text/html/parser/models/TableRowContentModel.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/models/TableRowContentModel.lo
+	-rm -f gnu/javax/swing/text/html/parser/models/list.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/models/list.lo
+	-rm -f gnu/javax/swing/text/html/parser/models/noTagModel.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/models/noTagModel.lo
+	-rm -f gnu/javax/swing/text/html/parser/models/node.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/models/node.lo
+	-rm -f gnu/javax/swing/text/html/parser/models/transformer.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/models/transformer.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/Parser.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/Parser.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/gnuStringIntMapper.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/gnuStringIntMapper.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Buffer.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Buffer.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Constants.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Constants.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Location.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Location.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/ParseException.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/ParseException.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Queue.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Queue.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/ReaderTokenizer.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/ReaderTokenizer.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Token.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/Token.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/node.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/node.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/low/pattern.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/pattern.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/parameterDefaulter.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/parameterDefaulter.lo
+	-rm -f gnu/javax/swing/text/html/parser/support/textPreProcessor.$(OBJEXT)
+	-rm -f gnu/javax/swing/text/html/parser/support/textPreProcessor.lo
 	-rm -f gnu/regexp/CharIndexed.$(OBJEXT)
 	-rm -f gnu/regexp/CharIndexed.lo
 	-rm -f gnu/regexp/CharIndexedCharArray.$(OBJEXT)
@@ -19383,6 +19727,8 @@ mostlyclean-compile:
 	-rm -f javax/swing/text/BadLocationException.lo
 	-rm -f javax/swing/text/Caret.$(OBJEXT)
 	-rm -f javax/swing/text/Caret.lo
+	-rm -f javax/swing/text/ChangedCharSetException.$(OBJEXT)
+	-rm -f javax/swing/text/ChangedCharSetException.lo
 	-rm -f javax/swing/text/ComponentView.$(OBJEXT)
 	-rm -f javax/swing/text/ComponentView.lo
 	-rm -f javax/swing/text/DefaultCaret.$(OBJEXT)
@@ -19459,8 +19805,32 @@ mostlyclean-compile:
 	-rm -f javax/swing/text/ViewFactory.lo
 	-rm -f javax/swing/text/html/HTML.$(OBJEXT)
 	-rm -f javax/swing/text/html/HTML.lo
+	-rm -f javax/swing/text/html/HTMLDocument.$(OBJEXT)
+	-rm -f javax/swing/text/html/HTMLDocument.lo
+	-rm -f javax/swing/text/html/HTMLEditorKit.$(OBJEXT)
+	-rm -f javax/swing/text/html/HTMLEditorKit.lo
+	-rm -f javax/swing/text/html/HTMLFrameHyperlinkEvent.$(OBJEXT)
+	-rm -f javax/swing/text/html/HTMLFrameHyperlinkEvent.lo
+	-rm -f javax/swing/text/html/parser/AttributeList.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/AttributeList.lo
+	-rm -f javax/swing/text/html/parser/ContentModel.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/ContentModel.lo
+	-rm -f javax/swing/text/html/parser/DTD.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/DTD.lo
+	-rm -f javax/swing/text/html/parser/DTDConstants.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/DTDConstants.lo
+	-rm -f javax/swing/text/html/parser/DocumentParser.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/DocumentParser.lo
+	-rm -f javax/swing/text/html/parser/Element.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/Element.lo
+	-rm -f javax/swing/text/html/parser/Entity.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/Entity.lo
+	-rm -f javax/swing/text/html/parser/Parser.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/Parser.lo
 	-rm -f javax/swing/text/html/parser/ParserDelegator.$(OBJEXT)
 	-rm -f javax/swing/text/html/parser/ParserDelegator.lo
+	-rm -f javax/swing/text/html/parser/TagElement.$(OBJEXT)
+	-rm -f javax/swing/text/html/parser/TagElement.lo
 	-rm -f javax/swing/text/rtf/ControlWordToken.$(OBJEXT)
 	-rm -f javax/swing/text/rtf/ControlWordToken.lo
 	-rm -f javax/swing/text/rtf/RTFEditorKit.$(OBJEXT)
@@ -20193,6 +20563,29 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/util/prefs/$(DEPDIR)/MemoryBasedPreferences.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/util/prefs/$(DEPDIR)/NodeReader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/util/prefs/$(DEPDIR)/NodeWriter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/$(DEPDIR)/HTML_401F.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/$(DEPDIR)/gnuDTD.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/$(DEPDIR)/htmlAttributeSet.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/$(DEPDIR)/htmlValidator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/models/$(DEPDIR)/PCDATAonly_model.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/models/$(DEPDIR)/TableRowContentModel.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/models/$(DEPDIR)/list.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/models/$(DEPDIR)/noTagModel.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/models/$(DEPDIR)/node.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/models/$(DEPDIR)/transformer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/$(DEPDIR)/Parser.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/$(DEPDIR)/gnuStringIntMapper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/$(DEPDIR)/parameterDefaulter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/$(DEPDIR)/textPreProcessor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/Buffer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/Constants.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/Location.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/ParseException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/Queue.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/ReaderTokenizer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/Token.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/node.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/pattern.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/CharIndexed.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/CharIndexedCharArray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/regexp/$(DEPDIR)/CharIndexedInputStream.Plo@am__quote@
@@ -22035,6 +22428,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/AttributeSet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/BadLocationException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/Caret.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/ChangedCharSetException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/ComponentView.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/DefaultCaret.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/DefaultEditorKit.Plo@am__quote@
@@ -22073,7 +22467,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/View.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/$(DEPDIR)/ViewFactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/$(DEPDIR)/HTML.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/$(DEPDIR)/HTMLDocument.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/$(DEPDIR)/HTMLEditorKit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/$(DEPDIR)/HTMLFrameHyperlinkEvent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/AttributeList.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/ContentModel.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/DTD.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/DTDConstants.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/DocumentParser.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/Element.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/Entity.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/Parser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/ParserDelegator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/html/parser/$(DEPDIR)/TagElement.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/rtf/$(DEPDIR)/ControlWordToken.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/rtf/$(DEPDIR)/RTFEditorKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/swing/text/rtf/$(DEPDIR)/RTFParseException.Plo@am__quote@
@@ -22725,6 +23131,10 @@ clean-libtool:
 	-rm -rf gnu/java/text/.libs gnu/java/text/_libs
 	-rm -rf gnu/java/util/.libs gnu/java/util/_libs
 	-rm -rf gnu/java/util/prefs/.libs gnu/java/util/prefs/_libs
+	-rm -rf gnu/javax/swing/text/html/parser/.libs gnu/javax/swing/text/html/parser/_libs
+	-rm -rf gnu/javax/swing/text/html/parser/models/.libs gnu/javax/swing/text/html/parser/models/_libs
+	-rm -rf gnu/javax/swing/text/html/parser/support/.libs gnu/javax/swing/text/html/parser/support/_libs
+	-rm -rf gnu/javax/swing/text/html/parser/support/low/.libs gnu/javax/swing/text/html/parser/support/low/_libs
 	-rm -rf gnu/regexp/.libs gnu/regexp/_libs
 	-rm -rf java/applet/.libs java/applet/_libs
 	-rm -rf java/awt/.libs java/awt/_libs
@@ -23276,6 +23686,14 @@ distclean-generic:
 	-rm -f gnu/java/util/$(am__dirstamp)
 	-rm -f gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/util/prefs/$(am__dirstamp)
+	-rm -f gnu/javax/swing/text/html/parser/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/javax/swing/text/html/parser/$(am__dirstamp)
+	-rm -f gnu/javax/swing/text/html/parser/models/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/javax/swing/text/html/parser/models/$(am__dirstamp)
+	-rm -f gnu/javax/swing/text/html/parser/support/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/javax/swing/text/html/parser/support/$(am__dirstamp)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/javax/swing/text/html/parser/support/low/$(am__dirstamp)
 	-rm -f gnu/regexp/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/regexp/$(am__dirstamp)
 	-rm -f java/applet/$(DEPDIR)/$(am__dirstamp)
@@ -23470,7 +23888,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/text/rtf/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/javax/swing/text/html/parser/$(DEPDIR) gnu/javax/swing/text/html/parser/models/$(DEPDIR) gnu/javax/swing/text/html/parser/support/$(DEPDIR) gnu/javax/swing/text/html/parser/support/low/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/text/rtf/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -23501,7 +23919,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/text/rtf/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/javax/swing/text/html/parser/$(DEPDIR) gnu/javax/swing/text/html/parser/models/$(DEPDIR) gnu/javax/swing/text/html/parser/support/$(DEPDIR) gnu/javax/swing/text/html/parser/support/low/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/text/rtf/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

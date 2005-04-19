@@ -1,5 +1,5 @@
-/* ParserDelegator.java -- Delegator for ParserDocument.
-    Copyright (C) 2005 Free Software Foundation, Inc.
+/* DocumentParser.java -- A parser for HTML documents.
+   Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,37 +35,53 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.text.html.parser;
 
-import gnu.javax.swing.text.html.parser.HTML_401F;
 import gnu.javax.swing.text.html.parser.htmlAttributeSet;
+import javax.swing.text.html.parser.Parser;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Serializable;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.HTMLEditorKit.ParserCallback;
 
 /**
- * This class instantiates and starts the working instance of
- * html parser, being responsible for providing the default DTD.
- *
- * TODO Later this class must be derived from the totally abstract class
- * HTMLEditorKit.Parser. HTMLEditorKit that does not yet exist.
- *
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
+ * <p>A simple error-tolerant HTML parser that uses a DTD document
+ * to access data on the possible tokens, arguments and syntax.</p>
+ * <p> The parser reads an HTML content from a Reader and calls various
+ * notifying methods (which should be overridden in a subclass)
+ * when tags or data are encountered.</p>
+ * <p>Some HTML elements need no opening or closing tags. The
+ * task of this parser is to invoke the tag handling methods also when
+ * the tags are not explicitly specified and must be supposed using
+ * information, stored in the DTD.
+ * For  example, parsing the document
+ * <p>&lt;table&gt;&lt;tr&gt;&lt;td&gt;a&lt;td&gt;b&lt;td&gt;c&lt;/tr&gt; <br>
+ * will invoke exactly the handling methods exactly in the same order
+ * (and with the same parameters) as if parsing the document: <br>
+ * <em>&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;table&gt;&lt;
+ * tbody&gt;</em>&lt;tr&gt;&lt;td&gt;a<em>&lt;/td&gt;</em>&lt;td&gt;b<em>
+ * &lt;/td&gt;</em>&lt;td&gt;c<em>&lt;/td&gt;&lt;/tr&gt;</em>&lt;
+ * <em>/tbody&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</em></p>
+ * (supposed tags are given in italics). The parser also supports
+ * obsolete elements of HTML syntax.<p>
+ * </p>
+ * In this implementation, DocumentParser is directly derived from its
+ * ancestor without changes of functionality.
+ * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class ParserDelegator
-  extends javax.swing.text.html.HTMLEditorKit.Parser
-  implements Serializable
+public class DocumentParser
+  extends Parser
+  implements DTDConstants
 {
+  /**
+   * The enclosed working parser class.
+   */
   private class gnuParser
     extends gnu.javax.swing.text.html.parser.support.Parser
   {
-    private static final long serialVersionUID = 1;
-
     private gnuParser(DTD d)
     {
       super(d);
@@ -73,12 +89,14 @@ public class ParserDelegator
 
     protected final void handleComment(char[] comment)
     {
+      parser.handleComment(comment);
       callBack.handleComment(comment, hTag.where.startPosition);
     }
 
     protected final void handleEmptyTag(TagElement tag)
       throws javax.swing.text.ChangedCharSetException
     {
+      parser.handleEmptyTag(tag);
       callBack.handleSimpleTag(tag.getHTMLTag(), getAttributes(),
                                hTag.where.startPosition
                               );
@@ -86,20 +104,25 @@ public class ParserDelegator
 
     protected final void handleEndTag(TagElement tag)
     {
+      parser.handleEndTag(tag);
       callBack.handleEndTag(tag.getHTMLTag(), hTag.where.startPosition);
     }
 
     protected final void handleError(int line, String message)
     {
+      parser.handleError(line, message);
       callBack.handleError(message, hTag.where.startPosition);
     }
 
     protected final void handleStartTag(TagElement tag)
     {
+      parser.handleStartTag(tag);
       htmlAttributeSet attributes = gnu.getAttributes();
 
       if (tag.fictional())
-        attributes.addAttribute(ParserCallback.IMPLIED, Boolean.TRUE);
+        attributes.addAttribute(HTMLEditorKit.ParserCallback.IMPLIED,
+                                Boolean.TRUE
+                               );
 
       callBack.handleStartTag(tag.getHTMLTag(), attributes,
                               hTag.where.startPosition
@@ -108,6 +131,7 @@ public class ParserDelegator
 
     protected final void handleText(char[] text)
     {
+      parser.handleText(text);
       callBack.handleText(text, hTag.where.startPosition);
     }
 
@@ -118,11 +142,10 @@ public class ParserDelegator
   }
 
   /**
-   * Use serialVersionUID for interoperability.
+   * This field is used to access the identically named
+   * methods of the outer class.
    */
-  private static final long serialVersionUID = -1276686502624777206L;
-
-  private static DTD dtd = HTML_401F.getInstance();
+  private DocumentParser parser = this;
 
   /**
    * The callback.
@@ -134,6 +157,21 @@ public class ParserDelegator
    * actually used to parse the document.
    */
   private gnuParser gnu;
+
+  /**
+   * Creates a new parser that uses the given DTD to access data on the
+   * possible tokens, arguments and syntax. There is no single - step way
+   * to get a default DTD; you must either refer to the implementation -
+   * specific packages, write your own DTD or obtain the working instance
+   * of parser in other way, for example, by calling
+   * {@link javax.swing.text.html.HTMLEditorKit#getParser() }.
+   * @param a_dtd a DTD to use.
+   */
+  public DocumentParser(DTD a_dtd)
+  {
+    super(a_dtd);
+    gnu = new gnuParser(a_dtd);
+  }
 
   /**
    * Parses the HTML document, calling methods of the provided
@@ -151,12 +189,6 @@ public class ParserDelegator
              throws IOException
   {
     callBack = a_callback;
-
-    if (gnu == null || !dtd.equals(gnu.getDTD()))
-      {
-        gnu = new gnuParser(dtd);
-      }
-
     gnu.parse(reader);
 
     callBack.handleEndOfLineString(gnu.getEndOfLineSequence());
@@ -172,35 +204,55 @@ public class ParserDelegator
   }
 
   /**
-   * Calling this method instructs that, if not specified directly,
-   * the documents will be parsed using the default
-   * DTD of the implementation.
+   * Handle HTML comment. The default method returns without action.
+   * @param comment the comment being handled
    */
-  protected static void setDefaultDTD()
+  protected void handleComment(char[] comment)
   {
-    dtd = HTML_401F.getInstance();
   }
 
   /**
-   * Registers the user - written DTD under the given name, also
-   * making it default for the subsequent parsings. This has effect on
-   * all subsequent calls to the parse(...) . If you need to specify
-   * your DTD locally, simply {@link javax.swing.text.html.parser.Parser}
-   * instead.
-   * @param dtd The DTD that will be used to parse documents by this class.
-   * @param name The name of this DTD.
-   * @return No standard is specified on which instance of DTD must be
-   * returned by this method, and it is recommended to leave the returned
-   * value without consideration. This implementation returns the DTD
-   * that was previously set as the default DTD, or the implementations
-   * default DTD if none was set.
+   * Handle the tag with no content, like &lt;br&gt;. The method is
+   * called for the elements that, in accordance with the current DTD,
+   * has an empty content.
+   * @param tag the tag being handled.
+   * @throws javax.swing.text.ChangedCharSetException
    */
-  protected static DTD createDTD(DTD a_dtd, String name)
+  protected void handleEmptyTag(TagElement tag)
+                         throws javax.swing.text.ChangedCharSetException
   {
-    DTD.putDTDHash(name, a_dtd);
+  }
 
-    DTD dtd_prev = dtd;
-    dtd = a_dtd;
-    return dtd_prev;
+  /**
+   * The method is called when the HTML closing tag ((like &lt;/table&gt;)
+   * is found or if the parser concludes that the one should be present
+   * in the current position.
+   * @param The tag being handled
+   */
+  protected void handleEndTag(TagElement tag)
+  {
+  }
+
+  /* Handle error that has occured in the given line. */
+  protected void handleError(int line, String message)
+  {
+  }
+
+  /**
+   * The method is called when the HTML opening tag ((like &lt;table&gt;)
+   * is found or if the parser concludes that the one should be present
+   * in the current position.
+   * @param The tag being handled
+   */
+  protected void handleStartTag(TagElement tag)
+  {
+  }
+
+  /**
+   * Handle the text section.
+   * @param text a section text.
+   */
+  protected void handleText(char[] text)
+  {
   }
 }

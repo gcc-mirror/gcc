@@ -47,6 +47,7 @@ import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSSerializer;
+import gnu.xml.dom.html2.DomHTMLImpl;
 import gnu.xml.dom.ls.DomLSInput;
 import gnu.xml.dom.ls.DomLSOutput;
 import gnu.xml.dom.ls.DomLSParser;
@@ -150,6 +151,12 @@ public class DomImpl
                 "".equals(version) ||
                 "3.0".equals(version));
       }
+    else if ("html".equals(name) || "xhtml".equals(name))
+      {
+        return (version == null ||
+                "".equals(version) ||
+                "2.0".equals(version));
+      }
 
     // views
     // stylesheets
@@ -199,7 +206,7 @@ public class DomImpl
                                  String rootName,
                                  DocumentType doctype)
   {
-    Document doc = new DomDocument(this);
+    Document doc = createDocument();
     Element root = null;
     
     if (rootName != null)
@@ -223,12 +230,22 @@ public class DomImpl
     return doc;
   }
 
+  protected Document createDocument()
+  {
+    return new DomDocument(this);
+  }
+
   // DOM Level 3
   
   public Object getFeature(String feature, String version)
   {
     if (hasFeature(feature, version))
       {
+        if ("html".equalsIgnoreCase(feature) ||
+            "xhtml".equalsIgnoreCase(feature))
+          {
+            return new DomHTMLImpl();
+          }
         return this;
       }
     return null;
