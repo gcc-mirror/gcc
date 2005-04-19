@@ -50,11 +50,16 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 
 /**
- * CellRendererPane
+ * The CellRendererPane's purpose is to paint the cells of JList, JTable and
+ * JTree. It intercepts the usual paint tree, so that we don't walk up and
+ * repaint everything.
+ *
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class CellRendererPane extends Container implements Accessible
+public class CellRendererPane
+  extends Container
+  implements Accessible
 {
   private static final long serialVersionUID = -7642183829532984273L;
 
@@ -83,116 +88,162 @@ public class CellRendererPane extends Container implements Accessible
     }
   }
 
-	/**
-	 * accessibleContext
-	 */
-	protected AccessibleContext accessibleContext = null;
+  /**
+   * accessibleContext
+   */
+  protected AccessibleContext accessibleContext = null;
 
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor CellRendererPane
-	 */
-	public CellRendererPane() {
-		// TODO
-	} // CellRendererPane()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * writeObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// TODO
-	} // writeObject()
-
-	/**
-	 * update
-	 * @param graphics TODO
-	 */
-	public void update(Graphics graphics) {
-		// TODO
-	} // update()
-
-	/**
-	 * invalidate
-	 */
-	public void invalidate() {
-		// TODO
-	} // invalidate()
-
-	/**
-	 * paint
-	 * @param graphics TODO
-	 */
-	public void paint(Graphics graphics) {
-		// TODO
-	} // paint()
-
-	/**
-	 * addImpl
-	 * @param c TODO
-	 * @param constraints TODO
-	 * @param index TODO
-	 */
-	protected void addImpl(Component c, Object constraints, int index) {
-		// TODO
-	} // addImpl()
-
-	/**
-	 * paintComponent
-	 * @param graphics TODO
-	 * @param c TODO
-	 * @param p TODO
-	 * @param x TODO
-	 * @param y TODO
-	 * @param w TODO
-	 * @param h TODO
-	 * @param shouldValidate TODO
-	 */
-	public void paintComponent(Graphics graphics, Component c,
-			Container p, int x, int y, int w, int h, 
-			boolean shouldValidate) {
-		// TODO
-	} // paintComponent()
-
-	/**
-	 * paintComponent
-	 * @param graphics TODO
-	 * @param c TODO
-	 * @param p TODO
-	 * @param x TODO
-	 * @param y TODO
-	 * @param w TODO
-	 * @param h TODO
-	 */
-	public void paintComponent(Graphics graphics, Component c,
-			Container p, int x, int y, int w, int h) {
-		// TODO
-	} // paintComponent()
-
-	/**
-	 * paintComponent
-	 * @param graphics TODO
-	 * @param c TODO
-	 * @param p TODO
-	 * @param r TODO
-	 */
-	public void paintComponent(Graphics graphics, Component c,
-			Container p, Rectangle r) {
-		// TODO
-	} // paintComponent()
+  //-------------------------------------------------------------
+  // Initialization ---------------------------------------------
+  //-------------------------------------------------------------
 
   /**
-   * getAccessibleContext
+   * Constructs a new CellRendererPane.
+   */
+  public CellRendererPane()
+  {
+  } // CellRendererPane()
+
+
+  //-------------------------------------------------------------
+  // Methods ----------------------------------------------------
+  //-------------------------------------------------------------
+
+  /**
+   * Should not be called.
+   *
+   * @param graphics not used here
+   */
+  public void update(Graphics graphics)
+  {
+  } // update()
+
+  /**
+   * Despite normal behaviour this does <em>not</em> cause the container
+   * to be invalidated. This prevents propagating up the paint tree.
+   */
+  public void invalidate()
+  {
+  } // invalidate()
+
+  /**
+   * Should not be called.
+   *
+   * @param graphics not used here
+   */
+  public void paint(Graphics graphics)
+  {
+  }
+
+  /**
+   * Overridden to check if a component is already a child of this Container.
+   * If it's already a child, nothing is done. Otherwise we pass this to
+   * <code>super.addImpl()</code>.
+   *
+   * @param c the component to add
+   * @param constraints not used here
+   * @param index not used here
+   */
+  protected void addImpl(Component c, Object constraints, int index)
+  {
+    if (!isAncestorOf(c))
+      {
+        super.addImpl(c, constraints, index);
+      }
+  } // addImpl()
+
+  /**
+   * Paints the specified component <code>c</code> on the {@link Graphics}
+   * context <code>graphics</code>. The Graphics context is tranlated to
+   * (x,y) and the components bounds are set to (w,h). If
+   * <code>shouldValidate</code>
+   * is set to true, then the component is validated before painting.
+   *
+   * @param graphics the graphics context to paint on
+   * @param c the component to be painted
+   * @param p the parent of the component
+   * @param x the X coordinate of the upper left corner where c should
+            be painted
+   * @param y the Y coordinate of the upper left corner where c should
+            be painted
+   * @param w the width of the components drawing area
+   * @param h the height of the components drawing area
+   * @param shouldValidate if <code>c</code> should be validated before
+   *        painting
+   */
+  public void paintComponent(Graphics graphics, Component c,
+                             Container p, int x, int y, int w, int h, 
+                             boolean shouldValidate)
+  {
+    // reparent c
+    addImpl(c, null, 0);
+
+    // translate to (x,y)
+    graphics.translate(x, y);
+
+    // set bounds of c
+    c.setBounds(0, 0, w, h);
+
+    // validate if necessary
+    if (shouldValidate)
+      {
+        c.validate();
+      }
+
+    // paint component
+    c.paint(graphics);
+
+    // untranslate g
+    graphics.translate(-x, -y);
+
+  } // paintComponent()
+
+  /**
+   * Paints the specified component <code>c</code> on the {@link Graphics}
+   * context <code>graphics</code>. The Graphics context is tranlated to (x,y)
+   * and the components bounds are set to (w,h). The component is <em>not</em>
+   * validated before painting.
+   *
+   * @param graphics the graphics context to paint on
+   * @param c the component to be painted
+   * @param p the parent of the component
+   * @param x the X coordinate of the upper left corner where c should
+            be painted
+   * @param y the Y coordinate of the upper left corner where c should
+            be painted
+   * @param w the width of the components drawing area
+   * @param h the height of the components drawing area
+   */
+  public void paintComponent(Graphics graphics, Component c,
+                             Container p, int x, int y, int w, int h) {
+
+    paintComponent(graphics, c, p, x, y, w, h, false);
+
+  } // paintComponent()
+
+  /**
+   * Paints the specified component <code>c</code> on the {@link Graphics}
+   * context <code>g</code>. The Graphics context is tranlated to (r.x,r.y) and
+   * the components bounds are set to (r.width,r.height).
+   * The component is <em>not</em>
+   * validated before painting.
+   *
+   * @param graphics the graphics context to paint on
+   * @param c the component to be painted
+   * @param p the component on which we paint
+   * @param r the bounding rectangle of c
+   */
+  public void paintComponent(Graphics graphics, Component c,
+                             Container p, Rectangle r)
+  {
+
+    paintComponent(graphics, c, p, r.x, r.y, r.width, r.height);
+
+  } // paintComponent()
+
+  /**
+   * getAccessibleContext <em>TODO</em>
    * @return AccessibleContext
    */
   public AccessibleContext getAccessibleContext()
