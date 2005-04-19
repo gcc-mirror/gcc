@@ -1,3 +1,104 @@
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initComponentDefaults): Added defaults for Menu, MenuBar
+	MenuEntry fonts.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initComponentDefaults): Added Label.font.
+	(initSystemColorDefaults): Added this method and adjusted the
+	general control color.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalBorders.java:
+	Added.
+	* javax/swing/plaf/metal/MetalButtonUI.java:
+	(installDefaults): Install button font.
+	* javax/swing/plaf/metal/MetalLookAndFeel.java:
+	(initComponentDefaults): Added button border, font and margin.
+	Changed components background color to the Metal current themes
+	standard color.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initComponentDefaults): Added to set Metal specific component
+	defaults.
+
+2005-04-19  Mark Wielaard  <mark@klomp.org>
+
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initClassDefaults): Call super.initClassDefaults().
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initClassDefaults): Added to include the *UI classes.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalComboBoxUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalDesktopIconUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalInternalFrameUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalPopupMenuSeparatorUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalProgressBarUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalRootPaneUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalScrollBarUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalSeparatorUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalSliderUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalSplitPaneUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalTextFieldUI.java:
+	Added.
+	* javax/swing/plaf/metal/MetalToggleButtonUI.java:
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalButtonUI.java:
+	Added skeleton class.
+	* javax/swing/plaf/metal/MetalCheckBoxUI.java:
+	Added skeleton class.
+	* javax/swing/plaf/metal/MetalLabelUI.java:
+	Added skeleton class.
+	* javax/swing/plaf/metal/MetalRadioButtonUI.java:
+	Added skeleton class.
+	* javax/swing/plaf/metal/MetalScrollPaneUI.java:
+	Added skeleton class.
+	* javax/swing/plaf/metal/MetalTabbedPaneUI.java:
+	Added skeleton class.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/UIDefaults.java:
+	Added API documentation for all methods.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/UIDefaults.java
+	(put): Now uses new checkAndPut method instead of checking
+	directly.
+	(putDefaults): Fixed so that it accepts null-values and
+	treats them like remove(key).
+	(checkAndPut): Added. This checks for null-values and calls
+	put or remove.
+
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Added new files.
+	* Makefile.in: Regenerated.
+
 2005-04-19  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/natRuntime.cc (insertSystemProperties): Set

@@ -64,8 +64,14 @@ import javax.swing.plaf.ComponentUI;
  */
 public class UIDefaults extends Hashtable
 {
+
+  /** Our ResourceBundles. */
   private LinkedList bundles;
+
+  /** The default locale. */
   private Locale defaultLocale;
+
+  /** We use this for firing PropertyChangeEvents. */
   private PropertyChangeSupport propertyChangeSupport;
 
   public static interface ActiveValue
@@ -208,8 +214,12 @@ public class UIDefaults extends Hashtable
     }
   }
 
+  /** Our serialVersionUID for serialization. */
   private static final long serialVersionUID = 7341222528856548117L;
 
+  /**
+   * Constructs a new empty UIDefaults instance.
+   */
   public UIDefaults()
   {
     bundles = new LinkedList();
@@ -217,6 +227,14 @@ public class UIDefaults extends Hashtable
     propertyChangeSupport = new PropertyChangeSupport(this);
   }
 
+  /**
+   * Constructs a new UIDefaults instance and loads the specified entries.
+   * The entries are expected to come in pairs, that means
+   * <code>entries[0]</code> is a key, <code>entries[1]</code> is a value,
+   * <code>entries[2]</code> a key and so forth.
+   *
+   * @param entries the entries to initialize the UIDefaults instance with
+   */
   public UIDefaults(Object[] entries)
   {
     this();
@@ -225,11 +243,24 @@ public class UIDefaults extends Hashtable
       put(entries[2 * i], entries[2 * i + 1]);
   }
 
+  /**
+   * Returns the entry for the specified <code>key</code> in the default
+   * locale.
+   *
+   * @return the entry for the specified <code>key</code>
+   */
   public Object get(Object key)
   {
     return this.get(key, getDefaultLocale());
   }
 
+  /**
+   * Returns the entry for the specified <code>key</code> in the Locale
+   * <code>loc</code>.
+   *
+   * @param key the key for which we return the value
+   * @param loc the locale
+   */
   public Object get(Object key, Locale loc)
   {
     Object obj = null;
@@ -284,133 +315,344 @@ public class UIDefaults extends Hashtable
     return obj;
   }
 
+  /**
+   * Puts a key and value into this UIDefaults object.<br>
+   * In contrast to
+   * {@link java.util.Hashtable}s <code>null</code>-values are accepted
+   * here and treated like #remove(key).
+   * <br>
+   * This fires a PropertyChangeEvent with key as name and the old and new
+   * values.
+   *
+   * @param key the key to put into the map
+   * @param value the value to put into the map
+   *
+   * @return the old value for key or <code>null</code> if <code>key</code>
+   *     had no value assigned
+   */
   public Object put(Object key, Object value)
   {
-    Object old;
-    if (value != null)
-      old = super.put(key, value);
-    else
-      old = super.remove(key);
+    Object old = checkAndPut(key, value);
+
     if (key instanceof String && old != value)
       firePropertyChange((String) key, old, value);
     return old;
   }
 
+  /**
+   * Puts a set of key-value pairs into the map.
+   * The entries are expected to come in pairs, that means
+   * <code>entries[0]</code> is a key, <code>entries[1]</code> is a value,
+   * <code>entries[2]</code> a key and so forth.
+   * <br>
+   * If a value is <code>null</code> it is treated like #remove(key).
+   * <br>
+   * This unconditionally fires a PropertyChangeEvent with
+   * <code>&apos;UIDefaults&apos;</code> as name and <code>null</code> for
+   * old and new value.
+   *
+   * @param entries the entries to be put into the map
+   */
   public void putDefaults(Object[] entries)
   {
     for (int i = 0; (2 * i + 1) < entries.length; ++i)
   {
-        super.put(entries[2 * i], entries[2 * i + 1]);
+        checkAndPut(entries[2 * i], entries[2 * i + 1]);
       }
     firePropertyChange("UIDefaults", null, null);
   }
 
+  /**
+   * Checks the value for <code>null</code> and put it into the Hashtable, if
+   * it is not <code>null</code>. If the value is <code>null</code> then
+   * remove the corresponding key.
+   *
+   * @param key the key to put into this UIDefauls table
+   * @param value the value to put into this UIDefaults table
+   *
+   * @return the old value for <code>key</code>
+   */
+  private Object checkAndPut(Object key, Object value)
+  {
+    Object old;
+
+    if (value != null)
+      old = super.put(key, value);
+    else
+      old = super.remove(key);
+
+    return old;
+  }
+
+  /**
+   * Returns a font entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the font entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Font getFont(Object key)
   {
     Object o = get(key);
     return o instanceof Font ? (Font) o : null;
   }
 
+  /**
+   * Returns a font entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the font entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Font getFont(Object key, Locale l)
   {
     Object o = get(key, l);
     return o instanceof Font ? (Font) o : null;
   }
 
+  /**
+   * Returns a color entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the color entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Color getColor(Object key)
   {
     Object o = get(key);
     return o instanceof Color ? (Color) o : null;
   }
 
+  /**
+   * Returns a color entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the color entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Color getColor(Object key, Locale l)
   {
     Object o = get(key, l);
     return o instanceof Color ? (Color) o : null;
   }
 
+  /**
+   * Returns an icon entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the icon entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Icon getIcon(Object key)
   {
     Object o = get(key);
     return o instanceof Icon ? (Icon) o : null;
   }
 
+  /**
+   * Returns an icon entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the icon entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Icon getIcon(Object key, Locale l)
   {
     Object o = get(key, l);
     return o instanceof Icon ? (Icon) o : null;
   }
 
+  /**
+   * Returns a border entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the border entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Border getBorder(Object key)
   {
     Object o = get(key);
     return o instanceof Border ? (Border) o : null;
   }
 
+  /**
+   * Returns a border entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the border entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Border getBorder(Object key, Locale l)
   {
     Object o = get(key, l);
     return o instanceof Border ? (Border) o : null;
   }
 
+  /**
+   * Returns a string entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the string entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public String getString(Object key)
   {
     Object o = get(key);
     return o instanceof String ? (String) o : null;
   }
 
+  /**
+   * Returns a string entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the string entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public String getString(Object key, Locale l)
   {
     Object o = get(key, l);
     return o instanceof String ? (String) o : null;
   }
 
+  /**
+   * Returns an integer entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the integer entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public int getInt(Object key)
   {
     Object o = get(key);
     return o instanceof Integer ? ((Integer) o).intValue() : 0;
   }
 
+  /**
+   * Returns an integer entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the integer entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public int getInt(Object key, Locale l)
   {
     Object o = get(key, l);
     return o instanceof Integer ? ((Integer) o).intValue() : 0;
   }
 
+  /**
+   * Returns a boolean entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the boolean entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public boolean getBoolean(Object key)
   {
     return Boolean.TRUE.equals(get(key));
   }
 
+  /**
+   * Returns a boolean entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the boolean entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public boolean getBoolean(Object key, Locale l)
   {
     return Boolean.TRUE.equals(get(key, l));
   }
 
+  /**
+   * Returns an insets entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the insets entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Insets getInsets(Object key) 
   {
     Object o = get(key);
     return o instanceof Insets ? (Insets) o : null;
   }
 
+  /**
+   * Returns an insets entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the boolean entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Insets getInsets(Object key, Locale l) 
   {
     Object o = get(key, l);
     return o instanceof Insets ? (Insets) o : null;
   }
 
+  /**
+   * Returns a dimension entry for the default locale.
+   *
+   * @param key the key to the requested entry
+   *
+   * @return the dimension entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Dimension getDimension(Object key) 
   {
     Object o = get(key);
     return o instanceof Dimension ? (Dimension) o : null;
   }
 
+  /**
+   * Returns a dimension entry for a specic locale.
+   *
+   * @param key the key to the requested entry
+   * @param locale the locale to the requested entry
+   *
+   * @return the boolean entry for <code>key</code> or null if no such entry
+   *     exists
+   */
   public Dimension getDimension(Object key, Locale l) 
   {
     Object o = get(key, l);
     return o instanceof Dimension ? (Dimension) o : null;
   }
 
+  /**
+   * Returns the ComponentUI class that renders a component. <code>id</code>
+   * is the ID for which the String value of the classname is stored in
+   * this UIDefaults map.
+   *
+   * @param id the ID of the UI class
+   * @param loader the ClassLoader to use
+   *
+   * @return the UI class for <code>id</code>
+   */
   public Class getUIClass(String id, ClassLoader loader)
   {
     String className = (String) get (id);
@@ -428,16 +670,38 @@ public class UIDefaults extends Hashtable
       }
   }
 
+  /**
+   * Returns the ComponentUI class that renders a component. <code>id</code>
+   * is the ID for which the String value of the classname is stored in
+   * this UIDefaults map.
+   *
+   * @param id the ID of the UI class
+   *
+   * @return the UI class for <code>id</code>
+   */
   public Class getUIClass(String id)
   {
     return getUIClass (id, null);
   }
 
+  /**
+   * If a key is requested in #get(key) that has no value, this method
+   * is called before returning <code>null</code>.
+   *
+   * @param msg the error message
+   */
   protected void getUIError(String msg)
   {
     System.err.println ("UIDefaults.getUIError: " + msg);
   }
 
+  /**
+   * Returns the {@link ComponentUI} for the specified {@link JComponent}.
+   *
+   * @param target the component for which the ComponentUI is requested
+   *
+   * @return the {@link ComponentUI} for the specified {@link JComponent}
+   */
   public ComponentUI getUI(JComponent target)
   {
     String classId = target.getUIClassID ();
@@ -477,42 +741,86 @@ public class UIDefaults extends Hashtable
       }
   }
 
+  /**
+   * Adds a {@link PropertyChangeListener} to this UIDefaults map.
+   * Registered PropertyChangeListener are notified when values
+   * are beeing put into this UIDefaults map.
+   *
+   * @param listener the PropertyChangeListener to add
+   */
   public void addPropertyChangeListener(PropertyChangeListener listener)
   {
     propertyChangeSupport.addPropertyChangeListener(listener);
   }
 
+  /**
+   * Removes a PropertyChangeListener from this UIDefaults map.
+   *
+   * @param listener the PropertyChangeListener to remove
+   */
   public void removePropertyChangeListener(PropertyChangeListener listener)
   {
     propertyChangeSupport.removePropertyChangeListener(listener);
   }
 
+  /**
+   * Returns an array of all registered PropertyChangeListeners.
+   *
+   * @return all registered PropertyChangeListeners
+   */
   public PropertyChangeListener[] getPropertyChangeListeners()
   {
     return propertyChangeSupport.getPropertyChangeListeners();
   }
 
+  /**
+   * Fires a PropertyChangeEvent.
+   *
+   * @param property the property name
+   * @param oldValue the old value
+   * @param newValue the new value
+   */
   protected void firePropertyChange(String property,
 				    Object oldValue, Object newValue)
   {
     propertyChangeSupport.firePropertyChange(property, oldValue, newValue);
   }
 
+  /**
+   * Adds a ResourceBundle for localized values.
+   *
+   * @param name the name of the ResourceBundle to add
+   */
   public void addResourceBundle(String name)
   {
     bundles.addFirst(name);
   }
 
+  /**
+   * Removes a ResourceBundle.
+   *
+   * @param name the name of the ResourceBundle to remove
+   */
   public void removeResourceBundle(String name)
   {
     bundles.remove(name);
   }
 
+  /**
+   * Sets the current locale to <code>loc</code>.
+   *
+   * @param loc the Locale to be set
+   */
   public void setDefaultLocale(Locale loc)
   {
     defaultLocale = loc;
   }
 
+  /**
+   * Returns the current default locale.
+   *
+   * @return the current default locale
+   */
   public Locale getDefaultLocale()
   {
     return defaultLocale;

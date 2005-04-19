@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Color;
+import java.awt.Insets;
+
 import javax.swing.UIDefaults;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
@@ -307,4 +310,196 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   {
     MetalLookAndFeel.theme = theme;
   }
+
+  /**
+   * Sets the ComponentUI classes for all Swing components to the Metal
+   * implementations.
+   *
+   * In particular this sets the following keys:
+   *
+   * <table>
+   * <tr>
+   * <th>Key</th><th>Value</th>
+   * </tr><tr>
+   * <td>ButtonUI</td><td>{@link MetalButtonUI}</td>
+   * </tr><tr>
+   * <td>CheckBoxUI</td><td>{@link MetalCheckBoxUI}</td>
+   * </tr><tr>
+   * <td>ComboBoxUI</td><td>{@link MetalComboBoxUI}</td>
+   * </tr><tr>
+   * <td>DesktopIconUI</td><td>{@link MetalDesktopIconUI}</td>
+   * </tr><tr>
+   * <td>InternalFrameUI</td><td>{@link MetalInternalFrameUI}</td>
+   * </tr><tr>
+   * <td>LabelUI</td><td>{@link MetalLabelUI}</td>
+   * </tr><tr>
+   * <td>PopupMenuSeparatorUI</td><td>{@link MetalPopupMenuSeparatorUI}</td>
+   * </tr><tr>
+   * <td>ProgressBarUI</td><td>{@link MetalProgressBarUI}</td>
+   * </tr><tr>
+   * <td>RadioButtonUI</td><td>{@link MetalRadioButtonUI}</td>
+   * </tr><tr>
+   * <td>RootPaneUI</td><td>{@link MetalRootPaneUI}</td>
+   * </tr><tr>
+   * <td>ScrollBarUI</td><td>{@link MetalScrollBarUI}</td>
+   * </tr><tr>
+   * <td>ScrollPaneUI</td><td>{@link MetalScrollPaneUI}</td>
+   * </tr><tr>
+   * <td>SeparatorUI</td><td>{@link MetalSeparatorUI}</td>
+   * </tr><tr>
+   * <td>SliderUI</td><td>{@link MetalSliderUI}</td>
+   * </tr><tr>
+   * <td>SplitPaneUI</td><td>{@link MetalSplitPaneUI}</td>
+   * </tr><tr>
+   * <td>TabbedPaneUI</td><td>{@link MetalTabbedPaneUI}</td>
+   * </tr><tr>
+   * <td>TextFieldUI</td><td>{@link MetalTextFieldUI}</td>
+   * </tr><tr>
+   * <td>ToggleButtonUI</td><td>{@link MetalToggleButtonUI}</td>
+   * </tr><tr>
+   * <td>ToolBarUI</td><td>{@link MetalToolBarUI}</td>
+   * </tr><tr>
+   * <td>ToolTipUI</td><td>{@link MetalToolTipUI}</td>
+   * </tr><tr>
+   * <td>TreeUI</td><td>{@link MetalTreeUI}</td>
+   * </tr><tr>
+   * </table>
+   *
+   * @param defaults the UIDefaults where the class defaults are added
+   */
+  protected void initClassDefaults(UIDefaults defaults)
+  {
+    super.initClassDefaults(defaults);
+
+    // Variables
+    Object[] uiDefaults;
+    // Initialize Class Defaults
+    uiDefaults = new Object[] {
+      "ButtonUI", "javax.swing.plaf.metal.MetalButtonUI",
+      "CheckBoxUI", "javax.swing.plaf.metal.MetalCheckBoxUI",
+      "ComboBoxUI", "javax.swing.plaf.metal.MetalComboBoxUI",
+      "DesktopIconUI", "javax.swing.plaf.metal.MetalDesktopIconUI",
+      "InternalFrameUI", "javax.swing.plaf.metal.MetalInternalFrameUI",
+      "LabelUI", "javax.swing.plaf.metal.MetalLabelUI",
+      "PopupMenuSeparatorUI",
+      "javax.swing.plaf.metal.MetalPopupMenuSeparatorUI",
+      "ProgressBarUI", "javax.swing.plaf.metal.MetalProgressBarUI",
+      "RadioButtonUI", "javax.swing.plaf.metal.MetalRadioButtonUI",
+      "RootPaneUI", "javax.swing.plaf.metal.MetalRootPaneUI",
+      "ScrollBarUI", "javax.swing.plaf.metal.MetalScrollBarUI",
+      "ScrollPaneUI", "javax.swing.plaf.metal.MetalScrollPaneUI",
+      "SeparatorUI", "javax.swing.plaf.metal.MetalSeparatorUI",
+      "SliderUI", "javax.swing.plaf.metal.MetalSliderUI",
+      "SplitPaneUI", "javax.swing.plaf.metal.MetalSplitPaneUI",
+      "TabbedPaneUI", "javax.swing.plaf.metal.MetalTabbedPaneUI",
+      "TextFieldUI", "javax.swing.plaf.metal.MetalTextFieldUI",
+      "ToggleButtonUI", "javax.swing.plaf.metal.MetalToggleButtonUI",
+      "ToolBarUI", "javax.swing.plaf.metal.MetalToolBarUI",
+      "ToolTipUI", "javax.swing.plaf.metal.MetalToolTipUI",
+      "TreeUI", "javax.swing.plaf.metal.MetalTreeUI",
+    };
+    // Add Class Defaults to UI Defaults table
+    defaults.putDefaults(uiDefaults);
+  }
+
+  /**
+   * Initializes the component defaults for the Metal Look &amp; Feel.
+   *
+   * In particular this sets the following keys (the colors are given
+   * as RGB hex values):
+   *
+   * <table>
+   * <tr>
+   * <th>Key</th><th>Value</th>
+   * </tr><tr>
+   * <td>Button.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>Button.border</td><td>{@link MetalBorders.ButtonBorder}</td>
+   * </tr><tr>
+   * <td>Button.font</td><td>{@link #getControlTextFont}</td>
+   * </tr><tr>
+   * <td>Button.margin</td><td><code>new java.awt.Insets(2, 14, 2, 14)</code>
+   * </td>
+   * </tr><tr>
+   * <td>CheckBox.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>CheckBoxMenuItem.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>ToolBar.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>Panel.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>Slider.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>OptionPane.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>ProgressBar.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>TabbedPane.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>Label.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>Label.font</td><td>{@link #getControlTextFont}</td>
+   * </tr><tr>
+   * <td>Menu.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>MenuBar.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>MenuItem.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * <td>ScrollBar.background</td><td>0xcccccc</td>
+   * </tr><tr>
+   * </table>
+   *
+   * @param defaults the UIDefaults instance to which the values are added
+   */
+  protected void initComponentDefaults(UIDefaults defaults)
+  {
+    super.initComponentDefaults(defaults);
+    Object[] myDefaults = new Object[] {
+      "Button.background", new ColorUIResource(getControl()),
+      "Button.border", MetalBorders.getButtonBorder(),
+      "Button.font", getControlTextFont(),
+      "Button.margin", new Insets(2, 14, 2, 14),
+      "CheckBox.background", new ColorUIResource(getControl()),
+      "CheckBoxMenuItem.background", new ColorUIResource(getControl()),
+      "ToolBar.background", new ColorUIResource(getControl()),
+      "Panel.background", new ColorUIResource(getControl()),
+      "Slider.background", new ColorUIResource(getControl()),
+      "OptionPane.background", new ColorUIResource(getControl()),
+      "ProgressBar.background", new ColorUIResource(getControl()),
+      "TabbedPane.background", new ColorUIResource(getControl()),
+      "Label.background", new ColorUIResource(getControl()),
+      "Label.font", getControlTextFont(),
+      "Menu.background", new ColorUIResource(getControl()),
+      "MenuBar.background", new ColorUIResource(getControl()),
+      "MenuItem.background", new ColorUIResource(getControl()),
+      "ScrollBar.background", new ColorUIResource(getControl())
+    };
+    defaults.putDefaults(myDefaults);
+  }
+
+  /**
+   * Initializes the system color defaults.
+   *
+   * In particular this sets the following keys:
+   *
+   * <table>
+   * <tr>
+   * <th>Key</th><th>Value</th><th>Description</th>
+   * </tr><tr>
+   * <td>control</td><td>0xcccccc</td><td>The default color for components</td>
+   * </tr>
+   * </table>
+   */
+  protected void initSystemColorDefaults(UIDefaults defaults)
+  {
+    super.initSystemColorDefaults(defaults);
+    Object[] uiDefaults;
+    uiDefaults = new Object[] {
+      "control", new ColorUIResource(getControl())
+    };
+    defaults.putDefaults(uiDefaults);
+  }
+
 }
