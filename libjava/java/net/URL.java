@@ -900,7 +900,8 @@ public final class URL implements Serializable
 	  {
 	    systemClassLoader = (ClassLoader) AccessController.doPrivileged
 	      (new PrivilegedAction() {
-		  public Object run() {
+		  public Object run()
+	          {
 		    return ClassLoader.getSystemClassLoader();
 		  }
 		});
@@ -922,7 +923,10 @@ public final class URL implements Serializable
               {
                 throw death;
               }
-	    catch (Throwable t) { /* ignored */ }
+	    catch (Throwable t)
+	      {
+		// Ignored.
+	      }
 	  }
 	 while (ph == null && pkgPrefix.hasMoreTokens());
       }
