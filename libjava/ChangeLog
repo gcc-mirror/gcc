@@ -1,3 +1,8 @@
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/security/x509/X509Certificate.java
+	(parse): Handle val == null case.
+
 2005-04-19  Roman Kennke  <roman@kennke.org>
 
 	* javax/swing/plaf/metal/MetalLookAndFeel.java
