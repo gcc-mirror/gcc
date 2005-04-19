@@ -1,5 +1,5 @@
 /* ImageIcon.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package javax.swing;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.image.ImageObserver;
 import java.io.Serializable;
@@ -50,9 +51,22 @@ public class ImageIcon
   implements Icon, Serializable
 {
   private static final long serialVersionUID = 532615968316031794L;
+
+  /** A dummy Component that is used in the MediaTracker. */
+  protected static Component component = new Component(){};
+
+  /** The MediaTracker used to monitor the loading of images. */
+  protected static MediaTracker tracker = new MediaTracker(component);
+
+  /** The ID that is used in the tracker. */
+  private static int id;
+
   Image image;
   String description;
   ImageObserver observer;
+
+  /** The image loading status. */
+  private int loadStatus;
 
   public ImageIcon()
   {
@@ -95,8 +109,8 @@ public class ImageIcon
 
   public ImageIcon(Image image, String description)
   {
-    this.image = Toolkit.getDefaultToolkit().createImage(image.getSource());
-    this.description = description;
+    setImage(image);
+    setDescription(description);
   }
     
   public ImageObserver getImageObserver()
@@ -116,7 +130,8 @@ public class ImageIcon
 
   public void setImage(Image image)
   {
-    this.image = Toolkit.getDefaultToolkit().createImage(image.getSource());
+    loadImage(image);
+    this.image = image;
   }
 
   public String getDescription()
@@ -142,5 +157,42 @@ public class ImageIcon
   public void paintIcon(Component c, Graphics g, int x, int y)
   {
     g.drawImage(image, x, y, observer != null ? observer : c);
+  }
+
+  /**
+   * Loads the image and blocks until the loading operation is finished.
+   *
+   * @param image the image to be loaded
+   */
+  protected void loadImage(Image image)
+  {
+    try
+      {
+	tracker.addImage(image, id);
+	id++;
+	tracker.waitForID(id - 1);
+      }
+    catch (InterruptedException ex)
+      {
+	; // ignore this for now
+      }
+    finally
+      {
+	loadStatus = tracker.statusID(id - 1, false);
+      }
+  }
+
+  /**
+   * Returns the load status of the icon image.
+   *
+   * @return the load status of the icon image
+   *
+   * @see {@link MediaTracker.COMPLETE}
+   * @see {@link MediaTracker.ABORTED}
+   * @see {@link MediaTracker.ERRORED}
+   */
+  public int getImageLoadStatus()
+  {
+    return loadStatus;
   }
 }

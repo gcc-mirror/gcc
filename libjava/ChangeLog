@@ -1,3 +1,17 @@
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/ImageIcon.java
+	Added API documentation.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/ImageIcon.java
+	(ImageIcon): Use setImage instead of direct assignment.
+	(setImage): Call loadImage to make sure that the image is loaded.
+	(loadImage): Waits for the image to complete loading.
+	(getImageLoadStatus): Added. Returns the load status of the
+	image.
+
 2005-04-19  Audrius Meskauskas  <audriusa@bluewin.ch>
 
 	* javax/swing/JTextArea.java (replaceRange):
