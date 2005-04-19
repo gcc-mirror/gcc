@@ -1,3 +1,8 @@
+2005-04-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-cfg.c (dump_function_to_file): Use cfun info only if it
+	refers to the function being dumped.
+
 2005-04-18  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* varasm.c (assemble_start_function): Remove reset of in_section.
