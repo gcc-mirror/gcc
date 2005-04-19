@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002, 2004  Free Software Foundation
+/* RasterOp.java --
+   Copyright (C) 2000, 2002, 2004, 2005  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -41,8 +42,8 @@ import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-public interface RasterOp {
-
+public interface RasterOp
+{
   WritableRaster filter(Raster src, WritableRaster dest);
 
   Rectangle2D getBounds2D(Raster src);
