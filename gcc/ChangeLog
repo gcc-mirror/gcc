@@ -1,3 +1,10 @@
+2005-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/20991
+	* tree-ssa-ccp.c (fold_stmt): Don't optimize OBJ_TYPE_REFs if that
+	would result in an already finalized unreachable node becoming
+	reachable while cgraph_global_info_ready.
+
 2005-04-19  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (Optimize Options): Refer to the correct

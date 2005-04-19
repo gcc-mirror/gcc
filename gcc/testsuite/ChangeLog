@@ -1,3 +1,8 @@
+2005-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/20991
+	* g++.dg/opt/pr20991.C: New test.
+
 2005-04-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20050410-1.c: New test.
