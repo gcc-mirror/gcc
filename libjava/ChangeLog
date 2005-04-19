@@ -1,3 +1,8 @@
+2005-04-19  vid Gilbert <david.gilbert@object-refinery.com>
+
+	* java/awt/Font.java (decode): Handle null argument and allow
+	space as delimiter.
+
 2005-04-19  Robert Schuster <thebohemian@gmx.net>
 
 	* java/beans/EventHandler.java: Reworked documentation.

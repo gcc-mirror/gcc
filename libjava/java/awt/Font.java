@@ -209,14 +209,21 @@ private static final long serialVersionUID = -4206021311591459213L;
   * The style should be one of BOLD, ITALIC, or BOLDITALIC.  The default
   * style if none is specified is PLAIN.  The default size if none
   * is specified is 12.
+  * 
+  * @param fontspec  a string specifying the required font (<code>null</code> 
+  *                  permitted, interpreted as 'Dialog-PLAIN-12').
+  * 
+  * @return A font.
   */
   public static Font decode (String fontspec)
 {
+  if (fontspec == null) 
+    fontspec = "Dialog-PLAIN-12";
   String name = null;
   int style = PLAIN;
   int size = 12;
 
-  StringTokenizer st = new StringTokenizer(fontspec, "-");
+  StringTokenizer st = new StringTokenizer(fontspec, "- ");
   while (st.hasMoreTokens())
     {
       String token = st.nextToken();
