@@ -1,5 +1,10 @@
 2005-04-19  Roman Kennke  <roman@kennke.org>
 
+	* javax/swing/plaf/basic/BasicMenuBarUI.java:
+	Fixed tabs to spaces.
+
+2005-04-19  Roman Kennke  <roman@kennke.org>
+
 	* javax/swing/plaf/basic/BasicMenuUI.java
 	(getMaximumSize): Now returns preferredSize because JMenu should
 	never be bigger than that.
