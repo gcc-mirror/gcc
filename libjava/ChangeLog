@@ -1,5 +1,11 @@
 2005-04-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/print/PrinterJob.java
+	(pageDialog): New method.
+	(printDialog): Implemented.
+
+2005-04-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/image/ConvolveOp.java:
 	Removed comment added by eclipse.
 
