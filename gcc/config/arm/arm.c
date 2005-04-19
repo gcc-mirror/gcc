@@ -755,6 +755,13 @@ arm_init_libfuncs (void)
   set_optab_libfunc (udiv_optab, DImode, "__aeabi_uldivmod");
   set_optab_libfunc (sdiv_optab, SImode, "__aeabi_idivmod");
   set_optab_libfunc (udiv_optab, SImode, "__aeabi_uidivmod");
+
+  /* We don't have mod libcalls.  Fortunately gcc knows how to use the
+     divmod libcalls instead.  */
+  set_optab_libfunc (smod_optab, DImode, NULL);
+  set_optab_libfunc (umod_optab, DImode, NULL);
+  set_optab_libfunc (smod_optab, SImode, NULL);
+  set_optab_libfunc (umod_optab, SImode, NULL);
 }
 
 /* Fix up any incompatible options that the user has specified.
