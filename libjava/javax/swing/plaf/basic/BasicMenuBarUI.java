@@ -295,9 +295,9 @@ public class BasicMenuBarUI extends MenuBarUI
     public void propertyChange(PropertyChangeEvent e)
     {
       if (e.getPropertyName().equals("borderPainted"))
-	menuBar.repaint();
+        menuBar.repaint();
       if (e.getPropertyName().equals("margin"))
-	menuBar.repaint();
+        menuBar.repaint();
     }
   }
 }
