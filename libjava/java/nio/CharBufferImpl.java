@@ -62,6 +62,7 @@ final class CharBufferImpl extends CharBuffer
   {
     super (copy.capacity (), copy.limit (), copy.position (), 0);
     backing_buffer = copy.backing_buffer;
+    array_offset = copy.array_offset;
     readOnly = copy.isReadOnly ();
   }
   
@@ -127,11 +128,10 @@ final class CharBufferImpl extends CharBuffer
    */
   public char get ()
   {
-    checkForUnderflow();
+    if (pos >= limit)
+        throw new BufferUnderflowException();
 
-    char result = backing_buffer [position ()];
-    position (position () + 1);
-    return result;
+    return backing_buffer [(pos++) + array_offset];
   }
   
   /**
@@ -142,10 +142,12 @@ final class CharBufferImpl extends CharBuffer
    */
   public CharBuffer put (char value)
   {
-    checkIfReadOnly();
-	  	    
-    backing_buffer [position ()] = value;
-    position (position () + 1);
+    if (readOnly)
+        throw new ReadOnlyBufferException();
+    if (pos >= limit)
+        throw new BufferOverflowException();
+
+    backing_buffer [(pos++) + array_offset] = value;
     return this;
   }
   
@@ -162,9 +164,37 @@ final class CharBufferImpl extends CharBuffer
   {
     checkIndex(index);
     
-    return backing_buffer [index];
+    return backing_buffer [index + array_offset];
   }
   
+  /**
+   * Bulk get, overloaded for speed.
+   */
+  public CharBuffer get (char[] dst, int offset, int length)
+  {
+    checkArraySize(dst.length, offset, length);
+    checkForUnderflow(length);
+
+    System.arraycopy(backing_buffer, pos + array_offset, 
+		     dst, offset, length);
+    pos += length;
+    return this;
+  }
+
+  /**
+   * Bulk put, overloaded for speed.
+   */
+  public CharBuffer put (char[] src, int offset, int length)
+  {
+    checkArraySize(src.length, offset, length);
+    checkForOverflow(length);
+		    
+    System.arraycopy(src, offset,
+		     backing_buffer, pos + array_offset, length);
+    pos += length;
+    return this;
+  }
+
   /**
    * Absolute put method. Writes <code>value</code> to position
    * <code>index</code> in the buffer.
@@ -178,7 +208,7 @@ final class CharBufferImpl extends CharBuffer
     checkIndex(index);
     checkIfReadOnly();
     	    
-    backing_buffer [index] = value;
+    backing_buffer [index + array_offset] = value;
     return this;
   }
   
