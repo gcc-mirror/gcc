@@ -680,7 +680,7 @@ public class SimpleDateFormat extends DateFormat
 		buffer.setDefaultAttribute (DateFormat.Field.YEAR);
 		if (cf.getSize() == 2)
 		  {
-		    temp = String.valueOf (calendar.get (Calendar.YEAR));
+		    temp = "00"+String.valueOf (calendar.get (Calendar.YEAR));
 		    buffer.append (temp.substring (temp.length() - 2));
 		  }
 		else
