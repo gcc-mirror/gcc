@@ -1013,12 +1013,6 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
       pp_c_right_paren (pp);
       break;
 
-    case STMT_EXPR:
-      pp_c_left_paren (pp);
-      pp_statement (pp, STMT_EXPR_STMT (e));
-      pp_c_right_paren (pp);
-      break;
-
     default:
       /* FIXME:  Make sure we won't get into an infinie loop.  */
       pp_c_left_paren (pp);
@@ -1786,7 +1780,6 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case FIELD_DECL:
     case LABEL_DECL:
     case ERROR_MARK:
-    case STMT_EXPR:
       pp_primary_expression (pp, e);
       break;
 

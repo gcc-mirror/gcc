@@ -29,10 +29,6 @@ cp-tree.def in the cp subdir.  */
    obtain the expression.  */
 DEFTREECODE (EXPR_STMT, "expr_stmt", tcc_expression, 1)
 
-/* A STMT_EXPR represents a statement-expression.  The
-   STMT_EXPR_STMT is the statement given by the expression.  */
-DEFTREECODE (STMT_EXPR, "stmt_expr", tcc_expression, 1)
-
 /* A COMPOUND_LITERAL_EXPR represents a C99 compound literal.  The
    COMPOUND_LITERAL_EXPR_DECL_STMT is the a DECL_STMT containing the decl
    for the anonymous object represented by the COMPOUND_LITERAL;
