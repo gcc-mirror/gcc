@@ -1,3 +1,9 @@
+2005-04-20  Michael Matz  <matz@suse.de>
+
+	PR20973
+	* reload.c (push_reload, find_dummy_reload): Check for uninitialized
+	pseudos.
+
 2005-04-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-phiopt.c: Fix comment typos.

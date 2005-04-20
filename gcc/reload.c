@@ -1520,7 +1520,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
      But if there is no spilling in this block, that is OK.
      An explicitly used hard reg cannot be a spill reg.  */
 
-  if (rld[i].reg_rtx == 0 && in != 0)
+  if (rld[i].reg_rtx == 0 && in != 0 && hard_regs_live_known)
     {
       rtx note;
       int regno;
@@ -1534,6 +1534,11 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	    && REG_P (XEXP (note, 0))
 	    && (regno = REGNO (XEXP (note, 0))) < FIRST_PSEUDO_REGISTER
 	    && reg_mentioned_p (XEXP (note, 0), in)
+	    /* Check that we don't use a hardreg for an uninitialized
+	       pseudo.  See also find_dummy_reload().  */
+	    && (ORIGINAL_REGNO (XEXP (note, 0)) < FIRST_PSEUDO_REGISTER
+		|| ! bitmap_bit_p (ENTRY_BLOCK_PTR->global_live_at_end,
+				   ORIGINAL_REGNO (XEXP (note, 0))))
 	    && ! refers_to_regno_for_reload_p (regno,
 					       (regno
 						+ hard_regno_nregs[regno]
@@ -1997,7 +2002,17 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
 				is a subreg, and in that case, out
 				has a real mode.  */
 			     (GET_MODE (out) != VOIDmode
-			      ? GET_MODE (out) : outmode)))
+			      ? GET_MODE (out) : outmode))
+        /* But only do all this if we can be sure, that this input
+           operand doesn't correspond with an uninitialized pseudoreg.
+           global can assign some hardreg to it, which is the same as
+	   a different pseudo also currently live (as it can ignore the
+	   conflict).  So we never must introduce writes to such hardregs,
+	   as they would clobber the other live pseudo using the same.
+	   See also PR20973.  */
+      && (ORIGINAL_REGNO (in) < FIRST_PSEUDO_REGISTER
+          || ! bitmap_bit_p (ENTRY_BLOCK_PTR->global_live_at_end,
+			     ORIGINAL_REGNO (in))))
     {
       unsigned int regno = REGNO (in) + in_offset;
       unsigned int nwords = hard_regno_nregs[regno][inmode];
