@@ -19,22 +19,14 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
+(define_mode_macro IMODE [QI HI SI DI])
 (define_mode_macro I48MODE [SI DI])
-(define_mode_attr modesuffix [(SI "4") (DI "8")])
+(define_mode_attr modesuffix [(QI "1") (HI "2") (SI "4") (DI "8")])
 
 
-(define_expand "memory_barrier"
-  [(set (mem:BLK (match_dup 0))
-	(unspec:BLK [(mem:BLK (match_dup 0))] UNSPEC_MF))]
-  ""
-{
-  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (DImode));
-  MEM_VOLATILE_P (operands[0]) = 1;
-})
-
-(define_insn "*mf_internal"
-  [(set (match_operand:BLK 0 "" "")
-	(unspec:BLK [(match_operand:BLK 1 "" "")] UNSPEC_MF))]
+(define_insn "memory_barrier"
+  [(set (mem:BLK (match_scratch:DI 0 "X"))
+	(unspec:BLK [(mem:BLK (match_scratch:DI 1 "X"))] UNSPEC_MF))]
   ""
   "mf"
   [(set_attr "itanium_class" "syst_m")])
@@ -77,10 +69,10 @@
   [(set_attr "itanium_class" "sem")])
 
 (define_expand "sync_compare_and_swap<mode>"
-  [(match_operand:I48MODE 0 "gr_register_operand" "")
-   (match_operand:I48MODE 1 "memory_operand" "")
-   (match_operand:I48MODE 2 "gr_register_operand" "")
-   (match_operand:I48MODE 3 "gr_register_operand" "")]
+  [(match_operand:IMODE 0 "gr_register_operand" "")
+   (match_operand:IMODE 1 "memory_operand" "")
+   (match_operand:IMODE 2 "gr_register_operand" "")
+   (match_operand:IMODE 3 "gr_register_operand" "")]
   ""
 {
   rtx ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
@@ -92,29 +84,29 @@
 })
 
 (define_insn "cmpxchg_acq_<mode>"
-  [(set (match_operand:I48MODE 0 "gr_register_operand" "=r")
-	(match_operand:I48MODE 1 "not_postinc_memory_operand" "+S"))
+  [(set (match_operand:IMODE 0 "gr_register_operand" "=r")
+	(match_operand:IMODE 1 "not_postinc_memory_operand" "+S"))
    (set (match_dup 1)
-        (unspec:I48MODE [(match_dup 1)
-			 (match_operand:DI 2 "ar_ccv_reg_operand" "")
-			 (match_operand:I48MODE 3 "gr_register_operand" "r")]
-			UNSPEC_CMPXCHG_ACQ))]
+        (unspec:IMODE [(match_dup 1)
+		       (match_operand:DI 2 "ar_ccv_reg_operand" "")
+		       (match_operand:IMODE 3 "gr_register_operand" "r")]
+		      UNSPEC_CMPXCHG_ACQ))]
   ""
   "cmpxchg<modesuffix>.acq %0 = %1, %3, %2"
   [(set_attr "itanium_class" "sem")])
 
 (define_insn "sync_lock_test_and_set<mode>"
-  [(set (match_operand:I48MODE 0 "gr_register_operand" "=r")
-        (match_operand:I48MODE 1 "not_postinc_memory_operand" "+S"))
+  [(set (match_operand:IMODE 0 "gr_register_operand" "=r")
+        (match_operand:IMODE 1 "not_postinc_memory_operand" "+S"))
    (set (match_dup 1)
-        (match_operand:I48MODE 2 "gr_register_operand" "r"))]
+        (match_operand:IMODE 2 "gr_register_operand" "r"))]
   ""
   "xchg<modesuffix> %0 = %1, %2"
   [(set_attr "itanium_class" "sem")])
 
 (define_expand "sync_lock_release<mode>"
-  [(set (match_operand:I48MODE 0 "memory_operand" "")
-	(match_operand:I48MODE 1 "gr_reg_or_0_operand" ""))]
+  [(set (match_operand:IMODE 0 "memory_operand" "")
+	(match_operand:IMODE 1 "gr_reg_or_0_operand" ""))]
   ""
 {
   gcc_assert (MEM_VOLATILE_P (operands[0]));

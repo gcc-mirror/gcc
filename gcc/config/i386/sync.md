@@ -32,14 +32,13 @@
 
 (define_insn "sync_compare_and_swap<mode>"
   [(set (match_operand:IMODE 0 "register_operand" "=a")
+	(match_operand:IMODE 1 "memory_operand" "+m"))
+   (set (match_dup 1)
 	(unspec_volatile:IMODE
-	  [(match_operand:IMODE 1 "memory_operand" "+m")
+	  [(match_dup 1)
 	   (match_operand:IMODE 2 "register_operand" "a")
 	   (match_operand:IMODE 3 "register_operand" "<modeconstraint>")]
 	  UNSPECV_CMPXCHG_1))
-   (set (match_dup 1)
-	(unspec_volatile:IMODE
-	  [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_2))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_CMPXCHG"
   "lock\;cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
@@ -47,19 +46,18 @@
 (define_expand "sync_compare_and_swap_cc<mode>"
   [(parallel
     [(set (match_operand:IMODE 0 "register_operand" "")
+	  (match_operand:IMODE 1 "memory_operand" ""))
+     (set (match_dup 1)
 	  (unspec_volatile:IMODE
-	    [(match_operand:IMODE 1 "memory_operand" "")
+	    [(match_dup 1)
 	     (match_operand:IMODE 2 "register_operand" "")
 	     (match_operand:IMODE 3 "register_operand" "")]
 	    UNSPECV_CMPXCHG_1))
-     (set (match_dup 1)
-	  (unspec_volatile:IMODE
-	    [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_2))
      (set (match_dup 4)
 	  (compare:CCZ
 	    (unspec_volatile:IMODE
-	      [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_1)
-	    (match_dup 3)))])]
+	      [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_2)
+	    (match_dup 2)))])]
   "TARGET_CMPXCHG"
 {
   operands[4] = gen_rtx_REG (CCZmode, FLAGS_REG);
@@ -70,19 +68,18 @@
 
 (define_insn "*sync_compare_and_swap_cc<mode>"
   [(set (match_operand:IMODE 0 "register_operand" "=a")
+	(match_operand:IMODE 1 "memory_operand" "+m"))
+   (set (match_dup 1)
 	(unspec_volatile:IMODE
-	  [(match_operand:IMODE 1 "memory_operand" "+m")
+	  [(match_dup 1)
 	   (match_operand:IMODE 2 "register_operand" "a")
 	   (match_operand:IMODE 3 "register_operand" "<modeconstraint>")]
 	  UNSPECV_CMPXCHG_1))
-   (set (match_dup 1)
-	(unspec_volatile:IMODE
-	  [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_2))
    (set (reg:CCZ FLAGS_REG)
 	(compare:CCZ
 	  (unspec_volatile:IMODE
-	    [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_1)
-	  (match_dup 3)))]
+	    [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG_2)
+	  (match_dup 2)))]
   "TARGET_CMPXCHG"
   "lock\;cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
 

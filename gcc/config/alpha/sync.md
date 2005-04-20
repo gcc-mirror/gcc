@@ -94,10 +94,8 @@
 (define_insn_and_split "sync_nand<mode>"
   [(set (match_operand:I48MODE 0 "memory_operand" "+m")
 	(unspec_volatile:I48MODE
-	  [(and:I48MODE
-	     (not:I48MODE
-	       (match_operand:I48MODE 1 "reg_or_8bit_operand" "rI"))
-	     (match_dup 0))]
+	  [(and:I48MODE (not:I48MODE (match_dup 0))
+	     (match_operand:I48MODE 1 "register_operand" "r"))]
 	  UNSPECV_ATOMIC))
    (clobber (match_scratch:I48MODE 2 "=&r"))]
   ""
@@ -136,10 +134,8 @@
 	(match_operand:I48MODE 1 "memory_operand" "+m"))
    (set (match_dup 1)
 	(unspec_volatile:I48MODE
-	  [(and:I48MODE
-	     (not:I48MODE
-	       (match_operand:I48MODE 2 "reg_or_8bit_operand" "rI"))
-	     (match_dup 1))]
+	  [(and:I48MODE (not:I48MODE (match_dup 1))
+	     (match_operand:I48MODE 2 "register_operand" "r"))]
 	  UNSPECV_ATOMIC))
    (clobber (match_scratch:I48MODE 3 "=&r"))]
   ""
@@ -177,12 +173,11 @@
 (define_insn_and_split "sync_new_nand<mode>"
   [(set (match_operand:I48MODE 0 "register_operand" "=&r")
 	(and:I48MODE 
-	  (not:I48MODE
-	    (match_operand:I48MODE 2 "reg_or_8bit_operand" "rI"))
-	  (match_operand:I48MODE 1 "memory_operand" "+m")))
+	  (not:I48MODE (match_operand:I48MODE 1 "memory_operand" "+m"))
+	  (match_operand:I48MODE 2 "reg_or_8bit_operand" "rI")))
    (set (match_dup 1)
 	(unspec_volatile:I48MODE
-	  [(and:I48MODE (not:I48MODE (match_dup 2)) (match_dup 1))]
+	  [(and:I48MODE (not:I48MODE (match_dup 1)) (match_dup 2))]
 	  UNSPECV_ATOMIC))
    (clobber (match_scratch:I48MODE 3 "=&r"))]
   ""
@@ -246,9 +241,11 @@
   emit_insn (gen_load_locked_<mode> (retval, mem));
 
   x = gen_lowpart (DImode, retval);
-  x = gen_rtx_EQ (DImode, x, oldval);
-  if (oldval != const0_rtx)
+  if (oldval == const0_rtx)
+    x = gen_rtx_NE (DImode, x, const0_rtx);
+  else
     {
+      x = gen_rtx_EQ (DImode, x, oldval);
       emit_insn (gen_rtx_SET (VOIDmode, cond, x));
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
     }
@@ -257,8 +254,7 @@
   REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
     
   emit_move_insn (scratch, newval);
-  emit_move_insn (retval, newval);
-  
+
   emit_insn (gen_store_conditional_<mode> (cond, mem, scratch));
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
@@ -266,8 +262,8 @@
   x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
   REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
 
-  emit_label (XEXP (label2, 0));
   emit_insn (gen_memory_barrier ());
+  emit_label (XEXP (label2, 0));
   DONE;
 }
   [(set_attr "type" "multi")])
@@ -286,7 +282,7 @@
   [(const_int 0)]
 {
   rtx retval, mem, val, scratch;
-  rtx cond, label1, label2, x;
+  rtx cond, label1, x;
   rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
 
   retval = operands[0];
@@ -298,7 +294,6 @@
   emit_insn (gen_memory_barrier ());
 
   label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
   emit_label (XEXP (label1, 0));
 
   emit_insn (gen_load_locked_<mode> (retval, mem));
@@ -312,8 +307,6 @@
   x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
   REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
 
-  emit_label (XEXP (label2, 0));
-  emit_insn (gen_memory_barrier ());
   DONE;
 }
   [(set_attr "type" "multi")])

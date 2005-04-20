@@ -1,15 +1,17 @@
-/* { dg-do compile { target ia64-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target sync_int_long } */
 /* { dg-options "-O2 -finline-functions" } */
+/* { dg-options "-march=i486" { target i?86-*-* } } */
+/* { dg-options "-march=i486" { target { x86_64-*-* && ilp32 } } } */
 
-/* Test inlining __sync_bool_compare_and_swap_di.  */
+/* Test inlining __sync_bool_compare_and_swap.  */
 
 #include <stdbool.h>
-#include <ia64intrin.h>
 
 static bool
 compare_and_swap(long *addr, long old, long new_val)
 {
-  return __sync_bool_compare_and_swap_di(addr, old, new_val);
+  return __sync_bool_compare_and_swap(addr, old, new_val);
 }
 
 void
