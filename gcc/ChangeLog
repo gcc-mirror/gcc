@@ -1,3 +1,9 @@
+2005-04-20  James E Wilson  <wilson@specifixinc.com>
+
+	PR c++/20805
+	* dwarf2out.c (gen_variable_die): Don't emit a specification if this
+	is another declaration.
+
 2005-04-21  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/predicates.md: New file.
