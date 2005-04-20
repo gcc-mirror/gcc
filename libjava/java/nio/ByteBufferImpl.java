@@ -144,13 +144,43 @@ final class ByteBufferImpl extends ByteBuffer
    */
   public byte get ()
   {
-    checkForUnderflow();
+    if (pos >= limit)
+        throw new BufferUnderflowException();
 
-    byte result = backing_buffer [position () + array_offset];
-    position (position () + 1);
-    return result;
+    return backing_buffer [(pos++) + array_offset];
   }
-  
+
+  /**
+   * Bulk get
+   */
+  public ByteBuffer get (byte[] dst, int offset, int length)
+  {
+    checkArraySize(dst.length, offset, length);
+    if ( (limit - pos) < length) // check for overflow
+      throw new BufferUnderflowException();
+
+    System.arraycopy(backing_buffer, pos + array_offset, 
+		     dst, offset, length);
+    pos += length;
+
+    return this;
+  }
+
+  /**
+   * Relative bulk put(), overloads the ByteBuffer impl.
+   */
+  public ByteBuffer put (byte[] src, int offset, int length)
+  {
+    if ( (limit - pos) < length) // check for overflow
+      throw new BufferOverflowException();
+    checkArraySize(src.length, offset, length);
+
+    System.arraycopy(src, offset, backing_buffer, pos + array_offset, length);
+    pos += length;
+
+    return this;
+  }
+
   /**
    * Relative put method. Writes <code>value</code> to the next position
    * in the buffer.
@@ -161,12 +191,12 @@ final class ByteBufferImpl extends ByteBuffer
    */
   public ByteBuffer put (byte value)
   {
-    checkIfReadOnly();
-    checkForOverflow();
+    if (readOnly)
+        throw new ReadOnlyBufferException();
+    if (pos >= limit)
+        throw new BufferOverflowException();
 
-    int pos = position();
-    backing_buffer [pos + array_offset] = value;
-    position (pos + 1);
+    backing_buffer [(pos++) + array_offset] = value;
     return this;
   }
   
@@ -208,7 +238,21 @@ final class ByteBufferImpl extends ByteBuffer
   
   public ByteBuffer putChar (char value)
   {
-    ByteBufferHelper.putChar(this, value, order());
+    if (readOnly)
+      throw new ReadOnlyBufferException ();
+    if ( (limit-pos) < 2)
+      throw new BufferOverflowException();
+
+    if (endian == ByteOrder.LITTLE_ENDIAN)
+      {
+        backing_buffer [(pos++) + array_offset] = (byte)(value&0xFF);
+        backing_buffer [(pos++) + array_offset] = (byte)(value>>8);
+      }
+    else
+      {
+        backing_buffer [(pos++) + array_offset] = (byte)(value>>8);
+        backing_buffer [(pos++) + array_offset] = (byte)(value&0xFF);
+      }
     return this;
   }
   

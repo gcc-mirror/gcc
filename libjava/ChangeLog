@@ -1,5 +1,23 @@
 2005-04-20  Sven de Marothy  <sven@physto.se>
 
+	* java/nio/ByteBufferImpl.java:
+	(putChar): Inlined for speed.
+	(put, get): Bulk methods can use arraycopy.
+	* java/nio/CharBufferImpl.java:
+	(put, get): Bulk methods can use arraycopy.
+
+2005-04-20  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/nio/ByteBufferImpl.java (get(), put(byte)): Inlined checks
+	and field updates.
+	* java/nio/CharBufferImpl.java
+	(CharBufferImpl(CharBufferImpl)): Copy array_offset field.
+	(get(), put(char)): Inlined checks and field updates. Fixed to
+	take array_offset into account.
+	(get(int), put(int, char)): Fixed to take array_offset into account.
+
+2005-04-20  Sven de Marothy  <sven@physto.se>
+
 	* java/text/SimpleDateFormat.java:
 	(formatWithAttribute): Pad year before truncating digits.
 
