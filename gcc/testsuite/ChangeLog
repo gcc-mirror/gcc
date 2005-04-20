@@ -1,3 +1,7 @@
+2005-04-19  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/fold-xor-1.c: New test.
+
 2005-04-19  James E. Wilson  <wilson@specifixinc.com>
 
 	PR target/20670

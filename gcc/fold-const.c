@@ -8174,6 +8174,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  goto bit_ior;
 	}
 
+      /* Convert ~X ^ ~Y to X ^ Y.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && TREE_CODE (arg1) == BIT_NOT_EXPR)
+	return fold_build2 (code, type,
+			    fold_convert (type, TREE_OPERAND (arg0, 0)),
+			    fold_convert (type, TREE_OPERAND (arg1, 0)));
+
       /* See if this can be simplified into a rotate first.  If that
 	 is unsuccessful continue in the association code.  */
       goto bit_rotate;
