@@ -1,3 +1,7 @@
+2005-04-19  James A. Morrison  <phython@gcc.gnu.org>
+
+	* fold-const (fold_binary):  Fold ~X ^ ~ Y to X ^ Y.
+
 2005-04-20  Michael Pogue  <michael.pogue@sun.com>
             Joseph S. Myers  <joseph@codesourcery.com>
 
