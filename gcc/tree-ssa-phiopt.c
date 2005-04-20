@@ -205,7 +205,8 @@ tree_ssa_phiopt (void)
 	  || (e1->flags & EDGE_FALLTHRU) == 0)
         continue;
 
-      /* Also make that bb1 only have one pred and it is bb.  */
+      /* Also make sure that bb1 only have one predecessor and that it
+	 is bb.  */
       if (!single_pred_p (bb1)
           || single_pred (bb1) != bb)
 	continue;
@@ -221,7 +222,7 @@ tree_ssa_phiopt (void)
       arg0 = PHI_ARG_DEF_TREE (phi, e1->dest_idx);
       arg1 = PHI_ARG_DEF_TREE (phi, e2->dest_idx);
 
-      /* We know something is wrong if we cannot find the edges in the PHI
+      /* Something is wrong if we cannot find the arguments in the PHI
 	 node.  */
       gcc_assert (arg0 != NULL && arg1 != NULL);
 
