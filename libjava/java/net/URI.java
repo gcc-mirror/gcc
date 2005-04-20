@@ -46,12 +46,67 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * <p>
+ * A URI instance represents that defined by 
+ * <a href="http://www.ietf.org/rfc/rfc3986.txt">RFC2396</a>,
+ * with some deviations.
+ * </p>
+ * <p>
+ * At its highest level, a URI consists of:
+ * </p>
+ * <code>[<em>scheme</em><strong>:</strong>]<em>scheme-specific-part</em>
+ * [<strong>#</strong><em>fragment</em>]</code>
+ * </p>
+ * <p>
+ * where <strong>#</strong> and <strong>:</strong> are literal characters,
+ * and those parts enclosed in square brackets are optional.
+ * </p>
+ * <p>
+ * There are two main types of URI.  An <em>opaque</em> URI is one
+ * which just consists of the above three parts, and is not further
+ * defined.  An example of such a URI would be <em>mailto:</em> URI.
+ * In contrast, <em>hierarchical</em> URIs give further definition
+ * to the scheme-specific part, so as represent some part of a hierarchical
+ * structure.
+ * </p>
+ * <p>
+ * <code>[<strong>//</strong><em>authority</em>][<em>path</em>]
+ * [<strong>?</strong><em>query</em>]</code>
+ * </p>
+ * <p>
+ * with <strong>/</strong> and <strong>?</strong> being literal characters.
+ * When server-based, the authority section is further subdivided into:
+ * </p>
+ * <p>
+ * <code>[<em>user-info</em><strong>@</strong>]<em>host</em>
+ * [<strong>:</strong><em>port</em>]</code>
+ * </p>
+ * <p>
+ * with <strong>@</strong> and <strong>:</strong> as literal characters.
+ * Authority sections that are not server-based are said to be registry-based.
+ * </p>
+ * <p>
+ * Hierarchical URIs can be either relative or absolute.  Absolute URIs
+ * always start with a `<strong>/</strong>', while relative URIs don't
+ * specify a scheme.  Opaque URIs are always absolute.
+ * </p>
+ * <p>
+ * Each part of the URI may have one of three states: undefined, empty
+ * or containing some content.  The former two of these are represented
+ * by <code>null</code> and the empty string in Java, respectively.
+ * The scheme-specific part may never be undefined.  It also follows from
+ * this that the path sub-part may also not be undefined, so as to ensure
+ * the former.
+ * </p>
+ * 
  * @author Ito Kazumitsu (ito.kazumitsu@hitachi-cable.co.jp)
  * @author Dalibor Topic (robilad@kaffe.org)
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.4
  */
-public final class URI implements Comparable, Serializable
+public final class URI 
+  implements Comparable, Serializable
 {
   static final long serialVersionUID = -6052424284110960213L;
 
@@ -65,7 +120,7 @@ public final class URI implements Comparable, Serializable
     "^(([^:/?#]+):)?((//([^/?#]*))?([^?#]*)(\\?([^#]*))?)?(#(.*))?";
 
   private static final String AUTHORITY_REGEXP =
-    "^((([^?#]*)@)?([^?#:]*)(:([^?#]*)))?";
+    "(([^?#]*)@)?([^?#:]*)(:([^?#]*))?";
 
   /**
    * Valid characters (taken from rfc2396)
@@ -115,9 +170,9 @@ public final class URI implements Comparable, Serializable
    */
   private static final int FRAGMENT_GROUP = 10;
   
-  private static final int AUTHORITY_USERINFO_GROUP = 3;
-  private static final int AUTHORITY_HOST_GROUP = 4;
-  private static final int AUTHORITY_PORT_GROUP = 6;
+  private static final int AUTHORITY_USERINFO_GROUP = 2;
+  private static final int AUTHORITY_HOST_GROUP = 3;
+  private static final int AUTHORITY_PORT_GROUP = 5;
   
   private transient String scheme;
   private transient String rawSchemeSpecificPart;
@@ -180,10 +235,14 @@ public final class URI implements Comparable, Serializable
     if (matcher.matches())
       {
 	scheme = getURIGroup(matcher, SCHEME_GROUP);
-	rawSchemeSpecificPart = getURIGroup(matcher, SCHEME_SPEC_PART_GROUP);
-	rawAuthority = getURIGroup(matcher, AUTHORITY_GROUP);
-	rawPath = getURIGroup(matcher, PATH_GROUP);
-	rawQuery = getURIGroup(matcher, QUERY_GROUP);
+	rawSchemeSpecificPart = matcher.group(SCHEME_SPEC_PART_GROUP);
+	schemeSpecificPart = unquote(rawSchemeSpecificPart);
+	if (!isOpaque())
+	  {
+	    rawAuthority = getURIGroup(matcher, AUTHORITY_GROUP);
+	    rawPath = matcher.group(PATH_GROUP);
+	    rawQuery = getURIGroup(matcher, QUERY_GROUP);
+	  }
 	rawFragment = getURIGroup(matcher, FRAGMENT_GROUP);
       }
     else
@@ -221,7 +280,6 @@ public final class URI implements Comparable, Serializable
 
     // We must eagerly unquote the parts, because this is the only time
     // we may throw an exception.
-    schemeSpecificPart = unquote(rawSchemeSpecificPart);
     authority = unquote(rawAuthority);
     userInfo = unquote(rawUserInfo);
     host = unquote(rawHost);
@@ -814,14 +872,15 @@ public final class URI implements Comparable, Serializable
   }
 
   /**
-   * Returns the URI as string
+   * Returns the URI as a String.  If the URI was created using a constructor,
+   * then this will be the same as the original input string.
+   *
+   * @return a string representation of the URI.
    */
   public String toString()
   {
     return (getScheme() == null ? "" : getScheme() + ":")
-           + (getRawAuthority() == null ? "" : "//" + getRawAuthority())
-           + (getRawPath() == null ? "" : getRawPath())
-           + (getRawQuery() == null ? "" : "?" + getRawQuery())
+           + getRawSchemeSpecificPart()
            + (getRawFragment() == null ? "" : "#" + getRawFragment());
   }
 

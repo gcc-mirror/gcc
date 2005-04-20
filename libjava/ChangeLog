@@ -1,3 +1,18 @@
+2005-04-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/net/URI.java:
+	Added class documentation.
+	(parseURI(String)): Only handle scheme-specific parts
+	if URI is not opaque.  Allow for parts that can't be null.
+	(toString()): Output the scheme-specific part whole, rather
+	than as its possibly non-existent components.
+
+2005-04-20  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/net/URI.java (AUTHORITY_REGEXP): Corrected regexp.
+	(AUTHORITY_USERINFO_GROUP,AUTHORITY_HOST_GROUP,AUTHORITY_PORT_GROUP):
+	Adjusted to match new regexp.
+
 2005-04-20  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/file/Connection.java,
