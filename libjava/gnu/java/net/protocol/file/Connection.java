@@ -33,7 +33,7 @@ module.  An independent module is a module which is not derived from
 or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
-exception statement from your version.  */
+exception statement from your version. */
 
 package gnu.java.net.protocol.file;
 
@@ -46,8 +46,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilePermission;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ProtocolException;
 import java.net.URL;
@@ -62,9 +62,9 @@ import java.util.Locale;
  * This subclass of java.net.URLConnection models a URLConnection via
  * the "file" protocol.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Nic Ferrier <nferrier@tapsellferrier.co.uk>
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Nic Ferrier (nferrier@tapsellferrier.co.uk)
+ * @author Warren Levy (warrenl@cygnus.com)
  */
 public class Connection extends URLConnection
 {
