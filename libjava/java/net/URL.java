@@ -953,4 +953,21 @@ public final class URL implements Serializable
   {
     oos.defaultWriteObject();
   }
+
+  /**
+   * Returns the equivalent <code>URI</code> object for this <code>URL</code>.
+   * This is the same as calling <code>new URI(this.toString())</code>.
+   * RFC2396-compliant URLs are guaranteed a successful conversion to
+   * a <code>URI</code> instance.  However, there are some values which
+   * form valid URLs, but which do not also form RFC2396-compliant URIs.
+   *
+   * @throws URISyntaxException if this URL is not RFC2396-compliant,
+   *         and thus can not be successfully converted to a URI.
+   */
+  public URI toURI()
+    throws URISyntaxException
+  {
+    return new URI(toString());
+  }
+
 }
