@@ -423,28 +423,32 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
     if (sum > 65535)
       throw new UTFDataFormatException ();
 
-    writeShort (sum);
+    int pos = 0;
+    byte[] buf = new byte[sum];
 
     for (int i = 0; i < len; ++i)
       {
 	char c = value.charAt(i);
 	if (c >= '\u0001' && c <= '\u007f')
-	  write (c);
+          buf[pos++] = (byte) c;
 	else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
 	  {
-	    write (0xc0 | (0x1f & (c >> 6)));
-	    write (0x80 | (0x3f & c));
+	    buf[pos++] = (byte) (0xc0 | (0x1f & (c >> 6)));
+	    buf[pos++] = (byte) (0x80 | (0x3f & c));
 	  }
 	else
 	  {
 	    // JSL says the first byte should be or'd with 0xc0, but
 	    // that is a typo.  Unicode says 0xe0, and that is what is
 	    // consistent with DataInputStream.
-	    write (0xe0 | (0x0f & (c >> 12)));
-	    write (0x80 | (0x3f & (c >> 6)));
-	    write (0x80 | (0x3f & c));
+	    buf[pos++] = (byte) (0xe0 | (0x0f & (c >> 12)));
+	    buf[pos++] = (byte) (0x80 | (0x3f & (c >> 6)));
+	    buf[pos++] = (byte) (0x80 | (0x3f & c));
 	  }
       }
+    
+    writeShort (sum);
+    write(buf, 0, sum);
   }
 
 } // class DataOutputStream

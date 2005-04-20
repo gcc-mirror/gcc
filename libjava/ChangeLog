@@ -1,3 +1,13 @@
+2005-04-20  Chris Burdess  <dog@gnu.org>
+
+	* java/io/DataOutputStream.java (writeUTF): Use block write for
+	output.
+
+2005-04-20  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/DataInputStream.java (ignoreInitialNewline): Removed
+	(readLine): Changed newline handling.
+
 2005-04-20  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/awt/image/PixelGrabber.java (setPixels(int,int,int,int,

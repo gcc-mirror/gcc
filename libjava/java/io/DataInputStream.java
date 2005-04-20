@@ -1,5 +1,5 @@
 /* DataInputStream.java -- FilteredInputStream that implements DataInput
-   Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -56,11 +56,6 @@ package java.io;
  */
 public class DataInputStream extends FilterInputStream implements DataInput
 {
-  // readLine() hack to ensure that an '\r' not followed by an '\n' is
-  // handled correctly. If set, readLine() will ignore the first char it sees
-  // if that char is a '\n'
-  boolean ignoreInitialNewline = false;
-
   // Byte buffer, used to make primitive read calls more efficient.
   byte[] buf = new byte [8];
   
@@ -352,88 +347,29 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @deprecated
    */
-  public final String readLine () throws IOException
+  public final String readLine() throws IOException
   {
-    StringBuffer strb = new StringBuffer ();
+    StringBuffer strb = new StringBuffer();
 
-    readloop: while (true)
+    while (true)
       {
-        int c = 0;
-        char ch = ' ';
-        boolean getnext = true;
-        while (getnext)
-          {
-	    getnext = false;
-	    c = in.read();
-	    if (c < 0)	// got an EOF
-	      return strb.length () > 0 ? strb.toString () : null;
-	    ch = (char) c;
-	    if ((ch &= 0xFF) == '\n')
-	      // hack to correctly handle '\r\n' sequences
-	      if (ignoreInitialNewline)
-		{
-		  ignoreInitialNewline = false;
-		  getnext = true;
-		}
-	      else
-		break readloop;
-	  }
-
-	if (ch == '\r')
+        int c = in.read();
+	if (c == -1)	// got an EOF
+	    return strb.length() > 0 ? strb.toString() : null;
+	if (c == '\r')
 	  {
-	    // FIXME: The following code tries to adjust the stream back one
-	    // character if the next char read is '\n'.  As a last resort,
-	    // it tries to mark the position before reading but the bottom
-	    // line is that it is possible that this method will not properly
-	    // deal with a '\r' '\n' combination thus not fulfilling the
-	    // DataInput contract for readLine.  It's not a particularly
-	    // safe approach threadwise since it is unsynchronized and
-	    // since it might mark an input stream behind the users back.
-	    // Along the same vein it could try the same thing for
-	    // ByteArrayInputStream and PushbackInputStream, but that is
-	    // probably overkill since this is deprecated & BufferedInputStream
-	    // is the most likely type of input stream.
-	    //
-	    // The alternative is to somehow push back the next byte if it
-	    // isn't a '\n' or to have the reading methods of this class
-	    // keep track of whether the last byte read was '\r' by readLine
-	    // and then skip the very next byte if it is '\n'.  Either way,
-	    // this would increase the complexity of the non-deprecated methods
-	    // and since it is undesirable to make non-deprecated methods
-	    // less efficient, the following seems like the most reasonable
-	    // approach.
-	    int next_c = 0;
-            char next_ch = ' ';
-	    if (in instanceof BufferedInputStream)
-	      {
-	        next_c = in.read();
-	        next_ch = (char) (next_c & 0xFF);
-		if ((next_ch != '\n') && (next_c >= 0)) 
-		  {
-	            BufferedInputStream bin = (BufferedInputStream) in;
-		    if (bin.pos > 0)
-                      bin.pos--;
-		  }
-	      }
-	    else if (markSupported())
-	      {
-	        next_c = in.read();
-	        next_ch = (char) (next_c & 0xFF);
-		if ((next_ch != '\n') && (next_c >= 0)) 
-		  {
-		    mark(1);
-		    if ((in.read() & 0xFF) != '\n')
-		      reset();
-		  }
-	      } 
-	    // In order to catch cases where 'in' isn't a BufferedInputStream
-	    // and doesn't support mark() (such as reading from a Socket), set 
-	    // a flag that instructs readLine() to ignore the first character 
-	    // it sees _if_ that character is a '\n'.
-	    else ignoreInitialNewline = true;
-	    break;
+	    int next_c = in.read();
+            if (next_c != '\n' && next_c != -1)
+              {
+                if (! (in instanceof PushbackInputStream))
+                    in = new PushbackInputStream(in);
+                ((PushbackInputStream) in).unread(next_c);
+              }
+            break;
 	  }
-	strb.append(ch);
+        if (c == '\n')
+            break;
+	strb.append((char) c);
       }
 
     return strb.length() > 0 ? strb.toString() : "";
