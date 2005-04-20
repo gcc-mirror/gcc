@@ -1616,44 +1616,6 @@ struct cum_args {int regs;};
 
 /* Node: Misc */
 
-/* FIXME: Check this one more time.  */
-#define PREDICATE_CODES					\
- {"cris_orthogonal_operator",				\
-  {PLUS, MINUS, IOR, AND, UMIN}},			\
- {"cris_commutative_orth_op",				\
-  {PLUS, IOR, AND, UMIN}},				\
- {"cris_operand_extend_operator",			\
-  {PLUS, MINUS, UMIN}},					\
- {"cris_additive_operand_extend_operator",		\
-  {PLUS, MINUS}},					\
- {"cris_extend_operator",				\
-  {ZERO_EXTEND, SIGN_EXTEND}},				\
- {"cris_plus_or_bound_operator",			\
-  {PLUS, UMIN}},					\
- {"cris_mem_op",					\
-  {MEM}},						\
- {"cris_load_multiple_op",				\
-  {PARALLEL}},						\
- {"cris_store_multiple_op",				\
-  {PARALLEL}},						\
- {"cris_bdap_operand",					\
-  {SUBREG, REG, LABEL_REF, SYMBOL_REF, MEM, CONST_INT,	\
-   CONST_DOUBLE, CONST, SIGN_EXTEND}},			\
- {"cris_bdap_biap_operand",				\
-  {SUBREG, REG, LABEL_REF, SYMBOL_REF, MEM, CONST_INT,	\
-   CONST_DOUBLE, CONST, SIGN_EXTEND, MULT}},		\
- {"cris_general_operand_or_gotless_symbol",		\
-  {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,		\
-   LABEL_REF, SUBREG, REG, MEM, UNSPEC}},		\
- {"cris_general_operand_or_symbol",			\
-  {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,		\
-   LABEL_REF, SUBREG, REG, MEM}},			\
- {"cris_general_operand_or_plt_symbol",			\
-  {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,		\
-   LABEL_REF, SUBREG, REG, MEM}},			\
- {"cris_mem_call_operand",				\
-  {MEM}},
-
 /* A combination of the bound (umin) insn together with a
    sign-extended add via the table to PC seems optimal.
    If the table overflows, the assembler will take care of it.

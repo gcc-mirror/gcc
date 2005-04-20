@@ -120,8 +120,6 @@ static void cris_operand_lossage (const char *, rtx);
 
 static int cris_reg_saved_in_regsave_area  (unsigned int, bool);
 
-static int cris_movem_load_rest_p (rtx, int);
-
 static void cris_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 
@@ -205,280 +203,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Predicate functions.  */
-
-/* This checks a part of an address, the one that is not a plain register
-   for an addressing mode using BDAP.
-   Allowed operands is either:
-   a) a register
-   b) a CONST operand (but not a symbol when generating PIC)
-   c) a [r] or [r+] in SImode, or sign-extend from HI or QI.  */
-
-int
-cris_bdap_operand (rtx op, enum machine_mode mode)
-{
-  register enum rtx_code code = GET_CODE (op);
-
-  if (mode != SImode && (mode != VOIDmode || GET_MODE (op) != VOIDmode))
-    return 0;
-
-  /* Just return whether this is a simple register or constant.  */
-  if (register_operand (op, mode)
-      || (CONSTANT_P (op) && !(flag_pic && cris_symbol (op))))
-    return 1;
-
-  /* Is it a [r] or possibly a [r+]?  */
-  if (code == MEM)
-    {
-      rtx tem = XEXP (op, 0);
-
-      if (mode == SImode
-	  && (register_operand (tem, SImode)
-	      || (GET_CODE (tem) == POST_INC
-		  && register_operand (XEXP (tem, 0), SImode))))
-	return 1;
-      else
-	return 0;
-    }
-
-  /* Perhaps a sign-extended mem: [r].(b|w) or [r+].(b|w)?  */
-  if (code == SIGN_EXTEND)
-    {
-      rtx tem = XEXP (op, 0);
-
-      if (GET_CODE (tem) != MEM)
-	return 0;
-
-      tem = XEXP (tem, 0);
-      if (mode == SImode
-	  && (register_operand (tem, SImode)
-	      || (GET_CODE (tem) == POST_INC
-		  && register_operand (XEXP (tem, 0), SImode))))
-	return 1;
-      else
-	return 0;
-    }
-
-  return 0;
-}
-
-/* This is similar to cris_bdap_operand:
-   It checks a part of an address, the one that is not a plain register
-   for an addressing mode using BDAP *or* BIAP.
-   Allowed operands is either:
-   a) a register
-   b) a CONST operand (but not a symbol when generating PIC)
-   c) a mult of (1, 2 or 4) and a register
-   d) a [r] or [r+] in SImode, or sign-extend from HI or QI.  */
-
-int
-cris_bdap_biap_operand (rtx op, enum machine_mode mode)
-{
-  register enum rtx_code code = GET_CODE (op);
-  rtx reg;
-  rtx val;
-
-  /* Check for bdap operand.  */
-  if (cris_bdap_operand (op, mode))
-    return 1;
-
-  if (mode != SImode && (mode != VOIDmode || GET_MODE (op) != VOIDmode))
-    return 0;
-
-  /* Check that we're looking at a BIAP operand.  */
-  if (code != MULT)
-    return 0;
-
-  /* Canonicalize register and multiplicand.  */
-  if (GET_CODE (XEXP (op, 0)) == CONST_INT)
-    {
-      val = XEXP (op, 0);
-      reg = XEXP (op, 1);
-    }
-  else
-    {
-      val = XEXP (op, 1);
-      reg = XEXP (op, 0);
-    }
-
-  /* Check that the operands are correct after canonicalization.  */
-  if (! register_operand (reg, SImode) || GET_CODE (val) != CONST_INT)
-    return 0;
-
-  /* Check that the multiplicand has a valid value.  */
-  if ((code == MULT
-       && (INTVAL (val) == 1 || INTVAL (val) == 2 || INTVAL (val) == 4)))
-    return 1;
-
-  return 0;
-}
-
-/* Check if MODE is same as mode for X, and X is PLUS, MINUS, IOR or
-   AND or UMIN.  */
-
-int
-cris_orthogonal_operator (rtx x, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (x);
-
-  return (GET_MODE (x) == mode
-	  && (code == PLUS || code == MINUS
-	      || code == IOR || code == AND || code == UMIN));
-}
-
-/* Check if MODE is same as mode for X, and X is PLUS, IOR or AND or
-   UMIN.  */
-
-int
-cris_commutative_orth_op (rtx x, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (x);
-
-  return (GET_MODE (x) == mode &&
-	  (code == PLUS
-	   || code == IOR || code == AND || code == UMIN));
-}
-
-/* Check if MODE is same as mode for X, and X is PLUS or MINUS or UMIN.
-   By the name, you might think we should include MULT.  We don't because
-   it doesn't accept the same addressing modes as the others (ony
-   registers) and there's also the problem of handling TARGET_MUL_BUG.  */
-
-int
-cris_operand_extend_operator (rtx x, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (x);
-
-  return (GET_MODE (x) == mode
-	  && (code == PLUS || code == MINUS || code == UMIN));
-}
-
-/* Check if MODE is same as mode for X, and X is PLUS or MINUS.  */
-
-int
-cris_additive_operand_extend_operator (rtx x, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (x);
-
-  return (GET_MODE (x) == mode
-	  && (code == PLUS || code == MINUS));
-}
-
-/* Check to see if MODE is same as mode for X, and X is SIGN_EXTEND or
-   ZERO_EXTEND.  */
-
-int
-cris_extend_operator (rtx x, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (x);
-
-  return
-    (GET_MODE (x) == mode && (code == SIGN_EXTEND || code == ZERO_EXTEND));
-}
-
-/* Check to see if MODE is same as mode for X, and X is PLUS or BOUND.  */
-
-int
-cris_plus_or_bound_operator (rtx x, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (x);
-
-  return
-    (GET_MODE (x) == mode && (code == UMIN || code == PLUS));
-}
-
-/* Used as an operator to get a handle on a already-known-valid MEM rtx:es
-   (no need to validate the address), where some address expression parts
-   have their own match_operand.  */
-
-int
-cris_mem_op (rtx x, enum machine_mode mode)
-{
-  if (mode == VOIDmode)
-    mode = GET_MODE (x);
-
-  return GET_MODE (x) == mode && GET_CODE (x) == MEM;
-}
-
-/* Since with -fPIC, not all symbols are valid PIC symbols or indeed
-   general_operands, we have to have a predicate that matches it for the
-   "movsi" expander.  */
-
-int
-cris_general_operand_or_symbol (rtx op, enum machine_mode mode)
-{
-  return general_operand (op, mode)
-    || (CONSTANT_P (op) && cris_symbol (op));
-}
-
-/* Since a PIC symbol without a GOT entry is not a general_operand, we
-   have to have a predicate that matches it.  We use this in the expanded
-   "movsi" anonymous pattern.  */
-
-int
-cris_general_operand_or_gotless_symbol (rtx op, enum machine_mode mode)
-{
-  return general_operand (op, mode)
-    || (GET_CODE (op) == UNSPEC && XINT (op, 1) == CRIS_UNSPEC_GOT)
-    || (CONSTANT_P (op) && cris_gotless_symbol (op));
-}
-
-/* Since a PLT symbol is not a general_operand, we have to have a
-   predicate that matches it when we need it.  We use this in the expanded
-   "call" and "call_value" anonymous patterns.  */
-
-int
-cris_general_operand_or_plt_symbol (rtx op, enum machine_mode mode)
-{
-  return general_operand (op, mode)
-    || (GET_CODE (op) == CONST
-	&& GET_CODE (XEXP (op, 0)) == UNSPEC
-	&& !TARGET_AVOID_GOTPLT);
-}
-
-/* This matches a (MEM (general_operand)) or
-   (MEM (cris_general_operand_or_symbol)).  The second one isn't a valid
-   memory_operand, so we need this predicate to recognize call
-   destinations before we change them to a PLT operand (by wrapping in
-   UNSPEC CRIS_UNSPEC_PLT).  */
-
-int
-cris_mem_call_operand (rtx op, enum machine_mode mode)
-{
-  rtx xmem;
-
-  if (GET_CODE (op) != MEM)
-    return 0;
-
-  if (memory_operand (op, mode))
-    return 1;
-
-  xmem = XEXP (op, 0);
-
-  return cris_general_operand_or_symbol (xmem, GET_MODE (op));
-}
-
 /* Helper for cris_load_multiple_op and cris_ret_movem_op.  */
 
-static int
+bool
 cris_movem_load_rest_p (rtx op, int offs)
 {
   unsigned int reg_count = XVECLEN (op, 0) - offs;
@@ -495,7 +222,7 @@ cris_movem_load_rest_p (rtx op, int offs)
       || GET_CODE (XVECEXP (op, 0, offs)) != SET
       || GET_CODE (SET_DEST (XVECEXP (op, 0, offs))) != REG
       || GET_CODE (SET_SRC (XVECEXP (op, 0, offs))) != MEM)
-    return 0;
+    return false;
 
   /* Check a possible post-inc indicator.  */
   if (GET_CODE (SET_SRC (XVECEXP (op, 0, offs + 1))) == PLUS)
@@ -511,7 +238,7 @@ cris_movem_load_rest_p (rtx op, int offs)
 	  || REGNO (reg) != REGNO (SET_DEST (XVECEXP (op, 0, offs + 1)))
 	  || GET_CODE (inc) != CONST_INT
 	  || INTVAL (inc) != (HOST_WIDE_INT) reg_count * 4)
-	return 0;
+	return false;
       i = offs + 2;
     }
   else
@@ -531,7 +258,7 @@ cris_movem_load_rest_p (rtx op, int offs)
       || GET_CODE (SET_SRC (elt)) != MEM
       || GET_MODE (SET_SRC (elt)) != SImode
       || !memory_address_p (SImode, src_addr))
-    return 0;
+    return false;
 
   for (setno = 1; i < XVECLEN (op, 0); setno++, i++)
     {
@@ -548,24 +275,17 @@ cris_movem_load_rest_p (rtx op, int offs)
 	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
 	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
 	  || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != setno * 4)
-	return 0;
+	return false;
     }
 
-  return 1;
+  return true;
 }
 
-/* Predicate for the parallel contents in a movem from-memory.  */
+/* Worker function for predicate for the parallel contents in a movem
+   to-memory.  */
 
-int
-cris_load_multiple_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return cris_movem_load_rest_p (op, 0);
-}
-
-/* Predicate for the parallel contents in a movem to-memory.  */
-
-int
-cris_store_multiple_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+bool
+cris_store_multiple_op_p (rtx op)
 {
   int reg_count = XVECLEN (op, 0);
   rtx dest;
@@ -581,18 +301,18 @@ cris_store_multiple_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   /* Perform a quick check so we don't blow up below.  FIXME: Adjust for
      other than (MEM reg) and (MEM (PLUS reg const)).  */
   if (reg_count <= 1)
-    return 0;
+    return false;
 
   elt = XVECEXP (op, 0, 0);
 
   if (GET_CODE (elt) != SET)
-    return  0;
+    return  false;
 
   dest = SET_DEST (elt);
 
   if (GET_CODE (SET_SRC (elt)) != REG
       || GET_CODE (dest) != MEM)
-    return 0;
+    return false;
 
   dest_addr = XEXP (dest, 0);
 
@@ -620,7 +340,7 @@ cris_store_multiple_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 		   && REGNO (XEXP (dest_addr, 0)) == REGNO (reg)
 		   && GET_CODE (XEXP (dest_addr, 1)) == CONST_INT
 		   && INTVAL (XEXP (dest_addr, 1)) == INTVAL (inc))))
-	return 0;
+	return false;
 
       i = 2;
     }
@@ -637,7 +357,7 @@ cris_store_multiple_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       || REGNO (SET_SRC (elt)) != (unsigned int) regno
       || GET_CODE (SET_DEST (elt)) != MEM
       || GET_MODE (SET_DEST (elt)) != SImode)
-    return 0;
+    return false;
 
   if (REG_P (dest_addr))
     {
@@ -652,7 +372,7 @@ cris_store_multiple_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       offset = INTVAL (XEXP (dest_addr, 1));
     }
   else
-    return 0;
+    return false;
 
   for (setno = 1; i < XVECLEN (op, 0); setno++, i++)
     {
@@ -669,10 +389,10 @@ cris_store_multiple_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 	  || ! rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_base)
 	  || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
 	  || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != setno * 4 + offset)
-	return 0;
+	return false;
     }
 
-  return 1;
+  return true;
 }
 
 /* The CONDITIONAL_REGISTER_USAGE worker.  */
@@ -2176,7 +1896,7 @@ cris_symbol (rtx x)
       return 1;
 
     case UNSPEC:
-      if (XINT (x, 1) == CRIS_UNSPEC_GOT)
+      if (XINT (x, 1) == CRIS_UNSPEC_GOT || XINT (x, 1) != CRIS_UNSPEC_PLT)
 	return 0;
       /* A PLT reference.  */
       ASSERT_PLT_UNSPEC (x);
@@ -2218,6 +1938,8 @@ cris_gotless_symbol (rtx x)
     case UNSPEC:
       if (XINT (x, 1) == CRIS_UNSPEC_GOT)
 	return 1;
+      if (XINT (x, 1) != CRIS_UNSPEC_PLT)
+	return 0;
       ASSERT_PLT_UNSPEC (x);
       return 1;
 

@@ -141,6 +141,10 @@
 (define_delay (eq_attr "slottable" "has_slot")
   [(eq_attr "slottable" "yes") (nil) (nil)])
 
+;; Operand and operator predicates.
+
+(include "predicates.md")
+
 ;; Test insns.
 
 ;; DImode
@@ -3944,7 +3948,7 @@
 	       for the symbol cause bad recombinatorial effects?  */
 	    op0 = force_reg (Pmode,
 			     gen_rtx_CONST
-			     (VOIDmode,
+			     (Pmode,
 			      gen_rtx_UNSPEC (VOIDmode,
 					      gen_rtvec (1, op0),
 					      CRIS_UNSPEC_PLT)));
@@ -4009,7 +4013,7 @@
 	       for the symbol cause bad recombinatorial effects?  */
 	    op1 = force_reg (Pmode,
 			     gen_rtx_CONST
-			     (VOIDmode,
+			     (Pmode,
 			      gen_rtx_UNSPEC (VOIDmode,
 					      gen_rtvec (1, op1),
 					      CRIS_UNSPEC_PLT)));
