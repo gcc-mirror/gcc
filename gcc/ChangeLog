@@ -1,3 +1,25 @@
+2005-04-21  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/predicates.md: New file.
+	* config/cris/cris-protos.h (cris_store_multiple_op_p)
+	(cris_movem_load_rest_p): Declare.
+	* config/cris/cris.c (cris_store_multiple_op): Return bool, not int.
+	(cris_movem_load_rest_p): Ditto.  Globalize.
+	(cris_bdap_operand, cris_bdap_biap_operand,
+	cris_orthogonal_operator, cris_commutative_orth_op,
+	cris_operand_extend_operator,
+	cris_additive_operand_extend_operator, cris_extend_operator,
+	cris_plus_or_bound_operator, cris_mem_op,
+	cris_general_operand_or_symbol,
+	cris_general_operand_or_gotless_symbol,
+	cris_general_operand_or_plt_symbol, cris_mem_call_operand,
+	cris_load_multiple_op): Remove predicate functions.
+	(cris_symbol, cris_gotless_symbol) <case UNSPEC>: Return 0, don't
+	abort, for UNSPECs other than CRIS_UNSPEC_PLT.
+	* config/cris/cris.h (PREDICATE_CODES): Don't define.
+	* config/cris/cris.md: Include predicates.md.
+	("call", "call_value"): Generate CONSTs of Pmode, not VOIDmode.
+
 2005-04-20  Ian Lance Taylor  <ian@airs.com>
 
 	* c-common.def: Remove STMT_EXPR (moved to cp/cp-tree.def).
