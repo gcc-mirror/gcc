@@ -183,9 +183,9 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
       size_t count;
 
       /* Since we know that the value is not zero (mpz_fits_slong_p),
-	 we know that at one word will be written, but we don't know
+	 we know that at least one word will be written, but we don't know
 	 about the second.  It's quicker to zero the second word before
-	 that conditionally clear it later.  */
+	 than conditionally clear it later.  */
       words[1] = 0;
 
       /* Extract the absolute value into words.  */
