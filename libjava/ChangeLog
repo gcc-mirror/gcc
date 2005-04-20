@@ -1,5 +1,11 @@
 2005-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/lang/ClassHelper.java,
+	gnu/java/lang/reflect/TypeSignature.java:
+	Fixed @author tag.
+
+2005-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/beans/IntrospectionIncubator.java:
 	Fixed HTML tags in javadocs.
 

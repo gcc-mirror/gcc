@@ -51,7 +51,7 @@ import java.util.Set;
  * ClassHelper has various methods that ought to have been in Class.
  *
  * @author John Keiser
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  */
 public class ClassHelper
 {
