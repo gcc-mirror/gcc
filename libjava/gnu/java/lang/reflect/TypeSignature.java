@@ -51,7 +51,7 @@ import java.lang.reflect.Method;
  * <code>Method</code>s.  Methods are also provided to go in the
  * reverse direction.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  */
 public class TypeSignature
 {
