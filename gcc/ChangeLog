@@ -1,3 +1,13 @@
+2005-04-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-phiopt.c (tree_ssa_phi_opt): Update calls to
+	conditional_replacement, value_replacement, abs_replacement,
+	minmax_replacement.
+	(replace_phi_edge_with_variable): Remove argument BB.
+	(conditional_replacement, value_replacement,
+	minmax_replacement, abs_replacement): Remove argument PHI_BB.
+	Update a call to replace_phi_edge_with_variable.
+
 2005-04-20  Michael Matz  <matz@suse.de>
 
 	PR20973
