@@ -2997,7 +2997,7 @@ newer is recommended to build on this platform.
 
 ``out of memory'' bootstrap failures may indicate a problem with
 process resource limits (ulimit).  Hard limits are configured in the
-/etc/security/limits system configuration file.
+@file{/etc/security/limits} system configuration file.
 
 To speed up the configuration phases of bootstrapping and installing GCC,
 one may use GNU Bash instead of AIX @command{/bin/sh}, e.g.,
