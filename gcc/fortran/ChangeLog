@@ -1,3 +1,7 @@
+2005-04-19  Steven G. Kargl  <kargls@comcast.net>
+
+	* trans-const.c (gfc_conv_mpz_to_tree): Fix comment.
+
 2005-04-19  Arnaud Desitter  <arnaud.desitter@ouce.ox.ac.uk>
             Steven G. Kargl  <kargls@comcast.net>
 
