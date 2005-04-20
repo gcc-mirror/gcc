@@ -740,8 +740,20 @@ reload (rtx first, int global)
 		     that is not a legitimate memory operand.  As later
 		     stages of reload assume that all addresses found
 		     in the reg_equiv_* arrays were originally legitimate,
-		     we ignore such REG_EQUIV notes.  */
-		  if (memory_operand (x, VOIDmode))
+
+		     It can also happen that a REG_EQUIV note contains a
+		     readonly memory location.  If the destination pseudo
+		     is set from some other value (typically a different
+		     pseudo), and the destination pseudo does not get a
+		     hard reg, then reload will replace the destination
+		     pseudo with its equivalent memory location.  This
+		     is horribly bad as it creates a store to a readonly
+		     memory location and a runtime segfault.  To avoid
+		     this problem we reject readonly memory locations
+		     for equivalences.  This is overly conservative as
+		     we could find all sets of the destination pseudo
+		     and remove them as they should be redundant.  */
+		  if (memory_operand (x, VOIDmode) && ! MEM_READONLY_P (x))
 		    {
 		      /* Always unshare the equivalence, so we can
 			 substitute into this insn without touching the
