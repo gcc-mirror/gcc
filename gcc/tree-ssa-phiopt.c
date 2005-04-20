@@ -56,7 +56,7 @@ static basic_block *blocks_in_phiopt_order (void);
    Conditional Replacement
    -----------------------
 
-   This transformation, implmented in conditional_replacement,
+   This transformation, implemented in conditional_replacement,
    replaces
 
      bb0:
@@ -133,7 +133,7 @@ static basic_block *blocks_in_phiopt_order (void);
      bb2:
        x = PHI <x' (bb0), ...>;
 
-   A similar transformtion is done for MAX_EXPR.  */
+   A similar transformation is done for MAX_EXPR.  */
 
 static void
 tree_ssa_phiopt (void)
