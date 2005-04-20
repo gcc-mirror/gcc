@@ -82,14 +82,14 @@ public class IntrospectionIncubator {
 
 	/** Examines the given method and files it in a suitable collection.
 	 * It files the method as a property method if it finds:
-	 * <lu>
+	 * <ul>
 	 * <li>boolean "is" getter</li>
 	 * <li>"get" style getter</li>
 	 * <li>single argument setter</li>
 	 * <li>indiced setter and getter</li> 
 	 * </ul>
 	 * It files the method as a listener method if all of these rules apply:
-	 * <lu>
+	 * <ul>
 	 * <li>the method name starts with "add" or "remove"</li>
 	 * <li>there is only a single argument</li>
 	 * <li>the argument type is a subclass of <code>java.util.EventListener</code></li>
@@ -323,6 +323,8 @@ public class IntrospectionIncubator {
 				return;
 		}
 		newName = capitalize(newName);
+		if (newName.length() == 0)
+			return;
 
 		DoubleKey k = new DoubleKey(type,newName);
 		Method[] methods = (Method[])propertyMethods.get(k);
@@ -350,6 +352,8 @@ public class IntrospectionIncubator {
 				return;
 		}
 		newName = capitalize(newName);
+		if (newName.length() == 0)
+			return;
 
 		DoubleKey k = new DoubleKey(type,newName);
 		Method[] methods = (Method[])listenerMethods.get(k);

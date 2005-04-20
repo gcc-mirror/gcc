@@ -1,5 +1,16 @@
 2005-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/beans/IntrospectionIncubator.java:
+	Fixed HTML tags in javadocs.
+
+2005-04-20  Jeroen Frijters  <jeroen@frijters.net>
+
+	* gnu/java/beans/IntrospectionIncubator.java
+	(addToPropertyHash, addToListenerHash): Don't confuse get(),
+	set(), is(), add() and remove() with properties or events.
+
+2005-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/image/XBMDecoder.java:
 	Fixed modifier order.
 
