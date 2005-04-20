@@ -59,10 +59,6 @@ c_dump_tree (void *dump_info, tree t)
       dump_child ("expr", EXPR_STMT_EXPR (t));
       break;
 
-    case STMT_EXPR:
-      dump_child ("stmt", STMT_EXPR_STMT (t));
-      break;
-
     default:
       break;
     }
