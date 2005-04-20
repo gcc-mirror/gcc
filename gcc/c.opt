@@ -226,6 +226,10 @@ Wimport
 C ObjC C++ ObjC++
 Deprecated.  This switch has no effect.
 
+Wint-to-pointer-cast
+C ObjC Var(warn_int_to_pointer_cast) Init(1)
+Warn when there is a cast to a pointer from an integer of a different size
+
 Winvalid-offsetof
 C++ ObjC++ Var(warn_invalid_offsetof) Init(1)
 Warn about invalid uses of the \"offsetof\" macro
@@ -313,6 +317,10 @@ Warn when converting the type of pointers to member functions
 Wpointer-arith
 C ObjC C++ ObjC++ Var(warn_pointer_arith)
 Warn about function pointer arithmetic
+
+Wpointer-to-int-cast
+C ObjC Var(warn_pointer_to_int_cast) Init(1)
+Warn when a pointer is cast to an integer of a different size
 
 Wprotocol
 ObjC ObjC++ Var(warn_protocol) Init(1)
