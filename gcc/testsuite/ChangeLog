@@ -1,6 +1,7 @@
 2005-04-19  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/fold-xor-1.c: New test.
+	* gcc.dg/fold-xor-2.c: New test.
 
 2005-04-19  James E. Wilson  <wilson@specifixinc.com>
 
