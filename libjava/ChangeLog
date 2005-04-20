@@ -1,3 +1,8 @@
+2005-04-20  Sven de Marothy  <sven@physto.se>
+
+	* java/text/SimpleDateFormat.java:
+	(formatWithAttribute): Pad year before truncating digits.
+
 2005-04-20  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/PlainDatagramSocketImpl.java:
