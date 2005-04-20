@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.0-b20050226\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-02-25 23:36+0000\n"
-"PO-Revision-Date: 2005-03-28 16:20+0200\n"
+"PO-Revision-Date: 2005-04-19 10:52+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -7998,23 +7998,23 @@ msgid "invalid floating point emulation option: -mfpe=%s"
 msgstr "Ungültige Option für Fließkommaemulation: -mfpe-%s"
 
 #: config/arm/arm.c:1054
-#, fuzzy, c-format
+#, c-format
 msgid "invalid floating point option: -mfpu=%s"
-msgstr "Ungültige Option für Fließkommaemulation: -mfpe-%s"
+msgstr "Ungültige Fließkommaoption: -mfpu=%s"
 
 #: config/arm/arm.c:1095
-#, fuzzy, c-format
+#, c-format
 msgid "invalid floating point abi: -mfloat-abi=%s"
-msgstr "Ungültige Option für Fließkommaemulation: -mfpe-%s"
+msgstr "Ungültiges Fließkomma-ABI: -mfloat-abi=%s"
 
 #: config/arm/arm.c:1110
 msgid "-mfloat-abi=hard and VFP"
-msgstr ""
+msgstr "-mfloat-abi=hard und VFP"
 
 #: config/arm/arm.c:1136
-#, fuzzy, c-format
+#, c-format
 msgid "structure size boundary can only be set to %s"
-msgstr "Grenze für Strukturgrößen kann nur auf 8 oder 32 gesetzt werden"
+msgstr "Grenze für Strukturgröße kann nur auf %s gesetzt werden"
 
 #: config/arm/arm.c:1145
 msgid "-mpic-register= is useless without -fpic"
@@ -8032,37 +8032,33 @@ msgstr "»%s« kann nicht für PIC-Register verwendet werden"
 #: config/mcore/mcore.c:3379 config/ns32k/ns32k.c:1073
 #: config/rs6000/rs6000.c:17260 config/sh/sh.c:7188 config/sh/sh.c:7209
 #: config/sh/sh.c:7244 config/stormy16/stormy16.c:2413 config/v850/v850.c:2210
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute only applies to functions"
-msgstr "Attribut »%s« gilt nur für Funktionen"
+msgstr "Attribut %qs gilt nur für Funktionen"
 
 #: config/arm/arm.c:10454 config/arm/arm.c:10472
-#, fuzzy
 msgid "predicated Thumb instruction"
-msgstr "Zeichenbefehle erzeugen"
+msgstr "angegebene Thumb-Anweisung"
 
 #: config/arm/arm.c:10460
-#, fuzzy
 msgid "predicated instruction in conditional sequence"
-msgstr "ret-Befehl nicht implementiert"
+msgstr "angegebene Anweisung in bedingter Sequenz"
 
 #: config/arm/arm.c:10568 config/arm/arm.c:10578 config/arm/arm.c:10588
 #: config/arm/arm.c:10614 config/arm/arm.c:10632 config/arm/arm.c:10667
 #: config/arm/arm.c:10686 config/arm/arm.c:10701 config/arm/arm.c:10727
 #: config/arm/arm.c:10734 config/arm/arm.c:10741
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand for code '%c'"
-msgstr "ungültiger Operandencode »%c«"
+msgstr "ungültiger Operande für Code »%c«"
 
 #: config/arm/arm.c:10627
-#, fuzzy
 msgid "instruction never exectued"
-msgstr "unbedingtes %2d niemals ausgeführt\n"
+msgstr "Anweisung wird niemals ausgeführt"
 
 #: config/arm/arm.c:10752
-#, fuzzy
 msgid "missing operand"
-msgstr "öffnende Klammer fehlt"
+msgstr "fehlender Operand"
 
 #: config/arm/arm.c:11518
 msgid "unable to compute real location of stacked parameter"
@@ -8128,7 +8124,7 @@ msgstr "Aufrufe zwischen Thumb- und ARM-Befehlssätzen unterstützen"
 
 #: config/arm/arm.h:342
 msgid "Generate a call to abort if a noreturn function returns"
-msgstr "Aufruf zum  Abbruch erzeugen, wenn eine »noreturn«-Funktion zurückkehrt"
+msgstr "Aufruf zum Abbruch erzeugen, wenn eine »noreturn«-Funktion zurückkehrt"
 
 #: config/arm/arm.h:345
 msgid "Do not move instructions into a function's prologue"
@@ -8179,14 +8175,12 @@ msgid "Specify the name of the target architecture"
 msgstr "Namen der Ziel-Architektur angeben"
 
 #: config/arm/arm.h:389
-#, fuzzy
 msgid "Specify the name of the target floating point hardware/format"
-msgstr "Version des Fließkommaemulators angeben"
+msgstr "Namen der Fließkommahardware/-format des Zielsystems angeben"
 
 #: config/arm/arm.h:391
-#, fuzzy
 msgid "Specify if floating point hardware should be used"
-msgstr "yes/no angeben; je nachdem, ob Fließkomma in den GPRs verwendet wird"
+msgstr "Angeben, ob Fließkommahardware verwendet werden sollte"
 
 #: config/arm/arm.h:393
 msgid "Specify the minimum bit alignment of structures"
@@ -8202,11 +8196,11 @@ msgstr "ABI angeben"
 
 #: config/arm/arm.h:398
 msgid "Alias for -mfloat-abi=soft"
-msgstr ""
+msgstr "Alias für -mfloat-abi=soft"
 
 #: config/arm/arm.h:400
 msgid "Alias for -mfloat-abi=hard"
-msgstr ""
+msgstr "Alias für -mfloat-abi=hard"
 
 #: config/arm/pe.h:59
 msgid "Ignore dllimport attribute for functions"
@@ -8259,21 +8253,21 @@ msgstr "Nur initialisierte Variablen können im Programmspeicherbereich platzier
 #: config/avr/avr.c:4637
 #, c-format
 msgid "`%s' appears to be a misspelled interrupt handler"
-msgstr ""
+msgstr "»%s« scheint ein falsch geschriebener Interrupt-Handler zu sein"
 
 #: config/avr/avr.c:4645
 #, c-format
 msgid "`%s' appears to be a misspelled signal handler"
-msgstr ""
+msgstr "»%s« scheint ein falsch geschriebener Signal-Handler zu sein"
 
 #: config/avr/avr.c:4714
 msgid "only uninitialized variables can be placed in the .noinit section"
 msgstr "Nur uninitialisierte Variablen können im .noinit-Bereich platziert werden"
 
 #: config/avr/avr.c:4728
-#, fuzzy, c-format
+#, c-format
 msgid "MCU %qs supported for assembler only"
-msgstr "MCU »%s« nur für Assemblierung unterstützt"
+msgstr "MCU %qs nur für Assemblierung unterstützt"
 
 #: config/avr/avr.h:73
 msgid "Assume int to be 8 bit integer"
@@ -8729,7 +8723,7 @@ msgstr "ungültiger Operand für Modifizierer »T«"
 
 #: config/cris/cris.c:1576
 msgid "invalid operand modifier letter"
-msgstr "ungültiger Operand für Modifizier-Buchstaben"
+msgstr "ungültiger Operand für Modifizierer-Buchstaben"
 
 #: config/cris/cris.c:1584
 #, c-format
@@ -8958,9 +8952,8 @@ msgid "Bad insn to frv_print_operand_memory_reference:"
 msgstr "Falscher Befehl für frv_print_operand_memory_references"
 
 #: config/frv/frv.c:2721
-#, fuzzy
 msgid "bad condition code"
-msgstr "Falscher eingebauter fcode"
+msgstr "Falscher Bedingungscode"
 
 #: config/frv/frv.c:2796
 msgid "Bad insn in frv_print_operand, bad const_double"
@@ -8979,9 +8972,8 @@ msgid "Bad insn to frv_print_operand, 'f' modifier:"
 msgstr "Falscher Befehl für frv_print_operand, Modifizierer »f«:"
 
 #: config/frv/frv.c:2895
-#, fuzzy
 msgid "Bad insn to frv_print_operand, 'g' modifier:"
-msgstr "Falscher Befehl für frv_print_operand, Modifizierer »C«:"
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »g«:"
 
 #: config/frv/frv.c:2943
 msgid "Bad insn to frv_print_operand, 'L' modifier:"
