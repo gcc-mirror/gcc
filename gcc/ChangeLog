@@ -8,6 +8,8 @@
 	minmax_replacement, abs_replacement): Remove argument PHI_BB.
 	Update a call to replace_phi_edge_with_variable.
 
+	* tree-ssa-phiopt.c: Fix comments.
+
 2005-04-20  Michael Matz  <matz@suse.de>
 
 	PR20973
