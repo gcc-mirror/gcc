@@ -673,6 +673,8 @@ pop_scope (void)
   bool functionbody = scope->function_body;
   bool keep = functionbody || scope->keep || scope->bindings;
 
+  c_end_vm_scope (scope->depth);
+
   /* If appropriate, create a BLOCK to record the decls for the life
      of this function.  */
   block = 0;
@@ -1983,6 +1985,12 @@ pushdecl (tree x)
 	  || DECL_INITIAL (x) || !DECL_EXTERNAL (x)))
     DECL_CONTEXT (x) = current_function_decl;
 
+  /* If this is of variably modified type, prevent jumping into its
+     scope.  */
+  if ((TREE_CODE (x) == VAR_DECL || TREE_CODE (x) == TYPE_DECL)
+      && variably_modified_type_p (TREE_TYPE (x), NULL_TREE))
+    c_begin_vm_scope (scope->depth);
+
   /* Anonymous decls are just inserted in the scope.  */
   if (!name)
     {
@@ -2439,7 +2447,7 @@ define_label (location_t location, tree name)
      if there is a containing function with a declared label with
      the same name.  */
   tree label = I_LABEL_DECL (name);
-  struct c_label_list *nlist;
+  struct c_label_list *nlist_se, *nlist_vm;
 
   if (label
       && ((DECL_CONTEXT (label) == current_function_decl
@@ -2458,6 +2466,9 @@ define_label (location_t location, tree name)
 	 definition.  */
       if (C_DECL_UNDEFINABLE_STMT_EXPR (label))
 	error ("%Jjump into statement expression", label);
+      if (C_DECL_UNDEFINABLE_VM (label))
+	error ("%Jjump into scope of identifier with variably modified type",
+	       label);
       DECL_SOURCE_LOCATION (label) = location;
     }
   else
@@ -2474,10 +2485,15 @@ define_label (location_t location, tree name)
     warning ("%Htraditional C lacks a separate namespace for labels, "
              "identifier %qE conflicts", &location, name);
 
-  nlist = XOBNEW (&parser_obstack, struct c_label_list);
-  nlist->next = label_context_stack->labels_def;
-  nlist->label = label;
-  label_context_stack->labels_def = nlist;
+  nlist_se = XOBNEW (&parser_obstack, struct c_label_list);
+  nlist_se->next = label_context_stack_se->labels_def;
+  nlist_se->label = label;
+  label_context_stack_se->labels_def = nlist_se;
+
+  nlist_vm = XOBNEW (&parser_obstack, struct c_label_list);
+  nlist_vm->next = label_context_stack_vm->labels_def;
+  nlist_vm->label = label;
+  label_context_stack_vm->labels_def = nlist_vm;
 
   /* Mark label as having been defined.  */
   DECL_INITIAL (label) = error_mark_node;
@@ -5637,7 +5653,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 {
   tree decl1, old_decl;
   tree restype, resdecl;
-  struct c_label_context *nstack;
+  struct c_label_context_se *nstack_se;
+  struct c_label_context_vm *nstack_vm;
 
   current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
@@ -5646,11 +5663,18 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   current_extern_inline = 0;
   c_switch_stack = NULL;
 
-  nstack = XOBNEW (&parser_obstack, struct c_label_context);
-  nstack->labels_def = NULL;
-  nstack->labels_used = NULL;
-  nstack->next = label_context_stack;
-  label_context_stack = nstack;
+  nstack_se = XOBNEW (&parser_obstack, struct c_label_context_se);
+  nstack_se->labels_def = NULL;
+  nstack_se->labels_used = NULL;
+  nstack_se->next = label_context_stack_se;
+  label_context_stack_se = nstack_se;
+
+  nstack_vm = XOBNEW (&parser_obstack, struct c_label_context_vm);
+  nstack_vm->labels_def = NULL;
+  nstack_vm->labels_used = NULL;
+  nstack_vm->scope = 0;
+  nstack_vm->next = label_context_stack_vm;
+  label_context_stack_vm = nstack_vm;
 
   /* Indicate no valid break/continue context by setting these variables
      to some non-null, non-label value.  We'll notice and emit the proper
@@ -6233,7 +6257,8 @@ finish_function (void)
 {
   tree fndecl = current_function_decl;
 
-  label_context_stack = label_context_stack->next;
+  label_context_stack_se = label_context_stack_se->next;
+  label_context_stack_vm = label_context_stack_vm->next;
 
   if (TREE_CODE (fndecl) == FUNCTION_DECL
       && targetm.calls.promote_prototypes (TREE_TYPE (fndecl)))
