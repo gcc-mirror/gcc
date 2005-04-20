@@ -522,7 +522,7 @@ public class PixelGrabber implements ImageConsumer
 
 		    assert (i >= 0 && i < int_pixel_buffer.length);
 		    assert (p >= 0 && p < pixels.length);
-		    int_pixel_buffer[i] = currentModel.getRGB (pixels[p]);
+		    int_pixel_buffer[i] = currentModel.getRGB (pixels[p] & 0xFF);
 		  }
 		else
 		  {
