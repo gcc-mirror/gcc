@@ -37,16 +37,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 
 static void tree_ssa_phiopt (void);
-static bool conditional_replacement (basic_block, basic_block, basic_block,
+static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, tree, tree, tree);
-static bool value_replacement (basic_block, basic_block, basic_block,
+static bool value_replacement (basic_block, basic_block,
 			       edge, edge, tree, tree, tree);
-static bool minmax_replacement (basic_block, basic_block, basic_block,
+static bool minmax_replacement (basic_block, basic_block,
 				edge, edge, tree, tree, tree);
-static bool abs_replacement (basic_block, basic_block, basic_block,
+static bool abs_replacement (basic_block, basic_block,
 			     edge, edge, tree, tree, tree);
-static void replace_phi_edge_with_variable (basic_block, basic_block, edge,
-					    tree, tree);
+static void replace_phi_edge_with_variable (basic_block, edge, tree, tree);
 static basic_block *blocks_in_phiopt_order (void);
 
 /* This pass tries to replaces an if-then-else block with an
@@ -227,14 +226,14 @@ tree_ssa_phiopt (void)
       gcc_assert (arg0 != NULL && arg1 != NULL);
 
       /* Do the replacement of conditional if it can be done.  */
-      if (conditional_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
+      if (conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	;
-      else if (value_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
+      else if (value_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	;
-      else if (abs_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
+      else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	;
       else
-	minmax_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1);
+	minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1);
     }
 
   free (bb_order);
@@ -317,9 +316,10 @@ empty_block_p (basic_block bb)
    is known to have two edges, one of which must reach BB).  */
 
 static void
-replace_phi_edge_with_variable (basic_block cond_block, basic_block bb,
+replace_phi_edge_with_variable (basic_block cond_block,
 				edge e, tree phi, tree new)
 {
+  basic_block bb = bb_for_stmt (phi);
   basic_block block_to_remove;
   block_stmt_iterator bsi;
 
@@ -363,7 +363,7 @@ replace_phi_edge_with_variable (basic_block cond_block, basic_block bb,
 
 static bool
 conditional_replacement (basic_block cond_bb, basic_block middle_bb,
-			 basic_block phi_bb, edge e0, edge e1, tree phi,
+			 edge e0, edge e1, tree phi,
 			 tree arg0, tree arg1)
 {
   tree result;
@@ -495,7 +495,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 
   SSA_NAME_DEF_STMT (new_var1) = new;
 
-  replace_phi_edge_with_variable (cond_bb, phi_bb, e1, phi, new_var1);
+  replace_phi_edge_with_variable (cond_bb, e1, phi, new_var1);
 
   /* Note that we optimized this PHI.  */
   return true;
@@ -509,7 +509,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 
 static bool
 value_replacement (basic_block cond_bb, basic_block middle_bb,
-		   basic_block phi_bb, edge e0, edge e1, tree phi,
+		   edge e0, edge e1, tree phi,
 		   tree arg0, tree arg1)
 {
   tree cond;
@@ -571,7 +571,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       else
 	arg = arg1;
 
-      replace_phi_edge_with_variable (cond_bb, phi_bb, e1, phi, arg);
+      replace_phi_edge_with_variable (cond_bb, e1, phi, arg);
 
       /* Note that we optimized this PHI.  */
       return true;
@@ -587,7 +587,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 
 static bool
 minmax_replacement (basic_block cond_bb, basic_block middle_bb,
-		    basic_block phi_bb, edge e0, edge e1, tree phi,
+		    edge e0, edge e1, tree phi,
 		    tree arg0, tree arg1)
 {
   tree result, type;
@@ -826,7 +826,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   bsi = bsi_last (cond_bb);
   bsi_insert_before (&bsi, new, BSI_NEW_STMT);
 
-  replace_phi_edge_with_variable (cond_bb, phi_bb, e1, phi, result);
+  replace_phi_edge_with_variable (cond_bb, e1, phi, result);
   return true;
 }
 
@@ -838,7 +838,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
 static bool
 abs_replacement (basic_block cond_bb, basic_block middle_bb,
-		 basic_block phi_bb, edge e0 ATTRIBUTE_UNUSED, edge e1,
+		 edge e0 ATTRIBUTE_UNUSED, edge e1,
 		 tree phi, tree arg0, tree arg1)
 {
   tree result;
@@ -947,7 +947,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     }
 
   SSA_NAME_DEF_STMT (result) = new;
-  replace_phi_edge_with_variable (cond_bb, phi_bb, e1, phi, result);
+  replace_phi_edge_with_variable (cond_bb, e1, phi, result);
 
   /* Note that we optimized this PHI.  */
   return true;
