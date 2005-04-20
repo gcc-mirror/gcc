@@ -846,18 +846,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
     messageArea.setLayout(new BorderLayout());
     addIcon(messageArea);
 
-    JPanel rightSide = new JPanel()
-      {
-	public Dimension getPreferredSize()
-	{
-	  int w = Math.max(optionPane.getSize().width, minimumWidth);
-	  Insets i = optionPane.getInsets();
-	  Dimension orig = super.getPreferredSize();
-	  Dimension value = new Dimension(w - i.left - i.right - iconSize,
-	                                  orig.height);
-	  return value;
-	}
-      };
+    JPanel rightSide = new JPanel();
     rightSide.setLayout(new GridBagLayout());
     GridBagConstraints con = createConstraints();
 

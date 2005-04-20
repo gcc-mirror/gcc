@@ -50,6 +50,7 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleStateSet;
+import javax.swing.JButton;
 import javax.swing.plaf.ToolBarUI;
 
 /**
@@ -742,6 +743,15 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
   {
     // XXX: Sun says disable button but test cases show otherwise.
     super.addImpl(component, constraints, index);
+
+    // if we added a Swing Button then adjust this a little
+    if (component instanceof AbstractButton)
+      {
+        AbstractButton b = (AbstractButton) component;
+        b.setRolloverEnabled(rollover);
+        b.updateUI();
+      }
+
   } // addImpl()
 
   /**

@@ -67,52 +67,52 @@ public class DefaultTreeSelectionModel
   public static final String SELECTION_MODE_PROPERTY = "selectionMode";
 
   /**
-   * changeSupport
+   * Our Swing property change support.
    */
   protected SwingPropertyChangeSupport changeSupport;
 
   /**
-   * selection
+   * The current selection.
    */
   protected TreePath[] selection;
 
   /**
-   * listenerList
+   * Our TreeSelectionListeners.
    */
   protected EventListenerList listenerList;
 
   /**
-   * rowMapper
+   * The current RowMapper.
    */
   protected transient RowMapper rowMapper;
 
   /**
-   * listSelectionModel
+   * The current listSelectionModel.
    */
   protected DefaultListSelectionModel listSelectionModel;
 
   /**
-   * selectionMode
+   * The current selection mode.
    */
   protected int selectionMode;
 
   /**
-   * leadPath
+   * The path that has been added last.
    */
   protected TreePath leadPath;
 
   /**
-   * leadIndex
+   * The index of the last added path.
    */
   protected int leadIndex;
 
   /**
-   * leadRow
+   * The row of the last added path according to the RowMapper.
    */
   protected int leadRow;
 
   /**
-   * Constructor DefaultTreeSelectionModel
+   * Constructs a new DefaultTreeSelectionModel.
    */
   public DefaultTreeSelectionModel()
   {
@@ -120,9 +120,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * clone
-   * @exception CloneNotSupportedException TODO
-   * @return Object
+   * Creates a clone of this DefaultTreeSelectionModel with the same
+   * selection.
+   *
+   * @exception CloneNotSupportedException should not be thrown here
+   *
+   * @return a clone of this DefaultTreeSelectionModel
    */
   public Object clone() throws CloneNotSupportedException
   {
@@ -130,8 +133,9 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * toString
-   * @return String
+   * Returns a string that shows this object's properties.
+   *
+   * @return a string that shows this object's properties
    */
   public String toString()
   {
@@ -161,8 +165,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * setRowMapper
-   * @param value0 TODO
+   * Sets the RowMapper that should be used to map between paths and their
+   * rows.
+   *
+   * @param rowMapper the RowMapper to set
+   *
+   * @see {@link RowMapper
    */
   public void setRowMapper(RowMapper value0)
   {
@@ -170,8 +178,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * getRowMapper
-   * @return RowMapper
+   * Returns the RowMapper that is currently used to map between paths and
+   * their rows.
+   *
+   * @return the current RowMapper
+   *
+   * @see {@link RowMapper
    */
   public RowMapper getRowMapper()
   {
@@ -179,8 +191,16 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * setSelectionMode
-   * @param value0 TODO
+   * Sets the current selection mode. Possible values are
+   * {@link #SINGLE_TREE_SELECTION}, {@link CONTIGUOUS_TREE_SELECTION}
+   * and {@link #DISCONTIGUOUS_TREE_SELECTION}.
+   *
+   * @param mode the selection mode to be set
+   *
+   * @see {@link #getSelectionMode}
+   * @see {@link #SINGLE_TREE_SELECTION}
+   * @see {@link #CONTIGUOUS_TREE_SELECTION}
+   * @see {@link #DISCONTIGUOUS_TREE_SELECTION}
    */
   public void setSelectionMode(int value0)
   {
@@ -188,8 +208,14 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * getSelectionMode
-   * @return int
+   * Returns the current selection mode.
+   *
+   * @return the current selection mode
+   *
+   * @see {@link #setSelectionMode}
+   * @see {@link #SINGLE_TREE_SELECTION}
+   * @see {@link #CONTIGUOUS_TREE_SELECTION}
+   * @see {@link #DISCONTIGUOUS_TREE_SELECTION}
    */
   public int getSelectionMode()
   {
@@ -197,8 +223,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * setSelectionPath
-   * @param value0 TODO
+   * Sets this path as the only selection.
+   *
+   * If this changes the selection the registered TreeSelectionListeners
+   * are notified.
+   *
+   * @param path the path to set as selection
    */
   public void setSelectionPath(TreePath value0)
   {
@@ -206,8 +236,13 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * setSelectionPaths
-   * @param value0 TODO
+   * Sets the paths as selection. This method checks for duplicates and
+   * removes them.
+   *
+   * If this changes the selection the registered TreeSelectionListeners
+   * are notified.
+   *
+   * @param paths the paths to set as selection
    */
   public void setSelectionPaths(TreePath[] value0)
   {
@@ -215,8 +250,13 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * addSelectionPath
-   * @param value0 TODO
+   * Adds a path to the list of selected paths. This method checks if the
+   * path is already selected and doesn't add the same path twice.
+   *
+   * If this changes the selection the registered TreeSelectionListeners
+   * are notified.
+   *
+   * @param path the path to add to the selection
    */
   public void addSelectionPath(TreePath value0)
   {
@@ -224,8 +264,13 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * addSelectionPaths
-   * @param value0 TODO
+   * Adds the paths to the list of selected paths. This method checks if the
+   * paths are already selected and doesn't add the same path twice.
+   *
+   * If this changes the selection the registered TreeSelectionListeners
+   * are notified.
+   *
+   * @param paths the paths to add to the selection
    */
   public void addSelectionPaths(TreePath[] value0)
   {
@@ -233,8 +278,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * removeSelectionPath
-   * @param value0 TODO
+   * Removes the path from the selection.
+   *
+   * If this changes the selection the registered TreeSelectionListeners
+   * are notified.
+   *
+   * @param path the path to remove
    */
   public void removeSelectionPath(TreePath value0)
   {
@@ -242,8 +291,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * removeSelectionPaths
-   * @param value0 TODO
+   * Removes the paths from the selection.
+   *
+   * If this changes the selection the registered TreeSelectionListeners
+   * are notified.
+   *
+   * @param paths the path to remove
    */
   public void removeSelectionPaths(TreePath[] value0)
   {
@@ -251,8 +304,10 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * getSelectionPath
-   * @return TreePath
+   * Returns the first path in the selection. This is especially useful
+   * when the selectionMode is {@link #SINGLE_TREE_SELECTION}.
+   *
+   * @return the first path in the selection
    */
   public TreePath getSelectionPath()
   {
@@ -260,8 +315,9 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * getSelectionPaths
-   * @return TreePath[]
+   * Returns the complete selection.
+   *
+   * @return the complete selection
    */
   public TreePath[] getSelectionPaths()
   {
@@ -269,8 +325,9 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * getSelectionCount
-   * @return int
+   * Returns the number of paths in the selection.
+   *
+   * @return the number of paths in the selection
    */
   public int getSelectionCount()
   {
@@ -278,9 +335,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * isPathSelected
-   * @param value0 TODO
-   * @return boolean
+   * Checks if a given path is in the selection.
+   *
+   * @param path the path to check
+   *
+   * @return <code>true</code> if the path is in the selection,
+   *         <code>false</code> otherwise
    */
   public boolean isPathSelected(TreePath value0)
   {
@@ -288,8 +348,10 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * isSelectionEmpty
-   * @return boolean
+   * Checks if the selection is empty.
+   *
+   * @return <code>true</code> if the selection is empty,
+   *         <code>false</code> otherwise
    */
   public boolean isSelectionEmpty()
   {
@@ -297,7 +359,7 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * clearSelection
+   * Removes all paths from the selection.
    */
   public void clearSelection()
   {
@@ -364,8 +426,9 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * getSelectionRows
-   * @return int[]
+   * Returns the currently selected rows.
+   *
+   * @return the currently selected rows
    */
   public int[] getSelectionRows()
   {
@@ -373,8 +436,9 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * getMinSelectionRow
-   * @return int
+   * Returns the smallest row index from the selection.
+   *
+   * @return the smallest row index from the selection
    */
   public int getMinSelectionRow()
   {
@@ -382,8 +446,9 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * getMaxSelectionRow
-   * @return int
+   * Returns the largest row index from the selection.
+   *
+   * @return the largest row index from the selection
    */
   public int getMaxSelectionRow()
   {
@@ -391,9 +456,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * isRowSelected
-   * @param value0 TODO
-   * @return boolean
+   * Checks if a particular row is selected.
+   *
+   * @param row the index of the row to check
+   *
+   * @return <code>true</code> if the row is in this selection,
+   *         <code>false</code> otherwise
    */
   public boolean isRowSelected(int value0)
   {
@@ -401,7 +469,7 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * resetRowSelection
+   * Updates the mappings from TreePaths to row indices.
    */
   public void resetRowSelection()
   {
@@ -459,7 +527,16 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * insureRowContinuity
+   * Makes sure the currently selected paths are valid according to the
+   * current selectionMode.
+   *
+   * If the selectionMode is set to {@link CONTIGUOUS_TREE_SELECTION}
+   * and the selection isn't contiguous then the selection is reset to
+   * the first set of contguous paths.
+   *
+   * If the selectionMode is set to {@link SINGLE_TREE_SELECTION}
+   * and the selection has more than one path, the selection is reset to
+   * the contain only the first path.
    */
   protected void insureRowContinuity()
   {
@@ -467,9 +544,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * arePathsContiguous
-   * @param value0 TODO
-   * @return boolean
+   * Returns <code>true</code> if the paths are contiguous or we
+   * have no RowMapper assigned.
+   *
+   * @param paths the paths to check for continuity
+   * @return <code>true</code> if the paths are contiguous or we
+   *         have no RowMapper assigned
    */
   protected boolean arePathsContiguous(TreePath[] value0)
   {
@@ -477,9 +557,19 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * canPathsBeAdded
-   * @param value0 TODO
-   * @return boolean
+   * Checks if the paths can be added. This returns <code>true</code> if:
+   * <ul>
+   * <li><code>paths</code> is <code>null</code> or empty</li>
+   * <li>we have no RowMapper assigned</li>
+   * <li>nothing is currently selected</li>
+   * <li>selectionMode is {@link DISCONTIGUOUS_TREE_SELECTION</li>
+   * <li>adding the paths to the selection still results in a contiguous set
+   *   of paths</li>
+   *
+   * @param paths the paths to check
+   *
+   * @return <code>true</code> if the paths can be added with respect to the
+   *         selectionMode
    */
   protected boolean canPathsBeAdded(TreePath[] value0)
   {
@@ -487,9 +577,12 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * canPathsBeRemoved
-   * @param value0 TODO
-   * @return boolean
+   * Checks if the paths can be removed without breaking the continuity of
+   * the selection according to selectionMode.
+   *
+   * @param paths the paths to check
+   * @return  <code>true</code> if the paths can be removed with respect to the
+   *         selectionMode
    */
   protected boolean canPathsBeRemoved(TreePath[] value0)
   {
@@ -507,7 +600,7 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * updateLeadIndex
+   * Updates the lead index instance field.
    */
   protected void updateLeadIndex()
   {
@@ -515,7 +608,7 @@ public class DefaultTreeSelectionModel
   }
 
   /**
-   * insureUniqueness
+   * Deprecated and not used.
    */
   protected void insureUniqueness()
   {

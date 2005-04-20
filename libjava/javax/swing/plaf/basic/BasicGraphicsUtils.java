@@ -595,7 +595,6 @@ public class BasicGraphicsUtils
     Rectangle iconRect = new Rectangle();
     Rectangle textRect = new Rectangle();
     Insets insets = b.getInsets();
-    Insets margin = b.getMargin();
     
     viewRect = new Rectangle();
 
@@ -628,11 +627,11 @@ public class BasicGraphicsUtils
 
     contentRect = textRect.union(iconRect);
 
-    return new Dimension(insets.left + margin.left
+    return new Dimension(insets.left
 			 + contentRect.width 
-			 + insets.right + margin.right,
-                         insets.top + margin.top
+			 + insets.right,
+                         insets.top
 			 + contentRect.height 
-			 + insets.bottom + margin.bottom);
+			 + insets.bottom);
   }
 }

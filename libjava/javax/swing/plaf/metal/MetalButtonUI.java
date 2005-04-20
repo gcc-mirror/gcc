@@ -40,6 +40,7 @@ package javax.swing.plaf.metal;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
+import javax.swing.JToolBar;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
@@ -92,6 +93,9 @@ public class MetalButtonUI
 
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
     button.setFont(defaults.getFont("Button.font"));
+
+    if (button.getParent() instanceof JToolBar)
+      button.setBorder(MetalBorders.getToolbarButtonBorder());
   }
 
 }

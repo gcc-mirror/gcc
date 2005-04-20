@@ -49,6 +49,7 @@ import javax.swing.JButton;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 import javax.swing.plaf.BorderUIResource;
+import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
 import javax.swing.plaf.basic.BasicBorders;
 
@@ -61,21 +62,28 @@ import javax.swing.plaf.basic.BasicBorders;
 public class MetalBorders
 {
 
+  /** The shared instance for getButtonBorder(). */
+  private static Border buttonBorder;
+
+  /** The shared instance for getRolloverButtonBorder(). */
+  private static Border toolbarButtonBorder;
+
   /**
    * A MarginBorder that gets shared by multiple components.
    * Created on demand by the private helper function {@link
    * #getMarginBorder()}.
    */
-  private static BasicBorders.MarginBorder sharedMarginBorder;
+  private static BasicBorders.MarginBorder marginBorder;
 
   /**
    * The border that is drawn around Swing buttons.
    */
   public static class MetalButtonBorder
     extends AbstractBorder
+    implements UIResource
   {
     /** The borders insets. */
-    protected static Insets borderInsets = new Insets(2, 2, 2, 2);
+    protected static Insets borderInsets = new Insets(3, 3, 3, 3);
 
     /**
      * Creates a new instance of ButtonBorder.
@@ -166,6 +174,7 @@ public class MetalBorders
       if (newInsets == null)
         newInsets = new Insets(0, 0, 0, 0);
 
+      AbstractButton b = (AbstractButton) c;
       newInsets.bottom = borderInsets.bottom;
       newInsets.left = borderInsets.left;
       newInsets.right = borderInsets.right;
@@ -174,6 +183,141 @@ public class MetalBorders
     }
   }
 
+  /**
+   * This border is used in Toolbar buttons as inner border.
+   */
+  static class RolloverMarginBorder extends AbstractBorder
+  {
+    /** The borders insets. */
+    protected static Insets borderInsets = new Insets(3, 3, 3, 3);
+
+    /**
+     * Creates a new instance of RolloverBorder.
+     */
+    public RolloverMarginBorder()
+    {
+    }
+    
+    /**
+     * Returns the insets of the RolloverBorder.
+     *
+     * @param c the component for which the border is used
+     *
+     * @return the insets of the RolloverBorder
+     */
+    public Insets getBorderInsets(Component c)
+    {
+      return getBorderInsets(c, null);
+    }
+
+    /**
+     * Returns the insets of the RolloverMarginBorder in the specified
+     * Insets object.
+     *
+     * @param c the component for which the border is used
+     * @param newInsets the insets object where to put the values
+     *
+     * @return the insets of the RolloverMarginBorder
+     */
+    public Insets getBorderInsets(Component c, Insets newInsets)
+    {
+      if (newInsets == null)
+        newInsets = new Insets(0, 0, 0, 0);
+
+      AbstractButton b = (AbstractButton) c;
+      Insets margin = b.getMargin();
+      newInsets.bottom = borderInsets.bottom;
+      newInsets.left = borderInsets.left;
+      newInsets.right = borderInsets.right;
+      newInsets.top = borderInsets.top;
+      return newInsets;
+    }
+  }
+
+  /**
+   * A border implementation for popup menus.
+   */
+  public static class PopupMenuBorder
+    extends AbstractBorder
+    implements UIResource
+  {
+
+    /** The border's insets. */
+    protected static Insets borderInsets = new Insets(2, 2, 1, 1);
+
+    /**
+     * Constructs a new PopupMenuBorder.
+     */
+    public PopupMenuBorder()
+    {
+    }
+    
+    /**
+     * Returns the insets of the border, creating a new Insets instance
+     * with each call.
+     *
+     * @param c the component for which we return the border insets
+     *          (not used here)
+     */
+    public Insets getBorderInsets(Component c)
+    {
+      return getBorderInsets(c, null);
+    }
+    
+    /**
+     * Returns the insets of the border, using the supplied Insets instance.
+     *
+     * @param c the component for which we return the border insets
+     *          (not used here)
+     * @param i the Insets instance to fill with the Insets values
+     */
+    public Insets getBorderInsets(Component c, Insets i)
+    {
+      Insets insets;
+      if (i == null)
+        insets = new Insets(borderInsets.top, borderInsets.left,
+                            borderInsets.bottom, borderInsets.right);
+      else
+        {
+          insets = i;
+          insets.top = borderInsets.top;
+          insets.left = borderInsets.left;
+          insets.bottom = borderInsets.bottom;
+          insets.right = borderInsets.right;
+        }
+      
+      return insets;
+    }
+
+    /**
+     * Paints the border for component <code>c</code> using the
+     * Graphics context <code>g</code> with the dimension
+     * <code>x, y, w, h</code>.
+     *
+     * @param c the component for which we paint the border
+     * @param g the Graphics context to use
+     * @param x the X coordinate of the upper left corner of c
+     * @param y the Y coordinate of the upper left corner of c
+     * @param w the width of c
+     * @param h the height of c
+     */
+    public void paintBorder(Component c, Graphics g, int x, int y, int w,
+                            int h)
+    {
+      Color darkShadow = MetalLookAndFeel.getPrimaryControlDarkShadow();
+      Color light = MetalLookAndFeel.getPrimaryControlHighlight();
+
+      // draw dark outer border
+      g.setColor(darkShadow);
+      g.drawRect(x, y, w - 1, h - 1);
+      
+      // draw highlighted inner border (only top and left)
+      g.setColor(light);
+      g.drawLine(x + 1, y + 1, x + 1, y + h - 2);
+      g.drawLine(x + 1, y + 1, x + w - 2, y + 1);
+    }
+    
+  }
 
   /**
    * Returns a border for Swing buttons in the Metal Look &amp; Feel.
@@ -182,24 +326,42 @@ public class MetalBorders
    */
   public static Border getButtonBorder()
   {
-    Border outer = new MetalButtonBorder();
-    Border inner = getMarginBorder();
-
-    return new BorderUIResource.CompoundBorderUIResource(outer, inner);
+    if (buttonBorder == null)
+      {
+        Border outer = new MetalButtonBorder();
+        Border inner = getMarginBorder();
+        buttonBorder = new BorderUIResource.CompoundBorderUIResource
+            (outer, inner);
+      }
+    return buttonBorder;
   }
 
   /**
-   * Returns a shared MarginBorder.
+   * Returns a border for Toolbar buttons in the Metal Look &amp; Feel.
+   *
+   * @return a border for Toolbar buttons in the Metal Look &amp; Feel
    */
-  static Border getMarginBorder()  // intentionally not public
+  static Border getToolbarButtonBorder()
   {
-    /* Swing is not designed to be thread-safe, so there is no
-     * need to synchronize the access to the global variable.
-     */
-    if (sharedMarginBorder == null)
-      sharedMarginBorder = new BasicBorders.MarginBorder();
-
-    return sharedMarginBorder;
+    if (toolbarButtonBorder == null)
+      {
+        Border outer = new MetalButtonBorder();
+        Border inner = new RolloverMarginBorder();
+        toolbarButtonBorder = new BorderUIResource.CompoundBorderUIResource
+          (outer, inner);
+      }
+    return toolbarButtonBorder;
   }
 
+  /**
+   * Returns a shared instance of {@link BasicBorders.MarginBorder}.
+   *
+   * @return a shared instance of {@link BasicBorders.MarginBorder}
+   */
+  static Border getMarginBorder()
+  {
+    if (marginBorder == null)
+      marginBorder = new BasicBorders.MarginBorder();
+    return marginBorder;
+  }
 }
