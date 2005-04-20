@@ -49,80 +49,91 @@ static void replace_phi_edge_with_variable (basic_block, basic_block, edge,
 					    tree, tree);
 static basic_block *blocks_in_phiopt_order (void);
 
-/* This pass eliminates PHI nodes which can be trivially implemented as
-   an assignment from a conditional expression.  i.e. if we have something
-   like:
+/* This pass tries to replaces an if-then-else block with an
+   assignment.  We have four kinds of transformations.  Some of these
+   transformations are also performed by the ifcvt RTL optimizer.
+
+   Conditional Replacement
+   -----------------------
+
+   This transformation, implmented in conditional_replacement,
+   replaces
 
      bb0:
       if (cond) goto bb2; else goto bb1;
      bb1:
      bb2:
-      x = PHI (0 (bb1), 1 (bb0)
+      x = PHI <0 (bb1), 1 (bb0), ...>;
 
-   We can rewrite that as:
-
-     bb0:
-     bb1:
-     bb2:
-      x = cond;
-
-   bb1 will become unreachable and bb0 and bb2 will almost always
-   be merged into a single block.  This occurs often due to gimplification
-    of conditionals.
-
-   Also done is the following optimization:
+   with
 
      bb0:
-      if (a != b) goto bb2; else goto bb1;
-     bb1:
-     bb2:
-      x = PHI (a (bb1), b (bb0))
-
-   We can rewrite that as:
-
-     bb0:
-     bb1:
-     bb2:
-      x = b;
-
-   This can sometimes occur as a result of other optimizations.  A
-   similar transformation is done by the ifcvt RTL optimizer.
-
-   This pass also eliminates PHI nodes which are really absolute
-   values.  i.e. if we have something like:
-
-     bb0:
-      if (a >= 0) goto bb2; else goto bb1;
-     bb1:
-      x = -a;
-     bb2:
-      x = PHI (x (bb1), a (bb0));
-
-   We can rewrite that as:
-
-     bb0:
-     bb1:
-     bb2:
-      x = ABS_EXPR< a >;
-
-   Similarly,
-
-     bb0:
-      if (a <= b) goto bb2; else goto bb1;
-     bb1:
+      x' = cond;
       goto bb2;
      bb2:
-      x = PHI (b (bb1), a (bb0));
+      x = PHI <x' (bb0), ...>;
 
-   Becomes
+   We remove bb1 as it becomes unreachable.  This occurs often due to
+   gimplification of conditionals.
 
-     x = MIN_EXPR (a, b)
+   Value Replacement
+   -----------------
 
-   And the same transformation for MAX_EXPR.
+   This transformation, implemented in value_replacement, replaces
 
-   bb1 will become unreachable and bb0 and bb2 will almost always be merged
-   into a single block.  Similar transformations are done by the ifcvt
-   RTL optimizer.  */
+     bb0:
+       if (a != b) goto bb2; else goto bb1;
+     bb1:
+     bb2:
+       x = PHI <a (bb1), b (bb0), ...>;
+
+   with
+
+     bb0:
+     bb2:
+       x = PHI <b (bb0), ...>;
+
+   This opportunity can sometimes occur as a result of other
+   optimizations.
+
+   ABS Replacement
+   ---------------
+
+   This transformation, implemented in abs_replacement, replaces
+
+     bb0:
+       if (a >= 0) goto bb2; else goto bb1;
+     bb1:
+       x = -a;
+     bb2:
+       x = PHI <x (bb1), a (bb0), ...>;
+
+   with
+
+     bb0:
+       x' = ABS_EXPR< a >;
+     bb2:
+       x = PHI <x' (bb0), ...>;
+
+   MIN/MAX Replacement
+   -------------------
+
+   This transformation, minmax_replacement replaces
+
+     bb0:
+       if (a <= b) goto bb2; else goto bb1;
+     bb1:
+     bb2:
+       x = PHI <b (bb1), a (bb0), ...>;
+
+   with
+
+     bb0:
+       x' = MIN_EXPR (a, b)
+     bb2:
+       x = PHI <x' (bb0), ...>;
+
+   A similar transformtion is done for MAX_EXPR.  */
 
 static void
 tree_ssa_phiopt (void)

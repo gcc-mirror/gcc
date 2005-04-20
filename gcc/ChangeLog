@@ -1,3 +1,7 @@
+2005-04-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-phiopt.c: Update a comment about the pass.
+
 2005-04-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-phiopt.c, config/arm/arm.c, config/fr30/fr30.md,
