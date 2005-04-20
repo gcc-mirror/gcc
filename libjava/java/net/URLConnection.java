@@ -432,6 +432,8 @@ public abstract class URLConnection
    * <code>UnknownServiceException</code> so subclasses are encouraged
    * to override this method.</p>
    *
+   * @return the content
+   *
    * @exception IOException If an error with the connection occurs.
    * @exception UnknownServiceException If the protocol does not support the
    * content type at all.
@@ -458,6 +460,8 @@ public abstract class URLConnection
    * Retrieves the content of this URLConnection
    *
    * @param classes The allowed classes for the content
+   *
+   * @return the content
    *
    * @exception IOException If an error occurs
    * @exception UnknownServiceException If the protocol does not support the
