@@ -184,11 +184,6 @@ public class GtkImagePainter implements Runnable, ImageConsumer
 	        startX + x, startY + y,
 		width, height, convertPixels (pixels, model), offset,
 		scansize, affine);
-
-    if (observer != null)
-      observer.imageUpdate (image,
-			    ImageObserver.SOMEBITS,
-			    x, y, width, height);
   }
 
   public void 
