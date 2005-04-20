@@ -1,5 +1,12 @@
 2005-04-20  Sven de Marothy  <sven@physto.se>
 
+	* gnu/java/awt/peer/gtk/GdkGraphics.java:
+	(drawImage): Don't notify the image observer for offscreen images.
+	* gnu/java/awt/peer/gtk/GtkImagePainter.java:
+	(setPixels): Don't notify the image observer.
+
+2005-04-20  Sven de Marothy  <sven@physto.se>
+
 	* java/nio/ByteBufferImpl.java:
 	(putChar): Inlined for speed.
 	(put, get): Bulk methods can use arraycopy.

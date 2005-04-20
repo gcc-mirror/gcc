@@ -147,11 +147,6 @@ public class GdkGraphics extends Graphics
         int height = img.getHeight (null);
 	copyPixmap (img.getGraphics (), 
 		    x, y, width, height);
-        // FIXME: need to differentiate between SOMEBITS and FRAMEBITS.
-        if (observer != null)
-          observer.imageUpdate (img,
-                                ImageObserver.FRAMEBITS,
-                                x, y, width, height);
 	return true;
       }
 
@@ -171,12 +166,6 @@ public class GdkGraphics extends Graphics
         int height = img.getHeight (null);
 	copyPixmap (img.getGraphics (), 
 		    x, y, width, height);
-
-        // FIXME: need to differentiate between SOMEBITS and FRAMEBITS.
-        if (observer != null)
-          observer.imageUpdate (img,
-                                ImageObserver.FRAMEBITS,
-                                x, y, width, height);
 	return true;
       }
 
@@ -197,11 +186,6 @@ public class GdkGraphics extends Graphics
         copyAndScalePixmap (img.getGraphics (), false, false,
                             0, 0, img.getWidth (null), img.getHeight (null), 
                             x, y, width, height);
-        // FIXME: need to differentiate between SOMEBITS and FRAMEBITS.
-        if (observer != null)
-          observer.imageUpdate (img,
-                                ImageObserver.FRAMEBITS,
-                                x, y, width, height);
         return true;
       }
 
@@ -286,12 +270,6 @@ public class GdkGraphics extends Graphics
         copyAndScalePixmap (img.getGraphics (), x_flip, y_flip,
                             sx_start, sy_start, s_width, s_height, 
                             dx_start, dy_start, d_width, d_height);
-
-        // FIXME: need to differentiate between SOMEBITS and FRAMEBITS.
-        if (observer != null)
-          observer.imageUpdate (img,
-                                ImageObserver.FRAMEBITS,
-                                dx_start, dy_start, d_width, d_height);
         return true;
       }
 
