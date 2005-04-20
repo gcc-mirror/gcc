@@ -1,3 +1,8 @@
+2005-04-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/lib/libffi-dg.exp (libffi-dg-test-1): In regsub use,
+	have Tcl8.3-compatible intermediate variable.
+
 2005-04-18  Simon Posnjak <simon.posnjak@siol.net> 
 	    Hans-Peter Nilsson  <hp@axis.com>
 

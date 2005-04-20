@@ -1,4 +1,4 @@
-#   Copyright (C) 2003 Free Software Foundation, Inc.
+#   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ proc libffi-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     upvar 2 dg-output-text output_match
 
     if { [llength $output_match] > 1 } {
-	set x [regsub -all "\n" [lindex $output_match 1] "\r?\n"]
+	regsub -all "\n" [lindex $output_match 1] "\r?\n" x
 	set output_match [lreplace $output_match 1 1 $x]
     }
 
