@@ -1,10 +1,11 @@
-/* { dg-do run { target ia64-*-* } } */
+/* { dg-do run } */
+/* { dg-require-effective-target sync_int_long } */
 /* { dg-options } */
+/* { dg-options "-march=i486" { target i?86-*-* } } */
+/* { dg-options "-march=i486" { target { x86_64-*-* && ilp32 } } } */
 
 /* Test basic functionality of the intrinsics.  The operations should
    not be optimized away if no one checks the return values.  */
-
-#include <ia64intrin.h>
 
 extern void abort (void);
 extern void *memcpy (void *, const void *, __SIZE_TYPE__);

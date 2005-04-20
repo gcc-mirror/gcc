@@ -5814,6 +5814,12 @@ ia64_dependencies_evaluation_hook (rtx head, rtx tail)
 {
   rtx insn, link, next, next_tail;
 
+  /* Before reload, which_alternative is not set, which means that
+     ia64_safe_itanium_class will produce wrong results for (at least)
+     move instructions.  */
+  if (!reload_completed)
+    return;
+
   next_tail = NEXT_INSN (tail);
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
@@ -5824,6 +5830,8 @@ ia64_dependencies_evaluation_hook (rtx head, rtx tail)
       {
 	for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
 	  {
+	    if (REG_NOTE_KIND (link) != REG_DEP_TRUE)
+	      continue;
 	    next = XEXP (link, 0);
 	    if ((ia64_safe_itanium_class (next) == ITANIUM_CLASS_ST
 		 || ia64_safe_itanium_class (next) == ITANIUM_CLASS_STF)

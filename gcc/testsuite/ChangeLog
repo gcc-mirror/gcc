@@ -1,3 +1,13 @@
+2005-04-19  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_int_mult): 
+	Fix typo in exists check.
+	(check_effective_target_sync_int_long): New.
+	* gcc.dg/ia64-sync-1.c: Enable for all effective-target sync_int_long.
+	* gcc.dg/ia64-sync-2.c: Likewise.
+	* gcc.dg/ia64-sync-3.c: Likewise.
+	* gcc.dg/ia64-sync-4.c: Likewise.
+
 2005-04-19  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/fold-xor-1.c: New test.

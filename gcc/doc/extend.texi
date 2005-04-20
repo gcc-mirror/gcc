@@ -4639,10 +4639,8 @@ returns the value that had previously been in memory.  That is,
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= value; return tmp; @}
+@{ tmp = *ptr; *ptr = ~tmp & value; return tmp; @}   // nand
 @end smallexample
-
-The builtin @code{__sync_fetch_and_nand} could be implemented by
-@code{__sync_fetch_and_and(ptr, ~value)}.
 
 @item @var{type} __sync_add_and_fetch (@var{type} *ptr, @var{type} value, ...)
 @itemx @var{type} __sync_sub_and_fetch (@var{type} *ptr, @var{type} value, ...)
@@ -4661,6 +4659,7 @@ return the new value.  That is,
 
 @smallexample
 @{ *ptr @var{op}= value; return *ptr; @}
+@{ *ptr = ~*ptr & value; return *ptr; @}   // nand
 @end smallexample
 
 @item bool __sync_bool_compare_and_swap (@var{type} *ptr, @var{type} oldval @var{type} newval, ...)
@@ -4673,7 +4672,7 @@ value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
 
 The ``bool'' version returns true if the comparison is successful and 
 @var{newval} was written.  The ``val'' version returns the contents
-of @code{*@var{ptr}} after the operation.
+of @code{*@var{ptr}} before the operation.
 
 @item __sync_synchronize (...)
 @findex __sync_synchronize

@@ -5255,20 +5255,13 @@ expand_builtin_sync_operation (tree arglist, enum rtx_code code, bool after,
 {
   enum machine_mode mode;
   rtx addr, val, mem;
-  tree valt;
 
   /* Expand the operands.  */
   addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_SUM);
   mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_VALUE (arglist))));
 
   arglist = TREE_CHAIN (arglist);
-  valt = TREE_VALUE (arglist);
-  if (code == NOT && TREE_CONSTANT (valt))
-    {
-      valt = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (valt), valt);
-      code = AND;
-    }
-  val = expand_expr (valt, NULL, mode, EXPAND_NORMAL);
+  val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
 
   /* Note that we explicitly do not want any alias information for this
      memory, so that we kill all other live memories.  Otherwise we don't
