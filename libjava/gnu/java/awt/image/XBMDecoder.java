@@ -121,7 +121,7 @@ public class XBMDecoder extends ImageDecoder
       }
   }    
 
-  static public int[] getScanline (Reader in, int len) throws IOException
+  public static int[] getScanline (Reader in, int len) throws IOException
   {
     char byteStr[] = new char[2];
     int scanline[] = new int[len];
