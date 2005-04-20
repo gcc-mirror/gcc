@@ -1,3 +1,10 @@
+2005-04-20  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/FilePermission.java
+	(serialVersionUID): Made private.
+	(ALL_FILES): New constant.
+	(implies): Handle '<<ALL FILES>>' case.
+
 2005-04-20  Sven de Marothy  <sven@physto.se>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics.java:
