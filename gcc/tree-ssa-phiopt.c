@@ -202,7 +202,7 @@ tree_ssa_phiopt (void)
       e1 = EDGE_SUCC (bb1, 0);
 
       /* Make sure that bb1 is just a fall through.  */
-      if (!single_succ_p (bb1) > 1
+      if (!single_succ_p (bb1)
 	  || (e1->flags & EDGE_FALLTHRU) == 0)
         continue;
 
