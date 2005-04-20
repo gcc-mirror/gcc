@@ -3259,7 +3259,8 @@ build_c_cast (tree type, tree expr)
 	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
 	warning ("cast increases required alignment of target type");
 
-      if (TREE_CODE (type) == INTEGER_TYPE
+      if (warn_pointer_to_int_cast
+	  && TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
 	  && !TREE_CONSTANT (value))
@@ -3271,7 +3272,8 @@ build_c_cast (tree type, tree expr)
 	warning ("cast from function call of type %qT to non-matching "
 		 "type %qT", otype, type);
 
-      if (TREE_CODE (type) == POINTER_TYPE
+      if (warn_int_to_pointer_cast
+	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == INTEGER_TYPE
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
 	  /* Don't warn about converting any constant.  */

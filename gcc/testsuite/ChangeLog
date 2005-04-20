@@ -1,3 +1,10 @@
+2005-04-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/Wint-to-pointer-cast-1.c,
+	gcc.dg/Wint-to-pointer-cast-2.c, gcc.dg/Wint-to-pointer-cast-3.c,
+	gcc.dg/Wpointer-to-int-cast-1.c, gcc.dg/Wpointer-to-int-cast-2.c,
+	gcc.dg/Wpointer-to-int-cast-3.c: New tests.
+
 2005-04-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/16861
