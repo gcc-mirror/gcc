@@ -7015,6 +7015,20 @@ fold_unary (enum tree_code code, tree type, tree op0)
 		   || (TREE_CODE (arg0) == PLUS_EXPR
 		       && integer_all_onesp (TREE_OPERAND (arg0, 1)))))
 	return fold_build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0));
+      /* Convert ~(X ^ Y) to ~X ^ Y or X ^ ~Y if ~X or ~Y simplify.  */
+      else if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	       && (tem = fold_unary (BIT_NOT_EXPR, type,
+			       	     fold_convert (type,
+					     	   TREE_OPERAND (arg0, 0)))))
+	return fold_build2 (BIT_XOR_EXPR, type, tem,
+			    fold_convert (type, TREE_OPERAND (arg0, 1)));
+      else if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	       && (tem = fold_unary (BIT_NOT_EXPR, type,
+			       	     fold_convert (type,
+					     	   TREE_OPERAND (arg0, 1)))))
+	return fold_build2 (BIT_XOR_EXPR, type,
+			    fold_convert (type, TREE_OPERAND (arg0, 0)), tem);
+
       return NULL_TREE;
 
     case TRUTH_NOT_EXPR:
