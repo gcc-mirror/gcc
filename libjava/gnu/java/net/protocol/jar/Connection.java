@@ -42,8 +42,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -64,7 +64,7 @@ import java.util.zip.ZipFile;
  * This subclass of java.net.JarURLConnection models a URLConnection via
  * the "jar" protocol.
  *
- * @author Kresten Krab Thorup <krab@gnu.org>
+ * @author Kresten Krab Thorup (krab@gnu.org)
  */
 public final class Connection extends JarURLConnection
 {
