@@ -247,14 +247,12 @@ public class BasicButtonUI extends ButtonUI
     Rectangle tr = new Rectangle();
     Rectangle ir = new Rectangle();
     Rectangle vr = new Rectangle();
-    Rectangle br = new Rectangle();
 
     Font f = c.getFont();
 
     g.setFont(f);
 
-    SwingUtilities.calculateInnerArea(b, br);
-    SwingUtilities.calculateInsetArea(br, b.getMargin(), vr);    
+    SwingUtilities.calculateInnerArea(b, vr);
     String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
                                                      b.getText(),
                                                      currentIcon(b),
@@ -270,7 +268,7 @@ public class BasicButtonUI extends ButtonUI
         || b.isSelected())
       paintButtonPressed(g, b);
     else
-      paintButtonNormal(g, br, c);
+      paintButtonNormal(g, vr, c);
 	
     paintIcon(g, c, ir);
     if (text != null)

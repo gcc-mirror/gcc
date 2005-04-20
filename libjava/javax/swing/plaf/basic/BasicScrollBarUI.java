@@ -152,8 +152,18 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
         {
 	  incrButton.removeMouseListener(buttonListener);
 	  decrButton.removeMouseListener(buttonListener);
-	  incrButton = createIncreaseButton(scrollbar.getOrientation());
-	  decrButton = createDecreaseButton(scrollbar.getOrientation());
+          int orientation = scrollbar.getOrientation();
+          switch (orientation)
+            {
+            case (JScrollBar.HORIZONTAL):
+              incrButton = createIncreaseButton(EAST);
+              decrButton = createDecreaseButton(WEST);
+              break;
+            default:
+              incrButton = createIncreaseButton(SOUTH);
+              decrButton = createDecreaseButton(NORTH);
+              break;
+            }
 	  incrButton.addMouseListener(buttonListener);
 	  decrButton.addMouseListener(buttonListener);
 	  calculatePreferredSize();
@@ -513,16 +523,9 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
   protected JButton createIncreaseButton(int orientation)
   {
     if (incrButton == null)
-      incrButton = new BasicArrowButton((orientation == SwingConstants.HORIZONTAL)
-                                        ? SwingConstants.EAST
-                                        : SwingConstants.SOUTH);
+      incrButton = new BasicArrowButton(orientation);
     else
-      {
-	if (orientation == SwingConstants.HORIZONTAL)
-	  ((BasicArrowButton) incrButton).setDirection(SwingConstants.EAST);
-	else
-	  ((BasicArrowButton) incrButton).setDirection(SwingConstants.SOUTH);
-      }
+      ((BasicArrowButton) incrButton).setDirection(orientation);
     return incrButton;
   }
 
@@ -537,16 +540,9 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
   protected JButton createDecreaseButton(int orientation)
   {
     if (decrButton == null)
-      decrButton = new BasicArrowButton((orientation == SwingConstants.HORIZONTAL)
-                                        ? SwingConstants.WEST
-                                        : SwingConstants.NORTH);
+      decrButton = new BasicArrowButton(orientation);
     else
-      {
-	if (orientation == SwingConstants.HORIZONTAL)
-	  ((BasicArrowButton) decrButton).setDirection(SwingConstants.WEST);
-	else
-	  ((BasicArrowButton) decrButton).setDirection(SwingConstants.NORTH);
-      }
+      ((BasicArrowButton) decrButton).setDirection(orientation);
     return decrButton;
   }
 
@@ -793,9 +789,19 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
    */
   protected void installComponents()
   {
-    incrButton = createIncreaseButton(scrollbar.getOrientation());
+    int orientation = scrollbar.getOrientation();
+    switch (orientation)
+      {
+      case (JScrollBar.HORIZONTAL):
+        incrButton = createIncreaseButton(EAST);
+        decrButton = createDecreaseButton(WEST);
+        break;
+      default:
+        incrButton = createIncreaseButton(SOUTH);
+        decrButton = createDecreaseButton(NORTH);
+        break;
+      }
     scrollbar.add(incrButton);
-    decrButton = createDecreaseButton(scrollbar.getOrientation());
     scrollbar.add(decrButton);
   }
 
@@ -869,9 +875,9 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 	scrollTimer.setRepeats(true);
 
 	installComponents();
-	installListeners();
 	installDefaults();
 	configureScrollBarColors();
+	installListeners();
 
 	calculatePreferredSize();
 	layoutContainer(scrollbar);

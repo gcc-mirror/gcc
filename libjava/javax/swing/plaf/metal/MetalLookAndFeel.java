@@ -449,6 +449,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    * </tr><tr>
    * <td>ScrollBar.background</td><td>0xcccccc</td>
    * </tr><tr>
+   * <td>PopupMenu.border</td>
+   * <td><code>new javax.swing.plaf.metal.MetalBorders.PopupMenuBorder()</td>
+   * </tr><tr>
    * </table>
    *
    * @param defaults the UIDefaults instance to which the values are added
@@ -472,9 +475,13 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "Label.background", new ColorUIResource(getControl()),
       "Label.font", getControlTextFont(),
       "Menu.background", new ColorUIResource(getControl()),
+      "Menu.font", getControlTextFont(),
       "MenuBar.background", new ColorUIResource(getControl()),
+      "MenuBar.font", getControlTextFont(),
       "MenuItem.background", new ColorUIResource(getControl()),
-      "ScrollBar.background", new ColorUIResource(getControl())
+      "MenuItem.font", getControlTextFont(),
+      "ScrollBar.background", new ColorUIResource(getControl()),
+      "PopupMenu.border", new MetalBorders.PopupMenuBorder()
     };
     defaults.putDefaults(myDefaults);
   }

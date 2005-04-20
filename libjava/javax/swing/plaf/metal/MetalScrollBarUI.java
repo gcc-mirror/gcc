@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.util.HashMap;
+
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -48,7 +50,7 @@ public class MetalScrollBarUI
 
   // FIXME: maybe replace by a Map of instances when this becomes stateful
   /** The shared UI instance for JScrollBars. */
-  private static MetalScrollBarUI instance = null;
+  private static HashMap instances = null;
 
   /**
    * Constructs a new instance of MetalScrollBarUI.
@@ -67,8 +69,19 @@ public class MetalScrollBarUI
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalScrollBarUI();
+    if (instances == null)
+      instances = new HashMap();
+
+    Object o = instances.get(component);
+    MetalScrollBarUI instance;
+    if (o == null)
+      {
+	instance = new MetalScrollBarUI();
+	instances.put(component, instance);
+      }
+    else
+      instance = (MetalScrollBarUI) o;
+
     return instance;
   }
 }

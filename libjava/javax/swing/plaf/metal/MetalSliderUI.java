@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.util.HashMap;
+
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicSliderUI;
@@ -46,9 +48,8 @@ public class MetalSliderUI
   extends BasicSliderUI
 {
 
-  // FIXME: maybe replace by a Map of instances when this becomes stateful
-  /** The shared UI instance for MetalSliderUIs */
-  private static MetalSliderUI instance = null;
+  /** The UI instances for MetalSliderUIs */
+  private static HashMap instances;
 
   /**
    * Constructs a new instance of MetalSliderUI.
@@ -67,8 +68,20 @@ public class MetalSliderUI
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalSliderUI();
+    if (instances == null)
+      instances = new HashMap();
+
+
+    Object o = instances.get(component);
+    MetalSliderUI instance;
+    if (o == null)
+      {
+	instance = new MetalSliderUI();
+	instances.put(component, instance);
+      }
+    else
+      instance = (MetalSliderUI) o;
+
     return instance;
   }
 }

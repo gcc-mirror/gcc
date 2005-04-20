@@ -1,3 +1,99 @@
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicButtonUI.java
+	(paint): This should not care about margin and insets
+	at the same time, as insets already include the margin
+	through the border.
+	* javax/swing/plaf/basic/BasicGraphicsUtils.java
+	(getPreferredButtonSize): Likewise.
+	* javax/swing/plaf/metal/MetalBorders.java
+	(getBorderInsets): Likewise.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicOptionPaneUI.java
+	(createMessageArea): The JPanel that holds the message area
+	doesn't need to override getPreferredSize. This prevents some
+	message components from rendering nicely.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalInternalFrameUI.java
+	(createUI): Do not share instances between components.
+	* javax/swing/plaf/metal/MetalSliderUI.java
+	(createUI): Do not share instances between components.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalBorders:
+	(PopupMenuBorder): Added.
+	* javax/swing/plaf/metal/MetalLookAndFeel
+	(initComponentDefaults): Added PopupMenuBorder.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/tree/DefaultTreeSelectionModel.java:
+	Added API documentation all over the class.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicScrollPaneUI.java
+	(installDefaults): Link managed JScrollPane in instance field.
+	(uninstallDefaults): Unlink managed JScrollPane in instance field.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
+	(PropertyChangeHandler.propertyChange): Add default
+	to switch statement to avoid errors with unusual values
+	for orientation.
+	(installComponents): Likewise.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalScrollBarUI.java:
+	(createUI): Instances cannot be shared among JScrollPanes.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initComponentDefaults): Added defaults for Menu, MenuBar
+	MenuEntry fonts.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
+	(installUI): Install listeners after everything all, otherwise
+	we get strange NPEs in some situations, especially with
+	custom L&Fs.
+	(createIncreaseButton): Orientation is expected to be
+	SwingConstants.NORTH, ..SOUTH, ..WEST or ..EAST and not
+	HORIZONTAL or VERTICAL.
+	(createDecreaseButton): Orientation is expected to be
+	SwingConstants.NORTH, ..SOUTH, ..WEST or ..EAST and not
+	HORIZONTAL or VERTICAL.
+	(installComponents): Orientation for buttons is expected to be
+	SwingConstants.NORTH, ..SOUTH, ..WEST or ..EAST and not
+	HORIZONTAL or VERTICAL.
+
+2005-04-20  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/JToolBar.java
+	(addImpl): Adjust added AbstractButtons to look and feel like
+	toolbar buttons.
+	* javax/swing/plaf/metal/MetalBorders.java:
+	Adjusted insets of ButtonBorder.
+	(RolloverMarginBorder): Added class for toolbar buttons.
+	(getButtonBorder): Adjusted factory method to return a shared
+	instance of button border.
+	(getToolbarButtonBorder): Added factory method to return a shared
+	instance of toolbar button border.
+	(getMarginBorder): Added factory method to return a shared
+	instance of margin border.
+	* javax/swing/plaf/metal/MetalButtonUI.java
+	(installDefauls): If button is child of a JToolBar then set
+	special border on this button.
+
 2005-04-20  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URLConnection.java

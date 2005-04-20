@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.util.HashMap;
+
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.plaf.ComponentUI;
@@ -47,9 +49,8 @@ public class MetalInternalFrameUI
   extends BasicInternalFrameUI
 {
 
-  // FIXME: maybe replace by a Map of instances when this becomes stateful
-  /** The shared UI instance for JInternalFrames */
-  private static MetalInternalFrameUI instance = null;
+  /** The instances of MetalInternalFrameUI*/
+  private static HashMap instances;
 
   /**
    * Constructs a new instance of MetalInternalFrameUI.
@@ -68,8 +69,20 @@ public class MetalInternalFrameUI
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalInternalFrameUI((JInternalFrame) component);
+    if (instances == null)
+      instances = new HashMap();
+
+
+    Object o = instances.get(component);
+    MetalInternalFrameUI instance;
+    if (o == null)
+      {
+	instance = new MetalInternalFrameUI((JInternalFrame) component);
+	instances.put(component, instance);
+      }
+    else
+      instance = (MetalInternalFrameUI) o;
+
     return instance;
   }
 }
