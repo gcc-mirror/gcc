@@ -1,3 +1,8 @@
+2005-04-21  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gcj.texi (Object fields): Change "Integer" to "Int" in example
+	contructor.
+
 2005-04-20  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gcj.texi: Fix typos and bogus example.
