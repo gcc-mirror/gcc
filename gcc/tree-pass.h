@@ -106,6 +106,7 @@ struct dump_file_info
 #define TODO_verify_stmts		(1 << 4)
 #define TODO_cleanup_cfg        	(1 << 5)
 #define TODO_verify_loops		(1 << 6)
+#define TODO_dump_cgraph		(1 << 7)
 
 /* To-do flags for calls to update_ssa.  */
 
@@ -152,6 +153,8 @@ struct dump_file_info
 
 #define TODO_verify_all \
   (TODO_verify_ssa | TODO_verify_flow | TODO_verify_stmts)
+
+extern void ipa_passes (void);
 
 extern struct tree_opt_pass pass_mudflap_1;
 extern struct tree_opt_pass pass_mudflap_2;
@@ -213,5 +216,7 @@ extern struct tree_opt_pass pass_store_copy_prop;
 extern struct tree_opt_pass pass_vrp;
 extern struct tree_opt_pass pass_create_structure_vars;
 extern struct tree_opt_pass pass_uncprop;
+
+extern struct tree_opt_pass pass_ipa_inline;
 
 #endif /* GCC_TREE_PASS_H */
