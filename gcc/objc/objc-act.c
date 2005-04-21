@@ -164,7 +164,7 @@ static void objc_start_function (tree, tree, tree, tree);
 static void objc_start_function (tree, tree, tree, struct c_arg_info *);
 #endif
 static tree start_protocol (enum tree_code, tree, tree);
-static tree build_method_decl (enum tree_code, tree, tree, tree);
+static tree build_method_decl (enum tree_code, tree, tree, tree, bool);
 static tree objc_add_method (tree, tree, int);
 static tree add_instance_variable (tree, int, tree);
 static tree build_ivar_reference (tree);
@@ -771,9 +771,11 @@ objc_set_method_type (enum tree_code type)
 }
 
 tree
-objc_build_method_signature (tree rettype, tree selector, tree optparms)
+objc_build_method_signature (tree rettype, tree selector,
+			     tree optparms, bool ellipsis)
 {
-  return build_method_decl (objc_inherit_code, rettype, selector, optparms);
+  return build_method_decl (objc_inherit_code, rettype, selector,
+			    optparms, ellipsis);
 }
 
 void
@@ -5263,7 +5265,7 @@ build_keyword_selector (tree selector)
 
 static tree
 build_method_decl (enum tree_code code, tree ret_type, tree selector,
-		   tree add_args)
+		   tree add_args, bool ellipsis)
 {
   tree method_decl;
 
@@ -5280,6 +5282,7 @@ build_method_decl (enum tree_code code, tree ret_type, tree selector,
       METHOD_SEL_NAME (method_decl) = build_keyword_selector (selector);
       METHOD_SEL_ARGS (method_decl) = selector;
       METHOD_ADD_ARGS (method_decl) = add_args;
+      METHOD_ADD_ARGS_ELLIPSIS_P (method_decl) = ellipsis;
     }
   else
     {
@@ -5347,7 +5350,7 @@ get_arg_type_list (tree meth, int context, int superflag)
 	  chainon (arglist, build_tree_list (NULL_TREE, arg_type));
 	}
 
-      if (!TREE_OVERFLOW (METHOD_ADD_ARGS (meth)))
+      if (!METHOD_ADD_ARGS_ELLIPSIS_P (meth))
 	goto lack_of_ellipsis;
     }
   else
@@ -7536,7 +7539,7 @@ start_method_def (tree method)
 	  objc_push_parm (TREE_VALUE (akey));
 	}
 
-      if (TREE_OVERFLOW (METHOD_ADD_ARGS (method)))
+      if (METHOD_ADD_ARGS_ELLIPSIS_P (method))
 	have_ellipsis = 1;
     }
 
@@ -8116,7 +8119,7 @@ gen_method_decl (tree method)
 	      chain = TREE_CHAIN (chain);
 	    }
 
-	  if (TREE_OVERFLOW (METHOD_ADD_ARGS (method)))
+	  if (METHOD_ADD_ARGS_ELLIPSIS_P (method))
 	    strcat (errbuf, ", ...");
 	}
     }

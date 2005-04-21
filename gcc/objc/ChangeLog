@@ -1,3 +1,15 @@
+2005-04-21  Roger Sayle  <roger@eyesopen.com>
+
+	* objc-act.h (METHOD_ADD_ARGS_ELLIPSIS_P): New macro for accessing
+	this field of an objc method decl.
+	* objc-act.c (build_method_decl): Take an additional "ellipsis"
+	argument, and set METHOD_ADD_ARGS_ELLIPSIS_P as appropriate.
+	(objc_build_method_signature): Accept additional "ellipsis"
+	argument and pass it to build_method_decl.
+	(get_arg_type_list, start_method_def, gen_method_decl): Use
+	the new METHOD_ADD_ARGS_ELLIPSIS_P instead of examining the
+	TREE_OVERFLOW field of a TREE_LIST node.
+
 2005-04-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/12913

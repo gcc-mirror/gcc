@@ -1,3 +1,12 @@
+2005-04-21  Roger Sayle  <roger@eyesopen.com>
+
+	* c-common.h (objc_build_method_signature): Update prototype.
+	* stub-objc.c (objc_build_method_signature): Update the stub
+	implementation to accept and ignore additional parameter.
+	* c-parser.c (c_parser_objc_method_decl): Reorgnize to pass
+	the value of ellipsis to objc_build_method_signature instead
+	of setting TREE_OVERFLOW on the parms TREE_LIST node.
+
 2005-04-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_emit_sync): New.

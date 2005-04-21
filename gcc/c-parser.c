@@ -5790,6 +5790,8 @@ c_parser_objc_method_decl (c_parser *parser)
   tree type = NULL_TREE;
   tree sel;
   tree parms = NULL_TREE;
+  bool ellipsis = false;
+
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
     {
       c_parser_consume_token (parser);
@@ -5804,7 +5806,6 @@ c_parser_objc_method_decl (c_parser *parser)
     {
       tree tsel = sel;
       tree list = NULL_TREE;
-      bool ellipsis;
       while (true)
 	{
 	  tree atype = NULL_TREE, id, keyworddecl;
@@ -5834,7 +5835,6 @@ c_parser_objc_method_decl (c_parser *parser)
 	 method parameters follow the C syntax, and may include '...'
 	 to denote a variable number of arguments.  */
       parms = make_node (TREE_LIST);
-      ellipsis = false;
       while (c_parser_next_token_is (parser, CPP_COMMA))
 	{
 	  struct c_parm *parm;
@@ -5851,10 +5851,9 @@ c_parser_objc_method_decl (c_parser *parser)
 	  parms = chainon (parms,
 			   build_tree_list (NULL_TREE, grokparm (parm)));
 	}
-      TREE_OVERFLOW (parms) = ellipsis;
       sel = list;
     }
-  return objc_build_method_signature (type, sel, parms);
+  return objc_build_method_signature (type, sel, parms, ellipsis);
 }
 
 /* Parse an objc-type-name.
