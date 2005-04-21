@@ -1,3 +1,41 @@
+2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cfghooks.h (struct cfg_hooks): Reword comments to avoid 'abort'.
+	* lambda.h (lambda_vector_min_nz): Likewise.
+	* langhooks.h (struct lang_hooks_for_types,
+	struct lang_hooks): Likewise.
+	* output.h (assemble_integer, this_is_asm_operands): Likewise.
+	* tree.h: Likewise.
+	* vec.h: Likewise.
+	* tree-flow-inline.h (relink_imm_use): Use gcc_assert.
+	
+	* optabs.c (prepare_cmp_insn, emit_cmp_and_jump_insns): Reword
+	comments to avoid 'abort'.  Use gcc_assert as necessary.
+	* opts.c (common_handle_option): Likewise.
+	* pretty-print.c (pp_base_format_text): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* read-rtl.c (read_rtx_filename, read_rtx_1): Likewise.
+	* regmove.c (try_auto_increment): Likewise.
+	* reload.c (find_valid_class, find_reloads_toplev,
+	find_equiv_reg): Likewise.
+	* reload1.c (reload, forget_old_reloads_1, function_invariant_p, 
+	merge_assigned_reloads): Likewise.
+	* tree-inline.c (inline_forbidden_p_1,
+	estimate_num_insns_1): Likewise.
+	* tree-optimize.c (execute_todo): Likewise.
+	* tree-outof-ssa.c (eliminate_phi): Likewise.
+	* tree-ssa-alias.c (add_pointed_to_expr): Likewise.
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Likewise.
+	* tree-ssa-operands.c (parse_ssa_operands,
+	get_indirect_ref_operands, create_ssa_artficial_load_stmt): Likewise.
+	* tree-ssa-pre.c (find_or_generate_expression): Likewise.
+	* tree-ssanames.c (release_ssa_name): Likewise.
+	* tree.c (int_bit_position, int_byte_position, tree_low_cst, 
+	walk_tree): Likewise.
+
+	* tree-ssa-operands.c (verify_abort): Fold into ..
+	(verify_imm_links): ... here.
+
 2005-04-21  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/sync.md (sync_new_nand<I48MODE>): Fix constraints
@@ -82,8 +120,6 @@
 	* tree-pass.h (TODO_dump_cgraph): New macro.
 	(ipa_passes): Declare.
 	* Makefile.in (cgraphunit.o): Add dependency on cgraphunit.h
-
-2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 

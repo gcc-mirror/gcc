@@ -61,7 +61,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Each operation that increases the number of active elements is
    available in 'quick' and 'safe' variants.  The former presumes that
    there is sufficient allocated space for the operation to succeed
-   (it aborts if there is not).  The latter will reallocate the
+   (it dies if there is not).  The latter will reallocate the
    vector, if needed.  Reallocation causes an exponential increase in
    vector size.  If you know you will be adding N elements, it would
    be more efficient to use the reserve operation before adding the
@@ -150,7 +150,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    T VEC_T_last(VEC(T) *v); // Pointer
    T *VEC_T_last(VEC(T) *v); // Object
 
-   Return the final element.  If V is empty,  abort.  */
+   Return the final element.  V must not be empty.  */
 
 #define VEC_last(T,V)	(VEC_OP(T,base,last)(VEC_BASE(V) VEC_CHECK_INFO))
 
@@ -158,8 +158,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    T VEC_T_index(VEC(T) *v, unsigned ix); // Pointer
    T *VEC_T_index(VEC(T) *v, unsigned ix); // Object
 
-   Return the IX'th element.  If IX is outside the domain of V,
-   abort.  */
+   Return the IX'th element.  If IX must be in the domain of V.  */
 
 #define VEC_index(T,V,I) (VEC_OP(T,base,index)(VEC_BASE(V),I VEC_CHECK_INFO))
 
@@ -234,8 +233,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    
    Push a new element onto the end, returns a pointer to the slot
    filled in. For object vectors, the new value can be NULL, in which
-   case NO initialization is performed.  Aborts if there is
-   insufficient space in the vector.  */
+   case NO initialization is performed.  There must
+   be sufficient space in the vector.  */
 
 #define VEC_quick_push(T,V,O)	\
 	(VEC_OP(T,base,quick_push)(VEC_BASE(V),O VEC_CHECK_INFO))
@@ -299,7 +298,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Insert an element, VAL, at the IXth position of V. Return a pointer
    to the slot created.  For vectors of object, the new value can be
    NULL, in which case no initialization of the inserted slot takes
-   place. Aborts if there is insufficient space.  */
+   place. There must be sufficient space.  */
 
 #define VEC_quick_insert(T,V,I,O)	\
 	(VEC_OP(T,base,quick_insert)(VEC_BASE(V),I,O VEC_CHECK_INFO))

@@ -1287,9 +1287,8 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
 {
   tree genop = bitmap_find_leader (AVAIL_OUT (block), expr);
 
-  /* If it's still NULL, see if it is a complex expression, and if
-     so, generate it recursively, otherwise, abort, because it's
-     not really .  */
+  /* If it's still NULL, it must be a complex expression, so generate
+     it recursively.  */
   if (genop == NULL)
     {
       genop = VALUE_HANDLE_EXPR_SET (expr)->head->expr;
@@ -1309,7 +1308,7 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
    EXPR is the expression to insert (in value form)
    STMTS is a statement list to append the necessary insertions into.
 
-   This function will abort if we hit some value that shouldn't be
+   This function will die if we hit some value that shouldn't be
    ANTIC but is (IE there is no leader for it, or its components).
    This function may also generate expressions that are themselves
    partially or fully redundant.  Those that are will be either made

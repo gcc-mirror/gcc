@@ -120,7 +120,7 @@ struct lang_hooks_for_types
   /* Given a type, apply default promotions to unnamed function
      arguments and return the new type.  Return the same type if no
      change.  Required by any language that supports variadic
-     arguments.  The default hook aborts.  */
+     arguments.  The default hook dies.  */
   tree (*type_promotes_to) (tree);
 
   /* Register TYPE as a builtin type with the indicated NAME.  The
@@ -207,7 +207,7 @@ struct lang_hooks
 
   /* Determines the size of any language-specific tcc_constant or
      tcc_exceptional nodes.  Since it is called from make_node, the
-     only information available is the tree code.  Expected to abort
+     only information available is the tree code.  Expected to die
      on unrecognized codes.  */
   size_t (*tree_size) (enum tree_code);
 

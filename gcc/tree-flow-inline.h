@@ -254,11 +254,8 @@ link_imm_use_stmt (ssa_imm_use_t *linknode, tree def, tree stmt)
 static inline void
 relink_imm_use (ssa_imm_use_t *node, ssa_imm_use_t *old)
 {
-#ifdef ENABLE_CHECKING
   /* The node one had better be in the same list.  */
-  if (*(old->use) != *(node->use))
-    abort ();
-#endif
+  gcc_assert (*(old->use) == *(node->use));
   node->prev = old->prev;
   node->next = old->next;
   if (old->prev)
@@ -268,7 +265,6 @@ relink_imm_use (ssa_imm_use_t *node, ssa_imm_use_t *old)
       /* Remove the old node from the list.  */
       old->prev = NULL;
     }
-
 }
 
 /* Relink ssa_imm_use node LINKNODE into the chain for OLD, with use occuring 

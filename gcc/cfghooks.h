@@ -43,8 +43,8 @@ struct cfg_hooks
   edge (*redirect_edge_and_branch) (edge e, basic_block b);
 
   /* Same as the above but allows redirecting of fallthru edges.  In that case
-     newly created forwarder basic block is returned.  It aborts when called
-     on abnormal edge.  */
+     newly created forwarder basic block is returned.  The edge must
+     not be abnormal.  */
   basic_block (*redirect_edge_and_branch_force) (edge, basic_block);
 
   /* Remove statements corresponding to a given basic block.  */

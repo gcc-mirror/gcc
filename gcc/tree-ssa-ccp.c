@@ -1657,7 +1657,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == STRING_CST)
 	{
 	  /* FIXME: Except that this causes problems elsewhere with dead
-	     code not being deleted, and we abort in the rtl expanders 
+	     code not being deleted, and we die in the rtl expanders 
 	     because we failed to remove some ssa_name.  In the meantime,
 	     just return zero.  */
 	  /* FIXME2: This condition should be signaled by

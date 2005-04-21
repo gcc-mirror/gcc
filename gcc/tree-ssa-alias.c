@@ -1958,7 +1958,7 @@ add_pointed_to_expr (struct alias_info *ai, tree ptr, tree expr)
 	}
 
       /* Neither operand is a pointer?  VAR can be pointing anywhere.
-	 FIXME: Shouldn't we abort here?  If we get here, we found
+	 FIXME: Shouldn't we asserting here?  If we get here, we found
 	 PTR = INT_CST + INT_CST, which should not be a valid pointer
 	 expression.  */
       if (!(POINTER_TYPE_P (TREE_TYPE (op0))

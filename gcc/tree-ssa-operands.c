@@ -1084,7 +1084,7 @@ parse_ssa_operands (tree stmt)
 
     default:
       /* Notice that if get_expr_operands tries to use &STMT as the operand
-	 pointer (which may only happen for USE operands), we will abort in
+	 pointer (which may only happen for USE operands), we will fail in
 	 append_use.  This default will handle statements like empty
 	 statements, or CALL_EXPRs that may appear on the RHS of a statement
 	 or as statements themselves.  */
@@ -1680,7 +1680,7 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
 
   /* Everything else *should* have been folded elsewhere, but users
      are smarter than we in finding ways to write invalid code.  We
-     cannot just abort here.  If we were absolutely certain that we
+     cannot just assert here.  If we were absolutely certain that we
      do handle all valid cases, then we could just do nothing here.
      That seems optimistic, so attempt to do something logical... */
   else if ((TREE_CODE (ptr) == PLUS_EXPR || TREE_CODE (ptr) == MINUS_EXPR)
@@ -2219,29 +2219,6 @@ create_ssa_artficial_load_stmt (stmt_operands_p old_ops, tree new_stmt)
   ann->operands.vuse_ops = finalize_ssa_vuses (&(tmp.vuse_ops), NULL);
 }
 
-
-
-/* Issue immediate use error for VAR to debug file F.  */
-static void 
-verify_abort (FILE *f, ssa_imm_use_t *var)
-{
-  tree stmt;
-  stmt = var->stmt;
-  if (stmt)
-    {
-      if (stmt_modified_p(stmt))
-	{
-	  fprintf (f, " STMT MODIFIED. - <%p> ", (void *)stmt);
-	  print_generic_stmt (f, stmt, TDF_SLIM);
-	}
-    }
-  fprintf (f, " IMM ERROR : (use_p : tree - %p:%p)", (void *)var, 
-	   (void *)var->use);
-  print_generic_expr (f, USE_FROM_PTR (var), TDF_SLIM);
-  fprintf(f, "\n");
-}
-
-
 /* Scan the immediate_use list for VAR making sure its linked properly.
    return RTUE iof there is a problem.  */
 
@@ -2268,31 +2245,18 @@ verify_imm_links (FILE *f, tree var)
   for (ptr = list->next; ptr != list; )
     {
       if (prev != ptr->prev)
-        {
-	  verify_abort (f, ptr);
-	  return true;
-	}
-
+	goto error;
+      
       if (ptr->use == NULL)
-        {
-	  verify_abort (f, ptr); 	/* 2 roots, or SAFE guard node.  */
-	  return true;
-	}
-      else
-	if (*(ptr->use) != var)
-	  {
-	    verify_abort (f, ptr);
-	    return true;
-	  }
+	goto error; /* 2 roots, or SAFE guard node.  */
+      else if (*(ptr->use) != var)
+	goto error;
 
       prev = ptr;
       ptr = ptr->next;
       /* Avoid infinite loops.  */
       if (count++ > 30000)
-	{
-	  verify_abort (f, ptr);
-	  return true;
-	}
+	goto error;
     }
 
   /* Verify list in the other direction.  */
@@ -2300,26 +2264,29 @@ verify_imm_links (FILE *f, tree var)
   for (ptr = list->prev; ptr != list; )
     {
       if (prev != ptr->next)
-	{
-	  verify_abort (f, ptr);
-	  return true;
-	}
+	goto error;
       prev = ptr;
       ptr = ptr->prev;
       if (count-- < 0)
-	{
-	  verify_abort (f, ptr);
-	  return true;
-	}
+	goto error;
     }
 
   if (count != 0)
-    {
-      verify_abort (f, ptr);
-      return true;
-    }
+    goto error;
 
   return false;
+
+ error:
+  if (ptr->stmt && stmt_modified_p (ptr->stmt))
+    {
+      fprintf (f, " STMT MODIFIED. - <%p> ", (void *)ptr->stmt);
+      print_generic_stmt (f, ptr->stmt, TDF_SLIM);
+    }
+  fprintf (f, " IMM ERROR : (use_p : tree - %p:%p)", (void *)ptr, 
+	   (void *)ptr->use);
+  print_generic_expr (f, USE_FROM_PTR (ptr), TDF_SLIM);
+  fprintf(f, "\n");
+  return true;
 }
 
 

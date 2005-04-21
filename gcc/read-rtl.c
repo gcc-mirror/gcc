@@ -160,7 +160,7 @@ static struct obstack joined_conditions_obstack;
 /* The current line number for the file.  */
 int read_rtx_lineno = 1;
 
-/* The filename for aborting with file and line.  */
+/* The filename for error reporting.  */
 const char *read_rtx_filename = "<unknown>";
 
 static void
@@ -1487,11 +1487,7 @@ read_rtx_1 (FILE *infile)
 	break;
 
       default:
-	fprintf (stderr,
-		 "switch format wrong in rtl.read_rtx(). format was: %c.\n",
-		 format_ptr[i]);
-	fprintf (stderr, "\tfile position: %ld\n", ftell (infile));
-	abort ();
+	gcc_unreachable ();
       }
 
   c = read_skip_spaces (infile);

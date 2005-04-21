@@ -493,7 +493,7 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
         print_rtl (dump_file, get_insns ());
 
       /* Flush the file.  If verification fails, we won't be able to
-	 close the file before aborting.  */
+	 close the file before dieing.  */
       fflush (dump_file);
     }
   if ((flags & TODO_dump_cgraph)
