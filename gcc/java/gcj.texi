@@ -1546,7 +1546,7 @@ management, but this is invisible to the application, and the
 reference to the object points to the dispatch table pointer.)
 
 The fields are laid out in the same order, alignment, and size as in
-C++.  Specifically, 8-bite and 16-bit native types (@code{byte},
+C++.  Specifically, 8-bit and 16-bit native types (@code{byte},
 @code{short}, @code{char}, and @code{boolean}) are @emph{not} widened
 to 32 bits.  Note that the Java VM does extend 8-bit and 16-bit types
 to 32 bits when on the VM stack or temporary registers.
@@ -1560,7 +1560,7 @@ public class Int
 @{
   public int i;
   public Integer (int i) @{ this.i = i; @}
-  public static zero = new Integer(0);
+  public static Int zero = new Int(0);
 @}
 @end example
 
@@ -1630,7 +1630,7 @@ it is safe to leave it out).
 
 Accessing a static field also requires the class of the
 field to be initialized.  The Java compiler will generate code
-to call @code{Jv_InitClass} before getting or setting the field.
+to call @code{JvInitClass} before getting or setting the field.
 However, the C++ compiler will not generate this extra code,
 so it is your responsibility to make sure the class is
 initialized before you access a static field from C++.
