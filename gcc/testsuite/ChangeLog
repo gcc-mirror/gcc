@@ -1,3 +1,8 @@
+2005-04-21  Devang Patel  <dpatel@apple.com>
+
+	PR optimization/20994
+	* gcc.dg/tree-ssa/ifc-3.c: New test.
+	
 2005-04-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/12913
