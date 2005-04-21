@@ -1,3 +1,9 @@
+2005-04-19  Per Bothner  <per@bothner.com>
+
+	PR preprocessor/20907
+	* line-map.c (linemap_line_start): Fix bug when we need to increse
+	column_bits but can re-use the current line_map.
+
 2005-04-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (fopen, fdopen, freopen): Define these to the unlocked
