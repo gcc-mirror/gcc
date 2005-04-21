@@ -363,6 +363,7 @@ case ${target} in
   tm_p_file="${tm_p_file} darwin-protos.h"
   tmake_file="t-darwin t-slibgcc-darwin"
   target_gtfiles="\$(srcdir)/config/darwin.c"
+  extra_options="${extra_options} darwin.opt"
   c_target_objs="darwin-c.o"
   cxx_target_objs="darwin-c.o"
   extra_parts="crt2.o"
@@ -1010,6 +1011,7 @@ i[34567]86-pc-msdosdjgpp*)
 	xm_file=i386/xm-djgpp.h
 	tm_file="dbxcoff.h ${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/djgpp.h"
 	tmake_file=i386/t-djgpp
+	extra_options="${extra_options} i386/djgpp.opt"
 	gnu_ld=yes
 	gas=yes
 	;;
@@ -1018,6 +1020,7 @@ i[34567]86-*-lynxos*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/lynx.h lynx.h"
 	tmake_file="i386/t-crtstuff t-lynx"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_options="${extra_options} lynx.opt"
 	thread_file=lynx
 	gnu_ld=yes
 	gas=yes
@@ -1060,6 +1063,7 @@ i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 	fi
 	tmake_file=i386/t-sco5
 	extra_parts="crtbegin.o crtend.o"
+	extra_options="${extra_options} i386/sco5.opt"
 	use_fixproto=yes
 	;;
 i[34567]86-*-solaris2*)
@@ -1149,6 +1153,7 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	xm_file=i386/xm-cygwin.h
 	tmake_file="i386/t-cygwin i386/t-cygming"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
+	extra_options="${extra_options} i386/cygming.opt"
 	extra_objs=winnt.o
 	c_target_objs=cygwin2.o
 	cxx_target_objs=cygwin2.o
@@ -1162,6 +1167,7 @@ i[34567]86-*-mingw32*)
 	xm_file=i386/xm-mingw32.h
 	tmake_file="i386/t-cygming i386/t-mingw32"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
+	extra_options="${extra_options} i386/cygming.opt"
 	extra_objs=winnt.o
 	case ${enable_threads} in
 	  "" | yes | win32) thread_file='win32' ;;
@@ -1178,6 +1184,7 @@ i[34567]86-*-uwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygwin.h i386/uwin.h"
 	tmake_file="i386/t-cygwin i386/t-uwin"
 	extra_objs=winnt.o
+	extra_options="${extra_options} i386/cygming.opt"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
@@ -1689,6 +1696,7 @@ powerpc-*-lynxos*)
 	tm_file="${tm_file} dbxelf.h elfos.h rs6000/sysv4.h rs6000/lynx.h lynx.h"
 	tmake_file="t-lynx rs6000/t-lynx"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	extra_options="${extra_options} lynx.opt"
 	thread_file=lynx
 	gnu_ld=yes
 	gas=yes

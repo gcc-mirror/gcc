@@ -129,20 +129,6 @@ Boston, MA 02111-1307, USA.  */
  %{mthreads: thread/crtn.o%s} %{!mthreads: crtn.o%s}"
 #endif
 
-/* Because of the %{m*} in cc1_options these options get substituted
-   for cc1.  We ignore them here.  */
-
-#ifndef SUBTARGET_OS_LYNX_SWITCHES
-# define SUBTARGET_OS_LYNX_SWITCHES				\
-  { "shared",		0, N_("Use shared libraries") },	\
-  { "threads", 		0, N_("Support multi-threading") },	\
-  { "legacy-threads",	0, N_("Support legacy multi-threading") },
-#endif
-
-#ifndef SUBTARGET_SWITCHES
-# define SUBTARGET_SWITCHES SUBTARGET_OS_LYNX_SWITCHES
-#endif
-
 /* Define the actual types of some ANSI-mandated types.  */
 
 #ifndef SIZE_TYPE

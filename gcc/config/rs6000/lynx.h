@@ -89,9 +89,6 @@
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#undef EXTRA_SUBTARGET_SWITCHES
-#define EXTRA_SUBTARGET_SWITCHES SUBTARGET_OS_LYNX_SWITCHES
-
 /* LynxOS does not do anything with .fixup plus let's not create
    writable section for linkonce.r and linkonce.t.  */
 

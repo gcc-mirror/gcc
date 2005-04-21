@@ -95,17 +95,6 @@ do {									\
         warning ("-fpic is not supported; -fPIC assumed");		\
         flag_pic = 2;							\
       }									\
-									\
-    /* Handle -mfix-and-continue.  */					\
-    if (darwin_fix_and_continue_switch)					\
-      {									\
-	const char *base = darwin_fix_and_continue_switch;		\
-	while (base[-1] != 'm') base--;					\
-									\
-	if (*darwin_fix_and_continue_switch != '\0')			\
-	  error ("invalid option %qs", base);				\
-	darwin_fix_and_continue = (base[0] != 'n');			\
-      }									\
   }									\
   if (TARGET_64BIT && ! TARGET_POWERPC64)				\
     {									\
@@ -391,7 +380,6 @@ do {									\
 /* For binary compatibility with 2.95; Darwin C APIs use bool from
    stdbool.h, which was an int-sized enum in 2.95.  Users can explicitly
    choose to have sizeof(bool)==1 with the -mone-byte-bool switch. */
-extern const char *darwin_one_byte_bool;
 #define BOOL_TYPE_SIZE (darwin_one_byte_bool ? CHAR_TYPE_SIZE : INT_TYPE_SIZE)
 
 #undef REGISTER_TARGET_PRAGMAS

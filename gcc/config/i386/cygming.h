@@ -50,26 +50,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 
-/* Masks for subtarget switches used by other files.  */
-#define MASK_NOP_FUN_DLLIMPORT 0x08000000 /* Ignore dllimport for functions */
-
-/* Used in winnt.c.  */
-#define TARGET_NOP_FUN_DLLIMPORT (target_flags & MASK_NOP_FUN_DLLIMPORT)
-
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-{ "cygwin",		  0, N_("Use the Cygwin interface") },	\
-{ "no-cygwin",		  0, N_("Use the Mingw32 interface") },	\
-{ "windows",		  0, N_("Create GUI application") },	\
-{ "no-win32",		  0, N_("Don't set Windows defines") },	\
-{ "win32",		  0, N_("Set Windows defines") },	\
-{ "console",		  0, N_("Create console application") },\
-{ "dll",		  0, N_("Generate code for a DLL") },	\
-{ "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT,		\
-  N_("Ignore dllimport for functions") },			\
-{ "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" },	\
-{ "threads",		  0, N_("Use Mingw-specific thread support") },
-
 #define MAYBE_UWIN_CPP_BUILTINS() /* Nothing.  */
 
 #define TARGET_OS_CPP_BUILTINS()					\

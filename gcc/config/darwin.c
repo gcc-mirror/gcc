@@ -77,10 +77,6 @@ Boston, MA 02111-1307, USA.  */
    the code that handles @code{static} data indirection.  */
 
 
-/* Nonzero if the user passes the -mone-byte-bool switch, which forces
-   sizeof(bool) to be 1. */
-const char *darwin_one_byte_bool = 0;
-
 int
 name_needs_quotes (const char *name)
 {
@@ -1396,14 +1392,5 @@ darwin_file_end (void)
     }
   fprintf (asm_out_file, "\t.subsections_via_symbols\n");
 }
-
-/* True, iff we're generating fast turn around debugging code.  When
-   true, we arrange for function prologues to start with 4 nops so
-   that gdb may insert code to redirect them, and for data to accessed
-   indirectly.  The runtime uses this indirection to forward
-   references for data to the original instance of that data.  */
-
-int darwin_fix_and_continue;
-const char *darwin_fix_and_continue_switch;
 
 #include "gt-darwin.h"

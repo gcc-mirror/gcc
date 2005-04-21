@@ -281,14 +281,6 @@ Boston, MA 02111-1307, USA.  */
 #define LIBGCC_SPEC \
  "%{!shared:%{!G:-lgcc}}"
 
-/* Here for legacy support only so we still accept -melf flag */
-#define MASK_COFF     		010000000000	/* Mask for COFF generation */
-#define TARGET_ELF              (1)
-
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES 					\
-	{ "elf", -MASK_COFF, N_("Generate ELF output")  },
-
 /* Handle special EH pointer encodings.  Absolute, pc-relative, and
    indirect are handled automatically.  */
 #define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE) \
