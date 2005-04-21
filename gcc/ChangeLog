@@ -1,3 +1,11 @@
+2005-04-21 Alan Modra  <amodra@bigpond.net.au>
+           Fariborz Jahanian <fjahanian@apple.com>
+
+        * config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Fix size of
+        portion of argument passed in fpr.
+        *expr.c (emit_push_insn): Fix computation of 'offset' used to
+        decide on partial argument save on stack.
+
 2005-04-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/sparc/predicates.md, config/sparc/sparc.md: Fix

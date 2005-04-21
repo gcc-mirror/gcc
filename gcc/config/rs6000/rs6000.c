@@ -4951,16 +4951,14 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		   && align_words >= GP_ARG_NUM_REG))))
     {
       if (cum->fregno + ((GET_MODE_SIZE (mode) + 7) >> 3) > FP_ARG_MAX_REG + 1)
-	ret = FP_ARG_MAX_REG + 1 - cum->fregno;
+	ret = (FP_ARG_MAX_REG + 1 - cum->fregno) * 8;
       else if (cum->nargs_prototype >= 0)
 	return 0;
     }
 
   if (align_words < GP_ARG_NUM_REG
       && GP_ARG_NUM_REG < align_words + rs6000_arg_size (mode, type))
-    ret = GP_ARG_NUM_REG - align_words;
-
-  ret *= (TARGET_32BIT ? 4 : 8);
+    ret = (GP_ARG_NUM_REG - align_words) * (TARGET_32BIT ? 4 : 8);
 
   if (ret != 0 && TARGET_DEBUG_ARG)
     fprintf (stderr, "rs6000_arg_partial_bytes: %d\n", ret);
