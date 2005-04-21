@@ -235,7 +235,7 @@ complete_type_check_abstract (tree type)
 int
 abstract_virtuals_error (tree decl, tree type)
 {
-  VEC (tree) *pure;
+  VEC(tree,gc) *pure;
   
   /* This function applies only to classes. Any other entity can never
      be abstract.  */

@@ -182,7 +182,7 @@ rtl_divmod_values_to_profile (rtx insn, histogram_values *values)
 	  hist->hvalue.rtl.insn = insn;
 	  hist->type = HIST_TYPE_POW2;
 	  hist->hdata.pow2.may_be_other = 1;
-	  VEC_safe_push (histogram_value, *values, hist);
+	  VEC_safe_push (histogram_value, heap, *values, hist);
 	}
 
       /* Check whether the divisor is not in fact a constant.  */
@@ -194,7 +194,7 @@ rtl_divmod_values_to_profile (rtx insn, histogram_values *values)
 	  hist->hvalue.rtl.seq = NULL_RTX;
 	  hist->hvalue.rtl.insn = insn;
 	  hist->type = HIST_TYPE_SINGLE_VALUE;
-	  VEC_safe_push (histogram_value, *values, hist);
+	  VEC_safe_push (histogram_value, heap, *values, hist);
 	}
 
       /* For mod, check whether it is not often a noop (or replaceable by
@@ -214,7 +214,7 @@ rtl_divmod_values_to_profile (rtx insn, histogram_values *values)
 	  hist->type = HIST_TYPE_INTERVAL;
 	  hist->hdata.intvl.int_start = 0;
 	  hist->hdata.intvl.steps = 2;
-	  VEC_safe_push (histogram_value, *values, hist);
+	  VEC_safe_push (histogram_value, heap, *values, hist);
 	}
       return;
 
@@ -305,7 +305,7 @@ insn_prefetch_values_to_profile (rtx insn, histogram_values* values)
   hist->hvalue.rtl.seq = NULL_RTX;
   hist->hvalue.rtl.insn = insn;
   hist->type = HIST_TYPE_CONST_DELTA;
-  VEC_safe_push (histogram_value, *values, hist);
+  VEC_safe_push (histogram_value, heap, *values, hist);
 
   return true;
 }
@@ -330,19 +330,18 @@ rtl_find_values_to_profile (histogram_values *values)
 {
   rtx insn;
   unsigned i, libcall_level;
+  histogram_value hist;
 
   life_analysis (NULL, PROP_DEATH_NOTES);
 
-  *values = VEC_alloc (histogram_value, 0);
+  *values = NULL;
   libcall_level = 0;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     rtl_values_to_profile (insn, values);
   static_values = *values;
 
-  for (i = 0; i < VEC_length (histogram_value, *values); i++)
+  for (i = 0; VEC_iterate (histogram_value, *values, i, hist); i++)
     {
-      histogram_value hist = VEC_index (histogram_value, *values, i);
-
       switch (hist->type)
 	{
 	case HIST_TYPE_INTERVAL:
@@ -1665,6 +1664,8 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
       op1 = TREE_OPERAND (op, 0);
       op2 = TREE_OPERAND (op, 1);
 
+      VEC_reserve (histogram_value, heap, *values, 3);
+      
       /* Check for a special case where the divisor is power(s) of 2.
          This is more aggressive than the RTL version, under the
 	 assumption that later phases will reduce / or % by power of 2
@@ -1676,7 +1677,7 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
 	  hist->hvalue.tree.stmt = stmt;
 	  hist->type = HIST_TYPE_POW2;
 	  hist->hdata.pow2.may_be_other = 1;
-	  VEC_safe_push (histogram_value, *values, hist);
+	  VEC_quick_push (histogram_value, *values, hist);
 	}
 
       /* Check for the case where the divisor is the same value most
@@ -1687,7 +1688,7 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
 	  hist->hvalue.tree.value = op2;
 	  hist->hvalue.tree.stmt = stmt;
 	  hist->type = HIST_TYPE_SINGLE_VALUE;
-	  VEC_safe_push (histogram_value, *values, hist);
+	  VEC_quick_push (histogram_value, *values, hist);
 	}
 
       /* For mod, check whether it is not often a noop (or replaceable by
@@ -1700,7 +1701,7 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
 	  hist->type = HIST_TYPE_INTERVAL;
 	  hist->hdata.intvl.int_start = 0;
 	  hist->hdata.intvl.steps = 2;
-	  VEC_safe_push (histogram_value, *values, hist);
+	  VEC_quick_push (histogram_value, *values, hist);
 	}
       return;
 
@@ -1725,8 +1726,9 @@ tree_find_values_to_profile (histogram_values *values)
   block_stmt_iterator bsi;
   tree stmt;
   unsigned int i;
-
-  *values = VEC_alloc (histogram_value, 0);
+  histogram_value hist;
+  
+  *values = NULL;
   FOR_EACH_BB (bb)
     for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
       {
@@ -1735,10 +1737,8 @@ tree_find_values_to_profile (histogram_values *values)
       }
   static_values = *values;
   
-  for (i = 0; i < VEC_length (histogram_value, *values); i++)
+  for (i = 0; VEC_iterate (histogram_value, *values, i, hist); i++)
     {
-      histogram_value hist = VEC_index (histogram_value, *values, i);
-
       switch (hist->type)
         {
 	case HIST_TYPE_INTERVAL:
@@ -1817,6 +1817,6 @@ bool
 value_profile_transformations (void)
 {
   bool retval = (value_prof_hooks->value_profile_transformations) ();
-  VEC_free (histogram_value, static_values);
+  VEC_free (histogram_value, heap, static_values);
   return retval;
 }

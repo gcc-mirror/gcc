@@ -465,7 +465,7 @@ sort_mem_initializers (tree t, tree mem_inits)
   tree base, binfo, base_binfo;
   tree sorted_inits;
   tree next_subobject;
-  VEC (tree) *vbases;
+  VEC(tree,gc) *vbases;
   int i;
   int uses_unions_p;
 
@@ -2867,7 +2867,7 @@ push_base_cleanups (void)
   int i;
   tree member;
   tree expr;
-  VEC (tree) *vbases;
+  VEC(tree,gc) *vbases;
 
   /* Run destructors for all virtual baseclasses.  */
   if (CLASSTYPE_VBASECLASSES (current_class_type))

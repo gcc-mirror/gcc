@@ -656,7 +656,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 struct saved_scope GTY(())
 {
-  VEC(cxx_saved_binding) *old_bindings;
+  VEC(cxx_saved_binding,gc) *old_bindings;
   tree old_namespace;
   tree decl_ns_list;
   tree class_name;
@@ -972,7 +972,8 @@ typedef struct tree_pair_s GTY (())
   tree value;
 } tree_pair_s;
 typedef tree_pair_s *tree_pair_p;
-DEF_VEC_GC_O (tree_pair_s);
+DEF_VEC_O (tree_pair_s);
+DEF_VEC_ALLOC_O (tree_pair_s,gc);
 
 /* This is a few header flags for 'struct lang_type'.  Actually,
    all but the first are used only for lang_type_class; they
@@ -1059,15 +1060,15 @@ struct lang_type_class GTY(())
   unsigned dummy : 12;
 
   tree primary_base;
-  VEC (tree_pair_s) *vcall_indices;
+  VEC(tree_pair_s,gc) *vcall_indices;
   tree vtables;
   tree typeinfo_var;
-  VEC (tree) *vbases;
+  VEC(tree,gc) *vbases;
   binding_table nested_udts;
   tree as_base;
-  VEC (tree) *pure_virtuals;
+  VEC(tree,gc) *pure_virtuals;
   tree friend_classes;
-  VEC (tree) * GTY((reorder ("resort_type_method_vec"))) methods;
+  VEC(tree,gc) * GTY((reorder ("resort_type_method_vec"))) methods;
   tree key_method;
   tree decl_list;
   tree template_info;
@@ -4022,7 +4023,7 @@ extern void finish_repo (void);
 
 /* in rtti.c */
 /* A vector of all tinfo decls that haven't been emitted yet.  */
-extern GTY(()) VEC(tree) *unemitted_tinfo_decls;
+extern GTY(()) VEC(tree,gc) *unemitted_tinfo_decls;
 
 extern void init_rtti_processing (void);
 extern tree build_typeid (tree);

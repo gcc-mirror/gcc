@@ -205,7 +205,7 @@ expunge_block (basic_block b)
 static inline void
 connect_src (edge e)
 {
-  VEC_safe_push (edge, e->src->succs, e);
+  VEC_safe_push (edge, gc, e->src->succs, e);
 }
 
 /* Connect E to E->dest.  */
@@ -214,7 +214,7 @@ static inline void
 connect_dest (edge e)
 {
   basic_block dest = e->dest;
-  VEC_safe_push (edge, dest->preds, e);
+  VEC_safe_push (edge, gc, dest->preds, e);
   e->dest_idx = EDGE_COUNT (dest->preds) - 1;
 }
 

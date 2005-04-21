@@ -1,3 +1,42 @@
+2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h: Adjust for new VEC API.
+	Define VEC(tree_pair_s,gc).
+	(struct save_scope): Adjust.
+	(struct lang_type_class): Adjust.
+	(unemitted_tinfo_decls): Adjust.
+	* class.c (add_method, resort_type_method_vec,
+	finish_struct_methods, struct find_final_overrider_data,
+	dfs_find_final_overrider_pre, find_final_overrider,
+	get_vcall_index, warn_hidden, walk_subobject_offsets,
+	check_methods, fixup_inline_methods, end_of_class,
+	warn_about_ambiguous_bases, finish_struct, build_vtbl_initializer,
+	add_vcall_offset): Adjust.
+	* decl.c (xref_basetypes, finish_method): Adjust.
+	* decl2.c (check_classfn): Adjust.
+	* init.c (sort_mem_initializers, push_base_cleanups): Adjust.
+	* method.c (do_build_copy_constructor): Adjust.
+	* name-lookup.c (new_class_binding, store_binding, 
+	store_bindings, store_class_bindings): Adjust.
+	* name-lookup.h: Define VEC(cxx_saved_binding,gc),
+	VEC(cp_class_binding,gc).
+	(struct cp_binding_level): Adjust.
+	* parser.c: Define VEC(cp_token_position,heap).
+	(struct cp_lexer): Adjust.
+	(cp_lexer_new_main, cp_lexer_new_from_tokens, cp_lexer_destroy,
+	cp_lexer_save_tokens): Adjust.
+	* pt.c (retrieve_specialization,
+	check_explicit_specialization): Adjust.
+	* rtti.c (unemitted_tinfo_decls): Adjust.
+	(init_rtti_processing, get_tinfo_decl, get_pseudo_ti_init,
+	get_pseudo_ti_desc): Adjust.
+	* search.c (dfs_access_in_type, lookup_conversion_operator,
+	lookup_fnfields_1, dfs_walk_once, dfs_walk_once_accessible,
+	dfs_get_pure_virtuals, lookup_conversions_r, binfo_for_vbase): Adjust.
+	* semantics.c: Define VEC(deferred_access,gc).
+	(push_deferring_access_checks): Adjust.
+	* typeck2.c (abstract_virtuals_error): Adjust.
+
 2005-04-20  Ian Lance Taylor  <ian@airs.com>
 
 	* cp-tree.def: Add STMT_EXPR.

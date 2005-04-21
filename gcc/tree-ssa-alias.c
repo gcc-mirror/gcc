@@ -2791,7 +2791,9 @@ typedef struct fieldoff
   HOST_WIDE_INT offset;  
 } *fieldoff_t;
 
-DEF_VEC_MALLOC_P(fieldoff_t);
+DEF_VEC_P (fieldoff_t);  /* FIXME: This can be a vector of struct
+			    fieldoff objects (nathan 2005/04/15)  */
+DEF_VEC_ALLOC_P(fieldoff_t,heap);
 
 /* Return the position, in bits, of FIELD_DECL from the beginning of its
    structure. 
@@ -2816,7 +2818,7 @@ bitpos_of_field (const tree fdecl)
    than just the immediately containing structure.  */
 
 static void
-push_fields_onto_fieldstack (tree type, VEC(fieldoff_t) **fieldstack, 
+push_fields_onto_fieldstack (tree type, VEC(fieldoff_t,heap) **fieldstack, 
 			     HOST_WIDE_INT offset)
 {
   fieldoff_t pair;
@@ -2838,7 +2840,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_t) **fieldstack,
 	  pair = xmalloc (sizeof (struct fieldoff));
 	  pair->field = field;
 	  pair->offset = offset;
-	  VEC_safe_push (fieldoff_t, *fieldstack, pair);
+	  VEC_safe_push (fieldoff_t, heap, *fieldstack, pair);
 	}
     }
   else if (TREE_CODE (field) == FIELD_DECL)
@@ -2846,7 +2848,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_t) **fieldstack,
       pair = xmalloc (sizeof (struct fieldoff));
       pair->field = field;
       pair->offset = offset + bitpos_of_field (field);
-      VEC_safe_push (fieldoff_t, *fieldstack, pair);
+      VEC_safe_push (fieldoff_t, heap, *fieldstack, pair);
     }
   for (field = TREE_CHAIN (field); field; field = TREE_CHAIN (field))
     {
@@ -2867,7 +2869,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_t) **fieldstack,
 	      pair = xmalloc (sizeof (struct fieldoff));
 	      pair->field = field;
 	      pair->offset = offset + bitpos_of_field (field);
-	      VEC_safe_push (fieldoff_t, *fieldstack, pair);
+	      VEC_safe_push (fieldoff_t, heap, *fieldstack, pair);
 	    }
 	}
       else
@@ -2875,7 +2877,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_t) **fieldstack,
 	  pair = xmalloc (sizeof (struct fieldoff));
 	  pair->field = field;
 	  pair->offset = offset + bitpos_of_field (field);
-	  VEC_safe_push (fieldoff_t, *fieldstack, pair);
+	  VEC_safe_push (fieldoff_t, heap, *fieldstack, pair);
 	}
     }
 }
@@ -2944,7 +2946,7 @@ fieldoff_compare (const void *pa, const void *pb)
 static void
 create_overlap_variables_for (tree var)
 {
-  VEC(fieldoff_t) *fieldstack = NULL;
+  VEC(fieldoff_t,heap) *fieldstack = NULL;
   used_part_t up;
   size_t uid = var_ann (var)->uid;
 
@@ -3019,7 +3021,7 @@ create_overlap_variables_for (tree var)
 	      fo = VEC_pop (fieldoff_t, fieldstack);
 	      free (fo);
 	    }
-	  VEC_free (fieldoff_t, fieldstack);
+	  VEC_free (fieldoff_t, heap, fieldstack);
 	  return;
 	}
       /* Otherwise, create the variables.  */
@@ -3109,7 +3111,7 @@ create_overlap_variables_for (tree var)
 
     }
 
-  VEC_free (fieldoff_t, fieldstack);
+  VEC_free (fieldoff_t, heap, fieldstack);
 }
 
 

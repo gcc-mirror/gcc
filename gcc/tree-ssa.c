@@ -493,7 +493,8 @@ err:
   internal_error ("verify_flow_sensitive_alias_info failed.");
 }
 
-DEF_VEC_MALLOC_P (bitmap);
+DEF_VEC_P (bitmap);
+DEF_VEC_ALLOC_P (bitmap,heap);
 
 /* Verify that all name tags have different points to sets.
    This algorithm takes advantage of the fact that every variable with the
@@ -512,8 +513,8 @@ verify_name_tags (void)
   size_t i;  
   size_t j;
   bitmap first, second;  
-  VEC (tree) *name_tag_reps = NULL;
-  VEC (bitmap) *pt_vars_for_reps = NULL;
+  VEC(tree,heap) *name_tag_reps = NULL;
+  VEC(bitmap,heap) *pt_vars_for_reps = NULL;
   bitmap type_aliases = BITMAP_ALLOC (NULL);
 
   /* First we compute the name tag representatives and their points-to sets.  */
@@ -539,8 +540,8 @@ verify_name_tags (void)
       if (pi->pt_vars == NULL)
 	continue;
 
-      VEC_safe_push (tree, name_tag_reps, ptr);
-      VEC_safe_push (bitmap, pt_vars_for_reps, pi->pt_vars);
+      VEC_safe_push (tree, heap, name_tag_reps, ptr);
+      VEC_safe_push (bitmap, heap, pt_vars_for_reps, pi->pt_vars);
 
       /* Verify that alias set of PTR's type tag is a superset of the
 	 alias set of PTR's name tag.  */
@@ -605,7 +606,10 @@ verify_name_tags (void)
 	}
     } 
 
-  VEC_free (bitmap, pt_vars_for_reps);
+  /* We do not have to free the bitmaps or trees in the vectors, as
+     they are not owned by us.  */
+  VEC_free (bitmap, heap, pt_vars_for_reps);
+  VEC_free (tree, heap, name_tag_reps);
   BITMAP_FREE (type_aliases);
   return;
   

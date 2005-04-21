@@ -139,10 +139,11 @@ typedef struct deferred_access GTY(())
   enum deferring_kind deferring_access_checks_kind;
   
 } deferred_access;
-DEF_VEC_GC_O (deferred_access);
+DEF_VEC_O (deferred_access);
+DEF_VEC_ALLOC_O (deferred_access,gc);
 
 /* Data for deferred access checking.  */
-static GTY(()) VEC (deferred_access) *deferred_access_stack;
+static GTY(()) VEC(deferred_access,gc) *deferred_access_stack;
 static GTY(()) unsigned deferred_access_no_check;
 
 /* Save the current deferred access states and start deferred
@@ -159,7 +160,7 @@ push_deferring_access_checks (deferring_kind deferring)
     {
       deferred_access *ptr;
 
-      ptr = VEC_safe_push (deferred_access, deferred_access_stack, NULL);
+      ptr = VEC_safe_push (deferred_access, gc, deferred_access_stack, NULL);
       ptr->deferred_access_checks = NULL_TREE;
       ptr->deferring_access_checks_kind = deferring;
     }

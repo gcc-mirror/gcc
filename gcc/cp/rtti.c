@@ -75,7 +75,7 @@ Boston, MA 02111-1307, USA.  */
 #define TINFO_REAL_NAME(NODE) TREE_PURPOSE (NODE)
 
 /* A vector of all tinfo decls that haven't yet been emitted.  */
-VEC (tree) *unemitted_tinfo_decls;
+VEC(tree,gc) *unemitted_tinfo_decls;
 
 static tree build_headof (tree);
 static tree ifnonnull (tree, tree);
@@ -119,7 +119,7 @@ init_rtti_processing (void)
     = build_qualified_type (type_info_type, TYPE_QUAL_CONST);
   type_info_ptr_type = build_pointer_type (const_type_info_type_node);
 
-  unemitted_tinfo_decls = VEC_alloc (tree, 124);
+  unemitted_tinfo_decls = VEC_alloc (tree, gc, 124);
   
   create_tinfo_types ();
 }
@@ -364,7 +364,7 @@ get_tinfo_decl (tree type)
       pushdecl_top_level_and_finish (d, NULL_TREE);
 
       /* Add decl to the global array of tinfo decls.  */
-      VEC_safe_push (tree, unemitted_tinfo_decls, d);
+      VEC_safe_push (tree, gc, unemitted_tinfo_decls, d);
     }
 
   return d;
@@ -1003,7 +1003,7 @@ get_pseudo_ti_init (tree type, tree var_desc)
 		      | (CLASSTYPE_DIAMOND_SHAPED_P (type) << 1));
 	  tree binfo = TYPE_BINFO (type);
           int nbases = BINFO_N_BASE_BINFOS (binfo);
-	  VEC (tree) *base_accesses = BINFO_BASE_ACCESSES (binfo);
+	  VEC(tree,gc) *base_accesses = BINFO_BASE_ACCESSES (binfo);
           tree base_inits = NULL_TREE;
           int ix;
           
@@ -1152,7 +1152,7 @@ get_pseudo_ti_desc (tree type)
       else
 	{
 	  tree binfo = TYPE_BINFO (type);
-	  VEC (tree) *base_accesses = BINFO_BASE_ACCESSES (binfo);
+	  VEC(tree,gc) *base_accesses = BINFO_BASE_ACCESSES (binfo);
 	  tree base_binfo = BINFO_BASE_BINFO (binfo, 0);
 	  int num_bases = BINFO_N_BASE_BINFOS (binfo);
 	  

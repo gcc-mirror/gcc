@@ -89,7 +89,8 @@ typedef struct cxx_saved_binding GTY(())
   tree real_type_value;
 } cxx_saved_binding;
 
-DEF_VEC_GC_O(cxx_saved_binding);
+DEF_VEC_O(cxx_saved_binding);
+DEF_VEC_ALLOC_O(cxx_saved_binding,gc);
 
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
@@ -145,7 +146,8 @@ typedef struct cp_class_binding GTY(())
   tree identifier;
 } cp_class_binding;
 
-DEF_VEC_GC_O(cp_class_binding);
+DEF_VEC_O(cp_class_binding);
+DEF_VEC_ALLOC_O(cp_class_binding,gc);
 
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
@@ -200,7 +202,7 @@ struct cp_binding_level GTY(())
 
     /* For the binding level corresponding to a class, the entities
        declared in the class or its base classes.  */
-    VEC(cp_class_binding) *class_shadowed;
+    VEC(cp_class_binding,gc) *class_shadowed;
 
     /* Similar to class_shadowed, but for IDENTIFIER_TYPE_VALUE, and
        is used for all binding levels. The TREE_PURPOSE is the name of

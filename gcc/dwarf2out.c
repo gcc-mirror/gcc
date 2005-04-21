@@ -12004,7 +12004,7 @@ gen_member_die (tree type, dw_die_ref context_die)
   /* First output info about the base classes.  */
   if (binfo)
     {
-      VEC (tree) *accesses = BINFO_BASE_ACCESSES (binfo);
+      VEC(tree,gc) *accesses = BINFO_BASE_ACCESSES (binfo);
       int i;
       tree base;
 

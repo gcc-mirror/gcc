@@ -145,7 +145,8 @@ struct edge_def GTY(())
 };
 
 typedef struct edge_def *edge;
-DEF_VEC_GC_P(edge);
+DEF_VEC_P(edge);
+DEF_VEC_ALLOC_P(edge,gc);
 
 #define EDGE_FALLTHRU		1	/* 'Straight line' flow */
 #define EDGE_ABNORMAL		2	/* Strange flow, like computed
@@ -220,8 +221,8 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   tree stmt_list;
 
   /* The edges into and out of the block.  */
-  VEC(edge) *preds;
-  VEC(edge) *succs;
+  VEC(edge,gc) *preds;
+  VEC(edge,gc) *succs;
 
   /* The registers that are live on entry to this block.  */
   bitmap GTY ((skip (""))) global_live_at_start;
@@ -650,10 +651,10 @@ single_pred (basic_block bb)
 
 typedef struct {
   unsigned index;
-  VEC(edge) **container;
+  VEC(edge,gc) **container;
 } edge_iterator;
 
-static inline VEC(edge) *
+static inline VEC(edge,gc) *
 ei_container (edge_iterator i)
 {
   gcc_assert (i.container);
@@ -665,7 +666,7 @@ ei_container (edge_iterator i)
 
 /* Return an iterator pointing to the start of an edge vector.  */
 static inline edge_iterator
-ei_start_1 (VEC(edge) **ev)
+ei_start_1 (VEC(edge,gc) **ev)
 {
   edge_iterator i;
 
@@ -678,7 +679,7 @@ ei_start_1 (VEC(edge) **ev)
 /* Return an iterator pointing to the last element of an edge
    vector.  */
 static inline edge_iterator
-ei_last_1 (VEC(edge) **ev)
+ei_last_1 (VEC(edge,gc) **ev)
 {
   edge_iterator i;
 

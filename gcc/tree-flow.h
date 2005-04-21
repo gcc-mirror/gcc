@@ -340,7 +340,7 @@ union tree_ann_d GTY((desc ("ann_type ((tree_ann_t)&%h)")))
   struct stmt_ann_d GTY((tag ("STMT_ANN"))) stmt;
 };
 
-extern GTY(()) VEC(tree) *modified_noreturn_calls;
+extern GTY(()) VEC(tree,gc) *modified_noreturn_calls;
 
 typedef union tree_ann_d *tree_ann_t;
 typedef struct var_ann_d *var_ann_t;
@@ -581,9 +581,6 @@ extern tree make_rename_temp (tree, const char *);
 extern void record_vars (tree);
 extern bool block_may_fallthru (tree block);
 
-typedef tree tree_on_heap;
-DEF_VEC_MALLOC_P (tree_on_heap);
-
 /* In tree-ssa-alias.c  */
 extern void dump_may_aliases_for (FILE *, tree);
 extern void debug_may_aliases_for (tree);
@@ -623,7 +620,7 @@ extern bool tree_ssa_useless_type_conversion (tree);
 extern bool tree_ssa_useless_type_conversion_1 (tree, tree);
 extern void verify_ssa (bool);
 extern void delete_tree_ssa (void);
-extern void register_new_def (tree, VEC (tree_on_heap) **);
+extern void register_new_def (tree, VEC(tree,heap) **);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 extern bool stmt_references_memory_p (tree);
 

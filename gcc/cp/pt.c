@@ -822,7 +822,7 @@ retrieve_specialization (tree tmpl, tree args,
     {
       tree class_template;
       tree class_specialization;
-      VEC(tree) *methods;
+      VEC(tree,gc) *methods;
       tree fns;
       int idx;
 
@@ -1967,7 +1967,7 @@ check_explicit_specialization (tree declarator,
 	    }
 	  else
 	    {
-	      VEC(tree) *methods;
+	      VEC(tree,gc) *methods;
 	      tree ovl;
 
 	      /* For a type-conversion operator, we cannot do a
