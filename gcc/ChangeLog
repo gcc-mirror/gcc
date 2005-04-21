@@ -1,3 +1,20 @@
+2005-04-21  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR/20742
+	* Makefile.in (tree-chrec.o): Depend on params.h.
+	* params.def (PARAM_SCEV_MAX_EXPR_SIZE): New parameter with
+	default value 20.
+	* tree-chrec.c: Depend on params.h.  Replace build with buildN,
+	and fold build with fold_buildN.
+	(chrec_fold_plus_1): Fail with a chrec_don_know when the size of
+	the expression exceeds PARAM_SCEV_MAX_EXPR_SIZE.
+	(tree_contains_chrecs): Compute an estimation of the size of the
+	given expression.
+	* tree-chrec.h (tree_contains_chrecs): Modify its declaration.
+	(tree_does_not_contain_chrecs): Update the use of tree_contains_chrecs.
+	* tree-scalar-evolution.c (simple_iv): Ditto.
+	* doc/invoke.texi (scev-max-expr-size): Documented.
+
 2005-04-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (*-*-darwin*): Add darwin.opt to $extra_options.
