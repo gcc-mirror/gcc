@@ -401,9 +401,8 @@ lambda_matrix_inverse_hard (lambda_matrix mat, lambda_matrix inv, int n)
       row = temp[j];
       diagonal = row[j];
 
-      /* If the matrix is singular, abort.  */
-      if (diagonal == 0)
-	abort ();
+      /* The matrix must not be singular.  */
+      gcc_assert (diagonal);
 
       determinant = determinant * diagonal;
 

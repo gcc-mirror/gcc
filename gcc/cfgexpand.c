@@ -60,8 +60,7 @@ add_reg_br_prob_note (FILE *dump_file, rtx last, int probability)
 	    || GET_CODE (NEXT_INSN (NEXT_INSN (NEXT_INSN (last)))) != CODE_LABEL
 	    || NEXT_INSN (NEXT_INSN (NEXT_INSN (NEXT_INSN (last)))))
 	  goto failed;
-	if (find_reg_note (last, REG_BR_PROB, 0))
-	  abort ();
+	gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
 	REG_NOTES (last)
 	  = gen_rtx_EXPR_LIST (REG_BR_PROB,
 			       GEN_INT (REG_BR_PROB_BASE - probability),
@@ -69,9 +68,8 @@ add_reg_br_prob_note (FILE *dump_file, rtx last, int probability)
 	return;
       }
   if (!last || GET_CODE (last) != JUMP_INSN || !any_condjump_p (last))
-      goto failed;
-  if (find_reg_note (last, REG_BR_PROB, 0))
-    abort ();
+    goto failed;
+  gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
   REG_NOTES (last)
     = gen_rtx_EXPR_LIST (REG_BR_PROB,
 			 GEN_INT (probability), REG_NOTES (last));

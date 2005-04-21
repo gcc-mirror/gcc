@@ -638,8 +638,7 @@ normalize_sched_times (partial_schedule_ptr ps)
       ddg_node_ptr u = &g->nodes[i];
       int normalized_time = SCHED_TIME (u) - amount;
 
-      if (normalized_time < 0)
-	abort ();
+      gcc_assert (normalized_time >= 0);
 
       SCHED_TIME (u) = normalized_time;
       SCHED_ROW (u) = normalized_time % ii;
@@ -1733,8 +1732,7 @@ check_nodes_order (int *node_order, int num_nodes)
     {
       int u = node_order[i];
 
-      if (u >= num_nodes || u < 0 || TEST_BIT (tmp, u))
-	abort ();
+      gcc_assert (u < num_nodes && u >= 0 && !TEST_BIT (tmp, u));
 
       SET_BIT (tmp, u);
     }

@@ -3635,7 +3635,7 @@ c_add_case_label (splay_tree cases, tree cond, tree orig_type,
  error_out:
   /* Add a label so that the back-end doesn't think that the beginning of
      the switch is unreachable.  Note that we do not add a case label, as
-     that just leads to duplicates and thence to aborts later on.  */
+     that just leads to duplicates and thence to failure later on.  */
   if (!cases->root)
     {
       tree t = create_artificial_label ();

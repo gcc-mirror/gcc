@@ -389,18 +389,19 @@ allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
       int regno = REGNO (ivs->entries[i].pseudo);
       rtx x = ALLOCATE_INITIAL_VALUE (ivs->entries[i].hard_reg);
 
-      if (x == NULL_RTX || REG_N_SETS (REGNO (ivs->entries[i].pseudo)) > 1)
-	; /* Do nothing.  */
-      else if (MEM_P (x))
-	reg_equiv_memory_loc[regno] = x;
-      else if (REG_P (x))
+      if (x && REG_N_SETS (REGNO (ivs->entries[i].pseudo)) <= 1)
 	{
-	  reg_renumber[regno] = REGNO (x);
-	  /* Poke the regno right into regno_reg_rtx
-	     so that even fixed regs are accepted.  */
-	  REGNO (ivs->entries[i].pseudo) = REGNO (x);
+	  if (MEM_P (x))
+	    reg_equiv_memory_loc[regno] = x;
+	  else
+	    {
+	      gcc_assert (REG_P (x));
+	      reg_renumber[regno] = REGNO (x);
+	      /* Poke the regno right into regno_reg_rtx so that even
+	     	 fixed regs are accepted.  */
+	      REGNO (ivs->entries[i].pseudo) = REGNO (x);
+	    }
 	}
-      else abort ();
     }
 #endif
 }

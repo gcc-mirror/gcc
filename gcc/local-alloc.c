@@ -1088,8 +1088,9 @@ update_equiv_regs (void)
 		      REG_NOTES (new_insn) = REG_NOTES (equiv_insn);
 		      REG_NOTES (equiv_insn) = 0;
 
-		      /* Make sure this insn is recognized before reload begins,
-			 otherwise eliminate_regs_in_insn will abort.  */
+		      /* Make sure this insn is recognized before
+			 reload begins, otherwise
+			 eliminate_regs_in_insn will die.  */
 		      INSN_CODE (new_insn) = INSN_CODE (equiv_insn);
 
 		      delete_insn (equiv_insn);
