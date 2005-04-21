@@ -1,5 +1,21 @@
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* optabs.c (gen_condiational_trap): Remove #define.
+	(add_equal_note): Assertify. Remove explicit indirection from
+	call via function pointer.
+	(expand_ternary_op, expand_simple_binop, expand_binop,
+	expand_twoval_unop, expand_twoval_binop,
+	expand_twoval_binop_libfunc, expand_simple_unop expand_unop,
+	emit_unop_insn,  emit_no_conflict_block,  prepare_cmp_insn,
+	prepare_operand emit_cmp_and_jump_insn_1, emit_cmp_and_jump_insns,
+	prepare_float_lib_cmp, emit_conditional_move,
+	emit_conditional_add, gen_add2_insn, gen_add3_insn,
+	have_add2_insn, gen_sub2_insn, gen_sub3_insn, have_sub2_insn,
+	expand_float, expand_fix, debug_optab_libfuncs, gen_cond_trap,
+	vector_compare_rtx, expand_vec_cond_expr): Likewise.
+
+2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* vec.h: Update API to separate allocation mechanism from type.
 	(VEC_safe_grow): New.
 	* vec.c (calculate_allocation): New.
