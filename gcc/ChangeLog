@@ -1,3 +1,21 @@
+2005-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c: Include tree-pass.h
+	(cgraph_decide_recursive_inlining,
+	cgraph_decide_inlining_of_small_function, cgraph_set_inline_failed,
+	cgraph_decide_inlining): Dump goes to dump_file.
+	(cgraph_optimize): Call ipa passes instead of inliner.
+	(cgraph_gate_inlining, pass_ipa_inline): New.
+	* tree-optimize.c (all_ipa_passes): New static variable.
+	(register_one_dump_file): Dead with IPA passes.
+	(register_dump_files): Likewise.
+	(init_tree_optimization_passes): Initialize IPA passes.
+	(execute_todo): Do cgraph dump when asked to, do not dump function body
+	for IPA pass.
+	* tree-pass.h (TODO_dump_cgraph): New macro.
+	(ipa_passes): Declare.
+	* Makefile.in (cgraphunit.o): Add dependency on cgraphunit.h
+
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/i386/i386.c (type_natural_mode): Use gcc_unreachable and

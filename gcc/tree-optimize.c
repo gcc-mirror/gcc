@@ -55,7 +55,7 @@ int dump_flags;
 bool in_gimple_form;
 
 /* The root of the compilation pass tree, once constructed.  */
-static struct tree_opt_pass *all_passes;
+static struct tree_opt_pass *all_passes, *all_ipa_passes;
 
 /* Pass: dump the gimplified, inlined, functions.  */
 
@@ -210,7 +210,7 @@ static struct tree_opt_pass pass_init_datastructures =
    enabled or not.  */
 
 static void
-register_one_dump_file (struct tree_opt_pass *pass, int n)
+register_one_dump_file (struct tree_opt_pass *pass, bool ipa, int n)
 {
   char *dot_name, *flag_name, *glob_name;
   char num[10];
@@ -222,7 +222,15 @@ register_one_dump_file (struct tree_opt_pass *pass, int n)
 			 ? 1 : pass->static_pass_number));
 
   dot_name = concat (".", pass->name, num, NULL);
-  if (pass->properties_provided & PROP_trees)
+  if (ipa)
+    {
+      flag_name = concat ("ipa-", pass->name, num, NULL);
+      glob_name = concat ("ipa-", pass->name, NULL);
+      /* First IPA dump is cgraph that is dumped via separate channels.  */
+      pass->static_pass_number = dump_register (dot_name, flag_name, glob_name,
+                                                TDF_IPA, n + 1, 0);
+    }
+  else if (pass->properties_provided & PROP_trees)
     {
       flag_name = concat ("tree-", pass->name, num, NULL);
       glob_name = concat ("tree-", pass->name, NULL);
@@ -239,7 +247,7 @@ register_one_dump_file (struct tree_opt_pass *pass, int n)
 }
 
 static int 
-register_dump_files (struct tree_opt_pass *pass, int properties)
+register_dump_files (struct tree_opt_pass *pass, bool ipa, int properties)
 {
   static int n = 0;
   do
@@ -260,7 +268,7 @@ register_dump_files (struct tree_opt_pass *pass, int properties)
         n++;
 
       if (pass->sub)
-        new_properties = register_dump_files (pass->sub, new_properties);
+        new_properties = register_dump_files (pass->sub, ipa, new_properties);
 
       /* If we have a gate, combine the properties that we could have with
          and without the pass being examined.  */
@@ -271,7 +279,7 @@ register_dump_files (struct tree_opt_pass *pass, int properties)
 
       pass->properties_provided = properties;
       if (pass->name)
-        register_one_dump_file (pass, pass_number);
+        register_one_dump_file (pass, ipa, pass_number);
 
       pass = pass->next;
     }
@@ -326,6 +334,10 @@ init_tree_optimization_passes (void)
   struct tree_opt_pass **p;
 
 #define NEXT_PASS(PASS)  (p = next_pass_1 (p, &PASS))
+  /* Intraprocedural optimization passes.  */
+  p = &all_ipa_passes;
+  NEXT_PASS (pass_ipa_inline);
+  *p = NULL;
 
   p = &all_passes;
   NEXT_PASS (pass_gimple);
@@ -432,11 +444,15 @@ init_tree_optimization_passes (void)
 
 #undef NEXT_PASS
 
-  /* Register the passes with the tree dump code.  */
-  register_dump_files (all_passes, 0);
+  register_dump_files (all_passes, false, PROP_gimple_any
+					  | PROP_gimple_lcf
+					  | PROP_gimple_leh
+					  | PROP_cfg);
+  register_dump_files (all_ipa_passes, true, PROP_gimple_any
+					     | PROP_gimple_lcf
+					     | PROP_gimple_leh
+					     | PROP_cfg);
 }
-
-static void execute_pass_list (struct tree_opt_pass *);
 
 static unsigned int last_verified;
 
@@ -465,7 +481,8 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
 	cleanup_tree_cfg ();
     }
 
-  if ((flags & TODO_dump_func) && dump_file)
+  if ((flags & TODO_dump_func)
+      && dump_file && current_function_decl)
     {
       if (properties & PROP_trees)
         dump_function_to_file (current_function_decl,
@@ -475,6 +492,14 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
       else
         print_rtl (dump_file, get_insns ());
 
+      /* Flush the file.  If verification fails, we won't be able to
+	 close the file before aborting.  */
+      fflush (dump_file);
+    }
+  if ((flags & TODO_dump_cgraph)
+      && dump_file && !current_function_decl)
+    {
+      dump_cgraph (dump_file);
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
       fflush (dump_file);
@@ -522,18 +547,18 @@ execute_one_pass (struct tree_opt_pass *pass)
       bool initializing_dump = !dump_initialized_p (pass->static_pass_number);
       dump_file_name = get_dump_file_name (pass->static_pass_number);
       dump_file = dump_begin (pass->static_pass_number, &dump_flags);
-      if (dump_file)
+      if (dump_file && current_function_decl)
 	{
 	  const char *dname, *aname;
 	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));
-          fprintf (dump_file, "\n;; Function %s (%s)%s\n\n", dname, aname,
-             cfun->function_frequency == FUNCTION_FREQUENCY_HOT
-             ? " (hot)"
-             : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
-             ? " (unlikely executed)"
-             : "");
+	  fprintf (dump_file, "\n;; Function %s (%s)%s\n\n", dname, aname,
+	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
+	     ? " (hot)"
+	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
+	     ? " (unlikely executed)"
+	     : "");
 	}
 
       if (initializing_dump
@@ -591,6 +616,13 @@ execute_pass_list (struct tree_opt_pass *pass)
       pass = pass->next;
     }
   while (pass);
+}
+
+/* Execute all IPA passes.  */
+void
+ipa_passes (void)
+{
+   execute_pass_list (all_ipa_passes);
 }
 
 
