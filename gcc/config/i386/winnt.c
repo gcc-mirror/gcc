@@ -273,13 +273,10 @@ i386_pe_mark_dllexport (tree decl)
   tree idp;
 
   rtlname = XEXP (DECL_RTL (decl), 0);
-  if (GET_CODE (rtlname) == SYMBOL_REF)
-    oldname = XSTR (rtlname, 0);
-  else if (GET_CODE (rtlname) == MEM
-	   && GET_CODE (XEXP (rtlname, 0)) == SYMBOL_REF)
-    oldname = XSTR (XEXP (rtlname, 0), 0);
-  else
-    abort ();
+  if (GET_CODE (rtlname) == MEM)
+    rtlname = XEXP (rtlname, 0);
+  gcc_assert (GET_CODE (rtlname) == SYMBOL_REF);
+  oldname = XSTR (rtlname, 0);
   if (i386_pe_dllimport_name_p (oldname))
     {
       warning ("%Jinconsistent dll linkage for '%D', dllexport assumed.",
@@ -317,13 +314,10 @@ i386_pe_mark_dllimport (tree decl)
   rtx symref;
 
   rtlname = XEXP (DECL_RTL (decl), 0);
-  if (GET_CODE (rtlname) == SYMBOL_REF)
-    oldname = XSTR (rtlname, 0);
-  else if (GET_CODE (rtlname) == MEM
-	   && GET_CODE (XEXP (rtlname, 0)) == SYMBOL_REF)
-    oldname = XSTR (XEXP (rtlname, 0), 0);
-  else
-    abort ();
+  if (GET_CODE (rtlname) == MEM)
+    rtlname = XEXP (rtlname, 0);
+  gcc_assert (GET_CODE (rtlname) == SYMBOL_REF);
+  oldname = XSTR (rtlname, 0);
   if (i386_pe_dllexport_name_p (oldname))
     {
       error ("%qs declared as both exported to and imported from a DLL",
@@ -332,14 +326,9 @@ i386_pe_mark_dllimport (tree decl)
     }
   else if (i386_pe_dllimport_name_p (oldname))
     {
-      /* Already done, but do a sanity check to prevent assembler errors.  */
-      if (!DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl))
-	{
-	  error ("%Jfailure in redeclaration of '%D': dllimport'd "
-		 "symbol lacks external linkage.", decl, decl);
-	  abort();
-	}
-      return;
+      /* Already done, but do a sanity check to prevent assembler
+	 errors.  */
+      gcc_assert (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl));
     }
 
   newname = alloca (strlen (DLL_IMPORT_PREFIX) + strlen (oldname) + 1);
