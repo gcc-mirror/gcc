@@ -1,5 +1,38 @@
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* config/i386/i386.c (type_natural_mode): Use gcc_unreachable and
+	gcc_assert instead of abort.
+	(classify_argument, examine_argument, construct_container,
+	contains_128bit_aligned_vector_p, ix86_check_movabs,
+	standard_80387_constant_opcode, standard_80387_constant_rtx,
+	ix86_initial_elimination_offset, ix86_compute_frame_layout,
+	pro_epilogue_adjust_stack, ix86_expand_epilogue,
+	ix86_address_cost, legitimate_address_p, legitimize_pic_address,
+	legitimize_tls_address, output_pic_addr_const,
+	i386_output_dwarf_dtprel, put_condition_code, print_reg,
+	get_some_local_dynamic_name, print_operand, print_operand_address,
+	output_387_binary_op, emit_i387_cw_initialization,
+	output_fix_trunc, output_fp_compare, ix86_output_addr_vec_elt,
+	ix86_expand_clear, ix86_expand_binary_operator,
+	ix86_expand_unary_operator, ix86_match_ccmode, ix86_cc_mode,
+	ix86_cc_modes_compatible, ix86_fp_comparison_codes,
+	ix86_fp_comparison_arithmetics_cost, ix86_expand_fp_compare,
+	ix86_expand_branch, ix86_expand_setcc,
+	ix86_expand_carry_flag_compare, ix86_expand_fp_movcc,
+	ix86_expand_int_addcc, ix86_split_to_parts, ix86_split_long_move,
+	ix86_expand_movmem, ix86_expand_call, assign_386_stack_local,
+	memory_address_length, ix86_attr_length_immediate_default,
+	ix86_attr_length_address_default, ix86_agi_dependant,
+	x86_initialize_trampoline, ix86_init_mmx_sse_builtins,
+	ix86_expand_binop_builtin, ix86_force_to_memory,
+	ix86_secondary_memory_needed, ix86_avoid_jump_misspredicts,
+	x86_emit_floatuns): Likewise.
+	* config/i386/netware.c (gen_regparm_prefix,
+	i386_nlm_strip_name_encoding): Likewise.
+	* config/i386/winnt.c (i386_pe_mark_dllexport): Likewise.
+
+2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* optabs.c (gen_condiational_trap): Remove #define.
 	(add_equal_note): Assertify. Remove explicit indirection from
 	call via function pointer.

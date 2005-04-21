@@ -150,7 +150,7 @@ gen_regparm_prefix (tree decl, unsigned nregs)
 
   if (nregs > total / BITS_PER_WORD)
     nregs = total / BITS_PER_WORD;
-  if (nregs > 9) abort();
+  gcc_assert (nregs <= 9);
   newsym = alloca (2 + strlen (asmname) + 1 + 1);
   return IDENTIFIER_POINTER (get_identifier_with_length (newsym,
 	sprintf (newsym, "_%u@%s", nregs, asmname)));
@@ -201,8 +201,12 @@ i386_nlm_strip_name_encoding (const char *str)
 	  ++name;
 	  if (ISDIGIT (p[1]))
 	    name = ggc_alloc_string (name, p - name);
-	  else if (!ISDIGIT (*name) || ++name != p)
-	    abort();
+	  else
+	    {
+	      gcc_assert (ISDIGIT (*name));
+	      name++;
+	      gcc_assert (name == p);
+	    }
 	}
     }
   return name;
