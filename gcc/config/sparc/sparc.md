@@ -4836,7 +4836,7 @@
   "TARGET_FPU && TARGET_ARCH64 && ! TARGET_HARD_QUAD"
   "emit_tfmode_cvt (UNSIGNED_FIX, operands); DONE;")
 
-;; Integer Addition/Substraction.
+;; Integer Addition/Subtraction.
 
 (define_expand "adddi3"
   [(set (match_operand:DI 0 "register_operand" "")

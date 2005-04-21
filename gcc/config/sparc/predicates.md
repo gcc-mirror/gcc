@@ -333,7 +333,7 @@
        (match_operand 0 "uns_small_int_operand")))
 
 
-;; Predicates for miscellanous instructions.
+;; Predicates for miscellaneous instructions.
 
 ;; Return true if OP is valid for the lhs of a comparison insn.
 (define_predicate "compare_operand"
