@@ -1,0 +1,9 @@
+2005-04-21  Mike Stump  <mrs@apple.com>
+
+	* ChangeLog: New.
+	* Make-lang.in: Likewise.
+	* config-lang.in: Likewise.
+	* lang-specs.h: Likewise.
+	* objcp-decl.c: Likewise.
+	* objcp-decl.h: Likewise.
+	* objcp-lang.c: Likewise.
