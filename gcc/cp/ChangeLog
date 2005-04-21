@@ -1,3 +1,8 @@
+2005-04-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cp-tree.h (THROW_NAME, AUTO_VTABLE_NAME, AUTO_TEMP_FORMAT,
+	VTABLE_BASE, VTABLE_NAME_PREFIX, STATIC_NAME_FORMAT): Remove.
+
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h: Adjust for new VEC API.

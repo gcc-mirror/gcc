@@ -3150,16 +3150,10 @@ extern GTY(()) varray_type local_classes;
 
 #define JOINER '$'
 
-#define THROW_NAME "$eh_throw"
-#define AUTO_VTABLE_NAME "__vtbl$me__"
 #define AUTO_TEMP_NAME "_$tmp_"
-#define AUTO_TEMP_FORMAT "_$tmp_%d"
-#define VTABLE_BASE "$vb"
-#define VTABLE_NAME_PREFIX "__vt_"
 #define VFIELD_BASE "$vf"
 #define VFIELD_NAME "_vptr$"
 #define VFIELD_NAME_FORMAT "_vptr$%s"
-#define STATIC_NAME_FORMAT "_%s$%s"
 #define ANON_AGGRNAME_FORMAT "$_%d"
 
 #else /* NO_DOLLAR_IN_LABEL */
@@ -3168,32 +3162,21 @@ extern GTY(()) varray_type local_classes;
 
 #define JOINER '.'
 
-#define THROW_NAME ".eh_throw"
-#define AUTO_VTABLE_NAME "__vtbl.me__"
 #define AUTO_TEMP_NAME "_.tmp_"
-#define AUTO_TEMP_FORMAT "_.tmp_%d"
-#define VTABLE_BASE ".vb"
-#define VTABLE_NAME_PREFIX "__vt_"
 #define VFIELD_BASE ".vf"
 #define VFIELD_NAME "_vptr."
 #define VFIELD_NAME_FORMAT "_vptr.%s"
-#define STATIC_NAME_FORMAT "_%s.%s"
 
 #define ANON_AGGRNAME_FORMAT "._%d"
 
 #else /* NO_DOT_IN_LABEL */
 
-#define THROW_NAME "__eh_throw"
 #define IN_CHARGE_NAME "__in_chrg"
-#define AUTO_VTABLE_NAME "__vtbl_me__"
 #define AUTO_TEMP_NAME "__tmp_"
 #define TEMP_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), AUTO_TEMP_NAME, \
 	     sizeof (AUTO_TEMP_NAME) - 1))
-#define AUTO_TEMP_FORMAT "__tmp_%d"
-#define VTABLE_BASE "__vtb"
 #define VTABLE_NAME "__vt_"
-#define VTABLE_NAME_PREFIX "__vt_"
 #define VTABLE_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VTABLE_NAME, \
 	     sizeof (VTABLE_NAME) - 1))
@@ -3203,7 +3186,6 @@ extern GTY(()) varray_type local_classes;
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VFIELD_NAME, \
 	    sizeof (VFIELD_NAME) - 1))
 #define VFIELD_NAME_FORMAT "__vptr_%s"
-#define STATIC_NAME_FORMAT "__static_%s_%s"
 
 #define ANON_AGGRNAME_PREFIX "__anon_"
 #define ANON_AGGRNAME_P(ID_NODE) \
