@@ -3952,14 +3952,16 @@ operation.  Operand 1 is the memory on which the atomic operation is
 performed.  Operand 2 is the ``old'' value to be compared against the
 current contents of the memory location.  Operand 3 is the ``new'' value
 to store in the memory if the compare succeeds.  Operand 0 is the result
-of the operation; it should contain the current contents of the memory
-after the operation.  If the compare succeeds, this should obviously be
-a copy of operand 3.
+of the operation; it should contain the contents of the memory
+before the operation.  If the compare succeeds, this should obviously be
+a copy of operand 2.
 
 This pattern must show that both operand 0 and operand 1 are modified.
 
-This pattern must issue any memory barrier instructions such that the
-pattern as a whole acts as a full barrier.
+This pattern must issue any memory barrier instructions such that all
+memory operations before the atomic operation occur before the atomic
+operation and all memory operations after the atomic operation occur
+after the atomic operation.
 
 @cindex @code{sync_compare_and_swap_cc@var{mode}} instruction pattern
 @item @samp{sync_compare_and_swap_cc@var{mode}}
@@ -3991,8 +3993,10 @@ Operand 1 is the second operand to the binary operator.
 
 The ``nand'' operation is @code{op0 & ~op1}.
 
-This pattern must issue any memory barrier instructions such that the
-pattern as a whole acts as a full barrier.
+This pattern must issue any memory barrier instructions such that all
+memory operations before the atomic operation occur before the atomic
+operation and all memory operations after the atomic operation occur
+after the atomic operation.
 
 If these patterns are not defined, the operation will be constructed
 from a compare-and-swap operation, if defined.
@@ -4013,8 +4017,10 @@ Operand 0 is the result value, operand 1 is the memory on which the
 atomic operation is performed, and operand 2 is the second operand
 to the binary operator.
 
-This pattern must issue any memory barrier instructions such that the
-pattern as a whole acts as a full barrier.
+This pattern must issue any memory barrier instructions such that all
+memory operations before the atomic operation occur before the atomic
+operation and all memory operations after the atomic operation occur
+after the atomic operation.
 
 If these patterns are not defined, the operation will be constructed
 from a compare-and-swap operation, if defined.
@@ -4052,7 +4058,8 @@ an atomic test-and-set bit operation.  The result operand should contain
 The true contents of the memory operand are implementation defined.
 
 This pattern must issue any memory barrier instructions such that the
-pattern as a whole acts as an acquire barrier.
+pattern as a whole acts as an acquire barrier, that is all memory
+operations after the pattern do not occur until the lock is acquired.
 
 If this pattern is not defined, the operation will be constructed from
 a compare-and-swap operation, if defined.
@@ -4065,7 +4072,8 @@ This pattern, if defined, releases a lock set by
 that contains the lock.
 
 This pattern must issue any memory barrier instructions such that the
-pattern as a whole acts as a release barrier.
+pattern as a whole acts as a release barrier, that is the lock is
+released only after all previous memory operations have completed.
 
 If this pattern is not defined, then a @code{memory_barrier} pattern
 will be emitted, followed by a store of zero to the memory operand.

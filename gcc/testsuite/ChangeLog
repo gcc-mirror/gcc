@@ -1,3 +1,8 @@
+2005-04-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Add powerpc*.
+
 2005-04-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.target/mips/branch-1.c: New test.
