@@ -127,6 +127,7 @@ static rtx vector_compare_rtx (tree, bool, enum insn_code);
 
 #ifndef HAVE_conditional_trap
 #define HAVE_conditional_trap 0
+#define gen_conditional_trap(a,b) (gcc_unreachable (), NULL_RTX)
 #endif
 
 /* Add a REG_EQUAL note to the last insn in INSNS.  TARGET is being set to

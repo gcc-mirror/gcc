@@ -1,5 +1,7 @@
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* optabs.c (gen_conditional_trap): Restore #define.
+
 	* alias.c (true_dependence): Remove 'abort' from comments. Use
 	gcc_assert and gcc_unreachable as appropriate.
 	(canon_true_dependence): Likewise.
