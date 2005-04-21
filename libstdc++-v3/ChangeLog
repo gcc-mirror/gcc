@@ -1,3 +1,10 @@
+2005-04-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/ext/bitmap_allocator/check_allocate_max_size.cpp: Add
+	explicit instantiations for systems without weak symbols.
+	* testsuite/ext/bitmap_allocator/check_deallocate_null.cc:
+	Likewise. 
+
 2005-04-18  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/stl_algo.h (rotate_copy): Add missing std qualification.
