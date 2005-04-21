@@ -1189,8 +1189,8 @@ extern char leaf_reg_remap[];
     : (C) == 'c' ? FPCC_REGS			\
     : NO_REGS))
 
-/* The letters I, J, K, L and M in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
+/* The letters I, J, K, L, M, N, O, P in a register constraint string
+   can be used to stand for particular ranges of CONST_INTs.
    This macro defines what the ranges are.
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
@@ -1201,20 +1201,32 @@ extern char leaf_reg_remap[];
    `L' is used for the range of constants supported by the movcc insns.
    `M' is used for the range of constants supported by the movrcc insns.
    `N' is like K, but for constants wider than 32 bits.
-   `O' is used for the range which is just 4096.  */
+   `O' is used for the range which is just 4096.
+   `P' is free.  */
 
+/* Predicates for 10-bit, 11-bit and 13-bit signed constants.  */
 #define SPARC_SIMM10_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x200 < 0x400)
 #define SPARC_SIMM11_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x400 < 0x800)
 #define SPARC_SIMM13_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x1000 < 0x2000)
-/* 10 and 11 bit immediates are only used for a few specific insns.
+
+/* 10- and 11-bit immediates are only used for a few specific insns.
    SMALL_INT is used throughout the port so we continue to use it.  */
 #define SMALL_INT(X) (SPARC_SIMM13_P (INTVAL (X)))
-/* 13 bit immediate, considering only the low 32 bits */
-#define SMALL_INT32(X) (SPARC_SIMM13_P (trunc_int_for_mode \
-					(INTVAL (X), SImode)))
+
+/* Predicate for constants that can be loaded with a sethi instruction.
+   This is the general, 64-bit aware, bitwise version that ensures that
+   only constants whose representation fits in the mask
+
+     0x00000000fffffc00
+
+   are accepted.  It will reject, for example, negative SImode constants
+   on 64-bit hosts, so correct handling is to mask the value beforehand
+   according to the mode of the instruction.  */
 #define SPARC_SETHI_P(X) \
   (((unsigned HOST_WIDE_INT) (X) \
     & ((unsigned HOST_WIDE_INT) 0x3ff - GET_MODE_MASK (SImode) - 1)) == 0)
+
+/* Version of the above predicate for SImode constants and below.  */
 #define SPARC_SETHI32_P(X) \
   (SPARC_SETHI_P ((unsigned HOST_WIDE_INT) (X) & GET_MODE_MASK (SImode)))
 
@@ -1228,13 +1240,12 @@ extern char leaf_reg_remap[];
    : (C) == 'O' ? (VALUE) == 4096			\
    : 0)
 
-/* Similar, but for floating constants, and defining letters G and H.
+/* Similar, but for CONST_DOUBLEs, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
-  ((C) == 'G' ? fp_zero_operand (VALUE, GET_MODE (VALUE))	\
+  ((C) == 'G' ? const_zero_operand (VALUE, GET_MODE (VALUE))	\
    : (C) == 'H' ? arith_double_operand (VALUE, DImode)		\
-   : (C) == 'O' ? arith_double_4096_operand (VALUE, DImode)	\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -1257,7 +1268,7 @@ extern char leaf_reg_remap[];
        || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
 	   && ! TARGET_FPU)				\
        || (GET_MODE (X) == TFmode			\
-	   && ! fp_zero_operand (X, TFmode)))		\
+	   && ! const_zero_operand (X, TFmode)))	\
       ? NO_REGS						\
       : (!FP_REG_CLASS_P (CLASS)			\
          && GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)	\
@@ -2448,59 +2459,6 @@ extern int sparc_indent_opcode;
 #endif
 #define TARGET_SUN_TLS TARGET_TLS
 #define TARGET_GNU_TLS 0
-
-/* Define the codes that are matched by predicates in sparc.c.  */
-
-#define PREDICATE_CODES							\
-{"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
-{"const1_operand", {CONST_INT}},					\
-{"fp_zero_operand", {CONST_DOUBLE}},					\
-{"fp_register_operand", {SUBREG, REG}},					\
-{"intreg_operand", {SUBREG, REG}},					\
-{"fcc_reg_operand", {REG}},						\
-{"fcc0_reg_operand", {REG}},						\
-{"icc_or_fcc_reg_operand", {REG}},					\
-{"call_operand", {MEM}},						\
-{"call_operand_address", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE,	\
-	SUBREG, REG, PLUS, LO_SUM, CONST_INT}},				\
-{"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
-{"symbolic_memory_operand", {SUBREG, MEM}},				\
-{"label_ref_operand", {LABEL_REF}},					\
-{"sp64_medium_pic_operand", {CONST}},					\
-{"data_segment_operand", {SYMBOL_REF, PLUS, CONST}},			\
-{"text_segment_operand", {LABEL_REF, SYMBOL_REF, PLUS, CONST}},		\
-{"reg_or_nonsymb_mem_operand", {SUBREG, REG, MEM}},			\
-{"splittable_symbolic_memory_operand", {MEM}},				\
-{"splittable_immediate_memory_operand", {MEM}},				\
-{"eq_or_neq", {EQ, NE}},						\
-{"normal_comp_operator", {GE, GT, LE, LT, GTU, LEU}},			\
-{"noov_compare_op", {NE, EQ, GE, GT, LE, LT, GEU, GTU, LEU, LTU}},	\
-{"noov_compare64_op", {NE, EQ, GE, GT, LE, LT, GEU, GTU, LEU, LTU}},	\
-{"v9_regcmp_op", {EQ, NE, GE, LT, LE, GT}},				\
-{"extend_op", {SIGN_EXTEND, ZERO_EXTEND}},				\
-{"cc_arithop", {AND, IOR, XOR}},					\
-{"cc_arithopn", {AND, IOR}},						\
-{"arith_operand", {SUBREG, REG, CONST_INT}},				\
-{"arith_add_operand", {SUBREG, REG, CONST_INT}},			\
-{"arith11_operand", {SUBREG, REG, CONST_INT}},				\
-{"arith10_operand", {SUBREG, REG, CONST_INT}},				\
-{"arith_double_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
-{"arith_double_add_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
-{"arith11_double_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
-{"arith10_double_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
-{"small_int", {CONST_INT}},						\
-{"small_int_or_double", {CONST_INT, CONST_DOUBLE}},			\
-{"uns_small_int", {CONST_INT}},						\
-{"uns_arith_operand", {SUBREG, REG, CONST_INT}},			\
-{"clobbered_register", {REG}},						\
-{"input_operand", {SUBREG, REG, CONST_INT, MEM, CONST}},		\
-{"compare_operand", {SUBREG, REG, ZERO_EXTRACT}},			\
-{"const64_operand", {CONST_INT, CONST_DOUBLE}},				\
-{"const64_high_operand", {CONST_INT, CONST_DOUBLE}},			\
-{"tgd_symbolic_operand", {SYMBOL_REF}},					\
-{"tld_symbolic_operand", {SYMBOL_REF}},					\
-{"tie_symbolic_operand", {SYMBOL_REF}},					\
-{"tle_symbolic_operand", {SYMBOL_REF}},
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 12

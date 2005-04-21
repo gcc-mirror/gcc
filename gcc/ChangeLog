@@ -1,3 +1,70 @@
+2005-04-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (reg_or_0_operand, const1_operand,
+	fp_zero_operand, fp_register_operand, intreg_operand,
+	fcc_reg_operand, fcc0_reg_operand, icc_or_fcc_reg_operand,
+	call_operand, call_operand_address, tgd_symbolic_operand,
+	tld_symbolic_operand, tie_symbolic_operand, tle_symbolic_operand,
+	symbolic_operand, symbolic_memory_operand, label_ref_operand,
+	sp64_medium_pic_operand, data_segment_operand,
+	text_segment_operand, splittable_symbolic_memory_operand,
+	reg_or_nonsymb_mem_operand, splittable_immediate_memory_operand,
+	eq_or_neq, normal_comp_operator, noov_compare_op,
+	noov_compare64_op, v9_regcmp_op, extend_op, cc_arithop,
+	cc_arithopn, arith_operand, arith_4096_operand, arith_add_operand,
+	const64_operand, const64_high_operand, arith11_operand,
+	arith10_operand, arith_double_operand, arith_double_4096_operand,
+	arith_double_add_operand, arith11_double_operand,
+	arith10_double_operand, small_int, small_int_or_double,
+	uns_small_int, uns_arith_operand, clobbered_register,
+	input_operand, compare_operand): Delete.
+	(sparc_emit_set_const32): Use predicates in assertion.  Remove special
+	code for TARGET_ARCH64 && HOST_BITS_PER_WIDE_INT != 64.
+	(sparc_emit_set_const64): Call gcc_unreachable if H_B_P_W_I == 32.
+	(GEN_HIGHINT64, GEN_INT64): Delete.
+	(sparc_emit_set_safe_HIGH64, gen_safe_SET64, gen_safe_OR64,
+	gen_safe_XOR64): Adjust for above deletion.
+	(sparc_emit_set_const64): Support only H_B_P_W_I == 64 and CONST_INTs.
+	Use 'unsigned HOST_WIDE_INT' instead of 'long' for bitmask.
+	(legitimate_constant_p): Use const_zero_operand instead.
+	(sparc_extra_constraint_check): Likewise.
+	* config/sparc/sparc.h (CONST_DOUBLE_OK_FOR_LETTER_P): Remove 'O'.
+	(PREFERRED_RELOAD_CLASS): Use const_zero_operand.
+	(PREDICATE_CODES): Delete.
+	* config/sparc/sparc.md: Include predicates.md.
+	(All patterns): Adjust for new predicate names.
+	(cmpdi, cmpdi_sp64): Use arith_operand predicate.
+	(movhi_const64_special, movsi_const64_special): Add 'K' constraint.
+	(movdi): Use general_operand predicate.
+	(movdi_sp64_dbl): Delete.
+	(movdi_const64_special): Add 'N' constraint.
+	(movdicc): Use arith10_operand predicate.
+	(movdi_cc_sp64, movdi_cc_sp64_trunc): Use arith11_operand predicate.
+	(movdi_cc_reg_sp64): Use arith10_operand predicate.
+	(movdi_cc_reg_sp64_trunc): Delete.
+	(cmp_zero_extract, cmp_zero_extract_sp64): Use small_int_operand.
+	(adddi3_insn_sp32, addx, cmp_cc_plus, cmp_ccx_plus, cmp_cc_plus_set,
+	cmp_ccx_plus_set): Use register_operand predicate.
+	(adddi3_sp64, cmp_ccx_plus_set): Use arith_operand predicate.
+	(subdi3_sp32): Delete.
+	(subdi3_insn_sp32): Change to define_insn_and_split.
+	(subdi3_sp64, cmp_minus_ccx, cmp_minus_ccx_set): Use arith_operand.
+	(muldi3, muldi3_sp64, muldi3_v8plus): Likewise.
+	(smulsi3_highpart_v8plus, const_smulsi3_highpart_v8plus,
+	umulsi3_highpart_v8plus, const_umulsi3_highpart_v8plus): Use
+	small_int_operand predicate.
+	(divdi3, udivdi3): Use arith_operand predicate.
+	(udivsi3, udivsi3_sp32, udivsi3_sp64): Use nonimmediate_operand.
+	(and<V64I>3_sp64, ior<V64I>3_sp64, xor<V64I:mode>3_sp64,
+	xor_not_<V64I:mode>_sp64) : Use arith_operand predicate.
+	(xordi3_sp64_dbl): Delete.
+	(cmp_ccx_arith_op, cmp_ccx_arith_op_set, cmp_ccx_xor_not,
+	cmp_ccx_xor_not_set, cmp_ccx_arith_op_not, cmp_ccx_arith_op_not_set,
+	cmp_ccx_neg, cmp_ccx_set_neg, one_cmpl<V64I>2_sp64, cmp_ccx_not,
+	cmp_ccx_set_not): Use arith_operand predicate.
+	(ashrsi3_extend2, lshrsi3_extend2 et al.): Use small_int_operand.
+	* config/sparc/predicates.md: New file.
+
 2005-04-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/14846
