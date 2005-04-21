@@ -125,26 +125,11 @@ final class VMClassLoader
    *
    * @param c the class to resolve
    */
-  static final native void resolveClass(Class clazz);
-
-  static final void transformException(Class clazz, Throwable x)
+  static final void resolveClass(Class clazz)
   {
-    LinkageError e;
-    if (x instanceof LinkageError)
-      e = (LinkageError) x;
-    else if (x instanceof ClassNotFoundException)
-      {
-	e = new NoClassDefFoundError("while resolving class: "
-				     + clazz.getName());
-	e.initCause (x);
-      }
-    else
-      {
-	e = new LinkageError ("unexpected exception during linking: "
-			      + clazz.getName());
-	e.initCause (x);
-      }
-    throw e;
+    // There doesn't seem to be a need for this to do anything.
+    // Testing reveals that the JDK doesn't seem to do anything here,
+    // either.
   }
 
   /**

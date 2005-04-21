@@ -1,3 +1,9 @@
+2005-04-21  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/VMClassLoader.java (transformException): Removed.
+	(resolveClass): No longer native.  Now does nothing.
+	* java/lang/natVMClassLoader.cc (resolveClass): Removed.
+
 2005-04-21  Anthony Green  <green@redhat.com>
 
 	PR libgcj/21115
