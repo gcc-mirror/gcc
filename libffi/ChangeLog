@@ -1,3 +1,7 @@
+2005-04-20  Release Manager
+
+	* GCC 4.0.0 released.
+
 2005-02-22  Andrew Haley  <aph@redhat.com>
 
 	* src/powerpc/ffi.c (ffi_prep_cif_machdep): Bump alignment to

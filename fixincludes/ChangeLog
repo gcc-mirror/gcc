@@ -1,3 +1,7 @@
+2005-04-20  Release Manager
+
+	* GCC 4.0.0 released.
+
 2005-03-21  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR target/20166

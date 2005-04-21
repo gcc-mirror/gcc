@@ -1,3 +1,7 @@
+2005-04-20  Release Manager
+
+	* GCC 4.0.0 released.
+
 2004-05-25  Daniel Jacobowitz  <drow@false.org>
 
 	* Makefile.in: Add .NOEXPORT.

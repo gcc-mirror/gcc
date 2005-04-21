@@ -1,3 +1,7 @@
+2005-04-20  Release Manager
+
+	* GCC 4.0.0 released.
+
 2005-04-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/ext/bitmap_allocator/check_allocate_max_size.cpp: Add

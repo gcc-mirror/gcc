@@ -1,3 +1,7 @@
+2005-04-20  Release Manager
+
+	* GCC 4.0.0 released.
+
 2005-04-17  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/natRuntime.cc (insertSystemProperties): Set
