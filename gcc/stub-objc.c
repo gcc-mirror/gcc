@@ -189,7 +189,8 @@ objc_build_keyword_decl (tree ARG_UNUSED (selector),
 tree
 objc_build_method_signature (tree ARG_UNUSED (rettype),
 			     tree ARG_UNUSED (selectors),
-			     tree ARG_UNUSED (optparms))
+			     tree ARG_UNUSED (optparms),
+			     bool ARG_UNUSED (ellipsis))
 {
   return 0;
 }

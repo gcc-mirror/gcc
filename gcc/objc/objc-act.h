@@ -52,6 +52,7 @@ enum gimplify_status objc_gimplify_expr (tree *, tree *, tree *);
 #define METHOD_SEL_NAME(DECL) ((DECL)->decl.name)
 #define METHOD_SEL_ARGS(DECL) ((DECL)->decl.arguments)
 #define METHOD_ADD_ARGS(DECL) ((DECL)->decl.result)
+#define METHOD_ADD_ARGS_ELLIPSIS_P(DECL) ((DECL)->decl.lang_flag_0)
 #define METHOD_DEFINITION(DECL) ((DECL)->decl.initial)
 #define METHOD_ENCODING(DECL) ((DECL)->decl.context)
 
