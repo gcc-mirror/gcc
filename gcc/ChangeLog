@@ -1,3 +1,10 @@
+2005-04-21  Devang Patel  <dpatel@apple.com>
+
+	PR optimization/20994
+	* tree-if-conv.c (find_phi_replacement_condition): Avoid generating
+	x = !(a == b) : p , q;.
+	(pass_if_conversion): Verify stmts and flow.
+	
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* optabs.c (gen_conditional_trap): Restore #define.
