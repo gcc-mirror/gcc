@@ -174,7 +174,7 @@
   [(set (match_operand:I48MODE 0 "register_operand" "=&r")
 	(and:I48MODE 
 	  (not:I48MODE (match_operand:I48MODE 1 "memory_operand" "+m"))
-	  (match_operand:I48MODE 2 "reg_or_8bit_operand" "rI")))
+	  (match_operand:I48MODE 2 "register_operand" "r")))
    (set (match_dup 1)
 	(unspec_volatile:I48MODE
 	  [(and:I48MODE (not:I48MODE (match_dup 1)) (match_dup 2))]
