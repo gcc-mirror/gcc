@@ -2063,7 +2063,7 @@ dbxout_type (tree type, int full)
 	  {
 	    int i;
 	    tree child;
-	    VEC (tree) *accesses = BINFO_BASE_ACCESSES (binfo);
+	    VEC(tree,gc) *accesses = BINFO_BASE_ACCESSES (binfo);
 	    
 	    if (use_gnu_debug_info_extensions)
 	      {

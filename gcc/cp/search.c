@@ -641,7 +641,7 @@ dfs_access_in_type (tree binfo, void *data)
 	{
 	  int i;
 	  tree base_binfo;
-	  VEC (tree) *accesses;
+	  VEC(tree,gc) *accesses;
 	  
 	  /* Otherwise, scan our baseclasses, and pick the most favorable
 	     access.  */
@@ -1314,7 +1314,7 @@ lookup_conversion_operator (tree class_type, tree type)
     {
       int i;
       tree fn;
-      VEC(tree) *methods = CLASSTYPE_METHOD_VEC (class_type);
+      VEC(tree,gc) *methods = CLASSTYPE_METHOD_VEC (class_type);
       
       for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
 	   VEC_iterate (tree, methods, i, fn); ++i)
@@ -1345,7 +1345,7 @@ lookup_conversion_operator (tree class_type, tree type)
 int
 lookup_fnfields_1 (tree type, tree name)
 {
-  VEC(tree) *method_vec;
+  VEC(tree,gc) *method_vec;
   tree fn;
   tree tmp;
   size_t i;
@@ -1658,7 +1658,7 @@ dfs_walk_once (tree binfo, tree (*pre_fn) (tree, void *),
 	  /* We are at the top of the hierarchy, and can use the
              CLASSTYPE_VBASECLASSES list for unmarking the virtual
              bases.  */
-	  VEC (tree) *vbases;
+	  VEC(tree,gc) *vbases;
 	  unsigned ix;
 	  tree base_binfo;
 	  
@@ -1766,7 +1766,7 @@ dfs_walk_once_accessible (tree binfo, bool friends_p,
 	  /* We are at the top of the hierarchy, and can use the
              CLASSTYPE_VBASECLASSES list for unmarking the virtual
              bases.  */
-	  VEC (tree) *vbases;
+	  VEC(tree,gc) *vbases;
 	  unsigned ix;
 	  tree base_binfo;
 	  
@@ -2000,7 +2000,7 @@ dfs_get_pure_virtuals (tree binfo, void *data)
 	   virtuals;
 	   virtuals = TREE_CHAIN (virtuals))
 	if (DECL_PURE_VIRTUAL_P (BV_FN (virtuals)))
-	  VEC_safe_push (tree, CLASSTYPE_PURE_VIRTUALS (type),
+	  VEC_safe_push (tree, gc, CLASSTYPE_PURE_VIRTUALS (type),
 			 BV_FN (virtuals));
     }
 
@@ -2270,7 +2270,7 @@ lookup_conversions_r (tree binfo,
   tree child_tpl_convs = NULL_TREE;
   unsigned i;
   tree base_binfo;
-  VEC(tree) *method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
+  VEC(tree,gc) *method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
   tree conv;
 
   /* If we have no conversion operators, then don't look.  */
@@ -2523,7 +2523,7 @@ binfo_for_vbase (tree base, tree t)
 {
   unsigned ix;
   tree binfo;
-  VEC (tree) *vbases;
+  VEC(tree,gc) *vbases;
   
   for (vbases = CLASSTYPE_VBASECLASSES (t), ix = 0;
        VEC_iterate (tree, vbases, ix, binfo); ix++)

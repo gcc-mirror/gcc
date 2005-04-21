@@ -537,7 +537,7 @@ do_build_copy_constructor (tree fndecl)
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
       tree binfo, base_binfo;
-      VEC (tree) *vbases;
+      VEC(tree,gc) *vbases;
 
       /* Initialize all the base-classes with the parameter converted
 	 to their type so that we get their copy constructor and not

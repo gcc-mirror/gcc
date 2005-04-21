@@ -9340,7 +9340,7 @@ xref_basetypes (tree ref, tree base_list)
 
   if (max_bases)
     {
-      BINFO_BASE_ACCESSES (binfo) = VEC_alloc (tree, max_bases);
+      BINFO_BASE_ACCESSES (binfo) = VEC_alloc (tree, gc, max_bases);
       /* An aggregate cannot have baseclasses.  */
       CLASSTYPE_NON_AGGREGATE (ref) = 1;
 
@@ -9356,7 +9356,7 @@ xref_basetypes (tree ref, tree base_list)
 
   if (max_vbases)
     {
-      CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, max_vbases);
+      CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, gc, max_vbases);
 
       if (TYPE_FOR_JAVA (ref))
 	error ("Java class %qT cannot have virtual bases", ref);
@@ -10866,7 +10866,7 @@ finish_method (tree decl)
      for String.cc in libg++.  */
   if (DECL_FRIEND_P (fndecl))
     {
-      VEC_safe_push (tree, CLASSTYPE_INLINE_FRIENDS (current_class_type),
+      VEC_safe_push (tree, gc, CLASSTYPE_INLINE_FRIENDS (current_class_type),
 		     fndecl);
       decl = void_type_node;
     }

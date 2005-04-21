@@ -33,8 +33,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define YY_INPUT(BUF,RESULT,SIZE) ((RESULT) = macro_input (BUF,SIZE))
 
 static unsigned macro_input (char *buffer, unsigned);
-static void push_macro_expansion (const char *, unsigned,
-				  const char *, unsigned);
+static const char *push_macro_expansion (const char *, unsigned,
+					 const char *, unsigned);
+static char *mangle_macro_name (const char *, unsigned,
+       			        const char *, unsigned);
 static void update_lineno (const char *l, size_t len);
 
 struct fileloc lexer_line;
@@ -237,33 +239,40 @@ ITYPE	{IWORD}({WS}{IWORD})*
   return ENT_YACCUNION;
 }
 
-^"DEF_VEC_"[[:alnum:]_]*{WS}?"("{WS}?{ID}{WS}?")" {
+^"DEF_VEC_"[[:alnum:]_]*{WS}?"("{WS}?{ID}{WS}?(","{WS}?{ID}{WS}?)*")" {
   char *macro, *arg;
   unsigned macro_len, arg_len;
   char *ptr = yytext;
+  const char *additional;
   type_p t;
 
-  /* Locate the macro and argument strings.  */
-  macro = ptr;
-  while (*ptr != '(' && !ISSPACE (*ptr))
-    ptr++;
-  macro_len = ptr - macro;
-  while (*ptr == '(' || ISSPACE (*ptr))
-    ptr++;
-  arg = ptr;
-  while (*ptr != ')' && !ISSPACE (*ptr))
-    ptr++;
+  /* Find the macro name.  */
+  for (macro = ptr; *ptr != '(' && !ISSPACE (*ptr); ptr++)
+    continue;
+  for (macro_len = ptr - macro; !(ISALNUM (*ptr) || *ptr == '_'); ptr++)
+    continue;
+
+  /* Find the argument(s).  */
+  for (arg = ptr; *ptr != ')'; ptr++)
+    continue;
   arg_len = ptr - arg;
 
-  /* Push the macro for later expansion.  */
-  push_macro_expansion (macro, macro_len, arg, arg_len);
-
   /* Create the struct and typedef.  */
-  ptr = (char *) xmemdup ("VEC_", 4, 4 + arg_len + 1);
-  memcpy (&ptr[4], arg, arg_len);
-  ptr[4 + arg_len] = 0;
+  ptr = mangle_macro_name ("VEC", 3, arg, arg_len);
+
   t = find_structure (ptr, 0);
   do_typedef (ptr, t, &lexer_line);
+
+  /* Push the macro for later expansion.  */
+  additional = push_macro_expansion (macro, macro_len, arg, arg_len);
+
+  if (additional)
+    {
+      ptr = mangle_macro_name (ptr, strlen (ptr),
+			       additional, strlen (additional));
+      t = find_structure (ptr, 0);
+      do_typedef (ptr, t, &lexer_line);
+    }
 }
 
 <in_struct>{
@@ -299,24 +308,23 @@ ITYPE	{IWORD}({WS}{IWORD})*
   return SCALAR;
 }
 
-"VEC"{WS}?"("{WS}?{ID}{WS}?")" {
+"VEC"{WS}?"("{WS}?{ID}{WS}?(","{WS}?{ID}{WS}?)*")" {
   char *macro, *arg;
   unsigned macro_len, arg_len;
   char *ptr = yytext;
 
-  macro = ptr;
-  while (*ptr != '(' && !ISSPACE (*ptr)) /* )*/
-    ptr++;
-  macro_len = ptr - macro;
-  while (*ptr == '(' || ISSPACE (*ptr))
-    ptr++;
-  arg = ptr;
-  while (*ptr != ')' && !ISSPACE (*ptr))
-    ptr++;
+  /* Find the macro name */
+  for (macro = ptr; *ptr != '(' && !ISSPACE (*ptr); ptr++)
+    continue;
+  for (macro_len = ptr - macro; !(ISALNUM(*ptr) || *ptr == '_'); ptr++)
+    continue;
+
+  /* Find the arguments.  */
+  for (arg = ptr; *ptr != ')'; ptr++)
+    continue;
   arg_len = ptr - arg;
-  ptr = (char *) xmemdup (macro, macro_len, macro_len + arg_len + 2);
-  ptr[macro_len] = '_';
-  memcpy (&ptr[macro_len+1], arg, arg_len);
+
+  ptr = mangle_macro_name (macro, macro_len, arg, arg_len);
   yylval.s = ptr;
   return ID;
 }
@@ -411,14 +419,43 @@ ITYPE	{IWORD}({WS}{IWORD})*
 
 /* Deal with the expansion caused by the DEF_VEC_x macros.  */
 
-typedef struct macro
+/* Mangle a macro and argument list as done by cpp concatenation in
+   the compiler proper.  */
+static char *
+mangle_macro_name (const char *macro, unsigned macro_len,
+		   const char *arg, unsigned arg_len)
+{
+  char *ptr = (char *) xmemdup (macro, macro_len, macro_len + arg_len + 2);
+
+  /* Now copy and concatenate each argument */
+  while (arg_len)
+    {
+      ptr[macro_len++] = '_';
+      for (; arg_len && (ISALNUM(*arg) || *arg == '_'); arg_len--)
+        ptr[macro_len++] = *arg++;
+      for (; arg_len && !(ISALNUM(*arg) || *arg == '_'); arg_len--)
+        arg++;
+    }
+  ptr[macro_len] = 0;
+
+  return ptr;
+}
+
+typedef struct macro_def
 {
   const char *name;
   const char *expansion;
+  const char *additional;
+} macro_def_t;
+
+typedef struct macro
+{
+  const macro_def_t *def;
   struct macro *next;
+  const char *args[10];
 } macro_t;
 
-static const macro_t macro_defs[] = 
+static const macro_def_t macro_defs[] = 
 {
 #define IN_GENGTYPE 1
 #include "vec.h"
@@ -427,11 +464,12 @@ static const macro_t macro_defs[] =
 
 /* Chain of macro expansions to do at end of scanning.  */
 static macro_t *macro_expns;
+static macro_t *macro_expns_end;
 
 /* Push macro NAME (NAME_LEN) with argument ARG (ARG_LEN) onto the
    expansion queue.  We ensure NAME is known at this point.  */
 
-static void
+static const char *
 push_macro_expansion (const char *name, unsigned name_len,
 		      const char *arg, unsigned arg_len)
 {
@@ -442,15 +480,51 @@ push_macro_expansion (const char *name, unsigned name_len,
         && !memcmp (name, macro_defs[ix].name, name_len))
       {
         macro_t *expansion = XNEW (macro_t);
+        char *args;
+	unsigned argno, last_arg;
 
-	expansion->next = macro_expns;
-	expansion->name = (char *) xmemdup (arg, arg_len, arg_len+1);
-	expansion->expansion = macro_defs[ix].expansion;
-	macro_expns = expansion;
-	return;
+	expansion->def = &macro_defs[ix];
+	expansion->next = NULL;
+	args = (char *) xmemdup (arg, arg_len, arg_len+1);
+	args[arg_len] = 0;
+        for (argno = 0; *args;)
+	  {
+   	    expansion->args[argno++] = args;
+	    while (*args && (ISALNUM (*args) || *args == '_'))
+	      args++;
+	    if (argno == 1)
+	      expansion->args[argno++] = "base";
+	    if (!*args)
+	      break;
+	    *args++ = 0;
+	    while (*args && !(ISALNUM (*args) || *args == '_'))
+	      args++;
+          }
+	last_arg = argno;
+        for (; argno != 10; argno++)
+	  expansion->args[argno] = NULL;
+	if (macro_expns_end)
+          macro_expns_end->next = expansion;
+	else
+	  macro_expns = expansion;
+	macro_expns_end = expansion;
+	if (macro_defs[ix].additional)
+	  {
+	    macro_t *expn2 = XNEW (macro_t);
+            memcpy (expn2, expansion, sizeof (*expn2));
+	    expansion = expn2;
+	    expansion->def += 1;
+	    expansion->args[last_arg++] = macro_defs[ix].additional;
+	    macro_expns_end->next = expansion;
+	    macro_expns_end = expansion;
+	  }
+        if (last_arg > 2 && strcmp (expansion->args[last_arg - 1], "heap"))
+	  expansion->args[last_arg++] = "GTY (())";
+	return macro_defs[ix].additional;
       }
   error_at_line (&lexer_line, "unrecognized macro `%.*s(%.*s)'",
 		 name_len, name, arg_len, arg);
+  return NULL;
 }
 
 /* Attempt to read some input.  Use fread until we're at the end of
@@ -472,15 +546,30 @@ macro_input (char *buffer, unsigned size)
       const char *expn;
       unsigned len;
 
-      for (expn = macro_expns->expansion; *expn; expn++)
+      for (expn = macro_expns->def->expansion; *expn; expn++)
         {
 	  if (*expn == '#')
 	    {
+	      int argno;
+
+	      argno = expn[1] - '0';
+	      expn += 1;
+
+	      /* Remove inserted space? */
 	      if (buffer[result-1] == ' ' && buffer[result-2] == '_')
 	        result--;
-	      len = strlen (macro_expns->name);
-	      memcpy (&buffer[result], macro_expns->name, len);
-	      result += len;
+
+	      /* Insert the argument value */
+	      if (macro_expns->args[argno])
+	        {
+		  len = strlen (macro_expns->args[argno]);
+		  memcpy (&buffer[result], macro_expns->args[argno], len);
+		  result += len;
+		}
+
+	      /* Skip next space? */
+	      if (expn[1] == ' ' && expn[2] == '_')
+	        expn++;
 	    }
 	  else
 	    {
@@ -492,6 +581,8 @@ macro_input (char *buffer, unsigned size)
       if (result > size)
         YY_FATAL_ERROR ("buffer too small to expand macro");
       macro_expns = macro_expns->next;
+      if (!macro_expns)
+        macro_expns_end = NULL;
     }
   return result;
 }

@@ -622,7 +622,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
   ix = class_method_index_for_fn (complete_type (ctype), function);
   if (ix >= 0)
     {
-      VEC(tree) *methods = CLASSTYPE_METHOD_VEC (ctype);
+      VEC(tree,gc) *methods = CLASSTYPE_METHOD_VEC (ctype);
       tree fndecls, fndecl = 0;
       bool is_conv_op;
       tree pushed_scope;

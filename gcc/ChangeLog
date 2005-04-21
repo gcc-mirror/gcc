@@ -1,3 +1,92 @@
+2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* vec.h: Update API to separate allocation mechanism from type.
+	(VEC_safe_grow): New.
+	* vec.c (calculate_allocation): New.
+	(vec_gc_o_reserve, vec_heap_o_reserve): Adjust.
+	(vec_gc_free, vec_heap_free): Remove.
+	* gengtype-lex.l (DEF_VEC_): Process mult-argument macros.  Adjust.
+	(VEC): Likewise.
+	(mangle_macro_name): New.
+	(struct macro_def): New.
+	(struct macro): Add multiple argument values.
+	(macro_expans_end): New.
+	(push_macro_expansion):  Chain on new macro. Process multiple
+	args, create follow on expansion. Return follow on argument.
+	(macro_input): Deal with multiple arguments.
+	
+	* tree.h: Define VEC(tree,heap) and VEC(tree,gc).
+	(struct tree_binfo): Adjust.
+	* basic-block.h: Define VEC(edge,gc).
+	(struct edge_def): Adjust.
+	(struct basic_block_def, struct edge_iterator): Likewise.
+	(ei_container, ei_start_1, ei_last_1): Likewise.
+	* cfg.c (connect_src, connect_dest): Likewise.
+	* cfgrtl.c (force_nonfallthru_and_redirect)
+	* dbxout.c (dbxout_type)
+	* dwarf2out.c (gen_member_die)
+	* lambda-code.c: Define VEC(int,gc), VEC(lambda_loop,gc).
+	(gcc_tree_to_linear_expression): Adjust.
+	(gcc_loop_to_lambda_loop, gcc_loopnest_to_lambda_loopnest,
+	lbv_to_gcc_expression, lle_to_gcc_expression,
+	lambda_loopnest_to_gcc_loopnest, can_convert_to_perfect_nest,
+	perfect_nestify): Likewise.
+	* lambda.h (gcc_loopnest_to_lambda_loopnest,
+	lambda_loopnest_to_gcc_loopnest): Adjust prototypes.
+	* profile.c (instrument_values): Adjust.
+	* tree-cfg.c (modified_noreturn_calls): Adjust.
+	(remove_fallthru_edge): Likewise.
+	* tree-dump.c (dequeue_and_dump): Adjust.
+	* tree-flow-inline.h (mark_stmt_modified): Adjust.
+	* tree-flow.h (modified_noreturn_calls): Adjust.
+	(tree_on_heap): Remove. (yay!)
+	(register_new_def): Adjust.
+	* tree-into-ssa.c: Define VEC(int,heap).
+	(block_defs_stack): Adjust.
+	(find_idf, insert_phi_nodes, register_new_def,
+	rewrite_initialize_block, rewrite_finalize_block,
+	register_new_update_single, rewrite_update_init_block,
+	rewrite_update_fini_block, rewrite_blocks,
+	ssa_rewrite_finalize_block, ssa_register_new_def,
+	ssa_rewrite_initialize_block, rewrite_ssa_into_ssa): Likewise.
+	* tree-loop-linear.c (linear_transform_loops): Adjust.
+	* tree-ssa-alias.c: Define VEC(fieldoff_t,heap).
+	(push_fields_onto_fieldstack, create_overlap_variables_for): Adjust.
+	* tree-ssa-dom.c (avail_exprs_stack, block_defs_stack,
+	stmts_to_rescan, const_and_copies_stack, nonzero_vars_stack,
+	vrp_variables_stack): Adjust declarations.
+	(tree_ssa_dominator_optimize): Adjust.
+	(dom_opt_initialize_block, remove_local_expressions_from_table,
+	restore_nonzero_vars_to_original_value,
+	restore_vars_to_original_value,
+	restore_currdefs_to_original_value, dom_opt_finalize_block,
+	record_var_is_nonzero, record_cond, record_const_or_copy_1,
+	optimize_stmt, update_rhs_and_lookup_avail_expr,
+	lookup_avail_expr, record_range): Likewise.
+	* tree-ssa-pre.c: Define VEC(basic_block,heap).
+	(compute_antic_aux): Adjust.
+	(inserted_exprs, create_expression_by_pieces, 
+	insert_into_preds_of_block, eliminate, mark_operand_necessary, 
+	remove_dead_inserted_code, fini_pre): Likewise.
+	* tree-ssa-propagate.c (interesting_ssa_edges): Adjust.
+	(varying_ssa_edges, add_ssa_edge, process_ssa_edge_worklist. 
+	ssa_prop_init): Likewise.
+	* tree-ssa.c: Define VEC(bitmap,heap).
+	(verify_name_tags): Adjust.
+	* value-prof.c (rtl_divmod_values_to_profile): Adjust.
+	(insn_prefetch_values_to_profile, rtl_find_values_to_profile,
+	tree_divmod_values_to_profile, tree_find_values_to_profile,
+	value_profile_transformations): Likewise.
+	* value-prof.h: Define VEC(histogram_value,heap).
+	* varasm.c: Remove alias_pair pointer typedef, define
+	VEC(alias_pair,gc).
+	(finish_aliases_1, finish_aliases_2, assemble_alias): Adjust.
+	
+	* config/pa/pa.c (typedef extern_symbol): Typedef the structure,
+	not a pointer to it.  Create an object vector.
+	(extern_symbols): Turn into an object vector.
+	(pa_hpux_asm_output_external, pa_hpux_file_end): Adjust.
+
 2005-04-21  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR/20742

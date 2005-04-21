@@ -1065,7 +1065,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
 	  
 	  gcc_assert (found);
 	  
-	  VEC_safe_push (edge, bb->succs, e);
+	  VEC_safe_push (edge, gc, bb->succs, e);
 	  make_single_succ_edge (ENTRY_BLOCK_PTR, bb, EDGE_FALLTHRU);
 	}
     }

@@ -223,7 +223,7 @@ instrument_values (histogram_values values)
 	  gcc_unreachable ();
 	}
     }
-  VEC_free (histogram_value, values);
+  VEC_free (histogram_value, heap, values);
 }
 
 

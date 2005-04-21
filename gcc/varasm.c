@@ -4426,17 +4426,17 @@ globalize_decl (tree decl)
    of an alias.  This requires that the decl have been defined.  Aliases
    that precede their definition have to be queued for later processing.  */
 
-struct alias_pair GTY(())
+typedef struct alias_pair GTY(())
 {
   tree decl;
   tree target;
-};
-typedef struct alias_pair *alias_pair;
+} alias_pair;
 
 /* Define gc'd vector type.  */
-DEF_VEC_GC_P(alias_pair);
+DEF_VEC_O(alias_pair);
+DEF_VEC_ALLOC_O(alias_pair,gc);
 
-static GTY(()) VEC(alias_pair) *alias_pairs;
+static GTY(()) VEC(alias_pair,gc) *alias_pairs;
 
 /* Given an assembly name, find the decl it is associated with.  At the
    same time, mark it needed for cgraph.  */
@@ -4534,7 +4534,7 @@ void
 finish_aliases_1 (void)
 {
   unsigned i;
-  alias_pair p;
+  alias_pair *p;
 
   for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
     {
@@ -4558,12 +4558,12 @@ void
 finish_aliases_2 (void)
 {
   unsigned i;
-  alias_pair p;
+  alias_pair *p;
 
   for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
     do_assemble_alias (p->decl, p->target);
 
-  alias_pairs = NULL;
+  VEC_truncate (alias_pair, alias_pairs, 0);
 }
 
 /* Emit an assembler directive to make the symbol for DECL an alias to
@@ -4610,12 +4610,9 @@ assemble_alias (tree decl, tree target)
     do_assemble_alias (decl, target);
   else
     {
-      alias_pair p;
-
-      p = ggc_alloc (sizeof (struct alias_pair));
+      alias_pair *p = VEC_safe_push (alias_pair, gc, alias_pairs, NULL);
       p->decl = decl;
       p->target = target;
-      VEC_safe_push (alias_pair, alias_pairs, p);
     }
 }
 

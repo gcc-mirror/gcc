@@ -9022,18 +9022,18 @@ pa_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
    at the end of the file if and only if SYMBOL_REF_REFERENCED_P is true.
    This avoids putting out names that are never really used.  */
 
-struct extern_symbol GTY(())
+typedef struct extern_symbol GTY(())
 {
   tree decl;
   const char *name;
-};
-typedef struct extern_symbol *extern_symbol;
+} extern_symbol;
 
 /* Define gc'd vector type for extern_symbol.  */
-DEF_VEC_GC_P(extern_symbol);
+DEF_VEC_O(extern_symbol);
+DEF_VEC_ALLOC_O(extern_symbol,gc);
 
 /* Vector of extern_symbol pointers.  */
-static GTY(()) VEC(extern_symbol) *extern_symbols;
+static GTY(()) VEC(extern_symbol,gc) *extern_symbols;
 
 #ifdef ASM_OUTPUT_EXTERNAL_REAL
 /* Mark DECL (name NAME) as an external reference (assembler output
@@ -9043,12 +9043,11 @@ static GTY(()) VEC(extern_symbol) *extern_symbols;
 void
 pa_hpux_asm_output_external (FILE *file, tree decl, const char *name)
 {
-  extern_symbol p = ggc_alloc (sizeof (struct extern_symbol));
+  extern_symbol * p = VEC_safe_push (extern_symbol, gc, extern_symbols, NULL);
 
   gcc_assert (file == asm_out_file);
   p->decl = decl;
   p->name = name;
-  VEC_safe_push (extern_symbol, extern_symbols, p);
 }
 
 /* Output text required at the end of an assembler file.
@@ -9059,7 +9058,7 @@ static void
 pa_hpux_file_end (void)
 {
   unsigned int i;
-  extern_symbol p;
+  extern_symbol *p;
 
   output_deferred_plabels ();
 
@@ -9072,7 +9071,7 @@ pa_hpux_file_end (void)
 	ASM_OUTPUT_EXTERNAL_REAL (asm_out_file, decl, p->name);
     }
 
-  extern_symbols = NULL;
+  VEC_free (extern_symbol, gc, extern_symbols);
 }
 #endif
 

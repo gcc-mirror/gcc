@@ -75,9 +75,10 @@ struct histogram_value_t
 
 typedef struct histogram_value_t *histogram_value;
 
-DEF_VEC_MALLOC_P(histogram_value);
+DEF_VEC_P(histogram_value);
+DEF_VEC_ALLOC_P(histogram_value,heap);
 
-typedef VEC(histogram_value) *histogram_values;
+typedef VEC(histogram_value,heap) *histogram_values;
 
 /* Hooks registration.  */
 extern void rtl_register_value_prof_hooks (void);

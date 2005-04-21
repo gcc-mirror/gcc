@@ -66,7 +66,8 @@ typedef struct cp_token GTY (())
 
 /* We use a stack of token pointer for saving token sets.  */
 typedef struct cp_token *cp_token_position;
-DEF_VEC_MALLOC_P (cp_token_position);
+DEF_VEC_P (cp_token_position);
+DEF_VEC_ALLOC_P (cp_token_position,heap);
 
 static const cp_token eof_token =
 {
@@ -104,7 +105,7 @@ typedef struct cp_lexer GTY (())
      called.  The top entry is the most recent position at which we
      began saving tokens.  If the stack is non-empty, we are saving
      tokens.  */
-  VEC (cp_token_position) *GTY ((skip)) saved_tokens;
+  VEC(cp_token_position,heap) *GTY ((skip)) saved_tokens;
 
   /* True if we should output debugging information.  */
   bool debugging_p;
@@ -260,7 +261,8 @@ cp_lexer_new_main (void)
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
 #endif /* ENABLE_CHECKING */
-  lexer->saved_tokens = VEC_alloc (cp_token_position, CP_SAVED_TOKEN_STACK);
+  lexer->saved_tokens = VEC_alloc (cp_token_position, heap,
+				   CP_SAVED_TOKEN_STACK);
 	 
   /* Create the buffer.  */
   alloc = CP_LEXER_BUFFER_SIZE;
@@ -314,7 +316,8 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
   lexer->next_token = first == last ? (cp_token *)&eof_token : first;
   lexer->last_token = last;
   
-  lexer->saved_tokens = VEC_alloc (cp_token_position, CP_SAVED_TOKEN_STACK);
+  lexer->saved_tokens = VEC_alloc (cp_token_position, heap,
+				   CP_SAVED_TOKEN_STACK);
 
 #ifdef ENABLE_CHECKING
   /* Initially we are not debugging.  */
@@ -332,7 +335,7 @@ cp_lexer_destroy (cp_lexer *lexer)
 {
   if (lexer->buffer)
     ggc_free (lexer->buffer);
-  VEC_free (cp_token_position, lexer->saved_tokens);
+  VEC_free (cp_token_position, heap, lexer->saved_tokens);
   ggc_free (lexer);
 }
 
@@ -621,7 +624,8 @@ cp_lexer_save_tokens (cp_lexer* lexer)
   if (cp_lexer_debugging_p (lexer))
     fprintf (cp_lexer_debug_stream, "cp_lexer: saving tokens\n");
 
-  VEC_safe_push (cp_token_position, lexer->saved_tokens, lexer->next_token);
+  VEC_safe_push (cp_token_position, heap,
+		 lexer->saved_tokens, lexer->next_token);
 }
 
 /* Commit to the portion of the token stream most recently saved.  */

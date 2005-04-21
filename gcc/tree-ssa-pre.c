@@ -1112,7 +1112,8 @@ clean (value_set_t set)
     }
 }
 
-DEF_VEC_MALLOC_P (basic_block);
+DEF_VEC_P (basic_block);
+DEF_VEC_ALLOC_P (basic_block, heap);
 static sbitmap has_abnormal_preds;
 
 /* Compute the ANTIC set for BLOCK.
@@ -1162,15 +1163,15 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
      them.  */
   else
     {
-      VEC (basic_block) * worklist;
+      VEC(basic_block, heap) * worklist;
       edge e;
       size_t i;
       basic_block bprime, first;
       edge_iterator ei;
 
-      worklist = VEC_alloc (basic_block, 2);
+      worklist = VEC_alloc (basic_block, heap, EDGE_COUNT (block->succs));
       FOR_EACH_EDGE (e, ei, block->succs)
-	VEC_safe_push (basic_block, worklist, e->dest);
+	VEC_quick_push (basic_block, worklist, e->dest);
       first = VEC_index (basic_block, worklist, 0);
       set_copy (ANTIC_OUT, ANTIC_IN (first));
 
@@ -1187,7 +1188,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	      node = next;
 	    }
 	}
-      VEC_free (basic_block, worklist);
+      VEC_free (basic_block, heap, worklist);
     }
 
   /* Generate ANTIC_OUT - TMP_GEN.  */
@@ -1271,7 +1272,7 @@ compute_antic (void)
     fprintf (dump_file, "compute_antic required %d iterations\n", num_iterations);
 }
 
-static VEC(tree_on_heap) *inserted_exprs;
+static VEC(tree,heap) *inserted_exprs;
 /* Find a leader for an expression, or generate one using
    create_expression_by_pieces if it's ANTIC but
    complex.  
@@ -1367,7 +1368,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	TREE_OPERAND (newexpr, 0) = name;
 	tsi = tsi_last (stmts);
 	tsi_link_after (&tsi, newexpr, TSI_CONTINUE_LINKING);
-	VEC_safe_push (tree_on_heap, inserted_exprs, newexpr);
+	VEC_safe_push (tree, heap, inserted_exprs, newexpr);
 	pre_stats.insertions++;
 	break;
       }
@@ -1415,7 +1416,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	NECESSARY (newexpr) = 0;
 	tsi = tsi_last (stmts);
 	tsi_link_after (&tsi, newexpr, TSI_CONTINUE_LINKING);
-	VEC_safe_push (tree_on_heap, inserted_exprs, newexpr);
+	VEC_safe_push (tree, heap, inserted_exprs, newexpr);
 	pre_stats.insertions++;
 
 	break;
@@ -1533,7 +1534,7 @@ insert_into_preds_of_block (basic_block block, value_set_node_t node,
   add_referenced_tmp_var (temp);
   temp = create_phi_node (temp, block);
   NECESSARY (temp) = 0; 
-  VEC_safe_push (tree_on_heap, inserted_exprs, temp);
+  VEC_safe_push (tree, heap, inserted_exprs, temp);
   FOR_EACH_EDGE (pred, ei, block->preds)
     add_phi_arg (temp, avail[pred->src->index], pred);
   
@@ -2111,10 +2112,11 @@ eliminate (void)
    this may be a bit faster, and we may want critical edges kept split.  */
 
 /* If OP's defining statement has not already been determined to be necessary,
-   mark that statement necessary. and place it on the WORKLIST.  */ 
+   mark that statement necessary. Return the stmt, if it is newly
+   necessary.  */ 
 
-static inline void
-mark_operand_necessary (tree op, VEC(tree_on_heap) **worklist)
+static inline tree
+mark_operand_necessary (tree op)
 {
   tree stmt;
 
@@ -2125,10 +2127,10 @@ mark_operand_necessary (tree op, VEC(tree_on_heap) **worklist)
 
   if (NECESSARY (stmt)
       || IS_EMPTY_STMT (stmt))
-    return;
+    return NULL;
 
   NECESSARY (stmt) = 1;
-  VEC_safe_push (tree_on_heap, *worklist, stmt);
+  return stmt;
 }
 
 /* Because we don't follow exactly the standard PRE algorithm, and decide not
@@ -2139,18 +2141,19 @@ mark_operand_necessary (tree op, VEC(tree_on_heap) **worklist)
 static void
 remove_dead_inserted_code (void)
 {
-  VEC (tree_on_heap) *worklist = NULL;
+  VEC(tree,heap) *worklist = NULL;
   int i;
   tree t;
 
-  for (i = 0; VEC_iterate (tree_on_heap, inserted_exprs, i, t); i++)
+  worklist = VEC_alloc (tree, heap, VEC_length (tree, inserted_exprs));
+  for (i = 0; VEC_iterate (tree, inserted_exprs, i, t); i++)
     {
       if (NECESSARY (t))
-	VEC_safe_push (tree_on_heap, worklist, t);
+	VEC_quick_push (tree, worklist, t);
     }
-  while (VEC_length (tree_on_heap, worklist) > 0)
+  while (VEC_length (tree, worklist) > 0)
     {
-      t = VEC_pop (tree_on_heap, worklist);
+      t = VEC_pop (tree, worklist);
       if (TREE_CODE (t) == PHI_NODE)
 	{
 	  /* PHI nodes are somewhat special in that each PHI alternative has
@@ -2160,11 +2163,17 @@ remove_dead_inserted_code (void)
 	     predecessor block associated with each PHI alternative as
 	     necessary.  */
 	  int k;
+
+	  VEC_reserve (tree, heap, worklist, PHI_NUM_ARGS (t));
 	  for (k = 0; k < PHI_NUM_ARGS (t); k++)
             {
 	      tree arg = PHI_ARG_DEF (t, k);
 	      if (TREE_CODE (arg) == SSA_NAME)
-		mark_operand_necessary (arg, &worklist);
+		{
+		  arg = mark_operand_necessary (arg);
+		  if (arg)
+		    VEC_quick_push (tree, worklist, arg);
+		}
 	    }
 	}
       else
@@ -2181,10 +2190,14 @@ remove_dead_inserted_code (void)
 	     links).  */
 
 	  FOR_EACH_SSA_TREE_OPERAND (use, t, iter, SSA_OP_ALL_USES)
-	    mark_operand_necessary (use, &worklist);
+	    {
+	      tree n = mark_operand_necessary (use);
+	      if (n)
+		VEC_safe_push (tree, heap, worklist, n);
+	    }
 	}
     }
-  for (i = 0; VEC_iterate (tree_on_heap, inserted_exprs, i, t); i++)
+  for (i = 0; VEC_iterate (tree, inserted_exprs, i, t); i++)
     {
       if (!NECESSARY (t))
 	{
@@ -2205,7 +2218,7 @@ remove_dead_inserted_code (void)
 	    }
 	}
     }
-  VEC_free (tree_on_heap, worklist);
+  VEC_free (tree, heap, worklist);
 }
 /* Initialize data structures used by PRE.  */
 
@@ -2272,7 +2285,7 @@ fini_pre (bool do_fre)
   basic_block bb;
   unsigned int i;
 
-  VEC_free (tree_on_heap, inserted_exprs);
+  VEC_free (tree, heap, inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
   free_alloc_pool (value_set_pool);
   free_alloc_pool (bitmap_set_pool);

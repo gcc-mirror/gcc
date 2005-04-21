@@ -306,7 +306,7 @@ new_class_binding (tree name, tree value, tree type, cxx_scope *scope)
     {
       cp_class_binding *old_base;
       old_base = VEC_index (cp_class_binding, scope->class_shadowed, 0);
-      if (VEC_reserve (cp_class_binding, scope->class_shadowed, -1))
+      if (VEC_reserve (cp_class_binding, gc, scope->class_shadowed, 1))
 	{
 	  /* Fixup the current bindings, as they might have moved.  */
 	  size_t i;
@@ -325,7 +325,7 @@ new_class_binding (tree name, tree value, tree type, cxx_scope *scope)
       cb = VEC_quick_push (cp_class_binding, scope->class_shadowed, NULL);
     }
   else
-    cb = VEC_safe_push (cp_class_binding, scope->class_shadowed, NULL);
+    cb = VEC_safe_push (cp_class_binding, gc, scope->class_shadowed, NULL);
   
   cb->identifier = name;
   binding = &cb->base;
@@ -4741,7 +4741,7 @@ struct saved_scope *scope_chain;
    *OLD_BINDINGS.  */
 
 static void
-store_binding (tree id, VEC(cxx_saved_binding) **old_bindings)
+store_binding (tree id, VEC(cxx_saved_binding,gc) **old_bindings)
 {
   cxx_saved_binding *saved;
 
@@ -4753,7 +4753,7 @@ store_binding (tree id, VEC(cxx_saved_binding) **old_bindings)
   
   IDENTIFIER_MARKED (id) = 1;
 
-  saved = VEC_safe_push (cxx_saved_binding, *old_bindings, NULL);
+  saved = VEC_safe_push (cxx_saved_binding, gc, *old_bindings, NULL);
   saved->identifier = id;
   saved->binding = IDENTIFIER_BINDING (id);
   saved->real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
@@ -4761,7 +4761,7 @@ store_binding (tree id, VEC(cxx_saved_binding) **old_bindings)
 }
 
 static void
-store_bindings (tree names, VEC(cxx_saved_binding) **old_bindings)
+store_bindings (tree names, VEC(cxx_saved_binding,gc) **old_bindings)
 {
   tree t;
 
@@ -4784,8 +4784,8 @@ store_bindings (tree names, VEC(cxx_saved_binding) **old_bindings)
    objects, rather than a TREE_LIST.  */
 
 static void
-store_class_bindings (VEC(cp_class_binding) *names, 
-		      VEC(cxx_saved_binding) **old_bindings)
+store_class_bindings (VEC(cp_class_binding,gc) *names, 
+		      VEC(cxx_saved_binding,gc) **old_bindings)
 {
   size_t i;
   cp_class_binding *cb;

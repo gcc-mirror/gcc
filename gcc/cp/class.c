@@ -887,7 +887,7 @@ add_method (tree type, tree method)
   tree overload;
   bool template_conv_p = false;
   bool conv_p;
-  VEC(tree) *method_vec;
+  VEC(tree,gc) *method_vec;
   bool complete_p;
   bool insert_p = false;
   tree current_fns;
@@ -909,7 +909,7 @@ add_method (tree type, tree method)
 	 allocate at least two (for constructors and destructors), and
 	 we're going to end up with an assignment operator at some
 	 point as well.  */
-      method_vec = VEC_alloc (tree, 8);
+      method_vec = VEC_alloc (tree, gc, 8);
       /* Create slots for constructors and destructors.  */
       VEC_quick_push (tree, method_vec, NULL_TREE);
       VEC_quick_push (tree, method_vec, NULL_TREE);
@@ -1052,7 +1052,7 @@ add_method (tree type, tree method)
     {
       /* We only expect to add few methods in the COMPLETE_P case, so
 	 just make room for one more method in that case.  */
-      if (VEC_reserve (tree, method_vec, complete_p ? 1 : -1))
+      if (VEC_reserve (tree, gc, method_vec, complete_p ? -1 : 1))
 	CLASSTYPE_METHOD_VEC (type) = method_vec;
       if (slot == VEC_length (tree, method_vec))
 	VEC_quick_push (tree, method_vec, overload);
@@ -1663,7 +1663,7 @@ resort_type_method_vec (void* obj,
                         gt_pointer_operator new_value,
                         void* cookie)
 {
-  VEC(tree) *method_vec = (VEC(tree) *) obj;
+  VEC(tree,gc) *method_vec = (VEC(tree,gc) *) obj;
   int len = VEC_length (tree, method_vec);
   size_t slot;
   tree fn;
@@ -1695,7 +1695,7 @@ static void
 finish_struct_methods (tree t)
 {
   tree fn_fields;
-  VEC(tree) *method_vec;
+  VEC(tree,gc) *method_vec;
   int slot, len;
 
   method_vec = CLASSTYPE_METHOD_VEC (t);
@@ -1814,7 +1814,7 @@ typedef struct find_final_overrider_data_s {
   /* The candidate overriders.  */
   tree candidates;
   /* Path to most derived.  */
-  VEC (tree) *path;
+  VEC(tree,heap) *path;
 } find_final_overrider_data;
 
 /* Add the overrider along the current path to FFOD->CANDIDATES.
@@ -1873,7 +1873,7 @@ dfs_find_final_overrider_pre (tree binfo, void *data)
 
   if (binfo == ffod->declaring_base)
     dfs_find_final_overrider_1 (binfo, ffod, VEC_length (tree, ffod->path));
-  VEC_safe_push (tree, ffod->path, binfo);
+  VEC_safe_push (tree, heap, ffod->path, binfo);
 
   return NULL_TREE;
 }
@@ -1922,12 +1922,12 @@ find_final_overrider (tree derived, tree binfo, tree fn)
   ffod.fn = fn;
   ffod.declaring_base = binfo;
   ffod.candidates = NULL_TREE;
-  ffod.path = VEC_alloc (tree, 30);
+  ffod.path = VEC_alloc (tree, heap, 30);
 
   dfs_walk_all (derived, dfs_find_final_overrider_pre,
 		dfs_find_final_overrider_post, &ffod);
 
-  VEC_free (tree, ffod.path);
+  VEC_free (tree, heap, ffod.path);
   
   /* If there was no winner, issue an error message.  */
   if (!ffod.candidates || TREE_CHAIN (ffod.candidates))
@@ -1946,7 +1946,7 @@ find_final_overrider (tree derived, tree binfo, tree fn)
 static tree
 get_vcall_index (tree fn, tree type)
 {
-  VEC (tree_pair_s) *indices = CLASSTYPE_VCALL_INDICES (type);
+  VEC(tree_pair_s,gc) *indices = CLASSTYPE_VCALL_INDICES (type);
   tree_pair_p p;
   unsigned ix;
 
@@ -2350,7 +2350,7 @@ check_for_override (tree decl, tree ctype)
 void
 warn_hidden (tree t)
 {
-  VEC(tree) *method_vec = CLASSTYPE_METHOD_VEC (t);
+  VEC(tree,gc) *method_vec = CLASSTYPE_METHOD_VEC (t);
   tree fns;
   size_t i;
 
@@ -3200,7 +3200,7 @@ walk_subobject_offsets (tree type,
       if (abi_version_at_least (2) && CLASSTYPE_VBASECLASSES (type))
 	{
 	  unsigned ix;
-	  VEC (tree) *vbases;
+	  VEC(tree,gc) *vbases;
 
 	  /* Iterate through the virtual base classes of TYPE.  In G++
 	     3.2, we included virtual bases in the direct base class
@@ -3678,7 +3678,7 @@ check_methods (tree t)
 	{
 	  TYPE_POLYMORPHIC_P (t) = 1;
 	  if (DECL_PURE_VIRTUAL_P (x))
-	    VEC_safe_push (tree, CLASSTYPE_PURE_VIRTUALS (t), x);
+	    VEC_safe_push (tree, gc, CLASSTYPE_PURE_VIRTUALS (t), x);
 	}
       /* All user-declared destructors are non-trivial.  */
       if (DECL_DESTRUCTOR_P (x))
@@ -4202,7 +4202,7 @@ static void
 fixup_inline_methods (tree type)
 {
   tree method = TYPE_METHODS (type);
-  VEC (tree) *friends;
+  VEC(tree,gc) *friends;
   unsigned ix;
 
   if (method && TREE_CODE (method) == TREE_VEC)
@@ -4370,7 +4370,7 @@ static tree
 end_of_class (tree t, int include_virtuals_p)
 {
   tree result = size_zero_node;
-  VEC (tree) *vbases;
+  VEC(tree,gc) *vbases;
   tree binfo;
   tree base_binfo;
   tree offset;
@@ -4417,7 +4417,7 @@ static void
 warn_about_ambiguous_bases (tree t)
 {
   int i;
-  VEC (tree) *vbases;
+  VEC(tree,gc) *vbases;
   tree basetype;
   tree binfo;
   tree base_binfo;
@@ -5129,7 +5129,7 @@ finish_struct (tree t, tree attributes)
       CLASSTYPE_PURE_VIRTUALS (t) = NULL;
       for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
 	if (DECL_PURE_VIRTUAL_P (x))
-	  VEC_safe_push (tree, CLASSTYPE_PURE_VIRTUALS (t), x);
+	  VEC_safe_push (tree, gc, CLASSTYPE_PURE_VIRTUALS (t), x);
       complete_vars (t);
     }
   else
@@ -7130,7 +7130,7 @@ build_vtbl_initializer (tree binfo,
   vtbl_init_data vid;
   unsigned ix;
   tree vbinfo;
-  VEC (tree) *vbases;
+  VEC(tree,gc) *vbases;
   
   /* Initialize VID.  */
   memset (&vid, 0, sizeof (vid));
@@ -7598,7 +7598,7 @@ add_vcall_offset (tree orig_fn, tree binfo, vtbl_init_data *vid)
      offset.  */
   if (vid->binfo == TYPE_BINFO (vid->derived))
     {
-      tree_pair_p elt = VEC_safe_push (tree_pair_s,
+      tree_pair_p elt = VEC_safe_push (tree_pair_s, gc,
 				       CLASSTYPE_VCALL_INDICES (vid->derived),
 				       NULL);
       elt->purpose = orig_fn;

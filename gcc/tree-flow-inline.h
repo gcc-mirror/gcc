@@ -151,7 +151,7 @@ mark_stmt_modified (tree t)
   if (ann == NULL)
     ann = create_stmt_ann (t);
   else if (noreturn_call_p (t))
-    VEC_safe_push (tree, modified_noreturn_calls, t);
+    VEC_safe_push (tree, gc, modified_noreturn_calls, t);
   ann->modified = 1;
 }
 

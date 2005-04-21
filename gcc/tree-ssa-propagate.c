@@ -143,7 +143,7 @@ static sbitmap bb_in_list;
    definition has changed.  SSA edges are def-use edges in the SSA
    web.  For each D-U edge, we store the target statement or PHI node
    U.  */
-static GTY(()) VEC(tree) *interesting_ssa_edges;
+static GTY(()) VEC(tree,gc) *interesting_ssa_edges;
 
 /* Identical to INTERESTING_SSA_EDGES.  For performance reasons, the
    list of SSA edges is split into two.  One contains all SSA edges
@@ -159,7 +159,7 @@ static GTY(()) VEC(tree) *interesting_ssa_edges;
    don't use a separate worklist for VARYING edges, we end up with
    situations where lattice values move from
    UNDEFINED->INTERESTING->VARYING instead of UNDEFINED->VARYING.  */
-static GTY(()) VEC(tree) *varying_ssa_edges;
+static GTY(()) VEC(tree,gc) *varying_ssa_edges;
 
 
 /* Return true if the block worklist empty.  */
@@ -244,9 +244,9 @@ add_ssa_edge (tree var, bool is_varying)
 	{
 	  STMT_IN_SSA_EDGE_WORKLIST (use_stmt) = 1;
 	  if (is_varying)
-	    VEC_safe_push (tree, varying_ssa_edges, use_stmt);
+	    VEC_safe_push (tree, gc, varying_ssa_edges, use_stmt);
 	  else
-	    VEC_safe_push (tree, interesting_ssa_edges, use_stmt);
+	    VEC_safe_push (tree, gc, interesting_ssa_edges, use_stmt);
 	}
     }
 }
@@ -342,7 +342,7 @@ simulate_stmt (tree stmt)
    SSA edge is added to it in simulate_stmt.  */
 
 static void
-process_ssa_edge_worklist (VEC(tree) **worklist)
+process_ssa_edge_worklist (VEC(tree,gc) **worklist)
 {
   /* Drain the entire worklist.  */
   while (VEC_length (tree, *worklist) > 0)
@@ -462,8 +462,8 @@ ssa_prop_init (void)
   size_t i;
 
   /* Worklists of SSA edges.  */
-  interesting_ssa_edges = VEC_alloc (tree, 20);
-  varying_ssa_edges = VEC_alloc (tree, 20);
+  interesting_ssa_edges = VEC_alloc (tree, gc, 20);
+  varying_ssa_edges = VEC_alloc (tree, gc, 20);
 
   executable_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (executable_blocks);
@@ -506,8 +506,8 @@ ssa_prop_init (void)
 static void
 ssa_prop_fini (void)
 {
-  VEC_free (tree, interesting_ssa_edges);
-  VEC_free (tree, varying_ssa_edges);
+  VEC_free (tree, gc, interesting_ssa_edges);
+  VEC_free (tree, gc, varying_ssa_edges);
   cfg_blocks = NULL;
   sbitmap_free (bb_in_list);
   sbitmap_free (executable_blocks);
