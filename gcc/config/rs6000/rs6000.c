@@ -1311,9 +1311,8 @@ rs6000_override_options (const char *default_cpu)
   if (DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT)
     {
       rs6000_darwin64_abi = 1;
-      /* Setting to empty string is same as "-mone-byte-bool".  */
 #if TARGET_MACHO
-      darwin_one_byte_bool = "";
+      darwin_one_byte_bool = 1;
 #endif
       /* Default to natural alignment, for better performance.  */
       rs6000_alignment_flags = MASK_ALIGN_NATURAL;

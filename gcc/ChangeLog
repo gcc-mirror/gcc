@@ -1,3 +1,71 @@
+2005-04-21  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (*-*-darwin*): Add darwin.opt to $extra_options.
+	(i[34567]86-pc-msdosdjgpp*): Likewise i386/djgpp.opt.
+	(i[34567]86-*-lynxos*, powerpc-*-lynxos*): Likewise lynx.opt.
+	(i[34567]86-*-sco3.2v5*): Likewise i386/sco5.opt.
+	(i[34567]86-*-pe, i[34567]86-*-cygwin*, i[34567]86-*-mingw32*)
+	(i[34567]86-*-uwin*): Likewise i386/cygming.opt.
+	* config/darwin.h (darwin_one_byte_bool, darwin_fix_and_continue)
+	(darwin_fix_and_continue_switch, SUBTARGET_OPTIONS): Delete.
+	* config/darwin.c (darwin_one_byte_bool, darwin_fix_and_continue)
+	(darwin_fix_and_continue_switch): Delete.
+	* config/lynx.h (SUBTARGET_OS_LYNX_SWITCHES): Delete.
+	(SUBTARGET_SWITCHES): Delete.
+	* config/i386/i386.h (target_flags, MASK_80387, MASK_RTD)
+	(MASK_ALIGN_DOUBLE, MASK_SVR3_SHLIB, MASK_IEEE_FP, MASK_FLOAT_RETURNS)
+	(MASK_NO_FANCY_MATH_387, MASK_OMIT_LEAF_FRAME_POINTER)
+	(MASK_STACK_PROBE, MASK_NO_ALIGN_STROPS, MASK_INLINE_ALL_STROPS)
+	(MASK_NO_PUSH_ARGS, MASK_ACCUMULATE_OUTGOING_ARGS, MASK_MMX)
+	(MASK_SSE, MASK_SSE2, MASK_SSE3, MASK_3DNOW, MASK_3DNOW_A)
+	(MASK_128BIT_LONG_DOUBLE, MASK_64BIT, MASK_MS_BITFIELD_LAYOUT)
+	(MASK_TLS_DIRECT_SEG_REFS, MASK_NO_RED_ZONE, TARGET_80387)
+	(TARGET_RTD, TARGET_ALIGN_DOUBLE, TARGET_PUSH_ARGS)
+	(TARGET_ACCUMULATE_OUTGOING_ARGS, TARGET_SVR3_SHLIB, TARGET_IEEE_FP)
+	(TARGET_128BIT_LONG_DOUBLE, TARGET_NO_FANCY_MATH_387)
+	(TARGET_USE_FANCY_MATH_387, TARGET_OMIT_LEAF_FRAME_POINTER)
+	(TARGET_DEBUG_ADDR, TARGET_DEBUG_ARG): Delete.
+	(TARGET_FLOAT_RETURNS_IN_80387): Make an alias of TARGET_FLOAT_RETURNS.
+	(TARGET_64BIT): Undef before redefining.
+	(TARGET_TLS_DIRECT_SEG_REFS, TARGET_STACK_PROBE)
+	(TARGET_ALIGN_STRINGOPS, TARGET_INLINE_ALL_STRINGOPS, TARGET_SSE)
+	(TARGET_SSE2, TARGET_SSE3, TARGET_MMX, TARGET_3DNOW, TARGET_3DNOW_A)
+	(TARGET_RED_ZONE, TARGET_USE_MS_BITFIELD_LAYOUT, TARGET_SWITCHES)
+	(TARGET_OPTIONS, SUBTARGET_SWITCHES, SUBTARGET_OPTIONS)
+	(ix86_fpmath_string, ix86_tls_dialect_string, ix86_cmodel_string)
+	(ix86_asm_string, ix86_regparm, ix86_regparm_string)
+	(ix86_preferred_stack_boundary_string, ix86_branch_cost_string)
+	(ix86_debug_arg_string, ix86_debug_addr_string)
+	(ix86_align_loops_string, ix86_align_jumps_string)
+	(ix86_align_funcs_string): Delete.
+	* config/i386/cygming.h (MASK_NOP_FUN_DLLIMPORT)
+	(TARGET_NOP_FUN_DLLIMPORT, SUBTARGET_SWITCHES): Delete.
+	* config/i386/djgpp.h (MASK_BNU210, SUBTARGET_SWITCHES): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Check TARGET_BNU210.
+	* config/i386/lynx.h (SUBTARGET_SWITCHES): Delete.
+	* config/i386/sco5.h (MASK_COFF, TARGET_ELF)
+	(SUBTARGET_SWITCHES): Delete.
+	* config/i386/i386.c (ix86_debug_arg_string): Delete.
+	(ix86_debug_addr_string): Delete.
+	(ix86_cmodel_string, ix86_asm_string, ix86_tls_dialect_string)
+	(ix86_fpmath_string, ix86_regparm_string, ix86_regparm)
+	(ix86_align_loops_string, ix86_align_jumps_string)
+	(ix86_preferred_stack_boundary_string, ix86_branch_cost_string)
+	(ix86_align_funcs_string): Make static.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(ix86_handle_option): New function.
+	(TARGET_USE_MS_BITFIELD_LAYOUT): Delete.
+	(ix86_ms_bitfield_layout_p): Check TARGET_MS_BITFIELD_LAYOUT.
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Remove handling
+	of darwin_fix_and_continue_switch.
+	(darwin_one_byte_bool): Delete.
+	* config/rs6000/lynx.h (EXTRA_SUBTARGET_SWITCHES): Delete.
+	* config/rs6000/rs6000.c (rs6000_override_options): Update assignment
+	to darwin_one_byte_bool.
+	* config/darwin.opt, config/lynx.opt, config/i386/cygming.opt,
+	* config/i386/djgpp.opt, config/i386/i386.opt,
+	* config/i386/sco5.opt: New files.
+
 2005-04-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (reg_or_0_operand, const1_operand,

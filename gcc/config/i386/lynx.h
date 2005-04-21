@@ -71,12 +71,6 @@ Boston, MA 02111-1307, USA.  */
   } while (0)
 #endif
 
-/* Since i386.h defines an empty SUBTARGET_SWITCHES the definition in
-   config/lynx.h is omitted.  */
-
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES SUBTARGET_OS_LYNX_SWITCHES
-
 /* Undefine SUBTARGET_EXTRA_SPECS it is empty anyway.  We define it in
    config/lynx.h.  */
 
