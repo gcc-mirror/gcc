@@ -1,3 +1,11 @@
+2005-04-21  Anthony Green  <green@redhat.com>
+
+	PR libgcj/21115
+	* testsuite/libjava.special/special.exp,
+	testsuite/libjava.special/pr21115I.java,
+	testsuite/libjava.special/pr21115.java,
+	testsuite/libjava.special/pr21115.out: New files.
+
 2005-04-21  Chris Burdess  <dog@gnu.org>
 
 	* gnu/java/net/CRLFInputStream.java: Rewrite to return

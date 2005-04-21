@@ -1,0 +1,30 @@
+# Special test cases.  These require tricky build procedures.
+
+proc gcj_special_run {} {
+  global srcdir subdir env
+
+  # ---- PR 21115 -------------------------------------------------------
+
+  if {! [bytecompile_file ${srcdir}/${subdir}/pr21115I.java [pwd]]} {
+    fail "bytecompile ${srcdir}/${subdir}/libjava.special/pr21115I.java"
+    # FIXME - should use `untested' on all remaining tests.
+    # But that is hard.
+    return 0
+  }
+  pass "bytecompile pr21115I.java"
+
+    if {! [gcj_link pr21115 pr21115 [list ${srcdir}/${subdir}/pr21115.java]]} {
+    fail "compiling/linking pr21115.java"
+    # FIXME
+    return 0
+  }
+
+  if {! [gcj_invoke pr21115 ${srcdir}/${subdir}/pr21115.out ""]} {
+    # FIXME
+    return 0
+  }
+
+  return 1
+}
+
+gcj_special_run
