@@ -1090,8 +1090,8 @@ reload (rtx first, int global)
       CLEAR_REGNO_REG_SET (bb->global_live_at_start,
 			   HARD_FRAME_POINTER_REGNUM);
 
-  /* Come here (with failure set nonzero) if we can't get enough spill regs
-     and we decide not to abort about it.  */
+  /* Come here (with failure set nonzero) if we can't get enough spill
+     regs.  */
  failed:
 
   CLEAR_REG_SET (&spilled_pseudos);
@@ -4059,7 +4059,7 @@ forget_old_reloads_1 (rtx x, rtx ignored ATTRIBUTE_UNUSED,
   unsigned int nr;
 
   /* note_stores does give us subregs of hard regs,
-     subreg_regno_offset will abort if it is not a hard reg.  */
+     subreg_regno_offset requires a hard reg.  */
   while (GET_CODE (x) == SUBREG)
     {
       /* We ignore the subreg offset when calculating the regno,
@@ -4963,11 +4963,11 @@ free_for_value_p (int regno, enum machine_mode mode, int opnum,
 }
 
 /* Return nonzero if the rtx X is invariant over the current function.  */
-/* ??? Actually, the places where we use this expect exactly what
- * is tested here, and not everything that is function invariant.  In
- * particular, the frame pointer and arg pointer are special cased;
- * pic_offset_table_rtx is not, and this will cause aborts when we
- *             go to spill these things to memory.  */
+/* ??? Actually, the places where we use this expect exactly what is
+   tested here, and not everything that is function invariant.  In
+   particular, the frame pointer and arg pointer are special cased;
+   pic_offset_table_rtx is not, and we must not spill these things to
+   memory.  */
 
 static int
 function_invariant_p (rtx x)
@@ -6087,10 +6087,10 @@ merge_assigned_reloads (rtx insn)
 			|| rld[j].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
 		       ? RELOAD_FOR_OTHER_ADDRESS : RELOAD_OTHER);
 
-		  /* Check to see if we accidentally converted two reloads
-		     that use the same reload register with different inputs
-		     to the same type.  If so, the resulting code won't work,
-		     so abort.  */
+		  /* Check to see if we accidentally converted two
+		     reloads that use the same reload register with
+		     different inputs to the same type.  If so, the
+		     resulting code won't work.  */
 		  if (rld[j].reg_rtx)
 		    for (k = 0; k < j; k++)
 		      gcc_assert (rld[k].in == 0 || rld[k].reg_rtx == 0

@@ -671,7 +671,7 @@ clear_secondary_mem (void)
 /* Find the largest class which has at least one register valid in
    mode INNER, and which for every such register, that register number
    plus N is also valid in OUTER (if in range) and is cheap to move
-   into REGNO.  Abort if no such class exists.  */
+   into REGNO.  Such a class must exist.  */
 
 static enum reg_class
 find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
@@ -4559,14 +4559,14 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 
   if (code == SUBREG && REG_P (SUBREG_REG (x)))
     {
-      /* Check for SUBREG containing a REG that's equivalent to a constant.
-	 If the constant has a known value, truncate it right now.
-	 Similarly if we are extracting a single-word of a multi-word
-	 constant.  If the constant is symbolic, allow it to be substituted
-	 normally.  push_reload will strip the subreg later.  If the
-	 constant is VOIDmode, abort because we will lose the mode of
-	 the register (this should never happen because one of the cases
-	 above should handle it).  */
+      /* Check for SUBREG containing a REG that's equivalent to a
+	 constant.  If the constant has a known value, truncate it
+	 right now.  Similarly if we are extracting a single-word of a
+	 multi-word constant.  If the constant is symbolic, allow it
+	 to be substituted normally.  push_reload will strip the
+	 subreg later.  The constant must not be VOIDmode, because we
+	 will lose the mode of the register (this should never happen
+	 because one of the cases above should handle it).  */
 
       int regno = REGNO (SUBREG_REG (x));
       rtx tem;
@@ -6536,7 +6536,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 		 different from what they were when calculating the need for
 		 spills.  If we notice an input-reload insn here, we will
 		 reject it below, but it might hide a usable equivalent.
-		 That makes bad code.  It may even abort: perhaps no reg was
+		 That makes bad code.  It may even fail: perhaps no reg was
 		 spilled for this insn because it was assumed we would find
 		 that equivalent.  */
 	      || INSN_UID (p) < reload_first_uid))

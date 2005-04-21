@@ -493,8 +493,7 @@ eliminate_phi (edge e, elim_graph g)
 
   gcc_assert (VARRAY_ACTIVE_SIZE (g->const_copies) == 0);
 
-  /* Abnormal edges already have everything coalesced, or the coalescer
-     would have aborted.  */
+  /* Abnormal edges already have everything coalesced.  */
   if (e->flags & EDGE_ABNORMAL)
     return;
 

@@ -320,8 +320,8 @@ extern bool default_assemble_integer (rtx, unsigned int, int);
 
 /* Assemble the integer constant X into an object of SIZE bytes.  ALIGN is
    the alignment of the integer in bits.  Return 1 if we were able to output
-   the constant, otherwise 0.  If FORCE is nonzero, abort if we can't output
-   the constant.  */
+   the constant, otherwise 0.  If FORCE is nonzero the constant must
+   be outputable. */
 extern bool assemble_integer (rtx, unsigned, unsigned, int);
 
 /* An interface to assemble_integer for the common case in which a value is
@@ -425,7 +425,7 @@ extern rtx current_insn_predicate;
 extern rtx current_output_insn;
 
 /* Nonzero while outputting an `asm' with operands.
-   This means that inconsistencies are the user's fault, so don't abort.
+   This means that inconsistencies are the user's fault, so don't die.
    The precise value is the insn being output, to pass to error_for_asm.  */
 extern rtx this_is_asm_operands;
 

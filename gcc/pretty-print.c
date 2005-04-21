@@ -365,14 +365,13 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
 	  break;
 
 	default:
-          if (!pp_format_decoder (pp) || !(*pp_format_decoder (pp)) (pp, text))
-	    {
-	      /* Hmmm.  The client failed to install a format translator
-                 but called us with an unrecognized format.  Or, maybe, the
-                 translated string just contains an invalid format, or
-                 has formats in the wrong order.  Sorry.  */
-	      abort ();
-	    }
+	  {
+	    bool ok;
+	    
+	    gcc_assert (pp_format_decoder (pp));
+	    ok = pp_format_decoder (pp) (pp, text);
+	    gcc_assert (ok);
+	  }
 	}
       if (quoted)
 	pp_string (pp, close_quote);

@@ -443,7 +443,7 @@ struct tree_common GTY(())
 #define TREE_SET_CODE(NODE, VALUE) ((NODE)->common.code = (VALUE))
 
 /* When checking is enabled, errors will be generated if a tree node
-   is accessed incorrectly. The macros abort with a fatal error.  */
+   is accessed incorrectly. The macros die with a fatal error.  */
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
 #define TREE_CHECK(T, CODE) __extension__				\

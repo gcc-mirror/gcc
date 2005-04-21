@@ -3307,7 +3307,8 @@ can_compare_p (enum rtx_code code, enum machine_mode mode,
    comparison or emitting a library call to perform the comparison if no insn
    is available to handle it.
    The values which are passed in through pointers can be modified; the caller
-   should perform the comparison on the modified values.  */
+   should perform the comparison on the modified values.  Constant
+   comparisons must have already been folded.  */
 
 static void
 prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
@@ -3320,11 +3321,6 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
   enum mode_class class;
 
   class = GET_MODE_CLASS (mode);
-
-  /* They could both be VOIDmode if both args are immediate constants,
-     but we should fold that at an earlier stage.
-     With no special code here, this will call abort,
-     reminding the programmer to implement such folding.  */
 
   if (mode != BLKmode && flag_force_mem)
     {
@@ -3352,9 +3348,9 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
     y = force_reg (mode, y);
 
 #ifdef HAVE_cc0
-  /* Abort if we have a non-canonical comparison.  The RTL documentation
-     states that canonical comparisons are required only for targets which
-     have cc0.  */
+  /* Make sure if we have a canonical comparison.  The RTL
+     documentation states that canonical comparisons are required only
+     for targets which have cc0.  */
   gcc_assert (!CONSTANT_P (x) || CONSTANT_P (y));
 #endif
 
@@ -3601,9 +3597,8 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
     }
 
 #ifdef HAVE_cc0
-  /* If OP0 is still a constant, then both X and Y must be constants.  Force
-     X into a register to avoid aborting in emit_cmp_insn due to non-canonical
-     RTL.  */
+  /* If OP0 is still a constant, then both X and Y must be constants.
+     Force X into a register to create canonical RTL.  */
   if (CONSTANT_P (op0))
     op0 = force_reg (mode, op0);
 #endif

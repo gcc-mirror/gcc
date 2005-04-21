@@ -135,7 +135,7 @@ try_auto_increment (rtx insn, rtx inc_insn, rtx inc_insn_set, rtx reg,
 		  /* If there is a REG_DEAD note on this insn, we must
 		     change this not to REG_UNUSED meaning that the register
 		     is set, but the value is dead.  Failure to do so will
-		     result in a sched1 abort -- when it recomputes lifetime
+		     result in a sched1 dieing -- when it recomputes lifetime
 		     information, the number of REG_DEAD notes will have
 		     changed.  */
 		  rtx note = find_reg_note (insn, REG_DEAD, reg);

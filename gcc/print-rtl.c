@@ -554,10 +554,7 @@ print_rtx (rtx in_rtx)
 	break;
 
       default:
-	fprintf (stderr,
-		 "switch format wrong in rtl.print_rtx(). format was: %c.\n",
-		 format_ptr[-1]);
-	abort ();
+	gcc_unreachable ();
       }
 
   switch (GET_CODE (in_rtx))

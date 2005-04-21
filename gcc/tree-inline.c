@@ -1069,7 +1069,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	 UNION_TYPE nodes, then it goes into infinite recursion on a
 	 structure containing a pointer to its own type.  If it doesn't,
 	 then the type node for S doesn't get adjusted properly when
-	 F is inlined, and we abort in find_function_data.
+	 F is inlined. 
 
 	 ??? This is likely no longer true, but it's too late in the 4.0
 	 cycle to try to find out.  This should be checked for 4.1.  */
@@ -1430,7 +1430,6 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 	break;
       }
     default:
-      /* Abort here se we know we don't miss any nodes.  */
       gcc_unreachable ();
     }
   return NULL;
