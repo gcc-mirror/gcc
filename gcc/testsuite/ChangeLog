@@ -1,3 +1,10 @@
+2005-04-21  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/vect/vect-85.c: Don't xfail on alpha.
+	* gcc.dg/vect/vect-86.c: Likewise.
+	* gcc.dg/vect/vect-87.c: Likewise.
+	* gcc.dg/vect/vect-88.c: Likewise.
+
 2005-04-21  Devang Patel  <dpatel@apple.com>
 
 	PR optimization/20994
