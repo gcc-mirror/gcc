@@ -1,3 +1,10 @@
+2005-04-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/ext/bitmap_allocator/check_allocate_max_size.cpp: Add
+	explicit instantiations for systems without weak symbols.
+	* testsuite/ext/bitmap_allocator/check_deallocate_null.cc:
+	Likewise. 
+
 2005-04-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_ALLOCATOR): Set default for linux
