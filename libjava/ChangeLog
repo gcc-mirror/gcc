@@ -1,5 +1,9 @@
 2005-04-21  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/AssertionError.java: Typo fix.
+
+2005-04-21  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/VMClassLoader.java (transformException): Removed.
 	(resolveClass): No longer native.  Now does nothing.
 	* java/lang/natVMClassLoader.cc (resolveClass): Removed.
