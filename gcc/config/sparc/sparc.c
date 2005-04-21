@@ -805,56 +805,6 @@ v9_regcmp_p (enum rtx_code code)
 
 /* Operand constraints.  */
 
-/* Return nonzero only if OP is a register of mode MODE,
-   or const0_rtx.  */
-
-int
-reg_or_0_operand (rtx op, enum machine_mode mode)
-{
-  if (register_operand (op, mode))
-    return 1;
-  if (op == const0_rtx)
-    return 1;
-  if (GET_MODE (op) == VOIDmode && GET_CODE (op) == CONST_DOUBLE
-      && CONST_DOUBLE_HIGH (op) == 0
-      && CONST_DOUBLE_LOW (op) == 0)
-    return 1;
-  if (fp_zero_operand (op, mode))
-    return 1;
-  return 0;
-}
-
-/* Return nonzero only if OP is const1_rtx.  */
-
-int
-const1_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return op == const1_rtx;
-}
-
-/* Nonzero if OP is a floating point value with value 0.0.  */
-
-int
-fp_zero_operand (rtx op, enum machine_mode mode)
-{
-  enum mode_class mclass = GET_MODE_CLASS (GET_MODE (op));
-  if (mclass != MODE_FLOAT && mclass != MODE_VECTOR_INT)
-    return 0;
-  return op == CONST0_RTX (mode);
-}
-
-/* Nonzero if OP is a register operand in floating point register.  */
-
-int
-fp_register_operand (rtx op, enum machine_mode mode)
-{
-  if (! register_operand (op, mode))
-    return 0;
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  return GET_CODE (op) == REG && SPARC_FP_REG_P (REGNO (op));
-}
-
 /* Nonzero if OP is a floating point constant which can
    be loaded into an integer register using a single
    sethi instruction.  */
@@ -931,94 +881,6 @@ fp_high_losum_p (rtx op)
   return 0;
 }
 
-/* Nonzero if OP is an integer register.  */
-
-int
-intreg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (register_operand (op, SImode)
-	  || (TARGET_ARCH64 && register_operand (op, DImode)));
-}
-
-/* Nonzero if OP is a floating point condition code register.  */
-
-int
-fcc_reg_operand (rtx op, enum machine_mode mode)
-{
-  /* This can happen when recog is called from combine.  Op may be a MEM.
-     Fail instead of calling abort in this case.  */
-  if (GET_CODE (op) != REG)
-    return 0;
-
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return 0;
-  if (mode == VOIDmode
-      && (GET_MODE (op) != CCFPmode && GET_MODE (op) != CCFPEmode))
-    return 0;
-
-#if 0	/* ??? ==> 1 when %fcc0-3 are pseudos first.  See gen_compare_reg().  */
-  if (reg_renumber == 0)
-    return REGNO (op) >= FIRST_PSEUDO_REGISTER;
-  return REGNO_OK_FOR_CCFP_P (REGNO (op));
-#else
-  return (unsigned) REGNO (op) - SPARC_FIRST_V9_FCC_REG < 4;
-#endif
-}
-
-/* Nonzero if OP is a floating point condition code fcc0 register.  */
-
-int
-fcc0_reg_operand (rtx op, enum machine_mode mode)
-{
-  /* This can happen when recog is called from combine.  Op may be a MEM.
-     Fail instead of calling abort in this case.  */
-  if (GET_CODE (op) != REG)
-    return 0;
-
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return 0;
-  if (mode == VOIDmode
-      && (GET_MODE (op) != CCFPmode && GET_MODE (op) != CCFPEmode))
-    return 0;
-
-  return REGNO (op) == SPARC_FCC_REG;
-}
-
-/* Nonzero if OP is an integer or floating point condition code register.  */
-
-int
-icc_or_fcc_reg_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == REG && REGNO (op) == SPARC_ICC_REG)
-    {
-      if (mode != VOIDmode && mode != GET_MODE (op))
-	return 0;
-      if (mode == VOIDmode
-	  && GET_MODE (op) != CCmode && GET_MODE (op) != CCXmode)
-	return 0;
-      return 1;
-    }
-
-  return fcc_reg_operand (op, mode);
-}
-
-/* Call insn on SPARC can take a PC-relative constant address, or any regular
-   memory address.  */
-
-int
-call_operand (rtx op, enum machine_mode mode)
-{
-  gcc_assert (GET_CODE (op) == MEM);
-  op = XEXP (op, 0);
-  return (symbolic_operand (op, mode) || memory_address_p (Pmode, op));
-}
-
-int
-call_operand_address (rtx op, enum machine_mode mode)
-{
-  return (symbolic_operand (op, mode) || memory_address_p (Pmode, op));
-}
-
 /* If OP is a SYMBOL_REF of a thread-local symbol, return its TLS mode,
    otherwise return 0.  */
 
@@ -1029,628 +891,6 @@ tls_symbolic_operand (rtx op)
     return 0;
   return SYMBOL_REF_TLS_MODEL (op);
 }
-
-int
-tgd_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return tls_symbolic_operand (op) == TLS_MODEL_GLOBAL_DYNAMIC;
-}
-
-int
-tld_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return tls_symbolic_operand (op) == TLS_MODEL_LOCAL_DYNAMIC;
-}
-
-int
-tie_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return tls_symbolic_operand (op) == TLS_MODEL_INITIAL_EXEC;
-}
-
-int
-tle_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return tls_symbolic_operand (op) == TLS_MODEL_LOCAL_EXEC;
-}
-
-/* Returns 1 if OP is either a symbol reference or a sum of a symbol
-   reference and a constant.  */
-
-int
-symbolic_operand (register rtx op, enum machine_mode mode)
-{
-  enum machine_mode omode = GET_MODE (op);
-
-  if (omode != mode && omode != VOIDmode && mode != VOIDmode)
-    return 0;
-
-  switch (GET_CODE (op))
-    {
-    case SYMBOL_REF:
-      return !SYMBOL_REF_TLS_MODEL (op);
-
-    case LABEL_REF:
-      return 1;
-
-    case CONST:
-      op = XEXP (op, 0);
-      return (((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-		&& !SYMBOL_REF_TLS_MODEL (XEXP (op, 0)))
-	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
-	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
-
-    default:
-      return 0;
-    }
-}
-
-/* Return truth value of statement that OP is a symbolic memory
-   operand of mode MODE.  */
-
-int
-symbolic_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  if (GET_CODE (op) != MEM)
-    return 0;
-  op = XEXP (op, 0);
-  return ((GET_CODE (op) == SYMBOL_REF && !SYMBOL_REF_TLS_MODEL (op))
-	  || GET_CODE (op) == CONST || GET_CODE (op) == HIGH
-	  || GET_CODE (op) == LABEL_REF);
-}
-
-/* Return truth value of statement that OP is a LABEL_REF of mode MODE.  */
-
-int
-label_ref_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) != LABEL_REF)
-    return 0;
-  if (GET_MODE (op) != mode)
-    return 0;
-  return 1;
-}
-
-/* Return 1 if the operand is an argument used in generating pic references
-   in either the medium/low or medium/anywhere code models of sparc64.  */
-
-int
-sp64_medium_pic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  /* Check for (const (minus (symbol_ref:GOT)
-                             (const (minus (label) (pc))))).  */
-  if (GET_CODE (op) != CONST)
-    return 0;
-  op = XEXP (op, 0);
-  if (GET_CODE (op) != MINUS)
-    return 0;
-  if (GET_CODE (XEXP (op, 0)) != SYMBOL_REF)
-    return 0;
-  /* ??? Ensure symbol is GOT.  */
-  if (GET_CODE (XEXP (op, 1)) != CONST)
-    return 0;
-  if (GET_CODE (XEXP (XEXP (op, 1), 0)) != MINUS)
-    return 0;
-  return 1;
-}
-
-/* Return 1 if the operand is a data segment reference.  This includes
-   the readonly data segment, or in other words anything but the text segment.
-   This is needed in the medium/anywhere code model on v9.  These values
-   are accessed with EMBMEDANY_BASE_REG.  */
-
-int
-data_segment_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  switch (GET_CODE (op))
-    {
-    case SYMBOL_REF :
-      return ! SYMBOL_REF_FUNCTION_P (op);
-    case PLUS :
-      /* Assume canonical format of symbol + constant.
-	 Fall through.  */
-    case CONST :
-      return data_segment_operand (XEXP (op, 0), VOIDmode);
-    default :
-      return 0;
-    }
-}
-
-/* Return 1 if the operand is a text segment reference.
-   This is needed in the medium/anywhere code model on v9.  */
-
-int
-text_segment_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  switch (GET_CODE (op))
-    {
-    case LABEL_REF :
-      return 1;
-    case SYMBOL_REF :
-      return SYMBOL_REF_FUNCTION_P (op);
-    case PLUS :
-      /* Assume canonical format of symbol + constant.
-	 Fall through.  */
-    case CONST :
-      return text_segment_operand (XEXP (op, 0), VOIDmode);
-    default :
-      return 0;
-    }
-}
-
-/* Return 1 if the operand is either a register or a memory operand that is
-   not symbolic.  */
-
-int
-reg_or_nonsymb_mem_operand (register rtx op, enum machine_mode mode)
-{
-  if (register_operand (op, mode))
-    return 1;
-
-  if (memory_operand (op, mode) && ! symbolic_memory_operand (op, mode))
-    return 1;
-
-  return 0;
-}
-
-int
-splittable_symbolic_memory_operand (rtx op,
-				    enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) != MEM)
-    return 0;
-  if (! symbolic_operand (XEXP (op, 0), Pmode))
-    return 0;
-  return 1;
-}
-
-int
-splittable_immediate_memory_operand (rtx op,
-				     enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) != MEM)
-    return 0;
-  if (! immediate_operand (XEXP (op, 0), Pmode))
-    return 0;
-  return 1;
-}
-
-/* Return truth value of whether OP is EQ or NE.  */
-
-int
-eq_or_neq (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == EQ || GET_CODE (op) == NE);
-}
-
-/* Return 1 if this is a comparison operator, but not an EQ, NE, GEU,
-   or LTU for non-floating-point.  We handle those specially.  */
-
-int
-normal_comp_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code;
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  if (GET_MODE (XEXP (op, 0)) == CCFPmode
-      || GET_MODE (XEXP (op, 0)) == CCFPEmode)
-    return 1;
-
-  code = GET_CODE (op);
-  return (code != NE && code != EQ && code != GEU && code != LTU);
-}
-
-/* Return 1 if this is a comparison operator.  This allows the use of
-   MATCH_OPERATOR to recognize all the branch insns.  */
-
-int
-noov_compare_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code;
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  code = GET_CODE (op);
-  if (GET_MODE (XEXP (op, 0)) == CC_NOOVmode
-      || GET_MODE (XEXP (op, 0)) == CCX_NOOVmode)
-    /* These are the only branches which work with CC_NOOVmode.  */
-    return (code == EQ || code == NE || code == GE || code == LT);
-  return 1;
-}
-
-/* Return 1 if this is a 64-bit comparison operator.  This allows the use of
-   MATCH_OPERATOR to recognize all the branch insns.  */
-
-int
-noov_compare64_op (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code;
-
-  if (! TARGET_V9)
-    return 0;
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  code = GET_CODE (op);
-  if (GET_MODE (XEXP (op, 0)) == CCX_NOOVmode)
-    /* These are the only branches which work with CCX_NOOVmode.  */
-    return (code == EQ || code == NE || code == GE || code == LT);
-  return (GET_MODE (XEXP (op, 0)) == CCXmode);
-}
-
-/* Nonzero if OP is a comparison operator suitable for use in v9
-   conditional move or branch on register contents instructions.  */
-
-int
-v9_regcmp_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code;
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  code = GET_CODE (op);
-  return v9_regcmp_p (code);
-}
-
-/* Return 1 if this is a SIGN_EXTEND or ZERO_EXTEND operation.  */
-
-int
-extend_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return GET_CODE (op) == SIGN_EXTEND || GET_CODE (op) == ZERO_EXTEND;
-}
-
-/* Return nonzero if OP is an operator of mode MODE which can set
-   the condition codes explicitly.  We do not include PLUS and MINUS
-   because these require CC_NOOVmode, which we handle explicitly.  */
-
-int
-cc_arithop (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) == AND
-      || GET_CODE (op) == IOR
-      || GET_CODE (op) == XOR)
-    return 1;
-
-  return 0;
-}
-
-/* Return nonzero if OP is an operator of mode MODE which can bitwise
-   complement its second operand and set the condition codes explicitly.  */
-
-int
-cc_arithopn (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  /* XOR is not here because combine canonicalizes (xor (not ...) ...)
-     and (xor ... (not ...)) to (not (xor ...)).  */
-  return (GET_CODE (op) == AND
-	  || GET_CODE (op) == IOR);
-}
-
-/* Return true if OP is a register, or is a CONST_INT that can fit in a
-   signed 13 bit immediate field.  This is an acceptable SImode operand for
-   most 3 address instructions.  */
-
-int
-arith_operand (rtx op, enum machine_mode mode)
-{
-  if (register_operand (op, mode))
-    return 1;
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-  return SMALL_INT32 (op);
-}
-
-/* Return true if OP is a constant 4096  */
-
-int
-arith_4096_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-  else
-    return INTVAL (op) == 4096;
-}
-
-/* Return true if OP is suitable as second operand for add/sub */
-
-int
-arith_add_operand (rtx op, enum machine_mode mode)
-{
-  return arith_operand (op, mode) || arith_4096_operand (op, mode);
-}
-
-/* Return true if OP is a CONST_INT or a CONST_DOUBLE which can fit in the
-   immediate field of OR and XOR instructions.  Used for 64-bit
-   constant formation patterns.  */
-int
-const64_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return ((GET_CODE (op) == CONST_INT
-	   && SPARC_SIMM13_P (INTVAL (op)))
-#if HOST_BITS_PER_WIDE_INT != 64
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))
-	      && (CONST_DOUBLE_HIGH (op) ==
-		  ((CONST_DOUBLE_LOW (op) & 0x80000000) != 0 ?
-		   (HOST_WIDE_INT)-1 : 0)))
-#endif
-	  );
-}
-
-/* The same, but only for sethi instructions.  */
-int
-const64_high_operand (rtx op, enum machine_mode mode)
-{
-  return ((GET_CODE (op) == CONST_INT
-	   && (INTVAL (op) & ~(HOST_WIDE_INT)0x3ff) != 0
-	   && SPARC_SETHI_P (INTVAL (op) & GET_MODE_MASK (mode))
-	   )
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_HIGH (op) == 0
-	      && (CONST_DOUBLE_LOW (op) & ~(HOST_WIDE_INT)0x3ff) != 0
-	      && SPARC_SETHI_P (CONST_DOUBLE_LOW (op))));
-}
-
-/* Return true if OP is a register, or is a CONST_INT that can fit in a
-   signed 11 bit immediate field.  This is an acceptable SImode operand for
-   the movcc instructions.  */
-
-int
-arith11_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && SPARC_SIMM11_P (INTVAL (op))));
-}
-
-/* Return true if OP is a register, or is a CONST_INT that can fit in a
-   signed 10 bit immediate field.  This is an acceptable SImode operand for
-   the movrcc instructions.  */
-
-int
-arith10_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && SPARC_SIMM10_P (INTVAL (op))));
-}
-
-/* Return true if OP is a register, is a CONST_INT that fits in a 13 bit
-   immediate field, or is a CONST_DOUBLE whose both parts fit in a 13 bit
-   immediate field.
-   ARCH64: Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
-   can fit in a 13 bit immediate field.  This is an acceptable DImode operand
-   for most 3 address instructions.  */
-
-int
-arith_double_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op))
-	  || (! TARGET_ARCH64
-	      && GET_CODE (op) == CONST_DOUBLE
-	      && (unsigned HOST_WIDE_INT) (CONST_DOUBLE_LOW (op) + 0x1000) < 0x2000
-	      && (unsigned HOST_WIDE_INT) (CONST_DOUBLE_HIGH (op) + 0x1000) < 0x2000)
-	  || (TARGET_ARCH64
-	      && GET_CODE (op) == CONST_DOUBLE
-	      && (unsigned HOST_WIDE_INT) (CONST_DOUBLE_LOW (op) + 0x1000) < 0x2000
-	      && ((CONST_DOUBLE_HIGH (op) == -1
-		   && (CONST_DOUBLE_LOW (op) & 0x1000) == 0x1000)
-		  || (CONST_DOUBLE_HIGH (op) == 0
-		      && (CONST_DOUBLE_LOW (op) & 0x1000) == 0))));
-}
-
-/* Return true if OP is a constant 4096 for DImode on ARCH64 */
-
-int
-arith_double_4096_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (TARGET_ARCH64 &&
-  	  ((GET_CODE (op) == CONST_INT && INTVAL (op) == 4096) ||
-  	   (GET_CODE (op) == CONST_DOUBLE &&
-  	    CONST_DOUBLE_LOW (op) == 4096 &&
-  	    CONST_DOUBLE_HIGH (op) == 0)));
-}
-
-/* Return true if OP is suitable as second operand for add/sub in DImode */
-
-int
-arith_double_add_operand (rtx op, enum machine_mode mode)
-{
-  return arith_double_operand (op, mode) || arith_double_4096_operand (op, mode);
-}
-
-/* Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
-   can fit in an 11 bit immediate field.  This is an acceptable DImode
-   operand for the movcc instructions.  */
-/* ??? Replace with arith11_operand?  */
-
-int
-arith11_double_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
-	      && (unsigned HOST_WIDE_INT) (CONST_DOUBLE_LOW (op) + 0x400) < 0x800
-	      && ((CONST_DOUBLE_HIGH (op) == -1
-		   && (CONST_DOUBLE_LOW (op) & 0x400) == 0x400)
-		  || (CONST_DOUBLE_HIGH (op) == 0
-		      && (CONST_DOUBLE_LOW (op) & 0x400) == 0)))
-	  || (GET_CODE (op) == CONST_INT
-	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
-	      && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x400) < 0x800));
-}
-
-/* Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
-   can fit in an 10 bit immediate field.  This is an acceptable DImode
-   operand for the movrcc instructions.  */
-/* ??? Replace with arith10_operand?  */
-
-int
-arith10_double_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
-	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x200) < 0x400
-	      && ((CONST_DOUBLE_HIGH (op) == -1
-		   && (CONST_DOUBLE_LOW (op) & 0x200) == 0x200)
-		  || (CONST_DOUBLE_HIGH (op) == 0
-		      && (CONST_DOUBLE_LOW (op) & 0x200) == 0)))
-	  || (GET_CODE (op) == CONST_INT
-	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
-	      && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x200) < 0x400));
-}
-
-/* Return truth value of whether OP is an integer which fits the
-   range constraining immediate operands in most three-address insns,
-   which have a 13 bit immediate field.  */
-
-int
-small_int (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
-}
-
-int
-small_int_or_double (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return ((GET_CODE (op) == CONST_INT && SMALL_INT (op))
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_HIGH (op) == 0
-	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))));
-}
-
-/* Recognize operand values for the umul instruction.  That instruction sign
-   extends immediate values just like all other sparc instructions, but
-   interprets the extended result as an unsigned number.  */
-
-int
-uns_small_int (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-#if HOST_BITS_PER_WIDE_INT > 32
-  /* All allowed constants will fit a CONST_INT.  */
-  return (GET_CODE (op) == CONST_INT
-	  && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
-	      || (INTVAL (op) >= 0xFFFFF000
-                  && INTVAL (op) <= 0xFFFFFFFF)));
-#else
-  return ((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_HIGH (op) == 0
-	      && (unsigned) CONST_DOUBLE_LOW (op) - 0xFFFFF000 < 0x1000));
-#endif
-}
-
-int
-uns_arith_operand (rtx op, enum machine_mode mode)
-{
-  return register_operand (op, mode) || uns_small_int (op, mode);
-}
-
-/* Return truth value of statement that OP is a call-clobbered register.  */
-int
-clobbered_register (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == REG && call_used_regs[REGNO (op)]);
-}
-
-/* Return 1 if OP is a valid operand for the source of a move insn.  */
-
-int
-input_operand (rtx op, enum machine_mode mode)
-{
-  enum mode_class mclass;
-
-  /* If both modes are non-void they must be the same.  */
-  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
-    return 0;
-
-  /* Allow any one instruction integer constant, and all CONST_INT
-     variants when we are working in DImode and !arch64.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && ((GET_CODE (op) == CONST_INT
-	   && (SPARC_SETHI_P (INTVAL (op) & GET_MODE_MASK (mode))
-	       || SPARC_SIMM13_P (INTVAL (op))
-	       || (mode == DImode
-		   && ! TARGET_ARCH64)))
-	  || (TARGET_ARCH64
-	      && GET_CODE (op) == CONST_DOUBLE
-	      && ((CONST_DOUBLE_HIGH (op) == 0
-		   && SPARC_SETHI_P (CONST_DOUBLE_LOW (op)))
-		  ||
-#if HOST_BITS_PER_WIDE_INT == 64
-		  (CONST_DOUBLE_HIGH (op) == 0
-		   && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op)))
-#else
-		  (SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))
-		   && (((CONST_DOUBLE_LOW (op) & 0x80000000) == 0
-			&& CONST_DOUBLE_HIGH (op) == 0)
-		       || (CONST_DOUBLE_HIGH (op) == -1
-			   && CONST_DOUBLE_LOW (op) & 0x80000000) != 0))
-#endif
-		  ))))
-    return 1;
-
-  /* If !arch64 and this is a DImode const, allow it so that
-     the splits can be generated.  */
-  if (! TARGET_ARCH64
-      && mode == DImode
-      && GET_CODE (op) == CONST_DOUBLE)
-    return 1;
-
-  if (register_operand (op, mode))
-    return 1;
-
-  mclass = GET_MODE_CLASS (mode);
-  if ((mclass == MODE_FLOAT && GET_CODE (op) == CONST_DOUBLE)
-      || (mclass == MODE_VECTOR_INT && GET_CODE (op) == CONST_VECTOR))
-    return 1;
-
-  /* If this is a SUBREG, look inside so that we handle
-     paradoxical ones.  */
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-
-  /* Check for valid MEM forms.  */
-  if (GET_CODE (op) == MEM)
-    return memory_address_p (mode, XEXP (op, 0));
-
-  return 0;
-}
-
-/* Return 1 if OP is valid for the lhs of a compare insn.  */
-
-int
-compare_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == ZERO_EXTRACT)
-    return (register_operand (XEXP (op, 0), mode)
-	    && small_int_or_double (XEXP (op, 1), mode)
-	    && small_int_or_double (XEXP (op, 2), mode)
-	    /* This matches cmp_zero_extract.  */
-	    && ((mode == SImode
-		 && ((GET_CODE (XEXP (op, 2)) == CONST_INT
-		      && INTVAL (XEXP (op, 2)) > 19)
-		     || (GET_CODE (XEXP (op, 2)) == CONST_DOUBLE
-			 && CONST_DOUBLE_LOW (XEXP (op, 2)) > 19)))
-		/* This matches cmp_zero_extract_sp64.  */
-		|| (mode == DImode
-		    && TARGET_ARCH64
-		    && ((GET_CODE (XEXP (op, 2)) == CONST_INT
-			 && INTVAL (XEXP (op, 2)) > 51)
-			|| (GET_CODE (XEXP (op, 2)) == CONST_DOUBLE
-			    && CONST_DOUBLE_LOW (XEXP (op, 2)) > 51)))));
-  else
-    return register_operand (op, mode);
-}
-
 
 /* We know it can't be done in one insn when we get here,
    the movsi expander guarantees this.  */
@@ -1660,15 +900,6 @@ sparc_emit_set_const32 (rtx op0, rtx op1)
   enum machine_mode mode = GET_MODE (op0);
   rtx temp;
 
-  if (GET_CODE (op1) == CONST_INT)
-    {
-      HOST_WIDE_INT value = INTVAL (op1);
-
-      gcc_assert (! SPARC_SETHI_P (value & GET_MODE_MASK (mode))
-	  	  && ! SPARC_SIMM13_P (value));
-    }
-
-  /* Full 2-insn decomposition is needed.  */
   if (reload_in_progress || reload_completed)
     temp = op0;
   else
@@ -1676,20 +907,15 @@ sparc_emit_set_const32 (rtx op0, rtx op1)
 
   if (GET_CODE (op1) == CONST_INT)
     {
+      gcc_assert (!small_int_operand (op1, mode)
+		  && !const_high_operand (op1, mode));
+
       /* Emit them as real moves instead of a HIGH/LO_SUM,
 	 this way CSE can see everything and reuse intermediate
 	 values if it wants.  */
-      if (TARGET_ARCH64
-	  && HOST_BITS_PER_WIDE_INT != 64
-	  && (INTVAL (op1) & 0x80000000) != 0)
-	emit_insn (gen_rtx_SET
-		   (VOIDmode, temp,
-		    immed_double_const (INTVAL (op1) & ~(HOST_WIDE_INT)0x3ff,
-					0, DImode)));
-      else
-	emit_insn (gen_rtx_SET (VOIDmode, temp,
-				GEN_INT (INTVAL (op1)
-					 & ~(HOST_WIDE_INT)0x3ff)));
+      emit_insn (gen_rtx_SET (VOIDmode, temp,
+			      GEN_INT (INTVAL (op1)
+			        & ~(HOST_WIDE_INT)0x3ff)));
 
       emit_insn (gen_rtx_SET (VOIDmode,
 			      op0,
@@ -1703,7 +929,6 @@ sparc_emit_set_const32 (rtx op0, rtx op1)
 			      gen_rtx_HIGH (mode, op1)));
       emit_insn (gen_rtx_SET (VOIDmode,
 			      op0, gen_rtx_LO_SUM (mode, temp, op1)));
-
     }
 }
 
@@ -1910,6 +1135,13 @@ sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
     }
 }
 
+#if HOST_BITS_PER_WIDE_INT == 32
+void
+sparc_emit_set_const64 (rtx op0 ATTRIBUTE_UNUSED, rtx op1 ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+#else
 /* These avoid problems when cross compiling.  If we do not
    go through all this hair then the optimizer will see
    invalid REG_EQUAL notes or in some cases none at all.  */
@@ -1917,17 +1149,6 @@ static void sparc_emit_set_safe_HIGH64 (rtx, HOST_WIDE_INT);
 static rtx gen_safe_SET64 (rtx, HOST_WIDE_INT);
 static rtx gen_safe_OR64 (rtx, HOST_WIDE_INT);
 static rtx gen_safe_XOR64 (rtx, HOST_WIDE_INT);
-
-#if HOST_BITS_PER_WIDE_INT == 64
-#define GEN_HIGHINT64(__x)		GEN_INT ((__x) & ~(HOST_WIDE_INT)0x3ff)
-#define GEN_INT64(__x)			GEN_INT (__x)
-#else
-#define GEN_HIGHINT64(__x) \
-	immed_double_const ((__x) & ~(HOST_WIDE_INT)0x3ff, 0, DImode)
-#define GEN_INT64(__x) \
-	immed_double_const ((__x) & 0xffffffff, \
-			    ((__x) & 0x80000000 ? -1 : 0), DImode)
-#endif
 
 /* The optimizer is not to assume anything about exactly
    which bits are set for a HIGH, they are unspecified.
@@ -1937,25 +1158,25 @@ static rtx gen_safe_XOR64 (rtx, HOST_WIDE_INT);
 static void
 sparc_emit_set_safe_HIGH64 (rtx dest, HOST_WIDE_INT val)
 {
-  emit_insn (gen_rtx_SET (VOIDmode, dest, GEN_HIGHINT64 (val)));
+  emit_insn (gen_rtx_SET (VOIDmode, dest, GEN_INT (val & ~(HOST_WIDE_INT)0x3ff)));
 }
 
 static rtx
 gen_safe_SET64 (rtx dest, HOST_WIDE_INT val)
 {
-  return gen_rtx_SET (VOIDmode, dest, GEN_INT64 (val));
+  return gen_rtx_SET (VOIDmode, dest, GEN_INT (val));
 }
 
 static rtx
 gen_safe_OR64 (rtx src, HOST_WIDE_INT val)
 {
-  return gen_rtx_IOR (DImode, src, GEN_INT64 (val));
+  return gen_rtx_IOR (DImode, src, GEN_INT (val));
 }
 
 static rtx
 gen_safe_XOR64 (rtx src, HOST_WIDE_INT val)
 {
-  return gen_rtx_XOR (DImode, src, GEN_INT64 (val));
+  return gen_rtx_XOR (DImode, src, GEN_INT (val));
 }
 
 /* Worker routines for 64-bit constant formation on arch64.
@@ -2293,8 +1514,7 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
   if (reload_in_progress || reload_completed)
     temp = op0;
 
-  if (GET_CODE (op1) != CONST_DOUBLE
-      && GET_CODE (op1) != CONST_INT)
+  if (GET_CODE (op1) != CONST_INT)
     {
       sparc_emit_set_symbolic_const64 (op0, op1, temp);
       return;
@@ -2303,28 +1523,8 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
   if (! temp)
     temp = gen_reg_rtx (DImode);
 
-  if (GET_CODE (op1) == CONST_DOUBLE)
-    {
-#if HOST_BITS_PER_WIDE_INT == 64
-      high_bits = (CONST_DOUBLE_LOW (op1) >> 32) & 0xffffffff;
-      low_bits  = CONST_DOUBLE_LOW (op1) & 0xffffffff;
-#else
-      high_bits = CONST_DOUBLE_HIGH (op1);
-      low_bits = CONST_DOUBLE_LOW (op1);
-#endif
-    }
-  else
-    {
-#if HOST_BITS_PER_WIDE_INT == 64
-      high_bits = ((INTVAL (op1) >> 32) & 0xffffffff);
-      low_bits = (INTVAL (op1) & 0xffffffff);
-#else
-      high_bits = ((INTVAL (op1) < 0) ?
-		   0xffffffff :
-		   0x00000000);
-      low_bits = INTVAL (op1);
-#endif
-    }
+  high_bits = ((INTVAL (op1) >> 32) & 0xffffffff);
+  low_bits = (INTVAL (op1) & 0xffffffff);
 
   /* low_bits	bits 0  --> 31
      high_bits	bits 32 --> 63  */
@@ -2452,26 +1652,20 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
 	  || (((~high_bits) & 0xffffffff) == 0xffffffff
 	      && ((~low_bits) & 0x80000000) != 0))
 	{
-	  int fast_int = (~low_bits & 0xffffffff);
+	  unsigned HOST_WIDE_INT fast_int = (~low_bits & 0xffffffff);
 
 	  if ((SPARC_SETHI_P (fast_int)
 	       && (~high_bits & 0xffffffff) == 0)
 	      || SPARC_SIMM13_P (fast_int))
 	    emit_insn (gen_safe_SET64 (temp, fast_int));
 	  else
-	    sparc_emit_set_const64 (temp, GEN_INT64 (fast_int));
+	    sparc_emit_set_const64 (temp, GEN_INT (fast_int));
 	}
       else
 	{
 	  rtx negated_const;
-#if HOST_BITS_PER_WIDE_INT == 64
 	  negated_const = GEN_INT (((~low_bits) & 0xfffffc00) |
 				   (((HOST_WIDE_INT)((~high_bits) & 0xffffffff))<<32));
-#else
-	  negated_const = immed_double_const ((~low_bits) & 0xfffffc00,
-					      (~high_bits) & 0xffffffff,
-					      DImode);
-#endif
 	  sparc_emit_set_const64 (temp, negated_const);
 	}
 
@@ -2536,6 +1730,7 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
 #endif
   sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits);
 }
+#endif /* HOST_BITS_PER_WIDE_INT == 32 */
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point,
@@ -3448,7 +2643,7 @@ legitimate_constant_p (rtx x)
 	  && (GET_MODE (x) == SFmode
 	      || GET_MODE (x) == DFmode
 	      || GET_MODE (x) == TFmode)
-	  && fp_zero_operand (x, GET_MODE (x)))
+	  && const_zero_operand (x, GET_MODE (x)))
 	return true;
 
       return false;
@@ -8643,7 +7838,7 @@ sparc_extra_constraint_check (rtx op, int c, int strict)
       break;
 
     case 'Y':
-      return fp_zero_operand (op, GET_MODE (op));
+      return const_zero_operand (op, GET_MODE (op));
 
     default:
       return 0;
