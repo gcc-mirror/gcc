@@ -22,10 +22,18 @@
 #include <ext/bitmap_allocator.h>
 #include <testsuite_allocator.h>
 
+typedef int value_type;
+
 int main()
 { 
-  typedef int value_type;
   typedef __gnu_cxx::bitmap_allocator<value_type> allocator_type;
   __gnu_test::check_deallocate_null<allocator_type>(); 
   return 0;
 }
+
+#if !__GXX_WEAK
+// Explicitly instantiatiate for systems without weak symbols.
+template class __gnu_cxx::bitmap_allocator<value_type>;
+#endif
+
+
