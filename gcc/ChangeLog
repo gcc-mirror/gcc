@@ -1,3 +1,8 @@
+2005-04-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/sparc/predicates.md, config/sparc/sparc.md: Fix
+	comment typos.
+
 2005-04-21  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c: Include tree-pass.h
