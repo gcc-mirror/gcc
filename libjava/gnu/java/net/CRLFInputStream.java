@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.net;
 
+import java.io.BufferedInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,15 +61,7 @@ public class CRLFInputStream
    */
   public static final int LF = 10;
 
-  /**
-   * Buffer.
-   */
-  protected int buf = -1;
-
-  /**
-   * Buffer at time of mark.
-   */
-  protected int markBuf = -1;
+  private boolean doReset;
 
   /**
    * Constructs a CR/LF input stream connected to the specified input
@@ -76,7 +69,7 @@ public class CRLFInputStream
    */
   public CRLFInputStream(InputStream in)
   {
-    super(in);
+    super(in.markSupported() ? in : new BufferedInputStream(in));
   }
 
   /**
@@ -87,24 +80,18 @@ public class CRLFInputStream
   public int read()
     throws IOException
   {
-    int c;
-    if (buf != -1)
+    int c = in.read();
+    if (c == CR)
       {
-        c = buf;
-        buf = -1;
-        return c;
-      }
-    else
-      {
-        c = super.read();
-        if (c == CR)
+        in.mark(1);
+        int d = in.read();
+        if (d == LF)
           {
-            buf = super.read();
-            if (buf == LF)
-              {
-                c = buf;
-                buf = -1;
-              }
+            c = d;
+          }
+        else
+          {
+            in.reset();
           }
       }
     return c;
@@ -131,75 +118,57 @@ public class CRLFInputStream
   public int read(byte[] b, int off, int len)
     throws IOException
   {
-    int shift = 0;
-    if (buf != -1)
+    in.mark(len + 1);
+    int l = in.read(b, off, len);
+    if (l > 0)
       {
-        // Push buf onto start of byte array
-        b[off] = (byte) buf;
-        off++;
-        len--;
-        buf = -1;
-        shift++;
-      }
-    int l = super.read(b, off, len);
-    l = removeCRLF(b, off - shift, l);
-    return l;
-  }
-
-  /**
-   * Indicates whether this stream supports the mark and reset methods.
-   */
-  public boolean markSupported()
-  {
-    return in.markSupported();
-  }
-
-  /**
-   * Marks the current position in this stream.
-   */
-  public void mark(int readlimit)
-  {
-    in.mark(readlimit);
-    markBuf = buf;
-  }
-
-  /**
-   * Repositions this stream to the position at the time the mark method was
-   * called.
-   */
-  public void reset()
-    throws IOException
-  {
-    in.reset();
-    buf = markBuf;
-  }
-
-  private int removeCRLF(byte[] b, int off, int len)
-  {
-    int end = off + len;
-    for (int i = off; i < end; i++)
-      {
-        if (b[i] == CR)
+        int i = indexOfCRLF(b, off, l);
+        if (doReset)
           {
-            if (i + 1 == end)
+            in.reset();
+            if (i != -1)
               {
-                // This is the last byte, impossible to determine whether CRLF
-                buf = CR;
-                len--;
+                l = in.read(b, off, i + 1); // read to CR
+                in.read(); // skip LF
+                b[i] = LF; // fix CR as LF
               }
-            else if (b[i + 1] == LF)
+            else
               {
-                // Shift left
-                end--;
-                for (int j = i; j < end; j++)
-                  {
-                    b[j] = b[j + 1];
-                  }
-                  len--;
-                  end = off + len;
+                l = in.read(b, off, len); // CR(s) but no LF
               }
           }
       }
-    return len;
+    return l;
   }
+
+  private int indexOfCRLF(byte[] b, int off, int len)
+    throws IOException
+  {
+    doReset = false;
+    int lm1 = len - 1;
+    for (int i = off; i < len; i++)
+      {
+        if (b[i] == CR)
+          {
+            int d;
+            if (i == lm1)
+              {
+                d = in.read();
+                doReset = true;
+              }
+            else
+              {
+                d = b[i + 1];
+              }
+            if (d == LF)
+              {
+                doReset = true;
+                return i;
+              }
+          }
+      }
+    return -1;
+  }
+
 }
+
