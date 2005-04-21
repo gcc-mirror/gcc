@@ -1559,7 +1559,7 @@ way.  For example, given the following Java class:
 public class Int
 @{
   public int i;
-  public Integer (int i) @{ this.i = i; @}
+  public Int (int i) @{ this.i = i; @}
   public static Int zero = new Int(0);
 @}
 @end example
