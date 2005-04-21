@@ -1795,7 +1795,7 @@ tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) errors.h tree-inline.h diagnostic.h $(HASHTAB_H) \
    $(TM_H) coretypes.h
 tree-chrec.o: tree-chrec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-   errors.h $(GGC_H) $(TREE_H) tree-chrec.h tree-pass.h
+   errors.h $(GGC_H) $(TREE_H) tree-chrec.h tree-pass.h $(PARAMS_H)
 tree-scalar-evolution.o: tree-scalar-evolution.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) errors.h $(GGC_H) $(TREE_H) $(RTL_H) \
    $(BASIC_BLOCK_H) diagnostic.h $(TREE_FLOW_H) $(TREE_DUMP_H) \

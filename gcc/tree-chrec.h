@@ -87,7 +87,7 @@ extern bool chrec_is_positive (tree, bool *);
 extern bool chrec_contains_symbols (tree);
 extern bool chrec_contains_symbols_defined_in_loop (tree, unsigned);
 extern bool chrec_contains_undetermined (tree);
-extern bool tree_contains_chrecs (tree);
+extern bool tree_contains_chrecs (tree, int *);
 extern bool evolution_function_is_affine_multivariate_p (tree);
 extern bool evolution_function_is_univariate_p (tree);
 extern unsigned nb_vars_in_chrec (tree);
@@ -183,7 +183,7 @@ evolution_function_is_affine_or_constant_p (tree chrec)
 static inline bool
 tree_does_not_contain_chrecs (tree expr)
 {
-  return !tree_contains_chrecs (expr);
+  return !tree_contains_chrecs (expr, NULL);
 }
 
 /* Determines whether CHREC is a loop invariant with respect to LOOP_NUM.  
