@@ -1,3 +1,12 @@
+2005-04-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/14846
+	* fold-const.c (fold_single_bit_test_into_sign_test): New,
+	split out from ...
+	(fold_single_bit_test): ... here.
+	(fold_binary): Call fold_single_bit_test_into_sign_test
+	instead of fold_single_bit_test.
+
 2005-04-20  James E Wilson  <wilson@specifixinc.com>
 
 	PR c++/20805
