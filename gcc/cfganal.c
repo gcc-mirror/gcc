@@ -69,7 +69,7 @@ flow_active_insn_p (rtx insn)
      programs that fail to return a value.  Its effect is to
      keep the return value from being live across the entire
      function.  If we allow it to be skipped, we introduce the
-     possibility for register livetime aborts.  */
+     possibility for register lifetime confusion.  */
   if (GET_CODE (PATTERN (insn)) == CLOBBER
       && REG_P (XEXP (PATTERN (insn), 0))
       && REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))

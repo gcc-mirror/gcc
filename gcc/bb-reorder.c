@@ -926,18 +926,14 @@ connect_traces (int n_traces, struct trace *traces)
 
       if (i >= n_traces)
 	{
-	  if (two_passes && current_pass == 1)
-	    {
-	      i = 0;
-	      t = i;
-	      current_pass = 2;
-	      if (current_partition == BB_HOT_PARTITION)
-		current_partition = BB_COLD_PARTITION;
-	      else
-		current_partition = BB_HOT_PARTITION;
-	    }
+	  gcc_assert (two_passes && current_pass == 1);
+	  i = 0;
+	  t = i;
+	  current_pass = 2;
+	  if (current_partition == BB_HOT_PARTITION)
+	    current_partition = BB_COLD_PARTITION;
 	  else
-	    abort ();
+	    current_partition = BB_HOT_PARTITION;
 	}
       
       if (connected[t])

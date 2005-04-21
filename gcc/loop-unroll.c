@@ -495,6 +495,8 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
 
   if (npeel)
     {
+      bool ok;
+      
       wont_exit = sbitmap_alloc (npeel + 1);
       sbitmap_ones (wont_exit);
       RESET_BIT (wont_exit, 0);
@@ -508,11 +510,12 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
         opt_info = analyze_insns_in_loop (loop);
       
       opt_info_start_duplication (opt_info);
-      if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, npeel,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-	abort ();
+      ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					  loops, npeel,
+					  wont_exit, desc->out_edge,
+					  remove_edges, &n_remove_edges,
+					  DLTHE_FLAG_UPDATE_FREQ);
+      gcc_assert (ok);
 
       free (wont_exit);
       
@@ -670,6 +673,7 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
   struct niter_desc *desc = get_simple_loop_desc (loop);
   bool exit_at_end = loop_exit_at_end_p (loop);
   struct opt_info *opt_info = NULL;
+  bool ok;
   
   niter = desc->niter;
 
@@ -704,12 +708,12 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
       if (exit_mod)
 	{
 	  opt_info_start_duplication (opt_info);
-          if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+          ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					      loops, exit_mod,
 					      wont_exit, desc->out_edge,
 					      remove_edges, &n_remove_edges,
-					      DLTHE_FLAG_UPDATE_FREQ))
-	    abort ();
+					      DLTHE_FLAG_UPDATE_FREQ);
+	  gcc_assert (ok);
 
           if (opt_info && exit_mod > 1)
  	    apply_opt_in_copies (opt_info, exit_mod, false, false); 
@@ -740,11 +744,12 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 	    RESET_BIT (wont_exit, 1);
          
           opt_info_start_duplication (opt_info);
-	  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, exit_mod + 1,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-	    abort ();
+	  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					      loops, exit_mod + 1,
+					      wont_exit, desc->out_edge,
+					      remove_edges, &n_remove_edges,
+					      DLTHE_FLAG_UPDATE_FREQ);
+	  gcc_assert (ok);
  
           if (opt_info && exit_mod > 0)
   	    apply_opt_in_copies (opt_info, exit_mod + 1, false, false);
@@ -763,11 +768,12 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
   /* Now unroll the loop.  */
   
   opt_info_start_duplication (opt_info);
-  if (!duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-		loops, max_unroll,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
+				      loops, max_unroll,
+				      wont_exit, desc->out_edge,
+				      remove_edges, &n_remove_edges,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
 
   if (opt_info)
     {
@@ -935,6 +941,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   struct niter_desc *desc = get_simple_loop_desc (loop);
   bool exit_at_end = loop_exit_at_end_p (loop);
   struct opt_info *opt_info = NULL;
+  bool ok;
   
   if (flag_split_ivs_in_unroller
       || flag_variable_expansion_in_unroller)
@@ -1013,11 +1020,12 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       && !desc->noloop_assumptions)
     SET_BIT (wont_exit, 1);
   ezc_swtch = loop_preheader_edge (loop)->src;
-  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, 1,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+				      loops, 1,
+				      wont_exit, desc->out_edge,
+				      remove_edges, &n_remove_edges,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
 
   /* Record the place where switch will be built for preconditioning.  */
   swtch = loop_split_edge_with (loop_preheader_edge (loop),
@@ -1029,11 +1037,12 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       sbitmap_zero (wont_exit);
       if (i != n_peel - 1 || !last_may_exit)
 	SET_BIT (wont_exit, 1);
-      if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, 1,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-	abort ();
+      ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					  loops, 1,
+					  wont_exit, desc->out_edge,
+					  remove_edges, &n_remove_edges,
+					  DLTHE_FLAG_UPDATE_FREQ);
+      gcc_assert (ok);
 
       /* Create item for switch.  */
       j = n_peel - i - (extra_zero_check ? 0 : 1);
@@ -1041,7 +1050,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 
       preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
       branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
-					  block_label (preheader), p, NULL_RTX);
+					  block_label (preheader), p,
+					  NULL_RTX);
 
       swtch = loop_split_edge_with (single_pred_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
@@ -1058,7 +1068,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       swtch = ezc_swtch;
       preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
-					  block_label (preheader), p, NULL_RTX);
+					  block_label (preheader), p,
+					  NULL_RTX);
 
       swtch = loop_split_edge_with (single_succ_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
@@ -1077,11 +1088,12 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   RESET_BIT (wont_exit, may_exit_copy);
   opt_info_start_duplication (opt_info);
   
-  if (!duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-		loops, max_unroll,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
+				      loops, max_unroll,
+				      wont_exit, desc->out_edge,
+				      remove_edges, &n_remove_edges,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
   
   if (opt_info)
     {
@@ -1094,7 +1106,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   if (exit_at_end)
     {
       basic_block exit_block = desc->in_edge->src->rbi->copy;
-      /* Find a new in and out edge; they are in the last copy we have made.  */
+      /* Find a new in and out edge; they are in the last copy we have
+	 made.  */
       
       if (EDGE_SUCC (exit_block, 0)->dest == desc->out_edge->dest)
 	{
@@ -1119,7 +1132,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
      the correct new number of iterations is this:  */
   gcc_assert (!desc->const_iter);
   desc->niter_expr =
-    simplify_gen_binary (UDIV, desc->mode, old_niter, GEN_INT (max_unroll + 1));
+    simplify_gen_binary (UDIV, desc->mode, old_niter,
+			 GEN_INT (max_unroll + 1));
   desc->niter_max /= max_unroll + 1;
   if (exit_at_end)
     {
@@ -1242,6 +1256,7 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
   unsigned npeel = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
   struct opt_info *opt_info = NULL;
+  bool ok;
   
   if (flag_split_ivs_in_unroller && npeel > 1)
     opt_info = analyze_insns_in_loop (loop);
@@ -1251,10 +1266,11 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
   
   opt_info_start_duplication (opt_info);
   
-  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, npeel, wont_exit, NULL, NULL, NULL,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+				      loops, npeel, wont_exit,
+				      NULL, NULL,
+				      NULL, DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
 
   free (wont_exit);
   
@@ -1387,6 +1403,7 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
   unsigned nunroll = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
   struct opt_info *opt_info = NULL;
+  bool ok;
   
   if (flag_split_ivs_in_unroller
       || flag_variable_expansion_in_unroller)
@@ -1397,10 +1414,11 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
   sbitmap_zero (wont_exit);
   opt_info_start_duplication (opt_info);
   
-  if (!duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-		loops, nunroll, wont_exit, NULL, NULL, NULL,
-		DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
+				      loops, nunroll, wont_exit,
+				      NULL, NULL, NULL,
+				      DLTHE_FLAG_UPDATE_FREQ);
+  gcc_assert (ok);
   
   if (opt_info)
     {
@@ -1599,6 +1617,7 @@ analyze_iv_to_split_insn (rtx insn)
   rtx set, dest;
   struct rtx_iv iv;
   struct iv_to_split *ivts;
+  bool ok;
 
   /* For now we just split the basic induction variables.  Later this may be
      extended for example by selecting also addresses of memory references.  */
@@ -1613,8 +1632,8 @@ analyze_iv_to_split_insn (rtx insn)
   if (!biv_p (insn, dest))
     return NULL;
 
-  if (!iv_analyze (insn, dest, &iv))
-    abort ();
+  ok = iv_analyze (insn, dest, &iv);
+  gcc_assert (ok);
 
   if (iv.step == const0_rtx
       || iv.mode != iv.extend_mode)

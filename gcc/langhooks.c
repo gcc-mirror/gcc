@@ -158,37 +158,31 @@ lhd_set_decl_assembler_name (tree decl)
      DECL_ASSEMBLER_NAME for lots of DECLs.  Only FUNCTION_DECLs and
      VAR_DECLs for variables with static storage duration need a real
      DECL_ASSEMBLER_NAME.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      || (TREE_CODE (decl) == VAR_DECL
-	  && (TREE_STATIC (decl)
-	      || DECL_EXTERNAL (decl)
-	      || TREE_PUBLIC (decl))))
-    {
-      /* By default, assume the name to use in assembly code is the
-	 same as that used in the source language.  (That's correct
-	 for C, and GCC used to set DECL_ASSEMBLER_NAME to the same
-	 value as DECL_NAME in build_decl, so this choice provides
-	 backwards compatibility with existing front-ends.
-
-         Can't use just the variable's own name for a variable whose
-	 scope is less than the whole compilation.  Concatenate a
-	 distinguishing number - we use the DECL_UID.  */
-      if (TREE_PUBLIC (decl) || DECL_CONTEXT (decl) == NULL_TREE)
-	SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
-      else
-	{
-	  const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
-	  char *label;
-
-	  ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
-	  SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
-	}
-    }
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
+	      || (TREE_CODE (decl) == VAR_DECL
+		  && (TREE_STATIC (decl)
+		      || DECL_EXTERNAL (decl)
+		      || TREE_PUBLIC (decl))));
+  
+  /* By default, assume the name to use in assembly code is the same
+     as that used in the source language.  (That's correct for C, and
+     GCC used to set DECL_ASSEMBLER_NAME to the same value as
+     DECL_NAME in build_decl, so this choice provides backwards
+     compatibility with existing front-ends.
+      
+     Can't use just the variable's own name for a variable whose scope
+     is less than the whole compilation.  Concatenate a distinguishing
+     number - we use the DECL_UID.  */
+  if (TREE_PUBLIC (decl) || DECL_CONTEXT (decl) == NULL_TREE)
+    SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
   else
-    /* Nobody should ever be asking for the DECL_ASSEMBLER_NAME of
-       these DECLs -- unless they're in language-dependent code, in
-       which case set_decl_assembler_name hook should handle things.  */
-    abort ();
+    {
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      char *label;
+      
+      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
+    }
 }
 
 /* By default we always allow bit-field based optimizations.  */
@@ -202,7 +196,7 @@ lhd_can_use_bit_fields_p (void)
 tree
 lhd_type_promotes_to (tree ARG_UNUSED (type))
 {
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Registration of machine- or os-specific builtin types.  */
@@ -216,10 +210,8 @@ lhd_register_builtin_type (tree ARG_UNUSED (type),
 void
 lhd_incomplete_type_error (tree ARG_UNUSED (value), tree type)
 {
-  if (TREE_CODE (type) == ERROR_MARK)
-    return;
-
-  abort ();
+  gcc_assert (TREE_CODE (type) == ERROR_MARK);
+  return;
 }
 
 /* Provide a default routine for alias sets that always returns -1.  This
@@ -248,7 +240,7 @@ lhd_expand_expr (tree ARG_UNUSED (t), rtx ARG_UNUSED (r),
 		 int ARG_UNUSED (em),
 		 rtx * ARG_UNUSED (a))
 {
-  abort ();
+  gcc_unreachable ();
 }
 
 /* The default language-specific function for expanding a decl.  After
@@ -288,10 +280,10 @@ lhd_types_compatible_p (tree x, tree y)
    handle language-specific tree codes, as well as language-specific
    information associated to common tree codes.  If a tree node is
    completely handled within this function, it should set *SUBTREES to
-   0, so that generic handling isn't attempted.  For language-specific
-   tree codes, generic handling would abort(), so make sure it is set
-   properly.  Both SUBTREES and *SUBTREES is guaranteed to be nonzero
-   when the function is called.  */
+   0, so that generic handling isn't attempted.  The generic handling
+   cannot deal with language-specific tree codes, so make sure it is
+   set properly.  Both SUBTREES and *SUBTREES is guaranteed to be
+   nonzero when the function is called.  */
 
 tree
 lhd_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
@@ -444,8 +436,7 @@ lhd_gimplify_expr (tree *expr_p ATTRIBUTE_UNUSED, tree *pre_p ATTRIBUTE_UNUSED,
 size_t
 lhd_tree_size (enum tree_code c ATTRIBUTE_UNUSED)
 {
-  abort ();
-  return 0;
+  gcc_unreachable ();
 }
 
 /* Return true if decl, which is a function decl, may be called by a

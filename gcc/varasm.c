@@ -470,7 +470,7 @@ named_section (tree decl, const char *name, int reloc)
   flags = targetm.section_type_flags (decl, name, reloc);
 
   /* Sanity check user variables for flag changes.  Non-user
-     section flag changes will abort in named_section_flags.
+     section flag changes will die in named_section_flags.
      However, don't complain if SECTION_OVERRIDE is set.
      We trust that the setter knows that it is safe to ignore
      the default flags for this decl.  */
@@ -2170,8 +2170,8 @@ default_assemble_integer (rtx x ATTRIBUTE_UNUSED,
 
 /* Assemble the integer constant X into an object of SIZE bytes.  ALIGN is
    the alignment of the integer in bits.  Return 1 if we were able to output
-   the constant, otherwise 0.  If FORCE is nonzero, abort if we can't output
-   the constant.  */
+   the constant, otherwise 0.  We must be able to output the constant,
+   if FORCE is nonzero.  */
 
 bool
 assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
@@ -2259,7 +2259,7 @@ assemble_real (REAL_VALUE_TYPE d, enum machine_mode mode, unsigned int align)
 /* Given an expression EXP with a constant value,
    reduce it to the sum of an assembler symbol and an integer.
    Store them both in the structure *VALUE.
-   Abort if EXP does not reduce.  */
+   EXP must be reduceable.  */
 
 struct addr_const GTY(())
 {

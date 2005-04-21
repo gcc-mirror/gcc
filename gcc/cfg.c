@@ -895,8 +895,7 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
 	c->probability *= scale / 65536;
     }
 
-  if (bb != taken_edge->src)
-    abort ();
+  gcc_assert (bb == taken_edge->src);
   taken_edge->count -= count;
   if (taken_edge->count < 0)
     taken_edge->count = 0;

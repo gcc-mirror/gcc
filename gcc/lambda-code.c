@@ -687,7 +687,7 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
 
   /* Unfortunately, we can't know the number of constraints we'll have
      ahead of time, but this should be enough even in ridiculous loop nest
-     cases. We abort if we go over this limit.  */
+     cases. We must not go over this limit.  */
   A = lambda_matrix_new (128, depth);
   B = lambda_matrix_new (128, invariants);
   a = lambda_vector_new (128);
@@ -2483,11 +2483,8 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
   lambda_vector distres;
   struct data_dependence_relation *ddr;
 
-#if defined ENABLE_CHECKING
-  if (LTM_COLSIZE (trans) != nb_loops
-      || LTM_ROWSIZE (trans) != nb_loops)
-    abort ();
-#endif
+  gcc_assert (LTM_COLSIZE (trans) == nb_loops
+	      && LTM_ROWSIZE (trans) == nb_loops);
 
   /* When there is an unknown relation in the dependence_relations, we
      know that it is no worth looking at this loop nest: give up.  */

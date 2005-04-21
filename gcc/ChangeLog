@@ -1,10 +1,50 @@
+2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* alias.c (true_dependence): Remove 'abort' from comments. Use
+	gcc_assert and gcc_unreachable as appropriate.
+	(canon_true_dependence): Likewise.
+	* bb-reorder.c (connect_traces): Likewise.
+	* c-common.c (c_add_case_label): Likewise.
+	* c-decl.c (finish_function): Likewise.
+	* caller-save.c (insert_restore, insert_save): Likewise.
+	* cfg.c (update_bb_profile_for_threading): Likewise.
+	* cfganal.c (flow_active_insn_p): Likewise.
+	* cfgexpand.c (add_reg_br_prob_note): Likewise.
+	* cfgrtl.c (rtl_redirect_edge_and_branch_force, rtl_split_edge,
+	cfg_layout_merge_blocks): Likewise.
+	* ifcvt.c (cond_exec_process_insns, merge_if_block,
+	find_if_block): Likewise.
+	* integrate.c (allocate_initial_values): Likewise.
+	* jump.c (reverse_condition, reverse_condition_maybe_unordered,
+	swap_condition, unsigned_condition, signed_condition,
+	mark_jump_label, invert_jump_1, rtx_renumbered_equal_p,
+	reg_or_subregno): Likewise.
+	* lambda-code.c (lambda_compute_auxillary_space,
+	lambda_transform_legal_p): Likewise.
+	* lambda-mat.c (lambda_matrix_inverse_hard): Likewise.
+	* langhooks.c (lhd_set_decl_assembler_name, lhd_type_promotes_to,
+	lhd_incomplete_type_error, lhd_expand_expr,
+	lhd_types_compatible_p, lhd_tree_size): Likewise.
+	* lcm.c (create_pre_exit, optimize_mode_switching): Likewise.
+	* local-alloc.c (update_equiv_regs): Likewise.
+	* loop-unroll.c (peel_loop_completely
+	unroll_loop_constant_iterations, unroll_loop_runtime_iterations,
+	peel_loop_simple, unroll_loop_stupid,
+	analyze_iv_to_split_insn): Likewise.
+	* loop.c (gen_prefetch, find_and_verify_loops,
+	basic_induction_var): Likewise.
+	* modulo-sched.c (normalize_sched_times, check_nodes_order): Likewise.
+	* value-prof.c (tree_find_values_to_profile): Likewise.
+	* varasm.c (named_section, default_assemble_integer,
+	decode_addr_const): Likewise.
+
 2005-04-21 Alan Modra  <amodra@bigpond.net.au>
            Fariborz Jahanian <fjahanian@apple.com>
 
-        * config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Fix size of
-        portion of argument passed in fpr.
-        *expr.c (emit_push_insn): Fix computation of 'offset' used to
-        decide on partial argument save on stack.
+	* config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Fix size of
+	portion of argument passed in fpr.
+	* expr.c (emit_push_insn): Fix computation of 'offset' used to
+	decide on partial argument save on stack.
 
 2005-04-21  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -28,6 +68,8 @@
 	* tree-pass.h (TODO_dump_cgraph): New macro.
 	(ipa_passes): Declare.
 	* Makefile.in (cgraphunit.o): Add dependency on cgraphunit.h
+
+2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 

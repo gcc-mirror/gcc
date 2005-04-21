@@ -1165,7 +1165,7 @@ force_nonfallthru (edge e)
 
 /* Redirect edge even at the expense of creating new jump insn or
    basic block.  Return new basic block if created, NULL otherwise.
-   Abort if conversion is impossible.  */
+   Conversion must be possible.  */
 
 static basic_block
 rtl_redirect_edge_and_branch_force (edge e, basic_block target)
@@ -1277,7 +1277,7 @@ rtl_move_block_after (basic_block bb ATTRIBUTE_UNUSED,
 }
 
 /* Split a (typically critical) edge.  Return the new block.
-   Abort on abnormal edges.
+   The edge must not be abnormal.
 
    ??? The code generally expects to be called on critical edges.
    The case of a block ending in an unconditional jump to a
@@ -2695,7 +2695,8 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 		  ? simplejump_p (BB_END (a)) : onlyjump_p (BB_END (a)))));
 }
 
-/* Merge block A and B, abort when it is not possible.  */
+/* Merge block A and B.  The blocks must be mergeable.  */
+
 static void
 cfg_layout_merge_blocks (basic_block a, basic_block b)
 {

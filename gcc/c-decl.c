@@ -6323,7 +6323,7 @@ finish_function (void)
   if (warn_return_type
       && TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != VOID_TYPE
       && !current_function_returns_value && !current_function_returns_null
-      /* Don't complain if we abort.  */
+      /* Don't complain if we are no-return.  */
       && !current_function_returns_abnormally
       /* Don't warn for main().  */
       && !MAIN_NAME_P (DECL_NAME (fndecl))

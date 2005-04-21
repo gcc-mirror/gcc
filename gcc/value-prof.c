@@ -1789,7 +1789,7 @@ tree_find_values_to_profile (histogram_values *values)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }

@@ -2141,7 +2141,7 @@ true_dependence (rtx mem, enum machine_mode mem_mode, rtx x,
 
   /* Read-only memory is by definition never modified, and therefore can't
      conflict with anything.  We don't expect to find read-only set on MEM,
-     but stupid user tricks can produce them, so don't abort.  */
+     but stupid user tricks can produce them, so don't die.  */
   if (MEM_READONLY_P (x))
     return 0;
 
@@ -2214,7 +2214,7 @@ canon_true_dependence (rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 
   /* Read-only memory is by definition never modified, and therefore can't
      conflict with anything.  We don't expect to find read-only set on MEM,
-     but stupid user tricks can produce them, so don't abort.  */
+     but stupid user tricks can produce them, so don't die.  */
   if (MEM_READONLY_P (x))
     return 0;
 

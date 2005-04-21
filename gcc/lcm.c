@@ -1101,23 +1101,27 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		last_insn = return_copy;
 	      }
 	    while (nregs);
+	    
 	    /* If we didn't see a full return value copy, verify that there
 	       is a plausible reason for this.  If some, but not all of the
 	       return register is likely spilled, we can expect that there
 	       is a copy for the likely spilled part.  */
-	    if (nregs
-		&& ! forced_late_switch
-		&& ! short_block
-		&& CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (ret_start))
-		&& nregs == hard_regno_nregs[ret_start][GET_MODE (ret_reg)]
-		/* For multi-hard-register floating point values,
-		   sometimes the likely-spilled part is ordinarily copied
-		   first, then the other part is set with an arithmetic
-		   operation.  This doesn't actually cause reload failures,
-		   so let it pass.  */
-		&& (GET_MODE_CLASS (GET_MODE (ret_reg)) == MODE_INT
-		    || nregs == 1))
-	      abort ();
+	    gcc_assert (!nregs
+			|| forced_late_switch
+			|| short_block
+			|| !(CLASS_LIKELY_SPILLED_P
+			     (REGNO_REG_CLASS (ret_start)))
+			|| (nregs
+			    != hard_regno_nregs[ret_start][GET_MODE (ret_reg)])
+			/* For multi-hard-register floating point
+		   	   values, sometimes the likely-spilled part
+		   	   is ordinarily copied first, then the other
+		   	   part is set with an arithmetic operation.
+		   	   This doesn't actually cause reload
+		   	   failures, so let it pass.  */
+			|| (GET_MODE_CLASS (GET_MODE (ret_reg)) != MODE_INT
+			    && nregs != 1));
+	    
 	    if (INSN_P (last_insn))
 	      {
 		before_return_copy
@@ -1370,21 +1374,23 @@ optimize_mode_switching (FILE *file)
 		  emited = true;
 		  if (JUMP_P (BB_END (src_bb)))
 		    emit_insn_before (mode_set, BB_END (src_bb));
-		  /* It doesn't make sense to switch to normal mode
-		     after a CALL_INSN, so we're going to abort if we
-		     find one.  The cases in which a CALL_INSN may
-		     have an abnormal edge are sibcalls and EH edges.
-		     In the case of sibcalls, the dest basic-block is
-		     the EXIT_BLOCK, that runs in normal mode; it is
-		     assumed that a sibcall insn requires normal mode
-		     itself, so no mode switch would be required after
-		     the call (it wouldn't make sense, anyway).  In
-		     the case of EH edges, EH entry points also start
-		     in normal mode, so a similar reasoning applies.  */
-		  else if (NONJUMP_INSN_P (BB_END (src_bb)))
-		    emit_insn_after (mode_set, BB_END (src_bb));
 		  else
-		    abort ();
+		    {
+		      /* It doesn't make sense to switch to normal
+		         mode after a CALL_INSN.  The cases in which a
+		         CALL_INSN may have an abnormal edge are
+		         sibcalls and EH edges.  In the case of
+		         sibcalls, the dest basic-block is the
+		         EXIT_BLOCK, that runs in normal mode; it is
+		         assumed that a sibcall insn requires normal
+		         mode itself, so no mode switch would be
+		         required after the call (it wouldn't make
+		         sense, anyway).  In the case of EH edges, EH
+		         entry points also start in normal mode, so a
+		         similar reasoning applies.  */
+		      gcc_assert (NONJUMP_INSN_P (BB_END (src_bb)));
+		      emit_insn_after (mode_set, BB_END (src_bb));
+		    }
 		  bb_info[j][src_bb->index].computing = mode;
 		  RESET_BIT (transp[src_bb->index], j);
 		}

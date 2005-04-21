@@ -511,7 +511,7 @@ reverse_condition (enum rtx_code code)
       return UNKNOWN;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -554,7 +554,7 @@ reverse_condition_maybe_unordered (enum rtx_code code)
       return LTGT;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -600,7 +600,7 @@ swap_condition (enum rtx_code code)
       return UNLE;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -631,7 +631,7 @@ unsigned_condition (enum rtx_code code)
       return LEU;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -660,7 +660,7 @@ signed_condition (enum rtx_code code)
       return LE;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1109,8 +1109,7 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
 	    && NOTE_LINE_NUMBER (label) == NOTE_INSN_DELETED_LABEL)
 	  break;
 
-	if (!LABEL_P (label))
-	  abort ();
+	gcc_assert (LABEL_P (label));
 
 	/* Ignore references to labels of containing functions.  */
 	if (LABEL_REF_NONLOCAL_P (x))
@@ -1723,10 +1722,13 @@ invert_jump_1 (rtx jump, rtx nlabel)
 {
   rtx x = pc_set (jump);
   int ochanges;
+  int ok;
 
   ochanges = num_validated_changes ();
-  if (!x || !invert_exp_1 (SET_SRC (x), jump))
-    abort ();
+  gcc_assert (x);
+  ok = invert_exp_1 (SET_SRC (x), jump);
+  gcc_assert (ok);
+  
   if (num_validated_changes () == ochanges)
     return 0;
 
@@ -1941,7 +1943,7 @@ rtx_renumbered_equal_p (rtx x, rtx y)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return 1;
@@ -1976,9 +1978,8 @@ true_regnum (rtx x)
 unsigned int
 reg_or_subregno (rtx reg)
 {
-  if (REG_P (reg))
-    return REGNO (reg);
   if (GET_CODE (reg) == SUBREG)
-    return REGNO (SUBREG_REG (reg));
-  abort ();
+    reg = SUBREG_REG (reg);
+  gcc_assert (REG_P (reg));
+  return REGNO (reg);
 }
