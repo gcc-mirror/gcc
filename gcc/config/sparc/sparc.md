@@ -4858,7 +4858,7 @@
 
 (define_insn_and_split "adddi3_insn_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (match_operand:DI 1 "register_operand" "%r")
+	(plus:DI (match_operand:DI 1 "arith_double_operand" "%r")
 		 (match_operand:DI 2 "arith_double_operand" "rHI")))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
@@ -4897,7 +4897,7 @@
 ;; LTU here means "carry set"
 (define_insn "addx"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (plus:SI (match_operand:SI 1 "register_operand" "%r")
+	(plus:SI (plus:SI (match_operand:SI 1 "arith_operand" "%r")
 			  (match_operand:SI 2 "arith_operand" "rI"))
 		 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
   ""
@@ -4973,7 +4973,7 @@
 
 (define_insn "*cmp_cc_plus"
   [(set (reg:CC_NOOV 100)
-	(compare:CC_NOOV (plus:SI (match_operand:SI 0 "register_operand" "%r")
+	(compare:CC_NOOV (plus:SI (match_operand:SI 0 "arith_operand" "%r")
 				  (match_operand:SI 1 "arith_operand" "rI"))
 			 (const_int 0)))]
   ""
@@ -4982,7 +4982,7 @@
 
 (define_insn "*cmp_ccx_plus"
   [(set (reg:CCX_NOOV 100)
-	(compare:CCX_NOOV (plus:DI (match_operand:DI 0 "register_operand" "%r")
+	(compare:CCX_NOOV (plus:DI (match_operand:DI 0 "arith_operand" "%r")
 				   (match_operand:DI 1 "arith_operand" "rI"))
 			  (const_int 0)))]
   "TARGET_ARCH64"
@@ -4991,7 +4991,7 @@
 
 (define_insn "*cmp_cc_plus_set"
   [(set (reg:CC_NOOV 100)
-	(compare:CC_NOOV (plus:SI (match_operand:SI 1 "register_operand" "%r")
+	(compare:CC_NOOV (plus:SI (match_operand:SI 1 "arith_operand" "%r")
 				  (match_operand:SI 2 "arith_operand" "rI"))
 			 (const_int 0)))
    (set (match_operand:SI 0 "register_operand" "=r")
@@ -5002,7 +5002,7 @@
 
 (define_insn "*cmp_ccx_plus_set"
   [(set (reg:CCX_NOOV 100)
-	(compare:CCX_NOOV (plus:DI (match_operand:DI 1 "register_operand" "%r")
+	(compare:CCX_NOOV (plus:DI (match_operand:DI 1 "arith_operand" "%r")
 				   (match_operand:DI 2 "arith_operand" "rI"))
 			  (const_int 0)))
    (set (match_operand:DI 0 "register_operand" "=r")

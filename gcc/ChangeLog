@@ -111,9 +111,7 @@
 	(movdi_cc_reg_sp64): Use arith10_operand predicate.
 	(movdi_cc_reg_sp64_trunc): Delete.
 	(cmp_zero_extract, cmp_zero_extract_sp64): Use small_int_operand.
-	(adddi3_insn_sp32, addx, cmp_cc_plus, cmp_ccx_plus, cmp_cc_plus_set,
-	cmp_ccx_plus_set): Use register_operand predicate.
-	(adddi3_sp64, cmp_ccx_plus_set): Use arith_operand predicate.
+	(adddi3_sp64, cmp_ccx_plus, cmp_ccx_plus_set): Use arith_operand.
 	(subdi3_sp32): Delete.
 	(subdi3_insn_sp32): Change to define_insn_and_split.
 	(subdi3_sp64, cmp_minus_ccx, cmp_minus_ccx_set): Use arith_operand.
