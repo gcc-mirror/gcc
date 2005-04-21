@@ -1,3 +1,33 @@
+2005-04-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_emit_sync): New.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_compare): Use
+	gen_rtx_* not gen_rtx_fmt_*.
+	(rs6000_emit_vector_select): Likewise.
+	(rs6000_emit_sync): New.
+	* config/rs6000/rs6000.md (GPR, INT, INT1): New mode macros.
+	(larx, stcx, cmp): New mode substitutions.
+	(UNSPEC_SYNC, UNSPEC_SYNC_OP, UNSPEC_SYNC_SWAP, UNSPEC_LWSYNC,
+	UNSPEC_ISYNC): New constants.
+	(rlwinm): Give name.
+	(memory_barrier, isync, lwsync): New insns.
+	(sync_compare_and_swap<mode>, sync_lock_test_and_set<mode>): New insn.
+	(sync_lock_release<mode>): New expander.
+	(sync_add<mode>, sync_sub<mode>, sync_ior<mode>, sync_and<mode>,
+	sync_xor<mode>, sync_nand<mode>, sync_old_add<mode>,
+	sync_old_sub<mode>, sync_old_ior<mode>, sync_old_and<mode>,
+	sync_old_xor<mode>, sync_old_nand<mode>, sync_new_add<mode>,
+	sync_new_sub<mode>, sync_new_ior<mode>, sync_new_and<mode>,
+	sync_new_xor<mode>, sync_new_nand<mode>): New expanders.
+	(sync_add<mode>_internal, sync_addshort_internal,
+	sync_sub<mode>_internal, sync_andsi_internal, sync_anddi_internal,
+	sync_boolsi_internal, sync_booldi_internal, sync_boolc<mode>_internal,
+	sync_boolc<mode>_internal2, sync_boolcc<mode>_internal): New insns.
+
+	* doc/md.texi (Standard Names): sync_compare_and_swap's operand 0
+	is the memory before, not after, the operation.  Clarify
+	barrier requirements.
+
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cfghooks.h (struct cfg_hooks): Reword comments to avoid 'abort'.

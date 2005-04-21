@@ -883,10 +883,13 @@ proc check_effective_target_sync_int_long { } {
         verbose "check_effective_target_sync_int_long: using cached result" 2
     } else {
         set et_sync_int_long_saved 0
+# This is intentionally powerpc but not rs6000, rs6000 doesn't have the
+# load-reserved/store-conditional instructions.
         if { [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
-	     || [istarget alpha*-*-*] } {
+	     || [istarget alpha*-*-*] 
+	     || [istarget powerpc*-*-*] } {
            set et_sync_int_long_saved 1
         }
     }

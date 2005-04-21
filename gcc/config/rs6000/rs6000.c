@@ -10620,12 +10620,10 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	}
     }
 
-  emit_insn (gen_rtx_fmt_ee (SET,
-			     VOIDmode,
-			     mask,
-			     gen_rtx_fmt_Ei (UNSPEC, dest_mode,
-					     gen_rtvec (2, op0, op1),
-					     vec_cmp_insn)));
+  emit_insn (gen_rtx_SET (VOIDmode, mask,
+			  gen_rtx_UNSPEC (dest_mode,
+					  gen_rtvec (2, op0, op1),
+					  vec_cmp_insn)));
   if (dmode != dest_mode)
     {
       rtx temp = gen_reg_rtx (dest_mode);
@@ -10676,10 +10674,10 @@ rs6000_emit_vector_select (rtx dest, rtx op1, rtx op2, rtx mask)
 
   /* For each vector element, select op1 when mask is 1 otherwise 
      select op2.  */
-  t = gen_rtx_fmt_ee (SET, VOIDmode, temp,
-		      gen_rtx_fmt_Ei (UNSPEC, dest_mode,
-				      gen_rtvec (3, op2, op1, mask),
-				      vsel_insn_index));
+  t = gen_rtx_SET (VOIDmode, temp,
+		   gen_rtx_UNSPEC (dest_mode,
+				   gen_rtvec (3, op2, op1, mask),
+				   vsel_insn_index));
   emit_insn (t);
   emit_move_insn (dest, temp);
   return;
@@ -10958,6 +10956,183 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
     abort ();
   if (target != dest)
     emit_move_insn (dest, target);
+}
+
+/* Emit instructions to perform a load-reserved/store-conditional operation.
+   The operation performed is an atomic
+   (set M (CODE:MODE M OP))
+   If not NULL, BEFORE is atomically set to M before the operation, and
+   AFTER is set to M after the operation (that is, (CODE:MODE M OP)).
+   If SYNC_P then a memory barrier is emitted before the operation.  
+   Either OP or M may be wrapped in a NOT operation.  */
+
+void
+rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
+		  rtx m, rtx op, rtx before_param, rtx after_param,
+		  bool sync_p)
+{
+  enum machine_mode used_mode;
+  rtx the_op, set_before, set_after, set_atomic, cc_scratch, before, after;
+  rtx used_m;
+  rtvec vec;
+  HOST_WIDE_INT imask = GET_MODE_MASK (mode);
+  rtx shift = NULL_RTX;
+  
+  if (sync_p)
+    emit_insn (gen_memory_barrier ());
+  
+  if (GET_CODE (m) == NOT)
+    used_m = XEXP (m, 0);
+  else
+    used_m = m;
+
+  /* If this is smaller than SImode, we'll have to use SImode with
+     adjustments.  */
+  if (mode == QImode || mode == HImode)
+    {
+      rtx newop, oldop;
+
+      if (MEM_ALIGN (used_m) >= 32)
+	{
+	  int ishift = 0;
+	  if (BYTES_BIG_ENDIAN)
+	    ishift = GET_MODE_BITSIZE (SImode) - GET_MODE_BITSIZE (mode);
+	  
+	  shift = GEN_INT (ishift);
+	}
+      else
+	{
+	  rtx addrSI, aligned_addr;
+	  
+	  addrSI = force_reg (SImode, gen_lowpart_common (SImode,
+							  XEXP (used_m, 0)));
+	  shift = gen_reg_rtx (SImode);
+
+	  emit_insn (gen_rlwinm (shift, addrSI, GEN_INT (3),
+				 GEN_INT (0x18)));
+
+	  aligned_addr = expand_binop (Pmode, and_optab,
+				       XEXP (used_m, 0),
+				       GEN_INT (-4), NULL_RTX,
+				       1, OPTAB_LIB_WIDEN);
+	  used_m = change_address (used_m, SImode, aligned_addr);
+	  set_mem_align (used_m, 32);
+	  /* It's safe to keep the old alias set of USED_M, because
+	     the operation is atomic and only affects the original
+	     USED_M.  */
+	  if (GET_CODE (m) == NOT)
+	    m = gen_rtx_NOT (SImode, used_m);
+	  else
+	    m = used_m;
+	}
+
+      if (GET_CODE (op) == NOT)
+	{
+	  oldop = lowpart_subreg (SImode, XEXP (op, 0), mode);
+	  oldop = gen_rtx_NOT (SImode, oldop);
+	}
+      else
+	oldop = lowpart_subreg (SImode, op, mode);
+      switch (code)
+	{
+	case IOR:
+	case XOR:
+	  newop = expand_binop (SImode, and_optab,
+				oldop, GEN_INT (imask), NULL_RTX,
+				1, OPTAB_LIB_WIDEN);
+	  emit_insn (gen_ashlsi3 (newop, newop, shift));
+	  break;
+
+	case AND:
+	  newop = expand_binop (SImode, ior_optab,
+				oldop, GEN_INT (~imask), NULL_RTX,
+				1, OPTAB_LIB_WIDEN);
+	  emit_insn (gen_ashlsi3 (newop, newop, shift));
+	  break;
+
+	case PLUS:
+	  {
+	    rtx mask;
+	    
+	    newop = expand_binop (SImode, and_optab,
+				  oldop, GEN_INT (imask), NULL_RTX,
+				  1, OPTAB_LIB_WIDEN);
+	    emit_insn (gen_ashlsi3 (newop, newop, shift));
+
+	    mask = gen_reg_rtx (SImode);
+	    emit_move_insn (mask, GEN_INT (imask));
+	    emit_insn (gen_ashlsi3 (mask, mask, shift));
+
+	    newop = gen_rtx_AND (SImode, gen_rtx_PLUS (SImode, m, newop),
+				 mask);
+	    newop = gen_rtx_IOR (SImode, newop,
+				 gen_rtx_AND (SImode,
+					      gen_rtx_NOT (SImode, mask),
+					      m));
+	    break;
+	  }
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      op = newop;
+      used_mode = SImode;
+      before = gen_reg_rtx (used_mode);
+      after = gen_reg_rtx (used_mode);
+    }
+  else
+    {
+      used_mode = mode;
+      before = before_param;
+      after = after_param;
+
+      if (before == NULL_RTX)
+	before = gen_reg_rtx (used_mode);
+      if (after == NULL_RTX)
+	after = gen_reg_rtx (used_mode);
+    }
+  
+  if (code == PLUS && used_mode != mode)
+    the_op = op;  /* Computed above.  */
+  else if (GET_CODE (op) == NOT && GET_CODE (m) != NOT)
+    the_op = gen_rtx_fmt_ee (code, used_mode, op, m);
+  else
+    the_op = gen_rtx_fmt_ee (code, used_mode, m, op);
+
+  set_after = gen_rtx_SET (VOIDmode, after, the_op);
+  set_before = gen_rtx_SET (VOIDmode, before, used_m);
+  set_atomic = gen_rtx_SET (VOIDmode, used_m,
+			    gen_rtx_UNSPEC (used_mode, gen_rtvec (1, the_op),
+					    UNSPEC_SYNC_OP));
+  cc_scratch = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (CCmode));
+
+  if (code == PLUS && used_mode != mode)
+    vec = gen_rtvec (5, set_after, set_before, set_atomic, cc_scratch,
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (SImode)));
+  else
+    vec = gen_rtvec (4, set_after, set_before, set_atomic, cc_scratch);
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, vec));
+
+  /* Shift and mask the return values properly.  */
+  if (used_mode != mode && before_param)
+    {
+      emit_insn (gen_lshrsi3 (before, before, shift));
+      convert_move (before_param, before, 1);
+    }
+
+  if (used_mode != mode && after_param)
+    {
+      emit_insn (gen_lshrsi3 (after, after, shift));
+      convert_move (after_param, after, 1);
+    }
+
+  /* The previous sequence will end with a branch that's dependent on
+     the conditional store, so placing an isync will ensure that no
+     other instructions (especially, no load or store instructions)
+     can start before the atomic operation completes.  */
+  if (sync_p)
+    emit_insn (gen_isync ());
 }
 
 /* Emit instructions to move SRC to DST.  Called by splitters for
