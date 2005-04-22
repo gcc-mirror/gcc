@@ -1,5 +1,5 @@
 /* { dg-do compile { target arm*-*-* } } */
-/* { dg-options "-O2 -ffast-math -mfpu=vfp -mfloat-abi=softfp" } */
+/* { dg-options "-O2 -mfpu=vfp -mfloat-abi=softfp" } */
 
 extern float fabsf (float);
 extern float sqrtf (float);
