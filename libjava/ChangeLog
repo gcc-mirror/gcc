@@ -1,5 +1,9 @@
 2005-04-21  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natClass.cc (initializeClass): Link class.
+
+2005-04-21  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/AssertionError.java: Typo fix.
 
 2005-04-21  Tom Tromey  <tromey@redhat.com>
