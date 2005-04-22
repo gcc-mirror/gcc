@@ -1,3 +1,14 @@
+2005-04-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/predicates.md (arith_double_operand): Use
+	trunc_int_for_mode if HOST_BITS_PER_WIDE_INT >=64.
+	* config/sparc/sparc.md (movqi, movhi, movsi, movqi): Use gen_int_mode.
+	(DImode, DFmode constant splitters): Likewise.  Remove code for
+	TARGET_ARCH64 && HOST_BITS_PER_WIDE_INT < 64.
+	(logical constant splitters): Use const_int_operand predicate.
+	(lshrsi3_extend): Remove code for TARGET_ARCH64 &&
+	HOST_BITS_PER_WIDE_INT < 64.
+
 2005-04-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/pa/pa.c (legitimize_pic_address): Use gcc_assert and
