@@ -1,3 +1,12 @@
+205-04-22  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/20074
+	PR libfortran/20436
+	PR libfortran/21108
+	* gfortran.dg/nested_reshape.f90: new test
+	* gfortran.dg/reshape-alloc.f90: new test
+	* gfortran.dg/reshape.f90: new test
+
 2005-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/arm-vfp1.c: New test.
