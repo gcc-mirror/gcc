@@ -1,3 +1,7 @@
+2005-04-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/arm-vfp1.c: New test.
+
 2005-04-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/21087
