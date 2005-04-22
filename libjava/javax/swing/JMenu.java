@@ -162,7 +162,8 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
    */
   public Component add(Component component)
   {
-    return popupMenu.add(component);
+    popupMenu.insert(component, -1);
+    return component;
   }
 
   /**
