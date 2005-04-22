@@ -443,6 +443,11 @@ extern void __gcov_merge_single (gcov_type *, unsigned);
    consecutive values.  */
 extern void __gcov_merge_delta (gcov_type *, unsigned);
 
+/* The profiler functions.  */
+extern void __gcov_interval_profiler (gcov_type *, gcov_type, int, unsigned); 
+extern void __gcov_pow2_profiler (gcov_type *, gcov_type);
+extern void __gcov_one_value_profiler (gcov_type *, gcov_type);
+
 #ifndef inhibit_libc
 /* The wrappers around some library functions..  */
 extern pid_t __gcov_fork (void);

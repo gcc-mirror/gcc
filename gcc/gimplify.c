@@ -4662,7 +4662,7 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
   gimple_test_f = simple ? is_gimple_val : is_gimple_reg_rhs;
 
   push_gimplify_context ();
-  gimplify_ctxp->into_ssa = true;
+  gimplify_ctxp->into_ssa = in_ssa_p;
 
   if (var)
     expr = build (MODIFY_EXPR, TREE_TYPE (var), var, expr);
@@ -4671,10 +4671,29 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
 		       gimple_test_f, fb_rvalue);
   gcc_assert (ret != GS_ERROR);
 
-  for (t = gimplify_ctxp->temps; t ; t = TREE_CHAIN (t))
-    add_referenced_tmp_var (t);
+  if (referenced_vars)
+    {
+      for (t = gimplify_ctxp->temps; t ; t = TREE_CHAIN (t))
+	add_referenced_tmp_var (t);
+    }
 
   pop_gimplify_context (NULL);
+
+  return expr;
+}
+
+/* Invokes force_gimple_operand for EXPR with parameters SIMPLE_P and VAR.  If
+   some statements are produced, emits them before BSI.  */
+
+tree
+force_gimple_operand_bsi (block_stmt_iterator *bsi, tree expr,
+			  bool simple_p, tree var)
+{
+  tree stmts;
+
+  expr = force_gimple_operand (expr, &stmts, simple_p, var);
+  if (stmts)
+    bsi_insert_before (bsi, stmts, BSI_SAME_STMT);
 
   return expr;
 }

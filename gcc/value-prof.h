@@ -66,10 +66,6 @@ struct histogram_value_t
 	  int int_start;	/* First value in interval.  */
 	  unsigned int steps;	/* Number of values in it.  */
 	} intvl;	/* Interval histogram data.  */
-      struct
-	{
-	  int may_be_other;	/* If the value may be non-positive or not 2^k.  */
-	} pow2;		/* Power of 2 histogram data.  */
     } hdata;		/* Profiled information specific data.  */
 };
 

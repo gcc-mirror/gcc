@@ -1,3 +1,46 @@
+2005-04-22  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* Makefile.in (LIBGCOV): Add _gcov_interval_profiler,
+	_gcov_pow2_profiler and _gcov_one_value_profiler.
+	(tree-profile.o): Add GGC_H and gt-tree-profile.h dependency.
+	(GTFILES): Add $(srcdir)/tree-profile.c.
+	* gcov-io.h (__gcov_interval_profiler, __gcov_pow2_profiler,
+	__gcov_one_value_profiler): Declare.
+	* gimplify.c (force_gimple_operand): Check whether the statements
+	should be produced in ssa form.
+	(force_gimple_operand_bsi): New function.
+	* libgcov.c (__gcov_interval_profiler, __gcov_pow2_profiler,
+	__gcov_one_value_profiler): New functions.
+	* rtl-profile.c (rtl_gen_pow2_profiler): Only measure whether
+	the profiled value is a power of two or not.
+	* tree-cfg.c (tree_block_ends_with_condjump_p): Handle empty blocks.
+	* tree-flow.h (in_ssa_p): Declare.
+	(force_gimple_operand_bsi): Declare.
+	* tree-into-ssa.c (in_ssa_p): New variable.
+	(rewrite_into_ssa): Set in_ssa_p.
+	* tree-outof-ssa.c (rewrite_out_of_ssa): Set in_ssa_p.
+	* tree-profile.c: Include ggc.h and gt-tree-profile.h.
+	(gcov_type_node, tree_interval_profiler_fn, tree_pow2_profiler_fn,
+	tree_one_value_profiler_fn): New variables.
+	(tree_init_edge_profiler): Initialize the profiler function decls.
+	(tree_gen_edge_profiler): Use global gcov_type_node.
+	(prepare_instrumented_value): New function.
+	(tree_gen_interval_profiler, tree_gen_interval_profiler,
+	tree_gen_one_value_profiler): Call the library functions instead of
+	creating instrumentation code.
+	* tree.c (build_fn_decl): New function.
+	* tree.h (build_fn_decl): Declare.
+	* value-prof.c (rtl_divmod_values_to_profile,
+	rtl_find_values_to_profile, rtl_mod_pow2_value_transform,
+	tree_mod_pow2_value_transform, tree_find_values_to_profile):
+	Do not handle may_be_other and precise values of exponents at pow2
+	profiler.
+	(tree_mod_subtract_transform): Reflect that value field of
+	histogram has changed meaning.
+	(tree_divmod_values_to_profile): Record the values correctly.
+	(tree_values_to_profile): Update comment.
+	* value-prof.h (struct histogram_value_t): Remove pow2 data.
+
 2005-04-22  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* varasm.c (do_assemble_alias): Return early if TREE_ASM_WRITTEN

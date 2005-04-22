@@ -172,10 +172,9 @@ rtl_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
   rtx mem_ref, tmp, mr, uval;
   rtx sequence;
   rtx end_of_code_label = gen_label_rtx ();
-  rtx loop_label = gen_label_rtx ();
   int per_counter = GCOV_TYPE_SIZE / BITS_PER_UNIT;
   edge e = split_block (BLOCK_FOR_INSN (value->hvalue.rtl.insn),
-		   PREV_INSN (value->hvalue.rtl.insn));
+			PREV_INSN (value->hvalue.rtl.insn));
 
   start_sequence ();
 
@@ -191,32 +190,19 @@ rtl_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
   emit_move_insn (uval, copy_rtx (value->hvalue.rtl.value));
 
   /* Check for non-power of 2.  */
-  if (value->hdata.pow2.may_be_other)
-    {
-      do_compare_rtx_and_jump (copy_rtx (uval), const0_rtx, LE, 0, value->hvalue.rtl.mode,
-			       NULL_RTX, NULL_RTX, end_of_code_label);
-      tmp = expand_simple_binop (value->hvalue.rtl.mode, PLUS, copy_rtx (uval),
-				 constm1_rtx, NULL_RTX, 0, OPTAB_WIDEN);
-      tmp = expand_simple_binop (value->hvalue.rtl.mode, AND, copy_rtx (uval), tmp,
-				 NULL_RTX, 0, OPTAB_WIDEN);
-      do_compare_rtx_and_jump (tmp, const0_rtx, NE, 0, value->hvalue.rtl.mode, NULL_RTX,
-			       NULL_RTX, end_of_code_label);
-    }
+  do_compare_rtx_and_jump (copy_rtx (uval), const0_rtx, LE, 0, value->hvalue.rtl.mode,
+			   NULL_RTX, NULL_RTX, end_of_code_label);
+  tmp = expand_simple_binop (value->hvalue.rtl.mode, PLUS, copy_rtx (uval),
+			     constm1_rtx, NULL_RTX, 0, OPTAB_WIDEN);
+  tmp = expand_simple_binop (value->hvalue.rtl.mode, AND, copy_rtx (uval), tmp,
+			     NULL_RTX, 0, OPTAB_WIDEN);
+  do_compare_rtx_and_jump (tmp, const0_rtx, NE, 0, value->hvalue.rtl.mode, NULL_RTX,
+			   NULL_RTX, end_of_code_label);
 
-  /* Count log_2(value).  */
-  emit_label (loop_label);
-
-  tmp = expand_simple_binop (Pmode, PLUS, copy_rtx (mr), GEN_INT (per_counter), mr, 0, OPTAB_WIDEN);
+  tmp = expand_simple_binop (Pmode, PLUS, copy_rtx (mr), GEN_INT (per_counter),
+			     mr, 0, OPTAB_WIDEN);
   if (tmp != mr)
     emit_move_insn (copy_rtx (mr), tmp);
-
-  tmp = expand_simple_binop (value->hvalue.rtl.mode, ASHIFTRT, copy_rtx (uval), const1_rtx,
-			     uval, 0, OPTAB_WIDEN);
-  if (tmp != uval)
-    emit_move_insn (copy_rtx (uval), tmp);
-
-  do_compare_rtx_and_jump (copy_rtx (uval), const0_rtx, NE, 0, value->hvalue.rtl.mode,
-			   NULL_RTX, NULL_RTX, loop_label);
 
   /* Increase the counter.  */
   emit_label (end_of_code_label);

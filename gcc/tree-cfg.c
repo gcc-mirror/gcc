@@ -5350,8 +5350,8 @@ tree_block_ends_with_call_p (basic_block bb)
 static bool
 tree_block_ends_with_condjump_p (basic_block bb)
 {
-  tree stmt = tsi_stmt (bsi_last (bb).tsi);
-  return (TREE_CODE (stmt) == COND_EXPR);
+  tree stmt = last_stmt (bb);
+  return (stmt && TREE_CODE (stmt) == COND_EXPR);
 }
 
 
