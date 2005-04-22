@@ -103,16 +103,13 @@ public class LogManager
    * The singleton LogManager instance.
    */
   private static LogManager logManager;
-  
 
   /**
    * The registered named loggers; maps the name of a Logger to
    * a WeakReference to it.
    */
   private Map loggers;
-
   final Logger rootLogger;
-
 
   /**
    * The properties for the logging framework which have been
@@ -132,20 +129,19 @@ public class LogManager
    * behave differently from the reference implementation in
    * this case.
    */
-  private final PropertyChangeSupport pcs
-    = new PropertyChangeSupport(/* source bean */ LogManager.class);
+  private final PropertyChangeSupport pcs = new PropertyChangeSupport( /* source bean */
+  LogManager.class);
 
   protected LogManager()
   {
     if (logManager != null)
-      throw new IllegalStateException(
-        "there can be only one LogManager; use LogManager.getLogManager()");
+      throw new IllegalStateException("there can be only one LogManager; use LogManager.getLogManager()");
 
     logManager = this;
     loggers = new java.util.HashMap();
     rootLogger = new Logger("", null);
     addLogger(rootLogger);
-    
+
     /* Make sure that Logger.global has the rootLogger as its parent.
      *
      * Logger.global is set during class initialization of Logger,
@@ -166,7 +162,6 @@ public class LogManager
     Logger.getLogger("global").setUseParentHandlers(true);
   }
 
-
   /**
    * Returns the globally shared LogManager instance.
    */
@@ -176,32 +171,30 @@ public class LogManager
   }
 
   static
-  {
-    makeLogManager();
-    
-    /* The Javadoc description of the class explains
-     * what is going on here.
-     */
-    Object configurator = createInstance(
-      System.getProperty("java.util.logging.config.class"),
-      /* must be instance of */ Object.class);
+    {
+      makeLogManager();
 
-    try
-    {
-      if (configurator == null)
-        getLogManager().readConfiguration();
+      /* The Javadoc description of the class explains
+       * what is going on here.
+       */
+      Object configurator = createInstance(System.getProperty("java.util.logging.config.class"),
+                                           /* must be instance of */ Object.class);
+
+      try
+        {
+	  if (configurator == null)
+	    getLogManager().readConfiguration();
+        }
+      catch (IOException ex)
+        {
+	  /* FIXME: Is it ok to ignore exceptions here? */
+        }
     }
-    catch (IOException ex)
-    {
-      /* FIXME: Is it ok to ignore exceptions here? */
-    }
-  }
-  
 
   private static LogManager makeLogManager()
   {
-    String      managerClassName;
-    LogManager  manager;
+    String managerClassName;
+    LogManager manager;
 
     managerClassName = System.getProperty("java.util.logging.manager");
     manager = (LogManager) createInstance(managerClassName, LogManager.class);
@@ -210,11 +203,10 @@ public class LogManager
 
     if (managerClassName != null)
       System.err.println("WARNING: System property \"java.util.logging.manager\""
-			 + " should be the name of a subclass of java.util.logging.LogManager");
+                         + " should be the name of a subclass of java.util.logging.LogManager");
 
     return new LogManager();
   }
-
 
   /**
    * Registers a listener which will be notified when the
@@ -228,7 +220,6 @@ public class LogManager
     pcs.addPropertyChangeListener(listener);
   }
 
-
   /**
    * Unregisters a listener.
    *
@@ -241,7 +232,6 @@ public class LogManager
     if (listener != null)
       pcs.removePropertyChangeListener(listener);
   }
-
 
   /**
    * Adds a named logger.  If a logger with the same name has
@@ -271,9 +261,8 @@ public class LogManager
      * that LogManager does its synchronization on the globally
      * shared instance of LogManager.
      */
-
     String name;
-    WeakReference  ref;
+    WeakReference ref;
 
     /* This will throw a NullPointerException if logger is null,
      * as required by the API specification.
@@ -282,18 +271,18 @@ public class LogManager
 
     ref = (WeakReference) loggers.get(name);
     if (ref != null)
-    {
-      if (ref.get() != null)
-	return false;
+      {
+	if (ref.get() != null)
+	  return false;
 
-      /* There has been a logger under this name in the past,
-       * but it has been garbage collected.
-       */
-      loggers.remove(ref);
-    }
+	/* There has been a logger under this name in the past,
+	 * but it has been garbage collected.
+	 */
+	loggers.remove(ref);
+      }
 
     /* Adding a named logger requires a security permission. */
-    if ((name != null) && !name.equals(""))
+    if ((name != null) && ! name.equals(""))
       checkAccess();
 
     Logger parent = findAncestor(logger);
@@ -308,26 +297,27 @@ public class LogManager
      * its parent to "foo.bar".
      */
     if (parent != rootLogger)
-    {
-      for (Iterator iter = loggers.keySet().iterator(); iter.hasNext();)
       {
-        Logger possChild = (Logger) ((WeakReference) loggers.get(iter.next())).get();
-        if ((possChild == null) || (possChild == logger) || (possChild.getParent() != parent))
-	  continue;
+	for (Iterator iter = loggers.keySet().iterator(); iter.hasNext();)
+	  {
+	    Logger possChild = (Logger) ((WeakReference) loggers.get(iter.next()))
+	                       .get();
+	    if ((possChild == null) || (possChild == logger)
+	        || (possChild.getParent() != parent))
+	      continue;
 
-	if (!possChild.getName().startsWith(name))
-	  continue;
+	    if (! possChild.getName().startsWith(name))
+	      continue;
 
-	if (possChild.getName().charAt(name.length()) != '.')
-	  continue;
+	    if (possChild.getName().charAt(name.length()) != '.')
+	      continue;
 
-	possChild.setParent(logger);
+	    possChild.setParent(logger);
+	  }
       }
-    }
 
     return true;
   }
-
 
   /**
    * Finds the closest ancestor for a logger among the currently
@@ -348,39 +338,38 @@ public class LogManager
   private synchronized Logger findAncestor(Logger child)
   {
     String childName = child.getName();
-    int    childNameLength = childName.length();
+    int childNameLength = childName.length();
     Logger best = rootLogger;
-    int    bestNameLength = 0;
+    int bestNameLength = 0;
 
-    Logger  cand;
-    String  candName;
-    int     candNameLength;
+    Logger cand;
+    String candName;
+    int candNameLength;
 
     if (child == rootLogger)
       return null;
 
     for (Iterator iter = loggers.keySet().iterator(); iter.hasNext();)
-    {
-      candName = (String) iter.next();
-      candNameLength = candName.length();
-
-      if (candNameLength > bestNameLength
-	  && childNameLength > candNameLength
-	  && childName.startsWith(candName)
-	  && childName.charAt(candNameLength) == '.')
       {
-        cand = (Logger) ((WeakReference) loggers.get(candName)).get();
-	if ((cand == null) || (cand == child))
-	  continue;
+	candName = (String) iter.next();
+	candNameLength = candName.length();
 
-	bestNameLength = candName.length();
-	best = cand;
+	if (candNameLength > bestNameLength
+	    && childNameLength > candNameLength
+	    && childName.startsWith(candName)
+	    && childName.charAt(candNameLength) == '.')
+	  {
+	    cand = (Logger) ((WeakReference) loggers.get(candName)).get();
+	    if ((cand == null) || (cand == child))
+	      continue;
+
+	    bestNameLength = candName.length();
+	    best = cand;
+	  }
       }
-    }
 
     return best;
   }
-
 
   /**
    * Returns a Logger given its name.
@@ -395,7 +384,7 @@ public class LogManager
    */
   public synchronized Logger getLogger(String name)
   {
-    WeakReference  ref;
+    WeakReference ref;
 
     /* Throw a NullPointerException if name is null. */
     name.getClass();
@@ -406,7 +395,6 @@ public class LogManager
     else
       return null;
   }
-
 
   /**
    * Returns an Enumeration of currently registered Logger names.
@@ -421,7 +409,6 @@ public class LogManager
     return Collections.enumeration(loggers.keySet());
   }
 
-
   /**
    * Resets the logging configuration by removing all handlers for
    * registered named loggers and setting their level to <code>null</code>.
@@ -431,8 +418,7 @@ public class LogManager
    *         the caller is not granted the permission to control
    *         the logging infrastructure.
    */
-  public synchronized void reset()
-    throws SecurityException
+  public synchronized void reset() throws SecurityException
   {
     /* Throw a SecurityException if the caller does not have the
      * permission to control the logging infrastructure.
@@ -443,25 +429,24 @@ public class LogManager
 
     Iterator iter = loggers.values().iterator();
     while (iter.hasNext())
-    {
-      WeakReference  ref;
-      Logger         logger;
-
-      ref = (WeakReference) iter.next();
-      if (ref != null)
       {
-	logger = (Logger) ref.get();
+	WeakReference ref;
+	Logger logger;
 
-	if (logger == null)
-	  iter.remove();
-	else if (logger != rootLogger)
-	  logger.setLevel(null);
+	ref = (WeakReference) iter.next();
+	if (ref != null)
+	  {
+	    logger = (Logger) ref.get();
+
+	    if (logger == null)
+	      iter.remove();
+	    else if (logger != rootLogger)
+	      logger.setLevel(null);
+	  }
       }
-    }
 
     rootLogger.setLevel(Level.INFO);
   }
-
 
   /**
    * Configures the logging framework by reading a configuration file.
@@ -488,97 +473,99 @@ public class LogManager
   public synchronized void readConfiguration()
     throws IOException, SecurityException
   {
-    String       path;
-    InputStream  inputStream;
+    String path;
+    InputStream inputStream;
 
     path = System.getProperty("java.util.logging.config.file");
     if ((path == null) || (path.length() == 0))
-    {
-      String url = (System.getProperty("gnu.classpath.home.url")
-		    + "/logging.properties");
-      inputStream = new URL(url).openStream();
-    }
+      {
+	String url = (System.getProperty("gnu.classpath.home.url")
+	             + "/logging.properties");
+	inputStream = new URL(url).openStream();
+      }
     else
-    {
       inputStream = new java.io.FileInputStream(path);
-    }
 
     try
-    {
-      readConfiguration(inputStream);
-    }
+      {
+	readConfiguration(inputStream);
+      }
     finally
-    {
-      /* Close the stream in order to save
-       * resources such as file descriptors.
-       */
-      inputStream.close();
-    }
+      {
+	/* Close the stream in order to save
+	 * resources such as file descriptors.
+	 */
+	inputStream.close();
+      }
   }
-
 
   public synchronized void readConfiguration(InputStream inputStream)
     throws IOException, SecurityException
-  {	
-    Properties   newProperties;
-    Enumeration  keys;
+  {
+    Properties newProperties;
+    Enumeration keys;
 
     checkAccess();
     newProperties = new Properties();
     newProperties.load(inputStream);
-    this.properties = newProperties;    
+    this.properties = newProperties;
     keys = newProperties.propertyNames();
 
     while (keys.hasMoreElements())
-    {
-      String key = ((String) keys.nextElement()).trim();
-      String value = newProperties.getProperty(key);
-  
-      if (value == null)
-	continue;
-	
-	  value = value.trim();
-	
-	  if("handlers".equals(key))
-        {
-          StringTokenizer tokenizer = new StringTokenizer(value);
-          while(tokenizer.hasMoreTokens())
-            {
-              String handlerName = tokenizer.nextToken();	
-              try
-                {
-              	  Class handlerClass = Class.forName(handlerName);
-              	  getLogger("").addHandler((Handler)handlerClass.newInstance()); 
-                }
-              catch (ClassCastException ex)
-                {
-                  System.err.println("[LogManager] class " + handlerName + " is not subclass of java.util.logging.Handler");
-                }
-              catch (Exception ex)
-                {
-                  //System.out.println("[LogManager.readConfiguration]"+ex);
-                }
-            }
-        }
-	  
-      if (key.endsWith(".level"))
       {
-	String loggerName = key.substring(0, key.length() - 6);
-	Logger logger = getLogger(loggerName);
-	if (logger != null)
-	{
-	  try
-	  {
-	    logger.setLevel(Level.parse(value));
-	  }
-	  catch (Exception _)
-	  {
-        //System.out.println("[LogManager.readConfiguration] "+_);
-	  }
+	String key = ((String) keys.nextElement()).trim();
+	String value = newProperties.getProperty(key);
+
+	if (value == null)
 	  continue;
-	}
+
+	value = value.trim();
+
+	if ("handlers".equals(key))
+	  {
+	    StringTokenizer tokenizer = new StringTokenizer(value);
+	    while (tokenizer.hasMoreTokens())
+	      {
+		String handlerName = tokenizer.nextToken();
+		try
+		  {
+		    Class handlerClass = Class.forName(handlerName);
+		    getLogger("").addHandler((Handler) handlerClass
+		                             .newInstance());
+		  }
+		catch (ClassCastException ex)
+		  {
+		    System.err.println("[LogManager] class " + handlerName
+		                       + " is not subclass of java.util.logging.Handler");
+		  }
+		catch (Exception ex)
+		  {
+		    //System.out.println("[LogManager.readConfiguration]"+ex);
+		  }
+	      }
+	  }
+
+	if (key.endsWith(".level"))
+	  {
+	    String loggerName = key.substring(0, key.length() - 6);
+	    Logger logger = getLogger(loggerName);
+
+	    if (logger == null)
+	      {
+		logger = Logger.getLogger(loggerName);
+		addLogger(logger);
+	      }
+	    try
+	      {
+		logger.setLevel(Level.parse(value));
+	      }
+	    catch (Exception _)
+	      {
+		//System.out.println("[LogManager.readConfiguration] "+_);
+	      }
+	    continue;
+	  }
       }
-    }
 
     /* The API specification does not talk about the
      * property name that is distributed with the
@@ -589,7 +576,6 @@ public class LogManager
     pcs.firePropertyChange(null, null, null);
   }
 
-  
   /**
    * Returns the value of a configuration property as a String.
    */
@@ -600,7 +586,6 @@ public class LogManager
     else
       return null;
   }
-
 
   /**
    * Returns the value of a configuration property as an integer.
@@ -617,15 +602,14 @@ public class LogManager
   static int getIntProperty(String name, int defaultValue)
   {
     try
-    {
-      return Integer.parseInt(getLogManager().getProperty(name));
-    }
+      {
+	return Integer.parseInt(getLogManager().getProperty(name));
+      }
     catch (Exception ex)
-    {
-      return defaultValue;
-    }
+      {
+	return defaultValue;
+      }
   }
-
 
   /**
    * Returns the value of a configuration property as an integer,
@@ -646,14 +630,13 @@ public class LogManager
    *        or if it is greater than the maximum value.
    */
   static int getIntPropertyClamped(String name, int defaultValue,
-				   int minValue, int maxValue)
+                                   int minValue, int maxValue)
   {
     int val = getIntProperty(name, defaultValue);
     if ((val < minValue) || (val > maxValue))
       val = defaultValue;
     return val;
   }
-
 
   /**
    * Returns the value of a configuration property as a boolean.
@@ -670,16 +653,14 @@ public class LogManager
   static boolean getBooleanProperty(String name, boolean defaultValue)
   {
     try
-    {
-      return (new Boolean(getLogManager().getProperty(name)))
-        .booleanValue();
-    }
+      {
+	return (new Boolean(getLogManager().getProperty(name))).booleanValue();
+      }
     catch (Exception ex)
-    {
-      return defaultValue;
-    }
+      {
+	return defaultValue;
+      }
   }
-
 
   /**
    * Returns the value of a configuration property as a Level.
@@ -697,15 +678,14 @@ public class LogManager
   static Level getLevelProperty(String propertyName, Level defaultValue)
   {
     try
-    {
-      return Level.parse(getLogManager().getProperty(propertyName));
-    }
+      {
+	return Level.parse(getLogManager().getProperty(propertyName));
+      }
     catch (Exception ex)
-    {
-      return defaultValue;
-    }
+      {
+	return defaultValue;
+      }
   }
-
 
   /**
    * Returns the value of a configuration property as a Class.
@@ -724,64 +704,60 @@ public class LogManager
     Class usingClass = null;
 
     try
-    {
-      String propertyValue = logManager.getProperty(propertyName);
-      if (propertyValue != null)
-        usingClass = Class.forName(propertyValue);
-      if (usingClass != null)
-        return usingClass;
-    }
+      {
+	String propertyValue = logManager.getProperty(propertyName);
+	if (propertyValue != null)
+	  usingClass = Class.forName(propertyValue);
+	if (usingClass != null)
+	  return usingClass;
+      }
     catch (Exception _)
-    {
-    }
+      {
+      }
 
     return defaultValue;
   }
 
-
-  static final Object getInstanceProperty(String propertyName,
-					  Class ofClass,
-					  Class defaultClass)
+  static final Object getInstanceProperty(String propertyName, Class ofClass,
+                                          Class defaultClass)
   {
     Class klass = getClassProperty(propertyName, defaultClass);
     if (klass == null)
       return null;
 
     try
-    {
-      Object obj = klass.newInstance();
-      if (ofClass.isInstance(obj))
-	return obj;
-    }
+      {
+	Object obj = klass.newInstance();
+	if (ofClass.isInstance(obj))
+	  return obj;
+      }
     catch (Exception _)
-    {
-    }
+      {
+      }
 
     if (defaultClass == null)
       return null;
 
     try
-    {
-      return defaultClass.newInstance();
-    }
+      {
+	return defaultClass.newInstance();
+      }
     catch (java.lang.InstantiationException ex)
-    {
-      throw new RuntimeException(ex.getMessage());
-    }
+      {
+	throw new RuntimeException(ex.getMessage());
+      }
     catch (java.lang.IllegalAccessException ex)
-    {
-      throw new RuntimeException(ex.getMessage());
-    }
+      {
+	throw new RuntimeException(ex.getMessage());
+      }
   }
-
 
   /**
    * An instance of <code>LoggingPermission("control")</code>
    * that is shared between calls to <code>checkAccess()</code>.
    */
-  private static final LoggingPermission controlPermission
-    = new LoggingPermission("control", null);
-
+  private static final LoggingPermission controlPermission = new LoggingPermission("control",
+                                                                                   null);
 
   /**
    * Checks whether the current security context allows changing
@@ -793,21 +769,19 @@ public class LogManager
    *         the caller is not granted the permission to control
    *         the logging infrastructure.
    */
-  public void checkAccess()
-    throws SecurityException
+  public void checkAccess() throws SecurityException
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkPermission(controlPermission);
   }
 
-
-  /** 
+  /**
    * Creates a new instance of a class specified by name.
    *
    * @param className the name of the class of which a new instance
    *        should be created.
-   *       
+   *
    * @param ofClass the class to which the new instance should
    *        be either an instance or an instance of a subclass.
    *        FIXME: This description is just terrible.
@@ -820,26 +794,26 @@ public class LogManager
    */
   static final Object createInstance(String className, Class ofClass)
   {
-    Class   klass;
+    Class klass;
 
     if ((className == null) || (className.length() == 0))
       return null;
 
     try
-    {
-      klass = Class.forName(className);
-      if (!ofClass.isAssignableFrom(klass))
-	return null;
+      {
+	klass = Class.forName(className);
+	if (! ofClass.isAssignableFrom(klass))
+	  return null;
 
-      return klass.newInstance();
-    }
+	return klass.newInstance();
+      }
     catch (Exception _)
-    {
-      return null;
-    }
+      {
+	return null;
+      }
     catch (java.lang.LinkageError _)
-    {
-      return null;
-    }
+      {
+	return null;
+      }
   }
 }
