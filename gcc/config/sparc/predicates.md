@@ -287,8 +287,8 @@
 #else
   if (GET_CODE (op) != CONST_INT)
     return false;
-  m1 = INTVAL (op) & 0xffffffff;
-  m2 = INTVAL (op) >> 32;
+  m1 = trunc_int_for_mode (INTVAL (op), SImode);
+  m2 = trunc_int_for_mode (INTVAL (op) >> 32, SImode);
 #endif
 
   return SPARC_SIMM13_P (m1) && SPARC_SIMM13_P (m2);
@@ -337,7 +337,7 @@
 
 ;; Return true if OP is valid for the lhs of a comparison insn.
 (define_predicate "compare_operand"
-  (match_code "reg, subreg, zero_extract")
+  (match_code "reg,subreg,zero_extract")
 {
   if (GET_CODE (op) == ZERO_EXTRACT)
     return (register_operand (XEXP (op, 0), mode)

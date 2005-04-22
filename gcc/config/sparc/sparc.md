@@ -1727,10 +1727,7 @@
   /* Working with CONST_INTs is easier, so convert
      a double if needed.  */
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    {
-      operands[1] = GEN_INT (trunc_int_for_mode
-			     (CONST_DOUBLE_LOW (operands[1]), QImode));
-    }
+    operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), QImode);
 
   /* Handle sets of MEM first.  */
   if (GET_CODE (operands[0]) == MEM)
@@ -1793,7 +1790,7 @@
   /* Working with CONST_INTs is easier, so convert
      a double if needed.  */
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
+    operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), HImode);
 
   /* Handle sets of MEM first.  */
   if (GET_CODE (operands[0]) == MEM)
@@ -1879,7 +1876,7 @@
   /* Working with CONST_INTs is easier, so convert
      a double if needed.  */
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
+    operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), SImode);
 
   /* Handle sets of MEM first.  */
   if (GET_CODE (operands[0]) == MEM)
@@ -2045,7 +2042,8 @@
 	(match_operand:DI 1 "general_operand" ""))]
   ""
 {
-  /* Where possible, convert CONST_DOUBLE into a CONST_INT.  */
+  /* Working with CONST_INTs is easier, so convert
+     a double if needed.  */
   if (GET_CODE (operands[1]) == CONST_DOUBLE
 #if HOST_BITS_PER_WIDE_INT == 32
       && ((CONST_DOUBLE_HIGH (operands[1]) == 0
@@ -2054,7 +2052,7 @@
 	      && (CONST_DOUBLE_LOW (operands[1]) & 0x80000000) != 0))
 #endif
       )
-    operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
+    operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), DImode);
 
   /* Handle MEM cases first.  */
   if (GET_CODE (operands[0]) == MEM)
@@ -2481,8 +2479,8 @@
   /* Slick... but this trick loses if this subreg constant part
      can be done in one insn.  */
   if (CONST_DOUBLE_LOW (operands[1]) == CONST_DOUBLE_HIGH (operands[1])
-      && !(SPARC_SETHI32_P (CONST_DOUBLE_HIGH (operands[1]))
-	   || SPARC_SIMM13_P (CONST_DOUBLE_HIGH (operands[1]))))
+      && ! SPARC_SETHI32_P (CONST_DOUBLE_HIGH (operands[1]))
+      && ! SPARC_SIMM13_P (CONST_DOUBLE_HIGH (operands[1])))
     {
       emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
 			    gen_highpart (SImode, operands[0])));
@@ -3090,27 +3088,26 @@
 
   if (TARGET_ARCH64)
     {
-#if HOST_BITS_PER_WIDE_INT == 64
+#if HOST_BITS_PER_WIDE_INT == 32
+      gcc_unreachable ();
+#else
       HOST_WIDE_INT val;
 
       val = ((HOST_WIDE_INT)(unsigned long)l[1] |
              ((HOST_WIDE_INT)(unsigned long)l[0] << 32));
-      emit_insn (gen_movdi (operands[0], GEN_INT (val)));
-#else
-      emit_insn (gen_movdi (operands[0],
-                            immed_double_const (l[1], l[0], DImode)));
+      emit_insn (gen_movdi (operands[0], gen_int_mode (val, DImode)));
 #endif
     }
   else
     {
       emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),
-			    GEN_INT (l[0])));
+			    gen_int_mode (l[0], SImode)));
 
       /* Slick... but this trick loses if this subreg constant part
          can be done in one insn.  */
       if (l[1] == l[0]
-          && !(SPARC_SETHI32_P (l[0])
-	       || SPARC_SIMM13_P (l[0])))
+	  && ! SPARC_SETHI32_P (l[0])
+	  && ! SPARC_SIMM13_P (l[0]))
         {
           emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
 			        gen_highpart (SImode, operands[0])));
@@ -3118,7 +3115,7 @@
       else
         {
           emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
-			        GEN_INT (l[1])));
+			        gen_int_mode (l[1], SImode)));
         }
     }
   DONE;
@@ -5899,11 +5896,9 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(and:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "" "")))
+		(match_operand:SI 2 "const_int_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "GET_CODE (operands[2]) == CONST_INT
-   && !SMALL_INT (operands[2])
-   && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  "!SMALL_INT (operands[2]) && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (and:SI (not:SI (match_dup 3)) (match_dup 1)))]
 {
@@ -6002,11 +5997,9 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(ior:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "" "")))
+		(match_operand:SI 2 "const_int_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "GET_CODE (operands[2]) == CONST_INT
-   && !SMALL_INT (operands[2])
-   && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  "!SMALL_INT (operands[2]) && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (ior:SI (not:SI (match_dup 3)) (match_dup 1)))]
 {
@@ -6105,11 +6098,9 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(xor:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "" "")))
+		(match_operand:SI 2 "const_int_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "GET_CODE (operands[2]) == CONST_INT
-   && !SMALL_INT (operands[2])
-   && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+   "!SMALL_INT (operands[2]) && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (not:SI (xor:SI (match_dup 3) (match_dup 1))))]
 {
@@ -6119,11 +6110,9 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(not:SI (xor:SI (match_operand:SI 1 "register_operand" "")
-			(match_operand:SI 2 "" ""))))
+			(match_operand:SI 2 "const_int_operand" ""))))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "GET_CODE (operands[2]) == CONST_INT
-   && !SMALL_INT (operands[2])
-   && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  "!SMALL_INT (operands[2]) && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (xor:SI (match_dup 3) (match_dup 1)))]
 {
@@ -7100,14 +7089,8 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (subreg:DI (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
 			   (match_operand:SI 2 "arith_operand" "r")) 0)
-		(match_operand 3 "" "")))]
-  "TARGET_ARCH64
-   && ((GET_CODE (operands[3]) == CONST_DOUBLE
-           && CONST_DOUBLE_HIGH (operands[3]) == 0
-           && CONST_DOUBLE_LOW (operands[3]) == 0xffffffff)
-       || (HOST_BITS_PER_WIDE_INT >= 64
-	   && GET_CODE (operands[3]) == CONST_INT
-           && (unsigned HOST_WIDE_INT) INTVAL (operands[3]) == 0xffffffff))"
+		(match_operand 3 "const_int_operand" "")))]
+  "TARGET_ARCH64 && (unsigned HOST_WIDE_INT) INTVAL (operands[3]) == 0xffffffff"
   "srl\t%1, %2, %0"
   [(set_attr "type" "shift")])
 
