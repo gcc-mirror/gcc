@@ -703,7 +703,20 @@ java::lang::Class::initializeClass (void)
     JvSynchronize sync (this);
 
     if (state < JV_STATE_LINKED)
-      java::lang::VMClassLoader::resolveClass (this);
+      {
+	try
+	  {
+	    _Jv_Linker::wait_for_state(this, JV_STATE_LINKED);
+	  }
+	catch (java::lang::Throwable *x)
+	  {
+	    // Turn into a NoClassDefFoundError.
+	    java::lang::NoClassDefFoundError *result
+	      = new java::lang::NoClassDefFoundError(getName());
+	    result->initCause(x);
+	    throw result;
+	  }
+      }
 
     // Step 2.
     java::lang::Thread *self = java::lang::Thread::currentThread();
