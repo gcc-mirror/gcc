@@ -945,7 +945,16 @@ ptr_t GC_get_stack_base()
 	  } /* Otherwise it's not safe to add 16 bytes and we fall	*/
 	    /* back to using /proc.					*/
 #	else 
+#	ifdef SPARC
+	  /* Older versions of glibc for 64-bit Sparc do not set
+	   * this variable correctly, it gets set to either zero
+	   * or one.
+	   */
+	  if (__libc_stack_end != (ptr_t) (unsigned long)0x1)
+	    return __libc_stack_end;
+#	else
 	  return __libc_stack_end;
+#	endif
 #	endif
       }
     f = open("/proc/self/stat", O_RDONLY);
