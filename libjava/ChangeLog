@@ -1,3 +1,8 @@
+2005-04-22  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/lib/libjava.exp (libjava_find_gij): Use $objdir/.. to find
+	gij if get_multilibs fails.
+
 2005-04-22  Anthony Green  <green@redhat.com>
 
 	* jni.cc (natrehash): Don't bother clearing memory again.
@@ -68,6 +73,7 @@
 	* gnu/gcj/runtime/NameFinder.java (close): IN, OUT, and PROC can all
 	be null, check for that case and don't deference it.
 
+>>>>>>> 1.3540
 2005-04-22  Sven de Marothy  <sven@physto.se>
 
 	* java/util/logging/LogManager.java: Reformatted.
