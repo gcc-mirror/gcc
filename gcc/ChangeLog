@@ -1,3 +1,13 @@
+2005-04-22 David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/20813
+	* config/rs6000/default64.h (TARGET_DEFAULT): Add MASK_PPC_GFXOPT.
+	* config/rs6000/rs6000.c (processor_target_table): Rename rs64a to
+	rs64.  Add MASK_PPC_GFXOPT to powerpc64 and rs64.
+	(rs6000_init_libfuncs): Set TFmode optabs to xlq names if
+	TARGET_XL_COMPAT.
+	* doc/invoke.texi (PowerPC options): Change rs64a to rs64.
+
 2005-04-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lambda-code.c: Define VEC(int,heap), VEC(lambda_loop,heap).
