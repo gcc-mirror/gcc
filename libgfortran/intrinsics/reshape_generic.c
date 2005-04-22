@@ -54,6 +54,8 @@ reshape (parray *ret, parray *source, shape_type *shape,
   index_type rstride0;
   index_type rdim;
   index_type rsize;
+  index_type rs;
+  index_type rex;
   char *rptr;
   /* s.* indicates the source array.  */
   index_type scount[GFC_MAX_DIMENSIONS];
@@ -76,9 +78,6 @@ reshape (parray *ret, parray *source, shape_type *shape,
   int dim;
   int size;
 
-  size = GFC_DESCRIPTOR_SIZE (ret);
-  if (ret->dim[0].stride == 0)
-    ret->dim[0].stride = 1;
   if (source->dim[0].stride == 0)
     source->dim[0].stride = 1;
   if (shape->dim[0].stride == 0)
@@ -88,7 +87,31 @@ reshape (parray *ret, parray *source, shape_type *shape,
   if (order && order->dim[0].stride == 0)
     order->dim[0].stride = 1;
 
-  rdim = GFC_DESCRIPTOR_RANK (ret);
+  if (ret->data == NULL)
+    {
+      size = GFC_DESCRIPTOR_SIZE (ret);
+      rdim = shape->dim[0].ubound - shape->dim[0].lbound + 1;
+      rs = 1;
+      for (n=0; n < rdim; n++)
+	{
+	  ret->dim[n].lbound = 0;
+	  rex = shape->data[n * shape->dim[0].stride];
+	  ret->dim[n].ubound =  rex - 1;
+	  ret->dim[n].stride = rs;
+	  rs *= rex;
+	}
+      ret->base = 0;
+      ret->data = internal_malloc_size ( rs * size );
+      ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
+    }
+  else
+    {
+      size = GFC_DESCRIPTOR_SIZE (ret);
+      rdim = GFC_DESCRIPTOR_RANK (ret);
+      if (ret->dim[0].stride == 0)
+	ret->dim[0].stride = 1;
+    }
+
   rsize = 1;
   for (n = 0; n < rdim; n++)
     {
@@ -108,7 +131,7 @@ reshape (parray *ret, parray *source, shape_type *shape,
         rsize *= rextent[n];
       else
         rsize = 0;
-      if (rextent[dim] <= 0)
+      if (rextent[n] <= 0)
         return;
     }
 
@@ -122,7 +145,7 @@ reshape (parray *ret, parray *source, shape_type *shape,
       if (sextent[n] <= 0)
         abort ();
 
-      if (rsize == sstride[n])
+      if (ssize == sstride[n])
         ssize *= sextent[n];
       else
         ssize = 0;
@@ -130,8 +153,6 @@ reshape (parray *ret, parray *source, shape_type *shape,
 
   if (pad)
     {
-      if (pad->dim[0].stride == 0)
-        pad->dim[0].stride = 1;
       pdim = GFC_DESCRIPTOR_RANK (pad);
       psize = 1;
       for (n = 0; n < pdim; n++)
@@ -144,7 +165,7 @@ reshape (parray *ret, parray *source, shape_type *shape,
           if (psize == pstride[n])
             psize *= pextent[n];
           else
-            rsize = 0;
+            psize = 0;
         }
       pptr = pad->data;
     }
