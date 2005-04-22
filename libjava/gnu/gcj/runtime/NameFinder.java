@@ -86,12 +86,14 @@ public class NameFinder
     {
       try
       {
-	in.close();
-	out.close();
+	if (in != null)
+	  in.close();
+	if (out != null)
+	  out.close();
       }
       catch (IOException x) {}
-
-      proc.destroy();
+      if (proc != null)
+	proc.destroy();
     }
   }
 
