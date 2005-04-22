@@ -243,9 +243,8 @@ void
 linear_transform_loops (struct loops *loops)
 {
   unsigned int i;
-  VEC(tree,gc) *oldivs = NULL;  /* FIXME:These should really be on the
-				   heap.  (nathan 2005/04/15)*/
-  VEC(tree,gc) *invariants = NULL;  /* FIXME:Likewise. */
+  VEC(tree,heap) *oldivs = NULL;
+  VEC(tree,heap) *invariants = NULL;
   
   for (i = 1; i < loops->num; i++)
     {
@@ -371,8 +370,8 @@ linear_transform_loops (struct loops *loops)
       free_dependence_relations (dependence_relations);
       free_data_refs (datarefs);
     }
-  VEC_free (tree, gc, oldivs);
-  VEC_free (tree, gc, invariants);
+  VEC_free (tree, heap, oldivs);
+  VEC_free (tree, heap, invariants);
   scev_reset ();
   update_ssa (TODO_update_ssa);
   rewrite_into_loop_closed_ssa (NULL);

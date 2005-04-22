@@ -196,13 +196,12 @@ lambda_body_vector lambda_body_vector_compute_new (lambda_trans_matrix,
 void print_lambda_body_vector (FILE *, lambda_body_vector);
 lambda_loopnest gcc_loopnest_to_lambda_loopnest (struct loops *,
 						 struct loop *,
-						 VEC(tree,gc) **,
-						 VEC(tree,gc) **,
+						 VEC(tree,heap) **,
+						 VEC(tree,heap) **,
 						 bool);
-void lambda_loopnest_to_gcc_loopnest (struct loop *, VEC(tree,gc) *,
-				      VEC(tree,gc) *,
-				      lambda_loopnest, 
-				      lambda_trans_matrix);
+void lambda_loopnest_to_gcc_loopnest (struct loop *,
+				      VEC(tree,heap) *, VEC(tree,heap) *,
+				      lambda_loopnest, lambda_trans_matrix);
 
 
 static inline void lambda_vector_negate (lambda_vector, lambda_vector, int);
