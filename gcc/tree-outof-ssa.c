@@ -2511,6 +2511,8 @@ rewrite_out_of_ssa (void)
 
   /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
   discover_nonconstant_array_refs ();
+
+  in_ssa_p = false;
 }
 
 

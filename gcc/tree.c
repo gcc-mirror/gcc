@@ -2807,6 +2807,23 @@ build_decl_stat (enum tree_code code, tree name, tree type MEM_STAT_DECL)
 
   return t;
 }
+
+/* Builds and returns function declaration with NAME and TYPE.  */
+
+tree
+build_fn_decl (const char *name, tree type)
+{
+  tree id = get_identifier (name);
+  tree decl = build_decl (FUNCTION_DECL, id, type);
+
+  DECL_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  TREE_NOTHROW (decl) = 1;
+
+  return decl;
+}
+
 
 /* BLOCK nodes are used to represent the structure of binding contours
    and declarations, once those contours have been exited and their contents

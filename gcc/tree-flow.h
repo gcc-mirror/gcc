@@ -38,6 +38,9 @@ struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 #endif
 
+/* True if the code is in ssa form.  */
+extern bool in_ssa_p;
+
 /*---------------------------------------------------------------------------
 		      Attributes for SSA_NAMEs.
   
@@ -796,9 +799,10 @@ extern void linear_transform_loops (struct loops *);
 
 /* In tree-ssa-loop-ivopts.c  */
 extern bool expr_invariant_in_loop_p (struct loop *, tree);
-/* In gimplify.c  */
 
+/* In gimplify.c  */
 tree force_gimple_operand (tree, tree *, bool, tree);
+tree force_gimple_operand_bsi (block_stmt_iterator *, tree, bool, tree);
 
 #include "tree-flow-inline.h"
 
