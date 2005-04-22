@@ -1,3 +1,24 @@
+2005-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (ipa.o, ipa-inline.o): New files.
+	* cgraph.h (cgraph_remove_unreachable_nodes, cgraph_postorder,
+	cgraph_decide_inlining_incrementally, cgraph_clone_inlined_nodes,
+	cgraph_mark_inline_edge, cgraph_default_inline_p): Declare.
+	* cgraphunit.c (cgraph_default_inline_p, cgraph_decide_inlining_incrementally, 
+	ncalls_inlined, nfunctions_inlined, initial_insns, overall_insns,
+	cgraph_estimate_size_after_inlining, cgraph_estimate_growth,
+	cgraph_clone_inlined_nodes, cgraph_mark_inline_edge,
+	cgraph_mark_inline, cgraph_check_inline_limits,
+	cgraph_default_inline_p, cgraph_recursive_inlining_p,
+	update_callee_keys, lookup_recursive_calls,
+	cgraph_decide_recursive_inlining, cgraph_set_inline_failed,
+	cgraph_decide_inlining_of_small_functions, cgraph_decide_inlining,
+	cgraph_decide_inlining_incrementally, cgraph_gate_inlining,
+	pass_ipa_inline): Move to ipa-inline.c
+	(cgraph_postorder, cgraph_remove_unreachable_nodes): Move to ipa.c
+	* ipa.c: New file.
+	* ipa-inline.c: New file.
+
 2005-04-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (SPARC options): Document that -mapp-regs

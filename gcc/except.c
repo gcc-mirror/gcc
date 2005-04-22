@@ -177,14 +177,12 @@ struct eh_region GTY(())
     /* Retain the cleanup expression even after expansion so that
        we can match up fixup regions.  */
     struct eh_region_u_cleanup {
-      tree exp;
       struct eh_region *prev_try;
     } GTY ((tag ("ERT_CLEANUP"))) cleanup;
 
     /* The real region (by expression and by pointer) that fixup code
        should live in.  */
     struct eh_region_u_fixup {
-      tree cleanup_exp;
       struct eh_region *real_region;
       bool resolved;
     } GTY ((tag ("ERT_FIXUP"))) fixup;

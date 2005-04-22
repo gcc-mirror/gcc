@@ -226,4 +226,13 @@ void cgraph_build_static_cdtor (char which, tree body, int priority);
 void cgraph_reset_static_var_maps (void);
 void init_cgraph (void);
 
+/* In ipa.c  */
+bool cgraph_remove_unreachable_nodes (bool, FILE *);
+int cgraph_postorder (struct cgraph_node **);
+
+/* In ipa-inline.c  */
+void cgraph_decide_inlining_incrementally (struct cgraph_node *);
+void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool);
+void cgraph_mark_inline_edge (struct cgraph_edge *);
+bool cgraph_default_inline_p (struct cgraph_node *);
 #endif  /* GCC_CGRAPH_H  */
