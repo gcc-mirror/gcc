@@ -652,8 +652,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
     {
       rtx insn, tmp_reg;
 
-      if (reg == 0)
-	abort ();
+      gcc_assert (reg);
 
       /* Before reload, allocate a temporary register for the intermediate
 	 result.  This allows the sequence to be deleted when the final
@@ -688,17 +687,12 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
 	return orig;
 
-      if (reg == 0)
-	abort ();
-
-      if (GET_CODE (XEXP (orig, 0)) == PLUS)
-	{
-	  base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
-	  orig = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
-					 base == reg ? 0 : reg);
-	}
-      else
-	abort ();
+      gcc_assert (reg);
+      gcc_assert (GET_CODE (XEXP (orig, 0)) == PLUS);
+      
+      base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
+      orig = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
+				     base == reg ? 0 : reg);
 
       if (GET_CODE (orig) == CONST_INT)
 	{
@@ -1227,8 +1221,7 @@ force_mode (enum machine_mode mode, rtx orig)
   if (mode == GET_MODE (orig))
     return orig;
 
-  if (REGNO (orig) >= FIRST_PSEUDO_REGISTER)
-    abort ();
+  gcc_assert (REGNO (orig) < FIRST_PSEUDO_REGISTER);
 
   return gen_rtx_REG (mode, REGNO (orig));
 }
@@ -1256,8 +1249,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
   if (GET_CODE (operand0) == MEM && IS_INDEX_ADDR_P (XEXP (operand0, 0)))
     {
       /* This is only safe up to the beginning of life analysis.  */
-      if (no_new_pseudos)
-	abort ();
+      gcc_assert (!no_new_pseudos);
 
       tem = copy_to_mode_reg (Pmode, XEXP (operand0, 0));
       operand0 = replace_equiv_address (operand0, tem);
@@ -1631,8 +1623,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 		{
 		  /* Save away the constant part of the expression.  */
 		  const_part = XEXP (XEXP (operand1, 0), 1);
-		  if (GET_CODE (const_part) != CONST_INT)
-		    abort ();
+		  gcc_assert (GET_CODE (const_part) == CONST_INT);
 
 		  /* Force the function label into memory.  */
 		  temp = force_const_mem (mode, XEXP (XEXP (operand1, 0), 0));
@@ -1974,8 +1965,7 @@ singlemove_string (rtx *operands)
       long i;
       REAL_VALUE_TYPE d;
 
-      if (GET_MODE (operands[1]) != SFmode)
-	abort ();
+      gcc_assert (GET_MODE (operands[1]) == SFmode);
 
       /* Translate the CONST_DOUBLE to a CONST_INT with the same target
 	 bit pattern.  */
@@ -2110,11 +2100,8 @@ output_move_double (rtx *operands)
     optype1 = RNDOP;
 
   /* Check for the cases that the operand constraints are not
-     supposed to allow to happen.  Abort if we get one,
-     because generating code for these cases is painful.  */
-
-  if (optype0 != REGOP && optype1 != REGOP)
-    abort ();
+     supposed to allow to happen.  */
+  gcc_assert (optype0 == REGOP || optype1 == REGOP);
 
    /* Handle auto decrementing and incrementing loads and stores
      specifically, since the structure of the function doesn't work
@@ -2133,40 +2120,33 @@ output_move_double (rtx *operands)
 	  rtx high_reg = gen_rtx_SUBREG (SImode, operands[1], 0);
 
 	  operands[0] = XEXP (addr, 0);
-	  if (GET_CODE (operands[1]) != REG || GET_CODE (operands[0]) != REG)
-	    abort ();
+	  gcc_assert (GET_CODE (operands[1]) == REG
+		      && GET_CODE (operands[0]) == REG);
 
-	  if (!reg_overlap_mentioned_p (high_reg, addr))
-	    {
-	      /* No overlap between high target register and address
-		 register.  (We do this in a non-obvious way to
-		 save a register file writeback)  */
-	      if (GET_CODE (addr) == POST_INC)
-		return "{stws|stw},ma %1,8(%0)\n\tstw %R1,-4(%0)";
-	      return "{stws|stw},ma %1,-8(%0)\n\tstw %R1,12(%0)";
-	    }
-	  else
-	    abort ();
+	  gcc_assert (!reg_overlap_mentioned_p (high_reg, addr));
+	  
+	  /* No overlap between high target register and address
+	     register.  (We do this in a non-obvious way to
+	     save a register file writeback)  */
+	  if (GET_CODE (addr) == POST_INC)
+	    return "{stws|stw},ma %1,8(%0)\n\tstw %R1,-4(%0)";
+	  return "{stws|stw},ma %1,-8(%0)\n\tstw %R1,12(%0)";
 	}
       else if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
 	{
 	  rtx high_reg = gen_rtx_SUBREG (SImode, operands[1], 0);
 
 	  operands[0] = XEXP (addr, 0);
-	  if (GET_CODE (operands[1]) != REG || GET_CODE (operands[0]) != REG)
-	    abort ();
-
-	  if (!reg_overlap_mentioned_p (high_reg, addr))
-	    {
-	      /* No overlap between high target register and address
-		 register.  (We do this in a non-obvious way to
-		 save a register file writeback)  */
-	      if (GET_CODE (addr) == PRE_INC)
-		return "{stws|stw},mb %1,8(%0)\n\tstw %R1,4(%0)";
-	      return "{stws|stw},mb %1,-8(%0)\n\tstw %R1,4(%0)";
-	    }
-	  else
-	    abort ();
+	  gcc_assert (GET_CODE (operands[1]) == REG
+		      && GET_CODE (operands[0]) == REG);
+	  
+	  gcc_assert (!reg_overlap_mentioned_p (high_reg, addr));
+	  /* No overlap between high target register and address
+	     register.  (We do this in a non-obvious way to save a
+	     register file writeback)  */
+	  if (GET_CODE (addr) == PRE_INC)
+	    return "{stws|stw},mb %1,8(%0)\n\tstw %R1,4(%0)";
+	  return "{stws|stw},mb %1,-8(%0)\n\tstw %R1,4(%0)";
 	}
     }
   if (optype1 == MEMOP)
@@ -2180,8 +2160,8 @@ output_move_double (rtx *operands)
 	  rtx high_reg = gen_rtx_SUBREG (SImode, operands[0], 0);
 
 	  operands[1] = XEXP (addr, 0);
-	  if (GET_CODE (operands[0]) != REG || GET_CODE (operands[1]) != REG)
-	    abort ();
+	  gcc_assert (GET_CODE (operands[0]) == REG
+		      && GET_CODE (operands[1]) == REG);
 
 	  if (!reg_overlap_mentioned_p (high_reg, addr))
 	    {
@@ -2207,8 +2187,8 @@ output_move_double (rtx *operands)
 	  rtx high_reg = gen_rtx_SUBREG (SImode, operands[0], 0);
 
 	  operands[1] = XEXP (addr, 0);
-	  if (GET_CODE (operands[0]) != REG || GET_CODE (operands[1]) != REG)
-	    abort ();
+	  gcc_assert (GET_CODE (operands[0]) == REG
+		      && GET_CODE (operands[1]) == REG);
 
 	  if (!reg_overlap_mentioned_p (high_reg, addr))
 	    {
@@ -2370,23 +2350,22 @@ output_fp_move_double (rtx *operands)
     {
       output_asm_insn ("fstd%F0 %1,%0", operands);
     }
-  else if (operands[1] == CONST0_RTX (GET_MODE (operands[0])))
+  else
     {
-      if (GET_CODE (operands[0]) == REG)
-	{
-	  rtx xoperands[2];
-	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
-	  xoperands[0] = operands[0];
-	  output_asm_insn ("copy %%r0,%0\n\tcopy %%r0,%1", xoperands);
-	}
+      rtx xoperands[2];
+      
+      gcc_assert (operands[1] == CONST0_RTX (GET_MODE (operands[0])));
+      
       /* This is a pain.  You have to be prepared to deal with an
 	 arbitrary address here including pre/post increment/decrement.
 
 	 so avoid this in the MD.  */
-      else
-	abort ();
+      gcc_assert (GET_CODE (operands[0]) == REG);
+      
+      xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
+      xoperands[0] = operands[0];
+      output_asm_insn ("copy %%r0,%0\n\tcopy %%r0,%1", xoperands);
     }
-  else abort ();
   return "";
 }
 
@@ -2407,11 +2386,10 @@ find_addr_reg (rtx addr)
       else if (CONSTANT_P (XEXP (addr, 1)))
 	addr = XEXP (addr, 0);
       else
-	abort ();
+	gcc_unreachable ();
     }
-  if (GET_CODE (addr) == REG)
-    return addr;
-  abort ();
+  gcc_assert (GET_CODE (addr) == REG);
+  return addr;
 }
 
 /* Emit code to perform a block move.
@@ -2542,7 +2520,7 @@ output_block_move (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
 	return "";
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
 }
 
@@ -2684,7 +2662,7 @@ output_block_clear (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
 	return "";
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
 }
 
@@ -2744,15 +2722,13 @@ output_and (rtx *operands)
 	if ((mask & (1 << ms0)) == 0)
 	  break;
 
-      if (ms0 != 32)
-	abort ();
+      gcc_assert (ms0 == 32);
 
       if (ls1 == 32)
 	{
 	  len = ls0;
 
-	  if (len == 0)
-	    abort ();
+	  gcc_assert (len);
 
 	  operands[2] = GEN_INT (len);
 	  return "{extru|extrw,u} %1,31,%2,%0";
@@ -2796,15 +2772,13 @@ output_64bit_and (rtx *operands)
 	if ((mask & ((unsigned HOST_WIDE_INT) 1 << ms0)) == 0)
 	  break;
 
-      if (ms0 != HOST_BITS_PER_WIDE_INT)
-	abort ();
+      gcc_assert (ms0 == HOST_BITS_PER_WIDE_INT);
 
       if (ls1 == HOST_BITS_PER_WIDE_INT)
 	{
 	  len = ls0;
 
-	  if (len == 0)
-	    abort ();
+	  gcc_assert (len);
 
 	  operands[2] = GEN_INT (len);
 	  return "extrd,u %1,63,%2,%0";
@@ -2843,8 +2817,7 @@ output_ior (rtx *operands)
     if ((mask & (1 << bs1)) == 0)
       break;
 
-  if (bs1 != 32 && ((unsigned HOST_WIDE_INT) 1 << bs1) <= mask)
-    abort ();
+  gcc_assert (bs1 == 32 || ((unsigned HOST_WIDE_INT) 1 << bs1) > mask);
 
   p = 31 - bs0;
   len = bs1 - bs0;
@@ -2873,9 +2846,8 @@ output_64bit_ior (rtx *operands)
     if ((mask & ((unsigned HOST_WIDE_INT) 1 << bs1)) == 0)
       break;
 
-  if (bs1 != HOST_BITS_PER_WIDE_INT
-      && ((unsigned HOST_WIDE_INT) 1 << bs1) <= mask)
-    abort ();
+  gcc_assert (bs1 == HOST_BITS_PER_WIDE_INT
+	      || ((unsigned HOST_WIDE_INT) 1 << bs1) > mask);
 
   p = 63 - bs0;
   len = bs1 - bs0;
@@ -3250,8 +3222,7 @@ store_reg_modify (int base, int reg, HOST_WIDE_INT mod)
 {
   rtx insn, basereg, srcreg, delta;
 
-  if (!VAL_14_BITS_P (mod))
-    abort ();
+  gcc_assert (VAL_14_BITS_P (mod));
 
   basereg = gen_rtx_REG (Pmode, base);
   srcreg = gen_rtx_REG (word_mode, reg);
@@ -4305,8 +4276,9 @@ pa_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
   attr_type = get_attr_type (insn);
 
-  if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+  switch (REG_NOTE_KIND (link))
     {
+    case REG_DEP_ANTI:
       /* Anti dependency; DEP_INSN reads a register that INSN writes some
 	 cycles later.  */
 
@@ -4386,9 +4358,8 @@ pa_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
       /* For other anti dependencies, the cost is 0.  */
       return 0;
-    }
-  else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
-    {
+
+    case REG_DEP_OUTPUT:
       /* Output dependency; DEP_INSN writes a register that INSN writes some
 	 cycles later.  */
       if (attr_type == TYPE_FPLOAD)
@@ -4471,9 +4442,10 @@ pa_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
       /* For other output dependencies, the cost is 0.  */
       return 0;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
 }
 
 /* Adjust scheduling priorities.  We use this to try and keep addil
@@ -4523,7 +4495,7 @@ pa_issue_rate (void)
     case PROCESSOR_8000:	return 4;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -4686,7 +4658,7 @@ print_operand (FILE *file, rtx x, int code)
 	case LTU:
 	  fputs ("<<", file);  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return;
     case 'N':			/* Condition, (N)egated */
@@ -4713,7 +4685,7 @@ print_operand (FILE *file, rtx x, int code)
 	case LTU:
 	  fputs (">>=", file);  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return;
     /* For floating point comparisons.  Note that the output
@@ -4753,7 +4725,7 @@ print_operand (FILE *file, rtx x, int code)
 	case ORDERED:
 	  fputs ("?", file);  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return;
     case 'S':			/* Condition, operands are (S)wapped.  */
@@ -4780,7 +4752,7 @@ print_operand (FILE *file, rtx x, int code)
 	case LTU:
 	  fputs (">>", file);  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return;
     case 'B':			/* Condition, (B)oth swapped and negate.  */
@@ -4807,51 +4779,33 @@ print_operand (FILE *file, rtx x, int code)
 	case LTU:
 	  fputs ("<<=", file);  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return;
     case 'k':
-      if (GET_CODE (x) == CONST_INT)
-	{
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~INTVAL (x));
-	  return;
-	}
-      abort ();
+      gcc_assert (GET_CODE (x) == CONST_INT);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~INTVAL (x));
+      return;
     case 'Q':
-      if (GET_CODE (x) == CONST_INT)
-	{
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 64 - (INTVAL (x) & 63));
-	  return;
-	}
-      abort ();
+      gcc_assert (GET_CODE (x) == CONST_INT);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, 64 - (INTVAL (x) & 63));
+      return;
     case 'L':
-      if (GET_CODE (x) == CONST_INT)
-	{
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 32 - (INTVAL (x) & 31));
-	  return;
-	}
-      abort ();
+      gcc_assert (GET_CODE (x) == CONST_INT);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, 32 - (INTVAL (x) & 31));
+      return;
     case 'O':
-      if (GET_CODE (x) == CONST_INT && exact_log2 (INTVAL (x)) >= 0)
-	{
-	  fprintf (file, "%d", exact_log2 (INTVAL (x)));
-	  return;
-	}
-      abort ();
+      gcc_assert (GET_CODE (x) == CONST_INT && exact_log2 (INTVAL (x)) >= 0);
+      fprintf (file, "%d", exact_log2 (INTVAL (x)));
+      return;
     case 'p':
-      if (GET_CODE (x) == CONST_INT)
-	{
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 63 - (INTVAL (x) & 63));
-	  return;
-	}
-      abort ();
+      gcc_assert (GET_CODE (x) == CONST_INT);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, 63 - (INTVAL (x) & 63));
+      return;
     case 'P':
-      if (GET_CODE (x) == CONST_INT)
-	{
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 31 - (INTVAL (x) & 31));
-	  return;
-	}
-      abort ();
+      gcc_assert (GET_CODE (x) == CONST_INT);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, 31 - (INTVAL (x) & 31));
+      return;
     case 'I':
       if (GET_CODE (x) == CONST_INT)
 	fputs ("i", file);
@@ -4926,7 +4880,7 @@ print_operand (FILE *file, rtx x, int code)
 	 addresses.  */
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   if (GET_CODE (x) == REG)
     {
@@ -5013,23 +4967,31 @@ output_global_address (FILE *file, rtx x, int round_constant)
       int offset = 0;		/* assembler wants -$global$ at end */
       rtx base = NULL_RTX;
 
-      if (GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)
+      switch (GET_CODE (XEXP (XEXP (x, 0), 0)))
 	{
+	case SYMBOL_REF:
 	  base = XEXP (XEXP (x, 0), 0);
 	  output_addr_const (file, base);
+	  break;
+	case CONST_INT:
+	  offset = INTVAL (XEXP (XEXP (x, 0), 0));
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
-      else if (GET_CODE (XEXP (XEXP (x, 0), 0)) == CONST_INT)
-	offset = INTVAL (XEXP (XEXP (x, 0), 0));
-      else abort ();
 
-      if (GET_CODE (XEXP (XEXP (x, 0), 1)) == SYMBOL_REF)
+      switch (GET_CODE (XEXP (XEXP (x, 0), 1)))
 	{
+	case SYMBOL_REF:
 	  base = XEXP (XEXP (x, 0), 1);
 	  output_addr_const (file, base);
+	  break;
+	case CONST_INT:
+	  offset = INTVAL (XEXP (XEXP (x, 0), 1));
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
-      else if (GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
-	offset = INTVAL (XEXP (XEXP (x, 0), 1));
-      else abort ();
 
       /* How bogus.  The compiler is apparently responsible for
 	 rounding the constant if it uses an LR field selector.
@@ -5043,8 +5005,9 @@ output_global_address (FILE *file, rtx x, int round_constant)
       if (round_constant)
 	offset = ((offset + 0x1000) & ~0x1fff);
 
-      if (GET_CODE (XEXP (x, 0)) == PLUS)
+      switch (GET_CODE (XEXP (x, 0)))
 	{
+	case PLUS:
 	  if (offset < 0)
 	    {
 	      offset = -offset;
@@ -5052,12 +5015,17 @@ output_global_address (FILE *file, rtx x, int round_constant)
 	    }
 	  else
 	    sep = "+";
-	}
-      else if (GET_CODE (XEXP (x, 0)) == MINUS
-	       && (GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF))
-	sep = "-";
-      else abort ();
+	  break;
 
+	case MINUS:
+	  gcc_assert (GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF);
+	  sep = "-";
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+      
       if (!read_only_operand (base, VOIDmode) && !flag_pic)
 	fputs ("-$global$", file);
       if (offset)
@@ -5441,9 +5409,9 @@ output_arg_descriptor (rtx call_insn)
       return;
     }
 
-  if (GET_CODE (call_insn) != CALL_INSN)
-    abort ();
-  for (link = CALL_INSN_FUNCTION_USAGE (call_insn); link; link = XEXP (link, 1))
+  gcc_assert (GET_CODE (call_insn) == CALL_INSN);
+  for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
+       link; link = XEXP (link, 1))
     {
       rtx use = XEXP (link, 0);
 
@@ -6021,7 +5989,7 @@ output_cbranch (rtx *operands, int nullify, int length, int negated, rtx insn)
 	return output_lbranch (operands[0], insn);
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
   return buf;
 }
@@ -6040,8 +6008,7 @@ output_lbranch (rtx dest, rtx insn)
   if (dbr_sequence_length () != 0)
     {
       /* We can't handle a jump in the delay slot.  */
-      if (GET_CODE (NEXT_INSN (insn)) == JUMP_INSN)
-	abort ();
+      gcc_assert (GET_CODE (NEXT_INSN (insn)) != JUMP_INSN);
 
       final_scan_insn (NEXT_INSN (insn), asm_out_file,
 		       optimize, 0, NULL);
@@ -6281,7 +6248,7 @@ output_bb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
   return buf;
 }
@@ -6426,7 +6393,7 @@ output_bvb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
   return buf;
 }
@@ -6475,13 +6442,15 @@ output_dbra (rtx *operands, rtx insn, int which_alternative)
       if (! nullify && length == 4 && dbr_sequence_length () == 0)
 	nullify = forward_branch_p (insn);
 
-      /* Handle short versions first.  */
-      if (length == 4 && nullify)
-	return "addib,%C2,n %1,%0,%3";
-      else if (length == 4 && ! nullify)
-	return "addib,%C2 %1,%0,%3";
-      else if (length == 8)
+      switch (length)
 	{
+	case 4:
+	  if (nullify)
+	    return "addib,%C2,n %1,%0,%3";
+	  else
+	    return "addib,%C2 %1,%0,%3";
+      
+	case 8:
 	  /* Handle weird backwards branch with a fulled delay slot
 	     which is nullified.  */
 	  if (dbr_sequence_length () != 0
@@ -6503,9 +6472,11 @@ output_dbra (rtx *operands, rtx insn, int which_alternative)
 	    return "addi,%N2 %1,%0,%0\n\tb,n %3";
 	  else
 	    return "addi,%N2 %1,%0,%0\n\tb %3";
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
-	abort ();
+      
     }
   /* Deal with gross reload from FP register case.  */
   else if (which_alternative == 1)
@@ -6580,13 +6551,15 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
       if (! nullify && length == 4 && dbr_sequence_length () == 0)
 	nullify = forward_branch_p (insn);
 
-      /* Handle short versions first.  */
-      if (length == 4 && nullify)
-	return "movb,%C2,n %1,%0,%3";
-      else if (length == 4 && ! nullify)
-	return "movb,%C2 %1,%0,%3";
-      else if (length == 8)
+      switch (length)
 	{
+	case 4:
+	  if (nullify)
+	    return "movb,%C2,n %1,%0,%3";
+	  else
+	    return "movb,%C2 %1,%0,%3";
+
+	case 8:
 	  /* Handle weird backwards branch with a filled delay slot
 	     which is nullified.  */
 	  if (dbr_sequence_length () != 0
@@ -6608,9 +6581,10 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
 	    return "or,%N2 %1,%%r0,%0\n\tb,n %3";
 	  else
 	    return "or,%N2 %1,%%r0,%0\n\tb %3";
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
-	abort ();
     }
   /* Deal with gross reload from FP register case.  */
   else if (which_alternative == 1)
@@ -7261,8 +7235,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
     return "";
 
   /* A sibcall should never have a branch in the delay slot.  */
-  if (sibcall)
-    abort ();
+  gcc_assert (!sibcall);
 
   /* This call has an unconditional jump in its delay slot.  */
   xoperands[0] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
