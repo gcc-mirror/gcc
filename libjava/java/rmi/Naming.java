@@ -39,11 +39,45 @@ exception statement from your version. */
 package java.rmi;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/**
+ * <p>
+ * The <code>Naming</code> class handles interactions with RMI registries.
+ * Each method takes a URL in <code>String</code> form, which points to
+ * the RMI registry.  The scheme of the URL is irrelevant.  The relevant
+ * part is:
+ * </p>
+ * <p>
+ * <code>//host:port/name</code>
+ * </p>
+ * <p>
+ * which tells the method how to locate and access the registry.  The host
+ * and port are both optional, and default to `localhost' and the standard
+ * RMI registry port (1099) respectively.  The name is simply a string
+ * used to refer to a particular service hosted by the registry.  The
+ * registry does not attempt to interpret this further.
+ * </p>
+ * <p>
+ * RMI services are registered using one of these names, and the same name
+ * is later used by the client to lookup the service and access its methods. 
+ * Registries can be shared by multiple services, or a service can create
+ * its own registry using <code>createRegistry()</code>.
+ * </p>
+ *
+ * @author Original author unknown.
+ * @author Ingo Proetel (proetel@aicas.com)
+ * @author Guilhem Lavaux (guilhem@kaffe.org)
+ * @author Jeroen Frijters (jeroen@frijters.net)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+ * @since 1.1
+ */
 public final class Naming {
+
   /**
    * This class isn't intended to be instantiated.
    */
@@ -66,17 +100,9 @@ public final class Naming {
  * @throws RemoteException
  */
 public static Remote lookup(String name) throws NotBoundException, MalformedURLException, RemoteException {
-	// hack to accept "rmi://host:port/service" strings
-	if(name.startsWith("rmi:")){ name = name.substring(4); }
-	URL u = new URL("http:" + name);
-	String filename = u.getFile();
-
-	// If the filename begins with a slash we must cut it for
-	// name resolution.
-	if (filename.charAt(0) == '/')
-		return (getRegistry(u).lookup(filename.substring(1)));
-	else
-		return (getRegistry(u).lookup(filename));
+        URL u = parseURL(name);
+	String serviceName = getName(u);
+	return (getRegistry(u).lookup(serviceName));
 }
 
 /**
@@ -88,14 +114,9 @@ public static Remote lookup(String name) throws NotBoundException, MalformedURLE
  * @throws RemoteException
  */
 public static void bind(String name, Remote obj) throws AlreadyBoundException, MalformedURLException, RemoteException {
-	URL u = new URL("http:" + name);
-	String filename = u.getFile();
-	// If the filename begins with a slash we must cut it for
-	// name resolution.
-	if (filename.charAt(0) == '/')
-		getRegistry(u).bind(filename.substring(1), obj);
-	else
-		getRegistry(u).bind(filename, obj);
+        URL u = parseURL(name);
+	String serviceName = getName(u);
+	getRegistry(u).bind(serviceName, obj);
 }
 
 /**
@@ -106,14 +127,9 @@ public static void bind(String name, Remote obj) throws AlreadyBoundException, M
  * @throws MalformedURLException
  */
 public static void unbind(String name) throws RemoteException, NotBoundException, MalformedURLException {
-	URL u = new URL("http:" + name);
-	String filename = u.getFile();
-	// If the filename begins with a slash we must cut it for
-	// name resolution.
-	if (filename.charAt(0) == '/')
-		getRegistry(u).unbind(filename.substring(1));
-	else
-		getRegistry(u).unbind(filename);
+        URL u = parseURL(name);
+	String serviceName = getName(u);
+	getRegistry(u).unbind(serviceName);
 }
 
 /**
@@ -125,14 +141,9 @@ public static void unbind(String name) throws RemoteException, NotBoundException
  * @throws MalformedURLException
  */
 public static void rebind(String name, Remote obj) throws RemoteException, MalformedURLException {
-	URL u = new URL("http:" + name);
-	String filename = u.getFile();
-	// If the filename begins with a slash we must cut it for
-	// name resolution.
-	if (filename.charAt(0) == '/')
-		getRegistry(u).rebind(filename.substring(1), obj);
-	else
-		getRegistry(u).rebind(filename, obj);
+        URL u = parseURL(name);
+	String serviceName = getName(u);
+	getRegistry(u).rebind(serviceName, obj);
 }
 
 /**
@@ -143,7 +154,7 @@ public static void rebind(String name, Remote obj) throws RemoteException, Malfo
  * @throws MalformedURLException
  */
 public static String[] list(String name) throws RemoteException, MalformedURLException {
-	return (getRegistry(new URL("http:" + name)).list());
+	return (getRegistry(parseURL(name)).list());
 }
 
 private static Registry getRegistry(URL u) throws RemoteException {
@@ -154,5 +165,56 @@ private static Registry getRegistry(URL u) throws RemoteException {
 		return (LocateRegistry.getRegistry(u.getHost(), u.getPort()));
 	}
 }
+
+  /**
+   * Parses the supplied URL and converts it to use the HTTP
+   * protocol.  From an RMI perspective, the scheme is irrelevant
+   * and we want to be able to create a URL for which a handler is
+   * available.
+   *
+   * @param name the URL in String form.
+   * @throws MalformedURLException if the URL is invalid.
+   */
+  private static URL parseURL(String name)
+    throws MalformedURLException
+  {
+    try
+      {
+	URI uri = new URI(name);
+	String host = uri.getHost();
+	int port = uri.getPort();
+	String query = uri.getQuery();
+	String path = uri.getPath();
+	return new URL("http", 
+		       (host == null ? "localhost" : host),
+		       (port == -1 ? 1099 : port),
+		       uri.getPath() + (query == null ? "" : query));
+      }
+    catch (URISyntaxException e)
+      {
+	throw new MalformedURLException("The URL syntax was invalid: " + 
+					e.getMessage());
+      }
+  }
+
+  /**
+   * Checks that the URL contains a name, and removes any leading
+   * slashes.
+   *
+   * @param url the URL to check.
+   * @throws MalformedURLException if no name is specified.
+   */ 
+  private static String getName(URL url)
+    throws MalformedURLException
+  {
+    String filename = url.getFile();
+    if (filename.length() == 0)
+      throw new MalformedURLException("No path specified: " + url);
+    // If the filename begins with a slash we must cut it for
+    // name resolution.
+    if (filename.charAt(0) == '/')
+      return filename.substring(1);
+    return filename;
+  }
 
 }
