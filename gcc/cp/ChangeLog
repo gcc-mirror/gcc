@@ -1,3 +1,8 @@
+2005-04-22  Per Bothner  <per@bothner.com>
+
+	* decl.c (make_rtl_for_nonlocal_decl): Don't try get_fileinfo if
+        input_filename is NULL, as it is for (say) __PRETTY_FUNCTION__.
+
 2005-04-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/21087
