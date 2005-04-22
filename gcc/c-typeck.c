@@ -64,7 +64,8 @@ int in_sizeof;
 /* The level of nesting inside "typeof".  */
 int in_typeof;
 
-struct c_label_context *label_context_stack;
+struct c_label_context_se *label_context_stack_se;
+struct c_label_context_vm *label_context_stack_vm;
 
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
@@ -6487,15 +6488,33 @@ c_finish_goto_label (tree label)
       return NULL_TREE;
     }
 
+  if (C_DECL_UNJUMPABLE_VM (decl))
+    {
+      error ("jump into scope of identifier with variably modified type");
+      return NULL_TREE;
+    }
+
   if (!C_DECL_UNDEFINABLE_STMT_EXPR (decl))
     {
       /* No jump from outside this statement expression context, so
 	 record that there is a jump from within this context.  */
       struct c_label_list *nlist;
       nlist = XOBNEW (&parser_obstack, struct c_label_list);
-      nlist->next = label_context_stack->labels_used;
+      nlist->next = label_context_stack_se->labels_used;
       nlist->label = decl;
-      label_context_stack->labels_used = nlist;
+      label_context_stack_se->labels_used = nlist;
+    }
+
+  if (!C_DECL_UNDEFINABLE_VM (decl))
+    {
+      /* No jump from outside this context context of identifiers with
+	 variably modified type, so record that there is a jump from
+	 within this context.  */
+      struct c_label_list *nlist;
+      nlist = XOBNEW (&parser_obstack, struct c_label_list);
+      nlist->next = label_context_stack_vm->labels_used;
+      nlist->label = decl;
+      label_context_stack_vm->labels_used = nlist;
     }
 
   TREE_USED (decl) = 1;
@@ -6629,6 +6648,11 @@ struct c_switch {
      appear.  */
   unsigned int blocked_stmt_expr;
 
+  /* Scope of outermost declarations of identifiers with variably
+     modified type within this switch statement; if nonzero, case and
+     default labels may not appear.  */
+  unsigned int blocked_vm;
+
   /* The next node on the stack.  */
   struct c_switch *next;
 };
@@ -6684,6 +6708,7 @@ c_start_case (tree exp)
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->blocked_stmt_expr = 0;
+  cs->blocked_vm = 0;
   cs->next = c_switch_stack;
   c_switch_stack = cs;
 
@@ -6697,7 +6722,8 @@ do_case (tree low_value, tree high_value)
 {
   tree label = NULL_TREE;
 
-  if (c_switch_stack && !c_switch_stack->blocked_stmt_expr)
+  if (c_switch_stack && !c_switch_stack->blocked_stmt_expr
+      && !c_switch_stack->blocked_vm)
     {
       label = c_add_case_label (c_switch_stack->cases,
 				SWITCH_STMT_COND (c_switch_stack->switch_stmt),
@@ -6714,6 +6740,15 @@ do_case (tree low_value, tree high_value)
       else
 	error ("%<default%> label in statement expression not containing "
 	       "enclosing switch statement");
+    }
+  else if (c_switch_stack && c_switch_stack->blocked_vm)
+    {
+      if (low_value)
+	error ("case label in scope of identifier with variably modified "
+	       "type not containing enclosing switch statement");
+      else
+	error ("%<default%> label in scope of identifier with variably "
+	       "modified type not containing enclosing switch statement");
     }
   else if (low_value)
     error ("case label not within a switch statement");
@@ -6732,6 +6767,9 @@ c_finish_case (tree body)
 
   SWITCH_STMT_BODY (cs->switch_stmt) = body;
 
+  /* We must not be within a statement expression nested in the switch
+     at this point; we might, however, be within the scope of an
+     identifier with variably modified type nested in the switch.  */
   gcc_assert (!cs->blocked_stmt_expr);
 
   /* Emit warnings as needed.  */
@@ -7000,7 +7038,7 @@ tree
 c_begin_stmt_expr (void)
 {
   tree ret;
-  struct c_label_context *nstack;
+  struct c_label_context_se *nstack;
   struct c_label_list *glist;
 
   /* We must force a BLOCK for this level so that, if it is not expanded
@@ -7013,17 +7051,17 @@ c_begin_stmt_expr (void)
       c_switch_stack->blocked_stmt_expr++;
       gcc_assert (c_switch_stack->blocked_stmt_expr != 0);
     }
-  for (glist = label_context_stack->labels_used;
+  for (glist = label_context_stack_se->labels_used;
        glist != NULL;
        glist = glist->next)
     {
       C_DECL_UNDEFINABLE_STMT_EXPR (glist->label) = 1;
     }
-  nstack = XOBNEW (&parser_obstack, struct c_label_context);
+  nstack = XOBNEW (&parser_obstack, struct c_label_context_se);
   nstack->labels_def = NULL;
   nstack->labels_used = NULL;
-  nstack->next = label_context_stack;
-  label_context_stack = nstack;
+  nstack->next = label_context_stack_se;
+  label_context_stack_se = nstack;
 
   /* Mark the current statement list as belonging to a statement list.  */
   STATEMENT_LIST_STMT_EXPR (ret) = 1;
@@ -7046,7 +7084,7 @@ c_finish_stmt_expr (tree body)
     }
   /* It is no longer possible to jump to labels defined within this
      statement expression.  */
-  for (dlist = label_context_stack->labels_def;
+  for (dlist = label_context_stack_se->labels_def;
        dlist != NULL;
        dlist = dlist->next)
     {
@@ -7054,7 +7092,7 @@ c_finish_stmt_expr (tree body)
     }
   /* It is again possible to define labels with a goto just outside
      this statement expression.  */
-  for (glist = label_context_stack->next->labels_used;
+  for (glist = label_context_stack_se->next->labels_used;
        glist != NULL;
        glist = glist->next)
     {
@@ -7062,10 +7100,11 @@ c_finish_stmt_expr (tree body)
       glist_prev = glist;
     }
   if (glist_prev != NULL)
-    glist_prev->next = label_context_stack->labels_used;
+    glist_prev->next = label_context_stack_se->labels_used;
   else
-    label_context_stack->next->labels_used = label_context_stack->labels_used;
-  label_context_stack = label_context_stack->next;
+    label_context_stack_se->next->labels_used
+      = label_context_stack_se->labels_used;
+  label_context_stack_se = label_context_stack_se->next;
 
   /* Locate the last statement in BODY.  See c_end_compound_stmt
      about always returning a BIND_EXPR.  */
@@ -7135,6 +7174,75 @@ c_finish_stmt_expr (tree body)
   SET_EXPR_LOCUS (*last_p, EXPR_LOCUS (last));
 
   return build4 (TARGET_EXPR, type, tmp, body, NULL_TREE, NULL_TREE);
+}
+
+/* Begin the scope of an identifier of variably modified type, scope
+   number SCOPE.  Jumping from outside this scope to inside it is not
+   permitted.  */
+
+void
+c_begin_vm_scope (unsigned int scope)
+{
+  struct c_label_context_vm *nstack;
+  struct c_label_list *glist;
+
+  gcc_assert (scope > 0);
+  if (c_switch_stack && !c_switch_stack->blocked_vm)
+    c_switch_stack->blocked_vm = scope;
+  for (glist = label_context_stack_vm->labels_used;
+       glist != NULL;
+       glist = glist->next)
+    {
+      C_DECL_UNDEFINABLE_VM (glist->label) = 1;
+    }
+  nstack = XOBNEW (&parser_obstack, struct c_label_context_vm);
+  nstack->labels_def = NULL;
+  nstack->labels_used = NULL;
+  nstack->scope = scope;
+  nstack->next = label_context_stack_vm;
+  label_context_stack_vm = nstack;
+}
+
+/* End a scope which may contain identifiers of variably modified
+   type, scope number SCOPE.  */
+
+void
+c_end_vm_scope (unsigned int scope)
+{
+  if (label_context_stack_vm == NULL)
+    return;
+  if (c_switch_stack && c_switch_stack->blocked_vm == scope)
+    c_switch_stack->blocked_vm = 0;
+  /* We may have a number of nested scopes of identifiers with
+     variably modified type, all at this depth.  Pop each in turn.  */
+  while (label_context_stack_vm->scope == scope)
+    {
+      struct c_label_list *dlist, *glist, *glist_prev = NULL;
+
+      /* It is no longer possible to jump to labels defined within this
+	 scope.  */
+      for (dlist = label_context_stack_vm->labels_def;
+	   dlist != NULL;
+	   dlist = dlist->next)
+	{
+	  C_DECL_UNJUMPABLE_VM (dlist->label) = 1;
+	}
+      /* It is again possible to define labels with a goto just outside
+	 this scope.  */
+      for (glist = label_context_stack_vm->next->labels_used;
+	   glist != NULL;
+	   glist = glist->next)
+	{
+	  C_DECL_UNDEFINABLE_VM (glist->label) = 0;
+	  glist_prev = glist;
+	}
+      if (glist_prev != NULL)
+	glist_prev->next = label_context_stack_vm->labels_used;
+      else
+	label_context_stack_vm->next->labels_used
+	  = label_context_stack_vm->labels_used;
+      label_context_stack_vm = label_context_stack_vm->next;
+    }
 }
 
 /* Begin and end compound statements.  This is as simple as pushing

@@ -1,5 +1,39 @@
 2005-04-22  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/12913
+	* c-tree.h (struct c_label_list): Update comment.
+	(struct c_label_context): Rename to struct c_label_context_se.
+	(label_context_stack): Rename to label_context_stack_se.
+	(C_DECL_UNJUMPABLE_VM, C_DECL_UNDEFINABLE_VM, struct
+	c_label_context_vm, label_context_stack_vm, c_begin_vm_scope,
+	c_end_vm_scope): New.
+	(C_DECL_DECLARED_BUILTIN, C_DECL_USED): Use FUNCTION_DECL_CHECK.
+	* c-decl.c (pop_scope): Call c_end_vm_scope.
+	(pushdecl): Call c_begin_vm_scope for variably modified
+	declarations.
+	(define_label): Check for jumping into scope of identifier with
+	variably modified type.  Push label on stack for those defined at
+	current context of identifiers with variably modified type.
+	(start_function): Create stack level for context of identifiers
+	with variably modified type.
+	(finish_function): Pop stack level for context of identifiers with
+	variably modified type.
+	* c-typeck.c (label_context_stack): Rename to
+	label_context_stack_se.
+	(label_context_stack_vm, c_begin_vm_scope, c_end_vm_scope): New.
+	(c_finish_goto_label): Check for jumping into scope of identifier
+	with variably modified type.  Push label on stack for those jumped
+	to from current context of identifiers with variably modified
+	type.
+	(struct c_switch): Add blocked_vm.
+	(c_start_case): Initialize blocked_vm.
+	(do_case): Check blocked_vm.
+	(c_finish_case): Add comment.
+	(c_begin_stmt_expr, c_finish_stmt_expr): Update for renamed
+	variable label_context_stack.
+
+2005-04-22  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* varasm.c (do_assemble_alias): Return early if TREE_ASM_WRITTEN
 	(decl).
 

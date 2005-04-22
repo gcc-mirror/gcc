@@ -1,3 +1,9 @@
+2005-04-22  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/12913
+	* objc-act.c (objc_start_function): Create stack level for context
+	of identifiers with variably modified type.
+
 2005-04-20  Release Manager
 
 	* GCC 4.0.0 released.
