@@ -1,3 +1,8 @@
+2005-04-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gnu/gcj/runtime/NameFinder.java (close): IN, OUT, and PROC can all
+	be null, check for that case and don't deference it.
+
 2005-04-22  Sven de Marothy  <sven@physto.se>
 
 	* java/util/logging/LogManager.java: Reformatted.
