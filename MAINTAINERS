@@ -121,7 +121,7 @@ java			Andrew Haley		aph@redhat.com
 mercury			Fergus Henderson	fjh@cs.mu.oz.au
 objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
-objective-c		Ziemowit Laski		zlaski@apple.com
+objective-c/c++		Ziemowit Laski		zlaski@apple.com
 objective-c/c++		Mike Stump		mrs@apple.com
 treelang                Tim Josling             tej@melbpc.org.au
 treelang                James A. Morrison	phython@gcc.gnu.org
