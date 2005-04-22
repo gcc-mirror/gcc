@@ -221,10 +221,8 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
   tree res;
   tree type;
   mp_exp_t exp;
-  char *p;
-  char *q;
+  char *p, *q;
   int n;
-  int edigits;
 
   for (n = 0; gfc_real_kinds[n].kind != 0; n++)
     {
@@ -233,45 +231,20 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
     }
   gcc_assert (gfc_real_kinds[n].kind);
 
-  n = MAX (abs (gfc_real_kinds[n].min_exponent),
-	   abs (gfc_real_kinds[n].max_exponent));
+  /* A decimal representation is used here, which requires the additional
+     two characters for rounding.  TODO: Use a hexadecimal representation
+     to avoid rounding issues.  */
+  p = mpfr_get_str (NULL, &exp, 10, gfc_real_kinds[n].precision+2,
+		    f, GFC_RND_MODE);
+  gcc_assert (p);
 
-  edigits = 1;
-  while (n > 0)
-    {
-      n = n / 10;
-      edigits += 3;
-    }
+  /* The additional 10 characters add space for the sprintf below.  */
+  q = (char *) gfc_getmem (strlen (p) + 10);
 
-  if (kind == gfc_default_double_kind)
-    p = mpfr_get_str (NULL, &exp, 10, 17, f, GFC_RND_MODE);
+  if (p[0] == '-')
+    sprintf (q, "-.%se%d", &p[1], (int) exp);
   else
-    p = mpfr_get_str (NULL, &exp, 10, 8, f, GFC_RND_MODE);
-
-
-  /* We also have one minus sign, "e", "." and a null terminator.  */
-  q = (char *) gfc_getmem (strlen (p) + edigits + 4);
-
-  if (p[0])
-    {
-      if (p[0] == '-')
-	{
-	  strcpy (&q[2], &p[1]);
-	  q[0] = '-';
-	  q[1] = '.';
-	}
-      else
-	{
-	  strcpy (&q[1], p);
-	  q[0] = '.';
-	}
-      strcat (q, "e");
-      sprintf (&q[strlen (q)], "%d", (int) exp);
-    }
-  else
-    {
-      strcpy (q, "0");
-    }
+    sprintf (q, ".%se%d", p, (int) exp);
 
   type = gfc_get_real_type (kind);
   res = build_real (type, REAL_VALUE_ATOF (q, TYPE_MODE (type)));
