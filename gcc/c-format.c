@@ -148,7 +148,7 @@ check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
 }
 
 /* Verify EXPR is a constant, and store its value.
-   If validated_p is true, abort on errors.
+   If validated_p is true there should be no errors.
    Returns true on success, false otherwise.  */
 static bool
 get_constant (tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
@@ -164,12 +164,12 @@ get_constant (tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
   return true;
 }
 
-/* Decode the arguments to a "format" attribute into a function_format_info
-   structure.  It is already known that the list is of the right length.
-   If VALIDATED_P is true, then these attributes have already been validated
-   and this function will abort if they are erroneous; if false, it
-   will give an error message.  Returns true if the attributes are
-   successfully decoded, false otherwise.  */
+/* Decode the arguments to a "format" attribute into a
+   function_format_info structure.  It is already known that the list
+   is of the right length.  If VALIDATED_P is true, then these
+   attributes have already been validated and must not be erroneous;
+   if false, it will give an error message.  Returns true if the
+   attributes are successfully decoded, false otherwise.  */
 
 static bool
 decode_format_attr (tree args, function_format_info *info, int validated_p)
@@ -1063,10 +1063,10 @@ finish_dollar_format_checking (format_check_results *res, int pointer_gap_ok)
 /* Retrieve the specification for a format flag.  SPEC contains the
    specifications for format flags for the applicable kind of format.
    FLAG is the flag in question.  If PREDICATES is NULL, the basic
-   spec for that flag must be retrieved and this function aborts if
-   it cannot be found.  If PREDICATES is not NULL, it is a string listing
-   possible predicates for the spec entry; if an entry predicated on any
-   of these is found, it is returned, otherwise NULL is returned.  */
+   spec for that flag must be retrieved and must exist.  If
+   PREDICATES is not NULL, it is a string listing possible predicates
+   for the spec entry; if an entry predicated on any of these is
+   found, it is returned, otherwise NULL is returned.  */
 
 static const format_flag_spec *
 get_flag_spec (const format_flag_spec *spec, int flag, const char *predicates)
@@ -2236,7 +2236,7 @@ format_type_warning (const char *descr, const char *format_start,
 
 /* Given a format_char_info array FCI, and a character C, this function
    returns the index into the conversion_specs where that specifier's
-   data is located.  If the character isn't found it aborts.  */
+   data is located.  The character must exist.  */
 static unsigned int
 find_char_info_specifier_index (const format_char_info *fci, int c)
 {
@@ -2252,8 +2252,7 @@ find_char_info_specifier_index (const format_char_info *fci, int c)
 
 /* Given a format_length_info array FLI, and a character C, this
    function returns the index into the conversion_specs where that
-   modifier's data is located.  If the character isn't found it
-   aborts.  */
+   modifier's data is located.  The character must exist.  */
 static unsigned int
 find_length_info_modifier_index (const format_length_info *fli, int c)
 {

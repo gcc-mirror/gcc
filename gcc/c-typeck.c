@@ -344,7 +344,7 @@ composite_type (tree t1, tree t2)
 	/* If both args specify argument types, we must merge the two
 	   lists, argument by argument.  */
 	/* Tell global_bindings_p to return false so that variable_size
-	   doesn't abort on VLAs in parameter types.  */
+	   doesn't die on VLAs in parameter types.  */
 	c_override_global_bindings_to_false = true;
 
 	len = list_length (p1);
@@ -5018,7 +5018,7 @@ pop_init_level (int implicit)
 
 	  /* We have already issued an error message for the existence
 	     of a flexible array member not at the end of the structure.
-	     Discard the initializer so that we do not abort later.  */
+	     Discard the initializer so that we do not die later.  */
 	  if (TREE_CHAIN (constructor_fields) != NULL_TREE)
 	    constructor_type = NULL_TREE;
 	}

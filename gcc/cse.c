@@ -5534,9 +5534,10 @@ cse_insn (rtx insn, rtx libcall_insn)
 
 	  else if (constant_pool_entries_cost
 		   && CONSTANT_P (trial)
-		   /* Reject cases that will abort in decode_rtx_const.
-		      On the alpha when simplifying a switch, we get
-		      (const (truncate (minus (label_ref) (label_ref)))).  */
+		   /* Reject cases that will cause decode_rtx_const to
+		      die.  On the alpha when simplifying a switch, we
+		      get (const (truncate (minus (label_ref)
+		      (label_ref)))).  */
 		   && ! (GET_CODE (trial) == CONST
 			 && GET_CODE (XEXP (trial, 0)) == TRUNCATE)
 		   /* Likewise on IA-64, except without the truncate.  */

@@ -606,7 +606,7 @@ mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
       || TREE_CODE_CLASS (code) == tcc_constant
       || code == SAVE_EXPR || code == TARGET_EXPR
       /* We can't do anything sensible with a BLOCK used as an expression,
-	 but we also can't abort when we see it because of non-expression
+	 but we also can't just die when we see it because of non-expression
 	 uses.  So just avert our eyes and cross our fingers.  Silly Java.  */
       || code == BLOCK)
     *walk_subtrees = 0;
@@ -930,7 +930,7 @@ gimplify_return_expr (tree stmt, tree *pre_p)
      returned in registers.  If we're returning values in registers, then
      we don't want to extend the lifetime of the RESULT_DECL, particularly
      across another call.  In addition, for those aggregates for which
-     hard_function_value generates a PARALLEL, we'll abort during normal
+     hard_function_value generates a PARALLEL, we'll die during normal
      expansion of structure assignments; there's special code in expand_return
      to handle this case that does not exist in expand_expr.  */
   if (!result_decl
@@ -2893,7 +2893,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 
 	     ??? What about code that pulls out the temp and uses it
 	     elsewhere? I think that such code never uses the TARGET_EXPR as
-	     an initializer.  If I'm wrong, we'll abort because the temp won't
+	     an initializer.  If I'm wrong, we'll die because the temp won't
 	     have any RTL.  In that case, I guess we'll need to replace
 	     references somehow.  */
 	  tree init = TARGET_EXPR_INITIAL (*from_p);
@@ -4329,7 +4329,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 #endif
       gcc_assert (fallback & fb_mayfail);
       /* If this is an asm statement, and the user asked for the
-	 impossible, don't abort.  Fail and let gimplify_asm_expr
+	 impossible, don't die.  Fail and let gimplify_asm_expr
 	 issue an error.  */
       ret = GS_ERROR;
       goto out;

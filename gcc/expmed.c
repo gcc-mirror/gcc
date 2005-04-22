@@ -544,8 +544,8 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       /* This is the mode we must force value to, so that there will be enough
 	 subwords to extract.  Note that fieldmode will often (always?) be
 	 VOIDmode, because that is what store_field uses to indicate that this
-	 is a bit field, but passing VOIDmode to operand_subword_force will
-	 result in an abort.  */
+	 is a bit field, but passing VOIDmode to operand_subword_force
+	 is not allowed.  */
       fieldmode = GET_MODE (value);
       if (fieldmode == VOIDmode)
 	fieldmode = smallest_mode_for_size (nwords * BITS_PER_WORD, MODE_INT);
@@ -582,10 +582,10 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  if (!REG_P (op0))
 	    {
-	      /* Since this is a destination (lvalue), we can't copy it to a
-		 pseudo.  We can trivially remove a SUBREG that does not
-		 change the size of the operand.  Such a SUBREG may have been
-		 added above.  Otherwise, abort.  */
+	      /* Since this is a destination (lvalue), we can't copy
+		 it to a pseudo.  We can remove a SUBREG that does not
+		 change the size of the operand.  Such a SUBREG may
+		 have been added above.  */
 	      gcc_assert (GET_CODE (op0) == SUBREG
 			  && (GET_MODE_SIZE (GET_MODE (op0))
 			      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))));
@@ -3835,8 +3835,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	  || optab2->handlers[compute_mode].libfunc)
 	break;
 
-  /* If we still couldn't find a mode, use MODE, but we'll probably abort
-     in expand_binop.  */
+  /* If we still couldn't find a mode, use MODE, but expand_binop will
+     probably die.  */
   if (compute_mode == VOIDmode)
     compute_mode = mode;
 
@@ -5538,9 +5538,9 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
    The algorithm is based on the code in expr.c:do_jump.
 
-   Note that this does not perform a general comparison.  Only variants
-   generated within expmed.c are correctly handled, others abort (but could
-   be handled if needed).  */
+   Note that this does not perform a general comparison.  Only
+   variants generated within expmed.c are correctly handled, others
+   could be handled if needed.  */
 
 static void
 do_cmp_and_jump (rtx arg1, rtx arg2, enum rtx_code op, enum machine_mode mode,

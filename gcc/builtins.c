@@ -4262,7 +4262,8 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
 
       if (!targetm.gimplify_va_arg_expr)
-	/* Once most targets are converted this should abort.  */
+	/* FIXME:Once most targets are converted we should merely
+	   assert this is non-null.  */
 	return GS_ALL_DONE;
 
       *expr_p = targetm.gimplify_va_arg_expr (valist, type, pre_p, post_p);

@@ -136,7 +136,7 @@ static const char *last_filename;
 extern int length_unit_log; /* This is defined in insn-attrtab.c.  */
 
 /* Nonzero while outputting an `asm' with operands.
-   This means that inconsistencies are the user's fault, so don't abort.
+   This means that inconsistencies are the user's fault, so don't die.
    The precise value is the insn being output, to pass to error_for_asm.  */
 rtx this_is_asm_operands;
 
@@ -788,7 +788,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
       label_align = xrealloc (label_align,
 			      n_labels * sizeof (struct label_alignment));
 
-      /* Range of labels grows monotonically in the function.  Abort here
+      /* Range of labels grows monotonically in the function.  Failing here
          means that the initialization of array got lost.  */
       gcc_assert (n_old_labels <= n_labels);
 
@@ -2060,7 +2060,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    /* Get out the operand values.  */
 	    string = decode_asm_operands (body, ops, NULL, NULL, NULL);
-	    /* Inhibit aborts on what would otherwise be compiler bugs.  */
+	    /* Inhibit dieing on what would otherwise be compiler bugs.  */
 	    insn_noperands = noperands;
 	    this_is_asm_operands = insn;
 
@@ -3135,8 +3135,7 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   if (x && GET_CODE (x) == SUBREG)
     x = alter_subreg (&x);
 
-  /* If X is a pseudo-register, abort now rather than writing trash to the
-     assembler file.  */
+  /* X must not be a psuedo reg.  */
   gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
 
   PRINT_OPERAND (asm_out_file, x, code);

@@ -1525,8 +1525,8 @@ hard_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
       enum machine_mode tmpmode;
 
       /* int_size_in_bytes can return -1.  We don't need a check here
-	 since the value of bytes will be large enough that no mode
-	 will match and we will abort later in this function.  */
+	 since the value of bytes will then be large enough that no
+	 mode will match anyway.  */
 
       for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	   tmpmode != VOIDmode;

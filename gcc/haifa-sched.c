@@ -753,8 +753,7 @@ queue_insn (rtx insn, int n_cycles)
 HAIFA_INLINE static rtx *
 ready_lastpos (struct ready_list *ready)
 {
-  if (ready->n_ready == 0)
-    abort ();
+  gcc_assert (ready->n_ready);
   return ready->vec + ready->first - ready->n_ready + 1;
 }
 
@@ -782,8 +781,8 @@ HAIFA_INLINE static rtx
 ready_remove_first (struct ready_list *ready)
 {
   rtx t;
-  if (ready->n_ready == 0)
-    abort ();
+  
+  gcc_assert (ready->n_ready);
   t = ready->vec[ready->first--];
   ready->n_ready--;
   /* If the queue becomes empty, reset it.  */
@@ -803,10 +802,8 @@ ready_remove_first (struct ready_list *ready)
 HAIFA_INLINE static rtx
 ready_element (struct ready_list *ready, int index)
 {
-#ifdef ENABLE_CHECKING
-  if (ready->n_ready == 0 || index >= ready->n_ready)
-    abort ();
-#endif
+  gcc_assert (ready->n_ready && index < ready->n_ready);
+  
   return ready->vec[ready->first - index];
 }
 
@@ -822,8 +819,7 @@ ready_remove (struct ready_list *ready, int index)
 
   if (index == 0)
     return ready_remove_first (ready);
-  if (ready->n_ready == 0 || index >= ready->n_ready)
-    abort ();
+  gcc_assert (ready->n_ready && index < ready->n_ready);
   t = ready->vec[ready->first - index];
   ready->n_ready--;
   for (i = index; i < ready->n_ready; i++)
@@ -1105,12 +1101,7 @@ rm_line_notes (rtx head, rtx tail)
 	  prev = insn;
 	  insn = unlink_line_notes (insn, next_tail);
 
-	  if (prev == tail)
-	    abort ();
-	  if (prev == head)
-	    abort ();
-	  if (insn == next_tail)
-	    abort ();
+	  gcc_assert (prev != tail && prev != head && insn != next_tail);
 	}
     }
 }
@@ -1289,12 +1280,7 @@ rm_other_notes (rtx head, rtx tail)
 
 	  insn = unlink_other_notes (insn, next_tail);
 
-	  if (prev == tail)
-	    abort ();
-	  if (prev == head)
-	    abort ();
-	  if (insn == next_tail)
-	    abort ();
+	  gcc_assert (prev != tail && prev != head && insn != next_tail);
 	}
     }
 }
@@ -1868,18 +1854,19 @@ schedule_block (int b, int rgn_n_insns)
      and caused problems because schedule_block and compute_forward_dependences
      had different notions of what the "head" insn was.  */
 
-  if (head == tail && (! INSN_P (head)))
-    abort ();
+  gcc_assert (head != tail || INSN_P (head));
 
   /* Debug info.  */
   if (sched_verbose)
     {
-      fprintf (sched_dump, ";;   ======================================================\n");
+      fprintf (sched_dump,
+	       ";;   ======================================================\n");
       fprintf (sched_dump,
 	       ";;   -- basic block %d from %d to %d -- %s reload\n",
 	       b, INSN_UID (head), INSN_UID (tail),
 	       (reload_completed ? "after" : "before"));
-      fprintf (sched_dump, ";;   ======================================================\n");
+      fprintf (sched_dump,
+	       ";;   ======================================================\n");
       fprintf (sched_dump, "\n");
     }
 
@@ -1938,8 +1925,7 @@ schedule_block (int b, int rgn_n_insns)
 	     list.  */
 	  queue_to_ready (&ready);
 
-	  if (ready.n_ready == 0)
-	    abort ();
+	  gcc_assert (ready.n_ready);
 
 	  if (sched_verbose >= 2)
 	    {
@@ -2122,8 +2108,7 @@ schedule_block (int b, int rgn_n_insns)
 
   /* Sanity check -- queue must be empty now.  Meaningless if region has
      multiple bbs.  */
-  if (current_sched_info->queue_must_finish_empty && q_size != 0)
-      abort ();
+  gcc_assert (!current_sched_info->queue_must_finish_empty || q_size);
 
   /* Update head/tail boundaries.  */
   head = NEXT_INSN (prev_head);
