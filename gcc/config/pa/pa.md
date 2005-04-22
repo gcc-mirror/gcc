@@ -2814,9 +2814,9 @@
   "!is_function_label_plus_const (operands[2])"
   "*
 {
-  if (flag_pic && symbolic_operand (operands[2], Pmode))
-    abort ();
-  else if (symbolic_operand (operands[2], Pmode))
+  gcc_assert (!flag_pic || !symbolic_operand (operands[2], Pmode));
+  
+  if (symbolic_operand (operands[2], Pmode))
     return \"ldo RR'%G2(%1),%0\";
   else
     return \"ldo R'%G2(%1),%0\";
@@ -4070,8 +4070,9 @@
   rtx op0 = operands[0];
   rtx op1 = operands[1];
 
-  if (GET_CODE (op1) == CONST_INT)
+  switch (GET_CODE (op1))
     {
+    case CONST_INT:
       operands[0] = operand_subword (op0, 1, 0, DImode);
       output_asm_insn (\"ldil L'%1,%0\", operands);
 
@@ -4080,10 +4081,9 @@
 	output_asm_insn (\"ldi -1,%0\", operands);
       else
 	output_asm_insn (\"ldi 0,%0\", operands);
-      return \"\";
-    }
-  else if (GET_CODE (op1) == CONST_DOUBLE)
-    {
+      break;
+
+    case CONST_DOUBLE:
       operands[0] = operand_subword (op0, 1, 0, DImode);
       operands[1] = GEN_INT (CONST_DOUBLE_LOW (op1));
       output_asm_insn (\"ldil L'%1,%0\", operands);
@@ -4091,10 +4091,12 @@
       operands[0] = operand_subword (op0, 0, 0, DImode);
       operands[1] = GEN_INT (CONST_DOUBLE_HIGH (op1));
       output_asm_insn (singlemove_string (operands), operands);
-      return \"\";
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
+  return \"\";
 }"
   [(set_attr "type" "move")
    (set_attr "length" "8")])
@@ -7070,8 +7072,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	     the only method that we have for doing DImode multiplication
 	     is with a libcall.  This could be trouble if we haven't
 	     allocated enough space for the outgoing arguments.  */
-	  if (INTVAL (nb) > current_function_outgoing_args_size)
-	    abort ();
+	  gcc_assert (INTVAL (nb) <= current_function_outgoing_args_size);
 
 	  emit_move_insn (arg_pointer_rtx,
 			  gen_rtx_PLUS (word_mode, stack_pointer_rtx,
@@ -7570,8 +7571,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	     the only method that we have for doing DImode multiplication
 	     is with a libcall.  This could be trouble if we haven't
 	     allocated enough space for the outgoing arguments.  */
-	  if (INTVAL (nb) > current_function_outgoing_args_size)
-	    abort ();
+	  gcc_assert (INTVAL (nb) <= current_function_outgoing_args_size);
 
 	  emit_move_insn (arg_pointer_rtx,
 			  gen_rtx_PLUS (word_mode, stack_pointer_rtx,
@@ -8089,8 +8089,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	     the only method that we have for doing DImode multiplication
 	     is with a libcall.  This could be trouble if we haven't
 	     allocated enough space for the outgoing arguments.  */
-	  if (INTVAL (nb) > current_function_outgoing_args_size)
-	    abort ();
+	  gcc_assert (INTVAL (nb) <= current_function_outgoing_args_size);
 
 	  emit_move_insn (arg_pointer_rtx,
 			  gen_rtx_PLUS (word_mode, stack_pointer_rtx,
@@ -8171,8 +8170,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	     the only method that we have for doing DImode multiplication
 	     is with a libcall.  This could be trouble if we haven't
 	     allocated enough space for the outgoing arguments.  */
-	  if (INTVAL (nb) > current_function_outgoing_args_size)
-	    abort ();
+	  gcc_assert (INTVAL (nb) <= current_function_outgoing_args_size);
 
 	  emit_move_insn (arg_pointer_rtx,
 			  gen_rtx_PLUS (word_mode, stack_pointer_rtx,
@@ -9263,8 +9261,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   int locality = INTVAL (operands[2]);
 
-  if (locality < 0 || locality > 3)
-    abort ();
+  gcc_assert (locality >= 0 && locality <= 3);
 
   /* Change operand[0] to a MEM as we don't have the infrastructure
      to output all the supported address modes for ldw/ldd when we use
@@ -9309,8 +9306,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   };
   int read_or_write = INTVAL (operands[1]);
 
-  if (read_or_write < 0 || read_or_write > 1)
-    abort ();
+  gcc_assert (read_or_write >= 0 && read_or_write <= 1);
 
   return instr [read_or_write];
 }
@@ -9338,9 +9334,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   };
   int read_or_write = INTVAL (operands[1]);
 
-  if ((which_alternative != 0 && which_alternative != 1)
-      || (read_or_write < 0 || read_or_write > 1))
-    abort ();
+  gcc_assert (which_alternative == 0 || which_alternative == 1);
+  gcc_assert (read_or_write >= 0 && read_or_write <= 1);
 
   return instr [which_alternative][read_or_write];
 }
