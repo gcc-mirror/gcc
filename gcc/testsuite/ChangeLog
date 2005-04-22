@@ -1,3 +1,7 @@
+2005-04-22  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/weak/weak-13.c: New test.
+
 2005-04-20  Release Manager
 
 	* GCC 4.0.0 released.
