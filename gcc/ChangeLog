@@ -1,3 +1,9 @@
+2005-04-22  James E Wilson  <wilson@specifixinc.com>
+
+	PR c++/20805
+	* dwarf2out.c (gen_variable_die): Don't emit a specification if this
+	is another declaration.
+
 2005-04-22  Michael Matz  <matz@suse.de>
 
 	PR middle-end/20973
