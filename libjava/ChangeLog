@@ -1,3 +1,15 @@
+2005-04-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/rmi/Naming.java:
+	Added class documentation.
+	(lookup(String)): Call parseURL and getName.
+	(bind(String,java.rmi.Remote)): Likewise.
+	(unbind(String)): Likewise.
+	(rebind(String, java.rmi.Remote)): Likewise.
+	(list(String)): Call parseURL.
+	(parseURL(String)): New method to handle parsing and defaults.
+	(getName(java.net.URL)): New method to handle finding the service name.
+
 2005-04-21  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natClass.cc (initializeClass): Link class.
