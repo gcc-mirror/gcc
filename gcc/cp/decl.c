@@ -4543,6 +4543,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 {
   int toplev = toplevel_bindings_p ();
   int defer_p;
+  const char *filename;
 
   /* Set the DECL_ASSEMBLER_NAME for the object.  */
   if (asmspec)
@@ -4592,17 +4593,19 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 
   /* We try to defer namespace-scope static constants so that they are
      not emitted into the object file unnecessarily.  */
+  filename = input_filename;
   if (!DECL_VIRTUAL_P (decl)
       && TREE_READONLY (decl)
       && DECL_INITIAL (decl) != NULL_TREE
       && DECL_INITIAL (decl) != error_mark_node
+      && filename != NULL
       && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl))
       && toplev
       && !TREE_PUBLIC (decl))
     {
       /* Fool with the linkage of static consts according to #pragma
 	 interface.  */
-      struct c_fileinfo *finfo = get_fileinfo (lbasename (input_filename));
+      struct c_fileinfo *finfo = get_fileinfo (lbasename (filename));
       if (!finfo->interface_unknown && !TREE_PUBLIC (decl))
 	{
 	  TREE_PUBLIC (decl) = 1;
