@@ -1,3 +1,8 @@
+2005-04-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/invoke.texi (SPARC options): Document that -mapp-regs
+	is turned off by default on Solaris.
+
 2005-04-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* version.c (version_string): Restore prerelease information.
