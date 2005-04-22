@@ -1,3 +1,36 @@
+2005-04-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* builtins.c (gimplify_va_arg_expr): Reword comments to avoid
+	'abort'. Use gcc_assert and gcc_unreachable as appropriate.
+	* c-format.c (get_constant, decode_format_attr, get_flag_spec, 
+	find_char_info_specifier_index,
+	find_length_info_modifier_index): Likewise.
+	* c-typeck.c (composite_type, pop_init_level): Likewise.
+	* combine.c (cant_combine_insn_p, try_combine): Likewise.
+	* cse.c (cse_insn): Likewise
+	* dominance.c (calc_dfs_tree): Likewise
+	dwarf2out.c (loc_descriptor_from_tree_1,
+	add_abstract_origin_attribute, force_decl_die,
+	force_type_die): Likewise
+	emit-rtl.c (operand_subword_force): Likewise
+	explow.c (hard_function_value): Likewise
+	expmed.c (store_bit_field, expand_divmod,
+	emit_store_flag_force): Likewise
+	expr.c (emit_move_multi_word, store_expr,
+	expand_expr_real_1): Likewise
+	final.c (this_is_asm_operands, shorten_branches, final_scan_insn,
+	output_operand): Likewise
+	flow.c (recompute_reg_usage): Likewise
+	* function.c (assign_stack_temp_for_type, assign_temp, 
+	handle_epilogue_set): Likewise
+	* genextract.c (main): Likewise
+	* gimplify.c (mostly_copy_tree_r, gimplify_return_expr,
+	gimplify_modify_expr_rhs, gimplify_expr): Likewise
+	* haifa-sched.c (ready_lastpos, ready_remove_first, ready_element,
+	ready_remove, rm_line_notes, rm_other_notes,
+	schedule_block): Likewise
+	mips-tfile.c (copy_object, out_of_bounds): Likewise
+
 2005-04-22 David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/20813

@@ -372,7 +372,7 @@ calc_dfs_tree (struct dom_info *di, enum cdi_direction reverse)
 
   di->nodes = di->dfsnum - 1;
 
-  /* This aborts e.g. when there is _no_ path from ENTRY to EXIT at all.  */
+  /* Make sure there is a path from ENTRY to EXIT at all.  */
   gcc_assert (di->nodes == (unsigned int) n_basic_blocks + 1);
 }
 

@@ -3020,8 +3020,8 @@ emit_move_multi_word (enum machine_mode mode, rtx x, rtx y)
       rtx ypart = operand_subword (y, i, 1, mode);
 
       /* If we can't get a part of Y, put Y into memory if it is a
-	 constant.  Otherwise, force it into a register.  If we still
-	 can't get a part of Y, abort.  */
+	 constant.  Otherwise, force it into a register.  Then we must
+	 be able to get a part of Y.  */
       if (ypart == 0 && CONSTANT_P (y))
 	{
 	  y = force_const_mem (mode, y);
@@ -4222,10 +4222,10 @@ store_expr (tree exp, rtx target, int call_param_p)
 	 but TARGET is not valid memory reference, TEMP will differ
 	 from TARGET although it is really the same location.  */
       && !(alt_rtl && rtx_equal_p (alt_rtl, target))
-      /* If there's nothing to copy, don't bother.  Don't call expr_size
-	 unless necessary, because some front-ends (C++) expr_size-hook
-	 aborts on objects that are not supposed to be bit-copied or
-	 bit-initialized.  */
+      /* If there's nothing to copy, don't bother.  Don't call
+	 expr_size unless necessary, because some front-ends (C++)
+	 expr_size-hook must not be given objects that are not
+	 supposed to be bit-copied or bit-initialized.  */
       && expr_size (exp) != const0_rtx)
     {
       if (GET_MODE (temp) != GET_MODE (target)
@@ -8341,8 +8341,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
         op2 = expand_expr (oprnd2, NULL_RTX, VOIDmode, 0);
         temp = expand_ternary_op (mode, this_optab, op0, op1, op2, 
 				  target, unsignedp);
-        if (temp == 0)
-          abort ();
+        gcc_assert (temp);
         return temp;
       }
 

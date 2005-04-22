@@ -475,9 +475,9 @@ from the machine description file `md'.  */\n\n");
       printf ("      break;\n\n");
     }
 
-  /* This should never be reached.  Note that we would also reach this abort
-   if we tried to extract something whose INSN_CODE was a DEFINE_EXPAND or
-   DEFINE_SPLIT, but that is correct.  */
+  /* This should never be reached.  Note that we would also reach here
+     if we tried to extract something whose INSN_CODE was a
+     DEFINE_EXPAND or DEFINE_SPLIT, but that is correct.  */
   printf ("    default:\n      gcc_unreachable ();\n");
 
   printf ("    }\n}\n");

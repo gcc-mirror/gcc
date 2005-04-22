@@ -4438,7 +4438,7 @@ copy_object (void)
 
 
 
-  /* Abort if the symbol table is not last.  */
+  /* The symbol table should be last.  */
   if (max_file_offset != (unsigned long) stat_buf.st_size)
     fatal ("symbol table is not last (symbol table ends at %ld, .o ends at %ld",
 	   max_file_offset,
@@ -4940,7 +4940,7 @@ pfatal_with_name (const char *msg)
 }
 
 
-/* Procedure to abort with an out of bounds error message.  It has
+/* Procedure to die with an out of bounds error message.  It has
    type int, so it can be used with an ?: expression within the
    ORIG_xxx macros, but the function never returns.  */
 

@@ -9283,7 +9283,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 
 #ifdef ENABLE_CHECKING
       /* Otherwise this is a generic code; we should just lists all of
-	 these explicitly.  Aborting means we forgot one.  */
+	 these explicitly.  We forgot one.  */
       gcc_unreachable ();
 #else
       /* In a release build, we want to degrade gracefully: better to
@@ -10583,7 +10583,7 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
      trees (in the case of java, they simply have no block tree, in some other
      languages).  For these functions, there is nothing we can really do to
      output correct debug info for inlined functions in all cases.  Rather
-     than abort, we'll just produce deficient debug info now, in that we will
+     than die, we'll just produce deficient debug info now, in that we will
      have variables without a proper abstract origin.  In the future, when all
      functions are lowered, we should re-add a gcc_assert (origin_die)
      here.  */
@@ -12540,7 +12540,7 @@ is_redundant_typedef (tree decl)
   return 0;
 }
 
-/* Returns the DIE for decl or aborts.  */
+/* Returns the DIE for decl.  A DIE will always be returned.  */
 
 static dw_die_ref
 force_decl_die (tree decl)
@@ -12593,8 +12593,7 @@ force_decl_die (tree decl)
 	  gcc_unreachable ();
 	}
 
-      /* See if we can find the die for this deci now.
-	 If not then abort.  */
+      /* We should be able to find the DIE now.  */
       if (!decl_die)
 	decl_die = lookup_decl_die (decl);
       gcc_assert (decl_die);
@@ -12603,7 +12602,7 @@ force_decl_die (tree decl)
   return decl_die;
 }
 
-/* Returns the DIE for decl or aborts.  */
+/* Returns the DIE for TYPE.  A DIE is always returned.  */
 
 static dw_die_ref
 force_type_die (tree type)
