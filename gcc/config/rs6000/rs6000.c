@@ -9011,11 +9011,21 @@ rs6000_init_libfuncs (void)
 	  set_conv_libfunc (ufix_optab, SImode, TFmode, "_quitrunc");
 	}
 
-      /* Standard AIX/Darwin/64-bit SVR4 quad floating point routines.  */
-      set_optab_libfunc (add_optab, TFmode, "__gcc_qadd");
-      set_optab_libfunc (sub_optab, TFmode, "__gcc_qsub");
-      set_optab_libfunc (smul_optab, TFmode, "__gcc_qmul");
-      set_optab_libfunc (sdiv_optab, TFmode, "__gcc_qdiv");
+      /* AIX/Darwin/64-bit Linux quad floating point routines.  */
+      if (!TARGET_XL_COMPAT)
+	{
+	  set_optab_libfunc (add_optab, TFmode, "__gcc_qadd");
+	  set_optab_libfunc (sub_optab, TFmode, "__gcc_qsub");
+	  set_optab_libfunc (smul_optab, TFmode, "__gcc_qmul");
+	  set_optab_libfunc (sdiv_optab, TFmode, "__gcc_qdiv");
+	}
+      else
+	{
+	  set_optab_libfunc (add_optab, TFmode, "_xlqadd");
+	  set_optab_libfunc (sub_optab, TFmode, "_xlqsub");
+	  set_optab_libfunc (smul_optab, TFmode, "_xlqmul");
+	  set_optab_libfunc (sdiv_optab, TFmode, "_xlqdiv");
+	}
     }
   else
     {
