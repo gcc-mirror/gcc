@@ -71,14 +71,14 @@ public class PrivateKeyUsagePeriod extends Extension.Value
       val = der.read();
     if (val.getTagClass() == DER.APPLICATION || val.getTag() == 0)
       {
-        notBefore = (Date) val.getValue();
+        notBefore = (Date) val.getValueAs (DER.GENERALIZED_TIME);
         val = der.read();
       }
     else
       notBefore = null;
     if (val.getTagClass() == DER.APPLICATION || val.getTag() == 1)
       {
-        notAfter = (Date) val.getValue();
+        notAfter = (Date) val.getValueAs (DER.GENERALIZED_TIME);
       }
     else
       notAfter = null;

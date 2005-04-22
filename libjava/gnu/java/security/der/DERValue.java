@@ -119,6 +119,13 @@ public class DERValue implements DER
     return value;
   }
 
+  public Object getValueAs (final int derType) throws IOException
+  {
+    byte[] encoded = getEncoded ();
+    encoded[0] = (byte) derType;
+    return DERReader.read (encoded).getValue ();
+  }
+
   public byte[] getEncoded()
   {
     if (encoded == null)
