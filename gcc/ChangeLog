@@ -1,3 +1,9 @@
+2005-04-22  Michael Matz  <matz@suse.de>
+
+	PR middle-end/20973
+	* reload.c (push_reload, find_dummy_reload): Check for uninitialized
+	pseudos.
+
 2005-04-22  David Edelsohn  <edelsohn@gnu.org>
 
 	Backport from mainline.
