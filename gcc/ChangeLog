@@ -1,3 +1,16 @@
+2005-04-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lambda-code.c: Define VEC(int,heap), VEC(lambda_loop,heap).
+	(gcc_tree_to_linear_expression): Convert to heap allocated
+	vectors.
+	(gcc_loop_to_lambda_loop, gcc_loopnest_to_lambda_loopnest,
+	lbv_to_gcc_expression, lle_to_gcc_expression,
+	lambda_loopnest_to_gcc_loopnest, can_convert_to_perfect_nest, 
+	perfect_nestify): Likewise.
+	lambda.h (gcc_loopnest_to_lambda_loopnest,
+	lambda_loopnest_to_gcc_loopnest): Likewise.
+	tree-loop-linear.c (linear_transform_loops): Likewise.
+
 2005-04-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/predicates.md (arith_double_operand): Use
