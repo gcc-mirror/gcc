@@ -1,3 +1,11 @@
+2005-04-22  Casey Marshall <csm@gnu.org>
+
+	* gnu/java/security/der/DERValue.java
+	(getValueAs): new method.
+	* gnu/java/security/x509/ext/PrivateKeyUsagePeriod.java
+	(<init>): read both dates with 'DERValue.getValueAs', with
+	'GENERALIZED_TIME' as the argument.
+
 2005-04-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gnu/gcj/runtime/NameFinder.java (close): IN, OUT, and PROC can all
