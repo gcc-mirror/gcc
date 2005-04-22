@@ -4486,6 +4486,9 @@ find_decl_and_mark_needed (tree decl, tree target)
 static void
 do_assemble_alias (tree decl, tree target ATTRIBUTE_UNUSED)
 {
+  if (TREE_ASM_WRITTEN (decl))
+    return;
+
   TREE_ASM_WRITTEN (decl) = 1;
   TREE_ASM_WRITTEN (DECL_ASSEMBLER_NAME (decl)) = 1;
 

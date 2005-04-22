@@ -1,3 +1,8 @@
+2005-04-22  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* varasm.c (do_assemble_alias): Return early if TREE_ASM_WRITTEN
+	(decl).
+
 2005-04-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/i386/i386.md (length_immediate): Use gcc_assert or
