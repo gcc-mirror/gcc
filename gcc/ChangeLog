@@ -1,11 +1,38 @@
+2005-04-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/i386/i386.md (length_immediate): Use gcc_assert or
+	gcc_unreachable, as appropriate.
+	(*movsi_1, *movqi_1, reload_outqi, *movdi_1_rex64, *pushsf,
+	*pushsf_rex64, *truncxfsf2_mixed, *truncxfsf2_i387,
+	*truncxfdf2_mixed, *truncxfdf2_i387, *adddi_1_rex64,
+	*adddi_2_rex64, *adddi_3_rex64, *adddi_4_rex64, *adddi_5_rex64,
+	*addsi_1, addsi_1_zext, *addsi_2, *addsi_2_zext, *addsi_3,
+	*addsi_3_zext, *addsi_4, *addsi_5, *addhi_1_lea, *addhi_1,
+	*addhi_2, *addhi_3, *addhi_4, *addhi_5, *addqi_1_lea, *addqi_1,
+	*addqi_1_slp, *addqi_2, *addqi_3, *addqi_4, *addqi_5, addqi_ext_1,
+	*addqi_ext_1_rex64, *anddi_1_rex64, *andsi_1, *andhi_1,
+	*ashldi3_1_rex64, *ashldi3_cmp_rex64, *ashlsi3_1, *ashlsi3_1_zext,
+	*ashlsi3_cmp, *ashlsi3_cmp_zext, *ashlhi3_1_lea, *ashlhi3_1,
+	*ashlhi3_cmp, *ashlqi3_1_lea, *ashlqi3_1, *ashlqi3_cmp,
+	pro_epilogue_adjust_stack_1, pro_epilogue_adjust_stack_rex64,
+	pro_epilogue_adjust_stack_rex64_2, prefetch, *prefetch_sse,
+	*prefetch_sse_rex): Likewise.
+	* config/i386/predicates.md (x86_64_immediate_operand,
+	x86_64_zext_immediate_operand, symbolic_operand,
+	no_seg_address_operand, aligned_operand,
+	memory_displacement_operand): Likewise.
+	* config/i386/sse.md (*mov<mode>_internal,
+	*movv2df_internal): Likewise.
+
 2005-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (ipa.o, ipa-inline.o): New files.
 	* cgraph.h (cgraph_remove_unreachable_nodes, cgraph_postorder,
 	cgraph_decide_inlining_incrementally, cgraph_clone_inlined_nodes,
 	cgraph_mark_inline_edge, cgraph_default_inline_p): Declare.
-	* cgraphunit.c (cgraph_default_inline_p, cgraph_decide_inlining_incrementally, 
-	ncalls_inlined, nfunctions_inlined, initial_insns, overall_insns,
+	* cgraphunit.c (cgraph_default_inline_p,
+	cgraph_decide_inlining_incrementally,  ncalls_inlined,
+	nfunctions_inlined, initial_insns, overall_insns, 
 	cgraph_estimate_size_after_inlining, cgraph_estimate_growth,
 	cgraph_clone_inlined_nodes, cgraph_mark_inline_edge,
 	cgraph_mark_inline, cgraph_check_inline_limits,

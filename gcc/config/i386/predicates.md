@@ -195,7 +195,7 @@
       break;
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
 
   return 0;
@@ -275,7 +275,7 @@
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return 0;
 })
@@ -359,7 +359,7 @@
       return 0;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 })
 
@@ -656,8 +656,10 @@
   (match_operand 0 "address_operand")
 {
   struct ix86_address parts;
-  if (! ix86_decompose_address (op, &parts))
-    abort ();
+  int ok;
+
+  ok = ix86_decompose_address (op, &parts);
+  gcc_assert (ok);
   return parts.seg == SEG_DEFAULT;
 })
 
@@ -666,6 +668,7 @@
   (match_operand 0 "general_operand")
 {
   struct ix86_address parts;
+  int ok;
 
   /* Registers and immediate operands are always "aligned".  */
   if (GET_CODE (op) != MEM)
@@ -682,8 +685,8 @@
     return 1;
 
   /* Decode the address.  */
-  if (!ix86_decompose_address (op, &parts))
-    abort ();
+  ok = ix86_decompose_address (op, &parts);
+  gcc_assert (ok);
 
   /* Look for some component that isn't known to be aligned.  */
   if (parts.index)
@@ -712,8 +715,10 @@
   (match_operand 0 "memory_operand")
 {
   struct ix86_address parts;
-  if (!ix86_decompose_address (XEXP (op, 0), &parts))
-    abort ();
+  int ok;
+
+  ok = ix86_decompose_address (XEXP (op, 0), &parts);
+  gcc_assert (ok);
   return parts.disp != NULL_RTX;
 })
 
