@@ -1,3 +1,7 @@
+2005-04-22  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/weak/weak-13.c: New test.
+
 2005-04-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* lib/target-supports.exp (check_effective_target_sync_int_long):
