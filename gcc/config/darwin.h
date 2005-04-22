@@ -646,7 +646,6 @@ SECTION_FUNCTION (text_coal_section,				\
 		  in_text_coal,					\
 		  ".section __TEXT,__textcoal_nt,coalesced,"	\
 		    "pure_instructions", 0)			\
-/* APPLE LOCAL mainline 2005-04-15 <radar 4078608> */           \
 SECTION_FUNCTION (text_unlikely_coal_section,			\
 		  in_text_unlikely_coal,			\
 		  ".section __TEXT,__text_unlikely_coal,"	\
