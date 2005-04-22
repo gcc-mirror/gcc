@@ -1,3 +1,9 @@
+2005-04-22  Anthony Green  <green@redhat.com>
+
+	* jni.cc (natrehash): Don't bother clearing memory again.
+	* interpret.cc (do_allocate_static_fields): Ditto.
+	* java/lang/natString.cc (rehash): Ditto.
+
 2005-04-22  Roman Kennke  <roman@kennke.org>
 
 	* javax/swing/plaf/basic/BasicLookAndFeel.java

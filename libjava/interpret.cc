@@ -3751,7 +3751,6 @@ _Jv_InterpreterEngine::do_allocate_static_fields (jclass klass,
   _Jv_InterpClass *iclass = (_Jv_InterpClass *) klass->aux_info;
 
   char *static_data = (char *) _Jv_AllocBytes (static_size);
-  memset (static_data, 0, static_size);
 
   for (int i = 0; i < klass->field_count; i++)
     {
