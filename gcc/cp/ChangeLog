@@ -1,3 +1,9 @@
+2005-04-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/21087
+	* name-lookup.c (push_overloaded_decl): Do not overload with
+	non-duplicate anticipated built-in.
+
 2005-04-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.h (THROW_NAME, AUTO_VTABLE_NAME, AUTO_TEMP_FORMAT,
