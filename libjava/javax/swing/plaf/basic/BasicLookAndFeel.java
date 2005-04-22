@@ -244,7 +244,14 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "AbstractUndoableEdit.redoText", "Redo",
 
       "Button.background", new ColorUIResource(Color.lightGray),
-      "Button.border", BorderUIResource.getEtchedBorderUIResource(),
+      "Button.border",
+      new UIDefaults.LazyValue() 
+      {
+        public Object createValue(UIDefaults table)
+        {
+          return BasicBorders.getButtonBorder();
+        }
+      },
       "Button.darkShadow", new ColorUIResource(Color.darkGray),
       "Button.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
         "SPACE",  "pressed",

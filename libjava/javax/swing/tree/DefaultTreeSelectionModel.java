@@ -116,7 +116,7 @@ public class DefaultTreeSelectionModel
    */
   public DefaultTreeSelectionModel()
   {
-    // TODO
+    setSelectionMode(DISCONTIGUOUS_TREE_SELECTION);
   }
 
   /**
@@ -187,7 +187,7 @@ public class DefaultTreeSelectionModel
    */
   public RowMapper getRowMapper()
   {
-    return null; // TODO
+    return rowMapper;
   }
 
   /**
@@ -202,9 +202,9 @@ public class DefaultTreeSelectionModel
    * @see {@link #CONTIGUOUS_TREE_SELECTION}
    * @see {@link #DISCONTIGUOUS_TREE_SELECTION}
    */
-  public void setSelectionMode(int value0)
+  public void setSelectionMode(int mode)
   {
-    // TODO
+    selectionMode = mode;
   }
 
   /**
@@ -219,7 +219,7 @@ public class DefaultTreeSelectionModel
    */
   public int getSelectionMode()
   {
-    return 0; // TODO
+    return selectionMode;
   }
 
   /**
@@ -311,7 +311,10 @@ public class DefaultTreeSelectionModel
    */
   public TreePath getSelectionPath()
   {
-    return null; // TODO
+    if ((selection == null) || (selection.length == 0))
+      return null;
+    else
+      return selection[0];
   }
 
   /**
@@ -321,7 +324,7 @@ public class DefaultTreeSelectionModel
    */
   public TreePath[] getSelectionPaths()
   {
-    return null; // TODO
+    return selection;
   }
 
   /**
@@ -331,7 +334,10 @@ public class DefaultTreeSelectionModel
    */
   public int getSelectionCount()
   {
-    return 0; // TODO
+    if (selection == null)
+      return 0;
+    else
+      return selection.length;
   }
 
   /**
@@ -355,7 +361,7 @@ public class DefaultTreeSelectionModel
    */
   public boolean isSelectionEmpty()
   {
-    return false; // TODO
+    return ((selection == null) || (selection.length == 0));
   }
 
   /**
@@ -432,7 +438,10 @@ public class DefaultTreeSelectionModel
    */
   public int[] getSelectionRows()
   {
-    return null; // TODO
+    if (rowMapper == null)
+      return null;
+    else
+      return rowMapper.getRowsForPaths(selection);
   }
 
   /**
@@ -442,7 +451,15 @@ public class DefaultTreeSelectionModel
    */
   public int getMinSelectionRow()
   {
-    return 0; // TODO
+    if ((rowMapper == null) || (selection == null) || (selection.length == 0))
+      return -1;
+    else {
+      int[] rows = rowMapper.getRowsForPaths(selection);
+      int minRow = Integer.MAX_VALUE;
+      for (int index = 0; index < rows.length; index++)
+        minRow = Math.min(minRow, rows[index]);
+      return minRow;
+    }
   }
 
   /**
@@ -452,7 +469,15 @@ public class DefaultTreeSelectionModel
    */
   public int getMaxSelectionRow()
   {
-    return 0; // TODO
+    if ((rowMapper == null) || (selection == null) || (selection.length == 0))
+      return -1;
+    else {
+      int[] rows = rowMapper.getRowsForPaths(selection);
+      int maxRow = -1;
+      for (int index = 0; index < rows.length; index++)
+        maxRow = Math.max(maxRow, rows[index]);
+      return maxRow;
+    }
   }
 
   /**
@@ -482,7 +507,10 @@ public class DefaultTreeSelectionModel
    */
   public int getLeadSelectionRow()
   {
-    return 0; // TODO
+    if ((rowMapper == null) || (leadPath == null))
+      return -1;
+    else
+      return rowMapper.getRowsForPaths(new TreePath[]{ leadPath })[0];
   }
 
   /**
@@ -491,7 +519,7 @@ public class DefaultTreeSelectionModel
    */
   public TreePath getLeadSelectionPath()
   {
-    return null; // TODO
+    return leadPath;
   }
 
   /**

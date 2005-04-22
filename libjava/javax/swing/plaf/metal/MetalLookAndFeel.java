@@ -92,6 +92,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
     if (LAF_defaults == null)
       LAF_defaults = super.getDefaults();
 
+    // add custom theme entries to the table
+    theme.addCustomEntriesToTable(LAF_defaults);
+    
     // Returns the default values for this look and feel. 
     return LAF_defaults;
   }
