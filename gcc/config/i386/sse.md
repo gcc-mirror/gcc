@@ -75,7 +75,7 @@
       else
 	return "movdqa\t{%1, %0|%0, %1}";
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "sselog1,ssemov,ssemov")
@@ -161,7 +161,7 @@
       else
 	return "movapd\t{%1, %0|%0, %1}";
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "sselog1,ssemov,ssemov")
