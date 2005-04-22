@@ -125,7 +125,6 @@ rehash ()
     {
       strhash_size = 1024;
       strhash = (jstring *) _Jv_AllocBytes (strhash_size * sizeof (jstring));
-      memset (strhash, 0, strhash_size * sizeof (jstring));
     }
   else
     {
@@ -133,7 +132,6 @@ rehash ()
       jstring* ptr = strhash + i;
       int nsize = strhash_size * 2;
       jstring *next = (jstring *) _Jv_AllocBytes (nsize * sizeof (jstring));
-      memset (next, 0, nsize * sizeof (jstring));
 
       while (--i >= 0)
 	{
