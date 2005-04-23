@@ -2,6 +2,11 @@
 
 	* config.sub: Update from master copy.
 
+2005-04-21  Mike Stump  <mrs@apple.com>
+
+	* MAINTAINERS: Add self as Objective-C/Objective-C++ maintainer.
+	* MAINTAINERS: Add Zem as Objective-C++ maintainer.
+
 2005-04-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.in <crisv32-*-*, cris-*-*>: New local variable
