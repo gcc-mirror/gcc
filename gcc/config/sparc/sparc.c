@@ -7897,12 +7897,12 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
       return true;
 
     case CONST_DOUBLE:
-      if (GET_MODE (x) == DImode
-	  && ((XINT (x, 3) == 0
-	       && (unsigned HOST_WIDE_INT) XINT (x, 2) < 0x1000)
-	      || (XINT (x, 3) == -1
-		  && XINT (x, 2) < 0
-		  && XINT (x, 2) >= -0x1000)))
+      if (GET_MODE (x) == VOIDmode
+	  && ((CONST_DOUBLE_HIGH (x) == 0
+	       && CONST_DOUBLE_LOW (x) < 0x1000)
+	      || (CONST_DOUBLE_HIGH (x) == -1
+		  && CONST_DOUBLE_LOW (x) < 0
+		  && CONST_DOUBLE_LOW (x) >= -0x1000)))
 	*total = 0;
       else
 	*total = 8;
@@ -7960,11 +7960,11 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
 		    nbits++;
 		}
 	      else if (GET_CODE (XEXP (x, 1)) == CONST_DOUBLE
-		       && GET_MODE (XEXP (x, 1)) == DImode)
+		       && GET_MODE (XEXP (x, 1)) == VOIDmode)
 		{
 		  rtx x1 = XEXP (x, 1);
-		  unsigned HOST_WIDE_INT value1 = XINT (x1, 2);
-		  unsigned HOST_WIDE_INT value2 = XINT (x1, 3);
+		  unsigned HOST_WIDE_INT value1 = CONST_DOUBLE_LOW (x1);
+		  unsigned HOST_WIDE_INT value2 = CONST_DOUBLE_HIGH (x1);
 
 		  for (nbits = 0; value1 != 0; value1 &= value1 - 1)
 		    nbits++;
