@@ -1,3 +1,8 @@
+2005-04-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* haifa-sched.c (schedule_block): Fix thinko in previous
+	assertification patch.
+
 2005-04-23  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (hppa[12]*-*-hpux10*): Add pa/pa-hpux.opt to

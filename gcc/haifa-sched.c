@@ -2108,7 +2108,7 @@ schedule_block (int b, int rgn_n_insns)
 
   /* Sanity check -- queue must be empty now.  Meaningless if region has
      multiple bbs.  */
-  gcc_assert (!current_sched_info->queue_must_finish_empty || q_size);
+  gcc_assert (!current_sched_info->queue_must_finish_empty || !q_size);
 
   /* Update head/tail boundaries.  */
   head = NEXT_INSN (prev_head);
