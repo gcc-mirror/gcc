@@ -1,3 +1,16 @@
+2005-04-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.md (sync_add<mode>_internal,
+	sync_addshort_internal, sync_sub<mode>_internal, sync_andsi_internal,
+	sync_anddi_internal, sync_boolsi_internal, sync_booldi_internal,
+	sync_boolc<mode>_internal, sync_boolc<mode>_internal2,
+	sync_boolcc<mode>_internal, sync_lock_test_and_set<mode>): Use
+	"bne- $-xxx" rather than local labels.
+	(sync_lock_release<mode>): Add second operand.
+	(lwsync): Use .long rather than a more meaningful opcode.
+	* doc/md.texi (Standard Names): Add description of second
+	parameter to sync_lock_test_and_set.
+
 2005-04-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21088
