@@ -1,3 +1,40 @@
+2005-04-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.gcc <cris-*>: Specify .opt files.
+	* config/cris/cris.opt, config/cris/elf.opt, config/cris/aout.opt,
+	config/cris/linux.opt: New files.
+	* config/cris/aout.h (CRIS_SUBTARGET_SWITCHES)
+	(CRIS_SUBTARGET_LONG_OPTIONS): Don't define.
+	(TARGET_ELF): Override to 0.
+	(CRIS_SUBTARGET_HANDLE_OPTION): Override to handle -melinux and
+	-melinux-stacksize=N.
+	* config/cris/cris.c: (cris_handle_option): New function.
+	(TARGET_DEFAULT_TARGET_FLAGS): Override.
+	(TARGET_HANDLE_OPTION): Override to cris_handle_option.
+	(cris_override_options): Use MASK_*, not TARGET_MASK_*.
+	* config/cris/cris.h (TARGET_MASK_SVINTO, TARGET_SVINTO,
+	(TARGET_MASK_CCINIT, TARGET_CCINIT, TARGET_MASK_PDEBUG)
+	(TARGET_PDEBUG, TARGET_MASK_SIDE_EFFECT_PREFIXES)
+	(TARGET_SIDE_EFFECT_PREFIXES, TARGET_MASK_EXPAND_MUL)
+	(TARGET_EXPAND_MUL, TARGET_MASK_STACK_ALIGN, TARGET_STACK_ALIGN)
+	(TARGET_MASK_CONST_ALIGN, TARGET_CONST_ALIGN)
+	(TARGET_MASK_DATA_ALIGN, TARGET_DATA_ALIGN)
+	(TARGET_MASK_PROLOGUE_EPILOGUE, TARGET_PROLOGUE_EPILOGUE)
+	(TARGET_MASK_ETRAX4_ADD, TARGET_ETRAX4_ADD)
+	(TARGET_MASK_ALIGN_BY_32, TARGET_ALIGN_BY_32, TARGET_MASK_ELF)
+	(TARGET_ELF, TARGET_MASK_LINUX, TARGET_LINUX)
+	(TARGET_MASK_AVOID_GOTPLT, TARGET_AVOID_GOTPLT)
+	(TARGET_MASK_MUL_BUG, TARGET_MUL_BUG, TARGET_SWITCHES)
+	(CRIS_SUBTARGET_SWITCHES, TARGET_OPTIONS)
+	(CRIS_SUBTARGET_LONG_OPTIONS): Don't define.
+	(TARGET_LINUX): Define 0.
+	(TARGET_DEFAULT): Use MASK_*, not TARGET_MASK_*.
+	(CRIS_SUBTARGET_DEFAULT): Define to 0, not TARGET_MASK_ELF.
+	(CRIS_SUBTARGET_DEFAULT): New empty default macro.
+	* config/cris/linux.h (CRIS_SUBTARGET_SWITCHES): Don't define.
+	(TARGET_LINUX): Override to 1.
+	(CRIS_SUBTARGET_DEFAULT): Use MASK_*, not TARGET_MASK_*.
+
 2005-04-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* haifa-sched.c (schedule_block): Fix thinko in previous

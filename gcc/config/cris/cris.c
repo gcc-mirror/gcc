@@ -134,6 +134,8 @@ static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 static tree cris_md_asm_clobbers (tree, tree, tree);
 
+static bool cris_handle_option (size_t, const char *, int);
+
 /* This is the argument from the "-max-stack-stackframe=" option.  */
 const char *cris_max_stackframe_str;
 
@@ -200,6 +202,10 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_ARG_PARTIAL_BYTES cris_arg_partial_bytes
 #undef TARGET_MD_ASM_CLOBBERS
 #define TARGET_MD_ASM_CLOBBERS cris_md_asm_clobbers
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | CRIS_SUBTARGET_DEFAULT)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION cris_handle_option
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2032,6 +2038,77 @@ cris_got_symbol (rtx x)
   return 1;
 }
 
+/* TARGET_HANDLE_OPTION worker.  We just store the values into local
+   variables here.  Checks for correct semantics are in
+   cris_override_options.  */
+
+static bool
+cris_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_metrax100:
+      target_flags
+	|= (MASK_SVINTO
+	    + MASK_ETRAX4_ADD
+	    + MASK_ALIGN_BY_32);
+      break;
+
+    case OPT_mno_etrax100:
+      target_flags
+	&= ~(MASK_SVINTO
+	     + MASK_ETRAX4_ADD
+	     + MASK_ALIGN_BY_32);
+      break;
+
+    case OPT_m32_bit:
+    case OPT_m32bit:
+      target_flags
+	|= (MASK_STACK_ALIGN
+	    + MASK_CONST_ALIGN
+	    + MASK_DATA_ALIGN
+	    + MASK_ALIGN_BY_32);
+      break;
+
+    case OPT_m16_bit:
+    case OPT_m16bit:
+      target_flags
+	|= (MASK_STACK_ALIGN
+	    + MASK_CONST_ALIGN
+	    + MASK_DATA_ALIGN);
+      break;
+
+    case OPT_m8_bit:
+    case OPT_m8bit:
+      target_flags
+	&= ~(MASK_STACK_ALIGN
+	     + MASK_CONST_ALIGN
+	     + MASK_DATA_ALIGN);
+      break;
+
+    case OPT_max_stackframe_:
+    case OPT_mmax_stackframe_:
+      cris_max_stackframe_str = arg;
+      break;
+
+    case OPT_march_:
+    case OPT_mcpu_:
+      cris_cpu_str = arg;
+      break;
+
+    case OPT_mtune_:
+      cris_tune_str = arg;
+      break;
+
+    default:
+      break;
+    }
+
+  CRIS_SUBTARGET_HANDLE_OPTION(code, arg, value);
+
+  return true;
+}
+
 /* The OVERRIDE_OPTIONS worker.
    As is the norm, this also parses -mfoo=bar type parameters.  */
 
@@ -2077,14 +2154,14 @@ cris_override_options (void)
 
       /* Set the target flags.  */
       if (cris_cpu_version >= CRIS_CPU_ETRAX4)
-	target_flags |= TARGET_MASK_ETRAX4_ADD;
+	target_flags |= MASK_ETRAX4_ADD;
 
       /* If this is Svinto or higher, align for 32 bit accesses.  */
       if (cris_cpu_version >= CRIS_CPU_SVINTO)
 	target_flags
-	  |= (TARGET_MASK_SVINTO | TARGET_MASK_ALIGN_BY_32
-	      | TARGET_MASK_STACK_ALIGN | TARGET_MASK_CONST_ALIGN
-	      | TARGET_MASK_DATA_ALIGN);
+	  |= (MASK_SVINTO | MASK_ALIGN_BY_32
+	      | MASK_STACK_ALIGN | MASK_CONST_ALIGN
+	      | MASK_DATA_ALIGN);
 
       /* Note that we do not add new flags when it can be completely
 	 described with a macro that uses -mcpu=X.  So
@@ -2115,8 +2192,8 @@ cris_override_options (void)
 	/* We have currently nothing more to tune than alignment for
 	   memory accesses.  */
 	target_flags
-	  |= (TARGET_MASK_STACK_ALIGN | TARGET_MASK_CONST_ALIGN
-	      | TARGET_MASK_DATA_ALIGN | TARGET_MASK_ALIGN_BY_32);
+	  |= (MASK_STACK_ALIGN | MASK_CONST_ALIGN
+	      | MASK_DATA_ALIGN | MASK_ALIGN_BY_32);
     }
 
   if (flag_pic)
