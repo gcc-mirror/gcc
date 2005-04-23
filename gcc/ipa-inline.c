@@ -30,7 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
     cgraph_mark_inline implementation
 
-      This function allow to mark given call inline and performs necessary
+      This function allows to mark given call inline and performs necessary
       modifications of cgraph (production of the clones and updating overall
       statistics)
 

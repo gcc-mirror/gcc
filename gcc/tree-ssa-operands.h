@@ -100,7 +100,7 @@ typedef struct v_must_def_optype_d GTY(())
 
 typedef v_must_def_optype_t *v_must_def_optype;
 
-/* This represents the operand cache fora stmt.  */
+/* This represents the operand cache for a stmt.  */
 typedef struct stmt_operands_d GTY(())
 {
   /* Statement operands.  */
