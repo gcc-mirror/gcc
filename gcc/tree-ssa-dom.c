@@ -96,19 +96,6 @@ static htab_t avail_exprs;
    marker.  */
 static VEC(tree,heap) *avail_exprs_stack;
 
-/* Stack of trees used to restore the global currdefs to its original
-   state after completing optimization of a block and its dominator children.
-
-   An SSA_NAME indicates that the current definition of the underlying
-   variable should be set to the given SSA_NAME.
-
-   A _DECL node indicates that the underlying variable has no current
-   definition.
-
-   A NULL node is used to mark the last node associated with the
-   current block.  */
-static VEC(tree,heap) *block_defs_stack;
-
 /* Stack of statements we need to rescan during finalization for newly
    exposed variables.
 
@@ -295,8 +282,6 @@ static void dom_opt_initialize_block (struct dom_walk_data *, basic_block);
 static void propagate_to_outgoing_edges (struct dom_walk_data *, basic_block);
 static void remove_local_expressions_from_table (void);
 static void restore_vars_to_original_value (void);
-static void restore_currdefs_to_original_value (void);
-static void register_definitions_for_stmt (tree);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 static void restore_nonzero_vars_to_original_value (void);
 static inline bool unsafe_associative_fp_binop (tree);
@@ -376,14 +361,10 @@ tree_ssa_dominator_optimize (void)
 
   memset (&opt_stats, 0, sizeof (opt_stats));
 
-  for (i = 0; i < num_referenced_vars; i++)
-    var_ann (referenced_var (i))->current_def = NULL;
-
   /* Create our hash tables.  */
   avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free);
   vrp_data = htab_create (ceil_log2 (num_ssa_names), vrp_hash, vrp_eq, free);
   avail_exprs_stack = VEC_alloc (tree, heap, 20);
-  block_defs_stack = VEC_alloc (tree, heap, 20);
   const_and_copies_stack = VEC_alloc (tree, heap, 20);
   nonzero_vars_stack = VEC_alloc (tree, heap, 20);
   vrp_variables_stack = VEC_alloc (tree, heap, 20);
@@ -475,7 +456,7 @@ tree_ssa_dominator_optimize (void)
       if (cfg_altered)
         free_dominance_info (CDI_DOMINATORS);
 
-      cfg_altered |= cleanup_tree_cfg ();
+      cfg_altered = cleanup_tree_cfg ();
 
       if (rediscover_loops_after_threading)
 	{
@@ -499,9 +480,6 @@ tree_ssa_dominator_optimize (void)
       bitmap_clear (nonzero_vars);
       htab_empty (avail_exprs);
       htab_empty (vrp_data);
-
-      for (i = 0; i < num_referenced_vars; i++)
-	var_ann (referenced_var (i))->current_def = NULL;
 
       /* Finally, remove everything except invariants in SSA_NAME_VALUE.
 
@@ -545,7 +523,6 @@ tree_ssa_dominator_optimize (void)
   BITMAP_FREE (nonzero_vars);
   BITMAP_FREE (need_eh_cleanup);
   
-  VEC_free (tree, heap, block_defs_stack);
   VEC_free (tree, heap, avail_exprs_stack);
   VEC_free (tree, heap, const_and_copies_stack);
   VEC_free (tree, heap, nonzero_vars_stack);
@@ -579,8 +556,20 @@ struct tree_opt_pass pass_dominator =
 };
 
 
-/* We are exiting BB, see if the target block begins with a conditional
-   jump which has a known value when reached via BB.  */
+/* We are exiting E->src, see if E->dest ends with a conditional
+   jump which has a known value when reached via E. 
+
+   Special care is necessary if E is a back edge in the CFG as we
+   will have already recorded equivalences for E->dest into our
+   various tables, including the result of the conditional at
+   the end of E->dest.  Threading opportunities are severely
+   limited in that case to avoid short-circuiting the loop
+   incorrectly.
+
+   Note it is quite common for the first block inside a loop to
+   end with a conditional which is either always true or always
+   false when reached via the loop backedge.  Thus we do not want
+   to blindly disable threading across a loop backedge.  */
 
 static void
 thread_across_edge (struct dom_walk_data *walk_data, edge e)
@@ -589,15 +578,37 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
   tree stmt = NULL;
   tree phi;
 
-  /* Each PHI creates a temporary equivalence, record them.  */
+  /* If E->dest does not end with a conditional, then there is
+     nothing to do.  */
+  bsi = bsi_last (e->dest);
+  if (bsi_end_p (bsi)
+      || ! bsi_stmt (bsi)
+      || (TREE_CODE (bsi_stmt (bsi)) != COND_EXPR
+	  && TREE_CODE (bsi_stmt (bsi)) != GOTO_EXPR
+	  && TREE_CODE (bsi_stmt (bsi)) != SWITCH_EXPR))
+    return;
+
+  /* The basic idea here is to use whatever knowledge we have
+     from our dominator walk to simplify statements in E->dest,
+     with the ultimate goal being to simplify the conditional
+     at the end of E->dest.
+
+     Note that we must undo any changes we make to the underlying
+     statements as the simplifications we are making are control
+     flow sensitive (ie, the simplifications are valid when we 
+     traverse E, but may not be valid on other paths to E->dest.  */
+     
+  /* Each PHI creates a temporary equivalence, record them.  Again
+     these are context sensitive equivalences and will be removed
+     by our caller.  */
   for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
     {
       tree src = PHI_ARG_DEF_FROM_EDGE (phi, e);
       tree dst = PHI_RESULT (phi);
 
       /* If the desired argument is not the same as this PHI's result 
-	 and it is set by a PHI in this block, then we can not thread
-	 through this block.  */
+	 and it is set by a PHI in E->dest, then we can not thread
+	 through E->dest.  */
       if (src != dst
 	  && TREE_CODE (src) == SSA_NAME
 	  && TREE_CODE (SSA_NAME_DEF_STMT (src)) == PHI_NODE
@@ -605,12 +616,26 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	return;
 
       record_const_or_copy (dst, src);
-      register_new_def (dst, &block_defs_stack);
     }
 
+  /* Try to simplify each statement in E->dest, ultimately leading to
+     a simplification of the COND_EXPR at the end of E->dest.
+
+     We might consider marking just those statements which ultimately
+     feed the COND_EXPR.  It's not clear if the overhead of bookkeeping
+     would be recovered by trying to simplify fewer statements.
+
+     If we are able to simplify a statement into the form
+     SSA_NAME = (SSA_NAME | gimple invariant), then we can record
+     a context sensitive equivalency which may help us simplify
+     later statements in E->dest. 
+
+     Failure to simplify into the form above merely means that the
+     statement provides no equivalences to help simplify later
+     statements.  This does not prevent threading through E->dest.  */
   for (bsi = bsi_start (e->dest); ! bsi_end_p (bsi); bsi_next (&bsi))
     {
-      tree lhs, cached_lhs;
+      tree cached_lhs;
 
       stmt = bsi_stmt (bsi);
 
@@ -618,32 +643,35 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
       if (IS_EMPTY_STMT (stmt) || TREE_CODE (stmt) == LABEL_EXPR)
 	continue;
 
+      /* Safely handle threading across loop backedges.  This is
+	 over conservative, but still allows us to capture the
+	 majority of the cases where we can thread across a loop
+	 backedge.  */
+      if ((e->flags & EDGE_DFS_BACK) != 0
+	  && TREE_CODE (stmt) != COND_EXPR
+	  && TREE_CODE (stmt) != SWITCH_EXPR)
+	return;
+
+      /* If the statement has volatile operands, then we assume we
+	 can not thread through this block.  This is overly
+	 conservative in some ways.  */
+      if (TREE_CODE (stmt) == ASM_EXPR && ASM_VOLATILE_P (stmt))
+	return;
+
       /* If this is not a MODIFY_EXPR which sets an SSA_NAME to a new
-	 value, then stop our search here.  Ideally when we stop a
-	 search we stop on a COND_EXPR or SWITCH_EXPR.  */
+	 value, then do not try to simplify this statement as it will
+	 not simplify in any way that is helpful for jump threading.  */
       if (TREE_CODE (stmt) != MODIFY_EXPR
 	  || TREE_CODE (TREE_OPERAND (stmt, 0)) != SSA_NAME)
-	break;
+	continue;
 
       /* At this point we have a statement which assigns an RHS to an
-	 SSA_VAR on the LHS.  We want to prove that the RHS is already
-	 available and that its value is held in the current definition
-	 of the LHS -- meaning that this assignment is a NOP when
-	 reached via edge E.  */
+	 SSA_VAR on the LHS.  We want to try and simplify this statement
+	 to expose more context sensitive equivalences which in turn may
+	 allow us to simplify the condition at the end of the loop.  */
       if (TREE_CODE (TREE_OPERAND (stmt, 1)) == SSA_NAME)
 	cached_lhs = TREE_OPERAND (stmt, 1);
       else
-	cached_lhs = lookup_avail_expr (stmt, false);
-
-      lhs = TREE_OPERAND (stmt, 0);
-
-      /* This can happen if we thread around to the start of a loop.  */
-      if (lhs == cached_lhs)
-	break;
-
-      /* If we did not find RHS in the hash table, then try again after
-	 temporarily const/copy propagating the operands.  */
-      if (!cached_lhs)
 	{
 	  /* Copy the operands.  */
 	  stmt_ann_t ann = stmt_ann (stmt);
@@ -678,8 +706,13 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 		SET_VUSE_OP (vuses, i, tmp);
 	    }
 
-	  /* Try to lookup the new expression.  */
-	  cached_lhs = lookup_avail_expr (stmt, false);
+	  /* Try to fold/lookup the new expression.  Inserting the
+	     expression into the hash table is unlikely to help
+	     simplify anything later, so just query the hashtable.  */
+	  cached_lhs = fold (TREE_OPERAND (stmt, 1));
+	  if (TREE_CODE (cached_lhs) != SSA_NAME
+	      && !is_gimple_min_invariant (cached_lhs))
+	    cached_lhs = lookup_avail_expr (stmt, false);
 
 	  /* Restore the statement's original uses/defs.  */
 	  for (i = 0; i < NUM_USES (uses); i++)
@@ -690,45 +723,22 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 
 	  free (uses_copy);
 	  free (vuses_copy);
-
-	  /* If we still did not find the expression in the hash table,
-	     then we can not ignore this statement.  */
-	  if (! cached_lhs)
-	    break;
 	}
 
-      /* If the expression in the hash table was not assigned to an
-	 SSA_NAME, then we can not ignore this statement.  */
-      if (TREE_CODE (cached_lhs) != SSA_NAME)
-	break;
-
-      /* If we have different underlying variables, then we can not
-	 ignore this statement.  */
-      if (SSA_NAME_VAR (cached_lhs) != SSA_NAME_VAR (lhs))
-	break;
-
-      /* If CACHED_LHS does not represent the current value of the underlying
-	 variable in CACHED_LHS/LHS, then we can not ignore this statement.  */
-      if (var_ann (SSA_NAME_VAR (lhs))->current_def != cached_lhs)
-	break;
-
-      /* If we got here, then we can ignore this statement and continue
-	 walking through the statements in the block looking for a threadable
-	 COND_EXPR.
-
-	 We want to record an equivalence lhs = cache_lhs so that if
-	 the result of this statement is used later we can copy propagate
-	 suitably.  */
-      record_const_or_copy (lhs, cached_lhs);
-      register_new_def (lhs, &block_defs_stack);
+      /* Record the context sensitive equivalence if we were able
+	 to simplify this statement.  */
+      if (cached_lhs
+	  && (TREE_CODE (cached_lhs) == SSA_NAME
+	      || is_gimple_min_invariant (cached_lhs)))
+	record_const_or_copy (TREE_OPERAND (stmt, 0), cached_lhs);
     }
 
-  /* If we stopped at a COND_EXPR or SWITCH_EXPR, then see if we know which
-     arm will be taken.  */
+  /* If we stopped at a COND_EXPR or SWITCH_EXPR, see if we know which arm
+     will be taken.  */
   if (stmt
       && (TREE_CODE (stmt) == COND_EXPR
-	  || TREE_CODE (stmt) == SWITCH_EXPR
-	  || TREE_CODE (stmt) == GOTO_EXPR))
+	  || TREE_CODE (stmt) == GOTO_EXPR
+	  || TREE_CODE (stmt) == SWITCH_EXPR))
     {
       tree cond, cached_lhs;
 
@@ -802,7 +812,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	  cached_lhs = cond;
 	  cached_lhs = SSA_NAME_VALUE (cached_lhs);
 	  if (cached_lhs && ! is_gimple_min_invariant (cached_lhs))
-	    cached_lhs = 0;
+	    cached_lhs = NULL;
 	}
       else
 	cached_lhs = lookup_avail_expr (stmt, false);
@@ -851,7 +861,6 @@ dom_opt_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
   VEC_safe_push (tree, heap, avail_exprs_stack, NULL_TREE);
-  VEC_safe_push (tree, heap, block_defs_stack, NULL_TREE);
   VEC_safe_push (tree, heap, const_and_copies_stack, NULL_TREE);
   VEC_safe_push (tree, heap, nonzero_vars_stack, NULL_TREE);
   VEC_safe_push (tree, heap, vrp_variables_stack, NULL_TREE);
@@ -892,6 +901,11 @@ initialize_hash_element (tree expr, tree lhs, struct expr_hash_elt *element)
     {
       element->ann = stmt_ann (expr);
       element->rhs = TREE_OPERAND (TREE_OPERAND (expr, 0), 1);
+    }
+  else if (TREE_CODE (expr) == GOTO_EXPR)
+    {
+      element->ann = stmt_ann (expr);
+      element->rhs = GOTO_DESTINATION (expr);
     }
   else
     {
@@ -961,39 +975,6 @@ restore_vars_to_original_value (void)
     }
 }
 
-/* Similar to restore_vars_to_original_value, except that it restores 
-   CURRDEFS to its original value.  */
-static void
-restore_currdefs_to_original_value (void)
-{
-  /* Restore CURRDEFS to its original state.  */
-  while (VEC_length (tree, block_defs_stack) > 0)
-    {
-      tree tmp = VEC_pop (tree, block_defs_stack);
-      tree saved_def, var;
-
-      if (tmp == NULL_TREE)
-	break;
-
-      /* If we recorded an SSA_NAME, then make the SSA_NAME the current
-	 definition of its underlying variable.  If we recorded anything
-	 else, it must have been an _DECL node and its current reaching
-	 definition must have been NULL.  */
-      if (TREE_CODE (tmp) == SSA_NAME)
-	{
-	  saved_def = tmp;
-	  var = SSA_NAME_VAR (saved_def);
-	}
-      else
-	{
-	  saved_def = NULL;
-	  var = tmp;
-	}
-                                                                                
-      var_ann (var)->current_def = saved_def;
-    }
-}
-
 /* We have finished processing the dominator children of BB, perform
    any finalization actions in preparation for leaving this node in
    the dominator tree.  */
@@ -1051,7 +1032,6 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	     unwind any expressions related to the TRUE arm before processing
 	     the false arm below.  */
 	  VEC_safe_push (tree, heap, avail_exprs_stack, NULL_TREE);
-	  VEC_safe_push (tree, heap, block_defs_stack, NULL_TREE);
 	  VEC_safe_push (tree, heap, const_and_copies_stack, NULL_TREE);
 
 	  edge_info = true_edge->aux;
@@ -1064,15 +1044,8 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	      tree lhs = edge_info->lhs;
 	      tree rhs = edge_info->rhs;
 
-	      /* If we have a simple NAME = VALUE equivalency record it.
-		 Until the jump threading selection code improves, only
-		 do this if both the name and value are SSA_NAMEs with
-		 the same underlying variable to avoid missing threading
-		 opportunities.  */
-	      if (lhs
-		  && TREE_CODE (COND_EXPR_COND (last)) == SSA_NAME
-		  && TREE_CODE (edge_info->rhs) == SSA_NAME
-		  && SSA_NAME_VAR (lhs) == SSA_NAME_VAR (rhs))
+	      /* If we have a simple NAME = VALUE equivalency record it.  */
+	      if (lhs && TREE_CODE (lhs) == SSA_NAME)
 		record_const_or_copy (lhs, rhs);
 
 	      /* If we have 0 = COND or 1 = COND equivalences, record them
@@ -1094,7 +1067,6 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	     we threaded this edge.  */
 	  remove_local_expressions_from_table ();
 	  restore_vars_to_original_value ();
-	  restore_currdefs_to_original_value ();
 	}
 
       /* Similarly for the ELSE arm.  */
@@ -1114,13 +1086,8 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	      tree lhs = edge_info->lhs;
 	      tree rhs = edge_info->rhs;
 
-	      /* If we have a simple NAME = VALUE equivalency record it.
-		 Until the jump threading selection code improves, only
-		 do this if both the name and value are SSA_NAMEs with
-		 the same underlying variable to avoid missing threading
-		 opportunities.  */
-	      if (lhs
-		  && TREE_CODE (COND_EXPR_COND (last)) == SSA_NAME)
+	      /* If we have a simple NAME = VALUE equivalency record it.  */
+	      if (lhs && TREE_CODE (lhs) == SSA_NAME)
 		record_const_or_copy (lhs, rhs);
 
 	      /* If we have 0 = COND or 1 = COND equivalences, record them
@@ -1146,7 +1113,6 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
   remove_local_expressions_from_table ();
   restore_nonzero_vars_to_original_value ();
   restore_vars_to_original_value ();
-  restore_currdefs_to_original_value ();
 
   /* Remove VRP records associated with this basic block.  They are no
      longer valid.
@@ -1273,7 +1239,6 @@ record_equivalences_from_phis (basic_block bb)
       if (i == PHI_NUM_ARGS (phi))
 	bitmap_set_bit (nonzero_vars, SSA_NAME_VERSION (PHI_RESULT (phi)));
 
-      register_new_def (lhs, &block_defs_stack);
     }
 }
 
@@ -3075,8 +3040,6 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
 				   may_optimize_p,
 				   ann);
 
-  register_definitions_for_stmt (stmt);
-
   /* If STMT is a COND_EXPR and it was modified, then we may know
      where it goes.  If that is the case, then mark the CFG as altered.
 
@@ -3518,23 +3481,3 @@ avail_expr_eq (const void *p1, const void *p2)
 
   return false;
 }
-
-/* Given STMT and a pointer to the block local definitions BLOCK_DEFS_P,
-   register register all objects set by this statement into BLOCK_DEFS_P
-   and CURRDEFS.  */
-
-static void
-register_definitions_for_stmt (tree stmt)
-{
-  tree def;
-  ssa_op_iter iter;
-
-  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
-    {
-
-      /* FIXME: We shouldn't be registering new defs if the variable
-	 doesn't need to be renamed.  */
-      register_new_def (def, &block_defs_stack);
-    }
-}
-

@@ -1,3 +1,23 @@
+2005-04-22  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (block_defs_stack): Remove, no longer needed.
+	(restore_currdefs_to_original_value): Likewise.
+	(register_definitions_for_stmt): Likewise.
+	(tree_ssa_dominator_optimize): No longer initialize CURRENT_DEF
+	for each variable.  Do not allocate/free block_defs_stack either.
+	Do not iterate if we just thread jumps.  Only iterate if the
+	tree_cleanup_cfg does useful work (temporary).
+	(dom_opt_initialize_block): No longer push a marker on
+	BLOCK_DEFS_STACK.
+	(dom_opt_finalize_block): Removal call to restore currdefs.
+	Relax restrictions for recording edge equivalences.
+	(record_equivalences_from_phis): No longer need to track
+	CURRENT_DEF.
+	(optimize_stmt): Similarly.
+	(thread_across_edge): Simplify by removing the requirement that
+	statements in the block we are threading through must be nops.
+	(initialize_hash_element): Handle GOTO_EXPR.
+
 2005-04-22  David S. Miller  <davem@davemloft.net>
 
 	* sched-vis.c (print_value): Use CONST_DOUBLE_LOW and
