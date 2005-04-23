@@ -2259,7 +2259,7 @@ assemble_real (REAL_VALUE_TYPE d, enum machine_mode mode, unsigned int align)
 /* Given an expression EXP with a constant value,
    reduce it to the sum of an assembler symbol and an integer.
    Store them both in the structure *VALUE.
-   EXP must be reduceable.  */
+   EXP must be reducible.  */
 
 struct addr_const GTY(())
 {

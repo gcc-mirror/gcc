@@ -3135,7 +3135,7 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   if (x && GET_CODE (x) == SUBREG)
     x = alter_subreg (&x);
 
-  /* X must not be a psuedo reg.  */
+  /* X must not be a pseudo reg.  */
   gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
 
   PRINT_OPERAND (asm_out_file, x, code);
