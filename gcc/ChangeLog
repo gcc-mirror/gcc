@@ -1,3 +1,9 @@
+2005-04-23  Richard Henderson  <rth@redhat.com>
+
+	PR target/21099
+	* config/i386/i386.c (ix86_split_to_parts): Use proper mode when
+	simplifying CONST_VECTOR.
+
 2005-04-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-live.c (live_worklist): Take a stack allocated on
@@ -644,7 +650,7 @@
 	decode_addr_const): Likewise.
 
 2005-04-21 Alan Modra  <amodra@bigpond.net.au>
-           Fariborz Jahanian <fjahanian@apple.com>
+	   Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Fix size of
 	portion of argument passed in fpr.
@@ -1122,7 +1128,7 @@
 	* fold-const (fold_binary):  Fold ~X ^ ~ Y to X ^ Y.
 
 2005-04-20  Michael Pogue  <michael.pogue@sun.com>
-            Joseph S. Myers  <joseph@codesourcery.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c.opt (Wint-to-pointer-cast, Wpointer-to-int-cast): New options.
 	* c-typeck.c (build_c_cast): Check these options.
