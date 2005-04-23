@@ -1,3 +1,10 @@
+2005-04-23  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.c (machopic_indirection_name): Don't use
+	quotes needlessly.
+	(darwin_emit_unwind_label): Use user_label_prefix instead of
+	"_".
+
 2005-04-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* final.c, ipa-inline.c, varasm.c: Fix comment typos.

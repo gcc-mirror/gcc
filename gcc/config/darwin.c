@@ -302,43 +302,40 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   size_t namelen = strlen (name);
   machopic_indirection *p;
   void ** slot;
+  bool saw_star = false;
+  bool needs_quotes;
+  const char *suffix;
+  const char *prefix = user_label_prefix;
+  const char *quote = "";
   
-  /* Construct the name of the non-lazy pointer or stub.  */
-  if (stub_p)
+  if (name[0] == '*')
     {
-      int needs_quotes = name_needs_quotes (name);
-      buffer = alloca (strlen ("&L")
-		       + namelen
-		       + strlen (STUB_SUFFIX)
-		       + 2 /* possible quotes */
-		       + 1 /* '\0' */);
+      saw_star = true;
+      prefix = "";
+      ++name;
+      --namelen;
+    }
 
-      if (needs_quotes)
-	{
-	  if (name[0] == '*')
-	    sprintf (buffer, "&\"L%s" STUB_SUFFIX "\"", name + 1);
-	  else
-	    sprintf (buffer, "&\"L%s%s" STUB_SUFFIX "\"", user_label_prefix, 
-		     name);
-	}
-      else if (name[0] == '*')
-	sprintf (buffer, "&L%s" STUB_SUFFIX, name + 1);
-      else
-	sprintf (buffer, "&L%s%s" STUB_SUFFIX, user_label_prefix, name);
-    }
-  else
+  needs_quotes = name_needs_quotes (name);
+  if (needs_quotes)
     {
-      buffer = alloca (strlen ("&L")
-		       + strlen (user_label_prefix)
-		       + namelen
-		       + strlen (NON_LAZY_POINTER_SUFFIX)
-		       + 1 /* '\0' */);
-      if (name[0] == '*')
-	sprintf (buffer, "&L%s" NON_LAZY_POINTER_SUFFIX, name + 1);
-      else
-	sprintf (buffer, "&L%s%s" NON_LAZY_POINTER_SUFFIX, 
-		 user_label_prefix, name);
+      quote = "\"";
     }
+
+  if (stub_p)
+    suffix = STUB_SUFFIX;
+  else
+    suffix = NON_LAZY_POINTER_SUFFIX;
+
+  buffer = alloca (strlen ("&L")
+		   + strlen (prefix)
+		   + namelen
+		   + strlen (suffix)
+		   + 2 * strlen (quote)
+		   + 1 /* '\0' */);
+
+  /* Construct the name of the non-lazy pointer or stub.  */
+  sprintf (buffer, "&%sL%s%s%s%s", quote, prefix, name, suffix, quote);
 
   if (!machopic_indirections)
     machopic_indirections = htab_create_ggc (37, 
@@ -1261,8 +1258,7 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
     ? DECL_ASSEMBLER_NAME (decl)
     : DECL_NAME (decl);
 
-  const char *prefix = "_";
-  const int prefix_len = 1;
+  const char *prefix = user_label_prefix;
 
   const char *base = IDENTIFIER_POINTER (id);
   unsigned int base_len = IDENTIFIER_LENGTH (id);
@@ -1276,7 +1272,8 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
   if (! for_eh)
     suffix = ".eh1";
 
-  lab = xmalloc (prefix_len + base_len + strlen (suffix) + quotes_len + 1);
+  lab = xmalloc (strlen (prefix)
+		 + base_len + strlen (suffix) + quotes_len + 1);
   lab[0] = '\0';
 
   if (need_quotes)
