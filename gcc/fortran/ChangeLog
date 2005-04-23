@@ -1,3 +1,8 @@
+2005-04-23  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-const.c (gfc_conv_mpfr_to_tree): Use hexadecimal string as
+	intermediate representation.
+
 2005-04-21  Steven G. Kargl  <kargls@comcast.net>
 
 	* trans-const.c (gfc_conv_mpfr_to_tree): Remove unneeded computation;
