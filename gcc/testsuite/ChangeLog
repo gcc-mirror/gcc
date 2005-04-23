@@ -1,3 +1,8 @@
+2005-04-23  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR middle-end/21082
+	* g++.dg/tree-ssa/pr21082.C: New testcase.
+
 2005-04-23  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/vect/vect-99.c: New test.
