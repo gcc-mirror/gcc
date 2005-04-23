@@ -5,6 +5,6 @@
 
       PROGRAM foo
       WRITE (*,*) "Test"           ! Neither this comment which exceeds the 72 character limit, too
-      WRITE (*,*) "This exactly 72 character long soruce line not, too."
+      WRITE (*,*) "This exactly 72 character long source line not, too."
       END
 

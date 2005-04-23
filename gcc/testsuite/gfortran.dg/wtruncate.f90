@@ -5,6 +5,6 @@
 
       PROGRAM foo
       WRITE (*,*) "Test"           ! Neither this comment which exceeds the 132 character limit with some random words, too (blah blah)
-      WRITE (*,*) "This exactly 132 character long soruce line not, too.  How can people fill 132 characters without sensless stuff"
+      WRITE (*,*) "This exactly 132 character long source line not, too.  How can people fill 132 characters without sensless stuff"
       END
 
