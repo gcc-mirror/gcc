@@ -91,11 +91,6 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-  { "sio",	 MASK_SIO,	N_("Generate cpp defines for server IO") }, \
-  { "wsio",	-MASK_SIO,	N_("Generate cpp defines for workstation IO") },
-
 /* Like the default, except no -lg.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}}"

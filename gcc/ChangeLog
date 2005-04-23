@@ -1,3 +1,52 @@
+2005-04-23  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (hppa[12]*-*-hpux10*): Add pa/pa-hpux.opt to
+	$extra_options.  Also add pa/pa-hpux1010.opt for hpux10.[1-9]*.
+	(hppa*64*-*-hpux11*): Add pa/pa-hpux1010.h to $tm_file.  Add
+	pa/pa-hpux.opt, pa/pa-hpux1010.opt and pa/pa64-hpux.opt to
+	$extra_options.  Also add pa/pa-hpux1111.opt for hpux11.[1-9]*.
+	(hppa[12]*-*-hpux11*): Add pa/pa-hpux1010.h to $tm_file.  Add
+	pa/pa-hpux.opt to $extra_options.  Also add pa/pa-hpux1111.opt
+	for hpux11.[1-9]*.
+	* config/pa/pa.h (architecture_type, rtx_def, pa_arch_string, pa_arch)
+	(pa_fixed_range_string, pa_cpu_string, pa_unix_string, target_flags)
+	(MASK_PA_11, MASK_DISABLE_FPREGS, TARGET_DISABLE_FPREGS)
+	(MASK_NO_SPACE_REGS, TARGET_NO_SPACE_REGS, MASK_JUMP_IN_DELAY)
+	(TARGET_JUMP_IN_DELAY, MASK_DISABLE_INDEXING, TARGET_DISABLE_INDEXING)
+	(MASK_PORTABLE_RUNTIME, TARGET_PORTABLE_RUNTIME, MASK_GAS, TARGET_GAS)
+	(MASK_SOFT_FLOAT, TARGET_SOFT_FLOAT, MASK_LONG_LOAD_STORE)
+	(TARGET_LONG_LOAD_STORE, MASK_FAST_INDIRECT_CALLS)
+	(TARGET_FAST_INDIRECT_CALLS, MASK_BIG_SWITCH, TARGET_BIG_SWITCH)
+	(MASK_PA_20, MASK_SIO, TARGET_SIO, MASK_GNU_LD, TARGET_GNU_LD)
+	(MASK_LONG_CALLS, TARGET_LONG_CALLS, TARGET_PA_11, TARGET_PA_20)
+	(TARGET_SWITCHES, SUBTARGET_SWITCHES, TARGET_OPTIONS)
+	(SUBTARGET_OPTIONS): Delete.
+	(TARGET_PA_10): Redefine in terms of TARGET_PA_11 and TARGET_PA_20.
+	(TARGET_SCHED_DEFAULT): Define to a PROCESSOR_* enum (PROCESSOR_8000)
+	instead of a string.
+	* config/pa/pa.c (pa_arch, pa_arch_string, pa_fixed_range_string)
+	(pa_cpu_string, pa_unix_string): Delete.
+	(pa_cpu): Initialize to TARGET_SCHED_DEFAULT.
+	(flag_pa_unix): Initialize based on TARGET_HPUX_11_11 and
+	TARGET_HPUX_10_10.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(pa_handle_option): New function.
+	(override_options): Remove handling of -march=, -mfixed-range=,
+	-mschedule= and -munix=.
+	* config/pa/pa-hpux.h (SUBTARGET_SWITCHES): Delete.
+	* config/pa/pa-hpux1010.h (SUBTARGET_OPTIONS): Delete.
+	* config/pa/pa-hpux10.h (SUBTARGET_OPTIONS): Delete.
+	* config/pa/pa-hpux1111.h (SUBTARGET_OPTIONS): Delete.
+	* config/pa/pa-hpux11.h (SUBTARGET_OPTIONS): Delete.
+	* config/pa/pa64-hpux.h (SUBTARGET_SWITCHES): Delete.
+	* config/pa/pa64-start.h (TARGET_PA_11, TARGET_PA_20): #undef before
+	redefining.
+	* config/pa/pa.opt: New file.
+	* config/pa/pa-hpux.opt: New file.
+	* config/pa/pa-hpux1010.opt: New file.
+	* config/pa/pa-hpux1111.opt: New file.
+	* config/pa/pa64-hpux.opt: New file.
+
 2005-04-22  David S. Miller  <davem@davemloft.net>
 
 	* rtl.h (CONST_DOUBLE): Fix comment, a CONST_DOUBLE holds an

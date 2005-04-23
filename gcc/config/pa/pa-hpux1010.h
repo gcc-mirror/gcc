@@ -22,12 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_HPUX_10_10
 #define TARGET_HPUX_10_10 1
 
-#undef SUBTARGET_OPTIONS
-#define SUBTARGET_OPTIONS						\
-  { "unix=",			&pa_unix_string,			\
-    N_("Specify UNIX standard for predefines and linking.\n"		\
-       "Supported values are 93 and 95."), 0}
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{!shared:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}} \
