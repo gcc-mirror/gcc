@@ -61,9 +61,6 @@ Boston, MA 02111-1307, USA.  */
 /* Array of all SSA_NAMEs used in the function.  */
 varray_type ssa_names;
 
-/* Bitmap of ssa names marked for rewriting.  */
-static bitmap ssa_names_to_rewrite;
-
 /* Free list of SSA_NAMEs.  This list is wiped at the end of each function
    after we leave SSA form.  */
 static GTY (()) tree free_ssanames;
@@ -76,54 +73,6 @@ static GTY (()) tree free_ssanames;
 unsigned int ssa_name_nodes_reused;
 unsigned int ssa_name_nodes_created;
 #endif
-
-/* Returns true if ssa name VAR is marked for rewrite.  */
-
-bool
-marked_for_rewrite_p (tree var)
-{
-  return bitmap_bit_p (ssa_names_to_rewrite, SSA_NAME_VERSION (var));
-}
-
-/* Returns true if any ssa name is marked for rewrite.  */
-
-bool
-any_marked_for_rewrite_p (void)
-{
-  if (!ssa_names_to_rewrite)
-    return false;
-
-  return !bitmap_empty_p (ssa_names_to_rewrite);
-}
-
-/* Mark ssa name VAR for rewriting.  */
-
-void
-mark_for_rewrite (tree var)
-{
-  bitmap_set_bit (ssa_names_to_rewrite, SSA_NAME_VERSION (var));
-}
-
-/* Unmark all ssa names marked for rewrite.  */
-
-void
-unmark_all_for_rewrite (void)
-{
-  bitmap_clear (ssa_names_to_rewrite);
-}
-
-/* Return the bitmap of ssa names to rewrite.  Copy the bitmap,
-   so that the optimizers cannot access internals directly  */
-
-bitmap
-marked_ssa_names (void)
-{
-  bitmap ret = BITMAP_ALLOC (NULL);
-
-  bitmap_copy (ret, ssa_names_to_rewrite);
-
-  return ret;
-}
 
 /* Initialize management of SSA_NAMEs.  */
 
@@ -138,7 +87,6 @@ init_ssanames (void)
      large.  */
   VARRAY_PUSH_TREE (ssa_names, NULL_TREE);
   free_ssanames = NULL;
-  ssa_names_to_rewrite = BITMAP_ALLOC (NULL);
 }
 
 /* Finalize management of SSA_NAMEs.  */
@@ -146,7 +94,6 @@ init_ssanames (void)
 void
 fini_ssanames (void)
 {
-  BITMAP_FREE (ssa_names_to_rewrite);
   ggc_free (ssa_names);
   ssa_names = NULL;
   free_ssanames = NULL;
@@ -237,11 +184,13 @@ release_ssa_name (tree var)
   if (var == var_ann (SSA_NAME_VAR (var))->default_def)
     return;
 
-  /* If the ssa name is marked for rewriting, it may have multiple definitions,
-     but we may happen to remove just one of them.  So do not remove the
-     ssa name now.  */
-  if (marked_for_rewrite_p (var))
-    return;
+  /* If VAR has been registered for SSA updating, don't remove it.
+     After update_ssa has run, the name will be released.  */
+  if (name_registered_for_update_p (var))
+    {
+      release_ssa_name_after_update_ssa (var);
+      return;
+    }
 
   /* release_ssa_name can be called multiple times on a single SSA_NAME.
      However, it should only end up on our free list one time.   We
@@ -304,7 +253,7 @@ duplicate_ssa_name (tree name, tree stmt)
 
 
 /* Creates a duplicate of the ptr_info_def at PTR_INFO for use by
-   the ssa name NAME.  */
+   the SSA name NAME.  */
 
 void
 duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)

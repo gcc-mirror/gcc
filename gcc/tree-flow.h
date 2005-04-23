@@ -253,15 +253,11 @@ struct var_ann_d GTY(())
   tree default_def;
 
   /* During into-ssa and the dominator optimizer, this field holds the
-     current version of this variable (an SSA_NAME). 
-
-     This was previously two varrays (one in into-ssa the other in the
-     dominator optimizer).  That is wasteful, particularly since the
-     dominator optimizer calls into-ssa resulting in having two varrays
-     live at the same time and this can happen for each call to the
-     dominator optimizer.  */
+     current version of this variable (an SSA_NAME).  */
   tree current_def;
   
+  /* If this variable is a structure, this fields holds a list of
+     symbols representing each of the fields of the structure.  */
   subvar_t subvars;
 };
 
@@ -540,9 +536,6 @@ extern bool tree_duplicate_sese_region (edge, edge, basic_block *, unsigned,
 					basic_block *);
 extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned);
-extern void rewrite_to_new_ssa_names_bb (basic_block, struct htab *);
-extern void rewrite_to_new_ssa_names (basic_block *, unsigned, htab_t);
-extern void allocate_ssa_names (bitmap, struct htab **);
 extern bool tree_purge_dead_eh_edges (basic_block);
 extern bool tree_purge_all_dead_eh_edges (bitmap);
 extern tree gimplify_val (block_stmt_iterator *, tree, tree);
@@ -565,7 +558,6 @@ extern tree create_phi_node (tree, basic_block);
 extern void add_phi_arg (tree, tree, edge);
 extern void remove_phi_args (edge);
 extern void remove_phi_node (tree, tree);
-extern tree find_phi_node_for (basic_block, tree, tree *);
 extern tree phi_reverse (tree);
 extern void dump_dfa_stats (FILE *);
 extern void debug_dfa_stats (void);
@@ -612,11 +604,6 @@ typedef bool (*walk_use_def_chains_fn) (tree, tree, void *);
 
 /* In tree-ssa.c  */
 extern void init_tree_ssa (void);
-extern void dump_tree_ssa (FILE *);
-extern void debug_tree_ssa (void);
-extern void debug_def_blocks (void);
-extern void dump_tree_ssa_stats (FILE *);
-extern void debug_tree_ssa_stats (void);
 extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
 extern bool tree_ssa_useless_type_conversion (tree);
@@ -628,23 +615,20 @@ extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 extern bool stmt_references_memory_p (tree);
 
 /* In tree-into-ssa.c  */
-extern void rewrite_ssa_into_ssa (void);
-
 void update_ssa (unsigned);
+void delete_update_ssa (void);
 void register_new_name_mapping (tree, tree);
 tree create_new_def_for (tree, tree, def_operand_p);
 bool need_ssa_update_p (void);
 bool name_registered_for_update_p (tree);
 bitmap ssa_names_to_replace (void);
 void release_ssa_name_after_update_ssa (tree name);
-void dump_repl_tbl (FILE *);
-void debug_repl_tbl (void);
-void dump_names_replaced_by (FILE *, tree);
-void debug_names_replaced_by (tree);
 void compute_global_livein (bitmap, bitmap);
 tree duplicate_ssa_name (tree, tree);
 void mark_sym_for_renaming (tree);
 void mark_set_for_renaming (bitmap);
+tree get_current_def (tree);
+void set_current_def (tree, tree);
 
 /* In tree-ssa-ccp.c  */
 bool fold_stmt (tree *);
@@ -724,7 +708,7 @@ tree find_loop_niter_by_eval (struct loop *, edge *);
 void estimate_numbers_of_iterations (struct loops *);
 tree can_count_iv_in_wider_type (struct loop *, tree, tree, tree, tree);
 void free_numbers_of_iterations_estimates (struct loops *);
-void rewrite_into_loop_closed_ssa (bitmap);
+void rewrite_into_loop_closed_ssa (bitmap, unsigned);
 void verify_loop_closed_ssa (void);
 void loop_commit_inserts (void);
 bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);

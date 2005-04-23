@@ -5827,6 +5827,18 @@ Small integer constants can use a shared data structure, reducing the
 compiler's memory usage and increasing its speed.  This sets the maximum
 value of a shared integer constant's.  The default value is 256.
 
+@item min-virtual-mappings
+Specifies the minimum number of virtual mappings in the incremental
+SSA updater that should be registered to trigger the virtual mappings
+heuristic defined by virtual-mappings-ratio.  The default value is
+100.
+
+@item virtual-mappings-ratio
+If the number of virtual mappings is virtual-mappings-ratio bigger
+than the number of virtual symbols to be updated, then the incremental
+SSA updater switches to a full update for those symbols.  The default
+ratio is 3.
+
 @end table
 @end table
 

@@ -466,30 +466,6 @@ remove_phi_node (tree phi, tree prev)
 }
 
 
-/* Find the first PHI node P in basic block BB for symbol SYM.  If
-   PREV_P is given, the PHI node preceding P is stored in *PREV_P.  */
-
-tree
-find_phi_node_for (basic_block bb, tree sym, tree *prev_p)
-{
-  tree phi;
-
-  if (prev_p)
-    *prev_p = NULL_TREE;
-
-  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-    {
-      if (SSA_NAME_VAR (PHI_RESULT (phi)) == sym)
-	return phi;
-
-      if (prev_p)
-	*prev_p = phi;
-    }
-
-  return NULL_TREE;
-}
-
-
 /* Reverse the order of PHI nodes in the chain PHI.
    Return the new head of the chain (old last PHI node).  */
 

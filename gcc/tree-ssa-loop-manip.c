@@ -139,11 +139,9 @@ add_exit_phis_edge (basic_block exit, tree use)
     return;
 
   phi = create_phi_node (use, exit);
-
+  create_new_def_for (PHI_RESULT (phi), phi, PHI_RESULT_PTR (phi));
   FOR_EACH_EDGE (e, ei, exit->preds)
     add_phi_arg (phi, use, e);
-
-  SSA_NAME_DEF_STMT (use) = def_stmt;
 }
 
 /* Add exit phis for VAR that is used in LIVEIN.
@@ -215,16 +213,21 @@ get_loops_exits (void)
 
 /* For USE in BB, if it is used outside of the loop it is defined in,
    mark it for rewrite.  Record basic block BB where it is used
-   to USE_BLOCKS.  */
+   to USE_BLOCKS.  Record the ssa name index to NEED_PHIS bitmap.  */
 
 static void
-find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks)
+find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
+			 bitmap need_phis)
 {
   unsigned ver;
   basic_block def_bb;
   struct loop *def_loop;
 
   if (TREE_CODE (use) != SSA_NAME)
+    return;
+
+  /* We don't need to keep virtual operands in loop-closed form.  */
+  if (!is_gimple_reg (use))
     return;
 
   ver = SSA_NAME_VERSION (use);
@@ -241,31 +244,32 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks)
     use_blocks[ver] = BITMAP_ALLOC (NULL);
   bitmap_set_bit (use_blocks[ver], bb->index);
 
-  if (!flow_bb_inside_loop_p (def_loop, bb))
-    mark_for_rewrite (use);
+  bitmap_set_bit (need_phis, ver);
 }
 
 /* For uses in STMT, mark names that are used outside of the loop they are
    defined to rewrite.  Record the set of blocks in that the ssa
-   names are defined to USE_BLOCKS.  */
+   names are defined to USE_BLOCKS and the ssa names themselves to
+   NEED_PHIS.  */
 
 static void
-find_uses_to_rename_stmt (tree stmt, bitmap *use_blocks)
+find_uses_to_rename_stmt (tree stmt, bitmap *use_blocks, bitmap need_phis)
 {
   ssa_op_iter iter;
   tree var;
   basic_block bb = bb_for_stmt (stmt);
 
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
-    find_uses_to_rename_use (bb, var, use_blocks);
+    find_uses_to_rename_use (bb, var, use_blocks, need_phis);
 }
 
 /* Marks names that are used in BB and outside of the loop they are
    defined in for rewrite.  Records the set of blocks in that the ssa
-   names are defined to USE_BLOCKS.  */
+   names are defined to USE_BLOCKS.  Record the SSA names that will
+   need exit PHIs in NEED_PHIS.  */
 
 static void
-find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks)
+find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks, bitmap need_phis)
 {
   block_stmt_iterator bsi;
   edge e;
@@ -275,10 +279,10 @@ find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks)
   FOR_EACH_EDGE (e, ei, bb->succs)
     for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
       find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (phi, e),
-			       use_blocks);
+			       use_blocks, need_phis);
  
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-    find_uses_to_rename_stmt (bsi_stmt (bsi), use_blocks);
+    find_uses_to_rename_stmt (bsi_stmt (bsi), use_blocks, need_phis);
 }
      
 /* Marks names that are used outside of the loop they are defined in
@@ -287,24 +291,24 @@ find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks)
    scan only blocks in this set.  */
 
 static void
-find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks)
+find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
 {
   basic_block bb;
   unsigned index;
   bitmap_iterator bi;
 
-  if (changed_bbs)
+  if (changed_bbs && !bitmap_empty_p (changed_bbs))
     {
       EXECUTE_IF_SET_IN_BITMAP (changed_bbs, 0, index, bi)
 	{
-	  find_uses_to_rename_bb (BASIC_BLOCK (index), use_blocks);
+	  find_uses_to_rename_bb (BASIC_BLOCK (index), use_blocks, need_phis);
 	}
     }
   else
     {
       FOR_EACH_BB (bb)
 	{
-	  find_uses_to_rename_bb (bb, use_blocks);
+	  find_uses_to_rename_bb (bb, use_blocks, need_phis);
 	}
     }
 }
@@ -336,43 +340,42 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks)
       base 99 and step 1.
       
       If CHANGED_BBS is not NULL, we look for uses outside loops only in
-      the basic blocks in this set.  */
+      the basic blocks in this set.
+
+      UPDATE_FLAG is used in the call to update_ssa.  See
+      TODO_update_ssa* for documentation.  */
 
 void
-rewrite_into_loop_closed_ssa (bitmap changed_bbs)
+rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
 {
   bitmap loop_exits = get_loops_exits ();
   bitmap *use_blocks;
-  unsigned i;
-  bitmap names_to_rename;
+  unsigned i, old_num_ssa_names;
+  bitmap names_to_rename = BITMAP_ALLOC (NULL);
 
-  gcc_assert (!any_marked_for_rewrite_p ());
+  /* If the pass has caused the SSA form to be out-of-date, update it
+     now.  */
+  update_ssa (update_flag);
 
-  use_blocks = xcalloc (num_ssa_names, sizeof (bitmap));
+  old_num_ssa_names = num_ssa_names;
+  use_blocks = xcalloc (old_num_ssa_names, sizeof (bitmap));
 
   /* Find the uses outside loops.  */
-  find_uses_to_rename (changed_bbs, use_blocks);
+  find_uses_to_rename (changed_bbs, use_blocks, names_to_rename);
 
-  if (!any_marked_for_rewrite_p ())
-    {
-      free (use_blocks);
-      BITMAP_FREE (loop_exits);
-      return;
-    }
-
-  /* Add the phi nodes on exits of the loops for the names we need to
+  /* Add the PHI nodes on exits of the loops for the names we need to
      rewrite.  */
-  names_to_rename = marked_ssa_names ();
   add_exit_phis (names_to_rename, use_blocks, loop_exits);
 
-  for (i = 0; i < num_ssa_names; i++)
+  for (i = 0; i < old_num_ssa_names; i++)
     BITMAP_FREE (use_blocks[i]);
   free (use_blocks);
   BITMAP_FREE (loop_exits);
   BITMAP_FREE (names_to_rename);
 
-  /* Do the rewriting.  */
-  rewrite_ssa_into_ssa ();
+  /* Fix up all the names found to be used outside their original
+     loops.  */
+  update_ssa (TODO_update_ssa);
 }
 
 /* Check invariants of the loop closed ssa form for the USE in BB.  */
@@ -383,7 +386,7 @@ check_loop_closed_ssa_use (basic_block bb, tree use)
   tree def;
   basic_block def_bb;
   
-  if (TREE_CODE (use) != SSA_NAME)
+  if (TREE_CODE (use) != SSA_NAME || !is_gimple_reg (use))
     return;
 
   def = SSA_NAME_DEF_STMT (use);
@@ -400,7 +403,7 @@ check_loop_closed_ssa_stmt (basic_block bb, tree stmt)
   ssa_op_iter iter;
   tree var;
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
     check_loop_closed_ssa_use (bb, var);
 }
 
@@ -413,6 +416,9 @@ verify_loop_closed_ssa (void)
   block_stmt_iterator bsi;
   tree phi;
   unsigned i;
+
+  if (current_loops == NULL)
+    return;
 
   verify_ssa (false);
 
@@ -566,53 +572,15 @@ copy_phi_node_args (unsigned first_new_block)
     BASIC_BLOCK (i)->rbi->duplicated = 0;
 }
 
-/* Renames variables in the area copied by tree_duplicate_loop_to_header_edge.
-   FIRST_NEW_BLOCK is the first block in the copied area.   DEFINITIONS is
-   a bitmap of all ssa names defined inside the loop.  */
 
-static void
-rename_variables (unsigned first_new_block, bitmap definitions)
-{
-  unsigned i, copy_number = 0;
-  basic_block bb;
-  htab_t ssa_name_map = NULL;
+/* The same as cfgloopmanip.c:duplicate_loop_to_header_edge, but also
+   updates the PHI nodes at start of the copied region.  In order to
+   achieve this, only loops whose exits all lead to the same location
+   are handled.
 
-  for (i = first_new_block; i < (unsigned) last_basic_block; i++)
-    {
-      bb = BASIC_BLOCK (i);
-
-      /* We assume that first come all blocks from the first copy, then all
-	 blocks from the second copy, etc.  */
-      if (copy_number != (unsigned) bb->rbi->copy_number)
-	{
-	  allocate_ssa_names (definitions, &ssa_name_map);
-	  copy_number = bb->rbi->copy_number;
-	}
-
-      rewrite_to_new_ssa_names_bb (bb, ssa_name_map);
-    }
-
-  htab_delete (ssa_name_map);
-}
-
-/* Sets SSA_NAME_DEF_STMT for results of all phi nodes in BB.  */
-
-static void
-set_phi_def_stmts (basic_block bb)
-{
-  tree phi;
-
-  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-    SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = phi;
-}
-
-/* The same as cfgloopmanip.c:duplicate_loop_to_header_edge, but also updates
-   ssa.  In order to achieve this, only loops whose exits all lead to the same
-   location are handled.
-   
-   FIXME: we create some degenerate phi nodes that could be avoided by copy
-   propagating them instead.  Unfortunately this is not completely
-   straightforward due to problems with constant folding.  */
+   Notice that we do not completely update the SSA web after
+   duplication.  The caller is responsible for calling update_ssa
+   after the loop has been duplicated.  */
 
 bool
 tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
@@ -622,9 +590,6 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 				    unsigned int *n_to_remove, int flags)
 {
   unsigned first_new_block;
-  basic_block bb;
-  unsigned i;
-  bitmap definitions;
 
   if (!(loops->state & LOOPS_HAVE_SIMPLE_LATCHES))
     return false;
@@ -634,8 +599,6 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa ();
 #endif
-
-  gcc_assert (!any_marked_for_rewrite_p ());
 
   first_new_block = last_basic_block;
   if (!duplicate_loop_to_header_edge (loop, e, loops, ndupl, wont_exit,
@@ -648,31 +611,7 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
   /* Copy the phi node arguments.  */
   copy_phi_node_args (first_new_block);
 
-  /* Rename the variables.  */
-  definitions = marked_ssa_names ();
-  rename_variables (first_new_block, definitions);
-  unmark_all_for_rewrite ();
-  BITMAP_FREE (definitions);
-
-  /* For some time we have the identical ssa names as results in multiple phi
-     nodes.  When phi node is resized, it sets SSA_NAME_DEF_STMT of its result
-     to the new copy.  This means that we cannot easily ensure that the ssa
-     names defined in those phis are pointing to the right one -- so just
-     recompute SSA_NAME_DEF_STMT for them.  */ 
-
-  for (i = first_new_block; i < (unsigned) last_basic_block; i++)
-    {
-      bb = BASIC_BLOCK (i);
-      set_phi_def_stmts (bb);
-      if (bb->rbi->copy_number == 1)
-  	set_phi_def_stmts (bb->rbi->original);
-    }
-
   scev_reset ();
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
-#endif
 
   return true;
 }
-

@@ -474,7 +474,7 @@ tree_ssa_dominator_optimize (void)
 
       calculate_dominance_info (CDI_DOMINATORS);
 
-      rewrite_ssa_into_ssa ();
+      update_ssa (TODO_update_ssa);
 
       /* Reinitialize the various tables.  */
       bitmap_clear (nonzero_vars);

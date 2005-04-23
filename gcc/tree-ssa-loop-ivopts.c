@@ -5416,10 +5416,8 @@ tree_ssa_iv_optimize (struct loops *loops)
       FOR_EACH_BB (bb)
 	for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	  update_stmt (bsi_stmt (si));
-
-      update_ssa (TODO_update_ssa);
     }
 
-  rewrite_into_loop_closed_ssa (NULL);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   tree_ssa_iv_optimize_finalize (loops, &data);
 }

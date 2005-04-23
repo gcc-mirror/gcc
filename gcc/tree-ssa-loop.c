@@ -40,7 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* The loop tree currently optimized.  */
 
-struct loops *current_loops;
+struct loops *current_loops = NULL;
 
 /* Initializes the loop structures.  DUMP is the file to that the details
    about the analysis should be dumped.  */
@@ -53,8 +53,7 @@ tree_loop_optimizer_init (FILE *dump)
   if (!loops)
     return NULL;
 
-  update_ssa (TODO_update_ssa);
-  rewrite_into_loop_closed_ssa (NULL);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 
   return loops;
 }

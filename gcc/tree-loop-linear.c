@@ -373,6 +373,5 @@ linear_transform_loops (struct loops *loops)
   VEC_free (tree, heap, oldivs);
   VEC_free (tree, heap, invariants);
   scev_reset ();
-  update_ssa (TODO_update_ssa);
-  rewrite_into_loop_closed_ssa (NULL);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa_full_phi);
 }
