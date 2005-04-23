@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-ssa-live.h"
 #include "errors.h"
 
-static void live_worklist (tree_live_info_p, varray_type, int);
+static void live_worklist (tree_live_info_p, int *, int);
 static tree_live_info_p new_tree_live_info (var_map);
 static inline void set_if_valid (var_map, bitmap, tree);
 static inline void add_livein_if_notdef (tree_live_info_p, bitmap,
@@ -478,7 +478,7 @@ delete_tree_live_info (tree_live_info_p live)
    passed in rather than being allocated on every call.  */
 
 static void
-live_worklist (tree_live_info_p live, varray_type stack, int i)
+live_worklist (tree_live_info_p live, int *stack, int i)
 {
   unsigned b;
   tree var;
@@ -487,6 +487,7 @@ live_worklist (tree_live_info_p live, varray_type stack, int i)
   var_map map = live->map;
   edge_iterator ei;
   bitmap_iterator bi;
+  int *tos = stack;
 
   var = partition_to_var (map, i);
   if (SSA_NAME_DEF_STMT (var))
@@ -494,13 +495,12 @@ live_worklist (tree_live_info_p live, varray_type stack, int i)
 
   EXECUTE_IF_SET_IN_BITMAP (live->livein[i], 0, b, bi)
     {
-      VARRAY_PUSH_INT (stack, b);
+      *tos++ = b;
     }
 
-  while (VARRAY_ACTIVE_SIZE (stack) > 0)
+  while (tos != stack)
     {
-      b = VARRAY_TOP_INT (stack);
-      VARRAY_POP (stack);
+      b = *--tos;
 
       FOR_EACH_EDGE (e, ei, BASIC_BLOCK (b)->preds)
 	if (e->src != ENTRY_BLOCK_PTR)
@@ -511,7 +511,7 @@ live_worklist (tree_live_info_p live, varray_type stack, int i)
 	    if (!bitmap_bit_p (live->livein[i], e->src->index))
 	      {
 		bitmap_set_bit (live->livein[i], e->src->index);
-		VARRAY_PUSH_INT (stack, e->src->index);
+		*tos++ = e->src->index;
 	      }
 	  }
     }
@@ -560,7 +560,7 @@ calculate_live_on_entry (var_map map)
   tree phi, var, stmt;
   tree op;
   edge e;
-  varray_type stack;
+  int *stack;
   block_stmt_iterator bsi;
   ssa_op_iter iter;
   bitmap_iterator bi;
@@ -624,11 +624,12 @@ calculate_live_on_entry (var_map map)
 	}
     }
 
-  VARRAY_INT_INIT (stack, last_basic_block, "stack");
+  stack = xmalloc (sizeof (int) * last_basic_block);
   EXECUTE_IF_SET_IN_BITMAP (live->global, 0, i, bi)
     {
       live_worklist (live, stack, i);
     }
+  free (stack);
 
 #ifdef ENABLE_CHECKING
    /* Check for live on entry partitions and report those with a DEF in
