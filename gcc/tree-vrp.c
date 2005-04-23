@@ -416,17 +416,17 @@ compare_values (tree val1, tree val2)
 	return 0;
       
       /* If VAL1 is a lower address than VAL2, return -1.  */
-      t = fold (build2 (LT_EXPR, TREE_TYPE (val1), val1, val2));
+      t = fold_binary (LT_EXPR, boolean_type_node, val1, val2);
       if (t == boolean_true_node)
 	return -1;
 
       /* If VAL1 is a higher address than VAL2, return +1.  */
-      t = fold (build2 (GT_EXPR, TREE_TYPE (val1), val1, val2));
+      t = fold_binary (GT_EXPR, boolean_type_node, val1, val2);
       if (t == boolean_true_node)
 	return 1;
 
       /* If VAL1 is different than VAL2, return +2.  */
-      t = fold (build2 (NE_EXPR, TREE_TYPE (val1), val1, val2));
+      t = fold_binary (NE_EXPR, boolean_type_node, val1, val2);
       if (t == boolean_true_node)
 	return 2;
 

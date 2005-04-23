@@ -1,3 +1,14 @@
+2005-04-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21088
+	* fold-const.c (fold_unary, fold_binary, fold_ternary):
+	Export.
+	* tree-vrp.c (compare_values): Use fold_binary to compare
+	pointers.  Use boolean_type_node as the type of a comparison
+	expression being folded.
+	* tree.h: Add prototypes for fold_unary, fold_binary,
+	fold_ternary.
+
 2005-04-22  Diego Novillo  <dnovillo@redhat.com>
 
 	* Makefile.in (tree-into-ssa.o): Add dependency on PARAMS_H.
