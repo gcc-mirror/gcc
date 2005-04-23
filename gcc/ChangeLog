@@ -251,8 +251,7 @@
 	* doc/invoke.texi: Document --param min-virtual-mappings
 	and --param virtual-mappings-ratio.
 
-2005-04-22  Zdenek Dvorak  <dvorakz@suse.cz>
-	    Diego Novillo  <dnovillo@redhat.com>
+2005-04-22  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-cfg.c (tree_duplicate_bb): Call create_new_def_for
 	for newly created PHI nodes.
