@@ -84,6 +84,7 @@ hppa_fpstore_bypass_p (rtx out_insn, rtx in_insn)
 
 static void copy_reg_pointer (rtx, rtx);
 static void fix_range (const char *);
+static bool pa_handle_option (size_t, const char *, int);
 static int hppa_address_cost (rtx);
 static bool hppa_rtx_costs (rtx, int, int, int *);
 static inline rtx force_mode (enum machine_mode, rtx);
@@ -155,26 +156,11 @@ static struct machine_function * pa_init_machine_status (void);
 rtx hppa_compare_op0, hppa_compare_op1;
 enum cmp_type hppa_branch_type;
 
-/* Which architecture we are generating code for.  */
-enum architecture_type pa_arch;
-
-/* String to hold which architecture we are generating code for.  */
-const char *pa_arch_string;
-
-/* String used with the -mfixed-range= option.  */
-const char *pa_fixed_range_string;
-
 /* Which cpu we are scheduling for.  */
-enum processor_type pa_cpu;
-
-/* String to hold which cpu we are scheduling for.  */
-const char *pa_cpu_string;
-
-/* String used with the -munix= option.  */
-const char *pa_unix_string;
+enum processor_type pa_cpu = TARGET_SCHED_DEFAULT;
 
 /* The UNIX standard to use for predefines and linking.  */
-int flag_pa_unix;
+int flag_pa_unix = TARGET_HPUX_11_11 ? 1998 : TARGET_HPUX_10_10 ? 1995 : 1993;
 
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
@@ -258,6 +244,11 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_ASM_DESTRUCTOR
 #define TARGET_ASM_DESTRUCTOR pa_asm_out_destructor
 #endif
+
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | TARGET_CPU_DEFAULT)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION pa_handle_option
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS pa_init_builtins
@@ -376,105 +367,78 @@ fix_range (const char *const_str)
     target_flags |= MASK_DISABLE_FPREGS;
 }
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+pa_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_mnosnake:
+    case OPT_mpa_risc_1_0:
+    case OPT_march_1_0:
+      target_flags &= ~(MASK_PA_11 | MASK_PA_20);
+      return true;
+
+    case OPT_msnake:
+    case OPT_mpa_risc_1_1:
+    case OPT_march_1_1:
+      target_flags &= ~MASK_PA_20;
+      target_flags |= MASK_PA_11;
+      return true;
+
+    case OPT_mpa_risc_2_0:
+    case OPT_march_2_0:
+      target_flags |= MASK_PA_11 | MASK_PA_20;
+      return true;
+
+    case OPT_mschedule_:
+      if (strcmp (arg, "8000") == 0)
+	pa_cpu = PROCESSOR_8000;
+      else if (strcmp (arg, "7100") == 0)
+	pa_cpu = PROCESSOR_7100;
+      else if (strcmp (arg, "700") == 0)
+	pa_cpu = PROCESSOR_700;
+      else if (strcmp (arg, "7100LC") == 0)
+	pa_cpu = PROCESSOR_7100LC;
+      else if (strcmp (arg, "7200") == 0)
+	pa_cpu = PROCESSOR_7200;
+      else if (strcmp (arg, "7300") == 0)
+	pa_cpu = PROCESSOR_7300;
+      else
+	return false;
+      return true;
+
+    case OPT_mfixed_range_:
+      fix_range (arg);
+      return true;
+
+#if TARGET_HPUX
+    case OPT_munix_93:
+      flag_pa_unix = 1993;
+      return true;
+#endif
+
+#if TARGET_HPUX_10_10
+    case OPT_munix_95:
+      flag_pa_unix = 1995;
+      return true;
+#endif
+
+#if TARGET_HPUX_11_11
+    case OPT_munix_98:
+      flag_pa_unix = 1998;
+      return true;
+#endif
+
+    default:
+      return true;
+    }
+}
+
 void
 override_options (void)
 {
-  if (pa_cpu_string == NULL)
-    pa_cpu_string = TARGET_SCHED_DEFAULT;
-
-  if (! strcmp (pa_cpu_string, "8000"))
-    {
-      pa_cpu_string = "8000";
-      pa_cpu = PROCESSOR_8000;
-    }
-  else if (! strcmp (pa_cpu_string, "7100"))
-    {
-      pa_cpu_string = "7100";
-      pa_cpu = PROCESSOR_7100;
-    }
-  else if (! strcmp (pa_cpu_string, "700"))
-    {
-      pa_cpu_string = "700";
-      pa_cpu = PROCESSOR_700;
-    }
-  else if (! strcmp (pa_cpu_string, "7100LC"))
-    {
-      pa_cpu_string = "7100LC";
-      pa_cpu = PROCESSOR_7100LC;
-    }
-  else if (! strcmp (pa_cpu_string, "7200"))
-    {
-      pa_cpu_string = "7200";
-      pa_cpu = PROCESSOR_7200;
-    }
-  else if (! strcmp (pa_cpu_string, "7300"))
-    {
-      pa_cpu_string = "7300";
-      pa_cpu = PROCESSOR_7300;
-    }
-  else
-    {
-      warning ("unknown -mschedule= option (%s).\nValid options are 700, 7100, 7100LC, 7200, 7300, and 8000\n", pa_cpu_string);
-    }
-
-  /* Set the instruction architecture.  */
-  if (pa_arch_string && ! strcmp (pa_arch_string, "1.0"))
-    {
-      pa_arch_string = "1.0";
-      pa_arch = ARCHITECTURE_10;
-      target_flags &= ~(MASK_PA_11 | MASK_PA_20);
-    }
-  else if (pa_arch_string && ! strcmp (pa_arch_string, "1.1"))
-    {
-      pa_arch_string = "1.1";
-      pa_arch = ARCHITECTURE_11;
-      target_flags &= ~MASK_PA_20;
-      target_flags |= MASK_PA_11;
-    }
-  else if (pa_arch_string && ! strcmp (pa_arch_string, "2.0"))
-    {
-      pa_arch_string = "2.0";
-      pa_arch = ARCHITECTURE_20;
-      target_flags |= MASK_PA_11 | MASK_PA_20;
-    }
-  else if (pa_arch_string)
-    {
-      warning ("unknown -march= option (%s).\nValid options are 1.0, 1.1, and 2.0\n", pa_arch_string);
-    }
-
-  if (TARGET_HPUX)
-    {
-      /* Set the default UNIX standard for HP-UX.  This affects the
-	 predefines and startfiles used for the target.  */
-      if (pa_unix_string == NULL)
-	pa_unix_string
-	  = TARGET_HPUX_11_11 ? "98" : (TARGET_HPUX_10_10 ? "95" : "93");
-
-      if (!strcmp (pa_unix_string, "93"))
-	flag_pa_unix = 1993;
-      else if (!strcmp (pa_unix_string, "95"))
-	flag_pa_unix = 1995;
-      else if (TARGET_HPUX_11_11)
-	{
-	  if (!strcmp (pa_unix_string, "98"))
-	    flag_pa_unix = 1998;
-	  else
-	    warning ("unknown -munix= option (%s).\n"
-		     "Valid options are 93, 95 and 98.\n",
-		     pa_unix_string);
-	}
-      else if (TARGET_HPUX_10_10)
-	warning ("unknown -munix= option (%s)."
-		 "\nValid options are 93 and 95.\n",
-		 pa_unix_string);
-      else
-	warning ("unknown -munix= option (%s).\nValid option is 93.\n",
-		 pa_unix_string);
-    }
-
-  if (pa_fixed_range_string)
-    fix_range (pa_fixed_range_string);
-
   /* Unconditional branches in the delay slot are not compatible with dwarf2
      call frame information.  There is no benefit in using this optimization
      on PA8000 and later processors.  */

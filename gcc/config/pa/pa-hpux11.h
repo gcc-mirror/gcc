@@ -93,12 +93,6 @@ Boston, MA 02111-1307, USA.  */
     }									\
   while (0)
 
-#undef SUBTARGET_OPTIONS
-#define SUBTARGET_OPTIONS						\
-  { "unix=",			&pa_unix_string,			\
-    N_("Specify UNIX standard for predefines and linking.\n"		\
-       "Supported values are 93 and 95."), 0}
-
 #undef CPP_SPEC
 #define CPP_SPEC \
   "%{mt|pthread:-D_REENTRANT -D_THREAD_SAFE -D_POSIX_C_SOURCE=199506L}"

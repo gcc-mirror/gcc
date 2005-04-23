@@ -78,12 +78,6 @@ Boston, MA 02111-1307, USA.  */
     }									\
   while (0)
 
-#undef SUBTARGET_OPTIONS
-#define SUBTARGET_OPTIONS                                               \
-  { "unix=",                    &pa_unix_string,                        \
-    N_("Specify UNIX standard for predefines and linking.\n"            \
-       "Supported value is 93."), 0}
-
 #define CPP_SPEC "%{threads: -D_REENTRANT -D_DCE_THREADS}"
 
 /* We can debug dynamically linked executables on hpux9; we also want
