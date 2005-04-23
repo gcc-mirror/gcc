@@ -4069,14 +4069,19 @@ a compare-and-swap operation, if defined.
 
 This pattern, if defined, releases a lock set by
 @code{sync_lock_test_and_set@var{mode}}.  Operand 0 is the memory
-that contains the lock.
+that contains the lock; operand 1 is the value to store in the lock.
+
+If the target doesn't implement full semantics for
+@code{sync_lock_test_and_set@var{mode}}, any value operand which is not
+the constant 0 should be rejected with @code{FAIL}, and the true contents
+of the memory operand are implementation defined.
 
 This pattern must issue any memory barrier instructions such that the
 pattern as a whole acts as a release barrier, that is the lock is
 released only after all previous memory operations have completed.
 
 If this pattern is not defined, then a @code{memory_barrier} pattern
-will be emitted, followed by a store of zero to the memory operand.
+will be emitted, followed by a store of the value to the memory operand.
 
 @end table
 
