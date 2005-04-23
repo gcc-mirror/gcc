@@ -1,3 +1,7 @@
+2005-04-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ipa-inline.c, tree-ssa-operands.h: Fix comment typos.
+
 2005-04-23  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/21082
