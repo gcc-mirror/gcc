@@ -1,3 +1,9 @@
+2005-04-23  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/FileInputStream.java (FileInputStream(File)),
+	java/io/FileOutputStream.java (FileOutputStream(File)):
+	Removed unnecessary File.isDirectory() check.
+
 2005-04-22  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/lib/libjava.exp (libjava_find_gij): Use $objdir/.. to find
