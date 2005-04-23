@@ -1,3 +1,11 @@
+2005-04-22  David S. Miller  <davem@davemloft.net>
+
+	* sched-vis.c (print_value): Use CONST_DOUBLE_LOW and
+	CONST_DOUBLE_HIGH.
+	* config/sparc/sparc.c (sparc_rtx_costs): Likewise, and
+	fix check on CONST_DOUBLE mode.  It should be VOIDmode
+	when it is representing an integer.
+
 2005-04-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* builtins.c (gimplify_va_arg_expr): Reword comments to avoid
