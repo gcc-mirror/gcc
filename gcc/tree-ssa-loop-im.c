@@ -757,14 +757,8 @@ move_computations (void)
   fini_walk_dominator_tree (&walk_data);
 
   loop_commit_inserts ();
-
   if (need_ssa_update_p ())
-    update_ssa (TODO_update_ssa);
-
-  /* The movement of LI code may cause violation of loop closed SSA
-     form invariants.  TODO -- avoid these rewrites completely.
-     Information in virtual phi nodes is sufficient for it.  */
-  rewrite_into_loop_closed_ssa (NULL);
+    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 }
 
 /* Checks whether the statement defining variable *INDEX can be hoisted

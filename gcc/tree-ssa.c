@@ -644,6 +644,10 @@ verify_ssa (bool check_modified_stmt)
   enum dom_state orig_dom_state = dom_computed[CDI_DOMINATORS];
   bitmap names_defined_in_bb = BITMAP_ALLOC (NULL);
 
+  gcc_assert (!need_ssa_update_p ());
+
+  verify_stmts ();
+
   timevar_push (TV_TREE_SSA_VERIFY);
 
   /* Keep track of SSA names present in the IL.  */
@@ -751,9 +755,7 @@ verify_ssa (bool check_modified_stmt)
 	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_DEFS)
-	    {
-	      bitmap_set_bit (names_defined_in_bb, SSA_NAME_VERSION (op));
-	    }
+	    bitmap_set_bit (names_defined_in_bb, SSA_NAME_VERSION (op));
 	}
 
       bitmap_clear (names_defined_in_bb);
@@ -763,6 +765,7 @@ verify_ssa (bool check_modified_stmt)
   verify_alias_info ();
 
   free (definition_block);
+
   /* Restore the dominance information to its prior known state, so
      that we do not perturb the compiler's subsequent behavior.  */
   if (orig_dom_state == DOM_NONE)
@@ -835,6 +838,7 @@ delete_tree_ssa (void)
   addressable_vars = NULL;
   modified_noreturn_calls = NULL;
   aliases_computed_p = false;
+  gcc_assert (!need_ssa_update_p ());
 }
 
 

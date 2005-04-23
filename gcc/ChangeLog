@@ -1,3 +1,158 @@
+2005-04-22  Diego Novillo  <dnovillo@redhat.com>
+
+	* Makefile.in (tree-into-ssa.o): Add dependency on PARAMS_H.
+	* lambda-code.c (perfect_nestify): Mark virtual operands in
+	the moved statement for renaming.
+	* params.def (PARAM_MIN_VIRTUAL_MAPPINGS): Define.
+	(PARAM_VIRTUAL_MAPPINGS_TO_SYMS_RATIO): Define.
+	* params.h (MIN_VIRTUAL_MAPPINGS): Define.
+	(VIRTUAL_MAPPINGS_TO_SYMS_RATIO): Define.
+	* tree-flow.h (struct var_ann_d): Update comments.
+	(rewrite_to_new_ssa_names_bb, rewrite_to_new_ssa_names,
+	allocate_ssa_names, find_phi_node_for, dump_tree_ssa,
+	debug_tree_ssa, debug_def_blocks, dump_tree_ssa_stats,
+	debug_tree_ssa_stats, rewrite_ssa_into_ssa,
+	dump_repl_tbl, debug_repl_tbl, dump_names_replaced_by,
+	debug_names_replaced_by): Remove declarations.
+	(delete_update_ssa, get_current_def, set_current_def): Declare.
+	(rewrite_into_loop_closed_ssa): Add new argument.  Update
+	all callers.
+	* tree-into-ssa.c: Include params.h.
+	(old_virtual_ssa_names): Remove.  Update all users.
+	(need_to_replace_names_p): Remove.  Update all users.
+	(struct update_ssa_stats_d): Declare.
+	(update_ssa_stats): New local.
+	(dump_tree_ssa, debug_tree_ssa, debug_def_blocks,
+	dump_tree_ssa_stats, debug_tree_ssa_stats,
+	dump_update_ssa, debug_update_ssa,
+	dump_names_replaced_by, debug_names_replaced_by): Declare.
+	(get_current_def, set current_def): Make extern.
+	(is_old_name, is_new_name): Protect against references
+	past the end of the sets.
+	(add_new_name_mapping): Assert that OLD and NEW are
+	different SSA names for the same symbol.
+	When adding a virtual mapping, update stats for virtual
+	mapping heuristic.
+	(insert_phi_nodes_for): If UPDATE_P is true, create the
+	LHS of the new PHI by duplicating SSA name VAR.
+	(insert_phi_nodes_1): Remove.  Update all users.
+	(insert_phi_nodes): Remove second argument.  Update all
+	users.
+	(maybe_replace_use, maybe_replace_def): New.
+	(rewrite_update_stmt): Call them.
+	(mark_def_interesting): Remove calls to is_gimple_reg.
+	(prepare_phi_args_for_update): Remove.  Update all users.
+	(prepare_block_for_update): Only process virtual operands
+	and GIMPLE registers in normal form.
+	(prepare_use_sites_for): New.
+	(prepare_names_to_update): Rename from prepare_def_sites.
+	Call prepare_use_sites_for.
+	(dump_update_ssa): Rename from dump_repl_tbl.
+	Update all users.
+	Show statistics for virtual mapping heuristic.
+	(debug_update_ssa): Rename from debug_debug_repl_tbl.
+	(init_update_ssa): Initialize UPDATE_SSA_STATS.
+	(delete_update_ssa): Make extern.
+	(mark_set_for_renaming): If the set is empty, do nothing.
+	(release_ssa_name_after_update_ssa): Update comment.
+	(insert_updated_phi_nodes_for): Do not remove existing
+	PHI nodes for symbols.
+	(switch_virtuals_to_full_rewrite_p): New.
+	(switch_virtuals_to_full_rewrite): New.
+	(update_ssa): Call them.
+	Clear REWRITE_THIS_STMT and REGISTER_DEFS_IN_THIS_STMT
+	for every statement before updating.
+	If all the names in NEW_SSA_NAMES have been marked for
+	removal, do nothing.
+	Only start at the top of the CFG if there are symbols in
+	SYMS_TO_RENAME.
+	(ssa_rewrite_finalize_block): Remove.
+	(ssa_register_new_def): Remove.
+	(ssa_rewrite_stmt): Remove.
+	(ssa_rewrite_phi_arguments): Remove.
+	(ssa_rewrite_initialize_block): Remove.
+	(ssa_mark_def_sites): Remove.
+	(ssa_mark_def_sites_initialize_block): Remove.
+	(ssa_mark_phi_uses): Remove.
+	(rewrite_ssa_into_ssa): Remove.
+	* tree-phinodes.c (find_phi_node_for): Remove.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely):
+	Call update_ssa.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops):
+	Remove calls to verify_dominators and
+	verify_loop_structure.
+	(tree_unswitch_single_loop): Call update_ssa.
+	* tree-ssa.c (verify_ssa): Assert that need_ssa_update_p
+	returns false.
+	Call verify_stmts.
+	(delete_tree_ssa): Assert that need_ssa_update_p returns
+	false.
+	* tree-vect-transform.c (vect_transform_loop): Call update_ssa.
+	* tree-vectorizer.c (allocate_new_names, rename_def_op,
+	free_new_names): Remove.  Update all users.
+	(rename_use_op): Call get_current_def.
+	(rename_variables_in_bb): Do not handle any real or
+	virtual definition.
+	(slpeel_update_phis_for_duplicate_loop): Call
+	get_current_def and set_current_def instead of using
+	SSA_NAME_AUX.
+	(slpeel_update_phi_nodes_for_guard2): Reformat comments.
+	(slpeel_can_duplicate_loop_p): Call need_ssa_update_p,
+	ssa_names_to_replace and delete_update_ssa.
+	* doc/invoke.texi: Document --param min-virtual-mappings
+	and --param virtual-mappings-ratio.
+
+2005-04-22  Zdenek Dvorak  <dvorakz@suse.cz>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-cfg.c (tree_duplicate_bb): Call create_new_def_for
+	for newly created PHI nodes.
+	Call create_new_def_for for every new V_MAY_DEF and
+	V_MUST_DEF on the copied statement.
+	(struct ssa_name_map_entry): Remove.
+	(ssa_name_map_entry_hash): Remove.
+	(ssa_name_map_entry_eq): Remove.
+	(allocate_ssa_names): Remove.
+	(rewrite_to_new_ssa_names_def): Remove.
+	(rewrite_to_new_ssa_names_use): Remove.
+	(rewrite_to_new_ssa_names_bb): Remove.
+	(rewrite_to_new_ssa_names): Remove.
+	(tree_duplicate_sese_region): Remove variables ver,
+	definitions, phi, ssa_name_map and bi.
+	Call need_ssa_update_p instead of any_marked_for_rewrite_p.
+	Call update_ssa.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Call
+	update_ssa instead of rewrite_ssa_into_ssa.
+	* tree-ssa-loop-manip.c (add_exit_phis_edge): Call
+	create_new_def_for.
+	(find_uses_to_rename_use): Add argument 'need_phis'.
+	(find_uses_to_rename_stmt): Do not scan virtual operands.
+	(find_uses_to_rename): Only scan PHI nodes for
+	non-virtual names.
+	(rewrite_into_loop_closed_ssa): Call update_ssa.
+	(check_loop_closed_ssa_use): Ignore virtual operands.
+	(check_loop_closed_ssa_stmt): Likewise.
+	(verify_loop_closed_ssa): Do nothing if CURRENT_LOOPS is
+	NULL.
+	(rename_variables, set_phi_def_stmts): Remove.
+	(tree_duplicate_loop_to_header_edge): Reformat comment.
+	Remove variables BB, I and DEFINITIONS.
+	Call need_ssa_update_p.
+	Call update_ssa.
+	(lv_adjust_loop_header_phi): Reformat comment.
+	* tree-ssanames.c (ssa_names_to_rewrite): Remove.
+	(marked_for_rewrite_p, any_marked_for_rewrite_p,
+	mark_for_rewrite, unmark_all_for_rewrite,
+	marked_ssa_names): Remove.  Update all users.
+	(release_ssa_name): If VAR has been registered for SSA
+	updating, do nothing.
+	* tree-vrp.c (new_ssa_names, old_ssa_names): Remove.
+	(build_assert_expr_for): Call register_new_name_mapping.
+	(insert_range_assertions): Update call to update_ssa.
+	* tree.h (mark_for_rewrite, unmark_all_for_rewrite,
+	marked_for_rewrite_p, any_marked_for_rewrite_p,
+	marked_ssa_names): Remove.
+
 2005-04-22  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (block_defs_stack): Remove, no longer needed.

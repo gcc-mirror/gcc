@@ -1991,6 +1991,11 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 
   slpeel_make_loop_iterate_ntimes (loop, ratio);
 
+  /* The memory tags and pointers in vectorized statements need to
+     have their SSA forms updated.  FIXME, why can't this be delayed
+     until all the loops have been transformed?  */
+  update_ssa (TODO_update_ssa);
+
   if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS, LOOP_LOC (loop_vinfo)))
     fprintf (vect_dump, "LOOP VECTORIZED.");
 }

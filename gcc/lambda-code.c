@@ -2443,7 +2443,9 @@ perfect_nestify (struct loops *loops,
 	     incremented when we do.  */
 	  for (bsi = bsi_start (bbs[i]); !bsi_end_p (bsi);)
 	    { 
-	      tree stmt = bsi_stmt (bsi);
+	      ssa_op_iter i;
+	      tree n, stmt = bsi_stmt (bsi);
+
 	      if (stmt == exit_condition
 		  || not_interesting_stmt (stmt)
 		  || stmt_is_bumper_for_loop (loop, stmt))
@@ -2451,11 +2453,19 @@ perfect_nestify (struct loops *loops,
 		  bsi_next (&bsi);
 		  continue;
 		}
+
 	      replace_uses_of_x_with_y (stmt, oldivvar, ivvar);
 	      bsi_move_before (&bsi, &tobsi);
+
+	      /* If the statement has any virtual operands, they may
+		 need to be rewired because the original loop may
+		 still reference them.  */
+	      FOR_EACH_SSA_TREE_OPERAND (n, stmt, i, SSA_OP_ALL_VIRTUALS)
+		mark_sym_for_renaming (SSA_NAME_VAR (n));
 	    }
 	}
     }
+
   free (bbs);
   return perfect_nest_p (loop);
 }
