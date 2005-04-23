@@ -624,14 +624,70 @@ simplify_replace_tree (tree expr, tree old, tree new)
   return (ret ? fold (ret) : expr);
 }
 
-/* Tries to simplify EXPR using the condition COND.  Returns the simplified
-   expression (or EXPR unchanged, if no simplification was possible).*/
+/* Expand definitions of ssa names in EXPR as long as they are simple
+   enough, and return the new expression.  */
 
 static tree
-tree_simplify_using_condition (tree cond, tree expr)
+expand_simple_operations (tree expr)
+{
+  unsigned i, n;
+  tree ret = NULL_TREE, e, ee, stmt;
+  enum tree_code code = TREE_CODE (expr);
+
+  if (is_gimple_min_invariant (expr))
+    return expr;
+
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
+    {
+      n = TREE_CODE_LENGTH (code);
+      for (i = 0; i < n; i++)
+	{
+	  e = TREE_OPERAND (expr, i);
+	  ee = expand_simple_operations (e);
+	  if (e == ee)
+	    continue;
+
+	  if (!ret)
+	    ret = copy_node (expr);
+
+	  TREE_OPERAND (ret, i) = ee;
+	}
+
+      return (ret ? fold (ret) : expr);
+    }
+
+  if (TREE_CODE (expr) != SSA_NAME)
+    return expr;
+
+  stmt = SSA_NAME_DEF_STMT (expr);
+  if (TREE_CODE (stmt) != MODIFY_EXPR)
+    return expr;
+
+  e = TREE_OPERAND (stmt, 1);
+  if (/* Casts are simple.  */
+      TREE_CODE (e) != NOP_EXPR
+      && TREE_CODE (e) != CONVERT_EXPR
+      /* Copies are simple.  */
+      && TREE_CODE (e) != SSA_NAME
+      /* Assignments of invariants are simple.  */
+      && !is_gimple_min_invariant (e)
+      /* And increments and decrements by a constant are simple.  */
+      && !((TREE_CODE (e) == PLUS_EXPR
+	    || TREE_CODE (e) == MINUS_EXPR)
+	   && is_gimple_min_invariant (TREE_OPERAND (e, 1))))
+    return expr;
+
+  return expand_simple_operations (e);
+}
+
+/* Tries to simplify EXPR using the condition COND.  Returns the simplified
+   expression (or EXPR unchanged, if no simplification was possible).  */
+
+static tree
+tree_simplify_using_condition_1 (tree cond, tree expr)
 {
   bool changed;
-  tree e, e0, e1, e2, notcond;
+  tree e, te, e0, e1, e2, notcond;
   enum tree_code code = TREE_CODE (expr);
 
   if (code == INTEGER_CST)
@@ -643,17 +699,17 @@ tree_simplify_using_condition (tree cond, tree expr)
     {
       changed = false;
 
-      e0 = tree_simplify_using_condition (cond, TREE_OPERAND (expr, 0));
+      e0 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 0));
       if (TREE_OPERAND (expr, 0) != e0)
 	changed = true;
 
-      e1 = tree_simplify_using_condition (cond, TREE_OPERAND (expr, 1));
+      e1 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 1));
       if (TREE_OPERAND (expr, 1) != e1)
 	changed = true;
 
       if (code == COND_EXPR)
 	{
-	  e2 = tree_simplify_using_condition (cond, TREE_OPERAND (expr, 2));
+	  e2 = tree_simplify_using_condition_1 (cond, TREE_OPERAND (expr, 2));
 	  if (TREE_OPERAND (expr, 2) != e2)
 	    changed = true;
 	}
@@ -716,22 +772,37 @@ tree_simplify_using_condition (tree cond, tree expr)
 	return boolean_true_node;
     }
 
+  te = expand_simple_operations (expr);
+
   /* Check whether COND ==> EXPR.  */
   notcond = invert_truthvalue (cond);
-  e = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-		   notcond, expr);
+  e = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, notcond, te);
   if (nonzero_p (e))
     return e;
 
   /* Check whether COND ==> not EXPR.  */
-  e = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-		   cond, expr);
+  e = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond, te);
   if (zero_p (e))
     return e;
 
   return expr;
 }
 
+/* Tries to simplify EXPR using the condition COND.  Returns the simplified
+   expression (or EXPR unchanged, if no simplification was possible).
+   Wrapper around tree_simplify_using_condition_1 that ensures that chains
+   of simple operations in definitions of ssa names in COND are expanded,
+   so that things like casts or incrementing the value of the bound before
+   the loop do not cause us to fail.  */
+
+static tree
+tree_simplify_using_condition (tree cond, tree expr)
+{
+  cond = expand_simple_operations (cond);
+
+  return tree_simplify_using_condition_1 (cond, expr);
+}
+     
 /* Tries to simplify EXPR using the conditions on entry to LOOP.
    Record the conditions used for simplification to CONDS_USED.
    Returns the simplified expression (or EXPR unchanged, if no
