@@ -712,7 +712,7 @@ change_decl_assembler_name (tree decl, tree name)
 
   if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
       && DECL_RTL_SET_P (decl))
-    warning ("%D renamed after being referenced in assembly", decl);
+    warning (0, "%D renamed after being referenced in assembly", decl);
 
   SET_DECL_ASSEMBLER_NAME (decl, name);
 }

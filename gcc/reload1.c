@@ -1233,10 +1233,10 @@ reload (rtx first, int global)
 
       if (size > STACK_CHECK_MAX_FRAME_SIZE)
 	{
-	  warning ("frame size too large for reliable stack checking");
+	  warning (0, "frame size too large for reliable stack checking");
 	  if (! verbose_warned)
 	    {
-	      warning ("try reducing the number of local variables");
+	      warning (0, "try reducing the number of local variables");
 	      verbose_warned = 1;
 	    }
 	}

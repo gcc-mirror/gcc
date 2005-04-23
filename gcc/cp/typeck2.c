@@ -352,7 +352,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
 
   if (diag_type == 1)
     {
-      p_msg = warning;
+      p_msg = warning0;
       p_msg_at = cp_warning_at;
     }
   else if (diag_type == 2)
@@ -839,7 +839,7 @@ process_init_constructor (tree type, tree init, tree* elts)
   if (elts)
     {
       if (warn_missing_braces)
-	warning ("aggregate has a partly bracketed initializer");
+	warning (0, "aggregate has a partly bracketed initializer");
       tail = *elts;
     }
   else
@@ -1005,7 +1005,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 	      /* Warn when some struct elements are implicitly initialized.  */
 	      if (warn_missing_field_initializers
 	          && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
-		warning ("missing initializer for member %qD", field);
+		warning (0, "missing initializer for member %qD", field);
 	    }
 	  else
 	    {
@@ -1020,7 +1020,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 		 to zero.  */
 	      if (warn_missing_field_initializers
 	          && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
-		warning ("missing initializer for member %qD", field);
+		warning (0, "missing initializer for member %qD", field);
 
 	      if (! zero_init_p (TREE_TYPE (field)))
 		next1 = build_zero_init (TREE_TYPE (field),

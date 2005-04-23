@@ -86,20 +86,20 @@ do {									\
     if (MACHO_DYNAMIC_NO_PIC_P)						\
       {									\
         if (flag_pic)							\
-            warning ("-mdynamic-no-pic overrides -fpic or -fPIC");	\
+            warning (0, "-mdynamic-no-pic overrides -fpic or -fPIC");	\
         flag_pic = 0;							\
       }									\
     else if (flag_pic == 1)						\
       {									\
         /* Darwin doesn't support -fpic.  */				\
-        warning ("-fpic is not supported; -fPIC assumed");		\
+        warning (0, "-fpic is not supported; -fPIC assumed");		\
         flag_pic = 2;							\
       }									\
   }									\
   if (TARGET_64BIT && ! TARGET_POWERPC64)				\
     {									\
       target_flags |= MASK_POWERPC64;					\
-      warning ("-m64 requires PowerPC64 architecture, enabling");	\
+      warning (0, "-m64 requires PowerPC64 architecture, enabling");	\
     }									\
 } while(0)
 

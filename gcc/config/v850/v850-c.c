@@ -64,9 +64,9 @@ static int
 pop_data_area (v850_data_area data_area)
 {
   if (data_area_stack == NULL)
-    warning ("#pragma GHS endXXXX found without previous startXXX");
+    warning (0, "#pragma GHS endXXXX found without previous startXXX");
   else if (data_area != data_area_stack->data_area)
-    warning ("#pragma GHS endXXX does not match previous startXXX");
+    warning (0, "#pragma GHS endXXX does not match previous startXXX");
   else
     {
       data_area_stack_element * elem;
@@ -91,7 +91,7 @@ mark_current_function_as_interrupt (void)
   
   if (current_function_decl ==  NULL_TREE)
     {
-      warning ("cannot set interrupt attribute: no current function");
+      warning (0, "cannot set interrupt attribute: no current function");
       return;
     }
 
@@ -99,7 +99,7 @@ mark_current_function_as_interrupt (void)
 
   if (name == NULL_TREE || TREE_CODE (name) != IDENTIFIER_NODE)
     {
-      warning ("cannot set interrupt attribute: no such identifier");
+      warning (0, "cannot set interrupt attribute: no such identifier");
       return;
     }
   
@@ -144,7 +144,7 @@ ghs_pragma_section (cpp_reader * pfile ATTRIBUTE_UNUSED)
       if (type == CPP_COMMA)
 	repeat = 1;
       else if (type != CPP_EOF)
-	warning ("junk at end of #pragma ghs section");
+	warning (0, "junk at end of #pragma ghs section");
       
       if      (streq (sect, "data"))    kind = GHS_SECTION_KIND_DATA;
       else if (streq (sect, "text"))    kind = GHS_SECTION_KIND_TEXT;
@@ -161,7 +161,7 @@ ghs_pragma_section (cpp_reader * pfile ATTRIBUTE_UNUSED)
       else if (streq (sect, "zbss"))    kind = GHS_SECTION_KIND_ZDATA;
       else
 	{
-	  warning ("unrecognized section name \"%s\"", sect);
+	  warning (0, "unrecognized section name \"%s\"", sect);
 	  return;
 	}
       
@@ -176,7 +176,7 @@ ghs_pragma_section (cpp_reader * pfile ATTRIBUTE_UNUSED)
   return;
 
  bad:
-  warning ("malformed #pragma ghs section");
+  warning (0, "malformed #pragma ghs section");
   return;
 
  reset:
@@ -195,7 +195,7 @@ ghs_pragma_interrupt (cpp_reader * pfile ATTRIBUTE_UNUSED)
   tree x;
   
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs interrupt");
+    warning (0, "junk at end of #pragma ghs interrupt");
   
   mark_current_function_as_interrupt ();
 }
@@ -206,7 +206,7 @@ ghs_pragma_starttda (cpp_reader * pfile ATTRIBUTE_UNUSED)
   tree x;
   
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs starttda");
+    warning (0, "junk at end of #pragma ghs starttda");
   
   push_data_area (DATA_AREA_TDA);
 }
@@ -217,7 +217,7 @@ ghs_pragma_startsda (cpp_reader * pfile ATTRIBUTE_UNUSED)
   tree x;
   
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs startsda");
+    warning (0, "junk at end of #pragma ghs startsda");
   
   push_data_area (DATA_AREA_SDA);
 }
@@ -228,7 +228,7 @@ ghs_pragma_startzda (cpp_reader * pfile ATTRIBUTE_UNUSED)
   tree x;
   
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs startzda");
+    warning (0, "junk at end of #pragma ghs startzda");
   
   push_data_area (DATA_AREA_ZDA);
 }
@@ -239,7 +239,7 @@ ghs_pragma_endtda (cpp_reader * pfile ATTRIBUTE_UNUSED)
   tree x;
   
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs endtda");
+    warning (0, "junk at end of #pragma ghs endtda");
   
   pop_data_area (DATA_AREA_TDA);
 }
@@ -250,7 +250,7 @@ ghs_pragma_endsda (cpp_reader * pfile ATTRIBUTE_UNUSED)
   tree x;
   
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs endsda");
+    warning (0, "junk at end of #pragma ghs endsda");
   
   pop_data_area (DATA_AREA_SDA);
 }
@@ -261,7 +261,7 @@ ghs_pragma_endzda (cpp_reader * pfile ATTRIBUTE_UNUSED)
   tree x;
   
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs endzda");
+    warning (0, "junk at end of #pragma ghs endzda");
   
   pop_data_area (DATA_AREA_ZDA);
 }

@@ -373,7 +373,7 @@ m68k_handle_fndecl_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning ("%qs attribute only applies to functions",
+      warning (0, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -632,7 +632,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	asm_fprintf (stream, "\tcmp" ASM_DOT "l %s,%Rsp\n\ttrapcs\n",
 		     M68K_REGNAME(REGNO (stack_limit_rtx)));
       else if (GET_CODE (stack_limit_rtx) != SYMBOL_REF)
-	warning ("stack limit expression is not supported");
+	warning (0, "stack limit expression is not supported");
     }
 
   if (current_frame.reg_no <= 2)

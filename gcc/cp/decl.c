@@ -565,7 +565,7 @@ poplevel (int keep, int reverse, int functionbody)
 	  && ! TREE_USED (decl)
 	  && ! DECL_IN_SYSTEM_HEADER (decl)
 	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
-	warning ("%Junused variable %qD", decl, decl);
+	warning (0, "%Junused variable %qD", decl, decl);
 
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))
@@ -1055,17 +1055,17 @@ duplicate_decls (tree newdecl, tree olddecl)
 	       && DECL_UNINLINABLE (olddecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
 	{
-	  warning ("%Jfunction %qD redeclared as inline", newdecl, newdecl);
-	  warning ("%Jprevious declaration of %qD with attribute noinline",
+	  warning (0, "%Jfunction %qD redeclared as inline", newdecl, newdecl);
+	  warning (0, "%Jprevious declaration of %qD with attribute noinline",
                    olddecl, olddecl);
 	}
       else if (DECL_DECLARED_INLINE_P (olddecl)
 	       && DECL_UNINLINABLE (newdecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
 	{
-	  warning ("%Jfunction %qD redeclared with attribute noinline",
+	  warning (0, "%Jfunction %qD redeclared with attribute noinline",
 		   newdecl, newdecl);
-	  warning ("%Jprevious declaration of %qD was inline",
+	  warning (0, "%Jprevious declaration of %qD was inline",
 		   olddecl, olddecl);
 	}
     }
@@ -1086,7 +1086,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  if (! TREE_PUBLIC (newdecl))
 	    {
 	      if (warn_shadow)
-                warning ("shadowing %s function %q#D",
+                warning (0, "shadowing %s function %q#D",
                          DECL_BUILT_IN (olddecl) ? "built-in" : "library",
                          olddecl);
 	      /* Discard the old built-in function.  */
@@ -1095,7 +1095,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  /* If the built-in is not ansi, then programs can override
 	     it even globally without an error.  */
 	  else if (! DECL_BUILT_IN (olddecl))
-	    warning ("library function %q#D redeclared as non-function %q#D",
+	    warning (0, "library function %q#D redeclared as non-function %q#D",
                      olddecl, newdecl);
 	  else
 	    {
@@ -1152,12 +1152,12 @@ duplicate_decls (tree newdecl, tree olddecl)
 
 	      if (TREE_PUBLIC (newdecl))
 		{
-		  warning ("new declaration %q#D", newdecl);
-		  warning ("ambiguates built-in declaration %q#D",
+		  warning (0, "new declaration %q#D", newdecl);
+		  warning (0, "ambiguates built-in declaration %q#D",
                            olddecl);
 		}
 	      else if (warn_shadow)
-		warning ("shadowing %s function %q#D",
+		warning (0, "shadowing %s function %q#D",
                          DECL_BUILT_IN (olddecl) ? "built-in" : "library",
                          olddecl);
 	    }
@@ -1363,7 +1363,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
 	  cp_warning_at ("prototype for %q#D", newdecl);
-	  warning ("%Jfollows non-prototype definition here", olddecl);
+	  warning (0, "%Jfollows non-prototype definition here", olddecl);
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl))
@@ -1418,8 +1418,8 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      && ! DECL_DECLARED_INLINE_P (olddecl)
 	      && TREE_ADDRESSABLE (olddecl) && warn_inline)
 	    {
-	      warning ("%q#D was used before it was declared inline", newdecl);
-	      warning ("%Jprevious non-inline declaration here", olddecl);
+	      warning (0, "%q#D was used before it was declared inline", newdecl);
+	      warning (0, "%Jprevious non-inline declaration here", olddecl);
 	    }
 	}
     }
@@ -1471,7 +1471,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  /* Don't warn about friends, let add_friend take care of it.  */
 	  && ! (DECL_FRIEND_P (newdecl) || DECL_FRIEND_P (olddecl)))
 	{
-	  warning ("redundant redeclaration of %qD in same scope", newdecl);
+	  warning (0, "redundant redeclaration of %qD in same scope", newdecl);
 	  cp_warning_at ("previous declaration of %qD", olddecl);
 	}
     }
@@ -1806,9 +1806,9 @@ duplicate_decls (tree newdecl, tree olddecl)
       && DECL_VISIBILITY_SPECIFIED (newdecl)
       && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
     {
-      warning ("%J%qD: visibility attribute ignored because it",
+      warning (0, "%J%qD: visibility attribute ignored because it",
 	       newdecl, newdecl);
-      warning ("%Jconflicts with previous declaration here", olddecl);
+      warning (0, "%Jconflicts with previous declaration here", olddecl);
     }
   /* Choose the declaration which specified visibility.  */
   if (DECL_VISIBILITY_SPECIFIED (olddecl))
@@ -3645,7 +3645,7 @@ start_decl (const cp_declarator *declarator,
     {
       if (! toplevel_bindings_p ()
 	  && DECL_EXTERNAL (decl))
-	warning ("declaration of %q#D has %<extern%> and is initialized",
+	warning (0, "declaration of %q#D has %<extern%> and is initialized",
                  decl);
       DECL_EXTERNAL (decl) = 0;
       if (toplevel_bindings_p ())
@@ -3667,7 +3667,7 @@ start_decl (const cp_declarator *declarator,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning ("%Jinline function %qD given attribute noinline", decl, decl);
+    warning (0, "%Jinline function %qD given attribute noinline", decl, decl);
 
   if (context && COMPLETE_TYPE_P (complete_type (context)))
     {
@@ -4052,7 +4052,7 @@ maybe_commonize_var (tree decl)
 	      cp_warning_at ("sorry: semantics of inline function static "
                              "data %q#D are wrong (you'll wind up "
                              "with multiple copies)", decl);
-	      warning ("%J  you can work around this by removing "
+	      warning (0, "%J  you can work around this by removing "
                        "the initializer",
 		       decl);
 	    }
@@ -4366,7 +4366,7 @@ reshape_init (tree type, tree *initp)
       if (brace_enclosed_p)
 	error ("too many initializers for %qT", type);
       else if (warn_missing_braces && !string_init_p)
-	warning ("missing braces around initializer");
+	warning (0, "missing braces around initializer");
     }
 
   return new_init;
@@ -4506,7 +4506,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 		  && DECL_INITIAL (decl)
 		  && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
 		  && PAREN_STRING_LITERAL_P (DECL_INITIAL (decl)))
-		warning ("array %qD initialized by parenthesized string literal %qE",
+		warning (0, "array %qD initialized by parenthesized string literal %qE",
 			 decl, DECL_INITIAL (decl));
 	      init = NULL;
 	    }
@@ -4783,7 +4783,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  && IS_AGGR_TYPE (type) && DECL_NAME (decl))
 	{
 	  if (TREE_TYPE (DECL_NAME (decl)) && TREE_TYPE (decl) != type)
-	    warning ("shadowing previous type declaration of %q#D", decl);
+	    warning (0, "shadowing previous type declaration of %q#D", decl);
 	  set_identifier_type_value (DECL_NAME (decl), decl);
 	}
 
@@ -5885,7 +5885,7 @@ grokvardecl (tree type,
 		     no linkage can only be used to declare extern "C"
 		     entities.  Since it's not always an error in the
 		     ISO C++ 90 Standard, we only issue a warning.  */
-		  warning ("non-local variable %q#D uses anonymous type",
+		  warning (0, "non-local variable %q#D uses anonymous type",
 			   decl);
 		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
 		    cp_warning_at ("%q#D does not refer to the unqualified "
@@ -5894,7 +5894,7 @@ grokvardecl (tree type,
 		}
 	    }
 	  else
-	    warning ("non-local variable %q#D uses local type %qT", decl, t);
+	    warning (0, "non-local variable %q#D uses local type %qT", decl, t);
 	}
     }
   else
@@ -6728,7 +6728,7 @@ grokdeclarator (const cp_declarator *declarator,
       else if (pedantic || ! is_main)
 	pedwarn ("ISO C++ forbids declaration of %qs with no type", name);
       else if (warn_return_type)
-	warning ("ISO C++ forbids declaration of %qs with no type", name);
+	warning (0, "ISO C++ forbids declaration of %qs with no type", name);
 
       type = integer_type_node;
     }
@@ -7013,7 +7013,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  /* It's common practice (and completely valid) to have a const
 	     be initialized and declared extern.  */
 	  if (!(type_quals & TYPE_QUAL_CONST))
-	    warning ("%qs initialized and declared %<extern%>", name);
+	    warning (0, "%qs initialized and declared %<extern%>", name);
 	}
       else
 	error ("%qs has both %<extern%> and initializer", name);
@@ -7953,7 +7953,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    /* Friends are treated specially.  */
 	    if (ctype == current_class_type)
-	      warning ("member functions are implicitly friends of their class");
+	      warning (0, "member functions are implicitly friends of their class");
  	    else if (decl && DECL_NAME (decl))
 	      {
 		if (template_class_depth (current_class_type) == 0)
@@ -8777,7 +8777,7 @@ grok_op_properties (tree decl, int friendp, bool complain)
 		what = "a base class";
 
 	      if (what && warn_conversion)
-		warning ("conversion to %s%s will never use a type "
+		warning (0, "conversion to %s%s will never use a type "
                          "conversion operator",
 			 ref ? "a reference to " : "", what);
 	    }
@@ -8869,13 +8869,13 @@ grok_op_properties (tree decl, int friendp, bool complain)
 		  if (TREE_CODE (ret) != REFERENCE_TYPE
 		      || !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ret)),
 				       arg))
-		    warning ("prefix %qD should return %qT", decl,
+		    warning (0, "prefix %qD should return %qT", decl,
                              build_reference_type (arg));
 		}
 	      else
 		{
 		  if (!same_type_p (TYPE_MAIN_VARIANT (ret), arg))
-		    warning ("postfix %qD should return %qT", decl, arg);
+		    warning (0, "postfix %qD should return %qT", decl, arg);
 		}
 	    }
 	}
@@ -8904,7 +8904,7 @@ grok_op_properties (tree decl, int friendp, bool complain)
 	      && (operator_code == TRUTH_ANDIF_EXPR
 		  || operator_code == TRUTH_ORIF_EXPR
 		  || operator_code == COMPOUND_EXPR))
-	    warning ("user-defined %qD always evaluates both arguments",
+	    warning (0, "user-defined %qD always evaluates both arguments",
                      decl);
 	}
 
@@ -8918,7 +8918,7 @@ grok_op_properties (tree decl, int friendp, bool complain)
 	      || operator_code == MULT_EXPR
 	      || operator_code == TRUNC_MOD_EXPR)
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
-	warning ("%qD should return by value", decl);
+	warning (0, "%qD should return by value", decl);
 
       /* [over.oper]/8 */
       for (; argtypes && argtypes != void_list_node;
@@ -9906,7 +9906,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   if (DECL_DECLARED_INLINE_P (decl1)
       && lookup_attribute ("noinline", attrs))
-    warning ("%Jinline function %qD given attribute noinline", decl1, decl1);
+    warning (0, "%Jinline function %qD given attribute noinline", decl1, decl1);
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
     /* This is a constructor, we must ensure that any default args
@@ -9943,7 +9943,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   if (warn_ecpp
       && DECL_OVERLOADED_OPERATOR_P (decl1) == NOP_EXPR
       && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
-    warning ("%<operator=%> should return a reference to %<*this%>");
+    warning (0, "%<operator=%> should return a reference to %<*this%>");
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
@@ -10676,7 +10676,7 @@ finish_function (int flags)
       /* Structor return values (if any) are set by the compiler.  */
       && !DECL_CONSTRUCTOR_P (fndecl)
       && !DECL_DESTRUCTOR_P (fndecl))
-    warning ("no return statement in function returning non-void");
+    warning (0, "no return statement in function returning non-void");
 
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */

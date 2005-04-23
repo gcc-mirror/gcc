@@ -412,7 +412,19 @@ inform (const char *msgid, ...)
 /* A warning.  Use this for code which is correct according to the
    relevant language specification but is likely to be buggy anyway.  */
 void
-warning (const char *msgid, ...)
+warning (int opt ATTRIBUTE_UNUSED, const char *msgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, msgid);
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_WARNING);
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+}
+
+void
+warning0 (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;

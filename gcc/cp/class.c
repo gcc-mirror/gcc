@@ -1234,7 +1234,7 @@ check_bases (tree t,
 	 here because the case of virtual functions but non-virtual
 	 dtor is handled in finish_struct_1.  */
       if (warn_ecpp && ! TYPE_POLYMORPHIC_P (basetype))
-	warning ("base class %q#T has a non-virtual destructor", basetype);
+	warning (0, "base class %q#T has a non-virtual destructor", basetype);
 
       /* If the base class doesn't have copy constructors or
 	 assignment operators that take const references, then the
@@ -1548,7 +1548,7 @@ maybe_warn_about_overly_private_class (tree t)
 	  }
       if (!has_nonprivate_method) 
 	{
-	  warning ("all member functions in class %qT are private", t);
+	  warning (0, "all member functions in class %qT are private", t);
 	  return;
 	}
     }
@@ -1559,7 +1559,7 @@ maybe_warn_about_overly_private_class (tree t)
   fn = CLASSTYPE_DESTRUCTORS (t);
   if (fn && TREE_PRIVATE (fn))
     {
-      warning ("%q#T only defines a private destructor and has no friends",
+      warning (0, "%q#T only defines a private destructor and has no friends",
 	       t);
       return;
     }
@@ -1599,7 +1599,7 @@ maybe_warn_about_overly_private_class (tree t)
 
       if (nonprivate_ctor == 0)
 	{
-	  warning ("%q#T only defines private constructors and has no friends",
+	  warning (0, "%q#T only defines private constructors and has no friends",
                    t);
 	  return;
 	}
@@ -3035,16 +3035,16 @@ check_field_decls (tree t, tree *access_decls,
 	&& TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	&& !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
-      warning ("%q#T has pointer data members", t);
+      warning (0, "%q#T has pointer data members", t);
       
       if (! TYPE_HAS_INIT_REF (t))
 	{
-	  warning ("  but does not override %<%T(const %T&)%>", t, t);
+	  warning (0, "  but does not override %<%T(const %T&)%>", t, t);
 	  if (! TYPE_HAS_ASSIGN_REF (t))
-	    warning ("  or %<operator=(const %T&)%>", t);
+	    warning (0, "  or %<operator=(const %T&)%>", t);
 	}
       else if (! TYPE_HAS_ASSIGN_REF (t))
-	warning ("  but does not override %<operator=(const %T&)%>", t);
+	warning (0, "  but does not override %<operator=(const %T&)%>", t);
     }
 
 
@@ -3477,7 +3477,7 @@ layout_empty_base (tree binfo, tree eoc, splay_tree offsets)
 	propagate_binfo_offsets
 	  (binfo, size_diffop (size_zero_node, BINFO_OFFSET (binfo)));
       else if (warn_abi)
-	warning ("offset of empty base %qT may not be ABI-compliant and may"
+	warning (0, "offset of empty base %qT may not be ABI-compliant and may"
 		 "change in a future version of GCC",
 		 BINFO_TYPE (binfo));
     }
@@ -3589,7 +3589,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	      if (abi_version_at_least (2))
 		CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
 	      else if (warn_abi)
-		warning ("class %qT will be considered nearly empty in a "
+		warning (0, "class %qT will be considered nearly empty in a "
 			 "future version of GCC", t);
 	    }
 	}
@@ -4334,7 +4334,7 @@ layout_virtual_bases (record_layout_info rli, splay_tree offsets)
 					 CLASSTYPE_ALIGN (basetype)),
 			       bitsize_unit_node),
 		   BINFO_OFFSET (vbase))))
-	    warning ("offset of virtual base %qT is not ABI-compliant and "
+	    warning (0, "offset of virtual base %qT is not ABI-compliant and "
                      "may change in a future version of GCC",
 		     basetype);
 
@@ -4433,7 +4433,7 @@ warn_about_ambiguous_bases (tree t)
       basetype = BINFO_TYPE (base_binfo);
 
       if (!lookup_base (t, basetype, ba_unique | ba_quiet, NULL))
-	warning ("direct base %qT inaccessible in %qT due to ambiguity",
+	warning (0, "direct base %qT inaccessible in %qT due to ambiguity",
 		 basetype, t);
     }
 
@@ -4445,7 +4445,7 @@ warn_about_ambiguous_bases (tree t)
 	basetype = BINFO_TYPE (binfo);
 	
 	if (!lookup_base (t, basetype, ba_unique | ba_quiet, NULL))
-	  warning ("virtual base %qT inaccessible in %qT due to ambiguity",
+	  warning (0, "virtual base %qT inaccessible in %qT due to ambiguity",
 		   basetype, t);
       }
 }
@@ -4622,7 +4622,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	      else
 		{
 		  if (warn_abi && TREE_CODE (t) == UNION_TYPE)
-		    warning ("size assigned to %qT may not be "
+		    warning (0, "size assigned to %qT may not be "
 			     "ABI-compliant and may change in a future "
 			     "version of GCC", 
 			     t);
@@ -4661,7 +4661,7 @@ layout_class_type (tree t, tree *virtuals_p)
 		   && DECL_MODE (field) != TYPE_MODE (type))
 	    /* Versions of G++ before G++ 3.4 did not reset the
 	       DECL_MODE.  */
-	    warning ("the offset of %qD may not be ABI-compliant and may "
+	    warning (0, "the offset of %qD may not be ABI-compliant and may "
 		     "change in a future version of GCC", field);
 	}
       else
@@ -4754,7 +4754,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	  TYPE_SIZE (base_t) = bitsize_zero_node;
 	  TYPE_SIZE_UNIT (base_t) = size_zero_node;
 	  if (warn_abi && !integer_zerop (rli_size_unit_so_far (rli)))
-	    warning ("layout of classes derived from empty class %qT "
+	    warning (0, "layout of classes derived from empty class %qT "
 		     "may change in a future version of GCC",
 		     t);
 	}
@@ -5045,7 +5045,7 @@ finish_struct_1 (tree t)
 	      && (!TREE_PRIVATE (dtor) 
 		  || CLASSTYPE_FRIEND_CLASSES (t) 
 		  || DECL_FRIENDLIST (TYPE_MAIN_DECL (t)))))
-	warning ("%q#T has virtual functions but non-virtual destructor", 
+	warning (0, "%q#T has virtual functions but non-virtual destructor", 
 		 t);
     }
 

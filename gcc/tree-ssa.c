@@ -1102,7 +1102,7 @@ warn_uninit (tree t, const char *msgid, void *data)
   locus = (context != NULL && EXPR_HAS_LOCATION (context)
 	   ? EXPR_LOCUS (context)
 	   : &DECL_SOURCE_LOCATION (var));
-  warning (msgid, locus, var);
+  warning (0, msgid, locus, var);
   TREE_NO_WARNING (var) = 1;
 }
    

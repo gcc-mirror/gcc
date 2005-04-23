@@ -751,7 +751,7 @@ do {									\
 	 here we have a working libgcov, so just assume that we have.  */\
       if (profile_flag)							\
 	{								\
-	  warning ("Profiling is not supported on this target.");	\
+	  warning (0, "Profiling is not supported on this target.");	\
 	  profile_flag = profile_arc_flag = 0;				\
 	}								\
     }									\

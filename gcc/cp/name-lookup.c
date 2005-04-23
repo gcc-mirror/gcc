@@ -894,7 +894,7 @@ pushdecl (tree x)
 		/* OK */;
 	      else
 		{
-		  warning ("extern declaration of %q#D doesn't match", x);
+		  warning (0, "extern declaration of %q#D doesn't match", x);
 		  cp_warning_at ("global declaration %q#D", oldglobal);
 		}
 	    }
@@ -938,8 +938,8 @@ pushdecl (tree x)
 
 	      if (warn_shadow && !err)
 		{
-		  warning ("declaration of %q#D shadows a parameter", x);
-		  warning ("%Jshadowed declaration is here", oldlocal);
+		  warning (0, "declaration of %q#D shadows a parameter", x);
+		  warning (0, "%Jshadowed declaration is here", oldlocal);
 		}
 	    }
 
@@ -963,22 +963,22 @@ pushdecl (tree x)
 	      if (member && !TREE_STATIC (member))
 		{
 		  /* Location of previous decl is not useful in this case.  */
-		  warning ("declaration of %qD shadows a member of 'this'",
+		  warning (0, "declaration of %qD shadows a member of 'this'",
 			   x);
 		}
 	      else if (oldlocal != NULL_TREE
 		       && TREE_CODE (oldlocal) == VAR_DECL)
 		{
-		  warning ("declaration of %qD shadows a previous local", x);
-		  warning ("%Jshadowed declaration is here", oldlocal);
+		  warning (0, "declaration of %qD shadows a previous local", x);
+		  warning (0, "%Jshadowed declaration is here", oldlocal);
 		}
 	      else if (oldglobal != NULL_TREE
 		       && TREE_CODE (oldglobal) == VAR_DECL)
 		/* XXX shadow warnings in outer-more namespaces */
 		{
-		  warning ("declaration of %qD shadows a global declaration",
+		  warning (0, "declaration of %qD shadows a global declaration",
 			   x);
-		  warning ("%Jshadowed declaration is here", oldglobal);
+		  warning (0, "%Jshadowed declaration is here", oldglobal);
 		}
 	    }
 	}
@@ -1092,7 +1092,7 @@ check_for_out_of_scope_variable (tree decl)
     {
       if (!DECL_ERROR_REPORTED (decl))
 	{
-	  warning ("name lookup of %qD changed", DECL_NAME (decl));
+	  warning (0, "name lookup of %qD changed", DECL_NAME (decl));
 	  cp_warning_at ("  matches this %qD under ISO standard rules",
 			 shadowed);
 	  cp_warning_at ("  matches this %qD under old rules", decl);
@@ -1861,7 +1861,7 @@ push_overloaded_decl (tree decl, int flags)
 	  if (IS_AGGR_TYPE (t) && warn_shadow
 	      && (! DECL_IN_SYSTEM_HEADER (decl)
 		  || ! DECL_IN_SYSTEM_HEADER (old)))
-	    warning ("%q#D hides constructor for %q#T", decl, t);
+	    warning (0, "%q#D hides constructor for %q#T", decl, t);
 	  old = NULL_TREE;
 	}
       else if (is_overloaded_fn (old))
@@ -3207,7 +3207,7 @@ parse_using_directive (tree namespace, tree attribs)
 			   DECL_NAMESPACE_ASSOCIATIONS (namespace));
 	}
       else
-	warning ("%qD attribute directive ignored", name);
+	warning (0, "%qD attribute directive ignored", name);
     }
 }
 

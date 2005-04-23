@@ -2413,7 +2413,7 @@ xtensa_multibss_section_type_flags (tree decl, const char *name, int reloc)
 		    && DECL_INITIAL (decl) == NULL_TREE))
 	flags |= SECTION_BSS;  /* @nobits */
       else
-	warning ("only uninitialized variables can be placed in a "
+	warning (0, "only uninitialized variables can be placed in a "
 		 ".bss section");
     }
 

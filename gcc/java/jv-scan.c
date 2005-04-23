@@ -42,7 +42,8 @@ Boston, MA 02111-1307, USA.  */
 
 extern void fatal_error (const char *msgid, ...)
      ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void warning (const char *msgid, ...) ATTRIBUTE_PRINTF_1;
+void warning (int opt, const char *msgid, ...) ATTRIBUTE_PRINTF_2;
+void warning0 (const char *msgid, ...) ATTRIBUTE_PRINTF_1;
 void report (void);
 
 static void usage (void) ATTRIBUTE_NORETURN;
@@ -256,7 +257,18 @@ fatal_error (const char *msgid, ...)
 }
 
 void
-warning (const char *msgid, ...)
+warning (int opt ATTRIBUTE_UNUSED, const char *msgid, ...)
+{
+  va_list ap;
+  va_start (ap, msgid);
+  fprintf (stderr, _("%s: warning: "), exec_name);
+  vfprintf (stderr, _(msgid), ap);
+  fputc ('\n', stderr);
+  va_end (ap);
+}
+
+void
+warning0 (const char *msgid, ...)
 {
   va_list ap;
   va_start (ap, msgid);

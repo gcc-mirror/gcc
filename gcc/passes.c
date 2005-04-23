@@ -1212,7 +1212,7 @@ rest_of_handle_branch_target_load_optimize (void)
       && flag_branch_target_load_optimize2
       && !warned)
     {
-      warning ("branch target register load optimization is not intended "
+      warning (0, "branch target register load optimization is not intended "
 	       "to be run twice");
 
       warned = 1;

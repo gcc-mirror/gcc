@@ -179,7 +179,7 @@ fix_sched_param (const char *param, const char *val)
   if (!strcmp (param, "verbose"))
     sched_verbose_param = atoi (val);
   else
-    warning ("fix_sched_param: unknown param: %s", param);
+    warning (0, "fix_sched_param: unknown param: %s", param);
 }
 
 struct haifa_insn_data *h_i_d;

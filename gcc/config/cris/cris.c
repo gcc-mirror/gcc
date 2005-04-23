@@ -2218,7 +2218,7 @@ cris_override_options (void)
 
   if (write_symbols == DWARF2_DEBUG && ! TARGET_ELF)
     {
-      warning ("that particular -g option is invalid with -maout and -melinux");
+      warning (0, "that particular -g option is invalid with -maout and -melinux");
       write_symbols = DBX_DEBUG;
     }
 
@@ -2730,7 +2730,7 @@ cris_expand_prologue (void)
     }
 
   if (cris_max_stackframe && framesize > cris_max_stackframe)
-    warning ("stackframe too big: %d bytes", framesize);
+    warning (0, "stackframe too big: %d bytes", framesize);
 }
 
 /* The expander for the epilogue pattern.  */

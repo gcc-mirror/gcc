@@ -71,7 +71,7 @@ ix86_handle_shared_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != VAR_DECL)
     {
-      warning ("%qs attribute only applies to variables",
+      warning (0, "%qs attribute only applies to variables",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -199,7 +199,7 @@ i386_pe_dllimport_p (tree decl)
 	{
 	   /* Don't warn about artificial methods.  */
 	  if (!DECL_ARTIFICIAL (decl))
-	    warning ("%Jfunction '%D' is defined after prior declaration "
+	    warning (0, "%Jfunction '%D' is defined after prior declaration "
 		     "as dllimport: attribute ignored", decl, decl);
 	  return 0;
 	}
@@ -210,7 +210,7 @@ i386_pe_dllimport_p (tree decl)
       else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
         {
 	  if (extra_warnings)
-	    warning ("%Jinline function '%D' is declared as dllimport: "
+	    warning (0, "%Jinline function '%D' is declared as dllimport: "
 		     "attribute ignored.", decl, decl);
 	  return 0;
 	}
@@ -279,7 +279,7 @@ i386_pe_mark_dllexport (tree decl)
   oldname = XSTR (rtlname, 0);
   if (i386_pe_dllimport_name_p (oldname))
     {
-      warning ("%Jinconsistent dll linkage for '%D', dllexport assumed.",
+      warning (0, "%Jinconsistent dll linkage for '%D', dllexport assumed.",
 	       decl, decl);
      /* Remove DLL_IMPORT_PREFIX.  */
       oldname += strlen (DLL_IMPORT_PREFIX);
@@ -463,10 +463,10 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 	 We leave these alone for now.  */
 
       if (DECL_INITIAL (decl) || !DECL_EXTERNAL (decl))
-	warning ("%J'%D' defined locally after being "
+	warning (0, "%J'%D' defined locally after being "
 		 "referenced with dllimport linkage", decl, decl);
       else
-	warning ("%J'%D' redeclared without dllimport attribute "
+	warning (0, "%J'%D' redeclared without dllimport attribute "
 		 "after being referenced with dllimport linkage", decl, decl);
     }
 }

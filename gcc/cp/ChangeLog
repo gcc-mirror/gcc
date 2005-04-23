@@ -1,3 +1,10 @@
+2005-04-23  DJ Delorie  <dj@redhat.com>
+
+	* call.c, class.c, cvt.c, decl.c, decl2.c, except.c, friend.c,
+	init.c, lex.c, mangle.c, method.c, name-lookup.c, parser.c,
+	repo.c, rtti.c, tree.c, typeck.c, typeck2.c: Adjust warning()
+	callers.
+
 2005-04-22  Per Bothner  <per@bothner.com>
 
 	* decl.c (make_rtl_for_nonlocal_decl): Don't try get_fileinfo if

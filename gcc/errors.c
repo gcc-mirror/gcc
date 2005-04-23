@@ -42,7 +42,7 @@ int have_error = 0;
 /* Print a warning message - output produced, but there may be problems.  */
 
 void
-warning (const char *format, ...)
+warning (int opt ATTRIBUTE_UNUSED, const char *format, ...)
 {
   va_list ap;
 

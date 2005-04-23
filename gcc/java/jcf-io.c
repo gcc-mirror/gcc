@@ -533,7 +533,7 @@ find_class (const char *classname, int classname_length, JCF *jcf,
   if (! java && ! class && java_buf.st_mtime > class_buf.st_mtime)
     {
       if (flag_newer)
-	warning ("source file for class %qs is newer than its matching class file.  Source file %qs used instead", classname, java_buffer);
+	warning (0, "source file for class %qs is newer than its matching class file.  Source file %qs used instead", classname, java_buffer);
       class = -1;
     }
 

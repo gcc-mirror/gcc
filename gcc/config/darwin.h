@@ -374,7 +374,7 @@ Boston, MA 02111-1307, USA.  */
   do {									\
     if (ALIAS)								\
       {									\
-	warning ("alias definitions not supported in Mach-O; ignored");	\
+	warning (0, "alias definitions not supported in Mach-O; ignored");	\
 	break;								\
       }									\
  									\

@@ -329,7 +329,7 @@ parse_output_constraint (const char **constraint_p, int operand_num,
       size_t c_len = strlen (constraint);
 
       if (p != constraint)
-	warning ("output constraint %qc for operand %d "
+	warning (0, "output constraint %qc for operand %d "
 		 "is not at the beginning",
 		 *p, operand_num);
 
@@ -553,7 +553,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
       }
 
   if (saw_match && !*allows_reg)
-    warning ("matching constraint does not allow a register");
+    warning (0, "matching constraint does not allow a register");
 
   return true;
 }
@@ -880,7 +880,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	  if (allows_reg)
 	    op = force_reg (TYPE_MODE (type), op);
 	  else if (!allows_mem)
-	    warning ("asm operand %d probably doesn%'t match constraints",
+	    warning (0, "asm operand %d probably doesn%'t match constraints",
 		     i + noutputs);
 	  else if (MEM_P (op))
 	    {
@@ -890,7 +890,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	    }
 	  else
 	    {
-	      warning ("use of memory input without lvalue in "
+	      warning (0, "use of memory input without lvalue in "
 		       "asm operand %d is deprecated", i + noutputs);
 
 	      if (CONSTANT_P (op))
@@ -1475,7 +1475,7 @@ warn_if_unused_value (tree exp, location_t locus)
       if (TREE_SIDE_EFFECTS (exp))
 	return 0;
 
-      warning ("%Hvalue computed is not used", &locus);
+      warning (0, "%Hvalue computed is not used", &locus);
       return 1;
     }
 }

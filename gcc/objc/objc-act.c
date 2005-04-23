@@ -753,7 +753,7 @@ objc_finish_implementation (void)
       objc_implementation_context = NULL_TREE;
     }
   else
-    warning ("%<@end%> must appear in an @implementation context");
+    warning (0, "%<@end%> must appear in an @implementation context");
 }
 
 void
@@ -924,7 +924,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 
 		      if (!rproto)
 			warning
-			  ("object does not conform to the %qs protocol",
+			  (0, "object does not conform to the %qs protocol",
 			   IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
 		    }
 		  return 1;
@@ -1014,7 +1014,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 		    }
 
 		  if (!rproto)
-		    warning ("class %qs does not implement the %qs protocol",
+		    warning (0, "class %qs does not implement the %qs protocol",
 			     IDENTIFIER_POINTER (OBJC_TYPE_NAME (TREE_TYPE (rhs))),
 			     IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
 		}
@@ -1091,7 +1091,7 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 			}
 		
 		      if (!lproto)
-			warning ("class %qs does not implement the %qs protocol",
+			warning (0, "class %qs does not implement the %qs protocol",
 				 IDENTIFIER_POINTER (OBJC_TYPE_NAME
 						     (TREE_TYPE (lhs))),
 				 IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
@@ -2373,7 +2373,7 @@ build_selector_translation_table (void)
 	      loc = &DECL_SOURCE_LOCATION (TREE_PURPOSE (chain));
 	    else
 	      loc = &input_location;
-	    warning ("%Hcreating selector for nonexistent method %qE",
+	    warning (0, "%Hcreating selector for nonexistent method %qE",
 		     loc, TREE_VALUE (chain));
 	  }
       }
@@ -2682,9 +2682,9 @@ objc_declare_alias (tree alias_ident, tree class_ident)
 #endif /* OBJCPLUS */
 
   if (!(underlying_class = objc_is_class_name (class_ident)))
-    warning ("cannot find class %qs", IDENTIFIER_POINTER (class_ident));
+    warning (0, "cannot find class %qs", IDENTIFIER_POINTER (class_ident));
   else if (objc_is_class_name (alias_ident))
-    warning ("class %qs already exists", IDENTIFIER_POINTER (alias_ident));
+    warning (0, "class %qs already exists", IDENTIFIER_POINTER (alias_ident));
   else
     alias_chain = tree_cons (underlying_class, alias_ident, alias_chain);
 }
@@ -2945,7 +2945,7 @@ objc_init_exceptions (void)
       /* On Darwin, ObjC exceptions require a sufficiently recent
 	 version of the runtime, so the user must ask for them explicitly.  */
       if (!flag_objc_exceptions)
-	warning ("use %<-fobjc-exceptions%> to enable Objective-C "
+	warning (0, "use %<-fobjc-exceptions%> to enable Objective-C "
 		 "exception syntax");
     }
 #ifndef OBJCPLUS
@@ -3290,9 +3290,9 @@ objc_begin_catch_clause (tree decl)
 	    continue;
 	  if (!t || objc_comptypes (TREE_TYPE (t), TREE_TYPE (type), 0) == 1)
 	    {
-	      warning ("exception of type %<%T%> will be caught",
+	      warning (0, "exception of type %<%T%> will be caught",
 		       TREE_TYPE (type));
-	      warning ("%H   by earlier handler for %<%T%>",
+	      warning (0, "%H   by earlier handler for %<%T%>",
 		       EXPR_LOCUS (stmt), TREE_TYPE (t ? t : objc_object_type));
 	      break;
 	    }
@@ -5377,7 +5377,7 @@ check_duplicates (hash hsh, int methods, int is_class)
 	     different types.  */
 	  attr loop;
 
-	  warning ("multiple %s named %<%c%s%> found",
+	  warning (0, "multiple %s named %<%c%s%> found",
 		   methods ? "methods" : "selectors",
 		   (is_class ? '+' : '-'),
 		   IDENTIFIER_POINTER (METHOD_SEL_NAME (meth)));
@@ -5645,7 +5645,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 		= lookup_method_in_protocol_list (rprotos, sel_name, 0);
 
 	      if (method_prototype)
-		warning ("found %<-%s%> instead of %<+%s%> in protocol(s)",
+		warning (0, "found %<-%s%> instead of %<+%s%> in protocol(s)",
 			 IDENTIFIER_POINTER (sel_name),
 			 IDENTIFIER_POINTER (sel_name));
 	    }
@@ -5704,7 +5704,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	}
       else
 	{
-	  warning ("invalid receiver type %qs",
+	  warning (0, "invalid receiver type %qs",
 		   gen_type_name (orig_rtype));
 	  /* After issuing the "invalid receiver" warning, perform method
 	     lookup as if we were messaging 'id'.  */
@@ -5719,7 +5719,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
   if (!method_prototype)
     {
       if (rprotos)
-	warning ("%<%c%s%> not found in protocol(s)",
+	warning (0, "%<%c%s%> not found in protocol(s)",
 		 (class_tree ? '+' : '-'),
 		 IDENTIFIER_POINTER (sel_name));
 
@@ -5733,7 +5733,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
       static bool warn_missing_methods = false;
 
       if (rtype)
-	warning ("%qs may not respond to %<%c%s%>",
+	warning (0, "%qs may not respond to %<%c%s%>",
 		 IDENTIFIER_POINTER (OBJC_TYPE_NAME (rtype)),
 		 (class_tree ? '+' : '-'),
 		 IDENTIFIER_POINTER (sel_name));
@@ -5741,15 +5741,15 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	 then we have failed to find _any_ instance or class method,
 	 respectively.  */
       else
-	warning ("no %<%c%s%> method found",
+	warning (0, "no %<%c%s%> method found",
 		 (class_tree ? '+' : '-'),
 		 IDENTIFIER_POINTER (sel_name));
 
       if (!warn_missing_methods)
 	{
-	  warning ("(Messages without a matching method signature");
-	  warning ("will be assumed to return %<id%> and accept");
-	  warning ("%<...%> as arguments.)");
+	  warning (0, "(Messages without a matching method signature");
+	  warning (0, "will be assumed to return %<id%> and accept");
+	  warning (0, "%<...%> as arguments.)");
 	  warn_missing_methods = true;
 	}
     }
@@ -5980,7 +5980,7 @@ objc_build_selector_expr (tree selnamelist)
       /* If still not found, print out a warning.  */
       if (!hsh)
 	{
-	  warning ("undeclared selector %qs", IDENTIFIER_POINTER (selname));
+	  warning (0, "undeclared selector %qs", IDENTIFIER_POINTER (selname));
 	}
     }
 
@@ -6022,7 +6022,7 @@ build_ivar_reference (tree id)
 	 to an instance variable.  It's better to catch the cases
 	 where this is done unknowingly than to support the above
 	 paradigm.  */
-      warning ("instance variable %qs accessed in class method",
+      warning (0, "instance variable %qs accessed in class method",
 	       IDENTIFIER_POINTER (id));
       self_decl = convert (objc_instance_type, self_decl); /* cast */
     }
@@ -6279,7 +6279,7 @@ add_category (tree class, tree category)
 
   if (cat)
     {
-      warning ("duplicate interface declaration for category %<%s(%s)%>",
+      warning (0, "duplicate interface declaration for category %<%s(%s)%>",
 	       IDENTIFIER_POINTER (CLASS_NAME (class)),
 	       IDENTIFIER_POINTER (CLASS_SUPER_NAME (category)));
     }
@@ -6340,10 +6340,10 @@ add_instance_variable (tree class, int public, tree field_decl)
       /* user-defined constructors and destructors are not known to Obj-C and
          hence will not be called.  This may or may not be a problem. */
       if (TYPE_NEEDS_CONSTRUCTING (field_type))
-        warning ("type %qs has a user-defined constructor", type_name);
+        warning (0, "type %qs has a user-defined constructor", type_name);
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (field_type))
-        warning ("type %qs has a user-defined destructor", type_name);
-      warning ("C++ constructors and destructors will not be invoked for Objective-C fields");
+        warning (0, "type %qs has a user-defined destructor", type_name);
+      warning (0, "C++ constructors and destructors will not be invoked for Objective-C fields");
     }
 #endif
 
@@ -6442,7 +6442,7 @@ objc_is_public (tree expr, tree identifier)
 		 non-@public ivars.  We will let this slide for now...  */
 	      if (!objc_method_context)
 	      {
-		warning ("instance variable %qs is %s; "
+		warning (0, "instance variable %qs is %s; "
 			 "this will be a hard error in the future",
 			 IDENTIFIER_POINTER (identifier),
 			 TREE_PRIVATE (decl) ? "@private" : "@protected");
@@ -6459,7 +6459,7 @@ objc_is_public (tree expr, tree identifier)
       else if (objc_implementation_context && (basetype == objc_object_reference))
 	{
 	  expr = convert (uprivate_record, expr);
-	  warning ("static access to object of type %<id%>");
+	  warning (0, "static access to object of type %<id%>");
 	}
     }
 
@@ -6481,16 +6481,16 @@ check_methods (tree chain, tree list, int mtype)
 	    {
 	      if (TREE_CODE (objc_implementation_context)
 		  == CLASS_IMPLEMENTATION_TYPE)
-		warning ("incomplete implementation of class %qs",
+		warning (0, "incomplete implementation of class %qs",
 			 IDENTIFIER_POINTER (CLASS_NAME (objc_implementation_context)));
 	      else if (TREE_CODE (objc_implementation_context)
 		       == CATEGORY_IMPLEMENTATION_TYPE)
-		warning ("incomplete implementation of category %qs",
+		warning (0, "incomplete implementation of category %qs",
 			 IDENTIFIER_POINTER (CLASS_SUPER_NAME (objc_implementation_context)));
 	      first = 0;
 	    }
 
-	  warning ("method definition for %<%c%s%> not found",
+	  warning (0, "method definition for %<%c%s%> not found",
 		   mtype, IDENTIFIER_POINTER (METHOD_SEL_NAME (chain)));
 	}
 
@@ -6569,17 +6569,17 @@ check_methods_accessible (tree chain, tree context, int mtype)
 	    {
 	      if (TREE_CODE (objc_implementation_context)
 		  == CLASS_IMPLEMENTATION_TYPE)
-		warning ("incomplete implementation of class %qs",
+		warning (0, "incomplete implementation of class %qs",
 			 IDENTIFIER_POINTER
 			   (CLASS_NAME (objc_implementation_context)));
 	      else if (TREE_CODE (objc_implementation_context)
 		       == CATEGORY_IMPLEMENTATION_TYPE)
-		warning ("incomplete implementation of category %qs",
+		warning (0, "incomplete implementation of category %qs",
 			 IDENTIFIER_POINTER
 			   (CLASS_SUPER_NAME (objc_implementation_context)));
 	      first = 0;
 	    }
-	  warning ("method definition for %<%c%s%> not found",
+	  warning (0, "method definition for %<%c%s%> not found",
 		   mtype, IDENTIFIER_POINTER (METHOD_SEL_NAME (chain)));
 	}
 
@@ -6620,7 +6620,7 @@ check_protocol (tree p, const char *type, const char *name)
 	}
 
       if (!f1 || !f2)
-	warning ("%s %qs does not fully implement the %qs protocol",
+	warning (0, "%s %qs does not fully implement the %qs protocol",
 		 type, name, IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
     }
 
@@ -6678,7 +6678,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 
   if (objc_implementation_context)
     {
-      warning ("%<@end%> missing in implementation context");
+      warning (0, "%<@end%> missing in implementation context");
       finish_class (objc_implementation_context);
       objc_ivar_chain = NULL_TREE;
       objc_implementation_context = NULL_TREE;
@@ -6735,7 +6735,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 
       if (!(implementation_template = lookup_interface (class_name)))
         {
-	  warning ("cannot find interface declaration for %qs",
+	  warning (0, "cannot find interface declaration for %qs",
 		   IDENTIFIER_POINTER (class_name));
 	  add_class (implementation_template = objc_implementation_context);
         }
@@ -6767,7 +6767,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 #ifdef OBJCPLUS
 	error ("duplicate interface declaration for class %qs",
 #else
-	warning ("duplicate interface declaration for class %qs",
+	warning (0, "duplicate interface declaration for class %qs",
 #endif	
         IDENTIFIER_POINTER (class_name));
       else
@@ -7022,7 +7022,7 @@ start_protocol (enum tree_code code, tree name, tree list)
     }
   else
     {
-      warning ("duplicate declaration for protocol %qs",
+      warning (0, "duplicate declaration for protocol %qs",
 	       IDENTIFIER_POINTER (name));
     }
   return protocol;
@@ -7552,7 +7552,7 @@ static void
 warn_with_method (const char *message, int mtype, tree method)
 {
   /* Add a readable method name to the warning.  */
-  warning ("%J%s %<%c%s%>", method,
+  warning (0, "%J%s %<%c%s%>", method,
            message, mtype, gen_method_decl (method));
 }
 
@@ -8285,7 +8285,7 @@ finish_objc (void)
   /* A missing @end may not be detected by the parser.  */
   if (objc_implementation_context)
     {
-      warning ("%<@end%> missing in implementation context");
+      warning (0, "%<@end%> missing in implementation context");
       finish_class (objc_implementation_context);
       objc_ivar_chain = NULL_TREE;
       objc_implementation_context = NULL_TREE;
@@ -8567,7 +8567,7 @@ objc_lookup_ivar (tree other, tree id)
   if (TREE_CODE (objc_method_context) == INSTANCE_METHOD_DECL
       && other && other != error_mark_node && !DECL_FILE_SCOPE_P (other))
     {
-      warning ("local declaration of %qs hides instance variable",
+      warning (0, "local declaration of %qs hides instance variable",
 	       IDENTIFIER_POINTER (id));
 
       return other;

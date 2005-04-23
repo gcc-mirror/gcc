@@ -433,7 +433,7 @@ parse_strconst_pragma (const char* name, int opt)
     {
       result = x;
       if (c_lex (&x) != CPP_EOF)
-	warning ("junk at end of #pragma %s", name);
+	warning (0, "junk at end of #pragma %s", name);
       return result;
     }
 
@@ -527,7 +527,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
 	 cookie (if any) of the filename, but this requires completing the
 	 --enable-mapped-location project first.  See PR 17577.  */
       if (cpp_included (parse_in, filename))
-	warning ("#pragma implementation for %qs appears after "
+	warning (0, "#pragma implementation for %qs appears after "
 		 "file is included", filename);
 #endif
     }
@@ -552,7 +552,7 @@ handle_pragma_java_exceptions (cpp_reader* dfile ATTRIBUTE_UNUSED )
 {
   tree x;
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma GCC java_exceptions");
+    warning (0, "junk at end of #pragma GCC java_exceptions");
 
   choose_personality_routine (lang_java);
 }

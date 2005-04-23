@@ -3402,14 +3402,14 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
       
       if (TREE_CODE (arg2_type) == ENUMERAL_TYPE
           && TREE_CODE (arg3_type) == ENUMERAL_TYPE)
-         warning ("enumeral mismatch in conditional expression: %qT vs %qT",
+         warning (0, "enumeral mismatch in conditional expression: %qT vs %qT",
                    arg2_type, arg3_type);
       else if (extra_warnings
                && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
                     && !same_type_p (arg3_type, type_promotes_to (arg2_type)))
                    || (TREE_CODE (arg3_type) == ENUMERAL_TYPE
                        && !same_type_p (arg2_type, type_promotes_to (arg3_type)))))
-        warning ("enumeral and non-enumeral type in conditional expression");
+        warning (0, "enumeral and non-enumeral type in conditional expression");
       
       arg2 = perform_implicit_conversion (result_type, arg2);
       arg3 = perform_implicit_conversion (result_type, arg3);
@@ -3776,7 +3776,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 		  && (TYPE_MAIN_VARIANT (TREE_TYPE (arg1))
 		      != TYPE_MAIN_VARIANT (TREE_TYPE (arg2))))
 		{
-		  warning ("comparison between %q#T and %q#T", 
+		  warning (0, "comparison between %q#T and %q#T", 
                            TREE_TYPE (arg1), TREE_TYPE (arg2));
 		}
 	      break;
@@ -4097,7 +4097,7 @@ build_temp (tree expr, tree type, int flags,
 				    build_tree_list (NULL_TREE, expr), 
 				    type, flags);
   if (warningcount > savew)
-    *diagnostic_fn = warning;
+    *diagnostic_fn = warning0;
   else if (errorcount > savee)
     *diagnostic_fn = error;
   else
@@ -4160,10 +4160,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       if (ARITHMETIC_TYPE_P (t) && expr == null_node)
 	{
 	  if (fn)
-	    warning ("passing NULL to non-pointer argument %P of %qD",
+	    warning (0, "passing NULL to non-pointer argument %P of %qD",
 		     argnum, fn);
 	  else
-	    warning ("converting to non-pointer type %qT from NULL", t);
+	    warning (0, "converting to non-pointer type %qT from NULL", t);
 	}
 
       /* Warn about assigning a floating-point type to an integer type.  */
@@ -4171,10 +4171,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && TREE_CODE (t) == INTEGER_TYPE)
 	{
 	  if (fn)
-	    warning ("passing %qT for argument %P to %qD",
+	    warning (0, "passing %qT for argument %P to %qD",
 		     TREE_TYPE (expr), argnum, fn);
 	  else
-	    warning ("converting to %qT from %qT", t, TREE_TYPE (expr));
+	    warning (0, "converting to %qT from %qT", t, TREE_TYPE (expr));
 	}
       /* And warn about assigning a negative value to an unsigned
 	 variable.  */
@@ -4183,10 +4183,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  if (TREE_CODE (expr) == INTEGER_CST && TREE_NEGATED_INT (expr)) 
 	    {
 	      if (fn)
-		warning ("passing negative value %qE for argument %P to %qD",
+		warning (0, "passing negative value %qE for argument %P to %qD",
 			 expr, argnum, fn);
 	      else
-		warning ("converting negative value %qE to %qT", expr, t);
+		warning (0, "converting negative value %qE to %qT", expr, t);
 	    }
 	  
 	  overflow_warning (expr);
@@ -4443,7 +4443,7 @@ convert_arg_to_ellipsis (tree arg)
 	 there is no need to emit a warning, since the expression won't be 
 	 evaluated. We keep the builtin_trap just as a safety check.  */
       if (!skip_evaluation)
-	warning ("cannot pass objects of non-POD type %q#T through %<...%>; "
+	warning (0, "cannot pass objects of non-POD type %q#T through %<...%>; "
 	         "call will abort at runtime", TREE_TYPE (arg));
       arg = call_builtin_trap ();
       arg = build2 (COMPOUND_EXPR, integer_type_node, arg,
@@ -4469,7 +4469,7 @@ build_x_va_arg (tree expr, tree type)
   if (! pod_type_p (type))
     {
       /* Undefined behavior [expr.call] 5.2.2/7.  */
-      warning ("cannot receive objects of non-POD type %q#T through %<...%>; "
+      warning (0, "cannot receive objects of non-POD type %q#T through %<...%>; "
                "call will abort at runtime", type);
       expr = convert (build_pointer_type (type), null_node);
       expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr),
@@ -5384,7 +5384,7 @@ build_new_method_call (tree instance, tree fns, tree args,
 		  || DECL_DESTRUCTOR_P (current_function_decl)))
 	    /* This is not an error, it is runtime undefined
 	       behavior.  */
-	    warning ((DECL_CONSTRUCTOR_P (current_function_decl) ? 
+	    warning (0, (DECL_CONSTRUCTOR_P (current_function_decl) ? 
 		      "abstract virtual %q#D called from constructor"
 		      : "abstract virtual %q#D called from destructor"),
 		     cand->fn);
@@ -5997,9 +5997,9 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 
 	      if (warn)
 		{
-		  warning ("passing %qT chooses %qT over %qT",
+		  warning (0, "passing %qT chooses %qT over %qT",
 			      type, type1, type2);
-		  warning ("  in call to %qD", w->fn);
+		  warning (0, "  in call to %qD", w->fn);
 		}
 	      else
 		add_warning (w, l);
@@ -6056,10 +6056,10 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 	  tree source = source_type (w->convs[0]);
 	  if (! DECL_CONSTRUCTOR_P (w->fn))
 	    source = TREE_TYPE (source);
-	  warning ("choosing %qD over %qD", w->fn, l->fn);
-	  warning ("  for conversion from %qT to %qT",
+	  warning (0, "choosing %qD over %qD", w->fn, l->fn);
+	  warning (0, "  for conversion from %qT to %qT",
 		   source, w->second_conv->type);
-	  warning ("  because conversion sequence for the argument is better");
+	  warning (0, "  because conversion sequence for the argument is better");
 	}
       else
 	add_warning (w, l);

@@ -42,8 +42,8 @@
    attribute by default.  */
 
 #define SYNTAX_ERROR(msgid) do {			\
-  warning (msgid);					\
-  warning ("ignoring malformed #pragma longcall");	\
+  warning (0, msgid);					\
+  warning (0, "ignoring malformed #pragma longcall");	\
   return;						\
 } while (0)
 
@@ -66,7 +66,7 @@ rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
     SYNTAX_ERROR ("number must be 0 or 1");
 
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma longcall");
+    warning (0, "junk at end of #pragma longcall");
 
   rs6000_default_long_calls = (n == integer_one_node);
 }

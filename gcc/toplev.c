@@ -851,7 +851,7 @@ check_global_declarations (tree *vec, int len)
 	  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	    pedwarn ("%J%qF used but never defined", decl, decl);
 	  else
-	    warning ("%J%qF declared %<static%> but never defined",
+	    warning (0, "%J%qF declared %<static%> but never defined",
 		     decl, decl);
 	  /* This symbol is effectively an "extern" declaration now.  */
 	  TREE_PUBLIC (decl) = 1;
@@ -877,7 +877,7 @@ check_global_declarations (tree *vec, int len)
 	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	  /* Otherwise, ask the language.  */
 	  && lang_hooks.decls.warn_unused_global (decl))
-	warning ("%J%qD defined but not used", decl, decl);
+	warning (0, "%J%qD defined but not used", decl, decl);
 
       /* Avoid confusing the debug information machinery when there are
 	 errors.  */
@@ -900,7 +900,7 @@ warn_deprecated_use (tree node)
   if (DECL_P (node))
     {
       expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
-      warning ("%qs is deprecated (declared at %s:%d)",
+      warning (0, "%qs is deprecated (declared at %s:%d)",
 	       IDENTIFIER_POINTER (DECL_NAME (node)),
 	       xloc.file, xloc.line);
     }
@@ -923,18 +923,18 @@ warn_deprecated_use (tree node)
 	  expanded_location xloc
 	    = expand_location (DECL_SOURCE_LOCATION (decl));
 	  if (what)
-	    warning ("%qs is deprecated (declared at %s:%d)", what,
+	    warning (0, "%qs is deprecated (declared at %s:%d)", what,
 		       xloc.file, xloc.line);
 	  else
-	    warning ("type is deprecated (declared at %s:%d)",
+	    warning (0, "type is deprecated (declared at %s:%d)",
 		     xloc.file, xloc.line);
 	}
       else
 	{
 	  if (what)
-	    warning ("%qs is deprecated", what);
+	    warning (0, "%qs is deprecated", what);
 	  else
-	    warning ("type is deprecated");
+	    warning (0, "type is deprecated");
 	}
     }
 }
@@ -1187,7 +1187,7 @@ decode_d_option (const char *arg)
       case 'a':
       default:
 	if (!enable_rtl_dump_file (c))
-	  warning ("unrecognized gcc debugging option: %c", c);
+	  warning (0, "unrecognized gcc debugging option: %c", c);
 	break;
       }
 }
@@ -1768,11 +1768,11 @@ process_options (void)
   /* Warn about options that are not supported on this machine.  */
 #ifndef INSN_SCHEDULING
   if (flag_schedule_insns || flag_schedule_insns_after_reload)
-    warning ("instruction scheduling not supported on this target machine");
+    warning (0, "instruction scheduling not supported on this target machine");
 #endif
 #ifndef DELAY_SLOTS
   if (flag_delayed_branch)
-    warning ("this target machine does not have delayed branches");
+    warning (0, "this target machine does not have delayed branches");
 #endif
 
   user_label_prefix = USER_LABEL_PREFIX;
@@ -1786,7 +1786,7 @@ process_options (void)
 	  user_label_prefix = flag_leading_underscore ? "_" : "";
 	}
       else
-	warning ("-f%sleading-underscore not supported on this target machine",
+	warning (0, "-f%sleading-underscore not supported on this target machine",
 		 flag_leading_underscore ? "" : "no-");
     }
 
@@ -1872,10 +1872,10 @@ process_options (void)
       if (flag_var_tracking == 1)
         {
 	  if (debug_info_level < DINFO_LEVEL_NORMAL)
-	    warning ("variable tracking requested, but useless unless "
+	    warning (0, "variable tracking requested, but useless unless "
 		     "producing debug info");
 	  else
-	    warning ("variable tracking requested, but not supported "
+	    warning (0, "variable tracking requested, but not supported "
 		     "by this debug format");
 	}
       flag_var_tracking = 0;
@@ -1902,44 +1902,44 @@ process_options (void)
     {
       if (flag_function_sections)
 	{
-	  warning ("-ffunction-sections not supported for this target");
+	  warning (0, "-ffunction-sections not supported for this target");
 	  flag_function_sections = 0;
 	}
       if (flag_data_sections)
 	{
-	  warning ("-fdata-sections not supported for this target");
+	  warning (0, "-fdata-sections not supported for this target");
 	  flag_data_sections = 0;
 	}
     }
 
   if (flag_function_sections && profile_flag)
     {
-      warning ("-ffunction-sections disabled; it makes profiling impossible");
+      warning (0, "-ffunction-sections disabled; it makes profiling impossible");
       flag_function_sections = 0;
     }
 
 #ifndef HAVE_prefetch
   if (flag_prefetch_loop_arrays)
     {
-      warning ("-fprefetch-loop-arrays not supported for this target");
+      warning (0, "-fprefetch-loop-arrays not supported for this target");
       flag_prefetch_loop_arrays = 0;
     }
   if (flag_speculative_prefetching)
     {
       if (flag_speculative_prefetching_set)
-	warning ("-fspeculative-prefetching not supported for this target");
+	warning (0, "-fspeculative-prefetching not supported for this target");
       flag_speculative_prefetching = 0;
     }
 #else
   if (flag_prefetch_loop_arrays && !HAVE_prefetch)
     {
-      warning ("-fprefetch-loop-arrays not supported for this target (try -march switches)");
+      warning (0, "-fprefetch-loop-arrays not supported for this target (try -march switches)");
       flag_prefetch_loop_arrays = 0;
     }
   if (flag_speculative_prefetching && !HAVE_prefetch)
     {
       if (flag_speculative_prefetching_set)
-	warning ("-fspeculative-prefetching not supported for this target (try -march switches)");
+	warning (0, "-fspeculative-prefetching not supported for this target (try -march switches)");
       flag_speculative_prefetching = 0;
     }
 #endif
@@ -1948,13 +1948,13 @@ process_options (void)
      make much sense anyway, so don't allow it.  */
   if (flag_prefetch_loop_arrays && optimize_size)
     {
-      warning ("-fprefetch-loop-arrays is not supported with -Os");
+      warning (0, "-fprefetch-loop-arrays is not supported with -Os");
       flag_prefetch_loop_arrays = 0;
     }
 
 #ifndef OBJECT_FORMAT_ELF
   if (flag_function_sections && write_symbols != NO_DEBUG)
-    warning ("-ffunction-sections may affect debugging on some targets");
+    warning (0, "-ffunction-sections may affect debugging on some targets");
 #endif
 
   /* The presence of IEEE signaling NaNs, implies all math can trap.  */

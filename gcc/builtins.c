@@ -351,7 +351,7 @@ c_strlen (tree src, int only_value)
      runtime.  */
   if (offset < 0 || offset > max)
     {
-      warning ("offset outside bounds of constant string");
+      warning (0, "offset outside bounds of constant string");
       return 0;
     }
 
@@ -945,7 +945,7 @@ expand_builtin_prefetch (tree arglist)
   /* Argument 1 must be either zero or one.  */
   if (INTVAL (op1) != 0 && INTVAL (op1) != 1)
     {
-      warning ("invalid second argument to %<__builtin_prefetch%>;"
+      warning (0, "invalid second argument to %<__builtin_prefetch%>;"
 	       " using zero");
       op1 = const0_rtx;
     }
@@ -960,7 +960,7 @@ expand_builtin_prefetch (tree arglist)
   /* Argument 2 must be 0, 1, 2, or 3.  */
   if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
     {
-      warning ("invalid third argument to %<__builtin_prefetch%>; using zero");
+      warning (0, "invalid third argument to %<__builtin_prefetch%>; using zero");
       op2 = const0_rtx;
     }
 
@@ -4220,12 +4220,12 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
       /* Unfortunately, this is merely undefined, rather than a constraint
 	 violation, so we cannot make this an error.  If this call is never
 	 executed, the program is still strictly conforming.  */
-      warning ("%qT is promoted to %qT when passed through %<...%>",
+      warning (0, "%qT is promoted to %qT when passed through %<...%>",
 	       type, promoted_type);
       if (! gave_help)
 	{
 	  gave_help = true;
-	  warning ("(so you should pass %qT not %qT to %<va_arg%>)",
+	  warning (0, "(so you should pass %qT not %qT to %<va_arg%>)",
 		   promoted_type, type);
 	}
 
@@ -4365,9 +4365,9 @@ expand_builtin_frame_address (tree fndecl, tree arglist)
       if (tem == NULL)
 	{
 	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
-	    warning ("unsupported argument to %<__builtin_frame_address%>");
+	    warning (0, "unsupported argument to %<__builtin_frame_address%>");
 	  else
-	    warning ("unsupported argument to %<__builtin_return_address%>");
+	    warning (0, "unsupported argument to %<__builtin_return_address%>");
 	  return const0_rtx;
 	}
 
@@ -9486,7 +9486,7 @@ fold_builtin_next_arg (tree arglist)
     {
       /* Evidently an out of date version of <stdarg.h>; can't validate
 	 va_start's second argument, but can still work as intended.  */
-      warning ("%<__builtin_next_arg%> called without an argument");
+      warning (0, "%<__builtin_next_arg%> called without an argument");
       return true;
     }
   /* We use __builtin_va_start (ap, 0, 0) or __builtin_next_arg (0, 0)
@@ -9521,7 +9521,7 @@ fold_builtin_next_arg (tree arglist)
 	     argument.  We just warn and set the arg to be the last
 	     argument so that we will get wrong-code because of
 	     it.  */
-	  warning ("second parameter of %<va_start%> not last named argument");
+	  warning (0, "second parameter of %<va_start%> not last named argument");
 	}
       /* We want to verify the second parameter just once before the tree
          optimizers are run and then avoid keeping it in the tree,

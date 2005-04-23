@@ -162,7 +162,7 @@ switch_to_section (enum in_section section, tree decl)		\
 do {									\
   if (flag_pic)								\
     {									\
-      warning ("-f%s ignored for target (all code is position independent)",\
+      warning (0, "-f%s ignored for target (all code is position independent)",\
 	       (flag_pic > 1) ? "PIC" : "pic");				\
       flag_pic = 0;							\
     }									\

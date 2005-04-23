@@ -1767,12 +1767,12 @@ handle_com_interface_attribute (tree* node,
       || !CLASS_TYPE_P (*node)
       || *node != TYPE_MAIN_VARIANT (*node))
     {
-      warning ("%qE attribute can only be applied to class definitions", name);
+      warning (0, "%qE attribute can only be applied to class definitions", name);
       return NULL_TREE;
     }
 
   if (!warned++)
-    warning ("%qE is obsolete; g++ vtables are now COM-compatible by default",
+    warning (0, "%qE is obsolete; g++ vtables are now COM-compatible by default",
 	     name);
 
   return NULL_TREE;
@@ -1835,7 +1835,7 @@ handle_init_priority_attribute (tree* node,
   if (pri <= MAX_RESERVED_INIT_PRIORITY)
     {
       warning
-	("requested init_priority is reserved for internal use");
+	(0, "requested init_priority is reserved for internal use");
     }
 
   if (SUPPORTS_INIT_PRIORITY)

@@ -1,3 +1,8 @@
+2005-04-23  DJ Delorie  <dj@redhat.com>
+
+	* class.c, decl.c, expr.c, jcf-io.c, jcf-parse.c, jv-scan.c,
+	parse.y: Adjust warning() callers.
+
 2005-04-21  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gcj.texi (Object fields): Change "Integer" to "Int" in example

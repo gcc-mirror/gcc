@@ -1,3 +1,7 @@
+2005-04-23  DJ Delorie  <dj@redhat.com>
+
+	* trans-decl.c: Adjust warning() callers.
+
 2005-04-23  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-const.c (gfc_conv_mpfr_to_tree): Use hexadecimal string as

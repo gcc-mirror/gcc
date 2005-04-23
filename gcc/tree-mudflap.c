@@ -839,7 +839,7 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
       break;
 
     case ARRAY_RANGE_REF:
-      warning ("mudflap checking not yet implemented for ARRAY_RANGE_REF");
+      warning (0, "mudflap checking not yet implemented for ARRAY_RANGE_REF");
       return;
 
     case BIT_FIELD_REF:
@@ -1030,7 +1030,7 @@ mx_register_decls (tree decl, tree *stmt_list)
 
           /* Add the __mf_register call at the current appending point.  */
           if (tsi_end_p (initially_stmts))
-	    warning ("mudflap cannot track %qs in stub function",
+	    warning (0, "mudflap cannot track %qs in stub function",
 		     IDENTIFIER_POINTER (DECL_NAME (decl)));
 	  else
 	    {
@@ -1261,7 +1261,7 @@ mudflap_finish_file (void)
 
           if (! COMPLETE_TYPE_P (TREE_TYPE (obj)))
             {
-              warning ("mudflap cannot track unknown size extern %qs",
+              warning (0, "mudflap cannot track unknown size extern %qs",
                        IDENTIFIER_POINTER (DECL_NAME (obj)));
               continue;
             }

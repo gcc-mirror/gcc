@@ -255,7 +255,7 @@ complain_wrong_lang (const char *text, const struct cl_option *option,
   bad_lang = write_langs (lang_mask);
 
   /* Eventually this should become a hard error IMO.  */
-  warning ("command line option \"%s\" is valid for %s but not for %s",
+  warning (0, "command line option \"%s\" is valid for %s but not for %s",
 	   text, ok_langs, bad_lang);
 
   free (ok_langs);
@@ -660,7 +660,7 @@ decode_options (unsigned int argc, const char **argv)
 	 this to `2' if -Wall is used, so we can avoid giving out
 	 lots of errors for people who don't realize what -Wall does.  */
       if (warn_uninitialized == 1)
-	warning ("-Wuninitialized is not supported without -O");
+	warning (0, "-Wuninitialized is not supported without -O");
     }
 
   if (flag_really_no_inline == 2)
@@ -975,7 +975,7 @@ common_handle_option (size_t scode, const char *arg, int value)
       else if (!strcmp (arg, "local-exec"))
 	flag_tls_default = TLS_MODEL_LOCAL_EXEC;
       else
-	warning ("unknown tls-model \"%s\"", arg);
+	warning (0, "unknown tls-model \"%s\"", arg);
       break;
 
     case OPT_ftracer:
@@ -1146,7 +1146,7 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg)
 	    }
 
 	  if (write_symbols == NO_DEBUG)
-	    warning ("target system does not support debug output");
+	    warning (0, "target system does not support debug output");
 	}
     }
   else

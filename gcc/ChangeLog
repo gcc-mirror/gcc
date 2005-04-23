@@ -1,3 +1,38 @@
+2005-04-23  DJ Delorie  <dj@redhat.com>
+
+	* diagnostic.c (warning): Accept parameter to classify warning option.
+	(warning0): New, for when a pointer to an error() like function is needed.
+	* errors.c (warning): Likewise.
+	* errors.h (warning, warning0): Adjust prototypes.
+	* toplev.h (warning, warning0): Likewise.
+
+	* attribs.c, builtins.c, c-common.c, c-decl.c, c-format.c,
+	c-gimplify.c, c-lex.c, c-objc-common.c, c-opts.c, c-parser.c,
+	c-pragma.c, c-typeck.c, calls.c, cgraph.c, coverage.c, emit-rtl.c,
+	fold-const.c, fortran/trans-decl.c, function.c, gcse.c,
+	genautomata.c, haifa-sched.c, opts.c, passes.c, regclass.c,
+	reload1.c, stmt.c, stor-layout.c, toplev.c, tree-cfg.c,
+	tree-dump.c, tree-inline.c, tree-mudflap.c, tree-optimize.c,
+	tree-ssa.c, tree.c, varasm.c: Adjust warning() callers.
+
+	* config/alpha/alpha.c, config/arc/arc.c, config/arm/arm.c,
+	config/avr/avr.c, config/bfin/bfin.c, config/c4x/c4x-c.c,
+	config/c4x/c4x.c, config/cris/cris.c, config/darwin-c.c,
+	config/darwin.c, config/darwin.h, config/h8300/h8300.c,
+	config/i386/cygming.h, config/i386/djgpp.h, config/i386/i386.c,
+	config/i386/winnt.c, config/ia64/ia64-c.c, config/ia64/ia64.c,
+	config/ip2k/ip2k.c, config/m32r/m32r.c, config/m68hc11/m68hc11.c,
+	config/m68k/m68k.c, config/mcore/mcore.c, config/mips/mips.c,
+	config/mmix/mmix.c, config/ns32k/ns32k.c, config/pa/pa-hpux11.h,
+	config/pa/pa.c, config/rs6000/aix43.h, config/rs6000/aix51.h,
+	config/rs6000/aix52.h, config/rs6000/darwin.h,
+	config/rs6000/rs6000-c.c, config/rs6000/rs6000.c,
+	config/s390/s390.c, config/sh/sh.c, config/sh/sh.h,
+	config/sh/symbian.c, config/sol2-c.c, config/sol2.c,
+	config/stormy16/stormy16.c, config/v850/v850-c.c,
+	config/v850/v850.c, config/xtensa/xtensa.c: Adjust warning()
+	callers.
+	
 2005-04-23  Richard Henderson  <rth@redhat.com>
 
         PR rtl-opt/21102

@@ -525,7 +525,7 @@ tl_RETURN expression_opt {
       tree_code_generate_return (type_prod->tp.pro.code, NULL);
     else
       {
-	warning ("%HRedundant expression in return.",
+	warning (0, "%HRedundant expression in return.",
 		 &ret_tok->tp.tok.location, ret_tok->tp.tok.length,
 		 ret_tok->tp.tok.chars);
         tree_code_generate_return (type_prod->tp.pro.code, NULL);
