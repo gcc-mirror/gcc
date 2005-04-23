@@ -1,3 +1,9 @@
+2005-04-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-live.c (live_worklist): Take a stack allocated on
+	heap as an argument.  Update uses of stack.
+	(calculate_live_on_entry): Allocate stack on heap.
+
 2005-04-23  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.c (machopic_indirection_name): Don't use
