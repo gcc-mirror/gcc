@@ -9,6 +9,8 @@
 	* tree.h: Add prototypes for fold_unary, fold_binary,
 	fold_ternary.
 
+	* tree-ssa-dom.c: Fix formatting.
+
 2005-04-22  Diego Novillo  <dnovillo@redhat.com>
 
 	* Makefile.in (tree-into-ssa.o): Add dependency on PARAMS_H.

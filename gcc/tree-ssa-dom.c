@@ -431,17 +431,18 @@ tree_ssa_dominator_optimize (void)
 
       free_all_edge_infos ();
 
-  {
-    block_stmt_iterator bsi;
-    basic_block bb;
-    FOR_EACH_BB (bb)
       {
-	for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	block_stmt_iterator bsi;
+	basic_block bb;
+	FOR_EACH_BB (bb)
 	  {
-	    update_stmt_if_modified (bsi_stmt (bsi));
+	    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	      {
+		update_stmt_if_modified (bsi_stmt (bsi));
+	      }
 	  }
       }
-  }
+
       /* Thread jumps, creating duplicate blocks as needed.  */
       cfg_altered |= thread_through_all_blocks ();
 
@@ -1238,7 +1239,6 @@ record_equivalences_from_phis (basic_block bb)
 
       if (i == PHI_NUM_ARGS (phi))
 	bitmap_set_bit (nonzero_vars, SSA_NAME_VERSION (PHI_RESULT (phi)));
-
     }
 }
 
