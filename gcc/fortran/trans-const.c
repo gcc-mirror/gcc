@@ -234,7 +234,7 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
   p = mpfr_get_str (NULL, &exp, 16, gfc_real_kinds[n].digits / 4 + 1,
 		    f, GFC_RND_MODE);
 
-  /* REAL_VALUE_ATOF expects the exponent for mantissae * 2**exp,
+  /* REAL_VALUE_ATOF expects the exponent for mantissa * 2**exp,
      mpfr_get_str returns the exponent for mantissa * 16**exp, adjust
      for that.  */
   exp *= 4;
