@@ -1,4 +1,10 @@
-205-04-22  Thomas Koenig  <Thomas.Koenig@online.de>
+2005-04-22  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/uninit-5.c: Remove xfails.
+	* gcc.dg/tree-ssa/20030711-1.c:Reduce the number of
+	conditionals and loads.
+
+2005-04-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/20074
 	PR libfortran/20436
