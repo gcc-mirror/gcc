@@ -105,9 +105,6 @@ public class FileInputStream extends InputStream
     if (s != null)
       s.checkRead(file.getPath());
 
-    if (file.isDirectory())
-      throw new FileNotFoundException(file.getPath() + " is a directory");
-
     ch = new FileChannelImpl (file.getPath(), FileChannelImpl.READ);
   }
 

@@ -155,10 +155,7 @@ public class FileOutputStream extends OutputStream
     if (s != null)
       s.checkWrite(file.getPath());
 
-    if (file.isDirectory())
-      throw new FileNotFoundException(file.getPath() + " is a directory");
-
-   ch = new FileChannelImpl (file.getPath(), (append
+    ch = new FileChannelImpl (file.getPath(), (append
 				     ? FileChannelImpl.WRITE
 				     | FileChannelImpl.APPEND
 				     : FileChannelImpl.WRITE));
