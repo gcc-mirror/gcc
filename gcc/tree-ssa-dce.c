@@ -74,7 +74,7 @@ static struct stmt_stats
   int removed_phis;
 } stats;
 
-static varray_type worklist;
+static VEC(tree,heap) *worklist;
 
 /* Vector indicating an SSA name has already been processed and marked
    as necessary.  */
@@ -235,7 +235,7 @@ mark_stmt_necessary (tree stmt, bool add_to_worklist)
 
   NECESSARY (stmt) = 1;
   if (add_to_worklist)
-    VARRAY_PUSH_TREE (worklist, stmt);
+    VEC_safe_push (tree, heap, worklist, stmt);
 }
 
 /* Mark the statement defining operand OP as necessary.  PHIONLY is true
@@ -263,7 +263,7 @@ mark_operand_necessary (tree op, bool phionly)
     return;
 
   NECESSARY (stmt) = 1;
-  VARRAY_PUSH_TREE (worklist, stmt);
+  VEC_safe_push (tree, heap, worklist, stmt);
 }
 
 
@@ -472,11 +472,10 @@ propagate_necessity (struct edge_list *el)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nProcessing worklist:\n");
 
-  while (VARRAY_ACTIVE_SIZE (worklist) > 0)
+  while (VEC_length (tree, worklist) > 0)
     {
       /* Take `i' from worklist.  */
-      i = VARRAY_TOP_TREE (worklist);
-      VARRAY_POP (worklist);
+      i = VEC_pop (tree, worklist);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -603,10 +602,9 @@ mark_really_necessary_kill_operand_phis (void)
   
   /* Mark all virtual phis still in use as necessary, and all of their
      arguments that are phis as necessary.  */
-  while (VARRAY_ACTIVE_SIZE (worklist) > 0)
+  while (VEC_length (tree, worklist) > 0)
     {
-      tree use = VARRAY_TOP_TREE (worklist);
-      VARRAY_POP (worklist);
+      tree use = VEC_pop (tree, worklist);
       
       for (i = 0; i < PHI_NUM_ARGS (use); i++)
 	mark_operand_necessary (PHI_ARG_DEF (use, i), true);
@@ -827,7 +825,7 @@ tree_dce_init (bool aggressive)
   processed = sbitmap_alloc (num_ssa_names + 1);
   sbitmap_zero (processed);
 
-  VARRAY_TREE_INIT (worklist, 64, "work list");
+  worklist = VEC_alloc (tree, heap, 64);
 }
 
 /* Cleanup after this pass.  */
@@ -848,6 +846,8 @@ tree_dce_done (bool aggressive)
     }
 
   sbitmap_free (processed);
+
+  VEC_free (tree, heap, worklist);
 }
 
 /* Main routine to eliminate dead code.
