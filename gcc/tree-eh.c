@@ -1920,7 +1920,12 @@ tree_could_throw_p (tree t)
 bool
 tree_can_throw_internal (tree stmt)
 {
-  int region_nr = lookup_stmt_eh_region (stmt);
+  int region_nr;
+
+  if (TREE_CODE (stmt) == RESX_EXPR)
+    region_nr = TREE_INT_CST_LOW (TREE_OPERAND (stmt, 0));
+  else
+    region_nr = lookup_stmt_eh_region (stmt);
   if (region_nr < 0)
     return false;
   return can_throw_internal_1 (region_nr);
@@ -1931,8 +1936,9 @@ tree_can_throw_external (tree stmt)
 {
   int region_nr = lookup_stmt_eh_region (stmt);
   if (region_nr < 0)
-    return false;
-  return can_throw_external_1 (region_nr);
+    return tree_could_throw_p (stmt);
+  else
+    return can_throw_external_1 (region_nr);
 }
 
 bool
