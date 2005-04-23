@@ -224,27 +224,29 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
   char *p, *q;
   int n;
 
-  for (n = 0; gfc_real_kinds[n].kind != 0; n++)
-    {
-      if (gfc_real_kinds[n].kind == kind)
-	break;
-    }
-  gcc_assert (gfc_real_kinds[n].kind);
+  n = gfc_validate_kind (BT_REAL, kind, false);
 
-  /* A decimal representation is used here, which requires the additional
-     two characters for rounding.  TODO: Use a hexadecimal representation
-     to avoid rounding issues.  */
-  p = mpfr_get_str (NULL, &exp, 10, gfc_real_kinds[n].precision+2,
+  gcc_assert (gfc_real_kinds[n].radix == 2);
+
+  /* mpfr chooses too small a number of hexadecimal digits if the
+     number of binary digits is not divisible by four, therefore we
+     have to explicitly request a sufficient number of digits here.  */
+  p = mpfr_get_str (NULL, &exp, 16, gfc_real_kinds[n].digits / 4 + 1,
 		    f, GFC_RND_MODE);
-  gcc_assert (p);
 
-  /* The additional 10 characters add space for the sprintf below.  */
-  q = (char *) gfc_getmem (strlen (p) + 10);
+  /* REAL_VALUE_ATOF expects the exponent for mantissae * 2**exp,
+     mpfr_get_str returns the exponent for mantissa * 16**exp, adjust
+     for that.  */
+  exp *= 4;
+
+  /* The additional 12 characters add space for the sprintf below.
+     This leaves 6 digits for the exponent which is certainly enough.  */
+  q = (char *) gfc_getmem (strlen (p) + 12);
 
   if (p[0] == '-')
-    sprintf (q, "-.%se%d", &p[1], (int) exp);
+    sprintf (q, "-0x.%sp%d", &p[1], (int) exp);
   else
-    sprintf (q, ".%se%d", p, (int) exp);
+    sprintf (q, "0x.%sp%d", p, (int) exp);
 
   type = gfc_get_real_type (kind);
   res = build_real (type, REAL_VALUE_ATOF (q, TYPE_MODE (type)));
