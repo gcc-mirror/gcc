@@ -177,7 +177,7 @@
 
 (define_expand "push<mode>1"
   [(match_operand:MMXMODE 0 "register_operand" "")]
-  "TARGET_SSE"
+  "TARGET_MMX"
 {
   ix86_expand_push (<MODE>mode, operands[0]);
   DONE;
