@@ -1549,7 +1549,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     have X (if C is 2 in the example above).  But don't make
 	     something more expensive than we had before.  */
 
-	  if (! FLOAT_MODE_P (mode))
+	  if (SCALAR_INT_MODE_P (mode))
 	    {
 	      HOST_WIDE_INT coeff0h = 0, coeff1h = 0;
 	      unsigned HOST_WIDE_INT coeff0l = 1, coeff1l = 1;

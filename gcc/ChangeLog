@@ -1,5 +1,11 @@
 2005-04-23  Richard Henderson  <rth@redhat.com>
 
+	PR rtl-opt/21102
+	* simplify-rtx.c (simplify_binary_operation): Fix mode check before
+	performing some integral scalar simplifications.
+
+2005-04-23  Richard Henderson  <rth@redhat.com>
+
 	PR target/21100
 	* config/i386/mmx.md (push<MMXMODE>1): Fix predicate thinko.
 
