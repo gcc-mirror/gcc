@@ -1,3 +1,17 @@
+2005-04-23  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (struct cost_pair): Add value field.
+	(find_interesting_uses_cond): Do not use integer_zerop and
+	integer_nonzerop to check for integer constants.
+	(set_use_iv_cost): Record the value field.
+	(determine_use_iv_cost_generic, determine_use_iv_cost_address,
+	determine_use_iv_cost_outer): Set the value field of the cost pair.
+	(may_eliminate_iv): Do not return the comparison code.
+	(iv_elimination_compare): New function.
+	(determine_use_iv_cost_condition): Set the value field.  Record
+	noneliminable invariants correctly.
+	(rewrite_use_compare, rewrite_use_outer): Use the value field.
+
 2005-04-23  DJ Delorie  <dj@redhat.com>
 
 	* diagnostic.c (warning): Accept parameter to classify warning option.

@@ -143,6 +143,9 @@ struct cost_pair
   unsigned cost;	/* The cost.  */
   bitmap depends_on;	/* The list of invariants that have to be
 			   preserved.  */
+  tree value;		/* For final value elimination, the expression for
+			   the final value of the iv.  For iv elimination,
+			   the new bound to compare with.  */
 };
 
 /* Use.  */
@@ -1276,8 +1279,8 @@ find_interesting_uses_cond (struct ivopts_data *data, tree stmt, tree *cond_p)
 
   const_iv.step = NULL_TREE;
 
-  if (integer_zerop (*cond_p)
-      || integer_nonzerop (*cond_p))
+  if (TREE_CODE (*cond_p) != SSA_NAME
+      && !COMPARISON_CLASS_P (*cond_p))
     return;
 
   if (TREE_CODE (*cond_p) == SSA_NAME)
@@ -2270,12 +2273,13 @@ alloc_use_cost_map (struct ivopts_data *data)
 }
 
 /* Sets cost of (USE, CANDIDATE) pair to COST and record that it depends
-   on invariants DEPENDS_ON.  */
+   on invariants DEPENDS_ON and that the value used in expressing it
+   is VALUE.*/
 
 static void
 set_use_iv_cost (struct ivopts_data *data,
 		 struct iv_use *use, struct iv_cand *cand, unsigned cost,
-		 bitmap depends_on)
+		 bitmap depends_on, tree value)
 {
   unsigned i, s;
 
@@ -2290,6 +2294,7 @@ set_use_iv_cost (struct ivopts_data *data,
       use->cost_map[cand->id].cand = cand;
       use->cost_map[cand->id].cost = cost;
       use->cost_map[cand->id].depends_on = depends_on;
+      use->cost_map[cand->id].value = value;
       return;
     }
 
@@ -2308,6 +2313,7 @@ found:
   use->cost_map[i].cand = cand;
   use->cost_map[i].cost = cost;
   use->cost_map[i].depends_on = depends_on;
+  use->cost_map[i].value = value;
 }
 
 /* Gets cost of (USE, CANDIDATE) pair.  */
@@ -3307,12 +3313,12 @@ determine_use_iv_cost_generic (struct ivopts_data *data,
   if (cand->pos == IP_ORIGINAL
       && cand->incremented_at == use->stmt)
     {
-      set_use_iv_cost (data, use, cand, 0, NULL);
+      set_use_iv_cost (data, use, cand, 0, NULL, NULL_TREE);
       return true;
     }
 
   cost = get_computation_cost (data, use, cand, false, &depends_on);
-  set_use_iv_cost (data, use, cand, cost, depends_on);
+  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE);
 
   return cost != INFTY;
 }
@@ -3326,7 +3332,7 @@ determine_use_iv_cost_address (struct ivopts_data *data,
   bitmap depends_on;
   unsigned cost = get_computation_cost (data, use, cand, true, &depends_on);
 
-  set_use_iv_cost (data, use, cand, cost, depends_on);
+  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE);
 
   return cost != INFTY;
 }
@@ -3382,14 +3388,29 @@ iv_period (struct iv *iv)
   return period;
 }
 
+/* Returns the comparison operator used when eliminating the iv USE.  */
+
+static enum tree_code
+iv_elimination_compare (struct ivopts_data *data, struct iv_use *use)
+{
+  struct loop *loop = data->current_loop;
+  basic_block ex_bb;
+  edge exit;
+
+  ex_bb = bb_for_stmt (use->stmt);
+  exit = EDGE_SUCC (ex_bb, 0);
+  if (flow_bb_inside_loop_p (loop, exit->dest))
+    exit = EDGE_SUCC (ex_bb, 1);
+
+  return (exit->flags & EDGE_TRUE_VALUE ? EQ_EXPR : NE_EXPR);
+}
+
 /* Check whether it is possible to express the condition in USE by comparison
-   of candidate CAND.  If so, store the comparison code to COMPARE and the
-   value compared with to BOUND.  */
+   of candidate CAND.  If so, store the value compared with to BOUND.  */
 
 static bool
 may_eliminate_iv (struct ivopts_data *data,
-		  struct iv_use *use, struct iv_cand *cand,
-		  enum tree_code *compare, tree *bound)
+		  struct iv_use *use, struct iv_cand *cand, tree *bound)
 {
   basic_block ex_bb;
   edge exit;
@@ -3440,11 +3461,6 @@ may_eliminate_iv (struct ivopts_data *data,
 				       fold_convert (wider_type, nit)))))
     return false;
 
-  if (exit->flags & EDGE_TRUE_VALUE)
-    *compare = EQ_EXPR;
-  else
-    *compare = NE_EXPR;
-
   *bound = cand_value_at (loop, cand, use->stmt, nit);
   return true;
 }
@@ -3455,37 +3471,46 @@ static bool
 determine_use_iv_cost_condition (struct ivopts_data *data,
 				 struct iv_use *use, struct iv_cand *cand)
 {
-  tree bound;
-  enum tree_code compare;
+  tree bound = NULL_TREE, op, cond;
+  bitmap depends_on = NULL;
+  unsigned cost;
 
   /* Only consider real candidates.  */
   if (!cand->iv)
     {
-      set_use_iv_cost (data, use, cand, INFTY, NULL);
+      set_use_iv_cost (data, use, cand, INFTY, NULL, NULL_TREE);
       return false;
     }
 
-  if (may_eliminate_iv (data, use, cand, &compare, &bound))
+  if (may_eliminate_iv (data, use, cand, &bound))
     {
-      bitmap depends_on = NULL;
-      unsigned cost = force_var_cost (data, bound, &depends_on);
+      cost = force_var_cost (data, bound, &depends_on);
 
-      set_use_iv_cost (data, use, cand, cost, depends_on);
+      set_use_iv_cost (data, use, cand, cost, depends_on, bound);
       return cost != INFTY;
     }
 
   /* The induction variable elimination failed; just express the original
      giv.  If it is compared with an invariant, note that we cannot get
      rid of it.  */
-  if (TREE_CODE (*use->op_p) == SSA_NAME)
-    record_invariant (data, *use->op_p, true);
-  else
+  cost = get_computation_cost (data, use, cand, false, &depends_on);
+
+  cond = *use->op_p;
+  if (TREE_CODE (cond) != SSA_NAME)
     {
-      record_invariant (data, TREE_OPERAND (*use->op_p, 0), true);
-      record_invariant (data, TREE_OPERAND (*use->op_p, 1), true);
+      op = TREE_OPERAND (cond, 0);
+      if (TREE_CODE (op) == SSA_NAME && !zero_p (get_iv (data, op)->step))
+	op = TREE_OPERAND (cond, 1);
+      if (TREE_CODE (op) == SSA_NAME)
+	{
+	  op = get_iv (data, op)->base;
+	  fd_ivopts_data = data;
+	  walk_tree (&op, find_depends, &depends_on, NULL);
+	}
     }
 
-  return determine_use_iv_cost_generic (data, use, cand);
+  set_use_iv_cost (data, use, cand, cost, depends_on, NULL);
+  return cost != INFTY;
 }
 
 /* Checks whether it is possible to replace the final value of USE by
@@ -3525,7 +3550,7 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
   bitmap depends_on;
   unsigned cost;
   edge exit;
-  tree value;
+  tree value = NULL_TREE;
   struct loop *loop = data->current_loop;
 
   /* The simple case first -- if we need to express value of the preserved
@@ -3535,7 +3560,7 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
   if (cand->pos == IP_ORIGINAL
       && cand->incremented_at == use->stmt)
     {
-      set_use_iv_cost (data, use, cand, 0, NULL);
+      set_use_iv_cost (data, use, cand, 0, NULL, NULL_TREE);
       return true;
     }
 
@@ -3543,7 +3568,7 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
     {
       if (!may_replace_final_value (data, use, &value))
 	{
-	  set_use_iv_cost (data, use, cand, INFTY, NULL);
+	  set_use_iv_cost (data, use, cand, INFTY, NULL, NULL_TREE);
 	  return false;
 	}
 
@@ -3552,7 +3577,7 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
 
       cost /= AVG_LOOP_NITER (loop);
 
-      set_use_iv_cost (data, use, cand, cost, depends_on);
+      set_use_iv_cost (data, use, cand, cost, depends_on, value);
       return cost != INFTY;
     }
 
@@ -3572,7 +3597,7 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
       cost = get_computation_cost (data, use, cand, false, &depends_on);
     }
 				   
-  set_use_iv_cost (data, use, cand, cost, depends_on);
+  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE);
 
   return cost != INFTY;
 }
@@ -4907,12 +4932,15 @@ rewrite_use_compare (struct ivopts_data *data,
   tree *op_p, cond, op, stmts, bound;
   block_stmt_iterator bsi = bsi_for_stmt (use->stmt);
   enum tree_code compare;
+  struct cost_pair *cp = get_use_iv_cost (data, use, cand);
   
-  if (may_eliminate_iv (data, use, cand, &compare, &bound))
+  bound = cp->value;
+  if (bound)
     {
       tree var = var_at_stmt (data->current_loop, cand, use->stmt);
       tree var_type = TREE_TYPE (var);
 
+      compare = iv_elimination_compare (data, use);
       bound = fold_convert (var_type, bound);
       op = force_gimple_operand (unshare_expr (bound), &stmts,
 				 true, NULL_TREE);
@@ -5087,8 +5115,8 @@ rewrite_use_outer (struct ivopts_data *data,
     {
       if (!cand->iv)
 	{
-	  bool ok = may_replace_final_value (data, use, &value);
-	  gcc_assert (ok);
+	  struct cost_pair *cp = get_use_iv_cost (data, use, cand);
+	  value = cp->value;
 	}
       else
 	value = get_computation_at (data->current_loop,
