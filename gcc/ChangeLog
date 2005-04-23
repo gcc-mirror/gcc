@@ -1,3 +1,7 @@
+2005-04-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* final.c, ipa-inline.c, varasm.c: Fix comment typos.
+
 2005-04-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config.gcc <cris-*>: Specify .opt files.
