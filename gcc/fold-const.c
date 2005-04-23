@@ -6678,7 +6678,7 @@ fold_complex_div (tree type, tree ac, tree bc, enum tree_code code)
    OP0.  Return the folded expression if folding is successful.
    Otherwise, return NULL_TREE.  */
 
-static tree
+tree
 fold_unary (enum tree_code code, tree type, tree op0)
 {
   tree tem;
@@ -7113,7 +7113,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
    OP0 and OP1.  Return the folded expression if folding is
    successful.  Otherwise, return NULL_TREE.  */
 
-static tree
+tree
 fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 {
   tree t1 = NULL_TREE;
@@ -9852,7 +9852,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
    OP0, OP1, and OP2.  Return the folded expression if folding is
    successful.  Otherwise, return NULL_TREE.  */
 
-static tree
+tree
 fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 {
   tree tem;
