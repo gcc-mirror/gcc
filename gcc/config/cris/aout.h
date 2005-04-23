@@ -74,22 +74,35 @@ Boston, MA 02111-1307, USA.  */
    %{static:-Bstatic}}\
   %{melinux-stacksize=*:-defsym __Stacksize=%*}"
 
-#undef CRIS_SUBTARGET_SWITCHES
-#define CRIS_SUBTARGET_SWITCHES						\
-  {"elinux", (TARGET_MASK_SVINTO					\
-	      + TARGET_MASK_STACK_ALIGN					\
-	      + TARGET_MASK_CONST_ALIGN					\
-	      + TARGET_MASK_DATA_ALIGN					\
-	      + TARGET_MASK_ETRAX4_ADD					\
-	      + TARGET_MASK_ALIGN_BY_32),				\
-   N_("Compile for the MMU-less Etrax 100-based elinux system")},	\
-  /* Legacy option.  */							\
-  {"aout",   0,	""},
+/* Previously controlled by target_flags.  */
+#undef TARGET_ELF
+#define TARGET_ELF 0
 
-#undef CRIS_SUBTARGET_LONG_OPTIONS
-#define CRIS_SUBTARGET_LONG_OPTIONS \
-  {"elinux-stacksize=", &cris_elinux_stacksize_str,			\
-   N_("For elinux, request a specified stack-size for this program"), 0},	\
+#undef CRIS_SUBTARGET_HANDLE_OPTION
+#define CRIS_SUBTARGET_HANDLE_OPTION(CODE, ARG, VALUE)	\
+  do							\
+    {							\
+      switch (CODE)					\
+	{						\
+	case OPT_melinux:				\
+	  target_flags					\
+	    |= (MASK_SVINTO				\
+		+ MASK_STACK_ALIGN			\
+		+ MASK_CONST_ALIGN			\
+		+ MASK_DATA_ALIGN			\
+		+ MASK_ETRAX4_ADD			\
+		+ MASK_ALIGN_BY_32);			\
+	  break;					\
+							\
+	case OPT_melinux_stacksize_:			\
+	  cris_elinux_stacksize_str = (ARG);		\
+	  break;					\
+							\
+	default:					\
+	  break;					\
+	}						\
+    }							\
+  while (0)
 
 #undef CRIS_SUBTARGET_VERSION
 #define CRIS_SUBTARGET_VERSION " - a.out"

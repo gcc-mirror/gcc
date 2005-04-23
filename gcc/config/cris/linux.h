@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -60,21 +60,15 @@ Boston, MA 02111-1307, USA.  */
   %{!fleading-underscore:--no-underscore}\
   %{fPIC|fpic|fPIE|fpie: --pic}"
 
-/* Provide a legacy -mlinux option.  */
-#undef CRIS_SUBTARGET_SWITCHES
-#define CRIS_SUBTARGET_SWITCHES						\
- {"linux",				 0, ""},			\
- {"gotplt",	 -TARGET_MASK_AVOID_GOTPLT, ""},			\
- {"no-gotplt",	  TARGET_MASK_AVOID_GOTPLT,				\
-  N_("Together with -fpic and -fPIC, do not use GOTPLT references")},
+/* Previously controlled by target_flags.  */
+#undef TARGET_LINUX
+#define TARGET_LINUX 1
 
 #undef CRIS_SUBTARGET_DEFAULT
 #define CRIS_SUBTARGET_DEFAULT			\
-  (TARGET_MASK_SVINTO				\
-   + TARGET_MASK_ETRAX4_ADD			\
-   + TARGET_MASK_ALIGN_BY_32			\
-   + TARGET_MASK_ELF				\
-   + TARGET_MASK_LINUX)
+  (MASK_SVINTO					\
+   + MASK_ETRAX4_ADD				\
+   + MASK_ALIGN_BY_32)
 
 #undef CRIS_DEFAULT_CPU_VERSION
 #define CRIS_DEFAULT_CPU_VERSION CRIS_CPU_NG
