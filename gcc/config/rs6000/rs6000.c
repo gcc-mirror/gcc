@@ -1251,14 +1251,14 @@ rs6000_override_options (const char *default_cpu)
 	{
 	  target_flags &= ~MASK_MULTIPLE;
 	  if ((target_flags_explicit & MASK_MULTIPLE) != 0)
-	    warning ("-mmultiple is not supported on little endian systems");
+	    warning (0, "-mmultiple is not supported on little endian systems");
 	}
 
       if (TARGET_STRING)
 	{
 	  target_flags &= ~MASK_STRING;
 	  if ((target_flags_explicit & MASK_STRING) != 0)
-	    warning ("-mstring is not supported on little endian systems");
+	    warning (0, "-mstring is not supported on little endian systems");
 	}
     }
 
@@ -1647,12 +1647,12 @@ rs6000_parse_abi_options (void)
   else if (! strcmp (rs6000_abi_string, "d64"))
     {
       rs6000_darwin64_abi = 1;
-      warning ("Using darwin64 ABI");
+      warning (0, "Using darwin64 ABI");
     }
   else if (! strcmp (rs6000_abi_string, "d32"))
     {
       rs6000_darwin64_abi = 0;
-      warning ("Using old darwin ABI");
+      warning (0, "Using old darwin ABI");
     }
 
   else if (! strcmp (rs6000_abi_string, "no-spe"))
@@ -1691,7 +1691,7 @@ rs6000_parse_alignment_option (void)
 	 useful for performance studies from time to time though, so
 	 don't disable it entirely.  */
       if (DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT)
-	warning ("-malign-power is not supported for 64-bit Darwin;"
+	warning (0, "-malign-power is not supported for 64-bit Darwin;"
 		 " it is incompatible with the installed C and C++ libraries");
       rs6000_alignment_flags = MASK_ALIGN_POWER;
     }
@@ -3857,7 +3857,7 @@ rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
       static bool warned_for_return_big_vectors = false;
       if (!warned_for_return_big_vectors)
 	{
-	  warning ("GCC vector returned by reference: "
+	  warning (0, "GCC vector returned by reference: "
 		   "non-standard ABI extension with no compatibility guarantee");
 	  warned_for_return_big_vectors = true;
 	}
@@ -5028,7 +5028,7 @@ rs6000_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 	fprintf (stderr, "function_arg_pass_by_reference: synthetic vector\n");
       if (!warned_for_pass_big_vectors)
 	{
-	  warning ("GCC vector passed by reference: "
+	  warning (0, "GCC vector passed by reference: "
 		   "non-standard ABI extension with no compatibility guarantee");
 	  warned_for_pass_big_vectors = true;
 	}
@@ -12408,7 +12408,7 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12)
 
   if (INTVAL (todec) != -size)
     {
-      warning ("stack frame too large");
+      warning (0, "stack frame too large");
       emit_insn (gen_trap ());
       return;
     }
@@ -12445,7 +12445,7 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12)
 				    const0_rtx));
 	}
       else
-	warning ("stack limit expression is not supported");
+	warning (0, "stack limit expression is not supported");
     }
 
   if (copy_r12 || ! TARGET_UPDATE)
@@ -14927,7 +14927,7 @@ output_function_profiler (FILE *file, int labelno)
       save_lr = 4;
       if (!TARGET_32BIT)
 	{
-	  warning ("no profiling of 64-bit code for this ABI");
+	  warning (0, "no profiling of 64-bit code for this ABI");
 	  return;
 	}
       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
@@ -16019,7 +16019,7 @@ rs6000_handle_altivec_attribute (tree *node,
     if (TARGET_64BIT)
       error ("use of %<long%> in AltiVec types is invalid for 64-bit code");
     else if (rs6000_warn_altivec_long)
-      warning ("use of %<long%> in AltiVec types is deprecated; use %<int%>");
+      warning (0, "use of %<long%> in AltiVec types is deprecated; use %<int%>");
     }
   else if (type == long_long_unsigned_type_node
            || type == long_long_integer_type_node)
@@ -16114,7 +16114,7 @@ rs6000_handle_longcall_attribute (tree *node, tree name,
       && TREE_CODE (*node) != FIELD_DECL
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning ("%qs attribute only applies to functions",
+      warning (0, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }

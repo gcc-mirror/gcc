@@ -3873,7 +3873,7 @@ c_parser_asm_statement (c_parser *parser)
   else if (c_parser_next_token_is_keyword (parser, RID_CONST)
 	   || c_parser_next_token_is_keyword (parser, RID_RESTRICT))
     {
-      warning ("%E qualifier ignored on asm",
+      warning (0, "%E qualifier ignored on asm",
 	       c_parser_peek_token (parser)->value);
       quals = NULL_TREE;
       c_parser_consume_token (parser);
@@ -4528,7 +4528,7 @@ c_parser_unary_expression (c_parser *parser)
     case CPP_PLUS:
       c_parser_consume_token (parser);
       if (!c_dialect_objc () && warn_traditional && !in_system_header)
-	warning ("traditional C rejects the unary plus operator");
+	warning (0, "traditional C rejects the unary plus operator");
       ret.value
 	= build_unary_op (CONVERT_EXPR,
 			  c_parser_cast_expression (parser, NULL).value, 0);

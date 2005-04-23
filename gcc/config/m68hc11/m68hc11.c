@@ -284,7 +284,7 @@ m68hc11_override_options (void)
   /* Compilation with -fpic generates a wrong code.  */
   if (flag_pic)
     {
-      warning ("-f%s ignored for 68HC11/68HC12 (not supported)",
+      warning (0, "-f%s ignored for 68HC11/68HC12 (not supported)",
 	       (flag_pic > 1) ? "PIC" : "pic");
       flag_pic = 0;
     }
@@ -1123,7 +1123,7 @@ m68hc11_handle_page0_attribute (tree *node, tree name,
     }
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning (0, "%qs attribute ignored", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -1159,7 +1159,7 @@ m68hc11_handle_fntype_attribute (tree *node, tree name,
       && TREE_CODE (*node) != FIELD_DECL
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning ("%qs attribute only applies to functions",
+      warning (0, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -1244,13 +1244,13 @@ m68hc11_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
   trap_handler = lookup_attribute ("trap", func_attr) != NULL_TREE;
   if (trap_handler && is_far)
     {
-      warning ("%<trap%> and %<far%> attributes are not compatible, ignoring %<far%>");
+      warning (0, "%<trap%> and %<far%> attributes are not compatible, ignoring %<far%>");
       trap_handler = 0;
     }
   if (trap_handler)
     {
       if (trap_handler_symbol != 0)
-        warning ("%<trap%> attribute is already used");
+        warning (0, "%<trap%> attribute is already used");
       else
         trap_handler_symbol = XEXP (rtl, 0);
     }

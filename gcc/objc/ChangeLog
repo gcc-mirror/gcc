@@ -1,3 +1,7 @@
+2005-04-23  DJ Delorie  <dj@redhat.com>
+
+	* objc-act.c: Adjust warning() callers.
+
 2005-04-21  Roger Sayle  <roger@eyesopen.com>
 
 	* objc-act.h (METHOD_ADD_ARGS_ELLIPSIS_P): New macro for accessing

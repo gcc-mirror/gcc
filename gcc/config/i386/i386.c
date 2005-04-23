@@ -1477,7 +1477,7 @@ override_options (void)
      Remove this code in GCC 3.2 or later.  */
   if (ix86_align_loops_string)
     {
-      warning ("-malign-loops is obsolete, use -falign-loops");
+      warning (0, "-malign-loops is obsolete, use -falign-loops");
       if (align_loops == 0)
 	{
 	  i = atoi (ix86_align_loops_string);
@@ -1490,7 +1490,7 @@ override_options (void)
 
   if (ix86_align_jumps_string)
     {
-      warning ("-malign-jumps is obsolete, use -falign-jumps");
+      warning (0, "-malign-jumps is obsolete, use -falign-jumps");
       if (align_jumps == 0)
 	{
 	  i = atoi (ix86_align_jumps_string);
@@ -1503,7 +1503,7 @@ override_options (void)
 
   if (ix86_align_funcs_string)
     {
-      warning ("-malign-functions is obsolete, use -falign-functions");
+      warning (0, "-malign-functions is obsolete, use -falign-functions");
       if (align_functions == 0)
 	{
 	  i = atoi (ix86_align_funcs_string);
@@ -1641,7 +1641,7 @@ override_options (void)
 	{
 	  if (!TARGET_SSE)
 	    {
-	      warning ("SSE instruction set disabled, using 387 arithmetics");
+	      warning (0, "SSE instruction set disabled, using 387 arithmetics");
 	      ix86_fpmath = FPMATH_387;
 	    }
 	  else
@@ -1652,12 +1652,12 @@ override_options (void)
 	{
 	  if (!TARGET_SSE)
 	    {
-	      warning ("SSE instruction set disabled, using 387 arithmetics");
+	      warning (0, "SSE instruction set disabled, using 387 arithmetics");
 	      ix86_fpmath = FPMATH_387;
 	    }
 	  else if (!TARGET_80387)
 	    {
-	      warning ("387 instruction set disabled, using SSE arithmetics");
+	      warning (0, "387 instruction set disabled, using SSE arithmetics");
 	      ix86_fpmath = FPMATH_SSE;
 	    }
 	  else
@@ -1815,7 +1815,7 @@ ix86_handle_cdecl_attribute (tree *node, tree name,
       && TREE_CODE (*node) != FIELD_DECL
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning ("%qs attribute only applies to functions",
+      warning (0, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -1843,7 +1843,7 @@ ix86_handle_cdecl_attribute (tree *node, tree name,
 
   if (TARGET_64BIT)
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning (0, "%qs attribute ignored", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -1861,7 +1861,7 @@ ix86_handle_regparm_attribute (tree *node, tree name, tree args,
       && TREE_CODE (*node) != FIELD_DECL
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning ("%qs attribute only applies to functions",
+      warning (0, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -1872,13 +1872,13 @@ ix86_handle_regparm_attribute (tree *node, tree name, tree args,
       cst = TREE_VALUE (args);
       if (TREE_CODE (cst) != INTEGER_CST)
 	{
-	  warning ("%qs attribute requires an integer constant argument",
+	  warning (0, "%qs attribute requires an integer constant argument",
 		   IDENTIFIER_POINTER (name));
 	  *no_add_attrs = true;
 	}
       else if (compare_tree_int (cst, REGPARM_MAX) > 0)
 	{
-	  warning ("argument to %qs attribute larger than %d",
+	  warning (0, "argument to %qs attribute larger than %d",
 		   IDENTIFIER_POINTER (name), REGPARM_MAX);
 	  *no_add_attrs = true;
 	}
@@ -2990,7 +2990,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 	    if (!TARGET_SSE && !warnedsse && cum->warn_sse)
 	      {
 		warnedsse = true;
-		warning ("SSE vector argument without SSE enabled "
+		warning (0, "SSE vector argument without SSE enabled "
 			 "changes the ABI");
 	      }
 	    if (cum->sse_nregs)
@@ -3007,7 +3007,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 	    if (!TARGET_MMX && !warnedmmx && cum->warn_mmx)
 	      {
 		warnedmmx = true;
-		warning ("MMX vector argument without MMX enabled "
+		warning (0, "MMX vector argument without MMX enabled "
 			 "changes the ABI");
 	      }
 	    if (cum->mmx_nregs)
@@ -3260,7 +3260,7 @@ ix86_struct_value_rtx (tree type, int incoming ATTRIBUTE_UNUSED)
 	  || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
 	{
 	  warned = true;
-	  warning ("SSE vector return without SSE enabled changes the ABI");
+	  warning (0, "SSE vector return without SSE enabled changes the ABI");
 	}
     }
 
@@ -15988,7 +15988,7 @@ ix86_handle_struct_attribute (tree *node, tree name,
   if (!(type && (TREE_CODE (*type) == RECORD_TYPE
 		 || TREE_CODE (*type) == UNION_TYPE)))
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning (0, "%qs attribute ignored", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -15997,7 +15997,7 @@ ix86_handle_struct_attribute (tree *node, tree name,
 	   || ((is_attribute_p ("gcc_struct", name)
 		&& lookup_attribute ("ms_struct", TYPE_ATTRIBUTES (*type)))))
     {
-      warning ("%qs incompatible attribute ignored",
+      warning (0, "%qs incompatible attribute ignored",
                IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }

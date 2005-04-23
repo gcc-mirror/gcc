@@ -317,7 +317,7 @@ fix_range (const char *const_str)
       dash = strchr (str, '-');
       if (!dash)
 	{
-	  warning ("value of -mfixed-range must have form REG1-REG2");
+	  warning (0, "value of -mfixed-range must have form REG1-REG2");
 	  return;
 	}
       *dash = '\0';
@@ -329,14 +329,14 @@ fix_range (const char *const_str)
       first = decode_reg_name (str);
       if (first < 0)
 	{
-	  warning ("unknown register name: %s", str);
+	  warning (0, "unknown register name: %s", str);
 	  return;
 	}
 
       last = decode_reg_name (dash + 1);
       if (last < 0)
 	{
-	  warning ("unknown register name: %s", dash + 1);
+	  warning (0, "unknown register name: %s", dash + 1);
 	  return;
 	}
 
@@ -344,7 +344,7 @@ fix_range (const char *const_str)
 
       if (first > last)
 	{
-	  warning ("%s-%s is an empty range", str, dash + 1);
+	  warning (0, "%s-%s is an empty range", str, dash + 1);
 	  return;
 	}
 
@@ -449,18 +449,18 @@ override_options (void)
 
   if (flag_pic && TARGET_PORTABLE_RUNTIME)
     {
-      warning ("PIC code generation is not supported in the portable runtime model\n");
+      warning (0, "PIC code generation is not supported in the portable runtime model\n");
     }
 
   if (flag_pic && TARGET_FAST_INDIRECT_CALLS)
    {
-      warning ("PIC code generation is not compatible with fast indirect calls\n");
+      warning (0, "PIC code generation is not compatible with fast indirect calls\n");
    }
 
   if (! TARGET_GAS && write_symbols != NO_DEBUG)
     {
-      warning ("-g is only supported when using GAS on this processor,");
-      warning ("-g option disabled");
+      warning (0, "-g is only supported when using GAS on this processor,");
+      warning (0, "-g option disabled");
       write_symbols = NO_DEBUG;
     }
 
@@ -7837,7 +7837,7 @@ pa_asm_output_aligned_common (FILE *stream,
   max_common_align = TARGET_64BIT ? 128 : (size >= 4096 ? 256 : 64);
   if (align > max_common_align)
     {
-      warning ("alignment (%u) for %s exceeds maximum alignment "
+      warning (0, "alignment (%u) for %s exceeds maximum alignment "
 	       "for global common data.  Using %u",
 	       align / BITS_PER_UNIT, name, max_common_align / BITS_PER_UNIT);
       align = max_common_align;

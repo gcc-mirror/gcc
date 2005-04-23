@@ -373,7 +373,7 @@ pop_type_0 (tree type, char **messagep)
       && t == object_ptr_type_node)
     {
       if (type != ptr_type_node)
-	warning ("need to insert runtime check for %s", 
+	warning (0, "need to insert runtime check for %s", 
 		 xstrdup (lang_printable_name (type, 0)));
       return type;
     }
@@ -502,7 +502,7 @@ can_widen_reference_to (tree source_type, tree target_type)
 			  source_type, target_type);
 
       if (!quiet_flag)
-       warning ("assert: %s is assign compatible with %s", 
+       warning (0, "assert: %s is assign compatible with %s", 
 		xstrdup (lang_printable_name (target_type, 0)),
 		xstrdup (lang_printable_name (source_type, 0)));
       /* Punt everything to runtime.  */
@@ -549,7 +549,7 @@ can_widen_reference_to (tree source_type, tree target_type)
 	  if (TYPE_DUMMY (source_type) || TYPE_DUMMY (target_type))
 	    {
 	      if (! quiet_flag)
-		warning ("assert: %s is assign compatible with %s", 
+		warning (0, "assert: %s is assign compatible with %s", 
 			 xstrdup (lang_printable_name (target_type, 0)),
 			 xstrdup (lang_printable_name (source_type, 0)));
 	      return 1;
@@ -2728,7 +2728,7 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
 	  else if (FIELD_STATIC (field_decl))
 	    {
 	      if (!DECL_CLINIT_P (current_function_decl))
-		warning ("%Jassignment to final static field %qD not in "
+		warning (0, "%Jassignment to final static field %qD not in "
                          "class initializer",
                          field_decl, field_decl);
 	    }
@@ -2737,7 +2737,7 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
 	      tree cfndecl_name = DECL_NAME (current_function_decl);
 	      if (! DECL_CONSTRUCTOR_P (current_function_decl)
 		  && !ID_FINIT_P (cfndecl_name))
-                warning ("%Jassignment to final field '%D' not in constructor",
+                warning (0, "%Jassignment to final field '%D' not in constructor",
 			 field_decl, field_decl);
 	    }
 	}
@@ -2927,7 +2927,7 @@ expand_byte_code (JCF *jcf, tree method)
       int pc = GET_u2 (linenumber_pointer);
       linenumber_pointer += 4;
       if (pc >= length)
-	warning ("invalid PC in line number table");
+	warning (0, "invalid PC in line number table");
       else
 	{
 	  if ((instruction_bits[pc] & BCODE_HAS_LINENUMBER) != 0)
@@ -2983,7 +2983,7 @@ expand_byte_code (JCF *jcf, tree method)
 	    {
               /* We've just reached the end of a region of dead code.  */
 	      if (extra_warnings)
-		warning ("unreachable bytecode from %d to before %d",
+		warning (0, "unreachable bytecode from %d to before %d",
 			 dead_code_index, PC);
               dead_code_index = -1;
             }
@@ -3025,7 +3025,7 @@ expand_byte_code (JCF *jcf, tree method)
     {
       /* We've just reached the end of a region of dead code.  */
       if (extra_warnings)
-	warning ("unreachable bytecode from %d to the end of the method", 
+	warning (0, "unreachable bytecode from %d to the end of the method", 
 		 dead_code_index);
     }
 }

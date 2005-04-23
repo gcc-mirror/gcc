@@ -178,7 +178,7 @@ do \
   { \
     if (TARGET_BNU210) \
       {	\
-        warning ("-mbnu210 is ignored (option is obsolete)"); \
+        warning (0, "-mbnu210 is ignored (option is obsolete)"); \
       }	\
   } \
 while (0)

@@ -226,7 +226,7 @@ mmix_override_options (void)
      labels.  */
   if (flag_pic)
     {
-      warning ("-f%s not supported: ignored", (flag_pic > 1) ? "PIC" : "pic");
+      warning (0, "-f%s not supported: ignored", (flag_pic > 1) ? "PIC" : "pic");
       flag_pic = 0;
     }
 }

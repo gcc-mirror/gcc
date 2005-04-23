@@ -451,9 +451,9 @@ layout_decl (tree decl, unsigned int known_align)
 	  int size_as_int = TREE_INT_CST_LOW (size);
 
 	  if (compare_tree_int (size, size_as_int) == 0)
-	    warning ("%Jsize of %qD is %d bytes", decl, decl, size_as_int);
+	    warning (0, "%Jsize of %qD is %d bytes", decl, decl, size_as_int);
 	  else
-	    warning ("%Jsize of %qD is larger than %d bytes",
+	    warning (0, "%Jsize of %qD is larger than %d bytes",
                      decl, decl, larger_than_size);
 	}
     }
@@ -837,10 +837,10 @@ place_field (record_layout_info rli, tree field)
 	  if (TYPE_ALIGN (type) > desired_align)
 	    {
 	      if (STRICT_ALIGNMENT)
-		warning ("%Jpacked attribute causes inefficient alignment "
+		warning (0, "%Jpacked attribute causes inefficient alignment "
                          "for %qD", field, field);
 	      else
-		warning ("%Jpacked attribute is unnecessary for %qD",
+		warning (0, "%Jpacked attribute is unnecessary for %qD",
 			 field, field);
 	    }
 	}
@@ -856,7 +856,7 @@ place_field (record_layout_info rli, tree field)
 	 Bump the cumulative size to multiple of field alignment.  */
 
       if (warn_padded)
-	warning ("%Jpadding struct to align %qD", field, field);
+	warning (0, "%Jpadding struct to align %qD", field, field);
 
       /* If the alignment is still within offset_align, just align
 	 the bit position.  */
@@ -1198,7 +1198,7 @@ finalize_record_size (record_layout_info rli)
 
   if (warn_padded && TREE_CONSTANT (unpadded_size)
       && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0)
-    warning ("padding struct size to alignment boundary");
+    warning (0, "padding struct size to alignment boundary");
 
   if (warn_packed && TREE_CODE (rli->t) == RECORD_TYPE
       && TYPE_PACKED (rli->t) && ! rli->packed_maybe_necessary
@@ -1228,17 +1228,17 @@ finalize_record_size (record_layout_info rli)
 		name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (rli->t)));
 
 	      if (STRICT_ALIGNMENT)
-		warning ("packed attribute causes inefficient "
+		warning (0, "packed attribute causes inefficient "
 			 "alignment for %qs", name);
 	      else
-		warning ("packed attribute is unnecessary for %qs", name);
+		warning (0, "packed attribute is unnecessary for %qs", name);
 	    }
 	  else
 	    {
 	      if (STRICT_ALIGNMENT)
-		warning ("packed attribute causes inefficient alignment");
+		warning (0, "packed attribute causes inefficient alignment");
 	      else
-		warning ("packed attribute is unnecessary");
+		warning (0, "packed attribute is unnecessary");
 	    }
 	}
     }

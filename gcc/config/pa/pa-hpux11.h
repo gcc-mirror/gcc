@@ -79,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
 		builtin_define ("_INCLUDE_XOPEN_SOURCE_500");		\
 	      }								\
 	    else if (flag_isoc94 || flag_isoc99 || c_dialect_cxx ())	\
-	      warning ("-munix=98 option required for C89 "		\
+	      warning (0, "-munix=98 option required for C89 "		\
 		       "Amendment 1 features.\n");			\
 	  }								\
 	if (TARGET_SIO)							\

@@ -3226,7 +3226,7 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
 					fold_convert (unsigned_type, rhs),
 					size_int (lbitsize), 0)))
 	{
-	  warning ("comparison is always %d due to width of bit-field",
+	  warning (0, "comparison is always %d due to width of bit-field",
 		   code == NE_EXPR);
 	  return constant_boolean_node (code == NE_EXPR, compare_type);
 	}
@@ -3237,7 +3237,7 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
 			      size_int (lbitsize - 1), 0);
       if (! integer_zerop (tem) && ! integer_all_onesp (tem))
 	{
-	  warning ("comparison is always %d due to width of bit-field",
+	  warning (0, "comparison is always %d due to width of bit-field",
 		   code == NE_EXPR);
 	  return constant_boolean_node (code == NE_EXPR, compare_type);
 	}
@@ -4808,7 +4808,7 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 						     lntype, ll_mask),
 					0)))
 	{
-	  warning ("comparison is always %d", wanted_code == NE_EXPR);
+	  warning (0, "comparison is always %d", wanted_code == NE_EXPR);
 
 	  return constant_boolean_node (wanted_code == NE_EXPR, truth_type);
 	}
@@ -4823,7 +4823,7 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 						     lntype, rl_mask),
 					0)))
 	{
-	  warning ("comparison is always %d", wanted_code == NE_EXPR);
+	  warning (0, "comparison is always %d", wanted_code == NE_EXPR);
 
 	  return constant_boolean_node (wanted_code == NE_EXPR, truth_type);
 	}
@@ -4952,12 +4952,12 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
     {
       if (wanted_code == NE_EXPR)
 	{
-	  warning ("%<or%> of unmatched not-equal tests is always 1");
+	  warning (0, "%<or%> of unmatched not-equal tests is always 1");
 	  return constant_boolean_node (true, truth_type);
 	}
       else
 	{
-	  warning ("%<and%> of mutually exclusive equal-tests is always 0");
+	  warning (0, "%<and%> of mutually exclusive equal-tests is always 0");
 	  return constant_boolean_node (false, truth_type);
 	}
     }

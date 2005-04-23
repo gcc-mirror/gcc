@@ -30,7 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_ERRORS_H
 #define GCC_ERRORS_H
 
-extern void warning (const char *, ...);
+extern void warning (int, const char *, ...);
 extern void error (const char *, ...);
 extern void fatal (const char *, ...) ATTRIBUTE_NORETURN;
 extern void internal_error (const char *, ...) ATTRIBUTE_NORETURN;

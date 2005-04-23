@@ -778,7 +778,7 @@ fix_register (const char *name, int fixed, int call_used)
     }
   else
     {
-      warning ("unknown register name: %s", name);
+      warning (0, "unknown register name: %s", name);
     }
 }
 
@@ -792,12 +792,12 @@ globalize_reg (int i)
 
   if (global_regs[i])
     {
-      warning ("register used for two global register variables");
+      warning (0, "register used for two global register variables");
       return;
     }
 
   if (call_used_regs[i] && ! fixed_regs[i])
-    warning ("call-clobbered register used for global register variable");
+    warning (0, "call-clobbered register used for global register variable");
 
   global_regs[i] = 1;
 

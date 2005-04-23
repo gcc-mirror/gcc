@@ -717,8 +717,8 @@ load_class (tree class_or_name, int verbose)
 	{
 	  /* This is just a diagnostic during testing, not a real problem.  */
 	  if (!quiet_flag)
-	    warning("cannot find file for class %s", 
-		    IDENTIFIER_POINTER (saved));
+	    warning (0, "cannot find file for class %s", 
+		     IDENTIFIER_POINTER (saved));
 	  
 	  /* Fake it.  */
 	  if (TREE_CODE (class_or_name) == RECORD_TYPE)
@@ -833,7 +833,7 @@ duplicate_class_warning (const char *filename)
   warn_loc.file = filename;
   warn_loc.line = 0;
 #endif
-  warning ("%Hduplicate class will only be compiled once", &warn_loc);
+  warning (0, "%Hduplicate class will only be compiled once", &warn_loc);
 }
 
 static void
@@ -1154,7 +1154,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
     free (file_list);
 
   if (filename_count == 0)
-    warning ("no input file specified");
+    warning (0, "no input file specified");
 
   if (resource_name)
     {

@@ -1916,7 +1916,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
     {
       if (!current_fake_result_decl)
 	{
-	  warning ("Function does not return a value");
+	  warning (0, "Function does not return a value");
 	  return fnbody;
 	}
 
@@ -2111,12 +2111,12 @@ generate_local_decl (gfc_symbol * sym)
       if (sym->attr.referenced)
         gfc_get_symbol_decl (sym);
       else if (sym->attr.dummy && warn_unused_parameter)
-            warning ("unused parameter %qs", sym->name);
+            warning (0, "unused parameter %qs", sym->name);
       /* Warn for unused variables, but not if they're inside a common
 	 block or are use-associated.  */
       else if (warn_unused_variable
 	       && !(sym->attr.in_common || sym->attr.use_assoc))
-	warning ("unused variable %qs", sym->name); 
+	warning (0, "unused variable %qs", sym->name); 
     }
 }
 
@@ -2257,7 +2257,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 	result = sym->result->backend_decl;
 
       if (result == NULL_TREE)
-	warning ("Function return value not set");
+	warning (0, "Function return value not set");
       else
 	{
 	  /* Set the return value to the dummy result variable.  */

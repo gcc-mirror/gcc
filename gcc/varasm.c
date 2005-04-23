@@ -943,7 +943,7 @@ make_decl_rtl (tree decl)
 	      error ("global register variable has initial value");
 	    }
 	  if (TREE_THIS_VOLATILE (decl))
-	    warning ("volatile register variables don%'t "
+	    warning (0, "volatile register variables don%'t "
 		     "work as you might wish");
 
 	  /* If the user specified one of the eliminables registers here,
@@ -1675,7 +1675,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
      In particular, a.out format supports a maximum alignment of 4.  */
   if (align > MAX_OFILE_ALIGNMENT)
     {
-      warning ("%Jalignment of %qD is greater than maximum object "
+      warning (0, "%Jalignment of %qD is greater than maximum object "
                "file alignment.  Using %d", decl, decl,
 	       MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
@@ -1739,7 +1739,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
       if ((unsigned HOST_WIDE_INT) DECL_ALIGN_UNIT (decl) > rounded)
-	warning ("%Jrequested alignment for %qD is greater than "
+	warning (0, "%Jrequested alignment for %qD is greater than "
                  "implemented alignment of %d", decl, decl, rounded);
 #endif
 
@@ -4305,7 +4305,7 @@ merge_weak (tree newdecl, tree olddecl)
 	 a weak symbol.  */
       else if (TREE_USED (olddecl)
 	       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (olddecl)))
-	warning ("%Jweak declaration of %qD after first use results "
+	warning (0, "%Jweak declaration of %qD after first use results "
                  "in unspecified behavior", newdecl, newdecl);
 
       if (SUPPORTS_WEAK)
@@ -4348,7 +4348,7 @@ declare_weak (tree decl)
 	weak_decls = tree_cons (NULL, decl, weak_decls);
     }
   else
-    warning ("%Jweak declaration of %qD not supported", decl, decl);
+    warning (0, "%Jweak declaration of %qD not supported", decl, decl);
 
   mark_weak (decl);
 }
@@ -4377,7 +4377,7 @@ weak_finish (void)
       ASM_WEAKEN_LABEL (asm_out_file, name);
 #else
 #ifdef ASM_OUTPUT_WEAK_ALIAS
-      warning ("only weak aliases are supported in this configuration");
+      warning (0, "only weak aliases are supported in this configuration");
       return;
 #endif
 #endif
@@ -4639,7 +4639,7 @@ default_assemble_visibility (tree decl, int vis)
   assemble_name (asm_out_file, name);
   fprintf (asm_out_file, "\n");
 #else
-  warning ("visibility attribute not supported in this configuration; ignored");
+  warning (0, "visibility attribute not supported in this configuration; ignored");
 #endif
 }
 

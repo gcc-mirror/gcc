@@ -550,7 +550,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fvtable_thunks:
     case OPT_fxref:
     case OPT_fvtable_gc:
-      warning ("switch %qs is no longer supported", option->opt_text);
+      warning (0, "switch %qs is no longer supported", option->opt_text);
       break;
 
     case OPT_faccess_control:
@@ -663,7 +663,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fhandle_exceptions:
-      warning ("-fhandle-exceptions has been renamed -fexceptions (and is now on by default)");
+      warning (0, "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)");
       flag_exceptions = value;
       break;
 
@@ -979,17 +979,17 @@ c_common_post_options (const char **pfilename)
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */
   if (warn_format_y2k && !warn_format)
-    warning ("-Wformat-y2k ignored without -Wformat");
+    warning (0, "-Wformat-y2k ignored without -Wformat");
   if (warn_format_extra_args && !warn_format)
-    warning ("-Wformat-extra-args ignored without -Wformat");
+    warning (0, "-Wformat-extra-args ignored without -Wformat");
   if (warn_format_zero_length && !warn_format)
-    warning ("-Wformat-zero-length ignored without -Wformat");
+    warning (0, "-Wformat-zero-length ignored without -Wformat");
   if (warn_format_nonliteral && !warn_format)
-    warning ("-Wformat-nonliteral ignored without -Wformat");
+    warning (0, "-Wformat-nonliteral ignored without -Wformat");
   if (warn_format_security && !warn_format)
-    warning ("-Wformat-security ignored without -Wformat");
+    warning (0, "-Wformat-security ignored without -Wformat");
   if (warn_missing_format_attribute && !warn_format)
-    warning ("-Wmissing-format-attribute ignored without -Wformat");
+    warning (0, "-Wmissing-format-attribute ignored without -Wformat");
 
   /* C99 requires special handling of complex multiplication and division;
      -ffast-math and -fcx-limited-range are handled in process_options.  */
@@ -1096,7 +1096,7 @@ c_common_parse_file (int set_yydebug)
   yydebug = set_yydebug;
 #else
   if (set_yydebug)
-    warning ("YYDEBUG was not defined at build time, -dy ignored");
+    warning (0, "YYDEBUG was not defined at build time, -dy ignored");
 #endif
 
   i = 0;
@@ -1400,7 +1400,7 @@ void
 cb_dir_change (cpp_reader * ARG_UNUSED (pfile), const char *dir)
 {
   if (!set_src_pwd (dir))
-    warning ("too late for # directive to set debug directory");
+    warning (0, "too late for # directive to set debug directory");
 }
 
 /* Set the C 89 standard (with 1994 amendments if C94, without GNU

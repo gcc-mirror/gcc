@@ -180,7 +180,7 @@ read_counts_file (void)
 
   if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
-      warning ("%qs is not a gcov data file", da_file_name);
+      warning (0, "%qs is not a gcov data file", da_file_name);
       gcov_close ();
       return;
     }
@@ -191,7 +191,7 @@ read_counts_file (void)
       GCOV_UNSIGNED2STRING (v, tag);
       GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
 
-      warning ("%qs is version %q.*s, expected version %q.*s",
+      warning (0, "%qs is version %q.*s, expected version %q.*s",
  	       da_file_name, 4, v, 4, e);
       gcov_close ();
       return;
@@ -345,7 +345,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
   entry = htab_find (counts_hash, &elt);
   if (!entry)
     {
-      warning ("no coverage for function %qs found.", IDENTIFIER_POINTER
+      warning (0, "no coverage for function %qs found.", IDENTIFIER_POINTER
 	       (DECL_ASSEMBLER_NAME (current_function_decl)));
       return 0;
     }
@@ -581,7 +581,7 @@ coverage_end_function (void)
 
   if (bbg_file_opened > 1 && gcov_is_error ())
     {
-      warning ("error writing %qs", bbg_file_name);
+      warning (0, "error writing %qs", bbg_file_name);
       bbg_file_opened = -1;
     }
 

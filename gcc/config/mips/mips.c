@@ -4350,7 +4350,7 @@ override_options (void)
 
   /* Deprecate -mint64. Remove after 4.0 branches.  */
   if (TARGET_INT64)
-    warning ("-mint64 is a deprecated option");
+    warning (0, "-mint64 is a deprecated option");
 
   if (TARGET_INT64 && !TARGET_LONG64)
     error ("unsupported combination: %s", "-mint64 -mlong32");
@@ -4404,7 +4404,7 @@ override_options (void)
 	target_flags &= ~MASK_BRANCHLIKELY;
     }
   if (TARGET_BRANCHLIKELY && !ISA_HAS_BRANCHLIKELY)
-    warning ("generation of Branch Likely instructions enabled, but not supported by architecture");
+    warning (0, "generation of Branch Likely instructions enabled, but not supported by architecture");
 
   /* The effect of -mabicalls isn't defined for the EABI.  */
   if (mips_abi == ABI_EABI && TARGET_ABICALLS)
@@ -4421,7 +4421,7 @@ override_options (void)
     {
       flag_pic = 1;
       if (mips_section_threshold > 0)
-	warning ("-G is incompatible with PIC code which is the default");
+	warning (0, "-G is incompatible with PIC code which is the default");
     }
 
   /* mips_split_addresses is a half-way house between explicit
@@ -9215,7 +9215,7 @@ mips_parse_cpu (const char *cpu_string)
   for (s = cpu_string; *s != 0; s++)
     if (ISUPPER (*s))
       {
-	warning ("the cpu name must be lower case");
+	warning (0, "the cpu name must be lower case");
 	break;
       }
 

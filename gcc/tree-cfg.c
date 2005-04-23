@@ -1384,7 +1384,7 @@ remove_useless_stmts_warn_notreached (tree stmt)
       location_t loc = EXPR_LOCATION (stmt);
       if (LOCATION_LINE (loc) > 0)
 	{
-	  warning ("%Hwill never be executed", &loc);
+	  warning (0, "%Hwill never be executed", &loc);
 	  return true;
 	}
     }
@@ -2000,10 +2000,10 @@ remove_bb (basic_block bb)
      in the block.  */
 #ifdef USE_MAPPED_LOCATION
   if (warn_notreached && loc > BUILTINS_LOCATION)
-    warning ("%Hwill never be executed", &loc);
+    warning (0, "%Hwill never be executed", &loc);
 #else
   if (warn_notreached && loc)
-    warning ("%Hwill never be executed", loc);
+    warning (0, "%Hwill never be executed", loc);
 #endif
 
   remove_phi_nodes_and_edges_for_unreachable_block (bb);
@@ -5599,7 +5599,7 @@ execute_warn_function_return (void)
       && !TREE_THIS_VOLATILE (cfun->decl)
       && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0
       && !lang_hooks.function.missing_noreturn_ok_p (cfun->decl))
-    warning ("%Jfunction might be possible candidate for "
+    warning (0, "%Jfunction might be possible candidate for "
 	     "attribute %<noreturn%>",
 	     cfun->decl);
 
@@ -5626,11 +5626,11 @@ execute_warn_function_return (void)
 #ifdef USE_MAPPED_LOCATION
       if (location == UNKNOWN_LOCATION)
 	location = cfun->function_end_locus;
-      warning ("%H%<noreturn%> function does return", &location);
+      warning (0, "%H%<noreturn%> function does return", &location);
 #else
       if (!locus)
 	locus = &cfun->function_end_locus;
-      warning ("%H%<noreturn%> function does return", locus);
+      warning (0, "%H%<noreturn%> function does return", locus);
 #endif
     }
 
@@ -5651,12 +5651,12 @@ execute_warn_function_return (void)
 	      location = EXPR_LOCATION (last);
 	      if (location == UNKNOWN_LOCATION)
 		  location = cfun->function_end_locus;
-	      warning ("%Hcontrol reaches end of non-void function", &location);
+	      warning (0, "%Hcontrol reaches end of non-void function", &location);
 #else
 	      locus = EXPR_LOCUS (last);
 	      if (!locus)
 		locus = &cfun->function_end_locus;
-	      warning ("%Hcontrol reaches end of non-void function", locus);
+	      warning (0, "%Hcontrol reaches end of non-void function", locus);
 #endif
 	      TREE_NO_WARNING (cfun->decl) = 1;
 	      break;

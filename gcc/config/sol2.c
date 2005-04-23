@@ -51,7 +51,7 @@ solaris_insert_attributes (tree decl, tree *attributes)
 	  {
 	    if (lookup_attribute ("aligned", DECL_ATTRIBUTES (decl))
 		|| lookup_attribute ("aligned", *attributes))
-	      warning ("%Jignoring %<#pragma align%> for explicitly "
+	      warning (0, "%Jignoring %<#pragma align%> for explicitly "
 		       "aligned %<%D%>", decl, decl);
 	    else
 	      *attributes = tree_cons (get_identifier ("aligned"), value,

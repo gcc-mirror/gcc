@@ -1798,7 +1798,7 @@ static inline void
 cp_parser_warn_min_max (void)
 {
   if (warn_deprecated && !in_system_header)
-    warning ("minimum/maximum operators are deprecated");
+    warning (0, "minimum/maximum operators are deprecated");
 }
 
 /* If not parsing tentatively, issue a diagnostic of the form
@@ -5297,7 +5297,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p)
 	      && !in_system_header
 	      && !VOID_TYPE_P (type)
 	      && current_lang_name != lang_name_c)
-	    warning ("use of old-style cast");
+	    warning (0, "use of old-style cast");
 
 	  /* Only type conversions to integral or enumeration types
 	     can be used in constant-expressions.  */
@@ -8128,7 +8128,7 @@ cp_parser_template_declaration (cp_parser* parser, bool member_p)
       /* Consume the `export' token.  */
       cp_lexer_consume_token (parser->lexer);
       /* Warn that we do not support `export'.  */
-      warning ("keyword %<export%> not implemented, and will be ignored");
+      warning (0, "keyword %<export%> not implemented, and will be ignored");
     }
 
   cp_parser_template_declaration_after_export (parser, member_p);
@@ -9914,7 +9914,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
  	  /* Warn about attributes. They are ignored.  */
  	  if (attributes)
-	    warning ("type attributes are honored only at type definition");
+	    warning (0, "type attributes are honored only at type definition");
 
 	  type = xref_tag (tag_type, identifier, ts,
 			   parser->num_template_parameter_lists);
@@ -10759,7 +10759,7 @@ cp_parser_init_declarator (cp_parser* parser,
      attributes -- but ignores them.  */
   if (cp_parser_allow_gnu_extensions_p (parser) && is_parenthesized_init)
     if (cp_parser_attributes_opt (parser))
-      warning ("attributes after parenthesized initializer ignored");
+      warning (0, "attributes after parenthesized initializer ignored");
 
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */
@@ -12036,7 +12036,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
       if (!parser->default_arg_ok_p)
 	{
 	  if (!flag_pedantic_errors)
-	    warning ("deprecated use of default argument for parameter of non-function");
+	    warning (0, "deprecated use of default argument for parameter of non-function");
 	  else
 	    {
 	      error ("default arguments are only permitted for function parameters");

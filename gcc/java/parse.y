@@ -3106,7 +3106,7 @@ yyerror (const char *msgid)
 		 code_from_source, strlen (code_from_source));
   remainder = obstack_finish (&temporary_obstack);
   if (do_warning)
-    warning ("%s.\n%s", msgid, remainder);
+    warning (0, "%s.\n%s", msgid, remainder);
   else
     error ("%s.\n%s", msgid, remainder);
 

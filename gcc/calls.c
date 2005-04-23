@@ -1935,7 +1935,7 @@ expand_call (tree exp, rtx target, int ignore)
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
   if (warn_aggregate_return && AGGREGATE_TYPE_P (TREE_TYPE (exp)))
-    warning ("function call has aggregate value");
+    warning (0, "function call has aggregate value");
 
   /* If the result of a pure or const function call is ignored (or void),
      and none of its arguments are volatile, we can avoid expanding the

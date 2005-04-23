@@ -599,7 +599,7 @@ build_throw (tree exp)
     }
 
   if (exp == null_node)
-    warning ("throwing NULL, which has integral, not pointer type");
+    warning (0, "throwing NULL, which has integral, not pointer type");
   
   if (exp != NULL_TREE)
     {
@@ -918,9 +918,9 @@ check_handlers_1 (tree master, tree_stmt_iterator i)
       tree handler = tsi_stmt (i);
       if (TREE_TYPE (handler) && can_convert_eh (type, TREE_TYPE (handler)))
 	{
-	  warning ("%Hexception of type %qT will be caught",
+	  warning (0, "%Hexception of type %qT will be caught",
 		   EXPR_LOCUS (handler), TREE_TYPE (handler));
-	  warning ("%H   by earlier handler for %qT",
+	  warning (0, "%H   by earlier handler for %qT",
 		   EXPR_LOCUS (master), type);
 	  break;
         }

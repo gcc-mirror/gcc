@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Pragmas.  */
 
-#define BAD(msgid) do { warning (msgid); return; } while (0)
+#define BAD(msgid) do { warning (0, msgid); return; } while (0)
 
 static bool using_frameworks = false;
 
@@ -111,7 +111,7 @@ darwin_pragma_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
     BAD ("malformed '#pragma options', ignoring");
 
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of '#pragma options'");
+    warning (0, "junk at end of '#pragma options'");
 
   arg = IDENTIFIER_POINTER (t);
   if (!strcmp (arg, "mac68k"))
@@ -121,7 +121,7 @@ darwin_pragma_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
   else if (!strcmp (arg, "reset"))
     pop_field_alignment ();
   else
-    warning ("malformed '#pragma options align={mac68k|power|reset}', ignoring");
+    warning (0, "malformed '#pragma options align={mac68k|power|reset}', ignoring");
 }
 
 /* #pragma unused ([var {, var}*]) */
@@ -154,7 +154,7 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
     BAD ("missing ')' after '#pragma unused', ignoring");
 
   if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of '#pragma unused'");
+    warning (0, "junk at end of '#pragma unused'");
 }
 
 static struct {
@@ -380,7 +380,7 @@ find_subframework_file (const char *fname, const char *pname)
 	  if (fast_dir != &subframe_dir)
 	    {
 	      if (fast_dir)
-		warning ("subframework include %s conflicts with framework include",
+		warning (0, "subframework include %s conflicts with framework include",
 			 fname);
 	      else
 		add_framework (fname, fname_len, &subframe_dir);

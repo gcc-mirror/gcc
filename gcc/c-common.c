@@ -913,7 +913,7 @@ overflow_warning (tree value)
     {
       TREE_OVERFLOW (value) = 0;
       if (skip_evaluation == 0)
-	warning ("integer overflow in expression");
+	warning (0, "integer overflow in expression");
     }
   else if ((TREE_CODE (value) == REAL_CST
 	    || (TREE_CODE (value) == COMPLEX_CST
@@ -922,13 +922,13 @@ overflow_warning (tree value)
     {
       TREE_OVERFLOW (value) = 0;
       if (skip_evaluation == 0)
-	warning ("floating point overflow in expression");
+	warning (0, "floating point overflow in expression");
     }
   else if (TREE_CODE (value) == VECTOR_CST && TREE_OVERFLOW (value))
     {
       TREE_OVERFLOW (value) = 0;
       if (skip_evaluation == 0)
-	warning ("vector overflow in expression");
+	warning (0, "vector overflow in expression");
     }
 }
 
@@ -950,9 +950,9 @@ unsigned_conversion_warning (tree result, tree operand)
     {
       if (!int_fits_type_p (operand, c_common_signed_type (type)))
 	/* This detects cases like converting -129 or 256 to unsigned char.  */
-	warning ("large integer implicitly truncated to unsigned type");
+	warning (0, "large integer implicitly truncated to unsigned type");
       else if (warn_conversion)
-	warning ("negative integer implicitly converted to unsigned type");
+	warning (0, "negative integer implicitly converted to unsigned type");
     }
 }
 
@@ -1010,7 +1010,7 @@ convert_and_check (tree type, tree expr)
 		 || !constant_fits_type_p (expr,
 					   c_common_unsigned_type (type)))
 		&& skip_evaluation == 0)
-	      warning ("overflow in implicit constant conversion");
+	      warning (0, "overflow in implicit constant conversion");
 	}
       else
 	unsigned_conversion_warning (t, expr);
@@ -1146,7 +1146,7 @@ warn_for_collisions_1 (tree written, tree writer, struct tlist *list,
 	  && DECL_NAME (list->expr))
 	{
 	  warned_ids = new_tlist (warned_ids, written, NULL_TREE);
-	  warning ("operation on %qE may be undefined", list->expr);
+	  warning (0, "operation on %qE may be undefined", list->expr);
 	}
       list = list->next;
     }
@@ -1472,7 +1472,7 @@ check_case_bounds (tree type, tree orig_type,
   if (tree_int_cst_compare (case_low, min_value) < 0
       && tree_int_cst_compare (case_high, min_value) < 0)
     {
-      warning ("case label value is less than minimum value for type");
+      warning (0, "case label value is less than minimum value for type");
       return false;
     }
 
@@ -1480,7 +1480,7 @@ check_case_bounds (tree type, tree orig_type,
   if (tree_int_cst_compare (case_low, max_value) > 0
       && tree_int_cst_compare (case_high, max_value) > 0)
     {
-      warning ("case label value exceeds maximum value for type");
+      warning (0, "case label value exceeds maximum value for type");
       return false;
     }
 
@@ -1488,7 +1488,7 @@ check_case_bounds (tree type, tree orig_type,
   if (tree_int_cst_compare (case_high, min_value) >= 0
       && tree_int_cst_compare (case_low, min_value) < 0)
     {
-      warning ("lower value in case label range"
+      warning (0, "lower value in case label range"
 	       " less than minimum value for type");
       case_low = min_value;
     }
@@ -1497,7 +1497,7 @@ check_case_bounds (tree type, tree orig_type,
   if (tree_int_cst_compare (case_low, max_value) <= 0
       && tree_int_cst_compare (case_high, max_value) > 0)
     {
-      warning ("upper value in case label range"
+      warning (0, "upper value in case label range"
 	       " exceeds maximum value for type");
       case_high = max_value;
     }
@@ -2120,9 +2120,9 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
       if (TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  if (val == truthvalue_false_node)
-	    warning ("comparison is always false due to limited range of data type");
+	    warning (0, "comparison is always false due to limited range of data type");
 	  if (val == truthvalue_true_node)
-	    warning ("comparison is always true due to limited range of data type");
+	    warning (0, "comparison is always true due to limited range of data type");
 	}
 
       if (val != 0)
@@ -2192,7 +2192,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 		  && !(TREE_CODE (primop0) == INTEGER_CST
 		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
 						   primop0))))
-		warning ("comparison of unsigned expression >= 0 is always true");
+		warning (0, "comparison of unsigned expression >= 0 is always true");
 	      value = truthvalue_true_node;
 	      break;
 
@@ -2201,7 +2201,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 		  && !(TREE_CODE (primop0) == INTEGER_CST
 		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
 						   primop0))))
-		warning ("comparison of unsigned expression < 0 is always false");
+		warning (0, "comparison of unsigned expression < 0 is always false");
 	      value = truthvalue_false_node;
 	      break;
 
@@ -2381,7 +2381,7 @@ c_common_truthvalue_conversion (tree expr)
 	  {
 	    /* Common Ada/Pascal programmer's mistake.  We always warn
 	       about this since it is so bad.  */
-	    warning ("the address of %qD, will always evaluate as %<true%>",
+	    warning (0, "the address of %qD, will always evaluate as %<true%>",
 		     TREE_OPERAND (expr, 0));
 	    return truthvalue_true_node;
 	  }
@@ -2477,7 +2477,7 @@ c_common_truthvalue_conversion (tree expr)
 
     case MODIFY_EXPR:
       if (warn_parentheses && !TREE_NO_WARNING (expr))
-	warning ("suggest parentheses around assignment used as truth value");
+	warning (0, "suggest parentheses around assignment used as truth value");
       break;
 
     default:
@@ -3548,7 +3548,7 @@ c_add_case_label (splay_tree cases, tree cond, tree orig_type,
     high_value = NULL_TREE;
   if (low_value && high_value
       && !tree_int_cst_lt (low_value, high_value))
-    warning ("empty range specified");
+    warning (0, "empty range specified");
 
   /* See if the case is in range of the type of the original testing
      expression.  If both low_value and high_value are out of range,
@@ -3667,10 +3667,10 @@ match_case_to_enum_1 (tree key, tree type, tree label)
 	      TREE_INT_CST_HIGH (key), TREE_INT_CST_LOW (key));
 
   if (TYPE_NAME (type) == 0)
-    warning ("%Jcase value %qs not in enumerated type",
+    warning (0, "%Jcase value %qs not in enumerated type",
 	     CASE_LABEL (label), buf);
   else
-    warning ("%Jcase value %qs not in enumerated type %qT",
+    warning (0, "%Jcase value %qs not in enumerated type %qT",
 	     CASE_LABEL (label), buf, type);
 }
 
@@ -3727,7 +3727,7 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 
   default_node = splay_tree_lookup (cases, (splay_tree_key) NULL);
   if (warn_switch_default && !default_node)
-    warning ("%Hswitch missing default case", &switch_location);
+    warning (0, "%Hswitch missing default case", &switch_location);
 
   /* If the switch expression was an enumerated type, check that
      exactly all enumeration literals are covered by the cases.
@@ -3761,7 +3761,7 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 	    {
 	      /* Warn if there are enumerators that don't correspond to
 		 case expressions.  */
-	      warning ("%Henumeration value %qE not handled in switch",
+	      warning (0, "%Henumeration value %qE not handled in switch",
 		       &switch_location, TREE_PURPOSE (chain));
 	    }
 	}
@@ -3957,7 +3957,7 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
      that changes what the typedef is typing.  */
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -3976,7 +3976,7 @@ handle_nocommon_attribute (tree *node, tree name,
     DECL_COMMON (*node) = 0;
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -3994,7 +3994,7 @@ handle_common_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     DECL_COMMON (*node) = 1;
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4021,7 +4021,7 @@ handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 			     TYPE_READONLY (TREE_TYPE (type)), 1));
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4040,7 +4040,7 @@ handle_noinline_attribute (tree *node, tree name,
     DECL_UNINLINABLE (*node) = 1;
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4063,7 +4063,7 @@ handle_always_inline_attribute (tree *node, tree name,
     }
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4087,7 +4087,7 @@ handle_used_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
     }
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4113,7 +4113,7 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	TREE_USED (decl) = 1;
       else
 	{
-	  warning ("%qE attribute ignored", name);
+	  warning (0, "%qE attribute ignored", name);
 	  *no_add_attrs = true;
 	}
     }
@@ -4147,7 +4147,7 @@ handle_const_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 			     TREE_THIS_VOLATILE (TREE_TYPE (type))));
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4191,7 +4191,7 @@ handle_transparent_union_attribute (tree *node, tree name,
     DECL_TRANSPARENT_UNION (decl) = 1;
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4219,7 +4219,7 @@ handle_constructor_attribute (tree *node, tree name,
     }
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4247,7 +4247,7 @@ handle_destructor_attribute (tree *node, tree name,
     }
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4266,7 +4266,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
   *no_add_attrs = true;
 
   if (TREE_CODE (TREE_VALUE (args)) != IDENTIFIER_NODE)
-    warning ("%qE attribute ignored", name);
+    warning (0, "%qE attribute ignored", name);
   else
     {
       int j;
@@ -4324,9 +4324,9 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
 	case MODE_VECTOR_INT:
 	case MODE_VECTOR_FLOAT:
-	  warning ("specifying vector types with __attribute__ ((mode)) "
+	  warning (0, "specifying vector types with __attribute__ ((mode)) "
 		   "is deprecated");
-	  warning ("use __attribute__ ((vector_size)) instead");
+	  warning (0, "use __attribute__ ((vector_size)) instead");
 	  valid_mode = vector_mode_valid_p (mode);
 	  break;
 
@@ -4591,7 +4591,7 @@ handle_alias_attribute (tree *node, tree name, tree args,
     }
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4615,13 +4615,13 @@ handle_visibility_attribute (tree *node, tree name, tree args,
     {
       if (TREE_CODE (*node) != RECORD_TYPE && TREE_CODE (*node) != UNION_TYPE)
        {
-         warning ("%qE attribute ignored on non-class types", name);
+         warning (0, "%qE attribute ignored on non-class types", name);
          return NULL_TREE;
        }
     }
   else if (decl_function_context (decl) != 0 || !TREE_PUBLIC (decl))
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       return NULL_TREE;
     }
 
@@ -4639,7 +4639,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
         return NULL_TREE;
       if (TREE_CODE (decl) == IDENTIFIER_NODE)
 	{
-	   warning ("%qE attribute ignored on types",
+	   warning (0, "%qE attribute ignored on types",
 		    name);
 	   return NULL_TREE;
 	}
@@ -4713,7 +4713,7 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
 
   if (!DECL_THREAD_LOCAL (decl))
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
   else
@@ -4780,7 +4780,7 @@ handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     DECL_IS_MALLOC (*node) = 1;
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4798,7 +4798,7 @@ handle_returns_twice_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     DECL_IS_RETURNS_TWICE (*node) = 1;
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4844,7 +4844,7 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* ??? TODO: Support types.  */
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4912,9 +4912,9 @@ handle_deprecated_attribute (tree *node, tree name,
 	    what = DECL_NAME (TYPE_NAME (type));
 	}
       if (what)
-	warning ("%qE attribute ignored for %qE", name, what);
+	warning (0, "%qE attribute ignored for %qE", name, what);
       else
-	warning ("%qE attribute ignored", name);
+	warning (0, "%qE attribute ignored", name);
     }
 
   return NULL_TREE;
@@ -4938,7 +4938,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   if (!host_integerp (size, 1))
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       return NULL_TREE;
     }
 
@@ -5100,7 +5100,7 @@ check_function_sentinel (tree attrs, tree params)
   if (attr)
     {
       if (!params)
-	warning ("missing sentinel in function call");
+	warning (0, "missing sentinel in function call");
       else
         {
 	  tree sentinel, end;
@@ -5122,7 +5122,7 @@ check_function_sentinel (tree attrs, tree params)
 	    }
 	  if (pos > 0)
 	    {
-	      warning ("not enough arguments to fit a sentinel");
+	      warning (0, "not enough arguments to fit a sentinel");
 	      return;
 	    }
 
@@ -5136,7 +5136,7 @@ check_function_sentinel (tree attrs, tree params)
 	  /* Validate the sentinel.  */
 	  if (!POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (sentinel)))
 	      || !integer_zerop (TREE_VALUE (sentinel)))
-	    warning ("missing sentinel in function call");
+	    warning (0, "missing sentinel in function call");
 	}
     }
 }
@@ -5178,7 +5178,7 @@ check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
     return;
 
   if (integer_zerop (param))
-    warning ("null argument where non-null required (argument %lu)",
+    warning (0, "null argument where non-null required (argument %lu)",
 	     (unsigned long) param_num);
 }
 
@@ -5209,7 +5209,7 @@ handle_nothrow_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* ??? TODO: Support types.  */
   else
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -5232,7 +5232,7 @@ handle_cleanup_attribute (tree *node, tree name, tree args,
      we'd be missing too much, since we do have attribute constructor.  */
   if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl))
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -5271,7 +5271,7 @@ handle_warn_unused_result_attribute (tree *node, tree name,
   /* Ignore the attribute for functions not returning any value.  */
   if (VOID_TYPE_P (TREE_TYPE (*node)))
     {
-      warning ("%qE attribute ignored", name);
+      warning (0, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -5288,7 +5288,7 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 
   if (!params)
     {
-      warning ("%qE attribute requires prototypes with named arguments", name);
+      warning (0, "%qE attribute requires prototypes with named arguments", name);
       *no_add_attrs = true;
     }
   else
@@ -5298,7 +5298,7 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 
       if (VOID_TYPE_P (TREE_VALUE (params)))
         {
-	  warning ("%qE attribute only applies to variadic functions", name);
+	  warning (0, "%qE attribute only applies to variadic functions", name);
 	  *no_add_attrs = true;
 	}
     }
@@ -5309,14 +5309,14 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 
       if (TREE_CODE (position) != INTEGER_CST)
         {
-	  warning ("requested position is not an integer constant");
+	  warning (0, "requested position is not an integer constant");
 	  *no_add_attrs = true;
 	}
       else
         {
 	  if (tree_int_cst_lt (position, integer_zero_node))
 	    {
-	      warning ("requested position is less than zero");
+	      warning (0, "requested position is less than zero");
 	      *no_add_attrs = true;
 	    }
 	}
@@ -5618,11 +5618,11 @@ c_warn_unused_result (tree *top_p)
       if (lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (ftype)))
 	{
 	  if (fdecl)
-	    warning ("%Hignoring return value of %qD, "
+	    warning (0, "%Hignoring return value of %qD, "
 		     "declared with attribute warn_unused_result",
 		     EXPR_LOCUS (t), fdecl);
 	  else
-	    warning ("%Hignoring return value of function "
+	    warning (0, "%Hignoring return value of function "
 		     "declared with attribute warn_unused_result",
 		     EXPR_LOCUS (t));
 	}

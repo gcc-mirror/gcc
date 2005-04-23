@@ -310,7 +310,7 @@ override_options (void)
   /* Unicos/Mk doesn't have shared libraries.  */
   if (TARGET_ABI_UNICOSMK && flag_pic)
     {
-      warning ("-f%s ignored for Unicos/Mk (not supported)",
+      warning (0, "-f%s ignored for Unicos/Mk (not supported)",
 	       (flag_pic > 1) ? "PIC" : "pic");
       flag_pic = 0;
     }
@@ -334,7 +334,7 @@ override_options (void)
   if (TARGET_IEEE)
     {
       if (TARGET_ABI_UNICOSMK)
-	warning ("-mieee not supported on Unicos/Mk");
+	warning (0, "-mieee not supported on Unicos/Mk");
       else
 	{
 	  alpha_tp = ALPHA_TP_INSN;
@@ -345,7 +345,7 @@ override_options (void)
   if (TARGET_IEEE_WITH_INEXACT)
     {
       if (TARGET_ABI_UNICOSMK)
-	warning ("-mieee-with-inexact not supported on Unicos/Mk");
+	warning (0, "-mieee-with-inexact not supported on Unicos/Mk");
       else
 	{
 	  alpha_tp = ALPHA_TP_INSN;
@@ -424,14 +424,14 @@ override_options (void)
 
   if (TARGET_ABI_UNICOSMK && alpha_fptm != ALPHA_FPTM_N)
     {
-      warning ("trap mode not supported on Unicos/Mk");
+      warning (0, "trap mode not supported on Unicos/Mk");
       alpha_fptm = ALPHA_FPTM_N;
     }
 
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
       && alpha_tp != ALPHA_TP_INSN && alpha_cpu != PROCESSOR_EV6)
     {
-      warning ("fp software completion requires -mtrap-precision=i");
+      warning (0, "fp software completion requires -mtrap-precision=i");
       alpha_tp = ALPHA_TP_INSN;
     }
 
@@ -447,16 +447,16 @@ override_options (void)
     {
       if (alpha_fprm == ALPHA_FPRM_MINF || alpha_fprm == ALPHA_FPRM_DYN)
 	{
-	  warning ("rounding mode not supported for VAX floats");
+	  warning (0, "rounding mode not supported for VAX floats");
 	  alpha_fprm = ALPHA_FPRM_NORM;
 	}
       if (alpha_fptm == ALPHA_FPTM_SUI)
 	{
-	  warning ("trap mode not supported for VAX floats");
+	  warning (0, "trap mode not supported for VAX floats");
 	  alpha_fptm = ALPHA_FPTM_SU;
 	}
       if (target_flags_explicit & MASK_LONG_DOUBLE_128)
-	warning ("128-bit long double not supported for VAX floats");
+	warning (0, "128-bit long double not supported for VAX floats");
       target_flags &= ~MASK_LONG_DOUBLE_128;
     }
 
@@ -484,7 +484,7 @@ override_options (void)
 	lat = alpha_mlat_string[1] - '0';
 	if (lat <= 0 || lat > 3 || cache_latency[alpha_tune][lat-1] == -1)
 	  {
-	    warning ("L%d cache latency unknown for %s",
+	    warning (0, "L%d cache latency unknown for %s",
 		     lat, alpha_cpu_name[alpha_tune]);
 	    lat = 3;
 	  }
@@ -499,7 +499,7 @@ override_options (void)
       }
     else
       {
-	warning ("bad value %qs for -mmemory-latency", alpha_mlat_string);
+	warning (0, "bad value %qs for -mmemory-latency", alpha_mlat_string);
 	lat = 3;
       }
 

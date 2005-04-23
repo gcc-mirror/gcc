@@ -1346,7 +1346,7 @@ pushdecl (tree x)
 		warnstring = "declaration of %qs shadows global declaration";
 
 	      if (warnstring)
-		warning (warnstring, IDENTIFIER_POINTER (name));
+		warning (0, warnstring, IDENTIFIER_POINTER (name));
 	    }
 #endif
 
@@ -1649,7 +1649,7 @@ poplevel (int keep, int reverse, int functionbody)
 	      define_label (input_location, DECL_NAME (label));
 	    }
 	  else if (warn_unused[UNUSED_LABEL] && !TREE_USED (label))
-	    warning ("%Jlabel '%D' defined but not used", label, label);
+	    warning (0, "%Jlabel '%D' defined but not used", label, label);
 	  IDENTIFIER_LABEL_VALUE (DECL_NAME (label)) = 0;
 
 	  /* Put the labels into the "variables" of the
@@ -1777,7 +1777,7 @@ force_poplevels (int start_pc)
   while (current_binding_level->start_pc > start_pc)
     {
       if (pedantic && current_binding_level->start_pc > start_pc)
-	warning ("%JIn %D: overlapped variable and exception ranges at %d",
+	warning (0, "%JIn %D: overlapped variable and exception ranges at %d",
                  current_function_decl, current_function_decl,
 		 current_binding_level->start_pc);
       poplevel (1, 0, 0);
@@ -1841,7 +1841,7 @@ give_name_to_locals (JCF *jcf)
 	  DECL_NAME (decl) = name;
 	  SET_DECL_ASSEMBLER_NAME (decl, name);
 	  if (TREE_CODE (decl) != PARM_DECL || TREE_TYPE (decl) != type)
-	    warning ("bad type in parameter debug info");
+	    warning (0, "bad type in parameter debug info");
 	}
       else
 	{
@@ -1850,7 +1850,7 @@ give_name_to_locals (JCF *jcf)
 	  tree decl = build_decl (VAR_DECL, name, type);
 	  if (end_pc > DECL_CODE_LENGTH (current_function_decl))
 	    {
-	      warning ("%Jbad PC range for debug info for local '%D'",
+	      warning (0, "%Jbad PC range for debug info for local '%D'",
                        decl, decl);
 	      end_pc = DECL_CODE_LENGTH (current_function_decl);
 	    }

@@ -567,7 +567,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 		  && TREE_CODE (TREE_TYPE (old_expr)) == RECORD_TYPE)
 		{
 	          tree expr = throw_bad_cast ();
-		  warning ("dynamic_cast of %q#D to %q#T can never succeed",
+		  warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
                            old_expr, type);
 	          /* Bash it to the expected type.  */
 	          TREE_TYPE (expr) = type;
@@ -581,7 +581,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 	      if (TREE_CODE (op) == VAR_DECL
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
-		  warning ("dynamic_cast of %q#D to %q#T can never succeed",
+		  warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
                            op, type);
 		  retval = build_int_cst (type, 0); 
 		  return retval;

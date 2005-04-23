@@ -109,7 +109,7 @@ get_base_filename (const char *filename)
 
   if (p && ! compiling)
     {
-      warning ("-frepo must be used with -c");
+      warning (0, "-frepo must be used with -c");
       flag_use_repository = 0;
       return NULL;
     }

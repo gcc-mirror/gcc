@@ -323,7 +323,7 @@ perform_member_init (tree member, tree init)
   /* Effective C++ rule 12 requires that all data members be
      initialized.  */
   if (warn_ecpp && !explicit && TREE_CODE (type) != ARRAY_TYPE)
-    warning ("%J%qD should be initialized in the member initialization "
+    warning (0, "%J%qD should be initialized in the member initialization "
 	     "list", current_function_decl, member);
 
   if (init == void_type_node)
@@ -370,7 +370,7 @@ perform_member_init (tree member, tree init)
 	    {
 	      init = build_default_init (type, /*nelts=*/NULL_TREE);
 	      if (TREE_CODE (type) == REFERENCE_TYPE)
-		warning ("%Jdefault-initialization of %q#D, "
+		warning (0, "%Jdefault-initialization of %q#D, "
 			 "which has reference type",
 			 current_function_decl, member);
 	    }
@@ -525,13 +525,13 @@ sort_mem_initializers (tree t, tree mem_inits)
 	    cp_warning_at ("%qD will be initialized after",
 			   TREE_PURPOSE (next_subobject));
 	  else
-	    warning ("base %qT will be initialized after",
+	    warning (0, "base %qT will be initialized after",
 		     TREE_PURPOSE (next_subobject));
 	  if (TREE_CODE (subobject) == FIELD_DECL)
 	    cp_warning_at ("  %q#D", subobject);
 	  else
-	    warning ("  base %qT", subobject);
-	  warning ("%J  when initialized here", current_function_decl);
+	    warning (0, "  base %qT", subobject);
+	  warning (0, "%J  when initialized here", current_function_decl);
 	}
 
       /* Look again, from the beginning of the list.  */
@@ -679,7 +679,7 @@ emit_mem_initializers (tree mem_inits)
       if (extra_warnings && !arguments 
 	  && DECL_COPY_CONSTRUCTOR_P (current_function_decl)
 	  && TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (subobject)))
-	warning ("%Jbase class %q#T should be explicitly initialized in the "
+	warning (0, "%Jbase class %q#T should be explicitly initialized in the "
 		 "copy constructor",
 		 current_function_decl, BINFO_TYPE (subobject));
 
@@ -1645,7 +1645,7 @@ build_new (tree placement, tree type, tree nelts, tree init,
 	pedwarn ("size in array new must have integral type");
       nelts = save_expr (cp_convert (sizetype, nelts));
       if (nelts == integer_zero_node)
-	warning ("zero size array reserves no space");
+	warning (0, "zero size array reserves no space");
     }
 
   /* ``A reference cannot be created by the new operator.  A reference
@@ -2735,7 +2735,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	  complete_type (type);
 	  if (!COMPLETE_TYPE_P (type))
 	    {
-	      warning ("possible problem detected in invocation of "
+	      warning (0, "possible problem detected in invocation of "
 		       "delete operator:");
 	      cxx_incomplete_type_diagnostic (addr, type, 1);
 	      inform ("neither the destructor nor the class-specific "

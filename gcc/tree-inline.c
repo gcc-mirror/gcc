@@ -1163,7 +1163,7 @@ inlinable_function_p (tree fn)
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
 	sorry (inline_forbidden_reason, fn, fn);
       else if (do_warning)
-	warning (inline_forbidden_reason, fn, fn);
+	warning (0, inline_forbidden_reason, fn, fn);
 
       inlinable = false;
     }
@@ -1571,8 +1571,8 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 	       && strlen (reason)
 	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn)))
 	{
-	  warning ("%Jinlining failed in call to %qF: %s", fn, fn, reason);
-	  warning ("called from here");
+	  warning (0, "%Jinlining failed in call to %qF: %s", fn, fn, reason);
+	  warning (0, "called from here");
 	}
       goto egress;
     }
@@ -1686,7 +1686,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 	&& return_slot_addr == NULL_TREE
 	&& block_may_fallthru (copy))
       {
-	warning ("control may reach end of non-void function %qD being inlined",
+	warning (0, "control may reach end of non-void function %qD being inlined",
 		 fn);
 	TREE_NO_WARNING (fn) = 1;
       }

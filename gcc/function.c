@@ -3601,7 +3601,7 @@ setjmp_vars_warning (tree block)
 	  && DECL_RTL_SET_P (decl)
 	  && REG_P (DECL_RTL (decl))
 	  && regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
-	warning ("%Jvariable %qD might be clobbered by %<longjmp%>"
+	warning (0, "%Jvariable %qD might be clobbered by %<longjmp%>"
 		 " or %<vfork%>",
 		 decl, decl);
     }
@@ -3622,7 +3622,7 @@ setjmp_args_warning (void)
     if (DECL_RTL (decl) != 0
 	&& REG_P (DECL_RTL (decl))
 	&& regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
-      warning ("%Jargument %qD might be clobbered by %<longjmp%> or %<vfork%>",
+      warning (0, "%Jargument %qD might be clobbered by %<longjmp%> or %<vfork%>",
 	       decl, decl);
 }
 
@@ -4020,7 +4020,7 @@ init_function_start (tree subr)
      regardless of which calling convention we are using for it.  */
   if (warn_aggregate_return
       && AGGREGATE_TYPE_P (TREE_TYPE (DECL_RESULT (subr))))
-    warning ("function returns an aggregate");
+    warning (0, "function returns an aggregate");
 }
 
 /* Make sure all values used by the optimization passes have sane
@@ -4343,7 +4343,7 @@ do_warn_unused_parameter (tree fn)
        decl; decl = TREE_CHAIN (decl))
     if (!TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL
 	&& DECL_NAME (decl) && !DECL_ARTIFICIAL (decl))
-      warning ("%Junused parameter %qD", decl, decl);
+      warning (0, "%Junused parameter %qD", decl, decl);
 }
 
 static GTY(()) rtx initial_trampoline;

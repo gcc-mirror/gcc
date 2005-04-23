@@ -149,7 +149,7 @@ add_friend (tree type, tree decl, bool complain)
 	      if (decl == TREE_VALUE (friends))
 		{
 		  if (complain)
-		    warning ("%qD is already a friend of class %qT",
+		    warning (0, "%qD is already a friend of class %qT",
 			     decl, type);
 		  return;
 		}
@@ -361,7 +361,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	  if (friend_type == probe)
 	    {
 	      if (complain)
-		warning ("%qD is already a friend of %qT", probe, type);
+		warning (0, "%qD is already a friend of %qT", probe, type);
 	      break;
 	    }
 	}
@@ -370,7 +370,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	  if (same_type_p (probe, friend_type))
 	    {
 	      if (complain)
-		warning ("%qT is already a friend of %qT", probe, type);
+		warning (0, "%qT is already a friend of %qT", probe, type);
 	      break;
 	    }
 	}
@@ -550,11 +550,11 @@ do_friend (tree ctype, tree declarator, tree decl,
 	  if (warn)
 	    {
 	      static int explained;
-	      warning ("friend declaration %q#D declares a non-template "
+	      warning (0, "friend declaration %q#D declares a non-template "
                        "function", decl);
 	      if (! explained)
 		{
-		  warning ("(if this is not what you intended, make sure "
+		  warning (0, "(if this is not what you intended, make sure "
                            "the function template has already been declared "
                            "and add <> after the function name here) "
                            "-Wno-non-template-friend disables this warning");
