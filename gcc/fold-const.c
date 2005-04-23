@@ -7841,7 +7841,28 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    && ptr_difference_const (arg0, arg1, &diff))
 	  return build_int_cst_type (type, diff);
       }
-	  
+
+      /* Fold &a[i] - &a[j] to i-j.  */
+      if (TREE_CODE (arg0) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF
+	  && TREE_CODE (arg1) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == ARRAY_REF)
+        {
+	  tree aref0 = TREE_OPERAND (arg0, 0);
+	  tree aref1 = TREE_OPERAND (arg1, 0);
+	  if (operand_equal_p (TREE_OPERAND (aref0, 0),
+			       TREE_OPERAND (aref1, 0), 0))
+	    {
+	      tree op0 = fold_convert (type, TREE_OPERAND (aref0, 1));
+	      tree op1 = fold_convert (type, TREE_OPERAND (aref1, 1));
+	      tree esz = array_ref_element_size (aref0);
+	      tree diff = build2 (MINUS_EXPR, type, op0, op1);
+	      return fold_build2 (MULT_EXPR, type, diff,
+			          fold_convert (type, esz));
+			          
+	    }
+	}
+
       /* Try replacing &a[i1] - c * i2 with &a[i1 - i2], if c is step
 	 of the array.  Loop optimizer sometimes produce this type of
 	 expressions.  */
