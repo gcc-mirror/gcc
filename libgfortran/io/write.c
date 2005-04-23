@@ -1477,7 +1477,8 @@ nml_write_obj (namelist_info * obj, index_type offset,
 	      ext_name = (char*)get_mem ( (base_name ? strlen (base_name) : 0)
 					+ (base ? strlen (base->var_name) : 0)
 					+ strlen (obj->var_name)
-					+ obj->var_rank * NML_DIGITS);
+					+ obj->var_rank * NML_DIGITS
+					+ 1);
 
 	      strcpy(ext_name, base_name ? base_name : "");
 	      clen = base ? strlen (base->var_name) : 0;

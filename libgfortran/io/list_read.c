@@ -2107,8 +2107,9 @@ get_name:
 
   if (component_flag)
     {
-      ext_name = (char*)get_mem (strlen (root_nl->var_name) +
-		  saved_string ? strlen (saved_string) : 0 + 1);
+      ext_name = (char*)get_mem (strlen (root_nl->var_name)
+				  + (saved_string ? strlen (saved_string) : 0)
+				  + 1);
       strcpy (ext_name, root_nl->var_name);
       strcat (ext_name, saved_string);
       nl = find_nml_node (ext_name);

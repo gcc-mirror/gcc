@@ -1,3 +1,12 @@
+2005-04-18 Paul Thomas <pault@gcc.gnu.org>
+	   Jerry DeLisle <jvdelisle@verizon.net> 
+
+	* io/write.c (nml_write_obj): Provide 1 more byte for ext_name.
+	* io/list_read.c (nml_get_obj_data): Put extra brackets in get_mem
+	call for ext_name.  These fix the bug reported by Jerry DeLisle to
+	the fortran list and are based on his suggested fix.
+
+
 2005-04-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/20074
