@@ -1293,7 +1293,8 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
   bitmap live;
   unsigned x, y, i;
   basic_block bb;
-  varray_type partition_link, tpa_to_clear, tpa_nodes;
+  varray_type tpa_to_clear;
+  int *partition_link, *tpa_nodes;
   unsigned l;
   ssa_op_iter iter;
   bitmap_iterator bi;
@@ -1306,8 +1307,8 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 
   live = BITMAP_ALLOC (NULL);
 
-  VARRAY_INT_INIT (partition_link, num_var_partitions (map) + 1, "part_link");
-  VARRAY_INT_INIT (tpa_nodes, tpa_num_trees (tpa), "tpa nodes");
+  partition_link = xcalloc (num_var_partitions (map) + 1, sizeof (int));
+  tpa_nodes = xcalloc (tpa_num_trees (tpa), sizeof (int));
   VARRAY_INT_INIT (tpa_to_clear, 50, "tpa to clear");
 
   FOR_EACH_BB (bb)
@@ -1414,26 +1415,28 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 	  i = tpa_find_tree (tpa, x);
 	  if (i != (unsigned)TPA_NONE)
 	    {
-	      int start = VARRAY_INT (tpa_nodes, i);
+	      int start = tpa_nodes[i];
 	      /* If start is 0, a new root reference list is being started.
 		 Register it to be cleared.  */
 	      if (!start)
 	        VARRAY_PUSH_INT (tpa_to_clear, i);
 
 	      /* Add interferences to other tpa members seen.  */
-	      for (y = start; y != 0; y = VARRAY_INT (partition_link, y))
+	      for (y = start; y != 0; y = partition_link[y])
 		conflict_graph_add (graph, x, y - 1);
-	      VARRAY_INT (tpa_nodes, i) = x + 1;
-	      VARRAY_INT (partition_link, x + 1) = start;
+	      tpa_nodes[i] = x + 1;
+	      partition_link[x + 1] = start;
 	    }
 	}
 
 	/* Now clear the used tpa root references.  */
 	for (l = 0; l < VARRAY_ACTIVE_SIZE (tpa_to_clear); l++)
-	  VARRAY_INT (tpa_nodes, VARRAY_INT (tpa_to_clear, l)) = 0;
+	  tpa_nodes[VARRAY_INT (tpa_to_clear, l)] = 0;
 	VARRAY_POP_ALL (tpa_to_clear);
     }
 
+  free (tpa_nodes);
+  free (partition_link);
   BITMAP_FREE (live);
   return graph;
 }
