@@ -10315,7 +10315,10 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
   if (GET_CODE (operand) == CONST_VECTOR)
     {
       enum machine_mode imode = int_mode_for_mode (mode);
-      operand = simplify_subreg (imode, operand, mode, 0);
+      /* Caution: if we looked through a constant pool memory above,
+	 the operand may actually have a different mode now.  That's
+	 ok, since we want to pun this all the way back to an integer.  */
+      operand = simplify_subreg (imode, operand, GET_MODE (operand), 0);
       gcc_assert (operand != NULL);
       mode = imode;
     }

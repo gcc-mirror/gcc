@@ -1,3 +1,9 @@
+2005-04-23  Richard Henderson  <rth@redhat.com>
+
+	PR target/21099
+	* config/i386/i386.c (ix86_split_to_parts): Use proper mode when
+	simplifying CONST_VECTOR.
+
 2005-04-22  James E Wilson  <wilson@specifixinc.com>
 
 	PR c++/20805
