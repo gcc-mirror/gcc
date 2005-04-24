@@ -286,7 +286,7 @@ associate_equivalences_with_edges (void)
    leading to this block.  If no such edge equivalency exists, then we
    record NULL.  These equivalences are live until we leave the dominator
    subtree rooted at the block where we record the equivalency.  */
-static varray_type equiv_stack;
+static VEC(tree,heap) *equiv_stack;
 
 /* Global hash table implementing a mapping from invariant values
    to a list of SSA_NAMEs which have the same value.  We might be
@@ -380,7 +380,7 @@ tree_ssa_uncprop (void)
 
   /* Create our global data structures.  */
   equiv = htab_create (1024, equiv_hash, equiv_eq, free);
-  VARRAY_TREE_INIT (equiv_stack, 2, "Block equiv stack");
+  equiv_stack = VEC_alloc (tree, heap, 2);
 
   /* We're going to do a dominator walk, so ensure that we have
      dominance information.  */
@@ -410,10 +410,11 @@ tree_ssa_uncprop (void)
   /* Finalize and clean up.  */
   fini_walk_dominator_tree (&walk_data);
 
-  /* EQUIV_STACK should already be empty at this point, so we just need
-     to empty elements out of the hash table and cleanup the AUX field
-     on the edges.  */
+  /* EQUIV_STACK should already be empty at this point, so we just
+     need to empty elements out of the hash table, free EQUIV_STACK,
+     and cleanup the AUX field on the edges.  */
   htab_delete (equiv);
+  VEC_free (tree, heap, equiv_stack);
   FOR_EACH_BB (bb)
     {
       edge e;
@@ -440,10 +441,8 @@ static void
 uncprop_finalize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 			basic_block bb ATTRIBUTE_UNUSED)
 {
-  tree value = VARRAY_TOP_TREE (equiv_stack);
-
   /* Pop the topmost value off the equiv stack.  */
-  VARRAY_POP (equiv_stack);
+  tree value = VEC_pop (tree, equiv_stack);
 
   /* If that value was non-null, then pop the topmost equivalency off
      its equivalency stack.  */
@@ -581,13 +580,13 @@ uncprop_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	  struct edge_equivalency *equiv = e->aux;
 
 	  record_equiv (equiv->rhs, equiv->lhs);
-	  VARRAY_PUSH_TREE (equiv_stack, equiv->rhs);
+	  VEC_safe_push (tree, heap, equiv_stack, equiv->rhs);
 	  recorded = true;
 	}
     }
 
   if (!recorded)
-    VARRAY_PUSH_TREE (equiv_stack, NULL_TREE);
+    VEC_safe_push (tree, heap, equiv_stack, NULL_TREE);
 }
 
 static bool
