@@ -1,3 +1,8 @@
+2005-04-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/20059
+	* gfortran.dg/common_5.f: New test.
+
 2005-04-23  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/21082
