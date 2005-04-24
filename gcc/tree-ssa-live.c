@@ -1279,6 +1279,8 @@ add_conflicts_if_valid (tpa_p tpa, conflict_graph graph,
     }
 }
 
+DEF_VEC_P(int);
+DEF_VEC_ALLOC_P(int,heap);
 
 /* Return a conflict graph for the information contained in LIVE_INFO.  Only
    conflicts between items in the same TPA list are added.  If optional 
@@ -1293,8 +1295,8 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
   bitmap live;
   unsigned x, y, i;
   basic_block bb;
-  varray_type tpa_to_clear;
   int *partition_link, *tpa_nodes;
+  VEC(int,heap) *tpa_to_clear;
   unsigned l;
   ssa_op_iter iter;
   bitmap_iterator bi;
@@ -1309,12 +1311,13 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 
   partition_link = xcalloc (num_var_partitions (map) + 1, sizeof (int));
   tpa_nodes = xcalloc (tpa_num_trees (tpa), sizeof (int));
-  VARRAY_INT_INIT (tpa_to_clear, 50, "tpa to clear");
+  tpa_to_clear = VEC_alloc (int, heap, 50);
 
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator bsi;
       tree phi;
+      int idx;
 
       /* Start with live on exit temporaries.  */
       bitmap_copy (live, live_on_exit (liveinfo, bb));
@@ -1419,7 +1422,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 	      /* If start is 0, a new root reference list is being started.
 		 Register it to be cleared.  */
 	      if (!start)
-	        VARRAY_PUSH_INT (tpa_to_clear, i);
+		VEC_safe_push (int, heap, tpa_to_clear, i);
 
 	      /* Add interferences to other tpa members seen.  */
 	      for (y = start; y != 0; y = partition_link[y])
@@ -1430,13 +1433,14 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 	}
 
 	/* Now clear the used tpa root references.  */
-	for (l = 0; l < VARRAY_ACTIVE_SIZE (tpa_to_clear); l++)
-	  tpa_nodes[VARRAY_INT (tpa_to_clear, l)] = 0;
-	VARRAY_POP_ALL (tpa_to_clear);
+	for (l = 0; VEC_iterate (int, tpa_to_clear, l, idx); l++)
+	  tpa_nodes[idx] = 0;
+	VEC_truncate (int, tpa_to_clear, 0);
     }
 
   free (tpa_nodes);
   free (partition_link);
+  VEC_free (int, heap, tpa_to_clear);
   BITMAP_FREE (live);
   return graph;
 }
