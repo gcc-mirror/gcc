@@ -1,3 +1,7 @@
+2005-04-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 35.
+
 2005-04-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/ext/bitmap_allocator/check_allocate_max_size.cpp: Add
