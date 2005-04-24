@@ -1,3 +1,8 @@
+2005-04-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree.h (TREE_THIS_VOLATILE): Document the effect on a
+	function decl.
+
 2005-04-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Use gcc_assert
