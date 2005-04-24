@@ -1,3 +1,10 @@
+2005-04-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-uncprop.c (equiv_stack): Change the type o
+	VEC(tree,heap).
+	(tree_ssa_uncprop, uncprop_finalize_block,
+	uncprop_initialize_block): Update uses of equiv_stack.
+
 2005-04-24  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/21163
