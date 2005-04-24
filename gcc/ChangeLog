@@ -1,6 +1,6 @@
 2005-04-24  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
-	* config.gcc (h8300-*-rtems*): Add h8300-rtemscoff.
+	* config.gcc (h8300-*-rtems*): Add h8300-*-rtemscoff*.
 	Switch h8300-*-rtems* to ELF.
 
 2005-04-24  Kazu Hirata  <kazu@cs.umass.edu>
