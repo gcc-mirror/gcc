@@ -1,3 +1,11 @@
+2005-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/20991
+	* cgraph.h (cgraph_local_info): Add vtable_method field.
+	* varasm.c (mark_decl_referenced): If cgraph_global_info_ready
+	and node is vtable_method, finalized and not reachable, don't do
+	anything.
+
 2005-04-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-copy.c (copy_prop_visit_cond_stmt): Use

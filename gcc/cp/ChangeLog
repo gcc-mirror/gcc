@@ -1,3 +1,10 @@
+2005-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/20991
+	* class.c: Include cgraph.h.
+	(cp_fold_obj_type_ref): Set node->local.vtable_method.
+	* Make-lang.in (cgraph.o): Depend on $(CGRAPH_H).
+
 2005-04-12  Markus F.X.J. Oberhumer  <markus@oberhumer.com>
 
 	* mangle.c (write_builtin_type): Handle integer types which are
