@@ -14999,6 +14999,41 @@ ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
   return false;
 }
 
+/* Return true if the registers in CLASS cannot represent the change from
+   modes FROM to TO.  */
+
+bool
+ix86_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
+			       enum reg_class class)
+{
+  if (from == to)
+    return false;
+
+  /* x87 registers can't do subreg at all, as all values are reformated
+     to extended precision.  */
+  if (MAYBE_FLOAT_CLASS_P (class))
+    return true;
+
+  if (MAYBE_SSE_CLASS_P (class) || MAYBE_MMX_CLASS_P (class))
+    {
+      /* Vector registers do not support QI or HImode loads.  If we don't
+	 disallow a change to these modes, reload will assume it's ok to
+	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
+	 the vec_dupv4hi pattern.  */
+      if (GET_MODE_SIZE (from) < 4)
+	return true;
+
+      /* Vector registers do not support subreg with nonzero offsets, which
+	 are otherwise valid for integer registers.  Since we can't see 
+	 whether we have a nonzero offset from here, prohibit all
+         nonparadoxical subregs changing size.  */
+      if (GET_MODE_SIZE (to) < GET_MODE_SIZE (from))
+	return true;
+    }
+
+  return false;
+}
+
 /* Return the cost of moving data from a register in class CLASS1 to
    one in class CLASS2.
 
