@@ -787,9 +787,13 @@ frv-*-*linux*)
 	         linux.h frv/linux.h frv/frv-abi.h"
 	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
 	;;
-h8300-*-rtems*)
+h8300-*-rtemscoff*)
 	tmake_file="h8300/t-h8300 t-rtems h8300/t-rtems"
 	tm_file="h8300/h8300.h dbxcoff.h h8300/coff.h h8300/rtems.h rtems.h"
+	;;
+h8300-*-rtems*)
+	tmake_file="h8300/t-h8300 h8300/t-elf t-rtems h8300/t-rtems"
+	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h h8300/rtems.h rtems.h"
 	;;
 h8300-*-elf*)
 	tmake_file="h8300/t-h8300 h8300/t-elf"
