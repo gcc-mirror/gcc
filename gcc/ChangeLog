@@ -1,3 +1,17 @@
+2005-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/20991
+	* cgraph.h (cgraph_local_info): Add vtable_method field.
+	* varasm.c (mark_decl_referenced): If cgraph_global_info_ready
+	and node is vtable_method, finalized and not reachable, don't do
+	anything.
+
+	Revert:
+	2005-04-18  Jakub Jelinek  <jakub@redhat.com>
+	* tree-ssa-ccp.c (fold_stmt): Don't optimize OBJ_TYPE_REFs if that
+	would result in an already finalized unreachable node becoming
+	reachable while cgraph_global_info_ready.
+
 2005-04-24  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	PR target/17824

@@ -2090,18 +2090,6 @@ fold_stmt (tree *stmt_p)
 
 	      t = TREE_TYPE (TREE_TYPE (OBJ_TYPE_REF_OBJECT (callee)));
 	      t = lang_hooks.fold_obj_type_ref (callee, t);
-	      if (t && TREE_CODE (t) == ADDR_EXPR
-		  && TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL
-		  && cgraph_global_info_ready)
-		{
-		  /* If the method has been already finalized as unreachable,
-		     avoid any new references to it.  */
-		  struct cgraph_node *node;
-
-		  node = cgraph_node (TREE_OPERAND (t, 0));
-		  if (!node->reachable && node->local.finalized)
-		    t = NULL_TREE;
-		}
 	      if (t)
 		{
 		  TREE_OPERAND (rhs, 0) = t;
