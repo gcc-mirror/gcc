@@ -1,3 +1,8 @@
+2005-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (java/decl.o, java/resource.o): Depend on $(EXPR_H)
+	instead of just expr.h.
+
 2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (main): Unlock the stdio streams.
