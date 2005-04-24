@@ -1757,15 +1757,35 @@ write_builtin_type (tree type)
 	    {
 	      tree t = c_common_type_for_mode (TYPE_MODE (type),
 					       TYPE_UNSIGNED (type));
-	      if (type == t)
-		{
-		  gcc_assert (TYPE_PRECISION (type) == 128);
-		  write_char (TYPE_UNSIGNED (type) ? 'o' : 'n');
-		}
-	      else
+	      if (type != t)
 		{
 		  type = t;
 		  goto iagain;
+		}
+
+	      if (TYPE_PRECISION (type) == 128)
+		write_char (TYPE_UNSIGNED (type) ? 'o' : 'n');
+	      else
+		{
+		  /* Allow for cases where TYPE is not one of the shared
+		     integer type nodes and write a "vendor extended builtin
+		     type" with a name the form intN or uintN, respectively.
+		     Situations like this can happen if you have an
+		     __attribute__((__mode__(__SI__))) type and use exotic
+		     switches like '-mint64' on MIPS or '-mint8' on AVR.
+		     Of course, this is undefined by the C++ ABI (and
+		     '-mint8' is not even Standard C conforming), but when
+		     using such special options you're pretty much in nowhere
+		     land anyway.  */
+		  const char *prefix;
+		  char prec[11];	/* up to ten digits for an unsigned */
+
+		  prefix = TYPE_UNSIGNED (type) ? "uint" : "int";
+		  sprintf (prec, "%u", (unsigned) TYPE_PRECISION (type));
+		  write_char ('u');	/* "vendor extended builtin type" */
+		  write_unsigned_number (strlen (prefix) + strlen (prec));
+		  write_string (prefix);
+		  write_string (prec);
 		}
 	    }
 	}
