@@ -604,7 +604,7 @@ copy_prop_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 
   /* The only conditionals that we may be able to compute statically
      are predicates involving at least one SSA_NAME.  */
-  if (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison
+  if (COMPARISON_CLASS_P (cond)
       && NUM_USES (uses) >= 1)
     {
       unsigned i;

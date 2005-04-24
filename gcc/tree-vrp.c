@@ -481,7 +481,7 @@ extract_range_from_assert (value_range *vr_p, tree expr)
   var = ASSERT_EXPR_VAR (expr);
   cond = ASSERT_EXPR_COND (expr);
 
-  gcc_assert (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison);
+  gcc_assert (COMPARISON_CLASS_P (cond));
 
   /* Find VAR in the ASSERT_EXPR conditional.  */
   limit = get_opposite_operand (cond, var);
@@ -1228,7 +1228,7 @@ build_assert_expr_for (tree cond, tree v)
   gcc_assert (TREE_CODE (v) == SSA_NAME);
   n = duplicate_ssa_name (v, NULL_TREE);
 
-  if (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison)
+  if (COMPARISON_CLASS_P (cond))
     {
       /* Build N = ASSERT_EXPR <V, COND>.  As a special case, if the
 	 conditional is an EQ_EXPR (V == Z), just build the assignment
@@ -1276,8 +1276,8 @@ build_assert_expr_for (tree cond, tree v)
 static inline bool
 fp_predicate (tree expr)
 {
-  return TREE_CODE_CLASS (TREE_CODE (expr)) == tcc_comparison
-         && FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)));
+  return (COMPARISON_CLASS_P (expr)
+	  && FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0))));
 }
 
 
@@ -1335,7 +1335,7 @@ has_assert_expr (tree op, tree cond)
       tree t1, t2;
 
       /* If COND is not a comparison predicate, something is wrong.  */
-      gcc_assert (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison);
+      gcc_assert (COMPARISON_CLASS_P (cond));
 
       /* Note that we only need to compare against one of the operands
 	 of OTHER_COND.  
