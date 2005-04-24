@@ -1,3 +1,10 @@
+2005-04-24  Ian Lance Taylor  <ian@airs.com>
+
+	* cp-tree.def (USING_STMT): Change class to tcc_statement.
+	(TRY_BLOCK, EH_SPEC_BLOCK, HANDLER, CLEANUP_STMT): Likewise.
+	(IF_STMT, FOR_STMT, WHILE_STMT, DO_STMT): Likewise.
+	(BREAK_STMT, CONTINUE_STMT, SWITCH_STMT): Likewise.
+
 2005-04-23  DJ Delorie  <dj@redhat.com>
 
 	* call.c, class.c, cvt.c, decl.c, decl2.c, except.c, friend.c,
