@@ -1,3 +1,9 @@
+2005-04-12  Markus F.X.J. Oberhumer  <markus@oberhumer.com>
+
+	* mangle.c (write_builtin_type): Handle integer types which are
+	not one of the shared integer type nodes and emit a "vendor
+	extended builtin type" with an encoding in the form of "u5int96".
+
 2005-04-24  Ian Lance Taylor  <ian@airs.com>
 
 	* cp-tree.def (USING_STMT): Change class to tcc_statement.
