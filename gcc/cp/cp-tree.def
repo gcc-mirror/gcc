@@ -204,7 +204,7 @@ DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", tcc_type, 0)
 DEFTREECODE (USING_DECL, "using_decl", tcc_declaration, 0)
 
 /* A using directive. The operand is USING_STMT_NAMESPACE.  */     
-DEFTREECODE (USING_STMT, "using_directive", tcc_expression, 1)
+DEFTREECODE (USING_STMT, "using_directive", tcc_statement, 1)
 
 /* An un-parsed default argument.  Looks like an IDENTIFIER_NODE.  */
 DEFTREECODE (DEFAULT_ARG, "default_arg", tcc_exceptional, 0)
@@ -258,15 +258,15 @@ DEFTREECODE (NON_DEPENDENT_EXPR, "non_dependent_expr", tcc_expression, 1)
    setup_vtbl_pointer (and appears in all functions, not just ctors).  */
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", tcc_expression, 1)
 
-DEFTREECODE (TRY_BLOCK, "try_block", tcc_expression, 2)
+DEFTREECODE (TRY_BLOCK, "try_block", tcc_statement, 2)
 
-DEFTREECODE (EH_SPEC_BLOCK, "eh_spec_block", tcc_expression, 2)
+DEFTREECODE (EH_SPEC_BLOCK, "eh_spec_block", tcc_statement, 2)
 
 /* A HANDLER wraps a catch handler for the HANDLER_TYPE.  If this is
    CATCH_ALL_TYPE, then the handler catches all types.  The declaration of
    the catch variable is in HANDLER_PARMS, and the body block in
    HANDLER_BODY.  */
-DEFTREECODE (HANDLER, "handler", tcc_expression, 2)
+DEFTREECODE (HANDLER, "handler", tcc_statement, 2)
 
 /* A MUST_NOT_THROW_EXPR wraps an expression that may not
    throw, and must call terminate if it does.  */
@@ -275,35 +275,35 @@ DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", tcc_expression, 1)
 /* A CLEANUP_STMT marks the point at which a declaration is fully
    constructed.  The CLEANUP_EXPR is run on behalf of CLEANUP_DECL
    when CLEANUP_BODY completes.  */
-DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", tcc_expression, 3)
+DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", tcc_statement, 3)
 
 /* Represents an 'if' statement. The operands are IF_COND,
    THEN_CLAUSE, and ELSE_CLAUSE, respectively.  */
 /* ??? It is currently still necessary to distinguish between IF_STMT 
    and COND_EXPR for the benefit of templates.  */
-DEFTREECODE (IF_STMT, "if_stmt", tcc_expression, 3)
+DEFTREECODE (IF_STMT, "if_stmt", tcc_statement, 3)
 
 /* Used to represent a `for' statement. The operands are
    FOR_INIT_STMT, FOR_COND, FOR_EXPR, and FOR_BODY, respectively.  */
-DEFTREECODE (FOR_STMT, "for_stmt", tcc_expression, 4)
+DEFTREECODE (FOR_STMT, "for_stmt", tcc_statement, 4)
 
 /* Used to represent a 'while' statement. The operands are WHILE_COND
    and WHILE_BODY, respectively.  */
-DEFTREECODE (WHILE_STMT, "while_stmt", tcc_expression, 2)
+DEFTREECODE (WHILE_STMT, "while_stmt", tcc_statement, 2)
 
 /* Used to represent a 'do' statement. The operands are DO_BODY and
    DO_COND, respectively.  */
-DEFTREECODE (DO_STMT, "do_stmt", tcc_expression, 2)
+DEFTREECODE (DO_STMT, "do_stmt", tcc_statement, 2)
 
 /* Used to represent a 'break' statement.  */
-DEFTREECODE (BREAK_STMT, "break_stmt", tcc_expression, 0)
+DEFTREECODE (BREAK_STMT, "break_stmt", tcc_statement, 0)
 
 /* Used to represent a 'continue' statement.  */
-DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_expression, 0)
+DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_statement, 0)
 
 /* Used to represent a 'switch' statement. The operands are
    SWITCH_STMT_COND, SWITCH_STMT_BODY and SWITCH_STMT_TYPE, respectively.  */
-DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_expression, 3)
+DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_statement, 3)
 
 DEFTREECODE (TAG_DEFN, "tag_defn", tcc_expression, 0)
 
