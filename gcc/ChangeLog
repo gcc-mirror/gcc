@@ -1,3 +1,13 @@
+2005-04-24  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/21163
+	* simplify-rtx.c (simplify_binary_operation) <IOR>: Check
+	for SCALAR_INT_MODE_P instead of not MODE_CC before returning
+	constm1_rtx.
+	<XOR, AND, LSHIFTRT, UMIN>: Use CONST0_RTX.
+	<UDIV, UMOD>: Use CONST0_RTX and CONST1_RTX.
+	<DIV, MOD>: Likewise.
+
 2005-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/20991
