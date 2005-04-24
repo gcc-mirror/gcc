@@ -1,5 +1,8 @@
 2005-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/20991
+	* g++.dg/opt/pr20991.C: New test.
+
 	* gcc.dg/compat/struct-layout-1_generate.c: In arrays avoid types
 	where sizeof (type) < __alignof__ (type).
 	* gcc.dg/compat/struct-layout-1.h: Likewise.

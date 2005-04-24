@@ -1955,9 +1955,15 @@ mark_decl_referenced (tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      /* Extern inline functions don't become needed when referenced.  */
-      if (!DECL_EXTERNAL (decl))
-        cgraph_mark_needed_node (cgraph_node (decl));
+      /* Extern inline functions don't become needed when referenced.
+	 If we know a method will be emitted in other TU and no new
+	 functions can be marked reachable, just use the external
+	 definition.  */
+      struct cgraph_node *node = cgraph_node (decl);
+      if (!DECL_EXTERNAL (decl)
+	  && (!node->local.vtable_method || !cgraph_global_info_ready
+	      || !node->local.finalized))
+	cgraph_mark_needed_node (node);
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
