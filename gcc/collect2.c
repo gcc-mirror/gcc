@@ -831,6 +831,11 @@ main (int argc, char **argv)
   signal (SIGCHLD, SIG_DFL);
 #endif
 
+  /* Unlock the stdio streams.  */
+  unlock_stream (stdin);
+  unlock_stream (stdout);
+  unlock_stream (stderr);
+
   gcc_init_libintl ();
 
   /* Do not invoke xcalloc before this point, since locale needs to be
