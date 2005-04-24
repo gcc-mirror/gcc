@@ -1,3 +1,17 @@
+2005-04-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-copy.c (copy_prop_visit_cond_stmt): Use
+	COMPARISON_CLASS_P.
+	* tree-ssa-pre.c (create_value_expr_from): Use
+	CONSTANT_CLASS_P and REFERENCE_CLASS_P.
+	* tree-ssa-propagate.c (stmt_makes_single_load,
+	stmt_makes_single_store): Use REFERENCE_CLASS_P.
+	* tree-vect-transform.c (vect_is_simple_cond): Use
+	COMPARISON_CLASS_P.
+	* tree-vrp.c (extract_range_from_assert,
+	build_assert_expr_for, fp_predicate, has_assert_expr): Use
+	COMPARISON_CLASS_P.
+
 2005-04-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree.h (TREE_THIS_VOLATILE): Document the effect on a

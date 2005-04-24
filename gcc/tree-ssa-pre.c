@@ -1851,7 +1851,7 @@ create_value_expr_from (tree expr, basic_block block,
 
       /* If OP is a constant that has overflowed, do not value number
 	 this expression.  */
-      if (TREE_CODE_CLASS (TREE_CODE (op)) == tcc_constant
+      if (CONSTANT_CLASS_P (op)
 	  && TREE_OVERFLOW (op))
 	{
 	  pool_free (pool, vexpr);
@@ -1859,7 +1859,7 @@ create_value_expr_from (tree expr, basic_block block,
 	}
 
       /* Recursively value-numberize reference ops */
-      if (TREE_CODE_CLASS (TREE_CODE (op)) == tcc_reference)
+      if (REFERENCE_CLASS_P (op))
 	{
 	  tree tempop = create_value_expr_from (op, block, vuses);
 	  op = tempop ? tempop : op;

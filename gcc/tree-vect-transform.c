@@ -1151,7 +1151,7 @@ vect_is_simple_cond (tree cond, loop_vec_info loop_vinfo)
 {
   tree lhs, rhs;
 
-  if (TREE_CODE_CLASS (TREE_CODE (cond)) != tcc_comparison)
+  if (!COMPARISON_CLASS_P (cond))
     return false;
 
   lhs = TREE_OPERAND (cond, 0);

@@ -709,7 +709,7 @@ stmt_makes_single_load (tree stmt)
 
   return (!TREE_THIS_VOLATILE (rhs)
 	  && (DECL_P (rhs)
-	      || TREE_CODE_CLASS (TREE_CODE (rhs)) == tcc_reference));
+	      || REFERENCE_CLASS_P (rhs)));
 }
 
 
@@ -735,7 +735,7 @@ stmt_makes_single_store (tree stmt)
 
   return (!TREE_THIS_VOLATILE (lhs)
           && (DECL_P (lhs)
-	      || TREE_CODE_CLASS (TREE_CODE (lhs)) == tcc_reference));
+	      || REFERENCE_CLASS_P (lhs)));
 }
 
 
