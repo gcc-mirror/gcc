@@ -1,3 +1,9 @@
+2005-04-24  Per Bothner  <per@bothner.com>
+	    Devang Patel  <dpatel@apple.com>
+
+	PR preprocessor/20907
+	* gcc.dg/cpp/very-long-comment.c: New test.
+
 2005-04-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/20059
