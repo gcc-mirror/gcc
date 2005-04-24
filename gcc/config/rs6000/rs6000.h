@@ -1393,7 +1393,7 @@ enum reg_class
 
    We also don't want to reload integer values into floating-point
    registers if we can at all help it.  In fact, this can
-   cause reload to abort, if it tries to generate a reload of CTR
+   cause reload to die, if it tries to generate a reload of CTR
    into a FP register and discovers it doesn't have the memory location
    required.
 

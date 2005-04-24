@@ -1,3 +1,40 @@
+2005-04-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Use gcc_assert
+	and gcc_unreachable as appropriate.
+	(num_insns_constant, output_vec_const_move,
+	build_mask64_2_operands, rs6000_output_dwarf_dtprel,
+	rs6000_emit_set_const, rs6000_emit_move,
+	spe_build_register_parallel, function_arg,
+	rs6000_move_block_from_reg, altivec_expand_predicate_builtin,
+	spe_expand_predicate_builtin, spe_expand_evsel_builtin,
+	rs6000_expand_builtin, spe_init_builtins, altivec_init_builtins,
+	rs6000_common_init_builtins, expand_block_clear,
+	expand_block_move, validate_condition_mode, ccr_bit, extract_MB,
+	extract_ME, rs6000_get_some_local_dynamic_name,
+	rs6000_output_function_entry, print_operand,
+	print_operand_address, rs6000_generate_compare, rs6000_emit_sCOND,
+	output_cbranch, output_e500_flip_gt_bit,
+	rs6000_emit_vector_compare, rs6000_emit_vector_compare,
+	rs6000_emit_cmove, rs6000_emit_minmax, rs6000_split_multireg_move,
+	compute_save_world_info, rs6000_stack_info,
+	rs6000_emit_load_toc_table, rs6000_frame_related,
+	spe_synthesize_frame_save, rs6000_emit_epilogue,
+	rs6000_output_function_epilogue, rs6000_hash_constant, output_toc,
+	output_function_profiler, rs6000_trampoline_size,
+	rs6000_initialize_trampoline, find_addr_reg,
+	rs6000_machopic_legitimize_pic_address,
+	rs6000_initial_elimination_offset,
+	rs6000_dbx_register_number): Likewise.
+	* config/rs6000/rs6000.md (*fix_truncdfsi2_internal,
+	*movdf_hardfloat32, *movdf_softfloat32, *fix_trunctfsi2_internal,
+	*movti_power, *movti_string, call, call_value, sibcall,
+	sibcall_value): Likewise.
+	* config/rs6000/spe.md (*movdf_e500_double,
+	*movv2si_internal): Likewise.
+	* config/rs6000/rs6000.h (PREFERRED_RELOAD_CLASS): Remove 'abort'
+	from comment.
+
 2005-04-24  Richard Henderson  <rth@redhat.com>
 
 	PR target/21101

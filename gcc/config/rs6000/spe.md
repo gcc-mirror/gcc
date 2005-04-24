@@ -2247,7 +2247,7 @@
      case 2:
        return \"evstdd%X0 %1,%y0\";
      default:
-       abort ();
+       gcc_unreachable ();
      }
  }"
   [(set_attr "type" "*,vecload,vecstore")
@@ -2327,7 +2327,7 @@
     case 1: return \"evldd%X1 %0,%y1\";
     case 2: return \"evor %0,%1,%1\";
     case 3: return output_vec_const_move (operands);
-    default: abort ();
+    default: gcc_unreachable ();
     }
 }"
   [(set_attr "type" "vecload,vecstore,*,*")
