@@ -101,6 +101,64 @@ extern int fn5 (void), fn6 (void), fn7 (void), fn8 (void), fn9 (void);
 #define atpaal8		__attribute__((packed, aligned (8)))
 #define atpaal16	__attribute__((packed, aligned (16)))
 
+#if UCHAR_MAX == 255 && USHORT_MAX == 65535 && UINT_MAX == 4294967295U \
+    && ULLONG_MAX == 18446744073709551615ULL
+/* For ILP32 and LP64 targets, assume float is at least 32-bit
+   and double plus long double at least 64-bit.  */
+# define atalx1		atal1
+# define atalx2		atal2
+# define atalx4		atal4
+# define atalx8		atal8
+# define atalx16	atal16
+# define atalx1pa	atal1pa
+# define atalx2pa	atal2pa
+# define atalx4pa	atal4pa
+# define atalx8pa	atal8pa
+# define atalx16pa	atal16pa
+# define atpaalx1	atpaal1
+# define atpaalx2	atpaal2
+# define atpaalx4	atpaal4
+# define atpaalx8	atpaal8
+# define atpaalx16	atpaal16
+# if ULONG_MAX > 4294967295UL
+#  define ataly8	atal8
+#  define ataly8pa	atal8pa
+#  define atpaaly8	atpaal8
+#  define ataly16	atal16
+#  define ataly16pa	atal16pa
+#  define atpaaly16	atpaal16
+# else
+#  define ataly8
+#  define ataly8pa
+#  define atpaaly8
+#  define ataly16
+#  define ataly16pa
+#  define atpaaly16
+# endif
+#else
+# define atalx1
+# define atalx2
+# define atalx4
+# define atalx8
+# define atalx16
+# define atalx1pa
+# define atalx2pa
+# define atalx4pa
+# define atalx8pa
+# define atalx16pa
+# define atpaalx1
+# define atpaalx2
+# define atpaalx4
+# define atpaalx8
+# define atpaalx16
+# define ataly8
+# define ataly8pa
+# define atpaaly8
+# define ataly16
+# define ataly16pa
+# define atpaaly16
+#endif
+
 #define atQI		__attribute__((mode (QI)))
 #define atHI		__attribute__((mode (HI)))
 #define atSI		__attribute__((mode (SI)))
@@ -427,6 +485,153 @@ typedef enum E9 Tal16E9 atal16;
 typedef void *Tal16ptr atal16;
 typedef char *Tal16cptr atal16;
 typedef int *Tal16iptr atal16;
+typedef char Talx1char atalx1;
+typedef signed char Talx1schar atalx1;
+typedef unsigned char Talx1uchar atalx1;
+typedef short int Talx1short atalx1;
+typedef unsigned short int Talx1ushort atalx1;
+typedef int Talx1int atalx1;
+typedef unsigned int Talx1uint atalx1;
+typedef long int Talx1long atalx1;
+typedef unsigned long int Talx1ulong atalx1;
+typedef long long int Talx1llong atalx1;
+typedef unsigned long long int Talx1ullong atalx1;
+#ifndef SKIP_COMPLEX_INT
+typedef _Complex char Talx1cchar atalx1;
+typedef _Complex signed char Talx1cschar atalx1;
+typedef _Complex unsigned char Talx1cuchar atalx1;
+typedef _Complex short int Talx1cshort atalx1;
+typedef _Complex unsigned short int Talx1cushort atalx1;
+typedef _Complex int Talx1cint atalx1;
+typedef _Complex unsigned int Talx1cuint atalx1;
+typedef _Complex long int Talx1clong atalx1;
+typedef _Complex unsigned long int Talx1culong atalx1;
+typedef _Complex long long int Talx1cllong atalx1;
+typedef _Complex unsigned long long int Talx1cullong atalx1;
+#endif
+typedef float Talx1float atalx1;
+typedef double Talx1double atalx1;
+typedef long double Talx1ldouble atalx1;
+typedef _Complex float Talx1cfloat atalx1;
+typedef _Complex double Talx1cdouble atalx1;
+typedef _Complex long double Talx1cldouble atalx1;
+typedef bool Talx1bool atalx1;
+typedef enum E0 Talx1E0 atalx1;
+typedef enum E1 Talx1E1 atalx1;
+typedef enum E2 Talx1E2 atalx1;
+typedef enum E3 Talx1E3 atalx1;
+typedef enum E4 Talx1E4 atalx1;
+typedef enum E5 Talx1E5 atalx1;
+typedef enum E6 Talx1E6 atalx1;
+typedef enum E7 Talx1E7 atalx1;
+typedef enum E8 Talx1E8 atalx1;
+typedef enum E9 Talx1E9 atalx1;
+typedef void *Talx1ptr atalx1;
+typedef char *Talx1cptr atalx1;
+typedef int *Talx1iptr atalx1;
+typedef short int Talx2short atalx2;
+typedef unsigned short int Talx2ushort atalx2;
+typedef int Talx2int atalx2;
+typedef unsigned int Talx2uint atalx2;
+typedef long int Talx2long atalx2;
+typedef unsigned long int Talx2ulong atalx2;
+typedef long long int Talx2llong atalx2;
+typedef unsigned long long int Talx2ullong atalx2;
+#ifndef SKIP_COMPLEX_INT
+typedef _Complex char Talx2cchar atalx2;
+typedef _Complex signed char Talx2cschar atalx2;
+typedef _Complex unsigned char Talx2cuchar atalx2;
+typedef _Complex short int Talx2cshort atalx2;
+typedef _Complex unsigned short int Talx2cushort atalx2;
+typedef _Complex int Talx2cint atalx2;
+typedef _Complex unsigned int Talx2cuint atalx2;
+typedef _Complex long int Talx2clong atalx2;
+typedef _Complex unsigned long int Talx2culong atalx2;
+typedef _Complex long long int Talx2cllong atalx2;
+typedef _Complex unsigned long long int Talx2cullong atalx2;
+#endif
+typedef float Talx2float atalx2;
+typedef double Talx2double atalx2;
+typedef long double Talx2ldouble atalx2;
+typedef _Complex float Talx2cfloat atalx2;
+typedef _Complex double Talx2cdouble atalx2;
+typedef _Complex long double Talx2cldouble atalx2;
+typedef enum E0 Talx2E0 atalx2;
+typedef enum E1 Talx2E1 atalx2;
+typedef enum E2 Talx2E2 atalx2;
+typedef enum E3 Talx2E3 atalx2;
+typedef enum E4 Talx2E4 atalx2;
+typedef enum E5 Talx2E5 atalx2;
+typedef enum E6 Talx2E6 atalx2;
+typedef enum E7 Talx2E7 atalx2;
+typedef enum E8 Talx2E8 atalx2;
+typedef enum E9 Talx2E9 atalx2;
+typedef void *Talx2ptr atalx2;
+typedef char *Talx2cptr atalx2;
+typedef int *Talx2iptr atalx2;
+typedef int Talx4int atalx4;
+typedef unsigned int Talx4uint atalx4;
+typedef long int Talx4long atalx4;
+typedef unsigned long int Talx4ulong atalx4;
+typedef long long int Talx4llong atalx4;
+typedef unsigned long long int Talx4ullong atalx4;
+#ifndef SKIP_COMPLEX_INT
+typedef _Complex short int Talx4cshort atalx4;
+typedef _Complex unsigned short int Talx4cushort atalx4;
+typedef _Complex int Talx4cint atalx4;
+typedef _Complex unsigned int Talx4cuint atalx4;
+typedef _Complex long int Talx4clong atalx4;
+typedef _Complex unsigned long int Talx4culong atalx4;
+typedef _Complex long long int Talx4cllong atalx4;
+typedef _Complex unsigned long long int Talx4cullong atalx4;
+#endif
+typedef float Talx4float atalx4;
+typedef double Talx4double atalx4;
+typedef long double Talx4ldouble atalx4;
+typedef _Complex float Talx4cfloat atalx4;
+typedef _Complex double Talx4cdouble atalx4;
+typedef _Complex long double Talx4cldouble atalx4;
+typedef enum E0 Talx4E0 atalx4;
+typedef enum E1 Talx4E1 atalx4;
+typedef enum E2 Talx4E2 atalx4;
+typedef enum E3 Talx4E3 atalx4;
+typedef enum E4 Talx4E4 atalx4;
+typedef enum E5 Talx4E5 atalx4;
+typedef enum E6 Talx4E6 atalx4;
+typedef enum E7 Talx4E7 atalx4;
+typedef enum E8 Talx4E8 atalx4;
+typedef enum E9 Talx4E9 atalx4;
+typedef void *Talx4ptr atalx4;
+typedef char *Talx4cptr atalx4;
+typedef int *Talx4iptr atalx4;
+typedef long int Taly8long ataly8;
+typedef unsigned long int Taly8ulong ataly8;
+typedef long long int Talx8llong atalx8;
+typedef unsigned long long int Talx8ullong atalx8;
+#ifndef SKIP_COMPLEX_INT
+typedef _Complex int Talx8cint atalx8;
+typedef _Complex unsigned int Talx8cuint atalx8;
+typedef _Complex long int Talx8clong atalx8;
+typedef _Complex unsigned long int Talx8culong atalx8;
+typedef _Complex long long int Talx8cllong atalx8;
+typedef _Complex unsigned long long int Talx8cullong atalx8;
+#endif
+typedef double Talx8double atalx8;
+typedef long double Talx8ldouble atalx8;
+typedef _Complex float Talx8cfloat atalx8;
+typedef _Complex double Talx8cdouble atalx8;
+typedef _Complex long double Talx8cldouble atalx8;
+typedef void *Taly8ptr ataly8;
+typedef char *Taly8cptr ataly8;
+typedef int *Taly8iptr ataly8;
+#ifndef SKIP_COMPLEX_INT
+typedef _Complex long int Taly16clong ataly16;
+typedef _Complex unsigned long int Taly16culong ataly16;
+typedef _Complex long long int Talx16cllong atalx16;
+typedef _Complex unsigned long long int Talx16cullong atalx16;
+#endif
+typedef _Complex double Talx16cdouble atalx16;
+typedef _Complex long double Talx16cldouble atalx16;
 typedef int (*Tfnptr) (void);
 
 /* Bitfield macros.  In C, it is invalid to use numbers larger
