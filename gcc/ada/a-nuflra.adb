@@ -256,33 +256,46 @@ package body Ada.Numerics.Float_Random is
    -----------
 
    function Value (Coded_State : String) return State is
+      Last  : constant Natural := Coded_State'Last;
       Start : Positive := Coded_State'First;
       Stop  : Positive := Coded_State'First;
       Outs  : State;
 
    begin
-      while Coded_State (Stop) /= ',' loop
+      while Stop <= Last and then Coded_State (Stop) /= ',' loop
          Stop := Stop + 1;
       end loop;
+
+      if Stop > Last then
+         raise Constraint_Error;
+      end if;
 
       Outs.X1 := Int'Value (Coded_State (Start .. Stop - 1));
       Start := Stop + 1;
 
       loop
          Stop := Stop + 1;
-         exit when Coded_State (Stop) = ',';
+         exit when Stop > Last or else Coded_State (Stop) = ',';
       end loop;
+
+      if Stop > Last then
+         raise Constraint_Error;
+      end if;
 
       Outs.X2 := Int'Value (Coded_State (Start .. Stop - 1));
       Start := Stop + 1;
 
       loop
          Stop := Stop + 1;
-         exit when Coded_State (Stop) = ',';
+         exit when Stop > Last or else Coded_State (Stop) = ',';
       end loop;
 
+      if Stop > Last then
+         raise Constraint_Error;
+      end if;
+
       Outs.P   := Int'Value (Coded_State (Start .. Stop - 1));
-      Outs.Q   := Int'Value (Coded_State (Stop + 1 .. Coded_State'Last));
+      Outs.Q   := Int'Value (Coded_State (Stop + 1 .. Last));
       Outs.X   := Euclid (Outs.P, Outs.Q);
       Outs.Scl := 1.0 / (Flt (Outs.P) * Flt (Outs.Q));
 
