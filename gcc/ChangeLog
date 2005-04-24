@@ -1,3 +1,8 @@
+2005-04-24  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config.gcc (h8300-*-rtems*): Add h8300-*-rtemscoff*.
+	Switch h8300-*-rtems* to ELF.
+
 2005-04-23  Richard Henderson  <rth@redhat.com>
 
 	* simplify-rtx.c (simplify_binary_operation): Fix second instance
