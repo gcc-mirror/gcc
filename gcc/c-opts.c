@@ -1302,7 +1302,10 @@ finish_options (void)
     {
       size_t i;
 
-      cpp_change_file (parse_in, LC_RENAME, _("<built-in>"));
+      cb_file_change (parse_in,
+		      linemap_add (&line_table, LC_RENAME, 0,
+				   _("<built-in>"), 0));
+
       cpp_init_builtins (parse_in, flag_hosted);
       c_cpp_builtins (parse_in);
 
