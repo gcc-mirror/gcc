@@ -1,3 +1,9 @@
+2005-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/compat/struct-layout-1_generate.c: In arrays avoid types
+	where sizeof (type) < __alignof__ (type).
+	* gcc.dg/compat/struct-layout-1.h: Likewise.
+
 2005-04-24  Per Bothner  <per@bothner.com>
 	    Devang Patel  <dpatel@apple.com>
 
