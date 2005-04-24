@@ -848,7 +848,7 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 		 requirements.  Insert padding immediately before this
 		 segment.  */
 	      gfc_warning ("Padding of %d bytes required before '%s' in "
-			   "COMMON '%s' at %L", offset, s->sym->name,
+			   "COMMON '%s' at %L", (int)offset, s->sym->name,
 			   common->name, &common->where);
 	    }
 	  else
@@ -874,7 +874,7 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
   if (common_segment->offset != 0)
     {
       gfc_warning ("COMMON '%s' at %L requires %d bytes of padding at start",
-		   common->name, &common->where, common_segment->offset);
+		   common->name, &common->where, (int)common_segment->offset);
     }
 
   create_common (common, common_segment, saw_equiv);

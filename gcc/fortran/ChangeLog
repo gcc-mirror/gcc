@@ -1,3 +1,9 @@
+2005-04-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/20059
+	* trans-common.c (translate_common): Cast offset and
+	common_segment->offset to type int for warning message.
+
 2005-04-23  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR fortran/14569
