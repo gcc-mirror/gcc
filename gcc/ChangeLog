@@ -1,3 +1,14 @@
+2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (main): Unlock the stdio streams.
+	* gcc.c (main): Likewise.
+	* gcov-dump.c (main): Likewise.
+	* gcov.c (main): Likewise.
+	* gen-protos.c (main): Likewise.
+	* gensupport.c (init_md_reader_args_cb): Likewise.
+	* protoize.c (main): Likewise.
+	* toplev.c (general_init): Likewise.
+
 2005-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/20991

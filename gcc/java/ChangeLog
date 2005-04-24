@@ -1,3 +1,10 @@
+2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (main): Unlock the stdio streams.
+	* jcf-dump.c (main): Likewise.
+	* jv-scan.c (main): Likewise.
+	* jvgenmain.c (main): Likewise.
+
 2005-04-23  DJ Delorie  <dj@redhat.com>
 
 	* class.c, decl.c, expr.c, jcf-io.c, jcf-parse.c, jv-scan.c,

@@ -5995,6 +5995,11 @@ main (int argc, const char **argv)
   GCC_DRIVER_HOST_INITIALIZATION;
 #endif
 
+  /* Unlock the stdio streams.  */
+  unlock_stream (stdin);
+  unlock_stream (stdout);
+  unlock_stream (stderr);
+
   gcc_init_libintl ();
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)

@@ -940,6 +940,11 @@ main (int argc, char** argv)
   JCF jcf[1];
   int argi, opt;
 
+  /* Unlock the stdio streams.  */
+  unlock_stream (stdin);
+  unlock_stream (stdout);
+  unlock_stream (stderr);
+
   gcc_init_libintl ();
 
   if (argc <= 1)
