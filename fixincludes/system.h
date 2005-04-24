@@ -38,6 +38,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define NULL 0
 #endif
 
+/* Use the unlocked open routines from libiberty.  */
+#define fopen(PATH,MODE) fopen_unlocked(PATH,MODE)
+#define fdopen(FILDES,MODE) fdopen_unlocked(FILDES,MODE)
+#define freopen(PATH,MODE,STREAM) freopen_unlocked(PATH,MODE,STREAM)
+
 /* fixincludes is not a multi-threaded application and therefore we
    do not have to use the locking functions.  In fact, using the locking
    functions can cause the compiler to be significantly slower under
@@ -57,11 +62,65 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #  undef putc
 #  define putc(C, Stream) putc_unlocked (C, Stream)
 # endif
+# ifdef HAVE_PUTCHAR_UNLOCKED
+#  undef putchar
+#  define putchar(C) putchar_unlocked (C)
+# endif
+# ifdef HAVE_GETC_UNLOCKED
+#  undef getc
+#  define getc(Stream) getc_unlocked (Stream)
+# endif
+# ifdef HAVE_GETCHAR_UNLOCKED
+#  undef getchar
+#  define getchar() getchar_unlocked ()
+# endif
 # ifdef HAVE_FPUTC_UNLOCKED
 #  undef fputc
 #  define fputc(C, Stream) fputc_unlocked (C, Stream)
 # endif
 
+# ifdef HAVE_CLEARERR_UNLOCKED
+#  undef clearerr
+#  define clearerr(Stream) clearerr_unlocked (Stream)
+#  if defined (HAVE_DECL_CLEARERR_UNLOCKED) && !HAVE_DECL_CLEARERR_UNLOCKED
+extern void clearerr_unlocked (FILE *);
+#  endif
+# endif
+# ifdef HAVE_FEOF_UNLOCKED
+#  undef feof
+#  define feof(Stream) feof_unlocked (Stream)
+#  if defined (HAVE_DECL_FEOF_UNLOCKED) && !HAVE_DECL_FEOF_UNLOCKED
+extern int feof_unlocked (FILE *);
+#  endif
+# endif
+# ifdef HAVE_FILENO_UNLOCKED
+#  undef fileno
+#  define fileno(Stream) fileno_unlocked (Stream)
+#  if defined (HAVE_DECL_FILENO_UNLOCKED) && !HAVE_DECL_FILENO_UNLOCKED
+extern int fileno_unlocked (FILE *);
+#  endif
+# endif
+# ifdef HAVE_FFLUSH_UNLOCKED
+#  undef fflush
+#  define fflush(Stream) fflush_unlocked (Stream)
+#  if defined (HAVE_DECL_FFLUSH_UNLOCKED) && !HAVE_DECL_FFLUSH_UNLOCKED
+extern int fflush_unlocked (FILE *);
+#  endif
+# endif
+# ifdef HAVE_FGETC_UNLOCKED
+#  undef fgetc
+#  define fgetc(Stream) fgetc_unlocked (Stream)
+#  if defined (HAVE_DECL_FGETC_UNLOCKED) && !HAVE_DECL_FGETC_UNLOCKED
+extern int fgetc_unlocked (FILE *);
+#  endif
+# endif
+# ifdef HAVE_FGETS_UNLOCKED
+#  undef fgets
+#  define fgets(S, n, Stream) fgets_unlocked (S, n, Stream)
+#  if defined (HAVE_DECL_FGETS_UNLOCKED) && !HAVE_DECL_FGETS_UNLOCKED
+extern char *fgets_unlocked (char *, int, FILE *);
+#  endif
+# endif
 # ifdef HAVE_FPUTS_UNLOCKED
 #  undef fputs
 #  define fputs(String, Stream) fputs_unlocked (String, Stream)
@@ -69,11 +128,25 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern int fputs_unlocked (const char *, FILE *);
 #  endif
 # endif
+# ifdef HAVE_FERROR_UNLOCKED
+#  undef ferror
+#  define ferror(Stream) ferror_unlocked (Stream)
+#  if defined (HAVE_DECL_FERROR_UNLOCKED) && !HAVE_DECL_FERROR_UNLOCKED
+extern int ferror_unlocked (FILE *);
+#  endif
+# endif
+# ifdef HAVE_FREAD_UNLOCKED
+#  undef fread
+#  define fread(Ptr, Size, N, Stream) fread_unlocked (Ptr, Size, N, Stream)
+#  if defined (HAVE_DECL_FREAD_UNLOCKED) && !HAVE_DECL_FREAD_UNLOCKED
+extern size_t fread_unlocked (void *, size_t, size_t, FILE *);
+#  endif
+# endif
 # ifdef HAVE_FWRITE_UNLOCKED
 #  undef fwrite
 #  define fwrite(Ptr, Size, N, Stream) fwrite_unlocked (Ptr, Size, N, Stream)
 #  if defined (HAVE_DECL_FWRITE_UNLOCKED) && !HAVE_DECL_FWRITE_UNLOCKED
-extern int fwrite_unlocked (const void *, size_t, size_t, FILE *);
+extern size_t fwrite_unlocked (const void *, size_t, size_t, FILE *);
 #  endif
 # endif
 # ifdef HAVE_FPRINTF_UNLOCKED

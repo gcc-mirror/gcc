@@ -1,6 +1,6 @@
 /* Function declarations for libiberty.
 
-   Copyright 2001, 2002 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2005 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -47,6 +47,22 @@ extern "C" {
 /* Get a definition for va_list.  */
 #include <stdarg.h>
 #endif
+
+#include <stdio.h>
+
+/* If the OS supports it, ensure that the supplied stream is setup to
+   avoid any multi-threaded locking.  Otherwise leave the FILE pointer
+   unchanged.  If the stream is NULL do nothing.  */
+
+extern void unlock_stream PARAMS ((FILE *));
+
+/* Open and return a FILE pointer.  If the OS supports it, ensure that
+   the stream is setup to avoid any multi-threaded locking.  Otherwise
+   return the FILE pointer unchanged.  */
+
+extern FILE *fopen_unlocked PARAMS ((const char *, const char *));
+extern FILE *fdopen_unlocked PARAMS ((int, const char *));
+extern FILE *freopen_unlocked PARAMS ((const char *, const char *, FILE *));
 
 /* Build an argument vector from a string.  Allocates memory using
    malloc.  Use freeargv to free the vector.  */

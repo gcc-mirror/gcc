@@ -1602,6 +1602,11 @@ general_init (const char *argv0)
 
   hex_init ();
 
+  /* Unlock the stdio streams.  */
+  unlock_stream (stdin);
+  unlock_stream (stdout);
+  unlock_stream (stderr);
+
   gcc_init_libintl ();
 
   /* Initialize the diagnostics reporting machinery, so option parsing

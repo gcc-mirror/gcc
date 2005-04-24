@@ -229,6 +229,16 @@ and inode numbers.
 
 @end deftypefn
 
+@c fopen_unlocked.c:40
+@deftypefn Extension FILE * fdopen_unlocked (int @var{fildes}, const char * @var{mode})
+
+Opens and returns a @code{FILE} pointer via @code{fdopen}.  If the
+operating system supports it, ensure that the stream is setup to avoid
+any multi-threaded locking.  Otherwise return the @code{FILE} pointer
+unchanged.
+
+@end deftypefn
+
 @c ffs.c:3
 @deftypefn Supplemental int ffs (int @var{valu})
 
@@ -288,6 +298,16 @@ Ignores case when performing the comparison.
 
 @end deftypefn
 
+@c fopen_unlocked.c:31
+@deftypefn Extension FILE * fopen_unlocked (const char *@var{path}, const char * @var{mode})
+
+Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
+operating system supports it, ensure that the stream is setup to avoid
+any multi-threaded locking.  Otherwise return the @code{FILE} pointer
+unchanged.
+
+@end deftypefn
+
 @c argv.c:111
 @deftypefn Extension void freeargv (char **@var{vector})
 
@@ -295,6 +315,16 @@ Free an argument vector that was built using @code{buildargv}.  Simply
 scans through @var{vector}, freeing the memory for each argument until
 the terminating @code{NULL} is found, and then frees @var{vector}
 itself.
+
+@end deftypefn
+
+@c fopen_unlocked.c:49
+@deftypefn Extension FILE * freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
+
+Opens and returns a @code{FILE} pointer via @code{freopen}.  If the
+operating system supports it, ensure that the stream is setup to avoid
+any multi-threaded locking.  Otherwise return the @code{FILE} pointer
+unchanged.
 
 @end deftypefn
 
@@ -1005,6 +1035,15 @@ will be a valid file name yet not exist when @code{tmpnam} checks for
 it.  @var{s} must point to a buffer of at least @code{L_tmpnam} bytes,
 or be @code{NULL}.  Use of this function creates a security risk, and it must
 not be used in new projects.  Use @code{mkstemp} instead.
+
+@end deftypefn
+
+@c fopen_unlocked.c:23
+@deftypefn Extension void unlock_stream (FILE * @var{stream})
+
+If the OS supports it, ensure that the supplied stream is setup to
+avoid any multi-threaded locking.  Otherwise leave the @code{FILE}
+pointer unchanged.  If the @var{stream} is @code{NULL} do nothing.
 
 @end deftypefn
 

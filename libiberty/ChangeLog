@@ -1,3 +1,20 @@
+2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (CFILES): Add fopen_unlocked.c.
+	(REQUIRED_OFILES): Add ./fopen_unlocked.o.
+	Regenerate dependencies.
+
+	* configure.ac: Check for stdio_ext.h and __fsetlocking.
+
+	* fopen_unlocked.c: New file.
+
+	* functions.texi, configure, config.in: Regenerate.
+
+	* fopen_unlocked.c (unlock_stream): New.
+	Consolidate unlocking code into a helper function.
+
+	* functions.texi: Regenerate.
+
 2005-04-20  Release Manager
 
 	* GCC 4.0.0 released.

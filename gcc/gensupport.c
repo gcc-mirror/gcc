@@ -911,6 +911,11 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
   char *lastsl;
   rtx desc;
 
+  /* Unlock the stdio streams.  */
+  unlock_stream (stdin);
+  unlock_stream (stdout);
+  unlock_stream (stderr);
+
   for (i = 1; i < argc; i++)
     {
       if (argv[i][0] != '-')

@@ -1,3 +1,10 @@
+2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (main): Unlock the stdio streams.
+	* jcf-dump.c (main): Likewise.
+	* jv-scan.c (main): Likewise.
+	* jvgenmain.c (main): Likewise.
+
 2005-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (java/decl.o, java/resource.o): Depend on $(EXPR_H)

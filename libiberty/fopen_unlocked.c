@@ -70,8 +70,10 @@ unchanged.
 /* This is an inline helper function to consolidate attempts to unlock
    a stream.  */
 
+static inline void unlock_1 PARAMS ((FILE *const fp ATTRIBUTE_UNUSED));
 static inline void
-unlock_1 (FILE *const fp ATTRIBUTE_UNUSED)
+unlock_1 (fp)
+     FILE *const fp ATTRIBUTE_UNUSED;
 {
 #if defined(HAVE___FSETLOCKING) && defined(FSETLOCKING_BYCALLER)
   if (fp)
@@ -80,13 +82,16 @@ unlock_1 (FILE *const fp ATTRIBUTE_UNUSED)
 }
 
 void
-unlock_stream(FILE *fp)
+unlock_stream(fp)
+     FILE *fp;
 {
   unlock_1 (fp);
 }
 
 FILE *
-fopen_unlocked (const char *path, const char *mode)		
+fopen_unlocked (path, mode)
+     const char *path;
+     const char *mode;
 {
   FILE *const fp = fopen (path, mode);
   unlock_1 (fp);
@@ -94,7 +99,9 @@ fopen_unlocked (const char *path, const char *mode)
 }
 
 FILE *
-fdopen_unlocked (int fildes, const char *mode)
+fdopen_unlocked (fildes, mode)
+     int fildes;
+     const char *mode;
 {
   FILE *const fp = fdopen (fildes, mode);
   unlock_1 (fp);
@@ -102,7 +109,10 @@ fdopen_unlocked (int fildes, const char *mode)
 }
 
 FILE *
-freopen_unlocked (const char *path, const char *mode, FILE *stream)
+freopen_unlocked (path, mode, stream)
+     const char *path;
+     const char *mode;
+     FILE *stream;
 {
   FILE *const fp = freopen (path, mode, stream);
   unlock_1 (fp);

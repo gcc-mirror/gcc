@@ -44,10 +44,13 @@ AC_TYPE_SIZE_T
 AC_STRUCT_TM
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
-AC_CHECK_FUNCS(putc_unlocked fputc_unlocked fputs_unlocked \
-        fwrite_unlocked fprintf_unlocked)
-AC_CHECK_DECLS([abort, basename, errno, getopt, putc_unlocked, fputc_unlocked,
-        fputs_unlocked, fwrite_unlocked, fprintf_unlocked])
+define(libcpp_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
+  ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked dnl
+  fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked dnl
+  fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked dnl
+  putchar_unlocked putc_unlocked)
+AC_CHECK_FUNCS(libcpp_UNLOCKED_FUNCS)
+AC_CHECK_DECLS(m4_split(m4_normalize(abort basename errno getopt libcpp_UNLOCKED_FUNCS)))
 
 # Checks for library functions.
 AC_FUNC_ALLOCA

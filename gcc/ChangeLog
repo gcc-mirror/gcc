@@ -1,3 +1,27 @@
+2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR/17092
+	* configure.ac (gcc_UNLOCKED_FUNCS): New.
+	(AC_CHECK_FUNCS, AC_CHECK_DECLS): Check for gcc_UNLOCKED_FUNCS.
+	* system.h (putchar, getc, getchar, clearerr, feof, fileno,
+	fflush, fgetc, fgets, ferror, fread): Redefine to the associated
+	_unlocked function.
+	(fwrite_unlocked): Fix prototype.
+	
+	* configure, config.in: Regenerate.
+
+	* system.h (fopen, fdopen, freopen): Define these to the unlocked
+	libiberty functions.
+
+	* collect2.c (main): Unlock the stdio streams.
+	* gcc.c (main): Likewise.
+	* gcov-dump.c (main): Likewise.
+	* gcov.c (main): Likewise.
+	* gen-protos.c (main): Likewise.
+	* gensupport.c (init_md_reader_args_cb): Likewise.
+	* protoize.c (main): Likewise.
+	* toplev.c (general_init): Likewise.
+
 2005-04-24  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/21163

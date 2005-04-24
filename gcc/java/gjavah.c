@@ -2388,6 +2388,11 @@ main (int argc, char** argv)
   int emit_dependencies = 0, suppress_output = 0;
   int opt;
 
+  /* Unlock the stdio streams.  */
+  unlock_stream (stdin);
+  unlock_stream (stdout);
+  unlock_stream (stderr);
+
   gcc_init_libintl ();
 
   if (argc <= 1)
