@@ -9024,24 +9024,23 @@ msgid "accumulator number is out of bounds"
 msgstr "Akkumulatorzahl außerhalb der Grenzen"
 
 #: config/frv/frv.c:9790
-#, fuzzy, c-format
+#, c-format
 msgid "inappropriate accumulator for %qs"
-msgstr "unpassender Akkumulator für »%s«"
+msgstr "unpassender Akkumulator für %qs"
 
 #: config/frv/frv.c:9856
-#, fuzzy
 msgid "invalid IACC argument"
-msgstr "ungültiges Typargument"
+msgstr "ungültiges IACC-Argument"
 
 #: config/frv/frv.c:9879
-#, fuzzy, c-format
+#, c-format
 msgid "%qs expects a constant argument"
-msgstr "»%s« erwartet ein konstantes Argument"
+msgstr "%qs erwartet ein konstantes Argument"
 
 #: config/frv/frv.c:9884
-#, fuzzy, c-format
+#, c-format
 msgid "constant argument out of range for %qs"
-msgstr "Konstantes Argument außerhalb des Wertebereiches für »%s«"
+msgstr "Konstantes Argument außerhalb des Wertebereiches für %qs"
 
 #: config/frv/frv.c:10319
 msgid "media functions are not available unless -mmedia is used"
@@ -9052,24 +9051,20 @@ msgid "this media function is only available on the fr500"
 msgstr "diese Medienfunktion ist nur auf dem fr500 verfügbar"
 
 #: config/frv/frv.c:10359
-#, fuzzy
 msgid "this media function is only available on the fr400 and fr550"
-msgstr "diese Medienfunktion ist nur auf dem fr400 verfügbar"
+msgstr "diese Medienfunktion ist nur auf dem fr400 und fr550 verfügbar"
 
 #: config/frv/frv.c:10378
-#, fuzzy
 msgid "this builtin function is only available on the fr405 and fr450"
-msgstr "diese Medienfunktion ist nur auf dem fr400 verfügbar"
+msgstr "diese eingebaute Funktion ist nur auf dem fr405 und fr450 verfügbar"
 
 #: config/frv/frv.c:10387
-#, fuzzy
 msgid "this builtin function is only available on the fr500 and fr550"
-msgstr "diese Medienfunktion ist nur auf dem fr500 verfügbar"
+msgstr "diese eingebaute Funktion ist nur auf dem fr500 und fr550 verfügbar"
 
 #: config/frv/frv.c:10399
-#, fuzzy
 msgid "this builtin function is only available on the fr450"
-msgstr "diese Medienfunktion ist nur auf dem fr400 verfügbar"
+msgstr "diese eingebaute Funktion ist nur auf dem fr450 verfügbar"
 
 #. This macro is a C statement to print on `stderr' a string describing the
 #. particular machine description choice.  Every machine description should
@@ -9107,14 +9102,12 @@ msgid "Do not generate H8S code"
 msgstr "Keinen H8S-Code erzeugen"
 
 #: config/h8300/h8300.h:161
-#, fuzzy
 msgid "Generate H8SX code"
-msgstr "H8S-Code erzeugen"
+msgstr "H8SX-Code erzeugen"
 
 #: config/h8300/h8300.h:162
-#, fuzzy
 msgid "Do not generate H8SX code"
-msgstr "Keinen H8S-Code erzeugen"
+msgstr "Keinen H8SX-Code erzeugen"
 
 #: config/h8300/h8300.h:163
 msgid "Generate H8S/2600 code"
@@ -9176,14 +9169,13 @@ msgid "bad value (%s) for -masm= switch"
 msgstr "Falscher Wert (%s) für Schalter -masm="
 
 #: config/i386/i386.c:1270
-#, fuzzy, c-format
+#, c-format
 msgid "code model %qs not supported in the %s bit mode"
-msgstr "Codemodell »%s« wird im %s-Bit-Modus nicht unterstützt"
+msgstr "Codemodell %qs wird im %s-Bit-Modus nicht unterstützt"
 
 #: config/i386/i386.c:1273
-#, fuzzy
 msgid "code model %<large%> not supported yet"
-msgstr "Codemodell »large« wird noch nicht unterstützt"
+msgstr "Codemodell %<large%> wird noch nicht unterstützt"
 
 #: config/i386/i386.c:1275
 #, c-format
@@ -9271,24 +9263,22 @@ msgid "fastcall and regparm attributes are not compatible"
 msgstr "Attribute fastcall und regparm sind nicht verträglich"
 
 #: config/i386/i386.c:1761
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute requires an integer constant argument"
-msgstr "Attribut »%s« benötigt eine Ganzzahlkonstante als Argument"
+msgstr "Attribut %qs benötigt eine Ganzzahlkonstante als Argument"
 
 #: config/i386/i386.c:1767
-#, fuzzy, c-format
+#, c-format
 msgid "argument to %qs attribute larger than %d"
-msgstr "Argument für Attribut »%s« ist größer als %d"
+msgstr "Argument für Attribut %qs ist größer als %d"
 
 #: config/i386/i386.c:2565
-#, fuzzy
 msgid "SSE register return with SSE disabled"
-msgstr "SSE-Vektorrückgabe ohne eingeschaltetes SSE ändert das ABI"
+msgstr "SSE-Registerrückgabe mit SSE ausgeschaltet"
 
 #: config/i386/i386.c:2567
-#, fuzzy
 msgid "SSE register argument with SSE disabled"
-msgstr "SSE-Vektorargument ohne eingeschaltetes SSE ändert das ABI"
+msgstr "SSE-Registerargument mit SSE ausgeschaltet"
 
 #: config/i386/i386.c:2862
 msgid "SSE vector argument without SSE enabled changes the ABI"
@@ -9319,7 +9309,7 @@ msgid "operand is neither a constant nor a condition code, invalid operand code 
 msgstr "Operand ist weder eine Konstante noch ein Bedingungscode, ungültiger Operandencode »c«"
 
 #: config/i386/i386.c:6625
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand code '%c'"
 msgstr "ungültiger Operandencode »%c«"
 
@@ -9341,14 +9331,14 @@ msgid "shift must be an immediate"
 msgstr "Verschiebung muss direkt angegeben werden"
 
 #: config/i386/i386.c:15634
-#, fuzzy, c-format
+#, c-format
 msgid "%qs incompatible attribute ignored"
-msgstr "»%s«-inkompatibles Attribut wird ignoriert"
+msgstr "%qs-inkompatibles Attribut wird ignoriert"
 
 #: config/i386/winnt.c:74
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute only applies to variables"
-msgstr "Attribut »%s« bezieht sich nur auf Variablen"
+msgstr "Attribut %qs bezieht sich nur auf Variablen"
 
 #: config/i386/winnt.c:172
 msgid "%Jfunction '%D' is defined after prior declaration as dllimport: attribute ignored"
@@ -9367,9 +9357,9 @@ msgid "%Jinconsistent dll linkage for '%D', dllexport assumed."
 msgstr "%Jinkonsistente dll-Bindung für »%D«, dllexport angenommen."
 
 #: config/i386/winnt.c:299 config/sh/symbian.c:279
-#, fuzzy, c-format
+#, c-format
 msgid "%qs declared as both exported to and imported from a DLL"
-msgstr "»%s« sowohl als »exportiert in« als auch als »importiert aus DLL« deklariert"
+msgstr "%qs sowohl als »exportiert in« als auch als »importiert aus DLL« deklariert"
 
 #: config/i386/winnt.c:308
 msgid "%Jfailure in redeclaration of '%D': dllimport'd symbol lacks external linkage."
@@ -9704,9 +9694,9 @@ msgid "malformed #pragma builtin"
 msgstr "Falsch geformtes #pragma builtin"
 
 #: config/ia64/ia64.c:494 config/m32r/m32r.c:360
-#, fuzzy, c-format
+#, c-format
 msgid "invalid argument of %qs attribute"
-msgstr "ungültiges Argument für Attribut »%s«"
+msgstr "ungültiges Argument für Attribut %qs"
 
 #: config/ia64/ia64.c:506
 msgid "%Jan address area attribute cannot be specified for local variables"
@@ -9827,9 +9817,8 @@ msgid "Generate inline floating point division, optimize for throughput"
 msgstr "Eingebettete Fließkommadivision erzeugen, auf Durchsatz optimieren"
 
 #: config/ia64/ia64.h:211
-#, fuzzy
 msgid "Do not inline floating point division"
-msgstr "Fließkommakonstanten nicht ins TOC legen"
+msgstr "Fließkommadivision nicht »inline« generieren"
 
 #: config/ia64/ia64.h:213
 msgid "Generate inline integer division, optimize for latency"
@@ -9840,9 +9829,8 @@ msgid "Generate inline integer division, optimize for throughput"
 msgstr "Eingebettete Ganzzahldivision erzeugen, auf Durchsatz optimieren"
 
 #: config/ia64/ia64.h:217
-#, fuzzy
 msgid "Do not inline integer division"
-msgstr "Indizierte Adressierung nicht ausschalten"
+msgstr "Ganzzahldivision nicht »inline« generieren"
 
 #: config/ia64/ia64.h:219
 msgid "Generate inline square root, optimize for latency"
@@ -9853,9 +9841,8 @@ msgid "Generate inline square root, optimize for throughput"
 msgstr "Eingebettete Quadratwurzel erzeugen, auf Durchsatz optimieren"
 
 #: config/ia64/ia64.h:223
-#, fuzzy
 msgid "Do not inline square root"
-msgstr "Leerregister nicht ausschalten"
+msgstr "Quadratwurzel nicht »inline« generieren"
 
 #: config/ia64/ia64.h:225
 msgid "Enable Dwarf 2 line debug info via GNU as"
@@ -9897,9 +9884,9 @@ msgid "gp_offset (%ld) or end_offset (%ld) is less than zero."
 msgstr "gp_offset (%ld) oder end_offset (%ld) ist kleiner als null."
 
 #: config/iq2000/iq2000.c:2847
-#, fuzzy, c-format
+#, c-format
 msgid "argument %qd is not a constant"
-msgstr "Argument »%d« ist keine Konstante"
+msgstr "Argument %qd ist keine Konstante"
 
 #: config/iq2000/iq2000.c:3150 config/xtensa/xtensa.c:2033
 msgid "PRINT_OPERAND_ADDRESS, null pointer"
@@ -9956,7 +9943,7 @@ msgstr "Uninitialisierte Konstanten im ROM ablegen (benötigt -membedded-data)"
 
 #: config/iq2000/iq2000.h:84 config/mips/mips.h:595
 msgid "Don't put uninitialized constants in ROM"
-msgstr "Keine uninitialisierte Konstanten im ROM ablegen"
+msgstr "Keine uninitialisierten Konstanten im ROM ablegen"
 
 #: config/iq2000/iq2000.h:106 config/mips/mips.h:780
 msgid "Specify CPU for scheduling purposes"
