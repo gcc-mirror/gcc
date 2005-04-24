@@ -1,3 +1,7 @@
+2005-04-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* vec.h (VEC_safe_grow): Replace grow with safe_grow.
+
 2005-04-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ipa-inline.c, tree-ssa-operands.h: Fix comment typos.
