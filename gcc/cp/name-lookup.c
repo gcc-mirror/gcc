@@ -1883,6 +1883,13 @@ push_overloaded_decl (tree decl, int flags)
 	      if (duplicate_decls (decl, fn) == fn)
 		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, fn);
 	    }
+
+	  /* We don't overload implicit built-ins.  duplicate_decls()
+	     may fail to merge the decls if the new decl is e.g. a
+	     template function.  */
+	  if (TREE_CODE (old) == FUNCTION_DECL
+	      && DECL_ANTICIPATED (old))
+	    old = NULL;
 	}
       else if (old == error_mark_node)
 	/* Ignore the undefined symbol marker.  */
