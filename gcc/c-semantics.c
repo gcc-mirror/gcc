@@ -149,19 +149,12 @@ build_stmt (enum tree_code code, ...)
   length = TREE_CODE_LENGTH (code);
   SET_EXPR_LOCATION (ret, input_location);
 
-  /* Most statements have implicit side effects all on their own, 
-     such as control transfer.  For those that do, we'll compute
-     the real value of TREE_SIDE_EFFECTS from its arguments.  */
-  switch (code)
-    {
-    case EXPR_STMT:
-      side_effects = false;
-      break;
-    default:
-      side_effects = true;
-      break;
-    }
+  /* TREE_SIDE_EFFECTS will already be set for statements with
+     implicit side effects.  Here we make sure it is set for other
+     expressions by checking whether the parameters have side
+     effects.  */
 
+  side_effects = false;
   for (i = 0; i < length; i++)
     {
       tree t = va_arg (p, tree);
@@ -170,7 +163,7 @@ build_stmt (enum tree_code code, ...)
       TREE_OPERAND (ret, i) = t;
     }
 
-  TREE_SIDE_EFFECTS (ret) = side_effects;
+  TREE_SIDE_EFFECTS (ret) |= side_effects;
 
   va_end (p);
   return ret;
