@@ -1,3 +1,16 @@
+2005-04-25  J"orn Rennecke <joern.rennecke@st.com>
+	    Stephen Clarke <stevec@superh.com>
+	    Roger Sayle <roger@eyesopen.com>
+
+	PR rtl-optimization/20413
+	* cfgrtl.c (redirect_edge_and_branch): Use Pmode instead of
+	VOIDmode for LABEL_REF.
+	* final.c (shorten_branches): Likewise.
+	* jump.c (mark_all_labels, redirect_exp_1): Likewise.
+	* loop.c (reg_dead_after_loop): Likewise.
+	* varasm.c (decode_addr_const): Likewise.
+	* doc/rtl.texi: Document mode requirement for LABEL_REF.
+
 2005-04-25  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (avr-*-*): Remove redundant "case".

@@ -1390,7 +1390,7 @@ The @code{symbol_ref} contains a mode, which is usually @code{Pmode}.
 Usually that is the only mode for which a symbol is directly valid.
 
 @findex label_ref
-@item (label_ref @var{label})
+@item (label_ref:@var{mode} @var{label})
 Represents the value of an assembler label for code.  It contains one
 operand, an expression, which must be a @code{code_label} or a @code{note}
 of type @code{NOTE_INSN_DELETED_LABEL} that appears in the instruction
@@ -1398,6 +1398,9 @@ sequence to identify the place where the label should go.
 
 The reason for using a distinct expression type for code label
 references is so that jump optimization can distinguish them.
+
+The @code{label_ref} contains a mode, which is usually @code{Pmode}.
+Usually that is the only mode for which a label is directly valid.
 
 @item (const:@var{m} @var{exp})
 Represents a constant that is the result of an assembly-time
