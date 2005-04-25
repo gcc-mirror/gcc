@@ -1,3 +1,9 @@
+2005-04-25  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21035
+	* include/bits/basic_string.h (compare): Adjust the documentation
+	to match the implementation and the standard.
+
 2005-04-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 35.
