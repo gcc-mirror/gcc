@@ -1,0 +1,50 @@
+! { dg-do compile }
+! PR20879
+! Check that we reject expressions longer than one character for the
+! ICHAR and IACHAR intrinsics.
+
+! Assumed length variables are special because the frontend doesn't have
+! an expression for their length
+subroutine test (c)
+  character(len=*) :: c
+  integer i
+  i = ichar(c)
+  i = ichar(c(2:))
+  i = ichar(c(:1))
+end subroutine
+
+program ichar_1
+   integer i
+   integer, parameter :: j = 2
+   character(len=8) :: c = 'abcd'
+   character(len=1) :: g1(2)
+   character(len=1) :: g2(2,2)
+   character*1, parameter :: s1 = 'e'
+   character*2, parameter :: s2 = 'ef'
+
+   if (ichar(c(3:3)) /= 97) call abort
+   if (ichar(c(:1)) /= 97) call abort
+   if (ichar(c(j:j)) /= 98) call abort
+   if (ichar(s1) /= 101) call abort
+   if (ichar('f') /= 102) call abort
+   g1(1) = 'a'
+   if (ichar(g1(1)) /= 97) call abort
+   if (ichar(g1(1)(:)) /= 97) call abort
+   g2(1,1) = 'a'
+   if (ichar(g2(1,1)) /= 97) call abort
+
+   i = ichar(c)      ! { dg-error "must be of length one" "" }
+   i = ichar(c(:))   ! { dg-error "must be of length one" "" }
+   i = ichar(s2)     ! { dg-error "must be of length one" "" }
+   i = ichar(c(1:2)) ! { dg-error "must be of length one" "" }
+   i = ichar(c(1:))  ! { dg-error "must be of length one" "" }
+   i = ichar('abc')  ! { dg-error "must be of length one" "" }
+
+   ! ichar and iachar use the same checking routines. DO a couple of tests to
+   ! make sure it's not totally broken.
+
+   if (ichar(c(3:3)) /= 97) call abort
+   i = ichar(c)      ! { dg-error "must be of length one" "" }
+
+   call test(g1(1))
+end program ichar_1
