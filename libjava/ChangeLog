@@ -1,3 +1,8 @@
+2005-04-25  David Gilbert  <david.gilbert@object-refinery.com>
+
+	* java/awt/Transparency.java
+	(getTransparency): fixed API docs.
+
 2005-04-25  Archie Cobbs  <archie@dellroad.org>
 
 	* java/lang/Throwable.java: simplify initializing cause in constructor
