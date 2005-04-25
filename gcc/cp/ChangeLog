@@ -1,3 +1,9 @@
+2005-04-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/21188
+	* rtti.c (ifnonnull): Cast the zero comparison operand
+	to the correct type.
+
 2005-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/20991

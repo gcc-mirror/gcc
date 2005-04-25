@@ -1,3 +1,8 @@
+2005-04-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/21188
+	* g++.dg/opt/rtti2.C: New test.
+
 2005-04-25  Paul Brook  <paul@codesourcery.com>
 	Steven G. Kargl  <kargls@comcast.net>
 
