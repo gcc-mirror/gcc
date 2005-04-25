@@ -1,3 +1,18 @@
+2005-04-25  Ian Lance Taylor  <ian@airs.com>
+
+	* cp-tree.def: Add EXPR_STMT.
+	* cp-tree.h (cp_stmt_codes): Add EXPR_STMT.
+	(EXPR_STMT_EXPR): Define.
+	* cp-gimplify.c: Include "flags.h".
+	(gimplify_expr_stmt): New static function.
+	(cp_gimplify_expr): Handle EXPR_STMT.
+	* cxx-pretty-print.c (pp_cxx_statement): Use pp_cxx_expression
+	rather than pp_expression.
+	(pp_cxx_statement): Handle EXPR_STMT.
+	* dump.c (cp_dump_tree): Handle EXPR_STMT.
+	* lex.c (cxx_init): Don't use c_common_stmt_codes in stmt_codes
+	initializer.
+
 2005-04-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/21188

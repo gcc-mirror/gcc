@@ -305,6 +305,10 @@ DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_statement, 0)
    SWITCH_STMT_COND, SWITCH_STMT_BODY and SWITCH_STMT_TYPE, respectively.  */
 DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_statement, 3)
 
+/* Used to represent an expression statement.  Use `EXPR_STMT_EXPR' to
+   obtain the expression.  */
+DEFTREECODE (EXPR_STMT, "expr_stmt", tcc_expression, 1)
+
 DEFTREECODE (TAG_DEFN, "tag_defn", tcc_expression, 0)
 
 /* Template instantiation level node.

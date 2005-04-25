@@ -54,11 +54,6 @@ c_dump_tree (void *dump_info, tree t)
 	dump_string (di, "bitfield");
       break;
 
-    case EXPR_STMT:
-      dump_stmt (di, t);
-      dump_child ("expr", EXPR_STMT_EXPR (t));
-      break;
-
     default:
       break;
     }

@@ -708,10 +708,6 @@ extern void finish_file	(void);
 #define STATEMENT_LIST_HAS_LABEL(NODE) \
   TREE_LANG_FLAG_3 (STATEMENT_LIST_CHECK (NODE))
 
-/* EXPR_STMT accessor. This gives the expression associated with an
-   expression statement.  */
-#define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
-
 /* COMPOUND_LITERAL_EXPR accessors.  */
 #define COMPOUND_LITERAL_EXPR_DECL_STMT(NODE)		\
   TREE_OPERAND (COMPOUND_LITERAL_EXPR_CHECK (NODE), 0)
@@ -727,9 +723,6 @@ enum c_tree_code {
 };
 
 #undef DEFTREECODE
-
-#define c_common_stmt_codes				\
-   EXPR_STMT
 
 /* TRUE if a code represents a statement.  The front end init
    langhook should take care of initialization of this array.  */

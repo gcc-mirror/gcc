@@ -1910,40 +1910,16 @@ pp_c_expression (c_pretty_printer *pp, tree e)
 
 /* Statements.  */
 
-/* statement:
-      labeled-statement
-      compound-statement
-      expression-statement
-      selection-statement
-      iteration-statement
-      jump-statement   */
-
 void
 pp_c_statement (c_pretty_printer *pp, tree stmt)
 {
-  enum tree_code code;
-
   if (stmt == NULL)
     return;
 
   if (pp_needs_newline (pp))
     pp_newline_and_indent (pp, 0);
 
-  code = TREE_CODE (stmt);
-  switch (code)
-    {
-      /* expression-statement:
-            expression(opt) ;  */
-    case EXPR_STMT:
-      pp_expression (pp, EXPR_STMT_EXPR (stmt));
-      pp_c_semicolon (pp);
-      pp_needs_newline (pp) = true;
-      break;
-
-    default:
-      dump_generic_node (pp_base (pp), stmt, pp_indentation (pp), 0, true);
-      break;
-    }
+  dump_generic_node (pp_base (pp), stmt, pp_indentation (pp), 0, true);
 }
 
 

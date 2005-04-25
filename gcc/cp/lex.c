@@ -320,7 +320,6 @@ bool
 cxx_init (void)
 {
   static const enum tree_code stmt_codes[] = {
-    c_common_stmt_codes,
     cp_stmt_codes
   };
 

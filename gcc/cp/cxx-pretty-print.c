@@ -1587,7 +1587,7 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
       pp_cxx_identifier (pp, "switch");
       pp_space (pp);
       pp_cxx_left_paren (pp);
-      pp_expression (pp, SWITCH_STMT_COND (t));
+      pp_cxx_expression (pp, SWITCH_STMT_COND (t));
       pp_cxx_right_paren (pp);
       pp_indentation (pp) += 3;
       pp_needs_newline (pp) = true;
@@ -1604,7 +1604,7 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
       pp_cxx_identifier (pp, "while");
       pp_space (pp);
       pp_cxx_left_paren (pp);
-      pp_expression (pp, WHILE_COND (t));
+      pp_cxx_expression (pp, WHILE_COND (t));
       pp_cxx_right_paren (pp);
       pp_newline_and_indent (pp, 3);
       pp_cxx_statement (pp, WHILE_BODY (t));
@@ -1620,7 +1620,7 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
       pp_cxx_identifier (pp, "while");
       pp_space (pp);
       pp_cxx_left_paren (pp);
-      pp_expression (pp, DO_COND (t));
+      pp_cxx_expression (pp, DO_COND (t));
       pp_cxx_right_paren (pp);
       pp_cxx_semicolon (pp);
       pp_needs_newline (pp) = true;
@@ -1637,12 +1637,12 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
       pp_needs_newline (pp) = false;
       pp_cxx_whitespace (pp);
       if (FOR_COND (t))
-	pp_expression (pp, FOR_COND (t));
+	pp_cxx_expression (pp, FOR_COND (t));
       pp_cxx_semicolon (pp);
       pp_needs_newline (pp) = false;
       pp_cxx_whitespace (pp);
       if (FOR_EXPR (t))
-	pp_expression (pp, FOR_EXPR (t));
+	pp_cxx_expression (pp, FOR_EXPR (t));
       pp_cxx_right_paren (pp);
       pp_newline_and_indent (pp, 3);
       pp_cxx_statement (pp, FOR_BODY (t));
@@ -1657,6 +1657,14 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
     case BREAK_STMT:
     case CONTINUE_STMT:
       pp_identifier (pp, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
+      pp_cxx_semicolon (pp);
+      pp_needs_newline (pp) = true;
+      break;
+
+      /* expression-statement:
+            expression(opt) ;  */
+    case EXPR_STMT:
+      pp_cxx_expression (pp, EXPR_STMT_EXPR (t));
       pp_cxx_semicolon (pp);
       pp_needs_newline (pp) = true;
       break;

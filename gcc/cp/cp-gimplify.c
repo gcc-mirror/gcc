@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-gimple.h"
 #include "hashtab.h"
 #include "pointer-set.h"
+#include "flags.h"
 
 /* Local declarations.  */
 
@@ -338,6 +339,41 @@ gimplify_switch_stmt (tree *stmt_p)
   *stmt_p = finish_bc_block (bc_break, break_block, *stmt_p);
 }
 
+/*  Gimplify an EXPR_STMT node.  */
+
+static void
+gimplify_expr_stmt (tree *stmt_p)
+{
+  tree stmt = EXPR_STMT_EXPR (*stmt_p);
+
+  if (stmt == error_mark_node)
+    stmt = NULL;
+
+  /* Gimplification of a statement expression will nullify the
+     statement if all its side effects are moved to *PRE_P and *POST_P.
+
+     In this case we will not want to emit the gimplified statement.
+     However, we may still want to emit a warning, so we do that before
+     gimplification.  */
+  if (stmt && (extra_warnings || warn_unused_value))
+    {
+      if (!TREE_SIDE_EFFECTS (stmt))
+	{
+	  if (!IS_EMPTY_STMT (stmt)
+	      && !VOID_TYPE_P (TREE_TYPE (stmt))
+	      && !TREE_NO_WARNING (stmt))
+	    warning (0, "statement with no effect");
+	}
+      else if (warn_unused_value)
+	warn_if_unused_value (stmt, input_location);
+    }
+
+  if (stmt == NULL_TREE)
+    stmt = alloc_stmt_list ();
+
+  *stmt_p = stmt;
+}
+
 /* Gimplify initialization from an AGGR_INIT_EXPR.  */
 
 static void
@@ -514,6 +550,11 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
     case BREAK_STMT:
       *expr_p = build_bc_goto (bc_break);
       ret = GS_ALL_DONE;
+      break;
+
+    case EXPR_STMT:
+      gimplify_expr_stmt (expr_p);
+      ret = GS_OK;
       break;
 
     default:
