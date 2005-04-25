@@ -1,3 +1,7 @@
+2005-04-25  Devang Patel <dpatel@apple.com>
+
+	* dbxout.c (dbxout_type): Emit attribute vector.
+	
 2005-04-05  Paul Brook  <julian@codesourcery.com>
 
 	* target-def.h (TARGET_CXX_USE_AEABI_ATEXIT): Define.
