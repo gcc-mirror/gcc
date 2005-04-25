@@ -1,3 +1,23 @@
+2005-04-25  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/awt/GraphicsEnvironment.java
+	(localGraphicsEnvironment): New field.
+	(getLocalGraphicsEnvironment): Added support for java.awt.graphicsenv
+	property.
+	(isHeadless): Added support for java.awt.headless property.
+	(isHeadlessInstance): Call headless().
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java
+	(getDisplayMode): Added. Returns the current display mode.
+	(isFullScreenSupported): Added.
+	* java/awt/GraphicsDevice.java
+	(setFullScreenWindow): Implemented a primitive fullscreen mode.
+	This resizes and relocates the fullscreen window so that it uses
+	the whole screen. This is not a fully accelerated fullscreen
+	exclusive mode.
+
 2005-04-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/Runtime.java,

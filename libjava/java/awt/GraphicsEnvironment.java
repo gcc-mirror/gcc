@@ -1,5 +1,5 @@
 /* GraphicsEnvironment.java -- information about the graphics environment
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import gnu.java.awt.ClasspathToolkit;
-
+import gnu.classpath.SystemProperties;
 import java.awt.image.BufferedImage;
 import java.util.Locale;
 
@@ -56,6 +56,8 @@ import java.util.Locale;
  */
 public abstract class GraphicsEnvironment
 {
+  private static GraphicsEnvironment localGraphicsEnvironment;
+
   /**
    * The environment must be obtained from a factory or query method, hence
    * this constructor is protected.
@@ -65,16 +67,43 @@ public abstract class GraphicsEnvironment
   }
 
   /**
-   * Returns the local graphics environment.
+   * Returns the local graphics environment. If the java.awt.graphicsenv
+   * system property is set, it instantiates the specified class,
+   * otherwise it assume that the awt toolkit is a ClasspathToolkit
+   * and delegates to it to create the instance.
    *
-   * XXX Not implemented in Classpath yet.
    * @return the local environment
    */
   public static GraphicsEnvironment getLocalGraphicsEnvironment()
   {
-    ClasspathToolkit tk;
-    tk = ((ClasspathToolkit) Toolkit.getDefaultToolkit ());
-    return tk.getLocalGraphicsEnvironment ();
+    if (localGraphicsEnvironment != null)
+      return localGraphicsEnvironment;
+
+    String graphicsenv = SystemProperties.getProperty("java.awt.graphicsenv",
+                                                      null);
+    if (graphicsenv != null)
+      {
+        try
+          {
+            // We intentionally use the bootstrap class loader.
+            localGraphicsEnvironment = (GraphicsEnvironment)
+                Class.forName(graphicsenv).newInstance();
+            return localGraphicsEnvironment;
+          }
+        catch (Exception x)
+          {
+            throw (InternalError)
+                new InternalError("Unable to instantiate java.awt.graphicsenv")
+                    .initCause(x);
+          }
+      }
+    else
+      {
+        ClasspathToolkit tk;
+        tk = ((ClasspathToolkit) Toolkit.getDefaultToolkit());
+        localGraphicsEnvironment = tk.getLocalGraphicsEnvironment();
+        return localGraphicsEnvironment;
+      }
   }
 
   /**
@@ -83,7 +112,8 @@ public abstract class GraphicsEnvironment
    * Windows Toolkit (java.awt) throw a {@link HeadlessException} if this
    * returns true.
    *
-   * XXX For now, Classpath assumes that it is never headless.
+   * This method returns true if the java.awt.headless property is set
+   * to "true".
    *
    * @return true if the environment is headless, meaning that graphics are
    *         unsupported
@@ -91,16 +121,16 @@ public abstract class GraphicsEnvironment
    */
   public static boolean isHeadless()
   {
-    // XXX Should be: getLocalGraphicsEnvironment().isHeadlessInstance();
-    return false;
+    String headless = SystemProperties.getProperty("java.awt.headless", null);
+    return "true".equalsIgnoreCase(headless);
   }
 
   /**
    * Check if the given environment is headless, meaning that it does not
    * support a display, keyboard, or mouse. Many methods in the Abstract
    * Windows Toolkit (java.awt) throw a {@link HeadlessException} if this
-   * returns true. This default implementation returns false, so subclasses
-   * need only override it if they are headless.
+   * returns true. This default implementation returns isHeadless(), so
+   * subclasses need only override it if they differ.
    *
    * @return true if the environment is headless, meaning that graphics are
    *         unsupported
@@ -108,7 +138,7 @@ public abstract class GraphicsEnvironment
    */
   public boolean isHeadlessInstance()
   {
-    return false;
+    return isHeadless();
   }
 
   /**
