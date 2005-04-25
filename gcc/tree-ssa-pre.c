@@ -1330,7 +1330,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	
 	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
 			      genop1, genop2));
-	newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
+	newexpr = force_gimple_operand (unshare_expr (folded), 
+					&forced_stmts, false, NULL);
 	if (forced_stmts)
 	  {
 	    tsi = tsi_start (forced_stmts);
@@ -1372,14 +1373,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	add_referenced_tmp_var (temp);
 	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
 			      genop1));
-	/* If the generated operand  is already GIMPLE min_invariant
-	   just use it instead of calling force_gimple_operand on it,
-	   since that may make it not invariant by copying it into an
-	   assignment.  */
-	if (!is_gimple_min_invariant (genop1))
-	  newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
-	else
-	  newexpr = genop1;
+	newexpr = force_gimple_operand (unshare_expr (folded), 
+					&forced_stmts, false, NULL);
 	if (forced_stmts)
 	  {
 	    tsi = tsi_start (forced_stmts);
