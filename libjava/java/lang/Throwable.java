@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.classpath.SystemProperties;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -170,7 +172,7 @@ public class Throwable implements Serializable
   public Throwable(String message, Throwable cause)
   {
     this(message);
-    initCause(cause);
+    this.cause = cause;
   }
 
   /**
@@ -401,13 +403,7 @@ public class Throwable implements Serializable
    */
   private static class StaticData
   {
-    static final String nl;
-
-    static
-    {
-      // Access package private properties field to prevent Security check.
-      nl = System.properties.getProperty("line.separator");
-    }
+    static final String nl = SystemProperties.getProperty("line.separator");
   }
 
   // Create whole stack trace in a stringbuffer so we don't have to print

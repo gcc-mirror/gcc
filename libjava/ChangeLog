@@ -1,3 +1,37 @@
+2005-04-25  Archie Cobbs  <archie@dellroad.org>
+
+	* java/lang/Throwable.java: simplify initializing cause in constructor
+
+2005-04-25  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/classpath/SystemProperties.java: New file.
+	* gnu/classpath/natSystemProperties.cc: New file.
+	* java/lang/Runtime.java
+	(defaultProperties): Removed.
+	(static): Likewise.
+	(): Made thrown exceptions more verbose.
+	(insertSystemProperties): Removed.
+	* java/lang/System.java
+	(static): Likewise.
+	(properties): Likewise.
+	(setSecurityManager): Reordered modifiers.
+	(getenv): Improved javadoc.
+	(): Likewise.
+	(isWordsBigEndian): Removed.
+	* java/lang/natRuntime.cc
+	(_Jv_SetDLLSearchPath): Likewise.
+	(file_encoding): Likewise.
+	(default_file_encoding): Likewise.
+	(getpwuid_adaptor): Likewise.
+	(insertSystemProperties): Likewise.
+	* java/lang/natSystem.cc
+	(isWordsBigEndian): Likewise.
+	* Makefile.am
+	(ordinary_java_source_files):
+	Added gnu/classpath/SystemProperties.java.
+	(nat_source_files): Added gnu/classpath/natSystemProperties.cc.
+	* Makefile.in: Regenerated.
+
 2005-04-25  Roman Kennke  <roman@kennke.org>
 
 	* javax/swing/plaf/basic/BasicScrollBarUI.java

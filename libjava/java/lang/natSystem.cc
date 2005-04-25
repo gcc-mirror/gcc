@@ -130,19 +130,6 @@ java::lang::System::identityHashCode (jobject obj)
   return _Jv_HashCode (obj);
 }
 
-jboolean
-java::lang::System::isWordsBigEndian (void)
-{
-  union
-  {
-    long lval;
-    char cval;
-  } u;
-
-  u.lval = 1;
-  return u.cval == 0;
-}
-
 jstring
 java::lang::System::getenv0 (jstring name)
 {
