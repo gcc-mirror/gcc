@@ -65,14 +65,6 @@ public class Runtime
    */
   private final String[] libpath;
 
-  /**
-   * The current security manager. This is located here instead of in
-   * System, to avoid security problems, as well as bootstrap issues.
-   * Make sure to access it in a thread-safe manner; it is package visible
-   * to avoid overhead in java.lang.
-   */
-  static SecurityManager securityManager;
-
   static
   {
     init();
@@ -151,7 +143,7 @@ public class Runtime
    */
   public void exit(int status)
   {
-    SecurityManager sm = securityManager; // Be thread-safe!
+    SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkExit(status);
     boolean first = false;
@@ -279,7 +271,7 @@ public class Runtime
    */
   public void addShutdownHook(Thread hook)
   {
-    SecurityManager sm = securityManager; // Be thread-safe!
+    SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkPermission(new RuntimePermission("shutdownHooks"));
     if (hook.isAlive() || hook.getThreadGroup() == null)
@@ -313,7 +305,7 @@ public class Runtime
    */
   public boolean removeShutdownHook(Thread hook)
   {
-    SecurityManager sm = securityManager; // Be thread-safe!
+    SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkPermission(new RuntimePermission("shutdownHooks"));
     synchronized (libpath)
@@ -340,7 +332,7 @@ public class Runtime
    */
   public void halt(int status)
   {
-    SecurityManager sm = securityManager; // Be thread-safe!
+    SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkExit(status);
     exitInternal(status);
@@ -364,7 +356,7 @@ public class Runtime
    */
   public static void runFinalizersOnExit(boolean finalizeOnExit)
   {
-    SecurityManager sm = securityManager; // Be thread-safe!
+    SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkExit(0);
     current.finalizeOnExit = finalizeOnExit;
@@ -494,7 +486,7 @@ public class Runtime
   public Process exec(String[] cmd, String[] env, File dir)
     throws IOException
   {
-    SecurityManager sm = securityManager; // Be thread-safe!
+    SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkExec(cmd[0]);
     return execInternal(cmd, env, dir);
@@ -581,7 +573,7 @@ public class Runtime
    */
   public void load(String filename)
   {
-    SecurityManager sm = securityManager; // Be thread-safe!
+    SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkLink(filename);
     _load(filename, false);
@@ -611,7 +603,7 @@ public class Runtime
   {
     // This is different from the Classpath implementation, but I
     // believe it is more correct.
-    SecurityManager sm = securityManager; // Be thread-safe!
+    SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkLink(libname);
     _load(libname, true);

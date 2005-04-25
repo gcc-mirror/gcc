@@ -263,7 +263,7 @@ public class ThreadGroup
   public final void checkAccess()
   {
     // Bypass System.getSecurityManager, for bootstrap efficiency.
-    SecurityManager sm = Runtime.securityManager;
+    SecurityManager sm = SecurityManager.current;
     if (sm != null)
       sm.checkAccess(this);
   }

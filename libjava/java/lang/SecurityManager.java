@@ -126,6 +126,14 @@ import java.util.PropertyPermission;
 public class SecurityManager
 {
   /**
+   * The current security manager. This is located here instead of in
+   * System, to avoid security problems, as well as bootstrap issues.
+   * Make sure to access it in a thread-safe manner; it is package visible
+   * to avoid overhead in java.lang.
+   */
+  static volatile SecurityManager current;
+
+  /**
    * Tells whether or not the SecurityManager is currently performing a
    * security check.
    * @deprecated Use {@link #checkPermission(Permission)} instead.

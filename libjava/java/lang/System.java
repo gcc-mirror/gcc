@@ -120,7 +120,7 @@ public final class System
    */
   public static void setIn(InputStream in)
   {
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPermission(new RuntimePermission("setIO"));
     setIn0(in);
@@ -137,7 +137,7 @@ public final class System
    */
   public static void setOut(PrintStream out)
   {
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPermission(new RuntimePermission("setIO"));
     
@@ -155,7 +155,7 @@ public final class System
    */
   public static void setErr(PrintStream err)
   {
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPermission(new RuntimePermission("setIO"));
     setErr0(err);
@@ -180,10 +180,10 @@ public final class System
     // Implementation note: the field lives in Runtime because of bootstrap
     // initialization issues. This method is synchronized so that no other
     // thread changes it to null before this thread makes the change.
-    if (Runtime.securityManager != null)
-      Runtime.securityManager.checkPermission
+    if (SecurityManager.current != null)
+      SecurityManager.current.checkPermission
         (new RuntimePermission("setSecurityManager"));
-    Runtime.securityManager = sm;
+    SecurityManager.current = sm;
   }
 
   /**
@@ -196,7 +196,7 @@ public final class System
   {
     // Implementation note: the field lives in Runtime because of bootstrap
     // initialization issues.
-    return Runtime.securityManager;
+    return SecurityManager.current;
   }
 
   /**
@@ -309,7 +309,7 @@ public final class System
    */
   public static Properties getProperties()
   {
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPropertiesAccess();
     return SystemProperties.getProperties();
@@ -326,7 +326,7 @@ public final class System
    */
   public static void setProperties(Properties properties)
   {
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPropertiesAccess();
     SystemProperties.setProperties(properties);
@@ -344,7 +344,7 @@ public final class System
    */
   public static String getProperty(String key)
   {
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPropertyAccess(key);
     else if (key.length() == 0)
@@ -365,7 +365,7 @@ public final class System
    */
   public static String getProperty(String key, String def)
   {
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPropertyAccess(key);
     return SystemProperties.getProperty(key, def);
@@ -385,7 +385,7 @@ public final class System
    */
   public static String setProperty(String key, String value)
   {
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPermission(new PropertyPermission(key, "write"));
     return SystemProperties.setProperty(key, value);
@@ -407,7 +407,7 @@ public final class System
   {
     if (name == null)
       throw new NullPointerException();
-    SecurityManager sm = Runtime.securityManager; // Be thread-safe.
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPermission(new RuntimePermission("getenv." + name));
     return getenv0(name);
