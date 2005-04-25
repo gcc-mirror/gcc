@@ -1319,126 +1319,94 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
 static tree
 create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 {
-  tree name = NULL_TREE;
-  tree newexpr = NULL_TREE;
+  tree temp, name;
+  tree folded, forced_stmts, newexpr;
   tree v;
-  
+  tree_stmt_iterator tsi;
+
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
     case tcc_binary:
     case tcc_comparison:
       {
-	tree_stmt_iterator tsi;
-	tree forced_stmts;
-	tree genop1, genop2;
-	tree temp;
-	tree folded;
 	tree op1 = TREE_OPERAND (expr, 0);
 	tree op2 = TREE_OPERAND (expr, 1);
-	genop1 = find_or_generate_expression (block, op1, stmts);
-	genop2 = find_or_generate_expression (block, op2, stmts);
-	temp = create_tmp_var (TREE_TYPE (expr), "pretmp");
-	add_referenced_tmp_var (temp);
-	
+	tree genop1 = find_or_generate_expression (block, op1, stmts);
+	tree genop2 = find_or_generate_expression (block, op2, stmts);
 	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
 			      genop1, genop2));
-	newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
-	if (forced_stmts)
-	  {
-	    tsi = tsi_start (forced_stmts);
-	    for (; !tsi_end_p (tsi); tsi_next (&tsi))
-	      {
-		tree stmt = tsi_stmt (tsi);
-		tree forcedname = TREE_OPERAND (stmt, 0);
-		tree forcedexpr = TREE_OPERAND (stmt, 1);
-		tree val = vn_lookup_or_add (forcedexpr, NULL);
-		vn_add (forcedname, val, NULL);		
-		bitmap_value_replace_in_set (NEW_SETS (block), forcedname); 
-		bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
-	      }
-
-	    tsi = tsi_last (stmts);
-	    tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
-	  }
-	newexpr = build (MODIFY_EXPR, TREE_TYPE (expr),
-			 temp, newexpr);
-	NECESSARY (newexpr) = 0;
-	name = make_ssa_name (temp, newexpr);
-	TREE_OPERAND (newexpr, 0) = name;
-	tsi = tsi_last (stmts);
-	tsi_link_after (&tsi, newexpr, TSI_CONTINUE_LINKING);
-	VEC_safe_push (tree, heap, inserted_exprs, newexpr);
-	pre_stats.insertions++;
 	break;
       }
+
     case tcc_unary:
       {
-	tree_stmt_iterator tsi;
-	tree forced_stmts = NULL;
-	tree genop1;
-	tree temp;
-	tree folded;
 	tree op1 = TREE_OPERAND (expr, 0);
-	genop1 = find_or_generate_expression (block, op1, stmts);
-	temp = create_tmp_var (TREE_TYPE (expr), "pretmp");
-	add_referenced_tmp_var (temp);
+	tree genop1 = find_or_generate_expression (block, op1, stmts);
 	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
 			      genop1));
-	/* If the generated operand  is already GIMPLE min_invariant
-	   just use it instead of calling force_gimple_operand on it,
-	   since that may make it not invariant by copying it into an
-	   assignment.  */
-	if (!is_gimple_min_invariant (genop1))
-	  newexpr = force_gimple_operand (folded, &forced_stmts, false, NULL);
-	else
-	  newexpr = genop1;
-	if (forced_stmts)
-	  {
-	    tsi = tsi_start (forced_stmts);
-	    for (; !tsi_end_p (tsi); tsi_next (&tsi))
-	      {
-		tree stmt = tsi_stmt (tsi);
-		tree forcedname = TREE_OPERAND (stmt, 0);
-		tree forcedexpr = TREE_OPERAND (stmt, 1);
-		tree val = vn_lookup_or_add (forcedexpr, NULL);
-		vn_add (forcedname, val, NULL);		
-		bitmap_value_replace_in_set (NEW_SETS (block), forcedname); 
-		bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
-	      }
-	    tsi = tsi_last (stmts);
-	    tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
-	  }
-	newexpr = build (MODIFY_EXPR, TREE_TYPE (expr),
-			 temp, newexpr);
-	name = make_ssa_name (temp, newexpr);
-	TREE_OPERAND (newexpr, 0) = name;
-	NECESSARY (newexpr) = 0;
-	tsi = tsi_last (stmts);
-	tsi_link_after (&tsi, newexpr, TSI_CONTINUE_LINKING);
-	VEC_safe_push (tree, heap, inserted_exprs, newexpr);
-	pre_stats.insertions++;
-
 	break;
       }
+
     default:
       gcc_unreachable ();
-      
     }
-  v = get_value_handle (expr);
-  vn_add (name, v, NULL);
 
-  /* The value may already exist in either NEW_SETS, or AVAIL_OUT, because
+  /* Force the generated expression to be a sequence of GIMPLE
+     statements.
+     We have to call unshare_expr because force_gimple_operand may
+     modify the tree we pass to it.  */
+  newexpr = force_gimple_operand (unshare_expr (folded), &forced_stmts, 
+                                  false, NULL);
+
+  /* If we have any intermediate expressions to the value sets, add them
+     to the value sets and chain them on in the instruction stream.  */
+  if (forced_stmts)
+    {
+      tsi = tsi_start (forced_stmts);
+      for (; !tsi_end_p (tsi); tsi_next (&tsi))
+	{
+	  tree stmt = tsi_stmt (tsi);
+	  tree forcedname = TREE_OPERAND (stmt, 0);
+	  tree forcedexpr = TREE_OPERAND (stmt, 1);
+	  tree val = vn_lookup_or_add (forcedexpr, NULL);
+	  vn_add (forcedname, val, NULL);
+	  bitmap_value_replace_in_set (NEW_SETS (block), forcedname);
+	  bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
+	}
+      tsi = tsi_last (stmts);
+      tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
+    }
+
+  /* Build and insert the assignment of the end result to the temporary
+     that we will return.  */
+  temp = create_tmp_var (TREE_TYPE (expr), "pretmp");
+  add_referenced_tmp_var (temp);
+  newexpr = build (MODIFY_EXPR, TREE_TYPE (expr), temp, newexpr);
+  name = make_ssa_name (temp, newexpr);
+  TREE_OPERAND (newexpr, 0) = name;
+  NECESSARY (newexpr) = 0;
+  tsi = tsi_last (stmts);
+  tsi_link_after (&tsi, newexpr, TSI_CONTINUE_LINKING);
+  VEC_safe_push (tree, heap, inserted_exprs, newexpr);
+
+  /* Add a value handle to the temprorary.
+     The value may already exist in either NEW_SETS, or AVAIL_OUT, because
      we are creating the expression by pieces, and this particular piece of
      the expression may have been represented.  There is no harm in replacing
      here.  */
+  v = get_value_handle (expr);
+  vn_add (name, v, NULL);
   bitmap_value_replace_in_set (NEW_SETS (block), name); 
   bitmap_value_replace_in_set (AVAIL_OUT (block), name);
+
+  pre_stats.insertions++;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {				    
       fprintf (dump_file, "Inserted ");
       print_generic_expr (dump_file, newexpr, 0);
       fprintf (dump_file, " in predecessor %d\n", block->index);
     }
+
   return name;
 }
 
