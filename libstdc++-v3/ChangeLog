@@ -1,5 +1,11 @@
 2005-04-25  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/21035
+	* include/bits/basic_string.h (compare): Adjust the documentation
+	to match the implementation and the standard.
+
+2005-04-25  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/20914
 	* include/bits/locale_facets.tcc (__int_to_char(_CharT*, _ValueT,
 	const _CharT*, ios_base::fmtflags, bool)): Don't deal with numeric
