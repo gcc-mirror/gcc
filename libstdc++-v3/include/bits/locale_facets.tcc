@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -853,24 +853,16 @@ namespace std
 		  ios_base::fmtflags __flags)
     {
       unsigned long __ul = static_cast<unsigned long>(__v);
-      bool __neg = false;
       if (__v < 0)
-	{
-	  __ul = -__ul;
-	  __neg = true;
-	}
-      return __int_to_char(__bufend, __ul, __lit, __flags, __neg);
+	__ul = -__ul;
+      return __int_to_char(__bufend, __ul, __lit, __flags, false);
     }
 
   template<typename _CharT>
     inline int
     __int_to_char(_CharT* __bufend, unsigned long __v, const _CharT* __lit,
 		  ios_base::fmtflags __flags)
-    {
-      // About showpos, see Table 60 and C99 7.19.6.1, p6 (+).
-      return __int_to_char(__bufend, __v, __lit,
-			   __flags & ~ios_base::showpos, false);
-    }
+    { return __int_to_char(__bufend, __v, __lit, __flags, false); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT>
@@ -879,59 +871,47 @@ namespace std
 		  ios_base::fmtflags __flags)
     {
       unsigned long long __ull = static_cast<unsigned long long>(__v);
-      bool __neg = false;
       if (__v < 0)
-	{
-	  __ull = -__ull;
-	  __neg = true;
-	}
-      return __int_to_char(__bufend, __ull, __lit, __flags, __neg);
+	__ull = -__ull;
+      return __int_to_char(__bufend, __ull, __lit, __flags, false);
     }
 
   template<typename _CharT>
     inline int
     __int_to_char(_CharT* __bufend, unsigned long long __v, 
 		  const _CharT* __lit, ios_base::fmtflags __flags)
-    { return __int_to_char(__bufend, __v, __lit,
-			   __flags & ~ios_base::showpos, false); }
+    { return __int_to_char(__bufend, __v, __lit, __flags, false); }
 #endif
 
+  // N.B. The last argument is currently unused (see libstdc++/20914).
   template<typename _CharT, typename _ValueT>
     int
     __int_to_char(_CharT* __bufend, _ValueT __v, const _CharT* __lit,
-		  ios_base::fmtflags __flags, bool __neg)
+		  ios_base::fmtflags __flags, bool)
     {
-      // Don't write base if already 0.
-      const bool __showbase = (__flags & ios_base::showbase) && __v;
       const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
-      _CharT* __buf = __bufend - 1;
+      _CharT* __buf = __bufend;
 
-      if (__builtin_expect(__basefield != ios_base::oct &&
-			   __basefield != ios_base::hex, true))
+      if (__builtin_expect(__basefield != ios_base::oct
+			   && __basefield != ios_base::hex, true))
 	{
 	  // Decimal.
 	  do
 	    {
-	      *__buf-- = __lit[(__v % 10) + __num_base::_S_odigits];
+	      *--__buf = __lit[(__v % 10) + __num_base::_S_odigits];
 	      __v /= 10;
 	    }
 	  while (__v != 0);
-	  if (__neg)
-	    *__buf-- = __lit[__num_base::_S_ominus];
-	  else if (__flags & ios_base::showpos)
-	    *__buf-- = __lit[__num_base::_S_oplus];
 	}
       else if (__basefield == ios_base::oct)
 	{
 	  // Octal.
 	  do
 	    {
-	      *__buf-- = __lit[(__v & 0x7) + __num_base::_S_odigits];
+	      *--__buf = __lit[(__v & 0x7) + __num_base::_S_odigits];
 	      __v >>= 3;
 	    }
 	  while (__v != 0);
-	  if (__showbase)
-	    *__buf-- = __lit[__num_base::_S_odigits];
 	}
       else
 	{
@@ -941,53 +921,25 @@ namespace std
 	                                        : __num_base::_S_odigits;
 	  do
 	    {
-	      *__buf-- = __lit[(__v & 0xf) + __case_offset];
+	      *--__buf = __lit[(__v & 0xf) + __case_offset];
 	      __v >>= 4;
 	    }
 	  while (__v != 0);
-	  if (__showbase)
-	    {
-	      // 'x' or 'X'
-	      *__buf-- = __lit[__num_base::_S_ox + __uppercase];
-	      // '0'
-	      *__buf-- = __lit[__num_base::_S_odigits];
-	    }
 	}
-      return __bufend - __buf - 1;
+      return __bufend - __buf;
     }
 
   template<typename _CharT, typename _OutIter>
     void
     num_put<_CharT, _OutIter>::
     _M_group_int(const char* __grouping, size_t __grouping_size, _CharT __sep,
-		 ios_base& __io, _CharT* __new, _CharT* __cs, int& __len) const
+		 ios_base&, _CharT* __new, _CharT* __cs, int& __len) const
     {
-      // By itself __add_grouping cannot deal correctly with __cs when
-      // ios::showbase is set and ios_base::oct || ios_base::hex.
-      // Therefore we take care "by hand" of the initial 0, 0x or 0X.
-      // However, remember that the latter do not occur if the number
-      // printed is '0' (__len == 1).
-      streamsize __off = 0;
-      const ios_base::fmtflags __basefield = __io.flags()
-	                                     & ios_base::basefield;
-      if ((__io.flags() & ios_base::showbase) && __len > 1)
-	if (__basefield == ios_base::oct)
-	  {
-	    __off = 1;
-	    __new[0] = __cs[0];
-	  }
-	else if (__basefield == ios_base::hex)
-	  {
-	    __off = 2;
-	    __new[0] = __cs[0];
-	    __new[1] = __cs[1];
-	  }
-      _CharT* __p = std::__add_grouping(__new + __off, __sep, __grouping,
-					__grouping_size, __cs + __off,
-					__cs + __len);
+      _CharT* __p = std::__add_grouping(__new, __sep, __grouping,
+					__grouping_size, __cs, __cs + __len);
       __len = __p - __new;
     }
-
+  
   template<typename _CharT, typename _OutIter>
     template<typename _ValueT>
       _OutIter
@@ -1000,28 +952,64 @@ namespace std
 	const locale& __loc = __io._M_getloc();
 	const __cache_type* __lc = __uc(__loc);
 	const _CharT* __lit = __lc->_M_atoms_out;
+	const ios_base::fmtflags __flags = __io.flags();
 
 	// Long enough to hold hex, dec, and octal representations.
-	const int __ilen = 4 * sizeof(_ValueT);
+	const int __ilen = 5 * sizeof(_ValueT);
 	_CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 							     * __ilen));
 
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	// Result is returned right-justified in the buffer.
-	int __len;
-	__len = __int_to_char(__cs + __ilen, __v, __lit, __io.flags());
+	int __len = __int_to_char(__cs + __ilen, __v, __lit, __flags);
 	__cs += __ilen - __len;
 
 	// Add grouping, if necessary.
 	if (__lc->_M_use_grouping)
 	  {
-	    // Grouping can add (almost) as many separators as the
-	    // number of digits, but no more.
+	    // Grouping can add (almost) as many separators as the number
+	    // of digits + space is reserved for numeric base or sign.
 	    _CharT* __cs2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-								  * __len * 2));
+								  * (__len + 1)
+								  * 2));
 	    _M_group_int(__lc->_M_grouping, __lc->_M_grouping_size,
-			 __lc->_M_thousands_sep, __io, __cs2, __cs, __len);
-	    __cs = __cs2;
+			 __lc->_M_thousands_sep, __io, __cs2 + 2, __cs, __len);
+	    __cs = __cs2 + 2;
+	  }
+
+	// Complete Stage 1, prepend numeric base or sign.
+	const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
+	if (__builtin_expect(__basefield != ios_base::oct
+			     && __basefield != ios_base::hex, true))
+	  {
+	    // Decimal.
+	    if (__v > 0)
+	      {
+		if (__flags & ios_base::showpos
+		    && numeric_limits<_ValueT>::is_signed)
+		  *--__cs = __lit[__num_base::_S_oplus], ++__len;
+	      }
+	    else if (__v)
+	      *--__cs = __lit[__num_base::_S_ominus], ++__len;
+	  }
+	else if (__basefield == ios_base::oct)
+	  {
+	    // Octal.
+	    if (__flags & ios_base::showbase && __v)
+	      *--__cs = __lit[__num_base::_S_odigits], ++__len;
+	  }
+	else
+	  {
+	    // Hex.
+	    if (__flags & ios_base::showbase && __v)
+	      {
+		// 'x' or 'X'
+		const bool __uppercase = __flags & ios_base::uppercase;
+		*--__cs = __lit[__num_base::_S_ox + __uppercase];
+		// '0'
+		*--__cs = __lit[__num_base::_S_odigits];
+		__len += 2;
+	      }
 	  }
 
 	// Pad.
@@ -1137,53 +1125,65 @@ namespace std
 				      _S_get_c_locale(), __prec);
 #endif
 
-      // [22.2.2.2.2] Stage 2, convert to char_type, using correct
-      // numpunct.decimal_point() values for '.' and adding grouping.
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+	// [22.2.2.2.2] Stage 2, convert to char_type, using correct
+	// numpunct.decimal_point() values for '.' and adding grouping.
+	const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+	
+	_CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							     * __len));
+	__ctype.widen(__cs, __cs + __len, __ws);
+	
+	// Replace decimal point.
+	const _CharT __cdec = __ctype.widen('.');
+	const _CharT __dec = __lc->_M_decimal_point;
+	const _CharT* __p = char_traits<_CharT>::find(__ws, __len, __cdec);
+	if (__p)
+	  __ws[__p - __ws] = __dec;
+	
+	// Add grouping, if necessary.
+	// N.B. Make sure to not group things like 2e20, i.e., no decimal
+	// point, scientific notation.
+	if (__lc->_M_use_grouping
+	    && (__p || __len < 3 || (__cs[1] <= '9' && __cs[2] <= '9'
+				     && __cs[1] >= '0' && __cs[2] >= '0')))
+	  {
+	    // Grouping can add (almost) as many separators as the
+	    // number of digits, but no more.
+	    _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+								  * __len * 2));
+	    
+	    streamsize __off = 0;
+	    if (__cs[0] == '-' || __cs[0] == '+')
+	      {
+		__off = 1;
+		__ws2[0] = __ws[0];
+		__len -= 1;
+	      }
+	    
+	    _M_group_float(__lc->_M_grouping, __lc->_M_grouping_size,
+			   __lc->_M_thousands_sep, __p, __ws2 + __off,
+			   __ws + __off, __len);
+	    __len += __off;
+	    
+	    __ws = __ws2;
+	  }
 
-      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							   * __len));
-      __ctype.widen(__cs, __cs + __len, __ws);
-
-      // Replace decimal point.
-      const _CharT __cdec = __ctype.widen('.');
-      const _CharT __dec = __lc->_M_decimal_point;
-      const _CharT* __p = char_traits<_CharT>::find(__ws, __len, __cdec);
-      if (__p)
-	__ws[__p - __ws] = __dec;
-
-      // Add grouping, if necessary.
-      // N.B. Make sure to not group things like 2e20, i.e., no decimal
-      // point, scientific notation.
-      if (__lc->_M_use_grouping
-	  && (__p || __len < 3 || (__cs[1] != 'e' && __cs[2] != 'e'
-				   && __cs[1] != 'E' && __cs[2] != 'E')))
-	{
-	  // Grouping can add (almost) as many separators as the
-	  // number of digits, but no more.
-	  _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-								* __len * 2));
-	  _M_group_float(__lc->_M_grouping, __lc->_M_grouping_size,
-			 __lc->_M_thousands_sep, __p, __ws2, __ws, __len);
-	  __ws = __ws2;
-	}
-
-      // Pad.
-      const streamsize __w = __io.width();
-      if (__w > static_cast<streamsize>(__len))
-	{
-	  _CharT* __ws3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-								* __w));
-	  _M_pad(__fill, __w, __io, __ws3, __ws, __len);
-	  __ws = __ws3;
-	}
-      __io.width(0);
-
-      // [22.2.2.2.2] Stage 4.
-      // Write resulting, fully-formatted string to output iterator.
-      return std::__write(__s, __ws, __len);
+	// Pad.
+	const streamsize __w = __io.width();
+	if (__w > static_cast<streamsize>(__len))
+	  {
+	    _CharT* __ws3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+								  * __w));
+	    _M_pad(__fill, __w, __io, __ws3, __ws, __len);
+	    __ws = __ws3;
+	  }
+	__io.width(0);
+	
+	// [22.2.2.2.2] Stage 4.
+	// Write resulting, fully-formatted string to output iterator.
+	return std::__write(__s, __ws, __len);
       }
-
+  
   template<typename _CharT, typename _OutIter>
     _OutIter
     num_put<_CharT, _OutIter>::

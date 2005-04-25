@@ -1,3 +1,33 @@
+2005-04-25  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/20914
+	* include/bits/locale_facets.tcc (__int_to_char(_CharT*, _ValueT,
+	const _CharT*, ios_base::fmtflags, bool)): Don't deal with numeric
+	base or sign here, instead...
+	(_M_insert_int(_OutIter, ios_base&, _CharT, _ValueT)): ... here,
+	after adding the grouping. This fixes the bug and also allows to
+	clean-up the code dealing with integer types.
+	(_M_group_int(const char*, size_t, _CharT, ios_base&, _CharT*,
+	_CharT*, int&)): Simplify, remove bits dealing with numeric base.
+	(__int_to_char(_CharT*, unsigned long, const _CharT*,
+	ios_base::fmtflags), __int_to_char(_CharT*, unsigned long long,
+	const _CharT*, ios_base::fmtflags)): Remove hackish fix for
+	libstdc++/15565.
+	(__int_to_char(_CharT*, long, const _CharT*, ios_base::fmtflags),
+	__int_to_char(_CharT*, long long, const _CharT*, ios_base::fmtflags)):
+	Simplify, don't pass the sign.
+	(_M_insert_float(_OutIter, ios_base&, _CharT, char, _ValueT)):
+	Deal with a sign at the beginning of __cs; robustify the grouping	
+	check.
+	* testsuite/22_locale/num_put/put/char/20914.cc: New.
+	* testsuite/22_locale/num_put/put/wchar_t/20914.cc: Likewise.
+
+2005-04-25  Earl Chew  <earl_chew@agilent.com>
+	    Christopher Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_insert): Don't leak
+	memory if _M_key_compare throws.
+
 2005-04-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 35.
