@@ -1,7 +1,3 @@
-# Specific names for AVR tools
-AR_FOR_TARGET = avr-ar
-RANLIB_FOR_TARGET = avr-ranlib
-
 LIB1ASMSRC = avr/libgcc.S
 LIB1ASMFUNCS = \
 	_mulqi3 \
