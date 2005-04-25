@@ -1,3 +1,14 @@
+2005-04-25  Roger Sayle  <roger@eyesopen.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20995
+	Partial backport from mainline.
+	2004-09-27  Mark Mitchell  <mark@codesourcery.com>
+	* tree.c (fold_if_not_in_template): New function.
+	* cp-tree.h (fold_if_not_in_template): Prototype here.
+	* call.c (build_conditional_expr): Use fold_if_not_in_template.
+	* typeck.c (build_binary_op): Likewise.
+
 2005-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21025

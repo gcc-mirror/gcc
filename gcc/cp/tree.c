@@ -1,6 +1,6 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2524,6 +2524,19 @@ stabilize_init (tree init, tree *initp)
     }
 
   return true;
+}
+
+/* Like "fold", but should be used whenever we might be processing the
+   body of a template.  */
+
+tree
+fold_if_not_in_template (tree expr)
+{
+  /* In the body of a template, there is never any need to call
+     "fold".  We will call fold later when actually instantiating the
+     template.  Integral constant expressions in templates will be
+     evaluated via fold_non_dependent_expr, as necessary.  */
+  return (processing_template_decl ? expr : fold (expr));
 }
 
 

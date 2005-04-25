@@ -1,3 +1,8 @@
+2005-04-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/20995
+	* g++.dg/opt/pr20995-1.C: New test case.
+
 2005-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21025
