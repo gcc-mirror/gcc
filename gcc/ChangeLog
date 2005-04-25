@@ -1,5 +1,9 @@
 2005-04-25  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* doc/invoke.texi (Blackfin Options): Avoid empty @opindex line.
+
+2005-04-25  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR bootstrap/21215
 	* doc/install.texi: Document correct assembler and linker to use
 	on i?86-*-solaris2.10.
