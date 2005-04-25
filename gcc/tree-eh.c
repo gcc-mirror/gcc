@@ -1746,6 +1746,97 @@ make_eh_edges (tree stmt)
   foreach_reachable_handler (region_nr, is_resx, make_eh_edge, stmt);
 }
 
+static bool mark_eh_edge_found_error;
+
+/* Mark edge make_eh_edge would create for given region by setting it aux
+   field, output error if something goes wrong.  */
+static void
+mark_eh_edge (struct eh_region *region, void *data)
+{
+  tree stmt, lab;
+  basic_block src, dst;
+  edge e;
+
+  stmt = data;
+  lab = get_eh_region_tree_label (region);
+
+  src = bb_for_stmt (stmt);
+  dst = label_to_block (lab);
+
+  e = find_edge (src, dst);
+  if (!e)
+    {
+      error ("EH edge %i->%i is missing %i %i.", src->index, dst->index, src, dst);
+      mark_eh_edge_found_error = true;
+    }
+  else if (!(e->flags & EDGE_EH))
+    {
+      error ("EH edge %i->%i miss EH flag.", src->index, dst->index);
+      mark_eh_edge_found_error = true;
+    }
+  else if (e->aux)
+    {
+      /* ??? might not be mistake.  */
+      error ("EH edge %i->%i has duplicated regions.", src->index, dst->index);
+      mark_eh_edge_found_error = true;
+    }
+  else
+    e->aux = (void *)1;
+}
+
+/* Verify that BB containing stmt as last stmt has precisely the edges
+   make_eh_edges would create.  */
+bool
+verify_eh_edges (tree stmt)
+{
+  int region_nr;
+  bool is_resx;
+  basic_block bb = bb_for_stmt (stmt);
+  edge_iterator ei;
+  edge e;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    gcc_assert (!e->aux);
+  mark_eh_edge_found_error = false;
+  if (TREE_CODE (stmt) == RESX_EXPR)
+    {
+      region_nr = TREE_INT_CST_LOW (TREE_OPERAND (stmt, 0));
+      is_resx = true;
+    }
+  else
+    {
+      region_nr = lookup_stmt_eh_region (stmt);
+      if (region_nr < 0)
+	{
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (e->flags & EDGE_EH)
+	      {
+		error ("BB %i can not throw but has EH edges", bb->index);
+		return true;
+	      }
+	   return false;
+	}
+      if (!tree_could_throw_p (stmt))
+	{
+	  error ("BB %i last statement has incorrectly set region", bb->index);
+	  return true;
+	}
+      is_resx = false;
+    }
+
+  foreach_reachable_handler (region_nr, is_resx, mark_eh_edge, stmt);
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      if ((e->flags & EDGE_EH) && !e->aux)
+	{
+	  error ("Unnecesary EH edge %i->%i", bb->index, e->dest->index);
+	  mark_eh_edge_found_error = true;
+	  return true;
+	}
+      e->aux = NULL;
+    }
+  return mark_eh_edge_found_error;
+}
 
 
 /* Return true if the expr can trap, as in dereferencing an invalid pointer
