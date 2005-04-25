@@ -43,6 +43,7 @@ import java.io.Serializable;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.EventListener;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.event.DocumentEvent;
@@ -71,7 +72,10 @@ public abstract class AbstractDocument
   Content content;
   AttributeContext context;
   DocumentFilter documentFilter;
-  
+
+  /** The documents properties. */
+  Dictionary properties;
+
   protected EventListenerList listenerList = new EventListenerList();
 
   protected AbstractDocument(Content doc)
@@ -175,7 +179,11 @@ public abstract class AbstractDocument
 
   public Dictionary getDocumentProperties()
   {
-    return null;
+    // FIXME: make me thread-safe
+    if (properties == null)
+      properties = new Hashtable();
+
+    return properties;
   }
 
   public Position getEndPosition()
@@ -201,7 +209,12 @@ public abstract class AbstractDocument
 
   public Object getProperty(Object key)
   {
-    return null;
+    // FIXME: make me thread-safe
+    Object value = null;
+    if (properties != null)
+      value = properties.get(key);
+
+    return value;
   }
 
   public Element[] getRootElements()
@@ -258,6 +271,11 @@ public abstract class AbstractDocument
 
   public void putProperty(Object key, Object value)
   {
+    // FIXME: make me thread-safe
+    if (properties == null)
+      properties = new Hashtable();
+
+    properties.put(key, value);
   }
 
   public void readLock()
@@ -366,6 +384,8 @@ public abstract class AbstractDocument
 
   public void setDocumentProperties(Dictionary x)
   {
+    // FIXME: make me thread-safe
+    properties = x;
   }
 
   protected void writeLock()

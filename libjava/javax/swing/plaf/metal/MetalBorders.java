@@ -184,6 +184,82 @@ public class MetalBorders
   }
 
   /**
+   * A border for JScrollPanes.
+   */
+  public static class ScrollPaneBorder
+    extends AbstractBorder
+    implements UIResource
+  {
+    /** The border insets. */
+    private static Insets insets = new Insets(1, 1, 2, 2);
+    
+    /**
+     * Constructs a new ScrollPaneBorder.
+     */
+    public ScrollPaneBorder()
+    {
+    }
+    
+    /**
+     * Returns the insets of the border for the Component <code>c</code>.
+     *
+     * @param c the Component for which we return the border insets
+     */
+    public Insets getBorderInsets(Component c)
+    {
+      return insets;
+    }
+
+    /**
+     * Paints the border.
+     *
+     * @param c the Component for which the border is painted
+     * @param g the Graphics context
+     * @param x the X coordinate of the upper left corner of the border
+     * @param y the Y coordinate of the upper left corner of the border
+     * @param w the width of the border
+     * @param h the height of the border
+     */
+    public void paintBorder(Component c, Graphics g, int x, int y,
+                            int w, int h)
+    {
+      Color darkShadow = MetalLookAndFeel.getControlDarkShadow();
+      Color shadow = MetalLookAndFeel.getControlShadow();
+      Color light = MetalLookAndFeel.getWhite();
+      Color middle = MetalLookAndFeel.getControl();
+
+      // paint top border line
+      g.setColor(darkShadow);
+      g.drawLine(x, y, x + w - 2, y);
+
+      // paint left border line
+      g.drawLine(x, y, x, y + h - 2);
+ 
+      // paint right inner border line
+      g.drawLine(x + w - 2, y, x + w - 2, y + h + 1);
+
+      // paint bottom inner border line
+      g.drawLine(x + 2, y + h - 2, x + w - 2, y + h - 2);
+
+      // draw right outer border line
+      g.setColor(light);
+      g.drawLine(x + w - 1, y, x + w - 1, y + h - 1);
+
+      // draw bottom outer border line
+      g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
+
+      // paint the lighter points
+      g.setColor(middle);
+      g.drawLine(x + w - 1, y, x + w - 1, y);
+      g.drawLine(x + w - 2, y + 2, x + w - 2, y + 2);
+      g.drawLine(x, y + h - 1, x, y + h - 1);
+      g.drawLine(x + 1, y + h - 2, x + 1, y + h - 2);
+
+    }
+    
+  }
+  
+  /**
    * This border is used in Toolbar buttons as inner border.
    */
   static class RolloverMarginBorder extends AbstractBorder

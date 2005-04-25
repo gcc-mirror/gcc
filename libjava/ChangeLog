@@ -1,3 +1,70 @@
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
+	(initDefaults): Initialize thumb*Color fields correctly.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/GapContent.java:
+	Added API comments.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalBorders.java:
+	Added inner class ScrollPaneBorder.
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initComponentDefaults): Added default for "ScrollPane.border"
+	to use the new ScrollPaneBorder.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/AbstractDocument.java:
+	Added FIXME comments. This class still has to be
+	implemented thread-safe.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/tree/DefaultTreeSelectionModel.java
+	(DefaultTreeSelectionModel): Initialize listenerList here.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalTextFieldUI.java
+	(createUI): Return one instance per Component instead of a
+	shared instance.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/Document.java:
+	Added API documentation comments.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/AbstractDocument.java
+	(getDocumentProperties): Implemented.
+	(setDocumentProperties): Implemented.
+	(getProperty): Implemented.
+	(putProperty): Implemented.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/BoxLayout
+	(preferredLayoutSize): Fixed computation so that it correctly
+	adds the top and bottom insets of the container.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicMenuItemUI.java
+	(paintText): Make use of the 'selectionForeground' UI default
+	for text painting.
+
+2005-04-25  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicLookAndFeel.java
+	(initSystemColorDefaults): Modified colors to match the
+	BasicLookAndFeel in the reference implementation.
+	(initComponentDefaults): Likewise.
+
 2005-04-25  Tom Tromey  <tromey@redhat.com>
 
 	* include/jni.h (_Jv_va_list): Removed.

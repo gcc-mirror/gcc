@@ -474,6 +474,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "Slider.background", new ColorUIResource(getControl()),
       "OptionPane.background", new ColorUIResource(getControl()),
       "ProgressBar.background", new ColorUIResource(getControl()),
+      "ScrollPane.border", new MetalBorders.ScrollPaneBorder(),
       "TabbedPane.background", new ColorUIResource(getControl()),
       "Label.background", new ColorUIResource(getControl()),
       "Label.font", getControlTextFont(),

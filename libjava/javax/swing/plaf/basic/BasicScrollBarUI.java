@@ -818,6 +818,11 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
     scrollbar.setBorder(defaults.getBorder("ScrollBar.border"));
     scrollbar.setOpaque(true);
 
+    thumbColor = defaults.getColor("ScrollBar.thumb");
+    thumbDarkShadowColor = defaults.getColor("ScrollBar.thumbDarkShadow");
+    thumbHighlightColor = defaults.getColor("ScrollBar.thumbHighlight");
+    thumbLightShadowColor = defaults.getColor("ScrollBar.thumbShadow");
+
     maximumThumbSize = defaults.getDimension("ScrollBar.maximumThumbSize");
     minimumThumbSize = defaults.getDimension("ScrollBar.minimumThumbSize");
   }
