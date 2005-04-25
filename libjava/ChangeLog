@@ -1,3 +1,11 @@
+2005-04-25  Tom Tromey  <tromey@redhat.com>
+
+	* include/jni.h (_Jv_va_list): Removed.
+	Moved configuration code...
+	* include/jni_md.h: ... here.  New file.
+	* include/Makefile.in: Rebuilt.
+	* include/Makefile.am (tool_include__HEADERS): Added jni_md.h.
+
 2005-04-23  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/io/FileInputStream.java (FileInputStream(File)),
