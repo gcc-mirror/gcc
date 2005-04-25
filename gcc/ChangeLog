@@ -1,3 +1,10 @@
+2005-04-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-vect-analyze.c (vect_mark_relevant): Take
+	VEC(tree,heap) instead of varray_type as an argument.
+	(vect_mark_stmts_to_be_vectorized): Change the type of
+	worklist to VEC(tree,heap).  Adjust uses of worklist.
+
 2005-04-24  Devang Patel  <dpatel@apple.com>
 
 	*  config/rs6000/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): New.
