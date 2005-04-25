@@ -1,5 +1,10 @@
 2005-04-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR testsuite/21062
+	* g++.dg/opt/alias2.C (printf): Correct the prototype.
+
+2005-04-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR C++/21188
 	* g++.dg/opt/rtti2.C: New test.
 

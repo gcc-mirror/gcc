@@ -1,7 +1,7 @@
 // { dg-do run }
 // { dg-options "-O2" }
 
-extern "C" int printf (...);
+extern "C" int printf (const char*, ...);
 
 struct _Deque_iterator {
   int _M_cur;
