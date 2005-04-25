@@ -1,3 +1,9 @@
+2005-04-25  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(connectSignals): Realize the window widget after connecting
+	signals.
+
 2005-04-25  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/awt/GraphicsEnvironment.java
@@ -222,7 +228,6 @@
 	* gnu/gcj/runtime/NameFinder.java (close): IN, OUT, and PROC can all
 	be null, check for that case and don't deference it.
 
->>>>>>> 1.3540
 2005-04-22  Sven de Marothy  <sven@physto.se>
 
 	* java/util/logging/LogManager.java: Reformatted.

@@ -252,6 +252,13 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
   g_signal_connect_after (G_OBJECT (ptr), "realize",
                           G_CALLBACK (connect_awt_hook_cb), *gref);
 
+
+  /* Realize the window here so that its frame extents are known now.
+     That way Window.pack can operate with the accurate insets
+     returned by the window manager rather than the default
+     estimates. */
+  gtk_widget_realize (GTK_WIDGET (ptr));
+
   gdk_threads_leave ();
 }
 
