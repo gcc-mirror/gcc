@@ -1573,9 +1573,6 @@ pdp11-*-bsd)
 pdp11-*-*)
 	use_fixproto=yes
 	;;
-avr-*-*)
-	use_fixproto=yes
-	;;
 # port not yet contributed
 #powerpc-*-openbsd*)
 #	tmake_file="${tmake_file} rs6000/t-fprules "
