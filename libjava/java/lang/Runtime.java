@@ -1,5 +1,5 @@
 /* Runtime.java -- access to the VM process
-   Copyright (C) 1998, 2002, 2003, 2004 Free Software Foundation
+   Copyright (C) 1998, 2002, 2003, 2004, 2005 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,14 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.classpath.SystemProperties;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -72,47 +73,9 @@ public class Runtime
    */
   static SecurityManager securityManager;
 
-  /**
-   * The default properties defined by the system. This is likewise located
-   * here instead of in Runtime, to avoid bootstrap issues; it is package
-   * visible to avoid overhead in java.lang. Note that System will add a
-   * few more properties to this collection, but that after that, it is
-   * treated as read-only.
-   *
-   * No matter what class you start initialization with, it defers to the
-   * superclass, therefore Object.&lt;clinit&gt; will be the first Java code
-   * executed. From there, the bootstrap sequence, up to the point that
-   * native libraries are loaded (as of March 24, when I traced this
-   * manually) is as follows:
-   *
-   * Object.&lt;clinit&gt; uses a String literal, possibly triggering initialization
-   *  String.&lt;clinit&gt; calls WeakHashMap.&lt;init&gt;, triggering initialization
-   *   AbstractMap, WeakHashMap, WeakHashMap$1 have no dependencies
-   *  String.&lt;clinit&gt; calls CaseInsensitiveComparator.&lt;init&gt;, triggering
-   *      initialization
-   *   CaseInsensitiveComparator has no dependencies
-   * Object.&lt;clinit&gt; calls System.loadLibrary, triggering initialization
-   *  System.&lt;clinit&gt; calls System.loadLibrary
-   *  System.loadLibrary calls Runtime.getRuntime, triggering initialization
-   *   Runtime.&lt;clinit&gt; calls Properties.&lt;init&gt;, triggering initialization
-   *    Dictionary, Hashtable, and Properties have no dependencies
-   *   Runtime.&lt;clinit&gt; calls VMRuntime.insertSystemProperties, triggering
-   *      initialization of VMRuntime; the VM must make sure that there are
-   *      not any harmful dependencies
-   *   Runtime.&lt;clinit&gt; calls Runtime.&lt;init&gt;
-   *    Runtime.&lt;init&gt; calls StringTokenizer.&lt;init&gt;, triggering initialization
-   *     StringTokenizer has no dependencies
-   *  System.loadLibrary calls Runtime.loadLibrary
-   *   Runtime.loadLibrary should be able to load the library, although it
-   *       will probably set off another string of initializations from
-   *       ClassLoader first
-   */
-  static Properties defaultProperties = new Properties();
-
   static
   {
     init();
-    insertSystemProperties(defaultProperties);
   }
 
   /**
@@ -134,8 +97,7 @@ public class Runtime
   private boolean finalizeOnExit;
 
   /**
-   * The one and only runtime instance. This must appear after the default
-   * properties have been initialized by the VM.
+   * The one and only runtime instance.
    */
   private static final Runtime current = new Runtime();
 
@@ -146,12 +108,11 @@ public class Runtime
   {
     if (current != null)
       throw new InternalError("Attempt to recreate Runtime");
-
+    
     // We don't use libpath in the libgcj implementation.  We still
     // set it to something to allow the various synchronizations to
     // work.
     libpath = new String[0];
-
   }
 
   /**
@@ -322,15 +283,15 @@ public class Runtime
     if (sm != null)
       sm.checkPermission(new RuntimePermission("shutdownHooks"));
     if (hook.isAlive() || hook.getThreadGroup() == null)
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("The hook thread " + hook + " must not have been already run or started");
     synchronized (libpath)
       {
         if (exitSequence != null)
-          throw new IllegalStateException();
+          throw new IllegalStateException("The Virtual Machine is exiting. It is not possible anymore to add any hooks");
         if (shutdownHooks == null)
           shutdownHooks = new HashSet(); // Lazy initialization.
         if (! shutdownHooks.add(hook))
-          throw new IllegalArgumentException();
+          throw new IllegalArgumentException(hook.toString() + " had already been inserted");
       }
   }
 
@@ -740,48 +701,4 @@ public class Runtime
    */
   native Process execInternal(String[] cmd, String[] env, File dir)
     throws IOException;
-    
-
-  /**
-   * Get the system properties. This is done here, instead of in System,
-   * because of the bootstrap sequence. Note that the native code should
-   * not try to use the Java I/O classes yet, as they rely on the properties
-   * already existing. The only safe method to use to insert these default
-   * system properties is {@link Properties#setProperty(String, String)}.
-   *
-   * <p>These properties MUST include:
-   * <dl>
-   * <dt>java.version         <dd>Java version number
-   * <dt>java.vendor          <dd>Java vendor specific string
-   * <dt>java.vendor.url      <dd>Java vendor URL
-   * <dt>java.home            <dd>Java installation directory
-   * <dt>java.vm.specification.version <dd>VM Spec version
-   * <dt>java.vm.specification.vendor  <dd>VM Spec vendor
-   * <dt>java.vm.specification.name    <dd>VM Spec name
-   * <dt>java.vm.version      <dd>VM implementation version
-   * <dt>java.vm.vendor       <dd>VM implementation vendor
-   * <dt>java.vm.name         <dd>VM implementation name
-   * <dt>java.specification.version    <dd>Java Runtime Environment version
-   * <dt>java.specification.vendor     <dd>Java Runtime Environment vendor
-   * <dt>java.specification.name       <dd>Java Runtime Environment name
-   * <dt>java.class.version   <dd>Java class version number
-   * <dt>java.class.path      <dd>Java classpath
-   * <dt>java.library.path    <dd>Path for finding Java libraries
-   * <dt>java.io.tmpdir       <dd>Default temp file path
-   * <dt>java.compiler        <dd>Name of JIT to use
-   * <dt>java.ext.dirs        <dd>Java extension path
-   * <dt>os.name              <dd>Operating System Name
-   * <dt>os.arch              <dd>Operating System Architecture
-   * <dt>os.version           <dd>Operating System Version
-   * <dt>file.separator       <dd>File separator ("/" on Unix)
-   * <dt>path.separator       <dd>Path separator (":" on Unix)
-   * <dt>line.separator       <dd>Line separator ("\n" on Unix)
-   * <dt>user.name            <dd>User account name
-   * <dt>user.home            <dd>User home directory
-   * <dt>user.dir             <dd>User's current working directory
-   * </dl>
-   *
-   * @param p the Properties object to insert the system properties into
-   */
-  static native void insertSystemProperties(Properties p);
 } // class Runtime

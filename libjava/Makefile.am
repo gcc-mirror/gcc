@@ -3122,6 +3122,7 @@ java/util/regex/PatternSyntaxException.java
 ordinary_java_source_files = $(core_java_source_files) \
 gnu/classpath/ServiceFactory.java \
 gnu/classpath/ServiceProviderLoadingAction.java \
+gnu/classpath/SystemProperties.java \
 gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java \
@@ -3884,6 +3885,7 @@ math_c_source_files = \
 
 ## This lists all the C++ source files in subdirectories.
 nat_source_files = \
+gnu/classpath/natSystemProperties.cc \
 gnu/gcj/natCore.cc \
 gnu/gcj/convert/JIS0208_to_Unicode.cc \
 gnu/gcj/convert/JIS0212_to_Unicode.cc \
