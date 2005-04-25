@@ -4998,6 +4998,7 @@ get_atexit_node (void)
   tree fn_type;
   tree fn_ptr_type;
   const char *name;
+  bool use_aeabi_atexit;
 
   if (atexit_node)
     return atexit_node;
@@ -5011,6 +5012,7 @@ get_atexit_node (void)
 	 We build up the argument types and then then function type
 	 itself.  */
 
+      use_aeabi_atexit = targetm.cxx.use_aeabi_atexit ();
       /* First, build the pointer-to-function type for the first
 	 argument.  */
       arg_types = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
@@ -5018,12 +5020,23 @@ get_atexit_node (void)
       fn_ptr_type = build_pointer_type (fn_type);
       /* Then, build the rest of the argument types.  */
       arg_types = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
-      arg_types = tree_cons (NULL_TREE, ptr_type_node, arg_types);
-      arg_types = tree_cons (NULL_TREE, fn_ptr_type, arg_types);
+      if (use_aeabi_atexit)
+	{
+	  arg_types = tree_cons (NULL_TREE, fn_ptr_type, arg_types);
+	  arg_types = tree_cons (NULL_TREE, ptr_type_node, arg_types);
+	}
+      else
+	{
+	  arg_types = tree_cons (NULL_TREE, ptr_type_node, arg_types);
+	  arg_types = tree_cons (NULL_TREE, fn_ptr_type, arg_types);
+	}
       /* And the final __cxa_atexit type.  */
       fn_type = build_function_type (integer_type_node, arg_types);
       fn_ptr_type = build_pointer_type (fn_type);
-      name = "__cxa_atexit";
+      if (use_aeabi_atexit)
+	name = "__aeabi_atexit";
+      else
+	name = "__cxa_atexit";
     }
   else
     {
@@ -5184,8 +5197,16 @@ register_dtor_fn (tree decl)
       args = tree_cons (NULL_TREE,
 			build_unary_op (ADDR_EXPR, get_dso_handle_node (), 0),
 			NULL_TREE);
-      args = tree_cons (NULL_TREE, null_pointer_node, args);
-      args = tree_cons (NULL_TREE, cleanup, args);
+      if (targetm.cxx.use_aeabi_atexit ())
+	{
+	  args = tree_cons (NULL_TREE, cleanup, args);
+	  args = tree_cons (NULL_TREE, null_pointer_node, args);
+	}
+      else
+	{
+	  args = tree_cons (NULL_TREE, null_pointer_node, args);
+	  args = tree_cons (NULL_TREE, cleanup, args);
+	}
     }
   else
     args = tree_cons (NULL_TREE, cleanup, NULL_TREE);
