@@ -1,5 +1,9 @@
 2005-04-25  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
+	* config.gcc (avr-*-*): Remove redundant "case".
+
+2005-04-25  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
 	PR target/17822
 	* config/avr/t-avr (AR_FOR_TARGET,RANLIB_FOR_TARGET): Remove.
 
