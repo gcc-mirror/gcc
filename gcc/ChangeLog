@@ -1,3 +1,7 @@
+2005-04-24  Devang Patel  <dpatel@apple.com>
+
+	*  config/rs6000/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): New.
+	
 2005-04-24  Ian Lance Taylor  <ian@airs.com>
 
 	* c-semantics.c (build_stmt): Remove test of specific tree codes
