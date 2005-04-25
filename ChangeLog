@@ -1,3 +1,8 @@
+2005-04-25  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* MAINTAINERS: Add self as Blackfin maintainer
+	* config.sub: Import from master version.
+
 2005-04-20  Release Manager
 
 	* GCC 4.0.0 released.
