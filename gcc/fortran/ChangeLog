@@ -1,3 +1,13 @@
+2005-04-25  Paul Brook  <paul@codesourcery.com>
+	Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/20879
+	* check.c (gfc_check_ichar_iachar): New function.
+	* instinsic.h (gfc_check_ichar_iachar): Add prototype.
+	* intrinsic.c (add_functions): Use it.
+	* primary.c (match_varspec, gfc_match_rvalue): Clear incorrect
+	character expression lengths.
+
 2005-04-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/20059

@@ -1,3 +1,9 @@
+2005-04-25  Paul Brook  <paul@codesourcery.com>
+	Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/20879
+	* gfortran.dg/ichar_1.f90: New file.
+
 2005-04-24  Per Bothner  <per@bothner.com>
 	    Devang Patel  <dpatel@apple.com>
 
