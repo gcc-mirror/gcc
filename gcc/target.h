@@ -603,6 +603,9 @@ struct gcc_target
        class data for classes whose virtual table will be emitted in
        only one translation unit will not be COMDAT.  */
     bool (*class_data_always_comdat) (void);
+    /* Returns true if __aeabi_atexit should be used to register static
+       destructors.  */
+    bool (*use_aeabi_atexit) (void);
   } cxx;
 
   /* Leave the boolean fields at the end.  */

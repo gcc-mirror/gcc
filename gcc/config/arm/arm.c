@@ -174,6 +174,7 @@ static bool arm_cxx_cdtor_returns_this (void);
 static bool arm_cxx_key_method_may_be_inline (void);
 static void arm_cxx_determine_class_data_visibility (tree);
 static bool arm_cxx_class_data_always_comdat (void);
+static bool arm_cxx_use_aeabi_atexit (void);
 static void arm_init_libfuncs (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 
@@ -307,6 +308,9 @@ static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 
 #undef TARGET_CXX_KEY_METHOD_MAY_BE_INLINE
 #define TARGET_CXX_KEY_METHOD_MAY_BE_INLINE arm_cxx_key_method_may_be_inline
+
+#undef TARGET_CXX_USE_AEABI_ATEXIT
+#define TARGET_CXX_USE_AEABI_ATEXIT arm_cxx_use_aeabi_atexit
 
 #undef TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY
 #define TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY \
@@ -14353,6 +14357,17 @@ arm_cxx_class_data_always_comdat (void)
      vague linkage if the class has no key function.  */
   return !TARGET_AAPCS_BASED;
 }
+
+
+/* The EABI says __aeabi_atexit should be used to register static
+   destructors.  */
+
+static bool
+arm_cxx_use_aeabi_atexit (void)
+{
+  return TARGET_AAPCS_BASED;
+}
+
 
 void
 arm_set_return_address (rtx source, rtx scratch)

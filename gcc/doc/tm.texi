@@ -8735,6 +8735,12 @@ classes whose virtual table will be emitted in only one translation
 unit will not be COMDAT.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CXX_USE_AEABI_ATEXIT (void)
+This hook returns true if @code{__aeabi_atexit} (as defined by the ARM EABI)
+should be used to register static destructors when @option{-fuse-cxa-atexit}
+is in effect.  The default is to return false to use @code{__cxa_atexit}.
+@end deftypefn
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous
