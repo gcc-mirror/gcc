@@ -1652,11 +1652,15 @@ dbxout_type (tree type, int full)
   tree tem;
   tree main_variant;
   static int anonymous_type_number = 0;
+  bool vector_type = false;
 
   if (TREE_CODE (type) == VECTOR_TYPE)
-    /* The frontend feeds us a representation for the vector as a struct
-       containing an array.  Pull out the array type.  */
-    type = TREE_TYPE (TYPE_FIELDS (TYPE_DEBUG_REPRESENTATION_TYPE (type)));
+    {
+      /* The frontend feeds us a representation for the vector as a struct
+	 containing an array.  Pull out the array type.  */
+      type = TREE_TYPE (TYPE_FIELDS (TYPE_DEBUG_REPRESENTATION_TYPE (type)));
+      vector_type = true;
+    }
 
   /* If there was an input error and we don't really have a type,
      avoid crashing and write something that is at least valid
@@ -1989,6 +1993,12 @@ dbxout_type (tree type, int full)
 	  stabstr_S (";@S;S");
 	  dbxout_type (TYPE_DOMAIN (type), 0);
 	  break;
+	}
+
+      if (vector_type)
+	{
+	  have_used_extensions = 1;
+	  stabstr_S ("@V;");
 	}
 
       /* Output "a" followed by a range type definition
