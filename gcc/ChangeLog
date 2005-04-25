@@ -1,3 +1,7 @@
+2005-04-25  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config.gcc (avr-*-*): Remove redundant "case".
+
 2005-04-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-vect-analyze.c (vect_mark_relevant): Take
