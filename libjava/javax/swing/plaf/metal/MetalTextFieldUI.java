@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.util.HashMap;
+
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicTextFieldUI;
@@ -46,9 +48,8 @@ public class MetalTextFieldUI
   extends BasicTextFieldUI
 {
 
-  // FIXME: maybe replace by a Map of instances when this becomes stateful
-  /** The shared UI instance for MetalTextFieldUIs */
-  private static MetalTextFieldUI instance = null;
+  /** The UI instances for MetalTextFieldUIs */
+  private static HashMap instances = null;
 
   /**
    * Constructs a new instance of MetalTextFieldUI.
@@ -67,8 +68,19 @@ public class MetalTextFieldUI
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalTextFieldUI();
+    if (instances == null)
+      instances = new HashMap();
+
+    Object o = instances.get(component);
+    MetalTextFieldUI instance;
+    if (o == null)
+      {
+	instance = new MetalTextFieldUI();
+	instances.put(component, instance);
+      }
+    else
+      instance = (MetalTextFieldUI) o;
+
     return instance;
   }
 }

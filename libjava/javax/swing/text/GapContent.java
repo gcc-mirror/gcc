@@ -44,6 +44,16 @@ import java.io.Serializable;
 // lets just use a stringbuffer instead.
 import javax.swing.undo.UndoableEdit;
 
+/**
+ * This implementation of {@link AbstractDocument.Content} uses a gapped
+ * buffer. This takes advantage of the fact that text area content is
+ * mostly inserted sequentially. The buffer is a char array that maintains
+ * a gap at the current insertion point. If characters a inserted at
+ * gap boundaries, the cost is minimal (simple array access). The array only
+ * has to be shifted around when the insertion point moves (then the gap also
+ * moves and one array copy is necessary) or when the gap is filled up and
+ * the buffer has to be enlarged.
+ */
 public class GapContent
   implements AbstractDocument.Content, Serializable
 {
@@ -51,16 +61,34 @@ public class GapContent
     
   StringBuffer buf = new StringBuffer();
 
+  /**
+   * Creates a new GapContent object.
+   */
   public GapContent()
   {
     this(10);
   }
 
+  /**
+   * Creates a new GapContent object with a specified initial size.
+   *
+   * @param size the initial size of the buffer
+   */
   public GapContent(int size)
   {
     buf.append("\n");
   }
 
+  /**
+   * Creates and returns a mark at the specified position.
+   *
+   * @param offset the position at which to create the mark
+   *
+   * @return the create Position object for the mark
+   *
+   * @throws BadLocationException if the offset is not a valid position in
+   *         the buffer
+   */
   public Position createPosition(final int offset) throws BadLocationException
   {
     return new Position()
@@ -74,11 +102,28 @@ public class GapContent
       };
   }
 
+  /**
+   * Returns the length of the content.
+   *
+   * @return the length of the content
+   */
   public int length()
   {
     return buf.length();
   }
 
+  /**
+   * Inserts a string at the specified position.
+   *
+   * @param where the position where the string is inserted
+   * @param str the string that is to be inserted
+   *
+   * @return an UndoableEdit object (currently not supported, so
+   *         <code>null</code> is returned)
+   *
+   * @throws BadLocationException if <code>where</code> is not a valid location
+   *         in the buffer
+   */
   public UndoableEdit insertString(int where, String str)
     throws BadLocationException
   {
@@ -86,6 +131,18 @@ public class GapContent
     return null;
   }
 
+  /**
+   * Removes a piece of content at th specified position.
+   *
+   * @param where the position where the content is to be removed
+   * @param nitems number of characters to be removed
+   *
+   * @return an UndoableEdit object (currently not supported, so
+   *         <code>null</code> is returned)
+   *
+   * @throws BadLocationException if <code>where</code> is not a valid location
+   *         in the buffer
+   */
   public UndoableEdit remove(int where, int nitems)
     throws BadLocationException
   {
@@ -93,11 +150,30 @@ public class GapContent
     return null;
   }
 
+  /**
+   * Returns a piece of content as String.
+   *
+   * @param where the start location of the fragment
+   * @param len the length of the fragment
+   *
+   * @throws BadLocationException if <code>where</code> or
+   *         <code>where + len</code> are no valid locations in the buffer
+   */
   public String getString(int where, int len) throws BadLocationException
   {
     return buf.substring(where, where+len);
   }
 
+  /**
+   * Fetches a piece of content and stores it in a {@link Segment} object.
+   *
+   * @param where the start location of the fragment
+   * @param len the length of the fragment
+   * @param txt the Segment object to store the fragment in
+   *
+   * @throws BadLocationException if <code>where</code> or
+   *         <code>where + len</code> are no valid locations in the buffer
+   */
   public void getChars(int where, int len, Segment txt)
     throws BadLocationException
   {

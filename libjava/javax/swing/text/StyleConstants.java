@@ -1,5 +1,5 @@
 /* StyleConstants.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -83,8 +83,10 @@ public class StyleConstants
   public static final Object ResolveAttribute = new StyleConstants("resolver");
 
   String keyname;
-  
-  private StyleConstants(String k) 
+
+  // Package-private to avoid accessor constructor for use by
+  // subclasses.
+  StyleConstants(String k) 
   {
     keyname = k;
   }
