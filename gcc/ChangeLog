@@ -1,3 +1,13 @@
+2005-04-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree-ssa-alias.c (fieldoff_t): Remove.
+	(fieldoff_s): typedef the structure itself.  Create a vector of
+	objects.
+	(push_fields_onto_fieldstack): Return count of fields pushed.
+	Remove peeling of first field.  Adjust.
+	(fieldoff_compare): Adjust.
+	(create_overlap_variables_for): Adjust.
+
 2005-04-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi (Blackfin Options): Avoid empty @opindex line.
