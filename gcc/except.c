@@ -74,6 +74,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "cgraph.h"
+#include "diagnostic.h"
 
 /* Provide defaults for stuff that may not be defined when using
    sjlj exceptions.  */
@@ -3435,4 +3436,136 @@ output_function_exception_table (void)
   current_function_section (current_function_decl);
 }
 
+/* Dump EH information to OUT.  */
+void 
+dump_eh_tree (FILE *out, struct function *fun)
+{
+  struct eh_region *i;
+  int depth = 0;
+  static const char * const type_name[] = {"unknown", "cleanup", "try", "catch",
+					   "allowed_exceptions", "must_not_throw",
+					   "throw", "fixup"};
+
+  i = fun->eh->region_tree;
+  if (! i)
+    return;
+
+  fprintf (out, "Eh tree:\n");
+  while (1)
+    {
+      fprintf (out, "  %*s %i %s", depth * 2, "",
+	       i->region_number, type_name [(int)i->type]);
+      if (i->tree_label)
+	{
+          fprintf (out, " tree_label:");
+	  print_generic_expr (out, i->tree_label, 0);
+	}
+      fprintf (out, "\n");
+      /* If there are sub-regions, process them.  */
+      if (i->inner)
+	i = i->inner, depth++;
+      /* If there are peers, process them.  */
+      else if (i->next_peer)
+	i = i->next_peer;
+      /* Otherwise, step back up the tree to the next peer.  */
+      else
+	{
+	  do {
+	    i = i->outer;
+	    depth--;
+	    if (i == NULL)
+	      return;
+	  } while (i->next_peer == NULL);
+	  i = i->next_peer;
+	}
+    }
+}
+
+/* Verify some basic invariants on EH datastructures.  Could be extended to
+   catch more.  */
+void 
+verify_eh_tree (struct function *fun)
+{
+  struct eh_region *i, *outer = NULL;
+  bool err = false;
+  int nvisited = 0;
+  int count = 0;
+  int j;
+  int depth = 0;
+
+  i = fun->eh->region_tree;
+  if (! i)
+    return;
+  for (j = fun->eh->last_region_number; j > 0; --j)
+    if (fun->eh->region_array[j])
+      {
+	count++;
+	if (fun->eh->region_array[j]->region_number != j)
+	  {
+	    error ("region_array is corrupted for region %i", i->region_number);
+	    err = true;
+	  }
+      }
+
+  while (1)
+    {
+      if (fun->eh->region_array[i->region_number] != i)
+	{
+	  error ("region_array is corrupted for region %i", i->region_number);
+	  err = true;
+	}
+      if (i->outer != outer)
+	{
+	  error ("outer block of region %i is wrong", i->region_number);
+	  err = true;
+	}
+      if (i->may_contain_throw && outer && !outer->may_contain_throw)
+	{
+	  error ("region %i may contain throw and is contained in region that may not",
+		 i->region_number);
+	  err = true;
+	}
+      if (depth < 0)
+	{
+	  error ("negative nesting depth of region %i", i->region_number);
+	  err = true;
+	}
+      nvisited ++;
+      /* If there are sub-regions, process them.  */
+      if (i->inner)
+	outer = i, i = i->inner, depth++;
+      /* If there are peers, process them.  */
+      else if (i->next_peer)
+	i = i->next_peer;
+      /* Otherwise, step back up the tree to the next peer.  */
+      else
+	{
+	  do {
+	    i = i->outer;
+	    depth--;
+	    if (i == NULL)
+	      {
+		if (depth != -1)
+		  {
+		    error ("Tree list ends on depth %i", depth + 1);
+		    err = true;
+		  }
+		if (count != nvisited)
+		  {
+		    error ("array does not match the region tree");
+		    err = true;
+		  }
+		if (err)
+		  {
+		    dump_eh_tree (stderr, fun);
+		    internal_error ("verify_eh_tree failed.");
+		  }
+	        return;
+	      }
+	    outer = i->outer;
+	  } while (i->next_peer == NULL);
+	  i = i->next_peer;
+	}
+    }
+}
 #include "gt-except.h"

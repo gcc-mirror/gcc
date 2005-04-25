@@ -554,6 +554,8 @@ make_exit_edges (basic_block bb)
   gcc_assert (last);
   switch (TREE_CODE (last))
     {
+    case RESX_EXPR:
+      break;
     case CALL_EXPR:
       /* If this function receives a nonlocal goto, then we need to
 	 make edges from this call site to all the nonlocal goto
@@ -3761,6 +3763,8 @@ tree_verify_flow_info (void)
 
       stmt = bsi_stmt (bsi);
 
+      err |= verify_eh_edges (stmt);
+
       if (is_ctrl_stmt (stmt))
 	{
 	  FOR_EACH_EDGE (e, ei, bb->succs)
@@ -4729,6 +4733,7 @@ tree_duplicate_bb (basic_block bb)
       def_operand_p def_p;
       ssa_op_iter op_iter;
       tree stmt, copy;
+      int region;
 
       stmt = bsi_stmt (bsi);
       if (TREE_CODE (stmt) == LABEL_EXPR)
@@ -4739,6 +4744,9 @@ tree_duplicate_bb (basic_block bb)
       copy = unshare_expr (stmt);
       bsi_insert_after (&bsi_tgt, copy, BSI_NEW_STMT);
       copy_virtual_operands (copy, stmt);
+      region = lookup_stmt_eh_region (stmt);
+      if (region >= 0)
+	add_stmt_to_eh_region (copy, region);
 
       /* Create new names for all the definitions created by COPY and
 	 add replacement mappings for each new name.  */
@@ -4947,6 +4955,8 @@ dump_function_to_file (tree fn, FILE *file, int flags)
     }
   fprintf (file, ")\n");
 
+  if (flags & TDF_DETAILS)
+    dump_eh_tree (file, DECL_STRUCT_FUNCTION (fn));
   if (flags & TDF_RAW)
     {
       dump_node (fn, TDF_SLIM | flags, file);

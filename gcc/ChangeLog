@@ -1,3 +1,16 @@
+2005-04-25  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.c (tree_duplicate_bb): Duplicate EH region too.
+
+	* except.c: Include diagnostic.h
+	(dump_eh_tree, verify_eh_tree): New functions.
+	* except.h (verify_eh_tree, dump_eh_tree, verify_eh_edges): Declare.
+	* tree-cfg.c (tree_verify_flow_info): verify eh edges.
+	(dump_function_to_file): dump eh tree.
+	* tree-eh.c (mark_eh_edge): New function.
+	(mark_eh_edge_found_error): New static variable.
+	(verify_eh_edges): New function.
+
 2005-04-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree-ssa-alias.c (fieldoff_t): Remove.
