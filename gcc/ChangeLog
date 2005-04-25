@@ -1,3 +1,15 @@
+2005-04-25  Ian Lance Taylor  <ian@airs.com>
+
+	* c-common.def (EXPR_STMT): Remove, moved to C++ frontend.
+	* c-common.h (EXPR_STMT_EXPR): Don't define.
+	(c_common_stmt_codes): Don't define.
+	* c-dump.c (c_dump_tree): Remove EXPR_STMT case.
+	* c-gimplify.c (gimplify_expr_stmt): Remove.
+	(c_gimplify_expr): Remove EXPR_STMT case.
+	* c-objc-common.c (c_objc_common_init): Remove stmt_codes and call
+	to INIT_STATEMENT_CODES.
+	* c-pretty-print.c (pp_c_statement): Just call dump_generic_node.
+
 2005-04-25  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.c (tree_duplicate_bb): Duplicate EH region too.

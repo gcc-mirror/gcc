@@ -852,7 +852,7 @@ enum cplus_tree_code {
    EH_SPEC_BLOCK,	USING_STMT,	TAG_DEFN,	\
    IF_STMT,		CLEANUP_STMT,	FOR_STMT,	\
    WHILE_STMT,		DO_STMT,	BREAK_STMT,	\
-   CONTINUE_STMT,	SWITCH_STMT
+   CONTINUE_STMT,	SWITCH_STMT,	EXPR_STMT
 enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Macros to make error reporting functions' lives easier.  */
@@ -2948,6 +2948,10 @@ struct lang_decl GTY(())
 
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)    TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
+
+/* EXPR_STMT accessor. This gives the expression associated with an
+   expression statement.  */
+#define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
 
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {

@@ -173,56 +173,11 @@ c_build_bind_expr (tree block, tree body)
   return bind;
 }
 
-/*  Gimplify an EXPR_STMT node.
-
-    STMT is the statement node.
-
-    PRE_P points to the list where side effects that must happen before
-	STMT should be stored.
-
-    POST_P points to the list where side effects that must happen after
-	STMT should be stored.  */
-
-static enum gimplify_status
-gimplify_expr_stmt (tree *stmt_p)
-{
-  tree stmt = EXPR_STMT_EXPR (*stmt_p);
-
-  if (stmt == error_mark_node)
-    stmt = NULL;
-
-  /* Gimplification of a statement expression will nullify the
-     statement if all its side effects are moved to *PRE_P and *POST_P.
-
-     In this case we will not want to emit the gimplified statement.
-     However, we may still want to emit a warning, so we do that before
-     gimplification.  */
-  if (stmt && (extra_warnings || warn_unused_value))
-    {
-      if (!TREE_SIDE_EFFECTS (stmt))
-	{
-	  if (!IS_EMPTY_STMT (stmt)
-	      && !VOID_TYPE_P (TREE_TYPE (stmt))
-	      && !TREE_NO_WARNING (stmt))
-	    warning (0, "statement with no effect");
-	}
-      else if (warn_unused_value)
-	warn_if_unused_value (stmt, input_location);
-    }
-
-  if (stmt == NULL_TREE)
-    stmt = alloc_stmt_list ();
-
-  *stmt_p = stmt;
-
-  return GS_OK;
-}
-
 /* Gimplification of expression trees.  */
 
-/* Gimplify a C99 compound literal expression.  This just means adding the
-   DECL_EXPR before the current EXPR_STMT and using its anonymous decl
-   instead.  */
+/* Gimplify a C99 compound literal expression.  This just means adding
+   the DECL_EXPR before the current statement and using its anonymous
+   decl instead.  */
 
 static enum gimplify_status
 gimplify_compound_literal_expr (tree *expr_p, tree *pre_p)
@@ -265,9 +220,6 @@ c_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
       
     case COMPOUND_LITERAL_EXPR:
       return gimplify_compound_literal_expr (expr_p, pre_p);
-
-    case EXPR_STMT:
-      return gimplify_expr_stmt (expr_p);
 
     default:
       return GS_UNHANDLED;

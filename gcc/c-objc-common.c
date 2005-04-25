@@ -124,12 +124,6 @@ c_warn_unused_global_decl (tree decl)
 bool
 c_objc_common_init (void)
 {
-  static const enum tree_code stmt_codes[] = {
-    c_common_stmt_codes
-  };
-
-  INIT_STATEMENT_CODES (stmt_codes);
-
   c_init_decl_processing ();
 
   if (c_common_init () == false)

@@ -459,6 +459,11 @@ cp_dump_tree (void* dump_info, tree t)
       dump_child ("stmt", STMT_EXPR_STMT (t));
       break;
 
+    case EXPR_STMT:
+      dump_stmt (di, t);
+      dump_child ("expr", EXPR_STMT_EXPR (t));
+      break;
+
     default:
       break;
     }
