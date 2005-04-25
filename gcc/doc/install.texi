@@ -2207,6 +2207,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#ix86-x-sco3.2v5,,i?86-*-sco3.2v5*}
 @item
+@uref{#ix86-x-solaris2.10,,i?86-*-solaris2.10}
+@item
 @uref{#ix86-x-udk,,i?86-*-udk}
 @item
 @uref{#ia64-x-linux,,ia64-*-linux}
@@ -2933,6 +2935,18 @@ GNU utilities) can be found in Support Level Supplement OSS658A, the
 ``GNU Development Tools'' package.  See the SCO web and ftp sites for details.
 That package also contains the currently ``officially supported'' version of
 GCC, version 2.95.3.  It is useful for bootstrapping this version.
+
+@html
+<hr />
+@end html
+@heading @anchor{ix86-x-solaris2.10}i?86-*-solaris2.10
+Use this for Solaris 10 or later on x86 and x86-64 systems.  This
+configuration is supported by GCC 4.0 and later versions only.
+
+It is recommended that you configure GCC to use the GNU assembler in
+@file{/usr/sfw/bin/gas} but the Sun linker, using the options
+@option{--with-gnu-as --with-as=/usr/sfw/bin/gas --without-gnu-ld
+--with-ld=/usr/ccs/bin/ld}.
 
 @html
 <hr />
