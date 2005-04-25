@@ -63,6 +63,7 @@ try gfc_check_iand (gfc_expr *, gfc_expr *);
 try gfc_check_ibclr (gfc_expr *, gfc_expr *);
 try gfc_check_ibits (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_ibset (gfc_expr *, gfc_expr *);
+try gfc_check_ichar_iachar (gfc_expr *);
 try gfc_check_idnint (gfc_expr *);
 try gfc_check_ieor (gfc_expr *, gfc_expr *);
 try gfc_check_index (gfc_expr *, gfc_expr *, gfc_expr *);
