@@ -1,3 +1,9 @@
+2005-04-25  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21035
+	* include/bits/basic_string.h (compare): Adjust the documentation
+	to match the implementation and the standard.
+
 2005-02-20  Paolo Carlini  <pcarlini@suse.de>
 	    Jon Grimm  <jgrimm2@us.ibm.com>
 	
