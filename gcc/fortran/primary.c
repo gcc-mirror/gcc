@@ -1516,6 +1516,9 @@ check_substring:
 	  if (primary->expr_type == EXPR_CONSTANT)
 	    primary->expr_type = EXPR_SUBSTRING;
 
+	  if (substring)
+	    primary->ts.cl = NULL;
+
 	  break;
 
 	case MATCH_NO:
@@ -1989,6 +1992,8 @@ gfc_match_rvalue (gfc_expr ** result)
 		}
 
 	      e->ts = sym->ts;
+	      if (e->ref)
+		e->ts.cl = NULL;
 	      m = MATCH_YES;
 	      break;
 	    }

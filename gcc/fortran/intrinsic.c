@@ -1342,7 +1342,7 @@ add_functions (void)
   make_generic ("huge", GFC_ISYM_NONE, GFC_STD_F95);
 
   add_sym_1 ("iachar", 1, 1, BT_INTEGER, di, GFC_STD_F95,
-	     NULL, gfc_simplify_iachar, NULL,
+	     gfc_check_ichar_iachar, gfc_simplify_iachar, NULL,
 	     c, BT_CHARACTER, dc, REQUIRED);
 
   make_generic ("iachar", GFC_ISYM_IACHAR, GFC_STD_F95);
@@ -1384,7 +1384,7 @@ add_functions (void)
   make_generic ("ibset", GFC_ISYM_IBSET, GFC_STD_F95);
 
   add_sym_1 ("ichar", 1, 0, BT_INTEGER, di, GFC_STD_F77,
-	     NULL, gfc_simplify_ichar, gfc_resolve_ichar,
+	     gfc_check_ichar_iachar, gfc_simplify_ichar, gfc_resolve_ichar,
 	     c, BT_CHARACTER, dc, REQUIRED);
 
   make_generic ("ichar", GFC_ISYM_ICHAR, GFC_STD_F77);
