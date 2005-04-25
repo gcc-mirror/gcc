@@ -7279,7 +7279,7 @@ by default.
 Don't generate extra code to prevent speculative loads from occurring.
 
 @item -mlow-64k
-@opindex
+@opindex mlow-64k
 When enabled, the compiler is free to take advantage of the knowledge that
 the entire program fits into the low 64k of memory.
 
