@@ -1723,6 +1723,13 @@ on data in the eight bit data area.  Note the eight bit data area is limited to
 You must use GAS and GLD from GNU binutils version 2.7 or later for
 this attribute to work correctly.
 
+@item exception_handler
+@cindex exception handler functions on the Blackfin processor
+Use this attribute on the Blackfin to indicate that the specified function
+is an exception handler.  The compiler will generate function entry and
+exit sequences suitable for use in an exception handler when this
+attribute is present.
+
 @item far
 @cindex functions which handle memory bank switching
 On 68HC11 and 68HC12 the @code{far} attribute causes the compiler to
@@ -1871,8 +1878,8 @@ that the specified function is an interrupt handler.  The compiler will
 generate function entry and exit sequences suitable for use in an
 interrupt handler when this attribute is present.
 
-Note, interrupt handlers for the m68k, H8/300, H8/300H, H8S, and SH processors
-can be specified via the @code{interrupt_handler} attribute.
+Note, interrupt handlers for the Blackfin, m68k, H8/300, H8/300H, H8S, and
+SH processors can be specified via the @code{interrupt_handler} attribute.
 
 Note, on the AVR, interrupts will be enabled inside the function.
 
@@ -1886,11 +1893,17 @@ void f () __attribute__ ((interrupt ("IRQ")));
 Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF@.
 
 @item interrupt_handler
-@cindex interrupt handler functions on the m68k, H8/300 and SH processors
-Use this attribute on the m68k, H8/300, H8/300H, H8S, and SH to indicate that
-the specified function is an interrupt handler.  The compiler will generate
-function entry and exit sequences suitable for use in an interrupt
-handler when this attribute is present.
+@cindex interrupt handler functions on the Blackfin, m68k, H8/300 and SH processors
+Use this attribute on the Blackfin, m68k, H8/300, H8/300H, H8S, and SH to
+indicate that the specified function is an interrupt handler.  The compiler
+will generate function entry and exit sequences suitable for use in an
+interrupt handler when this attribute is present.
+
+@item kspisusp
+@cindex User stack pointer in interrupts on the Blackfin
+When used together with @code{interrupt_handler}, @code{exception_handler}
+or @code{nmi_handler}, code will be generated to load the stack pointer
+from the USP register in the function prologue.
 
 @item long_call/short_call
 @cindex indirect calls on ARM
@@ -1969,6 +1982,19 @@ On 68HC11 and 68HC12 the @code{near} attribute causes the compiler to
 use the normal calling convention based on @code{jsr} and @code{rts}.
 This attribute can be used to cancel the effect of the @option{-mlong-calls}
 option.
+
+@item nesting
+@cindex Allow nesting in an interrupt handler on the Blackfin processor.
+Use this attribute together with @code{interrupt_handler},
+@code{exception_handler} or @code{nmi_handler} to indicate that the function
+entry code should enable nested interrupts or exceptions.
+
+@item nmi_handler
+@cindex NMI handler functions on the Blackfin processor
+Use this attribute on the Blackfin to indicate that the specified function
+is an NMI handler.  The compiler will generate function entry and
+exit sequences suitable for use in an NMI handler when this
+attribute is present.
 
 @item no_instrument_function
 @cindex @code{no_instrument_function} function attribute
@@ -2114,8 +2140,8 @@ disabled with the linker or the loader if desired, to avoid the
 problem.)
 
 @item saveall
-@cindex save all registers on the H8/300, H8/300H, and H8S
-Use this attribute on the H8/300, H8/300H, and H8S to indicate that
+@cindex save all registers on the Blackfin, H8/300, H8/300H, and H8S
+Use this attribute on the Blackfin, H8/300, H8/300H, and H8S to indicate that
 all registers except the stack pointer should be saved in the prologue
 regardless of whether they are used or not.
 

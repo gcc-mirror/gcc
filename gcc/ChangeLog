@@ -1,3 +1,26 @@
+2005-04-25  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin-modes.def: New file.
+	* config/bfin/bfin-protos.h: New file.
+	* config/bfin/bfin.c: New file.
+	* config/bfin/bfin.h: New file.
+	* config/bfin/bfin.md: New file.
+	* config/bfin/crti.s: New file.
+	* config/bfin/crtn.s: New file.
+	* config/bfin/elf.h: New file.
+	* config/bfin/lib1funcs.asm: New file.
+	* config/bfin/predicates.md: New file.
+	* config/bfin/t-bfin: New file.
+	* config/bfin/t-bfin-elf: New file.
+	* doc/extend.texi (exception_handler, kspisusp, nesting, nmi_handler):
+	Document new attributes.
+	(interrupt, interrupt_handler, saveall): Update documentation for
+	these attributes.
+	* doc/install.texi (Specific): Add entry for the Blackfin.
+	* doc/invoke.texi (Blackfin Options): New section.
+	* doc/md.texi (Blackfin family): New section to document constraints.
+	* config.gcc: Add bfin*-* and bfin*-elf configurations.
+
 2005-04-25  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (avr-*-*): Remove redundant "case".

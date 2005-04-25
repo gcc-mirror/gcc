@@ -1,4 +1,4 @@
-/* The Blackfin code generation auxiliary output file.
+/* The Blackfin code generation auxilary output file.
    Copyright (C) 2005  Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
@@ -67,10 +67,7 @@ const char *byte_reg_names[]   =  BYTE_REGISTER_NAMES;
 
 static int arg_regs[] = FUNCTION_ARG_REGISTERS;
 
-/* The value passed to -mshared-library-id=.  */
-static int bfin_library_id;
-/* Nonzero if -mshared-library-id was given.  */
-static int bfin_lib_id_given;
+const char *bfin_library_id_string;
 
 static void
 bfin_globalize_label (FILE *stream, const char *name)
@@ -323,7 +320,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum,
 
   /* The move for named arguments will be generated automatically by the
      compiler.  We need to generate the move rtx for the unnamed arguments
-     if they are in the first 3 words.  We assume at least 1 named argument
+     if they are in the first 3 words.  We assume atleast 1 named argument
      exists, so we never generate [ARGP] = R0 here.  */
 
   for (i = cum->words + 1; i < max_arg_registers; i++)
@@ -779,8 +776,8 @@ bfin_expand_prologue (void)
     {
       rtx addr;
       
-      if (bfin_lib_id_given)
-	addr = plus_constant (pic_offset_table_rtx, -4 - bfin_library_id * 4);
+      if (bfin_library_id_string)
+	addr = plus_constant (pic_offset_table_rtx, atoi (bfin_library_id_string));
       else
 	addr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 			     gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
@@ -1714,27 +1711,6 @@ secondary_output_reload_class (enum reg_class class, enum machine_mode mode,
   return secondary_input_reload_class (class, mode, x);
 }
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-bfin_handle_option (size_t code, const char *arg, int value)
-{
-  switch (code)
-    {
-    case OPT_mshared_library_id_:
-      if (value > MAX_LIBRARY_ID)
-	error ("-mshared-library-id=%s is not between 0 and %d",
-	       arg, MAX_LIBRARY_ID);
-      else
-	bfin_library_id = value;
-      bfin_lib_id_given = 1;
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 /* Implement the macro OVERRIDE_OPTIONS.  */
 
 void
@@ -1744,8 +1720,19 @@ override_options (void)
     flag_omit_frame_pointer = 1;
 
   /* Library identification */
-  if (bfin_lib_id_given && ! TARGET_ID_SHARED_LIBRARY)
-    error ("-mshared-library-id= specified without -mid-shared-library");
+  if (bfin_library_id_string)
+    {
+      int id;
+
+      if (! TARGET_ID_SHARED_LIBRARY)
+	error ("-mshared-library-id= specified without -mid-shared-library");
+      id = atoi (bfin_library_id_string);
+      if (id < 0 || id > MAX_LIBRARY_ID)
+	error ("-mshared-library-id=%d is not between 0 and %d", id, MAX_LIBRARY_ID);
+
+      /* From now on, bfin_library_id_string will contain the library offset.  */
+      asprintf ((char **)&bfin_library_id_string, "%d", (id * -4) - 4);
+    }
 
   if (TARGET_ID_SHARED_LIBRARY)
     /* ??? Provide a way to use a bigger GOT.  */
@@ -2554,7 +2541,7 @@ handle_int_attribute (tree *node, tree name,
 
   if (TREE_CODE (x) != FUNCTION_TYPE)
     {
-      warning (0, "%qs attribute only applies to functions",
+      warning ("%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -2737,8 +2724,5 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P bfin_vector_mode_supported_p
-
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION bfin_handle_option
 
 struct gcc_target targetm = TARGET_INITIALIZER;

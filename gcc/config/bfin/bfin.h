@@ -50,6 +50,54 @@ extern int target_flags;
 
 #define TARGET_DEFAULT MASK_CSYNC
 
+/* Don't create frame pointers for leaf functions */
+#define TARGET_OMIT_LEAF_FRAME_POINTER (target_flags & MASK_OMIT_LEAF_FRAME_POINTER)
+#define TARGET_LOW_64K                 (target_flags & MASK_LOW_64K)
+#define TARGET_CSYNC		       (target_flags & MASK_CSYNC)
+#define TARGET_ID_SHARED_LIBRARY       (target_flags & MASK_ID_SHARED_LIBRARY)
+
+#define MASK_OMIT_LEAF_FRAME_POINTER 0x00000001
+#define MASK_CSYNC                   0x00000002
+#define MASK_LOW_64K           	     0x00000004
+/* Compile using library ID based shared libraries.
+ * Set a specific ID using the -mshared-library-id=xxx option.
+ */
+#define MASK_ID_SHARED_LIBRARY	     0x00000008
+
+#define TARGET_SWITCHES  {\
+  { "omit-leaf-frame-pointer",	  MASK_OMIT_LEAF_FRAME_POINTER,		\
+    "Omit frame pointer for leaf functions" }, 				\
+  { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER,		\
+    "Use frame pointer for leaf functions"},       			\
+  { "low64k",	                  MASK_LOW_64K,				\
+    "Program is located in low 64K of memory" },			\
+  { "no-low64k",	         -MASK_LOW_64K,				\
+    "Program is not located in low 64K of memory (default)"},		\
+  { "csync",		         MASK_CSYNC,				\
+    "Avoid speculative loads by inserting CSYNC or equivalent"},	\
+  { "no-csync",			-MASK_CSYNC,				\
+    "Do not generate extra code to avoid speculative loads"},		\
+  { "id-shared-library", MASK_ID_SHARED_LIBRARY,			\
+    "Enable ID based shared library" },					\
+  { "no-id-shared-library", -MASK_ID_SHARED_LIBRARY,			\
+    "Disable ID based shared library" },				\
+  { "", TARGET_DEFAULT,							\
+    "default: csync"}}
+
+/* This macro is similar to `TARGET_SWITCHES' but defines names of
+   command options that have values.  Its definition is an
+   initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   fixed part of the option name, and the address of a variable.  The
+   variable, type `char *', is set to the variable part of the given
+   option if the fixed part matches.  The actual option name is made
+   by appending `-m' to the specified name.  */
+#define TARGET_OPTIONS							\
+{ { "shared-library-id=",	&bfin_library_id_string,		\
+    "ID of shared library to build", 0}					\
+}
+
 /* Maximum number of library ids we permit */
 #define MAX_LIBRARY_ID 255
 
@@ -331,7 +379,7 @@ enum reg_class
   BREGS,
   LREGS,
   MREGS,
-  CIRCREGS, /* Circular buffering registers, Ix, Bx, Lx together form.  See Automatic Circular Buffering.  */
+  CIRCREGS, /* Circular buffering registers, Ix, Bx, Lx together form. See Automatic Circlur Buffering */
   DAGREGS,
   EVEN_AREGS,
   ODD_AREGS,

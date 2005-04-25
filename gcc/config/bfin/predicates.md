@@ -125,3 +125,12 @@
 ;; Test for an operator valid in a conditional branch
 (define_predicate "bfin_cbranch_operator"
   (match_code "eq,ne"))
+
+(define_predicate "validreg_operand"
+  (match_operand 0 "register_operand")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  return (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	  || HARD_REGNO_MODE_OK (REGNO (op), mode));
+})
