@@ -300,7 +300,7 @@ AUTOMAKE_OPTIONS = foreign
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 tool_include_dir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include
-tool_include__HEADERS = jni.h jawt.h jawt_md.h jvmpi.h
+tool_include__HEADERS = jni.h jni_md.h jawt.h jawt_md.h jvmpi.h
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

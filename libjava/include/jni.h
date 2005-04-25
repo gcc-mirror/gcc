@@ -1,90 +1,58 @@
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004  Free Software Foundation
+/* jni.h
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005  Free Software Foundation
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
+
 
 /* Note: this file must be compilable by the C compiler (for now,
    assuming GNU C is ok).  This means you must never use `//'
    comments, and all C++-specific code must be conditional on
    __cplusplus.  */
 
-#ifndef __GCJ_JNI_H__
-#define __GCJ_JNI_H__
-
-#include <gcj/libgcj-config.h>
+#ifndef _CLASSPATH_JNI_H
+#define _CLASSPATH_JNI_H
 
 /* We include <stdio.h> for compatibility with Sun's <jni.h>.  */
 #include <stdio.h>
 
 #include <stdarg.h>
-#define _Jv_va_list va_list
 
-#ifdef __GCJ_JNI_IMPL__
+#include "jni_md.h"
 
-/* If __GCJ_JNI_IMPL__ is defined, then we assume that we're building
-   libgcj itself, and we include headers which taint the namespace
-   more than is acceptable for the ordinary JNI user.  */
-#include <gcj/javaprims.h>
-#include <gcj/array.h>
-#include <gnu/gcj/runtime/JNIWeakRef.h>
-
-typedef gnu::gcj::runtime::JNIWeakRef *jweak;
-
-typedef struct _Jv_JNIEnv JNIEnv;
-typedef struct _Jv_JavaVM JavaVM;
-
-#define JNI_TRUE true
-#define JNI_FALSE false
-
-#else /* __GCJ_JNI_IMPL__ */
-
-# ifdef __GNUC__
-
-/* If we're using gcc, we can use a platform-independent scheme to get
-   the right integer types.  FIXME: this is not always correct, for
-   instance on the c4x it will be wrong -- it depends on whether
-   QImode is 8 bits.  */
-typedef int    jbyte  __attribute__((__mode__(__QI__)));
-typedef int    jshort __attribute__((__mode__(__HI__)));
-typedef int    jint   __attribute__((__mode__(__SI__)));
-typedef int    jlong  __attribute__((__mode__(__DI__)));
-typedef int    jboolean __attribute__((__mode__(__QI__)));
-typedef unsigned short jchar __attribute__((__mode__(__HI__)));
-typedef float  jfloat;
-typedef double jdouble;
-typedef jint jsize;
-
-# else /* __GNUC__ */
-
-#  ifdef JV_HAVE_INTTYPES_H
-
-/* If <inttypes.h> is available, we use it.  */
-
-#   include <inttypes.h>
-
-typedef int8_t jbyte;
-typedef int16_t jshort;
-typedef int32_t jint;
-typedef int64_t jlong;
-typedef float jfloat;
-typedef double jdouble;
-typedef jint jsize;
-typedef int8_t jboolean;
-typedef uint16_t jchar;
-
-#  else /* JV_HAVE_INTTYPES_H */
-
-/* For now, we require either gcc or <inttypes.h>.  If we did more
-   work at configure time we could get around this, but right now it
-   doesn't seem worth it.  */
-#   error jni.h not ported to this platform
-
-#  endif /* JV_HAVE_INTTYPES_H */
-
-# endif /* __GNUC__ */
+/* The VM might define jobject and friends.  */
+#ifndef _CLASSPATH_VM_JNI_TYPES_DEFINED
 
 # ifdef __cplusplus
 
@@ -154,11 +122,21 @@ typedef const struct JNIInvokeInterface *JavaVM;
 
 # endif /* __cplusplus */
 
-/* Dummy defines.  */
-typedef void *jfieldID;
-typedef void *jmethodID;
+#endif /* _CLASSPATH_VM_JNI_TYPES_DEFINED */
 
-#endif /* __GCJ_JNI_IMPL__ */
+/* 
+ * Before jni.h is #included within a typical JVM, the source code should 
+ * #define _JNI_VM_INTERNAL_TYPES_DEFINED and provide the real declarations
+ * for 'jobject', 'jfieldID', 'jmethodID' and other implementation types.
+ * If _JNI_VM_INTERNAL_TYPES_DEFINED is not defined, the following 
+ * declares the old versions of the types.
+ */
+#ifndef _CLASSPATH_VM_INTERNAL_TYPES_DEFINED
+struct _jfieldID;
+struct _jmethodID;
+typedef struct _jfieldID *jfieldID;
+typedef struct _jmethodID *jmethodID;
+#endif 
 
 /* Version numbers.  */
 #define JNI_VERSION_1_1 0x00010001
@@ -171,39 +149,11 @@ typedef void *jmethodID;
 
 /* Error codes */
 #define JNI_OK            0
-#define JNI_ERR          -1
-#define JNI_EDETACHED    -2
-#define JNI_EVERSION     -3
+#define JNI_ERR          (-1)
+#define JNI_EDETACHED    (-2)
+#define JNI_EVERSION     (-3)
 
-/* Linkage and calling conventions. */
-#if defined (_WIN32) || defined (__WIN32__) || defined (WIN32)
 
-#define JNIIMPORT        __declspec(dllimport)
-#define JNIEXPORT        __declspec(dllexport)
-
-#define JNICALL          __stdcall
-
-/* These defines apply to symbols in libgcj */
-#ifdef __GCJ_DLL__
-# ifdef __GCJ_JNI_IMPL__
-#  define __GCJ_JNIIMPEXP__ JNIEXPORT
-# else
-#  define __GCJ_JNIIMPEXP__ JNIIMPORT
-# endif /* ! __GCJ_JNI_IMPL__ */
-#else /* ! __GCJ_DLL__ */
-# define __GCJ_JNIIMPEXP__
-#endif /*  __GCJ_DLL__ */
-
-#else /* !( _WIN32 || __WIN32__ || WIN32) */
-
-#define JNIIMPORT
-#define JNIEXPORT
-#define JNICALL
-#define __GCJ_JNIIMPEXP__
-
-#endif /* !( _WIN32 || __WIN32__ || WIN32) */
-
- 
 #ifdef __cplusplus
 extern "C"
 {
@@ -214,16 +164,22 @@ extern "C"
 extern JNIEXPORT jint JNICALL JNI_OnLoad (JavaVM *, void *);
 extern JNIEXPORT void JNICALL JNI_OnUnload (JavaVM *, void *);
 
+/* This can be defined as JNIIMPORT or JNIEXPORT by the md file,
+   depending on whether this is the implementation or a user.  */
+#ifndef _CLASSPATH_JNIIMPEXP
+#define _CLASSPATH_JNIIMPEXP JNIIMPORT
+#endif
+
 /* These functions are called by user code to start using the
    invocation API.  */
-extern __GCJ_JNIIMPEXP__ jint JNICALL
+extern _CLASSPATH_JNIIMPEXP jint JNICALL
 JNI_GetDefaultJavaVMInitArgs (void *);
 
-extern __GCJ_JNIIMPEXP__ jint JNICALL
+extern _CLASSPATH_JNIIMPEXP jint JNICALL
 JNI_CreateJavaVM (JavaVM **, void **, void *);
 
-extern __GCJ_JNIIMPEXP__ jint JNICALL
-JNI_GetCreatedJavaVMs(JavaVM **, jsize, jsize *);
+extern _CLASSPATH_JNIIMPEXP jint JNICALL
+JNI_GetCreatedJavaVMs (JavaVM **, jsize, jsize *);
 
 #ifdef __cplusplus
 }
@@ -298,7 +254,7 @@ struct JNINativeInterface
   jobject (JNICALL *NewObject)			   (JNIEnv *, jclass, 
                                                     jmethodID, ...);
   jobject (JNICALL *NewObjectV)			   (JNIEnv *, jclass, 
-                                                    jmethodID, _Jv_va_list);
+                                                    jmethodID, va_list);
   jobject (JNICALL *NewObjectA)			   (JNIEnv *, jclass, 
                                                     jmethodID, jvalue *);
 
@@ -309,114 +265,114 @@ struct JNINativeInterface
 
   jobject (JNICALL *CallObjectMethod)	   (JNIEnv *, jobject, jmethodID, ...);
   jobject (JNICALL *CallObjectMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jobject (JNICALL *CallObjectMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   jboolean (JNICALL *CallBooleanMethod)	   (JNIEnv *, jobject, jmethodID,
                                             ...);
   jboolean (JNICALL *CallBooleanMethodV)   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jboolean (JNICALL *CallBooleanMethodA)   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   jbyte (JNICALL *CallByteMethod)   (JNIEnv *, jobject, jmethodID, ...);
   jbyte (JNICALL *CallByteMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jbyte (JNICALL *CallByteMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   jchar (JNICALL *CallCharMethod)	   (JNIEnv *, jobject, jmethodID, ...);
   jchar (JNICALL *CallCharMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jchar (JNICALL *CallCharMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   jshort (JNICALL *CallShortMethod)	   (JNIEnv *, jobject, jmethodID, ...);
   jshort (JNICALL *CallShortMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jshort (JNICALL *CallShortMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   jint 	(JNICALL *CallIntMethod)	   (JNIEnv *, jobject, jmethodID, ...);
   jint 	(JNICALL *CallIntMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jint 	(JNICALL *CallIntMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   jlong (JNICALL *CallLongMethod)	   (JNIEnv *, jobject, jmethodID, ...);
   jlong (JNICALL *CallLongMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jlong (JNICALL *CallLongMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   jfloat (JNICALL *CallFloatMethod)	   (JNIEnv *, jobject, jmethodID, ...);
   jfloat (JNICALL *CallFloatMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jfloat (JNICALL *CallFloatMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   jdouble (JNICALL *CallDoubleMethod)	   (JNIEnv *, jobject, jmethodID, ...);
   jdouble (JNICALL *CallDoubleMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   jdouble (JNICALL *CallDoubleMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
   void  (JNICALL *CallVoidMethod)	   (JNIEnv *, jobject, jmethodID, ...);
   void  (JNICALL *CallVoidMethodV)	   (JNIEnv *, jobject, jmethodID,
-                                            _Jv_va_list);
+                                            va_list);
   void  (JNICALL *CallVoidMethodA)	   (JNIEnv *, jobject, jmethodID,
                                             jvalue *);
 
   jobject   (JNICALL *CallNonvirtualObjectMethod)  (JNIEnv *, jobject, jclass,
                                                     jmethodID, ...);
   jobject   (JNICALL *CallNonvirtualObjectMethodV) (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   jobject   (JNICALL *CallNonvirtualObjectMethodA) (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
   jboolean  (JNICALL *CallNonvirtualBooleanMethod) (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   jboolean  (JNICALL *CallNonvirtualBooleanMethodV) (JNIEnv *, jobject, jclass,
-					             jmethodID, _Jv_va_list);
+					             jmethodID, va_list);
   jboolean  (JNICALL *CallNonvirtualBooleanMethodA) (JNIEnv *, jobject, jclass,
 					             jmethodID, jvalue *);
   jbyte     (JNICALL *CallNonvirtualByteMethod)	   (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   jbyte     (JNICALL *CallNonvirtualByteMethodV)   (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   jbyte     (JNICALL *CallNonvirtualByteMethodA)   (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
   jchar     (JNICALL *CallNonvirtualCharMethod)	   (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   jchar     (JNICALL *CallNonvirtualCharMethodV)   (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   jchar     (JNICALL *CallNonvirtualCharMethodA)   (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
   jshort    (JNICALL *CallNonvirtualShortMethod)   (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   jshort    (JNICALL *CallNonvirtualShortMethodV)  (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   jshort    (JNICALL *CallNonvirtualShortMethodA)  (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
   jint 	    (JNICALL *CallNonvirtualIntMethod)	   (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   jint 	    (JNICALL *CallNonvirtualIntMethodV)	   (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   jint 	    (JNICALL *CallNonvirtualIntMethodA)	   (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
   jlong     (JNICALL *CallNonvirtualLongMethod)	   (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   jlong     (JNICALL *CallNonvirtualLongMethodV)   (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   jlong     (JNICALL *CallNonvirtualLongMethodA)   (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
   jfloat    (JNICALL *CallNonvirtualFloatMethod)   (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   jfloat    (JNICALL *CallNonvirtualFloatMethodV)  (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   jfloat    (JNICALL *CallNonvirtualFloatMethodA)  (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
   jdouble   (JNICALL *CallNonvirtualDoubleMethod)  (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   jdouble   (JNICALL *CallNonvirtualDoubleMethodV) (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   jdouble   (JNICALL *CallNonvirtualDoubleMethodA) (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
   void      (JNICALL *CallNonvirtualVoidMethod)	   (JNIEnv *, jobject, jclass,
 					            jmethodID, ...);
   void      (JNICALL *CallNonvirtualVoidMethodV)   (JNIEnv *, jobject, jclass,
-					            jmethodID, _Jv_va_list);
+					            jmethodID, va_list);
   void      (JNICALL *CallNonvirtualVoidMethodA)   (JNIEnv *, jobject, jclass,
 					            jmethodID, jvalue *);
 
@@ -458,61 +414,61 @@ struct JNINativeInterface
   jobject  (JNICALL *CallStaticObjectMethod)  (JNIEnv *, jclass, jmethodID,
 					       ...);
   jobject  (JNICALL *CallStaticObjectMethodV) (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   jobject  (JNICALL *CallStaticObjectMethodA) (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
   jboolean (JNICALL *CallStaticBooleanMethod) (JNIEnv *, jclass, jmethodID,
 					       ...);
   jboolean (JNICALL *CallStaticBooleanMethodV) (JNIEnv *, jclass, jmethodID,
-					        _Jv_va_list);
+					        va_list);
   jboolean (JNICALL *CallStaticBooleanMethodA) (JNIEnv *, jclass, jmethodID,
 					        jvalue *);
   jbyte	   (JNICALL *CallStaticByteMethod)    (JNIEnv *, jclass, jmethodID,
 					       ...);
   jbyte    (JNICALL *CallStaticByteMethodV)   (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   jbyte    (JNICALL *CallStaticByteMethodA)   (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
   jchar    (JNICALL *CallStaticCharMethod)    (JNIEnv *, jclass, jmethodID,
 					       ...);
   jchar    (JNICALL *CallStaticCharMethodV)   (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   jchar    (JNICALL *CallStaticCharMethodA)   (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
   jshort   (JNICALL *CallStaticShortMethod)   (JNIEnv *, jclass, jmethodID,
 					       ...);
   jshort   (JNICALL *CallStaticShortMethodV)  (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   jshort   (JNICALL *CallStaticShortMethodA)  (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
   jint 	   (JNICALL *CallStaticIntMethod)     (JNIEnv *, jclass, jmethodID,
 					       ...);
   jint 	   (JNICALL *CallStaticIntMethodV)    (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   jint 	   (JNICALL *CallStaticIntMethodA)    (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
   jlong    (JNICALL *CallStaticLongMethod)    (JNIEnv *, jclass, jmethodID,
 					       ...);
   jlong    (JNICALL *CallStaticLongMethodV)   (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   jlong    (JNICALL *CallStaticLongMethodA)   (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
   jfloat   (JNICALL *CallStaticFloatMethod)   (JNIEnv *, jclass, jmethodID,
 					       ...);
   jfloat   (JNICALL *CallStaticFloatMethodV)  (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   jfloat   (JNICALL *CallStaticFloatMethodA)  (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
   jdouble  (JNICALL *CallStaticDoubleMethod)  (JNIEnv *, jclass, jmethodID,
 					       ...);
   jdouble  (JNICALL *CallStaticDoubleMethodV) (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   jdouble  (JNICALL *CallStaticDoubleMethodA) (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
   void     (JNICALL *CallStaticVoidMethod)    (JNIEnv *, jclass, jmethodID,
 					       ...);
   void     (JNICALL *CallStaticVoidMethodV)   (JNIEnv *, jclass, jmethodID,
-					       _Jv_va_list);
+					       va_list);
   void     (JNICALL *CallStaticVoidMethodA)   (JNIEnv *, jclass, jmethodID,
 					       jvalue *);
 
@@ -647,6 +603,7 @@ struct JNINativeInterface
   jint     (JNICALL *MonitorExit)                  (JNIEnv *, jobject);
   jint     (JNICALL *GetJavaVM)                    (JNIEnv *, JavaVM **);
 
+  /* ---- JNI 1.2 functions ---- */
   void	   (JNICALL *GetStringRegion)	           (JNIEnv *, jstring, jsize,
 					            jsize, jchar *);
   void     (JNICALL *GetStringUTFRegion)	   (JNIEnv *, jstring, jsize,
@@ -667,6 +624,7 @@ struct JNINativeInterface
 
   jboolean	(JNICALL *ExceptionCheck)	   (JNIEnv *);
 
+  /* ---- JNI 1.4 functions ---- */
   jobject (JNICALL *NewDirectByteBuffer)           (JNIEnv *, void *, jlong);
   void *  (JNICALL *GetDirectBufferAddress)        (JNIEnv *, jobject);
   jlong   (JNICALL *GetDirectBufferCapacity)       (JNIEnv *, jobject);
@@ -680,24 +638,10 @@ public:
   /* The method table.  */
   struct JNINativeInterface *p;
 
-  /* This is ugly, but we must live with it.  */
-#ifndef __GCJ_JNI_IMPL__
-private:
+#ifdef _CLASSPATH_JNIENV_CONTENTS
+  _CLASSPATH_JNIENV_CONTENTS
 #endif
-  /* The current exception.  */
-  jthrowable ex;
 
-  /* The class of the current native method.  */
-  jclass klass;
-
-  /* The chain of local frames.  */
-  struct _Jv_JNI_LocalFrame *locals;
-
-  /* The bottom-most element of the chain, initialized with the env and
-     reused between non-nesting JNI calls.  */
-  struct _Jv_JNI_LocalFrame *bottom_locals;
-
-public:
   jint GetVersion ()
   { return p->GetVersion (this); }
 
@@ -773,14 +717,14 @@ public:
 
   jobject NewObject (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jobject result = p->NewObjectV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jobject NewObjectV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jobject NewObjectV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->NewObjectV (this, cl0, meth1, val2); }
 
   jobject NewObjectA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -797,14 +741,14 @@ public:
 
   jobject CallObjectMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jobject result = p->CallObjectMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jobject CallObjectMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jobject CallObjectMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallObjectMethodV (this, obj0, meth1, val2); }
 
   jobject CallObjectMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -812,14 +756,14 @@ public:
 
   jboolean CallBooleanMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jboolean result = p->CallBooleanMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jboolean CallBooleanMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jboolean CallBooleanMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallBooleanMethodV (this, obj0, meth1, val2); }
 
   jboolean CallBooleanMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -827,14 +771,14 @@ public:
 
   jbyte CallByteMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jbyte result = p->CallByteMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jbyte CallByteMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jbyte CallByteMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallByteMethodV (this, obj0, meth1, val2); }
 
   jbyte CallByteMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -842,14 +786,14 @@ public:
 
   jchar CallCharMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jchar result = p->CallCharMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jchar CallCharMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jchar CallCharMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallCharMethodV (this, obj0, meth1, val2); }
 
   jchar CallCharMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -857,14 +801,14 @@ public:
 
   jshort CallShortMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jshort result = p->CallShortMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jshort CallShortMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jshort CallShortMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallShortMethodV (this, obj0, meth1, val2); }
 
   jshort CallShortMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -872,14 +816,14 @@ public:
 
   jint CallIntMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jint result = p->CallIntMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jint CallIntMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jint CallIntMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallIntMethodV (this, obj0, meth1, val2); }
 
   jint CallIntMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -887,14 +831,14 @@ public:
 
   jlong CallLongMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jlong result = p->CallLongMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jlong CallLongMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jlong CallLongMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallLongMethodV (this, obj0, meth1, val2); }
 
   jlong CallLongMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -902,14 +846,14 @@ public:
 
   jfloat CallFloatMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jfloat result = p->CallFloatMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jfloat CallFloatMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jfloat CallFloatMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallFloatMethodV (this, obj0, meth1, val2); }
 
   jfloat CallFloatMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -917,14 +861,14 @@ public:
 
   jdouble CallDoubleMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jdouble result = p->CallDoubleMethodV (this, obj0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jdouble CallDoubleMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  jdouble CallDoubleMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { return p->CallDoubleMethodV (this, obj0, meth1, val2); }
 
   jdouble CallDoubleMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -932,13 +876,13 @@ public:
 
   void CallVoidMethod (jobject obj0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     p->CallVoidMethodV (this, obj0, meth1, args);
     va_end (args);
   }
 
-  void CallVoidMethodV (jobject obj0, jmethodID meth1, _Jv_va_list val2)
+  void CallVoidMethodV (jobject obj0, jmethodID meth1, va_list val2)
   { p->CallVoidMethodV (this, obj0, meth1, val2); }
 
   void CallVoidMethodA (jobject obj0, jmethodID meth1, jvalue * val2)
@@ -946,14 +890,14 @@ public:
 
   jobject CallNonvirtualObjectMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jobject result = p->CallNonvirtualObjectMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jobject CallNonvirtualObjectMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jobject CallNonvirtualObjectMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualObjectMethodV (this, obj0, cl1, meth2, val3); }
 
   jobject CallNonvirtualObjectMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -961,14 +905,14 @@ public:
 
   jboolean CallNonvirtualBooleanMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jboolean result = p->CallNonvirtualBooleanMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jboolean CallNonvirtualBooleanMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jboolean CallNonvirtualBooleanMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualBooleanMethodV (this, obj0, cl1, meth2, val3); }
 
   jboolean CallNonvirtualBooleanMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -976,14 +920,14 @@ public:
 
   jbyte CallNonvirtualByteMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jbyte result = p->CallNonvirtualByteMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jbyte CallNonvirtualByteMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jbyte CallNonvirtualByteMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualByteMethodV (this, obj0, cl1, meth2, val3); }
 
   jbyte CallNonvirtualByteMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -991,14 +935,14 @@ public:
 
   jchar CallNonvirtualCharMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jchar result = p->CallNonvirtualCharMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jchar CallNonvirtualCharMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jchar CallNonvirtualCharMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualCharMethodV (this, obj0, cl1, meth2, val3); }
 
   jchar CallNonvirtualCharMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -1006,14 +950,14 @@ public:
 
   jshort CallNonvirtualShortMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jshort result = p->CallNonvirtualShortMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jshort CallNonvirtualShortMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jshort CallNonvirtualShortMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualShortMethodV (this, obj0, cl1, meth2, val3); }
 
   jshort CallNonvirtualShortMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -1021,14 +965,14 @@ public:
 
   jint CallNonvirtualIntMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jint result = p->CallNonvirtualIntMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jint CallNonvirtualIntMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jint CallNonvirtualIntMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualIntMethodV (this, obj0, cl1, meth2, val3); }
 
   jint CallNonvirtualIntMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -1036,14 +980,14 @@ public:
 
   jlong CallNonvirtualLongMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jlong result = p->CallNonvirtualLongMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jlong CallNonvirtualLongMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jlong CallNonvirtualLongMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualLongMethodV (this, obj0, cl1, meth2, val3); }
 
   jlong CallNonvirtualLongMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -1051,14 +995,14 @@ public:
 
   jfloat CallNonvirtualFloatMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jfloat result = p->CallNonvirtualFloatMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jfloat CallNonvirtualFloatMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jfloat CallNonvirtualFloatMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualFloatMethodV (this, obj0, cl1, meth2, val3); }
 
   jfloat CallNonvirtualFloatMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -1066,14 +1010,14 @@ public:
 
   jdouble CallNonvirtualDoubleMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     jdouble result = p->CallNonvirtualDoubleMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
   }
 
-  jdouble CallNonvirtualDoubleMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  jdouble CallNonvirtualDoubleMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { return p->CallNonvirtualDoubleMethodV (this, obj0, cl1, meth2, val3); }
 
   jdouble CallNonvirtualDoubleMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -1081,13 +1025,13 @@ public:
 
   void CallNonvirtualVoidMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth2);
     p->CallNonvirtualVoidMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
   }
 
-  void CallNonvirtualVoidMethodV (jobject obj0, jclass cl1, jmethodID meth2, _Jv_va_list val3)
+  void CallNonvirtualVoidMethodV (jobject obj0, jclass cl1, jmethodID meth2, va_list val3)
   { p->CallNonvirtualVoidMethodV (this, obj0, cl1, meth2, val3); }
 
   void CallNonvirtualVoidMethodA (jobject obj0, jclass cl1, jmethodID meth2, jvalue * val3)
@@ -1155,14 +1099,14 @@ public:
 
   jobject CallStaticObjectMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jobject result = p->CallStaticObjectMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jobject CallStaticObjectMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jobject CallStaticObjectMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticObjectMethodV (this, cl0, meth1, val2); }
 
   jobject CallStaticObjectMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1170,14 +1114,14 @@ public:
 
   jboolean CallStaticBooleanMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jboolean result = p->CallStaticBooleanMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jboolean CallStaticBooleanMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jboolean CallStaticBooleanMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticBooleanMethodV (this, cl0, meth1, val2); }
 
   jboolean CallStaticBooleanMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1185,14 +1129,14 @@ public:
 
   jbyte CallStaticByteMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jbyte result = p->CallStaticByteMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jbyte CallStaticByteMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jbyte CallStaticByteMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticByteMethodV (this, cl0, meth1, val2); }
 
   jbyte CallStaticByteMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1200,14 +1144,14 @@ public:
 
   jchar CallStaticCharMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jchar result = p->CallStaticCharMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jchar CallStaticCharMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jchar CallStaticCharMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticCharMethodV (this, cl0, meth1, val2); }
 
   jchar CallStaticCharMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1215,14 +1159,14 @@ public:
 
   jshort CallStaticShortMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jshort result = p->CallStaticShortMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jshort CallStaticShortMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jshort CallStaticShortMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticShortMethodV (this, cl0, meth1, val2); }
 
   jshort CallStaticShortMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1230,14 +1174,14 @@ public:
 
   jint CallStaticIntMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jint result = p->CallStaticIntMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jint CallStaticIntMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jint CallStaticIntMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticIntMethodV (this, cl0, meth1, val2); }
 
   jint CallStaticIntMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1245,14 +1189,14 @@ public:
 
   jlong CallStaticLongMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jlong result = p->CallStaticLongMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jlong CallStaticLongMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jlong CallStaticLongMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticLongMethodV (this, cl0, meth1, val2); }
 
   jlong CallStaticLongMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1260,14 +1204,14 @@ public:
 
   jfloat CallStaticFloatMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jfloat result = p->CallStaticFloatMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jfloat CallStaticFloatMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jfloat CallStaticFloatMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticFloatMethodV (this, cl0, meth1, val2); }
 
   jfloat CallStaticFloatMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1275,14 +1219,14 @@ public:
 
   jdouble CallStaticDoubleMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     jdouble result = p->CallStaticDoubleMethodV (this, cl0, meth1, args);
     va_end (args);
     return result;
   }
 
-  jdouble CallStaticDoubleMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  jdouble CallStaticDoubleMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { return p->CallStaticDoubleMethodV (this, cl0, meth1, val2); }
 
   jdouble CallStaticDoubleMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1290,13 +1234,13 @@ public:
 
   void CallStaticVoidMethod (jclass cl0, jmethodID meth1, ...)
   {
-    _Jv_va_list args;
+    va_list args;
     va_start (args, meth1);
     p->CallStaticVoidMethodV (this, cl0, meth1, args);
     va_end (args);
   }
 
-  void CallStaticVoidMethodV (jclass cl0, jmethodID meth1, _Jv_va_list val2)
+  void CallStaticVoidMethodV (jclass cl0, jmethodID meth1, va_list val2)
   { p->CallStaticVoidMethodV (this, cl0, meth1, val2); }
 
   void CallStaticVoidMethodA (jclass cl0, jmethodID meth1, jvalue * val2)
@@ -1566,6 +1510,7 @@ public:
   jlong GetDirectBufferCapacity (jobject buf)
   { return p->GetDirectBufferCapacity (this, buf); }
 };
+
 #endif /* __cplusplus */
 
 /*
@@ -1592,10 +1537,6 @@ class _Jv_JavaVM
 public:
   const struct JNIInvokeInterface *functions;
 
-private:
-  /* FIXME: other fields.  */
-
-public:
   jint DestroyJavaVM ()
   { return functions->DestroyJavaVM (this); }
 
@@ -1611,6 +1552,7 @@ public:
   jint AttachCurrentThreadAsDaemon (void **penv, void *args)
   { return functions->AttachCurrentThreadAsDaemon (this, penv, args); }
 };
+
 #endif /* __cplusplus */
 
 typedef struct JavaVMAttachArgs
@@ -1642,4 +1584,16 @@ typedef struct JavaVMInitArgs
   jboolean ignoreUnrecognized;
 } JavaVMInitArgs;
 
-#endif /* __GCJ_JNI_H__ */
+
+
+/* Keep c-font-lock-extra-types in alphabetical order. */
+/* Local Variables: */
+/* c-font-lock-extra-types: ("\\sw+_t" 
+   "JNIEnv" "JNINativeMethod" "JavaVM" "JavaVMOption" "jarray"
+   "jboolean" "jbooleanArray" "jbyte" "jbyteArray" "jchar"  "jcharArray" 
+   "jclass" "jdouble" "jdoubleArray" "jfieldID" "jfloat" "jfloatArray"
+   "jint" "jintArray" "jlong" "jlongArray" "jmethodID" "jobject" "jstring" "jthrowable" 
+   "jvalue" "jweak") */
+/* End: */
+
+#endif /* _CLASSPATH_JNI_H */
