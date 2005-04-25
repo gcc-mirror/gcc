@@ -904,7 +904,7 @@ redirect_branch_edge (edge e, basic_block target)
 	  && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF
 	  && XEXP (XEXP (SET_SRC (tmp), 2), 0) == old_label)
 	{
-	  XEXP (SET_SRC (tmp), 2) = gen_rtx_LABEL_REF (VOIDmode,
+	  XEXP (SET_SRC (tmp), 2) = gen_rtx_LABEL_REF (Pmode,
 						       new_label);
 	  --LABEL_NUSES (old_label);
 	  ++LABEL_NUSES (new_label);

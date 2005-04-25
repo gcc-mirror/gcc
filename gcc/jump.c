@@ -209,7 +209,7 @@ mark_all_labels (rtx f)
 		  {
 		    /* But a LABEL_REF around the REG_LABEL note, so
 		       that we can canonicalize it.  */
-		    rtx label_ref = gen_rtx_LABEL_REF (VOIDmode,
+		    rtx label_ref = gen_rtx_LABEL_REF (Pmode,
 						       XEXP (label_note, 0));
 
 		    mark_jump_label (label_ref, insn, 0);
@@ -1543,7 +1543,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
 	{
 	  rtx n;
 	  if (nlabel)
-	    n = gen_rtx_LABEL_REF (VOIDmode, nlabel);
+	    n = gen_rtx_LABEL_REF (Pmode, nlabel);
 	  else
 	    n = gen_rtx_RETURN (VOIDmode);
 
@@ -1554,7 +1554,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
   else if (code == RETURN && olabel == 0)
     {
       if (nlabel)
-	x = gen_rtx_LABEL_REF (VOIDmode, nlabel);
+	x = gen_rtx_LABEL_REF (Pmode, nlabel);
       else
 	x = gen_rtx_RETURN (VOIDmode);
       if (loc == &PATTERN (insn))

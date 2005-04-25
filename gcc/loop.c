@@ -5074,7 +5074,7 @@ reg_dead_after_loop (const struct loop *loop, rtx reg)
   /* HACK: Must also search the loop fall through exit, create a label_ref
      here which points to the loop->end, and append the loop_number_exit_labels
      list to it.  */
-  label = gen_rtx_LABEL_REF (VOIDmode, loop->end);
+  label = gen_rtx_LABEL_REF (Pmode, loop->end);
   LABEL_NEXTREF (label) = loop->exit_labels;
 
   for (; label; label = LABEL_NEXTREF (label))

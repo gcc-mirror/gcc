@@ -953,8 +953,8 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 	      if (min_align > LABEL_TO_ALIGNMENT (lab))
 		min_align = LABEL_TO_ALIGNMENT (lab);
 	    }
-	  XEXP (pat, 2) = gen_rtx_LABEL_REF (VOIDmode, min_lab);
-	  XEXP (pat, 3) = gen_rtx_LABEL_REF (VOIDmode, max_lab);
+	  XEXP (pat, 2) = gen_rtx_LABEL_REF (Pmode, min_lab);
+	  XEXP (pat, 3) = gen_rtx_LABEL_REF (Pmode, max_lab);
 	  insn_shuid = INSN_SHUID (insn);
 	  rel = INSN_SHUID (XEXP (XEXP (pat, 0), 0));
 	  memset (&flags, 0, sizeof (flags));
