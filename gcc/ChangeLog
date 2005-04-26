@@ -1,3 +1,10 @@
+2004-04-26  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR tree-optimization/17598
+	* fold-const.c (fold_binary): Fold comparisons of addresses
+	of COMPONENT_REFs which reference the same field to
+	comparisons of the addresses of the base objects.
+
 2005-04-26  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (arm_return_in_msb): New function.
