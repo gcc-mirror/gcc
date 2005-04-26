@@ -1,3 +1,10 @@
+2005-04-26  Luca Barbieri  <luca.barbieri@gmail.com>
+
+	PR libgcj/21136:
+	* gnu/java/nio/channels/FileChannelImpl.java (tryLock): Pass
+	'false' to native lock().
+	(lock): Pass 'true' to native lock().
+
 2005-04-26  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java:
