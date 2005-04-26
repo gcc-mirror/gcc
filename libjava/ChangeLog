@@ -1,3 +1,22 @@
+2005-04-26  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java: Made all hexadecimal numbers lowercase.
+	Fixed typos in javadocs.
+	(isSiteLocalAddress): Fixed handling of byte values.
+	(isMCLinkLocal): Likewise.
+	* java/net/Inet4Address.java
+	(isMulticastAddress): Call super method.
+	(isLoopbackAddress): Likewise.
+	(isAnyLocalAddress): Likewise.
+	(isLinkLocalAddress): Likewise.
+	(isSiteLocalAddress): Likewise.
+	(isMCGlobal): Likewise.
+	(isMCNodeLocal): Likewise.
+	(isMCLinkLocal): Likewise.
+	(isMCSiteLocal): Likewise.
+	(isMCOrgLocal): Likewise.
+	(getHostAddress): Likewise.
+
 2005-04-26  Sven de Marothy  <sven@physto.se>
 
 	* java/net/InetAddress.java
