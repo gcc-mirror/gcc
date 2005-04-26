@@ -1,3 +1,15 @@
+2005-04-26  Jeff Law  <law@redhat.com>
+
+	* tree-flow-inline.h (op_iter_next_must_and_may_def): New.
+	(op_iter_init_must_and_may_def): Likewise.
+	(unmodifiable_var_p): Move to a later point in the file.
+	* tree-ssa-operands.h (FOR_EACH_SSA_MUST_AND_MAY_DEF_OPERAND): New.
+	* tree-ssa-dse.c (need_imm_uses_for): Remove, no longer needed.
+	(dse_record_phis): Directly check for virtual operands rather than
+	using need_imm_uses_for.
+	(dse_optimize_stmt): Handle V_MUST_DEF operands.  Handle case where
+	store has multiple V_{MAY,MUST}_DEF operands.
+
 2005-04-26  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-cfg.c (bsi_replace): Delink immediate uses for the original stmt.

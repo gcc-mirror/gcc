@@ -291,4 +291,11 @@ typedef struct ssa_operand_iterator_d
        !op_iter_done (&(ITER));					\
        op_iter_next_mustdef (&(KILLVAR), &(DEFVAR), &(ITER)))
 
+/* This macro executes a loop over the V_{MUST,MAY}_DEF of STMT.  The def
+   and kill for each V_{MUST,MAY}_DEF is returned in DEFVAR and KILLVAR. 
+   ITER is an ssa_op_iter structure used to control the loop.  */
+#define FOR_EACH_SSA_MUST_AND_MAY_DEF_OPERAND(DEFVAR, KILLVAR, STMT, ITER)\
+  for (op_iter_init_must_and_may_def (&(ITER), STMT, &(KILLVAR), &(DEFVAR));\
+       !op_iter_done (&(ITER));					\
+       op_iter_next_must_and_may_def (&(KILLVAR), &(DEFVAR), &(ITER)))
 #endif  /* GCC_TREE_SSA_OPERANDS_H  */
