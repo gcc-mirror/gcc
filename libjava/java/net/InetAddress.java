@@ -495,7 +495,7 @@ public class InetAddress implements Serializable
   public String toString()
   {
     String addr = getHostAddress();
-    String host = (hostName != null) ? hostName : addr;
+    String host = (hostName != null) ? hostName : "";
     return host + "/" + addr;
   }
 

@@ -1,3 +1,8 @@
+2005-04-26  Sven de Marothy  <sven@physto.se>
+
+	* java/net/InetAddress.java
+	(toString): Don't print empty hostnames.
+
 2005-04-26  Luca Barbieri  <luca.barbieri@gmail.com>
 
 	PR libgcj/21136:
