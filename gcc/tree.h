@@ -1439,6 +1439,8 @@ struct tree_phi_node GTY(())
   /* Basic block to that the phi node belongs.  */
   struct basic_block_def *bb;
 
+  /* Arguments of the PHI node.  These are maintained in the same
+     order as predecessor edge vector BB->PREDS.  */
   struct phi_arg_d GTY ((length ("((tree)&%h)->phi.num_args"))) a[1];
 };
 

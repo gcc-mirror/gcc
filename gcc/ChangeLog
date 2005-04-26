@@ -7,6 +7,9 @@
 	tree_ssa_iv_optimize_finalize): Use the VEC API instead of
 	VARRAY.
 
+	* tree.h (tree_phi_node): Add a comment about the order of PHI
+	arguments.
+
 2005-04-26  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (thumb_mulsi3): Use two-operand assembly form.
