@@ -1121,6 +1121,7 @@ op_iter_next_mustdef (use_operand_p *kill, def_operand_p *def, ssa_op_iter *ptr)
   ptr->done = true;
   return;
 }
+
 /* Get the next iterator maydef value for PTR, returning the maydef values in
    USE and DEF.  */
 static inline void
@@ -1141,6 +1142,34 @@ op_iter_next_maydef (use_operand_p *use, def_operand_p *def, ssa_op_iter *ptr)
   return;
 }
 
+/* Get the next iterator mustdef or maydef value for PTR, returning the
+   mustdef or maydef values in KILL and DEF.  */
+static inline void
+op_iter_next_must_and_may_def (use_operand_p *kill,
+			       def_operand_p *def,
+			       ssa_op_iter *ptr)
+{
+  if (ptr->v_mustu_i < ptr->num_v_mustu)
+    {
+      *def = V_MUST_DEF_RESULT_PTR (ptr->ops->v_must_def_ops, ptr->v_mustu_i);
+      *kill = V_MUST_DEF_KILL_PTR (ptr->ops->v_must_def_ops, (ptr->v_mustu_i)++);
+      return;
+    }
+  else if (ptr->v_mayu_i < ptr->num_v_mayu)
+    {
+      *def = V_MAY_DEF_RESULT_PTR (ptr->ops->v_may_def_ops, ptr->v_mayu_i);
+      *kill = V_MAY_DEF_OP_PTR (ptr->ops->v_may_def_ops, (ptr->v_mayu_i)++);
+      return;
+    }
+  else
+    {
+      *def = NULL_DEF_OPERAND_P;
+      *kill = NULL_USE_OPERAND_P;
+    }
+  ptr->done = true;
+  return;
+}
+
 /* Initialize iterator PTR to the operands in STMT.  Return the first operands
    in USE and DEF.  */
 static inline void
@@ -1149,16 +1178,6 @@ op_iter_init_maydef (ssa_op_iter *ptr, tree stmt, use_operand_p *use,
 {
   op_iter_init (ptr, stmt, SSA_OP_VMAYUSE);
   op_iter_next_maydef (use, def, ptr);
-}
-
-/* Return true if VAR cannot be modified by the program.  */
-
-static inline bool
-unmodifiable_var_p (tree var)
-{
-  if (TREE_CODE (var) == SSA_NAME)
-    var = SSA_NAME_VAR (var);
-  return TREE_READONLY (var) && (TREE_STATIC (var) || DECL_EXTERNAL (var));
 }
 
 
@@ -1170,6 +1189,26 @@ op_iter_init_mustdef (ssa_op_iter *ptr, tree stmt, use_operand_p *kill,
 {
   op_iter_init (ptr, stmt, SSA_OP_VMUSTDEFKILL);
   op_iter_next_mustdef (kill, def, ptr);
+}
+
+/* Initialize iterator PTR to the operands in STMT.  Return the first operands
+   in KILL and DEF.  */
+static inline void
+op_iter_init_must_and_may_def (ssa_op_iter *ptr, tree stmt,
+			       use_operand_p *kill, def_operand_p *def)
+{
+  op_iter_init (ptr, stmt, SSA_OP_VMUSTDEFKILL | SSA_OP_VMAYUSE);
+  op_iter_next_must_and_may_def (kill, def, ptr);
+}
+
+/* Return true if VAR cannot be modified by the program.  */
+
+static inline bool
+unmodifiable_var_p (tree var)
+{
+  if (TREE_CODE (var) == SSA_NAME)
+    var = SSA_NAME_VAR (var);
+  return TREE_READONLY (var) && (TREE_STATIC (var) || DECL_EXTERNAL (var));
 }
 
 /* Return true if REF, a COMPONENT_REF, has an ARRAY_REF somewhere in it.  */

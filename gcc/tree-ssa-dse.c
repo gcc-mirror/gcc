@@ -111,18 +111,8 @@ get_stmt_uid (tree stmt)
   return stmt_ann (stmt)->uid;
 }
 
-/* Function indicating whether we ought to include information for 'var'
-   when calculating immediate uses.  For this pass we only want use
-   information for virtual variables.  */
-
-static bool
-need_imm_uses_for (tree var)
-{
-  return !is_gimple_reg (var);
-}
-
-
 /* Set bit UID in bitmaps GLOBAL and *LOCAL, creating *LOCAL as needed.  */
+
 static void
 record_voperand_set (bitmap global, bitmap *local, unsigned int uid)
 {
@@ -136,6 +126,7 @@ record_voperand_set (bitmap global, bitmap *local, unsigned int uid)
   bitmap_set_bit (*local, uid);
   bitmap_set_bit (global, uid);
 }
+
 /* Initialize block local data structures.  */
 
 static void
@@ -177,12 +168,15 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
   tree stmt = bsi_stmt (bsi);
   stmt_ann_t ann = stmt_ann (stmt);
   v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
 
   v_may_defs = V_MAY_DEF_OPS (ann);
+  v_must_defs = V_MUST_DEF_OPS (ann);
 
   /* If this statement has no virtual defs, then there is nothing
      to do.  */
-  if (NUM_V_MAY_DEFS (v_may_defs) == 0)
+  if (NUM_V_MAY_DEFS (v_may_defs) == 0
+      && NUM_V_MUST_DEFS (v_must_defs) == 0)
     return;
 
   /* We know we have virtual definitions.  If this is a MODIFY_EXPR that's
@@ -195,33 +189,53 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 
   if (TREE_CODE (stmt) == MODIFY_EXPR)
     {
-      unsigned int num_uses = 0, count = 0;
       use_operand_p first_use_p = NULL_USE_OPERAND_P;
-      use_operand_p use_p;
-      tree use, use_stmt;
+      use_operand_p use_p = NULL;
+      tree use, use_stmt, temp;
       tree defvar = NULL_TREE, usevar = NULL_TREE;
+      bool fail = false;
       use_operand_p var2;
       def_operand_p var1;
       ssa_op_iter op_iter;
 
-      FOR_EACH_SSA_MAYDEF_OPERAND (var1, var2, stmt, op_iter)
-        {
+      /* We want to verify that each virtual definition in STMT has
+	 precisely one use and that all the virtual definitions are
+	 used by the same single statement.  When complete, we
+	 want USE_STMT to refer to the one statment which uses
+	 all of the virtual definitions from STMT.  */
+      use_stmt = NULL;
+      FOR_EACH_SSA_MUST_AND_MAY_DEF_OPERAND (var1, var2, stmt, op_iter)
+	{
 	  defvar = DEF_FROM_PTR (var1);
 	  usevar = USE_FROM_PTR (var2);
-	  num_uses += num_imm_uses (defvar);
-	  count++;
-	  if (num_uses > 1 || count > 1)
-	    break;
-	}
 
-      if (count == 1 && num_uses == 1)
-        {
-	  single_imm_use (defvar, &use_p, &use_stmt);
+	  /* If this virtual def does not have precisely one use, then
+	     we will not be able to eliminate STMT.  */
+	  if (num_imm_uses (defvar) != 1)
+	    {
+	      fail = true;
+	      break;
+	    }
+
+	  /* Get the one and only immediate use of DEFVAR.  */
+	  single_imm_use (defvar, &use_p, &temp);
 	  gcc_assert (use_p != NULL_USE_OPERAND_P);
 	  first_use_p = use_p;
 	  use = USE_FROM_PTR (use_p);
+
+	  /* If the immediate use of DEF_VAR is not the same as the
+	     previously find immediate uses, then we will not be able
+	     to eliminate STMT.  */
+	  if (use_stmt == NULL)
+	    use_stmt = temp;
+	  else if (temp != use_stmt)
+	    {
+	      fail = true;
+	      break;
+	    }
 	}
-      else
+
+      if (fail)
 	{
 	  record_voperand_set (dse_gd->stores, &bd->stores, ann->uid);
 	  return;
@@ -231,7 +245,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	 represents the only use of this store.
 
 	 Note this does not handle the case where the store has
-	 multiple V_MAY_DEFs which all reach a set of PHI nodes in the
+	 multiple V_{MAY,MUST}_DEFs which all reach a set of PHI nodes in the
 	 same block.  */
       while (use_p != NULL_USE_OPERAND_P
 	     && TREE_CODE (use_stmt) == PHI_NODE
@@ -295,7 +309,7 @@ dse_record_phis (struct dom_walk_data *walk_data, basic_block bb)
   tree phi;
 
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-    if (need_imm_uses_for (PHI_RESULT (phi)))
+    if (!is_gimple_reg (PHI_RESULT (phi)))
       record_voperand_set (dse_gd->stores,
 			   &bd->stores,
 			   get_stmt_uid (phi));
