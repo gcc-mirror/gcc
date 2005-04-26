@@ -1,3 +1,9 @@
+2005-04-26  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/21233:
+	* gij.cc (version): Properly quote java version.
+	(main): Fix typo in comment.
+
 2005-04-20  Release Manager
 
 	* GCC 4.0.0 released.
