@@ -9864,6 +9864,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	return build_complex (type, arg0, arg1);
       return NULL_TREE;
 
+    case ASSERT_EXPR:
+      /* An ASSERT_EXPR should never be passed to fold_binary.  */
+      gcc_unreachable ();
+
     default:
       return NULL_TREE;
     } /* switch (code) */
@@ -10146,21 +10150,6 @@ fold (tree expr)
     {
     case CONST_DECL:
       return fold (DECL_INITIAL (t));
-
-    case ASSERT_EXPR:
-      {
-	/* Given ASSERT_EXPR <Y, COND>, return Y if COND can be folded
-	   to boolean_true_node.  If COND folds to boolean_false_node,
-	   return ASSERT_EXPR <Y, 0>.  Otherwise, return the original
-	   expression.  */
-	tree c = fold (ASSERT_EXPR_COND (t));
-	if (c == boolean_true_node)
-	  return ASSERT_EXPR_VAR (t);
-	else if (c == boolean_false_node)
-	  return build (ASSERT_EXPR, TREE_TYPE (t), ASSERT_EXPR_VAR (t), c);
-	else
-	  return t;
-      }
 
     default:
       return t;

@@ -3,6 +3,10 @@
 	* basic-block.h (ei_cond): New.
 	(FOR_EACH_EDGE): Call ei_cond.
 
+	PR tree-optimization/21047
+	* fold-const.c (fold_binary): Abort on ASSERT_EXPR.
+	(fold): Don't handle ASSERT_EXPR.
+
 2005-04-25  Roger Sayle  <roger@eyesopen.com>
 
 	* sched-deps.c (sched_analyze_1): On STACK_REGS targets, x87, treat
