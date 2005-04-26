@@ -1,3 +1,8 @@
+2005-04-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h (ei_cond): New.
+	(FOR_EACH_EDGE): Call ei_cond.
+
 2005-04-25  Roger Sayle  <roger@eyesopen.com>
 
 	* sched-deps.c (sched_analyze_1): On STACK_REGS targets, x87, treat
