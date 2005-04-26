@@ -1077,9 +1077,9 @@
   "TARGET_THUMB"
   "*
   if (which_alternative < 2)
-    return \"mov\\t%0, %1\;mul\\t%0, %0, %2\";
+    return \"mov\\t%0, %1\;mul\\t%0, %2\";
   else
-    return \"mul\\t%0, %0, %2\";
+    return \"mul\\t%0, %2\";
   "
   [(set_attr "length" "4,4,2")
    (set_attr "insn" "mul")]

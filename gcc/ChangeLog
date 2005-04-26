@@ -1,3 +1,7 @@
+2005-04-26  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (thumb_mulsi3): Use two-operand assembly form.
+
 2005-04-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/mips.mips.c (mips_legitimize_tls_address): Use
