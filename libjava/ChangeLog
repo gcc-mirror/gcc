@@ -1,3 +1,8 @@
+2005-04-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/Robot.java (waitForIdle): Call invokeAndWait in a
+	static way.
+
 2005-04-26  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/URL.java (URL(URL,String,URLStreamHandler)): Add spec

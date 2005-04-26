@@ -394,10 +394,9 @@ public class Robot
       throw new IllegalThreadStateException ("Robot: waitForIdle called from "
 					     + "the event dispatch thread");
 
-    EventQueue q = Toolkit.getDefaultToolkit ().getSystemEventQueue ();
     try
       {
-	q.invokeAndWait (new Runnable () { public void run () { } });
+	EventQueue.invokeAndWait (new Runnable () { public void run () { } });
       }
     catch (InterruptedException e)
       {
