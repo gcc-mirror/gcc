@@ -1,5 +1,6 @@
 2005-04-26  David Edelsohn  <edelsohn@gnu.org>
 
+	PR libfortran/20930
 	* io/rewind.c (st_rewind): Flush the stream when resetting the mode
 	from WRITING to READING.
 
