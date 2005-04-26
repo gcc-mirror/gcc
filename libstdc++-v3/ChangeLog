@@ -1,3 +1,8 @@
+2005-04-26  Jones Desougi  <jones@ingate.com>
+
+	PR libstdc++/21131
+	* linkage.m4: Fix comments.
+
 2005-04-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21209
