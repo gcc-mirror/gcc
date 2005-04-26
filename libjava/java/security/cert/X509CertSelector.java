@@ -38,12 +38,11 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.security.OID;
-import gnu.java.security.action.GetPropertyAction;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.AccessController;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
@@ -1024,8 +1023,7 @@ public class X509CertSelector implements CertSelector, Cloneable
   public String toString()
   {
     StringBuffer str = new StringBuffer(X509CertSelector.class.getName());
-    GetPropertyAction getProp = new GetPropertyAction("line.separator");
-    String nl = (String) AccessController.doPrivileged(getProp);
+    String nl = SystemProperties.getProperty("line.separator");
     String eol = ";" + nl;
     str.append(" {").append(nl);
     if (cert != null)

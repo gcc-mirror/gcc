@@ -38,14 +38,13 @@ exception statement from your version. */
 
 package java.security.cert;
 
-import gnu.java.security.action.GetPropertyAction;
+import gnu.classpath.SystemProperties;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -336,8 +335,7 @@ public class X509CRLSelector implements CRLSelector, Cloneable
   public String toString()
   {
     StringBuffer str = new StringBuffer(X509CRLSelector.class.getName());
-    GetPropertyAction getProp = new GetPropertyAction("line.separator");
-    String nl = (String) AccessController.doPrivileged(getProp);
+    String nl = SystemProperties.getProperty("line.separator");
     String eol = ";" + nl;
 
     str.append(" {").append(nl);
