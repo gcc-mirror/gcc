@@ -1,3 +1,7 @@
+2005-04-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-cfg.c (bsi_replace): Delink immediate uses for the original stmt.
+
 2005-04-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (lv_adjust_loop_header_phi): Speed up moving a

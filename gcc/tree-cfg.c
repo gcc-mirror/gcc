@@ -3011,6 +3011,7 @@ bsi_replace (const block_stmt_iterator *bsi, tree stmt, bool preserve_eh_info)
 	add_stmt_to_eh_region (stmt, eh_region);
     }
 
+  delink_stmt_imm_use (orig_stmt);
   *bsi_stmt_ptr (*bsi) = stmt;
   mark_stmt_modified (stmt);
   update_modified_stmts (stmt);
