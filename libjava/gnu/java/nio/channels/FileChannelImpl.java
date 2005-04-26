@@ -419,7 +419,7 @@ public final class FileChannelImpl extends FileChannel
     try
       {
 	begin();
-        lock(position, size, shared, true);
+        lock(position, size, shared, false);
 	completed = true;
 	return new FileLockImpl(this, position, size, shared);
       }
@@ -451,7 +451,7 @@ public final class FileChannelImpl extends FileChannel
 
     try
       {
-	boolean lockable = lock(position, size, shared, false);
+	boolean lockable = lock(position, size, shared, true);
 	completed = true;
 	return (lockable
 		? new FileLockImpl(this, position, size, shared)
