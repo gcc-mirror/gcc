@@ -1216,7 +1216,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; the frame-pointer would be located).
 ;; In the nonlocal goto receiver, we unwind the register stack by a series
 ;; of "pop 0,0" until rO equals the saved value.  (If it goes lower, we
-;; should call abort.)
+;; should die with a trap.)
 (define_expand "nonlocal_goto_receiver"
   [(parallel [(unspec_volatile [(const_int 0)] 1)
 	      (clobber (scratch:DI))

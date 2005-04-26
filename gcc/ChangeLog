@@ -1,3 +1,15 @@
+2005-04-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mips.mips.c (mips_legitimize_tls_address): Use
+	gcc_unreachable.
+
+	* config/mmix/mmix.c (mmix_assemble_integer): Use gcc_assert.
+	* config/mmix/crti.asm (_init): Reword comment to avoid 'abort'.
+	* config/mmix/mmix.md (nonlocal_goto_receiver): Likewise.
+
+	* config/sparc/sparc.h (enum reg_class): Reword comment to avoid
+	'abort'.
+
 2005-04-26  Jeff Law  <law@redhat.com>
 
 	* tree-flow-inline.h (op_iter_next_must_and_may_def): New.
@@ -12,7 +24,8 @@
 
 2005-04-26  Andrew MacLeod  <amacleod@redhat.com>
 
-	* tree-cfg.c (bsi_replace): Delink immediate uses for the original stmt.
+	* tree-cfg.c (bsi_replace): Delink immediate uses for the original
+	stmt.
 
 2005-04-26  Kazu Hirata  <kazu@cs.umass.edu>
 

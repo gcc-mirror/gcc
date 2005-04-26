@@ -91,7 +91,7 @@ Main	SETL	$255,32
 % Provide the first part of _init and _fini.  Save the return address on the
 % register stack.  We eventually ignore the return address of these
 % PUSHJ:s, so it doesn't matter that whether .init and .fini code calls
-% functions or where they store rJ.  We shouldn't get there, so abort
+% functions or where they store rJ.  We shouldn't get there, so die
 % (TRAP Halt) if that happens.
 
 	.section .init,"ax",@progbits
