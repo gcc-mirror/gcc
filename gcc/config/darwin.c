@@ -55,12 +55,12 @@ Boston, MA 02111-1307, USA.  */
    running program and replace existing functions and methods of that
    translation unit with with versions of those functions and methods
    from the newly compiled translation unit.  The new functions access
-   the existing static data from the old translation unit, if the data
-   existed in the unit to be replaced, and from the new translation
-   unit, for new data.
+   the existing static symbols from the old translation unit, if the
+   symbol existed in the unit to be replaced, and from the new
+   translation unit, otherwise.
 
    The changes are to insert 5 nops at the beginning of all functions
-   and to use indirection to get at static duration data.  The 5 nops
+   and to use indirection to get at static symbols.  The 5 nops
    are required by consumers of the generated code.  Currently, gdb
    uses this to patch in a jump to the overriding function, this
    allows all uses of the old name to forward to the replacement,
@@ -68,13 +68,13 @@ Boston, MA 02111-1307, USA.  */
    rs6000_emit_prologue for the code that handles the nop insertions.
  
    The added indirection allows gdb to redirect accesses to static
-   duration data from the newly loaded translation unit to the
-   existing data, if any.  @code{static} data is special and is
-   handled by setting the second word in the .non_lazy_symbol_pointer
-   data structure to the address of the data.  See indirect_data for
-   the code that handles the extra indirection, and
-   machopic_output_indirection and its use of MACHO_SYMBOL_STATIC for
-   the code that handles @code{static} data indirection.  */
+   symbols from the newly loaded translation unit to the existing
+   symbol, if any.  @code{static} symbols are special and are handled by
+   setting the second word in the .non_lazy_symbol_pointer data
+   structure to symbol.  See indirect_data for the code that handles
+   the extra indirection, and machopic_output_indirection and its use
+   of MACHO_SYMBOL_STATIC for the code that handles @code{static}
+   symbol indirection.  */
 
 
 int
@@ -911,7 +911,7 @@ machopic_output_indirection (void **slot, void *data)
 	 the non-lazy symbol pointer data structure when they are
 	 defined.  This allows the runtime to rebind newer instances
 	 of the translation unit with the original instance of the
-	 data.  */
+	 symbol.  */
 
       if ((SYMBOL_REF_FLAGS (symbol) & MACHO_SYMBOL_STATIC)
 	  && machopic_symbol_defined_p (symbol))
@@ -987,9 +987,7 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 	      && DECL_INITIAL (decl) != error_mark_node)))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_DEFINED;
 
-  if (TREE_CODE (decl) == VAR_DECL
-      && indirect_data (sym_ref)
-      && ! TREE_PUBLIC (decl))
+  if (! TREE_PUBLIC (decl))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_STATIC;
 }
 
