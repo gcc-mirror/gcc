@@ -53,7 +53,7 @@ package java.security;
  */
 public final class AccessControlContext
 {
-  private ProtectionDomain protectionDomain[];
+  private ProtectionDomain[] protectionDomains;
   private DomainCombiner combiner;
 
   /**
@@ -63,13 +63,13 @@ public final class AccessControlContext
    *
    * @param context The ProtectionDomains to use
    */
-  public AccessControlContext(ProtectionDomain[]context)
+  public AccessControlContext(ProtectionDomain[] context)
   {
     int i, j, k, count = context.length, count2 = 0;
     for (i = 0, j = 0; i < count; i++)
       {
 	for (k = 0; k < i; k++)
-	  if (context[k] == protectionDomain[i])
+	  if (context[k] == protectionDomains[i])
 	    break;
 	if (k != i)		//it means previous loop did not complete
 	  continue;
@@ -77,16 +77,16 @@ public final class AccessControlContext
 	count2++;
       }
 
-    protectionDomain = new ProtectionDomain[count2];
+    protectionDomains = new ProtectionDomain[count2];
     for (i = 0, j = 0; i < count2; i++)
       {
 	for (k = 0; k < i; k++)
-	  if (context[k] == protectionDomain[i])
+	  if (context[k] == protectionDomains[i])
 	    break;
 	if (k != i)		//it means previous loop did not complete
 	  continue;
 
-	protectionDomain[j++] = context[i];
+	protectionDomains[j++] = context[i];
       }
   }
 
@@ -99,7 +99,7 @@ public final class AccessControlContext
   public AccessControlContext(AccessControlContext acc,
 			      DomainCombiner combiner)
   {
-    this(acc.protectionDomain);
+    this(acc.protectionDomains);
     this.combiner = combiner;
   }
 
@@ -123,8 +123,8 @@ public final class AccessControlContext
    */
   public void checkPermission(Permission perm) throws AccessControlException
   {
-    for (int i = 0; i < protectionDomain.length; i++)
-      if (protectionDomain[i].implies(perm) == true)
+    for (int i = 0; i < protectionDomains.length; i++)
+      if (protectionDomains[i].implies(perm) == true)
 	return;
 
     throw new AccessControlException("Permission not granted");
@@ -146,13 +146,13 @@ public final class AccessControlContext
       {
 	AccessControlContext acc = (AccessControlContext) obj;
 
-	if (acc.protectionDomain.length != protectionDomain.length)
+	if (acc.protectionDomains.length != protectionDomains.length)
 	  return false;
 
-	for (int i = 0; i < protectionDomain.length; i++)
-	  if (acc.protectionDomain[i] != protectionDomain[i])
+	for (int i = 0; i < protectionDomains.length; i++)
+	  if (acc.protectionDomains[i] != protectionDomains[i])
 	    return false;
-	return true;
+        return true;
       }
     return false;
   }
@@ -165,8 +165,8 @@ public final class AccessControlContext
   public int hashCode()
   {
     int h = 0;
-    for (int i = 0; i < protectionDomain.length; i++)
-      h ^= protectionDomain[i].hashCode();
+    for (int i = 0; i < protectionDomains.length; i++)
+      h ^= protectionDomains[i].hashCode();
 
     return h;
   }
