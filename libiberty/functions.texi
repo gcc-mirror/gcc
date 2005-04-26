@@ -229,7 +229,7 @@ and inode numbers.
 
 @end deftypefn
 
-@c fopen_unlocked.c:40
+@c fopen_unlocked.c:48
 @deftypefn Extension FILE * fdopen_unlocked (int @var{fildes}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fdopen}.  If the
@@ -298,7 +298,7 @@ Ignores case when performing the comparison.
 
 @end deftypefn
 
-@c fopen_unlocked.c:31
+@c fopen_unlocked.c:39
 @deftypefn Extension FILE * fopen_unlocked (const char *@var{path}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
@@ -318,7 +318,7 @@ itself.
 
 @end deftypefn
 
-@c fopen_unlocked.c:49
+@c fopen_unlocked.c:57
 @deftypefn Extension FILE * freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
 
 Opens and returns a @code{FILE} pointer via @code{freopen}.  If the
@@ -1035,6 +1035,15 @@ will be a valid file name yet not exist when @code{tmpnam} checks for
 it.  @var{s} must point to a buffer of at least @code{L_tmpnam} bytes,
 or be @code{NULL}.  Use of this function creates a security risk, and it must
 not be used in new projects.  Use @code{mkstemp} instead.
+
+@end deftypefn
+
+@c fopen_unlocked.c:31
+@deftypefn Extension void unlock_std_streams (void)
+
+If the OS supports it, ensure that the standard I/O streams,
+@code{stdin}, @code{stdout} and @code{stderr} are setup to avoid any
+multi-threaded locking.  Otherwise do nothing.
 
 @end deftypefn
 

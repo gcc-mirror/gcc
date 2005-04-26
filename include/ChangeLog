@@ -1,3 +1,7 @@
+2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (unlock_std_streams): New.
+
 2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (fopen_unlocked, fdopen_unlocked, freopen_unlocked):

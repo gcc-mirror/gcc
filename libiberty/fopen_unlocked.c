@@ -28,6 +28,14 @@ pointer unchanged.  If the @var{stream} is @code{NULL} do nothing.
 
 @end deftypefn
 
+@deftypefn Extension void unlock_std_streams (void)
+
+If the OS supports it, ensure that the standard I/O streams,
+@code{stdin}, @code{stdout} and @code{stderr} are setup to avoid any
+multi-threaded locking.  Otherwise do nothing.
+
+@end deftypefn
+
 @deftypefn Extension FILE * fopen_unlocked (const char *@var{path}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
@@ -82,10 +90,18 @@ unlock_1 (fp)
 }
 
 void
-unlock_stream(fp)
+unlock_stream (fp)
      FILE *fp;
 {
   unlock_1 (fp);
+}
+
+void
+unlock_std_streams ()
+{
+  unlock_1 (stdin);
+  unlock_1 (stdout);
+  unlock_1 (stderr);
 }
 
 FILE *
