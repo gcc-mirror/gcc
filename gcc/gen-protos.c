@@ -140,9 +140,7 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
   progname = &argv[0][i];
 
   /* Unlock the stdio streams.  */
-  unlock_stream (stdin);
-  unlock_stream (stdout);
-  unlock_stream (stderr);
+  unlock_std_streams ();
 
   INIT_SSTRING (&linebuf);
 

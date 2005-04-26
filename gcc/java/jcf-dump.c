@@ -941,9 +941,7 @@ main (int argc, char** argv)
   int argi, opt;
 
   /* Unlock the stdio streams.  */
-  unlock_stream (stdin);
-  unlock_stream (stdout);
-  unlock_stream (stderr);
+  unlock_std_streams ();
 
   gcc_init_libintl ();
 
