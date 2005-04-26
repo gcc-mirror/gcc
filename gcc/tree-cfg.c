@@ -5398,6 +5398,11 @@ tree_lv_adjust_loop_header_phi (basic_block first, basic_block second,
 				basic_block new_head, edge e)
 {
   tree phi1, phi2;
+  edge e2 = find_edge (new_head, second);
+
+  /* Because NEW_HEAD has been created by splitting SECOND's incoming
+     edge, we should always have an edge from NEW_HEAD to SECOND.  */
+  gcc_assert (e2 != NULL);
 
   /* Browse all 'second' basic block phi nodes and add phi args to
      edge 'e' for 'first' head. PHI args are always in correct order.  */
@@ -5406,13 +5411,8 @@ tree_lv_adjust_loop_header_phi (basic_block first, basic_block second,
        phi2 && phi1; 
        phi2 = PHI_CHAIN (phi2),  phi1 = PHI_CHAIN (phi1))
     {
-      edge e2 = find_edge (new_head, second);
-
-      if (e2)
-	{
-	  tree def = PHI_ARG_DEF (phi2, e2->dest_idx);
-	  add_phi_arg (phi1, def, e);
-	}
+      tree def = PHI_ARG_DEF (phi2, e2->dest_idx);
+      add_phi_arg (phi1, def, e);
     }
 }
 
