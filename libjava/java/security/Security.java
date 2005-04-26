@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.security;
 
-import gnu.java.security.action.GetPropertyAction;
+import gnu.classpath.SystemProperties;
 
 import gnu.classpath.Configuration;
 
@@ -71,10 +71,8 @@ public final class Security
   
   static
     {
-      GetPropertyAction getProp = new GetPropertyAction("gnu.classpath.home.url");
-      String base = (String) AccessController.doPrivileged(getProp);
-      getProp = new GetPropertyAction("gnu.classpath.vm.shortname");
-      String vendor = (String) AccessController.doPrivileged(getProp);
+      String base = SystemProperties.getProperty("gnu.classpath.home.url");
+      String vendor = SystemProperties.getProperty("gnu.classpath.vm.shortname");
 
       // Try VM specific security file
       boolean loaded = loadProviders (base, vendor);

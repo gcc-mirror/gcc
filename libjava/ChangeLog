@@ -1,3 +1,10 @@
+2005-04-26  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/security/Security.java,
+	java/security/cert/X509CRLSelector.java,
+	java/security/cert/X509CertSelector.java:
+	Modified to use SystemProperties.
+
 2005-04-26  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/System.java
