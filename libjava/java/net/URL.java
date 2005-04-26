@@ -430,7 +430,8 @@ public final class URL implements Serializable
 	authority = context.authority;
       }
     else // Protocol NOT specified in spec. and no context available.
-      throw new MalformedURLException("Absolute URL required with null context");
+      throw new MalformedURLException("Absolute URL required with null"
+				      + " context: " + spec);
 
     protocol = protocol.trim();
 
