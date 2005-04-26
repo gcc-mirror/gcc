@@ -1,3 +1,13 @@
+2005-04-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21209
+	* include/bits/locale_facets.tcc (_M_extract_int): Avoid signed
+	integer overflow, always use a suited unsigned type in the main
+	parsing loop.
+	(struct __to_unsigned_type): New.
+	* testsuite/22_locale/num_get/get/char/16.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/16.cc: Likewise.
+
 2005-04-25  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21035
