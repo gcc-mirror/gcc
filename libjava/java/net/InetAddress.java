@@ -1,5 +1,5 @@
 /* InetAddress.java -- Class to model an Internet address
-   Copyright (C) 1998, 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -230,7 +230,7 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Utility reoutine to check if InetAddress is a node local multicast address
+   * Utility routine to check if InetAddress is a node local multicast address.
    *
    * @since 1.4
    */
@@ -243,7 +243,7 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Utility reoutine to check if InetAddress is a link local multicast address
+   * Utility routine to check if InetAddress is a link local multicast address.
    *
    * @since 1.4
    */
@@ -258,7 +258,7 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Utility routine to check if InetAddress is a site local multicast address
+   * Utility routine to check if InetAddress is a site local multicast address.
    *
    * @since 1.4
    */
@@ -271,8 +271,8 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Utility reoutine to check if InetAddress is a organization local
-   * multicast address
+   * Utility routine to check if InetAddress is a organization local
+   * multicast address.
    *
    * @since 1.4
    */

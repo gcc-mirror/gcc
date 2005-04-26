@@ -1,3 +1,8 @@
+2005-04-26  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java:
+	Fixed typos in javadocs.
+
 2005-04-26  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/21020:
