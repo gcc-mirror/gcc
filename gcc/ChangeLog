@@ -1,3 +1,10 @@
+2005-04-25  Roger Sayle  <roger@eyesopen.com>
+
+	* sched-deps.c (sched_analyze_1): On STACK_REGS targets, x87, treat
+	all writes to any stack register as a read/write dependency on
+	FIRST_STACK_REG.
+	(sched_analyze_2): Likewise, for reads from any stack register.
+
 2005-04-25  Richard Henderson  <rth@redhat.com>
 
 	* final.c (output_addr_const): Revert 2005-04-09 change.
