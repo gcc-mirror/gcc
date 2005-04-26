@@ -1,3 +1,13 @@
+2005-04-26  Jeff Law  <law@redhat.com>
+
+	* gcc.gc/tree-ssa/ssa-dce-1.c: New test.
+	* gcc.gc/tree-ssa/ssa-dce-2.c: New test.
+	* gcc.gc/tree-ssa/ssa-dce-3.c: New test.
+	* gcc.gc/tree-ssa/ssa-dce-4.c: New test.
+	* gcc.gc/tree-ssa/ssa-dce-5.c: New test.
+	* gcc.gc/tree-ssa/ssa-dce-6.c: New test.
+	* gcc.gc/tree-ssa/ssa-dce-7.c: New test.
+
 2004-04-26  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR tree-optimization/17598
