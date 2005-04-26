@@ -1,3 +1,9 @@
+2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c, gcc.c, gcov-dump.c, gcov.c, gen-protos.c,
+	gensupport.c, protoize.c, toplev.c: Replace calls to
+	`unlock_stream' with `unlock_std_streams'.
+
 2005-04-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi (Blackfin Options): Avoid empty @opindex line.

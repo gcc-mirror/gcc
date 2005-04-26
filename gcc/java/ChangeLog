@@ -1,3 +1,8 @@
+2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c, jcf-dump.c, jv-scan.c, jvgenmain.c: Replace calls
+	to `unlock_stream' with `unlock_std_streams'.
+
 2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (main): Unlock the stdio streams.
