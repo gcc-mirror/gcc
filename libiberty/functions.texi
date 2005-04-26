@@ -176,7 +176,7 @@ the possibility of a GCC built-in function.
 
 @end deftypefn
 
-@c asprintf.c:29
+@c asprintf.c:32
 @deftypefn Extension int asprintf (char **@var{resptr}, const char *@var{format}, ...)
 
 Like @code{sprintf}, but instead of passing a pointer to a buffer, you
@@ -237,7 +237,7 @@ is respectively less than, matching, or greater than the array member.
 
 @end deftypefn
 
-@c argv.c:121
+@c argv.c:124
 @deftypefn Extension char** buildargv (char *@var{sp})
 
 Given a pointer to a string, parse the string extracting fields
@@ -318,7 +318,7 @@ pointer encountered.  Pointers to empty strings are ignored.
 
 @end deftypefn
 
-@c argv.c:49
+@c argv.c:52
 @deftypefn Extension char** dupargv (char **@var{vector})
 
 Duplicate an argument vector.  Simply scans through @var{vector},
@@ -362,7 +362,7 @@ and inode numbers.
 
 @end deftypefn
 
-@c fopen_unlocked.c:40
+@c fopen_unlocked.c:48
 @deftypefn Extension FILE * fdopen_unlocked (int @var{fildes}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fdopen}.  If the
@@ -431,7 +431,7 @@ Ignores case when performing the comparison.
 
 @end deftypefn
 
-@c fopen_unlocked.c:31
+@c fopen_unlocked.c:39
 @deftypefn Extension FILE * fopen_unlocked (const char *@var{path}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
@@ -441,7 +441,7 @@ unchanged.
 
 @end deftypefn
 
-@c argv.c:94
+@c argv.c:97
 @deftypefn Extension void freeargv (char **@var{vector})
 
 Free an argument vector that was built using @code{buildargv}.  Simply
@@ -451,7 +451,7 @@ itself.
 
 @end deftypefn
 
-@c fopen_unlocked.c:49
+@c fopen_unlocked.c:57
 @deftypefn Extension FILE * freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
 
 Opens and returns a @code{FILE} pointer via @code{freopen}.  If the
@@ -510,7 +510,7 @@ that @var{tz} be NULL.  Returns 0 on success, -1 on failure.
 
 @end deftypefn
 
-@c hex.c:30
+@c hex.c:33
 @deftypefn Extension void hex_init (void)
 
 Initializes the array mapping the current character set to
@@ -520,7 +520,7 @@ default ASCII-based table will normally be used on ASCII systems.
 
 @end deftypefn
 
-@c hex.c:39
+@c hex.c:42
 @deftypefn Extension int hex_p (int @var{c})
 
 Evaluates to non-zero if the given character is a valid hex character,
@@ -529,7 +529,7 @@ or zero if it is not.  Note that the value you pass will be cast to
 
 @end deftypefn
 
-@c hex.c:47
+@c hex.c:50
 @deftypefn Extension {unsigned int} hex_value (int @var{c})
 
 Returns the numeric equivalent of the given character when interpreted
@@ -1198,6 +1198,15 @@ Unlinks the named file, unless it is special (e.g. a device file).
 Returns 0 when the file was unlinked, a negative value (and errno set) when
 there was an error deleting the file, and a positive value if no attempt
 was made to unlink the file because it is special.
+
+@end deftypefn
+
+@c fopen_unlocked.c:31
+@deftypefn Extension void unlock_std_streams (void)
+
+If the OS supports it, ensure that the standard I/O streams,
+@code{stdin}, @code{stdout} and @code{stderr} are setup to avoid any
+multi-threaded locking.  Otherwise do nothing.
 
 @end deftypefn
 

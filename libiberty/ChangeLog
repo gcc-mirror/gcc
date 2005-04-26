@@ -1,3 +1,9 @@
+2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fopen_unlocked.c (unlock_std_streams): New.
+	
+	* functions.texi: Regenerate.
+
 2005-04-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fopen_unlocked.c (unlock_stream): New.
