@@ -176,12 +176,13 @@ public class RepaintManager
 
   /**
    * The global, shared RepaintManager instance. This is reused for all
-   * components in all windows.
+   * components in all windows.  This is package-private to avoid an accessor
+   * method.
    *
    * @see #currentManager
    * @see #setCurrentManager
    */
-  private static RepaintManager globalManager;
+  static RepaintManager globalManager;
 
   /**
    * Create a new RepaintManager object.

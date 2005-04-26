@@ -73,8 +73,9 @@ public abstract class Arc2D extends RectangularShape
    */
   public static final int PIE = 2;
 
-  /** The closure type of this arc. */
-  private int type;
+  /** The closure type of this arc.  This is package-private to avoid an
+   * accessor method.  */
+  int type;
 
   /**
    * Create a new arc, with the specified closure type.

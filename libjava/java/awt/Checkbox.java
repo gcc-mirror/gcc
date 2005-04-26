@@ -89,8 +89,9 @@ private String label;
 
 /**
   * @serial The state of this checkbox.
+  * This is package-private to avoid an accessor method.
   */
-private boolean state;
+boolean state;
 
 // The list of listeners for this object.
 private transient ItemListener item_listeners;

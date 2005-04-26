@@ -1,5 +1,5 @@
 /* DefaultHSBChooserPanel.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -70,38 +70,47 @@ import javax.swing.event.ChangeListener;
  */
 class DefaultHSBChooserPanel extends AbstractColorChooserPanel
 {
-  /** The gradient image displayed. */
-  private transient Image gradientImage;
+  /** The gradient image displayed.
+   * This is package-private to avoid an accessor method.  */
+  transient Image gradientImage;
 
   /** The Panel that holds the gradient image. */
   private transient JPanel gradientPanel;
 
-  /** The track gradient image. */
-  private transient Image trackImage;
+  /** The track gradient image.
+   * This is package-private to avoid an accessor method.  */
+  transient Image trackImage;
 
   /** The panel that holds the track. */
   private transient JPanel trackPanel;
 
-  /** The slider for the locked HSB value. */
-  private transient JSlider slider;
+  /** The slider for the locked HSB value.
+   * This is package-private to avoid an accessor method.  */
+  transient JSlider slider;
 
-  /** The RadioButton that controls the Hue. */
-  private transient JRadioButton hRadio;
+  /** The RadioButton that controls the Hue.
+   * This is package-private to avoid an accessor method.  */
+  transient JRadioButton hRadio;
 
-  /** The RadioButton that controls the Saturation. */
-  private transient JRadioButton sRadio;
+  /** The RadioButton that controls the Saturation.
+   * This is package-private to avoid an accessor method.  */
+  transient JRadioButton sRadio;
 
-  /** The RadioButton that controls the Brightness. */
-  private transient JRadioButton bRadio;
+  /** The RadioButton that controls the Brightness.
+   * This is package-private to avoid an accessor method.  */
+  transient JRadioButton bRadio;
 
-  /** The JSpinner that controls the Hue. */
-  private transient JSpinner hSpinner;
+  /** The JSpinner that controls the Hue.
+   * This is package-private to avoid an accessor method.  */
+  transient JSpinner hSpinner;
 
-  /** The JSpinner that controls the Saturation. */
-  private transient JSpinner sSpinner;
+  /** The JSpinner that controls the Saturation.
+   * This is package-private to avoid an accessor method.  */
+  transient JSpinner sSpinner;
 
-  /** The JSpinner that controls the Brightness. */
-  private transient JSpinner bSpinner;
+  /** The JSpinner that controls the Brightness.
+   * This is package-private to avoid an accessor method.  */
+  transient JSpinner bSpinner;
 
   /** The default width of the gradient image. */
   private static final int imgWidth = 200;
@@ -132,20 +141,26 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
   /** The JLabel that displays the value of Blue. */
   private transient JLabel bFull;
 
-  /** The point that is displayed in the gradient image. */
-  private transient Point gradientPoint = new Point();
+  /** The point that is displayed in the gradient image.
+   * Package-private to avoid an accessor method.
+   */
+  transient Point gradientPoint = new Point();
 
   /**
    * This indicates that the change to the slider or point is triggered
    * internally.
+   * This is package-private to avoid an accessor method.
    */
-  private transient boolean internalChange = false;
+  transient boolean internalChange = false;
 
-  /** This indicates that the change to the spinner is triggered internally. */
-  private transient boolean spinnerTrigger = false;
+  /** This indicates that the change to the spinner is triggered
+   * internally.
+   * This is package-private to avoid an accessor method.  */
+  transient boolean spinnerTrigger = false;
 
-  /** This int identifies which spinner is currently locked. */
-  private transient int locked = -1;
+  /** This int identifies which spinner is currently locked.
+   * This is package-private to avoid an accessor method.  */
+  transient int locked = -1;
 
   /** This value indicates that the Hue spinner is locked. */
   static final int HLOCKED = 0;
@@ -159,8 +174,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
   /**
    * This method indicates that the mouse event is in the process of being
    * handled.
+   * This is package-private to avoid an accessor method.
    */
-  private transient boolean handlingMouse;
+  transient boolean handlingMouse;
 
   /**
    * This helper class handles mouse events on the gradient image.
@@ -716,8 +732,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
   /**
    * This method calls the appropriate method to update the gradient image
    * depending on which HSB value is constant.
+   * This is package-private to avoid an accessor method.
    */
-  private void updateImage()
+  void updateImage()
   {
     switch (locked)
       {
@@ -750,8 +767,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
   /**
    * This method updates the slider in response to making a different HSB
    * property the constant.
+   * This is package-private to avoid an accessor method.
    */
-  private void updateSlider()
+  void updateSlider()
   {
     if (slider == null)
       return;
@@ -779,8 +797,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
   /**
    * This method updates the track gradient image depending on which HSB
    * property is constant.
+   * This is package-private to avoid an accessor method.
    */
-  private void updateTrack()
+  void updateTrack()
   {
     switch (locked)
       {

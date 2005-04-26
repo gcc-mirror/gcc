@@ -56,7 +56,8 @@ import javax.swing.undo.UndoableEdit;
  */
 public final class StringContent implements AbstractDocument.Content, Serializable
 {
-  private char[] content;
+  // This is package-private to avoid an accessor method.
+  char[] content;
 
   private int count;
 
@@ -156,7 +157,8 @@ public final class StringContent implements AbstractDocument.Content, Serializab
       this.offset = offset;
     }
 
-    private void setOffset(int offset)
+    // This is package-private to avoid an accessor method.
+    void setOffset(int offset)
     {
       this.offset = this.offset >= 0 ? offset : -1;
     }
@@ -290,7 +292,8 @@ public final class StringContent implements AbstractDocument.Content, Serializab
       }
   }
 
-  private void checkLocation(int where, int len) throws BadLocationException
+  // This is package-private to avoid an accessor method.
+  void checkLocation(int where, int len) throws BadLocationException
   {
     if (where < 0)
       throw new BadLocationException("Invalid location", 1);

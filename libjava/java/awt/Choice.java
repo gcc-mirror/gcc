@@ -74,8 +74,9 @@ private static final long serialVersionUID = -4075310674757313071L;
 
 /**
   * @serial A list of items for the choice box, which can be <code>null</code>.
+  * This is package-private to avoid an accessor method.
   */
-private Vector pItems = new Vector();
+Vector pItems = new Vector();
 
 /**
   * @serial The index of the selected item in the choice box.

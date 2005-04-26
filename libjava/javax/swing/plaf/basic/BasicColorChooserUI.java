@@ -1,5 +1,5 @@
 /* BasicColorChooserUI.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -141,11 +141,14 @@ public class BasicColorChooserUI extends ColorChooserUI
   /** The PropertyChangeListener for the JColorChooser. */
   protected PropertyChangeListener propertyChangeListener;
 
-  /** The JColorChooser. */
-  private JColorChooser chooser;
+  /**
+   * The JColorChooser.
+   * This is package-private to avoid an accessor method.
+   */
+  JColorChooser chooser;
 
   /** The JTabbedPane that is used. */
-  private JTabbedPane pane;
+  JTabbedPane pane;
 
   /** The Container that holds the preview panel. */
   private Container prevContainer;
@@ -219,10 +222,11 @@ public class BasicColorChooserUI extends ColorChooserUI
   /**
    * This method adds tabs to the JTabbedPane for the chooserPanels defined in
    * the JColorChooser.
+   * This is package-private to avoid an accessor method.
    *
    * @param panels The Panels that need tabs to be made for them.
    */
-  private void makeTabs(AbstractColorChooserPanel[] panels)
+  void makeTabs(AbstractColorChooserPanel[] panels)
   {
     pane.removeAll();
     for (int i = 0; i < panels.length; i++)
@@ -255,10 +259,11 @@ public class BasicColorChooserUI extends ColorChooserUI
   /**
    * This is a helper method that swaps the existing preview panel with the
    * given panel.
+   * This is package-private to avoid an accessor method.
    *
    * @param preview The new preview panel.
    */
-  private void updatePreviewPanel(JComponent preview)
+  void updatePreviewPanel(JComponent preview)
   {
     if (prevContainer == null)
       {

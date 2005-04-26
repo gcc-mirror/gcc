@@ -90,7 +90,8 @@ public class Window extends Container implements Accessible
 
   private transient boolean shown;
 
-  private transient Component windowFocusOwner;
+  // This is package-private to avoid an accessor method.
+  transient Component windowFocusOwner;
   
   /*
    * The number used to generate the name returned by getName.

@@ -126,14 +126,16 @@ public class ParserDelegator
 
   /**
    * The callback.
+   * This is package-private to avoid an accessor method.
    */
-  private HTMLEditorKit.ParserCallback callBack;
+  HTMLEditorKit.ParserCallback callBack;
 
   /**
    * The reference to the working class of HTML parser that is
    * actually used to parse the document.
+   * This is package-private to avoid an accessor method.
    */
-  private gnuParser gnu;
+  gnuParser gnu;
 
   /**
    * Parses the HTML document, calling methods of the provided

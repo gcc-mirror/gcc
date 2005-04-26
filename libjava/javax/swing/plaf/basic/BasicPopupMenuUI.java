@@ -1,5 +1,5 @@
 /* BasicPopupMenuUI.java
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -73,8 +73,9 @@ public class BasicPopupMenuUI extends PopupMenuUI
   /* PopupMenuListener listens to popup menu events fired by JPopupMenu*/
   private transient PopupMenuListener popupMenuListener;
 
-  /* ComponentListener listening to popupMenu's invoker. */
-  private TopWindowListener topWindowListener;
+  /* ComponentListener listening to popupMenu's invoker.
+   * This is package-private to avoid an accessor method.  */
+  TopWindowListener topWindowListener;
 
   /**
    * Creates a new BasicPopupMenuUI object.

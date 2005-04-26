@@ -1,5 +1,5 @@
 /* gnu.java.beans.PersistenceParser
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -83,8 +83,9 @@ public class PersistenceParser extends DefaultHandler implements Context
 	private ElementHandler currentHandler;
 
 	/** The real root element that stores all objects created during parsing.
+	 * Package-private to avoid an accessor method.
 	 */
-	private JavaHandler javaHandler;
+	JavaHandler javaHandler;
 
 	/** Stores the decoded objects. */
 	private List objects = new LinkedList();

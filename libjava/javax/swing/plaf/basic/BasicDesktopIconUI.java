@@ -1,5 +1,5 @@
 /* BasicDesktopIconUI.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -302,8 +302,9 @@ public class BasicDesktopIconUI extends DesktopIconUI
   /** The MouseListener responsible for reacting to MouseEvents on the JDesktopIcon. */
   private transient MouseInputListener mouseHandler;
 
-  /** The Button in the JDesktopIcon responsible for deiconifying it. */
-  private transient BoundButton button;
+  /** The Button in the JDesktopIcon responsible for deiconifying it.
+   * This is package-private to avoid an accessor method. */
+  transient BoundButton button;
 
   /** The PropertyChangeListener listening to the JDesktopIcon. */
   private transient PropertyChangeListener propertyHandler;

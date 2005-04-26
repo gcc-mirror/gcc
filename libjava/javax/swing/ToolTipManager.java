@@ -466,9 +466,9 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
   /**
    * This method displays the ToolTip. It can figure out the method needed to
    * show it as well (whether to display it in heavyweight/lightweight panel
-   * or a window.)
+   * or a window.)  This is package-private to avoid an accessor method.
    */
-  private void showTip()
+  void showTip()
   {
     if (! enabled || currentComponent == null)
       return;
@@ -535,8 +535,9 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
 
   /**
    * This method hides the ToolTip.
+   * This is package-private to avoid an accessor method.
    */
-  private void hideTip()
+  void hideTip()
   {
     if (currentTip == null || ! currentTip.isVisible() || ! enabled)
       return;

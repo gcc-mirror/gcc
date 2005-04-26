@@ -157,8 +157,9 @@ public class Parser
 
   /**
    * The attributes of the current HTML element.
+   * Package-private to avoid an accessor method.
    */
-  private htmlAttributeSet attributes =
+  htmlAttributeSet attributes =
     htmlAttributeSet.EMPTY_HTML_ATTRIBUTE_SET;
 
   /**
@@ -1154,9 +1155,10 @@ public class Parser
 
   /**
    * Actions that are also required if the closing action was
-   * intiated by the tag validator.
+   * initiated by the tag validator.
+   * Package-private to avoid an accessor method.
    */
-  private void _handleEndTag_remaining(TagElement tag)
+  void _handleEndTag_remaining(TagElement tag)
   {
     HTML.Tag h = tag.getHTMLTag();
 
@@ -1183,9 +1185,10 @@ public class Parser
    * A hooks for operations, preceeding call to handleStartTag().
    * The method is called when the HTML opening tag ((like &lt;table&gt;)
    * is found.
+   * Package-private to avoid an accessor method.
    * @param The tag
    */
-  private void _handleStartTag(TagElement tag)
+  void _handleStartTag(TagElement tag)
   {
     validator.openTag(tag, attributes);
     startingTag(tag);

@@ -82,6 +82,7 @@ public class Timer implements Serializable
 
   /**
    * DOCUMENT ME!
+   * Package-private to avoid an accessor method.
    */
   private void queueEvent()
   {
@@ -95,8 +96,9 @@ public class Timer implements Serializable
 
   /**
    * DOCUMENT ME!
+   * This is package-private to avoid an accessor method.
    */
-  private void drainEvents()
+  void drainEvents()
   {
     synchronized (queueLock)
       {

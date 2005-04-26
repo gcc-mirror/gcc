@@ -883,7 +883,8 @@ public abstract class JTextComponent extends JComponent
     return getUI().getEditorKit(this).getActions();
   }
     
-  private Document doc;
+  // This is package-private to avoid an accessor method.
+  Document doc;
   private Caret caret;
   private Highlighter highlighter;
   private Color caretColor;

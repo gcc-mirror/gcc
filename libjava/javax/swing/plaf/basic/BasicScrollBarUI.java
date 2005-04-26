@@ -645,8 +645,9 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
   /**
    * This method calculates the preferred size since calling
    * getPreferredSize() returns a cached value.
+   * This is package-private to avoid an accessor method.
    */
-  private void calculatePreferredSize()
+  void calculatePreferredSize()
   {
     // System.err.println(this + ".calculatePreferredSize()");
     int height;
@@ -1248,12 +1249,13 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
    * This method returns the value in the scrollbar's range given the y
    * coordinate. If the value is out of range, it will return the closest
    * legal value.
+   * This is package-private to avoid an accessor method.
    *
    * @param yPos The y coordinate to calculate a value for.
    *
    * @return The value for the y coordinate.
    */
-  private int valueForYPosition(int yPos)
+  int valueForYPosition(int yPos)
   {
     int min = scrollbar.getMinimum();
     int max = scrollbar.getMaximum();
@@ -1280,12 +1282,13 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
    * This method returns the value in the scrollbar's range given the x
    * coordinate. If the value is out of range, it will return the closest
    * legal value.
+   * This is package-private to avoid an accessor method.
    *
    * @param xPos The x coordinate to calculate a value for.
    *
    * @return The value for the x coordinate.
    */
-  private int valueForXPosition(int xPos)
+  int valueForXPosition(int xPos)
   {
     int min = scrollbar.getMinimum();
     int max = scrollbar.getMaximum();

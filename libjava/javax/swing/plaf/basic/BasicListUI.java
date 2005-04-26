@@ -1,5 +1,5 @@
 /* BasicListUI.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -491,10 +491,11 @@ public class BasicListUI extends ListUI
   /**
    * Marks the current layout as damaged and requests revalidation from the
    * JList.
+   * This is package-private to avoid an accessor method.
    *
    * @see #updateLayoutStateNeeded
    */
-  private void damageLayout()
+  void damageLayout()
   {
     updateLayoutStateNeeded = 1;
     list.revalidate();

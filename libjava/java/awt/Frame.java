@@ -186,8 +186,9 @@ private boolean resizable = true;
 /**
   * @serial The state of this frame.
   * // FIXME: What are the values here?
+  * This is package-private to avoid an accessor method.
   */
-private int state;
+int state;
 
 /**
   * @serial The title of the frame.

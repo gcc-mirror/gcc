@@ -2158,12 +2158,13 @@ public class BasicSliderUI extends SliderUI
 
   /**
    * This method finds the closest value that has a tick associated with it.
+   * This is package-private to avoid an accessor method.
    *
    * @param value The value to search from.
    *
    * @return The closest value that has a tick associated with it.
    */
-  private int findClosestTick(int value)
+  int findClosestTick(int value)
   {
     int min = slider.getMinimum();
     int max = slider.getMaximum();
