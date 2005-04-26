@@ -165,6 +165,8 @@ static bool arm_pass_by_reference (CUMULATIVE_ARGS *,
 static bool arm_promote_prototypes (tree);
 static bool arm_default_short_enums (void);
 static bool arm_align_anon_bitfield (void);
+static bool arm_return_in_msb (tree);
+static bool arm_must_pass_in_stack (enum machine_mode, tree);
 
 static tree arm_cxx_guard_type (void);
 static bool arm_cxx_guard_mask_bit (void);
@@ -318,6 +320,12 @@ static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 
 #undef TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT
 #define TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT arm_cxx_class_data_always_comdat
+
+#undef TARGET_RETURN_IN_MSB
+#define TARGET_RETURN_IN_MSB arm_return_in_msb
+
+#undef TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK arm_must_pass_in_stack
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2302,11 +2310,23 @@ arm_function_value(tree type, tree func ATTRIBUTE_UNUSED)
   int unsignedp ATTRIBUTE_UNUSED;
   rtx r ATTRIBUTE_UNUSED;
 
-
   mode = TYPE_MODE (type);
   /* Promote integer types.  */
   if (INTEGRAL_TYPE_P (type))
     PROMOTE_FUNCTION_MODE (mode, unsignedp, type);
+
+  /* Promotes small structs returned in a register to full-word size
+     for big-endian AAPCS.  */
+  if (arm_return_in_msb (type))
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (type);
+      if (size % UNITS_PER_WORD != 0)
+	{
+	  size += UNITS_PER_WORD - size % UNITS_PER_WORD;
+	  mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	}
+    }
+  
   return LIBCALL_VALUE(mode);
 }
 
@@ -4905,6 +4925,17 @@ vfp_secondary_reload_class (enum machine_mode mode, rtx x)
   return GENERAL_REGS;
 }
 
+/* Values which must be returned in the most-significant end of the return
+   register.  */
+
+static bool
+arm_return_in_msb (tree valtype)
+{
+  return (TARGET_AAPCS_BASED
+          && BYTES_BIG_ENDIAN
+          && (AGGREGATE_TYPE_P (valtype)
+              || TREE_CODE (valtype) == COMPLEX_TYPE));
+}
 
 /* Returns TRUE if INSN is an "LDR REG, ADDR" instruction.
    Use by the Cirrus Maverick code which has to workaround
@@ -6503,6 +6534,59 @@ arm_reload_out_hi (rtx *operands)
 			    gen_lowpart (QImode, scratch)));
     }
 }
+
+/* Return true if a type must be passed in memory. For AAPCS, small aggregates
+   (padded to the size of a word) should be passed in a register.  */
+
+static bool
+arm_must_pass_in_stack (enum machine_mode mode, tree type)
+{
+  if (TARGET_AAPCS_BASED)
+    return must_pass_in_stack_var_size (mode, type);
+  else
+    return must_pass_in_stack_var_size_or_pad (mode, type);
+}
+
+
+/* For use by FUNCTION_ARG_PADDING (MODE, TYPE).
+   Return true if an argument passed on the stack should be padded upwards,
+   i.e. if the least-significant byte has useful data.  */
+
+bool
+arm_pad_arg_upward (enum machine_mode mode, tree type)
+{
+  if (!TARGET_AAPCS_BASED)
+    return DEFAULT_FUNCTION_ARG_PADDING(mode, type);
+
+  if (type && BYTES_BIG_ENDIAN && INTEGRAL_TYPE_P (type))
+    return false;
+
+  return true;
+}
+
+
+/* Similarly, for use by BLOCK_REG_PADDING (MODE, TYPE, FIRST).
+   For non-AAPCS, return !BYTES_BIG_ENDIAN if the least significant
+   byte of the register has useful data, and return the opposite if the
+   most significant byte does.
+   For AAPCS, small aggregates and small complex types are always padded
+   upwards.  */
+
+bool
+arm_pad_reg_upward (enum machine_mode mode ATTRIBUTE_UNUSED,
+                    tree type, int first ATTRIBUTE_UNUSED)
+{
+  if (TARGET_AAPCS_BASED
+      && BYTES_BIG_ENDIAN
+      && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE)
+      && int_size_in_bytes (type) <= 4)
+    return true;
+
+  /* Otherwise, use default padding.  */
+  return !BYTES_BIG_ENDIAN;
+}
+
+
 
 /* Print a symbolic form of X to the debug file, F.  */
 static void

@@ -1,3 +1,19 @@
+2005-04-26  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (arm_return_in_msb): New function.
+	(arm_must_pass_in_stack): New function.
+	(TARGET_RETURN_IN_MSB): Define target hook.
+	(TARGET_MUST_PASS_IN_STACK): Define target hook.
+	(arm_function_value): Pad small aggregate return.
+	(arm_pad_arg_upward): New function.
+	(arm_pad_reg_upward): New function.
+	* config/arm/arm.h (PROMOTE_FUNCTION_MODE): Include complex values.
+	(FUNCTION_ARG_PADDING): Define macro.
+	(BLOCK_REG_PADDING): Define macro.
+	(PAD_VARARGS_DOWN): Correct padding for AAPCS.
+	* config/arm/arm-protos.h (arm_pad_arg_upward): Declare function.
+	(arm_pad_reg_upward): Declare function.
+
 2005-04-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h (ei_cond): New.
