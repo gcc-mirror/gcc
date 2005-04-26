@@ -160,17 +160,22 @@ public class BasicComboBoxUI extends ComboBoxUI
   private Color highlight;
   private Color lightHighlight;
 
-  /* Size of the largest item in the comboBox */
-  private Dimension largestItemSize;
+  /* Size of the largest item in the comboBox
+   * This is package-private to avoid an accessor method.
+   */
+  Dimension largestItemSize;
 
   // It seems that JComboBox doesn't have a border set explicitely. So we just
   // paint the border everytime combo box is displayed. 
 
-  /* border insets for this JComboBox*/
-  private static final Insets borderInsets = new Insets(2, 2, 2, 2);
+  /* border insets for this JComboBox
+   * This is package-private to avoid an accessor method. */
+  static final Insets borderInsets = new Insets(2, 2, 2, 2);
 
   // Width of the arrow button  
-  private static int arrowButtonWidth = 15;
+  // This is package-private to avoid an accessor method.
+  // FIXME: has wrong name for a constant.
+  static final int arrowButtonWidth = 15;
 
   // FIXME: This fields aren't used anywhere at this moment.
   protected Dimension cachedMinimumSize;

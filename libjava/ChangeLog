@@ -1,5 +1,97 @@
 2005-04-26  Tom Tromey  <tromey@redhat.com>
 
+	* javax/swing/text/html/parser/ParserDelegator.java (callBack,
+	gnu): Now package-private.
+	* javax/swing/text/html/parser/DocumentParser.java (parser,
+	callBack, gnu): Now package-private.
+	* javax/swing/text/StringContent.java (content, setOffset,
+	checkLocation): Now package-private.
+	* javax/swing/text/JTextComponent.java (doc): Now
+	package-private.
+	* javax/swing/plaf/basic/BasicToolBarUI.java (owner,
+	lastGoodOrientation, origParent, borders, cachedBounds,
+	cachedOrientation, DragWindow): Now package-private.
+	* javax/swing/plaf/basic/BasicTabbedPaneUI.java (incrButton,
+	decrButton, viewport, panel, currentScrollLocation, layoutManager,
+	tabAreaRect, contentRect, createIncreaseButton,
+	createDecreaseButton, findPointForIndex): Now package-private.
+	* javax/swing/plaf/basic/BasicSplitPaneDivider.java
+	(currentDividerLocation, moveDividerTo): Now package-private.
+	* javax/swing/plaf/basic/BasicSliderUI.java (findClosestTick): Now
+	package-private.
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
+	(calculatePreferredSize, valueForYPosition, valueForXPosition):
+	Now package-private.
+	* javax/swing/plaf/basic/BasicPopupMenuUI.java
+	(topWindowListener): Now package-private.
+	* javax/swing/plaf/basic/BasicOptionPaneUI.java (iconSize,
+	OK_STRING, YES_STRING, NO_STRING, CANCEL_STRING): Now constants.
+	(messageAreaContainer, buttonContainer, resetSelectedValue): Now
+	package-private.
+	* javax/swing/plaf/basic/BasicListUI.java (damageLayout): Now
+	package-private.
+	* javax/swing/plaf/basic/BasicInternalFrameTitlePane.java (title):
+	Now package-private.
+	* javax/swing/plaf/basic/BasicDesktopIconUI.java (button): Now
+	package-private.
+	* javax/swing/plaf/basic/BasicComboBoxUI.java (largestItemSize,
+	borderInsets): Now package-private.
+	(arrowButtonWidth): Likewise.  Now a constant.
+	* javax/swing/plaf/basic/BasicColorChooserUI.java (chooser, pane,
+	makeTabs, updatePreviewPanel): Now package-private.
+	* javax/swing/plaf/basic/BasicArrowButton.java (shadow,
+	darkShadow, highlight): Now package-private.
+	* javax/swing/colorchooser/DefaultSwatchChooserPanel.java
+	(addColorToQueue): Now package-private.
+	* javax/swing/colorchooser/DefaultRGBChooserPanel.java
+	(spinnerChange, sliderChange, updateChange, R, G, B, RSpinner,
+	GSpinner, BSpinner): Now package-private.
+	* javax/swing/colorchooser/DefaultHSBChooserPanel.java
+	(gradientImage, trackImage, slider, hRadio, sRadio, bRadio,
+	hSpinner, sSpinner, bSpinner, gradientPoint, internalChange,
+	spinnerTrigger, locked, handlingMouse, updateImage, updateSlider,
+	updateTrack): Now package-private.
+	* javax/swing/TransferHandler.java (clipboard): Now
+	package-private.
+	* javax/swing/ToolTipManager.java (showTip, hideTip): Now
+	package-private.
+	* javax/swing/Timer.java (drainEvents, queueEvent): Now
+	package-private.
+	* javax/swing/RepaintManager.java (globalManager): Now
+	package-private.
+	* javax/swing/JFormattedTextField.java (editValid): Now
+	package-private.
+	* javax/swing/JColorChooser.java (makeModal): Now
+	package-private.
+	* java/awt/geom/GeneralPath.java (rule, types, xpoints, ypoints,
+	index, path): Now package-private.
+	* java/awt/geom/Area.java (solids, holes, cubicCubicIntersect,
+	lineQuadIntersect, lineCubicIntersect, linesIntersect,
+	pointEquals): Now package-private.
+	* java/awt/geom/Arc2D.java (type): Now package-private.
+	* java/awt/Window.java (windowFocusOwner): Now package-private.
+	* java/awt/TextComponent.java (editable, selectionStart,
+	selectionEnd, text, getIndexAtPoint, getCharacterBounds): Now
+	package-private.
+	* java/awt/MenuItem.java (actionCommand, enabled, label): Now
+	package-private.
+	* java/awt/MenuComponent.java (focusListener): Now
+	package-private.
+	* java/awt/Frame.java (state): Now package-private.
+	* java/awt/Choice.java (pItems): Now package-private.
+	* java/awt/Checkbox.java (state): Now package-private.
+	* java/awt/Button.java (actionCommand, label): Now
+	package-private.
+	* gnu/javax/swing/text/html/parser/support/Parser.java
+	(attributes, _handleEndTag_remaining, _handleStartTag): Now
+	package-private.
+	* gnu/java/beans/decoder/PersistenceParser.java (javaHandler): Now
+	package-private.
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java (paint, stroke, fg, bg,
+	clip, transform, font, comp): Now package-private.
+
+2005-04-26  Tom Tromey  <tromey@redhat.com>
+
 	* java/awt/Robot.java (waitForIdle): Call invokeAndWait in a
 	static way.
 

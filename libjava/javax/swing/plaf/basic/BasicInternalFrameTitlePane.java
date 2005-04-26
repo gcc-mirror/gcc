@@ -1,5 +1,5 @@
 /* BasicInternalFrameTitlePane.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -644,8 +644,9 @@ public class BasicInternalFrameTitlePane extends JComponent
   /**
    * The label used to display the title. This label is not added to the
    * TitlePane.
+   * This is package-private to avoid an accessor method.
    */
-  private transient JLabel title;
+  transient JLabel title;
 
   /**
    * Creates a new BasicInternalFrameTitlePane object that is used in the

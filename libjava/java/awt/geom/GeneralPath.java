@@ -88,15 +88,18 @@ public final class GeneralPath implements Shape, Cloneable
   /** A big number, but not so big it can't survive a few float operations */
   private static final double BIG_VALUE = java.lang.Double.MAX_VALUE / 10.0;
 
-  /** The winding rule. */
-  private int rule;
+  /** The winding rule.
+   * This is package-private to avoid an accessor method.
+   */
+  int rule;
 
   /**
    * The path type in points. Note that xpoints[index] and ypoints[index] maps
    * to types[index]; the control points of quad and cubic paths map as
    * well but are ignored.
+   * This is package-private to avoid an accessor method.
    */
-  private byte[] types;
+  byte[] types;
 
   /**
    * The list of all points seen. Since you can only append floats, it makes
@@ -104,15 +107,18 @@ public final class GeneralPath implements Shape, Cloneable
    * allow a general path of double precision points.
    * Note: Storing x and y coords seperately makes for a slower transforms,
    * But it speeds up and simplifies box-intersection checking a lot.
+   * These are package-private to avoid accessor methods.
    */
-  private float[] xpoints;
-  private float[] ypoints;
+  float[] xpoints;
+  float[] ypoints;
 
   /** The index of the most recent moveto point, or null. */
   private int subpath = -1;
 
-  /** The next available index into points. */
-  private int index;
+  /** The next available index into points.
+   * This is package-private to avoid an accessor method.
+   */
+  int index;
 
   /**
    * Constructs a GeneralPath with the default (NON_ZERO)
@@ -534,8 +540,9 @@ public final class GeneralPath implements Shape, Cloneable
 
     /**
      * The GeneralPath whose segments are being iterated.
+     * This is package-private to avoid an accessor method.
      */
-    private final GeneralPath path;
+    final GeneralPath path;
 
     /**
      * The affine transformation used to transform coordinates.

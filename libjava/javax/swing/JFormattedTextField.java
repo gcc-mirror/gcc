@@ -155,7 +155,8 @@ public class JFormattedTextField extends JTextField
   private Object value;
   private int focusLostBehavior = COMMIT_OR_REVERT;
   private AbstractFormatterFactory formatterFactory;
-  private boolean editValid = true;
+  // Package-private to avoid an accessor method.
+  boolean editValid = true;
   
   public JFormattedTextField ()
   {

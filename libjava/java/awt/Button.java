@@ -77,13 +77,15 @@ private static final long serialVersionUID = -8774683716313001058L;
 
 /**
   * @serial The action command name for this button.
+  * This is package-private to avoid an accessor method.
   */
-private String actionCommand;
+String actionCommand;
 
 /**
   * @serial The label for this button.
+  * This is package-private to avoid an accessor method.
   */
-private String label;
+String label;
 
 // List of ActionListeners for this class.
 private transient ActionListener action_listeners;

@@ -1,5 +1,5 @@
 /* BasicSplitPaneDivider.java --
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -157,8 +157,9 @@ public class BasicSplitPaneDivider extends Container
   /**
    * Keeps track of where the divider should be placed when using one touch
    * expand buttons.
+   * This is package-private to avoid an accessor method.
    */
-  private transient int currentDividerLocation = 1;
+  transient int currentDividerLocation = 1;
 
   /** DOCUMENT ME! */
   private transient Border tmpBorder = new Border()
@@ -493,10 +494,11 @@ public class BasicSplitPaneDivider extends Container
    * using one touch expand buttons. Location 0 is the left (or top) most
    * location. Location 1 is the middle. Location 2 is the right (or bottom)
    * most location.
+   * This is package-private to avoid an accessor method.
    *
    * @param locationIndex The location to move to.
    */
-  private void moveDividerTo(int locationIndex)
+  void moveDividerTo(int locationIndex)
   {
     Insets insets = splitPane.getInsets();
     switch (locationIndex)

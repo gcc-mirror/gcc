@@ -119,8 +119,9 @@ public class TransferHandler implements Serializable
   
   /**
    * Clipboard if system clipboard may not be used.
+   * Package-private to avoid an accessor method.
    */
-  private static Clipboard clipboard;
+  static Clipboard clipboard;
   
   private int sourceActions;
   private Icon visualRepresentation;

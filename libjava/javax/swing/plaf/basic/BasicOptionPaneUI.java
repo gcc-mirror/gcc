@@ -1,5 +1,5 @@
 /* BasicOptionPaneUI.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -439,7 +439,8 @@ public class BasicOptionPaneUI extends OptionPaneUI
   protected JOptionPane optionPane;
 
   /** The size of the icons. */
-  private static int iconSize = 36;
+  // FIXME: wrong name for a constant.
+  private static final int iconSize = 36;
 
   /** The foreground color for the message area. */
   private transient Color messageForeground;
@@ -451,22 +452,28 @@ public class BasicOptionPaneUI extends OptionPaneUI
   private transient Border buttonBorder;
 
   /** The string used to describe OK buttons. */
-  private static String OK_STRING = "OK";
+  // FIXME: wrong name for a constant.
+  private static final String OK_STRING = "OK";
 
   /** The string used to describe Yes buttons. */
-  private static String YES_STRING = "Yes";
+  // FIXME: wrong name for a constant.
+  private static final String YES_STRING = "Yes";
 
   /** The string used to describe No buttons. */
-  private static String NO_STRING = "No";
+  // FIXME: wrong name for a constant.
+  private static final String NO_STRING = "No";
 
   /** The string used to describe Cancel buttons. */
-  private static String CANCEL_STRING = "Cancel";
+  // FIXME: wrong name for a constant.
+  private static final String CANCEL_STRING = "Cancel";
 
-  /** The container for the message area. */
-  private transient Container messageAreaContainer;
+  /** The container for the message area.
+   * This is package-private to avoid an accessor method. */
+  transient Container messageAreaContainer;
 
-  /** The container for the buttons. */
-  private transient Container buttonContainer;
+  /** The container for the buttons.
+   * This is package-private to avoid an accessor method.  */
+  transient Container buttonContainer;
 
   /**
    * A helper class that implements Icon. This is used temporarily until
@@ -1227,8 +1234,9 @@ public class BasicOptionPaneUI extends OptionPaneUI
   /**
    * This method resets the value in the inputComponent to the
    * initialSelectionValue property.
+   * This is package-private to avoid an accessor method.
    */
-  private void resetSelectedValue()
+  void resetSelectedValue()
   {
     if (inputComponent != null)
       {

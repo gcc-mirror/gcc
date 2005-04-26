@@ -82,8 +82,9 @@ import javax.swing.plaf.UIResource;
  */
 public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 {
-  /** Static owner of all DragWindows. */
-  private static JFrame owner = new JFrame();
+  /** Static owner of all DragWindows.
+   * This is package-private to avoid an accessor method.  */
+  static JFrame owner = new JFrame();
 
   /** The border used when the JToolBar is in nonrollover mode. */
   private static Border nonRolloverBorder;
@@ -94,8 +95,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
   /** The last known BorderLayout constraint before floating. */
   protected String constraintBeforeFloating;
 
-  /** The last known orientation of the JToolBar before floating. */
-  private int lastGoodOrientation;
+  /** The last known orientation of the JToolBar before floating.
+   * This is package-private to avoid an accessor method.  */
+  int lastGoodOrientation;
 
   /** The color of the border when it is dockable. */
   protected Color dockingBorderColor;
@@ -136,20 +138,24 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    */
   private transient Window floatFrame;
 
-  /** The original parent of the JToolBar. */
-  private transient Container origParent;
+  /** The original parent of the JToolBar.
+   * This is package-private to avoid an accessor method.  */
+  transient Container origParent;
 
-  /** A hashtable of components and their original borders. */
-  private transient Hashtable borders;
+  /** A hashtable of components and their original borders.
+   * This is package-private to avoid an accessor method.  */
+  transient Hashtable borders;
 
   /** A window listener for the floatable frame. */
   private transient WindowListener windowListener;
 
-  /** A set of cached bounds of the JToolBar. */
-  private transient Dimension cachedBounds;
+  /** A set of cached bounds of the JToolBar.
+   * This is package-private to avoid an accessor method.  */
+  transient Dimension cachedBounds;
 
-  /** The cached orientation of the JToolBar. */
-  private transient int cachedOrientation;
+  /** The cached orientation of the JToolBar.
+   * This is package-private to avoid an accessor method.  */
+  transient int cachedOrientation;
 
   /**
    * This method creates a new <code>BasicToolBarUI</code> object for the given JToolBar.
@@ -1086,8 +1092,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
     /**
      * Creates a new DragWindow object.
+     * This is package-private to avoid an accessor method.
      */
-    private DragWindow()
+    DragWindow()
     {
       super(owner);
     }

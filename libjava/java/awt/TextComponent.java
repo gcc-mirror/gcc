@@ -76,23 +76,27 @@ private static final long serialVersionUID = -2214773872412987419L;
 
 /**
   * @serial Indicates whether or not this component is editable.
+  * This is package-private to avoid an accessor method.
   */
-private boolean editable;
+boolean editable;
 
 /**
   * @serial The starting position of the selected text region.
+  * This is package-private to avoid an accessor method.
   */
-private int selectionStart;
+int selectionStart;
 
 /**
   * @serial The ending position of the selected text region.
+  * This is package-private to avoid an accessor method.
   */
-private int selectionEnd;
+int selectionEnd;
 
 /**
   * @serial The text in the component
+  * This is package-private to avoid an accessor method.
   */
-private String text;
+String text;
 
 /**
   * A list of listeners that will receive events from this object.
@@ -708,8 +712,9 @@ paramString()
   
   /*******************************/
   // Provide AccessibleAWTTextComponent access to several peer functions that
-  // aren't publicly exposed.
-  private synchronized int
+  // aren't publicly exposed.  This is package-private to avoid an accessor
+  // method.
+  synchronized int
   getIndexAtPoint(Point p)
   {
     TextComponentPeer tcp = (TextComponentPeer)getPeer();
@@ -718,7 +723,7 @@ paramString()
     return -1;
   }
   
-  private synchronized Rectangle
+  synchronized Rectangle
   getCharacterBounds(int i)
   {
     TextComponentPeer tcp = (TextComponentPeer)getPeer();

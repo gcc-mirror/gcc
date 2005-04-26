@@ -229,11 +229,11 @@ public class JColorChooser extends JComponent implements Accessible
 
   /**
    * This is a helper method to make the given JDialog block until it is
-   * hidden.
+   * hidden.  This is package-private to avoid an accessor method.
    *
    * @param dialog The JDialog to block.
    */
-  private static void makeModal(JDialog dialog)
+  static void makeModal(JDialog dialog)
   {
     try
       {

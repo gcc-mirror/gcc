@@ -1181,20 +1181,25 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
     }
   }
 
-  /** The button that increments the current scroll location. */
-  private transient ScrollingButton incrButton;
+  /** The button that increments the current scroll location.
+   * This is package-private to avoid an accessor method.  */
+  transient ScrollingButton incrButton;
 
-  /** The button that decrements the current scroll location. */
-  private transient ScrollingButton decrButton;
+  /** The button that decrements the current scroll location.
+   * This is package-private to avoid an accessor method.  */
+  transient ScrollingButton decrButton;
 
-  /** The viewport used to display the tabs. */
-  private transient ScrollingViewport viewport;
+  /** The viewport used to display the tabs.
+   * This is package-private to avoid an accessor method.  */
+  transient ScrollingViewport viewport;
 
-  /** The panel inside the viewport that paints the tabs. */
-  private transient ScrollingPanel panel;
+  /** The panel inside the viewport that paints the tabs.
+   * This is package-private to avoid an accessor method.  */
+  transient ScrollingPanel panel;
 
-  /** The starting visible tab in the run in SCROLL_TAB_MODE. */
-  private transient int currentScrollLocation;
+  /** The starting visible tab in the run in SCROLL_TAB_MODE.
+   * This is package-private to avoid an accessor method.  */
+  transient int currentScrollLocation;
 
   /** A reusable rectangle. */
   protected Rectangle calcRect;
@@ -1305,14 +1310,17 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
   /** The tab pane that this UI paints. */
   protected JTabbedPane tabPane;
 
-  /** The current layout manager for the tabPane. */
-  private transient LayoutManager layoutManager;
+  /** The current layout manager for the tabPane.
+   * This is package-private to avoid an accessor method.  */
+  transient LayoutManager layoutManager;
 
-  /** The rectangle that describes the tab area's position and size. */
-  private transient Rectangle tabAreaRect;
+  /** The rectangle that describes the tab area's position and size.
+   * This is package-private to avoid an accessor method.  */
+  transient Rectangle tabAreaRect;
 
-  /** The rectangle that describes the content area's position and size. */
-  private transient Rectangle contentRect;
+  /** The rectangle that describes the content area's position and
+   * size.  This is package-private to avoid an accessor method.  */
+  transient Rectangle contentRect;
 
   /**
    * Creates a new BasicTabbedPaneUI object.
@@ -1325,10 +1333,11 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
   /**
    * This method creates a ScrollingButton that  points in the appropriate
    * direction for an increasing button.
+   * This is package-private to avoid an accessor method.
    *
    * @return The increase ScrollingButton.
    */
-  private ScrollingButton createIncreaseButton()
+  ScrollingButton createIncreaseButton()
   {
     if (incrButton == null)
       incrButton = new ScrollingButton(SwingConstants.NORTH);
@@ -1343,10 +1352,11 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
   /**
    * This method creates a ScrollingButton that points in the appropriate
    * direction for a decreasing button.
+   * This is package-private to avoid an accessor method.
    *
    * @return The decrease ScrollingButton.
    */
-  private ScrollingButton createDecreaseButton()
+  ScrollingButton createDecreaseButton()
   {
     if (decrButton == null)
       decrButton = new ScrollingButton(SwingConstants.SOUTH);
@@ -1361,12 +1371,13 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
   /**
    * This method finds the point to set the view  position at given the index
    * of a tab. The tab will be the first visible tab in the run.
+   * This is package-private to avoid an accessor method.
    *
    * @param index The index of the first visible tab.
    *
    * @return The position of the first visible tab.
    */
-  private Point findPointForIndex(int index)
+  Point findPointForIndex(int index)
   {
     int tabPlacement = tabPane.getTabPlacement();
     int selectedIndex = tabPane.getSelectedIndex();

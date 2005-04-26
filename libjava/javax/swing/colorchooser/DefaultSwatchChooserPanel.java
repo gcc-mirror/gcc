@@ -501,10 +501,11 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
 
     /**
      * This method adds the given color to the beginning of the swatch panel.
+     * Package-private to avoid an accessor method.
      *
      * @param c The color to add.
      */
-    private void addColorToQueue(Color c)
+    void addColorToQueue(Color c)
     {
       if (--start == -1)
 	start = numRows * numCols - 1;

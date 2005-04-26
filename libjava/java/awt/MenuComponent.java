@@ -161,8 +161,9 @@ private static final long serialVersionUID = -4536902356223894379L;
    *
    * @see AccessibleAWTMenuComponent#addFocusListener(java.awt.event.FocusListener)
    * @serial ignored.
+   * This is package-private to avoid an accessor method.
    */
-  private transient FocusListener focusListener;
+  transient FocusListener focusListener;
 
 /*************************************************************************/
 
