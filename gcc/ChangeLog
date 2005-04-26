@@ -1,3 +1,8 @@
+2005-04-25  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.c (darwin_encode_section_info): Always set
+	MACHO_SYMBOL_STATIC for all ! TREE_PUBLIC symbols.
+
 2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c, gcc.c, gcov-dump.c, gcov.c, gen-protos.c,
