@@ -9708,6 +9708,39 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    return t1;
 	}
 
+      /* Fold a comparison of the address of COMPONENT_REFs with the same
+         type and component to a comparison of the address of the base
+	 object.  In short, &x->a OP &y->a to x OP y and
+         &x->a OP &y.a to x OP &y  */
+      if (TREE_CODE (arg0) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == COMPONENT_REF
+	  && TREE_CODE (arg1) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == COMPONENT_REF)
+        {
+	  tree cref0 = TREE_OPERAND (arg0, 0);
+	  tree cref1 = TREE_OPERAND (arg1, 0);
+	  if (TREE_OPERAND (cref0, 1) == TREE_OPERAND (cref1, 1))
+	    {
+	      tree op0 = TREE_OPERAND (cref0, 0);
+	      tree op1 = TREE_OPERAND (cref1, 0);
+	      if (TREE_CODE (op0) == INDIRECT_REF)
+		op0 = TREE_OPERAND (op0, 0);
+	      else
+	        {
+	          tree ptype = build_pointer_type (TREE_TYPE (op0));
+	          op0 = build1 (ADDR_EXPR, ptype, op0);
+		}
+	      if (TREE_CODE (op1) == INDIRECT_REF)
+		op1 = TREE_OPERAND (op1, 0);
+	      else
+	        {
+	          tree ptype = build_pointer_type (TREE_TYPE (op1));
+		  op1 = build1 (ADDR_EXPR, ptype, op1);
+		}
+	      return fold_build2 (code, type, op0, op1);
+	    }
+	}
+
       /* If this is a comparison of complex values and either or both sides
 	 are a COMPLEX_EXPR or COMPLEX_CST, it is best to split up the
 	 comparisons and join them with a TRUTH_ANDIF_EXPR or TRUTH_ORIF_EXPR.
