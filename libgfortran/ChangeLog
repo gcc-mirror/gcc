@@ -1,5 +1,10 @@
-2005-04-18 Paul Thomas <pault@gcc.gnu.org>
-	   Jerry DeLisle <jvdelisle@verizon.net> 
+2005-04-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* io/rewind.c (st_rewind): Flush the stream when resetting the mode
+	from WRITING to READING.
+
+2005-04-22  Paul Thomas  <pault@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@verizon.net> 
 
 	* io/write.c (nml_write_obj): Provide 1 more byte for ext_name.
 	* io/list_read.c (nml_get_obj_data): Put extra brackets in get_mem
