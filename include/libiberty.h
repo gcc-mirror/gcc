@@ -54,6 +54,12 @@ extern "C" {
 
 extern void unlock_stream (FILE *);
 
+/* If the OS supports it, ensure that the standard I/O streams, stdin,
+   stdout and stderr are setup to avoid any multi-threaded locking.
+   Otherwise do nothing.  */
+
+extern void unlock_std_streams (void);
+
 /* Open and return a FILE pointer.  If the OS supports it, ensure that
    the stream is setup to avoid any multi-threaded locking.  Otherwise
    return the FILE pointer unchanged.  */

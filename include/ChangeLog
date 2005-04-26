@@ -1,3 +1,7 @@
+2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (unlock_std_streams): New.
+
 2005-04-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* hashtab.h, libiberty.h, objalloc.h, splay-tree.h, ternary.h:
