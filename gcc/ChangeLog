@@ -1,3 +1,8 @@
+2005-04-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (lv_adjust_loop_header_phi): Speed up moving a
+	call to find_edge outside a loop to go through a PHI chain.
+
 2004-04-26  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR tree-optimization/17598
