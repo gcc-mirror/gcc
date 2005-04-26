@@ -1302,11 +1302,10 @@ mmix_assemble_integer (rtx x, unsigned int size, int aligned_p)
 	return true;
 
       case 8:
-	if (GET_CODE (x) == CONST_DOUBLE)
-	  /* We don't get here anymore for CONST_DOUBLE, because DImode
-	     isn't expressed as CONST_DOUBLE, and DFmode is handled
-	     elsewhere.  */
-	  abort ();
+	/* We don't get here anymore for CONST_DOUBLE, because DImode
+	   isn't expressed as CONST_DOUBLE, and DFmode is handled
+	   elsewhere.  */
+	gcc_assert (GET_CODE (x) != CONST_DOUBLE);
 	assemble_integer_with_op ("\tOCTA\t", x);
 	return true;
       }

@@ -1008,11 +1008,12 @@ extern int sparc_mode_class[];
    because reg_class_subunion[GENERAL_REGS][FP_REGS] will yield FP_REGS,
    because FP_REGS > GENERAL_REGS.
 
-   It is also important that one class contain all the general and all the
-   fp regs.  Otherwise when spilling a DFmode reg, it may be from EXTRA_FP_REGS
-   but find_reloads() may use class GENERAL_OR_FP_REGS. This will cause
-   allocate_reload_reg() to bypass it causing an abort because the compiler
-   thinks it doesn't have a spill reg when in fact it does.
+   It is also important that one class contain all the general and all
+   the fp regs.  Otherwise when spilling a DFmode reg, it may be from
+   EXTRA_FP_REGS but find_reloads() may use class
+   GENERAL_OR_FP_REGS. This will cause allocate_reload_reg() to die
+   because the compiler thinks it doesn't have a spill reg when in
+   fact it does.
 
    v9 also has 4 floating point condition code registers.  Since we don't
    have a class that is the union of FPCC_REGS with either of the others,

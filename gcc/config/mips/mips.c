@@ -1698,7 +1698,7 @@ mips_legitimize_tls_address (rtx loc)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return dest;
