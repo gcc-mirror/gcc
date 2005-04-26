@@ -143,7 +143,7 @@ public class InetAddress implements Serializable
   {
     // Mask against high order bits of 1110
     if (addr.length == 4)
-      return (addr[0] & 0xF0) == 0xE0;
+      return (addr[0] & 0xf0) == 0xe0;
 
     // Mask against high order bits of 11111111
     if (addr.length == 16)
@@ -173,7 +173,7 @@ public class InetAddress implements Serializable
   {
     // This is the IPv4 implementation.
     // Any class derived from InetAddress should override this.
-    return addr[0] == 0x7F;
+    return (addr[0] & 0xff) == 0x7f;
   }
 
   /**
@@ -198,18 +198,17 @@ public class InetAddress implements Serializable
   {
     // This is the IPv4 implementation.
     // Any class derived from InetAddress should override this.
+
     // 10.0.0.0/8
-    if (addr[0] == 0x0A)
+    if ((addr[0] & 0xff) == 0x0a)
       return true;
 
-    // XXX: Suns JDK 1.4.1 (on Linux) seems to have a bug here:
-    // it says 172.16.0.0 - 172.255.255.255 are site local addresses
     // 172.16.0.0/12
-    if (addr[0] == 0xAC && (addr[1] & 0xF0) == 0x01)
+    if ((addr[0] & 0xff) == 0xac && (addr[1] & 0xf0) == 0x10)
       return true;
 
     // 192.168.0.0/16
-    if (addr[0] == 0xC0 && addr[1] == 0xA8)
+    if ((addr[0] & 0xff) == 0xc0 && (addr[1] & 0xff) == 0xa8)
       return true;
 
     // XXX: Do we need to check more addresses here ?
@@ -254,7 +253,9 @@ public class InetAddress implements Serializable
     if (! isMulticastAddress())
       return false;
 
-    return (addr[0] == 0xE0 && addr[1] == 0x00 && addr[2] == 0x00);
+    return ((addr[0] & 0xff) == 0xe0
+	    && (addr[1] & 0xff)  == 0x00
+	    && (addr[2] & 0xff)  == 0x00);
   }
 
   /**
@@ -447,7 +448,7 @@ public class InetAddress implements Serializable
     int i = len > 4 ? len - 4 : 0;
 
     for (; i < len; i++)
-      hash = (hash << 8) | (addr[i] & 0xFF);
+      hash = (hash << 8) | (addr[i] & 0xff);
 
     return hash;
   }
