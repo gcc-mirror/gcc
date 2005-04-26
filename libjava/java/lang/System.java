@@ -177,9 +177,9 @@ public final class System
    */
   public static synchronized void setSecurityManager(SecurityManager sm)
   {
-    // Implementation note: the field lives in Runtime because of bootstrap
-    // initialization issues. This method is synchronized so that no other
-    // thread changes it to null before this thread makes the change.
+    // Implementation note: the field lives in SecurityManager because of
+    // bootstrap initialization issues. This method is synchronized so that
+    // no other thread changes it to null before this thread makes the change.
     if (SecurityManager.current != null)
       SecurityManager.current.checkPermission
         (new RuntimePermission("setSecurityManager"));
@@ -194,8 +194,6 @@ public final class System
    */
   public static SecurityManager getSecurityManager()
   {
-    // Implementation note: the field lives in Runtime because of bootstrap
-    // initialization issues.
     return SecurityManager.current;
   }
 
