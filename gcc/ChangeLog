@@ -1,3 +1,12 @@
+2005-04-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-loop-ivopts.c (ivopts_data, decl_rtl_to_reset,
+	n_iv_uses, iv_use, n_iv_cands, iv_cand,
+	tree_ssa_iv_optimize_init, record_use, add_candidate_1,
+	prepare_decl_rtl, free_loop_data,
+	tree_ssa_iv_optimize_finalize): Use the VEC API instead of
+	VARRAY.
+
 2005-04-26  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (thumb_mulsi3): Use two-operand assembly form.
