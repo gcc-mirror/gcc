@@ -195,6 +195,14 @@ struct iv_cand
 
 /* The data used by the induction variable optimizations.  */
 
+typedef struct iv_use *iv_use_p;
+DEF_VEC_P(iv_use_p);
+DEF_VEC_ALLOC_P(iv_use_p,heap);
+
+typedef struct iv_cand *iv_cand_p;
+DEF_VEC_P(iv_cand_p);
+DEF_VEC_ALLOC_P(iv_cand_p,heap);
+
 struct ivopts_data
 {
   /* The currently optimized loop.  */
@@ -216,10 +224,10 @@ struct ivopts_data
   unsigned max_inv_id;
 
   /* The uses of induction variables.  */
-  varray_type iv_uses;
+  VEC(iv_use_p,heap) *iv_uses;
 
   /* The candidates.  */
-  varray_type iv_candidates;
+  VEC(iv_cand_p,heap) *iv_candidates;
 
   /* A bitmap of important candidates.  */
   bitmap important_candidates;
@@ -304,14 +312,14 @@ struct iv_ca_delta
 /* The list of trees for that the decl_rtl field must be reset is stored
    here.  */
 
-static varray_type decl_rtl_to_reset;
+static VEC(tree,heap) *decl_rtl_to_reset;
 
 /* Number of uses recorded in DATA.  */
 
 static inline unsigned
 n_iv_uses (struct ivopts_data *data)
 {
-  return VARRAY_ACTIVE_SIZE (data->iv_uses);
+  return VEC_length (iv_use_p, data->iv_uses);
 }
 
 /* Ith use recorded in DATA.  */
@@ -319,7 +327,7 @@ n_iv_uses (struct ivopts_data *data)
 static inline struct iv_use *
 iv_use (struct ivopts_data *data, unsigned i)
 {
-  return VARRAY_GENERIC_PTR_NOGC (data->iv_uses, i);
+  return VEC_index (iv_use_p, data->iv_uses, i);
 }
 
 /* Number of candidates recorded in DATA.  */
@@ -327,7 +335,7 @@ iv_use (struct ivopts_data *data, unsigned i)
 static inline unsigned
 n_iv_cands (struct ivopts_data *data)
 {
-  return VARRAY_ACTIVE_SIZE (data->iv_candidates);
+  return VEC_length (iv_cand_p, data->iv_candidates);
 }
 
 /* Ith candidate recorded in DATA.  */
@@ -335,7 +343,7 @@ n_iv_cands (struct ivopts_data *data)
 static inline struct iv_cand *
 iv_cand (struct ivopts_data *data, unsigned i)
 {
-  return VARRAY_GENERIC_PTR_NOGC (data->iv_candidates, i);
+  return VEC_index (iv_cand_p, data->iv_candidates, i);
 }
 
 /* The data for LOOP.  */
@@ -743,9 +751,9 @@ tree_ssa_iv_optimize_init (struct loops *loops, struct ivopts_data *data)
     if (loops->parray[i])
       loops->parray[i]->aux = xcalloc (1, sizeof (struct loop_data));
 
-  VARRAY_GENERIC_PTR_NOGC_INIT (data->iv_uses, 20, "iv_uses");
-  VARRAY_GENERIC_PTR_NOGC_INIT (data->iv_candidates, 20, "iv_candidates");
-  VARRAY_GENERIC_PTR_NOGC_INIT (decl_rtl_to_reset, 20, "decl_rtl_to_reset");
+  data->iv_uses = VEC_alloc (iv_use_p, heap, 20);
+  data->iv_candidates = VEC_alloc (iv_cand_p, heap, 20);
+  decl_rtl_to_reset = VEC_alloc (tree, heap, 20);
 }
 
 /* Returns a memory object to that EXPR points.  In case we are able to
@@ -1165,7 +1173,7 @@ record_use (struct ivopts_data *data, tree *use_p, struct iv *iv,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_use (dump_file, use);
 
-  VARRAY_PUSH_GENERIC_PTR_NOGC (data->iv_uses, use);
+  VEC_safe_push (iv_use_p, heap, data->iv_uses, use);
 
   return use;
 }
@@ -1939,7 +1947,7 @@ add_candidate_1 (struct ivopts_data *data,
 	}
       cand->important = important;
       cand->incremented_at = incremented_at;
-      VARRAY_PUSH_GENERIC_PTR_NOGC (data->iv_candidates, cand);
+      VEC_safe_push (iv_cand_p, heap, data->iv_candidates, cand);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	dump_cand (dump_file, cand);
@@ -2439,7 +2447,7 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
 
   if (x)
     {
-      VARRAY_PUSH_GENERIC_PTR_NOGC (decl_rtl_to_reset, obj);
+      VEC_safe_push (tree, heap, decl_rtl_to_reset, obj);
       SET_DECL_RTL (obj, x);
     }
 
@@ -5235,6 +5243,7 @@ free_loop_data (struct ivopts_data *data)
 {
   unsigned i, j;
   bitmap_iterator bi;
+  tree obj;
 
   htab_empty (data->niters);
 
@@ -5265,7 +5274,7 @@ free_loop_data (struct ivopts_data *data)
       free (use->cost_map);
       free (use);
     }
-  VARRAY_POP_ALL (data->iv_uses);
+  VEC_truncate (iv_use_p, data->iv_uses, 0);
 
   for (i = 0; i < n_iv_cands (data); i++)
     {
@@ -5275,7 +5284,7 @@ free_loop_data (struct ivopts_data *data)
 	free (cand->iv);
       free (cand);
     }
-  VARRAY_POP_ALL (data->iv_candidates);
+  VEC_truncate (iv_cand_p, data->iv_candidates, 0);
 
   if (data->version_info_size < num_ssa_names)
     {
@@ -5287,13 +5296,10 @@ free_loop_data (struct ivopts_data *data)
 
   data->max_inv_id = 0;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (decl_rtl_to_reset); i++)
-    {
-      tree obj = VARRAY_GENERIC_PTR_NOGC (decl_rtl_to_reset, i);
+  for (i = 0; VEC_iterate (tree, decl_rtl_to_reset, i, obj); i++)
+    SET_DECL_RTL (obj, NULL_RTX);
 
-      SET_DECL_RTL (obj, NULL_RTX);
-    }
-  VARRAY_POP_ALL (decl_rtl_to_reset);
+  VEC_truncate (tree, decl_rtl_to_reset, 0);
 }
 
 /* Finalizes data structures used by the iv optimization pass.  LOOPS is the
@@ -5317,9 +5323,9 @@ tree_ssa_iv_optimize_finalize (struct loops *loops, struct ivopts_data *data)
   BITMAP_FREE (data->important_candidates);
   htab_delete (data->niters);
 
-  VARRAY_FREE (decl_rtl_to_reset);
-  VARRAY_FREE (data->iv_uses);
-  VARRAY_FREE (data->iv_candidates);
+  VEC_free (tree, heap, decl_rtl_to_reset);
+  VEC_free (iv_use_p, heap, data->iv_uses);
+  VEC_free (iv_cand_p, heap, data->iv_candidates);
 }
 
 /* Optimizes the LOOP.  Returns true if anything changed.  */
