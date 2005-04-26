@@ -50,25 +50,42 @@ import java.security.Security;
  * String passwd = AccessController.doPrivileged(action);
  * </code>
  */
-public class GetSecurityPropertyAction extends GetPropertyAction
+public class GetSecurityPropertyAction implements PrivilegedAction
 {
+  private String name;
+  private String value;
+
   public GetSecurityPropertyAction()
   {
   }
 
-  public GetSecurityPropertyAction (String propName)
+  public GetSecurityPropertyAction(String propName)
   {
-    super (propName);
+    setParameters(propName);
   }
 
   public GetSecurityPropertyAction(String propName, String defaultValue)
   {
-    super (propName, defaultValue);
+    setParameters(propName, defaultValue);
+  }
+
+  public GetSecurityPropertyAction setParameters(String propName)
+  {
+    this.name = propName;
+    this.value = null;
+    return this;
+  }
+
+  public GetSecurityPropertyAction setParameters(String propName, String defaultValue)
+  {
+    this.name = propName;
+    this.value = defaultValue;
+    return this;
   }
 
   public Object run()
   {
-    String val = Security.getProperty (name);
+    String val = Security.getProperty(name);
     if (val == null)
       val = value;
     return val;

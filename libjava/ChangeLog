@@ -1,5 +1,15 @@
 2005-04-26  Jeroen Frijters  <jeroen@frijters.net>
 
+	* gnu/java/security/action/GetSecurityPropertyAction.java
+	(GetSecurityPropertyAction): Implement PrivilegedAction instead
+	of extending GetPropertyAction.
+	(name): New field.
+	(value): Likewise.
+	(setParamters): New methods.
+	(GetSecurityPropertyAction): Use new setParameters methods.
+
+2005-04-26  Jeroen Frijters  <jeroen@frijters.net>
+
 	* java/security/Security.java,
 	java/security/cert/X509CRLSelector.java,
 	java/security/cert/X509CertSelector.java:
