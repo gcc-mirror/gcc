@@ -113,7 +113,7 @@ public final class AccessController
    * @return the result of the <code>action.run()</code> method.
    */
   public static Object doPrivileged(PrivilegedAction action,
-				    AccessControlContext context)
+                                    AccessControlContext context)
   {
     return action.run();
   }
@@ -137,14 +137,13 @@ public final class AccessController
   public static Object doPrivileged(PrivilegedExceptionAction action)
     throws PrivilegedActionException
   {
-
     try
       {
-	return action.run();
+        return action.run();
       }
     catch (Exception e)
       {
-	throw new PrivilegedActionException(e);
+        throw new PrivilegedActionException(e);
       }
   }
 
@@ -167,17 +166,16 @@ public final class AccessController
    * is thrown in the <code>run()</code> method.
    */
   public static Object doPrivileged(PrivilegedExceptionAction action,
-				    AccessControlContext context)
+                                    AccessControlContext context)
     throws PrivilegedActionException
   {
-
     try
       {
-	return action.run();
+        return action.run();
       }
     catch (Exception e)
       {
-	throw new PrivilegedActionException(e);
+        throw new PrivilegedActionException(e);
       }
   }
 
