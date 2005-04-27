@@ -1107,15 +1107,21 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 
     StringBuffer sb = new StringBuffer(9);
     sb.append("GMT");
-    sb.append(offset >= 0 ? '+' : '-');
 
-    offset = Math.abs(offset) / (1000 * 60);
-    int hours = offset / 60;
-    int minutes = offset % 60;
+    offset = offset / (1000 * 60);
+    int hours = Math.abs(offset) / 60;
+    int minutes = Math.abs(offset) % 60;
 
-    sb.append((char) ('0' + hours / 10)).append((char) ('0' + hours % 10));
-    sb.append(':');
-    sb.append((char) ('0' + minutes / 10)).append((char) ('0' + minutes % 10));
+    if (minutes != 0 || hours != 0)
+      {
+	sb.append(offset >= 0 ? '+' : '-');
+	sb.append((char) ('0' + hours / 10));
+	sb.append((char) ('0' + hours % 10));
+	sb.append(':');
+	sb.append((char) ('0' + minutes / 10));
+	sb.append((char) ('0' + minutes % 10));
+      }
+
     return sb.toString();
   }
 
