@@ -454,7 +454,7 @@
 
 	* dbxout.c (dbxout_type): Emit attribute vector.
 	
-2005-04-05  Paul Brook  <julian@codesourcery.com>
+2005-04-05  Paul Brook  <paul@codesourcery.com>
 
 	* target-def.h (TARGET_CXX_USE_AEABI_ATEXIT): Define.
 	* target.h (struct gcc_target): Add cxx.use_aeabi_atexit.
