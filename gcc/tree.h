@@ -1424,7 +1424,9 @@ struct edge_def;
 
 struct phi_arg_d GTY(())
 {
-  struct ssa_imm_use_d imm_use;	/* imm_use MUST be first element in struct.  */
+  /* imm_use MUST be the first element in struct because we do some
+     pointer arithmetic with it.  See phi_arg_index_from_use.  */
+  struct ssa_imm_use_d imm_use;
   tree def;
   bool nonzero;
 };
