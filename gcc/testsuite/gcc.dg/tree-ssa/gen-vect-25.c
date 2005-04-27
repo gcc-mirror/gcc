@@ -11,7 +11,7 @@ typedef short half_word;
 typedef int half_word;
 #endif
 
-int main (int n, int *p)
+int main_1 (int n, int *p)
 {
   int i;
   half_word ib[N];
@@ -46,6 +46,10 @@ int main (int n, int *p)
   return 0;
 }
 
+int main (int n)
+{
+  main_1 (n + 2, &n);
+}
 
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */

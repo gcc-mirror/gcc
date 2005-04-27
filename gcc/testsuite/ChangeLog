@@ -1,3 +1,7 @@
+2005-04-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/tree-ssa/gen-vect-25.c: Make more portable.
+
 2005-04-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/21177
