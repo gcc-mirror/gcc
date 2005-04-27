@@ -1,5 +1,5 @@
 /* BoxLayout.java -- A layout for swing components.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 

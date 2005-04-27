@@ -38,15 +38,23 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.HashMap;
 
 import javax.swing.JComponent;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 
 public class MetalScrollBarUI
   extends BasicScrollBarUI
 {
+
+  /** The minimum thumb size */
+  private static final Dimension MIN_THUMB_SIZE = new Dimension(18, 18);
 
   // FIXME: maybe replace by a Map of instances when this becomes stateful
   /** The shared UI instance for JScrollBars. */
@@ -83,5 +91,75 @@ public class MetalScrollBarUI
       instance = (MetalScrollBarUI) o;
 
     return instance;
+  }
+
+  /**
+   * Paints the slider button of the ScrollBar.
+   *
+   * @param g the Graphics context to use
+   * @param c the JComponent on which we paint
+   * @param thumbBounds the rectangle that is the slider button
+   */
+  protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds)
+  {
+    // first we fill the background
+    g.setColor(thumbColor);
+    g.fillRect(thumbBounds.x, thumbBounds.y, thumbBounds.width,
+               thumbBounds.height);
+
+    // draw the outer dark line
+    g.setColor(thumbDarkShadowColor);
+    g.drawRect(thumbBounds.x, thumbBounds.y, thumbBounds.width - 1,
+               thumbBounds.height - 1);
+
+    // draw the inner light line
+    g.setColor(thumbHighlightColor);
+    g.drawLine(thumbBounds.x + 1, thumbBounds.y + 1,
+               thumbBounds.x + thumbBounds.width - 2,
+               thumbBounds.y + 1);
+    g.drawLine(thumbBounds.x + 1, thumbBounds.y + 1,
+               thumbBounds.x + 1,
+               thumbBounds.y + thumbBounds.height - 2);
+
+    // draw the shadow line
+    UIDefaults def = UIManager.getLookAndFeelDefaults();
+    g.setColor(def.getColor("ScrollBar.shadow"));
+    g.drawLine(thumbBounds.x + 1, thumbBounds.y + thumbBounds.height,
+               thumbBounds.x + thumbBounds.width,
+               thumbBounds.y + thumbBounds.height);
+
+    // draw the pattern
+    int xOff = 0;
+    for (int y = thumbBounds.y + 4;
+         y < (thumbBounds.y + thumbBounds.height - 4); y++)
+      {
+        // set color alternating with every line
+        if ((y % 2) == 0)
+          g.setColor(thumbHighlightColor);
+        else
+          g.setColor(thumbDarkShadowColor);
+
+        for (int x = thumbBounds.x + 3 + (xOff);
+             x < (thumbBounds.x + thumbBounds.width - 3); x = x + 4)
+          {
+            g.drawLine(x, y, x, y);
+          }
+
+        // increase x offset
+        xOff++;
+        if (xOff > 3)
+          xOff = 0;
+
+      }
+  }
+
+  /**
+   * This method returns the minimum thumb size.
+   *
+   * @return The minimum thumb size.
+   */
+  protected Dimension getMinimumThumbSize()
+  {
+    return MIN_THUMB_SIZE;
   }
 }

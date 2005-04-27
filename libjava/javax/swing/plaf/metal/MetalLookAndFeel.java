@@ -1,5 +1,5 @@
 /* MetalLookAndFeel.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -465,8 +465,16 @@ public class MetalLookAndFeel extends BasicLookAndFeel
     Object[] myDefaults = new Object[] {
       "Button.background", new ColorUIResource(getControl()),
       "Button.border", MetalBorders.getButtonBorder(),
+      "Button.darkShadow", new ColorUIResource(getControlDarkShadow()),
+      "Button.disabledText", new ColorUIResource(getControlDisabled()),
+      "Button.focus", new ColorUIResource(getFocusColor()),
       "Button.font", getControlTextFont(),
+      "Button.foreground", new ColorUIResource(getSystemTextColor()),
+      "Button.highlight", new ColorUIResource(getControlHighlight()),
+      "Button.light", new ColorUIResource(getControlHighlight()),
       "Button.margin", new Insets(2, 14, 2, 14),
+      "Button.select", new ColorUIResource(getPrimaryControlShadow()),
+      "Button.shadow", new ColorUIResource(getPrimaryControlShadow()),
       "CheckBox.background", new ColorUIResource(getControl()),
       "CheckBoxMenuItem.background", new ColorUIResource(getControl()),
       "ToolBar.background", new ColorUIResource(getControl()),
@@ -478,6 +486,8 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "TabbedPane.background", new ColorUIResource(getControl()),
       "Label.background", new ColorUIResource(getControl()),
       "Label.font", getControlTextFont(),
+      "Label.disabledForeground", new ColorUIResource(getControlDisabled()),
+      "Label.foreground", new ColorUIResource(getSystemTextColor()),
       "Menu.background", new ColorUIResource(getControl()),
       "Menu.font", getControlTextFont(),
       "MenuBar.background", new ColorUIResource(getControl()),
@@ -485,6 +495,12 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "MenuItem.background", new ColorUIResource(getControl()),
       "MenuItem.font", getControlTextFont(),
       "ScrollBar.background", new ColorUIResource(getControl()),
+      "ScrollBar.shadow", new ColorUIResource(getControlShadow()),
+      "ScrollBar.thumb", new ColorUIResource(getPrimaryControlShadow()),
+      "ScrollBar.thumbDarkShadow",
+      new ColorUIResource(getPrimaryControlDarkShadow()),
+      "ScrollBar.thumbHighlight",
+      new ColorUIResource(getPrimaryControl()),
       "PopupMenu.border", new MetalBorders.PopupMenuBorder()
     };
     defaults.putDefaults(myDefaults);

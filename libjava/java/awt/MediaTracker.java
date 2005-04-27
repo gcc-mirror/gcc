@@ -1,5 +1,5 @@
 /* MediaTracker.java -- Class used for keeping track of images
-   Copyright (C) 1999, 2002i, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
