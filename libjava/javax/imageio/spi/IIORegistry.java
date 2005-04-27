@@ -81,7 +81,9 @@ public final class IIORegistry extends ServiceRegistry
 
     // XXX: Register built-in Spis here.
 
-    ((ClasspathToolkit)Toolkit.getDefaultToolkit()).registerImageIOSpis(this);
+    Toolkit toolkit = Toolkit.getDefaultToolkit();
+    if (toolkit instanceof ClasspathToolkit)
+      ((ClasspathToolkit)toolkit).registerImageIOSpis(this);
     
     registerApplicationClasspathSpis();
   }
