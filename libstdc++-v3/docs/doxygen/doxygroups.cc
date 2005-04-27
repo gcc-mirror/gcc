@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
    See license.html for license.
 
    This just provides documentation for stuff that doesn't need to be in the
@@ -23,19 +23,17 @@
  *  @brief Everything defined by the TR1 is within namespace std::tr1.
 */
 /** @namespace __gnu_cxx
- *  @brief This namespace serves two purposes.
- *
- *  This namespace is used for two things:
- *  -  sequestering internal (implementation-only) names away from the
- *     global namespace; these are details of the implementation and should
- *     not be touched by users
- *  -  GNU extensions for public use
- *
- *  This is still fluid and changing rapidly.  Currently the rule is:  if an
- *  entitity is found in the user-level documentation, it falls into the
- *  second category.
+ *  @brief GNU extensions for public use.
 */
-
+/** @namespace __gnu_cxx::balloc
+ *  @brief Related to __gnu_cxx::bitmap_allocator.
+*/
+/** @namespace __gnu_internal
+ *  @brief GNU implemenation details, not for public use.
+*/
+/** @namespace __gnu_debug
+ *  @brief GNU debug mode implemenation details.
+*/
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @addtogroup SGIextensions STL extensions from SGI
 Because libstdc++-v3 based its implementation of the STL subsections of
@@ -131,10 +129,11 @@ All associative containers must meet certain requirements, summarized in
  *  platform.  It is summarized at http://www.codesourcery.com/cxx-abi/
  *  along with the current specification.
  *
- *  For users of GCC 3.x, entry points are available in <cxxabi.h>, which notes,
- *  <em>"It is not normally necessary for user programs to include this header,
- *  or use the entry points directly.  However, this header is available
- *  should that be needed."</em>
+ *  For users of GCC greater than or equal to 3.x, entry points are
+ *  available in <cxxabi.h>, which notes, <em>"It is not normally
+ *  necessary for user programs to include this header, or use the
+ *  entry points directly.  However, this header is available should
+ *  that be needed."</em>
 */
 
 namespace abi {

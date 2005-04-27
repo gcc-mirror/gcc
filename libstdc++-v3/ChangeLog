@@ -1,3 +1,8 @@
+2005-04-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/doxygen/user.cfg.in: Update to doxygen-1.4.2.
+	* docs/doxygen/doxygroups.cc: Update namespace comments.
+
 2005-04-27  Dominik Strasser  <dominik.strasser@infineon.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 
@@ -77,7 +82,7 @@
 	__int_to_char(_CharT*, long long, const _CharT*, ios_base::fmtflags)):
 	Simplify, don't pass the sign.
 	(_M_insert_float(_OutIter, ios_base&, _CharT, char, _ValueT)):
-	Deal with a sign at the beginning of __cs; robustify the grouping	
+	Deal with a sign at the beginning of __cs; robustify the grouping
 	check.
 	* testsuite/22_locale/num_put/put/char/20914.cc: New.
 	* testsuite/22_locale/num_put/put/wchar_t/20914.cc: Likewise.
