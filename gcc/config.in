@@ -461,6 +461,9 @@
 /* Define if your linker supports -Bstatic/-Bdynamic option. */
 #undef HAVE_LD_STATIC_DYNAMIC
 
+/* Define if your linker supports --sysroot. */
+#undef HAVE_LD_SYSROOT
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 

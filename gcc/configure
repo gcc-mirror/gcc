@@ -15050,6 +15050,32 @@ _ACEOF
     ;;
 esac
 
+echo "$as_me:$LINENO: checking linker --sysroot support" >&5
+echo $ECHO_N "checking linker --sysroot support... $ECHO_C" >&6
+if test "${gcc_cv_ld_sysroot+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_ld_sysroot=no
+  if test $in_tree_ld = yes ; then
+      if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 ; then
+        gcc_cv_ld_sysroot = yes
+      fi
+  elif test x$gcc_cv_ld != x; then
+    if $gcc_cv_ld --help 2>/dev/null | grep sysroot > /dev/null; then
+      gcc_cv_ld_sysroot=yes
+    fi
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_ld_sysroot" >&5
+echo "${ECHO_T}$gcc_cv_ld_sysroot" >&6
+if test x"$gcc_cv_ld_sysroot" = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_LD_SYSROOT 1
+_ACEOF
+
+fi
+
 if test x$with_sysroot = x && test x$host = x$target \
    && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
 
