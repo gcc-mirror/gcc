@@ -1,3 +1,15 @@
+2005-04-27  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (ordinary_java_source_files): Add
+	gnu/java/net/protocol/https/Handler.java.
+	* Makefile.in: Regenerate.
+	* java/net/URL.java: Remove org.metastatic.jessie from default
+	protocol search path.
+
+2005-04-27  Chris Burdess  <dog@gnu.org>
+
+	* gnu/java/net/protocol/https/Handler.java: New file.
+
 2005-04-27  Jeroen Frijters  <jeroen@frijters.net>
 
 	* javax/imageio/spi/IIORegistry.java (IIORegistry):
