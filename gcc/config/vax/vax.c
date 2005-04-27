@@ -1100,3 +1100,227 @@ vax_output_conditional_branch (enum rtx_code code)
     }
 }
 
+/* 1 if X is an rtx for a constant that is a valid address.  */
+
+int
+legitimate_constant_address_p (rtx x)
+{
+  return (GET_CODE (x) == LABEL_REF || GET_CODE (x) == SYMBOL_REF
+	  || GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST
+	  || GET_CODE (x) == HIGH);
+}
+
+/* Nonzero if the constant value X is a legitimate general operand.
+   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+
+int
+legitimate_constant_p (rtx x ATTRIBUTE_UNUSED)
+{
+  return 1;
+}
+
+/* The other macros defined here are used only in legitimate_address_p ().  */
+
+/* Nonzero if X is a hard reg that can be used as an index
+   or, if not strict, if it is a pseudo reg.  */
+#define	INDEX_REGISTER_P(X, STRICT)
+(GET_CODE (X) == REG && (!(STRICT) || REGNO_OK_FOR_INDEX_P (REGNO (X))))
+
+/* Nonzero if X is a hard reg that can be used as a base reg
+   or, if not strict, if it is a pseudo reg.  */
+#define	BASE_REGISTER_P(X, STRICT)
+(GET_CODE (X) == REG && (!(STRICT) || REGNO_OK_FOR_BASE_P (REGNO (X))))
+
+#ifdef NO_EXTERNAL_INDIRECT_ADDRESS
+
+/* Re-definition of CONSTANT_ADDRESS_P, which is true only when there
+   are no SYMBOL_REFs for external symbols present.  */
+
+static int
+indirectable_constant_address_p (rtx x)
+{
+  if (!CONSTANT_ADDRESS_P (x))
+    return 0;
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP ((x), 0)) == PLUS)
+    x = XEXP (XEXP (x, 0), 0);
+  if (GET_CODE (x) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (x))
+    return 0;
+
+  return 1;
+}
+
+#else /* not NO_EXTERNAL_INDIRECT_ADDRESS */
+
+static int
+indirectable_constant_address_p (rtx x)
+{
+  return CONSTANT_ADDRESS_P (x);
+}
+
+#endif /* not NO_EXTERNAL_INDIRECT_ADDRESS */
+
+/* Nonzero if X is an address which can be indirected.  External symbols
+   could be in a sharable image library, so we disallow those.  */
+
+static int
+indirectable_address_p(rtx x, int strict)
+{
+  if (indirectable_constant_address_p (x))
+    return 1;
+  if (BASE_REGISTER_P (x, strict))
+    return 1;
+  if (GET_CODE (x) == PLUS
+      && BASE_REGISTER_P (XEXP (x, 0), strict)
+      && indirectable_constant_address_p (XEXP (x, 1)))
+    return 1;
+  return 0;
+}
+
+/* Return 1 if x is a valid address not using indexing.
+   (This much is the easy part.)  */
+static int
+nonindexed_address_p (rtx x, int strict)
+{
+  rtx xfoo0;
+  if (GET_CODE (x) == REG)
+    {
+      extern rtx *reg_equiv_mem;
+      if (! reload_in_progress
+	  || reg_equiv_mem[REGNO (x)] == 0
+	  || indirectable_address_p (reg_equiv_mem[REGNO (x)], strict))
+	return 1;
+    }
+  if (indirectable_constant_address_p (x))
+    return 1;
+  if (indirectable_address_p (x, strict))
+    return 1;
+  xfoo0 = XEXP (x, 0);
+  if (GET_CODE (x) == MEM && indirectable_address_p (xfoo0, strict))
+    return 1;
+  if ((GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_INC)
+      && BASE_REGISTER_P (xfoo0, strict))
+    return 1;
+  return 0;
+}
+
+/* 1 if PROD is either a reg times size of mode MODE and MODE is less
+   than or equal 8 bytes, or just a reg if MODE is one byte.  */
+
+static int
+index_term_p (rtx prod, enum machine_mode mode, int strict)
+{
+  rtx xfoo0, xfoo1;
+
+  if (GET_MODE_SIZE (mode) == 1)
+    return BASE_REGISTER_P (prod, strict);
+
+  if (GET_CODE (prod) != MULT || GET_MODE_SIZE (mode) > 8)
+    return 0;
+
+  xfoo0 = XEXP (prod, 0);
+  xfoo1 = XEXP (prod, 1);
+
+  if (GET_CODE (xfoo0) == CONST_INT
+      && INTVAL (xfoo0) == (int)GET_MODE_SIZE (mode)
+      && INDEX_REGISTER_P (xfoo1, strict))
+    return 1;
+
+  if (GET_CODE (xfoo1) == CONST_INT
+      && INTVAL (xfoo1) == (int)GET_MODE_SIZE (mode)
+      && INDEX_REGISTER_P (xfoo0, strict))
+    return 1;
+
+  return 0;
+}
+
+/* Return 1 if X is the sum of a register
+   and a valid index term for mode MODE.  */
+static int
+reg_plus_index_p (rtx x, enum machine_mode mode, int strict)
+{
+  rtx xfoo0, xfoo1;
+
+  if (GET_CODE (x) != PLUS)
+    return 0;
+
+  xfoo0 = XEXP (x, 0);
+  xfoo1 = XEXP (x, 1);
+
+  if (BASE_REGISTER_P (xfoo0, strict) && index_term_p (xfoo1, mode, strict))
+    return 1;
+
+  if (BASE_REGISTER_P (xfoo1, strict) && index_term_p (xfoo0, mode, strict))
+    return 1;
+
+  return 0;
+}
+
+/* legitimate_address_p returns 1 if it recognizes an RTL expression "x"
+   that is a valid memory address for an instruction.
+   The MODE argument is the machine mode for the MEM expression
+   that wants to use this address.  */
+int
+legitimate_address_p (enum machine_mode mode, rtx x, int strict)
+{
+  rtx xfoo0, xfoo1;
+
+  if (nonindexed_address_p (x, strict))
+    return 1;
+
+  if (GET_CODE (x) != PLUS)
+    return 0;
+
+  /* Handle <address>[index] represented with index-sum outermost */
+
+  xfoo0 = XEXP (x, 0);
+  xfoo1 = XEXP (x, 1);
+
+  if (index_term_p (xfoo0, mode, strict)
+      && nonindexed_address_p (xfoo1, strict))
+    return 1;
+
+  if (index_term_p (xfoo1, mode, strict)
+      && nonindexed_address_p (xfoo0, strict))
+    return 1;
+
+  /* Handle offset(reg)[index] with offset added outermost */	\
+
+  if (indirectable_constant_address_p (xfoo0)
+      && (BASE_REGISTER_P (xfoo1, strict)
+          || reg_plus_index_p (xfoo1, mode, strict)))
+    return 1;
+
+  if (indirectable_constant_address_p (xfoo1)
+      && (BASE_REGISTER_P (xfoo0, strict)
+          || reg_plus_index_p (xfoo0, mode, strict)))
+    return 1;
+
+  return 0;
+} 
+
+/* Return 1 if x (a legitimate address expression) has an effect that
+   depends on the machine mode it is used for.  On the VAX, the predecrement
+   and postincrement address depend thus (the amount of decrement or
+   increment being the length of the operand) and all indexed address depend
+   thus (because the index scale factor is the length of the operand).  */
+
+int
+vax_mode_dependent_address_p (rtx x)
+{
+  rtx xfoo0, xfoo1;
+
+  if (GET_CODE (x) == POST_INC || GET_CODE (x) == PRE_DEC)
+    return 1;
+  if (GET_CODE (x) != PLUS)
+    return 0;
+
+  xfoo0 = XEXP (x, 0);
+  xfoo1 = XEXP (x, 1);
+
+  if (CONSTANT_ADDRESS_P (xfoo0) && GET_CODE (xfoo1) == REG)
+    return 0;
+  if (CONSTANT_ADDRESS_P (xfoo1) && GET_CODE (xfoo0) == REG)
+    return 0;
+
+  return 1;
+}

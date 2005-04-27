@@ -541,15 +541,12 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* 1 if X is an rtx for a constant that is a valid address.  */
 
-#define CONSTANT_ADDRESS_P(X)   \
-  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
-   || GET_CODE (X) == HIGH)
+#define CONSTANT_ADDRESS_P(X) legitimate_constant_address_p (X)
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-#define LEGITIMATE_CONSTANT_P(X) 1
+#define LEGITIMATE_CONSTANT_P(X) legitimate_constant_p (X)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -569,169 +566,35 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) 1
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) 1
+
+/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
+   that is a valid memory address for an instruction.  */
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
+{ if (legitimate_address_p ((MODE), (X), 0)) goto ADDR; }
 
 #else
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
+
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 
-#endif
-
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
+   that is a valid memory address for an instruction.  */
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
+{ if (legitimate_address_p ((MODE), (X), 1)) goto ADDR; }
 
-   The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
-   except for CONSTANT_ADDRESS_P which is actually machine-independent.  */
+#endif
 
-#ifdef NO_EXTERNAL_INDIRECT_ADDRESS
-
-/* Zero if this contains a (CONST (PLUS (SYMBOL_REF) (...))) and the
-   symbol in the SYMBOL_REF is an external symbol.  */
-
-#define INDIRECTABLE_CONSTANT_P(X) \
- (! (GET_CODE ((X)) == CONST					\
-     && GET_CODE (XEXP ((X), 0)) == PLUS			\
-     && GET_CODE (XEXP (XEXP ((X), 0), 0)) == SYMBOL_REF	\
-     && SYMBOL_REF_FLAG (XEXP (XEXP ((X), 0), 0))))
-
-/* Re-definition of CONSTANT_ADDRESS_P, which is true only when there
-   are no SYMBOL_REFs for external symbols present.  */
-
-#define INDIRECTABLE_CONSTANT_ADDRESS_P(X)   				\
-  (GET_CODE (X) == LABEL_REF 						\
-   || (GET_CODE (X) == SYMBOL_REF && !SYMBOL_REF_FLAG (X))		\
-   || (GET_CODE (X) == CONST && INDIRECTABLE_CONSTANT_P(X))		\
-   || GET_CODE (X) == CONST_INT)
-
-
-/* Nonzero if X is an address which can be indirected.  External symbols
-   could be in a sharable image library, so we disallow those.  */
-
-#define INDIRECTABLE_ADDRESS_P(X)  \
-  (INDIRECTABLE_CONSTANT_ADDRESS_P (X) 					\
-   || (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
-   || (GET_CODE (X) == PLUS						\
-       && GET_CODE (XEXP (X, 0)) == REG					\
-       && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
-       && INDIRECTABLE_CONSTANT_ADDRESS_P (XEXP (X, 1))))
-
-#else /* not NO_EXTERNAL_INDIRECT_ADDRESS */
-
-#define INDIRECTABLE_CONSTANT_ADDRESS_P(X) CONSTANT_ADDRESS_P(X)
-
-/* Nonzero if X is an address which can be indirected.  */
-#define INDIRECTABLE_ADDRESS_P(X)  \
-  (CONSTANT_ADDRESS_P (X)						\
-   || (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
-   || (GET_CODE (X) == PLUS						\
-       && GET_CODE (XEXP (X, 0)) == REG					\
-       && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
-       && CONSTANT_ADDRESS_P (XEXP (X, 1))))
-
-#endif /* not NO_EXTERNAL_INDIRECT_ADDRESS */
-
-/* Go to ADDR if X is a valid address not using indexing.
-   (This much is the easy part.)  */
-#define GO_IF_NONINDEXED_ADDRESS(X, ADDR)  \
-{ register rtx xfoob = (X);						\
-  if (GET_CODE (xfoob) == REG)						\
-    {									\
-      extern rtx *reg_equiv_mem;					\
-      if (! reload_in_progress						\
-	  || reg_equiv_mem[REGNO (xfoob)] == 0				\
-	  || INDIRECTABLE_ADDRESS_P (reg_equiv_mem[REGNO (xfoob)]))	\
-	goto ADDR;							\
-    }									\
-  if (CONSTANT_ADDRESS_P (xfoob)) goto ADDR;				\
-  if (INDIRECTABLE_ADDRESS_P (xfoob)) goto ADDR;			\
-  xfoob = XEXP (X, 0);							\
-  if (GET_CODE (X) == MEM && INDIRECTABLE_ADDRESS_P (xfoob))		\
-    goto ADDR;								\
-  if ((GET_CODE (X) == PRE_DEC || GET_CODE (X) == POST_INC)		\
-      && GET_CODE (xfoob) == REG && REG_OK_FOR_BASE_P (xfoob))		\
-    goto ADDR; }
-
-/* 1 if PROD is either a reg times size of mode MODE and MODE is less
-   than or equal 8 bytes, or just a reg if MODE is one byte.
-   This macro's expansion uses the temporary variables xfoo0 and xfoo1
-   that must be declared in the surrounding context.  */
-#define INDEX_TERM_P(PROD, MODE)   \
-(GET_MODE_SIZE (MODE) == 1						\
- ? (GET_CODE (PROD) == REG && REG_OK_FOR_BASE_P (PROD))			\
- : (GET_CODE (PROD) == MULT && GET_MODE_SIZE (MODE) <= 8		\
-    &&									\
-    (xfoo0 = XEXP (PROD, 0), xfoo1 = XEXP (PROD, 1),			\
-     ((((GET_CODE (xfoo0) == CONST_INT					\
-         && GET_CODE (xfoo1) == REG)					\
-         && INTVAL (xfoo0) == (int)GET_MODE_SIZE (MODE))		\
-         && REG_OK_FOR_INDEX_P (xfoo1))					\
-        ||								\
-      (((GET_CODE (xfoo1) == CONST_INT					\
-         && GET_CODE (xfoo0) == REG)					\
-         && INTVAL (xfoo1) == (int)GET_MODE_SIZE (MODE))		\
-         && REG_OK_FOR_INDEX_P (xfoo0))))))
-
-/* Go to ADDR if X is the sum of a register
-   and a valid index term for mode MODE.  */
-#define GO_IF_REG_PLUS_INDEX(X, MODE, ADDR)	\
-{ register rtx xfooa;							\
-  if (GET_CODE (X) == PLUS)						\
-    { if (GET_CODE (XEXP (X, 0)) == REG					\
-	  && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
-	  && (xfooa = XEXP (X, 1),					\
-	      INDEX_TERM_P (xfooa, MODE)))				\
-	goto ADDR;							\
-      if (GET_CODE (XEXP (X, 1)) == REG					\
-	  && REG_OK_FOR_BASE_P (XEXP (X, 1))				\
-	  && (xfooa = XEXP (X, 0),					\
-	      INDEX_TERM_P (xfooa, MODE)))				\
-	goto ADDR; } }
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
-{ register rtx xfoo, xfoo0, xfoo1;					\
-  GO_IF_NONINDEXED_ADDRESS (X, ADDR);					\
-  if (GET_CODE (X) == PLUS)						\
-    { /* Handle <address>[index] represented with index-sum outermost */\
-      xfoo = XEXP (X, 0);						\
-      if (INDEX_TERM_P (xfoo, MODE))					\
-	{ GO_IF_NONINDEXED_ADDRESS (XEXP (X, 1), ADDR); }		\
-      xfoo = XEXP (X, 1);						\
-      if (INDEX_TERM_P (xfoo, MODE))					\
-	{ GO_IF_NONINDEXED_ADDRESS (XEXP (X, 0), ADDR); }		\
-      /* Handle offset(reg)[index] with offset added outermost */	\
-      if (INDIRECTABLE_CONSTANT_ADDRESS_P (XEXP (X, 0)))		\
-	{ if (GET_CODE (XEXP (X, 1)) == REG				\
-	      && REG_OK_FOR_BASE_P (XEXP (X, 1)))			\
-	    goto ADDR;							\
-	  GO_IF_REG_PLUS_INDEX (XEXP (X, 1), MODE, ADDR); }		\
-      if (INDIRECTABLE_CONSTANT_ADDRESS_P (XEXP (X, 1)))		\
-	{ if (GET_CODE (XEXP (X, 0)) == REG				\
-	      && REG_OK_FOR_BASE_P (XEXP (X, 0)))			\
-	    goto ADDR;							\
-	  GO_IF_REG_PLUS_INDEX (XEXP (X, 0), MODE, ADDR); } } }
-
 /* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-   On the VAX, the predecrement and postincrement address depend thus
-   (the amount of decrement or increment being the length of the operand)
-   and all indexed address depend thus (because the index scale factor
-   is the length of the operand).  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)	\
- { if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC)	\
-     goto LABEL; 							\
-   if (GET_CODE (ADDR) == PLUS)						\
-     { if (CONSTANT_ADDRESS_P (XEXP (ADDR, 0))				\
-	   && GET_CODE (XEXP (ADDR, 1)) == REG);			\
-       else if (CONSTANT_ADDRESS_P (XEXP (ADDR, 1))			\
-		&& GET_CODE (XEXP (ADDR, 0)) == REG);			\
-       else goto LABEL; }}
+   has an effect that depends on the machine mode it is used for.  */
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL) \
+ { if (vax_mode_dependent_address_p (ADDR)) goto LABEL; }
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
