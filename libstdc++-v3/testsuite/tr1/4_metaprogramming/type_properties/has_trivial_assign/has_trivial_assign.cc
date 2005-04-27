@@ -1,6 +1,6 @@
 // 2004-12-30  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,23 +30,21 @@ void test01()
   using std::tr1::has_trivial_assign;
   using namespace __gnu_test;
 
-  VERIFY( (test_assign_property<has_trivial_assign, void>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, int>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, float>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, EnumType>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, int*>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, int(*)(int)>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, int (ClassType::*)>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign,
-	   int (ClassType::*) (int)>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, int[2]>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, float[][3]>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, EnumType[2][3][4]>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, int*[3]>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign, int(*[][2])(int)>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign,
-	   int (ClassType::*[2][3])>(true)) );
-  VERIFY( (test_assign_property<has_trivial_assign,
+  VERIFY( (test_category<has_trivial_assign, void>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int>(true)) );
+  VERIFY( (test_category<has_trivial_assign, float>(true)) );
+  VERIFY( (test_category<has_trivial_assign, EnumType>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int*>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int(*)(int)>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int (ClassType::*)>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int (ClassType::*) (int)>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int[2]>(true)) );
+  VERIFY( (test_category<has_trivial_assign, float[][3]>(true)) );
+  VERIFY( (test_category<has_trivial_assign, EnumType[2][3][4]>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int*[3]>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int(*[][2])(int)>(true)) );
+  VERIFY( (test_category<has_trivial_assign, int (ClassType::*[2][3])>(true)) );
+  VERIFY( (test_category<has_trivial_assign,
 	   int (ClassType::*[][2][3]) (int)>(true)) );
 }
 
