@@ -1389,7 +1389,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   tsi_link_after (&tsi, newexpr, TSI_CONTINUE_LINKING);
   VEC_safe_push (tree, heap, inserted_exprs, newexpr);
 
-  /* Add a value handle to the temprorary.
+  /* Add a value handle to the temporary.
      The value may already exist in either NEW_SETS, or AVAIL_OUT, because
      we are creating the expression by pieces, and this particular piece of
      the expression may have been represented.  There is no harm in replacing
