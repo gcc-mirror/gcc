@@ -1,3 +1,13 @@
+2005-04-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-flow.h (ssa_names): Change the type to VEC(tree,gc).
+	(num_ssa_names): Use VEC_length.
+	(ssa_names): Use VEC_index.
+	* tree-ssanames.c (ssa_names): Change the type to
+	VEC(tree,gc).
+	(init_ssanames, fini_ssa_names, make_ssanames,
+	release_ssa_name): Update uses of ssa_names.
+
 2005-04-27  Devang Patel <dpatel@apple.com>
 
 	* dbxout.c (dbxout_type): Check use_gnu_debug_info_extensions.
