@@ -571,7 +571,8 @@ set_rhs (tree *stmt_p, tree expr)
 	  || !is_gimple_val (TREE_OPERAND (expr, 1)))
 	return false;
     }
-  else if (TREE_CODE_CLASS (code) == tcc_unary)
+  else if (TREE_CODE_CLASS (code) == tcc_unary
+	   || code == ADDR_EXPR)
     {
       if (!is_gimple_val (TREE_OPERAND (expr, 0)))
 	return false;
