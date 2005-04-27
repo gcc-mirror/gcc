@@ -9723,21 +9723,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    {
 	      tree op0 = TREE_OPERAND (cref0, 0);
 	      tree op1 = TREE_OPERAND (cref1, 0);
-	      if (TREE_CODE (op0) == INDIRECT_REF)
-		op0 = TREE_OPERAND (op0, 0);
-	      else
-	        {
-	          tree ptype = build_pointer_type (TREE_TYPE (op0));
-	          op0 = build1 (ADDR_EXPR, ptype, op0);
-		}
-	      if (TREE_CODE (op1) == INDIRECT_REF)
-		op1 = TREE_OPERAND (op1, 0);
-	      else
-	        {
-	          tree ptype = build_pointer_type (TREE_TYPE (op1));
-		  op1 = build1 (ADDR_EXPR, ptype, op1);
-		}
-	      return fold_build2 (code, type, op0, op1);
+	      return fold_build2 (code, type,
+			          build_fold_addr_expr (op0),
+				  build_fold_addr_expr (op1));
 	    }
 	}
 

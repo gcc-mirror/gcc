@@ -1,3 +1,8 @@
+2005-04-27  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* fold-const.c (fold_binary): Use build_fold_addr_expr
+	for address calculation and INDIRECT_REF handling.
+
 2005-04-27  Andrew Haley  <aph@redhat.com>
 
 	* postreload-gcse.c (hash_scan_set): Remove bogus assertion.
