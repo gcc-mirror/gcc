@@ -1,3 +1,13 @@
+2005-04-27  Sven de Marothy <sven@physto.se>
+
+	* java/util/TimeZone.java,
+	(getDefaultDisplayName): Fix previous fix.
+
+2005-04-27  Sven de Marothy <sven@physto.se>
+
+	* java/util/TimeZone.java,
+	(getDefaultDisplayName): Don't print zero offsets.
+
 2005-04-27  Roman Kennke  <roman@kennke.org>
 
 	* javax/swing/plaf/basic/BasicScrollBarUI
