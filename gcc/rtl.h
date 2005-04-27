@@ -1320,7 +1320,6 @@ extern rtx expand_builtin_expect_jump (tree, rtx, rtx);
 extern void set_stack_check_libfunc (rtx);
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
 extern rtx plus_constant (rtx, HOST_WIDE_INT);
-extern void optimize_save_area_alloca (void);
 
 /* In emit-rtl.c */
 extern rtvec gen_rtvec (int, ...);
