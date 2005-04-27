@@ -1,3 +1,11 @@
+2005-04-27  Dominik Strasser  <dominik.strasser@infineon.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21244
+	* include/bits/stl_bvector.h: Change the anonymous enum
+	at namespace scope to _S_word_bit_enum.
+	* testsuite/23_containers/vector/bool/21244.cc: New.
+
 2005-04-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (has_trivial_copy, has_trivial_assign,

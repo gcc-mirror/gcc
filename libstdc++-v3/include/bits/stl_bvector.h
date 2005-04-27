@@ -64,7 +64,7 @@
 namespace _GLIBCXX_STD
 {
   typedef unsigned long _Bit_type;
-  enum { _S_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
+  enum _S_word_bit_enum { _S_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
 
   struct _Bit_reference
   {
