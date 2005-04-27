@@ -1,3 +1,36 @@
+2005-04-27  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/charset/Charset.java (providers2): Renamed from 'providers'
+	to work around CNI limitation.
+
+2005-04-27  Sven de Marothy  <sven@physto.se>
+
+	* java/nio/charset/Charset.java:
+	(defaultCharset()): New method.
+	Status updated to 1.5
+
+2005-04-27  Sven de Marothy  <sven@physto.se>
+
+	* java/nio/charset/Charset.java: Cached encoders shouldn't be static.
+
+2005-04-27  Sven de Marothy  <sven@physto.se>
+
+	* java/nio/charset/Charset.java: Reset cached de/encoders.
+
+2005-04-27  Robert Schuster <thebohemian@gmx.net>
+
+	* java/nio/charset/Charset.java (forName): Throws
+	IllegalArgumentException when argument is null
+	and added documentation.
+
+2005-04-27  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* java/nio/charset/Charset.java (providers):
+	New method to make an array of CharsetProviders defined in
+	META-INF/services/java.nio.charset.spi.CharsetProvider.
+	(charsetForName, availableCharsets): Use the
+	new method providers().
+
 2005-04-26  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java: Made all hexadecimal numbers lowercase.
