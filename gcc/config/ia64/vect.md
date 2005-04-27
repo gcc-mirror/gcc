@@ -893,7 +893,7 @@
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   cmp = gen_reg_rtx (V2SFmode);

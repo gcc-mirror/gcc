@@ -66,7 +66,7 @@
       return (INTVAL (op) & 0x3fff) == 0;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 })
 
@@ -125,7 +125,7 @@
       return (offset >= 0 && offset <= size);
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 })
 

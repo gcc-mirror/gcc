@@ -532,7 +532,7 @@ ia64_encode_addr_area (tree decl, rtx symbol)
     {
     case ADDR_AREA_NORMAL: break;
     case ADDR_AREA_SMALL: flags |= SYMBOL_FLAG_SMALL_ADDR; break;
-    default: abort ();
+    default: gcc_unreachable ();
     }
   SYMBOL_REF_FLAGS (symbol) = flags;
 }
@@ -698,10 +698,8 @@ ia64_depz_field_mask (rtx rop, rtx rshift)
 void
 ia64_expand_load_address (rtx dest, rtx src)
 {
-  if (GET_CODE (src) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (src))
-    abort ();
-  if (GET_CODE (dest) != REG)
-    abort ();
+  gcc_assert (GET_CODE (src) != SYMBOL_REF || !SYMBOL_REF_TLS_MODEL (src));
+  gcc_assert (GET_CODE (dest) == REG);
 
   /* ILP32 mode still loads 64-bits of data from the GOT.  This avoids
      having to pointer-extend the value afterward.  Other forms of address
@@ -870,7 +868,7 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (orig_op0 == op0)
@@ -950,7 +948,7 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
     case CONST_INT:
     case CONST_DOUBLE:
       /* Cannot occur reversed.  */
-      if (reversed) abort ();
+      gcc_assert (!reversed);
       
       if (GET_MODE (in) != TFmode)
 	split_double (in, &out[0], &out[1]);
@@ -1007,14 +1005,16 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 	    break;
 
 	  case POST_INC:
-	    if (reversed || dead) abort ();
+	    gcc_assert (!reversed && !dead);
+	    
 	    /* Just do the increment in two steps.  */
 	    out[0] = adjust_automodify_address (in, DImode, 0, 0);
 	    out[1] = adjust_automodify_address (in, DImode, 0, 8);
 	    break;
 
 	  case POST_DEC:
-	    if (reversed || dead) abort ();
+	    gcc_assert (!reversed && !dead);
+	    
 	    /* Add 8, subtract 24.  */
 	    base = XEXP (base, 0);
 	    out[0] = adjust_automodify_address
@@ -1026,7 +1026,8 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 	    break;
 
 	  case POST_MODIFY:
-	    if (reversed || dead) abort ();
+	    gcc_assert (!reversed && !dead);
+
 	    /* Extract and adjust the modification.  This case is
 	       trickier than the others, because we might have an
 	       index register, or we might have a combined offset that
@@ -1045,38 +1046,41 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 		out[1] = adjust_automodify_address (in, DImode, 0, 8);
 		fixup = gen_adddi3 (base, base, GEN_INT (-8));
 	      }
-	    else if (GET_CODE (XEXP (offset, 1)) != CONST_INT)
-	      abort ();
-	    else if (INTVAL (XEXP (offset, 1)) < -256 + 8)
-	      {
-		/* Again the postmodify cannot be made to match, but
-		   in this case it's more efficient to get rid of the
-		   postmodify entirely and fix up with an add insn.  */
-		out[1] = adjust_automodify_address (in, DImode, base, 8);
-		fixup = gen_adddi3 (base, base,
-				    GEN_INT (INTVAL (XEXP (offset, 1)) - 8));
-	      }
 	    else
 	      {
-		/* Combined offset still fits in the displacement field.
-		   (We cannot overflow it at the high end.)  */
-		out[1] = adjust_automodify_address
-		  (in, DImode,
-		   gen_rtx_POST_MODIFY (Pmode, base,
-		     gen_rtx_PLUS (Pmode, base,
-				   GEN_INT (INTVAL (XEXP (offset, 1)) - 8))),
-		   8);
+		gcc_assert (GET_CODE (XEXP (offset, 1)) == CONST_INT);
+		if (INTVAL (XEXP (offset, 1)) < -256 + 8)
+		  {
+		    /* Again the postmodify cannot be made to match,
+		       but in this case it's more efficient to get rid
+		       of the postmodify entirely and fix up with an
+		       add insn.  */
+		    out[1] = adjust_automodify_address (in, DImode, base, 8);
+		    fixup = gen_adddi3
+		      (base, base, GEN_INT (INTVAL (XEXP (offset, 1)) - 8));
+		  }
+		else
+		  {
+		    /* Combined offset still fits in the displacement field.
+		       (We cannot overflow it at the high end.)  */
+		    out[1] = adjust_automodify_address
+		      (in, DImode, gen_rtx_POST_MODIFY
+		       (Pmode, base, gen_rtx_PLUS
+			(Pmode, base,
+			 GEN_INT (INTVAL (XEXP (offset, 1)) - 8))),
+		       8);
+		  }
 	      }
 	    break;
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	break;
       }
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return fixup;
@@ -1096,7 +1100,7 @@ ia64_split_tmode_move (rtx operands[])
      the value it points to.  In that case we have to do the loads in
      the appropriate order so that the pointer is not destroyed too
      early.  Also we must not generate a postmodify for that second
-     load, or rws_access_regno will abort.  */
+     load, or rws_access_regno will die.  */
   if (GET_CODE (operands[1]) == MEM
       && reg_overlap_mentioned_p (operands[0], operands[1]))
     {
@@ -1189,10 +1193,8 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
      do not need to emit another comparison.  */
   if (GET_MODE (op0) == BImode)
     {
-      if ((code == NE || code == EQ) && op1 == const0_rtx)
-	cmp = op0;
-      else
-	abort ();
+      gcc_assert ((code == NE || code == EQ) && op1 == const0_rtx);
+      cmp = op0;
     }
   /* HPUX TFmode compare requires a library call to _U_Qfcmp, which takes a
      magic number as its third argument, that indicates what to do.
@@ -1208,8 +1210,8 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
       } magic;
       enum rtx_code ncode;
       rtx ret, insns;
-      if (!cmptf_libfunc || GET_MODE (op1) != TFmode)
-	abort ();
+      
+      gcc_assert (cmptf_libfunc && GET_MODE (op1) == TFmode);
       switch (code)
 	{
 	  /* 1 = equal, 0 = not equal.  Equality operators do
@@ -1228,7 +1230,7 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
 	  /* FUTURE: Implement UNEQ, UNLT, UNLE, UNGT, UNGE, LTGT.
 	     Expanders for buneq etc. weuld have to be added to ia64.md
 	     for this to be useful.  */
-	default: abort ();
+	default: gcc_unreachable ();
 	}
 
       start_sequence ();
@@ -1309,24 +1311,26 @@ ia64_expand_vecint_compare (enum rtx_code code, enum machine_mode mode,
 	/* We don't have native unsigned comparisons, but we can generate
 	   them better than generic code can.  */
 
-	if (mode == V2SImode)
-	  abort ();
-	else if (mode == V8QImode)
+	gcc_assert (mode != V2SImode);
+	switch (mode)
 	  {
+	  case V8QImode:
 	    wmode = V4HImode;
 	    pack = gen_pack2_sss;
 	    unpack_l = gen_unpack1_l;
 	    unpack_h = gen_unpack1_h;
-	  }
-	else if (mode == V4HImode)
-	  {
+	    break;
+
+	  case V4HImode:
 	    wmode = V2SImode;
 	    pack = gen_pack4_sss;
 	    unpack_l = gen_unpack2_l;
 	    unpack_h = gen_unpack2_h;
+	    break;
+
+	  default:
+	    gcc_unreachable ();
 	  }
-	else
-	  abort ();
 
 	/* Unpack into wider vectors, zero extending the elements.  */
 
@@ -1354,7 +1358,7 @@ ia64_expand_vecint_compare (enum rtx_code code, enum machine_mode mode,
       return negate;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   x = gen_rtx_fmt_ee (code, mode, op0, op1);
@@ -1509,7 +1513,7 @@ ia64_expand_vecint_minmax (enum rtx_code code, enum machine_mode mode,
       code = GT;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   xops[3] = gen_rtx_fmt_ee (code, VOIDmode, operands[1], operands[2]);
 
@@ -1774,7 +1778,7 @@ next_scratch_gr_reg (void)
     }
 
   /* There must be _something_ available.  */
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Helper function for ia64_compute_frame_size, called through
@@ -2071,39 +2075,49 @@ ia64_initial_elimination_offset (int from, int to)
   switch (from)
     {
     case FRAME_POINTER_REGNUM:
-      if (to == HARD_FRAME_POINTER_REGNUM)
+      switch (to)
 	{
+	case HARD_FRAME_POINTER_REGNUM:
 	  if (current_function_is_leaf)
 	    offset = -current_frame_info.total_size;
 	  else
 	    offset = -(current_frame_info.total_size
 		       - current_function_outgoing_args_size - 16);
-	}
-      else if (to == STACK_POINTER_REGNUM)
-	{
+	  break;
+
+	case STACK_POINTER_REGNUM:
 	  if (current_function_is_leaf)
 	    offset = 0;
 	  else
 	    offset = 16 + current_function_outgoing_args_size;
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
-	abort ();
       break;
 
     case ARG_POINTER_REGNUM:
       /* Arguments start above the 16 byte save area, unless stdarg
 	 in which case we store through the 16 byte save area.  */
-      if (to == HARD_FRAME_POINTER_REGNUM)
-	offset = 16 - current_function_pretend_args_size;
-      else if (to == STACK_POINTER_REGNUM)
-	offset = (current_frame_info.total_size
-		  + 16 - current_function_pretend_args_size);
-      else
-	abort ();
+      switch (to)
+	{
+	case HARD_FRAME_POINTER_REGNUM:
+	  offset = 16 - current_function_pretend_args_size;
+	  break;
+
+	case STACK_POINTER_REGNUM:
+	  offset = (current_frame_info.total_size
+		    + 16 - current_function_pretend_args_size);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return offset;
@@ -2649,9 +2663,8 @@ ia64_expand_prologue (void)
     }
 
   /* We should now be at the base of the gr/br/fr spill area.  */
-  if (cfa_off != (current_frame_info.spill_cfa_off
-		  + current_frame_info.spill_size))
-    abort ();
+  gcc_assert (cfa_off == (current_frame_info.spill_cfa_off
+			  + current_frame_info.spill_size));
 
   /* Spill all general registers.  */
   for (regno = GR_REG (1); regno <= GR_REG (31); ++regno)
@@ -2704,15 +2717,13 @@ ia64_expand_prologue (void)
   for (regno = FR_REG (2); regno <= FR_REG (127); ++regno)
     if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
       {
-        if (cfa_off & 15)
-	  abort ();
+        gcc_assert (!(cfa_off & 15));
 	reg = gen_rtx_REG (XFmode, regno);
 	do_spill (gen_fr_spill_x, reg, cfa_off, reg);
 	cfa_off -= 16;
       }
 
-  if (cfa_off != current_frame_info.spill_cfa_off)
-    abort ();
+  gcc_assert (cfa_off == current_frame_info.spill_cfa_off);
 
   finish_spill_pointers ();
 }
@@ -2824,9 +2835,8 @@ ia64_expand_epilogue (int sibcall_p)
     }
 
   /* We should now be at the base of the gr/br/fr spill area.  */
-  if (cfa_off != (current_frame_info.spill_cfa_off
-		  + current_frame_info.spill_size))
-    abort ();
+  gcc_assert (cfa_off == (current_frame_info.spill_cfa_off
+			  + current_frame_info.spill_size));
 
   /* The GP may be stored on the stack in the prologue, but it's
      never restored in the epilogue.  Skip the stack slot.  */
@@ -2874,8 +2884,7 @@ ia64_expand_epilogue (int sibcall_p)
   for (regno = FR_REG (2); regno <= FR_REG (127); ++regno)
     if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
       {
-        if (cfa_off & 15)
-	  abort ();
+        gcc_assert (!(cfa_off & 15));
 	reg = gen_rtx_REG (XFmode, regno);
 	do_restore (gen_fr_restore_x, reg, cfa_off);
 	cfa_off -= 16;
@@ -2888,8 +2897,7 @@ ia64_expand_epilogue (int sibcall_p)
       emit_move_insn (reg, ar_unat_save_reg);
     }
 
-  if (cfa_off != current_frame_info.spill_cfa_off)
-    abort ();
+  gcc_assert (cfa_off == current_frame_info.spill_cfa_off);
 
   finish_spill_pointers ();
 
@@ -3931,8 +3939,7 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 void
 ia64_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
-  if (size != 8)
-    abort ();
+  gcc_assert (size == 8);
   fputs ("\tdata8.ua\t@dtprel(", file);
   output_addr_const (file, x);
   fputs (")", file);
@@ -4021,10 +4028,11 @@ ia64_print_operand (FILE * file, rtx x, int code)
 	str = reg_names [FR_REG (0)];
       else if (x == CONST1_RTX (GET_MODE (x)))
 	str = reg_names [FR_REG (1)];
-      else if (GET_CODE (x) == REG)
-	str = reg_names [REGNO (x)];
       else
-	abort ();
+	{
+	  gcc_assert (GET_CODE (x) == REG);
+	  str = reg_names [REGNO (x)];
+	}
       fputs (str, file);
       return;
 
@@ -4062,13 +4070,12 @@ ia64_print_operand (FILE * file, rtx x, int code)
 	    x = XEXP (XEXP (XEXP (x, 0), 1), 1);
 	    if (GET_CODE (x) == CONST_INT)
 	      value = INTVAL (x);
-	    else if (GET_CODE (x) == REG)
+	    else
 	      {
+		gcc_assert (GET_CODE (x) == REG);
 		fprintf (file, ", %s", reg_names[REGNO (x)]);
 		return;
 	      }
-	    else
-	      abort ();
 	    break;
 
 	  case POST_INC:
@@ -4350,7 +4357,7 @@ ia64_register_move_cost (enum machine_mode mode, enum reg_class from,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return 2;
@@ -4753,8 +4760,8 @@ struct reg_write_state rws_sum[NUM_REGS];
 struct reg_write_state rws_insn[NUM_REGS];
 
 /* Indicates whether this is the first instruction after a stop bit,
-   in which case we don't need another stop bit.  Without this, we hit
-   the abort in ia64_variable_issue when scheduling an alloc.  */
+   in which case we don't need another stop bit.  Without this,
+   ia64_variable_issue will die when scheduling an alloc.  */
 static int first_instruction;
 
 /* Misc flags needed to compute RAW/WAW dependencies while we are traversing
@@ -4805,8 +4812,7 @@ rws_access_regno (int regno, struct reg_flags flags, int pred)
 {
   int need_barrier = 0;
 
-  if (regno >= NUM_REGS)
-    abort ();
+  gcc_assert (regno < NUM_REGS);
 
   if (! PR_REGNO_P (regno))
     flags.is_and = flags.is_or = 0;
@@ -4816,8 +4822,7 @@ rws_access_regno (int regno, struct reg_flags flags, int pred)
       int write_count;
 
       /* One insn writes same reg multiple times?  */
-      if (rws_insn[regno].write_count > 0)
-	abort ();
+      gcc_assert (!rws_insn[regno].write_count);
 
       /* Update info for current instruction.  */
       rws_update (rws_insn, regno, flags, pred);
@@ -4858,7 +4863,7 @@ rws_access_regno (int regno, struct reg_flags flags, int pred)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   else
@@ -4911,7 +4916,7 @@ rws_access_regno (int regno, struct reg_flags flags, int pred)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -4963,9 +4968,8 @@ update_set_flags (rtx x, struct reg_flags *pflags, int *ppred, rtx *pcond)
 	  if (GET_CODE (cond) == EQ)
 	    is_complemented = 1;
 	  cond = XEXP (cond, 0);
-	  if (GET_CODE (cond) != REG
-	      && REGNO_REG_CLASS (REGNO (cond)) != PR_REGS)
-	    abort ();
+	  gcc_assert (GET_CODE (cond) == REG
+		      || REGNO_REG_CLASS (REGNO (cond)) == PR_REGS);
 	  *pcond = cond;
 	  if (XEXP (src, 1) == SET_DEST (x)
 	      || XEXP (src, 2) == SET_DEST (x))
@@ -5089,7 +5093,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
       need_barrier |= rws_access_regno (AR_EC_REGNUM, new_flags, pred);
 
       /* Avoid multiple register writes, in case this is a pattern with
-	 multiple CALL rtx.  This avoids an abort in rws_access_reg.  */
+	 multiple CALL rtx.  This avoids a failure in rws_access_reg.  */
       if (! flags.is_sibcall && ! rws_insn[REG_AR_CFM].write_count)
 	{
 	  new_flags.is_write = 1;
@@ -5103,16 +5107,14 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
       /* X is a predicated instruction.  */
 
       cond = COND_EXEC_TEST (x);
-      if (pred)
-	abort ();
+      gcc_assert (!pred);
       need_barrier = rtx_needs_barrier (cond, flags, 0);
 
       if (GET_CODE (cond) == EQ)
 	is_complemented = 1;
       cond = XEXP (cond, 0);
-      if (GET_CODE (cond) != REG
-	  && REGNO_REG_CLASS (REGNO (cond)) != PR_REGS)
-	abort ();
+      gcc_assert (GET_CODE (cond) == REG
+		  || REGNO_REG_CLASS (REGNO (cond)) == PR_REGS);
       pred = REGNO (cond);
       if (is_complemented)
 	++pred;
@@ -5133,7 +5135,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	  || (MEM_VOLATILE_P (x) && TARGET_VOL_ASM_STOP))
 	{
 	  /* Avoid writing the register multiple times if we have multiple
-	     asm outputs.  This avoids an abort in rws_access_reg.  */
+	     asm outputs.  This avoids a failure in rws_access_reg.  */
 	  if (! rws_insn[REG_VOLATILE].write_count)
 	    {
 	      new_flags.is_write = 1;
@@ -5220,8 +5222,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 
       /* Operators with side-effects.  */
     case POST_INC:    case POST_DEC:
-      if (GET_CODE (XEXP (x, 0)) != REG)
-	abort ();
+      gcc_assert (GET_CODE (XEXP (x, 0)) == REG);
 
       new_flags.is_write = 0;
       need_barrier  = rws_access_reg (XEXP (x, 0), new_flags, pred);
@@ -5230,8 +5231,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
       break;
 
     case POST_MODIFY:
-      if (GET_CODE (XEXP (x, 0)) != REG)
-	abort ();
+      gcc_assert (GET_CODE (XEXP (x, 0)) == REG);
 
       new_flags.is_write = 0;
       need_barrier  = rws_access_reg (XEXP (x, 0), new_flags, pred);
@@ -5262,7 +5262,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
       /* VEC_SELECT's second argument is a PARALLEL with integers that
 	 describe the elements selected.  On ia64, those integers are
 	 always constants.  Avoid walking the PARALLEL so that we don't
-	 get confused with "normal" parallels and abort.  */
+	 get confused with "normal" parallels and then die.  */
       need_barrier = rtx_needs_barrier (XEXP (x, 0), flags, pred);
       break;
 
@@ -5318,7 +5318,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -5351,7 +5351,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	  return 0;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -5390,7 +5390,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	    break;
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
       break;
     }
@@ -5505,7 +5505,7 @@ group_barrier_needed_p (rtx insn)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (first_instruction && INSN_P (insn)
@@ -5861,8 +5861,7 @@ ia64_sched_init (FILE *dump ATTRIBUTE_UNUSED,
     for (insn = NEXT_INSN (current_sched_info->prev_head);
 	 insn != current_sched_info->next_tail;
 	 insn = NEXT_INSN (insn))
-      if (SCHED_GROUP_P (insn))
-	abort ();
+      gcc_assert (!SCHED_GROUP_P (insn));
 #endif
   last_scheduled_insn = NULL_RTX;
   init_insn_group_barriers ();
@@ -5994,8 +5993,9 @@ ia64_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
   memcpy (prev_cycle_state, curr_state, dfa_state_size);
   if (reload_completed)
     {
-      if (group_barrier_needed_p (insn))
-	abort ();
+      int needed = group_barrier_needed_p (insn);
+      
+      gcc_assert (!needed);
       if (GET_CODE (insn) == CALL_INSN)
 	init_insn_group_barriers ();
       stops_p [INSN_UID (insn)] = stop_before_p;
@@ -6010,8 +6010,7 @@ ia64_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 static int
 ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn)
 {
-  if (insn == NULL_RTX || !INSN_P (insn))
-    abort ();
+  gcc_assert (insn  && INSN_P (insn));
   return (!reload_completed
 	  || !safe_group_barrier_needed_p (insn));
 }
@@ -6032,8 +6031,7 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
 {
   int setup_clocks_p = FALSE;
 
-  if (insn == NULL_RTX || !INSN_P (insn))
-    abort ();
+  gcc_assert (insn && INSN_P (insn));
   if ((reload_completed && safe_group_barrier_needed_p (insn))
       || (last_scheduled_insn
 	  && (GET_CODE (last_scheduled_insn) == CALL_INSN
@@ -6361,12 +6359,10 @@ issue_nops_and_insn (struct bundle_state *originator, int before_nops_num,
   curr_state->accumulated_insns_num
     = originator->accumulated_insns_num + before_nops_num;
   curr_state->branch_deviation = originator->branch_deviation;
-  if (insn == NULL_RTX)
-    abort ();
-  else if (INSN_CODE (insn) == CODE_FOR_insn_group_barrier)
+  gcc_assert (insn);
+  if (INSN_CODE (insn) == CODE_FOR_insn_group_barrier)
     {
-      if (GET_MODE (insn) == TImode)
-	abort ();
+      gcc_assert (GET_MODE (insn) != TImode);
       if (!try_issue_nops (curr_state, before_nops_num))
 	return;
       if (!try_issue_insn (curr_state, insn))
@@ -6386,9 +6382,9 @@ issue_nops_and_insn (struct bundle_state *originator, int before_nops_num,
       if (!try_issue_insn (curr_state, insn))
 	return;
       curr_state->accumulated_insns_num++;
-      if (GET_CODE (PATTERN (insn)) == ASM_INPUT
-	  || asm_noperands (PATTERN (insn)) >= 0)
-	abort ();
+      gcc_assert (GET_CODE (PATTERN (insn)) != ASM_INPUT
+		  && asm_noperands (PATTERN (insn)) < 0);
+
       if (ia64_safe_type (insn) == TYPE_L)
 	curr_state->accumulated_insns_num++;
     }
@@ -6518,7 +6514,7 @@ get_template (state_t state, int pos)
       else if (cpu_unit_reservation_p (state, _0mlx_))
 	return 9;
       else
-	abort ();
+	gcc_unreachable ();
     case 6:
       if (cpu_unit_reservation_p (state, _1mmi_))
 	return 1;
@@ -6541,9 +6537,9 @@ get_template (state_t state, int pos)
       else if (cpu_unit_reservation_p (state, _1mlx_))
 	return 9;
       else
-	abort ();
+	gcc_unreachable ();
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -6669,11 +6665,10 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
        insn != NULL_RTX;
        insn = next_insn)
     {
-      if (!INSN_P (insn)
-	  || ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IGNORE
-	  || GET_CODE (PATTERN (insn)) == USE
-	  || GET_CODE (PATTERN (insn)) == CLOBBER)
-	abort ();
+      gcc_assert (INSN_P (insn)
+		  && ia64_safe_itanium_class (insn) != ITANIUM_CLASS_IGNORE
+		  && GET_CODE (PATTERN (insn)) != USE
+		  && GET_CODE (PATTERN (insn)) != CLOBBER);
       type = ia64_safe_type (insn);
       next_insn = get_next_important_insn (NEXT_INSN (insn), tail);
       insn_num++;
@@ -6713,8 +6708,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  issue_nops_and_insn (curr_state, 0, insn, bundle_end_p,
 			       only_bundle_end_p);
 	}
-      if (index_to_bundle_states [insn_num] == NULL)
-	abort ();
+      gcc_assert (index_to_bundle_states [insn_num]);
       for (curr_state = index_to_bundle_states [insn_num];
 	   curr_state != NULL;
 	   curr_state = curr_state->next)
@@ -6747,10 +6741,10 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	       INSN_UID (insn));
 	  }
     }
-  if (index_to_bundle_states [insn_num] == NULL)
-    /* We should find a solution because the 2nd insn scheduling has
-       found one.  */
-    abort ();
+  
+  /* We should find a solution because the 2nd insn scheduling has
+     found one.  */
+  gcc_assert (index_to_bundle_states [insn_num]);
   /* Find a state corresponding to the best insn sequence.  */
   best_state = NULL;
   for (curr_state = index_to_bundle_states [insn_num];
@@ -6828,8 +6822,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
       if (max_pos > 3 && template1 < 0)
 	/* It may happen when we have the stop inside a bundle.  */
 	{
-	  if (pos > 3)
-	    abort ();
+	  gcc_assert (pos <= 3);
 	  template1 = get_template (curr_state->dfa_state, 3);
 	  pos += 3;
 	}
@@ -6840,14 +6833,12 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	    nop = gen_nop ();
 	    emit_insn_after (nop, insn);
 	    pos--;
-	    if (pos < 0)
-	      abort ();
+	    gcc_assert (pos >= 0);
 	    if (pos % 3 == 0)
 	      {
 		/* We are at the start of a bundle: emit the template
 		   (it should be defined).  */
-		if (template0 < 0)
-		  abort ();
+		gcc_assert (template0 >= 0);
 		b = gen_bundle_selector (GEN_INT (template0));
 		ia64_emit_insn_before (b, nop);
 		/* If we have two bundle window, we make one bundle
@@ -6866,8 +6857,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
       /* Long insn takes 2 slots.  */
       if (ia64_safe_type (insn) == TYPE_L)
 	pos--;
-      if (pos < 0)
-	abort ();
+      gcc_assert (pos >= 0);
       if (pos % 3 == 0
 	  && INSN_CODE (insn) != CODE_FOR_insn_group_barrier
 	  && GET_CODE (PATTERN (insn)) != ASM_INPUT
@@ -6875,8 +6865,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	{
 	  /* The current insn is at the bundle start: emit the
 	     template.  */
-	  if (template0 < 0)
-	    abort ();
+	  gcc_assert (template0 >= 0);
 	  b = gen_bundle_selector (GEN_INT (template0));
 	  ia64_emit_insn_before (b, insn);
 	  b = PREV_INSN (insn);
@@ -6894,14 +6883,12 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  nop = PREV_INSN (insn);
 	  insn = nop;
 	  pos--;
-	  if (pos < 0)
-	    abort ();
+	  gcc_assert (pos >= 0);
 	  if (pos % 3 == 0)
 	    {
 	      /* See comment above in analogous place for emitting nops
 		 after the insn.  */
-	      if (template0 < 0)
-		abort ();
+	      gcc_assert (template0 >= 0);
 	      b = gen_bundle_selector (GEN_INT (template0));
 	      ia64_emit_insn_before (b, insn);
 	      b = PREV_INSN (insn);
@@ -6921,11 +6908,10 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	 insn != NULL_RTX;
 	 insn = next_insn)
       {
-	if (!INSN_P (insn)
-	    || ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IGNORE
-	    || GET_CODE (PATTERN (insn)) == USE
-	    || GET_CODE (PATTERN (insn)) == CLOBBER)
-	  abort ();
+	gcc_assert (INSN_P (insn)
+		    && ia64_safe_itanium_class (insn) != ITANIUM_CLASS_IGNORE
+		    && GET_CODE (PATTERN (insn)) != USE
+		    && GET_CODE (PATTERN (insn)) != CLOBBER);
 	next_insn = get_next_important_insn (NEXT_INSN (insn), tail);
 	if (INSN_UID (insn) < clocks_length && add_cycles [INSN_UID (insn)])
 	  /* We found a MM-insn which needs additional cycles.  */
@@ -6963,9 +6949,9 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	       bundle start, there are no more 3 insns in the bundle,
 	       and the MM-insn is not at the start of bundle with
 	       template MLX.  */
-	    if ((pred_stop_p && n == 0) || n > 2
-		|| (template0 == 9 && n != 0))
-	      abort ();
+	    gcc_assert ((!pred_stop_p || n)
+			&& n <= 2
+			&& (template0 != 9 || !n));
 	    /* Put nops after the insn in the bundle.  */
 	    for (j = 3 - n; j > 0; j --)
 	      ia64_emit_insn_before (gen_nop (), insn);
@@ -7170,18 +7156,19 @@ ia64_st_address_bypass_p (rtx producer, rtx consumer)
 {
   rtx dest, reg, mem;
 
-  if (producer == NULL_RTX || consumer == NULL_RTX)
-    abort ();
+  gcc_assert (producer && consumer);
   dest = ia64_single_set (producer);
-  if (dest == NULL_RTX || (reg = SET_DEST (dest)) == NULL_RTX
-      || (GET_CODE (reg) != REG && GET_CODE (reg) != SUBREG))
-    abort ();
+  gcc_assert (dest);
+  reg = SET_DEST (dest);
+  gcc_assert (reg);
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
+  gcc_assert (GET_CODE (reg) == REG);
+  
   dest = ia64_single_set (consumer);
-  if (dest == NULL_RTX || (mem = SET_DEST (dest)) == NULL_RTX
-      || GET_CODE (mem) != MEM)
-    abort ();
+  gcc_assert (dest);
+  mem = SET_DEST (dest);
+  gcc_assert (mem && GET_CODE (mem) == MEM);
   return reg_mentioned_p (reg, mem);
 }
 
@@ -7193,25 +7180,26 @@ ia64_ld_address_bypass_p (rtx producer, rtx consumer)
 {
   rtx dest, src, reg, mem;
 
-  if (producer == NULL_RTX || consumer == NULL_RTX)
-    abort ();
+  gcc_assert (producer && consumer);
   dest = ia64_single_set (producer);
-  if (dest == NULL_RTX || (reg = SET_DEST (dest)) == NULL_RTX
-      || (GET_CODE (reg) != REG && GET_CODE (reg) != SUBREG))
-    abort ();
+  gcc_assert (dest);
+  reg = SET_DEST (dest);
+  gcc_assert (reg);
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
+  gcc_assert (GET_CODE (reg) == REG);
+  
   src = ia64_single_set (consumer);
-  if (src == NULL_RTX || (mem = SET_SRC (src)) == NULL_RTX)
-    abort ();
+  gcc_assert (src);
+  mem = SET_SRC (src);
+  gcc_assert (mem);
   if (GET_CODE (mem) == UNSPEC && XVECLEN (mem, 0) > 0)
     mem = XVECEXP (mem, 0, 0);
   while (GET_CODE (mem) == SUBREG || GET_CODE (mem) == ZERO_EXTEND)
     mem = XEXP (mem, 0);
 
   /* Note that LO_SUM is used for GOT loads.  */
-  if (GET_CODE (mem) != LO_SUM && GET_CODE (mem) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (mem) == LO_SUM || GET_CODE (mem) == MEM);
 
   return reg_mentioned_p (reg, mem);
 }
@@ -7619,22 +7607,21 @@ process_set (FILE *asm_out_file, rtx pat)
         {
 	  rtx op0 = XEXP (src, 0);
 	  rtx op1 = XEXP (src, 1);
-	  if (op0 == dest && GET_CODE (op1) == CONST_INT)
-	    {
-	      if (INTVAL (op1) < 0)
-		fprintf (asm_out_file, "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
-			 -INTVAL (op1));
-	      else
-		process_epilogue ();
-	    }
+	  
+	  gcc_assert (op0 == dest && GET_CODE (op1) == CONST_INT);
+	  
+	  if (INTVAL (op1) < 0)
+	    fprintf (asm_out_file, "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
+		     -INTVAL (op1));
 	  else
-	    abort ();
+	    process_epilogue ();
 	}
-      else if (GET_CODE (src) == REG
-	       && REGNO (src) == HARD_FRAME_POINTER_REGNUM)
-	process_epilogue ();
       else
-	abort ();
+	{
+	  gcc_assert (GET_CODE (src) == REG
+		      && REGNO (src) == HARD_FRAME_POINTER_REGNUM);
+	  process_epilogue ();
+	}
 
       return 1;
     }
@@ -7649,44 +7636,39 @@ process_set (FILE *asm_out_file, rtx pat)
 	{
 	case BR_REG (0):
 	  /* Saving return address pointer.  */
-	  if (dest_regno != current_frame_info.reg_save_b0)
-	    abort ();
+	  gcc_assert (dest_regno == current_frame_info.reg_save_b0);
 	  fprintf (asm_out_file, "\t.save rp, r%d\n",
 		   ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	case PR_REG (0):
-	  if (dest_regno != current_frame_info.reg_save_pr)
-	    abort ();
+	  gcc_assert (dest_regno == current_frame_info.reg_save_pr);
 	  fprintf (asm_out_file, "\t.save pr, r%d\n",
 		   ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	case AR_UNAT_REGNUM:
-	  if (dest_regno != current_frame_info.reg_save_ar_unat)
-	    abort ();
+	  gcc_assert (dest_regno == current_frame_info.reg_save_ar_unat);
 	  fprintf (asm_out_file, "\t.save ar.unat, r%d\n",
 		   ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	case AR_LC_REGNUM:
-	  if (dest_regno != current_frame_info.reg_save_ar_lc)
-	    abort ();
+	  gcc_assert (dest_regno == current_frame_info.reg_save_ar_lc);
 	  fprintf (asm_out_file, "\t.save ar.lc, r%d\n",
 		   ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	case STACK_POINTER_REGNUM:
-	  if (dest_regno != HARD_FRAME_POINTER_REGNUM
-	      || ! frame_pointer_needed)
-	    abort ();
+	  gcc_assert (dest_regno == HARD_FRAME_POINTER_REGNUM
+		      && frame_pointer_needed);
 	  fprintf (asm_out_file, "\t.vframe r%d\n",
 		   ia64_dbx_register_number (dest_regno));
 	  return 1;
 
 	default:
 	  /* Everything else should indicate being stored to memory.  */
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -7702,55 +7684,50 @@ process_set (FILE *asm_out_file, rtx pat)
 	  base = XEXP (dest, 0);
 	  off = 0;
 	}
-      else if (GET_CODE (XEXP (dest, 0)) == PLUS
-	       && GET_CODE (XEXP (XEXP (dest, 0), 1)) == CONST_INT)
+      else
 	{
+	  gcc_assert (GET_CODE (XEXP (dest, 0)) == PLUS
+		      && GET_CODE (XEXP (XEXP (dest, 0), 1)) == CONST_INT);
 	  base = XEXP (XEXP (dest, 0), 0);
 	  off = INTVAL (XEXP (XEXP (dest, 0), 1));
 	}
-      else
-	abort ();
 
       if (base == hard_frame_pointer_rtx)
 	{
 	  saveop = ".savepsp";
 	  off = - off;
 	}
-      else if (base == stack_pointer_rtx)
-	saveop = ".savesp";
       else
-	abort ();
+	{
+	  gcc_assert (base == stack_pointer_rtx);
+	  saveop = ".savesp";
+	}
 
       src_regno = REGNO (src);
       switch (src_regno)
 	{
 	case BR_REG (0):
-	  if (current_frame_info.reg_save_b0 != 0)
-	    abort ();
+	  gcc_assert (!current_frame_info.reg_save_b0);
 	  fprintf (asm_out_file, "\t%s rp, %ld\n", saveop, off);
 	  return 1;
 
 	case PR_REG (0):
-	  if (current_frame_info.reg_save_pr != 0)
-	    abort ();
+	  gcc_assert (!current_frame_info.reg_save_pr);
 	  fprintf (asm_out_file, "\t%s pr, %ld\n", saveop, off);
 	  return 1;
 
 	case AR_LC_REGNUM:
-	  if (current_frame_info.reg_save_ar_lc != 0)
-	    abort ();
+	  gcc_assert (!current_frame_info.reg_save_ar_lc);
 	  fprintf (asm_out_file, "\t%s ar.lc, %ld\n", saveop, off);
 	  return 1;
 
 	case AR_PFS_REGNUM:
-	  if (current_frame_info.reg_save_ar_pfs != 0)
-	    abort ();
+	  gcc_assert (!current_frame_info.reg_save_ar_pfs);
 	  fprintf (asm_out_file, "\t%s ar.pfs, %ld\n", saveop, off);
 	  return 1;
 
 	case AR_UNAT_REGNUM:
-	  if (current_frame_info.reg_save_ar_unat != 0)
-	    abort ();
+	  gcc_assert (!current_frame_info.reg_save_ar_unat);
 	  fprintf (asm_out_file, "\t%s ar.unat, %ld\n", saveop, off);
 	  return 1;
 
@@ -7850,7 +7827,7 @@ process_for_unwind_directive (FILE *asm_out_file, rtx insn)
 	  }
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }
@@ -7990,8 +7967,7 @@ ia64_hpux_file_end (void)
       tree decl = p->decl;
       tree id = DECL_ASSEMBLER_NAME (decl);
 
-      if (!id)
-	abort ();
+      gcc_assert (id);
 
       if (!TREE_ASM_WRITTEN (decl) && TREE_SYMBOL_REFERENCED (id))
         {

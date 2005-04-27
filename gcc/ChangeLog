@@ -1,39 +1,59 @@
+2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/ia64/ia64.c (ia64_encode_addr_area): Use gcc_assert and
+	gcc_unreachable as appropriate.
+	(ia64_expand_load_address, ia64_expand_tls_address,
+	ia64_split_tmode, ia64_split_tmode_move, ia64_expand_compare,
+	ia64_expand_vecint_compare, ia64_expand_vecint_minmax,
+	next_scratch_gr_reg, ia64_initial_elimination_offset,
+	ia64_expand_prologue, ia64_expand_epilogue,
+	ia64_output_dwarf_dtprel, ia64_print_operand,
+	ia64_register_move_cost, first_instruction, rws_access_regno,
+	update_set_flags, rtx_needs_barrier, group_barrier_needed_p,
+	ia64_sched_init, ia64_variable_issue,
+	ia64_first_cycle_multipass_dfs_lookahead_guard,
+	ia64_dfa_new_cycle, issue_nops_and_insn, get_template, bundling,
+	ia64_st_address_bypass_p, ia64_ld_address_bypass_p, process_set,
+	process_for_unwind_directive, ia64_hpux_file_end): Likewise.
+	* config/ia64/ia64.h (ASM_OUTPUT_ADDR_VEC_ELT): Likewise.
+	* config/ia64/ia64.md (*arm_movdi_vfp, *movdf_vfp): Likewise.
+	* config/ia64/predicates.md (got_symbolic_operand,
+	sdata_symbolic_operand): Likewise.
+	* config/ia64/vect.md (vcondv2sf): Likewise.
+
 2005-04-27  Matt Thomas <matt@3am-software.com>
 
 	* config/vax/vax.c (legitimate_constant_address_p): New.  Formerly
-		CONSTANT_ADDRESS_P in config/vax/vax.h
+	CONSTANT_ADDRESS_P in config/vax/vax.h
 	(legitimate_constant_p): Added.  Formerly CONSTANT_P in vax.h. 
 	(INDEX_REGISTER_P): New.
 	(BASE_REGISTER_P): New.
 	(indirectable_constant_address_p): New.  Adapted from
-		INDIRECTABLE_CONSTANT_ADDRESS_P in vax.h.
-		Use SYMBOL_REF_LOCAL_P.
+	INDIRECTABLE_CONSTANT_ADDRESS_P in vax.h. Use SYMBOL_REF_LOCAL_P.
 	(indirectable_address_p): New.  Adapted from
-		INDIRECTABLE_ADDRESS_P in vax.h.
+	INDIRECTABLE_ADDRESS_P in vax.h.
 	(nonindexed_address_p): New.  Adapted from
-		GO_IF_NONINDEXED_ADDRESS in vax.h.
-	(index_temp_p): New.  Adapted from
-		INDEX_TERM_P in vax.h.
-	(reg_plus_index_p): New.  Adapted from
-		GO_IF_REG_PLUS_INDEX in vax.h.
+	GO_IF_NONINDEXED_ADDRESS in vax.h.
+	(index_temp_p): New.  Adapted from INDEX_TERM_P in vax.h.
+	(reg_plus_index_p): New.  Adapted from GO_IF_REG_PLUS_INDEX in vax.h.
 	(legitimate_address_p): New.  Adapted from
-		GO_IF_LEGITIMATE_ADDRESS in vax.h
+	GO_IF_LEGITIMATE_ADDRESS in vax.h.
 	(vax_mode_dependent_address_p): New.  Adapted from
-		GO_IF_MODE_DEPENDENT_ADDRESS in vax.h
+	GO_IF_MODE_DEPENDENT_ADDRESS in vax.h.
 	* config/vax/vax.h (CONSTANT_ADDRESS_P): Use
-		legitimate_constant_address_p
+	legitimate_constant_address_p.
 	(CONSTANT_P): Use legitimate_constant_p.
 	(INDIRECTABLE_CONSTANT_ADDRESS_P): Removed.
 	(INDIRECTABLE_ADDRESS_P): Removed.
 	(GO_IF_NONINDEXED_ADDRESS): Removed.
 	(INDEX_TEMP_P): Removed.
 	(GO_IF_REG_PLUS_INDEX): Removed.
-	(GO_IF_LEGITIMATE_ADDRESS): Use legitimate_address_p.
-		Two definitions, depending on whether REG_OK_STRICT is defined.
+	(GO_IF_LEGITIMATE_ADDRESS): Use legitimate_address_p. Two
+	definitions, depending on whether REG_OK_STRICT is defined.
 	(GO_IF_MODE_DEPENDENT_ADDRESS): Use vax_mode_dependent_address_p.
-		Two definitions, depending on whether REG_OK_STRICT is defined.
+	Two definitions, depending on whether REG_OK_STRICT is defined.
 	* config/vax/vax-protos.h (legitimate_constant_address_p): Prototype
-		added.
+	added.
 	(legitimate_constant_p): Prototype added.
 	(legitimate_address_p): Prototype added.
 	(vax_mode_dependent_address_p): Prototype added.
