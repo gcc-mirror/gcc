@@ -1,3 +1,13 @@
+2005-04-27  Matt Thomas <matt@3am-software.com>
+            Jan-Benedict Glaw <jbglaw@microdata-pos.de>
+
+	* config/vax/vax.c (vax_rtx_costs): Whitespace cleanup.
+	(vax_output_mi_thunk): Ditto.
+	(vax_notice_cc_update): Ditto.
+	(INDEX_REGISTER_P): Add trailing \.
+	(BASE_REGISTER_P): Add trailing \.
+	(legitimate_address_p): Whitespace cleanup.  Remove trailing \.
+
 2005-04-27  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-propagate.c (set_rhs): Check operand of
@@ -80,38 +90,17 @@
 	(INDEX_REGISTER_P): New.
 	(BASE_REGISTER_P): New.
 	(indirectable_constant_address_p): New.  Adapted from
-<<<<<<< ChangeLog
-	INDIRECTABLE_CONSTANT_ADDRESS_P in vax.h.
-	Use SYMBOL_REF_LOCAL_P.
-=======
 	INDIRECTABLE_CONSTANT_ADDRESS_P in vax.h. Use SYMBOL_REF_LOCAL_P.
->>>>>>> 2.8478
 	(indirectable_address_p): New.  Adapted from
 	INDIRECTABLE_ADDRESS_P in vax.h.
 	(nonindexed_address_p): New.  Adapted from
-<<<<<<< ChangeLog
-	GO_IF_NONINDEXED_ADDRESS in vax.h.
-	(index_temp_p): New.  Adapted from
-	INDEX_TERM_P in vax.h.
-	(reg_plus_index_p): New.  Adapted from
-	GO_IF_REG_PLUS_INDEX in vax.h.
-=======
 	GO_IF_NONINDEXED_ADDRESS in vax.h.
 	(index_temp_p): New.  Adapted from INDEX_TERM_P in vax.h.
 	(reg_plus_index_p): New.  Adapted from GO_IF_REG_PLUS_INDEX in vax.h.
->>>>>>> 2.8478
 	(legitimate_address_p): New.  Adapted from
-<<<<<<< ChangeLog
-	GO_IF_LEGITIMATE_ADDRESS in vax.h
-=======
 	GO_IF_LEGITIMATE_ADDRESS in vax.h.
->>>>>>> 2.8478
 	(vax_mode_dependent_address_p): New.  Adapted from
-<<<<<<< ChangeLog
-	GO_IF_MODE_DEPENDENT_ADDRESS in vax.h
-=======
 	GO_IF_MODE_DEPENDENT_ADDRESS in vax.h.
->>>>>>> 2.8478
 	* config/vax/vax.h (CONSTANT_ADDRESS_P): Use
 	legitimate_constant_address_p.
 	(CONSTANT_P): Use legitimate_constant_p.
@@ -120,13 +109,8 @@
 	(GO_IF_NONINDEXED_ADDRESS): Removed.
 	(INDEX_TEMP_P): Removed.
 	(GO_IF_REG_PLUS_INDEX): Removed.
-<<<<<<< ChangeLog
-	(GO_IF_LEGITIMATE_ADDRESS): Use legitimate_address_p.
-	Two definitions, depending on whether REG_OK_STRICT is defined.
-=======
 	(GO_IF_LEGITIMATE_ADDRESS): Use legitimate_address_p. Two
 	definitions, depending on whether REG_OK_STRICT is defined.
->>>>>>> 2.8478
 	(GO_IF_MODE_DEPENDENT_ADDRESS): Use vax_mode_dependent_address_p.
 	Two definitions, depending on whether REG_OK_STRICT is defined.
 	* config/vax/vax-protos.h (legitimate_constant_address_p): Prototype
