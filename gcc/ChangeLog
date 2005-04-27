@@ -1,3 +1,7 @@
+2005-04-27  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-ssa-propagate.c (set_rhs): Revert last change.
+
 2005-04-27  Steve Ellcey  <sje@cup.hp.com>
 
 	* explow.c (convert_memory_address): Add gcc_assert.
