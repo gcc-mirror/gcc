@@ -1237,27 +1237,24 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
   /* Mark every edge that crosses between sections.  */
 
   i = 0;
-  if (targetm.have_named_sections)
+  FOR_EACH_BB (bb)
+    FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      FOR_EACH_BB (bb)
-        FOR_EACH_EDGE (e, ei, bb->succs)
-	  {
-	    if (e->src != ENTRY_BLOCK_PTR
-		&& e->dest != EXIT_BLOCK_PTR
-		&& BB_PARTITION (e->src) != BB_PARTITION (e->dest))
-	      {
-		e->flags |= EDGE_CROSSING;
-		if (i == *max_idx)
-		  {
-		    *max_idx *= 2;
-		    crossing_edges = xrealloc (crossing_edges,
-					       (*max_idx) * sizeof (edge));
-		  }
-		crossing_edges[i++] = e;
-	      }
-	    else
-	      e->flags &= ~EDGE_CROSSING;
-	  }
+      if (e->src != ENTRY_BLOCK_PTR
+	  && e->dest != EXIT_BLOCK_PTR
+	  && BB_PARTITION (e->src) != BB_PARTITION (e->dest))
+	{
+	  e->flags |= EDGE_CROSSING;
+	  if (i == *max_idx)
+	    {
+	      *max_idx *= 2;
+	      crossing_edges = xrealloc (crossing_edges,
+					 (*max_idx) * sizeof (edge));
+	    }
+	  crossing_edges[i++] = e;
+	}
+      else
+	e->flags &= ~EDGE_CROSSING;
     }
   *n_crossing_edges = i;
 }
@@ -1821,36 +1818,26 @@ fix_edges_for_rarely_executed_code (edge *crossing_edges,
   
   fix_up_fall_thru_edges ();
   
-  /* Only do the parts necessary for writing separate sections if
-     the target architecture has the ability to write separate sections
-     (i.e. it has named sections).  Otherwise, the hot/cold partitioning
-     information will be used when reordering blocks to try to put all
-     the hot blocks together, then all the cold blocks, but no actual
-     section partitioning will be done.  */
-
-  if (targetm.have_named_sections)
+  /* If the architecture does not have conditional branches that can
+     span all of memory, convert crossing conditional branches into
+     crossing unconditional branches.  */
+  
+  if (!HAS_LONG_COND_BRANCH)
+    fix_crossing_conditional_branches ();
+  
+  /* If the architecture does not have unconditional branches that
+     can span all of memory, convert crossing unconditional branches
+     into indirect jumps.  Since adding an indirect jump also adds
+     a new register usage, update the register usage information as
+     well.  */
+  
+  if (!HAS_LONG_UNCOND_BRANCH)
     {
-      /* If the architecture does not have conditional branches that can
-	 span all of memory, convert crossing conditional branches into
-	 crossing unconditional branches.  */
-  
-      if (!HAS_LONG_COND_BRANCH)
-	fix_crossing_conditional_branches ();
-  
-      /* If the architecture does not have unconditional branches that
-	 can span all of memory, convert crossing unconditional branches
-	 into indirect jumps.  Since adding an indirect jump also adds
-	 a new register usage, update the register usage information as
-	 well.  */
-      
-      if (!HAS_LONG_UNCOND_BRANCH)
-	{
-	  fix_crossing_unconditional_branches ();
-	  reg_scan (get_insns(), max_reg_num ());
-	}
-
-      add_reg_crossing_jump_notes ();
+      fix_crossing_unconditional_branches ();
+      reg_scan (get_insns(), max_reg_num ());
     }
+  
+  add_reg_crossing_jump_notes ();
 }
 
 /* Verify, in the basic block chain, that there is at most one switch
@@ -1942,7 +1929,8 @@ reorder_basic_blocks (unsigned int flags)
     dump_flow_info (dump_file);
 
   cfg_layout_finalize ();
-  verify_hot_cold_block_grouping ();
+  if (flag_reorder_blocks_and_partition)
+    verify_hot_cold_block_grouping ();
 
   timevar_pop (TV_REORDER_BLOCKS);
 }
@@ -1962,8 +1950,7 @@ insert_section_boundary_note (void)
   rtx new_note;
   int first_partition = 0;
   
-  if (flag_reorder_blocks_and_partition
-      && targetm.have_named_sections)
+  if (flag_reorder_blocks_and_partition)
     FOR_EACH_BB (bb)
     {
       if (!first_partition)
