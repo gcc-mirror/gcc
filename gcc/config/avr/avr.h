@@ -668,15 +668,13 @@ sprintf (STRING, "*.%s%lu", PREFIX, (unsigned long)(NUM))
 
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)	\
 {						\
-  if (REGNO > 31)				\
-    abort ();					\
+  gcc_assert (REGNO < 32);			\
   fprintf (STREAM, "\tpush\tr%d", REGNO);	\
 }
 
 #define ASM_OUTPUT_REG_POP(STREAM, REGNO)	\
 {						\
-  if (REGNO > 31)				\
-    abort ();					\
+  gcc_assert (REGNO < 32);			\
   fprintf (STREAM, "\tpop\tr%d", REGNO);	\
 }
 
