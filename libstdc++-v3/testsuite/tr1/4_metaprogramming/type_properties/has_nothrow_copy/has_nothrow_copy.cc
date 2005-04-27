@@ -1,6 +1,6 @@
 // 2004-12-30  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,23 +30,21 @@ void test01()
   using std::tr1::has_nothrow_copy;
   using namespace __gnu_test;
 
-  VERIFY( (test_copy_property<has_nothrow_copy, void>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, int>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, float>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, EnumType>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, int*>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, int(*)(int)>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, int (ClassType::*)>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy,
-	   int (ClassType::*) (int)>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, int[2]>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, float[][3]>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, EnumType[2][3][4]>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, int*[3]>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy, int(*[][2])(int)>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy,
-	   int (ClassType::*[2][3])>(true)) );
-  VERIFY( (test_copy_property<has_nothrow_copy,
+  VERIFY( (test_category<has_nothrow_copy, void>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, float>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, EnumType>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int*>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int(*)(int)>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int (ClassType::*)>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int (ClassType::*) (int)>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int[2]>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, float[][3]>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, EnumType[2][3][4]>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int*[3]>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int(*[][2])(int)>(true)) );
+  VERIFY( (test_category<has_nothrow_copy, int (ClassType::*[2][3])>(true)) );
+  VERIFY( (test_category<has_nothrow_copy,
 	   int (ClassType::*[][2][3]) (int)>(true)) );
 }
 

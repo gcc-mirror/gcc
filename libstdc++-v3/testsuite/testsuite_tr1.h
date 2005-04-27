@@ -62,40 +62,6 @@ namespace __gnu_test
       return ret;
     }
 
-  template<template<typename> class Property,
-           typename Type>
-    bool
-    test_copy_property(bool value)
-    {
-      bool ret = true;
-      ret &= Property<Type>::value == value;
-      ret &= Property<const Type>::value == value;
-      ret &= Property<volatile Type>::value == !value;
-      ret &= Property<const volatile Type>::value == !value;
-      ret &= Property<Type>::type::value == value;
-      ret &= Property<const Type>::type::value == value;
-      ret &= Property<volatile Type>::type::value == !value;
-      ret &= Property<const volatile Type>::type::value == !value;
-      return ret;
-    }
-
-  template<template<typename> class Property,
-           typename Type>
-    bool
-    test_assign_property(bool value)
-    {
-      bool ret = true;
-      ret &= Property<Type>::value == value;
-      ret &= Property<const Type>::value == !value;
-      ret &= Property<volatile Type>::value == !value;
-      ret &= Property<const volatile Type>::value == !value;
-      ret &= Property<Type>::type::value == value;
-      ret &= Property<const Type>::type::value == !value;
-      ret &= Property<volatile Type>::type::value == !value;
-      ret &= Property<const volatile Type>::type::value == !value;
-      return ret;
-    }
-
   template<template<typename, typename> class Relationship,
            typename Type1, typename Type2>
     bool

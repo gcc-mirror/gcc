@@ -1,3 +1,19 @@
+2005-04-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits (has_trivial_copy, has_trivial_assign,
+	has_nothrow_copy, has_nothrow_assign): Adjust according to the
+	resolution of TR1 issue 3.21.
+	* testsuite/testsuite_tr1.h (test_copy_property,
+	test_assign_property): Remove.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_assign/has_nothrow_assign.cc: Adjust.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_copy/has_nothrow_copy.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_assign/has_trivial_assign.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_copy/has_trivial_copy.cc: Likewise.
+
 2005-04-26  Jones Desougi  <jones@ingate.com>
 
 	PR libstdc++/21131
