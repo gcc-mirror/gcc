@@ -1,3 +1,7 @@
+2005-04-27  Steve Ellcey  <sje@cup.hp.com>
+
+	* explow.c (convert_memory_address): Add gcc_assert.
+
 2005-04-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.ac: Check for ld --sysroot support.

@@ -313,6 +313,7 @@ convert_memory_address (enum machine_mode to_mode ATTRIBUTE_UNUSED,
 			rtx x)
 {
 #ifndef POINTERS_EXTEND_UNSIGNED
+  gcc_assert (GET_MODE (x) == to_mode || GET_MODE (x) == VOIDmode);
   return x;
 #else /* defined(POINTERS_EXTEND_UNSIGNED) */
   enum machine_mode from_mode;
