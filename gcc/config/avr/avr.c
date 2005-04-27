@@ -380,8 +380,7 @@ avr_naked_function_p (tree func)
 {
   tree a;
 
-  if (TREE_CODE (func) != FUNCTION_DECL)
-    abort ();
+  gcc_assert (TREE_CODE (func) == FUNCTION_DECL);
   
   a = lookup_attribute ("naked", DECL_ATTRIBUTES (func));
   return a != NULL_TREE;
@@ -1030,7 +1029,7 @@ ptrreg_to_str (int regno)
     case REG_Y: return "Y";
     case REG_Z: return "Z";
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return NULL;
 }
@@ -1062,7 +1061,7 @@ cond_string (enum rtx_code code)
     case LTU:
       return "lo";
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -5534,7 +5533,7 @@ avr_normalize_condition (RTX_CODE condition)
     case LEU:
       return LTU;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 

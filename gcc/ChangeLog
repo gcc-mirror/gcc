@@ -1,3 +1,13 @@
+2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/fp-bit.c (abort): Add noreturn attribute.
+
+	* config/avr/avr.c (avr_naked_function_p): Use gcc_assert and
+	gcc_unreachable as appropriate.
+	(ptrreg_to_str, cond_string, avr_normalize_condition): Likewise.
+	* config/avr/avr.h (ASM_OUTPUT_REG_PUSH,
+	ASM_OUTPUT_REG_POP): Likewise.
+
 2005-04-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-complex.c (expand_vector_operations_1): Do not build
