@@ -1,3 +1,14 @@
+2005-04-27  David S. Miller  <davem@davemloft.net>
+
+	* explow.c (allocate_dynamic_stack_space SETJMP_VIA_SAVE_AREA):
+	Kill setjmpless_size.  current_function_calls_setjmp is completely
+	computed when we are called, so just use the optimized size value
+	instead of using REG_SAVE_AREA notes.
+	(optimize_save_area_alloca): Delete....
+	* rtl.h (optimize_save_area_alloca): Likewise...
+	* passes.c (rest_of_compilation): and don't call it any more.
+	* reg-notes.def (SAVE_AREA): Delete.
+	
 2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/fp-bit.c (abort): Add noreturn attribute.

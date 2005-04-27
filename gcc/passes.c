@@ -1558,15 +1558,6 @@ rest_of_compilation (void)
   /* Copy any shared structure that should not be shared.  */
   unshare_all_rtl ();
 
-#ifdef SETJMP_VIA_SAVE_AREA
-  /* This must be performed before virtual register instantiation.
-     Please be aware that everything in the compiler that can look
-     at the RTL up to this point must understand that REG_SAVE_AREA
-     is just like a use of the REG contained inside.  */
-  if (current_function_calls_alloca)
-    optimize_save_area_alloca ();
-#endif
-
   /* Instantiate all virtual registers.  */
   instantiate_virtual_regs ();
 
