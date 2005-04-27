@@ -1870,22 +1870,16 @@ forget_section (void)							\
 /* Print a memory address as an operand to reference that memory location.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
-{ register rtx addr = ADDR;						\
-  register rtx base;							\
-  int offset;								\
+{ rtx addr = ADDR;							\
   switch (GET_CODE (addr))						\
     {									\
     case REG:								\
       fprintf (FILE, "0(%s)", reg_names [REGNO (addr)]);		\
       break;								\
     case PLUS:								\
-      if (GET_CODE (XEXP (addr, 0)) == CONST_INT)			\
-	offset = INTVAL (XEXP (addr, 0)), base = XEXP (addr, 1);	\
-      else if (GET_CODE (XEXP (addr, 1)) == CONST_INT)			\
-	offset = INTVAL (XEXP (addr, 1)), base = XEXP (addr, 0);	\
-      else								\
-	abort ();							\
-      fprintf (FILE, "%d(%s)", offset, reg_names [REGNO (base)]);	\
+      gcc_assert (GET_CODE (XEXP (addr, 1)) == CONST_INT);		\
+      fprintf (FILE, "%d(%s)", (int)INTVAL (XEXP (addr, 1)),		\
+	       reg_names [REGNO (XEXP (addr, 0))]);			\
       break;								\
     case LO_SUM:							\
       if (!symbolic_operand (XEXP (addr, 1), VOIDmode))			\

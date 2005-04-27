@@ -52,8 +52,7 @@ Boston, MA 02111-1307, USA.  */
 	  break;						\
 	}							\
 								\
-      if ((TO) != STACK_POINTER_REGNUM)				\
-	abort ();						\
+      gcc_assert ((TO) == STACK_POINTER_REGNUM);		\
 								\
       switch (FROM)						\
 	{							\
@@ -66,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
 	  break;						\
 								\
 	default:						\
-	  abort ();						\
+	  gcc_unreachable ();					\
 	}							\
     } while (0)
 #endif
