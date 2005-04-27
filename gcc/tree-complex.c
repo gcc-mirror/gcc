@@ -980,10 +980,11 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
   else
     {
       /* Build a conversion; VIEW_CONVERT_EXPR is very expensive unless T will
-         be stored in memory anyway, so prefer NOP_EXPR.  Also, perform the
-	 VIEW_CONVERT_EXPR on the left side of the assignment.  */
+         be stored in memory anyway, so prefer NOP_EXPR.  We should also try
+	 performing the VIEW_CONVERT_EXPR on the left side of the
+	 assignment.  */
       if (TYPE_MODE (TREE_TYPE (rhs)) == BLKmode)
-        *p_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (rhs), lhs);
+        *p_rhs = gimplify_build1 (bsi, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
       else
 	*p_rhs = gimplify_build1 (bsi, NOP_EXPR, TREE_TYPE (lhs), rhs);
     }

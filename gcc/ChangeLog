@@ -1,3 +1,8 @@
+2005-04-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-complex.c (expand_vector_operations_1): Do not build
+	VIEW_CONVERT_EXPR's for the lhs.
+
 2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/pa/pa.h (PRINT_OPERAND_ADDRESS): Use gcc_assert, remove
