@@ -1,3 +1,7 @@
+2005-04-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree.h (phi_arg_d): Expand a comment in phi_arg_d.
+
 2005-04-27  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21213
