@@ -1,5 +1,11 @@
 2005-04-27  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/21159
+	* c-typeck.c (build_compound_expr): Don't warn for left-hand side
+	being a compound expression whose right-hand side is cast to void.
+
+2005-04-27  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/21213
 	* c-decl.c (finish_struct): Don't dereference NULL TYPE_FIELDS of
 	transparent union.
