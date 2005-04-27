@@ -42,6 +42,7 @@ import gnu.java.security.action.GetPropertyAction;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -49,6 +50,8 @@ import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -82,10 +85,24 @@ public class Connection extends URLConnection
 
   private static String lineSeparator;
   
+  static
+  {
+    if (lineSeparator == null)
+      {
+	GetPropertyAction getProperty = new GetPropertyAction("line.separator");
+	lineSeparator = (String) AccessController.doPrivileged(getProperty);
+      }
+  }
+  
   /**
    * This is a File object for this connection
    */
   private File file;
+
+  /**
+   * If a directory, contains a list of files in the directory.
+   */
+  private byte[] directoryListing;
 
   /**
    * InputStream if we are reading from the file
@@ -136,19 +153,7 @@ public class Connection extends URLConnection
       {
 	if (doInput)
 	  {
-	    if (lineSeparator == null)
-	      {
-		GetPropertyAction getProperty = new GetPropertyAction("line.separator");
-		lineSeparator = (String) AccessController.doPrivileged(getProperty);
-	      }
-	    
-	    StringBuffer sb = new StringBuffer();
-	    String[] files = file.list();
-
-	    for (int index = 0; index < files.length; ++index)
-	       sb.append(files[index]).append(lineSeparator);
-
-	    inputStream = new ByteArrayInputStream(sb.toString().getBytes());
+            inputStream = new ByteArrayInputStream(getDirectoryListing());
 	  }
 
 	if (doOutput)
@@ -157,6 +162,32 @@ public class Connection extends URLConnection
       }
     
     connected = true;
+  }
+
+  /**
+   * Populates the <code>directoryListing</code> field with a byte array
+   * containing a representation of the directory listing.
+   */
+  byte[] getDirectoryListing()
+    throws IOException
+  {
+    if (directoryListing == null)
+      {
+        ByteArrayOutputStream sink = new ByteArrayOutputStream();
+        // NB uses default character encoding for this system
+        Writer writer = new OutputStreamWriter(sink);
+    
+        String[] files = file.list();
+    
+        for (int i = 0; i < files.length; i++)
+          {
+            writer.write(files[i]);
+            writer.write(lineSeparator);
+          }
+
+        directoryListing = sink.toByteArray();
+      }
+    return directoryListing;  
   }
   
   /**
@@ -231,7 +262,13 @@ public class Connection extends URLConnection
 	if (field.equals("content-type"))
           return guessContentTypeFromName(file.getName());
 	else if (field.equals("content-length"))
-          return Long.toString(file.length());
+          {
+            if (file.isDirectory())
+              {
+                return Integer.toString(getContentLength());
+              }
+            return Long.toString(file.length());
+          }
 	else if (field.equals("last-modified"))
 	  {
 	    synchronized (dateFormat)
@@ -259,6 +296,10 @@ public class Connection extends URLConnection
 	if (!connected)
 	  connect();
         
+        if (file.isDirectory())
+          {
+            return getDirectoryListing().length;
+          }
 	return (int) file.length();
       }
     catch (IOException e)
