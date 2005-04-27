@@ -1,3 +1,8 @@
+2005-04-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/21171
+	* gcc.dg/tree-ssa/pr21171.c: New test.
+
 2004-04-27  Paolo Bonzini  <bonzini@gnu.org>
 
         * gcc.dg/tree-ssa/gen-vect-11.c, gcc.dg/tree-ssa/gen-vect-11a.c,
