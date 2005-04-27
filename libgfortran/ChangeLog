@@ -1,12 +1,18 @@
+2005-04-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20950
+	* io/inquire.c (inquire_via_unit): Check for the gfc_unit being
+	NULL when setting ioparm.sequential.
+
 2005-04-20  Release Manager
 
 	* GCC 4.0.0 released.
 
 2005-04-13  Thomas Koenig <Thomas.Koenig@online.de>
 
-        PR libfortran/20163
+	PR libfortran/20163
 	* runtime/string.c (compare0): Use fstrlen() to
-        strip trailing blanks from option string.
+	strip trailing blanks from option string.
 
 
 2005-04-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
@@ -30,7 +36,7 @@
 	the scale factor, but it needs to be restored afterwards.
 
 2005-04-03  Dale Ranta  <dir@lanl.gov>
-            Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20068
 	PR libfortran/20125
