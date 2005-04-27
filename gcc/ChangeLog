@@ -1,3 +1,7 @@
+2005-04-27  Andrew Haley  <aph@redhat.com>
+
+	* postreload-gcse.c (hash_scan_set): Remove bogus assertion.
+
 2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Reserve arm frame
