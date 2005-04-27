@@ -2533,32 +2533,18 @@ try to load a class @code{java.net.[impl.prefix]DatagramSocketImpl} instead of
 the normal @code{java.net.PlainDatagramSocketImpl}.
 
 @item gnu.gcj.progname
-The name that was used to invoked the program.
-
-@item gnu.gcj.runtime.NameFinder.demangle
-Whether names in a stack trace should be demangled.  Defaults to @code{true}.
-
-@item gnu.gcj.runtime.NameFinder.sanitize
-Whether calls to initialize exceptions and starting the runtime system
-should be removed from the stack trace.  Only done when names are
-demangled.  Defaults to @code{true}.
-
-@item gnu.gcj.runtime.NameFinder.remove_unknown
-Whether calls to unknown functions (class and method names are unknown)
-should be removed from the stack trace.  Only done when the stack is
-sanitized.  Ignored if this means no stack trace information would be
-available anymore.  Defaults to @code{true}.
-
-@item gnu.gcj.runtime.NameFinder.remove_interpreter
-Whether runtime interpreter calls (methods in the @code{_Jv_InterpMethod} class
-and functions starting with @samp{ffi_}) should be removed from the stack
-trace.  Only done when the stack is sanitized.  Defaults to @code{true}.
-
+The class or binary name that was used to invoke the program. This will be
+the name of the "main" class in the case where the @code{gij} front end is
+used, or the program binary name in the case where an application is compiled 
+to a native binary.
 
 @item gnu.gcj.runtime.NameFinder.use_addr2line
-Whether an external process (@command{addr2line} or @command{addr2name.awk})
-should be used as fallback to convert the addresses to function names when
-the runtime is unable to do it through @code{dladdr}.
+Whether an external process, @command{addr2line}, should be used to determine
+line number information when tracing the stack. Setting this to @code{false} 
+may suppress line numbers when printing stack traces and when using
+the java.util.logging infrastructure. However, performance may improve
+significantly for applications that print stack traces or make logging calls
+frequently.
 
 @item gnu.gcj.runtime.VMClassLoader.library_control
 This controls how shared libraries are automatically loaded by the
