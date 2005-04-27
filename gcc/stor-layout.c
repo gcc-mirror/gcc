@@ -746,9 +746,9 @@ place_union_field (record_layout_info rli, tree field)
   if (TREE_CODE (rli->t) == UNION_TYPE)
     rli->offset = size_binop (MAX_EXPR, rli->offset, DECL_SIZE_UNIT (field));
   else if (TREE_CODE (rli->t) == QUAL_UNION_TYPE)
-    rli->offset = fold (build3 (COND_EXPR, sizetype,
-				DECL_QUALIFIER (field),
-				DECL_SIZE_UNIT (field), rli->offset));
+    rli->offset = fold_build3 (COND_EXPR, sizetype,
+			       DECL_QUALIFIER (field),
+			       DECL_SIZE_UNIT (field), rli->offset);
 }
 
 #if defined (PCC_BITFIELD_TYPE_MATTERS) || defined (BITFIELD_NBYTES_LIMITED)
@@ -1641,9 +1641,9 @@ layout_type (tree type)
 	       that (possible) negative values are handled appropriately.  */
 	    length = size_binop (PLUS_EXPR, size_one_node,
 				 fold_convert (sizetype,
-					       fold (build2 (MINUS_EXPR,
-							     TREE_TYPE (lb),
-							     ub, lb))));
+					       fold_build2 (MINUS_EXPR,
+							    TREE_TYPE (lb),
+							    ub, lb)));
 
 	    /* Special handling for arrays of bits (for Chill).  */
 	    element_size = TYPE_SIZE (element);

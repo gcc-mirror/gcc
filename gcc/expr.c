@@ -4783,9 +4783,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		
 		if (BYTES_BIG_ENDIAN)
 		  value
-		    = fold (build2 (LSHIFT_EXPR, type, value,
-				    build_int_cst (NULL_TREE,
-						   BITS_PER_WORD - bitsize)));
+		   = fold_build2 (LSHIFT_EXPR, type, value,
+				   build_int_cst (NULL_TREE,
+						  BITS_PER_WORD - bitsize));
 		bitsize = BITS_PER_WORD;
 		mode = word_mode;
 	      }
@@ -4986,8 +4986,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    /* Assign value to element index.  */
 		    position
 		      = convert (ssizetype,
-				 fold (build2 (MINUS_EXPR, TREE_TYPE (index),
-					       index, TYPE_MIN_VALUE (domain))));
+				 fold_build2 (MINUS_EXPR, TREE_TYPE (index),
+					      index, TYPE_MIN_VALUE (domain)));
 		    position = size_binop (MULT_EXPR, position,
 					   convert (ssizetype,
 						    TYPE_SIZE_UNIT (elttype)));
@@ -5029,10 +5029,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		
 		if (minelt)
 		  index = fold_convert (ssizetype,
-					fold (build2 (MINUS_EXPR,
-						      TREE_TYPE (index),
-						      index,
-						      TYPE_MIN_VALUE (domain))));
+					fold_build2 (MINUS_EXPR,
+						     TREE_TYPE (index),
+						     index,
+						     TYPE_MIN_VALUE (domain)));
 		
 		position = size_binop (MULT_EXPR, index,
 				       convert (ssizetype,
@@ -5485,8 +5485,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	       index, then convert to sizetype and multiply by the size of
 	       the array element.  */
 	    if (! integer_zerop (low_bound))
-	      index = fold (build2 (MINUS_EXPR, TREE_TYPE (index),
-				    index, low_bound));
+	      index = fold_build2 (MINUS_EXPR, TREE_TYPE (index),
+				   index, low_bound);
 
 	    offset = size_binop (PLUS_EXPR, offset,
 			         size_binop (MULT_EXPR,
@@ -8971,9 +8971,9 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
   if (! HAVE_tablejump)
     return 0;
 
-  index_expr = fold (build2 (MINUS_EXPR, index_type,
-			     convert (index_type, index_expr),
-			     convert (index_type, minval)));
+  index_expr = fold_build2 (MINUS_EXPR, index_type,
+			    convert (index_type, index_expr),
+			    convert (index_type, minval));
   index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
   do_pending_stack_adjust ();
 

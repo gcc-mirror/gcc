@@ -8,6 +8,10 @@
 	(init_ssanames, fini_ssa_names, make_ssanames,
 	release_ssa_name): Update uses of ssa_names.
 
+	* dojump.c: Fix comment typos.  emit-rtl.c, expmed.c, expr.c,
+	stmt.c, stor-layout.c: Use fold_buildN instead of
+	fold (buildN (...)).
+
 2005-04-27  Devang Patel <dpatel@apple.com>
 
 	* dbxout.c (dbxout_type): Check use_gnu_debug_info_extensions.
