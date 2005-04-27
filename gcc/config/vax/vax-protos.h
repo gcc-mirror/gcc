@@ -20,6 +20,11 @@ Boston, MA 02111-1307, USA.  */
 
 extern void override_options (void);
 
+extern int legitimate_constant_address_p (rtx);
+extern int legitimate_constant_p (rtx);
+extern int legitimate_address_p (enum machine_mode, rtx, int);
+extern int vax_mode_dependent_address_p (rtx);
+
 #ifdef RTX_CODE
 extern const char *rev_cond_name (rtx);
 extern void split_quadword_operands (rtx *, rtx *, int);
@@ -34,4 +39,3 @@ extern const char * vax_output_conditional_branch (enum rtx_code);
 #ifdef REAL_VALUE_TYPE
 extern int check_float_value (enum machine_mode, REAL_VALUE_TYPE *, int);
 #endif /* REAL_VALUE_TYPE */
-

@@ -1,3 +1,43 @@
+2005-04-27  Matt Thomas <matt@3am-software.com>
+
+	* config/vax/vax.c (legitimate_constant_address_p): New.  Formerly
+		CONSTANT_ADDRESS_P in config/vax/vax.h
+	(legitimate_constant_p): Added.  Formerly CONSTANT_P in vax.h. 
+	(INDEX_REGISTER_P): New.
+	(BASE_REGISTER_P): New.
+	(indirectable_constant_address_p): New.  Adapted from
+		INDIRECTABLE_CONSTANT_ADDRESS_P in vax.h.
+		Use SYMBOL_REF_LOCAL_P.
+	(indirectable_address_p): New.  Adapted from
+		INDIRECTABLE_ADDRESS_P in vax.h.
+	(nonindexed_address_p): New.  Adapted from
+		GO_IF_NONINDEXED_ADDRESS in vax.h.
+	(index_temp_p): New.  Adapted from
+		INDEX_TERM_P in vax.h.
+	(reg_plus_index_p): New.  Adapted from
+		GO_IF_REG_PLUS_INDEX in vax.h.
+	(legitimate_address_p): New.  Adapted from
+		GO_IF_LEGITIMATE_ADDRESS in vax.h
+	(vax_mode_dependent_address_p): New.  Adapted from
+		GO_IF_MODE_DEPENDENT_ADDRESS in vax.h
+	* config/vax/vax.h (CONSTANT_ADDRESS_P): Use
+		legitimate_constant_address_p
+	(CONSTANT_P): Use legitimate_constant_p.
+	(INDIRECTABLE_CONSTANT_ADDRESS_P): Removed.
+	(INDIRECTABLE_ADDRESS_P): Removed.
+	(GO_IF_NONINDEXED_ADDRESS): Removed.
+	(INDEX_TEMP_P): Removed.
+	(GO_IF_REG_PLUS_INDEX): Removed.
+	(GO_IF_LEGITIMATE_ADDRESS): Use legitimate_address_p.
+		Two definitions, depending on whether REG_OK_STRICT is defined.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): Use vax_mode_dependent_address_p.
+		Two definitions, depending on whether REG_OK_STRICT is defined.
+	* config/vax/vax-protos.h (legitimate_constant_address_p): Prototype
+		added.
+	(legitimate_constant_p): Prototype added.
+	(legitimate_address_p): Prototype added.
+	(vax_mode_dependent_address_p): Prototype added.
+
 2005-04-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree.h (phi_arg_d): Expand a comment in phi_arg_d.
