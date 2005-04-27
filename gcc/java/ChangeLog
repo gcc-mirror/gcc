@@ -1,3 +1,9 @@
+2005-04-27  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gcj.texi (libgcj Runtime Properties): Remove obsolete
+	gnu.gcj.runtime.NameFinder.* system properties. Update documentation 
+	for gnu.gcj.runtime.NameFinder.use_addr2line and gnu.gcj.progname.
+
 2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c, jcf-dump.c, jv-scan.c, jvgenmain.c: Replace calls
