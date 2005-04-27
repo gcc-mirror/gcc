@@ -926,7 +926,9 @@ extern const char * structure_size_string;
      _interwork_r11_call_via_rN().  Making the register global	\
      is an easy way of ensuring that it remains valid for all	\
      calls.  */							\
-  if (TARGET_APCS_FRAME || TARGET_CALLER_INTERWORKING)		\
+  if (TARGET_APCS_FRAME || TARGET_CALLER_INTERWORKING		\
+      || (target_flags & (THUMB_FLAG_LEAF_BACKTRACE		\
+			  | THUMB_FLAG_BACKTRACE)))		\
     {								\
       fixed_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;		\
       call_used_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;	\

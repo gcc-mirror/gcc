@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifdef EXTENDED_FLOAT_STUBS
-extern __attribute__ ((__noreturn__)) void abort (void);
+extern void abort (void);
 void __extendsfxf2 (void) { abort(); }
 void __extenddfxf2 (void) { abort(); }
 void __truncxfdf2 (void) { abort(); }
