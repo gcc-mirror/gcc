@@ -416,10 +416,10 @@ extern GTY(()) varray_type referenced_vars;
 #define referenced_var(i) VARRAY_TREE (referenced_vars, i)
 
 /* Array of all SSA_NAMEs used in the function.  */
-extern GTY(()) varray_type ssa_names;
+extern GTY(()) VEC(tree,gc) *ssa_names;
 
-#define num_ssa_names VARRAY_ACTIVE_SIZE (ssa_names)
-#define ssa_name(i) VARRAY_TREE (ssa_names, i)
+#define num_ssa_names (VEC_length (tree, ssa_names))
+#define ssa_name(i) (VEC_index (tree, ssa_names, (i)))
 
 /* Artificial variable used to model the effects of function calls.  */
 extern GTY(()) tree global_var;
