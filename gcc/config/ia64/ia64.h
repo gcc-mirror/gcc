@@ -1796,7 +1796,7 @@ do {									\
 /* This is how to output an element of a case-vector that is absolute.
    (Ia64 does not use such vectors, but we must define this macro anyway.)  */
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE) abort ()
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE) gcc_unreachable ()
 
 /* Jump tables only need 8 byte alignment.  */
 
