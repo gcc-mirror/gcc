@@ -1,3 +1,7 @@
+2005-04-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-dce.c: Fix a comment typo.
+
 2005-04-27  David S. Miller  <davem@davemloft.net>
 
 	* explow.c (allocate_dynamic_stack_space SETJMP_VIA_SAVE_AREA):
