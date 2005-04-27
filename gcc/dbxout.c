@@ -1995,7 +1995,7 @@ dbxout_type (tree type, int full)
 	  break;
 	}
 
-      if (vector_type)
+      if (use_gnu_debug_info_extensions && vector_type)
 	{
 	  have_used_extensions = 1;
 	  stabstr_S ("@V;");
