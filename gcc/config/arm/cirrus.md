@@ -391,7 +391,7 @@
     /* Shifting by 0 will just copy %1 into %0.  */
     case 7: return \"cfsh64%?\\t%V0, %V1, #0\";
 
-    default: abort ();
+    default: gcc_unreachable ();
     }
   }"
   [(set_attr "length"         "  8,   8,     8,   8,     8,     4,     4,     4")
@@ -468,7 +468,7 @@
     case 7: return \"cfmvdlr\\t%V0, %Q1\;cfmvdhr%?\\t%V0, %R1\";
     case 8: return \"cfmvrdl%?\\t%Q0, %V1\;cfmvrdh%?\\t%R0, %V1\";
     case 9: return \"cfstrd%?\\t%V1, %0\";
-    default: abort ();
+    default: gcc_unreachable ();
     }
   }"
   [(set_attr "type"           "load1,store2,  *,store2,load1,     *,  load1,   *,     *,store2")

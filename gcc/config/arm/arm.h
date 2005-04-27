@@ -2565,7 +2565,7 @@ extern int making_const_table;
 	  }								\
 									\
 	  default:							\
-	    abort();							\
+	    gcc_unreachable ();						\
 	}								\
     }									\
   else if (GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_INC		\
@@ -2573,8 +2573,7 @@ extern int making_const_table;
     {									\
       extern enum machine_mode output_memory_reference_mode;		\
 									\
-      if (GET_CODE (XEXP (X, 0)) != REG)				\
-	abort ();							\
+      gcc_assert (GET_CODE (XEXP (X, 0)) == REG);			\
 									\
       if (GET_CODE (X) == PRE_DEC || GET_CODE (X) == PRE_INC)		\
 	asm_fprintf (STREAM, "[%r, #%s%d]!",				\
@@ -2618,8 +2617,7 @@ extern int making_const_table;
     asm_fprintf (STREAM, "%r!", REGNO (XEXP (X, 0)));	\
   else if (GET_CODE (X) == PLUS)			\
     {							\
-      if (GET_CODE (XEXP (X, 0)) != REG)		\
-        abort ();					\
+      gcc_assert (GET_CODE (XEXP (X, 0)) == REG);	\
       if (GET_CODE (XEXP (X, 1)) == CONST_INT)		\
 	asm_fprintf (STREAM, "[%r, #%wd]", 		\
 		     REGNO (XEXP (X, 0)),		\
