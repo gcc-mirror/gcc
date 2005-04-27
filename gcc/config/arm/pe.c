@@ -108,13 +108,11 @@ arm_mark_dllexport (decl)
   tree idp;
 
   rtlname = XEXP (DECL_RTL (decl), 0);
-  if (GET_CODE (rtlname) == SYMBOL_REF)
-    oldname = XSTR (rtlname, 0);
-  else if (GET_CODE (rtlname) == MEM
-	   && GET_CODE (XEXP (rtlname, 0)) == SYMBOL_REF)
-    oldname = XSTR (XEXP (rtlname, 0), 0);
-  else
-    abort ();
+  if (GET_CODE (rtlname) == MEM)
+    rtlname = XEXP (rtlname, 0);
+  gcc_assert (GET_CODE (rtlname) == SYMBOL_REF);
+  oldname = XSTR (rtlname, 0);
+  
   if (arm_dllimport_name_p (oldname))
     oldname += 9;
   else if (arm_dllexport_name_p (oldname))
@@ -147,17 +145,13 @@ arm_mark_dllimport (decl)
 
   rtlname = XEXP (DECL_RTL (decl), 0);
   
-  if (GET_CODE (rtlname) == SYMBOL_REF)
-    oldname = XSTR (rtlname, 0);
-  else if (GET_CODE (rtlname) == MEM
-	   && GET_CODE (XEXP (rtlname, 0)) == SYMBOL_REF)
-    oldname = XSTR (XEXP (rtlname, 0), 0);
-  else
-    abort ();
+  if (GET_CODE (rtlname) == MEM)
+    rtlname = XEXP (rtlname, 0);
+  gcc_assert (GET_CODE (rtlname) == SYMBOL_REF);
+  oldname = XSTR (rtlname, 0);
   
-  if (arm_dllexport_name_p (oldname))
-    abort (); /* this shouldn't happen */
-  else if (arm_dllimport_name_p (oldname))
+  gcc_assert (!arm_dllexport_name_p (oldname));
+  if (arm_dllimport_name_p (oldname))
     return; /* already done */
 
   /* ??? One can well ask why we're making these checks here,

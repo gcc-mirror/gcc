@@ -3614,12 +3614,8 @@
         ops[1] = mem;
         ops[2] = const0_rtx;
       }
-      
-    if (GET_CODE (ops[1]) != REG)
-      {
-        debug_rtx (ops[1]);
-        abort ();
-      }
+
+    gcc_assert (GET_CODE (ops[1]) == REG);
 
     ops[0] = operands[0];
     ops[3] = operands[2];
@@ -3634,7 +3630,7 @@
 ;; We used to have an early-clobber on the scratch register here.
 ;; However, there's a bug somewhere in reload which means that this
 ;; can be partially ignored during spill allocation if the memory
-;; address also needs reloading; this causes an abort later on when
+;; address also needs reloading; this causes us to die later on when
 ;; we try to verify the operands.  Fortunately, we don't really need
 ;; the early-clobber: we can always use operand 0 if operand 2
 ;; overlaps the address.
@@ -3685,11 +3681,7 @@
         ops[2] = const0_rtx;
       }
       
-    if (GET_CODE (ops[1]) != REG)
-      {
-        debug_rtx (ops[1]);
-        abort ();
-      }
+    gcc_assert (GET_CODE (ops[1]) == REG);
 
     ops[0] = operands[0];
     if (reg_mentioned_p (operands[2], ops[1]))
@@ -3949,10 +3941,9 @@
 	    else
               output_asm_insn (\"mov\\t%0, %2\;ldrsb\\t%0, [%1, %0]\", ops);
 	  }
-        else if (GET_CODE (b) != REG)
-	  abort ();
 	else
           {
+	    gcc_assert (GET_CODE (b) == REG);
             if (REGNO (b) == REGNO (ops[0]))
 	      {
                 output_asm_insn (\"ldrb\\t%0, [%2, %1]\", ops);
@@ -4032,10 +4023,9 @@
 	    else
               output_asm_insn (\"mov\\t%0, %2\;ldrsb\\t%0, [%1, %0]\", ops);
 	  }
-        else if (GET_CODE (b) != REG)
-	  abort ();
 	else
           {
+	    gcc_assert (GET_CODE (b) == REG);
             if (REGNO (b) == REGNO (ops[0]))
 	      {
                 output_asm_insn (\"ldrb\\t%0, [%2, %1]\", ops);
@@ -4778,8 +4768,7 @@
         {
           /* Writing a constant to memory needs a scratch, which should
 	     be handled with SECONDARY_RELOADs.  */
-          if (GET_CODE (operands[0]) != REG)
-	    abort ();
+          gcc_assert (GET_CODE (operands[0]) == REG);
 
           operands[0] = gen_rtx_SUBREG (SImode, operands[0], 0);
           emit_insn (gen_movsi (operands[0], operands[1]));
@@ -4821,8 +4810,7 @@
         {
           /* Writing a constant to memory needs a scratch, which should
 	     be handled with SECONDARY_RELOADs.  */
-          if (GET_CODE (operands[0]) != REG)
-	    abort ();
+          gcc_assert (GET_CODE (operands[0]) == REG);
 
           operands[0] = gen_rtx_SUBREG (SImode, operands[0], 0);
           emit_insn (gen_movsi (operands[0], operands[1]));
@@ -4846,7 +4834,7 @@
     case 3: return \"mov	%0, %1\";
     case 4: return \"mov	%0, %1\";
     case 5: return \"mov	%0, %1\";
-    default: abort ();
+    default: gcc_unreachable ();
     case 1:
       /* The stack pointer can end up being taken as an index register.
           Catch this case here and deal with it.  */
@@ -4957,7 +4945,7 @@
    (clobber (match_operand:SI 2 "register_operand" "=&l"))]
   "TARGET_THUMB"
   "*
-  abort ();"
+  gcc_unreachable ();"
 )
 	
 ;; We use a DImode scratch because we may occasionally need an additional
@@ -5052,8 +5040,7 @@
         {
           /* Writing a constant to memory needs a scratch, which should
 	     be handled with SECONDARY_RELOADs.  */
-          if (GET_CODE (operands[0]) != REG)
-	    abort ();
+          gcc_assert (GET_CODE (operands[0]) == REG);
 
           operands[0] = gen_rtx_SUBREG (SImode, operands[0], 0);
           emit_insn (gen_movsi (operands[0], operands[1]));
@@ -7059,8 +7046,7 @@
 		      (pc)))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA"
   "*
-  if (arm_ccfsm_state != 0)
-    abort ();
+  gcc_assert (!arm_ccfsm_state);
 
   return \"bvs\\t%l0\;beq\\t%l0\";
   "
@@ -7076,8 +7062,7 @@
 		      (pc)))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA"
   "*
-  if (arm_ccfsm_state != 0)
-    abort ();
+  gcc_assert (!arm_ccfsm_state);
 
   return \"bmi\\t%l0\;bgt\\t%l0\";
   "
@@ -7112,8 +7097,7 @@
 		      (label_ref (match_operand 0 "" ""))))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA"
   "*
-  if (arm_ccfsm_state != 0)
-    abort ();
+  gcc_assert (!arm_ccfsm_state);
 
   return \"bmi\\t%l0\;bgt\\t%l0\";
   "
@@ -7129,8 +7113,7 @@
 		      (label_ref (match_operand 0 "" ""))))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA"
   "*
-  if (arm_ccfsm_state != 0)
-    abort ();
+  gcc_assert (!arm_ccfsm_state);
 
   return \"bvs\\t%l0\;beq\\t%l0\";
   "
@@ -7286,14 +7269,14 @@
 ;   [(set (match_operand:SI 0 "s_register_operand" "")
 ; 	(uneq:SI (match_dup 1) (const_int 0)))]
 ;   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA"
-;   "abort ();"
+;   "gcc_unreachable ();"
 ; )
 ;
 ; (define_expand "sltgt"
 ;   [(set (match_operand:SI 0 "s_register_operand" "")
 ; 	(ltgt:SI (match_dup 1) (const_int 0)))]
 ;   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA"
-;   "abort ();"
+;   "gcc_unreachable ();"
 ; )
 
 (define_insn "*mov_scc"

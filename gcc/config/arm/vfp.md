@@ -158,7 +158,7 @@
     case 7:
       return \"fstd%?\\t%P1, %0\\t%@ int\";
     default:
-      abort ();
+      gcc_unreachable ();
     }
   "
   [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarith,f_load,f_store")
@@ -217,7 +217,7 @@
       case 7:
         return \"#\";
       default:
-	abort ();
+	gcc_unreachable ();
       }
     }
   "

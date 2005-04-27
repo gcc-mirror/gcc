@@ -1,3 +1,44 @@
+2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/arm/arm.h (ARM_PRINT_OPERAND_ADDRESS): Use gcc_assert and
+	gcc_unreachable as appropriate.
+	(THUMB_PRINT_OPERAND_ADDRESS): Likewise.
+	* config/arm/arm.c (arm_override_options, arm_compute_func_type,
+	use_return_insn, const_ok_for_op, arm_gen_constant,
+	arm_canonicalize_comparison, legitimize_pic_address,
+	thumb_find_work_register, arm_load_pic_register, arm_rtx_costs_1,
+	arm_cirrus_insn_p, cirrus_reorg, minmax_code,
+	load_multiple_sequence, emit_ldm_seq, store_multiple_sequence,
+	emit_stm_seq, arm_gen_movmemqi, arm_select_dominance_cc_mode,
+	arm_select_cc_mode, arm_reload_in_hi, arm_reload_out_hi,
+	move_minipool_fix_forward_ref, move_minipool_fix_backward_ref,
+	dump_minipool, create_fix_barrier, push_minipool_fix, arm_reorg,
+	fp_immediate_constant, fp_const_from_val, vfp_output_fstmx,
+	output_call, output_mov_long_double_fpa_from_arm,
+	output_mov_long_double_arm_from_fpa,
+	output_mov_double_fpa_from_arm, output_mov_double_arm_from_fpa,
+	output_move_double, arithmetic_instr, shift_op, int_log2,
+	output_return_instruction, arm_output_function_prologue,
+	arm_output_epilogue, arm_output_function_epilogue,
+	emit_multi_reg_push, arm_get_frame_offsets,
+	arm_compute_initial_elimination_offset, arm_expand_prologue,
+	arm_print_operand, arm_assemble_integer, get_arm_condition_code,
+	arm_final_prescan_insn, arm_init_iwmmxt_builtins,
+	arm_expand_binop_builtin, thumb_pushpop, thumb_far_jump_used_p,
+	thumb_compute_initial_elimination_offset,
+	thumb_output_function_prologue, thumb_load_double_from_address,
+	thumb_output_move_mem_multiple, thumb_reload_out_hi,
+	arm_emit_vector_const, arm_dbx_register_number): Likewise.
+	* config/arm/pe.c (arm_mark_dllexport, arm_mark_dllimport): Likewise.
+	* config/arm/arm.md (thumb_extendhisi2,
+	*thumb_extendhisi2_insn_v6, *thumb_extendqisi2,
+	*thumb_extendqisi2_v6, movhi, *thumb_movhi_insn,
+	thumb_movhi_clobber, movqi, *arm_buneq, *arm_bltgt,
+	*arm_buneq_reversed, *arm_bltgt_reversed, suneq, sltgt): Likewise.
+	* config/arm/cirrus.md (*cirrus_arm_movdi,
+	*cirrus_movdf_hard_insn): Likewise.
+	* config/arm/vfp.md (*arm_movdi_vfp, *movdf_vfp): Likewise.
+
 2005-04-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-flow.h (ssa_names): Change the type to VEC(tree,gc).
