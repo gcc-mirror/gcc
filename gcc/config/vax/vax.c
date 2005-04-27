@@ -587,7 +587,7 @@ vax_rtx_costs (rtx x, int code, int outer_code, int *total)
 		      && (unsigned HOST_WIDE_INT)-CONST_DOUBLE_LOW (x) < 64))
 		 ? 2 : 5;
       return true;
- 
+
     case POST_INC:
       *total = 2;
       return true;		/* Implies register operand.  */
@@ -815,16 +815,16 @@ vax_rtx_costs (rtx x, int code, int outer_code, int *total)
 
 static void
 vax_output_mi_thunk (FILE * file,
-                     tree thunk ATTRIBUTE_UNUSED, 
+                     tree thunk ATTRIBUTE_UNUSED,
                      HOST_WIDE_INT delta,
                      HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
                      tree function)
 {
   fprintf (file, "\t.word 0x0ffc\n\taddl2 $" HOST_WIDE_INT_PRINT_DEC, delta);
   asm_fprintf (file, ",4(%Rap)\n");
-  fprintf (file, "\tjmp ");						
-  assemble_name (file,  XSTR (XEXP (DECL_RTL (function), 0), 0));	
-  fprintf (file, "+2\n");						
+  fprintf (file, "\tjmp ");
+  assemble_name (file,  XSTR (XEXP (DECL_RTL (function), 0), 0));
+  fprintf (file, "+2\n");
 }
 
 static rtx
@@ -857,7 +857,7 @@ vax_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
 	    {
 	    case NEG:
 	      if (GET_MODE_CLASS (GET_MODE (exp)) == MODE_FLOAT)
-	 	break;
+		break;
 	    case AND:
 	    case IOR:
 	    case XOR:
@@ -1123,12 +1123,12 @@ legitimate_constant_p (rtx x ATTRIBUTE_UNUSED)
 
 /* Nonzero if X is a hard reg that can be used as an index
    or, if not strict, if it is a pseudo reg.  */
-#define	INDEX_REGISTER_P(X, STRICT)
+#define	INDEX_REGISTER_P(X, STRICT) \
 (GET_CODE (X) == REG && (!(STRICT) || REGNO_OK_FOR_INDEX_P (REGNO (X))))
 
 /* Nonzero if X is a hard reg that can be used as a base reg
    or, if not strict, if it is a pseudo reg.  */
-#define	BASE_REGISTER_P(X, STRICT)
+#define	BASE_REGISTER_P(X, STRICT) \
 (GET_CODE (X) == REG && (!(STRICT) || REGNO_OK_FOR_BASE_P (REGNO (X))))
 
 #ifdef NO_EXTERNAL_INDIRECT_ADDRESS
@@ -1283,7 +1283,7 @@ legitimate_address_p (enum machine_mode mode, rtx x, int strict)
       && nonindexed_address_p (xfoo0, strict))
     return 1;
 
-  /* Handle offset(reg)[index] with offset added outermost */	\
+  /* Handle offset(reg)[index] with offset added outermost */
 
   if (indirectable_constant_address_p (xfoo0)
       && (BASE_REGISTER_P (xfoo1, strict)
@@ -1296,7 +1296,7 @@ legitimate_address_p (enum machine_mode mode, rtx x, int strict)
     return 1;
 
   return 0;
-} 
+}
 
 /* Return 1 if x (a legitimate address expression) has an effect that
    depends on the machine mode it is used for.  On the VAX, the predecrement
