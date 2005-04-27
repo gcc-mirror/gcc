@@ -773,9 +773,6 @@ do {                                              \
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 4
 
-/* Size of a vector for autovectorization.  */
-#define UNITS_PER_SIMD_WORD 4
-
 /* Width in bits of a pointer.
    See also the macro `Pmode1' defined below.  */
 #define POINTER_SIZE 32

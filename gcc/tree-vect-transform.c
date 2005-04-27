@@ -720,6 +720,32 @@ vectorizable_assignment (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 }
 
 
+/* Function vect_min_worthwhile_factor.
+
+   For a loop where we could vectorize the operation indicated by CODE,
+   return the minimum vectorization factor that makes it worthwhile
+   to use generic vectors.  */
+static int
+vect_min_worthwhile_factor (enum tree_code code)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case NEGATE_EXPR:
+      return 4;
+
+    case BIT_AND_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_NOT_EXPR:
+      return 2;
+
+    default:
+      return INT_MAX;
+    }
+}
+
 /* Function vectorizable_operation.
 
    Check if STMT performs a binary or unary operation that can be vectorized. 
@@ -789,6 +815,16 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     {
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 	fprintf (vect_dump, "op not supported by target.");
+      return false;
+    }
+
+  /* Worthwhile without SIMD support?  */
+  if (!VECTOR_MODE_P (TYPE_MODE (vectype))
+      && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	 < vect_min_worthwhile_factor (code))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	fprintf (vect_dump, "not worthwhile without SIMD support.");
       return false;
     }
 

@@ -1076,13 +1076,21 @@ largest value that @code{BITS_PER_WORD} can have at run-time.
 @end defmac
 
 @defmac UNITS_PER_WORD
-Number of storage units in a word; normally 4.
+Number of storage units in a word; normally the size of a general-purpose
+register, a power of two from 1 or 8.
 @end defmac
 
 @defmac MIN_UNITS_PER_WORD
 Minimum number of units in a word.  If this is undefined, the default is
 @code{UNITS_PER_WORD}.  Otherwise, it is the constant value that is the
 smallest value that @code{UNITS_PER_WORD} can have at run-time.
+@end defmac
+
+@defmac UNITS_PER_SIMD_WORD
+Number of units in the vectors that the vectorizer can produce.
+The default is equal to @code{UNITS_PER_WORD}, because the vectorizer
+can do some transformations even in absence of specialized @acronym{SIMD}
+hardware.
 @end defmac
 
 @defmac POINTER_SIZE

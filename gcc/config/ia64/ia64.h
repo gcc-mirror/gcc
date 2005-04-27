@@ -168,8 +168,6 @@ extern enum processor_type ia64_tune;
 
 #define UNITS_PER_WORD 8
 
-#define UNITS_PER_SIMD_WORD UNITS_PER_WORD
-
 #define POINTER_SIZE (TARGET_ILP32 ? 32 : 64)
 
 /* A C expression whose value is zero if pointers that need to be extended

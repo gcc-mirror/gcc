@@ -1043,8 +1043,9 @@ extern const char *rs6000_warn_altivec_long_switch;
          || (MODE) == V1DImode          \
          || (MODE) == V2SImode)
 
-#define UNITS_PER_SIMD_WORD     \
-        (TARGET_ALTIVEC ? 16 : (TARGET_SPE ? 8 : 0) )
+#define UNITS_PER_SIMD_WORD					\
+        (TARGET_ALTIVEC ? UNITS_PER_ALTIVEC_WORD		\
+	 : (TARGET_SPE ? UNITS_PER_SPE_WORD : UNITS_PER_WORD))
 
 /* Value is TRUE if hard register REGNO can hold a value of
    machine-mode MODE.  */

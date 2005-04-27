@@ -1525,7 +1525,7 @@ get_vectype_for_scalar_type (tree scalar_type)
   int nunits;
   tree vectype;
 
-  if (nbytes == 0)
+  if (nbytes == 0 || nbytes >= UNITS_PER_SIMD_WORD)
     return NULL_TREE;
 
   /* FORNOW: Only a single vector size per target (UNITS_PER_SIMD_WORD)
@@ -1548,11 +1548,9 @@ get_vectype_for_scalar_type (tree scalar_type)
       print_generic_expr (vect_dump, vectype, TDF_SLIM);
     }
 
-  if (!VECTOR_MODE_P (TYPE_MODE (vectype)))
+  if (!VECTOR_MODE_P (TYPE_MODE (vectype))
+      && !INTEGRAL_MODE_P (TYPE_MODE (vectype)))
     {
-      /* TODO: tree-complex.c sometimes can parallelize operations
-         on generic vectors.  We can vectorize the loop in that case,
-         but then we should re-run the lowering pass.  */
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
         fprintf (vect_dump, "mode not supported by target.");
       return NULL_TREE;
@@ -1732,15 +1730,6 @@ vectorize_loops (struct loops *loops)
 
   /* Fix the verbosity level if not defined explicitly by the user.  */
   vect_set_dump_settings ();
-
-  /* Does the target support SIMD?  */
-  /* FORNOW: until more sophisticated machine modelling is in place.  */
-  if (!UNITS_PER_SIMD_WORD)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	fprintf (vect_dump, "vectorizer: target vector size is not defined.");
-      return;
-    }
 
   /*  ----------- Analyze loops. -----------  */
 
