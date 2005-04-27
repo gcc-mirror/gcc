@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-02-25 23:37+0000\n"
+"POT-Creation-Date: 2005-04-20 21:43-0700\n"
 "PO-Revision-Date: 2002-08-26 12:58+0200\n"
 "Last-Translator: Dennis Björklund <db@zigo.dhs.org>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -250,126 +250,126 @@ msgstr ""
 msgid "invalid flag \"%s\" in line directive"
 msgstr "ogiltigt flagga \"%s\" i line-direktiv"
 
-#: directives.c:792
+#: directives.c:797
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\" efter #line är inte ett positivt heltal"
 
-#: directives.c:798
+#: directives.c:803
 msgid "line number out of range"
 msgstr "radnummer utanför möjligt intervall"
 
-#: directives.c:811 directives.c:888
+#: directives.c:816 directives.c:893
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" är inte ett giltigt filnamn"
 
-#: directives.c:848
+#: directives.c:853
 #, fuzzy, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" efter #line är inte ett positivt heltal"
 
-#: directives.c:950
+#: directives.c:955
 #, fuzzy
 msgid "invalid #ident directive"
 msgstr "ogiltig #indent"
 
-#: directives.c:1038
+#: directives.c:1043
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr ""
 
-#: directives.c:1041
+#: directives.c:1046
 #, fuzzy, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "Klass \"%s\" finns redan"
 
-#: directives.c:1044
+#: directives.c:1049
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr ""
 
-#: directives.c:1244
+#: directives.c:1249
 msgid "#pragma once in main file"
 msgstr "#pragma once i huvudfil"
 
-#: directives.c:1267
+#: directives.c:1272
 msgid "invalid #pragma GCC poison directive"
 msgstr "ogiltigt GCC-direktiv #pragma poison"
 
-#: directives.c:1276
+#: directives.c:1281
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "förgiftar existerande makro \"%s\""
 
-#: directives.c:1297
+#: directives.c:1302
 msgid "#pragma system_header ignored outside include file"
 msgstr ""
 
-#: directives.c:1321
+#: directives.c:1326
 #, fuzzy, c-format
 msgid "cannot find source file %s"
 msgstr "kan inte hitta källfil %s"
 
-#: directives.c:1325
+#: directives.c:1330
 #, c-format
 msgid "current file is older than %s"
 msgstr "aktuell fil är äldre än %s"
 
-#: directives.c:1439
+#: directives.c:1444
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.c:1546
+#: directives.c:1551
 msgid "#else without #if"
 msgstr "#else utan #if"
 
-#: directives.c:1551
+#: directives.c:1556
 msgid "#else after #else"
 msgstr "#else efter #else"
 
-#: directives.c:1553 directives.c:1586
+#: directives.c:1558 directives.c:1591
 msgid "the conditional began here"
 msgstr "villkorssatsen började här"
 
-#: directives.c:1579
+#: directives.c:1584
 msgid "#elif without #if"
 msgstr "#elif utan #if"
 
-#: directives.c:1584
+#: directives.c:1589
 msgid "#elif after #else"
 msgstr "#elif efter #else"
 
-#: directives.c:1614
+#: directives.c:1619
 msgid "#endif without #if"
 msgstr "#endif utan #if"
 
-#: directives.c:1691
+#: directives.c:1696
 msgid "missing '(' after predicate"
 msgstr "saknas '(' efter predikat"
 
-#: directives.c:1706
+#: directives.c:1711
 msgid "missing ')' to complete answer"
 msgstr "saknas ')' för att avsluta svaret"
 
-#: directives.c:1726
+#: directives.c:1731
 msgid "predicate's answer is empty"
 msgstr "predikatets svar är tomt"
 
-#: directives.c:1753
+#: directives.c:1758
 msgid "assertion without predicate"
 msgstr ""
 
-#: directives.c:1755
+#: directives.c:1760
 msgid "predicate must be an identifier"
 msgstr "predikat måste vara en identifierare"
 
-#: directives.c:1841
+#: directives.c:1846
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2064
+#: directives.c:2069
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
@@ -808,33 +808,38 @@ msgstr ""
 msgid "missing ')' in macro parameter list"
 msgstr ""
 
-#: macro.c:1434
-msgid "ISO C requires whitespace after the macro name"
+#: macro.c:1439
+msgid "ISO C99 requires whitespace after the macro name"
 msgstr ""
 
-#: macro.c:1462
+#: macro.c:1463
+#, fuzzy
+msgid "missing whitespace after the macro name"
+msgstr "saknar mellanrum efter nummer \"%.*s\""
+
+#: macro.c:1493
 msgid "'#' is not followed by a macro parameter"
 msgstr ""
 
-#: macro.c:1481
+#: macro.c:1512
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr ""
 
-#: macro.c:1577
+#: macro.c:1608
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "\"%s\" omdefinierad"
 
-#: macro.c:1582
+#: macro.c:1613
 msgid "this is the location of the previous definition"
 msgstr "detta är platsen för den tidigare definitionen"
 
-#: macro.c:1632
+#: macro.c:1663
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr ""
 
-#: macro.c:1655
+#: macro.c:1686
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr ""
@@ -1856,9 +1861,6 @@ msgstr "parameternamn saknas i parameterlista"
 
 #~ msgid "decimal constant is so large that it is unsigned"
 #~ msgstr "decimal konstant så stor att den är unsigned"
-
-#~ msgid "missing white space after number '%.*s'"
-#~ msgstr "saknar mellanrum efter nummer \"%.*s\""
 
 #~ msgid "ignoring invalid multibyte character"
 #~ msgstr "ignorerar ogiltigt flerbytestecken"
