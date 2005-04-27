@@ -1,3 +1,10 @@
+2005-04-27  Chris Burdess  <dog@gnu.org>
+
+	* gnu/java/net/protocol/file/Connection.java: Return correct content
+	length for directory listing.
+	* java/net/URLClassLoader.java: Correction for URLClassLoader, bug
+	#11285: return valid URLs for directories.i
+
 2005-04-27  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (ordinary_java_source_files): Add

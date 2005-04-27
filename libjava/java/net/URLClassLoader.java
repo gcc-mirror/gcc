@@ -610,7 +610,7 @@ public class URLClassLoader extends SecureClassLoader
     Resource getResource(String name)
     {
       File file = new File(dir, name);
-      if (file.exists() && ! file.isDirectory())
+      if (file.exists())
         return new FileResource(this, name, file);
       return null;
     }
@@ -628,11 +628,36 @@ public class URLClassLoader extends SecureClassLoader
 
     InputStream getInputStream() throws IOException
     {
+      // Delegate to the URL content handler mechanism to retrieve an
+      // HTML representation of the directory listing if a directory
+      if (file.isDirectory())
+        {
+          URL url = getURL();
+          return url.openStream();
+        }
+      // Otherwise simply return a FileInputStream
       return new FileInputStream(file);
     }
 
     public int getLength()
     {
+      // Delegate to the URL content handler mechanism to retrieve the
+      // length of the HTML representation of the directory listing if
+      // a directory, or -1 if an exception occurs opening the directory.
+      if (file.isDirectory())
+        {
+          URL url = getURL();
+          try
+            {
+              URLConnection connection = url.openConnection();
+              return connection.getContentLength();
+            }
+          catch (IOException e)
+            {
+              return -1;
+            }
+        }
+      // Otherwise simply return the file length
       return (int) file.length();
     }
 
