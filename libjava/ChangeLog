@@ -1,3 +1,8 @@
+2005-04-27  Jeroen Frijters  <jeroen@frijters.net>
+
+	* javax/imageio/spi/IIORegistry.java (IIORegistry):
+	Don't assume that awt Toolkit is always ClasspathToolkit.
+
 2005-04-27  Chris Burdess  <dog@gnu.org>
 
 	* java/net/protocol/http/HTTPURLConnection.java (connect): Accept
