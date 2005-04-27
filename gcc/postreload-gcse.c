@@ -737,9 +737,6 @@ hash_scan_set (rtx insn)
   if (JUMP_P (insn) || set_noop_p (pat))
     return;
 
-  /* We shouldn't have any EH_REGION notes post reload.  */
-  gcc_assert (!find_reg_note (insn, REG_EH_REGION, NULL_RTX));
-
   if (REG_P (dest))
     {
       if (/* Don't CSE something if we can't do a reg/reg copy.  */
