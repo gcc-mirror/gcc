@@ -1,3 +1,72 @@
+2005-04-27  Caroline Tice  <ctice@apple.com>
+
+        * bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	Remove targetm.have_named_sections test.
+	(fix_edges_for_rarely_executed_code): Likewise.
+	(insert_section_boundary_note): Likewise.
+	(reorder_basic_blocks): Check partitioning flag before calling
+	verify_hot_cold_block_grouping.
+	* dbxout.c (dbxout_function_end): Get hot/cold section labels from
+	the function struct rather than global variables.
+	* dwarf2out.c (COLD_TEXT_SECTION_LABEL): New macro.
+	(COLD_END_LABEL): Likewise
+	(cold_text_section_label): New static global variable.
+	(cold_end_label): Likewise.
+	(dwarf2out_switch_text_section): Get hot/cold section labels from
+	the function struct rather than global variables; test to make sure
+	cfun is defined.
+	(output_aranges): Use cold_text_section_label and cold_end_label;
+	check partitioning flag before putting out delta.
+	(output_ranges): Remove incorrect code attempting to use
+	hot/cold labels.
+	(output_line_info): Get cold section label from function struct; test
+	to make sure cfun is defined.
+	(add_location_or_const_value_attribute): Likewise.
+	(dwarf2out_var_location): Likewise.
+	(dwarf2out_init): Generate cold_text_section_label and cold_end_label;
+	write out cold_text_section_label if partition flag is set.
+	(dwarf2out_finish): Write out cold_end_label if partition flag is set;
+	* function.h (struct function): Add new fields to point to hot/cold
+	section labels: hot_section_label, cold_section_label,
+	hot_section_end_label and cold_section_end_label; also add new field
+	for cold text section name, unlikely_text_section_name.
+	* opts.c (decode_options): Turn off partitioning flag if
+	!targetm.have_named_sections.
+	* output.h (hot_section_label): Remove.
+	(hot_section_end_label): Remove.
+	(cold_section_end_label): Remove.
+	(unlikely_section_label): Remove.
+	(unlikely_text_section_name): Remove.
+	* passes.c (rest_of_handle_final):  Remove extra blank line.
+	* varasm.c (unlikely_section_label): Remove.
+	(hot_section_label): Remove.
+	(hot_section_end_label): Remove.
+	(cold_section_end_label): Remove.
+	(unlikely_text_section_name):  Remove.
+	(initialize_cold_section_name): Modify to call
+	targetm.strip_name_encoding; to store cold section name in current
+	function struct, if it exists; and to only use the decl_section_name
+	if flag_named_sections is true.
+	(unlikely_text_section): Modify to get section name out of current
+	function struct, if there is one; otherwise build it from
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME.
+	(in_unlikely_text_section): Likewise.
+	(named_section): Modify to get/put cold section name in current function
+	struct, if there is one.
+	(function_section):  Change 'bool unlikely' to 'int reloc'; check
+	targetm.have_named_sections before calling named_section.
+	(current_function_section): Likewise.
+	(assemble_start_function): Modify to get/put unlikely_text_section_name
+	in current function struct; modify to get hot/cold section labels
+	from function struct; initialize labels using
+	ASM_GENERATE_INTERNAL_LABEL;
+	test partitioning flag before writing out hot section label.
+	(assemble_end_function): Test partitioning flag before writing out
+	hot/cold section labels.
+	(default_section_type_flags_1):  Get cold text section name from
+	function struct if there is one; Set flags correctly for
+	cold text section if there is not a current function struct.
+	
 2005-04-27  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-propagate.c (set_rhs): Revert last change.

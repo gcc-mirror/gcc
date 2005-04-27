@@ -328,7 +328,6 @@ rest_of_handle_final (void)
 
   timevar_push (TV_SYMOUT);
   (*debug_hooks->function_decl) (current_function_decl);
-
   timevar_pop (TV_SYMOUT);
 
   ggc_collect ();
