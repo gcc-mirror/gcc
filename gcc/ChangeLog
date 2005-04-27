@@ -1,5 +1,10 @@
 2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* config/pa/pa.h (PRINT_OPERAND_ADDRESS): Use gcc_assert, remove
+	unnecessary noncanonical RTL handling.
+	* config/pa/pa64-linux.h (INITIAL_ELIMINATION_OFFSET): Use
+	gcc_assert and gcc_unreachable.
+
 	* config/arm/arm.h (ARM_PRINT_OPERAND_ADDRESS): Use gcc_assert and
 	gcc_unreachable as appropriate.
 	(THUMB_PRINT_OPERAND_ADDRESS): Likewise.
