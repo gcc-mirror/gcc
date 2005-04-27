@@ -1,3 +1,7 @@
+2005-04-27  Devang Patel <dpatel@apple.com>
+
+	* dbxout.c (dbxout_type): Check use_gnu_debug_info_extensions.
+
 2005-04-27  Matt Thomas <matt@3am-software.com>
             Jan-Benedict Glaw <jbglaw@microdata-pos.de>
 
