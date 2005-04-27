@@ -1,3 +1,9 @@
+2005-04-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/21177
+	* interface.c (compare_parameter): Ignore type for EXPR_NULL
+	only if type is BT_UNKNOWN.
+
 2005-04-25  Paul Brook  <paul@codesourcery.com>
 	Steven G. Kargl  <kargls@comcast.net>
 
