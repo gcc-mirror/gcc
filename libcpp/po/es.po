@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-4.0-b20050226\n"
+"Project-Id-Version: cpplib-4.0.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-02-25 23:37+0000\n"
-"PO-Revision-Date: 2005-03-02 09:57-0600\n"
+"POT-Creation-Date: 2005-04-20 21:43-0700\n"
+"PO-Revision-Date: 2005-04-25 10:01-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -222,125 +222,125 @@ msgstr "#include_next en fichero primario de código fuente"
 msgid "invalid flag \"%s\" in line directive"
 msgstr "indicador \"%s\" inválido en la línea de la directiva"
 
-#: directives.c:792
+#: directives.c:797
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\" después de #line no es un entero positivo"
 
-#: directives.c:798
+#: directives.c:803
 msgid "line number out of range"
 msgstr "número de línea fuera de rango"
 
-#: directives.c:811 directives.c:888
+#: directives.c:816 directives.c:893
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" no es un nombre de fichero válido"
 
-#: directives.c:848
+#: directives.c:853
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" después de # no es un entero positivo"
 
-#: directives.c:950
+#: directives.c:955
 msgid "invalid #ident directive"
 msgstr "directiva #ident inválida"
 
-#: directives.c:1038
+#: directives.c:1043
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "registrando \"%s\" como un pragma y como un espacio de nombres de pragma"
 
-#: directives.c:1041
+#: directives.c:1046
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s ya está registrado"
 
-#: directives.c:1044
+#: directives.c:1049
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s ya está registrado"
 
-#: directives.c:1244
+#: directives.c:1249
 msgid "#pragma once in main file"
 msgstr "#pragma una vez en el fichero principal"
 
-#: directives.c:1267
+#: directives.c:1272
 msgid "invalid #pragma GCC poison directive"
 msgstr "directiva #pragma de GCC envenenada inválida"
 
-#: directives.c:1276
+#: directives.c:1281
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "envenenando la macro existente \"%s\""
 
-#: directives.c:1297
+#: directives.c:1302
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header ignorado fuera del fichero a incluir"
 
-#: directives.c:1321
+#: directives.c:1326
 #, c-format
 msgid "cannot find source file %s"
 msgstr "no se puede encontrar el fichero fuente %s"
 
-#: directives.c:1325
+#: directives.c:1330
 #, c-format
 msgid "current file is older than %s"
 msgstr "el fichero actual es más antiguo que %s"
 
-#: directives.c:1439
+#: directives.c:1444
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma lleva una cadena literal entre paréntesis"
 
-#: directives.c:1546
+#: directives.c:1551
 msgid "#else without #if"
 msgstr "#else sin #if"
 
-#: directives.c:1551
+#: directives.c:1556
 msgid "#else after #else"
 msgstr "#else después de #else"
 
-#: directives.c:1553 directives.c:1586
+#: directives.c:1558 directives.c:1591
 msgid "the conditional began here"
 msgstr "el condicional empezó aquí"
 
-#: directives.c:1579
+#: directives.c:1584
 msgid "#elif without #if"
 msgstr "#elif sin #if"
 
-#: directives.c:1584
+#: directives.c:1589
 msgid "#elif after #else"
 msgstr "#elif después de #else"
 
-#: directives.c:1614
+#: directives.c:1619
 msgid "#endif without #if"
 msgstr "#endif sin #if"
 
-#: directives.c:1691
+#: directives.c:1696
 msgid "missing '(' after predicate"
 msgstr "falta '(' antes del predicado"
 
-#: directives.c:1706
+#: directives.c:1711
 msgid "missing ')' to complete answer"
 msgstr "falta ')' para completar la respuesta"
 
-#: directives.c:1726
+#: directives.c:1731
 msgid "predicate's answer is empty"
 msgstr "el predicado de la respuesta está vacío"
 
-#: directives.c:1753
+#: directives.c:1758
 msgid "assertion without predicate"
 msgstr "afirmación sin predicado"
 
-#: directives.c:1755
+#: directives.c:1760
 msgid "predicate must be an identifier"
 msgstr "el predicado debe ser un identificador"
 
-#: directives.c:1841
+#: directives.c:1846
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" reafirmado"
 
-#: directives.c:2064
+#: directives.c:2069
 #, c-format
 msgid "unterminated #%s"
 msgstr "#%s sin terminar"
@@ -761,33 +761,37 @@ msgstr "ISO C no permite macros variadic nombrados"
 msgid "missing ')' in macro parameter list"
 msgstr "falta paréntesis derecho en la lista de parámetros de macro"
 
-#: macro.c:1434
-msgid "ISO C requires whitespace after the macro name"
-msgstr "ISO C requiere espacios en blanco después del nombre de macro"
+#: macro.c:1439
+msgid "ISO C99 requires whitespace after the macro name"
+msgstr "ISO C99 requiere espacios en blanco después del nombre de macro"
 
-#: macro.c:1462
+#: macro.c:1463
+msgid "missing whitespace after the macro name"
+msgstr "faltan espacios en blanco después del nombre de macro"
+
+#: macro.c:1493
 msgid "'#' is not followed by a macro parameter"
 msgstr "'#' no es seguido por un parámetro de macro"
 
-#: macro.c:1481
+#: macro.c:1512
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##' no puede aparece en o al final de una expansión de macro"
 
-#: macro.c:1577
+#: macro.c:1608
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "se redefinió \"%s\""
 
-#: macro.c:1582
+#: macro.c:1613
 msgid "this is the location of the previous definition"
 msgstr "esta es la ubicación de la definición previa"
 
-#: macro.c:1632
+#: macro.c:1663
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "el argumento de macro \"%s\" debería ser convertido a cadena en C tradicional"
 
-#: macro.c:1655
+#: macro.c:1686
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "tipo de hash %d inválido en cpp_macro_definition"
