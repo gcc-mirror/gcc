@@ -1,3 +1,61 @@
+2005-04-27  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicScrollBarUI
+	(getThumbBounds): Do not make thumb smaller than
+	minimumThumbSize.
+	* javax/swing/plaf/metal/MetalLookAndFeel
+	(initComponentDefaults): Added color defaults for ScrollBar.
+	* javax/swing/plaf/metal/MetalScrollBarUI
+	(paintThumb): Added.
+	(getMinimumThumbSize): Added.
+
+2005-04-27  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/metal/MetalLookAndFeel
+	(initComponentDefaults): Added some default colors.
+
+2005-04-27  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
+	(configureScrollBarColors: Changed key 'ScrollBar.thumbLightShadow'
+	to 'ScrollBar.thumbShadow'. The formes does not exist.
+	(paintThumb): Use BasicGraphicsUtils for painting the thumb.
+
+2005-04-27  Roman Kennke  <roman@kennke.org>
+
+	* java/awt/MediaTracker.java: Added 2005 to copyright statement.
+	* javax/swing/BoxLayout.java: Likewise.
+	* javax/swing/UIManager.java: Likewise.
+	* javax/swing/plaf/basic/BasicButtonListener.java: Likewise.
+	* javax/swing/plaf/basic/BasicGraphicsUtils.java: Likewise.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java: Likewise.
+	* javax/swing/plaf/basic/BasicMenuItemUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicScrollPaneUI.java: Likewise.
+	* javax/swing/plaf/metal/MetalLookAndFeel.java: Likewise.
+	* javax/swing/text/Document.java: Likewise.
+	* javax/swing/text/GapContent.java: Likewise.
+	* javax/swing/text/SimpleAttributeSet.java: Likewise.
+	* javax/swing/tree/DefaultTreeSelectionModel.java: Likewise.
+
+2005-04-27  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicToggleButtonUI.java:
+	(getPropertyPrefix): Added.
+
+2005-04-27  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/plaf/basic/BasicButtonUI.java
+	(getPropertyPrefix): Added.
+	(installDefaults): Use getPropertyPrefix instead of hard-coded
+	prefix.
+
+2005-04-27  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/JToggleButton.java
+	(JToggleButton): Removed horizontalAlignment setting, this
+	was wrong. Added setting of an actionCommand, ToggleButtons
+	have "" as default actionCommand.
+
 2005-04-27  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/charset/Charset.java (providers2): Renamed from 'providers'

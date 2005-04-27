@@ -107,17 +107,29 @@ public class BasicButtonUI extends ButtonUI
     textShiftOffset = defaultTextShiftOffset;
   }
 
+  /**
+   * Returns the prefix for the UI defaults property for this UI class.
+   * This is &apos;Button&apos; for this class.
+   *
+   * @return the prefix for the UI defaults property
+   */
+  protected String getPropertyPrefix()
+  {
+    return "Button";
+  }
+
   protected void installDefaults(AbstractButton b)
   {
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    focusColor = defaults.getColor("Button.focus");
-    b.setForeground(defaults.getColor("Button.foreground"));
-    b.setBackground(defaults.getColor("Button.background"));
-    b.setMargin(defaults.getInsets("Button.margin"));
-    b.setBorder(defaults.getBorder("Button.border"));
-    b.setIconTextGap(defaults.getInt("Button.textIconGap"));
+    String prefix = getPropertyPrefix();
+    focusColor = defaults.getColor(prefix + ".focus");
+    b.setForeground(defaults.getColor(prefix + ".foreground"));
+    b.setBackground(defaults.getColor(prefix + ".background"));
+    b.setMargin(defaults.getInsets(prefix + ".margin"));
+    b.setBorder(defaults.getBorder(prefix + ".border"));
+    b.setIconTextGap(defaults.getInt(prefix + ".textIconGap"));
     b.setInputMap(JComponent.WHEN_FOCUSED, 
-                  (InputMap) defaults.get("Button.focusInputMap"));
+                  (InputMap) defaults.get(prefix + ".focusInputMap"));
     b.setOpaque(true);
   }
 

@@ -1,5 +1,5 @@
 /* BasicToggleButtonUI.java
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,5 +48,15 @@ public class BasicToggleButtonUI extends BasicButtonUI
     return new BasicToggleButtonUI();
   }    
 
+  /**
+   * Returns the prefix for the UI defaults property for this UI class.
+   * This is &apos;ToggleButton&apos; for this class.
+   *
+   * @return the prefix for the UI defaults property
+   */
+  protected String getPropertyPrefix()
+  {
+    return "ToggleButton";
+  }
 }
 
