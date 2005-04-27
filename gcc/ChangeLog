@@ -1,3 +1,7 @@
+2005-04-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-pre.c: Fix a comment typo.
+
 2005-04-27  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/21171
