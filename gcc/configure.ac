@@ -3024,6 +3024,23 @@ EOF
     ;;
 esac
 
+AC_CACHE_CHECK(linker --sysroot support,
+  gcc_cv_ld_sysroot,
+  [gcc_cv_ld_sysroot=no
+  if test $in_tree_ld = yes ; then
+      if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 ; then
+        gcc_cv_ld_sysroot = yes
+      fi
+  elif test x$gcc_cv_ld != x; then 
+    if $gcc_cv_ld --help 2>/dev/null | grep sysroot > /dev/null; then
+      gcc_cv_ld_sysroot=yes
+    fi
+  fi])
+if test x"$gcc_cv_ld_sysroot" = xyes; then
+  AC_DEFINE(HAVE_LD_SYSROOT, 1,
+  [Define if your linker supports --sysroot.])
+fi	  
+
 if test x$with_sysroot = x && test x$host = x$target \
    && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include",

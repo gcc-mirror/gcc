@@ -1,3 +1,14 @@
+2005-04-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac: Check for ld --sysroot support.
+	* gcc.c: Document %R specifier for specs.
+	(SYSROOT_SPEC): New macro.
+	(sysroot_spec): New variable.
+	(static_specs): Add sysroot_spec.
+	(main): Pass the sysroot spec to the linker if appropriate.
+	* configure: Regenerated.
+	* config.in: Likewise.
+
 2005-04-27  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* fold-const.c (fold_binary): Use build_fold_addr_expr
