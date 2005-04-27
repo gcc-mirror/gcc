@@ -1,4 +1,5 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
 /* { dg-options "-O2 -ftree-vectorize -mpowerpc64 -fdump-tree-vect-stats -maltivec" } */
 
 #include <stdarg.h>
@@ -33,5 +34,5 @@ int main (void)
   return main1 ();
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

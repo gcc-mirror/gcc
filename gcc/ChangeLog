@@ -1,3 +1,39 @@
+2004-04-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-complex.c (expand_vector_operation): New, extracted from
+	expand_vector_operations_1.
+	(tree_vec_extract): Build a NOP_EXPR.
+	(expand_vec_parallel): Do not care about returning the correct type.
+	(expand_vector_operations_1): Call expand_vector_operation.
+	Build the VIEW_CONVERT_EXPR on the left side of MODIFY_EXPRs.
+
+	* tree-complex.c (gate_expand_vector_operations): New.
+	(pass_lower_vector_ssa): Use it.
+	* tree-optimize.c (init_tree_optimization_passes): Include
+	pass_lower_vector_ssa.
+	* tree-vect-transform.c (vect_min_worthwhile_factor): New.
+	(vectorizable_operation): Use it.
+	* tree-vectorizer.c (get_vectype_for_scalar_type): Accept
+	integer modes for the vector type.
+
+	* defaults.h (UNITS_PER_SIMD_WORD): Default to UNITS_PER_WORD.
+	* tree-vect-analyze.c (vect_enhance_data_refs_alignment):
+	Do not cope with UNITS_PER_SIMD_WORD == 0.
+	* tree-vectorizer.c (get_vectype_for_scalar_type): Check
+	if the scalar type is not bigger than UNITS_PER_SIMD_WORD.
+	(vectorize_loops): Do not check that UNITS_PER_SIMD_WORD > 0.
+	* config/i386/i386.h (UNITS_PER_SIMD_WORD): Default to UNITS_PER_WORD.
+	* config/mips/mips.h (UNITS_PER_SIMD_WORD): Likewise.
+	* config/rs6000/rs6000.h (UNITS_PER_SIMD_WORD): Likewise.
+	* config/sparc/sparc.h (UNITS_PER_SIMD_WORD): Likewise.
+
+	* config/alpha/alpha.h (UNITS_PER_SIMD_WORD): Remove.
+	* config/bfin/bfin.h (UNITS_PER_SIMD_WORD): Remove.
+	* config/ia64/ia64.h (UNITS_PER_SIMD_WORD): Remove.
+
+	* doc/tm.texi (UNITS_PER_WORD): Rephrase more accurately.
+	(UNITS_PER_SIMD_WORD): New.
+
 2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/ia64/ia64.c (ia64_encode_addr_area): Use gcc_assert and
@@ -29,17 +65,38 @@
 	(INDEX_REGISTER_P): New.
 	(BASE_REGISTER_P): New.
 	(indirectable_constant_address_p): New.  Adapted from
+<<<<<<< ChangeLog
+	INDIRECTABLE_CONSTANT_ADDRESS_P in vax.h.
+	Use SYMBOL_REF_LOCAL_P.
+=======
 	INDIRECTABLE_CONSTANT_ADDRESS_P in vax.h. Use SYMBOL_REF_LOCAL_P.
+>>>>>>> 2.8478
 	(indirectable_address_p): New.  Adapted from
 	INDIRECTABLE_ADDRESS_P in vax.h.
 	(nonindexed_address_p): New.  Adapted from
+<<<<<<< ChangeLog
+	GO_IF_NONINDEXED_ADDRESS in vax.h.
+	(index_temp_p): New.  Adapted from
+	INDEX_TERM_P in vax.h.
+	(reg_plus_index_p): New.  Adapted from
+	GO_IF_REG_PLUS_INDEX in vax.h.
+=======
 	GO_IF_NONINDEXED_ADDRESS in vax.h.
 	(index_temp_p): New.  Adapted from INDEX_TERM_P in vax.h.
 	(reg_plus_index_p): New.  Adapted from GO_IF_REG_PLUS_INDEX in vax.h.
+>>>>>>> 2.8478
 	(legitimate_address_p): New.  Adapted from
+<<<<<<< ChangeLog
+	GO_IF_LEGITIMATE_ADDRESS in vax.h
+=======
 	GO_IF_LEGITIMATE_ADDRESS in vax.h.
+>>>>>>> 2.8478
 	(vax_mode_dependent_address_p): New.  Adapted from
+<<<<<<< ChangeLog
+	GO_IF_MODE_DEPENDENT_ADDRESS in vax.h
+=======
 	GO_IF_MODE_DEPENDENT_ADDRESS in vax.h.
+>>>>>>> 2.8478
 	* config/vax/vax.h (CONSTANT_ADDRESS_P): Use
 	legitimate_constant_address_p.
 	(CONSTANT_P): Use legitimate_constant_p.
@@ -48,8 +105,13 @@
 	(GO_IF_NONINDEXED_ADDRESS): Removed.
 	(INDEX_TEMP_P): Removed.
 	(GO_IF_REG_PLUS_INDEX): Removed.
+<<<<<<< ChangeLog
+	(GO_IF_LEGITIMATE_ADDRESS): Use legitimate_address_p.
+	Two definitions, depending on whether REG_OK_STRICT is defined.
+=======
 	(GO_IF_LEGITIMATE_ADDRESS): Use legitimate_address_p. Two
 	definitions, depending on whether REG_OK_STRICT is defined.
+>>>>>>> 2.8478
 	(GO_IF_MODE_DEPENDENT_ADDRESS): Use vax_mode_dependent_address_p.
 	Two definitions, depending on whether REG_OK_STRICT is defined.
 	* config/vax/vax-protos.h (legitimate_constant_address_p): Prototype

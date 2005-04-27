@@ -1,3 +1,14 @@
+2004-04-27  Paolo Bonzini  <bonzini@gnu.org>
+
+        * gcc.dg/tree-ssa/gen-vect-11.c, gcc.dg/tree-ssa/gen-vect-11a.c,
+        gcc.dg/tree-ssa/gen-vect-11b.c, gcc.dg/tree-ssa/gen-vect-11c.c,
+        gcc.dg/tree-ssa/gen-vect-2.c, gcc.dg/tree-ssa/gen-vect-25.c,
+        gcc.dg/tree-ssa/gen-vect-26.c, gcc.dg/tree-ssa/gen-vect-28.c,
+        gcc.dg/tree-ssa/gen-vect-32.c: New.
+        * gcc.dg/vect/vect-82.c, gcc.dg/vect/vect-83.c: Fix dg-final.
+        * gcc.dg/vect/vect-82_64.c, gcc.dg/vect/vect-83_64.c: Remove xfail,
+        don't run on PPC32.
+        
 2005-04-27  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21213
