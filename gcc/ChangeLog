@@ -1,3 +1,12 @@
+2005-04-28  DJ Delorie  <dj@redhat.com>
+
+	* optc-gen.awk (END): Make sure no variable is defined more
+	than once.
+	* opth-gen.awk (END): Allocate bits on a per-variable basis.
+	Allow for bitfield variables other than target_flags.
+	* doc/options.text (Mask): Document that you may specify a
+	variable other than target_flags.
+
 2005-04-28  Martin Koegler <mkoegler@auto.tuwien.ac.at>
 
 	PR rtl-optimization/18877
