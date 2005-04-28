@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    machine modes used in the GNU compiler.
-   Copyright (C) 1987, 1992, 1994, 1997, 1998, 2000, 2003, 2004
+   Copyright (C) 1987, 1992, 1994, 1997, 1998, 2000, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.

@@ -13,6 +13,37 @@
 	JUMP_P, LABEL_P, REG_P, MEM_P, NONJUMP_INSN_P, and INSN_P
 	where appropriate.
 
+	* attribs.c, c-pragma.c, caller-save.c, cfghooks.h,
+	coverage.c, cselib.h, domwalk.c, domwalk.h, errors.c,
+	errors.h, gcov-dump.c, gcov-io.c, gcov-io.h, gen-protos.c,
+	genattrtab.h, genextract.c, gthr-win32.h, insn-notes.def,
+	integrate.c, lambda-mat.c, lambda.h, libgcov.c, local-alloc.c,
+	machmode.def, mips-tfile.c, params.c, pretty-print.c,
+	print-rtl.c, protoize.c, regmove.c, sched-vis.c, tree-chrec.h,
+	tree-data-ref.h, vec.h, config/darwin-c.c, config/sol2-c.c,
+	config/sol2.c, config/arm/arm-cores.def, config/arm/cirrus.md,
+	config/arm/symbian.h, config/c4x/c4x.c, config/c4x/c4x.h,
+	config/i386/cygming.h, config/i386/djgpp.h,
+	config/i386/lynx.h, config/i386/netware.c,
+	config/i386/winnt.c, config/ia64/ia64-c.c,
+	config/iq2000/iq2000.c, config/m32r/little.h,
+	config/m68k/m68k-protos.h, config/m68k/m68k.h,
+	config/m68k/m68k.md, config/mcore/mcore.c,
+	config/mcore/mcore.h, config/mmix/mmix.c, config/mmix/mmix.md,
+	config/mn10300/mn10300-protos.h, config/mn10300/mn10300.c,
+	config/mn10300/mn10300.h, config/ns32k/netbsd.h,
+	config/ns32k/ns32k.c, config/ns32k/ns32k.h,
+	config/pa/pa-hpux11.h, config/pdp11/pdp11.c,
+	config/pdp11/pdp11.h, config/rs6000/darwin.h,
+	config/rs6000/default64.h, config/rs6000/rs6000-c.c,
+	config/s390/2064.md, config/s390/2084.md,
+	config/s390/s390-modes.def, config/s390/s390-protos.h,
+	config/s390/tpf.h, config/sh/sh.h, config/sh/symbian.c,
+	config/stormy16/stormy16.c, config/vax/vax-protos.h,
+	config/vax/vax.c, config/vax/vax.h,
+	config/xtensa/lib1funcs.asm, config/xtensa/xtensa.md: Update
+	copyright.
+
 2005-04-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-typeck.c (build_compound_expr): Correct logic in last change.

@@ -1,5 +1,6 @@
 /* Subroutines for assembler code output on the NS32000.
-   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2004
+   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+   2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.

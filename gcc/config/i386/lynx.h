@@ -1,5 +1,5 @@
 /* Definitions for LynxOS on i386.
-   Copyright (C) 1993, 1995, 1996, 2002, 2004
+   Copyright (C) 1993, 1995, 1996, 2002, 2004, 2005
    Free Software Foundation, Inc. 
 
 This file is part of GCC.
