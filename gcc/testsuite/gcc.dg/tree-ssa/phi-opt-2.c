@@ -19,3 +19,4 @@ _Bool f1(_Bool a, _Bool b)
    value of b (except that we don't fold ! (b != 0) into b
    which can be fixed in a different patch).  */
 /* { dg-final { scan-tree-dump-times "if" 1 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

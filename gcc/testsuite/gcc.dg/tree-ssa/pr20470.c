@@ -12,3 +12,4 @@ void f1()
 }
 
 /* { dg-final { scan-tree-dump-times "ABS_EXPR" 1 "generic" } } */
+/* { dg-final { cleanup-tree-dump "generic" } } */

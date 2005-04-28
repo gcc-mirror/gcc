@@ -14,3 +14,4 @@ int main(void)
 	return temp.a + temp.b;
 }
 /* { dg-final { scan-tree-dump-times "return 11" 1 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

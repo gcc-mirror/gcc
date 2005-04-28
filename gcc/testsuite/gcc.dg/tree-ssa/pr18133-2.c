@@ -40,3 +40,4 @@ bar (int a)
    computed goto.  */
 
 /* { dg-final { scan-tree-dump-times "ab" 0 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

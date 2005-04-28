@@ -24,3 +24,4 @@ y: ;
 
 /* We should have folded away the goto &x  */
 /* { dg-final { scan-tree-dump-times "goto &x" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
