@@ -676,8 +676,8 @@ protected:
 	return __size_with_eos;
 #else
 	// Allow slop for in-place expansion.
-	return ((__size_with_eos + _S_alloc_granularity - 1)
-		&~ (_S_alloc_granularity - 1));
+	return ((__size_with_eos + size_t(_S_alloc_granularity) - 1)
+		&~ (size_t(_S_alloc_granularity) - 1));
 #endif
       }
       __GC_CONST _CharT* _M_data; /* Not necessarily 0 terminated. */
@@ -1998,7 +1998,7 @@ protected:
       size_type
       max_size() const
       {
-	return _S_min_len[_Rope_constants::_S_max_rope_depth - 1] - 1;
+	return _S_min_len[int(_Rope_constants::_S_max_rope_depth) - 1] - 1;
 	//  Guarantees that the result can be sufficirntly
 	//  balanced.  Longer ropes will probably still work,
 	//  but it's harder to make guarantees.

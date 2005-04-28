@@ -80,7 +80,7 @@ namespace __gnu_cxx
 
       enum { _S_align = 8 };
       enum { _S_max_bytes = 128 };
-      enum { _S_free_list_size = _S_max_bytes / _S_align };
+      enum { _S_free_list_size = (size_t)_S_max_bytes / (size_t)_S_align };
       
       union _Obj
       {

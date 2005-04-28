@@ -503,7 +503,7 @@ namespace __gnu_cxx
 	static _Tune _S_tune(__align, sizeof(_Tp) * 64,
 			     sizeof(_Tp) * 2 >= __align ? sizeof(_Tp) * 2
 			                                : __align,
-			     sizeof(_Tp) * _Tune::_S_chunk_size,
+			     sizeof(_Tp) * size_t(_Tune::_S_chunk_size),
 			     _Tune::_S_max_threads,
 			     _Tune::_S_freelist_headroom,
 			     getenv("GLIBCXX_FORCE_NEW") ? true : false);
@@ -549,7 +549,7 @@ namespace __gnu_cxx
 	static _Tune _S_tune(__align, sizeof(_Tp) * 64,
 			     sizeof(_Tp) * 2 >= __align ? sizeof(_Tp) * 2
                                                         : __align,
-			     sizeof(_Tp) * _Tune::_S_chunk_size,
+			     sizeof(_Tp) * size_t(_Tune::_S_chunk_size),
 			     _Tune::_S_max_threads,
 			     _Tune::_S_freelist_headroom,
 			     getenv("GLIBCXX_FORCE_NEW") ? true : false);
