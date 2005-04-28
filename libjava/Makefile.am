@@ -3231,6 +3231,7 @@ gnu/java/net/protocol/http/event/ConnectionEvent.java \
 gnu/java/net/protocol/http/event/ConnectionListener.java \
 gnu/java/net/protocol/http/event/RequestEvent.java \
 gnu/java/net/protocol/http/event/RequestListener.java \
+gnu/java/net/protocol/https/Handler.java \
 gnu/java/net/protocol/jar/Connection.java \
 gnu/java/net/protocol/jar/Handler.java \
 gnu/java/nio/ChannelInputStream.java \
