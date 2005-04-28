@@ -1,3 +1,8 @@
+2005-04-28  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.c (legitimize_pic_address): Fix sense of assertion test for
+	creating pseudos when the base offset is too large.
+
 2005-04-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* global.c (earlyclobber_regclass): Change the type to
