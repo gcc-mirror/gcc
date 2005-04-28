@@ -16,4 +16,4 @@ temp:
    optimize this before because PHI-OPT did not look at 
    PHIs which have more than two arguments.  */
 /* { dg-final { scan-tree-dump-times "if" 0 "optimized"} } */
-
+/* { dg-final { cleanup-tree-dump "optimized" } } */

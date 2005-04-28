@@ -56,3 +56,4 @@ float repl3 (float varz, float vara, float varb)
 
 /* { dg-final { scan-tree-dump "if .*varz" "phiopt1"} } */
 /* { dg-final { scan-tree-dump "vara.*MAX_EXPR" "phiopt1"} } */
+/* { dg-final { cleanup-tree-dump "phiopt1" } } */

@@ -14,4 +14,4 @@ _Bool f1()
    value of b (except that we don't fold ! (b != 0) into b
    which means that we miss a sib calling opportunity).  */
 /* { dg-final { scan-tree-dump-times "if " 1 "optimized"} } */
-
+/* { dg-final { cleanup-tree-dump "optimized" } } */

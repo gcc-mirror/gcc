@@ -265,3 +265,4 @@ f15 (int i, ...)
 /* { dg-final { scan-tree-dump "f15: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" { target alpha*-*-linux* } } } */
 /* { dg-final { scan-tree-dump-not "f15: va_list escapes 0, needs to save 0 GPR units" "stdarg" { target i?86-*-* ia64-*-* } } } */
 /* { dg-final { scan-tree-dump-not "f15: va_list escapes 0, needs to save 0 GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
+/* { dg-final { cleanup-tree-dump "stdarg" } } */

@@ -23,3 +23,4 @@ foo (int a, int b, int c, int d)
 }
 
 /* { dg-final { scan-tree-dump-times "with if \\(1\\)" 2 "copyprop1"} } */
+/* { dg-final { cleanup-tree-dump "copyprop1" } } */

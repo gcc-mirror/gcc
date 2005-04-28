@@ -109,3 +109,4 @@ f7 (int i, ...)
 }
 /* { dg-final { scan-tree-dump "f7: va_list escapes 0, needs to save 0 GPR units and 64 FPR units" "stdarg" { target { x86_64-*-* && lp64 } } } } */
 /* { dg-final { scan-tree-dump "f7: va_list escapes 0, needs to save 32 GPR units and 2" "stdarg" { target alpha*-*-linux* } } } */
+/* { dg-final { cleanup-tree-dump "stdarg" } } */

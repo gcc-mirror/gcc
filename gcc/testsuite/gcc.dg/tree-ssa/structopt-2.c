@@ -43,3 +43,4 @@ int main(void)
 /* { dg-final { scan-tree-dump-times "a.f" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "a.g" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "b.e" 0 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
