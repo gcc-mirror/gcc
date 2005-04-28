@@ -1,3 +1,8 @@
+2005-04-28  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/Timer.java: Javadocs merged
+	from GNU classpath.
+
 2005-04-28  Jeroen Frijters  <jeroen@frijters.net>
 
 	* gnu/java/net/protocol/file/Connection.java

@@ -1,5 +1,5 @@
 /* Timer.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,9 +46,13 @@ import java.util.EventListener;
 import javax.swing.event.EventListenerList;
 
 /**
- * DOCUMENT ME!
+ * Fires one or more action events after the specified delay.
+ * @author Ronald Veldema
+ * @author Audrius Meskauskas (audriusa@Bionformatics.org) - bug fixes
+ * and documentation comments
  */
-public class Timer implements Serializable
+public class Timer
+  implements Serializable
 {
   /** DOCUMENT ME! */
   private static final long serialVersionUID = -1116180831621385484L;
@@ -121,22 +125,33 @@ public class Timer implements Serializable
 
   static boolean logTimers;
 
-  /** DOCUMENT ME! */
+  /**
+   * <code>true</code> if the timer coalesces events.
+   */
   boolean coalesce = true;
 
-  /** DOCUMENT ME! */
+  /**
+   * <code>true</code> if the timer is firing repetetive events.
+   */
   boolean repeats = true;
 
-  /** DOCUMENT ME! */
+  /**
+   * <code>true</code> if the timer is currently active, firing events
+   * as scheduled.
+   */
   boolean running;
 
   /** DOCUMENT ME! */
   int ticks;
 
-  /** DOCUMENT ME! */
+  /**
+   * The delay between subsequent repetetive events.
+   */
   int delay;
 
-  /** DOCUMENT ME! */
+  /**
+   * The initial delay before the first event.
+   */
   int initialDelay;
 
   /**
@@ -184,8 +199,9 @@ public class Timer implements Serializable
   /**
    * Creates a new Timer object.
    *
-   * @param d DOCUMENT ME!
-   * @param listener DOCUMENT ME!
+   * @param d the default value for both initial and between event delay, in
+   * milliseconds.
+   * @param listener the first action listener, can be <code>null</code>.
    */
   public Timer(int d, ActionListener listener)
   {
@@ -236,12 +252,13 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Get the event listeners of the given type that are listening for the
+   * events, fired by this timer.
    *
-   * @param listenerType DOCUMENT ME!
+   * @param listenerType the listener type (for example, ActionListener.class)
    *
-   * @return DOCUMENT ME!
-   *
+   * @return the array of event listeners that are listening for the events,
+   * fired by this timer
    * @since 1.3
    */
   public EventListener[] getListeners(Class listenerType)
@@ -283,9 +300,12 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Set the timer logging state. If it is set to <code>true</code>, the
+   * timer prints a message to {@link System#out} when firing each
+   * action event.
    *
-   * @param lt DOCUMENT ME!
+   * @param lt <code>true</code> if logging is enabled, <code>false</code>
+   * (default value) otherwise
    */
   public static void setLogTimers(boolean lt)
   {
@@ -293,9 +313,11 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Return the logging state.
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if the timer is printing a message to
+   * {@link System#out}
+   * when firing each action event
    */
   public static boolean getLogTimers()
   {
@@ -303,9 +325,11 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Set the delay between firing the subsequent events.
+   * This parameter does not change the value of the initial delay before
+   * firing the first event.
    *
-   * @param d DOCUMENT ME!
+   * @param d The time gap between the subsequent events, in milliseconds
    */
   public void setDelay(int d)
   {
@@ -313,9 +337,9 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Get the delay between firing the subsequent events.
    *
-   * @return DOCUMENT ME!
+   * @return The delay between subsequent events, in milliseconds
    */
   public int getDelay()
   {
@@ -323,9 +347,12 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Set the intial delay before firing the first event since calling
+   * the {@link #start()} method. If the initial delay has not been
+   * set, it is assumed having the same value as the delay between the
+   * subsequent events.
    *
-   * @param i DOCUMENT ME!
+   * @param i the initial delay, in milliseconds
    */
   public void setInitialDelay(int i)
   {
@@ -333,9 +360,11 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Get the intial delay before firing the first event since calling
+   * the {@link #start()} method. If the initial delay has not been
+   * set, returns the same value as {@link #getDelay()}.
    *
-   * @return DOCUMENT ME!
+   * @return the initial delay before firing the first action event.
    */
   public int getInitialDelay()
   {
@@ -343,9 +372,11 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Enable firing the repetetive events.
    *
-   * @param r DOCUMENT ME!
+   * @param r <code>true</code> (default value) to fire repetetive events.
+   * <code>false</code> to fire
+   * only one event after the initial delay
    */
   public void setRepeats(boolean r)
   {
@@ -353,9 +384,11 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Check is this timer fires repetetive events.
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if the timer fires repetetive events,
+   * <code>false</code> if it fires
+   * only one event after the initial delay
    */
   public boolean isRepeats()
   {
@@ -363,9 +396,11 @@ public class Timer implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Get the timer state.
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if the timer has been started and is firing
+   * the action events as scheduled. <code>false</code>
+   * if the timer is inactive.
    */
   public boolean isRunning()
   {
@@ -402,7 +437,7 @@ public class Timer implements Serializable
       waker.interrupt();
     synchronized (queueLock)
       {
-	queue = 0;
+        queue = 0;
       }
   }
 }
