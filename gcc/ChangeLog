@@ -5,6 +5,8 @@
 
 	* config.gcc: Obsolete c4x-* and tic4x-*.
 
+	* tree.h (edge_def): Remove.
+
 2005-04-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-typeck.c (build_compound_expr): Correct logic in last change.
