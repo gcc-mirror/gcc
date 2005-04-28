@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.file;
 
-import gnu.java.security.action.GetPropertyAction;
+import gnu.classpath.SystemProperties;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -56,7 +56,6 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.Permission;
-import java.security.AccessController;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -76,23 +75,19 @@ public class Connection extends URLConnection
    */
   private static final String DEFAULT_PERMISSION = "read";
 
-  /**
-   * HTTP-style DateFormat, used to format the last-modified header.
-   */
-  private static SimpleDateFormat dateFormat
-    = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'",
-                           new Locale ("En", "Us", "Unix"));
-
-  private static String lineSeparator;
-  
-  static
+  private static class StaticData
   {
-    if (lineSeparator == null)
-      {
-	GetPropertyAction getProperty = new GetPropertyAction("line.separator");
-	lineSeparator = (String) AccessController.doPrivileged(getProperty);
-      }
+    /**
+     * HTTP-style DateFormat, used to format the last-modified header.
+     */
+    static SimpleDateFormat dateFormat
+      = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'",
+                             new Locale ("En", "Us", "Unix"));
+
+    static String lineSeparator =
+      SystemProperties.getProperty("line.separator");
   }
+
   
   /**
    * This is a File object for this connection
@@ -182,7 +177,7 @@ public class Connection extends URLConnection
         for (int i = 0; i < files.length; i++)
           {
             writer.write(files[i]);
-            writer.write(lineSeparator);
+            writer.write(StaticData.lineSeparator);
           }
 
         directoryListing = sink.toByteArray();
@@ -271,9 +266,10 @@ public class Connection extends URLConnection
           }
 	else if (field.equals("last-modified"))
 	  {
-	    synchronized (dateFormat)
+	    synchronized (StaticData.dateFormat)
 	      {
-        	return dateFormat.format(new Date(file.lastModified()));
+        	return StaticData.dateFormat.format(
+                        new Date(file.lastModified()));
 	      }
 	  }
       }

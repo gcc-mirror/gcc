@@ -1,3 +1,14 @@
+2005-04-28  Jeroen Frijters  <jeroen@frijters.net>
+
+	* gnu/java/net/protocol/file/Connection.java
+	(StaticData): New inner class to contain statics.
+	(connect, getHeaderField): Modified to use StaticData.
+
+2005-04-28  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/file/Connection.java
+	(lineSeparator): Initialize with SystemProperties.getProperty().
+
 2005-04-27  Chris Burdess  <dog@gnu.org>
 
 	* gnu/java/net/protocol/file/Connection.java: Return correct content
