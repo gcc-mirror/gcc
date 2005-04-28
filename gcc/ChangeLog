@@ -1,3 +1,8 @@
+2005-04-28  James E Wilson  <wilson@specifixinc.com>
+
+	* doc/install.texi: Update -enable-languages info.  Correct path to
+	html docs.
+
 2005-04-28  DJ Delorie  <dj@redhat.com>
 
 	* optc-gen.awk (END): Make sure no variable is defined more

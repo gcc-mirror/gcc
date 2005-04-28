@@ -1052,13 +1052,15 @@ their runtime libraries should be built.  For a list of valid values for
 grep language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
-@code{ada}, @code{c}, @code{c++}, @code{f77}, @code{f95}, @code{java},
-@code{objc}, @code{obj-c++}.
-Building the Ada compiler has special requirements, see below.@*
-If you do not pass this flag, all languages available in the @file{gcc}
-sub-tree will be configured.  Re-defining @code{LANGUAGES} when calling
-@samp{make bootstrap} @strong{does not} work anymore, as those
-language sub-directories might not have been configured!
+@code{all}, @code{ada}, @code{c}, @code{c++}, @code{f95}, @code{java},
+@code{objc}, @code{obj-c++}, @code{treelang}.
+Building the Ada compiler has special requirements, see below.
+If you do not pass this flag, or specify the option @code{all}, then all
+default languages available in the @file{gcc} sub-tree will be configured.
+Ada, Objective-C++, and treelang are not default languages; the rest are.
+Re-defining @code{LANGUAGES} when calling @samp{make bootstrap}
+@strong{does not} work anymore, as those language sub-directories might
+not have been configured!
 
 @item --disable-libada
 Specify that the run-time libraries and tools used by GNAT should not
@@ -2026,8 +2028,8 @@ Free Software Foundation}, though such manuals may not be for the most
 recent version of GCC@.
 
 If you would like to generate online HTML documentation, do @samp{cd
-@var{objdir}; make html} and HTML will be generated for the manuals in
-@file{@var{objdir}/HTML}.
+@var{objdir}; make html} and HTML will be generated for the gcc manuals in
+@file{@var{objdir}/gcc/HTML}.
 
 @html
 <hr />
