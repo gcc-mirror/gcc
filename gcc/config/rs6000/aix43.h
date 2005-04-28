@@ -23,8 +23,9 @@
 
 /* AIX 4.3 and above support 64-bit executables.  */
 #undef  SUBSUBTARGET_SWITCHES
-#define SUBSUBTARGET_SWITCHES					\
-  {"aix64", 		MASK_64BIT | MASK_POWERPC64 | MASK_POWERPC,	\
+#define SUBSUBTARGET_SWITCHES						\
+  {"aix64", 		MASK_64BIT | MASK_POWERPC64			\
+			  | MASK_POWERPC | MASK_PPC_GFXOPT,		\
    N_("Compile for 64-bit pointers") },					\
   {"aix32",		- (MASK_64BIT | MASK_POWERPC64),		\
    N_("Compile for 32-bit pointers") },					\

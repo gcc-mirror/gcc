@@ -1,3 +1,12 @@
+2005-04-28  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/20813
+	* config/rs6000/aix43.h (SUBSUBTARGET_SWITCHES, aix64): Add
+	MASK_PPC_GFXOPT.
+	* config/rs6000/aix51.h (SUBSUBTARGET_SWITCHES, aix64): Same.
+	* config/rs6000/aix52.h (SUBSUBTARGET_SWITCHES, aix64): Same.
+	* config/rs6000/sysv4.h (SUBTARGET_SWITCHES, 64): Same.
+
 2005-04-28  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (legitimize_pic_address): Fix sense of assertion test for
