@@ -1,3 +1,7 @@
+2005-04-27  Mike Stump  <mrs@apple.com>
+
+	* doc/cpp.texi: gcc now implements universal character names.
+
 2005-04-27  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21159
