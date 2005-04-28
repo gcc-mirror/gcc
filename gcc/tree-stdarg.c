@@ -783,7 +783,7 @@ execute_optimize_stdarg (void)
 
 		  /* Do any architecture specific checking.  */
 		  else if (targetm.stdarg_optimize_hook
-			   && (*targetm.stdarg_optimize_hook) (&si, lhs, rhs))
+			   && targetm.stdarg_optimize_hook (&si, lhs, rhs))
 		    continue;
 		}
 	    }

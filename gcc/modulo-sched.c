@@ -1000,7 +1000,7 @@ sms_schedule (FILE *dump_file)
       int temp = reload_completed;
 
       reload_completed = 1;
-      issue_rate = (*targetm.sched.issue_rate) ();
+      issue_rate = targetm.sched.issue_rate ();
       reload_completed = temp;
     }
   else
@@ -2342,13 +2342,13 @@ advance_one_cycle (void)
 {
   if (targetm.sched.dfa_pre_cycle_insn)
     state_transition (curr_state,
-		      (*targetm.sched.dfa_pre_cycle_insn) ());
+		      targetm.sched.dfa_pre_cycle_insn ());
 
   state_transition (curr_state, NULL);
 
   if (targetm.sched.dfa_post_cycle_insn)
     state_transition (curr_state,
-		      (*targetm.sched.dfa_post_cycle_insn) ());
+		      targetm.sched.dfa_post_cycle_insn ());
 }
 
 /* Given the kernel of a loop (from FIRST_INSN to LAST_INSN), finds
@@ -2392,8 +2392,8 @@ kernel_number_of_cycles (rtx first_insn, rtx last_insn)
 
       if (targetm.sched.variable_issue)
 	can_issue_more =
-	  (*targetm.sched.variable_issue) (sched_dump, sched_verbose,
-					   insn, can_issue_more);
+	  targetm.sched.variable_issue (sched_dump, sched_verbose,
+					insn, can_issue_more);
       /* A naked CLOBBER or USE generates no instruction, so don't
 	 let them consume issue slots.  */
       else if (GET_CODE (PATTERN (insn)) != USE
@@ -2440,8 +2440,8 @@ ps_has_conflicts (partial_schedule_ptr ps, int from, int to)
 
 	  if (targetm.sched.variable_issue)
 	    can_issue_more =
-	      (*targetm.sched.variable_issue) (sched_dump, sched_verbose,
-					       insn, can_issue_more);
+	      targetm.sched.variable_issue (sched_dump, sched_verbose,
+					    insn, can_issue_more);
 	  /* A naked CLOBBER or USE generates no instruction, so don't
 	     let them consume issue slots.  */
 	  else if (GET_CODE (PATTERN (insn)) != USE
