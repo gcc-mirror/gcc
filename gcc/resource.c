@@ -834,10 +834,10 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 static bool
 return_insn_p (rtx insn)
 {
-  if (GET_CODE (insn) == JUMP_INSN && GET_CODE (PATTERN (insn)) == RETURN)
+  if (JUMP_P (insn) && GET_CODE (PATTERN (insn)) == RETURN)
     return true;
 
-  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     return return_insn_p (XVECEXP (PATTERN (insn), 0, 0));
 
   return false;

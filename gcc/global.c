@@ -2192,7 +2192,7 @@ mark_reg_use_for_earlyclobber (rtx *x, void *data ATTRIBUTE_UNUSED)
   basic_block bb = data;
   struct bb_info *bb_info = BB_INFO (bb);
 
-  if (GET_CODE (*x) == REG && REGNO (*x) >= FIRST_PSEUDO_REGISTER)
+  if (REG_P (*x) && REGNO (*x) >= FIRST_PSEUDO_REGISTER)
     {
       regno = REGNO (*x);
       if (bitmap_bit_p (bb_info->killed, regno)

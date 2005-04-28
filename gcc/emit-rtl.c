@@ -2697,7 +2697,7 @@ get_first_nonnote_insn (void)
 	  continue;
       else
 	{
-	  if (GET_CODE (insn) == INSN
+	  if (NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	    insn = XVECEXP (PATTERN (insn), 0, 0);
 	}
@@ -2723,7 +2723,7 @@ get_last_nonnote_insn (void)
 	  continue;
       else
 	{
-	  if (GET_CODE (insn) == INSN
+	  if (NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	    insn = XVECEXP (PATTERN (insn), 0,
 			    XVECLEN (PATTERN (insn), 0) - 1);

@@ -7,6 +7,12 @@
 
 	* tree.h (edge_def): Remove.
 
+	* bt-load.c, cfgexpand.c, dwarf2out.c, emit-rtl.c, expr.c,
+	function.c, global.c, lcm.c, loop-invariant.c, optabs.c,
+	reorg.c, resource.c, tree-ssa-loop-ivopts.c, value-prof.c: Use
+	JUMP_P, LABEL_P, REG_P, MEM_P, NONJUMP_INSN_P, and INSN_P
+	where appropriate.
+
 2005-04-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-typeck.c (build_compound_expr): Correct logic in last change.

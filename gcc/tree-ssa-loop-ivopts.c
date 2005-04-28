@@ -2477,7 +2477,7 @@ computation_cost (tree expr)
   end_sequence ();
 
   cost = seq_cost (seq);
-  if (GET_CODE (rslt) == MEM)
+  if (MEM_P (rslt))
     cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type));
 
   return cost;

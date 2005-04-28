@@ -1008,7 +1008,7 @@ btr_def_live_range (btr_def def, HARD_REG_SET *btrs_live_in_range)
 			    def->bb, user->bb,
 			    (flag_btr_bb_exclusive
 			     || user->insn != BB_END (def->bb)
-			     || GET_CODE (user->insn) != JUMP_INSN));
+			     || !JUMP_P (user->insn)));
     }
   else
     {
@@ -1072,7 +1072,7 @@ combine_btr_defs (btr_def def, HARD_REG_SET *btrs_live_in_range)
 				def->bb, user->bb,
 				(flag_btr_bb_exclusive
 				 || user->insn != BB_END (def->bb)
-				 || GET_CODE (user->insn) != JUMP_INSN));
+				 || !JUMP_P (user->insn)));
 
 	  btr = choose_btr (combined_btrs_live);
 	  if (btr != -1)

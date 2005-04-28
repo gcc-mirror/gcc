@@ -1000,7 +1000,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	   insert the final mode switch before the return value copy
 	   to its hard register.  */
 	if (EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 1
-	    && GET_CODE ((last_insn = BB_END (src_bb))) == INSN
+	    && NONJUMP_INSN_P ((last_insn = BB_END (src_bb)))
 	    && GET_CODE (PATTERN (last_insn)) == USE
 	    && GET_CODE ((ret_reg = XEXP (PATTERN (last_insn), 0))) == REG)
 	  {

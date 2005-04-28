@@ -1244,15 +1244,14 @@ instantiate_virtual_regs (void)
   /* Scan through all the insns, instantiating every virtual register still
      present.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
-	|| GET_CODE (insn) == CALL_INSN)
+    if (INSN_P (insn))
       {
 	instantiate_virtual_regs_1 (&PATTERN (insn), insn, 1);
 	if (INSN_DELETED_P (insn))
 	  continue;
 	instantiate_virtual_regs_1 (&REG_NOTES (insn), NULL_RTX, 0);
 	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
-	if (GET_CODE (insn) == CALL_INSN)
+	if (CALL_P (insn))
 	  instantiate_virtual_regs_1 (&CALL_INSN_FUNCTION_USAGE (insn),
 				      NULL_RTX, 0);
 
