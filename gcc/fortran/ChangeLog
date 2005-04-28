@@ -1,3 +1,9 @@
+2005-04-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/20865
+	* resolve.c (resolve_actual_arglist): Issue an error if a statement
+	functions is used as actual argument.
+
 2005-04-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/21177
