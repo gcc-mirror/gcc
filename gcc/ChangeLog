@@ -1,3 +1,17 @@
+2005-04-27  James E. Wilson  <wilson@specifixinc.com>
+
+	* config/ia64/ia64.c (update_set_flags): Delete ppred and pcond
+	parameters.  Replace conditional move code with assert checking for
+	ar.lc.  Delete obsolete comments.
+	(set_src_needs_barrier): Delete cond parameter, and code using it.
+	(rtx_needs_barrier): Delete initialization of cond.  Fix typo in
+	assert checking for PR_REGS.  Fix calls to update_set_flags and
+	set_src_needs_barrier.
+	(group_barrier_needed): Renamed from group_barrier_needed_p.  Fix all
+	callers.  Rewrite explanatory comment before the function.
+	(safe_group_barrier_needed): Renamed from safe_group_barrier_needed_p.
+	Fix all callers.
+
 2005-04-27  Mike Stump  <mrs@apple.com>
 
 	* doc/cpp.texi: gcc now implements universal character names.
