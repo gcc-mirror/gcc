@@ -70,6 +70,8 @@ public class Timer
         {
           sleep(initialDelay);
 
+          queueEvent();
+
           while (running)
             {
               try
@@ -92,6 +94,8 @@ public class Timer
         }
       catch (Exception e)
         {
+          // The timer is no longer running.
+          running = false;
         }
     }
   }
@@ -189,6 +193,7 @@ public class Timer
   public Timer(int d, ActionListener listener)
   {
     delay = d;
+    initialDelay = d;
 
     if (listener != null)
       addActionListener(listener);
@@ -468,7 +473,7 @@ public class Timer
   * Post a scheduled event to the event queue.
   * Package-private to avoid an accessor method.
   */
-  private void queueEvent()
+  void queueEvent()
   {
     synchronized (queueLock)
       {
