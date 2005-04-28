@@ -2389,7 +2389,7 @@ decompose (rtx x)
     case REG:
       val.reg_flag = 1;
       val.start = true_regnum (x);
-      if (val.start < 0)
+      if (val.start < 0 || val.start >= FIRST_PSEUDO_REGISTER)
 	{
 	  /* A pseudo with no hard reg.  */
 	  val.start = REGNO (x);
@@ -2406,7 +2406,7 @@ decompose (rtx x)
 	return decompose (SUBREG_REG (x));
       val.reg_flag = 1;
       val.start = true_regnum (x);
-      if (val.start < 0)
+      if (val.start < 0 || val.start >= FIRST_PSEUDO_REGISTER)
 	return decompose (SUBREG_REG (x));
       else
 	/* A hard reg.  */

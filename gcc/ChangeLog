@@ -1,3 +1,9 @@
+2005-04-28  Martin Koegler <mkoegler@auto.tuwien.ac.at>
+
+	PR rtl-optimization/18877
+	* reload.c (decompose) <case REG, case SUBREG>: Handle pseudo reg
+	number in val.start.
+
 2005-04-28  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/20813
