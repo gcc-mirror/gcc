@@ -1,3 +1,22 @@
+2005-04-28  Paolo Carlini  <pcarlini@suse.de>
+	    Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR libstdc++/21244 (cont)
+	* include/bits/cpp_type_traits.h (struct __traitor): Convert
+	to bool the values.
+	* include/bits/stl_algo.h: Convert _S_threshold to int.
+	* include/bits/stl_bvector.h: Revert previous change, convert
+	_S_word_bit to int.
+	* include/debug/formatter.h: Convert __max_parameters to
+	size_t.
+	* include/ext/mt_allocator.h: Likewise for _S_chunk_size.
+	* include/ext/pool_allocator.h: Likewise for _S_max_bytes and
+	_S_align.
+	* include/ext/rope: Likewise for _S_alloc_granularity; convert
+	_S_max_rope_depth to int.
+	* include/ext/ropeimpl.h: Convert _S_path_cache_len to int;
+	_S_max_rope_depth to int; _S_copy_max to size_t.
+
 2005-04-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/doxygen/user.cfg.in: Update to doxygen-1.4.2.
