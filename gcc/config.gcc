@@ -189,6 +189,8 @@ case ${target} in
  | ip2k-*-elf		\
  | ns32k-*-netbsdelf*	\
  | ns32k-*-netbsd*	\
+ | c4x-*		\
+ | tic4x-*		\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
