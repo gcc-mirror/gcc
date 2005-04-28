@@ -1,3 +1,7 @@
+2005-04-28  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-typeck.c (build_compound_expr): Correct logic in last change.
+
 2005-04-27  James E. Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/ia64.c (update_set_flags): Delete ppred and pcond

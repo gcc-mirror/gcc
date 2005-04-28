@@ -3108,12 +3108,13 @@ build_compound_expr (tree expr1, tree expr2)
       /* The left-hand operand of a comma expression is like an expression
          statement: with -Wextra or -Wunused, we should warn if it doesn't have
 	 any side-effects, unless it was explicitly cast to (void).  */
-      if (warn_unused_value
-	  && !VOID_TYPE_P (TREE_TYPE (expr1)))
+      if (warn_unused_value)
 	{
-	  if (TREE_CODE (expr1) == CONVERT_EXPR)
+	  if (VOID_TYPE_P (TREE_TYPE (expr1))
+	      && TREE_CODE (expr1) == CONVERT_EXPR)
 	    ; /* (void) a, b */
-	  else if (TREE_CODE (expr1) == COMPOUND_EXPR
+	  else if (VOID_TYPE_P (TREE_TYPE (expr1))
+		   && TREE_CODE (expr1) == COMPOUND_EXPR
 		   && TREE_CODE (TREE_OPERAND (expr1, 1)) == CONVERT_EXPR)
 	    ; /* (void) a, (void) b, c */
 	  else
