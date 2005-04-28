@@ -1,3 +1,9 @@
+2005-04-19  Andrew Haley  <aph@redhat.com>
+	
+	PR java/21022
+	* dbxout.c (dbxout_type_fields): Check DECL_IGNORED_P before
+	looking at a field's bitpos.
+
 2005-04-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config.gcc: Obsolete c4x-* and tic4x-*.

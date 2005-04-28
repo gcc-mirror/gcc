@@ -1390,14 +1390,14 @@ dbxout_type_fields (tree type)
 
       /* Omit here local type decls until we know how to support them.  */
       if (TREE_CODE (tem) == TYPE_DECL
+	  /* Omit here the nameless fields that are used to skip bits.  */
+	  || DECL_IGNORED_P (tem)
 	  /* Omit fields whose position or size are variable or too large to
 	     represent.  */
 	  || (TREE_CODE (tem) == FIELD_DECL
 	      && (! host_integerp (bit_position (tem), 0)
 		  || ! DECL_SIZE (tem)
-		  || ! host_integerp (DECL_SIZE (tem), 1)))
-	  /* Omit here the nameless fields that are used to skip bits.  */
-	   || DECL_IGNORED_P (tem))
+		  || ! host_integerp (DECL_SIZE (tem), 1))))
 	continue;
 
       else if (TREE_CODE (tem) != CONST_DECL)
