@@ -604,6 +604,12 @@ resolve_actual_arglist (gfc_actual_arglist * arg)
 	  || sym->attr.external)
 	{
 
+          if (sym->attr.proc == PROC_ST_FUNCTION)
+            {
+              gfc_error ("Statement function '%s' at %L is not allowed as an "
+                         "actual argument", sym->name, &e->where);
+            }
+
 	  /* If the symbol is the function that names the current (or
 	     parent) scope, then we really have a variable reference.  */
 
