@@ -542,7 +542,7 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * If hostname  is a valid numeric IP address, return the numeric address.
+   * If hostname is a valid numeric IP address, return the numeric address.
    * Otherwise, return null.
    *
    * @param hostname the name of the host
@@ -553,8 +553,8 @@ public class InetAddress implements Serializable
    * Looks up all addresses of a given host.
    *
    * @param hostname the host to lookup
-   * @param ipaddr FIXME
-   * @param all FIXME
+   * @param ipaddr the IP address to lookup
+   * @param all return all known addresses for one host
    *
    * @return an array with all found addresses
    */

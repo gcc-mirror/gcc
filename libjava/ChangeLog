@@ -1,3 +1,9 @@
+2005-04-28  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java
+	(aton): Fixed javadoc.
+	(lookup): Likewise.
+
 2005-04-28  Tom Tromey  <tromey@redhat.com>
 
 	* javax/swing/Timer.java
