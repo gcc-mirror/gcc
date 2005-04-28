@@ -1,3 +1,8 @@
+2005-04-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree-ssa-alias.c (push_fields_onto_fieldstack): Remove bogus
+	assert.
+
 2005-04-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* modulo-sched.c, tree-stdarg.c: Use targetm.foo instead of
