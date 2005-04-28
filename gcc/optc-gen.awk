@@ -72,9 +72,13 @@ for (i = 0; i < n_opts; i++) {
 	init = opt_args("Init", flags[i])
 	if (init != "")
 		init = " = " init;
+	else if (name in var_seen)
+		continue;
 
 	printf ("/* Set by -%s.\n   %s  */\nint %s%s;\n\n",
 	    opts[i], help[i], name,init)
+
+	var_seen[name] = 1;
 }
 
 

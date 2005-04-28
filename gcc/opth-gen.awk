@@ -75,24 +75,43 @@ for (i = 0; i < n_opts; i++) {
 
     }
 
-masknum = 0
 for (i = 0; i < n_opts; i++) {
 	name = opt_args("Mask", flags[i])
+	vname = var_name(flags[i])
+	mask = "MASK_"
+	if (vname != "") {
+		mask = "OPTION_MASK_"
+	}
 	if (name != "" && !flag_set_p("MaskExists", flags[i]))
-		print "#define MASK_" name " (1 << " masknum++ ")"
+		print "#define " mask name " (1 << " masknum[vname]++ ")"
 }
 for (i = 0; i < n_extra_masks; i++) {
-	print "#define MASK_" extra_masks[i] " (1 << " masknum++ ")"
+	print "#define MASK_" extra_masks[i] " (1 << " masknum[""]++ ")"
 }
-if (masknum > 31)
-	print "#error too many target masks"
+
+for (var in masknum) {
+	if (masknum[var] > 31) {
+		if (var == "")
+			print "#error too many target masks"
+		else
+			print "#error too many masks for " var
+	}
+}
 print ""
 
 for (i = 0; i < n_opts; i++) {
 	name = opt_args("Mask", flags[i])
+	vname = var_name(flags[i])
+	macro = "OPTION_"
+	mask = "OPTION_MASK_"
+	if (vname == "") {
+		vname = "target_flags"
+		macro = "TARGET_"
+		mask = "MASK_"
+	}
 	if (name != "" && !flag_set_p("MaskExists", flags[i]))
-		print "#define TARGET_" name \
-		      " ((target_flags & MASK_" name ") != 0)"
+		print "#define " macro name \
+		      " ((" vname " & " mask name ") != 0)"
 }
 for (i = 0; i < n_extra_masks; i++) {
 	print "#define TARGET_" extra_masks[i] \
