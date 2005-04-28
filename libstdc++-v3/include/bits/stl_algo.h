@@ -2212,10 +2212,10 @@ namespace std
     __final_insertion_sort(_RandomAccessIterator __first,
 			   _RandomAccessIterator __last)
     {
-      if (__last - __first > _S_threshold)
+      if (__last - __first > int(_S_threshold))
 	{
-	  std::__insertion_sort(__first, __first + _S_threshold);
-	  std::__unguarded_insertion_sort(__first + _S_threshold, __last);
+	  std::__insertion_sort(__first, __first + int(_S_threshold));
+	  std::__unguarded_insertion_sort(__first + int(_S_threshold), __last);
 	}
       else
 	std::__insertion_sort(__first, __last);
@@ -2231,10 +2231,10 @@ namespace std
     __final_insertion_sort(_RandomAccessIterator __first,
 			   _RandomAccessIterator __last, _Compare __comp)
     {
-      if (__last - __first > _S_threshold)
+      if (__last - __first > int(_S_threshold))
 	{
-	  std::__insertion_sort(__first, __first + _S_threshold, __comp);
-	  std::__unguarded_insertion_sort(__first + _S_threshold, __last,
+	  std::__insertion_sort(__first, __first + int(_S_threshold), __comp);
+	  std::__unguarded_insertion_sort(__first + int(_S_threshold), __last,
 					  __comp);
 	}
       else
@@ -2481,7 +2481,7 @@ namespace std
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
 	_ValueType;
 
-      while (__last - __first > _S_threshold)
+      while (__last - __first > int(_S_threshold))
 	{
 	  if (__depth_limit == 0)
 	    {
@@ -2517,7 +2517,7 @@ namespace std
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
 	_ValueType;
 
-      while (__last - __first > _S_threshold)
+      while (__last - __first > int(_S_threshold))
 	{
 	  if (__depth_limit == 0)
 	    {

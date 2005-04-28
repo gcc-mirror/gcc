@@ -116,7 +116,7 @@ namespace __gnu_cxx
     _Rope_iterator_base<_CharT, _Alloc>::
     _S_setcache(_Rope_iterator_base<_CharT, _Alloc>& __x)
     {
-      const _RopeRep* __path[_Rope_constants::_S_max_rope_depth + 1];
+      const _RopeRep* __path[int(_Rope_constants::_S_max_rope_depth) + 1];
       const _RopeRep* __curr_rope;
       int __curr_depth = -1;  /* index into path    */
       size_t __curr_start_pos = 0;
@@ -175,7 +175,7 @@ namespace __gnu_cxx
       // Copy last section of path into _M_path_end.
       {
 	int __i = -1;
-	int __j = __curr_depth + 1 - _S_path_cache_len;
+	int __j = __curr_depth + 1 - int(_S_path_cache_len);
 
 	if (__j < 0) __j = 0;
 	while (__j <= __curr_depth)
@@ -236,10 +236,10 @@ namespace __gnu_cxx
       while (_Rope_constants::_S_concat == __current_node->_M_tag)
 	{
 	  ++__current_index;
-	  if (_S_path_cache_len == __current_index)
+	  if (int(_S_path_cache_len) == __current_index)
 	    {
 	      int __i;
-	      for (__i = 0; __i < _S_path_cache_len-1; __i++)
+	      for (__i = 0; __i < int(_S_path_cache_len) - 1; __i++)
 		__x._M_path_end[__i] = __x._M_path_end[__i+1];
 	      --__current_index;
 	    }
@@ -500,8 +500,9 @@ namespace __gnu_cxx
 							      get_allocator());
       size_t __depth = __result->_M_depth;
       
-      if (__depth > 20 && (__result->_M_size < 1000
-			   || __depth > _Rope_constants::_S_max_rope_depth))
+      if (__depth > 20
+	  && (__result->_M_size < 1000
+	      || __depth > size_t(_Rope_constants::_S_max_rope_depth)))
 	{
 	  _RopeRep* __balanced;
 
@@ -540,7 +541,7 @@ namespace __gnu_cxx
 	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen,
 						__r->get_allocator());
       if (_Rope_constants::_S_leaf == __r->_M_tag
-	  && __r->_M_size + __slen <= _S_copy_max)
+	  && __r->_M_size + __slen <= size_t(_S_copy_max))
 	{
 	  __result = _S_leaf_concat_char_iter((_RopeLeaf*)__r, __s, __slen);
 	  return __result;
@@ -551,7 +552,7 @@ namespace __gnu_cxx
 	{
 	  _RopeLeaf* __right =
 	    (_RopeLeaf* )(((_RopeConcatenation* )__r)->_M_right);
-	  if (__right->_M_size + __slen <= _S_copy_max)
+	  if (__right->_M_size + __slen <= size_t(_S_copy_max))
 	    {
 	      _RopeRep* __left = ((_RopeConcatenation*)__r)->_M_left;
 	      _RopeRep* __nright =
@@ -603,7 +604,7 @@ namespace __gnu_cxx
 	  __r->_M_ref_count = 2;      // One more than before
 	  return __r;
 	}
-      if (__orig_size + __slen <= _S_copy_max
+      if (__orig_size + __slen <= size_t(_S_copy_max)
 	  && _Rope_constants::_S_leaf == __r->_M_tag)
 	{
 	  __result = _S_destr_leaf_concat_char_iter((_RopeLeaf*)__r, __s, 
@@ -615,7 +616,7 @@ namespace __gnu_cxx
 	  _RopeLeaf* __right = (_RopeLeaf*)(((_RopeConcatenation*)
 					     __r)->_M_right);
 	  if (_Rope_constants::_S_leaf == __right->_M_tag
-	      && __right->_M_size + __slen <= _S_copy_max)
+	      && __right->_M_size + __slen <= size_t(_S_copy_max))
 	    {
 	      _RopeRep* __new_right =
 		_S_destr_leaf_concat_char_iter(__right, __s, __slen);
@@ -668,7 +669,7 @@ namespace __gnu_cxx
 	{
 	  if (_Rope_constants::_S_leaf == __left->_M_tag)
 	    {
-	      if (__right->_M_size + __left->_M_size <= _S_copy_max)
+	      if (__right->_M_size + __left->_M_size <= size_t(_S_copy_max))
 		return _S_leaf_concat_char_iter((_RopeLeaf*)__left,
 						((_RopeLeaf*)__right)->_M_data,
 						__right->_M_size);
@@ -679,7 +680,8 @@ namespace __gnu_cxx
 	    {
 	      _RopeLeaf* __leftright =
 		(_RopeLeaf*)(((_RopeConcatenation*)__left)->_M_right);
-	      if (__leftright->_M_size + __right->_M_size <= _S_copy_max)
+	      if (__leftright->_M_size
+		  + __right->_M_size <= size_t(_S_copy_max))
 		{
 		  _RopeRep* __leftleft = ((_RopeConcatenation*)__left)->_M_left;
 		  _RopeRep* __rest = _S_leaf_concat_char_iter(__leftright,
@@ -1184,7 +1186,7 @@ namespace __gnu_cxx
   template <class _CharT, class _Alloc>
     const unsigned long
     rope<_CharT, _Alloc>::
-    _S_min_len[_Rope_constants::_S_max_rope_depth + 1] = {
+    _S_min_len[int(_Rope_constants::_S_max_rope_depth) + 1] = {
       /* 0 */1, /* 1 */2, /* 2 */3, /* 3 */5, /* 4 */8, /* 5 */13, /* 6 */21,
       /* 7 */34, /* 8 */55, /* 9 */89, /* 10 */144, /* 11 */233, /* 12 */377,
       /* 13 */610, /* 14 */987, /* 15 */1597, /* 16 */2584, /* 17 */4181,
@@ -1203,7 +1205,7 @@ namespace __gnu_cxx
     rope<_CharT, _Alloc>::
     _S_balance(_RopeRep* __r)
     {
-      _RopeRep* __forest[_Rope_constants::_S_max_rope_depth + 1];
+      _RopeRep* __forest[int(_Rope_constants::_S_max_rope_depth) + 1];
       _RopeRep* __result = 0;
       int __i;
       // Invariant:
@@ -1212,12 +1214,12 @@ namespace __gnu_cxx
       // __forest[__i]._M_depth = __i
       // References from forest are included in refcount.
       
-      for (__i = 0; __i <= _Rope_constants::_S_max_rope_depth; ++__i)
+      for (__i = 0; __i <= int(_Rope_constants::_S_max_rope_depth); ++__i)
 	__forest[__i] = 0;
       try
 	{
 	  _S_add_to_forest(__r, __forest);
-	  for (__i = 0; __i <= _Rope_constants::_S_max_rope_depth; ++__i)
+	  for (__i = 0; __i <= int(_Rope_constants::_S_max_rope_depth); ++__i)
 	    if (0 != __forest[__i])
 	      {
 #ifndef __GC
@@ -1232,12 +1234,12 @@ namespace __gnu_cxx
 	}
       catch(...)
 	{
-	  for(__i = 0; __i <= _Rope_constants::_S_max_rope_depth; __i++)
+	  for(__i = 0; __i <= int(_Rope_constants::_S_max_rope_depth); __i++)
 	    _S_unref(__forest[__i]);
 	  __throw_exception_again;
 	}
       
-      if (__result->_M_depth > _Rope_constants::_S_max_rope_depth)
+      if (__result->_M_depth > int(_Rope_constants::_S_max_rope_depth))
 	__throw_length_error(__N("rope::_S_balance"));
       return(__result);
     }
@@ -1305,7 +1307,7 @@ namespace __gnu_cxx
 	      __forest[__i]->_M_unref_nonnil();
 	      __forest[__i] = 0;
 	    }
-	  if (__i == _Rope_constants::_S_max_rope_depth
+	  if (__i == int(_Rope_constants::_S_max_rope_depth)
 	      || __insertee->_M_size < _S_min_len[__i+1])
 	    {
 	      __forest[__i] = __insertee;

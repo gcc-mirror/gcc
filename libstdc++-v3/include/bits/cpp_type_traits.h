@@ -103,10 +103,12 @@ namespace std
     struct __truth_type<true>
     { typedef __true_type __type; };
 
+  // N.B. The conversions to bool are needed due to the issue
+  // explained in c++/19404.
   template<class _Sp, class _Tp>
     struct __traitor
     {
-      enum { __value = _Sp::__value || _Tp::__value };
+      enum { __value = bool(_Sp::__value) || bool(_Tp::__value) };
       typedef typename __truth_type<__value>::__type __type;
     };
 
