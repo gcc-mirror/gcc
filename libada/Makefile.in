@@ -115,6 +115,9 @@ info:
 # Build DVI (none here).
 dvi:
 
+# Build html (none here).
+html:
+
 # Build TAGS (none here).
 TAGS:
 
