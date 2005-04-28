@@ -132,7 +132,7 @@ extern const char *rs6000_tls_size_string; /* For -mtls-size= */
   { "bit-word",		-MASK_NO_BITFIELD_WORD, "" },			\
   { "no-bit-word",	 MASK_NO_BITFIELD_WORD,				\
     N_("Do not allow bit-fields to cross word boundaries") },		\
-  { "regnames",		  MASK_REGNAMES,				\
+  { "regnames",		 MASK_REGNAMES,					\
     N_("Use alternate register names") },				\
   { "no-regnames",	 -MASK_REGNAMES,				\
     N_("Don't use alternate register names") },				\
@@ -150,7 +150,8 @@ extern const char *rs6000_tls_size_string; /* For -mtls-size= */
     N_("Set the PPC_EMB bit in the ELF flags header") },		\
   { "windiss",		 0, N_("Use the WindISS simulator") },		\
   { "shlib",		 0, N_("no description yet") },			\
-  { "64",		 MASK_64BIT | MASK_POWERPC64 | MASK_POWERPC,	\
+  { "64",		 MASK_64BIT | MASK_POWERPC64			\
+			   | MASK_POWERPC | MASK_PPC_GFXOPT,		\
 			 N_("Generate 64-bit code") },			\
   { "32",		 - (MASK_64BIT | MASK_POWERPC64),		\
 			 N_("Generate 32-bit code") },			\
