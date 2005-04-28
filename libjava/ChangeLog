@@ -1,3 +1,18 @@
+2005-04-28  Tom Tromey  <tromey@redhat.com>
+
+	* javax/swing/Timer.java
+	(drainEvents, queueEvent): Now package-private.
+
+2005-04-28  Audrius Meskauskas  <audriusa@bluewin.ch>
+
+	* javax/swing/Timer.java
+	(constructor): Assigning initialDelay.
+
+2005-04-28  Audrius Meskauskas  <audriusa@bluewin.ch>
+
+	* javax/swing/Timer.java
+	(Waker.run): firing the first action event.
+
 2005-04-28  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/Timer.java: Reordered all fields and methods,
