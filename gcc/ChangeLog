@@ -1,3 +1,8 @@
+2005-04-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* modulo-sched.c, tree-stdarg.c: Use targetm.foo instead of
+	(*targetm.foo).
+
 2005-04-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-typeck.c (build_compound_expr): Correct logic in last change.
