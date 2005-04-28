@@ -1,5 +1,5 @@
 /* Definitions for Renesas little endian M32R cpu.
-   Copyright (C) 2003, 2004
+   Copyright (C) 2003, 2004, 2005
    Free Software Foundation, Inc.
 
    This file is part of GCC.
