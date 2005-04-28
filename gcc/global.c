@@ -2098,7 +2098,10 @@ mark_reg_change (rtx reg, rtx setter, void *data)
 /* Classes of registers which could be early clobbered in the current
    insn.  */
 
-static varray_type earlyclobber_regclass;
+DEF_VEC_P(int);
+DEF_VEC_ALLOC_P(int,heap);
+
+static VEC(int,heap) *earlyclobber_regclass;
 
 /* This function finds and stores register classes that could be early
    clobbered in INSN.  If any earlyclobber classes are found, the function
@@ -2112,7 +2115,7 @@ check_earlyclobber (rtx insn)
 
   extract_insn (insn);
 
-  VARRAY_POP_ALL (earlyclobber_regclass);
+  VEC_truncate (int, earlyclobber_regclass, 0);
   for (opno = 0; opno < recog_data.n_operands; opno++)
     {
       char c;
@@ -2149,13 +2152,23 @@ check_earlyclobber (rtx insn)
 	    case ',':
 	      if (amp_p && class != NO_REGS)
 		{
+		  int rc;
+
 		  found = true;
-		  for (i = VARRAY_ACTIVE_SIZE (earlyclobber_regclass) - 1;
-		       i >= 0; i--)
-		    if (VARRAY_INT (earlyclobber_regclass, i) == (int) class)
-		      break;
-		  if (i < 0)
-		    VARRAY_PUSH_INT (earlyclobber_regclass, (int) class);
+		  for (i = 0;
+		       VEC_iterate (int, earlyclobber_regclass, i, rc);
+		       i++)
+		    {
+		      if (rc == (int) class)
+			goto found_rc;
+		    }
+
+		  /* We use VEC_quick_push here because
+		     earlyclobber_regclass holds no more than
+		     N_REG_CLASSES elements. */
+		  VEC_quick_push (int, earlyclobber_regclass, (int) class);
+		found_rc:
+		  ;
 		}
 	      
 	      amp_p = false;
@@ -2194,23 +2207,24 @@ mark_reg_use_for_earlyclobber (rtx *x, void *data ATTRIBUTE_UNUSED)
 
   if (REG_P (*x) && REGNO (*x) >= FIRST_PSEUDO_REGISTER)
     {
+      int rc;
+
       regno = REGNO (*x);
       if (bitmap_bit_p (bb_info->killed, regno)
 	  || bitmap_bit_p (bb_info->avloc, regno))
 	return 0;
       pref_class = reg_preferred_class (regno);
       alt_class = reg_alternate_class (regno);
-      for (i = VARRAY_ACTIVE_SIZE (earlyclobber_regclass) - 1; i >= 0; i--)
-	if (reg_classes_intersect_p (VARRAY_INT (earlyclobber_regclass, i),
-				     pref_class)
-	    || (VARRAY_INT (earlyclobber_regclass, i) != NO_REGS
-		&& reg_classes_intersect_p (VARRAY_INT (earlyclobber_regclass,
-							i),
-					    alt_class)))
-	  {
-	    bitmap_set_bit (bb_info->earlyclobber, regno);
-	    break;
-	  }
+      for (i = 0; VEC_iterate (int, earlyclobber_regclass, i, rc); i++)
+	{
+	  if (reg_classes_intersect_p (rc, pref_class)
+	      || (rc != NO_REGS
+		  && reg_classes_intersect_p (rc, alt_class)))
+	    {
+	      bitmap_set_bit (bb_info->earlyclobber, regno);
+	      break;
+	    }
+	}
     }
   return 0;
 }
@@ -2232,8 +2246,9 @@ calculate_local_reg_bb_info (void)
   basic_block bb;
   rtx insn, bound;
 
-  VARRAY_INT_INIT (earlyclobber_regclass, 20,
-		   "classes of registers early clobbered in an insn");
+  /* We know that earlyclobber_regclass holds no more than
+    N_REG_CLASSES elements.  See check_earlyclobber.  */
+  earlyclobber_regclass = VEC_alloc (int, heap, N_REG_CLASSES);
   FOR_EACH_BB (bb)
     {
       bound = NEXT_INSN (BB_END (bb));
@@ -2245,6 +2260,7 @@ calculate_local_reg_bb_info (void)
 	      note_uses (&PATTERN (insn), mark_reg_use_for_earlyclobber_1, bb);
 	  }
     }
+  VEC_free (int, heap, earlyclobber_regclass);
 }
 
 /* The function sets up reverse post-order number of each basic

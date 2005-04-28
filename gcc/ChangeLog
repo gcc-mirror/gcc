@@ -1,3 +1,12 @@
+2005-04-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* global.c (earlyclobber_regclass): Change the type to
+	VEC(int,heap).
+	(check_earlyclobber): Update uses of earlyclobber_regclass.
+	(mark_reg_use_for_earlyclobber): Likewise.
+	(calculate_local_reg_bb_info): Allocate and free
+	earlyclobber_regclass using the VEC API.
+
 2005-04-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree-ssa-alias.c (push_fields_onto_fieldstack): Remove bogus
