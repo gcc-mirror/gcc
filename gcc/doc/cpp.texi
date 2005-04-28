@@ -3764,8 +3764,8 @@ character set may be controlled by the user, with the
 
 The C and C++ standards allow identifiers to be composed of @samp{_}
 and the alphanumeric characters.  C++ and C99 also allow universal
-character names (not implemented in GCC), and C99 further permits
-implementation-defined characters.
+character names, and C99 further permits implementation-defined
+characters.
 
 GCC allows the @samp{$} character in identifiers as an extension for
 most targets.  This is true regardless of the @option{std=} switch,
