@@ -1,3 +1,7 @@
+2004-04-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* AUTHORS, COPYING, INSTALL, NEWS, README: Remove.
+
 2005-04-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20950
