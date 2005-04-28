@@ -1,3 +1,7 @@
+2005-04-28  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/void-cast-2.c: New test.
+
 2005-04-27  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21159
