@@ -1,5 +1,10 @@
 2005-04-28  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/Timer.java: Reordered all fields and methods,
+	Added more javadocs.
+
+2005-04-28  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/Timer.java: Javadocs merged
 	from GNU classpath.
 

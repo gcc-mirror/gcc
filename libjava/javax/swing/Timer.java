@@ -54,29 +54,58 @@ import javax.swing.event.EventListenerList;
 public class Timer
   implements Serializable
 {
-  /** DOCUMENT ME! */
+  /**
+   * The timer thread
+   */
+  private class Waker
+    extends Thread
+  {
+    /**
+     * Fires events, pausing for required intervals.
+     */
+    public void run()
+    {
+      running = true;
+      try
+        {
+          sleep(initialDelay);
+
+          while (running)
+            {
+              try
+                {
+                  sleep(delay);
+                }
+              catch (InterruptedException e)
+                {
+                  return;
+                }
+              queueEvent();
+
+              if (logTimers)
+                System.out.println("javax.swing.Timer -> clocktick");
+
+              if ( ! repeats)
+                break;
+            }
+          running = false;
+        }
+      catch (Exception e)
+        {
+        }
+    }
+  }
+
+  /**
+   * Use serialVersionUID for interoperability.
+   */
   private static final long serialVersionUID = -1116180831621385484L;
 
-  /** DOCUMENT ME! */
-  protected EventListenerList listenerList = new EventListenerList();
-
-  // This object manages a "queue" of virtual actionEvents, maintained as a
-  // simple long counter. When the timer expires, a new event is queued,
-  // and a dispatcher object is pushed into the system event queue. When
-  // the system thread runs the dispatcher, it will fire as many
-  // ActionEvents as have been queued, unless the timer is set to
-  // coalescing mode, in which case it will fire only one ActionEvent.
-
-  /** DOCUMENT ME! */
-  private long queue;
-
-  /** DOCUMENT ME! */
-  private Object queueLock = new Object();
-
-  /** DOCUMENT ME! */
-  private Waker waker;
-
-  private Runnable drainer = new Runnable() 
+  /**
+   * The encloding class, used with {@link SwingUtilities#invokeLater}
+   * to invoke the {@link #drainEvents()}.
+   */
+  private Runnable drainer = new Runnable()
     {
       public void run()
       {
@@ -85,45 +114,15 @@ public class Timer
     };
 
   /**
-   * DOCUMENT ME!
-   * Package-private to avoid an accessor method.
+   * If <code>true</code>, the timer prints a message to
+   * {@link System#out} when firing each event.
    */
-  private void queueEvent()
-  {
-    synchronized (queueLock)
-      {
-	queue++;
-	if (queue == 1)
-	  SwingUtilities.invokeLater(drainer);
-      }
-  }
+  static boolean logTimers;
 
   /**
-   * DOCUMENT ME!
-   * This is package-private to avoid an accessor method.
+   * A field to store all listeners who are listening to this timer.
    */
-  void drainEvents()
-  {
-    synchronized (queueLock)
-      {
-	if (isCoalesce())
-	  {
-	    if (queue > 0)
-	      fireActionPerformed();
-	  }
-	else
-	  {
-	    while (queue > 0)
-	      {
-		fireActionPerformed();
-		queue--;
-	      }
-	  }
-	queue = 0;
-      }
-  }
-
-  static boolean logTimers;
+  protected EventListenerList listenerList = new EventListenerList();
 
   /**
    * <code>true</code> if the timer coalesces events.
@@ -141,9 +140,6 @@ public class Timer
    */
   boolean running;
 
-  /** DOCUMENT ME! */
-  int ticks;
-
   /**
    * The delay between subsequent repetetive events.
    */
@@ -155,46 +151,33 @@ public class Timer
   int initialDelay;
 
   /**
-   * DOCUMENT ME!
+   * The number of events that have been already fired by this timer.
+   * This is used as a numeric identifier for the next event that would
+   * be fired.
    */
-  private class Waker extends Thread
-  {
-    /**
-     * DOCUMENT ME!
-     */
-    public void run()
-    {
-      running = true;
-      try
-        {
-	  sleep(initialDelay);
+  int ticks;
 
-	  while (running)
-	    {
-	      try
-	        {
-		  sleep(delay);
-	        }
-	      catch (InterruptedException e)
-	        {
-		  return;
-	        }
-	      queueEvent();
+  /**
+   * Stores the thread that posts events to the queue at required time
+   * intervals.
+   */
+  private Waker waker;
 
-	      if (logTimers)
-		System.out.println("javax.swing.Timer -> clocktick");
+  /**
+   * This object manages a "queue" of virtual actionEvents, maintained as a
+   * simple long counter. When the timer expires, a new event is queued,
+   * and a dispatcher object is pushed into the system event queue. When
+   * the system thread runs the dispatcher, it will fire as many
+   * ActionEvents as have been queued, unless the timer is set to
+   * coalescing mode, in which case it will fire only one ActionEvent.
+   */
+  private long queue;
 
-	      if (! repeats)
-		break;
-	    }
-	  running = false;
-        }
-      catch (Exception e)
-        {
-//	  System.out.println("swing.Timer::" + e);
-        }
-    }
-  }
+  /**
+   * <code>synchronized(queueLock)</code> replaces
+   * <code>synchronized(queue)</code> that is not supported by this language.
+   */
+  private Object queueLock = new Object();
 
   /**
    * Creates a new Timer object.
@@ -212,9 +195,26 @@ public class Timer
   }
 
   /**
-   * DOCUMENT ME!
+   * Get the array of action listeners.
    *
-   * @param c DOCUMENT ME!
+   * @return the array of action listeners that are listening for the events,
+   * fired by this timer
+   *
+   * @since 1.4
+   */
+  public ActionListener[] getActionListeners()
+  {
+    return (ActionListener[]) listenerList.getListeners(ActionListener.class);
+  }
+
+  /**
+   * Sets whether the Timer coalesces multiple pending event firings.
+   * If the coalescing is enabled, the multiple events that have not been
+   * fired on time are replaced by the single event. The events may not
+   * be fired on time if the application is busy.
+   *
+   * @param c <code>true</code> (default) to enable the event coalescing,
+   * <code>false</code> otherwise
    */
   public void setCoalesce(boolean c)
   {
@@ -222,33 +222,17 @@ public class Timer
   }
 
   /**
-   * DOCUMENT ME!
+   * Checks if the Timer coalesces multiple pending event firings.
+   * If the coalescing is enabled, the multiple events that have not been
+   * fired on time are replaced by the single event. The events may not
+   * be fired on time if the application is busy.
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if the coalescing is enabled,
+   * <code>false</code> otherwise
    */
   public boolean isCoalesce()
   {
     return coalesce;
-  }
-
-  /**
-   * DOCUMENT ME!
-   *
-   * @param listener DOCUMENT ME!
-   */
-  public void addActionListener(ActionListener listener)
-  {
-    listenerList.add(ActionListener.class, listener);
-  }
-
-  /**
-   * DOCUMENT ME!
-   *
-   * @param listener DOCUMENT ME!
-   */
-  public void removeActionListener(ActionListener listener)
-  {
-    listenerList.remove(ActionListener.class, listener);
   }
 
   /**
@@ -264,39 +248,6 @@ public class Timer
   public EventListener[] getListeners(Class listenerType)
   {
     return listenerList.getListeners(listenerType);
-  }
-
-  /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
-   *
-   * @since 1.4
-   */
-  public ActionListener[] getActionListeners()
-  {
-    return (ActionListener[]) listenerList.getListeners(ActionListener.class);
-  }
-
-  /**
-   * DOCUMENT ME!
-   *
-   * @param event DOCUMENT ME!
-   */
-  protected void fireActionPerformed(ActionEvent event)
-  {
-    ActionListener[] listeners = getActionListeners();
-
-    for (int i = 0; i < listeners.length; i++)
-      listeners[i].actionPerformed(event);
-  }
-
-  /**
-   * DOCUMENT ME!
-   */
-  void fireActionPerformed()
-  {
-    fireActionPerformed(new ActionEvent(this, ticks++, "Timer"));
   }
 
   /**
@@ -408,7 +359,37 @@ public class Timer
   }
 
   /**
-   * DOCUMENT ME!
+   * Add the action listener
+   *
+   * @param listener the action listener to add
+   */
+  public void addActionListener(ActionListener listener)
+  {
+    listenerList.add(ActionListener.class, listener);
+  }
+
+  /**
+   * Remove the action listener.
+   *
+   * @param listener the action listener to remove
+   */
+  public void removeActionListener(ActionListener listener)
+  {
+    listenerList.remove(ActionListener.class, listener);
+  }
+
+  /**
+   * Cancel all pending tasks and fire the first event after the initial
+   * delay.
+   */
+  public void restart()
+  {
+    stop();
+    start();
+  }
+
+  /**
+   * Start firing the action events.
    */
   public void start()
   {
@@ -419,16 +400,7 @@ public class Timer
   }
 
   /**
-   * DOCUMENT ME!
-   */
-  public void restart()
-  {
-    stop();
-    start();
-  }
-
-  /**
-   * DOCUMENT ME!
+   * Stop firing the action events.
    */
   public void stop()
   {
@@ -438,6 +410,71 @@ public class Timer
     synchronized (queueLock)
       {
         queue = 0;
+      }
+  }
+
+  /**
+   * Fire the given action event to the action listeners.
+   *
+   * @param event the event to fire
+   */
+  protected void fireActionPerformed(ActionEvent event)
+  {
+    ActionListener[] listeners = getActionListeners();
+
+    for (int i = 0; i < listeners.length; i++)
+      listeners [ i ].actionPerformed(event);
+  }
+
+  /**
+   * Fire the action event, named "Timer" and having the numeric
+   * identifier, equal to the numer of events that have been
+   * already fired before.
+   */
+  void fireActionPerformed()
+  {
+    fireActionPerformed(new ActionEvent(this, ticks++, "Timer"));
+  }
+
+  /**
+   * Fire the queued action events.
+   * In the coalescing mode, a single event is fired as a replacement
+   * for all queued events. In non coalescing mode, a series of
+   * all queued events is fired.
+   * This is package-private to avoid an accessor method.
+   */
+  void drainEvents()
+  {
+    synchronized (queueLock)
+      {
+        if (isCoalesce())
+          {
+            if (queue > 0)
+              fireActionPerformed();
+          }
+        else
+          {
+            while (queue > 0)
+              {
+                fireActionPerformed();
+                queue--;
+              }
+          }
+        queue = 0;
+      }
+  }
+
+  /**
+  * Post a scheduled event to the event queue.
+  * Package-private to avoid an accessor method.
+  */
+  private void queueEvent()
+  {
+    synchronized (queueLock)
+      {
+        queue++;
+        if (queue == 1)
+          SwingUtilities.invokeLater(drainer);
       }
   }
 }
