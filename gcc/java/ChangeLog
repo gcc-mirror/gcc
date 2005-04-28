@@ -1,3 +1,25 @@
+2005-04-28  Andrew Haley  <aph@redhat.com>
+
+	PR java/21115
+	* expr.c (force_evaluation_order): Convert outgoing args smaller
+	than integer.
+
+	PR java/20768
+        * java-except.h (struct eh_range.handler): Remove unused field.
+        (handle_nested_ranges): Remove function declaration.
+        (sanity_check_exception_range): Add function declaration.
+        * verify.c (verify_jvm_instructions): Remove call to
+        handle_nested_ranges.
+	(start_pc_cmp): Remove function.
+	(verify_jvm_instructions): Remove PC sorting of exception regions.
+        * verify-glue.c (verify_jvm_instructions_new): Call
+        sanity_check_exception_range.
+        * except.c (link_handler, eh_range_freelist, link_handler,
+        handle_nested_ranges): Remove.
+        (add_handler): Rewrite.
+        (sanity_check_exception_range): New function.
+        (print_ranges): New function.
+
 2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c, jcf-dump.c, jv-scan.c, jvgenmain.c: Replace calls

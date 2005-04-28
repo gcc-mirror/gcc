@@ -3484,7 +3484,8 @@ maybe_adjust_start_pc (struct JCF *jcf, int code_offset,
    For method invocation, we modify the arguments so that a
    left-to-right order evaluation is performed. Saved expressions
    will, in CALL_EXPR order, be reused when the call will be expanded.
-*/
+
+   We also promote outgoing args if needed.  */
 
 tree
 force_evaluation_order (tree node)
@@ -3518,7 +3519,18 @@ force_evaluation_order (tree node)
       /* This reverses the evaluation order. This is a desired effect. */
       for (cmp = NULL_TREE; arg; arg = TREE_CHAIN (arg))
 	{
-	  tree saved = save_expr (force_evaluation_order (TREE_VALUE (arg)));
+	  /* Promote types smaller than integer.  This is required by
+	     some ABIs.  */
+	  tree saved;
+	  tree type = TREE_TYPE (TREE_VALUE (arg));
+	  if (targetm.calls.promote_prototypes (type)
+	      && INTEGRAL_TYPE_P (type)
+	      && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),
+				      TYPE_SIZE (integer_type_node)))
+	    TREE_VALUE (arg) 
+	      = fold_convert (integer_type_node, TREE_VALUE (arg));
+
+	  saved = save_expr (force_evaluation_order (TREE_VALUE (arg)));
 	  cmp = (cmp == NULL_TREE ? saved :
 		 build2 (COMPOUND_EXPR, void_type_node, cmp, saved));
 	  TREE_VALUE (arg) = saved;

@@ -45,7 +45,6 @@ static void push_pending_label (tree);
 static tree merge_types (tree, tree);
 static const char *check_pending_block (tree);
 static void type_stack_dup (int, int);
-static int start_pc_cmp (const void *, const void *);
 static char *pop_argument_types (tree);
 
 extern int stack_pointer;
@@ -346,15 +345,6 @@ struct pc_index
   int index;
 };
 
-/* A helper that is used when sorting exception ranges.  */
-static int
-start_pc_cmp (const void *xp, const void *yp)
-{
-  const struct pc_index *x = (const struct pc_index *) xp;
-  const struct pc_index *y = (const struct pc_index *) yp;
-  return x->start_pc - y->start_pc;
-}
-
 /* This causes the next iteration to ignore the next instruction
    and look for some other unhandled instruction. */
 #define INVALIDATE_PC (prevpc = -1, oldpc = PC, PC = INVALID_PC)
@@ -448,15 +438,12 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
   JCF_SEEK (jcf, DECL_CODE_OFFSET (current_function_decl) + length);
   eh_count = JCF_readu2 (jcf);
 
-  /* We read the exception handlers in order of increasing start PC.
-     To do this we first read and sort the start PCs.  */
   starts = xmalloc (eh_count * sizeof (struct pc_index));
   for (i = 0; i < eh_count; ++i)
     {
       starts[i].start_pc = GET_u2 (jcf->read_ptr + 8 * i);
       starts[i].index = i;
     }
-  qsort (starts, eh_count, sizeof (struct pc_index), start_pc_cmp);
 
   for (i = 0; i < eh_count; ++i)
     {
@@ -491,7 +478,6 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
     }
 
   free (starts);
-  handle_nested_ranges ();
 
   for (PC = 0;;)
     {

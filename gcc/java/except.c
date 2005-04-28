@@ -1,5 +1,5 @@
 /* Handle exceptions for GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2002, 2003, 2004
+   Copyright (C) 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -42,15 +42,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 static void expand_start_java_handler (struct eh_range *);
 static struct eh_range *find_handler_in_range (int, struct eh_range *,
 					       struct eh_range *);
-static void link_handler (struct eh_range *, struct eh_range *);
 static void check_start_handlers (struct eh_range *, int);
 static void free_eh_ranges (struct eh_range *range);
 
 struct eh_range *current_method_handlers;
 
 struct eh_range *current_try_block = NULL;
-
-struct eh_range *eh_range_freelist = NULL;
 
 /* These variables are used to speed up find_handler. */
 
@@ -62,12 +59,61 @@ static struct eh_range *cache_next_child;
 
 struct eh_range whole_range;
 
+/* Check the invariants of the structure we're using to contain
+   exception regions.  Either returns true or fails an assertion
+   check.  */
+
+bool
+sanity_check_exception_range (struct eh_range *range)
+{
+  struct eh_range *ptr = range->first_child;
+  for (; ptr; ptr = ptr->next_sibling)
+    {
+      gcc_assert (ptr->outer == range
+		  && ptr->end_pc > ptr->start_pc);
+      if (ptr->next_sibling)
+	gcc_assert (ptr->next_sibling->start_pc >= ptr->end_pc);
+      gcc_assert (ptr->start_pc >= ptr->outer->start_pc
+		  && ptr->end_pc <=  ptr->outer->end_pc);
+      (void) sanity_check_exception_range (ptr);
+    }
+
+  return true;
+}
+
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
-extern int binding_depth;
 extern int is_class_level;
 extern int current_pc;
-extern void indent ();
+extern int binding_depth;
+extern void indent (void);
+static void
+print_ranges (struct eh_range *range)
+{
+  if (! range)
+    return;
 
+  struct eh_range *child = range->first_child;
+  
+  indent ();
+  fprintf (stderr, "handler pc %d --> %d ", range->start_pc, range->end_pc);
+  
+  tree handler = range->handlers;
+  for ( ; handler != NULL_TREE; handler = TREE_CHAIN (handler))
+    {
+      tree type = TREE_PURPOSE (handler);
+      if (type == NULL)
+	type = throwable_type_node;
+      fprintf (stderr, " type=%s ", IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+    }
+  fprintf (stderr, "\n");
+
+  int saved = binding_depth;
+  binding_depth++;
+  print_ranges (child);
+  binding_depth = saved;
+
+  print_ranges (range->next_sibling);
+}
 #endif
 
 /* Search for the most specific eh_range containing PC.
@@ -117,114 +163,6 @@ find_handler (int pc)
   return find_handler_in_range (pc, h, cache_next_child);
 }
 
-/* Recursive helper routine for check_nested_ranges. */
-
-static void
-link_handler (struct eh_range *range, struct eh_range *outer)
-{
-  struct eh_range **ptr;
-
-  if (range->start_pc == outer->start_pc && range->end_pc == outer->end_pc)
-    {
-      outer->handlers = chainon (outer->handlers, range->handlers);
-      return;
-    }
-
-  /* If the new range completely encloses the `outer' range, then insert it
-     between the outer range and its parent.  */
-  if (range->start_pc <= outer->start_pc && range->end_pc >= outer->end_pc)
-    {
-      range->outer = outer->outer;
-      range->next_sibling = NULL;
-      range->first_child = outer;
-      {
-	struct eh_range *p = outer;
-	struct eh_range **pr = &(outer->outer->first_child);
-	while (*pr != outer)
-	  pr = &(*pr)->next_sibling;
-	*pr = range;
-
-	while (p)
-	  {
-	    p->outer = range;
-	    p = p->next_sibling;
-	  }
-      }
-      return;
-    }
-
-  /* Handle overlapping ranges by splitting the new range.  */
-  if (range->start_pc < outer->start_pc || range->end_pc > outer->end_pc)
-    {
-      struct eh_range *h = xmalloc (sizeof (struct eh_range));
-      if (range->start_pc < outer->start_pc)
-	{
-	  h->start_pc = range->start_pc;
-	  h->end_pc = outer->start_pc;
-	  range->start_pc = outer->start_pc;
-	}
-      else
-	{
-	  h->start_pc = outer->end_pc;
-	  h->end_pc = range->end_pc;
-	  range->end_pc = outer->end_pc;
-	}
-      h->first_child = NULL;
-      h->outer = NULL;
-      h->handlers = build_tree_list (TREE_PURPOSE (range->handlers),
-				     TREE_VALUE (range->handlers));
-      h->next_sibling = NULL;
-      h->expanded = 0;
-      h->stmt = NULL;
-      /* Restart both from the top to avoid having to make this
-	 function smart about reentrancy.  */
-      link_handler (h, &whole_range);
-      link_handler (range, &whole_range);
-      return;
-    }
-
-  ptr = &outer->first_child;
-  for (;; ptr = &(*ptr)->next_sibling)
-    {
-      if (*ptr == NULL || range->end_pc <= (*ptr)->start_pc)
-	{
-	  range->next_sibling = *ptr;
-	  range->first_child = NULL;
-	  range->outer = outer;
-	  *ptr = range;
-	  return;
-	}
-      else if (range->start_pc < (*ptr)->end_pc)
-	{
-	  link_handler (range, *ptr);
-	  return;
-	}
-      /* end_pc > (*ptr)->start_pc && start_pc >= (*ptr)->end_pc. */
-    }
-}
-
-/* The first pass of exception range processing (calling add_handler)
-   constructs a linked list of exception ranges.  We turn this into
-   the data structure expected by the rest of the code, and also
-   ensure that exception ranges are properly nested.  */
-
-void
-handle_nested_ranges (void)
-{
-  struct eh_range *ptr, *next;
-
-  ptr = whole_range.first_child;
-  whole_range.first_child = NULL;
-  for (; ptr; ptr = next)
-    {
-      next = ptr->next_sibling;
-      ptr->next_sibling = NULL;
-      link_handler (ptr, &whole_range);
-    }
-}
-
-/* Free RANGE as well as its children and siblings.  */
-
 static void
 free_eh_ranges (struct eh_range *range)
 {
@@ -252,55 +190,166 @@ method_init_exceptions (void)
   cache_range_start = 0xFFFFFF;
 }
 
-/* Add an exception range.  If we already have an exception range
-   which has the same handler and label, and the new range overlaps
-   that one, then we simply extend the existing range.  Some bytecode
-   obfuscators generate seemingly nonoverlapping exception ranges
-   which, when coalesced, do in fact nest correctly.
-   
-   This constructs an ordinary linked list which check_nested_ranges()
-   later turns into the data structure we actually want.
-   
-   We expect the input to come in order of increasing START_PC.  This
-   function doesn't attempt to detect the case where two previously
-   added disjoint ranges could be coalesced by a new range; that is
-   what the sorting counteracts.  */
+/* Split an exception range into two at PC.  The sub-ranges that
+   belong to the range are split and distributed between the two new
+   ranges.  */
 
-void
-add_handler (int start_pc, int end_pc, tree handler, tree type)
+static void
+split_range (struct eh_range *range, int pc)
 {
-  struct eh_range *ptr, *prev = NULL, *h;
+  struct eh_range *ptr;
+  struct eh_range **first_child, **second_child;
+  struct eh_range *h;
 
-  for (ptr = whole_range.first_child; ptr; ptr = ptr->next_sibling)
+  /* First, split all the sub-ranges.  */
+  for (ptr = range->first_child; ptr; ptr = ptr->next_sibling)
     {
-      if (start_pc >= ptr->start_pc
-	  && start_pc <= ptr->end_pc
-	  && TREE_PURPOSE (ptr->handlers) == type
-	  && TREE_VALUE (ptr->handlers) == handler)
+      if (pc > ptr->start_pc
+	  && pc < ptr->end_pc)
 	{
-	  /* Already found an overlapping range, so coalesce.  */
-	  ptr->end_pc = MAX (ptr->end_pc, end_pc);
-	  return;
+	  split_range (ptr, pc);
 	}
-      prev = ptr;
     }
 
+  /* Create a new range.  */
   h = xmalloc (sizeof (struct eh_range));
+
+  h->start_pc = pc;
+  h->end_pc = range->end_pc;
+  h->next_sibling = range->next_sibling;
+  range->next_sibling = h;
+  range->end_pc = pc;
+  h->handlers = build_tree_list (TREE_PURPOSE (range->handlers),
+				 TREE_VALUE (range->handlers));
+  h->next_sibling = NULL;
+  h->expanded = 0;
+  h->stmt = NULL;
+  h->outer = range->outer;
+  h->first_child = NULL;
+
+  ptr = range->first_child;
+  first_child = &range->first_child;
+  second_child = &h->first_child;
+
+  /* Distribute the sub-ranges bewteen the two new ranges.  */
+  for (ptr = range->first_child; ptr; ptr = ptr->next_sibling)
+    {
+      if (ptr->start_pc < pc)
+	{
+	  *first_child = ptr;
+	  ptr->outer = range;
+	  first_child = &ptr->next_sibling;
+	}
+      else
+	{
+	  *second_child = ptr;
+	  ptr->outer = h;
+	  second_child = &ptr->next_sibling;
+	}
+    }
+  *first_child = NULL;
+  *second_child = NULL;
+}  
+
+
+/* Add an exception range. 
+
+   There are some missed optimization opportunities here.  For
+   example, some bytecode obfuscators generate seemingly
+   nonoverlapping exception ranges which, when coalesced, do in fact
+   nest correctly.  We could merge these, but we'd have to fix up all
+   the enclosed regions first and perhaps create a new range anyway if
+   it overlapped existing ranges.
+   
+   Also, we don't attempt to detect the case where two previously
+   added disjoint ranges could be coalesced by a new range.  */
+
+void 
+add_handler (int start_pc, int end_pc, tree handler, tree type)
+{
+  struct eh_range *ptr, *h;
+  struct eh_range **first_child, **prev;
+
+  /* First, split all the existing ranges that we need to enclose.  */
+  for (ptr = whole_range.first_child; ptr; ptr = ptr->next_sibling)
+    {
+      if (start_pc > ptr->start_pc
+	  && start_pc < ptr->end_pc)
+	{
+	  split_range (ptr, start_pc);
+	}
+
+      if (end_pc > ptr->start_pc
+	  && end_pc < ptr->end_pc)
+	{
+	  split_range (ptr, end_pc);
+	}
+
+      if (ptr->start_pc >= end_pc)
+	break;
+    }
+
+  /* Create the new range.  */
+  h = xmalloc (sizeof (struct eh_range));
+  first_child = &h->first_child;
+
   h->start_pc = start_pc;
   h->end_pc = end_pc;
   h->first_child = NULL;
-  h->outer = NULL;
+  h->outer = NULL_EH_RANGE;
   h->handlers = build_tree_list (type, handler);
   h->next_sibling = NULL;
   h->expanded = 0;
   h->stmt = NULL;
 
-  if (prev == NULL)
-    whole_range.first_child = h;
-  else
-    prev->next_sibling = h;
-}
+  /* Find every range at the top level that will be a sub-range of the
+     range we're inserting and make it so.  */
+  {
+    struct eh_range **prev = &whole_range.first_child;
+    for (ptr = *prev; ptr;)
+      {
+	struct eh_range *next = ptr->next_sibling;
 
+	if (ptr->start_pc >= end_pc)
+	  break;
+
+	if (ptr->start_pc < start_pc)
+	  {
+	    prev = &ptr->next_sibling;
+	  }
+	else if (ptr->start_pc >= start_pc
+		 && ptr->start_pc < end_pc)
+	  {
+	    *prev = next;
+	    *first_child = ptr;
+	    first_child = &ptr->next_sibling;
+	    ptr->outer = h;
+	    ptr->next_sibling = NULL;	  
+	  }
+
+	ptr = next;
+      }
+  }
+
+  /* Find the right place to insert the new range.  */
+  prev = &whole_range.first_child;
+  for (ptr = *prev; ptr; prev = &ptr->next_sibling, ptr = ptr->next_sibling)
+    {
+      gcc_assert (ptr->outer == NULL_EH_RANGE);
+      if (ptr->start_pc >= start_pc)
+	break;
+    }
+
+  /* And insert it there.  */
+  *prev = h;
+  if (ptr)
+    {
+      h->next_sibling = ptr;
+      h->outer = ptr->outer;
+    }
+}
+      
+  
 /* if there are any handlers for this range, issue start of region */
 static void
 expand_start_java_handler (struct eh_range *range)
