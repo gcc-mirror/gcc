@@ -2824,14 +2824,6 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
   tree field;
   int count = 0;
 
-  /* Although there is nothing wrong per se with a structure whose
-     first field does not start at offset 0, there appeared to be an
-     Ada bug where the first field's offset was not zero, but the
-     field itself was at offset zero.  Make sure that doesn't
-     reoccur.  */
-  gcc_assert (!TYPE_FIELDS (type)
-	      || TREE_CODE (TYPE_FIELDS (type)) != FIELD_DECL
-	      || !bitpos_of_field (TYPE_FIELDS (type)));
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)
       {
