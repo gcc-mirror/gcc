@@ -3094,7 +3094,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	     test the index for the appropriate mode.  */
 	  if (!arm_legitimate_index_p (mode, offset, SET, 0))
 	    {
-	      gcc_assert (no_new_pseudos);
+	      gcc_assert (!no_new_pseudos);
 	      offset = force_reg (Pmode, offset);
 	    }
 
