@@ -1420,8 +1420,6 @@ struct tree_ssa_name GTY(())
 #define PHI_BB(NODE)			PHI_NODE_CHECK (NODE)->phi.bb
 #define PHI_ARG_IMM_USE_NODE(NODE, I)	PHI_NODE_ELT_CHECK (NODE, I).imm_use
 
-struct edge_def;
-
 struct phi_arg_d GTY(())
 {
   /* imm_use MUST be the first element in struct because we do some
