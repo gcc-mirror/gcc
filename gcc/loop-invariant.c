@@ -427,7 +427,7 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed,
     return;
   dest = SET_DEST (set);
 
-  if (GET_CODE (dest) != REG
+  if (!REG_P (dest)
       || HARD_REGISTER_P (dest))
     simple = false;
 

@@ -384,7 +384,7 @@ find_end_label (void)
       /* If the basic block reorder pass moves the return insn to
 	 some other place try to locate it again and put our
 	 end_of_function_label there.  */
-      while (insn && ! (GET_CODE (insn) == JUMP_INSN
+      while (insn && ! (JUMP_P (insn)
 		        && (GET_CODE (PATTERN (insn)) == RETURN)))
 	insn = PREV_INSN (insn);
       if (insn)

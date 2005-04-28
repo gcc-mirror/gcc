@@ -2650,7 +2650,7 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
 	 the original object if it spans an even number of hard regs.
 	 This special case is important for SCmode on 64-bit platforms
 	 where the natural size of floating-point regs is 32-bit.  */
-      || (GET_CODE (cplx) == REG
+      || (REG_P (cplx)
 	  && REGNO (cplx) < FIRST_PSEUDO_REGISTER
 	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0)
       /* For MEMs we always try to make a "subreg", that is to adjust
@@ -2710,7 +2710,7 @@ read_complex_part (rtx cplx, bool imag_p)
 	 the original object if it spans an even number of hard regs.
 	 This special case is important for SCmode on 64-bit platforms
 	 where the natural size of floating-point regs is 32-bit.  */
-      || (GET_CODE (cplx) == REG
+      || (REG_P (cplx)
 	  && REGNO (cplx) < FIRST_PSEUDO_REGISTER
 	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0)
       /* For MEMs we always try to make a "subreg", that is to adjust
@@ -6213,7 +6213,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 	  /* If the DECL isn't in memory, then the DECL wasn't properly
 	     marked TREE_ADDRESSABLE, which will be either a front-end
 	     or a tree optimizer bug.  */
-	  gcc_assert (GET_CODE (result) == MEM);
+	  gcc_assert (MEM_P (result));
 	  result = XEXP (result, 0);
 
 	  /* ??? Is this needed anymore?  */

@@ -232,7 +232,7 @@ find_mem_reference_1 (rtx *expr, void *ret)
 {
   rtx *mem = ret;
 
-  if (GET_CODE (*expr) == MEM)
+  if (MEM_P (*expr))
     {
       *mem = *expr;
       return 1;
@@ -283,7 +283,7 @@ insn_prefetch_values_to_profile (rtx insn, histogram_values* values)
   histogram_value hist;
 
   /* It only makes sense to look for memory references in ordinary insns.  */
-  if (GET_CODE (insn) != INSN)
+  if (!NONJUMP_INSN_P (insn))
     return false;
 
   if (!find_mem_reference (insn, &mem, &write))

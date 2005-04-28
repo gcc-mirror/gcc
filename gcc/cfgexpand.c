@@ -49,15 +49,15 @@ add_reg_br_prob_note (FILE *dump_file, rtx last, int probability)
   if (profile_status == PROFILE_ABSENT)
     return;
   for (last = NEXT_INSN (last); last && NEXT_INSN (last); last = NEXT_INSN (last))
-    if (GET_CODE (last) == JUMP_INSN)
+    if (JUMP_P (last))
       {
 	/* It is common to emit condjump-around-jump sequence when we don't know
 	   how to reverse the conditional.  Special case this.  */
 	if (!any_condjump_p (last)
-	    || GET_CODE (NEXT_INSN (last)) != JUMP_INSN
+	    || !JUMP_P (NEXT_INSN (last))
 	    || !simplejump_p (NEXT_INSN (last))
-	    || GET_CODE (NEXT_INSN (NEXT_INSN (last))) != BARRIER
-	    || GET_CODE (NEXT_INSN (NEXT_INSN (NEXT_INSN (last)))) != CODE_LABEL
+	    || !BARRIER_P (NEXT_INSN (NEXT_INSN (last)))
+	    || !LABEL_P (NEXT_INSN (NEXT_INSN (NEXT_INSN (last))))
 	    || NEXT_INSN (NEXT_INSN (NEXT_INSN (NEXT_INSN (last)))))
 	  goto failed;
 	gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
@@ -67,7 +67,7 @@ add_reg_br_prob_note (FILE *dump_file, rtx last, int probability)
 			       REG_NOTES (last));
 	return;
       }
-  if (!last || GET_CODE (last) != JUMP_INSN || !any_condjump_p (last))
+  if (!last || !JUMP_P (last) || !any_condjump_p (last))
     goto failed;
   gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
   REG_NOTES (last)

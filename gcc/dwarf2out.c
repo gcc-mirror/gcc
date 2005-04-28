@@ -1482,7 +1482,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
   src = SET_SRC (expr);
   dest = SET_DEST (expr);
 
-  if (GET_CODE (src) == REG)
+  if (REG_P (src))
     {
       rtx rsi = reg_saved_in (src);
       if (rsi)

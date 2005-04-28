@@ -5554,7 +5554,7 @@ expand_bool_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
 
       /* Ensure that if old_val == mem, that we're not comparing
 	 against an old value.  */
-      if (GET_CODE (old_val) == MEM)
+      if (MEM_P (old_val))
 	old_val = force_reg (mode, old_val);
 
       subtarget = expand_val_compare_and_swap_1 (mem, old_val, new_val,
