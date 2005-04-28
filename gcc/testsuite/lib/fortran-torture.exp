@@ -180,7 +180,7 @@ proc fortran-torture-execute { src } {
 	# exist.  If not, the testcase should XFAIL.
 
 	# Compile the testcase.
-	remote_file build delete $executable
+	catch { remote_file build delete $executable }
 	verbose "Testing $testcase, $option" 1
 
 	set options ""
