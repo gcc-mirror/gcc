@@ -1,3 +1,7 @@
+2005-04-27  James E Wilson  <wilson@specifixinc.com>
+
+	* Makefile.in (html): New.
+
 2005-02-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/17383
