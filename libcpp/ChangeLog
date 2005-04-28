@@ -1,3 +1,7 @@
+2005-04-27  Andris Pavenis  <pavenis@latnet.lv>
+
+	* files.c: Include io.h for DJGPP to get prototype of setmode.
+
 2005-04-19  Per Bothner  <per@bothner.com>
 
 	PR preprocessor/20907

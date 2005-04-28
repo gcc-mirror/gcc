@@ -40,6 +40,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifdef __DJGPP__
+#include <io.h>
   /* For DJGPP redirected input is opened in text mode.  */
 #  define set_stdin_to_binary_mode() \
      if (! isatty (0)) setmode (0, O_BINARY)
