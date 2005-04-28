@@ -842,7 +842,7 @@ typedef struct gfc_gsymbol
 {
   BBT_HEADER(gfc_gsymbol);
 
-  char name[GFC_MAX_SYMBOL_LEN+1];
+  const char *name;
   enum { GSYM_UNKNOWN=1, GSYM_PROGRAM, GSYM_FUNCTION, GSYM_SUBROUTINE,
         GSYM_MODULE, GSYM_COMMON, GSYM_BLOCK_DATA } type;
 

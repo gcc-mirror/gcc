@@ -2410,7 +2410,7 @@ gfc_get_gsymbol (const char *name)
 
   s = gfc_getmem (sizeof (gfc_gsymbol));
   s->type = GSYM_UNKNOWN;
-  strcpy (s->name, name);
+  s->name = gfc_get_string (name);
 
   gfc_insert_bbt (&gfc_gsym_root, s, gsym_compare);
 

@@ -1,3 +1,9 @@
+2005-04-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_gsymbol): Make name a const char *.
+	* symbol.c (gfc_get_gsymbol): Allocate gsymbol name via
+	gfc_get_string.
+
 2005-04-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20865
