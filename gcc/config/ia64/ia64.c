@@ -4779,12 +4779,12 @@ struct reg_flags
 static void rws_update (struct reg_write_state *, int, struct reg_flags, int);
 static int rws_access_regno (int, struct reg_flags, int);
 static int rws_access_reg (rtx, struct reg_flags, int);
-static void update_set_flags (rtx, struct reg_flags *, int *, rtx *);
-static int set_src_needs_barrier (rtx, struct reg_flags, int, rtx);
+static void update_set_flags (rtx, struct reg_flags *);
+static int set_src_needs_barrier (rtx, struct reg_flags, int);
 static int rtx_needs_barrier (rtx, struct reg_flags, int);
 static void init_insn_group_barriers (void);
-static int group_barrier_needed_p (rtx);
-static int safe_group_barrier_needed_p (rtx);
+static int group_barrier_needed (rtx);
+static int safe_group_barrier_needed (rtx);
 
 /* Update *RWS for REGNO, which is being written by the current instruction,
    with predicate PRED, and associated register flags in FLAGS.  */
@@ -4944,11 +4944,9 @@ rws_access_reg (rtx reg, struct reg_flags flags, int pred)
    the condition, stored in *PFLAGS, *PPRED and *PCOND.  */
 
 static void
-update_set_flags (rtx x, struct reg_flags *pflags, int *ppred, rtx *pcond)
+update_set_flags (rtx x, struct reg_flags *pflags)
 {
   rtx src = SET_SRC (x);
-
-  *pcond = 0;
 
   switch (GET_CODE (src))
     {
@@ -4961,40 +4959,16 @@ update_set_flags (rtx x, struct reg_flags *pflags, int *ppred, rtx *pcond)
 	return;
       else
 	{
-	  int is_complemented = 0;
-
 	  /* X is a conditional move.  */
 	  rtx cond = XEXP (src, 0);
-	  if (GET_CODE (cond) == EQ)
-	    is_complemented = 1;
 	  cond = XEXP (cond, 0);
-	  gcc_assert (GET_CODE (cond) == REG
-		      || REGNO_REG_CLASS (REGNO (cond)) == PR_REGS);
-	  *pcond = cond;
-	  if (XEXP (src, 1) == SET_DEST (x)
-	      || XEXP (src, 2) == SET_DEST (x))
-	    {
-	      /* X is a conditional move that conditionally writes the
-		 destination.  */
 
-	      /* We need another complement in this case.  */
-	      if (XEXP (src, 1) == SET_DEST (x))
-		is_complemented = ! is_complemented;
-
-	      *ppred = REGNO (cond);
-	      if (is_complemented)
-		++*ppred;
-	    }
-
-	  /* ??? If this is a conditional write to the dest, then this
-	     instruction does not actually read one source.  This probably
-	     doesn't matter, because that source is also the dest.  */
-	  /* ??? Multiple writes to predicate registers are allowed
-	     if they are all AND type compares, or if they are all OR
-	     type compares.  We do not generate such instructions
-	     currently.  */
+	  /* We always split conditional moves into COND_EXEC patterns, so the
+	     only pattern that can reach here is doloop_end_internal.  We don't
+	     need to do anything special for this pattern.  */
+	  gcc_assert (GET_CODE (cond) == REG && REGNO (cond) == AR_LC_REGNUM);
+	  return;
 	}
-      /* ... fall through ...  */
 
     default:
       if (COMPARISON_P (src)
@@ -5022,7 +4996,7 @@ update_set_flags (rtx x, struct reg_flags *pflags, int *ppred, rtx *pcond)
    for this insn.  */
 
 static int
-set_src_needs_barrier (rtx x, struct reg_flags flags, int pred, rtx cond)
+set_src_needs_barrier (rtx x, struct reg_flags flags, int pred)
 {
   int need_barrier = 0;
   rtx dst;
@@ -5042,10 +5016,6 @@ set_src_needs_barrier (rtx x, struct reg_flags flags, int pred, rtx cond)
     }
 
   need_barrier = rtx_needs_barrier (src, flags, pred);
-
-  /* This instruction unconditionally uses a predicate register.  */
-  if (cond)
-    need_barrier |= rws_access_reg (cond, flags, 0);
 
   dst = SET_DEST (x);
   if (GET_CODE (dst) == ZERO_EXTRACT)
@@ -5069,7 +5039,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
   int need_barrier = 0;
   const char *format_ptr;
   struct reg_flags new_flags;
-  rtx cond = 0;
+  rtx cond;
 
   if (! x)
     return 0;
@@ -5079,8 +5049,8 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
   switch (GET_CODE (x))
     {
     case SET:
-      update_set_flags (x, &new_flags, &pred, &cond);
-      need_barrier = set_src_needs_barrier (x, new_flags, pred, cond);
+      update_set_flags (x, &new_flags);
+      need_barrier = set_src_needs_barrier (x, new_flags, pred);
       if (GET_CODE (SET_SRC (x)) != CALL)
 	{
 	  new_flags.is_write = 1;
@@ -5114,7 +5084,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	is_complemented = 1;
       cond = XEXP (cond, 0);
       gcc_assert (GET_CODE (cond) == REG
-		  || REGNO_REG_CLASS (REGNO (cond)) == PR_REGS);
+		  && REGNO_REG_CLASS (REGNO (cond)) == PR_REGS);
       pred = REGNO (cond);
       if (is_complemented)
 	++pred;
@@ -5161,9 +5131,8 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	  switch (GET_CODE (pat))
 	    {
 	    case SET:
-	      update_set_flags (pat, &new_flags, &pred, &cond);
-	      need_barrier |= set_src_needs_barrier (pat, new_flags,
-						     pred, cond);
+	      update_set_flags (pat, &new_flags);
+	      need_barrier |= set_src_needs_barrier (pat, new_flags, pred);
 	      break;
 
 	    case USE:
@@ -5397,7 +5366,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
   return need_barrier;
 }
 
-/* Clear out the state for group_barrier_needed_p at the start of a
+/* Clear out the state for group_barrier_needed at the start of a
    sequence of insns.  */
 
 static void
@@ -5407,12 +5376,12 @@ init_insn_group_barriers (void)
   first_instruction = 1;
 }
 
-/* Given the current state, recorded by previous calls to this function,
-   determine whether a group barrier (a stop bit) is necessary before INSN.
-   Return nonzero if so.  */
+/* Given the current state, determine whether a group barrier (a stop bit) is
+   necessary before INSN.  Return nonzero if so.  This modifies the state to
+   include the effects of INSN as a side-effect.  */
 
 static int
-group_barrier_needed_p (rtx insn)
+group_barrier_needed (rtx insn)
 {
   rtx pat;
   int need_barrier = 0;
@@ -5520,10 +5489,10 @@ group_barrier_needed_p (rtx insn)
   return need_barrier;
 }
 
-/* Like group_barrier_needed_p, but do not clobber the current state.  */
+/* Like group_barrier_needed, but do not clobber the current state.  */
 
 static int
-safe_group_barrier_needed_p (rtx insn)
+safe_group_barrier_needed (rtx insn)
 {
   struct reg_write_state rws_saved[NUM_REGS];
   int saved_first_instruction;
@@ -5532,7 +5501,7 @@ safe_group_barrier_needed_p (rtx insn)
   memcpy (rws_saved, rws_sum, NUM_REGS * sizeof *rws_saved);
   saved_first_instruction = first_instruction;
 
-  t = group_barrier_needed_p (insn);
+  t = group_barrier_needed (insn);
 
   memcpy (rws_sum, rws_saved, NUM_REGS * sizeof *rws_saved);
   first_instruction = saved_first_instruction;
@@ -5582,7 +5551,7 @@ emit_insn_group_barriers (FILE *dump)
 	{
 	  insns_since_last_label = 1;
 
-	  if (group_barrier_needed_p (insn))
+	  if (group_barrier_needed (insn))
 	    {
 	      if (last_label)
 		{
@@ -5630,11 +5599,11 @@ emit_all_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 	{
 	  if (recog_memoized (insn) == CODE_FOR_insn_group_barrier)
 	    init_insn_group_barriers ();
-	  else if (group_barrier_needed_p (insn))
+	  else if (group_barrier_needed (insn))
 	    {
 	      emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), insn);
 	      init_insn_group_barriers ();
-	      group_barrier_needed_p (insn);
+	      group_barrier_needed (insn);
 	    }
 	}
     }
@@ -5928,7 +5897,7 @@ ia64_dfa_sched_reorder (FILE *dump, int sched_verbose, rtx *ready,
       int nr_need_stop = 0;
 
       for (insnp = ready; insnp < e_ready; insnp++)
-	if (safe_group_barrier_needed_p (*insnp))
+	if (safe_group_barrier_needed (*insnp))
 	  nr_need_stop++;
 
       if (reorder_type == 1 && n_ready == nr_need_stop)
@@ -5942,7 +5911,7 @@ ia64_dfa_sched_reorder (FILE *dump, int sched_verbose, rtx *ready,
 	while (insnp >= ready + deleted)
 	  {
 	    rtx insn = *insnp;
-	    if (! safe_group_barrier_needed_p (insn))
+	    if (! safe_group_barrier_needed (insn))
 	      break;
 	    memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
 	    *ready = insn;
@@ -5993,7 +5962,7 @@ ia64_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
   memcpy (prev_cycle_state, curr_state, dfa_state_size);
   if (reload_completed)
     {
-      int needed = group_barrier_needed_p (insn);
+      int needed = group_barrier_needed (insn);
       
       gcc_assert (!needed);
       if (GET_CODE (insn) == CALL_INSN)
@@ -6012,7 +5981,7 @@ ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn)
 {
   gcc_assert (insn  && INSN_P (insn));
   return (!reload_completed
-	  || !safe_group_barrier_needed_p (insn));
+	  || !safe_group_barrier_needed (insn));
 }
 
 /* The following variable value is pseudo-insn used by the DFA insn
@@ -6032,7 +6001,7 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
   int setup_clocks_p = FALSE;
 
   gcc_assert (insn && INSN_P (insn));
-  if ((reload_completed && safe_group_barrier_needed_p (insn))
+  if ((reload_completed && safe_group_barrier_needed (insn))
       || (last_scheduled_insn
 	  && (GET_CODE (last_scheduled_insn) == CALL_INSN
 	      || GET_CODE (PATTERN (last_scheduled_insn)) == ASM_INPUT
@@ -7065,7 +7034,7 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 	      need_barrier_p = 0;
 	      prev_insn = NULL_RTX;
 	    }
-	  else if (need_barrier_p || group_barrier_needed_p (insn))
+	  else if (need_barrier_p || group_barrier_needed (insn))
 	    {
 	      if (TARGET_EARLY_STOP_BITS)
 		{
@@ -7089,7 +7058,7 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 		       last != insn;
 		       last = NEXT_INSN (last))
 		    if (INSN_P (last))
-		      group_barrier_needed_p (last);
+		      group_barrier_needed (last);
 		}
 	      else
 		{
@@ -7097,7 +7066,7 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 				    insn);
 		  init_insn_group_barriers ();
 		}
-	      group_barrier_needed_p (insn);
+	      group_barrier_needed (insn);
 	      prev_insn = NULL_RTX;
 	    }
 	  else if (recog_memoized (insn) >= 0)
