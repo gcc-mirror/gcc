@@ -211,7 +211,7 @@ STATIC void *__JCR_LIST__[]
   = { };
 #endif /* JCR_SECTION_NAME */
 
-#ifdef INIT_SECTION_ASM_OP
+#if defined(INIT_SECTION_ASM_OP) || defined(INIT_ARRAY_SECTION_ASM_OP)
 
 #ifdef OBJECT_FORMAT_ELF
 
@@ -256,9 +256,11 @@ extern void __cxa_finalize (void *) TARGET_ATTRIBUTE_WEAK;
 static void __attribute__((used))
 __do_global_dtors_aux (void)
 {
+#ifndef FINI_ARRAY_SECTION_ASM_OP
   static func_ptr *p = __DTOR_LIST__ + 1;
-  static _Bool completed;
   func_ptr f;
+#endif /* !defined(FINI_ARRAY_SECTION_ASM_OP)  */
+  static _Bool completed;
 
   if (__builtin_expect (completed, 0))
     return;
@@ -268,11 +270,16 @@ __do_global_dtors_aux (void)
     __cxa_finalize (__dso_handle);
 #endif
 
+#ifdef FINI_ARRAY_SECTION_ASM_OP
+  /* If we are using .fini_array then destructors will be run via that
+     mechanism.  */
+#else /* !defined (FINI_ARRAY_SECTION_ASM_OP) */
   while ((f = *p))
     {
       p++;
       f ();
     }
+#endif /* !defined(FINI_ARRAY_SECTION_ASM_OP) */
 
 #ifdef USE_EH_FRAME_REGISTRY
 #ifdef CRT_GET_RFIB_DATA
@@ -290,7 +297,13 @@ __do_global_dtors_aux (void)
 }
 
 /* Stick a call to __do_global_dtors_aux into the .fini section.  */
+#ifdef FINI_SECTION_ASM_OP
 CRT_CALL_STATIC_FUNCTION (FINI_SECTION_ASM_OP, __do_global_dtors_aux)
+#else /* !defined(FINI_SECTION_ASM_OP) */
+static func_ptr __do_global_dtors_aux_fini_array_entry[]
+  __attribute__ ((__unused__, section(".fini_array")))
+  = { __do_global_dtors_aux };
+#endif /* !defined(FINI_SECTION_ASM_OP) */
 
 #if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
 /* Stick a call to __register_frame_info into the .init section.  For some
@@ -324,7 +337,13 @@ frame_dummy (void)
 #endif /* JCR_SECTION_NAME */
 }
 
+#ifdef INIT_SECTION_ASM_OP
 CRT_CALL_STATIC_FUNCTION (INIT_SECTION_ASM_OP, frame_dummy)
+#else /* defined(INIT_SECTION_ASM_OP) */
+static func_ptr __frame_dummy_init_array_entry[]
+  __attribute__ ((__unused__, section(".init_array")))
+  = { frame_dummy };
+#endif /* !defined(INIT_SECTION_ASM_OP) */
 #endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME */
 
 #else  /* OBJECT_FORMAT_ELF */
@@ -480,7 +499,11 @@ STATIC void *__JCR_END__[1]
    = { 0 };
 #endif /* JCR_SECTION_NAME */
 
-#ifdef INIT_SECTION_ASM_OP
+#ifdef INIT_ARRAY_SECTION_ASM_OP
+
+/* If we are using .init_array, there is nothing to do.  */
+
+#elif defined(INIT_SECTION_ASM_OP)
 
 #ifdef OBJECT_FORMAT_ELF
 static void __attribute__((used))

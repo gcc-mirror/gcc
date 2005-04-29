@@ -1,3 +1,29 @@
+2005-04-29  Julian Brown  <julian@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+	    Paul Brook  <paul@codesourcery.com>
+
+	* crtstuff.c: Handle targets that use .init_array.
+	* function.c (HAS_INIT_SECTION): Do not define. Instead, make sure
+	that INVOKE__main is set correctly.
+	(expand_main_function): Test INVOKE__main.
+	* libgcc2.c: Do not define __main when using .init_array.
+	* config/arm/arm.c (arm_elf_asm_constructor): New function.
+	* config/arm/arm.h (CTORS_SECTION_ASM_OP): Define, with specialized
+	libgcc version.
+	(DTORS_SECTION_ASM_OP): Likewise.
+	(CTOR_LIST_BEGIN): Define specially when in libgcc.
+	(CTOR_LIST_END): Likewise.
+	(DTOR_LIST_BEGIN): Likewise.
+	(DTOR_LIST_END): Likewise.
+	* config/arm/bpapi.h (INIT_SECTION_ASM_OP): Do not define it.
+	(FINI_SECTION_ASM_OP): Likewise.
+	(INIT_ARRAY_SECTION_ASM_OP): Define.
+	(FINI_ARRAY_SECTION_ASM_OP): Likewise.
+	* config/arm/elf.h (TARGET_ASM_CONSTRUCTOR): Define.
+	(SUPPORTS_INIT_PRIORITY): Evaluate to false for EABI based targets.
+	* doc/tm.texi (INIT_ARRAY_SECTION_ASM_OP): Document.
+	(FINI_ARRAY_SECTION_ASM_OP): Likewise.  
+
 2005-04-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_initial_elimination_offset): Use

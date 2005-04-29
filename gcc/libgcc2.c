@@ -1905,6 +1905,7 @@ TRANSFER_FROM_TRAMPOLINE
 #ifdef L__main
 
 #include "gbl-ctors.h"
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
@@ -1914,7 +1915,7 @@ TRANSFER_FROM_TRAMPOLINE
 #define SYMBOL__MAIN __main
 #endif
 
-#ifdef INIT_SECTION_ASM_OP
+#if defined (INIT_SECTION_ASM_OP) || defined (INIT_ARRAY_SECTION_ASM_OP)
 #undef HAS_INIT_SECTION
 #define HAS_INIT_SECTION
 #endif
