@@ -1,3 +1,11 @@
+2005-04-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* configure.ac: Check for ftruncate and chsize.
+	* io/unix.c (fd_truncate): Provide chsize as alternative to
+	ftruncate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2004-04-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* AUTHORS, COPYING, INSTALL, NEWS, README: Remove.
