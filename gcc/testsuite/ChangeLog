@@ -1,3 +1,7 @@
+2005-04-29  Paul Brook   <paul@codesourcery.com>
+
+	* gfortran.dg/entry_3.f90: New test.
+
 2005-04-29  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/implicit_4.f90: New test.
