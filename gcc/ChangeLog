@@ -1,5 +1,10 @@
 2005-04-29  Michael Matz  <matz@suse.de>
 
+	* config/i386/i386.md (movmemsi): Also active when
+	TARGET_INLINE_ALL_STRINGOPS.
+
+2005-04-29  Michael Matz  <matz@suse.de>
+
 	PR rtl-optimization/21144
 	* postreload.c (reload_cse_move2add): Check for VOIDmode.
 
