@@ -1,3 +1,10 @@
+2005-04-26  Luca Barbieri  <luca.barbieri@gmail.com>
+
+	PR libgcj/21136:
+	* gnu/java/nio/channels/FileChannelImpl.java (tryLock): Pass
+	'false' to native lock().
+	(lock): Pass 'true' to native lock().
+
 2005-04-27  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (ordinary_java_source_files): Add
