@@ -1,5 +1,5 @@
 /* Charset.java -- 
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -185,14 +185,21 @@ public abstract class Charset implements Comparable
 
   private static CharsetProvider provider()
   {
-      try {
-	  String s = System.getProperty("charset.provider");
-	  if(s != null){
-	      CharsetProvider p =
-		  (CharsetProvider) ((Class.forName(s)).newInstance());
-	      return p;
-	      }
-	  } catch(Exception e){}
+    try
+      {
+	String s = System.getProperty("charset.provider");
+	if (s != null)
+	  {
+	    CharsetProvider p =
+	      (CharsetProvider) ((Class.forName(s)).newInstance());
+	    return p;
+	  }
+      }
+    catch (Exception e)
+      {
+	// Ignore.
+      }
+    
     return Provider.provider();
   }
 

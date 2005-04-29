@@ -1,5 +1,10 @@
 2005-04-29  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/charset/Charset.java
+	(provider): Reformatted.
+
+2005-04-29  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/http/HTTPConnection.java:
 	(userAgent): Initialize from system properties.
 	(initUserAgent): Removed.
