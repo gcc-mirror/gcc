@@ -1,3 +1,20 @@
+2005-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/13082
+	PR fortran/18824
+	* gfortran.dg/entry_4.f90: New test.
+	* gfortran.fortran-torture/execute/entry_1.f90: New test.
+	* gfortran.fortran-torture/execute/entry_2.f90: New test.
+	* gfortran.fortran-torture/execute/entry_3.f90: New test.
+	* gfortran.fortran-torture/execute/entry_4.f90: New test.
+	* gfortran.fortran-torture/execute/entry_5.f90: New test.
+	* gfortran.fortran-torture/execute/entry_6.f90: New test.
+	* gfortran.fortran-torture/execute/entry_7.f90: New test.
+
+2005-04-29  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.fortran-torture/execute/entry_8.f90: New test.
+
 2005-04-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/16861

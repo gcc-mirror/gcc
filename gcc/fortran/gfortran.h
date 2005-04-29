@@ -431,6 +431,9 @@ typedef struct
   /* Set if this is the master function for a procedure with multiple
      entry points.  */
   unsigned entry_master:1;
+  /* Set if this is the master function for a function with multiple
+     entry points where characteristics of the entry points differ.  */
+  unsigned mixed_entry_master:1;
 
   /* Set if a function must always be referenced by an explicit interface.  */
   unsigned always_explicit:1;

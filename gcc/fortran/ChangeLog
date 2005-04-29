@@ -1,3 +1,34 @@
+2005-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/13082
+	PR fortran/18824
+	* trans-expr.c (gfc_conv_variable): Handle return values in functions
+	with alternate entry points.
+	* resolve.c (resolve_entries): Remove unnecessary string termination
+	after snprintf.  Set result of entry master.
+	If all entries have the same type, set entry master's type
+	to that common type, otherwise set mixed_entry_master attribute.
+	* trans-types.c (gfc_get_mixed_entry_union): New function.
+	(gfc_get_function_type): Use it for mixed_entry_master functions.
+	* gfortran.h (symbol_attribute): Add mixed_entry_master bit.
+	* decl.c (gfc_match_entry): Set entry->result properly for
+	function ENTRY.
+	* trans-decl.c (gfc_get_symbol_decl): For entry_master, skip over
+	__entry argument.
+	(build_entry_thunks): Handle return values in entry thunks.
+	Clear BT_CHARACTER's ts.cl->backend_decl, so that it is not
+	shared between multiple contexts.
+	(gfc_get_fake_result_decl): Use DECL_ARGUMENTS from
+	current_function_decl instead of sym->backend_decl.  Skip over
+	entry master's entry id argument.  For mixed_entry_master entries or
+	their results, return a COMPONENT_REF of the fake result.
+	(gfc_trans_deferred_vars): Don't warn about missing return value if
+	at least one entry point uses RESULT.
+	(gfc_generate_function_code): For entry master returning
+	CHARACTER, copy ts.cl->backend_decl to all entry result syms.
+	* trans-array.c (gfc_trans_dummy_array_bias): Don't consider return
+	values optional just because they are in entry master.
+
 2005-04-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/16861

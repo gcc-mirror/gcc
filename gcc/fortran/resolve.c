@@ -360,7 +360,6 @@ resolve_entries (gfc_namespace * ns)
      out what is going on.  */
   snprintf (name, GFC_MAX_SYMBOL_LEN, "master.%d.%s",
 	    master_count++, ns->proc_name->name);
-  name[GFC_MAX_SYMBOL_LEN] = '\0';
   gfc_get_ha_symbol (name, &proc);
   gcc_assert (proc != NULL);
 
@@ -369,8 +368,88 @@ resolve_entries (gfc_namespace * ns)
     gfc_add_subroutine (&proc->attr, proc->name, NULL);
   else
     {
+      gfc_symbol *sym;
+      gfc_typespec *ts, *fts;
+
       gfc_add_function (&proc->attr, proc->name, NULL);
-      gfc_internal_error ("TODO: Functions with alternate entry points");
+      proc->result = proc;
+      fts = &ns->entries->sym->result->ts;
+      if (fts->type == BT_UNKNOWN)
+	fts = gfc_get_default_type (ns->entries->sym->result, NULL);
+      for (el = ns->entries->next; el; el = el->next)
+	{
+	  ts = &el->sym->result->ts;
+	  if (ts->type == BT_UNKNOWN)
+	    ts = gfc_get_default_type (el->sym->result, NULL);
+	  if (! gfc_compare_types (ts, fts)
+	      || (el->sym->result->attr.dimension
+		  != ns->entries->sym->result->attr.dimension)
+	      || (el->sym->result->attr.pointer
+		  != ns->entries->sym->result->attr.pointer))
+	    break;
+	}
+
+      if (el == NULL)
+	{
+	  sym = ns->entries->sym->result;
+	  /* All result types the same.  */
+	  proc->ts = *fts;
+	  if (sym->attr.dimension)
+	    gfc_set_array_spec (proc, gfc_copy_array_spec (sym->as), NULL);
+	  if (sym->attr.pointer)
+	    gfc_add_pointer (&proc->attr, NULL);
+	}
+      else
+	{
+	  /* Otherwise the result will be passed through an union by
+	     reference.  */
+	  proc->attr.mixed_entry_master = 1;
+	  for (el = ns->entries; el; el = el->next)
+	    {
+	      sym = el->sym->result;
+	      if (sym->attr.dimension)
+		gfc_error ("%s result %s can't be an array in FUNCTION %s at %L",
+			   el == ns->entries ? "FUNCTION" : "ENTRY", sym->name,
+			   ns->entries->sym->name, &sym->declared_at);
+	      else if (sym->attr.pointer)
+		gfc_error ("%s result %s can't be a POINTER in FUNCTION %s at %L",
+			   el == ns->entries ? "FUNCTION" : "ENTRY", sym->name,
+			   ns->entries->sym->name, &sym->declared_at);
+	      else
+		{
+		  ts = &sym->ts;
+		  if (ts->type == BT_UNKNOWN)
+		    ts = gfc_get_default_type (sym, NULL);
+		  switch (ts->type)
+		    {
+		    case BT_INTEGER:
+		      if (ts->kind == gfc_default_integer_kind)
+			sym = NULL;
+		      break;
+		    case BT_REAL:
+		      if (ts->kind == gfc_default_real_kind
+			  || ts->kind == gfc_default_double_kind)
+			sym = NULL;
+		      break;
+		    case BT_COMPLEX:
+		      if (ts->kind == gfc_default_complex_kind)
+			sym = NULL;
+		      break;
+		    case BT_LOGICAL:
+		      if (ts->kind == gfc_default_logical_kind)
+			sym = NULL;
+		      break;
+		    default:
+		      break;
+		    }
+		  if (sym)
+		    gfc_error ("%s result %s can't be of type %s in FUNCTION %s at %L",
+			       el == ns->entries ? "FUNCTION" : "ENTRY", sym->name,
+			       gfc_typename (ts), ns->entries->sym->name,
+			       &sym->declared_at);
+		}
+	    }
+	}
     }
   proc->attr.access = ACCESS_PRIVATE;
   proc->attr.entry_master = 1;
