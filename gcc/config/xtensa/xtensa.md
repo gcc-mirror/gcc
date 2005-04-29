@@ -1326,7 +1326,7 @@
 	case NE:	return "bne\t%0, %1, %2";
 	case LT:	return "blt\t%0, %1, %2";
 	case GE:	return "bge\t%0, %1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else if (INTVAL (operands[1]) == 0)
@@ -1341,7 +1341,7 @@
 				: "bnez\t%0, %2");
 	case LT:	return "bltz\t%0, %2";
 	case GE:	return "bgez\t%0, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else
@@ -1352,11 +1352,10 @@
 	case NE:	return "bnei\t%0, %d1, %2";
 	case LT:	return "blti\t%0, %d1, %2";
 	case GE:	return "bgei\t%0, %d1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
-  abort ();
-  return "";
+  gcc_unreachable ();
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1379,7 +1378,7 @@
 	case NE:	return "beq\t%0, %1, %2";
 	case LT:	return "bge\t%0, %1, %2";
 	case GE:	return "blt\t%0, %1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else if (INTVAL (operands[1]) == 0)
@@ -1394,7 +1393,7 @@
 				: "beqz\t%0, %2");
 	case LT:	return "bgez\t%0, %2";
 	case GE:	return "bltz\t%0, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else
@@ -1405,11 +1404,10 @@
 	case NE:	return "beqi\t%0, %d1, %2";
 	case LT:	return "bgei\t%0, %d1, %2";
 	case GE:	return "blti\t%0, %d1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
-  abort ();
-  return "";
+  gcc_unreachable ();
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1430,7 +1428,7 @@
 	{
 	case LTU:	return "bltu\t%0, %1, %2";
 	case GEU:	return "bgeu\t%0, %1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else
@@ -1439,11 +1437,10 @@
 	{
 	case LTU:	return "bltui\t%0, %d1, %2";
 	case GEU:	return "bgeui\t%0, %d1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
-  abort ();
-  return "";
+  gcc_unreachable ();
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1464,7 +1461,7 @@
 	{
 	case LTU:	return "bgeu\t%0, %1, %2";
 	case GEU:	return "bltu\t%0, %1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else
@@ -1473,11 +1470,10 @@
 	{
 	case LTU:	return "bgeui\t%0, %d1, %2";
 	case GEU:	return "bltui\t%0, %d1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
-  abort ();
-  return "";
+  gcc_unreachable ();
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1505,7 +1501,7 @@
 	{
 	case EQ:	return "bbci\t%0, %d1, %2";
 	case NE:	return "bbsi\t%0, %d1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else
@@ -1514,11 +1510,10 @@
 	{
 	case EQ:	return "bbc\t%0, %1, %2";
 	case NE:	return "bbs\t%0, %1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
-  abort ();
-  return "";
+  gcc_unreachable ();
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -1544,7 +1539,7 @@
 	{
 	case EQ:	return "bbsi\t%0, %d1, %2";
 	case NE:	return "bbci\t%0, %d1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else
@@ -1553,11 +1548,10 @@
 	{
 	case EQ:	return "bbs\t%0, %1, %2";
 	case NE:	return "bbc\t%0, %1, %2";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
-  abort ();
-  return "";
+  gcc_unreachable ();
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -1577,10 +1571,8 @@
     {
     case EQ:		return "bnone\t%0, %1, %2";
     case NE:		return "bany\t%0, %1, %2";
-    default:		break;
+    default:		gcc_unreachable ();
     }
-  abort ();
-  return "";
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -1600,10 +1592,8 @@
     {
     case EQ:		return "bany\t%0, %1, %2";
     case NE:		return "bnone\t%0, %1, %2";
-    default:		break;
+    default:		gcc_unreachable ();
     }
-  abort ();
-  return "";
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -1758,7 +1748,7 @@
 	case NE:	return "movnez\t%0, %2, %1";
 	case LT:	return "movltz\t%0, %2, %1";
 	case GE:	return "movgez\t%0, %2, %1";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
   else
@@ -1769,11 +1759,10 @@
 	case NE:	return "moveqz\t%0, %3, %1";
 	case LT:	return "movgez\t%0, %3, %1";
 	case GE:	return "movltz\t%0, %3, %1";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
     }
-  abort ();
-  return "";
+  gcc_unreachable ();
 }
   [(set_attr "type"	"move,move")
    (set_attr "mode"	"SI")
@@ -1797,9 +1786,9 @@
     case 1:
       if (isEq) return "movt\t%0, %3, %1";
       return "movf\t%0, %3, %1";
+    default:
+      gcc_unreachable ();
     }
-  abort ();
-  return "";
 }
   [(set_attr "type"	"move,move")
    (set_attr "mode"	"SI")
@@ -1814,52 +1803,52 @@
 			 (match_operand:SF 3 "register_operand" "0,r,0,f")))]
   ""
 {
-  if (which_alternative == 0)
+  switch (which_alternative)
     {
+    case 0:
       switch (GET_CODE (operands[4]))
 	{
 	case EQ:	return "moveqz\t%0, %2, %1";
 	case NE:	return "movnez\t%0, %2, %1";
 	case LT:	return "movltz\t%0, %2, %1";
 	case GE:	return "movgez\t%0, %2, %1";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
-    }
-  else if (which_alternative == 1)
-    {
+      break;
+    case 1:
       switch (GET_CODE (operands[4]))
 	{
 	case EQ:	return "movnez\t%0, %3, %1";
 	case NE:	return "moveqz\t%0, %3, %1";
 	case LT:	return "movgez\t%0, %3, %1";
 	case GE:	return "movltz\t%0, %3, %1";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
-    }
-  else if (which_alternative == 2)
-    {
+      break;
+    case 2:
       switch (GET_CODE (operands[4]))
 	{
 	case EQ:	return "moveqz.s %0, %2, %1";
 	case NE:	return "movnez.s %0, %2, %1";
 	case LT:	return "movltz.s %0, %2, %1";
 	case GE:	return "movgez.s %0, %2, %1";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
-    }
-  else if (which_alternative == 3)
-    {
+      break;
+    case 3:
       switch (GET_CODE (operands[4]))
 	{
 	case EQ:	return "movnez.s %0, %3, %1";
 	case NE:	return "moveqz.s %0, %3, %1";
 	case LT:	return "movgez.s %0, %3, %1";
 	case GE:	return "movltz.s %0, %3, %1";
-	default:	break;
+	default:	gcc_unreachable ();
 	}
+      break;
+    default:
+      gcc_unreachable ();
     }
-  abort ();
-  return "";
+  gcc_unreachable ();
 }
   [(set_attr "type"	"move,move,move,move")
    (set_attr "mode"	"SF")
@@ -1889,9 +1878,9 @@
     case 3:
       if (isEq) return "movt.s\t%0, %3, %1";
       return "movf.s\t%0, %3, %1";
+    default:
+      gcc_unreachable ();
     }
-  abort ();
-  return "";
 }
   [(set_attr "type"	"move,move,move,move")
    (set_attr "mode"	"SF")
