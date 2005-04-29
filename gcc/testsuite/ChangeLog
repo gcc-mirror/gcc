@@ -1,3 +1,8 @@
+2004-04-29  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	* lib/fortran-torture.exp (fortran-torture.exp): Catch
+	error if file cannot be deleted.
+
 2005-04-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20865
