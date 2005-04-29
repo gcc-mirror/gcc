@@ -1,3 +1,8 @@
+2005-04-29  Jim Tison  <jtison@us.ibm.com>
+
+	* config/s390/s390.md ("prologue_tpf", "epilogue_tpf"): Alter
+	trace hooks calls to improve performance.
+
 2005-04-29  Julian Brown  <julian@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 	    Paul Brook  <paul@codesourcery.com>
