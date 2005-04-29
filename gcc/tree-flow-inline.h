@@ -314,7 +314,7 @@ first_safe_imm_use (imm_use_iterator *imm, tree var)
   return imm->imm_use;
 }
 
-/* Bump IMM to then next use in the list.  */
+/* Bump IMM to the next use in the list.  */
 static inline use_operand_p
 next_safe_imm_use (imm_use_iterator *imm)
 {
@@ -332,7 +332,7 @@ next_safe_imm_use (imm_use_iterator *imm)
       imm->imm_use = imm->imm_use->next;
       if (! end_safe_imm_use_p (imm))
 	{
-	  /* This isnt the end, link iternode before the next use.  */
+	  /* This isn't the end, link iternode before the next use.  */
 	  ptr->prev = imm->imm_use->prev;
 	  ptr->next = imm->imm_use;
 	  imm->imm_use->prev->next = ptr;
@@ -380,7 +380,7 @@ first_readonly_imm_use (imm_use_iterator *imm, tree var)
   return imm->imm_use;
 }
 
-/* Bump IMM to then next use in the list.  */
+/* Bump IMM to the next use in the list.  */
 static inline use_operand_p
 next_readonly_imm_use (imm_use_iterator *imm)
 {

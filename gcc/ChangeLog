@@ -3,6 +3,8 @@
 	* tree-flow-inline.h: Fix a comment typo.
 	* doc/tree-ssa.texi: Fix a typo.
 
+	* tree-flow-inline.h, tree-ssa-operands.c: Fix comment typos.
+
 2005-04-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/fr30/fr30.c (fr30_expand_prologue): Use gcc_assert and
