@@ -1,3 +1,8 @@
+2005-04-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.h (gfc_namespace): Add seen_implicit_none field,
+	Tobias forgot this in previous commit.
+	
 2005-04-29  Paul Brook   <paul@codesourcery.com>
 
 	* trans-expr.c (gfc_conv_expr_present): Fix broken assert.  Update
