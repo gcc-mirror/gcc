@@ -1,3 +1,10 @@
+2005-04-29  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_namespace): Add seen_implicit_none field.
+	* symbol.c (gfc_set_implicit_none): Give error if there's a previous
+	IMPLICIT NONE, set seen_implicit_none.
+	(gfc_merge_new_implicit): Error if there's an IMPLICIT NONE statement.
+
 2005-04-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h (gfc_gsymbol): Make name a const char *.

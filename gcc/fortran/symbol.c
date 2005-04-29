@@ -106,6 +106,14 @@ gfc_set_implicit_none (void)
 {
   int i;
 
+  if (gfc_current_ns->seen_implicit_none)
+    {
+      gfc_error ("Duplicate IMPLICIT NONE statement at %C");
+      return;
+    }
+
+  gfc_current_ns->seen_implicit_none = 1;
+
   for (i = 0; i < GFC_LETTERS; i++)
     {
       gfc_clear_ts (&gfc_current_ns->default_type[i]);
@@ -159,6 +167,12 @@ try
 gfc_merge_new_implicit (gfc_typespec * ts)
 {
   int i;
+
+  if (gfc_current_ns->seen_implicit_none)
+    {
+      gfc_error ("Cannot specify IMPLICIT at %C after IMPLICIT NONE");
+      return FAILURE;
+    }
 
   for (i = 0; i < GFC_LETTERS; i++)
     {
