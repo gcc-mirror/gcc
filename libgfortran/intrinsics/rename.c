@@ -32,6 +32,8 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 #include <errno.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "../io/io.h"
 
