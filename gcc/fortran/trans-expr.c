@@ -115,14 +115,15 @@ gfc_make_safe_expr (gfc_se * se)
 }
 
 
-/* Return an expression which determines if a dummy parameter is present.  */
+/* Return an expression which determines if a dummy parameter is present.
+   Also used for arguments to procedures with multiple entry points.  */
 
 tree
 gfc_conv_expr_present (gfc_symbol * sym)
 {
   tree decl;
 
-  gcc_assert (sym->attr.dummy && sym->attr.optional);
+  gcc_assert (sym->attr.dummy);
 
   decl = gfc_get_symbol_decl (sym);
   if (TREE_CODE (decl) != PARM_DECL)
