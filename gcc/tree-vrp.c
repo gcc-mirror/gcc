@@ -893,19 +893,40 @@ adjust_range_with_scev (value_range *vr, struct loop *l, tree var)
     }
   else if (vr->type == VR_RANGE)
     {
+      tree min = vr->min;
+      tree max = vr->max;
+
       if (init_is_max)
 	{
-	  /* INIT is the maximum value.  If INIT is lower than
-	     VR->MAX, set VR->MAX to INIT.  */
-	  if (compare_values (init, vr->max) == -1)
-	    set_value_range (vr, VR_RANGE, vr->min, init);
+	  /* INIT is the maximum value.  If INIT is lower than VR->MAX
+	     but no smaller than VR->MIN, set VR->MAX to INIT.  */
+	  if (compare_values (init, max) == -1)
+	    {
+	      max = init;
+
+	      /* If we just created an invalid range with the minimum
+		 greater than the maximum, take the minimum all the
+		 way to -INF.  */
+	      if (compare_values (min, max) == 1)
+		min = TYPE_MIN_VALUE (TREE_TYPE (min));
+	    }
 	}
       else
 	{
 	  /* If INIT is bigger than VR->MIN, set VR->MIN to INIT.  */
-	  if (compare_values (init, vr->min) == 1)
-	    set_value_range (vr, VR_RANGE, init, vr->max);
+	  if (compare_values (init, min) == 1)
+	    {
+	      min = init;
+
+	      /* If we just created an invalid range with the minimum
+		 greater than the maximum, take the maximum all the
+		 way to +INF.  */
+	      if (compare_values (min, max) == 1)
+		max = TYPE_MAX_VALUE (TREE_TYPE (max));
+	    }
 	}
+
+      set_value_range (vr, VR_RANGE, min, max);
     }
 }
 
