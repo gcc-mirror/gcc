@@ -17,6 +17,7 @@
 2005-04-29  Devang Patel  <dpatel@apple.com>
 
 	PR tree-optimization/21272
+	PR tree-optimization/21266
 	* tree-if-conv.c (find_phi_replacement_condition): Fix think-o.
 	
 2005-04-29  Kazu Hirata  <kazu@cs.umass.edu>
