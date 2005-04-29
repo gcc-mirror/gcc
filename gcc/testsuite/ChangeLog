@@ -1,3 +1,8 @@
+2004-04-28  Bob Wilson  <bob.wilson@acm.org>
+
+	* lib/target-supports.exp (check_profiling_available): Return
+	false for xtensa-*-elf.
+
 2004-04-29  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	* lib/fortran-torture.exp (fortran-torture.exp): Catch
