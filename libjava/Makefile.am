@@ -3555,6 +3555,7 @@ java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
+java/net/VMNetworkInterface.java \
 java/nio/Buffer.java \
 java/nio/BufferOverflowException.java \
 java/nio/BufferUnderflowException.java \
@@ -3935,7 +3936,7 @@ java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
 java/lang/reflect/natProxy.cc \
-java/net/natNetworkInterface.cc \
+java/net/natVMNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/nio/channels/natChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \

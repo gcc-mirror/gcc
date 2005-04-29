@@ -1,3 +1,24 @@
+2005-04-29  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/NetworkInterface.java
+	(static): Removed.
+	(NetworkInterface(String,InetAddress)): Made package-private.
+	(NetworkInterface(String,InetAddress[])): New constructor.
+	(getRealNetworkInterfaces): Removed.
+	(getByName): Use VMNetworkInterface.getInterfaces().
+	(getByInetAddress): Likewise.
+	(getNetworkInterfaces): Likewise.
+	* java/net/VMNetworkInterface.java,
+	java/net/natVMNetworkInterfaceNoNet.cc,
+	java/net/natVMNetworkInterfacePosix.c,c
+	java/net/natVMNetworkInterfaceWin32.cc: New files.
+	* java/net/natNetworkInterfaceNoNet.cc,
+	java/net/natNetworkInterfacePosix.cc,
+	 java/net/natNetworkInterfaceWin32.cc: Removed.
+	* configure.ac
+	* Makefile.am
+	* configure, Makefile.in: Regenerated.
+
 2005-04-29  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/Class.h (_Jv_ResolvePoolEntry): Declare as friend.

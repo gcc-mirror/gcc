@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -114,7 +114,7 @@ determineGetRealNetworkInterfacesFN ()
 }
 
 ::java::util::Vector*
-java::net::NetworkInterface::getRealNetworkInterfaces ()
+java::net::VMNetworkInterface::getInterfaces ()
 {
   // This next declaration used to be a static local,
   // but this introduced a dependency on libsupc++ due

@@ -79,7 +79,7 @@ CONFIG_HEADER = $(top_builddir)/include/config.h \
 CONFIG_CLEAN_FILES = libgcj.pc libgcj.spec libgcj-test.spec \
 	gnu/classpath/Configuration.java java/io/natFile.cc \
 	java/lang/ConcreteProcess.java java/lang/natConcreteProcess.cc \
-	java/net/natInetAddress.cc java/net/natNetworkInterface.cc \
+	java/net/natInetAddress.cc java/net/natVMNetworkInterface.cc \
 	gnu/java/net/natPlainSocketImpl.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
 	gnu/java/nio/natPipeImpl.cc gnu/java/nio/natSelectorImpl.cc \
@@ -270,8 +270,9 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/lang/ref/natReference.cc java/lang/reflect/natArray.cc \
 	java/lang/reflect/natConstructor.cc \
 	java/lang/reflect/natField.cc java/lang/reflect/natMethod.cc \
-	java/lang/reflect/natProxy.cc java/net/natNetworkInterface.cc \
-	java/net/natInetAddress.cc java/nio/channels/natChannels.cc \
+	java/lang/reflect/natProxy.cc \
+	java/net/natVMNetworkInterface.cc java/net/natInetAddress.cc \
+	java/nio/channels/natChannels.cc \
 	java/nio/natDirectByteBufferImpl.cc java/text/natCollator.cc \
 	java/util/natResourceBundle.cc java/util/natVMTimeZone.cc \
 	java/util/logging/natLogger.cc java/util/zip/natDeflater.cc \
@@ -846,7 +847,8 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/net/URLStreamHandler.java \
 	java/net/URLStreamHandlerFactory.java \
 	java/net/UnknownHostException.java \
-	java/net/UnknownServiceException.java java/nio/Buffer.java \
+	java/net/UnknownServiceException.java \
+	java/net/VMNetworkInterface.java java/nio/Buffer.java \
 	java/nio/BufferOverflowException.java \
 	java/nio/BufferUnderflowException.java \
 	java/nio/ByteBuffer.java java/nio/ByteBufferHelper.java \
@@ -2316,8 +2318,9 @@ am__objects_5 = gnu/classpath/natSystemProperties.lo \
 	java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
 	java/lang/reflect/natConstructor.lo \
 	java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
-	java/lang/reflect/natProxy.lo java/net/natNetworkInterface.lo \
-	java/net/natInetAddress.lo java/nio/channels/natChannels.lo \
+	java/lang/reflect/natProxy.lo \
+	java/net/natVMNetworkInterface.lo java/net/natInetAddress.lo \
+	java/nio/channels/natChannels.lo \
 	java/nio/natDirectByteBufferImpl.lo java/text/natCollator.lo \
 	java/util/natResourceBundle.lo java/util/natVMTimeZone.lo \
 	java/util/logging/natLogger.lo java/util/zip/natDeflater.lo \
@@ -3968,7 +3971,8 @@ am__objects_14 = $(am__objects_8) gnu/classpath/ServiceFactory.lo \
 	java/net/URLStreamHandler.lo \
 	java/net/URLStreamHandlerFactory.lo \
 	java/net/UnknownHostException.lo \
-	java/net/UnknownServiceException.lo java/nio/Buffer.lo \
+	java/net/UnknownServiceException.lo \
+	java/net/VMNetworkInterface.lo java/nio/Buffer.lo \
 	java/nio/BufferOverflowException.lo \
 	java/nio/BufferUnderflowException.lo java/nio/ByteBuffer.lo \
 	java/nio/ByteBufferHelper.lo java/nio/ByteBufferImpl.lo \
@@ -7349,6 +7353,7 @@ java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
+java/net/VMNetworkInterface.java \
 java/nio/Buffer.java \
 java/nio/BufferOverflowException.java \
 java/nio/BufferUnderflowException.java \
@@ -7724,7 +7729,7 @@ java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
 java/lang/reflect/natProxy.cc \
-java/net/natNetworkInterface.cc \
+java/net/natVMNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/nio/channels/natChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
@@ -8404,7 +8409,7 @@ java/net/$(am__dirstamp):
 java/net/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) java/net/$(DEPDIR)
 	@: > java/net/$(DEPDIR)/$(am__dirstamp)
-java/net/natNetworkInterface.lo: java/net/$(am__dirstamp) \
+java/net/natVMNetworkInterface.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
 java/net/natInetAddress.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
@@ -10357,6 +10362,8 @@ java/net/URLStreamHandlerFactory.lo: java/net/$(am__dirstamp) \
 java/net/UnknownHostException.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
 java/net/UnknownServiceException.lo: java/net/$(am__dirstamp) \
+	java/net/$(DEPDIR)/$(am__dirstamp)
+java/net/VMNetworkInterface.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
 java/nio/Buffer.lo: java/nio/$(am__dirstamp) \
 	java/nio/$(DEPDIR)/$(am__dirstamp)
@@ -17450,10 +17457,12 @@ mostlyclean-compile:
 	-rm -f java/net/UnknownHostException.lo
 	-rm -f java/net/UnknownServiceException.$(OBJEXT)
 	-rm -f java/net/UnknownServiceException.lo
+	-rm -f java/net/VMNetworkInterface.$(OBJEXT)
+	-rm -f java/net/VMNetworkInterface.lo
 	-rm -f java/net/natInetAddress.$(OBJEXT)
 	-rm -f java/net/natInetAddress.lo
-	-rm -f java/net/natNetworkInterface.$(OBJEXT)
-	-rm -f java/net/natNetworkInterface.lo
+	-rm -f java/net/natVMNetworkInterface.$(OBJEXT)
+	-rm -f java/net/natVMNetworkInterface.lo
 	-rm -f java/nio/Buffer.$(OBJEXT)
 	-rm -f java/nio/Buffer.lo
 	-rm -f java/nio/BufferOverflowException.$(OBJEXT)
@@ -21306,8 +21315,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/URLStreamHandlerFactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/UnknownHostException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/UnknownServiceException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/VMNetworkInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natInetAddress.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natNetworkInterface.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natVMNetworkInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/Buffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/BufferOverflowException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/BufferUnderflowException.Plo@am__quote@
