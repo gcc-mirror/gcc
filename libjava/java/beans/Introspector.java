@@ -220,6 +220,12 @@ public class Introspector {
   public static void flushCaches()
   {
     beanInfoCache.clear();
+
+	// Clears all the intermediate ExplicitInfo instances which
+	// have been created.
+	// This makes sure we have to retrieve stuff like BeanDescriptors
+	// again. (Remember that FeatureDescriptor can be modified by the user.)
+	ExplicitInfo.flushCaches();
   }
 
   /**
@@ -252,8 +258,8 @@ public class Introspector {
   public static BeanInfo getBeanInfo(Class beanClass, Class stopClass) 
     throws IntrospectionException 
   {
-    ExplicitInfo explicit = new ExplicitInfo(beanClass,stopClass);
-    
+    ExplicitInfo explicit = new ExplicitInfo(beanClass, stopClass);
+
     IntrospectionIncubator ii = new IntrospectionIncubator();
     ii.setPropertyStopClass(explicit.propertyStopClass);
     ii.setEventStopClass(explicit.eventStopClass);
@@ -303,15 +309,17 @@ public class Introspector {
 	  }
       }
     
-    if(explicit.explicitBeanDescriptor != null) 
-      {
-	currentInfo.setBeanDescriptor(new BeanDescriptor(beanClass,explicit.explicitBeanDescriptor.getCustomizerClass()));
-      } 
-    else 
-      {
-	currentInfo.setBeanDescriptor(new BeanDescriptor(beanClass,null));
-      }
-    
+	// Sets the info's BeanDescriptor to the one we extracted from the
+	// explicit BeanInfo instance(s) if they contained one. Otherwise we
+	// create the BeanDescriptor from scratch.
+	// Note: We do not create a copy the retrieved BeanDescriptor which will allow
+	// the user to modify the instance while it is cached. However this is how
+	// the RI does it.
+	currentInfo.setBeanDescriptor(
+		(explicit.explicitBeanDescriptor == null ? 
+			new BeanDescriptor(beanClass, null) :
+			explicit.explicitBeanDescriptor));
+
     currentInfo.setAdditionalBeanInfo(explicit.explicitBeanInfo);
     currentInfo.setIcons(explicit.im);
     
@@ -388,7 +396,7 @@ public class Introspector {
 	return null;
       }
   }
-  
+
   static BeanInfo copyBeanInfo(BeanInfo b) 
   {
     java.awt.Image[] icons = new java.awt.Image[4];
@@ -396,13 +404,15 @@ public class Introspector {
       {
 	icons[i-1] = b.getIcon(i);
       }
+
     return new ExplicitBeanInfo(b.getBeanDescriptor(),
 				b.getAdditionalBeanInfo(),
 				b.getPropertyDescriptors(),
 				b.getDefaultPropertyIndex(),
 				b.getEventSetDescriptors(),
 				b.getDefaultEventIndex(),
-				b.getMethodDescriptors(),icons);
+				b.getMethodDescriptors(),
+				icons);
   }
 }
 
@@ -423,22 +433,31 @@ class ExplicitInfo
   Class propertyStopClass;
   Class eventStopClass;
   Class methodStopClass;
-  
+
+  static Hashtable explicitBeanInfos = new Hashtable();
+  static Vector emptyBeanInfos = new Vector();
+
   ExplicitInfo(Class beanClass, Class stopClass) 
   {
     while(beanClass != null && !beanClass.equals(stopClass)) 
       {
+
 	BeanInfo explicit = findExplicitBeanInfo(beanClass);
+	
+
 	if(explicit != null) 
 	  {
+
 	    if(explicitBeanDescriptor == null) 
 	      {
 		explicitBeanDescriptor = explicit.getBeanDescriptor();
 	      }
+
 	    if(explicitBeanInfo == null) 
 	      {
 		explicitBeanInfo = explicit.getAdditionalBeanInfo();
 	      }
+
 	    if(explicitPropertyDescriptors == null) 
 	      {
 		if(explicit.getPropertyDescriptors() != null) 
@@ -448,6 +467,7 @@ class ExplicitInfo
 		    propertyStopClass = beanClass;
 		  }
 	      }
+
 	    if(explicitEventSetDescriptors == null) 
 	      {
 		if(explicit.getEventSetDescriptors() != null) 
@@ -457,6 +477,7 @@ class ExplicitInfo
 		    eventStopClass = beanClass;
 		  }
 	      }
+
 	    if(explicitMethodDescriptors == null) 
 	      {
 		if(explicit.getMethodDescriptors() != null) 
@@ -465,6 +486,7 @@ class ExplicitInfo
 		    methodStopClass = beanClass;
 		  }
 	      }
+
 	    if(im[0] == null && im[1] == null 
 	       && im[2] == null && im[3] == null) 
 	      {
@@ -476,22 +498,30 @@ class ExplicitInfo
 	  }
 	beanClass = beanClass.getSuperclass();
       }
+
     if(propertyStopClass == null) 
       {
 	propertyStopClass = stopClass;
       }
+
     if(eventStopClass == null) 
       {
 	eventStopClass = stopClass;
       }
+
     if(methodStopClass == null) 
       {
 	methodStopClass = stopClass;
       }
   }
   
-  static Hashtable explicitBeanInfos = new Hashtable();
-  static Vector emptyBeanInfos = new Vector();
+  /** Throws away all cached data and makes sure we re-instantiate things
+    * like BeanDescriptors again.
+    */
+  static void flushCaches() {
+	explicitBeanInfos.clear();
+	emptyBeanInfos.clear();
+  }
   
   static BeanInfo findExplicitBeanInfo(Class beanClass) 
   {
@@ -539,9 +569,13 @@ class ExplicitInfo
 				     Introspector.beanInfoSearchPath[i] + "."
 				     + newName);
 
-	    if (beanInfo != null)
+		// Returns the beanInfo if it exists and the described class matches
+		// the one we searched.
+	    if (beanInfo != null && beanInfo.getBeanDescriptor() != null &&
+			beanInfo.getBeanDescriptor().getBeanClass() == beanClass)
+
 	      return beanInfo;
-	  } 
+	  }
       }
 
     return beanInfo;

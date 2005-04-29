@@ -1,3 +1,16 @@
+2005-04-29  Robert Schuster  <thebohemian@gmx.net>
+
+	* java/beans/FeatureDescriptor.java:
+	(getShortDescription): Implemented fallback mechanism and fixed
+	documentation (fixes bug #12637).
+	(getDisplayName): Dito.
+
+2005-04-29  Robert Schuster  <thebohemian@gmx.net>
+
+	* java/beans/Introspector.java: Fixed bug #12624, BeanDescriptors
+	will now be set correctly.
+	(flushCaches): Now flushes all cached intermediate data.
+
 2005-04-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java
