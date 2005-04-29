@@ -1,3 +1,8 @@
+2005-04-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21030
+	* gcc.dg/tree-ssa/pr21030.c: New.
+
 2005-04-29  Devang Patel  <dpatel@apple.com>
 
 	PR tree-optimization/21272
