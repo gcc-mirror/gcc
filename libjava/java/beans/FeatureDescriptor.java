@@ -1,5 +1,5 @@
 /* java.beans.FeatureDescriptor
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,6 @@ import java.util.Hashtable;
  *
  * @author John Keiser
  * @since 1.1
- * @version 1.1.0, 31 May 1998
  */
 
 public class FeatureDescriptor
@@ -99,10 +98,13 @@ public class FeatureDescriptor
 
   /**
    * Get the localized (display) name of this feature.
+   *
+   * @returns The localized display name of this feature or falls
+   * back to the programmatic name.
    */
   public String getDisplayName()
   {
-    return displayName;
+    return (displayName == null) ? name : displayName;
   }
 
   /**
@@ -117,10 +119,14 @@ public class FeatureDescriptor
 
   /**
    * Get the localized short description for this feature.
+   *
+   * @returns A short localized description of this feature or
+   * what <code>getDisplayName</code> returns in case, that no short description
+   * is available.
    */
   public String getShortDescription()
   {
-    return shortDescription;
+    return (shortDescription == null) ? getDisplayName() : shortDescription;
   }
 
   /**
