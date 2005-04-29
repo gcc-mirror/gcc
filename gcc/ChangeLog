@@ -1,3 +1,18 @@
+2005-04-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/xtensa/xtensa.c (gen_int_relational): Use gcc_assert and
+	gcc_unreachable as appropriate.
+	(gen_conditional_move, xtensa_split_operand_pair,
+	xtensa_split_operand_pair, xtensa_copy_incoming_a7,
+	xtensa_copy_incoming_a7, xtensa_copy_incoming_a7,
+	xtensa_copy_incoming_a7, xtensa_output_literal,
+	xtensa_output_literal, xtensa_output_literal): Likewise.
+	* config/xtensa/xtensa.h (INITIAL_ELIMINATION_OFFSET): Likewise.
+	* config/xtensa/xtensa.md (*btrue, *bfalse, *ubtrue, *ubfalse,
+	*bittrue, *bitfalse, *masktrue, *maskfalse, movsicc_internal0,
+	movsicc_internal1, movsfcc_internal0,
+	movsfcc_internal1): Likewise.
+
 2005-04-28  James E Wilson  <wilson@specifixinc.com>
 
 	* config/i386/i386.h (HI_REGISTER_NAMES): Fix typos in comment.

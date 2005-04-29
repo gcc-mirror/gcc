@@ -667,8 +667,7 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
   struct cmp_info *p_info;
 
   test = map_test_to_internal_test (test_code);
-  if (test == ITEST_MAX)
-    abort ();
+  gcc_assert (test != ITEST_MAX);
 
   p_info = &info[ (int)test ];
 
@@ -864,7 +863,7 @@ gen_conditional_move (rtx cmp)
 		{
 		case LT: code = GE; break;
 		case GE: code = LT; break;
-		default: abort ();
+		default: gcc_unreachable ();
 		}
 	    }
 
@@ -956,7 +955,7 @@ xtensa_split_operand_pair (rtx operands[4], enum machine_mode mode)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   switch (GET_CODE (operands[0]))
@@ -972,7 +971,7 @@ xtensa_split_operand_pair (rtx operands[4], enum machine_mode mode)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1076,8 +1075,7 @@ xtensa_copy_incoming_a7 (rtx opnd)
     return opnd;
 
   /* This function should never be called again once a7 has been copied.  */
-  if (cfun->machine->set_frame_ptr_insn)
-    abort ();
+  gcc_assert (!cfun->machine->set_frame_ptr_insn);
 
   mode = GET_MODE (opnd);
 
@@ -1086,8 +1084,7 @@ xtensa_copy_incoming_a7 (rtx opnd)
   reg = opnd;
   if (GET_CODE (reg) == SUBREG)
     {
-      if (SUBREG_BYTE (reg) != 0)
-	abort ();
+      gcc_assert (SUBREG_BYTE (reg) == 0);
       reg = SUBREG_REG (reg);
     }
   if (GET_CODE (reg) != REG
@@ -1096,8 +1093,7 @@ xtensa_copy_incoming_a7 (rtx opnd)
     return opnd;
 
   /* 1-word args will always be in a7; 2-word args in a6/a7.  */
-  if (REGNO (reg) + HARD_REGNO_NREGS (A7_REG, mode) - 1 != A7_REG)
-    abort ();
+  gcc_assert (REGNO (reg) + HARD_REGNO_NREGS (A7_REG, mode) - 1 == A7_REG);
 
   cfun->machine->need_a7_copy = false;
 
@@ -1129,7 +1125,7 @@ xtensa_copy_incoming_a7 (rtx opnd)
       emit_insn (gen_movqi_internal (tmp, gen_raw_REG (mode, A7_REG)));
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   cfun->machine->set_frame_ptr_insn = emit_insn (gen_set_frame_ptr ());
@@ -1838,8 +1834,7 @@ xtensa_output_literal (FILE *file, rtx x, enum machine_mode mode, int labelno)
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_FLOAT:
-      if (GET_CODE (x) != CONST_DOUBLE)
-	abort ();
+      gcc_assert (GET_CODE (x) == CONST_DOUBLE);
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
       switch (mode)
@@ -1856,7 +1851,7 @@ xtensa_output_literal (FILE *file, rtx x, enum machine_mode mode, int labelno)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       break;
@@ -1864,24 +1859,27 @@ xtensa_output_literal (FILE *file, rtx x, enum machine_mode mode, int labelno)
     case MODE_INT:
     case MODE_PARTIAL_INT:
       size = GET_MODE_SIZE (mode);
-      if (size == 4)
+      switch (size)
 	{
+	case 4:
 	  output_addr_const (file, x);
 	  fputs ("\n", file);
-	}
-      else if (size == 8)
-	{
+	  break;
+
+	case 8:
 	  output_addr_const (file, operand_subword (x, 0, 0, DImode));
 	  fputs (", ", file);
 	  output_addr_const (file, operand_subword (x, 1, 0, DImode));
 	  fputs ("\n", file);
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
-	abort ();
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 

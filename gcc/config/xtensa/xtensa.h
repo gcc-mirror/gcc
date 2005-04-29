@@ -588,12 +588,17 @@ extern enum reg_class xtensa_char_to_class[256];
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   do {									\
     compute_frame_size (get_frame_size ());				\
-    if ((FROM) == FRAME_POINTER_REGNUM)					\
-      (OFFSET) = 0;							\
-    else if ((FROM) == ARG_POINTER_REGNUM)				\
-      (OFFSET) = xtensa_current_frame_size;				\
-    else								\
-      abort ();								\
+    switch (FROM)							\
+      {									\
+      case FRAME_POINTER_REGNUM:					\
+        (OFFSET) = 0;							\
+	break;								\
+      case ARG_POINTER_REGNUM:						\
+        (OFFSET) = xtensa_current_frame_size;				\
+	break;								\
+      default:								\
+	gcc_unreachable ();						\
+      }									\
   } while (0)
 
 /* If defined, the maximum amount of space required for outgoing
