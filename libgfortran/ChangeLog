@@ -1,3 +1,7 @@
+2004-04-29  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* intrinsics/rename.c: Add missing #includes.
+
 2004-04-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* AUTHORS, COPYING, INSTALL, NEWS, README: Remove.
