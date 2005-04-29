@@ -1,3 +1,11 @@
+2005-04-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/fr30/fr30.c (fr30_expand_prologue): Use gcc_assert and
+	gcc_unreachable as appropriate.
+	(fr30_expand_epilogue, fr30_setup_incoming_varargs,
+	fr30_print_operand, fr30_move_double): Likewise.
+	* config/fr30/fr30.md (*movsi_internal, *movsf_internal): Likewise.
+
 2005-04-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/arm.h (ARM_EABI_CTORS_SECTION_OP): Do not define if a
