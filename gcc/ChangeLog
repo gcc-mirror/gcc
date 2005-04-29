@@ -1,3 +1,8 @@
+2005-04-29  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/21144
+	* postreload.c (reload_cse_move2add): Check for VOIDmode.
+
 2005-04-29  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (OPTIMIZATION_OPTIONS): Define to disable
