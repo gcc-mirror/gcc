@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.net;
 
-import gnu.classpath.Configuration;
-
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -55,24 +53,24 @@ import java.util.Vector;
  */
 public final class NetworkInterface
 {
-  static
-    {
-      if (Configuration.INIT_LOAD_LIBRARY)
-	System.loadLibrary("javanet");
-    }
-
   private String name;
   private Vector inetAddresses;
 
-  private NetworkInterface(String name, InetAddress address)
+  NetworkInterface(String name, InetAddress address)
   {
     this.name = name;
     this.inetAddresses = new Vector(1, 1);
     this.inetAddresses.add(address);
   }
 
-  private static native Vector getRealNetworkInterfaces()
-    throws SocketException;
+  NetworkInterface(String name, InetAddress[] addresses)
+  {
+    this.name = name;
+    this.inetAddresses = new Vector(addresses.length, 1);
+
+    for (int i = 0; i < addresses.length; i++)
+      this.inetAddresses.add(addresses[i]);
+  }
 
   /**
    * Returns the name of the network interface
@@ -145,7 +143,7 @@ public final class NetworkInterface
   public static NetworkInterface getByName(String name)
     throws SocketException
   {
-    Vector networkInterfaces = getRealNetworkInterfaces();
+    Vector networkInterfaces = VMNetworkInterface.getInterfaces();
 
     for (Enumeration e = networkInterfaces.elements(); e.hasMoreElements();)
       {
@@ -172,7 +170,7 @@ public final class NetworkInterface
   public static NetworkInterface getByInetAddress(InetAddress addr)
     throws SocketException
   {
-    Vector networkInterfaces = getRealNetworkInterfaces();
+    Vector networkInterfaces = VMNetworkInterface.getInterfaces();
 
     for (Enumeration interfaces = networkInterfaces.elements();
          interfaces.hasMoreElements();)
@@ -199,7 +197,7 @@ public final class NetworkInterface
    */
   public static Enumeration getNetworkInterfaces() throws SocketException
   {
-    Vector networkInterfaces = getRealNetworkInterfaces();
+    Vector networkInterfaces = VMNetworkInterface.getInterfaces();
 
     if (networkInterfaces.isEmpty())
       return null;

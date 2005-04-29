@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,13 +9,13 @@ details.  */
 #include <config.h>
 #include <platform.h>
 
-#include <java/net/NetworkInterface.h>
 #include <java/net/SocketException.h>
+#include <java/net/VMNetworkInterface.h>
 #include <java/util/Vector.h>
 
 ::java::util::Vector*
-java::net::NetworkInterface::getRealNetworkInterfaces ()
+java::net::VMNetworkInterface::getInterfaces ()
 {
   throw new SocketException (
-    JvNewStringLatin1 ("NetworkInterface.getrealNetworkInterfaces: unimplemented"));
+    JvNewStringLatin1 ("VMNetworkInterface.getInterfaces: unimplemented"));
 }

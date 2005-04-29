@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -37,13 +37,14 @@ details.  */
 
 #include <gcj/cni.h>
 #include <jvm.h>
-#include <java/net/NetworkInterface.h>
 #include <java/net/Inet4Address.h>
+#include <java/net/NetworkInterface.h>
 #include <java/net/SocketException.h>
+#include <java/net/VMNetworkInterface.h>
 #include <java/util/Vector.h>
 
 ::java::util::Vector*
-java::net::NetworkInterface::getRealNetworkInterfaces ()
+java::net::VMNetworkInterface::getInterfaces ()
 {
   int fd;
   int num_interfaces = 0;
