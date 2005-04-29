@@ -3523,13 +3523,14 @@ force_evaluation_order (tree node)
 	  /* Promote types smaller than integer.  This is required by
 	     some ABIs.  */
 	  tree type = TREE_TYPE (TREE_VALUE (arg));
+	  tree saved;
 	  if (targetm.calls.promote_prototypes (type)
 	      && INTEGRAL_TYPE_P (type)
 	      && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),
 				      TYPE_SIZE (integer_type_node)))
 	    TREE_VALUE (arg) = fold_convert (integer_type_node, TREE_VALUE (arg));
 
-	  tree saved = save_expr (force_evaluation_order (TREE_VALUE (arg)));
+	  saved = save_expr (force_evaluation_order (TREE_VALUE (arg)));
 	  cmp = (cmp == NULL_TREE ? saved :
 		 build2 (COMPOUND_EXPR, void_type_node, cmp, saved));
 	  TREE_VALUE (arg) = saved;
