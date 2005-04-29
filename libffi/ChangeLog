@@ -1,3 +1,9 @@
+2005-05-29  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* configure.ac: Add i*86-*-rtems*, sparc*-*-rtems*,
+	powerpc-*rtems*, arm*-*-rtems*, sh-*-rtems*.
+	* configure: Regenerate.
+
 2005-04-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/lib/libffi-dg.exp (libffi-dg-test-1): In regsub use,
