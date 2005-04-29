@@ -1051,7 +1051,7 @@ through the use list, preventing insertions and deletions in the list from
 resulting in invalid pointers.  This is a little slower since it adds a
 placeholder element and moves it through the list.  This element must be 
 also be removed if the loop is terminated early.  A macro 
-(@code{BREAK_FROM SAFE_IMM_USE} is provided for this:
+(@code{BREAK_FROM SAFE_IMM_USE}) is provided for this:
 
 @smallexample
   FOR_EACH_IMM_USE_SAFE (use_p, iter, var)
