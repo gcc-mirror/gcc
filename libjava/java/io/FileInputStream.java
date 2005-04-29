@@ -76,7 +76,8 @@ public class FileInputStream extends InputStream
    * @param name The name of the file this stream should read from
    *
    * @exception SecurityException If read access to the file is not allowed
-   * @exception FileNotFoundException If the file does not exist.
+   * @exception FileNotFoundException If the file does not exist 
+   * or if it is a directory
    */
   public FileInputStream(String name) throws FileNotFoundException
   {
@@ -97,7 +98,8 @@ public class FileInputStream extends InputStream
    * @param file The <code>File</code> object this stream should read from
    *
    * @exception SecurityException If read access to the file is not allowed
-   * @exception FileNotFoundException If the file does not exist.
+   * @exception FileNotFoundException If the file does not exist
+   * or if it is a directory.
    */
   public FileInputStream(File file) throws FileNotFoundException
   {
@@ -105,7 +107,7 @@ public class FileInputStream extends InputStream
     if (s != null)
       s.checkRead(file.getPath());
 
-    ch = new FileChannelImpl (file.getPath(), FileChannelImpl.READ);
+    ch = new FileChannelImpl (file, FileChannelImpl.READ);
   }
 
   /**

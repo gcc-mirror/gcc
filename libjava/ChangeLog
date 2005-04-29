@@ -1,3 +1,16 @@
+2005-04-29  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/nio/channels/FileChannelImpl.java
+	(FileChannelImpl(String, int)): Removed.
+	(FileChannelImpl(File, int)): Added. Check if opened file is a
+	directory.
+	* java/io/FileInputStream.java(FileInputStream): Fixed javadocs.
+	Call FileChannelImpl(File, int).
+	* java/io/FileOutputStream.java (FileInputStream): Call
+	FileChannelImpl(File, int).
+	* java/io/RandomAccessFile.java (RandomAccessFile):
+	Call FileChannelImpl(File, int). Switched constructors around.
+
 2005-04-27  Andrew Haley  <aph@redhat.com>
 
 	PR java/19285
