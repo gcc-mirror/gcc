@@ -86,8 +86,6 @@ Boston, MA 02111-1307, USA.  */
 do {								\
   if ((LOG) > 0)						\
     fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, 1 << (LOG));	\
-  else if ((LOG) > 31)						\
-    abort ();							\
 } while (0)
 
 /* Use proper assembler syntax for these macros.  */

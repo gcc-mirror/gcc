@@ -1,5 +1,21 @@
 2005-04-29  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* config/m68k/m68k.c (m68k_initial_elimination_offset): Use
+	gcc_assert and gcc_unreachable as appropriate.
+	(output_dbcc_and_branch, output_scc_di, legitimize_pic_address,
+	const_int_cost, output_move_const_into_data_reg,
+	output_move_qimode, output_move_double, find_addr_reg,
+	print_operand, print_operand_address): Likewise.
+	* config/m68k/m68k.md (adddi3, subdi3, negsf2, negdf2, abssf2,
+	absdf2, sordered, sunordered, suneq, sunge, sungt, sunle, sunlt,
+	sltgt, bordered, bunordered, buneq, bunge, bungt, bunle, bunlt,
+	bltgt, *bordered_rev, *bunordered_rev, *buneq_rev, *bunge_rev,
+	*bunle_rev, *bunlt_rev, *bltgt_rev, negxf2, absxf2,
+	conditional_trap): Likewise.
+	* config/m68k/m68kelf.h (ASM_OUTPUT_ALIGN): Remove unreachable code.
+
+2005-04-29  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* config/xtensa/xtensa.c (gen_int_relational): Use gcc_assert and
 	gcc_unreachable as appropriate.
 	(gen_conditional_move, xtensa_split_operand_pair,
