@@ -1273,7 +1273,8 @@ reload_cse_move2add (rtx first)
 		    {
 		      enum machine_mode narrow_mode;
 		      for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-			   narrow_mode != GET_MODE (reg);
+			   narrow_mode != VOIDmode
+			   && narrow_mode != GET_MODE (reg);
 			   narrow_mode = GET_MODE_WIDER_MODE (narrow_mode))
 			{
 			  if (have_insn_for (STRICT_LOW_PART, narrow_mode)

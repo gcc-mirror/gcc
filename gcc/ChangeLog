@@ -1,3 +1,8 @@
+2005-04-29  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/21144
+	* postreload.c (reload_cse_move2add): Check for VOIDmode.
+
 2005-04-29  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/21098
