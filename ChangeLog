@@ -1,3 +1,7 @@
+2005-04-29  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure: Regenerate.
+
 2005-04-27  Mike Stump  <mrs@apple.com>
 
 	* MAINTAINERS: Add self as darwin maintainer.
