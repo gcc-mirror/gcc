@@ -1,3 +1,9 @@
+2005-04-28  Devang Patel  <dpatel@apple.com>
+
+	* dbxout.c (have_used_extensions): Remove.
+	(dbxout_type_fileds, dbxout_type, dbxout_symbol): Remove use of
+	have_used_extensions.
+	
 2005-04-28  James E Wilson  <wilson@specifixinc.com>
 
 	* doc/install.texi: Update -enable-languages info.  Correct path to
