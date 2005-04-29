@@ -1,3 +1,9 @@
+2005-04-29  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/ResourceBundle.java (getObject): Clarify
+	MissingResourceException detailed message.
+	(tryBundle(String,ClassLoader)): Likewise.
+
 2005-04-29  Robert Schuster  <thebohemian@gmx.net>
 
 	* java/beans/FeatureDescriptor.java:
