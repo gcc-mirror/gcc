@@ -1,3 +1,7 @@
+2005-04-29  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/Class.h (_Jv_ResolvePoolEntry): Declare as friend.
+	
 2005-04-29  Dalibor Topic  <robilad@kaffe.org>
 
 	* java/nio/channels/FileChannelImpl.java
