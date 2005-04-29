@@ -277,7 +277,7 @@ namespace std
 		     ios_base::iostate& __err, string& __xtrc) const
     {
       typedef char_traits<_CharT>			__traits_type;
-      typedef typename numpunct<_CharT>::__cache_type	__cache_type;
+      typedef __numpunct_cache<_CharT>                  __cache_type;
       __use_cache<__cache_type> __uc;
       const locale& __loc = __io._M_getloc();
       const __cache_type* __lc = __uc(__loc);
@@ -462,8 +462,8 @@ namespace std
 		     ios_base::iostate& __err, _ValueT& __v) const
       {
         typedef char_traits<_CharT>			     __traits_type;
-	typedef typename __to_unsigned_type<_ValueT>::__type __unsigned_type;	
-	typedef typename numpunct<_CharT>::__cache_type      __cache_type;
+	typedef typename __to_unsigned_type<_ValueT>::__type __unsigned_type;
+	typedef __numpunct_cache<_CharT>                     __cache_type;
 	__use_cache<__cache_type> __uc;
 	const locale& __loc = __io._M_getloc();
 	const __cache_type* __lc = __uc(__loc);
@@ -650,7 +650,7 @@ namespace std
       else
         {
 	  // Parse bool values as alphanumeric.
-	  typedef typename numpunct<_CharT>::__cache_type __cache_type;
+	  typedef __numpunct_cache<_CharT>              __cache_type;
 	  __use_cache<__cache_type> __uc;
 	  const locale& __loc = __io._M_getloc();
 	  const __cache_type* __lc = __uc(__loc);
@@ -915,7 +915,7 @@ namespace std
       _M_insert_int(_OutIter __s, ios_base& __io, _CharT __fill,
 		    _ValueT __v) const
       {
-	typedef typename numpunct<_CharT>::__cache_type	__cache_type;
+	typedef __numpunct_cache<_CharT>	        __cache_type;
 	__use_cache<__cache_type> __uc;
 	const locale& __loc = __io._M_getloc();
 	const __cache_type* __lc = __uc(__loc);
@@ -1038,7 +1038,7 @@ namespace std
       _M_insert_float(_OutIter __s, ios_base& __io, _CharT __fill, char __mod,
 		       _ValueT __v) const
       {
-	typedef typename numpunct<_CharT>::__cache_type	__cache_type;
+	typedef __numpunct_cache<_CharT>                __cache_type;
 	__use_cache<__cache_type> __uc;
 	const locale& __loc = __io._M_getloc();
 	const __cache_type* __lc = __uc(__loc);
@@ -1165,7 +1165,7 @@ namespace std
         }
       else
         {
-	  typedef typename numpunct<_CharT>::__cache_type __cache_type;
+	  typedef __numpunct_cache<_CharT>              __cache_type;
 	  __use_cache<__cache_type> __uc;
 	  const locale& __loc = __io._M_getloc();
 	  const __cache_type* __lc = __uc(__loc);
@@ -1259,8 +1259,7 @@ namespace std
 	typedef char_traits<_CharT>			  __traits_type;
 	typedef typename string_type::size_type	          size_type;	
 	typedef money_base::part			  part;
-	typedef moneypunct<_CharT, _Intl>		  __moneypunct_type;
-	typedef typename __moneypunct_type::__cache_type  __cache_type;
+	typedef __moneypunct_cache<_CharT, _Intl>         __cache_type;
 	
 	const locale& __loc = __io._M_getloc();
 	const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
@@ -1518,8 +1517,7 @@ namespace std
       {
 	typedef typename string_type::size_type	          size_type;
 	typedef money_base::part                          part;
-	typedef moneypunct<_CharT, _Intl>                 __moneypunct_type;
-	typedef typename __moneypunct_type::__cache_type  __cache_type;
+	typedef __moneypunct_cache<_CharT, _Intl>         __cache_type;
       
 	const locale& __loc = __io._M_getloc();
 	const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
@@ -1535,7 +1533,7 @@ namespace std
 	money_base::pattern __p;
 	const char_type* __sign;
 	size_type __sign_size;
-	if (*__beg != __lit[money_base::_S_minus])
+	if (!(*__beg == __lit[money_base::_S_minus]))
 	  {
 	    __p = __lc->_M_pos_format;
 	    __sign = __lc->_M_positive_sign;
@@ -2020,7 +2018,7 @@ namespace std
 	    for (size_t __i3 = 0; __i3 < __nmatches;)
 	      {
 		__name = __names[__matches[__i3]];
-		if (__name[__pos] != *__beg)
+		if (!(__name[__pos] == *__beg))
 		  __matches[__i3] = __matches[--__nmatches];
 		else
 		  ++__i3;
