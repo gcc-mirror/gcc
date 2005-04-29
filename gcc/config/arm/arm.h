@@ -2124,10 +2124,14 @@ typedef struct
 
 /* The EABI specifies that constructors should go in .init_array.
    Other targets use .ctors for compatibility.  */
+#ifndef ARM_EABI_CTORS_SECTION_OP
 #define ARM_EABI_CTORS_SECTION_OP \
   "\t.section\t.init_array,\"aw\",%init_array"
+#endif
+#ifndef ARM_EABI_DTORS_SECTION_OP
 #define ARM_EABI_DTORS_SECTION_OP \
   "\t.section\t.fini_array,\"aw\",%fini_array"
+#endif
 #define ARM_CTORS_SECTION_OP \
   "\t.section\t.ctors,\"aw\",%progbits"
 #define ARM_DTORS_SECTION_OP \

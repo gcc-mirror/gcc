@@ -1,3 +1,11 @@
+2005-04-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/arm/arm.h (ARM_EABI_CTORS_SECTION_OP): Do not define if a
+	definition has already been provided.
+	(ARM_EABI_DTORS_SECTION_OP): Likewise.
+	* config/arm/symbian.h (ARM_EABI_CTORS_SECTION_OP): Define.
+	(ARM_EABI_DTORS_SECTION_OP): Likewise.
+
 2005-04-29  Jim Tison  <jtison@us.ibm.com>
 
 	* config/s390/s390.md ("prologue_tpf", "epilogue_tpf"): Alter
