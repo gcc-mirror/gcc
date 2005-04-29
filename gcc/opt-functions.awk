@@ -97,8 +97,13 @@ function var_set(flags)
 	if (s != "")
 		return "CLVC_EQUAL, " s
 	s = opt_args("Mask", flags);
-	if (s != "")
-		return "CLVC_BIT_SET, MASK_" s
+	if (s != "") {
+		vn = var_name(flags);
+		if (vn)
+			return "CLVC_BIT_SET, OPTION_MASK_" s
+		else
+			return "CLVC_BIT_SET, MASK_" s
+	}
 	s = nth_arg(0, opt_args("InverseMask", flags));
 	if (s != "")
 		return "CLVC_BIT_CLEAR, MASK_" s
