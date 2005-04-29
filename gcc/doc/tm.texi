@@ -6019,6 +6019,22 @@ finalization code.  If not defined, GCC will assume such a section does
 not exist.
 @end defmac
 
+@defmac INIT_ARRAY_SECTION_ASM_OP
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+part of the @code{.init_array} (or equivalent) section.  If not
+defined, GCC will assume such a section does not exist.  Do not define
+both this macro and @code{INIT_SECTION_ASM_OP}.
+@end defmac
+ 
+@defmac FINI_ARRAY_SECTION_ASM_OP
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+part of the @code{.fini_array} (or equivalent) section.  If not
+defined, GCC will assume such a section does not exist.  Do not define
+both this macro and @code{FINI_SECTION_ASM_OP}.
+@end defmac
+
 @defmac CRT_CALL_STATIC_FUNCTION (@var{section_op}, @var{function})
 If defined, an ASM statement that switches to a different section
 via @var{section_op}, calls @var{function}, and switches back to

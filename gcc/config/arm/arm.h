@@ -2122,6 +2122,48 @@ typedef struct
 #define ASM_OUTPUT_LABELREF(FILE, NAME)		\
    arm_asm_output_labelref (FILE, NAME)
 
+/* The EABI specifies that constructors should go in .init_array.
+   Other targets use .ctors for compatibility.  */
+#define ARM_EABI_CTORS_SECTION_OP \
+  "\t.section\t.init_array,\"aw\",%init_array"
+#define ARM_EABI_DTORS_SECTION_OP \
+  "\t.section\t.fini_array,\"aw\",%fini_array"
+#define ARM_CTORS_SECTION_OP \
+  "\t.section\t.ctors,\"aw\",%progbits"
+#define ARM_DTORS_SECTION_OP \
+  "\t.section\t.dtors,\"aw\",%progbits"
+
+/* Define CTORS_SECTION_ASM_OP.  */
+#undef CTORS_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP
+#ifndef IN_LIBGCC2
+# define CTORS_SECTION_ASM_OP \
+   (TARGET_AAPCS_BASED ? ARM_EABI_CTORS_SECTION_OP : ARM_CTORS_SECTION_OP)
+# define DTORS_SECTION_ASM_OP \
+   (TARGET_AAPCS_BASED ? ARM_EABI_DTORS_SECTION_OP : ARM_DTORS_SECTION_OP)
+#else /* !defined (IN_LIBGCC2) */
+/* In libgcc, CTORS_SECTION_ASM_OP must be a compile-time constant,
+   so we cannot use the definition above.  */
+# ifdef __ARM_EABI__
+/* The .ctors section is not part of the EABI, so we do not define
+   CTORS_SECTION_ASM_OP when in libgcc; that prevents crtstuff
+   from trying to use it.  We do define it when doing normal
+   compilation, as .init_array can be used instead of .ctors.  */
+/* There is no need to emit begin or end markers when using
+   init_array; the dynamic linker will compute the size of the
+   array itself based on special symbols created by the static
+   linker.  However, we do need to arrange to set up
+   exception-handling here.  */
+#   define CTOR_LIST_BEGIN asm (ARM_EABI_CTORS_SECTION_OP)
+#   define CTOR_LIST_END /* empty */
+#   define DTOR_LIST_BEGIN asm (ARM_EABI_DTORS_SECTION_OP)
+#   define DTOR_LIST_END /* empty */
+# else /* !defined (__ARM_EABI__) */
+#   define CTORS_SECTION_ASM_OP ARM_CTORS_SECTION_OP
+#   define DTORS_SECTION_ASM_OP ARM_DTORS_SECTION_OP
+# endif /* !defined (__ARM_EABI__) */
+#endif /* !defined (IN_LIBCC2) */
+
 /* True if the operating system can merge entities with vague linkage
    (e.g., symbols in COMDAT group) during dynamic linking.  */
 #ifndef TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P

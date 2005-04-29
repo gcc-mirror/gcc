@@ -4035,11 +4035,12 @@ init_function_for_compilation (void)
   VARRAY_GROW (sibcall_epilogue, 0);
 }
 
-/* Expand a call to __main at the beginning of a possible main function.  */
-
-#if defined(INIT_SECTION_ASM_OP) && !defined(INVOKE__main)
-#undef HAS_INIT_SECTION
-#define HAS_INIT_SECTION
+/* Define IVOKE__main if we should emit a call to __main at the start
+   of "main".  */ 
+#if (!defined(INVOKE__main)			\
+     && !defined(INIT_SECTION_ASM_OP)		\
+     && !defined(INIT_ARRAY_SECTION_ASM_OP))
+#define INVOKE__main
 #endif
 
 void
@@ -4081,7 +4082,7 @@ expand_main_function (void)
     }
 #endif
 
-#ifndef HAS_INIT_SECTION
+#if defined(INVOKE__main)
   emit_library_call (init_one_libfunc (NAME__MAIN), LCT_NORMAL, VOIDmode, 0);
 #endif
 }
