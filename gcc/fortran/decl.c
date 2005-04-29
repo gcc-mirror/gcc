@@ -2407,8 +2407,7 @@ gfc_match_entry (void)
 	      || gfc_add_function (&entry->attr, entry->name, NULL) == FAILURE)
 	    return MATCH_ERROR;
 
-	  entry->result = proc->result;
-
+	  entry->result = entry;
 	}
       else
 	{
@@ -2423,6 +2422,8 @@ gfc_match_entry (void)
 	      || gfc_add_function (&entry->attr, result->name,
 				   NULL) == FAILURE)
 	    return MATCH_ERROR;
+
+	  entry->result = result;
 	}
 
       if (proc->attr.recursive && result == NULL)
