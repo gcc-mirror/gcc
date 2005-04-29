@@ -1,3 +1,8 @@
+2005-04-28  James E Wilson  <wilson@specifixinc.com>
+
+	* config/i386/i386.h (HI_REGISTER_NAMES): Fix typos in comment.
+	(ADDITIONAL_REGISTER_NAMES): Delete obsolete mmx register entries.
+
 2005-04-28  DJ Delorie  <dj@redhat.com>
 
 	* opt-functions.awk (var_set): Emit proper initializer for
