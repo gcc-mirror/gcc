@@ -2117,6 +2117,9 @@ resolve_variable (gfc_expr * e)
   if (e->ref && resolve_ref (e) == FAILURE)
     return FAILURE;
 
+  if (e->symtree == NULL)
+    return FAILURE;
+
   sym = e->symtree->n.sym;
   if (sym->attr.flavor == FL_PROCEDURE && !sym->attr.function)
     {
