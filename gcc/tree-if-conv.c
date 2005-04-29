@@ -701,7 +701,7 @@ find_phi_replacement_condition (struct loop *loop,
       basic_block tmp_bb;
       tmp_bb = first_bb;
       first_bb = second_bb;
-      second_bb = first_bb;
+      second_bb = tmp_bb;
     }
 
   /* Check if FIRST_BB is loop header or not.  */

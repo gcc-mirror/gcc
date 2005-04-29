@@ -1,3 +1,8 @@
+2005-04-29  Devang Patel  <dpatel@apple.com>
+
+	PR tree-optimization/21272
+	* tree-if-conv.c (find_phi_replacement_condition): Fix think-o.
+	
 2005-04-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-flow-inline.h: Fix a comment typo.
