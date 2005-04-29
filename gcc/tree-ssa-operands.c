@@ -1198,8 +1198,8 @@ swap_tree_operands (tree *exp0, tree *exp1)
 	    use1 = x;
 	    break;
 	  }
-      /* If both uses don't have operand entries, there isnt much we can do
-         at this point. Presumably we dont need to worry about it.  */
+      /* If both uses don't have operand entries, there isn't much we can do
+         at this point.  Presumably we dont need to worry about it.  */
       if (use0 != NUM_USES (uses) && use1 != NUM_USES (uses))
         {
 	  tree *tmp = USE_OP_PTR (uses, use1)->use;
