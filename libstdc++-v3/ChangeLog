@@ -1,5 +1,27 @@
 2005-04-29  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/21238
+	* include/bits/locale_facets.tcc (num_get::_M_extract_float,
+	num_get::_M_extract_int, num_get::do_get(bool&),
+	num_put::_M_insert_int, num_put::_M_insert_float,
+	num_put::do_put(bool), money_get::_M_extract,
+	money_put::_M_insert): Adjust the __cache_type typedef not to
+	forward to a numpunct/moneypunct typedef.
+	* testsuite/testsuite_character.h: Add pod_uint and its numpunct
+	and moneypunct specializations.
+	* testsuite/testsuite_character.cc: Add numpunct<pod_uint>::id
+	and moneypunct<pod_uint>::id.
+	* testsuite/22_locale/num_get/3.cc: New.
+	* testsuite/22_locale/num_put/3.cc: Likewise.
+	* testsuite/22_locale/money_get/3.cc: Likewise.
+	* testsuite/22_locale/money_put/3.cc: Likewise.
+
+	* include/bits/locale_facets.tcc (money_put::_M_insert,
+	time_get::_M_extract_name): Prefer operator== to operator!=
+	on char_types.
+
+2005-04-29  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits (is_convertible): Adjust according
 	to the resolution of TR1 issue 3.20.
 	* testsuite/tr1/4_metaprogramming/relationships_between_types/
