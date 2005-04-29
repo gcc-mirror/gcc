@@ -1023,7 +1023,7 @@ poplevel (int keep, int reverse, int functionbody)
      binding level is a function body, or if there are any nested blocks then
      create a BLOCK node to record them for the life of this function.  */
   if (keep || functionbody)
-    block_node = build_block (keep ? decl_chain : 0, 0, subblock_chain, 0, 0);
+    block_node = build_block (keep ? decl_chain : 0, subblock_chain, 0, 0);
 
   /* Record the BLOCK node just built as the subblock its enclosing scope.  */
   for (subblock_node = subblock_chain; subblock_node;

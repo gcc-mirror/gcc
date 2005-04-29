@@ -2830,8 +2830,7 @@ build_fn_decl (const char *name, tree type)
    compiled.  This information is used for outputting debugging info.  */
 
 tree
-build_block (tree vars, tree tags ATTRIBUTE_UNUSED, tree subblocks,
-	     tree supercontext, tree chain)
+build_block (tree vars, tree subblocks, tree supercontext, tree chain)
 {
   tree block = make_node (BLOCK);
 

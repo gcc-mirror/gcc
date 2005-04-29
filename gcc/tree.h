@@ -2905,7 +2905,7 @@ extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
 extern tree build_decl_stat (enum tree_code, tree, tree MEM_STAT_DECL);
 extern tree build_fn_decl (const char *, tree); 
 #define build_decl(c,t,q) build_decl_stat (c,t,q MEM_STAT_INFO)
-extern tree build_block (tree, tree, tree, tree, tree);
+extern tree build_block (tree, tree, tree, tree);
 #ifndef USE_MAPPED_LOCATION
 extern void annotate_with_file_line (tree, const char *, int);
 extern void annotate_with_locus (tree, location_t);
