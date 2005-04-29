@@ -1,3 +1,9 @@
+2005-04-29  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/21098
+	* config/rs6000/rs6000.c (rs6000_elf_end_indicate_exec_stack): New.
+	* config/rs6000/linux64.h (TARGET_ASM_FILE_END): Use the above.
+
 2005-04-25  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (avr-*-*): Remove redundant "case".
