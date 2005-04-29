@@ -243,9 +243,7 @@ fr30_expand_prologue (void)
     fr30_compute_frame_size (0, 0);
 
   /* This cases shouldn't happen.  Catch it now.  */
-  if (current_frame_info.total_size == 0
-      && current_frame_info.gmask)
-    abort ();
+  gcc_assert (current_frame_info.total_size || !current_frame_info.gmask);
 
   /* Allocate space for register arguments if this is a variadic function.  */
   if (current_frame_info.pretend_size)
@@ -367,9 +365,8 @@ fr30_expand_epilogue (void)
   int regno;
 
   /* Perform the inversion operations of the prologue.  */
-  if (! current_frame_info.initialised)
-    abort ();
-
+  gcc_assert (current_frame_info.initialised);
+  
   /* Pop local variables and arguments off the stack.
      If frame_pointer_needed is TRUE then the frame pointer register
      has actually been used as a frame pointer, and we can recover
@@ -430,8 +427,7 @@ fr30_setup_incoming_varargs (CUMULATIVE_ARGS *arg_regs_used_so_far,
   int size;
 
   /* All BLKmode values are passed by reference.  */
-  if (mode == BLKmode)
-    abort ();
+  gcc_assert (mode != BLKmode);
 
   /* ??? This run-time test as well as the code inside the if
      statement is probably unnecessary.  */
@@ -595,8 +591,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
       switch (GET_CODE (x0))
 	{
 	case REG:
-	  if ((unsigned) REGNO (x0) >= ARRAY_SIZE (reg_names))
-	    abort ();
+	  gcc_assert ((unsigned) REGNO (x0) < ARRAY_SIZE (reg_names));
 	  fprintf (file, "@%s", reg_names [REGNO (x0)]);
 	  break;
 
@@ -841,8 +836,7 @@ fr30_move_double (rtx * operands)
 	     must load it last.  Otherwise, load it first.  */
 	  int reverse = (refers_to_regno_p (dregno, dregno + 1, addr, 0) != 0);
 
-	  if (GET_CODE (addr) != REG)
-	    abort ();
+	  gcc_assert (GET_CODE (addr) == REG);
 	  
 	  dest0 = operand_subword (dest, reverse, TRUE, mode);
 	  dest1 = operand_subword (dest, !reverse, TRUE, mode);
@@ -895,8 +889,7 @@ fr30_move_double (rtx * operands)
       rtx src0;
       rtx src1;
 
-      if (GET_CODE (addr) != REG)
-	abort ();
+      gcc_assert (GET_CODE (addr) == REG);
       
       src0 = operand_subword (src, 0, TRUE, mode);
       src1 = operand_subword (src, 1, TRUE, mode);
@@ -929,7 +922,7 @@ fr30_move_double (rtx * operands)
     }
   else
     /* This should have been prevented by the constraints on movdi_insn.  */
-    abort ();
+    gcc_unreachable ();
   
   val = get_insns ();
   end_sequence ();
