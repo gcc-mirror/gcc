@@ -1976,6 +1976,25 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
     }
 }
 
+/* A subroutine of write_func_for_structure.  Write the enum tag for S.  */
+
+static void
+output_type_enum (outf_p of, type_p s)
+{
+  if (s->kind == TYPE_PARAM_STRUCT && s->u.s.line.file != NULL)
+    {
+      oprintf (of, ", gt_e_");
+      output_mangled_typename (of, s);
+    }
+  else if (UNION_OR_STRUCT_P (s) && s->u.s.line.file != NULL)
+    {
+      oprintf (of, ", gt_ggc_e_");
+      output_mangled_typename (of, s);
+    }
+  else
+    oprintf (of, ", gt_types_enum_last");
+}
+
 /* For S, a structure that's part of ORIG_S, and using parameters
    PARAM, write out a routine that:
    - Takes a parameter, a void * but actually of type *S
@@ -2050,21 +2069,7 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	{
 	  oprintf (d.of, ", x, gt_%s_", wtd->param_prefix);
 	  output_mangled_typename (d.of, orig_s);
-
-	  if (orig_s->u.p->kind == TYPE_PARAM_STRUCT
-	      && orig_s->u.p->u.s.line.file != NULL)
-	    {
-	      oprintf (d.of, ", gt_e_");
-	      output_mangled_typename (d.of, orig_s);
-	    }
-	  else if (UNION_OR_STRUCT_P (orig_s)
-		   && orig_s->u.s.line.file != NULL)
-	    {
-	      oprintf (d.of, ", gt_ggc_e_");
-	      output_mangled_typename (d.of, orig_s);
-	    }
-	  else
-	    oprintf (d.of, ", gt_types_enum_last");
+	  output_type_enum (d.of, orig_s);
 	}
       oprintf (d.of, "))\n");
     }
@@ -2075,21 +2080,7 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	{
 	  oprintf (d.of, ", xlimit, gt_%s_", wtd->param_prefix);
 	  output_mangled_typename (d.of, orig_s);
-
-	  if (orig_s->u.p->kind == TYPE_PARAM_STRUCT
-	      && orig_s->u.p->u.s.line.file != NULL)
-	    {
-	      oprintf (d.of, ", gt_e_");
-	      output_mangled_typename (d.of, orig_s);
-	    }
-	  else if (UNION_OR_STRUCT_P (orig_s)
-		   && orig_s->u.s.line.file != NULL)
-	    {
-	      oprintf (d.of, ", gt_ggc_e_");
-	      output_mangled_typename (d.of, orig_s);
-	    }
-	  else
-	    oprintf (d.of, ", gt_types_enum_last");
+	  output_type_enum (d.of, orig_s);
 	}
       oprintf (d.of, "))\n");
       oprintf (d.of, "   xlimit = (");
@@ -2115,21 +2106,7 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	    {
 	      oprintf (d.of, ", xprev, gt_%s_", wtd->param_prefix);
 	      output_mangled_typename (d.of, orig_s);
-
-	      if (orig_s->u.p->kind == TYPE_PARAM_STRUCT
-		  && orig_s->u.p->u.s.line.file != NULL)
-		{
-		  oprintf (d.of, ", gt_e_");
-		  output_mangled_typename (d.of, orig_s);
-		}
-	      else if (UNION_OR_STRUCT_P (orig_s)
-		       && orig_s->u.s.line.file != NULL)
-		{
-		  oprintf (d.of, ", gt_ggc_e_");
-		  output_mangled_typename (d.of, orig_s);
-		}
-	      else
-		oprintf (d.of, ", gt_types_enum_last");
+	      output_type_enum (d.of, orig_s);
 	    }
 	  oprintf (d.of, ");\n");
 	  oprintf (d.of, "      }\n");

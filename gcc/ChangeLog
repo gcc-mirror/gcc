@@ -1,3 +1,10 @@
+2005-04-29  Richard Henderson  <rth@redhat.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gengtype.c (write_func_for_structure): Split out ...
+	(output_type_enum): ... new function.  Fix thinko accessing
+	TYPE_PARAM_STRUCT data.
+
 2005-04-29  Tom Tromey  <tromey@redhat.com>
 
 	* tree.c (build_block): Removed unused 'tags' argument.
