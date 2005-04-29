@@ -203,7 +203,7 @@ static inline void
 link_imm_use_to_list (ssa_imm_use_t *linknode, ssa_imm_use_t *list)
 {
   /* Link the new node at the head of the list.  If we are in the process of 
-     traversing the list, we wont visit any new nodes added to it.  */
+     traversing the list, we won't visit any new nodes added to it.  */
   linknode->prev = list;
   linknode->next = list->next;
   list->next->prev = linknode;
