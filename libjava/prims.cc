@@ -359,6 +359,22 @@ _Jv_ThrowNullPointerException ()
   throw new java::lang::NullPointerException;
 }
 
+// Resolve an entry in the constant pool and return the target
+// address.
+void *
+_Jv_ResolvePoolEntry (jclass this_class, jint index)
+{
+  _Jv_Constants *pool = &this_class->constants;
+
+  if ((pool->tags[index] & JV_CONSTANT_ResolvedFlag) != 0)
+    return pool->data[index].field->u.addr;
+
+  JvSynchronize sync (this_class);
+  return (_Jv_Linker::resolve_pool_entry (this_class, index))
+    .field->u.addr;
+}
+
+
 // Explicitly throw a no memory exception.
 // The collector calls this when it encounters an out-of-memory condition.
 void _Jv_ThrowNoMemory()
