@@ -30,6 +30,9 @@
 /* Define to 1 if you have the `chdir' function. */
 #undef HAVE_CHDIR
 
+/* Define to 1 if you have the `chsize' function. */
+#undef HAVE_CHSIZE
+
 /* complex.h exists */
 #undef HAVE_COMPLEX_H
 
@@ -68,6 +71,9 @@
 
 /* libm includes frexpf */
 #undef HAVE_FREXPF
+
+/* Define to 1 if you have the `ftruncate' function. */
+#undef HAVE_FTRUNCATE
 
 /* libc includes getgid */
 #undef HAVE_GETGID

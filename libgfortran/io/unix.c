@@ -513,8 +513,15 @@ fd_truncate (unix_stream * s)
   /* non-seekable files, like terminals and fifo's fail the lseek.
      the fd is a regular file at this point */
 
+#ifdef HAVE_FTRUNCATE
   if (ftruncate (s->fd, s->logical_offset))
     return FAILURE;
+#else
+#ifdef HAVE_CHSIZE
+  if (chsize (s->fd, s->logical_offset))
+    return FAILURE;
+#endif
+#endif
 
   s->physical_offset = s->file_length = s->logical_offset;
 
