@@ -1,3 +1,8 @@
+2005-04-28  DJ Delorie  <dj@redhat.com>
+
+	* opt-functions.awk (var_set): Emit proper initializer for
+	non-target bitfields.
+
 2005-04-28  Devang Patel  <dpatel@apple.com>
 
 	* dbxout.c (have_used_extensions): Remove.
