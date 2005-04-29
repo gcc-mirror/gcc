@@ -1469,6 +1469,50 @@ gfc_return_by_reference (gfc_symbol * sym)
   return 0;
 }
 
+static tree
+gfc_get_mixed_entry_union (gfc_namespace *ns)
+{
+  tree type;
+  tree decl;
+  tree fieldlist;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_entry_list *el, *el2;
+
+  gcc_assert (ns->proc_name->attr.mixed_entry_master);
+  gcc_assert (memcmp (ns->proc_name->name, "master.", 7) == 0);
+
+  snprintf (name, GFC_MAX_SYMBOL_LEN, "munion.%s", ns->proc_name->name + 7);
+
+  /* Build the type node.  */
+  type = make_node (UNION_TYPE);
+
+  TYPE_NAME (type) = get_identifier (name);
+  fieldlist = NULL;
+
+  for (el = ns->entries; el; el = el->next)
+    {
+      /* Search for duplicates.  */
+      for (el2 = ns->entries; el2 != el; el2 = el2->next)
+	if (el2->sym->result == el->sym->result)
+	  break;
+
+      if (el == el2)
+	{
+	  decl = build_decl (FIELD_DECL,
+			     get_identifier (el->sym->result->name),
+			     gfc_sym_type (el->sym->result));
+	  DECL_CONTEXT (decl) = type;
+	  fieldlist = chainon (fieldlist, decl);
+	}
+    }
+
+  /* Finish off the type.  */
+  TYPE_FIELDS (type) = fieldlist;
+
+  gfc_finish_type (type);
+  return type;
+}
+
 tree
 gfc_get_function_type (gfc_symbol * sym)
 {
@@ -1571,6 +1615,8 @@ gfc_get_function_type (gfc_symbol * sym)
     type = integer_type_node;
   else if (!sym->attr.function || gfc_return_by_reference (sym))
     type = void_type_node;
+  else if (sym->attr.mixed_entry_master)
+    type = gfc_get_mixed_entry_union (sym->ns);
   else
     type = gfc_sym_type (sym);
 

@@ -3373,7 +3373,9 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
 
   /* Only do the entry/initialization code if the arg is present.  */
   dumdesc = GFC_DECL_SAVED_DESCRIPTOR (tmpdesc);
-  optional_arg = sym->attr.optional || sym->ns->proc_name->attr.entry_master;
+  optional_arg = (sym->attr.optional
+		  || (sym->ns->proc_name->attr.entry_master
+		      && sym->attr.dummy));
   if (optional_arg)
     {
       tmp = gfc_conv_expr_present (sym);
