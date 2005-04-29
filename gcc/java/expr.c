@@ -2513,8 +2513,7 @@ build_jni_stub (tree method)
     method_args = DECL_ARGUMENTS (method);
   else
     method_args = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (method));
-  block = build_block (env_var, NULL_TREE, NULL_TREE,
-		       method_args, NULL_TREE);
+  block = build_block (env_var, NULL_TREE, method_args, NULL_TREE);
   TREE_SIDE_EFFECTS (block) = 1;
   /* When compiling from source we don't set the type of the block,
      because that will prevent patch_return from ever being run.  */

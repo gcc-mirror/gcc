@@ -1,3 +1,7 @@
+2005-04-29  Tom Tromey  <tromey@redhat.com>
+
+	* treetree.c (poplevel): Updated for change to build_block.
+
 2005-04-23  DJ Delorie  <dj@redhat.com>
 
 	* parse.y: Adjust warning() callers.

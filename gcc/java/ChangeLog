@@ -1,3 +1,7 @@
+2005-04-29  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (build_jni_stub): Updated for change to build_block.
+
 2005-04-29  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	* expr.c (force_evaluation_order): Declare 'saved' earlier.
