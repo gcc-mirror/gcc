@@ -1,4 +1,12 @@
 2005-04-29  Paolo Carlini  <pcarlini@suse.de>
+	    Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/21286
+	* include/bits/fstream.tcc (basic_filebuf<>::xsgetn):
+	Loop on short reads; remove the work-around for
+	libstdc++/20806, not needed anymore.
+
+2005-04-29  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21238
 	* include/bits/locale_facets.tcc (num_get::_M_extract_float,
