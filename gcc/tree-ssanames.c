@@ -87,7 +87,7 @@ init_ssanames (void)
      large.
 
      We use VEC_quick_push here because we know that SSA_NAMES has at
-     least 50 elments reserved in it.  */
+     least 50 elements reserved in it.  */
   VEC_quick_push (tree, ssa_names, NULL_TREE);
   free_ssanames = NULL;
 }
