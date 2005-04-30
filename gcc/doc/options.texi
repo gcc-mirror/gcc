@@ -167,7 +167,7 @@ the value 1 when the option is active and 0 otherwise.  If you use @code{Var}
 to attach the option to a different variable, the associated macros are
 called @code{OPTION_MASK_@var{name}} and @code{OPTION_@var{name}} respectively.
 
-You can disable automatic bit alloction using @code{MaskExists}.
+You can disable automatic bit allocation using @code{MaskExists}.
 
 @item InverseMask(@var{othername})
 @itemx InverseMask(@var{othername}, @var{thisname})
