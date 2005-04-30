@@ -46,7 +46,7 @@
   "%{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic} "	\
   "-X"
 
-#if defined (__thumb__) && !defined (__THUMB_INTERWORK__) 
+#if defined (__thumb__)
 #define RENAME_LIBRARY_SET ".thumb_set"
 #else
 #define RENAME_LIBRARY_SET ".set"

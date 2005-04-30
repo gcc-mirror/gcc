@@ -94,10 +94,20 @@ Boston, MA 02111-1307, USA.  */
 # define RET		bx	lr
 # define RETc(x)	bx##x	lr
 
-# if (__ARM_ARCH__ == 4) \
-	&& (defined(__thumb__) || defined(__THUMB_INTERWORK__))
-#  define __INTERWORKING__
-# endif
+/* Special precautions for interworking on armv4t.  */
+# if (__ARM_ARCH__ == 4)
+
+/* Always use bx, not ldr pc.  */
+#  if (defined(__thumb__) || defined(__THUMB_INTERWORK__))
+#    define __INTERWORKING__
+#   endif /* __THUMB__ || __THUMB_INTERWORK__ */
+
+/* Include thumb stub before arm mode code.  */
+#  if defined(__thumb__) && !defined(__THUMB_INTERWORK__)
+#   define __INTERWORKING_STUBS__
+#  endif /* __thumb__ && !__THUMB_INTERWORK__ */
+
+#endif /* __ARM_ARCH == 4 */
 
 #else
 
@@ -192,7 +202,7 @@ SYM (__\name):
 /* Special function that will always be coded in ARM assembly, even if
    in Thumb-only compilation.  */
 
-#if defined(__thumb__) && !defined(__THUMB_INTERWORK__)
+#if defined(__INTERWORKING_STUBS__)
 .macro	ARM_FUNC_START name
 	FUNC_START \name
 	bx	pc
@@ -225,13 +235,17 @@ SYM (__\name):
 
 .macro	FUNC_ALIAS new old
 	.globl	SYM (__\new)
-	EQUIV	SYM (__\new), SYM (__\old)
+#if defined (__thumb__)
+	.thumb_set	SYM (__\new), SYM (__\old)
+#else
+	.set	SYM (__\new), SYM (__\old)
+#endif
 .endm
 
 .macro	ARM_FUNC_ALIAS new old
 	.globl	SYM (__\new)
 	EQUIV	SYM (__\new), SYM (__\old)
-#ifdef __thumb__
+#if defined(__INTERWORKING_STUBS__)
 	.set	SYM (_L__\new), SYM (_L__\old)
 #endif
 .endm
