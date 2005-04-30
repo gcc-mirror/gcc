@@ -169,10 +169,6 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       ycount = b->dim[1].ubound + 1 - b->dim[1].lbound;
     }
 
-  assert (a->base == 0);
-  assert (b->base == 0);
-  assert (retarray->base == 0);
-
   abase = a->data;
   bbase = b->data;
   dest = retarray->data;
