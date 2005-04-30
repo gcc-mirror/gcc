@@ -1,5 +1,15 @@
 2005-04-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	PR 14884
+	* Apply:
+	2004-03-25  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* fixinc/inclhack.def (rpc_xdr_lvalue_cast_a,
+	rpc_xdr_lvalue_cast_b): New fixes.
+	* fixinc/tests/base/rpc/xdr.h: Add new tests.
+
+2005-04-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* Apply:
 	2004-10-21  Aldy Hernandez  <aldyh@redhat.com>
 
