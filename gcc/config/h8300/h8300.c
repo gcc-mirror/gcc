@@ -481,8 +481,7 @@ byte_reg (rtx x, int b)
     "r4l", "r4h", "r5l", "r5h", "r6l", "r6h", "r7l", "r7h"
   };
 
-  if (!REG_P (x))
-    abort ();
+  gcc_assert (REG_P (x));
 
   return names_small[REGNO (x) * 2 + b];
 }
@@ -1001,7 +1000,7 @@ split_adds_subs (enum machine_mode mode, rtx *operands)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Try different amounts in descending order.  */
@@ -1366,7 +1365,7 @@ cond_string (enum rtx_code code)
     case LTU:
       return "lo";
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1391,7 +1390,7 @@ print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "#%ld", (-INTVAL (x)) & 0xff);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
     case 'F':
@@ -1404,12 +1403,11 @@ print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "#%ld", ((-INTVAL (x)) & 0xff00) >> 8);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
     case 'G':
-      if (GET_CODE (x) != CONST_INT)
-	abort ();
+      gcc_assert (GET_CODE (x) == CONST_INT);
       fprintf (file, "#%ld", 0xff & (-INTVAL (x)));
       break;
     case 'S':
@@ -1426,14 +1424,12 @@ print_operand (FILE *file, rtx x, int code)
       break;
     case 'V':
       bitint = exact_log2 (INTVAL (x) & 0xff);
-      if (bitint == -1)
-	abort ();
+      gcc_assert (bitint >= 0);
       fprintf (file, "#%d", bitint);
       break;
     case 'W':
       bitint = exact_log2 ((~INTVAL (x)) & 0xff);
-      if (bitint == -1)
-	abort ();
+      gcc_assert (bitint >= 0);
       fprintf (file, "#%d", bitint);
       break;
     case 'R':
@@ -1444,8 +1440,7 @@ print_operand (FILE *file, rtx x, int code)
 	goto def;
       break;
     case 'Y':
-      if (bitint == -1)
-	abort ();
+      gcc_assert (bitint >= 0);
       if (GET_CODE (x) == REG)
 	fprintf (file, "%s%c", names_big[REGNO (x)], bitint > 7 ? 'h' : 'l');
       else
@@ -1497,7 +1492,7 @@ print_operand (FILE *file, rtx x, int code)
 	    break;
 	  }
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	  break;
 	}
       break;
@@ -1527,7 +1522,7 @@ print_operand (FILE *file, rtx x, int code)
 	    break;
 	  }
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
     case 'j':
@@ -1537,16 +1532,24 @@ print_operand (FILE *file, rtx x, int code)
       fputs (cond_string (reverse_condition (GET_CODE (x))), file);
       break;
     case 'm':
-      if (GET_CODE (x) != CONST_INT)
-	abort ();
-      if (INTVAL (x) == 1)
-	fputs (".b", file);
-      else if (INTVAL (x) == 2)
-	fputs (".w", file);
-      else if (INTVAL (x) == 4)
-	fputs (".l", file);
-      else
-	abort ();
+      gcc_assert (GET_CODE (x) == CONST_INT);
+      switch (INTVAL (x))
+	{
+	case 1:
+	  fputs (".b", file);
+	  break;
+
+	case 2:
+	  fputs (".w", file);
+	  break;
+
+	case 4:
+	  fputs (".l", file);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
       break;
     case 'o':
       print_operand_address (file, x);
@@ -1612,7 +1615,7 @@ print_operand (FILE *file, rtx x, int code)
 	      fprintf (file, "%s", names_extended[REGNO (x)]);
 	      break;
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	  break;
 
@@ -1846,8 +1849,9 @@ h8300_initial_elimination_offset (int from, int to)
      pointer int account.  */
   saved_regs_size -= fp_size;
 
-  if (to == HARD_FRAME_POINTER_REGNUM)
+  switch (to)
     {
+    case HARD_FRAME_POINTER_REGNUM:
       switch (from)
 	{
 	case ARG_POINTER_REGNUM:
@@ -1857,11 +1861,10 @@ h8300_initial_elimination_offset (int from, int to)
 	case FRAME_POINTER_REGNUM:
 	  return -saved_regs_size;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
-    }
-  else if (to == STACK_POINTER_REGNUM)
-    {
+      break;
+    case STACK_POINTER_REGNUM:
       switch (from)
 	{
 	case ARG_POINTER_REGNUM:
@@ -1871,11 +1874,13 @@ h8300_initial_elimination_offset (int from, int to)
 	case FRAME_POINTER_REGNUM:
 	  return frame_size;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
+      break;
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
+  gcc_unreachable ();
 }
 
 /* Worker function for RETURN_ADDR_RTX.  */
@@ -2196,12 +2201,9 @@ h8300_classify_operand (rtx op, int size, enum h8300_operand_class *class)
 	  return 0;
 	}
     }
-  else if (register_operand (op, VOIDmode))
-    {
-      *class = H8OP_REGISTER;
-      return 0;
-    }
-  abort ();
+  gcc_assert (register_operand (op, VOIDmode));
+  *class = H8OP_REGISTER;
+  return 0;
 }
 
 /* Return the length of the instruction described by TABLE given that
@@ -2246,7 +2248,7 @@ h8300_unary_length (rtx op)
       return operand_length + 6;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2272,7 +2274,7 @@ h8300_short_immediate_length (rtx op)
       return 4 + operand_length;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2286,8 +2288,7 @@ h8300_bitfield_length (rtx op, rtx op2)
 
   if (GET_CODE (op) == REG)
     op = op2;
-  if (GET_CODE (op) == REG)
-    abort ();
+  gcc_assert (GET_CODE (op) != REG);
   
   size = GET_MODE_SIZE (GET_MODE (op));
   operand_length = h8300_classify_operand (op, size, &class);
@@ -2300,7 +2301,7 @@ h8300_bitfield_length (rtx op, rtx op2)
       return 4 + operand_length;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2312,18 +2313,18 @@ h8300_binary_length (rtx insn, const h8300_length_table *table)
   rtx set;
 
   set = single_set (insn);
-  if (set == 0)
-    abort ();
+  gcc_assert (set);
 
   if (BINARY_P (SET_SRC (set)))
     return h8300_length_from_table (XEXP (SET_SRC (set), 0),
 				    XEXP (SET_SRC (set), 1), table);
-  else if (GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == RTX_TERNARY)
-    return h8300_length_from_table (XEXP (XEXP (SET_SRC (set), 1), 0),
-				    XEXP (XEXP (SET_SRC (set), 1), 1),
-				    table);
   else
-    abort ();
+    {
+      gcc_assert (GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == RTX_TERNARY);
+      return h8300_length_from_table (XEXP (XEXP (SET_SRC (set), 1), 0),
+				      XEXP (XEXP (SET_SRC (set), 1), 1),
+				      table);
+    }
 }
 
 /* Subroutine of h8300_move_length.  Return true if OP is 1- or 2-byte
@@ -2401,7 +2402,7 @@ h8300_insn_length_from_table (rtx insn, rtx * operands)
   switch (get_attr_length_table (insn))
     {
     case LENGTH_TABLE_NONE:
-      abort ();
+      gcc_unreachable ();
 
     case LENGTH_TABLE_ADDB:
       return h8300_binary_length (insn, &addb_length_table);
@@ -2444,9 +2445,10 @@ h8300_insn_length_from_table (rtx insn, rtx * operands)
       
     case LENGTH_TABLE_BITBRANCH:
       return h8300_bitfield_length (operands[1], operands[2]) - 2;
-      
+
+    default:
+      gcc_unreachable ();
     }
-  abort ();
 }
 
 /* Return true if LHS and RHS are memory references that can be mapped
@@ -2711,7 +2713,7 @@ compute_mov_length (rtx *operands)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       /* Adjust the length based on the addressing mode used.
@@ -2831,7 +2833,7 @@ compute_mov_length (rtx *operands)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       /* Adjust the length based on the addressing mode used.
@@ -2875,8 +2877,7 @@ output_plussi (rtx *operands)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
 
-  if (mode != SImode)
-    abort ();
+  gcc_assert (mode == SImode);
 
   if (TARGET_H8300)
     {
@@ -2960,8 +2961,7 @@ compute_plussi_length (rtx *operands)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
 
-  if (mode != SImode)
-    abort ();
+  gcc_assert (mode == SImode);
 
   if (TARGET_H8300)
     {
@@ -3040,8 +3040,7 @@ compute_plussi_cc (rtx *operands)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
 
-  if (mode != SImode)
-    abort ();
+  gcc_assert (mode == SImode);
 
   if (TARGET_H8300)
     {
@@ -3135,7 +3134,7 @@ output_logical_op (enum machine_mode mode, rtx *operands)
       opname = "xor";
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   switch (mode)
@@ -3267,7 +3266,7 @@ output_logical_op (enum machine_mode mode, rtx *operands)
 	}
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return "";
 }
@@ -3413,7 +3412,7 @@ compute_logical_op_length (enum machine_mode mode, rtx *operands)
 	}
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return length;
 }
@@ -3495,7 +3494,7 @@ compute_logical_op_cc (enum machine_mode mode, rtx *operands)
 	}
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return cc;
 }
@@ -3633,7 +3632,7 @@ output_h8sx_shift (rtx *operands, int suffix, int optype)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
   if (operands[2] == const1_rtx)
     sprintf (buffer, "%s.%c\t%%%c0", stem, suffix, optype);
@@ -3914,7 +3913,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Fill in INFO.  Return unless we have SHIFT_SPECIAL.  */
@@ -3953,12 +3952,9 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
     case QIshift:
       /* For ASHIFTRT by 7 bits, the sign bit is simply replicated
 	 through the entire value.  */
-      if (shift_type == SHIFT_ASHIFTRT && count == 7)
-	{
-	  info->special = "shll\t%X0\n\tsubx\t%X0,%X0";
-	  goto end;
-	}
-      abort ();
+      gcc_assert (shift_type == SHIFT_ASHIFTRT && count == 7);
+      info->special = "shll\t%X0\n\tsubx\t%X0,%X0";
+      goto end;
 
     case HIshift:
       if (count == 7)
@@ -4040,7 +4036,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 		  info->cc_special = CC_SET_ZNV;
 		}
 	      else /* TARGET_H8300S */
-		abort ();
+		gcc_unreachable ();
 	      goto end;
 	    }
 	}
@@ -4059,7 +4055,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    }
 	}
-      abort ();
+      gcc_unreachable ();
 
     case SIshift:
       if (TARGET_H8300 && 8 <= count && count <= 9)
@@ -4100,7 +4096,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      abort ();
+	      gcc_unreachable ();
 	    case SHIFT_LSHIFTRT:
 	      info->special = "bld\t#7,%z0\n\tmov.w\t%e0,%f0\n\txor\t%y0,%y0\n\txor\t%z0,%z0\n\trotxl\t%w0\n\trotxl\t%x0\n\trotxl\t%y0";
 	      goto end;
@@ -4122,7 +4118,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      info->cc_special = CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	}
       else if ((TARGET_H8300 && 16 <= count && count <= 20)
@@ -4227,7 +4223,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	}
       else if (!TARGET_H8300 && count == 29)
@@ -4253,7 +4249,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 		}
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	}
       else if (!TARGET_H8300 && count == 30)
@@ -4273,7 +4269,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	}
       else if (count == 31)
@@ -4312,10 +4308,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 		}
 	    }
 	}
-      abort ();
+      gcc_unreachable ();
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
  end:
@@ -4365,7 +4361,7 @@ h8300_shift_needs_scratch_p (int count, enum machine_mode mode)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* On H8/300H, count == 8 uses a scratch register.  */
@@ -4385,6 +4381,7 @@ output_a_shift (rtx *operands)
   enum shift_type shift_type;
   enum shift_mode shift_mode;
   struct shift_info info;
+  int n;
 
   loopend_lab++;
 
@@ -4400,7 +4397,7 @@ output_a_shift (rtx *operands)
       shift_mode = SIshift;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   switch (code)
@@ -4415,115 +4412,117 @@ output_a_shift (rtx *operands)
       shift_type = SHIFT_ASHIFT;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
-  if (GET_CODE (operands[2]) != CONST_INT)
+  /* This case must be taken care of by one of the two splitters
+     that convert a variable shift into a loop.  */
+  gcc_assert (GET_CODE (operands[2]) == CONST_INT);
+  
+  n = INTVAL (operands[2]);
+
+  /* If the count is negative, make it 0.  */
+  if (n < 0)
+    n = 0;
+  /* If the count is too big, truncate it.
+     ANSI says shifts of GET_MODE_BITSIZE are undefined - we choose to
+     do the intuitive thing.  */
+  else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
+    n = GET_MODE_BITSIZE (mode);
+
+  get_shift_alg (shift_type, shift_mode, n, &info);
+  
+  switch (info.alg)
     {
-      /* This case must be taken care of by one of the two splitters
-	 that convert a variable shift into a loop.  */
-      abort ();
-    }
-  else
-    {
-      int n = INTVAL (operands[2]);
+    case SHIFT_SPECIAL:
+      output_asm_insn (info.special, operands);
+      /* Fall through.  */
 
-      /* If the count is negative, make it 0.  */
-      if (n < 0)
-	n = 0;
-      /* If the count is too big, truncate it.
-         ANSI says shifts of GET_MODE_BITSIZE are undefined - we choose to
-	 do the intuitive thing.  */
-      else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
-	n = GET_MODE_BITSIZE (mode);
+    case SHIFT_INLINE:
+      n = info.remainder;
 
-      get_shift_alg (shift_type, shift_mode, n, &info);
-
-      switch (info.alg)
+      /* Emit two bit shifts first.  */
+      if (info.shift2 != NULL)
 	{
-	case SHIFT_SPECIAL:
-	  output_asm_insn (info.special, operands);
-	  /* Fall through.  */
+	  for (; n > 1; n -= 2)
+	    output_asm_insn (info.shift2, operands);
+	}
 
-	case SHIFT_INLINE:
-	  n = info.remainder;
+      /* Now emit one bit shifts for any residual.  */
+      for (; n > 0; n--)
+	output_asm_insn (info.shift1, operands);
+      return "";
+      
+    case SHIFT_ROT_AND:
+      {
+	int m = GET_MODE_BITSIZE (mode) - n;
+	const int mask = (shift_type == SHIFT_ASHIFT
+			  ? ((1 << m) - 1) << n
+			  : (1 << m) - 1);
+	char insn_buf[200];
 
-	  /* Emit two bit shifts first.  */
-	  if (info.shift2 != NULL)
-	    {
-	      for (; n > 1; n -= 2)
-		output_asm_insn (info.shift2, operands);
-	    }
-
-	  /* Now emit one bit shifts for any residual.  */
-	  for (; n > 0; n--)
-	    output_asm_insn (info.shift1, operands);
-	  return "";
-
-	case SHIFT_ROT_AND:
+	/* Not all possibilities of rotate are supported.  They shouldn't
+	   be generated, but let's watch for 'em.  */
+	gcc_assert (info.shift1);
+	
+	/* Emit two bit rotates first.  */
+	if (info.shift2 != NULL)
 	  {
-	    int m = GET_MODE_BITSIZE (mode) - n;
-	    const int mask = (shift_type == SHIFT_ASHIFT
-			      ? ((1 << m) - 1) << n
-			      : (1 << m) - 1);
-	    char insn_buf[200];
+	    for (; m > 1; m -= 2)
+	      output_asm_insn (info.shift2, operands);
+	  }
+	
+	/* Now single bit rotates for any residual.  */
+	for (; m > 0; m--)
+	  output_asm_insn (info.shift1, operands);
+	
+	/* Now mask off the high bits.  */
+	switch (mode)
+	  {
+	  case QImode:
+	    sprintf (insn_buf, "and\t#%d,%%X0", mask);
+	    break;
 
-	    /* Not all possibilities of rotate are supported.  They shouldn't
-	       be generated, but let's watch for 'em.  */
-	    if (info.shift1 == 0)
-	      abort ();
+	  case HImode:
+	    gcc_assert (TARGET_H8300H || TARGET_H8300S);
+	    sprintf (insn_buf, "and.w\t#%d,%%T0", mask);
+	    break;
 
-	    /* Emit two bit rotates first.  */
-	    if (info.shift2 != NULL)
-	      {
-		for (; m > 1; m -= 2)
-		  output_asm_insn (info.shift2, operands);
-	      }
-
-	    /* Now single bit rotates for any residual.  */
-	    for (; m > 0; m--)
-	      output_asm_insn (info.shift1, operands);
-
-	    /* Now mask off the high bits.  */
-	    if (mode == QImode)
-	      sprintf (insn_buf, "and\t#%d,%%X0", mask);
-	    else if (mode == HImode && (TARGET_H8300H || TARGET_H8300S))
-	      sprintf (insn_buf, "and.w\t#%d,%%T0", mask);
-	    else
-	      abort ();
-
-	    output_asm_insn (insn_buf, operands);
-	    return "";
+	  default:
+	    gcc_unreachable ();
 	  }
 
-	case SHIFT_LOOP:
-	  /* A loop to shift by a "large" constant value.
-	     If we have shift-by-2 insns, use them.  */
-	  if (info.shift2 != NULL)
-	    {
-	      fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n / 2,
-		       names_big[REGNO (operands[4])]);
-	      fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-	      output_asm_insn (info.shift2, operands);
-	      output_asm_insn ("add	#0xff,%X4", operands);
-	      fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
-	      if (n % 2)
-		output_asm_insn (info.shift1, operands);
-	    }
-	  else
-	    {
-	      fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n,
-		       names_big[REGNO (operands[4])]);
-	      fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-	      output_asm_insn (info.shift1, operands);
-	      output_asm_insn ("add	#0xff,%X4", operands);
-	      fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
-	    }
-	  return "";
+	output_asm_insn (insn_buf, operands);
+	return "";
+      }
 
-	default:
-	  abort ();
+    case SHIFT_LOOP:
+      /* A loop to shift by a "large" constant value.
+	 If we have shift-by-2 insns, use them.  */
+      if (info.shift2 != NULL)
+	{
+	  fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n / 2,
+		   names_big[REGNO (operands[4])]);
+	  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
+	  output_asm_insn (info.shift2, operands);
+	  output_asm_insn ("add	#0xff,%X4", operands);
+	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
+	  if (n % 2)
+	    output_asm_insn (info.shift1, operands);
 	}
+      else
+	{
+	  fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n,
+		   names_big[REGNO (operands[4])]);
+	  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
+	  output_asm_insn (info.shift1, operands);
+	  output_asm_insn ("add	#0xff,%X4", operands);
+	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
+	}
+      return "";
+      
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -4566,7 +4565,7 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
       shift_mode = SIshift;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   switch (code)
@@ -4581,7 +4580,7 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
       shift_type = SHIFT_ASHIFT;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (GET_CODE (operands[2]) != CONST_INT)
@@ -4639,8 +4638,7 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
 
 	    /* Not all possibilities of rotate are supported.  They shouldn't
 	       be generated, but let's watch for 'em.  */
-	    if (info.shift1 == 0)
-	      abort ();
+	    gcc_assert (info.shift1);
 
 	    if (info.shift2 != NULL)
 	      {
@@ -4660,12 +4658,11 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
 		wlength += 2;
 		break;
 	      case SImode:
-		if (TARGET_H8300)
-		  abort ();
+		gcc_assert (!TARGET_H8300);
 		wlength += 3;
 		break;
 	      default:
-		abort ();
+		gcc_unreachable ();
 	      }
 	    return 2 * wlength;
 	  }
@@ -4686,7 +4683,7 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
 	  return 2 * wlength;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }
@@ -4702,7 +4699,8 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
   enum shift_type shift_type;
   enum shift_mode shift_mode;
   struct shift_info info;
-
+  int n;
+  
   switch (mode)
     {
     case QImode:
@@ -4715,7 +4713,7 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
       shift_mode = SIshift;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   switch (code)
@@ -4730,58 +4728,53 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
       shift_type = SHIFT_ASHIFT;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
-  if (GET_CODE (operands[2]) != CONST_INT)
+  /* This case must be taken care of by one of the two splitters
+     that convert a variable shift into a loop.  */
+  gcc_assert (GET_CODE (operands[2]) == CONST_INT);
+  
+  n = INTVAL (operands[2]);
+
+  /* If the count is negative, make it 0.  */
+  if (n < 0)
+    n = 0;
+  /* If the count is too big, truncate it.
+     ANSI says shifts of GET_MODE_BITSIZE are undefined - we choose to
+     do the intuitive thing.  */
+  else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
+    n = GET_MODE_BITSIZE (mode);
+  
+  get_shift_alg (shift_type, shift_mode, n, &info);
+  
+  switch (info.alg)
     {
-      /* This case must be taken care of by one of the two splitters
-	 that convert a variable shift into a loop.  */
-      abort ();
-    }
-  else
-    {
-      int n = INTVAL (operands[2]);
+    case SHIFT_SPECIAL:
+      if (info.remainder == 0)
+	return info.cc_special;
 
-      /* If the count is negative, make it 0.  */
-      if (n < 0)
-	n = 0;
-      /* If the count is too big, truncate it.
-         ANSI says shifts of GET_MODE_BITSIZE are undefined - we choose to
-	 do the intuitive thing.  */
-      else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
-	n = GET_MODE_BITSIZE (mode);
+      /* Fall through.  */
 
-      get_shift_alg (shift_type, shift_mode, n, &info);
-
-      switch (info.alg)
+    case SHIFT_INLINE:
+      return info.cc_inline;
+      
+    case SHIFT_ROT_AND:
+      /* This case always ends with an and instruction.  */
+      return CC_SET_ZNV;
+      
+    case SHIFT_LOOP:
+      /* A loop to shift by a "large" constant value.
+	 If we have shift-by-2 insns, use them.  */
+      if (info.shift2 != NULL)
 	{
-	case SHIFT_SPECIAL:
-	  if (info.remainder == 0)
-	    return info.cc_special;
-
-	  /* Fall through.  */
-
-	case SHIFT_INLINE:
-	  return info.cc_inline;
-
-	case SHIFT_ROT_AND:
-	  /* This case always ends with an and instruction.  */
-	  return CC_SET_ZNV;
-
-	case SHIFT_LOOP:
-	  /* A loop to shift by a "large" constant value.
-	     If we have shift-by-2 insns, use them.  */
-	  if (info.shift2 != NULL)
-	    {
-	      if (n % 2)
-		return info.cc_inline;
-	    }
-	  return CC_CLOBBER;
-
-	default:
-	  abort ();
+	  if (n % 2)
+	    return info.cc_inline;
 	}
+      return CC_CLOBBER;
+      
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -4833,7 +4826,7 @@ expand_a_rotate (rtx operands[])
 	  emit_insn (gen_rotlsi3_1 (dst, dst, const1_rtx));
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       /* Decrement the counter by 1.  */
@@ -4861,7 +4854,7 @@ expand_a_rotate (rtx operands[])
 	  emit_insn (gen_rotlsi3_1 (dst, dst, rotate_amount));
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -4882,8 +4875,7 @@ output_a_rotate (enum rtx_code code, rtx *operands)
   int amount;
   enum machine_mode mode = GET_MODE (dst);
 
-  if (GET_CODE (rotate_amount) != CONST_INT)
-    abort ();
+  gcc_assert (GET_CODE (rotate_amount) == CONST_INT);
 
   switch (mode)
     {
@@ -4897,7 +4889,7 @@ output_a_rotate (enum rtx_code code, rtx *operands)
       rotate_mode = SIshift;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   switch (code)
@@ -4909,7 +4901,7 @@ output_a_rotate (enum rtx_code code, rtx *operands)
       rotate_type = SHIFT_LSHIFTRT;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   amount = INTVAL (rotate_amount);
@@ -4953,7 +4945,7 @@ output_a_rotate (enum rtx_code code, rtx *operands)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       /* Adjust AMOUNT and flip the direction.  */
@@ -4988,8 +4980,7 @@ compute_a_rotate_length (rtx *operands)
   int amount;
   unsigned int length = 0;
 
-  if (GET_CODE (amount_rtx) != CONST_INT)
-    abort ();
+  gcc_assert (GET_CODE (amount_rtx) == CONST_INT);
 
   amount = INTVAL (amount_rtx);
 
@@ -5083,7 +5074,7 @@ fix_bit_operand (rtx *operands, enum rtx_code code)
 	emit_insn (gen_xorqi3_1 (res, operands[1], operands[2]));
 	break;
       default:
-	abort ();
+	gcc_unreachable ();
       }
     emit_insn (gen_movqi (operands[0], res));
   }
@@ -5598,9 +5589,9 @@ h8300_regs_ok_for_stm (int n, rtx operands[])
 	      && REGNO (operands[1]) == 1
 	      && REGNO (operands[2]) == 2
 	      && REGNO (operands[3]) == 3);
+    default:
+      gcc_unreachable ();
     }
-
-  abort ();
 }
 
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */

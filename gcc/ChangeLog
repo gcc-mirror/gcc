@@ -1,3 +1,21 @@
+2005-04-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/h8300/h8300.c (byte_reg): Use gcc_assert and
+	gcc_unreachable as appropriate.
+	(split_adds_subs, cond_string, print_operand,
+	h8300_initial_elimination_offset, h8300_classify_operand,
+	h8300_unary_length, h8300_short_immediate_length,
+	h8300_bitfield_length, h8300_binary_length,
+	h8300_insn_length_from_table, compute_mov_length, output_plussi,
+	compute_plussi_length, compute_plussi_cc, output_logical_op,
+	compute_logical_op_length, compute_logical_op_cc,
+	output_h8sx_shift, get_shift_alg, h8300_shift_needs_scratch_p,
+	output_a_shift, compute_a_shift_length, compute_a_shift_cc,
+	output_a_rotate, compute_a_rotate_length, fix_bit_operand,
+	h8300_regs_ok_for_stm): Likewise.
+	* config/h8300/h8300.md (*movsi_h8300, *movsf_h8300,
+	monitor_prologue): Likewise.
+
 2005-04-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* loop-invariant.c (invariants, create_new_invariant,
