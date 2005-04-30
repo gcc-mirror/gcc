@@ -1,3 +1,14 @@
+2005-04-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/18857
+	* generated/matmul_r8.c: Remove incorrect assertions.
+	* generated/matmul_c4.c: Regenerate
+	* generated/matmul_c8.c: Regenerate
+	* generated/matmul_i4.c: Regenerate
+	* generated/matmul_i8.c: Regenerate
+	* generated/matmul_r4.c: Regenerate
+	* generated/matmul_r8.c: Regenerate
+
 2005-04-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* configure.ac: Check for ftruncate and chsize.
@@ -28,7 +39,6 @@
 	call for ext_name.  These fix the bug reported by Jerry DeLisle to
 	the fortran list and are based on his suggested fix.
 
-
 2005-04-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/20074
@@ -45,7 +55,7 @@
 	* generated/reshape_i4.c: Regenerated.
 	* generated/reshape_i8.c: Regenerated.
 
-2005-04-18 Paul Thomas <pault@gcc.gnu.org>
+2005-04-18  Paul  Thomas <pault@gcc.gnu.org>
 
 	* io/list_read.c (nml_touch_nodes, nml_read_obj,
 	nml_get_obj_data): Fix memory leaks in code for derived types.

@@ -55,6 +55,9 @@ any_l8 (gfc_array_l8 *retarray, gfc_array_l8 *array, index_type *pdim)
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 

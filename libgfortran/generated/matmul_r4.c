@@ -167,10 +167,6 @@ matmul_r4 (gfc_array_r4 * retarray, gfc_array_r4 * a, gfc_array_r4 * b)
       ycount = b->dim[1].ubound + 1 - b->dim[1].lbound;
     }
 
-  assert (a->base == 0);
-  assert (b->base == 0);
-  assert (retarray->base == 0);
-
   abase = a->data;
   bbase = b->data;
   dest = retarray->data;
