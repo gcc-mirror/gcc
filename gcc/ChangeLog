@@ -1,3 +1,12 @@
+2005-04-30  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/bpabi.h (RENAME_LIBRARY_SET): Always use .thumb_set in
+	thumb mode.
+	* config/arm/ieee754-df.S: Use __INTERWORKING_STUBS__.
+	* config/arm/ieee754-sf.S: Ditto.
+	* config/arm/lib1funcs.asm: Define and use __INTERWORKING_STUBS__.
+	(FUNC_ALIAS): Use .thumb_set for thumb routines.
+
 2005-04-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssanames.c: Fix a comment typo.
