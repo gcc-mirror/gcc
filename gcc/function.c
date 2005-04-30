@@ -189,11 +189,6 @@ struct temp_slot GTY(())
 static rtx assign_stack_local_1 (enum machine_mode, HOST_WIDE_INT, int,
 				 struct function *);
 static struct temp_slot *find_temp_slot_from_address (rtx);
-static void instantiate_decls (tree, int);
-static void instantiate_decls_1 (tree, int);
-static void instantiate_decl (rtx, HOST_WIDE_INT, int);
-static rtx instantiate_new_reg (rtx, HOST_WIDE_INT *);
-static int instantiate_virtual_regs_1 (rtx *, rtx, int);
 static void pad_to_arg_alignment (struct args_size *, int, struct args_size *);
 static void pad_below (struct args_size *, enum machine_mode, tree);
 static void reorder_blocks_1 (rtx, tree, varray_type *);
@@ -214,7 +209,6 @@ static rtx keep_stack_depressed (rtx);
 static void prepare_function_start (tree);
 static void do_clobber_return_reg (rtx, void *);
 static void do_use_return_reg (rtx, void *);
-static void instantiate_virtual_regs_lossage (rtx);
 static void set_insn_locators (rtx, int) ATTRIBUTE_UNUSED;
 
 /* Pointer to chain of `struct function' for containing functions.  */
@@ -1217,183 +1211,6 @@ static int cfa_offset;
 #endif
 
 
-/* Pass through the INSNS of function FNDECL and convert virtual register
-   references to hard register references.  */
-
-void
-instantiate_virtual_regs (void)
-{
-  rtx insn;
-
-  /* Compute the offsets to use for this function.  */
-  in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
-  var_offset = STARTING_FRAME_OFFSET;
-  dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
-  out_arg_offset = STACK_POINTER_OFFSET;
-  cfa_offset = ARG_POINTER_CFA_OFFSET (current_function_decl);
-
-  /* Scan all variables and parameters of this function.  For each that is
-     in memory, instantiate all virtual registers if the result is a valid
-     address.  If not, we do it later.  That will handle most uses of virtual
-     regs on many machines.  */
-  instantiate_decls (current_function_decl, 1);
-
-  /* Initialize recognition, indicating that volatile is OK.  */
-  init_recog ();
-
-  /* Scan through all the insns, instantiating every virtual register still
-     present.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
-      {
-	instantiate_virtual_regs_1 (&PATTERN (insn), insn, 1);
-	if (INSN_DELETED_P (insn))
-	  continue;
-	instantiate_virtual_regs_1 (&REG_NOTES (insn), NULL_RTX, 0);
-	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
-	if (CALL_P (insn))
-	  instantiate_virtual_regs_1 (&CALL_INSN_FUNCTION_USAGE (insn),
-				      NULL_RTX, 0);
-
-	/* Past this point all ASM statements should match.  Verify that
-	   to avoid failures later in the compilation process.  */
-        if (asm_noperands (PATTERN (insn)) >= 0
-	    && ! check_asm_operands (PATTERN (insn)))
-          instantiate_virtual_regs_lossage (insn);
-      }
-
-  /* Now instantiate the remaining register equivalences for debugging info.
-     These will not be valid addresses.  */
-  instantiate_decls (current_function_decl, 0);
-
-  /* Indicate that, from now on, assign_stack_local should use
-     frame_pointer_rtx.  */
-  virtuals_instantiated = 1;
-}
-
-/* Scan all decls in FNDECL (both variables and parameters) and instantiate
-   all virtual registers in their DECL_RTL's.
-
-   If VALID_ONLY, do this only if the resulting address is still valid.
-   Otherwise, always do it.  */
-
-static void
-instantiate_decls (tree fndecl, int valid_only)
-{
-  tree decl;
-
-  /* Process all parameters of the function.  */
-  for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
-    {
-      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
-      HOST_WIDE_INT size_rtl;
-
-      instantiate_decl (DECL_RTL (decl), size, valid_only);
-
-      /* If the parameter was promoted, then the incoming RTL mode may be
-	 larger than the declared type size.  We must use the larger of
-	 the two sizes.  */
-      size_rtl = GET_MODE_SIZE (GET_MODE (DECL_INCOMING_RTL (decl)));
-      size = MAX (size_rtl, size);
-      instantiate_decl (DECL_INCOMING_RTL (decl), size, valid_only);
-    }
-
-  /* Now process all variables defined in the function or its subblocks.  */
-  instantiate_decls_1 (DECL_INITIAL (fndecl), valid_only);
-}
-
-/* Subroutine of instantiate_decls: Process all decls in the given
-   BLOCK node and all its subblocks.  */
-
-static void
-instantiate_decls_1 (tree let, int valid_only)
-{
-  tree t;
-
-  for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
-    if (DECL_RTL_SET_P (t))
-      instantiate_decl (DECL_RTL (t),
-			int_size_in_bytes (TREE_TYPE (t)),
-			valid_only);
-
-  /* Process all subblocks.  */
-  for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
-    instantiate_decls_1 (t, valid_only);
-}
-
-/* Subroutine of the preceding procedures: Given RTL representing a
-   decl and the size of the object, do any instantiation required.
-
-   If VALID_ONLY is nonzero, it means that the RTL should only be
-   changed if the new address is valid.  */
-
-static void
-instantiate_decl (rtx x, HOST_WIDE_INT size, int valid_only)
-{
-  enum machine_mode mode;
-  rtx addr;
-
-  if (x == 0)
-    return;
-
-  /* If this is a CONCAT, recurse for the pieces.  */
-  if (GET_CODE (x) == CONCAT)
-    {
-      instantiate_decl (XEXP (x, 0), size / 2, valid_only);
-      instantiate_decl (XEXP (x, 1), size / 2, valid_only);
-      return;
-    }
-
-  /* If this is not a MEM, no need to do anything.  Similarly if the
-     address is a constant or a register that is not a virtual register.  */
-  if (!MEM_P (x))
-    return;
-
-  addr = XEXP (x, 0);
-  if (CONSTANT_P (addr)
-      || (REG_P (addr)
-	  && (REGNO (addr) < FIRST_VIRTUAL_REGISTER
-	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
-    return;
-
-  /* If we should only do this if the address is valid, copy the address.
-     We need to do this so we can undo any changes that might make the
-     address invalid.  This copy is unfortunate, but probably can't be
-     avoided.  */
-
-  if (valid_only)
-    addr = copy_rtx (addr);
-
-  instantiate_virtual_regs_1 (&addr, NULL_RTX, 0);
-
-  if (valid_only && size >= 0)
-    {
-      unsigned HOST_WIDE_INT decl_size = size;
-
-      /* Now verify that the resulting address is valid for every integer or
-	 floating-point mode up to and including SIZE bytes long.  We do this
-	 since the object might be accessed in any mode and frame addresses
-	 are shared.  */
-
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   mode != VOIDmode && GET_MODE_SIZE (mode) <= decl_size;
-	   mode = GET_MODE_WIDER_MODE (mode))
-	if (! memory_address_p (mode, addr))
-	  return;
-
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-	   mode != VOIDmode && GET_MODE_SIZE (mode) <= decl_size;
-	   mode = GET_MODE_WIDER_MODE (mode))
-	if (! memory_address_p (mode, addr))
-	  return;
-    }
-
-  /* Put back the address now that we have updated it and we either know
-     it is valid or we don't care whether it is valid.  */
-
-  XEXP (x, 0) = addr;
-}
-
 /* Given a piece of RTX and a pointer to a HOST_WIDE_INT, if the RTX
    is a virtual register, return the equivalent hard register and set the
    offset indirectly through the pointer.  Otherwise, return 0.  */
@@ -1415,410 +1232,425 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
   else if (x == virtual_cfa_rtx)
     new = arg_pointer_rtx, offset = cfa_offset;
   else
-    return 0;
+    return NULL_RTX;
 
   *poffset = offset;
   return new;
 }
-
 
-/* Called when instantiate_virtual_regs has failed to update the instruction.
-   Usually this means that non-matching instruction has been emit, however for
-   asm statements it may be the problem in the constraints.  */
-static void
-instantiate_virtual_regs_lossage (rtx insn)
-{
-  gcc_assert (asm_noperands (PATTERN (insn)) >= 0);
-  error_for_asm (insn, "impossible constraint in %<asm%>");
-  delete_insn (insn);
-}
-/* Given a pointer to a piece of rtx and an optional pointer to the
-   containing object, instantiate any virtual registers present in it.
-
-   If EXTRA_INSNS, we always do the replacement and generate
-   any extra insns before OBJECT.  If it zero, we do nothing if replacement
-   is not valid.
-
-   Return 1 if we either had nothing to do or if we were able to do the
-   needed replacement.  Return 0 otherwise; we only return zero if
-   EXTRA_INSNS is zero.
-
-   We first try some simple transformations to avoid the creation of extra
-   pseudos.  */
+/* A subroutine of instantiate_virtual_regs, called via for_each_rtx.
+   Instantiate any virtual registers present inside of *LOC.  The expression
+   is simplified, as much as possible, but is not to be considered "valid"
+   in any sense implied by the target.  If any change is made, set CHANGED
+   to true.  */
 
 static int
-instantiate_virtual_regs_1 (rtx *loc, rtx object, int extra_insns)
+instantiate_virtual_regs_in_rtx (rtx *loc, void *data)
 {
-  rtx x;
-  RTX_CODE code;
-  rtx new = 0;
-  HOST_WIDE_INT offset = 0;
-  rtx temp;
-  rtx seq;
-  int i, j;
-  const char *fmt;
-
-  /* Re-start here to avoid recursion in common cases.  */
- restart:
+  HOST_WIDE_INT offset;
+  bool *changed = (bool *) data;
+  rtx x, new;
 
   x = *loc;
   if (x == 0)
-    return 1;
+    return 0;
 
-  /* We may have detected and deleted invalid asm statements.  */
-  if (object && INSN_P (object) && INSN_DELETED_P (object))
-    return 1;
-
-  code = GET_CODE (x);
-
-  /* Check for some special cases.  */
-  switch (code)
+  switch (GET_CODE (x))
     {
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
-    case CONST:
-    case SYMBOL_REF:
-    case CODE_LABEL:
-    case PC:
-    case CC0:
-    case ASM_INPUT:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-    case RETURN:
-      return 1;
-
-    case SET:
-      /* We are allowed to set the virtual registers.  This means that
-	 the actual register should receive the source minus the
-	 appropriate offset.  This is used, for example, in the handling
-	 of non-local gotos.  */
-      if ((new = instantiate_new_reg (SET_DEST (x), &offset)) != 0)
+    case REG:
+      new = instantiate_new_reg (x, &offset);
+      if (new)
 	{
-	  rtx src = SET_SRC (x);
-
-	  /* We are setting the register, not using it, so the relevant
-	     offset is the negative of the offset to use were we using
-	     the register.  */
-	  offset = - offset;
-	  instantiate_virtual_regs_1 (&src, NULL_RTX, 0);
-
-	  /* The only valid sources here are PLUS or REG.  Just do
-	     the simplest possible thing to handle them.  */
-	  if (!REG_P (src) && GET_CODE (src) != PLUS)
-	    {
-	      instantiate_virtual_regs_lossage (object);
-	      return 1;
-	    }
-
-	  start_sequence ();
-	  if (!REG_P (src))
-	    temp = force_operand (src, NULL_RTX);
-	  else
-	    temp = src;
-	  temp = force_operand (plus_constant (temp, offset), NULL_RTX);
-	  seq = get_insns ();
-	  end_sequence ();
-
-	  emit_insn_before (seq, object);
-	  SET_DEST (x) = new;
-
-	  if (! validate_change (object, &SET_SRC (x), temp, 0)
-	      || ! extra_insns)
-	    instantiate_virtual_regs_lossage (object);
-
-	  return 1;
+	  *loc = plus_constant (new, offset);
+	  if (changed)
+	    *changed = true;
 	}
-
-      instantiate_virtual_regs_1 (&SET_DEST (x), object, extra_insns);
-      loc = &SET_SRC (x);
-      goto restart;
+      return -1;
 
     case PLUS:
-      /* Handle special case of virtual register plus constant.  */
-      if (CONSTANT_P (XEXP (x, 1)))
+      new = instantiate_new_reg (XEXP (x, 0), &offset);
+      if (new)
 	{
-	  rtx old, new_offset;
+	  new = plus_constant (new, offset);
+	  *loc = simplify_gen_binary (PLUS, GET_MODE (x), new, XEXP (x, 1));
+	  if (changed)
+	    *changed = true;
+	  return -1;
+	}
 
-	  /* Check for (plus (plus VIRT foo) (const_int)) first.  */
-	  if (GET_CODE (XEXP (x, 0)) == PLUS)
-	    {
-	      if ((new = instantiate_new_reg (XEXP (XEXP (x, 0), 0), &offset)))
-		{
-		  instantiate_virtual_regs_1 (&XEXP (XEXP (x, 0), 1), object,
-					      extra_insns);
-		  new = gen_rtx_PLUS (Pmode, new, XEXP (XEXP (x, 0), 1));
-		}
-	      else
-		{
-		  loc = &XEXP (x, 0);
-		  goto restart;
-		}
-	    }
-
-#ifdef POINTERS_EXTEND_UNSIGNED
+      /* FIXME -- from old code */
 	  /* If we have (plus (subreg (virtual-reg)) (const_int)), we know
 	     we can commute the PLUS and SUBREG because pointers into the
 	     frame are well-behaved.  */
-	  else if (GET_CODE (XEXP (x, 0)) == SUBREG && GET_MODE (x) == ptr_mode
-		   && GET_CODE (XEXP (x, 1)) == CONST_INT
-		   && 0 != (new
-			    = instantiate_new_reg (SUBREG_REG (XEXP (x, 0)),
-						   &offset))
-		   && validate_change (object, loc,
-				       plus_constant (gen_lowpart (ptr_mode,
-								   new),
-						      offset
-						      + INTVAL (XEXP (x, 1))),
-				       0))
-		return 1;
-#endif
-	  else if ((new = instantiate_new_reg (XEXP (x, 0), &offset)) == 0)
-	    {
-	      /* We know the second operand is a constant.  Unless the
-		 first operand is a REG (which has been already checked),
-		 it needs to be checked.  */
-	      if (!REG_P (XEXP (x, 0)))
-		{
-		  loc = &XEXP (x, 0);
-		  goto restart;
-		}
-	      return 1;
-	    }
-
-	  new_offset = plus_constant (XEXP (x, 1), offset);
-
-	  /* If the new constant is zero, try to replace the sum with just
-	     the register.  */
-	  if (new_offset == const0_rtx
-	      && validate_change (object, loc, new, 0))
-	    return 1;
-
-	  /* Next try to replace the register and new offset.
-	     There are two changes to validate here and we can't assume that
-	     in the case of old offset equals new just changing the register
-	     will yield a valid insn.  In the interests of a little efficiency,
-	     however, we only call validate change once (we don't queue up the
-	     changes and then call apply_change_group).  */
-
-	  old = XEXP (x, 0);
-	  if (offset == 0
-	      ? ! validate_change (object, &XEXP (x, 0), new, 0)
-	      : (XEXP (x, 0) = new,
-		 ! validate_change (object, &XEXP (x, 1), new_offset, 0)))
-	    {
-	      if (! extra_insns)
-		{
-		  XEXP (x, 0) = old;
-		  return 0;
-		}
-
-	      /* Otherwise copy the new constant into a register and replace
-		 constant with that register.  */
-	      temp = gen_reg_rtx (Pmode);
-	      XEXP (x, 0) = new;
-	      if (validate_change (object, &XEXP (x, 1), temp, 0))
-		emit_insn_before (gen_move_insn (temp, new_offset), object);
-	      else
-		{
-		  /* If that didn't work, replace this expression with a
-		     register containing the sum.  */
-
-		  XEXP (x, 0) = old;
-		  new = gen_rtx_PLUS (Pmode, new, new_offset);
-
-		  start_sequence ();
-		  temp = force_operand (new, NULL_RTX);
-		  seq = get_insns ();
-		  end_sequence ();
-
-		  emit_insn_before (seq, object);
-		  if (! validate_change (object, loc, temp, 0)
-		      && ! validate_replace_rtx (x, temp, object))
-		    {
-		      instantiate_virtual_regs_lossage (object);
-		      return 1;
-		    }
-		}
-	    }
-
-	  return 1;
-	}
-
-      /* Fall through to generic two-operand expression case.  */
-    case EXPR_LIST:
-    case CALL:
-    case COMPARE:
-    case MINUS:
-    case MULT:
-    case DIV:      case UDIV:
-    case MOD:      case UMOD:
-    case AND:      case IOR:      case XOR:
-    case ROTATERT: case ROTATE:
-    case ASHIFTRT: case LSHIFTRT: case ASHIFT:
-    case NE:       case EQ:
-    case GE:       case GT:       case GEU:    case GTU:
-    case LE:       case LT:       case LEU:    case LTU:
-      if (XEXP (x, 1) && ! CONSTANT_P (XEXP (x, 1)))
-	instantiate_virtual_regs_1 (&XEXP (x, 1), object, extra_insns);
-      loc = &XEXP (x, 0);
-      goto restart;
-
-    case MEM:
-      /* Most cases of MEM that convert to valid addresses have already been
-	 handled by our scan of decls.  The only special handling we
-	 need here is to make a copy of the rtx to ensure it isn't being
-	 shared if we have to change it to a pseudo.
-
-	 If the rtx is a simple reference to an address via a virtual register,
-	 it can potentially be shared.  In such cases, first try to make it
-	 a valid address, which can also be shared.  Otherwise, copy it and
-	 proceed normally.
-
-	 First check for common cases that need no processing.  These are
-	 usually due to instantiation already being done on a previous instance
-	 of a shared rtx.  */
-
-      temp = XEXP (x, 0);
-      if (CONSTANT_ADDRESS_P (temp)
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	  || temp == arg_pointer_rtx
-#endif
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	  || temp == hard_frame_pointer_rtx
-#endif
-	  || temp == frame_pointer_rtx)
-	return 1;
-
-      if (GET_CODE (temp) == PLUS
-	  && CONSTANT_ADDRESS_P (XEXP (temp, 1))
-	  && (XEXP (temp, 0) == frame_pointer_rtx
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	      || XEXP (temp, 0) == hard_frame_pointer_rtx
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	      || XEXP (temp, 0) == arg_pointer_rtx
-#endif
-	      ))
-	return 1;
-
-      if (temp == virtual_stack_vars_rtx
-	  || temp == virtual_incoming_args_rtx
-	  || (GET_CODE (temp) == PLUS
-	      && CONSTANT_ADDRESS_P (XEXP (temp, 1))
-	      && (XEXP (temp, 0) == virtual_stack_vars_rtx
-		  || XEXP (temp, 0) == virtual_incoming_args_rtx)))
-	{
-	  /* This MEM may be shared.  If the substitution can be done without
-	     the need to generate new pseudos, we want to do it in place
-	     so all copies of the shared rtx benefit.  The call below will
-	     only make substitutions if the resulting address is still
-	     valid.
-
-	     Note that we cannot pass X as the object in the recursive call
-	     since the insn being processed may not allow all valid
-	     addresses.  However, if we were not passed on object, we can
-	     only modify X without copying it if X will have a valid
-	     address.
-
-	     ??? Also note that this can still lose if OBJECT is an insn that
-	     has less restrictions on an address that some other insn.
-	     In that case, we will modify the shared address.  This case
-	     doesn't seem very likely, though.  One case where this could
-	     happen is in the case of a USE or CLOBBER reference, but we
-	     take care of that below.  */
-
-	  if (instantiate_virtual_regs_1 (&XEXP (x, 0),
-					  object ? object : x, 0))
-	    return 1;
-
-	  /* Otherwise make a copy and process that copy.  We copy the entire
-	     RTL expression since it might be a PLUS which could also be
-	     shared.  */
-	  *loc = x = copy_rtx (x);
-	}
-
-      /* Fall through to generic unary operation case.  */
-    case PREFETCH:
-    case SUBREG:
-    case STRICT_LOW_PART:
-    case NEG:          case NOT:
-    case PRE_DEC:      case PRE_INC:      case POST_DEC:    case POST_INC:
-    case SIGN_EXTEND:  case ZERO_EXTEND:
-    case TRUNCATE:     case FLOAT_EXTEND: case FLOAT_TRUNCATE:
-    case FLOAT:        case FIX:
-    case UNSIGNED_FIX: case UNSIGNED_FLOAT:
-    case ABS:
-    case SQRT:
-    case FFS:
-    case CLZ:          case CTZ:
-    case POPCOUNT:     case PARITY:
-      /* These case either have just one operand or we know that we need not
-	 check the rest of the operands.  */
-      loc = &XEXP (x, 0);
-      goto restart;
-
-    case USE:
-    case CLOBBER:
-      /* If the operand is a MEM, see if the change is a valid MEM.  If not,
-	 go ahead and make the invalid one, but do it to a copy.  For a REG,
-	 just make the recursive call, since there's no chance of a problem.  */
-
-      if ((MEM_P (XEXP (x, 0))
-	   && instantiate_virtual_regs_1 (&XEXP (XEXP (x, 0), 0), XEXP (x, 0),
-					  0))
-	  || (REG_P (XEXP (x, 0))
-	      && instantiate_virtual_regs_1 (&XEXP (x, 0), object, 0)))
-	return 1;
-
-      XEXP (x, 0) = copy_rtx (XEXP (x, 0));
-      loc = &XEXP (x, 0);
-      goto restart;
-
-    case REG:
-      /* Try to replace with a PLUS.  If that doesn't work, compute the sum
-	 in front of this insn and substitute the temporary.  */
-      if ((new = instantiate_new_reg (x, &offset)) != 0)
-	{
-	  temp = plus_constant (new, offset);
-	  if (!validate_change (object, loc, temp, 0))
-	    {
-	      if (! extra_insns)
-		return 0;
-
-	      start_sequence ();
-	      temp = force_operand (temp, NULL_RTX);
-	      seq = get_insns ();
-	      end_sequence ();
-
-	      emit_insn_before (seq, object);
-	      if (! validate_change (object, loc, temp, 0)
-		  && ! validate_replace_rtx (x, temp, object))
-	        instantiate_virtual_regs_lossage (object);
-	    }
-	}
-
-      return 1;
+      break;
 
     default:
       break;
     }
 
-  /* Scan all subexpressions.  */
-  fmt = GET_RTX_FORMAT (code);
-  for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
-    if (*fmt == 'e')
-      {
-	if (!instantiate_virtual_regs_1 (&XEXP (x, i), object, extra_insns))
-	  return 0;
-      }
-    else if (*fmt == 'E')
-      for (j = 0; j < XVECLEN (x, i); j++)
-	if (! instantiate_virtual_regs_1 (&XVECEXP (x, i, j), object,
-					  extra_insns))
-	  return 0;
+  return 0;
+}
 
-  return 1;
+/* A subroutine of instantiate_virtual_regs_in_insn.  Return true if X
+   matches the predicate for insn CODE operand OPERAND.  */
+
+static int
+safe_insn_predicate (int code, int operand, rtx x)
+{
+  const struct insn_operand_data *op_data;
+
+  if (code < 0)
+    return true;
+
+  op_data = &insn_data[code].operand[operand];
+  if (op_data->predicate == NULL)
+    return true;
+
+  return op_data->predicate (x, op_data->mode);
+}
+
+/* A subroutine of instantiate_virtual_regs.  Instantiate any virtual
+   registers present inside of insn.  The result will be a valid insn.  */
+
+static void
+instantiate_virtual_regs_in_insn (rtx insn)
+{
+  HOST_WIDE_INT offset;
+  int insn_code, i;
+  bool any_change;
+  rtx set, new, x, seq;
+
+  /* There are some special cases to be handled first.  */
+  set = single_set (insn);
+  if (set)
+    {
+      /* We're allowed to assign to a virtual register.  This is interpreted
+	 to mean that the underlying register gets assigned the inverse
+	 transformation.  This is used, for example, in the handling of
+	 non-local gotos.  */
+      new = instantiate_new_reg (SET_DEST (set), &offset);
+      if (new)
+	{
+	  start_sequence ();
+
+	  for_each_rtx (&SET_SRC (set), instantiate_virtual_regs_in_rtx, NULL);
+	  x = simplify_gen_binary (PLUS, GET_MODE (new), SET_SRC (set),
+				   GEN_INT (-offset));
+	  x = force_operand (x, new);
+	  if (x != new)
+	    emit_move_insn (new, x);
+
+	  seq = get_insns ();
+	  end_sequence ();
+
+	  emit_insn_before (seq, insn);
+	  delete_insn (insn);
+	  return;
+	}
+
+      /* Handle a straight copy from a virtual register by generating a
+	 new add insn.  The difference between this and falling through
+	 to the generic case is avoiding a new pseudo and eliminating a
+	 move insn in the initial rtl stream.  */
+      new = instantiate_new_reg (SET_SRC (set), &offset);
+      if (new && offset != 0
+	  && REG_P (SET_DEST (set))
+	  && REGNO (SET_DEST (set)) > LAST_VIRTUAL_REGISTER)
+	{
+	  start_sequence ();
+
+	  x = expand_simple_binop (GET_MODE (SET_DEST (set)), PLUS,
+				   new, GEN_INT (offset), SET_DEST (set),
+				   1, OPTAB_LIB_WIDEN);
+	  if (x != SET_DEST (set))
+	    emit_move_insn (SET_DEST (set), x);
+
+	  seq = get_insns ();
+	  end_sequence ();
+
+	  emit_insn_before (seq, insn);
+	  delete_insn (insn);
+	  return;
+	}
+
+      extract_insn (insn);
+
+      /* Handle a plus involving a virtual register by determining if the
+	 operands remain valid if they're modified in place.  */
+      if (GET_CODE (SET_SRC (set)) == PLUS
+	  && recog_data.n_operands >= 3
+	  && recog_data.operand_loc[1] == &XEXP (SET_SRC (set), 0)
+	  && recog_data.operand_loc[2] == &XEXP (SET_SRC (set), 1)
+	  && GET_CODE (recog_data.operand[2]) == CONST_INT
+	  && (new = instantiate_new_reg (recog_data.operand[1], &offset)))
+	{
+	  offset += INTVAL (recog_data.operand[2]);
+
+	  /* If the sum is zero, then replace with a plain move.  */
+	  if (offset == 0)
+	    {
+	      start_sequence ();
+	      emit_move_insn (SET_DEST (set), new);
+	      seq = get_insns ();
+	      end_sequence ();
+
+	      emit_insn_before (seq, insn);
+	      delete_insn (insn);
+	      return;
+	    }
+
+	  x = gen_int_mode (offset, recog_data.operand_mode[2]);
+	  insn_code = INSN_CODE (insn);
+
+	  /* Using validate_change and apply_change_group here leaves
+	     recog_data in an invalid state.  Since we know exactly what
+	     we want to check, do those two by hand.  */
+	  if (safe_insn_predicate (insn_code, 1, new)
+	      && safe_insn_predicate (insn_code, 2, x))
+	    {
+	      *recog_data.operand_loc[1] = recog_data.operand[1] = new;
+	      *recog_data.operand_loc[2] = recog_data.operand[2] = x;
+	      any_change = true;
+	      goto verify;
+	    }
+	}
+    }
+  else
+    extract_insn (insn);
+
+  insn_code = INSN_CODE (insn);
+  any_change = false;
+
+  /* In the general case, we expect virtual registers to appear only in
+     operands, and then only as either bare registers or inside memories.  */
+  for (i = 0; i < recog_data.n_operands; ++i)
+    {
+      x = recog_data.operand[i];
+      switch (GET_CODE (x))
+	{
+	case MEM:
+	  {
+	    rtx addr = XEXP (x, 0);
+	    bool changed = false;
+
+	    for_each_rtx (&addr, instantiate_virtual_regs_in_rtx, &changed);
+	    if (!changed)
+	      continue;
+
+	    start_sequence ();
+	    x = replace_equiv_address (x, addr);
+	    seq = get_insns ();
+	    end_sequence ();
+	    if (seq)
+	      emit_insn_before (seq, insn);
+	  }
+	  break;
+
+	case REG:
+	  new = instantiate_new_reg (x, &offset);
+	  if (new == NULL)
+	    continue;
+	  if (offset == 0)
+	    x = new;
+	  else
+	    {
+	      start_sequence ();
+
+	      /* Careful, special mode predicates may have stuff in
+		 insn_data[insn_code].operand[i].mode that isn't useful
+		 to us for computing a new value.  */
+	      /* ??? Recognize address_operand and/or "p" constraints
+		 to see if (plus new offset) is a valid before we put
+		 this through expand_simple_binop.  */
+	      x = expand_simple_binop (GET_MODE (x), PLUS, new,
+				       GEN_INT (offset), NULL_RTX,
+				       1, OPTAB_LIB_WIDEN);
+	      seq = get_insns ();
+	      end_sequence ();
+	      emit_insn_before (seq, insn);
+	    }
+	  break;
+
+	case SUBREG:
+	  new = instantiate_new_reg (SUBREG_REG (x), &offset);
+	  if (new == NULL)
+	    continue;
+	  if (offset != 0)
+	    {
+	      start_sequence ();
+	      new = expand_simple_binop (GET_MODE (new), PLUS, new,
+					 GEN_INT (offset), NULL_RTX,
+					 1, OPTAB_LIB_WIDEN);
+	      seq = get_insns ();
+	      end_sequence ();
+	      emit_insn_before (seq, insn);
+	    }
+	  x = simplify_gen_subreg (insn_data[insn_code].operand[i].mode,
+				   new, GET_MODE (new), SUBREG_BYTE (x));
+	  break;
+
+	default:
+	  continue;
+	}
+
+      /* At this point, X contains the new value for the operand.
+	 Validate the new value vs the insn predicate.  Note that
+	 asm insns will have insn_code -1 here.  */
+      if (!safe_insn_predicate (insn_code, i, x))
+	x = force_reg (insn_data[insn_code].operand[i].mode, x);
+
+      *recog_data.operand_loc[i] = recog_data.operand[i] = x;
+      any_change = true;
+    }
+
+ verify:
+  if (any_change)
+    {
+      /* Propagate operand changes into the duplicates.  */
+      for (i = 0; i < recog_data.n_dups; ++i)
+	*recog_data.dup_loc[i]
+	  = recog_data.operand[(unsigned)recog_data.dup_num[i]];
+
+      /* Force re-recognition of the instruction for validation.  */
+      INSN_CODE (insn) = -1;
+    }
+
+  if (asm_noperands (PATTERN (insn)) >= 0)
+    {
+      if (!check_asm_operands (PATTERN (insn)))
+	{
+	  error_for_asm (insn, "impossible constraint in %<asm%>");
+	  delete_insn (insn);
+	}
+    }
+  else
+    {
+      if (recog_memoized (insn) < 0)
+	fatal_insn_not_found (insn);
+    }
+}
+
+/* Subroutine of instantiate_decls.  Given RTL representing a decl,
+   do any instantiation required.  */
+
+static void
+instantiate_decl (rtx x)
+{
+  rtx addr;
+
+  if (x == 0)
+    return;
+
+  /* If this is a CONCAT, recurse for the pieces.  */
+  if (GET_CODE (x) == CONCAT)
+    {
+      instantiate_decl (XEXP (x, 0));
+      instantiate_decl (XEXP (x, 1));
+      return;
+    }
+
+  /* If this is not a MEM, no need to do anything.  Similarly if the
+     address is a constant or a register that is not a virtual register.  */
+  if (!MEM_P (x))
+    return;
+
+  addr = XEXP (x, 0);
+  if (CONSTANT_P (addr)
+      || (REG_P (addr)
+	  && (REGNO (addr) < FIRST_VIRTUAL_REGISTER
+	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
+    return;
+
+  for_each_rtx (&XEXP (x, 0), instantiate_virtual_regs_in_rtx, NULL);
+}
+
+/* Subroutine of instantiate_decls: Process all decls in the given
+   BLOCK node and all its subblocks.  */
+
+static void
+instantiate_decls_1 (tree let)
+{
+  tree t;
+
+  for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
+    if (DECL_RTL_SET_P (t))
+      instantiate_decl (DECL_RTL (t));
+
+  /* Process all subblocks.  */
+  for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
+    instantiate_decls_1 (t);
+}
+
+/* Scan all decls in FNDECL (both variables and parameters) and instantiate
+   all virtual registers in their DECL_RTL's.  */
+
+static void
+instantiate_decls (tree fndecl)
+{
+  tree decl;
+
+  /* Process all parameters of the function.  */
+  for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
+    {
+      instantiate_decl (DECL_RTL (decl));
+      instantiate_decl (DECL_INCOMING_RTL (decl));
+    }
+
+  /* Now process all variables defined in the function or its subblocks.  */
+  instantiate_decls_1 (DECL_INITIAL (fndecl));
+}
+
+/* Pass through the INSNS of function FNDECL and convert virtual register
+   references to hard register references.  */
+
+void
+instantiate_virtual_regs (void)
+{
+  rtx insn;
+
+  /* Compute the offsets to use for this function.  */
+  in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
+  var_offset = STARTING_FRAME_OFFSET;
+  dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
+  out_arg_offset = STACK_POINTER_OFFSET;
+  cfa_offset = ARG_POINTER_CFA_OFFSET (current_function_decl);
+
+  /* Initialize recognition, indicating that volatile is OK.  */
+  init_recog ();
+
+  /* Scan through all the insns, instantiating every virtual register still
+     present.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      {
+	/* These patterns in the instruction stream can never be recognized.
+	   Fortunately, they shouldn't contain virtual registers either.  */
+	if (GET_CODE (PATTERN (insn)) == USE
+	    || GET_CODE (PATTERN (insn)) == CLOBBER
+	    || GET_CODE (PATTERN (insn)) == ADDR_VEC
+	    || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
+	    || GET_CODE (PATTERN (insn)) == ASM_INPUT)
+	  continue;
+
+	instantiate_virtual_regs_in_insn (insn);
+
+	if (INSN_DELETED_P (insn))
+	  continue;
+
+	for_each_rtx (&REG_NOTES (insn), instantiate_virtual_regs_in_rtx, NULL);
+
+	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
+	if (GET_CODE (insn) == CALL_INSN)
+	  for_each_rtx (&CALL_INSN_FUNCTION_USAGE (insn),
+			instantiate_virtual_regs_in_rtx, NULL);
+      }
+
+  /* Instantiate the virtual registers in the DECLs for debugging purposes.  */
+  instantiate_decls (current_function_decl);
+
+  /* Indicate that, from now on, assign_stack_local should use
+     frame_pointer_rtx.  */
+  virtuals_instantiated = 1;
 }
 
 /* Return 1 if EXP is an aggregate type (or a value with aggregate type).
