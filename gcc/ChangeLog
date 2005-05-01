@@ -1,3 +1,11 @@
+2005-05-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/11459
+	PR c/18502
+	* gcc.c (cpp_unique_options): Remove %{trigraphs}.
+	(cpp_options, cc1_options): Change %{std*} %{ansi} to
+	%{std*&ansi&trigraphs}.
+
 2005-04-29  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/21098
