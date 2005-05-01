@@ -1,5 +1,10 @@
 2005-05-01  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/21213
+	* gcc.dg/transparent-union-3.c: New test.
+
+2005-05-01  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/20740
 	* gcc.dg/format/asm_fprintf-2.c, gcc.dg/format/asm_fprintf-3.c,
 	gcc.dg/format/asm_fprintf-4.c, gcc.dg/format/asm_fprintf-5.c,

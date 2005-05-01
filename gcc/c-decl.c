@@ -5132,7 +5132,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
      make it one, warn and turn off the flag.  */
   if (TREE_CODE (t) == UNION_TYPE
       && TYPE_TRANSPARENT_UNION (t)
-      && TYPE_MODE (t) != DECL_MODE (TYPE_FIELDS (t)))
+      && (!TYPE_FIELDS (t) || TYPE_MODE (t) != DECL_MODE (TYPE_FIELDS (t))))
     {
       TYPE_TRANSPARENT_UNION (t) = 0;
       warning ("union cannot be made transparent");
