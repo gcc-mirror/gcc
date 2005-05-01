@@ -43,8 +43,4 @@
 #define _ALL_SOURCE
 #endif
 
-#define __off_t off_t
-#define __off64_t off64_t
-#define __ssize_t ssize_t
-
 #endif

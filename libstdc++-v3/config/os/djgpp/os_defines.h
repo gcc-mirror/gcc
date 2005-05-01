@@ -1,6 +1,6 @@
 // Specific definitions for DJGPP  -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,10 +33,6 @@
 
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
-
-#define __off_t off_t
-#define __off64_t off64_t
-#define __ssize_t ssize_t
 
 // FIXME: should there be '#undef POSIX_SOURCE'?
 

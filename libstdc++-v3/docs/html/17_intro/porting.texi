@@ -9,7 +9,8 @@
 @setchapternewpage odd
 
 @copying
-Copyright @copyright{} 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+Copyright @copyright{} 2000, 2001, 2002, 2003, 2005 
+Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -120,27 +121,10 @@ OS portion of the triplet (the default), then nothing needs to be changed.
 The first file to create in this directory, should be called
 @file{os_defines.h}.  This file contains basic macro definitions
 that are required to allow the C++ library to work with your C library.
-This file should provide macro definitions for @code{__off_t},
-@code{__off64_t}, and @code{__ssize_t}.  Typically, this just looks
-like:
 
-@example
-#define __off_t off_t
-#define __off64_t off64_t
-#define __ssize_t ssize_t
-@end example
-
-@noindent
-You don't have to provide these definitions if your system library
-already defines these types -- but the only library known to provide
-these types is the GNU C Library, so you will almost certainly have to
-provide these macros.  Note that this file does not have to include a
-header file that defines @code{off_t}, or the other types; you simply
-have to provide the macros.
-
-In addition, several libstdc++-v3 source files unconditionally define
-the macro @code{_POSIX_SOURCE}.  On many systems, defining this macro
-causes large portions of the C library header files to be eliminated
+Several libstdc++-v3 source files unconditionally define the macro
+@code{_POSIX_SOURCE}.  On many systems, defining this macro causes
+large portions of the C library header files to be eliminated
 at preprocessing time.  Therefore, you may have to @code{#undef} this
 macro, or define other macros (like @code{_LARGEFILE_SOURCE} or
 @code{__EXTENSIONS__}).  You won't know what macros to define or

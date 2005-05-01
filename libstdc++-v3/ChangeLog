@@ -1,3 +1,17 @@
+2005-05-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/os/aix/os_defines.h: Remove obsolete __off_t,
+	__off64_t, __ssize_t defines.
+	* config/os/djgpp/os_defines.h: Likewise.
+	* config/os/hpux/os_defines.h: Likewise.
+	* config/os/irix/irix5.2/os_defines.h: Likewise.
+	* config/os/irix/irix6.5/os_defines.h: Likewise.
+	* config/os/solaris/solaris2.5/os_defines.h: Likewise.
+	* config/os/solaris/solaris2.6/os_defines.h: Likewise.
+	* config/os/solaris/solaris2.7/os_defines.h: Likewise.
+	* docs/html/17_intro/porting.html: Don't discuss the defines.
+	* docs/html/17_intro/porting.texi: Likewise.
+
 2005-04-29  Paolo Carlini  <pcarlini@suse.de>
 	    Nathan Myers  <ncm@cantrip.org>
 
