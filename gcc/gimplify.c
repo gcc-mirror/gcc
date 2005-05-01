@@ -1421,16 +1421,13 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 			tree *post_p, fallback_t fallback)
 {
   tree *p;
-  varray_type stack;
+  VEC(tree,heap) *stack;
   enum gimplify_status ret = GS_OK, tret;
   int i;
 
   /* Create a stack of the subexpressions so later we can walk them in
-     order from inner to outer.
-
-     This array is very memory consuming.  Don't even think of making
-     it VARRAY_TREE.  */
-  VARRAY_GENERIC_PTR_NOGC_INIT (stack, 10, "stack");
+     order from inner to outer.  */
+  stack = VEC_alloc (tree, heap, 10);
 
   /* We can handle anything that get_inner_reference can deal with.  */
   for (p = expr_p; ; p = &TREE_OPERAND (*p, 0))
@@ -1440,10 +1437,10 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 	*p = fold_indirect_ref (*p);
       if (!handled_component_p (*p))
 	break;
-      VARRAY_PUSH_GENERIC_PTR_NOGC (stack, *p);
+      VEC_safe_push (tree, heap, stack, *p);
     }
 
-  gcc_assert (VARRAY_ACTIVE_SIZE (stack));
+  gcc_assert (VEC_length (tree, stack));
 
   /* Now STACK is a stack of pointers to all the refs we've walked through
      and P points to the innermost expression.
@@ -1457,9 +1454,9 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
      So we do this in three steps.  First we deal with the annotations
      for any variables in the components, then we gimplify the base,
      then we gimplify any indices, from left to right.  */
-  for (i = VARRAY_ACTIVE_SIZE (stack) - 1; i >= 0; i--)
+  for (i = VEC_length (tree, stack) - 1; i >= 0; i--)
     {
-      tree t = VARRAY_GENERIC_PTR_NOGC (stack, i);
+      tree t = VEC_index (tree, stack, i);
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
@@ -1527,9 +1524,9 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 
   /* And finally, the indices and operands to BIT_FIELD_REF.  During this
      loop we also remove any useless conversions.  */
-  for (; VARRAY_ACTIVE_SIZE (stack) > 0; )
+  for (; VEC_length (tree, stack) > 0; )
     {
-      tree t = VARRAY_TOP_TREE (stack);
+      tree t = VEC_pop (tree, stack);
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
@@ -1565,7 +1562,6 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 	 set which would have caused all the outer expressions in EXPR_P
 	 leading to P to also have had TREE_SIDE_EFFECTS set.  */
       recalculate_side_effects (t);
-      VARRAY_POP (stack);
     }
 
   tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval, fallback);
@@ -1578,7 +1574,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
       ret = MIN (ret, GS_OK);
     }
 
-  VARRAY_FREE (stack);
+  VEC_free (tree, heap, stack);
 
   return ret;
 }
