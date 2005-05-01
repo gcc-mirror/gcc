@@ -1,3 +1,9 @@
+2005-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Omit dots in the @anchors names
+	for i?86-*-sco3.2v5*, i?86-*-solaris2.10, and sparc-sun-solaris2.7.
+	Omit underscores for x86_64-*-* and the "all ELF targets" entry.
+
 2005-05-01  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/18316
