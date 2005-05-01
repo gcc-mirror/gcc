@@ -1,3 +1,11 @@
+2005-05-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/19579
+	Backport from mainline
+	2005-01-26  Jakub Jelinek  <jakub@redhat.com>
+	* ifcvt.c (noce_try_cmove_arith): If emitting instructions to set up
+	both A and B, see if they don't clobber registers the other expr uses.
+
 2005-04-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR 14884
