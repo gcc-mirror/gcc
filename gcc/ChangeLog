@@ -1,3 +1,11 @@
+2005-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backport from mainline
+	* doc/install.texi (Specific): Avoid using asterisks in @anchor
+	names related to target triplets.
+	Remove i?86-*-esix from platform directory.
+	Remove powerpc-*-eabiaix from platform directory.
+
 2005-05-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR bootstrap/20633
