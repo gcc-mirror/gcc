@@ -1,3 +1,8 @@
+2005-05-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/20633
+	* config/freebsd-spec.h (FBSD_CPP_SPEC): Add %(cpp_arch).
+
 2005-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Omit dots in the @anchors names
