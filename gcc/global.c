@@ -2292,6 +2292,9 @@ rpost_cmp (const void *bb1, const void *bb2)
 /* Temporary bitmap used for live_pavin, live_pavout calculation.  */
 static bitmap temp_bitmap;
 
+DEF_VEC_P(basic_block);
+DEF_VEC_ALLOC_P(basic_block,heap);
+
 /* The function calculates partial register availability according to
    the following equations:
 
@@ -2307,22 +2310,22 @@ calculate_reg_pav (void)
   basic_block bb, succ;
   edge e;
   int i, nel;
-  varray_type bbs, new_bbs, temp;
+  VEC(basic_block,heap) *bbs, *new_bbs, *temp;
   basic_block *bb_array;
   sbitmap wset;
 
-  VARRAY_BB_INIT (bbs, n_basic_blocks, "basic blocks");
-  VARRAY_BB_INIT (new_bbs, n_basic_blocks, "basic blocks for the next iter.");
+  bbs = VEC_alloc (basic_block, heap, n_basic_blocks);
+  new_bbs = VEC_alloc (basic_block, heap, n_basic_blocks);
   temp_bitmap = BITMAP_ALLOC (NULL);
   FOR_EACH_BB (bb)
     {
-      VARRAY_PUSH_BB (bbs, bb);
+      VEC_quick_push (basic_block, bbs, bb);
     }
   wset = sbitmap_alloc (n_basic_blocks + 1);
-  while (VARRAY_ACTIVE_SIZE (bbs))
+  while (VEC_length (basic_block, bbs))
     {
-      bb_array = &VARRAY_BB (bbs, 0);
-      nel = VARRAY_ACTIVE_SIZE (bbs);
+      bb_array = VEC_address (basic_block, bbs);
+      nel = VEC_length (basic_block, bbs);
       qsort (bb_array, nel, sizeof (basic_block), rpost_cmp);
       sbitmap_zero (wset);
       for (i = 0; i < nel; i++)
@@ -2356,7 +2359,7 @@ calculate_reg_pav (void)
 		      && !TEST_BIT (wset, succ->index))
 		    {
 		      SET_BIT (wset, succ->index);
-		      VARRAY_PUSH_BB (new_bbs, succ);
+		      VEC_quick_push (basic_block, new_bbs, succ);
 		    }
 		}
 	    }
@@ -2364,10 +2367,12 @@ calculate_reg_pav (void)
       temp = bbs;
       bbs = new_bbs;
       new_bbs = temp;
-      VARRAY_POP_ALL (new_bbs);
+      VEC_truncate (basic_block, new_bbs, 0);
     }
   sbitmap_free (wset);
   BITMAP_FREE (temp_bitmap);
+  VEC_free (basic_block, heap, new_bbs);
+  VEC_free (basic_block, heap, bbs);
 }
 
 /* The function modifies partial availability information for two

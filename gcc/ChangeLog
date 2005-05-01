@@ -3,6 +3,8 @@
 	* gimplify.c (gimplify_compound_lval): Use VEC instead of
 	VARRAY.
 
+	* global.c (calculate_reg_pav): Use VEC instead of VARRAY.
+
 2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR C++/14391
