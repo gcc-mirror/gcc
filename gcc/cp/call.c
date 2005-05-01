@@ -2203,10 +2203,18 @@ any_strictly_viable (struct z_candidate *cands)
   return false;
 }
 
+/* OBJ is being used in an expression like "OBJ.f (...)".  In other
+   words, it is about to become the "this" pointer for a member
+   function call.  Take the address of the object.  */
+
 static tree
 build_this (tree obj)
 {
-  /* Fix this to work on non-lvalues.  */
+  /* In a template, we are only concerned about the type of the
+     expression, so we can take a shortcut.  */
+  if (processing_template_decl)
+    return build_address (obj);
+
   return build_unary_op (ADDR_EXPR, obj, 0);
 }
 

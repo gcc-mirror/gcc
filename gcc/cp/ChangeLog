@@ -1,3 +1,11 @@
+2004-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18464
+	* call.c (build_this): In templates, do not bother with
+	build_unary_op.
+	* typeck.c (unary_complex_lvalue): In a template, always refuse
+	simplifications.
+
 2005-04-25  Roger Sayle  <roger@eyesopen.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
