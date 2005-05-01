@@ -2547,10 +2547,13 @@ scev_reset (void)
 }
 
 /* Checks whether OP behaves as a simple affine iv of LOOP in STMT and returns
-   its BASE and STEP if possible.  */
+   its BASE and STEP if possible.  If ALLOW_NONCONSTANT_STEP is true, we
+   want STEP to be invariant in LOOP.  Otherwise we require it to be an
+   integer constant.  */
 
 bool
-simple_iv (struct loop *loop, tree stmt, tree op, tree *base, tree *step)
+simple_iv (struct loop *loop, tree stmt, tree op, tree *base, tree *step,
+	   bool allow_nonconstant_step)
 {
   basic_block bb = bb_for_stmt (stmt);
   tree type, ev;
@@ -2579,8 +2582,15 @@ simple_iv (struct loop *loop, tree stmt, tree op, tree *base, tree *step)
     return false;
 
   *step = CHREC_RIGHT (ev);
-  if (TREE_CODE (*step) != INTEGER_CST)
+  if (allow_nonconstant_step)
+    {
+      if (tree_contains_chrecs (*step, NULL)
+	  || chrec_contains_symbols_defined_in_loop (*step, loop->num))
+	return false;
+    }
+  else if (TREE_CODE (*step) != INTEGER_CST)
     return false;
+
   *base = CHREC_LEFT (ev);
   if (tree_contains_chrecs (*base, NULL)
       || chrec_contains_symbols_defined_in_loop (*base, loop->num))
