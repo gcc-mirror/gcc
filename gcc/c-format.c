@@ -2518,9 +2518,27 @@ init_dynamic_asm_fprintf_info (void)
 	 length modifier to work, one must have issued: "typedef
 	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
 	 prior to using that modifier.  */
-      if (!(hwi = maybe_get_identifier ("__gcc_host_wide_int__"))
-	  || !(hwi = DECL_ORIGINAL_TYPE (identifier_global_value (hwi))))
+      hwi = maybe_get_identifier ("__gcc_host_wide_int__");
+      if (!hwi)
+	{
+	  error ("'__gcc_host_wide_int__' is not defined as a type");
+	  return;
+	}
+      hwi = identifier_global_value (hwi);
+      if (!hwi || TREE_CODE (hwi) != TYPE_DECL)
+	{
+	  error ("'__gcc_host_wide_int__' is not defined as a type");
+	  return;
+	}
+      hwi = DECL_ORIGINAL_TYPE (hwi);
+      if (!hwi)
 	abort ();
+      if (hwi != long_integer_type_node && hwi != long_long_integer_type_node)
+	{
+	  error ("'__gcc_host_wide_int__' is not defined as 'long'"
+		 " or 'long long'");
+	  return;
+	}
 
       /* Create a new (writable) copy of asm_fprintf_length_specs.  */
       new_asm_fprintf_length_specs = xmemdup (asm_fprintf_length_specs,
@@ -2563,19 +2581,71 @@ init_dynamic_diag_info (void)
 	 However we don't force a hard ICE because we may see only one
 	 or the other type.  */
       if ((loc = maybe_get_identifier ("location_t")))
-	loc = TREE_TYPE (identifier_global_value (loc));
+	{
+	  loc = identifier_global_value (loc);
+	  if (loc)
+	    {
+	      if (TREE_CODE (loc) != TYPE_DECL)
+		{
+		  error ("'location_t' is not defined as a type");
+		  loc = 0;
+		}
+	      else
+		loc = TREE_TYPE (loc);
+	    }
+	}
 
       /* We need to grab the underlying `union tree_node' so peek into
 	 an extra type level.  */
       if ((t = maybe_get_identifier ("tree")))
-	t = TREE_TYPE (TREE_TYPE (identifier_global_value (t)));
+	{
+	  t = identifier_global_value (t);
+	  if (t)
+	    {
+	      if (TREE_CODE (t) != TYPE_DECL)
+		{
+		  error ("'tree' is not defined as a type");
+		  t = 0;
+		}
+	      else if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
+		{
+		  error ("'tree' is not defined as a pointer type");
+		  t = 0;
+		}
+	      else
+		t = TREE_TYPE (TREE_TYPE (t));
+	    }
+	}
     
       /* Find the underlying type for HOST_WIDE_INT.  For the %w
 	 length modifier to work, one must have issued: "typedef
 	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
 	 prior to using that modifier.  */
       if ((hwi = maybe_get_identifier ("__gcc_host_wide_int__")))
-	hwi = DECL_ORIGINAL_TYPE (identifier_global_value (hwi));
+	{
+	  hwi = identifier_global_value (hwi);
+	  if (hwi)
+	    {
+	      if (TREE_CODE (hwi) != TYPE_DECL)
+		{
+		  error ("'__gcc_host_wide_int__' is not defined as a type");
+		  hwi = 0;
+		}
+	      else
+		{
+		  hwi = DECL_ORIGINAL_TYPE (hwi);
+		  if (!hwi)
+		    abort ();
+		  if (hwi != long_integer_type_node
+		      && hwi != long_long_integer_type_node)
+		    {
+		      error ("'__gcc_host_wide_int__' is not defined"
+			     " as 'long' or 'long long'");
+		      hwi = 0;
+		    }
+		}
+	    }
+	}
       
       /* Assign the new data for use.  */
 

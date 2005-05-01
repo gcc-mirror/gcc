@@ -1,5 +1,13 @@
 2005-05-01  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/20740
+	* c-format.c (init_dynamic_asm_fprintf_info): Give errors, not
+	aborts, if __gcc_host_wide_int__ is not properly defined.
+	(init_dynamic_diag_info): Give errors, not aborts, if location_t,
+	tree or __gcc_host_wide_int__ are not properly defined.
+
+2005-05-01  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/11459
 	PR c/18502
 	* gcc.c (cpp_unique_options): Remove %{trigraphs}.

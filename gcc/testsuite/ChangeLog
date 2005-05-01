@@ -1,5 +1,15 @@
 2005-05-01  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/20740
+	* gcc.dg/format/asm_fprintf-2.c, gcc.dg/format/asm_fprintf-3.c,
+	gcc.dg/format/asm_fprintf-4.c, gcc.dg/format/asm_fprintf-5.c,
+	gcc.dg/format/gcc_diag-2.c, gcc.dg/format/gcc_diag-3.c,
+	gcc.dg/format/gcc_diag-4.c, gcc.dg/format/gcc_diag-5.c,
+	gcc.dg/format/gcc_diag-6.c, gcc.dg/format/gcc_diag-7.c ,
+	gcc.dg/format/gcc_diag-8.c, gcc.dg/format/gcc_diag-9.c: New tests.
+
+2005-05-01  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/11459
 	PR c/18502
 	* gcc.dg/pr11459-1.c, gcc.dg/pr18502-1.c: New tests.
