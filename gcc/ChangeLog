@@ -1,5 +1,6 @@
 2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR C++/14391
 	* c-cppbuiltin.c (c_cpp_builtins): Do not define __GXX_WEAK__ to 1
 	if !flag_weak.
 	* doc/cpp.texi (__DEPRECATED): Document.
