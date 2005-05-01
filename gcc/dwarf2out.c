@@ -184,7 +184,7 @@ static GTY(()) varray_type incomplete_types;
    of declaration scopes at the current scope and containing
    scopes.  This table is used to find the proper place to
    define type declaration DIE's.  */
-static GTY(()) varray_type decl_scope_table;
+static GTY(()) VEC(tree,gc) *decl_scope_table;
 
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
@@ -10667,7 +10667,7 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
 static void
 push_decl_scope (tree scope)
 {
-  VARRAY_PUSH_TREE (decl_scope_table, scope);
+  VEC_safe_push (tree, gc, decl_scope_table, scope);
 }
 
 /* Pop a declaration scope.  */
@@ -10675,9 +10675,7 @@ push_decl_scope (tree scope)
 static inline void
 pop_decl_scope (void)
 {
-  gcc_assert (VARRAY_ACTIVE_SIZE (decl_scope_table) > 0);
-
-  VARRAY_POP (decl_scope_table);
+  VEC_pop (tree, decl_scope_table);
 }
 
 /* Return the DIE for the scope that immediately contains this type.
@@ -10720,8 +10718,8 @@ scope_die_for (tree t, dw_die_ref context_die)
       /* For types, we can just look up the appropriate DIE.  But
 	 first we check to see if we're in the middle of emitting it
 	 so we know where the new DIE should go.  */
-      for (i = VARRAY_ACTIVE_SIZE (decl_scope_table) - 1; i >= 0; --i)
-	if (VARRAY_TREE (decl_scope_table, i) == containing_scope)
+      for (i = VEC_length (tree, decl_scope_table) - 1; i >= 0; --i)
+	if (VEC_index (tree, decl_scope_table, i) == containing_scope)
 	  break;
 
       if (i < 0)
@@ -13470,7 +13468,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 				    decl_loc_table_eq, NULL);
 
   /* Allocate the initial hunk of the decl_scope_table.  */
-  VARRAY_TREE_INIT (decl_scope_table, 256, "decl_scope_table");
+  decl_scope_table = VEC_alloc (tree, gc, 256);
 
   /* Allocate the initial hunk of the abbrev_die_table.  */
   abbrev_die_table = ggc_alloc_cleared (ABBREV_DIE_TABLE_INCREMENT

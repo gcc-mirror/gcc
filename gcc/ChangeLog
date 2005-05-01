@@ -5,6 +5,10 @@
 
 	* global.c (calculate_reg_pav): Use VEC instead of VARRAY.
 
+	* dwarf2out.c (decl_scope_table, push_decl_scope,
+	pop_decl_scope, scope_die_for, dwarf2out_init): Use VEC
+	instead of VARRAY.
+
 2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR C++/14391
