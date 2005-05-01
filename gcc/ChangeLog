@@ -1,3 +1,8 @@
+2005-04-30  Michael Matz  <matz@suse.de>
+
+	* config/i386/i386.md (movmemsi): Also active when
+	TARGET_INLINE_ALL_STRINGOPS.
+
 2005-04-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR bootstrap/20633

@@ -1,3 +1,7 @@
+2005-04-30  Michael Maty  <matz@suse.de>
+
+	* gcc.dg/inline-mcpy.c: New test.
+
 2005-04-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/18958
