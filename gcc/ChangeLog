@@ -1,3 +1,11 @@
+2005-01-05  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.h (ARM_EMIT_TRAMPOLINE_CACHE_CLEAR): Define.
+	(INITIALIZE_TRAMPOLINE): Use it.
+	* config/arm/linux-gas.h (INITIALIZE_TRAMPOLINE): Remove.
+	* config/arm/netbsd.h (INITIALIZE_TRAMPOLINE): Remove.
+	* config/arm/netbsd-elf.h (INITIALIZE_TRAMPOLINE): Remove.
+
 2005-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Omit dots in the @anchors names
