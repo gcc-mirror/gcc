@@ -2206,9 +2206,9 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#ix86-x-linux,,i?86-*-linux*}
 @item
-@uref{#ix86-x-sco3.2v5,,i?86-*-sco3.2v5*}
+@uref{#ix86-x-sco32v5,,i?86-*-sco3.2v5*}
 @item
-@uref{#ix86-x-solaris2.10,,i?86-*-solaris2.10}
+@uref{#ix86-x-solaris210,,i?86-*-solaris2.10}
 @item
 @uref{#ix86-x-udk,,i?86-*-udk}
 @item
@@ -2266,7 +2266,7 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#sparc-sun-solaris2,,sparc-sun-solaris2*}
 @item
-@uref{#sparc-sun-solaris2.7,,sparc-sun-solaris2.7}
+@uref{#sparc-sun-solaris27,,sparc-sun-solaris2.7}
 @item
 @uref{#sparc-x-linux,,sparc-*-linux*}
 @item
@@ -2280,7 +2280,7 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#x-x-vxworks,,*-*-vxworks*}
 @item
-@uref{#x86_64-x-x,,x86_64-*-*, amd64-*-*}
+@uref{#x86-64-x-x,,x86_64-*-*, amd64-*-*}
 @item
 @uref{#xtensa-x-elf,,xtensa-*-elf}
 @item
@@ -2295,7 +2295,7 @@ GNU Compiler Collection on your machine.
 
 @itemize
 @item
-@uref{#elf_targets,,all ELF targets} (SVR4, Solaris 2, etc.)
+@uref{#elf,,all ELF targets} (SVR4, Solaris 2, etc.)
 @end itemize
 @end ifhtml
 
@@ -2896,7 +2896,7 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-sco3.2v5}i?86-*-sco3.2v5*
+@heading @anchor{ix86-x-sco32v5}i?86-*-sco3.2v5*
 Use this for the SCO OpenServer Release 5 family of operating systems.
 
 Unlike earlier versions of GCC, the ability to generate COFF with this
@@ -2940,7 +2940,7 @@ GCC, version 2.95.3.  It is useful for bootstrapping this version.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-solaris2.10}i?86-*-solaris2.10
+@heading @anchor{ix86-x-solaris210}i?86-*-solaris2.10
 Use this for Solaris 10 or later on x86 and x86-64 systems.  This
 configuration is supported by GCC 4.0 and later versions only.
 
@@ -3648,7 +3648,7 @@ or later system, the canonical target triplet must be specified as the
 @html
 <hr />
 @end html
-@heading @anchor{sparc-sun-solaris2.7}sparc-sun-solaris2.7
+@heading @anchor{sparc-sun-solaris27}sparc-sun-solaris2.7
 
 Sun patch 107058-01 (1999-01-13) for Solaris 7/SPARC triggers a bug in
 the dynamic linker.  This problem (Sun bug 4210064) affects GCC 2.8
@@ -3807,7 +3807,7 @@ VxWorks will incorporate this module.)
 @html
 <hr />
 @end html
-@heading @anchor{x86_64-x-x}x86_64-*-*, amd64-*-*
+@heading @anchor{x86-64-x-x}x86_64-*-*, amd64-*-*
 
 GCC supports the x86-64 architecture implemented by the AMD64 processor
 (amd64-*-* is an alias for x86_64-*-*) on GNU/Linux, FreeBSD and NetBSD@.
@@ -3920,7 +3920,7 @@ current GCC) is to be found in the GCC texinfo manual.
 @html
 <hr />
 @end html
-@heading @anchor{elf_targets}all ELF targets (SVR4, Solaris 2, etc.)
+@heading @anchor{elf}all ELF targets (SVR4, Solaris 2, etc.)
 
 C++ support is significantly better on ELF targets if you use the
 @uref{./configure.html#with-gnu-ld,,GNU linker}; duplicate copies of
