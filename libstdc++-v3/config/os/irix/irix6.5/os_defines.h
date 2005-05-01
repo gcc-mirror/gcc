@@ -44,10 +44,6 @@
 // the command-line.
 #undef _POSIX_SOURCE
 
-#define __off_t off_t
-#define __off64_t off64_t
-#define __ssize_t ssize_t
-
 // GCC does not use thunks on IRIX. 
 #define _G_USING_THUNKS 0
 

@@ -1,6 +1,6 @@
 // Specific definitions for IRIX  -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,10 +43,6 @@
 // to turn it on.)  _SGI_SOURCE is actually turned on implicitly via
 // the command-line.
 #undef _POSIX_SOURCE
-
-#define __off_t off_t
-#define __off64_t off64_t
-#define __ssize_t ssize_t
 
 // GCC does not use thunks on IRIX. 
 #define _G_USING_THUNKS 0

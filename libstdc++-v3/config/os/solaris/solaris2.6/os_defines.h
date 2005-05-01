@@ -1,6 +1,6 @@
 // Specific definitions for Solaris 2.6  -*- C++ -*-
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,11 +32,5 @@
 
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
-
-// These are typedefs which libio assumes are already in place (because
-// they really are, under Linux).
-#define __off_t     off_t
-#define __off64_t   off64_t
-#define __ssize_t   ssize_t
 
 #endif
