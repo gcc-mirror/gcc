@@ -3708,7 +3708,7 @@ get_computation_cost_at (struct ivopts_data *data,
 
   /* CSTEPI is removed from the offset in case statement is after the
      increment.  If the step is not constant, we use zero instead.
-     This is a bit inprecise (there is the extra addition), but
+     This is a bit imprecise (there is the extra addition), but
      redundancy elimination is likely to transform the code so that
      it uses value of the variable before increment anyway,
      so it is not that much unrealistic.  */
