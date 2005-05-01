@@ -1,3 +1,9 @@
+2005-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.c (INVOKE__main): Do not define.
+	(expand_main_function): Check HAS_INIT_SECTION when determining
+	whether or not to call __main.
+
 2005-05-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-loop-ivopts.c: Fix a comment typo.
