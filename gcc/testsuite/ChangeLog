@@ -1,3 +1,8 @@
+2005-05-01  Michael Matz  <matz@suse.de>
+
+	PR c++/19542
+	* g++.dg/warn/sentinel.C: New testcase for __null sentinels added.
+
 2005-04-29  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/inline-mcpy.c: New test.
