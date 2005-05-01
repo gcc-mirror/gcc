@@ -952,9 +952,9 @@ number_of_iterations_exit (struct loop *loop, edge exit,
       && !POINTER_TYPE_P (type))
     return false;
      
-  if (!simple_iv (loop, stmt, op0, &base0, &step0))
+  if (!simple_iv (loop, stmt, op0, &base0, &step0, false))
     return false;
-  if (!simple_iv (loop, stmt, op1, &base1, &step1))
+  if (!simple_iv (loop, stmt, op1, &base1, &step1, false))
     return false;
 
   niter->niter = NULL_TREE;

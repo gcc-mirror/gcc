@@ -1,3 +1,45 @@
+2005-05-01  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/18316
+	PR tree-optimization/19126
+	* tree.c (build_int_cst_type): Avoid shift by size of type.
+	* tree-scalar-evolution.c (simple_iv): Add allow_nonconstant_step
+	argument.
+	* tree-scalar-evolution.h (simple_iv): Declaration changed.
+	* tree-ssa-loop-ivopts.c (struct iv_cand): Add depends_on
+	field.
+	(dump_cand): Dump depends_on information.
+	(determine_biv_step): Add argument to simple_iv call.
+	(contains_abnormal_ssa_name_p): Handle case expr == NULL.
+	(find_bivs, find_givs_in_stmt_scev): Do not require step to be a
+	constant.
+	(add_candidate_1): Record depends_on for candidates.
+	(tree_int_cst_sign_bit, constant_multiple_of): New functions.
+	(get_computation_at, get_computation_cost_at, may_eliminate_iv):
+	Handle ivs with nonconstant step.
+	(iv_ca_set_remove_invariants, iv_ca_set_add_invariants): New functions.
+	(iv_ca_set_no_cp, iv_ca_set_cp): Handle cand->depends_on.
+	(create_new_iv): Unshare the step before passing it to create_iv.
+	(free_loop_data): Free cand->depends_on.
+	(build_addr_strip_iref): New function.
+	(find_interesting_uses_address): Use build_addr_strip_iref.
+	(strip_offset_1): Split the recursive part from strip_offset.
+	Strip constant offset component_refs and array_refs.
+	(strip_offset): Split the recursive part to strip_offset_1.
+	(add_address_candidates): Removed.
+	(add_derived_ivs_candidates): Do not use add_address_candidates.
+	(add_iv_value_candidates): Add candidates with stripped constant
+	offset.  Consider all candidates with initial value 0 important.
+	(struct affine_tree_combination): New.
+	(aff_combination_const, aff_combination_elt, aff_combination_scale,
+	aff_combination_add_elt, aff_combination_add,
+	tree_to_aff_combination, add_elt_to_tree, aff_combination_to_tree,
+	fold_affine_sum): New functions.
+	(get_computation_at): Use fold_affine_sum.
+	* tree-ssa-loop-manip.c (create_iv): Handle ivs with nonconstant step.
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Add argument
+	to simple_iv call.
+
 2005-04-30  Michael Matz  <matz@suse.de>
 
 	* config/i386/i386.md (movmemsi): Also active when

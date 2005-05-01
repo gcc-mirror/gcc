@@ -54,6 +54,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   tree stmt, initial, step1, stmts;
   tree vb, va;
   enum tree_code incr_op = PLUS_EXPR;
+  edge pe = loop_preheader_edge (loop);
 
   if (!var)
     {
@@ -92,6 +93,12 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 	}
     }
 
+  /* Gimplify the step if necessary.  We put the computations in front of the
+     loop (i.e. the step should be loop invariant).  */
+  step = force_gimple_operand (step, &stmts, true, var);
+  if (stmts)
+    bsi_insert_on_edge_immediate_loop (pe, stmts);
+
   stmt = build2 (MODIFY_EXPR, void_type_node, va,
 		 build2 (incr_op, TREE_TYPE (base),
 			 vb, step));
@@ -103,11 +110,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 
   initial = force_gimple_operand (base, &stmts, true, var);
   if (stmts)
-    {
-      edge pe = loop_preheader_edge (loop);
-
-      bsi_insert_on_edge_immediate_loop (pe, stmts);
-    }
+    bsi_insert_on_edge_immediate_loop (pe, stmts);
 
   stmt = create_phi_node (vb, loop->header);
   SSA_NAME_DEF_STMT (vb) = stmt;
