@@ -328,7 +328,7 @@ c_cpp_builtins (cpp_reader *pfile)
 
   if (c_dialect_cxx ())
     {
-      if (SUPPORTS_ONE_ONLY)
+      if (flag_weak && SUPPORTS_ONE_ONLY) 
 	cpp_define (pfile, "__GXX_WEAK__=1");
       else
 	cpp_define (pfile, "__GXX_WEAK__=0");
