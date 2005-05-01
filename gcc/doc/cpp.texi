@@ -2081,10 +2081,30 @@ respectively.  They exist to make the standard header given numerical limits
 work correctly.  You should not use these macros directly; instead, include
 the appropriate headers.
 
+@item __DEPRECATED
+This macro is defined, with value 1, when compiling a C++ source file
+with warnings about deprecated constructs enabled.  These warnings are
+enabled by default, but can be disabled with @option{-Wno-deprecated}.
+
+@item __EXCEPTIONS
+This macro is defined, with value 1, when compiling a C++ source file
+with exceptions enabled.  If @option{-fno-exceptions} was used when
+compiling the file, then this macro will not be defined.
+
 @item __USING_SJLJ_EXCEPTIONS__
 This macro is defined, with value 1, if the compiler uses the old
 mechanism based on @code{setjmp} and @code{longjmp} for exception
 handling.
+
+@item __GXX_WEAK__
+This macro is defined when compiling a C++ source file.  It has the
+value 1 if the compiler will use weak symbols, COMDAT sections, or
+other similar techniques to collapse symbols with ``vague linkage''
+that are defined in multiple translation units.  If the compiler will
+not collapse such symbols, this macro is defined with value 0.  In
+general, user code should not need to make use of this macro; the
+purpose of this macro is to ease implementation of the C++ runtime
+library provided with G++.
 
 @item __NEXT_RUNTIME__
 This macro is defined, with value 1, if (and only if) the NeXT runtime

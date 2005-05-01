@@ -1,5 +1,11 @@
 2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
+	* c-cppbuiltin.c (c_cpp_builtins): Do not define __GXX_WEAK__ to 1
+	if !flag_weak.
+	* doc/cpp.texi (__DEPRECATED): Document.
+	(__EXCEPTIONS): Likewise.
+	(__GXX_WEAK__): Likewise.
+
 	* function.c (INVOKE__main): Do not define.
 	(expand_main_function): Check HAS_INIT_SECTION when determining
 	whether or not to call __main.
