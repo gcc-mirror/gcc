@@ -78,7 +78,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define FBSD_CPP_SPEC "							\
   %(cpp_cpu)								\
-  %(cpp_arch)								\
   %{fPIC|fpic|fPIE|fpie:-D__PIC__ -D__pic__}				\
   %{posix:-D_POSIX_SOURCE}"
 

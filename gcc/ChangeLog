@@ -1,5 +1,9 @@
 2005-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* config/freebsd-spec.h (FBSD_CPP_SPEC): Revert last change.
+
+2005-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	Backport from mainline
 	* doc/install.texi (Specific): Avoid using asterisks in @anchor
 	names related to target triplets.
