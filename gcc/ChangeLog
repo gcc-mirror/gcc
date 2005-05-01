@@ -1,3 +1,8 @@
+2005-05-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gimplify.c (gimplify_compound_lval): Use VEC instead of
+	VARRAY.
+
 2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR C++/14391
