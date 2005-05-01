@@ -1,3 +1,7 @@
+2005-05-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-loop-ivopts.c: Fix a comment typo.
+
 2005-01-05  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.h (ARM_EMIT_TRAMPOLINE_CACHE_CLEAR): Define.
