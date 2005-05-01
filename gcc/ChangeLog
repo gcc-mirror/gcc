@@ -1,3 +1,8 @@
+2005-05-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/20633
+	* config/freebsd-spec.h (FBSD_CPP_SPEC): Add %(cpp_arch).
+
 2005-05-01  Michael Matz  <matz@suse.de>
 
 	PR c++/19542
