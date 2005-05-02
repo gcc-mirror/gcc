@@ -1,3 +1,8 @@
+2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* function.c (reorder_blocks, reorder_blocks_1): Use VEC
+	instead of VARRAY.
+
 2005-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 	    Bernd Schmidt  <bernd.schmidt@analog.com>
 
