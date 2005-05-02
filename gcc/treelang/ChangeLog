@@ -1,3 +1,8 @@
+2005-05-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR treelang/21345
+	* parse.y (parameters_opt): Add semicolon at the end.
+
 2005-04-20  Release Manager
 
 	* GCC 4.0.0 released.
