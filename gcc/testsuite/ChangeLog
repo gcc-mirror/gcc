@@ -1,3 +1,8 @@
+2005-05-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/titype-1.c: Fix dg-error target regexp.
+	* gcc.dg/uninit-C.c: Likewise.
+
 2004-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18464
