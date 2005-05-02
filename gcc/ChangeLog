@@ -1,3 +1,21 @@
+2005-05-02  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.opt: New file.
+	* config/mmix/mmix.h: Move options-related comments to mmix.opt.
+ 	(mmix_cc1_ignored_option): Don't declare.
+	(TARGET_OPTIONS, TARGET_MASK_LIBFUNCS, TARGET_MASK_ABI_GNU)
+	(TARGET_MASK_FCMP_EPSILON, TARGET_MASK_ZERO_EXTEND)
+	(TARGET_MASK_KNUTH_DIVISION, TARGET_MASK_TOPLEVEL_SYMBOLS)
+	(TARGET_MASK_BRANCH_PREDICT, TARGET_MASK_USE_RETURN_INSN)
+	(TARGET_MASK_BASE_ADDRESSES, TARGET_LIBFUNC, TARGET_ABI_GNU,
+	(TARGET_FCMP_EPSILON, TARGET_ZERO_EXTEND, TARGET_KNUTH_DIVISION)
+	(TARGET_TOPLEVEL_SYMBOLS, TARGET_BRANCH_PREDICT)
+	(TARGET_BASE_ADDRESSES, TARGET_USE_RETURN_INSN, TARGET_SWITCHES):
+	Don't define.
+	(TARGET_DEFAULT): Change TARGET_MASK_... to MASK_...
+	* config/mmix/mmix.c (mmix_cc1_ignored_option): Remove.
+	(TARGET_DEFAULT_TARGET_FLAGS): Override default.
+
 2005-05-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/15698
