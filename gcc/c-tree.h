@@ -96,6 +96,11 @@ struct lang_type GTY(())
 #define C_DECL_DECLARED_BUILTIN(EXP)		\
   DECL_LANG_FLAG_3 (FUNCTION_DECL_CHECK (EXP))
 
+/* For FUNCTION_DECLs, evaluates true if the decl is built-in, has a
+   built-in prototype and does not have a non-built-in prototype.  */
+#define C_DECL_BUILTIN_PROTOTYPE(EXP)		\
+  DECL_LANG_FLAG_6 (FUNCTION_DECL_CHECK (EXP))
+
 /* Record whether a decl was declared register.  This is strictly a
    front-end flag, whereas DECL_REGISTER is used for code generation;
    they may differ for structures with volatile fields.  */

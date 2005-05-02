@@ -98,6 +98,14 @@ static int enum_overflow;
 
 static location_t current_function_prototype_locus;
 
+/* Whether this prototype was built-in.  */
+
+static bool current_function_prototype_built_in;
+
+/* The argument type information of this prototype.  */
+
+static tree current_function_prototype_arg_types;
+
 /* The argument information structure for the function currently being
    defined.  */
 
@@ -1574,6 +1582,10 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 {
   int new_is_definition = (TREE_CODE (newdecl) == FUNCTION_DECL
 			   && DECL_INITIAL (newdecl) != 0);
+  int new_is_prototype = (TREE_CODE (newdecl) == FUNCTION_DECL
+			  && TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != 0);
+  int old_is_prototype = (TREE_CODE (olddecl) == FUNCTION_DECL
+			  && TYPE_ARG_TYPES (TREE_TYPE (olddecl)) != 0);
 
   /* For real parm decl following a forward decl, rechain the old decl
      in its new location and clear TREE_ASM_WRITTEN (it's not a
@@ -1647,8 +1659,12 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   if (TREE_DEPRECATED (newdecl))
     TREE_DEPRECATED (olddecl) = 1;
 
-  /* Keep source location of definition rather than declaration.  */
-  if (DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
+  /* Keep source location of definition rather than declaration and of
+     prototype rather than non-prototype unless that prototype is
+     built-in.  */
+  if ((DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
+      || (old_is_prototype && !new_is_prototype
+	  && !C_DECL_BUILTIN_PROTOTYPE (olddecl)))
     DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
 
   /* Merge the unused-warning information.  */
@@ -1763,6 +1779,11 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
 	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	  C_DECL_DECLARED_BUILTIN (newdecl) = 1;
+	  if (new_is_prototype)
+	    C_DECL_BUILTIN_PROTOTYPE (newdecl) = 0;
+	  else
+	    C_DECL_BUILTIN_PROTOTYPE (newdecl)
+	      = C_DECL_BUILTIN_PROTOTYPE (olddecl);
 	}
 
       /* Also preserve various other info from the definition.  */
@@ -2716,6 +2737,7 @@ builtin_function (const char *name, tree type, int function_code,
   DECL_LANG_SPECIFIC (decl) = GGC_CNEW (struct lang_decl);
   DECL_BUILT_IN_CLASS (decl) = cl;
   DECL_FUNCTION_CODE (decl) = function_code;
+  C_DECL_BUILTIN_PROTOTYPE (decl) = (TYPE_ARG_TYPES (type) != 0);
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
 
@@ -5734,14 +5756,53 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   /* If this definition isn't a prototype and we had a prototype declaration
      before, copy the arg type info from that prototype.  */
   old_decl = lookup_name_in_scope (DECL_NAME (decl1), current_scope);
-  if (old_decl != 0 && TREE_CODE (TREE_TYPE (old_decl)) == FUNCTION_TYPE
-      && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
-		    TREE_TYPE (TREE_TYPE (old_decl)))
-      && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
+  current_function_prototype_locus = UNKNOWN_LOCATION;
+  current_function_prototype_built_in = false;
+  current_function_prototype_arg_types = NULL_TREE;
+  if (TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
     {
-      TREE_TYPE (decl1) = composite_type (TREE_TYPE (old_decl),
-					  TREE_TYPE (decl1));
-      current_function_prototype_locus = DECL_SOURCE_LOCATION (old_decl);
+      if (old_decl != 0 && TREE_CODE (TREE_TYPE (old_decl)) == FUNCTION_TYPE
+	  && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
+			TREE_TYPE (TREE_TYPE (old_decl))))
+	{
+	  TREE_TYPE (decl1) = composite_type (TREE_TYPE (old_decl),
+					      TREE_TYPE (decl1));
+	  current_function_prototype_locus = DECL_SOURCE_LOCATION (old_decl);
+	  current_function_prototype_built_in
+	    = C_DECL_BUILTIN_PROTOTYPE (old_decl);
+	  current_function_prototype_arg_types
+	    = TYPE_ARG_TYPES (TREE_TYPE (decl1));
+	}
+      if (TREE_PUBLIC (decl1))
+	{
+	  /* If there is an external prototype declaration of this
+	     function, record its location but do not copy information
+	     to this decl.  This may be an invisible declaration
+	     (built-in or in a scope which has finished) or simply
+	     have more refined argument types than any declaration
+	     found above.  */
+	  struct c_binding *b;
+	  for (b = I_SYMBOL_BINDING (DECL_NAME (decl1)); b; b = b->shadowed)
+	    if (B_IN_SCOPE (b, external_scope))
+	      break;
+	  if (b)
+	    {
+	      tree ext_decl, ext_type;
+	      ext_decl = b->decl;
+	      ext_type = b->type ? b->type : TREE_TYPE (ext_decl);
+	      if (TREE_CODE (ext_type) == FUNCTION_TYPE
+		  && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
+				TREE_TYPE (ext_type)))
+		{
+		  current_function_prototype_locus
+		    = DECL_SOURCE_LOCATION (ext_decl);
+		  current_function_prototype_built_in
+		    = C_DECL_BUILTIN_PROTOTYPE (ext_decl);
+		  current_function_prototype_arg_types
+		    = TYPE_ARG_TYPES (ext_type);
+		}
+	    }
+	}
     }
 
   /* Optionally warn of old-fashioned def with no previous prototype.  */
@@ -6081,11 +6142,11 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
      set the DECL_ARG_TYPE of each argument according to
      the type previously specified, and report any mismatches.  */
 
-  if (TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
+  if (current_function_prototype_arg_types)
     {
       tree type;
       for (parm = DECL_ARGUMENTS (fndecl),
-	     type = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	     type = current_function_prototype_arg_types;
 	   parm || (type && (TYPE_MAIN_VARIANT (TREE_VALUE (type))
 			     != void_type_node));
 	   parm = TREE_CHAIN (parm), type = TREE_CHAIN (type))
@@ -6093,9 +6154,15 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	  if (parm == 0 || type == 0
 	      || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
 	    {
-	      error ("number of arguments doesn%'t match prototype");
-	      error ("%Hprototype declaration",
-		     &current_function_prototype_locus);
+	      if (current_function_prototype_built_in)
+		warning ("number of arguments doesn%'t match "
+			 "built-in prototype");
+	      else
+		{
+		  error ("number of arguments doesn%'t match prototype");
+		  error ("%Hprototype declaration",
+			 &current_function_prototype_locus);
+		}
 	      break;
 	    }
 	  /* Type for passing arg must be consistent with that
@@ -6122,17 +6189,33 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 
 		  if (pedantic)
 		    {
-		      pedwarn ("promoted argument %qD "
-			       "doesn%'t match prototype", parm);
-		      pedwarn ("%Hprototype declaration",
-			       &current_function_prototype_locus);
+		      /* ??? Is it possible to get here with a
+			 built-in prototype or will it always have
+			 been diagnosed as conflicting with an
+			 old-style definition and discarded?  */
+		      if (current_function_prototype_built_in)
+			warning ("promoted argument %qD "
+				 "doesn%'t match built-in prototype", parm);
+		      else
+			{
+			  pedwarn ("promoted argument %qD "
+				   "doesn%'t match prototype", parm);
+			  pedwarn ("%Hprototype declaration",
+				   &current_function_prototype_locus);
+			}
 		    }
 		}
 	      else
 		{
-		  error ("argument %qD doesn%'t match prototype", parm);
-		  error ("%Hprototype declaration",
-			 &current_function_prototype_locus);
+		  if (current_function_prototype_built_in)
+		    warning ("argument %qD doesn%'t match "
+			     "built-in prototype", parm);
+		  else
+		    {
+		      error ("argument %qD doesn%'t match prototype", parm);
+		      error ("%Hprototype declaration",
+			     &current_function_prototype_locus);
+		    }
 		}
 	    }
 	}

@@ -1,3 +1,11 @@
+2005-05-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/15698
+	* gcc.dg/builtins-30.c: Update expected messages.
+	* gcc.dg/pr15698-1.c, gcc.dg/pr15698-2.c, gcc.dg/pr15698-3.c,
+	gcc.dg/pr15698-4.c, gcc.dg/pr15698-5.c, gcc.dg/pr15698-6.c,
+	gcc.dg/pr15698-7.c, pr15698-8.c: New tests.
+
 2005-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15875
