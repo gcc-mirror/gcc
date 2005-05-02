@@ -4,7 +4,7 @@ main (void)
   long long   x;
   int         n;
 
-  if (sizeof (long long) < 64)
+  if (sizeof (long long) < 8)
     exit (0);
   
   n = 9;
