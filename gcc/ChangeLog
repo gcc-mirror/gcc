@@ -1,3 +1,8 @@
+2005-05-02  Janis Johnson  <janis187@us.ibm.com>
+
+	PR 19985
+	* gcov-io.h: Declare gcov external functions hidden.
+
 2005-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/freebsd-spec.h (FBSD_CPP_SPEC): Revert last change.

@@ -230,11 +230,15 @@ typedef HOST_WIDEST_INT gcov_type;
 
 #endif /* !IN_LIBGCOV */
 
-/* In gcov we want function linkage to be static. In libgcov we need
-   these functions to be extern, so prefix them with __gcov.  In the
-   compiler we want it extern, so that they can be accessed from
-   elsewhere.  */
+/* In gcov we want function linkage to be static.  In the compiler we want
+   it extern, so that they can be accessed from elsewhere.  In libgcov we
+   need these functions to be extern, so prefix them with __gcov.  In
+   libgcov they must also be hidden so that the instance in the executable
+   is not also used in a DSO.  */
 #if IN_LIBGCOV
+
+#include "auto-host.h"   /* for HAVE_GAS_HIDDEN */
+
 #define gcov_var __gcov_var
 #define gcov_open __gcov_open
 #define gcov_close __gcov_close
@@ -254,6 +258,16 @@ typedef HOST_WIDEST_INT gcov_type;
 /* Poison these, so they don't accidentally slip in.  */
 #pragma GCC poison gcov_write_string gcov_write_tag gcov_write_length
 #pragma GCC poison gcov_read_string gcov_sync gcov_time gcov_magic
+
+#ifdef HAVE_GAS_HIDDEN
+#define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))
+#else
+#define ATTRIBUTE_HIDDEN
+#endif
+
+#else
+
+#define ATTRIBUTE_HIDDEN
 
 #endif
 
@@ -433,20 +447,20 @@ struct gcov_info
 };
 
 /* Register a new object file module.  */
-extern void __gcov_init (struct gcov_info *);
+extern void __gcov_init (struct gcov_info *) ATTRIBUTE_HIDDEN;
 
 /* Called before fork, to avoid double counting.  */
-extern void __gcov_flush (void);
+extern void __gcov_flush (void) ATTRIBUTE_HIDDEN;
 
 /* The merge function that just sums the counters.  */
-extern void __gcov_merge_add (gcov_type *, unsigned);
+extern void __gcov_merge_add (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
 /* The merge function to choose the most common value.  */
-extern void __gcov_merge_single (gcov_type *, unsigned);
+extern void __gcov_merge_single (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
 /* The merge function to choose the most common difference between
    consecutive values.  */
-extern void __gcov_merge_delta (gcov_type *, unsigned);
+extern void __gcov_merge_delta (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 #endif /* IN_LIBGCOV */
 
 #if IN_LIBGCOV >= 0
@@ -476,7 +490,7 @@ GCOV_LINKAGE struct gcov_var
   size_t alloc;
   gcov_unsigned_t *buffer;
 #endif
-} gcov_var;
+} gcov_var ATTRIBUTE_HIDDEN;
 
 /* Functions for reading and writing gcov files. In libgcov you can
    open the file for reading then writing. Elsewhere you can open the
@@ -488,31 +502,33 @@ GCOV_LINKAGE struct gcov_var
    functions for writing.  Your file may become corrupted if you break
    these invariants.  */
 #if IN_LIBGCOV
-GCOV_LINKAGE int gcov_open (const char */*name*/);
+GCOV_LINKAGE int gcov_open (const char */*name*/) ATTRIBUTE_HIDDEN;
 #else
 GCOV_LINKAGE int gcov_open (const char */*name*/, int /*direction*/);
 GCOV_LINKAGE int gcov_magic (gcov_unsigned_t, gcov_unsigned_t);
 #endif
-GCOV_LINKAGE int gcov_close (void);
+GCOV_LINKAGE int gcov_close (void) ATTRIBUTE_HIDDEN;
 
 /* Available everywhere.  */
 static gcov_position_t gcov_position (void);
 static int gcov_is_error (void);
 static int gcov_is_eof (void);
 
-GCOV_LINKAGE gcov_unsigned_t gcov_read_unsigned (void);
-GCOV_LINKAGE gcov_type gcov_read_counter (void);
-GCOV_LINKAGE void gcov_read_summary (struct gcov_summary *);
+GCOV_LINKAGE gcov_unsigned_t gcov_read_unsigned (void) ATTRIBUTE_HIDDEN;
+GCOV_LINKAGE gcov_type gcov_read_counter (void) ATTRIBUTE_HIDDEN;
+GCOV_LINKAGE void gcov_read_summary (struct gcov_summary *) ATTRIBUTE_HIDDEN;
 
 #if IN_LIBGCOV
 /* Available only in libgcov */
-GCOV_LINKAGE void gcov_write_counter (gcov_type);
-GCOV_LINKAGE void gcov_write_tag_length (gcov_unsigned_t, gcov_unsigned_t);
+GCOV_LINKAGE void gcov_write_counter (gcov_type) ATTRIBUTE_HIDDEN;
+GCOV_LINKAGE void gcov_write_tag_length (gcov_unsigned_t, gcov_unsigned_t)
+    ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
-				      const struct gcov_summary *);
+				      const struct gcov_summary *)
+    ATTRIBUTE_HIDDEN;
 static void gcov_truncate (void);
 static void gcov_rewrite (void);
-GCOV_LINKAGE void gcov_seek (gcov_position_t /*position*/);
+GCOV_LINKAGE void gcov_seek (gcov_position_t /*position*/) ATTRIBUTE_HIDDEN;
 #else
 /* Available outside libgcov */
 GCOV_LINKAGE const char *gcov_read_string (void);
@@ -522,7 +538,7 @@ GCOV_LINKAGE void gcov_sync (gcov_position_t /*base*/,
 
 #if !IN_GCOV
 /* Available outside gcov */
-GCOV_LINKAGE void gcov_write_unsigned (gcov_unsigned_t);
+GCOV_LINKAGE void gcov_write_unsigned (gcov_unsigned_t) ATTRIBUTE_HIDDEN;
 #endif
 
 #if !IN_GCOV && !IN_LIBGCOV
