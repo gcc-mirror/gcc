@@ -1,3 +1,8 @@
+2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
+
+        * semantics.c (finish_call_expr): Call resolve_overloaded_builtin
+        for BUILT_IN_MD built-ins.
+
 2005-05-02  Michael Matz  <matz@suse.de>
 
 	PR c++/19542

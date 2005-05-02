@@ -5979,6 +5979,20 @@ tree
 resolve_overloaded_builtin (tree function, tree params)
 {
   enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
+  switch (DECL_BUILT_IN_CLASS (function))
+    {
+    case BUILT_IN_NORMAL:
+      break;
+    case BUILT_IN_MD:
+      if (targetm.resolve_overloaded_builtin)
+        return targetm.resolve_overloaded_builtin (function, params);
+      else
+        return NULL_TREE;
+    default:
+      return NULL_TREE;
+    }
+    
+  /* Handle BUILT_IN_NORMAL here.  */
   switch (orig_code)
     {
     case BUILT_IN_FETCH_AND_ADD_N:
@@ -6017,7 +6031,7 @@ resolve_overloaded_builtin (tree function, tree params)
       }
 
     default:
-      return NULL;
+      return NULL_TREE;
     }
 }
 

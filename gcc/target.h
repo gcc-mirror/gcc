@@ -345,9 +345,15 @@ struct gcc_target
   rtx (* expand_builtin) (tree exp, rtx target, rtx subtarget,
 			  enum machine_mode mode, int ignore);
 
+  /* Select a replacement for a target-specific builtin.  This is done
+     *before* regular type checking, and so allows the target to implement
+     a crude form of function overloading.  The result is a complete
+     expression that implements the operation.  */
+  tree (*resolve_overloaded_builtin) (tree decl, tree params);
+
   /* Fold a target-specific builtin.  */
   tree (* fold_builtin) (tree fndecl, tree arglist, bool ignore);
-
+  
   /* For a vendor-specific fundamental TYPE, return a pointer to
      a statically-allocated string containing the C++ mangling for
      TYPE.  In all other cases, return NULL.  */

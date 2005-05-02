@@ -1837,7 +1837,8 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
     {
       /* If the function is an overloaded builtin, resolve it.  */
       if (TREE_CODE (fn) == FUNCTION_DECL
-	  && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
+	  && (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
+	      || DECL_BUILT_IN_CLASS (fn) == BUILT_IN_MD))
         result = resolve_overloaded_builtin (fn, args);
 
       if (!result)

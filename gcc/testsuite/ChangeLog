@@ -1,3 +1,8 @@
+2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
+
+        * gcc.dg/altivec-3.c (vec_store): Do not use the old
+        __builtin_altivec_st_internal_4si built-in.
+
 2005-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15875
