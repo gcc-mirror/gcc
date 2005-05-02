@@ -1,3 +1,10 @@
+2005-05-02  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert:
+	2005-05-01  Mark Mitchell  <mark@codesourcery.com>
+	* typeck.c (unary_complex_lvalue): In a template, always refuse
+	simplifications.
+
 2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:

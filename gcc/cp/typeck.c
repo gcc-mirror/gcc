@@ -4172,12 +4172,6 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 tree
 unary_complex_lvalue (enum tree_code code, tree arg)
 {
-  /* Inside a template, making these kinds of adjustments is
-     pointless; we are only concerned with the type of the
-     expression.  */
-  if (processing_template_decl)
-    return NULL_TREE;
-
   /* Handle (a, b) used as an "lvalue".  */
   if (TREE_CODE (arg) == COMPOUND_EXPR)
     {

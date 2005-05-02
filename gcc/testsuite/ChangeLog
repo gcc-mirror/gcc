@@ -1,3 +1,8 @@
+2005-05-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15875
+	* g++.dg/template/ptrmem14.C: New test.
+
 2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:
