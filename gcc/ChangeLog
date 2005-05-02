@@ -1,3 +1,8 @@
+2005-05-02  Janis Johnson  <janis187@us.ibm.com>
+
+	PR 19985
+	* gcov-io.h: Declare gcov external functions hidden.
+
 2005-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Omit dots in the @anchors names
