@@ -1623,21 +1623,23 @@ decl_constant_value (tree decl)
 		      TREE_OPERAND (decl, 0), d1, d2);
     }
 
-  if (DECL_P (decl)
-      && (/* Enumeration constants are constant.  */
-	  TREE_CODE (decl) == CONST_DECL
-	  /* And so are variables with a 'const' type -- unless they
-	     are also 'volatile'.  */
-	  || CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))
-      && DECL_INITIAL (decl)
-      && DECL_INITIAL (decl) != error_mark_node
-      /* This is invalid if initial value is not constant.
-	 If it has either a function call, a memory reference,
-	 or a variable, then re-evaluating it could give different results.  */
-      && TREE_CONSTANT (DECL_INITIAL (decl))
-      /* Check for cases where this is sub-optimal, even though valid.  */
-      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
-    return DECL_INITIAL (decl);
+  while (DECL_P (decl)
+	 && (/* Enumeration constants are constant.  */
+	     TREE_CODE (decl) == CONST_DECL
+	     /* And so are variables with a 'const' type -- unless they
+		are also 'volatile'.  */
+	     || CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))
+	 && DECL_INITIAL (decl)
+	 && DECL_INITIAL (decl) != error_mark_node
+	 /* This is invalid if initial value is not constant.  If it
+	    has either a function call, a memory reference, or a
+	    variable, then re-evaluating it could give different
+	    results.  */
+	 && TREE_CONSTANT (DECL_INITIAL (decl))
+	 /* Check for cases where this is sub-optimal, even though
+	    valid.  */
+	 && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
+    decl = DECL_INITIAL (decl);
   return decl;
 }
 

@@ -1,5 +1,15 @@
-2004-12-22  Mark Mitchell  <mark@codesourcery.com>
+2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
+	Backport:
+	2005-02-22  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/19991
+	* init.c (decl_constant_value): Iterate if the value of a decl
+	is itself a constant.
+
+2005-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+        2004-12-22  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/18464
 	* call.c (build_this): In templates, do not bother with
 	build_unary_op.

@@ -1,10 +1,19 @@
+2005-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2005-02-22  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/19991
+	* g++.dg/parse/constant7.C: New test.
+
 2005-05-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/titype-1.c: Fix dg-error target regexp.
 	* gcc.dg/uninit-C.c: Likewise.
 
-2004-12-22  Mark Mitchell  <mark@codesourcery.com>
+2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
+	Backport:
+	2004-12-22  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/18464
 	* g++.dg/template/cond5.C: New test.
 
