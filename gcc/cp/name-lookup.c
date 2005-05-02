@@ -4864,7 +4864,7 @@ push_to_top_level (void)
 
   scope_chain = s;
   current_function_decl = NULL_TREE;
-  VARRAY_TREE_INIT (current_lang_base, 10, "current_lang_base");
+  current_lang_base = VEC_alloc (tree, gc, 10);
   current_lang_name = lang_name_cplusplus;
   current_namespace = global_namespace;
   timevar_pop (TV_NAME_LOOKUP);

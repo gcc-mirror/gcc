@@ -5523,7 +5523,7 @@ pop_nested_class (void)
 int
 current_lang_depth (void)
 {
-  return VARRAY_ACTIVE_SIZE (current_lang_base);
+  return VEC_length (tree, current_lang_base);
 }
 
 /* Set global variables CURRENT_LANG_NAME to appropriate value
@@ -5532,7 +5532,7 @@ current_lang_depth (void)
 void
 push_lang_context (tree name)
 {
-  VARRAY_PUSH_TREE (current_lang_base, current_lang_name);
+  VEC_safe_push (tree, gc, current_lang_base, current_lang_name);
 
   if (name == lang_name_cplusplus)
     {
@@ -5567,8 +5567,7 @@ push_lang_context (tree name)
 void
 pop_lang_context (void)
 {
-  current_lang_name = VARRAY_TOP_TREE (current_lang_base);
-  VARRAY_POP (current_lang_base);
+  current_lang_name = VEC_pop (tree, current_lang_base);
 }
 
 /* Type instantiation routines.  */
