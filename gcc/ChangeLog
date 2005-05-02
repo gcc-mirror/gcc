@@ -1,3 +1,38 @@
+2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
+
+        * c-common.c (resolve_overloaded_builtin): Forward to target
+        hook for BUILT_IN_MD built-ins.
+        * c-typeck.c (finish_call_expr): Call resolve_overloaded_builtin
+        for all types of built-in.
+        * target-def.h (TARGET_RESOLVE_OVERLOADED_BUILTIN): New.  Use it
+        in the definition of the target hooks struct.
+        * target.h (struct gcc_target): Add resolve_overloaded_builtin.
+        * config/rs6000/altivec.h: Rewritten.
+        * config/rs6000/rs6000-c.c (struct altivec_builtin_types,
+        altivec_resolve_overloaded_builtin, altivec_build_resolved_builtin,
+        rs6000_builtin_type, rs6000_builtin_type_compatible,
+        altivec_overloaded_builtins, rs6000_builtin_type,
+        rs6000_builtin_type_compatible): New.
+        * config/rs6000/rs6000.c (rs6000_builtin_types, rs6000_builtin_decls):
+        New.
+        (def_builtin): Turn into a function.  Check for duplicates and store
+        the builtin into rs6000_builtin_decls.
+        (bdesc_3arg, bdesc_dst, bdesc_altivec_preds, bdesc_2arg,
+        bdesc_1arg): Add overloaded builtins.
+        (altivec_expand_builtin): Check for unresolved overloaded builtins,
+        do not support ALTIVEC_COMPILETIME_ERROR.
+        (rs6000_init_builtins): Add opaque 128-bit vector, and internal
+        nodes to represent front-end types.
+        (altivec_init_builtins, rs6000_common_init_builtins): Create builtins
+        with opaque arguments and/or return values.
+        * config/rs6000/rs6000.h (enum rs6000_builtins): Remove
+        ALTIVEC_COMPILETIME_ERROR and add Altivec overloaded builtins.
+        (rs6000_builtin_type_index): New.
+        (is_ev64_opaque_type): Rename to...
+        (rs6000_is_opaque_type): ... this.
+        (rs6000_cpu_cpp_builtins): Install the resolve_overloaded_builtin
+        target hook.
+
 2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* function.c (reorder_blocks, reorder_blocks_1): Use VEC

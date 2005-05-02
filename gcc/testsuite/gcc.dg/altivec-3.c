@@ -19,7 +19,7 @@ float h3[4] __attribute__((aligned(16)));
 float g3[4] __attribute__((aligned(16)));
 
 #define vec_store(dst, src) \
-  __builtin_altivec_st_internal_4si ((int *) dst, (int4) src)
+  __builtin_vec_st (src, 0, (__typeof__ (src) *) dst)
 
 #define vec_add_int4(x, y) \
   __builtin_altivec_vaddsws (x, y)
