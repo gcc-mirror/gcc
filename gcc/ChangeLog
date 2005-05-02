@@ -1,3 +1,7 @@
+2005-05-02  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* doc/passes.texi: Document vectorization pass.
+
 2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-scalar-evolution.c (get_exit_conditions_rec,
