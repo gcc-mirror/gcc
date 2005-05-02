@@ -1,3 +1,8 @@
+2005-05-02  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* calls.c (expand_call): Handle current_function_pretend_args_size
+	when checking for sibcalls.
+
 2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21294

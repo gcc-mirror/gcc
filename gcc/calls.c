@@ -2197,8 +2197,11 @@ expand_call (tree exp, rtx target, int ignore)
          the argument areas are shared.  */
       || (fndecl && decl_function_context (fndecl) == current_function_decl)
       /* If this function requires more stack slots than the current
-	 function, we cannot change it into a sibling call.  */
-      || args_size.constant > current_function_args_size
+	 function, we cannot change it into a sibling call.
+	 current_function_pretend_args_size is not part of the
+	 stack allocated by our caller.  */
+      || args_size.constant > (current_function_args_size
+			       - current_function_pretend_args_size)
       /* If the callee pops its own arguments, then it must pop exactly
 	 the same number of arguments as the current function.  */
       || (RETURN_POPS_ARGS (fndecl, funtype, args_size.constant)
