@@ -477,6 +477,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warn_return_type = value;
       break;
 
+    case OPT_Wstrict_null_sentinel:
+      warn_strict_null_sentinel = value;
+      break;
+
     case OPT_Wsystem_headers:
       cpp_opts->warn_system_headers = value;
       break;

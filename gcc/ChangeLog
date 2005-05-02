@@ -1,3 +1,16 @@
+2005-05-02  Michael Matz  <matz@suse.de>
+
+	PR c++/19542
+	* c-common.c (c_common_nodes_and_builtins): Create global null_node.
+	(warn_strict_null_sentinel): Define.
+	(check_function_sentinel): Check for null_node as valid sentinel too.
+	* c-common.h (c_tree_index): Added CTI_NULL.
+	(null_node) Define global_tree[CTI_NULL].
+	(warn_strict_null_sentinel): Declare.
+	* c-opts.c: (c_common_handle_option): Handle -Wstrict-null-sentinel.
+	* c.opt: (Wstrict-null-sentinel): New C++ option.
+	* doc/invoke.texi (C++ Options): Document -Wstrict-null-sentinel.
+
 2005-05-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gimplify.c (gimplify_compound_lval): Use VEC instead of
