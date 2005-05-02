@@ -4701,7 +4701,7 @@ pushtag (tree name, tree type, tag_scope scope)
 	  if (TYPE_CONTEXT (type)
 	      && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL
 	      && !processing_template_decl)
-	    VARRAY_PUSH_TREE (local_classes, type);
+	    VEC_safe_push (tree, gc, local_classes, type);
         }
       if (b->kind == sk_class
 	  && !COMPLETE_TYPE_P (current_class_type))

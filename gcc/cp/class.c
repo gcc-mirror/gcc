@@ -104,7 +104,7 @@ static class_stack_node_t current_class_stack;
 
 /* An array of all local classes present in this translation unit, in
    declaration order.  */
-varray_type local_classes;
+VEC(tree,gc) *local_classes;
 
 static tree get_vfield_name (tree);
 static void finish_struct_anon (tree);
@@ -5324,7 +5324,7 @@ init_class_processing (void)
   current_class_stack_size = 10;
   current_class_stack 
     = xmalloc (current_class_stack_size * sizeof (struct class_stack_node));
-  VARRAY_TREE_INIT (local_classes, 8, "local_classes");
+  local_classes = VEC_alloc (tree, gc, 8);
 
   ridpointers[(int) RID_PUBLIC] = access_public_node;
   ridpointers[(int) RID_PRIVATE] = access_private_node;

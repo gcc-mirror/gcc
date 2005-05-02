@@ -1,3 +1,11 @@
+2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* class.c (local_classes, init_class_processing): Use VEC
+	instead of VARRAY.
+	* cp-tree.h (local_classes): Likewise.
+	* mangle.c (discriminator_for_local_entity): Likewise.
+	* name-lookup.c (pushtag): Likewise.
+
 2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
 
         * semantics.c (finish_call_expr): Call resolve_overloaded_builtin
