@@ -1436,7 +1436,7 @@ discriminator_for_local_entity (tree entity)
     {
       /* Scan the list of local classes.  */
       entity = TREE_TYPE (entity);
-      for (type = &VARRAY_TREE (local_classes, 0); *type != entity; ++type)
+      for (type = VEC_address (tree, local_classes); *type != entity; ++type)
         if (TYPE_IDENTIFIER (*type) == TYPE_IDENTIFIER (entity)
             && TYPE_CONTEXT (*type) == TYPE_CONTEXT (entity))
 	  ++discriminator;

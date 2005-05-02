@@ -3132,7 +3132,7 @@ extern int current_class_depth;
 
 /* An array of all local classes present in this translation unit, in
    declaration order.  */
-extern GTY(()) varray_type local_classes;
+extern GTY(()) VEC(tree,gc) *local_classes;
 
 /* Here's where we control how name mangling takes place.  */
 
