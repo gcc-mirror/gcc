@@ -1,3 +1,15 @@
+2005-04-29  Geoffrey Keating  <geoffk@apple.com>
+
+	PR target/20813
+	* config/rs6000/rs6000.md (floatsidf2_internal): Merge to create
+	define_insn_and_split.  Split only when memory operand is
+	offsettable.  Use adjust_address rather than plus_constant.
+	(floatunssidf2_internal): Likewise.
+	(fix_truncdfsi2_internal): Split only when memory operand is
+	offsettable.  Use adjust_address rather than plus_constant.
+	(fix_trunctfsi2_internal): Likewise.
+	(floatsidf2_internal): Likewise.
+
 2005-05-02  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-vrp.c (set_value_range_to_nonnull): Declare inline.

@@ -1,3 +1,8 @@
+2005-05-02  Geoffrey Keating  <geoffk@apple.com>
+
+	PR target/20813
+	* gcc.dg/rs6000-fpint-2.c: New.
+
 2005-05-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/15698
