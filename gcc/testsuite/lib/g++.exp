@@ -24,6 +24,7 @@
 #
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib target-libpath.exp
 
 #
 # GXX_UNDER_TEST is the compiler under test.
@@ -96,7 +97,6 @@ proc g++_include_flags { paths } {
 #
 
 proc g++_link_flags { paths } {
-    global rootme
     global srcdir
     global ld_library_path
     global GXX_UNDER_TEST
@@ -128,21 +128,7 @@ proc g++_link_flags { paths } {
       if [file exists "${gccpath}/librx/librx.a"] {
           append flags "-L${gccpath}/librx "
       }
-      append ld_library_path ":${rootme}"
-      set compiler [lindex $GXX_UNDER_TEST 0]
-      if { [is_remote host] == 0 && [which $compiler] != 0 } {
-	foreach i "[exec $compiler --print-multi-lib]" {
-	  set mldir ""
-	  regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
-	  set mldir [string trimright $mldir "\;@"]
-	  if { "$mldir" == "." } {
-	    continue
-	  }
-	  if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] >= 1 } {
-	    append ld_library_path ":${rootme}/${mldir}"
-	  }
-	}
-      }
+      append ld_library_path [gcc-set-multilib-library-path $GXX_UNDER_TEST]
     } else {
       global tool_root_dir;
 
@@ -166,20 +152,7 @@ proc g++_link_flags { paths } {
       }
     }
 
-    # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
-    # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
-    # (for the 64-bit ABI).  The right way to do this would be to modify
-    # unix.exp -- but that's not an option since it's part of DejaGNU
-    # proper, so we do it here.  We really only need to do 
-    # this on IRIX, but it shouldn't hurt to do it anywhere else.
-    # Doing this does cause trouble when testing cross-compilers.
-    if {![is_remote target]} {
-	setenv  LD_LIBRARY_PATH     $ld_library_path
-	setenv  SHLIB_PATH          $ld_library_path
-	setenv  LD_LIBRARYN32_PATH  $ld_library_path
-	setenv  LD_LIBRARY64_PATH   $ld_library_path
-	setenv  DYLD_LIBRARY_PATH   $ld_library_path
-    }
+    set_ld_library_path_env_vars
 
     return "$flags"
 }
@@ -197,6 +170,7 @@ proc g++_init { args } {
     global gluefile wrap_flags;
     global objdir srcdir
     global ALWAYS_CXXFLAGS
+    global CXXFLAGS
     global TOOL_EXECUTABLE TOOL_OPTIONS
     global GXX_UNDER_TEST
     global TESTING_IN_BUILD_TREE
@@ -242,6 +216,10 @@ proc g++_init { args } {
 	} else {
 	    unset gluefile
 	}
+    }
+
+    if {![info exists CXXFLAGS]} {
+	set CXXFLAGS ""
     }
 
     set ALWAYS_CXXFLAGS ""

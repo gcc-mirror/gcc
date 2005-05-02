@@ -1,5 +1,23 @@
 2005-05-02  Mark Mitchell  <mark@codesourcery.com>
 
+	Backport:
+	2005-03-25  Mark Mitchell  <mark@codesourcery.com>
+	* lib/g++.exp (g++_link_flags): Use gcc-set-multilib-library-path.
+	(g++_init): Make sure that CXXFLAGS is set.
+	* lib/gcc-defs.exp (gcc-set-multilib-library-path): New function.
+	* lib/objc.exp (objc_init): Likewise.
+	2004-11-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	* lib/target-libpath.exp (restore_ld_library_path_env_vars):
+	Check existence of ld library path variables before unsetting.
+	2004-11-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	* lib/target-libpath.exp (orig_ld_library_path_saved): Add missing set.
+	2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	* lib/target-libpath.exp: New file defining
+	set_ld_library_path_env_vars and restore_ld_library_path_env_vars.
+	* g++.dg/compat/compat.exp, lib/g++.exp, lib/objc.exp: Use new procs.
+
+2005-05-02  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/15875
 	* g++.dg/template/ptrmem14.C: New test.
 

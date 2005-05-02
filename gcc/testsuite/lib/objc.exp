@@ -28,6 +28,7 @@
 load_lib libgloss.exp
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib target-libpath.exp
 
 #
 # OBJC_UNDER_TEST is the compiler under test.
@@ -85,7 +86,6 @@ proc objc_version { } {
 set objc_initialized 0
 
 proc objc_init { args } {
-    global rootme
     global tmpdir
     global libdir
     global gluefile wrap_flags
@@ -118,25 +118,10 @@ proc objc_init { args } {
 	}
     }
 
-    set objc_libgcc_s_path "${rootme}"
-    set compiler [lindex $OBJC_UNDER_TEST 0]
-    if { [is_remote host] == 0 && [which $compiler] != 0 } {
-	foreach i "[exec $compiler --print-multi-lib]" {
-	    set mldir ""
-	    regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
-	    set mldir [string trimright $mldir "\;@"]
-	    if { "$mldir" == "." } {
-		continue
-	    }
-	    if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] >= 1 } {
-		append objc_libgcc_s_path ":${rootme}/${mldir}"
-	    }
-	}
-    }
+    append objc_libgcc_s_path [gcc-set-multilib-library-path $OBJC_UNDER_TEST]
 }
 
 proc objc_target_compile { source dest type options } {
-    global rootme;
     global tmpdir;
     global gluefile wrap_flags;
     global srcdir
@@ -184,17 +169,7 @@ proc objc_target_compile { source dest type options } {
     }
     lappend options "compiler=$OBJC_UNDER_TEST"
 
-    # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
-    # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
-    # (for the 64-bit ABI).  The right way to do this would be to modify
-    # unix.exp -- but that's not an option since it's part of DejaGNU
-    # proper, so we do it here.  We really only need to do 
-    # this on IRIX, but it shouldn't hurt to do it anywhere else.
-    setenv  LD_LIBRARY_PATH     $ld_library_path
-    setenv  SHLIB_PATH          $ld_library_path
-    setenv  LD_LIBRARYN32_PATH  $ld_library_path
-    setenv  LD_LIBRARY64_PATH   $ld_library_path
-    setenv  DYLD_LIBRARY_PATH   $ld_library_path 
+    set_ld_library_path_env_vars
 
     return [target_compile $source $dest $type $options]
 }
