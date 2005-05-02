@@ -1,3 +1,10 @@
+2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-uncprop.c (equiv_hash_elt, remove_equivalence,
+	record_equiv, tree_ssa_uncprop, uncprop_into_successor_phis):
+	Use VEC instead of VARRAY.
+	(equiv_free): New.
+
 2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
 
         * c-common.c (resolve_overloaded_builtin): Forward to target

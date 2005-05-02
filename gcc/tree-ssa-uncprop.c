@@ -300,7 +300,7 @@ struct equiv_hash_elt
   tree value;
 
   /* List of SSA_NAMEs which have the same value/key.  */
-  varray_type equivalences;
+  VEC(tree,heap) *equivalences;
 };
 
 static void uncprop_initialize_block (struct dom_walk_data *, basic_block);
@@ -325,6 +325,16 @@ equiv_eq (const void *p1, const void *p2)
   return operand_equal_p (value1, value2, 0);
 }
 
+/* Free an instance of equiv_hash_elt.  */
+
+static void
+equiv_free (void *p)
+{
+  struct equiv_hash_elt *elt = (struct equiv_hash_elt *) p;
+  VEC_free (tree, heap, elt->equivalences);
+  free (elt);
+}
+
 /* Remove the most recently recorded equivalency for VALUE.  */
 
 static void
@@ -339,7 +349,7 @@ remove_equivalence (tree value)
   slot = htab_find_slot (equiv, &equiv_hash_elt, NO_INSERT);
 
   equiv_hash_elt_p = (struct equiv_hash_elt *) *slot;
-  VARRAY_POP (equiv_hash_elt_p->equivalences);
+  VEC_pop (tree, equiv_hash_elt_p->equivalences);
 }
 
 /* Record EQUIVALENCE = VALUE into our hash table.  */
@@ -363,9 +373,7 @@ record_equiv (tree value, tree equivalence)
 
   equiv_hash_elt = (struct equiv_hash_elt *) *slot;
   
-  if (!equiv_hash_elt->equivalences)
-    VARRAY_TREE_INIT (equiv_hash_elt->equivalences, 10, "value equivs");
-  VARRAY_PUSH_TREE (equiv_hash_elt->equivalences, equivalence);
+  VEC_safe_push (tree, heap, equiv_hash_elt->equivalences, equivalence);
 }
 
 /* Main driver for un-cprop.  */
@@ -379,7 +387,7 @@ tree_ssa_uncprop (void)
   associate_equivalences_with_edges ();
 
   /* Create our global data structures.  */
-  equiv = htab_create (1024, equiv_hash, equiv_eq, free);
+  equiv = htab_create (1024, equiv_hash, equiv_eq, equiv_free);
   equiv_stack = VEC_alloc (tree, heap, 2);
 
   /* We're going to do a dominator walk, so ensure that we have
@@ -508,9 +516,9 @@ uncprop_into_successor_phis (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 		 then replace the value in the argument with its equivalent
 		 SSA_NAME.  Use the most recent equivalence as hopefully
 		 that results in shortest lifetimes.  */
-	      for (j = VARRAY_ACTIVE_SIZE (elt->equivalences) - 1; j >= 0; j--)
+	      for (j = VEC_length (tree, elt->equivalences) - 1; j >= 0; j--)
 		{
-		  tree equiv = VARRAY_TREE (elt->equivalences, j);
+		  tree equiv = VEC_index (tree, elt->equivalences, j);
 
 		  if (SSA_NAME_VAR (equiv) == SSA_NAME_VAR (PHI_RESULT (phi)))
 		    {
