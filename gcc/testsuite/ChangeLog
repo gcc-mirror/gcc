@@ -1,3 +1,7 @@
+2005-05-02  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.c-torture/execute/20000523-1.c: Fix bytes/bits thinko.
+
 2005-05-02  Michael Matz  <matz@suse.de>
 
 	PR c++/19542
