@@ -1,3 +1,8 @@
+2005-05-02  Michael Matz  <matz@suse.de>
+
+	PR c++/19542
+	* g++.dg/warn/sentinel.C: New testcase for __null sentinels added.
+
 2005-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/cpp/weak.C: New test.
