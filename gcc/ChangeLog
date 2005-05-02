@@ -1,3 +1,11 @@
+2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-scalar-evolution.c (get_exit_conditions_rec,
+	select_loops_exit_conditions,
+	number_of_iterations_for_all_loops,
+	analyze_scalar_evolution_for_all_loop_phi_nodes,
+	scev_analysis): Use VEC instead of VARRAY.
+
 2005-05-02  Michael Matz  <matz@suse.de>
 
 	PR c++/19542
