@@ -1,3 +1,13 @@
+2005-05-02  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-vrp.c (set_value_range_to_nonnull): Declare inline.
+	(set_value_range_to_null): Likewise.
+	(set_value_range_to_varying): New function.  Use it in all
+	call sites that used to call set_value_range (vr, VR_VARYING, ...).
+	(extract_range_from_assert): If the integral type has a
+	super-type, and LIMIT is not within MIN and MAX values of that
+	type, set the resulting range to VR_VARYING.
+
 2005-05-02  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.opt: New file.
