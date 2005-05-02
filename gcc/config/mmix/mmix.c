@@ -107,11 +107,6 @@ Boston, MA 02111-1307, USA.  */
 rtx mmix_compare_op0;
 rtx mmix_compare_op1;
 
-/* We ignore some options with arguments.  They are passed to the linker,
-   but also ends up here because they start with "-m".  We tell the driver
-   to store them in a variable we don't inspect.  */
-const char *mmix_cc1_ignored_option;
-
 /* Declarations of locals.  */
 
 /* Intermediate for insn output.  */
@@ -209,6 +204,8 @@ static bool mmix_pass_by_reference (const CUMULATIVE_ARGS *,
 #define TARGET_PASS_BY_REFERENCE mmix_pass_by_reference
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
