@@ -518,8 +518,7 @@ emit_link_insn (rtx spreg, HOST_WIDE_INT frame_size)
   for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
     {
       rtx set = XVECEXP (PATTERN (insn), 0, i);
-      if (GET_CODE (set) != SET)
-	abort ();
+      gcc_assert (GET_CODE (set) == SET);
       RTX_FRAME_RELATED_P (set) = 1;
     }
 
@@ -879,11 +878,12 @@ effective_address_32bit_p (rtx op, enum machine_mode mode)
   mode = GET_MODE (op);
   op = XEXP (op, 0);
 
-  if (REG_P (op) || GET_CODE (op) == POST_INC
-      || GET_CODE (op) == PRE_DEC || GET_CODE (op) == POST_DEC)
-    return 0;
   if (GET_CODE (op) != PLUS)
-    abort ();
+    {
+      gcc_assert (REG_P (op) || GET_CODE (op) == POST_INC
+		  || GET_CODE (op) == PRE_DEC || GET_CODE (op) == POST_DEC);
+      return 0;
+    }
 
   offset = INTVAL (XEXP (op, 1));
 
@@ -918,9 +918,6 @@ bfin_address_cost (rtx addr ATTRIBUTE_UNUSED)
 void
 print_address_operand (FILE *file, rtx x)
 {
-  if (GET_CODE (x) == MEM) 
-    abort ();
-
   switch (GET_CODE (x))
     {
     case PLUS:
@@ -943,7 +940,9 @@ print_address_operand (FILE *file, rtx x)
       break;
 
     default:
+      gcc_assert (GET_CODE (x) != MEM);
       print_operand (file, x, 0);
+      break;
     }
 }
 
@@ -1074,8 +1073,7 @@ print_operand (FILE *file, rtx x, char code)
 	    }
 	  else if (code == 'T')
 	    {
-	      if (REGNO (x) > 7)
-		abort ();
+	      gcc_assert (D_REGNO_P (REGNO (x)));
 	      fprintf (file, "%s", byte_reg_names[REGNO (x)]);
 	    }
 	  else 
@@ -1117,15 +1115,20 @@ print_operand (FILE *file, rtx x, char code)
 	  break;
 
 	case UNSPEC:
-	  if (XINT (x, 1) == UNSPEC_MOVE_PIC)
+	  switch (XINT (x, 1))
 	    {
+	    case UNSPEC_MOVE_PIC:
 	      output_addr_const (file, XVECEXP (x, 0, 0));
 	      fprintf (file, "@GOT");
+	      break;
+
+	    case UNSPEC_LIBRARY_OFFSET:
+	      fprintf (file, "_current_shared_library_p5_offset_");
+	      break;
+
+	    default:
+	      gcc_unreachable ();
 	    }
-	  else if (XINT (x, 1) == UNSPEC_LIBRARY_OFFSET)
-	    fprintf (file, "_current_shared_library_p5_offset_");
-	  else
-	    abort ();
 	  break;
 
 	default:
@@ -1389,8 +1392,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	{
 	  if (reg == 0)
 	    {
-	      if (no_new_pseudos)
-		abort ();
+	      gcc_assert (!no_new_pseudos);
 	      reg = gen_reg_rtx (Pmode);
 	    }
 
@@ -1422,8 +1424,7 @@ legitimize_pic_address (rtx orig, rtx reg)
       if (GET_CODE (addr) == CONST)
 	{
 	  addr = XEXP (addr, 0);
-	  if (GET_CODE (addr) != PLUS)
-	    abort ();
+	  gcc_assert (GET_CODE (addr) == PLUS);
 	}
 
       if (XEXP (addr, 0) == pic_offset_table_rtx)
@@ -1431,8 +1432,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 
       if (reg == 0)
 	{
-	  if (no_new_pseudos)
-	    abort ();
+	  gcc_assert (!no_new_pseudos);
 	  reg = gen_reg_rtx (Pmode);
 	}
 
@@ -1442,11 +1442,8 @@ legitimize_pic_address (rtx orig, rtx reg)
 
       if (GET_CODE (addr) == CONST_INT)
 	{
-	  if (! reload_in_progress && ! reload_completed)
-	    addr = force_reg (Pmode, addr);
-	  else
-	    /* If we reach here, then something is seriously wrong.  */
-	    abort ();
+	  gcc_assert (! reload_in_progress && ! reload_completed);
+	  addr = force_reg (Pmode, addr);
 	}
 
       if (GET_CODE (addr) == PLUS && CONSTANT_P (XEXP (addr, 1)))
@@ -1824,8 +1821,7 @@ asm_conditional_branch (rtx insn, rtx *operands, int n_nops, int predict_taken)
   int bp = predict_taken && len == 0 ? 1 : cbranch_predicted_taken_p (insn);
   int idx = (bp << 1) | (GET_CODE (operands[0]) == EQ ? BRF : BRT);
   output_asm_insn (ccbranch_templates[idx][len], operands);
-  if (n_nops > 0 && bp)
-    abort ();
+  gcc_assert (n_nops == 0 || !bp);
   if (len == 0)
     while (n_nops-- > 0)
       output_asm_insn ("nop;", NULL);
@@ -1846,10 +1842,8 @@ bfin_gen_compare (rtx cmp, enum machine_mode mode ATTRIBUTE_UNUSED)
      do not need to emit another comparison.  */
   if (GET_MODE (op0) == BImode)
     {
-      if ((code == NE || code == EQ) && op1 == const0_rtx)
-	tem = op0, code2 = code;
-      else
-	abort ();
+      gcc_assert ((code == NE || code == EQ) && op1 == const0_rtx);
+      tem = op0, code2 = code;
     }
   else
     {
@@ -2283,15 +2277,19 @@ void
 output_push_multiple (rtx insn, rtx *operands)
 {
   char buf[80];
+  int ok;
+  
   /* Validate the insn again, and compute first_[dp]reg_to_save. */
-  if (! push_multiple_operation (PATTERN (insn), VOIDmode))
-    abort ();
+  ok = push_multiple_operation (PATTERN (insn), VOIDmode);
+  gcc_assert (ok);
+  
   if (first_dreg_to_save == 8)
     sprintf (buf, "[--sp] = ( p5:%d );\n", first_preg_to_save);
   else if (first_preg_to_save == 6)
     sprintf (buf, "[--sp] = ( r7:%d );\n", first_dreg_to_save);
   else
-    sprintf (buf, "[--sp] = ( r7:%d, p5:%d );\n", first_dreg_to_save, first_preg_to_save);
+    sprintf (buf, "[--sp] = ( r7:%d, p5:%d );\n",
+	     first_dreg_to_save, first_preg_to_save);
 
   output_asm_insn (buf, operands);
 }
@@ -2303,16 +2301,19 @@ void
 output_pop_multiple (rtx insn, rtx *operands)
 {
   char buf[80];
+  int ok;
+  
   /* Validate the insn again, and compute first_[dp]reg_to_save. */
-  if (! pop_multiple_operation (PATTERN (insn), VOIDmode))
-    abort ();
+  ok = pop_multiple_operation (PATTERN (insn), VOIDmode);
+  gcc_assert (ok);
 
   if (first_dreg_to_save == 8)
     sprintf (buf, "( p5:%d ) = [sp++];\n", first_preg_to_save);
   else if (first_preg_to_save == 6)
     sprintf (buf, "( r7:%d ) = [sp++];\n", first_dreg_to_save);
   else
-    sprintf (buf, "( r7:%d, p5:%d ) = [sp++];\n", first_dreg_to_save, first_preg_to_save);
+    sprintf (buf, "( r7:%d, p5:%d ) = [sp++];\n",
+	     first_dreg_to_save, first_preg_to_save);
 
   output_asm_insn (buf, operands);
 }
