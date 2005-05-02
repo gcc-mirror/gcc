@@ -1,3 +1,13 @@
+2005-05-02  Nathan Sidwell  <nathan@codesourcery.com>
+	    Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (emit_link_insn, effective_address_32bit_p,
+	print_address_operand, print_operand, legitimize_pic_address,
+	asm_conditional_branch, bfin_gen_compare, output_push_multiple,
+	output_pop_multiple): Use gcc_assert or gcc_unreachable as
+	appropriate.
+	* config/bfin/bfin.md (movsf splitter, beq, bne): Likewise.
+
 2005-05-02  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* doc/passes.texi: Document vectorization pass.

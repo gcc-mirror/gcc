@@ -550,8 +550,7 @@
   long values;
   REAL_VALUE_TYPE value;
 
-  if (GET_CODE (operands[1]) != CONST_DOUBLE)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == CONST_DOUBLE);
 
   REAL_VALUE_FROM_CONST_DOUBLE (value, operands[1]);
   REAL_VALUE_TO_TARGET_SINGLE (value, values);
@@ -1432,14 +1431,9 @@
      do not need to emit another comparison.  */
   if (GET_MODE (bfin_compare_op0) == BImode)
     {
-      if (bfin_compare_op1 == const0_rtx)
-	{
-	  emit_insn (gen_cbranchbi4 (operands[2], op0, op1,
-				     operands[0]));
-	  DONE;
-	}
-      else
-	abort ();
+      gcc_assert (bfin_compare_op1 == const0_rtx);
+      emit_insn (gen_cbranchbi4 (operands[2], op0, op1, operands[0]));
+      DONE;
     }
 
   operands[3] = gen_rtx_NE (BImode, operands[1], const0_rtx);
@@ -1458,14 +1452,11 @@
      do not need to emit another comparison.  */
   if (GET_MODE (bfin_compare_op0) == BImode)
     {
-      if (bfin_compare_op1 == const0_rtx)
-	{
-	  rtx cmp = gen_rtx_NE (BImode, op0, op1);
-	  emit_insn (gen_cbranchbi4 (cmp, op0, op1, operands[0]));
-	  DONE;
-	}
-      else
-	abort ();
+      rtx cmp = gen_rtx_NE (BImode, op0, op1);
+
+      gcc_assert (bfin_compare_op1 == const0_rtx);
+      emit_insn (gen_cbranchbi4 (cmp, op0, op1, operands[0]));
+      DONE;
     }
 
   operands[1] = bfin_cc_rtx;	/* hard register: CC */
