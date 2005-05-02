@@ -191,7 +191,7 @@ static rtx assign_stack_local_1 (enum machine_mode, HOST_WIDE_INT, int,
 static struct temp_slot *find_temp_slot_from_address (rtx);
 static void pad_to_arg_alignment (struct args_size *, int, struct args_size *);
 static void pad_below (struct args_size *, enum machine_mode, tree);
-static void reorder_blocks_1 (rtx, tree, varray_type *);
+static void reorder_blocks_1 (rtx, tree, VEC(tree,heap) **);
 static void reorder_fix_fragments (tree);
 static int all_blocks (tree, tree *);
 static tree *get_block_vector (tree, int *);
@@ -3468,12 +3468,12 @@ void
 reorder_blocks (void)
 {
   tree block = DECL_INITIAL (current_function_decl);
-  varray_type block_stack;
+  VEC(tree,heap) *block_stack;
 
   if (block == NULL_TREE)
     return;
 
-  VARRAY_TREE_INIT (block_stack, 10, "block_stack");
+  block_stack = VEC_alloc (tree, heap, 10);
 
   /* Reset the TREE_ASM_WRITTEN bit for all blocks.  */
   clear_block_marks (block);
@@ -3488,6 +3488,8 @@ reorder_blocks (void)
 
   /* Remove deleted blocks from the block fragment chains.  */
   reorder_fix_fragments (block);
+
+  VEC_free (tree, heap, block_stack);
 }
 
 /* Helper function for reorder_blocks.  Reset TREE_ASM_WRITTEN.  */
@@ -3504,7 +3506,7 @@ clear_block_marks (tree block)
 }
 
 static void
-reorder_blocks_1 (rtx insns, tree current_block, varray_type *p_block_stack)
+reorder_blocks_1 (rtx insns, tree current_block, VEC(tree,heap) **p_block_stack)
 {
   rtx insn;
 
@@ -3547,12 +3549,11 @@ reorder_blocks_1 (rtx insns, tree current_block, varray_type *p_block_stack)
 		  BLOCK_SUBBLOCKS (current_block) = block;
 		  current_block = block;
 		}
-	      VARRAY_PUSH_TREE (*p_block_stack, block);
+	      VEC_safe_push (tree, heap, *p_block_stack, block);
 	    }
 	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 	    {
-	      NOTE_BLOCK (insn) = VARRAY_TOP_TREE (*p_block_stack);
-	      VARRAY_POP (*p_block_stack);
+	      NOTE_BLOCK (insn) = VEC_pop (tree, *p_block_stack);
 	      BLOCK_SUBBLOCKS (current_block)
 		= blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
 	      current_block = BLOCK_SUPERCONTEXT (current_block);
