@@ -1,3 +1,22 @@
+2005-05-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/15698
+	* c-tree.h (C_DECL_BUILTIN_PROTOTYPE): New.
+	* c-decl.c (current_function_prototype_built_in,
+	current_function_prototype_arg_types): New.
+	(merge_decls): Keep source location of prototype followed by
+	nonprototype declaration.  Update C_DECL_BUILTIN_PROTOTYPE.
+	(builtin_function): Set C_DECL_BUILTIN_PROTOTYPE.
+	(start_function): Always set current_function_prototype_locus,
+	current_function_prototype_built_in and
+	current_function_prototype_arg_types.  Check for external
+	prototype whether or not visible for external function and set
+	current_function_prototype_arg_types accordingly.
+	(store_parm_decls_oldstyle): Use
+	current_function_prototype_arg_types for checking old-style
+	definition against prototype.  Give warnings only if
+	current_function_prototype_built_in).
+
 2005-05-02  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* ggc.h (ggc_alloc_zone_pass_stat): New macro.
