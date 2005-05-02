@@ -251,7 +251,7 @@ range_is_null (value_range *vr)
 
 /* Set value range VR to a non-NULL range of type TYPE.  */
 
-static void
+static inline void
 set_value_range_to_nonnull (value_range *vr, tree type)
 {
   tree zero = build_int_cst (type, 0);
@@ -261,11 +261,20 @@ set_value_range_to_nonnull (value_range *vr, tree type)
 
 /* Set value range VR to a NULL range of type TYPE.  */
 
-static void
+static inline void
 set_value_range_to_null (value_range *vr, tree type)
 {
   tree zero = build_int_cst (type, 0);
   set_value_range (vr, VR_RANGE, zero, zero);
+}
+
+
+/* Set value range VR to VR_VARYING.  */
+
+static inline void
+set_value_range_to_varying (value_range *vr)
+{
+  set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
 }
 
 
@@ -477,9 +486,11 @@ extract_range_from_assert (value_range *vr_p, tree expr)
 {
   tree var, cond, limit, type;
   value_range *var_vr;
+  enum tree_code cond_code;
 
   var = ASSERT_EXPR_VAR (expr);
   cond = ASSERT_EXPR_COND (expr);
+  cond_code = TREE_CODE (cond);
 
   gcc_assert (COMPARISON_CLASS_P (cond));
 
@@ -493,10 +504,68 @@ extract_range_from_assert (value_range *vr_p, tree expr)
      (NE_EXPR).  Notice that we don't need to handle EQ_EXPR in these
      cases because assertions with equalities are never generated.
      The assert pass generates straight assignments in those cases.  */
-  if (POINTER_TYPE_P (type) && TREE_CODE (cond) != NE_EXPR)
+  if (POINTER_TYPE_P (type) && cond_code != NE_EXPR)
     {
-      set_value_range (vr_p, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr_p);
       return;
+    }
+
+  /* Special handling for integral types with super-types.  Some FEs
+     construct integral types derived from other types and restrict
+     the range of values these new types may take.
+
+     It may happen that LIMIT is actually smaller than TYPE's minimum
+     value.  For instance, the Ada FE is generating code like this
+     during bootstrap:
+
+	    D.1480_32 = nam_30 - 300000361;
+	    if (D.1480_32 <= 1) goto <L112>; else goto <L52>;
+	    <L112>:;
+	    D.1480_94 = ASSERT_EXPR <D.1480_32, D.1480_32 <= 1>;
+
+     All the names are of type types__name_id___XDLU_300000000__399999999
+     which has min == 300000000 and max == 399999999.  This means that
+     the ASSERT_EXPR would try to create the range [3000000, 1] which
+     is invalid.
+
+     The fact that the type specifies MIN and MAX values does not
+     automatically mean that every variable of that type will always
+     be within that range, so the predicate may well be true at run
+     time.  If we had symbolic -INF and +INF values, we could
+     represent this range, but we currently represent -INF and +INF
+     using the type's min and max values.
+	 
+     So, the only sensible thing we can do for now is set the
+     resulting range to VR_VARYING.  TODO, would having symbolic -INF
+     and +INF values be worth the trouble?  */
+  if (TREE_TYPE (type))
+    {
+      if (cond_code == LE_EXPR || cond_code == LT_EXPR)
+	{
+	  tree type_min = TYPE_MIN_VALUE (type);
+	  int cmp = compare_values (limit, type_min);
+
+	  /* For < or <= comparisons, if LIMIT is smaller than
+	     TYPE_MIN, set the range to VR_VARYING.  */
+	  if (cmp == -1 || cmp == 0)
+	    {
+	      set_value_range_to_varying (vr_p);
+	      return;
+	    }
+	}
+      else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
+	{
+	  tree type_max = TYPE_MIN_VALUE (type);
+	  int cmp = compare_values (limit, type_max);
+
+	  /* For > or >= comparisons, if LIMIT is bigger than
+	     TYPE_MAX, set the range to VR_VARYING.  */
+	  if (cmp == 1 || cmp == 0)
+	    {
+	      set_value_range_to_varying (vr_p);
+	      return;
+	    }
+	}
     }
 
   if (TREE_CODE (cond) == NE_EXPR)
@@ -599,7 +668,7 @@ extract_range_from_binary_expr (value_range *vr, tree expr)
       && code != MIN_EXPR
       && code != MAX_EXPR)
     {
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
       return;
     }
 
@@ -613,7 +682,7 @@ extract_range_from_binary_expr (value_range *vr, tree expr)
       if (is_gimple_min_invariant (op0))
 	set_value_range (&vr0, VR_RANGE, op0, op0);
       else
-	set_value_range (&vr0, VR_VARYING, NULL_TREE, NULL_TREE);
+	set_value_range_to_varying (&vr0);
     }
 
   op1 = TREE_OPERAND (expr, 1);
@@ -624,7 +693,7 @@ extract_range_from_binary_expr (value_range *vr, tree expr)
       if (is_gimple_min_invariant (op1))
 	set_value_range (&vr1, VR_RANGE, op1, op1);
       else
-	set_value_range (&vr1, VR_VARYING, 0, 0);
+	set_value_range_to_varying (&vr1);
     }
 
   /* If either range is UNDEFINED, so is the result.  */
@@ -637,21 +706,21 @@ extract_range_from_binary_expr (value_range *vr, tree expr)
   /* If either range is VARYING, so is the result.  */
   if (vr0.type == VR_VARYING || vr1.type == VR_VARYING)
     {
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
       return;
     }
 
   /* If the ranges are of different types, the result is VARYING.  */
   if (vr0.type != vr1.type)
     {
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
       return;
     }
 
   /* TODO.  Refuse to do any symbolic range operations for now.  */
   if (symbolic_range_p (&vr0) || symbolic_range_p (&vr1))
     {
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
       return;
     }
 
@@ -676,7 +745,7 @@ extract_range_from_binary_expr (value_range *vr, tree expr)
 	{
 	  /* Subtracting from a pointer, may yield 0, so just drop the
 	     resulting range to varying.  */
-	  set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+	  set_value_range_to_varying (vr);
 	}
 
       return;
@@ -710,7 +779,7 @@ extract_range_from_binary_expr (value_range *vr, tree expr)
       /* If the new range has its limits swapped around (MIN > MAX),
 	 then the operation caused one of them to wrap around, mark
 	 the new range VARYING.  */
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
     }
   else
     set_value_range (vr, vr0.type, min, max);
@@ -767,7 +836,7 @@ extract_range_from_unary_expr (value_range *vr, tree expr)
       if (is_gimple_min_invariant (op0))
 	set_value_range (&vr0, VR_RANGE, op0, op0);
       else
-	set_value_range (&vr0, VR_VARYING, NULL_TREE, NULL_TREE);
+	set_value_range_to_varying (&vr0);
     }
 
   /* If VR0 is UNDEFINED, so is the result.  */
@@ -780,14 +849,14 @@ extract_range_from_unary_expr (value_range *vr, tree expr)
   /* If VR0 is VARYING, so is the result.  */
   if (vr0.type == VR_VARYING)
     {
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
       return;
     }
 
   /* TODO.  Refuse to do any symbolic range operations for now.  */
   if (symbolic_range_p (&vr0))
     {
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
       return;
     }
 
@@ -796,7 +865,7 @@ extract_range_from_unary_expr (value_range *vr, tree expr)
   if (!INTEGRAL_TYPE_P (TREE_TYPE (op0))
       && !POINTER_TYPE_P (TREE_TYPE (op0)))
     {
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
       return;
     }
 
@@ -809,7 +878,7 @@ extract_range_from_unary_expr (value_range *vr, tree expr)
       else if (range_is_null (&vr0))
 	set_value_range_to_null (vr, TREE_TYPE (expr));
       else
-	set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+	set_value_range_to_varying (vr);
 
       return;
     }
@@ -824,7 +893,7 @@ extract_range_from_unary_expr (value_range *vr, tree expr)
 	 int' and 'y_5 = (unsigned short) x_3', if x_3 is ~[0, 0], it
 	 is impossible to know at compile time whether y_5 will be
 	 ~[0, 0].  */
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
       return;
     }
 
@@ -839,7 +908,7 @@ extract_range_from_unary_expr (value_range *vr, tree expr)
       /* If the new range has its limits swapped around (MIN > MAX),
 	 then the operation caused one of them to wrap around, mark
 	 the new range VARYING.  */
-      set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr);
     }
   else
     set_value_range (vr, vr0.type, min, max);
@@ -867,7 +936,7 @@ extract_range_from_expr (value_range *vr, tree expr)
   else if (TREE_CODE (expr) == INTEGER_CST)
     set_value_range (vr, VR_RANGE, expr, expr);
   else
-    set_value_range (vr, VR_VARYING, NULL_TREE, NULL_TREE);
+    set_value_range_to_varying (vr);
 }
 
 
@@ -1791,7 +1860,7 @@ vrp_initialize (void)
 	  if (!stmt_interesting_for_vrp (phi))
 	    {
 	      tree lhs = PHI_RESULT (phi);
-	      set_value_range (get_value_range (lhs), VR_VARYING, 0, 0);
+	      set_value_range_to_varying (get_value_range (lhs));
 	      DONT_SIMULATE_AGAIN (phi) = true;
 	    }
 	  else
@@ -1807,7 +1876,7 @@ vrp_initialize (void)
 	      ssa_op_iter i;
 	      tree def;
 	      FOR_EACH_SSA_TREE_OPERAND (def, stmt, i, SSA_OP_DEF)
-		set_value_range (get_value_range (def), VR_VARYING, 0, 0);
+		set_value_range_to_varying (get_value_range (def));
 	      DONT_SIMULATE_AGAIN (stmt) = true;
 	    }
 	  else
@@ -1878,7 +1947,7 @@ vrp_visit_assignment (tree stmt, tree *output_p)
   
   /* Every other statements produces no useful ranges.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
-    set_value_range (get_value_range (def), VR_VARYING, 0, 0);
+    set_value_range_to_varying (get_value_range (def));
 
   return SSA_PROP_VARYING;
 }
@@ -2021,7 +2090,7 @@ vrp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
   /* All other statements produce nothing of interest for VRP, so mark
      their outputs varying and prevent further simulation.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
-    set_value_range (get_value_range (def), VR_VARYING, 0, 0);
+    set_value_range_to_varying (get_value_range (def));
 
   return SSA_PROP_VARYING;
 }
@@ -2067,7 +2136,7 @@ vrp_meet (value_range *vr0, value_range *vr1)
   /* If either is a symbolic range, drop to VARYING.  */
   if (symbolic_range_p (vr0) || symbolic_range_p (vr1))
     {
-      set_value_range (vr0, VR_VARYING, NULL_TREE, NULL_TREE);
+      set_value_range_to_varying (vr0);
       return;
     }
 
@@ -2097,7 +2166,7 @@ vrp_meet (value_range *vr0, value_range *vr1)
       else
 	{
 	  /* The two ranges don't intersect, set the result to VR_VARYING.  */
-	  set_value_range (vr0, VR_VARYING, NULL_TREE, NULL_TREE);
+	  set_value_range_to_varying (vr0);
 	}
     }
   else if (vr0->type == VR_ANTI_RANGE && vr1->type == VR_ANTI_RANGE)
@@ -2108,7 +2177,7 @@ vrp_meet (value_range *vr0, value_range *vr1)
 	  && compare_values (vr0->min, vr0->max) == 0)
 	/* Nothing to do.  */ ;
       else
-	set_value_range (vr0, VR_VARYING, NULL_TREE, NULL_TREE);
+	set_value_range_to_varying (vr0);
     }
   else if (vr0->type == VR_ANTI_RANGE || vr1->type == VR_ANTI_RANGE)
     {
@@ -2121,7 +2190,7 @@ vrp_meet (value_range *vr0, value_range *vr1)
 	    *vr0 = *vr1;
 	}
       else
-	set_value_range (vr0, VR_VARYING, NULL_TREE, NULL_TREE);
+	set_value_range_to_varying (vr0);
     }
   else
     gcc_unreachable ();
@@ -2190,7 +2259,7 @@ vrp_visit_phi_node (tree phi)
 
   if (vr_result.type == VR_VARYING)
     {
-      set_value_range (lhs_vr, VR_VARYING, 0, 0);
+      set_value_range_to_varying (lhs_vr);
       return SSA_PROP_VARYING;
     }
 
@@ -2222,7 +2291,7 @@ vrp_visit_phi_node (tree phi)
 	  if (vr_result.min == TYPE_MIN_VALUE (TREE_TYPE (vr_result.min))
 	      && vr_result.max == TYPE_MAX_VALUE (TREE_TYPE (vr_result.max)))
 	    {
-	      set_value_range (lhs_vr, VR_VARYING, 0, 0);
+	      set_value_range_to_varying (lhs_vr);
 	      return SSA_PROP_VARYING;
 	    }
 	}
