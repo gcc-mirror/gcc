@@ -659,7 +659,7 @@ struct saved_scope GTY(())
   tree class_type;
   tree access_specifier;
   tree function_decl;
-  varray_type lang_base;
+  VEC(tree,gc) *lang_base;
   tree lang_name;
   tree template_parms;
   struct cp_binding_level *x_previous_class_level;

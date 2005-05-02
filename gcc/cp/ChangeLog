@@ -6,6 +6,13 @@
 	* mangle.c (discriminator_for_local_entity): Likewise.
 	* name-lookup.c (pushtag): Likewise.
 
+	* class.c (current_lang_depth, push_lang_context,
+	pop_lang_context): Use VEC instead of VARRAY.
+	* cp-tree.h (saved_scope): Use VEC for lang_base instead of
+	VARRAY.
+	* name-lookup.c (push_to_top_level): Use VEC instead of
+	VARRAY.
+
 2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
 
         * semantics.c (finish_call_expr): Call resolve_overloaded_builtin
