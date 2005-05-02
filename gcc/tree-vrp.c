@@ -717,6 +717,35 @@ extract_range_from_binary_expr (value_range *vr, tree expr)
 }
 
 
+/* Like expr_computes_nonzero, but this function uses value ranges
+   obtained so far.  */
+
+static bool
+vrp_expr_computes_nonzero (tree expr)
+{
+  if (expr_computes_nonzero (expr))
+    return true;
+
+  /* If we have an expression of the form &X->a, then the expression
+     is nonnull if X is nonnull.  */
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    {
+      tree base = get_base_address (TREE_OPERAND (expr, 0));
+
+      if (base != NULL_TREE
+	  && TREE_CODE (base) == INDIRECT_REF
+	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+	{
+	  value_range *vr = get_value_range (TREE_OPERAND (base, 0));
+	  if (range_is_nonnull (vr))
+	    return true;
+	}
+    }
+
+  return false;
+}
+
+
 /* Extract range information from a unary expression EXPR based on
    the range of its operand and the expression code.  */
 
@@ -833,7 +862,7 @@ extract_range_from_expr (value_range *vr, tree expr)
     extract_range_from_binary_expr (vr, expr);
   else if (TREE_CODE_CLASS (code) == tcc_unary)
     extract_range_from_unary_expr (vr, expr);
-  else if (expr_computes_nonzero (expr))
+  else if (vrp_expr_computes_nonzero (expr))
     set_value_range_to_nonnull (vr, TREE_TYPE (expr));
   else if (TREE_CODE (expr) == INTEGER_CST)
     set_value_range (vr, VR_RANGE, expr, expr);
