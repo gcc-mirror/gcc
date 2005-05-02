@@ -313,15 +313,11 @@ extern struct alloc_zone tree_id_zone;
 /* Allocate an object into the specified allocation zone.  */
 extern void *ggc_alloc_zone_stat (size_t, struct alloc_zone * MEM_STAT_DECL);
 # define ggc_alloc_zone(s,z) ggc_alloc_zone_stat (s,z MEM_STAT_INFO)
-
+# define ggc_alloc_zone_pass_stat(s,z) ggc_alloc_zone_stat (s,z PASS_MEM_STAT)
 #else
 
 # define ggc_alloc_zone(s, z) ggc_alloc (s)
-# ifdef GATHER_STATISTICS
-#  define ggc_alloc_zone_stat(s, z, n, l, f) ggc_alloc_stat (s, n, l, f)
-# else
-#  define ggc_alloc_zone_stat(s, z) ggc_alloc_stat (s)
-# endif
+# define ggc_alloc_zone_pass_stat(s, z) ggc_alloc_stat (s PASS_MEM_STAT)
 
 #endif
 
