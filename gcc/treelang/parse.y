@@ -450,6 +450,7 @@ parameters_opt:
 | parameters {
  $$ = $1;
 }
+;
 
 parameters:
 parameter {
