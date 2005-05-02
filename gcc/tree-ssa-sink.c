@@ -238,31 +238,25 @@ nearest_common_dominator_of_uses (tree stmt)
         {
 	  tree usestmt = USE_STMT (use_p);
 	  basic_block useblock;
+
 	  if (TREE_CODE (usestmt) == PHI_NODE)
 	    {
 	      int idx = PHI_ARG_INDEX_FROM_USE (use_p);
 
 	      useblock = PHI_ARG_EDGE (usestmt, idx)->src;
-	      /* Short circuit. Nothing dominates the entry block.  */
-	      if (useblock == ENTRY_BLOCK_PTR)
-		{
-		  BITMAP_FREE (blocks);
-		  return NULL;
-		}
-	      bitmap_set_bit (blocks, useblock->index);
 	    }
 	  else
 	    {
 	      useblock = bb_for_stmt (usestmt);
-
-	      /* Short circuit. Nothing dominates the entry block.  */
-	      if (useblock == ENTRY_BLOCK_PTR)
-		{
-		  BITMAP_FREE (blocks);
-		  return NULL;
-		}
-	      bitmap_set_bit (blocks, useblock->index);
 	    }
+
+	  /* Short circuit. Nothing dominates the entry block.  */
+	  if (useblock == ENTRY_BLOCK_PTR)
+	    {
+	      BITMAP_FREE (blocks);
+	      return NULL;
+	    }
+	  bitmap_set_bit (blocks, useblock->index);
 	}
     }
   commondom = BASIC_BLOCK (bitmap_first_set_bit (blocks));

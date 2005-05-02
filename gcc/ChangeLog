@@ -5,6 +5,9 @@
 	Use VEC instead of VARRAY.
 	(equiv_free): New.
 
+	* tree-ssa-sink.c (nearest_common_dominator_of_uses): Factor
+	out common code.
+
 2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
 
         * c-common.c (resolve_overloaded_builtin): Forward to target
