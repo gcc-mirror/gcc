@@ -1,3 +1,8 @@
+2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21294
+	* gcc.dg/tree-ssa/pr21294.c: New.
+
 2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
 
         * gcc.dg/altivec-3.c (vec_store): Do not use the old
