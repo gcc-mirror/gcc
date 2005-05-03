@@ -46,3 +46,5 @@
 !   scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { target { lp64 && !vect_no_align } }
 ! but we currently can't combine logical operators. (Could define 
 ! a keyword for "not_vect_no_align" if desired). 
+
+! { dg-final { cleanup-tree-dump "vect" } }
