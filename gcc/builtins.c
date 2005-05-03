@@ -111,15 +111,15 @@ static rtx expand_builtin_strspn (tree, rtx, enum machine_mode);
 static rtx expand_builtin_strcspn (tree, rtx, enum machine_mode);
 static rtx expand_builtin_memcpy (tree, rtx, enum machine_mode);
 static rtx expand_builtin_mempcpy (tree, tree, rtx, enum machine_mode, int);
-static rtx expand_builtin_memmove (tree, tree, rtx, enum machine_mode);
-static rtx expand_builtin_bcopy (tree, tree);
+static rtx expand_builtin_memmove (tree, tree, rtx, enum machine_mode, tree);
+static rtx expand_builtin_bcopy (tree);
 static rtx expand_builtin_strcpy (tree, rtx, enum machine_mode);
 static rtx expand_builtin_stpcpy (tree, rtx, enum machine_mode);
 static rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
 static rtx expand_builtin_strncpy (tree, rtx, enum machine_mode);
 static rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
 static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, enum machine_mode);
-static rtx expand_builtin_memset (tree, rtx, enum machine_mode);
+static rtx expand_builtin_memset (tree, rtx, enum machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
 static rtx expand_builtin_strlen (tree, rtx, enum machine_mode);
 static rtx expand_builtin_strstr (tree, tree, rtx, enum machine_mode);
@@ -2808,7 +2808,8 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 
       /* Copy word part most expediently.  */
       dest_addr = emit_block_move (dest_mem, src_mem, len_rtx,
-				   BLOCK_OP_NORMAL);
+				   CALL_EXPR_TAILCALL (exp)
+				   ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL);
 
       if (dest_addr == 0)
 	{
@@ -2915,7 +2916,7 @@ expand_builtin_mempcpy (tree arglist, tree type, rtx target, enum machine_mode m
 
 static rtx
 expand_builtin_memmove (tree arglist, tree type, rtx target,
-			enum machine_mode mode)
+			enum machine_mode mode, tree orig_exp)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2947,11 +2948,13 @@ expand_builtin_memmove (tree arglist, tree type, rtx target,
 	 normal memcpy.  */
       if (readonly_data_expr (src))
         {
-	  tree const fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+	  tree fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
 	  if (!fn)
 	    return 0;
-	  return expand_expr (build_function_call_expr (fn, arglist),
-			      target, mode, EXPAND_NORMAL);
+	  fn = build_function_call_expr (fn, arglist);
+	  if (TREE_CODE (fn) == CALL_EXPR)
+	    CALL_EXPR_TAILCALL (fn) = CALL_EXPR_TAILCALL (orig_exp);
+	  return expand_expr (fn, target, mode, EXPAND_NORMAL);
 	}
 
       /* If length is 1 and we can expand memcpy call inline,
@@ -2973,8 +2976,10 @@ expand_builtin_memmove (tree arglist, tree type, rtx target,
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_bcopy (tree arglist, tree type)
+expand_builtin_bcopy (tree exp)
 {
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree type = TREE_TYPE (exp);
   tree src, dest, size, newarglist;
 
   if (!validate_arglist (arglist,
@@ -2994,7 +2999,7 @@ expand_builtin_bcopy (tree arglist, tree type)
   newarglist = tree_cons (NULL_TREE, src, newarglist);
   newarglist = tree_cons (NULL_TREE, dest, newarglist);
 
-  return expand_builtin_memmove (newarglist, type, const0_rtx, VOIDmode);
+  return expand_builtin_memmove (newarglist, type, const0_rtx, VOIDmode, exp);
 }
 
 #ifndef HAVE_movstr
@@ -3288,7 +3293,8 @@ builtin_memset_gen_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
    convenient).  */
 
 static rtx
-expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
+expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
+		       tree orig_exp)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -3374,7 +3380,9 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
 
       dest_mem = get_memory_rtx (dest);
       set_mem_align (dest_mem, dest_align);
-      dest_addr = clear_storage (dest_mem, len_rtx);
+      dest_addr = clear_storage (dest_mem, len_rtx,
+				 CALL_EXPR_TAILCALL (orig_exp)
+				 ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL);
 
       if (dest_addr == 0)
 	{
@@ -3390,8 +3398,9 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_bzero (tree arglist)
+expand_builtin_bzero (tree exp)
 {
+  tree arglist = TREE_OPERAND (exp, 1);
   tree dest, size, newarglist;
 
   if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -3409,7 +3418,7 @@ expand_builtin_bzero (tree arglist)
   newarglist = tree_cons (NULL_TREE, integer_zero_node, newarglist);
   newarglist = tree_cons (NULL_TREE, dest, newarglist);
 
-  return expand_builtin_memset (newarglist, const0_rtx, VOIDmode);
+  return expand_builtin_memset (newarglist, const0_rtx, VOIDmode, exp);
 }
 
 /* Expand expression EXP, which is a call to the memcmp built-in function.
@@ -3548,7 +3557,7 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
     tree len, len1, len2;
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result, insn;
-    tree fndecl;
+    tree fndecl, fn;
 
     int arg1_align
       = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
@@ -3632,8 +3641,10 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
     arglist = build_tree_list (NULL_TREE, arg2);
     arglist = tree_cons (NULL_TREE, arg1, arglist);
     fndecl = get_callee_fndecl (exp);
-    exp = build_function_call_expr (fndecl, arglist);
-    return expand_call (exp, target, target == const0_rtx);
+    fn = build_function_call_expr (fndecl, arglist);
+    if (TREE_CODE (fn) == CALL_EXPR)
+      CALL_EXPR_TAILCALL (fn) = CALL_EXPR_TAILCALL (exp);
+    return expand_call (fn, target, target == const0_rtx);
   }
 #endif
   return 0;
@@ -3670,7 +3681,7 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     tree len, len1, len2;
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result, insn;
-    tree fndecl;
+    tree fndecl, fn;
 
     int arg1_align
       = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
@@ -3760,8 +3771,10 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     arglist = tree_cons (NULL_TREE, arg2, arglist);
     arglist = tree_cons (NULL_TREE, arg1, arglist);
     fndecl = get_callee_fndecl (exp);
-    exp = build_function_call_expr (fndecl, arglist);
-    return expand_call (exp, target, target == const0_rtx);
+    fn = build_function_call_expr (fndecl, arglist);
+    if (TREE_CODE (fn) == CALL_EXPR)
+      CALL_EXPR_TAILCALL (fn) = CALL_EXPR_TAILCALL (exp);
+    return expand_call (fn, target, target == const0_rtx);
   }
 #endif
   return 0;
@@ -4693,15 +4706,16 @@ build_string_literal (int len, const char *str)
   return t;
 }
 
-/* Expand a call to printf or printf_unlocked with argument list ARGLIST.
+/* Expand EXP, a call to printf or printf_unlocked.
    Return 0 if a normal call should be emitted rather than transforming
    the function inline.  If convenient, the result should be placed in
    TARGET with mode MODE.  UNLOCKED indicates this is a printf_unlocked
    call.  */
 static rtx
-expand_builtin_printf (tree arglist, rtx target, enum machine_mode mode,
+expand_builtin_printf (tree exp, rtx target, enum machine_mode mode,
 		       bool unlocked)
 {
+  tree arglist = TREE_OPERAND (exp, 1);
   tree fn_putchar = unlocked
 		    ? implicit_built_in_decls[BUILT_IN_PUTCHAR_UNLOCKED]
 		    : implicit_built_in_decls[BUILT_IN_PUTCHAR];
@@ -4792,19 +4806,22 @@ expand_builtin_printf (tree arglist, rtx target, enum machine_mode mode,
 
   if (!fn)
     return 0;
-  return expand_expr (build_function_call_expr (fn, arglist),
-		      target, mode, EXPAND_NORMAL);
+  fn = build_function_call_expr (fn, arglist);
+  if (TREE_CODE (fn) == CALL_EXPR)
+    CALL_EXPR_TAILCALL (fn) = CALL_EXPR_TAILCALL (exp);
+  return expand_expr (fn, target, mode, EXPAND_NORMAL);
 }
 
-/* Expand a call to fprintf or fprintf_unlocked with argument list ARGLIST.
+/* Expand EXP, a call to fprintf or fprintf_unlocked.
    Return 0 if a normal call should be emitted rather than transforming
    the function inline.  If convenient, the result should be placed in
    TARGET with mode MODE.  UNLOCKED indicates this is a fprintf_unlocked
    call.  */
 static rtx
-expand_builtin_fprintf (tree arglist, rtx target, enum machine_mode mode,
+expand_builtin_fprintf (tree exp, rtx target, enum machine_mode mode,
 		        bool unlocked)
 {
+  tree arglist = TREE_OPERAND (exp, 1);
   tree fn_fputc = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
 			   : implicit_built_in_decls[BUILT_IN_FPUTC];
   tree fn_fputs = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTS_UNLOCKED]
@@ -4886,8 +4903,10 @@ expand_builtin_fprintf (tree arglist, rtx target, enum machine_mode mode,
 
   if (!fn)
     return 0;
-  return expand_expr (build_function_call_expr (fn, arglist),
-		      target, mode, EXPAND_NORMAL);
+  fn = build_function_call_expr (fn, arglist);
+  if (TREE_CODE (fn) == CALL_EXPR)
+    CALL_EXPR_TAILCALL (fn) = CALL_EXPR_TAILCALL (exp);
+  return expand_expr (fn, target, mode, EXPAND_NORMAL);
 }
 
 /* Expand a call to sprintf with argument list ARGLIST.  Return 0 if
@@ -5850,25 +5869,26 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_MEMMOVE:
-      target = expand_builtin_memmove (arglist, TREE_TYPE (exp), target, mode);
+      target = expand_builtin_memmove (arglist, TREE_TYPE (exp), target,
+				       mode, exp);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_BCOPY:
-      target = expand_builtin_bcopy (arglist, TREE_TYPE (exp));
+      target = expand_builtin_bcopy (exp);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_MEMSET:
-      target = expand_builtin_memset (arglist, target, mode);
+      target = expand_builtin_memset (arglist, target, mode, exp);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_BZERO:
-      target = expand_builtin_bzero (arglist);
+      target = expand_builtin_bzero (exp);
       if (target)
 	return target;
       break;
@@ -5945,13 +5965,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       return const0_rtx;
 
     case BUILT_IN_PRINTF:
-      target = expand_builtin_printf (arglist, target, mode, false);
+      target = expand_builtin_printf (exp, target, mode, false);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_PRINTF_UNLOCKED:
-      target = expand_builtin_printf (arglist, target, mode, true);
+      target = expand_builtin_printf (exp, target, mode, true);
       if (target)
 	return target;
       break;
@@ -5968,13 +5988,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_FPRINTF:
-      target = expand_builtin_fprintf (arglist, target, mode, false);
+      target = expand_builtin_fprintf (exp, target, mode, false);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_FPRINTF_UNLOCKED:
-      target = expand_builtin_fprintf (arglist, target, mode, true);
+      target = expand_builtin_fprintf (exp, target, mode, true);
       if (target)
 	return target;
       break;
