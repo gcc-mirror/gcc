@@ -1,3 +1,8 @@
+2005-05-03  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Use STRIP_TYPE_NOPS
+	rather than STRIP_NOPS.
+
 2005-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/21330

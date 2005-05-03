@@ -1585,7 +1585,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
      substitutions.  Fold that down to one.  Remove NON_LVALUE_EXPRs that
      are sometimes added.  */
   base = fold (base);
-  STRIP_NOPS (base);
+  STRIP_TYPE_NOPS (base);
   TREE_OPERAND (expr, 0) = base;
 
   /* One possibility is that the address reduces to a string constant.  */
