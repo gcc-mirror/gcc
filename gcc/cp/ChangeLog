@@ -1,3 +1,7 @@
+2005-05-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* friend.c, lex.c, mangle.c, repo.c: Update copyright.
+
 2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c (local_classes, init_class_processing): Use VEC
