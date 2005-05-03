@@ -4029,7 +4029,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 
   /* Now walk through the statements backward.  We can ignore labels,
      anything else means this is not a forwarder block.  */
-  for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+  for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_prev (&bsi))
     {
       tree stmt = bsi_stmt (bsi);
  
