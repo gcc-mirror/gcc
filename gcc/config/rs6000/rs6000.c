@@ -1832,13 +1832,9 @@ num_insns_constant_wide (HOST_WIDE_INT value)
 int
 num_insns_constant (rtx op, enum machine_mode mode)
 {
-<<<<<<< rs6000.c
-  switch (GET_CODE (op))
-=======
   HOST_WIDE_INT low, high;
   
   switch (GET_CODE (op))
->>>>>>> 1.815
     {
     case CONST_INT:
 #if HOST_BITS_PER_WIDE_INT == 64
@@ -1860,54 +1856,6 @@ num_insns_constant (rtx op, enum machine_mode mode)
 	    return num_insns_constant_wide ((HOST_WIDE_INT) l);
 	  }
 
-<<<<<<< rs6000.c
-	{
-	  HOST_WIDE_INT low;
-	  HOST_WIDE_INT high;
-	  long l[2];
-	  REAL_VALUE_TYPE rv;
-	  int endian = (WORDS_BIG_ENDIAN == 0);
-	  
-	  if (mode == VOIDmode || mode == DImode)
-	    {
-	      high = CONST_DOUBLE_HIGH (op);
-	      low  = CONST_DOUBLE_LOW (op);
-	    }
-	  else
-	    {
-	      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-	      REAL_VALUE_TO_TARGET_DOUBLE (rv, l);
-	      high = l[endian];
-	      low  = l[1 - endian];
-	    }
-
-	  if (TARGET_32BIT)
-	    return (num_insns_constant_wide (low)
-		    + num_insns_constant_wide (high));
-	  
-	  else
-	    {
-	      if (high == 0 && low >= 0)
-		return num_insns_constant_wide (low);
-	      
-	      else if (high == -1 && low < 0)
-		return num_insns_constant_wide (low);
-	      
-	      else if (mask64_operand (op, mode))
-		return 2;
-	      
-	      else if (low == 0)
-		return num_insns_constant_wide (high) + 1;
-	      
-	      else
-		return (num_insns_constant_wide (high)
-			+ num_insns_constant_wide (low) + 1);
-	    }
-	}
-	
-    default:
-      gcc_unreachable ();
-=======
 	if (mode == VOIDmode || mode == DImode)
 	  {
 	    high = CONST_DOUBLE_HIGH (op);
@@ -1946,7 +1894,6 @@ num_insns_constant (rtx op, enum machine_mode mode)
 	
     default:
       gcc_unreachable ();
->>>>>>> 1.815
     }
 }
 
@@ -3328,16 +3275,10 @@ rs6000_emit_set_const (rtx dest, enum machine_mode mode,
 			      gen_rtx_IOR (SImode, result,
 					   GEN_INT (INTVAL (source) & 0xffff))));
       result = dest;
-<<<<<<< rs6000.c
-
-    case DImode:
-      switch (GET_CODE (source))
-=======
       break;
 
     case DImode:
       switch (GET_CODE (source))
->>>>>>> 1.815
 	{
 	case CONST_INT:
 	  c0 = INTVAL (source);
@@ -7292,7 +7233,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     if (d->code == fcode)
       return rs6000_expand_binop_builtin (d->icode, arglist, target);
 
-<<<<<<< rs6000.c
   /* Handle simple ternary operations.  */
   d = (struct builtin_description *) bdesc_3arg;
   for (i = 0; i < ARRAY_SIZE  (bdesc_3arg); i++, d++)
@@ -7300,16 +7240,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return rs6000_expand_ternop_builtin (d->icode, arglist, target);
   
   gcc_unreachable ();
-  return NULL_RTX;
-=======
-  /* Handle simple ternary operations.  */
-  d = (struct builtin_description *) bdesc_3arg;
-  for (i = 0; i < ARRAY_SIZE  (bdesc_3arg); i++, d++)
-    if (d->code == fcode)
-      return rs6000_expand_ternop_builtin (d->icode, arglist, target);
-  
-  gcc_unreachable ();
->>>>>>> 1.815
 }
 
 static tree
@@ -16952,20 +16882,6 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
 	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
 	return orig;
 
-<<<<<<< rs6000.c
-      gcc_assert (GET_CODE (XEXP (orig, 0)) == PLUS);
-      
-      /* Use a different reg for the intermediate value, as
-	 it will be marked UNCHANGING.  */
-      rtx reg_temp = no_new_pseudos ? reg : gen_reg_rtx (Pmode);
-      
-      base = rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 0),
-						     Pmode, reg_temp);
-      offset =
-	rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 1),
-						Pmode, reg);
-      
-=======
       gcc_assert (GET_CODE (XEXP (orig, 0)) == PLUS);
       
       /* Use a different reg for the intermediate value, as
@@ -16977,7 +16893,6 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
 	rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 1),
 						Pmode, reg);
       
->>>>>>> 1.815
       if (GET_CODE (offset) == CONST_INT)
 	{
 	  if (SMALL_INT (offset))

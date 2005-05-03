@@ -1,3 +1,7 @@
+2005-05-03  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.c: Remove conflict markers.
+
 2005-05-03  James E Wilson  <wilson@specifixinc.com>
 
 	* dwarf2out.c (lookup_filename): Call maybe_emit_file.
