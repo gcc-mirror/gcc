@@ -1,3 +1,12 @@
+2005-05-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-flow.h (tree_ann_common_d): Move aux to ...
+	(stmt_ann_d): ... here.
+	* tree-ssa-loop-im.c (LIM_DATA, determine_invariantness_stmt,
+	move_computations_stmt, schedule_sm): Update references to
+	aux.
+	* tree-vectorizer.h (set_stmt_info, vinfo_for_stmt): Likewise.
+
 2005-05-03  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c: Remove conflict markers.
