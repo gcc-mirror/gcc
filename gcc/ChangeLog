@@ -1,3 +1,7 @@
+2005-05-03  James E Wilson  <wilson@specifixinc.com>
+
+	* dwarf2out.c (lookup_filename): Call maybe_emit_file.
+
 2005-05-03  DJ Delorie  <dj@redhat.com>
 
 	* c-decl.c (store_parm_decls_oldstyle): Let diagnostic machinery
