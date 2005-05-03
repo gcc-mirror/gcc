@@ -241,14 +241,14 @@ static inline void
 set_stmt_info (stmt_ann_t ann, stmt_vec_info stmt_info)
 {
   if (ann)
-    ann->common.aux = (char *) stmt_info;
+    ann->aux = (char *) stmt_info;
 }
 
 static inline stmt_vec_info
 vinfo_for_stmt (tree stmt)
 {
   stmt_ann_t ann = stmt_ann (stmt);
-  return ann ? (stmt_vec_info) ann->common.aux : NULL;
+  return ann ? (stmt_vec_info) ann->aux : NULL;
 }
 
 /*-----------------------------------------------------------------*/
