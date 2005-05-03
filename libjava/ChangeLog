@@ -1,3 +1,9 @@
+2005-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c
+	(init_glib_threads): Check if threading system is already
+	initialized.
+
 2005-05-03  Andrew Overholt  <overholt@redhat.com>
 
 	PR libgcj/21372:
@@ -136,6 +142,7 @@
 	* gnu/java/net/protocol/file/Connection.java
 	(lineSeparator): Initialize with SystemProperties.getProperty().
 
+>>>>>>> 1.3571
 2005-04-27  Chris Burdess  <dog@gnu.org>
 
 	* gnu/java/net/protocol/file/Connection.java: Return correct content
