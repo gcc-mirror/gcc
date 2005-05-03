@@ -102,7 +102,7 @@
     case 4: return "#";
     case 5: return "#";
     case 6: return output_vec_const_move (operands);
-    default: abort();
+    default: gcc_unreachable ();
     }
 }
   [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
@@ -1649,8 +1649,7 @@
   rtx addr;
   rtx temp;
 
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
 
   addr = XEXP (operands[1], 0);
   temp = gen_reg_rtx (GET_MODE (addr));
