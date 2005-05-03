@@ -1031,14 +1031,14 @@ do {									\
 	int i;								\
         for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			\
           if (TEST_HARD_REG_BIT (reg_class_contents[(int)MMX_REGS], i))	\
-	    fixed_regs[i] = call_used_regs[i] = 1;		 	\
+	    fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";	\
       }									\
     if (! TARGET_SSE)							\
       {									\
 	int i;								\
         for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			\
           if (TEST_HARD_REG_BIT (reg_class_contents[(int)SSE_REGS], i))	\
-	    fixed_regs[i] = call_used_regs[i] = 1;		 	\
+	    fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";	\
       }									\
     if (! TARGET_80387 && ! TARGET_FLOAT_RETURNS_IN_80387)		\
       {									\
@@ -1047,7 +1047,15 @@ do {									\
         COPY_HARD_REG_SET (x, reg_class_contents[(int)FLOAT_REGS]);	\
         for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			\
           if (TEST_HARD_REG_BIT (x, i)) 				\
-	    fixed_regs[i] = call_used_regs[i] = 1;			\
+	    fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";	\
+      }									\
+    if (! TARGET_64BIT)							\
+      {									\
+	int i;								\
+	for (i = FIRST_REX_INT_REG; i <= LAST_REX_INT_REG; i++)		\
+	  reg_names[i] = "";						\
+	for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)		\
+	  reg_names[i] = "";						\
       }									\
   } while (0)
 

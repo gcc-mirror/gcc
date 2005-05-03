@@ -1,3 +1,8 @@
+2005-05-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/16888
+	* gcc.target/i386/asm-1.c: New test.
+
 2005-05-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/15698
