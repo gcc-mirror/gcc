@@ -1,3 +1,11 @@
+2005-05-03  Andrew Overholt  <overholt@redhat.com>
+
+	PR libgcj/21372:
+	* gnu/java/nio/channels/FileChannelImpl.java: Return null if lock
+	could not be acquired.
+	* java/nio/channels/FileLock.java (toString): Re-implement to be
+	in line with other implementations.
+
 2005-04-26  Luca Barbieri  <luca.barbieri@gmail.com>
 
 	PR libgcj/21136:
