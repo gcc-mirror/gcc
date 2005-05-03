@@ -1,3 +1,16 @@
+2005-05-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/predicates.md (const_compl_high_operand): New.
+	* config/sparc/sparc.c (sparc_emit_set_safe_HIGH64): Rename into
+	gen_safe_HIGH64.
+	(sparc_emit_set_const64_quick1): Adjust for above change.
+	(sparc_emit_set_const64_quick2): Likewise.
+	(sparc_emit_set_const64_longway): Likewise.
+	(sparc_emit_set_const64): Likewise.
+	* config/sparc/sparc.md (movhi_const64_special, movsi_const64_special,
+	movdi_const64_special): Delete.
+	(logical constant splitters): Use const_compl_high_operand.
+
 2005-05-03  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Use STRIP_TYPE_NOPS
