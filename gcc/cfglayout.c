@@ -230,7 +230,7 @@ record_effective_endpoints (void)
    locator greater than corresponding block_locators_locs value and smaller
    than the following one.  Similarly for the other properties.  */
 static GTY(()) varray_type block_locators_locs;
-static GTY(()) varray_type block_locators_blocks;
+static GTY(()) VEC(tree,gc) *block_locators_blocks;
 static GTY(()) varray_type line_locators_locs;
 static GTY(()) varray_type line_locators_lines;
 static GTY(()) varray_type file_locators_locs;
@@ -255,7 +255,7 @@ insn_locators_initialize (void)
   prologue_locator = epilogue_locator = 0;
 
   VARRAY_INT_INIT (block_locators_locs, 32, "block_locators_locs");
-  VARRAY_TREE_INIT (block_locators_blocks, 32, "block_locators_blocks");
+  block_locators_blocks = VEC_alloc (tree, gc, 32);
   VARRAY_INT_INIT (line_locators_locs, 32, "line_locators_locs");
   VARRAY_INT_INIT (line_locators_lines, 32, "line_locators_lines");
   VARRAY_INT_INIT (file_locators_locs, 32, "file_locators_locs");
@@ -294,7 +294,7 @@ insn_locators_initialize (void)
 	    {
 	      loc++;
 	      VARRAY_PUSH_INT (block_locators_locs, loc);
-	      VARRAY_PUSH_TREE (block_locators_blocks, block);
+	      VEC_safe_push (tree, gc, block_locators_blocks, block);
 	      last_block = block;
 	    }
 	  if (last_line_number != line_number)
@@ -435,7 +435,7 @@ insn_scope (rtx insn)
 	  break;
 	}
     }
-   return VARRAY_TREE (block_locators_blocks, min);
+  return VEC_index (tree, block_locators_blocks, min);
 }
 
 /* Return line number of the statement specified by the locator.  */
