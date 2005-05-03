@@ -1,6 +1,7 @@
 2005-05-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* rw.po: New file.
+	* gcc.pot: Regenerate.
 
 2004-09-30  Release Manager
 
