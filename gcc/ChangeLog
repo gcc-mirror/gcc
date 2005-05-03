@@ -1,3 +1,24 @@
+2005-05-03  DJ Delorie  <dj@redhat.com>
+
+	* c-decl.c (store_parm_decls_oldstyle): Let diagnostic machinery
+	decide if the warning will be printed.
+	* calls.c (expand_call): Likewise.
+	* function.c (init-function_start): Likewise.
+
+	* common.opt (-fdiagnostics-show-option): New.
+	* opts.c (option_enabled): Accept the option index instead of a
+	pointer to the option descriptor.
+	* opts.h (option_enabled): Likewise.
+	* toplev.c (print_switch_values): Pass option index, not option
+	descriptor.
+	* diagnostic.h (diagnostic_info): Add option_index.
+	* diagnostic.c: Include opts.h.
+	(diagnostic_set_info): Initialize option_index.
+	(diagnostic_report_diagnostic): Amend option name if appropriate.
+	(warning): Check to see if the specified warning is enabled.
+	Store option index.
+	* doc/invoke.texi (-fdiagnostics-show-options): Document.
+
 2005-05-03  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Fix ALL_REGS and

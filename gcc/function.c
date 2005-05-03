@@ -3850,9 +3850,8 @@ init_function_start (tree subr)
 
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
-  if (warn_aggregate_return
-      && AGGREGATE_TYPE_P (TREE_TYPE (DECL_RESULT (subr))))
-    warning (0, "function returns an aggregate");
+  if (AGGREGATE_TYPE_P (TREE_TYPE (DECL_RESULT (subr))))
+    warning (OPT_Waggregate_return, "function returns an aggregate");
 }
 
 /* Make sure all values used by the optimization passes have sane

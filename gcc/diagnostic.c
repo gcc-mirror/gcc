@@ -40,6 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "diagnostic.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "opts.h"
 
 
 /* Prototypes.  */
@@ -120,6 +121,7 @@ diagnostic_set_info (diagnostic_info *diagnostic, const char *msgid,
   diagnostic->message.format_spec = _(msgid);
   diagnostic->location = location;
   diagnostic->kind = kind;
+  diagnostic->option_index = 0;
 }
 
 /* Return a malloc'd string describing a location.  The caller is
@@ -333,6 +335,11 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   if (diagnostic_count_diagnostic (context, diagnostic))
     {
+      if (diagnostics_show_options && diagnostic->option_index)
+	diagnostic->message.format_spec
+	  = ACONCAT ((diagnostic->message.format_spec,
+		      " [", cl_options[diagnostic->option_index].opt_text, "]", NULL));
+
       pp_prepare_to_format (context->printer, &diagnostic->message,
 			    &diagnostic->location);
       (*diagnostic_starter (context)) (context, diagnostic);
@@ -412,13 +419,18 @@ inform (const char *msgid, ...)
 /* A warning.  Use this for code which is correct according to the
    relevant language specification but is likely to be buggy anyway.  */
 void
-warning (int opt ATTRIBUTE_UNUSED, const char *msgid, ...)
+warning (int opt, const char *msgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
+  if (opt && ! option_enabled (opt))
+    return;
+
   va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_WARNING);
+  diagnostic.option_index = opt;
+
   report_diagnostic (&diagnostic);
   va_end (ap);
 }

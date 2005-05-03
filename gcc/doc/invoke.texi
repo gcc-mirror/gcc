@@ -206,7 +206,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Language Independent Options
 @xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
--fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}}
+-fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}} @gol
+-fdiagnostics-show-options
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -2089,6 +2090,13 @@ Only meaningful in line-wrapping mode.  Instructs the diagnostic
 messages reporter to emit the same source location information (as
 prefix) for physical lines that result from the process of breaking
 a message which is too long to fit on a single line.
+
+@item -fdiagnostics-show-options
+@opindex fdiagnostics-show-options
+This option instructs the diagnostic machinery to add text to each
+diagnostic emitted, which indicates which command line option directly
+controls that diagnostic, when such an option is known to the
+diagnostic machinery.
 
 @end table
 

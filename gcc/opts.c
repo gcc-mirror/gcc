@@ -1400,8 +1400,9 @@ wrap_help (const char *help, const char *item, unsigned int item_width)
    a simple on-off switch.  */
 
 int
-option_enabled (const struct cl_option *option)
+option_enabled (int opt_idx)
 {
+  const struct cl_option *option = &(cl_options[opt_idx]);
   if (option->flag_var)
     switch (option->var_cond)
       {
