@@ -49,9 +49,8 @@ darwin_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
   void *mmap_result;
   int ret;
 
-  if ((size_t)pch_address_space % pagesize != 0
-      || sizeof (pch_address_space) % pagesize != 0)
-    abort ();
+  gcc_assert ((size_t)pch_address_space % pagesize == 0
+	      && sizeof (pch_address_space) % pagesize == 0);
   
   ret = (addr == pch_address_space && sz <= sizeof (pch_address_space));
   if (! ret)
@@ -73,8 +72,7 @@ darwin_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
       ret = mmap_result != (void *) MAP_FAILED;
 
       /* Sanity check for broken MAP_FIXED.  */
-      if (ret && mmap_result != addr)
-	abort ();
+      gcc_assert (!ret || mmap_result == addr);
     }
 
   return ret;

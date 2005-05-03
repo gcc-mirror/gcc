@@ -178,6 +178,9 @@
 (define_predicate "easy_fp_constant"
   (match_code "const_double")
 {
+  long k[4];
+  REAL_VALUE_TYPE rv;
+
   if (GET_MODE (op) != mode
       || (GET_MODE_CLASS (mode) != MODE_FLOAT && mode != DImode))
     return 0;
@@ -198,11 +201,9 @@
     return 0;
 #endif
 
-  if (mode == TFmode)
+  switch (mode)
     {
-      long k[4];
-      REAL_VALUE_TYPE rv;
-
+    case TFmode:
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
 
@@ -210,13 +211,8 @@
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[2]) == 1
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[3]) == 1);
-    }
 
-  else if (mode == DFmode)
-    {
-      long k[2];
-      REAL_VALUE_TYPE rv;
-
+    case DFmode:
       /* Force constants to memory before reload to utilize
 	 compress_float_constant.
 	 Avoid this when flag_unsafe_math_optimizations is enabled
@@ -232,13 +228,8 @@
 
       return (num_insns_constant_wide ((HOST_WIDE_INT) k[0]) == 1
 	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1);
-    }
 
-  else if (mode == SFmode)
-    {
-      long l;
-      REAL_VALUE_TYPE rv;
-
+    case SFmode:
       /* Force constants to memory before reload to utilize
 	 compress_float_constant.
 	 Avoid this when flag_unsafe_math_optimizations is enabled
@@ -249,20 +240,21 @@
 	return 0;
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-      REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+      REAL_VALUE_TO_TARGET_SINGLE (rv, k[0]);
 
-      return num_insns_constant_wide (l) == 1;
-    }
+      return num_insns_constant_wide (k[0]) == 1;
 
-  else if (mode == DImode)
+  case DImode:
     return ((TARGET_POWERPC64
 	     && GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_LOW (op) == 0)
 	    || (num_insns_constant (op, DImode) <= 2));
 
-  else if (mode == SImode)
+  case SImode:
     return 1;
-  else
-    abort ();
+
+  default:
+    gcc_unreachable ();
+  }
 })
 
 ;; Return 1 if the operand is a CONST_VECTOR and can be loaded into a
@@ -406,8 +398,7 @@
     }
   else if (GET_CODE (op) == CONST_DOUBLE)
     {
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-	abort ();
+      gcc_assert (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT);
 
       opl = CONST_DOUBLE_LOW (op);
       oph = CONST_DOUBLE_HIGH (op);

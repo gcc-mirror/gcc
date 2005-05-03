@@ -1,3 +1,23 @@
+2005-05-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/darwin.c (machopic_define_symbol): Use gcc_assert or
+	gcc_unreachable as appropriate.
+	(machopic_function_base_name, machopic_indirect_data_reference,
+	machopic_legitimize_pic_address, darwin_non_lazy_pcrel): Likewise.
+	* config/host-darwin.c (darwin_gt_pch_use_address): Likewise
+	* config/rs6000/altivec.md (*mov<mode>_internal,
+	build_vector_mask_for_load): Likewise.
+	* config/rs6000/darwin.md (movdf_low_si, movdf_low_di,
+	*call_nonlocal_darwin64, *call_value_nonlocal_darwin64,
+	*sibcall_symbolic_64, *sibcall_value_symbolic_64): Likewise.
+	* config/rs6000/predicates.md (easy_fp_constant,
+	logical_operand): Likewise.
+	* config/rs6000/rs6000.c (spe_expand_predicate_builtin,
+	compute_save_world_info, rs6000_emit_prologue,
+	rs6000_output_mi_thunk): Reword comments to avoid 'abort'.
+	* config/rs6000/host-darwin.c (segv_handler): Use fancy_abort
+	directly.
+
 2005-05-03  Uros Bizjak  <uros@kss-loka.si>
 
 	PR middle-end/21282
