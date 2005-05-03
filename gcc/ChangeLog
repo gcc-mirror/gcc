@@ -2,6 +2,8 @@
 
 	* config/rs6000/rs6000.c: Remove conflict markers.
 
+	* cfg.c (dump_flow_info): Use max_reg_num, not max_regno.
+
 2005-05-03  James E Wilson  <wilson@specifixinc.com>
 
 	* dwarf2out.c (lookup_filename): Call maybe_emit_file.
