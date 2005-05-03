@@ -1,3 +1,8 @@
+2005-05-03  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Fix ALL_REGS and
+	SPEC_OR_GEN_REGS definitions.
+
 2005-05-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/16888

@@ -1258,12 +1258,12 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000004, 0x00000000 }, /* CTR_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000006, 0x00000000 }, /* LINK_OR_CTR_REGS */ \
   { 0x00000000, 0x00000000, 0x00000007, 0x00002000 }, /* SPECIAL_REGS */     \
-  { 0xffffffff, 0x00000000, 0x0000000f, 0x00000000 }, /* SPEC_OR_GEN_REGS */ \
+  { 0xffffffff, 0x00000000, 0x0000000f, 0x00002000 }, /* SPEC_OR_GEN_REGS */ \
   { 0x00000000, 0x00000000, 0x00000010, 0x00000000 }, /* CR0_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000ff0, 0x00000000 }, /* CR_REGS */	     \
   { 0xffffffff, 0x00000000, 0x0000efff, 0x00000000 }, /* NON_FLOAT_REGS */   \
   { 0x00000000, 0x00000000, 0x00001000, 0x00000000 }, /* XER_REGS */	     \
-  { 0xffffffff, 0xffffffff, 0xffffffff, 0x00003fff }  /* ALL_REGS */	     \
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0x0001ffff }  /* ALL_REGS */	     \
 }
 
 /* The same information, inverted:
