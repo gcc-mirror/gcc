@@ -132,6 +132,16 @@ public abstract class FileLock
    */
   public final String toString()
   {
-    return "file-lock:pos=" + position + "size=" + size;
+	String toReturn = getClass().getName() + 
+	  "[" + position + ":" + size;
+	if (shared)
+	  toReturn += " shared";
+	else
+	  toReturn += " exclusive";
+	if (isValid())
+	  toReturn += " valid]";
+	else
+	  toReturn += " invalid]";
+	return toReturn;
   }
 }
