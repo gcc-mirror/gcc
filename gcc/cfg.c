@@ -471,14 +471,14 @@ check_bb_profile (basic_block bb, FILE * file)
 void
 dump_flow_info (FILE *file)
 {
-  int i;
   basic_block bb;
 
   /* There are no pseudo registers after reload.  Don't dump them.  */
   if (reg_n_info && !reload_completed)
     {
-      fprintf (file, "%d registers.\n", max_regno);
-      for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+      unsigned int i, max = max_reg_num ();
+      fprintf (file, "%d registers.\n", max);
+      for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
 	if (REG_N_REFS (i))
 	  {
 	    enum reg_class class, altclass;
