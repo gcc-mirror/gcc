@@ -1544,7 +1544,6 @@ maybe_add_assert_expr (basic_block bb)
   block_stmt_iterator si;
   tree last;
   bool added;
-  use_optype uses;
 
   /* Step 1.  Mark all the SSA names used in BB in bitmap FOUND.  */
   added = false;
@@ -1628,16 +1627,20 @@ maybe_add_assert_expr (basic_block bb)
   if (last
       && TREE_CODE (last) == COND_EXPR
       && !fp_predicate (COND_EXPR_COND (last))
-      && NUM_USES (uses = STMT_USE_OPS (last)) > 0)
+      && !ZERO_SSA_OPERANDS (last, SSA_OP_USE))
     {
       edge e;
       edge_iterator ei;
       tree op, cond;
       basic_block son;
+      ssa_op_iter iter;
       
       cond = COND_EXPR_COND (last);
 
-      op = USE_OP (uses, 0);
+      /* Get just the first use operand.  */
+      FOR_EACH_SSA_TREE_OPERAND (op, last, iter, SSA_OP_USE)
+	break;
+      gcc_assert (op != NULL);
 
       /* Do not attempt to infer anything in names that flow through
 	 abnormal edges.  */
@@ -1819,14 +1822,11 @@ stmt_interesting_for_vrp (tree stmt)
   else if (TREE_CODE (stmt) == MODIFY_EXPR)
     {
       tree lhs = TREE_OPERAND (stmt, 0);
-      stmt_ann_t ann = stmt_ann (stmt);
 
       if (TREE_CODE (lhs) == SSA_NAME
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
-	  && NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) == 0
-	  && NUM_VUSES (VUSE_OPS (ann)) == 0
-	  && NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) == 0)
+	  && ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
 	return true;
     }
   else if (TREE_CODE (stmt) == COND_EXPR || TREE_CODE (stmt) == SWITCH_EXPR)
@@ -2080,9 +2080,7 @@ vrp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
 
   ann = stmt_ann (stmt);
   if (TREE_CODE (stmt) == MODIFY_EXPR
-      && NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) == 0
-      && NUM_VUSES (VUSE_OPS (ann)) == 0
-      && NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) == 0)
+      && ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
     return vrp_visit_assignment (stmt, output_p);
   else if (TREE_CODE (stmt) == COND_EXPR || TREE_CODE (stmt) == SWITCH_EXPR)
     return vrp_visit_cond_stmt (stmt, taken_edge_p);

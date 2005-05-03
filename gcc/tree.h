@@ -1355,13 +1355,13 @@ struct value_range_def;
 
 /* Immediate use linking structure.  This structure is used for maintaining
    a doubly linked list of uses of an SSA_NAME.  */
-typedef struct ssa_imm_use_d GTY(())
+typedef struct ssa_use_operand_d GTY(())
 {
-  struct ssa_imm_use_d* GTY((skip(""))) prev;
-  struct ssa_imm_use_d* GTY((skip(""))) next;
+  struct ssa_use_operand_d* GTY((skip(""))) prev;
+  struct ssa_use_operand_d* GTY((skip(""))) next;
   tree GTY((skip(""))) stmt;
   tree *GTY((skip(""))) use;
-} ssa_imm_use_t;
+} ssa_use_operand_t;
 
 /* Return the immediate_use information for an SSA_NAME. */
 #define SSA_NAME_IMM_USE_NODE(NODE) SSA_NAME_CHECK (NODE)->ssa_name.imm_uses
@@ -1393,7 +1393,7 @@ struct tree_ssa_name GTY(())
   PTR GTY((skip)) aux;
 
   /* Immediate uses list for this SSA_NAME.  */
-  struct ssa_imm_use_d imm_uses;
+  struct ssa_use_operand_d imm_uses;
 };
 
 /* In a PHI_NODE node.  */
@@ -1424,7 +1424,7 @@ struct phi_arg_d GTY(())
 {
   /* imm_use MUST be the first element in struct because we do some
      pointer arithmetic with it.  See phi_arg_index_from_use.  */
-  struct ssa_imm_use_d imm_use;
+  struct ssa_use_operand_d imm_use;
   tree def;
   bool nonzero;
 };

@@ -226,7 +226,7 @@ make_phi_node (tree var, int len)
 
   for (i = 0; i < capacity; i++)
     {
-      ssa_imm_use_t * imm;
+      use_operand_p  imm;
       imm = &(PHI_ARG_IMM_USE_NODE (phi, i));
       imm->use = &(PHI_ARG_DEF_TREE (phi, i));
       imm->prev = NULL;
@@ -247,7 +247,7 @@ release_phi_node (tree phi)
 
   for (x = 0; x < PHI_NUM_ARGS (phi); x++)
     {
-      ssa_imm_use_t * imm;
+      use_operand_p  imm;
       imm = &(PHI_ARG_IMM_USE_NODE (phi, x));
       delink_imm_use (imm);
     }
@@ -282,7 +282,7 @@ resize_phi_node (tree *phi, int len)
 
   for (i = 0; i < PHI_NUM_ARGS (new_phi); i++)
     {
-      ssa_imm_use_t *imm, *old_imm;
+      use_operand_p imm, old_imm;
       imm = &(PHI_ARG_IMM_USE_NODE (new_phi, i));
       old_imm = &(PHI_ARG_IMM_USE_NODE (*phi, i));
       imm->use = &(PHI_ARG_DEF_TREE (new_phi, i));
@@ -293,7 +293,7 @@ resize_phi_node (tree *phi, int len)
 
   for (i = PHI_NUM_ARGS (new_phi); i < len; i++)
     {
-      ssa_imm_use_t * imm;
+      use_operand_p imm;
       imm = &(PHI_ARG_IMM_USE_NODE (new_phi, i));
       imm->use = &(PHI_ARG_DEF_TREE (new_phi, i));
       imm->prev = NULL;

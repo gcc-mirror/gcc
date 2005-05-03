@@ -678,12 +678,14 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
 tree
 first_vdef (tree stmt)
 {
-  if (NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) > 0)
-    return V_MAY_DEF_RESULT (STMT_V_MAY_DEF_OPS (stmt), 0);
-  else if (NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt)) > 0)
-    return V_MUST_DEF_RESULT (STMT_V_MUST_DEF_OPS (stmt), 0);
-  else
-    gcc_unreachable ();
+  ssa_op_iter iter;
+  tree op;
+
+  /* Simply return the first operand we arrive at.  */
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_VIRTUAL_DEFS)
+    return (op);
+
+  gcc_unreachable ();
 }
 
 
@@ -700,8 +702,7 @@ stmt_makes_single_load (tree stmt)
   if (TREE_CODE (stmt) != MODIFY_EXPR)
     return false;
 
-  if (NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0
-      && NUM_VUSES (STMT_VUSE_OPS (stmt)) == 0)
+  if (ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF|SSA_OP_VUSE))
     return false;
 
   rhs = TREE_OPERAND (stmt, 1);
@@ -726,8 +727,7 @@ stmt_makes_single_store (tree stmt)
   if (TREE_CODE (stmt) != MODIFY_EXPR)
     return false;
 
-  if (NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0
-      && NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt)) == 0)
+  if (ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF|SSA_OP_VMUSTDEF))
     return false;
 
   lhs = TREE_OPERAND (stmt, 0);

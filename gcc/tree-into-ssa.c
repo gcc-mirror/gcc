@@ -616,7 +616,7 @@ add_new_name_mapping (tree new, tree old)
    for every variable in the function.  For every statement S in block
    BB:
 
-   1- Variables defined by S in DEF_OPS(S) are marked in the bitmap
+   1- Variables defined by S in the DEFS of S are marked in the bitmap
       WALK_DATA->GLOBAL_DATA->KILLS.
 
    2- If S uses a variable VAR and there is no preceding kill of VAR,
@@ -648,7 +648,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
   /* If a variable is used before being set, then the variable is live
      across a block boundary, so mark it live-on-entry to BB.  */
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter,
-			    SSA_OP_USE | SSA_OP_VUSE | SSA_OP_VMUSTDEFKILL)
+			    SSA_OP_USE | SSA_OP_VUSE | SSA_OP_VMUSTKILL)
     {
       tree sym = USE_FROM_PTR (use_p);
       gcc_assert (DECL_P (sym));

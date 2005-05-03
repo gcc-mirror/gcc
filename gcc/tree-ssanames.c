@@ -121,7 +121,7 @@ tree
 make_ssa_name (tree var, tree stmt)
 {
   tree t;
-  ssa_imm_use_t *imm;
+  use_operand_p imm;
 
   gcc_assert (DECL_P (var)
 	      || TREE_CODE (var) == INDIRECT_REF);
@@ -205,7 +205,7 @@ release_ssa_name (tree var)
     {
       tree saved_ssa_name_var = SSA_NAME_VAR (var);
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
-      ssa_imm_use_t *imm = &(SSA_NAME_IMM_USE_NODE (var));
+      use_operand_p imm = &(SSA_NAME_IMM_USE_NODE (var));
 
 #ifdef ENABLE_CHECKING
       verify_imm_links (stderr, var);

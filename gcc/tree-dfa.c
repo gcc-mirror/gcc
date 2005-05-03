@@ -482,15 +482,13 @@ collect_dfa_stats_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 	{
 	case STMT_ANN:
 	  {
-	    stmt_ann_t ann = (stmt_ann_t) t->common.ann;
 	    dfa_stats_p->num_stmt_anns++;
-	    dfa_stats_p->num_defs += NUM_DEFS (DEF_OPS (ann));
-	    dfa_stats_p->num_uses += NUM_USES (USE_OPS (ann));
-	    dfa_stats_p->num_v_may_defs +=
-	                 NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann));
-	    dfa_stats_p->num_vuses += NUM_VUSES (VUSE_OPS (ann));
-	    dfa_stats_p->num_v_must_defs +=
-	                 NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann));
+	    dfa_stats_p->num_defs += NUM_SSA_OPERANDS (t, SSA_OP_DEF);
+	    dfa_stats_p->num_uses += NUM_SSA_OPERANDS (t, SSA_OP_USE);
+	    dfa_stats_p->num_v_may_defs += NUM_SSA_OPERANDS (t, SSA_OP_VMAYDEF);
+	    dfa_stats_p->num_vuses += NUM_SSA_OPERANDS (t, SSA_OP_VUSE);
+	    dfa_stats_p->num_v_must_defs += 
+				  NUM_SSA_OPERANDS (t, SSA_OP_VMUSTDEF);
 	    break;
 	  }
 
@@ -642,8 +640,8 @@ mark_new_vars_to_rename (tree stmt)
      We flag them in a separate bitmap because we don't really want to
      rename them if there are not any newly exposed symbols in the
      statement operands.  */
-  v_may_defs_before = NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt));
-  v_must_defs_before = NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt));
+  v_may_defs_before = NUM_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF);
+  v_must_defs_before = NUM_SSA_OPERANDS (stmt, SSA_OP_VMUSTDEF);
 
   FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, 
 			     SSA_OP_VMAYDEF | SSA_OP_VUSE | SSA_OP_VMUSTDEF)
@@ -657,8 +655,8 @@ mark_new_vars_to_rename (tree stmt)
      exposed variables.  */
   update_stmt (stmt);
 
-  v_may_defs_after = NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt));
-  v_must_defs_after = NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt));
+  v_may_defs_after = NUM_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF);
+  v_must_defs_after = NUM_SSA_OPERANDS (stmt, SSA_OP_VMUSTDEF);
 
   FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_ALL_OPERANDS)
     if (DECL_P (val))

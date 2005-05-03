@@ -2231,14 +2231,11 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
         {
 	  tree stmt = bsi_stmt (bsi);
-	  stmt_ann_t ann = stmt_ann (stmt);
 
 	  if (TREE_CODE (stmt) != MODIFY_EXPR)
 	    continue;
 
-	  if (!VUSE_OPS (ann)
-	      && !V_MUST_DEF_OPS (ann)
-	      && !V_MAY_DEF_OPS (ann))
+	  if (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
 	    continue;
 	  
 	  /* In the GIMPLE representation, a modify expression
@@ -2269,8 +2266,7 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 	    }
 
 	  /* When there are no defs in the loop, the loop is parallel.  */
-	  if (NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) > 0
-	      || NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt)) > 0)
+	  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
 	    bb->loop_father->parallel_p = false;
 	}
 

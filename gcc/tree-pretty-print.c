@@ -2098,6 +2098,9 @@ dump_vops (pretty_printer *buffer, tree stmt, int spc, int flags)
   use_operand_p kill_p;
   ssa_op_iter iter;
 
+  if (!ssa_operands_active ())
+    return;
+
   FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
     {
       pp_string (buffer, "#   ");

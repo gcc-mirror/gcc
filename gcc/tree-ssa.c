@@ -709,8 +709,8 @@ verify_ssa (bool check_modified_stmt)
 
 	  if (check_modified_stmt && stmt_modified_p (stmt))
 	    {
-	      error ("Stmt (0x%x) marked modified after optimization pass : ",
-		     (unsigned long)stmt);
+	      error ("Stmt (%p) marked modified after optimization pass : ",
+		     (void *)stmt);
 	      print_generic_stmt (stderr, stmt, TDF_VOPS);
 	      goto err;
 	    }
@@ -725,8 +725,7 @@ verify_ssa (bool check_modified_stmt)
 
 	      if (base_address
 		  && SSA_VAR_P (base_address)
-		  && NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0
-		  && NUM_V_MUST_DEFS (STMT_V_MUST_DEF_OPS (stmt)) == 0)
+		  && ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF|SSA_OP_VMUSTDEF))
 		{
 		  error ("Statement makes a memory store, but has no "
 			 "V_MAY_DEFS nor V_MUST_DEFS");
@@ -737,7 +736,7 @@ verify_ssa (bool check_modified_stmt)
 
 
 	  if (stmt_ann (stmt)->makes_aliased_stores 
-	      && NUM_V_MAY_DEFS (STMT_V_MAY_DEF_OPS (stmt)) == 0)
+	      && ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF))
 	    {
 	      error ("Statement makes aliased stores, but has no V_MAY_DEFS");
 	      print_generic_stmt (stderr, stmt, TDF_VOPS);
@@ -806,12 +805,23 @@ delete_tree_ssa (void)
   basic_block bb;
   block_stmt_iterator bsi;
 
+  /* Release any ssa_names still in use.  */
+  for (i = 0; i < num_ssa_names; i++)
+    {
+      tree var = ssa_name (i);
+      if (var && TREE_CODE (var) == SSA_NAME)
+        {
+	  SSA_NAME_IMM_USE_NODE (var).prev = &(SSA_NAME_IMM_USE_NODE (var));
+	  SSA_NAME_IMM_USE_NODE (var).next = &(SSA_NAME_IMM_USE_NODE (var));
+	}
+      release_ssa_name (var);
+    }
+
   /* Remove annotations from every tree in the function.  */
   FOR_EACH_BB (bb)
     for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
       {
 	tree stmt = bsi_stmt (bsi);
-        release_defs (stmt);
 	ggc_free (stmt->common.ann);
 	stmt->common.ann = NULL;
       }
@@ -943,9 +953,7 @@ stmt_references_memory_p (tree stmt)
   if (ann->has_volatile_ops)
     return true;
 
-  return (NUM_VUSES (VUSE_OPS (ann)) > 0
-	  || NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) > 0
-	  || NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) > 0);
+  return (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS));
 }
 
 /* Internal helper for walk_use_def_chains.  VAR, FN and DATA are as

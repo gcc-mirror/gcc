@@ -1,3 +1,190 @@
+2005-05-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lambda-code.c (gcc_loop_to_lambda_loop, 
+	lambda_loopnest_to_gcc_loopnest, phi_loop_edge_uses_def,
+	stmt_is_bumper_for_loop, perfect_nest_p, replace_uses_of_x_with_y): Use
+	generic operand interface.
+	* tree-data-ref.c (find_data_references_in_loop): Use generic interface.
+	* tree-dfa.c (collect_dfa_stats_r, mark_new_vars_to_rename): Use
+	generic operand interface.
+	* tree-flow-inline.h (delink_imm_use, link_imm_use_to_list, 
+	link_imm_use, link_imm_use_stmt, relink_imm_use, relink_imm_use_stmt,
+	next_safe_imm_use, has_zero_uses, has_single_use, single_imm_use,
+	num_imm_uses): Use ssa_use_operand_t.
+	(get_def_ops, get_use_ops, get_v_may_def_ops, get_vuse_ops,
+	get_v_must_def_ops): Delete.
+	(get_def_from_ptr, get_phi_result_ptr): Get def directly now.
+	(get_use_op_ptr, get_def_op_ptr, get_v_may_def_result_ptr,
+	get_v_may_def_op_ptr, get_vuse_op_ptr, get_v_must_def_result_ptr,
+	get_v_must_def_kill_ptr): Delete.
+	(delink_stmt_imm_use): Move and use new operand interface.
+	(op_iter_next_use, op_iter_next_def, op_iter_next_tree, op_iter_init,
+	op_iter_next_tree): Use new operand implementation.
+	(clear_and_done_ssa_iter): New.  Initialize a blank operand iterator.
+	(op_iter_init_use, op_iter_init_def, op_iter_init_tree): Add iterator 
+	type check.
+	(op_iter_next_mustdef, op_iter_next_maydef, 
+	op_iter_next_must_and_may_def): Delete. Replace with...
+	(op_iter_next_maymustdef): New.  Combine must and may next operations.
+	(op_iter_init_maydef, op_iter_init_mustdef, 
+	op_iter_init_must_and_may_def): Use new interface.
+	(single_ssa_tree_operand ): New.  Process single operands only as trees.
+	(single_ssa_use_operand): New.  Process single operands only as uses.
+	(single_ssa_def_operand): New.  Process single operands only as defs.
+	(zero_ssa_operands): New.  Return TRUE if there are zero operands of the
+	specified types.
+	(num_ssa_operands): New.  Count the number of specified operands.
+	(compare_ssa_operands_equal): New.  Compare two statements' operands.
+	(single_phi_def): New.  Return true if PHI has one def of the specified
+	operand type.
+	(op_iter_init_phiuse): New.  Initialize the iterator for PHI arguments.
+	(op_iter_init_phidef): New.  Initialize the iterator for the PHI def.
+	* tree-flow.h (struct immediate_use_iterator_d): Use ssa_use_operand_t.
+	(struct stmt_ann_d): Operands field no longer require GTY().
+	(vn_compute, vn_lookup_or_add, vn_add, vn_lookup): Change prototype.
+	* tree-into-ssa.c (mark_def_sites): Use SSA_OP_VMUSTKILL.
+	* tree-outof-ssa.c (check_replaceable, find_replaceable_in_bb, 
+	dump_replaceable_exprs, rewrite_trees): Use generic interface.
+	* tree-phinodes.c (make_phi_node, release_phi_node, resize_phi_node): 
+	Use use_operand_p instead of ssa_imm_use_t *.
+	* tree-pretty-print.c (dump_vops): check if operands are active before
+	dumping virtual operands.
+	* tree-sra.c (sra_walk_function): Use ZERO_SSA_OPERANDS.
+	* tree-ssa-ccp.c (likely_value): Use ZERO_SSA_OPERANDS.
+	(ccp_fold): Use new interface.
+	(ccp_visit_stmt): Remove unused variables and code.
+	(convert_to_gimple_builtin): Insert statements before calling 
+	mark_new_vars_to_rename.
+	* tree-ssa-copy.c (stmt_may_generate_copy): Use ZERO_SSA_OPERANDS.
+	(copy_prop_visit_cond_stmt): Use generic interface.
+	* tree-ssa-dom.c (struct expr_hash_elt): Use stmt pointer, not the 
+	annotation in table.
+	(thread_across_edge): Use generic interface.
+	(initialize_hash_element): Initialzie with stmt, not annotation.
+	(eliminate_redundant_computations): Use generic interface.
+	(record_equivalences_from_stmt): Pass stmt, not annotation.
+	(avail_expr_hash, real_avail_expr_hash, avail_expr_eq): Use generic
+	interface.
+	* tree-ssa-dse.c (dse_optimize_stmt): Use ZERO_SSA_OPERANDS.
+	* tree-ssa-loop-ivopts.c (find_invariants_stmt, 
+	find_interesting_uses_stmt, protect_loop_closed_ssa_form_use): Use 
+	generic operand interface.
+	* tree-ssa-loop-niter.c (chain_of_csts_start, get_val_for): Use generic
+	interface.
+	* tree-ssa-loop-unswitch.c (tree_may_unswitch_on): Use Generic operand
+	Interface.
+	* tree-ssa-operands.c (struct opbuild_list_d): New.  Operand build type.
+	(build_defs, build_uses, build_v_may_defs, build_vuses, 
+	build_v_must_defs): Change type to struct opbuild_list_d.
+	(ops_active): New.  Operands active boolean.
+	(operand_memory, operand_memory_index): New.  Operand memory managers.
+	(allocate_def_optype, allocate_use_optype, allocate_v_may_def_optype,
+	allocate_vuse_optype, allocate_v_must_def_optype): Delete.
+	(free_uses, free_defs, free_vuses, free_v_may_defs, free_v_must_defs): 
+	Change from functions to static variable list heads.
+	(opbuild_initialize_virtual): New.  Initialize a virtual build list.
+	(opbuild_initialize_real): New.  Initialize a virtual build list.
+	(opbuild_free): New.  Free a build list.
+	(opbuild_num_elems): New.  Number of items in a list.
+	(opbuild_append_real): New.  Add a real (tree *) operand.
+	(opbuild_append_virtual): New.  Add and sort a virtual (tree) operand.
+	(opbuild_first): New.  Return first element index in a list.
+	(opbuild_next): New.  Return next element in a list.
+	(opbuild_elem_real): New.  Return real element.
+	(opbuild_elem_virtual): New.  Return virtual element.
+	(opbuild_elem_uid): New.  Return UID of virtual element.
+	(opbuild_clear): New.  Reset an operand list.
+	(opbuild_remove_elem): New.  Remove an element form a list.
+	(ssa_operands_active): New.  Return true if operand cache is active.
+	(init_ssa_operands, fini_ssa_operands): Initialize new implementation.
+	(ssa_operand_alloc): New.  Allocate memory from an operand chunk.
+	(correct_use_link): Use use_operand_p.
+	(finalize_ssa_uses, finalize_ssa_v_may_defs, finalize_ssa_defs,
+	finalize_ssa_vuses, finalize_ssa_v_must_defs): New implmentation. 
+	(cleanup_v_may_defs): Use new implmentation.
+	(finalize_ssa_stmt_operands, start_ssa_stmt_operands): New 
+	implementation.
+	(append_def, append_use, append_v_may_def, append_vuse, 
+	append_v_must_def): Call opbuild_append routine instead of using varray.
+	(build_ssa_operands): Simplify to simply use stmt, don't maintain a 
+	global parse_old_ops variable.
+	(free_ssa_operands): New implementation.
+	(update_stmt_operands): Move.  Change argument to build_ssa_operands.
+	(copy_virtual_operands): Move. New generic implementation.
+	(create_ssa_artficial_load_stmt): Move. New implementation.
+	(swap_tree_operands): Update for new implementation.
+	(get_expr_operands): Add stmt parameter to calls to swap_tree_operands.
+	(add_call_clobber_ops, add_call_read_ops): Initialize opbuild list
+	rather than a varray.
+	(verify_imm_links): Use use_operand_p.
+	(dump_immediate_uses_for): If the immediate use variable is a virtual 
+	variable, show the virtual ops in the stmt.
+	* tree-ssa-operands.h (def_operand_p): No longer a structure.
+	(NULL_DEF_OPERAND_P): Now a #define.
+	(def_optype_d, use_optype_d, v_def_use_operand_type, v_may_def_optype_d,
+	vuse_operand_type, vuse_optype_d, v_must_def_optype_d): Delete.
+	(def_optype_d, use_optype_d, maydef_optype_d, vuse_optype_d,
+	mustdef_optype_d): New.  Use Linked list representation.
+	(SSA_OPERAND_MEMORY_SIZE): New.  Size of operand memory chunk.
+	(struct ssa_operand_memory_d): New.  Allocated Chunk node.
+	(struct stmt_operands_d): Change to new pointers that are not GTY.
+	(STMT_USE_OPS, NUM_USES, SET_USE_OP, STMT_DEF_OPS, NUM_DEFS, SET_DEF_OP,
+	STMT_V_MAY_DEF_OPS, NUM_V_MAY_DEFS, SET_V_MAY_DEF_RESULT,
+	SET_V_MAY_DEF_OP, STMT_VUSE_OPS, NUM_VUSES, SET_VUSE_OP,
+	STMT_V_MUST_DEF_OPS, NUM_V_MUST_DEFS, SET_V_MUST_DEF_RESULT, 
+	SET_V_MUST_DEF_KILL): Delete.
+	(V_MAY_DEF_OPS, V_MAY_DEF_RESULT_PTR, V_MAY_DEF_RESULT, 
+	V_MAY_DEF_OP_PTR, V_MAY_DEF_OP): Rename to MAYDEF_*.
+	(V_MUST_DEF_OPS, V_MUST_DEF_RESULT_PTR, V_MUST_DEF_RESULT, 
+	V_MUST_DEF_KILL_PTR, V_MUST_DEF_KILL): Rename to MUSTDEF_*.
+	(enum ssa_op_iter_type): Operand iterator typechecking values.
+	(struct ssa_operand_iterator_d): Use linked lists of operands.
+	(SSA_OP_VMUSTDEFKILL): Rename to SSA_OP_VMUSTKILL.
+	(FOR_EACH_SSA_MAYDEF_OPERAND, FOR_EACH_SSA_MUSTDEF_OPERAND,
+	FOR_EACH_SSA_MUST_AND_MAY_DEF_OPERAND): Use op_iter_next_maymustdef.
+	(FOR_EACH_PHI_ARG): New.  Iterate over PHI arguments.
+	(FOR_EACH_PHI_OR_STMT_USE): New.  Iterate over PHI or stmt uses.
+	(FOR_EACH_PHI_OR_STMT_DEF): New.  Iterate over PHI or stmt defs.
+	(SINGLE_SSA_TREE_OPERAND, SINGLE_SSA_USE_OPERAND, 
+	SINGLE_SSA_DEF_OPERAND, ZERO_SSA_OPERANDS, NUM_SSA_OPERANDS): New.
+	* tree-ssa-opfinalize.h: New.  Function templates for expansion.
+	(FINALIZE_ALLOC): Expands into alloc_def, alloc_use, alloc_maydef,
+	alloc_vuse, and alloc_mustdef.
+	(FINALIZE_FUNC): Expands into finalize_ssa_def_ops, 
+	finalize_ssa_use_ops, finalize_ssa_v_may_def_ops, finalize_ssa_vuse_ops,
+	and finalize_ssa_v_must_def_ops.
+	* tree-ssa-pre.c (add_to_sets): Pass tree to vn_add.
+	(create_value_expr_from): Use stmt not vuse_optype as a parameter. Pass
+	stmt around.
+	(compute_avail): Use generic iterator interface.
+	* tree-ssa-propagate.c (first_vdef): Use generic operand interface.
+	(stmt_makes_single_load, stmt_makes_single_store): Use 
+	ZERO_SSA_OPERANDS.
+	* tree-ssa-sink.c (is_hidden_global_store): Use ZERO_SSA_OPERANDS.
+	(statement_sink_location): Use generic interface.
+	* tree-ssa.c (verify_ssa):  Use %p in fprintf.  Use generic interface.
+	(delete_tree_ssa): Don't call release_defs.  Call release_ssa_name and
+	reset the immediate use link nodes.
+	(stmt_references_memory_p): Use ZERO_SSA_OPERANDS.
+	* tree-ssanames.c (make_ssa_name): Use use_operand_p.
+	* tree-tailcall.c (find_tail_calls): Use ZERO_SSA_OPERANDS.
+	(eliminate_tail_call): Use generic operand interface.
+	* tree-vect-analyze.c (vect_analyze_data_refs): Use ZERO_SSA_OPERANDS.
+	(vect_mark_relevant, vect_mark_stmts_to_be_vectorized): Use generic 
+	interface.
+	* tree-vect-transform.c (update_vuses_to_preheader): Use generic 
+	interface.
+	* tree-vectorizer.c (rename_variables_in_bb): Use generic interface.
+	* tree-vn.c (struct val_expr_pair_d): Cache statment pointer instead of
+	vuse_optype.
+	(vn_compute, val_expr_pair_hash, vn_add, vn_lookup, vn_lookup_or_add): 
+	Use statement pointer instead of vuse_optype.  Use generic interface.
+	* tree-vrp.c (maybe_add_assert_expr): Use generic interface.
+	(stmt_interesting_for_vrp, vrp_visit_stmt): Use ZERO_SSA_OPERANDS.
+	* tree.h (struct ssa_imm_use_d): Renamed to ssa_use_operand_d.
+	(tree_ssa_name, phi_arg_d): Use ssa_use_operand_d.
+	* doc/tree-ssa.texi: Update documentation for operand interface.
+
 2005-05-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/darwin.c (machopic_define_symbol): Use gcc_assert or

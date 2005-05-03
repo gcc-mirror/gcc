@@ -1943,29 +1943,25 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	  bool is_read = false;
 	  tree stmt = bsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	  v_may_def_optype v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
-	  v_must_def_optype v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
-	  vuse_optype vuses = STMT_VUSE_OPS (stmt);
 	  varray_type *datarefs = NULL;
-	  int nvuses, nv_may_defs, nv_must_defs;
 	  tree memref = NULL;
 	  tree scalar_type, vectype;	  
 	  tree base, offset, misalign, step, tag;
 	  struct ptr_info_def *ptr_info;
 	  bool base_aligned;
 	  subvar_t subvars = NULL;
+	  bool no_vuse, no_vmaymust;
 
 	  /* Assumption: there exists a data-ref in stmt, if and only if 
              it has vuses/vdefs.  */
 
-	  if (!vuses && !v_may_defs && !v_must_defs)
+	  no_vuse = ZERO_SSA_OPERANDS (stmt, SSA_OP_VUSE);
+	  no_vmaymust = ZERO_SSA_OPERANDS (stmt,
+					   SSA_OP_VMAYDEF | SSA_OP_VMUSTDEF);
+	  if (no_vuse && no_vmaymust)
 	    continue;
 
-	  nvuses = NUM_VUSES (vuses);
-	  nv_may_defs = NUM_V_MAY_DEFS (v_may_defs);
-	  nv_must_defs = NUM_V_MUST_DEFS (v_must_defs);
-
-	  if (nvuses && (nv_may_defs || nv_must_defs))
+	  if (!no_vuse && !no_vmaymust)
 	    {
 	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 		{
@@ -1985,7 +1981,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	      return false;
 	    }
 
-	  if (vuses)
+	  if (!no_vuse)
 	    {
 	      memref = TREE_OPERAND (stmt, 1);
 	      datarefs = &(LOOP_VINFO_DATAREF_READS (loop_vinfo));
@@ -2106,49 +2102,29 @@ vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt)
 static bool
 vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo)
 {
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   ssa_op_iter op_iter;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
-  tree var;
+  def_operand_p def_p;
 
   /* cond stmt other than loop exit cond.  */
   if (is_ctrl_stmt (stmt) && (stmt != LOOP_VINFO_EXIT_COND (loop_vinfo)))
     return true;
 
   /* changing memory.  */
-  if (TREE_CODE (stmt) == PHI_NODE)
-    {
-      if (!is_gimple_reg (PHI_RESULT (stmt)))
-        return false;
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, PHI_RESULT (stmt))
-	{
-	  basic_block bb = bb_for_stmt (USE_STMT (use_p));
-	  if (!flow_bb_inside_loop_p (loop, bb))
-	    {
-	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-		fprintf (vect_dump, "vec_stmt_relevant_p: used out of loop.");
-	      return true;
-	    }
-	}
-      return false;
-    }
-
-  v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
-  v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
-  if (v_may_defs || v_must_defs)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	fprintf (vect_dump, "vec_stmt_relevant_p: stmt has vdefs.");
-      return true;
-    }
+  if (TREE_CODE (stmt) != PHI_NODE)
+    if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
+      {
+	if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	  fprintf (vect_dump, "vec_stmt_relevant_p: stmt has vdefs.");
+	return true;
+      }
 
   /* uses outside the loop.  */
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, op_iter, SSA_OP_DEF)
+  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, op_iter, SSA_OP_DEF)
     {
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, var)
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, DEF_FROM_PTR (def_p))
 	{
 	  basic_block bb = bb_for_stmt (USE_STMT (use_p));
 	  if (!flow_bb_inside_loop_p (loop, bb))
@@ -2188,11 +2164,10 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   unsigned int nbbs = loop->num_nodes;
   block_stmt_iterator si;
-  tree stmt;
-  stmt_ann_t ann;
+  tree stmt, use;
+  ssa_op_iter iter;
   unsigned int i;
   int j;
-  use_optype use_ops;
   stmt_vec_info stmt_info;
   basic_block bb;
   tree phi;
@@ -2291,12 +2266,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	    }
 	} 
 
-      ann = stmt_ann (stmt);
-      use_ops = USE_OPS (ann);
-
-      for (i = 0; i < NUM_USES (use_ops); i++)
+      FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
 	{
-	  tree use = USE_OP (use_ops, i);
 
 	  /* We are only interested in uses that need to be vectorized. Uses 
 	     that are used for address computation are not considered relevant.

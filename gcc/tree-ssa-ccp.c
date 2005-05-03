@@ -457,9 +457,7 @@ likely_value (tree stmt)
   if (!do_store_ccp
       && (ann->makes_aliased_stores
 	  || ann->makes_aliased_loads
-	  || NUM_VUSES (VUSE_OPS (ann)) > 0
-	  || NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) > 0
-	  || NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) > 0))
+	  || !ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS)))
     return VARYING;
 
 
@@ -495,8 +493,8 @@ likely_value (tree stmt)
     }
 
   if (found_constant
-      || NUM_USES (USE_OPS (ann)) == 0
-      || NUM_VUSES (VUSE_OPS (ann)) == 0)
+      || ZERO_SSA_OPERANDS (stmt, SSA_OP_USE)
+      || ZERO_SSA_OPERANDS (stmt, SSA_OP_VUSE))
     return CONSTANT;
 
   return UNDEFINED;
@@ -934,17 +932,18 @@ ccp_fold (tree stmt)
 	       == FUNCTION_DECL)
 	   && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (rhs, 0), 0)))
     {
-      use_optype uses = STMT_USE_OPS (stmt);
-      if (NUM_USES (uses) != 0)
+      if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_USE))
 	{
-	  tree *orig;
+	  tree *orig, var;
 	  tree fndecl, arglist;
-	  size_t i;
+	  size_t i = 0;
+	  ssa_op_iter iter;
+	  use_operand_p var_p;
 
 	  /* Preserve the original values of every operand.  */
-	  orig = xmalloc (sizeof (tree) * NUM_USES (uses));
-	  for (i = 0; i < NUM_USES (uses); i++)
-	    orig[i] = USE_OP (uses, i);
+	  orig = xmalloc (sizeof (tree) *  NUM_SSA_OPERANDS (stmt, SSA_OP_USE));
+	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
+	    orig[i++] = var;
 
 	  /* Substitute operands with their values and try to fold.  */
 	  replace_uses_in (stmt, NULL, const_val);
@@ -953,8 +952,9 @@ ccp_fold (tree stmt)
 	  retval = fold_builtin (fndecl, arglist, false);
 
 	  /* Restore operands to their original form.  */
-	  for (i = 0; i < NUM_USES (uses); i++)
-	    SET_USE_OP (uses, i, orig[i]);
+	  i = 0;
+	  FOR_EACH_SSA_USE_OPERAND (var_p, stmt, iter, SSA_OP_USE)
+	    SET_USE (var_p, orig[i++]);
 	  free (orig);
 	}
     }
@@ -1188,9 +1188,6 @@ visit_cond_stmt (tree stmt, edge *taken_edge_p)
 static enum ssa_prop_result
 ccp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
 {
-  stmt_ann_t ann;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
   tree def;
   ssa_op_iter iter;
 
@@ -1201,10 +1198,6 @@ ccp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
       fprintf (dump_file, "\n");
     }
 
-  ann = stmt_ann (stmt);
-
-  v_must_defs = V_MUST_DEF_OPS (ann);
-  v_may_defs = V_MAY_DEF_OPS (ann);
   if (TREE_CODE (stmt) == MODIFY_EXPR)
     {
       /* If the statement is an assignment that produces a single
@@ -2206,17 +2199,18 @@ convert_to_gimple_builtin (block_stmt_iterator *si_p, tree expr)
   tmp = get_initialized_tmp_var (expr, &stmts, NULL);
   pop_gimplify_context (NULL);
 
-  /* The replacement can expose previously unreferenced variables.  */
-  for (ti = tsi_start (stmts); !tsi_end_p (ti); tsi_next (&ti))
-    {
-      find_new_referenced_vars (tsi_stmt_ptr (ti));
-      mark_new_vars_to_rename (tsi_stmt (ti));
-    }
-
   if (EXPR_HAS_LOCATION (stmt))
     annotate_all_with_locus (&stmts, EXPR_LOCATION (stmt));
 
-  bsi_insert_before (si_p, stmts, BSI_SAME_STMT);
+  /* The replacement can expose previously unreferenced variables.  */
+  for (ti = tsi_start (stmts); !tsi_end_p (ti); tsi_next (&ti))
+    {
+      tree new_stmt = tsi_stmt (ti);
+      find_new_referenced_vars (tsi_stmt_ptr (ti));
+      bsi_insert_before (si_p, new_stmt, BSI_NEW_STMT);
+      mark_new_vars_to_rename (bsi_stmt (*si_p));
+      bsi_next (si_p);
+    }
 
   return tmp;
 }

@@ -705,8 +705,8 @@ Almost every GIMPLE statement will contain a reference to a variable
 or memory location.  Since statements come in different shapes and
 sizes, their operands are going to be located at various spots inside
 the statement's tree.  To facilitate access to the statement's
-operands, they are organized into arrays associated inside each
-statement's annotation.  Each element in an operand array is a pointer
+operands, they are organized into lists associated inside each
+statement's annotation.  Each element in an operand list is a pointer
 to a @code{VAR_DECL}, @code{PARM_DECL} or @code{SSA_NAME} tree node.
 This provides a very convenient way of examining and replacing
 operands.
@@ -810,82 +810,6 @@ function is converted into SSA form.  This will be used to link all
 the non-killing definitions to prevent optimizations from making
 incorrect assumptions about them.
 
-Operands are collected by @file{tree-ssa-operands.c}.  They are stored
-inside each statement's annotation and can be accessed with
-@code{DEF_OPS}, @code{USE_OPS}, @code{V_MAY_DEF_OPS},
-@code{V_MUST_DEF_OPS} and @code{VUSE_OPS}.  The following are all the
-accessor macros available to access USE operands.  To access all the
-other operand arrays, just change the name accordingly.  Note that
-this interface to the operands is deprecated, and is slated for
-removal in a future version of gcc.  The preferred interface is the
-operand iterator interface.  Unless you need to discover the number of
-operands of a given type on a statement, you are strongly urged not to
-use this interface.
-
-@defmac USE_OPS (@var{ann})
-Returns the array of operands used by the statement with annotation
-@var{ann}.
-@end defmac
-
-@defmac STMT_USE_OPS (@var{stmt})
-Alternate version of USE_OPS that takes the statement @var{stmt} as
-input.
-@end defmac
-
-@defmac NUM_USES (@var{ops})
-Return the number of USE operands in array @var{ops}.
-@end defmac
-
-@defmac USE_OP_PTR (@var{ops}, @var{i})
-Return a pointer to the @var{i}th operand in array @var{ops}.
-@end defmac
-
-@defmac USE_OP (@var{ops}, @var{i})
-Return the @var{i}th operand in array @var{ops}.
-@end defmac
-
-The following function shows how to print all the operands of a given
-statement:
-
-@smallexample
-void
-print_ops (tree stmt)
-@{
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  def_optype defs;
-  use_optype uses;
-  stmt_ann_t ann;
-  size_t i;
-
-  ann = stmt_ann (stmt);
-
-  defs = DEF_OPS (ann);
-  for (i = 0; i < NUM_DEFS (defs); i++)
-    print_generic_expr (stderr, DEF_OP (defs, i), 0);
-
-  uses = USE_OPS (ann);
-  for (i = 0; i < NUM_USES (uses); i++)
-    print_generic_expr (stderr, USE_OP (uses, i), 0);
-
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    @{
-      print_generic_expr (stderr, V_MAY_DEF_OP (v_may_defs, i), 0);
-      print_generic_expr (stderr, V_MAY_DEF_RESULT (v_may_defs, i), 0);
-    @}
-
-  v_must_defs = V_MUST_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-    print_generic_expr (stderr, V_MUST_DEF_OP (v_must_defs, i), 0);
-
-  vuses = VUSE_OPS (ann);
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    print_generic_expr (stderr, VUSE_OP (vuses, i), 0);
-@}
-@end smallexample
-
 Operands are updated as soon as the statement is finished via a call
 to @code{update_stmt}.  If statement elements are changed via
 @code{SET_USE} or @code{SET_DEF}, then no further action is required
@@ -895,13 +819,49 @@ must be made to @code{update_stmt} when complete.  Calling one of the
 @code{bsi_insert} routines or @code{bsi_replace} performs an implicit
 call to @code{update_stmt}.
 
-@subsection Operand Iterators
-@cindex Operand Iterators
+@subsection Operand Iterators And Access Routines
+@cindex Operand Iterators 
+@cindex Operand Access Routines
 
-There is an alternative to iterating over the operands in a statement.
-It is especially useful when you wish to perform the same operation on
-more than one type of operand.  The previous example could be
-rewritten as follows:
+Operands are collected by @file{tree-ssa-operands.c}.  They are stored
+inside each statement's annotation and can be accessed through either the
+operand iterators or an access routine.
+
+The following access routines are available for examining operands:
+
+@enumerate
+@item @code{SINGLE_SSA_@{USE,DEF,TREE@}_OPERAND}: These accessors will return 
+NULL unless there is exactly one operand mathcing the specified flags.  If 
+there is exactly one operand, the operand is returned as either a @code{tree}, 
+@code{def_operand_p}, or @code{use_operand_p}.
+
+@smallexample
+tree t = SINGLE_SSA_TREE_OPERAND (stmt, flags);
+use_operand_p u = SINGLE_SSA_USE_OPERAND (stmt, SSA_ALL_VIRTUAL_USES);
+def_operand_p d = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_ALL_DEFS);
+@end smallexample
+
+@item @code{ZERO_SSA_OPERANDS}: This macro returns true if there are no 
+operands matching the specified flags.
+
+@smallexample
+if (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+  return;
+@end smallexample
+
+@item @code{NUM_SSA_OPERANDS}: This macro Returns the number of operands 
+matching 'flags'.  This actually executes a loop to perform the count, so 
+only use this if it is really needed.
+
+@smallexample
+int count = NUM_SSA_OPERANDS (stmt, flags)
+@end smallexample
+@end enumerate
+
+
+If you wish to iterate over some or all operands, use the
+@code{FOR_EACH_SSA_@{USE,DEF,TREE@}_OPERAND} iterator.  For example, to print
+all the operands for a statement:
 
 @smallexample
 void
@@ -911,10 +871,12 @@ print_ops (tree stmt)
   tree var;
 
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_OPERANDS)
-    print_generic_expr (stderr, var, 0);
+    print_generic_expr (stderr, var, TDF_SLIM);
 @}
 @end smallexample
 
+
+How to choose the appropriate iterator:
 
 @enumerate
 @item Determine whether you are need to see the operand pointers, or just the
@@ -966,7 +928,7 @@ So if you want to look at the use pointers for all the @code{USE} and
     @}
 @end smallexample
 
-The @code{_TREE_} macro is basically the same as the @code{USE} and
+The @code{TREE} macro is basically the same as the @code{USE} and
 @code{DEF} macros, only with the use or def dereferenced via
 @code{USE_FROM_PTR (use_p)} and @code{DEF_FROM_PTR (def_p)}.  Since we
 aren't using operand pointers, use and defs flags can be mixed.
@@ -1002,7 +964,7 @@ this one.
 
 @code{V_MUST_DEF}s are broken into two flags, one for the
 @code{DEF} portion (@code{SSA_OP_VMUSTDEF}) and one for the kill portion
-(@code{SSA_OP_VMUSTDEFKILL}).  If all you want to look at are the
+(@code{SSA_OP_VMUSTKILL}).  If all you want to look at are the
 @code{V_MUST_DEF}s together, there is a fourth iterator macro for this,
 which returns both a def_operand_p and a use_operand_p for each
 @code{V_MUST_DEF} in the statement.  Note that you don't need any flags for
@@ -1023,6 +985,46 @@ this one.
 There are many examples in the code as well, as well as the
 documentation in @file{tree-ssa-operands.h}.
 
+There are also a couple of variants on the stmt iterators regarding PHI
+nodes.
+
+@code{FOR_EACH_PHI_ARG} Works exactly like 
+@code{FOR_EACH_SSA_USE_OPERAND}, except it works over @code{PHI} arguments 
+instead of statement operands.
+
+@smallexample
+/* Look at every virtual PHI use.  */
+FOR_EACH_PHI_ARG (use_p, phi_stmt, iter, SSA_OP_VIRTUAL_USES)
+@{
+   my_code;
+@}
+
+/* Look at every real PHI use.  */
+FOR_EACH_PHI_ARG (use_p, phi_stmt, iter, SSA_OP_USES)
+  my_code;
+
+/* Look at every every PHI use.  */
+FOR_EACH_PHI_ARG (use_p, phi_stmt, iter, SSA_OP_ALL_USES)
+  my_code;
+@end smallexample
+
+@code{FOR_EACH_PHI_OR_STMT_@{USE,DEF@}} works exactly like 
+@code{FOR_EACH_SSA_@{USE,DEF@}_OPERAND}, except it will function on
+either a statement or a @code{PHI} node.  These should be used when it is
+appropriate but they are not quite as efficient as the individual 
+@code{FOR_EACH_PHI} and @code{FOR_EACH_SSA} routines.
+
+@smallexample
+FOR_EACH_PHI_OR_STMT_USE (use_operand_p, stmt, iter, flags)
+  @{
+     my_code;
+  @}
+
+FOR_EACH_PHI_OR_STMT_DEF (def_operand_p, phi, iter, flags)
+  @{
+     my_code;
+  @}
+@end smallexample
 
 @subsection Immediate Uses
 @cindex Immediate Uses

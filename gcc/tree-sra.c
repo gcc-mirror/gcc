@@ -897,9 +897,7 @@ sra_walk_function (const struct sra_walk_fns *fns)
 
 	/* If the statement has no virtual operands, then it doesn't
 	   make any structure references that we care about.  */
-	if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) == 0
-	    && NUM_VUSES (VUSE_OPS (ann)) == 0
-	    && NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) == 0)
+	if (ZERO_SSA_OPERANDS (stmt, (SSA_OP_VIRTUAL_DEFS | SSA_OP_VUSE)))
 	  continue;
 
 	switch (TREE_CODE (stmt))
