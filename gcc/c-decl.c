@@ -6011,8 +6011,8 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
     gcc_assert (TREE_CODE (b->decl) != PARM_DECL || !DECL_WEAK (b->decl));
 #endif
 
-  if (warn_old_style_definition && !in_system_header)
-    warning (0, "%Jold-style function definition", fndecl);
+  if (!in_system_header)
+    warning (OPT_Wold_style_definition, "%Jold-style function definition", fndecl);
 
   /* Match each formal parameter name with its declaration.  Save each
      decl in the appropriate TREE_PURPOSE slot of the parmids chain.  */

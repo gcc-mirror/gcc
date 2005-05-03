@@ -43,6 +43,8 @@ typedef struct
   location_t location;
   /* The kind of diagnostic it is about.  */
   diagnostic_t kind;
+  /* Which OPT_* directly controls this diagnostic.  */
+  int option_index;
 } diagnostic_info;
 
 #define pedantic_error_kind() (flag_pedantic_errors ? DK_ERROR : DK_WARNING)
