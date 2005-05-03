@@ -315,6 +315,10 @@ proc check_iconv_available { test_what } {
     puts $f "return 0;\n}"
     close $f
 
+    # If the tool configuration file has not set libiconv, try "-liconv"
+    if { ![info exists libiconv] } {
+	set libiconv "-liconv"
+    }
     set lines [${tool}_target_compile $src $exe executable "libs=$libiconv" ]
     file delete $src
 

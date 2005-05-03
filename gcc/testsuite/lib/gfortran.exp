@@ -73,7 +73,6 @@ proc gfortran_version { } {
 #
 
 proc gfortran_link_flags { paths } {
-    global rootme
     global srcdir
     global ld_library_path
     global GFORTRAN_UNDER_TEST
@@ -94,21 +93,8 @@ proc gfortran_link_flags { paths } {
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
           append flags "-L${gccpath}/libiberty "
       }
-      append ld_library_path ":${rootme}"
-      set compiler [lindex $GFORTRAN_UNDER_TEST 0]
-      if { [is_remote host] == 0 && [which $compiler] != 0 } {
-	foreach i "[exec $compiler --print-multi-lib]" {
-	  set mldir ""
-	  regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
-	  set mldir [string trimright $mldir "\;@"]
-	  if { "$mldir" == "." } {
-	    continue
-	  }
-	  if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] >= 1 } {
-	    append ld_library_path ":${rootme}/${mldir}"
-	  }
-	}
-      }
+      append ld_library_path \
+	[gcc-set-multilib-library-path $GFORTRAN_UNDER_TEST]
     }
 
     set_ld_library_path_env_vars
