@@ -48,8 +48,8 @@ typedef struct val_expr_pair_d
   /* Associated expression.  */
   tree e;
 
-  /* Virtual uses in E.  */
-  vuse_optype vuses;
+  /* for comparing Virtual uses in E.  */
+  tree stmt;
 
   /* E's hash value.  */
   hashval_t hashcode;
@@ -79,13 +79,13 @@ make_value_handle (tree type)
    VAL can be used to iterate by passing previous value numbers (it is
    used by iterative_hash_expr).
 
-   VUSES is the set of virtual use operands associated with EXPR.  It
-   may be NULL if EXPR has no virtual operands.  */
+   STMT is the stmt associated with EXPR for comparing virtual operands.  */
 
 hashval_t
-vn_compute (tree expr, hashval_t val, vuse_optype vuses)
+vn_compute (tree expr, hashval_t val, tree stmt)
 {
-  size_t i;
+  ssa_op_iter iter;
+  tree vuse;
 
   /* EXPR must not be a statement.  We are only interested in value
      numbering expressions on the RHS of assignments.  */
@@ -97,8 +97,9 @@ vn_compute (tree expr, hashval_t val, vuse_optype vuses)
 
   /* If the expression has virtual uses, incorporate them into the
      hash value computed for EXPR.  */
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    val = iterative_hash_expr (VUSE_OP (vuses, i), val);
+  if (stmt)
+    FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, iter, SSA_OP_VUSE)
+      val = iterative_hash_expr (vuse,  val);
 
   return val;
 }
@@ -146,22 +147,15 @@ val_expr_pair_hash (const void *p)
 static int
 val_expr_pair_expr_eq (const void *p1, const void *p2)
 {
+  bool ret;
   const val_expr_pair_t ve1 = (val_expr_pair_t) p1;
   const val_expr_pair_t ve2 = (val_expr_pair_t) p2;
-  size_t i;
 
   if (! expressions_equal_p (ve1->e, ve2->e))
     return false;
 
-  if (NUM_VUSES (ve1->vuses) != NUM_VUSES (ve2->vuses))
-    return false;
-  
-  for (i = 0; i < NUM_VUSES (ve1->vuses); i++)
-    if (! expressions_equal_p (VUSE_OP (ve1->vuses, i),
-			       VUSE_OP (ve2->vuses, i)))
-      return false;
-  
-  return true;
+  ret = compare_ssa_operands_equal (ve1->stmt, ve2->stmt, SSA_OP_VUSE);
+  return ret;
 }
 
 
@@ -181,12 +175,11 @@ set_value_handle (tree e, tree v)
 
 
 /* Insert EXPR into VALUE_TABLE with value VAL, and add expression
-   EXPR to the value set for value VAL.  VUSES represent the virtual
-   use operands associated with EXPR (if any).  They are used when
-   computing the hash value for EXPR.  */
+   EXPR to the value set for value VAL.  STMT represent the stmt
+   associated with EXPR.  It is used when computing a hash value for EXPR.  */
 
 void
-vn_add (tree expr, tree val, vuse_optype vuses)
+vn_add (tree expr, tree val, tree stmt)
 {
   void **slot;
   val_expr_pair_t new_pair;
@@ -194,8 +187,8 @@ vn_add (tree expr, tree val, vuse_optype vuses)
   new_pair = xmalloc (sizeof (struct val_expr_pair_d));
   new_pair->e = expr;
   new_pair->v = val;
-  new_pair->vuses = vuses;
-  new_pair->hashcode = vn_compute (expr, 0, vuses);
+  new_pair->stmt = stmt;
+  new_pair->hashcode = vn_compute (expr, 0, stmt);
   slot = htab_find_slot_with_hash (value_table, new_pair, new_pair->hashcode,
 				   INSERT);
   if (*slot)
@@ -208,12 +201,12 @@ vn_add (tree expr, tree val, vuse_optype vuses)
 
 
 /* Search in VALUE_TABLE for an existing instance of expression EXPR,
-   and return its value, or NULL if none has been set.  VUSES
-   represent the virtual use operands associated with EXPR (if any).
-   They are used when computing the hash value for EXPR.  */
+   and return its value, or NULL if none has been set.  STMT
+   represent the stmt associated with EXPR.   It is arused when computing the 
+   hash value for EXPR.  */
 
 tree
-vn_lookup (tree expr, vuse_optype vuses)
+vn_lookup (tree expr, tree stmt)
 {
   void **slot;
   struct val_expr_pair_d vep = {NULL, NULL, NULL, 0};
@@ -223,8 +216,8 @@ vn_lookup (tree expr, vuse_optype vuses)
     return expr;
 
   vep.e = expr;
-  vep.vuses = vuses;
-  vep.hashcode = vn_compute (expr, 0, vuses); 
+  vep.stmt = stmt;
+  vep.hashcode = vn_compute (expr, 0, stmt); 
   slot = htab_find_slot_with_hash (value_table, &vep, vep.hashcode, NO_INSERT);
   if (!slot)
     return NULL_TREE;
@@ -235,14 +228,13 @@ vn_lookup (tree expr, vuse_optype vuses)
 
 /* Like vn_lookup, but creates a new value for expression EXPR, if
    EXPR doesn't already have a value.  Return the existing/created
-   value for EXPR.  VUSES represent the virtual use operands
-   associated with EXPR (if any).  They are used when computing the
-   hash value for EXPR.  */
+   value for EXPR.  STMT represent the stmt associated with EXPR.  It is used
+   when computing the hash value for EXPR.  */
 
 tree
-vn_lookup_or_add (tree expr, vuse_optype vuses)
+vn_lookup_or_add (tree expr, tree stmt)
 {
-  tree v = vn_lookup (expr, vuses);
+  tree v = vn_lookup (expr, stmt);
   if (v == NULL_TREE)
     {
       v = make_value_handle (TREE_TYPE (expr));
@@ -256,7 +248,7 @@ vn_lookup_or_add (tree expr, vuse_optype vuses)
 	  fprintf (dump_file, "\n");
 	}
 
-      vn_add (expr, v, vuses);
+      vn_add (expr, v, stmt);
     }
 
   set_value_handle (expr, v);

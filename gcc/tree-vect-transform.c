@@ -1499,13 +1499,12 @@ update_vuses_to_preheader (tree stmt, struct loop *loop)
 {
   basic_block header_bb = loop->header;
   edge preheader_e = loop_preheader_edge (loop);
-  vuse_optype vuses = STMT_VUSE_OPS (stmt);
-  int nvuses = NUM_VUSES (vuses);
-  int i;
+  ssa_op_iter iter;
+  use_operand_p use_p;
 
-  for (i = 0; i < nvuses; i++)
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_VUSE)
     {
-      tree ssa_name = VUSE_OP (vuses, i);
+      tree ssa_name = USE_FROM_PTR (use_p);
       tree def_stmt = SSA_NAME_DEF_STMT (ssa_name);
       tree name_var = SSA_NAME_VAR (ssa_name);
       basic_block bb = bb_for_stmt (def_stmt);
@@ -1524,8 +1523,7 @@ update_vuses_to_preheader (tree stmt, struct loop *loop)
 	    {
 	      if (SSA_NAME_VAR (PHI_RESULT (phi)) == name_var)
 		{
-		  SET_VUSE_OP (vuses, i, 
-			       PHI_ARG_DEF (phi, preheader_e->dest_idx));
+		  SET_USE (use_p, PHI_ARG_DEF (phi, preheader_e->dest_idx));
 		  updated = true;
 		  break;
 		}

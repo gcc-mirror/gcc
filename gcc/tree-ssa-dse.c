@@ -167,16 +167,10 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
   struct dse_global_data *dse_gd = walk_data->global_data;
   tree stmt = bsi_stmt (bsi);
   stmt_ann_t ann = stmt_ann (stmt);
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  v_must_defs = V_MUST_DEF_OPS (ann);
 
   /* If this statement has no virtual defs, then there is nothing
      to do.  */
-  if (NUM_V_MAY_DEFS (v_may_defs) == 0
-      && NUM_V_MUST_DEFS (v_must_defs) == 0)
+  if (ZERO_SSA_OPERANDS (stmt, (SSA_OP_VMAYDEF|SSA_OP_VMUSTDEF)))
     return;
 
   /* We know we have virtual definitions.  If this is a MODIFY_EXPR that's

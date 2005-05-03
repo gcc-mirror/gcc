@@ -1266,7 +1266,6 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
   int stepint;
   int extra = 0;
   tree lboundvar, uboundvar, uboundresult;
-  use_optype uses;
 
   /* Find out induction var and exit condition.  */
   inductionvar = find_induction_var_from_exit_cond (loop);
@@ -1295,9 +1294,8 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
   phi = SSA_NAME_DEF_STMT (inductionvar);
   if (TREE_CODE (phi) != PHI_NODE)
     {
-      uses = STMT_USE_OPS (phi);
-
-      if (!uses)
+      phi = SINGLE_SSA_TREE_OPERAND (phi, SSA_OP_USE);
+      if (!phi)
 	{
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1307,7 +1305,6 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
 	  return NULL;
 	}
 
-      phi = USE_OP (uses, 0);
       phi = SSA_NAME_DEF_STMT (phi);
       if (TREE_CODE (phi) != PHI_NODE)
 	{
@@ -1972,12 +1969,11 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       tree oldiv_def;
       tree oldiv_stmt = SSA_NAME_DEF_STMT (oldiv);
 
-      gcc_assert (TREE_CODE (oldiv_stmt) == PHI_NODE
-		  || NUM_DEFS (STMT_DEF_OPS (oldiv_stmt)) == 1);
       if (TREE_CODE (oldiv_stmt) == PHI_NODE)
-	oldiv_def = PHI_RESULT (oldiv_stmt);
+        oldiv_def = PHI_RESULT (oldiv_stmt);
       else
-	oldiv_def = DEF_OP (STMT_DEF_OPS (oldiv_stmt), 0);
+	oldiv_def = SINGLE_SSA_TREE_OPERAND (oldiv_stmt, SSA_OP_DEF);
+      gcc_assert (oldiv_def != NULL_TREE);
 
       FOR_EACH_IMM_USE_SAFE (imm_use, imm_iter, oldiv_def)
 	{
@@ -2069,16 +2065,11 @@ phi_loop_edge_uses_def (struct loop *loop, tree phi, tree def)
 static bool
 stmt_uses_phi_result (tree stmt, tree phi_result)
 {
-  use_optype uses = STMT_USE_OPS (stmt);
+  tree use = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_USE);
   
   /* This is conservatively true, because we only want SIMPLE bumpers
      of the form x +- constant for our pass.  */
-  if (NUM_USES (uses) != 1)
-    return false;
-  if (USE_OP (uses, 0) == phi_result)
-    return true;
-  
-  return false;
+  return (use == phi_result);
 }
 
 /* STMT is a bumper stmt for LOOP if the version it defines is used in the
@@ -2092,13 +2083,13 @@ stmt_is_bumper_for_loop (struct loop *loop, tree stmt)
 {
   tree use;
   tree def;
-  def_optype defs = STMT_DEF_OPS (stmt);
   imm_use_iterator iter;
   use_operand_p use_p;
   
-  if (NUM_DEFS (defs) != 1)
+  def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
+  if (!def)
     return false;
-  def = DEF_OP (defs, 0);
+
   FOR_EACH_IMM_USE_FAST (use_p, iter, def)
     {
       use = USE_STMT (use_p);
@@ -2179,12 +2170,13 @@ perfect_nest_p (struct loop *loop)
 static void
 replace_uses_of_x_with_y (tree stmt, tree x, tree y)
 {
-  use_optype uses = STMT_USE_OPS (stmt);
-  size_t i;
-  for (i = 0; i < NUM_USES (uses); i++)
+  ssa_op_iter iter;
+  use_operand_p use_p;
+
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
     {
-      if (USE_OP (uses, i) == x)
-	SET_USE_OP (uses, i, y);
+      if (USE_FROM_PTR (use_p) == x)
+	SET_USE (use_p, y);
     }
 }
 
@@ -2193,11 +2185,12 @@ replace_uses_of_x_with_y (tree stmt, tree x, tree y)
 static bool
 stmt_uses_op (tree stmt, tree op)
 {
-  use_optype uses = STMT_USE_OPS (stmt);
-  size_t i;
-  for (i = 0; i < NUM_USES (uses); i++)
+  ssa_op_iter iter;
+  tree use;
+
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      if (USE_OP (uses, i) == op)
+      if (use == op)
 	return true;
     }
   return false;

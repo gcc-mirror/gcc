@@ -1444,12 +1444,8 @@ add_dependance (temp_expr_table_p tab, int version, tree var)
 static bool
 check_replaceable (temp_expr_table_p tab, tree stmt)
 {
-  stmt_ann_t ann;
-  vuse_optype vuseops;
-  def_optype defs;
-  use_optype uses;
   tree var, def;
-  int num_use_ops, version;
+  int version;
   var_map map = tab->map;
   ssa_op_iter iter;
   tree call_expr;
@@ -1457,22 +1453,16 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   if (TREE_CODE (stmt) != MODIFY_EXPR)
     return false;
   
-  ann = stmt_ann (stmt);
-  defs = DEF_OPS (ann);
-
   /* Punt if there is more than 1 def, or more than 1 use.  */
-  if (NUM_DEFS (defs) != 1)
+  def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
+  if (!def)
     return false;
-  def = DEF_OP (defs, 0);
+
   if (version_ref_count (map, def) != 1)
     return false;
 
-  /* There must be no V_MAY_DEFS.  */
-  if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) != 0)
-    return false;
-
-  /* There must be no V_MUST_DEFS.  */
-  if (NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) != 0)
+  /* There must be no V_MAY_DEFS or V_MUST_DEFS.  */
+  if (!(ZERO_SSA_OPERANDS (stmt, (SSA_OP_VMAYDEF | SSA_OP_VMUSTDEF))))
     return false;
 
   /* Float expressions must go through memory if float-store is on.  */
@@ -1488,21 +1478,6 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
 	return false;
     }
 
-  uses = USE_OPS (ann);
-  num_use_ops = NUM_USES (uses);
-  vuseops = VUSE_OPS (ann);
-
-  /* Any expression which has no virtual operands and no real operands
-     should have been propagated if it's possible to do anything with them. 
-     If this happens here, it probably exists that way for a reason, so we 
-     won't touch it.   An example is:
-         b_4 = &tab
-     There are no virtual uses nor any real uses, so we just leave this 
-     alone to be safe.  */
-
-  if (num_use_ops == 0 && NUM_VUSES (vuseops) == 0)
-    return false;
-
   version = SSA_NAME_VERSION (def);
 
   /* Add this expression to the dependency list for each use partition.  */
@@ -1512,7 +1487,7 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
     }
 
   /* If there are VUSES, add a dependence on virtual defs.  */
-  if (NUM_VUSES (vuseops) != 0)
+  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VUSE))
     {
       add_value_to_list (tab, (value_expr_p *)&(tab->version_info[version]), 
 			 VIRTUAL_PARTITION (tab));
@@ -1687,12 +1662,8 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 	  free_value_expr (tab, p);
 	}
 
-      /* A V_MAY_DEF kills any expression using a virtual operand.  */
-      if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) > 0)
-        kill_virtual_exprs (tab, true);
-	
-      /* A V_MUST_DEF kills any expression using a virtual operand.  */
-      if (NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) > 0)
+      /* A V_{MAY,MUST}_DEF kills any expression using a virtual operand.  */
+      if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
         kill_virtual_exprs (tab, true);
     }
 }
@@ -1743,7 +1714,8 @@ dump_replaceable_exprs (FILE *f, tree *expr)
     if (expr[x])
       {
         stmt = expr[x];
-	var = DEF_OP (STMT_DEF_OPS (stmt), 0);
+	var = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
+	gcc_assert (var != NULL_TREE);
 	print_generic_expr (f, var, TDF_SLIM);
 	fprintf (f, " replace with --> ");
 	print_generic_expr (f, TREE_OPERAND (stmt, 1), TDF_SLIM);
@@ -1874,13 +1846,11 @@ rewrite_trees (var_map map, tree *values)
     {
       for (si = bsi_start (bb); !bsi_end_p (si); )
 	{
-	  size_t num_uses, num_defs;
-	  use_optype uses;
-	  def_optype defs;
 	  tree stmt = bsi_stmt (si);
-	  use_operand_p use_p;
+	  use_operand_p use_p, copy_use_p;
 	  def_operand_p def_p;
-	  int remove = 0, is_copy = 0;
+	  bool remove = false, is_copy = false;
+	  int num_uses = 0;
 	  stmt_ann_t ann;
 	  ssa_op_iter iter;
 
@@ -1889,44 +1859,46 @@ rewrite_trees (var_map map, tree *values)
 
 	  if (TREE_CODE (stmt) == MODIFY_EXPR 
 	      && (TREE_CODE (TREE_OPERAND (stmt, 1)) == SSA_NAME))
-	    is_copy = 1;
+	    is_copy = true;
 
-	  uses = USE_OPS (ann);
-	  num_uses = NUM_USES (uses);
+	  copy_use_p = NULL_USE_OPERAND_P;
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	    {
 	      if (replace_use_variable (map, use_p, values))
-	        changed = true;
+		changed = true;
+	      copy_use_p = use_p;
+	      num_uses++;
 	    }
 
-	  defs = DEF_OPS (ann);
-	  num_defs = NUM_DEFS (defs);
+	  if (num_uses != 1)
+	    is_copy = false;
 
-	  /* Mark this stmt for removal if it is the list of replaceable 
-	     expressions.  */
-	  if (values && num_defs == 1)
+	  def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
+
+	  if (def_p != NULL)
 	    {
-	      tree def = DEF_OP (defs, 0);
-	      tree val;
-	      val = values[SSA_NAME_VERSION (def)];
-	      if (val)
-		remove = 1;
-	    }
-	  if (!remove)
-	    {
-	      FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_DEF)
+	      /* Mark this stmt for removal if it is the list of replaceable 
+		 expressions.  */
+	      if (values && values[SSA_NAME_VERSION (DEF_FROM_PTR (def_p))])
+		remove = true;
+	      else
 		{
 		  if (replace_def_variable (map, def_p, NULL))
 		    changed = true;
-
 		  /* If both SSA_NAMEs coalesce to the same variable,
 		     mark the now redundant copy for removal.  */
-		  if (is_copy
-		      && num_uses == 1
-		      && (DEF_FROM_PTR (def_p) == USE_OP (uses, 0)))
-		    remove = 1;
+		  if (is_copy)
+		    {
+		      gcc_assert (copy_use_p != NULL_USE_OPERAND_P);
+		      if (DEF_FROM_PTR (def_p) == USE_FROM_PTR (copy_use_p))
+			remove = true;
+		    }
 		}
 	    }
+	  else
+	    FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_DEF)
+	      if (replace_def_variable (map, def_p, NULL))
+		changed = true;
 
 	  /* Remove any stmts marked for removal.  */
 	  if (remove)

@@ -215,12 +215,8 @@ rename_variables_in_bb (basic_block bb)
   tree phi;
   block_stmt_iterator bsi;
   tree stmt;
-  stmt_ann_t ann;
-  use_optype uses;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  unsigned i;
+  use_operand_p use_p;
+  ssa_op_iter iter;
   edge e;
   edge_iterator ei;
   struct loop *loop = bb->loop_father;
@@ -228,23 +224,9 @@ rename_variables_in_bb (basic_block bb)
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
       stmt = bsi_stmt (bsi);
-      ann = stmt_ann (stmt);
-
-      uses = USE_OPS (ann);
-      for (i = 0; i < NUM_USES (uses); i++)
-	rename_use_op (USE_OP_PTR (uses, i));
-
-      vuses = VUSE_OPS (ann);
-      for (i = 0; i < NUM_VUSES (vuses); i++)
-	rename_use_op (VUSE_OP_PTR (vuses, i));
-
-      v_may_defs = V_MAY_DEF_OPS (ann);
-      for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-	rename_use_op (V_MAY_DEF_OP_PTR (v_may_defs, i));
-
-      v_must_defs = V_MUST_DEF_OPS (ann);
-      for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-	rename_use_op (V_MUST_DEF_KILL_PTR (v_must_defs, i));
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, 
+				 (SSA_OP_ALL_USES | SSA_OP_ALL_KILLS))
+	rename_use_op (use_p);
     }
 
   FOR_EACH_EDGE (e, ei, bb->succs)

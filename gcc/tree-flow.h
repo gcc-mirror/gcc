@@ -264,9 +264,9 @@ struct var_ann_d GTY(())
 
 typedef struct immediate_use_iterator_d
 {
-  ssa_imm_use_t *imm_use;
-  ssa_imm_use_t *end_p;
-  ssa_imm_use_t iter_node;
+  ssa_use_operand_t *imm_use;
+  ssa_use_operand_t *end_p;
+  ssa_use_operand_t iter_node;
 } imm_use_iterator;
 
 
@@ -315,7 +315,7 @@ struct stmt_ann_d GTY(())
   basic_block GTY ((skip (""))) bb;
 
   /* Operand cache for stmt.  */
-  struct stmt_operands_d operands;
+  struct stmt_operands_d GTY ((skip (""))) operands;
 
   /* Set of variables that have had their address taken in the statement.  */
   bitmap addresses_taken;
@@ -362,10 +362,6 @@ static inline int get_lineno (tree);
 static inline const char *get_filename (tree);
 static inline bool is_exec_stmt (tree);
 static inline bool is_label_stmt (tree);
-static inline v_may_def_optype get_v_may_def_ops (stmt_ann_t);
-static inline vuse_optype get_vuse_ops (stmt_ann_t);
-static inline use_optype get_use_ops (stmt_ann_t);
-static inline def_optype get_def_ops (stmt_ann_t);
 static inline bitmap addresses_taken (tree);
 static inline void set_default_def (tree, tree);
 static inline tree default_def (tree);
@@ -765,10 +761,10 @@ void print_value_expressions (FILE *, tree);
 /* In tree-vn.c  */
 bool expressions_equal_p (tree, tree);
 tree get_value_handle (tree);
-hashval_t vn_compute (tree, hashval_t, vuse_optype);
-tree vn_lookup_or_add (tree, vuse_optype);
-void vn_add (tree, tree, vuse_optype);
-tree vn_lookup (tree, vuse_optype);
+hashval_t vn_compute (tree, hashval_t, tree);
+tree vn_lookup_or_add (tree, tree);
+void vn_add (tree, tree, tree);
+tree vn_lookup (tree, tree);
 void vn_init (void);
 void vn_delete (void);
 

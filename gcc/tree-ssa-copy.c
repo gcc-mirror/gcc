@@ -360,9 +360,7 @@ stmt_may_generate_copy (tree stmt)
   /* If we are not doing store copy-prop, statements with loads and/or
      stores will never generate a useful copy.  */
   if (!do_store_copy_prop
-      && (NUM_VUSES (VUSE_OPS (ann)) > 0
-	  || NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) > 0
-	  || NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) > 0))
+      && !ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
     return false;
 
   /* Otherwise, the only statements that generate useful copies are
@@ -596,26 +594,31 @@ copy_prop_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 {
   enum ssa_prop_result retval;
   tree cond;
-  use_optype uses;
+  use_operand_p use_p;
+  ssa_op_iter iter;
+  unsigned num;
+
 
   cond = COND_EXPR_COND (stmt);
-  uses = STMT_USE_OPS (stmt);
   retval = SSA_PROP_VARYING;
+  num = NUM_SSA_OPERANDS (stmt, SSA_OP_USE);
 
   /* The only conditionals that we may be able to compute statically
      are predicates involving at least one SSA_NAME.  */
   if (COMPARISON_CLASS_P (cond)
-      && NUM_USES (uses) >= 1)
+      && num >= 1)
     {
       unsigned i;
       tree *orig;
 
       /* Save the original operands.  */
-      orig = xmalloc (sizeof (tree) * NUM_USES (uses));
-      for (i = 0; i < NUM_USES (uses); i++)
+      orig = xmalloc (sizeof (tree) * num);
+      i = 0;
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	{
-	  orig[i] = USE_OP (uses, i);
-	  SET_USE_OP (uses, i, get_last_copy_of (USE_OP (uses, i)));
+	  tree use = USE_FROM_PTR (use_p);
+	  orig[i++] = use;
+	  SET_USE (use_p, get_last_copy_of (use));
 	}
 
       /* See if we can determine the predicate's value.  */
@@ -638,8 +641,9 @@ copy_prop_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 	}
 
       /* Restore the original operands.  */
-      for (i = 0; i < NUM_USES (uses); i++)
-	SET_USE_OP (uses, i, orig[i]);
+      i = 0;
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	SET_USE (use_p, orig[i++]);
       free (orig);
     }
 

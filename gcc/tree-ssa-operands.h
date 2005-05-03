@@ -25,155 +25,116 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 /* This represents a pointer to a DEF operand.  */
-typedef struct def_operand_ptr GTY(())
-{
-  tree * GTY((skip(""))) def;
-} def_operand_p;
+typedef tree *def_operand_p;
 
 /* This represents a pointer to a USE operand.  */
-typedef ssa_imm_use_t *use_operand_p;
+typedef ssa_use_operand_t *use_operand_p;
 
+/* NULL operand types.  */
 #define NULL_USE_OPERAND_P 		NULL
-extern def_operand_p NULL_DEF_OPERAND_P;
+#define NULL_DEF_OPERAND_P 		NULL
 
 /* This represents the DEF operands of a stmt.  */
-typedef struct def_optype_d GTY(())
+struct def_optype_d
 {
-  unsigned num_defs; 
-  struct def_operand_ptr GTY((length("%h.num_defs"))) defs[1];
-} def_optype_t;
-
-typedef def_optype_t *def_optype;
-
-/* Operand type which uses a pointer to a tree ihn an immediate use.  */
-typedef ssa_imm_use_t use_operand_type_t;
+  struct def_optype_d *next;
+  tree *def_ptr;
+};
+typedef struct def_optype_d *def_optype_p;
 
 /* This represents the USE operands of a stmt.  */
-typedef struct use_optype_d GTY(())
+struct use_optype_d 
 {
-  unsigned num_uses; 
-  struct ssa_imm_use_d GTY((length("%h.num_uses"))) uses[1];
-} use_optype_t;
-
-typedef use_optype_t *use_optype;
-
-/* Operand type which stores a def a use, and an immediate use.  */
-typedef struct v_def_use_operand_type GTY(())
-{
-  tree def;
-  tree use;
-  ssa_imm_use_t imm_use;
-} v_def_use_operand_type_t;
+  struct use_optype_d *next;
+  struct ssa_use_operand_d use_ptr;
+};
+typedef struct use_optype_d *use_optype_p;
 
 /* This represents the MAY_DEFS for a stmt.  */
-typedef struct v_may_def_optype_d GTY(())
+struct maydef_optype_d
 {
-  unsigned num_v_may_defs; 
-  struct v_def_use_operand_type GTY((length ("%h.num_v_may_defs")))
-							      v_may_defs[1];
-} v_may_def_optype_t;
-
-typedef v_may_def_optype_t *v_may_def_optype;
-
-/* Operand type which stores a tree and an immeidate_use.  */
-typedef struct vuse_operand_type GTY(())
-{
-  tree use;
-  ssa_imm_use_t imm_use;
-} vuse_operand_type_t;
+  struct maydef_optype_d *next;
+  tree def_var;
+  tree use_var;
+  struct ssa_use_operand_d use_ptr;
+};
+typedef struct maydef_optype_d *maydef_optype_p;
 
 /* This represents the VUSEs for a stmt.  */
-typedef struct vuse_optype_d GTY(()) 
+struct vuse_optype_d
 {
-  unsigned num_vuses; 
-  struct vuse_operand_type GTY((length ("%h.num_vuses"))) vuses[1];
-} vuse_optype_t;
-
-typedef vuse_optype_t *vuse_optype;
-
+  struct vuse_optype_d *next;
+  tree use_var;
+  struct ssa_use_operand_d use_ptr;
+};
+typedef struct vuse_optype_d *vuse_optype_p;
+                                                                              
 /* This represents the V_MUST_DEFS for a stmt.  */
-typedef struct v_must_def_optype_d GTY(())
+struct mustdef_optype_d
 {
-  unsigned num_v_must_defs; 
-  v_def_use_operand_type_t GTY((length("%h.num_v_must_defs"))) v_must_defs[1];
-} v_must_def_optype_t;
+  struct mustdef_optype_d *next;
+  tree def_var;
+  tree kill_var;
+  struct ssa_use_operand_d use_ptr;
+};
+typedef struct mustdef_optype_d *mustdef_optype_p;
 
-typedef v_must_def_optype_t *v_must_def_optype;
+
+#define SSA_OPERAND_MEMORY_SIZE		(2048 - sizeof (void *))
+                                                                              
+struct ssa_operand_memory_d GTY((chain_next("%h.next")))
+{
+  struct ssa_operand_memory_d *next;
+  char mem[SSA_OPERAND_MEMORY_SIZE];
+};
+
 
 /* This represents the operand cache for a stmt.  */
-typedef struct stmt_operands_d GTY(())
+struct stmt_operands_d
 {
   /* Statement operands.  */
-  struct def_optype_d * GTY (()) def_ops;
-  struct use_optype_d * GTY (()) use_ops;
-
+  struct def_optype_d * def_ops;
+  struct use_optype_d * use_ops;
+                                                                              
   /* Virtual operands (V_MAY_DEF, VUSE, and V_MUST_DEF).  */
-  struct v_may_def_optype_d * GTY (()) v_may_def_ops;
-  struct vuse_optype_d * GTY (()) vuse_ops;
-  struct v_must_def_optype_d * GTY (()) v_must_def_ops;
-} stmt_operands_t;
+  struct maydef_optype_d * maydef_ops;
+  struct vuse_optype_d * vuse_ops;
+  struct mustdef_optype_d * mustdef_ops;
+};
+                                                                              
+typedef struct stmt_operands_d *stmt_operands_p;
+                                                                              
+#define USE_FROM_PTR(PTR)	get_use_from_ptr (PTR)
+#define DEF_FROM_PTR(PTR)	get_def_from_ptr (PTR)
+#define SET_USE(USE, V)		set_ssa_use_from_ptr (USE, V)
+#define SET_DEF(DEF, V)		((*(DEF)) = (V))
 
-typedef stmt_operands_t *stmt_operands_p;
+#define USE_STMT(USE)		(USE)->stmt
 
-#define USE_FROM_PTR(OP)	get_use_from_ptr (OP)
-#define DEF_FROM_PTR(OP)	get_def_from_ptr (OP)
-#define SET_USE(OP, V)		set_ssa_use_from_ptr (OP, V)
-#define SET_DEF(OP, V)		((*((OP).def)) = (V))
+#define DEF_OPS(STMT)		(stmt_ann (STMT)->operands.def_ops)
+#define USE_OPS(STMT)		(stmt_ann (STMT)->operands.use_ops)
+#define VUSE_OPS(STMT)		(stmt_ann (STMT)->operands.vuse_ops)
+#define MAYDEF_OPS(STMT)	(stmt_ann (STMT)->operands.maydef_ops)
+#define MUSTDEF_OPS(STMT)	(stmt_ann (STMT)->operands.mustdef_ops)
 
-#define USE_STMT(OP)		(OP)->stmt
+#define USE_OP_PTR(OP)		(&((OP)->use_ptr))
+#define USE_OP(OP)		(USE_FROM_PTR (USE_OP_PTR (OP)))
 
-#define USE_OPS(ANN)		get_use_ops (ANN)
-#define STMT_USE_OPS(STMT)	get_use_ops (stmt_ann (STMT))
-#define NUM_USES(OPS)		((OPS) ? (OPS)->num_uses : 0)
-#define USE_OP_PTR(OPS, I)	get_use_op_ptr ((OPS), (I))
-#define USE_OP(OPS, I)		(USE_FROM_PTR (USE_OP_PTR ((OPS), (I))))
-#define SET_USE_OP(OPS, I, V)	(SET_USE (USE_OP_PTR ((OPS), (I)), (V)))
+#define DEF_OP_PTR(OP)		((OP)->def_ptr)
+#define DEF_OP(OP)		(DEF_FROM_PTR (DEF_OP_PTR (OP)))
 
+#define VUSE_OP_PTR(OP)		USE_OP_PTR(OP)
+#define VUSE_OP(OP)		((OP)->use_var)
 
+#define MAYDEF_RESULT_PTR(OP)	(&((OP)->def_var))
+#define MAYDEF_RESULT(OP)	((OP)->def_var)
+#define MAYDEF_OP_PTR(OP)	USE_OP_PTR (OP)
+#define MAYDEF_OP(OP)		((OP)->use_var)
 
-#define DEF_OPS(ANN)		get_def_ops (ANN)
-#define STMT_DEF_OPS(STMT)	get_def_ops (stmt_ann (STMT))
-#define NUM_DEFS(OPS)		((OPS) ? (OPS)->num_defs : 0)
-#define DEF_OP_PTR(OPS, I)	get_def_op_ptr ((OPS), (I))
-#define DEF_OP(OPS, I)		(DEF_FROM_PTR (DEF_OP_PTR ((OPS), (I))))
-#define SET_DEF_OP(OPS, I, V)	(SET_DEF (DEF_OP_PTR ((OPS), (I)), (V)))
-
-
-
-#define V_MAY_DEF_OPS(ANN)		get_v_may_def_ops (ANN)
-#define STMT_V_MAY_DEF_OPS(STMT)	get_v_may_def_ops (stmt_ann(STMT))
-#define NUM_V_MAY_DEFS(OPS)		((OPS) ? (OPS)->num_v_may_defs : 0)
-#define V_MAY_DEF_RESULT_PTR(OPS, I)	get_v_may_def_result_ptr ((OPS), (I))
-#define V_MAY_DEF_RESULT(OPS, I)					\
-			    (DEF_FROM_PTR (V_MAY_DEF_RESULT_PTR ((OPS), (I))))
-#define SET_V_MAY_DEF_RESULT(OPS, I, V)					\
-			    (SET_DEF (V_MAY_DEF_RESULT_PTR ((OPS), (I)), (V)))
-#define V_MAY_DEF_OP_PTR(OPS, I)	get_v_may_def_op_ptr ((OPS), (I))
-#define V_MAY_DEF_OP(OPS, I)						\
-			    (USE_FROM_PTR (V_MAY_DEF_OP_PTR ((OPS), (I))))
-#define SET_V_MAY_DEF_OP(OPS, I, V)					\
-			    (SET_USE (V_MAY_DEF_OP_PTR ((OPS), (I)), (V)))
-
-
-#define VUSE_OPS(ANN)		get_vuse_ops (ANN)
-#define STMT_VUSE_OPS(STMT)	get_vuse_ops (stmt_ann(STMT))
-#define NUM_VUSES(OPS)		((OPS) ? (OPS)->num_vuses : 0)
-#define VUSE_OP_PTR(OPS, I)  	get_vuse_op_ptr ((OPS), (I))
-#define VUSE_OP(OPS, I)  	(USE_FROM_PTR (VUSE_OP_PTR ((OPS), (I))))
-#define SET_VUSE_OP(OPS, I, V)	(SET_USE (VUSE_OP_PTR ((OPS), (I)), (V)))
-
-
-#define V_MUST_DEF_OPS(ANN)		get_v_must_def_ops (ANN)
-#define STMT_V_MUST_DEF_OPS(STMT)	get_v_must_def_ops (stmt_ann (STMT))
-#define NUM_V_MUST_DEFS(OPS)		((OPS) ? (OPS)->num_v_must_defs : 0)
-#define V_MUST_DEF_RESULT_PTR(OPS, I)	get_v_must_def_result_ptr ((OPS), (I))
-#define V_MUST_DEF_RESULT(OPS, I) \
-				(DEF_FROM_PTR (V_MUST_DEF_RESULT_PTR ((OPS), (I))))
-#define SET_V_MUST_DEF_RESULT(OPS, I, V) \
-				(SET_DEF (V_MUST_DEF_RESULT_PTR ((OPS), (I)), (V)))
-#define V_MUST_DEF_KILL_PTR(OPS, I)  get_v_must_def_kill_ptr ((OPS), (I))
-#define V_MUST_DEF_KILL(OPS, I) (USE_FROM_PTR (V_MUST_DEF_KILL_PTR ((OPS), (I))))
-#define SET_V_MUST_DEF_KILL(OPS, I, V) (SET_USE (V_MUST_DEF_KILL_PTR ((OPS), (I)), (V)))
+#define MUSTDEF_RESULT_PTR(OP)	(&((OP)->def_var))
+#define MUSTDEF_RESULT(OP)	((OP)->def_var)
+#define MUSTDEF_KILL_PTR(OP)	USE_OP_PTR (OP)
+#define MUSTDEF_KILL(OP)	((OP)->kill_var)
 
 #define PHI_RESULT_PTR(PHI)	get_phi_result_ptr (PHI)
 #define PHI_RESULT(PHI)		DEF_FROM_PTR (PHI_RESULT_PTR (PHI))
@@ -196,7 +157,7 @@ extern void update_stmt_operands (tree);
 extern bool verify_imm_links (FILE *f, tree var);
 
 extern void copy_virtual_operands (tree, tree);
-extern void create_ssa_artficial_load_stmt (stmt_operands_p, tree);
+extern void create_ssa_artficial_load_stmt (tree, tree);
 
 extern void dump_immediate_uses (FILE *file);
 extern void dump_immediate_uses_for (FILE *file, tree var);
@@ -206,6 +167,15 @@ extern void debug_immediate_uses_for (tree var);
 extern bool ssa_call_clobbered_cache_valid;
 extern bool ssa_ro_call_cache_valid;
 
+extern bool ssa_operands_active (void);
+
+enum ssa_op_iter_type {
+  ssa_op_iter_none = 0,
+  ssa_op_iter_tree,
+  ssa_op_iter_use,
+  ssa_op_iter_def,
+  ssa_op_iter_maymustdef
+};
 /* This structure is used in the operand iterator loops.  It contains the 
    items required to determine which operand is retrieved next.  During
    optimization, this structure is scalarized, and any unused fields are 
@@ -213,21 +183,17 @@ extern bool ssa_ro_call_cache_valid;
 
 typedef struct ssa_operand_iterator_d
 {
-  int num_use;
-  int num_def;
-  int num_vuse;
-  int num_v_mayu;
-  int num_v_mayd;
-  int num_v_mustu;
-  int num_v_mustd;
-  int use_i;
-  int def_i;
-  int vuse_i;
-  int v_mayu_i;
-  int v_mayd_i;
-  int v_mustu_i;
-  int v_mustd_i;
-  stmt_operands_p ops;
+  def_optype_p defs;
+  use_optype_p uses;
+  vuse_optype_p vuses;
+  maydef_optype_p maydefs;
+  maydef_optype_p mayuses;
+  mustdef_optype_p mustdefs;
+  mustdef_optype_p mustkills;
+  enum ssa_op_iter_type iter_type;
+  int phi_i;
+  int num_phi;
+  tree phi_stmt;
   bool done;
 } ssa_op_iter;
 
@@ -239,17 +205,19 @@ typedef struct ssa_operand_iterator_d
 #define SSA_OP_VMAYUSE		0x08	/* USE portion of V_MAY_DEFS.  */
 #define SSA_OP_VMAYDEF		0x10	/* DEF portion of V_MAY_DEFS.  */
 #define SSA_OP_VMUSTDEF		0x20	/* V_MUST_DEF definitions.  */
-#define SSA_OP_VMUSTDEFKILL     0x40    /* V_MUST_DEF kills.  */
+#define SSA_OP_VMUSTKILL     	0x40    /* V_MUST_DEF kills.  */
 
 /* These are commonly grouped operand flags.  */
 #define SSA_OP_VIRTUAL_USES	(SSA_OP_VUSE | SSA_OP_VMAYUSE)
 #define SSA_OP_VIRTUAL_DEFS	(SSA_OP_VMAYDEF | SSA_OP_VMUSTDEF)
-#define SSA_OP_VIRTUAL_KILLS    (SSA_OP_VMUSTDEFKILL)
-#define SSA_OP_ALL_VIRTUALS     (SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS | SSA_OP_VIRTUAL_DEFS)
+#define SSA_OP_VIRTUAL_KILLS    (SSA_OP_VMUSTKILL)
+#define SSA_OP_ALL_VIRTUALS     (SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS \
+				 | SSA_OP_VIRTUAL_DEFS)
 #define SSA_OP_ALL_USES		(SSA_OP_VIRTUAL_USES | SSA_OP_USE)
 #define SSA_OP_ALL_DEFS		(SSA_OP_VIRTUAL_DEFS | SSA_OP_DEF)
 #define SSA_OP_ALL_KILLS        (SSA_OP_VIRTUAL_KILLS)
-#define SSA_OP_ALL_OPERANDS	(SSA_OP_ALL_USES | SSA_OP_ALL_DEFS | SSA_OP_ALL_KILLS)
+#define SSA_OP_ALL_OPERANDS	(SSA_OP_ALL_USES | SSA_OP_ALL_DEFS	\
+				 | SSA_OP_ALL_KILLS)
 
 /* This macro executes a loop over the operands of STMT specified in FLAG, 
    returning each operand as a 'tree' in the variable TREEVAR.  ITER is an
@@ -281,7 +249,7 @@ typedef struct ssa_operand_iterator_d
 #define FOR_EACH_SSA_MAYDEF_OPERAND(DEFVAR, USEVAR, STMT, ITER)	\
   for (op_iter_init_maydef (&(ITER), STMT, &(USEVAR), &(DEFVAR));	\
        !op_iter_done (&(ITER));					\
-       op_iter_next_maydef (&(USEVAR), &(DEFVAR), &(ITER)))
+       op_iter_next_maymustdef (&(USEVAR), &(DEFVAR), &(ITER)))
 
 /* This macro executes a loop over the V_MUST_DEF operands of STMT.  The def
    and kill for each V_MUST_DEF is returned in DEFVAR and KILLVAR. 
@@ -289,7 +257,7 @@ typedef struct ssa_operand_iterator_d
 #define FOR_EACH_SSA_MUSTDEF_OPERAND(DEFVAR, KILLVAR, STMT, ITER)	\
   for (op_iter_init_mustdef (&(ITER), STMT, &(KILLVAR), &(DEFVAR));	\
        !op_iter_done (&(ITER));					\
-       op_iter_next_mustdef (&(KILLVAR), &(DEFVAR), &(ITER)))
+       op_iter_next_maymustdef (&(KILLVAR), &(DEFVAR), &(ITER)))
 
 /* This macro executes a loop over the V_{MUST,MAY}_DEF of STMT.  The def
    and kill for each V_{MUST,MAY}_DEF is returned in DEFVAR and KILLVAR. 
@@ -297,5 +265,56 @@ typedef struct ssa_operand_iterator_d
 #define FOR_EACH_SSA_MUST_AND_MAY_DEF_OPERAND(DEFVAR, KILLVAR, STMT, ITER)\
   for (op_iter_init_must_and_may_def (&(ITER), STMT, &(KILLVAR), &(DEFVAR));\
        !op_iter_done (&(ITER));					\
-       op_iter_next_must_and_may_def (&(KILLVAR), &(DEFVAR), &(ITER)))
+       op_iter_next_maymustdef (&(KILLVAR), &(DEFVAR), &(ITER)))
+
+/* This macro will execute a loop over all the arguemnts of a PHI which
+   match FLAGS.   A use_operand_p is alwasy returned via USEVAR.  FLAGS
+   can be eiother SSA_OP_USE or SSA_OP_VIRTUAL_USES or SSA_OP_ALL_USES.  */
+#define FOR_EACH_PHI_ARG (USEVAR, STMT, ITER, FLAGS)		\
+  for ((USEVAR) = op_iter_init_phiuse (&(ITER), STMT, FLAGS);	\
+       !op_iter_done (&(ITER));					\
+       (USEVAR) = op_iter_next_use (&(ITER)))
+
+
+/* This macro will execute a loop over a stmt, regardless of whether it is
+   a real stmt or a PHI node, looking at the USE nodes matching FLAGS.  */
+#define FOR_EACH_PHI_OR_STMT_USE(USEVAR, STMT, ITER, FLAGS)	\
+  for ((USEVAR) = (TREE_CODE (STMT) == PHI_NODE 		\
+		   ? op_iter_init_phiuse (&(ITER), STMT, FLAGS)	\
+		   : op_iter_init_use (&(ITER), STMT, FLAGS));	\
+       !op_iter_done (&(ITER));					\
+       (USEVAR) = op_iter_next_use (&(ITER)))
+
+/* This macro will execute a loop over a stmt, regardless of whether it is
+   a real stmt or a PHI node, looking at the DEF nodes matching FLAGS.  */
+#define FOR_EACH_PHI_OR_STMT_DEF(DEFVAR, STMT, ITER, FLAGS)	\
+  for ((DEFVAR) = (TREE_CODE (STMT) == PHI_NODE 		\
+		   ? op_iter_init_phidef (&(ITER), STMT, FLAGS)	\
+		   : op_iter_init_def (&(ITER), STMT, FLAGS));	\
+       !op_iter_done (&(ITER));					\
+       (DEFVAR) = op_iter_next_def (&(ITER)))
+  
+/* This macro returns an operand in STMT as a tree if it is the ONLY
+   operand matching FLAGS.  If there are 0 or more than 1 operand matching
+   FLAGS, then NULL_TREE is returned.  */
+#define SINGLE_SSA_TREE_OPERAND(STMT, FLAGS)			\
+  single_ssa_tree_operand (STMT, FLAGS)
+                                                                                
+/* This macro returns an operand in STMT as a use_operand_p if it is the ONLY
+   operand matching FLAGS.  If there are 0 or more than 1 operand matching
+   FLAGS, then NULL_USE_OPERAND_P is returned.  */
+#define SINGLE_SSA_USE_OPERAND(STMT, FLAGS)			\
+  single_ssa_use_operand (STMT, FLAGS)
+                                                                                
+/* This macro returns an operand in STMT as a def_operand_p if it is the ONLY
+   operand matching FLAGS.  If there are 0 or more than 1 operand matching
+   FLAGS, then NULL_DEF_OPERAND_P is returned.  */
+#define SINGLE_SSA_DEF_OPERAND(STMT, FLAGS)			\
+  single_ssa_def_operand (STMT, FLAGS)
+										/* This macro returns TRUE if there are no operands matching FLAGS in STMT.  */
+#define ZERO_SSA_OPERANDS(STMT, FLAGS) 	zero_ssa_operands (STMT, FLAGS)
+
+/* THis macro counts the number of operands in STMT matching FLAGS.  */
+#define NUM_SSA_OPERANDS(STMT, FLAGS)	num_ssa_operands (STMT, FLAGS)
+
 #endif  /* GCC_TREE_SSA_OPERANDS_H  */

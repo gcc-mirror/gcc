@@ -413,9 +413,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       /* If the statement has virtual or volatile operands, fail.  */
       ann = stmt_ann (stmt);
-      if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann))
-          || NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann))
-	  || NUM_VUSES (VUSE_OPS (ann))
+      if (!ZERO_SSA_OPERANDS (stmt, (SSA_OP_VUSE | SSA_OP_VIRTUAL_DEFS))
 	  || ann->has_volatile_ops)
 	return;
     }
@@ -679,13 +677,13 @@ eliminate_tail_call (struct tailcall *t)
   basic_block bb, first;
   edge e;
   tree phi;
-  stmt_ann_t ann;
-  v_may_def_optype v_may_defs;
-  unsigned i;
   block_stmt_iterator bsi;
+  use_operand_p mayuse;
+  def_operand_p maydef;
+  ssa_op_iter iter;
+  tree orig_stmt;
 
-  stmt = bsi_stmt (t->call_bsi);
-  ann = stmt_ann (stmt);
+  stmt = orig_stmt = bsi_stmt (t->call_bsi);
   bb = t->call_block;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -748,10 +746,9 @@ eliminate_tail_call (struct tailcall *t)
     }
 
   /* Add phi nodes for the call clobbered variables.  */
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+  FOR_EACH_SSA_MAYDEF_OPERAND (maydef, mayuse, orig_stmt, iter)
     {
-      param = SSA_NAME_VAR (V_MAY_DEF_RESULT (v_may_defs, i));
+      param = SSA_NAME_VAR (DEF_FROM_PTR (maydef));
       for (phi = phi_nodes (first); phi; phi = PHI_CHAIN (phi))
 	if (param == SSA_NAME_VAR (PHI_RESULT (phi)))
 	  break;
@@ -782,7 +779,7 @@ eliminate_tail_call (struct tailcall *t)
 	  gcc_assert (EDGE_COUNT (first->preds) <= 2);
 	}
 
-      add_phi_arg (phi, V_MAY_DEF_OP (v_may_defs, i), e);
+      add_phi_arg (phi, USE_FROM_PTR (mayuse), e);
     }
 
   /* Update the values of accumulators.  */
