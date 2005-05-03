@@ -79,6 +79,7 @@ export_proto(transfer_complex);
 
 gfc_unit *current_unit = NULL;
 static int sf_seen_eor = 0;
+static int eor_condition = 0;
 
 char scratch[SCRATCH_SIZE] = { };
 static char *line_buffer = NULL;
@@ -150,7 +151,13 @@ read_sf (int *length)
   else
     p = base = data;
 
-  memset(base,'\0',*length);
+  /* If we have seen an eor previously, return a length of 0.  The
+     caller is responsible for correctly padding the input field.  */
+  if (sf_seen_eor)
+    {
+      *length = 0;
+      return base;
+    }
 
   current_unit->bytes_left = options.default_recl;
   readlen = 1;
@@ -179,13 +186,16 @@ read_sf (int *length)
 
       if (readlen < 1 || *q == '\n' || *q == '\r')
 	{
-	  /* ??? What is this for?  */
-          if (current_unit->unit_number == options.stdin_unit)
-            {
-              if (n <= 0)
-                continue;
-            }
 	  /* Unexpected end of line.  */
+
+	  /* If we see an EOR during non-advancing I/O, we need to skip
+	     the rest of the I/O statement.  Set the corresponding flag.  */
+	  if (advance_status == ADVANCE_NO)
+	    eor_condition = 1;
+
+	  /* Without padding, terminate the I/O statement without assigning
+	     the value.  With padding, the value still needs to be assigned,
+	     so we can just continue with a short read.  */
 	  if (current_unit->flags.pad == PAD_NO)
 	    {
 	      generate_error (ERROR_EOR, NULL);
@@ -203,6 +213,9 @@ read_sf (int *length)
       sf_seen_eor = 0;
     }
   while (n < *length);
+
+  if (ioparm.size != NULL)
+    *ioparm.size += *length;
 
   return base;
 }
@@ -433,6 +446,11 @@ formatted_transfer (bt type, void *p, int len)
   n = (p == NULL) ? 0 : ((type != BT_COMPLEX) ? 1 : 2);
   if (type == BT_COMPLEX)
     type = BT_REAL;
+
+  /* If there's an EOR condition, we simulate finalizing the transfer
+     by doing nothing.  */
+  if (eor_condition)
+    return;
 
   for (;;)
     {
@@ -1114,6 +1132,7 @@ data_transfer_init (int read_flag)
   g.first_item = 1;
   g.item_count = 0;
   sf_seen_eor = 0;
+  eor_condition = 0;
 
   pre_position ();
 
@@ -1229,7 +1248,10 @@ next_record_r (int done)
       length = 1;
       /* sf_read has already terminated input because of an '\n'  */
       if (sf_seen_eor) 
-         break;
+	{
+	  sf_seen_eor=0;
+	  break;
+	}
 
       do
         {
@@ -1395,6 +1417,13 @@ next_record (int done)
 static void
 finalize_transfer (void)
 {
+
+  if (eor_condition)
+    {
+      generate_error (ERROR_EOR, NULL);
+      return;
+    }
+
   if (ioparm.library_return != LIBRARY_OK)
     return;
 

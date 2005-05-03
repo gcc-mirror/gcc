@@ -1,3 +1,14 @@
+2005-05-03  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline:
+	* eor_handling_1.f90: New test case.
+	* eor_handling_2.f90: New test case.
+	* eor_handling_3.f90: New test case.
+	* eor_handling_4.f90: New test case.
+	* eor_handling_5.f90: New test case.
+	* noadv_size.f90: New test case.
+	* pad_no.f90: New test case.
+
 2005-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:
