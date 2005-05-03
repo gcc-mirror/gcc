@@ -1736,7 +1736,8 @@ namespace std
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
 
-      return std::copy(__first, __middle, copy(__middle, __last, __result));
+      return std::copy(__first, __middle,
+                       std::copy(__middle, __last, __result));
     }
 
   /**
