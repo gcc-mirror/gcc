@@ -393,6 +393,19 @@ The optimizations also use various utility functions contained in
 @file{tree-ssa-loop-manip.c}, @file{cfgloop.c}, @file{cfgloopanal.c} and
 @file{cfgloopmanip.c}.
 
+Vectorization.  This pass transforms loops to operate on vector types
+instead of scalar types.  Data parallelism across loop iterations is exploited
+to group data elements from consecutive iterations into a vector and operate 
+on them in parallel.  Depending on available target support the loop is 
+conceptually unrolled by a factor @code{VF} (vectorization factor), which is
+the number of elements operated upon in parallel in each iteration, and the 
+@code{VF} copies of each scalar operation are fused to form a vector operation.
+Additional loop transformations such as peeling and versioning may take place
+to align the number of iterations, and to align the memory accesses in the loop.
+The pass is implemented in @file{tree-vectorizer.c} (the main driver and general
+utilities), @file{tree-vect-analyze.c} and @file{tree-vect-tranform.c}.
+Analysis of data references is in @file{tree-data-ref.c}.
+
 @item Tree level if-conversion for vectorizer
 
 This pass applies if-conversion to simple loops to help vectorizer.
