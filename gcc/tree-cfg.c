@@ -1974,7 +1974,6 @@ remove_bb (basic_block bb)
         {
 	  release_defs (stmt);
 
-	  set_bb_for_stmt (stmt, NULL);
 	  bsi_remove (&i);
 	}
 
