@@ -7,6 +7,11 @@
 	aux.
 	* tree-vectorizer.h (set_stmt_info, vinfo_for_stmt): Likewise.
 
+	* tree-cfg.c (remove_bb): Remove a redundant call to
+	set_bb_for_stmt.
+	* tree-if-conv.c (replace_phi_with_cond_modify_expr):
+	Likewise.
+
 2005-05-03  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c: Remove conflict markers.

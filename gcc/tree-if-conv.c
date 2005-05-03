@@ -799,9 +799,7 @@ replace_phi_with_cond_modify_expr (tree phi, tree cond, basic_block true_bb,
   /* Make new statement definition of the original phi result.  */
   SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = new_stmt;
 
-  /* Set basic block and insert using iterator.  */
-  set_bb_for_stmt (new_stmt, bb);
-
+  /* Insert using iterator.  */
   bsi_insert_after (bsi, new_stmt, BSI_SAME_STMT);
   bsi_next (bsi);
 
