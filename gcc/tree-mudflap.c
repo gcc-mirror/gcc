@@ -1148,7 +1148,7 @@ mf_marked_p (tree t)
    delayed until program finish time.  If they're still incomplete by
    then, warnings are emitted.  */
 
-static GTY (()) varray_type deferred_static_decls;
+static GTY (()) VEC(tree,gc) *deferred_static_decls;
 
 /* A list of statements for calling __mf_register() at startup time.  */
 static GTY (()) tree enqueued_call_stmt_chain;
@@ -1189,10 +1189,7 @@ mudflap_enqueue_decl (tree obj)
   if (DECL_P (obj) && DECL_EXTERNAL (obj) && DECL_ARTIFICIAL (obj))
     return;
 
-  if (! deferred_static_decls)
-    VARRAY_TREE_INIT (deferred_static_decls, 10, "deferred static list");
-
-  VARRAY_PUSH_TREE (deferred_static_decls, obj);
+  VEC_safe_push (tree, gc, deferred_static_decls, obj);
 }
 
 
@@ -1243,10 +1240,9 @@ mudflap_finish_file (void)
   if (deferred_static_decls)
     {
       size_t i;
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_static_decls); i++)
+      tree obj;
+      for (i = 0; VEC_iterate (tree, deferred_static_decls, i, obj); i++)
         {
-          tree obj = VARRAY_TREE (deferred_static_decls, i);
-
           gcc_assert (DECL_P (obj));
 
           if (mf_marked_p (obj))
@@ -1271,7 +1267,7 @@ mudflap_finish_file (void)
                                  mf_varname_tree (obj));
         }
 
-      VARRAY_CLEAR (deferred_static_decls);
+      VEC_truncate (tree, deferred_static_decls, 0);
     }
 
   /* Append all the enqueued registration calls.  */

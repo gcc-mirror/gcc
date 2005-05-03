@@ -6,6 +6,10 @@
 	insn_locators_initialize, insn_scope): Use VEC instead of
 	VARRAY.
 
+	* tree-mudflap.c (deferred_static_decls, mudflap_enqueue_decl,
+	mudflap_finish_file, mudflap_finish_file): Use VEC instead of
+	VARRAY.
+
 2005-05-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/predicates.md (const_compl_high_operand): New.
