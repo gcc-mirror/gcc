@@ -1,5 +1,10 @@
 2005-05-03  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/VMSecurityManager.java (currentClassLoader): Use
+	'systemClasssLoader' directly.
+
+2005-05-03  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/VMSecurityManager.java (currentClassLoader): Don't
 	call VMClassLoader.getSystemClassLoader.
 
