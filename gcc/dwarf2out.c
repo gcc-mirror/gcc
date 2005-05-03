@@ -13184,6 +13184,14 @@ lookup_filename (const char *file_name)
   VARRAY_PUSH_CHAR_PTR (file_table, save_file_name);
   VARRAY_PUSH_UINT (file_table_emitted, 0);
 
+  /* If the assembler is emitting the file table, and we aren't eliminating
+     unused debug types, then we must emit .file here.  If we are eliminating
+     unused debug types, then this will be done by the maybe_emit_file call in
+     prune_unused_types_walk_attribs.  */
+
+  if (DWARF2_ASM_LINE_DEBUG_INFO && ! flag_eliminate_unused_debug_types)
+    maybe_emit_file (i);
+
   return i;
 }
 
