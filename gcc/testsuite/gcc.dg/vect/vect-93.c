@@ -74,3 +74,4 @@ int main (void)
 /* in main */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail vect_no_align } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { cleanup-tree-dump "vect" } } */
