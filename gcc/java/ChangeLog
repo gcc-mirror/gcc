@@ -1,3 +1,8 @@
+2005-05-03  Tom Tromey  <tromey@redhat.com>
+
+	PR java/21245:
+	* gjavah.c (main): Unlink output file on error.
+
 2005-05-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* constants.c, jvgenmain.c, lang.opt, resource.c: Update
