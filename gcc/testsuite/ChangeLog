@@ -1,5 +1,8 @@
 2005-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/21265
+	* gcc.dg/20050503-1.c: New test.
+
 	PR rtl-optimization/21239
 	* gcc.dg/i386-sse-11.c: New test.
 
