@@ -1,11 +1,11 @@
-@c Copyright (C) 2004
+@c Copyright (C) 2004, 2005
 @c Free Software Foundation, Inc.
 @c This is part of the GFORTRAN manual.   
 @c For copying conditions, see the file gfortran.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004
+Copyright @copyright{} 2004, 2005
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document

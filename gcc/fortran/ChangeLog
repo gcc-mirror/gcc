@@ -1,3 +1,8 @@
+2005-05-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* Make-lang.in, dump-parse-tree.c, invoke.texi, lang.opt,
+	match.h, trans-array.h: Update copyright.
+
 2005-04-29  Tom Tromey  <tromey@redhat.com>
 
 	* f95-lang.c (poplevel): Updated for change to build_block.
