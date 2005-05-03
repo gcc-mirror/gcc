@@ -1145,7 +1145,7 @@ sparc_emit_set_const64 (rtx op0 ATTRIBUTE_UNUSED, rtx op1 ATTRIBUTE_UNUSED)
 /* These avoid problems when cross compiling.  If we do not
    go through all this hair then the optimizer will see
    invalid REG_EQUAL notes or in some cases none at all.  */
-static void sparc_emit_set_safe_HIGH64 (rtx, HOST_WIDE_INT);
+static rtx gen_safe_HIGH64 (rtx, HOST_WIDE_INT);
 static rtx gen_safe_SET64 (rtx, HOST_WIDE_INT);
 static rtx gen_safe_OR64 (rtx, HOST_WIDE_INT);
 static rtx gen_safe_XOR64 (rtx, HOST_WIDE_INT);
@@ -1155,10 +1155,10 @@ static rtx gen_safe_XOR64 (rtx, HOST_WIDE_INT);
    Unfortunately this leads to many missed optimizations
    during CSE.  We mask out the non-HIGH bits, and matches
    a plain movdi, to alleviate this problem.  */
-static void
-sparc_emit_set_safe_HIGH64 (rtx dest, HOST_WIDE_INT val)
+static rtx
+gen_safe_HIGH64 (rtx dest, HOST_WIDE_INT val)
 {
-  emit_insn (gen_rtx_SET (VOIDmode, dest, GEN_INT (val & ~(HOST_WIDE_INT)0x3ff)));
+  return gen_rtx_SET (VOIDmode, dest, GEN_INT (val & ~(HOST_WIDE_INT)0x3ff));
 }
 
 static rtx
@@ -1201,7 +1201,7 @@ sparc_emit_set_const64_quick1 (rtx op0, rtx temp,
   else
     high_bits = low_bits;
 
-  sparc_emit_set_safe_HIGH64 (temp, high_bits);
+  emit_insn (gen_safe_HIGH64 (temp, high_bits));
   if (!is_neg)
     {
       emit_insn (gen_rtx_SET (VOIDmode, op0,
@@ -1240,7 +1240,7 @@ sparc_emit_set_const64_quick2 (rtx op0, rtx temp,
 
   if ((high_bits & 0xfffffc00) != 0)
     {
-      sparc_emit_set_safe_HIGH64 (temp, high_bits);
+      emit_insn (gen_safe_HIGH64 (temp, high_bits));
       if ((high_bits & ~0xfffffc00) != 0)
 	emit_insn (gen_rtx_SET (VOIDmode, op0,
 				gen_safe_OR64 (temp, (high_bits & 0x3ff))));
@@ -1284,7 +1284,7 @@ sparc_emit_set_const64_longway (rtx op0, rtx temp,
 
   if ((high_bits & 0xfffffc00) != 0)
     {
-      sparc_emit_set_safe_HIGH64 (temp, high_bits);
+      emit_insn (gen_safe_HIGH64 (temp, high_bits));
       if ((high_bits & ~0xfffffc00) != 0)
 	emit_insn (gen_rtx_SET (VOIDmode,
 				sub_temp,
@@ -1308,7 +1308,7 @@ sparc_emit_set_const64_longway (rtx op0, rtx temp,
 			      gen_rtx_ASHIFT (DImode, sub_temp,
 					      GEN_INT (32))));
 
-      sparc_emit_set_safe_HIGH64 (temp2, low_bits);
+      emit_insn (gen_safe_HIGH64 (temp2, low_bits));
       if ((low_bits & ~0xfffffc00) != 0)
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, temp3,
@@ -1597,7 +1597,7 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
       gcc_assert (SPARC_SETHI_P (focus_bits));
       gcc_assert (lowest_bit_set != 10);
 
-      sparc_emit_set_safe_HIGH64 (temp, focus_bits);
+      emit_insn (gen_safe_HIGH64 (temp, focus_bits));
 
       /* If lowest_bit_set == 10 then a sethi alone could have done it.  */
       if (lowest_bit_set < 10)

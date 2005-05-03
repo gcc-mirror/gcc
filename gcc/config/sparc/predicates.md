@@ -68,6 +68,12 @@
        (and (match_test "INTVAL (op) & ~(HOST_WIDE_INT)0x3ff")
             (match_test "SPARC_SETHI_P (INTVAL (op) & GET_MODE_MASK (mode))"))))
 
+;; Return true if OP is a constant whose 1's complement can be loaded by the
+;; sethi instruction.
+(define_predicate "const_compl_high_operand"
+  (and (match_code "const_int")
+       (and (not (match_operand 0 "small_int_operand"))
+            (match_test "SPARC_SETHI_P (~INTVAL (op) & GET_MODE_MASK (mode))"))))
 
 ;; Predicates for symbolic constants.
 

@@ -1841,12 +1841,6 @@
   ;
 })
 
-(define_insn "*movhi_const64_special"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(match_operand:HI 1 "const_high_operand" "K"))]
-  "TARGET_ARCH64"
-  "sethi\t%%hi(%a1), %0")
-
 (define_insn "*movhi_insn"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
 	(match_operand:HI 1 "input_operand"   "rI,K,m,rJ"))]
@@ -1942,14 +1936,6 @@
  movsi_is_ok:
   ;
 })
-
-;; This is needed to show CSE exactly which bits are set
-;; in a 64-bit register by sethi instructions.
-(define_insn "*movsi_const64_special"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "const_high_operand" "K"))]
-  "TARGET_ARCH64"
-  "sethi\t%%hi(%a1), %0")
 
 (define_insn "*movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,f,r,r,r,f,m,m,d")
@@ -2186,14 +2172,6 @@
    #"
   [(set_attr "type" "store,store,load,*,*,*,*,fpstore,fpload,*,*,*")
    (set_attr "length" "2,*,*,2,2,2,2,*,*,2,2,2")])
-
-;; This is needed to show CSE exactly which bits are set
-;; in a 64-bit register by sethi instructions.
-(define_insn "*movdi_const64_special"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(match_operand:DI 1 "const_high_operand" "N"))]
-  "TARGET_ARCH64"
-  "sethi\t%%hi(%a1), %0")
 
 (define_insn "*movdi_insn_sp64_novis"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?W")
@@ -5845,7 +5823,7 @@
   "umacd\t%1, %2, %L0"
   [(set_attr "type" "imul")])
 
-;;- Boolean instructions
+;; Boolean instructions
 ;; We define DImode `and' so with DImode `not' we can get
 ;; DImode `andn'.  Other combinations are possible.
 
@@ -5896,9 +5874,9 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(and:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "const_int_operand" "")))
+		(match_operand:SI 2 "const_compl_high_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "!SMALL_INT (operands[2]) && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  ""
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (and:SI (not:SI (match_dup 3)) (match_dup 1)))]
 {
@@ -5997,9 +5975,9 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(ior:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "const_int_operand" "")))
+		(match_operand:SI 2 "const_compl_high_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "!SMALL_INT (operands[2]) && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  ""
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (ior:SI (not:SI (match_dup 3)) (match_dup 1)))]
 {
@@ -6098,9 +6076,9 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(xor:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "const_int_operand" "")))
+		(match_operand:SI 2 "const_compl_high_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-   "!SMALL_INT (operands[2]) && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+   ""
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (not:SI (xor:SI (match_dup 3) (match_dup 1))))]
 {
@@ -6110,9 +6088,9 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(not:SI (xor:SI (match_operand:SI 1 "register_operand" "")
-			(match_operand:SI 2 "const_int_operand" ""))))
+			(match_operand:SI 2 "const_compl_high_operand" ""))))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "!SMALL_INT (operands[2]) && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  ""
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (xor:SI (match_dup 3) (match_dup 1)))]
 {
