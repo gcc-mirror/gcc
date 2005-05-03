@@ -1,3 +1,8 @@
+2005-05-03  Jones Desougi  <jones@ingate.com>
+
+	PR libstdc++/21131
+	* acinclude.m4: Fix comments.
+
 2005-02-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* testsuite/thread/pthread1.cc: Do not invoke pthread_setconcurrency

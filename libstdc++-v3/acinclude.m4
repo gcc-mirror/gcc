@@ -542,7 +542,7 @@ dnl 2) has "C" linkage
 dnl
 dnl argument 1 is name of function to check
 dnl
-dnl ASSUMES argument is a math function with TWO parameters
+dnl ASSUMES argument is a stdlib function with TWO parameters
 dnl
 dnl GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2
 AC_DEFUN(GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2, [
@@ -571,7 +571,7 @@ dnl 2) has "C" linkage
 dnl
 dnl argument 1 is name of function to check
 dnl
-dnl ASSUMES argument is a function with THREE parameters
+dnl ASSUMES argument is a stdlib function with THREE parameters
 dnl
 dnl GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3
 AC_DEFUN(GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3, [
@@ -599,7 +599,7 @@ dnl 2) has "C" linkage
 dnl
 dnl argument 1 is name of function to check
 dnl
-dnl ASSUMES argument is a function with ONE parameter
+dnl ASSUMES argument is a unistd function with ONE parameter
 dnl
 dnl GLIBCPP_CHECK_UNISTD_DECL_AND_LINKAGE_1
 AC_DEFUN(GLIBCPP_CHECK_UNISTD_DECL_AND_LINKAGE_1, [
