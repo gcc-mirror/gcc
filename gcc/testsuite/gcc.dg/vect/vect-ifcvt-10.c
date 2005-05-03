@@ -9,3 +9,4 @@ foo (int j, double *v, double x)
       x = v[i];
   return x;
 }
+/* { dg-final { cleanup-tree-dump "vect" } } */
