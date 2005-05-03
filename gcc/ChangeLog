@@ -1,5 +1,10 @@
 2005-05-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/21330
+	* loop-unswitch.c (may_unswitch_on): Set *cinsn only when
+	returning non-NULL.
+	(unswitch_single_loop): Clear cinsn when retrying.
+
 	PR target/21297
 	* config/i386/i386.c (legitimize_address): When canonicalizing
 	ASHIFT into MULT, multiply by 1 << shift_count instead of
