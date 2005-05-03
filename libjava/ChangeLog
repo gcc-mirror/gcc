@@ -142,7 +142,6 @@
 	* gnu/java/net/protocol/file/Connection.java
 	(lineSeparator): Initialize with SystemProperties.getProperty().
 
->>>>>>> 1.3571
 2005-04-27  Chris Burdess  <dog@gnu.org>
 
 	* gnu/java/net/protocol/file/Connection.java: Return correct content
