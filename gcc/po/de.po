@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.0-b20050226\n"
+"Project-Id-Version: gcc 4.0.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-04-20 21:41-0700\n"
-"PO-Revision-Date: 2005-04-24 15:25+0200\n"
+"PO-Revision-Date: 2005-05-01 18:42+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -838,9 +838,8 @@ msgid "%Hduplicate label %qD"
 msgstr "%Hdoppelte Marke %qD"
 
 #: c-decl.c:2460
-#, fuzzy
 msgid "%Jjump into statement expression"
-msgstr "Überlauf in Konstanten-Ausdruck"
+msgstr "%JSprung in Anweisungs-Ausdruck"
 
 #: c-decl.c:2474
 msgid "%Htraditional C lacks a separate namespace for labels, identifier %qs conflicts"
@@ -970,7 +969,7 @@ msgstr "%Jasm-Symbol für nicht-statische lokale Variable %qD wird ignoriert"
 
 #: c-decl.c:3334 fortran/f95-lang.c:646
 msgid "cannot put object with volatile field into register"
-msgstr "kann kein Objekt mit volatile-Feld in Register laden"
+msgstr "Objekt mit volatile-Feld kann nicht in Register geladen werden"
 
 #: c-decl.c:3468
 msgid "ISO C forbids forward parameter declarations"
@@ -1614,7 +1613,7 @@ msgstr "sowohl %<unsigned%> als auch %<double%> in Deklaration"
 
 #: c-decl.c:6890
 msgid "ISO C90 does not support complex types"
-msgstr "ISO-C90 unterstützt nicht komplexe Typen"
+msgstr "ISO-C90 unterstützt keine komplexen Typen"
 
 #: c-decl.c:6892 c-decl.c:6933
 msgid "both %<complex%> and %<void%> in declaration specifiers"
@@ -2260,7 +2259,7 @@ msgstr "Gleitkommakonstante überschreitet Wertebereich von %<%s%>"
 
 #: c-lex.c:766
 msgid "traditional C rejects string constant concatenation"
-msgstr "traditionelles C weist Stringkonstantenverkettung zurück"
+msgstr "traditionelles C weist Zeichenkettenkonstantenverkettung zurück"
 
 #: c-objc-common.c:80
 msgid "%Jfunction %qF can never be inlined because it is suppressed using -fno-inline"
@@ -2434,7 +2433,7 @@ msgstr "Datendefinition hat keinen Typ oder Speicherklasse"
 
 #: c-parse.y:388 objc/objc-parse.y:411
 msgid "ISO C does not allow extra %<;%> outside of a function"
-msgstr "ISO-C erlaubt kein extra %<;%> außerhalb einer Funktion"
+msgstr "ISO-C erlaubt kein zusätzliches %<;%> außerhalb einer Funktion"
 
 #: c-parse.y:445
 msgid "traditional C rejects the unary plus operator"
@@ -2613,7 +2612,7 @@ msgstr "%s: PCH-Datei konnte nicht geöffnet werden: %m\n"
 
 #: c-pch.c:503
 msgid "use -Winvalid-pch for more information"
-msgstr "verwenden Sie -Winvalid-pch für mehr Informationen"
+msgstr "-Winvalid-pch für weitere Informationen verwenden"
 
 #: c-pch.c:504
 #, c-format
@@ -2783,7 +2782,7 @@ msgstr "Funktionstypen nicht wirklich kompatibel in ISO-C"
 
 #: c-typeck.c:805
 msgid "types are not quite compatible"
-msgstr "Typen nicht sehr kompatibel"
+msgstr "Typen nicht ganz kompatibel"
 
 #: c-typeck.c:1047
 msgid "function return types not compatible due to %<volatile%>"
@@ -3068,7 +3067,7 @@ msgstr "Register-Variable %qD in verschachtelter Funktion verwendet"
 
 #: c-typeck.c:2876
 msgid "address of global register variable %qD requested"
-msgstr "Adresse der globalen Variable %qD angefordert"
+msgstr "Adresse der globalen Variablen %qD angefordert"
 
 #: c-typeck.c:2878
 msgid "address of register variable %qD requested"
@@ -3480,9 +3479,8 @@ msgid "excess elements in scalar initializer"
 msgstr "Elementüberschreitung in Skalarinitialisierung"
 
 #: c-typeck.c:6486
-#, fuzzy
 msgid "jump into statement expression"
-msgstr "Überlauf in Konstanten-Ausdruck"
+msgstr "Sprung in Anweisungs-Ausdruck"
 
 #: c-typeck.c:6511
 msgid "ISO C forbids %<goto *expr;%>"
@@ -3513,14 +3511,12 @@ msgid "%<long%> switch expression not converted to %<int%> in ISO C"
 msgstr "%<long%> switch-Ausdruck nicht nach »int« konvertiert in ISO C"
 
 #: c-typeck.c:6712
-#, fuzzy
 msgid "case label in statement expression not containing enclosing switch statement"
-msgstr "case-Marke nicht innerhalb einer switch-Anweisung"
+msgstr "case-Marke in Anweisungs-Ausdruck enthält keine einschließende switch-Anweisung"
 
 #: c-typeck.c:6715
-#, fuzzy
 msgid "%<default%> label in statement expression not containing enclosing switch statement"
-msgstr "%<default%>-Marke nicht innerhalb einer switch-Anweisung"
+msgstr "%<default%>-Marke in Anweisungs-Ausdruck enthält keine einschließende switch-Anweisung"
 
 #: c-typeck.c:6719 cp/parser.c:6076
 msgid "case label not within a switch statement"
@@ -4131,12 +4127,12 @@ msgstr "»%s« kann nicht gefunden werden"
 #: collect2.c:1583 collect2.c:1586
 #, c-format
 msgid "redirecting stdout: %s"
-msgstr "leite Standardausgabe um: %s"
+msgstr "Standardausgabe wird umgeleitet: %s"
 
 #: collect2.c:1625
 #, c-format
 msgid "[Leaving %s]\n"
-msgstr "[Verlassen von %s]\n"
+msgstr "[%s wird verlassen]\n"
 
 #: collect2.c:1845
 #, c-format
@@ -4209,7 +4205,7 @@ msgstr "dynamische Abhängigkeit %s nicht gefunden"
 #: collect2.c:2304
 #, c-format
 msgid "unable to open dynamic dependency '%s'"
-msgstr "kann dynamische Abhängigkeit »%s« nicht öffnen"
+msgstr "dynamische Abhängigkeit »%s« kann nicht geöffnet werden"
 
 #: collect2.c:2463
 #, c-format
@@ -4250,7 +4246,7 @@ msgstr ""
 
 #: convert.c:69
 msgid "cannot convert to a pointer type"
-msgstr "kann nicht in Zeigertyp konvertieren"
+msgstr "es kann nicht in Zeigertyp konvertiert werden"
 
 #: convert.c:302
 msgid "pointer value used where a floating point value was expected"
@@ -4533,7 +4529,7 @@ msgstr "Faltungstest: ursprünglicher Baum durch Faltung geändert"
 
 #: function.c:832 varasm.c:1584
 msgid "%Jsize of variable %qD is too large"
-msgstr "%JGröße der Variable %qD ist zu hoch"
+msgstr "%JGröße der Variablen %qD ist zu hoch"
 
 #: function.c:1443
 msgid "impossible constraint in %<asm%>"
@@ -4601,7 +4597,7 @@ msgstr "falsche %%include-Syntax für Spezifikationen nach %ld Zeichen"
 #: gcc.c:2047
 #, c-format
 msgid "could not find specs file %s\n"
-msgstr "konnte Spezifikationsdatei %s nicht finden\n"
+msgstr "Spezifikationsdatei %s konnte nicht gefunden werden\n"
 
 #: gcc.c:2064 gcc.c:2072 gcc.c:2081 gcc.c:2090
 #, c-format
@@ -4621,7 +4617,7 @@ msgstr "%s: Versuch, Spezifikation »%s« in bereits definierte Spezifikation »
 #: gcc.c:2111
 #, c-format
 msgid "rename spec %s to %s\n"
-msgstr "Spezifikation wird %s nach %s umbenannt\n"
+msgstr "Spezifikation wird von %s nach %s umbenannt\n"
 
 #: gcc.c:2113
 #, c-format
@@ -4881,7 +4877,7 @@ msgstr "Die Option »-%c« muss ein Argument haben"
 #: gcc.c:3213
 #, c-format
 msgid "couldn't run '%s': %s"
-msgstr "»%s« nicht ausgeführt werden: %s"
+msgstr "»%s« konnte nicht ausgeführt werden: %s"
 
 #. translate_options () has turned --version into -fversion.
 #: gcc.c:3398
@@ -6590,7 +6586,7 @@ msgstr "-fprefetch-loop-arrays wird für dieses Ziel nicht unterstützt (ggf. di
 
 #: toplev.c:1929
 msgid "-fspeculative-prefetching not supported for this target (try -march switches)"
-msgstr "-fspeculative-prefetching wird für dieses Ziel nicht unterstützt (ggf die »-march«-Schalter versuchen)"
+msgstr "-fspeculative-prefetching wird für dieses Ziel nicht unterstützt (ggf. die »-march«-Schalter versuchen)"
 
 #: toplev.c:1938
 msgid "-fprefetch-loop-arrays is not supported with -Os"
@@ -6694,7 +6690,7 @@ msgstr "Kontrollfluss inmitten des Basis-Blockes %d\n"
 #: tree-cfg.c:3724
 #, c-format
 msgid "Label %s in the middle of basic block %d\n"
-msgstr "Marke %s in der Mitte des Basis-Blocks %d\n"
+msgstr "Marke %s inmitten des Basis-Blocks %d\n"
 
 #: tree-cfg.c:3741
 #, c-format
@@ -6797,9 +6793,8 @@ msgid "%Jfunction %qF can never be inlined because it uses non-local goto"
 msgstr "%Jdie Funktion %qF kann nie »inline« sein, da sie ein nichtlokales »goto« enthält"
 
 #: tree-inline.c:1029
-#, fuzzy
 msgid "%Jfunction %qF can never be inlined because it uses __builtin_return or __builtin_apply_args"
-msgstr "%Jdie Funktion %qF kann nie »inline« sein, da sie Variablen variabler Größe verwendet"
+msgstr "%Jdie Funktion %qF kann nie »inline« sein, da sie __builtin_return oder __builtin_apply_args verwendet"
 
 #: tree-inline.c:1048
 msgid "%Jfunction %qF can never be inlined because it contains a computed goto"
@@ -7111,7 +7106,7 @@ msgstr "%JRegistername für Nicht-Registervariable %qD angegeben"
 
 #: varasm.c:1046
 msgid "global destructors not supported on this target"
-msgstr "globale Destrukoren werden für dieses Ziel nicht unterstützt"
+msgstr "globale Destruktoren werden für dieses Ziel nicht unterstützt"
 
 #: varasm.c:1107
 msgid "global constructors not supported on this target"
@@ -7163,24 +7158,20 @@ msgid "only weak aliases are supported in this configuration"
 msgstr "in dieser Konfiguration werden nur schwache Aliase unterstützt"
 
 #: varasm.c:4476
-#, fuzzy
 msgid "%J%qD aliased to undefined symbol %qE"
-msgstr "%qD als Alias für undefiniertes Symbol %qE"
+msgstr "%J%qD als Alias für undefiniertes Symbol %qE"
 
 #: varasm.c:4479
-#, fuzzy
 msgid "%J%qD aliased to external symbol %qE"
-msgstr "%qD als Alias für undefiniertes Symbol %qE"
+msgstr "%J%qD als Alias für externes Symbol %qE"
 
 #: varasm.c:4510
-#, fuzzy
 msgid "%Jalias definitions not supported in this configuration"
-msgstr "Alias-Definitionen werden in dieser Konfiguration nicht unterstützt; ignoriert"
+msgstr "%JAlias-Definitionen werden in dieser Konfiguration nicht unterstützt"
 
 #: varasm.c:4515
-#, fuzzy
 msgid "%Jonly weak aliases are supported in this configuration"
-msgstr "in dieser Konfiguration werden nur schwache Aliase unterstützt"
+msgstr "%Jin dieser Konfiguration werden nur schwache Aliase unterstützt"
 
 #: varasm.c:4573
 msgid "visibility attribute not supported in this configuration; ignored"
@@ -7306,7 +7297,7 @@ msgstr "um wie viel eine Übersetzungseinheit durch »inline« wachsen kann (in 
 
 #: params.def:161
 msgid "expense of call operation relative to ordinary aritmetic operations"
-msgstr ""
+msgstr "Kosten der Aufrufoperation relativ zu gewöhnlichen arithmetischen Operationen"
 
 #: params.def:168
 msgid "The maximum amount of memory to be allocated by GCSE"
@@ -7326,15 +7317,15 @@ msgstr "Der Anteil-Schwellwert des Zählers kritischer Kanten, die Redundanzbese
 
 #: params.def:201
 msgid "The maximum number of instructions to consider to unroll in a loop"
-msgstr "Die Höchstzahl der zum Aufrollen von Schleifen zu betrachtenden Anweisungen"
+msgstr "Die Höchstzahl der zum Abrollen von Schleifen zu betrachtenden Anweisungen"
 
 #: params.def:207
 msgid "The maximum number of instructions to consider to unroll in a loop on average"
-msgstr "Die Höchstzahl der zum Aufrollen von Schleifen im Mittel zu betrachtenden Anweisungen"
+msgstr "Die Höchstzahl der zum Abrollen von Schleifen im Mittel zu betrachtenden Anweisungen"
 
 #: params.def:212
 msgid "The maximum number of unrollings of a single loop"
-msgstr "Die Höchstzahl der Iterationen zum Aufrollen in einzelner Schleife"
+msgstr "Die Höchstzahl der Iterationen zum Abrollen in einzelner Schleife"
 
 #: params.def:217
 msgid "The maximum number of insns of a peeled loop"
@@ -7454,7 +7445,7 @@ msgstr "Mit N Aufrufen und V rufmarkierten Variablen in einer Funktion: .GLOBAL_
 
 #: params.def:376
 msgid "The maximum memory locations recorded by cselib"
-msgstr "Höchstzahl der Speicherstellen, die von csellib aufgezeichnet werden"
+msgstr "Höchstzahl der Speicherstellen, die von cselib aufgezeichnet werden"
 
 #: params.def:389
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap"
@@ -7532,7 +7523,7 @@ msgstr "Falsch geformtes %<#pragma align%> - ignoriert"
 
 #: config/sol2-c.c:103
 msgid "invalid alignment for %<#pragma align%>, ignoring"
-msgstr "ungültige Ausrichtung for %<#pragma align%> - ignoriert"
+msgstr "ungültige Ausrichtung für %<#pragma align%> - ignoriert"
 
 #: config/sol2-c.c:118
 msgid "%<#pragma align%> must appear before the declaration of %D, ignoring"
@@ -7614,7 +7605,7 @@ msgstr "Profilerunterstützung für WindISS"
 #: config/alpha/alpha.c:254
 #, c-format
 msgid "-f%s ignored for Unicos/Mk (not supported)"
-msgstr "-f%s für Unicos/Mk (nicht unterstützt) ignoriert"
+msgstr "-f%s für Unicos/Mk ignoriert (nicht unterstützt)"
 
 #: config/alpha/alpha.c:278
 msgid "-mieee not supported on Unicos/Mk"
@@ -8063,7 +8054,7 @@ msgstr "angegebene Anweisung in bedingter Sequenz"
 #: config/arm/arm.c:10734 config/arm/arm.c:10741
 #, c-format
 msgid "invalid operand for code '%c'"
-msgstr "ungültiger Operande für Code »%c«"
+msgstr "ungültiger Operand für Code »%c«"
 
 #: config/arm/arm.c:10627
 msgid "instruction never exectued"
@@ -8229,9 +8220,8 @@ msgid "bad address, not (reg+disp):"
 msgstr "Falsche Adresse, nicht (reg+disp):"
 
 #: config/avr/avr.c:1124
-#, fuzzy
 msgid "bad address, not post_inc or pre_dec:"
-msgstr "Falsche Adresse, nicht (reg+disp):"
+msgstr "Falsche Adresse, nicht post_inc oder pre_dec:"
 
 #: config/avr/avr.c:1135
 msgid "internal compiler error.  Bad address:"
@@ -8360,7 +8350,7 @@ msgstr "Ausschuss am Ende von »#pragma %s«"
 #: config/c4x/c4x.c:312
 #, c-format
 msgid "unknown CPU version %d, using 40.\n"
-msgstr "unbekannte CPU-Version %d, verwende 40.\n"
+msgstr "unbekannte CPU-Version %d, verwendet: 40.\n"
 
 #: config/c4x/c4x.c:874
 #, c-format
@@ -8681,7 +8671,7 @@ msgstr "unerwarteter Indextyp in cris_print_index"
 
 #: config/cris/cris.c:644
 msgid "unexpected base-type in cris_print_base"
-msgstr "unerwarteter Basistyp in cris_print_index"
+msgstr "unerwarteter Basistyp in cris_print_base"
 
 #: config/cris/cris.c:945
 #, c-format
@@ -8827,7 +8817,7 @@ msgstr "Für das MMU-lose Etrax 100-basierte elinux-System übersetzen"
 
 #: config/cris/aout.h:92
 msgid "For elinux, request a specified stack-size for this program"
-msgstr "Für elinux eine angegebene Stapelgröße für diese Programm anfordern"
+msgstr "Für elinux eine angegebene Stapelgröße für dieses Programm anfordern"
 
 #: config/cris/cris.h:354
 msgid "Work around bug in multiplication instruction"
@@ -8972,7 +8962,7 @@ msgstr "Falsches Register für frv_print_operand_memory_reference_reg:"
 #: config/frv/frv.c:2589 config/frv/frv.c:2599 config/frv/frv.c:2608
 #: config/frv/frv.c:2629 config/frv/frv.c:2634
 msgid "Bad insn to frv_print_operand_memory_reference:"
-msgstr "Falscher Befehl für frv_print_operand_memory_references"
+msgstr "Falscher Befehl für frv_print_operand_memory_reference:"
 
 #: config/frv/frv.c:2721
 msgid "bad condition code"
@@ -9176,14 +9166,14 @@ msgid "Use H8/300 alignment rules"
 msgstr "H8/300-Ausrichtungsregeln verwenden"
 
 #: config/i386/host-cygwin.c:65
-#, fuzzy, c-format
+#, c-format
 msgid "can't extend PCH file: %m"
-msgstr "PCH-Datei kann nicht gelesen werden: %m"
+msgstr "PCH-Datei kann nicht erweitert werden: %m"
 
 #: config/i386/host-cygwin.c:76
-#, fuzzy, c-format
+#, c-format
 msgid "can't set position in PCH file: %m"
-msgstr "Position in PCH-Datei kann nicht ermittelt werden: %m"
+msgstr "Position in PCH-Datei kann nicht gesetzt werden: %m"
 
 #: config/i386/i386.c:1242
 #, c-format
@@ -9580,11 +9570,11 @@ msgstr "Eingebaute MMX-, SSE- und SSE2-Funktionen und Codeerzeugung nicht unters
 
 #: config/i386/i386.h:411
 msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-msgstr "Eingebaute MMX-, SSE-, SSE2 und SSE3-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute MMX-, SSE-, SSE2- und SSE3-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.h:413
 msgid "Do not support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-msgstr "Eingebaute MMX-, SSE-, SSE2 und SSE3-Funktionen und Codeerzeugung nicht unterstützen"
+msgstr "Eingebaute MMX-, SSE-, SSE2- und SSE3-Funktionen und Codeerzeugung nicht unterstützen"
 
 #: config/i386/i386.h:415
 msgid "sizeof(long double) is 16"
@@ -9878,11 +9868,11 @@ msgstr "Quadratwurzel nicht »inline« generieren"
 
 #: config/ia64/ia64.h:225
 msgid "Enable Dwarf 2 line debug info via GNU as"
-msgstr "Dwarf 2 Zeilenfehlersuchinfo über GNU as einschalten"
+msgstr "Dwarf-2-Zeilenfehlersuchinfo über GNU as einschalten"
 
 #: config/ia64/ia64.h:227
 msgid "Disable Dwarf 2 line debug info via GNU as"
-msgstr "Dwarf 2 Zeilenfehlersuchinfo über GNU as ausschalten"
+msgstr "Dwarf-2-Zeilenfehlersuchinfo über GNU as ausschalten"
 
 #: config/ia64/ia64.h:229
 msgid "Enable earlier placing stop bits for better scheduling"
@@ -10458,9 +10448,8 @@ msgid "-mint64 is a deprecated option"
 msgstr "-mint64 ist eine veraltete Option"
 
 #: config/mips/mips.c:4142
-#, fuzzy
 msgid "unrecognized option %<-mfix-vr4130%s%>"
-msgstr "nicht erkannte Option »-%s«"
+msgstr "nicht erkannte Option %<-mfix-vr4130%s%>"
 
 #: config/mips/mips.c:4193
 msgid "generation of Branch Likely instructions enabled, but not supported by architecture"
@@ -10812,23 +10801,20 @@ msgid "FP exceptions are not enabled"
 msgstr "Fließkomma-Ausnahmen sind nicht eingeschaltet"
 
 #: config/mips/mips.h:677
-#, fuzzy
 msgid "Assume all symbols have 32-bit values"
-msgstr "Annehmen, dass alle doubles ausgerichtet sind"
+msgstr "Annehmen, dass alle Symbole 32-Bit-Werte haben"
 
 #: config/mips/mips.h:679
-#, fuzzy
 msgid "Don't assume all symbols have 32-bit values"
-msgstr "Keine symbolischen Registernamen verwenden"
+msgstr "Nicht annehmen, dass alle Symbole 32-Bit-Werte haben"
 
 #: config/mips/mips.h:794
 msgid "Specify a Standard MIPS ISA"
 msgstr "Standard MIPS ISA angeben"
 
 #: config/mips/mips.h:800
-#, fuzzy
 msgid "Work around VR4130 mflo/mfhi errata"
-msgstr "R4000-Errata beachten und umgehen"
+msgstr "Errata für VR4130 mflo/mfhi beachten und umgehen"
 
 #. Output assembler code to FILE to increment profiler label # LABELNO
 #. for profiling a function entry.
@@ -11129,7 +11115,7 @@ msgid ""
 "Valid options are 93, 95 and 98.\n"
 msgstr ""
 "Unbekannte Option für -munix= (%s).\n"
-"Gültige Optionen sind 93, 95 und 98\n"
+"Gültige Optionen sind 93, 95 und 98.\n"
 
 #: config/pa/pa.c:468
 #, c-format
@@ -11138,7 +11124,7 @@ msgid ""
 "Valid options are 93 and 95.\n"
 msgstr ""
 "Unbekannte Option für -munix= (%s).\n"
-"Gültige Optionen sind 93 und 95\n"
+"Gültige Optionen sind 93 und 95.\n"
 
 #: config/pa/pa.c:472
 #, c-format
@@ -11242,11 +11228,11 @@ msgstr "Leerregister nicht ausschalten"
 
 #: config/pa/pa.h:272
 msgid "Put jumps in call delay slots"
-msgstr "Sprünge in Aurufverzögerungsschlitze stecken"
+msgstr "Sprünge in Aufrufverzögerungsschlitze stecken"
 
 #: config/pa/pa.h:274
 msgid "Do not put jumps in call delay slots"
-msgstr "Keine Sprünge in Aurufverzögerungsschlitze stecken"
+msgstr "Keine Sprünge in Aufrufverzögerungsschlitze stecken"
 
 #: config/pa/pa.h:276
 msgid "Disable indexed addressing"
@@ -12861,11 +12847,11 @@ msgstr "PC-relativen L32R-Befehl zum Laden von Konstanten verwenden"
 
 #: config/xtensa/xtensa.h:83
 msgid "Disable fused multiply/add and multiply/subtract FP instructions"
-msgstr "Verschmolzene Multplizier/Addier- und Multiplizier/Subtrahier-Befehle für Fließkomma ausschalten"
+msgstr "Verschmolzene Multiplizier/Addier- und Multiplizier/Subtrahier-Befehle für Fließkomma ausschalten"
 
 #: config/xtensa/xtensa.h:85
 msgid "Enable fused multiply/add and multiply/subtract FP instructions"
-msgstr "Verschmolzene Multplizier/Addier- und Multiplizier/Subtrahier-Befehle für Fließkomma einschalten"
+msgstr "Verschmolzene Multiplizier/Addier- und Multiplizier/Subtrahier-Befehle für Fließkomma einschalten"
 
 #: config/xtensa/xtensa.h:87
 msgid "Intersperse literal pools with code in the text section"
