@@ -2,6 +2,10 @@
 
 	* tree-cfg.c (tree_forwarder_block_p): Fix a typo.
 
+	* cfglayout.c (block_locators_blocks,
+	insn_locators_initialize, insn_scope): Use VEC instead of
+	VARRAY.
+
 2005-05-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/predicates.md (const_compl_high_operand): New.
