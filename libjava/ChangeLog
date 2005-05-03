@@ -1,3 +1,8 @@
+2005-05-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/VMSecurityManager.java (currentClassLoader): Don't
+	call VMClassLoader.getSystemClassLoader.
+
 2005-04-29  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/NetworkInterface.java

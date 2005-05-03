@@ -1,6 +1,6 @@
 /*
  * java.lang.SecurityManager: part of the Java Class Libraries project.
- * Copyright (C) 1998, 2001, 2002 Free Software Foundation
+ * Copyright (C) 1998, 2001, 2002, 2005 Free Software Foundation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -54,7 +54,7 @@ class VMSecurityManager
     // The docs above are wrong.  See the online docs.
     // FIXME this implementation is a bit wrong too -- the docs say we
     // must also consider ancestors of the system class loader.
-    ClassLoader systemClassLoader = VMClassLoader.getSystemClassLoader();
+    ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
     Class[] classStack = getClassContext (caller);
     for (int i = 0; i < classStack.length; i++)
       {
