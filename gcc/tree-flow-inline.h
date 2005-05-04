@@ -1005,6 +1005,7 @@ op_iter_init (ssa_op_iter *ptr, tree stmt, int flags)
 static inline use_operand_p
 op_iter_init_use (ssa_op_iter *ptr, tree stmt, int flags)
 {
+  gcc_assert ((flags & SSA_OP_ALL_DEFS) == 0);
   op_iter_init (ptr, stmt, flags);
   ptr->iter_type = ssa_op_iter_use;
   return op_iter_next_use (ptr);
@@ -1015,6 +1016,7 @@ op_iter_init_use (ssa_op_iter *ptr, tree stmt, int flags)
 static inline def_operand_p
 op_iter_init_def (ssa_op_iter *ptr, tree stmt, int flags)
 {
+  gcc_assert ((flags & (SSA_OP_ALL_USES | SSA_OP_VIRTUAL_KILLS)) == 0);
   op_iter_init (ptr, stmt, flags);
   ptr->iter_type = ssa_op_iter_def;
   return op_iter_next_def (ptr);
@@ -1175,24 +1177,11 @@ static inline int
 num_ssa_operands (tree stmt, int flags)
 {
   ssa_op_iter iter;
+  tree t;
   int num = 0;
 
-  op_iter_init (&iter, stmt, flags);
-  for ( ; iter.defs; iter.defs = iter.defs->next)
+  FOR_EACH_SSA_TREE_OPERAND (t, stmt, iter, flags)
     num++;
-  for ( ; iter.uses; iter.uses = iter.uses->next)
-    num++;
-  for ( ; iter.vuses; iter.vuses = iter.vuses->next)
-    num++;
-  for ( ; iter.maydefs; iter.maydefs = iter.maydefs->next)
-    num++;
-  for ( ; iter.mayuses; iter.mayuses = iter.mayuses->next)
-    num++;
-  for ( ; iter.mustdefs; iter.mustdefs = iter.mustdefs->next)
-    num++;
-  for ( ; iter.mustkills; iter.mustkills = iter.mustkills->next)
-    num++;
-
   return num;
 }
 
