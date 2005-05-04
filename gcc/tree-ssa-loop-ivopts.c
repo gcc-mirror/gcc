@@ -5416,7 +5416,6 @@ rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
     }
 
   TREE_OPERAND (copy, 0) = new_name;
-  update_stmt (copy);
   bsi_insert_before (bsi, copy, BSI_SAME_STMT);
   with = new_name;
 
