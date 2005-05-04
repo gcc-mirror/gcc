@@ -16731,32 +16731,35 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  break;
 
 	case 1:
-	  /* tmp = op0 = A B C D */
+	  /* tmp = target = A B C D */
 	  tmp = copy_to_reg (target);
-
-	  /* op0 = C C D D */
+	  /* target = A A B B */
 	  emit_insn (gen_sse_unpcklps (target, target, target));
-
-	  /* op0 = C C D X */
+	  /* target = X A B B */
 	  ix86_expand_vector_set (false, target, val, 0);
-
-	  /* op0 = A B X D  */
+	  /* target = A X C D  */
 	  emit_insn (gen_sse_shufps_1 (target, target, tmp,
 				       GEN_INT (1), GEN_INT (0),
 				       GEN_INT (2+4), GEN_INT (3+4)));
 	  return;
 
 	case 2:
+	  /* tmp = target = A B C D */
 	  tmp = copy_to_reg (target);
-	  ix86_expand_vector_set (false, target, val, 0);
+	  /* tmp = X B C D */
+	  ix86_expand_vector_set (false, tmp, val, 0);
+	  /* target = A B X D */
 	  emit_insn (gen_sse_shufps_1 (target, target, tmp,
 				       GEN_INT (0), GEN_INT (1),
 				       GEN_INT (0+4), GEN_INT (3+4)));
 	  return;
 
 	case 3:
+	  /* tmp = target = A B C D */
 	  tmp = copy_to_reg (target);
-	  ix86_expand_vector_set (false, target, val, 0);
+	  /* tmp = X B C D */
+	  ix86_expand_vector_set (false, tmp, val, 0);
+	  /* target = A B X D */
 	  emit_insn (gen_sse_shufps_1 (target, target, tmp,
 				       GEN_INT (0), GEN_INT (1),
 				       GEN_INT (2+4), GEN_INT (0+4)));

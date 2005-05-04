@@ -1,5 +1,8 @@
 2005-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/21239
+	* gcc.dg/i386-sse-11.c: New test.
+
 	PR target/21297
 	* gcc.c-torture/execute/20050502-2.c: New test.
 

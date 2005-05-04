@@ -1,5 +1,11 @@
 2005-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_vector_set): Fix setting 3rd and 4th
+	item in V4SF mode.
+
+	PR rtl-optimization/21239
+	* combine.c (combine_simplify_rtx) <case VEC_SELECT>: Fix a typo.
+
 	PR target/21297
 	* config/i386/i386.c (legitimize_address): When canonicalizing
 	ASHIFT into MULT, multiply by 1 << shift_count instead of
