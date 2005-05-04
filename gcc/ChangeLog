@@ -1,3 +1,9 @@
+2005-05-04 Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Emit
+	setting of vrsave register for current function after
+	call to save_world is emitted.
+
 2005-05-05  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/predicates.md: New file.
