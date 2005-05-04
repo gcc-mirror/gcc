@@ -1,5 +1,9 @@
 2005-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* java/awt/image/VolatileImage.java: Document.
+
+2005-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c
 	(init_glib_threads): Check if threading system is already
 	initialized.
