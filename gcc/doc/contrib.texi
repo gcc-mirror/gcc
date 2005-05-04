@@ -317,6 +317,9 @@ the support for System V Release 4.  He has also worked heavily on the
 Intel 386 and 860 support.
 
 @item
+Mostafa Hagog for Swing Modulo Scheduling (SMS) and post reload GCSE@.
+
+@item
 Bruno Haible for improvements in the runtime overhead for EH, new
 warnings and assorted bug fixes.
 
@@ -973,6 +976,9 @@ description for the Tron architecture (specifically, the Gmicro).
 
 @item
 Kevin Zachmann helped port GCC to the Tahoe.
+
+@item
+Ayal Zaks for Swing Modulo Scheduling (SMS).
 
 @item
 Xiaoqiang Zhang for work on gfortran.
