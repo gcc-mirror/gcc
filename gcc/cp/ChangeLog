@@ -1,3 +1,9 @@
+2005-05-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cp-tree.h (language_function): Change the type of
+	x_local_names to VEC.
+	* decl.c (push_local_name): Adjust uses of local_names.
+
 2005-05-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* friend.c, lex.c, mangle.c, repo.c: Update copyright.

@@ -750,7 +750,7 @@ struct language_function GTY(())
   struct named_label_use_list *x_named_label_uses;
   struct named_label_list *x_named_labels;
   struct cp_binding_level *bindings;
-  varray_type x_local_names;
+  VEC(tree,gc) *x_local_names;
 };
 
 /* The current C++-specific per-function global variables.  */
