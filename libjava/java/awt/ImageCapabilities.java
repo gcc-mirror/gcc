@@ -1,5 +1,5 @@
-/* ImageCapabilities.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* ImageCapabilities.java -- the capabilities of an image buffer
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,23 +39,60 @@ exception statement from your version. */
 package java.awt;
 
 /**
- * STUBS ONLY
+ * This class represents the capabilities of an image buffer.  An
+ * image buffer may be backed by accelerated graphics resources.
+ * Those resources may or may not be volatile.  This class is used to
+ * describe these image buffer characteristics.
  */
 public class ImageCapabilities implements Cloneable
 {
+  /**
+   * Whether or not this the image buffer uses accelerated graphics
+   * resources.
+   */
   private final boolean accelerated;
+
+  /**
+   * Create a new image capability descriptor.
+   *
+   * @param accelerated true if the image buffer uses accelerated
+   * graphics resources
+   */
   public ImageCapabilities(boolean accelerated)
   {
     this.accelerated = accelerated;
   }
+
+  /**
+   * Returns whether or not the image buffer uses accelerated graphics
+   * resources.
+   *
+   * @return true if the image buffer uses accelerated graphics
+   * resources; false otherwise
+   */
   public boolean isAccelerated()
   {
     return accelerated;
   }
+
+  /**
+   * Returns whether or not the image buffer's resources are volatile,
+   * meaning that they can be reclaimed by the graphics system at any
+   * time.
+   *
+   * @return true if the image buffer's resources are volatile; false
+   * otherwise
+   */
   public boolean isTrueVolatile()
   {
     return true;
   }
+
+  /**
+   * Clone this image capability descriptor.
+   *
+   * @return a clone of this image capability descriptor
+   */
   public Object clone()
   {
     try
@@ -64,7 +101,7 @@ public class ImageCapabilities implements Cloneable
       }
     catch (CloneNotSupportedException e)
       {
-        throw (Error) new InternalError().initCause(e); // Impossible
+        throw (Error) new InternalError().initCause(e);
       }
   }
-} // class ImageCapabilities
+}
