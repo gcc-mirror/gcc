@@ -76,6 +76,9 @@ maxloc0_4_r8 (gfc_array_i4 * retarray, gfc_array_r8 *array)
       if (retarray->dim[0].stride == 0)
 	retarray->dim[0].stride = 1;
     }
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
@@ -191,6 +194,8 @@ mmaxloc0_4_r8 (gfc_array_i4 * retarray, gfc_array_r8 *array,
       if (retarray->dim[0].stride == 0)
 	retarray->dim[0].stride = 1;
     }
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
 
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;

@@ -40,10 +40,10 @@ export_proto(all_l4);
 void
 all_l4 (gfc_array_l4 *retarray, gfc_array_l4 *array, index_type *pdim)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
   GFC_LOGICAL_4 *base;
   GFC_LOGICAL_4 *dest;
   index_type rank;

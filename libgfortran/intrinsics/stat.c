@@ -73,7 +73,7 @@ stat_i4_sub (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
   char *str;
   struct stat sb;
 
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type stride[GFC_MAX_DIMENSIONS];
       
   /* If the rank of the array is not 1, abort.  */
   if (GFC_DESCRIPTOR_RANK (sarray) != 1)
@@ -168,7 +168,7 @@ stat_i8_sub (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
   char *str;
   struct stat sb;
 
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type stride[GFC_MAX_DIMENSIONS];
       
   /* If the rank of the array is not 1, abort.  */
   if (GFC_DESCRIPTOR_RANK (sarray) != 1)
@@ -293,7 +293,7 @@ fstat_i4_sub (GFC_INTEGER_4 *unit, gfc_array_i4 *sarray, GFC_INTEGER_4 *status)
   int val;
   struct stat sb;
 
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type stride[GFC_MAX_DIMENSIONS];
       
   /* If the rank of the array is not 1, abort.  */
   if (GFC_DESCRIPTOR_RANK (sarray) != 1)
@@ -379,7 +379,7 @@ fstat_i8_sub (GFC_INTEGER_8 *unit, gfc_array_i8 *sarray, GFC_INTEGER_8 *status)
   int val;
   struct stat sb;
 
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type stride[GFC_MAX_DIMENSIONS];
       
   /* If the rank of the array is not 1, abort.  */
   if (GFC_DESCRIPTOR_RANK (sarray) != 1)

@@ -25,10 +25,10 @@ export_proto(name`'rtype_qual`_'atype_code);
 void
 name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
   atype_name *base;
   rtype_name *dest;
   index_type rank;
@@ -160,11 +160,11 @@ void
 `m'name`'rtype_qual`_'atype_code (rtype * retarray, atype * array,
 				  index_type *pdim, gfc_array_l4 * mask)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
-  index_type mstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
+  index_type mstride[GFC_MAX_DIMENSIONS];
   rtype_name *dest;
   atype_name *base;
   GFC_LOGICAL_4 *mbase;

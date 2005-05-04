@@ -76,6 +76,9 @@ minloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array)
       if (retarray->dim[0].stride == 0)
 	retarray->dim[0].stride = 1;
     }
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
@@ -192,6 +195,8 @@ mminloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array,
 	retarray->dim[0].stride = 1;
     }
 
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
@@ -241,7 +246,7 @@ mminloc0_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 *array,
     {
       {
         /* Implementation start.  */
-  printf("mbase = %p, *mbase = %d, *base=%d\n");
+
   if (*mbase && *base < minval)
     {
       minval = *base;
