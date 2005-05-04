@@ -957,7 +957,7 @@ op_iter_next_tree (ssa_op_iter *ptr)
 }
 
 
-/* This functiins clears the iterator PTR, and marks it done.  This is normally
+/* This functions clears the iterator PTR, and marks it done.  This is normally
    used to prevent warnings in the compile about might be uninitailzied
    components.  */
 
@@ -1103,7 +1103,7 @@ op_iter_init_must_and_may_def (ssa_op_iter *ptr, tree stmt,
 }
 
 
-/* If there is a single opernad in STMT matching FLAGS, return it.  Otherwise
+/* If there is a single operand in STMT matching FLAGS, return it.  Otherwise
    return NULL.  PTR is the iterator to use.  */
 static inline tree
 single_ssa_tree_operand (tree stmt, int flags)
@@ -1121,7 +1121,7 @@ single_ssa_tree_operand (tree stmt, int flags)
 }
 
 
-/* If there is a single opernad in STMT matching FLAGS, return it.  Otherwise
+/* If there is a single operand in STMT matching FLAGS, return it.  Otherwise
    return NULL.  PTR is the iterator to use.  */
 static inline use_operand_p
 single_ssa_use_operand (tree stmt, int flags)
@@ -1140,7 +1140,7 @@ single_ssa_use_operand (tree stmt, int flags)
 
 
 
-/* If there is a single opernad in STMT matching FLAGS, return it.  Otherwise
+/* If there is a single operand in STMT matching FLAGS, return it.  Otherwise
    return NULL.  PTR is the iterator to use.  */
 static inline def_operand_p
 single_ssa_def_operand (tree stmt, int flags)
@@ -1158,7 +1158,7 @@ single_ssa_def_operand (tree stmt, int flags)
 }
 
 
-/* If there is a single opernad in STMT matching FLAGS, return it.  Otherwise
+/* If there is a single operand in STMT matching FLAGS, return it.  Otherwise
    return NULL.  PTR is the iterator to use.  */
 static inline bool
 zero_ssa_operands (tree stmt, int flags)
@@ -1170,7 +1170,7 @@ zero_ssa_operands (tree stmt, int flags)
 }
 
 
-/* Return the  number of opernads mathcing FLAGS in STMT.  */
+/* Return the number of operands matching FLAGS in STMT.  */
 static inline int
 num_ssa_operands (tree stmt, int flags)
 {
@@ -1285,7 +1285,7 @@ op_iter_init_phiuse (ssa_op_iter *ptr, tree phi, int flags)
 
   comp = (is_gimple_reg (phi_def) ? SSA_OP_USE : SSA_OP_VIRTUAL_USES);
     
-  /* if the PHI node deosn't the operand type we care about, we're done.  */
+  /* If the PHI node doesn't the operand type we care about, we're done.  */
   if ((flags & comp) == 0)
     {
       ptr->done = true;
@@ -1299,7 +1299,7 @@ op_iter_init_phiuse (ssa_op_iter *ptr, tree phi, int flags)
 }
 
 
-/* Start an iterator for a PHI defintion.  */
+/* Start an iterator for a PHI definition.  */
 
 static inline def_operand_p
 op_iter_init_phidef (ssa_op_iter *ptr, tree phi, int flags)
@@ -1314,7 +1314,7 @@ op_iter_init_phidef (ssa_op_iter *ptr, tree phi, int flags)
 
   comp = (is_gimple_reg (phi_def) ? SSA_OP_DEF : SSA_OP_VIRTUAL_DEFS);
     
-  /* if the PHI node deosn't the operand type we care about, we're done.  */
+  /* If the PHI node doesn't the operand type we care about, we're done.  */
   if ((flags & comp) == 0)
     {
       ptr->done = true;

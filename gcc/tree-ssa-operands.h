@@ -267,9 +267,9 @@ typedef struct ssa_operand_iterator_d
        !op_iter_done (&(ITER));					\
        op_iter_next_maymustdef (&(KILLVAR), &(DEFVAR), &(ITER)))
 
-/* This macro will execute a loop over all the arguemnts of a PHI which
-   match FLAGS.   A use_operand_p is alwasy returned via USEVAR.  FLAGS
-   can be eiother SSA_OP_USE or SSA_OP_VIRTUAL_USES or SSA_OP_ALL_USES.  */
+/* This macro will execute a loop over all the arguments of a PHI which
+   match FLAGS.   A use_operand_p is always returned via USEVAR.  FLAGS
+   can be either SSA_OP_USE or SSA_OP_VIRTUAL_USES or SSA_OP_ALL_USES.  */
 #define FOR_EACH_PHI_ARG (USEVAR, STMT, ITER, FLAGS)		\
   for ((USEVAR) = op_iter_init_phiuse (&(ITER), STMT, FLAGS);	\
        !op_iter_done (&(ITER));					\
@@ -314,7 +314,7 @@ typedef struct ssa_operand_iterator_d
 										/* This macro returns TRUE if there are no operands matching FLAGS in STMT.  */
 #define ZERO_SSA_OPERANDS(STMT, FLAGS) 	zero_ssa_operands (STMT, FLAGS)
 
-/* THis macro counts the number of operands in STMT matching FLAGS.  */
+/* This macro counts the number of operands in STMT matching FLAGS.  */
 #define NUM_SSA_OPERANDS(STMT, FLAGS)	num_ssa_operands (STMT, FLAGS)
 
 #endif  /* GCC_TREE_SSA_OPERANDS_H  */

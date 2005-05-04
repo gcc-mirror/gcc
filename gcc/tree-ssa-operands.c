@@ -104,7 +104,7 @@ Boston, MA 02111-1307, USA.  */
 struct opbuild_list_d GTY (())
 {
   varray_type vars;     /* The VAR_DECLS tree.  */
-  varray_type uid;      /* The sort value for virtaul symbols.  */
+  varray_type uid;      /* The sort value for virtual symbols.  */
   varray_type next;     /* The next index in the sorted list.  */
   int first;            /* First element in list.  */
   unsigned num;		/* Number of elements.  */
@@ -284,7 +284,7 @@ opbuild_append_virtual (struct opbuild_list_d *list, tree var)
     }
   else
     {
-      /* Dont enter duplicates at all.  */
+      /* Don't enter duplicates at all.  */
       if (VARRAY_UINT (list->uid, last) == var_uid)
         return;
       
@@ -359,7 +359,7 @@ opbuild_clear (struct opbuild_list_d *list)
 }
 
 
-/* Remove ELEM from LIST where PREV is the rpevious element.  Return the next 
+/* Remove ELEM from LIST where PREV is the previous element.  Return the next 
    element.  */
 
 static inline int 
@@ -1064,7 +1064,7 @@ copy_virtual_operands (tree dest, tree src)
 
   build_ssa_operands (dest);
 
-  /* Copy all the virtuial fields.  */
+  /* Copy all the virtual fields.  */
   FOR_EACH_SSA_TREE_OPERAND (t, src, iter, SSA_OP_VUSE)
     append_vuse (t);
   FOR_EACH_SSA_TREE_OPERAND (t, src, iter, SSA_OP_VMAYDEF)

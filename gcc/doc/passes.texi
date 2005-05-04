@@ -409,7 +409,7 @@ the number of elements operated upon in parallel in each iteration, and the
 Additional loop transformations such as peeling and versioning may take place
 to align the number of iterations, and to align the memory accesses in the loop.
 The pass is implemented in @file{tree-vectorizer.c} (the main driver and general
-utilities), @file{tree-vect-analyze.c} and @file{tree-vect-tranform.c}.
+utilities), @file{tree-vect-analyze.c} and @file{tree-vect-transform.c}.
 Analysis of data references is in @file{tree-data-ref.c}.
 
 @item Tree level if-conversion for vectorizer
