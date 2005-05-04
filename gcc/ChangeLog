@@ -1,3 +1,10 @@
+2005-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/21297
+	* config/i386/i386.c (legitimize_address): When canonicalizing
+	ASHIFT into MULT, multiply by 1 << shift_count instead of
+	1 << log2 (shift_count).
+
 2005-05-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/16888
