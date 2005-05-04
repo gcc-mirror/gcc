@@ -1,0 +1,3601 @@
+1998-12-30  Anthony Green  <green@cygnus.com>
+
+	* README: Removed.
+	* LIBJAVA_LICENSE, COPYING.LIB: Created.
+
+1998-12-23  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/PushbackInputStream.java (read): `off' already includes
+	`numBytes'.
+
+1998-12-17  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GCJ_canadian): Include target_alias.
+
+	* java/lang/natFirstThread.cc (run): Require main's class to be
+	public.
+
+1998-12-16  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/Locale.java (JAPAN): Language is `ja', not `jp'.
+
+	* java/util/ResourceBundle.java (getBundle): Throw
+	NullPointerException if locale argument is null.
+
+	* java/lang/natClass.cc (forName): Throw NullPointerException if
+	argument is null.
+	Include NullPointerException.h.
+
+1998-12-14  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Character.java (Character): Implement Comparable.
+	(compareTo): New methods.
+
+	* java/util/Locale.java (CANADA, FRANCE, JAPAN): Now `final'.  Use
+	correct country and language codes.
+	(UK, US): New constants.
+	(setDefault): Language codes are lower-case.
+
+	* java/lang/natClass.cc (getDeclaredConstructor): New method.
+	(getDeclaredConstructors): Likewise.
+	(getDeclaredField): Likewise.
+	(getDeclaredFields): Likewise.
+	(getDeclaredMethod): Likewise.
+	(getDeclaredMethods): Likewise.
+	(getField): Likewise.
+	(getFields): Likewise.
+	(getMethod): Likewise.
+	(getMethods): Likewise.
+	* java/lang/Class.java: Declare new methods.
+	* java/lang/Class.h: Declare new methods.
+
+	* java/lang/natString.cc: Removed `#pragma implementation'.
+	* include/cni.h (_Jv_GetStringChars): New function.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java/lang/String.h): Don't generate definition for
+	_Jv_GetStringChars.
+
+	* java/lang/natString.cc: Added `#pragma implementation'.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libjava.zip): Put build directory first in class
+	path to avoid bug in compiler.
+
+1998-12-14  Anthony Green  <green@cygnus.com>
+
+	* java/util/Locale.java: Add CANADA, FRANCE and JAPAN.
+
+	* include/javaprims.h: Add EventObject, ListResourceBundle and
+	ResourceBundle.
+
+1998-12-13  Anthony Green  <green@cygnus.com>
+
+	* mauve-libjava: Run the ResourceBundle tests.
+
+	* java/lang/natClass.cc (_Jv_FindClass): Don't fail when loader is
+	NULL.
+
+Sun Dec 13 18:11:21 1998  Per Bothner  <bothner@cygnus.com>
+
+	* configure.in, configure:  Make --enable-gcj-classes and
+	--enable-source-compilation the default.  (Nervously...)  Yeah!
+	Based on a patch from Tom Tromey.
+
+1998-12-13  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/EventObject.java: New file.
+	* java/util/EventListener.java: New file.
+
+	* include/javaprims.h: Updated class declarations.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added Constructor.h.
+	(java/lang/String.h): Don't inline String::length().
+	* java/lang/Class.h (getConstructor, getConstructors): Declare.
+	* java/lang/Class.java (initializeClass, hackRunInitializers,
+	hackTrampoline): No need to mark `final'.
+	(getConstructor, getConstructors): Declare.
+	* java/lang/reflect/Field.java (equals): New method.
+	* java/lang/natClass.cc (getConstructor): New method.
+	(getConstructors): Likewise.
+	Include Method.h, Field.h, Constructor.h.
+	* java/lang/reflect/Constructor.java: New file.
+	* java/lang/reflect/Method.java (toString): No space before open
+	paren.
+	(equals): Simplified.
+
+1998-12-13  Anthony Green  <green@cygnus.com>
+
+	* java/util/ResourceBundle.java: New file.
+	* java/util/ListResourceBundle.java: New file.
+
+1998-12-12  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/System.java (in, out, err): Now buffered streams by
+	default.
+
+	* include/javaprims.h: Updated class declarations.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added AccessibleObject.h, Method.h,
+	InvocationTargetException.h, Void.h, Byte.h, Short.h, Integer.h,
+	Long.h, Boolean.h.
+	(nat_files): Added natMethod.o.
+	* java/lang/reflect/natMethod.cc: New file.
+	* java/lang/reflect/Field.java (Field): Now extends
+	AccessibleObject.
+	* java/lang/reflect/AccessibleObject.java: New file.
+	* java/lang/reflect/InvocationTargetException.java: New file.
+
+1998-12-11  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc, prims.cc, include/jvm.h, java/lang/Class.h,
+	java/lang/Object.h, java/lang/natClass.cc, java/lang/natObject.cc:
+	Renamed dtable -> vtable and _Jv_DispatchTable -> _Jv_VTable.
+
+	* java/io/OutputStreamWriter.java (buffer): Size at 8192 bytes.
+
+1998-12-09  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/natDate.cc (_POSIX_THREAD_SEMANTICS): Define if
+	HAVE_CTIME_R.
+
+	* java/lang/natCharacter.cc (toTitleCase): Handle case where
+	character is already titlecase.
+
+	* java/lang/Character.java (isJavaLetter): Follow spec.
+	(isJavaLetterOrDigit): Likewise.
+
+	* java/util/GregorianCalendar.java (gregorianCutover): Append
+	`L'.
+
+	* java/lang/Character.java (isWhitespace): Use \r and not \u000d.
+
+1998-12-08  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/Modifier.java (toString): Replace second
+	`static' with `synchronized'.
+
+	* java/lang/natObject.cc (_Jv_FinalizeObject): Call hack12_6.
+	* java/lang/Object.h (Object::hack12_6): Declare.
+	* java/lang/Object.java (hack12_6): New function.
+
+1998-12-07  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-array.h (__JArray::clone): Removed decl.
+	* prims.cc (__JArray::clone): Removed.
+	* java/lang/natObject.cc (clone): Incorporate code to clone an
+	array.
+
+	* java/lang/natClass.cc (_Jv_NewClass): Set class loader.
+	(_Jv_FindArrayClass): Set dtable_method_count on new class.
+	Correctly use dtable_method_count.
+
+1998-12-07  Andrew Haley  <aph@cygnus.co.uk>
+
+	* java/lang/Double.java (isInfinite, isNaN): Handle correct
+	IEEE754 values.
+
+1998-12-06  Anthony Green  <green@cygnus.com>
+
+	* mauve-libjava: Don't test ResourceBundle.
+
+1998-12-04  Tom Tromey  <tromey@cygnus.com>
+
+	More JDK 1.2 spec fixes:
+	* java/util/Date.java (millis): Now private.
+	* java/text/DateFormat.java (DateFormat): Constructor now
+	protected.
+	* java/lang/Void.java (Void): New private constructor.
+	* java/lang/System.java (System): New private constructor.
+	* java/lang/SecurityManager.java (classLoaderDepth): Uncommented
+	body.
+	(currentClassLoader): New method.
+	(currentLoadedClass): New method.
+	* java/lang/Math.java (Math): New private constructor.
+	* java/lang/Compiler.java (Compiler): New private constructor.
+	* java/lang/Class.java (Class): New private constructor.
+	* java/lang/Double.java (toString): Removed access specifier from
+	two-argument `toString' method.
+
+1998-12-04  Andrew Haley  <aph@cygnus.co.uk>
+
+	* java/lang/s_rint.c (rint): Make the variable w volatile; this
+	causes it to be flushed from an fp register (where it may be
+	longer than double precision) to a double in memory.  This is
+	essential to ensure correct rounding behaviour.
+ 
+1998-12-04  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-assert.h (_Jv_Abort): Declare as `noreturn'
+	function.
+
+	* java/lang/Character.java (isIdentifierIgnorable): Added comment
+	explaining apparent divergence from JDK 1.2.
+
+1998-12-04  Per Bothner  <bothner@cygnus.com>
+
+	* include/no-threads.h:  Remove unused parameter names.
+	This silences a bunch of warnings.
+
+1998-12-04  Tom Tromey  <tromey@cygnus.com>
+
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (HAVE_CTIME_R): New symbol.
+
+1998-12-03  Tom Tromey  <tromey@cygnus.com>
+
+	* mauve-libjava: Added many more categories to reject.
+
+	Changes to follow JDK1.2 spec:
+	* java/lang/System.java (arraycopy, init_properties, checkSetIO,
+	setErr, setIn, setOut): No need to be `final'.
+	* java/lang/natObject.cc (wait): `nanos' argument is an int.
+	* java/lang/Object.h (Object::wait): `nanos' argument is an int.
+	* java/lang/Object.java (wait): `nanos' argument is an int.
+	* java/lang/VirtualMachineError.java: Class is abstract.
+	* java/lang/ThreadDeath.java: Made constructors public.
+	* java/io/FileDescriptor.java (FileDescriptor): Added missing
+	constructor.
+
+Thu Dec  3 20:29:38 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/text/DateFormatSymbols.java (getAmPmStrings,
+ 	getLocalPatternChars, setShortWeekdays): Fixed typos in method names.
+
+Thu Dec  3 19:21:53 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/RandomAccessFile.java (writeInt, writeLong, writeFloat,
+ 	writeDouble, writeByte, writeBytes, writeChar, writeChars,
+ 	writeShort, writeUTF): Added 'final' to signature to match JDK 1.1
+ 	and 1.2.
+
+	* java/lang/IllegalThreadStateException.java
+ 	(IllegalThreadStateException): Changed extending class to match spec.
+
+	* java/lang/NumberFormatException.java
+	(java/lang/NumberFormatException): Changed extending class to match
+ 	spec.
+
+	* java/util/Observer.java (Observer): Changed sig to match JCL.
+
+Thu Dec  3 19:05:26 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/DataOutputStream.java (writeInt, writeLong, writeFloat,
+ 	writeDouble, writeBytes, writeChars, writeUTF): Added 'final' to
+ 	signature to match JDK 1.1 and 1.2.
+
+Thu Dec  3 16:47:42 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am: Changed to use $(PERL) rather than hardcoded 'perl'.
+	* configure.in (PERL): Added AC_CHECK_PROGS to look for installed perl.
+	* Makefile.in, configure: Rebuilt.
+
+	* java/text/ParsePosition.java (setErrorIndex): Fixed typo in method
+	name.
+
+1998-12-02  Tom Tromey  <tromey@cygnus.com>
+
+	* mauve-libjava: New file.
+
+	The remaining `-W -Wall' fixes:
+	* java/lang/e_sqrt.c (__ieee754_sqrt): Added cast to unsigned to
+	avoid warning.
+	* java/lang/s_scalbn.c (scalbn): Added braces to avoid ambiguous
+	`else'.
+	* java/lang/s_floor.c (floor): Added cast to unsigned to avoid
+	warning.
+	* java/lang/e_pow.c (__ieee754_pow): Added cast to unsigned to
+	avoid warning.
+	* java/lang/e_log.c (__ieee754_log): Added braces to avoid
+	ambiguous `else'.
+	* java/lang/s_ceil.c (ceil): Cast `i1' to unsigned to avoid
+	warning.
+	* java/lang/e_atan2.c (__ieee754_atan2): Added parentheses per gcc
+	suggestion.
+	* java/lang/strtod.c (_strtod_r): Added parentheses per gcc
+	suggestion.
+	* java/lang/mprec.c (Balloc): Removed unused variable.
+	(mult): Added parentheses per gcc suggestion.
+	(pow5mult): Likewise.
+	(lshift): Likewise.
+	(ulp): Likewise.
+	(b2d): Likewise.
+	(d2b): Likewise.
+	* java/lang/dtoa.c (_dtoa_r): Added some parentheses per gcc
+	suggestion.  Added cast to `int' to avoid signed/unsigned
+	comparison.
+	* jni.cc (_Jv_JNI_GetSuperclass): Removed name of unused
+	parameter.
+	(IsAssignableFrom): Likewise.
+	(_Jv_JNI_GetObjectField): Likewise.
+	(_Jv_JNI_GetByteField): Likewise.
+	(_Jv_JNI_GetShortField): Likewise.
+	(_Jv_JNI_GetIntField): Likewise.
+	(_Jv_JNI_GetLongField): Likewise.
+	(_Jv_JNI_GetStringLength): Likewise.
+	(_Jv_JNI_ToReflectedField): Likewise.
+	(_Jv_JNI_FromReflectedField): Likewise.
+	(_Jv_JNIFunctions): Uncommented IsAssignableFrom.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CFLAGS): Define conditionally.
+	(WARNINGS): New macro.
+	(AM_CXXFLAGS): Include WARNINGS.
+	* configure: Rebuilt.
+	* configure.in (USING_GCC): New conditional.
+
+	* prims.cc (_Jv_Abort): Declare twice, to avoid warnings.
+
+	* java/lang/Character.java: Changed classification constants to
+	type `byte' to match JDK 1.2 docs.
+
+1998-12-01  Tom Tromey  <tromey@cygnus.com>
+
+	Some fixes to be `-W -Wall' clean:
+	* boehm.cc (_Jv_MarkObj): Removed name of unused parameter.
+	(_Jv_MarkArray): Likewise.
+	* java/lang/natCharacter.cc (to_lower_title): `i' is unsigned.
+	(to_upper_title): Likewise.
+	(isTitleCase): Likewise.
+	(toTitleCase): Likewise.
+	(getNumericValue): Likewise.
+	(isLowerCase): Likewise.
+	* java/lang/natString.cc (charAt): Don't cast `i' to unsigned
+	(avoids compiler warning).
+	* java/lang/natClass.cc (getDeclaredClasses): Always return a
+	value.
+	(getDeclaringClass): Likewise.
+	(_Jv_LookupInterfaceMethod): Likewise.
+	(_Jv_NewClass): Removed name of unused parameter.
+	* exception.cc (_Jv_type_matcher): Removed unused variable.
+	(_Jv_setup_eh_info): Removed name of unused parameter.
+	* prims.cc (_Jv_NewArray): Always return a value.
+	(_Jv_FindClassFromSignature): Likewise.
+	* include/java-field.h (getNameUtf8Const): Removed name of unused
+	parameter.
+	* include/quick-threads.h (_Jv_ThreadInitData): Removed name of
+	unused parameter.
+	(_Jv_ThreadSetPriority): Likewise.
+
+	* java/lang/natString.cc (hashChars): Now static.
+
+	* java/lang/FirstThread.java (FirstThread): Now final.
+
+	* java/io/File.java (performMkdir, performRenameTo): Now private.
+
+	* java/lang/natSystem.cc (currentTimeMillis): Return a value even
+	if no time function defined.
+
+	* configure: Rebuilt.
+	* configure.in: Look for ctime_r, ctime.
+	* java/util/Date.java (toString): Now native.
+	* java/util/natDate.cc (toString): Rewrote.
+
+1998-11-27  Andrew Haley  <aph@viagra.cygnus.co.uk>
+
+	* Add LDFLAGS line to allow TX39 test cases to link when cross
+	compiling.
+
+1998-11-23  Anthony Green  <green@cygnus.com>
+
+	* boehm.cc, chartables.pl, classes.pl, exception.cc, jni.cc,
+	no-threads.cc, nogc.cc, posix-threads.cc, prims.cc,
+	quick-threads.cc, include/boehm-gc.h, include/cni.h,
+	include/java-array.h, include/java-assert.h, include/java-field.h,
+	include/javaprims.h, include/jni.h, include/jvm.h,
+	include/no-gc.h, include/no-threads.h, include/posix-threads.h,
+	include/quick-threads.h, java/io/BufferedInputStream.java,
+	java/io/BufferedOutputStream.java, java/io/BufferedReader.java,
+	java/io/BufferedWriter.java, java/io/ByteArrayInputStream.java,
+	java/io/ByteArrayOutputStream.java, java/io/CharArrayReader.java,
+	java/io/CharArrayWriter.java,
+	java/io/CharConversionException.java, java/io/DataInput.java,
+	java/io/DataInputStream.java, java/io/DataOutput.java,
+	java/io/DataOutputStream.java, java/io/EOFException.java,
+	java/io/File.java, java/io/FileDescriptor.java,
+	java/io/FileInputStream.java, java/io/FileNotFoundException.java,
+	java/io/FileOutputStream.java, java/io/FileReader.java,
+	java/io/FileWriter.java, java/io/FilenameFilter.java,
+	java/io/FilterInputStream.java, java/io/FilterOutputStream.java,
+	java/io/FilterReader.java, java/io/FilterWriter.java,
+	java/io/IOException.java, java/io/InputStream.java,
+	java/io/InputStreamReader.java,
+	java/io/InterruptedIOException.java,
+	java/io/LineNumberInputStream.java, java/io/LineNumberReader.java,
+	java/io/OutputStream.java, java/io/OutputStreamWriter.java,
+	java/io/PipedInputStream.java, java/io/PipedOutputStream.java,
+	java/io/PipedReader.java, java/io/PipedWriter.java,
+	java/io/PrintStream.java, java/io/PrintWriter.java,
+	java/io/PushbackInputStream.java, java/io/PushbackReader.java,
+	java/io/RandomAccessFile.java, java/io/Reader.java,
+	java/io/SequenceInputStream.java, java/io/Serializable.java,
+	java/io/StreamTokenizer.java,
+	java/io/StringBufferInputStream.java, java/io/StringReader.java,
+	java/io/StringWriter.java, java/io/SyncFailedException.java,
+	java/io/UTFDataFormatException.java,
+	java/io/UnsupportedEncodingException.java, java/io/Writer.java,
+	java/io/natFile.cc, java/io/natFileDescriptorEcos.cc,
+	java/io/natFileDescriptorPosix.cc,
+	java/lang/AbstractMethodError.java,
+	java/lang/ArithmeticException.java,
+	java/lang/ArrayIndexOutOfBoundsException.java,
+	java/lang/ArrayStoreException.java, java/lang/Boolean.java,
+	java/lang/Byte.java, java/lang/Character.java, java/lang/Class.h,
+	java/lang/Class.java, java/lang/ClassCastException.java,
+	java/lang/ClassCircularityError.java,
+	java/lang/ClassFormatError.java, java/lang/ClassLoader.java,
+	java/lang/ClassNotFoundException.java,
+	java/lang/CloneNotSupportedException.java,
+	java/lang/Cloneable.java, java/lang/Comparable.java,
+	java/lang/Compiler.java, java/lang/Double.java,
+	java/lang/Error.java, java/lang/Exception.java,
+	java/lang/ExceptionInInitializerError.java,
+	java/lang/FirstThread.java, java/lang/Float.java,
+	java/lang/IllegalAccessError.java,
+	java/lang/IllegalAccessException.java,
+	java/lang/IllegalArgumentException.java,
+	java/lang/IllegalMonitorStateException.java,
+	java/lang/IllegalStateException.java,
+	java/lang/IllegalThreadStateException.java,
+	java/lang/IncompatibleClassChangeError.java,
+	java/lang/IndexOutOfBoundsException.java,
+	java/lang/InstantiationError.java,
+	java/lang/InstantiationException.java, java/lang/Integer.java,
+	java/lang/InternalError.java, java/lang/InterruptedException.java,
+	java/lang/LinkageError.java, java/lang/Long.java,
+	java/lang/Math.java, java/lang/NegativeArraySizeException.java,
+	java/lang/NoClassDefFoundError.java,
+	java/lang/NoSuchFieldError.java,
+	java/lang/NoSuchFieldException.java,
+	java/lang/NoSuchMethodError.java,
+	java/lang/NoSuchMethodException.java,
+	java/lang/NullPointerException.java, java/lang/Number.java,
+	java/lang/NumberFormatException.java, java/lang/Object.h,
+	java/lang/Object.java, java/lang/OutOfMemoryError.java,
+	java/lang/Process.java, java/lang/Runnable.java,
+	java/lang/Runtime.java, java/lang/RuntimeException.java,
+	java/lang/SecurityException.java, java/lang/SecurityManager.java,
+	java/lang/Short.java, java/lang/StackOverflowError.java,
+	java/lang/String.java, java/lang/StringBuffer.java,
+	java/lang/StringIndexOutOfBoundsException.java,
+	java/lang/System.java, java/lang/Thread.java,
+	java/lang/ThreadDeath.java, java/lang/ThreadGroup.java,
+	java/lang/Throwable.java, java/lang/UnknownError.java,
+	java/lang/UnsatisfiedLinkError.java,
+	java/lang/UnsupportedOperationException.java,
+	java/lang/VerifyError.java, java/lang/VirtualMachineError.java,
+	java/lang/Void.java, java/lang/natCharacter.cc,
+	java/lang/natClass.cc, java/lang/natDouble.cc,
+	java/lang/natFirstThread.cc, java/lang/natFloat.cc,
+	java/lang/natMath.cc, java/lang/natObject.cc,
+	java/lang/natRuntime.cc, java/lang/natString.cc,
+	java/lang/natSystem.cc, java/lang/natThread.cc,
+	java/lang/reflect/Field.java, java/lang/reflect/Member.java,
+	java/lang/reflect/Modifier.java, java/lang/reflect/natField.cc,
+	java/text/DateFormat.java, java/text/DateFormatSymbols.java,
+	java/text/FieldPosition.java, java/text/Format.java,
+	java/text/NumberFormat.java, java/text/ParseException.java,
+	java/text/ParsePosition.java, java/text/SimpleDateFormat.java,
+	java/util/BitSet.java, java/util/Calendar.java,
+	java/util/ConcurrentModificationException.java,
+	java/util/Date.java, java/util/Dictionary.java,
+	java/util/EmptyStackException.java, java/util/Enumeration.java,
+	java/util/GregorianCalendar.java, java/util/Hashtable.java,
+	java/util/Locale.java, java/util/MissingResourceException.java,
+	java/util/NoSuchElementException.java, java/util/Observable.java,
+	java/util/Observer.java, java/util/Properties.java,
+	java/util/Random.java, java/util/SimpleTimeZone.java,
+	java/util/Stack.java, java/util/StringTokenizer.java,
+	java/util/TimeZone.java, java/util/TooManyListenersException.java,
+	java/util/Vector.java, java/util/natGregorianCalendar.cc:  Updated
+	copyright notices.
+
+	* exception.cc: Include eh-common.h instead of duplicating 
+	code.
+
+1998-11-23  Tom Tromey  <tromey@cygnus.com>
+
+	* configure.host: Don't add `-O2' to libjava_flags.  Only add
+	`-Os' to libjava_flags once.
+
+1998-11-17  Andrew Haley  <aph@viagra.cygnus.co.uk>
+
+	* Makefile.am: add LIBJAVA_JAVAFLAGS.
+	* Makefile.in: likewise
+	* acconfig.h: add ECOS conditional for configure.h
+	* config.h.in: likewise
+	* configure: add test for --with-ecos
+	* configure.in: likewise
+	* java/io/natFileDescriptorEcos.cc (java::io::FileDescriptor::write):
+	rename call to avoid name clash.
+	* java/lang/natSystem.cc: add eCos clock support.
+	* java/util/natGregorianCalendar.cc: add eCos support.
+	
+1998-11-20  Andrew Haley  <aph@viagra.cygnus.co.uk>
+
+	* Makefile.am, Makefile.in, configure.host: tx39 build option 
+	"-G 0" added.
+
+Wed Nov 18 18:55:25 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/BufferedReader.java: Added more comments for clarity.
+	(mark): Used more mnemonic name for local var extraBuffSpace.
+
+	* java/io/LineNumberReader.java (lineEnd): Removed method to avoid
+	confusion with private method of same name in superclass.
+	(skipRedundantLF): Set fields in special case to avoid infinite
+	recursion.  Check if markPos has been invalidated in special case.
+	(readLine): Rewritten to use readLine method of superclass.
+	(skip): Incorporated code from lineEnd.
+
+Wed Nov 18 02:46:03 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/BufferedReader.java (readLine): New method.
+	(lineEnd): new private method.
+	(mark): Track special case for readLine of getting '\r' at the
+	end of the buffer.
+	(reset): Ditto.
+	(read): Ditto.
+	(fill): Ditto.
+	(skip): Ditto.
+
+	* java/io/InputStreamReader.java (read): Return number chars skipped
+	rather than requested.
+
+	* java/lang/StringBuffer.java (append): Update count and differentiate
+	between field and local variable.
+
+	* java/util/Date.java (parseTz): Evaluate in minutes rather than
+	seconds.  Deal with military style time.
+	(parse): Consistently treat all timezones in minutes until final
+	calculation.  Flag as non-local timezone.  Return value in milliseconds.
+	(setTime): Adjust for year offset from 1900.
+	(UTC): Adjust for year offset from 1900.
+
+1998-11-17  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Switch on host, not target.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GCJ_no): New macro.
+	(GCJ): Use @CANADIAN@.
+	(GCJH_no): New macro
+	(GCJH_canadian): New macro.
+	(GCJH): Use @CANADIAN@.
+	(ZIP_no): New macro.
+	(ZIP_canadian): New macro.
+	(ZIP): Use @CANADIAN@.
+	* aclocal.m4, configure: Rebuilt.
+	* configure.in (CANADIAN): Compute and subst.
+
+Tue Nov 17 12:44:37 1998  Anthony Green  <green@cygnus.com>
+
+	* java/io/FileDescriptor.java (finalize): Only close file
+	descriptor if valid.
+
+1998-11-17  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_InitRuntime): Removed.
+
+1998-11-16  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/FileOutputStream.java (close): Only close file
+	descriptor if valid.
+	(finalize): New method.
+
+	* prims.cc (_Jv_NewObjectArray): Set vtbl last.
+	(_Jv_NewPrimArray): Likewise.
+	* boehm.cc (_Jv_RegisterFinalizer): Use
+	GC_REGISTER_FINALIZER_NO_ORDER.
+	(GC_GENERIC_MALLOC): New define.
+	(_Jv_AllocObj): Use it.
+	(_Jv_AllocArray): Likewise.
+	(_Jv_AllocBytes): Likewise.
+	(_Jv_MarkObj): Just return if vtbl not set.
+	(_Jv_MarkArray): Likewise.
+	(MAYBE_MARK): New macro; use everywhere.
+	(_Jv_MarkObj): Mark fields belonging to superclasses as well.
+
+Mon Nov 16 14:57:53 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/natGregorianCalendar.cc (computeTime): Cast a time_t
+	to a jlong before calculation to prevent overflow.
+
+1998-11-16  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Fixed typo.
+
+1998-11-15  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Class.h (Class::getName): Removed definition.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added InstantiationException.h,
+	NoSuchMethodException.h.
+	* java/lang/natClass.cc (clinit_name): Renamed from init_name.
+	(init_name): New global.
+	(hackRunInitializers): Use clinit_name.
+	Include InstantiationException.h, NoSuchMethodException.h.
+	(newInstance): Do some error checking (but not all).  Call
+	constructor.
+	(forName): Throw exception if class not found.
+	(getName): New method.
+	(forName): Transform class name from external format to internal
+	format before lookup.
+
+1998-11-15  Anthony Green  <green@cygnus.com>
+
+	* java/lang/Class.h (Class::forName): Method is static.
+
+	* java/lang/natClass.cc (newInstance): Add simple implementation.
+	(forName): Ditto.
+
+Sat Nov 14 18:25:13 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java/lang/Class.h (Class::accflags):  Must be unsigned short (not
+	int), for compatibility with jc1.
+
+1998-11-14  Tom Tromey  <tromey@cygnus.com>
+
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (LINUX_THREADS): New define.
+	* configure: Rebuilt.
+	* configure.in: Define LINUX_THREADS if using POSIX threads on
+	Linux.  Look for pthread_mutexattr_setkind_np function.
+	* posix-threads.cc (throw_cleanup): New function.
+	(really_start): Push cleanup function.
+	(_Jv_ThreadCancel): New function.
+	(daemon_mutex, daemon_cond, non_daemon_count): New globals.
+	(_Jv_ThreadInitData): Set `exception' field in new structure.
+	(_Jv_ThreadStart): Increment non_daemon_count if not a daemon
+	thread.
+	(_Jv_ThreadWait): New function.
+	(_Jv_InitThreads): Initialize daemon globals.
+	(FLAG_DAEMON): New macro.
+	(really_start): Notify daemon_cond when non-daemon thread exits.
+	Include <java/lang/System.h>.
+	(struct starter): `object' field now a thread.
+	(_Jv_MutexInit): Use pthread_mutexattr_setkind_np if it exists.
+	* include/posix-threads.h (_Jv_CondInit): Use `0', not NULL.
+	(_Jv_ThreadWait): Removed definition.
+	(_Jv_Thread_t): Added `exception' field.
+	(_Jv_ThreadCancel): Removed definition.
+
+1998-11-13  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libjava.zip): Compute javac before changing
+	directory.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libjava.zip): Include directory entries.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (expanded): New macro.
+	(GCJ): Use it.
+
+1998-11-12  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (clone): New function.
+	* include/java-array.h (__JArray::clone): Removed definition.
+
+	* java/lang/natObject.cc (clone): Don't assert that class is not
+	an array; array's `clone' method just calls this one.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libjava.zip): Renamed target from classes.stamp.
+	Now creates zip file.  Changed all users.
+	(ZIP): New macro.
+	(data_DATA): New macro.
+
+1998-11-11  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Recognize --enable-java-gc, not --enable-gc.
+
+Wed Nov 11 18:13:46 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/InputStream.java (reset): Add msg to thrown exception.
+
+Wed Nov 11 17:57:02 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/LineNumberInputStream.java: Rewritten.
+
+	* java/io/StringBufferInputStream.java: Removed extraneous import.
+
+Wed Nov 11 15:19:33 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/StringBufferInputStream.java: Rewritten.
+
+	* java/util/Date.java (parseMonth): Optimize.
+	(parseDayOfWeek): Created.
+	(parse): Optimize to use parseDayOfWeek.
+
+1998-11-11  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/StringBuffer.java (append): Handle case where STR is
+	`null'.
+
+	* include/javaprims.h: Regenerated class declarations.
+
+	* configure: Rebuilt.
+	* configure.in: Added --enable-gcj-classes,
+	--enable-single-compilation, --enable-source-compilation flags.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java_io_files): New macro.
+	(java_lang_files): Likewise.
+	(java_text_files): Likewise.
+	(java_util_files): Likewise.
+	(java_files): Use new macros.
+	(java-io.o): New target.
+	(java-lang.o): Likewise.
+	(java-text.o): Likewise.
+	(java-util.o): Likewise.
+	(src_io_files): New macro.
+	(src_lang_files): Likewise.
+	(src_text_files): Likewise.
+	(src_util_files): Likewise.
+	(class_io_files): New macro.
+	(class_lang_files): Likewise.
+	(class_text_files): Likewise.
+	(class_util_files): Likewise.
+	(class_files): Use new macros.
+	(javao_files): Define conditionally.
+	(.java.o): New target.
+	($(javao_files)): New target.
+	(GCJ): new macro.
+	(GCJH): Added $(EXEEXT).
+	(CLASSPATH_ENV): Removed.
+	(GCJCOMPILE): New macro.
+
+Wed Nov 11 12:03:15 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Date.java (parse): Written from scratch.
+
+1998-11-11  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Throwable.java (toString): Correct sense of test for
+	determining when to include detail message in result.
+
+	* java/lang/ThreadDeath.java (ThreadDeath): Added missing
+	constructor.
+
+Fri Nov  6 16:30:20 1998  Tom Tromey  <tromey@ferrule.cygnus.com>
+
+	* java/lang/Class.h: Use _Jv_RegisterClasses, not
+	_Jv_RegisterClass.
+	* java/lang/natClass.cc (_Jv_RegisterClasses): New function.
+	(_Jv_RegisterClass): Use it.
+	* include/jvm.h (_Jv_RegisterClasses): Declare.
+	* java/lang/natObject.cc (init): Removed.
+	(sync_init): Never call _Jv_InitializeSyncMutex.
+	(_Jv_InitializeSyncMutex): Don't set `init'.
+	* prims.cc (JvRunMain): Don't run init functions.
+
+Thu Nov  5 17:14:37 1998  Tom Tromey  <tromey@sanguine.cygnus.com>
+
+	* java/lang/natClass.cc (initializeClass): Set state before
+	resolving constants.
+
+	* java/lang/natClass.cc (STATE_CONST_INIT): Removed.
+	(STATE_RESOLVED): New macro.
+	(initializeClass): Call resolveConstants.
+	(hackRunInitializers): Don't call resolveConstants.
+	(_Jv_FindArrayClass): Move short-circuit return for primitive
+	element types earlier in function.
+
+1998-11-03  Tom Tromey  <tromey@hoser.cygnus.com>
+
+	* prims.cc (no_memory): New global.
+	(_Jv_makeUtf8Const): Throw no_memory.
+	(_Jv_AllocObject): Likewise.
+	(_Jv_NewObjectArray): Likewise.
+	(_Jv_NewPrimArray): Likewise.
+	(JvRunMain): Initialize no_memory.
+
+Tue Nov  3 17:15:45 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/FileInputStream.java: Corrected date comment.
+	* java/io/SequenceInputStream.java: Rewritten.
+
+Mon Nov  2 17:20:31 1998  Tom Tromey  (tromey@cygnus.com)
+
+	* java/lang/FirstThread.java (die): New method.
+	* java/lang/natFirstThread.cc (die): Removed.
+	(DIE): New macro.
+	(run): Use `DIE', not `die'.
+
+Mon Nov  2 16:23:41 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/CharArrayReader.java (read): Move check into synchronized
+	block to prevent a close while in progress.
+	(reset): Ditto.
+	(skip): Ditto.
+	* java/io/PushbackReader.java (read): Ditto.
+	(ready): Ditto.
+	(unread): Ditto.
+	* java/io/StringReader.java (mark): Ditto.
+	(read): Ditto.
+	(reset): Ditto.
+	(skip): Ditto.
+
+Mon Nov  2 15:56:20 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/PipedInputStream.java: Updated status.
+	(connect): Added code to prevent infinite recursion and to
+	differentiate exception causes.
+	(read): Added code to differentiate exception causes.
+	(receive): Made exception pass string with the cause.
+
+	* java/io/PipedOutputStream.java: Updated status.
+	(connect): Added code to call connect at the other end of the pipe.
+
+Mon Nov  2 00:22:12 1998  Warren Levy  <warrenl@cygnus.com>
+	
+	* java/io/PipedInputStream.java (connect): Throw exception if
+	already connected to the same output stream.
+	(read): Do bounds checking first.
+
+Sun Nov  1 22:48:55 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/PipedInputStream.java: Added private boolean outClosed.
+	(available): Removed check if output stream is open.
+	(close): Mark the buffer as empty so available returns 0.
+	(read): Check if the output stream was closed and then return EOF
+	when the buffer is empty.
+	(receive): Mark the output stream as closed when passed a -1.
+
+	* java/io/PipedOutputStream.java (close): Notify the input stream
+	that there's no more data coming.
+	(connect): Added a FIXME comment to note more coordination needed
+	with PipedInputStream.
+	(flush): Added a FIXME comment to mark what this method might do
+	instead of nothing.
+
+Fri Oct 30 14:27:21 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/PipedInputStream.java: Rewritten.
+
+1998-10-30  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Throwable.java: Rewrote from scratch.
+
+	* java/lang/Class.h (Class): Don't mention newMultiArray.
+	* prims.cc (newMultiArray): Removed.
+	(_Jv_NewMultiArray): Removed.
+	(newArray): Removed.
+	(new_multi_array): New function.
+	(_Jv_NewMultiArray): Rewrote from scratch.
+
+	* include/javaprims.h: Regenerated class declarations.
+	* classes.pl (scan): Don't declare PrimClass.
+	* include/cni.h (JvPrimClass): Use new names for classes.
+	* java/lang/Class.h (Class): Removed _Jv_initPrimClass as friend;
+	added _Jv_PrimClass.
+	* prims.cc (_Jv_PrimClass): Renamed from PrimClass.
+	(_Jv_initPrimClass): Removed.
+	(DECLARE_PRIM_TYPE): Generated globals now start with `_Jv_'.
+	(_Jv_AllocObject): Added comment.
+	(_Jv_NewObjectArray): Likewise.
+	(_Jv_NewPrimArray): Likewise.
+
+1998-10-29  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natClass.cc (_Jv_NewClass): Initialize new field.
+	(_Jv_FindArrayClass): Use dtable_method_count to compute size of
+	new dtable.
+	* java/lang/Class.h (Class): Added `dtable_method_count' field.
+
+	* java/lang/natObject.cc (init): New global.
+	(sync_init): Call _Jv_InitializeSyncMutex if required.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added ClassLoader.h.
+	* include/jvm.h (_Jv_FindClassFromSignature): Declare.
+	* java/lang/Class.h (Class): simpleLookupClass, insertClass,
+	internalAddClass, lookupArray no longer friends.
+	_Jv_RegisterClass, _Jv_FindClassInCache, _Jv_NewClass,
+	_Jv_FindArrayClass now friends.
+	* java/lang/natClass.cc (HASH_LEN): New macro.
+	(HASH_UTF): Likewise.
+	(loaded_classes): New global.
+	(_Jv_FindClass): New function.
+	(ClassClass): New define.
+	(_Jv_FindClassInCache): New function.
+	(_Jv_RegisterClass): Likewise.
+	(_Jv_NewClass): Likewise.
+	Include <string.h>
+	(ObjectClass): New define.
+	(CloneableClass): New define.
+	* prims.cc (_Jv_FindClass): Removed.
+	(simpleLookupClass): Removed.
+	(insertClass): Removed.
+	(CLASSHASHSZ): Removed.
+	(classPool): Removed.
+	(_Jv_RegisterClass): Removed.
+	(internalAddClass): Removed.
+	(ClassClass): Removed.
+	(RuntimeClass): Removed.
+	(lookupArray): Removed.
+	(CloneableClass): Removed.
+	(CLASSMAXSIG): Removed.
+	Rearranged file to group related functions together.
+	(_Jv_IsInstanceOf): Moved to natClass.cc.
+	(abort_final): Removed.
+	Removed some unused includes.
+	(classFromSig): Removed.
+	(_Jv_FindClassFromSignature): New function.
+	(_Jv_initPrimClass): Renamed.
+	(getClass): Removed.
+
+Thu Oct 29 23:17:17 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/FileDescriptor.java (finalize): Throws IOException
+	instead of Throwable.
+
+	* java/io/FileInputStream.java: Rewritten.
+
+	* java/io/StreamTokenizer.java (nextToken): Unread newline character
+	at the end of a comment.
+
+1998-10-29  Tom Tromey  <tromey@cygnus.com>
+
+	* include/javaprims.h: Regenerated class declarations.
+	* classes.pl (scan): Don't special-case ClassLoader.
+
+	* prims.cc (processClass): Removed.
+	(_Jv_InitClass): Removed.
+	Removed all CSTATE_ macros.
+	(resolveConstants): Removed.
+	(MAXDIMS): Removed.
+	(_Jv_NewMultiArray): Cleaned up.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added NoClassDefFoundError.h.
+	* java/lang/Class.h (Class): Declare new methods.  processClass no
+	longer a friend.
+	* java/lang/Class.java (hackTrampoline): New method.
+	(initializeClass): Declare.
+	(hackRunInitializers): Declare.
+	* java/lang/natClass.cc (getClassLoader): Moved into Class.h.
+	(initializeClass): New method.
+	(hackRunInitializers): New method.
+	(init_name, void_signature): Moved from prims.cc.
+	(_Jv_InitClass): New function.
+	(isAssignableFrom): Don't call processClass.
+	(STATE_NOTHING): New macro.
+	(resolveConstants): New function.
+	Include Thread.h.
+	(ErrorClass): New define.
+
+	* java/lang/Class.java (getClassLoader): Declare.
+	* java/lang/ClassLoader.java: Rewrote from scratch.
+
+	* java/lang/natClass.cc: Include IncompatibleClassChangeError.h,
+	AbstractMethodError.h, IllegalAccessError.h,
+	NoClassDefFoundError.h.
+	* include/jvm.h (StringClass): Declare _Jv_equalUtf8Consts.
+	* prims.cc (_Jv_equalUtf8Consts): Renamed from equalUtf8Consts; no
+	longer static.  Changed return type.
+	* java/lang/natFirstThread.cc (run): Use _Jv_GetMethodLocal.
+	* java/lang/Class.h (Class): findMethodLocal no longer a friend.
+	* prims.cc (findMethodLocal): Removed.
+	(processClass): Use _Jv_GetMethodLocal.
+
+1998-10-28  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_LookupInterfaceMethod): Removed.
+	* java/lang/Class.h (Class): Declare _Jv_GetMethodLocal as
+	friend.
+	* java/lang/natClass.cc (_Jv_GetMethodLocal): New function.
+	(_Jv_LookupInterfaceMethod): New function (rewrote from scratch).
+
+	* include/jni.h: Added copyright header.
+	* include/javaprims.h: Added copyright header.
+	* include/java-field.h: Added copyright header.
+	* include/java-array.h: Added copyright header.
+	* include/cni.h: Added copyright header.
+
+	* include/javaprims.h: Regenerated class declarations using
+	classes.pl; now they are complete.
+	* classes.pl: New file.
+
+	* java/lang/natMath.cc: Include <config.h>.
+	* java/lang/reflect/natField.cc: Include <config.h>.
+	* java/util/NativeUtil.java: Removed.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added Math.h.
+	* java/lang/Math.h: Removed.
+	* java/util/natGregorianCalendar.cc: Added copyright header.
+	Include <config.h>.
+	* java/lang/natFloat.cc: Added copyright header.
+	* java/lang/Byte.java: Added copyright header.
+	* java/lang/Void.java: Added copyright header.
+	* java/lang/Short.java: Added copyright header.
+
+Wed Oct 28 12:55:47 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* include/javaprims.h (java::io): Added bunch of missing classes.
+	
+	* java/io/DataInputStream.java (readLine): Added a special case
+	for handling BufferedInputStream data to reduce the likelihood
+	of a pushback error.
+	(skipBytes): Added code to handle negative number of skip bytes.
+	
+	* java/io/StreamTokenizer.java: Rewritten.
+
+1998-10-28  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/natGregorianCalendar.cc (computeFields): Call
+	getRawOffset as a method.
+
+	* include/javaprims.h (java::io): Added FilterOutputStream.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added PrintStream.h,
+	FilterOutputStream.h.
+	* java/lang/natFirstThread.cc: Include System.h, Modifier.h,
+	PrintStream.h.
+	(die): New function.
+	(run): Die if `main' not found, is not public, or is not static.
+
+	* boehm.cc (_Jv_MarkObj): Use new field names.
+	* include/java-field.h (JvGetFirstInstanceField): Use new field
+	names.
+	(JvNumInstanceFields): Likewise.
+	* java/lang/natClass.cc (isAssignableFrom): Use new field names.
+	(getInterfaces): Likewise.
+	* prims.cc (CLASS_CONSTANTS): Removed.
+	(CLASS_CONST_SIZE): Likewise.
+	(CLASS_CONST_TAG): Likewise.
+	(CLASS_CONST_DATA): Likewise.
+	(CLASS_CONST_UTF8): Likewise.
+	(WORD2UTF): Likewise.
+	(CLASS_CLASS): Likewise.
+	(CLASS_PRIM_SIG): Likewise.
+	(CLASS_ARRAY_CACHE): Likewise.
+	(HASH_CHARS): Likewise.
+	(hashClassName): Likewise.
+	Many changes to use new field names.
+	* java/lang/Class.h (Class): Renamed fields to track compiler.
+
+1998-10-27  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natClass.cc: Use #pragma implementation.
+	(getComponentType): Moved into header.
+	(getModifiers): Likewise.
+	(getName): Likewise.
+	(getSuperclass): Likewise.
+	(isArray): Likewise.
+	(isPrimitive): Likewise.
+	* include/jvm.h (_Jv_FindClass): Declare.
+	* java/lang/natFirstThread.cc (run): Updated for new Class.h.
+	* java/lang/natSystem.cc (arraycopy): Updated for new Class.h.
+	* include/javaprims.h: Use _Jv_Method, not JvMethod.
+	* java/lang/Class.h: Rewrote from scratch.
+	* prims.cc: Many changes to work with new Class.h.
+	* include/java-field.h (CLASS_FIELDS): Removed.
+	(CLASS_SFIELDS): Likewise.
+	(CLASS_IFIELDS): Likewise.
+	(CLASS_NFIELDS): Likewise.
+	(CLASS_NIFIELDS): Likewise.
+	(CLASS_NSFIELDS): Likewise.
+	(CLASS_FSIZE): Likewise.
+	(JvGetFirstInstanceField): Rewrote.
+	(JvNumInstanceFields): Likewise.
+
+	* java/lang/Object.h: Added copyright comment.
+
+Wed Oct 28 00:32:23 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java/text:  New package directory.
+	* java/text/FieldPosition.java:  New class.
+	* java/text/ParsePosition.java:  New class. 
+	* java/text/ParseException.java:  New Exception class.
+	* java/text/Format.java:  New class.
+	* java/text/NumberFormat.java:  New (empty placeholder) class.
+	* java/text/DateFormatSymbols.java:  New class (no Locales support).
+	* java/text/DateFormat.java:  New Format class (incomplete).
+	* java/text/SimpleDateFormat.java:  New DateFormat class.
+	
+	* include/javaprims.h (java::test):  Added new package and classes.
+	* java/util/Calendar.java (clone):  New method.
+	* java/util/Date.java (toString):  Added non-native implementation.
+	(parse):  Made public instead of synchronized.
+	* java/util/natDate.cc (toString):  Removed.
+	* java/util/natGregorianCalendar.cc (computeFields):
+	Use gmtime (or gmtime_r) if no zone offset (the default, for now!).
+
+1998-10-27  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc (_Jv_MarkObj): Correctly mark a class' interfaces.
+
+	* prims.cc (lookupArray): Added explanatory comment.
+	* boehm.cc (_Jv_MarkObj): Correctly scan methods and fields of
+	class.  Mark the class of each object.
+	(_Jv_MarkArray): Mark the object's class.
+
+	* configure: Rebuilt.
+	* configure.in: Create java-gc.h.
+	* include/boehm-gc.h: New file.
+	* include/no-gc.h: New file.
+	* java/lang/Class.h (Class): Declare JV_MARKOBJ_DECL as friend, if
+	defined.
+	* java/lang/Object.h: Include java-gc.h.
+	(Object): Declare JV_MARKOBJ_DECL and JV_MARKARRAY_DECL as
+	friends, if defined.
+	* boehm.cc (_Jv_MarkObj): Renamed from mark_obj; changed
+	signature.
+	(_Jv_MarkArray): Renamed from mark_array; changed signature.
+
+1998-10-26  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natCharacter.cc (isSpaceChar): Look for line and
+	paragraph separators, not numbers.
+
+	* java/io/Writer.java (write): Removed write(char) to avoid
+	ambiguity.
+	* java/util/Properties.java: Rewrote from scratch.
+	* include/javaprims.h (java::io): Added PrintWriter,
+	BufferedWriter, PushbackReader.
+
+Mon Oct 26 13:13:28 1998  Anthony Green  <green@cygnus.com>
+
+	* java/lang/System.java: exit() is a static method.
+
+1998-10-26  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natString.cc (_Jv_NewStringUTF): Use
+	_Jv_strLengthUtf8.
+	(_Jv_NewStringUtf8Const): Likewise.
+	* include/jvm.h (_Jv_strLengthUtf8): Declare.
+	* prims.cc (_Jv_strLengthUtf8): Renamed from strLengthUtf8.
+
+	* java/lang/Object.h (Object): Add mark_array as friend function.
+	* prims.cc (_Jv_NewPrimArray): Use _Jv_AllocObj, not
+	_Jv_AllocBytes, to ensure that header is marked.
+	* boehm.cc (mark_obj): Push sync_info field for all objects, not
+	just Objects.
+	(mark_array): Push sync_info field for array.
+
+1998-10-24  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/String.java (String): Updated for StringBuffer
+	change.
+	* java/util/BitSet.java: Renamed field (data->bits) to conform to
+	serialization spec.
+	* java/lang/StringBuffer.java: Renamed fields to conform to
+	serialization spec: buffer->value, next->count, copy->shared.
+
+Wed Oct 21 18:24:57 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java/util/TimeZone.java:  New class.
+	* java/util/SimpleTimeZone.java:  New class.
+	* java/util/Locale.java:  New file.
+	* java/util/Calendar.java:  Make almost complete.
+	* java/util/GregorianCalendar.java
+	* java/util/natGregorianCalendar.cc:  New file.
+	* java/util/Date.java:  Re-written from scratch.
+	* java/util/natDate.cc (setTime):  Removed - no longer native.
+	* include/javaprims.h (java::util):  Add new classes.
+	* Makefile.am (nat_files):  Add java/util/natGregorianCalendar.o.
+	(nat_headers);  Add TimeZone.h, Calendar.h, GregorianCalendar.h.
+
+Sat Oct 24 22:58:25 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/natFileDescriptorPosix.cc (read): Zero extend jbyte b before
+	returning it as a jint.
+
+1998-10-23  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (arg_vec, main_group, main_thread): New globals.
+	(JvRunMain): Use them.
+
+Fri Oct 23 17:10:12 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/DataInputStream.java: Rewritten.
+
+	* java/io/DataOutputStream.java (writeUTF): OR secondary and
+ 	tertiary bytes with 0x80 per spec.
+
+1998-10-23  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/String.java (init): Changed name of `copy' argument.
+	* java/lang/natString.cc (init): Inverted sense of `copy'
+	argument.
+
+	* java/lang/Object.h (Object): Declare mark_obj as a friend.
+	* java/lang/Class.h (Class): Declare mark_obj as a friend.
+	* boehm.cc (ObjectClass): New define.
+	(ClassClass): Likewise.
+	(mark_obj): Special-case Object and Class.
+
+	* prims.cc (_Jv_NewPrimArray): Pass correct args to memset.
+
+	* java/util/BitSet.java: Rewrote from scratch.
+
+	* prims.cc (lookupArray): Removed useless cast.
+
+	* java/lang/natObject.cc: Use `#pragma implementation'.
+
+	* java/lang/String.java (init): Added `copy' argument.
+	(String): Look in StringBuffer to find char array.
+	* java/lang/natString.cc (init): Added `copy' argument.
+	* java/lang/StringBuffer.java: Rewrote from scratch.
+
+	* java/lang/Compiler.java: Rewrote from scratch.
+	* java/lang/Throwable.java: Don't use NativeLang.
+	* include/javaprims.h (java::lang): Don't mention NativeLang.
+	* java/lang/Process.java: Rewrote from scratch.
+	* java/lang/SecurityManager.java (classLoaderDepth): Commented
+	out.
+	(currentClassLoader): Likewise.
+	(currentLoadedClass): Likewise.
+	* java/lang/natClass.cc (getClassLoader): Commented out.
+	* java/lang/Class.java (getClassLoader): Commented out.
+	* java/lang/Compiler.java: Removed.
+	* java/lang/NativeLang.java: Removed.
+
+	* java/lang/natFirstThread.cc (run): Use _Jv_makeUtf8Const.
+	* include/jvm.h (StringClass): Declare _Jv_makeUtf8Const.
+	* prims.cc (_Jv_makeUtf8Const): Renamed from makeUtf8Const.
+	(_Jv_hashUtf8String): Now static.
+	* include/java-field.h (getNameUtf8Const): Use `_Jv_Utf8Const' as
+	name of return type.
+
+	* java/lang/Class.h (Class): Declare checkMemberAccess.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added Member.h.
+	* java/lang/natClass.cc: Include Member.h.
+	(getDeclaredClasses): Call checkMemberAccess.
+	* java/lang/Class.java (checkMemberAccess): Call
+	SecurityManager.checkMemberAccess.
+
+Fri Oct 23 08:01:54 1998  Anthony Green  <green@cygnus.com>
+
+	* java/lang/SecurityManager.java: Rewritten.
+
+Thu Oct 22 17:16:10 1998  Anthony Green  <green@cygnus.com>
+
+	* java/applet/Applet.java, java/applet/AppletContext.java,
+	java/applet/AppletStub.java, java/applet/AudioClip.java,
+	java/awt/AWTError.java, java/awt/AWTException.java,
+	java/awt/BorderLayout.java, java/awt/Button.java,
+	java/awt/Canvas.java, java/awt/CardLayout.java,
+	java/awt/Checkbox.java, java/awt/CheckboxGroup.java,
+	java/awt/CheckboxMenuItem.java, java/awt/Choice.java,
+	java/awt/Color.java, java/awt/Component.java,
+	java/awt/Container.java, java/awt/Dialog.java,
+	java/awt/Dimension.java, java/awt/Event.java,
+	java/awt/FileDialog.java, java/awt/FlowLayout.java,
+	java/awt/Font.java, java/awt/FontMetrics.java,
+	java/awt/Frame.java, java/awt/Graphics.java,
+	java/awt/GridBagConstraints.java, java/awt/GridBagLayout.java,
+	java/awt/GridLayout.java, java/awt/Image.java,
+	java/awt/Insets.java, java/awt/Label.java,
+	java/awt/LayoutManager.java, java/awt/List.java,
+	java/awt/MediaTracker.java, java/awt/Menu.java,
+	java/awt/MenuBar.java, java/awt/MenuComponent.java,
+	java/awt/MenuContainer.java, java/awt/MenuItem.java,
+	java/awt/Panel.java, java/awt/Point.java, java/awt/Polygon.java,
+	java/awt/Rectangle.java, java/awt/Scrollbar.java,
+	java/awt/TextArea.java, java/awt/TextComponent.java,
+	java/awt/TextField.java, java/awt/Toolkit.java,
+	java/awt/Window.java, java/awt/image/ColorModel.java,
+	java/awt/image/CropImageFilter.java,
+	java/awt/image/DirectColorModel.java,
+	java/awt/image/FilteredImageSource.java,
+	java/awt/image/ImageConsumer.java,
+	java/awt/image/ImageFilter.java,
+	java/awt/image/ImageObserver.java,
+	java/awt/image/ImageProducer.java,
+	java/awt/image/IndexColorModel.java,
+	java/awt/image/MemoryImageSource.java,
+	java/awt/image/PixelGrabber.java,
+	java/awt/image/RGBImageFilter.java, java/awt/peer/ButtonPeer.java,
+	java/awt/peer/CanvasPeer.java,
+	java/awt/peer/CheckboxMenuItemPeer.java,
+	java/awt/peer/CheckboxPeer.java, java/awt/peer/ChoicePeer.java,
+	java/awt/peer/ComponentPeer.java,
+	java/awt/peer/ContainerPeer.java, java/awt/peer/DialogPeer.java,
+	java/awt/peer/FileDialogPeer.java, java/awt/peer/FramePeer.java,
+	java/awt/peer/LabelPeer.java, java/awt/peer/ListPeer.java,
+	java/awt/peer/MenuBarPeer.java,
+	java/awt/peer/MenuComponentPeer.java,
+	java/awt/peer/MenuItemPeer.java, java/awt/peer/MenuPeer.java,
+	java/awt/peer/PanelPeer.java, java/awt/peer/ScrollbarPeer.java,
+	java/awt/peer/TextAreaPeer.java,
+	java/awt/peer/TextComponentPeer.java,
+	java/awt/peer/TextFieldPeer.java, java/awt/peer/WindowPeer.java,
+	java/net/ContentHandler.java, java/net/ContentHandlerFactory.java,
+	java/net/DatagramPacket.java, java/net/DatagramSocket.java,
+	java/net/DefaultSocketImpl.java, java/net/InetAddress.java,
+	java/net/MalformedURLException.java, java/net/NativeNet.java,
+	java/net/ProtocolException.java, java/net/ServerSocket.java,
+	java/net/Socket.java, java/net/SocketException.java,
+	java/net/SocketImpl.java, java/net/SocketImplFactory.java,
+	java/net/URL.java, java/net/URLConnection.java,
+	java/net/URLEncoder.java, java/net/URLStreamHandler.java,
+	java/net/URLStreamHandlerFactory.java,
+	java/net/UnknownHostException.java,
+	java/net/UnknownServiceException.java: Removed.
+
+1998-10-22  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_AllocObject): Register finalizer if class'
+	finalizer is not Object.finalize.
+	(internalAddClass): Don't set `final' member of class.
+	* java/lang/Object.h: Updated _JvObjectPrefix comment to mention
+	other places that know about finalize() location.
+	* java/lang/Class.h (Class): Removed `final' field.
+
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4 (LIB_AC_PROG_CXX): Unconditionally use
+	AC_CHECK_PROGS; otherwise the CXX cache variable might not be
+	set.
+	* configure.in (AC_OUTPUT): Pass CXX to config.status.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_MAKEFLAGS): Added CXX, CXXFLAGS.
+
+1998-10-21  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Object.java (finalize): Move to be first method in
+	class.
+
+	* configure: Rebuilt.
+	* configure.in (GCINCS): Include contents of boehm-cflags file.
+
+Tue Oct 20 13:11:04 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java/lang/ArrayIndexOutOfBoundsException.java
+ 	(ArrayIndexOutOfBoundsException): Fixed string literal.
+	* java/lang/StringIndexOutOfBoundsException.java
+	(StringIndexOutOfBoundsException): Fixed string literal.
+
+1998-10-20  Andrew Haley  <aph@viagra.cygnus.co.uk>
+
+	* natFileDescriptorEcos.cc added.
+	* natFileDescriptor.cc renamed natFileDescriptorPosix.cc.  
+
+1998-10-20  Andrew Haley  <aph@viagra.cygnus.co.uk>
+
+	* acconfig.h: test for __int32_t and __uint32_t added.
+	* include/config.h.in: test for __int32_t and __uint32_t added.
+	* java/lang/fdlibm.h: test for __int32_t and __uint32_t added.
+	* java/lang/mprec.h: test for __int32_t and __uint32_t added.
+	* configure.in: test for __int32_t and __uint32_t added.
+	* configure: test for __int32_t and __uint32_t added.
+	
+	* natFileDescriptor.cc renamed natFileDescriptorPosix.cc.  
+
+	* configure.in: Test for --enable ecos and link
+	natFileDescriptor.cc to natFileDescriptorEcos.cc or
+	natFileDescriptorPosix.cc
+	
+	* java/lang/dtoa.c: #include <stdio.h> moved inside #ifdef DEBUG.
+	
+Mon Oct 19 18:13:58 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ByteArrayInputStream.java (skip): Ensure that arg passed
+ 	in isn't negative.
+
+	* java/io/CharArrayReader.java (close): Synchronize on lock
+ 	object per Reader contract.
+	(read): Synchronize on lock obj.  Verify that reader wasn't closed.
+	(reset): Synchronize on lock obj.  Verify that reader wasn't closed.
+	(skip): Synchronize on lock obj.  Verify that reader wasn't closed.
+  	Ensure that arg passed in isn't negative.
+
+	* java/io/FilterReader.java (FilterReader): Use the lock obj when
+	constructing the superclass.
+
+	* java/io/PushbackReader.java (close): Synchronize on lock
+ 	object per Reader contract.
+	(read): Synchronize on lock obj.  Verify that reader wasn't closed.
+	(ready): Synchronize on lock obj.  Throw IOException if reader
+ 	wasn't closed.
+	(reset): Synchronize on lock obj.  Verify that reader wasn't closed.
+	(skip): Synchronize on lock obj.  Verify that reader wasn't closed.
+  	Ensure that arg passed in isn't negative.
+	(unread): Synchronize on lock obj.  Verify that reader wasn't closed.
+
+	* java/io/StringReader.java: Created.
+	
+Sun Oct 18 02:19:11 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/CharArrayReader.java (mark): Removed synchronized modifier
+	to match JCL.
+	(read): Removed synchronized modifier to match JCL.
+	(reset): Removed synchronized modifier to match JCL.
+	(skip): Removed synchronized modifier to match JCL.
+
+Sun Oct 18 02:01:54 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/PushbackReader.java (PushbackReader): Made
+	constructors public.
+
+1998-10-17  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/PushbackInputStream.java (PushbackInputStream): Made
+	constructors public.
+
+1998-10-16  Anthony Green  <green@cygnus.com>
+
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4 (LIBJAVA_CONFIGURE): Changed for new
+	configure.host.
+	* configure.host: Rewrote.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CXXFLAGS): Added LIBJAVA_CXXFLAGS.
+	(AM_CFLAGS): New macro.
+	($(c_files)): Use COMPILE macro.
+	(EXTRA_libjava_a_SOURCES): Added dummy file to work around
+	automake problem(s).
+
+Fri Oct 16 16:36:28 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ByteArrayInputStream.java (mark): Removed temp. comment.
+
+	* java/io/CharArrayReader.java: Created.
+
+Fri Oct 16 15:17:01 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/PushbackInputStream.java (PushbackInputStream): Changed
+ 	size check to allow 0 per JCL.
+
+	* java/io/PushbackReader.java: Created.
+
+1998-10-16  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/natFileDescriptor.cc: Conditionalize <unistd.h>,
+	<sys/time.h> includes. 
+	* java/io/natFile.cc: Conditionalize <unistd.h> include.
+	* include/no-threads.h: Conditionalize <unistd.h> include on
+	HAVE_UNISTD_H.
+
+Fri Oct 16 14:39:51 1998  Andrew Haley  <aph@madras.cygnus.co.uk>
+
+	* include/no-threads.h: Don't include <unistd.h> unless HAVE_SLEEP
+ 	is defined.
+
+Thu Oct 15 19:27:54 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/FilterReader.java: Created.
+
+Thu Oct 15 17:49:43 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/PushbackInputStream.java: Rewritten.
+
+	* java/io/BufferedInputStream.java (BufferedInputStream): Check
+	that size passed to constructor is legal.
+	(read): Check that args passed in are legal.
+	(skip): Rewritten to get rid of the temporary buffer.
+	(refill): Added marklimit check to grow the buffer.
+
+	* java/io/ByteArrayInputStream.java (read): Optimized invalid args
+	check.
+	(bytesAvail): Removed.
+	(read): Changed bytesAvail to Math.min.
+	(skip): Changed bytesAvail to Math.min.
+
+	* java/io/InputStream.java (read): Got rid of extraneous exceptions
+	from the throws clause.
+	(skip): Rewritten to use a temporary buffer.
+
+Thu Oct 15 19:42:55 1998  Andrew Haley  <aph@madras.cygnus.co.uk>
+
+	* prims.cc: (JvConvertArgv): Check added for argc < 0; possible on
+ 	some target OSes
+
+	* java/lang/dtoa.c: (print): Made #ifdef DEBUG only.
+
+	* java/lang/strtod.c: (_strtod_r): Don't use HUGE_VAL: it's faster
+ 	to write the double one word at a time.
+
+Tue Oct 13 14:41:47 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/BufferedInputStream.java:  Rewritten.
+
+1998-10-12  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc: Include config.h and stddef.h.
+
+	* java/lang/Class.h (_dispatchTable): Removed again.
+	Removed all ACC_* defines again.
+
+Fri Oct  9 17:08:34 1998  Per Bothner  <bothner@cygnus.com>
+
+	* Makefile.am (nat_files):  Add netField.o.
+	(libjava_a_SOURCES):  Add jni.cc.
+	(java/lang/reflect/Field.h):  New rule.
+	* Makefile.in:  Re-generated.
+	* include/javaprims.h:  Add some extra class and typedefs.
+	* include/jni.h:  New file.
+	* jni.cc:  New file.
+
+	* include/java-field.h:  New file.
+	* include/jvm.h:  #include <java-field.h>.
+	* boehm.cc:  #include <java-field.h>.
+	* java/lang/Class.h (JvField, inline numbers):  Moved to java-field.h.
+	* java/lang/reflect/Member.java:  New class.
+	* java/lang/reflect/Field.java:  New class.  (Very incomplete.)
+	* java/lang/reflect/natField.cc:  New file.  (Very incomplete.)
+
+Sun Oct 11 00:34:44 1998  Anthony Green  <green@cygnus.com>
+
+	* Makefile.in, aclocal.m4, configure, test/Makefile.in,
+	testsuite/Makefile.in: Rebuilt.
+	* Makefile.am, acinclude.m4, configure.in: Add multilib support.
+	* configure.host: Created.
+
+1998-10-10  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natObject.cc (sync_init): Always allocate a new
+	sync_info.
+
+1998-10-09  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/ByteArrayInputStream.java (mark): Renamed from
+	`mark_FIXME'.
+
+	* java/io/FileOutputStream.java (finalize): Removed.
+	* java/io/FileDescriptor.java (finalize): New method.
+
+Thu Oct  8 17:59:43 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* ByteArrayInputStream.java: Corrected status comment.
+
+Thu Oct  8 17:22:49 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* ByteArrayInputStream.java, FilterInputStream.java: Rewritten.
+
+1998-10-08  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (lookupArray): Use static array to initialize list of
+	interfaces.
+
+Thu Oct  8 12:45:03 1998  Anthony Green  <green@cygnus.com>
+
+	* prims.cc (lookupArray): Initialize the msize for new
+	array classes.
+
+Wed Oct  7 12:13:59 1998  Anthony Green  <green@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Check for fsync and sleep.
+	* acconfig.h (HAVE_SLEEP, HAVE_FSYNC): Added.
+
+	* include/no-threads.h (_Jv_CondWait): Wrap sleep() use with
+	HAVE_SLEEP. Include config.h.
+
+	* java/io/natFileDescriptor.cc (NO_FSYNC_MESSAGE): Added.
+	* java/io/natFileDescriptor.cc (sync): Wrap fsync() use
+	with HAVE_FSYNC.
+
+1998-10-08  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/natFile.cc: Don't include SecurityManager.h.
+	(performList): Renamed.
+	(performMkdir): Likewise.
+	(performRenameTo): Likewise.
+	(performDelete): Likewise.
+	Include <stdlib.h>.
+	* java/io/File.java (performDelete): Renamed from natDelete.
+	(list): Now written in Java.
+	(performList): New method.
+	(performMkdir): New method.
+	(mkdir): Now written in Java.
+	(performRenameTo): New method.
+	(renameTo): Now written in Java.
+
+1998-10-06  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ETAGS_ARGS): New macro.
+	(TAGS_DEPENDENCIES): Likewise.
+
+Tue Oct  6 22:04:44 PDT 1998 Anthony Green  <green@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Use -classpath option with javac.
+	
+Tue Oct  6 18:51:31 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/FileOutputStream.java (finalize): Call
+	super.finalize().
+
+Tue Oct  6 16:02:45 1998  Anthony Green  <green@cygnus.com>
+
+	* java/lang/mprec.h: Remove unused _mprec_log10 which conflicts
+	with newlib's libm.
+	* java/lang/mprec.c: Ditto.
+
+	* java/lang/mprec.h: Include math.h for HUGE_VAL when
+	cross-compiling.
+
+Tue Oct  6 14:27:00 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/InputStream.java (skip): Make local var i a long.
+
+Mon Oct  5 09:44:24 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natObject.cc (clone): Use memcpy, not memmove.
+	* prims.cc (lookupArray): Use memcpy, not memmove.
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (HAVE_MEMCPY): Added.
+	* configure: Rebuilt.
+	* configure.in: Check for memcpy again.
+
+	* java/io/RandomAccessFile.java (RandomAccessFile): Use
+	String.compareTo, not ==.
+
+	* java/lang/Class.h (Class): Use _Jv_DispatchTable.
+	(_PRIMITIVE_DTABLE): Use _Jv_DispatchTable.
+	* java/lang/natObject.cc (struct _dispatchTable): Removed.
+	* include/jvm.h (struct _Jv_DispatchTable): New structure.
+	* prims.cc (lookupArray): Removed dead code.  Copy Object's dtable
+	into new array's dtable.
+	(_Jv_AllocObject): Use _Jv_DispatchTable.
+	(_Jv_NewPrimArray): Likewise.
+	(_Jv_NewObjectArray): Likewise.
+
+Fri Oct  2 18:57:14 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* prims.cc (_Jv_ThrowBadArrayIndex): Construct a string with the
+ 	offending index value.
+	(_Jv_NewPrimArray): Throw NegativeArraySizeException when
+ 	appropriate.
+	* include/jvm.h (_Jv_ThrowBadArrayIndex): Added declaration.
+	* java/lang/Throwable.java: (Throwable): fixed argument to this().
+
+Fri Oct  2 15:58:23 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/DataInput.java, java/io/InputStream.java: Rewritten.
+	
+	* java/io/OutputStream.java (write): Use off and len parameters to
+ 	output partial byte array.
+	
+	* java/io/BufferedReader.java, java/io/FileReader.java,
+ 	java/io/InputStreamReader.java, java/io/LineNumberReader.java,
+ 	java/io/OutputStreamWriter.java, java/io/PrintWriter.java,
+ 	java/io/Reader.java, java/io/UnsupportedEncodingException.java,
+ 	java/io/Writer.java: Added COPYRIGHT-TBD comment.
+
+	* include/javaprims.h (java::lang): Added
+ 	ExceptionInInitializerError, IllegalStateException,
+ 	NoSuchFieldException, and UnsupportedOperationException.
+
+Fri Oct  2 01:05:38 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natObject.cc (CloneableClass): Is a Class, not a
+	Class*.
+
+	* include/java-array.h (__JArray): Added clone method.
+	* prims.cc (CloneableClass): New define.
+	(lookupArray): Initialize array class to indicate that it
+	implements Cloneable.
+
+	* java/lang/Class.h: Removed all ACC_* defines.
+	* prims.cc: Include Modifier.h.
+	(_Jv_LookupInterfaceMethod): Use methods in
+	java.lang.reflect.Modifier, not ACC_ defines.
+
+	* java/lang/Class.h (Class): Declare getClasses,
+	getDeclaredClasses, getDeclaringClass, getModifiers, 
+	* java/lang/Class.java: Rewrote from scratch.
+
+	* include/javaprims.h (java::lang): Added reflect and
+	reflect::Modifier.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added Modifier.h.
+
+	* prims.cc (_Jv_IsInstanceOf): Return false if class is
+	primitive.
+
+Fri Oct 2 06:49:00 1998  Anthony Green  <green@cygnus.com>
+
+	* java/lang/natString.cc (_Jv_StringFindSlot): Use JvAssert
+	instead of test and abort.
+
+	* java/lang/natString.cc (_Jv_NewStringUtf8Const): Add cast to
+	remove compiler warning.
+
+Fri Oct  2 12:33:44 1998  Andrew Haley  <aph@korai.cygnus.co.uk>
+
+	* java/lang/natDouble.cc: zero terminate string.
+	* strtod.c: Set errno if no digits are found in fraction.
+
+Thu Oct  1 11:48:28 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/Modifier.java: New file.
+
+	* java/lang/VirtualMachineError.java: Rewrote from scratch.
+	* java/lang/VerifyError.java: Rewrote from scratch.
+	* java/lang/UnsatisfiedLinkError.java: Rewrote from scratch.
+	* java/lang/UnknownError.java: Rewrote from scratch.
+	* java/lang/StackOverflowError.java: Rewrote from scratch.
+	* java/lang/OutOfMemoryError.java: Rewrote from scratch.
+	* java/lang/InternalError.java: Rewrote from scratch.
+	* java/lang/IllegalAccessError.java: Rewrote from scratch.
+	* java/lang/ExceptionInInitializerError.java: New file.
+	* java/lang/Error.java: Rewrote from scratch.
+	* java/lang/ClassFormatError.java: Rewrote from scratch.
+	* java/lang/ClassCircularityError.java: Rewrote from scratch.
+	* java/lang/AbstractMethodError.java: Rewrote from scratch.
+	* java/lang/NoClassDefFoundError.java: Rewrote from scratch.
+	* java/lang/NoSuchFieldError.java: Rewrote from scratch.
+	* java/lang/LinkageError.java: Rewrote from scratch.
+	* java/lang/IncompatibleClassChangeError.java: Rewrote from
+	scratch.
+	* java/lang/NoSuchMethodError.java: Rewrote from scratch.
+
+	* java/lang/natObject.cc (_Jv_FinalizeObject): New function.
+	* java/lang/Object.h (Object): Declare _Jv_FinalizeObject as a
+	friend.
+	* include/cni.h (JvAllocObject): Moved from prims.cc.
+	Include Class.h.
+	* prims.cc (JvAllocObject): Moved to cni.h.
+	(_Jv_AllocObject): Use _Jv_FinalizeObject.
+	(finalize_name): Removed.
+
+Wed Sep 30 12:09:34 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Class.h (Class): Added size() method.
+	* prims.cc (_Jv_MonitorEnter): Removed.
+	(_Jv_MonitorExit): Removed.
+	* java/lang/Object.h (JvSyncInfo): Removed.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added Cloneable.h,
+	CloneNotSupportedException.h.
+	* java/lang/Object.h: Rewrote.
+	* java/lang/natObject.cc: Rewrote from scratch.
+	* java/lang/Object.java: Rewrote from scratch.
+
+	* java/io/natFile.cc: Conditionally include <dirent.h>.
+	(list): If no <dirent.h>, always return NULL.
+	* configure: Rebuilt.
+	* configure.in: Check for dirent.h.
+
+	* prims.cc (lookupArray): Don't use sprintf.
+
+	* java/util/Hashtable.java (containsKey): Use `abs' to compute
+	initial index.
+	(get): Likewise.
+	(put): Likewise.
+	(rehash): Likewise.
+	(remove): Likewise.
+
+	* java/util/Hashtable.java (hsize): Renamed from size to avoid
+	name conflict with method.
+
+	* include/javaprims.h (java::util): Added HashtableEntry.
+
+Tue Sep 29 16:48:01 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Hashtable.java: Rewritten.
+
+Tue Sep 29 00:28:42 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/natFileDescriptor.cc (write): Correctly test `write'
+	return value.
+	(write): Likewise.
+
+	* java/lang/natThread.cc (join): Fixed assertion to refer to `nt',
+	not `curr_nt'.
+
+	* posix-threads.cc (_Jv_CondWait): Now returns int.
+	* include/javaprims.h (java::lang): Added
+	IllegalMonitorStateException.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added IllegalMonitorStateException.h.
+	* include/no-threads.h (_Jv_CondDestroy): Removed.
+	(_Jv_MutexDestroy): Removed.
+	(_Jv_CondWait): Now returns int.
+	(_Jv_CondNotify): Likewise.  Added mutex argument.
+	(_Jv_CondNotifyAll): Likewise.
+	(_Jv_MutexLock): Always succeed.
+	(_Jv_MutexUnlock): Likewise.
+	* include/posix-threads.h (_Jv_HaveCondDestroy): Define.
+	(_Jv_HaveMutexDestroy): Define.
+	(_Jv_CondNotify): Now returns int.  Added mutex argument.
+	(_Jv_CondNotifyAll): Likewise.
+	* include/quick-threads.h (_Jv_CondDestroy): Removed.
+	(_Jv_MutexDestroy): Removed.
+	(_Jv_CondWait): Now returns int.
+	(_Jv_CondNotify): Likewise.  Added mutex argument.
+	(_Jv_CondNotifyAll): Likewise.
+	* java/lang/natObject.cc (finalize_sync_info): New function.
+	(init_mutex): Initialize `init' and register finalizer if
+	required.
+	(CHECK): New macro.
+	(init_mutex): Use it.
+	(notify): Use it.
+	(notifyAll): Use it.
+	(wait): Use it.
+	(notify): Throw IllegalMonitorStateException on failure.
+	(notifyAll): Likewise.
+	(wait): Likewise.  Also, throw InterruptedException if
+	appropriate.
+	Include cni.h, Thread.h, IllegalMonitorStateException.h,
+	InterruptedException.h, IllegalArgumentException.h.
+	* java/lang/Object.h (struct JvSyncInfo): Added `init' member.
+
+	* java/lang/natString.cc: Renamed all `JvPriv' functions.
+	* java/lang/natRuntime.cc: Renamed all `JvPriv' functions.
+	* java/lang/Object.h: Renamed all `JvPriv' functions (and types).
+	* java/lang/natObject.cc: Renamed all `JvPriv' functions.
+	* java/lang/natThread.cc: Renamed all `JvPriv' functions.
+	* quick-threads.cc: Renamed all `JvPriv' functions.
+	* prims.cc: Renamed all `JvPriv' functions.
+	* posix-threads.cc: Renamed all `JvPriv' functions.
+	* nogc.cc: Renamed all `JvPriv' functions.
+	* no-threads.cc: Renamed all `JvPriv' functions.
+	* boehm.cc: Renamed all `JvPriv' functions.
+	* include/quick-threads.h: Renamed all `JvPriv' functions.
+	* include/posix-threads.h: Renamed all `JvPriv' functions.
+	* include/no-threads.h: Renamed all `JvPriv' functions.
+	* include/jvm.h: Renamed all `JvPrivXXX' functions to `_Jv_XXX'.
+
+	* include/no-threads.h (JvPrivCondWait): Wrote minimal
+	implementation.
+	(JvPrivCondNotify): Do nothing.
+	(JvPrivCondNotifyAll): Do nothing.
+
+	* prims.cc (processClass): Handle case where state is
+	DOING_CONSTINIT.
+
+	* java/lang/natFirstThread.cc: Include <stdlib.h>
+
+	* configure: Rebuilt.
+	* configure.in: Fixed sense of --enable-libjava-debug.
+
+	* java/lang/natThread.cc (join): Declare `t' outside the loop so
+	it can be used afterward by the assertion.
+
+	* configure: Rebuilt.
+	* configure.in: When cross-compiling, assume alloca.
+
+	* java/lang/natDouble.cc: Updated alloca magic to avoid use of
+	__builtin_alloca (autoconf docs are wrong here).
+
+	* java/io/natFileDescriptor.cc (close): Set fd to -1 before
+	closing.
+	(available): Use `FD_ZERO' (typo fix).
+
+Tue Sep 29 17:43:30 1998  Andrew Haley  <aph@tikka.cygnus.co.uk>
+
+	* java/lang/mprec.h, java/lang/mprec.c, java/lang/dtoa.c,
+ 	java/lang/natDouble.cc, java/lang/strtod.c: struct _Bigint renamed
+	struct _Jv_Bigint.
+	* java/lang/mprec.h, java/lang/mprec.c, java/lang/dtoa.c,
+ 	java/lang/natDouble.cc, java/lang/strtod.c: struct _reent renamed
+ 	struct _Jv_reent.
+
+	* java/lang/natDouble.cc: layout changed to match GNU coding standard.
+	
+Tue Sep 29 07:57:13 1998  Anthony Green  <green@cygnus.com>
+
+	* java/lang/natDouble.cc: Declare alloca safely.
+
+	* configure, include/config.h.in: Rebuilt.
+	* configure.in: Add alloca check.
+
+Tue Sep 29 00:28:42 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natThread.cc (finish_): Hold mutex for interrupt
+	condition while calling notify.
+	(join): Remove `curr_nt' from `nt's join list, not vice versa.
+	(interrupt): Hold mutex for interrupt condition while calling
+	notify.
+
+	* java/lang/natString.cc (init): Allocate and try to read `count'
+	characters, not `count - offset' characters.
+
+	* java/io/ByteArrayInputStream.java (ByteArrayInputStream):
+	Correctly compute `count'.
+
+	* java/lang/Boolean.java (getBoolean): Return false if property
+	not found.
+
+	* java/lang/System.java (setProperties): Set prop_init.
+
+Mon Sep 28 12:39:25 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/PrintStream.java (println): Use line.separator, not
+	file.separator.
+	* java/lang/System.java (out, err): Make both autoflush streams.
+	* java/io/ByteArrayOutputStream.java (write): Increment `count'.
+
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (HAVE_MEMCPY): Removed.
+	* configure: Rebuilt.
+	* configure.in: Never define HAVE_MEMCPY.
+
+	* java/lang/natString.cc: Don't include OutOfMemoryError.h or
+	Class.h.
+	(_Jv_AllocString): Use JvAllocObject again.
+	* java/lang/Class.h (thread): New field.
+	(_Jv_AllocString): No longer a friend.
+	* prims.cc (processClass): Removed dead code.  Changed to more
+	closely follow the Java Language Specification.
+	(processClass): Return early if already at the right state.
+
+	* prims.cc (JvNewStringUTF): Removed.
+	* include/cni.h (JvNewStringUTF): New function.
+	(_Jv_NewStringUTF): Declare as `extern "C"'.
+	* java/lang/natString.cc (_Jv_NewStringUTF): New function.
+
+	* java/lang/natDouble.cc: Added copyright info and header
+	comment.  Include <stdlib.h>.
+	(doubleValueOf): Use alloca, not malloc.  Allocate 3 times as many
+	bytes as are chars in string.
+
+Sat Sep 26 00:19:27 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/Hashtable.java (hkeys): Member renamed from to avoid
+	clash with method.
+	(hsize): Likewise.
+
+	* java/lang/System.java (init_properties): Now native.
+	* java/lang/natSystem.cc (init_properties): New method.
+	Include java/util/Properties.h.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added ByteArrayOutputStream.h,
+	OutputStreamWriter.h, ByteArrayInputStream.h,
+	InputStreamReader.h, Writer.h, InputStream.h, OutputStream.h,
+	Reader.h, Vector.h, SecurityManager.h, FilenameFilter.h,
+	SyncFailedException.h, EOFException.h, FileNotFoundException.h,
+	Properties.h, Hashtable.h, Dictionary.h.
+	(CFLAGS): Removed.
+
+	* include/javaprims.h (java::io): Added Reader, Writer,
+	InputStreamReader, OutputStreamWriter,
+	UnsupportedEncodingException, ByteArrayInputStream,
+	ByteArrayOutputStream, EOFException, SyncFailedException,
+	PushbackInputStream.
+	(java::lang): Added Cloneable.
+	(java::util): Added NoSuchElementException, VectorEnumeration,
+	Dictionary, HashtableEnumeration, PropertiesEnumeration.
+
+	* java/io/PipedReader.java: New file.
+
+Fri Sep 25 00:11:25 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natCharacter.cc (getNumericValue): Use `digit' to pick
+	up A-Z.
+
+	* java/io/io-defs.h: Removed.
+
+	* java/io/FileInputStream.java (skip): Use FileDescriptor.seek.
+	(FileInputStream): Use new constructor.  Can throw IOException.
+
+	* java/lang/System.java (getProperty): Don't throw
+	NullPointerException.
+
+	* java/io/RandomAccessFile.java: Rewrote from scratch.
+
+	* java/io/natFileDescriptor.cc: Include EOFException.h.
+	(seek): New method.
+	(length): New method.
+	(getFilePointer): New method.
+	(read): New method.
+	(available): New method.
+	* java/io/FileDescriptor.java (SET, CUR): New constants.
+	(seek, length, getFilePointer, read, available): New decls.
+
+	* java/io/PipedWriter.java: New file.
+	* java/io/StringWriter.java: New file.
+	* java/io/CharArrayWriter.java: New file.
+	* java/io/CharConversionException.java: New file.
+	* java/io/BufferedWriter.java: New file.
+	* java/io/FilterWriter.java: New file.
+	* java/io/FileWriter.java: New file.
+
+	* java/lang/natString.cc: Include ByteArrayOutputStream.h,
+	OutputStreamWriter.h, NullPointerException.h,
+	ByteArrayInputStream.h, InputStreamReader.h.
+	(getBytes): New method.
+	(init): Throw NullPointerException.
+	(init): New function.
+	* java/lang/String.java (getBytes): Added missing decl.
+	(getBytes): New method.
+	(String): Added byte[]-based constructors.
+	(copyValueOf): Wrote.
+	(init): Declare variant which takes byte array and encoding.
+	Import java.io.UnsupportedEncodingException.
+
+	* java/io/File.java: Rewrote from scratch.
+	* java/io/natFileDescriptor.cc: Rewrote from scratch.
+	* java/io/FileDescriptor.java: Rewrote from scratch.
+	* java/io/FilenameFilter.java: Rewrote from scratch.
+
+Thu Sep 24 13:30:16 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/SyncFailedException.java: New file.
+	* java/io/UTFDataFormatException.java: Rewrote from scratch.
+	* java/io/InterruptedIOException.java: Rewrote from scratch.
+	* java/io/FileNotFoundException.java: Rewrote from scratch.
+	* java/io/EOFException.java: Rewrote from scratch.
+	* java/io/IOException.java: Rewrote from scratch.
+	* java/io/PrintStream.java: Rewrote from scratch.
+	* java/io/DataOutputStream.java: Rewrote from scratch.
+	* java/io/BufferedOutputStream.java: Rewrote from scratch.
+	* java/io/FilterOutputStream.java: Rewrote from scratch.
+	* java/io/ByteArrayOutputStream.java: Rewrote from scratch.
+	* java/io/PipedOutputStream.java: Rewrote from scratch.
+	* java/io/FileOutputStream.java: Rewrote from scratch.
+	* java/io/OutputStream.java: Rewrote from scratch.
+	* java/io/DataOutput.java: Rewrote from scratch.
+
+Mon Sep 28 22:59:54 1998  Per Bothner  <bothner@cygnus.com>
+
+	* prims.cc (_Jv_CheckCast):  Add missing ! operator.
+
+Mon Sep 28 15:50:06 1998  Anthony Green  <green@cygnus.com>
+
+	* configure.in: Add --enable-libjava-debug
+
+	* Makefile.am (nat_headers): Add java/lang/Float.h and 
+	java/lang/Double.h
+
+	* acconfig.h: Add DEBUG and HAVE_MEMCPY.
+
+	* Makefile.in, configure, include/config.h.in: Rebuilt.
+
+Mon Sep 28 17:05:58 1998  Andrew Haley  <aph@korai.cygnus.co.uk>
+
+	* java/lang/Float.java: Rewritten
+	* java/lang/Double.java: Rewritten
+	* java/lang/natFloat.cc: toString() added.
+	* java/lang/natDouble.cc: toString() added.
+	* java/lang/natDouble.cc: doubleValueOf() added.
+	* java/lang/dtoa.c, java/lang/mprec.c, java/lang/mprec.h, 
+	java/lang/strtod.c: added.
+	* ieeefp.h: __sparc added.
+	* Makefile.am: java/lang/Float.h and java/lang/Double.h added.
+	
+Thu Sep 24 13:30:16 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/javaprims.h (java::lang): Added
+	CloneNotSupportedException.
+
+	* java/lang/Object.java (clone): No longer native.  Implemented.
+	* java/lang/natObject.cc (clone): Removed.
+
+Wed Sep 23 12:03:38 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc: Don't make definitions `extern "C"'.
+	(_Jv_RegisterClass): Renamed from registerClass.
+	* include/jvm.h (_Jv_ThrowBadArrayIndex): Declare.
+	(_Jv_NewArray): Likewise.
+	(_Jv_NewMultiArray): Likewise.
+	(_Jv_CheckCast): Likewise.
+	(_Jv_LookupInterfaceMethod): Likewise.
+	(_Jv_CheckArrayStore): Likewise.
+	(_Jv_RegisterClass): Likewise.
+
+	* acconfig.h (HAVE_FMOD, HAVE_MEMCPY): Removed.
+	* configure: Rebuilt.
+	* configure.in: Don't check for fmod; it is provided by the fdlibm
+	code.
+	* prims.cc (fmod): Removed.
+
+	* java/lang/natString.cc (charAt): Use _Jv_uint.
+	* java/lang/Class.h (class JvField): Use _Jv_ushort.
+	* prims.cc (HASH_CHARS): Use _Jv_ushort.
+	(equalUtf8Consts): Likewise.
+	(internalAddClass): Use _Jv_uint.
+	(processClass): Likewise.
+	* include/javaprims.h (_Jv_ushort): Renamed from uint16.
+	(_Jv_uint): Renamed from uint32.
+	(struct _Jv_Utf8Const): Changed members to use new type names.
+
+	* configure: Rebuilt.
+	* configure.in: Don't check for memcpy.  Require memmove and a way
+	to get the time.
+	* java/lang/natSystem.cc (arraycopy): Removed dead code, and
+	#error.
+	(currentTimeMillis): Don't use #error.
+
+Tue Sep 22 18:00:16 1998  Andrew Haley  <aph@korai.cygnus.co.uk>
+
+	* java/lang/Math.java: static member random renamed to random_ to
+ 	avoid conflict with member function of the same name.
+	* include/javaprims.h: java.util.Random added.
+
+Tue Sep 22 13:53:14 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-chartables.h: Regenerated.
+	* chartables.pl: End COMPACT_CHARACTER #if after fast tables
+	printed.
+
+Tue Sep 22 17:17:52 1998  Andrew Haley  <aph@tikka.cygnus.co.uk>
+
+	* java/lang/Math.java: Rewritten.
+	* java/lang/natMath.cc: New file.
+	* Files added from fdlibm:
+	  java/lang/e_acos.c, java/lang/k_sin.c, java/lang/sf_floor.c,
+	  java/lang/e_asin.c, java/lang/k_tan.c, java/lang/sf_rint.c,
+	  java/lang/e_atan2.c, java/lang/s_atan.c, java/lang/w_acos.c,
+	  java/lang/e_exp.c, java/lang/s_ceil.c, java/lang/w_asin.c,
+	  java/lang/e_fmod.c, java/lang/s_copysign.c, java/lang/w_atan2.c,
+	  java/lang/e_log.c, java/lang/s_cos.c, java/lang/w_exp.c,
+	  java/lang/e_pow.c, java/lang/s_fabs.c, java/lang/w_fmod.c,
+	  java/lang/e_rem_pio2.c, java/lang/s_floor.c, java/lang/w_log.c,
+	  java/lang/e_remainder.c, java/lang/s_rint.c, java/lang/w_pow.c,
+	  java/lang/e_scalb.c, java/lang/s_scalbn.c, java/lang/w_remainder.c,
+	  java/lang/e_sqrt.c, java/lang/s_sin.c, java/lang/w_sqrt.c,
+	  java/lang/ef_fmod.c, java/lang/s_tan.c, java/lang/wf_fmod.c,
+	  java/lang/k_cos.c, java/lang/sf_ceil.c,
+	  java/lang/k_rem_pio2.c, java/lang/sf_fabs.c,
+	  java/lang/ieeefp.h, java/lang/fdlibm.h
+	* Makefile.am: rules added for compiling C files from fdlibm.
+  	
+Mon Sep 21 15:40:58 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* chartables.pl: Minor documentation fixes.
+
+	* configure: Rebuilt.
+	* configure.in: Fixed --help output for --enable-fast-character.
+
+Thu Sep 17 11:03:27 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Recognize --enable-fast-character.
+	* acconfig.h (COMPACT_CHARACTER): New define.
+	* include/config.h.in: Rebuilt.
+	* include/java-chartables.h: New file.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_files): Added natCharacter.o.
+	* java/lang/natCharacter.cc: New file.
+	* chartables.pl (set_attribute): New function.
+	(@attributes, @second_attributes): New globals.
+	($ROMAN_START, $ROMAN_END): Likewise.
+	(process_char): Call set_attribute when required.
+	(print_char): Just print hex value.
+	(print_block): Generate C++ syntax.
+	(print_numerics): Likewise.
+	(print_single_map): Likewise.
+	(print_all_block): Likewise.
+	(print_case_table): Likewise.
+	(print_fast_tables): New function.
+	Generate C++ code suitable for a header file.
+	* java/lang/Character.java (table_search): Removed.
+	(digit_value): Now native.
+	(getNumericValue): Likewise.
+	(getType): Likewise.
+	Removed all automatically-generated tables.
+	(Tamil_Digit_One): Removed.
+	(isSpaceChar): Now native.
+	(isTitleCase): Likewise.
+	(isLowerCase): Likewise.
+	(isUpperCase): Likewise.
+	(toLowerCase): Likewise.
+	(toTitleCase): Likewise.
+	(toUpperCase): Likewise.
+	(isDefined): Fixed sense of test.
+
+Wed Sep 16 12:00:19 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natString.cc (equalsIgnoreCase): Removed obsolete
+	FIXME comment.
+	(regionMatches): Likewise.
+
+Tue Sep 15 14:35:12 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_AllocObject): Call _Jv_InitClass on the class.
+
+	* java/lang/Class.h (Object): For now, declare _Jv_AllocString as
+	a friend.
+	* java/lang/natString.cc (_Jv_AllocString): For now, don't call
+	_Jv_AllocObject.
+
+	* java/lang/natString.cc (toUpperCase): Declare `ch' as a jchar,
+	not a char.
+
+	* java/lang/natClass.cc (isAssignableFrom): Handle arrays.
+
+Fri Sep 11 14:01:08 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (instanceof_class): Removed.
+	(instanceof_array): Likewise.
+	(instanceof): Likewise.
+	(_Jv_IsInstanceOf): Use Class::isAssignableFrom.
+	(_Jv_CheckCast): Likewise.
+	* java/lang/natClass.cc (isAssignableFrom): New method.
+	* java/lang/Class.java (isAssignableFrom): Now native.
+
+	* include/cni.h (JvThrow): Use `extern inline'.
+	(JvAllocObject): Likewise.
+	(JvInitClass): Likewise.
+
+	* java/lang/natSystem.cc (arraycopy): Only check class of source
+	object if not null.
+
+	* prims.cc (_Jv_CheckArrayStore): Wrote.
+	(_Jv_MonitorEnter): Prefer `JvThrow'.
+	Include ArrayStoreException.h.
+	(_Jv_CheckCast): Indentation cleanup.
+
+Thu Sep 10 18:59:29 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* chartables.pl: New file.
+	* java/lang/Character.java: Rewrote from scratch.
+
+Fri Sep 18 18:15:58 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/lang/ArithmeticException.java,
+ 	java/lang/ArrayIndexOutOfBoundsException.java,
+ 	java/lang/ArrayStoreException.java,
+ 	java/lang/ClassCastException.java,
+ 	java/lang/ClassNotFoundException.java,
+ 	java/lang/CloneNotSupportedException.java,
+ 	java/lang/Exception.java, java/lang/IllegalAccessException.java,
+ 	java/lang/IllegalArgumentException.java,
+ 	java/lang/IllegalMonitorStateException.java,
+ 	java/lang/IllegalThreadStateException.java,
+ 	java/lang/IndexOutOfBoundsException.java,
+ 	java/lang/InstantiationException.java,
+ 	java/lang/InterruptedException.java,
+ 	java/lang/NegativeArraySizeException.java,
+ 	java/lang/NoSuchMethodException.java,
+ 	java/lang/NullPointerException.java,
+ 	java/lang/NumberFormatException.java,
+ 	java/lang/RuntimeException.java, java/lang/SecurityException.java,
+ 	java/lang/StringIndexOutOfBoundsException.java: Rewritten.
+
+	* java/lang/IllegalStateException.java,
+ 	java/lang/NoSuchFieldException.java,
+ 	java/lang/UnsupportedOperationException.java: Created.
+
+Fri Sep 18 15:01:42 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/lang/Integer.java, java/lang/Long.java: Rewritten.
+	* java/lang/Byte.java, java/lang/Short.java (decode): Uncommented.
+
+Fri Sep 11 16:49:19 1998  Per Bothner  <bothner@cygnus.com>
+
+	* prims.cc (JvRunMain):  No longer need to call _Jv_InitClass.
+
+Thu Sep 10 12:23:55 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am (nat_headers): Added StringIndexOutOfBoundsException.h.
+
+	* Makefile.in: Rebuilt.
+
+	* include/javaprims.h (java::lang): Added
+	StringIndexOutOfBoundsException.
+
+	* java/lang/String.java: Added header comment and FIXME comment for 
+	missing constructors/methods.
+	(endsWith): Adjusted offset into string to look at just the last chars.
+	Commented out undocumented method.
+
+	* java/lang/natString.cc: Added includes for
+	ArrayIndexOutOfBoundsException.h & StringIndexOutOfBoundsException.h.
+	(String::init): Throw StringIndexOutOfBoundsException.
+	(String::charAt): Throw StringIndexOutOfBoundsException.
+	(String::substring): Throw StringIndexOutOfBoundsException.
+	(String::getChars): Throw ArrayIndexOutOfBoundsException.
+	(String::getBytes): Throw ArrayIndexOutOfBoundsException.
+	(String::compareTo): Return difference/offset between chars/strings.
+
+Tue Sep  8 13:22:33 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/lang/Boolean.java (TYPE): Added comment.
+	
+  	* java/lang/Byte.java (decode): Added - commented out until dependent
+ 	code for Integer is written.
+	(compareTo): JDK 1.2 methods written.
+	(hashCode): Added comment to note that values have been verified.
+	
+	* java/lang/Short.java (decode): Added - commented out until dependent
+	code for Integer is written.
+	(compareTo): JDK 1.2 methods written.
+	(hashCode): Added comment to note that values have been verified.
+
+	* java/lang/Comparable.java: Created - JDK 1.2 interface.
+
+Fri Sep  4 10:36:35 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/javaprims.h (java::lang): Added VirtualMachineError,
+	OutOfMemoryError.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added OutOfMemoryError.h,
+	VirtualMachineError.h.
+	* prims.cc (_Jv_NewPrimArray): Throw OutOfMemoryError.
+	(lookupArray): Likewise.
+	(makeUtf8Const): Likewise.
+	(_Jv_AllocObject): Likewise.
+	(_Jv_NewObjectArray): Likewise.
+	Include OutOfMemoryError.h.
+
+	* java/io/natFileDescriptor.cc (newstr): Removed.  Changed callers
+	to use JvNewStringLatin1.
+
+	* java/io/io-defs.h: Include java/lang/IOException.h.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added
+	ArrayIndexOutOfBoundsException.h,
+	ClassFormatError.h,ClassNotFoundException.h,
+	ClassCircularityError.h, ClassCastException.h,
+	IncompatibleClassChangeError.h, AbstractMethodError.h,
+	IllegalAccessError.h, LinkageError.h, Error.h,
+	NegativeArraySizeException.h, IOException.h.
+	* include/cni.h (SignalError): Removed declaration.
+	* java/util/natDate.cc (setTime): Use JvFail, not sorry.
+	* java/lang/natObject.cc (clone): Use JvFail, not sorry.
+	* java/lang/natClass.cc (getInterfaces): Use JvFail, not sorry.
+	(newInstance): Likewise.
+	(forName): Likewise.
+	* java/io/natFileDescriptor.cc (open_read_write): Use JvFail, not
+	sorry.
+	(read): Use JvThrow, not SignalError.
+	(read): Likewise.
+	(write): Likewise.
+	(skip): Likewise.
+	(close): Likewise.
+	(open_read): Likewise.
+	(open_write): Likewise.
+	(ftell): Likewise.
+	(fseek): Likewise.
+	(newstr): New function.
+	* java/io/natFile.cc (isDirectoryUnchecked): Use JvFail, not
+	sorry.
+	(lastModifiedUnchecked): Likewise.
+	(lengthUnchecked): Likewise.
+	* include/javaprims.h (sorry): Removed declaration.
+	(java::lang): Added ArrayIndexOutOfBoundsException, LinkageError,
+	ClassFormatError, ClassNotFoundException, ClassCircularityError,
+	ClassCastException, IncompatibleClassChangeError,
+	AbstractMethodError, IllegalAccessError, NegativeArraySizeException.
+	* prims.cc (instanceof_array): Use JvFail, not sorry.
+	(sorry): Removed.
+	Include ArrayIndexOutOfBoundsException.h,
+	ClassFormatError.h,ClassNotFoundException.h,
+	ClassCircularityError.h, ClassCastException.h,
+	IncompatibleClassChangeError.h, AbstractMethodError.h,
+	IllegalAccessError.h, NegativeArraySizeException.h.
+	(_Jv_ThrowBadArrayIndex): Implemented.
+	(JvNewStringUTF): Use JvFail, not sorry.
+	(_Jv_FindClass): Likewise.
+	(_Jv_NewArray): Likewise.
+	(throwException): Removed.
+	(getClass): Use JvThrow.
+	(processClass): Likewise.
+	(_Jv_NewObjectArray): Likewise.
+	(_Jv_NewMultiArray): Likewise.
+	(_Jv_CheckCast): Likewise.
+	(_Jv_LookupInterfaceMethod): Likewise.
+	(SignalError): Removed.
+	(getClass): Use _Jv_NewStringUtf8Const to create String.
+
+	* java/lang/natSystem.cc (arraycopy): Throw
+	ArrayIndexOutOfBoundsException, not IndexOutOfBoundsException.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GCJH): Renamed.  Now use `gcjh'.  Changed all
+	users.
+	* include/java-array.h: Mention gcjh, not gjavah.
+
+	* java/io/natFile.cc (existsUnchecked): Use JvGetStringUTFRegion.
+	(canReadUnchecked): Likewise.
+	(canWriteUnchecked): Likewise.
+	(isFileUnchecked): Likewise.
+	* java/io/natFileDescriptor.cc: Don't include cni.h.
+
+	* java/lang/Thread.java (run__): Declare.
+	* java/lang/natThread.cc (run__): New method, to avoid compiler
+	warning.
+	(start): Use run__, not run_.
+
+	* java/io/io-defs.h: Include cni.h and jvm.h.
+
+Thu Sep  3 18:20:08 1998  Per Bothner  <bothner@cygnus.com>
+
+	Re-implement java.lang.String, using "COMPACT_STRINGS" representation.
+	* prims.cc (JvAllocString, JvNewString, JvNewStringlatin1):  Moved
+	to natString.cc (with suitable renaming, inlines etc).
+	(javaString2CString):  Removed.  Subsumed by _Jv_GetStringUTFRegion.
+	* java/lang/Class.h:  Renamed Utf8Const to _Jv_Utf8Const.
+	* java/lang/String.h:  Removed - now generated using gjavah.
+	* java/lang/String.java:  Re-written from scratch. Many native methods.
+	* java/lang/natDouble.cc, java/util/natDate.cc:  #include <cni.h>.
+	* java/lang/natString.cc:  Many functions re-written for "compact
+ 	strings" representation, or native java.lang.String methods added.
+ 	(Utf8Const2JavaString):  Renamed to _Jv_NewStringUtf8Const.
+	(_Jv_GetStringUTFLength, _Jv_GetStringUTFRegion):  New methods.
+	* java/lang/natClass.cc (getName):  Use new _Jv_NewStringUtf8Const.
+	* java/io/natFileDescriptor.cc:  Use new JvGetStringUTFRegion.
+	* include/cni.h:  Add inline method.
+	* include/java-array.h (jobjectArrayjchar):  gjavah bug work-around.
+	* include/javaprims.h:  Moved some stuff frm String.h.
+	* include/jvm.h (UTF8_GET, Utf8Const, StringClass):  Moved here.
+	* Makefile.am (nat_header):  Added Character.h and String.h.
+	(String.h):  Add new rule.
+
+Thu Sep  3 10:28:16 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* no-threads.cc: Include config.h, cni.h, jvm.h.  Don't include
+	java-assert.h.
+	* posix-threads.cc: Include cni.h, jvm.h.
+	* quick-threads.cc: Include cni.h, jvm.h.
+	* nogc.cc: Include cni.h, not javaprims.h.
+	* java/lang/natFirstThread.cc: Include cni.h, jvm.h.
+	* java/lang/natThread.cc: Rearranged #include ordering.  Don't
+	include java-assert.h.
+	* java/lang/natSystem.cc: Include cni.h.  Don't include
+	java-assert.h.
+	* java/lang/natRuntime.cc: Include cni.h.  Don't include
+	java-assert.h.
+	* prims.cc: Rearranged #include ordering.  Don't include
+	java-array.h or java-assert.h.
+	* boehm.cc: Include config.h, cni.h.
+	* exception.cc: Include config.h, cni.h.
+	* include/jvm.h: Include java-assert.h.
+	* include/cni.h: Include java/lang/Object.h.  Don't include
+	java-threads.h or java-array.h.
+
+Thu Sep  3 16:03:08 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/lang/Boolean.java: Rewritten.
+
+Thu Sep  3 10:28:16 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natFirstThread.cc (main_func): New typedef.
+	(run): Use main_func, not JvPrivThreadStartFunc.
+	* include/no-threads.h (JvPrivThreadStartFunc): Use correct
+	argument type.
+	* include/posix-threads.h (JvPrivThreadStartFunc): Use correct
+	argument type.
+	* include/quick-threads.h (JvPrivThreadStartFunc): Use correct
+	argument type.
+
+	Can't throw Java exceptions with C++ `throw':
+	* quick-threads.cc (qthrow): Use _Jv_Throw, not throw.
+	* java/lang/natThread.cc (join): Use _Jv_Throw, not throw.
+	(setPriority): Likewise.
+	(sleep): Likewise.
+	(start): Likewise.
+	(stop): Likewise.
+	* java/lang/natSystem.cc (arraycopy): Use _Jv_Throw, not throw.
+	* prims.cc (_Jv_MonitorEnter): Use _Jv_Throw, not throw.
+
+	Can't catch Java exceptions from C++:
+	* java/lang/natThread.cc (finish_): New method.
+	(run_): Removed.
+	* java/lang/Thread.java (run_): Rewrote in Java.
+	(finish_): New native method.
+
+Wed Sep  2 17:30:39 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/lang/Cloneable.java, java/lang/Number.java: Rewritten.
+
+	* include/javaprims.h (java::io): Added Serializable.
+
+Wed Sep  2 15:22:00 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/EmptyStackException.java,
+ 	java/util/NoSuchElementException.java: Rewritten.
+	
+  	* java/util/ConcurrentModificationException.java,
+ 	java/util/MissingResourceException.java,
+ 	java/util/TooManyListenersException.java: Created.
+
+Wed Sep  2 13:36:57 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/cni.h (JvThrow): New function.
+	* include/javaprims.h (_Jv_Throw): Declare.
+
+Wed Sep  2 14:07:48 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Observable.java: Rewritten.
+
+Wed Sep  2 13:36:57 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_MonitorExit): Assert that object is non-null.
+	(_Jv_MonitorEnter): Throw NullPointerException if object is null.
+	Include NullPointerException.h.
+
+Tue Sep  1 12:07:35 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natSystem.cc (arraycopy): Removed overlapping-copy
+	assignability checks.  Don't bother using memcpy.
+
+	* quick-threads.cc (JvPrivThreadStart): Don't call coop_start.
+	(started): Removed.
+	* include/quick-threads.h (JvPrivThreadWait): New function.
+	* include/no-threads.h (JvPrivThreadWait): New function.
+	* include/posix-threads.h (JvPrivThreadWait): New function.
+	* prims.cc (JvRunMain): Call JvPrivThreadWait.
+
+	* java/lang/natSystem.cc (arraycopy): Do nothing if count is 0.
+
+	* java/lang/natSystem.cc (arraycopy): Multiply both src and dst
+	offsets by size of type that is being copied.
+
+	* java/lang/natThread.cc (start): Don't pass `object' argument to
+	JvPrivThreadStart.
+	* no-threads.cc (JvPrivThreadStart): Removed `object' argument.
+	* posix-threads.cc (JvPrivThreadStart): Removed `object'
+	argument.
+	* quick-threads.cc (JvPrivThreadStart): Removed `object' argument;
+	always pass thread as object.
+	* include/quick-threads.h, include/posix-threads.h,
+	include/no-threads.h (JvPrivThreadStart): Removed `object'
+	argument.
+
+Mon Aug 31 19:11:53 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Dictionary.java: Rewritten.
+
+Mon Aug 31 14:35:55 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/quick-threads.h (JvPrivThreadInitData): Use 0, not NULL.
+	(JvPrivThreadDestroy): Likewise.
+	
+Mon Aug 31 12:56:01 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/lang/natRuntime.cc (exit): Changed final call to ::exit.
+
+Thu Aug 27 12:24:40 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natSystem.cc: Rewrote from scratch.
+	* java/lang/System.java: Rewrote from scratch.
+	* java/lang/Class.h (Class): Declare isAssignableFrom.
+	* include/javaprims.h (java::lang): Added ArrayStoreException,
+	IndexOutOfBoundsException.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added ArrayStoreException.h,
+	IndexOutOfBoundsException.h.
+	* java/lang/natObject.cc (hashCode): Use _Jv_HashCode.
+	* include/jvm.h (_Jv_HashCode): New function.
+
+	* java/lang/natThread.cc (suspend): Call checkAccess.
+	(resume): Likewise.
+	* java/lang/Thread.java (setDaemon): Call checkAccess.
+
+Thu Aug 27 12:24:40 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Runtime.java: Rewrote from scratch.
+	* java/lang/natRuntime.cc: Rewrote from scratch.
+
+	* nogc.cc (JvPrivGCTotalMemory): New function.
+	(JvPrivGCFreeMemory): Likewise.
+	(total): New global.
+	(JvPrivAllocObj): Increment total.
+	(JvPrivAllocArray): Likewise.
+	(JvPrivAllocBytes): Likewise.
+	* include/jvm.h: Declare JvPrivGCTotalMemory, JvPrivGCFreeMemory.
+	* boehm.cc (JvPrivGCTotalMemory): New function.
+	(sum_blocks): Likewise.
+	(JvPrivGCFreeMemory): Likewise.
+
+Wed Aug 26 12:30:32 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/javaprims.h (java::lang): Added FirstThread.
+	* java/lang/natFirstThread.cc: New file.
+	* java/lang/FirstThread.java: New file.
+	* prims.cc (main_signature): Removed.
+	(main_name): Removed.
+	#include FirstThread.h.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (TFRIEND): Removed.
+	(java/lang/Thread.h): Likewise.
+	(FTFRIEND): New macro.
+	(java/lang/FirstThread.h): New target.
+	(nat_files): Added natFirstThread.o.
+	(nat_headers): Added FirstThread.h.
+	* include/jvm.h (_Jv_StartFirstThread): Don't declare.
+	* java/lang/natThread.cc (_Jv_StartFirstThread): Removed.
+
+	* java/lang/Thread.java (setName): Throw IllegalArgumentException
+	if name is null.
+	(Thread): Likewise.
+
+	* java/lang/natThread.cc (start): Synchronize the thread.
+	(stop): Synchronize the thread.
+
+	* java/lang/ThreadDeath.java: Rewrote from scratch.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (TGFRIEND): New macro.
+	(java/lang/ThreadGroup.h): New target.
+	($(nat_files) prims.o boehm.o nogc.o): Native files depend on the
+	native headers.
+	($(javao_files) $(nat_files) prims.o boehm.o nogc.o): Removed.
+
+	* nogc.cc: Include config.h.
+
+	* java/lang/ThreadGroup.java: Rewrote from scratch.
+
+Tue Aug 25 00:12:54 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Thread.java (checkAccess): Only call in to security
+	manager if it exists.
+	(Thread): Don't check access when creating the first thread.  Add
+	this thread to the appropriate ThreadGroup.
+
+	* java/lang/natThread.cc (run_): Call uncaughtException method on
+	the ThreadGroup.
+
+	* java/lang/Runnable.java: Rewrote from scratch.
+	* java/lang/Thread.java: Updated copyright comment to correct
+	form.
+
+Wed Aug 26 15:16:18 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Random.java: Rewritten.
+
+Wed Aug 26 14:25:39 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* prims.cc (_Jv_NewMultiArray): Need one more slot to store
+ 	trailing 0 in array[].
+
+Wed Aug 26 12:21:06 1998  Anthony Green  <green@cygnus.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Remove RUNTEST, EXPECT, 
+	and RUNTESTFLAGS from AM_MAKEFLAGS.
+	(SUBDIRS): Conditionally include testsuite.
+	* Makefile.in: Rebuilt.
+
+Tue Aug 25 18:14:53 1998  Anthony Green  <green@cygnus.com>
+
+	* java/lang/Object.h: Include java-assert.h.
+
+Tue Aug 25 17:33:57 1998  Anthony Green  <green@cygnus.com>
+
+	* Makefile.am: Add testsuite directory.
+	* configure.in: Build testsuite/Makefile.
+	* Makefile.in, configure: Rebuilt.
+	
+Tue Aug 25 00:12:54 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (JvRunMain): Use _Jv_StartFirstThread.
+	* include/jvm.h (_Jv_StartFirstThread): Declare.
+
+	* include/javaprims.h (java::lang): Added Exception,
+	RuntimeException.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added NullPointerException.h,
+	InterruptedException.h, IllegalArgumentException.h, Exception.h,
+	Throwable.h, RuntimeException.h, IllegalThreadStateException.h.
+	(java/lang/Thread.h): New target.
+	(TFRIEND): New macro
+
+	* include/java-assert.h (JvFail): Use 0 and not NULL.
+
+	* posix-threads.cc (JvPrivThreadStart): Use getPriority() method
+	instead of assuming we are a friend of Thread.
+	* quick-threads.cc (JvPrivThreadStart): Use isDaemon() method
+	instead of assuming we are a friend of Thread.
+
+Mon Aug 24 15:58:36 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natThread.cc: Rewrote from scratch.
+	* java/lang/Thread.java: Rewrote from scratch.
+	* prims.cc (JvRunMain): Use new Thread constructor.
+	* include/javaprims.h (java::lang): Added InterruptedException.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added java/lang/Thread.h.
+	* java/lang/Thread.h: Removed.
+	* quick-threads.cc (JvPrivThreadStart): Added `data' argument.
+	* no-threads.cc (JvPrivThreadStart): Added JvPrivThread_t
+	argument.
+	* posix-threads.cc (JvPrivThreadJoin): Removed.
+	(JvPrivThreadInitData): Don't initialize join_mutex or join_cond.
+	(really_start): Don't notify join_cond.
+	(JvPrivThreadStart): Added `data' argument.
+	* include/no-threads.h (JvPrivThreadInterrupt): Removed.
+	(JvPrivThreadJoin): Likewise.
+	Use JvFail instead of sorry.
+	(JvPrivThreadSuspend): Removed.
+	(JvPrivThreadResume): Removed.
+	* include/quick-threads.h (JvPrivThreadInterrupt): Removed.
+	(JvPrivThreadJoin): Likewise.
+	(JvPrivThreadSuspend): Use JvFail.
+	(JvPrivThreadResume): Likewise.
+	(JvPrivThreadSuspend): Removed.
+	(JvPrivThreadResume): Likewise.
+	* include/posix-threads.h (JvPrivThreadInterrupt): Removed.
+	(JvPrivThread_t): Removed join_mutex, join_cond.
+	Use JvFail instead of sorry.
+	(JvPrivThreadSuspend): Removed.
+	(JvPrivThreadResume): Likewise.
+
+Tue Aug 25 12:50:13 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Observer.java: Rewritten
+	* java/util/Enumeration.java: Rewritten
+
+Tue Aug 25 11:33:54 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/StringTokenizer.java: Rewritten
+	* java/util/Stack.java: Added COPYRIGHT-TBD comment
+	* java/util/Vector.java: Added COPYRIGHT-TBD comment
+	* java/io/Serializable.java: Added COPYRIGHT-TBD comment
+	
+Fri Aug 21 10:14:22 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-assert.h (JvFail): Call _Jv_Abort even when DEBUG
+ 	not defined.
+
+	* no-threads.cc (JvPrivThreadStart): Use JvAssert.
+	Include java-assert.h.
+	* include/java-assert.h: New file.
+	* prims.cc (_Jv_Abort): New function.
+	Include java-assert.h, not assert.h.
+	(_Jv_MonitorExit): Use JvAssert.
+	(resolveConstants): Likewise.
+	(processClass): Likewise.
+	(JvRunMain): Assert that method is found.
+
+	* configure: Rebuilt.
+	* configure.in: Check for test subdir.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (SUBDIRS): Conditional on TESTSUBDIR.
+
+	* prims.cc (JvRunMain): Use NORM_PRIORITY.
+	* java/lang/Thread.h (Thread): Added NORM_PRIORITY.
+
+	* prims.cc (resolveConstants): Removed unused variables.
+	(processClass): Likewise.
+
+	* include/quick-threads.h (JvPrivThreadCurrent): Use
+	coop_getspecific.
+	* quick-threads.cc (destroy_data): New function.
+	(JvPrivInitThreads): Create key.
+	(JvPrivThreadKey): New global.
+	(JvPrivThreadStart): Use coop_setspecific.
+
+	* include/quick-threads.h, include/posix-threads.h,
+	include/no-threads.h, no-threads.cc, quick-threads.cc,
+	posix-threads.cc, nogc.cc, boehm.cc: Added copyright comment.
+
+Thu Aug 20 10:57:30 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/no-threads.h (JvPrivThreadInitData): Don't set
+	JvPrivOnlyThread.
+
+	* include/quick-threads.h (JvPrivCondWait): coop function now
+	takes microseconds.
+	(JvPrivThreadJoin): Likewise.
+
+	* java/lang/Thread.h (Thread): Updated declaration of
+	JvPrivThreadStart.
+	* include/quick-threads.h, include/posix-threads.h: Updated
+	declaration of JvPrivThreadStart.
+	* include/no-threads.h (JvPrivThreadStart): Changed definition
+	into declaration.
+	* no-threads.cc (JvPrivThreadStart): Removed `data' argument.
+	* quick-threads.cc (JvPrivThreadStart): Removed `data' argument.
+	* posix-threads.cc (JvPrivThreadStart): Removed `data' argument.
+
+Wed Aug 19 14:53:59 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* quick-threads.cc (qthrow): New function.
+	(JvPrivInitThreads): New function.
+	(started): New global.
+	(JvPrivThreadStart): Call coop_start if required.
+	* include/quick-threads.h (JvPrivThreadCancel): Implement.
+	(JvPrivThreadDestroy): Likewise.
+	(JvPrivInitThreads): Removed.
+	* include/posix-threads.h (JvPrivThreadCancel): Added error
+	argument.
+	* java/lang/natThread.cc (stop_): Pass exception to
+	JvPrivThreadCancel.
+
+Tue Aug 18 12:58:22 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/javaprims.h (java::lang): Added
+	IllegalArgumentException, IllegalThreadStateException, Math,
+	NullPointerException, ThreadDeath.
+	(java::util): Added Enumeration.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added java/lang/ThreadGroup.h.
+
+	* java/lang/ThreadGroup.java (ThreadGroup): No-args constructor
+	now public.
+	(threadsv): Renamed from threads to avoid clash in C++ header.
+	(groupsv): Likewise.
+	* include/no-threads.h (JvPrivThreadStart): Removed.
+	* no-threads.cc (JvPrivThreadStart): New function.
+	* java/lang/Thread.java (Thread): New constructor for internal use.
+	* java/lang/Thread.h (Thread): Declare JvRunMain as friend.
+	(Thread): Declare constructor.
+	* prims.cc (JvRunMain): Create the initial Thread and
+	ThreadGroup.
+	Include <java/lang/Thread.h> and <java/lang/ThreadGroup.h>.
+	* posix-threads.cc (JvPrivThreadStart): Added `thread' argument.
+	Removed `daemon' argument.
+
+	* prims.cc (JvRunMain): Call _Jv_InitializeSyncMutex.
+	* java/lang/Object.h (Object): Declare _Jv_InitializeSyncMutex as
+	a friend.
+	* java/lang/natObject.cc (_Jv_InitializeSyncMutex): New function.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (INCLUDES): Include THREADINCS.
+
+	* configure: Rebuilt.
+	* configure.in: Recognize `qt' as a threads package.
+
+Thu Aug 20 12:42:32 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Stack.java (pop): Null out topmost node for robustness.
+
+Thu Aug 20 12:30:30 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Stack.java: Rewritten.
+	* java/util/Vector.java (isEmpty): Simplified expression.
+
+Wed Aug 19 18:02:19 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* prims.cc (_Jv_NewObjectArray): Renamed from JvNewObjectArray.
+	(soft_anewarray): Removed, _Jv_NewObjectArray used instead.
+
+	* include/java-array.h (JvNewObjectArray): Created inline to
+ 	_Jv_NewObjectArray.
+
+	* java/lang/Class.h (_Jv_NewObjectArray): Renamed from
+ 	JvNewObjectArray.
+	
+Wed Aug 19 14:12:02 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* java/util/Vector.java: Rewritten.
+	* java/io/Serializable.java: Created.
+
+Fri Aug 14 10:31:54 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Float.java (NEGATIVE_INFINITY, POSITIVE_INFINITY):
+	Infinity is 1/0, not 1/1.
+
+	* boehm.cc (JvPrivAllocArray): Use GC_generic_malloc.
+
+	* configure: Rebuilt.
+	* configure.in: Removed duplicate AC_ARG_WITH.
+
+Thu Aug 13 14:51:47 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* prims.cc (_Jv_ThrowBadArrayIndex): Renamed from
+ 	soft_badarrayindex.
+	(_Jv_InitClass): Renamed from soft_initialise_class.
+	(_Jv_NewMultiArray): Renamed from soft_multianewarray.
+	(_Jv_CheckCast): Renamed from soft_checkcast.
+	(_Jv_LookupInterfaceMethod): Renamed from soft_lookupinterfacemethod.
+	(_Jv_CheckArrayStore): Renamed from soft_checkarraystore.
+	(JvRunMain): Call JvInitClass instead of soft_initialise_class.
+  	* include/cni.h (JvInitClass): New function.
+	(_Jv_InitClass): Renamed from soft_initialise_class.
+
+Wed Aug 12 10:07:04 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in (CXX): Don't set.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CXXFLAGS): New macro.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am ($(javao_files) $(nat_files) prims.o boehm.o
+	nogc.o): New target.
+
+	* boehm.cc (mark_obj): Update PUSH_CONTENTS call for new Boehm
+	GC.
+	(mark_array): Likewise.
+
+Tue Aug 11 11:44:53 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java/lang/Class.h (JvMethod):  Removed some unused fields.
+	(JvField.info):  Removed unused idx union variant.
+
+Mon Aug 10 15:00:14 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (makeUtf8Const): Mask off high bits of hash value to
+	match compiler.
+
+Mon Aug  3 16:13:54 1998  Per Bothner  <bothner@cygnus.com>
+
+	* configure.in, configure (CXX):  Add -fvtable-thunks.
+
+Thu Jul 30 14:34:47 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java/lang/Object.java (finalize):  Move first.
+	* java/lang/Object.h (_JvObjectPrefix):  New dummy base class.
+	(Object):  Re-arrange order to match Object.java.
+
+Tue Jul 28 21:42:16 1998  Per Bothner  <bothner@cygnus.com>
+
+	* prims.cc (hashUtf8String):  Fix - use new JavaSoft specification.
+	* java/lang/natString.cc (hashChars):  Likewise.
+
+	* prims.cc (RuntimeClass):  New macro.
+	(JvRunMain):  Do soft_initialise_class of RuntimeClass before exit.
+
+Mon Jul 27 22:20:10 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_MAKEFLAGS): New macro.
+
+Fri Jul 24 11:21:24 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* nogc.cc: Include <javaprims.h>.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GJAVAH): gjavah no longer in java subdir.
+
+Thu Jul 23 11:38:40 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* exception.cc (terminate): Removed.
+	(unexpected): Removed.
+
+	* configure: Rebuilt.
+	* configure.in: Handle case where target subdir is ".".
+
+	* configure: Rebuilt.
+	* configure.in: Compute COMPPATH based on --with-target-subdir
+	option.  Added --with-target-subdir and --with-cross-host.  Use
+	--with-cross-host to determine when a cross compiler is in use.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GJAVAH): Include COMPPATH.
+	* configure: Rebuilt.
+	* configure.in: Subst COMPPATH.
+
+Mon Jul 20 16:13:43 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (lockMutex): Removed.
+	(unlockMutex): Likewise.
+	(processClass): Lock the class using a JvSynchronize object.
+
+Fri Jul 17 11:27:48 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natString.cc (gc_calloc_fixed): Removed.
+	(gc_free_fixed): Removed.
+	(rehash): Use JvPrivAllocBytes, not gc_calloc_fixed; don't bother
+	freeing old value of strhash.
+
+	* exception.cc (_Jv_type_matcher): Cast first argument to
+	_Jv_IsInstanceOf.
+
+Thu Jul 16 14:51:44 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-array.h (jstringArray): New type.
+	* java/lang/natSystem.cc (setProperty): Removed.
+	(initProperties): Directly call JvNewStringLatin1 for arguments.
+	* java/util/natDate.cc: Include java/util/Date.h, not
+	java-util.h.
+	(setTime): Removed.
+	* java/io/FileDescriptor.java (available): No longer static.
+	* java/lang/natDouble.cc (Double): Removed class definition.
+	* include/javaprims.h (java::lang::Number): Declare.
+	(java::lang::NumberFormatException): Likewise.
+	(java::io::FilenameFilter): Likewise.
+	(java::lang::Character): Likewise.
+	(java::lang::Error): Likewise.
+	(java::lang::SecurityManager): Likewise.
+	(java::util::Vector): Likewise.
+	(java::io::FileNotFoundException): Likewise.
+	(java::io::IOException): Likewise.
+	(java::lang::NativeLang): Likewise.
+	(java::lang::UnsatisfiedLinkError): Likewise.
+	(java::util::StringTokenizer): Likewise.
+	(java::io::InputStream, java::io::OutputStream): Likewise.
+	(java::io::PrintStream, java::lang::SecurityException): Likewise.
+	(java::util::Hashtable): Likewise.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Added java/lang/Double.h,
+	java/lang/Number.h, java/lang/System.h, java/lang/Runtime.h.
+	(MOSTLYCLEANFILES): Added nat_headers.
+	* include/jvm.h: Moved many defines, declarations, and functions
+	to java/lang/Class.h.
+	(struct JvSyncInfo): Moved to java/lang/Object.h.
+	(UTF8_GET): Moved to java/lang/String.h.
+
+Wed Jul 15 09:02:31 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/io-defs.h: Don't include java-io.h.
+	* include/java-io.h: Removed.
+	* include/javaprims.h: Include java::io.
+
+Tue Jul 14 17:04:26 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-io.h (File): Removed
+	(FileDescriptor): Likewise.
+
+	* java/io/io-defs.h: Include java/io/File.h and
+	java/io/FileDescriptor.h.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GJAVAH): New macro.
+	(.class.h): New rule.
+	(SUFFIXES): Added .h.
+	(nat_headers): New macro.
+	($(nat_headers)): New target.
+	(BUILT_SOURCES): Added nat_headers.
+
+	* include/java-util.h: Removed.
+
+Fri Jul  3 10:17:14 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-io.h: Changed to avoid java-lang.h.
+	* java/lang/natThread.cc: Include java/lang/Thread.h, not
+	java-lang.h.
+	* java/lang/natSystem.cc: Include java/lang/System.h, not
+	java-lang.h.
+	* java/lang/natString.cc: Include java/lang/String.h, not
+	java-lang.h.
+	* java/lang/natRuntime.cc: Include java/lang/Runtime.h, not
+	java-lang.h.
+	* java/lang/natClass.cc: Include java/lang/Class.h, not
+	java-lang.h.
+	* java/lang/natDouble.cc: Include java/lang/Object.h, not
+	java-lang.h.
+	* java/lang/natObject.cc: Include java/lang/Object.h, not
+	java-lang.h.
+	* exception.cc: Don't include java-lang.h.
+	* posix-threads.cc: Include java/lang/Thread.h, not java-lang.h.
+	* no-threads.cc: Include java/lang/Thread.h, not java-lang.h.
+	* nogc.cc: Don't include java-lang.h.
+	* boehm.cc: Include java/lang/Class.h, not java-lang.h.
+	* prims.cc (processClass): Don't use `init_type'; just cast to
+	type directly.
+	Include java/lang/Class.h and jvm.h, not java-lang.h.
+	(JvAllocObject): Wrote single-argument version.
+	(PrimClass): Inherit from Class.
+	(initPrimClass): Removed.
+	* include/java-lang.h: Removed.
+	* include/jvm.h: Declare struct _dispatchTable.
+	* include/cni.h: Don't declare _Jv_MonitorEnter,
+	_Jv_MonitorExit, struct _dispatchTable.
+	* include/javaprims.h: Moved all typedefs here, from cni.h.
+	* java/lang/Class.h: New file.
+	* include/java-array.h: New file.
+	* java/lang/Object.h: New file.
+
+	* prims.cc (classFromSig): Now static.
+
+Wed Jul  1 12:28:48 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/cni.h: Don't mention soft_new.
+	* include/java-lang.h (Object): Don't mention soft_new.  Mention
+	_Jv_NewPrimArray, not newPrimArray.
+	* prims.cc (soft_new): Removed.
+	(_Jv_NewArray): Renamed from soft_newarray.
+	(soft_anewarray): Use JvNewObjectArray.
+	(newArray): Likewise.
+	(newRefArray): Removed.
+	(_Jv_NewPrimArray): Renamed from newPrimArray.
+	(equalUtf8Consts): Now static.
+	(soft_instanceof): Removed.
+	* java/lang/natDouble.cc (doubleToString): Now static.
+
+	* java/lang/natDouble.cc (java_lang_Double_doubleToLongBits,
+	java_lang_Double_longBitsToDouble, java_lang_Double_toString):
+	Removed.
+
+Tue Jun 30 10:54:57 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-lang.h: Renamed functions to _Jv_MonitorEnter and
+	_Jv_MonitorExit.
+	* include/cni.h: Renamed functions to _Jv_MonitorEnter and
+	_Jv_MonitorExit.
+	* include/no-threads.h (JvPrivMutexLock): Always return -1.
+	(JvPrivMutexUnlock): Likewise.
+	* prims.cc (_Jv_MonitorEnter): Renamed from soft_monitorenter.
+	Return value now jint.
+	(_Jv_MonitorExit): Renamed from soft_monitorexit.  Return value
+	now jint.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Don't allow `jV' names.
+	(maintainer-check): Depend on libjava.a.
+	* exception.cc (_Jv_eh_free): Renamed from __jV_eh_free.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (NM): New macro.
+	(maintainer-check): New target.
+
+	* include/posix-threads.h (_MIT_POSIX_THREADS): Removed.
+
+	* configure: Rebuilt.
+	* configure.in: Use --enable-threads, not --enable-gc.  Fix
+	documentation for --enable-threads.  Changed option to work like
+	identical option in gcc/configure.
+
+Mon Jun 29 10:44:29 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc (mark_array): Use JvGetArrayLength.
+
+Thu Jun 25 11:56:21 1998  Per Bothner  <bothner@cygnus.com>
+
+	* exception.cc:  New file (mostly written by Andrew MacLeod),
+	exception handling support.
+	* Makefile.am (libjava_a_SOURCES), Makefile.in:  Add exception.cc.
+	Remove -fexceptions - it is now the default.
+
+	* prims.cc (JvIsInstanceOf):  Renamed to _Jv_IsInstanceOf.
+	(JvAllocObject):  Renamed to _Jv_AllocObject.
+	(soft_athrow):  Removed.  Replaced by _Jv_Throw in exception.cc.
+	(loadClass):  Renamed to _Jv_FindClass.
+	* include/cni.h (JvIsInstanceOf, JvAllocObject).  Make into
+	inline methods that call _Jv_IsInstanceOf and _Jv_AllocObject.
+	* include/java-lang.h (JvGetArrayLength):  New CNI function.
+	* include/jvm.h (_Jv_FindClass):  Added declaration.
+
+	* java/lang/natString.cc:  More implementation if COMPACT_STRINGS.
+
+Wed Jun 24 16:41:30 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java/lang/natClass.cc (getName):  Add implementation.
+	* java/lang/Throwable.java (printStackTrace): Handle missing backtrace.
+
+Tue Jun 23 15:56:24 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (.class.o): Added -fexceptions.
+
+Mon Jun 15 14:54:06 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Don't check for __nanosleep.
+	* posix-threads.cc (nanosleep): Never define.
+
+Sun Jun 14 22:37:23 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* posix-threads.cc (JvPrivCondWait): Fixed computation of
+	timespec.
+
+Thu Jun 11 10:51:44 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natThread.cc (enumerate): Uncommented.
+	* java/lang/Thread.java (interrupted_): Renamed from `interrupt_'.
+	(interrupt): Call it.
+
+Wed Jun 10 15:57:16 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in (GCLIBS): Use `-lgc' so gjavac can recognize it.
+
+Mon Jun  8 12:04:11 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/no-threads.h (JvPrivThreadInterrupt): New method.
+	* include/java-lang.h (Thread): Added `interrupted_' method.
+	* java/lang/Thread.java (interrupted_): New method.
+	* java/lang/natThread.cc (join): Possibly throw interrupted
+	exception after join finishes.
+	(interrupted_): New method.
+	* posix-threads.cc (JvPrivThreadInitData): Initialize join_mutex,
+	join_cond.
+	(JvPrivThreadJoin): New function.
+	(really_start): Notify all threads waiting for this thread.
+	(struct starter): Added `data' member.
+	(JvPrivThreadStart): Set it.
+	* include/posix-threads.h (JvPrivThread_t): Added join_mutex,
+	join_cond.
+	(JvPrivThreadJoin): No longer inline.
+	(JvPrivThreadInterrupt): New function.
+
+	* include/no-threads.h (JvPrivThreadSleep): Removed.
+	* posix-threads.cc (JvPrivThreadSleep): Removed.
+
+Fri Jun  5 13:51:25 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in (THREADOBJS): Initialize to no-threads.o in
+	no-threads case.
+	* posix-threads.cc (key): New global.
+	(JvPrivInitThreads): New function.
+	(really_start): Set thread-specific data to point to object.
+	(JvPrivThreadStart): Added `daemon' argument.
+	(JvPrivThreadSleep): Added `data' argument.
+	* include/posix-threads.h (JvPrivInitThreads): Removed
+	implementation.
+	(JvPrivThreadCurrent): New function.
+	* include/no-threads.h (JvPrivThreadInitData): Initialize
+	JvPrivOnlyThread.  Added `thread' argument.
+	(JvPrivThreadCurrent): New function.
+	(JvPrivThreadStart): Added `daemon' argument.
+	* no-threads.cc: New file.
+	* java/lang/natThread.cc (init_data): New function.
+	(isAlive): Removed.
+	(start): Set `alive' member.
+	(stop_): Clear `alive' member.
+	(destroy): Likewise.
+	(currentThread): Implemented.
+	(start): Pass `daemon' argument to JvPrivThreadStart.
+	(sleep): Rewrote.
+	* include/java-lang.h (Thread): Added `alive', `tsync' members.
+	(Thread): Added `init_data' method.
+	* java/lang/Thread.java (alive, data): New instance variables.
+	(init_data): New private method.
+	(isAlive): No longer native.
+
+Thu Jun  4 14:09:32 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-lang.h (JvRunMain): Declare.
+	* include/jvm.h (JvPrivInitGC): Revert to C++ linkage.
+	* prims.cc (JvRunMain): New function.
+	(main_signature, main_name): New globals.
+
+	* boehm.cc (mark_array): Use `elements' function and not
+	operator[] on jarray.
+
+	* posix-threads.cc: Include <config.h>.  Define nanosleep if
+	required.
+
+	* configure: Rebuilt.
+	* configure.in: Check for _nanosleep.
+
+	* configure: Rebuilt.
+	* configure.in: Check for pthread_mutexattr_settype.
+
+	* include/cni.h (class JvSynchronize): New class.
+	* java/lang/Thread.java (sleep): Throws InterruptedException.
+	(join): Throws InterruptedException.
+	(resume): Not native.
+	(resume_): New method.
+	(start): Now synchronized.
+	(stop_): New method.
+	(Thread): Synchronize when accessing threadNumber.
+	(misc): Removed.
+	* java/lang/natThread.cc (throwException): New macro.
+	(sleep): Throw InterruptedException.
+	(resume_): Renamed.
+	(stop_): Renamed.
+	* include/java-lang.h (Runtime): Added interrupted().
+
+	* boehm.cc (call_finalizer): Correctly initialize jobj.
+	* include/java-lang.h (Runtime): Added getRuntime() and exit().
+
+	* java/lang/natSystem.cc (currentTimeMillis): Use #elif, not
+	`#elseif'.
+
+	* configure: Rebuilt.
+	* configure.in: Added support for --disable-threads.
+	* include/no-threads.h: New file.
+
+	* acconfig.h (HAVE_PTHREAD_MUTEXATTR_INIT): New macro.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (EXTRA_libjava_a_SOURCES): Added posix-threads.cc.
+	(libjava_a_DEPENDENCIES): Added THREADOBJS.
+	(libjava_a_LIBADD): Added THREADOBJS.
+	* configure: Rebuilt.
+	* configure.in: Added --with-threads option.
+	* posix-threads.cc: New file.
+	* include/posix-threads.h: New file.
+	* include/java-lang.h (Object): Added static member sync_mutex,
+	member sync_info, method init_mutex.
+	(struct JvSyncInfo): New struct.
+	Include "java-threads.h".
+	* prims.cc (soft_monitorenter): Wrote.
+	(soft_monitorexit): Likewise.
+	* java/lang/natObject.cc (init_mutex): New method.
+	(notify): Wrote.
+	(notifyAll): Wrote.
+	(wait): Wrote.
+	(sync_mutex): Define.
+	Include "java-threads.h".
+
+Tue Jun  2 15:24:33 1998  Per Bothner  <bothner@cygnus.com>
+
+	* include/java-lang.h (JvPrivInitGC):  Make extern "C".
+	* include/jvm.h (JvConvertArgv, JvNewObjectArray):  Likewise.
+
+Mon Jun  1 11:21:34 1998  Per Bothner  <bothner@cygnus.com>
+
+	* include/cni.h (jbyte etc):  Re-define using __java_byte etc.
+	Added extern "Java" in places to tell G++ Object is a "Java" type.
+	Other minor renaming and fixes.
+	* include/java-io.h (FileDescriptor):  Add friend class declarations.
+	G++ no longer allows non-Java types in method parameters and results
+	of Java classes.  Converted most offending methods to friends.
+	* java/lang/natDouble.cc (Double::toString):  Rename to doubleToString.
+	* java/lang/natSystem.cc (setProperty):  Make friend.
+	* java/lang/natString.cc, include/java-lang.h (String):  Rename
+	methods findInternSlot to __JvStringFindSlot and __JvStringGetSlot.
+	* include/java-lang.h (JArray):  Remove getData and eoprator[].
+	Add elements friend function instead.
+	* java/lang/natSystem.cc (arraycopy):  Use elements function.
+	* java/io/natFileDescriptor.cc (read, write):  Likewise.
+	* include/java-lang.h (Object):  Remove unused make method.
+	(System::setProperty(char*,char*)): Turn into friend function.
+	(Class):  Rename newObject by JvAllocObject.
+	* prims.cc:  Update to use JvAllocObject, and elements.
+
+	* java/lang/natDouble.cc:  Fix double -> jdouble.
+
+Wed May 20 16:50:06 1998  Per Bothner  <bothner@cygnus.com>
+
+	* Makefile.am (INCLUDES):  Add -Iinclude (to get config.h).
+
+Mon May 18 13:46:02 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natRuntime.cc (finalize_on_exit): Define.
+	* include/java-lang.h (Runtime): finalize_on_exit and
+	runFinalizersOnExit now static.
+	* java/lang/Runtime.java (runFinalizersOnExit): Now static, to
+	match JDK 1.2b3.
+	(finalize_on_exit): Now static.
+
+	* boehm.cc (mark_obj): Get class using getClass() method on
+	object.
+	(_dispatchTable): Removed.
+
+Mon May 11 15:26:52 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/natFileDescriptor.cc (open_read): Only call open if
+	HAVE_OPEN defined.
+	(open_write): Likewise.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am ($(nat_files)): Depend on config.h.
+
+Thu May  7 16:22:00 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (ObjectClass): Now a macro; updated for new class name
+	mangling scheme.
+	(StringClass): Likewise.
+	(ClassClass): Likewise.
+
+Wed May  6 00:26:44 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/natFileDescriptor.cc (available): Do nothing unless
+	HAVE_SELECT defined.
+	* java/util/natDate.cc (setTime): Conditional on
+	HAVE_GETTIMEOFDAY.
+	(toString): Conditional on HAVE_TIME.
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4: New file.
+	* configure.in: Don't actually call AM_EXEEXT.  Call
+	AC_CANONICAL_HOST.  Use LIB_AC_PROG_CC and LIB_AC_PROG_CXX.  Added
+	--with-target-subdir option.  Check for select and open
+	functions.
+
+Tue May  5 00:10:45 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc (JvPrivRegisterFinalizer): Changed interface.
+	(call_finalizer): Likewise.
+	* nogc.cc (JvPrivRegisterFinalizer): Changed interface.
+	* prims.cc (newObject): Pass actual method pointer to
+	JvPrivRegisterFinalizer.
+	* include/jvm.h (JvPrivFinalizerFunc): New typedef.
+	(JvPrivRegisterFinalizer): Changed interface.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (MOSTLYCLEANFILES): New macro.
+	(CLEANFILES): Removed javao_files.
+
+Fri May  1 22:52:24 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* nogc.cc: New file.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (INCLUDES): Use GCINCS, not paths to boehm-gc.
+	(EXTRA_libjava_a_SOURCES): New macro.
+	(libjava_a_SOURCES): Removed boehm.cc.
+	(libjava_a_DEPENDENCIES): Added GCOBJS.
+	(libjava_a_LIBADD): Likewise.
+	* configure: Rebuilt.
+	* configure.in: Added code for --enable-gc=TYPE.
+
+Thu Apr 30 14:54:00 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc (mark_array): Don't further dereference pointer from
+	array.
+
+	* boehm.cc: Include <boehm-config.h>, not <private/config.h>.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (INCLUDES): Removed -I for boehm-gc/include; added
+	one for boehm-gc build directory.
+
+Wed Apr 29 09:45:19 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/java-lang.h (finalize_on_exit): New instance variable in
+	java::lang::Runtime.
+	(runFinalizersOnExit): New method.
+	* java/lang/Runtime.java (finalize_on_exit): New instance
+	variable.
+	(runAllFinalizers_): New private method.
+	(runFinalizersOnExit): New method.
+	* boehm.cc (JvPrivRunFinalizers): New function.
+	(JvPrivRunAllFinalizers): Likewise.
+	(JvPrivRunGC): Likewise.
+	* java/lang/natRuntime.cc: Include "jvm.h".
+	(gc): Call JvPrivRunGC.
+	(runFinalization): Call JvPrivRunFinalizers.
+	(runFinalizersOnExit): New method.
+	(exit_): Call JvPrivRunAllFinalizers if required.
+	* include/jvm.h: Declare JvPrivRunFinalizers,
+	JvPrivRunAllFinalizers, JvPrivRunGC.
+
+Tue Apr 28 15:06:50 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc (JvPrivRegisterFinalizer): New function.
+	(call_finalizer): Likewise.
+	* include/jvm.h: Declare JvPrivRegisterFinalizer.
+	* prims.cc (finalize_name): New global.
+	(newObject): Just call other newObject.
+	(newObject): Register finalizer if it exists.
+
+Mon Apr 27 12:47:03 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (gc_malloc): Removed.
+	(makeUtf8Const): Use JvPrivAllocBytes.
+	(lookupArray): Likewise.
+	(newPrimArray): Likewise.
+	(JvNewObjectArray): Use JvPrivAllocArray.
+	(newObject): Use JvPrivAllocObj.
+	(newObject): Likewise.
+	Changed Method -> JvMethod everywhere.
+	Changed Field -> JvField everywhere.
+	* include/java-lang.h (Object): Changed type of `fields' to
+	JvField*.
+	(jmethodID, jfieldID): New typedefs.
+	(Object): JvGetFirstInstanceField and JvNumInstanceFields now
+	friends.
+	* include/jvm.h (struct JvMethod): Renamed from Method, and moved
+	from java-lang.h.
+	(METHOD_NATIVECODE): Moved from java-lang.h.
+	(class JvField): New class.
+	(JvGetFirstInstanceField): New function.
+	(JvFieldIsRef): Likewise.
+	(JvGetObjectField): Likewise.
+	(JvNumInstanceFields): Likewise.
+
+Thu Apr 23 16:42:11 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc: New file.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libjava_a_SOURCES): Added boehm.cc.
+	(INCLUDES): Added -I options to find boehm-gc files.
+
+Wed Apr 29 15:11:37 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in (CXX): Put -fno-rtti here and not in CXXFLAGS.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_files): New macro.
+	(libjava_a_DEPENDENCIES): Use it.
+	(libjava_a_LIBADD): Likewise.
+	($(nat_files)): New static pattern rule.
+	(class_files): Run separate find to find .class files.
+	(javao_files): Compute based on class_files.
+	(BUILT_SOURCES): New macro.
+
+Thu Apr 23 16:42:11 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.am (java_files): New macro.
+	(class_files): Likewise.
+	(javao_files): Likewise.
+	(libjava_a_DEPENDENCIES): Include $(javao_files).
+	(libjava_a_LIBADD): Likewise.
+	(classes.stamp): Depend on $(java_files); only recompile changed
+	files.
+	(here): New macro.
+	(CLEANFILES): Don't run find; use macros.  Don't mention
+	libjava.a.
+	(.class.o): New target.
+	(compiled.stamp): Removed.
+
+Thu Apr 23 14:17:43 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java/io/{Reader,InputStreamReader,FileReader,BufferedReader,
+	LineNumberReader}>java:  Newly-implemented standard classes.
+
+Thu Apr 23 14:02:04 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (compiled.stamp): Use $(CC), not $(GCC).
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (hack): New macro.
+	(libjava_a_LIBADD): Use $(hack) to work around automake oddity.
+
+Wed Apr 22 16:49:57 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* include/config.h.in: New file.
+	* include/config.h: Removed.
+	* acconfig.h: New file.
+	* Makefile.am (AR, ARFLAGS, JAVAC, GCC, CXX, CXXFLAGS): Removed.
+	(lib_LIBRARIES, libjava_a_SOURCES, libjava_a_DEPENDENCIES,
+	libjava_a_LIBADD): New macros.
+	(INCLUDES): New macro.
+	(prims.o): Removed.
+	(.cc.o): Removed.
+	(SUFFIXES): Removed.
+	(all): Removed.
+	(libjava.a): Removed.
+
+	* configure: Rebuilt.
+	* configure.in: Call AC_PROG_CC, AC_PROG_CXX, AC_PROG_RANLIB.
+	Look for headers and functions we require.  Create
+	include/config.h.
+
+Mon Apr 20 22:25:00 1998  Per Bothner  <bothner@cygnus.com>
+
+	* prims.cc (instance_class, instanceof, JvIsInstanceOf, JvConvertArgv,
+	soft_instanceof, newObject, JbNewObjectArray, soft_checkcast,
+	soft_lookupinterfacemethod):  New functions.
+	(PrimClass):  Actually initialize the primitive classes.
+	(Utf8Const2JavaString):  Moved to java/lang/natString.cc.
+
+	* include/java-util.h:  Removed java::util definition.
+	* include/cni.h:  Moved java::util here and added Properties.
+	Added more function prototypes.
+	* include/java-lang.h:  Added mroe methods and friend declarations.
+	* include/config.h (HAVE_GETTIMEOFDAY, HAVE_TIME):  Added.
+	* include/jvm.h (strLengthUtf8):  Add declaration.
+	
+	* java/lang/{Integer,Long,Boolean,Character,Float,Double}.java (TYPE):
+ 	New static field.
+	* java/lang/{Byte,Short,Void}.java:  New classes.
+	* java/lang/Character.java (isJavaIdentifierStart,
+	JavaIdentifierPart):  New static methods.
+	* java/lang/Number.java (byteValue, shortValue):  New methods.
+
+	* java/lang/String.java (intern, hashCode):  Make native.
+	* java/lang/natString.cc:  New file.  Handle the string pool.
+	* Makefile.am:  Build natString.o.  Use CXXFLAGS.
+
+	* java/lang/Class.java (isArray, isPrimitive, getComponentType,
+	isInstance, isAssignableFrom), java/lang/natClass.cc:  New methods.
+	* java/lang/Throwable.java (<init>):  Don't fillInStackTrace yet.
+	* java/lang/System.java (setProperty):  New private method.
+	(initProperties):  Take argument, and make native.
+	* java/lang/natSystem.cc:  Implement (preliminary) initProperties.
+	(currentTimeMillis):  Make more robust.
+
+	* java/io/{Writer,PrintWriter,OutputStreamWriter}.java:  New classes.
+	* java/io/UnsupportedEncodingException.java:  New exception class.
+
+	* java/io/DataInputStream.java:  Don't use a PushbackInputStream.
+	* java/io/FilterOutputStream.java:  Add missing 'extends OutputStream'.
+	
+Fri Apr 10 11:52:10 1998  Per Bothner  <bothner@cygnus.com>
+
+	* Makefile.am (CXXFLAGS, JC1FLAGS):  New macro.
+	* prims.cc:  Added bunch of stuff.
+	* include/cni.h:  Added various definitions.
+	* include/java-lang.h:  Added Method, various friends, some macros.
+
+	* include/config.h:  Added HAVA_MEMMOVE and HAVE_MEMCPY.
+	* java/lang/System.java (arraycopy):  Make native.
+
+Sun Apr  5 23:58:51 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java/lang/{netObject.cc,natClass.cc,natDouble.cc,natRuntime.cc,
+	natSystem.cc,natThread.cc}:  Native (C++) methods for various classes.
+	* java/lang/ClassLoader.java (defineClass):  Now takes extra argument.
+	* java/lang/Double.java (toString, doubleToLongBits, longBitsToDouble):
+	Make native.
+	* java/lang/Runtime.java:  Declare methods as native instead of
+	using NativeLang.
+	* java/lang/SecurityManager.java (getClassContext):  Just throw Error.
+	* java/lang/System.java:  Comment out some stuff, for now.
+	* java/lang/Thread.java:  Re-write.  Use native methods.
+	* java/lang/NativeLang.java:  Remove most of it.
+	
+	* java/util/natDate.cc:  Native (C++) methods for Date.
+	* java/util/{Calendar.java,GregorianCalendar.java}:  New classes.
+	* java/util/Date.java:  Complete re-write.
+
+	* java/io/io-defs.h:  New header file.
+	* java/io/FileDescriptor.java:  Add a bunch of private methods,
+	mostly moved from NativeIO.java and natNativeIO.cc.
+	* java/io/{natFile.cc,java/io/natFileDescriptor.cc}:  New native code.
+	* java/io/File.java:  Use new code.
+	* java/io/{FileInputStream.java.FileOutputStream.java,
+	RandomAccessFile.java}:  Use new private FileDescriptor methods.
+	* java/io/NativeIO.java:  Removed, no longer used.
+
+	* java/io/StreamTokenizer.java (numericChars):  Make char array.
+
+	* include/*.h:  Various header files used by the C++ native code.
+
+	* Makefile.am, Makefile.in, aclocal.m4, configure, configure.in:
+	New autoconf+automake-based setup.
+	* prims.cc:  New file for Java "primitives".
+
