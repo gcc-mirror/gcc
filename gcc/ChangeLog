@@ -1,3 +1,9 @@
+2005-05-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dwarf2out.c (incomplete_types, retry_incomplete_types,
+	gen_struct_or_union_type_die, dwarf2out_init): Use VEC instead
+	of VARRAY.
+
 2004-05-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/15618
