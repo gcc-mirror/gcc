@@ -3942,16 +3942,12 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  infiles[n_infiles].language = "*";
 	  infiles[n_infiles++].name = argv[++i];
 	}
+      /* Xassembler and Xpreprocessor were already handled in the first argv
+	 scan, so all we need to do here is ignore them and their argument.  */
       else if (strcmp (argv[i], "-Xassembler") == 0)
-	{
-	  infiles[n_infiles].language = "*";
-	  infiles[n_infiles++].name = argv[++i];
-	}
+	i++;
       else if (strcmp (argv[i], "-Xpreprocessor") == 0)
-	{
-	  infiles[n_infiles].language = "*";
-	  infiles[n_infiles++].name = argv[++i];
-	}
+	i++;
       else if (strcmp (argv[i], "-l") == 0)
 	{ /* POSIX allows separation of -l and the lib arg;
 	     canonicalize by concatenating -l with its arg */
