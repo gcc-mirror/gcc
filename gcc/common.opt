@@ -337,7 +337,7 @@ Common Joined RejectNegative
 -fdiagnostics-show-location=[once|every-line]	How often to emit source location at the beginning of line-wrapped diagnostics
 
 fdiagnostics-show-option
-Common Var(diagnostics_show_options)
+Common
 Amend appropriate diagnostic messages with the command line option that controls them.
 
 fdump-

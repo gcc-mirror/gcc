@@ -73,6 +73,10 @@ struct diagnostic_context
   /* True if it has been requested that warnings be treated as errors.  */
   bool warning_as_error_requested;
 
+  /* True if we should print the command line option which controls
+     each diagnostic, if known.  */
+  bool show_option_requested;
+
   /* True if we should raise a SIGABRT on errors.  */
   bool abort_on_error;
 
