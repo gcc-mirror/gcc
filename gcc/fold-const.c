@@ -6149,7 +6149,8 @@ fold_widened_comparison (enum tree_code code, tree type, tree arg0, tree arg1)
        || TYPE_UNSIGNED (TREE_TYPE (arg0)) == TYPE_UNSIGNED (shorter_type))
       && (TREE_TYPE (arg1_unw) == shorter_type
 	  || (TREE_CODE (arg1_unw) == INTEGER_CST
-	      && TREE_CODE (shorter_type) == INTEGER_TYPE
+	      && (TREE_CODE (shorter_type) == INTEGER_TYPE
+		  || TREE_CODE (shorter_type) == BOOLEAN_TYPE)
 	      && int_fits_type_p (arg1_unw, shorter_type))))
     return fold_build2 (code, type, arg0_unw,
 		       fold_convert (shorter_type, arg1_unw));
@@ -8856,10 +8857,20 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     case LT_EXPR:
     case GT_EXPR:
     case LE_EXPR:
-    case GE_EXPR:
+    case GE_EXPR:	
       /* If one arg is a real or integer constant, put it last.  */
       if (tree_swap_operands_p (arg0, arg1, true))
 	return fold_build2 (swap_tree_comparison (code), type, op1, op0);
+	
+      /* bool_var != 0 becomes bool_var. */
+      if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE && integer_zerop (arg1)
+          && code == NE_EXPR)
+        return non_lvalue (fold_convert (type, arg0));
+	
+      /* bool_var == 1 becomes bool_var. */
+      if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE && integer_onep (arg1)
+          && code == EQ_EXPR)
+        return non_lvalue (fold_convert (type, arg0));
 
       /* If this is an equality comparison of the address of a non-weak
 	 object against zero, then we know the result.  */

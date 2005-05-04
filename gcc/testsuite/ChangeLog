@@ -1,3 +1,8 @@
+2005-05-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/15618
+	* gcc.dg/tree-ssa/bool-[1-9].c: New tests.
+
 2005-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21265
