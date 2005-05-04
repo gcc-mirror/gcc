@@ -361,6 +361,8 @@ static const char *pname;
 static int errors = 0;
 
 /* Option flags.  */
+/* ??? The variables are not marked static because some of them have
+   the same names as gcc variables declared in options.h.  */
 /* ??? These comments should say what the flag mean as well as the options
    that set them.  */
 
@@ -368,20 +370,20 @@ static int errors = 0;
    something other than gcc.  */
 static const char *compiler_file_name = "gcc";
 
-static int version_flag = 0;		/* Print our version number.  */
-static int quiet_flag = 0;		/* Don't print messages normally.  */
-static int nochange_flag = 0;		/* Don't convert, just say what files
-					   we would have converted.  */
-static int nosave_flag = 0;		/* Don't save the old version.  */
-static int keep_flag = 0;		/* Don't delete the .X files.  */
+int version_flag = 0;		/* Print our version number.  */
+int quiet_flag = 0;		/* Don't print messages normally.  */
+int nochange_flag = 0;		/* Don't convert, just say what files
+				   we would have converted.  */
+int nosave_flag = 0;		/* Don't save the old version.  */
+int keep_flag = 0;		/* Don't delete the .X files.  */
 static const char ** compile_params = 0;	/* Option string for gcc.  */
 #ifdef UNPROTOIZE
 static const char *indent_string = "     ";	/* Indentation for newly
 						   inserted parm decls.  */
 #else /* !defined (UNPROTOIZE) */
-static int local_flag = 0;		/* Insert new local decls (when?).  */
-static int global_flag = 0;		/* set by -g option */
-static int cplusplus_flag = 0;		/* Rename converted files to *.C.  */
+int local_flag = 0;		/* Insert new local decls (when?).  */
+int global_flag = 0;		/* set by -g option */
+int cplusplus_flag = 0;		/* Rename converted files to *.C.  */
 static const char *nondefault_syscalls_dir = 0; /* Dir to look for
 						   SYSCALLS.c.X in.  */
 #endif /* !defined (UNPROTOIZE) */
