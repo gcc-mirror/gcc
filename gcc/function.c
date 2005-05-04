@@ -1485,8 +1485,8 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	      end_sequence ();
 	      emit_insn_before (seq, insn);
 	    }
-	  x = simplify_gen_subreg (insn_data[insn_code].operand[i].mode,
-				   new, GET_MODE (new), SUBREG_BYTE (x));
+	  x = simplify_gen_subreg (recog_data.operand_mode[i], new,
+				   GET_MODE (new), SUBREG_BYTE (x));
 	  break;
 
 	default:
