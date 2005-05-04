@@ -42,10 +42,10 @@ export_proto(minloc1_4_i4);
 void
 minloc1_4_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
   GFC_INTEGER_4 *base;
   GFC_INTEGER_4 *dest;
   index_type rank;
@@ -57,6 +57,9 @@ minloc1_4_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
@@ -180,11 +183,11 @@ void
 mminloc1_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
 				  index_type *pdim, gfc_array_l4 * mask)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
-  index_type mstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
+  index_type mstride[GFC_MAX_DIMENSIONS];
   GFC_INTEGER_4 *dest;
   GFC_INTEGER_4 *base;
   GFC_LOGICAL_4 *mbase;
@@ -197,6 +200,9 @@ mminloc1_4_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
 
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
 
