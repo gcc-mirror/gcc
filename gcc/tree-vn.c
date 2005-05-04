@@ -175,7 +175,7 @@ set_value_handle (tree e, tree v)
 
 
 /* Insert EXPR into VALUE_TABLE with value VAL, and add expression
-   EXPR to the value set for value VAL.  STMT represent the stmt
+   EXPR to the value set for value VAL.  STMT represents the stmt
    associated with EXPR.  It is used when computing a hash value for EXPR.  */
 
 void
@@ -202,7 +202,7 @@ vn_add (tree expr, tree val, tree stmt)
 
 /* Search in VALUE_TABLE for an existing instance of expression EXPR,
    and return its value, or NULL if none has been set.  STMT
-   represent the stmt associated with EXPR.   It is arused when computing the 
+   represents the stmt associated with EXPR.  It is used when computing the 
    hash value for EXPR.  */
 
 tree
@@ -228,7 +228,7 @@ vn_lookup (tree expr, tree stmt)
 
 /* Like vn_lookup, but creates a new value for expression EXPR, if
    EXPR doesn't already have a value.  Return the existing/created
-   value for EXPR.  STMT represent the stmt associated with EXPR.  It is used
+   value for EXPR.  STMT represents the stmt associated with EXPR.  It is used
    when computing the hash value for EXPR.  */
 
 tree

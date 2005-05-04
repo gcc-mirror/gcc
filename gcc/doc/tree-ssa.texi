@@ -831,7 +831,7 @@ The following access routines are available for examining operands:
 
 @enumerate
 @item @code{SINGLE_SSA_@{USE,DEF,TREE@}_OPERAND}: These accessors will return 
-NULL unless there is exactly one operand mathcing the specified flags.  If 
+NULL unless there is exactly one operand matching the specified flags.  If 
 there is exactly one operand, the operand is returned as either a @code{tree}, 
 @code{def_operand_p}, or @code{use_operand_p}.
 

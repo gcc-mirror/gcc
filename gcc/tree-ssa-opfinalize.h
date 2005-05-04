@@ -20,7 +20,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 /* This file contains common code which is used by each of the 5 operand 
-   types.  Macros are defined to specify the varying componenets.
+   types.  Macros are defined to specify the varying components.
 
    FINALIZE_FUNC - name of finalize function.
    FINALIZE_ALLOC - name of allocation routine.
@@ -29,8 +29,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    FINALIZE_OPS - Lead element in list.
    FINALIZE_USE_PTR - How to get the use_operand_p, if this is a use operand.
    FINALIZE_INITIALIZE - How to initialize an element.
-   FINALIZE_ELEM - How to retreive an element.
-   FINALIZE_BASE - How to retreive the base variable of an element.
+   FINALIZE_ELEM - How to retrieve an element.
+   FINALIZE_BASE - How to retrieve the base variable of an element.
    FINALIZE_BASE_TYPE - Type of the base variable.
    FINALIZE_OPBUILD - Opbuild array for these nodes.
    FINALIZE_OPBUILD_ELEM - How to get an element from the opbuild list.
