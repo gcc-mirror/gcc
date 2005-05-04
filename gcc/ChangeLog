@@ -1,3 +1,11 @@
+2005-05-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow-inline.h (op_iter_init_use, op_iter_init_def): Assert that
+	the flags are of appropriate types.
+	(num_ssa_operands): Generalize using the generic interface.
+	* tree-ssa-dce.c (remove_dead_stmt): Don't ask for kills on a DEF
+	iterator.
+
 2005-05-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* protoize.c (version_flag, quiet_flag, nochange_flag, nosave_flag)

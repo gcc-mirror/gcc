@@ -769,8 +769,7 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
         remove_edge (EDGE_SUCC (bb, 1));
     }
   
-  FOR_EACH_SSA_DEF_OPERAND (def_p, t, iter, 
-			    SSA_OP_VIRTUAL_DEFS | SSA_OP_VIRTUAL_KILLS)
+  FOR_EACH_SSA_DEF_OPERAND (def_p, t, iter, SSA_OP_VIRTUAL_DEFS)
     {
       tree def = DEF_FROM_PTR (def_p);
       mark_sym_for_renaming (SSA_NAME_VAR (def));
