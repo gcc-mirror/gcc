@@ -1,3 +1,8 @@
+2005-05-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/tm.texi (Target Hooks): Document
+	TARGET_RESOLVE_OVERLOADED_BUILTIN.
+
 2005-05-04  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.in: Change dependencies on target.h to $(TARGET_H).
