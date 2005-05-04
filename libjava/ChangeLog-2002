@@ -2562,7 +2562,7 @@
 	* java/lang/VMThrowable.java: New class.
 	* java/lang/natVMThrowable.cc: New file.
 
-2003-08-23  Michael Koch  <konqueror@gmx.de>
+2002-08-23  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URLConnection.java,
 	java/netJarURLConnection.java,
@@ -2587,7 +2587,7 @@
 	* java/net/SocketAddress.java: New class from Classpath.
 	* java/net/InetSocketAddress.java: Likewise.
 
-2003-08-21  Michael Koch  <konqueror@gmx.de>
+2002-08-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/Authenticator.java: updated JDK 1.4
 	* java/net/ContentHandler.java: updated JDK 1.4

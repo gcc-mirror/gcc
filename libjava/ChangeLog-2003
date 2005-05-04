@@ -967,7 +967,7 @@ i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 	(print): Use new internal print method.
 	(println): Likewise.
 
-2002-12-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
+2003-12-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/util/Hashtable.java (Hashtable(Map)): Use putAll, not
 	putAllInternal.
@@ -975,7 +975,7 @@ i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 	* java/util/HashMap.java (HashMap(Map)): As above.
 	(putAllInternal): As above.
 
-2002-12-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
+2003-12-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/util/Hashtable.java (internalContainsValue): Removed.
 	(containsValue): Don't delegate to internalContainsValue.
@@ -6592,7 +6592,7 @@ i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 	(static): Check result of loadProvider calls. If necessary
 	display WARNING and fallback to Gnu provider.
 
-2002-06-06  James Clark  <jjc@jclark.com>
+2003-06-06  James Clark  <jjc@jclark.com>
 
 	Fix for PR libgcj/8738:
 	* gnu/gcj/convert/UnicodeToBytes.java (havePendingBytes): New method.
@@ -6603,7 +6603,7 @@ i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 	* java/lang/natString.cc (getBytes): Check converter havePendingBytes()
 	and whether output buffer is full before increasing size.
 
-2002-06-06  Mark Wielaard  <mark@klomp dot org>
+2003-06-06  Mark Wielaard  <mark@klomp dot org>
 
 	* java/io/PrintStream.java (writeChars(char[],int, int)):
 	Check converter.havePendingBytes().
@@ -6632,7 +6632,7 @@ i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 	* java/lang/w_exp.c (o_threshold, u_threshold): Define only
 	if _IEEE_LIBM is undefined.
 
-2002-06-05  Loren J. Rittle  <ljrittle@acm.org>
+2003-06-05  Loren J. Rittle  <ljrittle@acm.org>
 
 	* libjava/include/posix.h (O_SYNC): Define if not available
 	and a reasonable, perhaps more conservative, replacement exists.
@@ -9660,7 +9660,7 @@ i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 	(find_symbol): New function.
 	(_Jv_FindSymbolInExecutable): Use it.
 
-2002-02-21  Anthony Green  <green@redhat.com>
+2003-02-21  Anthony Green  <green@redhat.com>
 
 	* java/lang/Thread.java (Thread): New constructor taking stack
 	size parameter (ignored for now).
@@ -10176,7 +10176,7 @@ i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 	(get): May not be final.
 	(put): May not be final.
 	
-2002-02-13  Ranjit Mathew  <rmathew@hotmail.com>
+2003-02-13  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* gnu/gcj/runtime/NameFinder.java (createStackTraceElement): Use
 	lastIndexOf( ) instead of indexOf( ) to find the colon before
@@ -11251,7 +11251,7 @@ i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
 	(TreeIterator.remove): Prefer IllegalStateException over
 	ConcurrentModificationException, to match Sun.
 
-2002-12-22  Anthony Green  <green@redhat.com>
+2003-01-03  Anthony Green  <green@redhat.com>
 
 	* boehm.cc (_Jv_MarkObj): Mark the protectionDomain of a class.
 
