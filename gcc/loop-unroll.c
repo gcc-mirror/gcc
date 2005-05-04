@@ -85,13 +85,16 @@ struct iv_to_split
 			   XEXP (XEXP (single_set, loc[0]), loc[1]).  */ 
 };
 
+DEF_VEC_P(rtx);
+DEF_VEC_ALLOC_P(rtx,heap);
+
 /* Information about accumulators to expand.  */
 
 struct var_to_expand
 {
   rtx insn;		           /* The insn in that the variable expansion occurs.  */
   rtx reg;                         /* The accumulator which is expanded.  */
-  varray_type var_expansions;      /* The copies of the accumulator which is expanded.  */ 
+  VEC(rtx,heap) *var_expansions;   /* The copies of the accumulator which is expanded.  */ 
   enum rtx_code op;                /* The type of the accumulation - addition, subtraction 
                                       or multiplication.  */
   int expansion_count;             /* Count the number of expansions generated so far.  */
@@ -1578,7 +1581,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
   /* Record the accumulator to expand.  */
   ves = xmalloc (sizeof (struct var_to_expand));
   ves->insn = insn;
-  VARRAY_RTX_INIT (ves->var_expansions, 1, "var_expansions");
+  ves->var_expansions = VEC_alloc (rtx, heap, 1);
   ves->reg = copy_rtx (dest);
   ves->op = GET_CODE (src);
   ves->expansion_count = 0;
@@ -1889,9 +1892,9 @@ get_expansion (struct var_to_expand *ve)
   if (ve->reuse_expansion == 0)
     reg = ve->reg;
   else
-    reg = VARRAY_RTX (ve->var_expansions,  ve->reuse_expansion - 1);
+    reg = VEC_index (rtx, ve->var_expansions, ve->reuse_expansion - 1);
   
-  if (VARRAY_ACTIVE_SIZE (ve->var_expansions) == (unsigned) ve->reuse_expansion)
+  if (VEC_length (rtx, ve->var_expansions) == (unsigned) ve->reuse_expansion)
     ve->reuse_expansion = 0;
   else 
     ve->reuse_expansion++;
@@ -1928,7 +1931,7 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
   if (apply_change_group ())
     if (really_new_expansion)
       {
-        VARRAY_PUSH_RTX (ve->var_expansions, new_reg);
+        VEC_safe_push (rtx, heap, ve->var_expansions, new_reg);
         ve->expansion_count++;
       }
 }
@@ -1946,21 +1949,19 @@ insert_var_expansion_initialization (void **slot, void *place_p)
   rtx seq, var, zero_init, insn;
   unsigned i;
   
-  if (VARRAY_ACTIVE_SIZE (ve->var_expansions) == 0)
+  if (VEC_length (rtx, ve->var_expansions) == 0)
     return 1;
   
   start_sequence ();
   if (ve->op == PLUS || ve->op == MINUS) 
-    for (i = 0; i < VARRAY_ACTIVE_SIZE (ve->var_expansions); i++)
+    for (i = 0; VEC_iterate (rtx, ve->var_expansions, i, var); i++)
       {
-        var = VARRAY_RTX (ve->var_expansions, i);
         zero_init =  CONST0_RTX (GET_MODE (var));
         emit_move_insn (var, zero_init);
       }
   else if (ve->op == MULT)
-    for (i = 0; i < VARRAY_ACTIVE_SIZE (ve->var_expansions); i++)
+    for (i = 0; VEC_iterate (rtx, ve->var_expansions, i, var); i++)
       {
-        var = VARRAY_RTX (ve->var_expansions, i);
         zero_init =  CONST1_RTX (GET_MODE (var));
         emit_move_insn (var, zero_init);
       }
@@ -1991,21 +1992,19 @@ combine_var_copies_in_loop_exit (void **slot, void *place_p)
   rtx expr, seq, var, insn;
   unsigned i;
 
-  if (VARRAY_ACTIVE_SIZE (ve->var_expansions) == 0)
+  if (VEC_length (rtx, ve->var_expansions) == 0)
     return 1;
   
   start_sequence ();
   if (ve->op == PLUS || ve->op == MINUS)
-    for (i = 0; i < VARRAY_ACTIVE_SIZE (ve->var_expansions); i++)
+    for (i = 0; VEC_iterate (rtx, ve->var_expansions, i, var); i++)
       {
-        var = VARRAY_RTX (ve->var_expansions, i);
         sum = simplify_gen_binary (PLUS, GET_MODE (ve->reg),
                                    var, sum);
       }
   else if (ve->op == MULT)
-    for (i = 0; i < VARRAY_ACTIVE_SIZE (ve->var_expansions); i++)
+    for (i = 0; VEC_iterate (rtx, ve->var_expansions, i, var); i++)
       {
-        var = VARRAY_RTX (ve->var_expansions, i);
         sum = simplify_gen_binary (MULT, GET_MODE (ve->reg),
                                    var, sum);
       }
@@ -2166,7 +2165,7 @@ release_var_copies (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   struct var_to_expand *ve = *slot;
   
-  VARRAY_CLEAR (ve->var_expansions);
+  VEC_free (rtx, heap, ve->var_expansions);
   
   /* Continue traversing the hash table.  */
   return 1;
