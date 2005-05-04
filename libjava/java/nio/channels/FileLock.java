@@ -1,5 +1,5 @@
 /* FileLock.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -132,16 +132,19 @@ public abstract class FileLock
    */
   public final String toString()
   {
-	String toReturn = getClass().getName() + 
-	  "[" + position + ":" + size;
-	if (shared)
-	  toReturn += " shared";
-	else
-	  toReturn += " exclusive";
-	if (isValid())
-	  toReturn += " valid]";
-	else
-	  toReturn += " invalid]";
-	return toReturn;
+    StringBuffer buf = new StringBuffer(getClass().getName());
+    buf.append("[");
+    buf.append(position);
+    buf.append(":");
+    buf.append(size);
+    if (shared)
+      buf.append(" shared");
+    else
+      buf.append(" exclusive");
+    if (isValid())
+      buf.append(" valid]");
+    else
+      buf.append(" invalid]");
+    return buf.toString();
   }
 }
