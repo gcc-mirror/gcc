@@ -832,15 +832,13 @@ push_local_name (tree decl)
   tree t, name;
 
   timevar_push (TV_NAME_LOOKUP);
-  if (!local_names)
-    VARRAY_TREE_INIT (local_names, 8, "local_names");
 
   name = DECL_NAME (decl);
 
-  nelts = VARRAY_ACTIVE_SIZE (local_names);
+  nelts = VEC_length (tree, local_names);
   for (i = 0; i < nelts; i++)
     {
-      t = VARRAY_TREE (local_names, i);
+      t = VEC_index (tree, local_names, i);
       if (DECL_NAME (t) == name)
 	{
 	  if (!DECL_LANG_SPECIFIC (decl))
@@ -851,13 +849,13 @@ push_local_name (tree decl)
 	  else
 	    DECL_DISCRIMINATOR (decl) = 1;
 
-	  VARRAY_TREE (local_names, i) = decl;
+	  VEC_replace (tree, local_names, i, decl);
 	  timevar_pop (TV_NAME_LOOKUP);
 	  return;
 	}
     }
 
-  VARRAY_PUSH_TREE (local_names, decl);
+  VEC_safe_push (tree, gc, local_names, decl);
   timevar_pop (TV_NAME_LOOKUP);
 }
 
