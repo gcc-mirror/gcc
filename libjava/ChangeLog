@@ -1,3 +1,9 @@
+2005-05-04  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* java/awt/ImageCapabilities.java: Document.
+
+	* java/awt/image/VolatileImage.java: Unindent copyright header.
+
 2005-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/image/VolatileImage.java: Document.
