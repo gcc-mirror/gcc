@@ -161,7 +161,7 @@ HOST_EXPORTS = \
 	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # Similar, for later GCC stages.
-STAGE_HOST_EXPORTS = \
+POSTSTAGE1_HOST_EXPORTS = \
 	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
 	$(HOST_EXPORTS) \
 	CC="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
@@ -848,6 +848,35 @@ configure-[+prefix+][+module+]: [+deps+]
 	  [+args+] $${srcdiroption} [+extra_configure_flags+] \
 	  || exit 1
 @endif [+prefix+][+module+]
+
+[+ IF bootstrap +]
+[+ FOR bootstrap_stage +]
+.PHONY: configure-stage[+id+]-[+prefix+][+module+] maybe-configure-stage[+id+]-[+prefix+][+module+]
+maybe-configure-stage[+id+]-[+prefix+][+module+]:
+@if [+module+]-bootstrap
+maybe-configure-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
+configure-stage[+id+]-[+prefix+][+module+]: [+deps+]
+	@$(MAKE) stage[+id+]-start
+	@[ -f [+subdir+]/[+module+]/Makefile ] && exit 0 || : ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	[+exports+][+ IF prev +] \
+	[+poststage1_exports+][+ ENDIF prev +] \
+	echo Configuring stage [+id+] in [+subdir+]/[+module+] ; \
+	cd [+subdir+]/[+module+] || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo [+subdir+]/[+module+]/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
+	libsrcdir="$$s/[+module+]"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  [+args+] $${srcdiroption} \
+	  [+stage_configure_flags+] [+extra_configure_flags+]
+@endif [+module+]-bootstrap
+[+ ENDFOR bootstrap_stage +]
+[+ ENDIF bootstrap +]
 [+ ENDDEF +]
 
 [+ DEFINE all +]
@@ -865,6 +894,41 @@ all-[+prefix+][+module+]: configure-[+prefix+][+module+]
 	(cd [+subdir+]/[+module+] && \
 	  $(MAKE) [+args+] [+extra_make_flags+] $(TARGET-[+prefix+][+module+]))
 @endif [+prefix+][+module+]
+
+[+ IF bootstrap +]
+[+ FOR bootstrap_stage +]
+.PHONY: all-stage[+id+]-[+prefix+][+module+] maybe-all-stage[+id+]-[+prefix+][+module+]
+.PHONY: clean-stage[+id+]-[+prefix+][+module+] maybe-clean-stage[+id+]-[+prefix+][+module+]
+maybe-all-stage[+id+]-[+prefix+][+module+]:
+maybe-clean-stage[+id+]-[+prefix+][+module+]:
+@if [+module+]-bootstrap
+maybe-all-stage[+id+]-[+prefix+][+module+]: all-stage[+id+]-[+prefix+][+module+]
+all-stage[+id+]: all-stage[+id+]-[+prefix+][+module+]
+all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
+	@$(MAKE) stage[+id+]-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	[+exports+][+ IF prev +] \
+	[+poststage1_exports+][+ ENDIF prev +] \
+	cd [+subdir+]/[+module+] && \
+	$(MAKE) [+args+] [+ IF prev
+		+][+poststage1_args+][+ ENDIF prev
+		+] [+stage_make_flags+] [+extra_make_flags+]
+
+maybe-clean-stage[+id+]-[+prefix+][+module+]: clean-stage[+id+]-[+prefix+][+module+]
+clean-stage[+id+]: clean-stage[+id+]-[+prefix+][+module+]
+clean-stage[+id+]-[+prefix+][+module+]:
+	@[ -f [+subdir+]/[+module+]/Makefile ] || [ -f [+subdir+]/stage[+id+]-[+module+]/Makefile ] \
+	  || exit 0 ; \
+	[ -f [+subdir+]/[+module+]/Makefile ] || $(MAKE) stage[+id+]-start ; \
+	cd [+subdir+]/[+module+] && \
+	$(MAKE) [+args+] [+ IF prev +] \
+		[+poststage1_args+] [+ ENDIF prev +] \
+		[+stage_make_flags+] [+extra_make_flags+] clean
+@endif [+module+]-bootstrap
+
+[+ ENDFOR bootstrap_stage +]
+[+ ENDIF bootstrap +]
 [+ ENDDEF +]
 
 # --------------------------------------
@@ -881,11 +945,16 @@ all-[+prefix+][+module+]: configure-[+prefix+][+module+]
 # Modules which run on the host machine
 # --------------------------------------
 [+ FOR host_modules +]
-[+ configure prefix="" subdir="$(HOST_SUBDIR)" exports="$(HOST_EXPORTS)"
+[+ configure prefix="" subdir="$(HOST_SUBDIR)"
+	     exports="$(HOST_EXPORTS)"
+	     poststage1_exports="$(POSTSTAGE1_HOST_EXPORTS)"
 	     args="$(HOST_CONFIGARGS)" +]
 
-[+ all prefix="" subdir="$(HOST_SUBDIR)" exports="$(HOST_EXPORTS)"
-       args="$(FLAGS_TO_PASS)" +]
+[+ all prefix="" subdir="$(HOST_SUBDIR)"
+       exports="$(HOST_EXPORTS)"
+       poststage1_exports="$(POSTSTAGE1_HOST_EXPORTS)"
+       args="$(FLAGS_TO_PASS)"
+       poststage1_args="$(POSTSTAGE1_FLAGS_TO_PASS)" +]
 
 .PHONY: check-[+module+] maybe-check-[+module+]
 maybe-check-[+module+]:
@@ -1271,7 +1340,7 @@ stage[+id+]-start::
 	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stage[+id+] > stage_current ; \
 	echo stage[+id+] > stage_last; \
-	$(mkinstalldirs) $(HOST_SUBDIR)[+
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)[+
    FOR host_modules +][+ IF bootstrap +]
 @if [+ module +]
 	@cd $(HOST_SUBDIR); [ -d stage[+id+]-[+module+] ] || \
@@ -1305,70 +1374,7 @@ stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +][+IF lean +]
 	fi
 
 .PHONY: all-stage[+id+] clean-stage[+id+]
-all-stage[+id+]: [+ FOR host_modules +][+ IF bootstrap +]\
-  maybe-all-stage[+id+]-[+module+][+
-ENDIF bootstrap+] [+ ENDFOR host_modules +]
-
 do-clean: clean-stage[+id+]
-clean-stage[+id+]: [+ FOR host_modules +][+ IF bootstrap +]\
-  maybe-clean-stage[+id+]-[+module+][+
-ENDIF bootstrap+] [+ ENDFOR host_modules +]
-
-[+ FOR host_modules +][+ IF bootstrap +]
-.PHONY: configure-stage[+id+]-[+module+] maybe-configure-stage[+id+]-[+module+]
-.PHONY: all-stage[+id+]-[+module+] maybe-all-stage[+id+]-[+module+]
-.PHONY: clean-stage[+id+]-[+module+] maybe-clean-stage[+id+]-[+module+]
-
-maybe-configure-stage[+id+]-[+module+]:
-maybe-all-stage[+id+]-[+module+]:
-maybe-clean-stage[+id+]-[+module+]:
-
-@if [+module+]-bootstrap
-maybe-configure-stage[+id+]-[+module+]: configure-stage[+id+]-[+module+]
-configure-stage[+id+]-[+module+]:
-	@$(MAKE) stage[+id+]-start
-	@[ -f [+module+]/Makefile ] && exit 0 || : ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
-	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
-	$(HOST_EXPORTS) [+ ENDIF prev +] \
-	echo Configuring stage [+id+] in [+module+] ; \
-	cd $(HOST_SUBDIR)/[+module+] || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/[+module+]/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	libsrcdir="$$s/[+module+]"; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  [+stage_configure_flags+] [+extra_configure_flags+]
-
-maybe-all-stage[+id+]-[+module+]: all-stage[+id+]-[+module+]
-all-stage[+id+]-[+module+]: configure-stage[+id+]-[+module+]
-	@$(MAKE) stage[+id+]-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
-	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
-	$(HOST_EXPORTS) [+ ENDIF prev +] \
-	cd $(HOST_SUBDIR)/[+module+] && \
-	$(MAKE) $(FLAGS_TO_PASS) [+ IF prev +] \
-		$(POSTSTAGE1_FLAGS_TO_PASS) [+ ENDIF prev +] \
-		[+stage_make_flags+] [+extra_make_flags+]
-
-maybe-clean-stage[+id+]-[+module+]: clean-stage[+id+]-[+module+]
-clean-stage[+id+]-[+module+]:
-	@[ -f [+module+]/Makefile ] || [ -f stage[+id+]-[+module+]/Makefile ] \
-	  || exit 0 ; \
-	[ -f [+module+]/Makefile ] || $(MAKE) stage[+id+]-start ; \
-	cd $(HOST_SUBDIR)/[+module+] && \
-	$(MAKE) $(FLAGS_TO_PASS) [+ IF prev +] \
-		$(POSTSTAGE1_FLAGS_TO_PASS) [+ ENDIF prev +] \
-		[+stage_make_flags+] [+extra_make_flags+] clean
-@endif [+module+]-bootstrap
-
-[+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 
 # FIXME: Will not need to be conditional when toplevel bootstrap is the
 # only possibility, but now it conflicts with no-bootstrap rules
