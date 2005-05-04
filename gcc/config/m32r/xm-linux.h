@@ -20,7 +20,3 @@
 
 #include <m32r/xm-m32r.h>
 #include <xm-linux.h>
-
-/* Doubles are stored in memory with the high order word first.
-   This matters when cross-compiling.  */
-#undef HOST_WORDS_BIG_ENDIAN
