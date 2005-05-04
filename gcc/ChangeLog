@@ -1,3 +1,7 @@
+2005-05-04  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.in: Change dependencies on target.h to $(TARGET_H).
+
 2005-05-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dwarf2out.c (incomplete_types, retry_incomplete_types,
