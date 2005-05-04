@@ -9489,6 +9489,18 @@ ignored.  This function should return the result of the call to the
 built-in function.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_RESOLVE_OVERLOADED_BUILTIN (tree @var{fndecl}, tree @var{arglist})
+
+Select a replacement for a machine specific built-in function that
+was set up by @samp{TARGET_INIT_BUILTINS}.  This is done
+@emph{before} regular type checking, and so allows the target to
+implement a crude form of function overloading.  @var{fndecl} is the
+declaration of the built-in function.  @var{arglist} is the list of
+arguments passed to the built-in function.  The result is a
+complete expression that implements the operation, usually
+another @code{CALL_EXPR}.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{fndecl}, tree @var{arglist}, bool @var{ignore})
 
 Fold a call to a machine specific built-in function that was set up by
