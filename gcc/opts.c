@@ -818,6 +818,10 @@ common_handle_option (size_t scode, const char *arg, int value)
 	return 0;
       break;
 
+    case OPT_fdiagnostics_show_option:
+      global_dc->show_option_requested = true;
+      break;
+
     case OPT_fdump_:
       if (!dump_switch_p (arg))
 	return 0;

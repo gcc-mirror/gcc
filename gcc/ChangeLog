@@ -1,3 +1,15 @@
+2005-05-03  DJ Delorie  <dj@redhat.com>
+
+	* common.opt (fdiagnostics-show-option): No variable is needed.
+	* diagnostic.h (diagnostic_context): Add show_option_requested flag.
+	* diagnostic.c (diagnostic_initialize): Initialize show_option_requested.
+	(diagnostic_report_diagnostic): Test for enabled diagnostics here.
+	Save and restore original message format.  Use flag in context
+	instead of global.
+	(warning): Don't test for enabled warnings here.
+	* opts.c (common_handle_option): Handle -fdiagnostics-show-option
+	here.
+
 2005-05-04  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config/m32r/xm-m32r.h: Don't define HOST_WORDS_BIG_ENDIAN.

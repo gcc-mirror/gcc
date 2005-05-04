@@ -102,6 +102,7 @@ diagnostic_initialize (diagnostic_context *context)
   memset (context->diagnostic_count, 0, sizeof context->diagnostic_count);
   context->issue_warnings_are_errors_message = true;
   context->warning_as_error_requested = false;
+  context->show_option_requested = false;
   context->abort_on_error = false;
   context->internal_error = NULL;
   diagnostic_starter (context) = default_diagnostic_starter;
@@ -331,11 +332,17 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	error_recursion (context);
     }
 
+  if (diagnostic->option_index
+      && ! option_enabled (diagnostic->option_index))
+    return;
+
   context->lock++;
 
   if (diagnostic_count_diagnostic (context, diagnostic))
     {
-      if (diagnostics_show_options && diagnostic->option_index)
+      const char *saved_format_spec = diagnostic->message.format_spec;
+
+      if (context->show_option_requested && diagnostic->option_index)
 	diagnostic->message.format_spec
 	  = ACONCAT ((diagnostic->message.format_spec,
 		      " [", cl_options[diagnostic->option_index].opt_text, "]", NULL));
@@ -347,6 +354,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       (*diagnostic_finalizer (context)) (context, diagnostic);
       pp_flush (context->printer);
       diagnostic_action_after_output (context, diagnostic);
+      diagnostic->message.format_spec = saved_format_spec;
     }
 
   context->lock--;
@@ -423,9 +431,6 @@ warning (int opt, const char *msgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-
-  if (opt && ! option_enabled (opt))
-    return;
 
   va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_WARNING);
