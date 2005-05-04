@@ -362,7 +362,9 @@ enum block_op_methods
 {
   BLOCK_OP_NORMAL,
   BLOCK_OP_NO_LIBCALL,
-  BLOCK_OP_CALL_PARM
+  BLOCK_OP_CALL_PARM,
+  /* Like BLOCK_OP_NORMAL, but the libcall can be tail call optimized.  */
+  BLOCK_OP_TAILCALL
 };
 
 extern void init_block_move_fn (const char *);
@@ -414,7 +416,7 @@ extern void use_group_regs (rtx *, rtx);
 
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes.  */
-extern rtx clear_storage (rtx, rtx);
+extern rtx clear_storage (rtx, rtx, enum block_op_methods);
 
 /* Determine whether the LEN bytes can be moved by using several move
    instructions.  Return nonzero if a call to move_by_pieces should

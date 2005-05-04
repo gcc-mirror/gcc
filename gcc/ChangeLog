@@ -1,5 +1,33 @@
 2005-05-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/21265
+	* expr.h (enum block_op_methods): Add BLOCK_OP_TAILCALL.
+	(clear_storage): Add argument.
+	* expr.c (emit_block_move_via_libcall, clear_storage_via_libcall):
+	Add tailcall argument, set CALL_EXPR_TAILCALL of the CALL_EXPR to
+	tailcall.
+	(emit_block_move): Handle BLOCK_OP_TAILCALL method.
+	(clear_storage): Add method argument, handle BLOCK_OP_TAILCALL.
+	(store_expr, store_constructor): Adjust callers.
+	* builtins.c (expand_builtin_memcpy): Pass BLOCK_OP_TAILCALL
+	to emit_block_move if CALL_EXPR_TAILCALL (exp).
+	(expand_builtin_memmove): Add ORIG_EXP argument, copy
+	CALL_EXPR_TAILCALL from ORIG_EXP to the new CALL_EXPR.
+	(expand_builtin_bcopy): Replace ARGLIST and TYPE arguments
+	with EXP.  Pass EXP to expand_builtin_memmove.
+	(expand_builtin_memset): Add ORIG_EXP argument, pass
+	BLOCK_OP_TAILCALL to clear_storage if CALL_EXPR_TAILCALL (orig_exp).
+	(expand_builtin_bzero): Replace ARGLIST argument with EXP.
+	Pass EXP to expand_builtin_memset.
+	(expand_builtin_strcmp): Copy CALL_EXPR_TAILCALL from EXP to
+	the new CALL_EXPR.
+	(expand_builtin_strncmp): Likewise.
+	(expand_builtin_printf): Replace ARGLIST argument with EXP.
+	Copy CALL_EXPR_TAILCALL from EXP to the new CALL_EXPR.
+	(expand_builtin_fprintf): Likewise.
+	(expand_builtin): Adjust calls to
+	expand_builtin_{memmove,bcopy,memset,bzero,{,f}printf}.
+
 	* config/i386/i386.c (ix86_expand_vector_set): Fix setting 3rd and 4th
 	item in V4SF mode.
 
