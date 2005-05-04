@@ -4,6 +4,12 @@
 	gen_struct_or_union_type_die, dwarf2out_init): Use VEC instead
 	of VARRAY.
 
+	* loop-unroll.c (var_to_expand, analyze_insn_to_expand_var,
+	get_expansion, expand_var_during_unrolling,
+	insert_var_expansion_initialization,
+	combine_var_copies_in_loop_exit, release_var_copies): Use VEC
+	instead of VARRAY.
+
 2004-05-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/15618
