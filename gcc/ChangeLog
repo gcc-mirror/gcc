@@ -1,3 +1,13 @@
+2005-05-04  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config/m32r/xm-m32r.h: Don't define HOST_WORDS_BIG_ENDIAN.
+	* config/m32r/xm-linux.h: Don't undefine HOST_WORDS_BIG_ENDIAN.
+	* mips-tfile.c: Use WORDS_BIG_ENDIAN instead of HOST_WORDS_BIG_ENDIAN.
+	* aclocal.m4: Don't include accross.m4.
+	* configure.ac: Use AC_C_BIGENDIAN instead of AC_C_BIGENDIAN_CROSS.
+	Use AC_CHECK_SIZEOF instead of AC_COMPILE_CHECK_SIZEOF.
+	* configure, config.in: Regenerate.
+	
 2005-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21265

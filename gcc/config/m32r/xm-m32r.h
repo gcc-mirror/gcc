@@ -25,10 +25,6 @@
 #define HOST_BITS_PER_LONG      32
 #define HOST_BITS_PER_LONGLONG  64
 
-/* Doubles are stored in memory with the high order word first.
-   This matters when cross-compiling.  */
-#define HOST_WORDS_BIG_ENDIAN    1
-
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.  */
 #include "tm.h"

@@ -2358,7 +2358,7 @@ initialize_init_file (void)
   init_file.fdr.fMerge = 1;
   init_file.fdr.glevel = GLEVEL_2;
 
-#ifdef HOST_WORDS_BIG_ENDIAN
+#ifdef WORDS_BIG_ENDIAN
   init_file.fdr.fBigendian = 1;
 #endif
 

@@ -1,4 +1,3 @@
-m4_include([../config/accross.m4])
 m4_include([../config/acx.m4])
 m4_include([../config/gettext-sister.m4])
 m4_include([../config/iconv.m4])

@@ -1,8 +1,5 @@
 /* config.in.  Generated from configure.ac by autoheader.  */
 
-/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
-#undef BYTEORDER
-
 /* Define as the number of bits in a byte, if \`limits.h' doesn't. */
 #undef CHAR_BIT
 
@@ -609,10 +606,6 @@
 /* Define if your compiler supports the \`__int64' type. */
 #undef HAVE___INT64
 
-/* Define if the host machine stores words of multi-word integers in
-   big-endian order. */
-#undef HOST_WORDS_BIG_ENDIAN
-
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
 
@@ -686,7 +679,8 @@
    The default is the GCC version number. */
 #undef WIN32_REGISTRY_KEY
 
-/* whether byteorder is bigendian */
+/* Define to 1 if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
 
 /* Always define this when using the GNU C Library */
