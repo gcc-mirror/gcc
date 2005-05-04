@@ -175,9 +175,10 @@ default_eh_frame_section (void)
 static GTY(()) varray_type used_rtx_varray;
 
 /* A pointer to the base of a list of incomplete types which might be
-   completed at some later time.  incomplete_types_list needs to be a VARRAY
-   because we want to tell the garbage collector about it.  */
-static GTY(()) varray_type incomplete_types;
+   completed at some later time.  incomplete_types_list needs to be a
+   VEC(tree,gc) because we want to tell the garbage collector about
+   it.  */
+static GTY(()) VEC(tree,gc) *incomplete_types;
 
 /* A pointer to the base of a table of references to declaration
    scopes.  This table is a display which tracks the nesting
@@ -10975,8 +10976,8 @@ retry_incomplete_types (void)
 {
   int i;
 
-  for (i = VARRAY_ACTIVE_SIZE (incomplete_types) - 1; i >= 0; i--)
-    gen_type_die (VARRAY_TREE (incomplete_types, i), comp_unit_die);
+  for (i = VEC_length (tree, incomplete_types) - 1; i >= 0; i--)
+    gen_type_die (VEC_index (tree, incomplete_types, i), comp_unit_die);
 }
 
 /* Generate a DIE to represent an inlined instance of an enumeration type.  */
@@ -12122,7 +12123,7 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die)
       /* We don't need to do this for function-local types.  */
       if (TYPE_STUB_DECL (type)
 	  && ! decl_function_context (TYPE_STUB_DECL (type)))
-	VARRAY_PUSH_TREE (incomplete_types, type);
+	VEC_safe_push (tree, gc, incomplete_types, type);
     }
 }
 
@@ -13501,7 +13502,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
      in this value in dwarf2out_finish.  */
   comp_unit_die = gen_compile_unit_die (NULL);
 
-  VARRAY_TREE_INIT (incomplete_types, 64, "incomplete_types");
+  incomplete_types = VEC_alloc (tree, gc, 64);
 
   VARRAY_RTX_INIT (used_rtx_varray, 32, "used_rtx_varray");
 
