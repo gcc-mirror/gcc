@@ -1,3 +1,13 @@
+2005-05-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/nio/channels/FileLock.java (toString): Entirely avoid
+	String "+".
+
+2005-05-04  Andrew Overholt  <overholt@redhat.com>
+
+	* java/nio/channels/FileLock.java (toString): Re-implement using
+	StringBuffer.
+
 2005-05-04  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/ImageCapabilities.java: Document.
