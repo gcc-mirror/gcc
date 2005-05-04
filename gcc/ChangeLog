@@ -1,3 +1,11 @@
+2005-05-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-outof-ssa.c (edge_leader, stmt_list,
+	analyze_edges_for_bb): Use VEC instead of VARRAY.
+	(init_analayze_edges_for_bb, fini_analayze_edges_for_bb): New.
+	(perform_edge_inserts): Call init_analayze_edges_for_bb and
+	fini_analayze_edges_for_bb.
+
 2005-05-04  James E Wilson  <wilson@specifixinc.com>
 
 	PR driver/21112

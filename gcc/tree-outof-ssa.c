@@ -1920,10 +1920,12 @@ rewrite_trees (var_map map, tree *values)
 }
 
 
+DEF_VEC_ALLOC_P(edge,heap);
+
 /* These are the local work structures used to determine the best place to 
    insert the copies that were placed on edges by the SSA->normal pass..  */
-static varray_type edge_leader = NULL;
-static varray_type GTY(()) stmt_list = NULL;
+static VEC(edge,heap) *edge_leader;
+static VEC(tree,heap) *stmt_list;
 static bitmap leader_has_match = NULL;
 static edge leader_match = NULL;
 
@@ -1989,6 +1991,28 @@ identical_stmt_lists_p (edge e1, edge e2)
 }
 
 
+/* Allocate data structures used in analyze_edges_for_bb.   */
+
+static void
+init_analyze_edges_for_bb (void)
+{
+  edge_leader = VEC_alloc (edge, heap, 25);
+  stmt_list = VEC_alloc (tree, heap, 25);
+  leader_has_match = BITMAP_ALLOC (NULL);
+}
+
+
+/* Free data structures used in analyze_edges_for_bb.   */
+
+static void
+fini_analyze_edges_for_bb (void)
+{
+  VEC_free (edge, heap, edge_leader);
+  VEC_free (tree, heap, stmt_list);
+  BITMAP_FREE (leader_has_match);
+}
+
+
 /* Look at all the incoming edges to block BB, and decide where the best place
    to insert the stmts on each edge are, and perform those insertions.   Output
    any debug information to DEBUG_FILE.  */
@@ -2005,6 +2029,7 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
   tree stmt;
   edge single_edge = NULL;
   bool is_label;
+  edge leader;
 
   count = 0;
 
@@ -2065,20 +2090,11 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
     }
 
   /* Ensure that we have empty worklists.  */
-  if (edge_leader == NULL)
-    {
-      VARRAY_EDGE_INIT (edge_leader, 25, "edge_leader");
-      VARRAY_TREE_INIT (stmt_list, 25, "stmt_list");
-      leader_has_match = BITMAP_ALLOC (NULL);
-    }
-  else
-    {
 #ifdef ENABLE_CHECKING
-      gcc_assert (VARRAY_ACTIVE_SIZE (edge_leader) == 0);
-      gcc_assert (VARRAY_ACTIVE_SIZE (stmt_list) == 0);
-      gcc_assert (bitmap_empty_p (leader_has_match));
+  gcc_assert (VEC_length (edge, edge_leader) == 0);
+  gcc_assert (VEC_length (tree, stmt_list) == 0);
+  gcc_assert (bitmap_empty_p (leader_has_match));
 #endif
-    }
 
   /* Find the "leader" block for each set of unique stmt lists.  Preference is
      given to FALLTHRU blocks since they would need a GOTO to arrive at another
@@ -2092,9 +2108,8 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
 	  bool found = false;
 
 	  /* Look for the same stmt list in edge leaders list.  */
-	  for (x = 0; x < VARRAY_ACTIVE_SIZE (edge_leader); x++)
+	  for (x = 0; VEC_iterate (edge, edge_leader, x, leader); x++)
 	    {
-	      edge leader = VARRAY_EDGE (edge_leader, x);
 	      if (identical_stmt_lists_p (leader, e))
 		{
 		  /* Give this edge the same stmt list pointer.  */
@@ -2109,8 +2124,8 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
 	  /* If no similar stmt list, add this edge to the leader list.  */
 	  if (!found)
 	    {
-	      VARRAY_PUSH_EDGE (edge_leader, e);
-	      VARRAY_PUSH_TREE (stmt_list, PENDING_STMT (e));
+	      VEC_safe_push (edge, heap, edge_leader, e);
+	      VEC_safe_push (tree, heap, stmt_list, PENDING_STMT (e));
 	    }
 	}
      }
@@ -2118,10 +2133,10 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
   /* If there are no similar lists, just issue the stmts.  */
   if (!have_opportunity)
     {
-      for (x = 0; x < VARRAY_ACTIVE_SIZE (edge_leader); x++)
-	bsi_commit_one_edge_insert (VARRAY_EDGE (edge_leader, x), NULL);
-      VARRAY_POP_ALL (edge_leader);
-      VARRAY_POP_ALL (stmt_list);
+      for (x = 0; VEC_iterate (edge, edge_leader, x, leader); x++)
+	bsi_commit_one_edge_insert (leader, NULL);
+      VEC_truncate (edge, edge_leader, 0);
+      VEC_truncate (tree, stmt_list, 0);
       bitmap_clear (leader_has_match);
       return;
     }
@@ -2134,30 +2149,30 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
   
   /* For each common list, create a forwarding block and issue the stmt's
      in that block.  */
-  for (x = 0 ; x < VARRAY_ACTIVE_SIZE (edge_leader); x++)
+  for (x = 0; VEC_iterate (edge, edge_leader, x, leader); x++)
     if (bitmap_bit_p (leader_has_match, x))
       {
-	edge new_edge, leader_edge;
+	edge new_edge;
 	block_stmt_iterator bsi;
 	tree curr_stmt_list;
 
-	leader_match = leader_edge = VARRAY_EDGE (edge_leader, x);
+	leader_match = leader;
 
 	/* The tree_* cfg manipulation routines use the PENDING_EDGE field
 	   for various PHI manipulations, so it gets cleared whhen calls are 
 	   made to make_forwarder_block(). So make sure the edge is clear, 
 	   and use the saved stmt list.  */
-	PENDING_STMT (leader_edge) = NULL;
-	leader_edge->aux = leader_edge;
-	curr_stmt_list = VARRAY_TREE (stmt_list, x);
+	PENDING_STMT (leader) = NULL;
+	leader->aux = leader;
+	curr_stmt_list = VEC_index (tree, stmt_list, x);
 
-        new_edge = make_forwarder_block (leader_edge->dest, same_stmt_list_p, 
+        new_edge = make_forwarder_block (leader->dest, same_stmt_list_p, 
 					 NULL);
 	bb = new_edge->dest;
 	if (debug_file)
 	  {
 	    fprintf (debug_file, "Splitting BB %d for Common stmt list.  ", 
-		     leader_edge->dest->index);
+		     leader->dest->index);
 	    fprintf (debug_file, "Original block is now BB%d.\n", bb->index);
 	    print_generic_stmt (debug_file, curr_stmt_list, TDF_VOPS);
 	  }
@@ -2170,7 +2185,7 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
 		       e->src->index, e->dest->index);
 	  }
 
-	bsi = bsi_last (leader_edge->dest);
+	bsi = bsi_last (leader->dest);
 	bsi_insert_after (&bsi, curr_stmt_list, BSI_NEW_STMT);
 
 	leader_match = NULL;
@@ -2178,15 +2193,14 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
       }
     else
       {
-        e = VARRAY_EDGE (edge_leader, x);
-	PENDING_STMT (e) = VARRAY_TREE (stmt_list, x);
-	bsi_commit_one_edge_insert (e, NULL);
+	PENDING_STMT (leader) = VEC_index (tree, stmt_list, x);
+	bsi_commit_one_edge_insert (leader, NULL);
       }
 
    
   /* Clear the working data structures.  */
-  VARRAY_POP_ALL (edge_leader);
-  VARRAY_POP_ALL (stmt_list);
+  VEC_truncate (edge, edge_leader, 0);
+  VEC_truncate (tree, stmt_list, 0);
   bitmap_clear (leader_has_match);
 }
 
@@ -2212,14 +2226,16 @@ perform_edge_inserts (FILE *dump_file)
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 
+  /* Allocate data structures used in analyze_edges_for_bb.   */
+  init_analyze_edges_for_bb ();
+
   FOR_EACH_BB (bb)
     analyze_edges_for_bb (bb, dump_file);
 
   analyze_edges_for_bb (EXIT_BLOCK_PTR, dump_file);
 
-  /* Clear out any tables which were created.  */
-  edge_leader = NULL;
-  BITMAP_FREE (leader_has_match);
+  /* Free data structures used in analyze_edges_for_bb.   */
+  fini_analyze_edges_for_bb ();
 
 #ifdef ENABLE_CHECKING
   {
