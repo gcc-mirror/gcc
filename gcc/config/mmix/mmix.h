@@ -964,27 +964,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: Misc */
 
-#define PREDICATE_CODES				\
- {"mmix_reg_cc_operand", {SUBREG, REG}},	\
- {"mmix_foldable_comparison_operator",		\
-  {NE, EQ, GE, GT, LE, LT}},			\
- /* All '<', actually.  */			\
- {"mmix_comparison_operator",			\
-  {NE, EQ, GE, GT, LE, LT, GEU, GTU, LEU,	\
-   LTU, UNORDERED, ORDERED, UNEQ, UNGE, UNLE,	\
-   UNLT, LTGT}},				\
- {"mmix_symbolic_or_address_operand",		\
-  {SYMBOL_REF, LABEL_REF, CONST,		\
-   SUBREG, REG, PLUS}},				\
- {"mmix_reg_or_constant_operand",		\
-  {CONST_INT, CONST_DOUBLE, SUBREG, REG}},	\
- {"mmix_reg_or_8bit_operand",			\
-  {CONST_INT, CONST_DOUBLE, SUBREG, REG}},	\
- {"mmix_reg_or_0_operand",			\
-  {CONST_INT, CONST_DOUBLE, SUBREG, REG}},
-
-#define SPECIAL_MODE_PREDICATES "mmix_symbolic_or_address_operand",
-
 /* There's no way to get a PC-relative offset into tables for SImode, so
    for the moment we have absolute entries in DImode.
    When we're going ELF, these should be SImode and 1.  */

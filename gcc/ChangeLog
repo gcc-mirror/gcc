@@ -1,3 +1,16 @@
+2005-05-05  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/predicates.md: New file.
+	* config/mmix/mmix.c (mmix_symbolic_or_address_operand)
+	(mmix_reg_or_constant_operand, mmix_reg_cc_operand)
+	(mmix_foldable_comparison_operator, mmix_comparison_operator)
+	(mmix_reg_or_0_operand, mmix_reg_or_8bit_operand): Remove.
+	* config/mmix/mmix.h (PREDICATE_CODES, SPECIAL_MODE_PREDICATES):
+	Don't define.
+	* config/mmix/mmix.md: Include predicates.md.
+	("call", "call_value"): Force address to register if it isn't a
+	mmix_symbolic_or_address_operand.
+
 2005-05-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow-inline.h (op_iter_init_use, op_iter_init_def): Assert that
