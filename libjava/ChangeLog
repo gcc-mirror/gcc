@@ -1,3 +1,7 @@
+2005-05-04  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* java/awt/BufferCapabilities.java: Document.
+
 2005-05-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/nio/channels/FileLock.java (toString): Entirely avoid
