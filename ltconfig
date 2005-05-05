@@ -266,6 +266,7 @@ exclude_expsyms="_GLOBAL_OFFSET_TABLE_"
 # rely on this symbol name, it's probably fine to never include it in
 # preloaded symbol tables.
 extract_expsyms_cmds=
+file_list_spec=
 
 ## Tools:
 old_AR="$AR"
@@ -2164,7 +2165,7 @@ case $ltmain in
     finish_cmds finish_eval global_symbol_pipe global_symbol_to_cdecl \
     hardcode_libdir_flag_spec hardcode_libdir_separator  \
     sys_lib_search_path_spec sys_lib_dlsearch_path_spec \
-    compiler_c_o need_locks exclude_expsyms include_expsyms; do
+    compiler_c_o need_locks exclude_expsyms include_expsyms file_list_spec; do
 
     case $var in
     reload_cmds | old_archive_cmds | old_archive_from_new_cmds | \
@@ -2556,6 +2557,12 @@ exclude_expsyms=$exclude_expsyms
 
 # Symbols that must always be exported.
 include_expsyms=$include_expsyms
+
+# Specify filename containing input files.
+file_list_spec=$file_list_spec
+
+# with_gnu_ld value
+with_gnu_ld=$with_gnu_ld
 
 EOF
 
