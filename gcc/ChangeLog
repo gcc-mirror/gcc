@@ -1,3 +1,50 @@
+2005-05-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (arm*-wince-pe*, arm-*-pe*, strongarm-*-pe): Add
+	arm/pe.opt to $extra_options.
+	* config/arm/arm.h (target_flags, target_fpu_name, target_fpe_name)
+	(target_float_abi_name, target_float_switch, target_abi_name)
+	(ARM_FLAG_APCS_FRAME, ARM_FLAG_POKE, ARM_FLAG_FPE, ARM_FLAG_APCS_STACK)
+	(ARM_FLAG_APCS_FLOAT, ARM_FLAG_APCS_REENT, ARM_FLAG_BIG_END)
+	(ARM_FLAG_INTERWORK, ARM_FLAG_LITTLE_WORDS, ARM_FLAG_NO_SCHED_PRO)
+	(ARM_FLAG_ABORT_NORETURN, ARM_FLAG_SINGLE_PIC_BASE)
+	(ARM_FLAG_LONG_CALLS, ARM_FLAG_THUMB, THUMB_FLAG_BACKTRACE)
+	(THUMB_FLAG_LEAF_BACKTRACE, THUMB_FLAG_CALLEE_SUPER_INTERWORKING)
+	(THUMB_FLAG_CALLER_SUPER_INTERWORKING, CIRRUS_FIX_INVALID_INSNS)
+	(TARGET_APCS_FRAME, TARGET_POKE_FUNCTION_NAME, TARGET_FPE)
+	(TARGET_APCS_STACK, TARGET_APCS_FLOAT, TARGET_APCS_REENT)
+	(TARGET_BIG_END, TARGET_INTERWORK, TARGET_LITTLE_WORDS)
+	(TARGET_NO_SCHED_PRO, TARGET_ABORT_NORETURN, TARGET_SINGLE_PIC_BASE)
+	(TARGET_LONG_CALLS, TARGET_THUMB, TARGET_CALLER_INTERWORKING)
+	(TARGET_CIRRUS_FIX_INVALID_INSNS, SUBTARGET_SWITCHES, TARGET_SWITCHES)
+	(TARGET_OPTIONS, arm_cpu_select, arm_select,  structure_size_string)
+	(arm_pic_register_string): Delete.
+	(TARGET_BACKTRACE): Redefine using TARGET_TPCS_LEAF_FRAME and
+	TARGET_TPCS_FRAME.
+	(TARGET_DEFAULT, CONDITIONAL_REGISTER_USAGE): Update mask names.
+	* config/arm/coff.h (TARGET_DEFAULT): Likewise.
+	* config/arm/elf.h (TARGET_DEFAULT): Likewise.
+	* config/arm/netbsd-elf.h (TARGET_DEFAULT): Likewise.
+	* config/arm/netbsd.h (TARGET_DEFAULT): Likewise.
+	* config/arm/semi.h (TARGET_DEFAULT): Likewise.
+	* config/arm/uclinux-elf.h (TARGET_DEFAULT): Likewise.
+	* config/arm/wince-pe.h (TARGET_DEFAULT): Likewise.
+	* config/arm/pe.h (TARGET_DEFAULT): Likewise.
+	(TARGET_FLAG_NOP_FUN, TARGET_NOP_FUN_DLLIMPORT): Delete.
+	(SUBTARGET_SWITCHES): Delete.
+	* config/arm/arm.c (target_float_switch): Delete.
+	(arm_cpu_select): Moved from config/arm/arm.h.
+	(target_fpu_name, target_fpe_name, target_float_abi_name)
+	(target_abi_name, structure_size_string, arm_pic_register_string)
+	(arm_select): Make static.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(arm_handle_option): New function.
+	(arm_override_options): Update target_flags checks for new mask names.
+	Remove target_float_switch code.
+	(arm_expand_prologue, thumb_expand_prologue): Check
+	!TARGET_SCHED_PROLOG instead of TARGET_NO_SCHED_PRO.
+	* config/arm/arm.opt, config/arm/pe.opt: New files.
+
 2005-05-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/arc/arc.c (get_arc_condition_code): Use gcc_assert &

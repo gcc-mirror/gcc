@@ -117,18 +117,6 @@ extern arm_cc arm_current_cc;
 extern int arm_target_label;
 extern int arm_ccfsm_state;
 extern GTY(()) rtx arm_target_insn;
-/* Run-time compilation parameters selecting different hardware subsets.  */
-extern int target_flags;
-/* The floating point mode.  */
-extern const char *target_fpu_name;
-/* For backwards compatibility.  */
-extern const char *target_fpe_name;
-/* Whether to use floating point hardware.  */
-extern const char *target_float_abi_name;
-/* For -m{soft,hard}-float.  */
-extern const char *target_float_switch;
-/* Which ABI to use.  */
-extern const char *target_abi_name;
 /* Define the information needed to generate branch insns.  This is
    stored from the compare operation.  */
 extern GTY(()) rtx arm_compare_op0;
@@ -184,89 +172,6 @@ extern GTY(()) rtx aof_pic_label;
 #define TARGET_VERSION fputs (" (ARM/generic)", stderr);
 #endif
 
-/* Nonzero if the function prologue (and epilogue) should obey
-   the ARM Procedure Call Standard.  */
-#define ARM_FLAG_APCS_FRAME	(1 << 0)
-
-/* Nonzero if the function prologue should output the function name to enable
-   the post mortem debugger to print a backtrace (very useful on RISCOS,
-   unused on RISCiX).  Specifying this flag also enables
-   -fno-omit-frame-pointer.
-   XXX Must still be implemented in the prologue.  */
-#define ARM_FLAG_POKE		(1 << 1)
-
-/* Nonzero if floating point instructions are emulated by the FPE, in which
-   case instruction scheduling becomes very uninteresting.  */
-#define ARM_FLAG_FPE		(1 << 2)
-
-/* FLAG 0x0008 now spare (used to be apcs-32 selection).  */
-
-/* Nonzero if stack checking should be performed on entry to each function
-   which allocates temporary variables on the stack.  */
-#define ARM_FLAG_APCS_STACK	(1 << 4)
-
-/* Nonzero if floating point parameters should be passed to functions in
-   floating point registers.  */
-#define ARM_FLAG_APCS_FLOAT	(1 << 5)
-
-/* Nonzero if re-entrant, position independent code should be generated.
-   This is equivalent to -fpic.  */
-#define ARM_FLAG_APCS_REENT	(1 << 6)
-
-  /* FLAG 0x0080 now spare (used to be alignment traps).  */
-  /* FLAG (1 << 8) is now spare (used to be soft-float).  */
-
-/* Nonzero if we should compile with BYTES_BIG_ENDIAN set to 1.  */
-#define ARM_FLAG_BIG_END	(1 << 9)
-
-/* Nonzero if we should compile for Thumb interworking.  */
-#define ARM_FLAG_INTERWORK	(1 << 10)
-
-/* Nonzero if we should have little-endian words even when compiling for
-   big-endian (for backwards compatibility with older versions of GCC).  */
-#define ARM_FLAG_LITTLE_WORDS	(1 << 11)
-
-/* Nonzero if we need to protect the prolog from scheduling */
-#define ARM_FLAG_NO_SCHED_PRO	(1 << 12)
-
-/* Nonzero if a call to abort should be generated if a noreturn
-   function tries to return.  */
-#define ARM_FLAG_ABORT_NORETURN	(1 << 13)
-
-/* Nonzero if function prologues should not load the PIC register.  */
-#define ARM_FLAG_SINGLE_PIC_BASE (1 << 14)
-
-/* Nonzero if all call instructions should be indirect.  */
-#define ARM_FLAG_LONG_CALLS	(1 << 15)
-
-/* Nonzero means that the target ISA is the THUMB, not the ARM.  */
-#define ARM_FLAG_THUMB          (1 << 16)
-
-/* Set if a TPCS style stack frame should be generated, for non-leaf
-   functions, even if they do not need one.  */
-#define THUMB_FLAG_BACKTRACE	(1 << 17)
-
-/* Set if a TPCS style stack frame should be generated, for leaf
-   functions, even if they do not need one.  */
-#define THUMB_FLAG_LEAF_BACKTRACE    		(1 << 18)
-
-/* Set if externally visible functions should assume that they
-   might be called in ARM mode, from a non-thumb aware code.  */
-#define THUMB_FLAG_CALLEE_SUPER_INTERWORKING	(1 << 19)
-
-/* Set if calls via function pointers should assume that their
-   destination is non-Thumb aware.  */
-#define THUMB_FLAG_CALLER_SUPER_INTERWORKING	(1 << 20)
-
-/* Fix invalid Cirrus instruction combinations by inserting NOPs.  */
-#define CIRRUS_FIX_INVALID_INSNS (1 << 21)
-
-#define TARGET_APCS_FRAME		(target_flags & ARM_FLAG_APCS_FRAME)
-#define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
-#define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
-#define TARGET_APCS_STACK		(target_flags & ARM_FLAG_APCS_STACK)
-#define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
-#define TARGET_APCS_REENT		(target_flags & ARM_FLAG_APCS_REENT)
 #define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point instructions. */
 #define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
@@ -278,22 +183,11 @@ extern GTY(()) rtx aof_pic_label;
 #define TARGET_IWMMXT			(arm_arch_iwmmxt)
 #define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_ARM)
 #define TARGET_IWMMXT_ABI (TARGET_ARM && arm_abi == ARM_ABI_IWMMXT)
-#define TARGET_BIG_END			(target_flags & ARM_FLAG_BIG_END)
-#define TARGET_INTERWORK		(target_flags & ARM_FLAG_INTERWORK)
-#define TARGET_LITTLE_WORDS		(target_flags & ARM_FLAG_LITTLE_WORDS)
-#define TARGET_NO_SCHED_PRO		(target_flags & ARM_FLAG_NO_SCHED_PRO)
-#define TARGET_ABORT_NORETURN		(target_flags & ARM_FLAG_ABORT_NORETURN)
-#define TARGET_SINGLE_PIC_BASE		(target_flags & ARM_FLAG_SINGLE_PIC_BASE)
-#define TARGET_LONG_CALLS		(target_flags & ARM_FLAG_LONG_CALLS)
-#define TARGET_THUMB                    (target_flags & ARM_FLAG_THUMB)
 #define TARGET_ARM                      (! TARGET_THUMB)
 #define TARGET_EITHER			1 /* (TARGET_ARM | TARGET_THUMB) */
-#define TARGET_CALLEE_INTERWORKING	(target_flags & THUMB_FLAG_CALLEE_SUPER_INTERWORKING)
-#define TARGET_CALLER_INTERWORKING	(target_flags & THUMB_FLAG_CALLER_SUPER_INTERWORKING)
-#define TARGET_BACKTRACE	        (leaf_function_p ()	      			\
-				         ? (target_flags & THUMB_FLAG_LEAF_BACKTRACE)	\
-				         : (target_flags & THUMB_FLAG_BACKTRACE))
-#define TARGET_CIRRUS_FIX_INVALID_INSNS	(target_flags & CIRRUS_FIX_INVALID_INSNS)
+#define TARGET_BACKTRACE	        (leaf_function_p () \
+				         ? TARGET_TPCS_LEAF_FRAME \
+				         : TARGET_TPCS_FRAME)
 #define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN)
 #define TARGET_AAPCS_BASED \
     (arm_abi != ARM_ABI_APCS && arm_abi != ARM_ABI_ATPCS)
@@ -305,100 +199,6 @@ extern GTY(()) rtx aof_pic_label;
 #ifndef TARGET_BPABI
 #define TARGET_BPABI false
 #endif
-
-/* SUBTARGET_SWITCHES is used to add flags on a per-config basis.  */
-#ifndef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES
-#endif
-
-#define TARGET_SWITCHES							\
-{									\
-  {"apcs",			ARM_FLAG_APCS_FRAME, "" },		\
-  {"apcs-frame",		ARM_FLAG_APCS_FRAME,			\
-   N_("Generate APCS conformant stack frames") },			\
-  {"no-apcs-frame",	       -ARM_FLAG_APCS_FRAME, "" },		\
-  {"poke-function-name",	ARM_FLAG_POKE,				\
-   N_("Store function names in object code") },				\
-  {"no-poke-function-name",    -ARM_FLAG_POKE, "" },			\
-  {"fpe",			ARM_FLAG_FPE,  "" },			\
-  {"apcs-stack-check",		ARM_FLAG_APCS_STACK, "" },		\
-  {"no-apcs-stack-check",      -ARM_FLAG_APCS_STACK, "" },		\
-  {"apcs-float",		ARM_FLAG_APCS_FLOAT,			\
-   N_("Pass FP arguments in FP registers") },				\
-  {"no-apcs-float",	       -ARM_FLAG_APCS_FLOAT, "" },		\
-  {"apcs-reentrant",		ARM_FLAG_APCS_REENT,			\
-   N_("Generate re-entrant, PIC code") },				\
-  {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT, "" },		\
-  {"big-endian",		ARM_FLAG_BIG_END,			\
-   N_("Assume target CPU is configured as big endian") },		\
-  {"little-endian",	       -ARM_FLAG_BIG_END,			\
-   N_("Assume target CPU is configured as little endian") },		\
-  {"words-little-endian",       ARM_FLAG_LITTLE_WORDS,			\
-   N_("Assume big endian bytes, little endian words") },		\
-  {"thumb-interwork",		ARM_FLAG_INTERWORK,			\
-   N_("Support calls between Thumb and ARM instruction sets") },	\
-  {"no-thumb-interwork",       -ARM_FLAG_INTERWORK, "" },		\
-  {"abort-on-noreturn",         ARM_FLAG_ABORT_NORETURN,		\
-   N_("Generate a call to abort if a noreturn function returns")},	\
-  {"no-abort-on-noreturn",     -ARM_FLAG_ABORT_NORETURN, "" },		\
-  {"no-sched-prolog",           ARM_FLAG_NO_SCHED_PRO,			\
-   N_("Do not move instructions into a function's prologue") },		\
-  {"sched-prolog",             -ARM_FLAG_NO_SCHED_PRO, "" },		\
-  {"single-pic-base",		ARM_FLAG_SINGLE_PIC_BASE,		\
-   N_("Do not load the PIC register in function prologues") },		\
-  {"no-single-pic-base",       -ARM_FLAG_SINGLE_PIC_BASE, "" },		\
-  {"long-calls",		ARM_FLAG_LONG_CALLS,			\
-   N_("Generate call insns as indirect calls, if necessary") },		\
-  {"no-long-calls",	       -ARM_FLAG_LONG_CALLS, "" },		\
-  {"thumb",                     ARM_FLAG_THUMB,				\
-   N_("Compile for the Thumb not the ARM") },				\
-  {"no-thumb",                 -ARM_FLAG_THUMB, "" },			\
-  {"arm",                      -ARM_FLAG_THUMB, "" },			\
-  {"tpcs-frame",		    THUMB_FLAG_BACKTRACE,		\
-   N_("Thumb: Generate (non-leaf) stack frames even if not needed") },	   \
-  {"no-tpcs-frame",                -THUMB_FLAG_BACKTRACE, "" },		   \
-  {"tpcs-leaf-frame",	  	    THUMB_FLAG_LEAF_BACKTRACE,		   \
-   N_("Thumb: Generate (leaf) stack frames even if not needed") },	   \
-  {"no-tpcs-leaf-frame",           -THUMB_FLAG_LEAF_BACKTRACE, "" },	   \
-  {"callee-super-interworking",	    THUMB_FLAG_CALLEE_SUPER_INTERWORKING,  \
-   N_("Thumb: Assume non-static functions may be called from ARM code") }, \
-  {"no-callee-super-interworking", -THUMB_FLAG_CALLEE_SUPER_INTERWORKING,  \
-     "" },								   \
-  {"caller-super-interworking",	    THUMB_FLAG_CALLER_SUPER_INTERWORKING,  \
-   N_("Thumb: Assume function pointers may go to non-Thumb aware code") }, \
-  {"no-caller-super-interworking", -THUMB_FLAG_CALLER_SUPER_INTERWORKING,  \
-   "" },								   \
-  {"cirrus-fix-invalid-insns",      CIRRUS_FIX_INVALID_INSNS,		   \
-   N_("Cirrus: Place NOPs to avoid invalid instruction combinations") },   \
-  {"no-cirrus-fix-invalid-insns",  -CIRRUS_FIX_INVALID_INSNS,		   \
-   N_("Cirrus: Do not break up invalid instruction combinations with NOPs") },\
-  SUBTARGET_SWITCHES							   \
-  {"",				TARGET_DEFAULT, "" }			   \
-}
-
-#define TARGET_OPTIONS							\
-{									\
-  {"cpu=",  & arm_select[0].string,					\
-   N_("Specify the name of the target CPU"), 0},			\
-  {"arch=", & arm_select[1].string,					\
-   N_("Specify the name of the target architecture"), 0},		\
-  {"tune=", & arm_select[2].string, "", 0},				\
-  {"fpe=",  & target_fpe_name, "", 0},					\
-  {"fp=",  & target_fpe_name, "", 0},					\
-  {"fpu=",  & target_fpu_name,						\
-   N_("Specify the name of the target floating point hardware/format"), 0}, \
-  {"float-abi=", & target_float_abi_name,				\
-   N_("Specify if floating point hardware should be used"), 0},		\
-  {"structure-size-boundary=", & structure_size_string,			\
-   N_("Specify the minimum bit alignment of structures"), 0},		\
-  {"pic-register=", & arm_pic_register_string,				\
-   N_("Specify the register to be used for PIC addressing"), 0},	\
-  {"abi=", &target_abi_name, N_("Specify an ABI"), 0},			\
-  {"soft-float", &target_float_switch,					\
-   N_("Alias for -mfloat-abi=soft"), "s"},				\
-  {"hard-float", &target_float_switch,					\
-   N_("Alias for -mfloat-abi=hard"), "h"}				\
-}
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu are specified.
@@ -418,18 +218,6 @@ extern GTY(()) rtx aof_pic_label;
     "%{!msoft-float:%{!mhard-float:%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}}}" }, \
   {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"}, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}"},
-
-struct arm_cpu_select
-{
-  const char *              string;
-  const char *              name;
-  const struct processors * processors;
-};
-
-/* This is a magic array.  If the user specifies a command line switch
-   which matches one of the entries in TARGET_OPTIONS then the corresponding
-   string pointer will be set to the value specified by the user.  */
-extern struct arm_cpu_select arm_select[];
 
 /* Which floating point model to use.  */
 enum arm_fp_model
@@ -550,7 +338,7 @@ extern int arm_tune_wbuf;
 extern int arm_cpp_interwork;
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT  (ARM_FLAG_APCS_FRAME)
+#define TARGET_DEFAULT  (MASK_APCS_FRAME)
 #endif
 
 /* The frame pointer register used in gcc has nothing to do with debugging;
@@ -697,9 +485,6 @@ extern int arm_structure_size_boundary;
 #ifndef DEFAULT_STRUCTURE_SIZE_BOUNDARY
 #define DEFAULT_STRUCTURE_SIZE_BOUNDARY 32
 #endif
-
-/* Used when parsing command line option -mstructure_size_boundary.  */
-extern const char * structure_size_string;
 
 /* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */
@@ -927,8 +712,7 @@ extern const char * structure_size_string;
      is an easy way of ensuring that it remains valid for all	\
      calls.  */							\
   if (TARGET_APCS_FRAME || TARGET_CALLER_INTERWORKING		\
-      || (target_flags & (THUMB_FLAG_LEAF_BACKTRACE		\
-			  | THUMB_FLAG_BACKTRACE)))		\
+      || TARGET_TPCS_FRAME || TARGET_TPCS_LEAF_FRAME)		\
     {								\
       fixed_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;		\
       call_used_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;	\
@@ -2400,9 +2184,6 @@ do {							\
    the assembler in use; this is more general than the APCS restriction of
    using sb (r9) all the time.  */
 extern int arm_pic_register;
-
-/* Used when parsing command line option -mpic-register=.  */
-extern const char * arm_pic_register_string;
 
 /* The register number of the register used to address a table of static
    data addresses in memory.  */

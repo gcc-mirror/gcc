@@ -45,22 +45,8 @@
 #undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "-D__pe__"
 
-
-/* Experimental addition for pr 7885.
-   Ignore dllimport for functions.  */
-#define TARGET_FLAG_NOP_FUN	(1 << 24)
-
-#undef  TARGET_NOP_FUN_DLLIMPORT
-#define TARGET_NOP_FUN_DLLIMPORT (target_flags & TARGET_FLAG_NOP_FUN)
-
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES					\
-{ "nop-fun-dllimport",		  TARGET_FLAG_NOP_FUN,		\
-  N_("Ignore dllimport attribute for functions") },		\
-{ "no-nop-fun-dllimport",	- TARGET_FLAG_NOP_FUN, "" },
-
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT	(TARGET_FLAG_NOP_FUN)
+#define TARGET_DEFAULT	(MASK_NOP_FUN_DLLIMPORT)
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \

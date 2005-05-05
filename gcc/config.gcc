@@ -715,11 +715,13 @@ arm*-*-elf | ep9312-*-elf)
 arm*-wince-pe*)
 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h arm/wince-pe.h"
 	tmake_file="arm/t-arm arm/t-wince-pe"
+	extra_options="${extra_options} arm/pe.opt"
 	extra_objs="pe.o"
 	;;
 arm-*-pe*)
 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h"
 	tmake_file="arm/t-arm arm/t-pe"
+	extra_options="${extra_options} arm/pe.opt"
 	extra_objs="pe.o"
 	;;
 arm*-*-kaos*)
@@ -2113,6 +2115,7 @@ strongarm-*-pe)
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
+	extra_options="${extra_options} arm/pe.opt"
 	extra_objs=pe.o
 	use_fixproto=yes
 	;;
