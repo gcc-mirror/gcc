@@ -5,6 +5,7 @@
 	and plus_constant.
 
 2005-05-05  Aldy Hernandez  <aldyh@redhat.com>
+	    David Edelsohn  <edelsohn@gnu.org>
 
 	* config.gcc: Add .opt magic for the rs6000 ports.
 
@@ -36,8 +37,8 @@
 	* config/rs6000/aix52.h: Same.
 	* config/rs6000/darwin.h: Remove SUBTARGET_SWITCHES,
 	MASK_MACHO_DYNAMIC_NO_PIC, TARGET_MACHO_DYNAMIC_NO_PIC.
-	Use TARGET_ALTIVEC_VRSAVE instead of
-	rs6000_altivec_vrsave.
+	Use TARGET_ALTIVEC_VRSAVE instead of rs6000_altivec_vrsave.
+	Define TARGET_DYNAMIC_NO_PIC as TARGET_MACHO_DYNAMIC_NO_PIC.
 	* config/rs6000/linux64.h: Use
 	rs6000_explicit_options.  Remove EXTRA_SUBTARGET_SWITCHES.
 
