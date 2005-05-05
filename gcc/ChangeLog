@@ -1,3 +1,9 @@
+2005-05-05  J"orn Rennecke  <joern.rennecke@st.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_builtin_saveregs): Use copy_to_mode_reg
+	and plus_constant.
+
 2005-05-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config.gcc: Add .opt magic for the rs6000 ports.
