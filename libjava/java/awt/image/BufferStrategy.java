@@ -1,5 +1,5 @@
-/* BufferStrategy.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* BufferStrategy.java -- describes image buffering resources
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,15 +41,85 @@ package java.awt.image;
 import java.awt.BufferCapabilities;
 import java.awt.Graphics;
 
-/** STUBS ONLY */
+/**
+ * This class describes a strategy for managing image buffering
+ * resources on a Canvas or Window.  A given buffer strategy may make
+ * use of hardware acceleration or take advantage of features of the
+ * native graphics system.  Examples of buffering strategies are
+ * double or triple buffering using either flipping or blitting.  For
+ * the details of these algorithms see BufferCapabilities.
+ *
+ * To use a buffer strategy, you retrieve it from either the current
+ * GraphicsConfiguration or from the Component on which you'd like to
+ * draw.  Then you can query the strategy's capabilities to make sure
+ * they're suitable.
+ *
+ * If the strategy's capabilities are suitable, you can obtain a
+ * graphics object and use it to draw with this strategy.  Drawing
+ * with a buffer strategy requires extra care, however.  You'll need
+ * to manually cause the next buffer to be shown on the output device.
+ * And since buffer strategies are usually implemented with a
+ * VolatileImage, you must frequently check that the contents of the
+ * buffer are valid and that the buffer still exists.
+ *
+ * A buffer strategy is usually implemented using a VolatileImage.
+ *
+ * @see VolatileImage
+ * @since 1.4
+ */
 public abstract class BufferStrategy
 {
+  /**
+   * Creates a new buffer strategy.
+   */
   public BufferStrategy()
   {
   }
+
+  /**
+   * Retrieves the capabilities of this buffer strategy.
+   *
+   * @return this buffer strategy's capabilities
+   */
   public abstract BufferCapabilities getCapabilities();
+
+  /**
+   * Retrieves a graphics object that can be used to draw using this
+   * buffer strategy.  This method may not be synchronized so be
+   * careful when calling it from multiple threads.  You also must
+   * manually dispose of this graphics object.
+   *
+   * @return a graphics object that can be used to draw using this
+   * buffer strategy
+   */
   public abstract Graphics getDrawGraphics();
+
+  /**
+   * Returns whether or not the buffer's resources have been reclaimed
+   * by the native graphics system since the last call to
+   * getDrawGraphics.  If the buffer resources have been lost then
+   * you'll need to obtain new resources before drawing again.  For
+   * details, see the documentation for VolatileImage.
+   *
+   * @return true if the contents were lost since the last call to
+   * getDrawGraphics, false otherwise
+   */
   public abstract boolean contentsLost();
+
+  /**
+   * Returns whether or not the buffer's resources were re-created and
+   * cleared to the default background color since the last call to
+   * getDrawGraphics.  If the buffer's resources have recently been
+   * re-created and initialized then the buffer's image may need to be
+   * re-rendered.  For details, see the documentation for
+   * VolatileImage.
+   */
   public abstract boolean contentsRestored();
+
+  /**
+   * Applies this buffer strategy.  In other words, this method brings
+   * the contents of the back or intermediate buffers to the front
+   * buffer.
+   */
   public abstract void show();
-} // class BufferStrategy
+}
