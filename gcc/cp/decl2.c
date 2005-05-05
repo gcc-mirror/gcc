@@ -92,9 +92,7 @@ static GTY(()) varray_type pending_statics;
 
 /* A list of functions which were declared inline, but which we
    may need to emit outline anyway.  */
-static GTY(()) varray_type deferred_fns;
-#define deferred_fns_used \
-  (deferred_fns ? deferred_fns->elements_used : 0)
+static GTY(()) VEC(tree,gc) *deferred_fns;
 
 /* Flag used when debugging spew.c */
 
@@ -732,9 +730,7 @@ note_vague_linkage_fn (tree decl)
     {
       DECL_DEFERRED_FN (decl) = 1;
       DECL_DEFER_OUTPUT (decl) = 1;
-      if (!deferred_fns)
-	VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
-      VARRAY_PUSH_TREE (deferred_fns, decl);
+      VEC_safe_push (tree, gc, deferred_fns, decl);
     }
 }
 
@@ -2747,6 +2743,7 @@ cp_finish_file (void)
   location_t locus;
   unsigned ssdf_count = 0;
   int retries = 0;
+  tree decl;
 
   locus = input_location;
   at_eof = 1;
@@ -2910,10 +2907,8 @@ cp_finish_file (void)
       /* Go through the set of inline functions whose bodies have not
 	 been emitted yet.  If out-of-line copies of these functions
 	 are required, emit them.  */
-      for (i = 0; i < deferred_fns_used; ++i)
+      for (i = 0; VEC_iterate (tree, deferred_fns, i, decl); ++i)
 	{
-	  tree decl = VARRAY_TREE (deferred_fns, i);
-
 	  /* Does it need synthesizing?  */
 	  if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
 	      && (! DECL_REALLY_EXTERN (decl) || DECL_INLINE (decl)))
@@ -2998,10 +2993,8 @@ cp_finish_file (void)
   while (reconsider);
 
   /* All used inline functions must have a definition at this point.  */
-  for (i = 0; i < deferred_fns_used; ++i)
+  for (i = 0; VEC_iterate (tree, deferred_fns, i, decl); ++i)
     {
-      tree decl = VARRAY_TREE (deferred_fns, i);
-
       if (/* Check online inline functions that were actually used.  */
 	  TREE_USED (decl) && DECL_DECLARED_INLINE_P (decl)
 	  /* But not defined.  */
