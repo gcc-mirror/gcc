@@ -1,5 +1,9 @@
 2005-05-05  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
+	* config.gcc (hppa1.1-*-rtems*): Obsolete.
+
+2005-05-05  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
 	* config/rs6000/t-rtems (MULTILIB_NEW_EXCEPTIONS_ONLY):
 	Exclude roe/603e multilib variants.
 

@@ -191,6 +191,7 @@ case ${target} in
  | ns32k-*-netbsd*	\
  | c4x-*		\
  | tic4x-*		\
+ | hppa1.1-*-rtems*	\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
