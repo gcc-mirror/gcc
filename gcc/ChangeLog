@@ -1,3 +1,9 @@
+2005-05-04  Denis Chertykov  <denisc@overta.ru>
+
+	PR target/21284
+	* config/avr/avr.c (avr_output_addr_vec_elt): Use special section
+	for output.
+
 2005-05-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi (Contributors): Add Mostafa Hagog and Ayal Zaks.
