@@ -1,3 +1,10 @@
+2005-05-04  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2004-12-21  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/19034
+	* g++.dg/template/crash30.C: New test.
+
 2005-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:
