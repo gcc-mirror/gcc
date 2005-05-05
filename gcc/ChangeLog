@@ -1,3 +1,10 @@
+2005-05-05  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.in: Replace dependencies on basic-block.h, c-pragma.h,
+	cfgloop.h, diagnostic.h, insn-attr.h, langhooks-def.h, params.h,
+	regs.h, system.h, tree-dump.h, tree-gimple.h, tree-scalar-evolution.h
+	and tree-data-ref.h with *_H variables.
+
 2005-05-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config/m32r/xm-m32r.h, config/m32r/linux.h: Delete files.
