@@ -314,17 +314,17 @@ proc v3-build_support {} {
     set config_src "config.cc"
     set f [open $config_src "w"]
     puts $f "#include <bits/c++config.h>"
+    puts $f "#include <bits/gthr.h>"
     close $f
     set preprocessed [v3_target_compile $config_src "" \
 	    	       preprocess "additional_flags=-dN"]
-    foreach l $preprocessed {
-	if { [string first "_GLIBCXX_USE_WCHAR_T" $l] != -1 } {
-	    verbose -log "wchar_t support detected"
-	    set v3-wchar_t 1
-	} elseif { [string first "_GLIBCXX_HAVE_GTHR_DEFAULT" $l] != -1 } {
-	    verbose -log "thread support detected"
-	    set v3-threads 1
-	}
+    if { [string first "_GLIBCXX_USE_WCHAR_T" $preprocessed] != -1 } {
+	verbose -log "wchar_t support detected"
+	set v3-wchar_t 1
+    }
+    if { [string first "__GTHREADS" $preprocessed] != -1 } {
+	verbose -log "thread support detected"
+	set v3-threads 1
     }
 
     # Build the support objects.
