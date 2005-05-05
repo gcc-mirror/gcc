@@ -6248,10 +6248,9 @@ sh_builtin_saveregs (void)
      saved).
      We emit the moves in reverse order so that we can use predecrement.  */
 
-  fpregs = gen_reg_rtx (Pmode);
-  emit_move_insn (fpregs, XEXP (regbuf, 0));
-  emit_insn (gen_addsi3 (fpregs, fpregs,
-			 GEN_INT (n_floatregs * UNITS_PER_WORD)));
+  fpregs = copy_to_mode_reg (Pmode,
+			     plus_constant (XEXP (regbuf, 0),
+                                            n_floatregs * UNITS_PER_WORD));
   if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       rtx mem;
