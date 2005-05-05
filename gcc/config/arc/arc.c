@@ -241,7 +241,7 @@ get_arc_condition_code (rtx comparison)
     case LEU : return 15;
     case LTU : return 6;
     case GEU : return 7;
-    default : abort ();
+    default : gcc_unreachable ();
     }
   /*NOTREACHED*/
   return (42);
@@ -774,8 +774,7 @@ arc_double_limm_p (rtx value)
 {
   HOST_WIDE_INT low, high;
 
-  if (GET_CODE (value) != CONST_DOUBLE)
-    abort ();
+  gcc_assert (GET_CODE (value) == CONST_DOUBLE);
 
   low = CONST_DOUBLE_LOW (value);
   high = CONST_DOUBLE_HIGH (value);
@@ -815,8 +814,7 @@ arc_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
   int first_anon_arg;
 
   /* All BLKmode values are passed by reference.  */
-  if (mode == BLKmode)
-    abort ();
+  gcc_assert (mode != BLKmode);
 
   first_anon_arg = *cum + ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
 			   / UNITS_PER_WORD);
@@ -1061,7 +1059,7 @@ arc_compute_function_type (tree decl)
 	  else if (!strcmp (TREE_STRING_POINTER (value), "ilink2"))
 	    fn_type = ARC_FUNCTION_ILINK2;
 	  else
-	    abort ();
+	    gcc_unreachable ();
 	  break;
 	}
     }
@@ -1229,8 +1227,7 @@ arc_output_function_prologue (FILE *file, HOST_WIDE_INT size)
 	   : current_frame_info.total_size);
 
   /* These cases shouldn't happen.  Catch them now.  */
-  if (size == 0 && gmask)
-    abort ();
+  gcc_assert (size || !gmask);
 
   /* Allocate space for register arguments if this is a variadic function.  */
   if (current_frame_info.pretend_size != 0)
@@ -1317,8 +1314,7 @@ arc_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
 
       if (!can_trust_sp_p)
 	{
-	  if (!frame_pointer_needed)
-	    abort ();
+	  gcc_assert (frame_pointer_needed);
 	  fprintf (file,"\tsub %s,%s,%d\t\t%s sp not trusted here\n",
 		   sp_str, fp_str, frame_size, ASM_COMMENT_START);
 	}
@@ -1400,23 +1396,19 @@ arc_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
 	fprintf (file, "\tadd %s,%s,16\n", sp_str, sp_str);
       else if (epilogue_delay != NULL_RTX)
 	{
-	  if (frame_pointer_needed && !fp_restored_p)
-	    abort ();
-	  if (restored < size)
-	    abort ();
+	  gcc_assert (!frame_pointer_needed || fp_restored_p);
+	  gcc_assert (restored >= size);
 	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, 1, NULL);
 	}
       else if (frame_pointer_needed && !fp_restored_p)
 	{
-	  if (!SMALL_INT (frame_size))
-	    abort ();
+	  gcc_assert (SMALL_INT (frame_size));
 	  /* Note that we restore fp and sp here!  */
 	  fprintf (file, "\tld.a %s,[%s,%d]\n", fp_str, sp_str, frame_size);
 	}
       else if (restored < size)
 	{
-	  if (!SMALL_INT (size - restored))
-	    abort ();
+	  gcc_assert (SMALL_INT (size - restored));
 	  fprintf (file, "\tadd %s,%s," HOST_WIDE_INT_PRINT_DEC "\n",
 		   sp_str, sp_str, size - restored);
 	}
@@ -1456,8 +1448,7 @@ arc_delay_slots_for_epilogue (void)
 int
 arc_eligible_for_epilogue_delay (rtx trial, int slot)
 {
-  if (slot != 0)
-    abort ();
+  gcc_assert (!slot);
 
   if (get_attr_length (trial) == 1
       /* If registers where saved, presumably there's more than enough
@@ -1522,15 +1513,14 @@ output_shift (rtx *operands)
   enum rtx_code code = GET_CODE (shift);
   const char *shift_one;
 
-  if (mode != SImode)
-    abort ();
+  gcc_assert (mode == SImode);
 
   switch (code)
     {
     case ASHIFT:   shift_one = "asl %0,%0"; break;
     case ASHIFTRT: shift_one = "asr %0,%0"; break;
     case LSHIFTRT: shift_one = "lsr %0,%0"; break;
-    default:       abort ();
+    default:       gcc_unreachable ();
     }
 
   if (GET_CODE (operands[2]) != CONST_INT)
@@ -1792,9 +1782,8 @@ arc_print_operand (FILE *file, rtx x, int code)
       {
 	char str[30];
 
-	if (GET_CODE (x) != CONST_DOUBLE
-	    || GET_MODE_CLASS (GET_MODE (x)) != MODE_FLOAT)
-	  abort ();
+	gcc_assert (GET_CODE (x) == CONST_DOUBLE
+		    && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT);
 
 	real_to_decimal (str, CONST_DOUBLE_REAL_VALUE (x), sizeof (str), 0, 1);
 	fprintf (file, "%s", str);
@@ -1896,26 +1885,33 @@ arc_print_operand_address (FILE *file, rtx addr)
 	offset = INTVAL (XEXP (addr, 1)), base = XEXP (addr, 0);
       else
 	base = XEXP (addr, 0), index = XEXP (addr, 1);
-      if (GET_CODE (base) != REG)
-	abort ();
+      gcc_assert (GET_CODE (base) == REG);
       fputs (reg_names[REGNO (base)], file);
       if (index == 0)
 	{
 	  if (offset != 0)
 	    fprintf (file, ",%d", offset);
 	}
-      else if (GET_CODE (index) == REG)
-	fprintf (file, ",%s", reg_names[REGNO (index)]);
-      else if (GET_CODE (index) == SYMBOL_REF)
-	fputc (',', file), output_addr_const (file, index);
       else
-	abort ();
+	{
+	  switch (GET_CODE (index))
+	    {
+	    case REG:
+	      fprintf (file, ",%s", reg_names[REGNO (index)]);
+	      break;
+	    case SYMBOL_REF:
+	      fputc (',', file), output_addr_const (file, index);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
       break;
     case PRE_INC :
     case PRE_DEC :
       /* We shouldn't get here as we've lost the mode of the memory object
 	 (which says how much to inc/dec by.  */
-      abort ();
+      gcc_unreachable ();
       break;
     default :
       output_addr_const (file, addr);
@@ -2102,7 +2098,7 @@ arc_final_prescan_insn (rtx insn,
 	  then_not_else = FALSE;
         }
       else
-	abort ();
+	gcc_unreachable ();
 
       /* See how many insns this branch skips, and what kind of insns.  If all
 	 insns are okay, and the label or unconditional branch to the same
@@ -2221,14 +2217,15 @@ arc_final_prescan_insn (rtx insn,
 	{
 	  if ((!seeking_return) && (arc_ccfsm_state == 1 || reverse))
 	    arc_ccfsm_target_label = CODE_LABEL_NUMBER (label);
-	  else if (seeking_return || arc_ccfsm_state == 2)
+	  else
 	    {
+	      gcc_assert (seeking_return || arc_ccfsm_state == 2);
 	      while (this_insn && GET_CODE (PATTERN (this_insn)) == USE)
 	        {
 		  this_insn = next_nonnote_insn (this_insn);
-		  if (this_insn && (GET_CODE (this_insn) == BARRIER
-				    || GET_CODE (this_insn) == CODE_LABEL))
-		    abort ();
+		  gcc_assert (!this_insn
+			      || (GET_CODE (this_insn) != BARRIER
+				  && GET_CODE (this_insn) != CODE_LABEL));
 	        }
 	      if (!this_insn)
 	        {
@@ -2240,8 +2237,6 @@ arc_final_prescan_insn (rtx insn,
 	        }
 	      arc_ccfsm_target_insn = this_insn;
 	    }
-	  else
-	    abort ();
 
 	  /* If REVERSE is true, ARM_CURRENT_CC needs to be inverted from
 	     what it was.  */
