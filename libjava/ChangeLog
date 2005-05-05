@@ -1,5 +1,7 @@
 2005-05-04  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* java/awt/image/BufferStrategy.java: Document.
+
 	* java/awt/BufferCapabilities.java: Document.
 
 2005-05-04  Tom Tromey  <tromey@redhat.com>
