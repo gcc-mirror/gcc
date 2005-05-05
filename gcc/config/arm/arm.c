@@ -181,6 +181,7 @@ static void arm_cxx_determine_class_data_visibility (tree);
 static bool arm_cxx_class_data_always_comdat (void);
 static bool arm_cxx_use_aeabi_atexit (void);
 static void arm_init_libfuncs (void);
+static bool arm_handle_option (size_t, const char *, int);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 
 /* Initialize the GCC target structure.  */
@@ -220,6 +221,11 @@ static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 
 #undef  TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE arm_output_function_epilogue
+
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_SCHED_PROLOG)
+#undef  TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION arm_handle_option
 
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
@@ -368,22 +374,19 @@ enum float_abi_type arm_float_abi;
 enum arm_abi_type arm_abi;
 
 /* Set by the -mfpu=... option.  */
-const char * target_fpu_name = NULL;
+static const char * target_fpu_name = NULL;
 
 /* Set by the -mfpe=... option.  */
-const char * target_fpe_name = NULL;
+static const char * target_fpe_name = NULL;
 
 /* Set by the -mfloat-abi=... option.  */
-const char * target_float_abi_name = NULL;
-
-/* Set by the legacy -mhard-float and -msoft-float options.  */
-const char * target_float_switch = NULL;
+static const char * target_float_abi_name = NULL;
 
 /* Set by the -mabi=... option.  */
-const char * target_abi_name = NULL;
+static const char * target_abi_name = NULL;
 
 /* Used to parse -mstructure_size_boundary command line option.  */
-const char * structure_size_string = NULL;
+static const char * structure_size_string = NULL;
 int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 
 /* Used for Thumb call_via trampolines.  */
@@ -494,7 +497,7 @@ int arm_cpp_interwork = 0;
 enum machine_mode output_memory_reference_mode;
 
 /* The register number to be used for the PIC offset register.  */
-const char * arm_pic_register_string = NULL;
+static const char * arm_pic_register_string = NULL;
 int arm_pic_register = INVALID_REGNUM;
 
 /* Set to 1 when a return insn is output, this means that the epilogue
@@ -574,11 +577,18 @@ static const struct processors all_architectures[] =
   {NULL, arm_none, NULL, 0 , NULL}
 };
 
+struct arm_cpu_select
+{
+  const char *              string;
+  const char *              name;
+  const struct processors * processors;
+};
+
 /* This is a magic structure.  The 'string' field is magically filled in
    with a pointer to the value specified by the user on the command line
    assuming that the user has specified such a value.  */
 
-struct arm_cpu_select arm_select[] =
+static struct arm_cpu_select arm_select[] =
 {
   /* string	  name            processors  */
   { NULL,	"-mcpu=",	all_cores  },
@@ -779,6 +789,63 @@ arm_init_libfuncs (void)
   set_optab_libfunc (umod_optab, SImode, NULL);
 }
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_mabi_:
+      target_abi_name = arg;
+      return true;
+
+    case OPT_march_:
+      arm_select[1].string = arg;
+      return true;
+
+    case OPT_mcpu_:
+      arm_select[0].string = arg;
+      return true;
+
+    case OPT_mfloat_abi_:
+      target_float_abi_name = arg;
+      return true;
+
+    case OPT_mfp_:
+    case OPT_mfpe_:
+      target_fpe_name = arg;
+      return true;
+
+    case OPT_mfpu_:
+      target_fpu_name = arg;
+      return true;
+
+    case OPT_mhard_float:
+      target_float_abi_name = "hard";
+      return true;
+
+    case OPT_mpic_register_:
+      arm_pic_register_string = arg;
+      return true;
+
+    case OPT_msoft_float:
+      target_float_abi_name = "soft";
+      return true;
+
+    case OPT_mstructure_size_boundary_:
+      structure_size_string = arg;
+      return true;
+
+    case OPT_mtune_:
+      arm_select[2].string = arg;
+      return true;
+
+    default:
+      return true;
+    }
+}
+
 /* Fix up any incompatible options that the user has specified.
    This has now turned into a maze.  */
 void
@@ -938,25 +1005,24 @@ arm_override_options (void)
   if (TARGET_INTERWORK && !(insn_flags & FL_THUMB))
     {
       warning (0, "target CPU does not support interworking" );
-      target_flags &= ~ARM_FLAG_INTERWORK;
+      target_flags &= ~MASK_INTERWORK;
     }
 
   if (TARGET_THUMB && !(insn_flags & FL_THUMB))
     {
       warning (0, "target CPU does not support THUMB instructions");
-      target_flags &= ~ARM_FLAG_THUMB;
+      target_flags &= ~MASK_THUMB;
     }
 
   if (TARGET_APCS_FRAME && TARGET_THUMB)
     {
       /* warning (0, "ignoring -mapcs-frame because -mthumb was used"); */
-      target_flags &= ~ARM_FLAG_APCS_FRAME;
+      target_flags &= ~MASK_APCS_FRAME;
     }
 
   /* TARGET_BACKTRACE calls leaf_function_p, which causes a crash if done
      from here where no function is being compiled currently.  */
-  if ((target_flags & (THUMB_FLAG_LEAF_BACKTRACE | THUMB_FLAG_BACKTRACE))
-      && TARGET_ARM)
+  if ((TARGET_TPCS_FRAME || TARGET_TPCS_LEAF_FRAME) && TARGET_ARM)
     warning (0, "enabling backtrace support is only meaningful when compiling for the Thumb");
 
   if (TARGET_ARM && TARGET_CALLEE_INTERWORKING)
@@ -968,11 +1034,11 @@ arm_override_options (void)
   if (TARGET_APCS_STACK && !TARGET_APCS_FRAME)
     {
       warning (0, "-mapcs-stack-check incompatible with -mno-apcs-frame");
-      target_flags |= ARM_FLAG_APCS_FRAME;
+      target_flags |= MASK_APCS_FRAME;
     }
 
   if (TARGET_POKE_FUNCTION_NAME)
-    target_flags |= ARM_FLAG_APCS_FRAME;
+    target_flags |= MASK_APCS_FRAME;
 
   if (TARGET_APCS_REENT && flag_pic)
     error ("-fpic and -mapcs-reent are incompatible");
@@ -985,7 +1051,7 @@ arm_override_options (void)
   if (TARGET_ARM
       && write_symbols != NO_DEBUG
       && !TARGET_APCS_FRAME
-      && (TARGET_DEFAULT & ARM_FLAG_APCS_FRAME))
+      && (TARGET_DEFAULT & MASK_APCS_FRAME))
     warning (0, "-g with -mno-apcs-frame may not give sensible debugging");
 
   /* If stack checking is disabled, we can use r10 as the PIC register,
@@ -1022,7 +1088,7 @@ arm_override_options (void)
     arm_cpp_interwork = 1;
 
   if (arm_arch5)
-    target_flags &= ~ARM_FLAG_INTERWORK;
+    target_flags &= ~MASK_INTERWORK;
 
   if (target_abi_name)
     {
@@ -1113,14 +1179,6 @@ arm_override_options (void)
       if (i == ARRAY_SIZE (all_float_abis))
 	error ("invalid floating point abi: -mfloat-abi=%s",
 	       target_float_abi_name);
-    }
-  else if (target_float_switch)
-    {
-      /* This is a bit of a hack to avoid needing target flags for these.  */
-      if (target_float_switch[0] == 'h')
-	arm_float_abi = ARM_FLOAT_ABI_HARD;
-      else
-	arm_float_abi = ARM_FLOAT_ABI_SOFT;
     }
   else
     arm_float_abi = TARGET_DEFAULT_FLOAT_ABI;
@@ -10350,7 +10408,7 @@ arm_expand_prologue (void)
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  Similarly if the user has requested no
      scheduling in the prolog.  */
-  if (current_function_profile || TARGET_NO_SCHED_PRO)
+  if (current_function_profile || !TARGET_SCHED_PROLOG)
     emit_insn (gen_blockage ());
 
   /* If the link register is being kept alive, with the return address in it,
@@ -13171,7 +13229,7 @@ thumb_expand_prologue (void)
 				  hard_frame_pointer_rtx));
     }
 
-  if (current_function_profile || TARGET_NO_SCHED_PRO)
+  if (current_function_profile || !TARGET_SCHED_PROLOG)
     emit_insn (gen_blockage ());
 
   cfun->machine->lr_save_eliminated = !thumb_force_lr_save ();
@@ -13220,7 +13278,7 @@ thumb_expand_epilogue (void)
      the stack adjustment will not be deleted.  */
   emit_insn (gen_prologue_use (stack_pointer_rtx));
 
-  if (current_function_profile || TARGET_NO_SCHED_PRO)
+  if (current_function_profile || !TARGET_SCHED_PROLOG)
     emit_insn (gen_blockage ());
 
   /* Emit a clobber for each insn that will be restored in the epilogue,

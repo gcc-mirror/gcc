@@ -27,4 +27,4 @@
 #define TARGET_VERSION fputs (" (ARM/ELF ucLinux)", stderr);
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (ARM_FLAG_SINGLE_PIC_BASE)
+#define TARGET_DEFAULT (MASK_SINGLE_PIC_BASE)
