@@ -418,7 +418,7 @@ maybe_begin_member_template_processing (tree decl)
   ++inline_parm_levels_used;
 }
 
-/* Undo the effects of begin_member_template_processing.  */
+/* Undo the effects of maybe_begin_member_template_processing.  */
 
 void 
 maybe_end_member_template_processing (void)
