@@ -22,11 +22,6 @@
    Free Software Foundation, 59 Temple Place - Suite 330, Boston,
    MA 02111-1307, USA.  */
 
-#undef  SUBSUBTARGET_SWITCHES
-#define SUBSUBTARGET_SWITCHES		\
-  {"pe",		0,					\
-   N_("Support message passing with the Parallel Environment") },
-
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu)"
 
