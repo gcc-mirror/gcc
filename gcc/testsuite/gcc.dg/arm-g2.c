@@ -1,6 +1,7 @@
 /* Verify that hardware multiply is preferred on XScale. */
-/* { dg-do compile { target xscale*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-mcpu=xscale -O2" } */
+/* { dg-require-effective-target arm32 } */
 
 /* Brett Gaines' test case. */
 unsigned BCPL(unsigned) __attribute__ ((naked));
@@ -15,5 +16,4 @@ unsigned BCPL(unsigned seed)
     return seed * 2147001325U + 715136305U;
 }
 
-/* We want to suppress running for -mthumb but not for -mthumb-interwork. */
-/* { dg-final { global compiler_flags; if ![string match "*-mthumb *" $compiler_flags] { scan-assembler "mla\[ 	].*" } } } */
+/* { dg-final { scan-assembler "mla\[ 	].*" } } */
