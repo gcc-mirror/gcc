@@ -21,10 +21,73 @@
 # Initialization.
 dg-init
 
+# Build the support objects.
+v3-build_support
+
+set tests [list]
+
+# If there is a "testsuite_files" file, use it.
+#
+# This is a workaround for problems reported with using:
+#
+#   runtest normal.exp="`cat testsuite_files`"
+#
+# See:
+#  http://gcc.gnu.org/ml/libstdc++/2005-03/msg00278.html
+# for discussion of the problem.
+#
+# If that worked consistently, we could modify "make check" to
+# pass that option, and then remove this code.
+if {[info exists blddir]} {
+    set tests_file "${blddir}/testsuite/testsuite_files"
+}
+if {[info exists tests_file] && [file exists $tests_file]} {
+    set f [open $tests_file]
+    while { ! [eof $f] } {
+	set t [gets $f]
+	if { [string length "$t"] != 0 } {
+	    lappend tests ${srcdir}/${t}
+	}
+    } 
+    close $f
+} else {
+    # Find directories that might have tests.
+    set subdirs [glob "$srcdir/\[0-9\]\[0-9\]*"]
+    foreach d [glob "$srcdir/\[a-z\]*"] {
+	if {[file isdirectory $d]} { 
+	    lappend subdirs $d
+	}
+    }
+    # Find all the tests.
+    foreach s $subdirs {
+	set subdir_tests [find $s *.cc]
+	# Filter out tests that should not be run.
+	foreach t $subdir_tests {
+	    # The DejaGNU "find" procedure sometimes returns a list 
+	    # containing an empty string, when it should really return
+	    # an empty list.
+	    if { $t == "" } {
+		continue
+	    }
+	    # Filter out:
+	    # 1. interactive tests.
+	    # 2. performance tests.
+	    # 3. wchar_t tests, if not supported.
+	    # 4. thread tests, if not supported. 
+	    if { [string first _xin $t] == -1
+		 && [string first performance $t] == -1
+		 && (${v3-wchar_t} || [string first wchar_t $t] == -1) 
+		 && (${v3-threads} || [string first thread $t] == -1) } {
+		lappend tests $t
+	    }
+	}
+    }
+}
+set tests [lsort $tests]
+
 # Main loop.
 global DEFAULT_CXXFLAGS
-dg-runtest [v3-list-tests testsuite_files] "" $DEFAULT_CXXFLAGS
-#dg-runtest [v3-list-tests testsuite_files_interactive] "" $DEFAULT_CXXFLAGS
+dg-runtest $tests "" $DEFAULT_CXXFLAGS
 
 # All done.
 dg-finish
