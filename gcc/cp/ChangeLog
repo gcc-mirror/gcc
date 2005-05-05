@@ -1,3 +1,8 @@
+2005-05-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* decl2.c (deferred_fns, note_vague_linkage_fn,
+	cp_finish_file): Use VEC instead of VARRAY.
+
 2005-05-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21352
