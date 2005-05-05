@@ -1928,8 +1928,10 @@ fi
 # fixed in future.  It's still worthwhile to use a cache file for each
 # directory.  I think.
 
-# Pass the appropriate --host, --build, and --cache-file arguments.
-target_configargs="--cache-file=./config.cache --host=${target_alias} --build=${build_alias} ${target_configargs}"
+# Pass the appropriate --build, --host, --target and --cache-file arguments.
+# We need to pass --target, as newer autoconf's requires consistency
+# for target_alias and gcc doesn't manage it consistently.
+target_configargs="--cache-file=./config.cache --build=${build_alias} --host=${target_alias} --target=${target_alias} ${target_configargs}"
 
 FLAGS_FOR_TARGET=
 case " $target_configdirs " in
