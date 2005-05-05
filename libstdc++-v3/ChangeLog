@@ -1,5 +1,9 @@
 2005-05-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* testsuite/lib/libstdc++.exp (v3-build_support): Look for
+	__GTHREADS, rather than _GLIBCXX_HAVE_GTHR_DEFAULT, to determine
+	whether or not thread support is available.
+
 	* docs/html/test.html: Explain how to run the testsuite on an
 	installed directory. 
 
