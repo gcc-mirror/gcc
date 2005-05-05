@@ -1,3 +1,40 @@
+2005-05-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (v3-build_support): Look for
+	__GTHREADS, rather than _GLIBCXX_HAVE_GTHR_DEFAULT, to determine
+	whether or not thread support is available.
+
+2005-05-04  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2005-03-25  Mark Mitchell  <mark@codesourcery.com>
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Define LOCALEDIR
+	when testing an installed compiler.
+	* testsuite/lib/libstdc++.exp (v3-build_support): Pass -w when
+	compiling support objects.
+	2005-03-23  Mark Mitchell  <mark@codesourcery.com>
+	* testsuite/libstdc++-dg/normal.exp: Read testsuite_files, if it
+	exists.
+	* testsuite/lib/libstdc++.exp (libstdc++_wchar_t): Rename to ...
+	(v3-wchar_t): ... this.
+	(libstdc++_threads): Rename to ...
+	(v3-threads): ... this.
+	(libstdc++_test_objs): Rename to ...
+	(v3-test_objs): ... this.
+	(libstdc++_build_support): Rename to ...
+	(v3-build_support): ... this.
+	* testsuite/libstdc++-dg/normal.exp: Adjust to use new names.
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Improve handling
+	of compilers not in the build directory.
+	(libstdc++_wchar_t): New variable.
+	(libstdc++_threads): Likewise.
+	(libstdc++_test_objs): Likewise.
+	(v3_target_compile): Use libstdc++_test_objs.
+	(v3-list-tests): Remove.
+	(listdc++_build_support): New function.
+	* testsuite/libstdc++-dg/normal.exp: Rework to dynamically
+	generate list of tests.
+	
 2005-05-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21209
