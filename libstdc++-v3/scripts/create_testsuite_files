@@ -40,20 +40,6 @@ if test ! -s "$tmp.1"; then
   exit 1
 fi
 
-# If the library is not configured to support wchar_t, don't run those tests.
-if test -f "$outdir/testsuite_wchar_t"; then
-  mv $tmp.1 $tmp.2
-else
-  grep -v wchar_t $tmp.1 > $tmp.2
-fi
-
-# If the library is not configured to support threads, don't run those tests.
-if test -f "$outdir/testsuite_thread"; then
-  mv $tmp.2 $tmp.3
-else
-  grep -v thread $tmp.2 > $tmp.3
-fi
-
 # Now filter out classes of tests.  These classes are run using special rules.
 grep _xin $tmp.3 > $tests_file_inter
 grep -v _xin $tmp.3 > $tmp.4
