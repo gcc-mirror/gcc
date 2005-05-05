@@ -509,6 +509,23 @@ multilibed build directory with different ABI settings:
 make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
 </pre>
  
+<p>
+You can run the tests with a compiler and library that have already
+been installed.  Make sure that the compiler (e.g., <code>g++</code>)
+is in your <code>PATH</code>.  If you are using shared libraries, then
+you must also ensure that the directory containing the shared version
+of libstdc++ is in your <code>LD_LIBRARY_PATH</code>, or equivalent.
+If your GCC source tree is at <code>/path/to/gcc</code>, then you can
+run the tests as follows:
+<pre>
+runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
+</pre>
+The testsuite will create a number of files in the directory in which you
+run this command,.  Some of those files might use the same name as
+files created by other testsuites (like the ones for GCC and G++), so
+you should not try to run all the testsuites in parallel from the same
+directory.
+</p>
 
    <p> In addition, there are some testing options that are mostly of
    interest to library maintainers and system integrators. As such,
