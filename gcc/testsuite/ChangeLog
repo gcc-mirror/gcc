@@ -1,3 +1,8 @@
+2005-05-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21352
+	* g++.dg/template/crash37.C: New test. 
+
 2005-05-05  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/arm-g2.c: Use effective-target arm32.
