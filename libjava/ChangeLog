@@ -1,3 +1,8 @@
+2005-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* java/awt/BufferCapabilities.java (BufferCapabilities): Fix
+	the typo.
+
 2005-05-04  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/image/BufferStrategy.java: Document.

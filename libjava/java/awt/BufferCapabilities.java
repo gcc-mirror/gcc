@@ -144,11 +144,11 @@ public class BufferCapabilities implements Cloneable
 			    ImageCapabilities backCaps,
                             FlipContents flipContents)
   {
-    if (front ==  null || back == null)
+    if (frontCaps ==  null || backCaps == null)
       throw new IllegalArgumentException();
-    this.front = front;
-    this.back = back;
-    this.flip = flip;
+    this.front = frontCaps;
+    this.back = backCaps;
+    this.flip = flipContents;
   }
 
   /**
