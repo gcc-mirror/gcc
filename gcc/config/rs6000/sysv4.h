@@ -47,24 +47,6 @@ enum rs6000_sdata_type {
 
 extern enum rs6000_sdata_type rs6000_sdata;
 
-/* V.4/eabi switches.  */
-#define	MASK_NO_BITFIELD_TYPE	0x40000000	/* Set PCC_BITFIELD_TYPE_MATTERS to 0.  */
-#define	MASK_STRICT_ALIGN	0x20000000	/* Set STRICT_ALIGNMENT to 1.  */
-#define	MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative.  */
-#define	MASK_EABI		0x08000000	/* Adhere to eabi, not System V spec.  */
-#define	MASK_LITTLE_ENDIAN	0x04000000	/* Target is little endian.  */
-#define	MASK_REGNAMES		0x02000000	/* Use alternate register names.  */
-#define	MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args.  */
-#define MASK_NO_BITFIELD_WORD	0x00800000	/* Bitfields cannot cross word boundaries */
-
-#define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
-#define	TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
-#define	TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
-#define	TARGET_EABI		(target_flags & MASK_EABI)
-#define	TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
-#define	TARGET_REGNAMES		(target_flags & MASK_REGNAMES)
-#define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
-#define TARGET_NO_BITFIELD_WORD	(target_flags & MASK_NO_BITFIELD_WORD)
 #define	TARGET_TOC		((target_flags & MASK_64BIT)		\
 				 || ((target_flags & (MASK_RELOCATABLE	\
 						      | MASK_MINIMAL_TOC)) \
@@ -77,86 +59,11 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define	TARGET_NO_TOC		(! TARGET_TOC)
 #define	TARGET_NO_EABI		(! TARGET_EABI)
 
-/* Strings provided by SUBTARGET_OPTIONS */
 extern const char *rs6000_abi_name;
 extern const char *rs6000_sdata_name;
 extern const char *rs6000_tls_size_string; /* For -mtls-size= */
 
-/* Override rs6000.h definition.  */
-#undef	SUBTARGET_OPTIONS
-#define	SUBTARGET_OPTIONS							\
-  { "call-",  &rs6000_abi_name, N_("Select ABI calling convention"), 0},	\
-  { "sdata=", &rs6000_sdata_name, N_("Select method for sdata handling"), 0},	\
-  { "tls-size=", &rs6000_tls_size_string,					\
-   N_("Specify bit size of immediate TLS offsets"), 0 }
-
 #define SDATA_DEFAULT_SIZE 8
-
-/* Note, V.4 no longer uses a normal TOC, so make -mfull-toc, be just
-   the same as -mminimal-toc.  */
-/* Override rs6000.h definition.  */
-#undef	SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES						\
-  { "bit-align",	-MASK_NO_BITFIELD_TYPE,				\
-    N_("Align to the base type of the bit-field") },			\
-  { "no-bit-align",	 MASK_NO_BITFIELD_TYPE,				\
-    N_("Don't align to the base type of the bit-field") },		\
-  { "strict-align",	 MASK_STRICT_ALIGN,				\
-    N_("Don't assume that unaligned accesses are handled by the system") }, \
-  { "no-strict-align",	-MASK_STRICT_ALIGN,				\
-    N_("Assume that unaligned accesses are handled by the system") },	\
-  { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC, \
-    N_("Produce code relocatable at runtime") },			\
-  { "no-relocatable",	-MASK_RELOCATABLE,				\
-    N_("Don't produce code relocatable at runtime") },			\
-  { "relocatable-lib",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC, \
-    N_("Produce code relocatable at runtime") },			\
-  { "no-relocatable-lib", -MASK_RELOCATABLE,				\
-    N_("Don't produce code relocatable at runtime") },			\
-  { "little-endian",	 MASK_LITTLE_ENDIAN,				\
-    N_("Produce little endian code") },					\
-  { "little",		 MASK_LITTLE_ENDIAN,				\
-    N_("Produce little endian code") },					\
-  { "big-endian",	-MASK_LITTLE_ENDIAN,				\
-    N_("Produce big endian code") },					\
-  { "big",		-MASK_LITTLE_ENDIAN,				\
-    N_("Produce big endian code") },					\
-  { "no-toc",		 0, N_("no description yet") },			\
-  { "toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
-  { "full-toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
-  { "prototype",	 MASK_PROTOTYPE, N_("no description yet") },	\
-  { "no-prototype",	-MASK_PROTOTYPE, N_("no description yet") },	\
-  { "no-traceback",	 0, N_("no description yet") },			\
-  { "eabi",		 MASK_EABI, N_("Use EABI") },			\
-  { "no-eabi",		-MASK_EABI, N_("Don't use EABI") },		\
-  { "bit-word",		-MASK_NO_BITFIELD_WORD, "" },			\
-  { "no-bit-word",	 MASK_NO_BITFIELD_WORD,				\
-    N_("Do not allow bit-fields to cross word boundaries") },		\
-  { "regnames",		 MASK_REGNAMES,					\
-    N_("Use alternate register names") },				\
-  { "no-regnames",	 -MASK_REGNAMES,				\
-    N_("Don't use alternate register names") },				\
-  { "sdata",		 0, N_("no description yet") },			\
-  { "no-sdata",		 0, N_("no description yet") },			\
-  { "sim",		 0,						\
-    N_("Link with libsim.a, libc.a and sim-crt0.o") },			\
-  { "ads",		 0,						\
-    N_("Link with libads.a, libc.a and crt0.o") },			\
-  { "yellowknife",	 0,						\
-    N_("Link with libyk.a, libc.a and crt0.o") },			\
-  { "mvme",		 0,						\
-    N_("Link with libmvme.a, libc.a and crt0.o") },			\
-  { "emb",		 0,						\
-    N_("Set the PPC_EMB bit in the ELF flags header") },		\
-  { "windiss",		 0, N_("Use the WindISS simulator") },		\
-  { "shlib",		 0, N_("no description yet") },			\
-  { "64",		 MASK_64BIT | MASK_POWERPC64			\
-			   | MASK_POWERPC | MASK_PPC_GFXOPT,		\
-			 N_("Generate 64-bit code") },			\
-  { "32",		 - (MASK_64BIT | MASK_POWERPC64),		\
-			 N_("Generate 32-bit code") },			\
-  EXTRA_SUBTARGET_SWITCHES						\
-  { "newlib",		 0, N_("no description yet") },
 
 /* This is meant to be redefined in the host dependent files.  */
 #define EXTRA_SUBTARGET_SWITCHES
@@ -1371,3 +1278,6 @@ ncrtn.o%s"
 
 /* Generate entries in .fixup for relocatable addresses.  */
 #define RELOCATABLE_NEEDS_FIXUP 1
+
+/* This target uses the sysv4.opt file.  */
+#define TARGET_USES_SYSV4_OPT 1

@@ -630,10 +630,12 @@ See RS/6000 and PowerPC Options.
 -minsert-sched-nops=@var{scheme} @gol
 -mcall-sysv  -mcall-netbsd @gol
 -maix-struct-return  -msvr4-struct-return @gol
--mabi=altivec  -mabi=no-altivec @gol
--mabi=spe  -mabi=no-spe @gol
+-mabi=@var{abi-type} @gol
+-misel -mno-isel @gol
 -misel=yes  -misel=no @gol
+-mspe -mno-spe @gol
 -mspe=yes  -mspe=no @gol
+-mvrsave -mno-vrsave @gol
 -mfloat-gprs=yes  -mfloat-gprs=no -mfloat-gprs=single -mfloat-gprs=double @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
@@ -10649,6 +10651,12 @@ the AltiVec instruction set.  You may also need to set
 @option{-mabi=altivec} to adjust the current ABI with AltiVec ABI
 enhancements.
 
+@item -mvrsave
+@item -mno-vrsave
+@opindex mvrsave
+@opindex mno-vrsave
+Generate VRSAVE instructions when generating AltiVec code.
+
 @item -mabi=spe
 @opindex mabi=spe
 Extend the current ABI with SPE ABI extensions.  This does not change
@@ -10659,16 +10667,26 @@ ABI@.
 @opindex mabi=no-spe
 Disable Booke SPE ABI extensions for the current ABI@.
 
-@item -misel=@var{yes/no}
-@itemx -misel
+@item -misel
+@itemx -mno-isel
 @opindex misel
+@opindex mno-isel
 This switch enables or disables the generation of ISEL instructions.
 
-@item -mspe=@var{yes/no}
-@itemx -mspe
+@item -misel=@var{yes/no}
+This switch has been deprecated.  Use @option{-misel} and
+@option{-mno-isel} instead.
+
+@item -mspe
+@itemx -mno-isel
 @opindex mspe
+@opindex mno-spe
 This switch enables or disables the generation of SPE simd
 instructions.
+
+@item -mspe=@var{yes/no}
+This option has been deprecated.  Use @option{-mspe} and
+@option{-mno-spe} instead.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs
@@ -10986,15 +11004,11 @@ Return all structures in memory (as specified by the AIX ABI)@.
 Return structures smaller than 8 bytes in registers (as specified by the
 SVR4 ABI)@.
 
-@item -mabi=altivec
-@opindex mabi=altivec
-Extend the current ABI with AltiVec ABI extensions.  This does not
-change the default ABI, instead it adds the AltiVec ABI extensions to
-the current ABI@.
-
-@item -mabi=no-altivec
-@opindex mabi=no-altivec
-Disable AltiVec ABI extensions for the current ABI@.
+@item -mabi=@var{abi-type}
+@opindex mabi
+Extend the current ABI with a particular extension, or remove such extension.
+Valid values are @var{altivec}, @var{no-altivec}, @var{spe},
+@var{no-spe}@.
 
 @item -mprototype
 @itemx -mno-prototype

@@ -128,117 +128,15 @@
 
 /* Architecture type.  */
 
-extern int target_flags;
+/* Define TARGET_MFCRF if the target assembler does not suppport the
+   optional field operand for mfcr.  */
 
-/* Use POWER architecture instructions and MQ register.  */
-#define MASK_POWER		0x00000001
-
-/* Use POWER2 extensions to POWER architecture.  */
-#define MASK_POWER2		0x00000002
-
-/* Use PowerPC architecture instructions.  */
-#define MASK_POWERPC		0x00000004
-
-/* Use PowerPC General Purpose group optional instructions, e.g. fsqrt.  */
-#define MASK_PPC_GPOPT		0x00000008
-
-/* Use PowerPC Graphics group optional instructions, e.g. fsel.  */
-#define MASK_PPC_GFXOPT		0x00000010
-
-/* Use PowerPC-64 architecture instructions.  */
-#define MASK_POWERPC64		0x00000020
-
-/* Use revised mnemonic names defined for PowerPC architecture.  */
-#define MASK_NEW_MNEMONICS	0x00000040
-
-/* Disable placing fp constants in the TOC; can be turned on when the
-   TOC overflows.  */
-#define MASK_NO_FP_IN_TOC	0x00000080
-
-/* Disable placing symbol+offset constants in the TOC; can be turned on when
-   the TOC overflows.  */
-#define MASK_NO_SUM_IN_TOC	0x00000100
-
-/* Output only one TOC entry per module.  Normally linking fails if
-   there are more than 16K unique variables/constants in an executable.  With
-   this option, linking fails only if there are more than 16K modules, or
-   if there are more than 16K unique variables/constant in a single module.
-
-   This is at the cost of having 2 extra loads and one extra store per
-   function, and one less allocable register.  */
-#define MASK_MINIMAL_TOC	0x00000200
-
-/* Nonzero for the 64 bit ABIs: longs and pointers are 64 bits.  The
-   chip is running in "64-bit mode", in which CR0 is set in dot
-   operations based on all 64 bits of the register, bdnz works on 64-bit
-   ctr, lr is 64 bits, and so on.  Requires MASK_POWERPC64.  */
-#define MASK_64BIT		0x00000400
-
-/* Disable use of FPRs.  */
-#define MASK_SOFT_FLOAT		0x00000800
-
-/* Enable load/store multiple, even on PowerPC */
-#define MASK_MULTIPLE		0x00001000
-
-/* Use string instructions for block moves */
-#define MASK_STRING		0x00002000
-
-/* Disable update form of load/store */
-#define MASK_NO_UPDATE		0x00004000
-
-/* Disable fused multiply/add operations */
-#define MASK_NO_FUSED_MADD	0x00008000
-
-/* Nonzero if we need to schedule the prolog and epilog.  */
-#define MASK_SCHED_PROLOG	0x00010000
-
-/* Use AltiVec instructions.  */
-#define MASK_ALTIVEC		0x00020000
-
-/* Return small structures in memory (as the AIX ABI requires).  */
-#define MASK_AIX_STRUCT_RET	0x00040000
-
-/* Use single field mfcr instruction.  */
-#define MASK_MFCRF		0x00080000
-
-/* The only remaining free bits are 0x00600000.  linux64.h uses
-   0x00100000, and sysv4.h uses 0x00800000 -> 0x40000000.
-   0x80000000 is not available because target_flags is signed.  */
-
-#define TARGET_POWER		(target_flags & MASK_POWER)
-#define TARGET_POWER2		(target_flags & MASK_POWER2)
-#define TARGET_POWERPC		(target_flags & MASK_POWERPC)
-#define TARGET_PPC_GPOPT	(target_flags & MASK_PPC_GPOPT)
-#define TARGET_PPC_GFXOPT	(target_flags & MASK_PPC_GFXOPT)
-#define TARGET_NEW_MNEMONICS	(target_flags & MASK_NEW_MNEMONICS)
-#define TARGET_NO_FP_IN_TOC	(target_flags & MASK_NO_FP_IN_TOC)
-#define TARGET_NO_SUM_IN_TOC	(target_flags & MASK_NO_SUM_IN_TOC)
-#define TARGET_MINIMAL_TOC	(target_flags & MASK_MINIMAL_TOC)
-#define TARGET_64BIT		(target_flags & MASK_64BIT)
-#define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
-#define TARGET_MULTIPLE		(target_flags & MASK_MULTIPLE)
-#define TARGET_STRING		(target_flags & MASK_STRING)
-#define TARGET_NO_UPDATE	(target_flags & MASK_NO_UPDATE)
-#define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
-#define TARGET_SCHED_PROLOG	(target_flags & MASK_SCHED_PROLOG)
-#define TARGET_ALTIVEC		(target_flags & MASK_ALTIVEC)
-#define TARGET_AIX_STRUCT_RET	(target_flags & MASK_AIX_STRUCT_RET)
-
-/* Define TARGET_MFCRF if the target assembler supports the optional
-   field operand for mfcr and the target processor supports the
-   instruction.  */
-
-#ifdef HAVE_AS_MFCRF
-#define TARGET_MFCRF		(target_flags & MASK_MFCRF)
-#else
+#ifndef HAVE_AS_MFCRF
+#undef TARGET_MFCRF
 #define TARGET_MFCRF 0
 #endif
 
-
 #define TARGET_32BIT		(! TARGET_64BIT)
-#define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
-#define TARGET_UPDATE		(! TARGET_NO_UPDATE)
-#define TARGET_FUSED_MADD	(! TARGET_NO_FUSED_MADD)
 
 /* Emit a dtp-relative reference to a TLS variable.  */
 
@@ -258,125 +156,19 @@ extern int target_flags;
 #ifdef IN_LIBGCC2
 /* For libgcc2 we make sure this is a compile time constant */
 #if defined (__64BIT__) || defined (__powerpc64__)
+#undef TARGET_POWERPC64
 #define TARGET_POWERPC64	1
 #else
+#undef TARGET_POWERPC64
 #define TARGET_POWERPC64	0
 #endif
 #else
-#define TARGET_POWERPC64	(target_flags & MASK_POWERPC64)
+    /* The option machinery will define this.  */
 #endif
 
 #define TARGET_XL_COMPAT 0
 
-/* Run-time compilation parameters selecting different hardware subsets.
-
-   Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#define TARGET_SWITCHES							\
- {{"power",		MASK_POWER  | MASK_MULTIPLE | MASK_STRING,	\
-			N_("Use POWER instruction set")},		\
-  {"power2",		(MASK_POWER | MASK_MULTIPLE | MASK_STRING	\
-			 | MASK_POWER2),				\
-			N_("Use POWER2 instruction set")},		\
-  {"no-power2",		- MASK_POWER2,					\
-			N_("Do not use POWER2 instruction set")},	\
-  {"no-power",		- (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE	\
-			   | MASK_STRING),				\
-			N_("Do not use POWER instruction set")},	\
-  {"powerpc",		MASK_POWERPC,					\
-			N_("Use PowerPC instruction set")},		\
-  {"no-powerpc",	- (MASK_POWERPC | MASK_PPC_GPOPT		\
-			   | MASK_PPC_GFXOPT | MASK_POWERPC64),		\
-			N_("Do not use PowerPC instruction set")},	\
-  {"powerpc-gpopt",	MASK_POWERPC | MASK_PPC_GPOPT,			\
-			N_("Use PowerPC General Purpose group optional instructions")},\
-  {"no-powerpc-gpopt",	- MASK_PPC_GPOPT,				\
-			N_("Do not use PowerPC General Purpose group optional instructions")},\
-  {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT,			\
-			N_("Use PowerPC Graphics group optional instructions")},\
-  {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT,				\
-			N_("Do not use PowerPC Graphics group optional instructions")},\
-  {"powerpc64",		MASK_POWERPC64,					\
-			N_("Use PowerPC-64 instruction set")},		\
-  {"no-powerpc64",	- MASK_POWERPC64,				\
-			N_("Do not use PowerPC-64 instruction set")},	\
-  {"altivec",		MASK_ALTIVEC ,					\
-			N_("Use AltiVec instructions")},		\
-  {"no-altivec",	- MASK_ALTIVEC ,					\
-			N_("Do not use AltiVec instructions")},	\
-  {"new-mnemonics",	MASK_NEW_MNEMONICS,				\
-			N_("Use new mnemonics for PowerPC architecture")},\
-  {"old-mnemonics",	-MASK_NEW_MNEMONICS,				\
-			N_("Use old mnemonics for PowerPC architecture")},\
-  {"full-toc",		- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC	\
-			   | MASK_MINIMAL_TOC),				\
-			N_("Put everything in the regular TOC")},	\
-  {"fp-in-toc",		- MASK_NO_FP_IN_TOC,				\
-			N_("Place floating point constants in TOC")},	\
-  {"no-fp-in-toc",	MASK_NO_FP_IN_TOC,				\
-			N_("Do not place floating point constants in TOC")},\
-  {"sum-in-toc",	- MASK_NO_SUM_IN_TOC,				\
-			N_("Place symbol+offset constants in TOC")},	\
-  {"no-sum-in-toc",	MASK_NO_SUM_IN_TOC,				\
-			N_("Do not place symbol+offset constants in TOC")},\
-  {"minimal-toc",	MASK_MINIMAL_TOC,				\
-			"Use only one TOC entry per procedure"},	\
-  {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC),	\
-			""},						\
-  {"no-minimal-toc",	- MASK_MINIMAL_TOC,				\
-			N_("Place variable addresses in the regular TOC")},\
-  {"hard-float",	- MASK_SOFT_FLOAT,				\
-			N_("Use hardware floating point")},		\
-  {"soft-float",	MASK_SOFT_FLOAT,				\
-			N_("Do not use hardware floating point")},	\
-  {"multiple",		MASK_MULTIPLE,					\
-			N_("Generate load/store multiple instructions")},	\
-  {"no-multiple",	- MASK_MULTIPLE,				\
-			N_("Do not generate load/store multiple instructions")},\
-  {"string",		MASK_STRING,					\
-			N_("Generate string instructions for block moves")},\
-  {"no-string",		- MASK_STRING,					\
-			N_("Do not generate string instructions for block moves")},\
-  {"update",		- MASK_NO_UPDATE,				\
-			N_("Generate load/store with update instructions")},\
-  {"no-update",		MASK_NO_UPDATE,					\
-			N_("Do not generate load/store with update instructions")},\
-  {"fused-madd",	- MASK_NO_FUSED_MADD,				\
-			N_("Generate fused multiply/add instructions")},\
-  {"no-fused-madd",	MASK_NO_FUSED_MADD,				\
-			N_("Do not generate fused multiply/add instructions")},\
-  {"sched-prolog",      MASK_SCHED_PROLOG,                              \
-			""},						\
-  {"no-sched-prolog",   -MASK_SCHED_PROLOG,                             \
-			N_("Do not schedule the start and end of the procedure")},\
-  {"sched-epilog",      MASK_SCHED_PROLOG,                              \
-			""},						\
-  {"no-sched-epilog",   -MASK_SCHED_PROLOG,                             \
-			""},						\
-  {"aix-struct-return",	MASK_AIX_STRUCT_RET,				\
-			N_("Return all structures in memory (AIX default)")},\
-  {"svr4-struct-return", - MASK_AIX_STRUCT_RET,				\
-			N_("Return small structures in registers (SVR4 default)")},\
-  {"no-aix-struct-return", - MASK_AIX_STRUCT_RET,			\
-			""},						\
-  {"no-svr4-struct-return", MASK_AIX_STRUCT_RET,			\
-			""},						\
-  {"mfcrf",		MASK_MFCRF,					\
-			N_("Generate single field mfcr instruction")},	\
-  {"no-mfcrf",		- MASK_MFCRF,					\
-			N_("Do not generate single field mfcr instruction")},\
-  SUBTARGET_SWITCHES							\
-  {"",			TARGET_DEFAULT | MASK_SCHED_PROLOG,		\
-			""}}
-
 #define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE | MASK_STRING)
-
-/* This is meant to be redefined in the host dependent files */
-#define SUBTARGET_SWITCHES
 
 /* Processor type.  Order must match cpu attribute in MD file.  */
 enum processor_type
@@ -446,46 +238,6 @@ enum group_termination
     previous_group
   };
 
-/* This is meant to be overridden in target specific files.  */
-#define	SUBTARGET_OPTIONS
-
-#define TARGET_OPTIONS							\
-{									\
-   {"cpu=",  &rs6000_select[1].string,					\
-    N_("Use features of and schedule code for given CPU"), 0},		\
-   {"tune=", &rs6000_select[2].string,					\
-    N_("Schedule code for given CPU"), 0},				\
-   {"debug=", &rs6000_debug_name, N_("Enable debug output"), 0},	\
-   {"traceback=", &rs6000_traceback_name,				\
-    N_("Select full, part, or no traceback table"), 0},			\
-   {"abi=", &rs6000_abi_string, N_("Specify ABI to use"), 0},		\
-   {"long-double-", &rs6000_long_double_size_string,			\
-    N_("Specify size of long double (64 or 128 bits)"), 0},		\
-   {"isel=", &rs6000_isel_string,                                       \
-    N_("Specify yes/no if isel instructions should be generated"), 0},  \
-   {"spe=", &rs6000_spe_string,                                         \
-    N_("Specify yes/no if SPE SIMD instructions should be generated"), 0},\
-   {"float-gprs=", &rs6000_float_gprs_string,                           \
-    N_("Specify yes/no if using floating point in the GPRs"), 0},       \
-   {"vrsave=", &rs6000_altivec_vrsave_string,                           \
-    N_("Specify yes/no if VRSAVE instructions should be generated for AltiVec"), 0}, \
-   {"longcall", &rs6000_longcall_switch,				\
-    N_("Avoid all range limits on call instructions"), 0},		\
-   {"no-longcall", &rs6000_longcall_switch, "", 0},			\
-   {"warn-altivec-long", &rs6000_warn_altivec_long_switch, \
-    N_("Warn about deprecated 'vector long ...' AltiVec type usage"), 0}, \
-   {"no-warn-altivec-long", &rs6000_warn_altivec_long_switch, "", 0}, \
-   {"sched-costly-dep=", &rs6000_sched_costly_dep_str,                  \
-    N_("Determine which dependences between insns are considered costly"), 0}, \
-   {"insert-sched-nops=", &rs6000_sched_insert_nops_str,                \
-    N_("Specify which post scheduling nop insertion scheme to apply"), 0}, \
-   {"align-", &rs6000_alignment_string,					\
-    N_("Specify alignment of structure fields default/natural"), 0},	\
-   {"prioritize-restricted-insns=", &rs6000_sched_restricted_insns_priority_str, \
-    N_("Specify scheduling priority for dispatch slot restricted insns"), 0}, \
-   SUBTARGET_OPTIONS							\
-}
-
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-cpu is ignored if -mcpu is specified.
    --with-tune is ignored if -mtune is specified.
@@ -527,24 +279,12 @@ extern int rs6000_spe_abi;
 extern int rs6000_isel;
 extern int rs6000_spe;
 extern int rs6000_float_gprs;
-extern const char *rs6000_float_gprs_string;
-extern const char *rs6000_isel_string;
-extern const char *rs6000_spe_string;
-extern const char *rs6000_altivec_vrsave_string;
-extern int rs6000_altivec_vrsave;
-extern const char *rs6000_longcall_switch;
-extern int rs6000_default_long_calls;
 extern const char* rs6000_alignment_string;
 extern int rs6000_alignment_flags;
 extern const char *rs6000_sched_restricted_insns_priority_str;
 extern int rs6000_sched_restricted_insns_priority;
-extern const char *rs6000_sched_costly_dep_str;
-extern enum rs6000_dependence_cost rs6000_sched_costly_dep;
 extern const char *rs6000_sched_insert_nops_str;
 extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
-
-extern int rs6000_warn_altivec_long;
-extern const char *rs6000_warn_altivec_long_switch;
 
 /* Alignment options for fields in structures for sub-targets following
    AIX-like ABI.
@@ -565,7 +305,6 @@ extern const char *rs6000_warn_altivec_long_switch;
 
 #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
-#define TARGET_ALTIVEC_VRSAVE rs6000_altivec_vrsave
 
 #define TARGET_SPE_ABI 0
 #define TARGET_SPE 0

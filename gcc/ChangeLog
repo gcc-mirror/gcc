@@ -1,3 +1,64 @@
+2005-05-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config.gcc: Add .opt magic for the rs6000 ports.
+
+	* doc/invoke.texi: Document -mabi= option properly.  Document
+	-misel and -mno-sel.  Document -mspe and -mno-spe.  Document
+	-mvrsave and -mno-vrsave.  Document deprecation of -mspe= and
+	-misel=.
+
+	* config/rs6000/aix.h: Remove XL_COMPAT stuff.  Remove
+	SUBTARGET_SWITCHES and SUBSUBTARGET_SWITCHES.  Define
+	TARGET_XL_COMPAT.
+
+	* config/rs6000/aix.opt: New.
+	* config/rs6000/aix41.opt: New.
+	* config/rs6000/aix64.opt: New.
+	* config/rs6000/darwin.opt: New.
+	* config/rs6000/linux64.opt: New.
+	* config/rs6000/rs6000.opt: New.
+	* config/rs6000/sysv4.opt: New.
+
+	* config/rs6000/sysv4.h: Delete definitions of MASK_* and
+	associated TARGET_*.  Remove SUBTARGET_OPTIONS,
+	SUBTARGET_SWITCHES.
+	Define TARGET_USES_SYSV4_OPT.
+	* config/rs6000/aix41.h: Remove SUBSUBTARGET_SWITCHES.
+	* config/rs6000/aix43.h: Remove SUBSUBTARGET_SWITCHES.  Define
+	TARGET_USES_AIX64_OPT.
+	* config/rs6000/aix51.h: Same.
+	* config/rs6000/aix52.h: Same.
+	* config/rs6000/darwin.h: Remove
+	SUBTARGET_SWITCHES.  Use TARGET_ALTIVEC_VRSAVE instead of
+	rs6000_altivec_vrsave.
+	* config/rs6000/linux64.h: Use
+	rs6000_explicit_options.  Remove EXTRA_SUBTARGET_SWITCHES.
+
+	* config/rs6000/rs6000.c: Remove definitions of
+	rs6000_sched_restricted_insns_priority,
+	rs6000_long_double_size_string, rs6000_altivec_vrsave,
+	rs6000_altivec_vrsave_string, rs6000_isel, rs6000_spe,
+	rs6000_float_gprs_string, rs6000_isel_string, rs6000_spe_string,
+	rs6000_abi_string, rs6000_warn_altivec_long, rs6000_longcall,
+	rs6000_alignment_string.  Define rs6000_explicit_options.
+	(rs6000_parse_abi_options): Remove.
+	(rs6000_parse_alignment_option): Remove.
+	(rs6000_parse_float_gprs_option): Remove.
+	(rs6000_handle_option): New.  Define TARGET_HANDLE_OPTION.  Define
+	TARGET_DEFAULT_TARGET_FLAGS.
+	(rs6000_override_options): Revamp to use new .opt machinery.
+
+	* config/rs6000/rs6000.h: Remove old MASK_* and TARGET_* in favor
+	of new .opt machinery.  Remove target_flags.  Redefine
+	TARGET_MFCRF and TARGET_POWERPC64.  Remove TARGET_SWITCHES,
+	SUBTARGET_SWITCHES, TARGET_OPTIONS, SUBTARGET_OPTIONS,
+	rs6000_float_gprs_string, rs6000_isel_string, rs6000_spe_string,
+	rs6000_altivec_vrsave_string, rs6000_altivec_vrsave,
+	rs6000_longcall_switch, rs6000_default_long_calls,
+	rs6000_sched_costly_dep_str, rs6000_sched_costly_dep,
+	rs6000_warn_altivec_long, rs6000_warn_altivec_long_switch, and
+	TARGET_ALTIVEC_VRSAVE.
+
 2005-05-05  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (hppa1.1-*-rtems*): Remove.

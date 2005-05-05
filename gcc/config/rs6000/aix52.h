@@ -20,17 +20,6 @@
    Free Software Foundation, 59 Temple Place - Suite 330, Boston,
    MA 02111-1307, USA.  */
 
-/* AIX V5 and above support 64-bit executables.  */
-#undef  SUBSUBTARGET_SWITCHES
-#define SUBSUBTARGET_SWITCHES						\
-  {"aix64", 		MASK_64BIT | MASK_POWERPC64			\
-			  | MASK_POWERPC | MASK_PPC_GFXOPT,		\
-   N_("Compile for 64-bit pointers") },					\
-  {"aix32",		- (MASK_64BIT | MASK_POWERPC64),		\
-   N_("Compile for 32-bit pointers") },					\
-  {"pe",		0,						\
-   N_("Support message passing with the Parallel Environment") },
-
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
@@ -188,3 +177,6 @@ do {									\
 #ifndef _AIX52
 extern long long int    atoll(const char *);  
 #endif
+
+/* This target uses the aix64.opt file.  */
+#define TARGET_USES_AIX64_OPT 1

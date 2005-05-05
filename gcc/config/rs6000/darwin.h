@@ -63,25 +63,13 @@
   while (0)
 
 
-/*  */
-#undef	SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES						\
-  { "64",     MASK_64BIT | MASK_POWERPC64, \
-        N_("Generate 64-bit code") }, \
-  { "32",     - (MASK_64BIT | MASK_POWERPC64), \
-        N_("Generate 32-bit code") }, \
-  {"dynamic-no-pic",	MASK_MACHO_DYNAMIC_NO_PIC,			\
-      N_("Generate code suitable for executables (NOT shared libs)")},	\
-  {"no-dynamic-no-pic",	-MASK_MACHO_DYNAMIC_NO_PIC, ""},
-
-
 /* The Darwin ABI always includes AltiVec, can't be (validly) turned
    off.  */
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
   rs6000_altivec_abi = 1;						\
-  rs6000_altivec_vrsave = 1;						\
+  TARGET_ALTIVEC_VRSAVE = 1;						\
   if (DEFAULT_ABI == ABI_DARWIN)					\
   {									\
     if (MACHO_DYNAMIC_NO_PIC_P)						\
