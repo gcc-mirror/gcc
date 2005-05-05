@@ -40,12 +40,6 @@
 #undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_64BIT ? "long int" : "int")
 
-/* Darwin switches.  */
-/* Use dynamic-no-pic codegen (no picbase reg; not suitable for shlibs.)  */
-#define MASK_MACHO_DYNAMIC_NO_PIC 0x00800000
-
-#define TARGET_DYNAMIC_NO_PIC	(target_flags & MASK_MACHO_DYNAMIC_NO_PIC)
-
 /* Handle #pragma weak and #pragma pack.  */
 #define HANDLE_SYSV_PRAGMA 1
 
