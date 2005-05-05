@@ -1,3 +1,19 @@
+2005-05-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.md (P): Use TARGET_*BIT rather than
+	comparing Pmode.
+	(SDI): New.
+	(cmp): Delete.
+	(wd): New.
+	(add<mode>3, add<mode>3_internal1, add<mode>3_internal2,
+	add<mode>3_internal3, one_cmpl<mode>2, sub<mode>3, neg<mode>2,
+	clz<mode>2, ctz<mode>2, ffs<mode>2): New.
+	(addsi3, addsi3_internal1, addsi3_internal2, addsi3_internal3,
+	(one_cmplsi2, subsi3, negsi2, clzsi2, ctzsi2, ffssi2): Remove.
+	(adddi3, adddi3_internal1, adddi3_internal2, adddi3_internal3,
+	(one_cmpldi2, subdi3, negdi2, clzdi2, ctzdi2, ffsdi2): Remove.
+	(sync_compare_and_swap<mode>): Use <wd> rather than <cmp>.
+
 2005-05-05  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.in: Replace dependencies on basic-block.h, c-pragma.h,
