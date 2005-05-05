@@ -1,3 +1,9 @@
+2005-05-04  Mike Stump  <mrs@apple.com>
+
+	* configure.in: Always pass --target to target configures as
+	otherwise rebuilds that do --recheck will fail.
+	* confiugure: Rebuilt.
+
 2005-05-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Rename from
