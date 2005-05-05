@@ -42,7 +42,7 @@ struct register_args
 };
 
 extern void ffi_call_unix64 (void *args, unsigned long bytes, unsigned flags,
-			     void *raddr, void (*fnaddr)());
+			     void *raddr, void (*fnaddr)(), unsigned ssecount);
 
 /* All reference to register classes here is identical to the code in
    gcc/config/i386/i386.c. Do *not* change one without the other.  */
@@ -303,10 +303,9 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 	  else if (sse0 && sse1)
 	    flags |= 1 << 10;
 	  /* Mark the true size of the structure.  */
-	  flags |= cif->rtype->size << 11;
+	  flags |= cif->rtype->size << 12;
 	}
     }
-  cif->flags = flags;
 
   /* Go over all arguments and determine the way they should be passed.
      If it's in a register and there is space for it, let that be so. If
@@ -331,6 +330,9 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 	  ssecount += nsse;
 	}
     }
+  if (ssecount)
+    flags |= 1 << 11;
+  cif->flags = flags;
   cif->bytes = bytes;
 
   return FFI_OK;
@@ -353,7 +355,7 @@ ffi_call (ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
      address then we need to make one.  Note the setting of flags to
      VOID above in ffi_prep_cif_machdep.  */
   ret_in_memory = (cif->rtype->type == FFI_TYPE_STRUCT
-		   && cif->flags == FFI_TYPE_VOID);
+		   && (cif->flags & 0xff) == FFI_TYPE_VOID);
   if (rvalue == NULL && ret_in_memory)
     rvalue = alloca (cif->rtype->size);
 
@@ -424,7 +426,7 @@ ffi_call (ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
     }
 
   ffi_call_unix64 (stack, cif->bytes + sizeof (struct register_args),
-		   cif->flags, rvalue, fn);
+		   cif->flags, rvalue, fn, ssecount);
 }
 
 
@@ -439,12 +441,17 @@ ffi_prep_closure (ffi_closure* closure,
   volatile unsigned short *tramp;
 
   tramp = (volatile unsigned short *) &closure->tramp[0];
+
   tramp[0] = 0xbb49;		/* mov <code>, %r11	*/
-  tramp[5] = 0xba49;		/* mov <data>, %r10	*/
-  tramp[10] = 0xff49;		/* jmp *%r11	*/
-  tramp[11] = 0x00e3;
   *(void * volatile *) &tramp[1] = ffi_closure_unix64;
+  tramp[5] = 0xba49;		/* mov <data>, %r10	*/
   *(void * volatile *) &tramp[6] = closure;
+
+  /* Set the carry bit iff the function uses any sse registers.
+     This is clc or stc, together with the first byte of the jmp.  */
+  tramp[10] = cif->flags & (1 << 11) ? 0x49f9 : 0x49f8;
+
+  tramp[11] = 0xe3ff;			/* jmp *%r11    */
 
   closure->cif = cif;
   closure->fun = fun;

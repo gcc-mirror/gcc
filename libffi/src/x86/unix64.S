@@ -31,7 +31,7 @@
 .text
 
 /* ffi_call_unix64 (void *args, unsigned long bytes, unsigned flags,
-                    void *raddr, void (*fnaddr)());
+	            void *raddr, void (*fnaddr)());
 
    Bit o trickiness here -- ARGS+BYTES is the base of the stack frame
    for this function.  This has been allocated by ffi_call.  We also
@@ -39,7 +39,7 @@
 
 	.align	2
 	.globl	ffi_call_unix64
-        .type	ffi_call_unix64,@function
+	.type	ffi_call_unix64,@function
 
 ffi_call_unix64:
 .LUW0:
@@ -53,6 +53,7 @@ ffi_call_unix64:
 .LUW1:
 	movq	%rdi, %r10		/* Save a copy of the register area. */
 	movq	%r8, %r11		/* Save a copy of the target fn.  */
+	movl	%r9d, %eax		/* Set number of SSE registers.  */
 
 	/* Load up all argument registers.  */
 	movq	(%r10), %rdi
@@ -61,14 +62,9 @@ ffi_call_unix64:
 	movq	24(%r10), %rcx
 	movq	32(%r10), %r8
 	movq	40(%r10), %r9
-	movdqa	48(%r10), %xmm0
-	movdqa	64(%r10), %xmm1
-	movdqa	80(%r10), %xmm2
-	movdqa	96(%r10), %xmm3
-	movdqa	112(%r10), %xmm4
-	movdqa	128(%r10), %xmm5
-	movdqa	144(%r10), %xmm6
-	movdqa	160(%r10), %xmm7
+	testl	%eax, %eax
+	jnz	.Lload_sse
+.Lret_from_load_sse:
 
 	/* Deallocate the reg arg area.  */
 	leaq	176(%r10), %rsp
@@ -181,37 +177,49 @@ ffi_call_unix64:
 	movq	%rax, (%rsi)
 	movq	%rdx, 8(%rsi)
 
-	/* Bits 11-31 contain the true size of the structure.  Copy from
+	/* Bits 12-31 contain the true size of the structure.  Copy from
 	   the scratch area to the true destination.  */
-	shrl	$11, %ecx
+	shrl	$12, %ecx
 	rep movsb
 	ret
+
+	/* Many times we can avoid loading any SSE registers at all.
+	   It's not worth an indirect jump to load the exact set of
+	   SSE registers needed; zero or all is a good compromise.  */
+	.align 2
 .LUW3:
+.Lload_sse:
+	movdqa	48(%r10), %xmm0
+	movdqa	64(%r10), %xmm1
+	movdqa	80(%r10), %xmm2
+	movdqa	96(%r10), %xmm3
+	movdqa	112(%r10), %xmm4
+	movdqa	128(%r10), %xmm5
+	movdqa	144(%r10), %xmm6
+	movdqa	160(%r10), %xmm7
+	jmp	.Lret_from_load_sse
+
+.LUW4:
 	.size    ffi_call_unix64,.-ffi_call_unix64
 
 	.align	2
 	.globl ffi_closure_unix64
-        .type	ffi_closure_unix64,@function
+	.type	ffi_closure_unix64,@function
 
 ffi_closure_unix64:
-.LUW4:
-	subq	$200, %rsp
 .LUW5:
-
+	/* The carry flag is set by the trampoline iff SSE registers
+	   are used.  Don't clobber it before the branch instruction.  */
+	leaq    -200(%rsp), %rsp
+.LUW6:
 	movq	%rdi, (%rsp)
-        movq    %rsi, 8(%rsp)
-        movq    %rdx, 16(%rsp)
-        movq    %rcx, 24(%rsp)
-        movq    %r8, 32(%rsp)
-        movq    %r9, 40(%rsp)
-	movdqa	%xmm0, 48(%rsp)
-	movdqa	%xmm1, 64(%rsp)
-	movdqa	%xmm2, 80(%rsp)
-	movdqa	%xmm3, 96(%rsp)
-	movdqa	%xmm4, 112(%rsp)
-	movdqa	%xmm5, 128(%rsp)
-	movdqa	%xmm6, 144(%rsp)
-	movdqa	%xmm7, 160(%rsp)
+	movq    %rsi, 8(%rsp)
+	movq    %rdx, 16(%rsp)
+	movq    %rcx, 24(%rsp)
+	movq    %r8, 32(%rsp)
+	movq    %r9, 40(%rsp)
+	jc      .Lsave_sse
+.Lret_from_save_sse:
 
 	movq	%r10, %rdi
 	leaq	176(%rsp), %rsi
@@ -221,7 +229,7 @@ ffi_closure_unix64:
 
 	/* Deallocate stack frame early; return value is now in redzone.  */
 	addq	$200, %rsp
-.LUW6:
+.LUW7:
 
 	/* The first byte of the return value contains the FFI_TYPE.  */
 	movzbl	%al, %r10d
@@ -300,7 +308,22 @@ ffi_closure_unix64:
 	movq	-24(%rsp), %rax
 	cmovnz	%rdx, %rax
 	ret
-.LUW7:
+
+	/* See the comment above .Lload_sse; the same logic applies here.  */
+	.align 2
+.LUW8:
+.Lsave_sse:
+	movdqa	%xmm0, 48(%rsp)
+	movdqa	%xmm1, 64(%rsp)
+	movdqa	%xmm2, 80(%rsp)
+	movdqa	%xmm3, 96(%rsp)
+	movdqa	%xmm4, 112(%rsp)
+	movdqa	%xmm5, 128(%rsp)
+	movdqa	%xmm6, 144(%rsp)
+	movdqa	%xmm7, 160(%rsp)
+	jmp	.Lret_from_save_sse
+
+.LUW9:
 	.size	ffi_closure_unix64,.-ffi_closure_unix64
 
 	.section	.eh_frame,"a",@progbits
@@ -327,24 +350,25 @@ ffi_closure_unix64:
 .LASFDE1:
 	.long	.LASFDE1-.Lframe1	/* FDE CIE offset */
 	.long	.LUW0-.			/* FDE initial location */
-	.long	.LUW3-.LUW0		/* FDE address range */
+	.long	.LUW4-.LUW0		/* FDE address range */
 	.uleb128 0x0			/* Augmentation size */
 
 	.byte	0x4			/* DW_CFA_advance_loc4 */
 	.long	.LUW1-.LUW0
 
-        /* New stack frame based off rbp.  This is a itty bit of unwind
-           trickery in that the CFA *has* changed.  There is no easy way
-           to describe it correctly on entry to the function.  Fortunately,
-           it doesn't matter too much since at all points we can correctly
-           unwind back to ffi_call.  Note that the location to which we
-           moved the return address is (the new) CFA-8, so from the
-           perspective of the unwind info, it hasn't moved.  */
+	/* New stack frame based off rbp.  This is a itty bit of unwind
+	   trickery in that the CFA *has* changed.  There is no easy way
+	   to describe it correctly on entry to the function.  Fortunately,
+	   it doesn't matter too much since at all points we can correctly
+	   unwind back to ffi_call.  Note that the location to which we
+	   moved the return address is (the new) CFA-8, so from the
+	   perspective of the unwind info, it hasn't moved.  */
 	.byte	0xc			/* DW_CFA_def_cfa, %rbp offset 32 */
 	.uleb128 6
 	.uleb128 32
 	.byte	0x80+6			/* DW_CFA_offset, %rbp offset 2*-8 */
 	.uleb128 2
+	.byte	0xa			/* DW_CFA_remember_state */
 
 	.byte	0x4			/* DW_CFA_advance_loc4 */
 	.long	.LUW2-.LUW1
@@ -352,23 +376,36 @@ ffi_closure_unix64:
 	.uleb128 7
 	.uleb128 8
 	.byte	0xc0+6			/* DW_CFA_restore, %rbp */
+
+	.byte	0x4			/* DW_CFA_advance_loc4 */
+	.long	.LUW3-.LUW2
+	.byte	0xb			/* DW_CFA_restore_state */
+
 	.align 8
 .LEFDE1:
 .LSFDE3:
 	.long	.LEFDE3-.LASFDE3	/* FDE Length */
 .LASFDE3:
 	.long	.LASFDE3-.Lframe1	/* FDE CIE offset */
-	.long	.LUW4-.			/* FDE initial location */
-	.long	.LUW7-.LUW4		/* FDE address range */
+	.long	.LUW5-.			/* FDE initial location */
+	.long	.LUW9-.LUW5		/* FDE address range */
 	.uleb128 0x0			/* Augmentation size */
-	.byte	0x4			/* DW_CFA_advance_loc4 */
-	.long	.LUW5-.LUW4
-	.byte	0xe			/* DW_CFA_def_cfa_offset */
-	.uleb128 208
+
 	.byte	0x4			/* DW_CFA_advance_loc4 */
 	.long	.LUW6-.LUW5
 	.byte	0xe			/* DW_CFA_def_cfa_offset */
+	.uleb128 208
+	.byte	0xa			/* DW_CFA_remember_state */
+
+	.byte	0x4			/* DW_CFA_advance_loc4 */
+	.long	.LUW7-.LUW6
+	.byte	0xe			/* DW_CFA_def_cfa_offset */
 	.uleb128 8
+
+	.byte	0x4			/* DW_CFA_advance_loc4 */
+	.long	.LUW8-.LUW7
+	.byte	0xb			/* DW_CFA_restore_state */
+
 	.align 8
 .LEFDE3:
 
