@@ -299,7 +299,7 @@
     case 3 :
       return \"st%V0 %1,%0\;st%V0 %R1,%R0\";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }"
   [(set_attr "type" "move,move,load,store")
@@ -392,7 +392,7 @@
     case 3 :
       return \"st%V0 %1,%0\;st%V0 %R1,%R0\";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }"
   [(set_attr "type" "move,move,load,store")

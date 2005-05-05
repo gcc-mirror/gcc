@@ -1,3 +1,14 @@
+2005-05-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/arc/arc.c (get_arc_condition_code): Use gcc_assert &
+	gcc_unreachable as appropriate.
+	(arc_double_limm_p, arc_setup_incoming_varargs,
+	arc_compute_function_type, arc_output_function_prologue,
+	arc_output_function_epilogue, arc_eligible_for_epilogue_delay,
+	output_shift, arc_print_operand, arc_print_operand_address,
+	arc_final_prescan_insn): Likewise.
+	* config/arc/arc.md (*movdi_insn, *movdf_insn): Likewise.
+
 2005-05-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.md (P): Use TARGET_*BIT rather than
