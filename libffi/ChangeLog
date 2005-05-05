@@ -1,4 +1,15 @@
-2005-05-29  Ralf Corsepius  <ralf.corsepius@rtems.org>
+2005-05-04  Andreas Degert <ad@papyrus-gmbh.de>
+	    Richard Henderson  <rth@redhat.com>
+
+	* src/x86/ffi64.c (ffi_prep_cif_machdep): Save sse-used flag in
+	bit 11 of flags.
+	(ffi_call): Mask return type field.  Pass ssecount to ffi_call_unix64.
+	(ffi_prep_closure): Set carry bit if sse-used flag set.
+	* src/x86/unix64.S (ffi_call_unix64): Add ssecount argument.
+	Only load sse registers if ssecount non-zero.
+	(ffi_closure_unix64): Only save sse registers if carry set on entry.
+
+2005-04-29  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* configure.ac: Add i*86-*-rtems*, sparc*-*-rtems*,
 	powerpc-*rtems*, arm*-*-rtems*, sh-*-rtems*.
