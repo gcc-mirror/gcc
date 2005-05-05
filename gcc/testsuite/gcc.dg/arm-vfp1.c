@@ -1,5 +1,6 @@
-/* { dg-do compile { target arm*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mfpu=vfp -mfloat-abi=softfp" } */
+/* { dg-require-effective-target arm32 } */
 
 extern float fabsf (float);
 extern float sqrtf (float);

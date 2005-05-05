@@ -1,3 +1,12 @@
+2005-05-05  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/arm-g2.c: Use effective-target arm32.
+	* gcc.dg/arm-mmx-1.c: Ditto.
+	* gcc.dg/arm-scd42-2.c: Ditto.
+	* gcc.dg/arm-vfp1.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_arm32): New
+	function.
+
 2005-05-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21354

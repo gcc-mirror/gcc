@@ -1,8 +1,9 @@
 /* Verify that if IP is saved to ensure stack alignment, we don't load
    it into sp.  */
-/* { dg-do compile { target arm*-*-* strongarm*-*-* xscale*-*-*} } */
+/* { dg-do compile } */
 /* { dg-options "-O -mno-apcs-frame -mcpu=iwmmxt -mabi=iwmmxt" } */
-/* { dg-final { global compiler_flags; if ![string match "*-mthumb *" $compiler_flags] { scan-assembler "ldmfd\[ 	]sp!.*ip,\[ ]*pc" } } } */
+/* { dg-require-effective-target arm32 } */
+/* { dg-final { scan-assembler "ldmfd\[ 	]sp!.*ip,\[ ]*pc" } } */
 
 /* This function uses all the call-saved registers, namely r4, r5, r6,
    r7, r8, r9, sl, fp.  Since we also save lr, that leaves an odd
