@@ -1,3 +1,8 @@
+2005-05-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21352
+	* pt.c (build_non_dependent_expr): Use is_overloaded_fn.
+
 2005-05-01  Michael Matz  <matz@suse.de>
 
 	PR c++/19542
