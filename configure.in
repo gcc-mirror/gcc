@@ -364,7 +364,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
   powerpc-*-darwin*)
-    noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes gdb gprof ${libgcj}"
+    noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes gdb gprof"
     ;;
   *-*-darwin*)
     noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes gdb gprof"

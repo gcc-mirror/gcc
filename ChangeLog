@@ -1,3 +1,9 @@
+2005-05-06  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	PR target/21325
+	* configure.in (powerpc-*-darwin*): Remove ${libgcj} from noconfigdirs.
+	* configure: Regenerated.
+
 2005-04-25  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* MAINTAINERS: Add self as Blackfin maintainer
