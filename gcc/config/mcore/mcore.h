@@ -885,7 +885,7 @@ switch_to_section (enum in_section section, tree decl)		\
       case in_data: data_section (); break;			\
       case in_named: named_section (decl, NULL, 0); break;	\
       SUBTARGET_SWITCH_SECTIONS      				\
-      default: abort (); break;					\
+      default: gcc_unreachable (); 				\
     }								\
 }
 

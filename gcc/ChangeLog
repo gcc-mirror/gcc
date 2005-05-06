@@ -1,3 +1,16 @@
+2005-05-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mcore/mcore.c (mcore_print_operand_address): Use
+	gcc_assert and gcc_unreachable as appropriate.
+	(mcore_print_operand, mcore_gen_compare_reg, mcore_output_call,
+	mcore_output_andn, output_inline_const, mcore_output_move,
+	mcore_output_movedouble, mcore_expand_block_move,
+	layout_mcore_frame, mcore_initial_elimination_offset,
+	mcore_expand_prolog, mcore_mark_dllexport,
+	mcore_mark_dllimport): Likewise.
+	* config/mcore/mcore.h (switch_to_section): Likewise.
+	* config/mcore/mcore.md: Likewise.
+
 2005-05-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/linux64.h: Remove MASK_PROFILE_KERNEL, and
