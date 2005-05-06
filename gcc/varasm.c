@@ -4225,7 +4225,21 @@ void
 merge_weak (tree newdecl, tree olddecl)
 {
   if (DECL_WEAK (newdecl) == DECL_WEAK (olddecl))
-    return;
+    {
+      if (DECL_WEAK (newdecl) && SUPPORTS_WEAK)
+        {
+          tree *pwd;
+          /* We put the NEWDECL on the weak_decls list at some point
+             and OLDDECL as well.  Keep just OLDDECL on the list.  */
+	  for (pwd = &weak_decls; *pwd; pwd = &TREE_CHAIN (*pwd))
+	    if (TREE_VALUE (*pwd) == newdecl)
+	      {
+	        *pwd = TREE_CHAIN (*pwd);
+		break;
+	      }
+        }
+      return;
+    }
 
   if (DECL_WEAK (newdecl))
     {
