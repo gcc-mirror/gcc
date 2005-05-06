@@ -122,6 +122,24 @@ proc dg-require-effective-target { args } {
     }
 }
 
+# If this target does not have fork, skip this test.
+
+proc dg-require-fork { args } {
+    if { ![check_fork_available] } {
+	upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
+# If this target does not have mkfifo, skip this test.
+
+proc dg-require-mkfifo { args } {
+    if { ![check_mkfifo_available] } {
+	upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # Check the flags with which the test will be run against options in
 # a test directive that will skip or xfail that test.  The DejaGnu proc
 # check_conditional_xfail will look at the options in compiler_flags, so

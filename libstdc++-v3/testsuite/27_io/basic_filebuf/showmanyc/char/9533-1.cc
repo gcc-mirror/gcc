@@ -1,3 +1,6 @@
+// { dg-require-fork "" }
+// { dg-require-mkfifo "" }
+
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -39,7 +42,7 @@ void test_01()
   signal(SIGPIPE, SIG_IGN);
   unlink(name);
   
-  if (0 != try_mkfifo(name, S_IRWXU))
+  if (0 != mkfifo(name, S_IRWXU))
     {
       VERIFY( false );
     }
