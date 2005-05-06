@@ -1,3 +1,9 @@
+2005-05-06  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/21380
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Do not
+	thread through a block with no preds.
+
 2005-05-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-operands.c (clobbered_v_may_defs, clobbered_vuses,
