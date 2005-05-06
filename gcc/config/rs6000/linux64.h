@@ -206,14 +206,6 @@ extern int dot_symbols;
 
 #endif
 
-#define	MASK_PROFILE_KERNEL	0x00100000
-
-/* Non-standard profiling for kernels, which just saves LR then calls
-   _mcount without worrying about arg saves.  The idea is to change
-   the function prologue as little as possible as it isn't easy to
-   account for arg save/restore code added just for _mcount.  */
-#define TARGET_PROFILE_KERNEL	(target_flags & MASK_PROFILE_KERNEL)
-
 /* We use glibc _mcount for profiling.  */
 #define NO_PROFILE_COUNTERS TARGET_64BIT
 #define PROFILE_HOOK(LABEL) \
