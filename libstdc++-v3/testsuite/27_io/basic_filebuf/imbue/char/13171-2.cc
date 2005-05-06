@@ -1,3 +1,6 @@
+// { dg-require-fork "" }
+// { dg-require-mkfifo "" }
+
 // Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -38,7 +41,7 @@ void test01()
 
   const char* name = "tmp_fifo_13171-2";
   unlink(name);
-  try_mkfifo(name, S_IRWXU);
+  mkfifo(name, S_IRWXU);
   semaphore s1, s2;
   
   int child = fork();

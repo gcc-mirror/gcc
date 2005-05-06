@@ -164,9 +164,6 @@ namespace __gnu_test
   std::locale
   try_named_locale(const char* name);
 
-  int
-  try_mkfifo (const char* filename, mode_t mode);
-
 
   // Counting.
   struct counter

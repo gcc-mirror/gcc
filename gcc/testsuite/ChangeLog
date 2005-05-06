@@ -1,3 +1,12 @@
+2005-05-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/target-supports-dg.exp (dg-require-fork): New function.
+	(dg-require-mkfifo): Likewise.
+	* lib/target-supports.exp (check_function_available): New
+	function.
+	(check_fork_available): Likewise.
+	(check_mkfifo_available): Likewise.
+
 2005-05-06  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/pr21380.c: New test.
