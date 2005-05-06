@@ -1,3 +1,8 @@
+2005-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/20961
+	* g++.dg/ext/weak3.C: New test.
+
 2005-05-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21352
