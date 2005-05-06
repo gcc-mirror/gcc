@@ -92,7 +92,7 @@ mbit-word
 Target Report Mask(NO_BITFIELD_WORD)
 Allow bit-fields to cross word boundaries
 
-mrenames
+mregnames
 Target Mask(REGNAMES)
 Use alternate register names
 
