@@ -206,6 +206,7 @@ query_formats (JNIEnv *env, jclass clazz)
   jclass formatClass;
   jmethodID addExtensionID;
   jmethodID addMimeTypeID;
+  jobject string;
 
   formatClass = (*env)->FindClass
     (env, "gnu/java/awt/peer/gtk/GdkPixbufDecoder$ImageFormatSpec");
@@ -227,26 +228,33 @@ query_formats (JNIEnv *env, jclass clazz)
       format = (GdkPixbufFormat *) f->data;
       name = gdk_pixbuf_format_get_name(format);
 
+      string = (*env)->NewStringUTF(env, name);
+      g_assert(string != NULL);
+
       jformat = (*env)->CallStaticObjectMethod 
-	(env, clazz, registerFormatID, 				    
-	 (*env)->NewStringUTF(env, name),
+	(env, clazz, registerFormatID, string,
 	 (jboolean) gdk_pixbuf_format_is_writable(format));
+      (*env)->DeleteLocalRef(env, string);
 
       g_assert(jformat != NULL);
       
       ch = gdk_pixbuf_format_get_extensions(format);
       while (*ch)
 	{
-	  (*env)->CallVoidMethod (env, jformat, addExtensionID, 
-				  (*env)->NewStringUTF(env, *ch)); 
+	  string = (*env)->NewStringUTF(env, *ch);
+	  g_assert(string != NULL);
+	  (*env)->CallVoidMethod (env, jformat, addExtensionID, string);
+	  (*env)->DeleteLocalRef(env, string);
 	  ++ch;
 	}
       
       ch = gdk_pixbuf_format_get_mime_types(format);
       while (*ch)
 	{
-	  (*env)->CallVoidMethod (env, jformat, addMimeTypeID, 
-				  (*env)->NewStringUTF(env, *ch)); 
+	  string = (*env)->NewStringUTF(env, *ch);
+	  g_assert(string != NULL);
+	  (*env)->CallVoidMethod (env, jformat, addMimeTypeID, string);
+	  (*env)->DeleteLocalRef(env, string);
 	  ++ch;
 	}
     }

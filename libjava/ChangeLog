@@ -1,3 +1,8 @@
+2005-05-06  Archie Cobbs  <archie@dellroad.org>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c:
+	use DeleteLocalRef() to avoid exhausting local native references.
+
 2005-05-06  Mark Wielaard  <mark@klomp.org>
 
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c:
