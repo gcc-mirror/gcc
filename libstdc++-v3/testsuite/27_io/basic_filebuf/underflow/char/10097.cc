@@ -1,3 +1,6 @@
+// { dg-require-fork "" }
+// { dg-require-mkfifo "" }
+
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
@@ -53,7 +56,7 @@ void test16()
   signal(SIGPIPE, SIG_IGN);
   unlink(name);
   
-  if (0 != try_mkfifo(name, S_IRWXU))
+  if (0 != mkfifo(name, S_IRWXU))
     {
       VERIFY( false );
     }

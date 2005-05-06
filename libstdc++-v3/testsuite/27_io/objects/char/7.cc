@@ -1,3 +1,6 @@
+// { dg-require-fork "" }
+// { dg-require-mkfifo "" }
+
 // 2003-04-26 Petur Runolfsson  <peturr02@ru.is>
 
 // Copyright (C) 2003, 2005 Free Software Foundation, Inc.
@@ -41,7 +44,7 @@ void test07()
   signal(SIGPIPE, SIG_IGN);
 
   unlink(name);  
-  try_mkfifo(name, S_IRWXU);
+  mkfifo(name, S_IRWXU);
   semaphore s1;
 
   int child = fork();

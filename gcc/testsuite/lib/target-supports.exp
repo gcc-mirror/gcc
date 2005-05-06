@@ -535,6 +535,53 @@ proc check_alpha_max_hw_available { } {
     return $alpha_max_hw_available_saved
 }
 
+# Returns true iff the FUNCTION is available on the target system.
+# (This is essentially a Tcl implementation of Autoconf's
+# AC_CHECK_FUNC.)
+
+proc check_function_available { function } {
+    set var "${function}_available_saved"
+    global $var
+    global tool
+
+    if {![info exists $var]} {
+	# Assume it exists.
+	set $var 1
+	# Check to make sure.
+	set src "function[pid].c"
+	set exe "function[pid].exe"
+
+	set f [open $src "w"]
+	puts $f "int main () { $function (); }"
+	close $f
+
+	set lines [${tool}_target_compile $src $exe executable ""]
+	file delete $src
+	file delete $exe
+
+	if {![string match "" $lines]} then {
+	    set $var 0
+	    verbose -log "$function is not available"
+	} else {
+	    verbose -log "$function is available"
+	}
+    }
+
+    eval return \$$var
+}
+
+# Returns ture iff "fork" is available on the target system.
+
+proc check_fork_available {} {
+    return [check_function_available "fork"]
+}
+
+# Returns ture iff "mkfifo" is available on the target system.
+
+proc check_mkfifo_available {} {
+    return [check_function_available "mkfifo"]
+}
+
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
 #
