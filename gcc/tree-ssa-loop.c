@@ -323,13 +323,16 @@ tree_complete_unroll (void)
   if (!current_loops)
     return;
 
-  tree_unroll_loops_completely (current_loops);
+  tree_unroll_loops_completely (current_loops,
+				flag_unroll_loops
+				|| flag_peel_loops
+				|| optimize >= 3);
 }
 
 static bool
 gate_tree_complete_unroll (void)
 {
-  return flag_peel_loops || flag_unroll_loops;
+  return true;
 }
 
 struct tree_opt_pass pass_complete_unroll =
