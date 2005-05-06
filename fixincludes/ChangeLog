@@ -1,3 +1,9 @@
+2005-05-06  Bruce Korb  <bkorb@gnu.org>
+	Joseph S. Myers <joseph@codesourcery.com>
+
+	* fixinc/inclhack.def: Correct backslashes
+	* fixinc/fixincl.x: regen
+
 2005-04-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (fopen, fdopen, freopen): Define these to the unlocked
