@@ -1,5 +1,10 @@
 2005-05-06  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/BufferCapabilities.java
+	(BufferCapabilities): Merged javadoc.
+
+2005-05-06  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Locale.java
 	(defaultLocale): Use gnu.classpath.SystemProperties to get properties.
 	(getLocale): New methods. Use it everywhere where instances of Locales
