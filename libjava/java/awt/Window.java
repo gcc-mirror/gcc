@@ -45,6 +45,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
+import java.awt.image.BufferStrategy;
 import java.awt.peer.WindowPeer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -794,6 +795,168 @@ public class Window extends Container implements Accessible
         setLocation (x, y);
       }
     // FIXME: handle case where component is non-null.
+  }
+
+  /**
+   * A BltBufferStrategy for windows.
+   */
+  private class WindowBltBufferStrategy extends BltBufferStrategy
+  {
+    /**
+     * Creates a block transfer strategy for this window.
+     *
+     * @param numBuffers the number of buffers in this strategy
+     * @param accelerated true if the buffer should be accelerated,
+     * false otherwise
+     */
+    WindowBltBufferStrategy(int numBuffers, boolean accelerated)
+    {
+      super(numBuffers,
+	    new BufferCapabilities(new ImageCapabilities(accelerated),
+				   new ImageCapabilities(accelerated),
+				   BufferCapabilities.FlipContents.COPIED));
+    }
+  }
+
+  /**
+   * A FlipBufferStrategy for windows.
+   */
+  private class WindowFlipBufferStrategy extends FlipBufferStrategy
+  {
+    /**
+     * Creates a flip buffer strategy for this window.
+     *
+     * @param numBuffers the number of buffers in this strategy
+     *
+     * @throws AWTException if the requested number of buffers is not
+     * supported
+     */
+    WindowFlipBufferStrategy(int numBuffers)
+      throws AWTException
+    {
+      super(numBuffers,
+	    new BufferCapabilities(new ImageCapabilities(true),
+				   new ImageCapabilities(true),
+				   BufferCapabilities.FlipContents.COPIED));
+    }
+  }
+
+  /**
+   * Creates a buffering strategy that manages how this window is
+   * repainted.  This method attempts to create the optimum strategy
+   * based on the desired number of buffers.  Hardware or software
+   * acceleration may be used.
+   *
+   * createBufferStrategy attempts different levels of optimization,
+   * but guarantees that some strategy with the requested number of
+   * buffers will be created even if it is not optimal.  First it
+   * attempts to create a page flipping strategy, then an accelerated
+   * blitting strategy, then an unaccelerated blitting strategy.
+   *
+   * Calling this method causes any existing buffer strategy to be
+   * destroyed.
+   *
+   * @param numBuffers the number of buffers in this strategy
+   *
+   * @throws IllegalArgumentException if requested number of buffers
+   * is less than one
+   * @throws IllegalStateException if this window is not displayable
+   *
+   * @since 1.4
+   */
+  public void createBufferStrategy(int numBuffers)
+  {
+    if (numBuffers < 1)
+      throw new IllegalArgumentException("Window.createBufferStrategy: number"
+					 + " of buffers is less than one");
+
+    if (!isDisplayable())
+      throw new IllegalStateException("Window.createBufferStrategy: window is"
+				      + " not displayable");
+
+    // try a flipping strategy
+    try
+      {
+	bufferStrategy = new WindowFlipBufferStrategy(numBuffers);
+	return;
+      }
+    catch (AWTException e)
+      {
+      }
+
+    // try an accelerated blitting strategy
+    try
+      {
+	bufferStrategy = new WindowBltBufferStrategy(numBuffers, true);
+      }
+    catch (AWTException e)
+      {
+      }
+
+    // fall back to an unaccelerated blitting strategy
+    try
+      {
+	bufferStrategy = new WindowBltBufferStrategy(numBuffers, false);
+      }
+    catch (AWTException e)
+      {
+      }
+  }
+
+  /**
+   * Creates a buffering strategy that manages how this window is
+   * repainted.  This method attempts to create a strategy based on
+   * the specified capabilities and throws an exception if the
+   * requested strategy is not supported.
+   *
+   * Calling this method causes any existing buffer strategy to be
+   * destroyed.
+   *
+   * @param numBuffers the number of buffers in this strategy
+   * @param caps the requested buffering capabilities
+   *
+   * @throws AWTException if the requested capabilities are not
+   * supported
+   * @throws IllegalArgumentException if requested number of buffers
+   * is less than one or if caps is null
+   *
+   * @since 1.4
+   */
+  public void createBufferStrategy(int numBuffers,
+				   BufferCapabilities caps)
+  {
+    if (numBuffers < 1)
+      throw new IllegalArgumentException("Window.createBufferStrategy: number"
+					 + " of buffers is less than one");
+
+    if (caps == null)
+      throw new IllegalArgumentException("Window.createBufferStrategy:"
+					 + " capabilities object is null");
+
+    // a flipping strategy was requested
+    if (caps.isPageFlipping())
+      {
+	try
+	  {
+	    bufferStrategy = new WindowFlipBufferStrategy(numBuffers);
+	  }
+	catch (AWTException e)
+	  {
+	  }
+      }
+    else
+      bufferStrategy = new WindowBltBufferStrategy(numBuffers, true);
+  }
+
+  /**
+   * Returns the buffer strategy used by the window.
+   *
+   * @return the buffer strategy.
+   * @since 1.4
+   */
+  public BufferStrategy getBufferStrategy()
+  {
+    return bufferStrategy;
   }
 
   /**

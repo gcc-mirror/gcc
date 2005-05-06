@@ -86,14 +86,14 @@ public class GdkGraphicsConfiguration
 
   public VolatileImage createCompatibleVolatileImage(int w, int h)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return new GtkVolatileImage(w, h);
   }
 
   public VolatileImage createCompatibleVolatileImage(int w, int h,
                                                      ImageCapabilities caps)
     throws java.awt.AWTException
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return new GtkVolatileImage(w, h, caps);
   }
 
   public ColorModel getColorModel()

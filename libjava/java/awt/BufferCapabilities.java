@@ -132,22 +132,22 @@ public class BufferCapabilities implements Cloneable
   /**
    * Creates a buffer capabilities object.
    *
-   * @param front front buffer capabilities descriptor
-   * @param back back buffer capabilities descriptor
+   * @param frontCaps front buffer capabilities descriptor
+   * @param backCaps back buffer capabilities descriptor
    * @param flip the results of a flip operation or null if
    * flipping is not supported
    *
-   * @exception IllegalArgumentException if front or back is
+   * @exception IllegalArgumentException if frontCaps or backCaps is
    * null
    */
-  public BufferCapabilities(ImageCapabilities front,
-			    ImageCapabilities back,
+  public BufferCapabilities(ImageCapabilities frontCaps,
+			    ImageCapabilities backCaps,
                             FlipContents flip)
   {
-    if (front ==  null || back == null)
+    if (frontCaps ==  null || backCaps == null)
       throw new IllegalArgumentException();
-    this.front = front;
-    this.back = back;
+    this.front = frontCaps;
+    this.back = backCaps;
     this.flip = flip;
   }
 
