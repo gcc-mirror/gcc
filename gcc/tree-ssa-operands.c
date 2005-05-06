@@ -133,9 +133,9 @@ bool ssa_call_clobbered_cache_valid;
 bool ssa_ro_call_cache_valid;
 
 /* These arrays are the cached operand vectors for call clobbered calls.  */
-static GTY (()) varray_type clobbered_v_may_defs;
-static GTY (()) varray_type clobbered_vuses;
-static GTY (()) varray_type ro_call_vuses;
+static VEC(tree,heap) *clobbered_v_may_defs;
+static VEC(tree,heap) *clobbered_vuses;
+static VEC(tree,heap) *ro_call_vuses;
 static bool clobbered_aliased_loads;
 static bool clobbered_aliased_stores;
 static bool ro_call_aliased_loads;
@@ -428,18 +428,9 @@ fini_ssa_operands (void)
       ggc_free (ptr);
     }
 
-  if (clobbered_v_may_defs)
-    {
-      ggc_free (clobbered_v_may_defs);
-      ggc_free (clobbered_vuses);
-      clobbered_v_may_defs = NULL;
-      clobbered_vuses = NULL;
-    }
-  if (ro_call_vuses)
-    {
-      ggc_free (ro_call_vuses);
-      ro_call_vuses = NULL;
-    }
+  VEC_free (tree, heap, clobbered_v_may_defs);
+  VEC_free (tree, heap, clobbered_vuses);
+  VEC_free (tree, heap, ro_call_vuses);
   ops_active = false;
 }
 
@@ -1975,16 +1966,16 @@ add_call_clobber_ops (tree stmt)
     {
       /* Process the caches in reverse order so we are always inserting at
          the head of the list.  */
-      for (i = VARRAY_ACTIVE_SIZE (clobbered_vuses) - 1; i >=0; i--)
+      for (i = VEC_length (tree, clobbered_vuses) - 1; i >=0; i--)
 	{
-	  t = VARRAY_TREE (clobbered_vuses, i);
+	  t = VEC_index (tree, clobbered_vuses, i);
 	  gcc_assert (TREE_CODE (t) != SSA_NAME);
 	  var_ann (t)->in_vuse_list = 1;
 	  opbuild_append_virtual (&build_vuses, t);
 	}
-      for (i = VARRAY_ACTIVE_SIZE (clobbered_v_may_defs) - 1; i >= 0; i--)
+      for (i = VEC_length (tree, clobbered_v_may_defs) - 1; i >= 0; i--)
 	{
-	  t = VARRAY_TREE (clobbered_v_may_defs, i);
+	  t = VEC_index (tree, clobbered_v_may_defs, i);
 	  gcc_assert (TREE_CODE (t) != SSA_NAME);
 	  var_ann (t)->in_v_may_def_list = 1;
 	  opbuild_append_virtual (&build_v_may_defs, t);
@@ -2020,34 +2011,27 @@ add_call_clobber_ops (tree stmt)
     }
 
   /* Prepare empty cache vectors.  */
-  if (clobbered_v_may_defs)
-    {
-      VARRAY_POP_ALL (clobbered_vuses);
-      VARRAY_POP_ALL (clobbered_v_may_defs);
-    }
-  else
-    {
-      VARRAY_TREE_INIT (clobbered_v_may_defs, 10, "clobbered_v_may_defs");
-      VARRAY_TREE_INIT (clobbered_vuses, 10, "clobbered_vuses");
-    }
+  VEC_truncate (tree, clobbered_vuses, 0);
+  VEC_truncate (tree, clobbered_v_may_defs, 0);
 
   /* Now fill the clobbered cache with the values that have been found.  */
   for (i = opbuild_first (&build_vuses);
        i != OPBUILD_LAST;
        i = opbuild_next (&build_vuses, i))
-    VARRAY_PUSH_TREE (clobbered_vuses, opbuild_elem_virtual (&build_vuses, i));
+    VEC_safe_push (tree, heap, clobbered_vuses,
+		   opbuild_elem_virtual (&build_vuses, i));
 
   gcc_assert (opbuild_num_elems (&build_vuses) 
-	      == VARRAY_ACTIVE_SIZE (clobbered_vuses));
+	      == VEC_length (tree, clobbered_vuses));
 
   for (i = opbuild_first (&build_v_may_defs);
        i != OPBUILD_LAST;
        i = opbuild_next (&build_v_may_defs, i))
-    VARRAY_PUSH_TREE (clobbered_v_may_defs, 
-		      opbuild_elem_virtual (&build_v_may_defs, i));
+    VEC_safe_push (tree, heap, clobbered_v_may_defs, 
+		   opbuild_elem_virtual (&build_v_may_defs, i));
 
   gcc_assert (opbuild_num_elems (&build_v_may_defs) 
-	      == VARRAY_ACTIVE_SIZE (clobbered_v_may_defs));
+	      == VEC_length (tree, clobbered_v_may_defs));
 
   ssa_call_clobbered_cache_valid = true;
 }
@@ -2078,11 +2062,11 @@ add_call_read_ops (tree stmt)
   /* If cache is valid, copy the elements into the build vector.  */
   if (ssa_ro_call_cache_valid)
     {
-      for (i = VARRAY_ACTIVE_SIZE (ro_call_vuses) - 1; i >=0 ; i--)
+      for (i = VEC_length (tree, ro_call_vuses) - 1; i >=0 ; i--)
 	{
 	  /* Process the caches in reverse order so we are always inserting at
 	     the head of the list.  */
-	  t = VARRAY_TREE (ro_call_vuses, i);
+	  t = VEC_index (tree, ro_call_vuses, i);
 	  gcc_assert (TREE_CODE (t) != SSA_NAME);
 	  var_ann (t)->in_vuse_list = 1;
 	  opbuild_append_virtual (&build_vuses, t);
@@ -2106,20 +2090,17 @@ add_call_read_ops (tree stmt)
     s_ann->makes_aliased_loads = empty_ann.makes_aliased_loads;
 
   /* Prepare empty cache vectors.  */
-  if (ro_call_vuses)
-    VARRAY_POP_ALL (ro_call_vuses);
-  else
-    VARRAY_TREE_INIT (ro_call_vuses, 10, "ro_call_vuses");
-
+  VEC_truncate (tree, ro_call_vuses, 0);
 
   /* Now fill the clobbered cache with the values that have been found.  */
   for (i = opbuild_first (&build_vuses);
        i != OPBUILD_LAST;
        i = opbuild_next (&build_vuses, i))
-    VARRAY_PUSH_TREE (ro_call_vuses, opbuild_elem_virtual (&build_vuses, i));
+    VEC_safe_push (tree, heap, ro_call_vuses,
+		   opbuild_elem_virtual (&build_vuses, i));
 
   gcc_assert (opbuild_num_elems (&build_vuses) 
-	      == VARRAY_ACTIVE_SIZE (ro_call_vuses));
+	      == VEC_length (tree, ro_call_vuses));
 
   ssa_ro_call_cache_valid = true;
 }

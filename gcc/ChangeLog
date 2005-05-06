@@ -1,3 +1,9 @@
+2005-05-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-operands.c (clobbered_v_may_defs, clobbered_vuses,
+	ro_call_vuse, fini_ssa_operands, add_call_clobber_ops,
+	add_call_read_ops): Use VEC instead of VARRAY.
+
 2005-05-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/mcore/mcore.c (mcore_print_operand_address): Use
