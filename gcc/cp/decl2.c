@@ -94,10 +94,6 @@ static GTY(()) varray_type pending_statics;
    may need to emit outline anyway.  */
 static GTY(()) VEC(tree,gc) *deferred_fns;
 
-/* Flag used when debugging spew.c */
-
-extern int spew_debug;
-
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 int at_eof;
