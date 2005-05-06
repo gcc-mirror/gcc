@@ -1,3 +1,16 @@
+2005-05-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/m32r/m32r.c (m32r_encode_section_info): Use gcc_assert
+	and gcc_unreachable, as appropriate.
+	(gen_compare, gen_split_move_double, m32r_setup_incoming_varargs,
+	m32r_expand_prologue, m32r_output_function_epilogue,
+	m32r_legitimize_pic_address, m32r_print_operand_address,
+	emit_cond_move, m32r_function_symbol,
+	m32r_output_block_move): Likewise.
+	* config/m32r/m32r.h (INITIAL_ELIMINATION_OFFSET): Likewise.
+	* config/m32r/m32r.md (	*movsi_insn, *zero_branch_insn,
+	*rev_zero_branch_insn): Likewise.
+	
 2005-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/20961

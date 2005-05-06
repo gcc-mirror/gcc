@@ -907,7 +907,7 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
       else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
 	(OFFSET) = size - current_function_pretend_args_size;			\
       else									\
-	abort ();								\
+	gcc_unreachable ();								\
     }										\
   while (0)
 
