@@ -560,7 +560,8 @@ thread_through_all_blocks (void)
 
   FOR_EACH_BB (bb)
     {
-      if (bb_ann (bb)->incoming_edge_threaded)
+      if (bb_ann (bb)->incoming_edge_threaded
+	  && EDGE_COUNT (bb->preds) > 0)
 	{
 	  thread_block (bb);
 	  retval = true;

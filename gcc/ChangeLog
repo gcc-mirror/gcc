@@ -1,3 +1,9 @@
+2005-05-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/21380
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Do not
+	thread through a block with no preds.
+
 2005-05-05  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (hppa1.1-*-rtems*): Obsolete.
