@@ -1,5 +1,18 @@
 2005-05-06  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR tree-optimization/19401
+	* tree-flow.h (tree_unroll_loops_completely): Declaration changed.
+	* tree-ssa-loop-ivcanon.c (enum unroll_level): New.
+	(estimated_unrolled_size): New function.
+	(try_unroll_loop_completely, canonicalize_loop_induction_variables,
+	tree_unroll_loops_completely): Always unroll loops if the code size
+	does not increase.
+	* tree-ssa-loop.c (tree_complete_unroll): Indicate whether all
+	loops should be unrolled completely.
+	(gate_tree_complete_unroll): Run complete unrolling unconditionally.
+
+2005-05-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	PR rtl-optimization/21254
 	* loop-iv.c (iv_number_of_iterations): Simplify infiniteness
 	assumptions for loops that otherwise do not roll.

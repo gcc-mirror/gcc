@@ -693,7 +693,7 @@ bool empty_block_p (basic_block);
 void tree_ssa_lim (struct loops *);
 void tree_ssa_unswitch_loops (struct loops *);
 void canonicalize_induction_variables (struct loops *);
-void tree_unroll_loops_completely (struct loops *);
+void tree_unroll_loops_completely (struct loops *, bool);
 void tree_ssa_iv_optimize (struct loops *);
 
 bool number_of_iterations_exit (struct loop *, edge,
