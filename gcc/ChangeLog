@@ -1,3 +1,12 @@
+2005-05-06  Denis Vlasenko  <vda@port.imtp.ilyichevsk.odessa.ua>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/21329
+	* config/i386/i386.c (ix86_expand_movmem): Don't use rep; movsb
+	for -Os if (movsl;)*(movsw;)?(movsb;)? sequence is shorter.
+	Don't use rep; movs{l,q} if the repetition count is really small,
+	instead use a sequence of movs{l,q} instructions.
+
 2005-05-06  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/21380

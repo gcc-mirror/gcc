@@ -11285,9 +11285,20 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
     src = replace_equiv_address_nv (src, srcreg);
 
   /* When optimizing for size emit simple rep ; movsb instruction for
-     counts not divisible by 4.  */
+     counts not divisible by 4, except when (movsl;)*(movsw;)?(movsb;)?
+     sequence is shorter than mov{b,l} $count, %{ecx,cl}; rep; movsb.
+     Sice of (movsl;)*(movsw;)?(movsb;)? sequence is
+     count / 4 + (count & 3), the other sequence is either 4 or 7 bytes,
+     but we don't know whether upper 24 (resp. 56) bits of %ecx will be
+     known to be zero or not.  The rep; movsb sequence causes higher
+     register preasure though, so take that into account.  */
 
-  if ((!optimize || optimize_size) && (count == 0 || (count & 0x03)))
+  if ((!optimize || optimize_size)
+      && (count == 0
+	  || ((count & 0x03)
+	      && (!optimize_size
+		  || count > 5 * 4
+		  || (count & 3) + count / 4 > 6))))
     {
       emit_insn (gen_cld ());
       countreg = ix86_zero_extend_to_Pmode (count_exp);
@@ -11313,19 +11324,36 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
       emit_insn (gen_cld ());
       if (count & ~(size - 1))
 	{
-	  countreg = copy_to_mode_reg (counter_mode,
-				       GEN_INT ((count >> (size == 4 ? 2 : 3))
-						& (TARGET_64BIT ? -1 : 0x3fffffff)));
-	  countreg = ix86_zero_extend_to_Pmode (countreg);
+	  if ((TARGET_SINGLE_STRINGOP || optimize_size) && count < 5 * 4)
+	    {
+	      enum machine_mode movs_mode = size == 4 ? SImode : DImode;
 
-	  destexp = gen_rtx_ASHIFT (Pmode, countreg,
-				    GEN_INT (size == 4 ? 2 : 3));
-	  srcexp = gen_rtx_PLUS (Pmode, destexp, srcreg);
-	  destexp = gen_rtx_PLUS (Pmode, destexp, destreg);
+	      while (offset < (count & ~(size - 1)))
+		{
+		  srcmem = adjust_automodify_address_nv (src, movs_mode,
+							 srcreg, offset);
+		  dstmem = adjust_automodify_address_nv (dst, movs_mode,
+							 destreg, offset);
+		  emit_insn (gen_strmov (destreg, dstmem, srcreg, srcmem));
+		  offset += size;
+		}
+	    }
+	  else
+	    {
+	      countreg = GEN_INT ((count >> (size == 4 ? 2 : 3))
+				  & (TARGET_64BIT ? -1 : 0x3fffffff));
+	      countreg = copy_to_mode_reg (counter_mode, countreg);
+	      countreg = ix86_zero_extend_to_Pmode (countreg);
 
-	  emit_insn (gen_rep_mov (destreg, dst, srcreg, src,
-				  countreg, destexp, srcexp));
-	  offset = count & ~(size - 1);
+	      destexp = gen_rtx_ASHIFT (Pmode, countreg,
+					GEN_INT (size == 4 ? 2 : 3));
+	      srcexp = gen_rtx_PLUS (Pmode, destexp, srcreg);
+	      destexp = gen_rtx_PLUS (Pmode, destexp, destreg);
+
+	      emit_insn (gen_rep_mov (destreg, dst, srcreg, src,
+				      countreg, destexp, srcexp));
+	      offset = count & ~(size - 1);
+	    }
 	}
       if (size == 8 && (count & 0x04))
 	{
