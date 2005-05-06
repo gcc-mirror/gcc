@@ -2,6 +2,9 @@
 
 	* decl2.c (spew_debug): Remove.
 
+	* decl2.c (ssdf_decls, start_static_storage_duration_function,
+	generate_ctor_or_dtor_function): Use VEC instead of VARRAY.
+
 2005-05-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* decl2.c (deferred_fns, note_vague_linkage_fn,
