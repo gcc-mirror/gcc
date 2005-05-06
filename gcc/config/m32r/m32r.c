@@ -432,7 +432,7 @@ m32r_encode_section_info (tree decl, rtx rtl, int first)
       else if (id == large_ident1 || id == large_ident2)
 	model = M32R_MODEL_LARGE;
       else
-	abort (); /* shouldn't happen */
+	gcc_unreachable (); /* shouldn't happen */
     }
   else
     {
@@ -443,7 +443,7 @@ m32r_encode_section_info (tree decl, rtx rtl, int first)
       else if (TARGET_MODEL_LARGE)
 	model = M32R_MODEL_LARGE;
       else
-	abort (); /* shouldn't happen */
+	gcc_unreachable (); /* shouldn't happen */
     }
   extra_flags |= model << SYMBOL_FLAG_MODEL_SHIFT;
 
@@ -700,7 +700,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
     case GEU: compare_code = LTU; branch_code = EQ; break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (need_compare)
@@ -766,7 +766,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  code = NE;
 		  break;
 		default:
-		  abort ();
+		  gcc_unreachable ();
 		}
 	      
 	      return gen_rtx_fmt_ee (code, CCmode, cc_reg, const0_rtx);
@@ -806,7 +806,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  code = NE;
 		  break;
 		default:
-		  abort();
+		  gcc_unreachable ();
 		}
 	      
 	      return gen_rtx_fmt_ee (code, CCmode, cc_reg, const0_rtx);
@@ -814,7 +814,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	  break;
 
 	default:
-	  abort();
+	  gcc_unreachable ();
 	}
     }
   else
@@ -876,7 +876,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return gen_rtx_fmt_ee (branch_code, VOIDmode, cc_reg, CONST0_RTX (CCmode));
@@ -968,7 +968,7 @@ gen_split_move_double (rtx operands[])
 						  !reverse * UNITS_PER_WORD)));
 	}
       else
-	abort ();
+	gcc_unreachable ();
     }
 
   /* Mem = reg.  */
@@ -995,7 +995,7 @@ gen_split_move_double (rtx operands[])
     }
 
   else
-    abort ();
+    gcc_unreachable ();
 
   val = get_insns ();
   end_sequence ();
@@ -1049,8 +1049,7 @@ m32r_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     return;
 
   /* All BLKmode values are passed by reference.  */
-  if (mode == BLKmode)
-    abort ();
+  gcc_assert (mode != BLKmode);
 
   first_anon_arg = (ROUND_ADVANCE_CUM (*cum, mode, type)
 		    + ROUND_ADVANCE_ARG (mode, type));
@@ -1401,8 +1400,7 @@ m32r_expand_prologue (void)
   gmask = current_frame_info.gmask;
 
   /* These cases shouldn't happen.  Catch them now.  */
-  if (current_frame_info.total_size == 0 && gmask)
-    abort ();
+  gcc_assert (current_frame_info.total_size || !gmask);
 
   /* Allocate space for register arguments if this is a variadic function.  */
   if (current_frame_info.pretend_size != 0)
@@ -1512,8 +1510,7 @@ m32r_output_function_epilogue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   /* This is only for the human reader.  */
   fprintf (file, "\t%s EPILOGUE\n", ASM_COMMENT_START);
 
-  if (!current_frame_info.initialized)
-    abort ();
+  gcc_assert (current_frame_info.initialized);
   total_size = current_frame_info.total_size;
 
   if (total_size == 0)
@@ -1572,7 +1569,7 @@ m32r_output_function_epilogue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
 	}
       else
-	abort ();
+	gcc_unreachable ();
 
       if (current_frame_info.save_lr)
 	fprintf (file, "\tpop %s\n", reg_names[RETURN_ADDR_REGNUM]);
@@ -1654,10 +1651,8 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
 
       if (reg == 0)
         {
-          if (reload_in_progress || reload_completed)
-            abort ();
-          else
-            reg = gen_reg_rtx (Pmode);
+          gcc_assert (!reload_in_progress && !reload_completed);
+	  reg = gen_reg_rtx (Pmode);
 
           subregs = 1;
         }
@@ -1700,10 +1695,8 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
 
       if (reg == 0)
         {
-          if (reload_in_progress || reload_completed)
-            abort ();
-          else
-            reg = gen_reg_rtx (Pmode);
+          gcc_assert (!reload_in_progress && !reload_completed);
+	  reg = gen_reg_rtx (Pmode);
         }
 
       if (GET_CODE (XEXP (orig, 0)) == PLUS)
@@ -1721,11 +1714,11 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
         {
           if (INT16_P (INTVAL (offset)))
             return plus_constant (base, INTVAL (offset));
-          else if (! reload_in_progress && ! reload_completed)
-            offset = force_reg (Pmode, offset);
           else
-            /* If we reach here, then something is seriously wrong.  */
-            abort ();
+	    {
+	      gcc_assert (! reload_in_progress && ! reload_completed);
+	      offset = force_reg (Pmode, offset);
+	    }
         }
 
       return gen_rtx_PLUS (Pmode, base, offset);
@@ -2045,9 +2038,7 @@ m32r_print_operand_address (FILE * file, rtx addr)
 	}
       else if (GET_CODE (base) == LO_SUM)
 	{
-	  if (index != 0
-	      || GET_CODE (XEXP (base, 0)) != REG)
-	    abort ();
+	  gcc_assert (!index && GET_CODE (XEXP (base, 0)) == REG);
 	  if (small_data_operand (XEXP (base, 1), VOIDmode))
 	    fputs ("sda(", file);
 	  else
@@ -2117,12 +2108,9 @@ emit_cond_move (rtx * operands, rtx insn ATTRIBUTE_UNUSED)
   buffer [0] = 0;
   
   /* Destination must be a register.  */
-  if (GET_CODE (operands [0]) != REG)
-    abort();
-  if (! conditional_move_operand (operands [2], SImode))
-    abort();
-  if (! conditional_move_operand (operands [3], SImode))
-    abort();
+  gcc_assert (GET_CODE (operands [0]) == REG);
+  gcc_assert (conditional_move_operand (operands [2], SImode));
+  gcc_assert (conditional_move_operand (operands [3], SImode));
       
   /* Check to see if the test is reversed.  */
   if (GET_CODE (operands [1]) == NE)
@@ -2181,7 +2169,7 @@ m32r_function_symbol (const char *name)
   else if (TARGET_MODEL_LARGE)
     model = M32R_MODEL_LARGE;
   else
-    abort (); /* Shouldn't happen.  */
+    gcc_unreachable (); /* Shouldn't happen.  */
   extra_flags |= model << SYMBOL_FLAG_MODEL_SHIFT;
                                                                                 
   if (extra_flags)
@@ -2320,8 +2308,7 @@ m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
   int		first_time;
   int		got_extra = 0;
   
-  if (bytes < 1 || bytes > MAX_MOVE_BYTES)
-    abort ();
+  gcc_assert (bytes >= 1 && bytes <= MAX_MOVE_BYTES);
   
   /* We do not have a post-increment store available, so the first set of
      stores are done without any increment, then the remaining ones can use
