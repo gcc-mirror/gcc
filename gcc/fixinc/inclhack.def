@@ -82,13 +82,13 @@ fix = {
 
 	#if defined(__FD_ZERO) && !defined(__GLIBC__)
 	#undef __FD_ZERO
-	# define __FD_ZERO(fdsetp) \\
-	  do { \\
-	    int __d0, __d1; \\
-		__asm__ __volatile__("cld ; rep ; stosl" \\
-        	: "=&c" (__d0), "=&D" (__d1) \\
-        	: "a" (0), "0" (__FDSET_LONGS), \\
-		  "1" ((__fd_set *) (fdsetp)) :"memory"); \\
+	# define __FD_ZERO(fdsetp) \
+	  do { \
+	    int __d0, __d1; \
+	        __asm__ __volatile__("cld ; rep ; stosl" \
+	        : "=&c" (__d0), "=&D" (__d1) \
+	        : "a" (0), "0" (__FDSET_LONGS), \
+	          "1" ((__fd_set *) (fdsetp)) :"memory"); \
 	  } while (0)
 	#endif
 
