@@ -1,3 +1,7 @@
+2005-05-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/rs6000/sysv4.h (EXTRA_SUBTARGET_SWITCHES): Delete.
+
 2005-05-05  J"orn Rennecke  <joern.rennecke@st.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 

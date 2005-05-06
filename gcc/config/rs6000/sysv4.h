@@ -65,9 +65,6 @@ extern const char *rs6000_tls_size_string; /* For -mtls-size= */
 
 #define SDATA_DEFAULT_SIZE 8
 
-/* This is meant to be redefined in the host dependent files.  */
-#define EXTRA_SUBTARGET_SWITCHES
-
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
