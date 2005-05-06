@@ -2167,7 +2167,7 @@ static GTY(()) tree ssdf_decl;
 
 /* All the static storage duration functions created in this
    translation unit.  */
-static GTY(()) varray_type ssdf_decls;
+static GTY(()) VEC(tree,gc) *ssdf_decls;
 
 /* A map from priority levels to information about that priority
    level.  There may be many such levels, so efficient lookup is
@@ -2215,7 +2215,7 @@ start_static_storage_duration_function (unsigned count)
      static constructors and destructors.  */
   if (!ssdf_decls)
     {
-      VARRAY_TREE_INIT (ssdf_decls, 32, "ssdf_decls");
+      ssdf_decls = VEC_alloc (tree, gc, 32);
 
       /* Take this opportunity to initialize the map from priority
 	 numbers to information about that priority level.  */
@@ -2231,7 +2231,7 @@ start_static_storage_duration_function (unsigned count)
       get_priority_info (DEFAULT_INIT_PRIORITY);
     }
 
-  VARRAY_PUSH_TREE (ssdf_decls, ssdf_decl);
+  VEC_safe_push (tree, gc, ssdf_decls, ssdf_decl);
 
   /* Create the argument list.  */
   initialize_p_decl = cp_build_parm_decl
@@ -2607,26 +2607,23 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 
   /* Call the static storage duration function with appropriate
      arguments.  */
-  if (ssdf_decls)
-    for (i = 0; i < ssdf_decls->elements_used; ++i) 
-      {
-	fndecl = VARRAY_TREE (ssdf_decls, i);
+  for (i = 0; VEC_iterate (tree, ssdf_decls, i, fndecl); ++i) 
+    {
+      /* Calls to pure or const functions will expand to nothing.  */
+      if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
+	{
+	  if (! body)
+	    body = start_objects (function_key, priority);
 
-	/* Calls to pure or const functions will expand to nothing.  */
-	if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
-	  {
-	    if (! body)
-	      body = start_objects (function_key, priority);
-
-	    arguments = tree_cons (NULL_TREE,
-				   build_int_cst (NULL_TREE, priority), 
-				   NULL_TREE);
-	    arguments = tree_cons (NULL_TREE,
-				   build_int_cst (NULL_TREE, constructor_p),
-				   arguments);
-	    finish_expr_stmt (build_function_call (fndecl, arguments));
-	  }
-      }
+	  arguments = tree_cons (NULL_TREE,
+				 build_int_cst (NULL_TREE, priority), 
+				 NULL_TREE);
+	  arguments = tree_cons (NULL_TREE,
+				 build_int_cst (NULL_TREE, constructor_p),
+				 arguments);
+	  finish_expr_stmt (build_function_call (fndecl, arguments));
+	}
+    }
 
   /* If we're generating code for the DEFAULT_INIT_PRIORITY, throw in
      calls to any functions marked with attributes indicating that
