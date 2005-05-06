@@ -1,3 +1,33 @@
+2005-05-06  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/PlainView.java
+	(drawUnselectedText): Call Utilities.drawTabbedText() with correct
+	offset parameter.
+	* javax/swing/text/Utilities.java
+	(drawTabbedText): Initilialize local variable pos correctly.
+
+2005-05-06  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/AbstractDocument.java
+	(LeafElement): Made start and end package private fields for
+	effective reindexing.
+	* javax/swing/text/PlainDocument.java
+	(constructor): The field rootElement is always BranchElement,
+	so we handle it as such.
+	(removeUpdate): Rewritten reindexing for removeUpdate so that
+	the actual removal is taken into account.
+
+2005-05-06  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/GapContent.java:
+	Removed debugging output stuff, which I accidentally left in.
+
+2005-05-06  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/GapContent.java:
+	Implemented a real GapContent. Only the public methods have
+	been implemented so far and still no UndoableEdit support.
+
 2005-05-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* java/awt/BufferCapabilities.java (BufferCapabilities): Fix

@@ -148,7 +148,7 @@ public class PlainView extends View
     g.setColor(unselectedColor);
     Segment segment = new Segment();
     getDocument().getText(p0, p1 - p0, segment);
-    return Utilities.drawTabbedText(segment, x, y, g, this, 0);
+    return Utilities.drawTabbedText(segment, x, y, g, this, segment.offset);
   }
 
   public void paint(Graphics g, Shape s)

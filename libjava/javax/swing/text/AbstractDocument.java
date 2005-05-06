@@ -847,8 +847,8 @@ public abstract class AbstractDocument
   public class LeafElement extends AbstractElement
   {
     private static final long serialVersionUID = 5115368706941283802L;
-    private int start;
-    private int end;
+    int start;
+    int end;
 
     public LeafElement(Element parent, AttributeSet attributes, int start,
                        int end)
