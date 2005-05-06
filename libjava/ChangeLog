@@ -1,3 +1,13 @@
+2005-05-06  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/Locale.java
+	(defaultLocale): Use gnu.classpath.SystemProperties to get properties.
+	(getLocale): New methods. Use it everywhere where instances of Locales
+	are needed.
+	(getDisplayLanguage): Merged javadoc.
+	(getDisplayCountry): Likewise.
+	(getDisplayVariant): Likewise.
+
 2005-05-06  Archie Cobbs  <archie@dellroad.org>
 
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c:
