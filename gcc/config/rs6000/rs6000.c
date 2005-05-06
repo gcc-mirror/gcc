@@ -15233,6 +15233,10 @@ rs6000_gen_section_name (char **buf, const char *filename,
 void
 output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 {
+  /* Non-standard profiling for kernels, which just saves LR then calls
+     _mcount without worrying about arg saves.  The idea is to change
+     the function prologue as little as possible as it isn't easy to
+     account for arg save/restore code added just for _mcount.  */
   if (TARGET_PROFILE_KERNEL)
     return;
 

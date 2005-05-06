@@ -1,3 +1,11 @@
+2005-05-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/linux64.h: Remove MASK_PROFILE_KERNEL, and
+	TARGET_PROFILE_KERNEL.
+
+	* config/rs6000/rs6000.c (output_profile_hook): Add comment to
+	TARGET_PROFILE_KERNEL use.
+
 2005-05-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m32r/m32r.c (m32r_encode_section_info): Use gcc_assert
