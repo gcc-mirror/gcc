@@ -1,5 +1,10 @@
 2005-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/21330
+	* loop-unswitch.c (may_unswitch_on): Set *cinsn only when
+	returning non-NULL.
+	(unswitch_single_loop): Clear cinsn when retrying.
+
 	PR c++/20961
 	* varasm.c (merge_weak): Remove NEWDECL from WEAK_DECLS chain
 	if both NEWDECL and OLDDECL are already weak.

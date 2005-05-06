@@ -1,5 +1,8 @@
 2005-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/21330
+	* gcc.c-torture/execute/20050502-1.c: New test.
+
 	PR c++/20961
 	* g++.dg/ext/weak3.C: New test.
 
