@@ -86,9 +86,7 @@ static tree get_guard_bits (tree);
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
    an initializer, and then initialized, statically, outside the class.  */
-static GTY(()) varray_type pending_statics;
-#define pending_statics_used \
-  (pending_statics ? pending_statics->elements_used : 0)
+static GTY(()) VEC(tree,gc) *pending_statics;
 
 /* A list of functions which were declared inline, but which we
    may need to emit outline anyway.  */
@@ -735,9 +733,7 @@ note_vague_linkage_fn (tree decl)
 static void
 note_vague_linkage_var (tree var)
 {
-  if (!pending_statics)
-    VARRAY_TREE_INIT (pending_statics, 32, "pending_statics");
-  VARRAY_PUSH_TREE (pending_statics, var);
+  VEC_safe_push (tree, gc, pending_statics, var);
 }
 
 /* We have just processed the DECL, which is a static data member.
@@ -2779,6 +2775,7 @@ cp_finish_file (void)
   do 
     {
       tree t;
+      tree decl;
 
       reconsider = false;
 
@@ -2965,9 +2962,8 @@ cp_finish_file (void)
 	reconsider = true;
 
       /* Static data members are just like namespace-scope globals.  */
-      for (i = 0; i < pending_statics_used; ++i) 
+      for (i = 0; VEC_iterate (tree, pending_statics, i, decl); ++i) 
 	{
-	  tree decl = VARRAY_TREE (pending_statics, i);
 	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl))
 	    continue;
 	  import_export_decl (decl);
@@ -2976,9 +2972,9 @@ cp_finish_file (void)
 	  if (DECL_NOT_REALLY_EXTERN (decl) && decl_needed_p (decl))
 	    DECL_EXTERNAL (decl) = 0;
 	}
-      if (pending_statics
-	  && wrapup_global_declarations (&VARRAY_TREE (pending_statics, 0),
-					 pending_statics_used))
+      if (VEC_length (tree, pending_statics) != 0
+	  && wrapup_global_declarations (VEC_address (tree, pending_statics),
+					 VEC_length (tree, pending_statics)))
 	reconsider = true;
 
       retries++;
@@ -3049,9 +3045,9 @@ cp_finish_file (void)
   /* Now, issue warnings about static, but not defined, functions,
      etc., and emit debugging information.  */
   walk_namespaces (wrapup_globals_for_namespace, /*data=*/&reconsider);
-  if (pending_statics)
-    check_global_declarations (&VARRAY_TREE (pending_statics, 0),
-			       pending_statics_used);
+  if (VEC_length (tree, pending_statics) != 0)
+    check_global_declarations (VEC_address (tree, pending_statics),
+			       VEC_length (tree, pending_statics));
 
   finish_repo ();
 
