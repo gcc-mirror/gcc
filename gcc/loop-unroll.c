@@ -375,6 +375,7 @@ decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
   /* Check number of iterations.  */
   if (!desc->simple_p
       || desc->assumptions
+      || desc->infinite
       || !desc->const_iter
       || desc->niter != 0)
     {
@@ -444,7 +445,8 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
   /* Check number of iterations.  */
   if (!desc->simple_p
       || desc->assumptions
-      || !desc->const_iter)
+      || !desc->const_iter
+      || desc->infinite)
     {
       if (dump_file)
 	fprintf (dump_file,
