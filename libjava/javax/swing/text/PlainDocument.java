@@ -47,7 +47,7 @@ public class PlainDocument extends AbstractDocument
   public static final String lineLimitAttribute = "lineLimit";
   public static final String tabSizeAttribute = "tabSize";
 
-  private Element rootElement;
+  private BranchElement rootElement;
   private int tabSize;
   
   public PlainDocument()
@@ -59,7 +59,7 @@ public class PlainDocument extends AbstractDocument
   {
     super(content);
     tabSize = 8;
-    rootElement = createDefaultRoot();
+    rootElement = (BranchElement) createDefaultRoot();
   }
 
   private void reindex()
@@ -114,9 +114,43 @@ public class PlainDocument extends AbstractDocument
 
   protected void removeUpdate(DefaultDocumentEvent event)
   {
-    reindex();
-
     super.removeUpdate(event);
+
+    int p0 = event.getOffset();
+    int p1 = event.getLength() + p0;
+    int len = event.getLength();
+
+    // check if we must collapse some elements
+    int i1 = rootElement.getElementIndex(p0);
+    int i2 = rootElement.getElementIndex(p1);
+    if (i1 != i2)
+      {
+        Element el1 = rootElement.getElement(i1);
+        Element el2 = rootElement.getElement(i2);
+        int start = el1.getStartOffset();
+        int end = el2.getEndOffset();
+        // collapse elements if the removal spans more than 1 line
+        Element newEl = createLeafElement(rootElement,
+                                          SimpleAttributeSet.EMPTY,
+                                          start, end - len);
+        rootElement.replace(start, end - start, new Element[]{ newEl });
+      }
+    else
+      {
+        // otherwise only adjust indices of the element
+        LeafElement el1 = (LeafElement) rootElement.getElement(i1);
+        el1.end -= len;
+      }
+
+    // reindex remaining elements
+    for (int i = rootElement.getElementIndex(p0) + 1;
+         i < rootElement.getElementCount(); i++)
+      {
+        LeafElement el = (LeafElement) rootElement.getElement(i);
+        el.start -= len;
+        el.end -= len;
+      }
+      
   }
 
   public Element getDefaultRootElement()

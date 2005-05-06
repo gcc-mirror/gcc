@@ -92,7 +92,7 @@ public class Utilities
     int ascent = metrics.getAscent();
 
     int pixelWidth = 0;
-    int pos = 0;
+    int pos = s.offset;
     int len = 0;
 
     for (int offset = s.offset; offset < (s.offset + s.count); ++offset)
