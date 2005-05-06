@@ -1,3 +1,34 @@
+2005-05-06  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR java/20309
+	* Make-lang.in (java): Add gjnih.
+	(JAVA_TARGET_INDEPENDENT_BIN_TOOLS): Likewise.
+	(GJNIH_OBJS): New variable.
+	(gjnih$(exeext)): New target.
+	(JAVA_MANFILES): Add gjnih.1.
+	(java.uninstall): Add gjnih.1.
+	(java.mostlyclean): Add gjnih.
+	(java.maintainer-clean): Add gjnih.1.
+	(java/gjavah-jni.o): New target.
+	(.INTERMEDIATE): Add gjnih.pod.
+	(gjnih.pod): New target.
+	* config-lang.in (stagestuff): Add gjnih.
+	* gcj.texi (Top): Add gjnih node.
+	(Invoking gcjh): Add descriptions of -force, -old, -trace, -J and
+	-bootclasspath options.
+	(Invoking gjnih): New node.
+	* gjavah.c Initialize flag_jni to 1 if JNI_DEFAULT is defined.
+	(TOOLNAME): New macro.
+	(error): Replace hard-coded gcjh with TOOLNAME.
+	(process_file): Likewise.
+	(usage): Likewise.
+	(version): Likewise.
+	(help): Likewise.  Add help output for -force, -old, -trace and -J
+	options.
+	(OPT_FORCE, OPT_OLD, OPT_TRACE): New macros.
+	(options): Add force, old, trace and J fields.
+	(main): Handle -force, -old, -trace and -J options.
+
 2005-04-28  Andrew Haley  <aph@redhat.com>
 
 	PR java/21115

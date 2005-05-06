@@ -53,8 +53,16 @@ FILE *out = NULL;
 /* Nonzero on failure.  */
 static int found_error = 0;
 
+#ifdef JNI_DEFAULT
+#define TOOLNAME "gjnih"
+
 /* Nonzero if we're generating JNI output.  */
+int flag_jni = 1;
+#else
+#define TOOLNAME "gcjh"
+
 int flag_jni = 0;
+#endif
 
 /* When nonzero, warn when source file is newer than matching class
    file.  */
@@ -266,7 +274,7 @@ error (const char *msgid, ...)
 
   va_start (ap, msgid);
 
-  fprintf (stderr, "gcjh: ");
+  fprintf (stderr, TOOLNAME ": ");
   vfprintf (stderr, _(msgid), ap);
   va_end (ap);
   fprintf (stderr, "\n");
@@ -2093,11 +2101,11 @@ process_file (JCF *jcf, FILE *out)
 		 cstart, mode, cend);
       else
 	{
-	  fprintf (out, "%s This file was created by `gcjh -stubs%s'.%s\n\
+	  fprintf (out, "%s This file was created by `" TOOLNAME " -stubs%s'.%s\n\
 %s\n\
 %s This file is intended to give you a head start on implementing native\n\
 %s methods using %s.\n\
-%s Be aware: running `gcjh -stubs %s' once more for this class may\n\
+%s Be aware: running `" TOOLNAME " -stubs %s' once more for this class may\n\
 %s overwrite any edits you have made to this file.%s\n\n",
 		   cstart, jflag, mode,
 		   cstart2,
@@ -2299,6 +2307,9 @@ process_file (JCF *jcf, FILE *out)
 #define OPT_MG            LONG_OPT (12)
 #define OPT_MD            LONG_OPT (13)
 #define OPT_MMD           LONG_OPT (14)
+#define OPT_FORCE         LONG_OPT (15)
+#define OPT_OLD           LONG_OPT (16)
+#define OPT_TRACE         LONG_OPT (17)
 
 static const struct option options[] =
 {
@@ -2321,23 +2332,33 @@ static const struct option options[] =
   { "MD",            no_argument,       NULL, OPT_MD  },
   { "MMD",           no_argument,       NULL, OPT_MMD },
   { "jni",           no_argument,       &flag_jni, 1 },
+  { "force",         no_argument,       NULL, OPT_FORCE },
+  /* If the output file should be named "ld" then a space is needed
+     between -o and its argument, ld. */
+  { "old",           no_argument,       NULL, OPT_OLD },
+  { "trace",         no_argument,       NULL, OPT_TRACE },
+  { NULL,            required_argument, NULL, 'J' },
   { NULL,            no_argument,       NULL, 0 }
 };
 
 static void
 usage (void)
 {
-  fprintf (stderr, _("Try 'gcjh --help' for more information.\n"));
+  fprintf (stderr, _("Try '" TOOLNAME " --help' for more information.\n"));
   exit (1);
 }
 
 static void
 help (void)
 {
-  printf (_("Usage: gcjh [OPTION]... CLASS...\n\n"));
-  printf (_("Generate C++ header files from .class files\n\n"));
+  printf (_("Usage: " TOOLNAME " [OPTION]... CLASS...\n\n"));
+  printf (_("Generate C or C++ header files from .class files\n\n"));
   printf (_("  -stubs                  Generate an implementation stub file\n"));
   printf (_("  -jni                    Generate a JNI header or stub\n"));
+  printf (_("  -force                  Always overwrite output files\n"));
+  printf (_("  -old                    Unused compatibility option\n"));
+  printf (_("  -trace                  Unused compatibility option\n"));
+  printf (_("  -J OPTION               Unused compatibility option\n"));
   printf ("\n");
   printf (_("  -add TEXT               Insert TEXT into class body\n"));
   printf (_("  -append TEXT            Insert TEXT after class declaration\n"));
@@ -2372,7 +2393,7 @@ help (void)
 static void
 version (void)
 {
-  printf ("gcjh (GCC) %s\n\n", version_string);
+  printf (TOOLNAME " (GCC) %s\n\n", version_string);
   printf ("Copyright %s 2004 Free Software Foundation, Inc.\n", _("(C)"));
   printf (_("This is free software; see the source for copying conditions.  There is NO\n"
 	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
@@ -2403,7 +2424,7 @@ main (int argc, char** argv)
 
   /* We use getopt_long_only to allow single `-' long options.  For
      some of our options this is more natural.  */
-  while ((opt = getopt_long_only (argc, argv, "I:d:o:v", options, NULL)) != -1)
+  while ((opt = getopt_long_only (argc, argv, "J:I:d:o:v", options, NULL)) != -1)
     {
       switch (opt)
 	{
@@ -2499,6 +2520,19 @@ main (int argc, char** argv)
 	case OPT_MMD:
 	  emit_dependencies = 1;
 	  jcf_dependency_init (0);
+	  break;
+
+	case OPT_FORCE:
+	  break;
+
+	case OPT_OLD:
+	  break;
+
+	case OPT_TRACE:
+	  break;
+
+	case 'J':
+          /* Ignore -J options. */
 	  break;
 
 	default:
