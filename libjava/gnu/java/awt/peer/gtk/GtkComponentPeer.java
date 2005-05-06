@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.AWTEvent;
+import java.awt.AWTException;
 import java.awt.BufferCapabilities;
 import java.awt.Color;
 import java.awt.Component;
@@ -71,6 +72,9 @@ import java.awt.peer.ComponentPeer;
 public class GtkComponentPeer extends GtkGenericPeer
   implements ComponentPeer
 {
+  VolatileImage backBuffer;
+  BufferCapabilities caps;
+
   Component awtComponent;
 
   Insets insets;
@@ -596,35 +600,63 @@ public class GtkComponentPeer extends GtkGenericPeer
     
   }
 
-  public VolatileImage createVolatileImage (int width, int height)
-  {
-    return null;
-  }
-
   public boolean handlesWheelScrolling ()
   {
     return false;
   }
 
-  public void createBuffers (int x, BufferCapabilities capabilities)
-    throws java.awt.AWTException
-
+  // Convenience method to create a new volatile image on the screen
+  // on which this component is displayed.
+  public VolatileImage createVolatileImage (int width, int height)
   {
-    
+    return new GtkVolatileImage (width, height);
   }
 
+  // Creates buffers used in a buffering strategy.
+  public void createBuffers (int numBuffers, BufferCapabilities caps)
+    throws AWTException
+  {
+    // numBuffers == 2 implies double-buffering, meaning one back
+    // buffer and one front buffer.
+    if (numBuffers == 2)
+      backBuffer = new GtkVolatileImage(awtComponent.getWidth(),
+					awtComponent.getHeight(),
+					caps.getBackBufferCapabilities());
+    else
+      throw new AWTException("GtkComponentPeer.createBuffers:"
+			     + " multi-buffering not supported");
+    this.caps = caps;
+  }
+
+  // Return the back buffer.
   public Image getBackBuffer ()
   {
-    return null;
+    return backBuffer;
   }
 
+  // FIXME: flip should be implemented as a fast native operation
   public void flip (BufferCapabilities.FlipContents contents)
   {
-    
+    getGraphics().drawImage(backBuffer,
+			    awtComponent.getWidth(),
+			    awtComponent.getHeight(),
+			    null);
+
+    // create new back buffer and clear it to the background color.
+    if (contents == BufferCapabilities.FlipContents.BACKGROUND)
+	{
+	  backBuffer = createVolatileImage(awtComponent.getWidth(),
+					   awtComponent.getHeight());
+	  backBuffer.getGraphics().clearRect(0, 0,
+					     awtComponent.getWidth(),
+					     awtComponent.getHeight());
+	}
+    // FIXME: support BufferCapabilities.FlipContents.PRIOR
   }
 
+  // Release the resources allocated to back buffers.
   public void destroyBuffers ()
   {
-    
+    backBuffer.flush();
   }
 }

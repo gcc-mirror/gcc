@@ -387,6 +387,7 @@ gnu/java/awt/peer/gtk/GtkTextAreaPeer.java \
 gnu/java/awt/peer/gtk/GtkTextComponentPeer.java	\
 gnu/java/awt/peer/gtk/GtkTextFieldPeer.java \
 gnu/java/awt/peer/gtk/GtkToolkit.java \
+gnu/java/awt/peer/gtk/GtkVolatileImage.java \
 gnu/java/awt/peer/gtk/GtkWindowPeer.java \
 gnu/java/awt/peer/gtk/GThreadMutex.java \
 gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java

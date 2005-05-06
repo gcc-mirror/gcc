@@ -79,8 +79,7 @@ public abstract class VolatileImage extends Image
    * One of validate's possible return values.  Indicates that the
    * image buffer has been restored, meaning that it is valid and
    * ready-to-use but that its previous contents have been lost.  This
-   * return value implies IMAGE_OK but that the image needs to be
-   * re-rendered.
+   * return value implies that the image needs to be re-rendered.
    */
   public static final int IMAGE_RESTORED = 1;
 
@@ -212,7 +211,7 @@ public abstract class VolatileImage extends Image
    *   <li><code>IMAGE_OK</code> if the image did not need to be
    *   validated and didn't need to be restored</li>
    *   <li><code>IMAGE_RESTORED</code> if the image may need to be
-   *   re-rendered.  This return value implies IMAGE_OK.</li>
+   *   re-rendered.</li>
    *   <li><code>IMAGE_INCOMPATIBLE</code> if this image's
    *   requirements are not fulfilled by the graphics configuration
    *   parameter.  This implies that you need to create a new

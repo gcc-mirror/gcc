@@ -96,23 +96,22 @@ public abstract class BufferStrategy
 
   /**
    * Returns whether or not the buffer's resources have been reclaimed
-   * by the native graphics system since the last call to
-   * getDrawGraphics.  If the buffer resources have been lost then
-   * you'll need to obtain new resources before drawing again.  For
-   * details, see the documentation for VolatileImage.
+   * by the native graphics system.  If the buffer resources have been
+   * lost then you'll need to obtain new resources before drawing
+   * again.  For details, see the documentation for VolatileImage.
    *
-   * @return true if the contents were lost since the last call to
-   * getDrawGraphics, false otherwise
+   * @return true if the contents were lost, false otherwise
    */
   public abstract boolean contentsLost();
 
   /**
    * Returns whether or not the buffer's resources were re-created and
-   * cleared to the default background color since the last call to
-   * getDrawGraphics.  If the buffer's resources have recently been
-   * re-created and initialized then the buffer's image may need to be
-   * re-rendered.  For details, see the documentation for
-   * VolatileImage.
+   * cleared to the default background color.  If the buffer's
+   * resources have recently been re-created and initialized then the
+   * buffer's image may need to be re-rendered.  For details, see the
+   * documentation for VolatileImage.
+   *
+   * @return true if the contents were restored, false otherwise
    */
   public abstract boolean contentsRestored();
 

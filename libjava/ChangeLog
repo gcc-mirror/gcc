@@ -1,3 +1,34 @@
+2005-05-06  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (gtk_awt_peer_sources): Add GtkVolatileImage.java.
+	* Makefile.in: Regenerate.
+	* gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java
+	(createCompatibleVolatileImage(int,int)): Implement.
+	(createCompatibleVolatileImage(int,int,ImageCapabilities)):
+	Likewise.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (backBuffer, caps):
+	New fields.
+	(createVolatileImage): Implement.
+	(createBuffers): Likewise.
+	(getBackBuffer): Likewise.
+	(flip): Likewise.
+	(destroyBuffers): Likewise.
+	* gnu/java/awt/peer/gtk/GtkVolatileImage.java: New file.
+	* java/awt/Canvas.java (CanvasBltBufferStrategy): New class.
+	(CanvasFlipBufferStrategy): Likewise.
+	(createBufferStrategy(int)): New method.
+	(createBufferStrategy(int,BufferCapabilities)): Likewise.
+	* java/awt/Component.java (BltBufferStrategy): Implement and
+	document class.
+	(FlipBufferStrategy): Likewise.
+	* java/awt/Window.java (WindowBltBufferStrategy): New class.
+	(WindowFlipBufferStrategy): Likewise.
+	(createBufferStrategy(int)): New method.
+	(createBufferStrategy(int,BufferCapabilities)): Likewise.
+	(getBufferStrategy): Likewise.
+	* java/awt/BufferCapabilities.java (BufferCapabilities): Rename
+	front to frontCaps and back to backCaps.
+
 2005-05-06  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/BufferCapabilities.java
