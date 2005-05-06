@@ -1,5 +1,5 @@
 /* gtkwindowpeer.c -- Native implementation of GtkWindowPeer
-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -56,7 +56,7 @@ static Bool property_notify_predicate (Display *display,
                                        XEvent  *xevent,
                                        XPointer arg);
 
-static void window_delete_cb (GtkWidget *widget, GdkEvent *event,
+static gboolean window_delete_cb (GtkWidget *widget, GdkEvent *event,
 			      jobject peer);
 static void window_destroy_cb (GtkWidget *widget, GdkEvent *event,
 			       jobject peer);
@@ -465,7 +465,7 @@ property_notify_predicate (Display *xdisplay __attribute__((unused)),
     return False;
 }
 
-static void
+static gboolean
 window_delete_cb (GtkWidget *widget __attribute__((unused)),
 		  GdkEvent *event __attribute__((unused)),
 		  jobject peer)
@@ -476,6 +476,12 @@ window_delete_cb (GtkWidget *widget __attribute__((unused)),
 			      (jint) AWT_WINDOW_CLOSING,
 			      (jobject) NULL, (jint) 0);
   gdk_threads_enter ();
+
+  /* Prevents that the Window dissappears ("destroy"
+     not being signalled). This is necessary because it
+     should be up to a WindowListener implementation
+     how the AWT Frame responds to close requests. */
+  return TRUE;
 }
 
 static void
