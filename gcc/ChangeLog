@@ -1,3 +1,13 @@
+2005-05-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/21254
+	* loop-iv.c (iv_number_of_iterations): Simplify infiniteness
+	assumptions for loops that otherwise do not roll.
+	(find_simple_exit): Prefer # of iterations that is guaranteed
+	not to be infinite.
+	* loop-unroll.c (decide_peel_once_rolling,
+	decide_peel_completely): Check whether the loop is infinite.
+
 2005-05-06  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/sysv4.opt: Fix typo.
