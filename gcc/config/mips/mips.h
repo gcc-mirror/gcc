@@ -970,7 +970,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 /* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
-#define INT_TYPE_SIZE (TARGET_INT64 ? 64 : 32)
+#define INT_TYPE_SIZE 32
 #define LONG_TYPE_SIZE (TARGET_LONG64 ? 64 : 32)
 #define LONG_LONG_TYPE_SIZE 64
 

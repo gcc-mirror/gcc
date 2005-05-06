@@ -133,10 +133,6 @@ mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Allow the use of hardware floating-point instructions
 
-mint64
-Target Report RejectNegative Mask(INT64)
-Use a 64-bit int type
-
 mips
 Target RejectNegative Joined
 -mipsN	Generate code for ISA level N

@@ -1,3 +1,14 @@
+2005-05-06  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.opt: Remove -mint64 option.
+	* config/mips/mips.c (override_options): Remove -mint64
+	handling.
+	* config/mips/mips.h (INT_TYPE_SIZE): Define to 32.
+	* config/mips/linux.h (TARGET_OS_CPP_BUILTINS): Remove
+	64-bit integer handling.
+	* doc/invoke.texi (Option Summary): Remove -mint64 for
+	mips.
+
 2005-05-06  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/19401
