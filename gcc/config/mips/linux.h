@@ -54,48 +54,45 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT MASK_ABICALLS
 
 #define TARGET_OS_CPP_BUILTINS()				\
-    do {							\
-	LINUX_TARGET_OS_CPP_BUILTINS();				\
-	if (TARGET_ABICALLS)					\
-	  {							\
-	    builtin_define ("__PIC__");				\
-	    builtin_define ("__pic__");				\
-	  }							\
-	/* The GNU C++ standard library requires this.  */	\
-	if (c_dialect_cxx ())					\
-	  builtin_define ("_GNU_SOURCE");			\
-								\
-      if (mips_abi == ABI_N32)					\
+  do {								\
+    LINUX_TARGET_OS_CPP_BUILTINS();				\
+    if (TARGET_ABICALLS)					\
+      {								\
+	builtin_define ("__PIC__");				\
+	builtin_define ("__pic__");				\
+      }								\
+    /* The GNU C++ standard library requires this.  */		\
+    if (c_dialect_cxx ())					\
+      builtin_define ("_GNU_SOURCE");				\
+    								\
+    if (mips_abi == ABI_N32)					\
       {								\
         builtin_define ("_ABIN32=2");				\
         builtin_define ("_MIPS_SIM=_ABIN32");			\
         builtin_define ("_MIPS_SZLONG=32");			\
         builtin_define ("_MIPS_SZPTR=32");			\
       }								\
-     else if (mips_abi == ABI_64)				\
+    else if (mips_abi == ABI_64)				\
       {								\
         builtin_define ("_ABI64=3");				\
         builtin_define ("_MIPS_SIM=_ABI64");			\
         builtin_define ("_MIPS_SZLONG=64");			\
         builtin_define ("_MIPS_SZPTR=64");			\
       }								\
-     else							\
+    else							\
       {								\
-	builtin_define ("_ABIO32=1");			\
-	builtin_define ("_MIPS_SIM=_ABIO32");		\
+	builtin_define ("_ABIO32=1");				\
+	builtin_define ("_MIPS_SIM=_ABIO32");			\
         builtin_define ("_MIPS_SZLONG=32");			\
         builtin_define ("_MIPS_SZPTR=32");			\
       }								\
-     if (TARGET_FLOAT64)					\
-        builtin_define ("_MIPS_FPSET=32");			\
-     else							\
-        builtin_define ("_MIPS_FPSET=16");			\
-								\
-     if (TARGET_INT64)						\
-        builtin_define ("_MIPS_SZINT=64");			\
-     else							\
-        builtin_define ("_MIPS_SZINT=32");			\
-} while (0)
+    if (TARGET_FLOAT64)						\
+      builtin_define ("_MIPS_FPSET=32");			\
+    else							\
+      builtin_define ("_MIPS_FPSET=16");			\
+    								\
+    builtin_define ("_MIPS_SZINT=32");				\
+  } while (0)
 
 #undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "%{pthread:-D_REENTRANT}"

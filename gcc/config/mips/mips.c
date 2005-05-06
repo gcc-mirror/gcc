@@ -4336,24 +4336,11 @@ override_options (void)
 
   if ((target_flags_explicit & MASK_LONG64) == 0)
     {
-      if (TARGET_INT64)
-	target_flags |= MASK_LONG64;
-      /* If no type size setting options (-mlong64,-mint64,-mlong32)
-	 were used, then set the type sizes.  In the EABI in 64 bit mode,
-	 longs and pointers are 64 bits.  Likewise for the SGI Irix6 N64
-	 ABI.  */
-      else if ((mips_abi == ABI_EABI && TARGET_64BIT) || mips_abi == ABI_64)
+      if ((mips_abi == ABI_EABI && TARGET_64BIT) || mips_abi == ABI_64)
 	target_flags |= MASK_LONG64;
       else
 	target_flags &= ~MASK_LONG64;
     }
-
-  /* Deprecate -mint64. Remove after 4.0 branches.  */
-  if (TARGET_INT64)
-    warning (0, "-mint64 is a deprecated option");
-
-  if (TARGET_INT64 && !TARGET_LONG64)
-    error ("unsupported combination: %s", "-mint64 -mlong32");
 
   if (MIPS_MARCH_CONTROLS_SOFT_FLOAT
       && (target_flags_explicit & MASK_SOFT_FLOAT) == 0)
