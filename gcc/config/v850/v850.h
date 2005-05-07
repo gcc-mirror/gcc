@@ -554,7 +554,7 @@ enum reg_class
   else if ((FROM) == ARG_POINTER_REGNUM)				\
    (OFFSET) = compute_frame_size (get_frame_size (), (long *)0);	\
   else									\
-    abort ();								\
+    gcc_unreachable ();							\
 }
 
 /* Keep the stack pointer constant throughout the function.  */
