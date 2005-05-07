@@ -14582,7 +14582,8 @@ fi
 
   powerpc*-*-*)
     case $target in
-      *-*-aix*) conftest_s='	.csect .text[PR]
+      *-*-aix*) conftest_s='	.machine "pwr5"
+	.csect .text[PR]
 	mfcr 3,128';;
       *-*-darwin*)
 	echo "$as_me:$LINENO: checking assembler for .machine directive support" >&5
@@ -14659,6 +14660,53 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
+
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr5"
+	.csect .text[PR]
+	popcntb 3,3';;
+      *) conftest_s='	.machine power5
+	.text
+	popcntb 3,3';;
+    esac
+
+    echo "$as_me:$LINENO: checking assembler for popcntb support" >&5
+echo $ECHO_N "checking assembler for popcntb support... $ECHO_C" >&6
+if test "${gcc_cv_as_powerpc_popcntb+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_powerpc_popcntb=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_popcntb=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_powerpc_popcntb=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_powerpc_popcntb" >&5
+echo "${ECHO_T}$gcc_cv_as_powerpc_popcntb" >&6
+if test $gcc_cv_as_powerpc_popcntb = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_POPCNTB 1
+_ACEOF
+
+fi
+
     ;;
 
   mips*-*-*)

@@ -1,3 +1,22 @@
+2005-05-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config.gcc ({powerpc,rs6000}-ibm-aix*): Remove rs6000/aix.opt
+	from extra_options.
+	* config.in (HAVE_AS_POPCNTB): New.
+	* configure.ac (HAVE_AS_MFCRF): Add .machine "pwr5" to AIX test.
+	(HAVE_AS_POPCNTB): New.
+	* configure: Regenerated.
+	* config/rs6000/aix.h (TARGET_XL_COMPAT): Delete.
+	* config/rs6000/rs6000.c (rs6000_override_options, power5): Add
+	MASK_POPCNTB.  Uncomment rs6000_sched_restricted_insns_priority
+	and rs6000_sched_costly_dep.
+	* config/rs6000/rs6000.h (TARGET_POPCNTB): New.
+	(TARGET_XL_COMPAT): Delete.
+	* config/rs6000/rs6000.md (UNSPEC_POPCNTB): New.
+	(popcount<mode>2): New.
+	(popcntb<mode>2): New.
+	* config/rs6000/rs6000.opt (mpopcntb): New.
+
 2005-05-07  Matt Kraai  <kraai@ftbfs.org>
 
 	* Makefile.in (c-gimplify.o): Depend on $(RTL_H) instead of rtl.h.

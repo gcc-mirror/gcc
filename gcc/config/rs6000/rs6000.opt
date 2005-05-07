@@ -44,9 +44,33 @@ mpowerpc64
 Target Report Mask(POWERPC64)
 Use PowerPC-64 instruction set
 
+mpowerpc-gpopt
+Target Report Mask(PPC_GPOPT)
+Use PowerPC General Purpose group optional instructions
+
+mpowerpc-gfxopt
+Target Report Mask(PPC_GFXOPT)
+Use PowerPC Graphics group optional instructions
+
+mmfcrf
+Target Report Mask(MFCRF)
+Generate single field mfcr instruction
+
+mpopcntb
+Target Report Mask(POPCNTB)
+Use PowerPC/AS popcntb instruction
+
 maltivec
 Target Report Mask(ALTIVEC)
 Use AltiVec instructions
+
+mmultiple
+Target Report Mask(MULTIPLE)
+Generate load/store multiple instructions
+
+mstring
+Target Report Mask(STRING)
+Generate string instructions for block moves
 
 mnew-mnemonics
 Target Report RejectNegative Mask(NEW_MNEMONICS)
@@ -56,35 +80,6 @@ mold-mnemonics
 Target Report RejectNegative InverseMask(NEW_MNEMONICS)
 Use old mnemonics for PowerPC architecture
 
-mno-fp-in-toc
-Target Report RejectNegative Mask(NO_FP_IN_TOC)
-Do not place floating point constants in TOC
-
-mfp-in-toc
-Target Report RejectNegative InverseMask(NO_FP_IN_TOC)
-Place floating point constants in TOC
-
-mno-sum-in-toc
-Target RejectNegative Mask(NO_SUM_IN_TOC)
-Do not place symbol+offset constants in TOC
-
-msum-in-toc
-Target RejectNegative InverseMask(NO_SUM_IN_TOC)
-Place symbol+offset constants in TOC
-
-;; ?? Where should we put documentation like this ??
-;;
-;  Output only one TOC entry per module.  Normally linking fails if
-;   there are more than 16K unique variables/constants in an executable.  With
-;   this option, linking fails only if there are more than 16K modules, or
-;   if there are more than 16K unique variables/constant in a single module.
-;
-;   This is at the cost of having 2 extra loads and one extra store per
-;   function, and one less allocable register.
-mminimal-toc
-Target Report Mask(MINIMAL_TOC)
-Use only one TOC entry per procedure
-
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT)
 Do not use hardware floating point
@@ -92,14 +87,6 @@ Do not use hardware floating point
 mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Use hardware floating point
-
-mmultiple
-Target Report Mask(MULTIPLE)
-Generate load/store multiple instructions
-
-mstring
-Target Report Mask(STRING)
-Generate string instructions for block moves
 
 mno-update
 Target Report RejectNegative Mask(NO_UPDATE)
@@ -132,17 +119,36 @@ msvr4-struct-return
 Target Report InverseMask(AIX_STRUCT_RET)
 Return small structures in registers (SVR4 default)
 
-mmfcrf
-Target Report Mask(MFCRF)
-Generate single field mfcr instruction
+mxl-compat
+Target Var(TARGET_XL_COMPAT)
+Conform more closely to IBM XLC semantics
 
-mpowerpc-gpopt
-Target Report Mask(PPC_GPOPT)
-Use PowerPC General Purpose group optional instructions
+mno-fp-in-toc
+Target Report RejectNegative Mask(NO_FP_IN_TOC)
+Do not place floating point constants in TOC
 
-mpowerpc-gfxopt
-Target Report Mask(PPC_GFXOPT)
-Use PowerPC Graphics group optional instructions
+mfp-in-toc
+Target Report RejectNegative InverseMask(NO_FP_IN_TOC)
+Place floating point constants in TOC
+
+mno-sum-in-toc
+Target RejectNegative Mask(NO_SUM_IN_TOC)
+Do not place symbol+offset constants in TOC
+
+msum-in-toc
+Target RejectNegative InverseMask(NO_SUM_IN_TOC)
+Place symbol+offset constants in TOC
+
+;  Output only one TOC entry per module.  Normally linking fails if
+;   there are more than 16K unique variables/constants in an executable.  With
+;   this option, linking fails only if there are more than 16K modules, or
+;   if there are more than 16K unique variables/constant in a single module.
+;
+;   This is at the cost of having 2 extra loads and one extra store per
+;   function, and one less allocable register.
+mminimal-toc
+Target Report Mask(MINIMAL_TOC)
+Use only one TOC entry per procedure
 
 mfull-toc
 Target Report

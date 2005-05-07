@@ -194,10 +194,6 @@
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* Enable AIX XL compiler calling convention breakage compatibility.  */
-#undef  TARGET_XL_COMPAT
-#define	TARGET_XL_COMPAT	has_xl_compat_option
-
 /* Define any extra SPECS that the compiler needs to generate.  */
 #undef  SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS						\
