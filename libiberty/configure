@@ -5404,9 +5404,9 @@ _ACEOF
     # dont have to check them here.
 
     # Of the functions in $checkfuncs, newlib only has strerror.
-    cat >> confdefs.h <<\EOF
+    cat >>confdefs.h <<\_ACEOF
 #define HAVE_STRERROR 1
-EOF
+_ACEOF
 
 
     setobjs=yes
@@ -5448,13 +5448,13 @@ fi
 
 case "${host}" in
   *-*-cygwin* | *-*-mingw*)
-    cat >> confdefs.h <<\EOF
+    cat >>confdefs.h <<\_ACEOF
 #define HAVE_SYS_ERRLIST 1
-EOF
+_ACEOF
 
-    cat >> confdefs.h <<\EOF
+    cat >>confdefs.h <<\_ACEOF
 #define HAVE_SYS_NERR 1
-EOF
+_ACEOF
 
     ;;
 esac
@@ -5566,9 +5566,9 @@ _ACEOF
     # don't have to check them here.
 
     # Of the functions in $checkfuncs, VxWorks only has strerror.
-    cat >> confdefs.h <<\EOF
+    cat >>confdefs.h <<\_ACEOF
 #define HAVE_STRERROR 1
-EOF
+_ACEOF
 
 
     setobjs=yes

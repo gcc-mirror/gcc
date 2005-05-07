@@ -119,15 +119,6 @@ if test $libiberty_cv_decl_needed_$1 = yes; then
 fi
 ])dnl
 
-# Work around a bug in autoheader.  This can go away when we switch to
-# autoconf >2.50.  The use of define instead of AC_DEFUN is
-# deliberate.
-define(AC_DEFINE_NOAUTOHEADER,
-[cat >> confdefs.h <<\EOF
-[#define] $1 ifelse($#, 2, [$2], $#, 3, [$2], 1)
-EOF
-])
-
 # We always want a C version of alloca() compiled into libiberty,
 # because native-compiler support for the real alloca is so !@#$%
 # unreliable that GCC has decided to use it only when being compiled
