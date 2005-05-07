@@ -1,3 +1,9 @@
+2005-05-06  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline:
+	PR libfortran/18958
+	* gfortran.dg/eoshift.f90:  New test case.
+
 2005-05-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/target-supports-dg.exp (dg-require-fork): New function.

@@ -1,3 +1,10 @@
+2005-05-06  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline:
+	PR libfortran/18958
+	libgfortran.h:  Change typedef of index_type from size_t
+	to ssize_t.
+
 2005-05-03  Thomas Koenig <Thomas.Koenig@online.de>
 
 	Backport from mainline:

@@ -215,7 +215,7 @@ typedef complex double GFC_COMPLEX_8;
 /* The following two definitions must be consistent with the types used
    by the compiler.  */
 /* The type used of array indices, amongst other things.  */
-typedef size_t index_type;
+typedef ssize_t index_type;
 /* The type used for the lengths of character variables.  */
 typedef GFC_INTEGER_4 gfc_charlen_type;
 
