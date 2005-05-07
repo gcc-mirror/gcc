@@ -1,3 +1,13 @@
+2005-05-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/v850/v850.c (print_operand): Use gcc_assert and
+	gcc_unreachable, as appropriate.
+	(print_operand_address, v850_handle_data_area_attribute,
+	v850_encode_data_area, construct_restore_jr, construct_save_jarl,
+	v850_insert_attributes, construct_prepare_instruction): Likewise.
+	* config/v850/v850.h (INITIAL_ELIMINATION_OFFSET): Likewise.
+	* config/v850/v850.md (movsicc, *sasf_1): Likewise.
+
 2005-05-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-loop-ivcanon.c, config/i386/i386.c,

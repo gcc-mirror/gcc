@@ -518,30 +518,40 @@ print_operand (FILE * file, rtx x, int code)
 	    fprintf (file, "l");
 	    break;
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	}
       break;
     case 'F':			/* high word of CONST_DOUBLE */
-      if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "%d", (INTVAL (x) >= 0) ? 0 : -1);
-      else if (GET_CODE (x) == CONST_DOUBLE)
+      switch (GET_CODE (x))
 	{
+	case CONST_INT:
+	  fprintf (file, "%d", (INTVAL (x) >= 0) ? 0 : -1);
+	  break;
+	  
+	case CONST_DOUBLE:
 	  const_double_split (x, &high, &low);
 	  fprintf (file, "%ld", (long) high);
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
-	abort ();
       break;
     case 'G':			/* low word of CONST_DOUBLE */
-      if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "%ld", (long) INTVAL (x));
-      else if (GET_CODE (x) == CONST_DOUBLE)
+      switch (GET_CODE (x))
 	{
+	case CONST_INT:
+	  fprintf (file, "%ld", (long) INTVAL (x));
+	  break;
+	  
+	case CONST_DOUBLE:
 	  const_double_split (x, &high, &low);
 	  fprintf (file, "%ld", (long) low);
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
-	abort ();
       break;
     case 'L':
       fprintf (file, "%d\n", (int)(INTVAL (x) & 0xffff));
@@ -550,54 +560,42 @@ print_operand (FILE * file, rtx x, int code)
       fprintf (file, "%d", exact_log2 (INTVAL (x)));
       break;
     case 'O':
-      if (special_symbolref_operand (x, VOIDmode))
-        {
-	  if (GET_CODE (x) == SYMBOL_REF)
-	    ;
-	  else if (GET_CODE (x) == CONST)
-	    x = XEXP (XEXP (x, 0), 0);
-	  else
-	    abort ();
-
-          if (SYMBOL_REF_ZDA_P (x))
-            fprintf (file, "zdaoff");
-          else if (SYMBOL_REF_SDA_P (x))
-            fprintf (file, "sdaoff");
-          else if (SYMBOL_REF_TDA_P (x))
-            fprintf (file, "tdaoff");
-          else
-            abort ();
-        }
+      gcc_assert (special_symbolref_operand (x, VOIDmode));
+      
+      if (GET_CODE (x) == CONST)
+	x = XEXP (XEXP (x, 0), 0);
       else
-        abort ();
+	gcc_assert (GET_CODE (x) == SYMBOL_REF);
+      
+      if (SYMBOL_REF_ZDA_P (x))
+	fprintf (file, "zdaoff");
+      else if (SYMBOL_REF_SDA_P (x))
+	fprintf (file, "sdaoff");
+      else if (SYMBOL_REF_TDA_P (x))
+	fprintf (file, "tdaoff");
+      else
+	gcc_unreachable ();
       break;
     case 'P':
-      if (special_symbolref_operand (x, VOIDmode))
-        output_addr_const (file, x);
-      else
-        abort ();
+      gcc_assert (special_symbolref_operand (x, VOIDmode));
+      output_addr_const (file, x);
       break;
     case 'Q':
-      if (special_symbolref_operand (x, VOIDmode))
-        {
-	  if (GET_CODE (x) == SYMBOL_REF)
-	    ;
-	  else if (GET_CODE (x) == CONST)
-	    x = XEXP (XEXP (x, 0), 0);
-	  else
-	    abort ();
-
-          if (SYMBOL_REF_ZDA_P (x))
-            fprintf (file, "r0");
-          else if (SYMBOL_REF_SDA_P (x))
-            fprintf (file, "gp");
-          else if (SYMBOL_REF_TDA_P (x))
-            fprintf (file, "ep");
-          else
-            abort ();
-        }
+      gcc_assert (special_symbolref_operand (x, VOIDmode));
+      
+      if (GET_CODE (x) == CONST)
+	x = XEXP (XEXP (x, 0), 0);
       else
-        abort ();
+	gcc_assert (GET_CODE (x) == SYMBOL_REF);
+      
+      if (SYMBOL_REF_ZDA_P (x))
+	fprintf (file, "r0");
+      else if (SYMBOL_REF_SDA_P (x))
+	fprintf (file, "gp");
+      else if (SYMBOL_REF_TDA_P (x))
+	fprintf (file, "ep");
+      else
+	gcc_unreachable ();
       break;
     case 'R':		/* 2nd word of a double.  */
       switch (GET_CODE (x))
@@ -636,7 +634,7 @@ print_operand (FILE * file, rtx x, int code)
       switch (GET_MODE (x))
 	{
 	default:
-	  abort ();
+	  gcc_unreachable ();
 
 	case QImode: fputs (".b", file); break;
 	case HImode: fputs (".h", file); break;
@@ -648,12 +646,13 @@ print_operand (FILE * file, rtx x, int code)
       fputs (reg_names[0], file);
       break;
     case 'z':			/* reg or zero */
-      if (x == const0_rtx)
-	fputs (reg_names[0], file);
-      else if (GET_CODE (x) == REG)
+      if (GET_CODE (x) == REG)
 	fputs (reg_names[REGNO (x)], file);
       else
-	abort ();
+	{
+	  gcc_assert (x == const0_rtx);
+	  fputs (reg_names[0], file);
+	}
       break;
     default:
       switch (GET_CODE (x))
@@ -680,7 +679,7 @@ print_operand (FILE * file, rtx x, int code)
 	  print_operand_address (file, x);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
@@ -779,7 +778,7 @@ print_operand_address (FILE * file, rtx addr)
               reg_name = "ep";
             }
           else
-            abort ();
+            gcc_unreachable ();
 
           fprintf (file, "%s(", off_name);
           output_addr_const (file, addr);
@@ -2131,7 +2130,7 @@ v850_handle_data_area_attribute (tree* node,
   else if (is_attribute_p ("zda", name))
     data_area = DATA_AREA_ZDA;
   else
-    abort ();
+    gcc_unreachable ();
   
   switch (TREE_CODE (decl))
     {
@@ -2246,7 +2245,7 @@ v850_encode_data_area (tree decl, rtx symbol)
     case DATA_AREA_ZDA: flags |= SYMBOL_FLAG_ZDA; break;
     case DATA_AREA_TDA: flags |= SYMBOL_FLAG_TDA; break;
     case DATA_AREA_SDA: flags |= SYMBOL_FLAG_SDA; break;
-    default: abort ();
+    default: gcc_unreachable ();
     }
   SYMBOL_REF_FLAGS (symbol) = flags;
 }
@@ -2285,12 +2284,9 @@ construct_restore_jr (rtx op)
 
   /* Work out how many bytes to pop off the stack before retrieving
      registers.  */
-  if (GET_CODE (XVECEXP (op, 0, 1)) != SET)
-    abort ();
-  if (GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) != PLUS)
-    abort ();
-  if (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1)) != CONST_INT)
-    abort ();
+  gcc_assert (GET_CODE (XVECEXP (op, 0, 1)) == SET);
+  gcc_assert (GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) == PLUS);
+  gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1)) == CONST_INT);
     
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1));
 
@@ -2310,12 +2306,10 @@ construct_restore_jr (rtx op)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       
-      if (GET_CODE (vector_element) != SET)
-	abort ();
-      if (GET_CODE (SET_DEST (vector_element)) != REG)
-	abort ();
-      if (! register_is_ok_for_epilogue (SET_DEST (vector_element), SImode))
-	abort ();
+      gcc_assert (GET_CODE (vector_element) == SET);
+      gcc_assert (GET_CODE (SET_DEST (vector_element)) == REG);
+      gcc_assert (register_is_ok_for_epilogue (SET_DEST (vector_element),
+					       SImode));
       
       mask |= 1 << REGNO (SET_DEST (vector_element));
     }
@@ -2327,24 +2321,19 @@ construct_restore_jr (rtx op)
 	break;
     }
 
-  if (first >= 32)
-    abort ();
+  gcc_assert (first < 32);
 
   /* Discover the last register to pop.  */
   if (mask & (1 << LINK_POINTER_REGNUM))
     {
-      if (stack_bytes != 16)
-	abort ();
+      gcc_assert (stack_bytes == 16);
       
       last = LINK_POINTER_REGNUM;
     }
   else
     {
-      if (stack_bytes != 0)
-	abort ();
-      
-      if ((mask & (1 << 29)) == 0)
-	abort ();
+      gcc_assert (!stack_bytes);
+      gcc_assert (mask & (1 << 29));
       
       last = 29;
     }
@@ -2401,14 +2390,10 @@ construct_save_jarl (rtx op)
     }
 
   /* Paranoia.  */
-  if (GET_CODE (XVECEXP (op, 0, 0)) != SET)
-    abort ();
-  if (GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != PLUS)
-    abort ();
-  if (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0)) != REG)
-    abort ();
-  if (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)) != CONST_INT)
-    abort ();
+  gcc_assert (GET_CODE (XVECEXP (op, 0, 0)) == SET);
+  gcc_assert (GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) == PLUS);
+  gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0)) == REG);
+  gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)) == CONST_INT);
     
   /* Work out how many bytes to push onto the stack after storing the
      registers.  */
@@ -2430,12 +2415,10 @@ construct_save_jarl (rtx op)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       
-      if (GET_CODE (vector_element) != SET)
-	abort ();
-      if (GET_CODE (SET_SRC (vector_element)) != REG)
-	abort ();
-      if (! register_is_ok_for_epilogue (SET_SRC (vector_element), SImode))
-	abort ();
+      gcc_assert (GET_CODE (vector_element) == SET);
+      gcc_assert (GET_CODE (SET_SRC (vector_element)) == REG);
+      gcc_assert (register_is_ok_for_epilogue (SET_SRC (vector_element),
+					       SImode));
       
       mask |= 1 << REGNO (SET_SRC (vector_element));
     }
@@ -2447,23 +2430,19 @@ construct_save_jarl (rtx op)
 	break;
     }
 
-  if (first >= 32)
-    abort ();
+  gcc_assert (first < 32);
 
   /* Discover the last register to push.  */
   if (mask & (1 << LINK_POINTER_REGNUM))
     {
-      if (stack_bytes != -16)
-	abort ();
+      gcc_assert (stack_bytes == -16);
       
       last = LINK_POINTER_REGNUM;
     }
   else
     {
-      if (stack_bytes != 0)
-	abort ();
-      if ((mask & (1 << 29)) == 0)
-	abort ();
+      gcc_assert (!stack_bytes);
+      gcc_assert (mask & (1 << 29));
       
       last = 29;
     }
@@ -2642,7 +2621,7 @@ v850_insert_attributes (tree decl, tree * attr_ptr ATTRIBUTE_UNUSED )
 	  switch (v850_get_data_area (decl))
 	    {
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	      
 	    case DATA_AREA_SDA:
 	      kind = ((TREE_READONLY (decl))
@@ -2711,12 +2690,9 @@ construct_dispose_instruction (rtx op)
 
   /* Work out how many bytes to pop off the
      stack before retrieving registers.  */
-  if (GET_CODE (XVECEXP (op, 0, 1)) != SET)
-    abort ();
-  if (GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) != PLUS)
-    abort ();
-  if (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1)) != CONST_INT)
-    abort ();
+  gcc_assert (GET_CODE (XVECEXP (op, 0, 1)) == SET);
+  gcc_assert (GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) == PLUS);
+  gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1)) == CONST_INT);
     
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1));
 
@@ -2738,12 +2714,10 @@ construct_dispose_instruction (rtx op)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       
-      if (GET_CODE (vector_element) != SET)
-	abort ();
-      if (GET_CODE (SET_DEST (vector_element)) != REG)
-	abort ();
-      if (! register_is_ok_for_epilogue (SET_DEST (vector_element), SImode))
-	abort ();
+      gcc_assert (GET_CODE (vector_element) == SET);
+      gcc_assert (GET_CODE (SET_DEST (vector_element)) == REG);
+      gcc_assert (register_is_ok_for_epilogue (SET_DEST (vector_element),
+					       SImode));
 
       if (REGNO (SET_DEST (vector_element)) == 2)
 	use_callt = 1;
@@ -2837,12 +2811,9 @@ construct_prepare_instruction (rtx op)
 
   /* Work out how many bytes to push onto
      the stack after storing the registers.  */
-  if (GET_CODE (XVECEXP (op, 0, 0)) != SET)
-    abort ();
-  if (GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != PLUS)
-    abort ();
-  if (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)) != CONST_INT)
-    abort ();
+  gcc_assert (GET_CODE (XVECEXP (op, 0, 0)) == SET);
+  gcc_assert (GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) == PLUS);
+  gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)) == CONST_INT);
     
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1));
 
@@ -2863,12 +2834,10 @@ construct_prepare_instruction (rtx op)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       
-      if (GET_CODE (vector_element) != SET)
-	abort ();
-      if (GET_CODE (SET_SRC (vector_element)) != REG)
-	abort ();
-      if (! register_is_ok_for_epilogue (SET_SRC (vector_element), SImode))
-	abort ();
+      gcc_assert (GET_CODE (vector_element) == SET);
+      gcc_assert (GET_CODE (SET_SRC (vector_element)) == REG);
+      gcc_assert (register_is_ok_for_epilogue (SET_SRC (vector_element),
+					       SImode));
 
       if (REGNO (SET_SRC (vector_element)) == 2)
 	use_callt = 1;
