@@ -1691,7 +1691,7 @@ then
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD)'
 
     if test "x$TARGET_SYSTEM_ROOT" = x; then
-	if [ "x$STMP_FIXPROTO" != x ] ; then
+	if test "x$STMP_FIXPROTO" != x; then
 	  STMP_FIXPROTO=stmp-install-fixproto
 	fi
     fi
