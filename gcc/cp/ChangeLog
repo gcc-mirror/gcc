@@ -6,6 +6,12 @@
 	* name-lookup.h (cp_binding_level): Change the type of
 	static_decls to VEC(tree,gc)*.
 
+	* mangle.c (globals): Change the type of substitutions to
+	VEC(tree,gc)*.
+	(dump_substitution_candidates, add_substitution,
+	find_substitution, finish_mangling, init_mangle): Use VEC
+	instead of VARRAY.
+
 2005-05-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* decl2.c (spew_debug): Remove.

@@ -97,7 +97,7 @@ typedef struct globals GTY(())
 {
   /* An array of the current substitution candidates, in the order
      we've seen them.  */
-  varray_type substitutions;
+  VEC(tree,gc) *substitutions;
 
   /* The entity that is being mangled.  */
   tree GTY ((skip)) entity;
@@ -346,11 +346,11 @@ static void
 dump_substitution_candidates (void)
 {
   unsigned i;
+  tree el;
 
   fprintf (stderr, "  ++ substitutions  ");
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (G.substitutions); ++i)
+  for (i = 0; VEC_iterate (tree, G.substitutions, i, el); ++i)
     {
-      tree el = VARRAY_TREE (G.substitutions, i);
       const char *name = "???";
 
       if (i > 0)
@@ -414,10 +414,10 @@ add_substitution (tree node)
   /* Make sure NODE isn't already a candidate.  */
   {
     int i;
-    for (i = VARRAY_ACTIVE_SIZE (G.substitutions); --i >= 0; )
+    tree candidate;
+
+    for (i = 0; VEC_iterate (tree, G.substitutions, i, candidate); i++)
       {
-	const tree candidate = VARRAY_TREE (G.substitutions, i);
-	
 	gcc_assert (!(DECL_P (node) && node == candidate));
 	gcc_assert (!(TYPE_P (node) && TYPE_P (candidate) 
 		      && same_type_p (node, candidate)));
@@ -426,7 +426,7 @@ add_substitution (tree node)
 #endif /* ENABLE_CHECKING */
 
   /* Put the decl onto the varray of substitution candidates.  */
-  VARRAY_PUSH_TREE (G.substitutions, node);
+  VEC_safe_push (tree, gc, G.substitutions, node);
 
   if (DEBUG_MANGLE)
     dump_substitution_candidates ();
@@ -529,7 +529,7 @@ static int
 find_substitution (tree node)
 {
   int i;
-  const int size = VARRAY_ACTIVE_SIZE (G.substitutions);
+  const int size = VEC_length (tree, G.substitutions);
   tree decl;
   tree type;
 
@@ -638,7 +638,7 @@ find_substitution (tree node)
      operation.  */
   for (i = 0; i < size; ++i)
     {
-      tree candidate = VARRAY_TREE (G.substitutions, i);
+      tree candidate = VEC_index (tree, G.substitutions, i);
       /* NODE is a matched to a candidate if it's the same decl node or
 	 if it's the same type.  */
       if (decl == candidate
@@ -2505,7 +2505,7 @@ finish_mangling (const bool warn)
 	     G.entity);
 
   /* Clear all the substitutions.  */
-  VARRAY_CLEAR (G.substitutions);
+  VEC_truncate (tree, G.substitutions, 0);
 
   /* Null-terminate the string.  */
   write_char ('\0');
@@ -2520,7 +2520,7 @@ init_mangle (void)
 {
   gcc_obstack_init (&name_obstack);
   name_base = obstack_alloc (&name_obstack, 0);
-  VARRAY_TREE_INIT (G.substitutions, 1, "mangling substitutions");
+  G.substitutions = NULL;
 
   /* Cache these identifiers for quick comparison when checking for
      standard substitutions.  */
