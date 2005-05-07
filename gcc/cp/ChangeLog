@@ -1,3 +1,11 @@
+2005-05-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* decl.c (wrapup_globals_for_namespace): Use VEC instead of
+	VARRAY.
+	* name-lookup.c (add_decl_to_level, begin_scope): Likewise.
+	* name-lookup.h (cp_binding_level): Change the type of
+	static_decls to VEC(tree,gc)*.
+
 2005-05-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* decl2.c (spew_debug): Remove.

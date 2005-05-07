@@ -786,9 +786,9 @@ int
 wrapup_globals_for_namespace (tree namespace, void* data)
 {
   struct cp_binding_level *level = NAMESPACE_LEVEL (namespace);
-  varray_type statics = level->static_decls;
-  tree *vec = &VARRAY_TREE (statics, 0);
-  int len = VARRAY_ACTIVE_SIZE (statics);
+  VEC(tree,gc) *statics = level->static_decls;
+  tree *vec = VEC_address (tree, statics);
+  int len = VEC_length (tree, statics);
   int last_time = (data != 0);
 
   if (last_time)
