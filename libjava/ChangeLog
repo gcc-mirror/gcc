@@ -1,3 +1,7 @@
+2005-05-07  Matthias Klose  <doko@debian.org>
+
+	* gnu/java/awt/peer/gtk/GtkVolatileImage.java: Add imports.
+
 2005-05-06  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (gtk_awt_peer_sources): Add GtkVolatileImage.java.
