@@ -17,6 +17,9 @@
 	(popcntb<mode>2): New.
 	* config/rs6000/rs6000.opt (mpopcntb): New.
 
+	* opt-functions.awk (var_set): Emit OPTION_MASK_ for InverseMask
+	if variable name exists.
+
 2005-05-07  Matt Kraai  <kraai@ftbfs.org>
 
 	* Makefile.in (c-gimplify.o): Depend on $(RTL_H) instead of rtl.h.
