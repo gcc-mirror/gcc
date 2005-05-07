@@ -1,3 +1,7 @@
+2005-05-07  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/ia64/hpux.h (NO_IMPLICIT_EXTERN_C): Define.
+
 2005-05-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/21441
