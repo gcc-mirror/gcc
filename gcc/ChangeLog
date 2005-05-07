@@ -1,3 +1,8 @@
+2005-05-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-loop-ivcanon.c, config/i386/i386.c,
+	config/rs6000/rs6000.h: Fix comment typos.
+
 2005-05-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Remove documentation for MIPS' -mint64 option.

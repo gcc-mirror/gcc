@@ -59,7 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 enum unroll_level
 {
-  UL_SINGLE_ITER,	/* Only loops that exit immediatelly in the first
+  UL_SINGLE_ITER,	/* Only loops that exit immediately in the first
 			   iteration.  */
   UL_NO_GROWTH,		/* Only loops whose unrolling will not cause increase
 			   of code size.  */
