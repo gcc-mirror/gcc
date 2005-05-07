@@ -132,8 +132,16 @@
    optional field operand for mfcr.  */
 
 #ifndef HAVE_AS_MFCRF
-#undef TARGET_MFCRF
+#undef  TARGET_MFCRF
 #define TARGET_MFCRF 0
+#endif
+
+/* Define TARGET_POPCNTB if the target assembler does not suppport the
+   popcount byte instruction.  */
+
+#ifndef HAVE_AS_POPCNTB
+#undef  TARGET_POPCNTB
+#define TARGET_POPCNTB 0
 #endif
 
 #define TARGET_32BIT		(! TARGET_64BIT)
@@ -165,8 +173,6 @@
 #else
     /* The option machinery will define this.  */
 #endif
-
-#define TARGET_XL_COMPAT 0
 
 #define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE | MASK_STRING)
 

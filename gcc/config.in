@@ -119,6 +119,9 @@
 /* Define if your assembler supports offsetable %lo(). */
 #undef HAVE_AS_OFFSETABLE_LO10
 
+/* Define if your assembler supports popcntb field. */
+#undef HAVE_AS_POPCNTB
+
 /* Define if your assembler supports .register. */
 #undef HAVE_AS_REGISTER_PSEUDO_OP
 
