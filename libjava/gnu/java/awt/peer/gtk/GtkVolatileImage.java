@@ -38,6 +38,10 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.ImageCapabilities;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.awt.image.VolatileImage;
 
 public class GtkVolatileImage extends VolatileImage
