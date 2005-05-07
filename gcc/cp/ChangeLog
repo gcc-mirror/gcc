@@ -1,3 +1,7 @@
+2005-05-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* mangle.c: Remove a reference to the MIPS -mint64 option.
+
 2005-05-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* decl.c (wrapup_globals_for_namespace): Use VEC instead of

@@ -1773,11 +1773,10 @@ write_builtin_type (tree type)
 		     type" with a name the form intN or uintN, respectively.
 		     Situations like this can happen if you have an
 		     __attribute__((__mode__(__SI__))) type and use exotic
-		     switches like '-mint64' on MIPS or '-mint8' on AVR.
-		     Of course, this is undefined by the C++ ABI (and
-		     '-mint8' is not even Standard C conforming), but when
-		     using such special options you're pretty much in nowhere
-		     land anyway.  */
+		     switches like '-mint8' on AVR.  Of course, this is
+		     undefined by the C++ ABI (and '-mint8' is not even
+		     Standard C conforming), but when using such special
+		     options you're pretty much in nowhere land anyway.  */
 		  const char *prefix;
 		  char prec[11];	/* up to ten digits for an unsigned */
 

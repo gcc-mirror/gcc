@@ -9857,14 +9857,6 @@ support to be enabled.
 Use (do not use) the MIPS-3D ASE@.  @xref{MIPS-3D Built-in Functions}.
 The option @option{-mips3d} implies @option{-mpaired-single}.
 
-@item -mint64
-@opindex mint64
-Force @code{int} and @code{long} types to be 64 bits wide.  See
-@option{-mlong32} for an explanation of the default and the way
-that the pointer size is determined.
-
-This option has been deprecated and will be removed in a future release.
-
 @item -mlong64
 @opindex mlong64
 Force @code{long} types to be 64 bits wide.  See @option{-mlong32} for
