@@ -128,7 +128,7 @@
 
 /* Architecture type.  */
 
-/* Define TARGET_MFCRF if the target assembler does not suppport the
+/* Define TARGET_MFCRF if the target assembler does not support the
    optional field operand for mfcr.  */
 
 #ifndef HAVE_AS_MFCRF

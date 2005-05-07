@@ -11291,7 +11291,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
      count / 4 + (count & 3), the other sequence is either 4 or 7 bytes,
      but we don't know whether upper 24 (resp. 56) bits of %ecx will be
      known to be zero or not.  The rep; movsb sequence causes higher
-     register preasure though, so take that into account.  */
+     register pressure though, so take that into account.  */
 
   if ((!optimize || optimize_size)
       && (count == 0
