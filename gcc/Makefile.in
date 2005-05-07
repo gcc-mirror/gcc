@@ -1782,7 +1782,7 @@ tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(CGRAPH_H) tree-pass.h $(CFGLOOP_H)
 c-gimplify.o : c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) errors.h \
    $(C_TREE_H) $(C_COMMON_H) $(DIAGNOSTIC_H) $(TREE_GIMPLE_H) varray.h \
-   $(FLAGS_H) langhooks.h toplev.h rtl.h $(TREE_FLOW_H) $(LANGHOOKS_DEF_H) \
+   $(FLAGS_H) langhooks.h toplev.h $(RTL_H) $(TREE_FLOW_H) $(LANGHOOKS_DEF_H) \
    $(TM_H) coretypes.h $(C_PRETTY_PRINT_H) $(CGRAPH_H)
 gimplify.o : gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) errors.h \
    $(DIAGNOSTIC_H) $(TREE_GIMPLE_H) tree-inline.h varray.h langhooks.h \

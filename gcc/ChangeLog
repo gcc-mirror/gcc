@@ -1,3 +1,7 @@
+2005-05-07  Matt Kraai  <kraai@ftbfs.org>
+
+	* Makefile.in (c-gimplify.o): Depend on $(RTL_H) instead of rtl.h.
+
 2005-05-07  Richard Henderson  <rth@redhat.com>
 
 	PR target/21412
