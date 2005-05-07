@@ -130,7 +130,7 @@ AC_SUBST(OUTPUT_OPTION)
 
 AC_C_CONST
 AC_C_INLINE
-AC_C_BIGENDIAN_CROSS
+AC_C_BIGENDIAN
 
 dnl When we start using libtool:
 dnl Default to a non shared library.  This may be overridden by the

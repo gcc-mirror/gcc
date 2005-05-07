@@ -1,4 +1,3 @@
-sinclude(../config/accross.m4)
 sinclude(../config/acx.m4)
 sinclude(../config/no-executables.m4)
 
