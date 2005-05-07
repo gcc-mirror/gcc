@@ -3575,11 +3575,29 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 
   /* Recognize the case where operand[1] is a reference to thread-local
      data and load its address to a register.  */
-  if (GET_CODE (operands[1]) == SYMBOL_REF)
+  if (rs6000_tls_referenced_p (operands[1]))
     {
-      enum tls_model model = SYMBOL_REF_TLS_MODEL (operands[1]);
-      if (model != 0)
-	operands[1] = rs6000_legitimize_tls_address (operands[1], model);
+      enum tls_model model;
+      rtx tmp = operands[1];
+      rtx addend = NULL;
+
+      if (GET_CODE (tmp) == CONST && GET_CODE (XEXP (tmp, 0)) == PLUS)
+	{
+          addend = XEXP (XEXP (tmp, 0), 1);
+	  tmp = XEXP (XEXP (tmp, 0), 0);
+	}
+
+      gcc_assert (GET_CODE (tmp) == SYMBOL_REF);
+      model = SYMBOL_REF_TLS_MODEL (tmp);
+      gcc_assert (model != 0);
+
+      tmp = rs6000_legitimize_tls_address (tmp, model);
+      if (addend)
+	{
+	  tmp = gen_rtx_PLUS (mode, tmp, addend);
+	  tmp = force_operand (tmp, operands[0]);
+	}
+      operands[1] = tmp;
     }
 
   /* Handle the case where reload calls us with an invalid address.  */
