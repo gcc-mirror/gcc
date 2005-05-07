@@ -46,7 +46,9 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{ANINT}:     ANINT,     Nearest whole number
 * @code{ANY}:       ANY,       Determine if any values are true
 * @code{ASIN}:      ASIN,      Arcsine function
-* @code{ATAN}:      ATAN,      Arctangent function
+* @code{ASSOCIATED}: ASSOCIATED, Status of a pointer or pointer/target pair
+* @code{ATAN}:       ATAN,      Arctangent function
+* @code{ATAN2}:      ATAN2,      Arctangent function
 * @code{BESJ0}:     BESJ0,     Bessel function of the first kind of order 0
 * @code{BESJ1}:     BESJ1,     Bessel function of the first kind of order 1
 * @code{BESJN}:     BESJN,     Bessel function of the first kind
@@ -472,7 +474,7 @@ end program test_aint
 
 @node ALL
 @section @code{ALL} --- All values in @var{MASK} along @var{DIM} are true 
-  @findex @code{ALL} intrinsic
+@findex @code{ALL} intrinsic
 @cindex true values
 
 @table @asis
@@ -534,6 +536,7 @@ program test_all
 end program test_all
 @end smallexample
 @end table
+
 
 
 @node ALLOCATED
@@ -631,7 +634,7 @@ end program test_anint
 
 @node ANY
 @section @code{ANY} --- Any value in @var{MASK} along @var{DIM} is true 
-  @findex @code{ANY} intrinsic
+@findex @code{ANY} intrinsic
 @cindex true values
 
 @table @asis
@@ -722,7 +725,7 @@ less than one.
 
 @item @emph{Return value}:
 The return value is of type @code{REAL(*)} and it lies in the
-range @math{ \pi / 2 \leq \arccos (x) \leq \pi / 2}.  The kind type
+range @math{-\pi / 2 \leq \arccos (x) \leq \pi / 2}.  The kind type
 parameter is the same as @var{X}.
 
 @item @emph{Example}:
@@ -738,6 +741,78 @@ end program test_asin
 @item Name            @tab Argument          @tab Return type       @tab Option
 @item @code{DASIN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
 @end multitable
+@end table
+
+
+@node ASSOCIATED
+@section @code{ASSOCIATED} --- Status of a pointer or pointer/target pair 
+@findex @code{ASSOCIATED} intrinsic
+@cindex pointer status
+
+@table @asis
+@item @emph{Description}:
+@code{ASSOCIATED(PTR [, TGT])} determines the status of the pointer @var{PTR}
+or if @var{PTR} is associated with the target @var{TGT}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+inquiry function
+
+@item @emph{Syntax}:
+@code{L = ASSOCIATED(PTR)} @*
+@code{L = ASSOCIATED(PTR [, TGT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{PTR} @tab @var{PTR} shall have the @code{POINTER} attribute and
+it can be of any type.
+@item @var{TGT} @tab (Optional) @var{TGT} shall be a @code{POINTER} or
+a @code{TARGET}.  It must have the same type, kind type parameter, and
+array rank as @var{PTR}.
+@end multitable
+The status of neither @var{PTR} nor @var{TGT} can be undefined.
+
+@item @emph{Return value}:
+@code{ASSOCIATED(PTR)} returns a scalar value of type @code{LOGICAL(4)}.
+There are several cases:
+@table @asis
+@item (A) If the optional @var{TGT} is not present, then @code{ASSOCIATED(PTR)}
+is true if @var{PTR} is associated with a target; otherwise, it returns false.
+@item (B) If @var{TGT} is present and a scalar target, the result is true if
+@var{TGT}
+is not a 0 sized storage sequence and the target associated with @var{PTR}
+occupies the same storage units.  If @var{PTR} is disassociated, then the 
+result is false.
+@item (C) If @var{TGT} is present and an array target, the result is true if
+@var{TGT} and @var{PTR} have the same shape, are not 0 sized arrays, are
+arrays whose elements are not 0 sized storage sequences, and @var{TGT} and
+@var{PTR} occupy the same storage units in array element order.
+As in case(B), the result is false, if @var{PTR} is disassociated.
+@item (D) If @var{TGT} is present and an scalar pointer, the result is true if
+target associated with @var{PTR} and the target associated with @var{TGT}
+are not 0 sized storage sequences and occupy the same storage units.
+The result is false, if either @var{TGT} or @var{PTR} is disassociated.
+@item (E) If @var{TGT} is present and an array pointer, the result is true if
+target assoicated with @var{PTR} and the target associated with @var{TGT}
+have the same shape, are not 0 sized arrays, are arrays whose elements are
+not 0 sized storage sequences, and @var{TGT} and @var{PTR} occupy the same
+storage units in array element order.
+The result is false, if either @var{TGT} or @var{PTR} is disassociated.
+@end table
+
+@item @emph{Example}:
+@smallexample
+program test_associated
+   implicit none
+   real, target  :: tgt(2) = (/1., 2./)
+   real, pointer :: ptr(:)
+   ptr => tgt
+   if (associated(ptr)     .eqv. .false.) call abort
+   if (associated(ptr,tgt) .eqv. .false.) call abort
+end program test_associated
+@end smallexample
 @end table
 
 
@@ -785,6 +860,56 @@ end program test_atan
 @end table
 
 
+@node ATAN2
+@section @code{ATAN2} --- Arctangent function 
+@findex @code{ATAN2} intrinsic
+@findex @code{DATAN2} intrinsic
+@cindex arctangent
+
+@table @asis
+@item @emph{Description}:
+@code{ATAN2(Y,X)} computes the arctangent of the complex number @math{X + i Y}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = ATAN2(Y,X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{Y} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type and kind type paremeter shall be the same as @var{Y}.
+If @var{Y} is zero, then @var{X} must be nonzero.
+@end multitable
+
+@item @emph{Return value}:
+The return value has the same type and kind type paremeter as @var{Y}.
+It is the principle value of the complex number @math{X + i Y}.  If
+@var{X} is nonzero, then it lies in the range @math{-\pi \le \arccos (x) \leq \pi}.
+The sign is positive if @var{Y} is positive.  If @var{Y} is zero, then
+the return value is zero if @var{X} is positive and @math{\pi} if @var{X}
+is negative.  Finally, if @var{X} is zero, then the magnitude of the result
+is @math{\pi/2}.
+
+@item @emph{Example}:
+@smallexample
+program test_atan2
+  real(4) :: x = 1.e0_4, y = 0.5e0_4
+  x = atan2(y,x)
+end program test_atan2
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type    @tab Option
+@item @code{DATAN2(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)} @tab f95, gnu
+@end multitable
+@end table
+
 
 @node BESJ0
 @section @code{BESJ0} --- Bessel function of the first kind of order 0
@@ -808,7 +933,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be an @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
@@ -854,7 +979,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be an @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
@@ -900,12 +1025,12 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{N} @tab The type shall be an @code{INTEGER(*)}.
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{N} @tab The type shall be an @code{INTEGER(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be an @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL(*)}.
 
 @item @emph{Example}:
 @smallexample
@@ -917,8 +1042,9 @@ end program test_besjn
 
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESJN(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@item Name             @tab Argument            @tab Return type       @tab Option
+@item @code{DBESJN(X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}    @tab gnu
+@item                  @tab @code{REAL(8) X}    @tab                   @tab
 @end multitable
 @end table
 
@@ -946,11 +1072,11 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be an @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL(*)}.
 
 @item @emph{Example}:
 @smallexample
@@ -991,11 +1117,11 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be an @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL(*)}.
 
 @item @emph{Example}:
 @smallexample
@@ -1036,12 +1162,12 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{N} @tab The type shall be an @code{INTEGER(*)}.
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{N} @tab The type shall be an @code{INTEGER(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be an @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL(*)}.
 
 @item @emph{Example}:
 @smallexample
@@ -1053,8 +1179,9 @@ end program test_besyn
 
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESYN(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@item Name               @tab Argument            @tab Return type     @tab Option
+@item @code{DBESYN(N,X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}  @tab gnu
+@item                    @tab @code{REAL(8)    X} @tab                 @tab 
 @end multitable
 @end table
 
@@ -1155,7 +1282,7 @@ end program test_cosh
 @node ERF
 @section @code{ERF} --- Error function 
 @findex @code{ERF} intrinsic
-@cindex error
+@cindex error function
 
 @table @asis
 @item @emph{Description}:
@@ -1172,11 +1299,11 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be an @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it is positive
+The return value is a scalar of type @code{REAL(*)} and it is positive
 (@math{ - 1 \leq erf (x) \leq 1 }.
 
 @item @emph{Example}:
@@ -1199,7 +1326,7 @@ end program test_erf
 @node ERFC
 @section @code{ERFC} --- Error function 
 @findex @code{ERFC} intrinsic
-@cindex error
+@cindex error function
 
 @table @asis
 @item @emph{Description}:
@@ -1216,11 +1343,11 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be an @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it is positive
+The return value is a scalar of type @code{REAL(*)} and it is positive
 (@math{ 0 \leq erfc (x) \leq 2 }.
 
 @item @emph{Example}:
@@ -1631,11 +1758,8 @@ end program test_tanh
 
 
 
-@comment gen   associated
-@comment 
-@comment gen   atan2
-@comment       datan2
-@comment 
+
+
 @comment gen   bit_size 
 @comment 
 @comment gen   btest

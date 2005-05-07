@@ -1,3 +1,8 @@
+2005-05-07  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi:  Document ASSOCIATED and ATAN2.  Update Bessel function
+	description to include information about scalar arguments.
+
 2005-05-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* Make-lang.in, dump-parse-tree.c, invoke.texi, lang.opt,
