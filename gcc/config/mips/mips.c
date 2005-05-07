@@ -357,7 +357,6 @@ static bool mips_callee_copies (CUMULATIVE_ARGS *, enum machine_mode mode,
 static int mips_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode mode,
 				   tree, bool);
 static bool mips_valid_pointer_mode (enum machine_mode);
-static bool mips_scalar_mode_supported_p (enum machine_mode);
 static bool mips_vector_mode_supported_p (enum machine_mode);
 static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree *);
 static rtx mips_prepare_builtin_target (enum insn_code, unsigned int, rtx);
@@ -819,9 +818,6 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P mips_vector_mode_supported_p
-
-#undef TARGET_SCALAR_MODE_SUPPORTED_P
-#define TARGET_SCALAR_MODE_SUPPORTED_P mips_scalar_mode_supported_p
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS mips_init_builtins
@@ -7285,44 +7281,8 @@ mips_valid_pointer_mode (enum machine_mode mode)
   return (mode == SImode || (TARGET_64BIT && mode == DImode));
 }
 
-/* Define this so that we can deal with a testcase like:
-
-   char foo __attribute__ ((mode (SI)));
-
-   then compiled with -mabi=64 and -mint64. We have no
-   32-bit type at that point and so the default case
-   always fails.  */
-
-static bool
-mips_scalar_mode_supported_p (enum machine_mode mode)
-{
-  switch (mode)
-    {
-    case QImode:
-    case HImode:
-    case SImode:
-    case DImode:
-      return true;
-
-      /* Handled via optabs.c.  */
-    case TImode:
-      return TARGET_64BIT;
-
-    case SFmode:
-    case DFmode:
-      return true;
-
-      /* LONG_DOUBLE_TYPE_SIZE is 128 for TARGET_NEWABI only.  */
-    case TFmode:
-      return TARGET_NEWABI;
-
-    default:
-      return false;
-    }
-}
-
-
 /* Target hook for vector_mode_supported_p.  */
+
 static bool
 mips_vector_mode_supported_p (enum machine_mode mode)
 {

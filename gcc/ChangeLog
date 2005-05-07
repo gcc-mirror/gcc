@@ -1,3 +1,9 @@
+2005-05-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/invoke.texi: Remove documentation for MIPS' -mint64 option.
+	* config/mips/mips.c (TARGET_SCALAR_MODE_SUPPORTED_P): Delete.
+	(mips_scalar_mode_supported_p): Delete.
+
 2005-05-06  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.opt: Remove -mint64 option.
