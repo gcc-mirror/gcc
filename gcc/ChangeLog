@@ -269,7 +269,7 @@
 
 2005-05-05  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* config/m32r/xm-m32r.h, config/m32r/linux.h: Delete files.
+	* config/m32r/xm-m32r.h, config/m32r/xm-linux.h: Delete files.
 
 2005-05-05  Kelley Cook  <kcook@gcc.gnu.org>
 
