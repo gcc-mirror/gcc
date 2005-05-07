@@ -328,7 +328,7 @@ if test -n "${with_target_subdir}"; then
     # dont have to check them here.
 
     # Of the functions in $checkfuncs, newlib only has strerror.
-    AC_DEFINE_NOAUTOHEADER(HAVE_STRERROR)
+    AC_DEFINE(HAVE_STRERROR)
 
     setobjs=yes
 
@@ -367,8 +367,8 @@ AC_SUBST(target_header_dir)
 
 case "${host}" in
   *-*-cygwin* | *-*-mingw*)
-    AC_DEFINE_NOAUTOHEADER(HAVE_SYS_ERRLIST)
-    AC_DEFINE_NOAUTOHEADER(HAVE_SYS_NERR)
+    AC_DEFINE(HAVE_SYS_ERRLIST)
+    AC_DEFINE(HAVE_SYS_NERR)
     ;;
 esac
 
@@ -406,7 +406,7 @@ if test -z "${setobjs}"; then
     # don't have to check them here.
 
     # Of the functions in $checkfuncs, VxWorks only has strerror.
-    AC_DEFINE_NOAUTOHEADER(HAVE_STRERROR)
+    AC_DEFINE(HAVE_STRERROR)
 
     setobjs=yes
     ;;
