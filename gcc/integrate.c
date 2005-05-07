@@ -50,7 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define CEIL_ROUND(VALUE,ALIGN)	(((VALUE) + (ALIGN) - 1) & ~((ALIGN)- 1))
 
 
-/* Private type used by {get/has}_func_hard_reg_initial_val.  */
+/* Private type used by {get/has}_hard_reg_initial_val.  */
 typedef struct initial_value_pair GTY(()) {
   rtx hard_reg;
   rtx pseudo;
@@ -293,38 +293,27 @@ get_hard_reg_initial_reg (struct function *fun, rtx reg)
   return NULL_RTX;
 }
 
-static rtx
-has_func_hard_reg_initial_val (struct function *fun, rtx reg)
+/* Make sure that there's a pseudo register of mode MODE that stores the
+   initial value of hard register REGNO.  Return an rtx for such a pseudo.  */
+
+rtx
+get_hard_reg_initial_val (enum machine_mode mode, int regno)
 {
-  struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
-  int i;
+  struct initial_value_struct *ivs;
+  rtx rv;
 
-  if (ivs == 0)
-    return NULL_RTX;
-
-  for (i = 0; i < ivs->num_entries; i++)
-    if (rtx_equal_p (ivs->entries[i].hard_reg, reg))
-      return ivs->entries[i].pseudo;
-
-  return NULL_RTX;
-}
-
-static rtx
-get_func_hard_reg_initial_val (struct function *fun, rtx reg)
-{
-  struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
-  rtx rv = has_func_hard_reg_initial_val (fun, reg);
-
+  rv = has_hard_reg_initial_val (mode, regno);
   if (rv)
     return rv;
 
+  ivs = cfun->hard_reg_initial_vals;
   if (ivs == 0)
     {
-      fun->hard_reg_initial_vals = ggc_alloc (sizeof (initial_value_struct));
-      ivs = fun->hard_reg_initial_vals;
+      ivs = ggc_alloc (sizeof (initial_value_struct));
       ivs->num_entries = 0;
       ivs->max_entries = 5;
       ivs->entries = ggc_alloc (5 * sizeof (initial_value_pair));
+      cfun->hard_reg_initial_vals = ivs;
     }
 
   if (ivs->num_entries >= ivs->max_entries)
@@ -335,22 +324,30 @@ get_func_hard_reg_initial_val (struct function *fun, rtx reg)
 				  * sizeof (initial_value_pair));
     }
 
-  ivs->entries[ivs->num_entries].hard_reg = reg;
-  ivs->entries[ivs->num_entries].pseudo = gen_reg_rtx (GET_MODE (reg));
+  ivs->entries[ivs->num_entries].hard_reg = gen_rtx_REG (mode, regno);
+  ivs->entries[ivs->num_entries].pseudo = gen_reg_rtx (mode);
 
   return ivs->entries[ivs->num_entries++].pseudo;
 }
 
-rtx
-get_hard_reg_initial_val (enum machine_mode mode, int regno)
-{
-  return get_func_hard_reg_initial_val (cfun, gen_rtx_REG (mode, regno));
-}
+/* See if get_hard_reg_initial_val has been used to create a pseudo
+   for the initial value of hard register REGNO in mode MODE.  Return
+   the associated pseudo if so, otherwise return NULL.  */
 
 rtx
 has_hard_reg_initial_val (enum machine_mode mode, int regno)
 {
-  return has_func_hard_reg_initial_val (cfun, gen_rtx_REG (mode, regno));
+  struct initial_value_struct *ivs;
+  int i;
+
+  ivs = cfun->hard_reg_initial_vals;
+  if (ivs != 0)
+    for (i = 0; i < ivs->num_entries; i++)
+      if (GET_MODE (ivs->entries[i].hard_reg) == mode
+	  && REGNO (ivs->entries[i].hard_reg) == (unsigned int) regno)
+	return ivs->entries[i].pseudo;
+
+  return NULL_RTX;
 }
 
 void
