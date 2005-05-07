@@ -1,8 +1,5 @@
 /* config.in.  Generated from configure.ac by autoheader.  */
 
-/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
-#undef BYTEORDER
-
 /* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
    This function is required for alloca.c support on those systems. */
 #undef CRAY_STACKSEG_END
@@ -343,10 +340,6 @@
 /* Define to 1 if you have the `__fsetlocking' function. */
 #undef HAVE___FSETLOCKING
 
-/* Define if the host machine stores words of multi-word integers in
-   big-endian order. */
-#undef HOST_WORDS_BIG_ENDIAN
-
 /* Define if canonicalize_file_name is not declared in system header files. */
 #undef NEED_DECLARATION_CANONICALIZE_FILE_NAME
 
@@ -389,7 +382,8 @@
 /* Define to an unsigned 64-bit type available in the compiler. */
 #undef UNSIGNED_64BIT_TYPE
 
-/* whether byteorder is bigendian */
+/* Define to 1 if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
 
 /* Define to empty if `const' does not conform to ANSI C. */
