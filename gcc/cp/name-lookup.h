@@ -188,7 +188,7 @@ struct cp_binding_level GTY(())
     tree namespaces;
 
     /* An array of static functions and variables (for namespaces only) */
-    varray_type static_decls;
+    VEC(tree,gc) *static_decls;
 
     /* A chain of VTABLE_DECL nodes.  */
     tree vtables; 
