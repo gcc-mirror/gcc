@@ -1,3 +1,14 @@
+2005-05-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* integrate.c (get_func_hard_reg_initial_val): Delete.
+	(has_func_hard_reg_initial_val): Delete.
+	(get_hard_reg_initial_val): Inline the old implementation of
+	get_func_hard_reg_initial_val.  Use has_hard_reg_initial_val
+	instead of has_func_hard_reg_initial_val to test for an existing
+	pseudo.  Only create an rtx if a new initial value entry is needed.
+	(has_hard_reg_initial_val): Scan the initial value list directly.
+	Don't create an rtx.
+
 2005-05-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config.gcc ({powerpc,rs6000}-ibm-aix*): Remove rs6000/aix.opt
