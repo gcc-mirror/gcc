@@ -1,3 +1,12 @@
+2005-05-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*movdi_insn", "*mov_sidesisf_biap")
+	("*mov_sidesisf", "*mov_sidesisf_biap_mem", "*mov_sidesisf_mem"):
+	Handle moved operand being in special register.
+	("smulsi3_highpart", "umulsi3_highpart"): Change .error into
+	presumed working insn.
+	(mover2side): Add FIXME.
+
 2005-05-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* integrate.c (get_func_hard_reg_initial_val): Delete.

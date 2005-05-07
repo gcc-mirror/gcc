@@ -441,8 +441,8 @@
 }")
 
 (define_insn "*movdi_insn"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand:DI 1 "general_operand" "r,g,rM"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,rx,m")
+	(match_operand:DI 1 "general_operand" "rx,g,rxM"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)
    || operands[1] == const0_rtx"
@@ -499,12 +499,12 @@
 ;; SImode
 
 (define_insn "*mov_sidesisf_biap"
-  [(set (match_operand 0 "register_operand" "=r,r")
+  [(set (match_operand 0 "register_operand" "=r,r,x,x")
 	(mem (plus:SI
-	      (mult:SI (match_operand:SI 1 "register_operand" "r,r")
-		       (match_operand:SI 2 "const_int_operand" "n,n"))
-	      (match_operand:SI 3 "register_operand" "r,r"))))
-   (set (match_operand:SI 4 "register_operand" "=*3,r")
+	      (mult:SI (match_operand:SI 1 "register_operand" "r,r,r,r")
+		       (match_operand:SI 2 "const_int_operand" "n,n,n,n"))
+	      (match_operand:SI 3 "register_operand" "r,r,r,r"))))
+   (set (match_operand:SI 4 "register_operand" "=*3,r,*3,r")
 	(plus:SI (mult:SI (match_dup 1)
 			  (match_dup 2))
 		 (match_dup 3)))]
@@ -512,7 +512,9 @@
    && cris_side_effect_mode_ok (MULT, operands, 4, 3, 1, 2, 0)"
   "@
    #
-   move.%s0 [%4=%3+%1%T2],%0")
+   move.%s0 [%4=%3+%1%T2],%0
+   #
+   move [%4=%3+%1%T2],%0")
 
 ;; move.S1 [rx=ry+i],rz
 ;; avoiding move.S1 [ry=ry+i],rz
@@ -569,26 +571,28 @@
 ;; SImode
 
 (define_insn "*mov_sidesisf"
-  [(set (match_operand 0 "register_operand" "=r,r,r")
+  [(set (match_operand 0 "register_operand" "=r,r,r,x,x,x")
 	(mem
-	 (plus:SI (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn"))))
-   (set (match_operand:SI 3 "register_operand" "=*1,r,r")
+	 (plus:SI
+	  (match_operand:SI 1 "cris_bdap_operand" "%r,r,r,r,r,r")
+	  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn,r>Rn,r,>Rn"))))
+   (set (match_operand:SI 3 "register_operand" "=*1,r,r,*1,r,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
   "GET_MODE_SIZE (GET_MODE (operands[0])) == UNITS_PER_WORD
    && cris_side_effect_mode_ok (PLUS, operands, 3, 1, 2, -1, 0)"
-  "*
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[2]) != CONST_INT
 	  || INTVAL (operands[2]) > 127
 	  || INTVAL (operands[2]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
-    return \"#\";
-  return \"move.%s0 [%3=%1%S2],%0\";
-}")
+    return "#";
+  if (which_alternative < 3)
+    return "move.%s0 [%3=%1%S2],%0";
+  return "move [%3=%1%S2],%0";
+})
 
 ;; Other way around; move to memory.
 
@@ -650,11 +654,11 @@
 
 (define_insn "*mov_sidesisf_biap_mem"
   [(set (mem (plus:SI
-	      (mult:SI (match_operand:SI 0 "register_operand" "r,r,r")
-		       (match_operand:SI 1 "const_int_operand" "n,n,n"))
-	      (match_operand:SI 2 "register_operand" "r,r,r")))
-	(match_operand 3 "register_operand" "r,r,r"))
-   (set (match_operand:SI 4 "register_operand" "=*2,!3,r")
+	      (mult:SI (match_operand:SI 0 "register_operand" "r,r,r,r,r,r")
+		       (match_operand:SI 1 "const_int_operand" "n,n,n,n,n,n"))
+	      (match_operand:SI 2 "register_operand" "r,r,r,r,r,r")))
+	(match_operand 3 "register_operand" "r,r,r,x,x,x"))
+   (set (match_operand:SI 4 "register_operand" "=*2,!3,r,*2,!3,r")
 	(plus:SI (mult:SI (match_dup 0)
 			  (match_dup 1))
 		 (match_dup 2)))]
@@ -663,7 +667,10 @@
   "@
    #
    #
-   move.%s3 %3,[%4=%2+%0%T1]")
+   move.%s3 %3,[%4=%2+%0%T1]
+   #
+   #
+   move %3,[%4=%2+%0%T1]")
 
 ;; Split for the case above where we're out of luck with register
 ;; allocation (again, the condition isn't checked for that), and we end up
@@ -755,27 +762,31 @@
 
 (define_insn "*mov_sidesisf_mem"
   [(set (mem
-	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn")))
-	(match_operand 2 "register_operand" "r,r,r,r"))
-   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r")
+	 (plus:SI
+	  (match_operand:SI
+	   0 "cris_bdap_operand" "%r,r,r,r,r,r,r,r")
+	  (match_operand:SI
+	   1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn,r>Rn,r>Rn,r,>Rn")))
+	(match_operand 2 "register_operand" "r,r,r,r,x,x,x,x"))
+   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r,*0,!2,r,r")
 	(plus:SI (match_dup 0)
 		 (match_dup 1)))]
   "GET_MODE_SIZE (GET_MODE (operands[2])) == UNITS_PER_WORD
    && cris_side_effect_mode_ok (PLUS, operands, 3, 0, 1, -1, 2)"
-  "*
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 4)
       && (GET_CODE (operands[1]) != CONST_INT
 	  || INTVAL (operands[1]) > 127
 	  || INTVAL (operands[1]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
-    return \"#\";
-  if (which_alternative == 1)
-    return \"#\";
-  return \"move.%s2 %2,[%3=%0%S1]\";
-}")
+    return "#";
+  if (which_alternative == 1 || which_alternative == 5)
+    return "#";
+  if (which_alternative < 4)
+    return "move.%s2 %2,[%3=%0%S1]";
+  return "move %2,[%3=%0%S1]";
+})
 
 ;; Like the biap case, a split where the set in the side-effect gets the
 ;; same register as the input register to the main insn, since the
@@ -2711,7 +2722,7 @@
   "TARGET_HAS_MUL_INSNS"
   "@
    %!muls.d %2,%1
-   .error 'untested assembly generated by GCC (smulsi3_highpart): muls.d %1,%2'
+   %!muls.d %1,%2
    %!muls.d %2,%1\;move $mof,%0
    %!muls.d %1,%2\;move $mof,%0"
   [(set_attr "slottable" "yes,yes,no,no")
@@ -2729,7 +2740,7 @@
   "TARGET_HAS_MUL_INSNS"
   "@
    %!mulu.d %2,%1
-   .error 'untested assembly generated by GCC (umulsi3_highpart): mulu.d %1,%2'
+   %!mulu.d %1,%2
    %!mulu.d %2,%1\;move $mof,%0
    %!mulu.d %1,%2\;move $mof,%0"
   [(set_attr "slottable" "yes,yes,no,no")
@@ -4986,6 +4997,8 @@
 			  [(match_dup 3)
 			   (match_operator
 			    5 "cris_mem_op" [(match_dup 0)])]))]
+  ;; FIXME: What about DFmode?
+  ;; Change to GET_MODE_SIZE (GET_MODE (operands[3])) <= UNITS_PER_WORD?
   "GET_MODE (operands[3]) != DImode
    && REGNO (operands[0]) != REGNO (operands[3])
    && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
