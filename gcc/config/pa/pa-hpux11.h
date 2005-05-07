@@ -66,7 +66,7 @@ Boston, MA 02111-1307, USA.  */
 	  }								\
 	if (!TARGET_64BIT)						\
 	  builtin_define ("_ILP32");					\
-	if (flag_pa_unix >= 1995)					\
+	if (flag_pa_unix >= 1995 && !flag_iso)				\
 	  {								\
 	    builtin_define ("_XOPEN_UNIX");				\
 	    builtin_define ("_XOPEN_SOURCE_EXTENDED");			\
@@ -75,8 +75,11 @@ Boston, MA 02111-1307, USA.  */
 	  {								\
 	    if (flag_pa_unix >= 1998)					\
 	      {								\
-		builtin_define ("_INCLUDE__STDC_A1_SOURCE");		\
-		builtin_define ("_INCLUDE_XOPEN_SOURCE_500");		\
+		if (flag_isoc94 || flag_isoc99 || c_dialect_cxx()	\
+		    || !flag_iso)					\
+		  builtin_define ("_INCLUDE__STDC_A1_SOURCE");		\
+		if (!flag_iso)						\
+		  builtin_define ("_INCLUDE_XOPEN_SOURCE_500");		\
 	      }								\
 	    else if (flag_isoc94 || flag_isoc99 || c_dialect_cxx ())	\
 	      warning ("-munix=98 option required for C89 "		\

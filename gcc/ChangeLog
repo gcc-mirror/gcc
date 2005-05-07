@@ -1,3 +1,8 @@
+2005-05-07  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/pa/pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Do not define
+	inappropriate feature test macros if flag_iso.
+
 2005-05-07  Richard Henderson  <rth@redhat.com>
 
         PR target/21412
