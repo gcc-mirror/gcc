@@ -234,7 +234,7 @@ struct eh_status GTY(())
   int built_landing_pads;
   int last_region_number;
 
-  varray_type ttype_data;
+  VEC(tree,gc) *ttype_data;
   varray_type ehspec_data;
   varray_type action_record_data;
 
@@ -966,10 +966,10 @@ add_ttypes_entry (htab_t ttypes_hash, tree type)
 
       n = xmalloc (sizeof (*n));
       n->t = type;
-      n->filter = VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data) + 1;
+      n->filter = VEC_length (tree, cfun->eh->ttype_data) + 1;
       *slot = n;
 
-      VARRAY_PUSH_TREE (cfun->eh->ttype_data, type);
+      VEC_safe_push (tree, gc, cfun->eh->ttype_data, type);
     }
 
   return n->filter;
@@ -1019,7 +1019,7 @@ assign_filter_values (void)
   int i;
   htab_t ttypes, ehspec;
 
-  VARRAY_TREE_INIT (cfun->eh->ttype_data, 16, "ttype_data");
+  cfun->eh->ttype_data = VEC_alloc (tree, gc, 16);
   VARRAY_UCHAR_INIT (cfun->eh->ehspec_data, 64, "ehspec_data");
 
   ttypes = htab_create (31, ttypes_filter_hash, ttypes_filter_eq, free);
@@ -3257,7 +3257,7 @@ output_function_exception_table (void)
   targetm.asm_out.exception_section ();
 #endif
 
-  have_tt_data = (VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data) > 0
+  have_tt_data = (VEC_length (tree, cfun->eh->ttype_data) > 0
 		  || VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data) > 0);
 
   /* Indicate the format of the @TType entries.  */
@@ -3320,7 +3320,7 @@ output_function_exception_table (void)
       after_disp = (1 + size_of_uleb128 (call_site_len)
 		    + call_site_len
 		    + VARRAY_ACTIVE_SIZE (cfun->eh->action_record_data)
-		    + (VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data)
+		    + (VEC_length (tree, cfun->eh->ttype_data)
 		       * tt_format_size));
 
       disp = after_disp;
@@ -3382,10 +3382,10 @@ output_function_exception_table (void)
   if (have_tt_data)
     assemble_align (tt_format_size * BITS_PER_UNIT);
 
-  i = VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data);
+  i = VEC_length (tree, cfun->eh->ttype_data);
   while (i-- > 0)
     {
-      tree type = VARRAY_TREE (cfun->eh->ttype_data, i);
+      tree type = VEC_index (tree, cfun->eh->ttype_data, i);
       rtx value;
 
       if (type == NULL_TREE)
