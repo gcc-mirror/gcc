@@ -1,3 +1,8 @@
+2005-05-08  Richard Henderson  <rth@redhat.com>
+
+	PR libffi/21285
+	* src/alpha/osf.S: Update unwind into to match code.
+
 2005-05-04  Andreas Degert <ad@papyrus-gmbh.de>
 	    Richard Henderson  <rth@redhat.com>
 
