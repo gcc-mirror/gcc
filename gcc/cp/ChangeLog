@@ -1,3 +1,10 @@
+2005-05-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* class.c (vtbl_init_data_s): Change the type of fns to
+	VEC(tree,gc)*.
+	(build_vtbl_initializer, add_vcall_offset, add_vcall_offset):
+	Use VEC instead of VARRAY.
+
 2005-05-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* mangle.c: Remove a reference to the MIPS -mint64 option.
