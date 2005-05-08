@@ -2612,8 +2612,6 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
       switch (*code)
 	{
 	case NE:
-	case UNGE:
-	case UNGT:
 	case LTGT:
 	case ORDERED:
 	  cmp_code = reverse_condition_maybe_unordered (*code);

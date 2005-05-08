@@ -411,6 +411,10 @@
 ;; generated from the same template.
 (define_code_macro fcond [unordered uneq unlt unle eq lt le])
 
+;; This code macro is used for comparisons that can be implemented
+;; by swapping the operands.
+(define_code_macro swapped_fcond [ge gt unge ungt])
+
 ;; <u> expands to an empty string when doing a signed operation and
 ;; "u" when doing an unsigned operation.
 (define_code_attr u [(sign_extend "") (zero_extend "u")])
@@ -436,6 +440,12 @@
 			 (eq "eq")
 			 (lt "lt")
 			 (le "le")])
+
+;; Similar, but for swapped conditions.
+(define_code_attr swapped_fcond [(ge "le")
+				 (gt "lt")
+				 (unge "ule")
+				 (ungt "ult")])
 
 ;; .........................
 ;;
@@ -4574,21 +4584,12 @@ beq\t%2,%.,1b\;\
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
-(define_insn "sgt_<mode>"
+(define_insn "s<code>_<mode>"
   [(set (match_operand:CC 0 "register_operand" "=z")
-	(gt:CC (match_operand:SCALARF 1 "register_operand" "f")
-	       (match_operand:SCALARF 2 "register_operand" "f")))]
+	(swapped_fcond:CC (match_operand:SCALARF 1 "register_operand" "f")
+		          (match_operand:SCALARF 2 "register_operand" "f")))]
   ""
-  "c.lt.<fmt>\t%Z0%2,%1"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sge_<mode>"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(ge:CC (match_operand:SCALARF 1 "register_operand" "f")
-	       (match_operand:SCALARF 2 "register_operand" "f")))]
-  ""
-  "c.le.<fmt>\t%Z0%2,%1"
+  "c.<swapped_fcond>.<fmt>\t%Z0%2,%1"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
