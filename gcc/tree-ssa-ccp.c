@@ -209,6 +209,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
+#include "target.h"
 
 
 /* Possible lattice values.  */
@@ -970,6 +971,127 @@ ccp_fold (tree stmt)
 }
 
 
+/* Return the tree representing the element referenced by T if T is an
+   ARRAY_REF or COMPONENT_REF into constant aggregates.  Return
+   NULL_TREE otherwise.  */
+
+static tree
+fold_const_aggregate_ref (tree t)
+{
+  prop_value_t *value;
+  tree base, ctor, idx, field, elt;
+
+  switch (TREE_CODE (t))
+    {
+    case ARRAY_REF:
+      /* Get a CONSTRUCTOR.  If BASE is a VAR_DECL, get its
+	 DECL_INITIAL.  If BASE is a nested reference into another
+	 ARRAY_REF or COMPONENT_REF, make a recursive call to resolve
+	 the inner reference.  */
+      base = TREE_OPERAND (t, 0);
+      switch (TREE_CODE (base))
+	{
+	case VAR_DECL:
+	  if (!TREE_READONLY (base)
+	      || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
+	      || !targetm.binds_local_p (base))
+	    return NULL_TREE;
+
+	  ctor = DECL_INITIAL (base);
+	  break;
+
+	case ARRAY_REF:
+	case COMPONENT_REF:
+	  ctor = fold_const_aggregate_ref (base);
+	  break;
+
+	default:
+	  return NULL_TREE;
+	}
+
+      if (ctor == NULL_TREE
+	  || TREE_CODE (ctor) != CONSTRUCTOR
+	  || !TREE_STATIC (ctor))
+	return NULL_TREE;
+
+      /* Get the index.  If we have an SSA_NAME, try to resolve it
+	 with the current lattice value for the SSA_NAME.  */
+      idx = TREE_OPERAND (t, 1);
+      switch (TREE_CODE (idx))
+	{
+	case SSA_NAME:
+	  if ((value = get_value (idx, true))
+	      && value->lattice_val == CONSTANT
+	      && TREE_CODE (value->value) == INTEGER_CST)
+	    idx = value->value;
+	  else
+	    return NULL_TREE;
+	  break;
+
+	case INTEGER_CST:
+	  break;
+
+	default:
+	  return NULL_TREE;
+	}
+
+      /* Whoo-hoo!  I'll fold ya baby.  Yeah!  */
+      for (elt = CONSTRUCTOR_ELTS (ctor);
+	   (elt && !tree_int_cst_equal (TREE_PURPOSE (elt), idx));
+	   elt = TREE_CHAIN (elt))
+	;
+
+      if (elt)
+	return TREE_VALUE (elt);
+      break;
+
+    case COMPONENT_REF:
+      /* Get a CONSTRUCTOR.  If BASE is a VAR_DECL, get its
+	 DECL_INITIAL.  If BASE is a nested reference into another
+	 ARRAY_REF or COMPONENT_REF, make a recursive call to resolve
+	 the inner reference.  */
+      base = TREE_OPERAND (t, 0);
+      switch (TREE_CODE (base))
+	{
+	case VAR_DECL:
+	  if (!TREE_READONLY (base)
+	      || TREE_CODE (TREE_TYPE (base)) != RECORD_TYPE
+	      || !targetm.binds_local_p (base))
+	    return NULL_TREE;
+
+	  ctor = DECL_INITIAL (base);
+	  break;
+
+	case ARRAY_REF:
+	case COMPONENT_REF:
+	  ctor = fold_const_aggregate_ref (base);
+	  break;
+
+	default:
+	  return NULL_TREE;
+	}
+
+      if (ctor == NULL_TREE
+	  || TREE_CODE (ctor) != CONSTRUCTOR
+	  || !TREE_STATIC (ctor))
+	return NULL_TREE;
+
+      field = TREE_OPERAND (t, 1);
+
+      for (elt = CONSTRUCTOR_ELTS (ctor); elt; elt = TREE_CHAIN (elt))
+	if (TREE_PURPOSE (elt) == field
+	    /* FIXME: Handle bit-fields.  */
+	    && ! DECL_BIT_FIELD (TREE_PURPOSE (elt)))
+	  return TREE_VALUE (elt);
+      break;
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+  
 /* Evaluate statement STMT.  */
 
 static prop_value_t
@@ -989,10 +1111,13 @@ evaluate_stmt (tree stmt)
      bother folding the statement.  */
   else if (likelyvalue == VARYING)
     simplified = get_rhs (stmt);
-  /* Otherwise the statement is likely to have an UNDEFINED value and
-     there will be nothing to do.  */
+  /* If the statement is an ARRAY_REF or COMPONENT_REF into constant
+     aggregates, extract the referenced constant.  Otherwise the
+     statement is likely to have an UNDEFINED value, and there will be
+     nothing to do.  Note that fold_const_aggregate_ref returns
+     NULL_TREE if the first case does not match.  */
   else
-    simplified = NULL_TREE;
+    simplified = fold_const_aggregate_ref (get_rhs (stmt));
 
   if (simplified && is_gimple_min_invariant (simplified))
     {
