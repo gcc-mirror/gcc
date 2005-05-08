@@ -1,5 +1,13 @@
 2005-05-08  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_emit_compare): Don't reverse UNGE and UNGT
+	comparisons.
+	* config/mips/mips.md (swapped_fcond): New code macro and attribute.
+	(sgt_<mode>, sge_<mode>): Generalize to all members of swapped_fcond,
+	including sunge_<mode> and sungt_<mode>.
+
+2005-05-08  Richard Sandiford  <rsandifo@redhat.com>
+
 	* integrate.h (get_hard_reg_initial_val): Change type of register
 	parameter from int to unsigned int.
 	(has_hard_reg_initial_val): Likewise.
