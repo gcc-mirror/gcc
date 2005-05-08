@@ -7765,6 +7765,24 @@ srl\t%M0,%M1,%2\n\
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
+(define_insn "sungt_df"
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(ungt:CC (match_operand:DF 1 "register_operand" "f")
+	         (match_operand:DF 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "c.ult.d\t%Z0%2,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
+
+(define_insn "sunge_df"
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(unge:CC (match_operand:DF 1 "register_operand" "f")
+	         (match_operand:DF 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "c.ule.d\t%Z0%2,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
+
 (define_insn "seq_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(eq:CC (match_operand:DF 1 "register_operand" "f")
@@ -7843,6 +7861,24 @@ srl\t%M0,%M1,%2\n\
 		 (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
   "c.ule.s\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
+
+(define_insn "sungt_sf"
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(ungt:CC (match_operand:SF 1 "register_operand" "f")
+	         (match_operand:SF 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT"
+  "c.ult.s\t%Z0%2,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
+
+(define_insn "sunge_sf"
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(unge:CC (match_operand:SF 1 "register_operand" "f")
+	         (match_operand:SF 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT"
+  "c.ule.s\t%Z0%2,%1"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 

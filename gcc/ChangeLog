@@ -1,3 +1,11 @@
+2005-05-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/21416
+	* config/mips/mips.c (mips_emit_compare): Don't reverse UNGE and UNGT
+	comparisons.
+	* config/mips/mips.md (sungt_df, sunge_df, sungt_sf, sunge_sf): New
+	patterns.
+
 2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR target/16925

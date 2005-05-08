@@ -3049,8 +3049,6 @@ get_float_compare_codes (enum rtx_code in_code, enum rtx_code *cmp_code,
   switch (in_code)
     {
     case NE:
-    case UNGE:
-    case UNGT:
     case LTGT:
     case ORDERED:
       *cmp_code = reverse_condition_maybe_unordered (in_code);
