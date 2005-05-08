@@ -1,3 +1,7 @@
+2005-05-08  Matt Kraai  <kraai@ftbfs.org>
+
+	* README.SCO: Update the URL.
+
 2005-03-08  Daniel Jacobowitz  <dan@debian.org>
 
 	* configure.in: Use an absolute path to install-sh.
