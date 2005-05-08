@@ -1668,7 +1668,7 @@ mark_def_site_blocks (sbitmap interesting_blocks)
   struct mark_def_sites_global_data mark_def_sites_global_data;
 
   /* Allocate memory for the DEF_BLOCKS hash table.  */
-  def_blocks = htab_create (VARRAY_ACTIVE_SIZE (referenced_vars),
+  def_blocks = htab_create (VEC_length (tree, referenced_vars),
 			    def_blocks_hash, def_blocks_eq, def_blocks_free);
 
   for (i = 0; i < num_referenced_vars; i++)

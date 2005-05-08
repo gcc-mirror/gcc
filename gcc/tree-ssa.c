@@ -786,7 +786,7 @@ err:
 void
 init_tree_ssa (void)
 {
-  VARRAY_TREE_INIT (referenced_vars, 20, "referenced_vars");
+  referenced_vars = VEC_alloc (tree, gc, 20);
   call_clobbered_vars = BITMAP_ALLOC (NULL);
   addressable_vars = BITMAP_ALLOC (NULL);
   init_ssanames ();
@@ -827,16 +827,13 @@ delete_tree_ssa (void)
       }
 
   /* Remove annotations from every referenced variable.  */
-  if (referenced_vars)
+  for (i = 0; i < num_referenced_vars; i++)
     {
-      for (i = 0; i < num_referenced_vars; i++)
-	{
-	  tree var = referenced_var (i);
-	  ggc_free (var->common.ann);
-	  var->common.ann = NULL;
-	}
-      referenced_vars = NULL;
+      tree var = referenced_var (i);
+      ggc_free (var->common.ann);
+      var->common.ann = NULL;
     }
+  VEC_free (tree, gc, referenced_vars);
 
   fini_ssanames ();
   fini_phinodes ();
