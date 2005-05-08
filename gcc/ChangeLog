@@ -1,3 +1,11 @@
+2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
+
+	PR target/16925
+	* config/m68hc11/m68hc11.c (m68hc11_gen_highpart): Handle split of
+	64-bit constants on 64-bit hosts.
+	(m68hc11_split_logical): Simplify.
+	(m68hc11_split_move): Likewise.
+
 2005-05-07  Anthony Green  <green@redhat.com>
 
         PR bootstrap/21403
