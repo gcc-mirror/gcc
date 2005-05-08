@@ -1369,7 +1369,7 @@ do {						\
 /* This is how to output an element of a case-vector that is absolute.
    (Alpha does not use such vectors, but we must define this macro anyway.)  */
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) abort ()
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) gcc_unreachable ()
 
 /* This is how to output an element of a case-vector that is relative.  */
 

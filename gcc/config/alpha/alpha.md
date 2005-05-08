@@ -1003,7 +1003,7 @@
       str = "__remlu";
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   operands[4] = GEN_INT (alpha_next_sequence_number++);
   emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
@@ -1071,7 +1071,7 @@
       str = "__remqu";
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   operands[4] = GEN_INT (alpha_next_sequence_number++);
   emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
@@ -1452,7 +1452,7 @@
     case 1:
       return "sll %r1,%2,%0";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "iadd,shift")])
@@ -2124,7 +2124,7 @@
       == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
     return "insll %1,%s2,%0";
 #endif
-  abort();
+  gcc_unreachable ();
 }
   [(set_attr "type" "shift")])
 
@@ -4497,8 +4497,7 @@
 	      (unspec [(reg:DI 29)] UNSPEC_SIBCALL)])]
   "TARGET_ABI_OSF"
 {
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == MEM);
   operands[0] = XEXP (operands[0], 0);
 })
 
@@ -4509,8 +4508,7 @@
 	      (clobber (reg:DI 26))])]
   ""
 {
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == MEM);
 
   operands[0] = XEXP (operands[0], 0);
   if (! call_operand (operands[0], Pmode))
@@ -4523,8 +4521,7 @@
 	      (clobber (reg:DI 26))])]
   ""
 {
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == MEM);
 
   operands[0] = XEXP (operands[0], 0);
   if (GET_CODE (operands[0]) != SYMBOL_REF && GET_CODE (operands[0]) != REG)
@@ -4542,8 +4539,7 @@
 	       (clobber (reg:DI 26))])]
    ""
 {
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == MEM);
 
   /* Always load the address of the called function into a register;
      load the CIW in $25.  */
@@ -4569,8 +4565,7 @@
 	      (clobber (reg:DI 27))])]
   ""
 {
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == MEM);
 
   operands[0] = XEXP (operands[0], 0);
 
@@ -4623,8 +4618,7 @@
 	      (unspec [(reg:DI 29)] UNSPEC_SIBCALL)])]
   "TARGET_ABI_OSF"
 {
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
   operands[1] = XEXP (operands[1], 0);
 })
 
@@ -4636,8 +4630,7 @@
 	      (clobber (reg:DI 26))])]
   ""
 {
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
 
   operands[1] = XEXP (operands[1], 0);
   if (! call_operand (operands[1], Pmode))
@@ -4651,8 +4644,7 @@
 	      (clobber (reg:DI 26))])]
   ""
 {
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
 
   operands[1] = XEXP (operands[1], 0);
   if (GET_CODE (operands[1]) != SYMBOL_REF && GET_CODE (operands[1]) != REG)
@@ -4669,8 +4661,7 @@
 	      (clobber (reg:DI 27))])]
   ""
 {
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
 
   operands[1] = XEXP (operands[1], 0);
 
@@ -4701,8 +4692,7 @@
 	      (clobber (reg:DI 26))])]
   ""
 {
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
 
   operands[1] = XEXP (operands[1], 0);
   if (GET_CODE (operands[1]) != REG)
@@ -4902,7 +4892,7 @@
 	operands [3] = alpha_use_linkage (operands [0], cfun->decl, 0, 0);
    	return "ldq $26,%3\;ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "jsr")
@@ -5639,7 +5629,7 @@
 
 ;; VMS needs to set up "vms_base_regno" for unwinding.  This move
 ;; often appears dead to the life analysis code, at which point we
-;; abort for emitting dead prologue instructions.  Force this live.
+;; die for emitting dead prologue instructions.  Force this live.
 
 (define_insn "force_movdi"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -6556,7 +6546,7 @@
     case 1:
 	return "lda $16,%0\;lda $17,%2($31)\;lda $18,%1\;ldq $26,%5\;lda $25,3($31)\;jsr $26,%4\;ldq $27,0($29)";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "multi")
@@ -6613,7 +6603,7 @@
     case 1:
 	return "lda $16,%0\;lda $17,%1($31)\;ldq $26,%4\;lda $25,2($31)\;jsr $26,%3\;ldq $27,0($29)";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "multi")
@@ -8036,7 +8026,7 @@
 	operands [4] = alpha_use_linkage (operands [1], cfun->decl, 0, 0);
    	return "ldq $26,%4\;ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "jsr")
