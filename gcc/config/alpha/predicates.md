@@ -231,7 +231,7 @@
       return add_operand (op, mode);
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return 0;
 })
@@ -506,7 +506,7 @@
 
 ;; Returns 1 if OP is not an eliminable register.
 ;;
-;; This exists to cure a pathological abort in the s8addq (et al) patterns,
+;; This exists to cure a pathological failure in the s8addq (et al) patterns,
 ;;
 ;;	long foo () { long t; bar(); return (long) &t * 26107; }
 ;;

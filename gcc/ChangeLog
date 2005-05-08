@@ -1,4 +1,36 @@
 2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
+	    Falk Hueffner  <falk@debian.org>
+
+	* config/alpha/alpha.c (tls_symbolic_operand_1): Use gcc_assert
+	and gcc_unreachable as appropriate.
+	(get_aligned_mem, get_unaligned_address,
+	alpha_emit_set_long_const, alpha_emit_conditional_branch,
+	alpha_emit_setcc, alpha_emit_conditional_move,
+	alpha_lookup_xfloating_lib_func, alpha_compute_xfloating_mode_arg,
+	alpha_emit_xfloating_libcall, alpha_split_tfmode_pair,
+	alpha_expand_unaligned_load, alpha_expand_block_move,
+	alpha_expand_zap_mask, get_trap_mode_suffix,
+	get_round_mode_suffix, get_some_local_dynamic_name,
+	print_operand_address, function_arg, alpha_return_in_memory,
+	function_value, alpha_expand_builtin,
+	alpha_initial_elimination_offset, alpha_expand_epilogue,
+	summarize_insn, alpha_handle_trap_shadows, alphaev5_insn_pipe,
+	alphaev5_next_group, alpha_align_insns,
+	unicosmk_initial_elimination_offset, unicosmk_unique_section,
+	unicosmk_ssib_name): Likewise.
+	* config/alpha/alpha.h (ASM_OUTPUT_ADDR_VEC_ELT): Likewise.
+	* config/alpha/unicosmk.h (TRAMPOLINE_TEMPLATE,
+	ASM_OUTPUT_ADDR_DIFF_ELT, ASM_OUTPUT_ADDR_DIFF_VEC): Likewise.
+	* config/alpha/vms.h (INITIAL_ELIMINATION_OFFSET,
+	ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/alpha/alpha.md (*divmodsi_internal_er,
+	*divmoddi_internal_er, ashldi3, *insxl, sibcall, call_osf,
+	call_nt, call_umk, call_vms, call_value, sibcall_value,
+	call_value_osf, call_value_nt, call_value_vms, call_value_umk,
+	*call_vms_1, *movmemdi_1, *clrmemdi_1, *call_value_vms_1): Likewise.
+	* config/alpha/predicates.md (input_operand): Likewise.
+
+2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/frv/frv.c (frv_default_flags_for_cpu): Use gcc_assert and
 	gcc_unreachable, as appropriate.
