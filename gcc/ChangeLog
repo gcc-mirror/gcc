@@ -1,3 +1,14 @@
+2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/m68hc11/m68hc11.c (m68hc11_emit_libcall): Use gcc_assert
+	and gcc_unreachable as appropriate.
+	(expand_prologue, expand_epilogue, m68hc11_gen_lowpart,
+	m68hc11_gen_highpart, print_operand, print_operand_address,
+	m68hc11_expand_compare, m68hc11_expand_compare_and_branch,
+	m68hc11_gen_movhi): Likewise.
+	* config/m68hc11/m68hc11.h (HARD_X_REGNUM): Reword comment.
+	* config/m68hc11/m68hc11.md: Reword comment.
+
 2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR target/21281
@@ -9,7 +20,8 @@
 	* config/m68hc11/predicates.md (reg_or_some_mem_operand): Do not allow
 	the 68HC12 address indirect addressing mode as it is not supported by
 	bset and bclr.
-	* config/m68hc11/m68hc11-protos.h (m68hc11_valid_addressing_p): Declare.
+	* config/m68hc11/m68hc11-protos.h
+	(m68hc11_valid_addressing_p): Declare.
 	(m68hc11_add_mode): Declare.
 	* config/m68hc11/m68hc11.c (m68hc11_valid_addressing_p): Rename from
 	register_indirect_p and export it.
@@ -30,8 +42,8 @@
 2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR target/19051
-	* config/m68hc11/m68hc11.md ("mulqi3"): Use general_operand for operand
-	1 and fix constraints.
+	* config/m68hc11/m68hc11.md ("mulqi3"): Use general_operand for
+	operand 1 and fix constraints.
 	("mulqihi3"): Use general_operand for operand 2.
 
 2005-05-08  Julian Brown  <julian@codesourcery.com>

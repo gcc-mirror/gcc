@@ -289,7 +289,7 @@ extern const struct processor_costs *m68hc11_cost;
 /* The Z register does not really exist in the 68HC11.  This a fake register
    for GCC.  It is treated exactly as an index register (X or Y).  It is only
    in the A_REGS class, which is the BASE_REG_CLASS for GCC.  Defining this
-   register helps the reload pass of GCC.  Otherwise, the reload often aborts
+   register helps the reload pass of GCC.  Otherwise, the reload often dies
    with register spill failures.
 
    The Z register is replaced by either X or Y during the machine specific

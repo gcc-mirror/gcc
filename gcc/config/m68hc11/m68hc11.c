@@ -922,7 +922,7 @@ m68hc11_emit_libcall (const char *name, enum rtx_code code,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   insns = get_insns ();
@@ -1571,8 +1571,7 @@ expand_prologue (void)
   int regno;
   rtx scratch;
 
-  if (reload_completed != 1)
-    abort ();
+  gcc_assert (reload_completed == 1);
 
   size = get_frame_size ();
 
@@ -1677,8 +1676,7 @@ expand_epilogue (void)
   int return_size;
   rtx scratch;
 
-  if (reload_completed != 1)
-    abort ();
+  gcc_assert (reload_completed == 1);
 
   size = get_frame_size ();
 
@@ -1826,12 +1824,16 @@ m68hc11_gen_lowpart (enum machine_mode mode, rtx x)
 	{
 	  l[0] = CONST_DOUBLE_LOW (x);
 	}
-      if (mode == SImode)
-	return GEN_INT (l[0]);
-      else if (mode == HImode && GET_MODE (x) == SFmode)
-	return gen_int_mode (l[0], HImode);
-      else
-	abort ();
+      switch (mode)
+	{
+	case SImode:
+	  return GEN_INT (l[0]);
+	case HImode:
+	  gcc_assert (GET_MODE (x) == SFmode);
+	  return gen_int_mode (l[0], HImode);
+	default:
+	  gcc_unreachable ();
+	}
     }
 
   if (mode == QImode && D_REG_P (x))
@@ -1840,12 +1842,15 @@ m68hc11_gen_lowpart (enum machine_mode mode, rtx x)
   /* gen_lowpart crashes when it is called with a SUBREG.  */
   if (GET_CODE (x) == SUBREG && SUBREG_BYTE (x) != 0)
     {
-      if (mode == SImode)
-	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 4);
-      else if (mode == HImode)
-	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 2);
-      else
-	abort ();
+      switch (mode)
+	{
+	case SImode:
+	  return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 4);
+	case HImode:
+	  return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 2);
+	default:
+	  gcc_unreachable ();
+	}
     }
   x = gen_lowpart (mode, x);
 
@@ -1902,12 +1907,16 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
 	  l[1] = CONST_DOUBLE_HIGH (x);
 	}
 
-      if (mode == SImode)
-	return GEN_INT (l[1]);
-      else if (mode == HImode && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	return gen_int_mode ((l[0] >> 16), HImode);
-      else
-	abort ();
+      switch (mode)
+	{
+	case SImode:
+	  return GEN_INT (l[1]);
+	case HImode:
+	  gcc_assert (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT);
+	  return gen_int_mode ((l[0] >> 16), HImode);
+	default:
+	  gcc_unreachable ();
+	}
     }
   if (GET_CODE (x) == CONST_INT)
     {
@@ -1946,20 +1955,16 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
     }
 
   /* gen_highpart crashes when it is called with a SUBREG.  */
-  if (GET_CODE (x) == SUBREG)
+  switch (GET_CODE (x))
     {
+    case SUBREG:
       return gen_rtx_SUBREG (mode, XEXP (x, 0), XEXP (x, 1));
-    }
-  if (GET_CODE (x) == REG)
-    {
+    case REG:
       if (REGNO (x) < FIRST_PSEUDO_REGISTER)
         return gen_rtx_REG (mode, REGNO (x));
       else
         return gen_rtx_SUBREG (mode, x, 0);
-    }
-
-  if (GET_CODE (x) == MEM)
-    {
+    case MEM:
       x = change_address (x, mode, 0);
 
       /* Return a different rtx to avoid to share it in several insns
@@ -1968,8 +1973,10 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
       if (GET_CODE (x) == MEM)
 	x = copy_rtx (x);
       return x;
+
+    default:
+      gcc_unreachable ();
     }
-  abort ();
 }
 
 
@@ -2170,56 +2177,36 @@ print_operand (FILE *file, rtx op, int letter)
       switch (GET_CODE (base))
 	{
 	case PRE_DEC:
-	  if (TARGET_M6812)
-	    {
-	      fprintf (file, "%u,-", GET_MODE_SIZE (GET_MODE (op)));
-	      asm_print_register (file, REGNO (XEXP (base, 0)));
-	    }
-	  else
-	    abort ();
+	  gcc_assert (TARGET_M6812);
+	  fprintf (file, "%u,-", GET_MODE_SIZE (GET_MODE (op)));
+	  asm_print_register (file, REGNO (XEXP (base, 0)));
 	  break;
 
 	case POST_DEC:
-	  if (TARGET_M6812)
-	    {
-	      fprintf (file, "%u,", GET_MODE_SIZE (GET_MODE (op)));
-	      asm_print_register (file, REGNO (XEXP (base, 0)));
-	      fprintf (file, "-");
-	    }
-	  else
-	    abort ();
+	  gcc_assert (TARGET_M6812);
+	  fprintf (file, "%u,", GET_MODE_SIZE (GET_MODE (op)));
+	  asm_print_register (file, REGNO (XEXP (base, 0)));
+	  fprintf (file, "-");
 	  break;
 
 	case POST_INC:
-	  if (TARGET_M6812)
-	    {
-	      fprintf (file, "%u,", GET_MODE_SIZE (GET_MODE (op)));
-	      asm_print_register (file, REGNO (XEXP (base, 0)));
-	      fprintf (file, "+");
-	    }
-	  else
-	    abort ();
+	  gcc_assert (TARGET_M6812);
+	  fprintf (file, "%u,", GET_MODE_SIZE (GET_MODE (op)));
+	  asm_print_register (file, REGNO (XEXP (base, 0)));
+	  fprintf (file, "+");
 	  break;
 
 	case PRE_INC:
-	  if (TARGET_M6812)
-	    {
-	      fprintf (file, "%u,+", GET_MODE_SIZE (GET_MODE (op)));
-	      asm_print_register (file, REGNO (XEXP (base, 0)));
-	    }
-	  else
-	    abort ();
+	  gcc_assert (TARGET_M6812);
+	  fprintf (file, "%u,+", GET_MODE_SIZE (GET_MODE (op)));
+	  asm_print_register (file, REGNO (XEXP (base, 0)));
 	  break;
 
         case MEM:
-          if (TARGET_M6812)
-            {
-              fprintf (file, "[");
-              print_operand_address (file, XEXP (base, 0));
-              fprintf (file, "]");
-            }
-          else
-            abort ();
+          gcc_assert (TARGET_M6812);
+	  fprintf (file, "[");
+	  print_operand_address (file, XEXP (base, 0));
+	  fprintf (file, "]");
           break;
 
 	default:
@@ -2324,8 +2311,7 @@ print_operand_address (FILE *file, rtx addr)
   switch (GET_CODE (addr))
     {
     case REG:
-      if (!REG_P (addr) || !REG_OK_FOR_BASE_STRICT_P (addr))
-	abort ();
+      gcc_assert (REG_P (addr) && REG_OK_FOR_BASE_STRICT_P (addr));
 
       fprintf (file, "0,");
       asm_print_register (file, REGNO (addr));
@@ -2336,45 +2322,29 @@ print_operand_address (FILE *file, rtx addr)
       switch (GET_CODE (base))
 	{
 	case PRE_DEC:
-	  if (TARGET_M6812)
-	    {
-	      fprintf (file, "%u,-", GET_MODE_SIZE (GET_MODE (addr)));
-	      asm_print_register (file, REGNO (XEXP (base, 0)));
-	    }
-	  else
-	    abort ();
+	  gcc_assert (TARGET_M6812);
+	  fprintf (file, "%u,-", GET_MODE_SIZE (GET_MODE (addr)));
+	  asm_print_register (file, REGNO (XEXP (base, 0)));
 	  break;
 
 	case POST_DEC:
-	  if (TARGET_M6812)
-	    {
-	      fprintf (file, "%u,", GET_MODE_SIZE (GET_MODE (addr)));
-	      asm_print_register (file, REGNO (XEXP (base, 0)));
-	      fprintf (file, "-");
-	    }
-	  else
-	    abort ();
+	  gcc_assert (TARGET_M6812);
+	  fprintf (file, "%u,", GET_MODE_SIZE (GET_MODE (addr)));
+	  asm_print_register (file, REGNO (XEXP (base, 0)));
+	  fprintf (file, "-");
 	  break;
 
 	case POST_INC:
-	  if (TARGET_M6812)
-	    {
-	      fprintf (file, "%u,", GET_MODE_SIZE (GET_MODE (addr)));
-	      asm_print_register (file, REGNO (XEXP (base, 0)));
-	      fprintf (file, "+");
-	    }
-	  else
-	    abort ();
+	  gcc_assert (TARGET_M6812);
+	  fprintf (file, "%u,", GET_MODE_SIZE (GET_MODE (addr)));
+	  asm_print_register (file, REGNO (XEXP (base, 0)));
+	  fprintf (file, "+");
 	  break;
 
 	case PRE_INC:
-	  if (TARGET_M6812)
-	    {
-	      fprintf (file, "%u,+", GET_MODE_SIZE (GET_MODE (addr)));
-	      asm_print_register (file, REGNO (XEXP (base, 0)));
-	    }
-	  else
-	    abort ();
+	  gcc_assert (TARGET_M6812);
+	  fprintf (file, "%u,+", GET_MODE_SIZE (GET_MODE (addr)));
+	  asm_print_register (file, REGNO (XEXP (base, 0)));
 	  break;
 
 	default:
@@ -2397,10 +2367,11 @@ print_operand_address (FILE *file, rtx addr)
 	  base = XEXP (addr, 1);
 	  offset = XEXP (addr, 0);
 	}
-      if ((CONSTANT_ADDRESS_P (base)) && (CONSTANT_ADDRESS_P (offset)))
+      if (CONSTANT_ADDRESS_P (base))
 	{
 	  need_parenthesis = must_parenthesize (addr);
 
+	  gcc_assert (CONSTANT_ADDRESS_P (offset));
 	  if (need_parenthesis)
 	    fprintf (file, "(");
 
@@ -2410,18 +2381,15 @@ print_operand_address (FILE *file, rtx addr)
 	  if (need_parenthesis)
 	    fprintf (file, ")");
 	}
-      else if (REG_P (base) && REG_OK_FOR_BASE_STRICT_P (base))
+      else
 	{
+	  gcc_assert (REG_P (base) && REG_OK_FOR_BASE_STRICT_P (base));
 	  if (REG_P (offset))
 	    {
-	      if (TARGET_M6812)
-		{
-		  asm_print_register (file, REGNO (offset));
-		  fprintf (file, ",");
-		  asm_print_register (file, REGNO (base));
-		}
-	      else
-		abort ();
+	      gcc_assert (TARGET_M6812);
+	      asm_print_register (file, REGNO (offset));
+	      fprintf (file, ",");
+	      asm_print_register (file, REGNO (base));
 	    }
 	  else
 	    {
@@ -2435,10 +2403,6 @@ print_operand_address (FILE *file, rtx addr)
 	      fprintf (file, ",");
 	      asm_print_register (file, REGNO (base));
 	    }
-	}
-      else
-	{
-	  abort ();
 	}
       break;
 
@@ -2470,14 +2434,10 @@ m68hc11_expand_compare (enum rtx_code code, rtx op0, rtx op1)
 {
   rtx ret = 0;
 
-  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
-    abort ();
-  else
-    {
-      emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx,
-			      gen_rtx_COMPARE (VOIDmode, op0, op1)));
-      ret = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
-    }
+  gcc_assert (GET_MODE_CLASS (GET_MODE (op0)) != MODE_FLOAT);
+  emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx,
+			  gen_rtx_COMPARE (VOIDmode, op0, op1)));
+  ret = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
 
   return ret;
 }
@@ -2605,7 +2565,7 @@ m68hc11_expand_compare_and_branch (enum rtx_code code, rtx op0, rtx op1,
 	    break;
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 
 	/*
@@ -2628,7 +2588,7 @@ m68hc11_expand_compare_and_branch (enum rtx_code code, rtx op0, rtx op1,
       }
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return 0;
 }
@@ -3119,7 +3079,7 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
               output_asm_insn ("sts\t2,-sp", operands);
               break;
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	  return;
 	}
@@ -3134,7 +3094,7 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
 	      output_asm_insn ("pul%0", operands);
 	      break;
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	  return;
 	}
@@ -3250,7 +3210,7 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
 	  output_asm_insn ("pulb", operands);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return;
     }
@@ -3474,7 +3434,7 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
 	  output_asm_insn ("psha", operands);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return;
     }
