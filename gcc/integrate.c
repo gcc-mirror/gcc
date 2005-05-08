@@ -297,7 +297,7 @@ get_hard_reg_initial_reg (struct function *fun, rtx reg)
    initial value of hard register REGNO.  Return an rtx for such a pseudo.  */
 
 rtx
-get_hard_reg_initial_val (enum machine_mode mode, int regno)
+get_hard_reg_initial_val (enum machine_mode mode, unsigned int regno)
 {
   struct initial_value_struct *ivs;
   rtx rv;
@@ -335,7 +335,7 @@ get_hard_reg_initial_val (enum machine_mode mode, int regno)
    the associated pseudo if so, otherwise return NULL.  */
 
 rtx
-has_hard_reg_initial_val (enum machine_mode mode, int regno)
+has_hard_reg_initial_val (enum machine_mode mode, unsigned int regno)
 {
   struct initial_value_struct *ivs;
   int i;
@@ -344,7 +344,7 @@ has_hard_reg_initial_val (enum machine_mode mode, int regno)
   if (ivs != 0)
     for (i = 0; i < ivs->num_entries; i++)
       if (GET_MODE (ivs->entries[i].hard_reg) == mode
-	  && REGNO (ivs->entries[i].hard_reg) == (unsigned int) regno)
+	  && REGNO (ivs->entries[i].hard_reg) == regno)
 	return ivs->entries[i].pseudo;
 
   return NULL_RTX;

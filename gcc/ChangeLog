@@ -1,3 +1,11 @@
+2005-05-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* integrate.h (get_hard_reg_initial_val): Change type of register
+	parameter from int to unsigned int.
+	(has_hard_reg_initial_val): Likewise.
+	* integrate.c (get_hard_reg_initial_val): Likewise.
+	(has_hard_reg_initial_val): Likewise.  Remove cast to unsigned int.
+
 2005-05-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* except.c (eh_status): Change the type of ttype_data to

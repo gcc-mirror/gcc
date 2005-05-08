@@ -21,12 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "varray.h"
 
-/* Return a pseudo that corresponds to the value in the specified hard
-   reg as of the start of the function (for inlined functions, the
-   value at the start of the parent function).  */
-extern rtx get_hard_reg_initial_val (enum machine_mode, int);
-/* Likewise, but for common cases.  */
-extern rtx has_hard_reg_initial_val (enum machine_mode, int);
+extern rtx get_hard_reg_initial_val (enum machine_mode, unsigned int);
+extern rtx has_hard_reg_initial_val (enum machine_mode, unsigned int);
 /* If a pseudo represents an initial hard reg (or expression), return
    it, else return NULL_RTX.  */
 extern rtx get_hard_reg_initial_reg (struct function *, rtx);
