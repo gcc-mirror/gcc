@@ -98,6 +98,7 @@ extern int memory_indexed_operand (rtx, enum machine_mode);
 extern void m68hc11_split_logical (enum machine_mode, int, rtx*);
 
 extern int m68hc11_register_indirect_p (rtx, enum machine_mode);
+extern int m68hc11_valid_addressing_p (rtx, enum machine_mode, int);
 
 extern int symbolic_memory_operand (rtx, enum machine_mode);
 
@@ -123,6 +124,7 @@ extern int m68hc11_page0_symbol_p (rtx x);
 
 extern HOST_WIDE_INT m68hc11_min_offset;
 extern HOST_WIDE_INT m68hc11_max_offset;
+extern int m68hc11_addr_mode;
 
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */

@@ -1037,6 +1037,13 @@ typedef struct m68hc11_args
 
 /* Addressing modes, and classification of registers for them.  */
 
+#define ADDR_STRICT       0x01  /* Accept only registers in class A_REGS  */
+#define ADDR_INCDEC       0x02  /* Post/Pre inc/dec */
+#define ADDR_INDEXED      0x04  /* D-reg index */
+#define ADDR_OFFSET       0x08
+#define ADDR_INDIRECT     0x10  /* Accept (mem (mem ...)) for [n,X] */
+#define ADDR_CONST        0x20  /* Accept const and symbol_ref  */
+
 /* The 68HC12 has all the post/pre increment/decrement modes.  */
 #define HAVE_POST_INCREMENT (TARGET_M6812 && TARGET_AUTO_INC_DEC)
 #define HAVE_PRE_INCREMENT  (TARGET_M6812 && TARGET_AUTO_INC_DEC)
