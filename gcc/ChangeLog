@@ -1,3 +1,10 @@
+2005-05-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* except.c (eh_status): Change the type of ttype_data to
+	VEC(tree,gc)*.
+	(add_ttypes_entry, assign_filter_values,
+	output_function_exception_table): Use VEC instead of VARRAY.
+
 2005-05-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (popcount<mode>2): Fix non-C90 constant.
