@@ -1,3 +1,7 @@
+2005-05-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (popcount<mode>2): Fix non-C90 constant.
+
 2005-05-07  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.in: Fix dependencies.
