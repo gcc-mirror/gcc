@@ -1,4 +1,24 @@
 2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (cs-tconfig.h): Pass USED_FOR_TARGET to mkconfig.sh
+	* aclocal.m4 (GCC_TARGET_TEMPLATE, AH_TEMPLATE): New.
+	* configure.ac (enable_checking): Fix typos in runtime_checking.
+	(ENABLE_RUNTIME_CHECKING): Mark as target template.
+	(xm_file): Prepend auto-host.h
+	(HAVE_GAS_HIDDEN, HAVE_LD_EH_FRAME_HDR): Mark as target template.
+	* mkconfig.sh: Do not automatically define USED_FOR_TARGET in
+	tconfig.h.
+	* crtstuff.c: Do not include auto-host.h.
+	(IN_LIBGCC2): Do not define.
+	* gcov-io.h: Include tconfig.h, not auto-host.h.
+	* libgcc2.c: Do not include auto-host.h.
+	(abort): Do not undefine.
+	* libgcov.c: Remove unneeded comment about config.h.
+	* unwind-dw2-fde-glibc.c: Do not inlude auto-host.h.
+	* config.in, configure: Regenerated.
+	
+2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
 	    Falk Hueffner  <falk@debian.org>
 
 	* config/alpha/alpha.c (tls_symbolic_operand_1): Use gcc_assert

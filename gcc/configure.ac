@@ -421,12 +421,12 @@ do
 	yes)		ac_assert_checking=1 ; ac_checking=1 ;
 			ac_fold_checking= ; ac_gc_checking=1 ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
-			ac_rtlflag_checking=1 ; ac_runtime_chacking=1 ;
+			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
 			ac_tree_checking=1 ; ac_valgrind_checking= ;;
 	no|none)	ac_assert_checking= ; ac_checking= ;
 			ac_fold_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
-			ac_rtlflag_checking= ; ac_runtime_chacking= ;
+			ac_rtlflag_checking= ; ac_runtime_checking= ;
 			ac_tree_checking= ; ac_valgrind_checking= ;;
 	all)		ac_assert_checking=1 ; ac_checking=1 ;
 			ac_fold_checking=1 ; ac_gc_checking=1 ;
@@ -466,6 +466,7 @@ if test x$ac_assert_checking != x ; then
   AC_DEFINE(ENABLE_ASSERT_CHECKING, 1,
 [Define if you want assertions enabled.  This is a cheap check.])
 fi
+GCC_TARGET_TEMPLATE(ENABLE_RUNTIME_CHECKING)
 if test x$ac_runtime_checking != x ; then
   AC_DEFINE(ENABLE_RUNTIME_CHECKING, 1,
 [Define if you want runtime assertions enabled.  This is a cheap check.])
@@ -1402,7 +1403,7 @@ host_xm_file="auto-host.h ansidecl.h ${host_xm_file}"
 build_xm_file="${build_auto} ansidecl.h ${build_xm_file}"
 # We don't want ansidecl.h in target files, write code there in ISO/GNU C.
 # put this back in temporarily.
-xm_file="ansidecl.h ${xm_file}"
+xm_file="auto-host.h ansidecl.h ${xm_file}"
 
 # --------
 # UNSORTED
@@ -2140,6 +2141,7 @@ changequote([,])dnl
 fi])
 libgcc_visibility=no
 AC_SUBST(libgcc_visibility)
+GCC_TARGET_TEMPLATE([HAVE_GAS_HIDDEN])
 if test $gcc_cv_as_hidden = yes && test $gcc_cv_ld_hidden = yes; then
   libgcc_visibility=yes
   AC_DEFINE(HAVE_GAS_HIDDEN, 1,
@@ -2951,6 +2953,7 @@ elif test x$gcc_cv_ld != x; then
 		gcc_cv_ld_eh_frame_hdr=yes
 	fi
 fi
+GCC_TARGET_TEMPLATE([HAVE_LD_EH_FRAME_HDR])
 if test x"$gcc_cv_ld_eh_frame_hdr" = xyes; then
 	AC_DEFINE(HAVE_LD_EH_FRAME_HDR, 1,
 [Define if your linker supports --eh-frame-hdr option.])

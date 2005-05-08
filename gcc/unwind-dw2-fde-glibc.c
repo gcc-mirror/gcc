@@ -33,7 +33,6 @@
 #define _GNU_SOURCE 1
 #endif
 
-#include "auto-host.h" /* For HAVE_LD_EH_FRAME_HDR.  */
 #include "tconfig.h"
 #include "tsystem.h"
 #ifndef inhibit_libc

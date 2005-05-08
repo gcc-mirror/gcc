@@ -1086,7 +1086,7 @@ cs-bconfig.h: Makefile
 
 cs-tconfig.h: Makefile
 	TARGET_CPU_DEFAULT="" \
-	HEADERS="$(xm_include_list)" DEFINES="$(xm_defines)" \
+	HEADERS="$(xm_include_list)" DEFINES="USED_FOR_TARGET $(xm_defines)" \
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
 
 cs-tm.h: Makefile

@@ -232,7 +232,7 @@ typedef HOST_WIDEST_INT gcov_type;
    is not also used in a DSO.  */
 #if IN_LIBGCOV
 
-#include "auto-host.h"   /* for HAVE_GAS_HIDDEN */
+#include "tconfig.h"
 
 #define gcov_var __gcov_var
 #define gcov_open __gcov_open
