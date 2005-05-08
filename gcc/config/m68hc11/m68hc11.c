@@ -1,5 +1,5 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
@@ -2044,6 +2044,10 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
 	{
 	  return gen_int_mode (val >> 16, HImode);
 	}
+      else if (mode == SImode)
+       {
+         return gen_int_mode (val >> 32, SImode);
+       }
     }
   if (mode == QImode && D_REG_P (x))
     return gen_rtx (REG, mode, HARD_A_REGNUM);
@@ -2926,15 +2930,7 @@ m68hc11_split_move (rtx to, rtx from, rtx scratch)
   high_to = m68hc11_gen_highpart (mode, to);
 
   low_from = m68hc11_gen_lowpart (mode, from);
-  if (mode == SImode && GET_CODE (from) == CONST_INT)
-    {
-      if (INTVAL (from) >= 0)
-	high_from = const0_rtx;
-      else
-	high_from = constm1_rtx;
-    }
-  else
-    high_from = m68hc11_gen_highpart (mode, from);
+  high_from = m68hc11_gen_highpart (mode, from);
 
   if (offset)
     {
@@ -3117,26 +3113,8 @@ m68hc11_split_logical (enum machine_mode mode, int code, rtx *operands)
   low[2] = m68hc11_gen_lowpart (mode, operands[2]);
 
   high[0] = m68hc11_gen_highpart (mode, operands[0]);
-
-  if (mode == SImode && GET_CODE (operands[1]) == CONST_INT)
-    {
-      if (INTVAL (operands[1]) >= 0)
-	high[1] = const0_rtx;
-      else
-	high[1] = constm1_rtx;
-    }
-  else
-    high[1] = m68hc11_gen_highpart (mode, operands[1]);
-
-  if (mode == SImode && GET_CODE (operands[2]) == CONST_INT)
-    {
-      if (INTVAL (operands[2]) >= 0)
-	high[2] = const0_rtx;
-      else
-	high[2] = constm1_rtx;
-    }
-  else
-    high[2] = m68hc11_gen_highpart (mode, operands[2]);
+  high[1] = m68hc11_gen_highpart (mode, operands[1]);
+  high[2] = m68hc11_gen_highpart (mode, operands[2]);
 
   low[3] = operands[3];
   high[3] = operands[3];
