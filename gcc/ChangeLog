@@ -1,5 +1,22 @@
 2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* config/frv/frv.c (frv_default_flags_for_cpu): Use gcc_assert and
+	gcc_unreachable, as appropriate.
+	(frv_function_prologue, frv_alloc_temp_reg,
+	frv_initial_elimination_offset, frv_expand_block_move,
+	frv_expand_block_clear, frv_print_operand_jump_hint,
+	frv_legitimize_tls_address, unspec_got_name, frv_emit_move,
+	frv_emit_movsi, frv_split_cond_move, frv_split_minmax,
+	frv_ifcvt_modify_insn, frv_ifcvt_modify_final,
+	frv_adjust_field_align, frv_insn_unit, frv_cond_flags,
+	frv_sort_insn_group, frv_reorder_packet, frv_matching_accg_mode,
+	frv_in_small_data_p, frv_asm_out_constructor,
+	frv_asm_out_destructor, frv_output_dwarf_dtprel): Likewise.
+	* config/frv/frv.md (reload_incc_fp, *cond_exec_si_binary1,
+	*cond_exec_si_binary2, *cond_exec_si_divide, *cond_exec_si_unary1,
+	*cond_exec_sf_conv, *cond_exec_sf_add, call, sibcall, call_value,
+	sibcall_value, casesi): Likewise.
+
 	* config/mn10300/mn10300.c (print_operand): Use gcc_assert and
 	gcc_unreachable as appropriate.
 	(print_operand_address, mn10300_print_reg_list, expand_prologue,

@@ -571,8 +571,10 @@ frv_default_flags_for_cpu (void)
     case FRV_CPU_FR300:
     case FRV_CPU_SIMPLE:
       return MASK_DEFAULT_SIMPLE;
+
+    default:
+      gcc_unreachable ();
     }
-  abort ();
 }
 
 /* Sometimes certain combinations of command options do not make
@@ -1461,8 +1463,7 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       rtx insn;
 
       /* Just to check that the above comment is true.  */
-      if (regs_ever_live[GPR_FIRST + 3])
-	abort ();
+      gcc_assert (!regs_ever_live[GPR_FIRST + 3]);
 
       /* Generate the instruction that saves the link register.  */
       fprintf (file, "\tmovsg lr,gr3\n");
@@ -1519,10 +1520,8 @@ frv_alloc_temp_reg (
 	regno = 0;
       if (regno == orig_regno)
 	{
-	  if (no_abort)
-	    return NULL_RTX;
-	  else
-	    abort ();
+	  gcc_assert (no_abort);
+	  return NULL_RTX;
 	}
     }
 
@@ -2109,7 +2108,7 @@ frv_initial_elimination_offset (int from, int to)
 	   - info->pretend_size);
 
   else
-    abort ();
+    gcc_unreachable ();
 
   if (TARGET_DEBUG_STACK)
     fprintf (stderr, "Eliminate %s to %s by adding %d\n",
@@ -2223,9 +2222,8 @@ frv_expand_block_move (rtx operands[])
   if (! constp)
     return FALSE;
 
-  /* If this is not a fixed size alignment, abort.  */
-  if (GET_CODE (align_rtx) != CONST_INT)
-    abort ();
+  /* This should be a fixed size alignment.  */
+  gcc_assert (GET_CODE (align_rtx) == CONST_INT);
 
   align = INTVAL (align_rtx);
 
@@ -2316,9 +2314,8 @@ frv_expand_block_clear (rtx operands[])
   if (! constp)
     return FALSE;
 
-  /* If this is not a fixed size alignment, abort.  */
-  if (GET_CODE (align_rtx) != CONST_INT)
-    abort ();
+  /* This should be a fixed size alignment.  */
+  gcc_assert (GET_CODE (align_rtx) == CONST_INT);
 
   align = INTVAL (align_rtx);
 
@@ -2623,8 +2620,7 @@ frv_print_operand_jump_hint (rtx insn)
   HOST_WIDE_INT prob = -1;
   enum { UNKNOWN, BACKWARD, FORWARD } jump_type = UNKNOWN;
 
-  if (GET_CODE (insn) != JUMP_INSN)
-    abort ();
+  gcc_assert (GET_CODE (insn) == JUMP_INSN);
 
   /* Assume any non-conditional jump is likely.  */
   if (! any_condjump_p (insn))
@@ -3568,7 +3564,7 @@ frv_legitimize_tls_address (rtx addr, enum tls_model model)
 	break;
       }
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return dest;
@@ -3670,7 +3666,7 @@ unspec_got_name (int i)
     case R_FRV_TLSDESCLO: return "tlsdesclo";
     case R_FRV_GOTTLSDESCHI: return "gottlsdeschi";
     case R_FRV_GOTTLSDESCLO: return "gottlsdesclo";
-    default: abort ();
+    default: gcc_unreachable ();
     }
 }
 
@@ -3919,7 +3915,7 @@ frv_emit_move (enum machine_mode mode, rtx dest, rtx src)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   emit_insn (gen_rtx_SET (VOIDmode, dest, src));
@@ -4134,8 +4130,7 @@ frv_emit_movsi (rtx dest, rtx src)
 
       /* Since OUR_FDPIC_REG is a pseudo register, we can't safely introduce
 	 new uses of it once reload has begun.  */
-      if (reload_in_progress || reload_completed)
-	abort ();
+      gcc_assert (!reload_in_progress && !reload_completed);
 
       switch (unspec)
 	{
@@ -4933,7 +4928,7 @@ frv_split_cond_move (rtx operands[])
 	}
 
       else
-	abort ();
+	gcc_unreachable ();
     }
   else
     {
@@ -5035,7 +5030,7 @@ frv_split_minmax (rtx operands[])
   switch (GET_CODE (minmax))
     {
     default:
-      abort ();
+      gcc_unreachable ();
 
     case SMIN: test_code = LT;  break;
     case SMAX: test_code = GT;  break;
@@ -5061,8 +5056,7 @@ frv_split_minmax (rtx operands[])
      then do a conditional move of the other value.  */
   if (GET_CODE (src2) == CONST_INT && INTVAL (src2) != 0)
     {
-      if (rtx_equal_p (dest, src1))
-	abort ();
+      gcc_assert (!rtx_equal_p (dest, src1));
 
       emit_move_insn (dest, src2);
       emit_insn (gen_rtx_COND_EXEC (VOIDmode,
@@ -5870,8 +5864,7 @@ frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
   rtx op1;
   rtx test;
 
-  if (GET_CODE (pattern) != COND_EXEC)
-    abort ();
+  gcc_assert (GET_CODE (pattern) == COND_EXEC);
 
   test = COND_EXEC_TEST (pattern);
   if (GET_CODE (test) == AND)
@@ -6137,8 +6130,7 @@ frv_ifcvt_modify_final (ce_if_block_t *ce_info ATTRIBUTE_UNUSED)
 
   /* Loop inserting the check insns.  The last check insn is the first test,
      and is the appropriate place to insert constants.  */
-  if (! p)
-    abort ();
+  gcc_assert (p);
 
   do
     {
@@ -6486,8 +6478,7 @@ frv_adjust_field_align (tree field, int computed)
 	  prev = cur;
 	}
 
-      if (!cur)
-	abort ();
+      gcc_assert (cur);
 
       /* If this isn't a :0 field and if the previous element is a bitfield
 	 also, see if the type is different, if so, we will need to align the
@@ -7007,8 +6998,7 @@ frv_insn_unit (rtx insn)
 	if (cpu_unit_reservation_p (state, frv_unit_codes[unit]))
 	  break;
 
-      if (unit == ARRAY_SIZE (frv_unit_codes))
-	abort ();
+      gcc_assert (unit != ARRAY_SIZE (frv_unit_codes));
 
       frv_type_to_unit[type] = unit;
     }
@@ -7076,15 +7066,14 @@ static struct {
 static int
 frv_cond_flags (rtx cond)
 {
-  if ((GET_CODE (cond) == EQ || GET_CODE (cond) == NE)
-      && GET_CODE (XEXP (cond, 0)) == REG
-      && CR_P (REGNO (XEXP (cond, 0)))
-      && XEXP (cond, 1) == const0_rtx)
-    return ((REGNO (XEXP (cond, 0)) - CR_FIRST)
-	    | (GET_CODE (cond) == NE
-	       ? REGSTATE_IF_TRUE
-	       : REGSTATE_IF_FALSE));
-  abort ();
+  gcc_assert ((GET_CODE (cond) == EQ || GET_CODE (cond) == NE)
+	      && GET_CODE (XEXP (cond, 0)) == REG
+	      && CR_P (REGNO (XEXP (cond, 0)))
+	      && XEXP (cond, 1) == const0_rtx);
+  return ((REGNO (XEXP (cond, 0)) - CR_FIRST)
+	  | (GET_CODE (cond) == NE
+	     ? REGSTATE_IF_TRUE
+	     : REGSTATE_IF_FALSE));
 }
 
 
@@ -7569,7 +7558,7 @@ frv_sort_insn_group (enum frv_insn_group group)
 	    return;
 	}
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Sort the current packet into assembly-language order.  Set packing
@@ -7601,14 +7590,13 @@ frv_reorder_packet (void)
       if (cursor[group] < packet_group->num_insns)
 	{
 	  /* frv_reorg should have added nops for us.  */
-	  if (packet_group->sorted[cursor[group]] == packet_group->nop)
-	    abort ();
+	  gcc_assert (packet_group->sorted[cursor[group]]
+		      != packet_group->nop);
 	  insns[to++] = packet_group->sorted[cursor[group]++];
 	}
     }
 
-  if (to != frv_packet.num_insns)
-    abort ();
+  gcc_assert (to == frv_packet.num_insns);
 
   /* Clear the last instruction's packing flag, thus marking the end of
      a packet.  Reorder the other instructions relative to it.  */
@@ -8258,7 +8246,7 @@ frv_matching_accg_mode (enum machine_mode mode)
       return QImode;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -8980,8 +8968,7 @@ frv_in_small_data_p (tree decl)
   section_name = DECL_SECTION_NAME (decl);
   if (section_name)
     {
-      if (TREE_CODE (section_name) != STRING_CST)
-	abort ();
+      gcc_assert (TREE_CODE (section_name) == STRING_CST);
       if (frv_string_begins_with (section_name, ".sdata"))
 	return true;
       if (frv_string_begins_with (section_name, ".sbss"))
@@ -9077,8 +9064,9 @@ frv_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
   assemble_align (POINTER_SIZE);
   if (TARGET_FDPIC)
     {
-      if (!frv_assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1))
-	abort ();
+      int ok = frv_assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+
+      gcc_assert (ok);
       return;
     }
   assemble_integer_with_op ("\t.picptr\t", symbol);
@@ -9091,8 +9079,9 @@ frv_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
   assemble_align (POINTER_SIZE);
   if (TARGET_FDPIC)
     {
-      if (!frv_assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1))
-	abort ();
+      int ok = frv_assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+      
+      gcc_assert (ok);
       return;
     }
   assemble_integer_with_op ("\t.picptr\t", symbol);
@@ -9115,8 +9104,7 @@ frv_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 void
 frv_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
-  if (size != 4)
-    abort ();
+  gcc_assert (size == 4);
   fputs ("\t.picptr\ttlsmoff(", file);
   /* We want the unbiased TLS offset, so add the bias to the
      expression, such that the implicit biasing cancels out.  */
