@@ -1,5 +1,28 @@
 2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/predicates.md (reg_or_some_mem_operand): Do not allow
+	the 68HC12 address indirect addressing mode as it is not supported by
+	bset and bclr.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_valid_addressing_p): Declare.
+	(m68hc11_add_mode): Declare.
+	* config/m68hc11/m68hc11.c (m68hc11_valid_addressing_p): Rename from
+	register_indirect_p and export it.
+	(m68hc11_z_replacement): Use emit_insn_after when adding the save Z
+	instruction so that it is part of the good BB.
+	(m68hc11_gen_movhi): Fix invalid generation of indexed indirect
+	addressing with movw.
+	(m68hc11_gen_movqi): Use pula and pulb instead of lda and ldb for
+	68HC12.
+	* config/m68hc11/m68hc11.h (ADDR_STRICT, ADDR_INCDEC, ADDR_INDEXED,
+	ADDR_OFFSET, ADDR_INDIRECT, ADDR__CONST): Moved from m68hc11.c.
+	* config/m68hc11/m68hc11.md ("movhi_const0"): Use this pattern only
+	for 68HC11.
+	("*movhi_68hc12"): Handle movhi_const0.
+	("*subhi3", "subqi3"): Use general_operand for operand 1.
+	("*subhi3_zext"): Likewise.
+
+2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
+
 	PR target/19051
 	* config/m68hc11/m68hc11.md ("mulqi3"): Use general_operand for operand
 	1 and fix constraints.

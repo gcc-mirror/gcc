@@ -65,7 +65,6 @@ static rtx simplify_logical (enum machine_mode, int, rtx, rtx *);
 static void m68hc11_emit_logical (enum machine_mode, int, rtx *);
 static void m68hc11_reorg (void);
 static int go_if_legitimate_address_internal (rtx, enum machine_mode, int);
-static int register_indirect_p (rtx, enum machine_mode, int);
 static rtx m68hc11_expand_compare (enum rtx_code, rtx, rtx);
 static int must_parenthesize (rtx);
 static int m68hc11_address_cost (rtx);
@@ -139,13 +138,6 @@ unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
 /* A correction offset which is applied to the stack pointer.
    This is 1 for 68HC11 and 0 for 68HC12.  */
 int m68hc11_sp_correction;
-
-#define ADDR_STRICT       0x01  /* Accept only registers in class A_REGS  */
-#define ADDR_INCDEC       0x02  /* Post/Pre inc/dec */
-#define ADDR_INDEXED      0x04  /* D-reg index */
-#define ADDR_OFFSET       0x08
-#define ADDR_INDIRECT     0x10  /* Accept (mem (mem ...)) for [n,X] */
-#define ADDR_CONST        0x20  /* Accept const and symbol_ref  */
 
 int m68hc11_addr_mode;
 int m68hc11_mov_addr_mode;
@@ -560,8 +552,8 @@ preferred_reload_class (rtx operand, enum reg_class class)
 /* Return 1 if the operand is a valid indexed addressing mode.
    For 68hc11:  n,r    with n in [0..255] and r in A_REGS class
    For 68hc12:  n,r    no constraint on the constant, r in A_REGS class.  */
-static int
-register_indirect_p (rtx operand, enum machine_mode mode, int addr_mode)
+int
+m68hc11_valid_addressing_p (rtx operand, enum machine_mode mode, int addr_mode)
 {
   rtx base, offset;
 
@@ -569,8 +561,8 @@ register_indirect_p (rtx operand, enum machine_mode mode, int addr_mode)
     {
     case MEM:
       if ((addr_mode & ADDR_INDIRECT) && GET_MODE_SIZE (mode) <= 2)
-        return register_indirect_p (XEXP (operand, 0), mode,
-                                    addr_mode & (ADDR_STRICT | ADDR_OFFSET));
+        return m68hc11_valid_addressing_p (XEXP (operand, 0), mode,
+                                   addr_mode & (ADDR_STRICT | ADDR_OFFSET));
       return 0;
 
     case POST_INC:
@@ -578,8 +570,8 @@ register_indirect_p (rtx operand, enum machine_mode mode, int addr_mode)
     case POST_DEC:
     case PRE_DEC:
       if (addr_mode & ADDR_INCDEC)
-	return register_indirect_p (XEXP (operand, 0), mode,
-                                    addr_mode & ADDR_STRICT);
+	return m68hc11_valid_addressing_p (XEXP (operand, 0), mode,
+                                   addr_mode & ADDR_STRICT);
       return 0;
 
     case PLUS:
@@ -675,7 +667,7 @@ m68hc11_small_indexed_indirect_p (rtx operand, enum machine_mode mode)
     return 1;
 
   addr_mode = m68hc11_mov_addr_mode | (reload_completed ? ADDR_STRICT : 0);
-  if (!register_indirect_p (operand, mode, addr_mode))
+  if (!m68hc11_valid_addressing_p (operand, mode, addr_mode))
     return 0;
 
   if (TARGET_M6812 && GET_CODE (operand) == PLUS
@@ -730,7 +722,7 @@ m68hc11_register_indirect_p (rtx operand, enum machine_mode mode)
 
   operand = XEXP (operand, 0);
   addr_mode = m68hc11_addr_mode | (reload_completed ? ADDR_STRICT : 0);
-  return register_indirect_p (operand, mode, addr_mode);
+  return m68hc11_valid_addressing_p (operand, mode, addr_mode);
 }
 
 static int
@@ -749,7 +741,7 @@ go_if_legitimate_address_internal (rtx operand, enum machine_mode mode,
       return 1;
     }
   addr_mode = m68hc11_addr_mode | (strict ? ADDR_STRICT : 0);
-  if (register_indirect_p (operand, mode, addr_mode))
+  if (m68hc11_valid_addressing_p (operand, mode, addr_mode))
     {
       return 1;
     }
@@ -995,7 +987,7 @@ m68hc11_indirect_p (rtx operand, enum machine_mode mode)
 
       operand = XEXP (operand, 0);
       addr_mode = m68hc11_addr_mode | (reload_completed ? ADDR_STRICT : 0);
-      return register_indirect_p (operand, mode, addr_mode);
+      return m68hc11_valid_addressing_p (operand, mode, addr_mode);
     }
   return 0;
 }
@@ -3110,10 +3102,13 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
 
   if (TARGET_M6812)
     {
-      if (IS_STACK_PUSH (operands[0]) && H_REG_P (operands[1]))
+      rtx from = operands[1];
+      rtx to = operands[0];
+
+      if (IS_STACK_PUSH (to) && H_REG_P (from))
 	{
           cc_status = cc_prev_status;
-	  switch (REGNO (operands[1]))
+	  switch (REGNO (from))
 	    {
 	    case HARD_X_REGNUM:
 	    case HARD_Y_REGNUM:
@@ -3128,10 +3123,10 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
 	    }
 	  return;
 	}
-      if (IS_STACK_POP (operands[1]) && H_REG_P (operands[0]))
+      if (IS_STACK_POP (from) && H_REG_P (to))
 	{
           cc_status = cc_prev_status;
-	  switch (REGNO (operands[0]))
+	  switch (REGNO (to))
 	    {
 	    case HARD_X_REGNUM:
 	    case HARD_Y_REGNUM:
@@ -3162,11 +3157,52 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
 	  else
 	    output_asm_insn ("st%1\t%0", operands);
 	}
+
+      /* The 68hc12 does not support (MEM:HI (MEM:HI)) with the movw
+         instruction.  We have to use a scratch register as temporary location.
+         Trying to use a specific pattern or constrain failed.  */
+      else if (GET_CODE (to) == MEM && GET_CODE (XEXP (to, 0)) == MEM)
+        {
+          rtx ops[4];
+
+          ops[0] = to;
+          ops[2] = from;
+          ops[3] = 0;
+          if (dead_register_here (insn, d_reg))
+            ops[1] = d_reg;
+          else if (dead_register_here (insn, ix_reg))
+            ops[1] = ix_reg;
+          else if (dead_register_here (insn, iy_reg))
+            ops[1] = iy_reg;
+          else
+            {
+              ops[1] = d_reg;
+              ops[3] = d_reg;
+              output_asm_insn ("psh%3", ops);
+            }
+
+          ops[0] = to;
+          ops[2] = from;
+          output_asm_insn ("ld%1\t%2", ops);
+          output_asm_insn ("st%1\t%0", ops);
+          if (ops[3])
+            output_asm_insn ("pul%3", ops);
+        }
+
+      /* Use movw for non-null constants or when we are clearing
+         a volatile memory reference.  However, this is possible
+         only if the memory reference has a small offset or is an
+         absolute address.  */
+      else if (GET_CODE (from) == CONST_INT
+               && INTVAL (from) == 0
+               && (MEM_VOLATILE_P (to) == 0
+                   || m68hc11_small_indexed_indirect_p (to, HImode) == 0))
+        {
+          output_asm_insn ("clr\t%h0", operands);
+          output_asm_insn ("clr\t%b0", operands);
+        }
       else
 	{
-	  rtx from = operands[1];
-	  rtx to = operands[0];
-
 	  if ((m68hc11_register_indirect_p (from, GET_MODE (from))
 	       && !m68hc11_small_indexed_indirect_p (from, GET_MODE (from)))
 	      || (m68hc11_register_indirect_p (to, GET_MODE (to))
@@ -3183,6 +3219,7 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
 		  ops[0] = to;
 		  ops[1] = operands[2];
 		  m68hc11_gen_movhi (insn, ops);
+                  return;
 		}
 	      else
 		{
@@ -3190,19 +3227,11 @@ m68hc11_gen_movhi (rtx insn, rtx *operands)
                   fatal_insn ("move insn not handled", insn);
 		}
 	    }
-	  else
-	    {
-	      if (GET_CODE (from) == CONST_INT && INTVAL (from) == 0)
-		{
-		  output_asm_insn ("clr\t%h0", operands);
-		  output_asm_insn ("clr\t%b0", operands);
-		}
-	      else
-		{
-                  m68hc11_notice_keep_cc (operands[0]);
-		  output_asm_insn ("movw\t%1,%0", operands);
-		}
-	    }
+          else
+            {
+              m68hc11_notice_keep_cc (operands[0]);
+              output_asm_insn ("movw\t%1,%0", operands);
+            }
 	}
       return;
     }
@@ -3530,8 +3559,10 @@ m68hc11_gen_movqi (rtx insn, rtx *operands)
 	}
       else if (H_REG_P (operands[0]))
 	{
-	  if (Q_REG_P (operands[0]))
-	    output_asm_insn ("lda%0\t%b1", operands);
+          if (IS_STACK_POP (operands[1]))
+            output_asm_insn ("pul%b0", operands);
+	  else if (Q_REG_P (operands[0]))
+            output_asm_insn ("lda%0\t%b1", operands);
 	  else if (D_REG_P (operands[0]))
 	    output_asm_insn ("ldab\t%b1", operands);
 	  else
