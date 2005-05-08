@@ -6,4 +6,4 @@ no longer believe that SCO is a serious threat.
 For more on the FSF's position regarding SCO's attacks on free
 software, please read:
 
-  http://www.gnu.org/philosophy/sco/sco.html
+  http://www.fsf.org/licensing/sco/
