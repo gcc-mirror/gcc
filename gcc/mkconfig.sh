@@ -54,7 +54,7 @@ for def in $DEFINES; do
     echo "#endif" >> ${output}T
 done
 
-# The first entry in HEADERS may be auto-host.h or auto-build.h;
+# The first entry in HEADERS may be auto-FOO.h ;
 # it wants to be included even when not -DIN_GCC.
 if [ -n "$HEADERS" ]; then
     set $HEADERS
@@ -72,17 +72,11 @@ if [ -n "$HEADERS" ]; then
     fi
 fi
 
-# If this is tconfig.h, now define USED_FOR_TARGET.  If this is tm.h,
-# now include insn-constants.h and insn-flags.h only if IN_GCC is
-# defined but neither GENERATOR_FILE nor USED_FOR_TARGET is defined.
-# (Much of this is temporary.)
+# If this is tm.h, now include insn-constants.h and insn-flags.h only
+# if IN_GCC is defined but neither GENERATOR_FILE nor USED_FOR_TARGET
+# is defined.  (Much of this is temporary.)
 
 case $output in
-    tconfig.h )
-	cat >> ${output}T <<EOF
-#define USED_FOR_TARGET
-EOF
-    ;;
     tm.h )
         cat >> ${output}T <<EOF
 #if defined IN_GCC && !defined GENERATOR_FILE && !defined USED_FOR_TARGET

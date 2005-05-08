@@ -6292,12 +6292,12 @@ do
 	yes)		ac_assert_checking=1 ; ac_checking=1 ;
 			ac_fold_checking= ; ac_gc_checking=1 ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
-			ac_rtlflag_checking=1 ; ac_runtime_chacking=1 ;
+			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
 			ac_tree_checking=1 ; ac_valgrind_checking= ;;
 	no|none)	ac_assert_checking= ; ac_checking= ;
 			ac_fold_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
-			ac_rtlflag_checking= ; ac_runtime_chacking= ;
+			ac_rtlflag_checking= ; ac_runtime_checking= ;
 			ac_tree_checking= ; ac_valgrind_checking= ;;
 	all)		ac_assert_checking=1 ; ac_checking=1 ;
 			ac_fold_checking=1 ; ac_gc_checking=1 ;
@@ -6344,6 +6344,7 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
+
 if test x$ac_runtime_checking != x ; then
 
 cat >>confdefs.h <<\_ACEOF
@@ -7399,7 +7400,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7402: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7403: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
@@ -12256,7 +12257,7 @@ host_xm_file="auto-host.h ansidecl.h ${host_xm_file}"
 build_xm_file="${build_auto} ansidecl.h ${build_xm_file}"
 # We don't want ansidecl.h in target files, write code there in ISO/GNU C.
 # put this back in temporarily.
-xm_file="ansidecl.h ${xm_file}"
+xm_file="auto-host.h ansidecl.h ${xm_file}"
 
 # --------
 # UNSORTED
@@ -13393,6 +13394,7 @@ fi
 echo "$as_me:$LINENO: result: $gcc_cv_ld_hidden" >&5
 echo "${ECHO_T}$gcc_cv_ld_hidden" >&6
 libgcc_visibility=no
+
 
 if test $gcc_cv_as_hidden = yes && test $gcc_cv_ld_hidden = yes; then
   libgcc_visibility=yes
@@ -15001,6 +15003,7 @@ elif test x$gcc_cv_ld != x; then
 		gcc_cv_ld_eh_frame_hdr=yes
 	fi
 fi
+
 if test x"$gcc_cv_ld_eh_frame_hdr" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF

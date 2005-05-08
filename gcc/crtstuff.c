@@ -51,15 +51,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    This file must be compiled with gcc.  */
 
-/* It is incorrect to include config.h here, because this file is being
-   compiled for the target, and hence definitions concerning only the host
-   do not apply.  */
-
-#define IN_LIBGCC2
-
-/* We include auto-host.h here to get HAVE_GAS_HIDDEN.  This is
-   supposedly valid even though this is a "target" file.  */
-#include "auto-host.h"
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"

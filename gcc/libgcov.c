@@ -29,10 +29,6 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-/* It is incorrect to include config.h here, because this file is being
-   compiled for the target, and hence definitions concerning only the host
-   do not apply.  */
-
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"

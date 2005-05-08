@@ -29,23 +29,10 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-
-/* We include auto-host.h here to get HAVE_GAS_HIDDEN.  This is
-   supposedly valid even though this is a "target" file.  */
-#include "auto-host.h"
-
-/* It is incorrect to include config.h here, because this file is being
-   compiled for the target, and hence definitions concerning only the host
-   do not apply.  */
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"
 #include "tm.h"
-
-/* Don't use `fancy_abort' here even if config.h says to use it.  */
-#ifdef abort
-#undef abort
-#endif
 
 #ifdef HAVE_GAS_HIDDEN
 #define ATTRIBUTE_HIDDEN  __attribute__ ((__visibility__ ("hidden")))
