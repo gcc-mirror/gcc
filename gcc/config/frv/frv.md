@@ -2468,13 +2468,11 @@
       rtx addr;
       rtx temp3 = simplify_gen_subreg (SImode, operands[2], TImode, 12);
 
-      if (GET_CODE (operands[1]) != MEM)
-        abort ();
+      gcc_assert (GET_CODE (operands[1]) == MEM);
 
       addr = XEXP (operands[1], 0);
 
-      if (GET_CODE (addr) != PLUS)
-        abort ();
+      gcc_assert (GET_CODE (addr) == PLUS);
 
       emit_move_insn (temp3, XEXP (addr, 1));
 
@@ -4479,7 +4477,7 @@
       case ASHIFT:   return \"csll %4, %z5, %2, %1, %e0\";
       case ASHIFTRT: return \"csra %4, %z5, %2, %1, %e0\";
       case LSHIFTRT: return \"csrl %4, %z5, %2, %1, %e0\";
-      default:       abort ();
+      default:       gcc_unreachable ();
     }
 }"
   [(set_attr "length" "4")
@@ -4502,7 +4500,7 @@
       case AND: return \"cmand %4, %5, %2, %1, %e0\";
       case IOR: return \"cmor %4, %5, %2, %1, %e0\";
       case XOR: return \"cmxor %4, %5, %2, %1, %e0\";
-      default:  abort ();
+      default:  gcc_unreachable ();
     }
 }"
   [(set_attr "length" "4")
@@ -4543,7 +4541,7 @@
     {
       case DIV:  return \"csdiv %4, %z5, %2, %1, %e0\";
       case UDIV: return \"cudiv %4, %z5, %2, %1, %e0\";
-      default:   abort ();
+      default:   gcc_unreachable ();
     }
 }"
   [(set_attr "length" "4")
@@ -4564,7 +4562,7 @@
     {
       case NOT: return \"cnot %4, %2, %1, %e0\";
       case NEG: return \"csub %., %4, %2, %1, %e0\";
-      default:  abort ();
+      default:  gcc_unreachable ();
     }
 }"
   [(set_attr "length" "4")
@@ -4639,7 +4637,7 @@
     {
       case ABS: return \"cfabss %4, %2, %1, %e0\";
       case NEG: return \"cfnegs %4, %2, %1, %e0\";
-      default:  abort ();
+      default:  gcc_unreachable ();
     }
 }"
   [(set_attr "length" "4")
@@ -4661,7 +4659,7 @@
     {
       case PLUS:  return \"cfadds %4, %5, %2, %1, %e0\";
       case MINUS: return \"cfsubs %4, %5, %2, %1, %e0\";
-      default:    abort ();
+      default:    gcc_unreachable ();
     }
 }"
   [(set_attr "length" "4")
@@ -5404,8 +5402,7 @@
   rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
   rtx addr;
 
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == MEM);
 
   addr = XEXP (operands[0], 0);
   if (! call_operand (addr, Pmode))
@@ -5490,8 +5487,7 @@
 {
   rtx addr;
 
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == MEM);
 
   addr = XEXP (operands[0], 0);
   if (! sibcall_operand (addr, Pmode))
@@ -5558,8 +5554,7 @@
   rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
   rtx addr;
 
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
 
   addr = XEXP (operands[1], 0);
   if (! call_operand (addr, Pmode))
@@ -5625,8 +5620,7 @@
 {
   rtx addr;
 
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
 
   addr = XEXP (operands[1], 0);
   if (! sibcall_operand (addr, Pmode))
@@ -5838,11 +5832,9 @@
   rtx reg2;
   rtx reg3;
 
-  if (GET_CODE (operands[1]) != CONST_INT)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == CONST_INT);
 
-  if (GET_CODE (operands[2]) != CONST_INT)
-    abort ();
+  gcc_assert (GET_CODE (operands[2]) == CONST_INT);
 
   /* If we can't generate an immediate instruction, promote to register.  */
   if (! IN_RANGE_P (INTVAL (range), -2048, 2047))
