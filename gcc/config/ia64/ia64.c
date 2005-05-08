@@ -1673,6 +1673,13 @@ ia64_split_call (rtx retval, rtx addr, rtx retaddr, rtx scratch_r,
 static void
 ia64_file_start (void)
 {
+  /* Variable tracking should be run after all optimizations which change order
+     of insns.  It also needs a valid CFG.  This can't be done in
+     ia64_override_options, because flag_var_tracking is finallized after
+     that.  */
+  ia64_flag_var_tracking = flag_var_tracking;
+  flag_var_tracking = 0;
+
   default_file_start ();
   emit_safe_across_calls ();
 }
@@ -4715,11 +4722,6 @@ ia64_override_options (void)
 
   ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
   flag_schedule_insns_after_reload = 0;
-
-  /* Variable tracking should be run after all optimizations which change order
-     of insns.  It also needs a valid CFG.  */
-  ia64_flag_var_tracking = flag_var_tracking;
-  flag_var_tracking = 0;
 
   ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
 
