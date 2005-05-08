@@ -1,9 +1,14 @@
+2005-05-07  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.in: Fix dependencies.
+	(GCOV_IO_H, VARRAY_H): Set.
+
 2005-05-07  Anthony Green  <green@redhat.com>
 
-        PR bootstrap/21403
-        * configure.ac (STMP_FIXPROTO): Fix [ ] consumption problem in
-        x$STMP_FIXPROTO test.
-        * configure: Rebuilt.
+	PR bootstrap/21403
+	* configure.ac (STMP_FIXPROTO): Fix [ ] consumption problem in
+	x$STMP_FIXPROTO test.
+	* configure: Rebuilt.
 
 2005-05-07  Joseph S. Myers  <joseph@codesourcery.com>
 
