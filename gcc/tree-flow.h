@@ -406,10 +406,10 @@ static inline void set_phi_nodes (basic_block, tree);
 			      Global declarations
 ---------------------------------------------------------------------------*/
 /* Array of all variables referenced in the function.  */
-extern GTY(()) varray_type referenced_vars;
+extern GTY(()) VEC(tree,gc) *referenced_vars;
 
-#define num_referenced_vars VARRAY_ACTIVE_SIZE (referenced_vars)
-#define referenced_var(i) VARRAY_TREE (referenced_vars, i)
+#define num_referenced_vars VEC_length (tree, referenced_vars)
+#define referenced_var(i) VEC_index (tree, referenced_vars, i)
 
 /* Array of all SSA_NAMEs used in the function.  */
 extern GTY(()) VEC(tree,gc) *ssa_names;

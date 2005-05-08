@@ -84,7 +84,7 @@ static void add_referenced_var (tree, struct walk_state *);
 /* Global declarations.  */
 
 /* Array of all variables referenced in the function.  */
-varray_type referenced_vars;
+VEC(tree,gc) *referenced_vars;
 
 
 /*---------------------------------------------------------------------------
@@ -558,7 +558,7 @@ add_referenced_var (tree var, struct walk_state *walk_state)
       if (slot)
 	*slot = (void *) var;
       v_ann->uid = num_referenced_vars;
-      VARRAY_PUSH_TREE (referenced_vars, var);
+      VEC_safe_push (tree, gc, referenced_vars, var);
 
       /* Global variables are always call-clobbered.  */
       if (is_global_var (var))

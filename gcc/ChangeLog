@@ -1,3 +1,12 @@
+2005-05-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-dfa.c (referenced_vars, add_referenced_var): Use VEC
+	instead of VARRAY.
+	* tree-flow.h (num_referenced_var, referenced_var): Likewise.
+	* tree-into-ssa.c (mark_def_site_blocks): Likewise.
+	* tree-ssa.c (init_tree_ssa, delete_tree_ssa): Likewise.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Likewise.
+
 2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR target/16925
