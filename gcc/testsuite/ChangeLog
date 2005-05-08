@@ -1,5 +1,6 @@
 2005-05-08  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR target/21416
 	* gcc.target/mips/fpcmp-[12].c: New tests.
 
 2005-05-06  Mark Mitchell  <mark@codesourcery.com>

@@ -1,5 +1,6 @@
 2005-05-08  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR target/21416
 	* config/mips/mips.c (mips_emit_compare): Don't reverse UNGE and UNGT
 	comparisons.
 	* config/mips/mips.md (swapped_fcond): New code macro and attribute.
