@@ -1,3 +1,10 @@
+2005-05-08  Steven Bosscher  <stevenb@suse.de>
+	    Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/14841, tree-optimization/15838
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): New.
+	(evaluate_stmt): Call it.
+
 2005-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/ia64.c (ia64_override_options): Don't set
