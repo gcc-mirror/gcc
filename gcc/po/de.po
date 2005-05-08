@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.0.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-04-20 21:41-0700\n"
-"PO-Revision-Date: 2005-05-06 20:54+0200\n"
+"PO-Revision-Date: 2005-05-08 11:47+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -14998,242 +14998,198 @@ msgid "expression %qE of abstract class type %qT cannot be used in throw-express
 msgstr "Ausdruck %qE von abstraktem Klassentyp %qT kann nicht in throw-Ausdruck verwendet werden"
 
 #: cp/except.c:921
-#, fuzzy
 msgid "%Hexception of type %qT will be caught"
-msgstr "Ausnahme des Typs »%T« wird gefangen werden"
+msgstr "%HAusnahme des Typs %qT wird gefangen werden"
 
 #: cp/except.c:923
-#, fuzzy
 msgid "%H   by earlier handler for %qT"
-msgstr "   von früherem Behandler für »%T«"
+msgstr "%H   von früherem Behandler für %qT"
 
 #: cp/except.c:953
-#, fuzzy
 msgid "%H%<...%> handler must be the last handler for its try block"
-msgstr "»...«-Behandler muss der letzte Behandler für seinen »try«-Block sein"
+msgstr "%H%<...%>-Behandler muss der letzte Behandler für seinen »try«-Block sein"
 
 #: cp/friend.c:152
-#, fuzzy
 msgid "%qD is already a friend of class %qT"
-msgstr "»%D« ist bereits ein »friend« der Klasse »%T«"
+msgstr "%qD ist bereits ein »friend« der Klasse %qT"
 
 #: cp/friend.c:228
-#, fuzzy
 msgid "invalid type %qT declared %<friend%>"
-msgstr "ungültiger Typ »%T« als »friend« deklariert"
+msgstr "ungültiger Typ %qT als %<friend%> deklariert"
 
 #. [temp.friend]
 #. Friend declarations shall not declare partial
 #. specializations.
 #: cp/friend.c:244 cp/friend.c:274
-#, fuzzy
 msgid "partial specialization %qT declared %<friend%>"
-msgstr "Teilspezialisierung »%T« als »friend« deklariert"
+msgstr "Teilspezialisierung %qT als %<friend%> deklariert"
 
 #: cp/friend.c:252
-#, fuzzy
 msgid "class %qT is implicitly friends with itself"
-msgstr "Klasse »%T« ist implizit »friend« von ihr selbst"
+msgstr "Klasse %qT ist implizit »friend« von ihr selbst"
 
 #: cp/friend.c:310
-#, fuzzy
 msgid "%qT is not a member of %qT"
-msgstr "»%D« ist kein Element von »%T«"
+msgstr "%qT ist kein Element von %qT"
 
 #: cp/friend.c:315
-#, fuzzy
 msgid "%qT is not a member class template of %qT"
-msgstr "»%D« ist keine Elementtemplatefunktion"
+msgstr "%qT ist kein Elementklassentemplate von %qT"
 
 #: cp/friend.c:323
-#, fuzzy
 msgid "%qT is not a nested class of %qT"
-msgstr "»%T« ist keine Basis von »%T«"
+msgstr "%qT ist keine geschachtelte Klasse von %qT"
 
 #. template <class T> friend class T;
 #: cp/friend.c:336
-#, fuzzy
 msgid "template parameter type %qT declared %<friend%>"
-msgstr "Template-Parameter-Typ »%T« als »friend« deklariert"
+msgstr "Template-Parameter-Typ %qT als %<friend%> deklariert"
 
 #. template <class T> friend class A; where A is not a template
 #: cp/friend.c:342
-#, fuzzy
 msgid "%q#T is not a template"
-msgstr "»%#T« ist kein Template"
+msgstr "%q#T ist kein Template"
 
 #: cp/friend.c:364
-#, fuzzy
 msgid "%qD is already a friend of %qT"
-msgstr "»%D« ist bereits ein »friend« von »%T«"
+msgstr "%qD ist bereits ein »friend« von %qT"
 
 #: cp/friend.c:373
-#, fuzzy
 msgid "%qT is already a friend of %qT"
-msgstr "»%T« ist bereits ein »friend« von »%T«"
+msgstr "%qT ist bereits ein »friend« von %qT"
 
 #: cp/friend.c:497
-#, fuzzy
 msgid "member %qD declared as friend before type %qT defined"
-msgstr "Element »%D« als »friend« deklariert, bevor Typ »%T« definiert wurde"
+msgstr "Element %qD als »friend« deklariert, bevor Typ %qT definiert wurde"
 
 #: cp/friend.c:553
-#, fuzzy
 msgid "friend declaration %q#D declares a non-template function"
-msgstr "»friend«-Deklaration »%#D« deklariert eine Nicht-Template-Funktion"
+msgstr "»friend«-Deklaration %q#D deklariert eine Nicht-Template-Funktion"
 
 #: cp/friend.c:557
 msgid "(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning"
-msgstr "(wenn das nicht beabsichtigt war, sollte sicher gestellt werden, dass das Funktions-Template bereits deklariert wurde, und <> hier hinter Funktionsnamen einfügen) -Wno-non-template-friend schaltet diese Warnung aus)"
+msgstr "(wenn das nicht beabsichtigt war, sollte sicher gestellt werden, dass das Funktions-Template bereits deklariert wurde, und <> hier hinter Funktionsnamen eingefügt wurde) -Wno-non-template-friend schaltet diese Warnung aus)"
 
 #: cp/g++spec.c:238 java/jvspec.c:417
-#, fuzzy, c-format
+#, c-format
 msgid "argument to '%s' missing\n"
 msgstr "Argument für »%s« fehlt\n"
 
 #: cp/init.c:326
-#, fuzzy
 msgid "%J%qD should be initialized in the member initialization list"
-msgstr "»%D« sollte in Elementinitialisierungsliste initialisiert werden"
+msgstr "%J%qD sollte in Elementinitialisierungsliste initialisiert werden"
 
 #: cp/init.c:373
-#, fuzzy
 msgid "%Jdefault-initialization of %q#D, which has reference type"
-msgstr "Standardinitialisierung von »%#D«, das Referenztyp hat"
+msgstr "%JStandardinitialisierung von %q#D, das Referenztyp hat"
 
 #: cp/init.c:379
-#, fuzzy
 msgid "%Juninitialized reference member %qD"
-msgstr "nicht initialisiertes Referenzelement »%D«"
+msgstr "%Jnicht initialisiertes Referenzelement %qD"
 
 #: cp/init.c:382
-#, fuzzy
 msgid "%Juninitialized member %qD with %<const%> type %qT"
-msgstr "nicht initialisiertes Element »%D« mit »const«-Typ »%T«"
+msgstr "%Jnicht initialisiertes Element %qD mit %<const%>-Typ %qT"
 
 #: cp/init.c:525
-#, fuzzy
 msgid "%qD will be initialized after"
-msgstr "»%D« wird initialisiert nach"
+msgstr "%qD wird initialisiert nach"
 
 #: cp/init.c:528
-#, fuzzy
 msgid "base %qT will be initialized after"
-msgstr "Basis »%T« wird initialisiert nach"
+msgstr "Basis %qT wird initialisiert nach"
 
 #: cp/init.c:531
-#, fuzzy
 msgid "  %q#D"
-msgstr "  »%#D«"
+msgstr "  %q#D"
 
 #: cp/init.c:533
-#, fuzzy
 msgid "  base %qT"
-msgstr "  Basis »%T«"
+msgstr "  Basis %qT"
 
 #: cp/init.c:534
-#, fuzzy
 msgid "%J  when initialized here"
-msgstr "  während es hier initialisiert wurde"
+msgstr "%J  während es hier initialisiert wurde"
 
 #: cp/init.c:550
-#, fuzzy
 msgid "%Jmultiple initializations given for %qD"
-msgstr "mehrere Initialisierungen für »%D« angegeben"
+msgstr "%Jmehrere Initialisierungen für %qD angegeben"
 
 #: cp/init.c:553
-#, fuzzy
 msgid "%Jmultiple initializations given for base %qT"
-msgstr "mehrere Initialisierungen für Basis »%T« angegeben"
+msgstr "%Jmehrere Initialisierungen für Basis %qT angegeben"
 
 #: cp/init.c:620
-#, fuzzy
 msgid "%Jinitializations for multiple members of %qT"
-msgstr "Initialisierungen für mehrere Elemente von »%T«"
+msgstr "%JInitialisierungen für mehrere Elemente von %qT"
 
 #: cp/init.c:682
-#, fuzzy
 msgid "%Jbase class %q#T should be explicitly initialized in the copy constructor"
-msgstr "Basisklasse »%#T« sollte explizit im Kopierkonstruktor initialisiert werden"
+msgstr "%JBasisklasse %q#T sollte explizit im Kopierkonstruktor initialisiert werden"
 
 #: cp/init.c:906 cp/init.c:925
-#, fuzzy
 msgid "class %qT does not have any field named %qD"
-msgstr "Klasse »%T« hat keinen Feldnamen »%D«"
+msgstr "Klasse %qT hat keinen Feldnamen %qD"
 
 #: cp/init.c:912
-#, fuzzy
 msgid "%q#D is a static data member; it can only be initialized at its definition"
-msgstr "»%#D« ist ein statisches Datenelement; es kann nur bei seiner Definition initialisiert werden"
+msgstr "%q#D« ist ein statisches Datenelement; es kann nur bei seiner Definition initialisiert werden"
 
 #: cp/init.c:919
-#, fuzzy
 msgid "%q#D is not a non-static data member of %qT"
-msgstr "»%#D« ist kein Nicht-static-Datenelement von »%T«"
+msgstr "%q#D ist kein Nicht-static-Datenelement von %qT"
 
 #: cp/init.c:958
-#, fuzzy
 msgid "unnamed initializer for %qT, which has no base classes"
-msgstr "unbenannte Initialisierung für »%T«, das keine Basisklassen hat"
+msgstr "unbenannte Initialisierung für %qT, das keine Basisklassen hat"
 
 #: cp/init.c:966
-#, fuzzy
 msgid "unnamed initializer for %qT, which uses multiple inheritance"
-msgstr "unbenannte Initialisierung für »%T«, das Mehrfachvererbung verwendet"
+msgstr "unbenannte Initialisierung für %qT, das Mehrfachvererbung verwendet"
 
 #: cp/init.c:1012
-#, fuzzy
 msgid "%qD is both a direct base and an indirect virtual base"
-msgstr "»%D« ist sowohl eine direkte Basis als auch eine indirekte virtuelle Basis"
+msgstr "%qD ist sowohl eine direkte Basis als auch eine indirekte virtuelle Basis"
 
 #: cp/init.c:1020
-#, fuzzy
 msgid "type %qD is not a direct or virtual base of %qT"
-msgstr "Typ »%D« ist keine direkte oder virtuelle Basis von »%T«"
+msgstr "Typ %qD ist keine direkte oder virtuelle Basis von %qT"
 
 #: cp/init.c:1023
-#, fuzzy
 msgid "type %qD is not a direct base of %qT"
-msgstr "Typ »%D« ist keine direkte Basis von »%T«"
+msgstr "Typ %qD ist keine direkte Basis von %qT"
 
 #: cp/init.c:1103
 msgid "bad array initializer"
 msgstr "schlechte Feldinitialisierung"
 
 #: cp/init.c:1302
-#, fuzzy
 msgid "%qT is not an aggregate type"
-msgstr "»%T« ist kein Aggregattyp"
+msgstr "%qT ist kein Aggregattyp"
 
 #: cp/init.c:1394
-#, fuzzy
 msgid "qualified type %qT does not match destructor name %<~%T%>"
-msgstr "qualifizierter Typ »%T« passt nicht zum Destruktornamen »~%T«"
+msgstr "qualifizierter Typ %qT passt nicht zum Destruktornamen %<~%T%>"
 
 #: cp/init.c:1402
-#, fuzzy
 msgid "incomplete type %qT does not have member %qD"
-msgstr "unvollständiger Typ »%T« hat kein Element »%D«"
+msgstr "unvollständiger Typ %qT hat kein Element %qD"
 
 #: cp/init.c:1421
-#, fuzzy
 msgid "%qD is not a member of type %qT"
-msgstr "»%D« ist kein Element vom Typ »%T«"
+msgstr "%qD ist kein Element vom Typ %qT"
 
 #: cp/init.c:1440
-#, fuzzy
 msgid "invalid pointer to bit-field %qD"
-msgstr "ungültiger Zeiger auf Bitfeld »%D«"
+msgstr "ungültiger Zeiger auf Bitfeld %qD"
 
 #: cp/init.c:1542
-#, fuzzy
 msgid "invalid use of non-static member function %qD"
-msgstr "ungültige Verwendung der nicht-statischen Elementfunktion »%D«"
+msgstr "ungültige Verwendung der nicht-statischen Elementfunktion %qD"
 
 #: cp/init.c:1548 cp/semantics.c:1321
-#, fuzzy
 msgid "invalid use of non-static data member %qD"
-msgstr "ungültige Verwendung des nicht-statischen Datenelementes »%D«"
+msgstr "ungültige Verwendung des nicht-statischen Datenelementes %qD"
 
 #: cp/init.c:1645
 msgid "size in array new must have integral type"
@@ -15252,33 +15208,29 @@ msgid "new cannot be applied to a function type"
 msgstr "»new« kann nicht auf Funktionstyp angewendet werden"
 
 #: cp/init.c:1694
-#, fuzzy
 msgid "call to Java constructor, while %<jclass%> undefined"
-msgstr "Aufruf von Java-Konstruktor, wobei »jclass« nicht definiert ist"
+msgstr "Aufruf von Java-Konstruktor, wobei %<jclass%> nicht definiert ist"
 
 #: cp/init.c:1710
 msgid "can't find class$"
 msgstr "class$ kann nicht gefunden werden"
 
 #: cp/init.c:1838
-#, fuzzy
 msgid "invalid type %<void%> for new"
-msgstr "ungültiger Typ »void« für »new«"
+msgstr "ungültiger Typ %<void%> für %<new%>"
 
 #: cp/init.c:1848
-#, fuzzy
 msgid "uninitialized const in %<new%> of %q#T"
-msgstr "nicht initialisierte Konstante in »new« von »%#T«"
+msgstr "nicht initialisierte Konstante in %<new%> von %q#T"
 
 #: cp/init.c:1882
-#, fuzzy, c-format
+#, c-format
 msgid "call to Java constructor with %qs undefined"
-msgstr "Aufruf von Java-Konstruktor mit »%s« ist nicht definiert"
+msgstr "Aufruf von Java-Konstruktor mit %qs ist nicht definiert"
 
 #: cp/init.c:1922
-#, fuzzy
 msgid "request for member %qD is ambiguous"
-msgstr "Abfrage des Elementes »%D« ist mehrdeutig"
+msgstr "Abfrage des Elementes %qD ist mehrdeutig"
 
 #: cp/init.c:2055
 msgid "ISO C++ forbids initialization in array new"
@@ -15323,23 +15275,21 @@ msgid "#pragma vtable no longer supported"
 msgstr "#pragma vtable wird nicht mehr unterstützt"
 
 #: cp/lex.c:530
-#, fuzzy, c-format
+#, c-format
 msgid "#pragma implementation for %qs appears after file is included"
-msgstr "#pragma Implementation für %s erscheint, nachdem Datei eingebunden wurde"
+msgstr "#pragma implementation für %qs erscheint, nachdem Datei eingebunden wurde"
 
 #: cp/lex.c:555
 msgid "junk at end of #pragma GCC java_exceptions"
 msgstr "Ausschuss am Ende von #pragma GCC java_exceptions"
 
 #: cp/lex.c:569
-#, fuzzy
 msgid "%qD not defined"
-msgstr "»%D« nicht definiert"
+msgstr "%qD nicht definiert"
 
 #: cp/lex.c:573
-#, fuzzy
 msgid "%qD was not declared in this scope"
-msgstr "»%D« wurde in diesem Gültigkeitsbereich nicht definiert"
+msgstr "%qD wurde in diesem Gültigkeitsbereich nicht definiert"
 
 #. In a template, it is invalid to write "f()" or "f(3)" if no
 #. declaration of "f" is available.  Historically, G++ and most
@@ -15352,58 +15302,48 @@ msgstr "»%D« wurde in diesem Gültigkeitsbereich nicht definiert"
 #. the manual (trouble.texi, node "Name lookup"), so they need to
 #. be kept in synch.
 #: cp/lex.c:610
-#, fuzzy
 msgid "there are no arguments to %qD that depend on a template parameter, so a declaration of %qD must be available"
-msgstr "es gibt keine Argumente für »%D«, die von einem Templateparameter abhängen, weshalb eine Deklaration von »%D« verfügbar sein muss"
+msgstr "es gibt keine Argumente für %qD, die von einem Templateparameter abhängen, weshalb eine Deklaration von %qD verfügbar sein muss"
 
 #: cp/lex.c:619
-#, fuzzy
 msgid "(if you use %<-fpermissive%>, G++ will accept your code, but allowing the use of an undeclared name is deprecated)"
-msgstr "(mit »-fpermissive« wird G++ den Code akzeptieren, aber die Verwendung eines nicht deklarierten Namens ist veraltet)"
+msgstr "(mit %<-fpermissive%> wird G++ den Code akzeptieren, aber die Verwendung eines nicht deklarierten Namens ist veraltet)"
 
 #: cp/mangle.c:2114
 msgid "call_expr cannot be mangled due to a defect in the C++ ABI"
 msgstr "call_expr kann wegen eines Fehlers im C++-ABI nicht verarbeitet werden"
 
 #: cp/mangle.c:2122
-#, fuzzy
 msgid "zero-operand casts cannot be mangled due to a defect in the C++ ABI"
-msgstr "call_expr kann wegen eines Fehlers im C++-ABI nicht verarbeitet werden"
+msgstr "Null-Operanden-Umwandlungen können wegen eines Fehlers im C++-ABI nicht verarbeitet werden"
 
 #: cp/mangle.c:2172
-#, fuzzy
 msgid "omitted middle operand to %<?:%> operand cannot be mangled"
-msgstr "ausgelassener mittlerer Operand für Operator »?:« kann nicht verarbeitet werden"
+msgstr "ausgelassener mittlerer Operand für Operator %<?:%> kann nicht verarbeitet werden"
 
 #: cp/mangle.c:2482
-#, fuzzy
 msgid "the mangled name of %qD will change in a future version of GCC"
-msgstr "der verarbeitete Name von »%D« wird sich in einer zukünftigen Version des GCC ändern"
+msgstr "der verarbeitete Name von %qD« wird sich in einer zukünftigen Version des GCC ändern"
 
 #: cp/method.c:445
-#, fuzzy
 msgid "generic thunk code fails for method %q#D which uses %<...%>"
-msgstr "allgemeiner Thunk-Code für Methode »%#D« mit »...« scheitert"
+msgstr "allgemeiner Thunk-Code für Methode %q#D mit %<...%> scheitert"
 
 #: cp/method.c:661
-#, fuzzy
 msgid "non-static const member %q#D, can't use default assignment operator"
-msgstr "nicht-statisches konstantes Element »%#D«, Standard-Zuweisungsoperator kann nicht verwendet werden"
+msgstr "nicht-statisches konstantes Element %q#D, Standard-Zuweisungsoperator kann nicht verwendet werden"
 
 #: cp/method.c:667
-#, fuzzy
 msgid "non-static reference member %q#D, can't use default assignment operator"
-msgstr "nicht-statisches Referenzelement »%#D«,  Standard-Zuweisungsoperator kann nicht verwendet werden"
+msgstr "nicht-statisches Referenzelement %q#D, Standard-Zuweisungsoperator kann nicht verwendet werden"
 
 #: cp/method.c:1082
-#, fuzzy
 msgid "vtable layout for class %qT may not be ABI-compliantand may change in a future version of GCC due to implicit virtual destructor"
-msgstr "vtable-Anordnung für Klasse »%T« könnte ABI-unverträglich sein und sich in zukünftigen GCC-Versionen durch implizite virtuelle Destruktoren ändern"
+msgstr "vtable-Anordnung für Klasse %qT könnte ABI-unverträglich sein und sich in zukünftigen GCC-Versionen durch implizite virtuelle Destruktoren ändern"
 
 #: cp/name-lookup.c:693
-#, fuzzy
 msgid "redeclaration of %<wchar_t%> as %qT"
-msgstr "Redeklaration von »wchar_t« als »%T«"
+msgstr "Redeklaration von %<wchar_t%> als %qT"
 
 #. A redeclaration of main, but not a duplicate of the
 #. previous one.
@@ -15412,85 +15352,69 @@ msgstr "Redeklaration von »wchar_t« als »%T«"
 #.
 #. This function shall not be overloaded.
 #: cp/name-lookup.c:725
-#, fuzzy
 msgid "invalid redeclaration of %qD"
-msgstr "ungültige Redeklaration von »%D«"
+msgstr "ungültige Redeklaration von %qD"
 
 #: cp/name-lookup.c:726
-#, fuzzy
 msgid "as %qD"
-msgstr "als »%D«"
+msgstr "als %qD"
 
 #: cp/name-lookup.c:814
-#, fuzzy
 msgid "type mismatch with previous external decl of %q#D"
-msgstr "Typen passen nicht zu vorheriger externer Deklaration von »%#D«"
+msgstr "Typen passen nicht zu vorheriger externer Deklaration von %q#D"
 
 #: cp/name-lookup.c:815
-#, fuzzy
 msgid "previous external decl of %q#D"
-msgstr "vorherige externe Deklaration von »%#D«"
+msgstr "vorherige externe Deklaration von %q#D"
 
 #: cp/name-lookup.c:897
-#, fuzzy
 msgid "extern declaration of %q#D doesn't match"
-msgstr "externe Deklaration von »%#D« passt nicht"
+msgstr "externe Deklaration von %q#D passt nicht"
 
 #: cp/name-lookup.c:898
-#, fuzzy
 msgid "global declaration %q#D"
-msgstr "globale Deklaration von »%#D«"
+msgstr "globale Deklaration von %q#D"
 
 #: cp/name-lookup.c:934 cp/name-lookup.c:941
-#, fuzzy
 msgid "declaration of %q#D shadows a parameter"
-msgstr "Deklaration von »%#D« überdeckt einen Parameter"
+msgstr "Deklaration von %q#D überdeckt einen Parameter"
 
 #. Location of previous decl is not useful in this case.
 #: cp/name-lookup.c:966
-#, fuzzy
 msgid "declaration of %qD shadows a member of 'this'"
-msgstr "Deklaration von »%D« überdeckt ein Element von 'this'"
+msgstr "Deklaration von %qD überdeckt ein Element von 'this'"
 
 #: cp/name-lookup.c:972
-#, fuzzy
 msgid "declaration of %qD shadows a previous local"
-msgstr "Deklaration von »%D« überdeckt einen vorhergehenden lokalen Bezeichner"
+msgstr "Deklaration von %qD überdeckt einen vorhergehenden lokalen Bezeichner"
 
 #: cp/name-lookup.c:979
-#, fuzzy
 msgid "declaration of %qD shadows a global declaration"
-msgstr "Deklaration von »%D« überdeckt eine globale Deklaration"
+msgstr "Deklaration von %qD überdeckt eine globale Deklaration"
 
 #: cp/name-lookup.c:1095
-#, fuzzy
 msgid "name lookup of %qD changed"
-msgstr "Suche nach »%D« hat sich geändert"
+msgstr "Suche nach %qD hat sich geändert"
 
 #: cp/name-lookup.c:1096
-#, fuzzy
 msgid "  matches this %qD under ISO standard rules"
-msgstr "  passt nach ISO-Standardregeln zu diesem »%D«"
+msgstr "  passt nach ISO-Standardregeln zu diesem %qD"
 
 #: cp/name-lookup.c:1098
-#, fuzzy
 msgid "  matches this %qD under old rules"
-msgstr "  passt nach den alten Regeln zu diesem »%D«"
+msgstr "  passt nach den alten Regeln zu diesem %qD"
 
 #: cp/name-lookup.c:1116 cp/name-lookup.c:1124
-#, fuzzy
 msgid "name lookup of %qD changed for new ISO %<for%> scoping"
-msgstr "Namenssuche von »%D« hat sich für neue ISO-Regeln zum »for«-Gültigkeitsbereich geändert"
+msgstr "Namenssuche von %qD hat sich für neue ISO-Regeln zum »for«-Gültigkeitsbereich geändert"
 
 #: cp/name-lookup.c:1118
-#, fuzzy
 msgid "  cannot use obsolete binding at %qD because it has a destructor"
-msgstr "  veraltete Bindung bei »%D« kann nicht verwendet werden, weil es einen Destruktor hat"
+msgstr "  veraltete Bindung bei %qD kann nicht verwendet werden, weil es einen Destruktor hat"
 
 #: cp/name-lookup.c:1126
-#, fuzzy
 msgid "  using obsolete binding at %qD"
-msgstr "  bei »%D« wird veraltete Bindung verwendet"
+msgstr "  bei %qD wird veraltete Bindung verwendet"
 
 #: cp/name-lookup.c:1179
 #, c-format
@@ -15507,58 +15431,48 @@ msgid "XXX is_class_level != (current_scope == class_scope)\n"
 msgstr "XXX is_class_level != (current_scope == class_scope)\n"
 
 #: cp/name-lookup.c:1864
-#, fuzzy
 msgid "%q#D hides constructor for %q#T"
-msgstr "»%#D« verdeckt Konstruktor für »%#T«"
+msgstr "%q#D verdeckt Konstruktor für %q#T"
 
 #: cp/name-lookup.c:1880
-#, fuzzy
 msgid "%q#D conflicts with previous using declaration %q#D"
-msgstr "»%#D« steht mit vorheriger »using«-Deklaration »%#D« in Konflikt"
+msgstr "%q#D steht mit vorheriger %<using%>-Deklaration %q#D in Konflikt"
 
 #: cp/name-lookup.c:1892
-#, fuzzy
 msgid "previous non-function declaration %q#D"
-msgstr "vorherige Deklaration »%#D« einer Nicht-Funktion"
+msgstr "vorherige Deklaration %q#D einer Nicht-Funktion"
 
 #: cp/name-lookup.c:1893
-#, fuzzy
 msgid "conflicts with function declaration %q#D"
-msgstr "steht mit Funktionsdeklaration »%#D« in Konflikt"
+msgstr "steht mit Funktionsdeklaration %q#D in Konflikt"
 
 #. It's a nested name with template parameter dependent scope.
 #. This can only be using-declaration for class member.
 #: cp/name-lookup.c:1971 cp/name-lookup.c:1996 cp/name-lookup.c:3158
-#, fuzzy
 msgid "%qT is not a namespace"
-msgstr "»%T« ist kein Namensbereich"
+msgstr "%qT ist kein Namensbereich"
 
 #. 7.3.3/5
 #. A using-declaration shall not name a template-id.
 #: cp/name-lookup.c:1981
-#, fuzzy
 msgid "a using-declaration cannot specify a template-id.  Try %<using %D%>"
-msgstr "eine »using«-Deklaration kann keine Template-ID angeben. Stattdessen »using %D« versuchen"
+msgstr "eine %<using%>-Deklaration kann keine Template-ID angeben. Stattdessen %<using %D%> versuchen"
 
 #: cp/name-lookup.c:1988
-#, fuzzy
 msgid "namespace %qD not allowed in using-declaration"
-msgstr "namespace »%D« in »using«-Deklaration nicht erlaubt"
+msgstr "namespace %qD in %<using%>-Deklaration nicht erlaubt"
 
 #: cp/name-lookup.c:2024
-#, fuzzy
 msgid "%qD not declared"
-msgstr "»%D« nicht deklariert"
+msgstr "%qD nicht deklariert"
 
 #: cp/name-lookup.c:2036 cp/name-lookup.c:2081 cp/name-lookup.c:2115
-#, fuzzy
 msgid "%qD is already declared in this scope"
-msgstr "»%D« wurde in diesem Gültigkeitsbereich bereits deklariert"
+msgstr "%qD wurde in diesem Gültigkeitsbereich bereits deklariert"
 
 #: cp/name-lookup.c:2121
-#, fuzzy
 msgid "using declaration %qD introduced ambiguous type %qT"
-msgstr "»using«-Deklaration »%D« führte mehrdeutigen Typen »%T« ein"
+msgstr "%<using%>-Deklaration %qD führte mehrdeutigen Typen %qT ein"
 
 #: cp/name-lookup.c:2692
 msgid "using-declaration for non-member at class scope"
@@ -15569,64 +15483,53 @@ msgid "using-declaration cannot name destructor"
 msgstr "»using«-Deklaration kann nicht den Destruktor benennen"
 
 #: cp/name-lookup.c:2770
-#, fuzzy
 msgid "declaration of %qD not in a namespace surrounding %qD"
-msgstr "Deklaration von »%D« nicht in einem Namensbereich um »%D«"
+msgstr "Deklaration von %qD nicht in einem Namensbereich um %qD"
 
 #: cp/name-lookup.c:2778
-#, fuzzy
 msgid "explicit qualification in declaration of `%D'"
-msgstr "explizite Instanziierung von »%#D«"
+msgstr "explizite Qualifizierung in Deklaration von »%D«"
 
 #: cp/name-lookup.c:2814
-#, fuzzy
 msgid "%qD should have been declared inside %qD"
-msgstr "»%D« sollte innerhalb von »%D« deklariert werden"
+msgstr "%qD sollte innerhalb von %qD deklariert werden"
 
 #: cp/name-lookup.c:2876
-#, fuzzy
 msgid "namespace alias %qD not allowed here, assuming %qD"
-msgstr "Namensbereich-Alias »%D« ist hier nicht erlaubt, »%D« angenommen"
+msgstr "Namensbereich-Alias %qD ist hier nicht erlaubt, %qD angenommen"
 
 #. The parser did not find it, so it's not there.
 #: cp/name-lookup.c:2991
-#, fuzzy
 msgid "unknown namespace %qD"
-msgstr "unbekannter Namensbereich »%D«"
+msgstr "unbekannter Namensbereich %qD"
 
 #: cp/name-lookup.c:3152
-#, fuzzy
 msgid "namespace %qT undeclared"
-msgstr "Namensbereich »%T« nicht deklariert"
+msgstr "Namensbereich %qT nicht deklariert"
 
 #: cp/name-lookup.c:3196
 msgid "strong using only meaningful at namespace scope"
 msgstr "starkes »using« ist nur im Gültigkeitsbereich des Namensbereiches sinnvoll"
 
 #: cp/name-lookup.c:3203
-#, fuzzy
 msgid "%qD attribute directive ignored"
-msgstr "Attribut-Anweisung »%D« wird ignoriert"
+msgstr "Attribut-Anweisung %qD wird ignoriert"
 
 #: cp/name-lookup.c:3337
-#, fuzzy
 msgid "use of %qD is ambiguous"
-msgstr "Verwendung von »%D« ist mehrdeutig"
+msgstr "Verwendung von %qD ist mehrdeutig"
 
 #: cp/name-lookup.c:3338
-#, fuzzy
 msgid "  first declared as %q#D here"
-msgstr "  zuerst hier deklariert as »%#D«"
+msgstr "  zuerst hier deklariert as %q#D"
 
 #: cp/name-lookup.c:3340
-#, fuzzy
 msgid "  also declared as %q#D here"
-msgstr "  auch hier deklariert als »%#D«"
+msgstr "  auch hier deklariert als %q#D"
 
 #: cp/name-lookup.c:3355
-#, fuzzy
 msgid "%qD denotes an ambiguous type"
-msgstr "»%D« bezeichnet einen mehrdeutigen Typen"
+msgstr "%qD bezeichnet einen mehrdeutigen Typen"
 
 #: cp/name-lookup.c:3356
 msgid "%J  first type here"
@@ -15639,29 +15542,24 @@ msgstr "%J  anderer Typ hier"
 #. This happens for A::B where B is a template, and there are no
 #. template arguments.
 #: cp/name-lookup.c:3421 cp/parser.c:4384 cp/typeck.c:1802
-#, fuzzy
 msgid "invalid use of %qD"
-msgstr "ungültige Verwendung von »%D«"
+msgstr "ungültige Verwendung von %qD"
 
 #: cp/name-lookup.c:3461
-#, fuzzy
 msgid "%<%D::%D%> is not a template"
-msgstr "»%D::%D« ist kein Template"
+msgstr "%<%D::%D%> ist kein Template"
 
 #: cp/name-lookup.c:3477
-#, fuzzy
 msgid "%qD undeclared in namespace %qD"
-msgstr "»%D« nicht deklariert in Namensbereich »%D«"
+msgstr "%qD nicht deklariert in Namensbereich %qD"
 
 #: cp/name-lookup.c:4103
-#, fuzzy
 msgid "%qD is not a function,"
-msgstr "»%D« ist keine Funktion"
+msgstr "%qD ist keine Funktion"
 
 #: cp/name-lookup.c:4104
-#, fuzzy
 msgid "  conflict with %qD"
-msgstr "  Konflikt mit »%D«"
+msgstr "  Konflikt mit %qD"
 
 #: cp/name-lookup.c:4869
 msgid "XXX entering pop_everything ()\n"
@@ -15673,71 +15571,60 @@ msgstr "XXX pop_everything () wird verlassen\n"
 
 #: cp/parser.c:1797
 msgid "minimum/maximum operators are deprecated"
-msgstr ""
+msgstr "Minimum/Maximum-Operatoren sind veraltet"
 
 #: cp/parser.c:1817
-#, fuzzy
 msgid "%<#pragma%> is not allowed here"
-msgstr "#pragma %s ist bereits registriert"
+msgstr "%<#pragma%> ist hier nicht erlaubt"
 
 #: cp/parser.c:1846
-#, fuzzy
 msgid "%<%D::%D%> has not been declared"
-msgstr "»%D::%D« wurde nicht deklariert"
+msgstr "%<%D::%D%> wurde nicht deklariert"
 
 #: cp/parser.c:1849 cp/semantics.c:2379
-#, fuzzy
 msgid "%<::%D%> has not been declared"
-msgstr "»%D::%D« wurde nicht deklariert"
+msgstr "%<::%D%> wurde nicht deklariert"
 
 #: cp/parser.c:1852
-#, fuzzy
 msgid "request for member %qD in non-class type %qT"
-msgstr "Abfrage des Elementes »%D« in »%E«, das vom Nicht-Klassentyp »%T« ist"
+msgstr "Abfrage des Elementes %qD in Nicht-Klassentyp %qT"
 
 #: cp/parser.c:1855
-#, fuzzy
 msgid "%<%T::%D%> has not been declared"
-msgstr "»%D::%D« wurde nicht deklariert"
+msgstr "%<%T::%D%> wurde nicht deklariert"
 
 #: cp/parser.c:1858
-#, fuzzy
 msgid "%qD has not been declared"
-msgstr "»%D« wurde nicht deklariert"
+msgstr "%qD wurde nicht deklariert"
 
 #: cp/parser.c:1861
-#, fuzzy
 msgid "%<%D::%D%> %s"
-msgstr "»%D::%D« %s"
+msgstr "%<%D::%D%> %s"
 
 #: cp/parser.c:1863
-#, fuzzy
 msgid "%<::%D%> %s"
-msgstr "»%D::%D« %s"
+msgstr "%<::%D%> %s"
 
 #: cp/parser.c:1865
-#, fuzzy
 msgid "%qD %s"
-msgstr "»%D« %s"
+msgstr "%qD %s"
 
 #: cp/parser.c:1917
 msgid "new types may not be defined in a return type"
 msgstr "neue Typen dürfen nicht in einem Rückgabetyp definiert werden"
 
 #: cp/parser.c:1918
-#, fuzzy
 msgid "(perhaps a semicolon is missing after the definition of %qT)"
-msgstr "zusätzliches Semikolon in »struct« oder »union« angegeben"
+msgstr "(vielleicht fehlt ein Semikolon hinter der Definition von %qT)"
 
 #: cp/parser.c:1937 cp/pt.c:4336
-#, fuzzy
 msgid "%qT is not a template"
-msgstr "»%T« ist kein Template"
+msgstr "%qT ist kein Template"
 
 #: cp/parser.c:1939
-#, fuzzy, c-format
+#, c-format
 msgid "%qE is not a template"
-msgstr "»%T« ist kein Template"
+msgstr "%qE ist kein Template"
 
 #: cp/parser.c:1941
 msgid "invalid template-id"
@@ -15749,30 +15636,28 @@ msgid "%s cannot appear in a constant-expression"
 msgstr "%s kann nicht in einem Konstanten-Ausdruck auftreten"
 
 #: cp/parser.c:1995
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of template-name %qE without an argument list"
-msgstr "ungültige Verwendung des Template-Namens »%E« in einem Deklarator"
+msgstr "ungültige Verwendung des Template-Namens %qE ohne eine Argumentliste"
 
 #. Issue an error message.
 #: cp/parser.c:2000
-#, fuzzy, c-format
+#, c-format
 msgid "%qE does not name a type"
-msgstr "»%s« bezeichnet keinen Typ"
+msgstr "%qE bezeichnet keinen Typ"
 
 #: cp/parser.c:2032
-#, fuzzy
 msgid "(perhaps %<typename %T::%E%> was intended)"
-msgstr "(vielleicht war »typename %T::%s« beabsichtigt)"
+msgstr "(vielleicht war %<typename %T::%E%> beabsichtigt)"
 
 #: cp/parser.c:2047
-#, fuzzy, c-format
+#, c-format
 msgid "%qE in namespace %qE does not name a type"
-msgstr "»%s« bezeichnet keinen Typ"
+msgstr "%qE in Namensbereich %qE bezeichnet keinen Typ"
 
 #: cp/parser.c:2050
-#, fuzzy
 msgid "%qE in class %qT does not name a type"
-msgstr "»%s« bezeichnet keinen Typ"
+msgstr "$qE in Klasse %qT bezeichnet keinen Typ"
 
 #: cp/parser.c:2759
 msgid "ISO C++ forbids braced-groups within expressions"
@@ -15783,19 +15668,16 @@ msgid "statement-expressions are allowed only inside functions"
 msgstr "Anweisungs-Ausdrücke sind nur innerhalb von Funktionen erlaubt"
 
 #: cp/parser.c:2819
-#, fuzzy
 msgid "%<this%> may not be used in this context"
-msgstr "»this« darf in diesem Kontext nicht verwendet werden"
+msgstr "%<this%> darf in diesem Kontext nicht verwendet werden"
 
 #: cp/parser.c:2955
-#, fuzzy
 msgid "local variable %qD may not appear in this context"
-msgstr "lokale Variable »%D« darf in diesem Kontext nicht auftauchen"
+msgstr "lokale Variable %qD darf in diesem Kontext nicht auftauchen"
 
 #: cp/parser.c:3327
-#, fuzzy
 msgid "typedef-name %qD used as destructor declarator"
-msgstr "typedef-Name »%D« als Destruktor-Deklarator verwendet"
+msgstr "typedef-Name %qD als Destruktor-Deklarator verwendet"
 
 #: cp/parser.c:3984
 msgid "ISO C++ forbids compound-literals"
@@ -15818,27 +15700,25 @@ msgid "use of old-style cast"
 msgstr "Verwendung einer Typumwandlung im alten Stil"
 
 #: cp/parser.c:6066
-#, fuzzy, c-format
+#, c-format
 msgid "case label %qE not within a switch statement"
-msgstr "»case«-Marke »%E« nicht innerhalb einer »switch«-Anweisung"
+msgstr "case-Marke %qE nicht innerhalb einer switch-Anweisung"
 
 #: cp/parser.c:6610
 msgid "ISO C++ forbids computed gotos"
 msgstr "ISO-C++ verbietet berechnete Gotos"
 
 #: cp/parser.c:6735
-#, fuzzy
 msgid "extra %<;%>"
-msgstr "zusätzliches »;«"
+msgstr "zusätzliches %<;%>"
 
 #: cp/parser.c:7054
 msgid "mixing declarations and function-definitions is forbidden"
 msgstr "Vermischung von Deklarationen und Funktionsdefinitionen ist verboten"
 
 #: cp/parser.c:7185
-#, fuzzy
 msgid "duplicate %<friend%>"
-msgstr "doppeltes »friend«"
+msgstr "doppeltes %<friend%>"
 
 #: cp/parser.c:7354
 msgid "class definition may not be declared a friend"
@@ -15853,58 +15733,49 @@ msgid "anachronistic old-style base class initializer"
 msgstr "anachronistische Basisklasseninitialisierung im alten Stil"
 
 #: cp/parser.c:7761
-#, fuzzy
 msgid "keyword %<typename%> not allowed in this context (a qualified member initializer is implicitly a type)"
-msgstr "Schlüsselwort »typename« in diesem Kontext nicht erlaubt (eine qualifizierte Elementinitialisierung ist implizit ein Typ)"
+msgstr "Schlüsselwort %<typename%> in diesem Kontext nicht erlaubt (eine qualifizierte Elementinitialisierung ist implizit ein Typ)"
 
 #. Warn that we do not support `export'.
 #: cp/parser.c:8127
-#, fuzzy
 msgid "keyword %<export%> not implemented, and will be ignored"
-msgstr "Schlüsselwort »export« nicht implementiert, und wird ignoriert"
+msgstr "Schlüsselwort %<export%> nicht implementiert, und wird ignoriert"
 
 #. Otherwise, emit an error about the invalid digraph, but continue
 #. parsing because we got our argument list.
 #: cp/parser.c:8500
-#, fuzzy
 msgid "%<<::%> cannot begin a template-argument list"
-msgstr "»<::« kann keine Templateargumentliste einleiten"
+msgstr "%<<::%> kann keine Templateargumentliste einleiten"
 
 #: cp/parser.c:8501
-#, fuzzy
 msgid "%<<:%> is an alternate spelling for %<[%>. Insert whitespace between %<<%> and %<::%>"
-msgstr "»<:« ist ein andere Schreibweise für »[«. Leerraum zwischen »<« und »::« einfügen"
+msgstr "%<<:%> ist eine andere Schreibweise für %<[%>. Leerraum zwischen %<<%> und %<::%> einfügen"
 
 #: cp/parser.c:8508
-#, fuzzy
 msgid "(if you use -fpermissive G++ will accept your code)"
-msgstr "(»-fpermissive« wird den Code akzeptieren)"
+msgstr "(G++ wird den Code mit »-fpermissive« akzeptieren)"
 
 #: cp/parser.c:8572
-#, fuzzy
 msgid "parse error in template argument list"
-msgstr "»<::« kann keine Templateargumentliste einleiten"
+msgstr "Syntaxfehler in Templateargumentliste"
 
 #. Explain what went wrong.
 #: cp/parser.c:8685
-#, fuzzy
 msgid "non-template %qD used as template"
-msgstr "Nicht-Template »%D« als Template verwendet"
+msgstr "Nicht-Template %qD als Template verwendet"
 
 #: cp/parser.c:8686
-#, fuzzy
 msgid "use %<%T::template %D%> to indicate that it is a template"
-msgstr "»%T::template %D« verwenden, um dies als Template zu kennzeichnen"
+msgstr "%<%T::template %D%> verwenden, um dies als Template zu kennzeichnen"
 
 #: cp/parser.c:9275 cp/parser.c:15071
-#, fuzzy, c-format
+#, c-format
 msgid "template declaration of %qs"
-msgstr "Templatedeklaration von »%#D«"
+msgstr "Templatedeklaration von %qs"
 
 #: cp/parser.c:9718
-#, fuzzy
 msgid "using %<typename%> outside of template"
-msgstr "»typename« außerhalb des Templates verwendet"
+msgstr "%<typename%> außerhalb des Templates verwendet"
 
 #: cp/parser.c:9913
 msgid "type attributes are honored only at type definition"
@@ -15930,28 +15801,24 @@ msgid "attributes after parenthesized initializer ignored"
 msgstr "Attribute hinter geklammerter Initialisierung werden ignoriert"
 
 #: cp/parser.c:11143
-#, fuzzy
 msgid "array bound is not an integer constant"
-msgstr "Feldindex ist keine Ganzzahl"
+msgstr "Feldgrenze ist keine Ganzzahlkonstante"
 
 #: cp/parser.c:11213
-#, fuzzy
 msgid "%<%T::%D%> is not a type"
-msgstr "»%T::%D« ist kein Typ"
+msgstr "%<%T::%D%> ist kein Typ"
 
 #: cp/parser.c:11255
-#, fuzzy
 msgid "invalid use of constructor as a template"
-msgstr "ungültige Benutzung des nicht-statischen Datenelements »%E«"
+msgstr "ungültige Benutzung des Konstruktors als Template"
 
 #: cp/parser.c:11256
 msgid "use %<%T::%D%> instead of %<%T::%T%> to name the constructor in a qualified name"
-msgstr ""
+msgstr "%<%T::%D%> statt %<%T::%T%> verwenden, um den Konstruktor mit qualifiziertem Namen zu benennen"
 
 #: cp/parser.c:11444
-#, fuzzy
 msgid "duplicate cv-qualifier"
-msgstr "doppelter case-Wert"
+msgstr "doppelter CV-Qualifizierer"
 
 #: cp/parser.c:11973
 msgid "file ends in default argument"
@@ -15966,33 +15833,28 @@ msgid "default arguments are only permitted for function parameters"
 msgstr "Standardargumente sind nur für Funktionsparameter zugelassen"
 
 #: cp/parser.c:12779
-#, fuzzy
 msgid "invalid class name in declaration of %qD"
-msgstr "ungültige Templatedeklaration von »%D«"
+msgstr "ungültiger Klassenname in Deklaration von %qD"
 
 #: cp/parser.c:12790
-#, fuzzy
 msgid "declaration of %qD in %qD which does not enclose %qD"
-msgstr "Deklaration von »%D« in »%D«, das nicht »%D« einschließt"
+msgstr "Deklaration von %qD in %qD, das nicht %qD einschließt"
 
 #: cp/parser.c:12803
 msgid "extra qualification ignored"
 msgstr "zusätzliche Qualifizierung ignoriert"
 
 #: cp/parser.c:12814
-#, fuzzy
 msgid "an explicit specialization must be preceded by %<template <>%>"
-msgstr "einer expliziten Spezialisierung muss »template <>« vorausgehen"
+msgstr "einer expliziten Spezialisierung muss %<template <>%> vorausgehen"
 
 #: cp/parser.c:12907
-#, fuzzy
 msgid "previous definition of %q#T"
-msgstr "vorherige Definition von »%#T«"
+msgstr "vorherige Definition von %q#T"
 
 #: cp/parser.c:13117
-#, fuzzy
 msgid "%Hextra %<;%>"
-msgstr "zusätzliches »;«"
+msgstr "%Hzusätzliches %<;%>"
 
 #: cp/parser.c:13135
 msgid "a class-key must be used when declaring a friend"
@@ -16007,23 +15869,20 @@ msgid "pure-specifier on function-definition"
 msgstr "reiner Spezifizierer bei Funktionsdefinition"
 
 #: cp/parser.c:13603
-#, fuzzy
 msgid "keyword %<typename%> not allowed outside of templates"
-msgstr "Schlüsselwort »typename« nicht außerhalb von Templates erlaubt"
+msgstr "Schlüsselwort %<typename%> nicht außerhalb von Templates erlaubt"
 
 #: cp/parser.c:13605
-#, fuzzy
 msgid "keyword %<typename%> not allowed in this context (the base class is implicitly a type)"
-msgstr "Schlüsselwort »typename« nicht erlaubt in diesem Kontext (die Basisklasse ist implizit ein Typ)"
+msgstr "Schlüsselwort %<typename%> nicht erlaubt in diesem Kontext (die Basisklasse ist implizit ein Typ)"
 
 #: cp/parser.c:13880
 msgid "invalid catch parameter"
 msgstr "ungültiger catch-Parameter"
 
 #: cp/parser.c:14458
-#, fuzzy
 msgid "reference to %qD is ambiguous"
-msgstr "Referenz auf »%D« ist mehrdeutig"
+msgstr "Referenz auf %qD ist mehrdeutig"
 
 #: cp/parser.c:14627
 msgid "too few template-parameter-lists"
@@ -16048,119 +15907,98 @@ msgid "named return values are no longer supported"
 msgstr "benannte Rückgabewerte werden nicht mehr unterstützt"
 
 #: cp/parser.c:15277
-#, fuzzy
 msgid "%H%<>>%> should be %<> >%> within a nested template argument list"
-msgstr "»>>« sollte innerhalb einer geschachtelten Templateargumentliste »> >« sein"
+msgstr "%H%<>>%> sollte innerhalb einer geschachtelten Templateargumentliste %<> >%> sein"
 
 #: cp/parser.c:15292
-#, fuzzy
 msgid "spurious %<>>%>, use %<>%> to terminate a template argument list"
-msgstr "falsches »>>«; »>« verwenden, um eine Templateargumentliste zu beenden"
+msgstr "falsches %<>>%>; %<>%> verwenden, um eine Templateargumentliste zu beenden"
 
 #: cp/parser.c:15297
-#, fuzzy
 msgid "missing %<>%> to terminate the template argument list"
-msgstr "fehlendes '>', um Templateargumentliste zu beenden"
+msgstr "fehlendes %<>%>, um Templateargumentliste zu beenden"
 
 #: cp/parser.c:15825
-#, fuzzy
 msgid "%qs tag used in naming %q#T"
-msgstr "Markierung »%s« bei Benennung von »%#T« verwendet"
+msgstr "Markierung %qs bei Benennung von %q#T verwendet"
 
 #: cp/parser.c:15846
-#, fuzzy
 msgid "%qD redeclared with different access"
-msgstr "%D mit anderem Zugriff redeklariert"
+msgstr "%qD mit anderem Zugriff redeklariert"
 
 #: cp/parser.c:15863
-#, fuzzy
 msgid "%<template%> (as a disambiguator) is only allowed within templates"
-msgstr "»template« (zur Erklärung) ist nur innerhalb von Templates erlaubt"
+msgstr "%<template%> (zur Erklärung) ist nur innerhalb von Templates erlaubt"
 
 #: cp/parser.c:16071
-#, fuzzy
 msgid "inter-module optimizations not implemented for C++"
-msgstr "Optimierungen zwischen Modulen noch nicht implementiert"
+msgstr "Optimierungen zwischen Modulen noch nicht implementiert für C++"
 
 #: cp/pt.c:241
-#, fuzzy
 msgid "data member %qD cannot be a member template"
-msgstr "Datenelement »%D« kann kein Elementtemplate sein"
+msgstr "Datenelement %qD kann kein Elementtemplate sein"
 
 #: cp/pt.c:253
-#, fuzzy
 msgid "invalid member template declaration %qD"
-msgstr "ungültige Elementtemplatedeklaration »%D«"
+msgstr "ungültige Elementtemplatedeklaration %qD"
 
 #: cp/pt.c:575
-#, fuzzy
 msgid "explicit specialization in non-namespace scope %qD"
-msgstr "explizite Spezialisierung in Gültigkeitsbereich des Nicht-Namensbereiches »%D«"
+msgstr "explizite Spezialisierung in Gültigkeitsbereich des Nicht-Namensbereiches %qD"
 
 #: cp/pt.c:586
 msgid "enclosing class templates are not explicitly specialized"
 msgstr "einschließende Klassentemplates werden nicht explizit spezialisiert"
 
 #: cp/pt.c:670
-#, fuzzy
 msgid "specialization of %qD in different namespace"
-msgstr "Spezialisierung von »%D« in anderem Namensbereich"
+msgstr "Spezialisierung von %qD in anderem Namensbereich"
 
 #: cp/pt.c:671 cp/pt.c:740
-#, fuzzy
 msgid "  from definition of %q#D"
-msgstr "  aus Definition von »%#D«"
+msgstr "  aus Definition von %q#D"
 
 #: cp/pt.c:707
-#, fuzzy
 msgid "specialization of %qT after instantiation"
-msgstr "Spezialisierung von »%T« hinter Instanziierung"
+msgstr "Spezialisierung von %qT hinter Instanziierung"
 
 #: cp/pt.c:739
-#, fuzzy
 msgid "specializing %q#T in different namespace"
-msgstr "»%#T« wird in anderem Namensbereich spezialisiert"
+msgstr "%q#T wird in anderem Namensbereich spezialisiert"
 
 #: cp/pt.c:754
-#, fuzzy
 msgid "specialization %qT after instantiation %qT"
-msgstr "Spezialisierung »%T« hinter Instanziierung »%T«"
+msgstr "Spezialisierung %qT hinter Instanziierung %qT"
 
 #: cp/pt.c:766
-#, fuzzy
 msgid "explicit specialization of non-template %qT"
-msgstr "explizite Spezialisierung des Nicht-Templates »%T«"
+msgstr "explizite Spezialisierung des Nicht-Templates %qT"
 
 #: cp/pt.c:1164
-#, fuzzy
 msgid "specialization of %qD after instantiation"
-msgstr "Spezialisierung von »%D« nach Instanziierung"
+msgstr "Spezialisierung von %qD nach Instanziierung"
 
 #: cp/pt.c:1293
 msgid "%s %+#D"
 msgstr "%s %+#D"
 
 #: cp/pt.c:1349
-#, fuzzy
 msgid "%qD is not a function template"
-msgstr "»%D« ist kein Funktionstemplate"
+msgstr "%qD ist kein Funktionstemplate"
 
 #: cp/pt.c:1542
-#, fuzzy
 msgid "template-id %qD for %q+D does not match any template declaration"
-msgstr "Template-ID »%D« für »%+D« passt zu keiner Templatedeklaration"
+msgstr "Template-ID %qD für %q+D passt zu keiner Templatedeklaration"
 
 #: cp/pt.c:1551
-#, fuzzy
 msgid "ambiguous template specialization %qD for %q+D"
-msgstr "mehrdeutige Templatespezialisierung »%D« für »%+D«"
+msgstr "mehrdeutige Templatespezialisierung %qD für %q+D"
 
 #. This case handles bogus declarations like template <>
 #. template <class T> void f<int>();
 #: cp/pt.c:1782 cp/pt.c:1836
-#, fuzzy
 msgid "template-id %qD in declaration of primary template"
-msgstr "Template-ID »%D« in Deklaration des ersten Templates"
+msgstr "Template-ID %qD in Deklaration des ersten Templates"
 
 #: cp/pt.c:1795
 msgid "template parameter list used in explicit instantiation"
@@ -16171,23 +16009,20 @@ msgid "definition provided for explicit instantiation"
 msgstr "Definition für explizite Instanziierung angegeben"
 
 #: cp/pt.c:1809
-#, fuzzy
 msgid "too many template parameter lists in declaration of %qD"
-msgstr "zu viele Templateparameterlisten in Deklaration von »%D«"
+msgstr "zu viele Templateparameterlisten in Deklaration von %qD"
 
 #: cp/pt.c:1812
-#, fuzzy
 msgid "too few template parameter lists in declaration of %qD"
-msgstr "zu wenige Templateparameterlisten in Deklaration von »%D«"
+msgstr "zu wenige Templateparameterlisten in Deklaration von %qD"
 
 #: cp/pt.c:1814
-#, fuzzy
 msgid "explicit specialization of %qD must be introduced by %<template <>%>"
-msgstr "einer expliziten Spezialisierung muss »template <>« vorausgehen"
+msgstr "einer expliziten Spezialisierung muss %<template <>%> vorausgehen"
 
 #: cp/pt.c:1833
 msgid "function template partial specialization %qD is not allowed"
-msgstr ""
+msgstr "Teilspezialisierung %qD des Funktionstemplates ist nicht erlaubt"
 
 #: cp/pt.c:1865
 msgid "default argument specified in explicit specialization"
@@ -16198,9 +16033,8 @@ msgid "template specialization with C linkage"
 msgstr "Templatespezialisierung mit C-Bindung angegeben"
 
 #: cp/pt.c:1896
-#, fuzzy
 msgid "%qD is not a template function"
-msgstr "»%D« ist keine Elementtemplatefunktion"
+msgstr "%qD ist keine Templatefunktion"
 
 #. From [temp.expl.spec]:
 #.
@@ -16215,43 +16049,37 @@ msgid "specialization of implicitly-declared special member function"
 msgstr "Spezialisierung der implizit deklarierten speziellen Elementfunktion"
 
 #: cp/pt.c:2002
-#, fuzzy
 msgid "no member function %qD declared in %qT"
-msgstr "keine Elementfunktion »%D« in »%T« deklariert"
+msgstr "keine Elementfunktion %qD in %qT deklariert"
 
 #: cp/pt.c:2207
-#, fuzzy
 msgid " shadows template parm %q#D"
-msgstr " überdeckt Templateparameter »%#D«"
+msgstr " überdeckt Templateparameter %q#D"
 
 #: cp/pt.c:2609
 msgid "template parameters not used in partial specialization:"
 msgstr "nicht in partieller Spezialisierung verwendete Templateparameter:"
 
 #: cp/pt.c:2613
-#, fuzzy
 msgid "        %qD"
-msgstr "        »%D«"
+msgstr "        %qD"
 
 #: cp/pt.c:2624
-#, fuzzy
 msgid "partial specialization %qT does not specialize any template arguments"
-msgstr "partielle Spezialisierung »%T« spezialisiert keine Templateargumente"
+msgstr "Teilspezialisierung %qT spezialisiert keine Templateargumente"
 
 #: cp/pt.c:2649
-#, fuzzy, c-format
+#, c-format
 msgid "template argument %qE involves template parameter(s)"
-msgstr "Templateargument »%E« betrifft Templateparameter"
+msgstr "Templateargument %qE betrifft Templateparameter"
 
 #: cp/pt.c:2693
-#, fuzzy
 msgid "type %qT of template argument %qE depends on template parameter(s)"
-msgstr "Typ »%T« des Templatearguments »%E« hängt von Templateparameter(n) ab"
+msgstr "Typ %qT des Templatearguments %qE hängt von Templateparameter(n) ab"
 
 #: cp/pt.c:2780
-#, fuzzy
 msgid "no default argument for %qD"
-msgstr "kein Standard-Argument für »%D«"
+msgstr "kein Standard-Argument für %qD"
 
 #: cp/pt.c:2937
 msgid "template with C linkage"
@@ -16265,9 +16093,8 @@ msgstr "Templateklasse ohne Namen"
 #.
 #. A destructor shall not be a member template.
 #: cp/pt.c:2948
-#, fuzzy
 msgid "destructor %qD declared as member template"
-msgstr "Destruktor »%D« als Element-Template deklariert"
+msgstr "Destruktor %qD als Element-Template deklariert"
 
 #. [basic.stc.dynamic.allocation]
 #.
@@ -16275,34 +16102,28 @@ msgstr "Destruktor »%D« als Element-Template deklariert"
 #. template. ... Template allocation functions shall
 #. have two or more parameters.
 #: cp/pt.c:2963
-#, fuzzy
 msgid "invalid template declaration of %qD"
-msgstr "ungültige Templatedeklaration von »%D«"
+msgstr "ungültige Templatedeklaration von %qD"
 
 #: cp/pt.c:3044
-#, fuzzy
 msgid "%qD does not declare a template type"
-msgstr "»%D« deklariert keinen Template-Typen"
+msgstr "%qD deklariert keinen Template-Typen"
 
 #: cp/pt.c:3050
-#, fuzzy
 msgid "template definition of non-template %q#D"
-msgstr "Template-Definition eines Nicht-Templates »%#D«"
+msgstr "Template-Definition eines Nicht-Templates %q#D"
 
 #: cp/pt.c:3092
-#, fuzzy
 msgid "expected %d levels of template parms for %q#D, got %d"
-msgstr "%d Ebenen von Template-Parametern für »%#D« erwartet, %d erhalten"
+msgstr "%d Ebenen von Template-Parametern für %q#D erwartet, %d erhalten"
 
 #: cp/pt.c:3104
-#, fuzzy
 msgid "got %d template parameters for %q#D"
-msgstr "%d Template-Parameter für »%#D« erhalten"
+msgstr "%d Template-Parameter für %q#D erhalten"
 
 #: cp/pt.c:3107
-#, fuzzy
 msgid "got %d template parameters for %q#T"
-msgstr "%d Template-Parameter für »%#T« erhalten"
+msgstr "%d Template-Parameter für %q#T erhalten"
 
 #: cp/pt.c:3109
 #, c-format
@@ -16310,19 +16131,16 @@ msgid "  but %d required"
 msgstr "  aber %d benötigt"
 
 #: cp/pt.c:3198
-#, fuzzy
 msgid "%qT is not a template type"
-msgstr "»%T« ist kein Template-Typ"
+msgstr "%qT ist kein Template-Typ"
 
 #: cp/pt.c:3211
-#, fuzzy
 msgid "template specifiers not specified in declaration of %qD"
-msgstr "zu wenige Templateparameterlisten in Deklaration von »%D«"
+msgstr "keine Templatespezifizierer in Deklaration von %qD angegeben"
 
 #: cp/pt.c:3221
-#, fuzzy
 msgid "previous declaration %qD"
-msgstr "vorherige Deklaration »%D«"
+msgstr "vorherige Deklaration %qD"
 
 #: cp/pt.c:3222
 #, c-format
@@ -16330,126 +16148,107 @@ msgid "used %d template parameter%s instead of %d"
 msgstr "%d Template-Parameter%.0s statt %d verwendet"
 
 #: cp/pt.c:3242
-#, fuzzy
 msgid "template parameter %q#D"
-msgstr "Template-Parameter »%#D«"
+msgstr "Template-Parameter %q#D"
 
 #: cp/pt.c:3243
-#, fuzzy
 msgid "redeclared here as %q#D"
-msgstr "hier als »%#D« redeklariert"
+msgstr "hier als %q#D redeklariert"
 
 #. We have in [temp.param]:
 #.
 #. A template-parameter may not be given default arguments
 #. by two different declarations in the same scope.
 #: cp/pt.c:3253
-#, fuzzy
 msgid "redefinition of default argument for %q#D"
-msgstr "Redefinition des Standardarguments für »%#D«"
+msgstr "Redefinition des Standardarguments für %q#D"
 
 #: cp/pt.c:3254
 msgid "%J  original definition appeared here"
 msgstr "%J  ursprüngliche Definition trat hier auf"
 
 #: cp/pt.c:3350
-#, fuzzy
 msgid "%qE is not a valid template argument for type %qT because function %qD has not external linkage"
-msgstr "Zeichenkettensymbol %E ist kein gültiges Templateargument, weil es die Adresse eines Objektes mit statischer Bindung ist"
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, da die Funktion %qD keine externe Bindung hat"
 
 #: cp/pt.c:3391
-#, fuzzy
 msgid "%qE is not a valid template argument for type %qT because string literals can never be used in this context"
-msgstr "Zeichenkettensymbol %E ist kein gültiges Templateargument, weil es die Adresse eines Objektes mit statischer Bindung ist"
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, da Zeichenkettensymbole in diesem Zusammenhang nicht verwendet werden können"
 
 #: cp/pt.c:3466
-#, fuzzy
 msgid "%qE is not a valid template argument for type %qT because it is a non-constant expression"
-msgstr "Zeichenkettensymbol %E ist kein gültiges Templateargument, weil es die Adresse eines Objektes mit statischer Bindung ist"
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, weil es ein nicht konstanter Ausdruck ist"
 
 #: cp/pt.c:3516
-#, fuzzy
 msgid "%qE is not a valid template argument for type %qT because it is not a constant pointer"
-msgstr "Zeichenkettensymbol %E ist kein gültiges Templateargument, weil es die Adresse eines Objektes mit statischer Bindung ist"
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, weil es kein konstanter Zeiger ist"
 
 #: cp/pt.c:3536
 msgid "%qE is not a valid template argument for type %qT because of conflicts in cv-qualification"
-msgstr ""
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, da es Konflikte in CV-Qualifikation gibt"
 
 #: cp/pt.c:3543
-#, fuzzy
 msgid "%qE is not a valid template argument for type %qT because it is not a lvalue"
-msgstr "Zeichenkettensymbol %E ist kein gültiges Templateargument, weil es die Adresse eines Objektes mit statischer Bindung ist"
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, weil es kein L-Wert ist"
 
 #: cp/pt.c:3556
-#, fuzzy
 msgid "%qE is not a valid template argument for type %qT because object %qD has not external linkage"
-msgstr "Zeichenkettensymbol %E ist kein gültiges Templateargument, weil es die Adresse eines Objektes mit statischer Bindung ist"
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, weil Objekt %qD keine externe Bindung hat"
 
 #: cp/pt.c:3598
-#, fuzzy
 msgid "%qE is not a valid template argument for type %qT because it is a pointer"
-msgstr "»%E« ist kein gültiges Templateargument"
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, weil es ein Zeiger ist"
 
 #: cp/pt.c:3600
 #, c-format
 msgid "try using %qE instead"
-msgstr ""
+msgstr "stattdessen %qE verwenden"
 
 #: cp/pt.c:3635
-#, fuzzy
 msgid "%qE is not a valid template argument for type %qT because it is of type %qT"
-msgstr "»%E« ist kein gültiges Templateargument"
+msgstr "%qE ist kein gültiges Templateargument für Typ %qT, weil es vom Typ %qT ist"
 
 #: cp/pt.c:3638
-#, fuzzy
 msgid "standard conversions are not allowed in this context"
-msgstr "»this« darf in diesem Kontext nicht verwendet werden"
+msgstr "Standardumwandlungen sind in diesem Kontext nicht erlaubt"
 
 #: cp/pt.c:3807
-#, fuzzy
 msgid "to refer to a type member of a template parameter, use %<typename %E%>"
-msgstr "um auf ein Typelement eines Templateparameters zu verweisen, »typename %E« verwenden"
+msgstr "um auf ein Typelement eines Templateparameters zu verweisen, %<typename %E%> verwenden"
 
 #: cp/pt.c:3822 cp/pt.c:3841 cp/pt.c:3881
-#, fuzzy
 msgid "type/value mismatch at argument %d in template parameter list for %qD"
-msgstr "Typ/Wert des Arguments %d passt nicht in Template-Parameterliste für »%D«"
+msgstr "Typ/Wert des Arguments %d passt nicht in Template-Parameterliste für %qD"
 
 #: cp/pt.c:3826
-#, fuzzy
 msgid "  expected a constant of type %qT, got %qT"
-msgstr "  Konstante des Typs »%T« erwartet, »%T« erhalten"
+msgstr "  Konstante des Typs %qT erwartet, %qT erhalten"
 
 #: cp/pt.c:3830
-#, fuzzy, c-format
+#, c-format
 msgid "  expected a class template, got %qE"
-msgstr "  Klassentemplate erwartet, »%E« erhalten"
+msgstr "  Klassentemplate erwartet, %qE erhalten"
 
 #: cp/pt.c:3832
-#, fuzzy, c-format
+#, c-format
 msgid "  expected a type, got %qE"
-msgstr "  einen Typ erwartet, »%E« erhalten"
+msgstr "  einen Typ erwartet, %qE erhalten"
 
 #: cp/pt.c:3845
-#, fuzzy
 msgid "  expected a type, got %qT"
-msgstr "  einen Typ erwartet, »%T« erhalten"
+msgstr "  einen Typ erwartet, %qT erhalten"
 
 #: cp/pt.c:3847
-#, fuzzy
 msgid "  expected a class template, got %qT"
-msgstr "  Klassentemplate erwartet, »%T« erhalten"
+msgstr "  Klassentemplate erwartet, %qT erhalten"
 
 #: cp/pt.c:3884
-#, fuzzy
 msgid "  expected a template of type %qD, got %qD"
-msgstr "  ein Template des Typs »%D« erwartet, »%D« erhalten"
+msgstr "  ein Template des Typs %qD erwartet, %qD erhalten"
 
 #: cp/pt.c:3920
-#, fuzzy
 msgid "could not convert template argument %qE to %qT"
-msgstr "Templateargument »%E« konnte nicht in »%T« umgewandelt werden"
+msgstr "Templateargument %qE konnte nicht in %qT umgewandelt werden"
 
 #: cp/pt.c:3959
 #, c-format
@@ -16457,9 +16256,8 @@ msgid "wrong number of template arguments (%d, should be %d)"
 msgstr "falsche Anzahl der Templateargumente (%d, sollte %d sein)"
 
 #: cp/pt.c:3963
-#, fuzzy
 msgid "provided for %qD"
-msgstr "für »%D« bereitgestellt"
+msgstr "für %qD bereitgestellt"
 
 #: cp/pt.c:3993
 #, c-format
@@ -16467,235 +16265,197 @@ msgid "template argument %d is invalid"
 msgstr "Templateargument %d ist ungültig"
 
 #: cp/pt.c:4348
-#, fuzzy
 msgid "non-template type %qT used as a template"
-msgstr "Nicht-Template-Typ »%T« als Template verwendet"
+msgstr "Nicht-Template-Typ %qT als Template verwendet"
 
 #: cp/pt.c:4350
-#, fuzzy
 msgid "for template declaration %qD"
-msgstr "Für Template-Deklaration »%D«"
+msgstr "Für Template-Deklaration %qD"
 
 #: cp/pt.c:4992
-#, fuzzy
 msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating %qD"
-msgstr "Instanziierungstiefe für Templates überschreitet Höchstwert %d (-ftemplate-depth-NN verwenden, um dies zu erhöhen) bei Instanziierung von »%D«"
+msgstr "Instanziierungstiefe für Templates überschreitet Höchstwert %d (-ftemplate-depth-NN verwenden, um dies zu erhöhen) bei Instanziierung von %qD"
 
 #: cp/pt.c:5438
-#, fuzzy
 msgid "ambiguous class template instantiation for %q#T"
-msgstr "mehrdeutige Klassentemplate-Instanziierung für »%#T«"
+msgstr "mehrdeutige Klassentemplate-Instanziierung für %q#T"
 
 #: cp/pt.c:5444
 msgid "%s %+#T"
 msgstr "%s %+#T"
 
 #: cp/pt.c:6526
-#, fuzzy
 msgid "instantiation of %qD as type %qT"
-msgstr "Instanziierung von »%D« als Typ »%T«"
+msgstr "Instanziierung von %qD als Typ %qT"
 
 #: cp/pt.c:6694
-#, fuzzy
 msgid "invalid parameter type %qT"
-msgstr "ungültiger Parametertyp »%T«"
+msgstr "ungültiger Parametertyp %qT"
 
 #: cp/pt.c:6696
-#, fuzzy
 msgid "in declaration %qD"
-msgstr "in Deklaration »%D«"
+msgstr "in Deklaration %qD"
 
 #: cp/pt.c:6757
-#, fuzzy
 msgid "function returning an array"
-msgstr "Funktion gibt Aggregat zurück"
+msgstr "Funktion gibt ein Feld zurück"
 
 #: cp/pt.c:6759
-#, fuzzy
 msgid "function returning a function"
-msgstr "»%s« als Funktion, die eine Funktion zurückgibt, deklariert"
+msgstr "Funktion gibt eine Funktion"
 
 #: cp/pt.c:6786
-#, fuzzy
 msgid "creating pointer to member function of non-class type %qT"
-msgstr "Erzeugung eines Zeigers auf Elementfunktion des Nicht-Klassentyps »%T«"
+msgstr "Erzeugung eines Zeigers auf Elementfunktion des Nicht-Klassentyps %qT"
 
 #: cp/pt.c:6954
 msgid "creating array with size zero"
 msgstr "Feld der Größe null wird erzeugt"
 
 #: cp/pt.c:6968
-#, fuzzy, c-format
+#, c-format
 msgid "creating array with size zero (%qE)"
-msgstr "Feld der Größe null (»%E«) wird erzeugt"
+msgstr "Feld der Größe null (%qE) wird erzeugt"
 
 #: cp/pt.c:7185
 msgid "forming reference to void"
 msgstr "Referenz auf »void« wird gebildet"
 
 #: cp/pt.c:7187
-#, fuzzy
 msgid "forming %s to reference type %qT"
-msgstr "%s wird in Referenztyp »%T« umgeformt"
+msgstr "%s wird in Referenztyp %qT umgeformt"
 
 #: cp/pt.c:7224
-#, fuzzy
 msgid "creating pointer to member of non-class type %qT"
-msgstr "Zeiger auf Element des Nicht-Klassentypen »%T« wird erzeugt"
+msgstr "Zeiger auf Element des Nicht-Klassentypen %qT wird erzeugt"
 
 #: cp/pt.c:7230
-#, fuzzy
 msgid "creating pointer to member reference type %qT"
-msgstr "Zeiger auf Elementreferenztyp »%T« wird erzeugt"
+msgstr "Zeiger auf Elementreferenztyp %qT wird erzeugt"
 
 #: cp/pt.c:7296
-#, fuzzy
 msgid "creating array of %qT"
-msgstr "Feld von »%T« wird erzeugt"
+msgstr "Feld von %qT wird erzeugt"
 
 #: cp/pt.c:7302
-#, fuzzy
 msgid "creating array of %qT, which is an abstract class type"
-msgstr "Feld von »%T« wird erzeugt, was ein abstrakter Klassentyp ist"
+msgstr "Feld von %qT wird erzeugt, was ein abstrakter Klassentyp ist"
 
 #: cp/pt.c:7346
-#, fuzzy
 msgid "%qT is not a class, struct, or union type"
-msgstr "»%T« ist kein Klassen-, Struktur- oder Union-Typ"
+msgstr "%qT ist kein Klassen-, Struktur- oder Union-Typ"
 
 #: cp/pt.c:7381
-#, fuzzy
 msgid "%qT resolves to %qT, which is not an enumeration type"
-msgstr "%Jcase-Wert %qs nicht in Aufzählungstyp"
+msgstr "%qT wird in %qT aufgelöst, was kein Aufzählungstyp ist"
 
 #: cp/pt.c:7384
-#, fuzzy
 msgid "%qT resolves to %qT, which is is not a class type"
-msgstr "Feld von »%T« wird erzeugt, was ein abstrakter Klassentyp ist"
+msgstr "%qT wird in %qT aufgelöst, was kein Klassentyp ist"
 
 #: cp/pt.c:7445
-#, fuzzy, c-format
+#, c-format
 msgid "use of %qs in template"
-msgstr "Verwendung von »%s« in Template"
+msgstr "Verwendung von %qs in Template"
 
 #: cp/pt.c:7570
-#, fuzzy, c-format
+#, c-format
 msgid "dependent-name %qE is parsed as a non-type, but instantiation yields a type"
-msgstr "Abhängigenname »%E« wird als Nicht-Typ erkannt, aber die Instanziierung liefert Typ"
+msgstr "Abhängigenname %qE wird als Nicht-Typ erkannt, aber die Instanziierung liefert einen Typ"
 
 #: cp/pt.c:7572
-#, fuzzy
 msgid "say %<typename %E%> if a type is meant"
-msgstr "»typename %E« sagen, wenn ein Typ gemeint ist"
+msgstr "%<typename %E%> sagen, wenn ein Typ gemeint ist"
 
 #: cp/pt.c:7691
-#, fuzzy
 msgid "using invalid field %qD"
-msgstr "statisches Feld »%s« fehlt"
+msgstr "ungültiges Feld %qD wird verwendet"
 
 #: cp/pt.c:8745
-#, fuzzy
 msgid "%qT is not a class or namespace"
-msgstr "»%T« ist keine Klasse oder Namensbereich"
+msgstr "%qT ist keine Klasse oder Namensbereich"
 
 #: cp/pt.c:8748
-#, fuzzy
 msgid "%qD is not a class or namespace"
-msgstr "»%D« ist keine Klasse oder Namensbereich"
+msgstr "%qD ist keine Klasse oder Namensbereich"
 
 #: cp/pt.c:8888
-#, fuzzy
 msgid "%qT is/uses anonymous type"
-msgstr "»%T« verwendet anonymen Typen"
+msgstr "%qT ist/verwendet anonymen Typen"
 
 #: cp/pt.c:8890
-#, fuzzy
 msgid "%qT uses local type %qT"
-msgstr "»%T« verwendet lokalen Typen »%T«"
+msgstr "%qT verwendet lokalen Typen %qT"
 
 #: cp/pt.c:8899
-#, fuzzy
 msgid "%qT is a variably modified type"
-msgstr "»%T« ist ein variabel modifizierter Typ"
+msgstr "%qT ist ein variabel modifizierter Typ"
 
 #: cp/pt.c:8910
-#, fuzzy, c-format
+#, c-format
 msgid "integral expression %qE is not constant"
-msgstr "Integralausdruck »%E« ist nicht konstant"
+msgstr "Ganzzahlausdruck %qE ist nicht konstant"
 
 #: cp/pt.c:8915
-#, fuzzy
 msgid "  trying to instantiate %qD"
-msgstr "  Versuch, »%D« zu instanziieren"
+msgstr "  Versuch, %qD zu instanziieren"
 
 #: cp/pt.c:9434
 msgid "incomplete type unification"
 msgstr "unvollständige Typvereinigung"
 
 #: cp/pt.c:10783 cp/pt.c:10854
-#, fuzzy
 msgid "explicit instantiation of non-template %q#D"
-msgstr "explizite Instanziierung des Nicht-Templates »%#D«"
+msgstr "explizite Instanziierung des Nicht-Templates %q#D"
 
 #: cp/pt.c:10799 cp/pt.c:10849
-#, fuzzy
 msgid "no matching template for %qD found"
-msgstr "kein passendes Template für »%D« gefunden"
+msgstr "kein passendes Template für %qD gefunden"
 
 #: cp/pt.c:10805
-#, fuzzy
 msgid "explicit instantiation of %q#D"
-msgstr "explizite Instanziierung von »%#D«"
+msgstr "explizite Instanziierung von %q#D"
 
 #: cp/pt.c:10841
-#, fuzzy
 msgid "duplicate explicit instantiation of %q#D"
-msgstr "doppelte explizite Instanziierung von »%#D«"
+msgstr "doppelte explizite Instanziierung von %q#D"
 
 #: cp/pt.c:10863
-#, fuzzy
 msgid "ISO C++ forbids the use of %<extern%> on explicit instantiations"
-msgstr "ISO-C++ verbietet die Verwendung von »extern« bei expliziten Instanziierungen"
+msgstr "ISO-C++ verbietet die Verwendung von %<extern%> bei expliziten Instanziierungen"
 
 #: cp/pt.c:10868 cp/pt.c:10958
-#, fuzzy
 msgid "storage class %qD applied to template instantiation"
-msgstr "Speicherklasse »%D« auf Templateinstanziierung angewendet"
+msgstr "Speicherklasse %qD auf Templateinstanziierung angewendet"
 
 #: cp/pt.c:10930
-#, fuzzy
 msgid "explicit instantiation of non-template type %qT"
-msgstr "explizite Instanziierung des Nicht-Templatetyps »%T«"
+msgstr "explizite Instanziierung des Nicht-Templatetyps %qT"
 
 #: cp/pt.c:10939
-#, fuzzy
 msgid "explicit instantiation of %q#T before definition of template"
-msgstr "explizite Instanziierung von »%#T« vor Definition des Templates"
+msgstr "explizite Instanziierung von %q#T vor Definition des Templates"
 
 #: cp/pt.c:10947
-#, fuzzy, c-format
+#, c-format
 msgid "ISO C++ forbids the use of %qE on explicit instantiations"
-msgstr "ISO-C++ verbietet die Verwendung von »%s« bei expliziten Instanziierungen"
+msgstr "ISO-C++ verbietet die Verwendung von %qE bei expliziten Instanziierungen"
 
 #: cp/pt.c:10992
-#, fuzzy
 msgid "duplicate explicit instantiation of %q#T"
-msgstr "doppelte explizite Instanziierung von »%#T«"
+msgstr "doppelte explizite Instanziierung von %q#T"
 
 #: cp/pt.c:11365
-#, fuzzy
 msgid "explicit instantiation of %qD but no definition available"
-msgstr "explizite Instanziierung von »%D«, aber keine Definition verfügbar"
+msgstr "explizite Instanziierung von %qD, aber keine Definition verfügbar"
 
 #: cp/pt.c:11510
-#, fuzzy
 msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating %q+D, possibly from virtual table generation"
-msgstr "Instanziierungstiefe für Templates überschreitet Höchstwert %d (-ftemplate-depth-NN verwenden, um dies zu erhöhen) bei Instanziierung von »%D«"
+msgstr "Instanziierungstiefe für Templates überschreitet Höchstwert %d (-ftemplate-depth-NN verwenden, um dies zu erhöhen) bei Instanziierung von %q+D, möglicherweise bei Erzeugung der virtuellen Tabelle"
 
 #: cp/pt.c:11779
-#, fuzzy
 msgid "%q#T is not a valid type for a template constant parameter"
-msgstr "»%#T« ist kein gültiger Typ für einen Templatekonstanten-Parameter"
+msgstr "%q#T ist kein gültiger Typ für einen Templatekonstanten-Parameter"
 
 #: cp/repo.c:112
 msgid "-frepo must be used with -c"
@@ -16707,9 +16467,9 @@ msgid "mysterious repository information in %s"
 msgstr "rätselhafte Repository-Information in %s"
 
 #: cp/repo.c:214
-#, fuzzy, c-format
+#, c-format
 msgid "can't create repository information file %qs"
-msgstr "Repository-Informationsdatei »%s« kann nicht erzeugt werden"
+msgstr "Repository-Informationsdatei %qs kann nicht erzeugt werden"
 
 #: cp/rtti.c:244
 msgid "cannot use typeid with -fno-rtti"
@@ -16720,202 +16480,168 @@ msgid "must #include <typeinfo> before using typeid"
 msgstr "vor Verwendung von typeid muss #include <typeinfo> angegeben werden"
 
 #: cp/rtti.c:322
-#, fuzzy
 msgid "cannot create type information for type %qT because its size is variable"
-msgstr "für Typ »%T« kann keine Typinformation erzeugt werden, weil seine Größe variabel ist"
+msgstr "für Typ %qT kann keine Typinformation erzeugt werden, weil seine Größe variabel ist"
 
 #: cp/rtti.c:570 cp/rtti.c:584
-#, fuzzy
 msgid "dynamic_cast of %q#D to %q#T can never succeed"
-msgstr "dynamic_cast von »%#D« nach »%#T« kann nie erfolgreich sein"
+msgstr "dynamic_cast von %q#D nach %q#T kann nie erfolgreich sein"
 
 #: cp/rtti.c:663
-#, fuzzy
 msgid "cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)"
-msgstr "dynamic_cast »%E« (des Typs »%#T«) in Typ »%#T« (%s) kann nicht vorgenommen werden"
+msgstr "dynamic_cast %qE (des Typs %q#T) in Typ %q#T (%s) kann nicht vorgenommen werden"
 
 #: cp/search.c:257
-#, fuzzy
 msgid "%qT is an ambiguous base of %qT"
-msgstr "»%T« ist mehrdeutige Basis von »%T«"
+msgstr "%qT ist mehrdeutige Basis von %qT"
 
 #: cp/search.c:275
-#, fuzzy
 msgid "%qT is an inaccessible base of %qT"
-msgstr "»%T« ist eine nicht erreichbare Basis von »%T«"
+msgstr "%qT ist eine nicht erreichbare Basis von %qT"
 
 #: cp/search.c:1843
-#, fuzzy
 msgid "deprecated covariant return type for %q#D"
-msgstr "ungültiger kovarianter Rückgabetyp für »%#D«"
+msgstr "ungültiger kovarianter Rückgabetyp für %q#D"
 
 #: cp/search.c:1845 cp/search.c:1860 cp/search.c:1866
-#, fuzzy
 msgid "  overriding %q#D"
-msgstr "  »%#D« wird überschrieben"
+msgstr "  %q#D wird überschrieben"
 
 #: cp/search.c:1859
-#, fuzzy
 msgid "invalid covariant return type for %q#D"
-msgstr "ungültiger kovarianter Rückgabetyp für »%#D«"
+msgstr "ungültiger kovarianter Rückgabetyp für %q#D"
 
 #: cp/search.c:1864
-#, fuzzy
 msgid "conflicting return type specified for %q#D"
-msgstr "in Konflikt stehende Rückgabetypen für »%#D« angegeben"
+msgstr "in Konflikt stehenden Rückgabetyp für %q#D angegeben"
 
 #: cp/search.c:1875
-#, fuzzy
 msgid "looser throw specifier for %q#F"
-msgstr "loser »throw«-Spezifizierer für »%#F«"
+msgstr "lockerer »throw«-Spezifizierer für %q#F"
 
 #: cp/search.c:1876
-#, fuzzy
 msgid "  overriding %q#F"
-msgstr "  »%#F« wird überschrieben"
+msgstr "  %q#F wird überschrieben"
 
 #. A static member function cannot match an inherited
 #. virtual member function.
 #: cp/search.c:1969
-#, fuzzy
 msgid "%q#D cannot be declared"
-msgstr "»%#D« kann nicht deklariert werden"
+msgstr "%q#D kann nicht deklariert werden"
 
 #: cp/search.c:1970
-#, fuzzy
 msgid "  since %q#D declared in base class"
-msgstr "  denn »%#D« ist in Basisklasse deklariert"
+msgstr "  denn %q#D ist in Basisklasse deklariert"
 
 #: cp/semantics.c:1199
-#, fuzzy, c-format
+#, c-format
 msgid "type of asm operand %qE could not be determined"
-msgstr "Typ des asm-Operanden »%E« konnte nicht ermittelt werden"
+msgstr "Typ des asm-Operanden %qE konnte nicht ermittelt werden"
 
 #: cp/semantics.c:1318
-#, fuzzy
 msgid "invalid use of member %qD in static member function"
-msgstr "ungültige Verwendung des Elementes »%D« in statischer Elementfunktion"
+msgstr "ungültige Verwendung des Elementes %qD in statischer Elementfunktion"
 
 #: cp/semantics.c:1322 cp/semantics.c:1361
 msgid "from this location"
 msgstr "von dieser Stelle"
 
 #: cp/semantics.c:1360
-#, fuzzy
 msgid "object missing in reference to %qD"
-msgstr "Objekt fehlt in Referenz auf »%D«"
+msgstr "Objekt fehlt in Referenz auf %qD"
 
 #: cp/semantics.c:1841
 msgid "arguments to destructor are not allowed"
 msgstr "Argumente für Destruktor sind nicht erlaubt"
 
 #: cp/semantics.c:1891
-#, fuzzy
 msgid "%<this%> is unavailable for static member functions"
-msgstr "»this« ist für statische Elementfunktionen nicht verfügbar"
+msgstr "%<this%> ist für statische Elementfunktionen nicht verfügbar"
 
 #: cp/semantics.c:1897
-#, fuzzy
 msgid "invalid use of %<this%> in non-member function"
-msgstr "ungültige Verwendung von »this« in Nicht-Element-Funktion"
+msgstr "ungültige Verwendung von %<this%> in Nicht-Element-Funktion"
 
 #: cp/semantics.c:1899
-#, fuzzy
 msgid "invalid use of %<this%> at top level"
-msgstr "ungültige Verwendung von »this« auf höchster Ebene"
+msgstr "ungültige Verwendung von %<this%> auf höchster Ebene"
 
 #: cp/semantics.c:1923
 msgid "invalid qualifying scope in pseudo-destructor name"
 msgstr "ungültiger angegebener Gültigkeitsbereich in Pseudodestruktor-Name"
 
 #: cp/semantics.c:1943
-#, fuzzy
 msgid "%qE is not of type %qT"
-msgstr "»%E« ist nicht vom Typ »%T«"
+msgstr "%qE ist nicht vom Typ %qT"
 
 #: cp/semantics.c:2043
-#, fuzzy
 msgid "template type parameters must use the keyword %<class%> or %<typename%>"
-msgstr "Templatetypparameter müssen das Schlüsselwort »class« oder »typename« verwenden"
+msgstr "Templatetypparameter müssen das Schlüsselwort %<class%> oder %<typename%> verwenden"
 
 #: cp/semantics.c:2087
-#, fuzzy
 msgid "invalid use of type %qT as a default value for a template template-parameter"
-msgstr "ungültige Verwendung des Typs »%T« als Standardwert für einen Template-Templateparameter"
+msgstr "ungültige Verwendung des Typs %qT als Standardwert für einen Template-Templateparameter"
 
 #: cp/semantics.c:2090
-#, fuzzy
 msgid "invalid use of %qD as a default value for a template template-parameter"
-msgstr "ungültige Verwendung von »%D« als Standardwert für einen Template-Templateparameter"
+msgstr "ungültige Verwendung von %qD als Standardwert für einen Template-Templateparameter"
 
 #: cp/semantics.c:2094
 msgid "invalid default argument for a template template parameter"
 msgstr "ungültiges Standardargument für einen Template-Templateparameter"
 
 #: cp/semantics.c:2111
-#, fuzzy
 msgid "definition of %q#T inside template parameter list"
-msgstr "Definition von »%#T« in Templateparameterliste"
+msgstr "Definition von %q#T in Templateparameterliste"
 
 #: cp/semantics.c:2122
-#, fuzzy
 msgid "invalid definition of qualified type %qT"
-msgstr "ungültige Definition des qualifizierten Typen »%T«"
+msgstr "ungültige Definition des qualifizierten Typen %qT"
 
 #: cp/semantics.c:2338
 msgid "invalid base-class specification"
 msgstr "ungültige Spezifizierung der Basisklasse"
 
 #: cp/semantics.c:2347
-#, fuzzy
 msgid "base class %qT has cv qualifiers"
-msgstr "Basisklasse »%T« hat CV-Kennzeichner"
+msgstr "Basisklasse %qT hat CV-Kennzeichner"
 
 #: cp/semantics.c:2367
-#, fuzzy
 msgid "incomplete type %qT used in nested name specifier"
-msgstr "unvollständiger Typ »%T« in geschachtelter Namensangabe verwendet"
+msgstr "unvollständiger Typ %qT in geschachtelter Namensangabe verwendet"
 
 #: cp/semantics.c:2370
-#, fuzzy
 msgid "reference to %<%T::%D%> is ambiguous"
-msgstr "Referenz auf »%D« ist mehrdeutig"
+msgstr "Referenz auf %<%T::%D%> ist mehrdeutig"
 
 #: cp/semantics.c:2374 cp/typeck.c:1637
-#, fuzzy
 msgid "%qD is not a member of %qT"
-msgstr "»%D« ist kein Element von »%T«"
+msgstr "%qD ist kein Element von %qT"
 
 #: cp/semantics.c:2377
-#, fuzzy
 msgid "%qD is not a member of %qD"
-msgstr "»%D« ist kein Element von »%D«"
+msgstr "%qD ist kein Element von %qD"
 
 #: cp/semantics.c:2506
-#, fuzzy
 msgid "template parameter %qD of type %qT is not allowed in an integral constant expression because it is not of integral or enumeration type"
-msgstr "Templateparameter »%D« vom Typ »%T« ist in ganzzahligem Konstantenausdruck nicht erlaubt, da er nicht Ganzzahl- oder Aufzählungstyp hat"
+msgstr "Templateparameter %qD vom Typ %qT ist in ganzzahligem Konstantenausdruck nicht erlaubt, da er nicht Ganzzahl- oder Aufzählungstyp hat"
 
 #: cp/semantics.c:2660
-#, fuzzy
 msgid "%qD cannot appear in a constant-expression"
-msgstr "»%D« kann nicht in Konstanten-Ausdruck auftreten"
+msgstr "%qD kann nicht in Konstanten-Ausdruck auftreten"
 
 #: cp/semantics.c:2668
-#, fuzzy
 msgid "use of namespace %qD as expression"
-msgstr "Verwendung des Namespace »%D« als Ausdruck"
+msgstr "Verwendung des Namensbereiches %qD als Ausdruck"
 
 #: cp/semantics.c:2673
-#, fuzzy
 msgid "use of class template %qT as expression"
-msgstr "Verwendung des Klassentemplates »%T« als Ausdruck"
+msgstr "Verwendung des Klassentemplates %qT als Ausdruck"
 
 #. Ambiguous reference to base members.
 #: cp/semantics.c:2679
-#, fuzzy
 msgid "request for member %qD is ambiguous in multiple inheritance lattice"
-msgstr "Abfrage des Elementes »%D« ist im Gitter der Mehrfachvererbung mehrdeutig"
+msgstr "Abfrage des Elementes %qD ist im Gitter der Mehrfachvererbung mehrdeutig"
 
 #: cp/semantics.c:2752
 #, c-format
@@ -16923,43 +16649,41 @@ msgid "use of %s from containing function"
 msgstr "Verwendung von %s von enthaltener Funktion aus"
 
 #: cp/semantics.c:2755
-#, fuzzy
 msgid "  %q#D declared here"
-msgstr "  »%#D« hier deklariert"
+msgstr "  %q#D hier deklariert"
 
 #: cp/semantics.c:2805
-#, fuzzy, c-format
+#, c-format
 msgid "type of %qE is unknown"
-msgstr "Typ von »%E« ist unbekannt"
+msgstr "Typ von %qE ist unbekannt"
 
 #: cp/tree.c:539
-#, fuzzy
 msgid "%qV qualifiers cannot be applied to %qT"
-msgstr "»%V«-Qualifizierer können nicht auf »%T« angewendet werden"
+msgstr "%qV-Qualifizierer können nicht auf %qT angewendet werden"
 
 #: cp/tree.c:1741
-#, fuzzy, c-format
+#, c-format
 msgid "%qE attribute can only be applied to Java class definitions"
-msgstr "Attribut »%s« kann nur auf Java-Klassendefinitionen angewendet werden"
+msgstr "Attribut %qE kann nur auf Java-Klassendefinitionen angewendet werden"
 
 #: cp/tree.c:1770
-#, fuzzy, c-format
+#, c-format
 msgid "%qE attribute can only be applied to class definitions"
-msgstr "Attribut »%s« kann nur auf Klassendefinitionen angewendet werden"
+msgstr "Attribut %qE kann nur auf Klassendefinitionen angewendet werden"
 
 #: cp/tree.c:1775
-#, fuzzy, c-format
+#, c-format
 msgid "%qE is obsolete; g++ vtables are now COM-compatible by default"
-msgstr "»%s« ist veraltet; g++-vtables sind jetzt standardmäßig COM-verträglich"
+msgstr "%qE ist veraltet; g++-vtables sind jetzt standardmäßig COM-verträglich"
 
 #: cp/tree.c:1799
 msgid "requested init_priority is not an integer constant"
 msgstr "angefordertes init_priority ist keine Ganzzahlkonstante"
 
 #: cp/tree.c:1820
-#, fuzzy, c-format
+#, c-format
 msgid "can only use %qE attribute on file-scope definitions of objects of class type"
-msgstr "nur Attribut »%s« kann für Definitionen von Objekten eines Klassentyps im Datei-Gültigkeitsbereich verwendet werden"
+msgstr "nur Attribut %qE kann für Definitionen von Objekten eines Klassentyps im Datei-Gültigkeitsbereich verwendet werden"
 
 #: cp/tree.c:1828
 msgid "requested init_priority is out of range"
@@ -16970,110 +16694,96 @@ msgid "requested init_priority is reserved for internal use"
 msgstr "angefordertes init_priority ist für interne Verwendung reserviert"
 
 #: cp/tree.c:1848
-#, fuzzy, c-format
+#, c-format
 msgid "%qE attribute is not supported on this platform"
-msgstr "Attribut »%s« wird auf dieser Plattform nicht unterstützt"
+msgstr "Attribut %qE wird auf dieser Plattform nicht unterstützt"
 
 #: cp/typeck.c:434 cp/typeck.c:448 cp/typeck.c:541
-#, fuzzy
 msgid "%s between distinct pointer types %qT and %qT lacks a cast"
-msgstr "%s zwischen den verschiedenen Zeigertypen »%T« und »%T« benötigt Umwandlung"
+msgstr "%s zwischen den verschiedenen Zeigertypen %qT und %qT benötigt Umwandlung"
 
 #: cp/typeck.c:510
-#, fuzzy
 msgid "ISO C++ forbids %s between pointer of type %<void *%> and pointer-to-function"
-msgstr "ISO-C++ verbietet %s zwischen Zeiger des Typs »void *« und Zeiger auf Funktion"
+msgstr "ISO-C++ verbietet %s zwischen Zeiger des Typs %<void *%> und Zeiger auf Funktion"
 
 #: cp/typeck.c:561
-#, fuzzy
 msgid "%s between distinct pointer-to-member types %qT and %qT lacks a cast"
-msgstr "%s zwischen verschiedenen Zeiger-auf-Element-Typen »%T« und »%T« fehlt eine Typkonvertierung"
+msgstr "%s zwischen verschiedenen Zeiger-auf-Element-Typen %qT und %qT fehlt eine Typkonvertierung"
 
 #: cp/typeck.c:1255
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of %qs to a member function"
-msgstr "ungültige Anwendung von »%s« auf Elementfunktion"
+msgstr "ungültige Anwendung von %qs auf Elementfunktion"
 
 #: cp/typeck.c:1288
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of %qs to a bit-field"
-msgstr "ungültige Anwendung von »%s« auf ein Bitfeld"
+msgstr "ungültige Anwendung von %qs auf ein Bitfeld"
 
 #: cp/typeck.c:1293
-#, fuzzy, c-format
+#, c-format
 msgid "ISO C++ forbids applying %qs to an expression of function type"
-msgstr "ISO-C++ verbietet Anwendung von »%s« auf einen Ausdruck mit Funktionstyp"
+msgstr "ISO-C++ verbietet Anwendung von %qs auf einen Ausdruck mit Funktionstyp"
 
 #: cp/typeck.c:1330
 msgid "invalid use of non-static member function"
 msgstr "falsche Benutzung einer nicht-statischen Elementfunktion"
 
 #: cp/typeck.c:1497
-#, fuzzy
 msgid "deprecated conversion from string constant to %qT'"
-msgstr "veraltete Konvertierung von Zeichenkettenkonstante in »%T«"
+msgstr "veraltete Konvertierung von Zeichenkettenkonstante in %qT"
 
 #: cp/typeck.c:1608 cp/typeck.c:1898
-#, fuzzy
 msgid "request for member %qD in %qE, which is of non-class type %qT"
-msgstr "Abfrage des Elementes »%D« in »%E«, das vom Nicht-Klassentyp »%T« ist"
+msgstr "Abfrage des Elementes %qD in %qE, das vom Nicht-Klassentyp %qT ist"
 
 #: cp/typeck.c:1635
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of nonstatic data member %qE"
-msgstr "ungültige Benutzung des nicht-statischen Datenelements »%E«"
+msgstr "ungültige Benutzung des nicht-statischen Datenelements %qE"
 
 #: cp/typeck.c:1687 cp/typeck.c:1715
-#, fuzzy
 msgid "invalid access to non-static data member %qD of NULL object"
-msgstr "ungültiger Zugriff auf nicht-statisches Datenelement »%D« des NULL-Objektes"
+msgstr "ungültiger Zugriff auf nicht-statisches Datenelement %qD des NULL-Objektes"
 
 #: cp/typeck.c:1690 cp/typeck.c:1717
-#, fuzzy
 msgid "(perhaps the %<offsetof%> macro was used incorrectly)"
-msgstr "(vielleicht wurde das Makro »offsetof« falsch verwendet)"
+msgstr "(vielleicht wurde das Makro %<offsetof%> falsch verwendet)"
 
 #: cp/typeck.c:1828
-#, fuzzy
 msgid "qualified type %qT does not match destructor name ~%qT"
-msgstr "qualifizierter Typ »%T« passt nicht zum Destruktornamen »~%T«"
+msgstr "qualifizierter Typ %qT passt nicht zum Destruktornamen ~%qT"
 
 #: cp/typeck.c:1834
-#, fuzzy
 msgid "the type being destroyed is %qT, but the destructor refers to %qT"
-msgstr "der zerstörte Typ ist »%T«, aber der Destruktor verweist auf »%T«"
+msgstr "der zerstörte Typ ist %qT, aber der Destruktor verweist auf %qT"
 
 #: cp/typeck.c:1944
-#, fuzzy
 msgid "%<%D::%D%> is not a member of %qT"
-msgstr "»%D::%D« ist kein Element von »%T«"
+msgstr "%<%D::%D%> ist kein Element von %qT"
 
 #: cp/typeck.c:1955
-#, fuzzy
 msgid "%qT is not a base of %qT"
-msgstr "»%T« ist keine Basis von »%T«"
+msgstr "%qT ist keine Basis von %qT"
 
 #: cp/typeck.c:1974
-#, fuzzy
 msgid "%qD has no member named %qE"
-msgstr "»%D« hat kein Element namens »%E«"
+msgstr "%qD hat kein Element namens %qE"
 
 #: cp/typeck.c:1989
-#, fuzzy
 msgid "%qD is not a member template function"
-msgstr "»%D« ist keine Elementtemplatefunktion"
+msgstr "%qD ist keine Elementtemplatefunktion"
 
 #. A pointer to incomplete type (other than cv void) can be
 #. dereferenced [expr.unary.op]/1
 #: cp/typeck.c:2096
-#, fuzzy
 msgid "%qT is not a pointer-to-object type"
-msgstr "»%T« ist kein Zeiger auf Objekt"
+msgstr "%qT ist kein Zeiger auf Objekt"
 
 #: cp/typeck.c:2121
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of %qs on pointer to member"
-msgstr "ungültige Verwendung von »%s« bei Zeiger auf Element"
+msgstr "ungültige Verwendung von %qs bei Zeiger auf Element"
 
 #: cp/typeck.c:2127
 msgid "invalid type argument"
@@ -17088,34 +16798,30 @@ msgid "ISO C++ forbids subscripting non-lvalue array"
 msgstr "ISO-C++ verbietet Indizierung eines Nicht-L-Wert-Feldes"
 
 #: cp/typeck.c:2243
-#, fuzzy
 msgid "subscripting array declared %<register%>"
-msgstr "Indizierung eines als »register« deklarierten Feldes"
+msgstr "Indizierung eines als %<register%> deklarierten Feldes"
 
 #: cp/typeck.c:2326
-#, fuzzy, c-format
+#, c-format
 msgid "object missing in use of %qE"
-msgstr "bei Verwendung von »%E« fehlt Objekt"
+msgstr "bei Verwendung von %qE fehlt Objekt"
 
 #: cp/typeck.c:2427
-#, fuzzy
 msgid "ISO C++ forbids calling %<::main%> from within program"
-msgstr "ISO-C++ verbietet den Aufruf von »::main« vom Programm aus"
+msgstr "ISO-C++ verbietet den Aufruf von %<::main%> vom Programm aus"
 
 #: cp/typeck.c:2452
-#, fuzzy
 msgid "must use %<.*%> or %<->*%> to call pointer-to-member function in %<%E (...)%>"
-msgstr ".* oder ->* muss verwendet werden, um Zeiger auf Element in »%E (...)« aufzurufen"
+msgstr "%<.*%> oder %<->*%> muss verwendet werden, um Zeiger auf Element in %<%E (...)%> aufzurufen"
 
 #: cp/typeck.c:2466
-#, fuzzy, c-format
+#, c-format
 msgid "%qE cannot be used as a function"
-msgstr "»%E« kann nicht als Funktion verwendet werden"
+msgstr "%qE kann nicht als Funktion verwendet werden"
 
 #: cp/typeck.c:2545
-#, fuzzy
 msgid "too many arguments to %s %q+#D"
-msgstr "zu viele Argumente für %s »%+#D«"
+msgstr "zu viele Argumente für %s %q+#D"
 
 #: cp/typeck.c:2547 cp/typeck.c:2650
 msgid "at this point in file"
@@ -17126,48 +16832,40 @@ msgid "too many arguments to function"
 msgstr "zu viele Argumente für Funktion"
 
 #: cp/typeck.c:2584
-#, fuzzy
 msgid "parameter %P of %qD has incomplete type %qT"
-msgstr "Parameter %P von »%D« hat unvollständigen Typen »%T«"
+msgstr "Parameter %P von %qD hat unvollständigen Typen %qT"
 
 #: cp/typeck.c:2587
-#, fuzzy
 msgid "parameter %P has incomplete type %qT"
-msgstr "Parameter %P hat unvollständigen Typen »%T«"
+msgstr "Parameter %P hat unvollständigen Typen %qT"
 
 #: cp/typeck.c:2648
-#, fuzzy
 msgid "too few arguments to %s %q+#D"
-msgstr "zu wenige Argumente für %s »%+#D«"
+msgstr "zu wenige Argumente für %s %q+#D"
 
 #: cp/typeck.c:2653
 msgid "too few arguments to function"
 msgstr "zu wenige Argumente für Funktion"
 
 #: cp/typeck.c:2800 cp/typeck.c:2810
-#, fuzzy
 msgid "assuming cast to type %qT from overloaded function"
-msgstr "Umwandlung in Typ »%T« von überladener Funktion wird angenommen"
+msgstr "Umwandlung in Typ %qT von überladener Funktion wird angenommen"
 
 #: cp/typeck.c:2871
-#, fuzzy
 msgid "division by zero in %<%E / 0%>"
-msgstr "Division durch Null in »%E / 0«"
+msgstr "Division durch Null in %<%E / 0%>"
 
 #: cp/typeck.c:2873
-#, fuzzy
 msgid "division by zero in %<%E / 0.%>"
-msgstr "Division durch Null in »%E / 0.«"
+msgstr "Division durch Null in %<%E / 0.%>"
 
 #: cp/typeck.c:2907
-#, fuzzy
 msgid "division by zero in %<%E %% 0%>"
-msgstr "Division durch Null in »%E %% 0«"
+msgstr "Division durch Null in %<%E %% 0%>"
 
 #: cp/typeck.c:2909
-#, fuzzy
 msgid "division by zero in %<%E %% 0.%>"
-msgstr "Division durch Null in »%E %% 0.«"
+msgstr "Division durch Null in %<%E %% 0.%>"
 
 #: cp/typeck.c:2989
 #, c-format
@@ -17188,14 +16886,12 @@ msgid "unordered comparison on non-floating point argument"
 msgstr "ungeordneter Vergleich mit Nicht-Gleitkomma-Argument"
 
 #: cp/typeck.c:3168
-#, fuzzy
 msgid "invalid operands of types %qT and %qT to binary %qO"
-msgstr "ungültige Operanden der Typen »%T« und »%T« für binäres »%O«"
+msgstr "ungültige Operanden der Typen %qT und %qT für binäres %qO"
 
 #: cp/typeck.c:3332
-#, fuzzy
 msgid "comparison between types %q#T and %q#T"
-msgstr "Vergleich zwischen den Typen »%#T« und »%#T«"
+msgstr "Vergleich zwischen den Typen %q#T und %q#T"
 
 #: cp/typeck.c:3368
 msgid "comparison between signed and unsigned integer expressions"
@@ -17210,9 +16906,8 @@ msgid "NULL used in arithmetic"
 msgstr "NULL in Arithmetik verwendet"
 
 #: cp/typeck.c:3505
-#, fuzzy
 msgid "ISO C++ forbids using pointer of type %<void *%> in subtraction"
-msgstr "ISO-C++ verbietet die Verwendung eines Zeigers des Typs »void *« in Subtraktion"
+msgstr "ISO-C++ verbietet die Verwendung eines Zeigers des Typs %<void *%> in Subtraktion"
 
 #: cp/typeck.c:3507
 msgid "ISO C++ forbids using pointer to a function in subtraction"
@@ -17227,14 +16922,14 @@ msgid "invalid use of a pointer to an incomplete type in pointer arithmetic"
 msgstr "ungültige Verwendung eines Zeigers auf einen unvollständigen Typen in Zeigerarithmetik"
 
 #: cp/typeck.c:3580
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of %qE to form a pointer-to-member-function.  Use a qualified-id."
-msgstr "ungültige Verwendung von »%E« um Zeiger auf Elementfunktion zu erzeugen. Qualifizierer-ID sollte verwendet werden"
+msgstr "ungültige Verwendung von %qE um Zeiger auf Elementfunktion zu erzeugen. Qualifizierer-ID sollte verwendet werden"
 
 #: cp/typeck.c:3587
-#, fuzzy, c-format
+#, c-format
 msgid "parenthesis around %qE cannot be used to form a pointer-to-member-function"
-msgstr "Klammern um »%E« können nicht verwendet werden, einen Zeiger auf Elementfunktion zu erzeugen"
+msgstr "Klammern um %qE können nicht verwendet werden, einen Zeiger auf Elementfunktion zu erzeugen"
 
 #: cp/typeck.c:3610
 msgid "taking address of temporary"
@@ -17246,69 +16941,58 @@ msgid "ISO C++ forbids %sing an enum"
 msgstr "ISO-C++ verbietet %s einer Aufzählung"
 
 #: cp/typeck.c:3856
-#, fuzzy
 msgid "cannot %s a pointer to incomplete type %qT"
-msgstr "Fehler bei %s eines Zeigers auf unvollständigen Typen »%T«"
+msgstr "Fehler bei %s eines Zeigers auf unvollständigen Typen %qT"
 
 #: cp/typeck.c:3862
-#, fuzzy
 msgid "ISO C++ forbids %sing a pointer of type %qT"
-msgstr "ISO-C++ verbietet %s eines Zeigers vom Typ »%T«"
+msgstr "ISO-C++ verbietet %s eines Zeigers vom Typ %qT"
 
 #: cp/typeck.c:3887
 msgid "cast to non-reference type used as lvalue"
 msgstr "Umwandlung in als L-Wert verwendeten Nicht-Referenz-Typ"
 
 #: cp/typeck.c:3922
-#, fuzzy
 msgid "invalid use of %<--%> on bool variable %qD"
-msgstr "ungültige Verwendung der boolschen Variable »%D«"
+msgstr "ungültige Verwendung von %<--%> der boolschen Variable %qD"
 
 #. ARM $3.4
 #: cp/typeck.c:3951
-#, fuzzy
 msgid "ISO C++ forbids taking address of function %<::main%>"
-msgstr "ISO-C++ verbietet das Ermitteln der Adresse der Funktion »::main«"
+msgstr "ISO-C++ verbietet das Ermitteln der Adresse der Funktion %<::main%>"
 
 #. An expression like &memfn.
 #: cp/typeck.c:4005
-#, fuzzy
 msgid "ISO C++ forbids taking the address of an unqualified or parenthesized non-static member function to form a pointer to member function.  Say %<&%T::%D%>"
-msgstr "ISO-C++ verbietet das Ermitteln der Adresse einer nicht qualifizierten oder geklammerten nicht-statischen Elementfunktion, um einen Zeiger auf Elementfunktion zu erzeugen. Stattdessen »&%T::%D« verwenden"
+msgstr "ISO-C++ verbietet das Ermitteln der Adresse einer nicht qualifizierten oder geklammerten nicht-statischen Elementfunktion, um einen Zeiger auf Elementfunktion zu erzeugen. Stattdessen %<&%T::%D%> verwenden"
 
 #: cp/typeck.c:4010
-#, fuzzy
 msgid "ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say %<&%T::%D%>"
-msgstr "ISO-C++ verbietet das Ermitteln der Adresse einer gebundenen Elementfunktion, um einen Zeiger auf Elementfunktion zu erzeugen. Stattdessen »&%T::%D« verwenden"
+msgstr "ISO-C++ verbietet das Ermitteln der Adresse einer gebundenen Elementfunktion, um einen Zeiger auf Elementfunktion zu erzeugen. Stattdessen %<&%T::%D%> verwenden"
 
 #: cp/typeck.c:4038
 msgid "ISO C++ forbids taking the address of a cast to a non-lvalue expression"
 msgstr "ISO-C++ verbietet das Ermitteln der Adresse einer Umwandlung in einen Nicht-L-Wert-Ausdruck"
 
 #: cp/typeck.c:4058
-#, fuzzy
 msgid "cannot create pointer to reference member %qD"
-msgstr "Zeiger auf Referenzelement »%D« kann nicht erzeugt werden"
+msgstr "Zeiger auf Referenzelement %qD kann nicht erzeugt werden"
 
 #: cp/typeck.c:4118
-#, fuzzy
 msgid "attempt to take address of bit-field structure member %qD"
-msgstr "Versuch, die Adresse des Bitfeldstrukturelements »%D« zu ermitteln"
+msgstr "Versuch, die Adresse des Bitfeldstrukturelements %qD zu ermitteln"
 
 #: cp/typeck.c:4277
-#, fuzzy
 msgid "cannot take the address of %<this%>, which is an rvalue expression"
-msgstr "Adresse von »this« kann nicht ermittelt werden, das ein R-Wert-Ausdruck ist"
+msgstr "Adresse von %<this%> kann nicht ermittelt werden, das ein R-Wert-Ausdruck ist"
 
 #: cp/typeck.c:4300
-#, fuzzy
 msgid "address of explicit register variable %qD requested"
-msgstr "Adresse der Register-Variablen »%s« angefordert"
+msgstr "Adresse der Register-Variablen %qD angefordert"
 
 #: cp/typeck.c:4305
-#, fuzzy
 msgid "address requested for %qD, which is declared %<register%>"
-msgstr "Adresse für »%D« angefordert, was als »register« deklariert ist"
+msgstr "Adresse für %qD angefordert, was als %<register%> deklariert ist"
 
 #: cp/typeck.c:4371
 #, c-format
@@ -17316,34 +17000,28 @@ msgid "%s expression list treated as compound expression"
 msgstr "%s Ausdrucksliste als zusammengesetzten Ausdruck behandelt"
 
 #: cp/typeck.c:4446
-#, fuzzy
 msgid "%s from type %qT to type %qT casts away constness"
-msgstr "%s vom Typ »%T« in Typ »%T« entfernt Konstantheit"
+msgstr "%s vom Typ %qT in Typ %qT entfernt Konstantheit"
 
 #: cp/typeck.c:4745
-#, fuzzy
 msgid "invalid static_cast from type %qT to type %qT"
-msgstr "ungültiges static_cast vom Typ »%T« in den Typ »%T«"
+msgstr "ungültiges static_cast vom Typ %qT in den Typ %qT"
 
 #: cp/typeck.c:4767
-#, fuzzy
 msgid "converting from %qT to %qT"
-msgstr "Umwandlung von »%T« nach »%T«"
+msgstr "Umwandlung von %qT nach %qT"
 
 #: cp/typeck.c:4812
-#, fuzzy
 msgid "invalid cast of an rvalue expression of type %qT to type %qT"
-msgstr "ungültiges reinterpret_cast eines R-Wert-Ausdrucks des Typs »%T« in Typ »%T«"
+msgstr "ungültige Typumwandlung eines R-Wert-Ausdrucks des Typs %qT in Typ %qT"
 
 #: cp/typeck.c:4871
-#, fuzzy
 msgid "cast from %qT to %qT loses precision"
-msgstr "reinterpret_cast von »%T« nach »%T« verliert Genauigkeit"
+msgstr "Typumwandlung von %qT nach %qT verliert Genauigkeit"
 
 #: cp/typeck.c:4896
-#, fuzzy
 msgid "cast from %qT to %qT increases required alignment of target type"
-msgstr "Umwandlung von »%T« in »%T« erhöht erforderliche Ausrichtung des Zieltyps"
+msgstr "Umwandlung von %qT in %qT erhöht erforderliche Ausrichtung des Zieltyps"
 
 #. Only issue a warning, as we have always supported this
 #. where possible, and it is necessary in some cases.  DR 195
@@ -17354,49 +17032,40 @@ msgid "ISO C++ forbids casting between pointer-to-function and pointer-to-object
 msgstr "ISO-C++ verbietet Umwandlung zwischen Zeiger auf Funktion und Zeiger auf Objekt"
 
 #: cp/typeck.c:4921
-#, fuzzy
 msgid "invalid cast from type %qT to type %qT"
-msgstr "ungültiges const_cast von Typ »%T« in Typ »%T«"
+msgstr "ungültige Umwandlung von Typ %qT in Typ %qT"
 
 #: cp/typeck.c:4977
-#, fuzzy
 msgid "invalid use of const_cast with type %qT, which is not a pointer, reference, nor a pointer-to-data-member type"
-msgstr "ungültige Verwendung von const_cast mit Typ »%T«, das weder Zeiger, Referenz, noch vom Typ eines Zeigers auf Datenelement ist"
+msgstr "ungültige Verwendung von const_cast mit Typ %qT, das weder Zeiger, Referenz, noch vom Typ eines Zeigers auf Datenelement ist"
 
 #: cp/typeck.c:4986
-#, fuzzy
 msgid "invalid use of const_cast with type %qT, which is a pointer or reference to a function type"
-msgstr "ungültige Verwendung von const_cast mit Typ »%T«, das ein Zeiger oder Referenz auf Funktionstyp ist"
+msgstr "ungültige Verwendung von const_cast mit Typ %qT, das ein Zeiger oder Referenz auf Funktionstyp ist"
 
 #: cp/typeck.c:5008
-#, fuzzy
 msgid "invalid const_cast of an rvalue of type %qT to type %qT"
-msgstr "ungültiges const_cast eines R-Wertes des Typs »%T« in Typ »%T«"
+msgstr "ungültiges const_cast eines R-Wertes des Typs %qT in Typ %qT"
 
 #: cp/typeck.c:5051
-#, fuzzy
 msgid "invalid const_cast from type %qT to type %qT"
-msgstr "ungültiges const_cast von Typ »%T« in Typ »%T«"
+msgstr "ungültiges const_cast von Typ %qT in Typ %qT"
 
 #: cp/typeck.c:5119 cp/typeck.c:5124
-#, fuzzy
 msgid "ISO C++ forbids casting to an array type %qT"
-msgstr "ISO-C++ verbietet Umwandlung in Feldtyp »%T«"
+msgstr "ISO-C++ verbietet Umwandlung in Feldtyp %qT"
 
 #: cp/typeck.c:5132
-#, fuzzy
 msgid "invalid cast to function type %qT"
-msgstr "ungültige Umwandlung in Funktionstyp »%T«"
+msgstr "ungültige Umwandlung in Funktionstyp %qT"
 
 #: cp/typeck.c:5348
-#, fuzzy
 msgid "  in evaluation of %<%Q(%#T, %#T)%>"
-msgstr "  in Auswertung von »%Q(%#T, %#T)«"
+msgstr "  in Auswertung von %<%Q(%#T, %#T)%>"
 
 #: cp/typeck.c:5417
-#, fuzzy
 msgid "incompatible types in assignment of %qT to %qT"
-msgstr "unverträgliche Typen in Zuweisung von »%T« an »%T«"
+msgstr "unverträgliche Typen in Zuweisung von %qT an %qT"
 
 #: cp/typeck.c:5424
 msgid "ISO C++ forbids assignment of arrays"
@@ -17412,34 +17081,28 @@ msgstr "   in Umwandlung in Zeiger auf Element"
 
 #. This is a reinterpret cast, we choose to do nothing.
 #: cp/typeck.c:5552 cp/typeck.c:5568
-#, fuzzy
 msgid "pointer to member cast via virtual base %qT"
-msgstr "Typumwandlung von Zeiger in Element über virtuelle Basis »%T«"
+msgstr "Typumwandlung von Zeiger in Element über virtuelle Basis %qT"
 
 #: cp/typeck.c:5571
-#, fuzzy
 msgid "pointer to member conversion via virtual base %qT"
-msgstr "Umwandlung von Zeiger in Element über virtuelle Basis »%T«"
+msgstr "Umwandlung in Zeiger auf Element über virtuelle Basis %qT"
 
 #: cp/typeck.c:5644
-#, fuzzy
 msgid "invalid conversion to type %qT from type %qT"
-msgstr "ungültige Umwandlung in Typ »%T« von Typ »%T«"
+msgstr "ungültige Umwandlung in Typ %qT von Typ %qT"
 
 #: cp/typeck.c:5862
-#, fuzzy
 msgid "cannot convert %qT to %qT for argument %qP to %qD"
-msgstr "»%T« kann nicht nach »%T« für Argument »%P« nach »%D« umgewandelt werden"
+msgstr "%qT kann nicht nach %qT für Argument %qP nach %qD umgewandelt werden"
 
 #: cp/typeck.c:5865
-#, fuzzy
 msgid "cannot convert %qT to %qT in %s"
-msgstr "»%T« kann nicht nach »%T« in %s umgewandelt werden"
+msgstr "%qT kann nicht nach %qT in %s umgewandelt werden"
 
 #: cp/typeck.c:5938 cp/typeck.c:5940
-#, fuzzy
 msgid "in passing argument %P of %q+D"
-msgstr "bei Übergabe des Arguments %P von »%+D«"
+msgstr "bei Übergabe des Arguments %P von %q+D"
 
 #: cp/typeck.c:5990
 msgid "returning reference to temporary"
@@ -17450,14 +17113,12 @@ msgid "reference to non-lvalue returned"
 msgstr "Referenz auf Nicht-L-Wert zurückgegeben"
 
 #: cp/typeck.c:6009
-#, fuzzy
 msgid "reference to local variable %qD returned"
-msgstr "Referenz auf lokale Variable »%D« zurückgegeben"
+msgstr "Referenz auf lokale Variable %qD zurückgegeben"
 
 #: cp/typeck.c:6012
-#, fuzzy
 msgid "address of local variable %qD returned"
-msgstr "Adresse der lokalen Variable »%D« zurückgegeben"
+msgstr "Adresse der lokalen Variable %qD zurückgegeben"
 
 #: cp/typeck.c:6042
 msgid "returning a value from a destructor"
@@ -17475,85 +17136,70 @@ msgid "returning a value from a constructor"
 msgstr "Rückgabe eines Wertes von einem Konstruktor"
 
 #: cp/typeck.c:6076
-#, fuzzy
 msgid "return-statement with no value, in function returning %qT"
-msgstr "Return-Anweisung ohne Wert, in »%T« zurückgebender Funktion"
+msgstr "Return-Anweisung ohne Wert, in %qT zurückgebender Funktion"
 
 #: cp/typeck.c:6093
 msgid "return-statement with a value, in function returning 'void'"
 msgstr "Return-Anweisung mit Wert in »void« zurückgebender Funktion"
 
 #: cp/typeck.c:6124
-#, fuzzy
 msgid "%<operator new%> must not return NULL unless it is declared %<throw()%> (or -fcheck-new is in effect)"
-msgstr "»operator new« darf nicht NULL zurückgeben, außer es ist mit »throw()« deklariert (oder -fcheck-new ist eingeschaltet)"
+msgstr "%<operator new%> darf nicht NULL zurückgeben, außer es ist mit %<throw()%> deklariert (oder -fcheck-new ist eingeschaltet)"
 
 #: cp/typeck2.c:52
-#, fuzzy
 msgid "type %qT is not a base type for type %qT"
-msgstr "Typ »%T« ist kein Basistyp für Typ »%T«"
+msgstr "Typ %qT ist kein Basistyp für Typ %qT"
 
 #: cp/typeck2.c:292
-#, fuzzy
 msgid "cannot declare variable %q+D to be of abstract type %qT"
-msgstr "Variable »%D« kann nicht als vom Typ »%T« deklariert werden"
+msgstr "Variable %q+D kann nicht als vom abstrakten Typ %qT deklariert werden"
 
 #: cp/typeck2.c:295
-#, fuzzy
 msgid "cannot declare parameter %q+D to be of abstract type %qT"
-msgstr "Parameter »%D« kann nicht als vom Typ »%T« deklariert werden"
+msgstr "Parameter %q+D kann nicht als vom abstrakten Typ %qT deklariert werden"
 
 #: cp/typeck2.c:298
-#, fuzzy
 msgid "cannot declare field %q+D to be of abstract type %qT"
-msgstr "Feld »%D« kann nicht als vom Typ »%T« deklariert werden"
+msgstr "Feld %q+D kann nicht als vom abstrakten Typ %qT deklariert werden"
 
 #: cp/typeck2.c:302
-#, fuzzy
 msgid "invalid abstract return type for member function %q+#D"
-msgstr "ungültiger Rückgabetyp für Elementfunktion »%#D«"
+msgstr "ungültiger abstrakter Rückgabetyp für Elementfunktion %q+#D"
 
 #: cp/typeck2.c:305
-#, fuzzy
 msgid "invalid abstract return type for function %q+#D"
-msgstr "ungültiger Rückgabetyp für Funktion »%#D«"
+msgstr "ungültiger abstrakter Rückgabetyp für Funktion %q+#D"
 
 #. Here we do not have location information, so use error instead
 #. of cp_error_at.
 #: cp/typeck2.c:310
-#, fuzzy
 msgid "invalid abstract type %qT for %qE"
-msgstr "ungültiger Parametertyp »%T«"
+msgstr "ungültiger abstrakter Typ %qT für %qE"
 
 #: cp/typeck2.c:312
-#, fuzzy
 msgid "invalid abstract type for %q+D"
-msgstr "ungültiger kovarianter Rückgabetyp für »%#D«"
+msgstr "ungültiger abstrakter Typ für %q+D"
 
 #: cp/typeck2.c:315
-#, fuzzy
 msgid "cannot allocate an object of abstract type %qT"
-msgstr "es kann kein Objekt des Typs »%T« belegt werden"
+msgstr "es kann kein Objekt des abstrakten Typs %qT belegt werden"
 
 #: cp/typeck2.c:323
-#, fuzzy
 msgid "%J  because the following virtual functions are pure within %qT:"
-msgstr "  denn die folgenden virtuellen Funktionen sind abstrakt:"
+msgstr "%J  denn die folgenden virtuellen Funktionen sind rein innerhalb %qT:"
 
 #: cp/typeck2.c:327
-#, fuzzy
 msgid "%J\t%#D"
-msgstr "\t%#D"
+msgstr "%J\t%#D"
 
 #: cp/typeck2.c:334
-#, fuzzy
 msgid "%J  since type %qT has pure virtual functions"
-msgstr "  denn der Typ »%T« hat abstrakte virtuelle Funktionen"
+msgstr "%J  denn der Typ %qT hat rein virtuelle Funktionen"
 
 #: cp/typeck2.c:582
-#, fuzzy
 msgid "constructor syntax used, but no constructor declared for type %qT"
-msgstr "Konstruktorsyntax verwendet, aber kein Konstruktor für Typ »%T« deklariert"
+msgstr "Konstruktorsyntax verwendet, aber kein Konstruktor für Typ %qT deklariert"
 
 #: cp/typeck2.c:596
 msgid "cannot initialize arrays using this syntax"
@@ -17572,24 +17218,20 @@ msgid "initializer for scalar variable requires one element"
 msgstr "Initialisierung für skalare Variable benötigt ein Element"
 
 #: cp/typeck2.c:750
-#, fuzzy
 msgid "braces around scalar initializer for %qT"
-msgstr "geschweifte Klammern um skalare Initialisierung für »%T«"
+msgstr "geschweifte Klammern um skalare Initialisierung für %qT"
 
 #: cp/typeck2.c:753
-#, fuzzy
 msgid "ignoring extra initializers for %qT"
-msgstr "zusätzliche Initialisierung für »%T« wird ignoriert"
+msgstr "zusätzliche Initialisierung für %qT wird ignoriert"
 
 #: cp/typeck2.c:765
-#, fuzzy
 msgid "variable-sized object of type %qT may not be initialized"
-msgstr "Objekt variabler Größe vom Typ »%T« könnte nicht initialisiert sein"
+msgstr "Objekt variabler Größe vom Typ %qT kann nicht initialisiert sein"
 
 #: cp/typeck2.c:776
-#, fuzzy
 msgid "subobject of type %qT must be initialized by constructor, not by %qE"
-msgstr "Unterobjekt vom Typ »%T« muss vom Konstruktor initialisiert werden, nicht von »%E«"
+msgstr "Unterobjekt vom Typ %qT muss vom Konstruktor initialisiert werden, nicht von %qE"
 
 #: cp/typeck2.c:842
 msgid "aggregate has a partly bracketed initializer"
@@ -17604,38 +17246,32 @@ msgid "non-empty initializer for array of empty elements"
 msgstr "nicht-leere Initialisierung für Feld leerer Elemente"
 
 #: cp/typeck2.c:1008 cp/typeck2.c:1023
-#, fuzzy
 msgid "missing initializer for member %qD"
-msgstr "Initialisierung für Element »%D« fehlt"
+msgstr "Initialisierung für Element %qD fehlt"
 
 #: cp/typeck2.c:1013
-#, fuzzy
 msgid "uninitialized const member %qD"
-msgstr "nicht initialisiertes konstantes Element »%D«"
+msgstr "nicht initialisiertes konstantes Element %qD"
 
 #: cp/typeck2.c:1015
-#, fuzzy
 msgid "member %qD with uninitialized const fields"
-msgstr "Element »%D« mit nicht initialisierten konstanten Feldern"
+msgstr "Element %qD mit nicht initialisierten konstanten Feldern"
 
 #: cp/typeck2.c:1017
-#, fuzzy
 msgid "member %qD is uninitialized reference"
-msgstr "Feld »%D« ist nicht initialisierte Referenz"
+msgstr "Element %qD ist nicht initialisierte Referenz"
 
 #: cp/typeck2.c:1064
 msgid "index value instead of field name in union initializer"
 msgstr "Indexwert statt Feldname in Union-Initialisierung"
 
 #: cp/typeck2.c:1076
-#, fuzzy
 msgid "no field %qD in union being initialized"
-msgstr "kein Feld »%D« in initialisierter Union"
+msgstr "kein Feld %qD in initialisierter Union"
 
 #: cp/typeck2.c:1084
-#, fuzzy
 msgid "union %qT with no named members cannot be initialized"
-msgstr "Union »%T« ohne benannte Elemente kann nicht initialisiert werden"
+msgstr "Union %qT ohne benannte Elemente kann nicht initialisiert werden"
 
 #: cp/typeck2.c:1119
 msgid "excess elements in aggregate initializer"
@@ -17646,44 +17282,36 @@ msgid "circular pointer delegation detected"
 msgstr "ringförmige Zeigerdelegation erkannt"
 
 #: cp/typeck2.c:1240
-#, fuzzy
 msgid "base operand of %<->%> has non-pointer type %qT"
-msgstr "Basisoperand von »->« hat Nicht-Zeiger-Typ »%T«"
+msgstr "Basisoperand von %<->%> hat Nicht-Zeiger-Typ %qT"
 
 #: cp/typeck2.c:1264
-#, fuzzy
 msgid "result of %<operator->()%> yields non-pointer result"
-msgstr "Ergebnis von »operator->()« ergibt Nicht-Zeiger-Ergebnis"
+msgstr "Ergebnis von %<operator->()%> ergibt Nicht-Zeiger-Ergebnis"
 
 #: cp/typeck2.c:1266
-#, fuzzy
 msgid "base operand of %<->%> is not a pointer"
-msgstr "Basisoperand von »->« ist kein Zeiger"
+msgstr "Basisoperand von %<->%> ist kein Zeiger"
 
 #: cp/typeck2.c:1290
-#, fuzzy
 msgid "%qE cannot be used as a member pointer, since it is of type %qT"
-msgstr "»%E« kannt nicht als Elementzeiger verwendet werden, da es vom Typ »%T« ist"
+msgstr "%qE kannt nicht als Elementzeiger verwendet werden, da es vom Typ %qT ist"
 
 #: cp/typeck2.c:1299
-#, fuzzy
 msgid "cannot apply member pointer %qE to %qE, which is of non-aggregate type %qT"
-msgstr "Elementzeiger »%E« kann nicht auf »%E« angewandt werden, da letzteres vom Nicht-Aggregat-Typ »%T« ist"
+msgstr "Elementzeiger %qE kann nicht auf %qE angewandt werden, da letzteres vom Nicht-Aggregat-Typ %qT ist"
 
 #: cp/typeck2.c:1321
-#, fuzzy
 msgid "pointer to member type %qT incompatible with object type %qT"
-msgstr "Elementtyp »%T::« mit Objekttyp »%T« inkompatibel"
+msgstr "Zeiger auf Elementtyp %qT mit Objekttyp %qT inkompatibel"
 
 #: cp/typeck2.c:1544
-#, fuzzy
 msgid "call to function %qD which throws incomplete type %q#T"
-msgstr "Aufruf der Funktion »%D«, die unvollständigen Typen »%#T« wirft"
+msgstr "Aufruf der Funktion %qD, die unvollständigen Typen %q#T wirft"
 
 #: cp/typeck2.c:1547
-#, fuzzy
 msgid "call to function which throws incomplete type %q#T"
-msgstr "Aufruf einer Funktion, die unvollständigen Typen »%#T« wirft"
+msgstr "Aufruf einer Funktion, die unvollständigen Typen %q#T wirft"
 
 #. XXX Not i18n clean.
 #: cp/cp-tree.h:3888
@@ -17693,40 +17321,40 @@ msgstr "%s ist veraltet, siehe Dokumentation für Details"
 
 #: fortran/f95-lang.c:242
 msgid "Unexpected type in truthvalue_conversion"
-msgstr ""
+msgstr "Unerwarteter Typ in Wahrheitswert-Umwandlung"
 
 #: fortran/f95-lang.c:295
-#, fuzzy, c-format
+#, c-format
 msgid "can't open input file: %s"
-msgstr "Ausgabedatei »%s« kann nicht geöffnet werden"
+msgstr "Eingabedatei »%s« kann nicht geöffnet werden"
 
 #: fortran/f95-lang.c:622
-#, fuzzy, c-format
+#, c-format
 msgid "global register variable %qs used in nested function"
-msgstr "globale Register-Variable »%s« in verschachtelter Funktion verwendet"
+msgstr "globale Register-Variable %qs in verschachtelter Funktion verwendet"
 
 #: fortran/f95-lang.c:626
-#, fuzzy, c-format
+#, c-format
 msgid "register variable %qs used in nested function"
-msgstr "Register-Variable »%s« in verschachtelter Funktion verwendet"
+msgstr "Register-Variable %qs in verschachtelter Funktion verwendet"
 
 #: fortran/f95-lang.c:633
-#, fuzzy, c-format
+#, c-format
 msgid "address of global register variable %qs requested"
-msgstr "Adresse der globalen Variable »%s« angefordert"
+msgstr "Adresse der globalen Register-Variable %qs angefordert"
 
 #: fortran/f95-lang.c:651
-#, fuzzy, c-format
+#, c-format
 msgid "address of register variable %qs requested"
-msgstr "Adresse der Register-Variablen »%s« angefordert"
+msgstr "Adresse der Register-Variablen %qs angefordert"
 
 #: fortran/gfortranspec.c:231
-#, fuzzy, c-format
+#, c-format
 msgid "overflowed output arg list for '%s'"
 msgstr "übergelaufene Ausgabeargumentliste für »%s«"
 
 #: fortran/gfortranspec.c:375
-#, fuzzy, c-format
+#, c-format
 msgid "argument to '%s' missing"
 msgstr "Argument für »%s« fehlt"
 
@@ -17736,126 +17364,122 @@ msgstr "keine Eingabedateien; es werden keine Ausgabedateien geschrieben"
 
 #: fortran/trans-array.c:2849
 msgid "Possible frontend bug: array constructor not expanded"
-msgstr ""
+msgstr "Möglicher Frontend-Fehler: Feldkonstruktor nicht expandiert"
 
 #: fortran/trans-array.c:3952
 msgid "Possible frontend bug: Deferred array size without pointer or allocatable attribute."
-msgstr ""
+msgstr "Möglicher Frontend-Fehler: Verschobene Feldgröße ohne Zeiger oder belegbares Attribut."
 
 #: fortran/trans-array.c:4112
 msgid "scalar vector subscript???"
-msgstr ""
+msgstr "Skalarer Vektorindex???"
 
 #: fortran/trans-array.c:4386
 #, c-format
 msgid "bad expression type during walk (%d)"
-msgstr ""
+msgstr "Falscher Ausdruckstyp beim Durchlaufen (%d)"
 
 #: fortran/trans-const.c:327
 #, c-format
 msgid "gfc_conv_constant_to_tree(): invalid type: %s"
-msgstr ""
+msgstr "gfc_conv_constant_to_tree(): ungültiger Typ: %s"
 
 #: fortran/trans-decl.c:780
 msgid "intrinsic variable which isn't a procedure"
-msgstr ""
+msgstr "innere Variable, die keine Prozedur ist"
 
 #: fortran/trans-decl.c:1919
-#, fuzzy
 msgid "Function does not return a value"
-msgstr "Funktion gibt keinen Zeichenkettentypen zurück"
+msgstr "Funktion gibt keinen Wert zurück"
 
 #. I don't think this should ever happen.
 #: fortran/trans-decl.c:2018
 #, c-format
 msgid "module symbol %s in wrong namespace"
-msgstr ""
+msgstr "Modulsymbol %s in falschem Namensbereich"
 
 #: fortran/trans-decl.c:2032
 #, c-format
 msgid "backend decl for module variable %s already exists"
-msgstr ""
+msgstr "Backend-Deklaration für Modulvariable %s ist bereits vorhanden"
 
 #: fortran/trans-decl.c:2114
-#, fuzzy, c-format
+#, c-format
 msgid "unused parameter %qs"
-msgstr "%Jnicht benutzter Parameter »%D«"
+msgstr "nicht benutzter Parameter %qs"
 
 #: fortran/trans-decl.c:2119
-#, fuzzy, c-format
+#, c-format
 msgid "unused variable %qs"
-msgstr "%JVariable »%D« wird nicht verwendet"
+msgstr "unbenutzte Variable %qs"
 
 #: fortran/trans-decl.c:2260
-#, fuzzy
 msgid "Function return value not set"
-msgstr "Funktion gibt Aggregat zurück"
+msgstr "Rückgabewert der Funktion nicht gesetzt"
 
 #: fortran/trans-expr.c:949
-#, fuzzy
 msgid "Unknown intrinsic op"
-msgstr "unbekannter Befehlsmodus"
+msgstr "unbekannte innere Anweisung"
 
 #: fortran/trans-intrinsic.c:583
-#, fuzzy, c-format
+#, c-format
 msgid "Intrinsic function %s(%d) not recognized"
-msgstr "Sprache %s nicht erkannt"
+msgstr "Innere Funktion %s(%d) nicht erkannt"
 
 #: fortran/trans-io.c:937
 #, c-format
 msgid "Bad namelist IO basetype (%d)"
-msgstr ""
+msgstr "Falscher Namenslisten-IO-Basistyp (%d)"
 
 #: fortran/trans-io.c:1014
 msgid "A format cannot be specified with a namelist"
-msgstr ""
+msgstr "Ein Format kann nicht mit einer Namensliste angegeben werden"
 
 #: fortran/trans-io.c:1312
 #, c-format
 msgid "Bad IO basetype (%d)"
-msgstr ""
+msgstr "Falscher IO-Basistyp (%d)"
 
 #: fortran/trans-types.c:193
 msgid "integer kind=8 not available for -fdefault-integer-8 option"
-msgstr ""
+msgstr "integer kind=8 nicht verfügbar für Option -fdefault-integer-8"
 
 #: fortran/trans-types.c:205
 msgid "real kind=8 not available for -fdefault-real-8 option"
-msgstr ""
+msgstr "real kind=8 nicht verfügbar für Option -fdefault-real-8"
 
 #: fortran/trans-types.c:218
 msgid "Use of -fdefault-double-8 requires -fdefault-real-8"
-msgstr ""
+msgstr "Verwendung von -fdefault-double-8 erfordert -fdefault-real-8"
 
 #: fortran/trans-types.c:927
-#, fuzzy
 msgid "Array element size too big"
-msgstr "Wert des Feldelementes bei %0 außerhalb des definierten Bereiches"
+msgstr "Feldelementgröße zu hoch"
 
 #: fortran/trans.c:621
 msgid "gfc_trans_code(): Bad statement code"
-msgstr ""
+msgstr "gfc_trans_code(): Falscher Anweisungscode"
 
 #. I changed this from sorry(...) because it should not return.
 #. TODO: Remove gfc_todo_error before releasing version 1.0.
 #: fortran/trans.h:569
 msgid "gfc_todo: Not Implemented: "
-msgstr ""
+msgstr "gfc_todo: Nicht implementiert: "
 
 #: java/check-init.c:251
 #, c-format
 msgid "Can't reassign a value to the final variable %qs"
-msgstr ""
+msgstr "An die finale Variable %qs kann kein weiterer Wert zugewiesen werden"
 
 #: java/check-init.c:519 java/parse.h:377
-#, fuzzy, c-format
+#, c-format
 msgid "Variable %qs may not have been initialized"
-msgstr "%Jletztes Feld »%D« könnte nicht initialisiert worden sein"
+msgstr "Variable %qs kann nicht initialisiert worden sein"
 
 #: java/check-init.c:535
-#, fuzzy, c-format
+#, c-format
 msgid "variable %qs may not have been initialized"
-msgstr "%Jletztes Feld »%D« könnte nicht initialisiert worden sein"
+msgstr "Variable %qs kann nicht initialisiert worden sein"
 
 #: java/check-init.c:954
 #, c-format
@@ -17863,9 +17487,8 @@ msgid "internal error in check-init: tree code not implemented: %s"
 msgstr "interner Fehler in check-init: Baumcode nicht implementiert: %s"
 
 #: java/check-init.c:1026
-#, fuzzy
 msgid "%Jfinal field %qD may not have been initialized"
-msgstr "%Jletztes Feld »%D« könnte nicht initialisiert worden sein"
+msgstr "%Jfinales Feld %qD kann nicht initialisiert worden sein"
 
 #: java/class.c:745
 msgid "bad method signature"
@@ -17903,14 +17526,14 @@ msgid "%J'%D' used prior to declaration"
 msgstr "%J»%D« bereits vor Deklaration benutzt"
 
 #: java/decl.c:1309
-#, fuzzy, c-format
+#, c-format
 msgid "declaration of %qs shadows a parameter"
-msgstr "Deklaration von »%s« überdeckt einen Parameter"
+msgstr "Deklaration von %qs überdeckt einen Parameter"
 
 #: java/decl.c:1312
-#, fuzzy, c-format
+#, c-format
 msgid "declaration of %qs shadows a symbol from the parameter list"
-msgstr "Deklaration von »%s« überdeckt ein Symbol aus der Parameterliste"
+msgstr "Deklaration von %qs überdeckt ein Symbol aus der Parameterliste"
 
 #: java/decl.c:1640
 msgid "%Jlabel '%D' used but not defined"
@@ -17935,26 +17558,26 @@ msgstr "%Jschlechter PC-Bereich für Debuginfo für lokales »%D«"
 #: java/expr.c:376
 #, c-format
 msgid "need to insert runtime check for %s"
-msgstr ""
+msgstr "Laufzeitprüfung für %s muss eingefügt werden"
 
 #: java/expr.c:505 java/expr.c:552
-#, fuzzy, c-format
+#, c-format
 msgid "assert: %s is assign compatible with %s"
-msgstr "-march=%s ist mit dem ausgewählten ABI unverträglich"
+msgstr "assert: %s ist mit %s zuweisungsverträglich"
 
 #: java/expr.c:672
 msgid "stack underflow - dup* operation"
 msgstr "Stapelunterlauf - dup*-Operation"
 
 #: java/expr.c:1688
-#, fuzzy, c-format
+#, c-format
 msgid "reference %qs is ambiguous: appears in interface %qs and interface %qs"
-msgstr "Referenz »%s« ist mehrdeutig: erscheint in den Schnittstellen »%s« und »%s«"
+msgstr "Referenz %qs ist mehrdeutig: erscheint in den Schnittstellen %qs und %qs"
 
 #: java/expr.c:1716
-#, fuzzy, c-format
+#, c-format
 msgid "field %qs not found"
-msgstr "Feld »%s« nicht gefunden"
+msgstr "Feld %qs nicht gefunden"
 
 #: java/expr.c:2101
 #, c-format
@@ -17998,9 +17621,8 @@ msgid "%Jassignment to final field '%D' not in field's class"
 msgstr "%JZuweisung an final-Feld »%D« nicht in Klasse des Feldes"
 
 #: java/expr.c:2731
-#, fuzzy
 msgid "%Jassignment to final static field %qD not in class initializer"
-msgstr "%JZuweisung an »final static«-Feld »%D« nicht in Klasseninitialisierung"
+msgstr "%JZuweisung an »final static«-Feld %qD nicht in Klasseninitialisierung"
 
 #: java/expr.c:2740
 msgid "%Jassignment to final field '%D' not in constructor"
@@ -18027,221 +17649,206 @@ msgstr "nicht erkannter breiter Teilbefehl"
 
 #: java/gjavah.c:701
 msgid "static field has same name as method"
-msgstr ""
+msgstr "statisches Feld hat gleichen Namen wie Methode"
 
 #. FIXME: i18n bug here.  Order of prints should not be
 #. fixed.
 #: java/gjavah.c:899
 msgid "ignored method '"
-msgstr ""
+msgstr "ignorierte Methode '"
 
 #: java/gjavah.c:901
 msgid "' marked virtual\n"
-msgstr ""
+msgstr "' als virtuell markiert\n"
 
 #: java/gjavah.c:1249
-#, fuzzy, c-format
+#, c-format
 msgid "couldn't find class %s"
 msgstr "Klasse »%s« kann nicht gefunden werden"
 
 #: java/gjavah.c:1256
-#, fuzzy, c-format
+#, c-format
 msgid "parse error while reading %s"
-msgstr "Fehler beim Lesen von %s aus ZIP-Datei"
+msgstr "Syntaxfehler beim Lesen von %s"
 
 #: java/gjavah.c:1482 java/gjavah.c:1584 java/gjavah.c:1659
-#, fuzzy, c-format
+#, c-format
 msgid "unparseable signature: '%s'"
-msgstr "kann Dateistatus für »%s« nicht ermitteln"
+msgstr "Signatur nicht erkennbar: »%s«"
 
 #: java/gjavah.c:2049
-#, fuzzy
 msgid "Not a valid Java .class file."
-msgstr "keine gültige Java-.class-Datei"
+msgstr "Keine gültige Java-.class-Datei."
 
 #: java/gjavah.c:2057 java/jcf-parse.c:746
 msgid "error while parsing constant pool"
 msgstr "Fehler beim Analysieren der Konstantenbasis"
 
 #: java/gjavah.c:2063
-#, fuzzy, c-format
+#, c-format
 msgid "error in constant pool entry #%d"
-msgstr "Fehler im Konstantenbasiseintrag #%d\n"
+msgstr "Fehler im Konstantenbasiseintrag #%d"
 
 #: java/gjavah.c:2206
-#, fuzzy
 msgid "class is of array type\n"
-msgstr "Typkonvertierung gibt Feldtyp an"
+msgstr "Klasse ist vom Feldtyp\n"
 
 #: java/gjavah.c:2214
-#, fuzzy
 msgid "base class is of array type"
-msgstr "Typkonvertierung gibt Feldtyp an"
+msgstr "Basisklasse ist vom Feldtyp"
 
 #: java/gjavah.c:2330
-#, fuzzy
 msgid "Try 'gcjh --help' for more information.\n"
-msgstr "verwenden Sie -Winvalid-pch für mehr Informationen"
+msgstr "»gcjh --help« für mehr Informationen versuchen.\n"
 
 #: java/gjavah.c:2337
-#, fuzzy
 msgid ""
 "Usage: gcjh [OPTION]... CLASS...\n"
 "\n"
 msgstr ""
-"Aufruf: gcov [OPTION]... QUELLDATEI\n"
+"Aufruf: gcjh [OPTION]... KLASSE...\n"
 "\n"
 
 #: java/gjavah.c:2338
-#, fuzzy
 msgid ""
 "Generate C++ header files from .class files\n"
 "\n"
-msgstr "C-Header mit Plattform-spezifischen Merkmalen erzeugen"
+msgstr ""
+"C++-Headerdateien von .class-Dateien erzeugen\n"
+"\n"
 
 #: java/gjavah.c:2339
-#, fuzzy
 msgid "  -stubs                  Generate an implementation stub file\n"
-msgstr "  -pipe                    Pipes statt temporärer Dateien verwenden\n"
+msgstr "  -stubs                  Einen Implementations-Stumpf erzeugen\n"
 
 #: java/gjavah.c:2340
-#, fuzzy
 msgid "  -jni                    Generate a JNI header or stub\n"
-msgstr "  -pipe                    Pipes statt temporärer Dateien verwenden\n"
+msgstr "  -jni                    Einen JNI-Header oder Stumpf erzeugen\n"
 
 #: java/gjavah.c:2342
 msgid "  -add TEXT               Insert TEXT into class body\n"
-msgstr ""
+msgstr "  -add TEXT               TEXT in Klassenkörper einfügen\n"
 
 #: java/gjavah.c:2343
 msgid "  -append TEXT            Insert TEXT after class declaration\n"
-msgstr ""
+msgstr "  -append TEXT            TEXT hinter Klassendeklaration einfügen\n"
 
 #: java/gjavah.c:2344
 msgid "  -friend TEXT            Insert TEXT as 'friend' declaration\n"
-msgstr ""
+msgstr "  -friend TEXT            TEXT als »friend«-Deklaration einfügen\n"
 
 #: java/gjavah.c:2345
 msgid "  -prepend TEXT           Insert TEXT before start of class\n"
-msgstr ""
+msgstr "  -prepend TEXT           TEXT vor Anfang der Klasse einfügen\n"
 
 #: java/gjavah.c:2347 java/jcf-dump.c:897
 msgid "  --classpath PATH        Set path to find .class files\n"
-msgstr ""
+msgstr "  --classpath PFAD        Pfad zum Finden von .class-Dateien setzen\n"
 
 #: java/gjavah.c:2348 java/jcf-dump.c:898
-#, fuzzy
 msgid "  -IDIR                   Append directory to class path\n"
-msgstr "  -B <Verzeichnis>         <Verzeichnis> zum Suchpfad des Compilers hinzufügen\n"
+msgstr "  -IDIR                   Verzeichnis an Klassenpfad anhängen\n"
 
 #: java/gjavah.c:2349 java/jcf-dump.c:899
 msgid "  --bootclasspath PATH    Override built-in class path\n"
-msgstr ""
+msgstr "  --bootclasspath PFAD    Eingebauten Klassenpfad ersetzen\n"
 
 #: java/gjavah.c:2350 java/jcf-dump.c:900
 msgid "  --extdirs PATH          Set extensions directory path\n"
-msgstr ""
+msgstr "  --extdirs PFAD          Pfad für Erweiterungen setzen\n"
 
 #: java/gjavah.c:2351
 msgid "  -d DIRECTORY            Set output directory name\n"
-msgstr ""
+msgstr "  -d VERZEICHNIS          Ausgabeverzeichnisnamen setzen\n"
 
 #: java/gjavah.c:2352 java/jcf-dump.c:901 java/jv-scan.c:114
-#, fuzzy
 msgid "  -o FILE                 Set output file name\n"
-msgstr "  -o <Datei>               Ausgabe in <Datei> schreiben\n"
+msgstr "  -o DATEI                Ausgabedateinamen setzen\n"
 
 #: java/gjavah.c:2353
 msgid "  -td DIRECTORY           Set temporary directory name\n"
-msgstr ""
+msgstr "  -td VERZEICHNIS         Temporären Verzeichnisnamen setzen\n"
 
 #: java/gjavah.c:2355 java/jcf-dump.c:903 java/jv-scan.c:116
-#, fuzzy
 msgid "  --help                  Print this help, then exit\n"
-msgstr "  -h, --help                      Diese Hilfe anzeigen\n"
+msgstr "  --help                  Diese Hilfe anzeigen und beenden\n"
 
 #: java/gjavah.c:2356 java/jcf-dump.c:904 java/jv-scan.c:117
-#, fuzzy
 msgid "  --version               Print version number, then exit\n"
-msgstr "  -v, --version                   Versionsnummer anzeigen\n"
+msgstr "  --version               Versionsnummer anzeigen und beenden\n"
 
 #: java/gjavah.c:2357 java/jcf-dump.c:905
-#, fuzzy
 msgid "  -v, --verbose           Print extra information while running\n"
-msgstr "  -v, --version                   Versionsnummer anzeigen\n"
+msgstr "  -v, --verbose           Zusatzinformationen beim Betrieb anzeigen\n"
 
 #: java/gjavah.c:2359
 msgid ""
 "  -M                      Print all dependencies to stdout;\n"
 "                             suppress ordinary output\n"
 msgstr ""
+"  -M                      Alle Abhängigkeiten auf stdout ausgeben;\n"
+"                             normale Ausgaben unterdrücken\n"
 
 #: java/gjavah.c:2361
 msgid ""
 "  -MM                     Print non-system dependencies to stdout;\n"
 "                             suppress ordinary output\n"
 msgstr ""
+"  -MM                     Nicht-System-Abhängigkeiten auf stdout ausgeben;\n"
+"                             normale Ausgaben unterdrücken\n"
 
 #: java/gjavah.c:2363
-#, fuzzy
 msgid "  -MD                     Print all dependencies to stdout\n"
-msgstr "  -h, --help                      Diese Hilfe anzeigen\n"
+msgstr "  -MD                     Alle Abhängigkeiten auf stdout ausgeben\n"
 
 #: java/gjavah.c:2364
-#, fuzzy
 msgid "  -MMD                    Print non-system dependencies to stdout\n"
-msgstr "  -h, --help                      Diese Hilfe anzeigen\n"
+msgstr "  -MMD                    Nicht-System-Abhängigkeiten auf stdout ausgeben\n"
 
 #: java/gjavah.c:2367 java/jcf-dump.c:907 java/jv-scan.c:119
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "For bug reporting instructions, please see:\n"
 "%s.\n"
 msgstr ""
-"\n"
-"Zum Einsenden von Fehlerberichten (auf Englisch) lesen Sie bitte die Hinweise in:\n"
+"Zum Einsenden von Fehlerberichten (auf Englisch) siehe:\n"
 "%s.\n"
 "Fehler in der deutschen Übersetzung sind an de@li.org zu melden.\n"
 
 #: java/gjavah.c:2395 java/gjavah.c:2509
-#, fuzzy
 msgid "no classes specified"
-msgstr "kein Klassenname mit \"%s\" angegeben"
+msgstr "keine Klassen angegeben"
 
 #: java/gjavah.c:2488
-#, fuzzy
 msgid "'-MG' option is unimplemented"
-msgstr "ret-Befehl nicht implementiert"
+msgstr "Option »-MG« ist nicht implementiert"
 
 #: java/gjavah.c:2517
-#, fuzzy
 msgid "can't specify both -o and -MD"
-msgstr "-C und -o können nicht zusammen angegeben werden"
+msgstr "-o und -MD können nicht zusammen angegeben werden"
 
 #: java/gjavah.c:2528
-#, fuzzy, c-format
+#, c-format
 msgid "Processing %s\n"
-msgstr "Erzeuge %s.\n"
+msgstr "%s wird verarbeitet\n"
 
 #: java/gjavah.c:2534
 #, c-format
 msgid "%s: no such class"
-msgstr ""
+msgstr "%s: keine derartige Klasse"
 
 #: java/gjavah.c:2538
 #, c-format
 msgid "Found in %s\n"
-msgstr ""
+msgstr "Gefunden in %s\n"
 
 #: java/jcf-dump.c:814
-#, fuzzy
 msgid "Not a valid Java .class file.\n"
-msgstr "keine gültige Java-.class-Datei"
+msgstr "Keine gültige Java-.class-Datei.\n"
 
 #: java/jcf-dump.c:820
-#, fuzzy
 msgid "error while parsing constant pool\n"
-msgstr "Fehler beim Analysieren der Konstantenbasis"
+msgstr "Fehler beim Analysieren der Konstantenbasis\n"
 
 #: java/jcf-dump.c:826 java/jcf-parse.c:749
 #, c-format
@@ -18249,32 +17856,27 @@ msgid "error in constant pool entry #%d\n"
 msgstr "Fehler im Konstantenbasiseintrag #%d\n"
 
 #: java/jcf-dump.c:836
-#, fuzzy
 msgid "error while parsing fields\n"
-msgstr "Fehler bei der Analyse der Felder"
+msgstr "Fehler bei der Analyse der Felder\n"
 
 #: java/jcf-dump.c:842
-#, fuzzy
 msgid "error while parsing methods\n"
-msgstr "Fehler beim Analysieren der Methoden"
+msgstr "Fehler beim Analysieren der Methoden\n"
 
 #: java/jcf-dump.c:848
-#, fuzzy
 msgid "error while parsing final attributes\n"
-msgstr "Fehler beim Analysieren der final-Attribute"
+msgstr "Fehler beim Analysieren der final-Attribute\n"
 
 #: java/jcf-dump.c:885
-#, fuzzy
 msgid "Try 'jcf-dump --help' for more information.\n"
-msgstr "verwenden Sie -Winvalid-pch für mehr Informationen"
+msgstr "»jcf-dump --help« für mehr Informationen verwenden.\n"
 
 #: java/jcf-dump.c:892
-#, fuzzy
 msgid ""
 "Usage: jcf-dump [OPTION]... CLASS...\n"
 "\n"
 msgstr ""
-"Aufruf: gcov [OPTION]... QUELLDATEI\n"
+"Aufruf: jcf-dump [OPTION]... KLASSE...\n"
 "\n"
 
 #: java/jcf-dump.c:893
@@ -18282,39 +17884,38 @@ msgid ""
 "Display contents of a class file in readable form.\n"
 "\n"
 msgstr ""
+"Inhalt einer Klassendatei in lesbarer Form ausgeben.\n"
+"\n"
 
 #: java/jcf-dump.c:894
-#, fuzzy
 msgid "  -c                      Disassemble method bodies\n"
-msgstr "  -c                       Nur kompilieren und assemblieren, aber nicht binden\n"
+msgstr "  -c                      Methodenkörper disassemblieren\n"
 
 #: java/jcf-dump.c:895
-#, fuzzy
 msgid "  --javap                 Generate output in 'javap' format\n"
-msgstr "  --help                   Diese Informationen anzeigen\n"
+msgstr "  --javap                 Ausgabe im »javap«-Format erzeugen\n"
 
 #: java/jcf-dump.c:932 java/jcf-dump.c:1000
 msgid "jcf-dump: no classes specified\n"
-msgstr ""
+msgstr "jcf-dump: keine Klassen angegeben\n"
 
 #: java/jcf-dump.c:1020
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot open '%s' for output.\n"
-msgstr "Es ist nicht möglich, »%s« zu öffnen"
+msgstr "»%s« kann nicht zur Ausgabe geöffnet werden.\n"
 
 #: java/jcf-dump.c:1066
 msgid "bad format of .zip/.jar archive\n"
-msgstr ""
+msgstr "falsches Format des .zip/.jar-Archives\n"
 
 #: java/jcf-dump.c:1184
-#, fuzzy
 msgid "Bad byte codes.\n"
-msgstr "Falscher eingebauter fcode"
+msgstr "Falsche Bytecodes.\n"
 
 #: java/jcf-io.c:536
-#, fuzzy, c-format
+#, c-format
 msgid "source file for class %qs is newer than its matching class file.  Source file %qs used instead"
-msgstr "Quelldatei für Klasse »%s« ist neuer als die dazu passende Klassendatei. Stattdessen wurde Quelldatei »%s« verwendet"
+msgstr "Quelldatei für Klasse %qs ist neuer als die dazu passende Klassendatei. Stattdessen wurde Quelldatei %qs verwendet"
 
 #: java/jcf-parse.c:366
 msgid "bad string constant"
@@ -18363,9 +17964,8 @@ msgid "error while parsing final attributes"
 msgstr "Fehler beim Analysieren der final-Attribute"
 
 #: java/jcf-parse.c:802
-#, fuzzy
 msgid "the %<java.lang.Object%> that was found in %qs didn't have the special zero-length %<gnu.gcj.gcj-compiled%> attribute.  This generally means that your classpath is incorrectly set.  Use %<info gcj \"Input Options\"%> to see the info page describing how to set the classpath"
-msgstr "das in »%s« gefundene »java.lang.Object« hatte nicht das spezielle Attribut »gnu.gcj.gcj-compiled« der Länge Null. Dies bedeutet allgemein, dass der Classpath falsch gesetzt ist. »info gcj \"Input Options\"« verwenden, um die Info-Seiten zu sehen, die das Setzen des Classpath beschreiben"
+msgstr "das in %qs gefundene %<java.lang.Object%> hatte nicht das spezielle Attribut %<gnu.gcj.gcj-compiled%> der Länge Null. Dies bedeutet allgemein, dass der Classpath falsch gesetzt ist. %<info gcj \"Input Options\"%> verwenden, um die Info-Seiten zu sehen, die das Setzen des Classpath beschreiben"
 
 #: java/jcf-parse.c:876
 msgid "missing Code attribute"
