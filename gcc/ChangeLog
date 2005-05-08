@@ -1,5 +1,11 @@
 2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
 
+	PR target/21281
+	* config/m68hc11/predicates.md (splitable_operand): An immediate is
+	allowed.
+
+2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/predicates.md (reg_or_some_mem_operand): Do not allow
 	the 68HC12 address indirect addressing mode as it is not supported by
 	bset and bclr.

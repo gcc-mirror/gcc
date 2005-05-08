@@ -148,7 +148,7 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "splitable_operand"
-  (match_code "subreg,reg,mem")
+  (match_code "subreg,reg,mem,symbol_ref,label_ref,const_int,const_double")
 {
   if (general_operand (op, mode) == 0)
     return 0;
