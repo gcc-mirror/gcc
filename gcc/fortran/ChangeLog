@@ -1,3 +1,7 @@
+2005-05-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* intrinsic.texi: Fix typos.
+
 2005-05-07  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.texi:  Document ASSOCIATED and ATAN2.  Update Bessel function
