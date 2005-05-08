@@ -795,7 +795,7 @@ target associated with @var{PTR} and the target associated with @var{TGT}
 are not 0 sized storage sequences and occupy the same storage units.
 The result is false, if either @var{TGT} or @var{PTR} is disassociated.
 @item (E) If @var{TGT} is present and an array pointer, the result is true if
-target assoicated with @var{PTR} and the target associated with @var{TGT}
+target associated with @var{PTR} and the target associated with @var{TGT}
 have the same shape, are not 0 sized arrays, are arrays whose elements are
 not 0 sized storage sequences, and @var{TGT} and @var{PTR} occupy the same
 storage units in array element order.
@@ -882,12 +882,12 @@ elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
 @item @var{Y} @tab The type shall be @code{REAL(*)}.
-@item @var{X} @tab The type and kind type paremeter shall be the same as @var{Y}.
+@item @var{X} @tab The type and kind type parameter shall be the same as @var{Y}.
 If @var{Y} is zero, then @var{X} must be nonzero.
 @end multitable
 
 @item @emph{Return value}:
-The return value has the same type and kind type paremeter as @var{Y}.
+The return value has the same type and kind type parameter as @var{Y}.
 It is the principle value of the complex number @math{X + i Y}.  If
 @var{X} is nonzero, then it lies in the range @math{-\pi \le \arccos (x) \leq \pi}.
 The sign is positive if @var{Y} is positive.  If @var{Y} is zero, then
