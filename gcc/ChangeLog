@@ -1,3 +1,13 @@
+2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mn10300/mn10300.c (print_operand): Use gcc_assert and
+	gcc_unreachable as appropriate.
+	(print_operand_address, mn10300_print_reg_list, expand_prologue,
+	expand_epilogue, notice_update_cc, initial_offset,
+	mn10300_address_cost_1): Likewise.
+	* config/mn10300/mn10300.md: Likewise.
+	(absdf2, abssf2, negdf2, negsf2): Likewise.
+
 2005-05-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/21416

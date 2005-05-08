@@ -220,7 +220,7 @@ print_operand (FILE *file, rtx x, int code)
 		fprintf (file, "ul");
 		break;
 	      default:
-		abort ();
+		gcc_unreachable ();
 	      }
 	    break;
 	  }
@@ -258,7 +258,7 @@ print_operand (FILE *file, rtx x, int code)
 	    fprintf (file, "cs");
 	    break;
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	break;
       case 'C':
@@ -289,7 +289,7 @@ print_operand (FILE *file, rtx x, int code)
 	    break;
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	break;
 
@@ -348,7 +348,7 @@ print_operand (FILE *file, rtx x, int code)
 	    }
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	break;
 
@@ -384,7 +384,7 @@ print_operand (FILE *file, rtx x, int code)
 		      fprintf (file, "0x%lx", val[1]);
 		      break;;
 		    case SFmode:
-		      abort ();
+		      gcc_unreachable ();
 		    case VOIDmode:
 		    case DImode:
 		      print_operand_address (file, 
@@ -405,7 +405,7 @@ print_operand (FILE *file, rtx x, int code)
 	    }
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	break;
 
@@ -419,14 +419,12 @@ print_operand (FILE *file, rtx x, int code)
 	break;
 
       case 'N':
-	if (INTVAL (x) < -128 || INTVAL (x) > 255)
-	  abort ();
+	gcc_assert (INTVAL (x) >= -128 && INTVAL (x) <= 255);
 	fprintf (file, "%d", (int)((~INTVAL (x)) & 0xff));
 	break;
 
       case 'U':
-	if (INTVAL (x) < -128 || INTVAL (x) > 255)
-	  abort ();
+	gcc_assert (INTVAL (x) >= -128 && INTVAL (x) <= 255);
 	fprintf (file, "%d", (int)(INTVAL (x) & 0xff));
 	break;
 
@@ -484,7 +482,7 @@ print_operand (FILE *file, rtx x, int code)
 	    print_operand_address (file, x);
 	    break;
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	break;
    }
@@ -514,7 +512,7 @@ print_operand_address (FILE *file, rtx addr)
 	    && REG_OK_FOR_BASE_P (XEXP (addr, 1)))
 	  base = XEXP (addr, 1), index = XEXP (addr, 0);
       	else
-	  abort ();
+	  gcc_unreachable ();
 	print_operand (file, index, 0);
 	fputc (',', file);
 	print_operand (file, base, 0);;
@@ -571,8 +569,7 @@ mn10300_print_reg_list (FILE *file, int mask)
 
   if ((mask & 0x3c000) != 0)
     {
-      if ((mask & 0x3c000) != 0x3c000)
-	abort();
+      gcc_assert ((mask & 0x3c000) == 0x3c000);
       if (need_comma)
 	fputc (',', file);
       fputs ("exreg1", file);
@@ -883,7 +880,7 @@ expand_prologue (void)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 	  
       /* Now prepare register a0, if we have decided to use it.  */
@@ -905,7 +902,7 @@ expand_prologue (void)
 	  break;
 	  
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       
       /* Now actually save the FP registers.  */
@@ -1121,7 +1118,7 @@ expand_epilogue (void)
 	      break;
 
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	}
 
@@ -1252,7 +1249,7 @@ notice_update_cc (rtx body, rtx insn)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1443,7 +1440,7 @@ initial_offset (int from, int to)
 	    + (current_function_outgoing_args_size
 	       ? current_function_outgoing_args_size + 4 : 0)); 
 
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
@@ -1936,7 +1933,7 @@ mn10300_address_cost_1 (rtx x, int *unsig)
 	  return 5;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
     case PLUS:
@@ -1973,7 +1970,7 @@ mn10300_address_cost_1 (rtx x, int *unsig)
       return 8;
 
     default:
-      abort ();
+      gcc_unreachable ();
 
     }
 }
