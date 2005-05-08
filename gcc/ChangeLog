@@ -1,3 +1,9 @@
+2005-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/ia64.c (ia64_override_options): Don't set
+	ia64_flag_var_tracking and clear flag_var_tracking here...
+	(ia64_file_start): ... but here.
+
 2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m68hc11/m68hc11.c (m68hc11_emit_libcall): Use gcc_assert
