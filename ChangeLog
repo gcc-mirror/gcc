@@ -1,3 +1,7 @@
+2005-05-08  Matt Kraai  <kraai@ftbfs.org>
+
+	* README.SCO: Update the URL.
+
 2005-05-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* ltconfig: Define file_list_spec.  Pass file_list_spec and
