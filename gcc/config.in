@@ -216,7 +216,10 @@
 
 
 /* Define if your assembler supports popcntb field. */
+#ifndef USED_FOR_TARGET
 #undef HAVE_AS_POPCNTB
+#endif
+
 
 /* Define if your assembler supports .register. */
 #ifndef USED_FOR_TARGET
@@ -277,6 +280,12 @@
 /* Define if <time.h> defines clock_t. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_CLOCK_T
+#endif
+
+
+/* Define 0/1 if your assembler and linker support COMDAT groups. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_COMDAT_GROUP
 #endif
 
 
@@ -663,12 +672,6 @@
 /* Define if your assembler supports .balign and .p2align. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_BALIGN_AND_P2ALIGN
-#endif
-
-
-/* Define 0/1 if your assembler supports COMDAT group. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_GAS_COMDAT_GROUP
 #endif
 
 
