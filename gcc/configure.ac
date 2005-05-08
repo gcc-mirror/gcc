@@ -2104,8 +2104,12 @@ changequote(,)dnl
 	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
 	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
 	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
-	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p'`
+	-e 's,^.*[ 	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[ 	].*$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p'`
     ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
+    ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
+    ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
+    ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
     if test 0"$ld_date" -lt 20020404; then
       if test -n "$ld_date"; then
 	# If there was date string, but was earlier than 2002-04-04, fail
@@ -2114,9 +2118,6 @@ changequote(,)dnl
 	# If there was no date string nor ld version number, something is wrong
 	gcc_cv_ld_hidden=no
       else
-	ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
-	ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
-	ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
 	test -z "$ld_vers_patch" && ld_vers_patch=0
 	if test "$ld_vers_major" -lt 2; then
 	  gcc_cv_ld_hidden=no
@@ -2258,18 +2259,35 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_MERGE,
 [Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.])
 
 gcc_GAS_CHECK_FEATURE(COMDAT group support, gcc_cv_as_comdat_group,
- [elf,2,15,91], [--fatal-warnings],
+ [elf,2,16,0], [--fatal-warnings],
  [.section .text,"axG",@progbits,.foo,comdat])
 if test $gcc_cv_as_comdat_group = yes; then
   gcc_cv_as_comdat_group_percent=no
 else
  gcc_GAS_CHECK_FEATURE(COMDAT group support, gcc_cv_as_comdat_group_percent,
-   [elf,2,15,91], [--fatal-warnings],
+   [elf,2,16,0], [--fatal-warnings],
    [.section .text,"axG",%progbits,.foo,comdat])
 fi
-AC_DEFINE_UNQUOTED(HAVE_GAS_COMDAT_GROUP,
+if test $in_tree_ld != yes && test x"$ld_vers" != x; then
+  comdat_group=yes
+  if test 0"$ld_date" -lt 20050308; then
+    if test -n "$ld_date"; then
+      # If there was date string, but was earlier than 2005-03-08, fail
+      comdat_group=no
+    elif test "$ld_vers_major" -lt 2; then
+      comdat_group=no
+    elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 16; then
+      comdat_group=no
+    fi
+  fi
+  if test $comdat_group = no; then
+    gcc_cv_as_comdat_group=no
+    gcc_cv_as_comdat_group_percent=no
+  fi
+fi
+AC_DEFINE_UNQUOTED(HAVE_COMDAT_GROUP,
   [`if test $gcc_cv_as_comdat_group = yes || test $gcc_cv_as_comdat_group_percent = yes; then echo 1; else echo 0; fi`],
-[Define 0/1 if your assembler supports COMDAT group.])
+[Define 0/1 if your assembler and linker support COMDAT groups.])
 
 # Thread-local storage - the check is heavily parametrized.
 conftest_s=

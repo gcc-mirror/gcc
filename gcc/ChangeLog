@@ -1,3 +1,19 @@
+2005-05-08  Julian Brown  <julian@codesourcery.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+	    Paul Brook  <paul@codesourcery.com>
+
+	* configure.ac: Set ld_vers_major, ld_vers_minor and ld_vers_patch for
+	GNU linker. Support linker version x.x.x.x.x. Require GNU linker
+	20050308/2.16.0 or newer for comdat group.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+	* varasm.c (default_function_rodata_section): Put .rodata section in
+	COMDAT group when necessary.
+	(default_elf_asm_named_section): Rename HAVE_GAS_COMDAT_GROUP to
+	HAVE_COMDAT_GROUP.
+	(default_unique_section_1): Don't use .gnu.linkonce when COMDAT is
+	available.
+
 2005-05-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-dfa.c (referenced_vars, add_referenced_var): Use VEC

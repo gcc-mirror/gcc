@@ -618,8 +618,19 @@ default_function_rodata_section (tree decl)
     {
       const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 
+      if (DECL_ONE_ONLY (decl) && HAVE_COMDAT_GROUP)
+        {
+	  size_t len = strlen (name) + 3;
+	  char* rname = alloca (len);
+         
+	  strcpy (rname, ".rodata");
+	  strcat (rname, name + 5); 
+          named_section_real (rname, SECTION_LINKONCE, decl);
+	  return;
+	}
       /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo.  */
-      if (DECL_ONE_ONLY (decl) && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
+      else if (DECL_ONE_ONLY (decl)
+	       && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
 	{
 	  size_t len = strlen (name) + 1;
 	  char *rname = alloca (len);
@@ -4880,7 +4891,7 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
      abbreviated form to switch back to it -- unless this section is
      part of a COMDAT groups, in which case GAS requires the full
      declaration every time.  */
-  if (!(HAVE_GAS_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+  if (!(HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
       && ! named_section_first_declaration (name))
     {
       fprintf (asm_out_file, "\t.section\t%s\n", name);
@@ -4901,7 +4912,7 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
     *f++ = 'S';
   if (flags & SECTION_TLS)
     *f++ = 'T';
-  if (HAVE_GAS_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+  if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
     *f++ = 'G';
   *f = '\0';
 
@@ -4928,7 +4939,7 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
       if (flags & SECTION_ENTSIZE)
 	fprintf (asm_out_file, ",%d", flags & SECTION_ENTSIZE);
-      if (HAVE_GAS_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+      if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
 	fprintf (asm_out_file, ",%s,comdat", 
 		 lang_hooks.decls.comdat_group (decl));
     }
@@ -5240,7 +5251,8 @@ default_unique_section (tree decl, int reloc)
 void
 default_unique_section_1 (tree decl, int reloc, int shlib)
 {
-  bool one_only = DECL_ONE_ONLY (decl);
+  /* We only need to use .gnu.linkonce if we don't have COMDAT groups.  */
+  bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
   const char *prefix, *name;
   size_t nlen, plen;
   char *string;
