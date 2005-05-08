@@ -1,3 +1,8 @@
+2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.h (REG_VALID_P): A regno must be >= 0
+	and -1 can happen in reg_renumber when no hard register is assigned.
+
 2005-05-08  Steven Bosscher  <stevenb@suse.de>
 	    Kazu Hirata  <kazu@cs.umass.edu>
 
