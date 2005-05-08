@@ -1,3 +1,10 @@
+2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
+
+	PR target/19051
+	* config/m68hc11/m68hc11.md ("mulqi3"): Use general_operand for operand
+	1 and fix constraints.
+	("mulqihi3"): Use general_operand for operand 2.
+
 2005-05-08  Julian Brown  <julian@codesourcery.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 	    Paul Brook  <paul@codesourcery.com>
