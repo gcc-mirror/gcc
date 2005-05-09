@@ -1,3 +1,8 @@
+2005-05-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR inline-asm/8788
+	* gcc.dg/pr8788-1.c: New testcase.
+
 2005-05-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/21416
