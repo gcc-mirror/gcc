@@ -1531,8 +1531,8 @@ use_return_insn (int iscond, rtx sibling)
 int
 const_ok_for_arm (HOST_WIDE_INT i)
 {
-  int lowbit;
-  
+  unsigned HOST_WIDE_INT mask = ~(unsigned HOST_WIDE_INT)0xFF;
+
   /* For machines with >32 bit HOST_WIDE_INT, the bits above bit 31 must
      be all zero, or all one.  */
   if ((i & ~(unsigned HOST_WIDE_INT) 0xffffffff) != 0
@@ -1541,24 +1541,19 @@ const_ok_for_arm (HOST_WIDE_INT i)
 	      & ~(unsigned HOST_WIDE_INT) 0xffffffff)))
     return FALSE;
 
-  i &= (unsigned HOST_WIDE_INT) 0xffffffff;
-  
-  /* Fast return for 0 and small values.  We must do this for zero, since
-     the code below can't handle that one case.  */
-  if ((i & ~(unsigned HOST_WIDE_INT) 0xff) == 0)
+  /* Fast return for 0 and powers of 2 */
+  if ((i & (i - 1)) == 0)
     return TRUE;
 
-  /* Get the number of trailing zeros, rounded down to the nearest even
-     number.  */
-  lowbit = (ffs ((int) i) - 1) & ~1;
-
-  if ((i & ~(((unsigned HOST_WIDE_INT) 0xff) << lowbit)) == 0)
-    return TRUE;
-  else if (lowbit <= 4
-	   && ((i & ~0xc000003f) == 0
-	       || (i & ~0xf000000f) == 0
-	       || (i & ~0xfc000003) == 0))
-    return TRUE;
+  do
+    {
+      if ((i & mask & (unsigned HOST_WIDE_INT) 0xffffffff) == 0)
+        return TRUE;
+      mask =
+	  (mask << 2) | ((mask & (unsigned HOST_WIDE_INT) 0xffffffff)
+			  >> (32 - 2)) | ~(unsigned HOST_WIDE_INT) 0xffffffff;
+    }
+  while (mask != ~(unsigned HOST_WIDE_INT) 0xFF);
 
   return FALSE;
 }
