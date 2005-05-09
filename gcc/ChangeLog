@@ -1,3 +1,8 @@
+2005-05-09  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/21160
+	* doc/invoke.texi (-Wuninitialized): Update documentation.
+
 2005-05-09  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (const_ok_for_arm): Use a faster algorithm.
