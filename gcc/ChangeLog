@@ -1,3 +1,9 @@
+2005-05-09  David Edelsohn  <edelsohn@gnu.org>
+
+        PR target/21477
+        * config/rs6000/rs6000.md (add_op2): New.
+        (add<mode>3): Use it.
+
 2005-05-09  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (arm_gen_constant): Add new heuristic for generating
