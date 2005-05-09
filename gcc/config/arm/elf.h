@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with ELF obj format.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2004
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org> and
    Catherine Moore <clm@cygnus.com>

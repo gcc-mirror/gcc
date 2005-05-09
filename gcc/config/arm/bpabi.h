@@ -1,5 +1,5 @@
 /* Configuration file for ARM BPABI targets.
-   Copyright (C) 2004
+   Copyright (C) 2004, 2005
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 

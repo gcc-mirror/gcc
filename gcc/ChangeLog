@@ -1,3 +1,14 @@
+2005-05-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* crtstuff.c, integrate.h, tree-scalar-evolution.h,
+	config/alpha/unicosmk.h, config/arc/arc.md,
+	config/arm/bpabi.h, config/arm/coff.h, config/arm/elf.h,
+	config/arm/ieee754-df.S, config/arm/ieee754-sf.S,
+	config/arm/netbsd.h, config/arm/pe.c, config/arm/pe.h,
+	config/arm/semi.h, config/arm/uclinux-elf.h,
+	config/arm/wince-pe.h, config/fr30/fr30.c,
+	config/rs6000/altivec.h: Update copyright.
+
 2005-05-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/pdp11/pdp11.c (pdp11_output_function_prologue): Use
