@@ -1,5 +1,31 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.c: (s390_branch_condition_mask,
+	s390_branch_condition_mnemonic, s390_extra_constraint_str,
+	s390_const_ok_for_constraint_p, s390_expand_plus_operand,
+	legitimize_pic_address, s390_emit_tls_call_insn,
+	legitimize_tls_address, legitimize_tls_address,
+	s390_expand_addcc, print_shift_count_operand, print_operand,
+	addr_generation_dependency_p, annotate_constant_pool_refs,
+	s390_split_branches, find_constant_pool_ref,
+	replace_constant_pool_ref, s390_add_constant, s390_find_constant,
+	s390_find_execute, s390_mainpool_start, s390_chunkify_start,
+	s390_output_pool_entry, s390_function_value,
+	s390_call_saved_register_used, s390_emit_call): Replace
+	conditional aborts by gcc_assert and unconditional by gcc_unreachable.
+	(s390_select_ccmode, s390_match_ccmode_set, s390_extract_part,
+	s390_cannot_force_const_mem, s390_output_dwarf_dtprel,
+	get_some_local_dynamic_name, s390_function_arg_size,
+	s390_function_arg_advance, s390_function_arg,
+	s390_expand_builtin, s390_gen_rtx_const_DI): Replace abort in
+	default case by gcc_unreachable.
+	* config/s390/s390.md: ("*cjump_31", "*icjump_31", "*jump31"): Replace
+	conditional abort by gcc_assert.
+	("doloop_si31"): Replace abort in last else by gcc_unreachable.
+	("main_pool", "pool"): Replace unconditional abort by gcc_unreachable.
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.c: (s390_decompose_address,
 	tls_symbolic_operand, legitimate_pic_operand_p,
 	legitimate_constant_p, legitimate_reload_constant_p,
