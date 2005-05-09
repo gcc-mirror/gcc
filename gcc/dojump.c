@@ -207,14 +207,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
       break;
 
-    case MINUS_EXPR:
-      /* Nonzero iff operands of minus differ.  */
-      do_compare_and_jump (build2 (NE_EXPR, TREE_TYPE (exp),
-				   TREE_OPERAND (exp, 0),
-				   TREE_OPERAND (exp, 1)),
-                           NE, NE, if_false_label, if_true_label);
-      break;
-
     case BIT_AND_EXPR:
       /* fold_single_bit_test() converts (X & (1 << C)) into (X >> C) & 1.
 	 See if the former is preferred for jump tests and restore it
@@ -369,6 +361,12 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
         break;
       }
 
+    case MINUS_EXPR:
+      /* Nonzero iff operands of minus differ.  */
+      exp = build2 (NE_EXPR, TREE_TYPE (exp),
+		    TREE_OPERAND (exp, 0),
+		    TREE_OPERAND (exp, 1));
+      /* FALLTHRU */
     case NE_EXPR:
       {
         tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
