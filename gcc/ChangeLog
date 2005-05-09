@@ -1,3 +1,7 @@
+2005-05-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/ia64/ia64.c: Fix a comment typo.
+
 2005-05-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/21397
