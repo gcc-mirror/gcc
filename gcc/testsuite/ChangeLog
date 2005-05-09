@@ -1,3 +1,9 @@
+2005-05-06  J"orn Rennecke <joern.rennecke@st.com>
+
+	* gcc.dg/pr15784-3.c: Add -fno-finite-math-only option.
+
+	* gcc.dg/20021029-1.c: For sh64*-*-*, add -mpt-fixed.
+
 2005-05-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21427

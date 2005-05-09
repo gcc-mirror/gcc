@@ -20,6 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* The SH uses a partial integer mode to represent the FPSCR register.  */
 PARTIAL_INT_MODE (SI);
+/* PDI mode is used to represent a function address in a target register.  */
+PARTIAL_INT_MODE (DI);
 
 /* Vector modes.  */
 VECTOR_MODE  (INT, QI, 2);    /*                 V2QI */

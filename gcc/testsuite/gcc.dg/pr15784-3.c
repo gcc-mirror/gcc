@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-generic" } */
+/* SH4 without -mieee defaults to -ffinite-math-only.  */
+/* { dg-options "-fdump-tree-generic -fno-finite-math-only" } */
 /* Test for folding abs(x) where appropriate.  */
 #define abs(x) x > 0 ? x : -x
 extern double fabs (double);

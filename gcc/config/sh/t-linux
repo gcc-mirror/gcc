@@ -1,5 +1,5 @@
 TARGET_LIBGCC2_CFLAGS = -fpic -DNO_FPSCR_VALUES
-LIB1ASMFUNCS_CACHE = _ic_invalidate
+LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
 
 LIB2FUNCS_EXTRA=
 

@@ -1,0 +1,6 @@
+MULTILIB_OPTIONS= mb m4-nofpu/m4-single/m4-single-only
+MULTILIB_DIRNAMES= 
+MULTILIB_MATCHES = m4=m4-100 m4-nofpu=m4-100-nofpu m4-single=m4-100-single m4-single-only=m4-100-single-only \
+		   m4=m4-200 m4-nofpu=m4-200-nofpu m4-single=m4-200-single m4-single-only=m4-200-single-only \
+		   m4-nofpu=m4-400 \
+		   m4-nofpu=m4-500
