@@ -877,7 +877,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
       if (asm_operand_ok (op, constraint) <= 0)
 	{
-	  if (allows_reg)
+	  if (allows_reg && TYPE_MODE (type) != BLKmode)
 	    op = force_reg (TYPE_MODE (type), op);
 	  else if (!allows_mem)
 	    warning (0, "asm operand %d probably doesn%'t match constraints",
