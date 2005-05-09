@@ -699,6 +699,10 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
   /* MIPS32 Release 2 */
   { "m4k", PROCESSOR_M4K, 33 },
+  { "24k", PROCESSOR_24K, 33 },
+  { "24kc", PROCESSOR_24K, 33 },  /* 24K  no FPU */
+  { "24kf", PROCESSOR_24K, 33 },  /* 24K 1:2 FPU */
+  { "24kx", PROCESSOR_24KX, 33 }, /* 24K 1:1 FPU */
 
   /* MIPS64 */
   { "5kc", PROCESSOR_5KC, 64 },

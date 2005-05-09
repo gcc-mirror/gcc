@@ -157,6 +157,17 @@
 (define_attr "mode" "unknown,none,QI,HI,SI,DI,SF,DF,FPSW"
   (const_string "unknown"))
 
+;; Mode for conversion types (fcvt)
+;; I2S          integer to float single (SI/DI to SF)
+;; I2D          integer to float double (SI/DI to DF)
+;; S2I          float to integer (SF to SI/DI)
+;; D2I          float to integer (DF to SI/DI)
+;; D2S          double to float single
+;; S2D          float single to double
+
+(define_attr "cnv_mode" "unknown,I2S,I2D,S2I,D2I,D2S,S2D" 
+  (const_string "unknown"))
+
 ;; Is this an extended instruction in mips16 mode?
 (define_attr "extended_mips16" "no,yes"
   (const_string "no"))
@@ -254,7 +265,7 @@
 ;; Attribute describing the processor.  This attribute must match exactly
 ;; with the processor_type enumeration in mips.h.
 (define_attr "cpu"
-  "default,4kc,5kc,20kc,m4k,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sr71000"
+  "default,4kc,5kc,20kc,24k,24kx,m4k,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sr71000"
   (const (symbol_ref "mips_tune")))
 
 ;; The type of hardware hazard associated with this instruction.
@@ -488,6 +499,7 @@
 (define_cpu_unit "alu" "alu")
 (define_cpu_unit "imuldiv" "imuldiv")
 
+(include "24k.md")
 (include "3000.md")
 (include "4000.md")
 (include "4100.md")
@@ -2140,6 +2152,7 @@ beq\t%2,%.,1b\;\
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "cvt.s.d\t%0,%1"
   [(set_attr "type"	"fcvt")
+   (set_attr "cnv_mode"	"D2S")   
    (set_attr "mode"	"SF")])
 
 ;; Integer truncation patterns.  Truncating SImode values to smaller
@@ -2454,6 +2467,7 @@ beq\t%2,%.,1b\;\
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "cvt.d.s\t%0,%1"
   [(set_attr "type"	"fcvt")
+   (set_attr "cnv_mode"	"S2D")   
    (set_attr "mode"	"DF")])
 
 ;;
@@ -2482,6 +2496,7 @@ beq\t%2,%.,1b\;\
   "trunc.w.d %0,%1"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
+   (set_attr "cnv_mode"	"D2I")
    (set_attr "length"	"4")])
 
 (define_insn "fix_truncdfsi2_macro"
@@ -2497,6 +2512,7 @@ beq\t%2,%.,1b\;\
 }
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
+   (set_attr "cnv_mode"	"D2I")
    (set_attr "length"	"36")])
 
 (define_expand "fix_truncsfsi2"
@@ -2517,7 +2533,8 @@ beq\t%2,%.,1b\;\
   "TARGET_HARD_FLOAT && ISA_HAS_TRUNC_W"
   "trunc.w.s %0,%1"
   [(set_attr "type"	"fcvt")
-   (set_attr "mode"	"DF")
+   (set_attr "mode"	"SF")
+   (set_attr "cnv_mode"	"S2I")
    (set_attr "length"	"4")])
 
 (define_insn "fix_truncsfsi2_macro"
@@ -2532,7 +2549,8 @@ beq\t%2,%.,1b\;\
     return "trunc.w.s %0,%1,%2";
 }
   [(set_attr "type"	"fcvt")
-   (set_attr "mode"	"DF")
+   (set_attr "mode"	"SF")
+   (set_attr "cnv_mode"	"S2I")
    (set_attr "length"	"36")])
 
 
@@ -2543,6 +2561,7 @@ beq\t%2,%.,1b\;\
   "trunc.l.d %0,%1"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
+   (set_attr "cnv_mode"	"D2I")
    (set_attr "length"	"4")])
 
 
@@ -2553,6 +2572,7 @@ beq\t%2,%.,1b\;\
   "trunc.l.s %0,%1"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"SF")
+   (set_attr "cnv_mode"	"S2I")
    (set_attr "length"	"4")])
 
 
@@ -2563,6 +2583,7 @@ beq\t%2,%.,1b\;\
   "cvt.d.w\t%0,%1"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
+   (set_attr "cnv_mode"	"I2D")   
    (set_attr "length"	"4")])
 
 
@@ -2573,6 +2594,7 @@ beq\t%2,%.,1b\;\
   "cvt.d.l\t%0,%1"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
+   (set_attr "cnv_mode"	"I2D")   
    (set_attr "length"	"4")])
 
 
@@ -2583,6 +2605,7 @@ beq\t%2,%.,1b\;\
   "cvt.s.w\t%0,%1"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"SF")
+   (set_attr "cnv_mode"	"I2S")   
    (set_attr "length"	"4")])
 
 
@@ -2593,6 +2616,7 @@ beq\t%2,%.,1b\;\
   "cvt.s.l\t%0,%1"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"SF")
+   (set_attr "cnv_mode"	"I2S")   
    (set_attr "length"	"4")])
 
 

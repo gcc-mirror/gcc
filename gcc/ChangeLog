@@ -1,3 +1,20 @@
+2005-05-09  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.h (processor_type): Add names for the 24K. 
+	* config/mips/mips.c (mips_cpu_info_table): Add names for the 24K
+	processor family.
+	* config/mips/mips.md (cnv_mode): New attribute for recording the
+	conversion types of float convert insns.
+	(cpu): Add 24k and 24kx.
+	(include): Include 24k.md file.
+	(truncdfsf2, extendsfdf2, fix_truncdfsi2_insn, fix_truncdfsi2_macro)
+	(fix_truncdfdi2, fix_truncsfdi2, floatsidf2, floatdidf2, floatsisf2)
+	(floatdisf2): Setup cnv_mode.
+	(fix_truncsfsi2_insn, fix_truncsfsi2_macro): Changed mode to SF and
+	setup cnv_mode.
+	* config/mips/24k.md: New file, contains 24k DFA pipeline
+	description. 
+
 2005-05-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/sh/sh.c (print_operand_address): Use gcc_assert and
