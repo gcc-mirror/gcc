@@ -1,3 +1,11 @@
+2005-05-09  Roger Sayle  <roger@eyesopen.com>
+
+	* c-tree.h (parser_build_unary_op): New prototype.
+	* c-typeck.c (parser_build_unary_op): New function to construct
+	a unary operation in the C parser.
+	* c-parser.c (c_parser_unary_expression):  Use the new function
+	parser_build_unary_op when appropriate.
+
 2005-05-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR 18655

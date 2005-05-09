@@ -2312,11 +2312,27 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
   return nreverse (result);
 }
 
-/* This is the entry point used by the parser
-   for binary operators in the input.
-   In addition to constructing the expression,
-   we check for operands that were written with other binary operators
-   in a way that is likely to confuse the user.  */
+/* This is the entry point used by the parser to build unary operators
+   in the input.  CODE, a tree_code, specifies the unary operator, and
+   ARG is the operand.  For unary plus, the C parser currently uses
+   CONVERT_EXPR for code.  */
+
+struct c_expr
+parser_build_unary_op (enum tree_code code, struct c_expr arg)
+{
+  struct c_expr result;
+
+  result.original_code = ERROR_MARK;
+  result.value = build_unary_op (code, arg.value, 0);
+  overflow_warning (result.value);
+  return result;
+}
+
+/* This is the entry point used by the parser to build binary operators
+   in the input.  CODE, a tree_code, specifies the binary operator, and
+   ARG1 and ARG2 are the operands.  In addition to constructing the
+   expression, we check for operands that were written with other binary
+   operators in a way that is likely to confuse the user.  */
 
 struct c_expr
 parser_build_binary_op (enum tree_code code, struct c_expr arg1,
