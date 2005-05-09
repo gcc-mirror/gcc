@@ -177,7 +177,7 @@ struct s390_address
   rtx base;
   rtx indx;
   rtx disp;
-  int pointer;
+  bool pointer;
 };
 
 /* Which cpu are we tuning for.  */
@@ -259,7 +259,7 @@ struct machine_function GTY(())
    the source and destination have matching CC modes and that
    CC mode is at least as constrained as REQ_MODE.  */
 
-static int
+static bool
 s390_match_ccmode_set (rtx set, enum machine_mode req_mode)
 {
   enum machine_mode set_mode;
@@ -312,14 +312,14 @@ s390_match_ccmode_set (rtx set, enum machine_mode req_mode)
    CC mode is at least as constrained as REQ_MODE.
    If REQ_MODE is VOIDmode, always return false.  */
 
-int
+bool
 s390_match_ccmode (rtx insn, enum machine_mode req_mode)
 {
   int i;
 
   /* s390_tm_ccmode returns VOIDmode to indicate failure.  */
   if (req_mode == VOIDmode)
-    return 0;
+    return false;
 
   if (GET_CODE (PATTERN (insn)) == SET)
     return s390_match_ccmode_set (PATTERN (insn), req_mode);
@@ -330,10 +330,10 @@ s390_match_ccmode (rtx insn, enum machine_mode req_mode)
           rtx set = XVECEXP (PATTERN (insn), 0, i);
           if (GET_CODE (set) == SET)
             if (!s390_match_ccmode_set (set, req_mode))
-              return 0;
+              return false;
         }
 
-  return 1;
+  return true;
 }
 
 /* If a test-under-mask instruction can be used to implement
@@ -344,7 +344,7 @@ s390_match_ccmode (rtx insn, enum machine_mode req_mode)
    if the instruction cannot (TM).  */
 
 enum machine_mode
-s390_tm_ccmode (rtx op1, rtx op2, int mixed)
+s390_tm_ccmode (rtx op1, rtx op2, bool mixed)
 {
   int bit0, bit1;
 
@@ -1243,12 +1243,12 @@ s390_safe_attr_type (rtx insn)
 
 /* Return true if DISP is a valid short displacement.  */
 
-static int
+static bool
 s390_short_displacement (rtx disp)
 {
   /* No displacement is OK.  */
   if (!disp)
-    return 1;
+    return true;
 
   /* Integer displacement in range.  */
   if (GET_CODE (disp) == CONST_INT)
@@ -1259,20 +1259,20 @@ s390_short_displacement (rtx disp)
       && GET_CODE (XEXP (disp, 0)) == UNSPEC
       && (XINT (XEXP (disp, 0), 1) == UNSPEC_GOT
           || XINT (XEXP (disp, 0), 1) == UNSPEC_GOTNTPOFF))
-    return 0;
+    return false;
 
   /* All other symbolic constants are literal pool references,
      which are OK as the literal pool must be small.  */
   if (GET_CODE (disp) == CONST)
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Decompose a RTL expression ADDR for a memory address into
    its components, returned in OUT.
 
-   Returns 0 if ADDR is not a valid memory address, nonzero
+   Returns false if ADDR is not a valid memory address, true
    otherwise.  If OUT is NULL, don't return the components,
    but check for validity only.
 
@@ -1288,9 +1288,9 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
   rtx indx = NULL_RTX;
   rtx disp = NULL_RTX;
   rtx orig_disp;
-  int pointer = FALSE;
-  int base_ptr = FALSE;
-  int indx_ptr = FALSE;
+  bool pointer = false;
+  bool base_ptr = false;
+  bool indx_ptr = false;
 
   /* Decompose address into base + index + displacement.  */
 
@@ -1328,7 +1328,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 
       else
 	{
-	  return FALSE;
+	  return false;
 	}
     }
 
@@ -1367,7 +1367,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
       else if (!indx)
         indx = gen_rtx_REG (Pmode, BASE_REGNUM);
       else
-        return FALSE;
+        return false;
 
       /* Mark up the displacement.  */
       disp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, disp),
@@ -1386,7 +1386,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 				     gen_rtvec (1, XVECEXP (base, 0, 0)),
 				     UNSPEC_LTREL_OFFSET);
 	    else
-	      return FALSE;
+	      return false;
 
 	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
 	    break;
@@ -1396,11 +1396,11 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	    break;
 
 	  default:
-	    return FALSE;
+	    return false;
 	  }
 
       if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
-	return FALSE;
+	return false;
 
       if (REGNO (base) == BASE_REGNUM
 	  || REGNO (base) == STACK_POINTER_REGNUM
@@ -1411,7 +1411,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	  || REGNO (base) == ARG_POINTER_REGNUM
           || (flag_pic
               && REGNO (base) == PIC_OFFSET_TABLE_REGNUM))
-        pointer = base_ptr = TRUE;
+        pointer = base_ptr = true;
     }
 
   /* Validate index register.  */
@@ -1426,7 +1426,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 				     gen_rtvec (1, XVECEXP (indx, 0, 0)),
 				     UNSPEC_LTREL_OFFSET);
 	    else
-	      return FALSE;
+	      return false;
 
 	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
 	    break;
@@ -1436,11 +1436,11 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	    break;
 
 	  default:
-	    return FALSE;
+	    return false;
 	  }
 
       if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
-	return FALSE;
+	return false;
 
       if (REGNO (indx) == BASE_REGNUM
 	  || REGNO (indx) == STACK_POINTER_REGNUM
@@ -1451,7 +1451,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	  || REGNO (indx) == ARG_POINTER_REGNUM
           || (flag_pic
               && REGNO (indx) == PIC_OFFSET_TABLE_REGNUM))
-        pointer = indx_ptr = TRUE;
+        pointer = indx_ptr = true;
     }
 
   /* Prefer to use pointer as base, not index.  */
@@ -1480,12 +1480,12 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	  && base != return_address_pointer_rtx 
 	  && indx != return_address_pointer_rtx)
 	if (!DISP_IN_RANGE (offset))
-	  return FALSE;
+	  return false;
     }
   else
     {
       /* All the special cases are pointers.  */
-      pointer = TRUE;
+      pointer = true;
 
       /* In the small-PIC case, the linker converts @GOT
          and @GOTNTPOFF offsets to possible displacements.  */
@@ -1517,18 +1517,18 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 		 exceed the size of the constant pool entry.  */
 	      rtx sym = XVECEXP (disp, 0, 0);
 	      if (offset >= GET_MODE_SIZE (get_pool_mode (sym)))
-		return FALSE;
+		return false;
 
               orig_disp = plus_constant (orig_disp, offset);
 	    }
         }
 
       else
-	return FALSE;
+	return false;
     }
 
   if (!base && !indx)
-    pointer = TRUE;
+    pointer = true;
 
   if (out)
     {
@@ -1538,7 +1538,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
       out->pointer = pointer;
     }
 
-  return TRUE;
+  return true;
 }
 
 /* Return true if CODE is a valid address without index.  */
@@ -1556,7 +1556,7 @@ s390_legitimate_address_without_index_p (rtx op)
   return true;
 }
 
-/* Return true if OP is a valid operand for a C constraint.  */
+/* Return 1 if OP is a valid operand for a C constraint, 0 else.  */
 
 int
 s390_extra_constraint_str (rtx op, int c, const char * str)
@@ -1996,7 +1996,7 @@ s390_split_access_reg (rtx reg, rtx *lo, rtx *hi)
 
 /* Return true if OP contains a symbol reference */
 
-int
+bool
 symbolic_reference_mentioned_p (rtx op)
 {
   register const char *fmt;
@@ -2026,7 +2026,7 @@ symbolic_reference_mentioned_p (rtx op)
 
 /* Return true if OP contains a reference to a thread-local symbol.  */
 
-int
+bool
 tls_symbolic_reference_mentioned_p (rtx op)
 {
   register const char *fmt;
@@ -2044,14 +2044,14 @@ tls_symbolic_reference_mentioned_p (rtx op)
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (tls_symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
-	      return 1;
+	      return true;
 	}
 
       else if (fmt[i] == 'e' && tls_symbolic_reference_mentioned_p (XEXP (op, i)))
-	return 1;
+	return true;
     }
 
-  return 0;
+  return false;
 }
 
 
@@ -2172,31 +2172,31 @@ s390_cannot_force_const_mem (rtx x)
    a constant that would need to be forced to the literal pool
    before it can be used as operand.  */
 
-int
+bool
 legitimate_reload_constant_p (register rtx op)
 {
   /* Accept la(y) operands.  */
   if (GET_CODE (op) == CONST_INT
       && DISP_IN_RANGE (INTVAL (op)))
-    return 1;
+    return true;
 
   /* Accept l(g)hi operands.  */
   if (GET_CODE (op) == CONST_INT
       && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'K', "K"))
-    return 1;
+    return true;
 
   /* Accept lliXX operands.  */
   if (TARGET_ZARCH
       && s390_single_part (op, DImode, HImode, 0) >= 0)
-  return 1;
+  return true;
 
   /* Accept larl operands.  */
   if (TARGET_CPU_ZARCH
       && larl_operand (op, VOIDmode))
-    return 1;
+    return true;
 
   /* Everything else cannot be handled without reload.  */
-  return 0;
+  return false;
 }
 
 /* Given an rtx OP being reloaded into a reg required to be in class CLASS,
@@ -2343,56 +2343,53 @@ s390_expand_plus_operand (register rtx target, register rtx src,
 }
 
 
-/* Return nonzero if ADDR is a valid memory address.
+/* Return true if ADDR is a valid memory address.
    STRICT specifies whether strict register checking applies.  */
 
-int
+bool
 legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 		      register rtx addr, int strict)
 {
   struct s390_address ad;
   if (!s390_decompose_address (addr, &ad))
-    return FALSE;
+    return false;
 
   if (strict)
     {
       if (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
-	return FALSE;
+	return false;
       if (ad.indx && !REG_OK_FOR_INDEX_STRICT_P (ad.indx))
-	return FALSE;
+	return false;
     }
   else
     {
       if (ad.base && !REG_OK_FOR_BASE_NONSTRICT_P (ad.base))
-	return FALSE;
+	return false;
       if (ad.indx && !REG_OK_FOR_INDEX_NONSTRICT_P (ad.indx))
-	return FALSE;
+	return false;
     }
 
-  return TRUE;
+  return true;
 }
 
-/* Return 1 if OP is a valid operand for the LA instruction.
+/* Return true if OP is a valid operand for the LA instruction.
    In 31-bit, we need to prove that the result is used as an
    address, as LA performs only a 31-bit addition.  */
 
-int
+bool
 legitimate_la_operand_p (register rtx op)
 {
   struct s390_address addr;
   if (!s390_decompose_address (op, &addr))
-    return FALSE;
+    return false;
 
-  if (TARGET_64BIT || addr.pointer)
-    return TRUE;
-
-  return FALSE;
+  return (TARGET_64BIT || addr.pointer);
 }
 
-/* Return 1 if it is valid *and* preferable to use LA to
+/* Return true if it is valid *and* preferable to use LA to
    compute the sum of OP1 and OP2.  */
 
-int
+bool
 preferred_la_operand_p (rtx op1, rtx op2)
 {
   struct s390_address addr;
@@ -2401,23 +2398,23 @@ preferred_la_operand_p (rtx op1, rtx op2)
     op1 = gen_rtx_PLUS (Pmode, op1, op2);
 
   if (!s390_decompose_address (op1, &addr))
-    return FALSE;
+    return false;
   if (addr.base && !REG_OK_FOR_BASE_STRICT_P (addr.base))
-    return FALSE;
+    return false;
   if (addr.indx && !REG_OK_FOR_INDEX_STRICT_P (addr.indx))
-    return FALSE;
+    return false;
 
   if (!TARGET_64BIT && !addr.pointer)
-    return FALSE;
+    return false;
 
   if (addr.pointer)
-    return TRUE;
+    return true;
 
   if ((addr.base && REG_P (addr.base) && REG_POINTER (addr.base))
       || (addr.indx && REG_P (addr.indx) && REG_POINTER (addr.indx)))
-    return TRUE;
+    return true;
 
-  return FALSE;
+  return false;
 }
 
 /* Emit a forced load-address operation to load SRC into DST.
@@ -3950,7 +3947,7 @@ s390_assemble_integer (rtx x, unsigned int size, int aligned_p)
 /* Returns true if register REGNO is used  for forming
    a memory address in expression X.  */
 
-static int
+static bool
 reg_used_in_mem_p (int regno, rtx x)
 {
   enum rtx_code code = GET_CODE (x);
@@ -3961,14 +3958,14 @@ reg_used_in_mem_p (int regno, rtx x)
     {
       if (refers_to_regno_p (regno, regno+1,
 			     XEXP (x, 0), 0))
-	return 1;
+	return true;
     }
   else if (code == SET
 	   && GET_CODE (SET_DEST (x)) == PC)
     {
       if (refers_to_regno_p (regno, regno+1,
 			     SET_SRC (x), 0))
-	return 1;
+	return true;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -3976,20 +3973,20 @@ reg_used_in_mem_p (int regno, rtx x)
     {
       if (fmt[i] == 'e'
 	  && reg_used_in_mem_p (regno, XEXP (x, i)))
-	return 1;
+	return true;
 
       else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  if (reg_used_in_mem_p (regno, XVECEXP (x, i, j)))
-	    return 1;
+	    return true;
     }
-  return 0;
+  return false;
 }
 
 /* Returns true if expression DEP_RTX sets an address register
    used by instruction INSN to address memory.  */
 
-static int
+static bool
 addr_generation_dependency_p (rtx dep_rtx, rtx insn)
 {
   rtx target, pat;
@@ -4027,7 +4024,7 @@ addr_generation_dependency_p (rtx dep_rtx, rtx insn)
 	    return reg_used_in_mem_p (regno, PATTERN (insn));
 	}
     }
-  return 0;
+  return false;
 }
 
 /* Return 1, if dep_insn sets register used in insn in the agen unit.  */
