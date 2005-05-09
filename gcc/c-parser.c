@@ -4495,66 +4495,45 @@ c_parser_unary_expression (c_parser *parser)
 {
   int ext;
   struct c_expr ret;
-  ret.original_code = ERROR_MARK;
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_PLUS_PLUS:
       c_parser_consume_token (parser);
-      ret.value
-	= build_unary_op (PREINCREMENT_EXPR,
-			  c_parser_cast_expression (parser, NULL).value, 0);
-      overflow_warning (ret.value);
-      return ret;
+      return parser_build_unary_op (PREINCREMENT_EXPR,
+				    c_parser_cast_expression (parser, NULL));
     case CPP_MINUS_MINUS:
       c_parser_consume_token (parser);
-      ret.value
-	= build_unary_op (PREDECREMENT_EXPR,
-			  c_parser_cast_expression (parser, NULL).value, 0);
-      overflow_warning (ret.value);
-      return ret;
+      return parser_build_unary_op (PREDECREMENT_EXPR,
+				    c_parser_cast_expression (parser, NULL));
     case CPP_AND:
       c_parser_consume_token (parser);
-      ret.value
-	= build_unary_op (ADDR_EXPR,
-			  c_parser_cast_expression (parser, NULL).value, 0);
-      overflow_warning (ret.value);
-      return ret;
+      return parser_build_unary_op (ADDR_EXPR,
+				    c_parser_cast_expression (parser, NULL));
     case CPP_MULT:
       c_parser_consume_token (parser);
       ret.value
 	= build_indirect_ref (c_parser_cast_expression (parser, NULL).value,
 			      "unary *");
+      ret.original_code = ERROR_MARK;
       return ret;
     case CPP_PLUS:
       c_parser_consume_token (parser);
       if (!c_dialect_objc () && warn_traditional && !in_system_header)
 	warning (0, "traditional C rejects the unary plus operator");
-      ret.value
-	= build_unary_op (CONVERT_EXPR,
-			  c_parser_cast_expression (parser, NULL).value, 0);
-      overflow_warning (ret.value);
-      return ret;
+      return parser_build_unary_op (CONVERT_EXPR,
+				    c_parser_cast_expression (parser, NULL));
     case CPP_MINUS:
       c_parser_consume_token (parser);
-      ret.value
-	= build_unary_op (NEGATE_EXPR,
-			  c_parser_cast_expression (parser, NULL).value, 0);
-      overflow_warning (ret.value);
-      return ret;
+      return parser_build_unary_op (NEGATE_EXPR,
+				    c_parser_cast_expression (parser, NULL));
     case CPP_COMPL:
       c_parser_consume_token (parser);
-      ret.value
-	= build_unary_op (BIT_NOT_EXPR,
-			  c_parser_cast_expression (parser, NULL).value, 0);
-      overflow_warning (ret.value);
-      return ret;
+      return parser_build_unary_op (BIT_NOT_EXPR,
+				    c_parser_cast_expression (parser, NULL));
     case CPP_NOT:
       c_parser_consume_token (parser);
-      ret.value
-	= build_unary_op (TRUTH_NOT_EXPR,
-			  c_parser_cast_expression (parser, NULL).value, 0);
-      overflow_warning (ret.value);
-      return ret;
+      return parser_build_unary_op (TRUTH_NOT_EXPR,
+				    c_parser_cast_expression (parser, NULL));
     case CPP_AND_AND:
       /* Refer to the address of a label as a pointer.  */
       c_parser_consume_token (parser);
@@ -4563,14 +4542,14 @@ c_parser_unary_expression (c_parser *parser)
 	  ret.value = finish_label_address_expr
 	    (c_parser_peek_token (parser)->value);
 	  c_parser_consume_token (parser);
-	  return ret;
 	}
       else
 	{
 	  c_parser_error (parser, "expected identifier");
 	  ret.value = error_mark_node;
-	  return ret;
 	}
+	ret.original_code = ERROR_MARK;
+	return ret;
     case CPP_KEYWORD:
       switch (c_parser_peek_token (parser)->keyword)
 	{
@@ -4586,18 +4565,14 @@ c_parser_unary_expression (c_parser *parser)
 	  return ret;
 	case RID_REALPART:
 	  c_parser_consume_token (parser);
-	  ret.value
-	    = build_unary_op (REALPART_EXPR,
-			      c_parser_cast_expression (parser, NULL).value,
-			      0);
-	  return ret;
+	  return parser_build_unary_op (REALPART_EXPR,
+					c_parser_cast_expression (parser,
+								  NULL));
 	case RID_IMAGPART:
 	  c_parser_consume_token (parser);
-	  ret.value
-	    = build_unary_op (IMAGPART_EXPR,
-			      c_parser_cast_expression (parser, NULL).value,
-			      0);
-	  return ret;
+	  return parser_build_unary_op (IMAGPART_EXPR,
+					c_parser_cast_expression (parser,
+								  NULL));
 	default:
 	  return c_parser_postfix_expression (parser);
 	}
