@@ -1,5 +1,14 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.md: ("gf") New mode attribute.
+	("fixuns_truncdfdi2", "fixuns_truncdfsi2", "fixuns_truncsfdi2",
+	"fixuns_truncsfsi2"): Merge.
+	("fix_truncdfdi2", "fix_truncsfdi2"): Merge.
+	("fix_truncdfdi2_ieee", "fix_truncdfsi2_ieee", "fix_truncsfdi2_ieee",
+	"fix_truncsfsi2_ieee"): Merge.
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.md: ("FPR") New mode macro.
 	("de", "dee"): New mode attributes.
 	("cmpdf", "cmpsf"): Merge.
