@@ -30,10 +30,10 @@
 void test01()
 {
   using namespace std;
-  using __gnu_test::pod_type;
+  using __gnu_test::pod_ushort;
 
-  typedef numpunct<pod_type>::string_type 	string_type;
-  typedef basic_ostringstream<pod_type> 		ostream_type;
+  typedef numpunct<pod_ushort>::string_type 	string_type;
+  typedef basic_ostringstream<pod_ushort> 		ostream_type;
   
   bool 		test = true;
 
@@ -58,7 +58,7 @@ void test01()
   VERIFY( test );
 
   // 2: fail, no ctype
-  const locale 	loc2(loc, new num_put<pod_type>);
+  const locale 	loc2(loc, new num_put<pod_ushort>);
   os.clear();
   os.imbue(loc2);
   try
@@ -74,7 +74,7 @@ void test01()
   VERIFY( test );
 
   // 3: fail, no numpunct
-  const locale 	loc3(loc2, new ctype<pod_type>);
+  const locale 	loc3(loc2, new ctype<pod_ushort>);
   os.clear();
   os.imbue(loc3);
   try
@@ -90,7 +90,7 @@ void test01()
   VERIFY( test );
 
   // 4: works.
-  const locale 	loc4(loc3, new numpunct<pod_type>);
+  const locale 	loc4(loc3, new numpunct<pod_ushort>);
   os.clear();
   os.imbue(loc4);
   try

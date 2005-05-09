@@ -35,134 +35,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_character.h>
 
-namespace std
-{
-  template<>
-    class ctype<__gnu_test::character>
-    : public locale::facet, public ctype_base
-    {
-    public:
-      typedef __gnu_test::character char_type;
-      explicit ctype(size_t refs  = 0)
-      : locale::facet(refs) { }
-
-      bool
-      is(mask m, char_type c) const
-      { return this->do_is(m, c); }
-
-      const char_type*
-      is(const char_type* low, const char_type* high, mask* vec) const
-      { return this->do_is(low, high, vec); }
-
-      const char_type*
-      scan_is(mask m, const char_type* low, const char_type* high) const
-      { return this->do_scan_is(m, low, high); }
-
-      const char_type*
-      scan_not(mask m, const char_type* low, const char_type* high) const
-      { return this->do_scan_not(m, low, high); }
-
-      char_type
-      toupper(char_type c) const
-      { return this->do_toupper(c); }
-
-      const char_type*
-      toupper(char_type* low, const char_type* high) const
-      { return this->do_toupper(low, high); }
-
-      char_type
-      tolower(char_type c) const
-      { return this->do_tolower(c); }
-
-      const char_type*
-      tolower(char_type* low, const char_type* high) const
-      { return this->do_tolower(low, high); }
-
-      char_type
-      widen(char c) const
-      { return this->do_widen(c); }
-
-      const char*
-      widen(const char* low, const char* high, char_type* to) const
-      { return this->do_widen(low, high, to); }
-
-      char
-      narrow(char_type c, char dfault) const
-      { return this->do_narrow(c, dfault); }
-
-      const char_type*
-      narrow(const char_type* low, const char_type* high,
-	     char dfault, char* to) const
-      { return this->do_narrow(low, high, dfault, to); }
-
-      static locale::id id;
-
-    protected:
-      ~ctype()
-      { }
-
-      virtual bool
-      do_is(mask m, char_type c) const
-      { return false; }
-
-      virtual const char_type*
-      do_is(const char_type* low, const char_type* high, mask* vec) const
-      {
-	fill_n(vec, high - low, mask());
-	return high;
-      }
-
-      virtual const char_type*
-      do_scan_is(mask m, const char_type* low, const char_type* high) const
-      { return high; }
-
-      virtual const char_type*
-      do_scan_not(mask m, const char_type* low, const char_type* high) const
-      { return low; }
-
-      virtual char_type
-      do_toupper(char_type c) const
-      { return c; }
-
-      virtual const char_type*
-      do_toupper(char_type*  low, const char_type*  high) const
-      { return high; }
-
-      virtual char_type
-      do_tolower(char_type c) const
-      { return c; }
-
-      virtual const char_type*
-      do_tolower(char_type*  low, const char_type*  high) const
-      { return high; }
-
-      virtual char_type
-      do_widen(char c) const
-      { return __gnu_test::character::from_char(c); }
-
-      virtual const char* 
-      do_widen(const char* low, const char* high, char_type* dest) const
-      {
-	transform(low, high, dest, &__gnu_test::character::from_char);
-	return high;
-      }
-
-      virtual char
-      do_narrow(char_type, char dfault) const
-      { return dfault; }
-
-      virtual const char_type*
-      do_narrow(const char_type* low, const char_type* high,
-		char dfault, char*  dest) const
-      {
-	fill_n(dest, high - low, dfault);
-	return high;
-      }
-    };
-
-  locale::id ctype<__gnu_test::character>::id;
-} // namespace std
-
 // libstdc++/14072
 void test01()
 {
@@ -170,12 +42,12 @@ void test01()
   using namespace std;
 
   locale loc;
-  loc = locale(loc, new ctype<__gnu_test::character>());
-  loc = locale(loc, new num_get<__gnu_test::character>());
-  loc = locale(loc, new num_put<__gnu_test::character>());
+  loc = locale(loc, new ctype<__gnu_test::pod_uchar>());
+  loc = locale(loc, new num_get<__gnu_test::pod_uchar>());
+  loc = locale(loc, new num_put<__gnu_test::pod_uchar>());
 	
   locale::global(loc);
-  basic_stringstream<__gnu_test::character> s;
+  basic_stringstream<__gnu_test::pod_uchar> s;
   s << "10\n";
   s.seekg(0, ios_base::beg);
   s.imbue(locale::classic());

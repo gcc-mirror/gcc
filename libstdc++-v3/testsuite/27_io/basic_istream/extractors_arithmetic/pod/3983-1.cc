@@ -39,10 +39,9 @@
 void test03()
 {
   using namespace std;
-  using __gnu_test::pod_type;
-  using __gnu_test::value_type;
-  typedef basic_stringbuf<pod_type> 	stringbuf_type;
-  typedef basic_istream<pod_type> 	istream_type;
+  using __gnu_test::pod_ushort;
+  typedef basic_stringbuf<pod_ushort> 	stringbuf_type;
+  typedef basic_istream<pod_ushort> 	istream_type;
 
   stringbuf_type strbuf01;
   istream_type iss(&strbuf01);
@@ -63,12 +62,12 @@ void test03()
 #if !__GXX_WEAK__
 // Explicitly instantiate for systems with no COMDAT or weak support.
 template 
-  std::basic_string<__gnu_test::pod_type>::size_type 
-  std::basic_string<__gnu_test::pod_type>::_Rep::_S_max_size;
+  std::basic_string<__gnu_test::pod_ushort>::size_type 
+  std::basic_string<__gnu_test::pod_ushort>::_Rep::_S_max_size;
 
 template 
-  __gnu_test::pod_type
-  std::basic_string<__gnu_test::pod_type>::_Rep::_S_terminal;
+  __gnu_test::pod_ushort
+  std::basic_string<__gnu_test::pod_ushort>::_Rep::_S_terminal;
 #endif
 
 int main()

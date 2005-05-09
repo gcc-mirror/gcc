@@ -27,8 +27,8 @@
 void test01()
 {
   using namespace std;
-  using __gnu_test::character;
-  typedef basic_filebuf<character>::traits_type traits_type;
+  using __gnu_test::pod_uchar;
+  typedef basic_filebuf<pod_uchar>::traits_type traits_type;
 
   bool test __attribute__((unused)) = true;
   const char* name = "tmp_close_12790";
@@ -37,23 +37,23 @@ void test01()
 	     new codecvt<traits_type::char_type, char,
 	     traits_type::state_type>);
 
-  basic_filebuf<character> fb;
+  basic_filebuf<pod_uchar> fb;
   fb.pubsetbuf(0, 0);
   fb.pubimbue(loc);
 
   fb.open(name, ios_base::out | ios_base::trunc);
-  fb.sputc(character::from_char('b'));
-  fb.sputc(character::from_char(0xff));
-  fb.sputc(character::from_char(0));
+  fb.sputc(pod_uchar::from<char>('b'));
+  fb.sputc(pod_uchar::from<char>(0xff));
+  fb.sputc(pod_uchar::from<char>(0));
 
   // Check that close() writes unshift sequence
   fb.close();
 
   fb.open(name, ios_base::in | ios_base::out | ios_base::ate);
 
-  fb.sputc(character::from_char('a'));
-  fb.sputc(character::from_char(0xff));
-  fb.sputc(character::from_char(0));
+  fb.sputc(pod_uchar::from<char>('a'));
+  fb.sputc(pod_uchar::from<char>(0xff));
+  fb.sputc(pod_uchar::from<char>(0));
 
   fb.close();
 
@@ -66,7 +66,7 @@ void test01()
   traits_type::int_type c = fb.sbumpc();
   VERIFY( c != traits_type::eof() );
   VERIFY( traits_type::eq(traits_type::to_char_type(c),
-			  character::from_char('a')) );
+			  pod_uchar::from<char>('a')) );
 
   fb.close();
 }
