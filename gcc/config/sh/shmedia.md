@@ -25,9 +25,11 @@
 ;; the integer and multimedia unit (imu), the load/store unit (lsu), and
 ;; the floating point unit (fpu).
 
-(define_automaton "shmedia")
+(define_automaton "sh5inst_pipe, sh5fpu_pipe")
 
-(define_cpu_unit "sh5issue,sh5fds" "shmedia")
+(define_cpu_unit "sh5issue" "sh5inst_pipe")
+
+(define_cpu_unit "sh5fds" "sh5fpu_pipe")
 
 ;; Every instruction on SH-5 occupies the issue resource for at least one
 ;; cycle.
@@ -86,8 +88,8 @@
 ;; can continue to issue.
 (define_insn_reservation "shmedia_fdiv" 19
   (and (eq_attr "pipe_model" "sh5media") (eq_attr "type" "fdiv_media"))
-  "sh5fds*19")
+  "sh5issue+sh5fds,sh5fds*18")
 
 (define_insn_reservation "shmedia_dfdiv" 35
   (and (eq_attr "pipe_model" "sh5media") (eq_attr "type" "dfdiv_media"))
-  "sh5fds*35")
+  "sh5issue+sh5fds,sh5fds*34")

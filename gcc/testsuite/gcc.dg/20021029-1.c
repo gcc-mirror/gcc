@@ -2,6 +2,7 @@
    variables into writable sections.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fpic" } */
+/* { dg-options "-O2 -fpic -mpt-fixed" { target sh64*-*-* } } */
 /* { dg-final { scan-assembler-not ".data.rel.ro.local" } } */
 
 int foo (int a)

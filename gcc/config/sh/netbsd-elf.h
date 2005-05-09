@@ -1,5 +1,5 @@
 /* Definitions for SH running NetBSD using ELF
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
 This file is part of GCC.
@@ -109,3 +109,10 @@ do									\
       }									\
   }									\
 while (0)
+
+/* Since libgcc is compiled with -fpic for this target, we can't use
+   __sdivsi3_1 as the division strategy for -O0 and -Os.  */
+#undef SH_DIV_STRATEGY_DEFAULT
+#define SH_DIV_STRATEGY_DEFAULT SH_DIV_CALL2
+#undef SH_DIV_STR_FOR_SIZE
+#define SH_DIV_STR_FOR_SIZE "call2"

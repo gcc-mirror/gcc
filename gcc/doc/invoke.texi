@@ -660,7 +660,10 @@ See RS/6000 and PowerPC Options.
 -mb  -ml  -mdalign  -mrelax @gol
 -mbigtable  -mfmovd  -mhitachi -mrenesas -mno-renesas -mnomacsave @gol
 -mieee  -misize  -mpadstruct  -mspace @gol
--mprefergot  -musermode}
+-mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
+-mdivsi3_libfunc=@var{name}  @gol
+-madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
+ -minvalid-symbols}
 
 @emph{SPARC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -11466,6 +11469,11 @@ Mark the @code{MAC} register as call-clobbered, even if
 @item -mieee
 @opindex mieee
 Increase IEEE-compliance of floating-point code.
+At the moment, this is equivalent to @option{-fno-finite-math-only}.
+When generating 16 bit SH opcodes, getting IEEE-conforming results for
+comparisons of NANs / infinities incurs extra overhead in every
+floating point comparison, therefore the default is set to
+@option{-ffinite-math-only}.
 
 @item -misize
 @opindex misize
@@ -11491,6 +11499,107 @@ Generate a library function call to invalidate instruction cache
 entries, after fixing up a trampoline.  This library function call
 doesn't assume it can write to the whole memory address space.  This
 is the default when the target is @code{sh-*-linux*}.
+
+@item -multcost=@var{number}
+@opindex multcost=@var{number}
+Set the cost to assume for a multiply insn.
+
+@item -mdiv=@var{strategy}
+@opindex mdiv=@var{strategy}
+Set the division strategy to use for SHmedia code.  @var{strategy} must be
+one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call,
+inv:call2, inv:fp .
+"fp" performs the operation in floating point.  This has a very high latency,
+but needs only a few instructions, so it might be a good choice if
+your code has enough easily esploitable ILP to allow the compiler to
+schedule the floating point instructions together with other instructions.
+Division by zero causes a floating point exception.
+"inv" uses integer operations to calculate the inverse of the divisor,
+and then multiplies the divident with the inverse.  This strategy allows
+cse and hoisting of the inverse calculation.  Division by zero calculates
+an unspecified result, but does not trap.
+"inv:minlat" is a variant of "inv" where if no cse / hoisting opportunities
+have been found, or if the entire operation has been hoisted to the same
+place, the last stages of the inverse calculation are intertwined with the
+final multiply to reduce the overall latency, at the expense of using a few
+more instructions, and thus offering fewer scheduling opportunities with
+other code.
+"call" calls a library function that usually implements the inv:minlat
+strategy.
+This gives high code density for m5-*media-nofpu compilations.
+"call2" uses a different entry point of the same library function, where it
+assumes that a pointer to a lookup table has already been set up, which
+exposes the pointer load to cse / code hoisting optimizations.
+"inv:call", "inv:call2" and "inv:fp" all use the "inv" algorithm for initial
+code generation, but if the code stays unoptimized, revert to the "call",
+"call2", or "fp" strategies, resspectively.  Note that the
+potentially-trapping side effect of division by zero is carried by a
+separate instruction, so it is possible that all the integer instructions
+are hoisted out, but the marker for the side effect stays where it is.
+A recombination to fp operations or a call is not possible in that case.
+"inv20u" and "inv20l" are variants of the "inv:minlat" strategy.  In the case
+that the inverse calculation was nor separated from the multiply, they speed
+up division where the dividend fits into 20 bits (plus sign where applicable),
+by inserting a test to skip a number of operations in this case; this test
+slows down the case of larger divdends.  inv20u assumes the case of a such
+a small dividend to be unlikely, and inv20l assumes it to be likely.
+
+@item -mdivsi3_libfunc=@var{name}
+@opindex mdivsi3_libfunc=@var{name}
+Set the name of the library function used for 32 bit signed division to
+@var{name}.  This only affect the name used in the call and inv:call
+division strategies, and the compiler will still expect the same
+sets of input/output/clobbered registers as if this option was not present.
+
+@item -madjust-unroll
+@opindex madjust-unroll
+Throttle unrolling to avoid thrashing target registers.
+This option only has an effect if the gcc code base supports the
+TARGET_ADJUST_UNROLL_MAX target hook.
+
+@item -mindexed-addressing
+@opindex mindexed-addressing
+Enable the use of the indexed addressing mode for SHmedia32/SHcompact.
+This is only safe if the hardware and/or OS implement 32 bit wrap-around
+semantics for the indexed addressing mode.  The architecture allows the
+implementation of processors with 64 bit MMU, which the OS could use to
+get 32 bit addressing, but since no current harware implementation supports
+this or any other way to make the indexed addressing mode safe to use in
+the 32 bit ABI, the default is -mno-indexed-addressing.
+
+@item -mgettrcost=@var{number}
+@opindex mgettrcost=@var{number}
+Set the cost assumed for the gettr instruction to @var{number}.
+The default is 2 if @option{-mpt-fixed} is in effect, 100 otherwise.
+
+@item -mpt-fixed
+@opindex mpt-fixed
+Assume pt* instructions won't trap.  This will generally generate better
+scheduled code, but is unsafe on current hardware.  The current architecture
+definition says that ptabs and ptrel trap when the target anded with 3 is 3.
+This has the unintentional effect of making it unsafe to schedule ptabs /
+ptrel before a branch, or hoist it out of a loop.  For example,
+__do_global_ctors, a part of libgcc that runs constructors at program
+startup, calls functions in a list which is delimited by -1.  With the
+-mpt-fixed option, the ptabs will be done before testing against -1.
+That means that all the constructors will be run a bit quicker, but when
+the loop comes to the end of the list, the pprogram crashes because ptabs
+loads -1 into a target register.  Since this option is unsafe for any
+hardware implementing the current architecture specification, the default
+is -mno-pt-fixed.  Unless the user specifies a specific cost with
+@option{-mgettrcost}, -mno-pt-fixed also implies @option{-mgettrcost=100};
+this deters register allocation using target registers for storing
+ordinary integers.
+
+@item -minvalid-symbols
+@opindex minvalid-symbols
+Assume symbols might be invalid.  Ordinary function symbols generated by
+the compiler will always be valid to load with movi/shori/ptabs or
+movi/shori/ptrel, but with assembler and/or linker tricks it is possible
+to generate symbols that will cause ptabs / ptrel to trap.
+This option is only meaningful when @option{-mno-pt-fixed} is in effect.
+It will then prevent cross-basic-block cse, hoisting and most scheduling
+of symbol loads.  The default is @option{-mno-invalid-symbols}.
 @end table
 
 @node SPARC Options
