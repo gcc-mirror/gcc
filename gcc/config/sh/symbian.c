@@ -216,14 +216,10 @@ sh_symbian_mark_dllexport (tree decl)
   tree idp;
 
   rtlname = XEXP (DECL_RTL (decl), 0);
-
-  if (GET_CODE (rtlname) == SYMBOL_REF)
-    oldname = XSTR (rtlname, 0);
-  else if (GET_CODE (rtlname) == MEM
-	   && GET_CODE (XEXP (rtlname, 0)) == SYMBOL_REF)
-    oldname = XSTR (XEXP (rtlname, 0), 0);
-  else
-    abort ();
+  if (GET_CODE (rtlname) == MEM)
+    rtlname = XEXP (rtlname, 0);
+  gcc_assert (GET_CODE (rtlname) == SYMBOL_REF);
+  oldname = XSTR (rtlname, 0);
 
   if (sh_symbian_dllimport_name_p (oldname))
     {
@@ -265,14 +261,10 @@ sh_symbian_mark_dllimport (tree decl)
   rtx newrtl;
 
   rtlname = XEXP (DECL_RTL (decl), 0);
-
-  if (GET_CODE (rtlname) == SYMBOL_REF)
-    oldname = XSTR (rtlname, 0);
-  else if (GET_CODE (rtlname) == MEM
-	   && GET_CODE (XEXP (rtlname, 0)) == SYMBOL_REF)
-    oldname = XSTR (XEXP (rtlname, 0), 0);
-  else
-    abort ();
+  if (GET_CODE (rtlname) == MEM)
+    rtlname = XEXP (rtlname, 0);
+  gcc_assert (GET_CODE (rtlname) == SYMBOL_REF);
+  oldname = XSTR (rtlname, 0);
 
   if (sh_symbian_dllexport_name_p (oldname))
     {

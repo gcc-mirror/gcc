@@ -89,15 +89,10 @@ Boston, MA 02111-1307, USA.  */
 #define FUNCTION_PROFILER(STREAM,LABELNO)				\
 do									\
   {									\
-    if (TARGET_SHMEDIA32)						\
+    if (TARGET_SHMEDIA32 || TARGET_SHMEDIA64)				\
       {									\
 	/* FIXME */							\
-	abort ();							\
-      }									\
-    else if (TARGET_SHMEDIA64)						\
-      {									\
-	/* FIXME */							\
-	abort ();							\
+	sorry ("unimplemented-shmedia profiling");			\
       }									\
     else								\
       {									\
