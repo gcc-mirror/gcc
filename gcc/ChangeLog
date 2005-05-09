@@ -1,3 +1,37 @@
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/s390.c: (s390_match_ccmode_set,
+	s390_branch_condition_mnemonic, s390_short_displacement,
+	s390_decompose_address, get_thread_pointer, legitimize_tls_address,
+	print_shift_count_operand, get_some_local_dynamic_name,
+	get_some_local_dynamic_name_1, reg_used_in_mem_p,
+	addr_generation_dependency_p, s390_split_branches,
+	annotate_constant_pool_refs, find_constant_pool_ref,
+	replace_constant_pool_ref, find_ltrel_base, replace_ltrel_base,
+	s390_optimize_prologue, find_unused_clobbered_reg, s390_frame_area,
+	s390_register_info, s390_frame_info, s390_init_frame_layout,
+	s390_update_frame_layout, save_fpr, restore_fpr, save_gprs,
+	restore_gprs, s390_function_arg_size, s390_function_arg_float,
+	s390_init_machine_status, s390_assemble_integer, s390_handle_option,
+	s390_encode_section_info, s390_cannot_force_const_mem,
+	s390_delegitimize_address, s390_return_in_memory, s390_init_builtins,
+	s390_expand_builtin, s390_output_mi_thunk, s390_safe_attr_type,
+	s390_adjust_priority, s390_issue_rate,
+	s390_first_cycle_multipass_dfa_lookahead, s390_cannot_copy_insn_p,
+	s390_rtx_costs, s390_address_cost, s390_reorg, s390_valid_pointer_mode,
+	s390_build_builtin_va_list, s390_gimplify_va_arg,
+	s390_function_ok_for_sibcall, s390_call_saved_register_used,
+	s390_pass_by_reference, s390_fixed_condition_code_regs,
+	s390_cc_modes_compatible s390_mainpool_start,, s390_mainpool_finish,
+	s390_mainpool_cancel, s390_chunkify_start, s390_chunkify_finish,
+	s390_chunkify_cancel, s390_start_pool, s390_end_pool,
+	s390_add_pool_insn, s390_find_pool, s390_add_constant,
+	s390_find_constant, s390_add_execute, s390_find_execute,
+	s390_execute_label, s390_execute_target, s390_dump_pool,
+	s390_dump_execute, s390_alloc_pool, s390_free_pool): Remove prototypes. 
+	Move target macro definitions to the end of the file.  Move several
+	functions within the file to assure correct compiling.
+
 2005-05-09  Steven Bosscher  <stevenb@suse.de>
 
 	* calls.c (purge_reg_equiv_notes): Remove, fold into...
