@@ -39,6 +39,12 @@ namespace std
   locale::id 
   ctype<__gnu_test::pod_uchar>::id;
 
+  locale::id
+  numpunct<__gnu_test::pod_uint>::id;
+
+  locale::id
+  moneypunct<__gnu_test::pod_uint>::id;
+
   // Member specializations for the existing facet classes.  
   // NB: This isn't especially portable. Perhaps a better way would be
   // to just specialize all of numpunct and ctype.

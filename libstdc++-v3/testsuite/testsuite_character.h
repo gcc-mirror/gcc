@@ -71,6 +71,7 @@ namespace __gnu_test
   typedef character<unsigned char, pod_int, pod_state>  	pod_char;
   typedef character<unsigned char, unsigned int, pod_state>  	pod_uchar;
   typedef character<unsigned short, unsigned int>	   	pod_ushort;
+  typedef character<unsigned int, unsigned long>	   	pod_uint;  
 
   // Specializations.
   // pod_char
@@ -377,6 +378,160 @@ namespace std
 	return high;
       }
     };
+
+  // numpunct specializations
+  template<> 
+    class numpunct<__gnu_test::pod_uint>
+    : public locale::facet
+    { 
+    public: 
+      typedef __gnu_test::pod_uint    char_type; 
+      typedef basic_string<char_type> string_type; 
+    
+      static locale::id id; 
+      
+      explicit
+      numpunct(size_t refs = 0)
+      : locale::facet(refs) 
+      { } 
+ 
+      char_type
+      decimal_point() const 
+      { return this->do_decimal_point(); } 
+ 
+      char_type
+      thousands_sep() const 
+      { return this->do_thousands_sep(); } 
+ 
+      string
+      grouping() const 
+      { return this->do_grouping(); } 
+ 
+      string_type
+      truename() const 
+      { return this->do_truename(); } 
+ 
+      string_type
+      falsename() const 
+      { return this->do_falsename(); } 
+ 
+    protected: 
+      ~numpunct()
+      { } 
+ 
+      virtual char_type
+      do_decimal_point() const 
+      { return char_type(); } 
+ 
+      virtual char_type
+      do_thousands_sep() const 
+      { return char_type(); } 
+ 
+      virtual string
+      do_grouping() const 
+      { return string(); } 
+ 
+      virtual string_type
+      do_truename() const 
+      { return string_type(); }
+ 
+      virtual string_type
+      do_falsename() const 
+      { return string_type(); } 
+    };
+
+  template<> 
+    class moneypunct<__gnu_test::pod_uint>
+    : public locale::facet, public money_base
+    { 
+    public: 
+      typedef __gnu_test::pod_uint    char_type; 
+      typedef basic_string<char_type> string_type; 
+    
+      static locale::id id; 
+      static const bool intl = false;
+
+      explicit
+      moneypunct(size_t refs = 0)
+      : locale::facet(refs) 
+      { }
+ 
+      char_type
+      decimal_point() const 
+      { return this->do_decimal_point(); } 
+ 
+      char_type
+      thousands_sep() const 
+      { return this->do_thousands_sep(); }
+
+      string
+      grouping() const
+      { return this->do_grouping(); }
+
+      string_type
+      curr_symbol() const 
+      { return this->do_curr_symbol(); } 
+ 
+      string_type
+      positive_sign() const 
+      { return this->do_positive_sign(); } 
+
+      string_type
+      negative_sign() const 
+      { return this->do_negative_sign(); } 
+      
+      int
+      frac_digits() const
+      { return this->do_frac_digits(); }
+
+      pattern
+      pos_format() const
+      { return this->do_pos_format(); }
+ 
+      pattern
+      neg_format() const
+      { return this->do_neg_format(); }
+  
+    protected: 
+      ~moneypunct() 
+      { } 
+ 
+      virtual char_type
+      do_decimal_point() const 
+      { return char_type(); } 
+ 
+      virtual char_type
+      do_thousands_sep() const 
+      { return char_type(); } 
+ 
+      virtual string
+      do_grouping() const 
+      { return string(); }
+
+      virtual string_type
+      do_curr_symbol() const 
+      { return string_type(); } 
+ 
+      string_type
+      do_positive_sign() const 
+      { return string_type(); } 
+
+      string_type
+      do_negative_sign() const 
+      { return string_type(); } 
+      
+      int
+      do_frac_digits() const
+      { return 0; }
+
+      pattern
+      do_pos_format() const
+      { return pattern(); }
+ 
+      pattern
+      do_neg_format() const
+      { return pattern(); }
+     };
 } // namespace std
 
 #endif // _GLIBCXX_TESTSUITE_CHARACTER_H

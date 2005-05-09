@@ -1,44 +1,66 @@
+2005-05-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21238
+	* include/bits/locale_facets.tcc (num_get::_M_extract_float,
+	num_get::_M_extract_int, num_get::do_get(bool&),
+	num_put::_M_insert_int, num_put::_M_insert_float,
+	num_put::do_put(bool), money_get::_M_extract,
+	money_put::_M_insert): Adjust the __cache_type typedef not to
+	forward to a numpunct/moneypunct typedef.
+	* testsuite/testsuite_character.h: Add pod_uint and its numpunct
+	and moneypunct specializations.
+	* testsuite/testsuite_character.cc: Add numpunct<pod_uint>::id
+	and moneypunct<pod_uint>::id.
+	* testsuite/22_locale/num_get/3.cc: New.
+	* testsuite/22_locale/num_put/3.cc: Likewise.
+	* testsuite/22_locale/money_get/3.cc: Likewise.
+	* testsuite/22_locale/money_put/3.cc: Likewise.
+
+	* include/bits/locale_facets.tcc (money_put::_M_insert,
+	time_get::_M_extract_name): Prefer operator== to operator!=
+	on char_types.
+
 2005-05-09  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * include/ext/pod_char_traits.h (__gnu_cxx::character): Add char_type.
-        (character::to): New.
-        (character::from): New.
-        (operator==): Add state parameter.
-        (operator<): Same.
-        (char_traits::copy): Use std::copy.
-        (char_traits::assign): Use std::fill_n.
-        (char_traits::to_char_type): Use character::from.
-        (char_traits::to_int_type): Use character::to.
-        * testsuite/testsuite_character.h (__gnu_test::character): Remove.
-        (__gnu_test::conversion_state): Remove.
-        (__gnu_test::pod_char): Remove.
-        (pod_char): New typedef.
-        (pod_uchar): New typedef.
-        (pod_ushort): New typedef.
-        * testsuite/testsuite_character.cc: Fixups.
-        * testsuite/21_strings/basic_string/inserters_extractors/pod/
-        10081-in.cc: Same.
-        * testsuite/21_strings/basic_string/inserters_extractors/pod/
-        10081-out.cc: Same.
-        * testsuite/22_locale/numpunct/members/pod/1.cc: Same.
-        * testsuite/22_locale/numpunct/members/pod/2.cc: Same.
-        * testsuite/27_io/basic_filebuf/close/12790-1.cc: Same.
-        * testsuite/27_io/basic_filebuf/open/12790-1.cc: Same.
-        * testsuite/27_io/basic_filebuf/seekoff/12790-1.cc: Same.
-        * testsuite/27_io/basic_filebuf/seekoff/12790-2.cc: Same.
-        * testsuite/27_io/basic_filebuf/seekoff/12790-3.cc: Same.
-        * testsuite/27_io/basic_filebuf/seekoff/12790-4.cc: Same.
-        * testsuite/27_io/basic_filebuf/seekpos/12790-1.cc: Same.
-        * testsuite/27_io/basic_filebuf/seekpos/12790-2.cc: Same.
-        * testsuite/27_io/basic_filebuf/seekpos/12790-3.cc: Same.
-        * testsuite/27_io/basic_ios/imbue/14072.cc: Same.
-        * testsuite/27_io/basic_istream/extractors_arithmetic/pod/
-        3983-1.cc: Same.
-        * testsuite/27_io/basic_istream/extractors_character/pod/
-        3983-2.cc: Same.
-        * testsuite/27_io/basic_istream/extractors_other/pod/3983-3.cc: Same.
-        * testsuite/27_io/basic_istream/sentry/pod/1.cc: Same.
-        * testsuite/27_io/basic_ostream/sentry/pod/1.cc: Same.
+	* include/ext/pod_char_traits.h (__gnu_cxx::character): Add char_type.
+	(character::to): New.
+	(character::from): New.
+	(operator==): Add state parameter.
+	(operator<): Same.
+	(char_traits::copy): Use std::copy.
+	(char_traits::assign): Use std::fill_n.
+	(char_traits::to_char_type): Use character::from.
+	(char_traits::to_int_type): Use character::to.
+	* testsuite/testsuite_character.h (__gnu_test::character): Remove.
+	(__gnu_test::conversion_state): Remove.
+	(__gnu_test::pod_char): Remove.
+	(pod_char): New typedef.
+	(pod_uchar): New typedef.
+	(pod_ushort): New typedef.
+	* testsuite/testsuite_character.cc: Fixups.
+	* testsuite/21_strings/basic_string/inserters_extractors/pod/
+	10081-in.cc: Same.
+	* testsuite/21_strings/basic_string/inserters_extractors/pod/
+	10081-out.cc: Same.
+	* testsuite/22_locale/numpunct/members/pod/1.cc: Same.
+	* testsuite/22_locale/numpunct/members/pod/2.cc: Same.
+	* testsuite/27_io/basic_filebuf/close/12790-1.cc: Same.
+	* testsuite/27_io/basic_filebuf/open/12790-1.cc: Same.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-1.cc: Same.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-2.cc: Same.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-3.cc: Same.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-4.cc: Same.
+	* testsuite/27_io/basic_filebuf/seekpos/12790-1.cc: Same.
+	* testsuite/27_io/basic_filebuf/seekpos/12790-2.cc: Same.
+	* testsuite/27_io/basic_filebuf/seekpos/12790-3.cc: Same.
+	* testsuite/27_io/basic_ios/imbue/14072.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/pod/
+	3983-1.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_character/pod/
+	3983-2.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_other/pod/3983-3.cc: Same.
+	* testsuite/27_io/basic_istream/sentry/pod/1.cc: Same.
+	* testsuite/27_io/basic_ostream/sentry/pod/1.cc: Same.
 
 2005-05-09  Benjamin Kosnik  <bkoz@redhat.com>
 
