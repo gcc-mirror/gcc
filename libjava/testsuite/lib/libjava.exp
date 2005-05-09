@@ -278,6 +278,10 @@ proc libjava_find_gij {} {
     global base_dir objdir
 
     set gijdir [lookfor_file [get_multilibs] libjava];
+    # Fall back if get_multilibs fails.
+    if {$gijdir == ""} {
+      set gijdir "$objdir/.."
+    }
     if {! [file exists $gijdir/gij]} {
 	return ""
     }
