@@ -1,3 +1,10 @@
+2005-05-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/21397
+	* arm.c (ARM_OPT_SET_CPU, ARM_OPT_SET_ARCH, ARM_OPT_SET_TUNE): Define.
+	(arm_override_options): Use them instead of manifest constants.  Don't
+	allow -march to override the -mtune setting.
+
 2005-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/ia64.c (ia64_override_options): Don't set

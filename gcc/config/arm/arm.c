@@ -569,6 +569,10 @@ struct arm_cpu_select arm_select[] =
   { NULL,	"-mtune=",	all_cores }
 };
 
+/* Defines representing the indexes into the above table.  */
+#define ARM_OPT_SET_CPU 0
+#define ARM_OPT_SET_ARCH 1
+#define ARM_OPT_SET_TUNE 2
 
 /* The name of the proprocessor macro to define for this architecture.  */
 
@@ -761,6 +765,7 @@ void
 arm_override_options (void)
 {
   unsigned i;
+  enum processor_type target_arch_cpu = arm_none;
 
   /* Set up the flags based on the cpu/architecture selected by the user.  */
   for (i = ARRAY_SIZE (arm_select); i--;)
@@ -775,22 +780,25 @@ arm_override_options (void)
             if (streq (ptr->string, sel->name))
               {
 		/* Set the architecture define.  */
-		if (i != 2)
+		if (i != ARM_OPT_SET_TUNE)
 		  sprintf (arm_arch_name, "__ARM_ARCH_%s__", sel->arch);
 
 		/* Determine the processor core for which we should
 		   tune code-generation.  */
 		if (/* -mcpu= is a sensible default.  */
-		    i == 0
-		    /* If -march= is used, and -mcpu= has not been used,
-		       assume that we should tune for a representative
-		       CPU from that architecture.  */
-		    || i == 1
+		    i == ARM_OPT_SET_CPU
 		    /* -mtune= overrides -mcpu= and -march=.  */
-		    || i == 2)
+		    || i == ARM_OPT_SET_TUNE)
 		  arm_tune = (enum processor_type) (sel - ptr->processors);
 
-		if (i != 2)
+		/* Remember the CPU associated with this architecture.
+		   If no other option is used to set the CPU type,
+		   we'll use this to guess the most suitable tuning
+		   options.  */
+		if (i == ARM_OPT_SET_ARCH)
+		  target_arch_cpu = sel->core;
+		
+		if (i != ARM_OPT_SET_TUNE)
 		  {
 		    /* If we have been given an architecture and a processor
 		       make sure that they are compatible.  We only generate
@@ -810,6 +818,10 @@ arm_override_options (void)
             error ("bad value (%s) for %s switch", ptr->string, ptr->name);
         }
     }
+
+  /* Guess the tuning options from the architecture if necessary.  */
+  if (arm_tune == arm_none)
+    arm_tune = target_arch_cpu;
 
   /* If the user did not specify a processor, choose one for them.  */
   if (insn_flags == 0)
