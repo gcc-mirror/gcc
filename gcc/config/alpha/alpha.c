@@ -3262,7 +3262,7 @@ alpha_split_tfmode_pair (rtx operands[4])
       operands[2] = adjust_address (operands[1], DImode, 0);
       break;
 
-    case CONST_FLOAT:
+    case CONST_DOUBLE:
       gcc_assert (operands[1] == CONST0_RTX (TFmode));
       operands[2] = operands[3] = const0_rtx;
       break;
