@@ -1,4 +1,8 @@
-2005-05-06  J"orn Rennecke <joern.rennecke@st.com>
+2005-05-09  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/return_1.f90: New test.
+
+2005-05-09  J"orn Rennecke  <joern.rennecke@st.com>
 
 	* gcc.dg/pr15784-3.c: Add -fno-finite-math-only option.
 
