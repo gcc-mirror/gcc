@@ -1,3 +1,7 @@
+2005-05-08  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (adjust_address): Fix typo last change.
+
 2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.h (REG_VALID_P): A regno must be >= 0
