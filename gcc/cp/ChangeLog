@@ -1,3 +1,18 @@
+2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21427
+	Backport 2005-03-01  Nathan Sidwell  <nathan@codesourcery.com>
+	* class.c (update_vtable_entry_for_fn): Don't crash on invalid
+	covariancy. 
+
+	* cp-tree.h (THUNK_TARGET): Expand comment.
+	* method.c (use_thunk): Make sure we also use the target, if that
+	is a thunk.
+
+	Backport 2005-02-11  Nathan Sidwell  <nathan@codesourcery.com>
+	* class.c (update_vtable_entry_for_fn): Walk the covariant's binfo
+	chain rather than using lookup_base.
+
 2005-05-04  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:
