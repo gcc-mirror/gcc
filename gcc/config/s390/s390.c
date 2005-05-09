@@ -1281,7 +1281,7 @@ s390_short_displacement (rtx disp)
    canonical form so that they will be recognized.  */
 
 static int
-s390_decompose_address (register rtx addr, struct s390_address *out)
+s390_decompose_address (rtx addr, struct s390_address *out)
 {
   HOST_WIDE_INT offset = 0;
   rtx base = NULL_RTX;
@@ -1970,7 +1970,7 @@ s390_address_cost (rtx addr)
    otherwise return 0.  */
 
 int
-tls_symbolic_operand (register rtx op)
+tls_symbolic_operand (rtx op)
 {
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
@@ -1999,8 +1999,8 @@ s390_split_access_reg (rtx reg, rtx *lo, rtx *hi)
 bool
 symbolic_reference_mentioned_p (rtx op)
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
     return 1;
@@ -2010,7 +2010,7 @@ symbolic_reference_mentioned_p (rtx op)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
@@ -2029,8 +2029,8 @@ symbolic_reference_mentioned_p (rtx op)
 bool
 tls_symbolic_reference_mentioned_p (rtx op)
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (GET_CODE (op) == SYMBOL_REF)
     return tls_symbolic_operand (op);
@@ -2040,7 +2040,7 @@ tls_symbolic_reference_mentioned_p (rtx op)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (tls_symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
@@ -2060,7 +2060,7 @@ tls_symbolic_reference_mentioned_p (rtx op)
    and that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 int
-legitimate_pic_operand_p (register rtx op)
+legitimate_pic_operand_p (rtx op)
 {
   /* Accept all non-symbolic constants.  */
   if (!SYMBOLIC_CONST (op))
@@ -2075,7 +2075,7 @@ legitimate_pic_operand_p (register rtx op)
    It is given that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 int
-legitimate_constant_p (register rtx op)
+legitimate_constant_p (rtx op)
 {
   /* Accept all non-symbolic constants.  */
   if (!SYMBOLIC_CONST (op))
@@ -2173,7 +2173,7 @@ s390_cannot_force_const_mem (rtx x)
    before it can be used as operand.  */
 
 bool
-legitimate_reload_constant_p (register rtx op)
+legitimate_reload_constant_p (rtx op)
 {
   /* Accept la(y) operands.  */
   if (GET_CODE (op) == CONST_INT
@@ -2288,8 +2288,8 @@ s390_secondary_output_reload_class (enum reg_class class,
    SCRATCH may be used as scratch register.  */
 
 void
-s390_expand_plus_operand (register rtx target, register rtx src,
-			  register rtx scratch)
+s390_expand_plus_operand (rtx target, rtx src,
+			  rtx scratch)
 {
   rtx sum1, sum2;
   struct s390_address ad;
@@ -2348,7 +2348,7 @@ s390_expand_plus_operand (register rtx target, register rtx src,
 
 bool
 legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-		      register rtx addr, int strict)
+		      rtx addr, int strict)
 {
   struct s390_address ad;
   if (!s390_decompose_address (addr, &ad))
@@ -2377,7 +2377,7 @@ legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
    address, as LA performs only a 31-bit addition.  */
 
 bool
-legitimate_la_operand_p (register rtx op)
+legitimate_la_operand_p (rtx op)
 {
   struct s390_address addr;
   if (!s390_decompose_address (op, &addr))
@@ -2972,7 +2972,7 @@ emit_symbolic_move (rtx *operands)
    See comments by legitimize_pic_address for details.  */
 
 rtx
-legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
+legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 		    enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx constant_term = const0_rtx;
@@ -3027,8 +3027,8 @@ legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
     {
       if (GET_CODE (XEXP (x, 0)) == REG)
 	{
-	  register rtx temp = gen_reg_rtx (Pmode);
-	  register rtx val  = force_operand (XEXP (x, 1), temp);
+	  rtx temp = gen_reg_rtx (Pmode);
+	  rtx val  = force_operand (XEXP (x, 1), temp);
 	  if (val != temp)
 	    emit_move_insn (temp, val);
 
@@ -3037,8 +3037,8 @@ legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
 
       else if (GET_CODE (XEXP (x, 1)) == REG)
 	{
-	  register rtx temp = gen_reg_rtx (Pmode);
-	  register rtx val  = force_operand (XEXP (x, 0), temp);
+	  rtx temp = gen_reg_rtx (Pmode);
+	  rtx val  = force_operand (XEXP (x, 0), temp);
 	  if (val != temp)
 	    emit_move_insn (temp, val);
 
