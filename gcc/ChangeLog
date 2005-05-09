@@ -1,5 +1,17 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.md: ("hc"): New mode attribute.
+	("extendhidi2", "extendqidi2"): Merge.
+	("*extendhidi2", "*extendqidi2"): Merge.
+	("extendhisi2", "extendqisi2"): Merge.
+	("zero_extendhidi2", "zero_extendqidi2"): Merge.
+	("*zero_extendhidi2", "*zero_extendqidi2"): Merge.
+	Merged 2 define_split.
+	("*zero_extendhisi2", "*zero_extendqisi2"): Merge.
+	("*zero_extendhisi2_64", "*zero_extendqisi2_64"): Merge.
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.md: ("COMPARE"): New mode macro.
 	("beq", "bne", "bgt", "bgtu", "blt", "bltu", "bge", "bgeu",
 	"ble", "bleu", "bunordered", "bordered", "buneq", "bunlt",
