@@ -1,5 +1,28 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390-protos.h: (s390_match_ccmode,
+	s390_match_ccmode_set, reg_used_in_mem_p,
+	symbolic_reference_mentioned_p, tls_symbolic_reference_mentioned_p,
+	legitimate_la_operand_p, preferred_la_operand_p,
+	s390_short_displacement, addr_generation_dependency_p,
+	legitimate_reload_constant_p, legitimate_address_p): Change return type
+	into 'bool'.
+	(s390_tm_ccmode): Change type of parameter "mixed" into 'bool'. 
+	* config/s390/s390.c: (s390_match_ccmode,
+	symbolic_reference_mentioned_p, tls_symbolic_reference_mentioned_p,
+	legitimate_reload_constant_p): Change return type into 'bool'.
+	(preferred_la_operand_p,legitimate_la_operand_p, legitimate_address_p):
+	Likewise.  Additionally adapted comment.  
+	(s390_extra_constraint_p): Change Comment to reflect 'int' return type.
+	(s390_tm_ccmode): Change type of parameter "mixed" into 'bool'. 
+	(s390_decompose_address): Change the type of the internal flags
+	"pointer", "base_ptr", "indx_ptr", and the return value into 'bool'.
+	(struct s390_address): Change type of "pointer" into bool.
+	* config/s390/s390.md: ("*tmdi_reg", "*tmsi_reg", "tm<mode>_full"):
+	Adapt calls for 's390_tm_ccmode' to the new signature.
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.c: (s390_match_ccmode_set,
 	s390_branch_condition_mnemonic, s390_short_displacement,
 	s390_decompose_address, get_thread_pointer, legitimize_tls_address,
