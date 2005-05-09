@@ -1,3 +1,12 @@
+2005-05-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/iq2000/iq2000.c (abort_with_insn): Use fancy_abort.
+	(gen_int_relational): Use gcc_unreachable and gcc_assert as necessary.
+	(function_arg_advance, function_arg, save_restore_insns,
+	iq2000_expand_prologue, iq2000_output_conditional_branch,
+	expand_one_builtin, print_operand):
+	* config/iq2000/iq2000.md (tablejump): Likewise.
+
 2005-05-09  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.h (processor_type): Add names for the 24K. 
