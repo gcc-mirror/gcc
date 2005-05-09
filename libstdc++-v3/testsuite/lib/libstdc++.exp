@@ -86,7 +86,8 @@ proc libstdc++_init { testfile } {
     global ld_library_path
     global target_triplet
 
-    # We set LC_ALL and LANG to C so that we get the same error messages as expected.
+    # We set LC_ALL and LANG to C so that we get the same error
+    # messages as expected.
     setenv LC_ALL C
     setenv LANG C
 
@@ -295,6 +296,10 @@ proc v3_target_compile { source dest type options } {
     return [target_compile $source $dest $type $options]
 }
 
+
+# XXX Fix me.
+# This is a complete hack: why do we build libv3test.a and then not use it?
+# This duplicates all the make logic. Boo: pick one way to do it, not two.
 # Build the support objects linked in with the libstdc++ tests.  In
 # addition, set v3-wchar_t, v3-threads, and v3-test_objs
 # appropriately.
@@ -327,7 +332,7 @@ proc v3-build_support {} {
 
     # Build the support objects.
     set source_files \
-	[list testsuite_abi.cc testsuite_allocator.cc testsuite_hooks.cc]
+	[list testsuite_abi.cc testsuite_allocator.cc testsuite_character.cc testsuite_hooks.cc]
     foreach f $source_files {
 	set object_file [file rootname $f].o
 	# Compile with "-w" so that warnings issued by the compiler

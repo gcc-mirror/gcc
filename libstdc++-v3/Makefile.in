@@ -42,7 +42,6 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure $(top_srcdir)/fragment.am \
-	$(top_srcdir)/scripts/check_survey.in \
 	$(top_srcdir)/scripts/testsuite_flags.in ChangeLog acconfig.h
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -56,7 +55,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = scripts/check_survey scripts/testsuite_flags
+CONFIG_CLEAN_FILES = scripts/testsuite_flags
 depcomp =
 am__depfiles_maybe =
 SOURCES =
@@ -374,8 +373,6 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) $(top_srcdir
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-scripts/check_survey: $(top_builddir)/config.status $(top_srcdir)/scripts/check_survey.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 scripts/testsuite_flags: $(top_builddir)/config.status $(top_srcdir)/scripts/testsuite_flags.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 

@@ -1,6 +1,6 @@
 // 2002-07-25 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,7 @@
 
 #include <fstream>
 #include <testsuite_hooks.h>
+#include <testsuite_character.h>
 
 // { dg-do compile }
 

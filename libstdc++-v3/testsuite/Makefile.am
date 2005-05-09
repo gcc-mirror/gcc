@@ -1,6 +1,6 @@
 ## Makefile for the testsuite subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -47,6 +47,7 @@ noinst_LIBRARIES = libv3test.a
 libv3test_a_SOURCES = \
 	testsuite_abi.cc \
 	testsuite_allocator.cc \
+	testsuite_character.cc \
 	testsuite_hooks.cc 
 
 ## Build support utilities.
@@ -55,7 +56,7 @@ noinst_PROGRAMS = abi_check
 else
 noinst_PROGRAMS =
 endif
-abi_check_SOURCES = abi_check.cc
+abi_check_SOURCES = testsuite_abi_check.cc
 abi_check_DEPENDENCIES = libv3test.a
 
 all-local: stamp_wchar stamp_thread testsuite_files
@@ -83,6 +84,10 @@ lists_of_files = \
    testsuite_files_interactive \
    testsuite_files_performance
 
+# This rule generates all of the testsuite_files* lists at once.
+${lists_of_files}:
+	${glibcxx_srcdir}/scripts/create_testsuite_files \
+	  ${glibcxx_srcdir}/testsuite `${PWD_COMMAND}`
 
 # We need more things in site.exp, but automake completely controls the
 # creation of that file; there's no way to append to it without messing up
@@ -112,6 +117,7 @@ site.exp: Makefile
 
 # This is automatically run after the generated check-DEJAGNU rule.
 check-local: check-abi
+
 
 baseline_file = ${baseline_dir}/baseline_symbols.txt
 extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
@@ -155,20 +161,14 @@ check-abi:
 check-abi-verbose:
 endif
 
-
-# These two special 'check-script' rules use the bash script
-# 'check_survey' to do testing. This script is not as portable as the
-# dejagnu test harness, and is thus off by default. It does produce
-# interesting output however, including various performance analysis
-# items like compile time, execution time, and binary size.
-survey_script = ${glibcxx_builddir}/scripts/check_survey
-check-script: ${survey_script}
-	-@(chmod + ${survey_script}; \
-	  ${survey_script} 0)
-
-check-script-install: ${survey_script}
-	-@(chmod + ${survey_script}; \
-	  ${survey_script} 0)
+# Runs the testsuite, but in compile only mode.
+# Can be used to test sources with non-GNU FE's at various warning
+# levels and for checking compile time across releases.
+# See script.
+compile_script=${glibcxx_srcdir}/scripts/check_compile
+check-compile: testsuite_files ${compile_script}
+	-@(chmod + ${compile_script}; \
+	  ${compile_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
 
 # Runs the testsuite/performance tests.
@@ -180,21 +180,9 @@ check-performance: testsuite_files_performance ${performance_script}
 	-@(chmod + ${performance_script}; \
 	  ${performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
-# Runs the testsuite, but in compile only mode, and times it.
-# See script.
-compile_script=${glibcxx_srcdir}/scripts/check_compile
-check-compile: testsuite_files ${compile_script}
-	-@(chmod + ${compile_script}; \
-	  ${compile_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
-# This rule generates all of the testsuite_files* lists at once.
-${lists_of_files}:
-	${glibcxx_srcdir}/scripts/create_testsuite_files \
-	  ${glibcxx_srcdir}/testsuite `${PWD_COMMAND}`
-
-
-.PHONY: baseline_symbols new-abi-baseline check-abi check-abi-verbose \
-check-script check-script-install check-performance
+.PHONY: baseline_symbols new-abi-baseline \
+	check-abi check-compile check-performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \

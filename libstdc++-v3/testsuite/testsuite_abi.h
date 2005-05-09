@@ -94,7 +94,7 @@ get_symbol(const std::string& mangled, const symbols& list);
 extern "C" void
 examine_symbol(const char* name, const char* file);
 
-extern "C" void
+extern "C" int
 compare_symbols(const char* baseline_file, const char* test_file, bool verb);
 
 

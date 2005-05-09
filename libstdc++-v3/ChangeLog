@@ -1,3 +1,56 @@
+2005-05-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/test.html: Update.
+	* testsuite/printnow.c: Remove.
+	* scripts/check_survey.in: Remove.
+
+	* testsuite/abi_check.cc: To...
+	* testuite/testsuite_abi_check.cc: ...here.
+	* testsuite/testsuite_abi.h (compare_symbols): Return int.
+	* testsuite/testsuite_abi.cc: Same.
+	
+	* testsuite/testsuite_hooks.h: Move character related bits to...
+	* testsuite/testsuite_character.h: ...here.
+	* testsuite/testsuite_character.cc: ... and here.
+	* testsuite/21_strings/basic_string/inserters_extractors/pod/
+	10081-in.cc: Use testsuite_character.h.
+	* testsuite/21_strings/basic_string/inserters_extractors/pod/
+	10081-out.cc: Same.
+	* testsuite/22_locale/numpunct/members/pod/1.cc: Same.
+	* testsuite/22_locale/numpunct/members/pod/2.cc: Same.
+	* testsuite/27_io/basic_filebuf/2.cc: Same.
+	* testsuite/27_io/basic_fstream/2.cc: Same.
+	* testsuite/27_io/basic_istream/2.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/pod/
+	3983-1.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_character/char/
+	9826.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_character/pod/
+	3983-2.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_other/pod/3983-3.cc: Same.
+	* testsuite/27_io/basic_istream/sentry/pod/1.cc: Same.
+	* testsuite/27_io/basic_ostream/2.cc: Same.
+	* testsuite/27_io/basic_ostream/sentry/pod/1.cc: Same.
+	* testsuite/27_io/basic_streambuf/2.cc: Same.
+	* testsuite/27_io/basic_stringbuf/2.cc: Same.
+	* testsuite/27_io/basic_stringbuf/4.cc: Same.
+	* testsuite/27_io/basic_stringstream/2.cc: Same.
+	* testsuite/27_io/fpos/1.cc: Same.
+	* testsuite/ext/mt_allocator/tune-1.cc: Same.
+	* testsuite/ext/mt_allocator/tune-2.cc: Same.
+	* testsuite/ext/stdio_filebuf/char/1.cc: Same.	
+	* testsuite/lib/libstdc++.exp (v3-build_support): Add
+	testsuite_character.cc.
+	* testsuite/Makefile.am (libv3test_a_SOURCES): Add
+	testsuite_character.cc.
+	* testsuite/Makefile.in: Regenerate.
+		
+	* configure.ac: Remove use of check_survey.
+	* configure: Regenerate.
+	* testsuite/Makefile.am: Remove check-script and
+	check-script-install rules.
+	* testsuite/Makefile.in: Regenerate.
+
 2005-05-09  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	DR 434. bitset::to_string() hard to use [Ready]

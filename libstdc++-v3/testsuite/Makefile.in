@@ -59,10 +59,11 @@ ARFLAGS = cru
 libv3test_a_AR = $(AR) $(ARFLAGS)
 libv3test_a_LIBADD =
 am_libv3test_a_OBJECTS = testsuite_abi.$(OBJEXT) \
-	testsuite_allocator.$(OBJEXT) testsuite_hooks.$(OBJEXT)
+	testsuite_allocator.$(OBJEXT) testsuite_character.$(OBJEXT) \
+	testsuite_hooks.$(OBJEXT)
 libv3test_a_OBJECTS = $(am_libv3test_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
-am_abi_check_OBJECTS = abi_check.$(OBJEXT)
+am_abi_check_OBJECTS = testsuite_abi_check.$(OBJEXT)
 abi_check_OBJECTS = $(am_abi_check_OBJECTS)
 abi_check_LDADD = $(LDADD)
 DEFAULT_INCLUDES = 
@@ -282,9 +283,10 @@ noinst_LIBRARIES = libv3test.a
 libv3test_a_SOURCES = \
 	testsuite_abi.cc \
 	testsuite_allocator.cc \
+	testsuite_character.cc \
 	testsuite_hooks.cc 
 
-abi_check_SOURCES = abi_check.cc
+abi_check_SOURCES = testsuite_abi_check.cc
 abi_check_DEPENDENCIES = libv3test.a
 
 # Generated lists of files to run.  All of these names are valid make
@@ -297,22 +299,17 @@ lists_of_files = \
 baseline_file = ${baseline_dir}/baseline_symbols.txt
 extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
 
-# These two special 'check-script' rules use the bash script
-# 'check_survey' to do testing. This script is not as portable as the
-# dejagnu test harness, and is thus off by default. It does produce
-# interesting output however, including various performance analysis
-# items like compile time, execution time, and binary size.
-survey_script = ${glibcxx_builddir}/scripts/check_survey
+# Runs the testsuite, but in compile only mode.
+# Can be used to test sources with non-GNU FE's at various warning
+# levels and for checking compile time across releases.
+# See script.
+compile_script = ${glibcxx_srcdir}/scripts/check_compile
 
 # Runs the testsuite/performance tests.
 # Some of these tests create large (~75MB) files, allocate huge
 # ammounts of memory, or otherwise tie up machine resources. Thus,
 # running this is off by default.
 performance_script = ${glibcxx_srcdir}/scripts/check_performance
-
-# Runs the testsuite, but in compile only mode, and times it.
-# See script.
-compile_script = ${glibcxx_srcdir}/scripts/check_compile
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
@@ -592,6 +589,11 @@ all-local: stamp_wchar stamp_thread testsuite_files
 @GLIBCXX_TEST_THREAD_TRUE@	touch testsuite_thread
 @GLIBCXX_TEST_THREAD_FALSE@stamp_thread:
 
+# This rule generates all of the testsuite_files* lists at once.
+${lists_of_files}:
+	${glibcxx_srcdir}/scripts/create_testsuite_files \
+	  ${glibcxx_srcdir}/testsuite `${PWD_COMMAND}`
+
 # We need more things in site.exp, but automake completely controls the
 # creation of that file; there's no way to append to it without messing up
 # the dependancy chains.  So we overrule automake.  This rule is exactly
@@ -656,27 +658,15 @@ new-abi-baseline:
 
 @GLIBCXX_TEST_ABI_FALSE@check-abi:
 @GLIBCXX_TEST_ABI_FALSE@check-abi-verbose:
-check-script: ${survey_script}
-	-@(chmod + ${survey_script}; \
-	  ${survey_script} 0)
-
-check-script-install: ${survey_script}
-	-@(chmod + ${survey_script}; \
-	  ${survey_script} 0)
-check-performance: testsuite_files_performance ${performance_script}
-	-@(chmod + ${performance_script}; \
-	  ${performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 check-compile: testsuite_files ${compile_script}
 	-@(chmod + ${compile_script}; \
 	  ${compile_script} ${glibcxx_srcdir} ${glibcxx_builddir})
+check-performance: testsuite_files_performance ${performance_script}
+	-@(chmod + ${performance_script}; \
+	  ${performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
-# This rule generates all of the testsuite_files* lists at once.
-${lists_of_files}:
-	${glibcxx_srcdir}/scripts/create_testsuite_files \
-	  ${glibcxx_srcdir}/testsuite `${PWD_COMMAND}`
-
-.PHONY: baseline_symbols new-abi-baseline check-abi check-abi-verbose \
-check-script check-script-install check-performance
+.PHONY: baseline_symbols new-abi-baseline \
+	check-abi check-compile check-performance
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
