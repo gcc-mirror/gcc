@@ -518,8 +518,7 @@ print_operand_address (FILE *stream, rtx x)
 	    }
 
 	  default:
-	    debug_rtx (x);
-	    abort ();
+	    gcc_unreachable ();
 	  }
       }
       break;
@@ -646,8 +645,7 @@ print_operand (FILE *stream, rtx x, int code)
       break;
 
     case 'm':
-      if (GET_CODE (x) != MEM)
-	abort ();
+      gcc_assert (GET_CODE (x) == MEM);
       x = XEXP (x, 0);
       switch (GET_CODE (x))
 	{
@@ -664,13 +662,12 @@ print_operand (FILE *stream, rtx x, int code)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       break;
 
     case 'd':
-      if (GET_CODE (x) != REG || GET_MODE (x) != V2SFmode)
-	abort ();
+      gcc_assert (GET_CODE (x) == REG && GET_MODE (x) == V2SFmode);
 
       fprintf ((stream), "d%s", reg_names[REGNO (x)] + 1);
       break;
@@ -700,9 +697,8 @@ print_operand (FILE *stream, rtx x, int code)
 	     subreg:SI of the DImode register.  Maybe reload should be
 	     fixed so as to apply alter_subreg to such loads?  */
 	case SUBREG:
-	  if (SUBREG_BYTE (x) != 0
-	      || GET_CODE (SUBREG_REG (x)) != REG)
-	    abort ();
+	  gcc_assert (SUBREG_BYTE (x) == 0
+		      && GET_CODE (SUBREG_REG (x)) == REG);
 
 	  x = SUBREG_REG (x);
 	  /* Fall through.  */
@@ -1078,7 +1074,7 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	      break;
 
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	  operands[1] = op1;
 	}
@@ -1101,7 +1097,7 @@ prepare_scc_operands (enum rtx_code code)
     {
     case NE:
       /* It isn't possible to handle this case.  */
-      abort ();
+      gcc_unreachable ();
     case LT:
       code = GT;
       break;
@@ -1239,12 +1235,17 @@ output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
       int dreg = REGNO (dst);
       rtx inside = XEXP (src, 0);
 
-      if (GET_CODE (inside) == REG)
-	ptrreg = REGNO (inside);
-      else if (GET_CODE (inside) == SUBREG)
-	ptrreg = subreg_regno (inside);
-      else if (GET_CODE (inside) == PLUS)
+      switch (GET_CODE (inside))
 	{
+	case REG:
+	  ptrreg = REGNO (inside);
+	  break;
+
+	case SUBREG:
+	  ptrreg = subreg_regno (inside);
+	  break;
+
+	case PLUS:
 	  ptrreg = REGNO (XEXP (inside, 0));
 	  /* ??? A r0+REG address shouldn't be possible here, because it isn't
 	     an offsettable address.  Unfortunately, offsettable addresses use
@@ -1253,15 +1254,16 @@ output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
 	     supported, so we can't use the 'o' constraint.
 	     Thus we must check for and handle r0+REG addresses here.
 	     We punt for now, since this is likely very rare.  */
-	  if (GET_CODE (XEXP (inside, 1)) == REG)
-	    abort ();
+	  gcc_assert (GET_CODE (XEXP (inside, 1)) != REG);
+	  break;
+	  
+	case LABEL_REF:
+	  return "mov.l	%1,%0\n\tmov.l	%1+4,%T0";
+	case POST_INC:
+	  return "mov.l	%1,%0\n\tmov.l	%1,%T0";
+	default:
+	  gcc_unreachable ();
 	}
-      else if (GET_CODE (inside) == LABEL_REF)
-	return "mov.l	%1,%0\n\tmov.l	%1+4,%T0";
-      else if (GET_CODE (inside) == POST_INC)
-	return "mov.l	%1,%0\n\tmov.l	%1,%T0";
-      else
-	abort ();
 
       /* Work out the safe way to copy.  Copy into the second half first.  */
       if (dreg == ptrreg)
@@ -1430,9 +1432,9 @@ output_branch (int logic, rtx insn, rtx *operands)
 	{
 	  int label = lf++;
 
-	  if (final_sequence
-	      && INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
-	    abort ();
+	  gcc_assert (!final_sequence
+		      || !(INSN_ANNULLED_BRANCH_P
+			   (XVECEXP (final_sequence, 0, 0))));
 	  asm_fprintf (asm_out_file, "b%s%ss\t%LLF%d\n",
 		       logic ? "f" : "t",
 		       ASSEMBLER_DIALECT ? "/" : ".", label);
@@ -1459,7 +1461,7 @@ output_branch (int logic, rtx insn, rtx *operands)
       /* There should be no longer branches now - that would
 	 indicate that something has destroyed the branches set
 	 up in machine_dependent_reorg.  */
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1663,7 +1665,7 @@ shift_insns_rtx (rtx insn)
     case ASHIFT:
       return shift_insns[shift_count];
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2023,7 +2025,7 @@ gen_shifty_op (int code, rtx *operands)
   else if (value == 0)
     {
       /* This can happen when not optimizing.  We must output something here
-	 to prevent the compiler from aborting in final.c after the try_split
+	 to prevent the compiler from dying in final.c after the try_split
 	 call.  */
       emit_insn (gen_nop ());
       return;
@@ -2389,8 +2391,7 @@ gen_shl_and (rtx dest, rtx left_rtx, rtx mask_rtx, rtx source)
 
 	  /* Cases 3 and 4 should be handled by this split
 	     only while combining  */
-	  if (kind > 2)
-	    abort ();
+	  gcc_assert (kind <= 2);
 	  if (right)
 	    {
 	      emit_insn (gen_lshrsi3 (dest, source, GEN_INT (right)));
@@ -2457,8 +2458,7 @@ shl_sext_kind (rtx left_rtx, rtx size_rtx, int *costp)
   left = INTVAL (left_rtx);
   size = INTVAL (size_rtx);
   insize = size - left;
-  if (insize <= 0)
-    abort ();
+  gcc_assert (insize > 0);
   /* Default to left / right shift.  */
   kind = 0;
   best_cost = shift_insns[32 - insize] + ashiftrt_insns[32 - size];
@@ -2686,8 +2686,7 @@ gen_datalabel_ref (rtx sym)
 					  gen_rtvec (1, sym),
 					  UNSPEC_DATALABEL));
 
-  if (GET_CODE (sym) != SYMBOL_REF)
-    abort ();
+  gcc_assert (GET_CODE (sym) == SYMBOL_REF);
 
   return sym;
 }
@@ -2965,8 +2964,7 @@ dump_table (rtx start, rtx barrier)
 				      scan);
 	      break;
 	    default:
-	      abort ();
-	      break;
+	      gcc_unreachable ();
 	    }
 
 	  if (p->mode != HImode)
@@ -3018,8 +3016,7 @@ dump_table (rtx start, rtx barrier)
 				  scan);
 	  break;
 	default:
-	  abort ();
-	  break;
+	  gcc_unreachable ();
 	}
 
       if (p->mode != HImode)
@@ -3130,10 +3127,9 @@ fixup_mova (rtx mova)
       do
 	{
 	  worker = NEXT_INSN (worker);
-	  if (! worker
-	      || GET_CODE (worker) == CODE_LABEL
-	      || GET_CODE (worker) == JUMP_INSN)
-	    abort ();
+	  gcc_assert (worker
+		      && GET_CODE (worker) != CODE_LABEL
+		      && GET_CODE (worker) != JUMP_INSN);
 	} while (recog_memoized (worker) != CODE_FOR_casesi_worker_1);
       wpat = PATTERN (worker);
       wpat0 = XVECEXP (wpat, 0, 0);
@@ -3772,6 +3768,7 @@ gen_far_branch (struct far_branch *bp)
   rtx insn = bp->insert_place;
   rtx jump;
   rtx label = gen_label_rtx ();
+  int ok;
 
   emit_label_after (label, insn);
   if (bp->far_label)
@@ -3790,8 +3787,9 @@ gen_far_branch (struct far_branch *bp)
     emit_barrier_after (jump);
   emit_label_after (bp->near_label, insn);
   JUMP_LABEL (jump) = bp->far_label;
-  if (! invert_jump (insn, label, 1))
-    abort ();
+  ok = invert_jump (insn, label, 1);
+  gcc_assert (ok);
+  
   /* If we are branching around a jump (rather than a return), prevent
      reorg from using an insn from the jump target as the delay slot insn -
      when reorg did this, it pessimized code (we rather hide the delay slot)
@@ -4365,9 +4363,8 @@ sh_reorg (void)
 						- 1);
 		      rtx clobber = *clobberp;
 
-		      if (GET_CODE (clobber) != CLOBBER
-			  || ! rtx_equal_p (XEXP (clobber, 0), r0_rtx))
-			abort ();
+		      gcc_assert (GET_CODE (clobber) == CLOBBER
+				  && rtx_equal_p (XEXP (clobber, 0), r0_rtx));
 
 		      if (last_float
 			  && reg_set_between_p (r0_rtx, last_float_move, scan))
@@ -4501,6 +4498,7 @@ split_branches (rtx first)
   rtx insn;
   struct far_branch **uid_branch, *far_branch_list = 0;
   int max_uid = get_max_uid ();
+  int ok;
 
   /* Find out which branches are out of range.  */
   shorten_branches (first);
@@ -4590,8 +4588,8 @@ split_branches (rtx first)
 		    bp->insert_place = insn;
 		    bp->address = addr;
 		  }
-		if (! redirect_jump (insn, label, 1))
-		  abort ();
+		ok = redirect_jump (insn, label, 1);
+		gcc_assert (ok);
 	      }
 	    else
 	      {
@@ -4737,19 +4735,29 @@ final_prescan_insn (rtx insn, rtx *opvec ATTRIBUTE_UNUSED,
 	  rtx pattern;
 
 	  pattern = PATTERN (insn);
-	  if (GET_CODE (pattern) == PARALLEL)
-	    pattern = XVECEXP (pattern, 0, 0);
-	  if (GET_CODE (pattern) == CALL
-	      || (GET_CODE (pattern) == SET
-		  && (GET_CODE (SET_SRC (pattern)) == CALL
-		      || get_attr_type (insn) == TYPE_SFUNC)))
-	    asm_fprintf (asm_out_file, "\t.uses %LL%d\n",
-			 CODE_LABEL_NUMBER (XEXP (note, 0)));
-	  else if (GET_CODE (pattern) == SET)
-	    (*targetm.asm_out.internal_label) (asm_out_file, "L",
-				       CODE_LABEL_NUMBER (XEXP (note, 0)));
-	  else
-	    abort ();
+	  switch (GET_CODE (pattern))
+	    {
+	    case PARALLEL:
+	      pattern = XVECEXP (pattern, 0, 0);
+	      break;
+
+	    case SET:
+	      if (GET_CODE (SET_SRC (pattern)) != CALL
+		  && get_attr_type (insn) != TYPE_SFUNC)
+		{
+		  targetm.asm_out.internal_label
+		    (asm_out_file, "L", CODE_LABEL_NUMBER (XEXP (note, 0)));
+		  break;
+		}
+	      /* else FALLTHROUGH */
+	    case CALL:
+	      asm_fprintf (asm_out_file, "\t.uses %LL%d\n",
+			   CODE_LABEL_NUMBER (XEXP (note, 0)));
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
 	}
     }
 }
@@ -4819,8 +4827,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 /* This test is bogus, as output_stack_adjust is used to re-align the
    stack.  */
 #if 0
-      if (size % align)
-	abort ();
+      gcc_assert (!(size % align));
 #endif
 
       if (CONST_OK_FOR_ADD (size))
@@ -4843,7 +4850,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 
 	  /* If TEMP is invalid, we could temporarily save a general
 	     register to MACL.  However, there is currently no need
-	     to handle this case, so just abort when we see it.  */
+	     to handle this case, so just die when we see it.  */
 	  if (epilogue_p < 0
 	      || current_function_interrupt
 	      || ! call_really_used_regs[temp] || fixed_regs[temp])
@@ -4890,53 +4897,53 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	    temp = scavenge_reg (live_regs_mask);
 	  if (temp < 0)
 	    {
+	      rtx adj_reg, tmp_reg, mem;
+	      
 	      /* If we reached here, the most likely case is the (sibcall)
 		 epilogue for non SHmedia.  Put a special push/pop sequence
 		 for such case as the last resort.  This looks lengthy but
-		 would not be problem because it seems to be very rare.  */
-	      if (! TARGET_SHMEDIA && epilogue_p)
-		{
-		  rtx adj_reg, tmp_reg, mem;
+		 would not be problem because it seems to be very
+		 rare.  */
+	      
+	      gcc_assert (!TARGET_SHMEDIA && epilogue_p);
+	      
 
-		  /* ??? There is still the slight possibility that r4 or r5
-		     have been reserved as fixed registers or assigned as
-		     global registers, and they change during an interrupt.
-		     There are possible ways to handle this:
-		     - If we are adjusting the frame pointer (r14), we can do
-		       with a single temp register and an ordinary push / pop
-		       on the stack.
-		     - Grab any call-used or call-saved registers (i.e. not
-		       fixed or globals) for the temps we need.  We might
-		       also grab r14 if we are adjusting the stack pointer.
-		       If we can't find enough available registers, issue
-		       a diagnostic and abort - the user must have reserved
-		       way too many registers.
-		     But since all this is rather unlikely to happen and
-		     would require extra testing, we just abort if r4 / r5
-		     are not available.  */
-		  if (fixed_regs[4] || fixed_regs[5]
-		      || global_regs[4] || global_regs[5])
-		    abort ();
+	       /* ??? There is still the slight possibility that r4 or
+		  r5 have been reserved as fixed registers or assigned
+		  as global registers, and they change during an
+		  interrupt.  There are possible ways to handle this:
+		     
+		  - If we are adjusting the frame pointer (r14), we can do
+		    with a single temp register and an ordinary push / pop
+		    on the stack.
+		  - Grab any call-used or call-saved registers (i.e. not
+		    fixed or globals) for the temps we need.  We might
+		    also grab r14 if we are adjusting the stack pointer.
+		    If we can't find enough available registers, issue
+		    a diagnostic and die - the user must have reserved
+		    way too many registers.
+		 But since all this is rather unlikely to happen and
+		 would require extra testing, we just die if r4 / r5
+		 are not available.  */
+	      gcc_assert (!fixed_regs[4] && !fixed_regs[5]
+			  && !global_regs[4] && !global_regs[5]);
 
-		  adj_reg = gen_rtx_REG (GET_MODE (reg), 4);
-		  tmp_reg = gen_rtx_REG (GET_MODE (reg), 5);
-		  emit_move_insn (gen_rtx_MEM (Pmode, reg), adj_reg);
-		  emit_insn (GEN_MOV (adj_reg, GEN_INT (size)));
-		  emit_insn (GEN_ADD3 (adj_reg, adj_reg, reg));
-		  mem = gen_rtx_MEM (Pmode, gen_rtx_PRE_DEC (Pmode, adj_reg));
-		  emit_move_insn (mem, tmp_reg);
-		  emit_move_insn (tmp_reg, gen_rtx_MEM (Pmode, reg));
-		  mem = gen_rtx_MEM (Pmode, gen_rtx_PRE_DEC (Pmode, adj_reg));
-		  emit_move_insn (mem, tmp_reg);
-		  emit_move_insn (reg, adj_reg);
-		  mem = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, reg));
-		  emit_move_insn (adj_reg, mem);
-		  mem = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, reg));
-		  emit_move_insn (tmp_reg, mem);
-		  return;
-		}
-	      else
-		abort ();
+	      adj_reg = gen_rtx_REG (GET_MODE (reg), 4);
+	      tmp_reg = gen_rtx_REG (GET_MODE (reg), 5);
+	      emit_move_insn (gen_rtx_MEM (Pmode, reg), adj_reg);
+	      emit_insn (GEN_MOV (adj_reg, GEN_INT (size)));
+	      emit_insn (GEN_ADD3 (adj_reg, adj_reg, reg));
+	      mem = gen_rtx_MEM (Pmode, gen_rtx_PRE_DEC (Pmode, adj_reg));
+	      emit_move_insn (mem, tmp_reg);
+	      	emit_move_insn (tmp_reg, gen_rtx_MEM (Pmode, reg));
+		mem = gen_rtx_MEM (Pmode, gen_rtx_PRE_DEC (Pmode, adj_reg));
+		emit_move_insn (mem, tmp_reg);
+		emit_move_insn (reg, adj_reg);
+		mem = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, reg));
+		emit_move_insn (adj_reg, mem);
+		mem = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, reg));
+		emit_move_insn (tmp_reg, mem);
+		return;
 	    }
 	  const_reg = gen_rtx_REG (GET_MODE (reg), temp);
 
@@ -5590,8 +5597,7 @@ sh_expand_prologue (void)
 
 	  GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (mem_rtx, 0), try_pre_dec);
 
-	  if (! r0)
-	    abort ();
+	  gcc_assert (r0);
 	  mem_rtx = NULL_RTX;
 
 	try_pre_dec:
@@ -5661,11 +5667,10 @@ sh_expand_prologue (void)
 	     registers or for special registers without pre-dec
 	     memory addresses, since we store their values in r0
 	     first.  */
-	  if (TARGET_REGISTER_P (reg)
-	      || ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
-		  && mem_rtx != pre_dec))
-	    abort ();
-
+	  gcc_assert (!TARGET_REGISTER_P (reg)
+		      && ((reg != PR_REG && !SPECIAL_REGISTER_P (reg))
+			  || mem_rtx == pre_dec));
+	  
 	addr_ok:
 	  orig_reg_rtx = reg_rtx;
 	  if (TARGET_REGISTER_P (reg)
@@ -5680,8 +5685,8 @@ sh_expand_prologue (void)
 		{
 		  offset_in_r0 = -1;
 		  sp_in_r0 = 0;
-		  if (refers_to_regno_p (R0_REG, R0_REG+1, mem_rtx, (rtx *) 0))
-		    abort ();
+		  gcc_assert (!refers_to_regno_p
+			      (R0_REG, R0_REG+1, mem_rtx, (rtx *) 0));
 		}
 
 	      if (*++tmp_pnt <= 0)
@@ -5729,8 +5734,7 @@ sh_expand_prologue (void)
 	  }
 	}
 
-      if (entry->offset != d_rounding)
-	abort ();
+      gcc_assert (entry->offset == d_rounding);
     }
   else
     push_regs (&live_regs_mask, current_function_interrupt);
@@ -5974,9 +5978,8 @@ sh_expand_epilogue (bool sibcall_p)
 						 stack_pointer_rtx,
 						 r0));
 
-	  if ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
-	      && mem_rtx != post_inc)
-	    abort ();
+	  gcc_assert ((reg != PR_REG && !SPECIAL_REGISTER_P (reg))
+		      || mem_rtx == post_inc);
 
 	addr_ok:
 	  if ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
@@ -6005,8 +6008,7 @@ sh_expand_epilogue (bool sibcall_p)
 						  REG_NOTES (insn));
 	}
 
-      if (entry->offset + offset_base != d + d_rounding)
-	abort ();
+      gcc_assert (entry->offset + offset_base == d + d_rounding);
     }
   else /* ! TARGET_SH5 */
     {
@@ -6121,7 +6123,7 @@ sh_set_return_address (rtx ra, rtx tmp)
 	  goto found;
 
       /* We can't find pr register.  */
-      abort ();
+      gcc_unreachable ();
 
     found:
       offset = entry->offset - offset;
@@ -6989,8 +6991,7 @@ sh_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
 			   int *pretend_arg_size,
 			   int second_time ATTRIBUTE_UNUSED)
 {
-  if (! current_function_stdarg)
-    abort ();
+  gcc_assert (current_function_stdarg);
   if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl))
     {
       int named_parm_regs, anon_parm_regs;
@@ -7064,38 +7065,34 @@ initial_elimination_offset (int from, int to)
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return 0;
 
-  if (from == RETURN_ADDRESS_POINTER_REGNUM
-      && (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM))
+  gcc_assert (from == RETURN_ADDRESS_POINTER_REGNUM
+	      && (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM));
+  if (TARGET_SH5)
     {
-      if (TARGET_SH5)
-	{
-	  int n = total_saved_regs_space;
-	  int pr_reg = TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG;
-	  save_schedule schedule;
-	  save_entry *entry;
-
-	  n += total_auto_space;
-
-	  /* If it wasn't saved, there's not much we can do.  */
-	  if (! TEST_HARD_REG_BIT (live_regs_mask, pr_reg))
-	    return n;
-
-	  target_flags = copy_flags;
-
-	  sh5_schedule_saves (&live_regs_mask, &schedule, n);
-	  for (entry = &schedule.entries[1]; entry->mode != VOIDmode; entry++)
-	    if (entry->reg == pr_reg)
-	      {
-		target_flags = save_flags;
-		return entry->offset;
-	      }
-	  abort ();
-	}
-      else
-	return total_auto_space;
+      int n = total_saved_regs_space;
+      int pr_reg = TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG;
+      save_schedule schedule;
+      save_entry *entry;
+      
+      n += total_auto_space;
+      
+      /* If it wasn't saved, there's not much we can do.  */
+      if (! TEST_HARD_REG_BIT (live_regs_mask, pr_reg))
+	return n;
+      
+      target_flags = copy_flags;
+      
+      sh5_schedule_saves (&live_regs_mask, &schedule, n);
+      for (entry = &schedule.entries[1]; entry->mode != VOIDmode; entry++)
+	if (entry->reg == pr_reg)
+	  {
+	    target_flags = save_flags;
+	    return entry->offset;
+	  }
+      gcc_unreachable ();
     }
-
-  abort ();
+  else
+    return total_auto_space;
 }
 
 /* Handle machine specific pragmas to be semi-compatible with Renesas
@@ -7353,7 +7350,7 @@ sh_pch_valid_p (const void *data_p, size_t len)
 	      goto make_message;
 	    }
 	}
-      abort ();
+      gcc_unreachable ();
     }
   data += sizeof (target_flags);
   len -= sizeof (target_flags);
@@ -8260,10 +8257,8 @@ get_free_reg (HARD_REG_SET regs_live)
 
   /* Hard reg 1 is live; since this is a SMALL_REGISTER_CLASSES target,
      there shouldn't be anything but a jump before the function end.  */
-  if (! TEST_HARD_REG_BIT (regs_live, 7))
-    return gen_rtx_REG (Pmode, 7);
-
-  abort ();
+  gcc_assert (!TEST_HARD_REG_BIT (regs_live, 7));
+  return gen_rtx_REG (Pmode, 7);
 }
 
 /* This function will set the fpscr from memory.
@@ -9538,7 +9533,7 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       pat = (*insn_data[d->icode].genfun) (op[0], op[1], op[2], op[3]);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   if (! pat)
     return 0;
@@ -9817,7 +9812,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  offset_addr = scratch0;
 	}
       else
-	abort (); /* FIXME */
+	gcc_unreachable (); /* FIXME */
       emit_load_ptr (scratch0, offset_addr);
 
       if (Pmode != ptr_mode)
@@ -9982,9 +9977,8 @@ extract_sfunc_addr (rtx insn)
 	  && GENERAL_REGISTER_P (true_regnum (XEXP (part, 0))))
 	return XEXP (part, 0);
     }
-  if (GET_CODE (XVECEXP (pattern, 0, 0)) == UNSPEC_VOLATILE)
-    return XVECEXP (XVECEXP (pattern, 0, 0), 0, 1);
-  abort ();
+  gcc_assert (GET_CODE (XVECEXP (pattern, 0, 0)) == UNSPEC_VOLATILE);
+  return XVECEXP (XVECEXP (pattern, 0, 0), 0, 1);
 }
 
 /* Verify that the register in use_sfunc_addr still agrees with the address
@@ -10010,7 +10004,7 @@ check_use_sfunc_addr (rtx insn, rtx reg)
 	continue;
       return rtx_equal_p (extract_sfunc_addr (insn), reg);
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Returns 1 if OP is a MEM that can be source of a simple move operation.  */

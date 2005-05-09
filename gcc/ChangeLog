@@ -1,3 +1,25 @@
+2005-05-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/sh/sh.c (print_operand_address): Use gcc_assert and
+	gcc_unreachable as appropriate.
+	(print_operand, prepare_move_operands, prepare_scc_operands,
+	output_movedouble, output_branch, shift_insns_rtx, gen_shifty_op,
+	gen_shl_and, shl_sext_kind, gen_datalabel_ref, dump_table,
+	fixup_mova, gen_far_branch, sh_reorg, split_branches,
+	final_prescan_insn, output_stack_adjust, sh_expand_epilogue,
+	sh_set_return_address, sh_setup_incoming_varargs,
+	initial_elimination_offset, sh_pch_valid_p, get_free_reg,
+	sh_expand_builtin, sh_output_mi_thunk, extract_sfunc_addr,
+	check_use_sfunc_addr): Likewise.
+	* config/sh/netbsd-elf.h (FUNCTION_PROFILER): Likewise.
+	* config/sh/sh.h (ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Likewise.
+	* config/sh/symbian.c (sh_symbian_mark_dllexport,
+	sh_symbian_mark_dllimport): Likewise.
+	* config/sh/sh.md: Likewise.
+	(movdicc, call_pop, call_value_pop, casesi_worker_1,
+	casesi_worker_2, casesi_shift_media, casesi_load_media,
+	return_media): Likewise.
+
 2005-05-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR inline-asm/8788

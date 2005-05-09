@@ -889,7 +889,7 @@
 	  FAIL;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }")
@@ -1950,7 +1950,7 @@
   [(const_int 0)]
   "
 {
-  if (INTVAL (operands[2]) == (unsigned) 0xffffffff)
+  if ((unsigned)INTVAL (operands[2]) == (unsigned) 0xffffffff)
     emit_insn (gen_mshflo_l_di (operands[0], operands[1], CONST0_RTX (DImode)));
   else
     emit_insn (gen_mshfhi_l_di (operands[0], CONST0_RTX (DImode), operands[1]));
@@ -2022,8 +2022,7 @@
       offset = SUBREG_BYTE (operands[0]);
       operands[0] = SUBREG_REG (operands[0]);
     }
-  if (GET_CODE (operands[0]) != REG)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == REG);
   if (! TARGET_LITTLE_ENDIAN)
     offset += 8 - GET_MODE_SIZE (inmode);
   operands[5] = gen_rtx_SUBREG (inmode, operands[0], offset);
@@ -3812,14 +3811,20 @@
 	  && GET_CODE (XEXP (operands[1], 0)) == POST_INC))
     FAIL;
 
-  if (GET_CODE (operands[0]) == REG)
-    regno = REGNO (operands[0]);
-  else if (GET_CODE (operands[0]) == SUBREG)
-    regno = subreg_regno (operands[0]);
-  else if (GET_CODE (operands[0]) == MEM)
-    regno = -1;
-  else
-    abort ();
+  switch (GET_CODE (operands[0]))
+    {
+    case REG:
+      regno = REGNO (operands[0]);
+      break;
+    case SUBREG:
+      regno = subreg_regno (operands[0]);
+      break;
+    case MEM:
+      regno = -1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   if (regno == -1
       || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
@@ -4186,11 +4191,12 @@
     operands[2] = immed_double_const ((unsigned long) values[endian]
 				      | ((HOST_WIDE_INT) values[1 - endian]
 					 << 32), 0, DImode);
-  else if (HOST_BITS_PER_WIDE_INT == 32)
-    operands[2] = immed_double_const (values[endian], values[1 - endian],
-				      DImode);
   else
-    abort ();
+    {
+      gcc_assert (HOST_BITS_PER_WIDE_INT == 32);
+      operands[2] = immed_double_const (values[endian], values[1 - endian],
+	  			        DImode);
+    }
 
   operands[3] = gen_rtx_REG (DImode, true_regnum (operands[0]));
 }")
@@ -4558,14 +4564,20 @@
 	  && GET_CODE (XEXP (operands[1], 0)) == POST_INC))
     FAIL;
 
-  if (GET_CODE (operands[0]) == REG)
-    regno = REGNO (operands[0]);
-  else if (GET_CODE (operands[0]) == SUBREG)
-    regno = subreg_regno (operands[0]);
-  else if (GET_CODE (operands[0]) == MEM)
-    regno = -1;
-  else
-    abort ();
+  switch (GET_CODE (operands[0]))
+    {
+    case REG:
+      regno = REGNO (operands[0]);
+      break;
+    case SUBREG:
+      regno = subreg_regno (operands[0]);
+      break;
+    case MEM:
+      regno = -1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   if (regno == -1
       || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
@@ -5959,58 +5971,57 @@
   "TARGET_SHCOMPACT"
   "
 {
-  if (operands[2] && INTVAL (operands[2]))
+  rtx cookie_rtx;
+  long cookie;
+  rtx func;
+  rtx r0, r1;
+
+  gcc_assert (operands[2] && INTVAL (operands[2]));
+  cookie_rtx = operands[2];
+  cookie = INTVAL (cookie_rtx);
+  func = XEXP (operands[0], 0);
+
+  if (flag_pic)
     {
-      rtx cookie_rtx = operands[2];
-      long cookie = INTVAL (cookie_rtx);
-      rtx func = XEXP (operands[0], 0);
-      rtx r0, r1;
-
-      if (flag_pic)
-	{
-	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
-	    {
-	      rtx reg = gen_reg_rtx (Pmode);
-
-	      emit_insn (gen_symGOTPLT2reg (reg, func));
-	      func = reg;
-	    }
-	  else
-	    func = legitimize_pic_address (func, Pmode, 0);
-	}
-
-      r0 = gen_rtx_REG (SImode, R0_REG);
-      r1 = gen_rtx_REG (SImode, R1_REG);
-
-      /* Since such a call function may use all call-clobbered
-	 registers, we force a mode switch earlier, so that we don't
-	 run out of registers when adjusting fpscr for the call.  */
-      emit_insn (gen_force_mode_for_call ());
-
-      operands[0] = function_symbol (\"__GCC_shcompact_call_trampoline\");
-      if (flag_pic)
-	{
+      if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
+        {
 	  rtx reg = gen_reg_rtx (Pmode);
-
-	  emit_insn (gen_symGOTPLT2reg (reg, operands[0]));
-	  operands[0] = reg;
+	  emit_insn (gen_symGOTPLT2reg (reg, func));
+	  func = reg;
 	}
-      operands[0] = force_reg (SImode, operands[0]);
-
-      emit_move_insn (r0, func);
-      emit_move_insn (r1, cookie_rtx);
-
-      if (cookie & CALL_COOKIE_RET_TRAMP (1))
-	emit_call_insn (gen_call_pop_compact_rettramp
-			(operands[0], operands[1], operands[2], operands[3]));
       else
-	emit_call_insn (gen_call_pop_compact
-			(operands[0], operands[1], operands[2], operands[3]));
-
-      DONE;
+        func = legitimize_pic_address (func, Pmode, 0);
     }
 
-  abort ();
+  r0 = gen_rtx_REG (SImode, R0_REG);
+  r1 = gen_rtx_REG (SImode, R1_REG);
+
+  /* Since such a call function may use all call-clobbered
+     registers, we force a mode switch earlier, so that we don't
+     run out of registers when adjusting fpscr for the call.  */
+  emit_insn (gen_force_mode_for_call ());
+
+  operands[0] = function_symbol (\"__GCC_shcompact_call_trampoline\");
+  if (flag_pic)
+    {
+      rtx reg = gen_reg_rtx (Pmode);
+
+      emit_insn (gen_symGOTPLT2reg (reg, operands[0]));
+      operands[0] = reg;
+    }
+  operands[0] = force_reg (SImode, operands[0]);
+
+  emit_move_insn (r0, func);
+  emit_move_insn (r1, cookie_rtx);
+
+  if (cookie & CALL_COOKIE_RET_TRAMP (1))
+    emit_call_insn (gen_call_pop_compact_rettramp
+	   	     (operands[0], operands[1], operands[2], operands[3]));
+  else
+    emit_call_insn (gen_call_pop_compact
+	  	     (operands[0], operands[1], operands[2], operands[3]));
+
+  DONE;
 }")
 
 (define_expand "call_value"
@@ -6430,60 +6441,60 @@
   "TARGET_SHCOMPACT"
   "
 {
-  if (TARGET_SHCOMPACT && operands[3] && INTVAL (operands[3]))
+  rtx cookie_rtx;
+  long cookie;
+  rtx func;
+  rtx r0, r1;
+
+  gcc_assert (TARGET_SHCOMPACT && operands[3] && INTVAL (operands[3]));
+  cookie_rtx = operands[3];
+  cookie = INTVAL (cookie_rtx);
+  func = XEXP (operands[1], 0);
+
+  if (flag_pic)
     {
-      rtx cookie_rtx = operands[3];
-      long cookie = INTVAL (cookie_rtx);
-      rtx func = XEXP (operands[1], 0);
-      rtx r0, r1;
+      if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
+        {
+          rtx reg = gen_reg_rtx (Pmode);
 
-      if (flag_pic)
-	{
-	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
-	    {
-	      rtx reg = gen_reg_rtx (Pmode);
-
-	      emit_insn (gen_symGOTPLT2reg (reg, func));
-	      func = reg;
-	    }
-	  else
-	    func = legitimize_pic_address (func, Pmode, 0);
-	}
-
-      r0 = gen_rtx_REG (SImode, R0_REG);
-      r1 = gen_rtx_REG (SImode, R1_REG);
-
-      /* Since such a call function may use all call-clobbered
-	 registers, we force a mode switch earlier, so that we don't
-	 run out of registers when adjusting fpscr for the call.  */
-      emit_insn (gen_force_mode_for_call ());
-
-      operands[1] = function_symbol (\"__GCC_shcompact_call_trampoline\");
-      if (flag_pic)
-	{
-	  rtx reg = gen_reg_rtx (Pmode);
-
-	  emit_insn (gen_symGOTPLT2reg (reg, operands[1]));
-	  operands[1] = reg;
-	}
-      operands[1] = force_reg (SImode, operands[1]);
-
-      emit_move_insn (r0, func);
-      emit_move_insn (r1, cookie_rtx);
-
-      if (cookie & CALL_COOKIE_RET_TRAMP (1))
-	emit_call_insn (gen_call_value_pop_compact_rettramp
-			(operands[0], operands[1], operands[2],
-			 operands[3], operands[4]));
+	  emit_insn (gen_symGOTPLT2reg (reg, func));
+          func = reg;
+        }
       else
-	emit_call_insn (gen_call_value_pop_compact
-			(operands[0], operands[1], operands[2],
-			 operands[3], operands[4]));
-
-      DONE;
+        func = legitimize_pic_address (func, Pmode, 0);
     }
 
-  abort ();
+  r0 = gen_rtx_REG (SImode, R0_REG);
+  r1 = gen_rtx_REG (SImode, R1_REG);
+
+  /* Since such a call function may use all call-clobbered
+     registers, we force a mode switch earlier, so that we don't
+     run out of registers when adjusting fpscr for the call.  */
+  emit_insn (gen_force_mode_for_call ());
+
+  operands[1] = function_symbol (\"__GCC_shcompact_call_trampoline\");
+  if (flag_pic)
+    {
+      rtx reg = gen_reg_rtx (Pmode);
+
+      emit_insn (gen_symGOTPLT2reg (reg, operands[1]));
+      operands[1] = reg;
+    }
+  operands[1] = force_reg (SImode, operands[1]);
+
+  emit_move_insn (r0, func);
+  emit_move_insn (r1, cookie_rtx);
+
+  if (cookie & CALL_COOKIE_RET_TRAMP (1))
+    emit_call_insn (gen_call_value_pop_compact_rettramp
+			(operands[0], operands[1], operands[2],
+			 operands[3], operands[4]));
+  else
+    emit_call_insn (gen_call_value_pop_compact
+			(operands[0], operands[1], operands[2],
+			 operands[3], operands[4]));
+
+  DONE;
 }")
 
 (define_expand "sibcall_epilogue"
@@ -7145,8 +7156,7 @@ mov.l\\t1f,r0\\n\\
 {
   rtx diff_vec = PATTERN (next_real_insn (operands[2]));
 
-  if (GET_CODE (diff_vec) != ADDR_DIFF_VEC)
-    abort ();
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
   switch (GET_MODE (diff_vec))
     {
@@ -7159,7 +7169,7 @@ mov.l\\t1f,r0\\n\\
 	return \"mov.b	@(r0,%1),%0\;extu.b	%0,%0\";
       return \"mov.b	@(r0,%1),%0\";
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }"
   [(set_attr "length" "4")])
@@ -7177,8 +7187,7 @@ mov.l\\t1f,r0\\n\\
   rtx diff_vec = PATTERN (next_real_insn (operands[2]));
   const char *load;
 
-  if (GET_CODE (diff_vec) != ADDR_DIFF_VEC)
-    abort ();
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
   switch (GET_MODE (diff_vec))
     {
@@ -7195,7 +7204,7 @@ mov.l\\t1f,r0\\n\\
 	load = \"mov.b	@(r0,%1),%0\";
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   output_asm_insn (\"add\tr0,%1\;mova\t%O3,r0\\n\", operands);
   return load;
@@ -7212,8 +7221,7 @@ mov.l\\t1f,r0\\n\\
 {
   rtx diff_vec = PATTERN (next_real_insn (operands[2]));
 
-  if (GET_CODE (diff_vec) != ADDR_DIFF_VEC)
-    abort ();
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
   switch (GET_MODE (diff_vec))
     {
@@ -7226,7 +7234,7 @@ mov.l\\t1f,r0\\n\\
 	return \"\";
       return \"add	%1, r63, %0\";
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }"
   [(set_attr "type" "arith_media")])
@@ -7241,8 +7249,7 @@ mov.l\\t1f,r0\\n\\
 {
   rtx diff_vec = PATTERN (next_real_insn (operands[3]));
 
-  if (GET_CODE (diff_vec) != ADDR_DIFF_VEC)
-    abort ();
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
   switch (GET_MODE (diff_vec))
     {
@@ -7259,7 +7266,7 @@ mov.l\\t1f,r0\\n\\
 	return \"ldx.ub	%1, %2, %0\";
       return \"ldx.b	%1, %2, %0\";
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }"
   [(set_attr "type" "load_media")])
@@ -7348,8 +7355,7 @@ mov.l\\t1f,r0\\n\\
     {
       rtx r18 = gen_rtx_REG (DImode, PR_MEDIA_REG);
 
-      if (! call_really_used_regs[TR0_REG] || fixed_regs[TR0_REG])
-	abort ();
+      gcc_assert (call_really_used_regs[TR0_REG] && !fixed_regs[TR0_REG]);
       tr_regno = TR0_REG;
       tr = gen_rtx_REG (DImode, tr_regno);
       emit_move_insn (tr, r18);

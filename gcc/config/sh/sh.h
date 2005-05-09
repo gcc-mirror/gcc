@@ -3475,8 +3475,7 @@ extern int rtx_equal_function_value_matters;
     if (((ENCODING) & 0xf) != DW_EH_PE_sdata4 \
 	&& ((ENCODING) & 0xf) != DW_EH_PE_sdata8) \
       { \
-	if (GET_CODE (ADDR) != SYMBOL_REF) \
-	  abort (); \
+	gcc_assert (GET_CODE (ADDR) == SYMBOL_REF); \
 	SYMBOL_REF_FLAGS (ADDR) |= SYMBOL_FLAG_FUNCTION; \
 	if (0) goto DONE; \
       } \
