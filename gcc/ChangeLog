@@ -1,5 +1,48 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.md: ("FPR") New mode macro.
+	("de", "dee"): New mode attributes.
+	("cmpdf", "cmpsf"): Merge.
+	("*cmpdf_ccs_0", "*cmpsf_ccs_0"): Merge.
+	("*cmpdf_ccs_0_ibm", "*cmpdf_ccs_0_ibm"): Merge.
+	("*cmpdf_ccs", "*cmpsf_ccs"): Merge.
+	("*cmpdf_ccs_ibm", "*cmpsf_ccs_ibm"): Merge.
+	("floatdidf2", "floatdisf2"): Merge.
+	("adddf3", "addsf3"): Merge.
+	("*adddf3", "*addsf3"): Merge.
+	("*adddf3_cc", "*addsf3_cc"): Merge.
+	("*adddf3_cconly", "*addsf3_cconly"): Merge.
+	("*adddf3_ibm", "*addsf3_ibm"): Merge.
+	("subdf3", "subsf3"): Merge.
+	("*subdf3", "*subsf3"): Merge.
+	("*subdf3_cc", "*subsf3_cc"): Merge.
+	("*subdf3_cconly", "*subsf3_cconly"): Merge.
+	("*subdf3_ibm", "*subsf3_ibm"): Merge.
+	("muldf3", "mulsf3"): Merge.
+	("*muldf3", "*mulsf3" "): Merge.
+	("*muldf3_ibm", "*mulsf3_ibm"): Merge.
+	("*fmadddf", "*fmaddsf"): Merge.
+	("*fmsubdf", "*fmsubsf"): Merge.
+	("divdf3", "divsf3"): Merge.
+	("*divdf3", "*divsf3"): Merge.
+	("*divdf3_ibm", "*divsf3_ibm"): Merge.
+	("negdf2", "negsf2"): Merge.
+	("*negdf2_cc", "*negsf2_cc"): Merge.
+	("*negdf2_cconly", "*negsf2_cconly"): Merge.
+	("*negdf2", "*negsf2"): Merge.
+	("*negdf2_ibm", "*negsf2_ibm"): Merge.
+	("absdf2", "abssf2"): Merge.
+	("*absdf2_cc", "*abssf2_cc"): Merge.
+	("*absdf2_cconly", "*abssf2_cconly"): Merge.
+	("*absdf2", "*abssf2"): Merge.
+	("*absdf2_ibm", "*abssf2_ibm"): Merge.
+	("*negabsdf2_cc", "*negabssf2_cc"): Merge.
+	("*negabsdf2_cconly", "*negabssf2_cconly"): Merge.
+	("*negabsdf2", "*negabssf2"): Merge.
+	("sqrtdf2", "sqrtsf2"): Merge.
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.c: (s390_adjust_priority): Adapt to changed 
 	attribute names.
 	* config/s390/2084.md: ("x_fsimpd", "x_fsimps", "x_fdivd", "x_fdivs",
