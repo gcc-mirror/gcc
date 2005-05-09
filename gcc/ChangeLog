@@ -1,5 +1,42 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.c: (s390_adjust_priority): Adapt to changed 
+	attribute names.
+	* config/s390/2084.md: ("x_fsimpd", "x_fsimps", "x_fdivd", "x_fdivs",
+	"x_floadd", "x_floads", "x_fstored", "x_fstores"): Rename to
+	("x_fsimpdf", "x_fsimpsf", "x_fdivdf", "x_fdivsf", "x_floaddf",
+	"x_floadsf", "x_fstoredf", "x_fstoresf") and replace 'type'
+	attribute names.
+	* config/s390/s390.md: ("type"): Rename "fsimpd, fsimps, floadd, floads,
+	fstored, fstores, fmuld, fmuls, fdivd, fdivs, fsqrtd, fsqrts" to
+	"fsimpdf, fsimpsf, floaddf, floadsf, fstoredf, fstoresf, fmuldf,
+	fmulsf, fdivdf, fdivsf, fsqrtdf, fsqrtsf".
+	("*cmpdf_ccs_0", "*cmpdf_css_0_ibm", "*cmpdf_ccs",
+	"*cmpdf_ccs_ibm", "*cmpsf_ccs_0", "*cmpsf_css_0_ibm",
+	"*cmpsf_ccs", "*cmpsf_ccs_ibm", "*movdi_64", "*movdi_31",
+	"*movsi_zarch", "*movsi_esa", "*movdf_64", "*movdf_31", "movsf",
+	"*muldf3", "*muldf3_ibm", "*fmadddf", "*fmsubdf", "*mulsf3",
+	"mulsf3_ibm", "*fmaddsf", "fmsubsf", "*divdf3", "*divdf3_ibm",
+	"*negdf2_cc", "*negdf2_cconly", "*negdf2", "*negdf2_ibm",
+	"*negsf2_cc", "*negsf2_cconly", "*negsf2", "*absdf2_cc",
+	"*absdf2_cconly", "*absdf2", "*absdf2_ibm", "*abssf2_cc",
+	"*abssf2_cconly", "*abssf2", "*abssf2_ibm", "*negabsdf2_cc",
+	"*negabsdf2_cconly", "*negabsdf2", "*negabssf2_cc",
+	"*negabssf2_cconly", "*negabssf2", "sqrtdf2", "sqrtsf2"): Rename
+	'type' value.
+	("*divsf3"): Additionally rename second pattern to
+	"*divsf3_ibm".
+	("truncdfsf2_ibm", "extendsfdf2_ieee", "extendsfdf2_ibm",
+	"*adddf3", "*adddf3_cc", "*adddf3_cconly", "*adddf3_ibm",
+	"*addsf3", "*addsf3_cc", "*addsf3_cconly", "*subdf3",
+	"subdf3_cc", "*subdf3_cconly", "*subdf3_ibm", "*subsf3",
+	"subsf3_cc", "*subsf3_cconly", "*subsf3_ibm"): Merge identical
+	'type values' and rename 'type' value.
+	("*addsf3"): Additionally rename second pattern to
+	"*addsf3_ibm".
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.md: ("SHIFT"): New mode macro.
 	("lr", "shift"): New mode attributes.
 	("ashldi3", "lshrdi3"): Merge.

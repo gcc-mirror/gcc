@@ -4211,8 +4211,8 @@ s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
 
   switch (s390_safe_attr_type (insn))
     {
-      case TYPE_FSTORED:
-      case TYPE_FSTORES:
+      case TYPE_FSTOREDF:
+      case TYPE_FSTORESF:
 	priority = priority << 3;
 	break;
       case TYPE_STORE:
