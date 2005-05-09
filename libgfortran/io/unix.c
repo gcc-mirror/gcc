@@ -892,7 +892,7 @@ open_internal (char *base, int length)
  * around it. */
 
 static stream *
-fd_to_stream (int fd, int prot)
+fd_to_stream (int fd, int prot, int avoid_mmap)
 {
   struct stat statbuf;
   unix_stream *s;
@@ -911,7 +911,10 @@ fd_to_stream (int fd, int prot)
   s->file_length = S_ISREG (statbuf.st_mode) ? statbuf.st_size : -1;
 
 #if HAVE_MMAP
-  mmap_open (s);
+  if (avoid_mmap)
+    fd_open (s);
+  else
+    mmap_open (s);
 #else
   fd_open (s);
 #endif
@@ -1153,7 +1156,7 @@ open_external (unit_flags *flags)
       internal_error ("open_external(): Bad action");
     }
 
-  return fd_to_stream (fd, prot);
+  return fd_to_stream (fd, prot, 0);
 }
 
 
@@ -1163,7 +1166,7 @@ open_external (unit_flags *flags)
 stream *
 input_stream (void)
 {
-  return fd_to_stream (STDIN_FILENO, PROT_READ);
+  return fd_to_stream (STDIN_FILENO, PROT_READ, 1);
 }
 
 
@@ -1173,7 +1176,7 @@ input_stream (void)
 stream *
 output_stream (void)
 {
-  return fd_to_stream (STDOUT_FILENO, PROT_WRITE);
+  return fd_to_stream (STDOUT_FILENO, PROT_WRITE, 1);
 }
 
 
@@ -1183,7 +1186,7 @@ output_stream (void)
 stream *
 error_stream (void)
 {
-  return fd_to_stream (STDERR_FILENO, PROT_WRITE);
+  return fd_to_stream (STDERR_FILENO, PROT_WRITE, 1);
 }
 
 /* init_error_stream()-- Return a pointer to the error stream.  This
