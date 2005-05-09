@@ -1,5 +1,25 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.md: ("DSI", "SCOND"): New mode 
+	macros.
+	("E", "g"): New mode attributes.
+	("*adddi3_alc_cc", "*addsi3_alc_cc"): Merge.
+	("*adddi3_alc", "*addsi3_alc"): Merge.
+	("*subdi3_slb_cc", "*subsi3_slb_cc"): Merge.
+	("*subdi3_slb", "*subsi3_slb"): Merge.
+	("adddicc", "addsicc"): Merge.
+	("*sconddi", "*scondsi"): Merge.
+	("*sconddi_neg", "*scondsi_neg"): Merge.
+	("sltu", "sgtu", "sleu", "sgeu"): Merge.
+	("negdi2", "negsi2"): Extract expander pattern from
+	"negsi2" and merge with "negdi2".
+	("*negdi2"): Merge with instruction pattern of "negsi2".
+	("*negdi2_cc", "*negsi2_cc"): Merge.
+	("*negdi2_cconly", "*negsi2_cconly"): Merge.
+	("rotldi3", "rotlsi3"): Merge.
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.md: ("hc"): New mode attribute.
 	("extendhidi2", "extendqidi2"): Merge.
 	("*extendhidi2", "*extendqidi2"): Merge.
