@@ -2546,11 +2546,13 @@ get these warnings.
 If you want to warn about code which uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.
 
-These warnings occur only for variables that are candidates for
-register allocation.  Therefore, they do not occur for a variable that
-is declared @code{volatile}, or whose address is taken, or whose size
-is other than 1, 2, 4 or 8 bytes.  Also, they do not occur for
-structures, unions or arrays, even when they are in registers.
+These warnings occur for individual uninitialized or clobbered
+elements of structure, union or array variables as well as for
+variables which are uninitialized or clobbered as a whole.  They do
+not occur for variables or elements declared @code{volatile}.  Because
+these warnings depend on optimization, the exact variables or elements
+for which there are warnings will depend on the precise optimization
+options and version of GCC used.
 
 Note that there may be no warning about a variable that is used only
 to compute a value that itself is never used, because such
