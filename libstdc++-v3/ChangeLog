@@ -4,6 +4,29 @@
 	* include/debug/bitset (to_string): Add three overloads, taking
 	fewer template arguments.
 
+2005-05-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/testsuite_hooks.cc (try_mkfifo): Remove.
+	* testsuite/testsuite_hooks.h (try_mkfifo): Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/4879.cc: Use
+	dg-require-fork and dg-require-mkfifo.  Replace try_mkfifo with
+	mkfifo.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc: Likewise.
+	* testsuite/27_io/objects/char/7.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/7.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9661-1.cc: Likewise.
+
 2005-05-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4: Remove testsuite_wchar_t and testsuite_thread.
