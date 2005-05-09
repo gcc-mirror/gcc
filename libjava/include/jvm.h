@@ -252,7 +252,7 @@ class _Jv_Linker
 private:
   static _Jv_Field *find_field_helper(jclass, _Jv_Utf8Const *, _Jv_Utf8Const *,
 				      jclass *);
-  static _Jv_Field *find_field(jclass, jclass, _Jv_Utf8Const *,
+  static _Jv_Field *find_field(jclass, jclass, jclass *, _Jv_Utf8Const *,
 			       _Jv_Utf8Const *);
   static void prepare_constant_time_tables(jclass);
   static jshort get_interfaces(jclass, _Jv_ifaces *);
