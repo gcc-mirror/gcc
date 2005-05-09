@@ -1,6 +1,6 @@
 // Debugging bitset implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -238,6 +238,28 @@ namespace __gnu_debug_def
         std::basic_string<_CharT, _Traits, _Allocator>
         to_string() const
         { return _M_base().template to_string<_CharT, _Traits, _Allocator>(); }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 434. bitset::to_string() hard to use.
+      template<typename _CharT, typename _Traits>
+        std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
+        to_string() const
+        { return to_string<_CharT, _Traits, std::allocator<_CharT> >(); }
+
+      template<typename _CharT>
+        std::basic_string<_CharT, std::char_traits<_CharT>,
+                          std::allocator<_CharT> >
+        to_string() const
+        {
+          return to_string<_CharT, std::char_traits<_CharT>,
+                           std::allocator<_CharT> >();
+        }
+
+      std::basic_string<char, std::char_traits<char>, std::allocator<char> >
+        to_string() const
+        {
+          return to_string<char,std::char_traits<char>,std::allocator<char> >();
+        }
 
       using _Base::count;
       using _Base::size;
