@@ -1,5 +1,6 @@
 2005-05-09  David Edelsohn  <edelsohn@gnu.org>
 
+	PR middle-end/21237
 	* dojump.c (do_jump, MINUS_EXPR): Build NE_EXPR and fall through
 	to NE_EXPR case.
 
