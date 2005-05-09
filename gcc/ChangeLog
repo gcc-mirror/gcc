@@ -1,3 +1,9 @@
+2005-05-09  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.c (arm_gen_constant): Add new heuristic for generating
+	constant integers that can be expressed as the difference of two
+	valid immediates.
+
 2005-05-09  Roger Sayle  <roger@eyesopen.com>
 
 	* c-tree.h (parser_build_unary_op): New prototype.
