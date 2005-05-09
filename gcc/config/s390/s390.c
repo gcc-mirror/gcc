@@ -53,37 +53,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-gimple.h"
 
 
-static bool s390_assemble_integer (rtx, unsigned int, int);
-static bool s390_handle_option (size_t, const char *, int);
-static void s390_encode_section_info (tree, rtx, int);
-static bool s390_cannot_force_const_mem (rtx);
-static rtx s390_delegitimize_address (rtx);
-static bool s390_return_in_memory (tree, tree);
-static void s390_init_builtins (void);
-static rtx s390_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static void s390_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
-				  HOST_WIDE_INT, tree);
-static enum attr_type s390_safe_attr_type (rtx);
-
-static int s390_adjust_priority (rtx, int);
-static int s390_issue_rate (void);
-static int s390_first_cycle_multipass_dfa_lookahead (void);
-static bool s390_cannot_copy_insn_p (rtx);
-static bool s390_rtx_costs (rtx, int, int, int *);
-static int s390_address_cost (rtx);
-static void s390_reorg (void);
-static bool s390_valid_pointer_mode (enum machine_mode);
-static tree s390_build_builtin_va_list (void);
-static tree s390_gimplify_va_arg (tree, tree, tree *, tree *);
-static bool s390_function_ok_for_sibcall (tree, tree);
-static bool s390_call_saved_register_used (tree);
-static bool s390_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
-				    tree, bool);
-static bool s390_fixed_condition_code_regs (unsigned int *, unsigned int *);
-static enum machine_mode s390_cc_modes_compatible (enum machine_mode,
- 						   enum machine_mode);
-
-
 /* Define the specific costs for a given cpu.  */
 
 struct processor_costs 
@@ -185,93 +154,6 @@ struct processor_costs z990_cost =
 };
 
 
-#undef  TARGET_ASM_ALIGNED_HI_OP
-#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
-#undef  TARGET_ASM_ALIGNED_DI_OP
-#define TARGET_ASM_ALIGNED_DI_OP "\t.quad\t"
-#undef  TARGET_ASM_INTEGER
-#define TARGET_ASM_INTEGER s390_assemble_integer
-
-#undef  TARGET_ASM_OPEN_PAREN
-#define TARGET_ASM_OPEN_PAREN ""
-
-#undef  TARGET_ASM_CLOSE_PAREN
-#define TARGET_ASM_CLOSE_PAREN ""
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_FUSED_MADD)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION s390_handle_option
-
-#undef	TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
-
-#ifdef HAVE_AS_TLS
-#undef TARGET_HAVE_TLS
-#define TARGET_HAVE_TLS true
-#endif
-#undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM s390_cannot_force_const_mem
-
-#undef TARGET_DELEGITIMIZE_ADDRESS
-#define TARGET_DELEGITIMIZE_ADDRESS s390_delegitimize_address
-
-#undef TARGET_RETURN_IN_MEMORY
-#define TARGET_RETURN_IN_MEMORY s390_return_in_memory
-
-#undef  TARGET_INIT_BUILTINS
-#define TARGET_INIT_BUILTINS s390_init_builtins
-#undef  TARGET_EXPAND_BUILTIN
-#define TARGET_EXPAND_BUILTIN s390_expand_builtin
-
-#undef TARGET_ASM_OUTPUT_MI_THUNK
-#define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
-#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
-
-#undef  TARGET_SCHED_ADJUST_PRIORITY
-#define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority
-#undef TARGET_SCHED_ISSUE_RATE
-#define TARGET_SCHED_ISSUE_RATE s390_issue_rate
-#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
-#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD s390_first_cycle_multipass_dfa_lookahead
-
-#undef TARGET_CANNOT_COPY_INSN_P
-#define TARGET_CANNOT_COPY_INSN_P s390_cannot_copy_insn_p
-#undef TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS s390_rtx_costs
-#undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST s390_address_cost
-
-#undef TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG s390_reorg
-
-#undef TARGET_VALID_POINTER_MODE
-#define TARGET_VALID_POINTER_MODE s390_valid_pointer_mode
-
-#undef TARGET_BUILD_BUILTIN_VA_LIST
-#define TARGET_BUILD_BUILTIN_VA_LIST s390_build_builtin_va_list
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR s390_gimplify_va_arg
-
-#undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
-#undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
-#undef TARGET_PASS_BY_REFERENCE
-#define TARGET_PASS_BY_REFERENCE s390_pass_by_reference
-
-#undef TARGET_FUNCTION_OK_FOR_SIBCALL
-#define TARGET_FUNCTION_OK_FOR_SIBCALL s390_function_ok_for_sibcall
-
-#undef TARGET_FIXED_CONDITION_CODE_REGS
-#define TARGET_FIXED_CONDITION_CODE_REGS s390_fixed_condition_code_regs
-
-#undef TARGET_CC_MODES_COMPATIBLE
-#define TARGET_CC_MODES_COMPATIBLE s390_cc_modes_compatible
-
-struct gcc_target targetm = TARGET_INITIALIZER;
-
 extern int reload_completed;
 
 /* The alias set for prologue/epilogue register save/restore.  */
@@ -372,53 +254,6 @@ struct machine_function GTY(())
   (1 << (BITNUM)))
 #define cfun_fpr_bit_p(BITNUM) (!!(cfun->machine->frame_layout.fpr_bitmap &    \
   (1 << (BITNUM))))
-
-static int s390_match_ccmode_set (rtx, enum machine_mode);
-static const char *s390_branch_condition_mnemonic (rtx, int);
-static int s390_short_displacement (rtx);
-static int s390_decompose_address (rtx, struct s390_address *);
-static rtx get_thread_pointer (void);
-static rtx legitimize_tls_address (rtx, rtx);
-static void print_shift_count_operand (FILE *, rtx);
-static const char *get_some_local_dynamic_name (void);
-static int get_some_local_dynamic_name_1 (rtx *, void *);
-static int reg_used_in_mem_p (int, rtx);
-static int addr_generation_dependency_p (rtx, rtx);
-static int s390_split_branches (void);
-static void annotate_constant_pool_refs (rtx *x);
-static void find_constant_pool_ref (rtx, rtx *);
-static void replace_constant_pool_ref (rtx *, rtx, rtx);
-static rtx find_ltrel_base (rtx);
-static void replace_ltrel_base (rtx *);
-static void s390_optimize_prologue (void);
-static int find_unused_clobbered_reg (void);
-static void s390_frame_area (int *, int *);
-static void s390_register_info (int []);
-static void s390_frame_info (void);
-static void s390_init_frame_layout (void);
-static void s390_update_frame_layout (void);
-static rtx save_fpr (rtx, int, int);
-static rtx restore_fpr (rtx, int, int);
-static rtx save_gprs (rtx, int, int, int);
-static rtx restore_gprs (rtx, int, int, int);
-static int s390_function_arg_size (enum machine_mode, tree);
-static bool s390_function_arg_float (enum machine_mode, tree);
-static struct machine_function * s390_init_machine_status (void);
-
-/* Return true if CODE is a valid address without index.  */
-
-bool
-s390_legitimate_address_without_index_p (rtx op)
-{
-  struct s390_address addr;
-
-  if (!s390_decompose_address (XEXP (op, 0), &addr))
-    return false;
-  if (addr.indx)
-    return false;
-
-  return true;
-}
 
 /* Return true if SET either doesn't set the CC register, or else
    the source and destination have matching CC modes and that
@@ -1222,6 +1057,14 @@ s390_narrow_logical_operator (enum rtx_code code, rtx *memop, rtx *immop)
 }
 
 
+/* How to allocate a 'struct machine_function'.  */
+
+static struct machine_function *
+s390_init_machine_status (void)
+{
+  return ggc_alloc_cleared (sizeof (struct machine_function));
+}
+
 /* Change optimizations to be performed, depending on the
    optimization level.
 
@@ -1424,6 +1267,293 @@ s390_short_displacement (rtx disp)
     return 1;
 
   return 0;
+}
+
+/* Decompose a RTL expression ADDR for a memory address into
+   its components, returned in OUT.
+
+   Returns 0 if ADDR is not a valid memory address, nonzero
+   otherwise.  If OUT is NULL, don't return the components,
+   but check for validity only.
+
+   Note: Only addresses in canonical form are recognized.
+   LEGITIMIZE_ADDRESS should convert non-canonical forms to the
+   canonical form so that they will be recognized.  */
+
+static int
+s390_decompose_address (register rtx addr, struct s390_address *out)
+{
+  HOST_WIDE_INT offset = 0;
+  rtx base = NULL_RTX;
+  rtx indx = NULL_RTX;
+  rtx disp = NULL_RTX;
+  rtx orig_disp;
+  int pointer = FALSE;
+  int base_ptr = FALSE;
+  int indx_ptr = FALSE;
+
+  /* Decompose address into base + index + displacement.  */
+
+  if (GET_CODE (addr) == REG || GET_CODE (addr) == UNSPEC)
+    base = addr;
+
+  else if (GET_CODE (addr) == PLUS)
+    {
+      rtx op0 = XEXP (addr, 0);
+      rtx op1 = XEXP (addr, 1);
+      enum rtx_code code0 = GET_CODE (op0);
+      enum rtx_code code1 = GET_CODE (op1);
+
+      if (code0 == REG || code0 == UNSPEC)
+	{
+	  if (code1 == REG || code1 == UNSPEC)
+	    {
+	      indx = op0;	/* index + base */
+	      base = op1;
+	    }
+
+	  else
+	    {
+	      base = op0;	/* base + displacement */
+	      disp = op1;
+	    }
+	}
+
+      else if (code0 == PLUS)
+	{
+	  indx = XEXP (op0, 0);	/* index + base + disp */
+	  base = XEXP (op0, 1);
+	  disp = op1;
+	}
+
+      else
+	{
+	  return FALSE;
+	}
+    }
+
+  else
+    disp = addr;		/* displacement */
+
+  /* Extract integer part of displacement.  */
+  orig_disp = disp;
+  if (disp)
+    {
+      if (GET_CODE (disp) == CONST_INT)
+	{
+	  offset = INTVAL (disp);
+	  disp = NULL_RTX;
+	}
+      else if (GET_CODE (disp) == CONST
+	       && GET_CODE (XEXP (disp, 0)) == PLUS
+	       && GET_CODE (XEXP (XEXP (disp, 0), 1)) == CONST_INT)
+	{
+	  offset = INTVAL (XEXP (XEXP (disp, 0), 1));
+	  disp = XEXP (XEXP (disp, 0), 0);
+	}
+    }
+
+  /* Strip off CONST here to avoid special case tests later.  */
+  if (disp && GET_CODE (disp) == CONST)
+    disp = XEXP (disp, 0);
+
+  /* We can convert literal pool addresses to
+     displacements by basing them off the base register.  */
+  if (disp && GET_CODE (disp) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (disp))
+    {
+      /* Either base or index must be free to hold the base register.  */
+      if (!base)
+        base = gen_rtx_REG (Pmode, BASE_REGNUM);
+      else if (!indx)
+        indx = gen_rtx_REG (Pmode, BASE_REGNUM);
+      else
+        return FALSE;
+
+      /* Mark up the displacement.  */
+      disp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, disp),
+			     UNSPEC_LTREL_OFFSET);
+    }
+
+  /* Validate base register.  */
+  if (base)
+    {
+      if (GET_CODE (base) == UNSPEC)
+	switch (XINT (base, 1))
+	  {
+	  case UNSPEC_LTREF:
+	    if (!disp)
+	      disp = gen_rtx_UNSPEC (Pmode, 
+				     gen_rtvec (1, XVECEXP (base, 0, 0)),
+				     UNSPEC_LTREL_OFFSET);
+	    else
+	      return FALSE;
+
+	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
+	    break;
+
+	  case UNSPEC_LTREL_BASE:
+	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
+	    break;
+
+	  default:
+	    return FALSE;
+	  }
+
+      if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
+	return FALSE;
+
+      if (REGNO (base) == BASE_REGNUM
+	  || REGNO (base) == STACK_POINTER_REGNUM
+	  || REGNO (base) == FRAME_POINTER_REGNUM
+	  || ((reload_completed || reload_in_progress)
+	      && frame_pointer_needed
+	      && REGNO (base) == HARD_FRAME_POINTER_REGNUM)
+	  || REGNO (base) == ARG_POINTER_REGNUM
+          || (flag_pic
+              && REGNO (base) == PIC_OFFSET_TABLE_REGNUM))
+        pointer = base_ptr = TRUE;
+    }
+
+  /* Validate index register.  */
+  if (indx)
+    {
+      if (GET_CODE (indx) == UNSPEC)
+	switch (XINT (indx, 1))
+	  {
+	  case UNSPEC_LTREF:
+	    if (!disp)
+	      disp = gen_rtx_UNSPEC (Pmode, 
+				     gen_rtvec (1, XVECEXP (indx, 0, 0)),
+				     UNSPEC_LTREL_OFFSET);
+	    else
+	      return FALSE;
+
+	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
+	    break;
+
+	  case UNSPEC_LTREL_BASE:
+	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
+	    break;
+
+	  default:
+	    return FALSE;
+	  }
+
+      if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
+	return FALSE;
+
+      if (REGNO (indx) == BASE_REGNUM
+	  || REGNO (indx) == STACK_POINTER_REGNUM
+	  || REGNO (indx) == FRAME_POINTER_REGNUM
+	  || ((reload_completed || reload_in_progress)
+	      && frame_pointer_needed
+	      && REGNO (indx) == HARD_FRAME_POINTER_REGNUM)
+	  || REGNO (indx) == ARG_POINTER_REGNUM
+          || (flag_pic
+              && REGNO (indx) == PIC_OFFSET_TABLE_REGNUM))
+        pointer = indx_ptr = TRUE;
+    }
+
+  /* Prefer to use pointer as base, not index.  */
+  if (base && indx && !base_ptr
+      && (indx_ptr || (!REG_POINTER (base) && REG_POINTER (indx))))
+    {
+      rtx tmp = base;
+      base = indx;
+      indx = tmp;
+    }
+
+  /* Validate displacement.  */
+  if (!disp)
+    {
+      /* If the argument pointer or the return address pointer are involved,
+	 the displacement will change later anyway as the virtual registers get
+	 eliminated.  This could make a valid displacement invalid, but it is 
+	 more likely to make an invalid displacement valid, because we sometimes
+	 access the register save area via negative offsets to one of those 
+	 registers.
+	 Thus we don't check the displacement for validity here.  If after
+	 elimination the displacement turns out to be invalid after all,
+	 this is fixed up by reload in any case.  */
+      if (base != arg_pointer_rtx 
+	  && indx != arg_pointer_rtx 
+	  && base != return_address_pointer_rtx 
+	  && indx != return_address_pointer_rtx)
+	if (!DISP_IN_RANGE (offset))
+	  return FALSE;
+    }
+  else
+    {
+      /* All the special cases are pointers.  */
+      pointer = TRUE;
+
+      /* In the small-PIC case, the linker converts @GOT
+         and @GOTNTPOFF offsets to possible displacements.  */
+      if (GET_CODE (disp) == UNSPEC
+          && (XINT (disp, 1) == UNSPEC_GOT
+	      || XINT (disp, 1) == UNSPEC_GOTNTPOFF)
+	  && offset == 0
+	  && flag_pic == 1)
+        {
+	  ;
+        }
+
+      /* Accept chunkified literal pool symbol references.  */
+      else if (GET_CODE (disp) == MINUS
+               && GET_CODE (XEXP (disp, 0)) == LABEL_REF
+               && GET_CODE (XEXP (disp, 1)) == LABEL_REF)
+        {
+	  ;
+        }
+
+      /* Accept literal pool references.  */
+      else if (GET_CODE (disp) == UNSPEC
+	       && XINT (disp, 1) == UNSPEC_LTREL_OFFSET)
+        {
+	  orig_disp = gen_rtx_CONST (Pmode, disp);
+	  if (offset)
+	    {
+	      /* If we have an offset, make sure it does not
+		 exceed the size of the constant pool entry.  */
+	      rtx sym = XVECEXP (disp, 0, 0);
+	      if (offset >= GET_MODE_SIZE (get_pool_mode (sym)))
+		return FALSE;
+
+              orig_disp = plus_constant (orig_disp, offset);
+	    }
+        }
+
+      else
+	return FALSE;
+    }
+
+  if (!base && !indx)
+    pointer = TRUE;
+
+  if (out)
+    {
+      out->base = base;
+      out->indx = indx;
+      out->disp = orig_disp;
+      out->pointer = pointer;
+    }
+
+  return TRUE;
+}
+
+/* Return true if CODE is a valid address without index.  */
+
+bool
+s390_legitimate_address_without_index_p (rtx op)
+{
+  struct s390_address addr;
+
+  if (!s390_decompose_address (XEXP (op, 0), &addr))
+    return false;
+  if (addr.indx)
+    return false;
+
+  return true;
 }
 
 /* Return true if OP is a valid operand for a C constraint.  */
@@ -2212,278 +2342,6 @@ s390_expand_plus_operand (register rtx target, register rtx src,
   s390_load_address (target, src);
 }
 
-
-/* Decompose a RTL expression ADDR for a memory address into
-   its components, returned in OUT.
-
-   Returns 0 if ADDR is not a valid memory address, nonzero
-   otherwise.  If OUT is NULL, don't return the components,
-   but check for validity only.
-
-   Note: Only addresses in canonical form are recognized.
-   LEGITIMIZE_ADDRESS should convert non-canonical forms to the
-   canonical form so that they will be recognized.  */
-
-static int
-s390_decompose_address (register rtx addr, struct s390_address *out)
-{
-  HOST_WIDE_INT offset = 0;
-  rtx base = NULL_RTX;
-  rtx indx = NULL_RTX;
-  rtx disp = NULL_RTX;
-  rtx orig_disp;
-  int pointer = FALSE;
-  int base_ptr = FALSE;
-  int indx_ptr = FALSE;
-
-  /* Decompose address into base + index + displacement.  */
-
-  if (GET_CODE (addr) == REG || GET_CODE (addr) == UNSPEC)
-    base = addr;
-
-  else if (GET_CODE (addr) == PLUS)
-    {
-      rtx op0 = XEXP (addr, 0);
-      rtx op1 = XEXP (addr, 1);
-      enum rtx_code code0 = GET_CODE (op0);
-      enum rtx_code code1 = GET_CODE (op1);
-
-      if (code0 == REG || code0 == UNSPEC)
-	{
-	  if (code1 == REG || code1 == UNSPEC)
-	    {
-	      indx = op0;	/* index + base */
-	      base = op1;
-	    }
-
-	  else
-	    {
-	      base = op0;	/* base + displacement */
-	      disp = op1;
-	    }
-	}
-
-      else if (code0 == PLUS)
-	{
-	  indx = XEXP (op0, 0);	/* index + base + disp */
-	  base = XEXP (op0, 1);
-	  disp = op1;
-	}
-
-      else
-	{
-	  return FALSE;
-	}
-    }
-
-  else
-    disp = addr;		/* displacement */
-
-  /* Extract integer part of displacement.  */
-  orig_disp = disp;
-  if (disp)
-    {
-      if (GET_CODE (disp) == CONST_INT)
-	{
-	  offset = INTVAL (disp);
-	  disp = NULL_RTX;
-	}
-      else if (GET_CODE (disp) == CONST
-	       && GET_CODE (XEXP (disp, 0)) == PLUS
-	       && GET_CODE (XEXP (XEXP (disp, 0), 1)) == CONST_INT)
-	{
-	  offset = INTVAL (XEXP (XEXP (disp, 0), 1));
-	  disp = XEXP (XEXP (disp, 0), 0);
-	}
-    }
-
-  /* Strip off CONST here to avoid special case tests later.  */
-  if (disp && GET_CODE (disp) == CONST)
-    disp = XEXP (disp, 0);
-
-  /* We can convert literal pool addresses to
-     displacements by basing them off the base register.  */
-  if (disp && GET_CODE (disp) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (disp))
-    {
-      /* Either base or index must be free to hold the base register.  */
-      if (!base)
-        base = gen_rtx_REG (Pmode, BASE_REGNUM);
-      else if (!indx)
-        indx = gen_rtx_REG (Pmode, BASE_REGNUM);
-      else
-        return FALSE;
-
-      /* Mark up the displacement.  */
-      disp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, disp),
-			     UNSPEC_LTREL_OFFSET);
-    }
-
-  /* Validate base register.  */
-  if (base)
-    {
-      if (GET_CODE (base) == UNSPEC)
-	switch (XINT (base, 1))
-	  {
-	  case UNSPEC_LTREF:
-	    if (!disp)
-	      disp = gen_rtx_UNSPEC (Pmode, 
-				     gen_rtvec (1, XVECEXP (base, 0, 0)),
-				     UNSPEC_LTREL_OFFSET);
-	    else
-	      return FALSE;
-
-	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
-	    break;
-
-	  case UNSPEC_LTREL_BASE:
-	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
-	    break;
-
-	  default:
-	    return FALSE;
-	  }
-
-      if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
-	return FALSE;
-
-      if (REGNO (base) == BASE_REGNUM
-	  || REGNO (base) == STACK_POINTER_REGNUM
-	  || REGNO (base) == FRAME_POINTER_REGNUM
-	  || ((reload_completed || reload_in_progress)
-	      && frame_pointer_needed
-	      && REGNO (base) == HARD_FRAME_POINTER_REGNUM)
-	  || REGNO (base) == ARG_POINTER_REGNUM
-          || (flag_pic
-              && REGNO (base) == PIC_OFFSET_TABLE_REGNUM))
-        pointer = base_ptr = TRUE;
-    }
-
-  /* Validate index register.  */
-  if (indx)
-    {
-      if (GET_CODE (indx) == UNSPEC)
-	switch (XINT (indx, 1))
-	  {
-	  case UNSPEC_LTREF:
-	    if (!disp)
-	      disp = gen_rtx_UNSPEC (Pmode, 
-				     gen_rtvec (1, XVECEXP (indx, 0, 0)),
-				     UNSPEC_LTREL_OFFSET);
-	    else
-	      return FALSE;
-
-	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
-	    break;
-
-	  case UNSPEC_LTREL_BASE:
-	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
-	    break;
-
-	  default:
-	    return FALSE;
-	  }
-
-      if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
-	return FALSE;
-
-      if (REGNO (indx) == BASE_REGNUM
-	  || REGNO (indx) == STACK_POINTER_REGNUM
-	  || REGNO (indx) == FRAME_POINTER_REGNUM
-	  || ((reload_completed || reload_in_progress)
-	      && frame_pointer_needed
-	      && REGNO (indx) == HARD_FRAME_POINTER_REGNUM)
-	  || REGNO (indx) == ARG_POINTER_REGNUM
-          || (flag_pic
-              && REGNO (indx) == PIC_OFFSET_TABLE_REGNUM))
-        pointer = indx_ptr = TRUE;
-    }
-
-  /* Prefer to use pointer as base, not index.  */
-  if (base && indx && !base_ptr
-      && (indx_ptr || (!REG_POINTER (base) && REG_POINTER (indx))))
-    {
-      rtx tmp = base;
-      base = indx;
-      indx = tmp;
-    }
-
-  /* Validate displacement.  */
-  if (!disp)
-    {
-      /* If the argument pointer or the return address pointer are involved,
-	 the displacement will change later anyway as the virtual registers get
-	 eliminated.  This could make a valid displacement invalid, but it is 
-	 more likely to make an invalid displacement valid, because we sometimes
-	 access the register save area via negative offsets to one of those 
-	 registers.
-	 Thus we don't check the displacement for validity here.  If after
-	 elimination the displacement turns out to be invalid after all,
-	 this is fixed up by reload in any case.  */
-      if (base != arg_pointer_rtx 
-	  && indx != arg_pointer_rtx 
-	  && base != return_address_pointer_rtx 
-	  && indx != return_address_pointer_rtx)
-	if (!DISP_IN_RANGE (offset))
-	  return FALSE;
-    }
-  else
-    {
-      /* All the special cases are pointers.  */
-      pointer = TRUE;
-
-      /* In the small-PIC case, the linker converts @GOT
-         and @GOTNTPOFF offsets to possible displacements.  */
-      if (GET_CODE (disp) == UNSPEC
-          && (XINT (disp, 1) == UNSPEC_GOT
-	      || XINT (disp, 1) == UNSPEC_GOTNTPOFF)
-	  && offset == 0
-	  && flag_pic == 1)
-        {
-	  ;
-        }
-
-      /* Accept chunkified literal pool symbol references.  */
-      else if (GET_CODE (disp) == MINUS
-               && GET_CODE (XEXP (disp, 0)) == LABEL_REF
-               && GET_CODE (XEXP (disp, 1)) == LABEL_REF)
-        {
-	  ;
-        }
-
-      /* Accept literal pool references.  */
-      else if (GET_CODE (disp) == UNSPEC
-	       && XINT (disp, 1) == UNSPEC_LTREL_OFFSET)
-        {
-	  orig_disp = gen_rtx_CONST (Pmode, disp);
-	  if (offset)
-	    {
-	      /* If we have an offset, make sure it does not
-		 exceed the size of the constant pool entry.  */
-	      rtx sym = XVECEXP (disp, 0, 0);
-	      if (offset >= GET_MODE_SIZE (get_pool_mode (sym)))
-		return FALSE;
-
-              orig_disp = plus_constant (orig_disp, offset);
-	    }
-        }
-
-      else
-	return FALSE;
-    }
-
-  if (!base && !indx)
-    pointer = TRUE;
-
-  if (out)
-    {
-      out->base = base;
-      out->indx = indx;
-      out->disp = orig_disp;
-      out->pointer = pointer;
-    }
-
-  return TRUE;
-}
 
 /* Return nonzero if ADDR is a valid memory address.
    STRICT specifies whether strict register checking applies.  */
@@ -3763,24 +3621,7 @@ print_shift_count_operand (FILE *file, rtx op)
     fprintf (file, "(%s)", reg_names[REGNO (op)]);
 }
 
-/* Locate some local-dynamic symbol still in use by this function
-   so that we can print its name in local-dynamic base patterns.  */
-
-static const char *
-get_some_local_dynamic_name (void)
-{
-  rtx insn;
-
-  if (cfun->machine->some_ld_name)
-    return cfun->machine->some_ld_name;
-
-  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-        && for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
-      return cfun->machine->some_ld_name;
-
-  abort ();
-}
+/* See 'get_some_local_dynamic_name'.  */
 
 static int
 get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
@@ -3801,6 +3642,25 @@ get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
     }
 
   return 0;
+}
+
+/* Locate some local-dynamic symbol still in use by this function
+   so that we can print its name in local-dynamic base patterns.  */
+
+static const char *
+get_some_local_dynamic_name (void)
+{
+  rtx insn;
+
+  if (cfun->machine->some_ld_name)
+    return cfun->machine->some_ld_name;
+
+  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+        && for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
+      return cfun->machine->some_ld_name;
+
+  abort ();
 }
 
 /* Output machine-dependent UNSPECs occurring in address constant X
@@ -4242,91 +4102,6 @@ s390_first_cycle_multipass_dfa_lookahead (void)
 }
 
 
-/* Split all branches that exceed the maximum distance.
-   Returns true if this created a new literal pool entry.  */
-
-static int
-s390_split_branches (void)
-{
-  rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
-  int new_literal = 0;
-  rtx insn, pat, tmp, target;
-  rtx *label;
-
-  /* We need correct insn addresses.  */
-
-  shorten_branches (get_insns ());
-
-  /* Find all branches that exceed 64KB, and split them.  */
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (GET_CODE (insn) != JUMP_INSN)
-	continue;
-
-      pat = PATTERN (insn);
-      if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
-	pat = XVECEXP (pat, 0, 0);
-      if (GET_CODE (pat) != SET || SET_DEST (pat) != pc_rtx)
-	continue;
-
-      if (GET_CODE (SET_SRC (pat)) == LABEL_REF)
-	{
-	  label = &SET_SRC (pat);
-	}
-      else if (GET_CODE (SET_SRC (pat)) == IF_THEN_ELSE)
-	{
-	  if (GET_CODE (XEXP (SET_SRC (pat), 1)) == LABEL_REF)
-	    label = &XEXP (SET_SRC (pat), 1);
-          else if (GET_CODE (XEXP (SET_SRC (pat), 2)) == LABEL_REF)
-            label = &XEXP (SET_SRC (pat), 2);
-	  else
-	    continue;
-        }
-      else
-	continue;
-
-      if (get_attr_length (insn) <= 4)
-	continue;
-
-      /* We are going to use the return register as scratch register,
-	 make sure it will be saved/restored by the prologue/epilogue.  */
-      cfun_frame_layout.save_return_addr_p = 1;
-
-      if (!flag_pic)
-	{
-	  new_literal = 1;
-	  tmp = force_const_mem (Pmode, *label);
-	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, tmp), insn);
-	  INSN_ADDRESSES_NEW (tmp, -1);
-	  annotate_constant_pool_refs (&PATTERN (tmp));
-
-	  target = temp_reg;
-	}
-      else
-	{
-	  new_literal = 1;
-	  target = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, *label),
-				   UNSPEC_LTREL_OFFSET);
-	  target = gen_rtx_CONST (Pmode, target);
-	  target = force_const_mem (Pmode, target);
-	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, target), insn);
-	  INSN_ADDRESSES_NEW (tmp, -1);
-	  annotate_constant_pool_refs (&PATTERN (tmp));
-
-          target = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, XEXP (target, 0),
-							cfun->machine->base_reg),
-				   UNSPEC_LTREL_BASE);
-	  target = gen_rtx_PLUS (Pmode, temp_reg, target);
-	}
-
-      if (!validate_change (insn, label, target, 0))
-	abort ();
-    }
-
-  return new_literal;
-}
-
 /* Annotate every literal pool reference in X by an UNSPEC_LTREF expression.
    Fix up MEMs as required.  */
 
@@ -4429,6 +4204,91 @@ annotate_constant_pool_refs (rtx *x)
             annotate_constant_pool_refs (&XVECEXP (*x, i, j));
         }
     }
+}
+
+/* Split all branches that exceed the maximum distance.
+   Returns true if this created a new literal pool entry.  */
+
+static int
+s390_split_branches (void)
+{
+  rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
+  int new_literal = 0;
+  rtx insn, pat, tmp, target;
+  rtx *label;
+
+  /* We need correct insn addresses.  */
+
+  shorten_branches (get_insns ());
+
+  /* Find all branches that exceed 64KB, and split them.  */
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) != JUMP_INSN)
+	continue;
+
+      pat = PATTERN (insn);
+      if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
+	pat = XVECEXP (pat, 0, 0);
+      if (GET_CODE (pat) != SET || SET_DEST (pat) != pc_rtx)
+	continue;
+
+      if (GET_CODE (SET_SRC (pat)) == LABEL_REF)
+	{
+	  label = &SET_SRC (pat);
+	}
+      else if (GET_CODE (SET_SRC (pat)) == IF_THEN_ELSE)
+	{
+	  if (GET_CODE (XEXP (SET_SRC (pat), 1)) == LABEL_REF)
+	    label = &XEXP (SET_SRC (pat), 1);
+          else if (GET_CODE (XEXP (SET_SRC (pat), 2)) == LABEL_REF)
+            label = &XEXP (SET_SRC (pat), 2);
+	  else
+	    continue;
+        }
+      else
+	continue;
+
+      if (get_attr_length (insn) <= 4)
+	continue;
+
+      /* We are going to use the return register as scratch register,
+	 make sure it will be saved/restored by the prologue/epilogue.  */
+      cfun_frame_layout.save_return_addr_p = 1;
+
+      if (!flag_pic)
+	{
+	  new_literal = 1;
+	  tmp = force_const_mem (Pmode, *label);
+	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, tmp), insn);
+	  INSN_ADDRESSES_NEW (tmp, -1);
+	  annotate_constant_pool_refs (&PATTERN (tmp));
+
+	  target = temp_reg;
+	}
+      else
+	{
+	  new_literal = 1;
+	  target = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, *label),
+				   UNSPEC_LTREL_OFFSET);
+	  target = gen_rtx_CONST (Pmode, target);
+	  target = force_const_mem (Pmode, target);
+	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, target), insn);
+	  INSN_ADDRESSES_NEW (tmp, -1);
+	  annotate_constant_pool_refs (&PATTERN (tmp));
+
+          target = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, XEXP (target, 0),
+							cfun->machine->base_reg),
+				   UNSPEC_LTREL_BASE);
+	  target = gen_rtx_PLUS (Pmode, temp_reg, target);
+	}
+
+      if (!validate_change (insn, label, target, 0))
+	abort ();
+    }
+
+  return new_literal;
 }
 
 
@@ -4635,28 +4495,28 @@ struct constant_pool
   int size;
 };
 
-static struct constant_pool * s390_mainpool_start (void);
-static void s390_mainpool_finish (struct constant_pool *);
-static void s390_mainpool_cancel (struct constant_pool *);
+/* Allocate new constant_pool structure.  */
 
-static struct constant_pool * s390_chunkify_start (void);
-static void s390_chunkify_finish (struct constant_pool *);
-static void s390_chunkify_cancel (struct constant_pool *);
+static struct constant_pool *
+s390_alloc_pool (void)
+{
+  struct constant_pool *pool;
+  int i;
 
-static struct constant_pool *s390_start_pool (struct constant_pool **, rtx);
-static void s390_end_pool (struct constant_pool *, rtx);
-static void s390_add_pool_insn (struct constant_pool *, rtx);
-static struct constant_pool *s390_find_pool (struct constant_pool *, rtx);
-static void s390_add_constant (struct constant_pool *, rtx, enum machine_mode);
-static rtx s390_find_constant (struct constant_pool *, rtx, enum machine_mode);
-static void s390_add_execute (struct constant_pool *, rtx);
-static rtx s390_find_execute (struct constant_pool *, rtx);
-static rtx s390_execute_label (rtx);
-static rtx s390_execute_target (rtx);
-static void s390_dump_pool (struct constant_pool *, bool);
-static void s390_dump_execute (struct constant_pool *);
-static struct constant_pool *s390_alloc_pool (void);
-static void s390_free_pool (struct constant_pool *);
+  pool = (struct constant_pool *) xmalloc (sizeof *pool);
+  pool->next = NULL;
+  for (i = 0; i < NR_C_MODES; i++)
+    pool->constants[i] = NULL;
+
+  pool->execute = NULL;
+  pool->label = gen_label_rtx ();
+  pool->first_insn = NULL_RTX;
+  pool->pool_insn = NULL_RTX;
+  pool->insns = BITMAP_ALLOC (NULL);
+  pool->size = 0;
+
+  return pool;
+}
 
 /* Create new constant pool covering instructions starting at INSN
    and chain it to the end of POOL_LIST.  */
@@ -4773,6 +4633,21 @@ s390_find_constant (struct constant_pool *pool, rtx val,
   return offset;
 }
 
+/* Check whether INSN is an execute.  Return the label_ref to its
+   execute target template if so, NULL_RTX otherwise.  */
+
+static rtx
+s390_execute_label (rtx insn)
+{
+  if (GET_CODE (insn) == INSN
+      && GET_CODE (PATTERN (insn)) == PARALLEL
+      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC
+      && XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_EXECUTE)
+    return XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 2);
+
+  return NULL_RTX;
+}
+
 /* Add execute target for INSN to the constant pool POOL.  */
 
 static void
@@ -4821,21 +4696,6 @@ s390_find_execute (struct constant_pool *pool, rtx insn)
   return offset;
 }
 
-/* Check whether INSN is an execute.  Return the label_ref to its
-   execute target template if so, NULL_RTX otherwise.  */
-
-static rtx
-s390_execute_label (rtx insn)
-{
-  if (GET_CODE (insn) == INSN
-      && GET_CODE (PATTERN (insn)) == PARALLEL
-      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC
-      && XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_EXECUTE)
-    return XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 2);
-
-  return NULL_RTX;
-}
-
 /* For an execute INSN, extract the execute target template.  */
 
 static rtx
@@ -4860,6 +4720,28 @@ s390_execute_target (rtx insn)
     }
 
   return pattern;
+}
+
+/* Dump out the out-of-pool execute template insns in POOL
+   at the end of the instruction stream.  */
+
+static void
+s390_dump_execute (struct constant_pool *pool)
+{
+  struct constant *c;
+  rtx insn;
+
+  for (c = pool->execute; c; c = c->next)
+    {
+      if (s390_execute_label (c->value) == const0_rtx)
+	continue;
+
+      insn = emit_label (c->label);
+      INSN_ADDRESSES_NEW (insn, -1);
+
+      insn = emit_insn (s390_execute_target (c->value));
+      INSN_ADDRESSES_NEW (insn, -1);
+    }
 }
 
 /* Indicate that INSN cannot be duplicated.  This is the case for
@@ -4962,51 +4844,6 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
 
   /* Output out-of-pool execute template isns.  */
   s390_dump_execute (pool);
-}
-
-/* Dump out the out-of-pool execute template insns in POOL
-   at the end of the instruction stream.  */
-
-static void
-s390_dump_execute (struct constant_pool *pool)
-{
-  struct constant *c;
-  rtx insn;
-
-  for (c = pool->execute; c; c = c->next)
-    {
-      if (s390_execute_label (c->value) == const0_rtx)
-	continue;
-
-      insn = emit_label (c->label);
-      INSN_ADDRESSES_NEW (insn, -1);
-
-      insn = emit_insn (s390_execute_target (c->value));
-      INSN_ADDRESSES_NEW (insn, -1);
-    }
-}
-
-/* Allocate new constant_pool structure.  */
-
-static struct constant_pool *
-s390_alloc_pool (void)
-{
-  struct constant_pool *pool;
-  int i;
-
-  pool = (struct constant_pool *) xmalloc (sizeof *pool);
-  pool->next = NULL;
-  for (i = 0; i < NR_C_MODES; i++)
-    pool->constants[i] = NULL;
-
-  pool->execute = NULL;
-  pool->label = gen_label_rtx ();
-  pool->first_insn = NULL_RTX;
-  pool->pool_insn = NULL_RTX;
-  pool->insns = BITMAP_ALLOC (NULL);
-  pool->size = 0;
-
-  return pool;
 }
 
 /* Free all memory used by POOL.  */
@@ -5636,265 +5473,6 @@ s390_output_pool_entry (rtx exp, enum machine_mode mode, unsigned int align)
     default:
       abort ();
     }
-}
-
-
-/* Rework the prologue/epilogue to avoid saving/restoring
-   registers unnecessarily.  */
-
-static void
-s390_optimize_prologue (void)
-{
-  rtx insn, new_insn, next_insn;
-
-  /* Do a final recompute of the frame-related data.  */
-
-  s390_update_frame_layout ();
-
-  /* If all special registers are in fact used, there's nothing we
-     can do, so no point in walking the insn list.  */
-
-  if (cfun_frame_layout.first_save_gpr <= BASE_REGNUM 
-      && cfun_frame_layout.last_save_gpr >= BASE_REGNUM
-      && (TARGET_CPU_ZARCH 
-          || (cfun_frame_layout.first_save_gpr <= RETURN_REGNUM 
-              && cfun_frame_layout.last_save_gpr >= RETURN_REGNUM)))
-    return;
-
-  /* Search for prologue/epilogue insns and replace them.  */
-
-  for (insn = get_insns (); insn; insn = next_insn)
-    {
-      int first, last, off;
-      rtx set, base, offset;
-
-      next_insn = NEXT_INSN (insn);
-
-      if (GET_CODE (insn) != INSN)
-	continue;
-
-      if (GET_CODE (PATTERN (insn)) == PARALLEL
-	  && store_multiple_operation (PATTERN (insn), VOIDmode))
-	{
-	  set = XVECEXP (PATTERN (insn), 0, 0);
-	  first = REGNO (SET_SRC (set));
-	  last = first + XVECLEN (PATTERN (insn), 0) - 1;
-	  offset = const0_rtx;
-	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
-	  off = INTVAL (offset);
-
-	  if (GET_CODE (base) != REG || off < 0)
-	    continue;
-	  if (REGNO (base) != STACK_POINTER_REGNUM
-	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
-	    continue;
-	  if (first > BASE_REGNUM || last < BASE_REGNUM)
-	    continue;
-
-	  if (cfun_frame_layout.first_save_gpr != -1)
-	    {
-	      new_insn 	= save_gprs (base, 
-				     off + (cfun_frame_layout.first_save_gpr
-					    - first) * UNITS_PER_WORD, 
-				     cfun_frame_layout.first_save_gpr,
-				     cfun_frame_layout.last_save_gpr);
-	      new_insn = emit_insn_before (new_insn, insn);
-	      INSN_ADDRESSES_NEW (new_insn, -1);
-	    }
-
-	  remove_insn (insn);
-	  continue;
-	}
-
-      if (GET_CODE (PATTERN (insn)) == SET
-	  && GET_CODE (SET_SRC (PATTERN (insn))) == REG
-	  && (REGNO (SET_SRC (PATTERN (insn))) == BASE_REGNUM
-	      || (!TARGET_CPU_ZARCH
-		  && REGNO (SET_SRC (PATTERN (insn))) == RETURN_REGNUM))
-	  && GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
-	{
-	  set = PATTERN (insn);
-	  first = REGNO (SET_SRC (set));
-	  offset = const0_rtx;
-	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
-	  off = INTVAL (offset);
-
-	  if (GET_CODE (base) != REG || off < 0)
-	    continue;
-	  if (REGNO (base) != STACK_POINTER_REGNUM
-	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
-	    continue;
-	  if (cfun_frame_layout.first_save_gpr != -1)
-	    {
-	      new_insn = save_gprs (base, 
-				    off + (cfun_frame_layout.first_save_gpr 
-					   - first) * UNITS_PER_WORD, 
-				    cfun_frame_layout.first_save_gpr,
-				    cfun_frame_layout.last_save_gpr);
-	      new_insn = emit_insn_before (new_insn, insn);
-	      INSN_ADDRESSES_NEW (new_insn, -1);
-	    }
-
-	  remove_insn (insn);
-	  continue;
-	}
-
-      if (GET_CODE (PATTERN (insn)) == PARALLEL
-	  && load_multiple_operation (PATTERN (insn), VOIDmode))
-	{
-	  set = XVECEXP (PATTERN (insn), 0, 0);
-	  first = REGNO (SET_DEST (set));
-	  last = first + XVECLEN (PATTERN (insn), 0) - 1;
-	  offset = const0_rtx;
-	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
-	  off = INTVAL (offset);
-
-	  if (GET_CODE (base) != REG || off < 0)
-	    continue;
-	  if (REGNO (base) != STACK_POINTER_REGNUM
-	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
-	    continue;
-	  if (first > BASE_REGNUM || last < BASE_REGNUM)
-	    continue;
-
-	  if (cfun_frame_layout.first_restore_gpr != -1)
-	    {
-	      new_insn = restore_gprs (base, 
-				       off + (cfun_frame_layout.first_restore_gpr
-					      - first) * UNITS_PER_WORD, 
-				       cfun_frame_layout.first_restore_gpr,
-				       cfun_frame_layout.last_restore_gpr);
-	      new_insn = emit_insn_before (new_insn, insn);
-	      INSN_ADDRESSES_NEW (new_insn, -1);
-	    }
-
-	  remove_insn (insn);
-	  continue;
-	}
-
-      if (GET_CODE (PATTERN (insn)) == SET
-	  && GET_CODE (SET_DEST (PATTERN (insn))) == REG
-	  && (REGNO (SET_DEST (PATTERN (insn))) == BASE_REGNUM
-	      || (!TARGET_CPU_ZARCH
-		  && REGNO (SET_DEST (PATTERN (insn))) == RETURN_REGNUM))
-	  && GET_CODE (SET_SRC (PATTERN (insn))) == MEM)
-	{
-	  set = PATTERN (insn);
-	  first = REGNO (SET_DEST (set));
-	  offset = const0_rtx;
-	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
-	  off = INTVAL (offset);
-
-	  if (GET_CODE (base) != REG || off < 0)
-	    continue;
-	  if (REGNO (base) != STACK_POINTER_REGNUM
-	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
-	    continue;
-	  if (cfun_frame_layout.first_restore_gpr != -1)
-	    {
-	      new_insn = restore_gprs (base, 
-				       off + (cfun_frame_layout.first_restore_gpr 
-					      - first) * UNITS_PER_WORD,
-				       cfun_frame_layout.first_restore_gpr,
-				       cfun_frame_layout.last_restore_gpr);
-	      new_insn = emit_insn_before (new_insn, insn);
-	      INSN_ADDRESSES_NEW (new_insn, -1);
-	    }
-
-	  remove_insn (insn);
-	  continue;
-	}
-    }
-}
-
-/* Perform machine-dependent processing.  */
-
-static void
-s390_reorg (void)
-{
-  bool pool_overflow = false;
-
-  /* Make sure all splits have been performed; splits after
-     machine_dependent_reorg might confuse insn length counts.  */
-  split_all_insns_noflow ();
-
-
-  /* Install the main literal pool and the associated base
-     register load insns.
-
-     In addition, there are two problematic situations we need
-     to correct:
-
-     - the literal pool might be > 4096 bytes in size, so that
-       some of its elements cannot be directly accessed
-
-     - a branch target might be > 64K away from the branch, so that
-       it is not possible to use a PC-relative instruction.
-
-     To fix those, we split the single literal pool into multiple
-     pool chunks, reloading the pool base register at various
-     points throughout the function to ensure it always points to
-     the pool chunk the following code expects, and / or replace
-     PC-relative branches by absolute branches.
-
-     However, the two problems are interdependent: splitting the
-     literal pool can move a branch further away from its target,
-     causing the 64K limit to overflow, and on the other hand,
-     replacing a PC-relative branch by an absolute branch means
-     we need to put the branch target address into the literal
-     pool, possibly causing it to overflow.
-
-     So, we loop trying to fix up both problems until we manage
-     to satisfy both conditions at the same time.  Note that the
-     loop is guaranteed to terminate as every pass of the loop
-     strictly decreases the total number of PC-relative branches
-     in the function.  (This is not completely true as there
-     might be branch-over-pool insns introduced by chunkify_start.
-     Those never need to be split however.)  */
-
-  for (;;)
-    {
-      struct constant_pool *pool = NULL;
-
-      /* Collect the literal pool.  */
-      if (!pool_overflow)
-	{
-	  pool = s390_mainpool_start ();
-	  if (!pool)
-	    pool_overflow = true;
-	}
-
-      /* If literal pool overflowed, start to chunkify it.  */
-      if (pool_overflow)
-        pool = s390_chunkify_start ();
-
-      /* Split out-of-range branches.  If this has created new
-	 literal pool entries, cancel current chunk list and
-	 recompute it.  zSeries machines have large branch
-	 instructions, so we never need to split a branch.  */
-      if (!TARGET_CPU_ZARCH && s390_split_branches ())
-        {
-          if (pool_overflow)
-            s390_chunkify_cancel (pool);
-	  else
-            s390_mainpool_cancel (pool);
-
-          continue;
-        }
-
-      /* If we made it up to here, both conditions are satisfied.
-	 Finish up literal pool related changes.  */
-      if (pool_overflow)
-	s390_chunkify_finish (pool);
-      else
-	s390_mainpool_finish (pool);
-
-      /* We're done splitting branches.  */
-      cfun->machine->split_branches_pending_p = false;
-      break;
-    }
-
-  s390_optimize_prologue ();
 }
 
 
@@ -7372,7 +6950,7 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
        ret = **args.overflow_arg_area++;
    } */
 
-tree
+static tree
 s390_gimplify_va_arg (tree valist, tree type, tree *pre_p, 
 		      tree *post_p ATTRIBUTE_UNUSED)
 {
@@ -8051,18 +7629,10 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
 }
 
-bool
+static bool
 s390_valid_pointer_mode (enum machine_mode mode)
 {
   return (mode == SImode || (TARGET_64BIT && mode == DImode));
-}
-
-/* How to allocate a 'struct machine_function'.  */
-
-static struct machine_function *
-s390_init_machine_status (void)
-{
-  return ggc_alloc_cleared (sizeof (struct machine_function));
 }
 
 /* Checks whether the given ARGUMENT_LIST would use a caller
@@ -8340,5 +7910,353 @@ s390_emit_tpf_eh_return (rtx target)
 
   emit_move_insn (EH_RETURN_HANDLER_RTX, reg);
 }
+
+/* Rework the prologue/epilogue to avoid saving/restoring
+   registers unnecessarily.  */
+
+static void
+s390_optimize_prologue (void)
+{
+  rtx insn, new_insn, next_insn;
+
+  /* Do a final recompute of the frame-related data.  */
+
+  s390_update_frame_layout ();
+
+  /* If all special registers are in fact used, there's nothing we
+     can do, so no point in walking the insn list.  */
+
+  if (cfun_frame_layout.first_save_gpr <= BASE_REGNUM 
+      && cfun_frame_layout.last_save_gpr >= BASE_REGNUM
+      && (TARGET_CPU_ZARCH 
+          || (cfun_frame_layout.first_save_gpr <= RETURN_REGNUM 
+              && cfun_frame_layout.last_save_gpr >= RETURN_REGNUM)))
+    return;
+
+  /* Search for prologue/epilogue insns and replace them.  */
+
+  for (insn = get_insns (); insn; insn = next_insn)
+    {
+      int first, last, off;
+      rtx set, base, offset;
+
+      next_insn = NEXT_INSN (insn);
+
+      if (GET_CODE (insn) != INSN)
+	continue;
+
+      if (GET_CODE (PATTERN (insn)) == PARALLEL
+	  && store_multiple_operation (PATTERN (insn), VOIDmode))
+	{
+	  set = XVECEXP (PATTERN (insn), 0, 0);
+	  first = REGNO (SET_SRC (set));
+	  last = first + XVECLEN (PATTERN (insn), 0) - 1;
+	  offset = const0_rtx;
+	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
+	  off = INTVAL (offset);
+
+	  if (GET_CODE (base) != REG || off < 0)
+	    continue;
+	  if (REGNO (base) != STACK_POINTER_REGNUM
+	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
+	    continue;
+	  if (first > BASE_REGNUM || last < BASE_REGNUM)
+	    continue;
+
+	  if (cfun_frame_layout.first_save_gpr != -1)
+	    {
+	      new_insn 	= save_gprs (base, 
+				     off + (cfun_frame_layout.first_save_gpr
+					    - first) * UNITS_PER_WORD, 
+				     cfun_frame_layout.first_save_gpr,
+				     cfun_frame_layout.last_save_gpr);
+	      new_insn = emit_insn_before (new_insn, insn);
+	      INSN_ADDRESSES_NEW (new_insn, -1);
+	    }
+
+	  remove_insn (insn);
+	  continue;
+	}
+
+      if (GET_CODE (PATTERN (insn)) == SET
+	  && GET_CODE (SET_SRC (PATTERN (insn))) == REG
+	  && (REGNO (SET_SRC (PATTERN (insn))) == BASE_REGNUM
+	      || (!TARGET_CPU_ZARCH
+		  && REGNO (SET_SRC (PATTERN (insn))) == RETURN_REGNUM))
+	  && GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
+	{
+	  set = PATTERN (insn);
+	  first = REGNO (SET_SRC (set));
+	  offset = const0_rtx;
+	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
+	  off = INTVAL (offset);
+
+	  if (GET_CODE (base) != REG || off < 0)
+	    continue;
+	  if (REGNO (base) != STACK_POINTER_REGNUM
+	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
+	    continue;
+	  if (cfun_frame_layout.first_save_gpr != -1)
+	    {
+	      new_insn = save_gprs (base, 
+				    off + (cfun_frame_layout.first_save_gpr 
+					   - first) * UNITS_PER_WORD, 
+				    cfun_frame_layout.first_save_gpr,
+				    cfun_frame_layout.last_save_gpr);
+	      new_insn = emit_insn_before (new_insn, insn);
+	      INSN_ADDRESSES_NEW (new_insn, -1);
+	    }
+
+	  remove_insn (insn);
+	  continue;
+	}
+
+      if (GET_CODE (PATTERN (insn)) == PARALLEL
+	  && load_multiple_operation (PATTERN (insn), VOIDmode))
+	{
+	  set = XVECEXP (PATTERN (insn), 0, 0);
+	  first = REGNO (SET_DEST (set));
+	  last = first + XVECLEN (PATTERN (insn), 0) - 1;
+	  offset = const0_rtx;
+	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
+	  off = INTVAL (offset);
+
+	  if (GET_CODE (base) != REG || off < 0)
+	    continue;
+	  if (REGNO (base) != STACK_POINTER_REGNUM
+	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
+	    continue;
+	  if (first > BASE_REGNUM || last < BASE_REGNUM)
+	    continue;
+
+	  if (cfun_frame_layout.first_restore_gpr != -1)
+	    {
+	      new_insn = restore_gprs (base, 
+				       off + (cfun_frame_layout.first_restore_gpr
+					      - first) * UNITS_PER_WORD, 
+				       cfun_frame_layout.first_restore_gpr,
+				       cfun_frame_layout.last_restore_gpr);
+	      new_insn = emit_insn_before (new_insn, insn);
+	      INSN_ADDRESSES_NEW (new_insn, -1);
+	    }
+
+	  remove_insn (insn);
+	  continue;
+	}
+
+      if (GET_CODE (PATTERN (insn)) == SET
+	  && GET_CODE (SET_DEST (PATTERN (insn))) == REG
+	  && (REGNO (SET_DEST (PATTERN (insn))) == BASE_REGNUM
+	      || (!TARGET_CPU_ZARCH
+		  && REGNO (SET_DEST (PATTERN (insn))) == RETURN_REGNUM))
+	  && GET_CODE (SET_SRC (PATTERN (insn))) == MEM)
+	{
+	  set = PATTERN (insn);
+	  first = REGNO (SET_DEST (set));
+	  offset = const0_rtx;
+	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
+	  off = INTVAL (offset);
+
+	  if (GET_CODE (base) != REG || off < 0)
+	    continue;
+	  if (REGNO (base) != STACK_POINTER_REGNUM
+	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
+	    continue;
+	  if (cfun_frame_layout.first_restore_gpr != -1)
+	    {
+	      new_insn = restore_gprs (base, 
+				       off + (cfun_frame_layout.first_restore_gpr 
+					      - first) * UNITS_PER_WORD,
+				       cfun_frame_layout.first_restore_gpr,
+				       cfun_frame_layout.last_restore_gpr);
+	      new_insn = emit_insn_before (new_insn, insn);
+	      INSN_ADDRESSES_NEW (new_insn, -1);
+	    }
+
+	  remove_insn (insn);
+	  continue;
+	}
+    }
+}
+
+/* Perform machine-dependent processing.  */
+
+static void
+s390_reorg (void)
+{
+  bool pool_overflow = false;
+
+  /* Make sure all splits have been performed; splits after
+     machine_dependent_reorg might confuse insn length counts.  */
+  split_all_insns_noflow ();
+
+
+  /* Install the main literal pool and the associated base
+     register load insns.
+
+     In addition, there are two problematic situations we need
+     to correct:
+
+     - the literal pool might be > 4096 bytes in size, so that
+       some of its elements cannot be directly accessed
+
+     - a branch target might be > 64K away from the branch, so that
+       it is not possible to use a PC-relative instruction.
+
+     To fix those, we split the single literal pool into multiple
+     pool chunks, reloading the pool base register at various
+     points throughout the function to ensure it always points to
+     the pool chunk the following code expects, and / or replace
+     PC-relative branches by absolute branches.
+
+     However, the two problems are interdependent: splitting the
+     literal pool can move a branch further away from its target,
+     causing the 64K limit to overflow, and on the other hand,
+     replacing a PC-relative branch by an absolute branch means
+     we need to put the branch target address into the literal
+     pool, possibly causing it to overflow.
+
+     So, we loop trying to fix up both problems until we manage
+     to satisfy both conditions at the same time.  Note that the
+     loop is guaranteed to terminate as every pass of the loop
+     strictly decreases the total number of PC-relative branches
+     in the function.  (This is not completely true as there
+     might be branch-over-pool insns introduced by chunkify_start.
+     Those never need to be split however.)  */
+
+  for (;;)
+    {
+      struct constant_pool *pool = NULL;
+
+      /* Collect the literal pool.  */
+      if (!pool_overflow)
+	{
+	  pool = s390_mainpool_start ();
+	  if (!pool)
+	    pool_overflow = true;
+	}
+
+      /* If literal pool overflowed, start to chunkify it.  */
+      if (pool_overflow)
+        pool = s390_chunkify_start ();
+
+      /* Split out-of-range branches.  If this has created new
+	 literal pool entries, cancel current chunk list and
+	 recompute it.  zSeries machines have large branch
+	 instructions, so we never need to split a branch.  */
+      if (!TARGET_CPU_ZARCH && s390_split_branches ())
+        {
+          if (pool_overflow)
+            s390_chunkify_cancel (pool);
+	  else
+            s390_mainpool_cancel (pool);
+
+          continue;
+        }
+
+      /* If we made it up to here, both conditions are satisfied.
+	 Finish up literal pool related changes.  */
+      if (pool_overflow)
+	s390_chunkify_finish (pool);
+      else
+	s390_mainpool_finish (pool);
+
+      /* We're done splitting branches.  */
+      cfun->machine->split_branches_pending_p = false;
+      break;
+    }
+
+  s390_optimize_prologue ();
+}
+
+
+/* Initialize GCC target structure.  */
+
+#undef  TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+#undef  TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP "\t.quad\t"
+#undef  TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER s390_assemble_integer
+
+#undef  TARGET_ASM_OPEN_PAREN
+#define TARGET_ASM_OPEN_PAREN ""
+
+#undef  TARGET_ASM_CLOSE_PAREN
+#define TARGET_ASM_CLOSE_PAREN ""
+
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_FUSED_MADD)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION s390_handle_option
+
+#undef	TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS true
+#endif
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM s390_cannot_force_const_mem
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS s390_delegitimize_address
+
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY s390_return_in_memory
+
+#undef  TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS s390_init_builtins
+#undef  TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN s390_expand_builtin
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+
+#undef  TARGET_SCHED_ADJUST_PRIORITY
+#define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE s390_issue_rate
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD s390_first_cycle_multipass_dfa_lookahead
+
+#undef TARGET_CANNOT_COPY_INSN_P
+#define TARGET_CANNOT_COPY_INSN_P s390_cannot_copy_insn_p
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS s390_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST s390_address_cost
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG s390_reorg
+
+#undef TARGET_VALID_POINTER_MODE
+#define TARGET_VALID_POINTER_MODE s390_valid_pointer_mode
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST s390_build_builtin_va_list
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR s390_gimplify_va_arg
+
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE s390_pass_by_reference
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL s390_function_ok_for_sibcall
+
+#undef TARGET_FIXED_CONDITION_CODE_REGS
+#define TARGET_FIXED_CONDITION_CODE_REGS s390_fixed_condition_code_regs
+
+#undef TARGET_CC_MODES_COMPATIBLE
+#define TARGET_CC_MODES_COMPATIBLE s390_cc_modes_compatible
+
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-s390.h"
