@@ -315,11 +315,10 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	    && regs_ever_live[regno]
 	    && ! call_used_regs[regno])
 	{
-	    if (via_ac == -1)
-		abort();
-	    
-	    fprintf (stream, "\tldd %s, %s\n", reg_names[regno], reg_names[via_ac]);
-	    fprintf (stream, "\tstd %s, -(sp)\n", reg_names[via_ac]);
+	  gcc_assert (via_ac != -1);
+	  fprintf (stream, "\tldd %s, %s\n",
+		   reg_names[regno], reg_names[via_ac]);
+	  fprintf (stream, "\tstd %s, -(sp)\n", reg_names[via_ac]);
 	}
     }
 
@@ -410,8 +409,7 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 		&& regs_ever_live[i]
 		&& ! call_used_regs[i])
 	    {
-		if (! LOAD_FPU_REG_P(via_ac))
-		    abort();
+	        gcc_assert (LOAD_FPU_REG_P(via_ac));
 		    
 		fprintf(stream, "\tldd %#o(r5), %s\n", (-fsize-k)&0xffff, reg_names[via_ac]);
 		fprintf(stream, "\tstd %s, %s\n", reg_names[via_ac], reg_names[i]);
@@ -442,8 +440,7 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 		&& regs_ever_live[i]
 		&& ! call_used_regs[i])
 	    {
-		if (! LOAD_FPU_REG_P(via_ac))
-		    abort();
+	        gcc_assert (LOAD_FPU_REG_P(via_ac));
 		    
 		fprintf(stream, "\tldd (sp)+, %s\n", reg_names[via_ac]);
 		fprintf(stream, "\tstd %s, %s\n", reg_names[via_ac], reg_names[i]);
@@ -524,8 +521,7 @@ output_move_double (rtx *operands)
      supposed to allow to happen.  Abort if we get one,
      because generating code for these cases is painful.  */
 
-  if (optype0 == RNDOP || optype1 == RNDOP)
-    abort ();
+  gcc_assert (optype0 != RNDOP && optype1 != RNDOP);
 
   /* If one operand is decrementing and one is incrementing
      decrement the former register explicitly
@@ -585,11 +581,9 @@ output_move_double (rtx *operands)
 	    latehalf[1] = GEN_INT (INTVAL(operands[1]) >> 16);
 	    operands[1] = GEN_INT (INTVAL(operands[1]) & 0xff);
 	}
-      else if (GET_CODE (operands[1]) == CONST_DOUBLE)
-	{
-	    /* immediate 32 bit values not allowed */
-	    abort();
-	}
+	else
+	  /* immediate 32 bit values not allowed */
+	  gcc_assert (GET_CODE (operands[1]) != CONST_DOUBLE);
     }
   else
     latehalf[1] = operands[1];
@@ -699,15 +693,13 @@ output_move_quad (rtx *operands)
      supposed to allow to happen.  Abort if we get one,
      because generating code for these cases is painful.  */
 
-  if (optype0 == RNDOP || optype1 == RNDOP)
-    abort ();
+  gcc_assert (optype0 != RNDOP && optype1 != RNDOP);
   
   /* check if we move a CPU reg to an FPU reg, or vice versa! */
   if (optype0 == REGOP && optype1 == REGOP)
       /* bogus - 64 bit cannot reside in CPU! */
-      if (CPU_REG_P(REGNO(operands[0]))
-	  || CPU_REG_P (REGNO(operands[1])))
-	  abort();
+      gcc_assert (!CPU_REG_P(REGNO(operands[0]))
+		  && !CPU_REG_P (REGNO(operands[1])));
   
   if (optype0 == REGOP || optype1 == REGOP)
   {
@@ -801,7 +793,7 @@ output_move_quad (rtx *operands)
 	  latehalf[1] = const0_rtx;
 	}
       else
-	abort();
+	gcc_unreachable ();
     }
   else
     latehalf[1] = operands[1];
@@ -995,7 +987,7 @@ print_operand_address (FILE *file, register rtx addr)
 	}
       if (offset != 0)
 	{
-	  if (addr != 0) abort ();
+	  gcc_assert (addr == 0);
 	  addr = offset;
 	}
       if (reg1 != 0 && GET_CODE (reg1) == MULT)
@@ -1022,17 +1014,15 @@ print_operand_address (FILE *file, register rtx addr)
 	output_address (addr);
       if (breg != 0)
 	{
-	  if (GET_CODE (breg) != REG)
-	    abort ();
+	  gcc_assert (GET_CODE (breg) == REG);
 	  fprintf (file, "(%s)", reg_names[REGNO (breg)]);
 	}
       if (ireg != 0)
 	{
 	  if (GET_CODE (ireg) == MULT)
 	    ireg = XEXP (ireg, 0);
-	  if (GET_CODE (ireg) != REG)
-	    abort ();
-	  abort();
+	  gcc_assert (GET_CODE (ireg) == REG);
+	  gcc_unreachable(); /* ??? */
 	  fprintf (file, "[%s]", reg_names[REGNO (ireg)]);
 	}
       break;
@@ -1203,7 +1193,7 @@ pdp11_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
 }
 
 const char *
-output_jump(const char *pos, const char *neg, int length)
+output_jump (const char *pos, const char *neg, int length)
 {
     static int x = 0;
     
@@ -1238,7 +1228,7 @@ output_jump(const char *pos, const char *neg, int length)
 	
       default:
 	
-	abort();
+	gcc_unreachable ();
     }
     
 }
@@ -1667,10 +1657,8 @@ output_addr_const_pdp11 (FILE *file, rtx x)
   switch (GET_CODE (x))
     {
     case PC:
-      if (flag_pic)
-	putc ('.', file);
-      else
-	abort ();
+      gcc_assert (flag_pic);
+      putc ('.', file);
       break;
 
     case SYMBOL_REF:
@@ -1703,10 +1691,8 @@ output_addr_const_pdp11 (FILE *file, rtx x)
       if (GET_MODE (x) == VOIDmode)
 	{
 	  /* We can use %o if the number is one word and positive.  */
-	  if (CONST_DOUBLE_HIGH (x))
-	    abort (); /* Should we just silently drop the high part?  */
-	  else
-	    fprintf (file, "%#ho", (unsigned short) CONST_DOUBLE_LOW (x));
+	  gcc_assert (!CONST_DOUBLE_HIGH (x));
+	  fprintf (file, "%#ho", (unsigned short) CONST_DOUBLE_LOW (x));
 	}
       else
 	/* We can't handle floating point constants;
