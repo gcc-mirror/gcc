@@ -253,12 +253,6 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 #define FRAME_REG_P(X)		(REG_P (X) && FRAME_REGNO_P (REGNO (X)))
 #define ACCESS_REG_P(X)		(REG_P (X) && ACCESS_REGNO_P (REGNO (X)))
 
-#define SIBCALL_REGNUM 1
-#define BASE_REGNUM 13
-#define RETURN_REGNUM 14
-#define CC_REGNUM 33
-#define TP_REGNUM 36
-
 /* Set up fixed registers and calling convention:
 
    GPRs 0-5 are always call-clobbered,
