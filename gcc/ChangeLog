@@ -1,3 +1,8 @@
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/s390.md: ("INT"): New mode macro.
+	("one_cmpldi2", "one_cmplsi2", "one_cmplhi2", "one_cmplqi2"):
+	Merge.
 
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
