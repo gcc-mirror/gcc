@@ -1,3 +1,9 @@
+2005-05-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/19155
+	* io/read.c (read_f): Accept 'e', 'E', 'd' and 'D' as first
+	non-blank characters of a real number.
+
 2005-05-06  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline:
