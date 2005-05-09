@@ -550,7 +550,7 @@ maybe ac0 ? - as option someday! */
    for profiling a function entry.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
-   abort ();
+   gcc_unreachable ();
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -944,7 +944,7 @@ extern struct rtx_def *cc0_reg_rtx;
 	fprintf (FILE, "\t.even\n");	\
 	break;				\
       default:				\
-	abort ();			\
+	gcc_unreachable ();		\
     }
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
@@ -1016,8 +1016,7 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
 
 #define TRAMPOLINE_TEMPLATE(FILE)	\
 {					\
-  if (TARGET_SPLIT)			\
-    abort();				\
+  gcc_assert (!TARGET_SPLIT);		\
 					\
   assemble_aligned_integer (2, GEN_INT (0x9400+STATIC_CHAIN_REGNUM));	\
   assemble_aligned_integer (2, const0_rtx);				\
@@ -1034,8 +1033,7 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
 
 #define INITIALIZE_TRAMPOLINE(TRAMP,FNADDR,CXT)	\
 {					\
-  if (TARGET_SPLIT)			\
-    abort();				\
+  gcc_assert (!TARGET_SPLIT);		\
 					\
   emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 2)), CXT); \
   emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 6)), FNADDR); \

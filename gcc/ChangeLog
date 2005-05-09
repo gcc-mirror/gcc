@@ -1,3 +1,15 @@
+2005-05-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/pdp11/pdp11.c (pdp11_output_function_prologue): Use
+	gcc_assert and gcc_unreachable as appropriate.
+	(pdp11_output_function_epilogue, output_move_double,
+	output_move_quad, print_operand_address, output_jump,
+	output_addr_const_pdp11): Likewise.
+	* config/pdp11/pdp11.h (FUNCTION_PROFILER,
+	ASM_OUTPUT_ALIGN): Likewise.
+	* config/pdp11/pdp11.md: Likewise.
+	(extendhisi2, subhi3, subqi3): Likewise.
+
 2005-05-09  David Edelsohn  <edelsohn@gnu.org>
 
 	PR middle-end/21237

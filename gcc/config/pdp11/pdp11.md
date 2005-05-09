@@ -124,8 +124,7 @@
   rtx br_insn = NEXT_INSN (insn);
   RTX_CODE br_code;
 
-  if (GET_CODE (br_insn) != JUMP_INSN)
-    abort();
+  gcc_assert (GET_CODE (br_insn) == JUMP_INSN);
   br_code =  GET_CODE (XEXP (XEXP (PATTERN (br_insn), 1), 0));
   
   switch(br_code)
@@ -148,7 +147,7 @@
 
     default:
 
-      abort();
+      gcc_unreachable ();
   }
 }"
   [(set_attr "length" "4")])
@@ -872,7 +871,7 @@
 
     default:
 
-      abort();
+      gcc_unreachable ();
   }
 }"
   [(set_attr "length" "5,3,3")])
@@ -1131,8 +1130,7 @@
   ""
   "*
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
-    abort();
+  gcc_assert (GET_CODE (operands[2]) != CONST_INT);
 
   return \"sub %2, %0\";
 }"
@@ -1145,8 +1143,7 @@
   ""
   "*
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
-    abort();
+  gcc_assert (GET_CODE (operands[2]) != CONST_INT);
 
   return \"sub %2, %0\";
 }"
