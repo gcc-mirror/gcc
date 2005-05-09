@@ -1,3 +1,22 @@
+2005-04-28  Andrew Haley  <aph@redhat.com>
+
+	PR java/19285
+	* java-tree.h (soft_resolvepoolentry_node): New.
+	(alloc_constant_fieldref): Declare.
+	* expr.c (expand_java_field_op): Don't call class_init for
+	accesses to static fields with indirect dispatch.
+	* builtins.c (initialize_builtins): Add "__builtin_expect".
+	* decl.c (soft_resolvepoolentry_node): New variable.
+	(java_init_decl_processing): Create a decl for
+	"_Jv_ResolvePoolEntry".
+	* class.c (build_fieldref_cache_entry): New function.
+	* class.c (build_static_field_ref): New function.
+	(build_static_field_ref): Rewrite for indirect dispatch.
+	* constants.c (find_name_and_type_constant_tree): New function.
+	(alloc_constant_fieldref): Likewise.
+	(build_constants_constructor): Handle CONSTANT_Fieldref and
+	CONSTANT_NameAndType.
+
 2005-05-06  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR java/20309

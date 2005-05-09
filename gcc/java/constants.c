@@ -356,6 +356,41 @@ alloc_name_constant (int tag, tree name)
   return find_tree_constant (outgoing_cpool, tag, name);
 }
 
+/* Create a cinstant pool entry for a name_and_type.  This one has '.'
+   rather than '/' because it isn't going into a class file, it's
+   going into a compiled object.  We don't use the '/' separator in
+   compiled objects.  */
+
+static int
+find_name_and_type_constant_tree (CPool *cpool, tree name, tree type)
+{
+  int name_index = find_utf8_constant (cpool, name);
+  int type_index 
+    = find_utf8_constant (cpool, 
+			  identifier_subst (build_java_signature (type), 
+					    "", '/', '.', ""));
+  return find_constant1 (cpool, CONSTANT_NameAndType,
+			 (name_index << 16) | type_index);
+}
+
+/* Look for a field ref that matches DECL in the constant pool of
+   CLASS.  
+   Return the index of the entry.  */
+
+int
+alloc_constant_fieldref (tree class, tree decl)
+{
+  CPool *outgoing_cpool = cpool_for_class (class);
+  int class_index 
+    = find_tree_constant (outgoing_cpool, CONSTANT_Class, 
+			  DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl))));
+  int name_type_index
+    = find_name_and_type_constant_tree (outgoing_cpool, DECL_NAME (decl), 
+					TREE_TYPE (decl));
+  return find_constant1 (outgoing_cpool, CONSTANT_Fieldref,
+			 (class_index << 16) | name_type_index);
+}
+
 /* Build an identifier for the internal name of reference type TYPE. */
 
 tree
@@ -442,14 +477,33 @@ build_constants_constructor (void)
   tree data_list = NULL_TREE;
   int i;
   for (i = outgoing_cpool->count;  --i > 0; )
-    {
-      tags_list
-	= tree_cons (NULL_TREE, get_tag_node (outgoing_cpool->tags[i]),
-		     tags_list);
-      data_list
-	= tree_cons (NULL_TREE, build_utf8_ref (outgoing_cpool->data[i].t),
-		     data_list);
-    }
+    switch (outgoing_cpool->tags[i])
+      {
+      case CONSTANT_Fieldref:
+      case CONSTANT_NameAndType:
+	{
+	  jword temp = outgoing_cpool->data[i].w;
+
+	  tags_list
+	    = tree_cons (NULL_TREE, 
+			 build_int_cst (NULL_TREE, outgoing_cpool->tags[i]),
+			 tags_list);
+	  data_list
+	    = tree_cons (NULL_TREE, 
+			 fold_convert (ptr_type_node, 
+				       (build_int_cst (NULL_TREE, temp))),
+			 data_list);
+	}
+	break;
+      default:
+	tags_list
+	  = tree_cons (NULL_TREE, get_tag_node (outgoing_cpool->tags[i]),
+		       tags_list);
+	data_list
+	  = tree_cons (NULL_TREE, build_utf8_ref (outgoing_cpool->data[i].t),
+		       data_list);
+	break;
+      }
   if (outgoing_cpool->count > 0)
     {
       tree data_decl, tags_decl, tags_type;
@@ -461,7 +515,7 @@ build_constants_constructor (void)
       data_list = tree_cons (NULL_TREE, null_pointer_node, data_list);
   
       data_decl = build_constant_data_ref ();
-      TREE_TYPE (data_decl) = build_array_type (ptr_type_node, index_type), 
+      TREE_TYPE (data_decl) = build_array_type (ptr_type_node, index_type);
       DECL_INITIAL (data_decl) = build_constructor (TREE_TYPE (data_decl),
 						    data_list);
       DECL_SIZE (data_decl) = TYPE_SIZE (TREE_TYPE (data_decl));

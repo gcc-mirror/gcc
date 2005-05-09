@@ -97,6 +97,9 @@ static int uniq;
 
 static GTY(()) tree pending_local_decls;
 
+/* The decl for "_Jv_ResolvePoolEntry".  */
+tree soft_resolvepoolentry_node;
+
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
 int binding_depth = 0;
 int is_class_level = 0;
@@ -1008,7 +1011,13 @@ java_init_decl_processing (void)
 					  build_function_type (void_type_node,
 							       t),
 					  0, NOT_BUILT_IN, NULL, NULL_TREE);
-
+  t = tree_cons (NULL_TREE, class_ptr_type,
+		 tree_cons (NULL_TREE, int_type_node, endlink));
+  soft_resolvepoolentry_node 
+    = builtin_function ("_Jv_ResolvePoolEntry", 
+			build_function_type (ptr_type_node, t),
+			0,NOT_BUILT_IN, NULL, NULL_TREE);
+  DECL_IS_PURE (soft_resolvepoolentry_node) = 1;
   throw_node = builtin_function ("_Jv_Throw",
 				 build_function_type (void_type_node, t),
 				 0, NOT_BUILT_IN, NULL, NULL_TREE);
