@@ -1,3 +1,9 @@
+2005-05-08  Richard Henderson  <rth@redhat.com>
+
+	Backport from mainline:
+	2005-02-07  Hans Boehm  <Hans.Boehm@hp.com>
+	* pthread_stop_world.c (GC_stop_world): Handle EINTR from sem_wait.
+
 2005-04-17  David S. Miller  <davem@davemloft.net>
 
 	* include/private/gcconfig.h (sparc-linux): Use LINUX_STACKBOTTOM.
