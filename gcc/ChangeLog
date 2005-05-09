@@ -1,5 +1,17 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.h: Move xxx_REGNUM definitions to s390.md.
+	* config/s390/s390.md: ("SIBCALL_REGNUM", "BASE_REGNUM",
+	"RETURN_REGNUM", "CC_REGNUM", "TP_REGNUM"): New constants.
+	Replace every occurrence of '(reg:<MODE> 33)' by '(reg:<MODE>
+	CC_REGNUM)'.
+	("get_tp_64", "get_tp_31", "set_tp_64", "set_tp_31"): Replace
+	'(reg:<MODE> 36)' by '(reg:<MODE> TP_REGNUM)'.
+	("*sibcall_br", "*sibcall_value_br"): Replace '(reg:DI 1)' by '(reg:DI
+	REG_SC)'.
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.md: ("gf") New mode attribute.
 	("fixuns_truncdfdi2", "fixuns_truncdfsi2", "fixuns_truncsfdi2",
 	"fixuns_truncsfsi2"): Merge.
