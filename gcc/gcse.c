@@ -3415,7 +3415,7 @@ one_cprop_pass (int pass, bool cprop_jumps, bool bypass_jumps)
     {
       fprintf (gcse_file, "CPROP of %s, pass %d: %d bytes needed, ",
 	       current_function_name (), pass, bytes_used);
-      fprintf (gcse_file, "%d local const props, %d local copy props\n\n",
+      fprintf (gcse_file, "%d local const props, %d local copy props, ",
 	       local_const_prop_count, local_copy_prop_count);
       fprintf (gcse_file, "%d global const props, %d global copy props\n\n",
 	       global_const_prop_count, global_copy_prop_count);

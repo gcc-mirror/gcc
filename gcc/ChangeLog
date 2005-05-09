@@ -1,3 +1,13 @@
+2005-05-09  Steven Bosscher  <stevenb@suse.de>
+
+	* calls.c (purge_reg_equiv_notes): Remove, fold into...
+	(fixup_tail_calls): ...here.  Only look at insns between the
+	start of the function and the FUNCTION_BEG insn note.
+
+	* gcse.c (one_cprop_pass): Fix typos in dumps.
+
+	* tree-ssa-operands.h (FOR_EACH_PHI_ARG): Fix typos.
+
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.h: Move xxx_REGNUM definitions to s390.md.

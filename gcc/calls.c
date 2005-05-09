@@ -1766,30 +1766,6 @@ shift_return_value (enum machine_mode mode, bool left_p, rtx value)
   return true;
 }
 
-/* Remove all REG_EQUIV notes found in the insn chain.  */
-
-static void
-purge_reg_equiv_notes (void)
-{
-  rtx insn;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      while (1)
-	{
-	  rtx note = find_reg_note (insn, REG_EQUIV, 0);
-	  if (note)
-	    {
-	      /* Remove the note and keep looking at the notes for
-		 this insn.  */
-	      remove_note (insn, note);
-	      continue;
-	    }
-	  break;
-	}
-    }
-}
-
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -3050,16 +3026,40 @@ expand_call (tree exp, rtx target, int ignore)
    this function's incoming arguments.
 
    At the start of RTL generation we know the only REG_EQUIV notes
-   in the rtl chain are those for incoming arguments, so we can safely
-   flush any REG_EQUIV note.
+   in the rtl chain are those for incoming arguments, so we can look
+   for REG_EQUIV notes between the start of the function and the
+   NOTE_INSN_FUNCTION_BEG.
 
    This is (slight) overkill.  We could keep track of the highest
    argument we clobber and be more selective in removing notes, but it
    does not seem to be worth the effort.  */
+
 void
 fixup_tail_calls (void)
 {
-  purge_reg_equiv_notes ();
+  rtx insn;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      /* There are never REG_EQUIV notes for the incoming arguments
+	 after the NOTE_INSN_FUNCTION_BEG note, so stop if we see it.  */
+      if (NOTE_P (insn)
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
+	break;
+
+      while (1)
+	{
+	  rtx note = find_reg_note (insn, REG_EQUIV, 0);
+	  if (note)
+	    {
+	      /* Remove the note and keep looking at the notes for
+		 this insn.  */
+	      remove_note (insn, note);
+	      continue;
+	    }
+	  break;
+	}
+    }
 }
 
 /* Traverse an argument list in VALUES and expand all complex
