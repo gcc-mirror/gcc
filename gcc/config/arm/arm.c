@@ -1909,6 +1909,41 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 	    }
 	}
 
+      /* See if we can calculate the value as the difference between two
+	 valid immediates.  */
+      if (clear_sign_bit_copies + clear_zero_bit_copies <= 16)
+	{
+	  int topshift = clear_sign_bit_copies & ~1;
+
+	  temp1 = ((remainder + (0x00800000 >> topshift))
+		   & (0xff000000 >> topshift));
+
+	  /* If temp1 is zero, then that means the 9 most significant
+	     bits of remainder were 1 and we've caused it to overflow.
+	     When topshift is 0 we don't need to do anything since we
+	     can borrow from 'bit 32'.  */
+	  if (temp1 == 0 && topshift != 0)
+	    temp1 = 0x80000000 >> (topshift - 1);
+
+	  temp2 = temp1 - remainder;
+	  
+	  if (const_ok_for_arm (temp2))
+	    {
+	      if (generate)
+		{
+		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
+		  emit_constant_insn (cond,
+				      gen_rtx_SET (VOIDmode, new_src,
+						   GEN_INT (temp1)));
+		  emit_constant_insn (cond,
+				      gen_addsi3 (target, new_src,
+						  GEN_INT (-temp2)));
+		}
+
+	      return 2;
+	    }
+	}
+
       /* See if we can generate this by setting the bottom (or the top)
 	 16 bits, and then shifting these into the other half of the
 	 word.  We only look for the simplest cases, to do more would cost
