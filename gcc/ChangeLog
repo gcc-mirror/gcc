@@ -1,5 +1,18 @@
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.c: (s390_decompose_address,
+	tls_symbolic_operand, legitimate_pic_operand_p,
+	legitimate_constant_p, legitimate_reload_constant_p,
+	s390_expand_plus_operand, legitimate_address_p,
+	legitimate_la_operand_p, ): Remove 'register' from signature.
+	(symbolic_reference_mentioned_p,
+	tls_symbolic_reference_mentioned_p): Remove 'register' from local
+	variable declarations.
+	(legitimize_address): Remove 'register' from
+	signature and local variable declarations.
+
+2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390-protos.h: (s390_match_ccmode,
 	s390_match_ccmode_set, reg_used_in_mem_p,
 	symbolic_reference_mentioned_p, tls_symbolic_reference_mentioned_p,
