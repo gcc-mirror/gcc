@@ -1,3 +1,8 @@
+2005-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (sse_mov?fcc* splitters): Add mode to
+	IF_THEN_ELSE, remove mode from MATCH_OPERATOR.  Fix a typo.
+
 2005-05-09  Grigory Tolstolytkin  <gtolstolytkin@ru.mvista.com>
 
 	Backport from mainline
