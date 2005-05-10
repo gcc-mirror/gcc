@@ -1,3 +1,14 @@
+2005-05-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20788
+	* io/unix.c (fd_to_stream): Add an avoid_mmap argument indicating
+	we don't we to mmap this stream. Use fd_open instead of mmap_open
+	in that case.
+	(open_external): Call fd_to_stream with avoid_mmap = 0.
+	(input_stream): Call fd_to_stream with avoid_mmap = 1.
+	(output_stream): Likewise.
+	(error_stream): Likewise.
+
 2005-05-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19155
