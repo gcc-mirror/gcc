@@ -2715,7 +2715,7 @@ fix = {
      * On Solaris 10, this fix is unncessary; <stdio.h> includes
      * <iso/stdio_iso.h>, which includes <sys/va_list.h>.
       */
-    mach     = '*-*-solaris2.1[0-9]';
+    mach     = '*-*-solaris2.1[0-9]*';
     not_machine = true;
 
     c_fix     = wrap;
@@ -2747,7 +2747,7 @@ fix = {
      * <stdio.h> is guarded appropriately by the _XPG4 feature macro; 
      * there is therefore no need for this fix there.
      */
-    mach = '*-*-solaris2.1[0-9]';
+    mach = '*-*-solaris2.1[0-9]*';
     not_machine = true;
 
     /*
