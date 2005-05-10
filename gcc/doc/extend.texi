@@ -3253,7 +3253,7 @@ struct my_unpacked_struct
     int i;
  @};
 
-struct my_packed_struct __attribute__ ((__packed__))
+struct __attribute__ ((__packed__)) my_packed_struct
   @{
      char c;
      int  i;
