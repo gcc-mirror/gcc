@@ -1,3 +1,21 @@
+2005-05-10  Ian Lance Taylor  <ian@airs.com>
+
+	* read-rtl.c (struct macro_traverse_data): Define.
+	(map_attr_string): New static function, broken out of
+	apply_macro_to_string.
+	(mode_attr_index, apply_mode_maps): New static functions.
+	(apply_macro_to_string): Call map_attr_string.
+	(apply_macro_to_rtx): Add mode_maps and infile parameters.  Change
+	all callers.
+	(apply_macro_traverse): Expect data to point to a struct
+	macro_traverse_data.
+	(read_rtx): Add mode_maps local variable.  Use mode_traverse_data
+	to pass data through htab_traverse.
+	(read_rtx_1): Add mode_maps parameter.  Change all callers.
+	Handle mode names which are attribute strings.
+	* doc/md.texi (Substitutions): Rename from String Substitutions.
+	Change references.  Document using attributes as modes.
+
 2005-05-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-cfg.c (tree_duplicate_sese_region): Update profile.
