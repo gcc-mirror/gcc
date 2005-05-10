@@ -1,3 +1,9 @@
+2005-05-10  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/s390.md: ("anddi3","andsi3","andhi3","andqi3"): Merge.
+	("iordi3", "iorsi3", "iorhi3", "iorqi3"): Merge.
+	("xordi3", "xorsi3", "xorhi3", "xorqi3"): Merge.
+
 2005-05-10  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (dom_opt_finalize_block): Do not call
