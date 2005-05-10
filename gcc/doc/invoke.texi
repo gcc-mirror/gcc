@@ -3427,6 +3427,7 @@ explicitly specified and it is not the final executable, otherwise it is
 the basename of the source file.  In both cases any suffix is removed
 (e.g.@: @file{foo.gcda} for input file @file{dir/foo.c}, or
 @file{dir/foo.gcda} for output file specified as @option{-o dir/foo.o}).
+@xref{Cross-profiling}.
 
 @cindex @command{gcov}
 @item --coverage

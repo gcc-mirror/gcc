@@ -1,3 +1,18 @@
+2005-05-11  Grigory Zagorodnev  <grigory.zagorodnev@intel.com>
+            H.J. Lu  <hongjiu.lu@intel.com   
+
+	* libgcov.c (create_file_directory): New function. Create
+	directory for the given file name.
+	(gcov_max_filename): New static var. Keeps size of the longest
+	file name.
+	(gcov_exit): Always try to create directory for output
+	file. Relocate each filename basing on environment vars.
+	(__gcov_init): Remember the longest file name.
+	* tsystem.h: include filenames.h to get IS_DIR_SEPARATOR
+	* doc/gcov.texi (Cross-profiling): New node documenting
+	cross-profiling management.
+	* doc/invoke.texi (-fprofile-arcs): Add xref to cross-profiling.
+
 2005-05-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (mem_min_alignment): Do not rely
