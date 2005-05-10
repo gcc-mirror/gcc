@@ -106,7 +106,8 @@ namespace _GLIBCXX_STD
     { *_M_p ^= _M_mask; }
   };
 
-  struct _Bit_iterator_base : public iterator<random_access_iterator_tag, bool>
+  struct _Bit_iterator_base
+  : public std::iterator<std::random_access_iterator_tag, bool>
   {
     _Bit_type * _M_p;
     unsigned int _M_offset;
@@ -489,7 +490,7 @@ template<typename _Alloc>
     template<class _InputIterator>
       void
       _M_initialize_range(_InputIterator __first, _InputIterator __last,
-			  input_iterator_tag)
+			  std::input_iterator_tag)
       {
 	this->_M_impl._M_start = iterator();
 	this->_M_impl._M_finish = iterator();
@@ -501,7 +502,7 @@ template<typename _Alloc>
     template<class _ForwardIterator>
       void
       _M_initialize_range(_ForwardIterator __first, _ForwardIterator __last,
-			  forward_iterator_tag)
+			  std::forward_iterator_tag)
       {
 	const size_type __n = std::distance(__first, __last);
 	_M_initialize(__n);
@@ -511,7 +512,7 @@ template<typename _Alloc>
     template<class _InputIterator>
       void
       _M_insert_range(iterator __pos, _InputIterator __first, 
-		      _InputIterator __last, input_iterator_tag)
+		      _InputIterator __last, std::input_iterator_tag)
       {
 	for (; __first != __last; ++__first)
 	  {
@@ -523,7 +524,7 @@ template<typename _Alloc>
     template<class _ForwardIterator>
       void
       _M_insert_range(iterator __position, _ForwardIterator __first, 
-		      _ForwardIterator __last, forward_iterator_tag)
+		      _ForwardIterator __last, std::forward_iterator_tag)
       {
 	if (__first != __last)
 	  {
@@ -746,7 +747,7 @@ template<typename _Alloc>
     template<class _InputIterator>
       void
       _M_assign_aux(_InputIterator __first, _InputIterator __last,
-		    input_iterator_tag)
+		    std::input_iterator_tag)
       {
 	iterator __cur = begin();
 	for (; __first != __last && __cur != end(); ++__cur, ++__first)
@@ -760,7 +761,7 @@ template<typename _Alloc>
     template<class _ForwardIterator>
       void
       _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
-		    forward_iterator_tag)
+		    std::forward_iterator_tag)
       {
 	const size_type __len = std::distance(__first, __last);
 	if (__len < size())

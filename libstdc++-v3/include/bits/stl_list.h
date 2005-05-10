@@ -110,14 +110,14 @@ namespace _GLIBCXX_STD
   template<typename _Tp>
     struct _List_iterator
     {
-      typedef _List_iterator<_Tp>           _Self;
-      typedef _List_node<_Tp>               _Node;
+      typedef _List_iterator<_Tp>                _Self;
+      typedef _List_node<_Tp>                    _Node;
 
-      typedef ptrdiff_t                     difference_type;
-      typedef bidirectional_iterator_tag    iterator_category;
-      typedef _Tp                           value_type;
-      typedef _Tp*                          pointer;
-      typedef _Tp&                          reference;
+      typedef ptrdiff_t                          difference_type;
+      typedef std::bidirectional_iterator_tag    iterator_category;
+      typedef _Tp                                value_type;
+      typedef _Tp*                               pointer;
+      typedef _Tp&                               reference;
 
       _List_iterator()
       : _M_node() { }
@@ -186,15 +186,15 @@ namespace _GLIBCXX_STD
   template<typename _Tp>
     struct _List_const_iterator
     {
-      typedef _List_const_iterator<_Tp>     _Self;
-      typedef const _List_node<_Tp>         _Node;
-      typedef _List_iterator<_Tp>           iterator;
+      typedef _List_const_iterator<_Tp>          _Self;
+      typedef const _List_node<_Tp>              _Node;
+      typedef _List_iterator<_Tp>                iterator;
 
-      typedef ptrdiff_t                     difference_type;
-      typedef bidirectional_iterator_tag    iterator_category;
-      typedef _Tp                           value_type;
-      typedef const _Tp*                    pointer;
-      typedef const _Tp&                    reference;
+      typedef ptrdiff_t                          difference_type;
+      typedef std::bidirectional_iterator_tag    iterator_category;
+      typedef _Tp                                value_type;
+      typedef const _Tp*                         pointer;
+      typedef const _Tp&                         reference;
 
       _List_const_iterator()
       : _M_node() { }
@@ -387,7 +387,7 @@ namespace _GLIBCXX_STD
    *  iterator's next/previous pointers refer to itself, the %list is
    *  %empty.  @endif
   */
-  template<typename _Tp, typename _Alloc = allocator<_Tp> >
+  template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
     class list : protected _List_base<_Tp, _Alloc>
     {
       // concept requirements

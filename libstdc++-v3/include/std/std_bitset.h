@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -751,7 +751,7 @@ namespace _GLIBCXX_STD
        */
       template<class _CharT, class _Traits, class _Alloc>
 	explicit
-	bitset(const basic_string<_CharT, _Traits, _Alloc>& __s,
+	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
 	       size_t __position = 0)
 	: _Base()
 	{
@@ -759,7 +759,7 @@ namespace _GLIBCXX_STD
 	    __throw_out_of_range(__N("bitset::bitset initial position "
 				     "not valid"));
 	  _M_copy_from_string(__s, __position,
-			      basic_string<_CharT, _Traits, _Alloc>::npos);
+			      std::basic_string<_CharT, _Traits, _Alloc>::npos);
 	}
 
       /**
@@ -772,7 +772,7 @@ namespace _GLIBCXX_STD
        *                                 which is neither '0' nor '1'.
        */
       template<class _CharT, class _Traits, class _Alloc>
-	bitset(const basic_string<_CharT, _Traits, _Alloc>& __s,
+	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
 	       size_t __position, size_t __n)
 	: _Base()
 	{
@@ -1014,10 +1014,10 @@ namespace _GLIBCXX_STD
        *  an example).
        */
       template<class _CharT, class _Traits, class _Alloc>
-	basic_string<_CharT, _Traits, _Alloc>
+	std::basic_string<_CharT, _Traits, _Alloc>
 	to_string() const
 	{
-	  basic_string<_CharT, _Traits, _Alloc> __result;
+	  std::basic_string<_CharT, _Traits, _Alloc> __result;
 	  _M_copy_to_string(__result);
 	  return __result;
 	}
@@ -1025,28 +1025,36 @@ namespace _GLIBCXX_STD
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 434. bitset::to_string() hard to use.
       template<class _CharT, class _Traits>
-	basic_string<_CharT, _Traits, allocator<_CharT> >
+	std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
 	to_string() const
-	{ return to_string<_CharT, _Traits, allocator<_CharT> >(); }
+	{ return to_string<_CharT, _Traits, std::allocator<_CharT> >(); }
 
       template<class _CharT>
-	basic_string<_CharT, char_traits<_CharT>, allocator<_CharT> >
+	std::basic_string<_CharT, std::char_traits<_CharT>,
+	                  std::allocator<_CharT> >
 	to_string() const
-	{ return to_string<_CharT, char_traits<_CharT>, allocator<_CharT> >(); }
+	{
+	  return to_string<_CharT, std::char_traits<_CharT>,
+	                   std::allocator<_CharT> >();
+	}
 
-      basic_string<char, char_traits<char>, allocator<char> >
+      std::basic_string<char, std::char_traits<char>, std::allocator<char> >
       to_string() const
-      { return to_string<char, char_traits<char>, allocator<char> >(); }
+      {
+	return to_string<char, std::char_traits<char>,
+	                 std::allocator<char> >();
+      }
 
       // Helper functions for string operations.
       template<class _CharT, class _Traits, class _Alloc>
 	void
-	_M_copy_from_string(const basic_string<_CharT, _Traits, _Alloc>& __s,
+	_M_copy_from_string(const std::basic_string<_CharT,
+			    _Traits, _Alloc>& __s,
 			    size_t, size_t);
 
       template<class _CharT, class _Traits, class _Alloc>
 	void
-	_M_copy_to_string(basic_string<_CharT, _Traits, _Alloc>&) const;
+	_M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>&) const;
 
       /// Returns the number of bits which are set.
       size_t
@@ -1136,7 +1144,7 @@ namespace _GLIBCXX_STD
   template<size_t _Nb>
     template<class _CharT, class _Traits, class _Alloc>
       void
-      bitset<_Nb>::_M_copy_from_string(const basic_string<_CharT, _Traits,
+      bitset<_Nb>::_M_copy_from_string(const std::basic_string<_CharT, _Traits,
 				       _Alloc>& __s, size_t __pos, size_t __n)
       {
 	reset();
@@ -1159,7 +1167,7 @@ namespace _GLIBCXX_STD
   template<size_t _Nb>
     template<class _CharT, class _Traits, class _Alloc>
       void
-      bitset<_Nb>::_M_copy_to_string(basic_string<_CharT, _Traits,
+      bitset<_Nb>::_M_copy_to_string(std::basic_string<_CharT, _Traits,
 				     _Alloc>& __s) const
       {
 	__s.assign(_Nb, '0');
@@ -1216,15 +1224,15 @@ namespace _GLIBCXX_STD
    *  hold.
   */
   template<class _CharT, class _Traits, size_t _Nb>
-    basic_istream<_CharT, _Traits>&
-    operator>>(basic_istream<_CharT, _Traits>& __is, bitset<_Nb>& __x)
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is, bitset<_Nb>& __x)
     {
       typedef typename _Traits::char_type char_type;
-      basic_string<_CharT, _Traits> __tmp;
+      std::basic_string<_CharT, _Traits> __tmp;
       __tmp.reserve(_Nb);
 
-      ios_base::iostate __state = ios_base::goodbit;
-      typename basic_istream<_CharT, _Traits>::sentry __sentry(__is);
+      std::ios_base::iostate __state = std::ios_base::goodbit;
+      typename std::basic_istream<_CharT, _Traits>::sentry __sentry(__is);
       if (__sentry)
 	{
 	  try
@@ -1241,7 +1249,7 @@ namespace _GLIBCXX_STD
 		  typename _Traits::int_type __c1 = __buf->sbumpc();
 		  if (_Traits::eq_int_type(__c1, __eof))
 		    {
-		      __state |= ios_base::eofbit;
+		      __state |= std::ios_base::eofbit;
 		      break;
 		    }
 		  else
@@ -1254,18 +1262,18 @@ namespace _GLIBCXX_STD
 		      else if (_Traits::eq_int_type(__buf->sputbackc(__c2),
 						    __eof))
 			{
-			  __state |= ios_base::failbit;
+			  __state |= std::ios_base::failbit;
 			  break;
 			}
 		    }
 		}
 	    }
 	  catch(...)
-	    { __is._M_setstate(ios_base::badbit); }
+	    { __is._M_setstate(std::ios_base::badbit); }
 	}
 
       if (__tmp.empty() && _Nb)
-	__state |= ios_base::failbit;
+	__state |= std::ios_base::failbit;
       else
 	__x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb);
       if (__state)
@@ -1274,10 +1282,11 @@ namespace _GLIBCXX_STD
     }
 
   template <class _CharT, class _Traits, size_t _Nb>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __os, const bitset<_Nb>& __x)
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const bitset<_Nb>& __x)
     {
-      basic_string<_CharT, _Traits> __tmp;
+      std::basic_string<_CharT, _Traits> __tmp;
       __x._M_copy_to_string(__tmp);
       return __os << __tmp;
     }

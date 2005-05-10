@@ -1,6 +1,6 @@
 // Multiset implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,8 +67,8 @@ namespace _GLIBCXX_STD
 {
 
   // Forward declaration of operators < and ==, needed for friend declaration.
-  template <class _Key, class _Compare = less<_Key>,
-	    class _Alloc = allocator<_Key> >
+  template <class _Key, class _Compare = std::less<_Key>,
+	    class _Alloc = std::allocator<_Key> >
     class multiset;
 
   template <class _Key, class _Compare, class _Alloc>
@@ -492,11 +492,11 @@ namespace _GLIBCXX_STD
        *
        *  This function probably only makes sense for multisets.
        */
-      pair<iterator,iterator>
+      std::pair<iterator,iterator>
       equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
 
-      pair<const_iterator,const_iterator>
+      std::pair<const_iterator,const_iterator>
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
 
