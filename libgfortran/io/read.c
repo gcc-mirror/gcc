@@ -536,9 +536,11 @@ read_f (fnode * f, char *dest, int length)
 
   exponent_sign = 1;
 
-  /* A digit (or a '.') is required at this point */
+  /* A digit, a '.' or a exponent character ('e', 'E', 'd' or 'D')
+     is required at this point */
 
-  if (!isdigit (*p) && *p != '.')
+  if (!isdigit (*p) && *p != '.' && *p != 'd' && *p != 'D'
+      && *p != 'e' && *p != 'E')
     goto bad_float;
 
   /* Remember the position of the first digit.  */
