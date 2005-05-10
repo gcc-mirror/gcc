@@ -1,3 +1,13 @@
+2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/21342
+	* c-decl.c (pushdecl): When there is a declaration in the current
+	scope and the declarations are external linkage, check for
+	compatibility with the type in the external scope and update the
+	type in the external scope with the composite type information.
+	Do not form a composite type of the new type and the visible type
+	if they are incompatible.
+
 2005-05-10  Michael Matz  <matz@suse.de>
 
 	from trunk:

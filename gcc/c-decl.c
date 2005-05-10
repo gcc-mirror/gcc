@@ -2028,11 +2028,52 @@ pushdecl (tree x)
   b = I_SYMBOL_BINDING (name);
   if (b && B_IN_SCOPE (b, scope))
     {
+      struct c_binding *b_ext, *b_use;
+      tree type = TREE_TYPE (x);
+      tree visdecl = b->decl;
+      tree vistype = TREE_TYPE (visdecl);
       if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
 	  && COMPLETE_TYPE_P (TREE_TYPE (x)))
 	b->inner_comp = false;
-      if (duplicate_decls (x, b->decl))
-	return b->decl;
+      b_use = b;
+      b_ext = b;
+      /* If this is an external linkage declaration, we should check
+	 for compatibility with the type in the external scope before
+	 setting the type at this scope based on the visible
+	 information only.  */
+      if (TREE_PUBLIC (x) && TREE_PUBLIC (visdecl))
+	{
+	  while (b_ext && !B_IN_EXTERNAL_SCOPE (b_ext))
+	    b_ext = b_ext->shadowed;
+	  if (b_ext)
+	    {
+	      b_use = b_ext;
+	      if (b_use->type)
+		TREE_TYPE (b_use->decl) = b_use->type;
+	    }
+	}
+      if (duplicate_decls (x, b_use->decl))
+	{
+	  if (b_use != b)
+	    {
+	      /* Save the updated type in the external scope and
+		 restore the proper type for this scope.  */
+	      tree thistype;
+	      if (comptypes (vistype, type))
+		thistype = composite_type (vistype, type);
+	      else
+		thistype = TREE_TYPE (b_use->decl);
+	      b_use->type = TREE_TYPE (b_use->decl);
+	      if (TREE_CODE (b_use->decl) == FUNCTION_DECL
+		  && DECL_BUILT_IN (b_use->decl))
+		thistype
+		  = build_type_attribute_variant (thistype,
+						  TYPE_ATTRIBUTES
+						  (b_use->type));
+	      TREE_TYPE (b_use->decl) = thistype;
+	    }
+	  return b_use->decl;
+	}
       else
 	goto skip_external_and_shadow_checks;
     }
@@ -2119,7 +2160,15 @@ pushdecl (tree x)
 	  && duplicate_decls (x, b->decl))
 	{
 	  tree thistype;
-	  thistype = (vistype ? composite_type (vistype, type) : type);
+	  if (vistype)
+	    {
+	      if (comptypes (vistype, type))
+		thistype = composite_type (vistype, type);
+	      else
+		thistype = TREE_TYPE (b->decl);
+	    }
+	  else
+	    thistype = type;
 	  b->type = TREE_TYPE (b->decl);
 	  if (TREE_CODE (b->decl) == FUNCTION_DECL && DECL_BUILT_IN (b->decl))
 	    thistype
