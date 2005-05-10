@@ -1,3 +1,9 @@
+2005-05-10  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm (__udivsi3, __divsi3): Rearrange special
+	case code to avoid one move instruction.
+	(__umodsi3, __modsi3): Merge duplicated code sequences.
+
 2005-05-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/mips/24k.md, config/sh/divtab.c, config/sh/sh.c,
