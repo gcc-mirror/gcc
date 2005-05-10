@@ -1,3 +1,11 @@
+2005-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2004-02-12  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	* function.c (fixup_var_refs): Save volatile_ok and set to 1.
+	* expr.c (emit_block_move_via_movstr): Save and restore
+	volatile_ok.
+
 2005-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (sse_mov?fcc* splitters): Add mode to

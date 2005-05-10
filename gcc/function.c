@@ -1517,6 +1517,7 @@ fixup_var_refs (rtx var, enum machine_mode promoted_mode, int unsignedp,
   rtx first_insn = get_insns ();
   struct sequence_stack *stack = seq_stack;
   tree rtl_exps = rtl_expr_chain;
+  int save_volatile_ok = volatile_ok;
 
   /* If there's a hash table, it must record all uses of VAR.  */
   if (ht)
@@ -1528,6 +1529,9 @@ fixup_var_refs (rtx var, enum machine_mode promoted_mode, int unsignedp,
       return;
     }
 
+  /* Volatile is valid in MEMs because all we're doing in changing the
+     address inside.  */
+  volatile_ok = 1;
   fixup_var_refs_insns (first_insn, var, promoted_mode, unsignedp,
 			stack == 0, may_share);
 
@@ -1555,6 +1559,8 @@ fixup_var_refs (rtx var, enum machine_mode promoted_mode, int unsignedp,
 	  end_sequence ();
 	}
     }
+
+  volatile_ok = save_volatile_ok;
 }
 
 /* REPLACEMENTS is a pointer to a list of the struct fixup_replacement and X is
