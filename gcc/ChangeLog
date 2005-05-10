@@ -1,3 +1,8 @@
+2005-05-10  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (dom_opt_finalize_block): Do not call
+	thread_across_edge for any abnormal edges.
+
 2005-05-10  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_atomic_op): New.

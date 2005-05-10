@@ -986,18 +986,6 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
       thread_across_edge (walk_data, single_succ_edge (bb));
     }
   else if ((last = last_stmt (bb))
-	   && TREE_CODE (last) == GOTO_EXPR
-	   && TREE_CODE (TREE_OPERAND (last, 0)) == SSA_NAME)
-    {
-      edge_iterator ei;
-      edge e;
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  thread_across_edge (walk_data, e);
-	}
-    }
-  else if ((last = last_stmt (bb))
 	   && TREE_CODE (last) == COND_EXPR
 	   && (COMPARISON_CLASS_P (COND_EXPR_COND (last))
 	       || TREE_CODE (COND_EXPR_COND (last)) == SSA_NAME)
