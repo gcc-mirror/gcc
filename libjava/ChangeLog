@@ -1,3 +1,8 @@
+2005-0509  David Daney  <ddaney@avtrex.com>
+
+	* java/util/BitSet.java (get(int, int)): Fix breakage when
+	requested set doesn't start on a multiple of 64.
+
 2005-04-27  Andrew Haley  <aph@redhat.com>
 
 	PR java/19285
