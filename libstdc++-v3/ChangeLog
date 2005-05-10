@@ -1,3 +1,7 @@
+2005-05-09  Mike Stump  <mrs@apple.com>
+
+	* configure: Regenerate.
+
 2005-05-09  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	DR 434. bitset::to_string() hard to use [Ready]

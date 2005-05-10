@@ -1,3 +1,7 @@
+2005-05-09  Mike Stump  <mrs@apple.com>
+
+	* configure: Regenerate.
+
 2005-05-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19155

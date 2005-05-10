@@ -1,3 +1,7 @@
+2005-05-09  Mike Stump  <mrs@apple.com>
+
+	* configure: Regenerate.
+
 2005-04-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	* os_dep.c, include/private/gc_locks.h: Import CRIS port by
