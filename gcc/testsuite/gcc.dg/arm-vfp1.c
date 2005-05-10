@@ -14,7 +14,14 @@ void test_sf() {
   /* { dg-final { scan-assembler "fabss" } } */
   f1 = fabsf (f1);
   /* negsf2_vfp */
-  /* { dg-final { scan-assembler "fnegs" } } */
+  /* There is no test for "fnegs" because the compiler will use an
+     integer operation instead to implement this operation.  Adding
+     complexity to the operand (e.g., "-(f1 + f2)") doesn't change the
+     situation, as the compiler still wants the result in an integer
+     register before writing it back to memory.  If we used an ABI that
+     required passing floating-point values in VFP registers that
+     would likely persuade the compiler to keep the value in the VFP
+     registers.  */ 
   f1 = -f1;
   /* addsf3_vfp */
   /* { dg-final { scan-assembler "fadds" } } */
