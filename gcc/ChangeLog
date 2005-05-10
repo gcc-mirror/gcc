@@ -1,3 +1,9 @@
+2005-05-10  Ben Elliston  <bje@au.ibm.com>
+
+	PR debug/16676
+	* dwarf2out.c (dwarf2out_decl): Always set context_die to NULL,
+	even when debug_info_level is DINFO_LEVEL_TERSE.
+
 2005-05-08  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_z_replacement): Use emit_insn_after
