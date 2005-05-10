@@ -1,5 +1,10 @@
 2005-05-10  Richard Henderson  <rth@redhat.com>
 
+	* optabs.c (expand_compare_and_swap_loop): Don't clobber old value
+	before comparing it for success.
+
+2005-05-10  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/sync.md (sync_add<I48MODE>): Fix arguments for
 	no return value pattern.
 
