@@ -1,3 +1,8 @@
+2005-05-09  Mike Stump  <mrs@apple.com>
+
+	* libtool.m4 (AC_LIBTOOL_SYS_MAX_CMD_LEN): Use quotes on
+	lt_cv_sys_max_cmd_len for now.
+	
 2005-05-09  Stan Cox  <scox@redhat.com>
 
 	* MAINTAINERS: Remove self, add Nick Clifton as iq2000 maintainer.
