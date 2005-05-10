@@ -6084,10 +6084,9 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
   
   if (cand1->template_decl && cand2->template_decl)
     {
-      winner = more_specialized
+      winner = more_specialized_fn
         (TI_TEMPLATE (cand1->template_decl),
          TI_TEMPLATE (cand2->template_decl),
-         DEDUCE_ORDER,
          /* Tell the deduction code how many real function arguments
 	    we saw, not counting the implicit 'this' argument.  But,
 	    add_function_candidate() suppresses the "this" argument

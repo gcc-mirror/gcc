@@ -19,7 +19,7 @@ struct Bar
 
 Foo Quux (Bar const &b)
 {
-  return b; // { dg-error "ambiguous" "" }
+  return b; // { dg-error "ambiguous overload" "" }
 }
 
 
