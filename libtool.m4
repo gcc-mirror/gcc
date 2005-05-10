@@ -332,7 +332,7 @@ AC_CACHE_VAL([lt_cv_sys_max_cmd_len], [dnl
     ;;
   esac
 ])
-if test -n $lt_cv_sys_max_cmd_len ; then
+if test -n "$lt_cv_sys_max_cmd_len" ; then
   AC_MSG_RESULT($lt_cv_sys_max_cmd_len)
 else
   AC_MSG_RESULT(none)
