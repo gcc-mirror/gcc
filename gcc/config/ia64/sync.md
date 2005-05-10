@@ -32,15 +32,17 @@
   [(set_attr "itanium_class" "syst_m")])
 
 (define_expand "sync_add<mode>"
-  [(match_operand:I48MODE 0 "gr_register_operand" "")
-   (match_operand:I48MODE 1 "memory_operand" "")
-   (match_operand:I48MODE 2 "general_operand" "")]
+  [(match_operand:I48MODE 0 "memory_operand" "")
+   (match_operand:I48MODE 1 "general_operand" "")]
   ""
 {
-  if (!fetchadd_operand (operands[2], <MODE>mode))
+  rtx tmp;
+  if (!fetchadd_operand (operands[1], <MODE>mode))
     FAIL;
+
+  tmp = gen_reg_rtx (<MODE>mode);
   emit_insn (gen_memory_barrier ());
-  emit_insn (gen_fetchadd_acq_<mode> (operands[0], operands[1], operands[2]));
+  emit_insn (gen_fetchadd_acq_<mode> (tmp, operands[0], operands[1]));
   DONE;
 })
 
