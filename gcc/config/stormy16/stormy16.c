@@ -146,8 +146,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
   enum machine_mode mode;
   
   mode = GET_MODE (op0);
-  if (mode != HImode && mode != SImode)
-    abort ();
+  gcc_assert (mode == HImode || mode == SImode);
 
   if (mode == SImode
       && (code == GT || code == LE || code == GTU || code == LEU))
@@ -250,8 +249,7 @@ xstormy16_split_cbranch (enum machine_mode mode, rtx label, rtx comparison,
   seq = get_insns ();
   end_sequence ();
 
-  if (! INSN_P (seq))
-    abort ();
+  gcc_assert (INSN_P (seq));
 
   last_insn = seq;
   while (NEXT_INSN (last_insn) != NULL_RTX)
@@ -324,7 +322,7 @@ xstormy16_output_cbranch_hi (rtx op, const char *label, int reversed, rtx insn)
     case LEU:  ccode = "ls";  break;
       
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (need_longbranch)
@@ -374,7 +372,7 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
 
       /* The missing codes above should never be generated.  */
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   switch (code)
@@ -383,8 +381,7 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
       {
 	int regnum;
 	
-	if (GET_CODE (XEXP (op, 0)) != REG)
-	  abort ();
+	gcc_assert (GET_CODE (XEXP (op, 0)) == REG);
       
 	regnum = REGNO (XEXP (op, 0));
 	sprintf (prevop, "or %s,%s", reg_names[regnum], reg_names[regnum+1]);
@@ -396,7 +393,7 @@ xstormy16_output_cbranch_si (rtx op, const char *label, int reversed, rtx insn)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (need_longbranch)
@@ -799,21 +796,16 @@ xstormy16_split_move (enum machine_mode mode, rtx dest, rtx src)
   rtx auto_inc_reg_rtx = NULL_RTX;
   
   /* Check initial conditions.  */
-  if (! reload_completed
-      || mode == QImode || mode == HImode
-      || ! nonimmediate_operand (dest, mode)
-      || ! general_operand (src, mode))
-    abort ();
+  gcc_assert (reload_completed
+	      && mode != QImode && mode != HImode
+	      && nonimmediate_operand (dest, mode)
+	      && general_operand (src, mode));
 
   /* This case is not supported below, and shouldn't be generated.  */
-  if (GET_CODE (dest) == MEM
-      && GET_CODE (src) == MEM)
-    abort ();
+  gcc_assert (GET_CODE (dest) != MEM || GET_CODE (src) != MEM);
 
   /* This case is very very bad after reload, so trap it now.  */
-  if (GET_CODE (dest) == SUBREG
-      || GET_CODE (src) == SUBREG)
-    abort ();
+  gcc_assert (GET_CODE (dest) != SUBREG && GET_CODE (src) != SUBREG);
 
   /* The general idea is to copy by words, offsetting the source and
      destination.  Normally the least-significant word will be copied
@@ -870,12 +862,12 @@ xstormy16_split_move (enum machine_mode mode, rtx dest, rtx src)
 	   && reg_overlap_mentioned_p (dest, src))
     {
       int regno;
-      if (GET_CODE (dest) != REG)
-	abort ();
+      
+      gcc_assert (GET_CODE (dest) == REG);
       regno = REGNO (dest);
       
-      if (! refers_to_regno_p (regno, regno + num_words, mem_operand, 0))
-	abort ();
+      gcc_assert (refers_to_regno_p (regno, regno + num_words,
+				     mem_operand, 0));
       
       if (refers_to_regno_p (regno, regno + 1, mem_operand, 0))
 	direction = -1;
@@ -887,7 +879,7 @@ xstormy16_split_move (enum machine_mode mode, rtx dest, rtx src)
 	   (set (reg:DI r0) (mem:DI (reg:HI r1)))
 	   which we'd need to support by doing the set of the second word
 	   last.  */
-	abort ();
+	gcc_unreachable ();
     }
 
   end = direction < 0 ? -1 : num_words;
@@ -910,9 +902,8 @@ xstormy16_split_move (enum machine_mode mode, rtx dest, rtx src)
 	MEM_VOLATILE_P (w_dest) = 1;
       
       /* The simplify_subreg calls must always be able to simplify.  */
-      if (GET_CODE (w_src) == SUBREG
-	  || GET_CODE (w_dest) == SUBREG)
-	abort ();
+      gcc_assert (GET_CODE (w_src) != SUBREG
+		  && GET_CODE (w_dest) != SUBREG);
       
       insn = emit_insn (gen_rtx_SET (VOIDmode, w_dest, w_src));
       if (auto_inc_reg_rtx)
@@ -1075,7 +1066,7 @@ xstormy16_initial_elimination_offset (int from, int to)
   else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     result = -(layout.sp_minus_fp + layout.fp_minus_ap);
   else
-    abort ();
+    gcc_unreachable ();
 
   return result;
 }
@@ -1656,25 +1647,22 @@ xstormy16_encode_section_info (tree decl,
 
       rtl = r;
       rtlname = XEXP (rtl, 0);
-      if (GET_CODE (rtlname) == SYMBOL_REF)
-	oldname = XSTR (rtlname, 0);
-      else if (GET_CODE (rtlname) == MEM
-	       && GET_CODE (XEXP (rtlname, 0)) == SYMBOL_REF)
-	oldname = XSTR (XEXP (rtlname, 0), 0);
-      else
-	abort ();
+      if (GET_CODE (rtlname) == MEM)
+	rtlname = XEXP (rtlname, 0);
+      gcc_assert (GET_CODE (rtlname) == SYMBOL_REF);
+      oldname = XSTR (rtlname, 0);
 
       if (DECL_INITIAL (decl))
 	{
 	  newsection = ".data_below100";
-	  DECL_SECTION_NAME (decl) = build_string (strlen (newsection), newsection);
+	  DECL_SECTION_NAME (decl) = build_string (strlen (newsection),
+						   newsection);
 	}
 
       newname = alloca (strlen (oldname) + 4);
       sprintf (newname, "@b.%s", oldname);
       idp = get_identifier (newname);
-      XEXP (rtl, 0) =
-	gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
+      XEXP (rtl, 0) = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
     }
 }
 
@@ -1769,8 +1757,7 @@ xstormy16_print_operand_address (FILE *file, rtx address)
 
   if (GET_CODE (address) == PLUS)
     {
-      if (GET_CODE (XEXP (address, 1)) != CONST_INT)
-	abort ();
+      gcc_assert (GET_CODE (XEXP (address, 1)) == CONST_INT);
       offset = INTVAL (XEXP (address, 1));
       address = XEXP (address, 0);
     }
@@ -1782,8 +1769,7 @@ xstormy16_print_operand_address (FILE *file, rtx address)
   if (pre_dec || post_inc)
     address = XEXP (address, 0);
   
-  if (GET_CODE (address) != REG)
-    abort ();
+  gcc_assert (GET_CODE (address) == REG);
 
   fputc ('(', file);
   if (pre_dec)
@@ -1997,8 +1983,7 @@ xstormy16_expand_call (rtx retval, rtx dest, rtx counter)
   rtx call, temp;
   enum machine_mode mode;
 
-  if (GET_CODE (dest) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (dest) == MEM);
   dest = XEXP (dest, 0);
 
   if (! CONSTANT_P (dest)
@@ -2120,7 +2105,7 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       
       firstloop = 0;
@@ -2147,10 +2132,8 @@ xstormy16_output_shift (enum machine_mode mode, enum rtx_code code,
   const char *r0, *r1, *rt;
   static char r[64];
 
-  if (GET_CODE (size_r) != CONST_INT
-      || GET_CODE (x) != REG
-      || mode != SImode)
-    abort ();
+  gcc_assert (GET_CODE (size_r) == CONST_INT
+	      && GET_CODE (x) == REG && mode == SImode);
   size = INTVAL (size_r) & (GET_MODE_BITSIZE (mode) - 1);
 
   if (size == 0)
@@ -2174,7 +2157,7 @@ xstormy16_output_shift (enum machine_mode mode, enum rtx_code code,
 	  sprintf (r, "shr %s,#1 | rrc %s,#1", r1, r0);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return r;
     }
@@ -2194,7 +2177,7 @@ xstormy16_output_shift (enum machine_mode mode, enum rtx_code code,
 	  sprintf (r, "mov %s,%s | mov %s,#0", r0, r1, r1);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return r;
     }
@@ -2215,7 +2198,7 @@ xstormy16_output_shift (enum machine_mode mode, enum rtx_code code,
 		   r0, r1, r1, r0, (int) size - 16);
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       return r;
     }
@@ -2244,7 +2227,7 @@ xstormy16_output_shift (enum machine_mode mode, enum rtx_code code,
 	       r0, rt);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return r;
 }
@@ -2366,7 +2349,7 @@ xstormy16_init_builtins (void)
 	    case 'S': arg = short_unsigned_type_node; break;
 	    case 'l': arg = long_integer_type_node; break;
 	    case 'L': arg = long_unsigned_type_node; break;
-	    default: abort();
+	    default: gcc_unreachable ();
 	    }
 	  if (a == 0)
 	    ret_type = arg;

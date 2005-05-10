@@ -1,3 +1,14 @@
+2005-05-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/stormy16/stormy16.c (xstormy16_emit_cbranch): Use
+	gcc_assert and gcc_unreachable as appropriate.
+	(xstormy16_split_cbranch, xstormy16_output_cbranch_hi,
+	xstormy16_output_cbranch_si, xstormy16_split_move,
+	xstormy16_initial_elimination_offset,
+	xstormy16_encode_section_info, xstormy16_print_operand_address,
+	xstormy16_expand_call, xstormy16_expand_arith,
+	xstormy16_output_shift, xstormy16_init_builtins): Likewise.
+
 2005-05-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-outof-ssa.c (_elim_graph): Change the type of nodes and
