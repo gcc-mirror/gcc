@@ -1,3 +1,9 @@
+2005-05-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/mips/24k.md, config/sh/divtab.c, config/sh/sh.c,
+	config/sh/sh.md, config/sh/superh.h: Fix comment typos.
+	* doc/invoke.texi: Fix typos.
+
 2005-05-10  Gabor Loki <loki@gcc.gnu.org>
 
 	PR c/17913

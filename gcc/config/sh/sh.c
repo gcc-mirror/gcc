@@ -747,7 +747,7 @@ print_operand (FILE *stream, rtx x, int code)
 	    if (GET_CODE (inner) != REG || GET_MODE_SIZE (inner_mode) > 8)
 	      abort ();
 	    /* Floating point register pairs are always big endian;
-	       general purpose registes are 64 bit wide.  */
+	       general purpose registers are 64 bit wide.  */
 	    regno = REGNO (inner);
 	    regno = (HARD_REGNO_NREGS (regno, inner_mode)
 		     - HARD_REGNO_NREGS (regno, mode))
@@ -10947,10 +10947,10 @@ sh_adjust_unroll_max (struct loop * loop, int insn_count,
    are to be modified.
 
    This is like replace_rtx, except that we operate on N_REPLACEMENTS
-   replacements sumultanously - FROM(n) is replacements[n*2] and to(n) is
+   replacements simultaneously - FROM(n) is replacements[n*2] and to(n) is
    replacements[n*2+1] - and that we take mode changes into account.
 
-   If a replacement is ambigous, return NULL_RTX.
+   If a replacement is ambiguous, return NULL_RTX.
 
    If MODIFY is zero, don't modify any rtl in place,
    just return zero or nonzero for failure / success.  */
@@ -11177,7 +11177,7 @@ shmedia_prepare_call_address (rtx fnaddr, int is_sibcall)
   /* If ptabs might trap, make this visible to the rest of the compiler.
      We generally assume that symbols pertain to valid locations, but
      it is possible to generate invalid symbols with asm or linker tricks.
-     In a list of functions where each returns its sucessor, an invalid
+     In a list of functions where each returns its successor, an invalid
      symbol might denote an empty list.  */
   if (!TARGET_PT_FIXED
       && (!is_sym || TARGET_INVALID_SYMBOLS)
