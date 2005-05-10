@@ -1,3 +1,8 @@
+2005-05-10  Ben Elliston  <bje@au.ibm.com>
+
+	PR debug/16676
+	* gcc.dg/debug/pr16676.c: New test.
+
 2005-05-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR testsuite/21443
