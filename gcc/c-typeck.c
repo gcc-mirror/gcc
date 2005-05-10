@@ -3105,10 +3105,7 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
   if (result_type != TREE_TYPE (op2))
     op2 = convert_and_check (result_type, op2);
 
-  if (TREE_CODE (ifexp) == INTEGER_CST)
-    return non_lvalue (integer_zerop (ifexp) ? op2 : op1);
-
-  return fold (build3 (COND_EXPR, result_type, ifexp, op1, op2));
+  return fold_build3 (COND_EXPR, result_type, ifexp, op1, op2);
 }
 
 /* Return a compound expression that performs two expressions and

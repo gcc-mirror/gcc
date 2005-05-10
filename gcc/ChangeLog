@@ -1,3 +1,11 @@
+2005-05-10  Gabor Loki <loki@gcc.gnu.org>
+
+	PR c/17913
+	* c-typeck.c (build_conditional_expr): Remove reducing cond_expr.
+	* fold-const.c (fold): Expand the condition of reducing cond_expr.
+	(contains_label_1, contains_label_p): New functions for checking
+	labels in a sub-tree.
+
 2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21342
