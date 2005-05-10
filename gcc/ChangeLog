@@ -1,3 +1,11 @@
+2005-05-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-cfg.c (tree_duplicate_sese_region): Update profile.
+	* tree-optimize.c (init_tree_optimization_passes) Swap
+	pass_ch and pass_profile.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Do not update profile
+	here.  Remove rewrite_into_loop_closed_ssa call.
+
 2005-05-10  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.c: (s390_const_double_ok_for_constraint_p): New
