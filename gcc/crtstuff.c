@@ -51,6 +51,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    This file must be compiled with gcc.  */
 
+/* Target machine header files require this define. */
+#define IN_LIBGCC2
+
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"
