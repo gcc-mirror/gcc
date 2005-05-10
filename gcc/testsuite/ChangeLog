@@ -1,3 +1,7 @@
+2005-05-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/arm-vfp1.c: Remove test for fnegs.
+
 2005-05-10  Bob Wilson  <bob.wilson@acm.org>
 
 	* gcc.dg/const-elim-1.c: Remove xfail for xtensa-*-*.
