@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-store_ccp-vops" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-store_ccp-vops" } */
 
 /* Test to check whether global variables are being
    constant propagated. */

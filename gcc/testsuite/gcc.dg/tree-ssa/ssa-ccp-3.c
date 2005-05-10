@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-store_ccp" } */
+/* { dg-options "-O2 -fdump-tree-store_ccp" } */
 
 extern void link_error (void);
 
