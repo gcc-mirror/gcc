@@ -1,3 +1,7 @@
+2005-05-10  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/debug/debug.h: Fix typo in macro name.
+
 2005-05-09  Paolo Carlini  <pcarlini@suse.de>
 	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 	    

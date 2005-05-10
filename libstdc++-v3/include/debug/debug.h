@@ -226,7 +226,7 @@ _GLIBCXX_DEBUG_VERIFY(::std::__is_heap(_First, _Last, _Pred),		\
 #ifdef _GLIBCXX_DEBUG
 #  define _GLIBCXX_DEBUG_ASSERT(_Condition) assert(_Condition)
 
-#  ifdef _GLIBXX_DEBUG_PEDANTIC
+#  ifdef _GLIBCXX_DEBUG_PEDANTIC
 #    define _GLIBCXX_DEBUG_PEDASSERT(_Condition) assert(_Condition)
 #  else
 #    define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
