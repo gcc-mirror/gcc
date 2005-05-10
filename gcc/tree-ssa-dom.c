@@ -486,7 +486,7 @@ tree_ssa_dominator_optimize (void)
 
 	 This must be done before we iterate as we might have a
 	 reference to an SSA_NAME which was removed by the call to
-	 rewrite_ssa_into_ssa.
+	 update_ssa.
 
 	 Long term we will be able to let everything in SSA_NAME_VALUE
 	 persist.  However, for now, we know this is the safe thing to do.  */
