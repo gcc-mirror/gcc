@@ -1,3 +1,8 @@
+2005-05-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* crtstuff.c: Revert part of 2005-05-08 Change.
+	(IN_LIBGCC2): Define.
+
 2005-05-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (fp_sethi_p): Test !SPARC_SIMM13_P and
