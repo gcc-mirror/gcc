@@ -8,6 +8,49 @@
 	* include/fibheap.h (fibnode): Use unsigned long int for
 	bit-fields if __GNUC__ is defined.
 
+2003-12-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* fibheap.h (fibnode): Use __extension__ for
+	bit-fields mark and degree if __GNUC__.
+
+2003-12-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fibheap.h (fibnode): Use unsigned long int for
+	bit-fields if __GNUC__ is defined.
+
+2003-12-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bfdlink.h (bfd_link_info): Change relax_finalizing to
+	need_relax_finalize.
+
+2003-12-03  Alan Modra  <amodra@bigpond.net.au>
+
+	* bfdlink.h (struct bfd_link_hash_entry): Rename "next" to "und_next".
+
+2003-12-02  Alan Modra  <amodra@bigpond.net.au>
+
+	* bfdlink.h (struct bfd_link_info): Remove mpc860c0 field.
+
+2003-11-14  Nick Clifton  <nickc@redhat.com>
+
+	* dis-asm.h (struct disassemble_info): Add new field
+	'symbol_is_valid' which is a function which can tell the
+	disassembler to skip certain symbols as they should not be
+	displayed to the user.
+	(arm_symbol_is_valid): New prototype.  This is the ARM
+	specific function for the symbol_is_valid field.
+	(generic_symbol_is_valid): New prototype.  This is the default
+	function pointed to by the symbol_is_valid field.
+
+2003-11-06  Bruno Rohee  <bruno@rohee.com>
+
+	* hp-symtab.h: Fix "the the" typo.
+
+2003-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bfdlink.h (bfd_elf_version_expr): Add "symbol" and remove
+	"wildcard".
+
 2003-10-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* obstack.h: Merge the following change from gnulib:
@@ -22,6 +65,18 @@
 	Use the fast variant of each macro, rather than copying the
 	definiens of the fast variant; that way, we'll be more likely to
 	catch future bugs in the fast variants.
+
+2003-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* bfdlink.h (struct bfd_elf_version_expr): Remove match field.
+	Add wildcard and mask fields.
+	(BFD_ELF_VERSION_C_TYPE): Define.
+	(BFD_ELF_VERSION_CXX_TYPE): Likewise.
+	(BFD_ELF_VERSION_JAVA_TYPE): Likewise.
+	(struct bfd_elf_version_expr_head): New.
+	(struct bfd_elf_version_tree): Add match field.
+	Change type of globals and locals fields
+	to struct bfd_elf_version_expr_head.
 
 2003-09-22  Andrew Cagney  <cagney@redhat.com>
 
@@ -40,6 +95,27 @@
 
 	* floatformat.h (floatformat_is_valid): Add prototype.
 
+2003-08-27  Andrew Cagney  <cagney@redhat.com>
+
+	* dis-asm.h (init_disassemble_info): Declare.
+	(INIT_DISASSEMBLE_INFO): Redefine as a call to
+	init_disassemble_info.
+	(INIT_DISASSEMBLE_INFO_NO_ARCH): Ditto.
+
+2003-08-20  Nick Clifton  <nickc@redhat.com>
+
+	* bfdlink.h (enum report_method): New enum.  Describes how to
+	report something.
+	(struct bfd_link_info): Delete fields 'no_undefined' and
+	'allow_shlib_undefined'.  Replace with
+	'unresolved_symbols_in_objects' and
+	'unresolved_symbols_in_shared_libs'.
+
+2003-08-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* bfdlink.h: Remove PARAMS macro.  Replace PTR with void *.
+	* dis-asm.h: Likewise.
+
 2003-07-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* xtensa-config.h: Undef all macros before defining them.
@@ -56,6 +132,15 @@
 
 	* xtensa-config.h: New file imported from binutils.
 
+2003-06-30  Bob Wilson  <bob.wilson@acm.org>
+
+	* xtensa-config.h (XCHAL_HAVE_CONST16, XCHAL_HAVE_ABS,
+	XCHAL_HAVE_ADDX, XCHAL_HAVE_L32R): Define.
+
+2003-06-25  Alan Modra  <amodra@bigpond.net.au>
+
+	* bfdlink.h: Correct spelling of "relocatable".
+
 2003-06-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* safe-ctype.h (HC_UNKNOWN, HC_ASCII, HC_EBCDIC): Rename to
@@ -71,6 +156,24 @@
 
 	* ansidecl.h: Delete HAVE_LONG_DOUBLE GCC bootstrap support.
 
+2003-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* bfdlink.h (struct bfd_link_info): Add execstack and noexecstack.
+
+2003-06-03  H.J. Lu <hongjiu.lu@intel.com>
+
+	* bfdlink.h (LD_DEFINITION_IN_DISCARDED_SECTION): New.
+
+2003-05-30  Ulrich Drepper  <drepper@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* bfdlink.h (struct bfd_link_info): Add pie and executable
+	bits.
+
+2003-05-21  Nick Clifton  <nickc@redhat.com>
+
+	* bfdlink.h (struct bfd_link_hash_table): Fix typo in comment.
+
 2003-05-15  Jim Blandy  <jimb@redhat.com>
 
 	* libiberty.h (hex_value): Make the value an unsigned int, to
@@ -78,10 +181,35 @@
 	than int --- like bfd_vma, on some platforms.
 	(_hex_value): Update declaration.
 
+2003-05-09  Alan Modra  <amodra@bigpond.net.au>
+
+	* xtensa-isa-internal.h (xtensa_isa_module_struct): Remove const on
+	gen_num_opcodes_fn return type.
+
 2003-05-07  Jason Merrill  <jason@redhat.com>
 
 	* hashtab.h (iterative_hash): Prototype.
 	(iterative_hash_object): New macro.
+
+2003-04-28  H.J. Lu <hjl@gnu.org>
+
+	* bfdlink.h (bfd_link_info): Add relax_finalizing.
+
+2003-04-23  H.J. Lu <hjl@gnu.org>
+
+	* bfdlink.h (bfd_link_callbacks): Add error_handler.
+
+2003-04-02  Bob Wilson  <bob.wilson@acm.org>
+
+	* xtensa-config.h: Remove comment indicating that this is a
+	generated file.
+
+2003-04-01  Bob Wilson  <bob.wilson@acm.org>
+
+	* dis-asm.h (print_insn_xtensa): Declare.
+	* xtensa-config.h: New file.
+	* xtensa-isa-internal.h: Likewise.
+	* xtensa-isa.h: Likewise.
 
 2003-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -107,6 +235,10 @@
 
 	* libiberty.h (lrealpath): Add declaration.
 
+2003-01-31  Grant Grundler  <grundler@dsl2.external.hp.com>
+
+	* hppa.h (ldwa, ldda): Add ordered opcodes.
+
 2003-01-26  Daniel Jacobowitz  <drow@mvista.com>
 
 	* hashtab.h (htab_alloc_with_arg, htab_free_with_arg): Add new types.
@@ -122,6 +254,31 @@
 	(struct splay_tree_s): Likewise.  Make allocate_data a PTR,
 	not a void *.
 
+2002-01-02  Ben Elliston  <bje@redhat.com>
+
+	* dis-asm.h (print_insn_iq2000): Declare.
+
+2002-12-24    Dmitry Diky <diwil@mail.ru>
+
+	* dis-asm.h: Add msp430 disassembler prototype.
+
+2002-12-27  Chris Demetriou  <cgd@broadcom.com>
+
+	* dis-asm.h (print_mips_disassembler_options): Prototype.
+
+2002-12-23  Alan Modra  <amodra@bigpond.net.au>
+
+	* bfdlink.h (struct bfd_link_info): Add "strip_discarded".
+
+2002-12-20  Alan Modra  <amodra@bigpond.net.au>
+
+	* bfdlink.h (struct bfd_link_info): Replace bfd_boolean fields with
+	bit-fields.  Rearrange to put all like types together.
+
+2002-11-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* bfdlink.h: Replace boolean with bfd_boolean.  Formatting.
+
 2002-11-23  Simon Burge  <simonb@wasabisystems.com>
 
 	* libiberty.h (basename): Add NetBSD to the list.
@@ -129,6 +286,11 @@
 2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	* libiberty.h (make_relative_prefix): Add prototype.
+
+2002-11-14  Egor Duda  <deo@logos-m.ru>
+
+	* bfdlink.h (struct bfd_link_info): Add new boolean
+	field pei386_runtime_pseudo_reloc.
 
 2002-10-26  Roger Sayle  <roger@eyesopen.com>
 
@@ -150,10 +312,47 @@
 
 	* getopt.h: getopt is in unistd.h (based on SUSv2).
 
+2002-09-26  Andrew Cagney  <ac131313@redhat.com>
+
+	* regs/: Delete directory.
+
 2002-09-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libiberty.h (asprintf, vasprintf): Don't declare them if the
 	corresponding HAVE_DECL_ macro is 1.
+
+2002-09-19  Nathan Tallent  <eraxxon@alumni.rice.edu>
+
+	* dis-asm.h: Remove (errant) trailing semicolon (;) from the
+	extern "C" { } declaration.
+
+2002-09-04  Nick Clifton  <nickc@redhat.com>
+
+	* dis-asm.h (print_ppc_disassembler_options): Prototype.
+
+2002-08-28  Michael Hayes <m.hayes@elec.canterbury.ac.nz>
+
+	* dis-asm.h: Add standard disassembler for tic4x.
+
+2002-08-07  H.J. Lu <hjl@gnu.org>
+
+	* bfdlink.h (bfd_link_info): Add allow_undefined_version.
+	(bfd_elf_version_expr): Add symver and script.
+
+2002-07-31  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
+
+	* bfdlink.h (bfd_link_common_skip_ar_symbols): New enum.
+	(struct bfd_link_info): Add new field 'common_skip_ar_symbols'.
+
+2002-07-19  Denis Chertykov  <denisc@overta.ru>
+	    Matthew Green  <mrg@redhat.com>
+
+	* dis-asm.h (print_insn_ip2k): Declare.
+
+2002-07-01  Alan Modra  <amodra@bigpond.net.au>
+
+	* bfdlink.h (struct bfd_sym_chain): Declare.
+	(struct bfd_link_info): Add gc_sym_list.  Formatting fixes.
 
 2002-06-25  Alan Modra  <amodra@bigpond.net.au>
 
@@ -168,6 +367,22 @@
 
 	* libiberty.h (basename): Don't declare if HAVE_DECL_BASENAME.
 	* getopt.h (getopt): Don't declare if HAVE_DECL_GETOPT.
+
+2002-06-18  Dave Brolley  <brolley@redhat.com>
+
+	From Catherine Moore:
+	* dis-asm.h (print_insn_frv): New prototype.
+
+2002-06-09  Andrew Cagney  <cagney@redhat.com>
+
+	* remote-sim.h: Move to directory gdb/.
+	* callback.h: Move to directory gdb/.
+
+2002-06-07  Charles Wilson  <cwilson@ece.gatech.edu>
+
+	* bfdlink.h (struct bfd_link_info): Change type of
+	pei386_auto_import field to int so that -1 can mean enabled by
+	default and 1 can mean enabled by command line switch.
 
 2002-06-06  DJ Delorie  <dj@redhat.com>
 
@@ -196,6 +411,22 @@
 	(htab_create): Replace with #define.
 	(htab_try_create): Delete.
 
+2002-05-28  Kuang Hwa Lin <kuang@sbcglobal.net>
+
+	* dis-asm.h: Prototype print_insn_dlx.
+
+2002-05-23  Andrew Cagney  <ac131313@redhat.com>
+
+	* sim-d10v.h: Delete file.  Moved to include/gdb/.
+
+2002-05-21  H.J. Lu  (hjl@gnu.org)
+
+	* bfdlink.h (bfd_link_info): Add allow_multiple_definition.
+
+2002-05-17  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* dis-asm.h (print_insn_shl, print_insn_sh64l): Remove prototype.
+
 2002-04-16  David S. Miller  <davem@redhat.com>
 
 	* xregex2.h (__restrict_arr): Define to __restrict on GCC
@@ -205,11 +436,15 @@
 
 	* dyn-string.h:  Also allow IN_GLIBCPP_V3 to redefine names.
 
+2002-03-10  Daniel Jacobowitz <drow@mvista.com>
+
+	* gdb: New directory.
+
 2002-03-06  Andrew Cagney  <ac131313@redhat.com>
 
 	* floatformat.h (floatformat_arm_ext): Delete declaration.
 
-2002-02-22  Jim Blandy  <jimb@redhat.com>
+2002-02-21  Jim Blandy  <jimb@redhat.com>
 
 	Allow the user to specify functions for allocating memory for
 	splay tree roots and nodes.
@@ -218,6 +453,25 @@
 	(splay_tree): New fields: `allocate', `deallocate', and
 	`allocate_data'.
 	(splay_tree_new_with_allocator): New function declaration.
+
+2002-02-15  Alan Modra  <amodra@bigpond.net.au>
+
+	Support arbitrary length fill patterns.
+	* bfdlink.h (enum bfd_link_order_type): Remove bfd_fill_link_order.
+	(struct bfd_link_order): Remove fill.  Add data.size.
+
+2002-02-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	Contribute sh64-elf.
+	2000-11-25  Hans-Peter Nilsson  <hpn@cygnus.com>
+	* dis-asm.h (print_insn_sh64): New prototype.
+	(print_insn_sh64l): New prototype.
+	(print_insn_sh64x_media): New prototype.
+
+2002-02-05  Frank Ch. Eigler  <fche@redhat.com>
+
+	* dis-asm.h (disassemble_info): New field `insn_sets'.
+	(INIT_DISASSEMBLE_INFO): Clear it.
 
 2002-02-05  Jason Merrill  <jason@redhat.com>
 
@@ -230,14 +484,47 @@
 
 	* demangle.h (cplus_demangle_v3_type): New prototype.
 
+2002-01-31  Ivan Guzvinec  <ivang@opencores.org>
+
+	* dis-asm.h : Add support for or32 targets
+
 2002-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (C_alloca): Add ATTRIBUTE_MALLOC.
+
+2002-01-27  David O'Brien  <obrien@FreeBSD.org>
+
+	* cgen.h (BFD_VERSION): Use BFD_VERSION_DATE instead.
+
+2001-12-14  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* dis-asm.h (INIT_DISASSEMBLE_INFO_NO_ARCH): Initialise the
+	disassembler_options field (to NULL).
+
+2001-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* bfdlink.h (struct bfd_link_info): Add eh_frame_hdr field.
+
+2001-12-07  Geoffrey Keating  <geoffk@redhat.com>
+
+	* dis-asm.h (print_insn_xstormy16): Declare.
 
 2001-12-06  Richard Henderson  <rth@redhat.com>
 
 	* demangle.h (no_demangling): New.
 	(NO_DEMANGLING_STYLE_STRING): New.
+
+2001-11-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* dis-asm.h (print_insn_i386): Declare.
+
+2001-11-11  Timothy Wall  <twall@alum.mit.edu>
+
+	* dis-asm.h: Fix comment to refer to octets rather than bytes.
+
+2001-10-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* dis-asm.h (print_insn_mmix): Add prototype.
 
 2001-10-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -250,10 +537,18 @@
 	* libiberty.h (_hex_value): Const-ify.
 	(hex_init): Delete.
 
+2001-10-16  Christopher Faylor  <cgf@redhat.com>
+
+	* filenames.h: Add cygwin to the list of dosish style path systems.
+
 2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h (demangler_engine): Const-ify.
 	* libiberty.h (buildargv): Likewise.
+
+2001-10-03  Vassili Karpov  <malc@pulsesoft.com>
+
+	* bfdlink.h (struct bfd_link_info): Add nocopyreloc field.
 
 2001-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -284,6 +579,24 @@
 
 	* ansidecl.h (VA_OPEN, VA_CLOSE): Allow multiple uses.
 
+2001-08-25  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* bfdlink.h (struct bfd_link_info): Change 'spare_dynamic_tags' to
+	unsigned to remove a compile time warning message.
+
+2001-08-24  H.J. Lu  <hjl@gnu.org>
+
+	* bfdlink.h (bfd_link_hash_table_type): New. The linker hash
+	table type, bfd_link_generic_hash_table and
+	bfd_link_elf_hash_table.
+	(bfd_link_hash_table): Add a new field, type, for the linker
+	hash table type.
+
+2001-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* bfdlink.h (struct bfd_link_info): Add combreloc and
+	spare_dynamic_tags fields.
+
 2001-08-23  Lars Brinkhoff  <lars@nocrew.org>
 
 	* dyn-string.h, fibheap.h, partition.h, sort.h, splay-tree.h:
@@ -294,6 +607,10 @@
 	* fibheap.h: Tidy formatting.
 	(fibnode_t): Limit degree to 31 bits to avoid warning.
 
+2001-08-20  Daniel Berlin  <dan@cgsoftware.com>
+
+	* fibheap.h: New file. Fibonacci heap.
+
 2001-08-20  Andrew Cagney  <ac131313@redhat.com>
 
 	* floatformat.h (floatformat_arm_ext): Document as deprecated.
@@ -301,10 +618,6 @@
 	(floatformat_ia64_spill_little, floatformat_ia64_quad_little)
 	(floatformat_ia64_spill_big, floatformat_ia64_quad_big)
 	(floatformat_m88110_harris_ext): Declare.
-
-2001-08-20  Daniel Berlin  <dan@cgsoftware.com>
-
-	* fibheap.h: New file. Fibonacci heap.
 
 2001-08-18  Zack Weinberg  <zackw@panix.com>
 
@@ -328,6 +641,11 @@
 	(re_comp): Define to xre_comp.
 	(re_exec): Define to xre_exec.
 
+2001-08-02  Charles Wilson  <cwilson@ece.gatech.edu>
+
+	* bfdlink.h (struct bfd_link_info): add new boolean
+	field pei386_auto_import.
+
 2001-07-18  Andreas Jaeger  <aj@suse.de>
 
 	* xregex2.h: Place under LGPL version 2.1.
@@ -336,6 +654,10 @@
 
 	* xregex.h: New file to support libiberty regex.
 	* xregex2.h: Ditto.
+
+2001-06-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* bfdlink.h (struct bfd_link_info): New member export_dynamic.
 
 2001-05-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
@@ -356,9 +678,17 @@
 	* splay-tree.h (splay_tree_max): New function.
 	(splay_tree_min): Likewise.
 
+2001-04-27  Johan Rydberg  <jrydberg@opencores.org>
+
+	* dis-asm.h (print_insn_openrisc): Add prototype.
+
 2001-04-15  Daniel Berlin  <dan@cgsoftware.com>
 
 	* ternary.h: New file - Ternary search tree header.
+
+2001-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* bfdlink.h (bfd_link_discard): Add discard_sec_merge.
 
 2001-04-03  Zack Weinberg  <zackw@stanford.edu>
 
@@ -401,16 +731,45 @@
 	* safe-ctype.h (_sch_test): Cast enum bit to unsigned short int for pcc
 	compatibility.
 
+2001-02-18  lars brinkhoff  <lars@nocrew.org>
+
+	* dis-asm.h: Add PDP-11 target.
+
+2001-02-09  Martin Schwidefsky  <schwidefsky@de.ibm.com>
+
+	* dis-asm.h: Add linux target for S/390.
+
+2001-01-11  Peter Targett  <peter.targett@arccores.com>
+
+	* dis-asm.h (arc_get_disassembler): Correct declaration.
+
+2001-01-09  Philip Blundell  <philb@gnu.org>
+
+	* bin-bugs.h (REPORT_BUGS_TO): Set to `bug-binutils@gnu.org'.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* COPYING: Update to current
 	ftp://ftp.gnu.org/pub/gnu/Licenses/COPYING-2.0 (fixes references
 	to 19yy as example year in copyright notice).
 
+2000-12-19  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* dis-asm.h (struct disassemble_info): New member "section".
+	(INIT_DISASSEMBLE_INFO_NO_ARCH): Initialize private_data member.
+	Initialize section member.
+
 2000-12-16  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
 	* safe-ctype.h: Make code work on all targets and not just on
 	targets where a char is 8 bits.
+
+2000-12-10  Fred Fish  <fnf@be.com>
+
+	* bfdlink.h (struct bfd_link_info): Add new allow_shlib_undefined
+	member to struct for systems where it is normal to have undefined
+	symbols in shared libraries at runtime and the runtime linker
+	takes care of redirecting them.
 
 2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
@@ -442,9 +801,18 @@
 
 	* hashtab.h: Change void * to PTR where necessary.
 
-2000-09-10  Mark Mitchell  <mark@codesourcery.com>
+2000-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (splay_tree_predecessor): Declare.
+
+2000-09-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* dis-asm.h: Declare cris_get_disassembler, not print_insn_cris.
+	Fix typo in comment.
+
+2000-09-28  John David Anglin <dave@hiauly1.hia.nrc.ca>
+
+	* alloca-conf.h: New file (copied from libiberty).
 
 2000-09-05  John David Anglin <dave@hiauly1.hia.nrc.ca>
 
@@ -463,6 +831,31 @@
 
 	* libiberty.h (ARRAY_SIZE): New macro.
 
+2000-07-29  Nick Clifton  <nickc@cygnus.com>
+
+	* os9k.h: Add copyright notice.
+	Fix formatting.
+
+2000-07-22  Jason Eckhardt  <jle@cygnus.com>
+
+	* dis-asm.h (print_insn_i860): Add prototype.
+
+2000-07-20  H.J. Lu  <hjl@gnu.org>
+
+	* bfdlink.h (bfd_link_info): Add new_dtags.
+
+2000-07-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	* dis-asm.h (print_insn_cris): Declare.
+
+2000-07-19  H.J. Lu  (hjl@gnu.org)
+
+	* bfdlink.h (bfd_link_info): Add flags and flags_1.
+
+2000-06-05  DJ Delorie  <dj@redhat.com>
+
+	* MAINTAINERS: new
+
 2000-06-21  Alex Samuel  <samuel@codesourcery.com>
 
 	* dyn-string.h (dyn_string_init, dyn_string_new,
@@ -477,6 +870,16 @@
 	dyn_string_insert_cstr, dyn_string_append, dyn_string_append_cstr,
 	dyn_string_append_char, dyn_string_substring): Change return type
 	to int.
+
+2000-06-18  Stephane Carrez  <stcarrez@worldnet.fr>
+
+	* dis-asm.h (print_insn_m68hc12): Define.
+	(print_insn_m68hc11): Likewise.
+
+2000-06-18  Nick Clifton  <nickc@redhat.com>
+
+	* os9k.h: Change values of MODSYNC and CRCCON due to bug report
+	from Russ Magee <rmagee@home.com>.
 
 2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -500,11 +903,26 @@ Tue May 30 16:53:34 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* floatformat.h (struct floatformat): Add field name.
 
+2000-05-26  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* filenames.h: New file.
+	(HAVE_DOS_BASED_FILE_SYSTEM, IS_DIR_SEPARATOR)
+	(IS_ABSOLUTE_PATH, FILENAME_CMP): New macros.
+
 2000-05-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* getopt.h (getopt): Also check HAVE_DECL_* when prototyping.
 
 	* libiberty.h (basename): Likewise.
+
+2000-05-17  S. Bharadwaj Yadavalli  <sby@scrugs.lkg.dec.com>
+	    Rick Gorton             <gorton@scrugs.lkg.dec.com>
+
+	* bfdlink.h (struct bfd_link_info): Add emitrelocations flag.
+
+2000-05-08  Alan Modra  <alan@linuxcare.com.au>
+
+	* dis-asm.h (print_insn_tic54x): Declare.
 
 2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -540,6 +958,11 @@ Thu May  4 17:15:26 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* sort.h: New file.
 
+Fri Apr 21 13:20:53 2000  Richard Henderson  <rth@cygnus.com>
+			  David Mosberger  <davidm@hpl.hp.com>
+
+	* dis-asm.h (print_insn_ia64): Declare.
+
 Tue Apr 18 16:22:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* hashtab.h (enum insert_option): New type.
@@ -554,11 +977,23 @@ Tue Apr 18 16:22:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* splay-tree.h (splay_tree_remove): Declare.
 
+2000-04-04  Alan Modra  <alan@linuxcare.com.au>
+
+	* bin-bugs.h (REPORT_BUGS_TO): Remove translated part.
+
+2000-04-03  Alan Modra  <alan@linuxcare.com.au>
+
+	* bin-bugs.h: New file.
+
 2000-03-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* hashtab.h (hashval_t): New type.
 	(htab_find_with_hash): Use it as an argument.
 	(htab_find_slot_with_hash): Likewise.
+
+2000-03-27  Denis Chertykov  <denisc@overta.ru>
+
+	* dis-asm.h (print_insn_avr): Declare.
 
 2000-03-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
@@ -587,10 +1022,65 @@ Tue Apr 18 16:22:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(hash_table_entry_t): Discard; just use void * for element
 	type.
 
+2000-03-01  H.J. Lu  <hjl@gnu.org>
+
+	* bfdlink.h (bfd_link_callbacks): Add a boolean arg to
+	the undefined_symbol callback.
+
+2000-02-23  Linas Vepstas <linas@linas.org>
+
+	* dis-asm.h (print_insn_i370): Declare.
+
+Tue Feb 22 15:19:54 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* remote-sim.h (sim_trace): Document return values.
+	(sim_set_trace): Declare.  Deprecate.
+
+2000-02-21  Alan Modra  <alan@spri.levels.unisa.edu.au>
+
+	* dis-asm.h (struct disassemble_info): Change `length' param of
+	read_memory_func to unsigned.  Change type of `buffer_length' and
+	`octets_per_byte' to unsigned.
+	(buffer_read_memory): Change `length' param to unsigned.
+
+2000-02-16  Nick Clifton  <nickc@cygnus.com>
+
+	* dis-asm.h: Add prototypes for ARM register name functions.
+
+Wed Feb  9 18:45:49 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* wait.h: Delete. No longer used by GDB.
+
+Tue Feb  8 17:01:13 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* remote-sim.h (sim_resume): Clarify use of SIGGNAL.
+	(sim_stop_reason): Clarify meaning of sim_signalled.
+
+2000-02-03  Timothy Wall <twall@redhat.com>
+
+	* dis-asm.h (struct disassemble_info): Added octets_per_byte
+	field and initialize it to one (1).
+
+2000-01-27  Nick Clifton  <nickc@redhat.com>
+
+	* dis-asm.h: Add prototype for disassembler_usage().
+	Add prototype for arm_disassembler_options().
+	Remove prototype for arm_toggle_regnames().
+	Add prototype for parse_arm_disassembler_option().
+
 Sat Jan  1 19:06:52 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* symcat.h (STRINGX) [!__STDC__ || ALMOST_STDC]: Change "?" to "s"
 	to stringify argument s.
+
+Wed Dec 15 11:22:56 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* hp-symtab.h (HP_LANGUAGE_FORTRAN): New enumeration constant.
+	(HP_LANGUAGE_F77): Define using HP_LANGUAGE_FORTRAN.
+
+1999-12-15  Doug Evans  <dje@transmeta.com>
+
+	* dis-asm.h: Enclose in extern "C" ifdef __cplusplus.
 
 1999-12-05  Mark Mitchell  <mark@codesourcery.com>
 
@@ -618,11 +1108,25 @@ Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* ansidecl.h: Define and test `GCC_VERSION', not `HAVE_GCC_VERSION'.
 
+1999-11-04      Jimmy Guo       <guo@cup.hp.com>
+
+	* hp-symtab.h (dntt_type_fparam): Add doc_ranges, misc_kind
+	fields, change location type to CORE_ADDR from int.
+	(dntt_type_const): Name the 5th field location_type.
+
+Sun Oct 24 19:11:32 1999  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* sim-d10v.h (SIM_D10V_TS2_DMAP_REGNUM): Define.
+
 1999-10-23 08:51 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* hashtab.h: Give hash_table_t a struct tag.  Add prototypes
 	for clear_hash_table_slot and traverse_hash_table.  Correct
 	prototype of all_hash_table_collisions.
+
+Sat Oct 23 19:00:13 1999  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* sim-d10v.h: New file.
 
 Fri Oct 15 01:47:51 1999  Vladimir Makarov  <vmakarov@loony.cygnus.com>
 
@@ -648,6 +1152,10 @@ Tue Sep 14 00:35:02 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* libiberty.h (xmemdup): Add prototype for new function.
 
+1999-09-04  Steve Chamberlain  <sac@pobox.com>
+
+	* dis-asm.h (print_insn_pj): Declare.
+
 1999-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* obstack.h (obstack_grow, obstack_grow0): Move (char*) casts
@@ -668,6 +1176,37 @@ Tue Sep 14 00:35:02 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* ansidecl.h: Copy attribute support macros from egcs.
 
+1999-06-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* bfdlink.h (struct bfd_link_hash_entry): Add init_function and
+	fini_function.
+
+1999-06-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* mips.h (Elf32_Internal_Msym): New structure.
+	(Elf32_External_Msym): Likewise.
+	(ELF32_MS_REL_INDEX): New macro.
+	(ELF32_MS_FLAGS): Likewise.
+	(ELF32_MS_INFO): Likewise.
+
+1999-06-14  Nick Clifton  <nickc@cygnus.com>
+
+	* dis-asm.h (arm_toggle_regnames): New prototype.
+	(struct diassemble_info): New field: disassembler_options.
+
+1999-04-11  Richard Henderson  <rth@cygnus.com>
+
+	* bfdlink.h (bfd_elf_version_expr): Rename `match' to `pattern'.
+	Add `match' callback function.
+
+1999-04-10  Richard Henderson  <rth@cygnus.com>
+
+	* bfdlink.h (bfd_link_info): Add no_undefined.
+
+1999-04-08  Nick Clifton  <nickc@cygnus.com>
+
+	* dis-asm.h: Add prototype for print_insn_mcore.
+
 1999-04-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (splay_tree_compare_pointers): Declare.
@@ -680,12 +1219,39 @@ Wed Mar 24 12:46:29 1999  Andrew Cagney  <cagney@amy.cygnus.com>
 
 	* libiberty.h (basename): Cygwin{,32} should have the prototype.
 
+1999-02-22  Jim Lemke  <jlemke@cygnus.com>
+
+	* bfdlink.h (bfd_link_info): add field "mpc860c0".
+
+Mon Feb  1 21:05:46 1999  Catherine Moore  <clm@cygnus.com>
+
+	* dis-asm.h (print_insn_i386_att):  Declare.
+	(print_insn_i386_intel):  Declare.
+
+1998-12-30  Michael Meissner  <meissner@cygnus.com>
+
+	* dis-asm.h (INIT_DISASSEMBLE_INFO_NO_ARCH): Cast STREAM and
+	FPRINTF_FUNC to avoid compiler warnings.
+
+Wed Dec 30 16:07:14 1998  David Taylor  <taylor@texas.cygnus.com>
+
+	* dis-asm.h: change void * to PTR (two places).
+
 Mon Dec 14 09:53:31 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h: Don't check IN_GCC anymore.
 	* splay-tree.h: Likewise.
 
 Tue Dec  8 00:30:31 1998  Elena Zannoni  <ezannoni@kwikemart.cygnus.com>
+
+	The following changes were made by Elena Zannoni
+	<ezannoni@kwikemart.cygnus.com> and Edith Epstein
+	<eepstein@sophia.cygnus.com> as part of a project to merge in
+	changes made by HP; HP did not create ChangeLog entries.
+
+	* dis-asm.h (struct disassemble_info): change the type of stream
+	from FILE* to void*, for use with gdb's new type GDB_FILE.
+	(fprintf_ftype): change FILE* parameter type to void*.
 
 	* demangle.h: (DMGL_EDG): new macro for Kuck and Associates
 	(DMGL_STYLE_MASK): modify to include Kuck and Assoc style
@@ -698,6 +1264,12 @@ Tue Dec  8 00:30:31 1998  Elena Zannoni  <ezannoni@kwikemart.cygnus.com>
 	(HP_DEMANGLING_STYLE_STRING): new macro.
 	(ARM_DEMANGLING): coerce to int.
 	(HP_DEMANGLING): new macro.
+
+	* hp-symtab.h: rewritten, from HP.
+	(quick_procedure): change type of language field to unsigned int
+	(quick_module): change type of language field to unsigned int
+	(struct dntt_type_svar): add field thread_specific.
+	(hp_language): add languages modcal and dmpascal.
 
 Fri Nov 20 13:14:00 1998  Andrew Cagney  <cagney@b1.cygnus.com>
 
@@ -714,10 +1286,18 @@ Sun Nov  8 17:42:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* demangle.h: Never define PARAMS().
 	* splay-tree.h: Likewise.
 
+Sat Nov  7 18:30:20 1998  Peter Schauer  <peter.schauer@regent.e-technik.tu-muenchen.de>
+
+	* dis-asm.h (print_insn_vax): Declare.
+
 Sat Nov  7 16:04:03 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h: Don't include gansidecl.h.
 	* splay-tree.h: Likewise.
+
+1998-10-26 16:03  Ulrich Drepper  <drepper@cygnus.com>
+
+	* bfdlink.h (struct bfd_link_info): Add new field optimize.
 
 Thu Oct 22 19:58:00 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -782,10 +1362,6 @@ Mon Dec  8 11:22:23 1997  Nick Clifton  <nickc@cygnus.com>
 Tue Dec  2 10:20:53 1997  Nick Clifton  <nickc@cygnus.com>
 
 	* dis-asm.h (disasm_symaddr): New prototype.
-
-Mon Dec  1 20:24:18 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
-
-	* coff/sh.h (R_SH_SWITCH8): New.
 
 Mon Dec  1 11:29:35 1997  Doug Evans  <devans@canuck.cygnus.com>
 
@@ -915,14 +1491,6 @@ Thu May 15 01:24:16 1997  Mark Alexander  <marka@cygnus.com>
 	* obstack.h (obstack_specify_allocation_with_arg, obstack_chunkfun,
 	obstack_freefun): Eliminate compile warnings in gdb.
 
-Tue May 13 10:21:14 1997  Nick Clifton  <nickc@cygnus.com>
-
-	* coff/arm.h (constants):   Added new flag bits F_APCS_26 and
-	F_APCS_SET for the f_flags field of the filehdr structure.  Added new
-	flags: F_APCS26, F_ARM_2, F_ARM_3, F_ARM_7, F_ARM_7T to store
-	information in the flags field of the internal_f structure used by BFD
-	routines.
-
 Tue Apr 22 10:24:34 1997  Fred Fish  <fnf@cygnus.com>
 
 	* floatformat.h (floatformat_byteorders): Add comments for previous
@@ -1016,6 +1584,10 @@ Thu Feb  6 14:20:01 1997  Martin M. Hunt  <hunt@pizza.cygnus.com>
 	* dis-asm.h: (disassemble_info):  Add new fields
 	bytes_per_chunk and display_endian to control the
 	display of raw instructions.
+
+Fri Dec 27 22:17:37 1996  Fred Fish  <fnf@cygnus.com>
+
+	* dis-asm.h (print_insn_tic80): Declare.
 
 Sun Dec  8 17:11:12 1996  Doug Evans  <dje@canuck.cygnus.com>
 
@@ -1267,13 +1839,7 @@ Thu May 18 04:25:50 1995  Ken Raeburn  <raeburn@kr-laptop.cygnus.com>
 
 Sat May 13 10:14:08 1995  Steve Chamberlain  <sac@slash.cygnus.com>
 
-	* coff/pe.h: New file.
 	* bfdlink.h (subsytem, stack_heap_parameters): New.
-	* coff/i386.h (NT_SECTION_ALIGNMENT, NT_FILE_ALIGNMENT,
-	NT_DEF_RESERVE, NT_DEF_COMMIT): New.
-	* coff/internal.h (internal_filehdr):  New fields for PE.
-	(IMAGE_DATA_DIRECTORY): New.
-	(internal_aouthdr): New fields for PE.
 
 Thu May  4 14:36:42 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
@@ -1347,8 +1913,6 @@ Tue Oct 25 11:38:02 1994  Ian Lance Taylor  <ian@sanguine.cygnus.com>
 	multiple_common field.
 
 Sun Sep 04 17:58:10 1994  Richard Earnshaw (rwe@pegasus.esprit.ec.org)
-
-	* aout/aout64.h: Only define QMAGIC if it isn't already defined.
 
 	* dis-asm.h: Add support for the ARM.
 
@@ -1495,10 +2059,6 @@ Fri Aug  6 17:05:47 1993  David J. Mackenzie  (djm@thepub.cygnus.com)
 
 	* getopt.h, obstack.h: Update to latest FSF version.
 
-Mon Aug  2 16:37:14 1993  Stu Grossman  (grossman at cygnus.com)
-
-	* coff/i386.h:  Add Lynx magic number.
-
 Mon Aug  2 14:45:29 1993  John Gilmore  (gnu@cygnus.com)
 
 	* dis-asm.h:  Move enum outside of struct defn to avoid warnings.
@@ -1528,10 +2088,6 @@ Thu Jul 15 12:41:15 1993  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 
 	* dis-asm.h: Added declaration of print_insn_m88k.
 
-Thu Jul  8 09:05:26 1993  Doug Evans  (dje@canuck.cygnus.com)
-
-	* opcode/h8300.h: Lots of little fixes for the h8/300h.
-
 Fri Jul  2 10:31:59 1993  Ian Lance Taylor  (ian@cygnus.com)
 
 	* ansidecl.h: Use ANSI macros if __mips and _SYSTYPE_SVR4 are
@@ -1556,9 +2112,6 @@ Tue Jun  8 12:16:03 1993  Steve Chamberlain  (sac@phydeaux.cygnus.com)
 
 	 Support for H8/300-H
 	* dis-asm.h (print_insn_h8300, print_insn_h8300h): Declare it.
-	* coff/h8300.h: New magic number.
-	* coff/internal.h: New relocations.
-	* opcode/h8300.h: Lots of new opcodes.
 
 Tue Jun  1 07:35:03 1993  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
 
@@ -1837,7 +2390,7 @@ Mon Jan 27 22:01:13 1992  Steve Chamberlain  (sac at cygnus.com)
 
 Wed Dec 18 17:19:44 1991  Stu Grossman  (grossman at cygnus.com)
 
-	* bfd.h, ieee.h, opcode/m68k.h, opcode/sparc.h:  ANSIfy enums.
+	* bfd.h, ieee.h:  ANSIfy enums.
 
 Thu Dec 12 20:59:56 1991  John Gilmore  (gnu at cygnus.com)
 
@@ -1899,7 +2452,7 @@ Sat Nov 30 20:46:43 1991  Steve Chamberlain  (sac at rtl.cygnus.com)
 Wed Nov 27 10:38:31 1991  Steve Chamberlain  (sac at rtl.cygnus.com)
 
 	* internalcoff.h: (internal_scnhdr) took out #def dependency, now
-	s_nreloc and s_nlnno are always long.	(internal_reloc): allways
+	s_nreloc and s_nlnno are always long. 	(internal_reloc): allways
 	has an offset field now.
 
 Fri Nov 22 08:12:58 1991  John Gilmore  (gnu at cygnus.com)
@@ -1980,7 +2533,7 @@ Fri Oct 25 03:18:20 1991  John Gilmore  (gnu at cygnus.com)
 
 Thu Oct 24 22:11:11 1991  John Gilmore  (gnu at cygnus.com)
 
-	RS/6000 support, by Metin G. Ozisik, Mimi Ph˚Ùng-ThÂo Vı, and
+	RS/6000 support, by Metin G. Ozisik, Mimi PhÅ˚ÅÙng-ThÅÂo VÅı, and
 	John Gilmore.
 
 	* a.out.gnu.h:  Update slightly.
