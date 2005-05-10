@@ -3193,7 +3193,8 @@ mem_min_alignment (rtx mem, int desired)
     return 0;
 
   /* Obviously...  */
-  if (MEM_ALIGN (mem) / BITS_PER_UNIT >= (unsigned)desired)
+  if (!TARGET_UNALIGNED_DOUBLES
+      && MEM_ALIGN (mem) / BITS_PER_UNIT >= (unsigned)desired)
     return 1;
 
   /* ??? The rest of the function predates MEM_ALIGN so
