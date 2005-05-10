@@ -380,7 +380,7 @@ public class BitSet implements Cloneable, Serializable
       }
 
     int len = Math.min(hi_offset, bits.length - 1);
-    int reverse = ~lo_bit;
+    int reverse = 64 - lo_bit;
     int i;
     for (i = 0; lo_offset < len; lo_offset++, i++)
       bs.bits[i] = ((bits[lo_offset] >>> lo_bit)
