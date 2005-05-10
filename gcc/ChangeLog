@@ -1,5 +1,10 @@
-2005-05-11  Grigory Zagorodnev  <grigory.zagorodnev@intel.com>
-            H.J. Lu  <hongjiu.lu@intel.com   
+2005-05-10  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/sync.md (sync_add<I48MODE>): Fix arguments for
+	no return value pattern.
+
+2005-05-10  Grigory Zagorodnev  <grigory.zagorodnev@intel.com>
+            H.J. Lu  <hongjiu.lu@intel.com>
 
 	* libgcov.c (create_file_directory): New function. Create
 	directory for the given file name.
