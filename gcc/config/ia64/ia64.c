@@ -1662,6 +1662,111 @@ ia64_split_call (rtx retval, rtx addr, rtx retaddr, rtx scratch_r,
   if ((!TARGET_CONST_GP || is_desc) && !noreturn_p && !sibcall_p)
     ia64_reload_gp ();
 }
+
+/* Expand an atomic operation.  We want to perform MEM <CODE>= VAL atomically.
+
+   This differs from the generic code in that we know about the zero-extending
+   properties of cmpxchg, and the zero-extending requirements of ar.ccv.  We
+   also know that ld.acq+cmpxchg.rel equals a full barrier.
+
+   The loop we want to generate looks like
+
+	cmp_reg = mem;
+      label:
+        old_reg = cmp_reg;
+	new_reg = cmp_reg op val;
+	cmp_reg = compare-and-swap(mem, old_reg, new_reg)
+	if (cmp_reg != old_reg)
+	  goto label;
+
+   Note that we only do the plain load from memory once.  Subsequent
+   iterations use the value loaded by the compare-and-swap pattern.  */
+
+void
+ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
+		       rtx old_dst, rtx new_dst)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx old_reg, new_reg, cmp_reg, ar_ccv, label;
+  enum insn_code icode;
+
+  /* Special case for using fetchadd.  */
+  if ((mode == SImode || mode == DImode) && fetchadd_operand (val, mode))
+    {
+      if (!old_dst)
+        old_dst = gen_reg_rtx (mode);
+
+      emit_insn (gen_memory_barrier ());
+
+      if (mode == SImode)
+	icode = CODE_FOR_fetchadd_acq_si;
+      else
+	icode = CODE_FOR_fetchadd_acq_di;
+      emit_insn (GEN_FCN (icode) (old_dst, mem, val));
+
+      if (new_dst)
+	{
+	  new_reg = expand_simple_binop (mode, PLUS, old_dst, val, new_dst,
+					 true, OPTAB_WIDEN);
+	  if (new_reg != new_dst)
+	    emit_move_insn (new_dst, new_reg);
+	}
+      return;
+    }
+
+  /* Because of the volatile mem read, we get an ld.acq, which is the
+     front half of the full barrier.  The end half is the cmpxchg.rel.  */
+  gcc_assert (MEM_VOLATILE_P (mem));
+
+  old_reg = gen_reg_rtx (DImode);
+  cmp_reg = gen_reg_rtx (DImode);
+  label = gen_label_rtx ();
+
+  if (mode != DImode)
+    {
+      val = simplify_gen_subreg (DImode, val, mode, 0);
+      emit_insn (gen_extend_insn (cmp_reg, mem, DImode, mode, 1));
+    }
+  else
+    emit_move_insn (cmp_reg, mem);
+
+  emit_label (label);
+
+  ar_ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
+  emit_move_insn (old_reg, cmp_reg);
+  emit_move_insn (ar_ccv, cmp_reg);
+
+  if (old_dst)
+    emit_move_insn (old_dst, gen_lowpart (mode, cmp_reg));
+
+  new_reg = cmp_reg;
+  if (code == NOT)
+    {
+      new_reg = expand_simple_unop (DImode, NOT, new_reg, NULL_RTX, true);
+      code = AND;
+    }
+  new_reg = expand_simple_binop (DImode, code, new_reg, val, NULL_RTX,
+				 true, OPTAB_DIRECT);
+
+  if (mode != DImode)
+    new_reg = gen_lowpart (mode, new_reg);
+  if (new_dst)
+    emit_move_insn (new_dst, new_reg);
+
+  switch (mode)
+    {
+    case QImode:  icode = CODE_FOR_cmpxchg_rel_qi;  break;
+    case HImode:  icode = CODE_FOR_cmpxchg_rel_hi;  break;
+    case SImode:  icode = CODE_FOR_cmpxchg_rel_si;  break;
+    case DImode:  icode = CODE_FOR_cmpxchg_rel_di;  break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (GEN_FCN (icode) (cmp_reg, mem, ar_ccv, new_reg));
+
+  emit_cmp_and_jump_insns (cmp_reg, old_reg, EQ, NULL, DImode, true, label);
+}
 
 /* Begin the assembly file.  */
 

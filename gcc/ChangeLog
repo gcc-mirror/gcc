@@ -1,5 +1,19 @@
 2005-05-10  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_expand_atomic_op): New.
+	* config/ia64/ia64-protos.h: Declare it.
+	* config/ia64/sync.md (I124MODE, FETCHOP, fetchop_name): New.
+	(sync_add<I48MODE>, sync_old_add<I48MODE>): Remove.
+	(sync_<FETCHOP><IMODE>, sync_nand<IMODE>): New.
+	(sync_old_<FETCHOP><IMODE>, sync_old_nand<IMODE>): New.
+	(sync_new_<FETCHOP><IMODE>, sync_new_nand<IMODE>): New.
+	(cmpxchg_rel_<I124MODE>): Split from cmpxchg_acq_<IMODE>.  Zero
+	extend result; use release semantics.
+	(cmpxchg_rel_di): Rename from cmpxchg_acq_<IMODE>; use release.
+	(sync_val_compare_and_swap_<IMODE>): Update to match.
+
+2005-05-10  Richard Henderson  <rth@redhat.com>
+
 	* optabs.c (expand_compare_and_swap_loop): Don't clobber old value
 	before comparing it for success.
 
