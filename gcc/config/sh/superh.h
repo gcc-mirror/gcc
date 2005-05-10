@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
    It configures the compiler for SH4 only and switches the default
    endianess to little (although big endian is still available).
    It also configures the spec file to the default board configuration
-   but in such a way that it can be overriden by a boardspecs file
+   but in such a way that it can be overridden by a boardspecs file
    (using the -specs= option). This file is expected to disable the
    defaults and provide options --defsym _start and --defsym _stack
    which are required by the SuperH configuration of GNU ld.
@@ -90,7 +90,7 @@ extern const char * boardtype;
 extern const char * osruntime;
 
 
-/* Override the linker spec strings to use the new emultation
+/* Override the linker spec strings to use the new emulation
    The specstrings are concatenated as follows
    LINK_EMUL_PREFIX.(''|'32'|'64'|LINK_DEFAULT_CPU_EMUL).SUBTARGET_LINK_EMUL_SUFFIX
 */

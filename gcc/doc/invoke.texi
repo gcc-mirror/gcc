@@ -11513,11 +11513,11 @@ one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call,
 inv:call2, inv:fp .
 "fp" performs the operation in floating point.  This has a very high latency,
 but needs only a few instructions, so it might be a good choice if
-your code has enough easily esploitable ILP to allow the compiler to
+your code has enough easily exploitable ILP to allow the compiler to
 schedule the floating point instructions together with other instructions.
 Division by zero causes a floating point exception.
 "inv" uses integer operations to calculate the inverse of the divisor,
-and then multiplies the divident with the inverse.  This strategy allows
+and then multiplies the dividend with the inverse.  This strategy allows
 cse and hoisting of the inverse calculation.  Division by zero calculates
 an unspecified result, but does not trap.
 "inv:minlat" is a variant of "inv" where if no cse / hoisting opportunities
@@ -11534,7 +11534,7 @@ assumes that a pointer to a lookup table has already been set up, which
 exposes the pointer load to cse / code hoisting optimizations.
 "inv:call", "inv:call2" and "inv:fp" all use the "inv" algorithm for initial
 code generation, but if the code stays unoptimized, revert to the "call",
-"call2", or "fp" strategies, resspectively.  Note that the
+"call2", or "fp" strategies, respectively.  Note that the
 potentially-trapping side effect of division by zero is carried by a
 separate instruction, so it is possible that all the integer instructions
 are hoisted out, but the marker for the side effect stays where it is.
@@ -11543,7 +11543,7 @@ A recombination to fp operations or a call is not possible in that case.
 that the inverse calculation was nor separated from the multiply, they speed
 up division where the dividend fits into 20 bits (plus sign where applicable),
 by inserting a test to skip a number of operations in this case; this test
-slows down the case of larger divdends.  inv20u assumes the case of a such
+slows down the case of larger dividends.  inv20u assumes the case of a such
 a small dividend to be unlikely, and inv20l assumes it to be likely.
 
 @item -mdivsi3_libfunc=@var{name}
@@ -11565,7 +11565,7 @@ Enable the use of the indexed addressing mode for SHmedia32/SHcompact.
 This is only safe if the hardware and/or OS implement 32 bit wrap-around
 semantics for the indexed addressing mode.  The architecture allows the
 implementation of processors with 64 bit MMU, which the OS could use to
-get 32 bit addressing, but since no current harware implementation supports
+get 32 bit addressing, but since no current hardware implementation supports
 this or any other way to make the indexed addressing mode safe to use in
 the 32 bit ABI, the default is -mno-indexed-addressing.
 
@@ -11585,7 +11585,7 @@ __do_global_ctors, a part of libgcc that runs constructors at program
 startup, calls functions in a list which is delimited by -1.  With the
 -mpt-fixed option, the ptabs will be done before testing against -1.
 That means that all the constructors will be run a bit quicker, but when
-the loop comes to the end of the list, the pprogram crashes because ptabs
+the loop comes to the end of the list, the program crashes because ptabs
 loads -1 into a target register.  Since this option is unsafe for any
 hardware implementing the current architecture specification, the default
 is -mno-pt-fixed.  Unless the user specifies a specific cost with

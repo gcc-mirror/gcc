@@ -1108,7 +1108,7 @@
 
   /* We want to replace occurences of operands[0] with operands[1] and
      operands[2] with operands[0] in operands[4]/operands[5].
-     Doing just two replace_rtx calls naiively would result in the second
+     Doing just two replace_rtx calls naively would result in the second
      replacement undoing all that the first did if operands[1] and operands[2]
      are identical, so we must do this simultaneously.  */
   replacements[0] = operands[0];

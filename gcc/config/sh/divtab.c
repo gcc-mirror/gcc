@@ -25,7 +25,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Calculate division table for SH5Media integer division
-   Contributed by Joern Rernnecke
+   Contributed by Joern Rennecke
    joern.rennecke@superh.com  */
 
 #include <stdio.h>
