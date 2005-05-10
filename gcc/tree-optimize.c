@@ -374,8 +374,8 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_phiopt);
   NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_tail_recursion);
-  NEXT_PASS (pass_ch);
   NEXT_PASS (pass_profile);
+  NEXT_PASS (pass_ch);
   NEXT_PASS (pass_stdarg);
   NEXT_PASS (pass_sra);
   /* FIXME: SRA may generate arbitrary gimple code, exposing new
