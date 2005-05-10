@@ -1,6 +1,6 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -192,7 +192,7 @@ namespace _GLIBCXX_STD
       void
       vector<_Tp, _Alloc>::
       _M_assign_aux(_InputIterator __first, _InputIterator __last,
-		    input_iterator_tag)
+		    std::input_iterator_tag)
       {
 	iterator __cur(begin());
 	for (; __first != __last && __cur != end(); ++__cur, ++__first)
@@ -208,7 +208,7 @@ namespace _GLIBCXX_STD
       void
       vector<_Tp, _Alloc>::
       _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
-		    forward_iterator_tag)
+		    std::forward_iterator_tag)
       {
 	const size_type __len = std::distance(__first, __last);
 
@@ -392,7 +392,7 @@ namespace _GLIBCXX_STD
     void
     vector<_Tp, _Alloc>::
     _M_range_insert(iterator __pos, _InputIterator __first,
-		    _InputIterator __last, input_iterator_tag)
+		    _InputIterator __last, std::input_iterator_tag)
     {
       for (; __first != __last; ++__first)
 	{
@@ -406,7 +406,7 @@ namespace _GLIBCXX_STD
       void
       vector<_Tp, _Alloc>::
       _M_range_insert(iterator __position, _ForwardIterator __first,
-		      _ForwardIterator __last, forward_iterator_tag)
+		      _ForwardIterator __last, std::forward_iterator_tag)
       {
 	if (__first != __last)
 	  {

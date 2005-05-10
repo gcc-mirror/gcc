@@ -1,3 +1,25 @@
+2005-05-09  Paolo Carlini  <pcarlini@suse.de>
+	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+	    
+	PR libstdc++/18604
+	* include/bits/deque.tcc: Fully qualify names from namespace std.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/std/std_bitset.h: Likewise.
+	* testsuite/23_containers/bitset/18604.cc: New.
+	* testsuite/23_containers/deque/18604.cc: Likewise.
+	* testsuite/23_containers/list/18604.cc: Likewise.
+	* testsuite/23_containers/map/18604.cc: Likewise.
+	* testsuite/23_containers/set/18604.cc: Likewise.
+	* testsuite/23_containers/vector/18604.cc: Likewise.	
+
 2005-05-09  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.
