@@ -1,3 +1,13 @@
+2005-05-10  Tom Tromey  <tromey@redhat.com>
+
+	* gcj/javaprims.h: Updated.
+	* java/lang/String.java (String(StringBuilder)): New constructor.
+	* java/lang/natStringBuilder.cc: New file.
+	* java/lang/StringBuilder.java: New file.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added StringBuilder.java.
+	(nat_source_files): Added natStringBuilder.cc.
+
 2005-05-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR java/21436

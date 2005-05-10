@@ -1,5 +1,5 @@
 /* String.java -- immutable character sequences; the object of string literals
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -395,6 +395,18 @@ public final class String implements Serializable, Comparable, CharSequence
 	  buffer.shared = true;
 	init (buffer.value, 0, buffer.count, ! should_copy);
       }
+  }
+
+  /**
+   * Creates a new String using the character sequence represented by
+   * the StringBuilder. Subsequent changes to buf do not affect the String.
+   *
+   * @param buffer StringBuilder to copy
+   * @throws NullPointerException if buffer is null
+   */
+  public String(StringBuilder buffer)
+  {
+    this(buffer.value, 0, buffer.count);
   }
 
   /**

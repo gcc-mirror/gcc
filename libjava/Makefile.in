@@ -264,8 +264,8 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/lang/natFloat.cc java/lang/natMath.cc \
 	java/lang/natObject.cc java/lang/natRuntime.cc \
 	java/lang/natString.cc java/lang/natStringBuffer.cc \
-	java/lang/natSystem.cc java/lang/natThread.cc \
-	java/lang/natVMClassLoader.cc \
+	java/lang/natStringBuilder.cc java/lang/natSystem.cc \
+	java/lang/natThread.cc java/lang/natVMClassLoader.cc \
 	java/lang/natVMSecurityManager.cc java/lang/natVMThrowable.cc \
 	java/lang/ref/natReference.cc java/lang/reflect/natArray.cc \
 	java/lang/reflect/natConstructor.cc \
@@ -337,6 +337,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/lang/StackOverflowError.java \
 	java/lang/StackTraceElement.java java/lang/StrictMath.java \
 	java/lang/String.java java/lang/StringBuffer.java \
+	java/lang/StringBuilder.java \
 	java/lang/StringIndexOutOfBoundsException.java \
 	java/lang/System.java java/lang/Thread.java \
 	java/lang/ThreadDeath.java java/lang/ThreadGroup.java \
@@ -2312,8 +2313,8 @@ am__objects_5 = gnu/classpath/natSystemProperties.lo \
 	java/lang/natFloat.lo java/lang/natMath.lo \
 	java/lang/natObject.lo java/lang/natRuntime.lo \
 	java/lang/natString.lo java/lang/natStringBuffer.lo \
-	java/lang/natSystem.lo java/lang/natThread.lo \
-	java/lang/natVMClassLoader.lo \
+	java/lang/natStringBuilder.lo java/lang/natSystem.lo \
+	java/lang/natThread.lo java/lang/natVMClassLoader.lo \
 	java/lang/natVMSecurityManager.lo java/lang/natVMThrowable.lo \
 	java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
 	java/lang/reflect/natConstructor.lo \
@@ -2381,7 +2382,7 @@ am__objects_8 = java/lang/AbstractMethodError.lo \
 	java/lang/SecurityManager.lo java/lang/Short.lo \
 	java/lang/StackOverflowError.lo java/lang/StackTraceElement.lo \
 	java/lang/StrictMath.lo java/lang/String.lo \
-	java/lang/StringBuffer.lo \
+	java/lang/StringBuffer.lo java/lang/StringBuilder.lo \
 	java/lang/StringIndexOutOfBoundsException.lo \
 	java/lang/System.lo java/lang/Thread.lo \
 	java/lang/ThreadDeath.lo java/lang/ThreadGroup.lo \
@@ -6735,6 +6736,7 @@ java/lang/StackTraceElement.java \
 java/lang/StrictMath.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
+java/lang/StringBuilder.java \
 java/lang/StringIndexOutOfBoundsException.java \
 java/lang/System.java \
 java/lang/Thread.java \
@@ -7719,6 +7721,7 @@ java/lang/natObject.cc \
 java/lang/natRuntime.cc	\
 java/lang/natString.cc \
 java/lang/natStringBuffer.cc \
+java/lang/natStringBuilder.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc \
@@ -8369,6 +8372,8 @@ java/lang/natString.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/natStringBuffer.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
+java/lang/natStringBuilder.lo: java/lang/$(am__dirstamp) \
+	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/natSystem.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/natThread.lo: java/lang/$(am__dirstamp) \
@@ -8675,6 +8680,8 @@ java/lang/StrictMath.lo: java/lang/$(am__dirstamp) \
 java/lang/String.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/StringBuffer.lo: java/lang/$(am__dirstamp) \
+	java/lang/$(DEPDIR)/$(am__dirstamp)
+java/lang/StringBuilder.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/StringIndexOutOfBoundsException.lo:  \
 	java/lang/$(am__dirstamp) java/lang/$(DEPDIR)/$(am__dirstamp)
@@ -17174,6 +17181,8 @@ mostlyclean-compile:
 	-rm -f java/lang/String.lo
 	-rm -f java/lang/StringBuffer.$(OBJEXT)
 	-rm -f java/lang/StringBuffer.lo
+	-rm -f java/lang/StringBuilder.$(OBJEXT)
+	-rm -f java/lang/StringBuilder.lo
 	-rm -f java/lang/StringIndexOutOfBoundsException.$(OBJEXT)
 	-rm -f java/lang/StringIndexOutOfBoundsException.lo
 	-rm -f java/lang/System.$(OBJEXT)
@@ -17266,6 +17275,8 @@ mostlyclean-compile:
 	-rm -f java/lang/natString.lo
 	-rm -f java/lang/natStringBuffer.$(OBJEXT)
 	-rm -f java/lang/natStringBuffer.lo
+	-rm -f java/lang/natStringBuilder.$(OBJEXT)
+	-rm -f java/lang/natStringBuilder.lo
 	-rm -f java/lang/natSystem.$(OBJEXT)
 	-rm -f java/lang/natSystem.lo
 	-rm -f java/lang/natThread.$(OBJEXT)
@@ -21174,6 +21185,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/StrictMath.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/String.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/StringBuffer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/StringBuilder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/StringIndexOutOfBoundsException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/System.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/Thread.Plo@am__quote@
@@ -21220,6 +21232,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natRuntime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natString.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natStringBuffer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natStringBuilder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natSystem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natVMClassLoader.Plo@am__quote@
