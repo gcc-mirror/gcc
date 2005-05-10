@@ -1,3 +1,51 @@
+2005-05-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (fp_sethi_p): Test !SPARC_SIMM13_P and
+	remove redundant test.
+	(fp_mov_p): Accept 0.
+	(fp_high_losum_p): Remove redundant test.
+	* config/sparc/predicates.md (const_high_operand): Explicitly test
+	(not small_int_operand).
+	(fp_const_high_losum_operand): New.
+	* config/sparc/sparc.md (movsi_insn): Do not emit 'clr'.  Reorder.
+	(movdi_insn_sp32_v9): Use canonical predicates.
+	(movdi_insn_sp32): Test !TARGET_V9 instead of !TARGET_ARCH64.
+	(movdi_insn_sp64_novis): Delete.
+	(movdi_insn_sp64_vis): Rename into movdi_insn_sp64.
+	(movsf_insn_novis): Delete.
+	(movsf_insn_vis): Rename into movsf_insn.
+	(movsf_no_f_insn): Rename into movsf_insn_no_fpu.
+	(movsf_lo_sum): Use fp_const_high_losum_operand.
+	(movsf_high): Likewise.
+	(movsf_high_losum splitter): Likewise.
+	(mov<V32:mode> expander): Use register_or_zero_operand.
+	(mov<V64:mode> expander): Likewise.
+	(movdf_insn_sp32): Use register_or_zero_operand.
+	(movdf_no_e_insn_sp32): Use register_or_zero_operand.
+	Rename into movdf_insn_sp32_no_fpu.
+	(movdf_no_e_insn_v9_sp32): Use register_or_zero_operand.
+	Rename into movdf_insn_sp32_v9_no_fpu.
+	(movdf_insn_v9only_novis): Delete.
+	(movdf_insn_v9only_vis): Rename into movdf_insn_sp32_v9.
+	(movdf_insn_sp64_novis): Delete.
+	(movdf_insn_sp64_vis): Rename into movdf_insn_sp64.
+	(movdf_no_e_insn_sp64): Use register_or_zero_operand. 
+	Rename into movdf_insn_sp64_no_fpu.
+	(movtf expander): Use register_or_zero_operand.
+	(movtf_insn_sp32): Delete.
+	(movtf_insn_vis_sp32): Use register_or_zero_operand.
+	Rename into movtf_insn_sp32.
+	(movtf_no_e_insn_sp32): Use register_or_zero_operand.
+	Rename into movtf_insn_sp32_no_fpu.
+	(movtf_insn_hq_sp64): Delete.
+	(movtf_insn_hq_vis_sp64): Use register_or_zero_operand.
+	Rename into movtf_insn_sp64_hq.
+	(movtf_insn_sp64): Delete.
+	(movtf_insn_vis_sp64): Use register_or_zero_operand.
+	Rename into movtf_insn_sp64.
+	(movtf_no_e_insn_sp64): Use register_or_zero_operand.
+	Rename into movtf_insn_sp64_no_fpu.
+
 2005-05-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/stormy16/stormy16.c (xstormy16_emit_cbranch): Use

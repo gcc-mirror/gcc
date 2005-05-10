@@ -65,7 +65,7 @@
 ;; The first test avoids emitting sethi to load zero for example.
 (define_predicate "const_high_operand"
   (and (match_code "const_int")
-       (and (match_test "INTVAL (op) & ~(HOST_WIDE_INT)0x3ff")
+       (and (not (match_operand 0 "small_int_operand"))
             (match_test "SPARC_SETHI_P (INTVAL (op) & GET_MODE_MASK (mode))"))))
 
 ;; Return true if OP is a constant whose 1's complement can be loaded by the
@@ -74,6 +74,16 @@
   (and (match_code "const_int")
        (and (not (match_operand 0 "small_int_operand"))
             (match_test "SPARC_SETHI_P (~INTVAL (op) & GET_MODE_MASK (mode))"))))
+
+;; Return true if OP is a FP constant that needs to be loaded by the sethi/losum
+;; pair of instructions.
+(define_predicate "fp_const_high_losum_operand"
+  (match_operand 0 "const_double_operand")
+{
+  gcc_assert (mode == SFmode);
+  return fp_high_losum_p (op);
+})
+
 
 ;; Predicates for symbolic constants.
 

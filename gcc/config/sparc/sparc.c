@@ -818,12 +818,8 @@ fp_sethi_p (rtx op)
       long i;
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      if (REAL_VALUES_EQUAL (r, dconst0) &&
-	  ! REAL_VALUE_MINUS_ZERO (r))
-	return 0;
       REAL_VALUE_TO_TARGET_SINGLE (r, i);
-      if (SPARC_SETHI_P (i))
-	return 1;
+      return !SPARC_SIMM13_P (i) && SPARC_SETHI_P (i);
     }
 
   return 0;
@@ -842,12 +838,8 @@ fp_mov_p (rtx op)
       long i;
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      if (REAL_VALUES_EQUAL (r, dconst0) &&
-	  ! REAL_VALUE_MINUS_ZERO (r))
-	return 0;
       REAL_VALUE_TO_TARGET_SINGLE (r, i);
-      if (SPARC_SIMM13_P (i))
-	return 1;
+      return SPARC_SIMM13_P (i);
     }
 
   return 0;
@@ -869,13 +861,8 @@ fp_high_losum_p (rtx op)
       long i;
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      if (REAL_VALUES_EQUAL (r, dconst0) &&
-	  ! REAL_VALUE_MINUS_ZERO (r))
-	return 0;
       REAL_VALUE_TO_TARGET_SINGLE (r, i);
-      if (! SPARC_SETHI_P (i)
-          && ! SPARC_SIMM13_P (i))
-	return 1;
+      return !SPARC_SIMM13_P (i) && !SPARC_SETHI_P (i);
     }
 
   return 0;
