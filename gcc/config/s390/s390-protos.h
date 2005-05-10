@@ -33,6 +33,7 @@ extern void s390_conditional_register_usage (void);
 #ifdef RTX_CODE
 extern int s390_extra_constraint_str (rtx, int, const char *);
 extern int s390_const_ok_for_constraint_p (HOST_WIDE_INT, int, const char *);
+extern int s390_const_double_ok_for_constraint_p (rtx, int, const char *);
 extern int s390_single_part (rtx, enum machine_mode, enum machine_mode, int);
 extern unsigned HOST_WIDE_INT s390_extract_part (rtx, enum machine_mode, int);
 extern bool s390_split_ok_p (rtx, rtx, enum machine_mode, int);

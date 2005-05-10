@@ -1,3 +1,16 @@
+2005-05-10  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/s390.c: (s390_const_double_ok_for_constraint_p): New
+	function.
+	(legitimate_reload_constant_p): Add check for const double zero.
+	* config/s390/s390.md: Add comment for constraint letter 'G'.
+	("*movdf_64", "*movdf_31", "movsf"): Add constraint and proper
+	attributes for new case.
+	* config/s390/s390.h: (CONST_DOUBLE_OK_FOR_CONSTRAINT_P): Define it as
+	s390_const_double_ok_for_constraint_p.
+	* config/s390/s390-protos.h (s390_const_double_ok_for_constraint_p):
+	Add prototype.
+
 2005-05-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21170

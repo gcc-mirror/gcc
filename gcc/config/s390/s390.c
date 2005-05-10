@@ -1680,6 +1680,27 @@ s390_extra_constraint_str (rtx op, int c, const char * str)
 /* Return true if VALUE matches the constraint STR.  */
 
 int
+s390_const_double_ok_for_constraint_p (rtx value,
+				       int c,
+				       const char * str)
+{
+  gcc_assert (c == str[0]);
+
+  switch (str[0])
+    {
+    case 'G':
+      /* The floating point zero constant.  */
+      return (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT
+              && value == CONST0_RTX (GET_MODE (value)));
+      
+    default:
+      return 0;
+    }
+}
+
+/* Return true if VALUE matches the constraint STR.  */
+
+int
 s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
 				int c,
 				const char * str)
@@ -2188,6 +2209,11 @@ legitimate_reload_constant_p (rtx op)
   /* Accept larl operands.  */
   if (TARGET_CPU_ZARCH
       && larl_operand (op, VOIDmode))
+    return true;
+
+  /* Accept lzXX operands.  */
+  if (GET_CODE (op) == CONST_DOUBLE
+      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'G', "G"))
     return true;
 
   /* Everything else cannot be handled without reload.  */
