@@ -648,8 +648,8 @@ redirect_edges (void **slot, void *data)
    the appropriate duplicate of BB.
 
    BB and its duplicates will have assignments to the same set of
-   SSA_NAMEs.  Right now, we just call into rewrite_ssa_into_ssa
-   to update the SSA graph for those names.
+   SSA_NAMEs.  Right now, we just call into update_ssa to update the
+   SSA graph for those names.
 
    We are also going to experiment with a true incremental update
    scheme for the duplicated resources.  One of the interesting
