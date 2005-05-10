@@ -1,3 +1,10 @@
+2005-05-09  Grigory Tolstolytkin <gtolstolytkin@ru.mvista.com>
+
+	Backport:
+	2004-02-12  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Don't kill previous
+	MEM_VOLATILE in REF).
+
 2005-05-10  Ben Elliston  <bje@au.ibm.com>
 
 	PR debug/16676
