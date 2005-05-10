@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-store_ccp" } */
+/* { dg-options "-O2 -fdump-tree-store_ccp" } */
 
 /* Check that cprop works for assignments to array elements and structs.  */
 

@@ -1,3 +1,14 @@
+2005-05-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR testsuite/21443
+	* gcc.dg/tree-ssa/20030731-2.c, gcc.dg/tree-ssa/20030917-1.c,
+	gcc.dg/tree-ssa/20030917-3.c, gcc.dg/tree-ssa/ssa-ccp-1.c,
+	gcc.dg/tree-ssa/ssa-ccp-2.c, gcc.dg/tree-ssa/ssa-ccp-3.c,
+	gcc.dg/tree-ssa/ssa-ccp-7.c, gcc.dg/tree-ssa/ssa-ccp-9.c:
+	Change -O1 to -O2.
+	* gcc.dg/tree-ssa/20040721-1.c: Change -O1 to -O2.  Add
+	-fno-tree-dominator-opts.
+
 2005-05-09  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/return_1.f90: New test.
