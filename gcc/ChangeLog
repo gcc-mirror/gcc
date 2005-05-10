@@ -1,9 +1,9 @@
-2005-05-09  Grigory Tolstolytkin <gtolstolytkin@ru.mvista.com>
+2005-05-09  Grigory Tolstolytkin  <gtolstolytkin@ru.mvista.com>
 
-	Backport:
+	Backport from mainline
 	2004-02-12  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Don't kill previous
-	MEM_VOLATILE in REF).
+	MEM_VOLATILE in REF.
 
 2005-05-10  Ben Elliston  <bje@au.ibm.com>
 
@@ -51,7 +51,7 @@
 	(m68hc11_split_move): Likewise.
 
 2005-05-06  Bruce Korb  <bkorb@gnu.org>
-	Joseph S. Myers <joseph@codesourcery.com>
+            Joseph S. Myers <joseph@codesourcery.com>
 
 	* fixinc/inclhack.def: Correct backslashes
 	* fixinc/fixincl.x: regen
