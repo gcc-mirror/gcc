@@ -1,6 +1,6 @@
 // Multimap implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,8 +68,8 @@ namespace _GLIBCXX_STD
   // Forward declaration of operators < and ==, needed for friend declaration.
 
   template <typename _Key, typename _Tp,
-            typename _Compare = less<_Key>,
-            typename _Alloc = allocator<pair<const _Key, _Tp> > >
+            typename _Compare = std::less<_Key>,
+            typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
     class multimap;
 
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
@@ -114,11 +114,11 @@ namespace _GLIBCXX_STD
     public:
       typedef _Key                                          key_type;
       typedef _Tp                                           mapped_type;
-      typedef pair<const _Key, _Tp>                         value_type;
+      typedef std::pair<const _Key, _Tp>                    value_type;
       typedef _Compare                                      key_compare;
 
       class value_compare
-      : public binary_function<value_type, value_type, bool>
+      : public std::binary_function<value_type, value_type, bool>
       {
 	friend class multimap<_Key,_Tp,_Compare,_Alloc>;
       protected:
@@ -573,7 +573,7 @@ namespace _GLIBCXX_STD
        *  @endcode
        *  (but is faster than making the calls separately).
        */
-      pair<iterator,iterator>
+      std::pair<iterator,iterator>
       equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
 
@@ -590,7 +590,7 @@ namespace _GLIBCXX_STD
        *  @endcode
        *  (but is faster than making the calls separately).
        */
-      pair<const_iterator,const_iterator>
+      std::pair<const_iterator,const_iterator>
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
 

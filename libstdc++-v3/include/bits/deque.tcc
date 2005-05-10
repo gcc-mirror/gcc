@@ -1,6 +1,6 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -203,7 +203,7 @@ namespace _GLIBCXX_STD
       void
       deque<_Tp, _Alloc>
       ::_M_assign_aux(_InputIterator __first, _InputIterator __last,
-		      input_iterator_tag)
+		      std::input_iterator_tag)
       {
         iterator __cur = begin();
         for (; __first != __last && __cur != end(); ++__cur, ++__first)
@@ -287,7 +287,7 @@ namespace _GLIBCXX_STD
       void
       deque<_Tp, _Alloc>::
       _M_range_initialize(_InputIterator __first, _InputIterator __last,
-                          input_iterator_tag)
+                          std::input_iterator_tag)
       {
         this->_M_initialize_map(0);
         try
@@ -307,7 +307,7 @@ namespace _GLIBCXX_STD
       void
       deque<_Tp, _Alloc>::
       _M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
-                          forward_iterator_tag)
+                          std::forward_iterator_tag)
       {
         const size_type __n = std::distance(__first, __last);
         this->_M_initialize_map(__n);
@@ -417,7 +417,7 @@ namespace _GLIBCXX_STD
       deque<_Tp, _Alloc>::
       _M_range_insert_aux(iterator __pos,
                           _InputIterator __first, _InputIterator __last,
-                          input_iterator_tag)
+                          std::input_iterator_tag)
       { std::copy(__first, __last, std::inserter(*this, __pos)); }
 
   template <typename _Tp, typename _Alloc>
@@ -426,7 +426,7 @@ namespace _GLIBCXX_STD
       deque<_Tp, _Alloc>::
       _M_range_insert_aux(iterator __pos,
                           _ForwardIterator __first, _ForwardIterator __last,
-                          forward_iterator_tag)
+                          std::forward_iterator_tag)
       {
         const size_type __n = std::distance(__first, __last);
         if (__pos._M_cur == this->_M_impl._M_start._M_cur)
