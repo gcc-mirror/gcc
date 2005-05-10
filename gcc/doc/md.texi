@@ -6718,7 +6718,7 @@ rtx-based construct, such as a @code{define_insn},
 
 @menu
 * Defining Mode Macros:: Defining a new mode macro.
-* String Substitutions:: Combining mode macros with string substitutions
+* Substitutions::	 Combining mode macros with substitutions
 * Examples::             Examples
 @end menu
 
@@ -6764,14 +6764,15 @@ but that the @code{:SI} expansion has no such constraint.
 
 Macros are applied in the order they are defined.  This can be
 significant if two macros are used in a construct that requires
-string substitutions.  @xref{String Substitutions}.
+substitutions.  @xref{Substitutions}.
 
-@node String Substitutions
-@subsubsection String Substitution in Mode Macros
+@node Substitutions
+@subsubsection Substitution in Mode Macros
 @findex define_mode_attr
 
 If an @file{.md} file construct uses mode macros, each version of the
-construct will often need slightly different strings.  For example:
+construct will often need slightly different strings or modes.  For
+example:
 
 @itemize @bullet
 @item
@@ -6782,6 +6783,11 @@ appropriate mode name for @var{m}.
 @item
 When a @code{define_insn} defines several instruction patterns,
 each instruction will often use a different assembler mnemonic.
+
+@item
+When a @code{define_insn} requires operands with different modes,
+using a macro for one of the operand modes usually requires a specific
+mode for the other operand(s).
 @end itemize
 
 GCC supports such variations through a system of ``mode attributes''.
@@ -6796,12 +6802,12 @@ upper case.  You can define other attributes using:
 where @var{name} is the name of the attribute and @var{valuei}
 is the value associated with @var{modei}.
 
-When GCC replaces some @var{:macro} with @var{:mode}, it will
-scan each string in the pattern for sequences of the form
-@code{<@var{macro}:@var{attr}>}, where @var{attr} is the name of
-a mode attribute.  If the attribute is defined for @var{mode}, the
-whole @code{<...>} sequence will be replaced by the appropriate
-attribute value.
+When GCC replaces some @var{:macro} with @var{:mode}, it will scan
+each string and mode in the pattern for sequences of the form
+@code{<@var{macro}:@var{attr}>}, where @var{attr} is the name of a
+mode attribute.  If the attribute is defined for @var{mode}, the whole
+@code{<...>} sequence will be replaced by the appropriate attribute
+value.
 
 For example, suppose an @file{.md} file has:
 
@@ -6814,6 +6820,15 @@ If one of the patterns that uses @code{:P} contains the string
 @code{"<P:load>\t%0,%1"}, the @code{SI} version of that pattern
 will use @code{"lw\t%0,%1"} and the @code{DI} version will use
 @code{"ld\t%0,%1"}.
+
+Here is an example of using an attribute for a mode:
+
+@smallexample
+(define_mode_macro LONG [SI DI])
+(define_mode_attr SHORT [(SI "HI") (DI "SI")])
+(define_insn ...
+  (sign_extend:LONG (match_operand:<LONG:SHORT> ...)) ...)
+@end smallexample
 
 The @code{@var{macro}:} prefix may be omitted, in which case the
 substitution will be attempted for every macro expansion.
