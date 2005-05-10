@@ -9905,6 +9905,37 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     } /* switch (code) */
 }
 
+/* Callback for walk_tree, looking for LABEL_EXPR.
+   Returns tree TP if it is LABEL_EXPR. Otherwise it returns NULL_TREE.
+   Do not check the sub-tree of GOTO_EXPR.  */
+
+static tree
+contains_label_1 (tree *tp,
+                  int *walk_subtrees,
+                  void *data ATTRIBUTE_UNUSED)
+{
+  switch (TREE_CODE (*tp))
+    {
+    case LABEL_EXPR:
+      return *tp;
+    case GOTO_EXPR:
+      *walk_subtrees = 0;
+    /* no break */
+    default:
+      return NULL_TREE;
+    }
+}
+
+/* Checks wheter the sub-tree ST contains a label LABEL_EXPR which is
+   accessible from outside the sub-tree. Returns NULL_TREE if no
+   addressable label is found.  */
+
+static bool
+contains_label_p (tree st)
+{
+  return (walk_tree (&st, contains_label_1 , NULL, NULL) != NULL_TREE);
+}
+
 /* Fold a ternary expression of code CODE and type TYPE with operands
    OP0, OP1, and OP2.  Return the folded expression if folding is
    successful.  Otherwise, return NULL_TREE.  */
@@ -9958,12 +9989,16 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	 so all simple results must be passed through pedantic_non_lvalue.  */
       if (TREE_CODE (arg0) == INTEGER_CST)
 	{
+	  tree unused_op = integer_zerop (arg0) ? op1 : op2;
 	  tem = integer_zerop (arg0) ? op2 : op1;
 	  /* Only optimize constant conditions when the selected branch
 	     has the same type as the COND_EXPR.  This avoids optimizing
-	     away "c ? x : throw", where the throw has a void type.  */
-	  if (! VOID_TYPE_P (TREE_TYPE (tem))
-	      || VOID_TYPE_P (type))
+             away "c ? x : throw", where the throw has a void type.
+             Avoid throwing away that operand which contains label.  */
+          if ((!TREE_SIDE_EFFECTS (unused_op)
+               || !contains_label_p (unused_op))
+              && (! VOID_TYPE_P (TREE_TYPE (tem))
+                  || VOID_TYPE_P (type)))
 	    return pedantic_non_lvalue (tem);
 	  return NULL_TREE;
 	}
