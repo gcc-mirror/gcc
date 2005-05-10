@@ -4,6 +4,8 @@
 	* gfortran.dg/f2c_1.f90, gfortran.dg/f2c_2.f90,
 	gfortran.dg/f2c_3.f90: New tests.
 
+	* gfortran.dg/return_1.f90: Fix dg annotation.
+
 2005-05-10  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.c-torture/compile/20050510-1.c: New test.
