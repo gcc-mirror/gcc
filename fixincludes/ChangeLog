@@ -1,3 +1,9 @@
+2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (stdio_stdarg_h, stdio_va_list): Bypass on
+	*-*-solaris2.1[0-9]*, not just *-*-solaris2.1[0-9].
+	* fixincl.x: Regenerate.
+
 2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac (fixincludes_UNLOCKED_FUNCS): New.
