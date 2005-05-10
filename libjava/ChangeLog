@@ -1,3 +1,7 @@
+2005-05-09  Mike Stump  <mrs@apple.com>
+
+	* configure: Regenerate.
+
 2005-05-09  David Daney  <ddaney@avtrex.com>
 
 	* java/util/BitSet.java (get(int, int)): Fix breakage when

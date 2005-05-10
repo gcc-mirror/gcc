@@ -4431,7 +4431,7 @@ else
 
 fi
 
-if test -n $lt_cv_sys_max_cmd_len ; then
+if test -n "$lt_cv_sys_max_cmd_len" ; then
   echo "$as_me:$LINENO: result: $lt_cv_sys_max_cmd_len" >&5
 echo "${ECHO_T}$lt_cv_sys_max_cmd_len" >&6
 else
