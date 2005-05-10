@@ -1,3 +1,34 @@
+2005-05-10  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/20178
+	* gfortran.h (gfc_option): Add flag_f2c.
+	* invoke.texi: Document '-ff2c' command line option.  Adapt
+	documentation for '-fno-second-underscore' and '-fno-underscoring'.
+	* lang.opt (ff2c): New entry.
+	* options.c (gfc-init_options): Set default calling convention
+	to -fno-f2c.  Mark -fsecond-underscore unset.
+	(gfc_post_options): Set -fsecond-underscore if not explicitly set
+	by user.	
+	(handle_options): Set gfc_option.flag_f2c according to requested
+	calling	convention.
+	* trans-decl.c (gfc_get_extern_function_decl): Use special f2c
+	intrinsics where necessary.
+	(gfc_trans_deferred_vars): Change todo error to	assertion.
+	* trans-expr.c (gfc_conv_variable): Dereference access
+	to hidden result argument.
+	(gfc_conv_function_call): Add hidden result argument to argument
+	list if f2c calling conventions requested.  Slightly restructure
+	tests.  Convert result of default REAL function to requested type
+	if f2c calling conventions are used.  Dereference COMPLEX result
+	if f2c cc are used.
+	* trans-types.c (gfc_sym_type):  Return double for default REAL
+	function if f2c cc are used.
+	(gfc_return_by_reference): Slightly restructure logic.  Return
+	COMPLEX by reference depending on calling conventions.
+	(gfc_get_function_type): Correctly make hidden result argument a
+	pass-by-reference argument for COMPLEX.  Remove old code which does
+	this for derived types.
+
 2005-05-09  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* match.c (gfc_match_return): Only require space after keyword when

@@ -1419,6 +1419,7 @@ typedef struct
   int flag_no_backend;
   int flag_pack_derived;
   int flag_repack_arrays;
+  int flag_f2c;
 
   int q_kind;
 
