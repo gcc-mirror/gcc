@@ -1,3 +1,9 @@
+2005-05-09  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* match.c (gfc_match_return): Only require space after keyword when
+	it is obligatory.  Only give stdwarn to after matching is successful.
+	* dump-parse-tree.c (gfc_show_symbol): Deal with alternate returns.
+
 2005-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/13082

@@ -1974,12 +1974,7 @@ gfc_match_return (void)
   gfc_expr *e;
   match m;
   gfc_compile_state s;
-
-  gfc_enclosing_unit (&s);
-  if (s == COMP_PROGRAM
-      && gfc_notify_std (GFC_STD_GNU, "Extension: RETURN statement in "
-			 "main program at %C") == FAILURE)
-      return MATCH_ERROR;
+  int c;
 
   e = NULL;
   if (gfc_match_eos () == MATCH_YES)
@@ -1992,7 +1987,18 @@ gfc_match_return (void)
       goto cleanup;
     }
 
-  m = gfc_match ("% %e%t", &e);
+  if (gfc_current_form == FORM_FREE)
+    {
+      /* The following are valid, so we can't require a blank after the
+        RETURN keyword:
+          return+1
+          return(1)  */
+      c = gfc_peek_char ();
+      if (ISALPHA (c) || ISDIGIT (c))
+       return MATCH_NO;
+    }
+
+  m = gfc_match (" %e%t", &e);
   if (m == MATCH_YES)
     goto done;
   if (m == MATCH_ERROR)
@@ -2005,6 +2011,12 @@ cleanup:
   return MATCH_ERROR;
 
 done:
+  gfc_enclosing_unit (&s);
+  if (s == COMP_PROGRAM
+      && gfc_notify_std (GFC_STD_GNU, "Extension: RETURN statement in "
+                        "main program at %C") == FAILURE)
+      return MATCH_ERROR;
+
   new_st.op = EXEC_RETURN;
   new_st.expr = e;
 
@@ -2014,6 +2026,12 @@ done:
 
 /* Match a CALL statement.  The tricky part here are possible
    alternate return specifiers.  We handle these by having all
+  gfc_enclosing_unit (&s);
+  if (s == COMP_PROGRAM
+      && gfc_notify_std (GFC_STD_GNU, "Extension: RETURN statement in "
+                        "main program at %C") == FAILURE)
+      return MATCH_ERROR;
+
    "subroutines" actually return an integer via a register that gives
    the return number.  If the call specifies alternate returns, we
    generate code for a SELECT statement whose case clauses contain

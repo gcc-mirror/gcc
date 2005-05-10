@@ -665,7 +665,12 @@ gfc_show_symbol (gfc_symbol * sym)
       gfc_status ("Formal arglist:");
 
       for (formal = sym->formal; formal; formal = formal->next)
-	gfc_status (" %s", formal->sym->name);
+        {
+          if (formal->sym != NULL)
+            gfc_status (" %s", formal->sym->name);
+          else
+            gfc_status (" [Alt Return]");
+        }
     }
 
   if (sym->formal_ns)

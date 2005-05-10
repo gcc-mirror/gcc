@@ -1,3 +1,7 @@
+2005-05-09  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/return_1.f90: New test.
+
 2005-05-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20723
