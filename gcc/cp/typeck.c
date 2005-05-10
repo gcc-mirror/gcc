@@ -4107,15 +4107,10 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  }
 	else
 	  {
+	    tree object = TREE_OPERAND (arg, 0);
 	    tree field = TREE_OPERAND (arg, 1);
-	    tree rval = build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0), 0);
-	    tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (rval)),
-				      decl_type_context (field),
-				      ba_check, NULL);
-	    
-	    rval = build_base_path (PLUS_EXPR, rval, binfo, 1);
-
-	    TREE_OPERAND (arg, 0) = build_indirect_ref (rval, NULL);
+	    gcc_assert (same_type_ignoring_top_level_qualifiers_p
+			(TREE_TYPE (object), decl_type_context (field)));
 	    addr = build_address (arg);
 	  }
 

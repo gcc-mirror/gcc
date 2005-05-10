@@ -1,3 +1,8 @@
+2005-05-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (build_unary_op): Do not resort to address arithmetic
+	when taking the address of a COMPONENT_REF.
+	
 2005-05-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c (vtbl_init_data_s): Change the type of fns to
