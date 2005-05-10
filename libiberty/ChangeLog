@@ -1,3 +1,21 @@
+2005-05-10  Nick Clifton  <nickc@redhat.com>
+
+	* Update the address and phone number of the FSF organization in
+	the GPL notices in the following files:
+	COPYING.LIB, Makefile.in, _doprnt.c, argv.c, asprintf.c,
+	choose-temp.c, clock.c, concat.c, copying-lib.texi, cp-demangle.c,
+	cp-demangle.h, cp-demint.c, cplus-dem.c, dyn-string.c, fdmatch.c,
+	fibheap.c, floatformat.c, fnmatch.c, fopen_unlocked.c,
+	gather-docs, getopt.c, getopt1.c, getruntime.c, hashtab.c, hex.c,
+	lbasename.c, lrealpath.c, maint-tool, make-relative-prefix.c,
+	make-temp-file.c, md5.c, mempcpy.c, mkstemps.c, objalloc.c,
+	obstack.c, partition.c, pex-common.c, pex-common.h, pex-djgpp.c,
+	pex-msdos.c, pex-one.c, pex-unix.c, pex-win32.c, pexecute.c,
+	physmem.c, putenv.c, regex.c, safe-ctype.c, setenv.c, snprintf.c,
+	sort.c, spaces.c, splay-tree.c, stpcpy.c, stpncpy.c, strndup.c,
+	strtod.c, ternary.c, unlink-if-ordinary.c, vasprintf.c,
+	vsnprintf.c, vsprintf.c, xexit.c, xmalloc.c, xstrndup.c
+
 2005-05-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* aclocal.m4 (AC_DEFINE_NOAUTOHEADER): Remove.
