@@ -523,7 +523,7 @@ estimate_niter_from_size_of_data (struct loop *loop,
 
 static tree
 analyze_array_indexes (struct loop *loop,
-		       varray_type *access_fns, 
+		       VEC(tree,heap) **access_fns, 
 		       tree ref, tree stmt)
 {
   tree opnd0, opnd1;
@@ -542,7 +542,7 @@ analyze_array_indexes (struct loop *loop,
   if (loop->estimated_nb_iterations == NULL_TREE)
     estimate_niter_from_size_of_data (loop, opnd0, access_fn, stmt);
   
-  VARRAY_PUSH_TREE (*access_fns, access_fn);
+  VEC_safe_push (tree, heap, *access_fns, access_fn);
   
   /* Recursively record other array access functions.  */
   if (TREE_CODE (opnd0) == ARRAY_REF)
@@ -575,7 +575,7 @@ analyze_array (tree stmt, tree ref, bool is_read)
   
   DR_STMT (res) = stmt;
   DR_REF (res) = ref;
-  VARRAY_TREE_INIT (DR_ACCESS_FNS (res), 3, "access_fns");
+  DR_ACCESS_FNS (res) = VEC_alloc (tree, heap, 3);
   DR_BASE_NAME (res) = analyze_array_indexes 
     (loop_containing_stmt (stmt), &(DR_ACCESS_FNS (res)), ref, stmt);
   DR_IS_READ (res) = is_read;
@@ -610,9 +610,9 @@ init_data_ref (tree stmt,
   
   DR_STMT (res) = stmt;
   DR_REF (res) = ref;
-  VARRAY_TREE_INIT (DR_ACCESS_FNS (res), 5, "access_fns");
+  DR_ACCESS_FNS (res) = VEC_alloc (tree, heap, 5);
   DR_BASE_NAME (res) = base;
-  VARRAY_PUSH_TREE (DR_ACCESS_FNS (res), access_fn);
+  VEC_quick_push (tree, DR_ACCESS_FNS (res), access_fn);
   DR_IS_READ (res) = is_read;
   
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2124,11 +2124,12 @@ static bool
 access_functions_are_affine_or_constant_p (struct data_reference *a)
 {
   unsigned int i;
-  varray_type fns = DR_ACCESS_FNS (a);
+  VEC(tree,heap) **fns = &DR_ACCESS_FNS (a);
+  tree t;
   
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (fns); i++)
-    if (!evolution_function_is_constant_p (VARRAY_TREE (fns, i))
-	&& !evolution_function_is_affine_multivariate_p (VARRAY_TREE (fns, i)))
+  for (i = 0; VEC_iterate (tree, *fns, i, t); i++)
+    if (!evolution_function_is_constant_p (t)
+	&& !evolution_function_is_affine_multivariate_p (t))
       return false;
   
   return true;
@@ -2457,8 +2458,7 @@ free_data_refs (varray_type datarefs)
 	VARRAY_GENERIC_PTR (datarefs, i);
       if (dr)
 	{
-	  if (DR_ACCESS_FNS (dr))
-	    varray_clear (DR_ACCESS_FNS (dr));
+	  VEC_free (tree, heap, DR_ACCESS_FNS (dr));
 	  free (dr);
 	}
     }

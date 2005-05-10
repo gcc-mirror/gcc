@@ -36,7 +36,7 @@ struct data_reference
   tree base_name;
   
   /* A list of chrecs.  */
-  varray_type access_fns;
+  VEC(tree,heap) *access_fns;
 
   /* Auxiliary info specific to a pass.  */
   int aux;
@@ -50,8 +50,8 @@ struct data_reference
 #define DR_REF(DR) DR->ref
 #define DR_BASE_NAME(DR) DR->base_name
 #define DR_ACCESS_FNS(DR) DR->access_fns
-#define DR_ACCESS_FN(DR, I) VARRAY_TREE (DR_ACCESS_FNS (DR), I)
-#define DR_NUM_DIMENSIONS(DR) VARRAY_ACTIVE_SIZE (DR_ACCESS_FNS (DR))
+#define DR_ACCESS_FN(DR, I) VEC_index (tree, DR_ACCESS_FNS (DR), I)
+#define DR_NUM_DIMENSIONS(DR) VEC_length (tree, DR_ACCESS_FNS (DR))
 #define DR_IS_READ(DR) DR->is_read
 
 enum data_dependence_direction {
