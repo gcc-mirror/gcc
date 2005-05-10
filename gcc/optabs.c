@@ -5625,24 +5625,27 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
 {
   enum machine_mode mode = GET_MODE (mem);
   enum insn_code icode;
-  rtx label, subtarget;
+  rtx label, cmp_reg, subtarget;
 
   /* The loop we want to generate looks like
 
-	old_reg = mem;
+	cmp_reg = mem;
       label:
+        old_reg = cmp_reg;
 	seq;
-	old_reg = compare-and-swap(mem, old_reg, new_reg)
-	if (old_reg != new_reg)
+	cmp_reg = compare-and-swap(mem, old_reg, new_reg)
+	if (cmp_reg != old_reg)
 	  goto label;
 
      Note that we only do the plain load from memory once.  Subsequent
      iterations use the value loaded by the compare-and-swap pattern.  */
 
   label = gen_label_rtx ();
+  cmp_reg = gen_reg_rtx (mode);
 
-  emit_move_insn (old_reg, mem);
+  emit_move_insn (cmp_reg, mem);
   emit_label (label);
+  emit_move_insn (old_reg, cmp_reg);
   if (seq)
     emit_insn (seq);
 
@@ -5654,9 +5657,12 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
     {
     default:
       subtarget = expand_val_compare_and_swap_1 (mem, old_reg, new_reg,
-						 old_reg, icode);
+						 cmp_reg, icode);
       if (subtarget != NULL_RTX)
-	break;
+	{
+	  gcc_assert (subtarget == cmp_reg);
+	  break;
+	}
 
       /* FALLTHRU */
     case CODE_FOR_nothing:
@@ -5665,11 +5671,13 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
 	return false;
 
       subtarget = expand_val_compare_and_swap_1 (mem, old_reg, new_reg,
-						 old_reg, icode);
+						 cmp_reg, icode);
       if (subtarget == NULL_RTX)
 	return false;
+      if (subtarget != cmp_reg)
+	emit_move_insn (cmp_reg, subtarget);
 
-      emit_cmp_insn (subtarget, old_reg, EQ, const0_rtx, mode, true);
+      emit_cmp_insn (cmp_reg, old_reg, EQ, const0_rtx, mode, true);
     }
 
   /* ??? Mark this jump predicted not taken?  */
