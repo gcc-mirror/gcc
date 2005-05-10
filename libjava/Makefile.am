@@ -2931,6 +2931,7 @@ java/lang/StackTraceElement.java \
 java/lang/StrictMath.java \
 java/lang/String.java \
 java/lang/StringBuffer.java \
+java/lang/StringBuilder.java \
 java/lang/StringIndexOutOfBoundsException.java \
 java/lang/System.java \
 java/lang/Thread.java \
@@ -3926,6 +3927,7 @@ java/lang/natObject.cc \
 java/lang/natRuntime.cc	\
 java/lang/natString.cc \
 java/lang/natStringBuffer.cc \
+java/lang/natStringBuilder.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc \

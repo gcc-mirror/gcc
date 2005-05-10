@@ -1,7 +1,7 @@
 // javaprims.h - Main external header file for libgcj.  -*- c++ -*-
 
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation
 
    This file is part of libgcj.
@@ -78,24 +78,24 @@ extern "Java"
       class IOException;
       class InputStream;
       class InputStreamReader;
-      class InterfaceComparator;
       class InterruptedIOException;
       class InvalidClassException;
       class InvalidObjectException;
       class LineNumberInputStream;
       class LineNumberReader;
-      class MemberComparator;
-      class MyIOException;
       class NotActiveException;
       class NotSerializableException;
       class ObjectInput;
       class ObjectInputStream;
       class ObjectInputStream$GetField;
+      class ObjectInputStream$ValidatorAndPriority;
       class ObjectInputValidation;
       class ObjectOutput;
       class ObjectOutputStream;
       class ObjectOutputStream$PutField;
       class ObjectStreamClass;
+      class ObjectStreamClass$InterfaceComparator;
+      class ObjectStreamClass$MemberComparator;
       class ObjectStreamConstants;
       class ObjectStreamException;
       class ObjectStreamField;
@@ -124,7 +124,6 @@ extern "Java"
       class UTFDataFormatException;
       class UnsupportedEncodingException;
       class VMObjectStreamClass;
-      class ValidatorAndPriority;
       class WriteAbortedException;
       class Writer;
     }
@@ -204,6 +203,7 @@ extern "Java"
       class String;
       class String$CaseInsensitiveComparator;
       class StringBuffer;
+      class StringBuilder;
       class StringIndexOutOfBoundsException;
       class System;
       class Thread;
@@ -211,6 +211,7 @@ extern "Java"
       class ThreadGroup;
       class ThreadLocal;
       class Throwable;
+      class Throwable$StaticData;
       class UnknownError;
       class UnsatisfiedLinkError;
       class UnsupportedClassVersionError;
@@ -256,6 +257,8 @@ extern "Java"
     {
       class AbstractCollection;
       class AbstractList;
+      class AbstractList$RandomAccessSubList;
+      class AbstractList$SubList;
       class AbstractMap;
       class AbstractMap$BasicMapEntry;
       class AbstractSequentialList;
@@ -342,7 +345,6 @@ extern "Java"
       class PropertyResourceBundle;
       class Random;
       class RandomAccess;
-      class RandomAccessSubList;
       class ResourceBundle;
       class ResourceBundle$BundleKey;
       class Set;
@@ -351,7 +353,6 @@ extern "Java"
       class SortedSet;
       class Stack;
       class StringTokenizer;
-      class SubList;
       class TimeZone;
       class Timer;
       class Timer$Scheduler;
@@ -376,6 +377,7 @@ extern "Java"
         class JarEntry;
         class JarException;
         class JarFile;
+        class JarFile$EntryInputStream;
         class JarFile$JarEnumeration;
         class JarInputStream;
         class JarOutputStream;
