@@ -131,4 +131,7 @@ extern int errno;
    unreachable default case of a switch.  Do not use gcc_assert(0).  */
 #define gcc_unreachable() (abort ())
 
+/* Filename handling macros.  */
+#include "filenames.h"
+
 #endif /* ! GCC_TSYSTEM_H */
