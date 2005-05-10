@@ -299,19 +299,21 @@ __udivsi3:
 .Lreturn:
 	abi_return
 
-.Lspecial:
-	# return dividend >= divisor
-	movi	a2, 0
-	bltu	a6, a3, .Lreturn2
-	movi	a2, 1
-.Lreturn2:
-	abi_return
-
 .Lle_one:
 	beqz	a3, .Lerror	# if divisor == 1, return the dividend
 	abi_return
+
+.Lspecial:
+	# return dividend >= divisor
+	bltu	a6, a3, .Lreturn0
+	movi	a2, 1
+	abi_return
+
 .Lerror:
-	movi	a2, 0		# just return 0; could throw an exception
+	# just return 0; could throw an exception
+
+.Lreturn0:
+	movi	a2, 0
 	abi_return
 	.size	__udivsi3,.-__udivsi3
 
@@ -361,22 +363,24 @@ __divsi3:
 	movltz	a2, a5, a7	# return (sign < 0) ? -quotient : quotient
 	abi_return
 
-.Lspecial:
-	movi	a2, 0
-	bltu	a6, a3, .Lreturn2 #  if dividend < divisor, return 0
-	movi	a2, 1
-	movi	a4, -1
-	movltz	a2, a4, a7	# else return (sign < 0) ? -1 :	 1 
-.Lreturn2:
-	abi_return
-
 .Lle_one:
 	beqz	a3, .Lerror
 	neg	a2, a6		# if udivisor == 1, then return...
 	movgez	a2, a6, a7	# (sign < 0) ? -udividend : udividend
 	abi_return
+
+.Lspecial:
+	bltu	a6, a3, .Lreturn0 #  if dividend < divisor, return 0
+	movi	a2, 1
+	movi	a4, -1
+	movltz	a2, a4, a7	# else return (sign < 0) ? -1 :	 1 
+	abi_return
+
 .Lerror:
-	movi	a2, 0		# just return 0; could throw an exception
+	# just return 0; could throw an exception
+
+.Lreturn0:
+	movi	a2, 0
 	abi_return
 	.size	__divsi3,.-__divsi3
 
@@ -414,15 +418,10 @@ __umodsi3:
 #endif /* !XCHAL_HAVE_LOOPS */
 .Lloopend:
 
+.Lspecial:
 	bltu	a2, a3, .Lreturn
 	sub	a2, a2, a3	# subtract once more if dividend >= divisor
 .Lreturn:
-	abi_return
-
-.Lspecial:
-	bltu	a2, a3, .Lreturn2
-	sub	a2, a2, a3	# subtract once if dividend >= divisor
-.Lreturn2:
 	abi_return
 
 .Lle_one:
@@ -468,21 +467,13 @@ __modsi3:
 #endif /* !XCHAL_HAVE_LOOPS */
 .Lloopend:
 
+.Lspecial:
 	bltu	a2, a3, .Lreturn
 	sub	a2, a2, a3	# subtract once more if udividend >= udivisor
 .Lreturn:
 	bgez	a7, .Lpositive
 	neg	a2, a2		# if (dividend < 0), return -udividend
 .Lpositive:	
-	abi_return
-
-.Lspecial:
-	bltu	a2, a3, .Lreturn2
-	sub	a2, a2, a3	# subtract once if dividend >= divisor
-.Lreturn2:
-	bgez	a7, .Lpositive2
-	neg	a2, a2		# if (dividend < 0), return -udividend
-.Lpositive2:	
 	abi_return
 
 .Lle_one:
