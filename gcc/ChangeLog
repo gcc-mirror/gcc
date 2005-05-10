@@ -1,3 +1,11 @@
+2005-05-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-outof-ssa.c (_elim_graph): Change the type of nodes and
+	const_copies to VEC(tree,heap)*.
+	(new_elim_graph, delete_elim_graph, elim_graph_size,
+	elim_graph_add_node, eliminate_build, eliminate_phi): Use VEC
+	instead of VARRAY.
+
 2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR other/21052

@@ -79,7 +79,7 @@ typedef struct _elim_graph {
   int size;
 
   /* List of nodes in the elimination graph.  */
-  varray_type nodes;
+  VEC(tree,heap) *nodes;
 
   /*  The predecessor and successor edge list.  */
   varray_type edge_list;
@@ -97,7 +97,7 @@ typedef struct _elim_graph {
   edge e;
 
   /* List of constant copies to emit.  These are pushed on in pairs.  */
-  varray_type  const_copies;
+  VEC(tree,heap) *const_copies;
 } *elim_graph;
 
 
@@ -218,8 +218,8 @@ new_elim_graph (int size)
 {
   elim_graph g = (elim_graph) xmalloc (sizeof (struct _elim_graph));
 
-  VARRAY_TREE_INIT (g->nodes, 30, "Elimination Node List");
-  VARRAY_TREE_INIT (g->const_copies, 20, "Elimination Constant Copies");
+  g->nodes = VEC_alloc (tree, heap, 30);
+  g->const_copies = VEC_alloc (tree, heap, 20);
   VARRAY_INT_INIT (g->edge_list, 20, "Elimination Edge List");
   VARRAY_INT_INIT (g->stack, 30, " Elimination Stack");
   
@@ -234,7 +234,7 @@ new_elim_graph (int size)
 static inline void
 clear_elim_graph (elim_graph g)
 {
-  VARRAY_POP_ALL (g->nodes);
+  VEC_truncate (tree, g->nodes, 0);
   VARRAY_POP_ALL (g->edge_list);
 }
 
@@ -245,6 +245,8 @@ static inline void
 delete_elim_graph (elim_graph g)
 {
   sbitmap_free (g->visited);
+  VEC_free (tree, heap, g->const_copies);
+  VEC_free (tree, heap, g->nodes);
   free (g);
 }
 
@@ -254,7 +256,7 @@ delete_elim_graph (elim_graph g)
 static inline int
 elim_graph_size (elim_graph g)
 {
-  return VARRAY_ACTIVE_SIZE (g->nodes);
+  return VEC_length (tree, g->nodes);
 }
 
 
@@ -264,10 +266,12 @@ static inline void
 elim_graph_add_node (elim_graph g, tree node)
 {
   int x;
-  for (x = 0; x < elim_graph_size (g); x++)
-    if (VARRAY_TREE (g->nodes, x) == node)
+  tree t;
+
+  for (x = 0; VEC_iterate (tree, g->nodes, x, t); x++)
+    if (t == node)
       return;
-  VARRAY_PUSH_TREE (g->nodes, node);
+  VEC_safe_push (tree, heap, g->nodes, node);
 }
 
 
@@ -379,8 +383,8 @@ eliminate_build (elim_graph g, basic_block B)
         {
 	  /* Save constant copies until all other copies have been emitted
 	     on this edge.  */
-	  VARRAY_PUSH_TREE (g->const_copies, T0);
-	  VARRAY_PUSH_TREE (g->const_copies, Ti);
+	  VEC_safe_push (tree, heap, g->const_copies, T0);
+	  VEC_safe_push (tree, heap, g->const_copies, Ti);
 	}
       else
         {
@@ -491,7 +495,7 @@ eliminate_phi (edge e, elim_graph g)
   int x;
   basic_block B = e->dest;
 
-  gcc_assert (VARRAY_ACTIVE_SIZE (g->const_copies) == 0);
+  gcc_assert (VEC_length (tree, g->const_copies) == 0);
 
   /* Abnormal edges already have everything coalesced.  */
   if (e->flags & EDGE_ABNORMAL)
@@ -503,12 +507,13 @@ eliminate_phi (edge e, elim_graph g)
 
   if (elim_graph_size (g) != 0)
     {
+      tree var;
+
       sbitmap_zero (g->visited);
       VARRAY_POP_ALL (g->stack);
 
-      for (x = 0; x < elim_graph_size (g); x++)
+      for (x = 0; VEC_iterate (tree, g->nodes, x, var); x++)
         {
-	  tree var = VARRAY_TREE (g->nodes, x);
 	  int p = var_to_partition (g->map, var);
 	  if (!TEST_BIT (g->visited, p))
 	    elim_forward (g, p);
@@ -525,13 +530,11 @@ eliminate_phi (edge e, elim_graph g)
     }
 
   /* If there are any pending constant copies, issue them now.  */
-  while (VARRAY_ACTIVE_SIZE (g->const_copies) > 0)
+  while (VEC_length (tree, g->const_copies) > 0)
     {
       tree src, dest;
-      src = VARRAY_TOP_TREE (g->const_copies);
-      VARRAY_POP (g->const_copies);
-      dest = VARRAY_TOP_TREE (g->const_copies);
-      VARRAY_POP (g->const_copies);
+      src = VEC_pop (tree, g->const_copies);
+      dest = VEC_pop (tree, g->const_copies);
       insert_copy_on_edge (e, dest, src);
     }
 }
