@@ -937,7 +937,7 @@ void java_layout_classes (void);
 void java_reorder_fields (void);
 tree java_method_add_stmt (tree, tree);
 int java_report_errors (void);
-extern tree do_resolve_class (tree, tree, tree, tree);
+extern tree do_resolve_class (tree, tree, tree, tree, tree);
 #endif
 char *java_get_line_col (const char *, int, int);
 extern void reset_report (void);
@@ -960,5 +960,6 @@ extern void java_finish_classes (void);
 
 extern GTY(()) struct parser_ctxt *ctxp;
 extern GTY(()) struct parser_ctxt *ctxp_for_generation;
+extern GTY(()) struct parser_ctxt *ctxp_for_generation_last;
 
 #endif /* ! GCC_JAVA_PARSE_H */

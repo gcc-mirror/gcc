@@ -1,3 +1,21 @@
+2005-05-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR java/21436
+	* class.c (maybe_layout_super_class): Look for imports in this_class.
+	* parse.h (ctxp_for_generation_last): New.
+	(do_resolve_class): Add a parameter.
+	* parse.y (ctxp_for_generation_last): New.
+	(java_pop_parser_context): Add at end of list.
+	(find_in_imports, find_in_imports_on_demand): Look in ctxp
+	if the TYPE_IMPORT_LIST or respectively the TYPE_IMPORT_DEMAND_LIST of
+	the given type are NULL.
+	(do_resolve_class): Look into the imports of the new second parameter.
+	Adjust recursive calls.
+	(resolve_class, resolve_inner_class, find_as_inner_class): Adjust
+	calls to do_resolve_class.
+	(create_class): Set the TYPE_IMPORT_LIST and TYPE_IMPORT_DEMAND_LIST.
+	(java_complete_class): Do not do that here.
+
 2005-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR java/20309
@@ -15447,7 +15465,7 @@
 	(CLASS_P): Moved around.
 	(java_parse_abort_on_error): Macro moved from jcf-parse.c
 	* jcf-parse.c (java_parse_abort_on_error): Macro moved to
-	java-parse.h
+	java-tree.h
 	(jcf_parse_source): Changed leading comment. Removed unnecessary
 	fclose and CLASS_FROM_SOURCE_P marking.
 	(parse_source_file): New local variables remember_for_generation

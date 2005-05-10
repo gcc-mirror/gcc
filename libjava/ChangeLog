@@ -1,3 +1,8 @@
+2005-05-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR java/21436
+	* testsuite/libjava.jacks/jacks.xfail: Adjust.
+
 2005-05-09  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.
