@@ -1,3 +1,8 @@
+2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR other/21052
+	* doc/extend.texi (Type Attributes): Correct example syntax.
+
 2005-05-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21160
