@@ -901,7 +901,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   gfc_expr e;
   gfc_intrinsic_sym *isym;
   gfc_expr argexpr;
-  char s[GFC_MAX_SYMBOL_LEN];
+  char s[GFC_MAX_SYMBOL_LEN + 13]; /* "f2c_specific" and '\0'.  */
   tree name;
   tree mangled_name;
 
@@ -937,7 +937,18 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 	  gcc_assert (isym->formal->next->next == NULL);
 	  isym->resolve.f2 (&e, &argexpr, NULL);
 	}
-      sprintf (s, "specific%s", e.value.function.name);
+
+      if (gfc_option.flag_f2c
+	  && ((e.ts.type == BT_REAL && e.ts.kind == gfc_default_real_kind)
+	      || e.ts.type == BT_COMPLEX))
+	{
+	  /* Specific which needs a different implementation if f2c
+	     calling conventions are used.  */
+	  sprintf (s, "f2c_specific%s", e.value.function.name);
+	}
+      else
+	sprintf (s, "specific%s", e.value.function.name);
+
       name = get_identifier (s);
       mangled_name = name;
     }
@@ -2030,7 +2041,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	    fnbody = gfc_trans_dummy_character (proc_sym->ts.cl, fnbody);
 	}
       else
-	gfc_todo_error ("Deferred non-array return by reference");
+	gcc_assert (gfc_option.flag_f2c
+		    && proc_sym->ts.type == BT_COMPLEX);
     }
 
   for (sym = proc_sym->tlink; sym != proc_sym; sym = sym->tlink)

@@ -1272,6 +1272,18 @@ gfc_sym_type (gfc_symbol * sym)
     sym = sym->result;
 
   type = gfc_typenode_for_spec (&sym->ts);
+  if (gfc_option.flag_f2c
+      && sym->attr.function
+      && sym->ts.type == BT_REAL
+      && sym->ts.kind == gfc_default_real_kind
+      && !sym->attr.always_explicit)
+    {
+      /* Special case: f2c calling conventions require that (scalar) 
+	 default REAL functions return the C type double instead.  */
+      sym->ts.kind = gfc_default_double_kind;
+      type = gfc_typenode_for_spec (&sym->ts);
+      sym->ts.kind = gfc_default_real_kind;
+    }
 
   if (sym->attr.dummy && !sym->attr.function)
     byref = 1;
@@ -1453,19 +1465,29 @@ gfc_get_derived_type (gfc_symbol * derived)
 int
 gfc_return_by_reference (gfc_symbol * sym)
 {
+  gfc_symbol *result;
+
   if (!sym->attr.function)
     return 0;
 
-  if (sym->result)
-    sym = sym->result;
+  result = sym->result ? sym->result : sym;
 
-  if (sym->attr.dimension)
+  if (result->attr.dimension)
     return 1;
 
-  if (sym->ts.type == BT_CHARACTER)
+  if (result->ts.type == BT_CHARACTER)
     return 1;
 
-  /* Possibly return complex numbers by reference for g77 compatibility.  */
+  /* Possibly return complex numbers by reference for g77 compatibility.
+     We don't do this for calls to intrinsics (as the library uses the
+     -fno-f2c calling convention), nor for calls to functions which always
+     require an explicit interface, as no compatibility problems can
+     arise there.  */
+  if (gfc_option.flag_f2c
+      && result->ts.type == BT_COMPLEX
+      && !sym->attr.intrinsic && !sym->attr.always_explicit)
+    return 1;
+  
   return 0;
 }
 
@@ -1551,7 +1573,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	gfc_conv_const_charlen (arg->ts.cl);
 
       type = gfc_sym_type (arg);
-      if (arg->ts.type == BT_DERIVED
+      if (arg->ts.type == BT_COMPLEX
 	  || arg->attr.dimension
 	  || arg->ts.type == BT_CHARACTER)
 	type = build_reference_type (type);
