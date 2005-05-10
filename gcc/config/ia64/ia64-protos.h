@@ -51,6 +51,7 @@ extern bool ia64_expand_vecint_minmax (enum rtx_code, enum machine_mode, rtx[]);
 extern void ia64_expand_call (rtx, rtx, rtx, int);
 extern void ia64_split_call (rtx, rtx, rtx, rtx, rtx, int, int);
 extern void ia64_reload_gp (void);
+extern void ia64_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx);
 
 extern HOST_WIDE_INT ia64_initial_elimination_offset (int, int);
 extern void ia64_expand_prologue (void);
