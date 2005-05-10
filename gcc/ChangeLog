@@ -1,3 +1,8 @@
+2005-05-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (mem_min_alignment): Do not rely
+	on MEM_ALIGN if TARGET_UNALIGNED_DOUBLES.
+
 2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21342
