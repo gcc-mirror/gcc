@@ -1,3 +1,11 @@
+2005-05-10  Michael Matz  <matz@suse.de>
+
+	from trunk:
+	2005-04-28  James E Wilson  <wilson@specifixinc.com>
+
+	* config/i386/i386.h (HI_REGISTER_NAMES): Fix typos in comment.
+	(ADDITIONAL_REGISTER_NAMES): Delete obsolete mmx register entries.
+
 2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR other/21052
