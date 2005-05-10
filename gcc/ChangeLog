@@ -4,6 +4,13 @@
 	config/sh/sh.md, config/sh/superh.h: Fix comment typos.
 	* doc/invoke.texi: Fix typos.
 
+	* tree-data-ref.c (analyze_array_indexes, analyze_array,
+	init_data_ref, access_functions_are_affine_or_constant_p,
+	free_data_refs): Use VEC instead of VARRAY.
+	* tree-data-ref.h (data_reference): Change the type of
+	access_fns to VEC(tree,gc)*.
+	(DR_ACCESS_FN, DR_NUM_DIMENSIONS): Use VEC instead of VARRAY.
+
 2005-05-10  Gabor Loki <loki@gcc.gnu.org>
 
 	PR c/17913
