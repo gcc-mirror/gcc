@@ -1,3 +1,10 @@
+2005-05-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/linux-elf.h (SUBTARGET_FRAME_POINTER_REQUIRED): Define.
+	* config/arm/arm.h (SUBTARGET_FRAME_POINTER_REQUIRED): Provide
+	default definition.
+	(FRAME_POINTER_REQUIRED): Use SUBTARGET_FRAME_POINTER_REQUIRED.
+
 2005-05-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR bootstrap/21481

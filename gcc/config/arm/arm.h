@@ -861,8 +861,14 @@ extern int arm_structure_size_boundary;
    If we have to have a frame pointer we might as well make use of it.
    APCS says that the frame pointer does not need to be pushed in leaf
    functions, or simple tail call functions.  */
+
+#ifndef SUBTARGET_FRAME_POINTER_REQUIRED
+#define SUBTARGET_FRAME_POINTER_REQUIRED 0
+#endif
+
 #define FRAME_POINTER_REQUIRED					\
   (current_function_has_nonlocal_label				\
+   || SUBTARGET_FRAME_POINTER_REQUIRED				\
    || (TARGET_ARM && TARGET_APCS_FRAME && ! leaf_function_p ()))
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
