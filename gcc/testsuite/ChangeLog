@@ -1,3 +1,7 @@
+2005-05-11  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* gcc.dg/arm-vfp1.c: Revert last change.
+
 2005-05-11  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/19807

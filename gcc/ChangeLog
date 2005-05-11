@@ -1,3 +1,7 @@
+2005-05-11  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.md (negsf2, negdf2): Permit these expands when compiling for VFP.
+
 2005-05-11  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/19807
