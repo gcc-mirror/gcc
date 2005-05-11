@@ -1,3 +1,27 @@
+2005-05-11  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR middle-end/20371:
+	* tree.h (record_layout_info_s): New member prev_packed.
+	* stor-layout.c (update_alignment_for_field): Fix comment about
+	KNOWN_ALIGN.  For MS bitfields, if we start a new run, make sure
+	we start it properly aligned.
+	(place_field): At the beginning of a record, pass 0 as KNOWN_ALIGN
+	to update_alignment_for_field, and recompute it afterwards using
+	the alignment of the record.
+	When a packed bitfield precedes an MS bitfield, don't add padding
+	at the end of the packed bitfield on behalf of the base type of
+	the packed bit field.
+	Don't adjust rli->bitpos at the end
+	of an MS bitfield run if we already adjusted bitpos/offset for an
+	alignment as large or larger than the bitfield type size.
+	Take possible record alignment > BIGGEST_ALIGNMENT into account
+	when calculating actual_align.
+	Only put packed buit fields into rli->prev_field if they end up
+	suitably aligned.
+	Also set rli->remaining_in_alignment when we re-set rli->prev_field.
+	Update rli->remaining_in_alignment when we have already started a
+	run of bit fields and we process a packed bit field.
+
 2005-05-11  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-data-ref.c (find_data_references_in_loop): Give up when

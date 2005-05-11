@@ -3142,6 +3142,9 @@ typedef struct record_layout_info_s
   tree pending_statics;
   /* Bits remaining in the current alignment group */
   int remaining_in_alignment;
+  /* True if prev_field was packed and we haven't found any non-packed
+     fields that we have put in the same alignment group.  */
+  int prev_packed;
   /* True if we've seen a packed field that didn't have normal
      alignment anyway.  */
   int packed_maybe_necessary;
