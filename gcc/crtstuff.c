@@ -54,6 +54,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Target machine header files require this define. */
 #define IN_LIBGCC2
 
+/* FIXME: Including auto-host is incorrect, but until we have
+   identified the set of defines that need to go into auto-target.h,
+   this will have to do.  */
+#include "auto-host.h"
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"

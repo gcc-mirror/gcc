@@ -1,3 +1,8 @@
+2005-05-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR bootstrap/21481
+	* crtstuff.c: Include auto-host.h again, for now.
+
 2005-05-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/24k.md: Remove trailing whitespace.
