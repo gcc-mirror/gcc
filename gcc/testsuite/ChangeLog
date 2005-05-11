@@ -1,3 +1,7 @@
+2005-05-11  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/debug/pr16676.c: Remove for now.
+
 2005-05-10  Ben Elliston  <bje@au.ibm.com>
 
 	PR debug/16676

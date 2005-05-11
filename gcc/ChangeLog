@@ -1,3 +1,7 @@
+2005-05-11  Ben Elliston  <bje@au.ibm.com>
+
+	* dwarf2out.c: Revert my 2005-05-10 patch.
+
 2005-05-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
