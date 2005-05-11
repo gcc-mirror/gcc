@@ -126,7 +126,8 @@
 ;; slt		set less than instructions
 ;; clz		the clz and clo instructions
 ;; trap		trap if instructions
-;; imul		integer multiply
+;; imul		integer multiply 2 operands
+;; imul3	integer multiply 3 operands
 ;; imadd	integer multiply-add
 ;; idiv		integer divide
 ;; fmove	floating point register move
@@ -148,7 +149,7 @@
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
 (define_attr "type"
-  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,condmove,xfer,mthilo,mfhilo,const,arith,shift,slt,clz,trap,imul,imadd,idiv,fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,frsqrt1,frsqrt2,multi,nop"
+  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,condmove,xfer,mthilo,mfhilo,const,arith,shift,slt,clz,trap,imul,imul3,imadd,idiv,fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,frsqrt1,frsqrt2,multi,nop"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")]
 	(const_string "unknown")))
@@ -253,7 +254,7 @@
 	  ;; VR4120 errata MD(4): if there are consecutive dmult instructions,
 	  ;; the result of the second one is missed.  The assembler should work
 	  ;; around this by inserting a nop after the first dmult.
-	  (and (eq_attr "type" "imul")
+	  (and (eq_attr "type" "imul,imul3")
 	       (and (eq_attr "mode" "DI")
 		    (ne (symbol_ref "TARGET_FIX_VR4120") (const_int 0))))
 	  (const_int 8)
@@ -317,7 +318,7 @@
 ;; True if an instruction might assign to hi or lo when reloaded.
 ;; This is used by the TUNE_MACC_CHAINS code.
 (define_attr "may_clobber_hilo" "no,yes"
-  (if_then_else (eq_attr "type" "imul,imadd,idiv,mthilo")
+  (if_then_else (eq_attr "type" "imul,imul3,imadd,idiv,mthilo")
 		(const_string "yes")
 		(const_string "no")))
 
@@ -967,7 +968,7 @@
     return "mul\t%0,%1,%2";
   return "mult\t%0,%1,%2";
 }
-  [(set_attr "type" "imul")
+  [(set_attr "type" "imul3,imul")
    (set_attr "mode" "SI")])
 
 (define_insn "muldi3_mult3"
@@ -978,7 +979,7 @@
    (clobber (match_scratch:DI 4 "=l"))]
   "TARGET_64BIT && GENERATE_MULT3_DI"
   "dmult\t%0,%1,%2"
-  [(set_attr "type" "imul")
+  [(set_attr "type" "imul3")
    (set_attr "mode" "DI")])
 
 ;; If a register gets allocated to LO, and we spill to memory, the reload
@@ -1400,7 +1401,7 @@
   "@
    muls\t$0,%1,%2
    muls\t%0,%1,%2"
-  [(set_attr "type"     "imul")
+  [(set_attr "type"     "imul,imul3")
    (set_attr "mode"     "SI")])
 
 ;; ??? We could define a mulditi3 pattern when TARGET_64BIT.
@@ -1586,7 +1587,7 @@
   "@
    mult<u>\t%1,%2
    mulhi<u>\t%0,%1,%2"
-  [(set_attr "type" "imul")
+  [(set_attr "type" "imul,imul3")
    (set_attr "mode" "SI")])
 
 (define_insn "*<su>mulsi3_highpart_neg_mulhi_internal"
@@ -1604,7 +1605,7 @@
   "@
    mulshi<u>\t%.,%1,%2
    mulshi<u>\t%0,%1,%2"
-  [(set_attr "type" "imul")
+  [(set_attr "type" "imul,imul3")
    (set_attr "mode" "SI")])
 
 ;; Disable unsigned multiplication for -mfix-vr4120.  This is for VR4120
