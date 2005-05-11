@@ -9950,7 +9950,7 @@ contains_label_1 (tree *tp,
     }
 }
 
-/* Checks wheter the sub-tree ST contains a label LABEL_EXPR which is
+/* Checks whether the sub-tree ST contains a label LABEL_EXPR which is
    accessible from outside the sub-tree. Returns NULL_TREE if no
    addressable label is found.  */
 
