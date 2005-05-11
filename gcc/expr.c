@@ -1452,7 +1452,6 @@ static bool
 emit_block_move_via_movstr (rtx x, rtx y, rtx size, unsigned int align)
 {
   rtx opalign = GEN_INT (align / BITS_PER_UNIT);
-  int save_volatile_ok = volatile_ok;
   enum machine_mode mode;
 
   /* Since this is a move insn, we don't care about volatility.  */
@@ -1502,7 +1501,7 @@ emit_block_move_via_movstr (rtx x, rtx y, rtx size, unsigned int align)
 	  if (pat)
 	    {
 	      emit_insn (pat);
-	      volatile_ok = save_volatile_ok;
+	      volatile_ok = 0;
 	      return true;
 	    }
 	  else
@@ -1510,7 +1509,7 @@ emit_block_move_via_movstr (rtx x, rtx y, rtx size, unsigned int align)
 	}
     }
 
-  volatile_ok = save_volatile_ok;
+  volatile_ok = 0;
   return false;
 }
 

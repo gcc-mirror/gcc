@@ -1592,7 +1592,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
      front-end routine) and use it.  */
   alias = get_alias_set (t);
 
-  MEM_VOLATILE_P (ref) |= TYPE_VOLATILE (type);
+  MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
   RTX_UNCHANGING_P (ref)
     |= ((lang_hooks.honor_readonly
