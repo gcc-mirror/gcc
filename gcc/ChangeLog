@@ -1,3 +1,14 @@
+2005-05-11  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-data-ref.c (find_data_references_in_loop): Give up when
+	the body of the loop contains a CALL_EXPR or an ASM_EXPR: they
+	may embed arbitrary side effects.
+	Remove the assumption that GIMPLE form contains a single array
+	access per statement.
+	When the statement contains virtual operands, fail if it is not
+	a MODIFY_EXPR or a CALL_EXPR.
+	Return after the dont know node is inserted.
+
 2005-05-11  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.md (negsf2, negdf2): Permit these expands when compiling for VFP.
