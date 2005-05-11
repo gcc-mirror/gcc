@@ -1588,7 +1588,7 @@ version.o: version.c version.h $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 	-DDEVPHASE=$(DEVPHASE_s) -c $(srcdir)/version.c $(OUTPUT_OPTION)
 
 gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	varray.h $(HASHTAB_H) $(SPLAY_TREE_H) bitmap.h $(TREE_H) $(RTL_H) \
+	$(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) bitmap.h $(TREE_H) $(RTL_H) \
 	function.h insn-config.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
 	cselib.h insn-addr.h $(OPTABS_H) libfuncs.h debug.h $(GGC_H) \
 	$(CGRAPH_H) $(TREE_FLOW_H) reload.h $(CPP_ID_DATA_H)
@@ -2743,7 +2743,8 @@ build/genattrtab.o : genattrtab.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H) \
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(GGC_H) gensupport.h genattrtab.h
 
 build/genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h varray.h genattrtab.h $(HASHTAB_H)
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(VARRAY_H) genattrtab.h \
+  $(HASHTAB_H)
 
 build/genoutput.o : genoutput.c $(RTL_BASE_H) $(BCONFIG_H) \
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
@@ -2811,7 +2812,7 @@ build/rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) $(RTL_H) \
 build/print-rtl.o: print-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
   $(RTL_BASE_H)
 build/varray.o: varray.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) \
-  varray.h $(RTL_BASE_H) $(GGC_H) $(TREE_H) bitmap.h errors.h
+  $(VARRAY_H) $(RTL_BASE_H) $(GGC_H) $(TREE_H) bitmap.h errors.h
 
 #
 # Remake internationalization support.
