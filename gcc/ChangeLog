@@ -1,3 +1,29 @@
+2005-05-11  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.md (type): Add imul3.
+	(length, hazard, may_clobber_hilo): Check for imul3.
+	(mulsi3_mult3, muldi3_mult3, *muls, <su>mulsi3_highpart_mulhi_internal)
+	(*<su>mulsi3_highpart_neg_mulhi_internal): Set attr to imul3.
+	* config/mips/24k.md (r24k_int_mul3): Enable this reservation
+	for a 3 operand mul and its bypasses.
+	* config/mips/3000.md (r3k_imul): Add imul3 to reservations.
+	* config/mips/4000.md (r4k_imul): Likewise.
+	* config/mips/4100.md (r4100_imul_si, r4100_imul_di):  Likewise.
+	* config/mips/4130.md (vr4130_class, vr4130_mulsi)
+	(vr4130_muldi): Likewise.
+	* config/mips/4300.md (r4300_imul_si, r4300_imul_di): Likewise.
+	* config/mips/4600.md (r4600_imul, r4650_imul): Likewise.
+	* config/mips/5000.md (r5k_imul_si, r5k_imul_di): Likewise.
+	* config/mips/5400.md (ir_vr54_imul_si, ir_vr54_imul_di)
+	(ir_vr54_imadd_si): Likewise.
+	* config/mips/5500.md (ir_vr55_imul_si, ir_vr55_imul_di):  Likewise.
+	* config/mips/7000.md (rm7_impy_si_mult, rm7_impy_si_mul)
+	(rm7_impy_di): Likewise.
+	* config/mips/9000.md (rm9k_mulsi, rm9k_muldi):  Likewise.
+	* config/mips/generic.md (generic_imul): Likewise.
+	* config/mips/sb1.md (ir_sb1_mulsi, ir_sb1_muldi): Likewise.
+	* config/mips/sr71k.md (ir_sr70_imul_si, ir_sr70_imul_di):  Likewise.
+
 2005-05-11  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR middle-end/20371:

@@ -296,7 +296,7 @@
 
 (define_insn_reservation "ir_sb1_mulsi" 3
   (and (eq_attr "cpu" "sb1")
-       (and (eq_attr "type" "imul,imadd")
+       (and (eq_attr "type" "imul,imul3,imadd")
 	    (eq_attr "mode" "SI")))
   "sb1_ex1+sb1_mul")
 
@@ -305,7 +305,7 @@
 
 (define_insn_reservation "ir_sb1_muldi" 4
   (and (eq_attr "cpu" "sb1")
-       (and (eq_attr "type" "imul")
+       (and (eq_attr "type" "imul,imul3")
 	    (eq_attr "mode" "DI")))
   "sb1_ex1+sb1_mul, sb1_mul")
 

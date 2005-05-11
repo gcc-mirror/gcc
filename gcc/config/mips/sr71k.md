@@ -209,14 +209,14 @@
 (define_insn_reservation "ir_sr70_imul_si"
                                  4
                           (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "imul,imadd")
+                               (and (eq_attr "type" "imul,imul3,imadd")
                                     (eq_attr "mode" "SI")))
                          "ri_alux,ipu_alux,ipu_macc_iter")
 
 (define_insn_reservation "ir_sr70_imul_di"
                                  6
                           (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "imul,imadd")
+                               (and (eq_attr "type" "imul,imul3,imadd")
                                     (eq_attr "mode" "DI")))
                          "ri_alux,ipu_alux,(ipu_macc_iter*3)")
 
