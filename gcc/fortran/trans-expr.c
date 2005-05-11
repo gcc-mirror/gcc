@@ -1288,7 +1288,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
       if (!se->direct_byref)
 	{
-	  if (sym->result->attr.dimension)
+	  if (sym->attr.dimension)
 	    {
 	      if (flag_bounds_check)
 		{
