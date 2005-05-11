@@ -356,6 +356,13 @@ new_unit (unit_flags * flags)
   u->s = s;
   u->flags = *flags;
 
+  if (flags->position == POSITION_APPEND)
+  {
+    if (sseek (u->s, file_length (u->s)) == FAILURE)
+      generate_error (ERROR_OS, NULL);
+    u->endfile = AT_ENDFILE;
+  }
+
   /* Unspecified recl ends up with a processor dependent value.  */
 
   u->recl = (ioparm.recl_in != 0) ? ioparm.recl_in : g.max_offset;
