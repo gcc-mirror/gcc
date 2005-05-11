@@ -124,150 +124,131 @@
 ;;
 
 
-(define_insn_reservation "ir_sr70_unknown"
-                               1
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "unknown"))
-                         "serial_dispatch")
+(define_insn_reservation "ir_sr70_unknown" 1
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "unknown"))
+  "serial_dispatch")
 
 
 ;; Assume prediction fails.
-(define_insn_reservation "ir_sr70_branch"
-                               6
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "branch,jump,call"))
-                         "ri_branch")
+(define_insn_reservation "ir_sr70_branch" 6
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "branch,jump,call"))
+  "ri_branch")
 
-(define_insn_reservation "ir_sr70_load"
-                               2
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "load"))
-                         "ri_mem")
+(define_insn_reservation "ir_sr70_load" 2
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "load"))
+  "ri_mem")
 
-(define_insn_reservation "ir_sr70_store"
-                               1
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "store"))
-                         "ri_mem")
+(define_insn_reservation "ir_sr70_store" 1
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "store"))
+  "ri_mem")
 
 
 ;;
 ;; float loads/stores flow through both cpu and cp1...
 ;;
-(define_insn_reservation "ir_sr70_fload"
-                               9
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "fpload,fpidxload"))
-                         "(cpu_iss+cp1_iss),(ri_mem+rf_ldmem)")
+(define_insn_reservation "ir_sr70_fload" 9
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "fpload,fpidxload"))
+  "(cpu_iss+cp1_iss),(ri_mem+rf_ldmem)")
 
-(define_insn_reservation "ir_sr70_fstore"
-                               1
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "fpstore,fpidxstore"))
-                         "(cpu_iss+cp1_iss),(fpu_mov+ri_mem)")
+(define_insn_reservation "ir_sr70_fstore" 1
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "fpstore,fpidxstore"))
+  "(cpu_iss+cp1_iss),(fpu_mov+ri_mem)")
 
 
 ;; This reservation is for conditional move based on integer
 ;; or floating point CC.
-(define_insn_reservation "ir_sr70_condmove"
-                               4
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "condmove"))
-                         "ri_insns")
+(define_insn_reservation "ir_sr70_condmove" 4
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "condmove"))
+  "ri_insns")
 
 ;; Try to discriminate move-from-cp1 versus move-to-cp1 as latencies
 ;; are different. Like float load/store, these insns use multiple
 ;; resources simultaneously
-(define_insn_reservation "ir_sr70_xfer_from"
-                               6
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "xfer")
-                                    (eq_attr "mode" "!SF,DF,FPSW")))
-                         "(cpu_iss+cp1_iss),(fpu_mov+ri_mem)")
+(define_insn_reservation "ir_sr70_xfer_from" 6
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "xfer")
+	    (eq_attr "mode" "!SF,DF,FPSW")))
+  "(cpu_iss+cp1_iss),(fpu_mov+ri_mem)")
 
-(define_insn_reservation "ir_sr70_xfer_to"
-                               9
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "xfer")
-                                    (eq_attr "mode" "SF,DF")))
-                         "(cpu_iss+cp1_iss),(ri_mem+rf_ldmem)")
+(define_insn_reservation "ir_sr70_xfer_to" 9
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "xfer")
+	    (eq_attr "mode" "SF,DF")))
+  "(cpu_iss+cp1_iss),(ri_mem+rf_ldmem)")
 
-(define_insn_reservation "ir_sr70_hilo"
-                               1
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "mthilo,mfhilo"))
-                         "ri_insns")
+(define_insn_reservation "ir_sr70_hilo" 1
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "mthilo,mfhilo"))
+  "ri_insns")
 
-(define_insn_reservation "ir_sr70_arith"
-                               1
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "arith,shift,slt,clz,const,trap"))
-                         "ri_insns")
+(define_insn_reservation "ir_sr70_arith" 1
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "arith,shift,slt,clz,const,trap"))
+  "ri_insns")
 
 ;; emulate repeat (dispatch stall) by spending extra cycle(s) in
 ;; in iter unit
-(define_insn_reservation "ir_sr70_imul_si"
-                                 4
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "imul,imul3,imadd")
-                                    (eq_attr "mode" "SI")))
-                         "ri_alux,ipu_alux,ipu_macc_iter")
+(define_insn_reservation "ir_sr70_imul_si" 4
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "imul,imul3,imadd")
+	    (eq_attr "mode" "SI")))
+  "ri_alux,ipu_alux,ipu_macc_iter")
 
-(define_insn_reservation "ir_sr70_imul_di"
-                                 6
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "imul,imul3,imadd")
-                                    (eq_attr "mode" "DI")))
-                         "ri_alux,ipu_alux,(ipu_macc_iter*3)")
+(define_insn_reservation "ir_sr70_imul_di" 6
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "imul,imul3,imadd")
+	    (eq_attr "mode" "DI")))
+  "ri_alux,ipu_alux,(ipu_macc_iter*3)")
 
 ;; Divide algorithm is early out with best latency of 7 pcycles.
 ;; Use worst case for scheduling purposes.
-(define_insn_reservation "ir_sr70_idiv_si"
-                                 41
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "idiv")
-                                    (eq_attr "mode" "SI")))
-                         "ri_alux,ipu_alux,(ipu_macc_iter*38)")
+(define_insn_reservation "ir_sr70_idiv_si" 41
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "idiv")
+	    (eq_attr "mode" "SI")))
+  "ri_alux,ipu_alux,(ipu_macc_iter*38)")
 
-(define_insn_reservation "ir_sr70_idiv_di"
-                                 73
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "idiv")
-                                    (eq_attr "mode" "DI")))
-                         "ri_alux,ipu_alux,(ipu_macc_iter*70)")
+(define_insn_reservation "ir_sr70_idiv_di" 73
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "idiv")
+	    (eq_attr "mode" "DI")))
+  "ri_alux,ipu_alux,(ipu_macc_iter*70)")
 
 ;; extra reservations of fpu_fpu are for repeat latency
-(define_insn_reservation "ir_sr70_fadd_sf"
-                               8
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fadd")
-                                    (eq_attr "mode" "SF")))
-                         "rf_insn,fpu_fpu")
+(define_insn_reservation "ir_sr70_fadd_sf" 8
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "fadd")
+	    (eq_attr "mode" "SF")))
+  "rf_insn,fpu_fpu")
 
-(define_insn_reservation "ir_sr70_fadd_df"
-                               10
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fadd")
-                                    (eq_attr "mode" "DF")))
-                         "rf_insn,fpu_fpu")
+(define_insn_reservation "ir_sr70_fadd_df" 10
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "fadd")
+	    (eq_attr "mode" "DF")))
+  "rf_insn,fpu_fpu")
 
 ;; Latencies for MADD,MSUB, NMADD, NMSUB assume the Multiply is fused
 ;; with the sub or add.
-(define_insn_reservation "ir_sr70_fmul_sf"
-                               8
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fmul,fmadd")
-                                    (eq_attr "mode" "SF")))
-                         "rf_insn,fpu_fpu")
+(define_insn_reservation "ir_sr70_fmul_sf" 8
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "fmul,fmadd")
+	    (eq_attr "mode" "SF")))
+  "rf_insn,fpu_fpu")
 
 ;; tie up the fpu unit to emulate the balance for the "repeat
 ;; rate" of 8 (2 are spent in the iss unit)
-(define_insn_reservation "ir_sr70_fmul_df"
-                               16
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fmul,fmadd")
-                                    (eq_attr "mode" "DF")))
-                         "rf_insn,fpu_fpu*6")
+(define_insn_reservation "ir_sr70_fmul_df" 16
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "fmul,fmadd")
+	    (eq_attr "mode" "DF")))
+  "rf_insn,fpu_fpu*6")
 
 
 ;; RECIP insn uses same type attr as div, and for SR3, has same
@@ -275,77 +256,66 @@
 ;; 28 -- only way to fix this is to introduce new insn attrs.
 ;; cycles spent in iter unit are designed to satisfy balance
 ;; of "repeat" latency after insn uses up rf_multi1 reservation
-(define_insn_reservation "ir_sr70_fdiv_sf"
-                                60
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fdiv,frdiv")
-                                    (eq_attr "mode" "SF")))
-                         "rf_multi1+(fpu_iter*51)")
+(define_insn_reservation "ir_sr70_fdiv_sf" 60
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "fdiv,frdiv")
+	    (eq_attr "mode" "SF")))
+  "rf_multi1+(fpu_iter*51)")
 
-(define_insn_reservation "ir_sr70_fdiv_df"
-                                120
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fdiv,frdiv")
-                                    (eq_attr "mode" "DF")))
-                         "rf_multi1+(fpu_iter*109)")
+(define_insn_reservation "ir_sr70_fdiv_df" 120
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "fdiv,frdiv")
+	    (eq_attr "mode" "DF")))
+  "rf_multi1+(fpu_iter*109)")
 
-(define_insn_reservation "ir_sr70_fabs"
-                               4
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "fabs,fneg,fmove"))
-                         "rf_insn,fpu_fpu")
+(define_insn_reservation "ir_sr70_fabs" 4
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "fabs,fneg,fmove"))
+  "rf_insn,fpu_fpu")
 
-(define_insn_reservation "ir_sr70_fcmp"
-                               10
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "fcmp"))
-                         "rf_insn,fpu_fpu")
+(define_insn_reservation "ir_sr70_fcmp" 10
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "fcmp"))
+  "rf_insn,fpu_fpu")
 
 ;; "fcvt" type attribute covers a number of diff insns, most have the same
 ;; latency descriptions, a few vary. We use the
 ;; most common timing (which is also worst case).
-(define_insn_reservation "ir_sr70_fcvt"
-                               12
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "fcvt"))
-                         "rf_insn,fpu_fpu*4")
+(define_insn_reservation "ir_sr70_fcvt" 12
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "fcvt"))
+  "rf_insn,fpu_fpu*4")
 
-(define_insn_reservation "ir_sr70_fsqrt_sf"
-                                62
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fsqrt")
-                                    (eq_attr "mode" "SF")))
-                         "rf_multi1+(fpu_iter*53)")
+(define_insn_reservation "ir_sr70_fsqrt_sf" 62
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "fsqrt")
+	    (eq_attr "mode" "SF")))
+  "rf_multi1+(fpu_iter*53)")
 
-(define_insn_reservation "ir_sr70_fsqrt_df"
-                                122
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fsqrt")
-                                    (eq_attr "mode" "DF")))
-                         "rf_multi1+(fpu_iter*111)")
+(define_insn_reservation "ir_sr70_fsqrt_df" 122
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "fsqrt")
+	    (eq_attr "mode" "DF")))
+  "rf_multi1+(fpu_iter*111)")
 
-(define_insn_reservation "ir_sr70_frsqrt_sf"
-                                48
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "frsqrt")
-                                    (eq_attr "mode" "SF")))
-                         "rf_multi1+(fpu_iter*39)")
+(define_insn_reservation "ir_sr70_frsqrt_sf" 48
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "frsqrt")
+	    (eq_attr "mode" "SF")))
+  "rf_multi1+(fpu_iter*39)")
 
-(define_insn_reservation "ir_sr70_frsqrt_df"
-                                240
-                          (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "frsqrt")
-                                    (eq_attr "mode" "DF")))
-                         "rf_multi1+(fpu_iter*229)")
+(define_insn_reservation "ir_sr70_frsqrt_df" 240
+  (and (eq_attr "cpu" "sr71000")
+       (and (eq_attr "type" "frsqrt")
+	    (eq_attr "mode" "DF")))
+  "rf_multi1+(fpu_iter*229)")
 
-(define_insn_reservation "ir_sr70_multi"
-                               1
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "multi"))
-                         "serial_dispatch")
+(define_insn_reservation "ir_sr70_multi" 1
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "multi"))
+  "serial_dispatch")
 
-(define_insn_reservation "ir_sr70_nop"
-                               1
-                          (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "nop"))
-                         "ri_insns")
+(define_insn_reservation "ir_sr70_nop" 1
+  (and (eq_attr "cpu" "sr71000")
+       (eq_attr "type" "nop"))
+  "ri_insns")
