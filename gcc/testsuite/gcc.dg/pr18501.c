@@ -9,7 +9,7 @@ int something (void);
 void
 bitmap_print_value_set (void)
 {
-  unsigned first;	/* { dg-warning "may be used" "conditional in loop" } */
+  unsigned first;	/* { dg-warning "may be used" "conditional in loop" { xfail *-*-* } } */
   
   for (; bmp_iter_set (); )
     {

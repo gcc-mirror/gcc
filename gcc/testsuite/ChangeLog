@@ -1,3 +1,15 @@
+2005-05-10  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/pr18501.c: XFAIL.
+	* gcc.dg/tree-ssa/loop-4.c: Fix expected pattern.
+	* gcc.dg/tree-ssa/pr20913.c: Change to link-time test.
+	* gcc.dg/tree-ssa/ssa-ccp-2.c: Change to a .optimized scan.
+	* gcc.dg/tree-ssa/ssa-ccp-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-9.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-ccp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-7.c: Change to a .fre scan.
+	* gcc.dg/tree-ssa/ssa-pre-8.c: Likewise.
+
 2005-05-10  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/20178
