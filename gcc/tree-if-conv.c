@@ -241,13 +241,6 @@ tree_if_convert_stmt (struct loop *  loop, tree t, tree cond,
 	 program.  */
       break;
 
-    case GOTO_EXPR:
-      /* Unconditional goto */
-      add_to_predicate_list (bb_for_stmt (TREE_OPERAND (t, 1)), cond);
-      bsi_remove (bsi);
-      cond = NULL_TREE;
-      break;
-
     case COND_EXPR:
       /* Update destination blocks' predicate list and remove this
 	 condition expression.  */
@@ -401,7 +394,7 @@ if_convertible_modify_expr_p (struct loop *loop, basic_block bb, tree m_expr)
 /* Return true, iff STMT is if-convertible.
    Statement is if-convertible if,
    - It is if-convertible MODIFY_EXPR
-   - IT is LABEL_EXPR, GOTO_EXPR or COND_EXPR.
+   - IT is LABEL_EXPR or COND_EXPR.
    STMT is inside block BB, which is inside loop LOOP.  */
 
 static bool
@@ -418,7 +411,6 @@ if_convertible_stmt_p (struct loop *loop, basic_block bb, tree stmt)
 	return false;
       break;
 
-    case GOTO_EXPR:
     case COND_EXPR:
       break;
 
