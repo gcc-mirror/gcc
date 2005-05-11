@@ -8418,6 +8418,7 @@ fold (tree expr)
       if (code == TRUNC_MOD_EXPR
 	  && !TYPE_UNSIGNED (type)
 	  && TREE_CODE (arg1) == INTEGER_CST
+	  && !TREE_CONSTANT_OVERFLOW (arg1)
 	  && TREE_INT_CST_HIGH (arg1) < 0
 	  && !flag_trapv
 	  /* Avoid this transformation if C is INT_MIN, i.e. C == -C.  */
