@@ -576,6 +576,12 @@ set_rhs (tree *stmt_p, tree expr)
       if (!is_gimple_val (TREE_OPERAND (expr, 0)))
 	return false;
     }
+  else if (code == ADDR_EXPR)
+    {
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ARRAY_REF
+	  && !is_gimple_val (TREE_OPERAND (TREE_OPERAND (expr, 0), 1)))
+	return false;
+    }
   else if (code == COMPOUND_EXPR)
     return false;
 

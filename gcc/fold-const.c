@@ -6259,55 +6259,81 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
 }
 
 /* Tries to replace &a[idx] CODE s * delta with &a[idx CODE delta], if s is
-   step of the array.  ADDR is the address. MULT is the multiplicative expression.
+   step of the array.  Reconstructs s and delta in the case of s * delta
+   being an integer constant (and thus already folded).
+   ADDR is the address. MULT is the multiplicative expression.
    If the function succeeds, the new address expression is returned.  Otherwise
    NULL_TREE is returned.  */
 
 static tree
-try_move_mult_to_index (enum tree_code code, tree addr, tree mult)
+try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
 {
   tree s, delta, step;
-  tree arg0 = TREE_OPERAND (mult, 0), arg1 = TREE_OPERAND (mult, 1);
   tree ref = TREE_OPERAND (addr, 0), pref;
   tree ret, pos;
   tree itype;
 
-  STRIP_NOPS (arg0);
-  STRIP_NOPS (arg1);
+  /* Canonicalize op1 into a possibly non-constant delta
+     and an INTEGER_CST s.  */
+  if (TREE_CODE (op1) == MULT_EXPR)
+    {
+      tree arg0 = TREE_OPERAND (op1, 0), arg1 = TREE_OPERAND (op1, 1);
+
+      STRIP_NOPS (arg0);
+      STRIP_NOPS (arg1);
   
-  if (TREE_CODE (arg0) == INTEGER_CST)
-    {
-      s = arg0;
-      delta = arg1;
+      if (TREE_CODE (arg0) == INTEGER_CST)
+        {
+          s = arg0;
+          delta = arg1;
+        }
+      else if (TREE_CODE (arg1) == INTEGER_CST)
+        {
+          s = arg1;
+          delta = arg0;
+        }
+      else
+        return NULL_TREE;
     }
-  else if (TREE_CODE (arg1) == INTEGER_CST)
+  else if (TREE_CODE (op1) == INTEGER_CST)
     {
-      s = arg1;
-      delta = arg0;
+      delta = op1;
+      s = NULL_TREE;
     }
   else
-    return NULL_TREE;
+    {
+      /* Simulate we are delta * 1.  */
+      delta = op1;
+      s = integer_one_node;
+    }
 
   for (;; ref = TREE_OPERAND (ref, 0))
     {
       if (TREE_CODE (ref) == ARRAY_REF)
 	{
 	  step = array_ref_element_size (ref);
-
 	  if (TREE_CODE (step) != INTEGER_CST)
 	    continue;
 
-	  itype = TREE_TYPE (step);
+	  if (s)
+	    {
+	      if (! tree_int_cst_equal (step, s))
+                continue;
+	    }
+	  else
+	    {
+	      /* Try if delta is a multiple of step.  */
+	      tree mod = int_const_binop (TRUNC_MOD_EXPR, delta, step, 0);
+	      if (!integer_zerop (mod))
+		continue;
 
-	  /* If the type sizes do not match, we might run into problems
-	     when one of them would overflow.  */
-	  if (TYPE_PRECISION (itype) != TYPE_PRECISION (TREE_TYPE (s)))
+	      delta = int_const_binop (EXACT_DIV_EXPR, delta, step, 0);
+	    }
+
+	  itype = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
+	  if (! itype)
 	    continue;
 
-	  if (!operand_equal_p (step, fold_convert (itype, s), 0))
-	    continue;
-
-	  delta = fold_convert (itype, delta);
 	  break;
 	}
 
@@ -6330,8 +6356,9 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree mult)
     }
 
   TREE_OPERAND (pos, 1) = fold_build2 (code, itype,
-				       TREE_OPERAND (pos, 1),
-				       delta);
+				       fold_convert (itype,
+						     TREE_OPERAND (pos, 1)),
+				       fold_convert (itype, delta));
 
   return build1 (ADDR_EXPR, TREE_TYPE (addr), ret);
 }
@@ -7441,15 +7468,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  /* Try replacing &a[i1] + c * i2 with &a[i1 + i2], if c is step
 	     of the array.  Loop optimizer sometimes produce this type of
 	     expressions.  */
-	  if (TREE_CODE (arg0) == ADDR_EXPR
-	      && TREE_CODE (arg1) == MULT_EXPR)
+	  if (TREE_CODE (arg0) == ADDR_EXPR)
 	    {
 	      tem = try_move_mult_to_index (PLUS_EXPR, arg0, arg1);
 	      if (tem)
 		return fold_convert (type, fold (tem));
 	    }
-	  else if (TREE_CODE (arg1) == ADDR_EXPR
-		   && TREE_CODE (arg0) == MULT_EXPR)
+	  else if (TREE_CODE (arg1) == ADDR_EXPR)
 	    {
 	      tem = try_move_mult_to_index (PLUS_EXPR, arg1, arg0);
 	      if (tem)
@@ -7867,8 +7892,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       /* Try replacing &a[i1] - c * i2 with &a[i1 - i2], if c is step
 	 of the array.  Loop optimizer sometimes produce this type of
 	 expressions.  */
-      if (TREE_CODE (arg0) == ADDR_EXPR
-	  && TREE_CODE (arg1) == MULT_EXPR)
+      if (TREE_CODE (arg0) == ADDR_EXPR)
 	{
 	  tem = try_move_mult_to_index (MINUS_EXPR, arg0, arg1);
 	  if (tem)

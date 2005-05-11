@@ -1,5 +1,18 @@
 2005-05-11  Richard Guenther  <rguenth@gcc.gnu.org>
 
+	PR middle-end/19807
+	PR tree-optimization/19639
+	* fold-const.c (try_move_mult_to_index): Handle INTEGER_CST
+	and generic summands for char* as s * delta, too, folding &a[i]
+	CODE x to &a[i CODE x/s].  Use tree_int_cst_equal
+	for comparison of steps.  Convert types for index addition.
+	(fold_binary): Adjust the callers to always dispatch to
+	try_move_mult_to_index.
+	* tree-ssa-propagate.c (set_rhs): Avoid setting rhs to
+	expr with non-gimple ARRAY_REF offset.
+
+2005-05-11  Richard Guenther  <rguenth@gcc.gnu.org>
+
 	* fold-const.c (fold_indirect_ref_1): Avoid removing
 	NOP_EXPRs with type qualifiers like const.
 
