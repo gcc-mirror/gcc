@@ -1,3 +1,8 @@
+2005-05-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* resolve.c (resolve_symbol): Copy 'pointer' and 'dimension'
+	attribute from result symbol to function symbol.
+
 2005-05-10  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/20178
