@@ -1,5 +1,11 @@
 2005-05-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/21260
+	* io.c (check_format): Look for literal characters inside
+	hollerith constant.
+
+2005-05-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* resolve.c (resolve_symbol): Copy 'pointer' and 'dimension'
 	attribute from result symbol to function symbol.
 	* trans-expr.c (gfc_conv_function_call): Look at sym->attr.dimension
