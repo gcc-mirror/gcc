@@ -2218,7 +2218,6 @@ compute_all_dependences (varray_type datarefs,
 tree 
 find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 {
-  bool dont_know_node_not_inserted = true;
   basic_block bb, *bbs;
   unsigned int i;
   block_stmt_iterator bsi;
@@ -2233,28 +2232,61 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
         {
 	  tree stmt = bsi_stmt (bsi);
 
-	  if (TREE_CODE (stmt) != MODIFY_EXPR)
-	    continue;
+	  /* ASM_EXPR and CALL_EXPR may embed arbitrary side effects.
+	     Calls have side-effects, except those to const or pure
+	     functions.  */
+	  if ((TREE_CODE (stmt) == CALL_EXPR
+	       && !(call_expr_flags (stmt) & (ECF_CONST | ECF_PURE)))
+	      || (TREE_CODE (stmt) == ASM_EXPR
+		  && ASM_VOLATILE_P (stmt)))
+	    goto insert_dont_know_node;
 
 	  if (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
 	    continue;
-	  
-	  /* In the GIMPLE representation, a modify expression
-  	     contains a single load or store to memory.  */
-	  if (TREE_CODE (TREE_OPERAND (stmt, 0)) == ARRAY_REF)
-	    VARRAY_PUSH_GENERIC_PTR 
-		    (*datarefs, analyze_array (stmt, TREE_OPERAND (stmt, 0), 
-					       false));
 
-	  else if (TREE_CODE (TREE_OPERAND (stmt, 1)) == ARRAY_REF)
-	    VARRAY_PUSH_GENERIC_PTR 
-		    (*datarefs, analyze_array (stmt, TREE_OPERAND (stmt, 1), 
-					       true));
-  	  else
+	  switch (TREE_CODE (stmt))
 	    {
-	      if (dont_know_node_not_inserted)
+	    case MODIFY_EXPR:
+	      if (TREE_CODE (TREE_OPERAND (stmt, 0)) == ARRAY_REF)
+		VARRAY_PUSH_GENERIC_PTR 
+		  (*datarefs, analyze_array (stmt, TREE_OPERAND (stmt, 0),
+					     false));
+
+	      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == ARRAY_REF)
+		VARRAY_PUSH_GENERIC_PTR 
+		  (*datarefs, analyze_array (stmt, TREE_OPERAND (stmt, 1),
+					     true));
+
+	      if (TREE_CODE (TREE_OPERAND (stmt, 0)) != ARRAY_REF
+		  && TREE_CODE (TREE_OPERAND (stmt, 1)) != ARRAY_REF)
+		goto insert_dont_know_node;
+
+	      break;
+
+	    case CALL_EXPR:
+	      {
+		tree args;
+		bool one_inserted = false;
+
+		for (args = TREE_OPERAND (stmt, 1); args; args = TREE_CHAIN (args))
+		  if (TREE_CODE (TREE_VALUE (args)) == ARRAY_REF)
+		    {
+		      VARRAY_PUSH_GENERIC_PTR 
+			(*datarefs, analyze_array (stmt, TREE_VALUE (args), true));
+		      one_inserted = true;
+		    }
+
+		if (!one_inserted)
+		  goto insert_dont_know_node;
+
+		break;
+	      }
+
+	    default:
 		{
 		  struct data_reference *res;
+
+		insert_dont_know_node:;
 		  res = xmalloc (sizeof (struct data_reference));
 		  DR_STMT (res) = NULL_TREE;
 		  DR_REF (res) = NULL_TREE;
@@ -2262,7 +2294,9 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 		  DR_BASE_NAME (res) = NULL;
 		  DR_IS_READ (res) = false;
 		  VARRAY_PUSH_GENERIC_PTR (*datarefs, res);
-		  dont_know_node_not_inserted = false;
+
+		  free (bbs);
+		  return chrec_dont_know;
 		}
 	    }
 
@@ -2277,7 +2311,7 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 
   free (bbs);
 
-  return dont_know_node_not_inserted ? NULL_TREE : chrec_dont_know;
+  return NULL_TREE;
 }
 
 
