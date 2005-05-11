@@ -1,3 +1,7 @@
+2005-05-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/24k.md: Remove trailing whitespace.
+
 2005-05-11  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.md (type): Add imul3.
