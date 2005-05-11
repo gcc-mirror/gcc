@@ -1,3 +1,30 @@
+2005-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (tree-eh.o: Kill gt-tree-eh.h dependency.
+	(GTFILES): add except.h.
+	* except.c (eh_status): Add throw_stmt_table.
+	(set_eh_throw_stmt_table, get_eh_throw_stmt_table): New functions.
+	* except.h (add_stmt_to_eh_region_fn, remove_stmt_from_eh_region_fn,
+	lookup_stmt_eh_region_fn): Declare.
+	(throw_stmt_node): New structure.
+	(set_eh_throw_stmt_table, get_eh_throw_stmt_table): New.
+	* gengtype.c (open_base_files): Add except.h to inlines.
+	* tree-eh.c (throw_stmt_node): Kill.
+	(record_stmt_eh_region): Update.
+	(add_stmt_to_eh_region_fn): Break out from ...
+	(add_stmt_to_eh_region): ... here.
+	(remove_stmt_from_eh_region_fn): Break out from ...
+	(remove_stmt_from_eh_region): ... here.
+	(lookup_stmt_eh_region_fn): Break out from ...
+	(lookup_stmt_eh_region): ... here.
+	(honor_protect_cleanup_actions): Use build_resx.
+	(lower_try_finally_onedest): Likewise.
+	(lower_try_finally_copy): Likewise.
+	(lower_try_finally_switch): Likewise.
+	(lower_eh_constructs): Update eh table construction.
+	* tree.c (build_resx): New.
+	* tree.h (build_resx): Declare.
+
 2005-05-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* libgcov.c (gcov_exit): Set prefix_length to 0 if no relocation

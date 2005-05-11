@@ -105,6 +105,9 @@ extern void verify_eh_tree (struct function *);
 extern void dump_eh_tree (FILE *, struct function *);
 
 /* tree-eh.c */
+extern void add_stmt_to_eh_region_fn (struct function *, tree, int);
+extern bool remove_stmt_from_eh_region_fn (struct function *, tree);
+extern int lookup_stmt_eh_region_fn (struct function *, tree);
 extern int lookup_stmt_eh_region (tree);
 extern bool verify_eh_edges (tree);
 
@@ -158,3 +161,12 @@ extern tree (*lang_eh_runtime_type) (tree);
 #else
 # define USING_SJLJ_EXCEPTIONS		MUST_USE_SJLJ_EXCEPTIONS
 #endif
+
+struct throw_stmt_node GTY(())
+{
+  tree stmt;
+  int region_nr;
+};
+
+extern struct htab *get_eh_throw_stmt_table (struct function *);
+extern void set_eh_throw_stmt_table (struct function *, struct htab *);

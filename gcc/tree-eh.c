@@ -81,14 +81,6 @@ struct_ptr_hash (const void *a)
    compared to those that can.  We should be saving some amount
    of space by only allocating memory for those that can throw.  */
 
-struct throw_stmt_node GTY(())
-{
-  tree stmt;
-  int region_nr;
-};
-
-static GTY((param_is (struct throw_stmt_node))) htab_t throw_stmt_table;
-
 static void
 record_stmt_eh_region (struct eh_region *region, tree t)
 {
@@ -102,7 +94,25 @@ record_stmt_eh_region (struct eh_region *region, tree t)
   n->stmt = t;
   n->region_nr = get_eh_region_number (region);
 
-  slot = htab_find_slot (throw_stmt_table, n, INSERT);
+  slot = htab_find_slot (get_eh_throw_stmt_table (cfun), n, INSERT);
+  gcc_assert (!*slot);
+  *slot = n;
+}
+
+void
+add_stmt_to_eh_region_fn (struct function *ifun, tree t, int num)
+{
+  struct throw_stmt_node *n;
+  void **slot;
+
+  gcc_assert (num >= 0);
+  gcc_assert (TREE_CODE (t) != RESX_EXPR);
+
+  n = ggc_alloc (sizeof (*n));
+  n->stmt = t;
+  n->region_nr = num;
+
+  slot = htab_find_slot (get_eh_throw_stmt_table (ifun), n, INSERT);
   gcc_assert (!*slot);
   *slot = n;
 }
@@ -110,54 +120,59 @@ record_stmt_eh_region (struct eh_region *region, tree t)
 void
 add_stmt_to_eh_region (tree t, int num)
 {
-  struct throw_stmt_node *n;
-  void **slot;
-
-  gcc_assert (num >= 0);
-
-  n = ggc_alloc (sizeof (*n));
-  n->stmt = t;
-  n->region_nr = num;
-
-  slot = htab_find_slot (throw_stmt_table, n, INSERT);
-  gcc_assert (!*slot);
-  *slot = n;
+  add_stmt_to_eh_region_fn (cfun, t, num);
 }
 
 bool
-remove_stmt_from_eh_region (tree t)
+remove_stmt_from_eh_region_fn (struct function *ifun, tree t)
 {
   struct throw_stmt_node dummy;
   void **slot;
 
-  if (!throw_stmt_table)
+  if (!get_eh_throw_stmt_table (ifun))
     return false;
 
   dummy.stmt = t;
-  slot = htab_find_slot (throw_stmt_table, &dummy, NO_INSERT);
+  slot = htab_find_slot (get_eh_throw_stmt_table (ifun), &dummy,
+                        NO_INSERT);
   if (slot)
     {
-      htab_clear_slot (throw_stmt_table, slot);
+      htab_clear_slot (get_eh_throw_stmt_table (ifun), slot);
       return true;
     }
   else
     return false;
 }
 
+bool
+remove_stmt_from_eh_region (tree t)
+{
+  return remove_stmt_from_eh_region_fn (cfun, t);
+}
+
 int
-lookup_stmt_eh_region (tree t)
+lookup_stmt_eh_region_fn (struct function *ifun, tree t)
 {
   struct throw_stmt_node *p, n;
 
-  if (!throw_stmt_table)
+  if (!get_eh_throw_stmt_table (ifun))
     return -2;
 
   n.stmt = t;
-  p = htab_find (throw_stmt_table, &n);
+  p = htab_find (get_eh_throw_stmt_table (ifun), &n);
 
   return (p ? p->region_nr : -1);
 }
 
+int
+lookup_stmt_eh_region (tree t)
+{
+  /* We can get called from initialized data when -fnon-call-exceptions
+     is on; prevent crash.  */
+  if (!cfun)
+    return -1;
+  return lookup_stmt_eh_region_fn (cfun, t);
+}
 
 
 /* First pass of EH node decomposition.  Build up a tree of TRY_FINALLY_EXPR
@@ -832,9 +847,7 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
       x = build (MODIFY_EXPR, void_type_node, x, save_filt);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
-      x = build1 (RESX_EXPR, void_type_node,
-		  build_int_cst (NULL_TREE,
-				 get_eh_region_number (tf->region)));
+      x = build_resx (get_eh_region_number (tf->region));
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
     }
 
@@ -939,9 +952,8 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
 
       append_to_statement_list (finally, tf->top_p);
 
-      x = build1 (RESX_EXPR, void_type_node,
-		  build_int_cst (NULL_TREE,
-				 get_eh_region_number (tf->region)));
+      x = build_resx (get_eh_region_number (tf->region));
+
       append_to_statement_list (x, tf->top_p);
 
       return;
@@ -1028,9 +1040,7 @@ lower_try_finally_copy (struct leh_state *state, struct leh_tf_state *tf)
       lower_eh_constructs_1 (state, &x);
       append_to_statement_list (x, &new_stmt);
 
-      x = build1 (RESX_EXPR, void_type_node,
-		  build_int_cst (NULL_TREE,
-				 get_eh_region_number (tf->region)));
+      x = build_resx (get_eh_region_number (tf->region));
       append_to_statement_list (x, &new_stmt);
     }
 
@@ -1204,9 +1214,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
       x = build (LABEL_EXPR, void_type_node, CASE_LABEL (last_case));
       append_to_statement_list (x, &switch_body);
-      x = build1 (RESX_EXPR, void_type_node,
-		  build_int_cst (NULL_TREE,
-				 get_eh_region_number (tf->region)));
+      x = build_resx (get_eh_region_number (tf->region));
       append_to_statement_list (x, &switch_body);
     }
 
@@ -1676,8 +1684,9 @@ lower_eh_constructs (void)
   tree *tp = &DECL_SAVED_TREE (current_function_decl);
 
   finally_tree = htab_create (31, struct_ptr_hash, struct_ptr_eq, free);
-  throw_stmt_table = htab_create_ggc (31, struct_ptr_hash, struct_ptr_eq,
-				      ggc_free);
+  set_eh_throw_stmt_table (cfun, htab_create_ggc (31, struct_ptr_hash,
+						  struct_ptr_eq,
+						  ggc_free));
 
   collect_finally_tree (*tp, NULL);
 
@@ -2035,4 +2044,3 @@ maybe_clean_eh_stmt (tree stmt)
   return false;
 }
 
-#include "gt-tree-eh.h"
