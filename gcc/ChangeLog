@@ -1,3 +1,9 @@
+2005-05-11  Richard Henderson  <rth@redhat.com>
+
+	PR c/21502
+	* c-decl.c (finish_decl): Propagate the completed array type of
+	a global variable into the binding.
+
 2005-05-10  Matt Kraai  <kraai@ftbfs.org>
 
 	* Makefile.in (gtype-desc.o, build/genautomata.o)
