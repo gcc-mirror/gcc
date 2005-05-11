@@ -1,3 +1,9 @@
+2005-05-11  Bud Davis  <bdavis@gfortran.org>
+
+	PR fortran/19478
+	* io/unix.c (fd_truncate): update positions when ftruncate
+	fails (like writing to /dev/null).
+
 2005-05-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/21471
