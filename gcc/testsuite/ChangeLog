@@ -1,3 +1,7 @@
+2005-05-11  Bud Davis  <bdavis@gfortran.org>
+
+	* gfortran.dg/dev_null.f90: New test.
+
 2005-05-11  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* gcc.dg/arm-vfp1.c: Revert last change.

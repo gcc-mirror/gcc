@@ -515,13 +515,15 @@ fd_truncate (unix_stream * s)
 
 #ifdef HAVE_FTRUNCATE
   if (ftruncate (s->fd, s->logical_offset))
-    return FAILURE;
 #else
 #ifdef HAVE_CHSIZE
   if (chsize (s->fd, s->logical_offset))
-    return FAILURE;
 #endif
 #endif
+    {
+      s->physical_offset = s->file_length = 0;
+      return FAILURE;
+    }
 
   s->physical_offset = s->file_length = s->logical_offset;
 
