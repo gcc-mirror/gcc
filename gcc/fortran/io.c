@@ -641,7 +641,7 @@ data_desc:
       {
         while(repeat >0)
          {
-          next_char(0);
+          next_char(1);
           repeat -- ;
          }
       }
