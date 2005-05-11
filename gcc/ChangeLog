@@ -1,3 +1,9 @@
+2005-05-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimizer/18472
+	* tree-if-conv.c (tree_if_convert_stmt,
+	if_convertible_modify_expr_p): Don't handle GOTO_EXPR.
+
 2005-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (tree-eh.o: Kill gt-tree-eh.h dependency.
