@@ -1,3 +1,9 @@
+2005-05-11  Richard Henderson  <rth@redhat.com>
+
+        PR c/21502
+        * c-decl.c (finish_decl): Propagate the completed array type of
+        a global variable into the binding.
+
 2005-05-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (mem_min_alignment): Do not rely
