@@ -364,12 +364,17 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_rename_ssa_copies);
   NEXT_PASS (pass_early_warn_uninitialized);
-  NEXT_PASS (pass_dce);
-  NEXT_PASS (pass_dominator);
-  NEXT_PASS (pass_copy_prop);
+
+  /* Initial scalar cleanups.  */
+  NEXT_PASS (pass_ccp);
+  NEXT_PASS (pass_fre);
   NEXT_PASS (pass_dce);
   NEXT_PASS (pass_forwprop);
   NEXT_PASS (pass_vrp);
+  NEXT_PASS (pass_copy_prop);
+  NEXT_PASS (pass_dce);
+  NEXT_PASS (pass_dominator);
+
   NEXT_PASS (pass_merge_phi);
   NEXT_PASS (pass_phiopt);
   NEXT_PASS (pass_may_alias);
@@ -403,6 +408,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_loop);
   NEXT_PASS (pass_dominator);
   NEXT_PASS (pass_copy_prop);
+  NEXT_PASS (pass_dce);
   /* FIXME: If DCE is not run before checking for uninitialized uses,
      we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
      However, this also causes us to misdiagnose cases that should be
