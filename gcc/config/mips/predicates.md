@@ -69,10 +69,6 @@
   (and (match_code "reg")
        (match_test "FP_REG_P (REGNO (op))")))
 
-(define_predicate "hilo_operand"
-  (and (match_code "reg")
-       (match_test "MD_REG_P (REGNO (op))")))
-
 (define_predicate "lo_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == LO_REGNUM")))

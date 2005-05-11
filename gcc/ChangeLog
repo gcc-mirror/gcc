@@ -1,5 +1,12 @@
 2005-05-11  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/7000.md (rm7_impy_si_mult): Just match imul and imadd.
+	Remove hilo_operand check.
+	(rm7_impy_si_mul): Just match imul3.  Remove hilo_operand check.
+	* config/mips/predicates.md (hilo_operand): Delete.
+
+2005-05-11  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/sr71k.md, config/mips/7000.md: Reformat.
 
 2005-05-11  Kazu Hirata  <kazu@cs.umass.edu>
