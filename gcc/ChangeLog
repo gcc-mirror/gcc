@@ -1,3 +1,8 @@
+2005-05-10  Matt Kraai  <kraai@ftbfs.org>
+
+	* Makefile.in (gtype-desc.o, build/genautomata.o)
+	(build/varray.o): Depend on $(VARRAY_H).
+	
 2005-05-10  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-optimize.c (init_tree_optimization_passes): Re-organize
