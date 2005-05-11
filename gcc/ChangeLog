@@ -1,3 +1,8 @@
+2005-05-11  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* fold-const.c (fold_indirect_ref_1): Avoid removing
+	NOP_EXPRs with type qualifiers like const.
+
 2005-05-11  Richard Henderson  <rth@redhat.com>
 
 	PR c/21502
