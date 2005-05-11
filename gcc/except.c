@@ -251,6 +251,8 @@ struct eh_status GTY(())
 
   rtx sjlj_fc;
   rtx sjlj_exit_after;
+
+  htab_t GTY((param_is (struct throw_stmt_node))) throw_stmt_table;
 };
 
 
@@ -3434,6 +3436,18 @@ output_function_exception_table (void)
 			 (i ? NULL : "Exception specification table"));
 
   current_function_section (current_function_decl);
+}
+
+void
+set_eh_throw_stmt_table (struct function *fun, struct htab *table)
+{
+  fun->eh->throw_stmt_table = table;
+}
+
+htab_t
+get_eh_throw_stmt_table (struct function *fun)
+{
+  return fun->eh->throw_stmt_table;
 }
 
 /* Dump EH information to OUT.  */
