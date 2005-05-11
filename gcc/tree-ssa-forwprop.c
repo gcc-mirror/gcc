@@ -189,8 +189,6 @@ forward_propagate_into_cond_1 (tree cond, tree *test_var_p)
 
       if (has_single_use (test_var))
 	{
-	  tree op0 = TREE_OPERAND (def_rhs, 0);
-	  tree op1 = TREE_OPERAND (def_rhs, 1);
 	  enum tree_code new_code;
 	  tree t;
 
@@ -246,9 +244,6 @@ forward_propagate_into_cond_1 (tree cond, tree *test_var_p)
 	  if (has_single_use (test_var))
 	    {
 	      /* TEST_VAR was set from a relational operator.  */
-	      tree op0 = TREE_OPERAND (def_rhs, 0);
-	      tree op1 = TREE_OPERAND (def_rhs, 1);
-
 	      new_cond = build (TREE_CODE (def_rhs),
 				boolean_type_node, op0, op1);
 
