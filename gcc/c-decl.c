@@ -3275,11 +3275,13 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       /* Get the completed type made by complete_array_type.  */
       type = TREE_TYPE (decl);
 
-      if (failure == 1)
-	error ("%Jinitializer fails to determine size of %qD", decl, decl);
-
-      else if (failure == 2)
+      switch (failure)
 	{
+	case 1:
+	  error ("%Jinitializer fails to determine size of %qD", decl, decl);
+	  break;
+
+	case 2:
 	  if (do_default)
 	    error ("%Jarray size missing in %qD", decl, decl);
 	  /* If a `static' var's size isn't known,
@@ -3290,9 +3292,33 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	     and it will get allocated.  */
 	  else if (!pedantic && TREE_STATIC (decl) && !TREE_PUBLIC (decl))
 	    DECL_EXTERNAL (decl) = 1;
+	  break;
+
+	case 3:
+	  error ("%Jzero or negative size array %qD", decl, decl);
+	  break;
+
+	case 0:
+	  /* For global variables, update the copy of the type that
+	     exists in the binding.  */
+	  if (TREE_PUBLIC (decl))
+	    {
+	      struct c_binding *b_ext = I_SYMBOL_BINDING (DECL_NAME (decl));
+	      while (b_ext && !B_IN_EXTERNAL_SCOPE (b_ext))
+		b_ext = b_ext->shadowed;
+	      if (b_ext)
+		{
+		  if (b_ext->type)
+		    b_ext->type = composite_type (b_ext->type, type);
+		  else
+		    b_ext->type = type;
+		}
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
-      else if (failure == 3)
-	error ("%Jzero or negative size array %qD", decl, decl);
 
       if (DECL_INITIAL (decl))
 	TREE_TYPE (DECL_INITIAL (decl)) = type;
