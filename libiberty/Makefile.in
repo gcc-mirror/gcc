@@ -441,13 +441,14 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/alloca.c $(OUTPUT_OPTION)
 
-./argv.o: $(srcdir)/argv.c $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+./argv.o: $(srcdir)/argv.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/argv.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/argv.c $(OUTPUT_OPTION)
 
-./asprintf.o: $(srcdir)/asprintf.c $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+./asprintf.o: $(srcdir)/asprintf.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/asprintf.c -o pic/$@; \
 	else true; fi
@@ -459,8 +460,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/atexit.c $(OUTPUT_OPTION)
 
-./basename.o: $(srcdir)/basename.c $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
-	$(INCDIR)/safe-ctype.h
+./basename.o: $(srcdir)/basename.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h $(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/basename.c -o pic/$@; \
 	else true; fi
@@ -553,7 +554,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/dyn-string.c $(OUTPUT_OPTION)
 
-./fdmatch.o: $(srcdir)/fdmatch.c $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+./fdmatch.o: $(srcdir)/fdmatch.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/fdmatch.c -o pic/$@; \
 	else true; fi
@@ -645,7 +647,7 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/hashtab.c $(OUTPUT_OPTION)
 
-./hex.o: $(srcdir)/hex.c $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+./hex.o: $(srcdir)/hex.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/hex.c -o pic/$@; \
@@ -664,8 +666,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/insque.c $(OUTPUT_OPTION)
 
-./lbasename.o: $(srcdir)/lbasename.c $(INCDIR)/ansidecl.h $(INCDIR)/filenames.h \
-	$(INCDIR)/libiberty.h $(INCDIR)/safe-ctype.h
+./lbasename.o: $(srcdir)/lbasename.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/filenames.h $(INCDIR)/libiberty.h \
+	$(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/lbasename.c -o pic/$@; \
 	else true; fi
@@ -886,7 +889,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/sort.c $(OUTPUT_OPTION)
 
-./spaces.o: $(srcdir)/spaces.c $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+./spaces.o: $(srcdir)/spaces.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/spaces.c -o pic/$@; \
 	else true; fi
@@ -1056,7 +1060,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/waitpid.c $(OUTPUT_OPTION)
 
-./xatexit.o: $(srcdir)/xatexit.c $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+./xatexit.o: $(srcdir)/xatexit.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xatexit.c -o pic/$@; \
 	else true; fi
