@@ -2,6 +2,9 @@
 
 	* fold-const.c, libgcov.c: Fix comment typos.
 
+	* tree-ssa-forwprop.c (forward_propagate_into_cond_1): Remove
+	redundant code.
+
 2005-05-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/linux-elf.h (SUBTARGET_FRAME_POINTER_REQUIRED): Define.
