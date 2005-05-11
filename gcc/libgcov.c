@@ -91,7 +91,7 @@ static gcov_unsigned_t gcov_crc32;
 /* Size of the longest file name. */
 static size_t gcov_max_filename = 0;
 
-/* Make sure path compenent of the given FILENAME exists, create 
+/* Make sure path component of the given FILENAME exists, create 
    missing directories. FILENAME must be writable. 
    Returns zero on success, or -1 if an error occurred.  */
 
@@ -208,7 +208,7 @@ gcov_exit (void)
       
       prefix_length = strlen(gcov_prefix);
 
-      /* Remove an unneccesary trailing '/' */
+      /* Remove an unnecessary trailing '/' */
       if (IS_DIR_SEPARATOR (gcov_prefix[prefix_length - 1]))
 	prefix_length--;
     }
