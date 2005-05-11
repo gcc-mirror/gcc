@@ -1,3 +1,8 @@
+2005-05-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* libgcov.c (gcov_exit): Set prefix_length to 0 if no relocation
+	is needed.
+
 2005-05-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c, libgcov.c: Fix comment typos.

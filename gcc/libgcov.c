@@ -212,6 +212,8 @@ gcov_exit (void)
       if (IS_DIR_SEPARATOR (gcov_prefix[prefix_length - 1]))
 	prefix_length--;
     }
+  else
+    prefix_length = 0;
   
   /* Allocate and initialize the filename scratch space.  */
   gi_filename = alloca (prefix_length + gcov_max_filename + 1);
