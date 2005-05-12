@@ -266,7 +266,9 @@ static bool unspec_caller_rtx_p (rtx);
 static bool sh_cannot_copy_insn_p (rtx);
 static bool sh_rtx_costs (rtx, int, int, int *);
 static int sh_address_cost (rtx);
+#ifdef TARGET_ADJUST_UNROLL_MAX
 static int sh_adjust_unroll_max (struct loop *, int, int, int, int);
+#endif
 static int shmedia_target_regs_stack_space (HARD_REG_SET *);
 static int shmedia_reserve_space_for_target_registers_p (int, HARD_REG_SET *);
 static int shmedia_target_regs_stack_adjust (HARD_REG_SET *);
@@ -7554,7 +7556,7 @@ general_movsrc_operand (rtx op, enum machine_mode mode)
   if (TARGET_SHMEDIA && 1
       && GET_CODE (op) == SUBREG && GET_MODE (op) == mode
       && SUBREG_REG (op) == const0_rtx && subreg_lowpart_p (op))
-    /* FIXME */ abort (); // return 1;
+    /* FIXME */ abort (); /* return 1; */
   return general_operand (op, mode);
 }
 
@@ -8766,9 +8768,7 @@ mark_constant_pool_use (rtx x)
 }
 
 int
-ua_offset (c, mode)
-     rtx c;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+ua_offset (rtx c, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return GET_CODE (c) == CONST_INT && CONST_OK_FOR_I06 (INTVAL (c));
 }
