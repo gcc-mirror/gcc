@@ -236,6 +236,8 @@ jclass _Jv_GetArrayClass (jclass klass, java::lang::ClassLoader *loader);
 
 jboolean _Jv_IsInterpretedClass (jclass);
 
+void _Jv_CopyClassesToSystemLoader (java::lang::ClassLoader *);
+
 #ifdef INTERPRETER
 void _Jv_InitField (jobject, jclass, int);
 
@@ -493,6 +495,8 @@ private:
   friend void ::_Jv_sharedlib_register_hook (jclass klass);
 
   friend void *::_Jv_ResolvePoolEntry (jclass this_class, jint index);
+
+  friend void ::_Jv_CopyClassesToSystemLoader (java::lang::ClassLoader *);
 
   // Chain for class pool.  This also doubles as the ABI version
   // number.  It is only used for this purpose at class registration

@@ -35,7 +35,7 @@ mostlyclean-local:
 noinst_LTLIBRARIES = libsax-gcj.la
 
 libsax_gcj_la_SOURCES =	sax.jar
-libsax_gcj_la_GCJFLAGS = -findirect-dispatch $(AM_GCJFLAGS)
+libsax_gcj_la_GCJFLAGS = -findirect-dispatch -fbootstrap-classes $(AM_GCJFLAGS)
 
 source_files = \
 org/xml/sax/SAXNotSupportedException.java \

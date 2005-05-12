@@ -35,7 +35,7 @@ mostlyclean-local:
 noinst_LTLIBRARIES = libw3c-gcj.la
 
 libw3c_gcj_la_SOURCES =	w3c.jar
-libw3c_gcj_la_GCJFLAGS = -findirect-dispatch $(AM_GCJFLAGS)
+libw3c_gcj_la_GCJFLAGS = -findirect-dispatch -fbootstrap-classes $(AM_GCJFLAGS)
 
 source_files = \
 org/w3c/dom/xpath/XPathNamespace.java \

@@ -99,6 +99,7 @@ java::lang::ClassLoader *
 java::lang::VMClassLoader::getSystemClassLoaderInternal()
 {
   _Jv_InitClass (&gnu::gcj::runtime::ExtensionClassLoader::class$);
+  _Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::ExtensionClassLoader::system_instance);
   return gnu::gcj::runtime::ExtensionClassLoader::system_instance;
 }
 

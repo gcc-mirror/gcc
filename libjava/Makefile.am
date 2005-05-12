@@ -204,7 +204,7 @@ AM_GCJFLAGS = \
 	@LIBGCJ_JAVAFLAGS@ \
 	-fclasspath= -fbootclasspath=$(BOOTCLASSPATH) \
 	--encoding=UTF-8 \
-	-Wno-deprecated
+	-Wno-deprecated -fbootstrap-classes
 
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)

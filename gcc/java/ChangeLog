@@ -1,3 +1,10 @@
+2005-05-11  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Code Generation): Document -fbootstrap-classes.
+	* decl.c (GCJ_BOOTSTRAP_LOADER_ADDITION): New macro.
+	(parse_version): Use it.
+	* lang.opt (-fbootstrap-classes): New option.
+
 2005-05-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR java/21436

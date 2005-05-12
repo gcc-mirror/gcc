@@ -64,6 +64,10 @@ static void parse_version (void);
 /* Used when computing the ABI version.  */
 #define GCJ_BINARYCOMPAT_ADDITION 5
 
+/* Used when defining a class that should be loaded by the bootstrap
+   loader.  */
+#define GCJ_BOOTSTRAP_LOADER_ADDITION 1
+
 /* The version of the BC ABI that we generate.  At the moment we are
    compatible with what shipped in GCC 4.0.  This must be kept in sync
    with parse_version(), libgcj, and reality (if the BC format
@@ -620,6 +624,8 @@ parse_version (void)
      probably always require strict matching for ordinary ABI.  */
   if (flag_indirect_dispatch)
     abi_version = GCJ_CURRENT_BC_ABI_VERSION;
+  if (flag_bootstrap_classes)
+    abi_version += GCJ_BOOTSTRAP_LOADER_ADDITION;
 
   gcj_abi_version = build_int_cstu (ptr_type_node, abi_version);
 }
