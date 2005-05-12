@@ -191,11 +191,6 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 */
 
 tree c_global_trees[CTI_MAX];
-
-/* TRUE if a code represents a statement.  The front end init
-   langhook should take care of initialization of this array.  */
-
-bool statement_code_p[MAX_TREE_CODES];
 
 /* Switches common to the C front ends.  */
 

@@ -1,3 +1,10 @@
+2005-05-12  Ian Lance Taylor  <ian@airs.com>
+
+	* c-common.h (statement_code_p): Don't declare.
+	(STATEMENT_CODE_P): Don't define.
+	(INIT_STATEMENT_CODES): Don't define.
+	* c-common.c (statement_code_p): Don't define.
+
 2005-05-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.h: Remove dead code.

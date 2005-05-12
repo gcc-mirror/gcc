@@ -735,20 +735,6 @@ enum c_tree_code {
 
 #undef DEFTREECODE
 
-/* TRUE if a code represents a statement.  The front end init
-   langhook should take care of initialization of this array.  */
-extern bool statement_code_p[MAX_TREE_CODES];
-
-#define STATEMENT_CODE_P(CODE) statement_code_p[(int) (CODE)]
-
-#define INIT_STATEMENT_CODES(STMT_CODES)			\
-  do {								\
-    unsigned int i;						\
-    memset (&statement_code_p, 0, sizeof (statement_code_p));	\
-    for (i = 0; i < ARRAY_SIZE (STMT_CODES); i++)		\
-      statement_code_p[STMT_CODES[i]] = true;			\
-  } while (0)
-
 extern int stmts_are_full_exprs_p (void);
 extern int anon_aggr_type_p (tree);
 
