@@ -312,6 +312,10 @@ init_cp_pragma (void)
   c_register_pragma ("GCC", "java_exceptions", handle_pragma_java_exceptions);
 }
 
+/* TRUE if a code represents a statement.  */
+
+bool statement_code_p[MAX_TREE_CODES];
+
 /* Initialize the C++ front end.  This function is very sensitive to
    the exact order that things are done here.  It would be nice if the
    initialization done by this routine were moved to its subroutines,
@@ -319,11 +323,18 @@ init_cp_pragma (void)
 bool
 cxx_init (void)
 {
+  unsigned int i;
   static const enum tree_code stmt_codes[] = {
-    cp_stmt_codes
+   CTOR_INITIALIZER,	TRY_BLOCK,	HANDLER,
+   EH_SPEC_BLOCK,	USING_STMT,	TAG_DEFN,
+   IF_STMT,		CLEANUP_STMT,	FOR_STMT,
+   WHILE_STMT,		DO_STMT,	BREAK_STMT,
+   CONTINUE_STMT,	SWITCH_STMT,	EXPR_STMT
   };
 
-  INIT_STATEMENT_CODES (stmt_codes);
+  memset (&statement_code_p, 0, sizeof (statement_code_p));
+  for (i = 0; i < ARRAY_SIZE (stmt_codes); i++)
+    statement_code_p[stmt_codes[i]] = true;
 
   /* We cannot just assign to input_filename because it has already
      been initialized and will be used later as an N_BINCL for stabs+

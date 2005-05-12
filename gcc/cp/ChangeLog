@@ -1,3 +1,13 @@
+2005-05-12  Ian Lance Taylor  <ian@airs.com>
+
+	* cp-tree.h (cp_stmt_codes): Don't define.
+	(statement_code_p): Declare.
+	(STATEMENT_CODE_P): Define.
+	* lex.c (statement_code_p): Define.
+	(cxx_init): Use actual codes in stmt_codes initializer, not
+	cp_stmt_codes macro.  Initialize statement_code_p directly, rather
+	than using INIT_STATEMENT_CODES.
+
 2005-05-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (build_unary_op): Do not resort to address arithmetic

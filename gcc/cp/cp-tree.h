@@ -843,12 +843,11 @@ enum cplus_tree_code {
 };
 #undef DEFTREECODE
 
-#define cp_stmt_codes					\
-   CTOR_INITIALIZER,	TRY_BLOCK,	HANDLER,	\
-   EH_SPEC_BLOCK,	USING_STMT,	TAG_DEFN,	\
-   IF_STMT,		CLEANUP_STMT,	FOR_STMT,	\
-   WHILE_STMT,		DO_STMT,	BREAK_STMT,	\
-   CONTINUE_STMT,	SWITCH_STMT,	EXPR_STMT
+/* TRUE if a tree code represents a statement.  */
+extern bool statement_code_p[MAX_TREE_CODES];
+
+#define STATEMENT_CODE_P(CODE) statement_code_p[(int) (CODE)]
+
 enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Macros to make error reporting functions' lives easier.  */
