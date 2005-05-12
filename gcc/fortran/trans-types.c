@@ -785,9 +785,6 @@ gfc_is_nodesc_array (gfc_symbol * sym)
   if (sym->attr.result || sym->attr.function)
     return 0;
 
-  if (sym->attr.pointer || sym->attr.allocatable)
-    return 0;
-
   gcc_assert (sym->as->type == AS_EXPLICIT);
 
   return 1;
