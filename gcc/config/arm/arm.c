@@ -1920,8 +1920,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 	{
 	  int topshift = clear_sign_bit_copies & ~1;
 
-	  temp1 = ((remainder + (0x00800000 >> topshift))
-		   & (0xff000000 >> topshift));
+	  temp1 = ARM_SIGN_EXTEND ((remainder + (0x00800000 >> topshift))
+				   & (0xff000000 >> topshift));
 
 	  /* If temp1 is zero, then that means the 9 most significant
 	     bits of remainder were 1 and we've caused it to overflow.
@@ -1930,7 +1930,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 	  if (temp1 == 0 && topshift != 0)
 	    temp1 = 0x80000000 >> (topshift - 1);
 
-	  temp2 = temp1 - remainder;
+	  temp2 = ARM_SIGN_EXTEND (temp1 - remainder);
 	  
 	  if (const_ok_for_arm (temp2))
 	    {
