@@ -157,7 +157,10 @@ D(ident,	T_IDENT,	EXTENSION, IN_I)	   /*     11 */ \
 D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* 0 ObjC */	\
 D(assert,	T_ASSERT,	EXTENSION, 0)		   /* 0 SVR4 */	\
 D(unassert,	T_UNASSERT,	EXTENSION, 0)		   /* 0 SVR4 */	\
-D(sccs,		T_SCCS,		EXTENSION, 0)		   /* 0 SVR4? */
+D(sccs,		T_SCCS,		EXTENSION, IN_I)	   /* 0 SVR4? */
+
+/* #sccs is synonymous with #ident.  */
+#define do_sccs do_ident
 
 /* Use the table to generate a series of prototypes, an enum for the
    directive names, and an array of directive handlers.  */
@@ -953,7 +956,8 @@ do_ident (cpp_reader *pfile)
   const cpp_token *str = cpp_get_token (pfile);
 
   if (str->type != CPP_STRING)
-    cpp_error (pfile, CPP_DL_ERROR, "invalid #ident directive");
+    cpp_error (pfile, CPP_DL_ERROR, "invalid #%s directive",
+	       pfile->directive->name);
   else if (pfile->cb.ident)
     pfile->cb.ident (pfile, pfile->directive_line, &str->val.str);
 
@@ -1472,12 +1476,6 @@ cpp_handle_deferred_pragma (cpp_reader *pfile, const cpp_string *s)
   pfile->cb.line_change = saved_line_change;
   pfile->state.in_deferred_pragma = false;
   CPP_OPTION (pfile, defer_pragmas) = saved_defer_pragmas;
-}
-
-/* Ignore #sccs on all systems.  */
-static void
-do_sccs (cpp_reader *pfile ATTRIBUTE_UNUSED)
-{
 }
 
 /* Handle #ifdef.  */
