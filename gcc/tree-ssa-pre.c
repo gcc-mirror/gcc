@@ -1341,6 +1341,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 		tree forcedname = TREE_OPERAND (stmt, 0);
 		tree forcedexpr = TREE_OPERAND (stmt, 1);
 		tree val = vn_lookup_or_add (forcedexpr, NULL);
+
+		VEC_safe_push (tree_on_heap, inserted_exprs, stmt);
 		vn_add (forcedname, val, NULL);		
 		bitmap_value_replace_in_set (NEW_SETS (block), forcedname); 
 		bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
@@ -1384,6 +1386,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 		tree forcedname = TREE_OPERAND (stmt, 0);
 		tree forcedexpr = TREE_OPERAND (stmt, 1);
 		tree val = vn_lookup_or_add (forcedexpr, NULL);
+		
+		VEC_safe_push (tree_on_heap, inserted_exprs, stmt);
 		vn_add (forcedname, val, NULL);		
 		bitmap_value_replace_in_set (NEW_SETS (block), forcedname); 
 		bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);

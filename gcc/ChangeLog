@@ -1,3 +1,9 @@
+2005-05-12  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/21532
+	* tree-ssa-pre.c (create_expression_by_pieces): stmt
+	needs to go onto the inserted_exprs list.
+
 2005-05-12  Richard Henderson  <rth@redhat.com>
 
         PR target/21412
