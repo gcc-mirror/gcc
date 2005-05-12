@@ -1,3 +1,8 @@
+2005-05-12  Ryota Kunisawa  <kunisawa@access.co.jp>
+
+	PR bootstrap/21230
+	* configure: Regenerate.
+
 2005-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac (libcpp_UNLOCKED_FUNCS): New.
