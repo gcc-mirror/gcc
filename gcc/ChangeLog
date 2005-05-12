@@ -1,3 +1,12 @@
+2005-05-13  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (FOR_ALL_BB_FN): New macro.
+	(init_flow): Initialize cfg structure.
+	* function.c (allocate_struct_function): Do not initialize cfg structure.
+	* tree-cfg.c (init_empty_tree_cfg): Break out from ...
+	(build_tree_cfg): ... here.
+	* tree-flow.h (init_empty_tree_cfg): Declare.
+
 2005-05-12  Steven Bosscher <stevenb@suse.de>
 
 	Fix PR tree-optimization/21520

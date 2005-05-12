@@ -132,6 +132,26 @@ static tree find_case_label_for_value (tree, tree);
 static bool phi_alternatives_equal (basic_block, edge, edge);
 static bool cleanup_forwarder_blocks (void);
 
+void
+init_empty_tree_cfg (void)
+{
+  /* Initialize the basic block array.  */
+  init_flow ();
+  profile_status = PROFILE_ABSENT;
+  n_basic_blocks = 0;
+  last_basic_block = 0;
+  VARRAY_BB_INIT (basic_block_info, initial_cfg_capacity, "basic_block_info");
+
+  /* Build a mapping of labels to their associated blocks.  */
+  VARRAY_BB_INIT (label_to_block_map, initial_cfg_capacity,
+		  "label to block map");
+
+  ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
+  EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
+
+  create_block_annotation (ENTRY_BLOCK_PTR);
+  create_block_annotation (EXIT_BLOCK_PTR);
+}
 
 /*---------------------------------------------------------------------------
 			      Create basic blocks
@@ -146,20 +166,9 @@ build_tree_cfg (tree *tp)
   /* Register specific tree functions.  */
   tree_register_cfg_hooks ();
 
-  /* Initialize the basic block array.  */
-  init_flow ();
-  profile_status = PROFILE_ABSENT;
-  n_basic_blocks = 0;
-  last_basic_block = 0;
-  VARRAY_BB_INIT (basic_block_info, initial_cfg_capacity, "basic_block_info");
   memset ((void *) &cfg_stats, 0, sizeof (cfg_stats));
 
-  /* Build a mapping of labels to their associated blocks.  */
-  VARRAY_BB_INIT (label_to_block_map, initial_cfg_capacity,
-		  "label to block map");
-
-  ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
-  EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
+  init_empty_tree_cfg ();
 
   found_computed_goto = 0;
   make_blocks (*tp);
@@ -176,9 +185,6 @@ build_tree_cfg (tree *tp)
   if (n_basic_blocks == 0)
     create_empty_bb (ENTRY_BLOCK_PTR);
 
-  create_block_annotation (ENTRY_BLOCK_PTR);
-  create_block_annotation (EXIT_BLOCK_PTR);
-  
   /* Adjust the size of the array.  */
   VARRAY_GROW (basic_block_info, n_basic_blocks);
 
