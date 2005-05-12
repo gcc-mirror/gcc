@@ -1,3 +1,20 @@
+2005-05-12  Steven Bosscher  <stevenb@suse.de>
+	    Stuart Hastings <stuart@apple.com>
+	    Jan Hubicka  <jh@suse.cz>
+	    
+	* except.c  (duplicate_eh_region_1, duplicate_eh_region_2,
+	duplicate_eh_regions): New functions, based on old
+	implementation removed with RTL inliner.
+	(reachable_next_level): Modify behaviour pre-inline.
+	* except.h (duplicate_eh_regions_map, duplicate_eh_regions):
+	Declare.
+	* function.h (struct function): Add after_inlining flag.
+	* tree-optimize.c (tree_rest_of_compilation): Set it.
+	* tree-eh.c (add_stmt_to_eh_region_fn): Initialize hashtable
+	when needed.
+	* tree-cfg.c (label_to_block_fn): Deal with cases where
+	label was never insterted into code.
+
 2005-05-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/cpp.texi: Document that #sccs is a synonym for #ident.

@@ -853,6 +853,148 @@ current_function_has_exception_handlers (void)
   return false;
 }
 
+static struct eh_region *
+duplicate_eh_region_1 (struct eh_region *o)
+{
+  struct eh_region *n = ggc_alloc_cleared (sizeof (struct eh_region));
+
+  *n = *o;
+  
+  n->region_number = o->region_number + cfun->eh->last_region_number;
+  gcc_assert (!o->aka);
+  
+  return n;
+}
+
+static void
+duplicate_eh_region_2 (struct eh_region *o, struct eh_region **n_array,
+		       struct eh_region *prev_try)
+{
+  struct eh_region *n = n_array[o->region_number];
+  
+  switch (n->type)
+    {
+    case ERT_TRY:
+      if (o->u.try.catch)
+        n->u.try.catch = n_array[o->u.try.catch->region_number];
+      if (o->u.try.last_catch)
+        n->u.try.last_catch = n_array[o->u.try.last_catch->region_number];
+      break;
+      
+    case ERT_CATCH:
+      if (o->u.catch.next_catch)
+	n->u.catch.next_catch = n_array[o->u.catch.next_catch->region_number];
+      if (o->u.catch.prev_catch)
+	n->u.catch.prev_catch = n_array[o->u.catch.prev_catch->region_number];
+      break;
+
+    case ERT_CLEANUP:
+      if (o->u.cleanup.prev_try)
+	n->u.cleanup.prev_try = n_array[o->u.cleanup.prev_try->region_number];
+      else
+        n->u.cleanup.prev_try = prev_try;
+      break;
+      
+    default:
+      break;
+    }
+  
+  if (o->outer)
+    n->outer = n_array[o->outer->region_number];
+  if (o->inner)
+    n->inner = n_array[o->inner->region_number];
+  if (o->next_peer)
+    n->next_peer = n_array[o->next_peer->region_number];
+}
+
+/* Duplicate the EH regions of IFUN into current function, root the tree in
+   OUTER_REGION and remap labels using MAP callback.  */
+int
+duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
+		      void *data, int outer_region)
+{
+  int ifun_last_region_number = ifun->eh->last_region_number;
+  struct eh_region **n_array, *root, *cur, *prev_try;
+  int i;
+  
+  if (ifun_last_region_number == 0 || !ifun->eh->region_tree)
+    return 0;
+  
+  n_array = xcalloc (ifun_last_region_number + 1, sizeof (*n_array));
+  
+  /* Search for the containing ERT_TRY region to fix up
+     the prev_try short-cuts for ERT_CLEANUP regions.  */
+  prev_try = NULL;
+  if (outer_region > 0)
+    for (prev_try = cfun->eh->region_array[outer_region];
+         prev_try && prev_try->type != ERT_TRY;
+	 prev_try = prev_try->outer)
+      ;
+
+  for (i = 1; i <= ifun_last_region_number; ++i)
+    {
+      cur = ifun->eh->region_array[i];
+      if (!cur || cur->region_number != i)
+	continue;
+      n_array[i] = duplicate_eh_region_1 (cur);
+      if (cur->tree_label)
+	{
+	  tree newlabel = map (cur->tree_label, data);
+	  n_array[i]->tree_label = newlabel;
+	}
+      else
+	n_array[i]->tree_label = NULL;
+    }
+  for (i = 1; i <= ifun_last_region_number; ++i)
+    {
+      cur = ifun->eh->region_array[i];
+      if (!cur || cur->region_number != i)
+	continue;
+      duplicate_eh_region_2 (cur, n_array, prev_try);
+    }
+  
+  root = n_array[ifun->eh->region_tree->region_number];
+  gcc_assert (root->outer == NULL);
+  if (outer_region > 0)
+    {
+      struct eh_region *cur = cfun->eh->region_array[outer_region];
+      struct eh_region *p = cur->inner;
+
+      if (p)
+	{
+	  while (p->next_peer)
+	    p = p->next_peer;
+	  p->next_peer = root;
+	}
+      else
+        cur->inner = root;
+      for (i = 1; i <= ifun_last_region_number; ++i)
+	if (n_array[i] && n_array[i]->outer == NULL)
+	  n_array[i]->outer = cur;
+    }
+  else
+    {
+      struct eh_region *p = cfun->eh->region_tree;
+      if (p)
+	{
+	  while (p->next_peer)
+	    p = p->next_peer;
+	  p->next_peer = root;
+	}
+      else
+        cfun->eh->region_tree = root;
+    }
+  
+  free (n_array);
+  
+  i = cfun->eh->last_region_number;
+  cfun->eh->last_region_number = i + ifun_last_region_number;
+  
+  collect_eh_region_array ();
+  
+  return i;
+}
+
 static int
 t2r_eq (const void *pentry, const void *pdata)
 {
@@ -2273,8 +2415,13 @@ reachable_next_level (struct eh_region *region, tree type_thrown,
       /* Here we end our search, since no exceptions may propagate.
 	 If we've touched down at some landing pad previous, then the
 	 explicit function call we generated may be used.  Otherwise
-	 the call is made by the runtime.  */
-      if (info && info->saw_any_handlers)
+	 the call is made by the runtime. 
+
+         Before inlining, do not perform this optimization.  We may
+	 inline a subroutine that contains handlers, and that will
+	 change the value of saw_any_handlers.  */
+
+      if ((info && info->saw_any_handlers) || !cfun->after_inlining)
 	{
 	  add_reachable_handler (info, region, region);
 	  return RNL_CAUGHT;

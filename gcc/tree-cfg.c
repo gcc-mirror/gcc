@@ -823,6 +823,8 @@ label_to_block_fn (struct function *ifun, tree dest)
       bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
       uid = LABEL_DECL_UID (dest);
     }
+  if (VARRAY_SIZE (ifun->cfg->x_label_to_block_map) <= (unsigned int)uid)
+    return NULL;
   return VARRAY_BB (ifun->cfg->x_label_to_block_map, uid);
 }
 
