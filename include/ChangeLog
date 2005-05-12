@@ -1,3 +1,7 @@
+2005-05-12  Steve Ellcey  <sje@cup.hp.com>
+
+	libiberty.h: Do not define empty basename prototype.
+
 2005-05-10  Nick Clifton  <nickc@redhat.com>
 
 	* Update the address and phone number of the FSF organization in
