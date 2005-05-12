@@ -124,6 +124,13 @@ struct mem_ref
   struct mem_ref_loc *locs;	/* The locations where it is found.  */
   bitmap vops;			/* Vops corresponding to this memory
 				   location.  */
+  struct mem_ref *next;		/* Next memory reference in the list.
+				   Memory references are stored in a hash
+				   table, but the hash function depends
+				   on values of pointers. Thus we cannot use
+				   htab_traverse, since then we would get
+				   misscompares during bootstrap (although the
+				   produced code would be correct).  */
 };
 
 /* Minimum cost of an expensive expression.  */
@@ -1018,28 +1025,18 @@ determine_lsm_ref (struct loop *loop, edge *exits, unsigned n_exits,
   schedule_sm (loop, exits, n_exits, ref->mem, ref->locs);
 }
 
-/* Attempts to hoist memory reference described in SLOT out of loop
-   described in DATA.  Callback for htab_traverse.  */
+/* Hoists memory references MEM_REFS out of LOOP.  CLOBBERED_VOPS is the list
+   of vops clobbered by call in loop or accessed by multiple memory references.
+   EXITS is the list of N_EXITS exit edges of the LOOP.  */
 
-struct hmr_data
+static void
+hoist_memory_references (struct loop *loop, struct mem_ref *mem_refs,
+			 bitmap clobbered_vops, edge *exits, unsigned n_exits)
 {
-  struct loop *loop;	/* Loop from that the reference should be hoisted.  */
-  edge *exits;		/* Exits of the loop.  */
-  unsigned n_exits;	/* Length of the exits array.  */
-  bitmap clobbered_vops;/* The vops clobbered by call in loop or accessed by
-			   multiple memory references.  */
-};
+  struct mem_ref *ref;
 
-static int
-hoist_memory_reference (void **slot, void *data)
-{
-  struct mem_ref *ref = *slot;
-  struct hmr_data *hmr_data = data;
-
-  determine_lsm_ref (hmr_data->loop, hmr_data->exits, hmr_data->n_exits,
-		     hmr_data->clobbered_vops, ref);
-
-  return 1;
+  for (ref = mem_refs; ref; ref = ref->next)
+    determine_lsm_ref (loop, exits, n_exits, clobbered_vops, ref);
 }
 
 /* Checks whether LOOP (with N_EXITS exits stored in EXITS array) is suitable
@@ -1080,25 +1077,15 @@ memref_eq (const void *obj1, const void *obj2)
   return operand_equal_p (mem1->mem, (tree) obj2, 0);
 }
 
-/* A function to free the struct mem_ref object OBJ.  */
-
-static void
-memref_del (void *obj)
-{
-  struct mem_ref *mem = obj;
-
-  free_mem_ref_locs (mem->locs);
-  BITMAP_FREE (mem->vops);
-  free (mem);
-}
-
 /* Gathers memory references in statement STMT in LOOP, storing the
    information about them in MEM_REFS hash table.  Note vops accessed through
-   unrecognized statements in CLOBBERED_VOPS.  */
+   unrecognized statements in CLOBBERED_VOPS.  The newly created references
+   are also stored to MEM_REF_LIST.  */
 
 static void
 gather_mem_refs_stmt (struct loop *loop, htab_t mem_refs,
-		      bitmap clobbered_vops, tree stmt)
+		      bitmap clobbered_vops, tree stmt,
+		      struct mem_ref **mem_ref_list)
 {
   tree *lhs, *rhs, *mem = NULL;
   hashval_t hash;
@@ -1157,6 +1144,8 @@ gather_mem_refs_stmt (struct loop *loop, htab_t mem_refs,
       ref->locs = NULL;
       ref->is_stored = false;
       ref->vops = BITMAP_ALLOC (NULL);
+      ref->next = *mem_ref_list;
+      *mem_ref_list = ref;
       *slot = ref;
     }
   ref->is_stored |= is_stored;
@@ -1179,53 +1168,80 @@ fail:
     }
 }
 
-/* Gathers memory references in LOOP, storing the information about them
-   in MEM_REFS hash table.  Note vops accessed through unrecognized
-   statements in CLOBBERED_VOPS.  */
+/* Gathers memory references in LOOP.  Notes vops accessed through unrecognized
+   statements in CLOBBERED_VOPS.  The list of the references found by
+   the function is returned.  */
 
-static void
-gather_mem_refs (struct loop *loop, htab_t mem_refs, bitmap clobbered_vops)
+static struct mem_ref *
+gather_mem_refs (struct loop *loop, bitmap clobbered_vops)
 {
   basic_block *body = get_loop_body (loop);
   block_stmt_iterator bsi;
   unsigned i;
+  struct mem_ref *mem_ref_list = NULL;
+  htab_t mem_refs = htab_create (100, memref_hash, memref_eq, NULL);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
       for (bsi = bsi_start (body[i]); !bsi_end_p (bsi); bsi_next (&bsi))
-	gather_mem_refs_stmt (loop, mem_refs, clobbered_vops, bsi_stmt (bsi));
+	gather_mem_refs_stmt (loop, mem_refs, clobbered_vops, bsi_stmt (bsi),
+			      &mem_ref_list);
     }
 
   free (body);
+
+  htab_delete (mem_refs);
+  return mem_ref_list;
 }
 
-/* Finds the vops accessed by memory reference described in SLOT as well as
-   some other reference(s) and marks them in DATA->clobbered_vops.
-   Callback for htab_traverse.  */
+/* Finds the vops accessed by more than one of the memory references described
+   in MEM_REFS and marks them in CLOBBERED_VOPS.  */
 
-struct fmrv_data
+static void
+find_more_ref_vops (struct mem_ref *mem_refs, bitmap clobbered_vops)
 {
-  bitmap clobbered_vops;	/* The vops clobbered by call in loop or accessed by
-			   multiple memory references.  */
-  bitmap all_vops;	/* All vops referenced in the loop.  */
-};
+  bitmap_head tmp, all_vops;
+  struct mem_ref *ref;
 
-static int
-find_more_ref_vops (void **slot, void *data)
-{
-  struct mem_ref *ref = *slot;
-  struct fmrv_data *fmrv_data = data;
-  bitmap_head tmp;
-
-  /* The vops that are already in all_vops are accessed by more than
-     one memory reference.  */
   bitmap_initialize (&tmp, &bitmap_default_obstack);
-  bitmap_and (&tmp, fmrv_data->all_vops, ref->vops);
-  bitmap_ior_into (fmrv_data->clobbered_vops, &tmp);
-  bitmap_clear (&tmp);
+  bitmap_initialize (&all_vops, &bitmap_default_obstack);
 
-  bitmap_ior_into (fmrv_data->all_vops, ref->vops);
-  return 1;
+  for (ref = mem_refs; ref; ref = ref->next)
+    {
+      /* The vops that are already in all_vops are accessed by more than
+	 one memory reference.  */
+      bitmap_and (&tmp, &all_vops, ref->vops);
+      bitmap_ior_into (clobbered_vops, &tmp);
+      bitmap_clear (&tmp);
+
+      bitmap_ior_into (&all_vops, ref->vops);
+    }
+
+  bitmap_clear (&all_vops);
+}
+
+/* Releases the memory occupied by REF.  */
+
+static void
+free_mem_ref (struct mem_ref *ref)
+{
+  free_mem_ref_locs (ref->locs);
+  BITMAP_FREE (ref->vops);
+  free (ref);
+}
+
+/* Releases the memory occupied by REFS.  */
+
+static void
+free_mem_refs (struct mem_ref *refs)
+{
+  struct mem_ref *ref, *next;
+
+  for (ref = refs; ref; ref = next)
+    {
+      next = ref->next;
+      free_mem_ref (ref);
+    }
 }
 
 /* Try to perform store motion for all memory references modified inside
@@ -1236,10 +1252,8 @@ determine_lsm_loop (struct loop *loop)
 {
   unsigned n_exits;
   edge *exits = get_loop_exit_edges (loop, &n_exits);
-  htab_t mem_refs;
-  struct hmr_data hmr_data;
-  struct fmrv_data fmrv_data;
   bitmap clobbered_vops;
+  struct mem_ref *mem_refs;
 
   if (!loop_suitable_for_sm (loop, exits, n_exits))
     {
@@ -1247,26 +1261,17 @@ determine_lsm_loop (struct loop *loop)
       return;
     }
 
-  mem_refs = htab_create (100, memref_hash, memref_eq, memref_del);
-
   /* Find the memory references in LOOP.  */
   clobbered_vops = BITMAP_ALLOC (NULL);
-  gather_mem_refs (loop, mem_refs, clobbered_vops);
+  mem_refs = gather_mem_refs (loop, clobbered_vops);
 
   /* Find the vops that are used for more than one reference.  */
-  fmrv_data.all_vops = BITMAP_ALLOC (NULL);
-  fmrv_data.clobbered_vops = clobbered_vops;
-  htab_traverse (mem_refs, find_more_ref_vops, &fmrv_data);
-  BITMAP_FREE (fmrv_data.all_vops);
+  find_more_ref_vops (mem_refs, clobbered_vops);
 
   /* Hoist all suitable memory references.  */
-  hmr_data.loop = loop;
-  hmr_data.exits = exits;
-  hmr_data.n_exits = n_exits;
-  hmr_data.clobbered_vops = clobbered_vops;
-  htab_traverse (mem_refs, hoist_memory_reference, &hmr_data);
+  hoist_memory_references (loop, mem_refs, clobbered_vops, exits, n_exits);
 
-  htab_delete (mem_refs);
+  free_mem_refs (mem_refs);
   free (exits);
   BITMAP_FREE (clobbered_vops);
 }
