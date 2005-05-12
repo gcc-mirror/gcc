@@ -1317,7 +1317,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 {
   HOST_WIDE_INT offset;
   int insn_code, i;
-  bool any_change;
+  bool any_change = false;
   rtx set, new, x, seq;
 
   /* There are some special cases to be handled first.  */
@@ -1374,6 +1374,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	}
 
       extract_insn (insn);
+      insn_code = INSN_CODE (insn);
 
       /* Handle a plus involving a virtual register by determining if the
 	 operands remain valid if they're modified in place.  */
@@ -1387,7 +1388,9 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	  offset += INTVAL (recog_data.operand[2]);
 
 	  /* If the sum is zero, then replace with a plain move.  */
-	  if (offset == 0)
+	  if (offset == 0
+	      && REG_P (SET_DEST (set))
+	      && REGNO (SET_DEST (set)) > LAST_VIRTUAL_REGISTER)
 	    {
 	      start_sequence ();
 	      emit_move_insn (SET_DEST (set), new);
@@ -1400,7 +1403,6 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	    }
 
 	  x = gen_int_mode (offset, recog_data.operand_mode[2]);
-	  insn_code = INSN_CODE (insn);
 
 	  /* Using validate_change and apply_change_group here leaves
 	     recog_data in an invalid state.  Since we know exactly what
@@ -1411,15 +1413,17 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	      *recog_data.operand_loc[1] = recog_data.operand[1] = new;
 	      *recog_data.operand_loc[2] = recog_data.operand[2] = x;
 	      any_change = true;
-	      goto verify;
+
+	      /* Fall through into the regular operand fixup loop in
+		 order to take care of operands other than 1 and 2.  */
 	    }
 	}
     }
   else
-    extract_insn (insn);
-
-  insn_code = INSN_CODE (insn);
-  any_change = false;
+    {
+      extract_insn (insn);
+      insn_code = INSN_CODE (insn);
+    }
 
   /* In the general case, we expect virtual registers to appear only in
      operands, and then only as either bare registers or inside memories.  */
@@ -1503,7 +1507,6 @@ instantiate_virtual_regs_in_insn (rtx insn)
       any_change = true;
     }
 
- verify:
   if (any_change)
     {
       /* Propagate operand changes into the duplicates.  */
