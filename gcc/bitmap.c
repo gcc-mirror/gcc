@@ -51,14 +51,15 @@ bitmap_elem_to_freelist (bitmap head, bitmap_element *elt)
 {
   bitmap_obstack *bit_obstack = head->obstack;
   
+  elt->next = NULL;
   if (bit_obstack)
     {
-      elt->next = bit_obstack->elements;
+      elt->prev = bit_obstack->elements;
       bit_obstack->elements = elt;
     }
   else
     {
-      elt->next = bitmap_ggc_free;
+      elt->prev = bitmap_ggc_free;
       bitmap_ggc_free = elt;
     }
 }
@@ -105,7 +106,16 @@ bitmap_element_allocate (bitmap head)
       element = bit_obstack->elements;
       
       if (element)
-	bit_obstack->elements = element->next;
+	/* Use up the inner list first before looking at the next
+	   element of the outer list.  */
+	if (element->next)
+	  {
+	    bit_obstack->elements = element->next;
+	    bit_obstack->elements->prev = element->prev;
+	  }
+	else
+	  /*  Inner list was just a singleton.  */
+	  bit_obstack->elements = element->prev;
       else
 	element = XOBNEW (&bit_obstack->obstack, bitmap_element);
     }
@@ -113,7 +123,16 @@ bitmap_element_allocate (bitmap head)
     {
       element = bitmap_ggc_free;
       if (element)
-	bitmap_ggc_free = element->next;
+	/* Use up the inner list first before looking at the next
+	   element of the outer list.  */
+	if (element->next)
+	  {
+	    bitmap_ggc_free = element->next;
+	    bitmap_ggc_free->prev = element->prev;
+	  }
+	else
+	  /*  Inner list was just a singleton.  */
+	  bitmap_ggc_free = element->prev;
       else
 	element = GGC_NEW (bitmap_element);
     }
@@ -128,13 +147,38 @@ bitmap_element_allocate (bitmap head)
 void
 bitmap_elt_clear_from (bitmap head, bitmap_element *elt)
 {
-  bitmap_element *next;
+  bitmap_element *prev;
+  bitmap_obstack *bit_obstack = head->obstack;
 
-  while (elt)
+  if (!elt) return;
+
+  prev = elt->prev;
+  if (prev)
     {
-      next = elt->next;
-      bitmap_element_free (head, elt);
-      elt = next;
+      prev->next = NULL;
+      if (head->current->indx > prev->indx)
+	{
+	  head->current = prev;
+	  head->indx = prev->indx;
+	}
+    } 
+  else
+    {
+      head->first = NULL;
+      head->current = NULL;
+      head->indx = 0;
+    }
+
+  /* Put the entire list onto the free list in one operation. */ 
+  if (bit_obstack)
+    {
+      elt->prev = bit_obstack->elements; 
+      bit_obstack->elements = elt;
+    }
+  else
+    {
+      elt->prev = bitmap_ggc_free;
+      bitmap_ggc_free = elt;
     }
 }
 
@@ -143,15 +187,8 @@ bitmap_elt_clear_from (bitmap head, bitmap_element *elt)
 inline void
 bitmap_clear (bitmap head)
 {
-  bitmap_element *element, *next;
-
-  for (element = head->first; element != 0; element = next)
-    {
-      next = element->next;
-      bitmap_elem_to_freelist (head, element);
-    }
-
-  head->first = head->current = 0;
+  if (head->first)
+    bitmap_elt_clear_from (head, head->first);
 }
 
 /* Initialize a bitmap obstack.  If BIT_OBSTACK is NULL, initialize
