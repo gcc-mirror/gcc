@@ -50,7 +50,7 @@ AC_DEFUN([ACX_PROG_CC_WARNING_ALMOST_PEDANTIC],
 AC_SUBST([WARN_PEDANTIC])dnl
 AS_VAR_PUSHDEF([acx_Pedantic], [acx_cv_prog_cc_pedantic_$1])dnl
 WARN_PEDANTIC=
-AS_IF([test $GCC = yes],
+AS_IF([test "$GCC" = yes],
 [AC_CACHE_CHECK([whether $CC supports -pedantic $1], acx_Pedantic,
 [save_CFLAGS="$CFLAGS"
 CFLAGS="-pedantic $1"

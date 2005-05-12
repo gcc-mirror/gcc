@@ -2757,7 +2757,7 @@ fi
 CFLAGS="$save_CFLAGS"
 
 WARN_PEDANTIC=
-if test $GCC = yes; then
+if test "$GCC" = yes; then
   echo "$as_me:$LINENO: checking whether $CC supports -pedantic -Wno-long-long" >&5
 echo $ECHO_N "checking whether $CC supports -pedantic -Wno-long-long... $ECHO_C" >&6
 if test "${acx_cv_prog_cc_pedantic__Wno_long_long+set}" = set; then
