@@ -1,3 +1,9 @@
+2005-05-12  Steven Bosscher <stevenb@suse.de>
+
+	Fix PR tree-optimization/21520
+	* tree-ssa-pre.c (phi_translate): Use fully_constant_expression
+	to attempt to fold constants.
+
 2005-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c: Declare the prototype of sh_adjust_unroll_max

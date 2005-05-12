@@ -842,6 +842,19 @@ debug_value_set (value_set_t set, const char *setname, int blockindex)
   print_value_set (stderr, set, setname, blockindex);
 }
 
+/* Return the folded version of T if T, when folded, is a gimple
+   min_invariant.  Otherwise, return T.  */ 
+
+static tree
+fully_constant_expression (tree t)
+{  
+  tree folded;
+  folded = fold (t);
+  if (folded && is_gimple_min_invariant (folded))
+    return folded;
+  return t;
+}
+
 /* Translate EXPR using phis in PHIBLOCK, so that it has the values of
    the phis in PRED.  Return NULL if we can't find a leader for each
    part of the translated expression.  */
@@ -889,12 +902,22 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	  return NULL;
 	if (newop1 != oldop1 || newop2 != oldop2)
 	  {
+	    tree t;
 	    newexpr = pool_alloc (binary_node_pool);
 	    memcpy (newexpr, expr, tree_size (expr));
-	    create_tree_ann (newexpr);
 	    TREE_OPERAND (newexpr, 0) = newop1 == oldop1 ? oldop1 : get_value_handle (newop1);
 	    TREE_OPERAND (newexpr, 1) = newop2 == oldop2 ? oldop2 : get_value_handle (newop2);
-	    vn_lookup_or_add (newexpr, NULL);
+	    t = fully_constant_expression (newexpr);
+	    if (t != newexpr)
+	      {
+		pool_free (binary_node_pool, newexpr);
+		newexpr = t;
+	      }
+	    else
+	      {
+		create_tree_ann (newexpr);	 
+		vn_lookup_or_add (newexpr, NULL);
+	      }
 	    expr = newexpr;
 	    phi_trans_add (oldexpr, newexpr, pred);	    
 	  }
@@ -913,11 +936,21 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	  return NULL;
 	if (newop1 != oldop1)
 	  {
+	    tree t;
 	    newexpr = pool_alloc (unary_node_pool);
 	    memcpy (newexpr, expr, tree_size (expr));
-	    create_tree_ann (newexpr);	 
 	    TREE_OPERAND (newexpr, 0) = get_value_handle (newop1);
-	    vn_lookup_or_add (newexpr, NULL);
+	    t = fully_constant_expression (newexpr);
+	    if (t != newexpr)
+	      {
+		pool_free (unary_node_pool, newexpr);
+		newexpr = t;
+	      }
+	    else
+	      {
+		create_tree_ann (newexpr);	 
+		vn_lookup_or_add (newexpr, NULL);
+	      }
 	    expr = newexpr;
 	    phi_trans_add (oldexpr, newexpr, pred);
 	  }
@@ -1410,19 +1443,6 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
     }
 
   return name;
-}
-
-/* Return the folded version of T if T, when folded, is a gimple
-   min_invariant.  Otherwise, return T.  */ 
-
-static tree
-fully_constant_expression (tree t)
-{  
-  tree folded;
-  folded = fold (t);
-  if (folded && is_gimple_min_invariant (folded))
-    return folded;
-  return t;
 }
 
 /* Insert the to-be-made-available values of NODE for each predecessor, stored
