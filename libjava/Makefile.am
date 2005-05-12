@@ -105,14 +105,14 @@ endif
 
 if GTK_AWT
 cond_gtk_ltlibrary = lib-gnu-java-awt-peer-gtk.la
-cond_gtk_jawt_ltlibrary = libjawt.la
+cond_gtk_gcjawt_ltlibrary = libgcjawt.la
 else
 cond_gtk_ltlibrary =
-cond_gtk_jawt_ltlibrary =
+cond_gtk_gcjawt_ltlibrary =
 endif
 
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la \
-    $(cond_gtk_ltlibrary) $(cond_gtk_jawt_ltlibrary) $(cond_xlib_ltlibrary)
+    $(cond_gtk_ltlibrary) $(cond_gtk_gcjawt_ltlibrary) $(cond_xlib_ltlibrary)
 toolexecmainlib_DATA = libgcj.spec
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -501,14 +501,14 @@ lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
 lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
 
-libjawt_la_SOURCES = jawt.c
-libjawt_la_CFLAGS = -I$(srcdir)/jni/classpath $(PEDANTIC_CFLAGS) $(X_CFLAGS)
+libgcjawt_la_SOURCES = jawt.c
+libgcjawt_la_CFLAGS = -I$(srcdir)/jni/classpath $(PEDANTIC_CFLAGS) $(X_CFLAGS)
 ## See jv_convert_LDADD.
-libjawt_la_LIBADD = -L$(here)/.libs lib-gnu-java-awt-peer-gtk.la
-libjawt_la_LDFLAGS = \
+libgcjawt_la_LIBADD = -L$(here)/.libs lib-gnu-java-awt-peer-gtk.la
+libgcjawt_la_LDFLAGS = \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LIBGCJ_LD_SYMBOLIC)
-libjawt_la_LINK = $(LIBLINK)
+libgcjawt_la_LINK = $(LIBLINK)
 
 lib_gnu_awt_xlib_la_SOURCES = \
 	$(xlib_java_source_files) \
