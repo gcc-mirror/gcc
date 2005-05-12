@@ -541,6 +541,7 @@ extern tree gimplify_build2 (block_stmt_iterator *, enum tree_code,
 			     tree, tree, tree);
 extern tree gimplify_build3 (block_stmt_iterator *, enum tree_code,
 			     tree, tree, tree, tree);
+extern void init_empty_tree_cfg (void);
 
 /* In tree-pretty-print.c.  */
 extern void dump_generic_bb (FILE *, basic_block, int, int);

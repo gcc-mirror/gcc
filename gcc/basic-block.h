@@ -444,6 +444,9 @@ extern bool rediscover_loops_after_threading;
 #define FOR_ALL_BB(BB) \
   for (BB = ENTRY_BLOCK_PTR; BB; BB = BB->next_bb)
 
+#define FOR_ALL_BB_FN(BB, FN) \
+  for (BB = ENTRY_BLOCK_PTR_FOR_FUNCTION (FN); BB; BB = BB->next_bb)
+
 /* Special labels found during CFG build.  */
 
 extern GTY(()) rtx label_value_list;
