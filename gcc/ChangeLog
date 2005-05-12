@@ -1,3 +1,21 @@
+2005-05-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.h: Remove dead code.
+	* config/sparc/sparc.c (sparc_compute_frame_size): Use
+	FIRST_PARM_OFFSET for the size of the register window area.
+	(emit_save_regs): Rename into emit_save_or_restore_regs.
+	Add 'action' parameter.  Use 4095 as upper bound for the offset.
+	Pass 'action' to save_or_restore_regs.
+	(emit_restore_regs): Delete.
+	(sparc_expand_prologue): Call emit_save_or_restore_regs.
+	(sparc_expand_epilogue): Likewise.
+	* config/sparc/sparc.md (mode macro P): Move.
+	(movdi_insn_sp32_v9, movdi_insn_sp32): Swap.
+	(mov<V32:mode> expander): Move to the top of the V32 section.
+	(movdf_insn_sp32_v9_no_fpu, movdf_insn_sp32_v9): Swap.
+	(movtf_insn_sp64_hq, movtf_insn_sp64): Swap.
+	(sibcall_epilogue): Move.
+
 2005-05-12  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/21501
