@@ -872,6 +872,7 @@ open_internal (char *base, int length)
   unix_stream *s;
 
   s = get_mem (sizeof (unix_stream));
+  memset (s, '\0', sizeof (unix_stream));
 
   s->buffer = base;
   s->buffer_offset = 0;
@@ -900,6 +901,7 @@ fd_to_stream (int fd, int prot, int avoid_mmap)
   unix_stream *s;
 
   s = get_mem (sizeof (unix_stream));
+  memset (s, '\0', sizeof (unix_stream));
 
   s->fd = fd;
   s->buffer_offset = 0;

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
    return memory that is guaranteed to be set to zero.  This can have
    a severe efficiency penalty, so it should never be set if good
    performance is desired, but it can help when you're debugging code.  */
-#define GFC_CLEAR_MEMORY
+/* #define GFC_CLEAR_MEMORY */
 
 /* If GFC_CHECK_MEMORY is defined, we do some sanity checks at runtime.
    This causes small overhead, but again, it also helps debugging.  */
