@@ -34,42 +34,6 @@
   (and (match_code "symbol_ref")
        (match_test "SYMBOL_REF_FUNCTION_P (op)")))
 
-;; True if OP refers to a symbol, and is appropriate for a GOT load.
-(define_predicate "got_symbolic_operand" 
-  (match_operand 0 "symbolic_operand" "")
-{
-  switch (GET_CODE (op))
-    {
-    case LABEL_REF:
-      return true;
-
-    case SYMBOL_REF:
-      /* This sort of load should not be used for things in sdata.  */
-      return !SYMBOL_REF_SMALL_ADDR_P (op);
-
-    case CONST:
-      /* Accept only (plus (symbol_ref) (const_int)).  */
-      op = XEXP (op, 0);
-      if (GET_CODE (op) != PLUS
-	  || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
-          || GET_CODE (XEXP (op, 1)) != CONST_INT)
-        return false;
-
-      /* Ok if we're not using GOT entries at all.  */
-      if (TARGET_NO_PIC || TARGET_AUTO_PIC)
-        return true;
-
-      /* The low 14 bits of the constant have been forced to zero
-	 by ia64_expand_load_address, so that we do not use up so
-	 many GOT entries.  Prevent cse from undoing this.  */
-      op = XEXP (op, 1);
-      return (INTVAL (op) & 0x3fff) == 0;
-
-    default:
-      abort ();
-    }
-})
-
 ;; True if OP refers to a symbol in the sdata section.
 (define_predicate "sdata_symbolic_operand" 
   (match_code "symbol_ref,const")
@@ -129,6 +93,187 @@
     }
 })
 
+;; True if OP refers to a symbol in the small address area.
+(define_predicate "small_addr_symbolic_operand" 
+  (match_code "symbol_ref,const")
+{
+  switch (GET_CODE (op))
+    {
+    case CONST:
+      op = XEXP (op, 0);
+      if (GET_CODE (op) != PLUS
+	  || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
+	return false;
+      op = XEXP (op, 0);
+      /* FALLTHRU */
+
+    case SYMBOL_REF:
+      return SYMBOL_REF_SMALL_ADDR_P (op);
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
+;; True if OP refers to a symbol with which we may use any offset.
+(define_predicate "any_offset_symbol_operand"
+  (match_code "symbol_ref")
+{
+  if (TARGET_NO_PIC || TARGET_AUTO_PIC)
+    return true;
+  if (SYMBOL_REF_SMALL_ADDR_P (op))
+    return true;
+  if (SYMBOL_REF_FUNCTION_P (op))
+    return false;
+  if (sdata_symbolic_operand (op, mode))
+    return true;
+  return false;
+})
+
+;; True if OP refers to a symbol with which we may use 14-bit aligned offsets.
+;; False if OP refers to a symbol with which we may not use any offset at any
+;; time.
+(define_predicate "aligned_offset_symbol_operand"
+  (and (match_code "symbol_ref")
+       (match_test "! SYMBOL_REF_FUNCTION_P (op)")))
+
+;; True if OP refers to a symbol, and is appropriate for a GOT load.
+(define_predicate "got_symbolic_operand" 
+  (match_operand 0 "symbolic_operand" "")
+{
+  HOST_WIDE_INT addend = 0;
+
+  switch (GET_CODE (op))
+    {
+    case LABEL_REF:
+      return true;
+
+    case CONST:
+      /* Accept only (plus (symbol_ref) (const_int)).  */
+      op = XEXP (op, 0);
+      if (GET_CODE (op) != PLUS
+	  || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+          || GET_CODE (XEXP (op, 1)) != CONST_INT)
+        return false;
+
+      addend = INTVAL (XEXP (op, 1));
+      op = XEXP (op, 0);
+      /* FALLTHRU */
+
+    case SYMBOL_REF:
+      /* These symbols shouldn't be used with got loads.  */
+      if (SYMBOL_REF_SMALL_ADDR_P (op))
+	return false;
+      if (SYMBOL_REF_TLS_MODEL (op) != 0)
+	return false;
+
+      if (any_offset_symbol_operand (op, mode))
+	return true;
+
+      /* The low 14 bits of the constant have been forced to zero
+	 so that we do not use up so many GOT entries.  Prevent cse
+	 from undoing this.  */
+      if (aligned_offset_symbol_operand (op, mode))
+	return (addend & 0x3fff) == 0;
+
+      return addend == 0;
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
+;; Return true if OP is a valid thread local storage symbolic operand.
+(define_predicate "tls_symbolic_operand"
+  (match_code "symbol_ref,const")
+{
+  switch (GET_CODE (op))
+    {
+    case SYMBOL_REF:
+      return SYMBOL_REF_TLS_MODEL (op) != 0;
+
+    case CONST:
+      op = XEXP (op, 0);
+      if (GET_CODE (op) != PLUS
+	  || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
+	return false;
+
+      /* We only allow certain offsets for certain tls models.  */
+      switch (SYMBOL_REF_TLS_MODEL (XEXP (op, 0)))
+	{
+	case TLS_MODEL_GLOBAL_DYNAMIC:
+	case TLS_MODEL_LOCAL_DYNAMIC:
+	  return false;
+
+	case TLS_MODEL_INITIAL_EXEC:
+	  return (INTVAL (XEXP (op, 1)) & 0x3fff) == 0;
+
+	case TLS_MODEL_LOCAL_EXEC:
+	  return true;
+
+	default:
+	  return false;
+	}
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
+;; Return true if OP is a local-dynamic thread local storage symbolic operand.
+(define_predicate "ld_tls_symbolic_operand"
+  (and (match_code "symbol_ref")
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_DYNAMIC")))
+
+;; Return true if OP is an initial-exec thread local storage symbolic operand.
+(define_predicate "ie_tls_symbolic_operand"
+  (match_code "symbol_ref,const")
+{
+  switch (GET_CODE (op))
+    {
+    case CONST:
+      op = XEXP (op, 0);
+      if (GET_CODE (op) != PLUS
+	  || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+	  || GET_CODE (XEXP (op, 1)) != CONST_INT
+	  || (INTVAL (XEXP (op, 1)) & 0x3fff) != 0)
+	return false;
+      op = XEXP (op, 0);
+      /* FALLTHRU */
+
+    case SYMBOL_REF:
+      return SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_INITIAL_EXEC;
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
+;; Return true if OP is a local-exec thread local storage symbolic operand.
+(define_predicate "le_tls_symbolic_operand"
+  (match_code "symbol_ref,const")
+{
+  switch (GET_CODE (op))
+    {
+    case CONST:
+      op = XEXP (op, 0);
+      if (GET_CODE (op) != PLUS
+          || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+          || GET_CODE (XEXP (op, 1)) != CONST_INT)
+        return false;
+      op = XEXP (op, 0);
+      /* FALLTHRU */
+
+    case SYMBOL_REF:
+      return SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_EXEC;
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
 ;; Like nonimmediate_operand, but don't allow MEMs that try to use a
 ;; POST_MODIFY with a REG as displacement.
 (define_predicate "destination_operand"
@@ -142,11 +287,51 @@
   (and (match_operand 0 "memory_operand")
        (match_test "GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != RTX_AUTOINC")))
 
-;; True if OP is a general operand, excluding tls symbolic operands.
+;; True if OP is a general operand, with some restrictions on symbols.
 (define_predicate "move_operand"
-  (and (match_operand 0 "general_operand")
-       (not (match_test 
-	     "GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (op)"))))
+  (match_operand 0 "general_operand")
+{
+  switch (GET_CODE (op))
+    {
+    case CONST:
+      {
+	HOST_WIDE_INT addend;
+
+	/* Accept only (plus (symbol_ref) (const_int)).  */
+	op = XEXP (op, 0);
+	if (GET_CODE (op) != PLUS
+	    || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+            || GET_CODE (XEXP (op, 1)) != CONST_INT)
+	  return false;
+
+	addend = INTVAL (XEXP (op, 1));
+	op = XEXP (op, 0);
+
+	/* After reload, we want to allow any offset whatsoever.  This
+	   allows reload the opportunity to avoid spilling addresses to
+	   the stack, and instead simply substitute in the value from a
+	   REG_EQUIV.  We'll split this up again when splitting the insn.  */
+	if (reload_in_progress || reload_completed)
+	  return true;
+
+	/* Some symbol types we allow to use with any offset.  */
+	if (any_offset_symbol_operand (op, mode))
+	  return true;
+
+	/* Some symbol types we allow offsets with the low 14 bits of the
+	   constant forced to zero so that we do not use up so many GOT
+	   entries.  We want to prevent cse from undoing this.  */
+	if (aligned_offset_symbol_operand (op, mode))
+	  return (addend & 0x3fff) == 0;
+
+	/* The remaining symbol types may never be used with an offset.  */
+	return false;
+      }
+
+    default:
+      return true;
+    }
+})
 
 ;; True if OP is a register operand that is (or could be) a GR reg.
 (define_predicate "gr_register_operand"
