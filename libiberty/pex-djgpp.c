@@ -29,6 +29,10 @@ extern int errno;
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include <process.h>
 
 /* Use ECHILD if available, otherwise use EINVAL.  */
@@ -68,7 +72,7 @@ pex_init (int flags, const char *pname, const char *tempbase)
 {
   /* DJGPP does not support pipes.  */
   flags &= ~ PEX_USE_PIPES;
-  return pex_init_common (flags, pname, tempbase, funcs);
+  return pex_init_common (flags, pname, tempbase, &funcs);
 }
 
 /* Open a file for reading.  */
@@ -119,46 +123,46 @@ pex_djgpp_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
   if (in != STDIN_FILE_NO)
     {
-      org_in = _dup (STDIN_FILE_NO);
+      org_in = dup (STDIN_FILE_NO);
       if (org_in < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup";
+	  *errmsg = "dup";
 	  return -1;
 	}
-      if (_dup2 (in, STDIN_FILE_NO) < 0)
+      if (dup2 (in, STDIN_FILE_NO) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup2";
+	  *errmsg = "dup2";
 	  return -1;
 	}
-      if (_close (in) < 0)
+      if (close (in) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_close";
+	  *errmsg = "close";
 	  return -1;
 	}
     }
 
   if (out != STDOUT_FILE_NO)
     {
-      org_out = _dup (STDOUT_FILE_NO);
+      org_out = dup (STDOUT_FILE_NO);
       if (org_out < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup";
+	  *errmsg = "dup";
 	  return -1;
 	}
-      if (_dup2 (out, STDOUT_FILE_NO) < 0)
+      if (dup2 (out, STDOUT_FILE_NO) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup2";
+	  *errmsg = "dup2";
 	  return -1;
 	}
-      if (_close (out) < 0)
+      if (close (out) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_close";
+	  *errmsg = "close";
 	  return -1;
 	}
     }
@@ -166,70 +170,68 @@ pex_djgpp_exec_child (struct pex_obj *obj, int flags, const char *executable,
   if (errdes != STDERR_FILE_NO
       || (flags & PEX_STDERR_TO_STDOUT) != 0)
     {
-      int e;
-
-      org_errdes = _dup (STDERR_FILE_NO);
+      org_errdes = dup (STDERR_FILE_NO);
       if (org_errdes < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup";
+	  *errmsg = "dup";
 	  return -1;
 	}
-      if (_dup2 ((flags & PEX_STDERR_TO_STDOUT) != 0 ? STDOUT_FILE_NO : errdes,
+      if (dup2 ((flags & PEX_STDERR_TO_STDOUT) != 0 ? STDOUT_FILE_NO : errdes,
 		 STDERR_FILE_NO) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup2";
+	  *errmsg = "dup2";
 	  return -1;
 	}
       if (errdes != STDERR_FILE_NO)
 	{
-	  if (_close (errdes) < 0)
+	  if (close (errdes) < 0)
 	    {
 	      *err = errno;
-	      *errmsg = "_close";
+	      *errmsg = "close";
 	      return -1;
 	    }
 	}
     }
 
-  status = (((flags & PEX_SEARCH) != 0 ? _spawnvp : _spawnv)
-	    (P_WAIT, program, (const char **) argv));
+  status = (((flags & PEX_SEARCH) != 0 ? spawnvp : spawnv)
+	    (P_WAIT, executable, (char * const *) argv));
 
   if (status == -1)
     {
       *err = errno;
-      *errmsg = ((flags & PEX_SEARCH) != 0) ? "_spawnvp" : "_spawnv";
+      *errmsg = ((flags & PEX_SEARCH) != 0) ? "spawnvp" : "spawnv";
     }
 
   if (in != STDIN_FILE_NO)
     {
-      if (_dup2 (org_in, STDIN_FILE_NO) < 0)
+      if (dup2 (org_in, STDIN_FILE_NO) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup2";
+	  *errmsg = "dup2";
 	  return -1;
 	}
-      if (_close (org_in) < 0)
+      if (close (org_in) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_close";
+	  *errmsg = "close";
 	  return -1;
 	}
     }
 
   if (out != STDOUT_FILE_NO)
     {
-      if (_dup2 (org_out, STDOUT_FILE_NO) < 0)
+      if (dup2 (org_out, STDOUT_FILE_NO) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup2";
+	  *errmsg = "dup2";
 	  return -1;
 	}
-      if (_close (org_out) < 0)
+      if (close (org_out) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_close";
+	  *errmsg = "close";
 	  return -1;
 	}
     }
@@ -237,16 +239,16 @@ pex_djgpp_exec_child (struct pex_obj *obj, int flags, const char *executable,
   if (errdes != STDERR_FILE_NO
       || (flags & PEX_STDERR_TO_STDOUT) != 0)
     {
-      if (_dup2 (org_errdes, STDERR_FILE_NO) < 0)
+      if (dup2 (org_errdes, STDERR_FILE_NO) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_dup2";
+	  *errmsg = "dup2";
 	  return -1;
 	}
-      if (_close (org_errdes) < 0)
+      if (close (org_errdes) < 0)
 	{
 	  *err = errno;
-	  *errmsg = "_close";
+	  *errmsg = "close";
 	  return -1;
 	}
     }
@@ -268,8 +270,9 @@ pex_djgpp_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
 static int
 pex_djgpp_wait (struct pex_obj *obj, long pid, int *status,
-		struct pex_time *time, int done, const char **errmsg,
-		int *err)
+		struct pex_time *time, int done ATTRIBUTE_UNUSED,
+		const char **errmsg ATTRIBUTE_UNUSED,
+		int *err ATTRIBUTE_UNUSED)
 {
   int *statuses;
 

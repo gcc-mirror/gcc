@@ -1,3 +1,14 @@
+2005-05-11  Eli Zaretskii  <eliz@gnu.org>
+
+	* pex-djgpp.c: Include string.h, fcntl.h, unistd.h, and
+	sys/stat.h.
+	(pex_init): Fix last argument to pex_init_common.
+	(pex_djgpp_exec_child): Remove leading underscore from _open,
+	_dup, _dup2, _close, and _spawnv/_spawnvp.  Replace `program',
+	which is undeclared, with `executable', which was unused.  Remove
+	unused variable `e'.  Fix casting of last arg to spawnv/spawnvp.
+	(pex_djgpp_wait): Declare arguments with ATTRIBUTE_UNUSED.
+
 2005-05-11  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.in: Regenerate dependencies.
