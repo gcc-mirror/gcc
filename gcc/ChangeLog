@@ -1,3 +1,15 @@
+2005-05-12  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-im.c (struct mem_ref): Add field "next".
+	(struct hmr_data, hoist_memory_reference, memref_del,
+	struct fmrv_data): Removed.
+	(hoist_memory_references, free_mem_ref, free_mem_refs): New functions.
+	(gather_mem_refs, gather_mem_refs_stmt): Add new references to the
+	list.
+	(find_more_ref_vops): Traverse the list of memory references.
+	(determine_lsm_loop): Work with the list of memory references instead
+	of traversing the hashtable.
+
 2005-05-12  Steven Bosscher  <stevenb@suse.de>
 	    Stuart Hastings <stuart@apple.com>
 	    Jan Hubicka  <jh@suse.cz>
