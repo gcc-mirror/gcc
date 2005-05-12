@@ -565,6 +565,7 @@ extern void _Jv_RegisterBootstrapPackages ();
 // This is used to find ABI versions we recognize.
 #define GCJ_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 10)
 #define GCJ_BINARYCOMPAT_ADDITION 5
+#define GCJ_BOOTSTRAP_LOADER_ADDITION 1
 
 // At present we know we are compatible with the BC ABI as used in GCC
 // 4.0.
@@ -573,10 +574,18 @@ extern void _Jv_RegisterBootstrapPackages ();
 inline bool
 _Jv_CheckABIVersion (unsigned long value)
 {
-  // Recognize our defined C++ ABI.
+  // Recognize our defined C++ ABIs.
   return (value == GCJ_VERSION
-	  // At the moment this is the only BC ABI we recognize.
-	  || value == GCJ_40_BC_ABI_VERSION);
+	  || value == (GCJ_VERSION + GCJ_BOOTSTRAP_LOADER_ADDITION)
+	  || value == GCJ_40_BC_ABI_VERSION
+	  || value == (GCJ_40_BC_ABI_VERSION + GCJ_BOOTSTRAP_LOADER_ADDITION));
+}
+
+inline bool
+_Jv_ClassForBootstrapLoader (unsigned long value)
+{
+  return (value == (GCJ_VERSION + GCJ_BOOTSTRAP_LOADER_ADDITION)
+	  || value == (GCJ_40_BC_ABI_VERSION + GCJ_BOOTSTRAP_LOADER_ADDITION));
 }
 
 // It makes the source cleaner if we simply always define this

@@ -52,6 +52,15 @@ details.  */
 
 static jclass loaded_classes[HASH_LEN];
 
+// This records classes which will be registered with the system class
+// loader when it is initialized.
+static jclass system_class_list;
+
+// This is used as the value of system_class_list after we have
+// initialized the system class loader; it lets us know that we should
+// no longer pay attention to the system abi flag.
+#define SYSTEM_LOADER_INITIALIZED ((jclass) -1)
+
 // This is the root of a linked list of classes
 static jclass stack_head;
 
@@ -165,6 +174,22 @@ _Jv_RegisterClasses_Counted (const jclass * classes, size_t count)
 void
 _Jv_RegisterClassHookDefault (jclass klass)
 {
+  // This is bogus, but there doesn't seem to be a better place to do
+  // it.
+  if (! klass->engine)
+    klass->engine = &_Jv_soleCompiledEngine;
+
+  if (system_class_list != SYSTEM_LOADER_INITIALIZED)
+    {
+      unsigned long abi = (unsigned long) klass->next_or_version;
+      if (! _Jv_ClassForBootstrapLoader (abi))
+	{
+	  klass->next_or_version = system_class_list;
+	  system_class_list = klass;
+	  return;
+	}
+    }
+
   jint hash = HASH_UTF (klass->name);
 
   // If the class is already registered, don't re-register it.
@@ -193,9 +218,6 @@ _Jv_RegisterClassHookDefault (jclass klass)
 	}
     }
 
-  // FIXME: this is really bogus!
-  if (! klass->engine)
-    klass->engine = &_Jv_soleCompiledEngine;
   klass->next_or_version = loaded_classes[hash];
   loaded_classes[hash] = klass;
 }
@@ -214,6 +236,21 @@ _Jv_RegisterClass (jclass klass)
   classes[0] = klass;
   classes[1] = NULL;
   _Jv_RegisterClasses (classes);
+}
+
+// This is used during initialization to register all compiled-in
+// classes that are not part of the core with the system class loader.
+void
+_Jv_CopyClassesToSystemLoader (java::lang::ClassLoader *loader)
+{
+  for (jclass klass = system_class_list;
+       klass;
+       klass = klass->next_or_version)
+    {
+      klass->loader = loader;
+      loader->loadedClasses->put(klass->name->toString(), klass);
+    }
+  system_class_list = SYSTEM_LOADER_INITIALIZED;
 }
 
 jclass

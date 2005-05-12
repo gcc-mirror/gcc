@@ -1,3 +1,26 @@
+2005-05-11  Tom Tromey  <tromey@redhat.com>
+
+	* external/w3c_dom/Makefile.in: Rebuilt.
+	* external/w3c_dom/Makefile.am (libw3c_gcj_la_GCJFLAGS): Added
+	-fbootstrap-classes.
+	* external/sax/Makefile.in: Rebuilt.
+	* external/sax/Makefile.am (libsax_gcj_la_GCJFLAGS): Added
+	-fbootstrap-classes.
+	* java/lang/Class.h (_Jv_CopyClassesToSystemLoader): Declare as
+	friend.
+	* java/lang/natVMClassLoader.cc (getSystemClassLoaderInternal):
+	Call _Jv_CopyClassesToSystemLoader.
+	* java/lang/natClassLoader.cc (system_class_list): New global.
+	(_Jv_RegisterClassHookDefault): Handle bootstrap and system
+	classes differently.
+	(_Jv_CopyClassesToSystemLoader): New function.
+	(SYSTEM_LOADER_INITIALIZED): New define.
+	* include/jvm.h (GCJ_BOOTSTRAP_LOADER_ADDITION): New define.
+	(_Jv_CheckABIVersion): Use it.
+	(_Jv_ClassForBootstrapLoader): New function.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_GCJFLAGS): Added -fbootstrap-classes.
+
 2005-05-10  Tom Tromey  <tromey@redhat.com>
 
 	* gcj/javaprims.h: Updated.

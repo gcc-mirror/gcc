@@ -515,6 +515,15 @@ ABI.  These restrictions will be lifted in some future release.
 However, if you compile CNI code with the standard ABI, you can call
 it from code built with the binary compatibility ABI.
 
+@item -fbootstrap-classes
+This option can be use to tell @code{libgcj} that the compiled classes
+should be loaded by the bootstrap loader, not the system class loader.
+By default, if you compile a class and link it into an executable, it
+will be treated as if it was loaded using the system class loader.
+This is convenient, as it means that things like
+@code{Class.forName()} will search @samp{CLASSPATH} to find the
+desired class.
+
 @end table
 
 
