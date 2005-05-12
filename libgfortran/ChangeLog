@@ -1,3 +1,16 @@
+2005-05-12  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21324
+	* runtime/memory.c:  Don't define GFC_CLEAR_MEMORY (it's a
+	performance hog).
+	* io/open.c (new_unit): Zero freshly allocated memory for
+	unit structure.
+	* io/unit.c (init_units):  Zero freshly allocated memory for
+	STDIN, STDOUT and STDERR.
+	* io/unix.c (open_internal):  Zero freshly allocated memory
+	for unix_stream.
+	(fd_to_stream):  Likewise.
+
 2005-05-11  Bud Davis  <bdavis@gfortran.org>
 
 	PR fortran/19478

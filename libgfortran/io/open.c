@@ -351,6 +351,7 @@ new_unit (unit_flags * flags)
   /* Create the unit structure.  */
 
   u = get_mem (sizeof (gfc_unit) + ioparm.file_len);
+  memset (u, '\0', sizeof (gfc_unit) + ioparm.file_len);
 
   u->unit_number = ioparm.unit;
   u->s = s;
