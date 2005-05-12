@@ -845,11 +845,10 @@ cris_print_operand (FILE *file, rtx x, int code)
       switch (GET_CODE (operand))
 	{
 	case CONST_INT:
-	  if (HOST_BITS_PER_WIDE_INT == 32)
-	    /* Sign-extension from a normal int to a long long.  */
-	    fprintf (file, INTVAL (operand) < 0 ? "-1" : "0");
-	  else
-	    fprintf (file, "0x%x", (unsigned int)(INTVAL (x) >> 31 >> 1));
+	  /* If we're having 64-bit HOST_WIDE_INTs, the whole (DImode)
+	     value is kept here, and so may be other than 0 or -1.  */
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		   INTVAL (operand_subword (operand, 1, 0, DImode)));
 	  return;
 
 	case CONST_DOUBLE:
