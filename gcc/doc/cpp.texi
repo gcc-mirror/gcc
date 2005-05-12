@@ -3372,18 +3372,15 @@ current file to be treated as if it came from a system header.
 @chapter Other Directives
 
 @findex #ident
+@findex #sccs
 The @samp{#ident} directive takes one argument, a string constant.  On
 some systems, that string constant is copied into a special segment of
-the object file.  On other systems, the directive is ignored.
+the object file.  On other systems, the directive is ignored.  The
+@samp{#sccs} directive is a synonym for @samp{#ident}.
 
-This directive is not part of the C standard, but it is not an official
-GNU extension either.  We believe it came from System V@.
-
-@findex #sccs
-The @samp{#sccs} directive is recognized, because it appears in the
-header files of some systems.  It is a very old, obscure, extension
-which we did not invent, and we have been unable to find any
-documentation of what it should do, so GCC simply ignores it.
+These directives are not part of the C standard, but they are not
+official GNU extensions either.  What historical information we have
+been able to find, suggests they originated with System V@.
 
 @cindex null directive
 The @dfn{null directive} consists of a @samp{#} followed by a newline,

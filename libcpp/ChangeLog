@@ -1,3 +1,9 @@
+2005-05-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* directives.c (#sccs table entry): Mark IN_I, consistent with #ident.
+	(do_sccs): Delete function definition, #define to do_ident.
+	(do_ident): Don't hardwire directive name.
+
 2005-05-12  Ryota Kunisawa  <kunisawa@access.co.jp>
 
 	PR bootstrap/21230
@@ -26,7 +32,7 @@
 	fflush, fgetc, fgets, ferror, fread): Redefine to the associated
 	_unlocked function.
 	(fwrite_unlocked): Fix prototype.
-	
+
 	* configure, config.in: Regenerate.
 
 2005-04-05  Jakub Jelinek  <jakub@redhat.com>
@@ -58,7 +64,7 @@
 	* lex.c (forms_identifier_p): Disable UCNs in C89 mode.
 
 2005-03-14  Geoffrey Keating  <geoffk@apple.com>
-	
+
 	* init.c (cpp_create_reader): Default warn_normalize to normalized_C.
 	* charset.c: Update for new format of ucnid.h.
 	(ucn_valid_in_identifier): Update for new format of ucnid.h.
@@ -119,7 +125,7 @@
 
 	* directives.c (do_line): Save sysp early before line table is
 	realloc'ed.
-	
+
 2005-02-20  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 18785

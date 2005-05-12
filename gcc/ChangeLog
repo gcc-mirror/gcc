@@ -1,5 +1,9 @@
+2005-05-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/cpp.texi: Document that #sccs is a synonym for #ident.
+
 2005-05-12  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/21532
 	* tree-ssa-pre.c (create_expression_by_pieces): stmt
 	needs to go onto the inserted_exprs list.
@@ -55,7 +59,7 @@
 	(ia64_cannot_force_const_mem): New.
 	(tls_symbolic_operand_type): New.
 	(ia64_legitimate_constant_p): New.
-	(ia64_expand_load_address): Return true on success.  Improve 
+	(ia64_expand_load_address): Return true on success.  Improve
 	checks for when we should not split.
 	(ia64_expand_tls_address): New addend operand.  Distribute it
 	as appropriate to the tls_kind.  Delay referencing gp.
@@ -70,7 +74,7 @@
 	ia64_expand_load_address and FAIL or DONE as appropriate.
 	(load_fptr): Only accept after reload.
 	(load_fptr_internal1, gprel64_offset, load_gprel64, load_symptr_high,
-	load_symptr_low, load_ltoff_dtpmod, 
+	load_symptr_low, load_ltoff_dtpmod,
 	(load_dtpmod): New.
 	(load_dtprel): Only accept tls symbols.
 	(load_dtprel64, load_dtprel22): Likewise.
@@ -251,7 +255,7 @@
 
 	* Makefile.in (gtype-desc.o, build/genautomata.o)
 	(build/varray.o): Depend on $(VARRAY_H).
-	
+
 2005-05-10  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-optimize.c (init_tree_optimization_passes): Re-organize
@@ -324,7 +328,7 @@
 
 	* config/s390/s390.md: Add comment lines for 'f' and 't' constraint
 	letters.
-	
+
 2005-05-10  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.md: ("anddi3","andsi3","andhi3","andqi3"): Merge.
@@ -361,7 +365,7 @@
 	no return value pattern.
 
 2005-05-10  Grigory Zagorodnev  <grigory.zagorodnev@intel.com>
-            H.J. Lu  <hongjiu.lu@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	* libgcov.c (create_file_directory): New function. Create
 	directory for the given file name.
@@ -453,7 +457,7 @@
 	(movdf_insn_v9only_vis): Rename into movdf_insn_sp32_v9.
 	(movdf_insn_sp64_novis): Delete.
 	(movdf_insn_sp64_vis): Rename into movdf_insn_sp64.
-	(movdf_no_e_insn_sp64): Use register_or_zero_operand. 
+	(movdf_no_e_insn_sp64): Use register_or_zero_operand.
 	Rename into movdf_insn_sp64_no_fpu.
 	(movtf expander): Use register_or_zero_operand.
 	(movtf_insn_sp32): Delete.
@@ -505,9 +509,9 @@
 
 2005-05-09  David Edelsohn  <edelsohn@gnu.org>
 
-        PR target/21477
-        * config/rs6000/rs6000.md (add_op2): New.
-        (add<mode>3): Use it.
+	PR target/21477
+	* config/rs6000/rs6000.md (add_op2): New.
+	(add<mode>3): Use it.
 
 2005-05-09  Richard Earnshaw  <richard.earnshaw@arm.com>
 
@@ -577,14 +581,14 @@
 	s390_short_displacement, addr_generation_dependency_p,
 	legitimate_reload_constant_p, legitimate_address_p): Change return type
 	into 'bool'.
-	(s390_tm_ccmode): Change type of parameter "mixed" into 'bool'. 
+	(s390_tm_ccmode): Change type of parameter "mixed" into 'bool'.
 	* config/s390/s390.c: (s390_match_ccmode,
 	symbolic_reference_mentioned_p, tls_symbolic_reference_mentioned_p,
 	legitimate_reload_constant_p): Change return type into 'bool'.
 	(preferred_la_operand_p,legitimate_la_operand_p, legitimate_address_p):
-	Likewise.  Additionally adapted comment.  
+	Likewise.  Additionally adapted comment.
 	(s390_extra_constraint_p): Change Comment to reflect 'int' return type.
-	(s390_tm_ccmode): Change type of parameter "mixed" into 'bool'. 
+	(s390_tm_ccmode): Change type of parameter "mixed" into 'bool'.
 	(s390_decompose_address): Change the type of the internal flags
 	"pointer", "base_ptr", "indx_ptr", and the return value into 'bool'.
 	(struct s390_address): Change type of "pointer" into bool.
@@ -621,7 +625,7 @@
 	s390_add_pool_insn, s390_find_pool, s390_add_constant,
 	s390_find_constant, s390_add_execute, s390_find_execute,
 	s390_execute_label, s390_execute_target, s390_dump_pool,
-	s390_dump_execute, s390_alloc_pool, s390_free_pool): Remove prototypes. 
+	s390_dump_execute, s390_alloc_pool, s390_free_pool): Remove prototypes.
 	Move target macro definitions to the end of the file.  Move several
 	functions within the file to assure correct compiling.
 
@@ -701,7 +705,7 @@
 
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
-	* config/s390/s390.c: (s390_adjust_priority): Adapt to changed 
+	* config/s390/s390.c: (s390_adjust_priority): Adapt to changed
 	attribute names.
 	* config/s390/2084.md: ("x_fsimpd", "x_fsimps", "x_fdivd", "x_fdivs",
 	"x_floadd", "x_floads", "x_fstored", "x_fstores"): Rename to
@@ -747,7 +751,7 @@
 
 2005-05-09  Adrian Straetling  <straetling@de.ibm.com>
 
-	* config/s390/s390.md: ("DSI", "SCOND"): New mode 
+	* config/s390/s390.md: ("DSI", "SCOND"): New mode
 	macros.
 	("E", "g"): New mode attributes.
 	("*adddi3_alc_cc", "*addsi3_alc_cc"): Merge.
@@ -808,7 +812,7 @@
 	("*tsthi", "*tstqi"): Merge.
 	("*tsthi_cconly", "tstqi_cconly"): Merge.
 	("*sethighhisi", "*sethighqisi"): Merge.
-	 
+
 2005-05-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* crtstuff.c, integrate.h, tree-scalar-evolution.h,
@@ -860,7 +864,7 @@
 
 2005-05-09  David Ung  <davidu@mips.com>
 
-	* config/mips/mips.h (processor_type): Add names for the 24K. 
+	* config/mips/mips.h (processor_type): Add names for the 24K.
 	* config/mips/mips.c (mips_cpu_info_table): Add names for the 24K
 	processor family.
 	* config/mips/mips.md (cnv_mode): New attribute for recording the
@@ -873,7 +877,7 @@
 	(fix_truncsfsi2_insn, fix_truncsfsi2_macro): Changed mode to SF and
 	setup cnv_mode.
 	* config/mips/24k.md: New file, contains 24k DFA pipeline
-	description. 
+	description.
 
 2005-05-09  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -1025,7 +1029,7 @@
 	* libgcov.c: Remove unneeded comment about config.h.
 	* unwind-dw2-fde-glibc.c: Do not inlude auto-host.h.
 	* config.in, configure: Regenerated.
-	
+
 2005-05-08  Nathan Sidwell  <nathan@codesourcery.com>
 	    Falk Hueffner  <falk@debian.org>
 
@@ -1300,7 +1304,7 @@
 	* config/m32r/m32r.h (INITIAL_ELIMINATION_OFFSET): Likewise.
 	* config/m32r/m32r.md (	*movsi_insn, *zero_branch_insn,
 	*rev_zero_branch_insn): Likewise.
-	
+
 2005-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/20961
@@ -1601,7 +1605,7 @@
 	* configure.ac: Use AC_C_BIGENDIAN instead of AC_C_BIGENDIAN_CROSS.
 	Use AC_CHECK_SIZEOF instead of AC_COMPILE_CHECK_SIZEOF.
 	* configure, config.in: Regenerate.
-	
+
 2005-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21265
@@ -1738,14 +1742,14 @@
 
 2005-05-03  Andrew MacLeod  <amacleod@redhat.com>
 
-	* lambda-code.c (gcc_loop_to_lambda_loop, 
+	* lambda-code.c (gcc_loop_to_lambda_loop,
 	lambda_loopnest_to_gcc_loopnest, phi_loop_edge_uses_def,
 	stmt_is_bumper_for_loop, perfect_nest_p, replace_uses_of_x_with_y): Use
 	generic operand interface.
 	* tree-data-ref.c (find_data_references_in_loop): Use generic interface.
 	* tree-dfa.c (collect_dfa_stats_r, mark_new_vars_to_rename): Use
 	generic operand interface.
-	* tree-flow-inline.h (delink_imm_use, link_imm_use_to_list, 
+	* tree-flow-inline.h (delink_imm_use, link_imm_use_to_list,
 	link_imm_use, link_imm_use_stmt, relink_imm_use, relink_imm_use_stmt,
 	next_safe_imm_use, has_zero_uses, has_single_use, single_imm_use,
 	num_imm_uses): Use ssa_use_operand_t.
@@ -1759,12 +1763,12 @@
 	(op_iter_next_use, op_iter_next_def, op_iter_next_tree, op_iter_init,
 	op_iter_next_tree): Use new operand implementation.
 	(clear_and_done_ssa_iter): New.  Initialize a blank operand iterator.
-	(op_iter_init_use, op_iter_init_def, op_iter_init_tree): Add iterator 
+	(op_iter_init_use, op_iter_init_def, op_iter_init_tree): Add iterator
 	type check.
-	(op_iter_next_mustdef, op_iter_next_maydef, 
+	(op_iter_next_mustdef, op_iter_next_maydef,
 	op_iter_next_must_and_may_def): Delete. Replace with...
 	(op_iter_next_maymustdef): New.  Combine must and may next operations.
-	(op_iter_init_maydef, op_iter_init_mustdef, 
+	(op_iter_init_maydef, op_iter_init_mustdef,
 	op_iter_init_must_and_may_def): Use new interface.
 	(single_ssa_tree_operand ): New.  Process single operands only as trees.
 	(single_ssa_use_operand): New.  Process single operands only as uses.
@@ -1781,9 +1785,9 @@
 	(struct stmt_ann_d): Operands field no longer require GTY().
 	(vn_compute, vn_lookup_or_add, vn_add, vn_lookup): Change prototype.
 	* tree-into-ssa.c (mark_def_sites): Use SSA_OP_VMUSTKILL.
-	* tree-outof-ssa.c (check_replaceable, find_replaceable_in_bb, 
+	* tree-outof-ssa.c (check_replaceable, find_replaceable_in_bb,
 	dump_replaceable_exprs, rewrite_trees): Use generic interface.
-	* tree-phinodes.c (make_phi_node, release_phi_node, resize_phi_node): 
+	* tree-phinodes.c (make_phi_node, release_phi_node, resize_phi_node):
 	Use use_operand_p instead of ssa_imm_use_t *.
 	* tree-pretty-print.c (dump_vops): check if operands are active before
 	dumping virtual operands.
@@ -1791,11 +1795,11 @@
 	* tree-ssa-ccp.c (likely_value): Use ZERO_SSA_OPERANDS.
 	(ccp_fold): Use new interface.
 	(ccp_visit_stmt): Remove unused variables and code.
-	(convert_to_gimple_builtin): Insert statements before calling 
+	(convert_to_gimple_builtin): Insert statements before calling
 	mark_new_vars_to_rename.
 	* tree-ssa-copy.c (stmt_may_generate_copy): Use ZERO_SSA_OPERANDS.
 	(copy_prop_visit_cond_stmt): Use generic interface.
-	* tree-ssa-dom.c (struct expr_hash_elt): Use stmt pointer, not the 
+	* tree-ssa-dom.c (struct expr_hash_elt): Use stmt pointer, not the
 	annotation in table.
 	(thread_across_edge): Use generic interface.
 	(initialize_hash_element): Initialzie with stmt, not annotation.
@@ -1804,21 +1808,21 @@
 	(avail_expr_hash, real_avail_expr_hash, avail_expr_eq): Use generic
 	interface.
 	* tree-ssa-dse.c (dse_optimize_stmt): Use ZERO_SSA_OPERANDS.
-	* tree-ssa-loop-ivopts.c (find_invariants_stmt, 
-	find_interesting_uses_stmt, protect_loop_closed_ssa_form_use): Use 
+	* tree-ssa-loop-ivopts.c (find_invariants_stmt,
+	find_interesting_uses_stmt, protect_loop_closed_ssa_form_use): Use
 	generic operand interface.
 	* tree-ssa-loop-niter.c (chain_of_csts_start, get_val_for): Use generic
 	interface.
 	* tree-ssa-loop-unswitch.c (tree_may_unswitch_on): Use Generic operand
 	Interface.
 	* tree-ssa-operands.c (struct opbuild_list_d): New.  Operand build type.
-	(build_defs, build_uses, build_v_may_defs, build_vuses, 
+	(build_defs, build_uses, build_v_may_defs, build_vuses,
 	build_v_must_defs): Change type to struct opbuild_list_d.
 	(ops_active): New.  Operands active boolean.
 	(operand_memory, operand_memory_index): New.  Operand memory managers.
 	(allocate_def_optype, allocate_use_optype, allocate_v_may_def_optype,
 	allocate_vuse_optype, allocate_v_must_def_optype): Delete.
-	(free_uses, free_defs, free_vuses, free_v_may_defs, free_v_must_defs): 
+	(free_uses, free_defs, free_vuses, free_v_may_defs, free_v_must_defs):
 	Change from functions to static variable list heads.
 	(opbuild_initialize_virtual): New.  Initialize a virtual build list.
 	(opbuild_initialize_real): New.  Initialize a virtual build list.
@@ -1838,13 +1842,13 @@
 	(ssa_operand_alloc): New.  Allocate memory from an operand chunk.
 	(correct_use_link): Use use_operand_p.
 	(finalize_ssa_uses, finalize_ssa_v_may_defs, finalize_ssa_defs,
-	finalize_ssa_vuses, finalize_ssa_v_must_defs): New implmentation. 
+	finalize_ssa_vuses, finalize_ssa_v_must_defs): New implmentation.
 	(cleanup_v_may_defs): Use new implmentation.
-	(finalize_ssa_stmt_operands, start_ssa_stmt_operands): New 
+	(finalize_ssa_stmt_operands, start_ssa_stmt_operands): New
 	implementation.
-	(append_def, append_use, append_v_may_def, append_vuse, 
+	(append_def, append_use, append_v_may_def, append_vuse,
 	append_v_must_def): Call opbuild_append routine instead of using varray.
-	(build_ssa_operands): Simplify to simply use stmt, don't maintain a 
+	(build_ssa_operands): Simplify to simply use stmt, don't maintain a
 	global parse_old_ops variable.
 	(free_ssa_operands): New implementation.
 	(update_stmt_operands): Move.  Change argument to build_ssa_operands.
@@ -1855,7 +1859,7 @@
 	(add_call_clobber_ops, add_call_read_ops): Initialize opbuild list
 	rather than a varray.
 	(verify_imm_links): Use use_operand_p.
-	(dump_immediate_uses_for): If the immediate use variable is a virtual 
+	(dump_immediate_uses_for): If the immediate use variable is a virtual
 	variable, show the virtual ops in the stmt.
 	* tree-ssa-operands.h (def_operand_p): No longer a structure.
 	(NULL_DEF_OPERAND_P): Now a #define.
@@ -1869,11 +1873,11 @@
 	(STMT_USE_OPS, NUM_USES, SET_USE_OP, STMT_DEF_OPS, NUM_DEFS, SET_DEF_OP,
 	STMT_V_MAY_DEF_OPS, NUM_V_MAY_DEFS, SET_V_MAY_DEF_RESULT,
 	SET_V_MAY_DEF_OP, STMT_VUSE_OPS, NUM_VUSES, SET_VUSE_OP,
-	STMT_V_MUST_DEF_OPS, NUM_V_MUST_DEFS, SET_V_MUST_DEF_RESULT, 
+	STMT_V_MUST_DEF_OPS, NUM_V_MUST_DEFS, SET_V_MUST_DEF_RESULT,
 	SET_V_MUST_DEF_KILL): Delete.
-	(V_MAY_DEF_OPS, V_MAY_DEF_RESULT_PTR, V_MAY_DEF_RESULT, 
+	(V_MAY_DEF_OPS, V_MAY_DEF_RESULT_PTR, V_MAY_DEF_RESULT,
 	V_MAY_DEF_OP_PTR, V_MAY_DEF_OP): Rename to MAYDEF_*.
-	(V_MUST_DEF_OPS, V_MUST_DEF_RESULT_PTR, V_MUST_DEF_RESULT, 
+	(V_MUST_DEF_OPS, V_MUST_DEF_RESULT_PTR, V_MUST_DEF_RESULT,
 	V_MUST_DEF_KILL_PTR, V_MUST_DEF_KILL): Rename to MUSTDEF_*.
 	(enum ssa_op_iter_type): Operand iterator typechecking values.
 	(struct ssa_operand_iterator_d): Use linked lists of operands.
@@ -1883,12 +1887,12 @@
 	(FOR_EACH_PHI_ARG): New.  Iterate over PHI arguments.
 	(FOR_EACH_PHI_OR_STMT_USE): New.  Iterate over PHI or stmt uses.
 	(FOR_EACH_PHI_OR_STMT_DEF): New.  Iterate over PHI or stmt defs.
-	(SINGLE_SSA_TREE_OPERAND, SINGLE_SSA_USE_OPERAND, 
+	(SINGLE_SSA_TREE_OPERAND, SINGLE_SSA_USE_OPERAND,
 	SINGLE_SSA_DEF_OPERAND, ZERO_SSA_OPERANDS, NUM_SSA_OPERANDS): New.
 	* tree-ssa-opfinalize.h: New.  Function templates for expansion.
 	(FINALIZE_ALLOC): Expands into alloc_def, alloc_use, alloc_maydef,
 	alloc_vuse, and alloc_mustdef.
-	(FINALIZE_FUNC): Expands into finalize_ssa_def_ops, 
+	(FINALIZE_FUNC): Expands into finalize_ssa_def_ops,
 	finalize_ssa_use_ops, finalize_ssa_v_may_def_ops, finalize_ssa_vuse_ops,
 	and finalize_ssa_v_must_def_ops.
 	* tree-ssa-pre.c (add_to_sets): Pass tree to vn_add.
@@ -1896,7 +1900,7 @@
 	stmt around.
 	(compute_avail): Use generic iterator interface.
 	* tree-ssa-propagate.c (first_vdef): Use generic operand interface.
-	(stmt_makes_single_load, stmt_makes_single_store): Use 
+	(stmt_makes_single_load, stmt_makes_single_store): Use
 	ZERO_SSA_OPERANDS.
 	* tree-ssa-sink.c (is_hidden_global_store): Use ZERO_SSA_OPERANDS.
 	(statement_sink_location): Use generic interface.
@@ -1908,14 +1912,14 @@
 	* tree-tailcall.c (find_tail_calls): Use ZERO_SSA_OPERANDS.
 	(eliminate_tail_call): Use generic operand interface.
 	* tree-vect-analyze.c (vect_analyze_data_refs): Use ZERO_SSA_OPERANDS.
-	(vect_mark_relevant, vect_mark_stmts_to_be_vectorized): Use generic 
+	(vect_mark_relevant, vect_mark_stmts_to_be_vectorized): Use generic
 	interface.
-	* tree-vect-transform.c (update_vuses_to_preheader): Use generic 
+	* tree-vect-transform.c (update_vuses_to_preheader): Use generic
 	interface.
 	* tree-vectorizer.c (rename_variables_in_bb): Use generic interface.
 	* tree-vn.c (struct val_expr_pair_d): Cache statment pointer instead of
 	vuse_optype.
-	(vn_compute, val_expr_pair_hash, vn_add, vn_lookup, vn_lookup_or_add): 
+	(vn_compute, val_expr_pair_hash, vn_add, vn_lookup, vn_lookup_or_add):
 	Use statement pointer instead of vuse_optype.  Use generic interface.
 	* tree-vrp.c (maybe_add_assert_expr): Use generic interface.
 	(stmt_interesting_for_vrp, vrp_visit_stmt): Use ZERO_SSA_OPERANDS.
@@ -2046,38 +2050,38 @@
 
 2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
 
-        * c-common.c (resolve_overloaded_builtin): Forward to target
-        hook for BUILT_IN_MD built-ins.
-        * c-typeck.c (finish_call_expr): Call resolve_overloaded_builtin
-        for all types of built-in.
-        * target-def.h (TARGET_RESOLVE_OVERLOADED_BUILTIN): New.  Use it
-        in the definition of the target hooks struct.
-        * target.h (struct gcc_target): Add resolve_overloaded_builtin.
-        * config/rs6000/altivec.h: Rewritten.
-        * config/rs6000/rs6000-c.c (struct altivec_builtin_types,
-        altivec_resolve_overloaded_builtin, altivec_build_resolved_builtin,
-        rs6000_builtin_type, rs6000_builtin_type_compatible,
-        altivec_overloaded_builtins, rs6000_builtin_type,
-        rs6000_builtin_type_compatible): New.
-        * config/rs6000/rs6000.c (rs6000_builtin_types, rs6000_builtin_decls):
-        New.
-        (def_builtin): Turn into a function.  Check for duplicates and store
-        the builtin into rs6000_builtin_decls.
-        (bdesc_3arg, bdesc_dst, bdesc_altivec_preds, bdesc_2arg,
-        bdesc_1arg): Add overloaded builtins.
-        (altivec_expand_builtin): Check for unresolved overloaded builtins,
-        do not support ALTIVEC_COMPILETIME_ERROR.
-        (rs6000_init_builtins): Add opaque 128-bit vector, and internal
-        nodes to represent front-end types.
-        (altivec_init_builtins, rs6000_common_init_builtins): Create builtins
-        with opaque arguments and/or return values.
-        * config/rs6000/rs6000.h (enum rs6000_builtins): Remove
-        ALTIVEC_COMPILETIME_ERROR and add Altivec overloaded builtins.
-        (rs6000_builtin_type_index): New.
-        (is_ev64_opaque_type): Rename to...
-        (rs6000_is_opaque_type): ... this.
-        (rs6000_cpu_cpp_builtins): Install the resolve_overloaded_builtin
-        target hook.
+	* c-common.c (resolve_overloaded_builtin): Forward to target
+	hook for BUILT_IN_MD built-ins.
+	* c-typeck.c (finish_call_expr): Call resolve_overloaded_builtin
+	for all types of built-in.
+	* target-def.h (TARGET_RESOLVE_OVERLOADED_BUILTIN): New.  Use it
+	in the definition of the target hooks struct.
+	* target.h (struct gcc_target): Add resolve_overloaded_builtin.
+	* config/rs6000/altivec.h: Rewritten.
+	* config/rs6000/rs6000-c.c (struct altivec_builtin_types,
+	altivec_resolve_overloaded_builtin, altivec_build_resolved_builtin,
+	rs6000_builtin_type, rs6000_builtin_type_compatible,
+	altivec_overloaded_builtins, rs6000_builtin_type,
+	rs6000_builtin_type_compatible): New.
+	* config/rs6000/rs6000.c (rs6000_builtin_types, rs6000_builtin_decls):
+	New.
+	(def_builtin): Turn into a function.  Check for duplicates and store
+	the builtin into rs6000_builtin_decls.
+	(bdesc_3arg, bdesc_dst, bdesc_altivec_preds, bdesc_2arg,
+	bdesc_1arg): Add overloaded builtins.
+	(altivec_expand_builtin): Check for unresolved overloaded builtins,
+	do not support ALTIVEC_COMPILETIME_ERROR.
+	(rs6000_init_builtins): Add opaque 128-bit vector, and internal
+	nodes to represent front-end types.
+	(altivec_init_builtins, rs6000_common_init_builtins): Create builtins
+	with opaque arguments and/or return values.
+	* config/rs6000/rs6000.h (enum rs6000_builtins): Remove
+	ALTIVEC_COMPILETIME_ERROR and add Altivec overloaded builtins.
+	(rs6000_builtin_type_index): New.
+	(is_ev64_opaque_type): Rename to...
+	(rs6000_is_opaque_type): ... this.
+	(rs6000_cpu_cpp_builtins): Install the resolve_overloaded_builtin
+	target hook.
 
 2005-05-02  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -2298,7 +2302,7 @@
 	PR tree-optimization/21272
 	PR tree-optimization/21266
 	* tree-if-conv.c (find_phi_replacement_condition): Fix think-o.
-	
+
 2005-04-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-flow-inline.h: Fix a comment typo.
@@ -2351,7 +2355,7 @@
 	* config/arm/elf.h (TARGET_ASM_CONSTRUCTOR): Define.
 	(SUPPORTS_INIT_PRIORITY): Evaluate to false for EABI based targets.
 	* doc/tm.texi (INIT_ARRAY_SECTION_ASM_OP): Document.
-	(FINI_ARRAY_SECTION_ASM_OP): Likewise.  
+	(FINI_ARRAY_SECTION_ASM_OP): Likewise.
 
 2005-04-29  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -2399,7 +2403,7 @@
 	* dbxout.c (have_used_extensions): Remove.
 	(dbxout_type_fileds, dbxout_type, dbxout_symbol): Remove use of
 	have_used_extensions.
-	
+
 2005-04-28  James E Wilson  <wilson@specifixinc.com>
 
 	* doc/install.texi: Update -enable-languages info.  Correct path to
@@ -2524,7 +2528,7 @@
 
 2005-04-27  Caroline Tice  <ctice@apple.com>
 
-        * bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
 	Remove targetm.have_named_sections test.
 	(fix_edges_for_rarely_executed_code): Likewise.
 	(insert_section_boundary_note): Likewise.
@@ -2590,7 +2594,7 @@
 	(default_section_type_flags_1):  Get cold text section name from
 	function struct if there is one; Set flags correctly for
 	cold text section if there is not a current function struct.
-	
+
 2005-04-27  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-propagate.c (set_rhs): Revert last change.
@@ -2644,7 +2648,7 @@
 	* rtl.h (optimize_save_area_alloca): Likewise...
 	* passes.c (rest_of_compilation): and don't call it any more.
 	* reg-notes.def (SAVE_AREA): Delete.
-	
+
 2005-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/fp-bit.c (abort): Add noreturn attribute.
@@ -2724,7 +2728,7 @@
 	* dbxout.c (dbxout_type): Check use_gnu_debug_info_extensions.
 
 2005-04-27  Matt Thomas <matt@3am-software.com>
-            Jan-Benedict Glaw <jbglaw@microdata-pos.de>
+	    Jan-Benedict Glaw <jbglaw@microdata-pos.de>
 
 	* config/vax/vax.c (vax_rtx_costs): Whitespace cleanup.
 	(vax_output_mi_thunk): Ditto.
@@ -2811,7 +2815,7 @@
 
 	* config/vax/vax.c (legitimate_constant_address_p): New.  Formerly
 	CONSTANT_ADDRESS_P in config/vax/vax.h
-	(legitimate_constant_p): Added.  Formerly CONSTANT_P in vax.h. 
+	(legitimate_constant_p): Added.  Formerly CONSTANT_P in vax.h.
 	(INDEX_REGISTER_P): New.
 	(BASE_REGISTER_P): New.
 	(indirectable_constant_address_p): New.  Adapted from
@@ -2971,7 +2975,7 @@
 2005-04-25  Devang Patel <dpatel@apple.com>
 
 	* dbxout.c (dbxout_type): Emit attribute vector.
-	
+
 2005-04-05  Paul Brook  <paul@codesourcery.com>
 
 	* target-def.h (TARGET_CXX_USE_AEABI_ATEXIT): Define.
@@ -3061,7 +3065,7 @@
 2005-04-24  Devang Patel  <dpatel@apple.com>
 
 	*  config/rs6000/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): New.
-	
+
 2005-04-24  Ian Lance Taylor  <ian@airs.com>
 
 	* c-semantics.c (build_stmt): Remove test of specific tree codes
@@ -3249,7 +3253,7 @@
 	config/stormy16/stormy16.c, config/v850/v850-c.c,
 	config/v850/v850.c, config/xtensa/xtensa.c: Adjust warning()
 	callers.
-	
+
 2005-04-23  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/21102
@@ -3597,7 +3601,7 @@
 
 	* builtins.c (gimplify_va_arg_expr): Reword comments to avoid
 	'abort'. Use gcc_assert and gcc_unreachable as appropriate.
-	* c-format.c (get_constant, decode_format_attr, get_flag_spec, 
+	* c-format.c (get_constant, decode_format_attr, get_flag_spec,
 	find_char_info_specifier_index,
 	find_length_info_modifier_index): Likewise.
 	* c-typeck.c (composite_type, pop_init_level): Likewise.
@@ -3616,7 +3620,7 @@
 	final.c (this_is_asm_operands, shorten_branches, final_scan_insn,
 	output_operand): Likewise
 	flow.c (recompute_reg_usage): Likewise
-	* function.c (assign_stack_temp_for_type, assign_temp, 
+	* function.c (assign_stack_temp_for_type, assign_temp,
 	handle_epilogue_set): Likewise
 	* genextract.c (main): Likewise
 	* gimplify.c (mostly_copy_tree_r, gimplify_return_expr,
@@ -3643,7 +3647,7 @@
 	vectors.
 	(gcc_loop_to_lambda_loop, gcc_loopnest_to_lambda_loopnest,
 	lbv_to_gcc_expression, lle_to_gcc_expression,
-	lambda_loopnest_to_gcc_loopnest, can_convert_to_perfect_nest, 
+	lambda_loopnest_to_gcc_loopnest, can_convert_to_perfect_nest,
 	perfect_nestify): Likewise.
 	lambda.h (gcc_loopnest_to_lambda_loopnest,
 	lambda_loopnest_to_gcc_loopnest): Likewise.
@@ -3757,7 +3761,7 @@
 	cgraph_mark_inline_edge, cgraph_default_inline_p): Declare.
 	* cgraphunit.c (cgraph_default_inline_p,
 	cgraph_decide_inlining_incrementally,  ncalls_inlined,
-	nfunctions_inlined, initial_insns, overall_insns, 
+	nfunctions_inlined, initial_insns, overall_insns,
 	cgraph_estimate_size_after_inlining, cgraph_estimate_growth,
 	cgraph_clone_inlined_nodes, cgraph_mark_inline_edge,
 	cgraph_mark_inline, cgraph_check_inline_limits,
@@ -3825,7 +3829,7 @@
 	* tree.h: Likewise.
 	* vec.h: Likewise.
 	* tree-flow-inline.h (relink_imm_use): Use gcc_assert.
-	
+
 	* optabs.c (prepare_cmp_insn, emit_cmp_and_jump_insns): Reword
 	comments to avoid 'abort'.  Use gcc_assert as necessary.
 	* opts.c (common_handle_option): Likewise.
@@ -3835,7 +3839,7 @@
 	* regmove.c (try_auto_increment): Likewise.
 	* reload.c (find_valid_class, find_reloads_toplev,
 	find_equiv_reg): Likewise.
-	* reload1.c (reload, forget_old_reloads_1, function_invariant_p, 
+	* reload1.c (reload, forget_old_reloads_1, function_invariant_p,
 	merge_assigned_reloads): Likewise.
 	* tree-inline.c (inline_forbidden_p_1,
 	estimate_num_insns_1): Likewise.
@@ -3847,7 +3851,7 @@
 	get_indirect_ref_operands, create_ssa_artficial_load_stmt): Likewise.
 	* tree-ssa-pre.c (find_or_generate_expression): Likewise.
 	* tree-ssanames.c (release_ssa_name): Likewise.
-	* tree.c (int_bit_position, int_byte_position, tree_low_cst, 
+	* tree.c (int_bit_position, int_byte_position, tree_low_cst,
 	walk_tree): Likewise.
 
 	* tree-ssa-operands.c (verify_abort): Fold into ..
@@ -3864,7 +3868,7 @@
 	* tree-if-conv.c (find_phi_replacement_condition): Avoid generating
 	x = !(a == b) : p , q;.
 	(pass_if_conversion): Verify stmts and flow.
-	
+
 2005-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* optabs.c (gen_conditional_trap): Restore #define.
@@ -4003,7 +4007,7 @@
 	(push_macro_expansion):  Chain on new macro. Process multiple
 	args, create follow on expansion. Return follow on argument.
 	(macro_input): Deal with multiple arguments.
-	
+
 	* tree.h: Define VEC(tree,heap) and VEC(tree,gc).
 	(struct tree_binfo): Adjust.
 	* basic-block.h: Define VEC(edge,gc).
@@ -4054,11 +4058,11 @@
 	lookup_avail_expr, record_range): Likewise.
 	* tree-ssa-pre.c: Define VEC(basic_block,heap).
 	(compute_antic_aux): Adjust.
-	(inserted_exprs, create_expression_by_pieces, 
-	insert_into_preds_of_block, eliminate, mark_operand_necessary, 
+	(inserted_exprs, create_expression_by_pieces,
+	insert_into_preds_of_block, eliminate, mark_operand_necessary,
 	remove_dead_inserted_code, fini_pre): Likewise.
 	* tree-ssa-propagate.c (interesting_ssa_edges): Adjust.
-	(varying_ssa_edges, add_ssa_edge, process_ssa_edge_worklist. 
+	(varying_ssa_edges, add_ssa_edge, process_ssa_edge_worklist.
 	ssa_prop_init): Likewise.
 	* tree-ssa.c: Define VEC(bitmap,heap).
 	(verify_name_tags): Adjust.
@@ -4070,7 +4074,7 @@
 	* varasm.c: Remove alias_pair pointer typedef, define
 	VEC(alias_pair,gc).
 	(finish_aliases_1, finish_aliases_2, assemble_alias): Adjust.
-	
+
 	* config/pa/pa.c (typedef extern_symbol): Typedef the structure,
 	not a pointer to it.  Create an object vector.
 	(extern_symbols): Turn into an object vector.
@@ -4408,7 +4412,7 @@
 
 2005-04-19  Paul Brook  <paul@codesourcery.com>
 
-	* config/arm/arm.c (arm_init_libfuncs): Clear mod optabs. 
+	* config/arm/arm.c (arm_init_libfuncs): Clear mod optabs.
 
 2005-04-19  Andrew Haley  <aph@redhat.com>
 
@@ -4498,7 +4502,7 @@
 2005-04-18  Devang Patel  <dpatel@apple.com>
 
 	* config/rs6000/atlivec.md (mulv4si3): New pattern.
-	
+
 2005-04-18  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR tree-optimization/20922
