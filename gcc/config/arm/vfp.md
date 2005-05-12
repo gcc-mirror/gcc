@@ -298,20 +298,59 @@
 )
 
 (define_insn "*negsf2_vfp"
-  [(set (match_operand:SF	  0 "s_register_operand" "+w")
-	(neg:SF (match_operand:SF 1 "s_register_operand" "w")))]
+  [(set (match_operand:SF	  0 "s_register_operand" "=w,?r")
+	(neg:SF (match_operand:SF 1 "s_register_operand" "w,r")))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fnegs%?\\t%0, %1"
+  "@
+   fnegs%?\\t%0, %1
+   eor%?\\t%0, %1, #-2147483648"
   [(set_attr "predicable" "yes")
    (set_attr "type" "ffarith")]
 )
 
-(define_insn "*negdf2_vfp"
-  [(set (match_operand:DF	  0 "s_register_operand" "+w")
-	(neg:DF (match_operand:DF 1 "s_register_operand" "w")))]
+(define_insn_and_split "*negdf2_vfp"
+  [(set (match_operand:DF	  0 "s_register_operand" "=w,?r,?r")
+	(neg:DF (match_operand:DF 1 "s_register_operand" "w,0,r")))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
-  "fnegd%?\\t%P0, %P1"
+  "@
+   fnegd%?\\t%P0, %P1
+   #
+   #"
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP && reload_completed
+   && arm_general_register_operand (operands[0], DFmode)"
+  [(set (match_dup 0) (match_dup 1))]
+  "
+  if (REGNO (operands[0]) == REGNO (operands[1]))
+    {
+      operands[0] = gen_highpart (SImode, operands[0]);
+      operands[1] = gen_rtx_XOR (SImode, operands[0], GEN_INT (0x80000000));
+    }
+  else
+    {
+      rtx in_hi, in_lo, out_hi, out_lo;
+
+      in_hi = gen_rtx_XOR (SImode, gen_highpart (SImode, operands[1]),
+			   GEN_INT (0x80000000));
+      in_lo = gen_lowpart (SImode, operands[1]);
+      out_hi = gen_highpart (SImode, operands[0]);
+      out_lo = gen_lowpart (SImode, operands[0]);
+
+      if (REGNO (in_lo) == REGNO (out_hi))
+        {
+          emit_insn (gen_rtx_SET (SImode, out_lo, in_lo));
+	  operands[0] = out_hi;
+          operands[1] = in_hi;
+        }
+      else
+        {
+          emit_insn (gen_rtx_SET (SImode, out_hi, in_hi));
+	  operands[0] = out_lo;
+          operands[1] = in_lo;
+        }
+    }
+  "
   [(set_attr "predicable" "yes")
+   (set_attr "length" "4,4,8")
    (set_attr "type" "ffarith")]
 )
 
