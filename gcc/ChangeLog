@@ -1,5 +1,11 @@
 2005-05-12  Richard Earnshaw  <richard.earnshaw@arm.com>
 
+	PR target/21501
+	* arm.c (arm_gen_constant): Sign-extend intermediate values when
+	synthesizing a constant of the difference of two immediates.
+
+2005-05-12  Richard Earnshaw  <richard.earnshaw@arm.com>
+
 	* arm/vfp.md (negsf2_vfp): Add alternative using integer registers.
 	(negdf2_vfp): Likewise.  Convert to define_insn_and_split and split
 	the alternatives using integer registers into the appropriate
