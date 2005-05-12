@@ -112,6 +112,11 @@ add_stmt_to_eh_region_fn (struct function *ifun, tree t, int num)
   n->stmt = t;
   n->region_nr = num;
 
+  if (!get_eh_throw_stmt_table (ifun))
+    set_eh_throw_stmt_table (ifun, htab_create_ggc (31, struct_ptr_hash,
+						    struct_ptr_eq,
+						    ggc_free));
+
   slot = htab_find_slot (get_eh_throw_stmt_table (ifun), n, INSERT);
   gcc_assert (!*slot);
   *slot = n;
