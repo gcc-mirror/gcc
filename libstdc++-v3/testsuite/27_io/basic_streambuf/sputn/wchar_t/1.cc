@@ -1,6 +1,6 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -98,10 +98,8 @@ void test01()
   testbuf buf01;
 
   // sputn/xsputn
-  const wchar_t* lit01 = L"isotope 217: the unstable molecule on thrill jockey";
-  const int i02 = std::wcslen(lit01);
-  wchar_t lit02[i02];
-  std::wcscpy(lit02, lit01);
+  wchar_t lit02[] = L"isotope 217: the unstable molecule on thrill jockey";
+  const int i02 = std::wcslen(lit02);
 
   wchar_t carray[i02 + 1];
   std::wmemset(carray, 0, i02 + 1);

@@ -1,3 +1,11 @@
+2005-05-13  Magnus Fromreide  <magfr@lysator.liu.se>
+
+	* testsuite/27_io/basic_streambuf/sgetn/char/1.cc: Use
+	initialization instead of copying as the string is used only once.
+	* testsuite/27_io/basic_streambuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/wchar_t/1.cc: Likewise.
+
 2005-05-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/create_testsuite_files: Fix.

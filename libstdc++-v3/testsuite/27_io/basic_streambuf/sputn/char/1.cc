@@ -1,6 +1,7 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -96,10 +97,8 @@ void test01()
   testbuf buf01;
 
   // sputn/xsputn
-  const char* lit01 = "isotope 217: the unstable molecule on thrill jockey";
-  const int i02 = std::strlen(lit01);
-  char lit02[i02];
-  std::strcpy(lit02, lit01);
+  char lit02[] = "isotope 217: the unstable molecule on thrill jockey";
+  const int i02 = std::strlen(lit02);
 
   char carray[i02 + 1];
   std::memset(carray, 0, i02 + 1);
