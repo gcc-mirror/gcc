@@ -1,3 +1,26 @@
+2005-05-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	Replace calls to abort in CRIS port.
+	* config/cris/cris.h (CRIS_ASSERT): New macro.
+	* config/cris/cris.md ("*movsi_internal"): Use CRIS_ASSERT and
+	internal_error instead of abort.
+	("movsi"): Ditto.  Unquote preparation statement section.
+	* config/cris/cris.c (ASSERT_PLT_UNSPEC): Define in terms of
+	CRIS_ASSERT.
+	("call", "call_value"): Ditto, but use gcc_assert where
+	appropriate.  Tweak comments.
+	(cris_op_str): Call internal_error, not abort.
+	(cris_print_operand): Tweak "abort" reference to "die" in comment.
+	(cris_initial_elimination_offset): Call gcc_unreachable, not abort.
+	(cris_notice_update_cc): Call internal_error, not abort.
+	(cris_expand_return, cris_expand_prologue, cris_gen_movem_load)
+	(cris_emit_movem_store, cris_asm_output_symbol_ref)
+	(cris_output_addr_const_extra): Use CRIS_ASSERT, don't call abort.
+	(cris_symbol, cris_got_symbol): Use CRIS_ASSERT instead of
+	ENABLE_CHECKING-guarded abort call.
+	(cris_split_movdx): Use CRIS_ASSERT instead of abort with test.
+	Use internal_error at end of test-chain.
+
 2005-05-13  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR rtl-optimization/20769:

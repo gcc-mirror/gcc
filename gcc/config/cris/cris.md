@@ -962,7 +962,6 @@
     (match_operand:SI 0 "nonimmediate_operand" "")
     (match_operand:SI 1 "cris_general_operand_or_symbol" ""))]
   ""
-  "
 {
   /* If the output goes to a MEM, make sure we have zero or a register as
      input.  */
@@ -986,8 +985,7 @@
 	 do, and for the patterns we generate.  */
       if (! REG_S_P (operands[0]))
 	{
-	  if (no_new_pseudos)
-	    abort ();
+	  CRIS_ASSERT (!no_new_pseudos);
 	  operands[1] = force_reg (SImode, operands[1]);
 	}
       else
@@ -1017,18 +1015,18 @@
 	      rtx sym = get_related_value (operands[1]);
 	      HOST_WIDE_INT offs = get_integer_term (operands[1]);
 
-	      if (sym == NULL_RTX || offs == 0)
-		abort ();
+	      CRIS_ASSERT (sym != NULL_RTX && offs != 0);
+
 	      emit_move_insn (operands[0], sym);
 	      if (expand_binop (SImode, add_optab, operands[0],
 				GEN_INT (offs), operands[0], 0,
 				OPTAB_LIB_WIDEN) != operands[0])
-		abort ();
+	        internal_error ("expand_binop failed in movsi");
 	      DONE;
 	    }
 	}
     }
-}")
+})
 
 (define_insn "*movsi_internal"
   [(set
@@ -1103,8 +1101,7 @@
 	  /* We clobber cc0 rather than set it to GOT.  Should not
              matter, though.  */
 	  CC_STATUS_INIT;
-	  if (REGNO (operands[0]) != PIC_OFFSET_TABLE_REGNUM)
-	    abort ();
+	  CRIS_ASSERT (REGNO (operands[0]) == PIC_OFFSET_TABLE_REGNUM);
 
 	  return \"move.d $pc,%0\;sub.d .:GOTOFF,%0\";
 	}
@@ -3931,24 +3928,20 @@
 		    (match_operand 1 "general_operand" ""))
 	      (clobber (reg:SI CRIS_SRP_REGNUM))])]
   ""
-  "
 {
   rtx op0;
 
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[0]) == MEM);
 
   if (flag_pic)
     {
       op0 = XEXP (operands[0], 0);
 
       /* It might be that code can be generated that jumps to 0 (or to a
-	 specific address).  Don't abort on that.  At least there's a
-	 testcase.  */
+	 specific address).  Don't die on that.  (There is a testcase.)  */
       if (CONSTANT_ADDRESS_P (op0) && GET_CODE (op0) != CONST_INT)
 	{
-	  if (no_new_pseudos)
-	    abort ();
+	  CRIS_ASSERT (!no_new_pseudos);
 
 	  /* For local symbols (non-PLT), get the plain symbol reference
 	     into a register.  For symbols that can be PLT, make them PLT.  */
@@ -3964,12 +3957,12 @@
 					      gen_rtvec (1, op0),
 					      CRIS_UNSPEC_PLT)));
 	  else
-	    abort ();
+	    internal_error ("Unidentifiable op0");
 
 	  operands[0] = replace_equiv_address (operands[0], op0);
 	}
     }
-}")
+})
 
 ;; Accept *anything* as operand 1.  Accept operands for operand 0 in
 ;; order of preference.
@@ -3998,24 +3991,20 @@
 			 (match_operand 2 "" "")))
 	      (clobber (reg:SI CRIS_SRP_REGNUM))])]
   ""
-  "
 {
   rtx op1;
 
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
+  gcc_assert (GET_CODE (operands[1]) == MEM);
 
   if (flag_pic)
     {
       op1 = XEXP (operands[1], 0);
 
       /* It might be that code can be generated that jumps to 0 (or to a
-	 specific address).  Don't abort on that.  At least there's a
-	 testcase.  */
+	 specific address).  Don't die on that.  (There is a testcase.)  */
       if (CONSTANT_ADDRESS_P (op1) && GET_CODE (op1) != CONST_INT)
 	{
-	  if (no_new_pseudos)
-	    abort ();
+	  CRIS_ASSERT (!no_new_pseudos);
 
 	  if (cris_gotless_symbol (op1))
 	    op1 = force_reg (Pmode, op1);
@@ -4029,12 +4018,12 @@
 					      gen_rtvec (1, op1),
 					      CRIS_UNSPEC_PLT)));
 	  else
-	    abort ();
+	    internal_error ("Unidentifiable op0");
 
 	  operands[1] = replace_equiv_address (operands[1], op1);
 	}
     }
-}")
+})
 
 ;; Accept *anything* as operand 2.  The validity other than "general" of
 ;; operand 0 will be checked elsewhere.  Accept operands for operand 1 in
