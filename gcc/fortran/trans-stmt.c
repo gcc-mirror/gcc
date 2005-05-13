@@ -2216,7 +2216,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
     for (i = start; i <= end; i += stride)
       {
         if (masktmp[maskindex++])
-          e<i> = f<i>
+          g<i> = h<i>
       }
 
     Note that this code only works when there are no dependencies.

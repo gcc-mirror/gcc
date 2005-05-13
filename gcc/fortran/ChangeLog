@@ -1,3 +1,7 @@
+2005-05-13  Paul Brook  <paul@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_forall_1): Fix comment typo.
+
 2005-05-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-types.c (gfc_is_nodesc_array): Remove redundant check.
