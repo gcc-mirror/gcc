@@ -2943,6 +2943,39 @@ emit_unop_insn (int icode, rtx target, rtx op0, enum rtx_code code)
     emit_move_insn (target, temp);
 }
 
+struct no_conflict_data
+{
+  rtx target, first, insn;
+  bool must_stay;
+};
+
+/* Called via note_stores by emit_no_conflict_block.  Set P->must_stay
+   if the currently examined clobber / store has to stay in the list of
+   insns that constitute the actual no_conflict block.  */
+static void
+no_conflict_move_test (rtx dest, rtx set, void *p0)
+{
+  struct no_conflict_data *p= p0;
+
+  /* If this inns directly contributes to setting the target, it must stay.  */
+  if (reg_overlap_mentioned_p (p->target, dest))
+    p->must_stay = true;
+  /* If we haven't committed to keeping any other insns in the list yet,
+     there is nothing more to check.  */
+  else if (p->insn == p->first)
+    return;
+  /* If this insn sets / clobbers a register that feeds one of the insns
+     already in the list, this insn has to stay too.  */
+  else if (reg_mentioned_p (dest, PATTERN (p->first))
+	   || reg_used_between_p (dest, p->first, p->insn)
+	   /* Likewise if this insn depends on a register set by a previous
+	      insn in the list.  */
+	   || (GET_CODE (set) == SET
+	       && (modified_in_p (SET_SRC (set), p->first)
+		   || modified_between_p (SET_SRC (set), p->first, p->insn))))
+    p->must_stay = true;
+}
+
 /* Emit code to perform a series of operations on a multi-word quantity, one
    word at a time.
 
@@ -2988,8 +3021,8 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
      these from the list.  */
   for (insn = insns; insn; insn = next)
     {
-      rtx set = 0, note;
-      int i;
+      rtx note;
+      struct no_conflict_data data;
 
       next = NEXT_INSN (insn);
 
@@ -3000,22 +3033,12 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
       if ((note = find_reg_note (insn, REG_RETVAL, NULL)) != NULL)
 	remove_note (insn, note);
 
-      if (GET_CODE (PATTERN (insn)) == SET || GET_CODE (PATTERN (insn)) == USE
-	  || GET_CODE (PATTERN (insn)) == CLOBBER)
-	set = PATTERN (insn);
-      else if (GET_CODE (PATTERN (insn)) == PARALLEL)
-	{
-	  for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
-	    if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET)
-	      {
-		set = XVECEXP (PATTERN (insn), 0, i);
-		break;
-	      }
-	}
-
-      gcc_assert (set);
-
-      if (! reg_overlap_mentioned_p (target, SET_DEST (set)))
+      data.target = target;
+      data.first = insns;
+      data.insn = insn;
+      data.must_stay = 0;
+      note_stores (PATTERN (insn), no_conflict_move_test, &data);
+      if (! data.must_stay)
 	{
 	  if (PREV_INSN (insn))
 	    NEXT_INSN (PREV_INSN (insn)) = next;

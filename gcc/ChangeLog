@@ -1,3 +1,10 @@
+2005-05-13  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR middle-end/20714:
+	* optabs.c (no_conflict_data): New struct.
+	(no_conflict_move_test): New function.
+	(emit_no_conflict_block): Use it.
+
 2005-05-13  Adam Nemet  <anemet@lnxw.com>
 
 	* doc/invoke.texi (Debugging Options): Option
