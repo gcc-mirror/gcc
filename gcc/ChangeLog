@@ -5,10 +5,10 @@
 	* config/cris/cris.md ("*movsi_internal"): Use CRIS_ASSERT and
 	internal_error instead of abort.
 	("movsi"): Ditto.  Unquote preparation statement section.
-	* config/cris/cris.c (ASSERT_PLT_UNSPEC): Define in terms of
-	CRIS_ASSERT.
 	("call", "call_value"): Ditto, but use gcc_assert where
 	appropriate.  Tweak comments.
+	* config/cris/cris.c (ASSERT_PLT_UNSPEC): Define in terms of
+	CRIS_ASSERT.
 	(cris_op_str): Call internal_error, not abort.
 	(cris_print_operand): Tweak "abort" reference to "die" in comment.
 	(cris_initial_elimination_offset): Call gcc_unreachable, not abort.
