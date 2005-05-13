@@ -6490,7 +6490,10 @@ finish_function (void)
       /* Normally, with -Wreturn-type, flow will complain.  Unless we're an
 	 inline function, as we might never be compiled separately.  */
       && DECL_INLINE (fndecl))
-    warning (0, "no return statement in function returning non-void");
+    {
+      warning (0, "no return statement in function returning non-void");
+      TREE_NO_WARNING (fndecl) = 1;
+    }
 
   /* With just -Wextra, complain only if function returns both with
      and without a value.  */

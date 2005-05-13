@@ -1,5 +1,9 @@
 2005-05-13  Jan Hubicka  <jh@suse.cz>
 
+	* c-decl.c (finish_function): Suppress "control reaches end of
+	non-void function" when "no return statement in function
+	returning non-void" is issued.
+
 	* tree-inline.c (copy_body_r): Simplify substituted ADDR_EXPRs.
 	* tree-optimize.c (pass_gimple): Kill.
 	(init_tree_optimization_passes): Kill pass_gimple.
