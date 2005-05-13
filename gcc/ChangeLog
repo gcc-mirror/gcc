@@ -1,3 +1,10 @@
+2005-05-13  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* c-format.c (check_format_arg): Handle string literals of
+	the form &"string"[offset].
+
+	* g++.dg/warn/format4.C: New testcase.
+
 2005-05-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/mips/3000.md, config/mips/4000.md,

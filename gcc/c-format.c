@@ -1260,6 +1260,10 @@ check_format_arg (void *ctx, tree format_tree,
       return;
     }
   format_tree = TREE_OPERAND (format_tree, 0);
+  if (TREE_CODE (format_tree) == ARRAY_REF
+      && host_integerp (TREE_OPERAND (format_tree, 1), 0)
+      && (offset += tree_low_cst (TREE_OPERAND (format_tree, 1), 0)) >= 0)
+    format_tree = TREE_OPERAND (format_tree, 0);
   if (TREE_CODE (format_tree) == VAR_DECL
       && TREE_CODE (TREE_TYPE (format_tree)) == ARRAY_TYPE
       && (array_init = decl_constant_value (format_tree)) != format_tree
