@@ -27,16 +27,30 @@ public final class SystemClassLoader extends URLClassLoader
   // causing a crash.
   void init()
   {
+    String sep = File.pathSeparator;
     StringTokenizer st
       = new StringTokenizer (System.getProperty ("java.class.path", "."),
-			     File.pathSeparator);
+			     sep, true);
+    // Pretend we start with a ':', so if we see a ':' first we add
+    // '.'.
+    boolean last_was_sep = true;
     while (st.hasMoreElements ()) 
       {  
 	String e = st.nextToken ();
 	try
 	  {
-	    if ("".equals(e))
-	      e = ".";
+	    if (sep.equals(e))
+	      {
+		if (last_was_sep)
+		  {
+		    // We saw two separators in a row, so add ".".
+		    addURL(new URL("file", "", -1, "./"));
+		    last_was_sep = false;
+		  }
+		else
+		  last_was_sep = true;
+		continue;
+	      }
 
 	    File path = new File(e);
 	    // Ignore invalid paths.
@@ -47,6 +61,19 @@ public final class SystemClassLoader extends URLClassLoader
 	    else
 	      addURL(new URL("file", "", -1, e));
 	  } 
+	catch (java.net.MalformedURLException x)
+	  {
+	    // This should never happen.
+	    throw new RuntimeException(x);
+	  }
+      }
+    // If we saw a trailing ":", add "." to the path.
+    if (last_was_sep)
+      {
+	try
+	  {
+	    addURL(new URL("file", "", -1, "./"));
+	  }
 	catch (java.net.MalformedURLException x)
 	  {
 	    // This should never happen.
