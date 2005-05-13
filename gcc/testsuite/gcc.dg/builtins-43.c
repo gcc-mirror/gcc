@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fno-trapping-math -fdump-tree-generic -fdump-tree-optimized" } */
+/* { dg-options "-O1 -fno-trapping-math -fdump-tree-gimple -fdump-tree-optimized" } */
   
 extern void f(int);
 extern void link_error ();
@@ -46,8 +46,8 @@ main ()
 
 
 /* Check that all instances of __builtin_isnan were folded.  */
-/* { dg-final { scan-tree-dump-times "isnan" 0 "generic" } } */
-/* { dg-final { cleanup-tree-dump "generic" } } */
+/* { dg-final { scan-tree-dump-times "isnan" 0 "gimple" } } */
+/* { dg-final { cleanup-tree-dump "gimple" } } */
 
 /* Check that all instances of link_error were subject to DCE.  */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" } } */

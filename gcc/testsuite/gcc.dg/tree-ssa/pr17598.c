@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-generic" } */
+/* { dg-options "-fdump-tree-gimple" } */
 
 struct f
 {
@@ -35,8 +35,8 @@ int foobar2(struct g *x)
   return &x->k->i == &yy.k->i; /* x->k == yy.k */
 }
 
-/* { dg-final { scan-tree-dump-times "x == y" 1 "generic" } } */
-/* { dg-final { scan-tree-dump-times "x == &y" 2 "generic" } } */
-/* { dg-final { scan-tree-dump "x->k" "generic" } } */
-/* { dg-final { scan-tree-dump "yy.k" "generic" } } */
-/* { dg-final { cleanup-tree-dump "generic" } } */
+/* { dg-final { scan-tree-dump-times "x == y" 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "x == &y" 2 "gimple" } } */
+/* { dg-final { scan-tree-dump "x->k" "gimple" } } */
+/* { dg-final { scan-tree-dump "yy.k" "gimple" } } */
+/* { dg-final { cleanup-tree-dump "gimple" } } */

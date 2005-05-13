@@ -212,6 +212,10 @@ build_tree_cfg (tree *tp)
       }
   }
 
+#ifdef ENABLE_CHECKING
+  verify_stmts ();
+#endif
+
   /* Dump a textual representation of the flowgraph.  */
   if (dump_file)
     dump_tree_cfg (dump_file, dump_flags);

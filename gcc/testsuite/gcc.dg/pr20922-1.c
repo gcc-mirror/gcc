@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fno-wrapv -fdump-tree-generic" } */
+/* { dg-options "-fno-wrapv -fdump-tree-gimple" } */
 int f(int i)
 {
   return (i - 2) > i;
@@ -34,5 +34,5 @@ int z(double i)
 {
   return (i + (-2.0)) > i;
 }
-/* { dg-final { scan-tree-dump-times " = 0" 7 "generic" } } */
-/* { dg-final { cleanup-tree-dump "generic" } } */
+/* { dg-final { scan-tree-dump-times " = 0" 7 "gimple" } } */
+/* { dg-final { cleanup-tree-dump "gimple" } } */

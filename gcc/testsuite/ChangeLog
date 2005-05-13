@@ -1,3 +1,13 @@
+2005-05-13  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/builtins-43.c: Use gimple dump instead of generic.
+	* gcc.dg/fold-xor-?.c: Likewise.
+	* gcc.dg/pr15784-?.c: Likewise.
+	* gcc.dg/pr20922-?.c: Likewise.
+	* gcc.dg/tree-ssa/20050128-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr17598.c: Likewise.
+	* gcc.dg/tree-ssa/pr20470.c: Likewise.
+
 2005-05-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/21260

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-generic" } */
+/* { dg-options "-fdump-tree-gimple" } */
 
 /* PR tree-optimization/20470:
     Missing fold to abs(x) when x == MINUS_EXPR.  */
@@ -11,5 +11,5 @@ void f1()
   i = abs(j-k);
 }
 
-/* { dg-final { scan-tree-dump-times "ABS_EXPR" 1 "generic" } } */
-/* { dg-final { cleanup-tree-dump "generic" } } */
+/* { dg-final { scan-tree-dump-times "ABS_EXPR" 1 "gimple" } } */
+/* { dg-final { cleanup-tree-dump "gimple" } } */
