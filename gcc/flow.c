@@ -1692,8 +1692,12 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	fatal_insn ("Attempt to delete prologue/epilogue insn:", insn);
 
       /* Record sets.  Do this even for dead instructions, since they
-	 would have killed the values if they hadn't been deleted.  */
+	 would have killed the values if they hadn't been deleted.  To
+	 be consistent, we also have to emit a clobber when we delete
+	 an insn that clobbers a live register.  */
+      pbi->flags |= PROP_DEAD_INSN;
       mark_set_regs (pbi, PATTERN (insn), insn);
+      pbi->flags &= ~PROP_DEAD_INSN;
 
       /* CC0 is now known to be dead.  Either this insn used it,
 	 in which case it doesn't anymore, or clobbered it,
@@ -2960,6 +2964,8 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 		  }
 		CLEAR_REGNO_REG_SET (pbi->reg_live, i);
 	      }
+	  if (flags & PROP_DEAD_INSN)
+	    emit_insn_after (gen_rtx_CLOBBER (VOIDmode, reg), insn);
 	}
     }
   else if (REG_P (reg))

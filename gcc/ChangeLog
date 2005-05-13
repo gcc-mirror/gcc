@@ -1,3 +1,12 @@
+2005-05-13  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR rtl-optimization/20756:
+	* basic-block.h (PROP_DEAD_INSN): Define.
+	* flow.c (propagate_one_insn): Set during mark_set_regs call
+	for a dead insn.
+	(mark_set_1): Emit a clobber when we are about to delete a dead insn
+	that kills a live register.
+
 2005-05-13  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390.md: ("DBL"): New mode attribute.
