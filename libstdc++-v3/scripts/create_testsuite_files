@@ -41,8 +41,8 @@ if test ! -s "$tmp.1"; then
 fi
 
 # Now filter out classes of tests.  These classes are run using special rules.
-grep _xin $tmp.3 > $tests_file_inter
-grep -v _xin $tmp.3 > $tmp.4
+grep _xin $tmp.1 > $tests_file_inter
+grep -v _xin $tmp.1 > $tmp.4
 
 grep performance $tmp.4 > $tests_file_perf
 grep -v performance $tmp.4 > $tmp.5
