@@ -44,9 +44,6 @@ details.  */
 
 using namespace gcj;
 
-// When true, print debugging information about class loading.
-bool gcj::verbose_class_flag;
-
 typedef unsigned int uaddr __attribute__ ((mode (pointer)));
 
 template<typename T>
@@ -1728,7 +1725,8 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
 
       if (state >= JV_STATE_LINKED && klass->state < JV_STATE_LINKED)
 	{
-	  verify_class (klass);
+	  if (gcj::verifyClasses)
+	    verify_class (klass);
 
 	  ensure_class_linked (klass);
 	  link_exception_table (klass);
