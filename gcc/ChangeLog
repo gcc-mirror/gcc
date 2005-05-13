@@ -1,3 +1,10 @@
+2005-05-13  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390.md: ("DBL"): New mode attribute.
+	("*movmem_long_64", "*movmem_long_31"): Merge to "*movmem_long".
+	("*clrmem_long_64", "*clrmem_long_31"): Merge to "*clrmem_long".
+	("*cmpmem_long_64", "*cmpmem_long_31"): Merge to "*cmpmem_long".
+
 2005-05-13  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* c-format.c (check_format_arg): Handle string literals of
