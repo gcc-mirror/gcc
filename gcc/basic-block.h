@@ -806,6 +806,8 @@ enum update_life_extent
 #define PROP_SCAN_DEAD_STORES	128	/* Scan for dead code.  */
 #define PROP_ASM_SCAN		256	/* Internal flag used within flow.c
 					   to flag analysis of asms.  */
+#define PROP_DEAD_INSN		1024	/* Internal flag used within flow.c
+					   to flag analysis of dead insn.  */
 #define PROP_FINAL		(PROP_DEATH_NOTES | PROP_LOG_LINKS  \
 				 | PROP_REG_INFO | PROP_KILL_DEAD_CODE  \
 				 | PROP_SCAN_DEAD_CODE | PROP_AUTOINC \
