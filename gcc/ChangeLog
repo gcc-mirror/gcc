@@ -1,3 +1,12 @@
+2005-05-13  Josh Conner  <jconner@apple.com>
+
+	* config/arm/arm.c (arm_size_return_regs): New.
+	(thumb_unexpanded_epilogue): replace in-line calculation
+	of return registers with call to arm_size_return_regs.
+	(use_return_insn): Include test of which registers are
+	being used to hold return values, to accommodate
+	vector return values.
+
 2005-05-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/sysv4.opt (mlittle): Handle.
