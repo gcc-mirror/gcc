@@ -2,7 +2,7 @@ extern void abort (void);
 
 int test(int n)
 {
-  struct s { char b[n]; };
+  struct s { char b[n]; } __attribute__((packed));
   n++;
   return sizeof(struct s);
 }
