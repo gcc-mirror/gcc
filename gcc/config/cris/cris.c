@@ -51,14 +51,10 @@ Boston, MA 02111-1307, USA.  */
 #define ADDITIVE_SIZE_MODIFIER(size) \
  ((size) <= 63 ? "q" : (size) <= 255 ? "u.b" : (size) <= 65535 ? "u.w" : ".d")
 
-#define ASSERT_PLT_UNSPEC(x)					\
-  do								\
-    {								\
-      if (XINT (x, 1) != CRIS_UNSPEC_PLT			\
-	  || (GET_CODE (XVECEXP (x, 0, 0)) != SYMBOL_REF	\
-	      && GET_CODE (XVECEXP (x, 0, 0)) != LABEL_REF))	\
-	abort ();						\
-    } while (0)
+#define ASSERT_PLT_UNSPEC(x)						\
+  CRIS_ASSERT (XINT (x, 1) == CRIS_UNSPEC_PLT				\
+	       && ((GET_CODE (XVECEXP (x, 0, 0)) == SYMBOL_REF)		\
+		   || GET_CODE (XVECEXP (x, 0, 0)) == LABEL_REF))
 
 #define LOSE_AND_RETURN(msgid, x)			\
   do						\
@@ -448,7 +444,7 @@ cris_op_str (rtx x)
 	 an operator, for immediate output.  If that ever happens for
 	 MULT, we need to apply TARGET_MUL_BUG in the caller.  Make sure
 	 we notice.  */
-      abort ();
+      internal_error ("MULT case in cris_op_str");
       break;
 
     case DIV:
@@ -809,7 +805,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 
     case 'z':
       /* Const_int: print b for -127 <= x <= 255,
-	 w for -32768 <= x <= 65535, else abort.  */
+	 w for -32768 <= x <= 65535, else die.  */
       if (GET_CODE (x) != CONST_INT
 	  || INTVAL (x) < -32768 || INTVAL (x) > 65535)
 	LOSE_AND_RETURN ("invalid operand for 'z' modifier", x);
@@ -1216,7 +1212,7 @@ cris_initial_elimination_offset (int fromreg, int toreg)
       && toreg == STACK_POINTER_REGNUM)
     return ap_fp_offset + fp_sp_offset - 4;
 
-  abort ();
+  gcc_unreachable ();
 }
 
 /*  This function looks into the pattern to see how this insn affects
@@ -1480,8 +1476,7 @@ cris_notice_update_cc (rtx exp, rtx insn)
       break;
 
     default:
-      /* Unknown cc_attr value.  */
-      abort ();
+      internal_error ("Unknown cc_attr value");
     }
 
   CC_STATUS_INIT;
@@ -1533,9 +1528,8 @@ cris_expand_return (bool on_stack)
      to check that it doesn't change half-way through.  */
   emit_jump_insn (gen_rtx_RETURN (VOIDmode));
 
-  if ((cfun->machine->return_type == CRIS_RETINSN_RET && on_stack)
-      || (cfun->machine->return_type == CRIS_RETINSN_JUMP && !on_stack))
-    abort ();
+  CRIS_ASSERT (cfun->machine->return_type != CRIS_RETINSN_RET || !on_stack);
+  CRIS_ASSERT (cfun->machine->return_type != CRIS_RETINSN_JUMP || on_stack);
 
   cfun->machine->return_type
     = on_stack ? CRIS_RETINSN_JUMP : CRIS_RETINSN_RET;
@@ -1933,10 +1927,7 @@ cris_symbol (rtx x)
 int
 cris_gotless_symbol (rtx x)
 {
-#ifdef ENABLE_CHECKING
-  if (!flag_pic)
-    abort ();
-#endif
+  CRIS_ASSERT (flag_pic);
 
   switch (GET_CODE (x))
     {
@@ -1996,10 +1987,7 @@ cris_gotless_symbol (rtx x)
 int
 cris_got_symbol (rtx x)
 {
-#ifdef ENABLE_CHECKING
-  if (!flag_pic)
-    abort ();
-#endif
+  CRIS_ASSERT (flag_pic);
 
   switch (GET_CODE (x))
     {
@@ -2320,8 +2308,7 @@ cris_split_movdx (rtx *operands)
   /* We used to have to handle (SUBREG (MEM)) here, but that should no
      longer happen; after reload there are no SUBREGs any more, and we're
      only called after reload.  */
-  if (GET_CODE (dest) == SUBREG || GET_CODE (src) == SUBREG)
-    abort ();
+  CRIS_ASSERT (GET_CODE (dest) != SUBREG && GET_CODE (src) != SUBREG);
 
   start_sequence ();
   if (GET_CODE (dest) == REG)
@@ -2412,7 +2399,7 @@ cris_split_movdx (rtx *operands)
 	    }
 	}
       else
-	abort ();
+	internal_error ("Unknown src");
     }
   /* Reg-to-mem copy or clear mem.  */
   else if (GET_CODE (dest) == MEM
@@ -2454,7 +2441,7 @@ cris_split_movdx (rtx *operands)
     }
 
   else
-    abort ();
+    internal_error ("Unknown dest");
 
   val = get_insns ();
   end_sequence ();
@@ -2482,8 +2469,7 @@ cris_expand_prologue (void)
   if (!TARGET_PROLOGUE_EPILOGUE)
     return;
 
-  if (size < 0)
-    abort ();
+  CRIS_ASSERT (size >= 0);
 
   /* Align the size to what's best for the CPU model.  */
   if (TARGET_STACK_ALIGN)
@@ -2930,8 +2916,7 @@ cris_gen_movem_load (rtx src, rtx nregs_rtx, int nprefix)
   if (GET_CODE (srcreg) == POST_INC)
     srcreg = XEXP (srcreg, 0);
 
-  if (!REG_P (srcreg))
-    abort ();
+  CRIS_ASSERT (REG_P (srcreg));
 
   /* Don't use movem for just one insn.  The insns are equivalent except
      for the pipeline hazard (on v32); movem does not forward the loaded
@@ -2987,8 +2972,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
   if (GET_CODE (destreg) == POST_INC || GET_CODE (destreg) == PLUS)
     destreg = XEXP (destreg, 0);
 
-  if (!REG_P (destreg))
-    abort ();
+  CRIS_ASSERT (REG_P (destreg));
 
   /* Don't use movem for just one insn.  The insns are equivalent except
      for the pipeline hazard (on v32); movem does not forward the loaded
@@ -3129,8 +3113,8 @@ cris_asm_output_symbol_ref (FILE *file, rtx x)
 	}
       else if (cris_got_symbol (x))
 	{
-	  if (cris_pic_sympart_only)
-	    abort ();
+	  CRIS_ASSERT (!cris_pic_sympart_only);
+
 	  fprintf (file, "[$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
 	  assemble_name (file, XSTR (x, 0));
 
@@ -3193,9 +3177,7 @@ cris_output_addr_const_extra (FILE *file, rtx x)
 	}
       else
 	{
-	  if (TARGET_AVOID_GOTPLT)
-	    /* We shouldn't get here.  */
-	    abort ();
+	  CRIS_ASSERT (!TARGET_AVOID_GOTPLT);
 
 	  fprintf (file, "[$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
 	  assemble_name (file, XSTR (x, 0));

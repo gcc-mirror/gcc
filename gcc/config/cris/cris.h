@@ -38,6 +38,11 @@ Boston, MA 02111-1307, USA.  */
    settings not repeated below.  This file contains general CRIS
    definitions and definitions for the cris-*-elf subtarget.  */
 
+/* We don't want to use gcc_assert for everything, as that can be
+   compiled out.  */
+#define CRIS_ASSERT(x) \
+ do { if (!(x)) internal_error ("CRIS-port assertion failed: " #x); } while (0)
+
 /* Replacement for REG_P since it does not match SUBREGs.  Happens for
    testcase Axis-20000320 with gcc-2.9x.  */
 #define REG_S_P(x) \
