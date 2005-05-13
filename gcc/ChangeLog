@@ -1,3 +1,13 @@
+2005-05-13  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR rtl-optimization/20769:
+	* bt-load.c (compute_defs_uses_and_gen): Check for the blockage
+	pattern emitted by expand_nl_goto_receiver.
+
+	PR middle-end/20793:
+	* integrate.c (allocate_initial_values): Update register liveness
+	information.
+
 2005-05-13  Josh Conner  <jconner@apple.com>
 
 	* arm.c (arm_return_in_memory): Add handling for vector return types.

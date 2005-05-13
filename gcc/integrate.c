@@ -392,11 +392,23 @@ allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
 	    reg_equiv_memory_loc[regno] = x;
 	  else
 	    {
+	      basic_block bb;
+	      int new_regno;
+
 	      gcc_assert (REG_P (x));
-	      reg_renumber[regno] = REGNO (x);
+	      new_regno = REGNO (x);
+	      reg_renumber[regno] = new_regno;
 	      /* Poke the regno right into regno_reg_rtx so that even
 	     	 fixed regs are accepted.  */
-	      REGNO (ivs->entries[i].pseudo) = REGNO (x);
+	      REGNO (ivs->entries[i].pseudo) = new_regno;
+	      /* Update global register liveness information.  */
+	      FOR_EACH_BB (bb)
+		{
+		  if (REGNO_REG_SET_P(bb->global_live_at_start, regno))
+		    SET_REGNO_REG_SET (bb->global_live_at_start, new_regno);
+		  if (REGNO_REG_SET_P(bb->global_live_at_end, regno))
+		    SET_REGNO_REG_SET (bb->global_live_at_end, new_regno);
+		}
 	    }
 	}
     }
