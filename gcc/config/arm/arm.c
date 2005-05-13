@@ -73,6 +73,7 @@ static int thumb_far_jump_used_p (void);
 static bool thumb_force_lr_save (void);
 static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 static rtx emit_sfm (int, int);
+static int arm_size_return_regs (void);
 #ifndef AOF_ASSEMBLER
 static bool arm_assemble_integer (rtx, unsigned int, int);
 #endif
@@ -1465,9 +1466,11 @@ use_return_insn (int iscond, rtx sibling)
       if (!call_used_regs[3])
 	return 0;
 
-      /* ... that it isn't being used for a return value (always true
-	 until we implement return-in-regs), or for a tail-call
-	 argument ...  */
+      /* ... that it isn't being used for a return value ... */
+      if (arm_size_return_regs () >= (4 * UNITS_PER_WORD))
+	return 0;
+
+      /* ... or for a tail-call argument ...  */
       if (sibling)
 	{
 	  gcc_assert (GET_CODE (sibling) == CALL_INSN);
@@ -9851,6 +9854,20 @@ emit_multi_reg_push (unsigned long mask)
   return par;
 }
 
+/* Calculate the size of the return value that is passed in registers.  */
+static int
+arm_size_return_regs (void)
+{
+  enum machine_mode mode;
+
+  if (current_function_return_rtx != 0)
+    mode = GET_MODE (current_function_return_rtx);
+  else
+    mode = DECL_MODE (DECL_RESULT (current_function_decl));
+
+  return GET_MODE_SIZE (mode);
+}
+
 static rtx
 emit_sfm (int base_reg, int count)
 {
@@ -12920,13 +12937,7 @@ thumb_unexpanded_epilogue (void)
      This is more reliable that examining regs_ever_live[] because that
      will be set if the register is ever used in the function, not just if
      the register is used to hold a return value.  */
-
-  if (current_function_return_rtx != 0)
-    mode = GET_MODE (current_function_return_rtx);
-  else
-    mode = DECL_MODE (DECL_RESULT (current_function_decl));
-
-  size = GET_MODE_SIZE (mode);
+  size = arm_size_return_regs ();
 
   /* The prolog may have pushed some high registers to use as
      work registers.  e.g. the testsuite file:
