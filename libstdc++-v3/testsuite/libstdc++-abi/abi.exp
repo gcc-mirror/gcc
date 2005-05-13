@@ -30,9 +30,9 @@ remote_exec "build" "$srcdir/../scripts/extract_symvers" \
 v3-build_support
 
 # Build the abi_check program.
-if { [v3_target_compile "$srcdir/testsuite_abi_check.cc" "abi_check" \
+if { [v3_target_compile "$srcdir/abi_check.cc" "abi_check" \
       "executable" [list "additional_flags=-w"]] != "" } {
-    error "could not compile testsuite_abi_check.cc"
+    error "could not compile abi_check.cc"
 }
 
 remote_download "target" $baseline_file "baseline_symbols.txt"
