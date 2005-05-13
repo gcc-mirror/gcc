@@ -1,3 +1,16 @@
+2005-05-13  Nick Clifton  <nickc@redhat.com>
+
+	* Update the address and phone number of the FSF organization in
+	the GPL notices in the following files:
+	Makefile.in, bindtextdom.c, dcgettext.c, dcigettext.c,
+	dcngettext.c, dgettext.c, dngettext.c, eval-plural.h,
+	explodename.c, finddomain.c, gettext.c, gettextP.h, gmo.h,
+	hash-string.h, intl-compat.c, l10nflist.c, libgnuintl.h,
+	loadinfo.h, loadmsgcat.c, localcharset.c, localcharset.h,
+	locale.alias, localealias.c, localename.c, log.c, ngettext.c,
+	osdep.c, plural-exp.c, plural-exp.h, plural.c, plural.y,
+	relocatable.c, relocatable.h, textdomain.c
+
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* aclocal.m4: Regenerate.
