@@ -1,3 +1,7 @@
+2005-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* configure.host: Set IEEESPEC to -mieee for sh*-*-*.
+
 2005-05-12  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (cond_gtk_gcjawt_ltlibrary): Rename libjawt.la
