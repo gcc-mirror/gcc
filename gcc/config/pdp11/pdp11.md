@@ -1,5 +1,5 @@
 ;;- Machine description for the pdp11 for GNU C compiler
-;; Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2004
+;; Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2004, 2005
 ;; Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
