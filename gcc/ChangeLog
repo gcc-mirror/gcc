@@ -1,3 +1,10 @@
+2005-05-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/sysv4.opt (mlittle): Handle.
+
+	* config/rs6000/rs6000.c (rs6000_handle_option): Set
+	target_flags_explicit when appropriate.
+
 2005-05-13  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR middle-end/20714:

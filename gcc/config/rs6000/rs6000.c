@@ -1553,18 +1553,25 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_mno_power:
       target_flags &= ~(MASK_POWER | MASK_POWER2
 			| MASK_MULTIPLE | MASK_STRING);
+      target_flags_explicit |= (MASK_POWER | MASK_POWER2
+				| MASK_MULTIPLE | MASK_STRING);
       break;
     case OPT_mno_powerpc:
       target_flags &= ~(MASK_POWERPC | MASK_PPC_GPOPT
 			| MASK_PPC_GFXOPT | MASK_POWERPC64);
+      target_flags_explicit |= (MASK_POWERPC | MASK_PPC_GPOPT
+				| MASK_PPC_GFXOPT | MASK_POWERPC64);
       break;
     case OPT_mfull_toc:
       target_flags &= ~(MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC
 			| MASK_NO_SUM_IN_TOC);
+      target_flags_explicit |= (MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC
+				| MASK_NO_SUM_IN_TOC);
 #ifdef TARGET_USES_SYSV4_OPT
       /* Note, V.4 no longer uses a normal TOC, so make -mfull-toc, be
 	 just the same as -mminimal-toc.  */
       target_flags |= MASK_MINIMAL_TOC;
+      target_flags_explicit |= MASK_MINIMAL_TOC;
 #endif
       break;
 
@@ -1572,6 +1579,7 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_mtoc:
       /* Make -mtoc behave like -mminimal-toc.  */
       target_flags |= MASK_MINIMAL_TOC;
+      target_flags_explicit |= MASK_MINIMAL_TOC;
       break;
 #endif
 
@@ -1581,6 +1589,8 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_m64:
 #endif
       target_flags |= MASK_POWERPC64 | MASK_POWERPC | MASK_PPC_GFXOPT;
+      target_flags_explicit |= MASK_POWERPC64 | MASK_POWERPC
+	| MASK_PPC_GFXOPT;
       break;
 
 #ifdef TARGET_USES_AIX64_OPT
@@ -1589,6 +1599,7 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_m32:
 #endif
       target_flags &= ~MASK_POWERPC64;
+      target_flags_explicit |= MASK_POWERPC64;
       break;
 
     case OPT_minsert_sched_nops_:
@@ -1598,25 +1609,34 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_mminimal_toc:
       if (value == 1)
 	{
-	  target_flags &= ~MASK_NO_FP_IN_TOC;
-	  target_flags &= ~MASK_NO_SUM_IN_TOC;
+	  target_flags &= ~(MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC);
+	  target_flags_explicit |= (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC);
 	}
       break;
 
     case OPT_mpower:
       if (value == 1)
-	target_flags |= (MASK_MULTIPLE | MASK_STRING);
+	{
+	  target_flags |= (MASK_MULTIPLE | MASK_STRING);
+	  target_flags_explicit |= (MASK_MULTIPLE | MASK_STRING);
+	}
       break;
 
     case OPT_mpower2:
       if (value == 1)
-	target_flags |= (MASK_POWER | MASK_MULTIPLE | MASK_STRING);
+	{
+	  target_flags |= (MASK_POWER | MASK_MULTIPLE | MASK_STRING);
+	  target_flags_explicit |= (MASK_POWER | MASK_MULTIPLE | MASK_STRING);
+	}
       break;
 
     case OPT_mpowerpc_gpopt:
     case OPT_mpowerpc_gfxopt:
       if (value == 1)
-	target_flags |= MASK_POWERPC;
+	{
+	  target_flags |= MASK_POWERPC;
+	  target_flags_explicit |= MASK_POWERPC;
+	}
       break;
 
 #if TARGET_ALTIVEC_VRSAVE != 0
@@ -1657,15 +1677,25 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 
     case OPT_mrelocatable:
       if (value == 1)
-	target_flags |= MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC;
+	{
+	  target_flags |= MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC;
+	  target_flags_explicit |= MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC;
+	}
       break;
 
     case OPT_mrelocatable_lib:
       if (value == 1)
-	target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC
-	  | MASK_NO_FP_IN_TOC;
+	{
+	  target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC
+	    | MASK_NO_FP_IN_TOC;
+	  target_flags_explicit |= MASK_RELOCATABLE | MASK_MINIMAL_TOC
+	    | MASK_NO_FP_IN_TOC;
+	}
       else
-	target_flags &= ~MASK_RELOCATABLE;
+	{
+	  target_flags &= ~MASK_RELOCATABLE;
+	  target_flags_explicit |= MASK_RELOCATABLE;
+	}
       break;
 #endif
 
