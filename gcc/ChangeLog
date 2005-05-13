@@ -1,3 +1,13 @@
+2005-05-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/mips/3000.md, config/mips/4000.md,
+	config/mips/4100.md, config/mips/4300.md, config/mips/4600.md,
+	config/mips/5000.md, config/mips/7000.md, config/mips/9000.md,
+	config/mips/generic.md, config/pdp11/pdp11.md,
+	config/sh/crt1.asm, config/sh/lib1funcs.asm,
+	config/sh/sh-modes.def, config/sh/sh-protos.h,
+	config/sh/shmedia.md, config/sh/ushmedia.h: Update copyright.
+
 2005-05-13  Richard Henderson  <rth@redhat.com>
 
 	* function.c (instantiate_virtual_regs_in_insn): Do not simplify
