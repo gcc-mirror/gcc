@@ -1776,15 +1776,6 @@ typedef struct
 /* Alignment required for a trampoline in bits.  */
 #define TRAMPOLINE_ALIGNMENT  32
 
-/* Call __clear_cache after setting up the trampoline unless this is a nop.  */
-#ifdef CLEAR_INSN_CACHE
-#define ARM_EMIT_TRAMPOLINE_CACHE_CLEAR(TRAMP)				\
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
-		     0, VOIDmode, 2, TRAMP, Pmode,			\
-		     plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);
-#else
-#define ARM_EMIT_TRAMPOLINE_CACHE_CLEAR(TRAMP) do {} while (0)
-#endif
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -1800,7 +1791,9 @@ typedef struct
 			       plus_constant (TRAMP,			\
 					      TARGET_ARM ? 12 : 20)),	\
 		  FNADDR);						\
-  ARM_EMIT_TRAMPOLINE_CACHE_CLEAR (TRAMP);				\
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
+		     0, VOIDmode, 2, TRAMP, Pmode,			\
+		     plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);	\
 }
 #endif
 
