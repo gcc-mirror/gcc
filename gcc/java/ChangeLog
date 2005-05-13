@@ -1,3 +1,7 @@
+2005-05-12  Aaron Luchko <aluchko@redhat.com>
+
+        * gcj.texi: Add '-verify', '-noverify', and '-verifyremote'.
+
 2005-05-11  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Code Generation): Document -fbootstrap-classes.

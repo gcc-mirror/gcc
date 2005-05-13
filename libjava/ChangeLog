@@ -1,3 +1,18 @@
+2005-05-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* include/jvm.h (gcj::verifyClasses): Declare.
+	* link.cc (gcj::verbose_class_flag): Moved.
+	* prims.cc (gcj::verifyClasses): Define here.
+	(gcj::verbose_class_flag): Move definition here.
+	(_Jv_Linker::wait_for_state): Don't call verify_class
+	if gcj::verifyClasses is not set.
+	* gij.cc (main): Set gcj::verifyClasses when '-noverify' is given.	
+
+2005-05-12  Aaron Luchko  <aluchko@redhat.com>
+
+	* gij.cc (main): Recognize '-verify', '-noverify', and
+	'-verifyremote'
+
 2005-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* configure.host: Set IEEESPEC to -mieee for sh*-*-*.
