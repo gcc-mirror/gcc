@@ -1,3 +1,7 @@
+2005-05-13  Josh Conner  <jconner@apple.com>
+
+	* arm.c (arm_return_in_memory): Add handling for vector return types.
+
 2005-05-13  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.h (processor_type): Add new PROCESSOR_4KP
