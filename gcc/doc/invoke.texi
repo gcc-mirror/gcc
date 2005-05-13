@@ -3787,8 +3787,8 @@ numbers and line number note output.  This makes it more feasible to
 use diff on debugging dumps for compiler invocations with different
 options, in particular with and without @option{-g}.
 
-@item -fdump-translation-unit @r{(C and C++ only)}
-@itemx -fdump-translation-unit-@var{options} @r{(C and C++ only)}
+@item -fdump-translation-unit @r{(C++ only)}
+@itemx -fdump-translation-unit-@var{options} @r{(C++ only)}
 @opindex fdump-translation-unit
 Dump a representation of the tree structure for the entire translation
 unit to a file.  The file name is made by appending @file{.tu} to the
