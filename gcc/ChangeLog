@@ -1,3 +1,11 @@
+2005-05-13  Jan Hubicka  <jh@suse.cz>
+
+	* tree-inline.c (copy_body_r): Simplify substituted ADDR_EXPRs.
+	* tree-optimize.c (pass_gimple): Kill.
+	(init_tree_optimization_passes): Kill pass_gimple.
+	* tree-cfg.c (build_tree_cfg): Do verify_stmts to check that we are gimple.
+	* tree-dump.c (dump_files): Rename .generic to .gimple.*
+
 2005-05-13  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR rtl-optimization/20756:

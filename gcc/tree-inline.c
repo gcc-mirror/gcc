@@ -566,21 +566,15 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	{
 	  /* Get rid of *& from inline substitutions that can happen when a
 	     pointer argument is an ADDR_EXPR.  */
-	  tree decl = TREE_OPERAND (*tp, 0), value;
+	  tree decl = TREE_OPERAND (*tp, 0);
 	  splay_tree_node n;
 
 	  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
 	  if (n)
 	    {
-	      value = (tree) n->value;
-	      STRIP_NOPS (value);
-	      if (TREE_CODE (value) == ADDR_EXPR
-		  && (lang_hooks.types_compatible_p
-		      (TREE_TYPE (*tp), TREE_TYPE (TREE_OPERAND (value, 0)))))
-		{
-		  *tp = TREE_OPERAND (value, 0);
-		  return copy_body_r (tp, walk_subtrees, data);
-		}
+	      *tp = build_fold_indirect_ref ((tree)n->value);
+	      *walk_subtrees = 0;
+	      return NULL;
 	    }
 	}
 

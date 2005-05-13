@@ -672,7 +672,7 @@ static struct dump_file_info dump_files[TDI_end] =
   {".tu", "translation-unit", NULL, TDF_TREE, 0, 0, 0},
   {".class", "class-hierarchy", NULL, TDF_TREE, 0, 1, 0},
   {".original", "tree-original", NULL, TDF_TREE, 0, 2, 0},
-  {".generic", "tree-generic", NULL, TDF_TREE, 0, 3, 0},
+  {".gimple", "tree-gimple", NULL, TDF_TREE, 0, 3, 0},
   {".nested", "tree-nested", NULL, TDF_TREE, 0, 4, 0},
   {".inlined", "tree-inlined", NULL, TDF_TREE, 0, 5, 0},
   {".vcg", "tree-vcg", NULL, TDF_TREE, 0, 6, 0},

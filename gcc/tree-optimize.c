@@ -57,25 +57,6 @@ bool in_gimple_form;
 /* The root of the compilation pass tree, once constructed.  */
 static struct tree_opt_pass *all_passes, *all_ipa_passes;
 
-/* Pass: dump the gimplified, inlined, functions.  */
-
-static struct tree_opt_pass pass_gimple = 
-{
-  "gimple",				/* name */
-  NULL,					/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  0,					/* tv_id */
-  0,					/* properties_required */
-  PROP_gimple_any,			/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
-  0					/* letter */
-};
-
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
 static bool
@@ -340,7 +321,6 @@ init_tree_optimization_passes (void)
   *p = NULL;
 
   p = &all_passes;
-  NEXT_PASS (pass_gimple);
   NEXT_PASS (pass_remove_useless_stmts);
   NEXT_PASS (pass_mudflap_1);
   NEXT_PASS (pass_lower_cf);
