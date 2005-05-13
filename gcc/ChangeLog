@@ -1,3 +1,8 @@
+2005-05-13  Adam Nemet  <anemet@lnxw.com>
+
+	* doc/invoke.texi (Debugging Options): Option
+	-fdump-translation-unit only works with C++ now.
+
 2005-05-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	Replace calls to abort in CRIS port.
