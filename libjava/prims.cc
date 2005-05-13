@@ -920,6 +920,12 @@ namespace gcj
   _Jv_Utf8Const *finit_name;
   
   bool runtimeInitialized = false;
+  
+  // When true, print debugging information about class loading.
+  bool verbose_class_flag;
+  
+  // When true, enable the bytecode verifier and BC-ABI type verification. 
+  bool verifyClasses = true;
 }
 
 // We accept all non-standard options accepted by Sun's java command,

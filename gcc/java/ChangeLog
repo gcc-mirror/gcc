@@ -1,3 +1,7 @@
+2005-05-13  Aaron Luchko <aluchko@redhat.com>
+
+	* gcj.texi: Add '-verify', '-noverify', and '-verifyremote'.
+
 2005-04-28  Andrew Haley  <aph@redhat.com>
 
 	PR java/19285

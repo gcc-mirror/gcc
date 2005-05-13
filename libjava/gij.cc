@@ -296,6 +296,14 @@ main (int argc, char const** argv)
         nonstandard_opts_help ();
       else if (! strncmp (arg, "-X", 2))
         add_option (vm_args, arg, NULL);
+      // Obsolete options recognized for backwards-compatibility.
+      else if (! strcmp (arg, "-verify")
+               || ! strcmp (arg, "-verifyremote"))
+	continue;
+      else if (! strcmp (arg, "-noverify"))
+        {
+	  gcj::verifyClasses = false;
+	}
       else
 	{
 	  fprintf (stderr, "gij: unrecognized option -- `%s'\n", argv[i]);

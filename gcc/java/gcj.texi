@@ -1086,6 +1086,11 @@ Equivalent to @code{-Xms}.
 @item -mx=@var{number}
 Equivalent to @code{-Xmx}.
 
+@item -noverify
+Do not verify compliance of bytecode with the VM specification. In addition,
+this option disables type verification which is otherwise performed on BC-ABI
+compiled code.
+
 @item -X
 @itemx -X@var{argument}
 Supplying @code{-X} by itself will cause @code{gij} to list all the
@@ -1128,7 +1133,8 @@ Each time a class is initialized, print a short message on standard error.
 compatibility with existing application launch scripts:
 @code{-client}, @code{-server}, @code{-hotspot}, @code{-jrockit},
 @code{-agentlib}, @code{-agentpath}, @code{-debug}, @code{-d32},
-@code{-d64}, @code{-javaagent} and @code{-noclassgc}.
+@code{-d64}, @code{-javaagent}, @code{-noclassgc}, @code{-verify},
+and @code{-verifyremote}.
 
 @c man end
 

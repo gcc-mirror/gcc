@@ -244,6 +244,9 @@ namespace gcj
 
   /* Print out class names as they are initialized. */
   extern bool verbose_class_flag;
+  
+  /* When true, enable the bytecode verifier and BC-ABI verification. */
+  extern bool verifyClasses;
 }
 
 // This class handles all aspects of class preparation and linking.
