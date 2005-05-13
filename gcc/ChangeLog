@@ -1,3 +1,8 @@
+2005-05-13  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.h (INITIALIZE_TRAMPOLINE): Make the call to __clear_cache
+	unconditional.
+
 2005-05-13  Josh Conner  <jconner@apple.com>
 
 	* config/arm/arm.c (arm_size_return_regs): New.
