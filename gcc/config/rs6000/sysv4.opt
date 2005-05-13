@@ -53,10 +53,9 @@ mlittle-endian
 Target Report RejectNegative Mask(LITTLE_ENDIAN)
 Produce little endian code
 
-; FIXME: Need a way to specify an alias.
-;mlittle
-;Target Report RejectNegative Mask(LITTLE_ENDIAN)
-;Produce little endian code
+mlittle
+Target Report RejectNegative Mask(LITTLE_ENDIAN) MaskExists
+Produce little endian code
 
 mbig-endian
 Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
