@@ -11444,7 +11444,7 @@ fold_indirect_ref_1 (tree t)
   tree sub = t;
   tree subtype;
 
-  STRIP_TYPE_NOPS (sub);
+  STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
   if (!POINTER_TYPE_P (subtype))
     return NULL_TREE;
