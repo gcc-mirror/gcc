@@ -1,6 +1,6 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -96,10 +96,8 @@ void test02()
 
   bool test __attribute__((unused)) = true;
 
-  const wchar_t* lit00 = L"chicago underground trio/possible cube on delmark";
-  size_t i01 = traits_type::length(lit00);
-  wchar_t lit01[i01];
-  std::wcscpy(lit01, lit00);
+  wchar_t lit01[] = L"chicago underground trio/possible cube on delmark";
+  size_t i01 = traits_type::length(lit01);
 
   testbuf buf01;
 
