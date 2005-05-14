@@ -389,7 +389,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_loop);
   NEXT_PASS (pass_dominator);
   NEXT_PASS (pass_copy_prop);
-  NEXT_PASS (pass_dce);
+  NEXT_PASS (pass_cd_dce);
   /* FIXME: If DCE is not run before checking for uninitialized uses,
      we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
      However, this also causes us to misdiagnose cases that should be
@@ -400,7 +400,6 @@ init_tree_optimization_passes (void)
      variable.  Using a representation like Gated Single Assignment
      may help.  */
   NEXT_PASS (pass_late_warn_uninitialized);
-  NEXT_PASS (pass_cd_dce);
   NEXT_PASS (pass_dse);
   NEXT_PASS (pass_forwprop);
   NEXT_PASS (pass_phiopt);
