@@ -1,5 +1,9 @@
 2005-05-14  Jan Hubicka  <jh@suse.cz>
 
+	* tree-eh.c (record_stmt_eh_region): Use add_stmt_to_eh_region.
+	(add_stmt_to_eh_region_fn): Nest into CALL_EXPR.
+	(remove_stmt_from_eh_region_fn): Likewise.
+
 	* tree-cfg.c (execute_warn_function_return): Break out noreturn
 	warning too..
 	(execute_warn_function_noreturn): ... here.

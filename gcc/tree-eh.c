@@ -84,19 +84,10 @@ struct_ptr_hash (const void *a)
 static void
 record_stmt_eh_region (struct eh_region *region, tree t)
 {
-  struct throw_stmt_node *n;
-  void **slot;
-
   if (!region)
     return;
 
-  n = ggc_alloc (sizeof (*n));
-  n->stmt = t;
-  n->region_nr = get_eh_region_number (region);
-
-  slot = htab_find_slot (get_eh_throw_stmt_table (cfun), n, INSERT);
-  gcc_assert (!*slot);
-  *slot = n;
+  add_stmt_to_eh_region (t, get_eh_region_number (region));
 }
 
 void
@@ -120,6 +111,12 @@ add_stmt_to_eh_region_fn (struct function *ifun, tree t, int num)
   slot = htab_find_slot (get_eh_throw_stmt_table (ifun), n, INSERT);
   gcc_assert (!*slot);
   *slot = n;
+  /* ??? For the benefit of calls.c, converting all this to rtl,
+     we need to record the call expression, not just the outer
+     modify statement.  */
+  if (TREE_CODE (t) == MODIFY_EXPR
+      && (t = get_call_expr_in (t)))
+    add_stmt_to_eh_region_fn (ifun, t, num);
 }
 
 void
@@ -143,6 +140,12 @@ remove_stmt_from_eh_region_fn (struct function *ifun, tree t)
   if (slot)
     {
       htab_clear_slot (get_eh_throw_stmt_table (ifun), slot);
+      /* ??? For the benefit of calls.c, converting all this to rtl,
+	 we need to record the call expression, not just the outer
+	 modify statement.  */
+      if (TREE_CODE (t) == MODIFY_EXPR
+	  && (t = get_call_expr_in (t)))
+	remove_stmt_from_eh_region_fn (ifun, t);
       return true;
     }
   else
@@ -1610,17 +1613,8 @@ lower_eh_constructs_1 (struct leh_state *state, tree *tp)
       /* Look for things that can throw exceptions, and record them.  */
       if (state->cur_region && tree_could_throw_p (t))
 	{
-	  tree op;
-
 	  record_stmt_eh_region (state->cur_region, t);
 	  note_eh_region_may_contain_throw (state->cur_region);
-
-	  /* ??? For the benefit of calls.c, converting all this to rtl,
-	     we need to record the call expression, not just the outer
-	     modify statement.  */
-	  op = get_call_expr_in (t);
-	  if (op)
-	    record_stmt_eh_region (state->cur_region, op);
 	}
       break;
 
@@ -1681,9 +1675,6 @@ lower_eh_constructs (void)
   tree *tp = &DECL_SAVED_TREE (current_function_decl);
 
   finally_tree = htab_create (31, struct_ptr_hash, struct_ptr_eq, free);
-  set_eh_throw_stmt_table (cfun, htab_create_ggc (31, struct_ptr_hash,
-						  struct_ptr_eq,
-						  ggc_free));
 
   collect_finally_tree (*tp, NULL);
 
