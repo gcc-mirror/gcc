@@ -167,13 +167,13 @@ Boston, MA 02111-1307, USA.  */
    The values of these macros are register numbers.  */
 
 /* VAX pc is overloaded on a register.  */
-#define PC_REGNUM 15
+#define PC_REGNUM VAX_PC_REGNUM
 
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM 14
+#define STACK_POINTER_REGNUM VAX_SP_REGNUM
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 13
+#define FRAME_POINTER_REGNUM VAX_FP_REGNUM
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
@@ -182,7 +182,7 @@ Boston, MA 02111-1307, USA.  */
 #define FRAME_POINTER_REQUIRED 1
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 12
+#define ARG_POINTER_REGNUM VAX_AP_REGNUM
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 0
