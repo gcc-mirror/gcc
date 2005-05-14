@@ -1205,8 +1205,7 @@
 			    (match_operand:SI 3 "immediate_operand" "")))])]
   ""
 {
-  if (INTVAL (operands[3]) > 255 * 4 || INTVAL (operands[3]) % 4)
-    abort ();
+  gcc_assert (INTVAL (operands[3]) <= 255 * 4 && INTVAL (operands[3]) % 4 == 0);
 
   /* Operand 1 is the number of bytes to be popped by DW_CFA_GNU_args_size
      during EH unwinding.  We must include the argument count pushed by
@@ -1234,8 +1233,7 @@
 			    (match_operand:SI 4 "immediate_operand" "")))])]
   ""
 {
-  if (INTVAL (operands[4]) > 255 * 4 || INTVAL (operands[4]) % 4)
-    abort ();
+  gcc_assert (INTVAL (operands[4]) <= 255 * 4 && INTVAL (operands[4]) % 4 == 0);
 
   /* Operand 2 is the number of bytes to be popped by DW_CFA_GNU_args_size
      during EH unwinding.  We must include the argument count pushed by
