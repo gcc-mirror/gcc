@@ -1,3 +1,11 @@
+2005-05-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-eh.c (leh_tf_state): Change the type of dest_array to
+	VEC(tree,heap)*.
+	(maybe_record_in_goto_queue, lower_try_finally_onedest,
+	lower_try_finally_copy, lower_try_finally_switch,
+	lower_try_finally): Use VEC instead of VARRAY.
+
 2005-05-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (Node: Register Classes): Remove obsoleted
