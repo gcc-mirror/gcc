@@ -1,5 +1,11 @@
 2005-05-13  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR libgcj/21557
+	* java/lang/natObject.cc (_Jv_MonitorEnter): Save and clear thread
+	interrupt status flag if _Jv_CondWait is interrupted.
+
+2005-05-13  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* include/jvm.h (gcj::verifyClasses): Declare.
 	* link.cc (gcj::verbose_class_flag): Moved.
 	* prims.cc (gcj::verifyClasses): Define here.
