@@ -35,6 +35,8 @@ details.  */
 
 
 
+using namespace java::lang;
+
 // This is used to represent synchronization information.
 struct _Jv_SyncInfo
 {
@@ -926,12 +928,22 @@ retry:
 	  release_set(&(he -> address), (address | REQUEST_CONVERSION | HEAVY));
 				// release lock on he
 	  LOG(REQ_CONV, (address | REQUEST_CONVERSION | HEAVY), self);
+	  // If _Jv_CondWait is interrupted, we ignore the interrupt, but
+	  // restore the thread's interrupt status flag when done.
+	  jboolean interrupt_flag = false;
 	  while ((he -> address & ~FLAGS) == (address & ~FLAGS))
 	    {
 	      // Once converted, the lock has to retain heavyweight
-	      // status, since heavy_count > 0 . 
-	      _Jv_CondWait (&(hl->si.condition), &(hl->si.mutex), 0, 0);
+	      // status, since heavy_count > 0.
+	      int r = _Jv_CondWait (&(hl->si.condition), &(hl->si.mutex), 0, 0);
+	      if (r == _JV_INTERRUPTED)
+	        {
+		  interrupt_flag = true;
+		  Thread::currentThread()->interrupt_flag = false;
+		}
 	    }
+	  if (interrupt_flag)
+	    Thread::currentThread()->interrupt_flag = interrupt_flag;
 	  keep_live(addr);
 		// Guarantee that hl doesn't get unlinked by finalizer.
 		// This is only an issue if the client fails to release
