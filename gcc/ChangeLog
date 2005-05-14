@@ -1,5 +1,13 @@
 2005-05-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
+	* config/vax/vax.c: (override_options) Remove 'register' keyword.
+	(split_quadword_operands) Likewise. (rev_cond_name) Likewise.
+	(vax_float_literal) Likewise. (vax_rtx_costs) Remove trailing
+	whitespace.
+	* config/vax/vax.h: Remove 'register' keyword. Misc. whitespace fixes,
+	mostly removal of trailing spaces...
+	* config/vax/vax-modes.def: Remove trailing whitespace.
+
 	* config/vax/elf.h: Update whitespace.
 
 2005-05-14  Richard Guenther  <rguenth@gcc.gnu.org>

@@ -112,8 +112,8 @@ override_options (void)
 static void
 vax_output_function_prologue (FILE * file, HOST_WIDE_INT size)
 {
-  register int regno;
-  register int mask = 0;
+  int regno;
+  int mask = 0;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (regs_ever_live[regno] && !call_used_regs[regno])
@@ -199,9 +199,9 @@ split_quadword_operands (rtx * operands, rtx * low, int n ATTRIBUTE_UNUSED)
 }
 
 void
-print_operand_address (FILE * file, register rtx addr)
+print_operand_address (FILE * file, rtx addr)
 {
-  register rtx reg1, breg, ireg;
+  rtx reg1, breg, ireg;
   rtx offset;
 
  retry:
@@ -411,9 +411,9 @@ rev_cond_name (rtx op)
 }
 
 int
-vax_float_literal(register rtx c)
+vax_float_literal(rtx c)
 {
-  register enum machine_mode mode;
+  enum machine_mode mode;
   REAL_VALUE_TYPE r, s;
   int i;
 
@@ -457,7 +457,7 @@ vax_float_literal(register rtx c)
 
 
 static int
-vax_address_cost_1 (register rtx addr)
+vax_address_cost_1 (rtx addr)
 {
   int reg = 0, indexed = 0, indir = 0, offset = 0, predec = 0;
   rtx plus_op0 = 0, plus_op1 = 0;
