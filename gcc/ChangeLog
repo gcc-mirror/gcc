@@ -1,3 +1,9 @@
+2005-05-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (Node: Register Classes): Remove obsoleted
+	comment regarding defined register classes.
+	(LEGITIMIZE_RELOAD_ADDRESS): Do not define.
+
 2005-05-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-optimize.c (init_tree_optimization_passes): Move

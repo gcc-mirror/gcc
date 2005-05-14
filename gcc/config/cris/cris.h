@@ -502,11 +502,6 @@ extern int target_flags;
 
 /* Node: Register Classes */
 
-/* CRIS has only one kind of registers, so NO_REGS and ALL_REGS
-   are the only classes.  FIXME: It actually makes sense to have another
-   class for special registers, and yet another class for the
-   multiply-overflow register in v10; then a class for the return
-   register also makes sense.  */
 enum reg_class 
   {
     NO_REGS,
@@ -1070,70 +1065,6 @@ struct cum_args {int regs;};
    already split up in several instructions (Is this still true?).
    FIXME: Check and adjust for gcc-2.9x.  */
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN) {}
-
-/* Kludge to solve Axis-990219: Work around imperfection in
-   reload_load_address1:
-    (plus (sign_extend (mem:qi (reg))) (reg))
-   should be reloaded as (plus (reg) (reg)), not
-    (plus (sign_extend (reg)) (reg)).
-   There are no checks that reload_load_address_1 "reloads"
-   addresses correctly, so invalidness is not caught or
-   corrected.
-    When the right thing happens in reload, the kludge can
-   be removed; still not as of 2003-02-27.  */
-
-#define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_LEVELS, WIN) \
-  do									\
-    {									\
-      if (GET_CODE (X) == PLUS						\
-	  && REG_P (XEXP (X, 1))					\
-	  && GET_CODE (XEXP (X, 0)) == SIGN_EXTEND			\
-	  && GET_CODE (XEXP (XEXP (X, 0), 0)) == MEM			\
-	  && (GET_MODE (XEXP (XEXP (X, 0), 0)) == HImode		\
-	      || GET_MODE (XEXP (XEXP (X, 0), 0)) == QImode)		\
-	  && (REG_P (XEXP (XEXP (XEXP (X, 0), 0), 0))			\
-	      || (GET_CODE (XEXP (XEXP (XEXP (X, 0), 0), 0))		\
-		  == POST_INC						\
-		  && REG_P (XEXP (XEXP (XEXP (XEXP (X, 0), 0), 0),	\
-				  0)))))				\
-	{								\
-	  int something_reloaded = 0;					\
-									\
-	  if (REGNO (XEXP (X, 1)) >= FIRST_PSEUDO_REGISTER)		\
-	    {								\
-	      /* Second reg is pseudo, reload it.  */			\
-	      push_reload (XEXP (X, 1), NULL_RTX, &XEXP (X, 1), 	\
-			   NULL,					\
-			   GENERAL_REGS, GET_MODE (X), VOIDmode, 0, 0,	\
-			   OPNUM, TYPE);				\
-	      something_reloaded = 1;					\
-	    }								\
-									\
-	  if (REG_P (XEXP (XEXP (XEXP (X, 0), 0), 0))			\
-	      && (REGNO (XEXP (XEXP (XEXP (X, 0), 0), 0))		\
-		  >= FIRST_PSEUDO_REGISTER))				\
-	    {								\
-	      /* First one is a pseudo - reload that.  */		\
-	      push_reload (XEXP (XEXP (XEXP (X, 0), 0), 0), NULL_RTX,	\
-			   &XEXP (XEXP (XEXP (X, 0), 0), 0), NULL, 	\
-			   GENERAL_REGS,				\
-			   GET_MODE (X), VOIDmode, 0, 0, OPNUM, TYPE);	\
-	      something_reloaded = 1;					\
-	    }								\
-									\
-	  if (! something_reloaded					\
-	      || (GET_CODE (XEXP (XEXP (X, 0), 0)) == POST_INC		\
-		  && (REGNO (XEXP (XEXP (XEXP (X, 0), 0), 0))		\
-		      >= FIRST_PSEUDO_REGISTER)))			\
-	    /* Reload the sign_extend.	Happens if neither reg is a	\
-	       pseudo, or the first one was inside post_increment.  */	\
-	    push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	\
-			 GENERAL_REGS, GET_MODE (X), VOIDmode, 0, 0,	\
-			 OPNUM, TYPE);					\
-	  goto WIN;							\
-	}								\
-    }									\
-  while (0)
 
 /* In CRIS, only the postincrement address mode depends thus,
    since the increment depends on the size of the operand.  */
