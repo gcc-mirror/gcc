@@ -1,3 +1,8 @@
+2005-05-14  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* fold-const.c (div_if_zero_remainder): New function.
+	(try_move_mult_to_index): Use it.
+
 2005-05-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-eh.c (leh_tf_state): Change the type of dest_array to
