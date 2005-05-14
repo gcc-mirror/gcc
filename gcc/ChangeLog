@@ -1,3 +1,11 @@
+2005-05-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-live.c (tpa_init, tpa_delete, tpa_compact,
+	root_var_init, type_var_init): Use VEC instead of VARRAY.
+	* tree-ssa-live.h (tree_partition_associator_d): Change the
+	type of trees to VEC(tree,heap)*.
+	(tpa_tree): Use VEC instead of VARRAY.
+
 2005-05-14  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* fold-const.c (div_if_zero_remainder): New function.
