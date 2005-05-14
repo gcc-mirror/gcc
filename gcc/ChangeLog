@@ -1,3 +1,7 @@
+2005-05-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/vax/elf.h: Update whitespace.
+
 2005-05-14  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	Revert
