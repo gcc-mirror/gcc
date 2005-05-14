@@ -795,7 +795,7 @@ tpa_init (var_map map)
   memset (tpa->partition_to_tree_map, TPA_NONE, num_partitions * sizeof (int));
 
   x = MAX (40, (num_partitions / 20));
-  VARRAY_TREE_INIT (tpa->trees, x, "trees");
+  tpa->trees = VEC_alloc (tree, heap, x);
   VARRAY_INT_INIT (tpa->first_partition, x, "first_partition");
 
   return tpa;
@@ -837,6 +837,7 @@ tpa_delete (tpa_p tpa)
   if (!tpa)
     return;
 
+  VEC_free (tree, heap, tpa->trees);
   free (tpa->partition_to_tree_map);
   free (tpa->next_partition);
   free (tpa);
@@ -870,19 +871,20 @@ tpa_compact (tpa_p tpa)
 	 of the tree list.  */
       if (tpa_next_partition (tpa, first) == NO_PARTITION)
         {
-	  swap_t = VARRAY_TREE (tpa->trees, last);
+	  swap_t = VEC_index (tree, tpa->trees, last);
 	  swap_i = VARRAY_INT (tpa->first_partition, last);
 
 	  /* Update the last entry. Since it is known to only have one
 	     partition, there is nothing else to update.  */
-	  VARRAY_TREE (tpa->trees, last) = VARRAY_TREE (tpa->trees, x);
+	  VEC_replace (tree, tpa->trees, last,
+		       VEC_index (tree, tpa->trees, x));
 	  VARRAY_INT (tpa->first_partition, last) 
 	    = VARRAY_INT (tpa->first_partition, x);
 	  tpa->partition_to_tree_map[tpa_first_partition (tpa, last)] = last;
 
 	  /* Since this list is known to have more than one partition, update
 	     the list owner entries.  */
-	  VARRAY_TREE (tpa->trees, x) = swap_t;
+	  VEC_replace (tree, tpa->trees, x, swap_t);
 	  VARRAY_INT (tpa->first_partition, x) = swap_i;
 	  for (y = tpa_first_partition (tpa, x); 
 	       y != NO_PARTITION; 
@@ -961,7 +963,7 @@ root_var_init (var_map map)
         {
 	  ann->root_var_processed = 1;
 	  VAR_ANN_ROOT_INDEX (ann) = rv->num_trees++;
-	  VARRAY_PUSH_TREE (rv->trees, t);
+	  VEC_safe_push (tree, heap, rv->trees, t);
 	  VARRAY_PUSH_INT (rv->first_partition, p);
 	}
       rv->partition_to_tree_map[p] = VAR_ANN_ROOT_INDEX (ann);
@@ -970,7 +972,7 @@ root_var_init (var_map map)
   /* Reset the out_of_ssa_tag flag on each variable for later use.  */
   for (x = 0; x < rv->num_trees; x++)
     {
-      t = VARRAY_TREE (rv->trees, x);
+      t = VEC_index (tree, rv->trees, x);
       var_ann (t)->root_var_processed = 0;
     }
 
@@ -1026,12 +1028,12 @@ type_var_init (var_map map)
 
       /* Find the list for this type.  */
       for (y = 0; y < tv->num_trees; y++)
-        if (t == VARRAY_TREE (tv->trees, y))
+        if (t == VEC_index (tree, tv->trees, y))
 	  break;
       if (y == tv->num_trees)
         {
 	  tv->num_trees++;
-	  VARRAY_PUSH_TREE (tv->trees, t);
+	  VEC_safe_push (tree, heap, tv->trees, t);
 	  VARRAY_PUSH_INT (tv->first_partition, p);
 	}
       else
