@@ -320,7 +320,7 @@ struct leh_tf_state
   size_t goto_queue_active;
 
   /* The set of unique labels seen as entries in the goto queue.  */
-  varray_type dest_array;
+  VEC(tree,heap) *dest_array;
 
   /* A label to be added at the end of the completed transformed
      sequence.  It will be set if may_fallthru was true *at one time*,
@@ -501,18 +501,18 @@ maybe_record_in_goto_queue (struct leh_state *state, tree stmt)
 
 	if (! tf->dest_array)
 	  {
-	    VARRAY_TREE_INIT (tf->dest_array, 10, "dest_array");
-	    VARRAY_PUSH_TREE (tf->dest_array, lab);
+	    tf->dest_array = VEC_alloc (tree, heap, 10);
+	    VEC_quick_push (tree, tf->dest_array, lab);
 	    index = 0;
 	  }
 	else
 	  {
-	    int n = VARRAY_ACTIVE_SIZE (tf->dest_array);
+	    int n = VEC_length (tree, tf->dest_array);
 	    for (index = 0; index < n; ++index)
-	      if (VARRAY_TREE (tf->dest_array, index) == lab)
+	      if (VEC_index (tree, tf->dest_array, index) == lab)
 		break;
 	    if (index == n)
-	      VARRAY_PUSH_TREE (tf->dest_array, lab);
+	      VEC_safe_push (tree, heap, tf->dest_array, lab);
 	  }
       }
       break;
@@ -996,7 +996,7 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
 	do_goto_redirection (q, finally_label, NULL);
       replace_goto_queue (tf);
 
-      if (VARRAY_TREE (tf->dest_array, 0) == tf->fallthru_label)
+      if (VEC_index (tree, tf->dest_array, 0) == tf->fallthru_label)
 	{
 	  /* Reachable by goto to fallthru label only.  Redirect it
 	     to the new label (already created, sadly), and do not
@@ -1060,10 +1060,7 @@ lower_try_finally_copy (struct leh_state *state, struct leh_tf_state *tf)
 	tree label;
       } *labels;
 
-      if (tf->dest_array)
-	return_index = VARRAY_ACTIVE_SIZE (tf->dest_array);
-      else
-	return_index = 0;
+      return_index = VEC_length (tree, tf->dest_array);
       labels = xcalloc (sizeof (*labels), return_index + 1);
 
       q = tf->goto_queue;
@@ -1152,10 +1149,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   lower_eh_constructs_1 (state, &finally);
 
   /* Prepare for switch statement generation.  */
-  if (tf->dest_array)
-    nlabels = VARRAY_ACTIVE_SIZE (tf->dest_array);
-  else
-    nlabels = 0;
+  nlabels = VEC_length (tree, tf->dest_array);
   return_index = nlabels;
   eh_index = return_index + tf->may_return;
   fallthru_index = eh_index + tf->may_throw;
@@ -1389,10 +1383,7 @@ lower_try_finally (struct leh_state *state, tree *tp)
      how many destinations are reached by the finally block.  Use this to
      determine how we process the finally block itself.  */
 
-  if (this_tf.dest_array)
-    ndests = VARRAY_ACTIVE_SIZE (this_tf.dest_array);
-  else
-    ndests = 0;
+  ndests = VEC_length (tree, this_tf.dest_array);
   ndests += this_tf.may_fallthru;
   ndests += this_tf.may_return;
   ndests += this_tf.may_throw;
@@ -1424,6 +1415,7 @@ lower_try_finally (struct leh_state *state, tree *tp)
       append_to_statement_list (x, tp);
     }
 
+  VEC_free (tree, heap, this_tf.dest_array);
   if (this_tf.goto_queue)
     free (this_tf.goto_queue);
 }
