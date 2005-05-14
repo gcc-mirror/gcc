@@ -831,6 +831,33 @@ div_and_round_double (enum tree_code code, int uns,
   add_double (lnum_orig, hnum_orig, *lrem, *hrem, lrem, hrem);
   return overflow;
 }
+
+/* If ARG2 divides ARG1 with zero remainder, carries out the division
+   of type CODE and returns the quotient.
+   Otherwise returns NULL_TREE.  */
+
+static tree
+div_if_zero_remainder (enum tree_code code, tree arg1, tree arg2)
+{
+  unsigned HOST_WIDE_INT int1l, int2l;
+  HOST_WIDE_INT int1h, int2h;
+  unsigned HOST_WIDE_INT quol, reml;
+  HOST_WIDE_INT quoh, remh;
+  tree type = TREE_TYPE (arg1);
+  int uns = TYPE_UNSIGNED (type);
+
+  int1l = TREE_INT_CST_LOW (arg1);
+  int1h = TREE_INT_CST_HIGH (arg1);
+  int2l = TREE_INT_CST_LOW (arg2);
+  int2h = TREE_INT_CST_HIGH (arg2);
+
+  div_and_round_double (code, uns, int1l, int1h, int2l, int2h,
+		  	&quol, &quoh, &reml, &remh);
+  if (remh != 0 || reml != 0)
+    return NULL_TREE;
+
+  return build_int_cst_wide (type, quol, quoh);
+}
 
 /* Return true if built-in mathematical function specified by CODE
    preserves the sign of it argument, i.e. -f(x) == f(-x).  */
@@ -6311,6 +6338,10 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
     {
       if (TREE_CODE (ref) == ARRAY_REF)
 	{
+	  itype = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
+	  if (! itype)
+	    continue;
+
 	  step = array_ref_element_size (ref);
 	  if (TREE_CODE (step) != INTEGER_CST)
 	    continue;
@@ -6323,16 +6354,11 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
 	  else
 	    {
 	      /* Try if delta is a multiple of step.  */
-	      tree mod = int_const_binop (TRUNC_MOD_EXPR, delta, step, 0);
-	      if (!integer_zerop (mod))
+	      tree tmp = div_if_zero_remainder (EXACT_DIV_EXPR, delta, step);
+	      if (! tmp)
 		continue;
-
-	      delta = int_const_binop (EXACT_DIV_EXPR, delta, step, 0);
+	      delta = tmp;
 	    }
-
-	  itype = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
-	  if (! itype)
-	    continue;
 
 	  break;
 	}

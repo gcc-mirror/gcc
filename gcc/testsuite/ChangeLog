@@ -1,3 +1,7 @@
+2005-05-14  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* g++.dg/tree-ssa/tmmti-2.C: New testcase.
+
 2005-05-13  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.c-torture/execute/20041218-2.c: Add __attribute__((packed)).
