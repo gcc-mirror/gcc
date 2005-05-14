@@ -1,3 +1,8 @@
+2005-05-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-optimize.c (init_tree_optimization_passes): Move
+	pass_cd_dce in place of the last pass_dce.
+
 2005-05-14  Nathan Sidwell  <nathan@codesourcery.com>
 	    Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
