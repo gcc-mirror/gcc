@@ -1,3 +1,12 @@
+2005-05-14  Nathan Sidwell  <nathan@codesourcery.com>
+	    Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/vax/vax.c: (print_operand_address) Use gcc_unreachable() and
+	gcc_assert().
+	(rev_cond_name) Likewise.
+	(vax_float_literal) Likewise.
+	* config/vax/vax.md: Likewise.
+
 2005-05-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/vax/vax.md: define_constant VAXens AP, FP, SP and PC

@@ -269,7 +269,7 @@ print_operand_address (FILE * file, rtx addr)
 	  addr = XEXP (addr, 1);
 	}
       else
-	abort ();
+	gcc_unreachable ();
 
       if (GET_CODE (addr) == REG)
 	{
@@ -280,8 +280,9 @@ print_operand_address (FILE * file, rtx addr)
 	}
       else if (GET_CODE (addr) == MULT)
 	ireg = addr;
-      else if (GET_CODE (addr) == PLUS)
+      else
 	{
+	  gcc_assert (GET_CODE (addr) == PLUS);
 	  if (CONSTANT_ADDRESS_P (XEXP (addr, 0))
 	      || GET_CODE (XEXP (addr, 0)) == MEM)
 	    {
@@ -289,10 +290,11 @@ print_operand_address (FILE * file, rtx addr)
 		{
 		  if (GET_CODE (offset) == CONST_INT)
 		    offset = plus_constant (XEXP (addr, 0), INTVAL (offset));
-		  else if (GET_CODE (XEXP (addr, 0)) == CONST_INT)
-		    offset = plus_constant (offset, INTVAL (XEXP (addr, 0)));
 		  else
-		    abort ();
+		    {
+		      gcc_assert (GET_CODE (XEXP (addr, 0)) == CONST_INT);
+		      offset = plus_constant (offset, INTVAL (XEXP (addr, 0)));
+		    }
 		}
 	      offset = XEXP (addr, 0);
 	    }
@@ -303,14 +305,12 @@ print_operand_address (FILE * file, rtx addr)
 	      else
 		reg1 = XEXP (addr, 0);
 	    }
-	  else if (GET_CODE (XEXP (addr, 0)) == MULT)
+	  else
 	    {
-	      if (ireg)
-		abort ();
+	      gcc_assert (GET_CODE (XEXP (addr, 0)) == MULT);
+	      gcc_assert (!ireg);
 	      ireg = XEXP (addr, 0);
 	    }
-	  else
-	    abort ();
 
 	  if (CONSTANT_ADDRESS_P (XEXP (addr, 1))
 	      || GET_CODE (XEXP (addr, 1)) == MEM)
@@ -319,10 +319,11 @@ print_operand_address (FILE * file, rtx addr)
 		{
 		  if (GET_CODE (offset) == CONST_INT)
 		    offset = plus_constant (XEXP (addr, 1), INTVAL (offset));
-		  else if (GET_CODE (XEXP (addr, 1)) == CONST_INT)
-		    offset = plus_constant (offset, INTVAL (XEXP (addr, 1)));
 		  else
-		    abort ();
+		    {
+		      gcc_assert (GET_CODE (XEXP (addr, 1)) == CONST_INT);
+		      offset = plus_constant (offset, INTVAL (XEXP (addr, 1)));
+		    }
 		}
 	      offset = XEXP (addr, 1);
 	    }
@@ -333,25 +334,20 @@ print_operand_address (FILE * file, rtx addr)
 	      else
 		reg1 = XEXP (addr, 1);
 	    }
-	  else if (GET_CODE (XEXP (addr, 1)) == MULT)
+	  else
 	    {
-	      if (ireg)
-		abort ();
+	      gcc_assert (GET_CODE (XEXP (addr, 1)) == MULT);
+	      gcc_assert (!ireg);
 	      ireg = XEXP (addr, 1);
 	    }
-	  else
-	    abort ();
 	}
-      else
-	abort ();
 
       /* If REG1 is nonzero, figure out if it is a base or index register.  */
       if (reg1)
 	{
 	  if (breg != 0 || (offset && GET_CODE (offset) == MEM))
 	    {
-	      if (ireg)
-		abort ();
+	      gcc_assert (!ireg);
 	      ireg = reg1;
 	    }
 	  else
@@ -368,8 +364,7 @@ print_operand_address (FILE * file, rtx addr)
 	{
 	  if (GET_CODE (ireg) == MULT)
 	    ireg = XEXP (ireg, 0);
-	  if (GET_CODE (ireg) != REG)
-	    abort ();
+	  gcc_assert (GET_CODE (ireg) == REG);
 	  fprintf (file, "[%s]", reg_names[REGNO (ireg)]);
 	}
       break;
@@ -406,7 +401,7 @@ rev_cond_name (rtx op)
       return "lssu";
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -432,12 +427,13 @@ vax_float_literal(rtx c)
   for (i = 0; i < 7; i++)
     {
       int x = 1 << i;
+      bool ok;
       REAL_VALUE_FROM_INT (s, x, 0, mode);
 
       if (REAL_VALUES_EQUAL (r, s))
 	return 1;
-      if (!exact_real_inverse (mode, &s))
-	abort ();
+      ok = exact_real_inverse (mode, &s);
+      gcc_assert (ok);
       if (REAL_VALUES_EQUAL (r, s))
 	return 1;
     }
