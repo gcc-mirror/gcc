@@ -1,5 +1,9 @@
 2005-05-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
+	* config/vax/vax.md: define_constant VAXens AP, FP, SP and PC
+	registers and use them (specifically the stack pointer).
+	* config/vax/vax.h: Use above defines right here.
+
 	* config/vax/vax.c: (override_options) Remove 'register' keyword.
 	(split_quadword_operands) Likewise. (rev_cond_name) Likewise.
 	(vax_float_literal) Likewise. (vax_rtx_costs) Remove trailing

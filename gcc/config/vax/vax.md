@@ -31,9 +31,13 @@
 ;; UNSPEC_VOLATILE usage:
 
 (define_constants
-  [(VUNSPEC_BLOCKAGE 0)     ; `blockage' insn to prevent scheduling across an
-			    ;   insn in the code.
+  [(VUNSPEC_BLOCKAGE 0)	    ; `blockage' insn to prevent scheduling across an
+			    ; insn in the code.
    (VUNSPEC_SYNC_ISTREAM 1) ; sequence of insns to sync the I-stream
+   (VAX_AP_REGNUM 12)	    ; Register 12 contains the argument pointer
+   (VAX_FP_REGNUM 13)	    ; Register 13 contains the frame pointer
+   (VAX_SP_REGNUM 14)	    ; Register 14 contains the stack pointer
+   (VAX_PC_REGNUM 15)	    ; Register 15 contains the program counter
   ]
 )
 
@@ -1196,8 +1200,8 @@
 (define_expand "call_pop"
   [(parallel [(call (match_operand:QI 0 "memory_operand" "")
 		    (match_operand:SI 1 "const_int_operand" ""))
-	      (set (reg:SI 14)
-		   (plus:SI (reg:SI 14)
+	      (set (reg:SI VAX_SP_REGNUM)
+		   (plus:SI (reg:SI VAX_SP_REGNUM)
 			    (match_operand:SI 3 "immediate_operand" "")))])]
   ""
 {
@@ -1213,8 +1217,8 @@
 (define_insn "*call_pop"
   [(call (match_operand:QI 0 "memory_operand" "m")
 	 (match_operand:SI 1 "const_int_operand" "n"))
-   (set (reg:SI 14) (plus:SI (reg:SI 14)
-			     (match_operand:SI 2 "immediate_operand" "i")))]
+   (set (reg:SI VAX_SP_REGNUM) (plus:SI (reg:SI VAX_SP_REGNUM)
+					(match_operand:SI 2 "immediate_operand" "i")))]
   ""
 {
   operands[1] = GEN_INT ((INTVAL (operands[1]) - 4) / 4);
@@ -1225,8 +1229,8 @@
   [(parallel [(set (match_operand 0 "" "")
 		   (call (match_operand:QI 1 "memory_operand" "")
 			 (match_operand:SI 2 "const_int_operand" "")))
-	      (set (reg:SI 14)
-		   (plus:SI (reg:SI 14)
+	      (set (reg:SI VAX_SP_REGNUM)
+		   (plus:SI (reg:SI VAX_SP_REGNUM)
 			    (match_operand:SI 4 "immediate_operand" "")))])]
   ""
 {
@@ -1243,8 +1247,8 @@
   [(set (match_operand 0 "" "")
 	(call (match_operand:QI 1 "memory_operand" "m")
 	      (match_operand:SI 2 "const_int_operand" "n")))
-   (set (reg:SI 14) (plus:SI (reg:SI 14)
-			     (match_operand:SI 3 "immediate_operand" "i")))]
+   (set (reg:SI VAX_SP_REGNUM) (plus:SI (reg:SI VAX_SP_REGNUM)
+					(match_operand:SI 3 "immediate_operand" "i")))]
   ""
   "*
 {
