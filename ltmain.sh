@@ -3272,7 +3272,6 @@ EOF
           :
         else
 	  # The command line is too long to link in one step, link piecewise.
-          $echo "creating reloadable object files..."
 
 	  # Save the value of $output and $libobjs because we want to
 	  # use them later.  If we have whole_archive_flag_spec, we
@@ -3286,6 +3285,7 @@ EOF
 	    save_libobjs=$libobjs
 	  fi
           save_output=$output
+	  output_la=`$echo "X$output" | $Xsed -e "s,^.*/,,"`
 
 	  # Clear the reloadable object creation command queue and
 	  # initialize k to one.
@@ -3295,63 +3295,87 @@ EOF
           delfiles=
           last_robj=
           k=1
-          output=$output_objdir/$save_output-${k}.$objext
-	  # Loop over the list of objects to be linked.
-          for obj in $save_libobjs
-          do
-            eval test_cmds=\"$reload_cmds $objlist $last_robj\"
-            if test "X$objlist" = X ||
-	       { len=`expr "X$test_cmds" : ".*"` &&
-                 test $len -le $max_cmd_len; }; then
-              objlist="$objlist $obj"
-            else
-	      # The command $test_cmds is almost too long, add a
-	      # command to the queue.
-              if test $k -eq 1 ; then
-	        # The first file doesn't have a previous command to add.
-                eval concat_cmds=\"$reload_cmds $objlist $last_robj\"
-              else
-	        # All subsequent reloadable object files will link in
-	        # the last one created.
-                eval concat_cmds=\"\$concat_cmds~$reload_cmds $objlist $last_robj\"
-              fi
-              last_robj=$output_objdir/$save_output-${k}.$objext
-              k=`expr $k + 1`
-              output=$output_objdir/$save_output-${k}.$objext
-              objlist=$obj
-              len=1
-            fi
-          done
-	  # Handle the remaining objects by creating one last
-	  # reloadable object file.  All subsequent reloadable object
-	  # files will link in the last one created.
-	  test -z "$concat_cmds" || concat_cmds=$concat_cmds~
-          eval concat_cmds=\"\${concat_cmds}$reload_cmds $objlist $last_robj\"
 
-	  # Set up a command to remove the reloadale object files
-	  # after they are used.
-          i=0
-          while test $i -lt $k
-          do
-            i=`expr $i + 1`
-            delfiles="$delfiles $output_objdir/$save_output-${i}.$objext"
-          done
+	  if test "$with_gnu_ld" = yes; then
+	    output=${output_objdir}/${output_la}.lnkscript
+	    $echo "creating GNU ld script: $output"
+	    $echo 'INPUT (' > $output
+	    for obj in $save_libobjs
+	    do
+	      $echo \""$obj"\" >> $output
+	    done
+	    $echo ')' >> $output
+	    delfiles="$delfiles $output"
+	  elif test "X$file_list_spec" != X; then
+	    output=${output_objdir}/${output_la}.lnk
+	    $echo "creating linker input file list: $output"
+	    : > $output
+	    for obj in $save_libobjs
+	    do
+	      $echo "$obj" >> $output
+	    done
+	    delfiles="$delfiles $output"
+	    output=\"$file_list_spec$output\"
+	  else
+	    $echo "creating reloadable object files..."
+	    output=$output_objdir/$save_output-${k}.$objext
+	    # Loop over the list of objects to be linked.
+	    for obj in $save_libobjs
+	    do
+	      eval test_cmds=\"$reload_cmds $objlist $last_robj\"
+	      if test "X$objlist" = X ||
+		 { len=`expr "X$test_cmds" : ".*"` &&
+		   test $len -le $max_cmd_len; }; then
+		objlist="$objlist $obj"
+	      else
+		# The command $test_cmds is almost too long, add a
+		# command to the queue.
+		if test $k -eq 1 ; then
+		  # The first file doesn't have a previous command to add.
+		  eval concat_cmds=\"$reload_cmds $objlist $last_robj\"
+		else
+		  # All subsequent reloadable object files will link in
+		  # the last one created.
+		  eval concat_cmds=\"\$concat_cmds~$reload_cmds $objlist $last_robj\"
+		fi
+		last_robj=$output_objdir/$save_output-${k}.$objext
+		k=`expr $k + 1`
+		output=$output_objdir/$save_output-${k}.$objext
+		objlist=$obj
+		len=1
+	      fi
+	    done
+	    # Handle the remaining objects by creating one last
+	    # reloadable object file.  All subsequent reloadable object
+	    # files will link in the last one created.
+	    test -z "$concat_cmds" || concat_cmds=$concat_cmds~
+	    eval concat_cmds=\"\${concat_cmds}$reload_cmds $objlist $last_robj\"
 
-          $echo "creating a temporary reloadable object file: $output"
+	    # Set up a command to remove the reloadale object files
+	    # after they are used.
+	    i=0
+	    while test $i -lt $k
+	    do
+	      i=`expr $i + 1`
+	      delfiles="$delfiles $output_objdir/$save_output-${i}.$objext"
+	    done
 
-	  # Loop through the commands generated above and execute them.
-          IFS="${IFS= 	}"; save_ifs="$IFS"; IFS='~'
-          for cmd in $concat_cmds; do
-            IFS="$save_ifs"
-	    eval cmd=\"$cmd\"
-            $show "$cmd"
-            $run eval "$cmd" || exit $?
-          done
-          IFS="$save_ifs"
+	    $echo "creating a temporary reloadable object file: $output"
 
-          libobjs=$output
+	    # Loop through the commands generated above and execute them.
+	    IFS="${IFS= 	}"; save_ifs="$IFS"; IFS='~'
+	    for cmd in $concat_cmds; do
+	      IFS="$save_ifs"
+	      eval cmd=\"$cmd\"
+	      $show "$cmd"
+	      $run eval "$cmd" || exit $?
+	    done
+	    IFS="$save_ifs"
+	  fi
+
+	  libobjs=$output
 	  # Restore the value of output.
-          output=$save_output
+	  output=$save_output
 
 	  if test -n "$convenience" && test -n "$whole_archive_flag_spec"; then
 	    eval libobjs=\"\$libobjs $whole_archive_flag_spec\"
@@ -3364,20 +3388,20 @@ EOF
 	    cmds=$archive_expsym_cmds
 	  else
 	    cmds=$archive_cmds
-          fi
+	  fi
 
 	  # Append the command to remove the reloadable object files
 	  # to the just-reset $cmds.
-          eval cmds=\"\$cmds~$rm $delfiles\"
-        fi
-        IFS="${IFS= 	}"; save_ifs="$IFS"; IFS='~'
-        for cmd in $cmds; do
-          IFS="$save_ifs"
+	  eval cmds=\"\$cmds~$rm $delfiles\"
+	fi
+	IFS="${IFS= 	}"; save_ifs="$IFS"; IFS='~'
+	for cmd in $cmds; do
+	  IFS="$save_ifs"
 	  eval cmd=\"$cmd\"
-          $show "$cmd"
-          $run eval "$cmd" || exit $?
-        done
-        IFS="$save_ifs"
+	  $show "$cmd"
+	  $run eval "$cmd" || exit $?
+	done
+	IFS="$save_ifs"
 
 	# Restore the uninstalled library and exit
 	if test "$mode" = relink; then

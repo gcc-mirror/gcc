@@ -1,3 +1,14 @@
+2005-05-13  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+	* ltconfig: Define file_list_spec.  Pass file_list_spec and
+	with_gnu_ld to libtool.
+	* ltcf-c.sh (aix[45]): Define file_list_spec.
+	* ltcf-cxx.sh (aix[45]): Same.
+	* ltcf-gcj.sh (aix[45]): Same.
+	* ltmain.sh: If command exceeds max_cmd_len and file_list_spec
+	exists, write list of input files to temporary file.
+
 2005-05-08  Matt Kraai  <kraai@ftbfs.org>
 
 	* README.SCO: Update the URL.

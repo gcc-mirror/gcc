@@ -128,6 +128,7 @@ case $host_os in
     hardcode_direct=yes
     hardcode_libdir_separator=':'
     link_all_deplibs=yes
+    file_list_spec='${wl}-f,'
     # When large executables or shared objects are built, AIX ld can
     # have problems creating the table of contents.  If linking a library
     # or program results in "error TOC overflow" add -mminimal-toc to
