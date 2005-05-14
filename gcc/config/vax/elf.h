@@ -1,6 +1,6 @@
 /* Target definitions for GNU compiler for VAX using ELF
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
-   Contributed by Matt Thomas (matt@3am-software.com)
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Contributed by Matt Thomas <matt@3am-software.com>
 
 This file is part of GCC.
 
@@ -26,9 +26,9 @@ Boston, MA 02111-1307, USA.  */
 #undef REGISTER_NAMES
 #define REGISTER_PREFIX "%"
 #define REGISTER_NAMES \
-{"%r0", "%r1",  "%r2",  "%r3", "%r4", "%r5", "%r6", "%r7", \
- "%r8", "%r9", "%r10", "%r11", "%ap", "%fp", "%sp", "%pc"}
-  
+  { "%r0", "%r1",  "%r2",  "%r3", "%r4", "%r5", "%r6", "%r7", \
+    "%r8", "%r9", "%r10", "%r11", "%ap", "%fp", "%sp", "%pc", }
+
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"
 
@@ -52,13 +52,13 @@ Boston, MA 02111-1307, USA.  */
 /* Place the top of the stack for the DWARF2 EH stackadj value.  */
 #define EH_RETURN_STACKADJ_RTX						\
   gen_rtx_MEM (SImode,							\
-	       plus_constant (gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM), \
+	       plus_constant (gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),\
 			      -4))
 
 /* Simple store the return handler into the call frame.  */
 #define EH_RETURN_HANDLER_RTX						\
   gen_rtx_MEM (Pmode,							\
-	       plus_constant (gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM), \
+	       plus_constant (gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),\
 			      16))
 
 
@@ -71,19 +71,20 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE)
 
 #undef OVERRIDE_OPTIONS
-#define OVERRIDE_OPTIONS			\
-  do						\
-    {						\
-      /* Do generic VAX overrides.  */		\
-      override_options ();			\
-						\
-      /* Turn off function CSE if we're 	\
-	 doing PIC.  */				\
-      if (flag_pic) flag_no_function_cse = 1;	\
-    }						\
+#define OVERRIDE_OPTIONS				\
+  do							\
+    {							\
+      /* Do generic VAX overrides.  */			\
+      override_options ();				\
+							\
+      /* Turn off function CSE if we're doing PIC.  */	\
+      if (flag_pic)					\
+	flag_no_function_cse = 1;			\
+    }							\
   while (0)
 
 /* VAX ELF is always gas; override the generic VAX ASM_SPEC.  */
 
 #undef ASM_SPEC
 #define ASM_SPEC ""
+
