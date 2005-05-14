@@ -39,4 +39,4 @@ int k()
   if (++z > 10)
     _exit(0);
   k();
-}
+}             /* { dg-warning "control reaches" } */
