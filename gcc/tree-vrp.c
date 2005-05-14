@@ -1204,6 +1204,9 @@ compare_range_with_value (enum tree_code comp, value_range *vr, tree val)
 	  else if (cmp == -1 || cmp == 1 || cmp == 2)
 	    return boolean_false_node;
 	}
+      else if (compare_values (val, vr->min) == -1
+	       || compare_values (vr->max, val) == -1)
+	return boolean_false_node;
 
       return NULL_TREE;
     }

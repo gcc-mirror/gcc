@@ -3,6 +3,11 @@
 	* tree-optimize.c (init_tree_optimization_passes): Move
 	pass_cd_dce in place of the last pass_dce.
 
+	PR tree-optimization/21563
+	* tree-vrp.c (compare_value): Return boolean_false_node when
+	SSA_NAME in "if (SSA_NAME == CST)" is strictly smaller than or
+	strictly larger than CST.
+
 2005-05-14  Nathan Sidwell  <nathan@codesourcery.com>
 	    Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
