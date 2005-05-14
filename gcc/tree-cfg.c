@@ -5630,14 +5630,6 @@ execute_warn_function_return (void)
   edge e;
   edge_iterator ei;
 
-  if (warn_missing_noreturn
-      && !TREE_THIS_VOLATILE (cfun->decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0
-      && !lang_hooks.function.missing_noreturn_ok_p (cfun->decl))
-    warning (0, "%Jfunction might be possible candidate for "
-	     "attribute %<noreturn%>",
-	     cfun->decl);
-
   /* If we have a path to EXIT, then we do return.  */
   if (TREE_THIS_VOLATILE (cfun->decl)
       && EDGE_COUNT (EXIT_BLOCK_PTR->preds) > 0)
@@ -5730,6 +5722,37 @@ struct tree_opt_pass pass_warn_function_return =
   NULL,					/* name */
   NULL,					/* gate */
   execute_warn_function_return,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
+
+/* Emit noreturn warnings.  */
+
+static void
+execute_warn_function_noreturn (void)
+{
+  if (warn_missing_noreturn
+      && !TREE_THIS_VOLATILE (cfun->decl)
+      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0
+      && !lang_hooks.function.missing_noreturn_ok_p (cfun->decl))
+    warning (0, "%Jfunction might be possible candidate for "
+	     "attribute %<noreturn%>",
+	     cfun->decl);
+}
+
+struct tree_opt_pass pass_warn_function_noreturn =
+{
+  NULL,					/* name */
+  NULL,					/* gate */
+  execute_warn_function_noreturn,	/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
