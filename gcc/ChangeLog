@@ -1,5 +1,9 @@
 2005-05-14  Jan Hubicka  <jh@suse.cz>
 
+	Patch by Richard Henderson:
+	* tree-eh.c (tree_can_throw_internal, tree_can_throw_external):
+	Handle RESX expressions properly.
+
 	* tree-eh.c (record_stmt_eh_region): Use add_stmt_to_eh_region.
 	(add_stmt_to_eh_region_fn): Nest into CALL_EXPR.
 	(remove_stmt_from_eh_region_fn): Likewise.
