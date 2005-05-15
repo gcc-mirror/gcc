@@ -1800,7 +1800,6 @@ create_label_decl (tree name)
 		     TREE_TYPE (return_address_type_node));
   DECL_CONTEXT (decl) = current_function_decl;
   DECL_IGNORED_P (decl) = 1;
-  DECL_ARTIFICIAL (decl) = 1;
   return decl;
 }
 
