@@ -288,7 +288,7 @@ proc compat-execute { src1 sid use_alt } {
 	set testcase [string range "$src1" [string length "$srcdir/"] end]
     }
     if {[string first "$tmpdir/" "$testcase"] == 0} {
-	set testcase [string range "$src1" [string length "$tmpdir/"] end]
+	set testcase [string range "$testcase" [string length "$tmpdir/"] end]
     }
     regsub "_main.*" $testcase "" testcase
     # Set up the base name of executable files so they'll be unique.
