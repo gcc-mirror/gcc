@@ -184,13 +184,13 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
 #endif
   // Use dladdr() to determine in which binary the address IP resides.
 #if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
-  extern char **_Jv_argv;
   Dl_info info;
   jstring binaryName = NULL;
+  const char *argv0 = _Jv_GetSafeArg(0);
 
   void *ip = frame->ip;
   _Unwind_Ptr offset = 0;
-  
+
   if (dladdr (ip, &info))
     {
       if (info.dli_fname)
@@ -199,7 +199,7 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
         return;
 
       // addr2line expects relative addresses for shared libraries.
-      if (strcmp (info.dli_fname, _Jv_argv[0]) == 0)
+      if (strcmp (info.dli_fname, argv0) == 0)
         offset = (_Unwind_Ptr) ip;
       else
         offset = (_Unwind_Ptr) ip - (_Unwind_Ptr) info.dli_fbase;

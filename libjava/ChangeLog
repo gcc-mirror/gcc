@@ -1,3 +1,7 @@
+2005-05-15  Tom Tromey  <tromey@redhat.com>
+
+	* stacktrace.cc (getLineNumberForFrame): Use _Jv_GetSafeArg.
+
 2005-05-13  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/21557
