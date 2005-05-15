@@ -1,5 +1,11 @@
 2005-05-15  Tom Tromey  <tromey@redhat.com>
 
+	PR java/21519:
+	* testsuite/libjava.compile/pr21519.java: New file.
+	* testsuite/libjava.compile/pr21519.no-link: New file.
+
+2005-05-15  Tom Tromey  <tromey@redhat.com>
+
 	* stacktrace.cc (getLineNumberForFrame): Use _Jv_GetSafeArg.
 
 2005-05-13  Bryce McKinlay  <mckinlay@redhat.com>
