@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "../io/io.h"
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -64,15 +67,15 @@ symlnk_i4_sub (char *path1, char *path2, GFC_INTEGER_4 *status,
   /* Make a null terminated copy of the strings.  */
   str1 = gfc_alloca (path1_len + 1);
   memcpy (str1, path1, path1_len);
-  str1[path1_len] = '\0'; 
+  str1[path1_len] = '\0';
 
   str2 = gfc_alloca (path2_len + 1);
   memcpy (str2, path2, path2_len);
-  str2[path2_len] = '\0'; 
+  str2[path2_len] = '\0';
 
   val = symlink (str1, str2);
 
-  if (status != NULL) 
+  if (status != NULL)
     *status = (val == 0) ? 0 : errno;
 }
 iexport(symlnk_i4_sub);
@@ -97,15 +100,15 @@ symlnk_i8_sub (char *path1, char *path2, GFC_INTEGER_8 *status,
   /* Make a null terminated copy of the strings.  */
   str1 = gfc_alloca (path1_len + 1);
   memcpy (str1, path1, path1_len);
-  str1[path1_len] = '\0'; 
+  str1[path1_len] = '\0';
 
   str2 = gfc_alloca (path2_len + 1);
   memcpy (str2, path2, path2_len);
-  str2[path2_len] = '\0'; 
+  str2[path2_len] = '\0';
 
   val = symlink (str1, str2);
 
-  if (status != NULL) 
+  if (status != NULL)
     *status = (val == 0) ? 0 : errno;
 }
 iexport(symlnk_i8_sub);

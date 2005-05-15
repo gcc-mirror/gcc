@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -40,12 +40,11 @@ Boston, MA 02111-1307, USA.  */
 static int
 compare0 (const char *s1, int s1_len, const char *s2)
 {
-  int i;
   int len;
 
   /* Strip trailing blanks from the Fortran string.  */
-  len = fstrlen(s1, s1_len);
-  return strncasecmp(s1,s2,len) == 0;
+  len = fstrlen (s1, s1_len);
+  return strncasecmp (s1, s2, len) == 0;
 }
 
 

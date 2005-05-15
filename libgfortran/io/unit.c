@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -288,7 +288,6 @@ is_internal_unit ()
 void
 init_units (void)
 {
-  gfc_offset m, n;
   gfc_unit *u;
   int i;
 
