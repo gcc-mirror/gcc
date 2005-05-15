@@ -1627,6 +1627,11 @@ st_write_done (void)
 /* Receives the scalar information for namelist objects and stores it
    in a linked list of namelist_info types.  */
 
+extern void st_set_nml_var (void * ,char * ,
+			    GFC_INTEGER_4 ,gfc_charlen_type ,GFC_INTEGER_4);
+export_proto(st_set_nml_var);
+
+
 void
 st_set_nml_var (void * var_addr, char * var_name, GFC_INTEGER_4 len,
 		gfc_charlen_type string_length, GFC_INTEGER_4 dtype)
@@ -1674,6 +1679,9 @@ st_set_nml_var (void * var_addr, char * var_name, GFC_INTEGER_4 len,
 }
 
 /* Store the dimensional information for the namelist object.  */
+extern void st_set_nml_var_dim (GFC_INTEGER_4, GFC_INTEGER_4,
+				GFC_INTEGER_4 ,GFC_INTEGER_4);
+export_proto(st_set_nml_var_dim);
 
 void
 st_set_nml_var_dim (GFC_INTEGER_4 n_dim, GFC_INTEGER_4 stride,
@@ -1690,11 +1698,3 @@ st_set_nml_var_dim (GFC_INTEGER_4 n_dim, GFC_INTEGER_4 stride,
   nml->dim[n].lbound = (ssize_t)lbound;
   nml->dim[n].ubound = (ssize_t)ubound;
 }
-
-extern void st_set_nml_var (void * ,char * ,
-			    GFC_INTEGER_4 ,gfc_charlen_type ,GFC_INTEGER_4);
-export_proto(st_set_nml_var);
-
-extern void st_set_nml_var_dim (GFC_INTEGER_4, GFC_INTEGER_4,
-				GFC_INTEGER_4 ,GFC_INTEGER_4);
-export_proto(st_set_nml_var_dim);
