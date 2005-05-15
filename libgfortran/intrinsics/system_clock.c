@@ -1,5 +1,5 @@
 /* Implementation of the SYSTEM_CLOCK intrinsic.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -104,9 +104,13 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
     }
   else
     {
-      if (count != NULL) *count = - GFC_INTEGER_4_HUGE;
-      if (count_rate != NULL) *count_rate = 0;
-      if (count_max != NULL) *count_max = 0;
+      if (count != NULL)
+	*count = - GFC_INTEGER_4_HUGE;
+      if (count_rate != NULL)
+	*count_rate = 0;
+      if (count_max != NULL)
+	*count_max = 0;
+      return;
     }
 #elif defined(HAVE_TIME_H)
   time_t t, t1;
@@ -118,7 +122,7 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
       cnt = - GFC_INTEGER_4_HUGE;
       mx = 0;
     }
-  else if (t0 == (time_t) -2) 
+  else if (t0 == (time_t) -2)
     t0 = t1;
   else
     {
@@ -131,9 +135,12 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
   cnt = - GFC_INTEGER_4_HUGE;
   mx = 0;
 #endif
-  if (count != NULL) *count = cnt;
-  if (count_rate != NULL) *count_rate = TCK;
-  if (count_max != NULL) *count_max = mx;
+  if (count != NULL)
+    *count = cnt;
+  if (count_rate != NULL)
+    *count_rate = TCK;
+  if (count_max != NULL)
+    *count_max = mx;
 }
 
 
@@ -180,9 +187,14 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
     }
   else
     {
-      if (count != NULL) *count = - GFC_INTEGER_8_HUGE;
-      if (count_rate != NULL) *count_rate = 0;
-      if (count_max != NULL) *count_max = 0;
+      if (count != NULL)
+	*count = - GFC_INTEGER_8_HUGE;
+      if (count_rate != NULL)
+	*count_rate = 0;
+      if (count_max != NULL)
+	*count_max = 0;
+
+      return;
     }
 #elif defined(HAVE_TIME_H)
   time_t t, t1;
@@ -194,7 +206,7 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
       cnt = - GFC_INTEGER_8_HUGE;
       mx = 0;
     }
-  else if (t0 == (time_t) -2) 
+  else if (t0 == (time_t) -2)
     t0 = t1;
   else
     {

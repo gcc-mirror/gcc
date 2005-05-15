@@ -1490,7 +1490,7 @@ nml_write_obj (namelist_info * obj, index_type offset,
 		{
 		  strcat (ext_name, dim_i ? "" : "(");
 		  clen = strlen (ext_name);
-		  st_sprintf (ext_name + clen, "%ld", (long) obj->ls[dim_i].idx);
+		  st_sprintf (ext_name + clen, "%d", (int) obj->ls[dim_i].idx);
 		  strcat (ext_name, (dim_i == obj->var_rank - 1) ? ")" : ",");
 		}
 
