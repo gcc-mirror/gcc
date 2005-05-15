@@ -605,7 +605,7 @@ FIX_PROC_HEAD( wrap_fix )
        *  *both* the fix name and the file name.
        */
       size_t ln = strlen( filname ) + strlen( p_fixd->fix_name ) + 14;
-      char*  pz = xmalloc( ln );
+      char*  pz = XNEWVEC (char, ln);
       pz_name = pz;
       sprintf( pz, "FIXINC_WRAP_%s-%s", filname, p_fixd->fix_name );
 
@@ -770,7 +770,7 @@ main( int argc, char** argv )
       return EXIT_FAILURE;
     }
 
-  pz_tmptmp = xmalloc (strlen (argv[4]) + 5);
+  pz_tmptmp = XNEWVEC (char, strlen (argv[4]) + 5);
   strcpy( pz_tmptmp, argv[4] );
 
   /* Don't lose because "12345678" and "12345678X" map to the same

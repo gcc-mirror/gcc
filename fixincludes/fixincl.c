@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "fixlib.h"
 
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #if defined( HAVE_MMAP_FILE )
 #include <sys/mman.h>
@@ -451,7 +452,7 @@ run_compiles (void)
 {
   tFixDesc *p_fixd = fixDescList;
   int fix_ct = FIX_COUNT;
-  regex_t *p_re = xcalloc (REGEX_COUNT, sizeof (regex_t));
+  regex_t *p_re = XCNEWVEC (regex_t, REGEX_COUNT);
 
   /*  Make sure compile_re does not stumble across invalid data */
 
@@ -866,7 +867,7 @@ fix_with_system (tFixDesc* p_fixd,
               + strlen (pz_temp_file);
 
       /* Allocate something sure to be big enough for our purposes */
-      pz_cmd = xmalloc (argsize);
+      pz_cmd = XNEWVEC (char, argsize);
       strcpy (pz_cmd, pz_orig_dir);
       pz_scan = pz_cmd + strlen (pz_orig_dir);
 
@@ -933,7 +934,7 @@ fix_with_system (tFixDesc* p_fixd,
         }
 
       /* Estimated buffer size we will need.  */
-      pz_scan = pz_cmd = xmalloc (argsize);
+      pz_scan = pz_cmd = XNEWVEC (char, argsize);
       /* How much of it do we allot to the program name and its
          arguments.  */
       parg_size = argsize - parg_size;
@@ -1020,7 +1021,7 @@ start_fixer (int read_fd, tFixDesc* p_fixd, char* pz_fix_file)
   else
     {
       tSCC z_cmd_fmt[] = "file='%s'\n%s";
-      pz_cmd = xmalloc (strlen (p_fixd->patch_args[2])
+      pz_cmd = XNEWVEC (char, strlen (p_fixd->patch_args[2])
 			+ sizeof (z_cmd_fmt) + strlen (pz_fix_file));
       sprintf (pz_cmd, z_cmd_fmt, pz_fix_file, p_fixd->patch_args[2]);
       pz_cmd_save = p_fixd->patch_args[2];
