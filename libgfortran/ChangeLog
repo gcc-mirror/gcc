@@ -1,5 +1,11 @@
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
+	* intrinsics/system_clock.c (system_clock_4, system_clock_8): Add
+	missing returns, reformat a bit.
+
+	* io/write.c (nml_write_obj): Use %d again - and cast to int,
+	st_sprintf does not handle %ld.
+
 	* io/unit.c (is_internal_unit): Add void as parameter list.
 
 	* io/transfer.c: Move prototype declarations before the functions.
