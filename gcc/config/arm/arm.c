@@ -12922,7 +12922,6 @@ thumb_unexpanded_epilogue (void)
   int high_regs_pushed = 0;
   int had_to_push_lr;
   int size;
-  int mode;
 
   if (return_used_this_function)
     return "";
