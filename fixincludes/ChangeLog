@@ -1,3 +1,13 @@
+2005-05-15  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* fixlib.c (load_file_data): Use XRESIZVEC in lieu of xrealloc.
+	* server.c (load_data): Likewise.
+	(run_shell): Use XCNEW (char) in lieu of xcalloc (1, 1).
+	* fixincl.c: #include <sys/wait.h>
+	(run_compiles): Use XCNEWVEC instead of xcalloc.
+	(fix_with_system, start_fixer): Use XNEWVEC instead of xmalloc.
+	* fixfixes.c (FIX_PROC_HEAD, main): Likewise.
+
 2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (stdio_stdarg_h, stdio_va_list): Bypass on

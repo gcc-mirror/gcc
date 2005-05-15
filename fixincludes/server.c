@@ -83,7 +83,7 @@ load_data (FILE* fp)
   t_bool got_done = BOOL_FALSE;
 
   text_size = sizeof (z_line) * 2;
-  pz_scan = pz_text = xmalloc (text_size);
+  pz_scan = pz_text = XNEWVEC (char, text_size);
 
   for (;;)
     {
@@ -109,7 +109,7 @@ load_data (FILE* fp)
           size_t off = (size_t) (pz_scan - pz_text);
 	  
           text_size += 4096;
-          pz_text = xrealloc (pz_text, text_size);
+          pz_text = XRESIZEVEC (char, pz_text, text_size);
           pz_scan = pz_text + off;
         }
     }
@@ -124,7 +124,7 @@ load_data (FILE* fp)
   while ((pz_scan > pz_text) && ISSPACE (pz_scan[-1]))
     pz_scan--;
   *pz_scan = NUL;
-  return xrealloc (pz_text, strlen (pz_text) + 1);
+  return XRESIZEVEC (char, pz_text, strlen (pz_text) + 1);
 }
 
 
@@ -260,7 +260,7 @@ run_shell (const char* pz_cmd)
   if (server_id <= 0)
     {
       fprintf (stderr, zNoServer, pz_cmd);
-      return xcalloc (1, 1);
+      return XCNEW (char);
     }
 
   /*  Make sure the process will pay attention to us, send the
@@ -275,7 +275,7 @@ run_shell (const char* pz_cmd)
   if (server_id == NULLPROCESS)
     {
       fprintf (stderr, zNoServer, pz_cmd);
-      return xcalloc (1, 1);
+      return XCNEW (char);
     }
 
   /*  Now try to read back all the data.  If we fail due to either a
@@ -295,7 +295,7 @@ run_shell (const char* pz_cmd)
 
         fprintf (stderr, "CLOSING SHELL SERVER - command failure:\n\t%s\n",
                  pz_cmd);
-        pz = xcalloc (1, 1);
+        pz = XCNEW (char);
       }
 #ifdef DEBUG
     fprintf( stderr, "run_shell command success:  %s\n", pz );
