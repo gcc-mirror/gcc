@@ -273,7 +273,7 @@ calculate_G_format (fnode *f, double value, int len, int *num_blank)
 static void
 output_float (fnode *f, double value, int len)
 {
-  /* This must be large enough to accurately hold any value.  */ 
+  /* This must be large enough to accurately hold any value.  */
   char buffer[32];
   char *out;
   char *digits;
@@ -324,7 +324,7 @@ output_float (fnode *f, double value, int len)
       if (edigits < 2)
 	edigits = 2;
     }
-  
+
   if (ft == FMT_F || ft == FMT_EN
       || ((ft == FMT_D || ft == FMT_E) && g.scale_factor != 0))
     {
@@ -344,7 +344,7 @@ output_float (fnode *f, double value, int len)
     }
 
   sprintf (buffer, "%+-#31.*e", ndigits - 1, value);
-  
+
   /* Check the resulting string has punctuation in the correct places.  */
   if (buffer[2] != '.' || buffer[ndigits + 2] != 'e')
       internal_error ("printf is broken");
@@ -514,7 +514,7 @@ output_float (fnode *f, double value, int len)
       edigits = 1;
       for (i = abs (e); i >= 10; i /= 10)
 	edigits++;
-      
+
       if (f->u.real.e < 0)
 	{
 	  /* Width not specified.  Must be no more than 3 digits.  */
@@ -562,7 +562,7 @@ output_float (fnode *f, double value, int len)
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);
   if (sign != SIGN_NONE)
     nblanks--;
-  
+
   /* Check the value fits in the specified field width.  */
   if (nblanks < 0 || edigits == -1)
     {
@@ -640,7 +640,7 @@ output_float (fnode *f, double value, int len)
       ndigits -= i;
       out += nafter;
     }
-  
+
   /* Output the exponent.  */
   if (expchar)
     {
@@ -707,22 +707,22 @@ write_float (fnode *f, const char *source, int len)
 	    }
 
 	  memset(p, ' ', nb);
-	  res = !isnan (n); 
+	  res = !isnan (n);
 	  if (res != 0)
 	    {
-	      if (signbit(n))   
+	      if (signbit(n))
 		fin = '-';
 	      else
 		fin = '+';
 
 	      if (nb > 7)
-		memcpy(p + nb - 8, "Infinity", 8); 
+		memcpy(p + nb - 8, "Infinity", 8);
 	      else
 		memcpy(p + nb - 3, "Inf", 3);
 	      if (nb < 8 && nb > 3)
 		p[nb - 4] = fin;
 	      else if (nb > 8)
-		p[nb - 9] = fin; 
+		p[nb - 9] = fin;
 	    }
 	  else
 	    memcpy(p + nb - 3, "NaN", 3);
@@ -1430,7 +1430,7 @@ nml_write_obj (namelist_info * obj, index_type offset,
 	    }
 	  num++;
 
-	  /* Output the data, if an intrinsic type, or recurse into this 
+	  /* Output the data, if an intrinsic type, or recurse into this
 	     routine to treat derived types.  */
 
 	  switch (obj->type)
@@ -1466,10 +1466,10 @@ nml_write_obj (namelist_info * obj, index_type offset,
 
 	      /* To treat a derived type, we need to build two strings:
 		 ext_name = the name, including qualifiers that prepends
-			    component names in the output - passed to 
+			    component names in the output - passed to
 			    nml_write_obj.
 		 obj_name = the derived type name with no qualifiers but %
-			    appended.  This is used to identify the 
+			    appended.  This is used to identify the
 			    components.  */
 
 	      /* First ext_name => get length of all possible components  */
@@ -1558,8 +1558,8 @@ obj_loop:
 }
 
 /* This is the entry function for namelist writes.  It outputs the name
-   of the namelist and iterates through the namelist by calls to 
-   nml_write_obj.  The call below has dummys in the arguments used in 
+   of the namelist and iterates through the namelist by calls to
+   nml_write_obj.  The call below has dummys in the arguments used in
    the treatment of derived types.  */
 
 void
@@ -1617,4 +1617,3 @@ namelist_write (void)
 }
 
 #undef NML_DIGITS
-

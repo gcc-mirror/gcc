@@ -92,12 +92,12 @@ matmul_c4 (gfc_array_c4 * retarray, gfc_array_c4 * a, gfc_array_c4 * b)
           retarray->dim[0].lbound = 0;
           retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
           retarray->dim[0].stride = 1;
-          
+
           retarray->dim[1].lbound = 0;
           retarray->dim[1].ubound = b->dim[1].ubound - b->dim[1].lbound;
           retarray->dim[1].stride = retarray->dim[0].ubound+1;
         }
-          
+
       retarray->data
 	= internal_malloc_size (sizeof (GFC_COMPLEX_4) * size0 ((array_t *) retarray));
       retarray->base = 0;
@@ -157,7 +157,7 @@ matmul_c4 (gfc_array_c4 * retarray, gfc_array_c4 * a, gfc_array_c4 * b)
       /* bystride should never be used for 1-dimensional b.
 	 in case it is we want it to cause a segfault, rather than
 	 an incorrect result. */
-      bystride = 0xDEADBEEF; 
+      bystride = 0xDEADBEEF;
       ycount = 1;
     }
   else

@@ -94,7 +94,7 @@ etime (gfc_array_r4 *t)
   return val;
 }
 
-/* LAPACK's test programs declares ETIME external, therefore we 
+/* LAPACK's test programs declares ETIME external, therefore we
    need this.  */
 
 extern GFC_REAL_4 etime_ (GFC_REAL_4 *t);
