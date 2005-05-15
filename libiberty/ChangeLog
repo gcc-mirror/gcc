@@ -4,6 +4,9 @@
 	braces.  Minor wording fixes.  Use --- for em-dash.  Use
 	@enumerate in enumerated lists.
 
+	* fopen_unlocked.c: Enclose multi-word data types in @deftypefn in
+	braces.
+
 2005-05-11  Eli Zaretskii  <eliz@gnu.org>
 
 	* pex-djgpp.c: Include string.h, fcntl.h, unistd.h, and
