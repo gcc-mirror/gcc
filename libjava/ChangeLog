@@ -1,5 +1,9 @@
 2005-05-15  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/String.java (startsWith): Fixed javadoc.
+
+2005-05-15  Tom Tromey  <tromey@redhat.com>
+
 	PR java/21519:
 	* testsuite/libjava.compile/pr21519.java: New file.
 	* testsuite/libjava.compile/pr21519.no-link: New file.
