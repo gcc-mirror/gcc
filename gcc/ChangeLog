@@ -1,3 +1,9 @@
+2005-05-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_output_mi_thunk): Check cfun->cfg instead
+	of basic_block_info.  Call init_flow and find_basic_blocks
+	before dbr_schedule if needed.
+
 2005-05-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-optimize.c (init_tree_optimization_passes): Move
