@@ -597,13 +597,13 @@ internal_proto(list_formatted_read);
 extern void finish_list_read (void);
 internal_proto(finish_list_read);
 
-extern void init_at_eol();
+extern void init_at_eol (void);
 internal_proto(init_at_eol);
 
-extern void namelist_read();
+extern void namelist_read (void);
 internal_proto(namelist_read);
 
-extern void namelist_write();
+extern void namelist_write (void);
 internal_proto(namelist_write);
 
 /* write.c */

@@ -1,5 +1,41 @@
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
+	* runtime/normalize.c (almostone_r4, almostone_r8): Fix parameter
+	list.
+
+	* intrinsics/random.c (KISS_DEFAULT_SEED): Remove extra semicolon.
+
+	* io/transfer.c: Do not use empty initializers for global objects.
+	Add missing initializers.
+
+	* io/lock.c: Do not use empty initializers for global objects.
+
+	* io/close.c: Add missing initializers.
+
+	* runtime/environ.c: Add missing initializers. Do not use empty
+	initializers for global object.
+	(init_string): Mark argument as unused.
+
+	* runtime/main.c (cleanup): Fix parameter list.
+
+	* io/io.h: Fix parameter lists.
+
+	* m4/transpose.m4, m4/matmul.m4: Fix pointer cast to avoid
+	warning.
+
+	* generated/transpose_c4.c, generated/transpose_c8.c,
+	generated/transpose_i4.c, generated/transpose_i8.c,
+	generated/matmul_c4.c, generated/matmul_c8.c,
+	generated/matmul_i4.c, generated/matmul_i8.c,
+	generated/matmul_r4.c, generated/matmul_r8.c: Regenerated.
+
+	* io/write.c (nml_write_obj): Fix 64-bit problem.
+
+	* io/list_read.c (nml_get_obj_data): Add missing braces around
+	initializer to avoid warnings.
+
+	* intrinsics/etime.c (etime_sub): Remove unused variable.
+
 	* intrinsics/chdir.c, intrinsics/getlog.c, intrinsics/link.c,
 	intrinsics/symlnk.c, intrinsics/perror.c: Include <string.h> for
 	prototypes.

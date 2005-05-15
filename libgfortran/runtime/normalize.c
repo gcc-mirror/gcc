@@ -1,5 +1,5 @@
 /* Nelper routines to convert from integer to real.
-   Copyright 2004 Free Software Foundation, Inc.
+   Copyright 2004, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* Return the largest value less than one representable in a REAL*4.  */
 
 static inline GFC_REAL_4
-almostone_r4 ()
+almostone_r4 (void)
 {
 #ifdef HAVE_NEXTAFTERF
   return nextafterf (1.0f, 0.0f);
@@ -65,7 +65,7 @@ almostone_r4 ()
 /* Return the largest value less than one representable in a REAL*8.  */
 
 static inline GFC_REAL_8
-almostone_r8 ()
+almostone_r8 (void)
 {
 #ifdef HAVE_NEXTAFTER
   return nextafter (1.0, 0.0);

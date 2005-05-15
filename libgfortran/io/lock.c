@@ -33,11 +33,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 #include "io.h"
 
-st_parameter ioparm = { };
+st_parameter ioparm;
 iexport_data(ioparm);
 
-namelist_info *ionml = 0;
-global_t g = { };
+namelist_info *ionml;
+global_t g;
 
 
 /* library_start()-- Called with a library call is entered.  */

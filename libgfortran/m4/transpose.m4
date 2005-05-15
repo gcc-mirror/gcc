@@ -64,7 +64,7 @@ transpose_`'rtype_code (rtype * ret, rtype * source)
       ret->dim[1].ubound = source->dim[0].ubound - source->dim[0].lbound;
       ret->dim[1].stride = ret->dim[0].ubound+1;
 
-      ret->data = internal_malloc_size (sizeof (rtype_name) * size0 (ret));
+      ret->data = internal_malloc_size (sizeof (rtype_name) * size0 ((array_t *) ret));
       ret->base = 0;
     }
 

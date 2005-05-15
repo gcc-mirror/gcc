@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
  * but other variables are checked during execution of the user's
  * program. */
 
-options_t options = { };
+options_t options;
 
 
 typedef struct variable
@@ -326,7 +326,7 @@ show_sep (variable * v)
 
 
 static void
-init_string (variable * v)
+init_string (variable * v __attribute__ ((unused)))
 {
 }
 
@@ -361,7 +361,7 @@ static choice rounding[] = {
   {"UP", FP_ROUND_UP},
   {"DOWN", FP_ROUND_DOWN},
   {"ZERO", FP_ROUND_ZERO},
-  {NULL}
+  {NULL, 0}
 };
 
 static choice precision[] =
@@ -369,14 +369,14 @@ static choice precision[] =
   { "24", 1},
   { "53", 2},
   { "64", 0},
-  { NULL}
+  { NULL, 0}
 };
 
 static choice signal_choices[] =
 {
   { "IGNORE", 1},
   { "ABORT", 0},
-  { NULL}
+  { NULL, 0}
 };
 
 
@@ -463,98 +463,100 @@ show_signal (variable * v)
 static variable variable_table[] = {
   {"GFORTRAN_STDIN_UNIT", 5, &options.stdin_unit, init_integer, show_integer,
    "Unit number that will be preconnected to standard input\n"
-   "(No preconnection if negative)"},
+   "(No preconnection if negative)", 0},
 
   {"GFORTRAN_STDOUT_UNIT", 6, &options.stdout_unit, init_integer,
    show_integer,
    "Unit number that will be preconnected to standard output\n"
-   "(No preconnection if negative)"},
+   "(No preconnection if negative)", 0},
 
   {"GFORTRAN_STDERR_UNIT", 0, &options.stderr_unit, init_integer,
    show_integer,
    "Unit number that will be preconnected to standard error\n"
-   "(No preconnection if negative)"},
+   "(No preconnection if negative)", 0},
 
   {"GFORTRAN_USE_STDERR", 1, &options.use_stderr, init_boolean,
    show_boolean,
-   "Sends library output to standard error instead of standard output."},
+   "Sends library output to standard error instead of standard output.", 0},
 
   {"GFORTRAN_TMPDIR", 0, NULL, init_string, show_string,
    "Directory for scratch files.  Overrides the TMP environment variable\n"
-   "If TMP is not set " DEFAULT_TEMPDIR " is used."},
+   "If TMP is not set " DEFAULT_TEMPDIR " is used.", 0},
 
   {"GFORTRAN_UNBUFFERED_ALL", 0, &options.all_unbuffered, init_boolean,
    show_boolean,
    "If TRUE, all output is unbuffered.  This will slow down large writes "
-   "but can be\nuseful for forcing data to be displayed immediately."},
+   "but can be\nuseful for forcing data to be displayed immediately.", 0},
 
   {"GFORTRAN_SHOW_LOCUS", 1, &options.locus, init_boolean, show_boolean,
-   "If TRUE, print filename and line number where runtime errors happen."},
+   "If TRUE, print filename and line number where runtime errors happen.", 0},
 
   {"GFORTRAN_OPTIONAL_PLUS", 0, &options.optional_plus, init_boolean, show_boolean,
-   "Print optional plus signs in numbers where permitted.  Default FALSE."},
+   "Print optional plus signs in numbers where permitted.  Default FALSE.", 0},
 
   {"GFORTRAN_DEFAULT_RECL", DEFAULT_RECL, &options.default_recl,
    init_unsigned_integer, show_integer,
    "Default maximum record length for sequential files.  Most useful for\n"
    "adjusting line length of preconnected units.  Default "
-   stringize (DEFAULT_RECL)},
+   stringize (DEFAULT_RECL), 0},
 
   {"GFORTRAN_LIST_SEPARATOR", 0, NULL, init_sep, show_sep,
    "Separatator to use when writing list output.  May contain any number of "
-   "spaces\nand at most one comma.  Default is a single space."},
+   "spaces\nand at most one comma.  Default is a single space.", 0},
 
   /* Memory related controls */
 
   {"GFORTRAN_MEM_INIT", 0, NULL, init_mem, show_mem,
    "How to initialize allocated memory.  Default value is NONE for no "
    "initialization\n(faster), NAN for a Not-a-Number with the mantissa "
-   "0x40f95 or a custom\nhexadecimal value"},
+   "0x40f95 or a custom\nhexadecimal value", 0},
 
   {"GFORTRAN_MEM_CHECK", 0, &options.mem_check, init_boolean, show_boolean,
-   "Whether memory still allocated will be reported when the program ends."},
+   "Whether memory still allocated will be reported when the program ends.",
+   0},
 
   /* Signal handling (Unix).  */
 
   {"GFORTRAN_SIGHUP", 0, &options.sighup, init_signal, show_signal,
-   "Whether the program will IGNORE or ABORT on SIGHUP."},
+   "Whether the program will IGNORE or ABORT on SIGHUP.", 0},
 
   {"GFORTRAN_SIGINT", 0, &options.sigint, init_signal, show_signal,
-   "Whether the program will IGNORE or ABORT on SIGINT."},
+   "Whether the program will IGNORE or ABORT on SIGINT.", 0},
 
   /* Floating point control */
 
   {"GFORTRAN_FPU_ROUND", 0, &options.fpu_round, init_round, show_round,
-   "Set floating point rounding.  Values are NEAREST, UP, DOWN, ZERO."},
+   "Set floating point rounding.  Values are NEAREST, UP, DOWN, ZERO.", 0},
 
   {"GFORTRAN_FPU_PRECISION", 0, &options.fpu_precision, init_precision,
    show_precision,
-   "Precision of intermediate results.  Values are 24, 53 and 64."},
+   "Precision of intermediate results.  Values are 24, 53 and 64.", 0},
 
   {"GFORTRAN_FPU_INVALID", 1, &options.fpu_invalid, init_boolean,
    show_boolean,
-   "Raise a floating point exception on invalid FP operation."},
+   "Raise a floating point exception on invalid FP operation.", 0},
 
   {"GFORTRAN_FPU_DENORMAL", 1, &options.fpu_denormal, init_boolean,
    show_boolean,
-   "Raise a floating point exception when denormal numbers are encountered."},
+   "Raise a floating point exception when denormal numbers are encountered.",
+   0},
 
   {"GFORTRAN_FPU_ZERO", 0, &options.fpu_zerodiv, init_boolean, show_boolean,
-   "Raise a floating point exception when dividing by zero."},
+   "Raise a floating point exception when dividing by zero.", 0},
 
   {"GFORTRAN_FPU_OVERFLOW", 0, &options.fpu_overflow, init_boolean,
    show_boolean,
-   "Raise a floating point exception on overflow."},
+   "Raise a floating point exception on overflow.", 0},
 
   {"GFORTRAN_FPU_UNDERFLOW", 0, &options.fpu_underflow, init_boolean,
    show_boolean,
-   "Raise a floating point exception on underflow."},
+   "Raise a floating point exception on underflow.", 0},
 
   {"GFORTRAN_FPU_PRECISION", 0, &options.fpu_precision_loss, init_boolean,
    show_boolean,
-   "Raise a floating point exception on precision loss."},
+   "Raise a floating point exception on precision loss.", 0},
 
-  {NULL}
+  {NULL, 0, NULL, NULL, NULL, NULL, 0}
 };
 
 

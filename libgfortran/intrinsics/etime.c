@@ -1,5 +1,5 @@
 /* Implementation of the ETIME intrinsic.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -46,7 +46,6 @@ void
 etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
 {
   GFC_REAL_4 tu, ts, tt, *tp;
-  index_type dim;
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_SYS_RESOURCE_H)
   struct rusage rt;
