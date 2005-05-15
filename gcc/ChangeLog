@@ -1,3 +1,7 @@
+2005-05-15  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.c (thumb_unexpanded_epilogue): Delete unused variable 'mode'.
+
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c (pfatal_pexecute): Remove unused local function.
