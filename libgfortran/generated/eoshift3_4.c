@@ -1,5 +1,5 @@
 /* Implementation of the EOSHIFT intrinsic
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -77,6 +77,12 @@ eoshift3_4 (gfc_array_char *ret, gfc_array_char *array,
   int which;
   GFC_INTEGER_4 sh;
   GFC_INTEGER_4 delta;
+
+  /* The compiler cannot figure out that these are set, initialize
+     them to avoid warnings.  */
+  len = 0;
+  soffset = 0;
+  roffset = 0;
 
   if (pwhich)
     which = *pwhich - 1;

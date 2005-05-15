@@ -1,5 +1,5 @@
 /* Generic implementation of the SPREAD intrinsic
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -45,7 +45,7 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
-  index_type rdelta;
+  index_type rdelta = 0;
   index_type rrank;
   index_type rs;
   char *rptr;

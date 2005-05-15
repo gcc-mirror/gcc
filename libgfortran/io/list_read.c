@@ -2026,8 +2026,8 @@ nml_get_obj_data (void)
   char c;
   char * ext_name;
   namelist_info * nl;
-  namelist_info * first_nl;
-  namelist_info * root_nl;
+  namelist_info * first_nl = NULL;
+  namelist_info * root_nl = NULL;
   int dim;
   int component_flag;
 

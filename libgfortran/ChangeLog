@@ -1,5 +1,21 @@
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
+	* m4/eoshift1.m4: Initialize variables to avoid warnings.
+	* m4/eoshift3.m4: Initialize variables to avoid warnings.
+	* generated/eoshift1_4.c, generated/eoshift1_8.c,
+	generated/eoshift3_4.c, generated/eoshift3_8.c: Regenerated.
+
+	* intrinsics/spread_generic.c (spread): Initialize variables to
+	avoid warnings.
+
+	* intrinsics/eoshift0.c (eoshift0): Initialize variables to avoid
+	warnings.
+	* intrinsics/eoshift2.c (eoshift2): Initialize variables to avoid
+	warnings.
+
+	* io/list_read.c (nml_get_obj_data): Initialize variables to avoid
+	warnings.
+
 	* intrinsics/pack_generic.c (pack): Remove unneeded calculation.
 
 	* m4/matmull.m4 (matmul_): Remove unneeded calculations, fix
