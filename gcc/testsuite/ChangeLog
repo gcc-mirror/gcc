@@ -1,3 +1,7 @@
+2005-05-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/compat.exp (compat-execute): Do not use regsub unsafely.
+
 2005-05-11  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.dg/debug/pr16676.c: Remove for now.
