@@ -1,5 +1,5 @@
 `/* Implementation of the MATMUL intrinsic
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -100,7 +100,7 @@ matmul_`'rtype_code (rtype * retarray, rtype * a, rtype * b)
         }
           
       retarray->data
-	= internal_malloc_size (sizeof (rtype_name) * size0 (retarray));
+	= internal_malloc_size (sizeof (rtype_name) * size0 ((array_t *) retarray));
       retarray->base = 0;
     }
 
@@ -180,7 +180,7 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       rtype_name *abase_n;
       rtype_name bbase_yn;
 
-      memset (dest, 0, (sizeof (rtype_name) * size0(retarray)));
+      memset (dest, 0, (sizeof (rtype_name) * size0((array_t *) retarray)));
 
       for (y = 0; y < ycount; y++)
 	{

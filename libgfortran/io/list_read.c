@@ -2188,8 +2188,8 @@ get_name:
 
   if (c == '(' && nl->type == GFC_DTYPE_CHARACTER)
     {
-      descriptor_dimension chd[1] = {1, clow, nl->string_length};
-      nml_loop_spec ind[1] = {1, clow, nl->string_length, 1};
+      descriptor_dimension chd[1] = { {1, clow, nl->string_length} };
+      nml_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
 
       if (nml_parse_qualifier (chd, ind, 1) == FAILURE)
 	{

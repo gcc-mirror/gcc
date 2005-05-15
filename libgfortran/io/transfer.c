@@ -82,7 +82,7 @@ gfc_unit *current_unit = NULL;
 static int sf_seen_eor = 0;
 static int eor_condition = 0;
 
-char scratch[SCRATCH_SIZE] = { };
+char scratch[SCRATCH_SIZE];
 static char *line_buffer = NULL;
 
 static unit_advance advance_status;
@@ -90,7 +90,7 @@ static unit_advance advance_status;
 static st_option advance_opt[] = {
   {"yes", ADVANCE_YES},
   {"no", ADVANCE_NO},
-  {NULL}
+  {NULL, 0}
 };
 
 

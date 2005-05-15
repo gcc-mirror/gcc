@@ -1,5 +1,5 @@
 /* Implementation of the RANDOM intrinsics
-   Copyright 2002, 2004 Free Software Foundation, Inc.
+   Copyright 2002, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>
    and Steve Kargl.
 
@@ -440,7 +440,7 @@ KISS algorithm.  */
 #define GFC_SR(k, n)	((k)^((k)>>(n)))
 
 static const GFC_INTEGER_4 kiss_size = 4;
-#define KISS_DEFAULT_SEED {123456789, 362436069, 521288629, 916191069};
+#define KISS_DEFAULT_SEED {123456789, 362436069, 521288629, 916191069}
 static const GFC_UINTEGER_4 kiss_default_seed[4] = KISS_DEFAULT_SEED;
 static GFC_UINTEGER_4 kiss_seed[4] = KISS_DEFAULT_SEED;
 

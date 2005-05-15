@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2003, 2005 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -113,7 +113,7 @@ init (void)
 /* Cleanup the runtime library.  */
 
 static void __attribute__((destructor))
-cleanup ()
+cleanup (void)
 {
   close_units ();
 }

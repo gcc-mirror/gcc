@@ -1,5 +1,5 @@
 /* Implementation of the MATMUL intrinsic
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -99,7 +99,7 @@ matmul_r4 (gfc_array_r4 * retarray, gfc_array_r4 * a, gfc_array_r4 * b)
         }
           
       retarray->data
-	= internal_malloc_size (sizeof (GFC_REAL_4) * size0 (retarray));
+	= internal_malloc_size (sizeof (GFC_REAL_4) * size0 ((array_t *) retarray));
       retarray->base = 0;
     }
 
@@ -178,7 +178,7 @@ matmul_r4 (gfc_array_r4 * retarray, gfc_array_r4 * a, gfc_array_r4 * b)
       GFC_REAL_4 *abase_n;
       GFC_REAL_4 bbase_yn;
 
-      memset (dest, 0, (sizeof (GFC_REAL_4) * size0(retarray)));
+      memset (dest, 0, (sizeof (GFC_REAL_4) * size0((array_t *) retarray)));
 
       for (y = 0; y < ycount; y++)
 	{
