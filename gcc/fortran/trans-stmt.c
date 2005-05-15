@@ -129,7 +129,7 @@ gfc_trans_label_assign (gfc_code * code)
       label_len = code->label->format->value.character.length;
       len_tree = build_int_cst (NULL_TREE, label_len);
       label_tree = gfc_build_string_const (label_len + 1, label_str);
-      label_tree = gfc_build_addr_expr (pchar_type_node, label_tree);
+      label_tree = gfc_build_addr_expr (pvoid_type_node, label_tree);
     }
 
   gfc_add_modify_expr (&se.pre, len, len_tree);
