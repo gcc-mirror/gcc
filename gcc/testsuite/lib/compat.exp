@@ -279,8 +279,18 @@ proc compat-execute { src1 sid use_alt } {
     regsub "sid" "sid_y_alt.o" $sid obj3_alt
 
     # Get the base name of this test, for use in messages.
-    regsub "^$srcdir/?" $src1 "" testcase
-    regsub "^$tmpdir/?" $testcase "tmpdir-" testcase
+    set testcase "$src1"
+    # Remove the $srcdir and $tmpdir prefixes from $src1.  (It would
+    # be possible to use "regsub" here, if we were careful to escape
+    # all regular expression characters in $srcdir and $tmpdir, but
+    # that would be more complicated that this approach.) 
+    if {[string first "$srcdir/" "$src1"] == 0} {
+	set testcase [string range "$src1" [string length "$srcdir/"] end]
+    }
+    if {[string first "$tmpdir/" "$testcase"] == 0} {
+	set testcase [string range "$testcase" [string length "$tmpdir/"] end]
+	set testcase "tmpdir-$testcase"
+    }
     regsub "_main.*" $testcase "" testcase
     # Set up the base name of executable files so they'll be unique.
     regsub -all "\[./\]" $testcase "-" execbase
