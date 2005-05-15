@@ -1,4 +1,4 @@
-@deftypefn Extension struct pex_obj *pex_init (int @var{flags}, const char *@var{pname}, const char *@var{tempbase})
+@deftypefn Extension {struct pex_obj *} pex_init (int @var{flags}, const char *@var{pname}, const char *@var{tempbase})
 
 Prepare to execute one or more programs, with standard output of each
 program fed to standard input of the next.  This is a system
@@ -29,7 +29,7 @@ temporary files; it may be @code{NULL} to use a randomly chosen name.
 
 @end deftypefn
 
-@deftypefn Extension const char *pex_run (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{outname}, const char *@var{errname}, int *@var{err})
+@deftypefn Extension {const char *} pex_run (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{outname}, const char *@var{errname}, int *@var{err})
 
 Execute one program in a pipeline.  On success this returns
 @code{NULL}.  On failure it returns an error message, a statically
@@ -46,8 +46,8 @@ allocated string.
 This must be set on the last program in the pipeline.  In particular,
 it should be set when executing a single program.  The standard output
 of the program will be sent to @var{outname}, or, if @var{outname} is
-@code{NULL}, to the standard output of the calling program.  This
-should not be set if you want to call @code{pex_read_output}
+@code{NULL}, to the standard output of the calling program.  Do @emph{not}
+set this bit if you want to call @code{pex_read_output}
 (described below).  After a call to @code{pex_run} with this bit set,
 @var{pex_run} may no longer be called with the same @var{obj}.
 
@@ -71,7 +71,7 @@ Send the program's standard error to standard output, if possible.
 The standard input (output) of the program should be read (written) in
 binary mode rather than text mode.  These flags are ignored on systems
 which do not distinguish binary mode and text mode, such as Unix.  For
-proper behavior these flags should match appropriately--a call to
+proper behavior these flags should match appropriately---a call to
 @code{pex_run} using @code{PEX_BINARY_OUTPUT} should be followed by a
 call using @code{PEX_BINARY_INPUT}.
 @end table
@@ -81,11 +81,20 @@ arguments to pass to the program; normally @code{@var{argv}[0]} will
 be a copy of @var{executable}.
 
 @var{outname} is used to set the name of the file to use for standard
-output.  There are two cases in which no output file will be used: 1)
+output.  There are two cases in which no output file will be used:
+
+@enumerate
+@item
 if @code{PEX_LAST} is not set in @var{flags}, and @code{PEX_USE_PIPES}
-was set in the call to @code{pex_init}, and the system supports pipes;
-2) if @code{PEX_LAST} is set in @var{flags}, and @var{outname} is
-@code{NULL}.  Otherwise the code will use a file to hold standard
+was set in the call to @code{pex_init}, and the system supports pipes
+
+@item
+if @code{PEX_LAST} is set in @var{flags}, and @var{outname} is
+@code{NULL}
+@end enumerate
+
+@noindent
+Otherwise the code will use a file to hold standard
 output.  If @code{PEX_LAST} is not set, this file is considered to be
 a temporary file, and it will be removed when no longer needed, unless
 @code{PEX_SAVE_TEMPS} was set in the call to @code{pex_init}.
@@ -93,22 +102,26 @@ a temporary file, and it will be removed when no longer needed, unless
 There are two cases to consider when setting the name of the file to
 hold standard output.
 
-First case: @code{PEX_SUFFIX} is set in @var{flags}.  In this case
+@enumerate
+@item
+@code{PEX_SUFFIX} is set in @var{flags}.  In this case
 @var{outname} may not be @code{NULL}.  If the @var{tempbase} parameter
 to @code{pex_init} was not @code{NULL}, then the output file name is
 the concatenation of @var{tempbase} and @var{outname}.  If
 @var{tempbase} was @code{NULL}, then the output file name is a random
 file name ending in @var{outname}.
 
-Second case: @code{PEX_SUFFIX} was not set in @var{flags}.  In this
+@item
+@code{PEX_SUFFIX} was not set in @var{flags}.  In this
 case, if @var{outname} is not @code{NULL}, it is used as the output
 file name.  If @var{outname} is @code{NULL}, and @var{tempbase} was
 not NULL, the output file name is randomly chosen using
 @var{tempbase}.  Otherwise the output file name is chosen completely
 at random.
+@end enumerate
 
 @var{errname} is the file name to use for standard error output.  If
-it is @code{NULL}, standard error is the same as the caller.
+it is @code{NULL}, standard error is the same as the caller's.
 Otherwise, standard error is written to the named file.
 
 On an error return, the code sets @code{*@var{err}} to an @code{errno}
@@ -116,7 +129,7 @@ value, or to 0 if there is no relevant @code{errno}.
 
 @end deftypefn
 
-@deftypefn Extension FILE * pex_read_output (struct pex_obj *@var{obj}, int @var{binary})
+@deftypefn Extension {FILE *} pex_read_output (struct pex_obj *@var{obj}, int @var{binary})
 
 Returns a @code{FILE} pointer which may be used to read the standard
 output of the last program in the pipeline.  When this is used,
@@ -145,7 +158,8 @@ results will be placed into @var{vector}.  The results are in the
 order of the calls to @code{pex_run}.  Returns 0 on error, 1 on
 success.
 
-@code{struct pex_time} has the following fields: @code{user_seconds},
+@code{struct pex_time} has the following fields of the type
+@code{unsigned long}: @code{user_seconds},
 @code{user_microseconds}, @code{system_seconds},
 @code{system_microseconds}.  On systems which do not support reporting
 process times, all the fields will be set to @code{0}.
@@ -158,14 +172,14 @@ Clean up and free all data associated with @var{obj}.
 
 @end deftypefn
 
-@deftypefn Extension const char *pex_one (int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{pname}, const char *@var{outname}, const char *@var{errname}, int *@var{status}, int *@var{err})
+@deftypefn Extension {const char *} pex_one (int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{pname}, const char *@var{outname}, const char *@var{errname}, int *@var{status}, int *@var{err})
 
-An interface to @code{pex_init} to permit the easy execution of a
+An interface to permit the easy execution of a
 single program.  The return value and most of the parameters are as
 for a call to @code{pex_run}.  @var{flags} is restricted to a
 combination of @code{PEX_SEARCH}, @code{PEX_STDERR_TO_STDOUT}, and
 @code{PEX_BINARY_OUTPUT}.  @var{outname} is interpreted as if
-@code{PEX_LAST} were set.  On a successful return, *@var{status} will
+@code{PEX_LAST} were set.  On a successful return, @code{*@var{status}} will
 be set to the exit status of the program.
 
 @end deftypefn

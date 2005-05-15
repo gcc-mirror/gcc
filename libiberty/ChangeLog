@@ -1,3 +1,9 @@
+2005-05-15  Eli Zaretskii  <eliz@gnu.org>
+
+	* pexecute.txh: Enclose multi-word data types in @deftypefn in
+	braces.  Minor wording fixes.  Use --- for em-dash.  Use
+	@enumerate in enumerated lists.
+
 2005-05-11  Eli Zaretskii  <eliz@gnu.org>
 
 	* pex-djgpp.c: Include string.h, fcntl.h, unistd.h, and
@@ -47,7 +53,7 @@
 2005-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fopen_unlocked.c (unlock_std_streams): New.
-	
+
 	* functions.texi: Regenerate.
 
 2005-04-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -66,19 +72,19 @@
 	* lbasename.c: Likewise.
 	* spaces.c: Likewise.
 	* xatexit.c:Likewise.
-	* configure.ac:  Do check declarations for basename, ffs, asprintf 
+	* configure.ac:  Do check declarations for basename, ffs, asprintf
 	and vasprintf for real.
 	* configure: Regenerate.
 
 2005-04-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	* argv.c (dupargv): Allocate space of argv[argc], not 
+	* argv.c (dupargv): Allocate space of argv[argc], not
 	sizeof(char *) of that amount.  Cast result to char *.
 
 2005-04-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* regex.c (wcs_re_match_2_internal, byte_re_match_2_internal):
-	Replace not with negate. 
+	Replace not with negate.
 
 2005-04-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
@@ -152,7 +158,7 @@
 	* configure: Rebuild.
 
 2005-03-28  Mark Kettenis  <kettenis@gnu.org>
-	
+
 	* unlink-if-ordinary.c: Include <sys/types.h>.
 
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
@@ -160,19 +166,19 @@
 	Convert libiberty to use ISO C prototype style 7/n.
 	* regex.c (PARAMS): Remove definition.
 	(PREFIX): Unconditionaly define using ISO C ## operator.
-	(init_syntax_once, extract_number, extract_number_and_incr, 
+	(init_syntax_once, extract_number, extract_number_and_incr,
 	print_fastmap, print_partial_compiled_pattern,
-	print_compiled_pattern, print_double_string, printchar, 
+	print_compiled_pattern, print_double_string, printchar,
 	convert_mbs_to_wcs, re_set_syntax, regex_grow_registers,
 	regex_compile, store_op1, store_op2, insert_op1, insert_op2,
-	at_begline_loc_p, at_endline_p, group_in_compile_stack, 
-	insert_space, wcs_compile_range, byte_compile_range, 
-	truncate_wchar, re_compile_fastmap, re_compile_fastmap, 
-	re_set_registers, re_search, re_search_2, re_search_3, re_match, 
+	at_begline_loc_p, at_endline_p, group_in_compile_stack,
+	insert_space, wcs_compile_range, byte_compile_range,
+	truncate_wchar, re_compile_fastmap, re_compile_fastmap,
+	re_set_registers, re_search, re_search_2, re_search_3, re_match,
 	re_match_2, count_mbs_length, wcs_re_match_2_internal,
 	byte_re_match_2_internal, group_match_null_string_p,
 	alt_match_null_string_p, common_op_match_null_string_p,
-	bcmp_translate, re_compile_pattern, re_comp, re_exec, regcomp, 
+	bcmp_translate, re_compile_pattern, re_comp, re_exec, regcomp,
 	regexec, regerror, regfree): Use ISO C prototype style.
 	* partition.c: (elem_compare): Likewise.
 	* cp-demangle.c (print_usage): Likewise.
@@ -181,21 +187,21 @@
 
 	Convert libiberty to use ISO C prototype style 5/n.
 	* random.c (srandom, initstate, setstate, random): Use ISO C
-	prototypes. 
+	prototypes.
 	* putenv.c (putenv): Likewise.
 	* physmem.c (physmem_available, physmem_total, main): Likewise.
 	* pex-win32.c (fix_argv, pexecute, pwait): Likewise.
 	* pex-unix.c (pexecute, pwait): Likewise.
 	* pex-msdos.c (pexecute, pwait): Likewise.
 	* pex-djgpp.c (pexecute, pwait): Likewise.
-	* partition.c (partition_new, partition_delete, partition_union) 
+	* partition.c (partition_new, partition_delete, partition_union)
 	(elem_compare, partition_print): Likewise.
-	* obstack.c (_obstack_begin, _obstack_begin_1, _obstack_newchunk, 
-	_obstack_allocated_p, _obstack_free, obstack_free, 
+	* obstack.c (_obstack_begin, _obstack_begin_1, _obstack_newchunk,
+	_obstack_allocated_p, _obstack_free, obstack_free,
 	_obstack_memory_used, print_and_abort, obstack_next_free,
 	obstack_object_size, obstack_base): Likewise.  Remove codes
 	predicated on !defined(__STDC__).
-	* objalloc.c (objalloc_create, _objalloc_alloc, objalloc_free, 
+	* objalloc.c (objalloc_create, _objalloc_alloc, objalloc_free,
 	objalloc_free_block): Use ISO C prototypes.
 	* mkstemps.c (mkstemps): Likewise.
 	* memset.c (memset): Likewise.
@@ -205,16 +211,16 @@
 	* setenv.c (setenv, unsetenv): Likewise.
 	* sigsetmask.c (sigsetmask): Likewise.
 	* snprintf.c (snprintf): Likewise.
-	* sort.c (sort_pointers, xmalloc): Likewise. 
+	* sort.c (sort_pointers, xmalloc): Likewise.
 	* spaces.c (spaces): Likewise.
-	* splay-tree.c (splay_tree_delete_helper, 
-	splay_tree_splay_helper, splay_tree_splay, 
+	* splay-tree.c (splay_tree_delete_helper,
+	splay_tree_splay_helper, splay_tree_splay,
 	splay_tree_foreach_helper, splay_tree_xmalloc_allocate,
-	splay_tree_new, splay_tree_xmalloc_allocate, 
+	splay_tree_new, splay_tree_xmalloc_allocate,
 	splay_tree_new_with_allocator, splay_tree_delete,
-	splay_tree_insert, splay_tree_remove, splay_tree_lookup, 
-	splay_tree_max, splay_tree_min, splay_tree_predecessor, 
-	splay_tree_successor, splay_tree_foreach, 
+	splay_tree_insert, splay_tree_remove, splay_tree_lookup,
+	splay_tree_max, splay_tree_min, splay_tree_predecessor,
+	splay_tree_successor, splay_tree_foreach,
 	splay_tree_compare_ints, splay_tree_compare_pointers): Likewise.
 	* stpcpy.c (stpcpy): Likewise.
 	* stpncpy.c (stpncpy): Likewise.
@@ -225,19 +231,19 @@
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert libiberty to use ISO C prototype style 6/n.
-	* strerror.c (init_error_tables, errno_max, strerror, strerrno, 
+	* strerror.c (init_error_tables, errno_max, strerror, strerrno,
 	strtoerrno, main): Use ISO C prototype style.
 	* strncasecmp.c (strncasecmp): Likewise.
 	* strncmp.c (strncmp): Likewise.
 	* strndup.c (strndup): Likewise.
 	* strrchr.c (strrchr): Likewise.
-	* strsignal.c (init_signal_tables, signo_max, strsignal, 
+	* strsignal.c (init_signal_tables, signo_max, strsignal,
 	strsigno, strtosigno, psignal, main): Likewise.
 	* strstr.c (strstr): Likewise.
 	* strtod.c (strtod, atof): Likewise.
 	* strtol.c (strtol): Likewise.
 	* strtoul.c (strtoul): Likewise.
-	* ternary.c (ternary_insert, ternary_cleanup, ternary_search, 
+	* ternary.c (ternary_insert, ternary_cleanup, ternary_search,
 	ternary_recursivesearch): Likewise.
 	* tmpnam.c (tmpnam): Likewise.
 	* unlink-if-ordinary.c (unlink_if_ordinary): Likewise.
@@ -250,7 +256,7 @@
 	* waitpid.c (waitpid): Likewise.
 	* xatexit.c (xatexit, xatexit_cleanup): Likewise.
 	* xexit.c (xexit): Likewise.
-	* xmalloc.c (xmalloc_set_program_name, xmalloc_failed, xmalloc, 
+	* xmalloc.c (xmalloc_set_program_name, xmalloc_failed, xmalloc,
 	xcalloc, xrealloc): Likewise.
 	* xmemdup.c (xmemdup): Likewise.
 	* xstrdup.c (xstrdup): Likewise.
