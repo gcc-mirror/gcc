@@ -36,6 +36,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "../io/io.h"
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 
 /* SUBROUTINE PERROR(STRING)
    CHARACTER(len=*), INTENT(IN) :: STRING   */
@@ -56,7 +59,7 @@ perror_sub (char *string, gfc_charlen_type string_len)
   /* Make a null terminated copy of the strings.  */
   str = gfc_alloca (string_len + 1);
   memcpy (str, string, string_len);
-  str[string_len] = '\0'; 
+  str[string_len] = '\0';
 
   perror (str);
 }

@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "../io/io.h"
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -60,11 +63,11 @@ chdir_i4_sub (char *dir, GFC_INTEGER_4 *status, gfc_charlen_type dir_len)
   /* Make a null terminated copy of the strings.  */
   str = gfc_alloca (dir_len + 1);
   memcpy (str, dir, dir_len);
-  str[dir_len] = '\0'; 
+  str[dir_len] = '\0';
 
   val = chdir (str);
 
-  if (status != NULL) 
+  if (status != NULL)
     *status = (val == 0) ? 0 : errno;
 }
 iexport(chdir_i4_sub);
@@ -85,11 +88,11 @@ chdir_i8_sub (char *dir, GFC_INTEGER_8 *status, gfc_charlen_type dir_len)
   /* Make a null terminated copy of the strings.  */
   str = gfc_alloca (dir_len + 1);
   memcpy (str, dir, dir_len);
-  str[dir_len] = '\0'; 
+  str[dir_len] = '\0';
 
   val = chdir (str);
 
-  if (status != NULL) 
+  if (status != NULL)
     *status = (val == 0) ? 0 : errno;
 }
 iexport(chdir_i8_sub);

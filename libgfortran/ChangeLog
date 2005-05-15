@@ -1,3 +1,16 @@
+2005-05-15  Andreas Jaeger  <aj@suse.de>
+
+	* intrinsics/chdir.c, intrinsics/getlog.c, intrinsics/link.c,
+	intrinsics/symlnk.c, intrinsics/perror.c: Include <string.h> for
+	prototypes.
+
+	* runtime/string.c (compare0): Remove unused variable.
+	* io/unit.c (init_units): Remove unused variables.
+	* intrinsics/getcwd.c (getcwd_i4_sub): Remove unused variable.
+	* intrinsics/unlink.c (unlink_i4_sub): Remove unused variable.
+	* intrinsics/stat.c (stat_i4_sub, fstat_i8_sub, fstat_i4_sub,
+	stat_i8_sub): Remove unused variable.
+
 2005-05-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21324
@@ -179,7 +192,7 @@
 	from WRITING to READING.
 
 2005-04-22  Paul Thomas  <pault@gcc.gnu.org>
-	    Jerry DeLisle  <jvdelisle@verizon.net> 
+	    Jerry DeLisle  <jvdelisle@verizon.net>
 
 	* io/write.c (nml_write_obj): Provide 1 more byte for ext_name.
 	* io/list_read.c (nml_get_obj_data): Put extra brackets in get_mem
@@ -355,7 +368,7 @@
 	environment variables we want to be positive.
 	(init_integer): Function to allow negative environment
 	variables (e.g. for GFORTRAN_STDIN_UNIT).
-	
+
 2005-04-10  Thomas Koenig <Thomas.Koenig@online.de>
 
 	PR libfortran/17992
@@ -466,7 +479,7 @@
 2005-04-09  Thomas Koenig <Thomas.Koenig@online.de>
 
 	PR libfortran/20163
-	* runtime/string.c (compare0): Use fstrlen() to 
+	* runtime/string.c (compare0): Use fstrlen() to
 	strip trailing blanks from option string.
 
 2005-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
