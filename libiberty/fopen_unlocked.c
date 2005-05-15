@@ -36,7 +36,7 @@ multi-threaded locking.  Otherwise do nothing.
 
 @end deftypefn
 
-@deftypefn Extension FILE * fopen_unlocked (const char *@var{path}, const char * @var{mode})
+@deftypefn Extension {FILE *} fopen_unlocked (const char *@var{path}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
@@ -45,7 +45,7 @@ unchanged.
 
 @end deftypefn
 
-@deftypefn Extension FILE * fdopen_unlocked (int @var{fildes}, const char * @var{mode})
+@deftypefn Extension {FILE *} fdopen_unlocked (int @var{fildes}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fdopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
@@ -54,7 +54,7 @@ unchanged.
 
 @end deftypefn
 
-@deftypefn Extension FILE * freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
+@deftypefn Extension {FILE *} freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
 
 Opens and returns a @code{FILE} pointer via @code{freopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
