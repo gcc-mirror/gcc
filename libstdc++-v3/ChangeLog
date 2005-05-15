@@ -1,3 +1,22 @@
+2005-05-15  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2005-04-04  Mark Mitchell  <mark@codesourcery.com>
+	* testsuite/Makefile.am (check-local): Remove.
+	(curent_symbols.txt): Likewise.
+	(check-abi): Do not depend on current_symbols.txt.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/libstdc++-abi/abi.exp: Build current_symbols.txt.
+	2005-04-01  Mark Mitchell  <mark@codesourcery.com>
+	* testsuite/Makefile.am (noinst_PROGRAMS): Remove.
+	(site.exp): Write out the path to the baseline file.
+	(check-abi): Use DejaGNU.
+	(check-abi-verbose): Remove.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/testsuite_abi.cc (compare_symbols): Return a value.
+	* testsuite/testsuite_abi.h (compare_symbols): Adjust prototype.
+	* testsuite/libstdc++-abi/abi.exp: New file.
+
 2005-05-13  Magnus Fromreide  <magfr@lysator.liu.se>
 
 	* testsuite/27_io/basic_streambuf/sgetn/char/1.cc: Use
