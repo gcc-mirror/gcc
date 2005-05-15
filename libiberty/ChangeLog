@@ -1,3 +1,7 @@
+2005-05-15  Andreas Jaeger  <aj@suse.de>
+
+	* functions.texi: Regenerated.
+
 2005-05-15  Eli Zaretskii  <eliz@gnu.org>
 
 	* pexecute.txh: Enclose multi-word data types in @deftypefn in
