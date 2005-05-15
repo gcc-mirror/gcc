@@ -1,3 +1,12 @@
+2005-05-15  Feng Wang <fengwang@nudt.edu.cn>
+	Jerry DeLisle <jvdelisle@verizon.net>
+
+	PR fortran/17432
+	* trans-stmt.c (gfc_trans_label_assign): fix pointer type, to 
+	resolve ICE on assign of format label.
+	* trans-io.c (set_string): add fold-convert to properly
+	handle assigned format label in write.
+ 
 2005-05-13  Paul Brook  <paul@codesourcery.com>
 
 	* trans-stmt.c (gfc_trans_forall_1): Fix comment typo.

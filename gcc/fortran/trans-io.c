@@ -412,7 +412,8 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
       tmp = build2 (LE_EXPR, boolean_type_node,
 		    tmp, convert (TREE_TYPE (tmp), integer_minus_one_node));
       gfc_trans_runtime_check (tmp, msg, &se.pre);
-      gfc_add_modify_expr (&se.pre, io, GFC_DECL_ASSIGN_ADDR (se.expr));
+      gfc_add_modify_expr (&se.pre, io,
+		 fold_convert (TREE_TYPE (io), GFC_DECL_ASSIGN_ADDR (se.expr)));
       gfc_add_modify_expr (&se.pre, len, GFC_DECL_STRING_LEN (se.expr));
     }
   else

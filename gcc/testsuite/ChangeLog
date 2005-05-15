@@ -1,3 +1,8 @@
+2005-05-15  Jerry DeLisle <jvdelisle@verizon.net>
+
+	PR fortran/17432
+	* gfortran.dg/assign_4.f: New test.
+
 2005-05-13  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.c-torture/execute/20041218-2.c: Add __attribute__((packed)).
