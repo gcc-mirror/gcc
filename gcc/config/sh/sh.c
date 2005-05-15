@@ -10301,7 +10301,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       /* Initialize the bitmap obstacks.  */
       bitmap_obstack_initialize (NULL);
       bitmap_obstack_initialize (&reg_obstack);
-      if (! basic_block_info)
+      if (! cfun->cfg)
 	init_flow ();
       rtl_register_cfg_hooks ();
       find_basic_blocks (insns);
@@ -10315,7 +10315,14 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   sh_reorg ();
 
   if (optimize > 0 && flag_delayed_branch)
-    dbr_schedule (insns, dump_file);
+    {
+      if (! cfun->cfg)
+	{
+	  init_flow ();
+	  find_basic_blocks (insns);
+	}
+      dbr_schedule (insns, dump_file);
+    }
   shorten_branches (insns);
   final_start_function (insns, file, 1);
   final (insns, file, 1);
