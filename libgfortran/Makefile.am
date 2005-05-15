@@ -1,8 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-## We like to use C99 routines when available.  This makes sure that
-## __STDC_VERSION__ is set such that libc includes make them available.
-AM_CFLAGS = -std=gnu99
+
 ACLOCAL_AMFLAGS = -I ../config
 
 ## May be used by toolexeclibdir.
@@ -193,7 +191,7 @@ i_dotprod_c= \
 generated/dotprod_i4.c \
 generated/dotprod_i8.c \
 generated/dotprod_r4.c \
-generated/dotprod_r8.c 
+generated/dotprod_r8.c
 
 i_dotprodl_c= \
 generated/dotprod_l4.c \
@@ -530,4 +528,3 @@ $(gfor_built_specific2_src): m4/specific2.m4 m4/head.m4
 endif
 
 EXTRA_DIST = $(m4_files)
-

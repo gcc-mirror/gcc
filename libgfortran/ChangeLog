@@ -1,5 +1,18 @@
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
+	* intrinsics/pack_generic.c (pack): Remove unneeded calculation.
+
+	* m4/matmull.m4 (matmul_): Remove unneeded calculations, fix
+	pointer cast to avoid warning.
+	* generated/matmul_l4.c: Regenerated.
+	* generated/matmul_l8.c: Regenerated.
+
+	* Makefile.am: Remove AM_CFLAGS here.
+	* configure.ac: Define AM_CFLAGS and AM_FCFLAGS so that warnings
+	are set.  Set additionally -Wstrict-prototypes for CFLAGS.
+	* Makefile.in: Regenerated
+	* configure: Regenerated.
+
 	* intrinsics/system_clock.c (system_clock_4, system_clock_8): Add
 	missing returns, reformat a bit.
 
