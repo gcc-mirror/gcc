@@ -66,9 +66,6 @@ lists_of_files = \
    testsuite_files_performance
 
 
-# This is automatically run after the generated check-DEJAGNU rule.
-check-local: check-abi
-
 # We need more things in site.exp, but automake completely controls the
 # creation of that file; there's no way to append to it without messing up
 # the dependancy chains.  So we overrule automake.  This rule is exactly

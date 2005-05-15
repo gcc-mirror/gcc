@@ -463,7 +463,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU check-local
+	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU
 check: check-am
 all-am: Makefile $(LIBRARIES) all-local
 installdirs:
@@ -542,17 +542,16 @@ ps-am:
 uninstall-am: uninstall-info-am
 
 .PHONY: CTAGS GTAGS all all-am all-local check check-DEJAGNU check-am \
-	check-local clean clean-generic clean-libtool \
-	clean-noinstLIBRARIES ctags distclean distclean-DEJAGNU \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-info-am
+	clean clean-generic clean-libtool clean-noinstLIBRARIES ctags \
+	distclean distclean-DEJAGNU distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-exec install-exec-am \
+	install-info install-info-am install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-info-am
 
 
 all-local: stamp_wchar testsuite_files
@@ -561,9 +560,6 @@ all-local: stamp_wchar testsuite_files
 @GLIBCXX_TEST_WCHAR_T_TRUE@stamp_wchar:
 @GLIBCXX_TEST_WCHAR_T_TRUE@	touch testsuite_wchar_t
 @GLIBCXX_TEST_WCHAR_T_FALSE@stamp_wchar:
-
-# This is automatically run after the generated check-DEJAGNU rule.
-check-local: check-abi
 
 # We need more things in site.exp, but automake completely controls the
 # creation of that file; there's no way to append to it without messing up
