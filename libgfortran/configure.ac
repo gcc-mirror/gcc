@@ -111,12 +111,15 @@ m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
 m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
-AC_SUBST(CFLAGS)
-
 # Add -Wall if we are using GCC.
 if test "x$GCC" = "xyes"; then
-  CFLAGS="$CFLAGS -Wall"
+  AM_FCFLAGS="-Wall"
+  ## We like to use C99 routines when available.  This makes sure that
+  ## __STDC_VERSION__ is set such that libc includes make them available.
+  AM_CFLAGS="-std=gnu99 -Wall"
 fi
+AC_SUBST(AM_FCFLAGS)
+AC_SUBST(AM_CFLAGS)
 
 # Find other programs we need.
 AC_CHECK_TOOL(AS, as)

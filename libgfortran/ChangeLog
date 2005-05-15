@@ -1,5 +1,14 @@
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
+	* Makefile.am: Remove AM_CFLAGS here.
+	* configure.ac: Define AM_CFLAGS and AM_FCFLAGS so that warnings
+	are set.  Set additionally -Wstrict-prototypes for CFLAGS.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+
+2005-05-15  Andreas Jaeger  <aj@suse.de>
+
 	* intrinsics/chdir.c, intrinsics/getlog.c, intrinsics/link.c,
 	intrinsics/symlnk.c, intrinsics/perror.c: Include <string.h> for
 	prototypes.
