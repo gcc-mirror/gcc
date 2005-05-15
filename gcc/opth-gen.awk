@@ -141,14 +141,14 @@ print "{"
 for (i = 0; i < n_opts; i++)
 	back_chain[i] = "N_OPTS";
 
-	for (i = 0; i < n_opts; i++) {
-		# Combine the flags of identical switches.  Switches
-		# appear many times if they are handled by many front
-		# ends, for example.
-		while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
-			flags[i + 1] = flags[i] " " flags[i + 1];
-			i++;
-		}
+for (i = 0; i < n_opts; i++) {
+	# Combine the flags of identical switches.  Switches
+	# appear many times if they are handled by many front
+	# ends, for example.
+	while( i + 1 != n_opts && opts[i] == opts[i + 1] ) {
+		flags[i + 1] = flags[i] " " flags[i + 1];
+		i++;
+	}
 
 	len = length (opts[i]);
 	enum = "OPT_" opts[i]
