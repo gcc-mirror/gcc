@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "../io/io.h"
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

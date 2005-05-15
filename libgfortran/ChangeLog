@@ -1,3 +1,9 @@
+2005-05-15  Andreas Jaeger  <aj@suse.de>
+
+	* intrinsics/chdir.c, intrinsics/getlog.c, intrinsics/link.c,
+	intrinsics/symlnk.c, intrinsics/perror.c: Include <string.h> for
+	prototypes.
+
 2005-05-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21324
@@ -16,7 +22,7 @@
 	PR fortran/19478
 	* io/unix.c (fd_truncate): update positions when ftruncate
 	fails (like writing to /dev/null).
-	
+
 2005-05-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/21471
@@ -162,7 +168,7 @@
 	PR libfortran/15332
 	* io/format.c (parse_format_list): format node for colon edit
 	descriptor needs a repeat counter set to 1.
-	
+
 2005-02-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	* Makefile.in, config.h.in: Regenerate.
 
@@ -201,9 +207,9 @@
 2005-03-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20124
-	* write.c (output_float): Adds a nzero_real variable to store 
-	the number of leading zeros whatever the format width is. Corrects 
-	the rounding of numbers less than 10^(-width). Fixes typo in an 
+	* write.c (output_float): Adds a nzero_real variable to store
+	the number of leading zeros whatever the format width is. Corrects
+	the rounding of numbers less than 10^(-width). Fixes typo in an
 	error message. Updates copyright years
 
 2005-02-25  Peter O'Gorman  <peter@pogma.com>
@@ -212,7 +218,7 @@
 	PR libgfortran/17748
 	* runtime/environ.c: Remove references to environ.
 	Update copyright years.
-	(show_variables): remove GFORTRAN_UNBUFFERED_* and 
+	(show_variables): remove GFORTRAN_UNBUFFERED_* and
 	GFORTRAN_NAME_* because they require environ.
 	(pattern_scan): Remove function.
 
@@ -310,7 +316,7 @@
 
 	PR libfortran/18982
 	* io/unix.c (regular_file):  No need to change flags->action
-	if an error occurs.  Document this.  
+	if an error occurs.  Document this.
 	No need to call stat() for STATUS_OLD, open() will
 	fail anyway.
 	For ACTION_UNSPECIFIED, try open for read-write, then for
@@ -320,16 +326,16 @@
 	regular_file.
 
 2005-01-22  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
-	
+
 	PR fortran/19194
 	* io/io.h (st_parameter): Use 'GFC_INTEGER_4' instead of 'int',
 	use CHARACTER macro for definition of string valued paramters.
-	
+
 2005-01-22  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/19314
 	* io/inquire.c(inquire_via_unit): implement POSITION=.
-	* io/transfer.c(next_record): update position for 
+	* io/transfer.c(next_record): update position for
 	INQUIRE.
 	* io/rewind.c(st_rewind): update position for
 	INQUIRE.
@@ -641,7 +647,7 @@
 
 2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	* libgfortran/libgfortran.h (GFC_UINTEGER_1, GFC_UINTEGER_2): 
+	* libgfortran/libgfortran.h (GFC_UINTEGER_1, GFC_UINTEGER_2):
 	Define.
 	* intrinsics/ishftc.c: Update copyright years.
 	(ishftc8): Change 'shift' and 'size' to GFC_INTEGER_4.
@@ -651,7 +657,7 @@
 2004-12-23  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/19071
-	* io/tranfer.c (formatted_transfer): moved check for 
+	* io/tranfer.c (formatted_transfer): moved check for
 	format reversion inside the processing loop.
 
 2004-12-19  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
@@ -895,7 +901,7 @@
 
 	* m4/matmul.m4: Loops reordered to improve cache behavior.
 	* generated/matmul_??.c: Regenerated.
-	
+
 2004-11-10  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/18218
@@ -1012,7 +1018,7 @@
 2004-09-21  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/17286
-	* io/list_read.c (namelist_read): ignore spaces after 
+	* io/list_read.c (namelist_read): ignore spaces after
 	the '=' for namelist reads.
 
 2004-09-15  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
@@ -1164,7 +1170,7 @@
 
 2004-08-24  Bud Davis  <bdavis9659@comcast.net>
 
-	PR fortran/17143	
+	PR fortran/17143
 	* runtime/error.c (itoa): keep from overflowing during
 	mod operation by using unsigned variable.
 
@@ -1265,7 +1271,7 @@
 
 2004-07-18  Bud Davis  <bdavis9659@comcast.net>
 
-	* configure.ac: Add check for LFS support. 
+	* configure.ac: Add check for LFS support.
 	* configure: Regenerate
 
 2004-07-11  Paul Brook  <paul@codesourcery.com>
@@ -1286,7 +1292,7 @@
 	PR fortran/15472
 	* io/transfer.c(us_write): set recl for seq unform writes to max size.
 	* io/transfer.c(data_transfer_init): handle un-opened seq unform unit.
-	* io/unix.c(fd_alloc_w_at): handle requests at start, fd_flush at 
+	* io/unix.c(fd_alloc_w_at): handle requests at start, fd_flush at
 	right time.
 	* io/unix.c(is_seekable): set based upon the file/device, not the
 	method being used to access it (fd or mmap).
@@ -1383,16 +1389,16 @@
 2004-06-13  Steven G. Kargl  <kargls@comcast.net>
 	    Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	* random.c: Fix several spelling and formatting mistakes in 
+	* random.c: Fix several spelling and formatting mistakes in
 	comments.
 	(random_r8): Fix loop to make random numbers range in [0,1(.
-	
+
 
 2004-06-13  Steven G. Kargl  <kargls@comcast.net>
 
 	* random.c (random_r4): Burn a random number.
 	(random_r8): fix infinite loop.
-	
+
 2004-06-12  Bud Davis  <bdavis9659@comcast.net>
       Steve Kargl  <sgk@troutmask.apl.washington.edu>
 
