@@ -1,3 +1,7 @@
+2005-05-15  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* ylwrap: Import from Automake 1.9.5.
+
 2005-05-13  David Ung  <davidu@mips.com>
 
 	* MAINTAINERS (Write After Approval): Add self.
