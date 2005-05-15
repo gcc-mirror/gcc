@@ -275,7 +275,7 @@ get_unit (int read_flag)
  * not */
 
 int
-is_internal_unit ()
+is_internal_unit (void)
 {
   return current_unit == &internal_unit;
 }

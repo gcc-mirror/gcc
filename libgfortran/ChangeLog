@@ -1,5 +1,9 @@
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
+	* io/unit.c (is_internal_unit): Add void as parameter list.
+
+	* io/transfer.c: Move prototype declarations before the functions.
+
 	* runtime/normalize.c (almostone_r4, almostone_r8): Fix parameter
 	list.
 
