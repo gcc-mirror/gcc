@@ -1377,11 +1377,11 @@ list_formatted_read (bt type, void *p, int len)
 
     case BT_CHARACTER:
       if (saved_string)
-       { 
+       {
           m = (len < saved_used) ? len : saved_used;
           memcpy (p, saved_string, m);
        }
-      else    
+      else
 	/* Just delimiters encountered, nothing to copy but SPACE.  */
         m = 0;
 
@@ -1600,7 +1600,7 @@ nml_parse_qualifier(descriptor_dimension * ad,
 
       /*Check the values of the triplet indices.  */
 
-      if ( (ls[dim].start > (ssize_t)ad[dim].ubound) 
+      if ( (ls[dim].start > (ssize_t)ad[dim].ubound)
 	|| (ls[dim].start < (ssize_t)ad[dim].lbound)
 	|| (ls[dim].end   > (ssize_t)ad[dim].ubound)
 	|| (ls[dim].end   < (ssize_t)ad[dim].lbound))
@@ -1646,7 +1646,7 @@ find_nml_node (char * var_name)
 
 /* Visits all the components of a derived type that have
    not explicitly been identified in the namelist input.
-   touched is set and the loop specification initialised 
+   touched is set and the loop specification initialised
    to default values  */
 
 static void
@@ -1854,7 +1854,7 @@ nml_read_obj (namelist_info * nl, index_type offset)
 	pdata = (void*)(pdata + (nl->ls[dim].idx - nl->dim[dim].lbound) *
 		 nl->dim[dim].stride * nl->size);
 
-      /* Reset the error flag and try to read next value, if 
+      /* Reset the error flag and try to read next value, if
 	 repeat_count=0  */
 
       nml_read_error = 0;
@@ -1873,7 +1873,7 @@ nml_read_obj (namelist_info * nl, index_type offset)
 
 	  saved_type = GFC_DTYPE_UNKNOWN;
 	  free_saved ();
- 
+
           switch (nl->type)
 	  {
 	  case GFC_DTYPE_INTEGER:
@@ -1904,7 +1904,7 @@ nml_read_obj (namelist_info * nl, index_type offset)
 
 	    /* Now loop over the components. Update the component pointer
 	       with the return value from nml_write_obj.  This loop jumps
-	       past nested derived types by testing if the potential 
+	       past nested derived types by testing if the potential
 	       component name contains '%'.  */
 
 	    for (cmp = nl->next;
@@ -1940,7 +1940,7 @@ nml_read_obj (namelist_info * nl, index_type offset)
 
       /* The standard permits array data to stop short of the number of
 	 elements specified in the loop specification.  In this case, we
-	 should be here with nml_read_error != 0.  Control returns to 
+	 should be here with nml_read_error != 0.  Control returns to
 	 nml_get_obj_data and an attempt is made to read object name.  */
 
       prev_nl = nl;

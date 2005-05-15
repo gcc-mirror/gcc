@@ -621,7 +621,7 @@ arandom_r8 (gfc_array_r8 *x)
 }
 
 /* random_seed is used to seed the PRNG with either a default
-   set of seeds or user specified set of seeds.  random_seed 
+   set of seeds or user specified set of seeds.  random_seed
    must be called with no argument or exactly one argument.  */
 
 void

@@ -168,7 +168,7 @@ read_sf (int *length)
     {
       if (is_internal_unit())
         {
-	  /* readlen may be modified inside salloc_r if 
+	  /* readlen may be modified inside salloc_r if
 	     is_internal_unit() is true.  */
           readlen = 1;
         }
@@ -226,7 +226,7 @@ read_sf (int *length)
    file, advancing the current position.  We return a pointer to a
    buffer containing the bytes.  We return NULL on end of record or
    end of file.
-  
+
    If the read is short, then it is because the current record does not
    have enough data to satisfy the read request and the file was
    opened with PAD=YES.  The caller must assume tailing spaces for
@@ -683,7 +683,7 @@ formatted_transfer (bt type, void *p, int len)
            else // FMT==T
              {
                 consume_data_flag = 0 ;
-                pos = f->u.n - 1; 
+                pos = f->u.n - 1;
              }
 
            if (pos < 0 || pos >= current_unit->recl )
@@ -1122,12 +1122,12 @@ data_transfer_init (int read_flag)
 	generate_error (ERROR_OS, NULL);
     }
 
-  /* Overwriting an existing sequential file ? 
+  /* Overwriting an existing sequential file ?
      it is always safe to truncate the file on the first write */
-  if (g.mode == WRITING 
-      && current_unit->flags.access == ACCESS_SEQUENTIAL 
+  if (g.mode == WRITING
+      && current_unit->flags.access == ACCESS_SEQUENTIAL
       && current_unit->current_record == 0)
-        struncate(current_unit->s); 
+        struncate(current_unit->s);
 
   current_unit->mode = g.mode;
 
@@ -1227,7 +1227,7 @@ next_record_r (int done)
 	{
 	  new = file_position (current_unit->s) + current_unit->bytes_left;
 
-	  /* Direct access files do not generate END conditions, 
+	  /* Direct access files do not generate END conditions,
 	     only I/O errors.  */
 	  if (sseek (current_unit->s, new) == FAILURE)
 	    generate_error (ERROR_OS, NULL);
@@ -1255,7 +1255,7 @@ next_record_r (int done)
     case FORMATTED_SEQUENTIAL:
       length = 1;
       /* sf_read has already terminated input because of an '\n'  */
-      if (sf_seen_eor) 
+      if (sf_seen_eor)
 	{
 	  sf_seen_eor=0;
 	  break;
@@ -1371,7 +1371,7 @@ next_record_w (int done)
         }
 
       if (sfree (current_unit->s) == FAILURE)
- 	goto io_error;
+	goto io_error;
 
       break;
 
@@ -1698,4 +1698,3 @@ export_proto(st_set_nml_var);
 extern void st_set_nml_var_dim (GFC_INTEGER_4, GFC_INTEGER_4,
 				GFC_INTEGER_4 ,GFC_INTEGER_4);
 export_proto(st_set_nml_var_dim);
-

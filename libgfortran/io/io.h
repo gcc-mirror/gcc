@@ -230,7 +230,7 @@ typedef struct
   GFC_INTEGER_4 rec;
   GFC_INTEGER_4 *nextrec, *size;
 
-  GFC_INTEGER_4 recl_in; 
+  GFC_INTEGER_4 recl_in;
   GFC_INTEGER_4 *recl_out;
 
   GFC_INTEGER_4 *iolength;
@@ -343,7 +343,7 @@ typedef struct
   unit_blank blank_status;
   enum {SIGN_S, SIGN_SS, SIGN_SP} sign_status;
   int scale_factor;
-  jmp_buf eof_jump;  
+  jmp_buf eof_jump;
 }
 global_t;
 
