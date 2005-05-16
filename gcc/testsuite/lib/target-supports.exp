@@ -570,15 +570,20 @@ proc check_function_available { function } {
     eval return \$$var
 }
 
-# Returns ture iff "fork" is available on the target system.
+# Returns true iff "fork" is available on the target system.
 
 proc check_fork_available {} {
     return [check_function_available "fork"]
 }
 
-# Returns ture iff "mkfifo" is available on the target system.
+# Returns true iff "mkfifo" is available on the target system.
 
 proc check_mkfifo_available {} {
+    if {[istarget *-*-cygwin*]} {
+       # Cygwin has mkfifo, but support is incomplete.
+       return 0
+     }
+
     return [check_function_available "mkfifo"]
 }
 
