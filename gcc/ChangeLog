@@ -1,3 +1,14 @@
+2005-05-16  Richard Sandiford  <rsandifo@redhat.com>
+
+	* Makefile.in (options.c): Tell optc-gen.awk to include config.h,
+	system.h, coretypes.h and tm.h.
+	(options.o): Update dependencies accordingly.
+	* optc-gen.awk: Allow header_name to be a list of filenames.
+	Handle the "Condition" flag.
+	* opts.h (CL_DISABLED): New flag.
+	* opts.c (handle_option): Print an error for CL_DISABLED options.
+	* doc/options.texi: Document the "Condition" option flag.
+
 2005-05-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-inline.c (estimate_num_insns_1): Handle VEC_COND_EXPR.
