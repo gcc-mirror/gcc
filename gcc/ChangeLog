@@ -1,3 +1,7 @@
+2005-05-16  Richard Sandiford  <rsandifo@redhat.com>
+
+	* optc-gen.awk: Include intl.h after the externally-provided files.
+
 2005-05-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-copy.c (copy_prop_visit_assignment): Clean up by
