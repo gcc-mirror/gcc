@@ -1,3 +1,7 @@
+2005-05-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-inline.c (estimate_num_insns_1): Handle VEC_COND_EXPR.
+
 2005-05-15  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-scalar-evolution.c (set_nb_iterations_in_loop): Only
