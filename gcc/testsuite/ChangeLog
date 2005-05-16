@@ -1,3 +1,10 @@
+2005-05-16  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	PR libstdc++/21526
+	* lib/target-supports.exp (check_mkfifo_available):
+	Return 0 for cygwin as mkfifo support incomplete on platform.
+	Fix typos in comments.
+
 2005-05-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/compat.exp (compat-execute): Do not use regsub unsafely.
