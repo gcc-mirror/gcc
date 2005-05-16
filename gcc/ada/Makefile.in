@@ -245,7 +245,9 @@ LIBIBERTY = ../../libiberty/libiberty.a
 # and the system's installed libraries.
 LIBS = $(LIBINTL) $(LIBIBERTY) $(SYSLIBS)
 LIBDEPS = $(LIBINTL_DEP) $(LIBIBERTY)
-TOOLS_LIBS = $(LIBGNAT) $(EXTRA_GNATTOOLS_OBJS) link.o ../../../libiberty/libiberty.a $(SYSLIBS)
+# Default is no TGT_LIB; one might be passed down or something
+TGT_LIB =
+TOOLS_LIBS = $(LIBGNAT) $(EXTRA_GNATTOOLS_OBJS) link.o ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
