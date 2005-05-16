@@ -2946,11 +2946,11 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
 	       block_stmt_iterator si)
 {
   stmt_ann_t ann;
-  tree stmt;
+  tree stmt, old_stmt;
   bool may_optimize_p;
   bool may_have_exposed_new_symbols = false;
 
-  stmt = bsi_stmt (si);
+  old_stmt = stmt = bsi_stmt (si);
 
   update_stmt_if_modified (stmt);
   ann = stmt_ann (stmt);
@@ -3055,7 +3055,7 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
 
       /* If we simplified a statement in such a way as to be shown that it
 	 cannot trap, update the eh information and the cfg to match.  */
-      if (maybe_clean_eh_stmt (stmt))
+      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
 	{
 	  bitmap_set_bit (need_eh_cleanup, bb->index);
 	  if (dump_file && (dump_flags & TDF_DETAILS))

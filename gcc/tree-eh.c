@@ -2034,12 +2034,32 @@ tree_can_throw_external (tree stmt)
     return can_throw_external_1 (region_nr);
 }
 
-bool
-maybe_clean_eh_stmt (tree stmt)
+/* Given a statement OLD_STMT and a new statement NEW_STMT that has replaced
+   OLD_STMT in the function, remove OLD_STMT from the EH table and put NEW_STMT
+   in the table if it should be in there.  Return TRUE if a replacement was
+   done that my require an EH edge purge.  */
+
+bool 
+maybe_clean_or_replace_eh_stmt (tree old_stmt, tree new_stmt) 
 {
-  if (!tree_could_throw_p (stmt))
-    if (remove_stmt_from_eh_region (stmt))
-      return true;
+  int region_nr = lookup_stmt_eh_region (old_stmt);
+
+  if (region_nr >= 0)
+    {
+      bool new_stmt_could_throw = tree_could_throw_p (new_stmt);
+
+      if (new_stmt == old_stmt && new_stmt_could_throw)
+	return false;
+
+      remove_stmt_from_eh_region (old_stmt);
+      if (new_stmt_could_throw)
+	{
+	  add_stmt_to_eh_region (new_stmt, region_nr);
+	  return false;
+	}
+      else
+	return true;
+    }
+
   return false;
 }
-

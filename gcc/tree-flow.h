@@ -751,7 +751,7 @@ extern bool tree_can_throw_external (tree);
 extern int lookup_stmt_eh_region (tree);
 extern void add_stmt_to_eh_region (tree, int);
 extern bool remove_stmt_from_eh_region (tree);
-extern bool maybe_clean_eh_stmt (tree);
+extern bool maybe_clean_or_replace_eh_stmt (tree, tree);
 
 /* In tree-ssa-pre.c  */
 void add_to_value (tree, tree);
