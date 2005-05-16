@@ -1,3 +1,8 @@
+2005-05-16  Richard Henderson  <rth@redhat.com>
+
+	* decl.c (build_library_fn_1): Move setting TREE_NOTHROW ...
+	(build_library_fn): ... here.
+
 2005-05-12  Ian Lance Taylor  <ian@airs.com>
 
 	* cp-tree.h (cp_stmt_codes): Don't define.
