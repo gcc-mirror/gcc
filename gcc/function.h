@@ -357,10 +357,10 @@ struct function GTY(())
      be used by debugger functions for determining the size of text
      sections.  */
 
-  const char * hot_section_label;
-  const char * cold_section_label;
-  const char * hot_section_end_label;
-  const char * cold_section_end_label;
+  const char *hot_section_label;
+  const char *cold_section_label;
+  const char *hot_section_end_label;
+  const char *cold_section_end_label;
 
   /* String to be used for name of cold text sections, via
      targetm.asm_out.named_section.  */

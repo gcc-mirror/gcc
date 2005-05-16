@@ -1,3 +1,18 @@
+2005-05-16  Caroline Tice  <ctice@apple.com>
+
+	* bb-reorder.c (verify_hot_cold_block_grouping):  Replace
+	internal_error with gcc_assert.
+	* dwarf2out.c (dwarf2out_switch_text_section):  Likewise.
+	* function.h (struct function): Remove space between "*" and
+	struct field names.
+	* varasm.c (initialize_cold_section_name):   Add gcc_assert;
+	modify to use alloca.
+	(unlikely_text_section): Add check for flag_function_sections.
+	(assemble_start_function):  Move call to resolve_section, so it
+	comes before first call to unlikely_text_section.
+	(assemble_end_function):  Add test and call to function_section
+	if appropriate.
+	
 2005-05-16  Roger Sayle  <roger@eyesopen.com>
 
 	* c-common.c (c_common_truthvalue_conversion): Use fold_build2
