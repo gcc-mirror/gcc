@@ -594,32 +594,18 @@ copy_prop_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 {
   enum ssa_prop_result retval;
   tree cond;
-  use_operand_p use_p;
-  ssa_op_iter iter;
-  unsigned num;
-
 
   cond = COND_EXPR_COND (stmt);
   retval = SSA_PROP_VARYING;
-  num = NUM_SSA_OPERANDS (stmt, SSA_OP_USE);
 
   /* The only conditionals that we may be able to compute statically
-     are predicates involving at least one SSA_NAME.  */
+     are predicates involving two SSA_NAMEs.  */
   if (COMPARISON_CLASS_P (cond)
-      && num >= 1)
+      && TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME
+      && TREE_CODE (TREE_OPERAND (cond, 1)) == SSA_NAME)
     {
-      unsigned i;
-      tree *orig;
-
-      /* Save the original operands.  */
-      orig = xmalloc (sizeof (tree) * num);
-      i = 0;
-      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
-	{
-	  tree use = USE_FROM_PTR (use_p);
-	  orig[i++] = use;
-	  SET_USE (use_p, get_last_copy_of (use));
-	}
+      tree op0 = get_last_copy_of (TREE_OPERAND (cond, 0));
+      tree op1 = get_last_copy_of (TREE_OPERAND (cond, 1));
 
       /* See if we can determine the predicate's value.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -629,22 +615,20 @@ copy_prop_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 	  print_generic_stmt (dump_file, cond, 0);
 	}
 
-      /* We can fold COND only and get a useful result only when we
-	 have the same SSA_NAME on both sides of a comparison
-	 operator.  */
-      if (TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME
-	  && TREE_OPERAND (cond, 0) == TREE_OPERAND (cond, 1))
+      /* We can fold COND and get a useful result only when we have
+	 the same SSA_NAME on both sides of a comparison operator.  */
+      if (op0 == op1)
 	{
-	  *taken_edge_p = find_taken_edge (bb_for_stmt (stmt), fold (cond));
-	  if (*taken_edge_p)
-	    retval = SSA_PROP_INTERESTING;
+	  tree folded_cond = fold_binary (TREE_CODE (cond), boolean_type_node,
+					  op0, op1);
+	  if (folded_cond)
+	    {
+	      basic_block bb = bb_for_stmt (stmt);
+	      *taken_edge_p = find_taken_edge (bb, folded_cond);
+	      if (*taken_edge_p)
+		retval = SSA_PROP_INTERESTING;
+	    }
 	}
-
-      /* Restore the original operands.  */
-      i = 0;
-      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
-	SET_USE (use_p, orig[i++]);
-      free (orig);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS) && *taken_edge_p)
