@@ -1,3 +1,9 @@
+2005-05-16  Roger Sayle  <roger@eyesopen.com>
+
+	* c-common.c (c_common_truthvalue_conversion): Use fold_build2
+	instead of build_binary_op when performing code transformations
+	to avoid error messages about constructs not it the user's code.
+
 2005-05-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-pre.c: Fix a comment typo.
