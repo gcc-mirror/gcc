@@ -1,3 +1,8 @@
+2005-05-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-copy.c (copy_prop_visit_assignment): Clean up by
+	folding a COND_EXPR_COND in a nondestructive manner.
+
 2005-05-16  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/altivec.md (altivec_vmrghb, altivec_vmrghh, 
