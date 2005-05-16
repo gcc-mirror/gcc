@@ -1,3 +1,8 @@
+2005-05-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/install.html: Update list of required named
+	locales, add "es_ES".
+
 2005-05-13  Magnus Fromreide  <magfr@lysator.liu.se>
 
 	* testsuite/27_io/basic_streambuf/sgetn/char/1.cc: Use
