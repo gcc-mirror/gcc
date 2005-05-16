@@ -179,34 +179,23 @@ initialize_cold_section_name (void)
   const char *name;
   const char *stripped_name;
   char *buffer;
-  int len;
 
-  if (cfun
-      && current_function_decl)
+  gcc_assert (cfun && current_function_decl);
+  if (cfun->unlikely_text_section_name)
+    return;
+
+  if (flag_function_sections && DECL_SECTION_NAME (current_function_decl))
     {
-      if (!cfun->unlikely_text_section_name)
-	{
-	  if (flag_function_sections
-	      && DECL_SECTION_NAME (current_function_decl))
-	    {
-	      name = xstrdup (TREE_STRING_POINTER (DECL_SECTION_NAME 
-						   (current_function_decl)));
-	      stripped_name = targetm.strip_name_encoding (name);
-	      len = strlen (stripped_name);
-	      buffer = (char *) xmalloc (len + 10);
-	      sprintf (buffer, "%s%s", stripped_name, "_unlikely");
-	      cfun->unlikely_text_section_name = ggc_strdup (buffer);
-	      free (buffer);
-	      free ((char *) name);
-	    }
-	  else
-	    cfun->unlikely_text_section_name = 
-	                                UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
-	}
+      name = alloca (TREE_STRING_LENGTH (DECL_SECTION_NAME
+					 (current_function_decl)));
+      strcpy ((char *) name, TREE_STRING_POINTER (DECL_SECTION_NAME 
+					 (current_function_decl)));
+      stripped_name = targetm.strip_name_encoding (name);
+      buffer = ACONCAT ((stripped_name, "_unlikely", NULL));
+      cfun->unlikely_text_section_name = ggc_strdup (buffer);
     }
   else
-   internal_error 
-     ("initialize_cold_section_name called without valid current_function_decl.");
+    cfun->unlikely_text_section_name =  UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
 }
 
 /* Tell assembler to switch to text section.  */
@@ -232,9 +221,11 @@ unlikely_text_section (void)
       if (!cfun->unlikely_text_section_name)
 	initialize_cold_section_name ();
 
-      if ((in_section != in_unlikely_executed_text)
-	  &&  (in_section != in_named 
-	       || strcmp (in_named_name, cfun->unlikely_text_section_name) != 0))
+      if (flag_function_sections
+	  || ((in_section != in_unlikely_executed_text)
+	      &&  (in_section != in_named 
+		   || (strcmp (in_named_name, cfun->unlikely_text_section_name) 
+		       != 0))))
 	{
 	  named_section (NULL_TREE, cfun->unlikely_text_section_name, 0);
 	  in_section = in_unlikely_executed_text;
@@ -1267,6 +1258,8 @@ assemble_start_function (tree decl, const char *fnname)
   if (CONSTANT_POOL_BEFORE_FUNCTION)
     output_constant_pool (fnname, decl);
 
+  resolve_unique_section (decl, 0, flag_function_sections);
+
   /* Make sure the not and cold text (code) sections are properly
      aligned.  This is necessary here in the case where the function
      has both hot and cold sections, because we don't want to re-set
@@ -1320,7 +1313,6 @@ assemble_start_function (tree decl, const char *fnname)
     }
 
   last_text_section = no_section;
-  resolve_unique_section (decl, 0, flag_function_sections);
 
   /* Switch to the correct text section for the start of the function.  */
 
@@ -1406,7 +1398,10 @@ assemble_end_function (tree decl, const char *fnname)
       save_text_section = in_section;
       unlikely_text_section ();
       ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_end_label);
-      text_section ();
+      if (first_function_block_is_cold)
+	text_section ();
+      else
+	function_section (decl);
       ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_end_label);
       if (save_text_section == in_unlikely_executed_text)
 	unlikely_text_section ();

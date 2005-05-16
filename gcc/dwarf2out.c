@@ -6814,8 +6814,7 @@ dwarf2out_switch_text_section (void)
 {
   dw_fde_ref fde;
 
-  if (!cfun)
-    internal_error ("Attempt to switch text sections without any code.");
+  gcc_assert (cfun);
 
   fde = &fde_table[fde_table_in_use - 1];
   fde->dw_fde_switched_sections = true;

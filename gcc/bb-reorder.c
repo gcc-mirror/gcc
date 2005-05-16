@@ -1874,8 +1874,7 @@ verify_hot_cold_block_grouping (void)
 	}
     }
   
-  if (err)
-    internal_error ("verify_hot_cold_block_grouping failed");
+  gcc_assert(!err);
 }
 
 /* Reorder basic blocks.  The main entry point to this file.  FLAGS is
