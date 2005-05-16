@@ -52,14 +52,9 @@
  * Rewritten to be reentrant by Ulrich Drepper, 1995
  */
 
-#include "config.h"
-#ifdef HAVE_LIMITS_H
 #include <limits.h>
-#endif
 #include "libiberty.h"
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 #include "generate-random.h"
 
 

@@ -51,14 +51,9 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.*/
 
-#include "config.h"
-#ifdef HAVE_LIMITS_H
 #include <limits.h>
-#endif
 #include "libiberty.h"
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 #include "generate-random.h"
 
 
