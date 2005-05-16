@@ -1,3 +1,11 @@
+2005-05-16  Andreas Jaeger  <aj@suse.de>
+
+	* getpwd.c: Remove unneeded prototype getcwd and move getwd so
+	that it's only declared if needed.
+
+	* getopt1.c: Change order of includes so that __GNU_LIBRARY__ is
+	defined.
+
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
 	* functions.texi: Regenerated.
