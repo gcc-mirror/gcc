@@ -1,3 +1,11 @@
+2005-05-15  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2005-05-09  Mark Mitchell  <mark@codesourcery.com>
+	PR 18655
+	* dwarf2out.c (output_call_frame_info): Use DWARF2_FRAME_REG_OUT
+	before outputting DWARF_FRAME_RETURN_COLUMN.
+
 2005-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/21551
