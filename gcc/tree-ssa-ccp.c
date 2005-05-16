@@ -2355,6 +2355,7 @@ execute_fold_all_builtins (void)
       for (i = bsi_start (bb); !bsi_end_p (i); bsi_next (&i))
 	{
 	  tree *stmtp = bsi_stmt_ptr (i);
+	  tree old_stmt = *stmtp;
 	  tree call = get_rhs (*stmtp);
 	  tree callee, result;
 
@@ -2396,7 +2397,7 @@ execute_fold_all_builtins (void)
 		}
 	    }
 	  update_stmt (*stmtp);
-	  if (maybe_clean_eh_stmt (*stmtp)
+	  if (maybe_clean_or_replace_eh_stmt (old_stmt, *stmtp)
 	      && tree_purge_dead_eh_edges (bb))
 	    cfg_changed = true;
 

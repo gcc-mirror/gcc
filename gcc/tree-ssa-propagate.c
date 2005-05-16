@@ -1051,6 +1051,7 @@ substitute_and_fold (prop_value_t *prop_value)
 	  did_replace |= replace_vuses_in (stmt, &replaced_address, prop_value);
 	  if (did_replace)
 	    {
+	      tree old_stmt = stmt;
 	      fold_stmt (bsi_stmt_ptr (i));
 	      stmt = bsi_stmt(i);
 
@@ -1060,7 +1061,7 @@ substitute_and_fold (prop_value_t *prop_value)
 
               /* If we cleaned up EH information from the statement,
                  remove EH edges.  */
-	      if (maybe_clean_eh_stmt (stmt))
+	      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
 		tree_purge_dead_eh_edges (bb);
 	    }
 

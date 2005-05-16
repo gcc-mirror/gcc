@@ -2321,7 +2321,7 @@ eliminate (void)
 
 		  /* If we removed EH side effects from the statement, clean
 		     its EH information.  */
-		  if (maybe_clean_eh_stmt (stmt))
+		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
 		    {
 		      bitmap_set_bit (need_eh_cleanup,
 				      bb_for_stmt (stmt)->index);

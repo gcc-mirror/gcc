@@ -1,3 +1,16 @@
+2005-05-16  Richard Henderson  <rth@redhat.com>
+	    Steven Bosscher <stevenb@suse.de>
+
+	PR tree-opt/21399
+	* tree-eh.c (maybe_clean_or_replace_eh_stmt): Rename from 
+	maybe_clean_eh_stmt; take old stmt parameter.  Update EH
+	region data structure to match replacement.
+	* tree-flow.h: Update to match.
+	* tree-ssa-ccp.c (execute_fold_all_builtins): Likewise.
+	* tree-ssa-dom.c (optimize_stmt): Likewise.
+	* tree-ssa-pre.c (eliminate): Likewise.
+	* tree-ssa-propagate.c (substitute_and_fold): Likewise.
+
 2005-05-16  Caroline Tice  <ctice@apple.com>
 
 	* bb-reorder.c (verify_hot_cold_block_grouping):  Replace
