@@ -1,5 +1,10 @@
 2005-05-16  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/java/net/protocol/http/Headers.java (parse): Include final
+	character of line.
+
+2005-05-16  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/21606:
 	* java/net/URI.java (unquote): Handle lower-case letters as well.
 
