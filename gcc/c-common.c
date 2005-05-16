@@ -2462,12 +2462,12 @@ c_common_truthvalue_conversion (tree expr)
 	 two objects.  */
       if (TREE_TYPE (TREE_OPERAND (expr, 0))
 	  == TREE_TYPE (TREE_OPERAND (expr, 1)))
-	return build_binary_op (NE_EXPR, TREE_OPERAND (expr, 0),
-				TREE_OPERAND (expr, 1), 1);
-      return build_binary_op (NE_EXPR, TREE_OPERAND (expr, 0),
-			      fold (build1 (NOP_EXPR,
-					    TREE_TYPE (TREE_OPERAND (expr, 0)),
-					    TREE_OPERAND (expr, 1))), 1);
+	return fold_build2 (NE_EXPR, truthvalue_type_node,
+			    TREE_OPERAND (expr, 0), TREE_OPERAND (expr, 1));
+      return fold_build2 (NE_EXPR, truthvalue_type_node,
+			  TREE_OPERAND (expr, 0),
+			  fold_convert (TREE_TYPE (TREE_OPERAND (expr, 0)),
+					TREE_OPERAND (expr, 1)));
 
     case BIT_AND_EXPR:
       if (integer_onep (TREE_OPERAND (expr, 1))
