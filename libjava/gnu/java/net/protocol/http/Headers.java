@@ -323,7 +323,10 @@ public class Headers
         if (c1 == ' ' || c1 == '\t')
           {
             // Continuation
-            value.append(line.substring(0, len - 1));
+	    int last = len - 1;
+	    if (line.charAt(last) != '\r')
+	      ++last;
+            value.append(line.substring(0, last));
           }
         else
           {
@@ -340,7 +343,10 @@ public class Headers
                 di++;
               }
             while (di < len && line.charAt(di) == ' ');
-            value.append(line.substring(di, len - 1));
+	    int last = len - 1;
+	    if (line.charAt(last) != '\r')
+	      ++last;
+            value.append(line.substring(di, last));
           }
       }
   }
