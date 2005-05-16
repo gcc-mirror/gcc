@@ -994,6 +994,8 @@ ia64_expand_move (rtx op0, rtx op1)
 	      op1 = plus_constant (sym, addend_hi);
 	      addend = addend_lo;
 	    }
+	  else
+	    addend = 0;
 	}
       else
 	op1 = sym;
