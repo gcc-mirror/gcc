@@ -2178,6 +2178,11 @@ compute_affine_dependence (struct data_dependence_relation *ddr)
     fprintf (dump_file, ")\n");
 }
 
+
+typedef struct data_dependence_relation *ddr_p;
+DEF_VEC_P(ddr_p);
+DEF_VEC_ALLOC_P(ddr_p,heap);
+
 /* Compute a subset of the data dependence relation graph.  Don't
    compute read-read relations, and avoid the computation of the
    opposite relation, i.e. when AB has been computed, don't compute BA.
@@ -2186,7 +2191,7 @@ compute_affine_dependence (struct data_dependence_relation *ddr)
 
 static void 
 compute_all_dependences (varray_type datarefs, 
-			 varray_type *dependence_relations)
+			 VEC(ddr_p,heap) **dependence_relations)
 {
   unsigned int i, j, N;
 
@@ -2202,7 +2207,7 @@ compute_all_dependences (varray_type datarefs,
 	b = VARRAY_GENERIC_PTR (datarefs, j);
 	ddr = initialize_data_dependence_relation (a, b);
 
-	VARRAY_PUSH_GENERIC_PTR (*dependence_relations, ddr);
+	VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
 	compute_affine_dependence (ddr);
 	compute_subscript_distance (ddr);
       }
@@ -2329,7 +2334,8 @@ compute_data_dependences_for_loop (unsigned nb_loops,
 				   varray_type *dependence_relations)
 {
   unsigned int i;
-  varray_type allrelations;
+  VEC(ddr_p,heap) *allrelations;
+  struct data_dependence_relation *ddr;
 
   /* If one of the data references is not computable, give up without
      spending time to compute other dependences.  */
@@ -2346,13 +2352,11 @@ compute_data_dependences_for_loop (unsigned nb_loops,
       return;
     }
 
-  VARRAY_GENERIC_PTR_INIT (allrelations, 1, "Data dependence relations");
+  allrelations = NULL;
   compute_all_dependences (*datarefs, &allrelations);
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (allrelations); i++)
+  for (i = 0; VEC_iterate (ddr_p, allrelations, i, ddr); i++)
     {
-      struct data_dependence_relation *ddr;
-      ddr = VARRAY_GENERIC_PTR (allrelations, i);
       if (build_classic_dist_vector (ddr, nb_loops, loop->depth))
 	{
 	  VARRAY_PUSH_GENERIC_PTR (*dependence_relations, ddr);
