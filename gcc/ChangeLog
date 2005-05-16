@@ -5,6 +5,11 @@
 	(mem_loc_descriptor, add_const_value_attributes,
 	dwarf2out_init): Adjust uses of used_rtx_varray.
 
+	* tree-data-ref.c (compute_all_dependences): Change the type
+	of dependence_relations to VEC(ddr_p,heap)**.
+	(compute_data_dependences_for_loop): Change the type of
+	allrelations to VEC(ddr_p,heap)*.
+
 2005-05-16  Richard Sandiford  <rsandifo@redhat.com>
 
 	* Makefile.in (options.c): Tell optc-gen.awk to include config.h,
