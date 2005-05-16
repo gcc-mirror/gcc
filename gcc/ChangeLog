@@ -1,3 +1,28 @@
+2005-05-15  Daniel Berlin  <dberlin@dberlin.org>
+	    
+	Fix PR tree-optimization/21576
+	
+	* tree-ssa-pre.c (expression_node_pool): New pool.
+	(comparison_node_pool): Ditto.
+	(list_node_pool): Ditto.
+	(pool_copy_list): New function.
+	(phi_translate): Handle CALL_EXPR.
+	(valid_in_set): Ditto.
+	(create_expression_by_pieces): Ditto.
+	(insert_into_preds_of_block): Ditto.
+	(insert_aux): Ditto.
+	(compute_avail): Ditto.
+	(create_value_expr_from): Handle TREE_LIST and CALL_EXPR.
+	(can_value_number_call): New function.
+	(find_leader): Update comment.
+	(init_pre): Create new pools.
+	(fini_pre): Free new pools.
+	(pass_pre): Add TODO_update_ssa for the future when we are going
+	to need vops.
+	* tree-vn.c (expressions_equal_p): Handle TREE_LIST.
+	(set_value_handle): Ditto.
+	(get_value_handle): Ditto.
+
 2005-05-15  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (thumb_unexpanded_epilogue): Delete unused variable 'mode'.
