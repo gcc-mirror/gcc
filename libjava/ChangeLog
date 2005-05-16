@@ -1,3 +1,8 @@
+2005-05-16  Ziga Mahkovec  <ziga.mahkovec@klika.si>
+
+	PR libgcj/20504
+	gnu/regexp/RE.java: Add support for quoting constructs.
+
 2005-05-15  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/String.java (startsWith): Fixed javadoc.
