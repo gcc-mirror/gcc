@@ -1,3 +1,10 @@
+2005-05-15  Roger Sayle  <roger@eyesopen.com>
+
+	* tree-scalar-evolution.c (set_nb_iterations_in_loop): Only
+	check for TREE_OVERFLOW on INTEGER_CST trees.
+	* tree-chrec.c (chrec_convert): Only clear TREE_OVERFLOW on
+	CONSTANT_CLASS_P tree nodes.
+
 2005-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/21551
