@@ -2022,7 +2022,7 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
   
   /* This case is only for TREE_LIST's that appear as part of
      CALL_EXPR's.  Anything else is a bug, but we can't easily verify
-     this, hence tihs comment.  TREE_LIST is not handled by the
+     this, hence this comment.  TREE_LIST is not handled by the
      general case below is because they don't have a fixed length, or
      operands, so you can't access purpose/value/chain through
      TREE_OPERAND macros.  */
