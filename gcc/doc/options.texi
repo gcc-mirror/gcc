@@ -191,4 +191,11 @@ The state of the option should be printed by @option{-fverbose-asm}.
 @item Undocumented
 The option is deliberately missing documentation and should not
 be included in the @option{--help} output.
+
+@item Condition(@var{cond})
+The option should only be accepted if preprocessor condition
+@var{cond} is true.  Note that any C declarations associated with the
+option will be present even if @var{cond} is false; @var{cond} simply
+controls whether the option is accepted and whether it is printed in
+the @option{--help} output.
 @end table

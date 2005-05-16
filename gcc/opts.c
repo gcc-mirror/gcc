@@ -315,6 +315,14 @@ handle_option (const char **argv, unsigned int lang_mask)
   /* We've recognized this switch.  */
   result = 1;
 
+  /* Check to see if the option is disabled for this configuration.  */
+  if (option->flags & CL_DISABLED)
+    {
+      error ("command line option %qs"
+	     " is not supported by this configuration", opt);
+      goto done;
+    }
+
   /* Sort out any argument the switch takes.  */
   if (option->flags & CL_JOINED)
     {
