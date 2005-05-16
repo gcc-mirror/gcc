@@ -119,9 +119,25 @@ expressions_equal_p (tree e1, tree e2)
   te1 = TREE_TYPE (e1);
   te2 = TREE_TYPE (e2);
 
-  if (TREE_CODE (e1) == TREE_CODE (e2) 
-      && (te1 == te2 || lang_hooks.types_compatible_p (te1, te2))
-      && operand_equal_p (e1, e2, OEP_PURE_SAME))
+  if (TREE_CODE (e1) == TREE_LIST && TREE_CODE (e2) == TREE_LIST)
+    {
+      tree lop1 = e1;
+      tree lop2 = e2;
+      for (lop1 = e1, lop2 = e2;
+	   lop1 || lop2;
+	   lop1 = TREE_CHAIN (lop1), lop2 = TREE_CHAIN (lop2))
+	{
+	  if (!lop1 || !lop2)
+	    return false;
+	  if (!expressions_equal_p (TREE_VALUE (lop1), TREE_VALUE (lop2)))
+	    return false;
+	}
+      return true;
+
+    }
+  else if (TREE_CODE (e1) == TREE_CODE (e2) 
+	   && (te1 == te2 || lang_hooks.types_compatible_p (te1, te2))
+	   && operand_equal_p (e1, e2, OEP_PURE_SAME))
     return true;
 
   return false;
@@ -166,7 +182,7 @@ set_value_handle (tree e, tree v)
 {
   if (TREE_CODE (e) == SSA_NAME)
     SSA_NAME_VALUE (e) = v;
-  else if (EXPR_P (e) || DECL_P (e))
+  else if (EXPR_P (e) || DECL_P (e) || TREE_CODE (e) == TREE_LIST)
     get_tree_ann (e)->common.value_handle = v;
   else
     /* Do nothing.  Constants are their own value handles.  */
@@ -271,7 +287,7 @@ get_value_handle (tree expr)
 
   if (TREE_CODE (expr) == SSA_NAME)
     return SSA_NAME_VALUE (expr);
-  else if (EXPR_P (expr) || DECL_P (expr))
+  else if (EXPR_P (expr) || DECL_P (expr) || TREE_CODE (expr) == TREE_LIST)
     {
       tree_ann_t ann = tree_ann (expr);
       return ((ann) ? ann->common.value_handle : NULL_TREE);
