@@ -1062,9 +1062,11 @@ chrec_convert (tree type,
 	tree res = fold_convert (type, chrec);
 
 	/* Don't propagate overflows.  */
-	TREE_OVERFLOW (res) = 0;
 	if (CONSTANT_CLASS_P (res))
-	  TREE_CONSTANT_OVERFLOW (res) = 0;
+	  {
+	    TREE_CONSTANT_OVERFLOW (res) = 0;
+	    TREE_OVERFLOW (res) = 0;
+	  }
 
 	/* But reject constants that don't fit in their type after conversion.
 	   This can happen if TYPE_MIN_VALUE or TYPE_MAX_VALUE are not the

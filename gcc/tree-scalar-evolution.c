@@ -922,8 +922,9 @@ set_nb_iterations_in_loop (struct loop *loop,
      count of the loop in order to be compatible with the other
      nb_iter computations in loop-iv.  This also allows the
      representation of nb_iters that are equal to MAX_INT.  */
-  if ((TREE_CODE (res) == INTEGER_CST && TREE_INT_CST_LOW (res) == 0)
-      || TREE_OVERFLOW (res))
+  if (TREE_CODE (res) == INTEGER_CST
+      && (TREE_INT_CST_LOW (res) == 0
+	  || TREE_OVERFLOW (res)))
     res = chrec_dont_know;
   
   if (dump_file && (dump_flags & TDF_DETAILS))
