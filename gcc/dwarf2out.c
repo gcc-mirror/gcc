@@ -170,9 +170,12 @@ default_eh_frame_section (void)
 #endif
 }
 
+DEF_VEC_P(rtx);
+DEF_VEC_ALLOC_P(rtx,gc);
+
 /* Array of RTXes referenced by the debugging information, which therefore
    must be kept around forever.  */
-static GTY(()) varray_type used_rtx_varray;
+static GTY(()) VEC(rtx,gc) *used_rtx_array;
 
 /* A pointer to the base of a list of incomplete types which might be
    completed at some later time.  incomplete_types_list needs to be a
@@ -8680,7 +8683,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode, bool can_use_fbreg)
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
       mem_loc_result->dw_loc_oprnd1.v.val_addr = rtl;
-      VARRAY_PUSH_RTX (used_rtx_varray, rtl);
+      VEC_safe_push (rtx, gc, used_rtx_array, rtl);
       break;
 
     case PRE_MODIFY:
@@ -9772,7 +9775,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
     case LABEL_REF:
     case CONST:
       add_AT_addr (die, DW_AT_const_value, rtl);
-      VARRAY_PUSH_RTX (used_rtx_varray, rtl);
+      VEC_safe_push (rtx, gc, used_rtx_array, rtl);
       break;
 
     case PLUS:
@@ -10660,7 +10663,7 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
     {
       add_AT_addr (die, DW_AT_VMS_rtnbeg_pd_address,
 		   XEXP (DECL_RTL (decl), 0));
-      VARRAY_PUSH_RTX (used_rtx_varray, XEXP (DECL_RTL (decl), 0));
+      VEC_safe_push (tree, gc, used_rtx_array, XEXP (DECL_RTL (decl), 0));
     }
 #endif
 }
@@ -13506,7 +13509,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 
   incomplete_types = VEC_alloc (tree, gc, 64);
 
-  VARRAY_RTX_INIT (used_rtx_varray, 32, "used_rtx_varray");
+  used_rtx_array = VEC_alloc (rtx, gc, 32);
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,

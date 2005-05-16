@@ -1,3 +1,10 @@
+2005-05-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dwarf2out.c (used_rtx_varray): Rename to used_rtx_array.
+	Change the type to VEC(rtx,gc)*.
+	(mem_loc_descriptor, add_const_value_attributes,
+	dwarf2out_init): Adjust uses of used_rtx_varray.
+
 2005-05-16  Richard Sandiford  <rsandifo@redhat.com>
 
 	* Makefile.in (options.c): Tell optc-gen.awk to include config.h,
