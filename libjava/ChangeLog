@@ -1,3 +1,8 @@
+2005-05-16  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/21606:
+	* java/net/URI.java (unquote): Handle lower-case letters as well.
+
 2005-05-16  Ziga Mahkovec  <ziga.mahkovec@klika.si>
 
 	PR libgcj/20504

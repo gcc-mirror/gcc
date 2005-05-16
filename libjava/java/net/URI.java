@@ -255,9 +255,8 @@ public final class URI implements Comparable, Serializable
 	  {
 	    if (i + 2 >= str.length())
 	      throw new URISyntaxException(str, "Invalid quoted character");
-	    String hex = "0123456789ABCDEF";
-	    int hi = hex.indexOf(str.charAt(++i));
-	    int lo = hex.indexOf(str.charAt(++i));
+	    int hi = Character.digit(str.charAt(++i), 16);
+	    int lo = Character.digit(str.charAt(++i), 16);
 	    if (lo < 0 || hi < 0)
 	      throw new URISyntaxException(str, "Invalid quoted character");
 	    buf[pos++] = (byte) (hi * 16 + lo);
