@@ -1,3 +1,12 @@
+2005-05-16  Richard Henderson  <rth@redhat.com>
+
+        PR target/21556
+        * config/ia64/ia64.md (load_dtpmod, load_ltoff_dtpmod, load_dtprel,
+        load_dtprel64, load_dtprel22, load_dtprel_gd, load_ltoff_dtprel,
+        add_dtprel, add_dtprel14, add_dtprel22, load_tprel, load_tprel64,
+        load_tprel22, load_tprel_ie, load_ltoff_tprel, add_tprel, add_tprel14,
+        add_tprel22): Remove mode from symbolic operand.
+
 2005-05-15  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:
