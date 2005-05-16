@@ -1,5 +1,5 @@
 /* getopt_long and getopt_long_only entry points for GNU getopt.
-   Copyright (C) 1987,88,89,90,91,92,93,94,96,97,98
+   Copyright (C) 1987,88,89,90,91,92,93,94,96,97,98,2005
      Free Software Foundation, Inc.
 
    NOTE: This source is derived from an old version taken from the GNU C
@@ -24,8 +24,6 @@
 #include <config.h>
 #endif
 
-#include "getopt.h"
-
 #if !defined __STDC__ || !__STDC__
 /* This is a separate conditional since some stdc systems
    reject `defined (const)'.  */
@@ -35,6 +33,8 @@
 #endif
 
 #include <stdio.h>
+
+#include "getopt.h"
 
 /* Comment out all this code if we are using the GNU C Library, and are not
    actually compiling the library itself.  This code is part of the GNU C

@@ -39,10 +39,6 @@ extern int errno;
 #include <limits.h>
 #endif
 
-/* Prototype these in case the system headers don't provide them. */
-extern char *getpwd ();
-extern char *getwd ();
-
 #include "libiberty.h"
 
 /* Virtually every UN*X system now in common use (except for pre-4.3-tahoe
@@ -50,6 +46,8 @@ extern char *getwd ();
    the few exceptions to the general rule here.  */
 
 #if !defined(HAVE_GETCWD) && defined(HAVE_GETWD)
+/* Prototype in case the system headers doesn't provide it. */
+extern char *getwd ();
 #define getcwd(buf,len) getwd(buf)
 #endif
 
