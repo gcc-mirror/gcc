@@ -1,3 +1,9 @@
+2005-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/21454
+	* decl.c (maybe_deduce_size_from_array_init): Call
+	cp_apply_type_quals_to_decl after completing array type.
+
 2005-05-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20723

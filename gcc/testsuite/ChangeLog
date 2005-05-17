@@ -1,5 +1,8 @@
 2005-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/21454
+	* g++.dg/opt/const4.C: New test.
+
 	PR tree-optimization/21610
 	* gcc.c-torture/compile/20050516-1.c: New test.
 
