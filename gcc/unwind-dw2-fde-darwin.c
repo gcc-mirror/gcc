@@ -27,6 +27,7 @@
 /* Locate the FDE entry for a given address, using Darwin's keymgr support.  */
 
 #include "tconfig.h"
+#include "tsystem.h"
 #include <string.h>
 #include <stdlib.h>
 #include "dwarf2.h"
