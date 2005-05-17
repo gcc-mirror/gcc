@@ -1,3 +1,7 @@
+2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (eh_return): Add missing DONE.
+
 2005-05-17  Ian Lance Taylor  <ian@airs.com>
 
 	* read-rtl.c (struct macro_traverse_data): Add unknown_mode_attr
