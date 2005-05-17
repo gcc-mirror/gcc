@@ -1,3 +1,18 @@
+2005-05-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md (ncond, ocode, rcond): Remove separate
+	define_code_attr.
+	("b<ncond:code>", "b<ocond:code>", "b<rcond:code>")
+	("*b<ncond:code>_reversed", "*b<ocond:code>_reversed")
+	("*b<rcond:code>_reversed", "s<ncond:code>", "s<rcond:code>")
+	("s<ocond:code>"): Rename from respectively "b<ncond>",
+	"b<ocond>", "b<rcond>", ("*b<ncond>_reversed",
+	"*b<ocond>_reversed", "*b<rcond>_reversed", "s<ncond>",
+	"s<rcond>" and "s<ocond>".
+	("b<ocond:code>", "*b<ocond:code>_reversed")
+	("*b<rcond:code>_reversed"): Remove extraneous backslashes in
+	output statement section.
+
 2005-05-17  Roger Sayle  <roger@eyesopen.com>
 
 	* c-typeck.c (common_type): Also handle BOOLEAN_TYPEs.
