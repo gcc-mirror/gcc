@@ -383,6 +383,7 @@ init_tree_optimization_passes (void)
      we add may_alias right after fold builtins
      which can create arbitrary GIMPLE.  */
   NEXT_PASS (pass_may_alias);
+  NEXT_PASS (pass_cse_reciprocals);
   NEXT_PASS (pass_split_crit_edges);
   NEXT_PASS (pass_pre);
   NEXT_PASS (pass_sink_code);
