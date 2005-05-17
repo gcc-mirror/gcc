@@ -289,25 +289,22 @@ public abstract class Charset implements Comparable
     return true;
   }
 
-  public final ByteBuffer encode (CharBuffer cb)
+  // NB: This implementation serializes different threads calling
+  // Charset.encode(), a potential performance problem.  It might
+  // be better to remove the cache, or use ThreadLocal to cache on
+  // a per-thread basis.
+  public final synchronized ByteBuffer encode (CharBuffer cb)
   {
     try
       {
-        // NB: This implementation serializes different threads calling
-        // Charset.encode(), a potential performance problem.  It might
-        // be better to remove the cache, or use ThreadLocal to cache on
-        // a per-thread basis.
-        synchronized (Charset.class)
-          {
-            if (cachedEncoder == null)
-              {
-                cachedEncoder = newEncoder ()
-                  .onMalformedInput (CodingErrorAction.REPLACE)
-                  .onUnmappableCharacter (CodingErrorAction.REPLACE);
-              } else
- 	        cachedEncoder.reset();
-            return cachedEncoder.encode (cb);
-          }
+	if (cachedEncoder == null)
+	  {
+	    cachedEncoder = newEncoder ()
+	      .onMalformedInput (CodingErrorAction.REPLACE)
+	      .onUnmappableCharacter (CodingErrorAction.REPLACE);
+	  } else
+	  cachedEncoder.reset();
+	return cachedEncoder.encode (cb);
       }
     catch (CharacterCodingException e)
       {
@@ -320,26 +317,23 @@ public abstract class Charset implements Comparable
     return encode (CharBuffer.wrap (str));
   }
 
-  public final CharBuffer decode (ByteBuffer bb)
+  // NB: This implementation serializes different threads calling
+  // Charset.decode(), a potential performance problem.  It might
+  // be better to remove the cache, or use ThreadLocal to cache on
+  // a per-thread basis.
+  public final synchronized CharBuffer decode (ByteBuffer bb)
   {
     try
       {
-        // NB: This implementation serializes different threads calling
-        // Charset.decode(), a potential performance problem.  It might
-        // be better to remove the cache, or use ThreadLocal to cache on
-        // a per-thread basis.
-        synchronized (Charset.class)
-          {
-            if (cachedDecoder == null)
-              {
-                cachedDecoder = newDecoder ()
-                  .onMalformedInput (CodingErrorAction.REPLACE)
-                  .onUnmappableCharacter (CodingErrorAction.REPLACE);
-              } else
- 	        cachedDecoder.reset();
+	if (cachedDecoder == null)
+	  {
+	    cachedDecoder = newDecoder ()
+	      .onMalformedInput (CodingErrorAction.REPLACE)
+	      .onUnmappableCharacter (CodingErrorAction.REPLACE);
+	  } else
+	  cachedDecoder.reset();
 
-            return cachedDecoder.decode (bb);
-          }
+	return cachedDecoder.decode (bb);
       }
     catch (CharacterCodingException e)
       {

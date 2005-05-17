@@ -1,5 +1,10 @@
 2005-05-16  Tom Tromey  <tromey@redhat.com>
 
+	* java/nio/charset/Charset.java (encode, decode): Synchronize on
+	'this', not the class.
+
+2005-05-16  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/java/net/protocol/http/Headers.java (parse): Include final
 	character of line.
 
