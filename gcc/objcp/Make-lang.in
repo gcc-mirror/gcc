@@ -60,12 +60,12 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) $(BACKEND) $(LIBDEPS)
 objcp/objcp-lang.o : objcp/objcp-lang.c \
   $(CXX_TREE_H) $(TM_H) toplev.h debug.h langhooks.h objc/objc-act.h \
   $(LANGHOOKS_DEF_H) c-common.h gtype-objcp.h $(CXX_PRETTY_PRINT_H) \
-  $(DIAGNOSTIC_H) cp/cp-objcp-common.h
+  $(DIAGNOSTIC_H) cp/cp-objcp-common.h tree-gimple.h
 
 objcp/objcp-decl.o : objcp/objcp-decl.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_TREE_H) \
    toplev.h $(GGC_H) c-pragma.h input.h flags.h output.h objc/objc-act.h \
-   objcp/objcp-decl.h
+   objcp/objcp-decl.h tree-gimple.h
 
 # The following must be an explicit rule; please keep in sync with the implicit
 # one in Makefile.in.
@@ -73,7 +73,8 @@ objcp/objcp-act.o : objc/objc-act.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(TM_P_H) \
    $(EXPR_H) $(TARGET_H) $(CXX_TREE_H) diagnostic.h toplev.h flags.h \
    objc/objc-act.h input.h function.h output.h debug.h langhooks.h \
-   objcp/objcp-decl.h $(LANGHOOKS_DEF_H) $(HASHTAB_H) gt-objc-objc-act.h
+   objcp/objcp-decl.h $(LANGHOOKS_DEF_H) $(HASHTAB_H) gt-objc-objc-act.h \
+   tree-gimple.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 po-generated:

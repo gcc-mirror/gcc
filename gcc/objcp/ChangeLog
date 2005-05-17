@@ -1,3 +1,12 @@
+2005-05-17  Mike Stump  <mrs@apple.com>
+
+	Yet more Objective-C++...
+	
+	* Make-lang.in (objcp/objcp-lang.o): Add tree-gimple.h
+	(objcp/objcp-decl.o): Likewise.
+	(objcp/objcp-act.o): Likewise.
+	* objcp-lang.c (LANG_HOOKS_GIMPLIFY_EXPR): Add.
+
 2005-04-21  Mike Stump  <mrs@apple.com>
 
 	* ChangeLog: New.
