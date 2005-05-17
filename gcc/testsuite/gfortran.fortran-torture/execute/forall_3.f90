@@ -1,6 +1,5 @@
+! PR fortran/15080
 ! Really test forall with temporary
-! This test fails (2004-06-28).  See PR15080.  I'd XFAIL it,
-! but there doesn't seem to be an easy way to do this for torture tests.
 program evil_forall
   implicit none
   type t
