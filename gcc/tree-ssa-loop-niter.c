@@ -189,10 +189,10 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
   /* Ignore loops of while (i-- < 10) type.  */
   if (code != NE_EXPR)
     {
-      if (step0 && !tree_expr_nonnegative_p (step0))
+      if (step0 && tree_int_cst_sign_bit (step0))
 	return;
 
-      if (!zero_p (step1) && tree_expr_nonnegative_p (step1))
+      if (!zero_p (step1) && !tree_int_cst_sign_bit (step1))
 	return;
     }
 
@@ -366,7 +366,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
       if (!zero_p (step1))
   	step0 = fold_unary_to_constant (NEGATE_EXPR, type, step1);
       step1 = NULL_TREE;
-      if (!tree_expr_nonnegative_p (fold_convert (signed_niter_type, step0)))
+      if (tree_int_cst_sign_bit (fold_convert (signed_niter_type, step0)))
 	{
 	  step0 = fold_unary_to_constant (NEGATE_EXPR, type, step0);
 	  base1 = fold_build1 (NEGATE_EXPR, type, base1);
@@ -627,7 +627,7 @@ simplify_replace_tree (tree expr, tree old, tree new)
 /* Expand definitions of ssa names in EXPR as long as they are simple
    enough, and return the new expression.  */
 
-static tree
+tree
 expand_simple_operations (tree expr)
 {
   unsigned i, n;
