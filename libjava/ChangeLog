@@ -1,5 +1,10 @@
 2005-05-16  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/21140:
+	* java/nio/charset/Charset.java (encode, decode): Don't cache.
+
+2005-05-16  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/java/net/protocol/http/Headers.java (parse): Include final
 	character of line.
 

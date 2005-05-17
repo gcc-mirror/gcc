@@ -1,5 +1,5 @@
 /* Charset.java -- 
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -227,21 +227,10 @@ public abstract class Charset implements Comparable
   {
     try
       {
-        // NB: This implementation serializes different threads calling
-        // Charset.encode(), a potential performance problem.  It might
-        // be better to remove the cache, or use ThreadLocal to cache on
-        // a per-thread basis.
-        synchronized (Charset.class)
-          {
-            if (cachedEncoder == null)
-              {
-                cachedEncoder = newEncoder ()
-                  .onMalformedInput (CodingErrorAction.REPLACE)
-                  .onUnmappableCharacter (CodingErrorAction.REPLACE);
-              }
-
-            return cachedEncoder.encode (cb);
-          }
+	CharsetEncoder enc = newEncoder ()
+	  .onMalformedInput (CodingErrorAction.REPLACE)
+	  .onUnmappableCharacter (CodingErrorAction.REPLACE);
+	return enc.encode (cb);
       }
     catch (CharacterCodingException e)
       {
@@ -258,21 +247,10 @@ public abstract class Charset implements Comparable
   {
     try
       {
-        // NB: This implementation serializes different threads calling
-        // Charset.decode(), a potential performance problem.  It might
-        // be better to remove the cache, or use ThreadLocal to cache on
-        // a per-thread basis.
-        synchronized (Charset.class)
-          {
-            if (cachedDecoder == null)
-              {
-                cachedDecoder = newDecoder ()
-                  .onMalformedInput (CodingErrorAction.REPLACE)
-                  .onUnmappableCharacter (CodingErrorAction.REPLACE);
-              }
-
-            return cachedDecoder.decode (bb);
-          }
+	CharsetDecoder dec = newDecoder ()
+	  .onMalformedInput (CodingErrorAction.REPLACE)
+	  .onUnmappableCharacter (CodingErrorAction.REPLACE);
+	return dec.decode (bb);
       }
     catch (CharacterCodingException e)
       {
