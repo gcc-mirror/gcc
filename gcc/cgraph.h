@@ -117,6 +117,8 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Set when function is reachable by call from other function
      that is either reachable or needed.  */
   bool reachable;
+  /* Set once the function is lowered (ie it's CFG is built).  */
+  bool lowered;
   /* Set once the function has been instantiated and its callee
      lists created.  */
   bool analyzed;
@@ -215,6 +217,7 @@ bool decide_is_variable_needed (struct cgraph_varpool_node *, tree);
 bool cgraph_assemble_pending_functions (void);
 bool cgraph_varpool_assemble_pending_decls (void);
 void cgraph_finalize_function (tree, bool);
+void cgraph_lower_function (struct cgraph_node *);
 void cgraph_finalize_compilation_unit (void);
 void cgraph_create_edges (struct cgraph_node *, tree);
 void cgraph_optimize (void);

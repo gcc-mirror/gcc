@@ -162,19 +162,20 @@ struct expr_status GTY(())
 struct function GTY(())
 {
   struct eh_status *eh;
+  struct eh_status *saved_eh;
   struct expr_status *expr;
   struct emit_status *emit;
   struct varasm_status *varasm;
 
   /* The control flow graph for this function.  */
   struct control_flow_graph *cfg;
+  struct control_flow_graph *saved_cfg;
   bool after_inlining;
 
   /* For tree-optimize.c.  */
 
   /* Saved tree and arguments during tree optimization.  Used later for
      inlining */
-  tree saved_tree;
   tree saved_args;
   tree saved_static_chain_decl;
 

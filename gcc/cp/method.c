@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
+#include "tree-pass.h"
 
 /* Various flags to control the mangling process.  */
 
@@ -504,7 +505,9 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       /* Re-enable access control.  */
       pop_deferring_access_checks ();
 
-      expand_body (finish_function (0));
+      thunk_fndecl = finish_function (0);
+      tree_lowering_passes (thunk_fndecl);
+      expand_body (thunk_fndecl);
     }
 
   pop_from_top_level ();
