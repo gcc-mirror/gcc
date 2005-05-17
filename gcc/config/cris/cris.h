@@ -667,19 +667,15 @@ enum reg_class
 	  /* A BDAP constant: [reg+(8|16|32)bit offset]?  */		\
 	  && ((BASE_P (XEXP (XEXP (X, 0), 0))				\
 	       && CONSTANT_INDEX_P (XEXP (XEXP (X, 0), 1)))		\
-	      /* Swap arguments to the above.  FIXME: gcc-2.9x? */	\
-	      || (BASE_P (XEXP (XEXP (X, 0), 1))			\
-		  && CONSTANT_INDEX_P (XEXP (XEXP (X, 0), 0)))		\
 	      /* A BDAP register: [reg+[reg(+)].S]?  */			\
 	      || (BASE_P (XEXP (XEXP (X, 0), 0))			\
 		  && BDAP_INDEX_P(XEXP(XEXP(X, 0), 1)))			\
-	      /* Same, but with swapped arguments.  */			\
+	      /* Same, but with swapped arguments (no canonical		\
+		 ordering between e.g. REG and MEM as of LAST_UPDATED	\
+		 "Thu May 12 03:59:11 UTC 2005").  */			\
 	      || (BASE_P (XEXP (XEXP (X, 0), 1))			\
 		  && BDAP_INDEX_P (XEXP (XEXP (X, 0), 0)))		\
-	      /* A BIAP: [reg+reg.S].  */				\
-	      || (BASE_P (XEXP (XEXP (X, 0), 0))			\
-		  && BIAP_INDEX_P (XEXP (XEXP (X, 0), 1)))		\
-	      /* Same, but with swapped arguments.  */			\
+	      /* A BIAP: [reg+reg.S] (MULT comes first).  */		\
 	      || (BASE_P (XEXP (XEXP (X, 0), 1))			\
 		  && BIAP_INDEX_P (XEXP (XEXP (X, 0), 0))))))		\
  )
