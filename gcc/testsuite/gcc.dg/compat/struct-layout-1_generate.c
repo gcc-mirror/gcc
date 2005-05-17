@@ -1225,21 +1225,6 @@ iterative_hash (const void *k_in /* the key */,
   c = initval;           /* the previous hash value */
 
   /*---------------------------------------- handle most of the key */
-#ifndef WORDS_BIGENDIAN
-  /* On a little-endian machine, if the data is 4-byte aligned we can hash
-     by word for better speed.  This gives nondeterministic results on
-     big-endian machines.  */
-  if (sizeof (hashval_t) == 4 && (((size_t)k)&3) == 0)
-    while (len >= 12)    /* aligned */
-      {
-	a += *(hashval_t *)(k+0);
-	b += *(hashval_t *)(k+4);
-	c += *(hashval_t *)(k+8);
-	mix(a,b,c);
-	k += 12; len -= 12;
-      }
-  else /* unaligned */
-#endif
     while (len >= 12)
       {
 	a += (k[0] +((hashval_t)k[1]<<8) +((hashval_t)k[2]<<16) +((hashval_t)k[3]<<24));
