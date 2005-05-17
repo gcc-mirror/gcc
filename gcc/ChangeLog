@@ -1,5 +1,11 @@
 2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	* cfgloop.h (just_once_each_iteration_p): Declaration changed.
+	* cfgloopanal.c (just_once_each_iteration_p): Make the loop argument
+	const.
+
+2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* ggc-page.c (ggc_alloc_stat): Record amount of memory allocated.
 	* ggc-zone.c (ggc_alloc_zone_1): Ditto.
 	* timevar.c (timevar_ggc_mem_total): New variable.

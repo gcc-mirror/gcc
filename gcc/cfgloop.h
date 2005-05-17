@@ -287,7 +287,7 @@ extern void force_single_succ_latches (struct loops *);
 extern void verify_loop_structure (struct loops *);
 
 /* Loop analysis.  */
-extern bool just_once_each_iteration_p (struct loop *, basic_block);
+extern bool just_once_each_iteration_p (const struct loop *, basic_block);
 extern unsigned expected_loop_iterations (const struct loop *);
 
 /* Loop manipulation.  */
