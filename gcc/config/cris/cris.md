@@ -164,16 +164,9 @@
 (define_code_attr shlr [(ashiftrt "ashr") (lshiftrt "lshr") (ashift "ashl")])
 (define_code_attr slr [(ashiftrt "asr") (lshiftrt "lsr") (ashift "lsl")])
 
-;; For conditional branches and sCC.  We define an attribute by the
-;; same name as the macro, so the insn names here is seen as
-;; b<ncond>, b<ocond> etc. rather than b<code> b<code> etc.
 (define_code_macro ncond [eq ne gtu ltu geu leu])
-(define_code_attr  ncond [(eq "eq") (ne "ne") (gtu "gtu") (ltu "ltu")
-			  (geu "geu") (leu "leu")])
 (define_code_macro ocond [gt le])
-(define_code_attr ocond [(gt "gt") (le "le")])
 (define_code_macro rcond [lt ge])
-(define_code_attr rcond [(lt "lt") (ge "ge")])
 (define_code_attr CC [(eq "eq") (ne "ne") (gt "gt") (gtu "hi") (lt "lt")
 		      (ltu "lo") (ge "ge") (geu "hs") (le "le") (leu "ls")])
 (define_code_attr rCC [(eq "ne") (ne "eq") (gt "le") (gtu "ls") (lt "ge")
@@ -2638,7 +2631,7 @@
 ;; e.g. m68k, so we have to check if overflow bit is set on all "signed"
 ;; conditions.
 
-(define_insn "b<ncond>"
+(define_insn "b<ncond:code>"
   [(set (pc)
 	(if_then_else (ncond (cc0)
 			     (const_int 0))
@@ -2648,7 +2641,7 @@
   "b<CC> %l0%#"
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "b<ocond>"
+(define_insn "b<ocond:code>"
   [(set (pc)
 	(if_then_else (ocond (cc0)
 			     (const_int 0))
@@ -2658,11 +2651,11 @@
 {
   return
     (cc_prev_status.flags & CC_NO_OVERFLOW)
-    ? 0 : \"b<CC> %l0%#\";
+    ? 0 : "b<CC> %l0%#";
 }
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "b<rcond>"
+(define_insn "b<rcond:code>"
   [(set (pc)
 	(if_then_else (rcond (cc0)
 			     (const_int 0))
@@ -2678,7 +2671,7 @@
 
 ;; Reversed anonymous patterns to the ones above, as mandated.
 
-(define_insn "*b<ncond>_reversed"
+(define_insn "*b<ncond:code>_reversed"
   [(set (pc)
 	(if_then_else (ncond (cc0)
 			     (const_int 0))
@@ -2688,7 +2681,7 @@
   "b<rCC> %l0%#"
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "*b<ocond>_reversed"
+(define_insn "*b<ocond:code>_reversed"
   [(set (pc)
 	(if_then_else (ocond (cc0)
 			     (const_int 0))
@@ -2698,11 +2691,11 @@
 {
   return
     (cc_prev_status.flags & CC_NO_OVERFLOW)
-    ? 0 : \"b<rCC> %l0%#\";
+    ? 0 : "b<rCC> %l0%#";
 }
   [(set_attr "slottable" "has_slot")])
 
-(define_insn "*b<rcond>_reversed"
+(define_insn "*b<rcond:code>_reversed"
   [(set (pc)
 	(if_then_else (rcond (cc0)
 			     (const_int 0))
@@ -2712,7 +2705,7 @@
 {
   return
     (cc_prev_status.flags & CC_NO_OVERFLOW)
-    ? \"b<roCC> %l0%#\" : \"b<rCC> %l0%#\";
+    ? "b<roCC> %l0%#" : "b<rCC> %l0%#";
 }
   [(set_attr "slottable" "has_slot")])
 
@@ -2721,7 +2714,7 @@
 ;; Like bCC, we have to check the overflow bit for
 ;; signed conditions.
 
-(define_insn "s<ncond>"
+(define_insn "s<ncond:code>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ncond:SI (cc0) (const_int 0)))]
   ""
@@ -2729,7 +2722,7 @@
   [(set_attr "slottable" "yes")
    (set_attr "cc" "none")])
 
-(define_insn "s<rcond>"
+(define_insn "s<rcond:code>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(rcond:SI (cc0) (const_int 0)))]
   ""
@@ -2741,7 +2734,7 @@
   [(set_attr "slottable" "yes")
    (set_attr "cc" "none")])
 
-(define_insn "s<ocond>"
+(define_insn "s<ocond:code>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ocond:SI (cc0) (const_int 0)))]
   ""
