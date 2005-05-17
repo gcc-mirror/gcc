@@ -248,7 +248,7 @@ find_unit (int n)
  * unit or the internal file. */
 
 gfc_unit *
-get_unit (int read_flag)
+get_unit (int read_flag __attribute__ ((unused)))
 {
   if (ioparm.internal_unit != NULL)
     {
@@ -289,7 +289,7 @@ void
 init_units (void)
 {
   gfc_unit *u;
-  int i;
+  unsigned int i;
 
   if (options.stdin_unit >= 0)
     {				/* STDIN */
@@ -363,7 +363,7 @@ init_units (void)
    * set a 1 in the LSB and keep a running sum, stopping at MSB-1 bit. */
 
   g.max_offset = 0;
-  for (i=0; i < sizeof(g.max_offset) * 8 - 1; i++)
+  for (i = 0; i < sizeof (g.max_offset) * 8 - 1; i++)
     g.max_offset = g.max_offset + ((gfc_offset) 1 << i);
 
 }
