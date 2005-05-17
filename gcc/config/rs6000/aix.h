@@ -38,8 +38,6 @@
 #define TARGET_ALTIVEC 0
 #undef  TARGET_ALTIVEC_ABI
 #define TARGET_ALTIVEC_ABI 0
-#undef  TARGET_ALTIVEC_VRSAVE
-#define TARGET_ALTIVEC_VRSAVE 0
 
 /* The AIX linker will discard static constructors in object files before
    collect has a chance to see them, so scan the object files directly.  */

@@ -1,3 +1,15 @@
+2005-05-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix.h (TARGET_ALTIVEC_VRSAVE): Delete.
+	* config/rs6000/rs6000.c (rs6000_explicit_options): Add
+	aix_struct_ret.
+	(rs6000_override_options): Do not protect TARGET_ALTIVEC_VRSAVE.
+	Modify aix_struct_return variable, not target_flags.
+	(rs6000_handle_option): Do not protect TARGET_ALTIVEC_VRSAVE.
+	(rs6000_return_in_memory): Test aix_struct_return.
+	* config/rs6000/rs6000.opt (maix-struct-return): Convert to
+	independent variable.  Report mxl-compat.
+
 2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (eh_return): Add missing DONE.
