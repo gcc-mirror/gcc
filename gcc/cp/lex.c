@@ -175,6 +175,7 @@ struct resword
    _true_.  */
 #define D_EXT		0x01	/* GCC extension */
 #define D_ASM		0x02	/* in C99, but has a switch to turn it off */
+#define D_OBJC		0x04	/* Objective C++ only */
 
 CONSTRAINT(ridbits_fit, RID_LAST_MODIFIER < sizeof(unsigned long) * CHAR_BIT);
 
@@ -279,6 +280,31 @@ static const struct resword reswords[] =
   { "wchar_t",          RID_WCHAR,	0 },
   { "while",		RID_WHILE,	0 },
 
+  /* The remaining keywords are specific to Objective-C++.  NB:
+     All of them will remain _disabled_, since they are context-
+     sensitive.  */
+
+  /* These ObjC keywords are recognized only immediately after
+     an '@'.  NB: The following C++ keywords double as
+     ObjC keywords in this context: RID_CLASS, RID_PRIVATE,
+     RID_PROTECTED, RID_PUBLIC, RID_THROW, RID_TRY and RID_CATCH.  */
+  { "compatibility_alias", RID_AT_ALIAS,	D_OBJC },
+  { "defs",		RID_AT_DEFS,		D_OBJC },
+  { "encode",		RID_AT_ENCODE,		D_OBJC },
+  { "end",		RID_AT_END,		D_OBJC },
+  { "implementation",	RID_AT_IMPLEMENTATION,	D_OBJC },
+  { "interface",	RID_AT_INTERFACE,	D_OBJC },
+  { "protocol",		RID_AT_PROTOCOL,	D_OBJC },
+  { "selector",		RID_AT_SELECTOR,	D_OBJC },
+  { "finally",		RID_AT_FINALLY,		D_OBJC },
+  { "synchronized",	RID_AT_SYNCHRONIZED,	D_OBJC },
+  /* These are recognized only in protocol-qualifier context.  */
+  { "bycopy",		RID_BYCOPY,		D_OBJC },
+  { "byref",		RID_BYREF,		D_OBJC },
+  { "in",		RID_IN,			D_OBJC },
+  { "inout",		RID_INOUT,		D_OBJC },
+  { "oneway",		RID_ONEWAY,		D_OBJC },
+  { "out",		RID_OUT,		D_OBJC },
 };
 
 void
@@ -287,6 +313,7 @@ init_reswords (void)
   unsigned int i;
   tree id;
   int mask = ((flag_no_asm ? D_ASM : 0)
+	      | D_OBJC
 	      | (flag_no_gnu_keywords ? D_EXT : 0));
 
   ridpointers = ggc_calloc ((int) RID_MAX, sizeof (tree));
