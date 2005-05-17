@@ -1,3 +1,31 @@
+2005-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/15080
+	* trans-stmt.c (generate_loop_for_temp_to_lhs): Remove SIZE and COUNT2
+	arguments.  If LSS is gfc_ss_terminator, increment COUNT1 by 1, instead
+	of incrementing COUNT2 and using COUNT1+COUNT2 increment COUNT1 and use
+	just that as index.
+	(generate_loop_for_rhs_to_temp): Likewise.
+	(compute_overall_iter_number): Add INNER_SIZE_BODY argument.
+	It non-NULL, add it to body.
+	(allocate_temp_for_forall_nest_1): New function, split from
+	allocate_temp_for_forall_nest.
+	(allocate_temp_for_forall_nest): Add INNER_SIZE_BODY argument,
+	propagate it down to compute_overall_iter_number.  Use
+	allocate_temp_for_forall_nest_1.
+	(gfc_trans_assign_need_temp): Remove COUNT2.  Call
+	compute_inner_temp_size into a new stmtblock_t.  Adjust calls to
+	allocate_temp_for_forall_nest, generate_loop_for_rhs_to_temp
+	and generate_loop_for_temp_to_lhs.
+	(gfc_trans_pointer_assign_need_temp): Adjust calls to
+	allocate_temp_for_forall_nest.
+	(gfc_evaluate_where_mask): Call compute_inner_temp_size into a new
+	stmtblock_t.  Call compute_overall_iter_number just once, then
+	allocate_temp_for_forall_nest_1 twice with the same size.
+	Initialize mask indexes if nested_forall_info != NULL.
+	(gfc_trans_where_2): Initialize mask indexes before calling
+	gfc_trans_nested_forall_loop.
+
 2005-05-15  Feng Wang <fengwang@nudt.edu.cn>
 	Jerry DeLisle <jvdelisle@verizon.net>
 
