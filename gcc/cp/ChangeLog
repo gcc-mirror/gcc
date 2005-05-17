@@ -1,3 +1,83 @@
+2005-05-17  Mike Stump  <mrs@apple.com>
+
+	Yet more Objective-C++...
+	
+	* cp-objcp-common.h (cxx_get_alias_set): Move from
+	here...
+	(cxx_warn_unused_global_decl): Likewise.
+	(cp_expr_size): Likewise.
+	(cp_tree_size): Likewise.
+	(cp_var_mod_type_p): Likewise.
+	(cxx_initialize_diagnostics): Likewise.
+	(cxx_types_compatible_p): Likewise.
+	* cp-tree.h: to here.
+	(do_poplevel): Add.
+	* lex.c (D_OBJC): Add.
+	(init_reswords): Add.
+	* Make-lang.in (cp/pt.o): Add cp/cp-objcp-common.h.
+	* parser.c: Add c-common.h include.
+	* pt.c: Add c-common.h and cp-objcp-common.h includes.
+	(template_args_equal): Use objc_comptypes as well.
+	(tsubst_copy_and_build): Use objcp_tsubst_copy_and_build as well.
+	* semantics.c (do_poplevel): Remove static.
+
+	* decl.c (objc_mark_locals_volatile): Don't change decls that are
+	already ok.
+	* decl2.c (generate_ctor_or_dtor_function): Add code to initialize
+	Objective C++ early enough.
+	* lex.c (struct resword reswords): Add Objective-C++ support.
+	* parser.c (cp_lexer_get_preprocessor_token): Add Objective-C++.
+	(cp_parser_objc_message_receiver): Add.
+	(cp_parser_objc_message_args): Likewise.
+	(cp_parser_objc_message_expression): Likewise.
+	(cp_parser_objc_encode_expression): Likewise.
+	(cp_parser_objc_defs_expression): Likewise.
+	(cp_parser_objc_protocol_expression): Likewise.
+	(cp_parser_objc_selector_expression): Likewise.
+	(cp_parser_objc_expression): Likewise.
+	(cp_parser_objc_visibility_spec): Likewise.
+	(cp_parser_objc_method_type): Likewise.
+	(cp_parser_objc_protocol_qualifiers): Likewise.
+	(cp_parser_objc_typename): Likewise.
+	(cp_parser_objc_selector_p): Likewise.
+	(cp_parser_objc_selector): Likewise.
+	(cp_parser_objc_method_keyword_params): Likewise.
+	(cp_parser_objc_method_tail_params_opt): Likewise.
+	(cp_parser_objc_interstitial_code): Likewise.
+	(cp_parser_objc_method_signature): Likewise.
+	(cp_parser_objc_method_prototype_list): Likewise.
+	(cp_parser_objc_method_definition_list): Likewise.
+	(cp_parser_objc_class_ivars): Likewise.
+	(cp_parser_objc_identifier_list): Likewise.
+	(cp_parser_objc_alias_declaration): Likewise.
+	(cp_parser_objc_class_declaration): Likewise.
+	(cp_parser_objc_protocol_declaration): Likewise.
+	(cp_parser_objc_protocol_refs_opt): Likewise.
+	(cp_parser_objc_superclass_or_category): Likewise.
+	(cp_parser_objc_class_interface): Likewise.
+	(cp_parser_objc_class_implementation): Likewise.
+	(cp_parser_objc_end_implementation): Likewise.
+	(cp_parser_objc_declaration): Likewise.
+	(cp_parser_objc_try_catch_finally_statement): Likewise.
+	(cp_parser_objc_synchronized_statement): Likewise.
+	(cp_parser_objc_throw_statement): Likewise.
+	(cp_parser_objc_statement): Likewise.
+	(cp_parser_primary_expression): Add Objective-C++.
+	(cp_parser_statement): Likewise.
+	(cp_parser_declaration): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_type_name): Likewise.
+	(cp_parser_parameter_declaration_list): Likewise.
+	(cp_parser_member_declaration) Likewise.
+	* tree.c: Include debug.h.
+	* typeck.c (composite_pointer_type): Add Objective-C++ support.
+	(finish_class_member_access_expr): Likewise.
+	(build_function_call): Allow objc to rewrite FUNCTION_DECLs.
+	(build_modify_expr): Allow objc to generate write barriers.
+
+	* Make-lang.in (cp/tree.o): Add debug.h.
+	* tree.c (lvalue_p_1, case CONST_DECL): Add.
+
 2005-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21454

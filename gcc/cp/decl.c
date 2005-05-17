@@ -419,19 +419,32 @@ objc_mark_locals_volatile (void *enclosing_blk)
   struct cp_binding_level *scope;
 
   for (scope = current_binding_level;
-       scope && scope != enclosing_blk && scope->kind == sk_block;
+       scope && scope != enclosing_blk;
        scope = scope->level_chain)
     {
       tree decl;
 
       for (decl = scope->names; decl; decl = TREE_CHAIN (decl))
         {
-	  if (TREE_CODE (decl) == VAR_DECL)
+	  /* Do not mess with variables that are 'static' or (already)
+	     'volatile'.  */
+	  if (!TREE_THIS_VOLATILE (decl) && !TREE_STATIC (decl)
+	      && (TREE_CODE (decl) == VAR_DECL
+		  || TREE_CODE (decl) == PARM_DECL))
 	    {
-              DECL_REGISTER (decl) = 0;
-              TREE_THIS_VOLATILE (decl) = 1;
+	      TREE_TYPE (decl)
+		= build_qualified_type (TREE_TYPE (decl),
+					(TYPE_QUALS (TREE_TYPE (decl))
+					 | TYPE_QUAL_VOLATILE));
+	      TREE_THIS_VOLATILE (decl) = 1;
+	      TREE_SIDE_EFFECTS (decl) = 1;
+	      DECL_REGISTER (decl) = 0;
 	    }
-        }
+	}
+
+      /* Do not climb up past the current function.  */
+      if (scope->kind == sk_function_parms)
+	break;
     }
 }
 

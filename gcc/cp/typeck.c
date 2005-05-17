@@ -514,10 +514,12 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       class1 = TREE_TYPE (t1);
       class2 = TREE_TYPE (t2);
 
-      if (DERIVED_FROM_P (class1, class2))
+      if (DERIVED_FROM_P (class1, class2) || 
+	  (c_dialect_objc () && objc_comptypes (class1, class2, 0) == 1))
 	t2 = (build_pointer_type 
 	      (cp_build_qualified_type (class1, TYPE_QUALS (class2))));
-      else if (DERIVED_FROM_P (class2, class1))
+      else if (DERIVED_FROM_P (class2, class1) ||
+	       (c_dialect_objc () && objc_comptypes (class2, class1, 0) == 1))
 	t1 = (build_pointer_type 
 	      (cp_build_qualified_type (class2, TYPE_QUALS (class1))));
       else
@@ -1849,6 +1851,10 @@ finish_class_member_access_expr (tree object, tree name)
   if (object == error_mark_node || name == error_mark_node)
     return error_mark_node;
 
+  /* If OBJECT is an ObjC class instance, we must obey ObjC access rules.  */
+  if (!objc_is_public (object, name))
+    return error_mark_node;
+
   object_type = TREE_TYPE (object);
 
   if (processing_template_decl)
@@ -2394,6 +2400,10 @@ build_function_call (tree function, tree params)
   tree name = NULL_TREE;
   int is_method;
   tree original = function;
+
+  /* For Objective-C, convert any calls via a cast to OBJC_TYPE_REF
+     expressions, like those used for ObjC messenger dispatches.  */
+  function = objc_rewrite_function_call (function, params);
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs, since FUNCTION is used in non-lvalue context.  */
@@ -5440,6 +5450,14 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 
   if (newrhs == error_mark_node)
     return error_mark_node;
+
+  if (c_dialect_objc () && flag_objc_gc)
+    {
+      result = objc_generate_write_barrier (lhs, modifycode, newrhs);
+
+      if (result)
+	return result;
+    }
 
   result = build2 (modifycode == NOP_EXPR ? MODIFY_EXPR : INIT_EXPR,
 		   lhstype, lhs, newrhs);

@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "integrate.h"
 #include "tree-inline.h"
+#include "debug.h"
 #include "target.h"
 
 static tree bot_manip (tree *, int *, void *);
@@ -111,6 +112,7 @@ lvalue_p_1 (tree ref,
     case STRING_CST:
       return clk_ordinary;
 
+    case CONST_DECL:
     case VAR_DECL:
       if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
 	  && DECL_LANG_SPECIFIC (ref)
