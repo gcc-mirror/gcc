@@ -35,6 +35,7 @@
 
 using namespace __cxxabiv1;
 
+#define gcc_unreachable() std::abort()
 #include "unwind-pe.h"
 
 

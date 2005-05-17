@@ -19,17 +19,9 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
-// unwind-pe.h uses std::abort(), but sometimes we compile libjava
-// without libstdc++-v3. The following hack forces it to use
-// stdlib.h's abort().
-namespace std
-{
-  static __attribute__ ((__noreturn__)) void
-  abort ()
-  {
-    ::abort ();
-  }
-}
+// Sometimes we compile libjava without libstdc++-v3. Therefore make
+// sure we use stdlib.h's abort().
+#define gcc_unreachable() ::abort ()
 #include "unwind.h"
 
 struct alignment_test_struct

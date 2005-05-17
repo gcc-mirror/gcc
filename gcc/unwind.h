@@ -214,8 +214,7 @@ _Unwind_GetDataRelBase (struct _Unwind_Context *_C)
 static inline _Unwind_Ptr
 _Unwind_GetTextRelBase (struct _Unwind_Context *_C __attribute__ ((__unused__)))
 {
-  abort ();
-  return 0;
+  gcc_unreachable ();
 }
 
 /* @@@ Retrieve the Backing Store Pointer of the given context.  */
