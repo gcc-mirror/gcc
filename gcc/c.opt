@@ -120,6 +120,10 @@ Wall
 C ObjC C++ ObjC++
 Enable most warning messages
 
+Wassign-intercept
+ObjC ObjC++ Var(warn_assign_intercept)
+Warn whenever an Objective-C assignment is being intercepted by the garbage collector
+
 Wbad-function-cast
 C ObjC Var(warn_bad_function_cast)
 Warn about casting functions to incompatible types
@@ -362,6 +366,10 @@ Wstrict-prototypes
 C ObjC Var(warn_strict_prototypes)
 Warn about unprototyped function declarations
 
+Wstrict-selector-match
+ObjC ObjC++ Var(warn_strict_selector_match)
+Warn if type signatures of candidate methods do not match exactly
+
 Wsynth
 C++ ObjC++ Var(warn_synth)
 Warn when synthesis behavior differs from Cfront
@@ -564,12 +572,29 @@ C++ ObjC++
 fnonnull-objects
 C++ ObjC++
 
+; Generate special '- .cxx_construct' and '- .cxx_destruct' methods
+; to initialize any non-POD ivars in Objective-C++ classes.
+fobjc-call-cxx-cdtors
+ObjC++ Var(flag_objc_call_cxx_cdtors)
+Generate special Objective-C methods to initialize/destroy non-POD C++ ivars, if needed
+
+fobjc-direct-dispatch
+ObjC ObjC++ Var(flag_objc_direct_dispatch)
+Allow fast jumps to the message dispatcher
+
+; Nonzero means that we will allow new ObjC exception syntax (@throw,
+; @try, etc.) in source code.
 fobjc-exceptions
-ObjC ObjC++
+ObjC ObjC++ Var(flag_objc_exceptions)
 Enable Objective-C exception and synchronization syntax
 
+fobjc-gc
+ObjC ObjC++ Var(flag_objc_gc)
+Enable garbage collection (GC) in Objective-C/Objective-C++ programs
+
+; Nonzero means that we generate NeXT setjmp based exceptions.
 fobjc-sjlj-exceptions
-ObjC ObjC++
+ObjC ObjC++ Var(flag_objc_sjlj_exceptions) Init(-1)
 Enable Objective-C setjmp exception handling runtime
 
 foperator-names

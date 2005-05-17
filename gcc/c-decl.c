@@ -567,12 +567,22 @@ objc_mark_locals_volatile (void *enclosing_blk)
     {
       for (b = scope->bindings; b; b = b->prev)
 	{
-	  if (TREE_CODE (b->decl) == VAR_DECL
-	      || TREE_CODE (b->decl) == PARM_DECL)
+	  tree decl = b->decl;
+
+	  /* Do not mess with variables that are 'static' or (already)
+	     'volatile'.  */
+	  if (!TREE_THIS_VOLATILE (decl) && !TREE_STATIC (decl)
+	      && (TREE_CODE (decl) == VAR_DECL
+		  || TREE_CODE (decl) == PARM_DECL))
 	    {
-	      C_DECL_REGISTER (b->decl) = 0;
-	      DECL_REGISTER (b->decl) = 0;
-	      TREE_THIS_VOLATILE (b->decl) = 1;
+	      TREE_TYPE (decl)
+		= build_qualified_type (TREE_TYPE (decl),
+					(TYPE_QUALS (TREE_TYPE (decl))
+					 | TYPE_QUAL_VOLATILE));
+	      TREE_THIS_VOLATILE (decl) = 1;
+	      TREE_SIDE_EFFECTS (decl) = 1;
+	      DECL_REGISTER (decl) = 0;
+	      C_DECL_REGISTER (decl) = 0;
 	    }
 	}
 

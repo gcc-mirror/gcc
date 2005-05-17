@@ -407,3 +407,9 @@ do {									\
    references for data to the original instance of that data.  */
 
 #define TARGET_FIX_AND_CONTINUE (darwin_fix_and_continue)
+
+/* This is the reserved direct dispatch address for Objective-C.  */
+#define OFFS_MSGSEND_FAST		0xFFFEFF00
+
+/* This is the reserved ivar address Objective-C.  */
+#define OFFS_ASSIGNIVAR_FAST		0xFFFEFEC0

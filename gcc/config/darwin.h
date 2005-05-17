@@ -533,7 +533,10 @@ Boston, MA 02111-1307, USA.  */
 	     machopic_validate_stub_or_non_lazy_ptr (xname);		     \
 	   else if (len > 14 && !strcmp ("$non_lazy_ptr", xname + len - 13)) \
 	     machopic_validate_stub_or_non_lazy_ptr (xname);		     \
-	   fputs (&xname[1], FILE);					     \
+	   if (xname[1] != '"' && name_needs_quotes (&xname[1]))	     \
+	     fprintf (FILE, "\"%s\"", &xname[1]);			     \
+	   else								     \
+	     fputs (&xname[1], FILE); 					     \
 	 }								     \
        else if (xname[0] == '+' || xname[0] == '-')			     \
          fprintf (FILE, "\"%s\"", xname);				     \
@@ -541,6 +544,8 @@ Boston, MA 02111-1307, USA.  */
          fprintf (FILE, "L%s", xname);					     \
        else if (!strncmp (xname, ".objc_class_name_", 17))		     \
 	 fprintf (FILE, "%s", xname);					     \
+       else if (xname[0] != '"' && name_needs_quotes (xname))		     \
+	 fprintf (FILE, "\"%s\"", xname);				     \
        else								     \
          asm_fprintf (FILE, "%U%s", xname);				     \
   } while (0)

@@ -290,13 +290,6 @@ int warn_strict_null_sentinel;
    will most likely result in crashes.  */
 int flag_nil_receivers = 1;
 
-/* Nonzero means that we will allow new ObjC exception syntax (@throw,
-   @try, etc.) in source code.  */
-int flag_objc_exceptions = 0;
-
-/* Nonzero means that we generate NeXT setjmp based exceptions.  */
-int flag_objc_sjlj_exceptions = -1;
-
 /* Nonzero means that code generation will be altered to support
    "zero-link" execution.  This currently affects ObjC only, but may
    affect other languages in the future.  */
