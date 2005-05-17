@@ -2392,6 +2392,50 @@
   [(set_attr "type" "sseiadd")
    (set_attr "mode" "TI")])
 
+(define_expand "mulv16qi3"
+  [(set (match_operand:V16QI 0 "register_operand" "")
+	(mult:V16QI (match_operand:V16QI 1 "register_operand" "")
+		    (match_operand:V16QI 2 "register_operand" "")))]
+  "TARGET_SSE2"
+{
+  rtx t[12], op0;
+  int i;
+
+  for (i = 0; i < 12; ++i)
+    t[i] = gen_reg_rtx (V16QImode);
+
+  /* Unpack data such that we've got a source byte in each low byte of
+     each word.  We don't care what goes into the high byte of each word.
+     Rather than trying to get zero in there, most convenient is to let
+     it be a copy of the low byte.  */
+  emit_insn (gen_sse2_punpckhbw (t[0], operands[1], operands[1]));
+  emit_insn (gen_sse2_punpckhbw (t[1], operands[2], operands[2]));
+  emit_insn (gen_sse2_punpcklbw (t[2], operands[1], operands[1]));
+  emit_insn (gen_sse2_punpcklbw (t[3], operands[2], operands[2]));
+
+  /* Multiply words.  The end-of-line annotations here give a picture of what
+     the output of that instruction looks like.  Dot means don't care; the 
+     letters are the bytes of the result with A being the most significant.  */
+  emit_insn (gen_mulv8hi3 (gen_lowpart (V8HImode, t[4]), /* .A.B.C.D.E.F.G.H */
+			   gen_lowpart (V8HImode, t[0]),
+			   gen_lowpart (V8HImode, t[1])));
+  emit_insn (gen_mulv8hi3 (gen_lowpart (V8HImode, t[5]), /* .I.J.K.L.M.N.O.P */
+			   gen_lowpart (V8HImode, t[2]),
+			   gen_lowpart (V8HImode, t[3])));
+
+  /* Extract the relevant bytes and merge them back together.  */
+  emit_insn (gen_sse2_punpckhbw (t[6], t[5], t[4]));	/* ..AI..BJ..CK..DL */
+  emit_insn (gen_sse2_punpcklbw (t[7], t[5], t[4]));	/* ..EM..FN..GO..HP */
+  emit_insn (gen_sse2_punpckhbw (t[8], t[7], t[6]));	/* ....AEIM....BFJN */
+  emit_insn (gen_sse2_punpcklbw (t[9], t[7], t[6]));	/* ....CGKO....DHLP */
+  emit_insn (gen_sse2_punpckhbw (t[10], t[9], t[8]));	/* ........ACEGIKMO */
+  emit_insn (gen_sse2_punpcklbw (t[11], t[9], t[8]));	/* ........BDFHJLNP */
+
+  op0 = operands[0];
+  emit_insn (gen_sse2_punpcklbw (op0, t[11], t[10]));	/* ABCDEFGHIJKLMNOP */
+  DONE;
+})
+
 (define_expand "mulv8hi3"
   [(set (match_operand:V8HI 0 "register_operand" "")
 	(mult:V8HI (match_operand:V8HI 1 "nonimmediate_operand" "")
@@ -2533,6 +2577,50 @@
 
   /* Merge the parts back together.  */
   emit_insn (gen_sse2_punpckldq (op0, t5, t6));
+  DONE;
+})
+
+(define_expand "mulv2di3"
+  [(set (match_operand:V2DI 0 "register_operand" "")
+	(mult:V2DI (match_operand:V2DI 1 "nonimmediate_operand" "")
+		   (match_operand:V2DI 2 "nonimmediate_operand" "")))]
+  "TARGET_SSE2"
+{
+  rtx t1, t2, t3, t4, t5, t6, thirtytwo;
+  rtx op0, op1, op2;
+
+  op0 = operands[0];
+  op1 = operands[1];
+  op2 = operands[2];
+  t1 = gen_reg_rtx (V2DImode);
+  t2 = gen_reg_rtx (V2DImode);
+  t3 = gen_reg_rtx (V2DImode);
+  t4 = gen_reg_rtx (V2DImode);
+  t5 = gen_reg_rtx (V2DImode);
+  t6 = gen_reg_rtx (V2DImode);
+  thirtytwo = GEN_INT (32);
+
+  /* Multiply low parts.  */
+  emit_insn (gen_sse2_umulv2siv2di3 (t1, gen_lowpart (V4SImode, op1),
+				     gen_lowpart (V4SImode, op2)));
+
+  /* Shift input vectors left 32 bits so we can multiply high parts.  */
+  emit_insn (gen_lshrv2di3 (t2, op1, thirtytwo));
+  emit_insn (gen_lshrv2di3 (t3, op2, thirtytwo));
+
+  /* Multiply high parts by low parts.  */
+  emit_insn (gen_sse2_umulv2siv2di3 (t4, gen_lowpart (V4SImode, op1),
+				     gen_lowpart (V4SImode, t3)));
+  emit_insn (gen_sse2_umulv2siv2di3 (t5, gen_lowpart (V4SImode, op2),
+				     gen_lowpart (V4SImode, t2)));
+
+  /* Shift them back.  */
+  emit_insn (gen_ashlv2di3 (t4, t4, thirtytwo));
+  emit_insn (gen_ashlv2di3 (t5, t5, thirtytwo));
+
+  /* Add the three parts together.  */
+  emit_insn (gen_addv2di3 (t6, t1, t4));
+  emit_insn (gen_addv2di3 (op0, t6, t5));
   DONE;
 })
 
