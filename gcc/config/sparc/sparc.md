@@ -1833,13 +1833,13 @@
   /* This makes sure we will not get rematched due to splittage.  */
   if (! CONSTANT_P (operands[1]) || input_operand (operands[1], HImode))
     ;
-  else if (CONSTANT_P (operands[1])
-	   && GET_CODE (operands[1]) != HIGH
+  else if (GET_CODE (operands[1]) != HIGH
 	   && GET_CODE (operands[1]) != LO_SUM)
     {
       sparc_emit_set_const32 (operands[0], operands[1]);
       DONE;
     }
+
  movhi_is_ok:
   ;
 })
@@ -1901,7 +1901,6 @@
 
       if (GET_CODE (operands[1]) == LABEL_REF)
 	{
-	  /* shit */
 	  emit_insn (gen_movsi_pic_label_ref (operands[0], operands[1]));
 	  DONE;
 	}
@@ -1929,13 +1928,13 @@
   /* This makes sure we will not get rematched due to splittage.  */
   if (! CONSTANT_P (operands[1]) || input_operand (operands[1], SImode))
     ;
-  else if (CONSTANT_P (operands[1])
-	   && GET_CODE (operands[1]) != HIGH
+  else if (GET_CODE (operands[1]) != HIGH
 	   && GET_CODE (operands[1]) != LO_SUM)
     {
       sparc_emit_set_const32 (operands[0], operands[1]);
       DONE;
     }
+
  movsi_is_ok:
   ;
 })
@@ -2045,12 +2044,7 @@
   /* Handle MEM cases first.  */
   if (GET_CODE (operands[0]) == MEM)
     {
-      /* If it's a REG, we can always do it.
-	 The const zero case is more complex, on v9
-	 we can always perform it.  */
-      if (register_operand (operands[1], DImode)
-	  || (TARGET_V9
-              && (operands[1] == const0_rtx)))
+      if (register_or_zero_operand (operands[1], DImode))
         goto movdi_is_ok;
 
       if (! reload_in_progress)
@@ -2131,7 +2125,7 @@
 				" J,U,T,r,o,i,r, f, T, o, f, f"))]
   "! TARGET_V9
    && (register_operand (operands[0], DImode)
-       || register_operand (operands[1], DImode))"
+       || register_or_zero_operand (operands[1], DImode))"
   "@
    #
    std\t%1, %0
@@ -2410,7 +2404,9 @@
 
   /* Slick... but this trick loses if this subreg constant part
      can be done in one insn.  */
-  if (low == high && (low & 0x3ff) != 0 && low + 0x1000 >= 0x2000)
+  if (low == high
+      && ! SPARC_SETHI32_P (high)
+      && ! SPARC_SIMM13_P (high))
     emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
 			  gen_highpart (SImode, operands[0])));
   else
@@ -2535,7 +2531,7 @@
 
 (define_split
   [(set (match_operand:DI 0 "memory_operand" "")
-        (const_int 0))]
+        (match_operand:DI 1 "const_zero_operand" ""))]
   "reload_completed
    && (! TARGET_V9
        || (! TARGET_ARCH64
@@ -2618,7 +2614,7 @@
 })
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:V32 0 "nonimmediate_operand" "=d,f,*r,*r,*r,*r,f,m,m")
+  [(set (match_operand:V32 0 "nonimmediate_operand" "=d,f,*r,*r,*r,f,*r,m,m")
 	(match_operand:V32 1 "input_operand"        "GY,f,*rRY,Q,S,m,m,f,*rGY"))]
   "TARGET_FPU
    && (register_operand (operands[0], <V32:MODE>mode)
@@ -2659,7 +2655,7 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "fga,fpmove,*,*,*,load,fpload,fpstore,store")])
+  [(set_attr "type" "fga,fpmove,*,*,*,fpload,load,fpstore,store")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
