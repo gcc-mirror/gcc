@@ -704,7 +704,7 @@ read_integer (int length)
 /* Read a character variable.  */
 
 static void
-read_character (int length)
+read_character (int length __attribute__ ((unused)))
 {
   char c, quote, message[100];
 
@@ -1693,7 +1693,7 @@ nml_untouch_nodes (void)
    on no match.  */
 
 static void
-nml_match_name (char *name, index_type len)
+nml_match_name (const char *name, index_type len)
 {
   index_type i;
   char c;

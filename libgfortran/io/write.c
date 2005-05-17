@@ -181,7 +181,7 @@ calculate_exp (int d)
           for Gw.dEe, n' ' means e+2 blanks  */
 
 static fnode *
-calculate_G_format (fnode *f, double value, int len, int *num_blank)
+calculate_G_format (fnode *f, double value, int *num_blank)
 {
   int e = f->u.real.e;
   int d = f->u.real.d;
@@ -271,7 +271,7 @@ calculate_G_format (fnode *f, double value, int len, int *num_blank)
 /* Output a real number according to its format which is FMT_G free.  */
 
 static void
-output_float (fnode *f, double value, int len)
+output_float (fnode *f, double value)
 {
   /* This must be large enough to accurately hold any value.  */
   char buffer[32];
@@ -732,13 +732,13 @@ write_float (fnode *f, const char *source, int len)
 
   if (f->format != FMT_G)
     {
-      output_float (f, n, len);
+      output_float (f, n);
     }
   else
     {
       save_scale_factor = g.scale_factor;
-      f2 = calculate_G_format(f, n, len, &nb);
-      output_float (f2, n, len);
+      f2 = calculate_G_format(f, n, &nb);
+      output_float (f2, n);
       g.scale_factor = save_scale_factor;
       if (f2 != NULL)
         free_mem(f2);
@@ -1325,7 +1325,7 @@ list_formatted_write (bt type, void *p, int len)
 
 /* Stores the delimiter to be used for character objects.  */
 
-static char * nml_delim;
+static const char * nml_delim;
 
 static namelist_info *
 nml_write_obj (namelist_info * obj, index_type offset,
@@ -1359,13 +1359,13 @@ nml_write_obj (namelist_info * obj, index_type offset,
       if (base)
 	{
 	  len =strlen (base->var_name);
-	  for (dim_i = 0; dim_i < strlen (base_name); dim_i++)
+	  for (dim_i = 0; dim_i < (index_type) strlen (base_name); dim_i++)
             {
 	      cup = toupper (base_name[dim_i]);
 	      write_character (&cup, 1);
             }
 	}
-      for (dim_i =len; dim_i < strlen (obj->var_name); dim_i++)
+      for (dim_i =len; dim_i < (index_type) strlen (obj->var_name); dim_i++)
 	{
 	  cup = toupper (obj->var_name[dim_i]);
 	  write_character (&cup, 1);
