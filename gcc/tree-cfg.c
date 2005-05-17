@@ -1261,6 +1261,7 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
 {
   tree stmt;
   block_stmt_iterator bsi;
+  tree phi;
 
   if (!single_succ_p (a))
     return false;
@@ -1288,9 +1289,19 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
       && DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
     return false;
 
-  /* There may be no PHI nodes at the start of B.  */
-  if (phi_nodes (b))
-    return false;
+  /* It must be possible to eliminate all phi nodes in B.  If ssa form
+     is not up-to-date, we cannot eliminate any phis.  */
+  phi = phi_nodes (b);
+  if (phi)
+    {
+      if (need_ssa_update_p ())
+	return false;
+
+      for (; phi; phi = PHI_CHAIN (phi))
+	if (!is_gimple_reg (PHI_RESULT (phi))
+	    && !may_propagate_copy (PHI_RESULT (phi), PHI_ARG_DEF (phi, 0)))
+	  return false;
+    }
 
   /* Do not remove user labels.  */
   for (bsi = bsi_start (b); !bsi_end_p (bsi); bsi_next (&bsi))
@@ -1310,6 +1321,55 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
   return true;
 }
 
+/* Replaces all uses of NAME by VAL.  */
+
+static void
+replace_uses_by (tree name, tree val)
+{
+  imm_use_iterator imm_iter;
+  use_operand_p use;
+  tree stmt;
+  edge e;
+  unsigned i;
+  VEC(tree,heap) *stmts = VEC_alloc (tree, heap, 20);
+
+  FOR_EACH_IMM_USE_SAFE (use, imm_iter, name)
+    {
+      stmt = USE_STMT (use);
+
+      SET_USE (use, val);
+
+      if (TREE_CODE (stmt) == PHI_NODE)
+	{
+	  e = PHI_ARG_EDGE (stmt, PHI_ARG_INDEX_FROM_USE (use));
+	  if (e->flags & EDGE_ABNORMAL)
+	    {
+	      /* This can only occur for virtual operands, since
+		 for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+		 would prevent replacement.  */
+	      gcc_assert (!is_gimple_reg (name));
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
+	    }
+	}
+      else
+	VEC_safe_push (tree, heap, stmts, stmt);
+    }
+ 
+  /* We do not update the statements in the loop above.  Consider
+     x = w * w;
+
+     If we performed the update in the first loop, the statement
+     would be rescanned after first occurence of w is replaced,
+     the new uses would be placed to the beginning of the list,
+     and we would never process them.  */
+  for (i = 0; VEC_iterate (tree, stmts, i, stmt); i++)
+    {
+      fold_stmt_inplace (stmt);
+      update_stmt (stmt);
+    }
+
+  VEC_free (tree, heap, stmts);
+}
 
 /* Merge block B into block A.  */
 
@@ -1318,9 +1378,39 @@ tree_merge_blocks (basic_block a, basic_block b)
 {
   block_stmt_iterator bsi;
   tree_stmt_iterator last;
+  tree phi;
 
   if (dump_file)
     fprintf (dump_file, "Merging blocks %d and %d\n", a->index, b->index);
+
+  /* Remove the phi nodes.  */
+  bsi = bsi_last (a);
+  for (phi = phi_nodes (b); phi; phi = phi_nodes (b))
+    {
+      tree def = PHI_RESULT (phi), use = PHI_ARG_DEF (phi, 0);
+      tree copy;
+      
+      if (!may_propagate_copy (def, use)
+	  /* Propagating pointers might cause the set of vops for statements
+	     to be changed, and thus require ssa form update.  */
+	  || (is_gimple_reg (def)
+	      && POINTER_TYPE_P (TREE_TYPE (def))))
+	{
+	  gcc_assert (is_gimple_reg (def));
+
+	  /* Note that just emiting the copies is fine -- there is no problem
+	     with ordering of phi nodes.  This is because A is the single
+	     predecessor of B, therefore results of the phi nodes cannot
+	     appear as arguments of the phi nodes.  */
+	  copy = build2 (MODIFY_EXPR, void_type_node, def, use);
+	  bsi_insert_after (&bsi, copy, BSI_NEW_STMT);
+	  SET_PHI_RESULT (phi, NULL_TREE);
+	  SSA_NAME_DEF_STMT (def) = copy;
+	}
+      else
+	replace_uses_by (def, use);
+      remove_phi_node (phi, NULL);
+    }
 
   /* Ensure that B follows A.  */
   move_block_after (b, a);

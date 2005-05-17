@@ -630,6 +630,7 @@ void set_current_def (tree, tree);
 
 /* In tree-ssa-ccp.c  */
 bool fold_stmt (tree *);
+bool fold_stmt_inplace (tree);
 tree widen_bitfield (tree, tree, tree);
 
 /* In tree-vrp.c  */

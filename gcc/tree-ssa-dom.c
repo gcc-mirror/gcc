@@ -404,6 +404,7 @@ tree_ssa_dominator_optimize (void)
   /* Clean up the CFG so that any forwarder blocks created by loop
      canonicalization are removed.  */
   cleanup_tree_cfg ();
+  calculate_dominance_info (CDI_DOMINATORS);
 
   /* If we prove certain blocks are unreachable, then we want to
      repeat the dominator optimization process as PHI nodes may

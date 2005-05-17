@@ -1,5 +1,16 @@
 2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	* tree-cfg.c (tree_can_merge_blocks_p): Allow phi nodes in the
+	merged block.
+	(replace_uses_by): New function.
+	(tree_merge_blocks): Eliminate the phi nodes in the merged block.
+	* tree-flow.h (fold_stmt_inplace): Declare.
+	* tree-ssa-ccp.c (fold_stmt_inplace): New function.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Update dominance
+	info after cfg cleanup.
+
+2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* cfgloop.h (just_once_each_iteration_p): Declaration changed.
 	* cfgloopanal.c (just_once_each_iteration_p): Make the loop argument
 	const.
