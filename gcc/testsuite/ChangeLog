@@ -1,3 +1,9 @@
+2005-05-17  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* gcc.dg/compat/generate-random.c: Do not include
+	libiberty.h.
+	* gcc.dg/compat/generate-random_r.c: Likewise.
+
 2005-05-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/fold-div-1.c, gcc.dg/recip-1.c, gcc.dg/recip-2.c: New.
