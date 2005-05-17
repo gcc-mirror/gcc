@@ -1624,8 +1624,12 @@ determine_visibility (tree decl)
 	       && DECL_DECLARED_INLINE_P (decl)
 	       && visibility_options.inlines_hidden)
 	{
-	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
-	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+	  /* Don't change it if it has been set explicitly by user.  */
+	  if (!DECL_VISIBILITY_SPECIFIED (decl))
+	    {
+	      DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+	      DECL_VISIBILITY_SPECIFIED (decl) = 1;
+	    }
 	}
       else if (CLASSTYPE_VISIBILITY_SPECIFIED (class_type))
 	{
