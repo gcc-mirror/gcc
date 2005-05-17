@@ -1,3 +1,13 @@
+2005-05-17  Mike Stump  <mrs@apple.com>
+
+	Yet more Objective-C++...
+
+	* objc.dg/method-5.m: Update.
+	* objc.dg/method-6.m: Update.
+	* objc.dg/method-7.m: Update.
+	* objc.dg/method-9.m: Update.
+	* objc.dg/try-catch-2.m: Update.
+
 2005-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/compat/struct-layout-1_generate.c (iterative_hash):
