@@ -52,7 +52,6 @@
    SUCH DAMAGE.*/
 
 #include <limits.h>
-#include "libiberty.h"
 #include <stdlib.h>
 #include "generate-random.h"
 
