@@ -1323,7 +1323,7 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
 
 /* Replaces all uses of NAME by VAL.  */
 
-static void
+void
 replace_uses_by (tree name, tree val)
 {
   imm_use_iterator imm_iter;

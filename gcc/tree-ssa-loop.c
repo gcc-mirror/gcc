@@ -286,6 +286,31 @@ struct tree_opt_pass pass_iv_canon =
   0					/* letter */
 };
 
+/* Propagation of constants using scev.  */
+
+static bool
+gate_scev_const_prop (void)
+{
+  return true;
+}
+
+struct tree_opt_pass pass_scev_cprop =
+{
+  "sccp",				/* name */
+  gate_scev_const_prop,			/* gate */
+  scev_const_prop,	       		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_SCEV_CONST,	  		/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func,			/* todo_flags_finish */
+  0					/* letter */
+};
+
 /* Record bounds on numbers of iterations of loops.  */
 
 static void
