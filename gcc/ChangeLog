@@ -1,3 +1,7 @@
+2005-05-17  Roger Sayle  <roger@eyesopen.com>
+
+	* c-typeck.c (common_type): Also handle BOOLEAN_TYPEs.
+
 2005-05-17  Steven Bosscher  <stevenb@suse.de>
 	    Stuart Hastings <stuart@apple.com>
 	    Jan Hubicka  <jh@suse.cz>
