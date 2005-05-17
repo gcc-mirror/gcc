@@ -992,6 +992,7 @@ find_bivs (struct ivopts_data *data)
 	continue;
 
       base = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
+      base = expand_simple_operations (base);
       if (contains_abnormal_ssa_name_p (base)
 	  || contains_abnormal_ssa_name_p (step))
 	continue;
@@ -1062,6 +1063,7 @@ find_givs_in_stmt_scev (struct ivopts_data *data, tree stmt,
 
   if (!simple_iv (loop, stmt, TREE_OPERAND (stmt, 1), base, step, true))
     return false;
+  *base = expand_simple_operations (*base);
 
   if (contains_abnormal_ssa_name_p (*base)
       || contains_abnormal_ssa_name_p (*step))
@@ -2536,7 +2538,7 @@ var_at_stmt (struct loop *loop, struct iv_cand *cand, tree stmt)
 /* Return the most significant (sign) bit of T.  Similar to tree_int_cst_msb,
    but the bit is determined from TYPE_PRECISION, not MODE_BITSIZE.  */
 
-static int
+int
 tree_int_cst_sign_bit (tree t)
 {
   unsigned bitno = TYPE_PRECISION (TREE_TYPE (t)) - 1;

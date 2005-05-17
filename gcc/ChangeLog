@@ -1,5 +1,16 @@
 2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	* tree-ssa-loop-ivopts.c (find_bivs, find_givs_in_stmt_scev): Apply
+	expand_simple_operations to bases of the ivs.
+	(tree_int_cst_sign_bit): Export.
+	* tree-flow.h (expand_simple_operations): Declare.
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Use
+	tree_int_cst_sign_bit.
+	(expand_simple_operations): Export.
+	* tree.h (tree_int_cst_sign_bit): Declare.
+
+2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* tree-cfg.c (tree_can_merge_blocks_p): Allow phi nodes in the
 	merged block.
 	(replace_uses_by): New function.
