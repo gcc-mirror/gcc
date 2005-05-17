@@ -1203,6 +1203,9 @@ ggc_alloc_stat (size_t size MEM_STAT_DECL)
      information is used in deciding when to collect.  */
   G.allocated += object_size;
 
+  /* For timevar statistics.  */
+  timevar_ggc_mem_total += object_size;
+
 #ifdef GATHER_STATISTICS
   {
     size_t overhead = object_size - size;

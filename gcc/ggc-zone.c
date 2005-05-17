@@ -1228,6 +1228,8 @@ ggc_alloc_zone_stat (size_t orig_size, struct alloc_zone *zone
   /* Keep track of how many bytes are being allocated.  This
      information is used in deciding when to collect.  */
   zone->allocated += size;
+  
+  timevar_ggc_mem_total += (size + CHUNK_OVERHEAD);
 
 #ifdef GATHER_STATISTICS
   ggc_record_overhead (orig_size, size - orig_size, result PASS_MEM_STAT);

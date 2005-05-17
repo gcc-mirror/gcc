@@ -61,6 +61,9 @@ struct timevar_time_def
 
   /* Wall clock time.  */
   double wall;
+
+  /* Garbage collector memory.  */
+  unsigned ggc_mem;
 };
 
 /* An enumeration of timing variable identifiers.  Constructed from
@@ -92,5 +95,7 @@ extern void timevar_print (FILE *);
 extern void print_time (const char *, long);
 
 extern bool timevar_enable;
+
+extern size_t timevar_ggc_mem_total;
 
 #endif /* ! GCC_TIMEVAR_H */
