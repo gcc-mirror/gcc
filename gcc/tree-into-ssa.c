@@ -2611,7 +2611,7 @@ switch_virtuals_to_full_rewrite (void)
 void
 update_ssa (unsigned update_flags)
 {
-  bitmap *dfs, blocks;
+  bitmap blocks;
   basic_block bb, start_bb;
   bitmap_iterator bi;
   unsigned i;
@@ -2646,13 +2646,8 @@ update_ssa (unsigned update_flags)
 
   if (insert_phi_p)
     {
-      /* If the caller requested PHI nodes to be added, compute
-	 dominance frontiers and initialize live-in information data
-	 structures (DEF_BLOCKS).  */
-      dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap *));
-      FOR_EACH_BB (bb)
-	dfs[bb->index] = BITMAP_ALLOC (NULL);
-      compute_dominance_frontiers (dfs);
+      /* If the caller requested PHI nodes to be added, initialize
+	 live-in information data structures (DEF_BLOCKS).  */
 
       /* For each SSA name N, the DEF_BLOCKS table describes where the
 	 name is defined, which blocks have PHI nodes for N, and which
@@ -2663,7 +2658,6 @@ update_ssa (unsigned update_flags)
     }
   else
     {
-      dfs = NULL;
       def_blocks = NULL;
     }
 
@@ -2738,6 +2732,15 @@ update_ssa (unsigned update_flags)
      and for symbols in SYMS_TO_RENAME.  */
   if (insert_phi_p)
     {
+      bitmap *dfs;
+
+      /* If the caller requested PHI nodes to be added, compute
+	 dominance frontiers.  */
+      dfs = xmalloc (last_basic_block * sizeof (bitmap *));
+      FOR_EACH_BB (bb)
+	dfs[bb->index] = BITMAP_ALLOC (NULL);
+      compute_dominance_frontiers (dfs);
+
       if (sbitmap_first_set_bit (old_ssa_names) >= 0)
 	{
 	  /* insert_update_phi_nodes_for will call add_new_name_mapping
@@ -2756,6 +2759,10 @@ update_ssa (unsigned update_flags)
       EXECUTE_IF_SET_IN_BITMAP (syms_to_rename, 0, i, bi)
 	insert_updated_phi_nodes_for (referenced_var (i), dfs, blocks,
 	                              update_flags);
+
+      FOR_EACH_BB (bb)
+	BITMAP_FREE (dfs[bb->index]);
+      free (dfs);
 
       /* Insertion of PHI nodes may have added blocks to the region.
 	 We need to re-compute START_BB to include the newly added
@@ -2813,13 +2820,6 @@ update_ssa (unsigned update_flags)
 
   /* Free allocated memory.  */
 done:
-  if (insert_phi_p)
-    {
-      FOR_EACH_BB (bb)
-	BITMAP_FREE (dfs[bb->index]);
-      free (dfs);
-    }
-
   BITMAP_FREE (blocks);
   delete_update_ssa ();
 
