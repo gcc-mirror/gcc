@@ -1,5 +1,17 @@
 2005-05-17  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* config/arm/lib1funcs.asm (cfi_pop, cfi_push, cfi_start)
+	(cfi_end): New macros.
+	(RETLDM): Use cfi_pop.  Expect an eight byte stack frame.
+	(ARM_LDIV0, THUMB_LDIV0, DIV_FUNC_END): Use CFI macros.  Create
+	an eight byte stack frame.
+	(__NR_tkill): Define.
+	(__div0): Use gettid tkill on GNU/Linux.
+	(_arm_return): Add CFI.
+	(Lchange_\register, .Lchange_lr): Create an eight byte stack frame.
+
+2005-05-17  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* configure.ac: Remove spaces around assignment to
 	gcc_cv_ld_sysroot.
 	* configure: Regenerated.
