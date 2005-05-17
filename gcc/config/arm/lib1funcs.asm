@@ -116,19 +116,82 @@ Boston, MA 02111-1307, USA.  */
 
 #endif
 
+.macro	cfi_pop		advance, reg, cfa_offset
+#ifdef __ELF__
+	.pushsection	.debug_frame
+	.byte	0x4		/* DW_CFA_advance_loc4 */
+	.4byte	\advance
+	.byte	(0xc0 | \reg)	/* DW_CFA_restore */
+	.byte	0xe		/* DW_CFA_def_cfa_offset */
+	.uleb128 \cfa_offset
+	.popsection
+#endif
+.endm
+.macro	cfi_push	advance, reg, offset, cfa_offset
+#ifdef __ELF__
+	.pushsection	.debug_frame
+	.byte	0x4		/* DW_CFA_advance_loc4 */
+	.4byte	\advance
+	.byte	(0x80 | \reg)	/* DW_CFA_offset */
+	.uleb128 (\offset / -4)
+	.byte	0xe		/* DW_CFA_def_cfa_offset */
+	.uleb128 \cfa_offset
+	.popsection
+#endif
+.endm
+.macro cfi_start	start_label, end_label
+#ifdef __ELF__
+	.pushsection	.debug_frame
+LSYM(Lstart_frame):
+	.4byte	LSYM(Lend_cie) - LSYM(Lstart_cie) @ Length of CIE
+LSYM(Lstart_cie):
+        .4byte	0xffffffff	@ CIE Identifier Tag
+        .byte	0x1	@ CIE Version
+        .ascii	"\0"	@ CIE Augmentation
+        .uleb128 0x1	@ CIE Code Alignment Factor
+        .sleb128 -4	@ CIE Data Alignment Factor
+        .byte	0xe	@ CIE RA Column
+        .byte	0xc	@ DW_CFA_def_cfa
+        .uleb128 0xd
+        .uleb128 0x0
+
+	.align 2
+LSYM(Lend_cie):
+	.4byte	LSYM(Lend_fde)-LSYM(Lstart_fde)	@ FDE Length
+LSYM(Lstart_fde):
+	.4byte	LSYM(Lstart_frame)	@ FDE CIE offset
+	.4byte	\start_label	@ FDE initial location
+	.4byte	\end_label-\start_label	@ FDE address range
+	.popsection
+#endif
+.endm
+.macro cfi_end	end_label
+#ifdef __ELF__
+	.pushsection	.debug_frame
+	.align	2
+LSYM(Lend_fde):
+	.popsection
+\end_label:
+#endif
+.endm
+
 /* Don't pass dirn, it's there just to get token pasting right.  */
 
-.macro	RETLDM	regs=, cond=, dirn=ia
+.macro	RETLDM	regs=, cond=, unwind=, dirn=ia
 #if defined (__INTERWORKING__)
 	.ifc "\regs",""
-	ldr\cond	lr, [sp], #4
+	ldr\cond	lr, [sp], #8
 	.else
 	ldm\cond\dirn	sp!, {\regs, lr}
+	.endif
+	.ifnc "\unwind", ""
+	/* Mark LR as restored.  */
+97:	cfi_pop 97b - \unwind, 0xe, 0x0
 	.endif
 	bx\cond	lr
 #else
 	.ifc "\regs",""
-	ldr\cond	pc, [sp], #4
+	ldr\cond	pc, [sp], #8
 	.else
 	ldm\cond\dirn	sp!, {\regs, pc}
 	.endif
@@ -136,25 +199,25 @@ Boston, MA 02111-1307, USA.  */
 .endm
 
 
-.macro ARM_LDIV0
-LSYM(Ldiv0):
-	str	lr, [sp, #-4]!
+.macro ARM_LDIV0 name
+	str	lr, [sp, #-8]!
+98:	cfi_push 98b - __\name, 0xe, -0x8, 0x8
 	bl	SYM (__div0) __PLT__
 	mov	r0, #0			@ About as wrong as it could be.
-	RETLDM
+	RETLDM	unwind=98b
 .endm
 
 
-.macro THUMB_LDIV0
-LSYM(Ldiv0):
-	push	{ lr }
+.macro THUMB_LDIV0 name
+	push	{ r1, lr }
+98:	cfi_push 98b - __\name, 0xe, -0x4, 0x8
 	bl	SYM (__div0)
 	mov	r0, #0			@ About as wrong as it could be.
 #if defined (__INTERWORKING__)
-	pop	{ r1 }
-	bx	r1
+	pop	{ r1, r2 }
+	bx	r2
 #else
-	pop	{ pc }
+	pop	{ r1, pc }
 #endif
 .endm
 
@@ -163,12 +226,14 @@ LSYM(Ldiv0):
 .endm
 
 .macro DIV_FUNC_END name
+	cfi_start	__\name, LSYM(Lend_div0)
 LSYM(Ldiv0):
 #ifdef __thumb__
-	THUMB_LDIV0
+	THUMB_LDIV0 \name
 #else
-	ARM_LDIV0
+	ARM_LDIV0 \name
 #endif
+	cfi_end	LSYM(Lend_div0)
 	FUNC_END \name
 .endm
 
@@ -923,16 +988,24 @@ LSYM(Lover12):
 #define __NR_SYSCALL_BASE	0x900000
 #define __NR_getpid			(__NR_SYSCALL_BASE+ 20)
 #define __NR_kill			(__NR_SYSCALL_BASE+ 37)
+#define __NR_gettid			(__NR_SYSCALL_BASE+ 224)
+#define __NR_tkill			(__NR_SYSCALL_BASE+ 238)
 
 	.code	32
 	FUNC_START div0
 
 	stmfd	sp!, {r1, lr}
-	swi	__NR_getpid
+	swi	__NR_gettid
 	cmn	r0, #1000
+	swihs	__NR_getpid
+	cmnhs	r0, #1000
 	RETLDM	r1 hs
+	mov	ip, r0
 	mov	r1, #SIGFPE
-	swi	__NR_kill
+	swi	__NR_tkill
+	movs	r0, r0
+	movne	r0, ip
+	swine	__NR_kill
 	RETLDM	r1
 
 	FUNC_END div0
@@ -1137,8 +1210,14 @@ LSYM(Lover12):
 
 	.code   32
 	.globl _arm_return
+LSYM(Lstart_arm_return):
+	cfi_start	LSYM(Lstart_arm_return) LSYM(Lend_arm_return)
+	cfi_push	0, 0xe, -0x8, 0x8
+	nop	@ This nop is for the benefit of debuggers, so that
+		@ backtraces will use the correct unwind information.
 _arm_return:
-	RETLDM
+	RETLDM	unwind=LSYM(Lstart_arm_return)
+	cfi_end	LSYM(Lend_arm_return)
 
 	.globl _arm_return_r7
 _arm_return_r7:
@@ -1179,7 +1258,7 @@ _arm_return_r11:
 	.globl LSYM(Lchange_\register)
 LSYM(Lchange_\register):
 	tst	\register, #1
-	streq	lr, [sp, #-4]!
+	streq	lr, [sp, #-8]!
 	adreq	lr, _arm_return
 	bx	\register
 
@@ -1216,7 +1295,7 @@ LSYM(Lchange_\register):
 	.globl .Lchange_lr
 .Lchange_lr:
 	tst	lr, #1
-	stmeqdb	r13!, {lr}
+	stmeqdb	r13!, {lr, pc}
 	mov	ip, lr
 	adreq	lr, _arm_return
 	bx	ip
