@@ -3067,7 +3067,7 @@ AC_CACHE_CHECK(linker --sysroot support,
   [gcc_cv_ld_sysroot=no
   if test $in_tree_ld = yes ; then
       if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 ; then
-        gcc_cv_ld_sysroot = yes
+        gcc_cv_ld_sysroot=yes
       fi
   elif test x$gcc_cv_ld != x; then 
     if $gcc_cv_ld --help 2>/dev/null | grep sysroot > /dev/null; then
