@@ -155,6 +155,7 @@ struct dump_file_info
   (TODO_verify_ssa | TODO_verify_flow | TODO_verify_stmts)
 
 extern void ipa_passes (void);
+extern void tree_lowering_passes (tree decl);
 
 extern struct tree_opt_pass pass_mudflap_1;
 extern struct tree_opt_pass pass_mudflap_2;

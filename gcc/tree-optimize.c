@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cgraph.h"
 #include "graph.h"
 #include "cfgloop.h"
+#include "except.h"
 
 
 /* Global variables used to communicate with passes.  */
@@ -55,7 +56,7 @@ int dump_flags;
 bool in_gimple_form;
 
 /* The root of the compilation pass tree, once constructed.  */
-static struct tree_opt_pass *all_passes, *all_ipa_passes;
+static struct tree_opt_pass *all_passes, *all_ipa_passes, * all_lowering_passes;
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
@@ -158,6 +159,51 @@ static struct tree_opt_pass pass_free_datastructures =
   0					/* letter */
 };
 
+/* Pass: fixup_cfg - IPA passes or compilation of earlier functions might've
+   changed some properties - such as marged functions nothrow.  Remove now
+   redundant edges and basic blocks.  */
+
+static void
+execute_fixup_cfg (void)
+{
+  basic_block bb;
+  block_stmt_iterator bsi;
+
+  if (cfun->eh)
+    FOR_EACH_BB (bb)
+      {
+	for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	  {
+	    tree stmt = bsi_stmt (bsi);
+	    tree call = get_call_expr_in (stmt);
+
+	    if (call && call_expr_flags (call) & (ECF_CONST | ECF_PURE))
+	      TREE_SIDE_EFFECTS (call) = 0;
+	    if (!tree_could_throw_p (stmt) && lookup_stmt_eh_region (stmt))
+	      remove_stmt_from_eh_region (stmt);
+	  }
+	tree_purge_dead_eh_edges (bb);
+      }
+    
+  cleanup_tree_cfg ();
+}
+
+static struct tree_opt_pass pass_fixup_cfg =
+{
+  NULL,					/* name */
+  NULL,					/* gate */
+  execute_fixup_cfg,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
 
 /* Do the actions required to initialize internal data structures used
    in tree-ssa optimization passes.  */
@@ -320,14 +366,21 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_ipa_inline);
   *p = NULL;
 
-  p = &all_passes;
+  /* All passes needed to lower the function into shape optimizers can operate
+     on.  These passes are performed before interprocedural passes, unlike rest
+     of local passes (all_passes).  */
+  p = &all_lowering_passes;
   NEXT_PASS (pass_remove_useless_stmts);
   NEXT_PASS (pass_mudflap_1);
-  NEXT_PASS (pass_lower_cf);
-  NEXT_PASS (pass_lower_eh);
-  NEXT_PASS (pass_build_cfg);
+  NEXT_PASS (pass_lower_cf); 
+  NEXT_PASS (pass_lower_eh); 
+  NEXT_PASS (pass_build_cfg); 
   NEXT_PASS (pass_pre_expand);
   NEXT_PASS (pass_warn_function_return);
+  *p = NULL;
+
+  p = &all_passes;
+  NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_tree_profile);
   NEXT_PASS (pass_init_datastructures);
   NEXT_PASS (pass_all_optimizations);
@@ -432,6 +485,7 @@ init_tree_optimization_passes (void)
 
 #undef NEXT_PASS
 
+  register_dump_files (all_lowering_passes, false, 0);
   register_dump_files (all_passes, false, PROP_gimple_any
 					  | PROP_gimple_lcf
 					  | PROP_gimple_leh
@@ -606,6 +660,23 @@ execute_pass_list (struct tree_opt_pass *pass)
   while (pass);
 }
 
+void
+tree_lowering_passes (tree fn)
+{
+  tree saved_current_function_decl = current_function_decl;
+
+  current_function_decl = fn;
+  push_cfun (DECL_STRUCT_FUNCTION (fn));
+  tree_register_cfg_hooks ();
+  bitmap_obstack_initialize (NULL);
+  execute_pass_list (all_lowering_passes);
+  free_dominance_info (CDI_POST_DOMINATORS);
+  compact_blocks ();
+  current_function_decl = saved_current_function_decl;
+  bitmap_obstack_release (NULL);
+  pop_cfun ();
+}
+
 /* Execute all IPA passes.  */
 void
 ipa_passes (void)
@@ -675,8 +746,7 @@ tree_rest_of_compilation (tree fndecl)
 	      cgraph_clone_inlined_nodes (e, true);
 	}
       cfun->saved_static_chain_decl = cfun->static_chain_decl;
-      cfun->saved_tree = save_body (fndecl, &cfun->saved_args,
-				    &cfun->saved_static_chain_decl);
+      save_body (fndecl, &cfun->saved_args, &cfun->saved_static_chain_decl);
     }
 
   if (flag_inline_trees)
@@ -712,6 +782,7 @@ tree_rest_of_compilation (tree fndecl)
   bitmap_obstack_initialize (NULL);
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
   
+  tree_register_cfg_hooks ();
   /* Perform all tree transforms and optimizations.  */
   execute_pass_list (all_passes);
   
@@ -721,12 +792,16 @@ tree_rest_of_compilation (tree fndecl)
   bitmap_obstack_release (NULL);
   
   /* Restore original body if still needed.  */
-  if (cfun->saved_tree)
+  if (cfun->saved_cfg)
     {
-      DECL_SAVED_TREE (fndecl) = cfun->saved_tree;
       DECL_ARGUMENTS (fndecl) = cfun->saved_args;
+      cfun->cfg = cfun->saved_cfg;
+      cfun->eh = cfun->saved_eh;
+      cfun->saved_cfg = NULL;
+      cfun->saved_eh = NULL;
+      cfun->saved_args = NULL_TREE;
       cfun->static_chain_decl = cfun->saved_static_chain_decl;
-
+      cfun->saved_static_chain_decl = NULL;
       /* When not in unit-at-a-time mode, we must preserve out of line copy
 	 representing node before inlining.  Restore original outgoing edges
 	 using clone we created earlier.  */
@@ -734,6 +809,7 @@ tree_rest_of_compilation (tree fndecl)
 	{
 	  struct cgraph_edge *e;
 
+	  node = cgraph_node (current_function_decl);
 	  cgraph_node_remove_callees (node);
 	  node->callees = saved_node->callees;
 	  saved_node->callees = NULL;

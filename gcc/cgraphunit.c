@@ -427,6 +427,7 @@ cgraph_finalize_function (tree decl, bool nested)
   notice_global_symbol (decl);
   node->decl = decl;
   node->local.finalized = true;
+  node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
   if (node->nested)
     lower_nested_functions (decl);
   gcc_assert (!node->nested);
@@ -458,6 +459,16 @@ cgraph_finalize_function (tree decl, bool nested)
   if (warn_unused_parameter)
     do_warn_unused_parameter (decl);
 }
+
+void
+cgraph_lower_function (struct cgraph_node *node)
+{
+  if (node->lowered)
+    return;
+  tree_lowering_passes (node->decl);
+  node->lowered = true;
+}
+
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
 static tree
@@ -538,6 +549,43 @@ cgraph_create_edges (struct cgraph_node *node, tree body)
   /* The nodes we're interested in are never shared, so walk
      the tree ignoring duplicates.  */
   visited_nodes = pointer_set_create ();
+  if (TREE_CODE (body) == FUNCTION_DECL)
+    {
+      struct function *this_cfun = DECL_STRUCT_FUNCTION (body);
+      basic_block this_block;
+      block_stmt_iterator bsi;
+      tree step;
+
+      /* Reach the trees by walking over the CFG, and note the 
+	 enclosing basic-blocks in the call edges.  */
+      FOR_EACH_BB_FN (this_block, this_cfun)
+        for (bsi = bsi_start (this_block); !bsi_end_p (bsi); bsi_next (&bsi))
+	  walk_tree (bsi_stmt_ptr (bsi), record_call_1, node, visited_nodes);
+
+      /* Walk over any private statics that may take addresses of functions.  */
+      if (TREE_CODE (DECL_INITIAL (body)) == BLOCK)
+	{
+	  for (step = BLOCK_VARS (DECL_INITIAL (body));
+	       step;
+	       step = TREE_CHAIN (step))
+	    if (DECL_INITIAL (step))
+	      walk_tree (&DECL_INITIAL (step), record_call_1, node, visited_nodes);
+	}
+
+      /* Also look here for private statics.  */
+      if (DECL_STRUCT_FUNCTION (body))
+	for (step = DECL_STRUCT_FUNCTION (body)->unexpanded_var_list;
+	     step;
+	     step = TREE_CHAIN (step))
+	  {
+	    tree decl = TREE_VALUE (step);
+	    if (DECL_INITIAL (decl) && TREE_STATIC (decl))
+	      walk_tree (&DECL_INITIAL (decl), record_call_1, node, visited_nodes);
+	  }
+    }
+  else
+    walk_tree (&body, record_call_1, node, visited_nodes);
+    
   walk_tree (&body, record_call_1, node, visited_nodes);
   pointer_set_destroy (visited_nodes);
   visited_nodes = NULL;
@@ -596,6 +644,9 @@ verify_cgraph_node (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
   struct cgraph_node *main_clone;
+  struct function *this_cfun = DECL_STRUCT_FUNCTION (node->decl);
+  basic_block this_block;
+  block_stmt_iterator bsi;
 
   timevar_push (TV_CGRAPH_VERIFY);
   error_found = false;
@@ -655,8 +706,23 @@ verify_cgraph_node (struct cgraph_node *node)
       && DECL_SAVED_TREE (node->decl) && !TREE_ASM_WRITTEN (node->decl)
       && (!DECL_EXTERNAL (node->decl) || node->global.inlined_to))
     {
-      walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl),
-				    verify_cgraph_node_1, node);
+      if (this_cfun->cfg)
+	{
+	  /* The nodes we're interested in are never shared, so walk
+	     the tree ignoring duplicates.  */
+	  visited_nodes = pointer_set_create ();
+	  /* Reach the trees by walking over the CFG, and note the
+	     enclosing basic-blocks in the call edges.  */
+	  FOR_EACH_BB_FN (this_block, this_cfun)
+	    for (bsi = bsi_start (this_block); !bsi_end_p (bsi); bsi_next (&bsi))
+	      walk_tree (bsi_stmt_ptr (bsi), verify_cgraph_node_1, node, visited_nodes);
+	  pointer_set_destroy (visited_nodes);
+	  visited_nodes = NULL;
+	}
+      else
+	/* No CFG available?!  */
+	gcc_unreachable ();
+
       for (e = node->callees; e; e = e->next_callee)
 	{
 	  if (!e->aux)
@@ -729,12 +795,14 @@ cgraph_analyze_function (struct cgraph_node *node)
   struct cgraph_edge *e;
 
   current_function_decl = decl;
+  push_cfun (DECL_STRUCT_FUNCTION (decl));
+  cgraph_lower_function (node);
 
   /* First kill forward declaration so reverse inlining works properly.  */
-  cgraph_create_edges (node, DECL_SAVED_TREE (decl));
+  cgraph_create_edges (node, decl);
 
   node->local.inlinable = tree_inlinable_function_p (decl);
-  node->local.self_insns = estimate_num_insns (DECL_SAVED_TREE (decl));
+  node->local.self_insns = estimate_num_insns (decl);
   if (node->local.inlinable)
     node->local.disregard_inline_limits
       = lang_hooks.tree_inlining.disregard_inline_limits (decl);
@@ -754,6 +822,7 @@ cgraph_analyze_function (struct cgraph_node *node)
   node->global.insns = node->local.self_insns;
 
   node->analyzed = true;
+  pop_cfun ();
   current_function_decl = NULL;
 }
 
@@ -1178,7 +1247,10 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 
   /* ??? We will get called LATE in the compilation process.  */
   if (cgraph_global_info_ready)
-    tree_rest_of_compilation (decl);
+    {
+      tree_lowering_passes (decl);
+      tree_rest_of_compilation (decl);
+    }
   else
     cgraph_finalize_function (decl, 0);
   

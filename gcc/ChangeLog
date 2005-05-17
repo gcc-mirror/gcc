@@ -1,3 +1,61 @@
+2005-05-17  Steven Bosscher  <stevenb@suse.de>
+	    Stuart Hastings <stuart@apple.com>
+	    Jan Hubicka  <jh@suse.cz>
+	    Dale Johannesen  <dalej@apple.com>
+
+	* cgraph.h (cgraph_node): Add 'lowered' state.
+	(cgraph_lower_function): Declare.
+	* cgraphunit.c (cgraph_finalize_function): Initialize lowered flag.
+	(cgraph_lower_function): New function.
+	(cgraph_create_edges): Deal with lowered function bodies.
+	(verify_cgraph_node): Likewise.
+	(cgraph_analyze_function): Do lowering job.
+	(cgraph_build_static_cdtor): Likewise.
+	* function.h (struct function): Add saved_eh and saved_cfg.
+	* integrate.c (copy_decl_for_inlining): Kill LABEL_DECL_UID field.
+	* tree-cfg.c (fold_cond_expr_cond): Export.
+	* tree-flow.h (fold_cond_expr_cond): Declare.
+	* tree-inline.c: Include basic-block, ggc, tree-flow, except.h and
+	pointer-set.
+	(struct_inline_data): Kill fnd, first_inlined_fn, ret_label,
+	in_target_cleanup_p, tree_pruner, tsi; add callee, caller and
+	callee_cfun, block, eh_region, eh_region_offset.
+	(inlining_p): New predicate.
+	(remap_decl): Update for new inline_data; declare newly created inline
+	vars in low gimple way.
+	(copy_body_r): Update for new datastructure, simplify some of handling
+	when we are in gimple; remap LABEL_DECLs for EH; copy TREE_BLOCK;
+	deal with RESX_EXPRs.
+	(copy_bb): New.
+	(copy_edges_for_bb): Likewise.
+	(remap_decl_1): New.
+	(copy_cfg_body): New.
+	(copy_generic_body): Rewrite to work on low gimple.
+	(copy_body): Turn into simple wrapper around copy_cfg_body.
+	(setup_one_parameter): Insert new statements into given basic block.
+	(initialize_initialized_parameters): Likewise, reorganize way things are
+	gimplified.
+	(declare_return_variable): Update for new inline data datastructure.
+	(inline_forbidden_p): Work on low gimple.
+	(estimate_num_insns): Likewise.
+	(expand_call_inline): Work on CFG.
+	(push_cfun, pop_cfun): New functions.
+	(cfun_stack): New stack.
+	(add_lexical_block): New function.
+	(gimple_expand_calls_inline): Work on basic block.
+	(optimize_inline_calls): Likewise.
+	(clone_body, save_body, unsave_ewpr_now): Update for new
+	datastructures.
+	(declare_inline_vars): Work on block instead of bind_expr.
+	(inlining_p): New predicate.
+	* tree-inline.h (push_cfun, pop_cfun): Declare.
+	* tree-optimize.c: Include except.h
+	(all_lowering_passes): New variable.
+	(execute_fixup_cfg, pass_fixup_cfg): New pass.
+	(init_tree_optimization_passes): Move some to all_lowering_passes.
+	(tree_lowering_passes): New function.
+	(tree_rest_of_compilation): Register cfg hooks; save/unsave eh.
+
 2005-05-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* unwind-dw2-fde-darwin.c: Include tsystem.h.
