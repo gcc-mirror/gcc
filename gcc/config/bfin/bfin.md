@@ -1764,6 +1764,7 @@
   emit_move_insn (EH_RETURN_HANDLER_RTX, operands[0]);
   emit_insn (gen_eh_return_internal ());
   emit_barrier ();
+  DONE;
 })
 
 (define_insn_and_split "eh_return_internal"
