@@ -618,7 +618,9 @@ c_common_type (tree t1, tree t2)
 }
 
 /* Wrapper around c_common_type that is used by c-common.c.  ENUMERAL_TYPEs
-   are allowed here and are converted to their compatible integer types.  */
+   are allowed here and are converted to their compatible integer types.
+   BOOLEAN_TYPEs are allowed here and return either boolean_type_node or
+   preferably a non-Boolean type as the common type.  */
 tree
 common_type (tree t1, tree t2)
 {
@@ -626,6 +628,18 @@ common_type (tree t1, tree t2)
     t1 = c_common_type_for_size (TYPE_PRECISION (t1), 1);
   if (TREE_CODE (t2) == ENUMERAL_TYPE)
     t2 = c_common_type_for_size (TYPE_PRECISION (t2), 1);
+
+  /* If both types are BOOLEAN_TYPE, then return boolean_type_node.  */
+  if (TREE_CODE (t1) == BOOLEAN_TYPE
+      && TREE_CODE (t2) == BOOLEAN_TYPE)
+    return boolean_type_node;
+
+  /* If either type is BOOLEAN_TYPE, then return the other.  */
+  if (TREE_CODE (t1) == BOOLEAN_TYPE)
+    return t2;
+  if (TREE_CODE (t2) == BOOLEAN_TYPE)
+    return t1;
+
   return c_common_type (t1, t2);
 }
 
