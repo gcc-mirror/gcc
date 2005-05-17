@@ -1,3 +1,111 @@
+2005-05-17  Mike Stump  <mrs@apple.com>
+
+	Yet more Objective-C++...
+
+	* objc-act.c (objc_finish_try_stmt): Add return value.
+	(objc_build_synchronized): Likewise.
+
+	* objc-act.c (objc_is_gcable_type): Add.
+	(objc_substitute_decl): Add.
+	(objc_build_ivar_assignment): Add.
+	(objc_build_global_assignment): Add.
+	(objc_build_strong_cast_assignment): Add.
+	(objc_is_ivar_reference_p): Add.
+	(objc_is_global_reference_p): Add.
+	(objc_generate_write_barrier): Add.
+	(objc_rewrite_function_call): Add.
+	(objc_gimplify_expr): Add Objective-C++ support.
+	* objc-act.h (ALLOC_OBJC_TYPE_LANG_SPECIFIC): Likewise.
+	(SIZEOF_OBJC_TYPE_LANG_SPECIFIC): Add.
+	(INIT_TYPE_OBJC_INFO): Add Objective-C++ support.
+	(DUP_TYPE_OBJC_INFO): Likewise.
+	(struct imp_entry): Add field has_cxx_cdtors.
+	(struct imp_entry *imp_list): Add OCTI_UMSG_FAST_DECL,
+	OCTI_METH_LIST_TEMPL, OCTI_METH_PROTO_LIST_TEMPL,
+	OCTI_IVAR_LIST_TEMPL, OCTI_ASSIGN_IVAR_DECL,
+	OCTI_ASSIGN_IVAR_FAST_DECL, OCTI_ASSIGN_GLOBAL_DECL,
+	OCTI_ASSIGN_STRONGCAST_DECL.
+	(umsg_fast_decl): Add.
+	(objc_assign_ivar_decl): Add.
+	(objc_assign_ivar_fast_decl): Add.
+	(objc_assign_global_decl): Add.
+	(objc_assign_strong_cast_decl): Add.
+	(objc_method_list_ptr): Add.
+	(objc_method_proto_list_ptr): Add.
+	(objc_ivar_list_ptr): Add.
+
+	* objc-act.c (should_call_super_dealloc): Add.
+	(OBJC_VERSION): Bump to 6.
+	(objc_is_gcable_type): Add.
+	(objc_substitute_decl): Add.
+	(objc_build_ivar_assignment): Add.
+	(objc_build_global_assignment): Add.
+	(objc_build_strong_cast_assignment): Add.
+	(objc_is_gcable_p): Add.
+	(objc_is_ivar_reference_p): Add.
+	(objc_is_global_reference_p): Add.
+	(generate_shared_structures): Add flags parameter.
+	(objc_generate_cxx_ctor_or_dtor): Add.
+	(objc_generate_cxx_cdtors): Add.
+	(add_class): Add name parameter.
+	(objc_types_share_size_and_alignment): Add.
+	(comp_proto_with_proto): Add strict parameter.
+	(CLS_HAS_CXX_STRUCTORS): Add.
+	(TAG_ASSIGNIVAR): Add.
+	(TAG_ASSIGNGLOBAL): Add.
+	(TAG_ASSIGNSTRONGCAST): Add.
+	(TAG_MSGSEND_FAST): Add.
+	(TAG_ASSIGNIVAR_FAST): Add.
+	(TAG_CXX_CONSTRUCT): Add.
+	(TAG_CXX_DESTRUCT): Add.
+	(OBJC_LOOKUP_CLASS): Add.
+	(OBJC_LOOKUP_NO_SUPER): Add.
+	(objc_finish_file): Add pch support.
+	(objc_finish_implementation): Add Objective-C++ support.
+	(synth_module_prologue): Likewise.
+	(synth_module_prologue): Add fast dispatching.
+	(objc_get_class_reference): Add Objective-C++ support.
+	(objc_generate_write_barrier): Likewise.
+	(next_sjlj_build_enter_and_setjmp): Likewise.
+	(objc_begin_try_stmt): Likewise.
+	(build_next_objc_exception_stuff): Add fast ivar support.
+	(build_private_template): Mark the record as used so debug
+	information is generated.
+	(build_protocol_template): Add Objective-C++ support.
+	(objc_method_parm_type) Likewise.
+	(objc_generate_cxx_ctor_or_dtor): Likewise.
+	(objc_generate_cxx_cdtors): Likewise.
+	(build_protocol_initializer): Likewise.
+	(build_category_template): Likewise.
+	(build_class_template): Likewise.
+	(build_method_list_template): Likewise.
+	(build_category_initializer): Likewise.
+	(build_shared_structure_initializer): Likewise.
+	(objc_finish_message_expr): Likewise.
+	(build_objc_method_call): Add fast dispatch support.
+	(lookup_method_static): Add support to end search at superclasses.
+	(add_method_to_hash_list): Add strict parameter to
+	comp_proto_with_proto.
+	(objc_add_method): Likewise.
+	(objc_add_method): Also set the interface_value.
+	(add_instance_variable): Add Objective-C++ support.
+	(objc_is_public): Likewise.
+	(start_class): Likewise.
+	(continue_class): Likewise.
+	(encode_aggregate_within): Likewise.
+	(start_method_def): Likewise.
+	(objc_start_function): Clear current_function_returns_value
+	and current_function_returns_null.
+	(really_start_method): Add Objective-C++ support.
+	(objc_finish_method_definition): Add warning for missing
+	[super dealloc].
+	(finish_objc): Add Objective-C++ support.
+	(generate_objc_image_info): Likewise.
+	(objc_lookup_ivar): Likewise.
+	* objc-act.h (TYPE_HAS_OBJC_INFO): Likewise.
+	(INIT_TYPE_OBJC_INFO): Likewise.
+	(DUP_TYPE_OBJC_INFO): Likewise.
+
 2005-04-23  DJ Delorie  <dj@redhat.com>
 
 	* objc-act.c: Adjust warning() callers.
