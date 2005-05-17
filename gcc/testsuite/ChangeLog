@@ -1,5 +1,8 @@
 2005-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/21610
+	* gcc.c-torture/compile/20050516-1.c: New test.
+
 	PR fortran/15080
 	* gfortran.fortran-torture/execute/forall_3.f90: Remove comment
 	about the test failing.

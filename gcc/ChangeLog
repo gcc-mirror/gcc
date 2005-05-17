@@ -1,5 +1,9 @@
 2005-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/21610
+	* c-typeck.c (decl_constant_value_for_broken_optimization): If not
+	returning DECL, call unshare_expr.
+
 	* varasm.c (struct constant_descriptor_tree): Add hash field.
 	(const_desc_hash): Just return hash field.
 	(const_desc_eq): If hash values are different, return 0 immediately.
