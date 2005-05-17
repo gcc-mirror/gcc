@@ -971,6 +971,8 @@ get_lang_number (void)
     return N_SO_PASCAL;
   else if (strcmp (language_string, "GNU Objective-C") == 0)
     return N_SO_OBJC;
+  else if (strcmp (language_string, "GNU Objective-C++") == 0)
+    return N_SO_OBJCPLUS;
   else
     return 0;
 

@@ -1,3 +1,46 @@
+2005-05-17  Mike Stump  <mrs@apple.com>
+
+	Yet more Objective-C++...
+
+	* c-common.h (objc_finish_try_stmt): Add.
+	(objc_build_synchronized): Add.
+	(objc_generate_write_barrier): Add.
+	* stub-objc.c (objc_build_synchronized): Add return value.
+	(objc_finish_try_stmt): Likewise.
+	(objc_generate_write_barrier): Add.
+
+	* c-common.h (objc_rewrite_function_call): Add.
+	* c-typeck.c (build_function_call): Allow objc to rewrite
+	FUNCTION_DECLs.
+	(build_modify_expr): Allow objc to generate write barriers.
+	* c.opt (Wassign-intercept): Add.
+	(Wstrict-selector-match): Add.
+	(fobjc-call-cxx-cdtors): Add.
+	(fobjc-direct-dispatch): Add.
+	(fobjc-gc): Add.
+	* dbxout.c (get_lang_number): Add Objective-C++ support.
+	* doc/invoke.texi (-fobjc-call-cxx-cdtors): Likewise.
+	(-Wstrict-selector-match): Likewise.
+	(-fobjc-direct-dispatch): Likewise.
+	(-Wassign-intercept): Likewise.
+	(Overall Options): Likewise.
+	* gengtype.c (get_output_file_with_visibility): Likewise.
+	* stub-objc.c (objc_rewrite_function_call): Add.
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Improved quoting support.
+
+	* c-common.c (flag_objc_exceptions): Remove.
+	(flag_objc_sjlj_exceptions): Remove.
+	* c-decl.c (objc_mark_locals_volatile): Don't change decls
+	that are already ok.
+	* c-opts.c (c_common_handle_option, case
+	OPT_fobjc_exceptions): Remove.
+	(case OPT_fobjc_sjlj_exceptions): Remove
+	* c.opt (fobjc-call-cxx-cdtors): Have opt create the flag.
+	(fobjc-exceptions): Likewise.
+	(fobjc-sjlj-exceptions): Likewise.
+	* config/rs6000/darwin.h (OFFS_MSGSEND_FAST): Add.
+	(OFFS_ASSIGNIVAR_FAST): Add.
+	
 2005-05-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.md (movhi): Do not test constness
@@ -38,6 +81,7 @@
 	* cfgloopanal.c (just_once_each_iteration_p): Make the loop argument
 	const.
 
+>>>>>>> 2.8834
 2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* ggc-page.c (ggc_alloc_stat): Record amount of memory allocated.

@@ -699,14 +699,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       flag_no_nonansi_builtin = !value;
       break;
 
-    case OPT_fobjc_exceptions:
-      flag_objc_exceptions = value;
-      break;
-
-    case OPT_fobjc_sjlj_exceptions:
-      flag_objc_sjlj_exceptions = value;
-      break;
-
     case OPT_foperator_names:
       cpp_opts->operator_names = value;
       break;

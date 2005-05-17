@@ -197,11 +197,17 @@ Objective-C and Objective-C++ Dialects}.
 -fconstant-string-class=@var{class-name} @gol
 -fgnu-runtime  -fnext-runtime @gol
 -fno-nil-receivers @gol
+-fobjc-call-cxx-cdtors @gol
+-fobjc-direct-dispatch @gol
 -fobjc-exceptions @gol
+-fobjc-gc @gol
 -freplace-objc-classes @gol
 -fzero-link @gol
 -gen-decls @gol
--Wno-protocol  -Wselector -Wundeclared-selector}
+-Wassign-intercept @gol
+-Wno-protocol  -Wselector @gol
+-Wstrict-selector-match @gol
+-Wundeclared-selector}
 
 @item Language Independent Options
 @xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
@@ -815,6 +821,13 @@ precompiled header.
 C++ source code which must be preprocessed.  Note that in @samp{.cxx},
 the last two letters must both be literally @samp{x}.  Likewise,
 @samp{.C} refers to a literal capital C@.
+
+@item @var{file}.mm
+@itemx @var{file}.M
+Objective-C++ source code which must be preprocessed.
+
+@item @var{file}.mii
+Objective-C++ source code which should not be preprocessed.
 
 @item @var{file}.hh
 @itemx @var{file}.H
@@ -1897,6 +1910,35 @@ is not @code{nil}.  This allows for more efficient entry points in the runtime
 to be used.  Currently, this option is only available in conjunction with
 the NeXT runtime on Mac OS X 10.3 and later.
 
+@item -fobjc-call-cxx-cdtors
+@opindex fobjc-call-cxx-cdtors
+For each Objective-C class, check if any of its instance variables is a
+C++ object with a non-trivial default constructor.  If so, synthesize a
+special @code{- (id) .cxx_construct} instance method that will run
+non-trivial default constructors on any such instance variables, in order,
+and then return @code{self}.  Similarly, check if any instance variable
+is a C++ object with a non-trivial destructor, and if so, synthesize a
+special @code{- (void) .cxx_destruct} method that will run
+all such default destructors, in reverse order.
+
+The @code{- (id) .cxx_construct} and/or @code{- (void) .cxx_destruct} methods
+thusly generated will only operate on instance variables declared in the
+current Objective-C class, and not those inherited from superclasses.  It
+is the responsibility of the Objective-C runtime to invoke all such methods
+in an object's inheritance hierarchy.  The @code{- (id) .cxx_construct} methods
+will be invoked by the runtime immediately after a new object
+instance is allocated; the @code{- (void) .cxx_destruct} methods will
+be invoked immediately before the runtime deallocates an object instance.
+
+As of this writing, only the NeXT runtime on Mac OS X 10.4 and later has
+support for invoking the @code{- (id) .cxx_construct} and
+@code{- (void) .cxx_destruct} methods.
+
+@item -fobjc-direct-dispatch
+@opindex fobjc-direct-dispatch
+Allow fast jumps to the message dispatcher.  On Darwin this is
+accompilished via the comm page.
+
 @item -fobjc-exceptions
 @opindex fobjc-exceptions
 Enable syntactic support for structured exception handling in Objective-C,
@@ -1989,6 +2031,10 @@ Unlike Java, Objective-C does not allow for entire methods to be marked
 @code{@@synchronized} blocks is allowed, and will cause the guarding object
 to be unlocked properly.
 
+@item -fobjc-gc
+@opindex fobjc-gc
+Enable garbage collection (GC) in Objective-C and Objective-C++ programs.
+
 @item -freplace-objc-classes
 @opindex freplace-objc-classes
 Emit a special marker instructing @command{ld(1)} not to statically link in
@@ -2015,6 +2061,11 @@ for individual class implementations to be modified during program execution.
 Dump interface declarations for all classes seen in the source file to a
 file named @file{@var{sourcename}.decl}.
 
+@item -Wassign-intercept
+@opindex Wassign-intercept
+Warn whenever an Objective-C assignment is being intercepted by the
+garbage collector.
+
 @item -Wno-protocol
 @opindex Wno-protocol
 If a class is declared to implement a protocol, a warning is issued for
@@ -2037,6 +2088,15 @@ the end of compilation, these warnings are not produced if the final
 stage of compilation is not reached, for example because an error is
 found during compilation, or because the @option{-fsyntax-only} option is
 being used.
+
+@item -Wstrict-selector-match
+@opindex Wstrict-selector-match
+Warn if multiple methods with differing argument and/or return types are
+found for a given selector when attempting to send a message using this
+selector to a receiver of type @code{id} or @code{Class}.  When this flag
+is off (which is the default behavior), the compiler will omit such warnings
+if any differences found are confined to types which share the same size
+and alignment.
 
 @item -Wundeclared-selector
 @opindex Wundeclared-selector
