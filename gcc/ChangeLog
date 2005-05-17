@@ -1,3 +1,17 @@
+2005-05-17  Ian Lance Taylor  <ian@airs.com>
+
+	* read-rtl.c (struct macro_traverse_data): Add unknown_mode_attr
+	field.
+	(mode_attr_index): Remove check for defined attribute.  Remove
+	infile parameter.  Change all callers.
+	(apply_mode_maps): Add unknown parameter.  Change caller.  Always
+	return after finding attribute.
+	(apply_macro_to_rtx): Add unknown_mode_attr parameter.  Change
+	callers.
+	(apply_macro_traverse): Set mtd->unknown_mode_attr.
+	(read_rtx): Use mtd.unknown_mode_attr to check for an undefined
+	attribute used for a mode.
+
 2005-05-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-ssa-math-opts.c: New file.
