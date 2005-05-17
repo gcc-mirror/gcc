@@ -1,3 +1,7 @@
+2005-05-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libsupc++/eh_personality.cc (gcc_unreachable): Define.
+
 2005-05-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/install.html: Update list of required named

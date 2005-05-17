@@ -1,3 +1,20 @@
+2005-05-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* unwind-dw2-fde-glibc.c (base_from_cb_data,
+	_Unwind_IteratePhdrCallback): Use gcc_assert and gcc_unreachable as
+	appropriate.
+	* unwind-dw2-fde.c (__deregister_frame_info_bases,
+	base_from_object, fde_split, end_fde_sort): Likewise.
+	* unwind-dw2.c (_Unwind_GetGR, _Unwind_SetGR, execute_stack_op, 
+	execute_cfa_program, _Unwind_SetSpColumn, uw_update_context_1,
+	uw_init_context_1): Likewise.
+	* unwind.inc (_Unwind_RaiseException_Phase2, _Unwind_Resume,
+	_Unwind_Resume_or_Rethrow): Likewise.
+	* unwind-pe.h (__gxx_abort): Do not define.
+	(size_of_encoded_value, base_of_encoded_value,
+	read_encoded_value_with_base): Use gcc_unreachable.
+	* unwind.h (_Unwind_GetTextRelBase): Likewise.
+
 2005-05-17  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (cfi_pop, cfi_push, cfi_start)

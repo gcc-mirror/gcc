@@ -164,7 +164,7 @@ __register_frame_table (void *begin)
    from crtbegin (wherein it is declared weak), and this object does
    not get pulled from libgcc.a for other reasons, then the
    invocation of __deregister_frame_info will be resolved from glibc.
-   Since the registration did not happen there, we'll abort.
+   Since the registration did not happen there, we'll die.
 
    Therefore, declare a new deregistration entry point that does the
    exact same thing, but will resolve to the same library as
@@ -212,11 +212,9 @@ __deregister_frame_info_bases (const void *begin)
 	  }
       }
 
-  __gthread_mutex_unlock (&object_mutex);
-  abort ();
-
  out:
   __gthread_mutex_unlock (&object_mutex);
+  gcc_assert (ob);
   return (void *) ob;
 }
 
@@ -255,8 +253,9 @@ base_from_object (unsigned char encoding, struct object *ob)
       return (_Unwind_Ptr) ob->tbase;
     case DW_EH_PE_datarel:
       return (_Unwind_Ptr) ob->dbase;
+    default:
+      gcc_unreachable ();
     }
-  abort ();
 }
 
 /* Return the FDE pointer encoding from the CIE.  */
@@ -441,8 +440,7 @@ fde_split (struct object *ob, fde_compare_t fde_compare,
   /* This should optimize out, but it is wise to make sure this assumption
      is correct. Should these have different sizes, we cannot cast between
      them and the overlaying onto ERRATIC will not work.  */
-  if (sizeof (const fde *) != sizeof (const fde **))
-    abort ();
+  gcc_assert (sizeof (const fde *) == sizeof (const fde **));
 
   for (i = 0; i < count; i++)
     {
@@ -566,8 +564,7 @@ end_fde_sort (struct object *ob, struct fde_accumulator *accu, size_t count)
 {
   fde_compare_t fde_compare;
 
-  if (accu->linear && accu->linear->count != count)
-    abort ();
+  gcc_assert (!accu->linear || accu->linear->count == count);
 
   if (ob->s.b.mixed_encoding)
     fde_compare = fde_mixed_encoding_compare;
@@ -579,8 +576,7 @@ end_fde_sort (struct object *ob, struct fde_accumulator *accu, size_t count)
   if (accu->erratic)
     {
       fde_split (ob, fde_compare, accu->linear, accu->erratic);
-      if (accu->linear->count + accu->erratic->count != count)
-	abort ();
+      gcc_assert (accu->linear->count + accu->erratic->count == count);
       frame_heapsort (ob, fde_compare, accu->erratic);
       fde_merge (ob, fde_compare, accu->linear, accu->erratic);
       free (accu->erratic);

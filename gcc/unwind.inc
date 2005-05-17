@@ -72,8 +72,7 @@ _Unwind_RaiseException_Phase2(struct _Unwind_Exception *exc,
 	}
 
       /* Don't let us unwind past the handler context.  */
-      if (match_handler)
-	abort ();
+      gcc_assert (!match_handler);
 
       uw_update_context (context, &fs);
     }
@@ -144,8 +143,8 @@ _Unwind_RaiseException(struct _Unwind_Exception *exc)
 /* Subroutine of _Unwind_ForcedUnwind also invoked from _Unwind_Resume.  */
 
 static _Unwind_Reason_Code
-_Unwind_ForcedUnwind_Phase2(struct _Unwind_Exception *exc,
-			    struct _Unwind_Context *context)
+_Unwind_ForcedUnwind_Phase2 (struct _Unwind_Exception *exc,
+			     struct _Unwind_Context *context)
 {
   _Unwind_Stop_Fn stop = (_Unwind_Stop_Fn) (_Unwind_Ptr) exc->private_1;
   void *stop_argument = (void *) (_Unwind_Ptr) exc->private_2;
@@ -235,8 +234,7 @@ _Unwind_Resume (struct _Unwind_Exception *exc)
   else
     code = _Unwind_ForcedUnwind_Phase2 (exc, &cur_context);
 
-  if (code != _URC_INSTALL_CONTEXT)
-    abort ();
+  gcc_assert (code == _URC_INSTALL_CONTEXT);
 
   uw_install_context (&this_context, &cur_context);
 }
@@ -261,8 +259,7 @@ _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exc)
 
   code = _Unwind_ForcedUnwind_Phase2 (exc, &cur_context);
 
-  if (code != _URC_INSTALL_CONTEXT)
-    abort ();
+  gcc_assert (code == _URC_INSTALL_CONTEXT);
 
   uw_install_context (&this_context, &cur_context);
 }
