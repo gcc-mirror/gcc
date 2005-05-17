@@ -112,15 +112,15 @@ msched-epilog
 Target Undocumented Mask(SCHED_PROLOG) MaskExists
 
 maix-struct-return
-Target Report Mask(AIX_STRUCT_RET)
+Target Report RejectNegative Var(aix_struct_return)
 Return all structures in memory (AIX default)
 
 msvr4-struct-return
-Target Report InverseMask(AIX_STRUCT_RET)
+Target Report RejectNegative Var(aix_struct_return,0) VarExists
 Return small structures in registers (SVR4 default)
 
 mxl-compat
-Target Var(TARGET_XL_COMPAT)
+Target Report Var(TARGET_XL_COMPAT)
 Conform more closely to IBM XLC semantics
 
 mno-fp-in-toc

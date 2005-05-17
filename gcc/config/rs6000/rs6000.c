@@ -226,6 +226,7 @@ int rs6000_alignment_flags;
 
 /* True for any options that were explicitly set.  */
 struct {
+  bool aix_struct_ret;		/* True if -maix-struct-ret was used.  */
   bool alignment;		/* True if -malign- was used.  */
   bool abi;			/* True if -mabi= was used.  */
   bool spe;			/* True if -mspe= was used.  */
@@ -1252,9 +1253,7 @@ rs6000_override_options (const char *default_cpu)
   if (TARGET_ELF && TARGET_64BIT)
     {
       rs6000_altivec_abi = 1;
-#if TARGET_ALTIVEC_VRSAVE != 0
       TARGET_ALTIVEC_VRSAVE = 1;
-#endif
     }
 
   /* Set the Darwin64 ABI as default for 64-bit Darwin.  */
@@ -1357,16 +1356,11 @@ rs6000_override_options (const char *default_cpu)
     memcpy (rs6000_reg_names, alt_reg_names, sizeof (rs6000_reg_names));
 #endif
 
-  /* Set TARGET_AIX_STRUCT_RET last, after the ABI is determined.
+  /* Set aix_struct_return last, after the ABI is determined.
      If -maix-struct-return or -msvr4-struct-return was explicitly
      used, don't override with the ABI default.  */
-  if ((target_flags_explicit & MASK_AIX_STRUCT_RET) == 0)
-    {
-      if (DEFAULT_ABI == ABI_V4 && !DRAFT_V4_STRUCT_RET)
-	target_flags = (target_flags & ~MASK_AIX_STRUCT_RET);
-      else
-	target_flags |= MASK_AIX_STRUCT_RET;
-    }
+  if (!rs6000_explicit_options.aix_struct_ret)
+    aix_struct_return = (DEFAULT_ABI != ABI_V4 || DRAFT_V4_STRUCT_RET);
 
   if (TARGET_LONG_DOUBLE_128
       && (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN))
@@ -1639,11 +1633,14 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 	}
       break;
 
-#if TARGET_ALTIVEC_VRSAVE != 0
+    case OPT_maix_struct_return:
+    case OPT_msvr4_struct_return:
+      rs6000_explicit_options.aix_struct_ret = true;
+      break;
+
     case OPT_mvrsave_:
       rs6000_parse_yes_no_option ("vrsave", arg, &(TARGET_ALTIVEC_VRSAVE));
       break;
-#endif
 
     case OPT_misel_:
       rs6000_explicit_options.isel = true;
@@ -3899,7 +3896,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
    returned in memory.  The Darwin ABI does the same.  The SVR4 ABI
    specifies that structures <= 8 bytes are returned in r3/r4, but a
    draft put them in memory, and GCC used to implement the draft
-   instead of the final standard.  Therefore, TARGET_AIX_STRUCT_RET
+   instead of the final standard.  Therefore, aix_struct_return
    controls this instead of DEFAULT_ABI; V.4 targets needing backward
    compatibility can change DRAFT_V4_STRUCT_RET to override the
    default, and -m switches get the final word.  See
@@ -3935,7 +3932,7 @@ rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
     }
 
   if (AGGREGATE_TYPE_P (type)
-      && (TARGET_AIX_STRUCT_RET
+      && (aix_struct_return
 	  || (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 8))
     return true;
 
