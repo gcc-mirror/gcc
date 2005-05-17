@@ -247,27 +247,36 @@ all_java_source_files = \
 
 EXTRA_DIST = $(all_java_source_files)
 
-# Build a list of native and bytecode-compiled directories.  The Makefile
-# depends on them, because they affect the definition of two variables
-# below.
-# Each directory's filelist file depends on the corresponding Java source files
-# Each class file depends on the its directory's .stamp file
-# Below, one .lo file is built per directory when the stamp file changes
-
+# Build dependencies between java, class and lo files.  They are included
+# below, together with automatically-generated dependencies between Java
+# files.
+#
+# Dependencies from Java to .class files
+# --------------------------------------
+# Each directory's filelist file depends on the corresponding Java source files.
+# The stamp file depends on the filelist (using a `Static Pattern Rule').
+# Each class file depends on the its directory's .stamp file.  This reflects
+# the fact that 1) all classfiles are compiled in one go when the .stamp file
+# is built and 2) anything which depends on a particular .class file must wait
+# until its directory is processed and the .stamp file is created.
+#
+# Dependencies from Java to .lo files
+# -----------------------------------
+# As above, each directory's filelist file depends on the corresponding Java
+# source files, and the stamp file depends on the filelist.  For native
+# compilation, the lo file depends on the stamp file (also using a `Static
+# Pattern Rule').  So, when one Java file changes, the filelist file is
+# updated, the stamp file rule builds the .class files, and the .lo file rule
+# recompiles to native code.
 Makefile.deps: $(srcdir)/Makefile.in
 	@: $(call write_entries_to_file,$(all_java_source_files),files.tmplist)
-	sed 's,/[^/]*$$,,' \
-	  files.tmplist | sort | uniq > bytecodes.list
-	sed -n '1,$(words $(all_native_compiled_source_files))s,/[^/]*$$,,p' \
-	  files.tmplist | sort | uniq > native.list
 	echo 's,^\(.*\)/\([^/]*\)\.java$$,\1.list: \0\' > tmpsed
 	echo '\1/\2.class: \1.stamp,' >> tmpsed
-	sed -ftmpsed files.tmplist \
-	  > Makefile.deps
+	sed -ftmpsed files.tmplist > Makefile.deps
 	rm files.tmplist tmpsed
 
-all_native_compiled_dirs := $(shell test -f native.list && cat native.list)
-all_java_dirs := $(shell test -f bytecodes.list && cat bytecodes.list)
+all_native_compiled_dirs = $(sort $(patsubst %/, %, $(dir $(all_native_compiled_source_files))))
+all_java_dirs = $(sort $(patsubst %/, %, $(dir $(all_java_source_files))))
 all_java_lo_files = $(all_native_compiled_dirs:=.lo)
 all_java_deps_files = $(all_java_dirs:=.deps)
 all_java_stamp_files = $(all_java_dirs:=.stamp)

@@ -1,5 +1,12 @@
 2005-05-17  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.am (Makefile.deps): Do not create native.list and
+	bytecodes.list.
+	(all_native_compiled_dirs, all_java_dirs): Compute dir list here.
+	* Makefile.in: Regenerate.
+
+2005-05-17  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.ac (--enable-libgcj-multifile): Remove.
 
 	* Makefile.am (all_native_compiled_source_files,
