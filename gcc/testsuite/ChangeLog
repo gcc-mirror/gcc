@@ -1,3 +1,8 @@
+2005-05-16  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_int_mul): Add
+	i?86 and x86_64.
+
 2005-05-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/compat/generate-random.c (config.h): Do not include.

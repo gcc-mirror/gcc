@@ -1,3 +1,7 @@
+2005-05-16  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (mulv4si3): New.
+
 2005-05-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (EXTRA_CONSTRAINT_T): Remove FIXME and
