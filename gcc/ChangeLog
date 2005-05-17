@@ -1,3 +1,99 @@
+2005-05-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md: Unquote preparation and output statements.
+ 	(BWD, WD, BW): New, mode-macros.
+	(S, s, m, mm, nbitsm1): New, mode-attrs.
+	(szext, shift, shiftrt, ncond, ocond, rcond): New, code-macros.
+	(u, su, shlr, slr, ncond, ocond, rcond, rCC, oCC, roCC): New,
+	code-attrs.
+	("tst<mode>"): Replace "tstqi", "tsthi" and "tstsi".
+	("*cmp_ext<mode>"): Replace "*cmp_extsi" and "*cmp_exthi".
+	("*cmp_swapext<mode>"): Replace "*cmp_swapextqi" and
+	"*cmp_swapexthi".
+	("cmp<mode>"): Replace "cmphi" and "cmpqi".
+	("movdi"): Move misplaced head comment regarding necessity of
+	movdi from movsi to here.
+	("*mov_side<mode>_biap"): Replace "*mov_sideqi_biap" and
+	"*mov_sidehi_biap".
+	("*mov_side<mode>"): Replace "*mov_sideqi" and "*mov_sidehi".
+	("*mov_side<mode>_biap_mem", "*mov_sidehi_biap_mem"): Replace
+	"*mov_sideqi_biap_mem".
+	("*mov_side<mode>_mem"): Replace "*mov_sideqi_mem" and
+	"*mov_sidehi_mem".
+	("*clear_side<mode>_biap"): Replace "*clear_sidesi_biap",
+	"*clear_sidehi_biap" and "*clear_sideqi_biap".
+	("*clear_side<mode>"): Replace "*clear_sidesi", "*clear_sidehi"
+	and "*clear_sideqi".
+	("*ext_side<mode>si_biap"): Replace "*ext_sideqisi_biap" and
+	"*ext_sidehisi_biap".
+	("*ext_side<mode>si"): Replace "*ext_sideqisi" and
+	"*ext_sidehisi".
+	("reload_in<mode>"): Replace "reload_inhi" and "reload_inqi".
+	("reload_out<mode>"): Replace "reload_outhi" and "reload_outqi".
+	("extend<mode>di2"): Replace "extendhidi2" and "extendqidi2".
+	("extend<mode>si2"): Replace "extendhisi2" and "extendqisi2".
+	("zero_extend<mode>si2"): Replace "zero_extendhisi2" and
+	"zero_extendqisi2".
+	("*op_side<mode>_biap"): Replace "*op_sideqi_biap",
+	"*op_sidehi_biap" and "*op_sidesi_biap".
+	("*op_side<mode>"): Replace "*op_sideqi", "*op_sidehi" and
+	"*op_sidesi".
+	("*op_swap_side<mode>_biap"): Replace "*op_swap_sideqi_biap",
+	"*op_swap_sidehi_biap" and "*op_swap_sidesi_biap".
+	("*op_swap_side<mode>"): Replace "*op_swap_sideqi",
+	"*op_swap_sidehi" and "*op_swap_sidesi".
+	("sub<mode>3"): Replace "subhi3" and "subqi3", correcting a typo
+	in the N alternative of "subqi3".
+	("*extop<mode>si_side_biap"): Replace "*extopqisi_side_biap" and
+	"*extophisi_side_biap".
+	("*extop<mode>si_side"): Replace "*extopqisi_side" and
+	"*extophisi_side".
+	("*extop<mode>si_swap_side_biap"): Replace
+	"*extopqisi_swap_side_biap" and "*extophisi_swap_side_biap".
+	("*extop<mode>si_swap_side"): Replace "*extopqisi_swap_side" and
+	"*extophisi_swap_side".
+	("*extop<mode>si"): Replace "*extopqisi" and "*extophisi".
+	("*extop<mode>si_swap"): Replace "*extopqisi_swap" and
+	"*extophisi_swap".
+	("<u>mul<s><mode>3"): Replace "umulhisi3", "umulqihi3",
+	"mulqihi3", "mulhisi3" and "mulhisi3".
+	("<u>mulsidi3"): Replace "mulsidi3" and "umulsidi3".
+	("<su>mulsi3_highpart"): Replace "smulsi3_highpart" and
+	"umulsi3_highpart".
+	("xor<mode>3"): Replace "xorhi3" and "xorqi3".
+	("neg<mode>2"): Replace "negsi2", "neghi2" and "negqi2".
+	("one_cmpl<mode>2"): Replace "one_cmplhi2" and "one_cmplqi2".
+	("<shlr>si3"): Replace "ashrsi3", "lshrsi3" and "ashlsi3".
+	("ashr<mode>3"): Replace "ashrhi3" and "ashrqi3".
+	("*expanded_<shlr><mode>"): Replace "*expanded_ashrhi",
+	"*expanded_ashrqi", "*expanded_lshrhi" and "*expanded_lshrqi".
+	("*<shlr><mode>_lowpart"): Replace "*ashrhi_lowpart",
+	"*ashrqi_lowpart", "*lshrhi_lowpart" and "*lshrqi_lowpart".
+	("lshr<mode>3"): Replace "lshrhi3" and "lshrqi3".
+	("ashl<mode>3"): Replace "ashlhi3" and "ashlqi3".
+	("*ashl<mode>_lowpart"): Replace "*ashlqi_lowpart" and
+	"*ashlhi_lowpart".
+	("abs<mode>2"): Replace "abshi2" and "absqi2".
+	("b<ncond>"): Replace "beq", "bne", "bgtu", "bltu", "bgeu" and
+	"bleu".
+	("b<ocond>"): Replace "bgt" and "ble".
+	("b<rcond>"): Replace "blt" and "bge".
+	("*b<ncond>_reversed"): Replace "*beq_reversed", "*bne_reversed",
+	"*bgtu_reversed", "*bltu_reversed", "*bgeu_reversed" and
+	"*bleu_reversed".
+	("*b<ocond>_reversed"): Replace "*bgt_reversed" and
+	"*ble_reversed".
+	("*b<rcond>_reversed"): Replace "*blt_reversed" and
+	"*blt_reversed".
+	("s<ncond>"): Replace "sgeu", "sltu", "seq", "sgtu", "sleu" and
+	"sne".
+	("s<rcond>"): Replace "sge" and "slt".
+	("s<ocond>"): Replace "sgt" and "sle".
+	("clear.[bwd] [rx=rx+rz.S2]"): Replace split clear.d
+	[rx=rx+rz.S2], clear.w [rx=rx+rz.S2] and clear.b [rx=rx+rz.S2].
+	("clear.[bwd] [rx=rx+i]"): Replace splits clear.d [rx=rx+i],
+	clear.w [rx=rx+i] and clear.b [rx=rx+i].
+
 2005-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (struct constant_descriptor_tree): Add hash field.
