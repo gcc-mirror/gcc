@@ -1,3 +1,9 @@
+2005-05-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (EXTRA_CONSTRAINT_T): Remove FIXME and
+	tests for noncanonical versions of reg+constant and
+	reg+reg*{1,2,4}.
+
 2005-05-16  Richard Henderson  <rth@redhat.com>
 	    Steven Bosscher <stevenb@suse.de>
 
