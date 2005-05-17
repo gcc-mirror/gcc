@@ -1,4 +1,4 @@
-/* Forward propagation of single use variables.
+/* Forward propagation of expressions for single use variables.
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -33,13 +33,19 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-dump.h"
+#include "langhooks.h"
 
-/* This pass performs simple forward propagation of single use variables
-   from their definition site into their single use site.
+/* This pass propagates the RHS of assignment statements into use
+   sites of the LHS of the assignment.  It's basically a specialized
+   form of tree combination.
 
-   Right now we only bother forward propagating into COND_EXPRs since those
-   are relatively common cases where forward propagation creates valid
-   gimple code without the expression needing to fold.  i.e.
+   Note carefully that after propagation the resulting statement
+   must still be a proper gimple statement.  Right now we simply
+   only perform propagations we know will result in valid gimple
+   code.  One day we'll want to generalize this code.
+
+   One class of common cases we handle is forward propagating a single use
+   variale into a COND_EXPR.  
 
      bb0:
        x = a COND b;
@@ -106,6 +112,37 @@ Boston, MA 02111-1307, USA.  */
    a worklist of COND_EXPR statements to examine.  As we make a change to
    a statement, we put it back on the worklist to examine on the next
    iteration of the main loop.
+
+   A second class of propagation opportunities arises for ADDR_EXPR
+   nodes.
+
+     ptr = &x->y->z;
+     res = *ptr;
+
+   Will get turned into
+
+     res = x->y->z;
+
+   Or
+
+     ptr = &x[0];
+     ptr2 = ptr + <constant>;
+
+   Will get turned into
+
+     ptr2 = &x[constant/elementsize];
+
+  Or
+
+     ptr = &x[0];
+     offset = index * element_size;
+     offset_p = (pointer) offset;
+     ptr2 = ptr + offset_p
+
+  Will get turned into:
+
+     ptr2 = &x[index];
+
 
    This will (of course) be extended as other needs arise.  */
 
@@ -397,6 +434,230 @@ forward_propagate_into_cond (tree cond_expr)
     }
 }
 
+/* STMT defines LHS which is contains the address of the 0th element
+   in an array.  USE_STMT uses LHS to compute the address of an
+   arbitrary element within the array.  The (variable) byte offset
+   of the element is contained in OFFSET.
+
+   We walk back through the use-def chains of OFFSET to verify that
+   it is indeed computing the offset of an element within the array
+   and extract the index corresponding to the given byte offset.
+
+   We then try to fold the entire address expression into a form
+   &array[index].
+
+   If we are successful, we replace the right hand side of USE_STMT
+   with the new address computation.  */
+
+static bool
+forward_propagate_addr_into_variable_array_index (tree offset, tree lhs,
+						  tree stmt, tree use_stmt)
+{
+  tree index;
+
+  /* The offset must be defined by a simple MODIFY_EXPR statement.  */
+  if (TREE_CODE (offset) != MODIFY_EXPR)
+    return false;
+
+  /* The RHS of the statement which defines OFFSET must be a gimple
+     cast of another SSA_NAME.  */
+  offset = TREE_OPERAND (offset, 1);
+  if (!is_gimple_cast (offset))
+    return false;
+
+  offset = TREE_OPERAND (offset, 0);
+  if (TREE_CODE (offset) != SSA_NAME)
+    return false;
+
+  /* Get the defining statement of the offset before type
+     conversion.  */
+  offset = SSA_NAME_DEF_STMT (offset);
+
+  /* The statement which defines OFFSET before type conversion
+     must be a simple MODIFY_EXPR.  */
+  if (TREE_CODE (offset) != MODIFY_EXPR)
+    return false;
+
+  /* The RHS of the statement which defines OFFSET must be a
+     multiplication of an object by the size of the array elements. 
+     This implicitly verifies that the size of the array elements
+     is constant.  */
+  offset = TREE_OPERAND (offset, 1);
+  if (TREE_CODE (offset) != MULT_EXPR
+      || TREE_CODE (TREE_OPERAND (offset, 1)) != INTEGER_CST
+      || !simple_cst_equal (TREE_OPERAND (offset, 1),
+			    TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (lhs)))))
+    return false;
+
+  /* The first operand to the MULT_EXPR is the desired index.  */
+  index = TREE_OPERAND (offset, 0);
+
+  /* Replace the pointer addition with array indexing.  */
+  TREE_OPERAND (use_stmt, 1) = unshare_expr (TREE_OPERAND (stmt, 1));
+  TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (use_stmt, 1), 0), 1) = index;
+
+  /* That should have created gimple, so there is no need to
+     record information to undo the propagation.  */
+  fold_stmt (bsi_stmt_ptr (bsi_for_stmt (use_stmt)));
+  mark_new_vars_to_rename (use_stmt);
+  update_stmt (use_stmt);
+  return true;
+}
+
+/* STMT is a statement of the form SSA_NAME = ADDR_EXPR <whatever>.
+
+   Try to forward propagate the ADDR_EXPR into the uses of the SSA_NAME.
+   Often this will allow for removal of an ADDR_EXPR and INDIRECT_REF
+   node or for recovery of array indexing from pointer arithmetic.  */
+
+static bool
+forward_propagate_addr_expr (tree stmt)
+{
+  int stmt_loop_depth = bb_for_stmt (stmt)->loop_depth;
+  tree name = TREE_OPERAND (stmt, 0);
+  use_operand_p imm_use;
+  tree use_stmt, lhs, rhs, array_ref;
+
+  /* We require that the SSA_NAME holding the result of the ADDR_EXPR
+     be used only once.  That may be overly conservative in that we
+     could propagate into multiple uses.  However, that would effectively
+     be un-cseing the ADDR_EXPR, which is probably not what we want.  */
+  single_imm_use (name, &imm_use, &use_stmt);
+  if (!use_stmt)
+    return false;
+
+  /* If the use is not in a simple assignment statement, then
+     there is nothing we can do.  */
+  if (TREE_CODE (use_stmt) != MODIFY_EXPR)
+    return false;
+
+  /* If the use is in a deeper loop nest, then we do not want
+     to propagate the ADDR_EXPR into the loop as that is likely
+     adding expression evaluations into the loop.  */
+  if (bb_for_stmt (use_stmt)->loop_depth > stmt_loop_depth)
+    return false;
+
+  /* Strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS.  */
+  lhs = TREE_OPERAND (use_stmt, 0);
+  while (TREE_CODE (lhs) == COMPONENT_REF || TREE_CODE (lhs) == ARRAY_REF)
+    lhs = TREE_OPERAND (lhs, 0);
+
+  /* Now see if the LHS node is an INDIRECT_REF using NAME.  If so, 
+     propagate the ADDR_EXPR into the use of NAME and fold the result.  */
+  if (TREE_CODE (lhs) == INDIRECT_REF && TREE_OPERAND (lhs, 0) == name)
+    {
+      /* This should always succeed in creating gimple, so there is
+	 no need to save enough state to undo this propagation.  */
+      TREE_OPERAND (lhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
+      fold_stmt (bsi_stmt_ptr (bsi_for_stmt (use_stmt)));
+      mark_new_vars_to_rename (use_stmt);
+      update_stmt (use_stmt);
+      return true;
+    }
+
+  /* Trivial case.  The use statement could be a trivial copy.  We
+     go ahead and handle that case here since it's trivial and
+     removes the need to run copy-prop before this pass to get
+     the best results.  Also note that by handling this case here
+     we can catch some cascading effects, ie the single use is
+     in a copy, and the copy is used later by a single INDIRECT_REF
+     for example.  */
+  if (TREE_CODE (lhs) == SSA_NAME && TREE_OPERAND (use_stmt, 1) == name)
+    {
+      TREE_OPERAND (use_stmt, 1) = unshare_expr (TREE_OPERAND (stmt, 1));
+      mark_new_vars_to_rename (use_stmt);
+      update_stmt (use_stmt);
+      return true;
+    }
+
+  /* Strip away any outer COMPONENT_REF/ARRAY_REF nodes from the RHS.  */
+  rhs = TREE_OPERAND (use_stmt, 1);
+  while (TREE_CODE (rhs) == COMPONENT_REF || TREE_CODE (rhs) == ARRAY_REF)
+    rhs = TREE_OPERAND (rhs, 0);
+
+  /* Now see if the RHS node is an INDIRECT_REF using NAME.  If so, 
+     propagate the ADDR_EXPR into the use of NAME and fold the result.  */
+  if (TREE_CODE (rhs) == INDIRECT_REF && TREE_OPERAND (rhs, 0) == name)
+    {
+      /* This should always succeed in creating gimple, so there is
+         no need to save enough state to undo this propagation.  */
+      TREE_OPERAND (rhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
+      fold_stmt (bsi_stmt_ptr (bsi_for_stmt (use_stmt)));
+      mark_new_vars_to_rename (use_stmt);
+      update_stmt (use_stmt);
+      return true;
+    }
+
+  /* The remaining cases are all for turning pointer arithmetic into
+     array indexing.  They only apply when we have the address of
+     element zero in an array.  If that is not the case then there
+     is nothing to do.  */
+  array_ref = TREE_OPERAND (TREE_OPERAND (stmt, 1), 0);
+  if (TREE_CODE (array_ref) != ARRAY_REF
+      || TREE_CODE (TREE_TYPE (TREE_OPERAND (array_ref, 0))) != ARRAY_TYPE
+      || !integer_zerop (TREE_OPERAND (array_ref, 1)))
+    return false;
+
+  /* If the use of the ADDR_EXPR must be a PLUS_EXPR, or else there
+     is nothing to do. */
+  if (TREE_CODE (rhs) != PLUS_EXPR)
+    return false;
+
+  /* Try to optimize &x[0] + C where C is a multiple of the size
+     of the elements in X into &x[C/element size].  */
+  if (TREE_OPERAND (rhs, 0) == name
+      && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
+    {
+      tree orig = unshare_expr (rhs);
+      TREE_OPERAND (rhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
+
+      /* If folding succeeds, then we have just exposed new variables
+	 in USE_STMT which will need to be renamed.  If folding fails,
+	 then we need to put everything back the way it was.  */
+      if (fold_stmt (bsi_stmt_ptr (bsi_for_stmt (use_stmt))))
+	{
+	  mark_new_vars_to_rename (use_stmt);
+	  update_stmt (use_stmt);
+	  return true;
+	}
+      else
+	{
+	  TREE_OPERAND (use_stmt, 1) = orig;
+	  update_stmt (use_stmt);
+	  return false;
+	}
+    }
+
+  /* Try to optimize &x[0] + OFFSET where OFFSET is defined by
+     converting a multiplication of an index by the size of the
+     array elements, then the result is converted into the proper
+     type for the arithmetic.  */
+  if (TREE_OPERAND (rhs, 0) == name
+      && TREE_CODE (TREE_OPERAND (rhs, 1)) == SSA_NAME
+      /* Avoid problems with IVopts creating PLUS_EXPRs with a
+	 different type than their operands.  */
+      && lang_hooks.types_compatible_p (TREE_TYPE (name), TREE_TYPE (rhs)))
+    {
+      tree offset_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 1));
+      return forward_propagate_addr_into_variable_array_index (offset_stmt, lhs,
+							       stmt, use_stmt);
+    }
+	      
+  /* Same as the previous case, except the operands of the PLUS_EXPR
+     were reversed.  */
+  if (TREE_OPERAND (rhs, 1) == name
+      && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
+      /* Avoid problems with IVopts creating PLUS_EXPRs with a
+	 different type than their operands.  */
+      && lang_hooks.types_compatible_p (TREE_TYPE (name), TREE_TYPE (rhs)))
+    {
+      tree offset_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
+      return forward_propagate_addr_into_variable_array_index (offset_stmt, lhs,
+							       stmt, use_stmt);
+    }
+  return false;
+}
+
 /* Main entry point for the forward propagation optimizer.  */
 
 static void
@@ -406,9 +667,32 @@ tree_ssa_forward_propagate_single_use_vars (void)
 
   FOR_EACH_BB (bb)
     {
-      tree last = last_stmt (bb);
-      if (last && TREE_CODE (last) == COND_EXPR)
-	forward_propagate_into_cond (last);
+      block_stmt_iterator bsi;
+
+      /* Note we update BSI within the loop as necessary.  */
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
+	{
+	  tree stmt = bsi_stmt (bsi);
+
+	  /* If this statement sets an SSA_NAME to an address,
+	     try to propagate the address into the uses of the SSA_NAME.  */
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && TREE_CODE (TREE_OPERAND (stmt, 1)) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME)
+	    {
+	      if (forward_propagate_addr_expr (stmt))
+		bsi_remove (&bsi);
+	      else
+		bsi_next (&bsi);
+	    }
+	  else if (TREE_CODE (stmt) == COND_EXPR)
+	    {
+	      forward_propagate_into_cond (stmt);
+	      bsi_next (&bsi);
+	    }
+	  else
+	    bsi_next (&bsi);
+	}
     }
 }
 
@@ -433,6 +717,6 @@ struct tree_opt_pass pass_forwprop = {
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
   TODO_dump_func | TODO_ggc_collect	/* todo_flags_finish */
-  | TODO_verify_ssa,
+  | TODO_update_ssa | TODO_verify_ssa,
   0					/* letter */
 };
