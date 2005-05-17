@@ -96,6 +96,8 @@ struct macro_traverse_data {
   struct map_value *mode_maps;
   /* Input file.  */
   FILE *infile;
+  /* The last unknown attribute used as a mode.  */
+  const char *unknown_mode_attr;
 };
 
 /* If CODE is the number of a code macro, return a real rtx code that
@@ -114,7 +116,7 @@ static bool uses_code_macro_p (rtx, int);
 static void apply_code_macro (rtx, int);
 static const char *apply_macro_to_string (const char *, struct mapping *, int);
 static rtx apply_macro_to_rtx (rtx, struct mapping *, int,
-			       struct map_value *, FILE *);
+			       struct map_value *, FILE *, const char **);
 static bool uses_macro_p (rtx, struct mapping *);
 static const char *add_condition_to_string (const char *, const char *);
 static void add_condition_to_rtx (rtx, const char *);
@@ -311,30 +313,15 @@ map_attr_string (const char *p, struct mapping *macro, int value)
    apply_macro_to_rtx.  */
 
 static unsigned int
-mode_attr_index (struct map_value **mode_maps, const char *string,
-		 FILE *infile)
+mode_attr_index (struct map_value **mode_maps, const char *string)
 {
   char *p;
-  char *attr;
   struct map_value *mv;
 
   /* Copy the attribute string into permanent storage, without the
      angle brackets around it.  */
   obstack_grow (&string_obstack, string + 1, strlen (string) - 2);
   p = (char *) obstack_finish (&string_obstack);
-
-  /* Make sure the attribute is defined as either a code attribute or
-     a mode attribute.  */
-  attr = strchr (p, ':');
-  if (attr == 0)
-    attr = p;
-  else
-    ++attr;
-
-  if (!htab_find (modes.attrs, &attr) && !htab_find (codes.attrs, &attr))
-    fatal_with_file_and_line (infile,
-			      "undefined attribute '%s' used for mode",
-			      p);
 
   mv = XNEW (struct map_value);
   mv->number = *mode_maps == 0 ? 0 : (*mode_maps)->number + 1;
@@ -348,11 +335,16 @@ mode_attr_index (struct map_value **mode_maps, const char *string,
   return MAX_MACHINE_MODE + htab_elements (modes.macros) + mv->number;
 }
 
-/* Apply MODE_MAPS to the top level of X.  */
+/* Apply MODE_MAPS to the top level of X, expanding cases where an
+   attribute is used for a mode.  MACRO is the current macro we are
+   expanding, and VALUE is the value to which we are expanding it.
+   INFILE is used for error messages.  This sets *UNKNOWN to true if
+   we find a mode attribute which has not yet been defined, and does
+   not change it otherwise.  */
 
 static void
 apply_mode_maps (rtx x, struct map_value *mode_maps, struct mapping *macro,
-		 int value, FILE *infile)
+		 int value, FILE *infile, const char **unknown)
 {
   unsigned int offset;
   int indx;
@@ -371,10 +363,10 @@ apply_mode_maps (rtx x, struct map_value *mode_maps, struct mapping *macro,
 
 	  v = map_attr_string (pm->string, macro, value);
 	  if (v)
-	    {
-	      PUT_MODE (x, find_mode (v->string, infile));
-	      return;
-	    }
+	    PUT_MODE (x, find_mode (v->string, infile));
+	  else
+	    *unknown = pm->string;
+	  return;
 	}
     }
 }
@@ -420,11 +412,15 @@ apply_macro_to_string (const char *string, struct mapping *macro, int value)
 }
 
 /* Return a copy of ORIGINAL in which all uses of MACRO have been
-   replaced by VALUE.  */
+   replaced by VALUE.  MODE_MAPS holds information about attribute
+   strings used for modes.  INFILE is used for error messages.  This
+   sets *UNKNOWN_MODE_ATTR to the value of an unknown mode attribute,
+   and does not change it otherwise.  */
 
 static rtx
 apply_macro_to_rtx (rtx original, struct mapping *macro, int value,
-		    struct map_value *mode_maps, FILE *infile)
+		    struct map_value *mode_maps, FILE *infile,
+		    const char **unknown_mode_attr)
 {
   struct macro_group *group;
   const char *format_ptr;
@@ -446,7 +442,7 @@ apply_macro_to_rtx (rtx original, struct mapping *macro, int value,
     group->apply_macro (x, value);
 
   if (mode_maps)
-    apply_mode_maps (x, mode_maps, macro, value, infile);
+    apply_mode_maps (x, mode_maps, macro, value, infile, unknown_mode_attr);
 
   /* Change each string and recursively change each rtx.  */
   format_ptr = GET_RTX_FORMAT (bellwether_code);
@@ -464,7 +460,8 @@ apply_macro_to_rtx (rtx original, struct mapping *macro, int value,
 
       case 'e':
 	XEXP (x, i) = apply_macro_to_rtx (XEXP (x, i), macro, value,
-					  mode_maps, infile);
+					  mode_maps, infile,
+					  unknown_mode_attr);
 	break;
 
       case 'V':
@@ -475,7 +472,8 @@ apply_macro_to_rtx (rtx original, struct mapping *macro, int value,
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      XVECEXP (x, i, j) = apply_macro_to_rtx (XVECEXP (original, i, j),
 						      macro, value, mode_maps,
-						      infile);
+						      infile,
+						      unknown_mode_attr);
 	  }
 	break;
 
@@ -581,11 +579,20 @@ apply_macro_traverse (void **slot, void *data)
   for (elem = mtd->queue; elem != 0; elem = XEXP (elem, 1))
     if (uses_macro_p (XEXP (elem, 0), macro))
       {
+	/* For each macro we expand, we set UNKNOWN_MODE_ATTR to NULL.
+	   If apply_macro_rtx finds an unknown attribute for a mode,
+	   it will set it to the attribute.  We want to know whether
+	   the attribute is unknown after we have expanded all
+	   possible macros, so setting it to NULL here gives us the
+	   right result when the hash table traversal is complete.  */
+	mtd->unknown_mode_attr = NULL;
+
 	original = XEXP (elem, 0);
 	for (v = macro->values; v != 0; v = v->next)
 	  {
 	    x = apply_macro_to_rtx (original, macro, v->number,
-				    mtd->mode_maps, mtd->infile);
+				    mtd->mode_maps, mtd->infile,
+				    &mtd->unknown_mode_attr);
 	    add_condition_to_rtx (x, v->string);
 	    if (v != macro->values)
 	      {
@@ -1362,8 +1369,13 @@ read_rtx (FILE *infile, rtx *x, int *lineno)
       mtd.queue = queue_next;
       mtd.mode_maps = mode_maps;
       mtd.infile = infile;
+      mtd.unknown_mode_attr = mode_maps ? mode_maps->string : NULL;
       htab_traverse (modes.macros, apply_macro_traverse, &mtd);
       htab_traverse (codes.macros, apply_macro_traverse, &mtd);
+      if (mtd.unknown_mode_attr)
+	fatal_with_file_and_line (infile,
+				  "undefined attribute '%s' used for mode",
+				  mtd.unknown_mode_attr);
     }
 
   *x = XEXP (queue_next, 0);
@@ -1457,7 +1469,7 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
       if (tmp_char[0] != '<' || tmp_char[strlen (tmp_char) - 1] != '>')
 	mode = find_macro (&modes, tmp_char, infile);
       else
-	mode = mode_attr_index (mode_maps, tmp_char, infile);
+	mode = mode_attr_index (mode_maps, tmp_char);
       PUT_MODE (return_rtx, mode);
       if (GET_MODE (return_rtx) != mode)
 	fatal_with_file_and_line (infile, "mode too large");
