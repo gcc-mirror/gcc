@@ -1,3 +1,16 @@
+2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* timevar.def (TV_SCEV_CONST): New timevar.
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_scev_cprop.
+	* tree-pass.h (pass_scev_cprop): Declare.
+	* tree-scalar-evolution.c (scev_const_prop): New function.
+	* tree-scalar-evolution.h (scev_const_prop): Declare.
+	* tree-ssa-loop.c (gate_scev_const_prop, pass_scev_cprop):
+	New.
+	* tree-cfg.c (replace_uses_by): Export.
+	* tree-flow.h (replace_uses_by): Declare.
+
 2005-05-17  Mike Stump  <mrs@apple.com>
 
 	Yet more Objective-C++...

@@ -2627,3 +2627,72 @@ scev_finalize (void)
   BITMAP_FREE (already_instantiated);
 }
 
+/* Replace ssa names for that scev can prove they are constant by the
+   appropriate constants.  Most importantly, this takes care of final
+   value replacement.
+   
+   We only consider SSA names defined by phi nodes; rest is left to the
+   ordinary constant propagation pass.  */
+
+void
+scev_const_prop (void)
+{
+  basic_block bb;
+  tree name, phi, type, ev;
+  struct loop *loop;
+  bitmap ssa_names_to_remove = NULL;
+
+  if (!current_loops)
+    return;
+
+  FOR_EACH_BB (bb)
+    {
+      loop = bb->loop_father;
+
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  name = PHI_RESULT (phi);
+
+	  if (!is_gimple_reg (name))
+	    continue;
+
+	  type = TREE_TYPE (name);
+
+	  if (!POINTER_TYPE_P (type)
+	      && !INTEGRAL_TYPE_P (type))
+	    continue;
+
+	  ev = resolve_mixers (loop, analyze_scalar_evolution (loop, name));
+	  if (!is_gimple_min_invariant (ev)
+	      || !may_propagate_copy (name, ev))
+	    continue;
+
+	  /* Replace the uses of the name.  */
+	  replace_uses_by (name, ev);
+
+	  if (!ssa_names_to_remove)
+	    ssa_names_to_remove = BITMAP_ALLOC (NULL);
+	  bitmap_set_bit (ssa_names_to_remove, SSA_NAME_VERSION (name));
+	}
+    }
+
+  /* Remove the ssa names that were replaced by constants.  We do not remove them
+     directly in the previous cycle, since this invalidates scev cache.  */
+  if (ssa_names_to_remove)
+    {
+      bitmap_iterator bi;
+      unsigned i;
+
+      EXECUTE_IF_SET_IN_BITMAP (ssa_names_to_remove, 0, i, bi)
+	{
+	  name = ssa_name (i);
+	  phi = SSA_NAME_DEF_STMT (name);
+
+	  gcc_assert (TREE_CODE (phi) == PHI_NODE);
+	  remove_phi_node (phi, NULL);
+	}
+
+      BITMAP_FREE (ssa_names_to_remove);
+      scev_reset ();
+    }
+}
