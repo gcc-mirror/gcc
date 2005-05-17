@@ -1205,7 +1205,7 @@ data_transfer_init (int read_flag)
 #define MAX_READ 4096
 
 static void
-next_record_r (int done)
+next_record_r (void)
 {
   int rlength, length;
   gfc_offset new;
@@ -1296,7 +1296,7 @@ next_record_r (int done)
 /* Position to the next record in write mode.  */
 
 static void
-next_record_w (int done)
+next_record_w (void)
 {
   gfc_offset c, m;
   int length;
@@ -1395,9 +1395,9 @@ next_record (int done)
   current_unit->read_bad = 0;
 
   if (g.mode == READING)
-    next_record_r (done);
+    next_record_r ();
   else
-    next_record_w (done);
+    next_record_w ();
 
   /* keep position up to date for INQUIRE */
   current_unit->flags.position = POSITION_ASIS;
@@ -1482,7 +1482,9 @@ finalize_transfer (void)
    data transfer, it just updates the length counter.  */
 
 static void
-iolength_transfer (bt type, void *dest, int len)
+iolength_transfer (bt type   __attribute__ ((unused)),
+		   void *dest __attribute__ ((unused)),
+		   int len)
 {
   if (ioparm.iolength != NULL)
     *ioparm.iolength += len;

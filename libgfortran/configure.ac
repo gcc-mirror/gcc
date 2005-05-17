@@ -114,7 +114,7 @@ if test "x$GCC" = "xyes"; then
   AM_FCFLAGS="-Wall"
   ## We like to use C99 routines when available.  This makes sure that
   ## __STDC_VERSION__ is set such that libc includes make them available.
-  AM_CFLAGS="-std=gnu99 -Wall -Wstrict-prototypes"
+  AM_CFLAGS="-std=gnu99 -Wall -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wextra -Wwrite-strings"
 fi
 AC_SUBST(AM_FCFLAGS)
 AC_SUBST(AM_CFLAGS)

@@ -1,3 +1,32 @@
+2005-05-16  Andreas Jaeger  <aj@suse.de>
+
+	* configure.ac: Add additional warning flags.
+	* configure: Regenerate.
+
+	* io/write.c (calculate_G_format): Remove unused parameter.
+	(output_float): Remove unused parameter.
+	(write_float): Change callers.
+	(nml_write_obj): Avoid signed warning.
+	Make variable const to support -Wwrite-strings.
+
+	* io/unix.c (fd_alloc, mmap_open, mmap_sfree, mem_sfree,
+	mem_truncate): Mark argument as unused.
+
+	* io/unit.c (get_unit): Mark argument as unused.
+	(init_units): Avoid warning about signed comparision.
+
+	* io/transfer.c (next_record_r): Remove unused parameter.
+	(next_record_w): Remove unused parameter.
+	(next_record): Change callers.
+	(iolength_transfer): Mark arguments as unused.
+
+	* io/open.c: Add initializer.
+
+	* io/list_read.c (read_character): Mark argument as unused.
+	(nml_match_name): Add const to make compile with -Wwrite-strings.
+
+	* io/format.c: Add initializer.
+
 2005-05-15  Andreas Jaeger  <aj@suse.de>
 
 	* m4/eoshift1.m4: Initialize variables to avoid warnings.

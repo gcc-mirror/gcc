@@ -1,4 +1,5 @@
-/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -54,7 +55,9 @@ static const char *error;
 static format_token saved_token;
 static int value, format_string_len, reversion_ok;
 
-static fnode *saved_format, colon_node = { FMT_COLON };
+static fnode *saved_format;
+static fnode colon_node = { FMT_COLON, 0, NULL, NULL, {{ 0, 0, 0 }}, 0,
+			    NULL };
 
 /* Error messages */
 

@@ -1,4 +1,5 @@
-/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -38,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 static st_option access_opt[] = {
   {"sequential", ACCESS_SEQUENTIAL},
   {"direct", ACCESS_DIRECT},
-  {NULL}
+  {NULL, 0}
 };
 
 static st_option action_opt[] =
@@ -46,14 +47,14 @@ static st_option action_opt[] =
   { "read", ACTION_READ},
   { "write", ACTION_WRITE},
   { "readwrite", ACTION_READWRITE},
-  { NULL}
+  { NULL, 0}
 };
 
 static st_option blank_opt[] =
 {
   { "null", BLANK_NULL},
   { "zero", BLANK_ZERO},
-  { NULL}
+  { NULL, 0}
 };
 
 static st_option delim_opt[] =
@@ -61,14 +62,14 @@ static st_option delim_opt[] =
   { "none", DELIM_NONE},
   { "apostrophe", DELIM_APOSTROPHE},
   { "quote", DELIM_QUOTE},
-  { NULL}
+  { NULL, 0}
 };
 
 static st_option form_opt[] =
 {
   { "formatted", FORM_FORMATTED},
   { "unformatted", FORM_UNFORMATTED},
-  { NULL}
+  { NULL, 0}
 };
 
 static st_option position_opt[] =
@@ -76,7 +77,7 @@ static st_option position_opt[] =
   { "asis", POSITION_ASIS},
   { "rewind", POSITION_REWIND},
   { "append", POSITION_APPEND},
-  { NULL}
+  { NULL, 0}
 };
 
 static st_option status_opt[] =
@@ -86,14 +87,14 @@ static st_option status_opt[] =
   { "new", STATUS_NEW},
   { "replace", STATUS_REPLACE},
   { "scratch", STATUS_SCRATCH},
-  { NULL}
+  { NULL, 0}
 };
 
 static st_option pad_opt[] =
 {
   { "yes", PAD_YES},
   { "no", PAD_NO},
-  { NULL}
+  { NULL, 0}
 };
 
 

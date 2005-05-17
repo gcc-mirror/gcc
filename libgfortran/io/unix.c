@@ -1,4 +1,5 @@
-/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -329,7 +330,8 @@ fd_flush (unix_stream * s)
  * to come next. */
 
 static void
-fd_alloc (unix_stream * s, gfc_offset where, int *len)
+fd_alloc (unix_stream * s, gfc_offset where,
+	  int *len __attribute__ ((unused)))
 {
   char *new_buffer;
   int n, read_len;
@@ -606,7 +608,8 @@ mmap_flush (unix_stream * s)
  * guaranteed to be mappable. */
 
 static try
-mmap_alloc (unix_stream * s, gfc_offset where, int *len)
+mmap_alloc (unix_stream * s, gfc_offset where,
+	    int *len __attribute__ ((unused)))
 {
   gfc_offset offset;
   int length;
@@ -711,7 +714,7 @@ mmap_close (unix_stream * s)
 
 
 static try
-mmap_sfree (unix_stream * s)
+mmap_sfree (unix_stream * s __attribute__ ((unused)))
 {
   return SUCCESS;
 }
@@ -721,7 +724,7 @@ mmap_sfree (unix_stream * s)
  * mmap()-ed, we fall back to the file descriptor functions. */
 
 static try
-mmap_open (unix_stream * s)
+mmap_open (unix_stream * s __attribute__ ((unused)))
 {
   char *p;
   int i;
@@ -827,7 +830,7 @@ mem_seek (unix_stream * s, gfc_offset offset)
 
 
 static int
-mem_truncate (unix_stream * s)
+mem_truncate (unix_stream * s __attribute__ ((unused)))
 {
   return SUCCESS;
 }
@@ -843,7 +846,7 @@ mem_close (unix_stream * s)
 
 
 static try
-mem_sfree (unix_stream * s)
+mem_sfree (unix_stream * s __attribute__ ((unused)))
 {
   return SUCCESS;
 }
