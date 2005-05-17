@@ -354,13 +354,19 @@ This pass transforms tail recursion into a loop.  It is located in
 
 This pass sinks stores and assignments down the flowgraph closer to it's
 use point.  The pass is located in @file{tree-ssa-sink.c} and is
-described by @code{pass_sink_code}
+described by @code{pass_sink_code}.
 
 @item Partial redundancy elimination
 
 This pass eliminates partially redundant computations, as well as
 performing load motion.  The pass is located in @file{tree-ssa-pre.c}
 and is described by @code{pass_pre}.
+
+Just before partial redundancy elimination, if
+@option{-funsafe-math-optimizations} is on, GCC tries to convert
+divisions to multiplications by the reciprocal.  The pass is located
+in @file{tree-ssa-math-opts.c} and is described by
+@code{pass_cse_reciprocal}.
 
 @item Loop optimization
 

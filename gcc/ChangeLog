@@ -1,3 +1,14 @@
+2005-05-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in: Add tree-ssa-math-opts.c.
+	* expr.c (expand_expr_real_1) <case RDIV_EXPR>: Never emit as a*(1/b).
+	* fold-const.c (distribute_real_division): New.
+	(fold_binary) <case PLUS_EXPR, case MINUS_EXPR>: Use it.
+	* tree-pass.h (pass_cse_reciprocals): New.
+	* tree-optimize.c (init_tree_optimization_passes): Run it.
+	* tree-ssa-math-opts.c: New file.
+	* doc/passes.texi: Document the new pass.
+
 2005-05-17  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/21595
@@ -21,7 +32,7 @@
 2005-05-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md: Unquote preparation and output statements.
- 	(BWD, WD, BW): New, mode-macros.
+	(BWD, WD, BW): New, mode-macros.
 	(S, s, m, mm, nbitsm1): New, mode-attrs.
 	(szext, shift, shiftrt, ncond, ocond, rcond): New, code-macros.
 	(u, su, shlr, slr, ncond, ocond, rcond, rCC, oCC, roCC): New,
