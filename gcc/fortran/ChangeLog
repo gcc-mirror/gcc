@@ -1,3 +1,9 @@
+2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* trans-types.c (gfc_array_range_type): New variable.
+	(gfc_init_types): Initialize gfc_array_range_type.
+	(gfc_get_array_type_bounds): Use gfc_array_range_type.
+
 2005-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/15080
