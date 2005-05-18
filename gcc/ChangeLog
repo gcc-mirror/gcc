@@ -1,5 +1,9 @@
 2005-05-18  Geoffrey Keating  <geoffk@apple.com>
 
+	* rs6000/predicates.md (fix_trunc_dest_operand): New.
+	* rs6000/rs6000.md (fix_truncdfsi2): Use fix_trunc_dest_operand.
+	Check that a memory operand is valid before trying to use it.
+	
 	* tree-cfg.c (pass_remove_useless): This pass works on trees.
 
 2005-05-18  Richard Guenther  <rguenth@gcc.gnu.org>

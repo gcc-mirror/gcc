@@ -364,6 +364,15 @@
 		    || GET_CODE (XEXP (XEXP (op, 0), 1)) != CONST_INT
 		    || INTVAL (XEXP (XEXP (op, 0), 1)) % 4 == 0")))
 
+;; Used for the destination of the fix_truncdfsi2 expander.
+;; If stfiwx will be used, the result goes to memory; otherwise,
+;; we're going to emit a store and a load of a subreg, so the dest is a
+;; register.
+(define_predicate "fix_trunc_dest_operand"
+  (if_then_else (match_test "! TARGET_E500_DOUBLE && TARGET_PPC_GFXOPT")
+   (match_operand 0 "memory_operand")
+   (match_operand 0 "gpc_reg_operand")))
+
 ;; Return 1 if the operand is either a non-special register or can be used
 ;; as the operand of a `mode' add insn.
 (define_predicate "add_operand"
