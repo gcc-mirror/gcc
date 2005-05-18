@@ -40,6 +40,7 @@
 #include <jawt.h>
 #include <jawt_md.h>
 #include "classpath_jawt.h"
+#include <malloc.h>
 
 static jint (JNICALL _Jv_Lock) (JAWT_DrawingSurface* surface);
 static void (JNICALL _Jv_Unlock) (JAWT_DrawingSurface* surface);
@@ -76,14 +77,13 @@ JAWT_GetAWT (JNIEnv* env, JAWT* awt)
 static jint
 (JNICALL _Jv_Lock) (JAWT_DrawingSurface* surface)
 {
-  /* lock the drawing surface */
-  return classpath_jawt_lock ();
+  return classpath_jawt_object_lock (surface->lock);
 }
 
 static void
 (JNICALL _Jv_Unlock) (JAWT_DrawingSurface* surface)
 {
-  classpath_jawt_unlock ();
+  classpath_jawt_object_unlock (surface->lock);
 }
 
 static JAWT_DrawingSurfaceInfo*
@@ -109,6 +109,7 @@ static void
   surface_info_x11->drawable = 0;
   surface_info_x11->visualID = 0;
 
+  free (surface_info->platformInfo);
   free (surface_info);
   surface_info = NULL;
 }
@@ -135,6 +136,8 @@ static JAWT_DrawingSurface*
 
   surface->surface_info = (JAWT_DrawingSurfaceInfo*) malloc (sizeof (JAWT_DrawingSurfaceInfo));
 
+  surface->lock = classpath_jawt_create_lock ();
+
   if (surface->surface_info == NULL)
     return NULL;
 
@@ -158,6 +161,7 @@ static JAWT_DrawingSurface*
 static void
 (JNICALL _Jv_FreeDrawingSurface) (JAWT_DrawingSurface* surface)
 {
+  classpath_jawt_destroy_lock (surface->lock);
   free (surface);
 }
 

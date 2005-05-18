@@ -1,3 +1,20 @@
+2005-05-18  Anthony Green  <green@redhat.com>
+
+	* jni/gtk-peer/gtk_jawt.c (classpath_jawt_object_lock,
+	classpath_jawt_object_unlock, classpath_jawt_create_lock,
+	classpath_jawt_destroy_lock): New functions.
+	* jni/classpath/classpath_jawt.h (classpath_jawt_object_lock,
+	classpath_jawt_object_unlock, classpath_jawt_create_lock,
+	classpath_jawt_destroy_lock): New functions.
+	* include/jawt.h (struct _JAWT_DrawingSurface): Add lock
+	field.
+	* jawt.c: #include malloc.h.
+	(_Jv_Lock): Use lock.
+	(_Jv_Unlock): Ditto.
+	(_Jv_GetDrawingSurface): Initialize lock.
+	(_Jv_FreeDrawingSurface): Destroy lock.
+	(_Jv_FreeDrawingSurfaceInfo): Free platformInfo.
+
 2005-05-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.am (Makefile.deps): Do not use \0, it is unportable.
