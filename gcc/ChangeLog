@@ -347,6 +347,7 @@
 	(init_tree_optimization_passes): Move some to all_lowering_passes.
 	(tree_lowering_passes): New function.
 	(tree_rest_of_compilation): Register cfg hooks; save/unsave eh.
+	* tree-pass.h (tree_lowering_passes): Declare
 
 2005-05-17  Nathan Sidwell  <nathan@codesourcery.com>
 
