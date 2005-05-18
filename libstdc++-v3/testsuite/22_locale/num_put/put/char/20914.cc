@@ -1,3 +1,5 @@
+// { dg-require-namedlocale "" }
+
 // 2005-04-17  Paolo Carlini  <pcarlini@suse.de>
 
 // Copyright (C) 2005 Free Software Foundation
@@ -31,7 +33,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   // A locale that expects grouping.
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
+  locale loc_de = locale("de_DE");
 
   const string empty;
   string result;

@@ -1,6 +1,12 @@
+// { dg-do run }
+// { dg-xfail-if "" { "*-*-hpux11.23" } { "*" } { "" } } */
+// { dg-options "-finput-charset=ISO8859-1" }
+// { dg-require-iconv "ISO8859-1" }
+// { dg-require-namedlocale "" }
+
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +25,6 @@
 // USA.
 
 // 22.2.4.1.1 collate members
-
-// { dg-do run }
-// { dg-xfail-if "" { "*-*-hpux11.23" } { "*" } { "" } } */
-// { dg-options "-finput-charset=ISO8859-1" }
-// { dg-require-iconv "ISO8859-1" }
 
 #include <testsuite_hooks.h>
 

@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2003-10-24  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +35,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   
   // basic construction
-  locale loc_de = __gnu_test::try_named_locale("de_DE@euro");
+  locale loc_de = locale("de_DE@euro");
 
   iterator_type end;
   istringstream iss;

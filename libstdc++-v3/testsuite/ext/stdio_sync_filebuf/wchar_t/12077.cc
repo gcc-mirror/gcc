@@ -1,4 +1,6 @@
-// Copyright (C) 2004 Free Software Foundation
+// { dg-require-namedlocale "" }
+
+// Copyright (C) 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +30,7 @@ void test01()
 
   const char* name = "tmp_12077";
 
-  locale loc = __gnu_test::try_named_locale("is_IS.UTF-8");
+  locale loc = locale("is_IS.UTF-8");
   locale::global(loc);
   wcin.imbue(loc);
 

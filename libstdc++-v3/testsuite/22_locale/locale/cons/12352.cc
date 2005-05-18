@@ -1,4 +1,6 @@
-// Copyright (C) 2003 Free Software Foundation
+// { dg-require-namedlocale "" }
+
+// Copyright (C) 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -101,7 +103,7 @@ void test01(int iters)
 	  times_to_fail = i;
 	  try
 	    {
-	      std::locale loc1 = __gnu_test::try_named_locale("");
+	      std::locale loc1 = std::locale("");
 	      std::locale loc2(loc1, std::locale::classic(),
 			       std::locale::numeric);
 	    }

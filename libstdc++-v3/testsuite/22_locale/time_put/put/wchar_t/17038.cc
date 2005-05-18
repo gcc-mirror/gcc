@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2004-08-25  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +39,7 @@ void test01()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_in = __gnu_test::try_named_locale("ta_IN");
+  locale loc_in = locale("ta_IN");
   VERIFY( loc_in != loc_c );
 
   // create an ostream-derived object, cache the time_put facet

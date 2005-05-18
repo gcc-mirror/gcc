@@ -1,3 +1,4 @@
+// { dg-require-namedlocale "" }
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
 
@@ -39,8 +40,8 @@ void test01()
   using namespace std; 
   using namespace __gnu_test;
 
-  locale loc_en(__gnu_test::try_named_locale("en_US"));
-  locale loc_fr(__gnu_test::try_named_locale("fr_FR"));
+  locale loc_en(locale("en_US"));
+  locale loc_fr(locale("fr_FR"));
 
   const char* name = "tmp_fifo_13582-2";
   unlink(name);

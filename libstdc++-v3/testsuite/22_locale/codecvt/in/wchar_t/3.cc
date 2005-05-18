@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -102,7 +104,7 @@ void test03()
   wmemset(i_ref, 0xdeadbeef, size + 1);
   int_type*		ito_next;
 
-  locale loc = __gnu_test::try_named_locale("en_US.ISO-8859-15");
+  locale loc = locale("en_US.ISO-8859-15");
   locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 

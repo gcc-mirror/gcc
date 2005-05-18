@@ -1,3 +1,5 @@
+// { dg-require-namedlocale "" }
+
 // Copyright (C) 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -38,7 +40,7 @@ test02()
   os2.setf(wios::fixed);
 
   // Check it can be done in a locale with grouping on.
-  locale loc2 = __gnu_test::try_named_locale("de_DE");
+  locale loc2 = locale("de_DE");
   os2.imbue(loc2);
   os2 << fixed << setprecision(3) << val2 << endl;
   os2 << endl;

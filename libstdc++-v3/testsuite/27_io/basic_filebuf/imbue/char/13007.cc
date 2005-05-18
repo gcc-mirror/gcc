@@ -1,4 +1,6 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// { dg-require-namedlocale "" }
+
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +47,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   Buf buf;
-  std::locale loc(__gnu_test::try_named_locale("fr_FR"));
+  std::locale loc(std::locale("fr_FR"));
 
   buf.pubimbue(loc);
 
