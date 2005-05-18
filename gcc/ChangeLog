@@ -1,3 +1,9 @@
+2005-05-18  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Do not
+	propagate an ADDR_EXPR if the definition and use sites are
+	in different EH regions.
+
 2005-05-18  Ian Lance Taylor  <ian@airs.com>
 
 	* read-rtl.c (mode_attr_index): Use obstack_grow0, not
