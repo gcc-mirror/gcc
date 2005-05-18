@@ -102,7 +102,8 @@ am__objects_19 = shape_i4.lo shape_i8.lo
 am__objects_20 = eoshift1_4.lo eoshift1_8.lo
 am__objects_21 = eoshift3_4.lo eoshift3_8.lo
 am__objects_22 = cshift1_4.lo cshift1_8.lo
-am__objects_23 = reshape_i4.lo reshape_i8.lo
+am__objects_23 = reshape_i4.lo reshape_i8.lo reshape_c4.lo \
+	reshape_c8.lo
 am__objects_24 = in_pack_i4.lo in_pack_i8.lo
 am__objects_25 = in_unpack_i4.lo in_unpack_i8.lo
 am__objects_26 = exponent_r4.lo exponent_r8.lo
@@ -514,7 +515,9 @@ generated/shape_i8.c
 
 i_reshape_c = \
 generated/reshape_i4.c \
-generated/reshape_i8.c
+generated/reshape_i8.c \
+generated/reshape_c4.c \
+generated/reshape_c8.c
 
 i_eoshift1_c = \
 generated/eoshift1_4.c \
@@ -1113,6 +1116,12 @@ reshape_i4.lo: generated/reshape_i4.c
 
 reshape_i8.lo: generated/reshape_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_i8.lo `test -f 'generated/reshape_i8.c' || echo '$(srcdir)/'`generated/reshape_i8.c
+
+reshape_c4.lo: generated/reshape_c4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_c4.lo `test -f 'generated/reshape_c4.c' || echo '$(srcdir)/'`generated/reshape_c4.c
+
+reshape_c8.lo: generated/reshape_c8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_c8.lo `test -f 'generated/reshape_c8.c' || echo '$(srcdir)/'`generated/reshape_c8.c
 
 in_pack_i4.lo: generated/in_pack_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_i4.lo `test -f 'generated/in_pack_i4.c' || echo '$(srcdir)/'`generated/in_pack_i4.c
