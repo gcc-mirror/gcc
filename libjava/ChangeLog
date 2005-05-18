@@ -1,3 +1,9 @@
+2005-05-18  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/19729
+	* gnu/java/security/provider/DSASignature.java: Import updates
+	from GNU Crypto.
+
 2005-05-18  Anthony Green  <green@redhat.com>
 
 	* jni/gtk-peer/gtk_jawt.c (classpath_jawt_object_lock,
