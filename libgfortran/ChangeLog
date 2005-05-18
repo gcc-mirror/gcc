@@ -1,6 +1,12 @@
 2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21127
+	* Makefile.am:  Really commit.
+	* Makefile.in:  Really commit.
+
+2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21127
 	* Makefile.am:  Add generated/reshape_c4.c and
 	generated/reshape_c8.c.
 	* Makefile.in:  Regenerated.

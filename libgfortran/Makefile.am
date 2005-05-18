@@ -225,7 +225,9 @@ generated/shape_i8.c
 
 i_reshape_c= \
 generated/reshape_i4.c \
-generated/reshape_i8.c
+generated/reshape_i8.c \
+generated/reshape_c4.c \
+generated/reshape_c8.c
 
 i_eoshift1_c= \
 generated/eoshift1_4.c \
