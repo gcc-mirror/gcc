@@ -1137,8 +1137,14 @@ gfc_resolve_reshape (gfc_expr * f, gfc_expr * source, gfc_expr * shape,
     case 4:
     case 8:
     /* case 16: */
-      f->value.function.name =
-	gfc_get_string (PREFIX("reshape_%d"), source->ts.kind);
+      if (source->ts.type == BT_COMPLEX)
+	f->value.function.name =
+	  gfc_get_string (PREFIX("reshape_%c%d"),
+			  gfc_type_letter (BT_COMPLEX), source->ts.kind);
+      else
+	f->value.function.name =
+	  gfc_get_string (PREFIX("reshape_%d"), source->ts.kind);
+
       break;
 
     default:

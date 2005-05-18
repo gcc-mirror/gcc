@@ -1,3 +1,10 @@
+2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21127
+	* fortran/iresolve.c (gfc_resolve_reshape): Add 
+	gfc_type_letter (BT_COMPLEX) for complex to
+	to resolved function name.
+
 2005-05-18 Erik Edelmann <erik.edelmann@iki.fi>
 
 	* array.c (gfc_match_array_constructor): Support [ ... ]
