@@ -146,6 +146,11 @@ Boston, MA 02111-1307, USA.  */
 
    This will (of course) be extended as other needs arise.  */
 
+
+/* Set to true if we delete EH edges during the optimization.  */
+static bool cfg_changed;
+
+
 /* Given an SSA_NAME VAR, return true if and only if VAR is defined by
    a comparison.  */
 
@@ -434,6 +439,21 @@ forward_propagate_into_cond (tree cond_expr)
     }
 }
 
+/* We've just substituted an ADDR_EXPR into stmt.  Update all the 
+   relevant data structures to match.  */
+
+static void
+tidy_after_forward_propagate_addr (tree stmt)
+{
+  mark_new_vars_to_rename (stmt);
+  update_stmt (stmt);
+
+  /* We may have turned a trapping insn into a non-trapping insn.  */
+  if (maybe_clean_or_replace_eh_stmt (stmt, stmt)
+      && tree_purge_dead_eh_edges (bb_for_stmt (stmt)))
+    cfg_changed = true;
+}
+
 /* STMT defines LHS which is contains the address of the 0th element
    in an array.  USE_STMT uses LHS to compute the address of an
    arbitrary element within the array.  The (variable) byte offset
@@ -498,9 +518,8 @@ forward_propagate_addr_into_variable_array_index (tree offset, tree lhs,
 
   /* That should have created gimple, so there is no need to
      record information to undo the propagation.  */
-  fold_stmt (bsi_stmt_ptr (bsi_for_stmt (use_stmt)));
-  mark_new_vars_to_rename (use_stmt);
-  update_stmt (use_stmt);
+  fold_stmt_inplace (use_stmt);
+  tidy_after_forward_propagate_addr (use_stmt);
   return true;
 }
 
@@ -537,11 +556,6 @@ forward_propagate_addr_expr (tree stmt)
   if (bb_for_stmt (use_stmt)->loop_depth > stmt_loop_depth)
     return false;
 
-  /* If the two statements belong to different EH regions, then there
-     is nothing we can or should try to do.  */
-  if (lookup_stmt_eh_region (use_stmt) != lookup_stmt_eh_region (stmt))
-    return false;
-
   /* Strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS.  */
   lhs = TREE_OPERAND (use_stmt, 0);
   while (TREE_CODE (lhs) == COMPONENT_REF || TREE_CODE (lhs) == ARRAY_REF)
@@ -554,9 +568,8 @@ forward_propagate_addr_expr (tree stmt)
       /* This should always succeed in creating gimple, so there is
 	 no need to save enough state to undo this propagation.  */
       TREE_OPERAND (lhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
-      fold_stmt (bsi_stmt_ptr (bsi_for_stmt (use_stmt)));
-      mark_new_vars_to_rename (use_stmt);
-      update_stmt (use_stmt);
+      fold_stmt_inplace (use_stmt);
+      tidy_after_forward_propagate_addr (use_stmt);
       return true;
     }
 
@@ -570,8 +583,7 @@ forward_propagate_addr_expr (tree stmt)
   if (TREE_CODE (lhs) == SSA_NAME && TREE_OPERAND (use_stmt, 1) == name)
     {
       TREE_OPERAND (use_stmt, 1) = unshare_expr (TREE_OPERAND (stmt, 1));
-      mark_new_vars_to_rename (use_stmt);
-      update_stmt (use_stmt);
+      tidy_after_forward_propagate_addr (use_stmt);
       return true;
     }
 
@@ -587,9 +599,8 @@ forward_propagate_addr_expr (tree stmt)
       /* This should always succeed in creating gimple, so there is
          no need to save enough state to undo this propagation.  */
       TREE_OPERAND (rhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
-      fold_stmt (bsi_stmt_ptr (bsi_for_stmt (use_stmt)));
-      mark_new_vars_to_rename (use_stmt);
-      update_stmt (use_stmt);
+      fold_stmt_inplace (use_stmt);
+      tidy_after_forward_propagate_addr (use_stmt);
       return true;
     }
 
@@ -619,10 +630,9 @@ forward_propagate_addr_expr (tree stmt)
       /* If folding succeeds, then we have just exposed new variables
 	 in USE_STMT which will need to be renamed.  If folding fails,
 	 then we need to put everything back the way it was.  */
-      if (fold_stmt (bsi_stmt_ptr (bsi_for_stmt (use_stmt))))
+      if (fold_stmt_inplace (use_stmt))
 	{
-	  mark_new_vars_to_rename (use_stmt);
-	  update_stmt (use_stmt);
+	  tidy_after_forward_propagate_addr (use_stmt);
 	  return true;
 	}
       else
@@ -670,6 +680,8 @@ tree_ssa_forward_propagate_single_use_vars (void)
 {
   basic_block bb;
 
+  cfg_changed = false;
+
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator bsi;
@@ -699,6 +711,9 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	    bsi_next (&bsi);
 	}
     }
+
+  if (cfg_changed)
+    cleanup_tree_cfg ();
 }
 
 
