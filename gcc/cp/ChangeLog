@@ -91,6 +91,11 @@
 	* Make-lang.in (cp/tree.o): Add debug.h.
 	* tree.c (lvalue_p_1, case CONST_DECL): Add.
 
+2005-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* method.c: Include tree-pass.h
+	(use_thunk): Lower body before expanding.
+
 2005-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21454
