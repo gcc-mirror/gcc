@@ -30,6 +30,7 @@ public class Process_3 implements Runnable
     catch (Exception ex)
       {
 	System.out.println(ex.toString());
+        System.exit(1);
       }
   }
 
