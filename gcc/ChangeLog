@@ -1,3 +1,9 @@
+2005-05-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sol2.h (TARGET_DEFAULT): Add back MASK_APP_REGS.
+	* config/sparc/sol2-64.h (TARGET_DEFAULT): Likewise.
+	* config/sparc/sp-elf.h (TARGET_DEFAULT): Delete.
+
 2005-05-17  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (find_or_generate_expression): CALL_EXPR
