@@ -22,9 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc-elf)")
 
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_FPU
-
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
