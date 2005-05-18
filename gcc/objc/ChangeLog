@@ -1,3 +1,9 @@
+2005-05-18  Mike Stump  <mrs@apple.com>
+
+	PR objc/21641
+	* objc-act.c (struct interface_tuple): Mark it up for GC.
+	(interface_htab): It is really a struct interface_tuple.
+
 2005-05-17  Mike Stump  <mrs@apple.com>
 
 	Yet more Objective-C++...
