@@ -537,6 +537,11 @@ forward_propagate_addr_expr (tree stmt)
   if (bb_for_stmt (use_stmt)->loop_depth > stmt_loop_depth)
     return false;
 
+  /* If the two statements belong to different EH regions, then there
+     is nothing we can or should try to do.  */
+  if (lookup_stmt_eh_region (use_stmt) != lookup_stmt_eh_region (stmt))
+    return false;
+
   /* Strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS.  */
   lhs = TREE_OPERAND (use_stmt, 0);
   while (TREE_CODE (lhs) == COMPONENT_REF || TREE_CODE (lhs) == ARRAY_REF)
