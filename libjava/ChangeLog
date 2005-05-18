@@ -1,3 +1,8 @@
+2005-05-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.am (Makefile.deps): Do not use \0, it is unportable.
+	* Makefile.in: Regenerate.
+
 2005-05-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac: Use AC_C_BIGENDIAN instead of AC_C_BIGENDIAN_CROSS.
