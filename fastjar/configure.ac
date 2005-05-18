@@ -37,14 +37,14 @@ AC_STRUCT_TM
 gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG
 
 dnl Check for type-widths
-AC_COMPILE_CHECK_SIZEOF(char)
-AC_COMPILE_CHECK_SIZEOF(short)
-AC_COMPILE_CHECK_SIZEOF(int)
-AC_COMPILE_CHECK_SIZEOF(long)
-AC_CHECK_TYPES([long long],[AC_COMPILE_CHECK_SIZEOF(long long)])
+AC_CHECK_SIZEOF(char)
+AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_TYPES([long long],[AC_CHECK_SIZEOF(long long)])
 
 dnl Check byte order
-AC_C_BIGENDIAN_CROSS
+AC_C_BIGENDIAN
 
 AC_ARG_WITH(system-zlib,
 [  --with-system-zlib      use installed libz])
