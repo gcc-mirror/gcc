@@ -52,22 +52,17 @@ enum {
   MATCH_SIZE = ARRAY_SIZE (pch_matching)
 };
 
-/* This structure is read very early when validating the PCH, and
-   might be read for a PCH which is for a completely different compiler
-   for a different operating system.  Thus, it should really only contain
-   'unsigned char' entries, at least in the initial entries.  
+/* The value of the checksum in the dummy compiler that is actually
+   checksummed.  That compiler should never be run.  */
+static const char no_checksum[16] = { 0 };
 
-   If you add or change entries before version_length, you should increase
-   the version number in get_ident().  
+/* Information about flags and suchlike that affect PCH validity.
 
-   There are a bunch of fields named *_length; those are lengths of data that
-   follows this structure in the same order as the fields in the structure.  */
+   Before this structure is read, both an initial 8-character identification
+   string, and a 16-byte checksum, have been read and validated.  */
 
 struct c_pch_validity
 {
-  unsigned char host_machine_length;
-  unsigned char target_machine_length;
-  unsigned char version_length;
   unsigned char debug_info_type;
   signed char match[MATCH_SIZE];
   void (*pch_init) (void);
@@ -87,10 +82,6 @@ static FILE *pch_outfile;
 /* The position in the assembler output file when pch_init was called.  */
 static long asm_file_startpos;
 
-/* The host and target machines.  */
-static const char host_machine[] = HOST_MACHINE;
-static const char target_machine[] = TARGET_MACHINE;
-
 static const char *get_ident (void);
 
 /* Compute an appropriate 8-byte magic number for the PCH file, so that
@@ -102,7 +93,7 @@ static const char *
 get_ident (void)
 {
   static char result[IDENT_LENGTH];
-  static const char template[IDENT_LENGTH] = "gpch.012";
+  static const char template[IDENT_LENGTH] = "gpch.013";
   static const char c_language_chars[] = "Co+O";
   
   memcpy (result, template, IDENT_LENGTH);
@@ -111,8 +102,10 @@ get_ident (void)
   return result;
 }
 
-/* Prepare to write a PCH file.  This is called at the start of 
-   compilation.  */
+/* Prepare to write a PCH file, if one is being written.  This is
+   called at the start of compilation.  
+
+   Also, print out the executable checksum if -fverbose-asm is in effect.  */
 
 void
 pch_init (void)
@@ -122,6 +115,15 @@ pch_init (void)
   void *target_validity;
   static const char partial_pch[IDENT_LENGTH] = "gpcWrite";
   
+#ifdef ASM_COMMENT_START
+  if (flag_verbose_asm)
+    {
+      fprintf (asm_out_file, "%s ", ASM_COMMENT_START);
+      c_common_print_pch_checksum (asm_out_file);
+      fputc ('\n', asm_out_file);
+    }
+#endif
+  
   if (!pch_file)
     return;
   
@@ -130,13 +132,8 @@ pch_init (void)
     fatal_error ("can%'t create precompiled header %s: %m", pch_file);
   pch_outfile = f;
 
-  gcc_assert (strlen (host_machine) < 256
-	      && strlen (target_machine) < 256
-	      && strlen (version_string) < 256);
+  gcc_assert (memcmp (executable_checksum, no_checksum, 16) != 0);
   
-  v.host_machine_length = strlen (host_machine);
-  v.target_machine_length = strlen (target_machine);
-  v.version_length = strlen (version_string);
   v.debug_info_type = write_symbols;
   {
     size_t i;
@@ -150,10 +147,8 @@ pch_init (void)
   target_validity = targetm.get_pch_validity (&v.target_data_length);
   
   if (fwrite (partial_pch, IDENT_LENGTH, 1, f) != 1
+      || fwrite (executable_checksum, 16, 1, f) != 1
       || fwrite (&v, sizeof (v), 1, f) != 1
-      || fwrite (host_machine, v.host_machine_length, 1, f) != 1
-      || fwrite (target_machine, v.target_machine_length, 1, f) != 1
-      || fwrite (version_string, v.version_length, 1, f) != 1
       || fwrite (target_validity, v.target_data_length, 1, f) != 1)
     fatal_error ("can%'t write to %s: %m", pch_file);
 
@@ -234,20 +229,24 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 {
   int sizeread;
   int result;
-  char ident[IDENT_LENGTH];
-  char short_strings[256 * 3];
-  int strings_length;
+  char ident[IDENT_LENGTH + 16];
   const char *pch_ident;
   struct c_pch_validity v;
 
   /* Perform a quick test of whether this is a valid
      precompiled header for the current language.  */
 
-  sizeread = read (fd, ident, IDENT_LENGTH);
+  gcc_assert (memcmp (executable_checksum, no_checksum, 16) != 0);
+
+  sizeread = read (fd, ident, IDENT_LENGTH + 16);
   if (sizeread == -1)
     fatal_error ("can%'t read %s: %m", name);
-  else if (sizeread != IDENT_LENGTH)
-    return 2;
+  else if (sizeread != IDENT_LENGTH + 16)
+    {
+      cpp_error (pfile, CPP_DL_WARNING, "%s: too short to be a PCH file",
+		 name);
+      return 2;
+    }
   
   pch_ident = get_ident();
   if (memcmp (ident, pch_ident, IDENT_LENGTH) != 0)
@@ -269,51 +268,19 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 	}
       return 2;
     }
-
-  /* At this point, we know it's a PCH file, so it ought to be long enough
-     that we can read a c_pch_validity structure.  */
-  if (read (fd, &v, sizeof (v)) != sizeof (v))
-    fatal_error ("can%'t read %s: %m", name);
-
-  strings_length = (v.host_machine_length + v.target_machine_length 
-		    + v.version_length);
-  if (read (fd, short_strings, strings_length) != strings_length)
-    fatal_error ("can%'t read %s: %m", name);
-  if (v.host_machine_length != strlen (host_machine)
-      || memcmp (host_machine, short_strings, strlen (host_machine)) != 0)
-    {
-      if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, CPP_DL_WARNING, 
-		   "%s: created on host '%.*s', but used on host '%s'", name,
-		   v.host_machine_length, short_strings, host_machine);
-      return 2;
-    }
-  if (v.target_machine_length != strlen (target_machine)
-      || memcmp (target_machine, short_strings + v.host_machine_length,
-		 strlen (target_machine)) != 0)
-    {
-      if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, CPP_DL_WARNING, 
-		   "%s: created for target '%.*s', but used for target '%s'", 
-		   name, v.target_machine_length, 
-		   short_strings + v.host_machine_length, target_machine);
-      return 2;
-    }
-  if (v.version_length != strlen (version_string)
-      || memcmp (version_string, 
-		 (short_strings + v.host_machine_length 
-		  + v.target_machine_length),
-		 v.version_length) != 0)
+  if (memcmp (ident + IDENT_LENGTH, executable_checksum, 16) != 0)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
 	cpp_error (pfile, CPP_DL_WARNING,
-		   "%s: created by version '%.*s', but this is version '%s'", 
-		   name, v.version_length, 
-		   (short_strings + v.host_machine_length 
-		    + v.target_machine_length), 
-		   version_string);
+		   "%s: created by a different GCC executable", name);
       return 2;
     }
+
+  /* At this point, we know it's a PCH file created by this
+     executable, so it ought to be long enough that we can read a
+     c_pch_validity structure.  */
+  if (read (fd, &v, sizeof (v)) != sizeof (v))
+    fatal_error ("can%'t read %s: %m", name);
 
   /* The allowable debug info combinations are that either the PCH file
      was built with the same as is being used now, or the PCH file was
@@ -346,7 +313,9 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   /* If the text segment was not loaded at the same address as it was
      when the PCH file was created, function pointers loaded from the
      PCH will not be valid.  We could in theory remap all the function
-     pointers, but no support for that exists at present.  */
+     pointers, but no support for that exists at present.  
+     Since we have the same executable, it should only be necessary to
+     check one function.  */
   if (v.pch_init != &pch_init)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
@@ -507,4 +476,16 @@ c_common_pch_pragma (cpp_reader *pfile)
   c_common_read_pch (pfile, name, fd, name);
   
   close (fd);
+}
+
+/* Print out executable_checksum[].  */
+
+void
+c_common_print_pch_checksum (FILE *f)
+{
+  int i;
+  fputs ("Compiler executable checksum: ", f);
+  for (i = 0; i < 16; i++)
+    fprintf (f, "%02x", executable_checksum[i]);
+  putc ('\n', f);
 }

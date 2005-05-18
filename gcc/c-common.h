@@ -859,6 +859,10 @@ extern void c_common_read_pch (cpp_reader *pfile, const char *name, int fd,
 extern void c_common_write_pch (void);
 extern void c_common_no_more_pch (void);
 extern void c_common_pch_pragma (cpp_reader *pfile);
+extern void c_common_print_pch_checksum (FILE *f);
+
+/* In *-checksum.c */
+extern const unsigned char executable_checksum[16];
 
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);

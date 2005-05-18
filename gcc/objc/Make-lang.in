@@ -50,9 +50,20 @@ objc-warn = $(STRICT_WARN)
 # Language-specific object files for Objective C.
 OBJC_OBJS = objc/objc-lang.o objc/objc-act.o
 
-cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
+cc1obj-dummy$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-		$(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBS)
+	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o \
+	      $(BACKEND) $(LIBS)
+
+cc1obj-checksum.c : cc1obj-dummy$(exeext) build/genchecksum$(exeext)
+	build/genchecksum$(exeext) cc1obj-dummy$(exeext) > $@
+
+cc1obj-checksum.o : cc1obj-checksum.c
+
+cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o $(BACKEND) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o \
+	      $(BACKEND) $(LIBS)
 
 # Objective C language specific files.
 
