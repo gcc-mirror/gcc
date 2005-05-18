@@ -72,6 +72,9 @@ struct _JAWT_DrawingSurface
 
   struct _JAWT_DrawingSurfaceInfo* surface_info;
 
+  /* An object we're going to use for locking the surface.  */
+  jobject lock;
+
   /* FIXME: also include bounding rectangle of drawing surface. */
   /* FIXME: also include current clipping region. */
 };

@@ -153,6 +153,21 @@ classpath_jawt_get_drawable (JNIEnv* env, jobject canvas)
 }
 
 jint
+classpath_jawt_object_lock (jobject lock)
+{
+  JNIEnv *env = gdk_env();
+  (*env)->MonitorEnter (env, lock);
+  return 0;
+}
+
+void
+classpath_jawt_object_unlock (jobject lock)
+{
+  JNIEnv *env = gdk_env();
+  (*env)->MonitorExit (env, lock);
+}
+
+jint
 classpath_jawt_lock ()
 {
   gdk_threads_enter ();
@@ -163,4 +178,20 @@ void
 classpath_jawt_unlock ()
 {
   gdk_threads_leave ();
+}
+
+jobject
+classpath_jawt_create_lock ()
+{
+  JNIEnv *env = gdk_env ();
+  jobject lock = (*env)->NewStringUTF (env, "jawt-lock");
+  NSA_SET_GLOBAL_REF (env, lock);
+  return lock;
+}
+
+void
+classpath_jawt_destroy_lock (jobject lock)
+{
+  JNIEnv *env = gdk_env ();
+  NSA_DEL_GLOBAL_REF (env, lock);
 }
