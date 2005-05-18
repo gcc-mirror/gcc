@@ -1,3 +1,8 @@
+2005-05-17  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/18220
+	* testsuite/libjava.lang/Process_3.java (run):  Exit on error.
+
 2005-05-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* exception.cc (abort): Remove std::abort hack.
