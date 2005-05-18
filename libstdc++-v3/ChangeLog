@@ -1,5 +1,18 @@
 2005-05-18  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/22_locale/ctype/is/char/2.cc: Adjust dg-require-namedlocale.
+	* testsuite/22_locale/ctype/is/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/wrapped_env.cc: Add
+	missing dg-require-namedlocale.
+	* testsuite/22_locale/time_get/get_year/char/wrapped_locale.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/wrapped_locale.cc:
+	Likewise.
+
+2005-05-18  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/testsuite_hooks.cc: Remove try_named_locale.
 	* testsuite/testsuite_hooks.h: Remove try_named_locale.
 	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale): New.
