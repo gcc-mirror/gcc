@@ -3045,12 +3045,13 @@ objc_generate_write_barrier (tree lhs, enum tree_code modifycode, tree rhs)
   return result;
 }
 
-static GTY ((param_is (union tree_node))) htab_t interface_htab;
-
-struct interface_tuple {
+struct interface_tuple GTY(())
+{
   tree id;
   tree class_name;
 };
+
+static GTY ((param_is (struct interface_tuple))) htab_t interface_htab;
 
 static hashval_t
 hash_interface (const void *p)
