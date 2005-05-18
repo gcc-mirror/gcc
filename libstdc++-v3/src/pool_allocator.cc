@@ -170,4 +170,5 @@ namespace __gnu_cxx
   // Instantiations.
   template class __pool_alloc<char>;
   template class __pool_alloc<wchar_t>;
+  template class __pool_alloc<size_t>;  
 } // namespace __gnu_cxx

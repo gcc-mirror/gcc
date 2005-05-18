@@ -1,7 +1,4 @@
-// Expected execution error for PR19495.
-// { dg-do run { xfail powerpc*-*-linux* } }
-
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +32,10 @@
 
 typedef char char_type;
 typedef std::char_traits<char_type> traits_type;
-typedef std::tr1::array<char_type, 32> array_type;
+// NB: Array_allocator doesn't properly support rebinding, used by
+// basic_string. See libstdc++/21609 for details.
+typedef std::tr1::array<size_t, 16> array_type;
+typedef __gnu_cxx::array_allocator<size_t, array_type> allocator_type;
 
 array_type extern_array;
 
@@ -44,10 +44,8 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   using std::basic_string;
-  typedef __gnu_cxx::array_allocator<char_type, array_type> allocator_type;
   typedef basic_string<char_type, traits_type, allocator_type> string_type;
 
-  size_t index = array_type::_S_index;
   allocator_type a(&extern_array);
   string_type s(a);
     
