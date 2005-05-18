@@ -627,8 +627,7 @@ ia64_extra_constraint (rtx value, char c)
 
     case 'T':
       /* Symbol ref to small-address-area.  */
-      return (GET_CODE (value) == SYMBOL_REF
-	      && SYMBOL_REF_SMALL_ADDR_P (value));
+      return small_addr_symbolic_operand (value, VOIDmode);
 
     case 'U':
       /* Vector zero.  */
