@@ -1,4 +1,4 @@
-`/* Implementation of the RESHAPE
+/* Implementation of the RESHAPE
    Copyright 2002 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
@@ -31,22 +31,20 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include <stdlib.h>
 #include <assert.h>
-#include "libgfortran.h"'
-include(iparm.m4)dnl
+#include "libgfortran.h"
 
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 
 /* The shape parameter is ignored. We can currently deduce the shape from the
    return array.  */
-dnl Only the kind (ie size) is used to name the function.
 
-extern void reshape_`'rtype_ccode (rtype *, rtype *, shape_type *,
-				    rtype *, shape_type *);
-export_proto(reshape_`'rtype_ccode);
+extern void reshape_c4 (gfc_array_c4 *, gfc_array_c4 *, shape_type *,
+				    gfc_array_c4 *, shape_type *);
+export_proto(reshape_c4);
 
 void
-reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
-                      rtype * pad, shape_type * order)
+reshape_c4 (gfc_array_c4 * ret, gfc_array_c4 * source, shape_type * shape,
+                      gfc_array_c4 * pad, shape_type * order)
 {
   /* r.* indicates the return array.  */
   index_type rcount[GFC_MAX_DIMENSIONS];
@@ -57,7 +55,7 @@ reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
   index_type rsize;
   index_type rs;
   index_type rex;
-  rtype_name *rptr;
+  GFC_COMPLEX_4 *rptr;
   /* s.* indicates the source array.  */
   index_type scount[GFC_MAX_DIMENSIONS];
   index_type sextent[GFC_MAX_DIMENSIONS];
@@ -65,16 +63,16 @@ reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
   index_type sstride0;
   index_type sdim;
   index_type ssize;
-  const rtype_name *sptr;
+  const GFC_COMPLEX_4 *sptr;
   /* p.* indicates the pad array.  */
   index_type pcount[GFC_MAX_DIMENSIONS];
   index_type pextent[GFC_MAX_DIMENSIONS];
   index_type pstride[GFC_MAX_DIMENSIONS];
   index_type pdim;
   index_type psize;
-  const rtype_name *pptr;
+  const GFC_COMPLEX_4 *pptr;
 
-  const rtype_name *src;
+  const GFC_COMPLEX_4 *src;
   int n;
   int dim;
 
@@ -100,7 +98,7 @@ reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
 	  rs *= rex;
 	}
       ret->base = 0;
-      ret->data = internal_malloc_size ( rs * sizeof (rtype_name));
+      ret->data = internal_malloc_size ( rs * sizeof (GFC_COMPLEX_4));
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }
   else
@@ -176,9 +174,9 @@ reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
 
   if (rsize != 0 && ssize != 0 && psize != 0)
     {
-      rsize *= rtype_kind;
-      ssize *= rtype_kind;
-      psize *= rtype_kind;
+      rsize *= 4;
+      ssize *= 4;
+      psize *= 4;
       reshape_packed ((char *)ret->data, rsize, (char *)source->data,
 		      ssize, pad ? (char *)pad->data : NULL, psize);
       return;

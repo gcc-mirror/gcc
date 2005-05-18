@@ -1,3 +1,8 @@
+2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21127
+	* gfortran.dg/reshape-complex.f90:  New test.
+
 2005-05-18  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	* gfortran.dg/array_constructor_1.f90: New test.
