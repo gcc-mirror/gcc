@@ -1,3 +1,9 @@
+2005-05-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/21632
+	* config/ia64/ia64.c (ia64_extra_constraint) <'T'>: Use
+	small_addr_symbolic_operand.
+
 2005-05-18  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Do not
