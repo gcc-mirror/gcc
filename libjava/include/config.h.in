@@ -1,8 +1,5 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
-#undef BYTEORDER
-
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
    */
@@ -354,10 +351,6 @@
 /* Define to 1 if you have the file `AC_File'. */
 #undef HAVE__PROC_SELF_EXE
 
-/* Define if the host machine stores words of multi-word integers in
-   big-endian order. */
-#undef HOST_WORDS_BIG_ENDIAN
-
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
 
@@ -418,7 +411,7 @@
 /* Define if pthread_mutex_t has __m_count member. */
 #undef PTHREAD_MUTEX_HAVE___M_COUNT
 
-/* The number of bytes in type void * */
+/* The size of a `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
@@ -454,7 +447,8 @@
 /* Version number of package */
 #undef VERSION
 
-/* whether byteorder is bigendian */
+/* Define to 1 if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
 
 /* Define to 1 if the X Window System is missing or not being used. */
