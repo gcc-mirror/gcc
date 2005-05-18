@@ -1467,7 +1467,8 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
       gcc_assert (UNARY_CLASS_P (genop)
 		  || BINARY_CLASS_P (genop)
 		  || COMPARISON_CLASS_P (genop)
-		  || REFERENCE_CLASS_P (genop));
+		  || REFERENCE_CLASS_P (genop)
+		  || TREE_CODE (genop) == CALL_EXPR);
       genop = create_expression_by_pieces (block, genop, stmts);
     }
   return genop;

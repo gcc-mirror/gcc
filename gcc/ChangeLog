@@ -1,3 +1,8 @@
+2005-05-17  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (find_or_generate_expression): CALL_EXPR
+	is okay too.
+
 2005-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* timevar.def (TV_SCEV_CONST): New timevar.
