@@ -198,6 +198,7 @@ int assembler_dialect;
 
 static bool shmedia_space_reserved_for_target_registers;
 
+static bool sh_handle_option (size_t, const char *, int);
 static void split_branches (rtx);
 static int branch_dest (rtx);
 static void force_into (rtx, rtx);
@@ -324,6 +325,11 @@ static int hard_regs_intersect_p (HARD_REG_SET *, HARD_REG_SET *);
 #define TARGET_ASM_FILE_START sh_file_start
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION sh_handle_option
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES sh_insert_attributes
@@ -490,6 +496,112 @@ static int hard_regs_intersect_p (HARD_REG_SET *, HARD_REG_SET *);
 #endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+sh_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
+		  int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_m1:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH1;
+      return true;
+
+    case OPT_m2:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH2;
+      return true;
+
+    case OPT_m2a:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH2A;
+      return true;
+
+    case OPT_m2a_nofpu:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH2A_NOFPU;
+      return true;
+
+    case OPT_m2a_single:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH2A_SINGLE;
+      return true;
+
+    case OPT_m2a_single_only:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH2A_SINGLE_ONLY;
+      return true;
+
+    case OPT_m2e:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH2E;
+      return true;
+
+    case OPT_m3:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH3;
+      return true;
+
+    case OPT_m3e:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH3E;
+      return true;
+
+    case OPT_m4:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4;
+      return true;
+
+    case OPT_m4_nofpu:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_NOFPU;
+      return true;
+
+    case OPT_m4_single:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_SINGLE;
+      return true;
+
+    case OPT_m4_single_only:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4_SINGLE_ONLY;
+      return true;
+
+    case OPT_m4a:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4A;
+      return true;
+
+    case OPT_m4a_nofpu:
+    case OPT_m4al:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4A_NOFPU;
+      return true;
+
+    case OPT_m4a_single:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4A_SINGLE;
+      return true;
+
+    case OPT_m4a_single_only:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH4A_SINGLE_ONLY;
+      return true;
+
+    case OPT_m5_32media:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH5_32MEDIA;
+      return true;
+
+    case OPT_m5_32media_nofpu:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH5_32MEDIA_NOFPU;
+      return true;
+
+    case OPT_m5_64media:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH5_64MEDIA;
+      return true;
+
+    case OPT_m5_64media_nofpu:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH5_64MEDIA_NOFPU;
+      return true;
+
+    case OPT_m5_compact:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH5_COMPACT;
+      return true;
+
+    case OPT_m5_compact_nofpu:
+      target_flags = (target_flags & ~MASK_ARCH) | SELECT_SH5_COMPACT_NOFPU;
+      return true;
+
+    default:
+      return true;
+    }
+}
 
 /* Print the operand address in x to the stream.  */
 
@@ -5236,7 +5348,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
   CLEAR_HARD_REG_SET (*live_regs_mask);
   if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && interrupt_handler
       && regs_ever_live[FPSCR_REG])
-    target_flags &= ~FPU_SINGLE_BIT;
+    target_flags &= ~MASK_FPU_SINGLE;
   /* If we can save a lot of saves by switching to double mode, do that.  */
   else if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && TARGET_FPU_SINGLE)
     for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
@@ -5245,7 +5357,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	      || (interrupt_handler && ! pragma_trapa))
 	  && ++count > 2)
 	{
-	  target_flags &= ~FPU_SINGLE_BIT;
+	  target_flags &= ~MASK_FPU_SINGLE;
 	  break;
 	}
   /* PR_MEDIA_REG is a general purpose register, thus global_alloc already
@@ -5327,7 +5439,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	      else if (XD_REGISTER_P (reg))
 		{
 		  /* Must switch to double mode to access these registers.  */
-		  target_flags &= ~FPU_SINGLE_BIT;
+		  target_flags &= ~MASK_FPU_SINGLE;
 		}
 	    }
 	}
@@ -7403,17 +7515,7 @@ sh_cfun_interrupt_handler_p (void)
 	  != NULL_TREE);
 }
 
-/* ??? target_switches in toplev.c is static, hence we have to duplicate it.  */
-static const struct
-{
-  const char *const name;
-  const int value;
-  const char *const description;
-}
-sh_target_switches[] = TARGET_SWITCHES;
-#define target_switches sh_target_switches
-
-/* Like default_pch_valid_p, but take flag_mask into account.  */
+/* Like default_pch_valid_p, but only check certain target_flags.  */
 const char *
 sh_pch_valid_p (const void *data_p, size_t len)
 {
@@ -7433,9 +7535,6 @@ sh_pch_valid_p (const void *data_p, size_t len)
   const char *flag_that_differs = NULL;
   size_t i;
   int old_flags;
-  int flag_mask
-    = (SH1_BIT | SH2_BIT | SH3_BIT | SH_E_BIT | HARD_SH4_BIT | FPU_SINGLE_BIT
-       | SH4_BIT | HITACHI_BIT | LITTLE_ENDIAN_BIT);
 
   /* -fpic and -fpie also usually make a PCH invalid.  */
   if (data[0] != flag_pic)
@@ -7446,24 +7545,15 @@ sh_pch_valid_p (const void *data_p, size_t len)
 
   /* Check target_flags.  */
   memcpy (&old_flags, data, sizeof (target_flags));
-  if (((old_flags ^ target_flags) & flag_mask) != 0)
-    {
-      for (i = 0; i < ARRAY_SIZE (target_switches); i++)
-	{
-	  int bits;
+  if ((old_flags ^ target_flags) & (MASK_SH1 | MASK_SH2 | MASK_SH3
+				    | MASK_SH_E | MASK_HARD_SH4
+				    | MASK_FPU_SINGLE | MASK_SH4))
+    return _("created and used with different architectures / ABIs");
+  if ((old_flags ^ target_flags) & MASK_HITACHI)
+    return _("created and used with different ABIs");
+  if ((old_flags ^ target_flags) & MASK_LITTLE_ENDIAN)
+    return _("created and used with different endianness");
 
-	  bits = target_switches[i].value;
-	  if (bits < 0)
-	    bits = -bits;
-	  bits &= flag_mask;
-	  if ((target_flags & bits) != (old_flags & bits))
-	    {
-	      flag_that_differs = target_switches[i].name;
-	      goto make_message;
-	    }
-	}
-      gcc_unreachable ();
-    }
   data += sizeof (target_flags);
   len -= sizeof (target_flags);
 
@@ -10649,7 +10739,7 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
 	     the TYPE or the FNDECL available so we synthesize the
 	     contents of that function as best we can.  */
 	  pcum->force_mem =
-	    (TARGET_DEFAULT & HITACHI_BIT)
+	    (TARGET_DEFAULT & MASK_HITACHI)
 	    && (mode == BLKmode
 		|| (GET_MODE_SIZE (mode) > 4
 		    && !(mode == DFmode

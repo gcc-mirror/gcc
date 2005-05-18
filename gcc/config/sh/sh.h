@@ -148,107 +148,48 @@ do { \
 	SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);	\
 } while (0)
 
-/* ??? Need to write documentation for all SH options and add it to the
-   invoke.texi file.  */
-
-/* Run-time compilation parameters selecting different hardware subsets.  */
-
-extern int target_flags;
-#define ISIZE_BIT      	(1<<1)
-#define DALIGN_BIT     	(1<<6)
-#define SH1_BIT	       	(1<<8)
-#define SH2_BIT	       	(1<<9)
-#define SH3_BIT	       	(1<<10)
-#define SH_E_BIT	(1<<11)
-#define HARD_SH4_BIT	(1<<5)
-#define FPU_SINGLE_BIT	(1<<7)
-#define SH4_BIT	       	(1<<12)
-#define SH4A_BIT	(1<<3)
-#define FMOVD_BIT	(1<<4)
-#define SH5_BIT		(1<<0)
-#define SPACE_BIT 	(1<<13)
-#define BIGTABLE_BIT  	(1<<14)
-#define RELAX_BIT	(1<<15)
-#define USERMODE_BIT	(1<<16)
-#define HITACHI_BIT     (1<<22)
-#define NOMACSAVE_BIT   (1<<23)
-#define PREFERGOT_BIT	(1<<24)
-#define PADSTRUCT_BIT  (1<<28)
-#define LITTLE_ENDIAN_BIT (1<<29)
-#define IEEE_BIT (1<<30)
-#define SAVE_ALL_TR_BIT (1<<2)
-#define HARD_SH2A_BIT	(1<<17)
-#define HARD_SH2A_DOUBLE_BIT	(1<<18)
-#define INDEXED_ADDRESS_BIT (1<<19)
-#define PT_FIXED_BIT	(1<<21)
-#define INVALID_SYMBOLS_BIT (1<<25)
-#define ADJUST_UNROLL_BIT (1<<20)
-
 /* Nonzero if this is an ELF target - compile time only */
 #define TARGET_ELF 0
 
-/* Nonzero if we should dump out instruction size info.  */
-#define TARGET_DUMPISIZE  (target_flags & ISIZE_BIT)
-
-/* Nonzero to align doubles on 64 bit boundaries.  */
-#define TARGET_ALIGN_DOUBLE (target_flags & DALIGN_BIT)
-
-/* Nonzero if we should generate code using type 1 insns.  */
-#define TARGET_SH1 (target_flags & SH1_BIT)
-
-/* Nonzero if we should generate code using type 2 insns.  */
-#define TARGET_SH2 (target_flags & SH2_BIT)
-
 /* Nonzero if we should generate code using type 2E insns.  */
-#define TARGET_SH2E ((target_flags & SH_E_BIT) && TARGET_SH2)
+#define TARGET_SH2E (TARGET_SH2 && TARGET_SH_E)
 
 /* Nonzero if we should generate code using type 2A insns.  */
-#define TARGET_SH2A (target_flags & HARD_SH2A_BIT)
+#define TARGET_SH2A TARGET_HARD_SH2A
 /* Nonzero if we should generate code using type 2A SF insns.  */
-#define TARGET_SH2A_SINGLE ((target_flags & HARD_SH2A_BIT) && TARGET_SH2E)
+#define TARGET_SH2A_SINGLE (TARGET_SH2A && TARGET_SH2E)
 /* Nonzero if we should generate code using type 2A DF insns.  */
-#define TARGET_SH2A_DOUBLE ((target_flags & HARD_SH2A_DOUBLE_BIT) && TARGET_SH2A)
-
-/* Nonzero if we should generate code using type 3 insns.  */
-#define TARGET_SH3 (target_flags & SH3_BIT)
+#define TARGET_SH2A_DOUBLE (TARGET_HARD_SH2A_DOUBLE && TARGET_SH2A)
 
 /* Nonzero if we should generate code using type 3E insns.  */
-#define TARGET_SH3E ((target_flags & SH_E_BIT) && TARGET_SH3)
+#define TARGET_SH3E (TARGET_SH3 && TARGET_SH_E)
 
 /* Nonzero if the cache line size is 32.  */
-#define TARGET_CACHE32 (target_flags & HARD_SH4_BIT || TARGET_SH5)
+#define TARGET_CACHE32 (TARGET_HARD_SH4 || TARGET_SH5)
 
 /* Nonzero if we schedule for a superscalar implementation.  */
-#define TARGET_SUPERSCALAR (target_flags & HARD_SH4_BIT)
+#define TARGET_SUPERSCALAR TARGET_HARD_SH4
 
 /* Nonzero if the target has separate instruction and data caches.  */
-#define TARGET_HARVARD (target_flags & HARD_SH4_BIT || TARGET_SH5)
-
-/* Nonzero if compiling for SH4 hardware (to be used for insn costs etc.)  */
-#define TARGET_HARD_SH4 (target_flags & HARD_SH4_BIT)
-
-/* Nonzero if the default precision of th FPU is single */
-#define TARGET_FPU_SINGLE (target_flags & FPU_SINGLE_BIT)
+#define TARGET_HARVARD (TARGET_HARD_SH4 || TARGET_SH5)
 
 /* Nonzero if a double-precision FPU is available.  */
-#define TARGET_FPU_DOUBLE ((target_flags & SH4_BIT) || TARGET_SH2A_DOUBLE)
+#define TARGET_FPU_DOUBLE (TARGET_SH4 || TARGET_SH2A_DOUBLE)
 
 /* Nonzero if an FPU is available.  */
 #define TARGET_FPU_ANY (TARGET_SH2E || TARGET_FPU_DOUBLE)
 
 /* Nonzero if we should generate code using type 4 insns.  */
-#define TARGET_SH4 ((target_flags & SH4_BIT) && (target_flags & SH1_BIT))
+#undef TARGET_SH4
+#define TARGET_SH4 ((target_flags & MASK_SH4) != 0 && TARGET_SH1)
 
 /* Nonzero if we're generating code for the common subset of
    instructions present on both SH4a and SH4al-dsp.  */
-#define TARGET_SH4A_ARCH (target_flags & SH4A_BIT)
+#define TARGET_SH4A_ARCH TARGET_SH4A
 
 /* Nonzero if we're generating code for SH4a, unless the use of the
    FPU is disabled (which makes it compatible with SH4al-dsp).  */
 #define TARGET_SH4A_FP (TARGET_SH4A_ARCH && TARGET_FPU_ANY)
-
-/* Nonzero if we should generate code for a SH5 CPU (either ISA).  */
-#define TARGET_SH5 (target_flags & SH5_BIT)
 
 /* Nonzero if we should generate code using the SHcompact instruction
    set and 32-bit ABI.  */
@@ -260,55 +201,14 @@ extern int target_flags;
 
 /* Nonzero if we should generate code using the SHmedia ISA and 32-bit
    ABI.  */
-#define TARGET_SHMEDIA32 (TARGET_SH5 && ! TARGET_SH1 \
-			  && (target_flags & SH_E_BIT))
+#define TARGET_SHMEDIA32 (TARGET_SH5 && ! TARGET_SH1 && TARGET_SH_E)
 
 /* Nonzero if we should generate code using the SHmedia ISA and 64-bit
    ABI.  */
-#define TARGET_SHMEDIA64 (TARGET_SH5 && ! TARGET_SH1 \
- 			  && ! (target_flags & SH_E_BIT))
+#define TARGET_SHMEDIA64 (TARGET_SH5 && ! TARGET_SH1 && ! TARGET_SH_E)
 
 /* Nonzero if we should generate code using SHmedia FPU instructions.  */
 #define TARGET_SHMEDIA_FPU (TARGET_SHMEDIA && TARGET_FPU_DOUBLE)
-/* Nonzero if we should generate fmovd.  */
-#define TARGET_FMOVD (target_flags & FMOVD_BIT)
-
-/* Nonzero if we respect NANs.  */
-#define TARGET_IEEE (target_flags & IEEE_BIT)
-
-/* Nonzero if we should generate smaller code rather than faster code.  */
-#define TARGET_SMALLCODE   (target_flags & SPACE_BIT)
-
-/* Nonzero to use long jump tables.  */
-#define TARGET_BIGTABLE     (target_flags & BIGTABLE_BIT)
-
-/* Nonzero to generate pseudo-ops needed by the assembler and linker
-   to do function call relaxing.  */
-#define TARGET_RELAX (target_flags & RELAX_BIT)
-
-/* Nonzero if using Renesas's calling convention.  */
-#define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
-
-/* Nonzero if not saving macl/mach when using -mhitachi */
-#define TARGET_NOMACSAVE	(target_flags & NOMACSAVE_BIT)
-
-/* Nonzero if padding structures to a multiple of 4 bytes.  This is
-   incompatible with Renesas's compiler, and gives unusual structure layouts
-   which confuse programmers.
-   ??? This option is not useful, but is retained in case there are people
-   who are still relying on it.  It may be deleted in the future.  */
-#define TARGET_PADSTRUCT       (target_flags & PADSTRUCT_BIT)
-
-/* Nonzero if generating code for a little endian SH.  */
-#define TARGET_LITTLE_ENDIAN     (target_flags & LITTLE_ENDIAN_BIT)
-
-/* Nonzero if we should do everything in userland.  */
-#define TARGET_USERMODE		(target_flags & USERMODE_BIT)
-
-/* Nonzero if we should prefer @GOT calls when generating PIC.  */
-#define TARGET_PREFERGOT	(target_flags & PREFERGOT_BIT)
-
-#define TARGET_SAVE_ALL_TARGET_REGS (target_flags & SAVE_ALL_TR_BIT)
 
 /* This is not used by the SH2E calling convention  */
 #define TARGET_VARARGS_PRETEND_ARGS(FUN_DECL) \
@@ -317,12 +217,12 @@ extern int target_flags;
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT SELECT_SH1
-#define SUPPORT_SH1
-#define SUPPORT_SH2E
-#define SUPPORT_SH4
-#define SUPPORT_SH4_SINGLE
-#define SUPPORT_SH2A
-#define SUPPORT_SH2A_SINGLE
+#define SUPPORT_SH1 1
+#define SUPPORT_SH2E 1
+#define SUPPORT_SH4 1
+#define SUPPORT_SH4_SINGLE 1
+#define SUPPORT_SH2A 1
+#define SUPPORT_SH2A_SINGLE 1
 #endif
 
 #define TARGET_DIVIDE_INV \
@@ -339,307 +239,88 @@ extern int target_flags;
 #define TARGET_DIVIDE_INV_CALL (sh_div_strategy == SH_DIV_INV_CALL)
 #define TARGET_DIVIDE_INV_CALL2 (sh_div_strategy == SH_DIV_INV_CALL2)
 
-/* Target macros pertaining to SHmedia architecture bugs.  */
-#define TARGET_ALLOW_INDEXED_ADDRESS (target_flags & INDEXED_ADDRESS_BIT)
-#define TARGET_PT_FIXED (target_flags & PT_FIXED_BIT)
-#define TARGET_INVALID_SYMBOLS (target_flags & INVALID_SYMBOLS_BIT)
+#define SELECT_SH1               (MASK_SH1)
+#define SELECT_SH2               (MASK_SH2 | SELECT_SH1)
+#define SELECT_SH2E              (MASK_SH_E | MASK_SH2 | MASK_SH1 \
+				  | MASK_FPU_SINGLE)
+#define SELECT_SH2A              (MASK_SH_E | MASK_HARD_SH2A \
+				  | MASK_HARD_SH2A_DOUBLE \
+				  | MASK_SH2 | MASK_SH1)
+#define SELECT_SH2A_NOFPU        (MASK_HARD_SH2A | MASK_SH2 | MASK_SH1)
+#define SELECT_SH2A_SINGLE_ONLY  (MASK_SH_E | MASK_HARD_SH2A | MASK_SH2 \
+				  | MASK_SH1 | MASK_FPU_SINGLE)
+#define SELECT_SH2A_SINGLE       (MASK_SH_E | MASK_HARD_SH2A \
+				  | MASK_FPU_SINGLE | MASK_HARD_SH2A_DOUBLE \
+				  | MASK_SH2 | MASK_SH1)
+#define SELECT_SH3               (MASK_SH3 | SELECT_SH2)
+#define SELECT_SH3E              (MASK_SH_E | MASK_FPU_SINGLE | SELECT_SH3)
+#define SELECT_SH4_NOFPU         (MASK_HARD_SH4 | SELECT_SH3)
+#define SELECT_SH4_SINGLE_ONLY   (MASK_HARD_SH4 | SELECT_SH3E)
+#define SELECT_SH4               (MASK_SH4 | MASK_SH_E | MASK_HARD_SH4 \
+				  | SELECT_SH3)
+#define SELECT_SH4_SINGLE        (MASK_FPU_SINGLE | SELECT_SH4)
+#define SELECT_SH4A_NOFPU        (MASK_SH4A | SELECT_SH4_NOFPU)
+#define SELECT_SH4A_SINGLE_ONLY  (MASK_SH4A | SELECT_SH4_SINGLE_ONLY)
+#define SELECT_SH4A              (MASK_SH4A | SELECT_SH4)
+#define SELECT_SH4A_SINGLE       (MASK_SH4A | SELECT_SH4_SINGLE)
+#define SELECT_SH5_64MEDIA       (MASK_SH5 | MASK_SH4)
+#define SELECT_SH5_64MEDIA_NOFPU (MASK_SH5)
+#define SELECT_SH5_32MEDIA       (MASK_SH5 | MASK_SH4 | MASK_SH_E)
+#define SELECT_SH5_32MEDIA_NOFPU (MASK_SH5 | MASK_SH_E)
+#define SELECT_SH5_COMPACT       (MASK_SH5 | MASK_SH4 | SELECT_SH3E)
+#define SELECT_SH5_COMPACT_NOFPU (MASK_SH5 | SELECT_SH3)
 
-#define TARGET_ADJUST_UNROLL (target_flags & ADJUST_UNROLL_BIT)
-
-#define SELECT_SH1               (SH1_BIT)
-#define SELECT_SH2               (SH2_BIT | SELECT_SH1)
-#define SELECT_SH2E              (SH_E_BIT | SH2_BIT | SH1_BIT | FPU_SINGLE_BIT)
-#define SELECT_SH2A              (SH_E_BIT | HARD_SH2A_BIT | HARD_SH2A_DOUBLE_BIT | SH2_BIT | SH1_BIT)
-#define SELECT_SH2A_NOFPU        (HARD_SH2A_BIT | SH2_BIT | SH1_BIT)
-#define SELECT_SH2A_SINGLE_ONLY  (SH_E_BIT | HARD_SH2A_BIT | SH2_BIT | SH1_BIT | FPU_SINGLE_BIT)
-#define SELECT_SH2A_SINGLE       (SH_E_BIT | HARD_SH2A_BIT | FPU_SINGLE_BIT \
-				  | HARD_SH2A_DOUBLE_BIT | SH2_BIT | SH1_BIT)
-#define SELECT_SH3               (SH3_BIT | SELECT_SH2)
-#define SELECT_SH3E              (SH_E_BIT | FPU_SINGLE_BIT | SELECT_SH3)
-#define SELECT_SH4_NOFPU         (HARD_SH4_BIT | SELECT_SH3)
-#define SELECT_SH4_SINGLE_ONLY   (HARD_SH4_BIT | SELECT_SH3E)
-#define SELECT_SH4               (SH4_BIT | SH_E_BIT | HARD_SH4_BIT | SELECT_SH3)
-#define SELECT_SH4_SINGLE        (FPU_SINGLE_BIT | SELECT_SH4)
-#define SELECT_SH4A_NOFPU        (SH4A_BIT | SELECT_SH4_NOFPU)
-#define SELECT_SH4A_SINGLE_ONLY  (SH4A_BIT | SELECT_SH4_SINGLE_ONLY)
-#define SELECT_SH4A              (SH4A_BIT | SELECT_SH4)
-#define SELECT_SH4A_SINGLE       (SH4A_BIT | SELECT_SH4_SINGLE)
-#define SELECT_SH5_64MEDIA       (SH5_BIT | SH4_BIT)
-#define SELECT_SH5_64MEDIA_NOFPU (SH5_BIT)
-#define SELECT_SH5_32MEDIA       (SH5_BIT | SH4_BIT | SH_E_BIT)
-#define SELECT_SH5_32MEDIA_NOFPU (SH5_BIT | SH_E_BIT)
-#define SELECT_SH5_COMPACT       (SH5_BIT | SH4_BIT | SELECT_SH3E)
-#define SELECT_SH5_COMPACT_NOFPU (SH5_BIT | SELECT_SH3)
-
-/* Disable processor switches for which we have no suitable multilibs.  */
-#ifndef SUPPORT_SH1
-#define TARGET_SWITCH_SH1
-#ifndef SUPPORT_SH2
-#define TARGET_SWITCH_SH2
-#ifndef SUPPORT_SH3
-#define TARGET_SWITCH_SH3
-#ifndef SUPPORT_SH4_NOFPU
-#define TARGET_SWITCH_SH4_NOFPU
+#if SUPPORT_SH1
+#define SUPPORT_SH2 1
 #endif
-#ifndef SUPPORT_SH4A_NOFPU
-#define TARGET_SWITCH_SH4A_NOFPU
+#if SUPPORT_SH2
+#define SUPPORT_SH3 1
 #endif
-#ifndef SUPPORT_SH4AL
-#define TARGET_SWITCH_SH4AL
+#if SUPPORT_SH3
+#define SUPPORT_SH4_NOFPU 1
 #endif
-#ifndef SUPPORT_SH2A_NOFPU
-#define TARGET_SWITCH_SH2A_NOFPU
-#endif
-#endif
-#endif
+#if SUPPORT_SH4_NOFPU
+#define SUPPORT_SH4A_NOFPU 1
+#define SUPPORT_SH4AL 1
+#define SUPPORT_SH2A_NOFPU 1
 #endif
 
-#ifndef SUPPORT_SH2E
-#define TARGET_SWITCH_SH2E
-#ifndef SUPPORT_SH3E
-#define TARGET_SWITCH_SH3E
-#ifndef SUPPORT_SH4_SINGLE_ONLY
-#define TARGET_SWITCH_SH4_SINGLE_ONLY
+#if SUPPORT_SH2E
+#define SUPPORT_SH3E 1
 #endif
-#ifndef SUPPORT_SH4A_SINGLE_ONLY
-#define TARGET_SWITCH_SH4A_SINGLE_ONLY
-#endif
-#ifndef SUPPORT_SH2A_SINGLE_ONLY
-#define TARGET_SWITCH_SH2A_SINGLE_ONLY
-#endif
-#endif
+#if SUPPORT_SH3E
+#define SUPPORT_SH4_SINGLE_ONLY 1
+#define SUPPORT_SH4A_SINGLE_ONLY 1
+#define SUPPORT_SH2A_SINGLE_ONLY 1
 #endif
 
-#ifndef SUPPORT_SH4
-#define TARGET_SWITCH_SH4
-#ifndef SUPPORT_SH4A
-#define TARGET_SWITCH_SH4A
-#endif
+#if SUPPORT_SH4
+#define SUPPORT_SH4A 1
 #endif
 
-#ifndef SUPPORT_SH4_SINGLE
-#define TARGET_SWITCH_SH4_SINGLE
-#ifndef SUPPORT_SH4A_SINGLE
-#define TARGET_SWITCH_SH4A_SINGLE
-#endif
+#if SUPPORT_SH4_SINGLE
+#define SUPPORT_SH4A_SINGLE 1
 #endif
 
-#ifndef SUPPORT_SH2A
-#define TARGET_SWITCH_SH2A
+#if SUPPORT_SH5_COMPAT
+#define SUPPORT_SH5_32MEDIA 1
 #endif
 
-#ifndef SUPPORT_SH2A_SINGLE
-#define TARGET_SWITCH_SH2A_SINGLE
+#if SUPPORT_SH5_COMPACT_NOFPU
+#define SUPPORT_SH5_32MEDIA_NOFPU 1
 #endif
 
-#ifndef SUPPORT_SH5_64MEDIA
-#define TARGET_SWITCH_SH5_64MEDIA
-#endif
-
-#ifndef SUPPORT_SH5_64MEDIA_NOFPU
-#define TARGET_SWITCH_SH5_64MEDIA_NOFPU
-#endif
-
-#if !defined(SUPPORT_SH5_32MEDIA) && !defined (SUPPORT_SH5_COMPACT)
-#define TARGET_SWITCHES_SH5_32MEDIA
-#endif
-
-#if !defined(SUPPORT_SH5_32MEDIA_NOFPU) && !defined (SUPPORT_SH5_COMPACT_NOFPU)
-#define TARGET_SWITCHES_SH5_32MEDIA_NOFPU
-#endif
-
-#if defined(TARGET_SWITCHES_SH5_32MEDIA) && defined(TARGET_SWITCHES_SH5_32MEDIA_NOFPU)
-#define TARGET_SWITCH_SH5_32_ANY_EXTRA
-#endif
-
-#if defined(TARGET_SWITCH_SH5_32_ANY_EXTRA) && !defined(SUPPORT_SH5_64MEDIA) && !defined(SUPPORT_SH5_64MEDIA_NOFPU)
-#define TARGET_SWITCH_SH5_MEDIA_ANY_EXTRA
-#endif
+#define SUPPORT_ANY_SH5_32MEDIA \
+  (SUPPORT_SH5_32MEDIA || SUPPORT_SH5_32MEDIA_NOFPU)
+#define SUPPORT_ANY_SH5_64MEDIA \
+  (SUPPORT_SH5_64MEDIA || SUPPORT_SH5_64MEDIA_NOFPU)
+#define SUPPORT_ANY_SH5 \
+  (SUPPORT_ANY_SH5_32MEDIA || SUPPORT_ANY_SH5_64MEDIA)
 
 /* Reset all target-selection flags.  */
-#define TARGET_NONE -(SH1_BIT | SH2_BIT | SH3_BIT | SH_E_BIT | SH4_BIT \
-		      | HARD_SH2A_BIT | HARD_SH2A_DOUBLE_BIT \
-		      | SH4A_BIT | HARD_SH4_BIT | FPU_SINGLE_BIT | SH5_BIT)
-
-#ifndef TARGET_SWITCH_SH1
-#define TARGET_SWITCH_SH1 \
-  {"1",		TARGET_NONE, "" }, \
-  {"1",		SELECT_SH1, "Generate SH1 code" },
-#endif
-#ifndef TARGET_SWITCH_SH2
-#define TARGET_SWITCH_SH2 \
-  {"2",		TARGET_NONE, "" }, \
-  {"2",		SELECT_SH2, "Generate SH2 code" },
-#endif
-#ifndef TARGET_SWITCH_SH2E
-#define TARGET_SWITCH_SH2E \
-  {"2e",	TARGET_NONE, "" }, \
-  {"2e",	SELECT_SH2E, "Generate SH2e code" },
-#endif
-#ifndef TARGET_SWITCH_SH2A
-#define TARGET_SWITCH_SH2A \
-  {"2a",	TARGET_NONE, "" }, \
-  {"2a",	SELECT_SH2A, "Generate SH2a code" },
-#endif
-#ifndef TARGET_SWITCH_SH2A_SINGLE_ONLY
-#define TARGET_SWITCH_SH2A_SINGLE_ONLY \
-  {"2a-single-only", TARGET_NONE, "" },	\
-  {"2a-single-only", SELECT_SH2A_SINGLE_ONLY, "Generate only single-precision SH2a code" },
-#endif
-#ifndef TARGET_SWITCH_SH2A_SINGLE
-#define TARGET_SWITCH_SH2A_SINGLE \
-  {"2a-single", TARGET_NONE, "" },	\
-  {"2a-single", SELECT_SH2A_SINGLE, "Generate default single-precision SH2a code" },
-#endif
-#ifndef TARGET_SWITCH_SH2A_NOFPU
-#define TARGET_SWITCH_SH2A_NOFPU \
-  {"2a-nofpu",  TARGET_NONE, "" },	\
-  {"2a-nofpu",  SELECT_SH2A_NOFPU, "Generate SH2a FPU-less code" },
-#endif
-#ifndef TARGET_SWITCH_SH3
-#define TARGET_SWITCH_SH3 \
-  {"3",		TARGET_NONE, "" }, \
-  {"3",		SELECT_SH3, "Generate SH3 code" },
-#endif
-#ifndef TARGET_SWITCH_SH3E
-#define TARGET_SWITCH_SH3E \
-  {"3e",	TARGET_NONE, "" }, \
-  {"3e",	SELECT_SH3E, "Generate SH3e code" },
-#endif
-#ifndef TARGET_SWITCH_SH4_SINGLE_ONLY
-#define TARGET_SWITCH_SH4_SINGLE_ONLY \
-  {"4-single-only",	TARGET_NONE, "" }, \
-  {"4-single-only",	SELECT_SH4_SINGLE_ONLY, "Generate only single-precision SH4 code" },
-#endif
-#ifndef TARGET_SWITCH_SH4_SINGLE
-#define TARGET_SWITCH_SH4_SINGLE \
-  {"4-single",	TARGET_NONE, "" }, \
-  {"4-single",	SELECT_SH4_SINGLE, "Generate default single-precision SH4 code" },
-#endif
-#ifndef TARGET_SWITCH_SH4_NOFPU
-#define TARGET_SWITCH_SH4_NOFPU \
-  {"4-nofpu",	TARGET_NONE, "" }, \
-  {"4-nofpu",	SELECT_SH4_NOFPU, "Generate SH4 FPU-less code" },
-#endif
-#ifndef TARGET_SWITCH_SH4
-#define TARGET_SWITCH_SH4 \
-  {"4",		TARGET_NONE, "" }, \
-  {"4",		SELECT_SH4, "Generate SH4 code" },
-#endif
-#ifndef TARGET_SWITCH_SH4A
-#define TARGET_SWITCH_SH4A \
-  {"4a",	TARGET_NONE, "" }, \
-  {"4a",	SELECT_SH4A, "Generate SH4a code" },
-#endif
-#ifndef TARGET_SWITCH_SH4A_SINGLE_ONLY
-#define TARGET_SWITCH_SH4A_SINGLE_ONLY \
-  {"4a-single-only",	TARGET_NONE, "" },	\
-  {"4a-single-only",	SELECT_SH4A_SINGLE_ONLY, "Generate only single-precision SH4a code" },
-#endif
-#ifndef TARGET_SWITCH_SH4A_SINGLE
-#define TARGET_SWITCH_SH4A_SINGLE \
-  {"4a-single",	TARGET_NONE, "" },\
-  {"4a-single",	SELECT_SH4A_SINGLE, "Generate default single-precision SH4a code" },
-#endif
-#ifndef TARGET_SWITCH_SH4A_NOFPU
-#define TARGET_SWITCH_SH4A_NOFPU \
-  {"4a-nofpu",	TARGET_NONE, "" },\
-  {"4a-nofpu",	SELECT_SH4A_NOFPU, "Generate SH4a FPU-less code" },
-#endif
-#ifndef TARGET_SWITCH_SH4AL
-#define TARGET_SWITCH_SH4AL \
-  {"4al",	TARGET_NONE, "" },\
-  {"4al",	SELECT_SH4A_NOFPU, "Generate SH4al-dsp code" },
-#endif
-#ifndef TARGET_SWITCH_SH5_64MEDIA
-#define TARGET_SWITCH_SH5_64MEDIA \
-  {"5-64media",	TARGET_NONE, "" },		\
-  {"5-64media", SELECT_SH5_64MEDIA, "Generate 64-bit SHmedia code" },
-#endif
-#ifndef TARGET_SWITCH_SH5_64MEDIA_NOFPU
-#define TARGET_SWITCH_SH5_64MEDIA_NOFPU \
-  {"5-64media-nofpu", TARGET_NONE, "" },	\
-  {"5-64media-nofpu", SELECT_SH5_64MEDIA_NOFPU, "Generate 64-bit FPU-less SHmedia code" },
-#endif
-#ifndef TARGET_SWITCHES_SH5_32MEDIA
-#define TARGET_SWITCHES_SH5_32MEDIA \
-  {"5-32media",	TARGET_NONE, "" },		\
-  {"5-32media", SELECT_SH5_32MEDIA, "Generate 32-bit SHmedia code" }, \
-  {"5-compact",	TARGET_NONE, "" },		\
-  {"5-compact",	SELECT_SH5_COMPACT, "Generate SHcompact code" },
-#endif
-#ifndef TARGET_SWITCHES_SH5_32MEDIA_NOFPU
-#define TARGET_SWITCHES_SH5_32MEDIA_NOFPU \
-  {"5-32media-nofpu", TARGET_NONE, "" },	\
-  {"5-32media-nofpu", SELECT_SH5_32MEDIA_NOFPU, "Generate 32-bit FPU-less SHmedia code" }, \
-  {"5-compact-nofpu", TARGET_NONE, "" },	\
-  {"5-compact-nofpu", SELECT_SH5_COMPACT_NOFPU, "Generate FPU-less SHcompact code" },
-#endif
-
-#ifndef TARGET_SWITCH_SH5_32_ANY_EXTRA
-#define TARGET_SWITCH_SH5_32_ANY_EXTRA \
-  {"indexed-addressing", INDEXED_ADDRESS_BIT, "Enable the use of the indexed addressing mode for SHmedia32/SHcompact"}, \
-  {"no-indexed-addressing", -INDEXED_ADDRESS_BIT, "Disable the use of the indexed addressing mode for SHmedia32/SHcompact"},
-#endif
-
-#ifndef TARGET_SWITCH_SH5_MEDIA_ANY_EXTRA
-#define TARGET_SWITCH_SH5_MEDIA_ANY_EXTRA \
-  {"pt-fixed",	PT_FIXED_BIT, "Assume pt* instructions won't trap"}, \
-  {"no-pt-fixed", -PT_FIXED_BIT, "Assume pt* instructions may trap"}, \
-  {"invalid-symbols",INVALID_SYMBOLS_BIT, "Assume symbols might be invalid"}, \
-  {"no-invalid-symbols",-INVALID_SYMBOLS_BIT, "Assume symbols won't be invalid"}, \
-  {"adjust-unroll", ADJUST_UNROLL_BIT, "Throttle unrolling to avoid thrashing target registers unless the unroll benefit outweighs this"}, \
-  {"no-adjust-unroll", -ADJUST_UNROLL_BIT, "Don't throttle unrolling"},
-#endif
-
-#define TARGET_SWITCHES \
-{ TARGET_SWITCH_SH1 \
-  TARGET_SWITCH_SH2 \
-  TARGET_SWITCH_SH2A_SINGLE_ONLY \
-  TARGET_SWITCH_SH2A_SINGLE \
-  TARGET_SWITCH_SH2A_NOFPU \
-  TARGET_SWITCH_SH2A \
-  TARGET_SWITCH_SH2E \
-  TARGET_SWITCH_SH3 \
-  TARGET_SWITCH_SH3E \
-  TARGET_SWITCH_SH4_SINGLE_ONLY \
-  TARGET_SWITCH_SH4_SINGLE \
-  TARGET_SWITCH_SH4_NOFPU \
-  TARGET_SWITCH_SH4 \
-  TARGET_SWITCH_SH4A_SINGLE_ONLY \
-  TARGET_SWITCH_SH4A_SINGLE \
-  TARGET_SWITCH_SH4A_NOFPU \
-  TARGET_SWITCH_SH4A \
-  TARGET_SWITCH_SH4AL \
-  TARGET_SWITCH_SH5_64MEDIA \
-  TARGET_SWITCH_SH5_64MEDIA_NOFPU \
-  TARGET_SWITCHES_SH5_32MEDIA \
-  TARGET_SWITCHES_SH5_32MEDIA_NOFPU \
-  {"b",		-LITTLE_ENDIAN_BIT, "Generate code in big endian mode" }, \
-  {"bigtable", 	BIGTABLE_BIT, "Generate 32-bit offsets in switch tables" }, \
-  {"dalign",  	DALIGN_BIT, "Aligns doubles at 64-bit boundaries" },	\
-  {"fmovd",  	FMOVD_BIT, "" },					\
-  {"hitachi",	HITACHI_BIT, "Follow Renesas (formerly Hitachi) / SuperH calling conventions" }, \
-  {"renesas",	HITACHI_BIT, "Follow Renesas (formerly Hitachi) / SuperH calling conventions" }, \
-  {"no-renesas",-HITACHI_BIT,"Follow the GCC calling conventions" },	\
-  {"nomacsave", NOMACSAVE_BIT, "Mark MAC register as call-clobbered" },	\
-  {"ieee",  	IEEE_BIT, "Increase the IEEE compliance for floating-point code" }, \
-  {"isize", 	ISIZE_BIT, "Annotate assembler instructions with estimated addresses" }, \
-  {"l",		LITTLE_ENDIAN_BIT, "Generate code in little endian mode" }, \
-  {"no-ieee",  	-IEEE_BIT, "Opposite of -mieee" },			\
-  {"padstruct", PADSTRUCT_BIT, "Make structs a multiple of 4 bytes (warning: ABI altered)" }, \
-  {"prefergot",	PREFERGOT_BIT, "Emit function-calls using global offset table when generating PIC" }, \
-  {"relax",	RELAX_BIT, "Shorten address references during linking" }, \
-  {"space", 	SPACE_BIT, "Deprecated. Use -Os instead" },		\
-  {"usermode",	USERMODE_BIT, "Generate library function call to invalidate instruction cache entries after fixing trampoline" }, \
-  TARGET_SWITCH_SH5_32_ANY_EXTRA \
-  TARGET_SWITCH_SH5_MEDIA_ANY_EXTRA \
-  SUBTARGET_SWITCHES                            			\
-  {"",   	TARGET_DEFAULT, "" }					\
-}
-
-/* This are meant to be redefined in the host dependent files */
-#define SUBTARGET_SWITCHES
+#define MASK_ARCH (MASK_SH1 | MASK_SH2 | MASK_SH3 | MASK_SH_E | MASK_SH4 \
+		   | MASK_HARD_SH2A | MASK_HARD_SH2A_DOUBLE | MASK_SH4A \
+		   | MASK_HARD_SH4 | MASK_FPU_SINGLE | MASK_SH5)
 
 /* This defaults us to big-endian.  */
 #ifndef TARGET_ENDIAN_DEFAULT
@@ -647,7 +328,7 @@ extern int target_flags;
 #endif
 
 #ifndef TARGET_OPT_DEFAULT
-#define TARGET_OPT_DEFAULT  ADJUST_UNROLL_BIT
+#define TARGET_OPT_DEFAULT  MASK_ADJUST_UNROLL
 #endif
 
 #define TARGET_DEFAULT \
@@ -705,7 +386,7 @@ extern int target_flags;
   { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },			\
   SUBTARGET_EXTRA_SPECS
 
-#if TARGET_CPU_DEFAULT & HARD_SH4_BIT
+#if TARGET_CPU_DEFAULT & MASK_HARD_SH4
 #define SUBTARGET_ASM_RELAX_SPEC "%{!m1:%{!m2:%{!m3*:%{!m5*:-isa=sh4}}}}"
 #else
 #define SUBTARGET_ASM_RELAX_SPEC "%{m4*:-isa=sh4}"
@@ -726,7 +407,7 @@ extern int target_flags;
 #define ASM_SPEC SH_ASM_SPEC
 
 #ifndef SUBTARGET_ASM_ENDIAN_SPEC
-#if TARGET_ENDIAN_DEFAULT == LITTLE_ENDIAN_BIT
+#if TARGET_ENDIAN_DEFAULT == MASK_LITTLE_ENDIAN
 #define SUBTARGET_ASM_ENDIAN_SPEC "%{mb:-big} %{!mb:-little}"
 #else
 #define SUBTARGET_ASM_ENDIAN_SPEC "%{ml:-little} %{!ml:-big}"
@@ -736,7 +417,7 @@ extern int target_flags;
 #if STRICT_NOFPU == 1
 /* Strict nofpu means that the compiler should tell the assembler
    to reject FPU instructions. E.g. from ASM inserts.  */
-#if TARGET_CPU_DEFAULT & HARD_SH4_BIT && !(TARGET_CPU_DEFAULT & SH_E_BIT)
+#if TARGET_CPU_DEFAULT & MASK_HARD_SH4 && !(TARGET_CPU_DEFAULT & MASK_SH_E)
 #define SUBTARGET_ASM_ISA_SPEC "%{!m1:%{!m2:%{!m3*:%{m4-nofpu|!m4*:%{!m5:-isa=sh4-nofpu}}}}}"
 #else
 /* If there were an -isa option for sh5-nofpu then it would also go here. */
@@ -751,30 +432,30 @@ extern int target_flags;
 #define SUBTARGET_ASM_SPEC ""
 #endif
 
-#if TARGET_ENDIAN_DEFAULT == LITTLE_ENDIAN_BIT
+#if TARGET_ENDIAN_DEFAULT == MASK_LITTLE_ENDIAN
 #define LINK_EMUL_PREFIX "sh%{!mb:l}"
 #else
 #define LINK_EMUL_PREFIX "sh%{ml:l}"
 #endif
 
-#if TARGET_CPU_DEFAULT & SH5_BIT
-#if TARGET_CPU_DEFAULT & SH_E_BIT
+#if TARGET_CPU_DEFAULT & MASK_SH5
+#if TARGET_CPU_DEFAULT & MASK_SH_E
 #define LINK_DEFAULT_CPU_EMUL "32"
-#if TARGET_CPU_DEFAULT & SH1_BIT
+#if TARGET_CPU_DEFAULT & MASK_SH1
 #define ASM_ISA_SPEC_DEFAULT "--isa=SHcompact"
 #else
 #define ASM_ISA_SPEC_DEFAULT "--isa=SHmedia --abi=32"
-#endif /* SH1_BIT */
-#else /* !SH_E_BIT */
+#endif /* MASK_SH1 */
+#else /* !MASK_SH_E */
 #define LINK_DEFAULT_CPU_EMUL "64"
 #define ASM_ISA_SPEC_DEFAULT "--isa=SHmedia --abi=64"
-#endif /* SH_E_BIT */
+#endif /* MASK_SH_E */
 #define ASM_ISA_DEFAULT_SPEC \
 " %{!m1:%{!m2*:%{!m3*:%{!m4*:%{!m5*:" ASM_ISA_SPEC_DEFAULT "}}}}}"
-#else /* !SH5_BIT */
+#else /* !MASK_SH5 */
 #define LINK_DEFAULT_CPU_EMUL ""
 #define ASM_ISA_DEFAULT_SPEC ""
-#endif /* SH5_BIT */
+#endif /* MASK_SH5 */
 
 #define SUBTARGET_LINK_EMUL_SUFFIX ""
 #define SUBTARGET_LINK_SPEC ""
@@ -806,7 +487,7 @@ do {									\
     }									\
   if (SIZE)								\
     {									\
-      target_flags |= SPACE_BIT;					\
+      target_flags |= MASK_SMALLCODE;					\
       sh_div_str = SH_DIV_STR_FOR_SIZE ;				\
     }									\
   /* We can't meaningfully test TARGET_SHMEDIA here, because -m options	\
@@ -817,7 +498,7 @@ do {									\
     {									\
       flag_branch_target_load_optimize = 1;				\
       if (! (SIZE))							\
-	target_flags |= SAVE_ALL_TR_BIT;				\
+	target_flags |= MASK_SAVE_ALL_TARGET_REGS;			\
     }									\
   /* Likewise, we can't meaningfully test TARGET_SH2E / TARGET_IEEE	\
      here, so leave it to OVERRIDE_OPTIONS to set			\
@@ -857,7 +538,7 @@ do {									\
     flag_finite_math_only						\
       = !flag_signaling_nans && TARGET_SH2E && ! TARGET_IEEE;		\
   if (TARGET_SH2E && !flag_finite_math_only)				\
-    target_flags |= IEEE_BIT;						\
+    target_flags |= MASK_IEEE;						\
   sh_cpu = CPU_SH1;							\
   assembler_dialect = 0;						\
   if (TARGET_SH2)							\
@@ -868,7 +549,7 @@ do {									\
     {									\
       sh_cpu = CPU_SH2A;						\
       if (TARGET_SH2A_DOUBLE)						\
-        target_flags |= FMOVD_BIT;					\
+        target_flags |= MASK_FMOVD;					\
     }									\
   if (TARGET_SH3)							\
     sh_cpu = CPU_SH3;							\
@@ -887,15 +568,15 @@ do {									\
   if (TARGET_SH5)							\
     {									\
       sh_cpu = CPU_SH5;							\
-      target_flags |= DALIGN_BIT;					\
+      target_flags |= MASK_ALIGN_DOUBLE;				\
       if (TARGET_SHMEDIA_FPU)						\
-	target_flags |= FMOVD_BIT;					\
+	target_flags |= MASK_FMOVD;					\
       if (TARGET_SHMEDIA)						\
 	{								\
 	  /* There are no delay slots on SHmedia.  */			\
 	  flag_delayed_branch = 0;					\
 	  /* Relaxation isn't yet supported for SHmedia */		\
-	  target_flags &= ~RELAX_BIT;					\
+	  target_flags &= ~MASK_RELAX;					\
 	  /* After reload, if conversion does little good but can cause \
 	     ICEs:							\
 	     - find_if_block doesn't do anything for SH because we don't\
