@@ -1,3 +1,8 @@
+2005-05-18  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree.c (build1_stat): Don't try to handle two-operand
+	tree codes.
+
 2005-05-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (sh*-*-*): Define SUPPORT_* macros to 1.
