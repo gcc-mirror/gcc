@@ -320,7 +320,7 @@ mode_attr_index (struct map_value **mode_maps, const char *string)
 
   /* Copy the attribute string into permanent storage, without the
      angle brackets around it.  */
-  obstack_grow (&string_obstack, string + 1, strlen (string) - 2);
+  obstack_grow0 (&string_obstack, string + 1, strlen (string) - 2);
   p = (char *) obstack_finish (&string_obstack);
 
   mv = XNEW (struct map_value);
