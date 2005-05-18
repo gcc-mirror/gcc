@@ -1,4 +1,8 @@
 2005-05-18  Daniel Berlin  <dberlin@dberlin.org>
+
+	* cfgrtl.c (purge_dead_edges): Don't remove fake edges.
+
+2005-05-18  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/21407
 
