@@ -277,7 +277,8 @@ build_round_expr (stmtblock_t * pblock, tree arg, tree type)
    however the RTL expander only actually supports FIX_TRUNC_EXPR.  */
 
 static tree
-build_fix_expr (stmtblock_t * pblock, tree arg, tree type, int op)
+build_fix_expr (stmtblock_t * pblock, tree arg, tree type,
+               enum tree_code op)
 {
   switch (op)
     {
@@ -300,14 +301,15 @@ build_fix_expr (stmtblock_t * pblock, tree arg, tree type, int op)
 
 /* Round a real value using the specified rounding mode.
    We use a temporary integer of that same kind size as the result.
-   Values larger than can be represented by this kind are unchanged, as
-   will not be accurate enough to represent the rounding.
+   Values larger than those that can be represented by this kind are
+   unchanged, as thay will not be accurate enough to represent the
+   rounding.
     huge = HUGE (KIND (a))
     aint (a) = ((a > huge) || (a < -huge)) ? a : (real)(int)a
    */
 
 static void
-gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
   tree type;
   tree itype;
@@ -337,17 +339,21 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, int op)
 	}
       break;
 
-    case FIX_FLOOR_EXPR:
+    case FIX_TRUNC_EXPR:
       switch (kind)
 	{
 	case 4:
-	  n = BUILT_IN_FLOORF;
+	  n = BUILT_IN_TRUNCF;
 	  break;
 
 	case 8:
-	  n = BUILT_IN_FLOOR;
+	  n = BUILT_IN_TRUNC;
 	  break;
 	}
+      break;
+
+    default:
+      gcc_unreachable ();
     }
 
   /* Evaluate the argument.  */

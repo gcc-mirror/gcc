@@ -781,15 +781,15 @@ gfc_init_builtin_functions (void)
 
   /* We define these separately as the fortran versions have different
      semantics (they return an integer type) */
-  gfc_define_builtin ("__builtin_floor", mfunc_double[0], 
-		      BUILT_IN_FLOOR, "floor", true);
-  gfc_define_builtin ("__builtin_floorf", mfunc_float[0], 
-		      BUILT_IN_FLOORF, "floorf", true);
   gfc_define_builtin ("__builtin_round", mfunc_double[0], 
 		      BUILT_IN_ROUND, "round", true);
   gfc_define_builtin ("__builtin_roundf", mfunc_float[0], 
 		      BUILT_IN_ROUNDF, "roundf", true);
-  
+  gfc_define_builtin ("__builtin_trunc", mfunc_double[0],
+                      BUILT_IN_TRUNC, "trunc", true);
+  gfc_define_builtin ("__builtin_truncf", mfunc_float[0],
+                      BUILT_IN_TRUNCF, "truncf", true);
+
   gfc_define_builtin ("__builtin_cabs", func_cdouble_double, 
 		      BUILT_IN_CABS, "cabs", true);
   gfc_define_builtin ("__builtin_cabsf", func_cfloat_float, 
