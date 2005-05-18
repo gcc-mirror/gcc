@@ -1,3 +1,8 @@
+2005-05-18  Devang Patel  <dpatel@apple.com>
+
+	* config/rs6000/rs6000.md (insvsi_internal1): Subtract shift from
+	the mask end.
+	
 2005-05-18  Richard Henderson  <rth@redhat.com>
 
         * tree-ssa-forwprop.c (cfg_changed): New.
