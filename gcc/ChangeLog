@@ -1,3 +1,11 @@
+2005-05-18  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/21407
+
+	* tree-ssa-operands.c (note_addressable): Change
+	COMPONENT_REF handling in response to aliasing
+	discussion.
+
 2005-05-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2.h (TARGET_DEFAULT): Add back MASK_APP_REGS.

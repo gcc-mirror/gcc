@@ -1886,35 +1886,14 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 static void
 note_addressable (tree var, stmt_ann_t s_ann)
 {
-  tree ref;
   subvar_t svars;
-  HOST_WIDE_INT offset;
-  HOST_WIDE_INT size;
 
   if (!s_ann)
     return;
   
-  /* If this is a COMPONENT_REF, and we know exactly what it touches, we only
-     take the address of the subvariables it will touch.
-     Otherwise, we take the address of all the subvariables, plus the real
-     ones.  */
-
-  if (var && TREE_CODE (var) == COMPONENT_REF 
-      && (ref = okay_component_ref_for_subvars (var, &offset, &size)))
-    {
-      subvar_t sv;
-      svars = get_subvars_for_var (ref);
-      
-      if (s_ann->addresses_taken == NULL)
-	s_ann->addresses_taken = BITMAP_GGC_ALLOC ();      
-      
-      for (sv = svars; sv; sv = sv->next)
-	{
-	  if (overlap_subvar (offset, size, sv, NULL))
-	    bitmap_set_bit (s_ann->addresses_taken, var_ann (sv->var)->uid);
-	}
-      return;
-    }
+  /* Note that it is *NOT OKAY* to use the target of a COMPONENT_REF
+     as the only thing we take the address of.
+     See PR 21407 and the ensuing mailing list discussion.  */
   
   var = get_base_address (var);
   if (var && SSA_VAR_P (var))
