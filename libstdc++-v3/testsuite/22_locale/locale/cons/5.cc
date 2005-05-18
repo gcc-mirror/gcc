@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002, 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,7 +67,7 @@ void test04()
   // Check that a "POSIX" LC_ALL is equivalent to "C".
   if (!setenv("LC_ALL", "POSIX", 1))
     {
-      locale loc = __gnu_test::try_named_locale("");
+      locale loc = locale("");
       VERIFY( loc.name() == "C" );
     }
   setenv("LC_ALL", "", 1);
@@ -73,7 +75,7 @@ void test04()
   // Check that a "en_PH" LC_ALL is equivalent to "en_PH".
   if (!setenv("LC_ALL", "en_PH", 1))
     {
-      locale loc = __gnu_test::try_named_locale("");
+      locale loc = locale("");
       VERIFY( loc.name() == "en_PH" );
     }
   setenv("LC_ALL", "", 1);
@@ -83,7 +85,7 @@ void test04()
     {
       if (!setenv("LC_ALL", "en_PH", 1))
 	{
-	  locale loc = __gnu_test::try_named_locale("");
+	  locale loc = locale("");
 	  VERIFY( loc.name() == "en_PH" );
 	}
       setenv("LC_ALL", "", 1);
@@ -112,7 +114,7 @@ void test04()
   // Check the default set by LANG.
   if (!setenv("LANG", "fr_FR", 1))
     {
-      locale loc = __gnu_test::try_named_locale("");
+      locale loc = locale("");
       VERIFY( loc.name() == "fr_FR" );
     }
 
@@ -126,7 +128,7 @@ void test04()
   // Setting a category in the "C" default.
   if (!setenv("LC_COLLATE", "de_DE", 1))
     {
-      locale loc = __gnu_test::try_named_locale("");
+      locale loc = locale("");
 
 #if _GLIBCXX_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;"
@@ -142,7 +144,7 @@ void test04()
   // Changing the LANG default while LC_COLLATE is set.
   if (!setenv("LANG", "fr_FR", 1))
     {
-      locale loc = __gnu_test::try_named_locale("");
+      locale loc = locale("");
 #if _GLIBCXX_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
 	      "LC_TIME=fr_FR;LC_COLLATE=de_DE;LC_MONETARY=fr_FR;"
@@ -160,7 +162,7 @@ void test04()
 #if _GLIBCXX_NUM_CATEGORIES
   if (!setenv("LC_IDENTIFICATION", "it_IT", 1))
     {
-      locale loc = __gnu_test::try_named_locale("");
+      locale loc = locale("");
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
 	      "LC_TIME=fr_FR;LC_COLLATE=de_DE;LC_MONETARY=fr_FR;"
 	      "LC_MESSAGES=fr_FR;LC_PAPER=fr_FR;LC_NAME=fr_FR;"

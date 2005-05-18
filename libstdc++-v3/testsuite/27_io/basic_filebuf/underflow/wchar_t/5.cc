@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2003-09-04  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +36,7 @@ void test05()
 
   wfilebuf fb;
   fb.pubsetbuf(0, 0);
-  fb.pubimbue(__gnu_test::try_named_locale("se_NO.UTF-8"));
+  fb.pubimbue(locale("se_NO.UTF-8"));
 
   FILE* file = fopen(name, "w");
   setvbuf(file, 0, _IONBF, 0);

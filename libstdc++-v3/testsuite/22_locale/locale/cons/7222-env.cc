@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002, 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,8 +32,8 @@ void test02()
 {
   bool test __attribute__((unused)) = true;
 
-  std::locale loc_1 = __gnu_test::try_named_locale("");
-  std::locale loc_2 = __gnu_test::try_named_locale("");
+  std::locale loc_1 = std::locale("");
+  std::locale loc_2 = std::locale("");
   VERIFY( loc_1 == loc_2 );
 }
  

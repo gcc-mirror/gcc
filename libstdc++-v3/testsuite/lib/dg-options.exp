@@ -1,6 +1,6 @@
 # Handlers for additional dg-xxx keywords in tests.
 
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,3 +27,11 @@ proc dg-require-iconv { args } {
     return
 }
 
+proc dg-require-namedlocale { args } {
+    if { ![ check_v3_target_namedlocale ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}

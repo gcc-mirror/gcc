@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2003-09-04  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -86,7 +88,7 @@ void test03()
   const size_t wlen = sizeof(wstr) / sizeof(wstr[0]);
 
   const int loops = 2 * BUFSIZ / wlen;
-  locale loc = __gnu_test::try_named_locale("se_NO.UTF-8");
+  locale loc = locale("se_NO.UTF-8");
 
   FILE* file = fopen(name, "w");
   for (int i = 0; i < loops; ++i)

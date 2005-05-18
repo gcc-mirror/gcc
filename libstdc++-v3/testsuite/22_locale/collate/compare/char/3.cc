@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2003-02-24 Petur Runolfsson <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +35,7 @@ void test03()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
+  locale loc_de = locale("de_DE");
   VERIFY( loc_c != loc_de );
 
   // cache the collate facets

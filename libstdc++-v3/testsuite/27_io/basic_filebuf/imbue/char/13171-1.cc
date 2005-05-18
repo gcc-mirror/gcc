@@ -1,4 +1,6 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// { dg-require-namedlocale "" }
+
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,8 +32,8 @@ void test01()
 
   filebuf fb;
   
-  fb.pubimbue(__gnu_test::try_named_locale("en_US"));
-  fb.pubimbue(__gnu_test::try_named_locale("en_US"));
+  fb.pubimbue(locale("en_US"));
+  fb.pubimbue(locale("en_US"));
   
   fb.open("tmp_13171-1", ios_base::out);
   fb.sputc('F');

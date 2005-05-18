@@ -162,7 +162,7 @@ namespace __gnu_test
     bool test = true;
     
     // Set the global locale. 
-    locale loc_name = try_named_locale(name);
+    locale loc_name = locale(name);
     locale orig = locale::global(loc_name);
 
     const char* res = setlocale(LC_ALL, name);
@@ -192,7 +192,7 @@ namespace __gnu_test
     
 #ifdef _GLIBCXX_HAVE_SETENV 
     // Set the global locale. 
-    locale loc_name = try_named_locale(name);
+    locale loc_name = locale(name);
     locale orig = locale::global(loc_name);
 
     // Set environment variable env to value in name. 
@@ -210,25 +210,6 @@ namespace __gnu_test
 	s += string(" to ");
 	s += string(name);
 	__throw_runtime_error(s.c_str());
-      }
-#endif
-  }
-
-  std::locale 
-  try_named_locale(const char* name)
-  {
-    try
-      {
-	return std::locale(name);
-      }
-#ifdef __EXCEPTIONS
-    catch (std::runtime_error& ex)
-      {
-	// Thrown by generic and gnu implemenation if named locale fails.
-	if (std::strstr(ex.what(), "name not valid"))
-	  exit(0);
-	else
-	  throw;
       }
 #endif
   }

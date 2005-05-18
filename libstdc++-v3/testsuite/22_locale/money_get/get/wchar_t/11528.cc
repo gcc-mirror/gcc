@@ -1,4 +1,6 @@
-// Copyright (C) 2003 Free Software Foundation
+// { dg-require-namedlocale "" }
+
+// Copyright (C) 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +31,7 @@ void test01()
 
   bool test __attribute__((unused)) = true;
 
-  locale loc_us = __gnu_test::try_named_locale("en_US");
+  locale loc_us = locale("en_US");
 
   iterator_type end;
   wistringstream iss;

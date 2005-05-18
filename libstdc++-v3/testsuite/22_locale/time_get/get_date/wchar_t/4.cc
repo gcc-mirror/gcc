@@ -1,3 +1,5 @@
+// { dg-require-namedlocale "" }
+
 // 2003-12-17  Paolo Carlini  <pcarlini@suse.de>
 
 // Copyright (C) 2003 Free Software Foundation
@@ -31,7 +33,7 @@ void test01()
 
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
-  locale loc_tw = __gnu_test::try_named_locale("zh_TW");
+  locale loc_tw = locale("zh_TW");
 
   iterator_type end;
 

@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -341,4 +341,92 @@ proc v3-build_support {} {
 	}
 	append v3-test_objs "$object_file "
     }
+}
+
+proc check_v3_target_namedlocale { } {
+    global et_namedlocale_saved
+    global et_namedlocale_target_name
+    global tool	
+
+    if { ![info exists et_namedlocale_target_name] } {
+	set et_namedlocale_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_namedlocale_target_name } {
+	verbose "check_v3_target_namedlocale: `$et_namedlocale_target_name'" 2
+	set et_namedlocale_target_name $current_target
+	if [info exists et_namedlocale_saved] {
+	    verbose "check_v3_target_namedlocale: removing cached result" 2
+	    unset et_namedlocale_saved
+	}
+    }
+
+    if [info exists et_namedlocale_saved] {
+	verbose "check_v3_target_namedlocale: using cached result" 2
+    } else {
+	set et_namedlocale_saved 0
+
+	# Set up, compile, and execute a C++ test program that tries to use
+	# all the required named locales.
+	set src nlocale[pid].cc
+	set exe nlocale[pid].x
+
+	set f [open $src "w"]
+	puts $f "#include <locale>"
+	puts $f "using namespace std;"	
+	puts $f "int main ()"
+	puts $f "{"
+	puts $f "  try"	
+	puts $f "  {" 
+	puts $f "     locale(\"\");"
+	puts $f "     locale(\"de_DE\");"
+	puts $f "     locale(\"de_DE.ISO-8859-15@euro\");"
+	puts $f "     locale(\"de_DE@euro\");"
+	puts $f "     locale(\"en_HK\");"
+	puts $f "     locale(\"en_PH\");"
+	puts $f "     locale(\"en_US\");"
+	puts $f "     locale(\"en_US.ISO-8859-1\");"
+	puts $f "     locale(\"en_US.ISO-8859-15\");"
+	puts $f "     locale(\"en_US.UTF-8\");"
+	puts $f "     locale(\"es_ES\");"
+	puts $f "     locale(\"es_MX\");"
+	puts $f "     locale(\"fr_FR\");"
+	puts $f "     locale(\"fr_FR@euro\");"
+	puts $f "     locale(\"is_IS\");"
+	puts $f "     locale(\"is_IS.UTF-8\");"
+	puts $f "     locale(\"it_IT\");"
+	puts $f "     locale(\"ja_JP.eucjp\");"
+	puts $f "     locale(\"se_NO.UTF-8\");"
+	puts $f "     locale(\"ta_IN\");"
+	puts $f "     locale(\"zh_TW\");"
+	puts $f "     return 0;"
+	puts $f "  }"
+	puts $f "  catch(...)"
+	puts $f "  {"
+	puts $f "     return 1;"
+	puts $f "  }"	
+	puts $f "}"
+	close $f
+
+	set lines [v3_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set result [${tool}_load "./$exe" "" ""]
+	    set status [lindex $result 0]
+	    remote_file build delete $exe
+
+	    verbose "check_v3_target_namedlocale: status is <$status>" 2
+
+	    if { $status == "pass" } {
+		set et_namedlocale_saved 1
+	    }
+	} else {
+	    verbose "check_v3_target_namedlocale: compilation failed" 2
+	}
+    }
+    return $et_namedlocale_saved
 }

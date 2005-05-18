@@ -1,8 +1,9 @@
 // { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* } }
 // { dg-options "-pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* } }
 // { dg-options "-pthreads" { target *-*-solaris* } }
+// { dg-require-namedlocale "" }
 
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,7 +53,7 @@ main()
   pthread_t tid[max_thread_count];
   
   for (int j = 0; j < max_locales; ++j)
-    loc[j] = __gnu_test::try_named_locale(j % 2 ? "en_US" : "fr_FR");  
+    loc[j] = std::locale(j % 2 ? "en_US" : "fr_FR");  
 
   for (int i = 0; i < max_thread_count; i++)
     pthread_create(&tid[i], NULL, thread_main, 0);

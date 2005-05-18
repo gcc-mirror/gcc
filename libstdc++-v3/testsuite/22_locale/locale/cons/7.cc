@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2001-01-19 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2003 Free Software Foundation
+// Copyright (C) 2001, 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +37,7 @@ test02()
 
   // construct a locale object with the specialized facet.
   locale		loc_c = locale::classic();
-  locale		loc_fr = __gnu_test::try_named_locale("fr_FR");
+  locale		loc_fr = locale("fr_FR");
   locale 		loc_1(locale::classic(), 
 			      new numpunct_byname<char>("fr_FR"));
 

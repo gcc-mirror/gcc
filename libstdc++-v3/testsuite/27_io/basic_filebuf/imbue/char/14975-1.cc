@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2004-04-16  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +44,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   Buf fb;
-  locale loc_us = __gnu_test::try_named_locale("en_US");
+  locale loc_us = locale("en_US");
   fb.pubimbue(loc_us);
   fb.open("tmp_14975-1", ios_base::out);
   

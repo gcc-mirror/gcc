@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2003-05-13 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +44,7 @@ void test02()
   VERIFY( p != bad);
 
   // According to 27.5.2.2.1, loc == getloc() after pubimbue(loc).
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
+  locale loc_de = locale("de_DE");
   locale ret = ob.pubimbue(loc_de);
   VERIFY( ob.getloc() == loc_de );
 }

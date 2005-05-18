@@ -1,4 +1,6 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// { dg-require-namedlocale "" }
+
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +32,7 @@ void test01()
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  locale loc_is(__gnu_test::try_named_locale("is_IS.UTF-8"));
+  locale loc_is(locale("is_IS.UTF-8"));
   
   {
     wofstream out("tmp_12868");

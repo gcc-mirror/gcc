@@ -1,6 +1,8 @@
+// { dg-require-namedlocale "" }
+
 // 2003-04-30  Petur Runolfsson <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +36,7 @@ void test01()
     putc(static_cast<unsigned char>(i), file);
   fclose(file);
 
-  locale loc (__gnu_test::try_named_locale("de_DE.ISO-8859-15@euro"));
+  locale loc (locale("de_DE.ISO-8859-15@euro"));
   locale::global(loc); // Set locale for stdin
 
   freopen(name, "r", stdin);

@@ -1,3 +1,5 @@
+// { dg-require-namedlocale "" }
+
 // 2003-10-07  Petur Runolfsson  <peturr02@ru.is>
 //
 // Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
@@ -92,7 +94,7 @@ void test01()
   const size_t wlen = sizeof(wstr) / sizeof(wstr[0]);
 
   const int loops = 2 * BUFSIZ / wlen;
-  locale loc = __gnu_test::try_named_locale("se_NO.UTF-8");
+  locale loc = locale("se_NO.UTF-8");
 
   FILE* file = fopen(name, "w");
   for (int i = 0; i < loops; ++i)
