@@ -1,8 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
-#undef BYTEORDER
-
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
 #undef HAVE_DIRENT_H
@@ -63,10 +60,6 @@
 /* Define to 1 if you have the `_chsize' function. */
 #undef HAVE__CHSIZE
 
-/* Define if the host machine stores words of multi-word integers in
-   big-endian order. */
-#undef HOST_WORDS_BIG_ENDIAN
-
 /* Define if host mkdir takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
 
@@ -88,19 +81,19 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* The number of bytes in type char */
+/* The size of a `char', as computed by sizeof. */
 #undef SIZEOF_CHAR
 
-/* The number of bytes in type int */
+/* The size of a `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
-/* The number of bytes in type long */
+/* The size of a `long', as computed by sizeof. */
 #undef SIZEOF_LONG
 
-/* The number of bytes in type long long */
+/* The size of a `long long', as computed by sizeof. */
 #undef SIZEOF_LONG_LONG
 
-/* The number of bytes in type short */
+/* The size of a `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
 
 /* Define to 1 if you have the ANSI C header files. */
@@ -112,7 +105,8 @@
 /* Version number of package */
 #undef VERSION
 
-/* whether byteorder is bigendian */
+/* Define to 1 if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
 
 /* Define to `long' if <sys/types.h> does not define. */

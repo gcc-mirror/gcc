@@ -1,7 +1,5 @@
 # Process this with automake to create Makefile.in
 
-ACLOCAL_AMFLAGS = -I ../config
-
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.

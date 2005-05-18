@@ -1,3 +1,10 @@
+2005-05-17  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.ac: Use AC_C_BIGENDIAN instead of AC_C_BIGENDIAN_CROSS.
+	Use AC_CHECK_SIZEOF instead of AC_COMPILE_CHECK_SIZEOF.
+	* Makefile.am: Remove ACLOCAL_AMFLAGS.
+	* aclocal.m4, Makefile.in, configure, config.h.in: Regenerate.
+
 2005-03-28  Marcin Dalecki  <martin@dalecki.de>
 
 	* jartool.c (main): Indentation fixlet.
