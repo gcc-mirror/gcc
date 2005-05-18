@@ -25,7 +25,7 @@
 #define SYMBIAN		1
 
 /* Default to using the Renesas ABI.  */
-#define TARGET_ABI_DEFAULT	RENESAS_BIT
+#define TARGET_ABI_DEFAULT	MASK_HITACHI
 
 #define SUBTARGET_CPP_SPEC ""
 

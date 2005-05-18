@@ -1945,7 +1945,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		sh5-32media | sh5-32media-nofpu | \
 		sh5-compact | sh5-compact-nofpu)
 			tmake_file="${tmake_file} sh/t-mlib-${sh_multilib}"
-			tm_defines="$tm_defines SUPPORT_`echo $sh_multilib|tr a-z- A-Z_`"
+			tm_defines="$tm_defines SUPPORT_`echo $sh_multilib|tr a-z- A-Z_`=1"
 			;;
 		*)
 			echo "with_multilib_list=${sh_multilib} not supported."
@@ -1954,7 +1954,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		esac
 	done
 	if test x${enable_incomplete_targets} == xyes ; then
-		tm_defines="$tm_defines SUPPORT_SH1 SUPPORT_SH2E SUPPORT_SH4 SUPPORT_SH4_SINGLE SUPPORT_SH2A SUPPORT_SH2A_SINGLE SUPPORT_SH5_32MEDIA SUPPORT_SH5_32MEDIA_NOFPU SUPPORT_SH5_64MEDIA SUPPORT_SH5_64MEDIA_NOFPU"
+		tm_defines="$tm_defines SUPPORT_SH1=1 SUPPORT_SH2E=1 SUPPORT_SH4=1 SUPPORT_SH4_SINGLE=1 SUPPORT_SH2A=1 SUPPORT_SH2A_SINGLE=1 SUPPORT_SH5_32MEDIA=1 SUPPORT_SH5_32MEDIA_NOFPU=1 SUPPORT_SH5_64MEDIA=1 SUPPORT_SH5_64MEDIA_NOFPU=1"
 	fi
 	use_fixproto=yes
 	;;

@@ -20,21 +20,21 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
-#if TARGET_ENDIAN_DEFAULT == LITTLE_ENDIAN_BIT
+#if TARGET_ENDIAN_DEFAULT == MASK_LITTLE_ENDIAN
 #define TARGET_VERSION_ENDIAN "le"
 #else
 #define TARGET_VERSION_ENDIAN ""
 #endif
 
-#if TARGET_CPU_DEFAULT & SH5_BIT
-#if TARGET_CPU_DEFAULT & SH_E_BIT
+#if TARGET_CPU_DEFAULT & MASK_SH5
+#if TARGET_CPU_DEFAULT & MASK_SH_E
 #define TARGET_VERSION_CPU "sh5"
 #else
 #define TARGET_VERSION_CPU "sh64"
-#endif /* SH_E_BIT */
+#endif /* MASK_SH_E */
 #else
 #define TARGET_VERSION_CPU "sh"
-#endif /* SH5_BIT */
+#endif /* MASK_SH5 */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION	fprintf (stderr, " (NetBSD/%s%s ELF)",		\
@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (TARGET_CPU_DEFAULT | USERMODE_BIT | TARGET_ENDIAN_DEFAULT)
+  (TARGET_CPU_DEFAULT | MASK_USERMODE | TARGET_ENDIAN_DEFAULT)
 
 /* Define because we use the label and we do not need them.  */
 #define NO_PROFILE_COUNTERS 1
