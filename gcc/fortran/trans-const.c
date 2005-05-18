@@ -141,6 +141,8 @@ gfc_conv_const_charlen (gfc_charlen * cl)
     {
       cl->backend_decl = gfc_conv_mpz_to_tree (cl->length->value.integer,
 					       cl->length->ts.kind);
+      cl->backend_decl = fold_convert (gfc_charlen_type_node,
+					cl->backend_decl);
     }
 }
 
