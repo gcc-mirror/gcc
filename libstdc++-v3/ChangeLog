@@ -1,3 +1,8 @@
+2005-05-18  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/debug.html: Explain that _GLIBXX_DEBUG_PEDANTIC must
+	be defined for pedantic mode.
+
 2005-05-15  Andreas Schwab  <schwab@suse.de>
 
 	* testsuite/Makefile.am (check-local): Really remove.
