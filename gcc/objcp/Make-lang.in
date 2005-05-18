@@ -51,9 +51,19 @@ objcp-warn = $(STRICT_WARN) -DOBJCPLUS -I$(srcdir)/objc -I$(srcdir)/cp
 OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
    $(CXX_AND_OBJCXX_OBJS)
 
-cc1objplus$(exeext): $(OBJCXX_OBJS) $(BACKEND) $(LIBDEPS)
+cc1objplus-dummy$(exeext): $(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) \
+		$(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-		$(OBJCXX_OBJS) $(BACKEND) $(LIBS)
+		$(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBS)
+
+cc1objplus-checksum.c : cc1objplus-dummy$(exeext) build/genchecksum$(exeext)
+	build/genchecksum$(exeext) cc1objplus-dummy$(exeext) > $@
+
+cc1objplus-checksum.o : cc1objplus-checksum.c
+
+cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBS)
 
 # Objective C++ language specific files.
 

@@ -1,5 +1,40 @@
 2005-05-18  Geoffrey Keating  <geoffk@apple.com>
 
+	* dummy-checksum.c: New.
+	* genchecksum.c: New.
+	* c.opt (print_pch_checksum): New flag.
+	* c-pch.c (struct c_pch_validity): Make much shorter.
+	(no_checksum): New.
+	(host_machine): Remove.
+	(target_machine): Remove.
+	(get_ident): Change PCH version number.
+	(pch_init): When -fverbose-asm, print out the compiler fingerprint.
+	Don't put triplets or version string in PCH validity data.
+	Do put the compiler checksum in the validity data.
+	(c_common_valid_pch): Don't check triplets or version string.  Do
+	check checksum.
+	(c_common_print_pch_checksum): New.
+	* c-opts.c (c_common_handle_option): Add OPT_print_pch_checksum.
+	Print fingerprint with -v.
+	* c-common.h (c_common_print_pch_checksum): New.
+	(executable_checksum): New.
+	* Makefile.in (STAGEMOVESTUFF): Add cc1*-dummy, *-checksum.c.
+	(cc1-dummy): New rule.
+	(cc1-checksum.c): New rule.
+	(cc1-checksum.o): New rule.
+	(cc1): Add checksum support.
+	(build/genchecksum): New.
+	(build/genchecksum.o): New.
+	(dummy-checksum.o): New.
+	(genobjnames): Add genchecksum.o.
+	(mostlyclean): Remove *-checksum.c.
+	(gnucompare): Add libgcc to list of directories checked.
+	Make comparison problems in libgcc/ and with checksum files only
+	be warnings.
+	* doc/invoke.texi (Precompiled Headers): Remove caution.
+	Document that it must be the exact same binary.  Add a few
+	known-safe flags to the list.
+
 	* rs6000/predicates.md (fix_trunc_dest_operand): New.
 	* rs6000/rs6000.md (fix_truncdfsi2): Use fix_trunc_dest_operand.
 	Check that a memory operand is valid before trying to use it.

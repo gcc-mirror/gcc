@@ -91,9 +91,18 @@ CXX_OBJS = cp/cp-lang.o stub-objc.o $(CXX_AND_OBJCXX_OBJS)
 # Use strict warnings for this front end.
 cp-warn = $(STRICT_WARN)
 
-cc1plus$(exeext): $(CXX_OBJS) $(BACKEND) $(LIBDEPS)
+cc1plus-dummy$(exeext): $(CXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) $(BACKEND) $(LIBS)
+	      $(CXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBS)
+
+cc1plus-checksum.c : cc1plus-dummy$(exeext) build/genchecksum$(exeext)
+	build/genchecksum$(exeext) cc1plus-dummy$(exeext) > $@
+
+cc1plus-checksum.o : cc1plus-checksum.c
+
+cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBS)
 
 # Special build rules.
 $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf

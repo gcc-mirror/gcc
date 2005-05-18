@@ -1,3 +1,10 @@
+2005-05-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in (cc1obj-dummy): New.
+	(cc1obj-checksum.c): New.
+	(cc1obj-checksum.o): New.
+	(cc1obj): Add cc1obj-checksum.o.
+
 2005-05-18  Mike Stump  <mrs@apple.com>
 
 	PR objc/21641
