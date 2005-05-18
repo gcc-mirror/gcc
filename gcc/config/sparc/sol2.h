@@ -148,7 +148,8 @@ Boston, MA 02111-1307, USA.  */
 /* Solaris allows 64 bit out and global registers in 32 bit mode.
    sparc_override_options will disable V8+ if not generating V9 code.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_V8PLUS + MASK_FPU + MASK_LONG_DOUBLE_128)
+#define TARGET_DEFAULT (MASK_V8PLUS + MASK_APP_REGS + MASK_FPU \
+			+ MASK_LONG_DOUBLE_128)
 
 /* Solaris-specific #pragmas are implemented on top of attributes.  Hook in
    the bits from config/sol2.c.  */
