@@ -118,8 +118,8 @@ AC_HEADER_STDC
 AC_CHECK_FUNCS(memcpy)
 AC_FUNC_ALLOCA
 
-AC_COMPILE_CHECK_SIZEOF(double)
-AC_COMPILE_CHECK_SIZEOF(long double)
+AC_CHECK_SIZEOF(double)
+AC_CHECK_SIZEOF(long double)
 
 # Also AC_SUBST this variable for ffi.h.
 HAVE_LONG_DOUBLE=0
@@ -131,7 +131,7 @@ if test $ac_cv_sizeof_double != $ac_cv_sizeof_long_double; then
 fi
 AC_SUBST(HAVE_LONG_DOUBLE)
 
-AC_C_BIGENDIAN_CROSS
+AC_C_BIGENDIAN
 
 if test x$TARGET = xSPARC; then
     AC_CACHE_CHECK([assembler and linker support unaligned pc related relocs],

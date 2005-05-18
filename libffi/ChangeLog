@@ -1,3 +1,11 @@
+2005-05-03  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.ac: Use AC_C_BIGENDIAN instead of AC_C_BIGENDIAN_CROSS.
+	Use AC_CHECK_SIZEOF instead of AC_COMPILE_CHECK_SIZEOF.
+	* Makefile.am (ACLOCAL_AMFLAGS): Remove -I ../config.
+	* aclocal.m4, configure, fficonfig.h.in, Makefile.in,
+	include/Makefile.in, testsuite/Makefile.in: Regenerate.
+	
 2005-05-09  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.
