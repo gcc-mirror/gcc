@@ -2428,9 +2428,12 @@ purge_dead_edges (basic_block bb)
   if (!found)
     return purged;
 
+  /* Remove all but the fake and fallthru edges.  The fake edge may be
+     the only successor for this block in the case of noreturn
+     calls.  */
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
-      if (!(e->flags & EDGE_FALLTHRU))
+      if (!(e->flags & (EDGE_FALLTHRU | EDGE_FAKE)))
 	{
 	  bb->flags |= BB_DIRTY;
 	  remove_edge (e);
