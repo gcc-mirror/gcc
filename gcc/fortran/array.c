@@ -866,14 +866,27 @@ gfc_match_array_constructor (gfc_expr ** result)
   gfc_expr *expr;
   locus where;
   match m;
+  const char *end_delim;
 
   if (gfc_match (" (/") == MATCH_NO)
-    return MATCH_NO;
+    {
+      if (gfc_match (" [") == MATCH_NO)
+        return MATCH_NO;
+      else
+        {
+          if (gfc_notify_std (GFC_STD_F2003, "New in Fortran 2003: [...] "
+                              "style array constructors at %C") == FAILURE)
+            return MATCH_ERROR;
+          end_delim = " ]";
+        }
+    }
+  else
+    end_delim = " /)";
 
   where = gfc_current_locus;
   head = tail = NULL;
 
-  if (gfc_match (" /)") == MATCH_YES)
+  if (gfc_match (end_delim) == MATCH_YES)
     goto empty;			/* Special case */
 
   for (;;)
@@ -895,7 +908,7 @@ gfc_match_array_constructor (gfc_expr ** result)
 	break;
     }
 
-  if (gfc_match (" /)") == MATCH_NO)
+  if (gfc_match (end_delim) == MATCH_NO)
     goto syntax;
 
 empty:
