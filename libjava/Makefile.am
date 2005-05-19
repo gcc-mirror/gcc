@@ -306,11 +306,7 @@ libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
-# Work around libtool wanting to do piece-wise linking with -r.  Using a
-# convenience library suddenly invokes the --whole-archive path instead.
-# This allows the build to succeed for targets that allocate multiple got
-# subsections in the linker, such as Alpha and MIPS.
-libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files) $(math_c_source_files) \
 	$(BOEHMGC_SRC) $(NOGC_SRC) \
@@ -318,15 +314,6 @@ libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
 	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
-libgcj0_convenience_la_LIBADD = \
-	$(all_libgcj_lo_files) \
-	gnu-xml.lo javax-imageio.lo \
-	javax-xml.lo gnu-java-beans.lo \
-	external/sax/libsax-gcj.la \
-	external/w3c_dom/libw3c-gcj.la
-libgcj0_convenience_la_DEPENDENCIES = $(libgcj0_convenience_la_LIBADD)
-
-noinst_LTLIBRARIES = libgcj0_convenience.la
 
 ## Objects from C++ sources in subdirs.
 nat_files = $(nat_source_files:.cc=.lo)
@@ -339,7 +326,11 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	$(LIBLTDL) $(SYS_ZLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LIBADD = \
-	libgcj0_convenience.la \
+	$(all_libgcj_lo_files) \
+	gnu-xml.lo javax-imageio.lo \
+	javax-xml.lo gnu-java-beans.lo \
+	external/sax/libsax-gcj.la \
+	external/w3c_dom/libw3c-gcj.la \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
@@ -673,10 +664,6 @@ SUFFIXES = .class .java .h .properties
 
 ## Pass the list of object files to libtool in a temporary file to
 ## avoid tripping platform command line length limits.
-libgcj.la: $(libgcj_la_DEPENDENCIES)
-	$(libgcj_la_LINK) $(libgcj_la_LIBADD) \
-	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
-
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
 	@echo Creating list of files to link...
 	@: $(call write_entries_to_file,$(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_LIBADD),lib_gnu_awt_xlib.objectlist)
