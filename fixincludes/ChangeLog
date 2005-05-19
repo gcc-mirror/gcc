@@ -1,3 +1,7 @@
+2005-05-19  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* aclocal.m4: Remove superfluous reference to accross.m4.
+
 2005-05-15  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* fixlib.c (load_file_data): Use XRESIZVEC in lieu of xrealloc.
