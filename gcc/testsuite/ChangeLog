@@ -1,3 +1,7 @@
+2005-05-19  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/vect/vect-dv-2.c: Remove dg-do directive.
+
 2005-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21495
