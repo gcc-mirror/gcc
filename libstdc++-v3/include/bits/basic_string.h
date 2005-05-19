@@ -695,7 +695,10 @@ namespace std
       reference
       operator[](size_type __pos)
       {
-	_GLIBCXX_DEBUG_ASSERT(__pos < size());
+        // allow pos == size() as v3 extension:
+	_GLIBCXX_DEBUG_ASSERT(__pos <= size());
+        // but be strict in pedantic mode:
+	_GLIBCXX_DEBUG_PEDASSERT(__pos < size());
 	_M_leak();
 	return _M_data()[__pos];
       }
