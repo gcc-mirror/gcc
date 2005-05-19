@@ -1,5 +1,14 @@
 2005-05-19  Richard Henderson  <rth@redhat.com>
 
+	PR target/21390
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Move 
+	TFmode code swapping ...
+	(alpha_emit_xfloating_compare): ... here.
+	(alpha_emit_setcc): Update to match.
+	(alpha_lookup_xfloating_lib_func): Assert TARGET_HAS_XFLOATING_LIBS.
+
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
 	PR target/21657
 	* config/ia64/ia64.c (ia64_expand_tls_address): Remove extra
 	memory indirection in local-dynamic case.

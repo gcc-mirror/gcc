@@ -211,7 +211,7 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_size =
 
 /* Declarations of static functions.  */
 static struct machine_function *alpha_init_machine_status (void);
-static rtx alpha_emit_xfloating_compare (enum rtx_code, rtx, rtx);
+static rtx alpha_emit_xfloating_compare (enum rtx_code *, rtx, rtx);
 
 #if TARGET_ABI_OPEN_VMS
 static void alpha_write_linkage (FILE *, const char *, tree);
@@ -2501,35 +2501,7 @@ alpha_emit_conditional_branch (enum rtx_code code)
 
   if (alpha_compare.fp_p && GET_MODE (op0) == TFmode)
     {
-      gcc_assert (TARGET_HAS_XFLOATING_LIBS);
-
-      /* X_floating library comparison functions return
-	   -1  unordered
-	    0  false
-	    1  true
-	 Convert the compare against the raw return value.  */
-
-      switch (code)
-	{
-	case UNORDERED:
-	  cmp_code = EQ;
-	  code = LT;
-	  break;
-	case ORDERED:
-	  cmp_code = EQ;
-	  code = GE;
-	  break;
-	case NE:
-	  cmp_code = NE;
-	  code = NE;
-	  break;
-	default:
-	  cmp_code = code;
-	  code = GT;
-	  break;
-	}
-
-      op0 = alpha_emit_xfloating_compare (cmp_code, op0, op1);
+      op0 = alpha_emit_xfloating_compare (&code, op0, op1);
       op1 = const0_rtx;
       alpha_compare.fp_p = 0;
     }
@@ -2665,29 +2637,9 @@ alpha_emit_setcc (enum rtx_code code)
 
   if (fp_p && GET_MODE (op0) == TFmode)
     {
-      gcc_assert (TARGET_HAS_XFLOATING_LIBS);
-
-      /* X_floating library comparison functions return
-	   -1  unordered
-	    0  false
-	    1  true
-	 Convert the compare against the raw return value.  */
-
-      if (code == UNORDERED || code == ORDERED)
-	cmp_code = EQ;
-      else
-	cmp_code = code;
-
-      op0 = alpha_emit_xfloating_compare (cmp_code, op0, op1);
+      op0 = alpha_emit_xfloating_compare (&code, op0, op1);
       op1 = const0_rtx;
       fp_p = 0;
-
-      if (code == UNORDERED)
-	code = LT;
-      else if (code == ORDERED)
-	code = GE;
-      else
-        code = GT;
     }
 
   if (fp_p && !TARGET_FIX)
@@ -3025,6 +2977,8 @@ alpha_lookup_xfloating_lib_func (enum rtx_code code)
   long n = ARRAY_SIZE (xfloating_ops);
   long i;
 
+  gcc_assert (TARGET_HAS_XFLOATING_LIBS);
+
   /* How irritating.  Nothing to key off for the main table.  */
   if (TARGET_FLOAT_VAX && (code == FLOAT_EXTEND || code == FLOAT_TRUNCATE))
     {
@@ -3185,12 +3139,44 @@ alpha_emit_xfloating_arith (enum rtx_code code, rtx operands[])
 /* Emit an X_floating library function call for a comparison.  */
 
 static rtx
-alpha_emit_xfloating_compare (enum rtx_code code, rtx op0, rtx op1)
+alpha_emit_xfloating_compare (enum rtx_code *pcode, rtx op0, rtx op1)
 {
-  rtx func;
-  rtx out, operands[2];
+  enum rtx_code cmp_code, res_code;
+  rtx func, out, operands[2];
 
-  func = alpha_lookup_xfloating_lib_func (code);
+  /* X_floating library comparison functions return
+	   -1  unordered
+	    0  false
+	    1  true
+     Convert the compare against the raw return value.  */
+
+  cmp_code = *pcode;
+  switch (cmp_code)
+    {
+    case UNORDERED:
+      cmp_code = EQ;
+      res_code = LT;
+      break;
+    case ORDERED:
+      cmp_code = EQ;
+      res_code = GE;
+      break;
+    case NE:
+      res_code = NE;
+      break;
+    case EQ:
+    case LT:
+    case GT:
+    case LE:
+    case GE:
+      res_code = GT;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  *pcode = res_code;
+
+  func = alpha_lookup_xfloating_lib_func (cmp_code);
 
   operands[0] = op0;
   operands[1] = op1;
@@ -3199,7 +3185,7 @@ alpha_emit_xfloating_compare (enum rtx_code code, rtx op0, rtx op1)
   /* ??? Strange mode for equiv because what's actually returned
      is -1,0,1, not a proper boolean value.  */
   alpha_emit_xfloating_libcall (func, out, operands, 2,
-				gen_rtx_fmt_ee (code, CCmode, op0, op1));
+				gen_rtx_fmt_ee (cmp_code, CCmode, op0, op1));
 
   return out;
 }
