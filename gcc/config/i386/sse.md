@@ -2536,8 +2536,8 @@
 
 (define_expand "mulv4si3"
   [(set (match_operand:V4SI 0 "register_operand" "")
-	(mult:V4SI (match_operand:V4SI 1 "nonimmediate_operand" "")
-		   (match_operand:V4SI 2 "nonimmediate_operand" "")))]
+	(mult:V4SI (match_operand:V4SI 1 "register_operand" "")
+		   (match_operand:V4SI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
   rtx t1, t2, t3, t4, t5, t6, thirtytwo;
@@ -2582,8 +2582,8 @@
 
 (define_expand "mulv2di3"
   [(set (match_operand:V2DI 0 "register_operand" "")
-	(mult:V2DI (match_operand:V2DI 1 "nonimmediate_operand" "")
-		   (match_operand:V2DI 2 "nonimmediate_operand" "")))]
+	(mult:V2DI (match_operand:V2DI 1 "register_operand" "")
+		   (match_operand:V2DI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
   rtx t1, t2, t3, t4, t5, t6, thirtytwo;
