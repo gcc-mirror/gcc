@@ -1,3 +1,9 @@
+2005-05-19  Jan Beulich  <jbeulich@novell.com>
+
+	* libsupc++/unwind-cxx.h: Include cstdlib.
+	(gcc_unreachable): #define.
+	* libsupc++/eh_personality.cc (gcc_unreachable): Remove #define.
+
 2005-05-18  Paolo Carlini  <pcarlini@suse.de>
 	    Nathan Myers  <ncm@cantrip.org>
 
