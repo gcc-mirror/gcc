@@ -99,6 +99,10 @@ Boston, MA 02111-1307, USA.  */
    VUSE for 'b'.  */
 #define opf_no_vops 	(1 << 2)
 
+/* Operand is a "non-specific" kill for call-clobbers and such.  This is used
+   to distinguish "reset the world" events from explicit MODIFY_EXPRs.  */
+#define opf_non_specific  (1 << 3)
+
 /* This structure maintain a sorted list of operands which is created by
    parse_ssa_operand.  */
 struct opbuild_list_d GTY (())
@@ -1326,7 +1330,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 		bool exact;		
 		if (overlap_subvar (offset, size, sv, &exact))
 		  {
-		    if (exact)
+		    if (!exact)
 		      flags &= ~opf_kill_def;
 		    add_stmt_operand (&sv->var, s_ann, flags);
 		  }
@@ -1552,7 +1556,7 @@ get_asm_expr_operands (tree stmt)
 	  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
 	      {
 		tree var = referenced_var (i);
-		add_stmt_operand (&var, s_ann, opf_is_def);
+		add_stmt_operand (&var, s_ann, opf_is_def | opf_non_specific);
 	      }
 
 	/* Now clobber all addressables.  */
@@ -1570,7 +1574,7 @@ get_asm_expr_operands (tree stmt)
 		  && get_subvars_for_var (var) != NULL)
 		continue;		
 
-	      add_stmt_operand (&var, s_ann, opf_is_def);
+	      add_stmt_operand (&var, s_ann, opf_is_def | opf_non_specific);
 	    }
 
 	break;
@@ -1756,19 +1760,20 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
   /* If the variable cannot be modified and this is a V_MAY_DEF change
      it into a VUSE.  This happens when read-only variables are marked
      call-clobbered and/or aliased to writeable variables.  So we only
-     check that this only happens on stores, and not writes to GIMPLE
-     registers.
-     
-     FIXME: The C++ FE is emitting assignments in the IL stream for
-     read-only globals.  This is wrong, but for the time being disable
-     this transformation on V_MUST_DEF operands (otherwise, we
-     mis-optimize SPEC2000's eon).  */
-  if ((flags & opf_is_def)
-      && !(flags & opf_kill_def)
-      && unmodifiable_var_p (var))
+     check that this only happens on non-specific stores.
+
+     Note that if this is a specific store, i.e. associated with a
+     modify_expr, then we can't suppress the V_DEF, lest we run into
+     validation problems.
+
+     This can happen when programs cast away const, leaving us with a
+     store to read-only memory.  If the statement is actually executed
+     at runtime, then the program is ill formed.  If the statement is
+     not executed then all is well.  At the very least, we cannot ICE.  */
+  if ((flags & opf_non_specific) && unmodifiable_var_p (var))
     {
       gcc_assert (!is_real_op);
-      flags &= ~opf_is_def;
+      flags &= ~(opf_is_def | opf_kill_def);
     }
 
   if (is_real_op)
@@ -1976,7 +1981,7 @@ add_call_clobber_ops (tree stmt)
       if (unmodifiable_var_p (var))
 	add_stmt_operand (&var, &empty_ann, opf_none);
       else
-	add_stmt_operand (&var, &empty_ann, opf_is_def);
+	add_stmt_operand (&var, &empty_ann, opf_is_def | opf_non_specific);
     }
 
   clobbered_aliased_loads = empty_ann.makes_aliased_loads;
@@ -2061,7 +2066,7 @@ add_call_read_ops (tree stmt)
   EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, u, bi)
     {
       tree var = referenced_var (u);
-      add_stmt_operand (&var, &empty_ann, opf_none);
+      add_stmt_operand (&var, &empty_ann, opf_none | opf_non_specific);
     }
 
   ro_call_aliased_loads = empty_ann.makes_aliased_loads;
