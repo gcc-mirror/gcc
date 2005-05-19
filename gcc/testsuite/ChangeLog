@@ -1,3 +1,10 @@
+2005-05-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/c99-math.h: New
+	* gcc.dg/c99-math-float-1.c: New test.
+	* gcc.dg/c99-math-double-1.c: Likewise.
+	* gcc.dg/c99-math-long-double-1.c: Likewise.
+
 2005-05-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tree-ssa/20031015-1.c: Expect one V_MUST_DEF.
