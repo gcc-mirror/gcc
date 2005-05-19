@@ -113,7 +113,6 @@ static int find_in_imports_on_demand (tree, tree);
 static void find_in_imports (tree, tree);
 static void check_inner_class_access (tree, tree, tree);
 static int check_pkg_class_access (tree, tree, bool, tree);
-static void register_package (tree);
 static tree resolve_package (tree, tree *, tree *);
 static tree resolve_class (tree, tree, tree, tree);
 static void declare_local_variables (int, tree, tree);
@@ -407,9 +406,6 @@ static GTY(()) tree current_static_block;
 
 /* The generated `write_parm_value$' identifier.  */
 static GTY(()) tree wpv_id;
-
-/* The list of all packages we've seen so far */
-static GTY(()) tree package_list;
 
 /* Hold THIS for the scope of the current method decl.  */
 static GTY(()) tree current_this;
@@ -738,7 +734,6 @@ package_declaration:
 	PACKAGE_TK name SC_TK
 		{
 		  ctxp->package = EXPR_WFL_NODE ($2);
-		  register_package (ctxp->package);
 		}
 |	PACKAGE_TK error
 		{yyerror ("Missing name"); RECOVER;}
@@ -5970,22 +5965,6 @@ do_resolve_class (tree enclosing, tree import_type, tree class_type, tree decl,
   if ((new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
     return new_class_decl;
 
-  /* 5- Try with a name qualified with the package name we've seen so far */
-  if (!QUALIFIED_P (TYPE_NAME (class_type)))
-    {
-      tree package;
-
-      /* If there is a current package (ctxp->package), it's the first
-	 element of package_list and we can skip it. */
-      for (package = (ctxp->package ?
-		      TREE_CHAIN (package_list) : package_list);
-	   package; package = TREE_CHAIN (package))
-	if ((new_class_decl = qualify_and_find (class_type,
-					       TREE_PURPOSE (package),
-					       TYPE_NAME (class_type))))
-	  return new_class_decl;
-    }
-
   /* 5- Check another compilation unit that bears the name of type */
   load_class (TYPE_NAME (class_type), 0);
 
@@ -7245,27 +7224,6 @@ find_in_imports_on_demand (tree enclosing_type, tree class_type)
     return to_return;
   else
     return (seen_once < 0 ? 0 : seen_once); /* It's ok not to have found */
-}
-
-/* Add package NAME to the list of packages encountered so far. To
-   speed up class lookup in do_resolve_class, we make sure a
-   particular package is added only once.  */
-
-static void
-register_package (tree name)
-{
-  static htab_t pht;
-  void **e;
-
-  if (pht == NULL)
-    pht = htab_create (50, htab_hash_pointer, htab_eq_pointer, NULL);
-
-  e = htab_find_slot (pht, name, INSERT);
-  if (*e == NULL)
-    {
-      package_list = chainon (package_list, build_tree_list (name, NULL));
-      *e = name;
-    }
 }
 
 static tree

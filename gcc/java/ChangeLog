@@ -1,3 +1,11 @@
+2005-05-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR java/17845
+
+	* parse.y (register_package, package_list): Remove.
+	(package_declaration): Do not call register_package.
+	(do_resolve_class): Do not use package_list.
+
 2005-05-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* jcf-write.c (generate_bytecode_insns) <SAVE_EXPR>: Remove
