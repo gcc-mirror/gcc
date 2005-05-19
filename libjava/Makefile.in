@@ -17,7 +17,7 @@
 
 
 
-SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) libgcj.c $(libgcj0_convenience_la_SOURCES) $(libgcjawt_la_SOURCES) $(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
+SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(libgcj_la_SOURCES) $(libgcjawt_la_SOURCES) $(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -95,7 +95,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" \
 	"$(DESTDIR)$(toolexecmainlibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 = gnu/gcj/xlib.lo gnu/awt/xlib.lo
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
@@ -209,15 +209,13 @@ lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
 	$(am_lib_gnu_java_awt_peer_gtk_la_OBJECTS)
 @GTK_AWT_TRUE@am_lib_gnu_java_awt_peer_gtk_la_rpath = -rpath \
 @GTK_AWT_TRUE@	$(toolexeclibdir)
-am__DEPENDENCIES_3 = gnu/regexp/MessagesBundle.properties.lo \
+am__DEPENDENCIES_3 = $(filter-out $(all_xlib_lo_files), \
+	$(all_java_lo_files))
+am__DEPENDENCIES_4 = gnu/regexp/MessagesBundle.properties.lo \
 	gnu/regexp/MessagesBundle_fr.properties.lo \
 	org/ietf/jgss/MessagesBundle.properties.lo
-am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3)
-libgcj_la_SOURCES = libgcj.c
-libgcj_la_OBJECTS = libgcj.lo
-am__DEPENDENCIES_5 = $(filter-out $(all_xlib_lo_files), \
-	$(all_java_lo_files))
-am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
+am__DEPENDENCIES_5 = $(am__DEPENDENCIES_4)
+am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
 	gnu/classpath/natSystemProperties.cc gnu/gcj/natCore.cc \
 	gnu/gcj/convert/JIS0208_to_Unicode.cc \
@@ -336,13 +334,13 @@ am__objects_5 = java/lang/dtoa.lo java/lang/k_rem_pio2.lo \
 @USING_POSIX_THREADS_TRUE@am__objects_13 = posix-threads.lo
 @USING_WIN32_THREADS_TRUE@am__objects_14 = win32-threads.lo
 @USING_NO_THREADS_TRUE@am__objects_15 = no-threads.lo
-am_libgcj0_convenience_la_OBJECTS = prims.lo jni.lo exception.lo \
-	stacktrace.lo link.lo defineclass.lo interpret.lo verify.lo \
-	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
-	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
-	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
-	$(am__objects_13) $(am__objects_14) $(am__objects_15)
-libgcj0_convenience_la_OBJECTS = $(am_libgcj0_convenience_la_OBJECTS)
+am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
+	link.lo defineclass.lo interpret.lo verify.lo $(am__objects_4) \
+	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
+	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
+	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
+	$(am__objects_14) $(am__objects_15)
+libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 libgcjawt_la_DEPENDENCIES = lib-gnu-java-awt-peer-gtk.la
 am_libgcjawt_la_OBJECTS = libgcjawt_la-jawt.lo
 libgcjawt_la_OBJECTS = $(am_libgcjawt_la_OBJECTS)
@@ -394,18 +392,16 @@ LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(AM_GCJFLAGS) \
 	$(GCJFLAGS)
 GCJLD = $(GCJ)
 SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
-	$(lib_gnu_java_awt_peer_gtk_la_SOURCES) libgcj.c \
-	$(libgcj0_convenience_la_SOURCES) $(libgcjawt_la_SOURCES) \
-	$(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) \
-	$(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) \
-	$(grmiregistry_SOURCES) $(jv_convert_SOURCES)
-DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
-	$(am__lib_gnu_java_awt_peer_gtk_la_SOURCES_DIST) libgcj.c \
-	$(am__libgcj0_convenience_la_SOURCES_DIST) \
+	$(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(libgcj_la_SOURCES) \
 	$(libgcjawt_la_SOURCES) $(libgij_la_SOURCES) \
-	$(gcj_dbtool_SOURCES) $(am__gen_from_JIS_SOURCES_DIST) \
-	$(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) \
-	$(jv_convert_SOURCES)
+	$(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) \
+	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
+DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
+	$(am__lib_gnu_java_awt_peer_gtk_la_SOURCES_DIST) \
+	$(am__libgcj_la_SOURCES_DIST) $(libgcjawt_la_SOURCES) \
+	$(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) \
+	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
+	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -798,12 +794,7 @@ libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
-
-# Work around libtool wanting to do piece-wise linking with -r.  Using a
-# convenience library suddenly invokes the --whole-archive path instead.
-# This allows the build to succeed for targets that allocate multiple got
-# subsections in the linker, such as Alpha and MIPS.
-libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files) $(math_c_source_files) \
 	$(BOEHMGC_SRC) $(NOGC_SRC) \
@@ -812,15 +803,6 @@ libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
 
-libgcj0_convenience_la_LIBADD = \
-	$(all_libgcj_lo_files) \
-	gnu-xml.lo javax-imageio.lo \
-	javax-xml.lo gnu-java-beans.lo \
-	external/sax/libsax-gcj.la \
-	external/w3c_dom/libw3c-gcj.la
-
-libgcj0_convenience_la_DEPENDENCIES = $(libgcj0_convenience_la_LIBADD)
-noinst_LTLIBRARIES = libgcj0_convenience.la
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -831,7 +813,11 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 libgcj_la_LIBADD = \
-	libgcj0_convenience.la \
+	$(all_libgcj_lo_files) \
+	gnu-xml.lo javax-imageio.lo \
+	javax-xml.lo gnu-java-beans.lo \
+	external/sax/libsax-gcj.la \
+	external/w3c_dom/libw3c-gcj.la \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
@@ -4035,15 +4021,6 @@ libgcj-test.spec: $(top_builddir)/config.status $(srcdir)/libgcj-test.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 gnu/classpath/Configuration.java: $(top_builddir)/config.status $(top_srcdir)/gnu/classpath/Configuration.java.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(toolexeclibdir)"
@@ -4617,8 +4594,8 @@ sysdep/$(DEPDIR)/$(am__dirstamp):
 	@: > sysdep/$(DEPDIR)/$(am__dirstamp)
 sysdep/dwarf2-backtrace.lo: sysdep/$(am__dirstamp) \
 	sysdep/$(DEPDIR)/$(am__dirstamp)
-libgcj0_convenience.la: $(libgcj0_convenience_la_OBJECTS) $(libgcj0_convenience_la_DEPENDENCIES) 
-	$(CXXLINK)  $(libgcj0_convenience_la_LDFLAGS) $(libgcj0_convenience_la_OBJECTS) $(libgcj0_convenience_la_LIBADD) $(LIBS)
+libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES) 
+	$(libgcj_la_LINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
 libgcjawt.la: $(libgcjawt_la_OBJECTS) $(libgcjawt_la_DEPENDENCIES) 
 	$(libgcjawt_la_LINK) $(am_libgcjawt_la_rpath) $(libgcjawt_la_LDFLAGS) $(libgcjawt_la_OBJECTS) $(libgcjawt_la_LIBADD) $(LIBS)
 libgij.la: $(libgij_la_OBJECTS) $(libgij_la_DEPENDENCIES) 
@@ -5050,7 +5027,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gij.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interpret.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jni.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgcj.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgcjawt_la-jawt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/no-threads.Plo@am__quote@
@@ -6183,8 +6159,8 @@ maintainer-clean-generic:
 clean: clean-recursive
 
 clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
-	clean-noinstLTLIBRARIES clean-noinstPROGRAMS \
-	clean-toolexeclibLTLIBRARIES mostlyclean-am
+	clean-noinstPROGRAMS clean-toolexeclibLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -6245,28 +6221,28 @@ uninstall-info: uninstall-info-recursive
 
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am am--refresh check \
 	check-am clean clean-binPROGRAMS clean-generic clean-libtool \
-	clean-local clean-noinstLTLIBRARIES clean-noinstPROGRAMS \
-	clean-recursive clean-toolexeclibLTLIBRARIES ctags \
-	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-shar \
-	dist-tarZ dist-zip distcheck distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-local \
-	distclean-recursive distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-binSCRIPTS \
-	install-data install-data-am install-data-local \
-	install-dbexecDATA install-exec install-exec-am install-info \
-	install-info-am install-jarDATA install-man \
-	install-pkgconfigDATA install-strip \
-	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic \
-	maintainer-clean-recursive mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool mostlyclean-local \
-	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-binSCRIPTS uninstall-dbexecDATA uninstall-info-am \
-	uninstall-jarDATA uninstall-pkgconfigDATA \
-	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
+	clean-local clean-noinstPROGRAMS clean-recursive \
+	clean-toolexeclibLTLIBRARIES ctags ctags-recursive dist \
+	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
+	distcheck distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-local distclean-recursive \
+	distclean-tags distcleancheck distdir distuninstallcheck dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-binSCRIPTS install-data \
+	install-data-am install-data-local install-dbexecDATA \
+	install-exec install-exec-am install-info install-info-am \
+	install-jarDATA install-man install-pkgconfigDATA \
+	install-strip install-toolexeclibLTLIBRARIES \
+	install-toolexecmainlibDATA installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic maintainer-clean-recursive \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-local mostlyclean-recursive \
+	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-binSCRIPTS \
+	uninstall-dbexecDATA uninstall-info-am uninstall-jarDATA \
+	uninstall-pkgconfigDATA uninstall-toolexeclibLTLIBRARIES \
+	uninstall-toolexecmainlibDATA
 
 
 # Build dependencies between java, class and lo files.  They are included
@@ -6444,10 +6420,6 @@ distclean-local:
 # Just remove the objects from C++ sources, for testing the C++ compiler.
 clean-nat:
 	rm -f $(nat_files) $(xlib_nat_files)
-
-libgcj.la: $(libgcj_la_DEPENDENCIES)
-	$(libgcj_la_LINK) $(libgcj_la_LIBADD) \
-	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
 	@echo Creating list of files to link...
