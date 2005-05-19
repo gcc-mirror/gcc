@@ -1,3 +1,9 @@
+2005-05-19  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-ssa-loop-ivopts.c (determine_base_object): Use
+	build_fold_addr_expr to generate trees of correct type.
+	Use fold_buildN if possible.
+
 2005-05-19  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (REG_BR_PROB_BASE): Define.

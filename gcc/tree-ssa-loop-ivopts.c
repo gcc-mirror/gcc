@@ -791,7 +791,8 @@ determine_base_object (tree expr)
       if (TREE_CODE (base) == INDIRECT_REF)
 	return determine_base_object (TREE_OPERAND (base, 0));
 
-      return fold (build1 (ADDR_EXPR, ptr_type_node, base));
+      return fold_convert (ptr_type_node,
+		           build_fold_addr_expr (base));
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -804,9 +805,9 @@ determine_base_object (tree expr)
       if (!op0)
 	return (code == PLUS_EXPR
 		? op1
-		: fold (build1 (NEGATE_EXPR, ptr_type_node, op1)));
+		: fold_build1 (NEGATE_EXPR, ptr_type_node, op1));
 
-      return fold (build (code, ptr_type_node, op0, op1));
+      return fold_build2 (code, ptr_type_node, op0, op1);
 
     case NOP_EXPR:
     case CONVERT_EXPR:
