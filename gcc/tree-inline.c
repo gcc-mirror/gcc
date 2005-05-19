@@ -656,7 +656,8 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 		 associate callgraph nodes.  */
 	      edge = cgraph_edge (id->current_node, old_node);
 	      if (edge)
-		 cgraph_clone_edge (edge, id->node, *tp);
+		 cgraph_clone_edge (edge, id->node, *tp,
+				    REG_BR_PROB_BASE, 1);
 	    }
 	}
       else if (TREE_CODE (*tp) == RESX_EXPR && id->eh_region_offset)
@@ -1922,7 +1923,8 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
          constant propagating arguments.  In all other cases we hit a bug
          (incorrect node sharing is most common reason for missing edges.  */
       gcc_assert (dest->needed || !flag_unit_at_a_time);
-      cgraph_create_edge (id->node, dest, t)->inline_failed
+      cgraph_create_edge (id->node, dest, t,
+			  bb->count, bb->loop_depth)->inline_failed
 	= N_("originally indirect function call not considered for inlining");
       goto egress;
     }

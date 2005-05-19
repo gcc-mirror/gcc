@@ -706,9 +706,6 @@ enum reg_note
   REG_NOTE_MAX
 };
 
-/* The base value for branch probability notes.  */
-#define REG_BR_PROB_BASE  10000
-
 /* Define macros to extract and insert the reg-note kind in an EXPR_LIST.  */
 #define REG_NOTE_KIND(LINK) ((enum reg_note) GET_MODE (LINK))
 #define PUT_REG_NOTE_KIND(LINK, KIND) \

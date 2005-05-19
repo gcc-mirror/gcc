@@ -123,7 +123,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate)
     }
    else if (duplicate)
     {
-      n = cgraph_clone_node (e->callee);
+      n = cgraph_clone_node (e->callee, e->count, e->loop_nest);
       cgraph_redirect_edge_callee (e, n);
     }
 
@@ -369,7 +369,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
 	     cgraph_node_name (node));
 
   /* We need original clone to copy around.  */
-  master_clone = cgraph_clone_node (node);
+  master_clone = cgraph_clone_node (node, 0, 1);
   master_clone->needed = true;
   for (e = master_clone->callees; e; e = e->next_callee)
     if (!e->inline_failed)
