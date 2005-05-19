@@ -1,5 +1,11 @@
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
+	PR target/21657
+	* config/ia64/ia64.c (ia64_expand_tls_address): Remove extra
+	memory indirection in local-dynamic case.
+
 2005-05-18  Jie Zhang  <jie.zhang@analog.com>
-            Bernd Schmidt  <bernd.schmidt@analog.com>
+	    Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (branch_dest): Add comment why it's
 	necessary.
@@ -52,12 +58,12 @@
 	
 2005-05-18  Richard Henderson  <rth@redhat.com>
 
-        * tree-ssa-forwprop.c (cfg_changed): New.
-        (tidy_after_forward_propagate_addr): New.
-        (forward_propagate_addr_expr): Use it, and fold_stmt_inplace.
-        (forward_propagate_addr_into_variable_array_index): Likewise.
-        (tree_ssa_forward_propagate_single_use_vars): Cleanup cfg if
-        edges were removed.
+	* tree-ssa-forwprop.c (cfg_changed): New.
+	(tidy_after_forward_propagate_addr): New.
+	(forward_propagate_addr_expr): Use it, and fold_stmt_inplace.
+	(forward_propagate_addr_into_variable_array_index): Likewise.
+	(tree_ssa_forward_propagate_single_use_vars): Cleanup cfg if
+	edges were removed.
 
 2005-05-18  Geoffrey Keating  <geoffk@apple.com>
 
