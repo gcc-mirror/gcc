@@ -1,3 +1,8 @@
+2005-05-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* crontab: Don't build 3.3 branch snapshots.
+	* update_version (IGNORE_BRANCHES): Add gcc-3_3-branch.
+
 2005-03-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* README: Update.
