@@ -1,3 +1,8 @@
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (mulv4si3): Use all register inputs.
+	(mulv2di3): Likewise.
+
 2005-05-19  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-loop-ivopts.c (determine_base_object): Use
