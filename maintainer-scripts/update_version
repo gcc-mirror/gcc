@@ -6,7 +6,7 @@
 # in $ADD_BRANCHES.
 
 CVSROOT=${CVSROOT:-/cvs/gcc}
-IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2)-branch'
+IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2|3_3)-branch'
 ADD_BRANCHES='HEAD autovect-branch'
 
 # Run this from /tmp.
