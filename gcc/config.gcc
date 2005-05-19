@@ -1684,6 +1684,7 @@ powerpc-*-linux*)
 		fi
 		tm_file="rs6000/biarch64.h ${tm_file} rs6000/linux64.h"
 		tmake_file="$tmake_file rs6000/t-linux64"
+		extra_options="${extra_options} rs6000/linux64.opt"
 		;;
 	    *)
 		tm_file="${tm_file} rs6000/linux.h"
