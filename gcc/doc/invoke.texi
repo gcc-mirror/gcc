@@ -1937,7 +1937,7 @@ support for invoking the @code{- (id) .cxx_construct} and
 @item -fobjc-direct-dispatch
 @opindex fobjc-direct-dispatch
 Allow fast jumps to the message dispatcher.  On Darwin this is
-accompilished via the comm page.
+accomplished via the comm page.
 
 @item -fobjc-exceptions
 @opindex fobjc-exceptions

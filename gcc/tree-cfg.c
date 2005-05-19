@@ -1359,7 +1359,7 @@ replace_uses_by (tree name, tree val)
      x = w * w;
 
      If we performed the update in the first loop, the statement
-     would be rescanned after first occurence of w is replaced,
+     would be rescanned after first occurrence of w is replaced,
      the new uses would be placed to the beginning of the list,
      and we would never process them.  */
   for (i = 0; VEC_iterate (tree, stmts, i, stmt); i++)
@@ -1398,7 +1398,7 @@ tree_merge_blocks (basic_block a, basic_block b)
 	{
 	  gcc_assert (is_gimple_reg (def));
 
-	  /* Note that just emiting the copies is fine -- there is no problem
+	  /* Note that just emitting the copies is fine -- there is no problem
 	     with ordering of phi nodes.  This is because A is the single
 	     predecessor of B, therefore results of the phi nodes cannot
 	     appear as arguments of the phi nodes.  */

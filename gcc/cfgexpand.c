@@ -597,7 +597,7 @@ expand_one_register_var (tree var)
 }
 
 /* A subroutine of expand_one_var.  Called to assign rtl to a VAR_DECL that
-   has some associated error, e.g. it's type is error-mark.  We just need
+   has some associated error, e.g. its type is error-mark.  We just need
    to pick something that won't crash the rest of the compiler.  */
 
 static void

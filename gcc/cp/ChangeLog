@@ -1,3 +1,7 @@
+2005-05-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* parser.c: Fix comment typos.
+
 2005-05-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* Make-lang.in (cc1plus-dummy): New.

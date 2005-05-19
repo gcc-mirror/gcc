@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
    code.  One day we'll want to generalize this code.
 
    One class of common cases we handle is forward propagating a single use
-   variale into a COND_EXPR.  
+   variable into a COND_EXPR.  
 
      bb0:
        x = a COND b;

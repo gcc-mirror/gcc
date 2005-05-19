@@ -160,7 +160,7 @@ static struct tree_opt_pass pass_free_datastructures =
 };
 
 /* Pass: fixup_cfg - IPA passes or compilation of earlier functions might've
-   changed some properties - such as marged functions nothrow.  Remove now
+   changed some properties - such as marked functions nothrow.  Remove now
    redundant edges and basic blocks.  */
 
 static void
