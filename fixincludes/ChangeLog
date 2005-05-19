@@ -1,3 +1,12 @@
+2005-05-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR target/19933
+	PR target/21315
+	* inclhack.def: New fixes solaris_math_[1-9].
+	* fixincl.x: Regenerate.
+	* tests/base/iso/math_c99.h: New.
+
 2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (stdio_stdarg_h, stdio_va_list): Bypass on

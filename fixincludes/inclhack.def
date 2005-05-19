@@ -2564,6 +2564,176 @@ fix = {
     test_text = "extern int utime(const char *, struct utimbuf *);";
 };
 
+/*
+ * Sun Solaris 10 defines several C99 math macros in terms of
+ * builtins specific to the Studio compiler, in particular not
+ * compatible with the GNU compiler.
+ */
+fix = {
+    hackname = solaris_math_1;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tHUGE_VA%1\t(__builtin_huge_va%2())";
+    c_fix_arg = "^#define[ \t]+HUGE_VA([LF]+)[ \t]+__builtin_huge_va([lf]+)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	HUGE_VAL\n"
+    "#define	HUGE_VAL	__builtin_huge_val\n"
+    "#undef	HUGE_VALF\n"
+    "#define	HUGE_VALF	__builtin_huge_valf\n"
+    "#undef	HUGE_VALL\n"
+    "#define	HUGE_VALL	__builtin_huge_vall";
+};
+
+fix = {
+    hackname = solaris_math_2;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tINFINITY\t(__builtin_inff())";
+    c_fix_arg = "^#define[ \t]+INFINITY[ \t]+__builtin_infinity";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	INFINITY\n"
+    "#define	INFINITY	__builtin_infinity";
+};
+
+fix = {
+    hackname = solaris_math_3;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tNAN\t\t(__builtin_nanf(\"\"))";
+    c_fix_arg = "^#define[ \t]+NAN[ \t]+__builtin_nan";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	NAN\n"
+    "#define	NAN	__builtin_nan";
+};
+
+fix = {
+    hackname = solaris_math_4;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tfpclassify(x) \\\n"
+                "  __extension__ ({ __typeof(x) __x_fp = (x); \\\n"
+                "\t\t   isnan(__x_fp) \\\n"
+                "\t\t     ? FP_NAN \\\n"
+                "\t\t     : isinf(__x_fp) \\\n"
+                "\t\t       ? FP_INFINITE \\\n"
+                "\t\t       : isnormal(__x_fp) \\\n"
+                "\t\t\t ? FP_NORMAL \\\n"
+                "\t\t\t : __x_fp == 0.0 \\\n"
+                "\t\t\t   ? FP_ZERO \\\n"
+                "\t\t\t   : FP_SUBNORMAL; })";
+    c_fix_arg = "^#define[ \t]+fpclassify\\(x\\)[ \t]+__builtin_fpclassify\\(x\\)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	fpclassify\n"
+    "#define	fpclassify(x)	__builtin_fpclassify(x)";
+};
+
+fix = {
+    hackname = solaris_math_5;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tisfinite(x) \\\n"
+                "  __extension__ ({ __typeof (x) __x_f = (x); \\\n"
+                "\t\t   __builtin_expect(!isnan(__x_f - __x_f), 1); })";
+    c_fix_arg = "^#define[ \t]+isfinite\\(x\\)[ \t]+__builtin_isfinite\\(x\\)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	isfinite\n"
+    "#define	isfinite(x)	__builtin_isfinite(x)";
+};
+
+fix = {
+    hackname = solaris_math_6;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tisinf(x) \\\n"
+                "  __extension__ ({ __typeof (x) __x_i = (x); \\\n"
+                "\t\t   __builtin_expect(!isnan(__x_i) && !isfinite(__x_i), 0); })";
+    c_fix_arg = "^#define[ \t]+isinf\\(x\\)[ \t]+__builtin_isinf\\(x\\)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	isinf\n"
+    "#define	isinf(x)	__builtin_isinf(x)";
+};
+
+fix = {
+    hackname = solaris_math_7;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tisnormal(x) \\\n"
+                "  __extension__ ({ __typeof(x) __x_n = (x); \\\n"
+                "\t\t   if (__x_n < 0.0) __x_n = -__x_n; \\\n"
+                "\t\t   __builtin_expect(isfinite(__x_n) \\\n"
+                "\t\t\t\t    && (sizeof(__x_n) == sizeof(float) \\\n"
+                "\t\t\t\t\t  ? __x_n >= __FLT_MIN__ \\\n"
+                "\t\t\t\t\t  : sizeof(__x_n) == sizeof(long double) \\\n"
+                "\t\t\t\t\t    ? __x_n >= __LDBL_MIN__ \\\n"
+                "\t\t\t\t\t    : __x_n >= __DBL_MIN__), 1); })";
+    c_fix_arg = "^#define[ \t]+isnormal\\(x\\)[ \t]+__builtin_isnormal\\(x\\)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	isnormal\n"
+    "#define	isnormal(x)	__builtin_isnormal(x)";
+};
+
+fix = {
+    hackname = solaris_math_8;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tsignbit(x)\t(sizeof(x) == sizeof(float) \\\n"
+                "\t\t\t   ? __builtin_signbitf(x) \\\n"
+                "\t\t\t   : sizeof(x) == sizeof(long double) \\\n"
+                "\t\t\t     ? __builtin_signbitl(x) \\\n"
+                "\t\t\t     : __builtin_signbit(x))";
+    c_fix_arg = "^#define[ \t]+signbit\\(x\\)[ \t]+__builtin_signbit\\(x\\)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	signbit\n"
+    "#define	signbit(x)	__builtin_signbit(x)";
+};
+
+fix = {
+    hackname = solaris_math_9;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\t%1(x, y)%2__builtin_%1(x, y)";
+    c_fix_arg = "^#define[ \t]+([a-z]+)\\(x, y\\)([ \t]+)\\(\\(x\\) __builtin_[a-z]+\\(y\\)\\)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	isgreater\n"
+    "#define	isgreater(x, y)		((x) __builtin_isgreater(y))\n"
+    "#undef	isgreaterequal\n"
+    "#define	isgreaterequal(x, y)	((x) __builtin_isgreaterequal(y))\n"
+    "#undef	isless\n"
+    "#define	isless(x, y)		((x) __builtin_isless(y))\n"
+    "#undef	islessequal\n"
+    "#define	islessequal(x, y)	((x) __builtin_islessequal(y))\n"
+    "#undef	islessgreater\n"
+    "#define	islessgreater(x, y)	((x) __builtin_islessgreater(y))\n"
+    "#undef	isunordered\n"
+    "#define	isunordered(x, y)	((x) __builtin_isunordered(y))";
+};
 
 /*
  *  Sun Solaris 2.5.1, 2.6 defines PTHREAD_{MUTEX|COND}_INITIALIZER
