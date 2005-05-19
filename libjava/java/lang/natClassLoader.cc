@@ -127,6 +127,14 @@ _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
   if (! loader)
     loader = java::lang::VMClassLoader::bootLoader;
+  if (! loader)
+    {
+      // Very early in the bootstrap process, the Bootstrap classloader may 
+      // not exist yet.
+      // FIXME: We could maintain a list of these and come back and register
+      // them later.
+      return;
+    }
   loader->loadedClasses->put(klass->name->toString(), klass);
 }
 
@@ -346,7 +354,7 @@ _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
   ret->superclass = superclass;
   ret->loader = loader;
 
-  _Jv_RegisterClass (ret);
+  _Jv_RegisterInitiatingLoader (ret, loader);
 
   return ret;
 }
