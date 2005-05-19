@@ -1,5 +1,6 @@
 2005-05-18  Richard Henderson  <rth@redhat.com>
 
+	PR 21541
 	* tree-ssa-operands.c (opf_non_specific): New.
 	(get_asm_expr_operands): Set it.
 	(add_call_clobber_ops, add_call_read_ops): Likewise.
