@@ -2424,8 +2424,8 @@ if test -d ${srcdir}/gcc; then
   missing_languages=`echo "$missing_languages" | sed -e "s/^,//" -e "s/,$//"`
   if test "x$missing_languages" != x; then
     { echo "configure: error: 
-The following requested languages were not found: ${missing_languages}
-The available languages are: ${potential_languages}" 1>&2; exit 1; }
+The following requested languages could not be built: ${missing_languages}
+Recognised languages are: ${potential_languages}" 1>&2; exit 1; }
   fi
 
   if test "x$new_enable_languages" != "x$enable_languages"; then

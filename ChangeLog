@@ -1,3 +1,9 @@
+2005-05-19  Paul Brook  <paul@codesourcery.com>
+
+	* configure.in: Rewrite misleading error message when requested 
+	language cannot be built.
+	* configure: Regenerate.
+
 2005-05-15  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* ylwrap: Import from Automake 1.9.5.
