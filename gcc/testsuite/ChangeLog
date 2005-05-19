@@ -1,5 +1,7 @@
 2005-05-19  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/altivec-21.c: Use dg-error only for ilp32.
+
 	* gcc.dg/vect/vect-dv-2.c: Remove dg-do directive.
 
 2005-05-19  Jakub Jelinek  <jakub@redhat.com>

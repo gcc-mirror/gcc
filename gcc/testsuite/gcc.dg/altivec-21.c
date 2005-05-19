@@ -10,8 +10,8 @@ typedef void (*pvecfunc) ();
 void foo(pvecfunc pvf) {
    vector int v = (vector int){1, 2, 3, 4};
 #ifndef __LP64__
-   preansi (4, 4.0, v); /* { dg-error "AltiVec argument passed to unprototyped function" } */
-   (*pvf)  (4, 4.0, v); /* { dg-error "AltiVec argument passed to unprototyped function" } */
+   preansi (4, 4.0, v); /* { dg-error "AltiVec argument passed to unprototyped function" "" { target ilp32 } } */
+   (*pvf)  (4, 4.0, v); /* { dg-error "AltiVec argument passed to unprototyped function" "" { target ilp32 } } */
 #endif /* __LP64__ */
 }
 
