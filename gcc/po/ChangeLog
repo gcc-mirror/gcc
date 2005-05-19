@@ -1,5 +1,11 @@
 2005-05-19  Mark Mitchell  <mark@codesourcery.com>
 
+	* rw.po: New file.
+
+	* ca.po: Update.
+	* de.po: Likewise.
+	* tr.po: Likewise.
+
 	* gcc.pot: Regenerated.
 
 2004-11-07  Joseph S. Myers  <joseph@codesourcery.com>

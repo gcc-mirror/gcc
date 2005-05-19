@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.4.2\n"
+"Project-Id-Version: gcc 3.4.3\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-11-04 19:12-0800\n"
-"PO-Revision-Date: 2004-09-14 17:59+0300\n"
+"PO-Revision-Date: 2004-11-05 20:13+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -379,9 +379,9 @@ msgid "unable to emulate '%s'"
 msgstr "'%s' öykünümü yapılamıyor"
 
 #: c-common.c:4686
-#, fuzzy, c-format
+#, c-format
 msgid "mode `%s' applied to inappropriate type"
-msgstr "küme olmayan türe `sigof' uygulanmış"
+msgstr "`%s' kipi ilgisiz türe uygulanmış"
 
 #: c-common.c:4718
 msgid "%Jsection attribute cannot be specified for local variables"
@@ -4240,9 +4240,8 @@ msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "\"%s\" dizgeciği önişlemci ifadelerinde geçersizdir"
 
 #: cppexp.c:751
-#, fuzzy
 msgid "missing expression between '(' and ')'"
-msgstr "'(' ve ')' arasında void ifade"
+msgstr "'(' ve ')' arasında ifade yok"
 
 #: cppexp.c:754
 msgid "#if with no expression"
@@ -6565,7 +6564,7 @@ msgstr "`%s' e sıçrama geçersiz olarak bağlama sınırları içinde gerçekl
 
 #: stmt.c:977 stmt.c:3790
 msgid "%Jlabel '%D' used before containing binding contour"
-msgstr ""
+msgstr "%J '%D' etiketi bağlama çerçevesinden önce kullanılmış"
 
 #: stmt.c:1156
 msgid "output operand constraint lacks `='"
@@ -6733,7 +6732,7 @@ msgstr "%J paketli öznitelik `%D' için gereksiz"
 
 #: stor-layout.c:902
 msgid "%Jpadding struct to align '%D'"
-msgstr ""
+msgstr "%J yapı '%D' ye hizalanarak yerleştiriliyor"
 
 #: stor-layout.c:1244
 msgid "padding struct size to alignment boundary"
@@ -7309,35 +7308,35 @@ msgstr "Ortalama olarak, bir döngü içinde çevrime sokulmayacağı varsayıla
 
 #: params.def:155
 msgid "The maximum number of unrollings of a single loop"
-msgstr ""
+msgstr "Tek bir döngüde işlenemeyenlerin azami sayısı"
 
 #: params.def:160
 msgid "The maximum number of insns of a peeled loop"
-msgstr ""
+msgstr "Soyulmuş bir döngüdeki azami komut sayısı"
 
 #: params.def:165
 msgid "The maximum number of peelings of a single loop"
-msgstr ""
+msgstr "Tek bir döngüdeki azami soyulma sayısı"
 
 #: params.def:170
 msgid "The maximum number of insns of a completely peeled loop"
-msgstr ""
+msgstr "Tamamen soyulmuş bir döngüdeki azami komut sayısı"
 
 #: params.def:175
 msgid "The maximum number of peelings of a single loop that is peeled completely"
-msgstr ""
+msgstr "Tamamen soyulan tek bir döngüdeki azami soyulma sayısı"
 
 #: params.def:180
 msgid "The maximum number of insns of a peeled loop that rolls only once"
-msgstr ""
+msgstr "Bir soyulmuş döngüde sadece tek turdaki azami komut sayısı"
 
 #: params.def:186
 msgid "The maximum number of insns of an unswitched loop"
-msgstr ""
+msgstr "Bir switch'siz döngüdeki azami komut sayısı"
 
 #: params.def:191
 msgid "The maximum number of unswitchings in a single loop"
-msgstr ""
+msgstr "Tek bir döngüdeki switch'sizlerin azami sayısı"
 
 #: params.def:196
 msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot"
@@ -7876,7 +7875,7 @@ msgstr "Geçersiz gerçel değer öykünüm seçeneği: -mfpe-%s"
 
 #: config/arm/arm.c:806
 msgid "-mfpe switch not supported by ep9312 target cpu - ignored."
-msgstr ""
+msgstr "-mfpe seçeneği ep9312 hedef işlemcisi tarafından desteklenmiyor - yoksayıldı."
 
 #: config/arm/arm.c:826
 msgid "structure size boundary can only be set to 8 or 32"
@@ -10791,7 +10790,7 @@ msgstr ""
 
 #: config/mips/mips.c:5273
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
-msgstr ""
+msgstr "stack/frame/arg göstericisi olmadan mips_debugger_offset çağrısı"
 
 #: config/mips/mips.c:5400
 #, c-format
@@ -10878,7 +10877,7 @@ msgstr "geçici dosya kapatılamıyor: %m"
 
 #: config/mips/linux64.h:39
 msgid "Same as -mabi=32, just trickier"
-msgstr ""
+msgstr "-mabi=32 ile aynı, sadece daha kolay"
 
 #. Target CPU builtins.
 #. We do this here because __mips is defined below		 and so we can't use builtin_define_std.
@@ -11627,7 +11626,7 @@ msgstr "Sinyal eylemci ayarlanırken: %m"
 #: config/rs6000/host-darwin.c:184
 #, c-format
 msgid "couldn't unmap pch_address_space: %m\n"
-msgstr ""
+msgstr "pch_address_space unmap edilemedi: %m\n"
 
 #. Handle the machine specific pragma longcall.  Its syntax is
 #.
@@ -11749,7 +11748,7 @@ msgstr "dss argümanı 2 bitlik işaretsiz bir sabit olmalı"
 #: config/rs6000/rs6000.c:6261
 #, c-format
 msgid "invalid parameter combination for `%s' AltiVec intrinsic"
-msgstr ""
+msgstr "`%s' Altivec yerleşiği için parametre birleşimi geçersiz"
 
 #: config/rs6000/rs6000.c:6494
 msgid "argument 1 of __builtin_spe_predicate must be a constant"
@@ -11830,7 +11829,7 @@ msgstr "bu ABI için 64 bitlik profilleme kodu yok"
 
 #: config/rs6000/rs6000.c:14986
 msgid "use of 'long' in AltiVec types is deprecated; use 'int'"
-msgstr ""
+msgstr "AltiVec türlerde 'long' artık kullanılmıyor; 'int' kullanın"
 
 #: config/rs6000/aix.h:184 config/rs6000/beos.h:32
 msgid "Always pass floating-point arguments in memory"
@@ -11886,11 +11885,11 @@ msgstr "-m64 seçeneği PowerPC64 mimarisi gerektirir"
 
 #: config/rs6000/linux64.h:206
 msgid "Call mcount for profiling before a function prologue"
-msgstr ""
+msgstr "Bir işlevin başlangıcından önce profilleme için mcount çağrılır"
 
 #: config/rs6000/linux64.h:208
 msgid "Call mcount for profiling after a function prologue"
-msgstr ""
+msgstr "Bir işlevin başlangıcından sonra profilleme için mcount çağrılır"
 
 #. Run-time compilation parameters selecting different hardware subsets.
 #.
@@ -12076,13 +12075,12 @@ msgid "Avoid all range limits on call instructions"
 msgstr "Çağrı komutlarında tüm kapsam sınırları engellenir"
 
 #: config/rs6000/rs6000.h:468
-#, fuzzy
 msgid "Warn about deprecated 'vector long ...' AltiVec type usage"
-msgstr "Eskimiş derleyici özellikleri hakkında uyarmaz"
+msgstr "AltiVec tür kullanımında önerilmeyen 'vector long ...' için uyarır"
 
 #: config/rs6000/rs6000.h:471
 msgid "Determine which dependences between insns are considered costly"
-msgstr ""
+msgstr "Komutlar arasındaki bağımlılıkların hangilerinin maliyetli varsayıldığı saptanır"
 
 #: config/rs6000/rs6000.h:473
 msgid "Specify which post scheduling nop insertion scheme to apply"
@@ -12369,11 +12367,11 @@ msgstr "tpf OS kodu iptal edilir"
 
 #: config/s390/s390.h:140
 msgid "disable fused multiply/add instructions"
-msgstr ""
+msgstr "birleşik çarpma/toplama komutları iptal edildi"
 
 #: config/s390/s390.h:141
 msgid "enable fused multiply/add instructions"
-msgstr ""
+msgstr "birleşik çarpma/toplama komutları etkin"
 
 #: config/sh/sh.c:5978
 msgid "__builtin_saveregs not supported by this subtarget"
@@ -12977,7 +12975,7 @@ msgstr "%s %T <dönüşüm>"
 
 #: cp/call.c:2253
 msgid "%J%s %+#D <near match>"
-msgstr ""
+msgstr "%J%s %+#D <eşleşme yakınında>"
 
 #: cp/call.c:2255
 msgid "%J%s %+#D"
@@ -13700,14 +13698,12 @@ msgstr "'%D' öncesinde `%#D' olarak bir bildirim var"
 #. declared as the name of any other entity in any glogal scope
 #. of the program.
 #: cp/decl.c:1436
-#, fuzzy
 msgid "declaration of `namespace %D' conflicts with"
-msgstr "C işlevi `%#D' bildirimi ile"
+msgstr "`namespace %D' bildirimi bununla çelişiyor:"
 
 #: cp/decl.c:1437
-#, fuzzy
 msgid "previous declaration of `namespace %D' here"
-msgstr "`%#D'nin önceki bildirimi ile burada çelişiyor"
+msgstr "`namespace %D'nin önceki bildirimi ile burada çelişiyor"
 
 #: cp/decl.c:1449
 msgid "`%#D' previously defined here"
@@ -13996,7 +13992,7 @@ msgstr "`%D' ismi bir dizi için bir GNU tarzı ilklendirici içinde kullanılm�
 #: cp/decl.c:4251
 #, c-format
 msgid "Designated initializer `%E' larger than array size"
-msgstr ""
+msgstr "Tasarlanan ilklendirici `%E' dizi boyutundan daha büyük"
 
 #: cp/decl.c:4323
 msgid "brace-enclosed initializer used to initialize `%T'"
@@ -14245,9 +14241,9 @@ msgid "unnamed variable or field declared void"
 msgstr "adsız değişken ya da alan void olarak bildirilmiş"
 
 #: cp/decl.c:6405
-#, fuzzy, c-format
+#, c-format
 msgid "variable or field `%E' declared void"
-msgstr "`%s' değişkeni ya da alanı void olarak bildirilmiş"
+msgstr "`%E' değişkeni ya da alanı void olarak bildirilmiş"
 
 #: cp/decl.c:6408
 msgid "variable or field declared void"
@@ -15978,7 +15974,7 @@ msgstr "`%D' farklı erişimle tekrar bildirilmiş"
 
 #: cp/parser.c:15186
 msgid "`template' (as a disambiguator) is only allowed within templates"
-msgstr ""
+msgstr "`template' (bir belirsizlik giderici olarak) sadece şablonlarda kullanılabilir"
 
 #: cp/pt.c:243
 msgid "data member `%D' cannot be a member template"
@@ -15997,9 +15993,8 @@ msgid "enclosing class templates are not explicitly specialized"
 msgstr "sınıf şablonlarının zarflanması doğrudan özelleştirilmiyor"
 
 #: cp/pt.c:733
-#, fuzzy
 msgid "specialization of `%D' in different namespace"
-msgstr " `%#T' farklı isim alanında özelleştiriliyor"
+msgstr " `%D' farklı isim alanında özelleştiriliyor"
 
 #: cp/pt.c:734 cp/pt.c:803
 msgid "  from definition of `%#D'"
@@ -16150,9 +16145,8 @@ msgstr "yıkıcı `%D' bir üye şablonu olarak bildirilmiş"
 #. template. ... Template allocation functions shall
 #. have two or more parameters.
 #: cp/pt.c:2868
-#, fuzzy
 msgid "invalid template declaration of `%D'"
-msgstr "geçersiz üye şablonu bildirimi `%D'"
+msgstr "geçersiz şablonu bildirimi `%D'"
 
 #: cp/pt.c:2948
 msgid "`%D' does not declare a template type"
@@ -16407,9 +16401,8 @@ msgid "`%T' is not a class or namespace"
 msgstr "`%T' bir sınıf ya da isim alanı değil"
 
 #: cp/pt.c:8592
-#, fuzzy
 msgid "`%D' is not a class or namespace"
-msgstr "`%T' bir sınıf ya da isim alanı değil"
+msgstr "`%D' bir sınıf ya da isim alanı değil"
 
 #: cp/pt.c:8709
 msgid "`%T' uses anonymous type"
@@ -17507,6 +17500,11 @@ msgid ""
 "For more information about these matters, see the file named COPYING\n"
 "or type the command `info -f g77 Copying'.\n"
 msgstr ""
+"GNU Fortran yasaların izin verdiği ölçüde hiçbir GARANTİ içermez.\n"
+"GNU Fortran'ın kopyalarını GNU Genel Kamu Lisansının koşullarına\n"
+"bağlı kalarak yeniden dağıtabilirsiniz.\n"
+"Bu konuda daha fazla bilgi edinmek için COPYING dosyasına bakabileceğiniz\n"
+"gibi `info -f g77 Copying' komutunu da verebilirsiniz.\n"
 
 #: f/g77spec.c:369
 msgid "--driver no longer supported"
@@ -19537,9 +19535,8 @@ msgid "Display this information"
 msgstr "Bu yardım iletisi gösterilir"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:27
-#, fuzzy
 msgid "--param <param>=<value>\tSet parameter <param> to value.  See below for a complete list of parameters"
-msgstr "--param <param>=<değer>\tParametreye değer atanır. Parametrelerin tam listesi aşağıdadır"
+msgstr "--param <param>=<değer>\t<param> parametresine değer atanır. Parametrelerin tam listesi aşağıdadır"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:36
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
@@ -19594,17 +19591,16 @@ msgid "Like -MD but ignore system header files"
 msgstr "-MD gibi, ancak sistem başlık dosyaları yoksayılır"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:78
-#, fuzzy
 msgid "Generate phony targets for all headers"
-msgstr "Kod Intel as için üretilir"
+msgstr ""
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:81
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
-msgstr ""
+msgstr "-MQ <hedef>\tMAKE sarmalamalı hedefi ekler"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:84
 msgid "-MT <target>\tAdd an unquoted target"
-msgstr ""
+msgstr "-MT <hedef>\tBir sarmalanmamış hedef ekler"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:87
 msgid "-O<number>\tSet optimization level to <number>"
@@ -19692,7 +19688,7 @@ msgstr "Effective C++ tarzı kuralların çelişkilerinde uyarmaz"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:153
 msgid "Warn about stray tokens after #elif and #endif"
-msgstr ""
+msgstr "#elif ve #endif'ten sonraki serseri sözcüklerde uyarır"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:156
 msgid "Treat all warnings as errors"
@@ -20731,7 +20727,7 @@ msgstr "Benzer semboller zayıf semboller olarak ele alınır"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:1017
 msgid "Construct webs and split unrelated uses of single variable"
-msgstr ""
+msgstr "Izgara oluşturur ve tek bir değişkenin ilgisiz kullanımlarını ayırır"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:1020
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
@@ -20743,7 +20739,7 @@ msgstr "O anki çalışma dizinini betimleyen bir #line yönergesi üretilir"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:1026
 msgid "Assume signed arithmetic overflow wraps around"
-msgstr ""
+msgstr "İşaretli aritmetik taşmaların etrafından dolanıldığı varsayılır"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:1029
 msgid "Store strings in writable data section"
