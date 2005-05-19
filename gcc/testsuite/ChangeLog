@@ -1,3 +1,7 @@
+2005-05-18  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tree-ssa/20031015-1.c: Expect one V_MUST_DEF.
+
 2005-05-18  Devang Patel  <dpatel@apple.com>
 
 	* g++.dg/opt/20050511-1.C: New test.
