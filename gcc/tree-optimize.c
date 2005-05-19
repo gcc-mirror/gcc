@@ -486,7 +486,7 @@ init_tree_optimization_passes (void)
 
 #undef NEXT_PASS
 
-  register_dump_files (all_lowering_passes, false, 0);
+  register_dump_files (all_lowering_passes, false, PROP_gimple_any);
   register_dump_files (all_passes, false, PROP_gimple_any
 					  | PROP_gimple_lcf
 					  | PROP_gimple_leh
