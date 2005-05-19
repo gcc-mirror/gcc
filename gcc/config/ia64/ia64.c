@@ -884,7 +884,6 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
 
       tga_op1 = gen_reg_rtx (Pmode);
       emit_insn (gen_load_dtpmod (tga_op1, op1));
-      tga_op1 = gen_const_mem (Pmode, tga_op1);
 
       tga_op2 = const0_rtx;
 

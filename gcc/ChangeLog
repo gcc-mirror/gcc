@@ -8,6 +8,12 @@
 
 2005-05-18  Richard Henderson  <rth@redhat.com>
 
+	PR target/21657
+	* config/ia64/ia64.c (ia64_expand_tls_address): Remove extra
+	memory indirection in local-dynamic case.
+
+2005-05-18  Richard Henderson  <rth@redhat.com>
+
 	PR target/21632
 	* config/ia64/ia64.c (ia64_extra_constraint) <'T'>: Use
 	small_addr_symbolic_operand.
