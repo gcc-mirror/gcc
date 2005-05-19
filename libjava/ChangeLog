@@ -1,3 +1,7 @@
+2005-05-19  Release Manager
+
+	* GCC 3.4.4 released.
+
 2005-01-17  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): In the case

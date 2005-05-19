@@ -1,3 +1,7 @@
+2005-05-19  Release Manager
+
+	* GCC 3.4.4 released.
+
 2004-11-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release: Check "-p" argument more carefully.

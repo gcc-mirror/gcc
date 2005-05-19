@@ -1,3 +1,7 @@
+2005-05-19  Release Manager
+
+	* GCC 3.4.4 released.
+
 2005-05-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/compat.exp (compat-execute): Do not use regsub unsafely.
