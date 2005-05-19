@@ -1,4 +1,0 @@
-pa-host.o : $(srcdir)/config/pa/pa-host.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h hosthooks.h hosthooks-def.h $(HOOKS_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/pa/pa-host.c
