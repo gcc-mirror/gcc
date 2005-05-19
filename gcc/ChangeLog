@@ -1,3 +1,11 @@
+2005-05-18  Jie Zhang  <jie.zhang@analog.com>
+            Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (branch_dest): Add comment why it's
+	necessary.
+	* config/bfin/bfin.md (attr "length" default): Change the offset of
+	forward conditional branch of length 4 from 4096 to 4092.
+
 2005-05-19  Jan Beulich  <jbeulich@novell.com>
 
 	* unwind-compat.c: Include tconfig.h and tsystem.h.
