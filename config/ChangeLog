@@ -1,3 +1,7 @@
+2005-05-19  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* accross.m4: Delete file.
+
 2005-05-12  Ryota Kunisawa  <kunisawa@access.co.jp>
 
 	PR bootstrap/21230
