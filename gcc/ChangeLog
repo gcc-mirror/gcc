@@ -1,5 +1,14 @@
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
+	PR target/21390
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Move
+	TFmode code swapping ...
+	(alpha_emit_xfloating_compare): ... here.
+	(alpha_emit_setcc): Update to match.
+	(alpha_lookup_xfloating_lib_func): Assert TARGET_HAS_XFLOATING_LIBS.
+
 2005-05-19  Jie Zhang  <jie.zhang@analog.com>
-            Bernd Schmidt  <bernd.schmidt@analog.com>
+	    Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (branch_dest): Add comment why it's
 	necessary.
@@ -43,12 +52,12 @@
 
 2005-05-16  Richard Henderson  <rth@redhat.com>
 
-        PR target/21556
-        * config/ia64/ia64.md (load_dtpmod, load_ltoff_dtpmod, load_dtprel,
-        load_dtprel64, load_dtprel22, load_dtprel_gd, load_ltoff_dtprel,
-        add_dtprel, add_dtprel14, add_dtprel22, load_tprel, load_tprel64,
-        load_tprel22, load_tprel_ie, load_ltoff_tprel, add_tprel, add_tprel14,
-        add_tprel22): Remove mode from symbolic operand.
+	PR target/21556
+	* config/ia64/ia64.md (load_dtpmod, load_ltoff_dtpmod, load_dtprel,
+	load_dtprel64, load_dtprel22, load_dtprel_gd, load_ltoff_dtprel,
+	add_dtprel, add_dtprel14, add_dtprel22, load_tprel, load_tprel64,
+	load_tprel22, load_tprel_ie, load_ltoff_tprel, add_tprel, add_tprel14,
+	add_tprel22): Remove mode from symbolic operand.
 
 2005-05-15  Mark Mitchell  <mark@codesourcery.com>
 
@@ -84,41 +93,41 @@
 
 2005-05-12  Richard Henderson  <rth@redhat.com>
 
-        PR target/21412
-        * config/ia64/ia64.c (TARGET_CANNOT_FORCE_CONST_MEM): New.
-        (ia64_cannot_force_const_mem): New.
-        (tls_symbolic_operand_type): New.
-        (ia64_legitimate_constant_p): New.
-        (ia64_expand_load_address): Return true on success.  Improve
-        checks for when we should not split.
-        (ia64_expand_tls_address): New addend operand.  Distribute it
-        as appropriate to the tls_kind.  Delay referencing gp.
-        (ia64_expand_move): Split symbolic addend as necessary.  Handle
-        tls symbols with addends.
-        * config/ia64/ia64-protos.h: Update.
-        * config/ia64/ia64.h (CALL_REALLY_USED_REGISTERS): False for r0,
-        p0, f0, f1, and r13.
-        (LEGITIMATE_CONSTANT_P): Move to ia64_legitimate_constant_p.
-        * config/ia64/ia64.md (UNSPEC_DTPMOD): New.
-        (symbolic_operand splitter): Pass everything through
-        ia64_expand_load_address and FAIL or DONE as appropriate.
-        (load_fptr): Only accept after reload.
-        (load_fptr_internal1, gprel64_offset, load_gprel64, load_symptr_high,
-        load_symptr_low, load_ltoff_dtpmod,
-        (load_dtpmod): New.
-        (load_dtprel): Only accept tls symbols.
-        (load_dtprel64, load_dtprel22): Likewise.
-        (load_tprel, load_tprel64, load_tprel22): Likewise.
-        (load_dtprel_gd, load_ltoff_dtprel, load_tprel_ie): New.
-        (add_dtprel): Only accept tls symbols.  Canonicalize PLUS.
-        (add_dtprel14, add_dtprel22): Likewise.
-        (add_tprel, add_tprel14, add_tprel22): Likewise.
-        * config/ia64/predicates.md (small_addr_symbolic_operand): New.
-        (any_offset_symbol_operand, aligned_offset_symbol_operand): New.
-        (got_symbolic_operand): Check CONST offsets.
-        (tls_symbolic_operand, ld_tls_symbolic_operand): New.
-        (ie_tls_symbolic_operand, le_tls_symbolic_operand): New.
-        (move_operand): Don't handle tls here.  Check CONST offsets.
+	PR target/21412
+	* config/ia64/ia64.c (TARGET_CANNOT_FORCE_CONST_MEM): New.
+	(ia64_cannot_force_const_mem): New.
+	(tls_symbolic_operand_type): New.
+	(ia64_legitimate_constant_p): New.
+	(ia64_expand_load_address): Return true on success.  Improve
+	checks for when we should not split.
+	(ia64_expand_tls_address): New addend operand.  Distribute it
+	as appropriate to the tls_kind.  Delay referencing gp.
+	(ia64_expand_move): Split symbolic addend as necessary.  Handle
+	tls symbols with addends.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.h (CALL_REALLY_USED_REGISTERS): False for r0,
+	p0, f0, f1, and r13.
+	(LEGITIMATE_CONSTANT_P): Move to ia64_legitimate_constant_p.
+	* config/ia64/ia64.md (UNSPEC_DTPMOD): New.
+	(symbolic_operand splitter): Pass everything through
+	ia64_expand_load_address and FAIL or DONE as appropriate.
+	(load_fptr): Only accept after reload.
+	(load_fptr_internal1, gprel64_offset, load_gprel64, load_symptr_high,
+	load_symptr_low, load_ltoff_dtpmod,
+	(load_dtpmod): New.
+	(load_dtprel): Only accept tls symbols.
+	(load_dtprel64, load_dtprel22): Likewise.
+	(load_tprel, load_tprel64, load_tprel22): Likewise.
+	(load_dtprel_gd, load_ltoff_dtprel, load_tprel_ie): New.
+	(add_dtprel): Only accept tls symbols.  Canonicalize PLUS.
+	(add_dtprel14, add_dtprel22): Likewise.
+	(add_tprel, add_tprel14, add_tprel22): Likewise.
+	* config/ia64/predicates.md (small_addr_symbolic_operand): New.
+	(any_offset_symbol_operand, aligned_offset_symbol_operand): New.
+	(got_symbolic_operand): Check CONST offsets.
+	(tls_symbolic_operand, ld_tls_symbolic_operand): New.
+	(ie_tls_symbolic_operand, le_tls_symbolic_operand): New.
+	(move_operand): Don't handle tls here.  Check CONST offsets.
 
 2005-05-11  James A. Morrison  <phython@gcc.gnu.org>
 
@@ -133,9 +142,9 @@
 
 2005-05-11  Richard Henderson  <rth@redhat.com>
 
-        PR c/21502
-        * c-decl.c (finish_decl): Propagate the completed array type of
-        a global variable into the binding.
+	PR c/21502
+	* c-decl.c (finish_decl): Propagate the completed array type of
+	a global variable into the binding.
 
 2005-05-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -225,10 +234,10 @@
 
 2005-05-07  Anthony Green  <green@redhat.com>
 
-        PR bootstrap/21403
-        * configure.ac (STMP_FIXPROTO): Fix [ ] consumption problem in
-        x$STMP_FIXPROTO test.
-        * configure: Rebuilt.
+	PR bootstrap/21403
+	* configure.ac (STMP_FIXPROTO): Fix [ ] consumption problem in
+	x$STMP_FIXPROTO test.
+	* configure: Rebuilt.
 
 2005-05-07  Joseph S. Myers  <joseph@codesourcery.com>
 
@@ -237,9 +246,9 @@
 
 2005-05-07  Richard Henderson  <rth@redhat.com>
 
-        PR target/21412
-        * config/rs6000/rs6000.c (rs6000_emit_move): Look for tls addresses
-        with constant offsets.
+	PR target/21412
+	* config/rs6000/rs6000.c (rs6000_emit_move): Look for tls addresses
+	with constant offsets.
 
 2005-05-06  Jakub Jelinek  <jakub@redhat.com>
 
@@ -553,7 +562,7 @@
 
 2005-04-24  Richard Henderson  <rth@redhat.com>
 
-        PR target/21101
+	PR target/21101
 	* config/i386/i386.h (CANNOT_CHANGE_MODE_CLASS): Move guts to ...
 	* config/i386/i386.c (ix86_cannot_change_mode_class): ... here.
 	Deny modes smaller than 4 bytes.
