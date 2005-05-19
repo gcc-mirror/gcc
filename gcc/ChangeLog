@@ -1,3 +1,8 @@
+2005-05-19  Nick Clifton  <nickc@redhat.com>
+
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Use the
+	new rs6000_explicit_options structure.
+
 2005-05-19  Richard Henderson  <rth@redhat.com>
 
 	PR target/21390
