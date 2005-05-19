@@ -1,3 +1,9 @@
+2005-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/21495
+	* decl.c (grokdeclarator): Fix "storage class specified for"
+	error reporting.
+
 2005-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21454
