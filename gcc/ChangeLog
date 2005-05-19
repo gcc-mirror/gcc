@@ -1,5 +1,10 @@
 2005-05-18  Richard Henderson  <rth@redhat.com>
 
+	* config.gcc (powerpc-*-linux*): Include linux64.opt when
+	including linux64.h.
+
+2005-05-18  Richard Henderson  <rth@redhat.com>
+
 	* tree-cfg.c (pass_remove_useless): Revert last change.
 	* tree-optimize.c (init_tree_optimization_passes): Initialize
 	all_lowering_passes with PROP_gimple_any.
