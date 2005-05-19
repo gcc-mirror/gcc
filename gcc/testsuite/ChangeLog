@@ -1,3 +1,9 @@
+2005-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/21495
+	* g++.dg/parse/extern1.C: New test.
+	* g++.dg/tls/diag-2.C: Adjust expected error message wording.
+
 2005-05-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/c99-math.h: New.
