@@ -513,7 +513,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
       if (assignment && TREE_CODE (assignment) == MODIFY_EXPR)
 	{
 	  /* Replace the RETURN_EXPR with (a copy of) the
-	     MODIFY_EXPR hangning underneath.  */
+	     MODIFY_EXPR hanging underneath.  */
 	  *tp = copy_node (assignment);
 	}
       else /* Else the RETURN_EXPR returns no value.  */
@@ -626,7 +626,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	  && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (*tp))))
 	TREE_BLOCK (*tp) = id->block;
 
-      /* We're duplicationg a CALL_EXPR.  Find any corresponding
+      /* We're duplicating a CALL_EXPR.  Find any corresponding
 	 callgraph edges and update or duplicate them.  */
       if (TREE_CODE (*tp) == CALL_EXPR && id->node && get_callee_fndecl (*tp))
 	{
@@ -750,9 +750,9 @@ copy_bb (inline_data *id, basic_block bb, int frequency_scale, int count_scale)
   return copy_basic_block;
 }
 
-/* Copy edges from BB into it's copy constructed ealier, scale profile
-   accordingly.  Edges will be taken care of
-   later.  Assume aux pointers to point to the copies of each BB  */
+/* Copy edges from BB into its copy constructed earlier, scale profile
+   accordingly.  Edges will be taken care of later.  Assume aux
+   pointers to point to the copies of each BB.  */
 static void
 copy_edges_for_bb (basic_block bb, int count_scale)
 {
@@ -770,7 +770,7 @@ copy_edges_for_bb (basic_block bb, int count_scale)
 
       flags = old_edge->flags;
 
-      /* Return edges do get a FALLTHU flag when the get inlined.  */
+      /* Return edges do get a FALLTHRU flag when the get inlined.  */
       if (old_edge->dest->index == EXIT_BLOCK && !old_edge->flags
 	  && old_edge->dest->aux != EXIT_BLOCK_PTR)
 	flags |= EDGE_FALLTHRU;
@@ -885,7 +885,7 @@ copy_cfg_body (inline_data * id, gcov_type count, int frequency,
   id->callee_cfun = cfun_to_copy;
 
   /* If saving or cloning a function body, create new basic_block_info
-     and label_to_block_maps.  Otherwise, we're duplicaing a function
+     and label_to_block_maps.  Otherwise, we're duplicating a function
      body for inlining; insert our new blocks and labels into the
      existing varrays.  */
   saving_or_cloning = (id->saving_p || id->cloning_p);
@@ -1084,7 +1084,7 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
       /* If we did not create a gimple value and we did not create a gimple
 	 cast of a gimple value, then we will need to gimplify INIT_STMTS
 	 at the end.  Note that is_gimple_cast only checks the outer
-	 tree code, not its operand.  Thus the explicit check that it's
+	 tree code, not its operand.  Thus the explicit check that its
 	 operand is a gimple value.  */
       if (!is_gimple_val (rhs)
 	  && (!is_gimple_cast (rhs)
@@ -1591,7 +1591,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 
     /* We don't account constants for now.  Assume that the cost is amortized
        by operations that do use them.  We may re-consider this decision once
-       we are able to optimize the tree before estimating it's size and break
+       we are able to optimize the tree before estimating its size and break
        out static initializers.  */
     case IDENTIFIER_NODE:
     case INTEGER_CST:
@@ -2231,7 +2231,7 @@ clone_body (tree clone, tree fn, void *arg_map)
 }
 
 /* Save duplicate body in FN.  MAP is used to pass around splay tree
-   used to update argments in restore_body.  */
+   used to update arguments in restore_body.  */
 
 /* Make and return duplicate of body in FN.  Put copies of DECL_ARGUMENTS
    in *arg_copy and of the static chain, if any, in *sc_copy.  */

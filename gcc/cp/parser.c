@@ -9687,7 +9687,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	  tree qual_type = objc_get_protocol_qualified_type (type, protos);
 
 	  /* Clobber the "unqualified" type previously entered into
-	     DECL_SPECS with the new, improved protocol-qualifed version.  */
+	     DECL_SPECS with the new, improved protocol-qualified version.  */
 	  if (decl_specs)
 	    decl_specs->type = qual_type;
 
@@ -17015,7 +17015,7 @@ cp_parser_objc_protocol_declaration (cp_parser* parser)
       goto finish;
     }
 
-  /* See if we have a foward declaration or a definition.  */
+  /* See if we have a forward declaration or a definition.  */
   tok = cp_lexer_peek_nth_token (parser->lexer, 2);
   
   /* Try a forward declaration first.  */
