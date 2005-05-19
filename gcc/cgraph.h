@@ -22,6 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 #include "tree.h"
+#include "basic-block.h"
 
 /* Information about the function collected locally.
    Available after function is analyzed.  */
@@ -109,6 +110,8 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   struct cgraph_global_info global;
   struct cgraph_rtl_info rtl;
   
+  /* Expected number of executions: calculated in profile.c.  */
+  gcov_type count;
   /* Unique id of the node.  */
   int uid;
   /* Set when function must be output - it is externally visible
@@ -141,6 +144,10 @@ struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_call
   /* When NULL, inline this call.  When non-NULL, points to the explanation
      why function was not inlined.  */
   const char *inline_failed;
+  /* Expected number of executions: calculated in profile.c.  */
+  gcov_type count;
+  /* Depth of loop nest, 1 means no loop nest.  */
+  int loop_nest;
 };
 
 /* The cgraph_varpool data structure.
@@ -190,25 +197,25 @@ void cgraph_remove_node (struct cgraph_node *);
 void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
-				        tree);
-struct cgraph_node *cgraph_node (tree decl);
+				        tree, gcov_type, int);
+struct cgraph_node *cgraph_node (tree);
 struct cgraph_node *cgraph_node_for_asm (tree asmname);
-struct cgraph_edge *cgraph_edge (struct cgraph_node *, tree call_expr);
+struct cgraph_edge *cgraph_edge (struct cgraph_node *, tree);
 struct cgraph_local_info *cgraph_local_info (tree);
 struct cgraph_global_info *cgraph_global_info (tree);
 struct cgraph_rtl_info *cgraph_rtl_info (tree);
 const char * cgraph_node_name (struct cgraph_node *);
-struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *, struct cgraph_node *, tree);
-struct cgraph_node * cgraph_clone_node (struct cgraph_node *);
+struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *, struct cgraph_node *, tree, int, int);
+struct cgraph_node * cgraph_clone_node (struct cgraph_node *, gcov_type, int);
 
-struct cgraph_varpool_node *cgraph_varpool_node (tree decl);
+struct cgraph_varpool_node *cgraph_varpool_node (tree);
 struct cgraph_varpool_node *cgraph_varpool_node_for_asm (tree asmname);
 void cgraph_varpool_mark_needed_node (struct cgraph_varpool_node *);
 void cgraph_varpool_finalize_decl (tree);
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 
 bool cgraph_function_possibly_inlined_p (tree);
-void cgraph_unnest_node (struct cgraph_node *node);
+void cgraph_unnest_node (struct cgraph_node *);
 void cgraph_varpool_enqueue_needed_node (struct cgraph_varpool_node *);
 void cgraph_varpool_reset_queue (void);
 bool decide_is_variable_needed (struct cgraph_varpool_node *, tree);
@@ -219,7 +226,6 @@ bool cgraph_varpool_assemble_pending_decls (void);
 void cgraph_finalize_function (tree, bool);
 void cgraph_lower_function (struct cgraph_node *);
 void cgraph_finalize_compilation_unit (void);
-void cgraph_create_edges (struct cgraph_node *, tree);
 void cgraph_optimize (void);
 void cgraph_mark_needed_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);

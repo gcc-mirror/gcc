@@ -1,3 +1,27 @@
+2005-05-19  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (REG_BR_PROB_BASE): Define.
+	* cgraph.c (cgraph_create_edge): Initialize loop_nest and count.
+	(dump_cgraph_node): Dump count.
+	(cgraph_clone_edge): Rescale counts.
+	(cgraph_clone_node): Likewise.
+	* cgraph.h: Include basic-block.h
+	(cgraph_node): Add count.
+	(cgraph_edge): Add count and loop_nest.
+	(cgraph_node, cgraph_edge, cgraph_clone_edge, cgraph_clone_node):
+	Update prototypes.
+	* cgraphunit.c: Kill now redundant inlining comment.
+	(cgraph_create_edges): Make static, maintain current basic block;
+	fix pasto.
+	(record_call_1): Fill in new fields.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Update call of
+	cgraph_clone_node.
+	(cgraph_decide_recursive_inlining): Likewise.
+	* rtl.h (REG_BR_PROB_BASE): Kill.
+	* tree-inline.c (copy_body_r): Update call of cgraph_clone_edge.
+	(expand_call_inline): Update call of cgraph_create_edge.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+
 2005-05-19  Nick Clifton  <nickc@redhat.com>
 
 	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Use the

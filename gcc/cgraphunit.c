@@ -136,33 +136,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	decision on whether function is needed is made more conservative so
 	uninlininable static functions are needed too.  During the call-graph
 	construction the edge destinations are not marked as reachable and it
-	is completely relied upn assemble_variable to mark them.
-	
-     Inlining decision heuristics
-        ??? Move this to separate file after tree-ssa merge.
-
-	We separate inlining decisions from the inliner itself and store it
-	inside callgraph as so called inline plan.  Refer to cgraph.c
-	documentation about particular representation of inline plans in the
-	callgraph
-
-	The implementation of particular heuristics is separated from
-	the rest of code to make it easier to replace it with more complicated
-	implementation in the future.  The rest of inlining code acts as a
-	library aimed to modify the callgraph and verify that the parameters
-	on code size growth fits.
-
-	To mark given call inline, use cgraph_mark_inline function, the
-	verification is performed by cgraph_default_inline_p and
-	cgraph_check_inline_limits.
-
-	The heuristics implements simple knapsack style algorithm ordering
-	all functions by their "profitability" (estimated by code size growth)
-	and inlining them in priority order.
-
-	cgraph_decide_inlining implements heuristics taking whole callgraph
-	into account, while cgraph_decide_inlining_incrementally considers
-	only one function at a time and is used in non-unit-at-a-time mode.  */
+	is completely relied upn assemble_variable to mark them.  */
 
 
 #include "config.h"
@@ -198,6 +172,7 @@ static void cgraph_expand_function (struct cgraph_node *);
 static tree record_call_1 (tree *, int *, void *);
 static void cgraph_mark_local_functions (void);
 static void cgraph_analyze_function (struct cgraph_node *node);
+static void cgraph_create_edges (struct cgraph_node *node, tree body);
 
 /* Records tree nodes seen in cgraph_create_edges.  Simply using
    walk_tree_without_duplicates doesn't guarantee each node is visited
@@ -460,6 +435,9 @@ cgraph_finalize_function (tree decl, bool nested)
     do_warn_unused_parameter (decl);
 }
 
+/* Used only while constructing the callgraph.  */
+static basic_block current_basic_block;
+
 void
 cgraph_lower_function (struct cgraph_node *node)
 {
@@ -468,7 +446,6 @@ cgraph_lower_function (struct cgraph_node *node)
   tree_lowering_passes (node->decl);
   node->lowered = true;
 }
-
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
 static tree
@@ -508,7 +485,9 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
 	tree decl = get_callee_fndecl (*tp);
 	if (decl && TREE_CODE (decl) == FUNCTION_DECL)
 	  {
-	    cgraph_create_edge (data, cgraph_node (decl), *tp);
+	    cgraph_create_edge (data, cgraph_node (decl), *tp,
+			        current_basic_block->count,
+				current_basic_block->loop_depth);
 
 	    /* When we see a function call, we don't want to look at the
 	       function reference in the ADDR_EXPR that is hanging from
@@ -543,24 +522,25 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
 
 /* Create cgraph edges for function calls inside BODY from NODE.  */
 
-void
+static void
 cgraph_create_edges (struct cgraph_node *node, tree body)
 {
   /* The nodes we're interested in are never shared, so walk
      the tree ignoring duplicates.  */
   visited_nodes = pointer_set_create ();
+  gcc_assert (current_basic_block == NULL);
   if (TREE_CODE (body) == FUNCTION_DECL)
     {
       struct function *this_cfun = DECL_STRUCT_FUNCTION (body);
-      basic_block this_block;
       block_stmt_iterator bsi;
       tree step;
 
       /* Reach the trees by walking over the CFG, and note the 
 	 enclosing basic-blocks in the call edges.  */
-      FOR_EACH_BB_FN (this_block, this_cfun)
-        for (bsi = bsi_start (this_block); !bsi_end_p (bsi); bsi_next (&bsi))
+      FOR_EACH_BB_FN (current_basic_block, this_cfun)
+        for (bsi = bsi_start (current_basic_block); !bsi_end_p (bsi); bsi_next (&bsi))
 	  walk_tree (bsi_stmt_ptr (bsi), record_call_1, node, visited_nodes);
+      current_basic_block = NULL;
 
       /* Walk over any private statics that may take addresses of functions.  */
       if (TREE_CODE (DECL_INITIAL (body)) == BLOCK)
@@ -586,7 +566,6 @@ cgraph_create_edges (struct cgraph_node *node, tree body)
   else
     walk_tree (&body, record_call_1, node, visited_nodes);
     
-  walk_tree (&body, record_call_1, node, visited_nodes);
   pointer_set_destroy (visited_nodes);
   visited_nodes = NULL;
 }
