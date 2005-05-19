@@ -1,3 +1,8 @@
+2005-05-19  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/basic_string.h (operator[]): Allow s[s.size()] in
+	debug mode, but not pedantic mode.
+
 2005-05-19  Jan Beulich  <jbeulich@novell.com>
 
 	* libsupc++/unwind-cxx.h: Include cstdlib.
