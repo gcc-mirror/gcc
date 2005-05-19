@@ -1,5 +1,13 @@
 2005-05-19  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* java/lang/natClassLoader.cc (_Jv_NewClass): Use
+	_Jv_RegisterInitiatingLoader to register array classes, not 
+	_Jv_RegisterClass.
+	(_Jv_RegisterInitiatingLoader): Give up if called very early during
+	bootstrapping. Add a FIXME to handle this case better.
+
+2005-05-19  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* Makefile.am (libgcj0_convenience_la): Removed. Don't build a libgcj
 	convenience library.
 	(libgcj_la_SOURCES): New. Move sources here.
