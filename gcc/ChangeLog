@@ -1,3 +1,13 @@
+2005-05-18  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-operands.c (opf_non_specific): New.
+	(get_asm_expr_operands): Set it.
+	(add_call_clobber_ops, add_call_read_ops): Likewise.
+	(add_stmt_operand): Test it instead of opf_kill_def when
+	considering unmodifiable variables.
+
+	* tree-ssa-operands.c (get_expr_operands): Fix exact test.
+
 2005-05-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgexpand.c, tree-cfg.c, tree-inline.c, tree-optimize.c,
