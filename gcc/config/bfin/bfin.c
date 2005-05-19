@@ -1751,7 +1751,10 @@ override_options (void)
   flag_schedule_insns = 0;
 }
 
-/* Return the destination address of BRANCH.  */
+/* Return the destination address of BRANCH.
+   We need to use this instead of get_attr_length, because the
+   cbranch_with_nops pattern conservatively sets its length to 6, and
+   we still prefer to use shorter sequences.  */
 
 static int
 branch_dest (rtx branch)

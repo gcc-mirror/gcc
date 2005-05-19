@@ -173,7 +173,9 @@
 ;;;   if cc jmp; jump.[sl] offset
 ;;;   offset of jump.[sl] is from the jump instruction but
 ;;;     gcc calculates length from the if cc jmp instruction
-;;;     hence our range is (-4094, 4096) instead of (-4096, 4094) for a br
+;;;     furthermore gcc takes the end address of the branch instruction
+;;;     as (pc) for a forward branch
+;;;     hence our range is (-4094, 4092) instead of (-4096, 4094) for a br
 ;;;
 ;;; The way the (pc) rtx works in these calculations is somewhat odd;
 ;;; for backward branches it's the address of the current instruction,
@@ -210,7 +212,7 @@
 	            (ge (minus (match_dup 3) (pc)) (const_int -1024)))
 		  (const_int 2)
 		(and
-	            (le (minus (match_dup 3) (pc)) (const_int 4096))
+	            (le (minus (match_dup 3) (pc)) (const_int 4092))
 	            (ge (minus (match_dup 3) (pc)) (const_int -4094)))
 		  (const_int 4)]
 	       (const_int 6))
