@@ -1,3 +1,7 @@
+2005-05-19  David Ayers  <d.ayers@inode.at>
+
+	* exception.c: Include tsystem.h for unwind.h.
+
 2005-05-09  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.
