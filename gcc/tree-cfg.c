@@ -1992,8 +1992,8 @@ struct tree_opt_pass pass_remove_useless_stmts =
   NULL,					/* next */
   0,					/* static_pass_number */
   0,					/* tv_id */
-  PROP_gimple_any | PROP_trees,		/* properties_required */
-  PROP_trees,				/* properties_provided */
+  PROP_gimple_any,			/* properties_required */
+  0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func,			/* todo_flags_finish */
