@@ -968,6 +968,8 @@ cgraph_expand_function (struct cgraph_node *node)
   if (flag_unit_at_a_time)
     announce_function (decl);
 
+  cgraph_lower_function (node);
+
   /* Generate RTL for the body of DECL.  */
   lang_hooks.callgraph.expand_function (decl);
 
