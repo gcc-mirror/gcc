@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1637,7 +1637,7 @@ namespace std
 
       for (_Distance __i = 0; __i < __d; __i++)
 	{
-	  const _ValueType __tmp = *__first;
+	  _ValueType __tmp = *__first;
 	  _RandomAccessIterator __p = __first;
 
 	  if (__k < __l)
