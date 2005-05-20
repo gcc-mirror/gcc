@@ -1,3 +1,9 @@
+2005-05-20  Mike Stump  <mrs@apple.com>
+
+	* obj-c++-dg.exp: Add.
+	* obj-c++.exp: Add.
+	* obj-c++.dg/dg.exp: Add.
+
 2005-05-20  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* g++.old-deja/g++.jason/thunk3.C: XFAIL on m32r*-*.
