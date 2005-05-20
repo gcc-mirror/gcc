@@ -1,3 +1,11 @@
+2005-05-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (__rotate<_RandomAccessIterator>):
+	Don't qualify __tmp as const, _ValueType is not necessarily
+	Assignable.
+	* include/bits/stl_algobase.h (swap, __iter_swap<false>):
+	Likewise, as an harmless extension.
+
 2005-05-19  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/basic_string.h (operator[]): Allow s[s.size()] in
