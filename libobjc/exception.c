@@ -27,7 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #include "config.h"
 #include "objc/objc-api.h"
-#include "tsystem.h"
 #include "unwind.h"
 #include "unwind-pe.h"
 
