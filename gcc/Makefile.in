@@ -2452,7 +2452,8 @@ s-constants : $(MD_DEPS) build/genconstants$(build_exeext)
 
 insn-emit.o : insn-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(EXPR_H) real.h output.h insn-config.h $(OPTABS_H) reload.h \
-  $(RECOG_H) toplev.h function.h $(FLAGS_H) hard-reg-set.h $(RESOURCE_H) $(TM_P_H)
+  $(RECOG_H) toplev.h function.h $(FLAGS_H) hard-reg-set.h $(RESOURCE_H) \
+  $(TM_P_H) $(BASIC_BLOCK_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-emit.c \
 	  $(OUTPUT_OPTION)
 
