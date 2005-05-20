@@ -1,3 +1,28 @@
+2005-05-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	Friend class name lookup 5/n
+	PR c++/1016
+	* g++.dg/lookup/hidden-class1.C: New test.
+	* g++.dg/lookup/hidden-class2.C: Likewise.
+	* g++.dg/lookup/hidden-class3.C: Likewise.
+	* g++.dg/lookup/hidden-class4.C: Likewise.
+	* g++.dg/lookup/hidden-class5.C: Likewise.
+	* g++.dg/lookup/hidden-class6.C: Likewise.
+	* g++.dg/lookup/hidden-class7.C: Likewise.
+	* g++.dg/lookup/hidden-class8.C: Likewise.
+	* g++.dg/lookup/hidden-class9.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class1.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class2.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class3.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class4.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class5.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class6.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class7.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class8.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class9.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class10.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class11.C: Likewise.
+
 2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21127

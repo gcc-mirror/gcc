@@ -3132,6 +3132,13 @@ push_template_decl_real (tree decl, int is_friend)
       tmpl = pushdecl_namespace_level (tmpl);
       if (tmpl == error_mark_node)
 	return error_mark_node;
+
+      /* Hide template friend classes that haven't been declared yet.  */
+      if (is_friend && TREE_CODE (decl) == TYPE_DECL)
+	{
+	  DECL_ANTICIPATED (tmpl) = 1;
+	  DECL_FRIEND_P (tmpl) = 1;
+	}
     }
 
   if (primary)
@@ -4582,7 +4589,7 @@ lookup_template_class (tree d1,
 
 	  /* A local class.  Make sure the decl gets registered properly.  */
 	  if (context == current_function_decl)
-	    pushtag (DECL_NAME (template), t, 0);
+	    pushtag (DECL_NAME (template), t, /*tag_scope=*/ts_current);
 	}
 
       /* If we called start_enum or pushtag above, this information
@@ -5640,7 +5647,7 @@ instantiate_class_template (tree type)
 		     tsubst_enum.  */
 		  if (name)
 		    SET_IDENTIFIER_TYPE_VALUE (name, newtag);
-		  pushtag (name, newtag, /*globalize=*/0);
+		  pushtag (name, newtag, /*tag_scope=*/ts_current);
 		}
 	    }
 	  else if (TREE_CODE (t) == FUNCTION_DECL 

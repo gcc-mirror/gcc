@@ -3758,7 +3758,7 @@ extern void maybe_push_cleanup_level (tree);
 extern void finish_scope                        (void);
 extern void push_switch				(tree);
 extern void pop_switch				(void);
-extern tree pushtag				(tree, tree, int);
+extern tree pushtag				(tree, tree, tag_scope);
 extern tree make_anon_name			(void);
 extern int decls_match				(tree, tree);
 extern tree duplicate_decls			(tree, tree);

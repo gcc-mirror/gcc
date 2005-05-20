@@ -3303,12 +3303,13 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
       case TEMPLATE_DECL:
         /* If we expect types or namespaces, and not templates,
            or this is not a template class.  */
-        if (LOOKUP_QUALIFIERS_ONLY (flags)
-            && !DECL_CLASS_TEMPLATE_P (val))
+        if ((LOOKUP_QUALIFIERS_ONLY (flags)
+	     && !DECL_CLASS_TEMPLATE_P (val))
+	    || hidden_name_p (val))
           val = NULL_TREE;
         break;
       case TYPE_DECL:
-        if (LOOKUP_NAMESPACES_ONLY (flags))
+        if (LOOKUP_NAMESPACES_ONLY (flags) || hidden_name_p (val))
           val = NULL_TREE;
         break;
       case NAMESPACE_DECL:
@@ -3317,7 +3318,7 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
         break;
       case FUNCTION_DECL:
         /* Ignore built-in functions that are still anticipated.  */
-        if (LOOKUP_QUALIFIERS_ONLY (flags) || DECL_ANTICIPATED (val))
+        if (LOOKUP_QUALIFIERS_ONLY (flags) || hidden_name_p (val))
           val = NULL_TREE;
         break;
       default:
@@ -3389,21 +3390,35 @@ lookup_flags (int prefer_type, int namespaces_only)
 }
 
 /* Given a lookup that returned VAL, use FLAGS to decide if we want to
-   ignore it or not.  Subroutine of lookup_name_real.  */
+   ignore it or not.  Subroutine of lookup_name_real and
+   lookup_type_scope.  */
 
-static tree
+static bool
 qualify_lookup (tree val, int flags)
 {
   if (val == NULL_TREE)
-    return val;
+    return false;
   if ((flags & LOOKUP_PREFER_NAMESPACES) && TREE_CODE (val) == NAMESPACE_DECL)
-    return val;
+    return true;
   if ((flags & LOOKUP_PREFER_TYPES)
       && (TREE_CODE (val) == TYPE_DECL || TREE_CODE (val) == TEMPLATE_DECL))
-    return val;
+    return true;
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
-    return NULL_TREE;
-  return val;
+    return false;
+  return true;
+}
+
+/* Given a lookup that returned VAL, decide if we want to ignore it or 
+   not based on DECL_ANTICIPATED_P.  */
+
+bool
+hidden_name_p (tree val)
+{
+  if (DECL_P (val)
+      && DECL_LANG_SPECIFIC (val)
+      && DECL_ANTICIPATED (val))
+    return true;
+  return false;
 }
 
 /* Look up NAME in the NAMESPACE.  */
@@ -3474,10 +3489,9 @@ lookup_namespace_name (tree namespace, tree name)
       if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
 	val = OVL_FUNCTION (val);
 
-      /* Ignore built-in functions that haven't been prototyped yet.  */
-      if (!val || !DECL_P(val)
-          || !DECL_LANG_SPECIFIC(val)
-          || !DECL_ANTICIPATED (val))
+      /* Ignore built-in functions and friends that haven't been declared
+	 yet.  */
+      if (!val || !hidden_name_p (val))
         POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val);
     }
 
@@ -3536,10 +3550,8 @@ unqualified_namespace_lookup (tree name, int flags)
 
       if (b)
 	{
-	  if (b->value && DECL_P (b->value)
-	      && DECL_LANG_SPECIFIC (b->value) 
-	      && DECL_ANTICIPATED (b->value))
-	    /* Ignore anticipated built-in functions.  */
+	  if (b->value && hidden_name_p (b->value))
+	    /* Ignore anticipated built-in functions and friends.  */
 	    ;
 	  else
 	    binding.value = b->value;
@@ -3780,6 +3792,8 @@ innermost_non_namespace_value (tree name)
    node of some kind representing its definition if there is only one
    such declaration, or return a TREE_LIST with all the overloaded
    definitions if there are many, or return 0 if it is undefined.
+   Hidden name, either friend declaration or built-in function, are
+   not ignored.
 
    If PREFER_TYPE is > 0, we prefer TYPE_DECLs or namespaces.
    If PREFER_TYPE is > 1, we reject non-type decls (e.g. namespaces).
@@ -3844,10 +3858,12 @@ lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
 	  continue;
 	
 	/* If this is the kind of thing we're looking for, we're done.  */
-	if (qualify_lookup (iter->value, flags))
+	if (qualify_lookup (iter->value, flags)
+	    && !hidden_name_p (iter->value))
 	  binding = iter->value;
 	else if ((flags & LOOKUP_PREFER_TYPES)
-		 && qualify_lookup (iter->type, flags))
+		 && qualify_lookup (iter->type, flags)
+		 && !hidden_name_p (iter->type))
 	  binding = iter->type;
 	else
 	  binding = NULL_TREE;
@@ -3905,7 +3921,8 @@ lookup_name (tree name, int prefer_type)
    Unlike lookup_name_real, we make sure that NAME is actually
    declared in the desired scope, not from inheritance, nor using
    directive.  For using declaration, there is DR138 still waiting
-   to be resolved.
+   to be resolved.  Hidden name coming from earlier an friend 
+   declaration is also returned.
 
    A TYPE_DECL best matching the NAME is returned.  Catching error
    and issuing diagnostics are caller's responsibility.  */
@@ -3955,9 +3972,7 @@ lookup_type_scope (tree name, tag_scope scope)
 
       if (iter)
 	{
-	  /* If this is the kind of thing we're looking for, we're done.
-	     Ignore names found via using declaration.  See DR138 for
-	     current status.  */
+	  /* If this is the kind of thing we're looking for, we're done.  */
 	  if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES))
 	    val = iter->type;
 	  else if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
@@ -4507,7 +4522,7 @@ push_using_directive (tree used)
    processing.  */
 
 static tree
-maybe_process_template_type_declaration (tree type, int globalize,
+maybe_process_template_type_declaration (tree type, int is_friend,
                                          cxx_scope *b)
 {
   tree decl = TYPE_NAME (type);
@@ -4530,7 +4545,7 @@ maybe_process_template_type_declaration (tree type, int globalize,
 	     push_template_decl_real, but we want the original value.  */
 	  tree name = DECL_NAME (decl);
 
-	  decl = push_template_decl_real (decl, globalize);
+	  decl = push_template_decl_real (decl, is_friend);
 	  /* If the current binding level is the binding level for the
 	     template parameters (see the comment in
 	     begin_template_parm_list) and the enclosing level is a class
@@ -4539,7 +4554,7 @@ maybe_process_template_type_declaration (tree type, int globalize,
 	     friend case, push_template_decl will already have put the
 	     friend into global scope, if appropriate.  */
 	  if (TREE_CODE (type) != ENUMERAL_TYPE
-	      && !globalize && b->kind == sk_template_parms
+	      && !is_friend && b->kind == sk_template_parms
 	      && b->level_chain->kind == sk_class)
 	    {
 	      finish_member_declaration (CLASSTYPE_TI_TEMPLATE (type));
@@ -4570,7 +4585,7 @@ maybe_process_template_type_declaration (tree type, int globalize,
    Returns TYPE upon success and ERROR_MARK_NODE otherwise.  */
 
 tree
-pushtag (tree name, tree type, int globalize)
+pushtag (tree name, tree type, tag_scope scope)
 {
   struct cp_binding_level *b;
 
@@ -4587,7 +4602,7 @@ pushtag (tree name, tree type, int globalize)
 	    template is instantiated.  */
 	 || (b->kind == sk_template_parms && b->explicit_spec_p)
 	 || (b->kind == sk_class
-	     && (globalize
+	     && (scope != ts_current
 		 /* We may be defining a new type in the initializer
 		    of a static member variable. We allow this when
 		    not pedantic, and it is particularly useful for
@@ -4608,7 +4623,7 @@ pushtag (tree name, tree type, int globalize)
 	    {
 	      tree cs = current_scope ();
 
-	      if (! globalize)
+	      if (scope == ts_current)
 		context = cs;
 	      else if (cs != NULL_TREE && TYPE_P (cs))
 		/* When declaring a friend class of a local class, we want
@@ -4629,11 +4644,21 @@ pushtag (tree name, tree type, int globalize)
 
 	  d = create_implicit_typedef (name, type);
 	  DECL_CONTEXT (d) = FROB_CONTEXT (context);
+	  if (scope == ts_within_enclosing_non_class)
+	    {
+	      /* This is a friend.  Make this TYPE_DECL node hidden from
+		 ordinary name lookup.  Its corresponding TEMPLATE_DECL
+		 will be marked in push_template_decl_real.  */
+	      retrofit_lang_decl (d);
+	      DECL_ANTICIPATED (d) = 1;
+	      DECL_FRIEND_P (d) = 1;
+	    }
+
 	  if (! in_class)
 	    set_identifier_type_value_with_scope (name, d, b);
 
-	  d = maybe_process_template_type_declaration (type,
-						       globalize, b);
+	  d = maybe_process_template_type_declaration
+		(type, scope == ts_within_enclosing_non_class, b);
 	  if (d == error_mark_node)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 

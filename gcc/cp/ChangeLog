@@ -1,3 +1,34 @@
+2005-05-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	Friend class name lookup 5/n
+	PR c++/1016
+	* cp-tree.h (pushtag): Adjust declaration.
+	* decl.c (lookup_and_check_tag): Call lookup_type_scope if
+	lookup_name fails.
+	(xref_tag): Adjust call to pushtag.  Make hidden class visible.
+	(start_enum): Adjust call to pushtag.
+	* name-lookup.c (ambiguous_decl): Ignore hidden names.
+	(qualify_lookup): Change return type to bool.
+	(hidden_name_p): New function.
+	(lookup_namespace_name, unqualified_namespace_lookup,
+	lookup_name_real): Use it.
+	(lookup_type_scope): Update comments.
+	(maybe_process_template_type_declaration): Change parameter name
+	from globalize to is_friend.
+	(pushtag): Change globalize parameter of type int to tag_scope.
+	Hide name if introduced by friend declaration.
+	* name-lookup.h (hidden_name_p): Add declaration.
+	* parser.c (cp_parser_lookup_name): Don't deal with hidden name
+	here.
+	* pt.c (push_template_decl_real): Make hidden class template
+	visible.
+	(lookup_template_class, instantiate_class_template): Adjust call
+	to pushtag.
+	* semantics.c (begin_class_definition): Likewise.
+	* rtti.c (init_rtti_processing, build_dynamic_cast_1, 
+	tinfo_base_init, emit_support_tinfos): Use ts_current instead of
+	ts_global.
+
 2005-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21495
