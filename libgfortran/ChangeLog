@@ -3,6 +3,7 @@
 	Backport from mainline:
 	PR libfortran/19106
 	PR libfortran/19014
+	PR libfortran/19016
 	* m4/iforeach.c (name`'rtype_qual`_'atype_code):  Add TODO
 	that setting correct strides is a front end job.
 	(`m'name`'rtype_qual`_'atype_code):  Likewise.  If mask has
