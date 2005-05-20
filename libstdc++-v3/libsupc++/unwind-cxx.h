@@ -38,8 +38,6 @@
 #include <typeinfo>
 #include <exception>
 #include <cstddef>
-#include <cstdlib>
-#define gcc_unreachable() std::abort()
 #include "unwind.h"
 
 #pragma GCC visibility push(default)

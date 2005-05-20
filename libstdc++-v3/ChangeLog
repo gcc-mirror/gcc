@@ -1,3 +1,7 @@
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
+	* libsupc++/unwind-cxx.h: Revert gcc_unreachable change.
+
 2005-05-19  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/basic_string.h (operator[]): Allow s[s.size()] in
