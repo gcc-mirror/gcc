@@ -5,7 +5,8 @@
 	(cc1objplus-checksum.o): New.
 	(cc1objplus): Add cc1objplus-checksum.o.
 
-2005-05-17  Mike Stump  <mrs@apple.com>
+2005-05-17  Ziemowit Laski  <zlaski@apple.com>
+	    Mike Stump  <mrs@apple.com>
 
 	Yet more Objective-C++...
 	
@@ -14,7 +15,8 @@
 	(objcp/objcp-act.o): Likewise.
 	* objcp-lang.c (LANG_HOOKS_GIMPLIFY_EXPR): Add.
 
-2005-04-21  Mike Stump  <mrs@apple.com>
+2005-04-21  Ziemowit Laski  <zlaski@apple.com>
+	    Mike Stump  <mrs@apple.com>
 
 	* ChangeLog: New.
 	* Make-lang.in: Likewise.

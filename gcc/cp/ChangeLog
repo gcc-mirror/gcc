@@ -21,7 +21,8 @@
 	* decl2.c (determine_visibility): Don't set visibility to
 	hidden if it has been set explicitly by user.
 
-2005-05-17  Mike Stump  <mrs@apple.com>
+2005-05-17  Ziemowit Laski  <zlaski@apple.com>
+	    Mike Stump  <mrs@apple.com>
 
 	Yet more Objective-C++...
 	
