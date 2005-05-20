@@ -1,5 +1,10 @@
 2005-05-20  Jan Hubicka  <jh@suse.cz>
 
+	* Makefile.in (insn-emit.o): Add basic-block.h dependency.
+	* genemit.c (main): Make insn-emit to include basic-block.h too.
+
+2005-05-20  Jan Hubicka  <jh@suse.cz>
+
 	* cgraphunit.c (cgraph_expand_function): Force function being lowered.
 
 2005-05-19  Richard Henderson  <rth@redhat.com>
