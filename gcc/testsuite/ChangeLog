@@ -1,3 +1,7 @@
+2004-05-19  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/other/stdarg3.C: Only use -mlp64 for hpux.
+
 2005-05-19  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/altivec-21.c: Use dg-error only for ilp32.
