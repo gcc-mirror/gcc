@@ -34,6 +34,23 @@
    we use the crude approximation.  We'll do better later.  */
 
 
+#ifndef HAVE_FABSF
+float
+fabsf(float x)
+{
+  return (float) fabs(x);
+}
+#endif
+
+#ifndef HAVE_FABSL
+long double
+fabsl(long double x)
+{
+  return fabs((double) x);
+}
+#endif
+
+
 #ifndef HAVE_ACOSF
 float
 acosf(float x)
