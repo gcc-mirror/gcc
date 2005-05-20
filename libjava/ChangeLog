@@ -1,3 +1,9 @@
+2005-05-20  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/21637:
+	* gnu/java/net/protocol/jar/Connection.java (getInputStream):
+	Throw FileNotFoundException if jar entry not found.
+
 2005-05-18  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/19729
