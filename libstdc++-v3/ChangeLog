@@ -1,3 +1,8 @@
+2005-05-20  Jan Beulich  <jbeulich@novell.com>
+
+	* libmath/stubs.c: Also implement fabsf/fabsl if not present in the
+	system libraries.
+
 2005-05-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algo.h (__rotate<_RandomAccessIterator>):
