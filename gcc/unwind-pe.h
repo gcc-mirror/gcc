@@ -34,6 +34,13 @@
 #ifndef GCC_UNWIND_PE_H
 #define GCC_UNWIND_PE_H
 
+/* If using C++, references to abort have to be qualified with std::.  */
+#if __cplusplus
+#define __gxx_abort std::abort
+#else
+#define __gxx_abort abort
+#endif
+
 /* Pointer encodings, from dwarf2.h.  */
 #define DW_EH_PE_absptr         0x00
 #define DW_EH_PE_omit           0xff
@@ -79,9 +86,8 @@ size_of_encoded_value (unsigned char encoding)
       return 4;
     case DW_EH_PE_udata8:
       return 8;
-    default:
-      gcc_unreachable ();
     }
+  __gxx_abort ();
 }
 
 #endif
@@ -112,9 +118,8 @@ base_of_encoded_value (unsigned char encoding, struct _Unwind_Context *context)
       return _Unwind_GetDataRelBase (context);
     case DW_EH_PE_funcrel:
       return _Unwind_GetRegionStart (context);
-    default:
-      gcc_unreachable ();
     }
+  __gxx_abort ();
 }
 
 #endif
@@ -251,7 +256,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 	  break;
 
 	default:
-	  gcc_unreachable ();
+	  __gxx_abort ();
 	}
 
       if (result != 0)

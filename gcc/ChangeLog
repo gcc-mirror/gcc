@@ -1,5 +1,9 @@
 2005-05-19  Richard Henderson  <rth@redhat.com>
 
+	* unwind.h, unwind-pe.h: Revert gcc_unreachable change of 05-17.
+
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/sse.md (mulv4si3): Use all register inputs.
 	(mulv2di3): Likewise.
 
