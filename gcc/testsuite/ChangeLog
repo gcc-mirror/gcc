@@ -1,3 +1,12 @@
+2005-05-20  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* g++.old-deja/g++.jason/thunk3.C: XFAIL on m32r*-*.
+	* gcc.c-torture/execute/20020720-1.x: Add xfail for m32r*-*.
+
+2005-05-20  Bjoern Haase <bjoern.m.haase@web.de>
+	
+	* gcc.c-torture/execute/20020720-1.x: Add xfail for avr-*-*.
+
 2004-05-19  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/other/stdarg3.C: Only use -mlp64 for hpux.
