@@ -4448,6 +4448,48 @@ alpha_expand_builtin_vector_binop (rtx (*gen) (rtx, rtx, rtx),
   emit_insn ((*gen) (op0, op1, op2));
 }
 
+/* A subroutine of the atomic operation splitters.  Jump to LABEL if
+   COND is true.  Mark the jump as unlikely to be taken.  */
+
+static void
+emit_unlikely_jump (rtx cond, rtx label)
+{
+  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+  rtx x;
+
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
+  x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
+  REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
+}
+
+/* A subroutine of the atomic operation splitters.  Emit a load-locked
+   instruction in MODE.  */
+
+static void
+emit_load_locked (enum machine_mode mode, rtx reg, rtx mem)
+{
+  rtx (*fn) (rtx, rtx) = NULL;
+  if (mode == SImode)
+    fn = gen_load_locked_si;
+  else if (mode == DImode)
+    fn = gen_load_locked_di;
+  emit_insn (fn (reg, mem));
+}
+
+/* A subroutine of the atomic operation splitters.  Emit a store-conditional
+   instruction in MODE.  */
+
+static void
+emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
+{
+  rtx (*fn) (rtx, rtx, rtx) = NULL;
+  if (mode == SImode)
+    fn = gen_store_conditional_si;
+  else if (mode == DImode)
+    fn = gen_store_conditional_di;
+  emit_insn (fn (res, mem, val));
+}
+
 /* Expand an an atomic fetch-and-operate pattern.  CODE is the binary operation
    to perform.  MEM is the memory on which to operate.  VAL is the second 
    operand of the binary operator.  BEFORE and AFTER are optional locations to
@@ -4459,8 +4501,7 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
 		       rtx before, rtx after, rtx scratch)
 {
   enum machine_mode mode = GET_MODE (mem);
-  rtx label, cond, x;
-  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+  rtx label, x, cond = gen_rtx_REG (DImode, REGNO (scratch));
 
   emit_insn (gen_memory_barrier ());
 
@@ -4470,40 +4511,81 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
 
   if (before == NULL)
     before = scratch;
-
-  if (mode == SImode)
-    emit_insn (gen_load_locked_si (before, mem));
-  else if (mode == DImode)
-    emit_insn (gen_load_locked_di (before, mem));
-  else
-    gcc_unreachable ();
+  emit_load_locked (mode, before, mem);
 
   if (code == NOT)
-    {
-      x = gen_rtx_NOT (mode, before);
-      x = gen_rtx_AND (mode, x, val);
-    }
+    x = gen_rtx_AND (mode, gen_rtx_NOT (mode, before), val);
   else
     x = gen_rtx_fmt_ee (code, mode, before, val);
-
   if (after)
     emit_insn (gen_rtx_SET (VOIDmode, after, copy_rtx (x)));
   emit_insn (gen_rtx_SET (VOIDmode, scratch, x));
 
-  cond = gen_rtx_REG (DImode, REGNO (scratch));
-  if (mode == SImode)
-    emit_insn (gen_store_conditional_si (cond, mem, scratch));
-  else if (mode == DImode)
-    emit_insn (gen_store_conditional_di (cond, mem, scratch));
-  else
-    gcc_unreachable ();
+  emit_store_conditional (mode, cond, mem, scratch);
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label, pc_rtx);
-  x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
-  REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
+  emit_unlikely_jump (x, label);
 
   emit_insn (gen_memory_barrier ());
+}
+
+/* Expand a compare and swap operation.  */
+
+void
+alpha_split_compare_and_swap (rtx retval, rtx mem, rtx oldval, rtx newval,
+			      rtx scratch)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx label1, label2, x, cond = gen_lowpart (DImode, scratch);
+
+  emit_insn (gen_memory_barrier ());
+
+  label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  emit_label (XEXP (label1, 0));
+
+  emit_load_locked (mode, retval, mem);
+
+  x = gen_lowpart (DImode, retval);
+  if (oldval == const0_rtx)
+    x = gen_rtx_NE (DImode, x, const0_rtx);
+  else
+    {
+      x = gen_rtx_EQ (DImode, x, oldval);
+      emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+      x = gen_rtx_EQ (DImode, cond, const0_rtx);
+    }
+  emit_unlikely_jump (x, label2);
+
+  emit_move_insn (scratch, newval);
+  emit_store_conditional (mode, cond, mem, scratch);
+
+  x = gen_rtx_EQ (DImode, cond, const0_rtx);
+  emit_unlikely_jump (x, label1);
+
+  emit_insn (gen_memory_barrier ());
+  emit_label (XEXP (label2, 0));
+}
+
+/* Expand an atomic exchange operation.  */
+
+void
+alpha_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx label, x, cond = gen_lowpart (DImode, scratch);
+
+  emit_insn (gen_memory_barrier ());
+
+  label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  emit_label (XEXP (label, 0));
+
+  emit_load_locked (mode, retval, mem);
+  emit_move_insn (scratch, val);
+  emit_store_conditional (mode, cond, mem, scratch);
+
+  x = gen_rtx_EQ (DImode, cond, const0_rtx);
+  emit_unlikely_jump (x, label);
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
