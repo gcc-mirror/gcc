@@ -1,3 +1,9 @@
+2005-05-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (configure-gcc): Depend on binutils having been built.
+	(all-gcc): No need to do it here.
+	* Makefile.in: Regenerate.
+
 2005-05-19  Paul Brook  <paul@codesourcery.com>
 
 	* configure.in: Rewrite misleading error message when requested 
