@@ -1,5 +1,17 @@
 2005-05-19  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (emit_unlikely_jump, emit_load_locked,
+	emit_store_conditional): Split out from ...
+	(alpha_split_atomic_op): ... here.
+	(alpha_split_compare_and_swap): New; extract from .md file.
+	(alpha_split_lock_test_and_set): Likewise.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/sync.md (sync_compare_and_swap<I48MODE>): Move
+	split code into alpha.c.
+	(sync_lock_test_and_set<I48MODE>): Likewise.
+
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
 	* unwind.h, unwind-pe.h: Revert gcc_unreachable change of 05-17.
 
 2005-05-19  Richard Henderson  <rth@redhat.com>

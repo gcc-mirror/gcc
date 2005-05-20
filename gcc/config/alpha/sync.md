@@ -221,49 +221,8 @@
   "reload_completed"
   [(const_int 0)]
 {
-  rtx retval, mem, oldval, newval, scratch;
-  rtx cond, label1, label2, x;
-  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
-
-  retval = operands[0];
-  mem = operands[1];
-  oldval = operands[2];
-  newval = operands[3];
-  scratch = operands[4];
-  cond = gen_lowpart (DImode, scratch);
-
-  emit_insn (gen_memory_barrier ());
-
-  label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  emit_label (XEXP (label1, 0));
-
-  emit_insn (gen_load_locked_<mode> (retval, mem));
-
-  x = gen_lowpart (DImode, retval);
-  if (oldval == const0_rtx)
-    x = gen_rtx_NE (DImode, x, const0_rtx);
-  else
-    {
-      x = gen_rtx_EQ (DImode, x, oldval);
-      emit_insn (gen_rtx_SET (VOIDmode, cond, x));
-      x = gen_rtx_EQ (DImode, cond, const0_rtx);
-    }
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label2, pc_rtx);
-  x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
-  REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
-    
-  emit_move_insn (scratch, newval);
-
-  emit_insn (gen_store_conditional_<mode> (cond, mem, scratch));
-
-  x = gen_rtx_EQ (DImode, cond, const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label1, pc_rtx);
-  x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
-  REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
-
-  emit_insn (gen_memory_barrier ());
-  emit_label (XEXP (label2, 0));
+  alpha_split_compare_and_swap (operands[0], operands[1], operands[2],
+				operands[3], operands[4]);
   DONE;
 }
   [(set_attr "type" "multi")])
@@ -281,32 +240,8 @@
   "reload_completed"
   [(const_int 0)]
 {
-  rtx retval, mem, val, scratch;
-  rtx cond, label1, x;
-  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
-
-  retval = operands[0];
-  mem = operands[1];
-  val = operands[2];
-  scratch = operands[3];
-  cond = gen_lowpart (DImode, scratch);
-
-  emit_insn (gen_memory_barrier ());
-
-  label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  emit_label (XEXP (label1, 0));
-
-  emit_insn (gen_load_locked_<mode> (retval, mem));
-
-  emit_move_insn (scratch, val);
-  
-  emit_insn (gen_store_conditional_<mode> (cond, mem, scratch));
-
-  x = gen_rtx_EQ (DImode, cond, const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label1, pc_rtx);
-  x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
-  REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_BR_PROB, very_unlikely, NULL_RTX);
-
+  alpha_split_lock_test_and_set (operands[0], operands[1],
+				 operands[2], operands[3]);
   DONE;
 }
   [(set_attr "type" "multi")])
