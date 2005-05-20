@@ -53,13 +53,34 @@ maxloc0_8_i4 (gfc_array_i8 * retarray, gfc_array_i4 *array)
   index_type n;
 
   rank = GFC_DESCRIPTOR_RANK (array);
-  assert (rank > 0);
-  assert (GFC_DESCRIPTOR_RANK (retarray) == 1);
-  assert (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound == rank);
+  if (rank <= 0)
+    runtime_error ("Rank of array needs to be > 0");
+
+  if (retarray->data == NULL)
+    {
+      retarray->dim[0].lbound = 0;
+      retarray->dim[0].ubound = rank-1;
+      retarray->dim[0].stride = 1;
+      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      retarray->base = 0;
+      retarray->data = internal_malloc_size (sizeof (GFC_INTEGER_8) * rank);
+    }
+  else
+    {
+      if (GFC_DESCRIPTOR_RANK (retarray) != 1)
+	runtime_error ("rank of return array does not equal 1");
+
+      if (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound != rank)
+        runtime_error ("dimension of return array incorrect");
+
+      if (retarray->dim[0].stride == 0)
+	retarray->dim[0].stride = 1;
+    }
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
-  if (retarray->dim[0].stride == 0)
-    retarray->dim[0].stride = 1;
 
   dstride = retarray->dim[0].stride;
   dest = retarray->data;
@@ -150,17 +171,37 @@ mmaxloc0_8_i4 (gfc_array_i8 * retarray, gfc_array_i4 *array,
   index_type n;
 
   rank = GFC_DESCRIPTOR_RANK (array);
-  assert (rank > 0);
-  assert (GFC_DESCRIPTOR_RANK (retarray) == 1);
-  assert (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound == rank);
-  assert (GFC_DESCRIPTOR_RANK (mask) == rank);
+  if (rank <= 0)
+    runtime_error ("Rank of array needs to be > 0");
+
+  if (retarray->data == NULL)
+    {
+      retarray->dim[0].lbound = 0;
+      retarray->dim[0].ubound = rank-1;
+      retarray->dim[0].stride = 1;
+      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      retarray->base = 0;
+      retarray->data = internal_malloc_size (sizeof (GFC_INTEGER_8) * rank);
+    }
+  else
+    {
+      if (GFC_DESCRIPTOR_RANK (retarray) != 1)
+	runtime_error ("rank of return array does not equal 1");
+
+      if (retarray->dim[0].ubound + 1 - retarray->dim[0].lbound != rank)
+        runtime_error ("dimension of return array incorrect");
+
+      if (retarray->dim[0].stride == 0)
+	retarray->dim[0].stride = 1;
+    }
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
 
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
-  if (retarray->dim[0].stride == 0)
-    retarray->dim[0].stride = 1;
-  if (retarray->dim[0].stride == 0)
-    retarray->dim[0].stride = 1;
+
+  if (mask->dim[0].stride == 0)
+    mask->dim[0].stride = 1;
 
   dstride = retarray->dim[0].stride;
   dest = retarray->data;

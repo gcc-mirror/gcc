@@ -55,11 +55,11 @@ count_4_l8 (gfc_array_i4 *retarray, gfc_array_l8 *array, index_type *pdim)
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
-  assert (rank == GFC_DESCRIPTOR_RANK (retarray));
+
+  /* TODO:  It should be a front end job to correctly set the strides.  */
+
   if (array->dim[0].stride == 0)
     array->dim[0].stride = 1;
-  if (retarray->dim[0].stride == 0)
-    retarray->dim[0].stride = 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
   delta = array->dim[dim].stride;
@@ -93,8 +93,17 @@ count_4_l8 (gfc_array_i4 *retarray, gfc_array_l8 *array, index_type *pdim)
 		 		 * retarray->dim[rank-1].stride
 				 * extent[rank-1]);
       retarray->base = 0;
+      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
     }
-          
+  else
+    {
+      if (retarray->dim[0].stride == 0)
+	retarray->dim[0].stride = 1;
+
+      if (rank != GFC_DESCRIPTOR_RANK (retarray))
+	runtime_error ("rank of return array incorrect");
+    }
+
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;
