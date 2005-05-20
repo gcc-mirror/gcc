@@ -1,3 +1,7 @@
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
+	* exception.c: Revert last change.
+
 2005-05-19  David Ayers  <d.ayers@inode.at>
 
 	* exception.c: Include tsystem.h for unwind.h.
