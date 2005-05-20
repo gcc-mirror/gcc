@@ -34676,30 +34676,30 @@ configure-stage3-gcc: maybe-configure-stage3-intl
 configure-stage4-gcc: maybe-configure-stage4-intl
 configure-stageprofile-gcc: maybe-configure-stageprofile-intl
 configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
-configure-gcc: maybe-configure-binutils
+configure-gcc: maybe-all-binutils
 
-configure-stage1-gcc: maybe-configure-stage1-binutils
-configure-stage2-gcc: maybe-configure-stage2-binutils
-configure-stage3-gcc: maybe-configure-stage3-binutils
-configure-stage4-gcc: maybe-configure-stage4-binutils
-configure-stageprofile-gcc: maybe-configure-stageprofile-binutils
-configure-stagefeedback-gcc: maybe-configure-stagefeedback-binutils
-configure-gcc: maybe-configure-gas
+configure-stage1-gcc: maybe-all-stage1-binutils
+configure-stage2-gcc: maybe-all-stage2-binutils
+configure-stage3-gcc: maybe-all-stage3-binutils
+configure-stage4-gcc: maybe-all-stage4-binutils
+configure-stageprofile-gcc: maybe-all-stageprofile-binutils
+configure-stagefeedback-gcc: maybe-all-stagefeedback-binutils
+configure-gcc: maybe-all-gas
 
-configure-stage1-gcc: maybe-configure-stage1-gas
-configure-stage2-gcc: maybe-configure-stage2-gas
-configure-stage3-gcc: maybe-configure-stage3-gas
-configure-stage4-gcc: maybe-configure-stage4-gas
-configure-stageprofile-gcc: maybe-configure-stageprofile-gas
-configure-stagefeedback-gcc: maybe-configure-stagefeedback-gas
-configure-gcc: maybe-configure-ld
+configure-stage1-gcc: maybe-all-stage1-gas
+configure-stage2-gcc: maybe-all-stage2-gas
+configure-stage3-gcc: maybe-all-stage3-gas
+configure-stage4-gcc: maybe-all-stage4-gas
+configure-stageprofile-gcc: maybe-all-stageprofile-gas
+configure-stagefeedback-gcc: maybe-all-stagefeedback-gas
+configure-gcc: maybe-all-ld
 
-configure-stage1-gcc: maybe-configure-stage1-ld
-configure-stage2-gcc: maybe-configure-stage2-ld
-configure-stage3-gcc: maybe-configure-stage3-ld
-configure-stage4-gcc: maybe-configure-stage4-ld
-configure-stageprofile-gcc: maybe-configure-stageprofile-ld
-configure-stagefeedback-gcc: maybe-configure-stagefeedback-ld
+configure-stage1-gcc: maybe-all-stage1-ld
+configure-stage2-gcc: maybe-all-stage2-ld
+configure-stage3-gcc: maybe-all-stage3-ld
+configure-stage4-gcc: maybe-all-stage4-ld
+configure-stageprofile-gcc: maybe-all-stageprofile-ld
+configure-stagefeedback-gcc: maybe-all-stagefeedback-ld
 all-gcc: all-libiberty
 
 all-stage1-gcc: all-stage1-libiberty
@@ -34770,30 +34770,6 @@ all-stage4-gcc: maybe-all-build-fixincludes
 all-stageprofile-gcc: maybe-all-build-fixincludes
 all-stagefeedback-gcc: maybe-all-build-fixincludes
 all-prebootstrap: maybe-all-build-fixincludes
-all-gcc: maybe-all-binutils
-
-all-stage1-gcc: maybe-all-stage1-binutils
-all-stage2-gcc: maybe-all-stage2-binutils
-all-stage3-gcc: maybe-all-stage3-binutils
-all-stage4-gcc: maybe-all-stage4-binutils
-all-stageprofile-gcc: maybe-all-stageprofile-binutils
-all-stagefeedback-gcc: maybe-all-stagefeedback-binutils
-all-gcc: maybe-all-gas
-
-all-stage1-gcc: maybe-all-stage1-gas
-all-stage2-gcc: maybe-all-stage2-gas
-all-stage3-gcc: maybe-all-stage3-gas
-all-stage4-gcc: maybe-all-stage4-gas
-all-stageprofile-gcc: maybe-all-stageprofile-gas
-all-stagefeedback-gcc: maybe-all-stagefeedback-gas
-all-gcc: maybe-all-ld
-
-all-stage1-gcc: maybe-all-stage1-ld
-all-stage2-gcc: maybe-all-stage2-ld
-all-stage3-gcc: maybe-all-stage3-ld
-all-stage4-gcc: maybe-all-stage4-ld
-all-stageprofile-gcc: maybe-all-stageprofile-ld
-all-stagefeedback-gcc: maybe-all-stagefeedback-ld
 all-gcc: maybe-all-zlib
 
 all-stage1-gcc: maybe-all-stage1-zlib
