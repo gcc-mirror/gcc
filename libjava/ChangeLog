@@ -1,3 +1,7 @@
+2005-05-19  Richard Henderson  <rth@redhat.com>
+
+	* exception.cc: Revert 05-17 gcc_unreachable change.
+
 2005-05-19  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_NewClass): Use
