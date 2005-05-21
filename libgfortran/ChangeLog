@@ -1,5 +1,6 @@
 2005-05-21  Thomas Koenig  <Thomas.Koenig@online.de>
 
+	PR libfortran/18495
 	PR libfortran/20074
 	PR libfortran/20436
 	PR libfortran/21108
