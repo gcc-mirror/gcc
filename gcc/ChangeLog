@@ -1,3 +1,8 @@
+2005-05-21  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-stdarg.c (execute_optimize_stdarg): Handle references
+	to va_list of the form &va[0].
+
 2005-05-20  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (insn-emit.o): Add basic-block.h dependency.
