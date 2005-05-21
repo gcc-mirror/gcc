@@ -1,3 +1,10 @@
+2005-05-21  Andrew Pinski
+
+	Backport from the mainline:
+	2005-03-14  Zdenek Dvorak  <dvorakz@suse.cz>
+	* fortran/trans-intrinsic.c (gfc_conv_intrinsic_ishft): Convert
+	the argument of the shift to the unsigned type.
+
 2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21127

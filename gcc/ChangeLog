@@ -1,3 +1,14 @@
+2005-05-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/21331
+	PR tree-opt/21293
+	Backport from the mainline:
+	2005-03-14  Zdenek Dvorak  <dvorakz@suse.cz>
+	* tree-cfg.c (find_taken_edge_cond_expr): Use zero_p instead of
+	integer_zerop.
+	* tree-gimple.c (is_gimple_min_invariant): Consider overflowed
+	constants invariant.
+
 2005-05-19  Richard Henderson  <rth@redhat.com>
 
 	PR target/21390

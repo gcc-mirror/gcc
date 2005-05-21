@@ -180,7 +180,7 @@ is_gimple_min_invariant (tree t)
     case STRING_CST:
     case COMPLEX_CST:
     case VECTOR_CST:
-      return !TREE_OVERFLOW (t);
+      return true;
 
     default:
       return false;
