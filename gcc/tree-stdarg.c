@@ -660,16 +660,30 @@ execute_optimize_stdarg (void)
 
 	  si.va_start_count++;
 	  ap = TREE_VALUE (TREE_OPERAND (call, 1));
-	  if (TREE_CODE (ap) != ADDR_EXPR
-	      || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (ap, 0)))
-		 != TYPE_MAIN_VARIANT (va_list_type_node)
-	      || TREE_CODE (TREE_OPERAND (ap, 0)) != VAR_DECL)
+
+	  if (TREE_CODE (ap) != ADDR_EXPR)
+	    {
+	      va_list_escapes = true;
+	      break;
+	    }
+	  ap = TREE_OPERAND (ap, 0);
+	  if (TREE_CODE (ap) == ARRAY_REF)
+	    {
+	      if (! integer_zerop (TREE_OPERAND (ap, 1)))
+	        {
+	          va_list_escapes = true;
+	          break;
+		}
+	      ap = TREE_OPERAND (ap, 0);
+	    }
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (ap))
+	      != TYPE_MAIN_VARIANT (va_list_type_node)
+	      || TREE_CODE (ap) != VAR_DECL)
 	    {
 	      va_list_escapes = true;
 	      break;
 	    }
 
-	  ap = TREE_OPERAND (ap, 0);
 	  if (is_global_var (ap))
 	    {
 	      va_list_escapes = true;
