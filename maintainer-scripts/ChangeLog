@@ -1,3 +1,8 @@
+2005-05-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* crontab: Spread snapshot building more evenly throughout the
+	week.
+
 2005-05-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* crontab: Don't build 3.3 branch snapshots.
