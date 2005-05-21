@@ -202,6 +202,28 @@ tanhf(float x)
 }
 #endif
 
+#ifndef HAVE_TRUNC
+double
+trunc(double x)
+{
+  if (!isfinite (x))
+    return x;
+
+  if (x < 0.0)
+    return - floor (-x);
+  else
+    return floor (x);
+}
+#endif
+
+#ifndef HAVE_TRUNCF
+float
+truncf(float x)
+{
+  return (float) trunc (x);
+}
+#endif
+
 #ifndef HAVE_NEXTAFTERF
 /* This is a portable implementation of nextafterf that is intended to be
    independent of the floating point format or its in memory representation.
