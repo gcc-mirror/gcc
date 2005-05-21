@@ -1,3 +1,7 @@
+2005-05-21  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* testsuite/libjava.jacks/jacks.xfail: Remove 3.10.2-round-6.
+
 2005-05-19  Richard Henderson  <rth@redhat.com>
 
 	* exception.cc: Revert 05-17 gcc_unreachable change.
