@@ -1,3 +1,19 @@
+2005-05-21  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/20074
+	PR libfortran/20436
+	PR libfortran/21108
+	* m4/reshape.m4 (reshape_`'rtype_kind):  rs, rex:  New
+	variables, to be used in calculation of return array sizes.
+	Populate return array descriptor if ret->data is NULL.
+	Fix condition for early return (it used to test something
+	undefined if order was used).
+	Remove duplicate check wether pad is used.
+	* intrinsics/reshape_generic.c (reshape_generic): Likewise.
+	Fix a few places where the wrong variables were set.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+
 2005-05-20  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline:

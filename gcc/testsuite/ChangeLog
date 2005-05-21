@@ -1,3 +1,12 @@
+2005-05-21  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/20074
+	PR libfortran/20436
+	PR libfortran/21108
+	* gfortran.dg/nested_reshape.f90: new test
+	* gfortran.dg/reshape-alloc.f90: new test
+	* gfortran.dg/reshape.f90: new test
+
 2004-05-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/21331
