@@ -1,3 +1,8 @@
+2005-05-22  Andreas Jaeger  <aj@suse.de>
+
+	* java/lang/mprec.c (mult, lshift, b2d, d2b): Add parenthesis to
+	avoid warnings.
+
 2005-05-21  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* testsuite/libjava.jacks/jacks.xfail: Remove 3.10.2-round-6.
@@ -9,7 +14,7 @@
 2005-05-19  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_NewClass): Use
-	_Jv_RegisterInitiatingLoader to register array classes, not 
+	_Jv_RegisterInitiatingLoader to register array classes, not
 	_Jv_RegisterClass.
 	(_Jv_RegisterInitiatingLoader): Give up if called very early during
 	bootstrapping. Add a FIXME to handle this case better.
@@ -55,9 +60,9 @@
 	Use AC_CHECK_SIZEOF instead of AC_COMPILE_CHECK_SIZEOF.
 	* aclocal.m4, configure, config.h.in, include/config.h.in,
 	Makefile.in, include/Makefile.in, testsuite/Makefile.in,
-	external/Makefile.in, external/sax/Makefile.in, 
+	external/Makefile.in, external/sax/Makefile.in,
 	external/w3c_dom/Makefile.in, gcj/Makefile.in: Regenerate.
-	
+
 2005-05-17  David Daney  <ddaney@avtrex.com>
 
 	PR libgcj/18220
@@ -169,7 +174,7 @@
 	(gcj::verbose_class_flag): Move definition here.
 	(_Jv_Linker::wait_for_state): Don't call verify_class
 	if gcj::verifyClasses is not set.
-	* gij.cc (main): Set gcj::verifyClasses when '-noverify' is given.	
+	* gij.cc (main): Set gcj::verifyClasses when '-noverify' is given.
 
 2005-05-12  Aaron Luchko  <aluchko@redhat.com>
 
@@ -411,7 +416,7 @@
 2005-04-29  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/Class.h (_Jv_ResolvePoolEntry): Declare as friend.
-	
+
 2005-04-29  Dalibor Topic  <robilad@kaffe.org>
 
 	* java/nio/channels/FileChannelImpl.java
@@ -2486,7 +2491,7 @@
 	(getLinearDay): Should be private.
 
 2005-03-23  Tom Tromey  <tromey@redhat.com>
- 
+
 	* include/jvm.h (GCJ_40_BC_ABI_VERSION): New define.
 	(_Jv_CheckABIVersion): Use it.
 
@@ -6258,7 +6263,7 @@
 	(setRowSelectionInterval): Likewise.
 	(removeColumnSelectionInterval): Likewise.
 	(removeRowSelectionInterval): Likewise.
- 	(isColumnSelected): Likewise.
+	(isColumnSelected): Likewise.
 	(isRowSelected): Likewise.
 	(isCellSelected): Likewise.
 	(selectAll): Likewise.
@@ -7544,4 +7549,3 @@
 2005-01-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/boehm-gc.h: Include gc_ext_config.h, not gc_config.h.
-
