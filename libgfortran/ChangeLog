@@ -1,3 +1,9 @@
+2005-05-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/21376
+	* io/write.c (output_float): Rework logic to avoid call to log10
+	with argument equal to zero.
+
 2005-05-21  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/18495

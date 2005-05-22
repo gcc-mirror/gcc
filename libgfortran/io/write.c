@@ -292,6 +292,7 @@ output_float (fnode *f, double value, int len)
   int nblanks;
   int i;
   sign_t sign;
+  double abslog;
 
   ft = f->format;
   w = f->u.real.w;
@@ -316,9 +317,11 @@ output_float (fnode *f, double value, int len)
     edigits = 2;
   else
     {
-      edigits = 1 + (int) log10 (fabs(log10 (value)));
-      if (edigits < 2)
+      abslog = fabs(log10 (value));
+      if (abslog < 100)
 	edigits = 2;
+      else
+        edigits = 1 + (int) log10 (abslog);
     }
   
   if (ft == FMT_F || ft == FMT_EN
