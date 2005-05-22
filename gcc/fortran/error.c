@@ -486,7 +486,7 @@ gfc_warning (const char *format, ...)
 /* Possibly issue a warning/error about use of a nonstandard (or deleted)
    feature.  An error/warning will be issued if the currently selected
    standard does not contain the requested bits.  Return FAILURE if
-   and error is generated.  */
+   an error is generated.  */
 
 try
 gfc_notify_std (int std, const char *format, ...)
