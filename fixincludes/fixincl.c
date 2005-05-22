@@ -24,7 +24,9 @@ Boston, MA 02111-1307, USA.  */
 #include "fixlib.h"
 
 #include <sys/stat.h>
+#ifndef SEPARATE_FIX_PROC
 #include <sys/wait.h>
+#endif
 
 #if defined( HAVE_MMAP_FILE )
 #include <sys/mman.h>
