@@ -5805,7 +5805,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
       if (GET_CODE (x) != MEM)
 	{
 	  slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot0, x));
+	  emit_move_insn (slot0, x);
 	}
       else
 	slot0 = x;
@@ -5813,7 +5813,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
       if (GET_CODE (y) != MEM)
 	{
 	  slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
-	  emit_insn (gen_rtx_SET (VOIDmode, slot1, y));
+	  emit_move_insn (slot1, y);
 	}
       else
 	slot1 = y;
