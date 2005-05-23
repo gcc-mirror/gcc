@@ -1,3 +1,10 @@
+2005-05-23  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/debug/string (class basic_string): Add missing
+	template arguments; provide typedefs for char and wchar_t.
+	(operator[]): Allow s[s.size()] in debug mode, but not
+	pedantic mode.
+	
 2005-05-22  Paolo Carlini  <pcarlini@suse.de>
 
 	Port from libstdcxx_so_7-branch:

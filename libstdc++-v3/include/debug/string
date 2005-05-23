@@ -1,6 +1,6 @@
 // Debugging string implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -37,7 +37,8 @@
 
 namespace __gnu_debug
 {
-  template<typename _CharT, typename _Traits, typename _Allocator>
+template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
+            typename _Allocator = std::allocator<_CharT> >
     class basic_string
     : public std::basic_string<_CharT, _Traits, _Allocator>,
       public __gnu_debug::_Safe_sequence<basic_string<_CharT, _Traits,
@@ -213,7 +214,16 @@ namespace __gnu_debug
     reference
     operator[](size_type __pos)
     {
+#ifdef _GLIBCXX_DEBUG_PEDANTIC
       __glibcxx_check_subscript(__pos);
+#else
+      // as an extension v3 allows s[s.size()] when s is non-const.
+      _GLIBCXX_DEBUG_VERIFY(__pos <= this->size(),
+			    _M_message(::__gnu_debug::__msg_subscript_oob)
+			    ._M_sequence(*this, "this")
+			    ._M_integer(__pos, "__pos")
+			    ._M_integer(this->size(), "size"));
+#endif
       return _M_base()[__pos];
     }
 
@@ -996,6 +1006,13 @@ namespace __gnu_debug
       __str._M_invalidate_all();
       return __res;
     }
+
+  typedef basic_string<char>    string;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  typedef basic_string<wchar_t> wstring;
+#endif
+
 } // namespace __gnu_debug
 
 #endif
