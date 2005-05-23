@@ -43,18 +43,18 @@ spread (const gfc_array_char *ret, const gfc_array_char *source,
 	const index_type *along, const index_type *pncopies)
 {
   /* r.* indicates the return array.  */
-  index_type rstride[GFC_MAX_DIMENSIONS - 1];
+  index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type rdelta;
   char *rptr;
   char *dest;
   /* s.* indicates the source array.  */
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
+  index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;
   const char *sptr;
 
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
   index_type n;
   index_type dim;
   index_type size;

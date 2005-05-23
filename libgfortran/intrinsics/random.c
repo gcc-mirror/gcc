@@ -253,9 +253,9 @@ iexport(random_r8);
 void
 arandom_r4 (gfc_array_r4 * harv)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];
   index_type stride0;
   index_type dim;
   GFC_REAL_4 *dest;
@@ -326,9 +326,9 @@ arandom_r4 (gfc_array_r4 * harv)
 void
 arandom_r8 (gfc_array_r8 * harv)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];
   index_type stride0;
   index_type dim;
   GFC_REAL_8 *dest;
@@ -498,9 +498,9 @@ iexport(random_r8);
 void
 arandom_r4 (gfc_array_r4 *x)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];
   index_type stride0;
   index_type dim;
   GFC_REAL_4 *dest;
@@ -562,9 +562,9 @@ arandom_r4 (gfc_array_r4 *x)
 void
 arandom_r8 (gfc_array_r8 *x)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];
   index_type stride0;
   index_type dim;
   GFC_REAL_8 *dest;

@@ -37,9 +37,9 @@ Boston, MA 02111-1307, USA.  */
 void
 internal_unpack_8 (gfc_array_i8 * d, const GFC_INTEGER_8 * src)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];
   index_type stride0;
   index_type dim;
   index_type dsize;

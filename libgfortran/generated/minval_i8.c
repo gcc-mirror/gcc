@@ -41,10 +41,10 @@ export_proto(minval_i8);
 void
 minval_i8 (gfc_array_i8 *retarray, gfc_array_i8 *array, index_type *pdim)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
   GFC_INTEGER_8 *base;
   GFC_INTEGER_8 *dest;
   index_type rank;
@@ -177,11 +177,11 @@ void
 mminval_i8 (gfc_array_i8 * retarray, gfc_array_i8 * array,
 				  index_type *pdim, gfc_array_l4 * mask)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
-  index_type mstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
+  index_type mstride[GFC_MAX_DIMENSIONS];
   GFC_INTEGER_8 *dest;
   GFC_INTEGER_8 *base;
   GFC_LOGICAL_4 *mbase;

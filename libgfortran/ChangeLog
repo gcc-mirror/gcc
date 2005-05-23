@@ -1,3 +1,82 @@
+2005-05-23  Thomas Koenig  <Thomas.Koenig@online.de>
+	
+	Backport from mainline:
+	PR libfortran/21354
+	PR libfortran/21075
+	* m4/cshift1.m4: Change dimension of auxiliary arrays from
+	GFC_MAX_DIMENSION - 1 to GFC_MAX_DIMENSION.
+	* m4/eoshift1.m4: Likewise.
+	* m4/eoshift3.m4: Likewise.
+	* m4/ifunction.m4: Likewise.
+	* m4/in_pack.m4: Likewise.
+	* m4/in_unpack.m4: Likewise.
+	* m4/reshape.m4: Likewise.
+	* intrinsics/cshift0.c: Likewise.
+	* intrinsics/eoshift0.c: Likewise.
+	* intrinsics/eoshift2.c: Likewise.
+	* intrinsics/random.c: Likewise.
+	* intrinsics/reshape_generic.c: Likewise.
+	* intrinsics/spread_generic.c: Likewise.
+	* intrinsics/stat.c: Likewise.
+	* generated/all_l4.c: Regenerated.
+	* generated/all_l8.c: Regenerated.
+	* generated/any_l4.c: Regenerated.
+	* generated/any_l8.c: Regenerated.
+	* generated/count_4_l4.c: Regenerated.
+	* generated/count_4_l8.c: Regenerated.
+	* generated/count_8_l4.c: Regenerated.
+	* generated/count_8_l8.c: Regenerated.
+	* generated/cshift1_4.c: Regenerated.
+	* generated/cshift1_8.c: Regenerated.
+	* generated/eoshift1_4.c: Regenerated.
+	* generated/eoshift1_8.c: Regenerated.
+	* generated/eoshift3_4.c: Regenerated.
+	* generated/eoshift3_8.c: Regenerated.
+	* generated/in_pack_i4.c: Regenerated.
+	* generated/in_pack_i8.c: Regenerated.
+	* generated/in_unpack_i4.c: Regenerated.
+	* generated/in_unpack_i8.c: Regenerated.
+	* generated/maxloc1_4_i4.c: Regenerated.
+	* generated/maxloc1_4_i8.c: Regenerated.
+	* generated/maxloc1_4_r4.c: Regenerated.
+	* generated/maxloc1_4_r8.c: Regenerated.
+	* generated/maxloc1_8_i4.c: Regenerated.
+	* generated/maxloc1_8_i8.c: Regenerated.
+	* generated/maxloc1_8_r4.c: Regenerated.
+	* generated/maxloc1_8_r8.c: Regenerated.
+	* generated/maxval_i4.c: Regenerated.
+	* generated/maxval_i8.c: Regenerated.
+	* generated/maxval_r4.c: Regenerated.
+	* generated/maxval_r8.c: Regenerated.
+	* generated/minloc1_4_i4.c: Regenerated.
+	* generated/minloc1_4_i8.c: Regenerated.
+	* generated/minloc1_4_r4.c: Regenerated.
+	* generated/minloc1_4_r8.c: Regenerated.
+	* generated/minloc1_8_i4.c: Regenerated.
+	* generated/minloc1_8_i8.c: Regenerated.
+	* generated/minloc1_8_r4.c: Regenerated.
+	* generated/minloc1_8_r8.c: Regenerated.
+	* generated/minval_i4.c: Regenerated.
+	* generated/minval_i8.c: Regenerated.
+	* generated/minval_r4.c: Regenerated.
+	* generated/minval_r8.c: Regenerated.
+	* generated/product_c4.c: Regenerated.
+	* generated/product_c8.c: Regenerated.
+	* generated/product_i4.c: Regenerated.
+	* generated/product_i8.c: Regenerated.
+	* generated/product_r4.c: Regenerated.
+	* generated/product_r8.c: Regenerated.
+	* generated/reshape_c4.c: Regenerated.
+	* generated/reshape_c8.c: Regenerated.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+	* generated/sum_c4.c: Regenerated.
+	* generated/sum_c8.c: Regenerated.
+	* generated/sum_i4.c: Regenerated.
+	* generated/sum_i8.c: Regenerated.
+	* generated/sum_r4.c: Regenerated.
+	* generated/sum_r8.c: Regenerated.
+
 2005-05-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/21376
@@ -6,6 +85,7 @@
 
 2005-05-21  Thomas Koenig  <Thomas.Koenig@online.de>
 
+	Backport from mainline:
 	PR libfortran/18495
 	PR libfortran/20074
 	PR libfortran/20436

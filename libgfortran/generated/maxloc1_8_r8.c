@@ -42,10 +42,10 @@ export_proto(maxloc1_8_r8);
 void
 maxloc1_8_r8 (gfc_array_i8 *retarray, gfc_array_r8 *array, index_type *pdim)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
   GFC_REAL_8 *base;
   GFC_INTEGER_8 *dest;
   index_type rank;
@@ -183,11 +183,11 @@ void
 mmaxloc1_8_r8 (gfc_array_i8 * retarray, gfc_array_r8 * array,
 				  index_type *pdim, gfc_array_l4 * mask)
 {
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
-  index_type dstride[GFC_MAX_DIMENSIONS - 1];
-  index_type mstride[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
+  index_type mstride[GFC_MAX_DIMENSIONS];
   GFC_INTEGER_8 *dest;
   GFC_REAL_8 *base;
   GFC_LOGICAL_4 *mbase;

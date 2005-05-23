@@ -45,24 +45,24 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 	  int shift, const gfc_array_char *bound, int which)
 {
   /* r.* indicates the return array.  */
-  index_type rstride[GFC_MAX_DIMENSIONS - 1];
+  index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type roffset;
   char *rptr;
   char *dest;
   /* s.* indicates the source array.  */
-  index_type sstride[GFC_MAX_DIMENSIONS - 1];
+  index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;
   index_type soffset;
   const char *sptr;
   const char *src;
   /* b.* indicates the bound array.  */
-  index_type bstride[GFC_MAX_DIMENSIONS - 1];
+  index_type bstride[GFC_MAX_DIMENSIONS];
   index_type bstride0;
   const char *bptr;
 
-  index_type count[GFC_MAX_DIMENSIONS - 1];
-  index_type extent[GFC_MAX_DIMENSIONS - 1];
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
   index_type dim;
   index_type size;
   index_type len;
