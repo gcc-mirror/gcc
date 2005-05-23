@@ -308,7 +308,7 @@ struct stmt_ann_d GTY(())
   unsigned makes_clobbering_call : 1;
 
   /* Basic block that contains this statement.  */
-  basic_block GTY ((skip (""))) bb;
+  basic_block bb;
 
   /* Operand cache for stmt.  */
   struct stmt_operands_d GTY ((skip (""))) operands;
