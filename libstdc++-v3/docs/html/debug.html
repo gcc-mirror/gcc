@@ -286,7 +286,10 @@
   under pedantic debug mode libstdc++ would signal an error. To enable
   the pedantic debug mode, compile your program with
   both <code>-D_GLIBCXX_DEBUG</code>
-  and <code>-D_GLIBCXX_DEBUG_PEDANTIC</code> .</p>
+  and <code>-D_GLIBCXX_DEBUG_PEDANTIC</code> .
+  (N.B. In GCC 3.4.x and 4.0.0, due to a bug,
+  <code>-D_GLIBXX_DEBUG_PEDANTIC</code> was also needed. The problem has
+  been fixed in GCC 4.0.1 and later versions.) </p>
 
 <p>The following library components provide extra debugging
   capabilities in debug mode:</p>
