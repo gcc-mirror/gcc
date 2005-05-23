@@ -801,9 +801,6 @@ v9_regcmp_p (enum rtx_code code)
 	  || code == LE || code == GT);
 }
 
-
-/* Operand constraints.  */
-
 /* Nonzero if OP is a floating point constant which can
    be loaded into an integer register using a single
    sethi instruction.  */
@@ -877,9 +874,127 @@ tls_symbolic_operand (rtx op)
     return 0;
   return SYMBOL_REF_TLS_MODEL (op);
 }
-
-/* We know it can't be done in one insn when we get here,
-   the movsi expander guarantees this.  */
+
+/* Expand a move instruction.  Return true if all work is done.  */
+
+bool
+sparc_expand_move (enum machine_mode mode, rtx *operands)
+{
+  /* Handle sets of MEM first.  */
+  if (GET_CODE (operands[0]) == MEM)
+    {
+      /* 0 is a register (or a pair of registers) on SPARC.  */
+      if (register_or_zero_operand (operands[1], mode))
+	return false;
+
+      if (!reload_in_progress)
+	{
+	  operands[0] = validize_mem (operands[0]);
+	  operands[1] = force_reg (mode, operands[1]);
+	}
+    }
+
+  /* Fixup TLS cases.  */
+  if (tls_symbolic_operand (operands [1]))
+    operands[1] = legitimize_tls_address (operands[1]);
+
+  /* Fixup PIC cases.  */
+  if (flag_pic && CONSTANT_P (operands[1]))
+    {
+      if (pic_address_needs_scratch (operands[1]))
+	operands[1] = legitimize_pic_address (operands[1], mode, 0);
+
+      if (GET_CODE (operands[1]) == LABEL_REF && mode == SImode)
+	{
+	  emit_insn (gen_movsi_pic_label_ref (operands[0], operands[1]));
+	  return true;
+	}
+
+      if (GET_CODE (operands[1]) == LABEL_REF && mode == DImode)
+	{
+	  gcc_assert (TARGET_ARCH64);
+	  emit_insn (gen_movdi_pic_label_ref (operands[0], operands[1]));
+	  return true;
+	}
+
+      if (symbolic_operand (operands[1], mode))
+	{
+	  operands[1] = legitimize_pic_address (operands[1],
+						mode,
+						(reload_in_progress ?
+						 operands[0] :
+						 NULL_RTX));
+	  return false;
+	}
+    }
+
+  /* If we are trying to toss an integer constant into FP registers,
+     or loading a FP or vector constant, force it into memory.  */
+  if (CONSTANT_P (operands[1])
+      && REG_P (operands[0])
+      && (SPARC_FP_REG_P (REGNO (operands[0]))
+	  || SCALAR_FLOAT_MODE_P (mode)
+	  || VECTOR_MODE_P (mode)))
+    {
+      /* emit_group_store will send such bogosity to us when it is
+         not storing directly into memory.  So fix this up to avoid
+         crashes in output_constant_pool.  */
+      if (operands [1] == const0_rtx)
+	operands[1] = CONST0_RTX (mode);
+
+      /* We can clear FP registers if TARGET_VIS, and always other regs.  */
+      if ((TARGET_VIS || REGNO (operands[0]) < SPARC_FIRST_FP_REG)
+	  && const_zero_operand (operands[1], mode))
+	return false;
+
+      if (REGNO (operands[0]) < SPARC_FIRST_FP_REG
+	  /* We are able to build any SF constant in integer registers
+	     with at most 2 instructions.  */
+	  && (mode == SFmode
+	      /* And any DF constant in integer registers.  */
+	      || (mode == DFmode
+		  && (reload_completed || reload_in_progress))))
+	return false;
+
+      operands[1] = force_const_mem (mode, operands[1]);
+      if (!reload_in_progress)
+	operands[1] = validize_mem (operands[1]);
+      return false;
+    }
+
+  /* Accept non-constants and valid constants unmodified.  */
+  if (!CONSTANT_P (operands[1])
+      || GET_CODE (operands[1]) == HIGH
+      || input_operand (operands[1], mode))
+    return false;
+
+  switch (mode)
+    {
+    case QImode:
+      /* All QImode constants require only one insn, so proceed.  */
+      break;
+
+    case HImode:
+    case SImode:
+      sparc_emit_set_const32 (operands[0], operands[1]);
+      return true;
+
+    case DImode:
+      /* input_operand should have filtered out 32-bit mode.  */
+      sparc_emit_set_const64 (operands[0], operands[1]);
+      return true;
+    
+    default:
+      gcc_unreachable ();
+    }
+
+  return false;
+}
+
+/* Load OP1, a 32-bit constant, into OP0, a register.
+   We know it can't be done in one insn when we get
+   here, the move expander guarantees this.  */
+
 void
 sparc_emit_set_const32 (rtx op0, rtx op1)
 {
@@ -918,13 +1033,13 @@ sparc_emit_set_const32 (rtx op0, rtx op1)
     }
 }
 
-
 /* Load OP1, a symbolic 64-bit constant, into OP0, a DImode register.
    If TEMP is nonzero, we are forbidden to use any other scratch
    registers.  Otherwise, we are allowed to generate them as needed.
 
    Note that TEMP may have TImode if the code model is TARGET_CM_MEDANY
    or TARGET_CM_EMBMEDANY (see the reload_indi and reload_outdi patterns).  */
+
 void
 sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
 {
@@ -1488,14 +1603,9 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
   rtx temp = 0;
 
   /* Sanity check that we know what we are working with.  */
-  gcc_assert (TARGET_ARCH64);
-
-  if (GET_CODE (op0) != SUBREG)
-    {
-      gcc_assert (GET_CODE (op0) == REG
-		  && (REGNO (op0) < SPARC_FIRST_FP_REG
-	      	      || REGNO (op0) > SPARC_LAST_V9_FP_REG));
-    }
+  gcc_assert (TARGET_ARCH64
+	      && (GET_CODE (op0) == SUBREG
+		  || (REG_P (op0) && ! SPARC_FP_REG_P (REGNO (op0)))));
 
   if (reload_in_progress || reload_completed)
     temp = op0;
@@ -2626,9 +2736,16 @@ legitimate_constant_p (rtx x)
       /* Floating point constants are generally not ok.
 	 The only exception is 0.0 in VIS.  */
       if (TARGET_VIS
-	  && (GET_MODE (x) == SFmode
-	      || GET_MODE (x) == DFmode
-	      || GET_MODE (x) == TFmode)
+	  && SCALAR_FLOAT_MODE_P (GET_MODE (x))
+	  && const_zero_operand (x, GET_MODE (x)))
+	return true;
+
+      return false;
+
+    case CONST_VECTOR:
+      /* Vector constants are generally not ok.
+	 The only exception is 0 in VIS.  */
+      if (TARGET_VIS
 	  && const_zero_operand (x, GET_MODE (x)))
 	return true;
 
@@ -3007,15 +3124,15 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 	     won't get confused into thinking that these two instructions
 	     are loading in the true address of the symbol.  If in the
 	     future a PIC rtx exists, that should be used instead.  */
-	  if (Pmode == SImode)
-	    {
-	      emit_insn (gen_movsi_high_pic (temp_reg, orig));
-	      emit_insn (gen_movsi_lo_sum_pic (temp_reg, temp_reg, orig));
-	    }
-	  else
+	  if (TARGET_ARCH64)
 	    {
 	      emit_insn (gen_movdi_high_pic (temp_reg, orig));
 	      emit_insn (gen_movdi_lo_sum_pic (temp_reg, temp_reg, orig));
+	    }
+	  else
+	    {
+	      emit_insn (gen_movsi_high_pic (temp_reg, orig));
+	      emit_insn (gen_movsi_lo_sum_pic (temp_reg, temp_reg, orig));
 	    }
 	  address = temp_reg;
 	}
