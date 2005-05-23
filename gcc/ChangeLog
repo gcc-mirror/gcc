@@ -1,3 +1,8 @@
+2005-05-23  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_optimize_prologue): Don't replace an insn
+	saving less registers than the replacement.
+
 2005-05-23  Jan Hubicka  <jh@suse.cz>
 
 	* tree-flow.h (stmt_ann_d): Kill GTY ((skip)) mark on BB.
