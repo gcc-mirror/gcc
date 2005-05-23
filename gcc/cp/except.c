@@ -697,15 +697,18 @@ build_throw (tree exp)
 	 the space first we would have to deal with cleaning it up if
 	 evaluating this expression throws.
 
-	 The case where EXP the initializer is a call to a constructor or a
-	 function returning a class is a bit of a grey area in the
-	 standard; it's unclear whether or not it should be allowed to
-	 throw.  We used to say no, as that allowed us to optimize this
-	 case without worrying about deallocating the exception object if
-	 it does.  But that conflicted with expectations (PR 13944) and the
-	 EDG compiler; now we wrap the initialization in a TRY_CATCH_EXPR
-	 to call do_free_exception rather than in a MUST_NOT_THROW_EXPR,
-	 for this case only.
+	 The case where EXP the initializer is a cast or a function
+	 returning a class is a bit of a grey area in the standard; it's
+	 unclear whether or not it should be allowed to throw.  We used to
+	 say no, as that allowed us to optimize this case without worrying
+	 about deallocating the exception object if it does.  But that
+	 conflicted with expectations (PR 13944) and the EDG compiler; now
+	 we wrap the initialization in a TRY_CATCH_EXPR to call
+	 do_free_exception rather than in a MUST_NOT_THROW_EXPR, for this
+	 case only.
+
+	 BUT: Issue 475 may do away with this inconsistency by removing the
+	 terminate() in this situation.
 
          Note that we don't check the return value from stabilize_init
          because it will only return false in cases where elided is true,
