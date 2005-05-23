@@ -1,3 +1,8 @@
+2005-05-23  Jan Beulich  <jbeulich@novell.com>
+
+	* gthr-posix.h (__gthread_recursive_mutex_init_function): Add
+	missing return statement.
+
 2005-05-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/21331
