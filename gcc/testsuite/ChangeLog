@@ -1,3 +1,9 @@
+2005-05-23  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/execute/20020720-1.x: Fix m32r target selector to
+	be a proper triple, ie: m32r*-*-*.
+	* g++.old-deja/g++.jason/thunk3.C: Likewise.
+
 2004-05-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/21331

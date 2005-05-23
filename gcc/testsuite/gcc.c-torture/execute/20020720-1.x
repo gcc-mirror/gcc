@@ -30,7 +30,7 @@ set torture_eval_before_compile {
         "This test fails to optimize completely on certain platforms." \
         { "xtensa-*-*" "sh-*-*" "arm*-*-*" "strongarm*-*-*" "xscale*-*-*" \
 	  "h8300*-*-*" "frv-*-*" "powerpc*-*-*" "rs6000-*-*" "bfin*-*" \
-	  "m32r*-*" "avr-*-*"} \
+	  "m32r*-*-*" "avr-*-*"} \
         { "*" } \
         { "-O0" }
     }
