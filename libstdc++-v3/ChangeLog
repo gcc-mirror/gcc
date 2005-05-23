@@ -1,3 +1,8 @@
+2005-05-23  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/debug.html: Explain that _GLIBXX_DEBUG_PEDANTIC
+	had to be defined for pedantic mode in 3.4 and 4.0.0.
+
 2005-05-20  Jan Beulich  <jbeulich@novell.com>
 
 	* libmath/stubs.c: Also implement fabsf/fabsl if not present in the
