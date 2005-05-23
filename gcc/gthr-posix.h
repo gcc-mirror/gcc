@@ -548,6 +548,7 @@ __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
 	r = pthread_mutexattr_destroy (&attr);
       return r;
     }
+  return 0;
 }
 #endif
 

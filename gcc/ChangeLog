@@ -1,3 +1,8 @@
+2005-05-23  Jan Beulich  <jbeulich@novell.com>
+
+	* gthr-posix.h (__gthread_recursive_mutex_init_function): Add
+	missing return statement.
+
 2005-05-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (sparc_emit_float_lib_cmp): Use
