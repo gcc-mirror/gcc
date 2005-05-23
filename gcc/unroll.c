@@ -3691,7 +3691,8 @@ loop_iterations (struct loop *loop)
      ??? Without a vtop we could still perform the optimization if we check
      the initial and final values carefully.  */
   if (loop->vtop
-      && (reg_term = find_common_reg_term (initial_value, final_value)))
+      && (reg_term = find_common_reg_term (initial_value, final_value))
+      && loop_invariant_p (loop, reg_term))
     {
       initial_value = subtract_reg_term (initial_value, reg_term);
       final_value = subtract_reg_term (final_value, reg_term);

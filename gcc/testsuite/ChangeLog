@@ -1,3 +1,7 @@
+2005-05-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20050510-1.c: New test.
+
 2005-05-19  Release Manager
 
 	* GCC 3.4.4 released.
