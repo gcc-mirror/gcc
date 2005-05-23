@@ -7951,6 +7951,10 @@ s390_optimize_prologue (void)
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
+	  if (cfun_frame_layout.first_save_gpr != -1
+	      && (cfun_frame_layout.first_save_gpr < first
+		  || cfun_frame_layout.last_save_gpr > last))
+	    continue;
 	  if (REGNO (base) != STACK_POINTER_REGNUM
 	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
 	    continue;
@@ -7972,7 +7976,8 @@ s390_optimize_prologue (void)
 	  continue;
 	}
 
-      if (GET_CODE (PATTERN (insn)) == SET
+      if (cfun_frame_layout.first_save_gpr == -1
+	  && GET_CODE (PATTERN (insn)) == SET
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == REG
 	  && (REGNO (SET_SRC (PATTERN (insn))) == BASE_REGNUM
 	      || (!TARGET_CPU_ZARCH
@@ -7990,16 +7995,6 @@ s390_optimize_prologue (void)
 	  if (REGNO (base) != STACK_POINTER_REGNUM
 	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
 	    continue;
-	  if (cfun_frame_layout.first_save_gpr != -1)
-	    {
-	      new_insn = save_gprs (base, 
-				    off + (cfun_frame_layout.first_save_gpr 
-					   - first) * UNITS_PER_WORD, 
-				    cfun_frame_layout.first_save_gpr,
-				    cfun_frame_layout.last_save_gpr);
-	      new_insn = emit_insn_before (new_insn, insn);
-	      INSN_ADDRESSES_NEW (new_insn, -1);
-	    }
 
 	  remove_insn (insn);
 	  continue;
@@ -8016,6 +8011,10 @@ s390_optimize_prologue (void)
 	  off = INTVAL (offset);
 
 	  if (GET_CODE (base) != REG || off < 0)
+	    continue;
+	  if (cfun_frame_layout.first_restore_gpr != -1
+	      && (cfun_frame_layout.first_restore_gpr < first
+		  || cfun_frame_layout.last_restore_gpr > last))
 	    continue;
 	  if (REGNO (base) != STACK_POINTER_REGNUM
 	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
@@ -8038,7 +8037,8 @@ s390_optimize_prologue (void)
 	  continue;
 	}
 
-      if (GET_CODE (PATTERN (insn)) == SET
+      if (cfun_frame_layout.first_restore_gpr == -1
+	  && GET_CODE (PATTERN (insn)) == SET
 	  && GET_CODE (SET_DEST (PATTERN (insn))) == REG
 	  && (REGNO (SET_DEST (PATTERN (insn))) == BASE_REGNUM
 	      || (!TARGET_CPU_ZARCH
@@ -8056,16 +8056,6 @@ s390_optimize_prologue (void)
 	  if (REGNO (base) != STACK_POINTER_REGNUM
 	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
 	    continue;
-	  if (cfun_frame_layout.first_restore_gpr != -1)
-	    {
-	      new_insn = restore_gprs (base, 
-				       off + (cfun_frame_layout.first_restore_gpr 
-					      - first) * UNITS_PER_WORD,
-				       cfun_frame_layout.first_restore_gpr,
-				       cfun_frame_layout.last_restore_gpr);
-	      new_insn = emit_insn_before (new_insn, insn);
-	      INSN_ADDRESSES_NEW (new_insn, -1);
-	    }
 
 	  remove_insn (insn);
 	  continue;
