@@ -1,3 +1,15 @@
+2005-05-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc-protos.h (sparc_expand_move): New prototype.
+	* config/sparc/sparc.c (sparc_expand_move): New function.
+	(sparc_emit_set_const64): Rewrite assert condition on entry.
+	(legitimate_constant_p) <CONST_VECTOR>: New case.
+	(legitimize_pic_address): Use TARGET_ARCH64 to select the mode.
+	* config/sparc/sparc.md (movqi, movhi, movsi, movdi, movV32,
+	movV64, movtf): Use nonimmediate_operand for the first operand.
+	Rewrite.  Only invoke sparc_expand_move.
+	* config/sparc/predicates.md (input_operand): Reorder tests.
+
 2005-05-23  Jan Beulich  <jbeulich@novell.com>
 
 	* gthr-posix.h (__gthread_recursive_mutex_init_function): Add

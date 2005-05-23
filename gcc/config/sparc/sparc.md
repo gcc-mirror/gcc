@@ -1723,54 +1723,12 @@
 ;; Integer move instructions
 
 (define_expand "movqi"
-  [(set (match_operand:QI 0 "general_operand" "")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "")
 	(match_operand:QI 1 "general_operand" ""))]
   ""
 {
-  /* Working with CONST_INTs is easier, so convert
-     a double if needed.  */
-  if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), QImode);
-
-  /* Handle sets of MEM first.  */
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (register_or_zero_operand (operands[1], QImode))
-	goto movqi_is_ok;
-
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (QImode, operands[1]);
-	}
-    }
-
-  /* Fixup TLS cases.  */
-  if (tls_symbolic_operand (operands [1]))
-    operands[1] = legitimize_tls_address (operands[1]);
-
-  /* Fixup PIC cases.  */
-  if (flag_pic)
-    {
-      if (CONSTANT_P (operands[1])
-	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], QImode, 0);
-
-      if (symbolic_operand (operands[1], QImode))
-	{
-	  operands[1] = legitimize_pic_address (operands[1],
-						QImode,
-						(reload_in_progress ?
-						 operands[0] :
-						 NULL_RTX));
-	  goto movqi_is_ok;
-	}
-    }
-
-  /* All QI constants require only one insn, so proceed.  */
-
- movqi_is_ok:
-  ;
+  if (sparc_expand_move (QImode, operands))
+    DONE;
 })
 
 (define_insn "*movqi_insn"
@@ -1786,62 +1744,12 @@
    (set_attr "us3load_type" "*,3cycle,*")])
 
 (define_expand "movhi"
-  [(set (match_operand:HI 0 "general_operand" "")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]
   ""
 {
-  /* Working with CONST_INTs is easier, so convert
-     a double if needed.  */
-  if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), HImode);
-
-  /* Handle sets of MEM first.  */
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (register_or_zero_operand (operands[1], HImode))
-	goto movhi_is_ok;
-
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (HImode, operands[1]);
-	}
-    }
-
-  /* Fixup TLS cases.  */
-  if (tls_symbolic_operand (operands [1]))
-    operands[1] = legitimize_tls_address (operands[1]);
-
-  /* Fixup PIC cases.  */
-  if (flag_pic)
-    {
-      if (CONSTANT_P (operands[1])
-	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], HImode, 0);
-
-      if (symbolic_operand (operands[1], HImode))
-	{
-	  operands[1] = legitimize_pic_address (operands[1],
-						HImode,
-						(reload_in_progress ?
-						 operands[0] :
-						 NULL_RTX));
-	  goto movhi_is_ok;
-	}
-    }
-
-  /* This makes sure we will not get rematched due to splittage.  */
-  if (! CONSTANT_P (operands[1]) || input_operand (operands[1], HImode))
-    ;
-  else if (GET_CODE (operands[1]) != HIGH
-	   && GET_CODE (operands[1]) != LO_SUM)
-    {
-      sparc_emit_set_const32 (operands[0], operands[1]);
-      DONE;
-    }
-
- movhi_is_ok:
-  ;
+  if (sparc_expand_move (HImode, operands))
+    DONE;
 })
 
 (define_insn "*movhi_insn"
@@ -1866,77 +1774,12 @@
   "or\t%1, %2, %0")
 
 (define_expand "movsi"
-  [(set (match_operand:SI 0 "general_operand" "")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(match_operand:SI 1 "general_operand" ""))]
   ""
 {
-  /* Working with CONST_INTs is easier, so convert
-     a double if needed.  */
-  if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), SImode);
-
-  /* Handle sets of MEM first.  */
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (register_or_zero_operand (operands[1], SImode))
-	goto movsi_is_ok;
-
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (SImode, operands[1]);
-	}
-    }
-
-  /* Fixup TLS cases.  */
-  if (tls_symbolic_operand (operands [1]))
-    operands[1] = legitimize_tls_address (operands[1]);
-
-  /* Fixup PIC cases.  */
-  if (flag_pic)
-    {
-      if (CONSTANT_P (operands[1])
-	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], SImode, 0);
-
-      if (GET_CODE (operands[1]) == LABEL_REF)
-	{
-	  emit_insn (gen_movsi_pic_label_ref (operands[0], operands[1]));
-	  DONE;
-	}
-
-      if (symbolic_operand (operands[1], SImode))
-	{
-	  operands[1] = legitimize_pic_address (operands[1],
-						SImode,
-						(reload_in_progress ?
-						 operands[0] :
-						 NULL_RTX));
-	  goto movsi_is_ok;
-	}
-    }
-
-  /* If we are trying to toss an integer constant into the
-     FPU registers, force it into memory.  */
-  if (GET_CODE (operands[0]) == REG
-      && REGNO (operands[0]) >= SPARC_FIRST_FP_REG
-      && REGNO (operands[0]) <= SPARC_LAST_V9_FP_REG
-      && CONSTANT_P (operands[1]))
-    operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
-						 operands[1]));
-
-  /* This makes sure we will not get rematched due to splittage.  */
-  if (! CONSTANT_P (operands[1]) || input_operand (operands[1], SImode))
-    ;
-  else if (GET_CODE (operands[1]) != HIGH
-	   && GET_CODE (operands[1]) != LO_SUM)
-    {
-      sparc_emit_set_const32 (operands[0], operands[1]);
-      DONE;
-    }
-
- movsi_is_ok:
-  ;
+  if (sparc_expand_move (SImode, operands))
+    DONE;
 })
 
 (define_insn "*movsi_insn"
@@ -2025,85 +1868,12 @@
   "or\t%1, %%lo(%a3-(%a2-.)), %0")
 
 (define_expand "movdi"
-  [(set (match_operand:DI 0 "general_operand" "")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "")
 	(match_operand:DI 1 "general_operand" ""))]
   ""
 {
-  /* Working with CONST_INTs is easier, so convert
-     a double if needed.  */
-  if (GET_CODE (operands[1]) == CONST_DOUBLE
-#if HOST_BITS_PER_WIDE_INT == 32
-      && ((CONST_DOUBLE_HIGH (operands[1]) == 0
-	   && (CONST_DOUBLE_LOW (operands[1]) & 0x80000000) == 0)
-	  || (CONST_DOUBLE_HIGH (operands[1]) == (HOST_WIDE_INT) 0xffffffff
-	      && (CONST_DOUBLE_LOW (operands[1]) & 0x80000000) != 0))
-#endif
-      )
-    operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), DImode);
-
-  /* Handle MEM cases first.  */
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (register_or_zero_operand (operands[1], DImode))
-        goto movdi_is_ok;
-
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (DImode, operands[1]);
-	}
-    }
-
-  /* Fixup TLS cases.  */
-  if (tls_symbolic_operand (operands [1]))
-    operands[1] = legitimize_tls_address (operands[1]);
-
-  if (flag_pic)
-    {
-      if (CONSTANT_P (operands[1])
-	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], DImode, 0);
-
-      if (GET_CODE (operands[1]) == LABEL_REF)
-        {
-          gcc_assert (TARGET_ARCH64);
-          emit_insn (gen_movdi_pic_label_ref (operands[0], operands[1]));
-          DONE;
-        }
-
-      if (symbolic_operand (operands[1], DImode))
-	{
-	  operands[1] = legitimize_pic_address (operands[1],
-						DImode,
-						(reload_in_progress ?
-						 operands[0] :
-						 NULL_RTX));
-	  goto movdi_is_ok;
-	}
-    }
-
-  /* If we are trying to toss an integer constant into the
-     FPU registers, force it into memory.  */
-  if (GET_CODE (operands[0]) == REG
-      && REGNO (operands[0]) >= SPARC_FIRST_FP_REG
-      && REGNO (operands[0]) <= SPARC_LAST_V9_FP_REG
-      && CONSTANT_P (operands[1]))
-    operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
-						 operands[1]));
-
-  /* This makes sure we will not get rematched due to splittage.  */
-  if (! CONSTANT_P (operands[1]) || input_operand (operands[1], DImode))
-    ;
-  else if (TARGET_ARCH64
-           && GET_CODE (operands[1]) != HIGH
-           && GET_CODE (operands[1]) != LO_SUM)
-    {
-      sparc_emit_set_const64 (operands[0], operands[1]);
-      DONE;
-    }
-
- movdi_is_ok:
-  ;
+  if (sparc_expand_move (DImode, operands))
+    DONE;
 })
 
 ;; Be careful, fmovd does not exist when !v9.
@@ -2552,65 +2322,12 @@
 
 ;; Yes, you guessed it right, the former movsf expander.
 (define_expand "mov<V32:mode>"
-  [(set (match_operand:V32 0 "general_operand" "")
+  [(set (match_operand:V32 0 "nonimmediate_operand" "")
 	(match_operand:V32 1 "general_operand" ""))]
   "<V32:MODE>mode == SFmode || TARGET_VIS"
 {
-  /* Force constants into memory.  */
-  if (GET_CODE (operands[0]) == REG && CONSTANT_P (operands[1]))
-    {
-      /* emit_group_store will send such bogosity to us when it is
-         not storing directly into memory.  So fix this up to avoid
-         crashes in output_constant_pool.  */
-      if (operands [1] == const0_rtx)
-        operands[1] = CONST0_RTX (<V32:MODE>mode);
-
-      if ((TARGET_VIS || REGNO (operands[0]) < 32)
-	  && const_zero_operand (operands[1], <V32:MODE>mode))
-	goto movsf_is_ok;
-
-      /* We are able to build any SF constant in integer registers
-	 with at most 2 instructions.  */
-      if (REGNO (operands[0]) < 32
-	  && <V32:MODE>mode == SFmode)
-	goto movsf_is_ok;
-
-      operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
-                                                   operands[1]));
-    }
-
-  /* Handle sets of MEM first.  */
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (register_or_zero_operand (operands[1], <V32:MODE>mode))
-	goto movsf_is_ok;
-
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (<V32:MODE>mode, operands[1]);
-	}
-    }
-
-  /* Fixup PIC cases.  */
-  if (flag_pic)
-    {
-      if (CONSTANT_P (operands[1])
-	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], <V32:MODE>mode, 0);
-
-      if (symbolic_operand (operands[1], <V32:MODE>mode))
-	{
-	  operands[1] = legitimize_pic_address (operands[1],
-						<V32:MODE>mode,
-						(reload_in_progress ?
-						 operands[0] :
-						 NULL_RTX));
-	}
-    }
-
- movsf_is_ok:
-  ;
+  if (sparc_expand_move (<V32:MODE>mode, operands))
+    DONE;
 })
 
 (define_insn "*movsf_insn"
@@ -2741,65 +2458,12 @@
 
 ;; Yes, you again guessed it right, the former movdf expander.
 (define_expand "mov<V64:mode>"
-  [(set (match_operand:V64 0 "general_operand" "")
+  [(set (match_operand:V64 0 "nonimmediate_operand" "")
 	(match_operand:V64 1 "general_operand" ""))]
   "<V64:MODE>mode == DFmode || TARGET_VIS"
 {
-  /* Force constants into memory.  */
-  if (GET_CODE (operands[0]) == REG && CONSTANT_P (operands[1]))
-    {
-      /* emit_group_store will send such bogosity to us when it is
-         not storing directly into memory.  So fix this up to avoid
-         crashes in output_constant_pool.  */
-      if (operands [1] == const0_rtx)
-        operands[1] = CONST0_RTX (<V64:MODE>mode);
-
-      if ((TARGET_VIS || REGNO (operands[0]) < 32)
-	  && const_zero_operand (operands[1], <V64:MODE>mode))
-	goto movdf_is_ok;
-
-      /* We are able to build any DF constant in integer registers.  */
-      if (REGNO (operands[0]) < 32
-	  && <V64:MODE>mode == DFmode
-	  && (reload_completed || reload_in_progress))
-	goto movdf_is_ok;
-
-      operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
-                                                   operands[1]));
-    }
-
-  /* Handle MEM cases first.  */
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (register_or_zero_operand (operands[1], <V64:MODE>mode))
-	goto movdf_is_ok;
-
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (<V64:MODE>mode, operands[1]);
-	}
-    }
-
-  /* Fixup PIC cases.  */
-  if (flag_pic)
-    {
-      if (CONSTANT_P (operands[1])
-	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], <V64:MODE>mode, 0);
-
-      if (symbolic_operand (operands[1], <V64:MODE>mode))
-	{
-	  operands[1] = legitimize_pic_address (operands[1],
-						<V64:MODE>mode,
-						(reload_in_progress ?
-						 operands[0] :
-						 NULL_RTX));
-	}
-    }
-
- movdf_is_ok:
-  ;
+  if (sparc_expand_move (<V64:MODE>mode, operands))
+    DONE;
 })
 
 ;; Be careful, fmovd does not exist when !v9.
@@ -3137,60 +2801,12 @@
 })
 
 (define_expand "movtf"
-  [(set (match_operand:TF 0 "general_operand" "")
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
 	(match_operand:TF 1 "general_operand" ""))]
   ""
 {
-  /* Force TFmode constants into memory.  */
-  if (GET_CODE (operands[0]) == REG
-      && CONSTANT_P (operands[1]))
-    {
-      /* emit_group_store will send such bogosity to us when it is
-         not storing directly into memory.  So fix this up to avoid
-         crashes in output_constant_pool.  */
-      if (operands [1] == const0_rtx)
-        operands[1] = CONST0_RTX (TFmode);
-
-      if (TARGET_VIS && const_zero_operand (operands[1], TFmode))
-	goto movtf_is_ok;
-
-      operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
-                                                   operands[1]));
-    }
-
-  /* Handle MEM cases first, note that only v9 guarantees
-     full 16-byte alignment for quads.  */
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (register_or_zero_operand (operands[1], TFmode))
-	goto movtf_is_ok;
-
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (TFmode, operands[1]);
-	}
-    }
-
-  /* Fixup PIC cases.  */
-  if (flag_pic)
-    {
-      if (CONSTANT_P (operands[1])
-	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], TFmode, 0);
-
-      if (symbolic_operand (operands[1], TFmode))
-	{
-	  operands[1] = legitimize_pic_address (operands[1],
-						TFmode,
-						(reload_in_progress ?
-						 operands[0] :
-						 NULL_RTX));
-	}
-    }
-
- movtf_is_ok:
-  ;
+  if (sparc_expand_move (TFmode, operands))
+    DONE;
 })
 
 (define_insn "*movtf_insn_sp32"

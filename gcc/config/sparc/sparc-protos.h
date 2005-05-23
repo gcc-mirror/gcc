@@ -74,6 +74,7 @@ extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern rtx legitimize_tls_address (rtx);
 extern rtx legitimize_address (rtx, rtx, enum machine_mode);
 extern void sparc_defer_case_vector (rtx, rtx, int);
+extern bool sparc_expand_move (enum machine_mode, rtx *);
 extern void sparc_emit_set_const32 (rtx, rtx);
 extern void sparc_emit_set_const64 (rtx, rtx);
 extern void sparc_emit_set_symbolic_const64 (rtx, rtx, rtx);

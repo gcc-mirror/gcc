@@ -380,8 +380,10 @@
   if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
     return false;
 
+  mclass = GET_MODE_CLASS (mode);
+
   /* Allow any 1-instruction integer constant.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
+  if (mclass == MODE_INT
       && (small_int_operand (op, mode) || const_high_operand (op, mode)))
     return true;
 
@@ -392,16 +394,14 @@
       && (GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT))
     return true;
 
-  if (register_operand (op, mode))
-    return true;
-
-  mclass = GET_MODE_CLASS (mode);
   if ((mclass == MODE_FLOAT && GET_CODE (op) == CONST_DOUBLE)
       || (mclass == MODE_VECTOR_INT && GET_CODE (op) == CONST_VECTOR))
     return true;
 
-  /* If this is a SUBREG, look inside so that we handle
-     paradoxical ones.  */
+  if (register_operand (op, mode))
+    return true;
+
+  /* If this is a SUBREG, look inside so that we handle paradoxical ones.  */
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
