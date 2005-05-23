@@ -624,6 +624,12 @@ meaning.
 * Old-style kind specifications::
 * Old-style variable initialization::
 * Extensions to namelist::
+* X format descriptor::
+* Commas in FORMAT specifications::
+* I/O item lists::
+* Hexadecimal constants::
+* Real array indices::
+* Unary operators::
 @end menu
 
 @node Old-style kind specifications
@@ -719,6 +725,66 @@ had been called:
 
 To aid this dialog, when input is from stdin, errors produce send their
 messages to stderr and execution continues, even if IOSTAT is set.
+
+@node X format descriptor
+@section X format descriptor
+@cindex X format descriptor
+
+To support legacy codes, @command{gfortran} permits the count field
+of the X edit descriptor in FORMAT statements to be omitted.  When
+omitted, the count is implicitly assumed to be one.
+
+@smallexample
+       PRINT 10, 2, 3
+10     FORMAT (I1, X, I1)
+@end smallexample
+
+@node Commas in FORMAT specifications
+@section Commas in FORMAT specifications
+@cindex Commas in FORMAT specifications
+
+To support legacy codes, @command{gfortran} allows the comma separator
+to be omitted immediately before and after character string edit
+descriptors in FORMAT statements.
+
+@smallexample
+       PRINT 10, 2, 3
+10     FORMAT ('FOO='I1' BAR='I2)
+@end smallexample
+
+@node I/O item lists
+@section I/O item lists
+@cindex I/O item lists
+
+To support legacy codes, @command{gfortran} allows the input item list
+of the READ statement, and the output item lists of the WRITE and PRINT
+statements to start with a comma.
+
+@node Hexadecimal constants
+@section Hexadecimal constants
+@cindex Hexadecimal constants
+
+As a GNU extension, @command{gfortran} allows hexadecimal constants to
+be specified using the X prefix, in addition to the standard Z prefix.
+
+@node Real array indices
+@section Real array indices
+@cindex Real array indices
+
+As a GNU extension, @command{gfortran} allows arrays to be indexed using
+real types, whose values are implicitly converted to integers.
+
+@node Unary operators
+@section Unary operators
+@cindex Unary operators
+
+As a GNU extension, @command{gfortran} allows unary plus and unary
+minus operators to appear as the second operand of binary arithmetic
+operators without the need for parenthesis.
+
+@smallexample
+       X = Y * -Z
+@end smallexample
 
 @include intrinsic.texi
 @c ---------------------------------------------------------------------

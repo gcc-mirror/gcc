@@ -1,3 +1,7 @@
+2005-05-22  Roger Sayle  <roger@eyesopen.com>
+
+	* gfortran.texi: Document some more GNU extensions.
+
 2005-05-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* error.c (gfc_warning): Fix typo in comment.
