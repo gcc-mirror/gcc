@@ -1,3 +1,9 @@
+2005-05-24  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (cleanup-ipa-dump): New.
+	(cleanup-coverage-files, cleanup-repo-files, cleanup-rtl-dump,
+	cleanup-tree-dump, cleanup-saved-temps): Update comments.
+
 2005-05-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/21645
