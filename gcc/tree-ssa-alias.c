@@ -642,7 +642,6 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 
   FOR_EACH_BB (bb)
     {
-      bb_ann_t block_ann = bb_ann (bb);
       block_stmt_iterator si;
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
@@ -665,9 +664,6 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 		if (stmt_escapes_p)
 		  mark_call_clobbered (var);
 	      }
-
-	  if (stmt_escapes_p)
-	    block_ann->has_escape_site = 1;
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
 	    {
