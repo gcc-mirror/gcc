@@ -1,4 +1,4 @@
-2005-05-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-05-22  Peter Wainwright  <prw@ceiriog1.demon.co.uk>
 
 	PR libfortran/21376
 	* io/write.c (output_float): Rework logic to avoid call to log10
