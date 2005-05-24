@@ -385,9 +385,6 @@ struct bb_ann_d GTY(())
   /* Chain of PHI nodes for this block.  */
   tree phi_nodes;
 
-  /* Nonzero if this block contains an escape point (see is_escape_site).  */
-  unsigned has_escape_site : 1;
-
   /* Nonzero if one or more incoming edges to this block should be threaded
      to an outgoing edge of this block.  */
   unsigned incoming_edge_threaded : 1;
