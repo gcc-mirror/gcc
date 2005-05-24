@@ -2908,19 +2908,11 @@ cprop_into_stmt (tree stmt)
   bool may_have_exposed_new_symbols = false;
   use_operand_p op_p;
   ssa_op_iter iter;
-  tree rhs;
 
   FOR_EACH_SSA_USE_OPERAND (op_p, stmt, iter, SSA_OP_ALL_USES)
     {
       if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols |= cprop_operand (stmt, op_p);
-    }
-
-  if (may_have_exposed_new_symbols)
-    {
-      rhs = get_rhs (stmt);
-      if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
-	recompute_tree_invarant_for_addr_expr (rhs);
     }
 
   return may_have_exposed_new_symbols;
@@ -2971,6 +2963,8 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
      fold its RHS before checking for redundant computations.  */
   if (ann->modified)
     {
+      tree rhs;
+
       /* Try to fold the statement making sure that STMT is kept
 	 up to date.  */
       if (fold_stmt (bsi_stmt_ptr (si)))
@@ -2984,6 +2978,10 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
 	      print_generic_stmt (dump_file, stmt, TDF_SLIM);
 	    }
 	}
+
+      rhs = get_rhs (stmt);
+      if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
+	recompute_tree_invarant_for_addr_expr (rhs);
 
       /* Constant/copy propagation above may change the set of 
 	 virtual operands associated with this statement.  Folding

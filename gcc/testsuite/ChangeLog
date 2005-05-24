@@ -1,3 +1,8 @@
+2005-05-23  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/pr21638.c: New test.
+	* gcc.c-torture/compile/20050520-1.c: New test.
+
 2005-05-23  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/execute/20020720-1.x: Fix m32r target selector to

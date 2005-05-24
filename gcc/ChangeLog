@@ -1,3 +1,14 @@
+2005-05-23  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (cprop_into_stmt): Do not call
+	recompute_tree_invariant_for_addr_expr here.
+	(optimize_stmt): Call it here instead and do so if anything
+	at all has changed in the statement and the RHS is an ADDR_EXPR.
+	* tree-ssa-forwprop.c (tidy_after_forward_propagate_addr): If
+	needed, call recompute_tree_invariant_for_addr_expr.
+	* tree-ssa-propagate.c (substitute_and_fold): Call
+	recompute_tree_invariant_for_addr_expr as needed.
+
 2005-05-23  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_optimize_prologue): Don't replace an insn
