@@ -1,6 +1,7 @@
 /* Test various ObjC types assignments and comparisons.  */
 /* Author: Nicola Pero <nicola@brainstorm.co.uk>.  */
 /* { dg-do compile } */
+
 #include <objc/objc.h>
 
 @protocol MyProtocol

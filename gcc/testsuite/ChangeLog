@@ -1,3 +1,27 @@
+2005-05-24  Ziemowit Laski  <zlaski@apple.com>
+
+	* obj-c++.dg/bitfield-[1-5].mm: New.
+	* obj-c++.dg/class-protocol-1.mm: New.
+	* obj-c++.dg/comp-types-1[0-1].mm: New.
+	* obj-c++.dg/comp-types-[2-9].mm: New.
+	* obj-c++.dg/encode-[4-8].mm: New.
+	* obj-c++.dg/layout-1.mm: New.
+	* obj-c++.dg/method-1[0-9].mm: New.
+	* obj-c++.dg/method-2[0-1].mm: New.
+	* obj-c++.dg/method-[8-9].mm: New.
+	* obj-c++.dg/objc-gc-3.mm: New.
+	* obj-c++.dg/try-catch-10.mm: New.
+	* objc.dg/bitfield-5.m: New.
+	* objc.dg/comp-types-10.m: New.
+	* objc.dg/comp-types-9.m: New.
+	* objc.dg/layout-1.m: New.
+	* objc.dg/objc-gc-4.m: New.
+	* objc.dg/try-catch-9.m: New.
+	* objc.dg/class-protocol-1.m: Tweak diagnostics.
+	* objc.dg/comp-types-1.m: Likewise.
+	* objc.dg/comp-types-[5-6].m: Likewise.
+	* objc.dg/method-9.m: Likewise.
+
 2005-05-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/altivec-vec-merge.c: Make test usable on GNU/Linux targets

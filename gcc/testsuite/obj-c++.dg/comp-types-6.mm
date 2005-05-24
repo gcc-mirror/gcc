@@ -1,6 +1,7 @@
 /* Test assignments and comparisons involving `one-off' protocols.  */
 /* Author: Nicola Pero <nicola@brainstorm.co.uk>.  */
 /* { dg-do compile } */
+
 #include <objc/objc.h>
 
 @protocol MyProtocol
