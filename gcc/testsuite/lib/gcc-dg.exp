@@ -307,8 +307,8 @@ proc remove-build-file { pat } {
 
 # Remove compiler-generated coverage files for the current test.
 proc cleanup-coverage-files { } {
-    # This assumes that we are two frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
     remove-build-file "[file rootname [file tail $testcase]].gc??"
@@ -323,8 +323,8 @@ proc cleanup-coverage-files { } {
 
 # Remove compiler-generated files from -repo for the current test.
 proc cleanup-repo-files { } {
-    # This assumes that we are two frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
     remove-build-file "[file rootname [file tail $testcase]].o"
@@ -343,8 +343,8 @@ proc cleanup-repo-files { } {
 #
 # SUFFIX is the filename suffix pattern.
 proc cleanup-rtl-dump { suffix } {
-    # This assumes that we are two frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
     remove-build-file "[file tail $testcase].??.$suffix"
@@ -361,9 +361,9 @@ proc cleanup-rtl-dump { suffix } {
 #
 # SUFFIX is the file suffix pattern.
 proc cleanup-tree-dump { suffix } {
-    # This assumes that we are two frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new dejagnu release.
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
     remove-build-file "[file tail $testcase].t??.$suffix"
 
@@ -375,6 +375,24 @@ proc cleanup-tree-dump { suffix } {
     }
 }
 
+# Remove a specific ipa dump file for the current test.
+#
+# SUFFIX is the file suffix pattern.
+proc cleanup-ipa-dump { suffix } {
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    remove-build-file "[file tail $testcase].i??.$suffix"
+
+    # Clean up dump files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file tail $srcfile].i??.$suffix"
+	}
+    }
+}
+
 # Remove files kept by --save-temps for the current test.
 #
 # Currently this is only .i files, but more can be added if there are
@@ -382,8 +400,8 @@ proc cleanup-tree-dump { suffix } {
 proc cleanup-saved-temps { } {
     global additional_sources
 
-    # This assumes that we are two frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
     remove-build-file "[file rootname [file tail $testcase]].ii"
