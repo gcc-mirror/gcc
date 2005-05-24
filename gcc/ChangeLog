@@ -1,3 +1,8 @@
+2005-05-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	__NO_FPRS__ when 'f' class registers will not be available. 
+
 2005-05-24  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.c (m32r_expand_block_move):  Return 0 if
