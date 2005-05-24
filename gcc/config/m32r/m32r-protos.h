@@ -47,7 +47,7 @@ extern void   m32r_initialize_trampoline (rtx, rtx, rtx);
 extern int    zero_and_one (rtx, rtx);
 extern char * emit_cond_move (rtx *, rtx);
 extern void   m32r_output_block_move (rtx, rtx *);
-extern void   m32r_expand_block_move (rtx *);
+extern int    m32r_expand_block_move (rtx *);
 extern void   m32r_print_operand (FILE *, rtx, int);
 extern void   m32r_print_operand_address (FILE *, rtx);
 extern int    m32r_not_same_reg (rtx, rtx);

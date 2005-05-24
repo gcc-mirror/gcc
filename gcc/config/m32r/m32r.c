@@ -2595,9 +2595,11 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
    operands[0] is the pointer to the destination.
    operands[1] is the pointer to the source.
    operands[2] is the number of bytes to move.
-   operands[3] is the alignment.  */
+   operands[3] is the alignment.
 
-void
+   Returns 1 upon success, 0 otherwise.  */
+
+int
 m32r_expand_block_move (rtx operands[])
 {
   rtx           orig_dst  = operands[0];
@@ -2612,7 +2614,7 @@ m32r_expand_block_move (rtx operands[])
   rtx           dst_reg;
 
   if (constp && bytes <= 0)
-    return;
+    return 1;
 
   /* Move the address into scratch registers.  */
   dst_reg = copy_addr_to_reg (XEXP (orig_dst, 0));
@@ -2627,7 +2629,7 @@ m32r_expand_block_move (rtx operands[])
   if (optimize_size || ! constp || align != UNITS_PER_WORD)
     {
       block_move_call (dst_reg, src_reg, bytes_rtx);
-      return;
+      return 0;
     }
 
   leftover = bytes % MAX_MOVE_BYTES;
@@ -2684,6 +2686,7 @@ m32r_expand_block_move (rtx operands[])
     emit_insn (gen_movmemsi_internal (dst_reg, src_reg, GEN_INT (leftover),
 				      gen_reg_rtx (SImode),
 				      gen_reg_rtx (SImode)));
+    return 1;
 }
 
 
