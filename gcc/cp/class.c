@@ -4681,6 +4681,11 @@ layout_class_type (tree t, tree *virtuals_p)
 	 comply with the ABI.  */
       if (warn_abi
 	  && DECL_C_BIT_FIELD (field) 
+	  /* The TREE_NO_WARNING flag gets set by Objective-C when
+	     laying out an Objective-C class.  The ObjC ABI differs
+	     from the C++ ABI, and so we do not want a warning
+	     here.  */
+	  && !TREE_NO_WARNING (field)
 	  && !last_field_was_bitfield
 	  && !integer_zerop (size_binop (TRUNC_MOD_EXPR,
 					 DECL_FIELD_BIT_OFFSET (field),

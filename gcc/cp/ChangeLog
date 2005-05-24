@@ -1,3 +1,21 @@
+2005-05-24  Ziemowit Laski  <zlaski@apple.com>
+
+	* class.c (layout_class_type): Do not issue C++ ABI warnings
+	for ObjC structs.
+	* decl.c (objc_mark_locals_volatile): Streamline by calling
+	objc_volatilize_decl().
+	* parser.c (cp_parser_objc_message_expression): Allow simple
+	type specifiers (instead of merely type names) as message
+	receivers.
+	* pt.c (template_args_equal): Do not call objc_comptypes().
+	* typeck.c (composite_pointer_type): If both pointers are
+	ObjC-esque, arbitrarily choose the first; do not call
+	objc_comptypes().
+	(comptypes): Do not call objc_comptypes().
+	(convert_for_assignment): Call objc_compare_types().
+	(comp_ptr_ttypes_real): Call objc_type_quals_match() before
+	concluding that types do not match.
+
 2005-05-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/21645

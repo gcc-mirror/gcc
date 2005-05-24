@@ -503,6 +503,13 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       return build_type_attribute_variant (result_type, attributes);
     }
 
+  if (c_dialect_objc () && TREE_CODE (t1) == POINTER_TYPE
+      && TREE_CODE (t2) == POINTER_TYPE)
+    {
+      if (objc_compare_types (t1, t2, -3, NULL_TREE))
+	return t1;
+    }
+
   /* [expr.eq] permits the application of a pointer conversion to
      bring the pointers to a common type.  */
   if (TREE_CODE (t1) == POINTER_TYPE && TREE_CODE (t2) == POINTER_TYPE
@@ -514,12 +521,10 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       class1 = TREE_TYPE (t1);
       class2 = TREE_TYPE (t2);
 
-      if (DERIVED_FROM_P (class1, class2) || 
-	  (c_dialect_objc () && objc_comptypes (class1, class2, 0) == 1))
+      if (DERIVED_FROM_P (class1, class2))
 	t2 = (build_pointer_type 
 	      (cp_build_qualified_type (class1, TYPE_QUALS (class2))));
-      else if (DERIVED_FROM_P (class2, class1) ||
-	       (c_dialect_objc () && objc_comptypes (class2, class1, 0) == 1))
+      else if (DERIVED_FROM_P (class2, class1))
 	t1 = (build_pointer_type 
 	      (cp_build_qualified_type (class2, TYPE_QUALS (class1))));
       else
@@ -1000,11 +1005,6 @@ comptypes (tree t1, tree t2, int strict)
       else if ((strict & COMPARE_DERIVED) && DERIVED_FROM_P (t2, t1))
 	break;
       
-      /* We may be dealing with Objective-C instances.  */
-      if (TREE_CODE (t1) == RECORD_TYPE
-	  && objc_comptypes (t1, t2, 0) > 0)
-	break;
-
       return false;
 
     case OFFSET_TYPE:
@@ -5832,7 +5832,33 @@ convert_for_assignment (tree type, tree rhs,
   /* Simplify the RHS if possible.  */
   if (TREE_CODE (rhs) == CONST_DECL)
     rhs = DECL_INITIAL (rhs);
-  
+
+  if (c_dialect_objc ())
+    {
+      int parmno;
+      tree rname = fndecl;
+
+      if (!strcmp (errtype, "assignment"))
+	parmno = -1;
+      else if (!strcmp (errtype, "initialization"))
+	parmno = -2;
+      else
+	{
+	  tree selector = objc_message_selector ();
+
+	  parmno = parmnum;
+
+	  if (selector && parmno > 1)
+	    {
+	      rname = selector;
+	      parmno -= 1;
+	    }
+	}
+
+      if (objc_compare_types (type, rhstype, parmno, rname))
+	return convert (type, rhs);
+    }
+
   /* [expr.ass]
 
      The expression is implicitly converted (clause _conv_) to the
@@ -6257,10 +6283,15 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	 so the usual checks are not appropriate.  */
       if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
 	{
-	  if (!at_least_as_qualified_p (to, from))
+	  /* In Objective-C++, some types may have been 'volatilized' by
+	     the compiler for EH; when comparing them here, the volatile
+	     qualification must be ignored.  */
+	  bool objc_quals_match = objc_type_quals_match (to, from);
+
+	  if (!at_least_as_qualified_p (to, from) && !objc_quals_match)
 	    return 0;
 
-	  if (!at_least_as_qualified_p (from, to))
+	  if (!at_least_as_qualified_p (from, to) && !objc_quals_match)
 	    {
 	      if (constp == 0)
 		return 0;
