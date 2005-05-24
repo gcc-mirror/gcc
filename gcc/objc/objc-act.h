@@ -32,7 +32,6 @@ const char *objc_printable_name (tree, int);
 tree objc_get_callee_fndecl (tree);
 void objc_finish_file (void);
 tree objc_fold_obj_type_ref (tree, tree);
-int objc_types_compatible_p (tree, tree);
 enum gimplify_status objc_gimplify_expr (tree *, tree *, tree *);
 
 /* NB: The remaining public functions are prototyped in c-common.h, for the
@@ -190,7 +189,6 @@ enum objc_tree_index
     OCTI_STATIC_NST_DECL,
     OCTI_SELF_ID,
     OCTI_UCMD_ID,
-    OCTI_UNUSED_LIST,
 
     OCTI_SELF_DECL,
     OCTI_UMSG_DECL,
@@ -305,7 +303,6 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 
 #define self_id			objc_global_trees[OCTI_SELF_ID]
 #define ucmd_id			objc_global_trees[OCTI_UCMD_ID]
-#define unused_list		objc_global_trees[OCTI_UNUSED_LIST]
 
 #define self_decl		objc_global_trees[OCTI_SELF_DECL]
 #define umsg_decl		objc_global_trees[OCTI_UMSG_DECL]

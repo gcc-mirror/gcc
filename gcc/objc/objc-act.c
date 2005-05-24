@@ -169,12 +169,20 @@ static tree is_ivar (tree, tree);
 static void build_objc_exception_stuff (void);
 static void build_next_objc_exception_stuff (void);
 
+/* We only need the following for ObjC; ObjC++ will use C++'s definition
+   of DERIVED_FROM_P.  */
+#ifndef OBJCPLUS
+static bool objc_derived_from_p (tree, tree);
+#define DERIVED_FROM_P(PARENT, CHILD) objc_derived_from_p (PARENT, CHILD)
+#endif
+static void objc_xref_basetypes (tree, tree);
+
 static void build_class_template (void);
 static void build_selector_template (void);
 static void build_category_template (void);
 static void build_super_template (void);
 static tree build_protocol_initializer (tree, tree, tree, tree, tree);
-static tree get_class_ivars (tree);
+static tree get_class_ivars (tree, bool);
 static tree generate_protocol_list (tree);
 static void build_protocol_reference (tree);
 
@@ -387,6 +395,14 @@ struct string_descriptor GTY(())
 };
 
 static GTY((param_is (struct string_descriptor))) htab_t string_htab;
+
+/* Store the EH-volatilized types in a hash table, for easy retrieval.  */
+struct volatilized_type GTY(())
+{
+  tree type;
+};
+
+static GTY((param_is (struct volatilized_type))) htab_t volatilized_htab;
 
 FILE *gen_declaration_file;
 
@@ -777,351 +793,470 @@ objc_is_class_id (tree type)
   return OBJC_TYPE_NAME (type) == objc_class_id;
 }
 
+/* Construct a C struct with tag NAME, a base struct with tag
+   SUPER_NAME (if any), and FIELDS indicated.  */
 
-int
-objc_types_compatible_p (tree type1, tree type2)
+static tree
+objc_build_struct (tree name, tree fields, tree super_name)
 {
+  tree s = start_struct (RECORD_TYPE, name);
+  tree super = (super_name ? xref_tag (RECORD_TYPE, super_name) : NULL_TREE);
 
-  if (objc_is_object_ptr (type1) || objc_is_object_ptr (type2)
-      || objc_is_class_name (type1) || objc_is_class_name (type2))
+  if (super)
     {
-      return lhd_types_compatible_p (type1, type2);
-    }
-  else
-    {
+      /* Prepend a packed variant of the base class into the layout.  This
+	 is necessary to preserve ObjC ABI compatibility.  */
+      tree base = build_decl (FIELD_DECL, NULL_TREE, super);
+      tree field = TYPE_FIELDS (super);
+
+      while (field && TREE_CHAIN (field)
+	     && TREE_CODE (TREE_CHAIN (field)) == FIELD_DECL)
+	field = TREE_CHAIN (field);
+
+      /* For ObjC ABI purposes, the "packed" size of a base class is
+	 the the sum of the offset and the size (in bits) of the last
+	 field in the class.  */
+      DECL_SIZE (base)
+	= (field && TREE_CODE (field) == FIELD_DECL
+	   ? size_binop (PLUS_EXPR, 
+			 size_binop (PLUS_EXPR,
+				     size_binop
+				     (MULT_EXPR,
+				      convert (bitsizetype,
+					       DECL_FIELD_OFFSET (field)),
+				      bitsize_int (BITS_PER_UNIT)),
+				     DECL_FIELD_BIT_OFFSET (field)),
+			 DECL_SIZE (field))
+	   : bitsize_zero_node);
+      DECL_SIZE_UNIT (base)
+	= size_binop (FLOOR_DIV_EXPR, convert (sizetype, DECL_SIZE (base)),
+		      size_int (BITS_PER_UNIT));
+      DECL_ARTIFICIAL (base) = 1;
+      DECL_ALIGN (base) = 1;
+      DECL_FIELD_CONTEXT (base) = s;
 #ifdef OBJCPLUS
-      return cxx_types_compatible_p (type1, type2);
-#else
-      return c_types_compatible_p (type1, type2);
+      DECL_FIELD_IS_BASE (base) = 1;
+
+      if (fields)
+	TREE_NO_WARNING (fields) = 1;	/* Suppress C++ ABI warnings -- we   */
+#endif					/* are following the ObjC ABI here.  */
+      TREE_CHAIN (base) = fields;
+      fields = base;
+    }
+
+  s = finish_struct (s, fields, NULL_TREE);
+
+  /* Use TYPE_BINFO structures to point at the super class, if any.  */
+  objc_xref_basetypes (s, super);
+
+  return s;
+}
+
+/* Mark DECL as being 'volatile' for purposes of Darwin
+   _setjmp()/_longjmp() exception handling.  Called from
+   objc_mark_locals_volatile().  */
+void
+objc_volatilize_decl (tree decl)
+{
+  /* Do not mess with variables that are 'static' or (already)
+     'volatile'.  */
+  if (!TREE_THIS_VOLATILE (decl) && !TREE_STATIC (decl)
+      && (TREE_CODE (decl) == VAR_DECL
+	  || TREE_CODE (decl) == PARM_DECL))
+    {
+      tree t = TREE_TYPE (decl);
+      struct volatilized_type key;
+      void **loc;
+
+      t = build_qualified_type (t, (TYPE_QUALS (t)
+				    | TYPE_QUAL_VOLATILE));
+      key.type = t;
+      loc = htab_find_slot (volatilized_htab, &key, INSERT);
+
+      if (!*loc)
+	{
+	  *loc = ggc_alloc (sizeof (key));
+	  ((struct volatilized_type *) *loc)->type = t;
+	}
+
+      TREE_TYPE (decl) = t;
+      TREE_THIS_VOLATILE (decl) = 1;
+      TREE_SIDE_EFFECTS (decl) = 1;
+      DECL_REGISTER (decl) = 0;
+#ifndef OBJCPLUS
+      C_DECL_REGISTER (decl) = 0;
 #endif
     }
 }
 
+/* Check if protocol PROTO is adopted (directly or indirectly) by class CLS
+   (including its categoreis and superclasses) or by object type TYP.
+   Issue a warning if PROTO is not adopted anywhere and WARN is set.  */
 
-/* Return 1 if LHS and RHS are compatible types for assignment or
-   various other operations.  Return 0 if they are incompatible, and
-   return -1 if we choose to not decide (because the types are really
-   just C types, not ObjC specific ones).  When the operation is
-   REFLEXIVE (typically comparisons), check for compatibility in
-   either direction; when it's not (typically assignments), don't.
-
-   This function is called in two cases: when both lhs and rhs are
-   pointers to records (in which case we check protocols too), and
-   when both lhs and rhs are records (in which case we check class
-   inheritance only).
-
-   Warnings about classes/protocols not implementing a protocol are
-   emitted here (multiple of those warnings might be emitted for a
-   single line!); generic warnings about incompatible assignments and
-   lacks of casts in comparisons are/must be emitted by the caller if
-   we return 0.
-*/
-
-int
-objc_comptypes (tree lhs, tree rhs, int reflexive)
+static bool
+objc_lookup_protocol (tree proto, tree cls, tree typ, bool warn)
 {
-  /* New clause for protocols.  */
+  bool class_type = (cls != NULL_TREE);
 
-  /* Here we manage the case of a POINTER_TYPE = POINTER_TYPE.  We only
-     manage the ObjC ones, and leave the rest to the C code.  */
-  if (TREE_CODE (lhs) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (lhs)) == RECORD_TYPE
-      && TREE_CODE (rhs) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (rhs)) == RECORD_TYPE)
+  while (cls)
     {
-      int lhs_is_proto = IS_PROTOCOL_QUALIFIED_UNTYPED (lhs);
-      int rhs_is_proto = IS_PROTOCOL_QUALIFIED_UNTYPED (rhs);
+      tree c;
 
-      if (lhs_is_proto)
-        {
-	  tree lproto, lproto_list = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (lhs));
-	  tree rproto, rproto_list;
-	  tree p;
-
-	  /* <Protocol> = <Protocol>  */
-	  if (rhs_is_proto)
-	    {
-	      /* Class <Protocol> != id <Protocol>;
-		 id <Protocol> != Class <Protocol>  */
-	      if (IS_ID (lhs) != IS_ID (rhs))
-		return 0;
-
-	      rproto_list = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rhs));
-
-	      if (!reflexive)
-		{
-		  /* An assignment between objects of type 'id
-		     <Protocol>'; make sure the protocol on the lhs is
-		     supported by the object on the rhs.  */
-		  for (lproto = lproto_list; lproto;
-		       lproto = TREE_CHAIN (lproto))
-		    {
-		      p = TREE_VALUE (lproto);
-		      rproto = lookup_protocol_in_reflist (rproto_list, p);
-
-		      if (!rproto)
-			warning
-			  (0, "object does not conform to the %qs protocol",
-			   IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
-		    }
-		  return 1;
-		}
-	      else
-		{
-		  /* Obscure case - a comparison between two objects
-		     of type 'id <Protocol>'.  Check that either the
-		     protocol on the lhs is supported by the object on
-		     the rhs, or viceversa.  */
-
-		  /* Check if the protocol on the lhs is supported by the
-		     object on the rhs.  */
-		  for (lproto = lproto_list; lproto;
-		       lproto = TREE_CHAIN (lproto))
-		    {
-		      p = TREE_VALUE (lproto);
-		      rproto = lookup_protocol_in_reflist (rproto_list, p);
-
-		      if (!rproto)
-			{
-			  /* Check failed - check if the protocol on the rhs
-			     is supported by the object on the lhs.  */
-			  for (rproto = rproto_list; rproto;
-			       rproto = TREE_CHAIN (rproto))
-			    {
-			      p = TREE_VALUE (rproto);
-			      lproto = lookup_protocol_in_reflist (lproto_list,
-								   p);
-
-			      if (!lproto)
-				{
-				  /* This check failed too: incompatible  */
-				  return 0;
-				}
-			    }
-			  return 1;
-			}
-		    }
-		  return 1;
-		}
-	    }
-	  /* <Protocol> = <class> *  */
-	  else if (TYPED_OBJECT (TREE_TYPE (rhs)))
-	    {
-	      tree rname = OBJC_TYPE_NAME (TREE_TYPE (rhs));
-	      tree rinter;
-
-	      /* Class <Protocol> != <class> *  */
-	      if (IS_CLASS (lhs))
-		return 0;
-
-	      /* Make sure the protocol is supported by the object on
-		 the rhs.  */
-	      for (lproto = lproto_list; lproto; lproto = TREE_CHAIN (lproto))
-		{
-		  p = TREE_VALUE (lproto);
-		  rproto = 0;
-		  rinter = lookup_interface (rname);
-
-		  while (rinter && !rproto)
-		    {
-		      tree cat;
-
-		      rproto_list = CLASS_PROTOCOL_LIST (rinter);
-		      rproto = lookup_protocol_in_reflist (rproto_list, p);
-		      /* If the underlying ObjC class does not have
-			 the protocol we're looking for, check for "one-off"
-			 protocols (e.g., `NSObject<MyProt> *foo;') attached
-			 to the rhs.  */
-		      if (!rproto && TYPE_HAS_OBJC_INFO (TREE_TYPE (rhs)))
-			{
-			  rproto_list = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rhs));
-			  rproto = lookup_protocol_in_reflist (rproto_list, p);
-			}
-
-		      /* Check for protocols adopted by categories.  */
-		      cat = CLASS_CATEGORY_LIST (rinter);
-		      while (cat && !rproto)
-			{
-			  rproto_list = CLASS_PROTOCOL_LIST (cat);
-			  rproto = lookup_protocol_in_reflist (rproto_list, p);
-			  cat = CLASS_CATEGORY_LIST (cat);
-			}
-
-		      rinter = lookup_interface (CLASS_SUPER_NAME (rinter));
-		    }
-
-		  if (!rproto)
-		    warning (0, "class %qs does not implement the %qs protocol",
-			     IDENTIFIER_POINTER (OBJC_TYPE_NAME (TREE_TYPE (rhs))),
-			     IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
-		}
-	      return 1;
-	    }
-	  /* id <Protocol> = id; Class <Protocol> = id */
-	  else if (objc_is_object_id (TREE_TYPE (rhs)))
-	    {
-	      return 1;
-	    }
-	  /* id <Protocol> != Class; Class <Protocol> = Class */
-	  else if (objc_is_class_id (TREE_TYPE (rhs)))
-	    {
-	      return IS_CLASS (lhs);
-	    }
-	  /* <Protocol> = ?? : let comptypes decide.  */
-          return -1;
-        }
-      else if (rhs_is_proto)
+      /* Check protocols adopted by the class and its categories.  */
+      for (c = cls; c; c = CLASS_CATEGORY_LIST (c))
 	{
-	  /* <class> * = <Protocol> */
-	  if (TYPED_OBJECT (TREE_TYPE (lhs)))
-	    {
-	      /* <class> * != Class <Protocol> */
-	      if (IS_CLASS (rhs))
-		return 0;
-
-	      if (reflexive)
-		{
-		  tree rname = OBJC_TYPE_NAME (TREE_TYPE (lhs));
-		  tree rinter;
-		  tree rproto, rproto_list = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rhs));
-
-		  /* Make sure the protocol is supported by the object on
-		     the lhs.  */
-		  for (rproto = rproto_list; rproto;
-		       rproto = TREE_CHAIN (rproto))
-		    {
-		      tree p = TREE_VALUE (rproto);
-		      tree lproto = 0;
-		      rinter = lookup_interface (rname);
-
-		      while (rinter && !lproto)
-			{
-			  tree cat;
-
-			  tree lproto_list = CLASS_PROTOCOL_LIST (rinter);
-			  lproto = lookup_protocol_in_reflist (lproto_list, p);
-			  /* If the underlying ObjC class does not
-			     have the protocol we're looking for,
-			     check for "one-off" protocols (e.g.,
-			     `NSObject<MyProt> *foo;') attached to the
-			     lhs.  */
-			  if (!lproto && TYPE_HAS_OBJC_INFO (TREE_TYPE (lhs)))
-			    {
-			      lproto_list = TYPE_OBJC_PROTOCOL_LIST
-				(TREE_TYPE (lhs));
-			      lproto = lookup_protocol_in_reflist
-				(lproto_list, p);
-			    }
-
-			  /* Check for protocols adopted by categories.  */
-			  cat = CLASS_CATEGORY_LIST (rinter);
-			  while (cat && !lproto)
-			    {
-			      lproto_list = CLASS_PROTOCOL_LIST (cat);
-			      lproto = lookup_protocol_in_reflist (lproto_list,
-								   p);
-			      cat = CLASS_CATEGORY_LIST (cat);
-			    }
-			
-			  rinter = lookup_interface (CLASS_SUPER_NAME
-						     (rinter));
-			}
-		
-		      if (!lproto)
-			warning (0, "class %qs does not implement the %qs protocol",
-				 IDENTIFIER_POINTER (OBJC_TYPE_NAME
-						     (TREE_TYPE (lhs))),
-				 IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
-		    }
-		  return 1;
-		}
-	      else
-		return 0;
-	    }
-	  /* id = id <Protocol>; id = Class <Protocol> */
-	  else if (objc_is_object_id (TREE_TYPE (lhs)))
-	    {
-	      return 1;
-	    }
-	  /* Class != id <Protocol>; Class = Class <Protocol> */
-	  else if (objc_is_class_id (TREE_TYPE (lhs)))
-	    {
-	      return IS_CLASS (rhs);
-	    }
-	  /* ??? = <Protocol> : let comptypes decide */
-	  else
-	    {
-	      return -1;
-	    }
+	  if (lookup_protocol_in_reflist (CLASS_PROTOCOL_LIST (c), proto))
+	    return true;
 	}
-      else
+
+      /* Repeat for superclasses.  */
+      cls = lookup_interface (CLASS_SUPER_NAME (cls));
+    }
+
+  /* Check for any protocols attached directly to the object type.  */
+  if (TYPE_HAS_OBJC_INFO (typ))
+    {
+      if (lookup_protocol_in_reflist (TYPE_OBJC_PROTOCOL_LIST (typ), proto))
+	return true;
+    }
+
+  if (warn)
+    {
+      strcpy (errbuf, class_type ? "class \'" : "type \'");
+      gen_type_name_0 (class_type ? typ : TYPE_POINTER_TO (typ));
+      strcat (errbuf, "\' does not ");
+      /* NB: Types 'id' and 'Class' cannot reasonably be described as
+	 "implementing" a given protocol, since they do not have an
+	 implementation.  */
+      strcat (errbuf, class_type ? "implement" : "conform to");
+      strcat (errbuf, " the \'");
+      strcat (errbuf, IDENTIFIER_POINTER (PROTOCOL_NAME (proto)));
+      strcat (errbuf, "\' protocol");
+      warning (0, errbuf);
+    }
+
+  return false;
+}
+
+/* Check if class RCLS and instance struct type RTYP conform to at least the
+   same protocols that LCLS and LTYP conform to.  */
+
+static bool
+objc_compare_protocols (tree lcls, tree ltyp, tree rcls, tree rtyp, bool warn)
+{
+  tree p;
+  bool have_lproto = false;
+
+  while (lcls)
+    {
+      /* NB: We do _not_ look at categories defined for LCLS; these may or
+	 may not get loaded in, and therefore it is unreasonable to require
+	 that RCLS/RTYP must implement any of their protocols.  */
+      for (p = CLASS_PROTOCOL_LIST (lcls); p; p = TREE_CHAIN (p))
 	{
-	  /* Attention: we shouldn't defer to comptypes here.  One bad
-	     side effect would be that we might loose the REFLEXIVE
-	     information.
-	  */
-	  lhs = TREE_TYPE (lhs);
-	  rhs = TREE_TYPE (rhs);
+	  have_lproto = true;
+
+	  if (!objc_lookup_protocol (TREE_VALUE (p), rcls, rtyp, warn))
+	    return warn;
+	}
+
+      /* Repeat for superclasses.  */
+      lcls = lookup_interface (CLASS_SUPER_NAME (lcls));
+    }
+
+  /* Check for any protocols attached directly to the object type.  */
+  if (TYPE_HAS_OBJC_INFO (ltyp))
+    {
+      for (p = TYPE_OBJC_PROTOCOL_LIST (ltyp); p; p = TREE_CHAIN (p))
+	{
+	  have_lproto = true;
+
+	  if (!objc_lookup_protocol (TREE_VALUE (p), rcls, rtyp, warn))
+	    return warn;
 	}
     }
 
-  if (TREE_CODE (lhs) != RECORD_TYPE || TREE_CODE (rhs) != RECORD_TYPE)
+  /* NB: If LTYP and LCLS have no protocols to search for, return 'true'
+     vacuously, _unless_ RTYP is a protocol-qualified 'id'.  We can get
+     away with simply checking for 'id' or 'Class' (!RCLS), since this
+     routine will not get called in other cases.  */
+  return have_lproto || (rcls != NULL_TREE);
+}
+
+/* Determine if it is permissible to assign (if ARGNO is greater than -3)
+   an instance of RTYP to an instance of LTYP or to compare the two
+   (if ARGNO is equal to -3), per ObjC type system rules.  Before
+   returning 'true', this routine may issue warnings related to, e.g.,
+   protocol conformance.  When returning 'false', the routine must
+   produce absolutely no warnings; the C or C++ front-end will do so
+   instead, if needed.  If either LTYP or RTYP is not an Objective-C type,
+   the routine must return 'false'.
+
+   The ARGNO parameter is encoded as follows:
+     >= 1	Parameter number (CALLEE contains function being called);
+     0		Return value;
+     -1		Assignment;
+     -2		Initialization;
+     -3		Comparison (LTYP and RTYP may match in either direction).  */
+
+bool
+objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
+{
+  tree lcls, rcls, lproto, rproto;
+  bool pointers_compatible;
+
+  /* We must be dealing with pointer types */
+  if (!POINTER_TYPE_P (ltyp) || !POINTER_TYPE_P (rtyp))
+    return false;
+
+  do
     {
-      /* Nothing to do with ObjC - let immediately comptypes take
-	 responsibility for checking.  */
-      return -1;
+      ltyp = TREE_TYPE (ltyp);  /* Remove indirections.  */
+      rtyp = TREE_TYPE (rtyp);
     }
+  while (POINTER_TYPE_P (ltyp) && POINTER_TYPE_P (rtyp));
 
-  /* `id' = `<class> *' `<class> *' = `id': always allow it.
-     Please note that
-     'Object *o = [[Object alloc] init]; falls
-     in the case <class> * = `id'.
-  */
-  if ((objc_is_object_id (lhs) && TYPED_OBJECT (rhs))
-      || (objc_is_object_id (rhs) && TYPED_OBJECT (lhs)))
-    return 1;
+  /* Past this point, we are only interested in ObjC class instances,
+     or 'id' or 'Class'.  */
+  if (TREE_CODE (ltyp) != RECORD_TYPE || TREE_CODE (rtyp) != RECORD_TYPE)
+    return false;
 
-  /* `id' = `Class', `Class' = `id' */
+  if (!objc_is_object_id (ltyp) && !objc_is_class_id (ltyp)
+      && !TYPE_HAS_OBJC_INFO (ltyp))
+    return false;
 
-  else if ((objc_is_object_id (lhs) && objc_is_class_id (rhs))
-	   || (objc_is_class_id (lhs) && objc_is_object_id (rhs)))
-    return 1;
+  if (!objc_is_object_id (rtyp) && !objc_is_class_id (rtyp)
+      && !TYPE_HAS_OBJC_INFO (rtyp))
+    return false;
 
-  /* `Class' != `<class> *' && `<class> *' != `Class'!  */
-  else if ((OBJC_TYPE_NAME (lhs) == objc_class_id && TYPED_OBJECT (rhs))
-	   || (OBJC_TYPE_NAME (rhs) == objc_class_id && TYPED_OBJECT (lhs)))
-    return 0;
+  /* Past this point, we are committed to returning 'true' to the caller.
+     However, we can still warn about type and/or protocol mismatches.  */
 
-  /* `<class> *' = `<class> *' */
-
-  else if (TYPED_OBJECT (lhs) && TYPED_OBJECT (rhs))
+  if (TYPE_HAS_OBJC_INFO (ltyp))
     {
-      tree lname = OBJC_TYPE_NAME (lhs);
-      tree rname = OBJC_TYPE_NAME (rhs);
-      tree inter;
-
-      if (lname == rname)
-	return 1;
-
-      /* If the left hand side is a super class of the right hand side,
-	 allow it.  */
-      for (inter = lookup_interface (rname); inter;
-	   inter = lookup_interface (CLASS_SUPER_NAME (inter)))
-	if (lname == CLASS_SUPER_NAME (inter))
-	  return 1;
-
-      /* Allow the reverse when reflexive.  */
-      if (reflexive)
-	for (inter = lookup_interface (lname); inter;
-	     inter = lookup_interface (CLASS_SUPER_NAME (inter)))
-	  if (rname == CLASS_SUPER_NAME (inter))
-	    return 1;
-
-      return 0;
+      lcls = TYPE_OBJC_INTERFACE (ltyp);
+      lproto = TYPE_OBJC_PROTOCOL_LIST (ltyp);
     }
   else
-    /* Not an ObjC type - let comptypes do the check.  */
-    return -1;
+    lcls = lproto = NULL_TREE;
+
+  if (TYPE_HAS_OBJC_INFO (rtyp))
+    {
+      rcls = TYPE_OBJC_INTERFACE (rtyp);
+      rproto = TYPE_OBJC_PROTOCOL_LIST (rtyp);
+    }
+  else
+    rcls = rproto = NULL_TREE;
+
+  /* If either type is an unqualified 'id', we're done.  */
+  if ((!lproto && objc_is_object_id (ltyp))
+      || (!rproto && objc_is_object_id (rtyp)))
+    return true;
+
+  pointers_compatible = (TYPE_MAIN_VARIANT (ltyp) == TYPE_MAIN_VARIANT (rtyp));
+
+  /* If the underlying types are the same, and at most one of them has
+     a protocol list, we do not need to issue any diagnostics.  */
+  if (pointers_compatible && (!lproto || !rproto))
+    return true;
+
+  /* If exactly one of the types is 'Class', issue a diagnostic; any
+     exceptions of this rule have already been handled.  */
+  if (objc_is_class_id (ltyp) ^ objc_is_class_id (rtyp))
+    pointers_compatible = false;
+  /* Otherwise, check for inheritance relations.  */
+  else
+    {
+      if (!pointers_compatible)
+	pointers_compatible
+	  = (objc_is_object_id (ltyp) || objc_is_object_id (rtyp));
+
+      if (!pointers_compatible)
+	pointers_compatible = DERIVED_FROM_P (ltyp, rtyp);
+
+      if (!pointers_compatible && argno == -3)
+	pointers_compatible = DERIVED_FROM_P (rtyp, ltyp);
+    }
+
+  /* If the pointers match modulo protocols, check for protocol conformance
+     mismatches.  */
+  if (pointers_compatible)
+    {
+      pointers_compatible = objc_compare_protocols (lcls, ltyp, rcls, rtyp,
+						    argno != -3);
+
+      if (!pointers_compatible && argno == -3)
+	pointers_compatible = objc_compare_protocols (rcls, rtyp, lcls, ltyp,
+						      argno != -3);
+    }
+
+  if (!pointers_compatible)
+    {
+      /* NB: For the time being, we shall make our warnings look like their
+	 C counterparts.  In the future, we may wish to make them more
+	 ObjC-specific.  */
+      switch (argno)
+	{
+	case -3:
+	  warning (0, "comparison of distinct Objective-C types lacks a cast");
+	  break;
+
+	case -2:
+	  warning (0, "initialization from distinct Objective-C type");
+	  break;
+
+	case -1:
+	  warning (0, "assignment from distinct Objective-C type");
+	  break;
+
+	case 0:
+	  warning (0, "distinct Objective-C type in return");
+	  break;
+
+	default:
+	  warning (0, "passing argument %d of %qE from distinct "
+		   "Objective-C type", argno, callee);
+	  break;
+	}
+    }
+
+  return true;
+}
+
+/* Check if LTYP and RTYP have the same type qualifiers.  If either type
+   lives in the volatilized hash table, ignore the 'volatile' bit when
+   making the comparison.  */
+
+bool
+objc_type_quals_match (tree ltyp, tree rtyp)
+{
+  int lquals = TYPE_QUALS (ltyp), rquals = TYPE_QUALS (rtyp);
+  struct volatilized_type key;
+
+  key.type = ltyp;
+
+  if (htab_find_slot (volatilized_htab, &key, NO_INSERT))
+    lquals &= ~TYPE_QUAL_VOLATILE;
+
+  key.type = rtyp;
+
+  if (htab_find_slot (volatilized_htab, &key, NO_INSERT))
+    rquals &= ~TYPE_QUAL_VOLATILE;
+
+  return (lquals == rquals);
+}
+
+#ifndef OBJCPLUS
+/* Determine if CHILD is derived from PARENT.  The routine assumes that
+   both parameters are RECORD_TYPEs, and is non-reflexive.  */
+
+static bool
+objc_derived_from_p (tree parent, tree child)
+{
+  parent = TYPE_MAIN_VARIANT (parent);
+
+  for (child = TYPE_MAIN_VARIANT (child);
+       TYPE_BINFO (child) && BINFO_N_BASE_BINFOS (TYPE_BINFO (child));)
+    {
+      child = TYPE_MAIN_VARIANT (BINFO_TYPE (BINFO_BASE_BINFO
+					     (TYPE_BINFO (child),
+					      0)));
+
+      if (child == parent)
+	return true;
+    }
+
+  return false;
+}
+#endif
+
+static tree
+objc_build_component_ref (tree datum, tree component)
+{
+  /* If COMPONENT is NULL, the caller is referring to the anonymous
+     base class field.  */
+  if (!component)
+    {
+      tree base = TYPE_FIELDS (TREE_TYPE (datum));
+
+      return build3 (COMPONENT_REF, TREE_TYPE (base), datum, base, NULL_TREE);
+    }
+
+  /* The 'build_component_ref' routine has been removed from the C++
+     front-end, but 'finish_class_member_access_expr' seems to be
+     a worthy substitute.  */
+#ifdef OBJCPLUS
+  return finish_class_member_access_expr (datum, component);
+#else
+  return build_component_ref (datum, component);
+#endif
+}
+
+/* Recursively copy inheritance information rooted at BINFO.  To do this,
+   we emulate the song and dance performed by cp/tree.c:copy_binfo().  */
+
+static tree
+objc_copy_binfo (tree binfo)
+{
+  tree btype = BINFO_TYPE (binfo);
+  tree binfo2 = make_tree_binfo (BINFO_N_BASE_BINFOS (binfo));
+  tree base_binfo;
+  int ix;
+
+  BINFO_TYPE (binfo2) = btype;
+  BINFO_OFFSET (binfo2) = BINFO_OFFSET (binfo);
+  BINFO_BASE_ACCESSES (binfo2) = BINFO_BASE_ACCESSES (binfo);
+
+  /* Recursively copy base binfos of BINFO.  */
+  for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
+    {
+      tree base_binfo2 = objc_copy_binfo (base_binfo);
+
+      BINFO_INHERITANCE_CHAIN (base_binfo2) = binfo2;
+      BINFO_BASE_APPEND (binfo2, base_binfo2);
+    }
+
+  return binfo2;
+}
+
+/* Record superclass information provided in BASETYPE for ObjC class REF.
+   This is loosely based on cp/decl.c:xref_basetypes().  */
+
+static void
+objc_xref_basetypes (tree ref, tree basetype)
+{
+  tree binfo = make_tree_binfo (basetype ? 1 : 0);
+
+  TYPE_BINFO (ref) = binfo;
+  BINFO_OFFSET (binfo) = size_zero_node;
+  BINFO_TYPE (binfo) = ref;
+
+  if (basetype)
+    {
+      tree base_binfo = objc_copy_binfo (TYPE_BINFO (basetype));
+
+      BINFO_INHERITANCE_CHAIN (base_binfo) = binfo;
+      BINFO_BASE_ACCESSES (binfo) = VEC_alloc (tree, gc, 1);
+      BINFO_BASE_APPEND (binfo, base_binfo);
+      BINFO_BASE_ACCESS_APPEND (binfo, access_public_node);
+    }
+}
+
+static hashval_t
+volatilized_hash (const void *ptr)
+{
+  tree typ = ((struct volatilized_type *)ptr)->type;
+
+  return (hashval_t) typ;
+}
+
+static int
+volatilized_eq (const void *ptr1, const void *ptr2)
+{
+  tree typ1 = ((struct volatilized_type *)ptr1)->type;
+  tree typ2 = ((struct volatilized_type *)ptr2)->type;
+
+  return typ1 == typ2;
 }
 
 /* Called from finish_decl.  */
@@ -1532,10 +1667,6 @@ synth_module_prologue (void)
   /* Pre-build the following entities - for speed/convenience.  */
   self_id = get_identifier ("self");
   ucmd_id = get_identifier ("_cmd");
-#ifndef OBJCPLUS
-  /* The C++ front-end does not appear to grok __attribute__((__unused__)).  */
-  unused_list = build_tree_list (get_identifier ("__unused__"), NULL_TREE);
-#endif	  
 
 #ifdef OBJCPLUS
   pop_lang_context ();
@@ -2512,23 +2643,29 @@ add_class_reference (tree ident)
 tree
 objc_get_class_reference (tree ident)
 {
-  tree orig_ident;
+  tree orig_ident = (DECL_P (ident)
+		     ? DECL_NAME (ident)
+		     : TYPE_P (ident)
+		     ? OBJC_TYPE_NAME (ident)
+		     : ident);
   bool local_scope = false;
 
 #ifdef OBJCPLUS
   if (processing_template_decl)
     /* Must wait until template instantiation time.  */
     return build_min_nt (CLASS_REFERENCE_EXPR, ident);
-  if (TREE_CODE (ident) == TYPE_DECL)
-    {
-      /* The type must exist in the global namespace.  */
-      if (DECL_CONTEXT (ident) && DECL_CONTEXT (ident) != global_namespace)
-	local_scope = true;
-
-      ident = DECL_NAME (ident);
-    }
 #endif
-  orig_ident = ident;
+
+  if (TREE_CODE (ident) == TYPE_DECL)
+    ident = (DECL_ORIGINAL_TYPE (ident)
+	     ? DECL_ORIGINAL_TYPE (ident)
+	     : TREE_TYPE (ident));
+
+#ifdef OBJCPLUS
+  if (TYPE_P (ident) && TYPE_CONTEXT (ident)
+      && TYPE_CONTEXT (ident) != global_namespace)
+    local_scope = true;
+#endif
 
   if (local_scope || !(ident = objc_is_class_name (ident)))
     {
@@ -2656,7 +2793,20 @@ objc_declare_alias (tree alias_ident, tree class_ident)
   else if (objc_is_class_name (alias_ident))
     warning (0, "class %qs already exists", IDENTIFIER_POINTER (alias_ident));
   else
-    alias_chain = tree_cons (underlying_class, alias_ident, alias_chain);
+    {
+      /* Implement @compatibility_alias as a typedef.  */
+#ifdef OBJCPLUS
+      push_lang_context (lang_name_c); /* extern "C" */
+#endif
+      lang_hooks.decls.pushdecl (build_decl
+				 (TYPE_DECL,
+				  alias_ident,
+				  xref_tag (RECORD_TYPE, underlying_class)));
+#ifdef OBJCPLUS
+      pop_lang_context ();
+#endif
+      alias_chain = tree_cons (underlying_class, alias_ident, alias_chain);
+    }
 }
 
 void
@@ -2807,10 +2957,11 @@ objc_substitute_decl (tree expr, tree oldexpr, tree newexpr)
   switch (TREE_CODE (expr))
     {
     case COMPONENT_REF:
-      return build_component_ref (objc_substitute_decl (TREE_OPERAND (expr, 0),
-							oldexpr,
-							newexpr),
-				  DECL_NAME (TREE_OPERAND (expr, 1)));
+      return objc_build_component_ref
+	     (objc_substitute_decl (TREE_OPERAND (expr, 0),
+				    oldexpr,
+				    newexpr),
+	      DECL_NAME (TREE_OPERAND (expr, 1)));
     case ARRAY_REF:
       return build_array_ref (objc_substitute_decl (TREE_OPERAND (expr, 0),
 						    oldexpr,
@@ -3103,7 +3254,7 @@ objc_get_class_ivars (tree class_name)
   tree interface = lookup_interface (class_name);
 
   if (interface)
-    return get_class_ivars (interface);
+    return get_class_ivars (interface, true);
 
   error ("cannot find interface declaration for %qs",
 	 IDENTIFIER_POINTER (class_name));
@@ -3115,7 +3266,7 @@ objc_get_class_ivars (tree class_name)
    and for @defs constructs.  */
 
 static tree
-get_class_ivars (tree interface)
+get_class_ivars (tree interface, bool inherited)
 {
   tree ivar_chain = copy_list (CLASS_RAW_IVARS (interface));
 
@@ -3125,6 +3276,9 @@ get_class_ivars (tree interface)
      finish_struct(), which will fill in field offsets.  */
   if (!CLASS_IVARS (interface))
     CLASS_IVARS (interface) = ivar_chain;
+
+  if (!inherited)
+    return ivar_chain;
 
   while (CLASS_SUPER_NAME (interface))
     {
@@ -3283,8 +3437,8 @@ next_sjlj_build_enter_and_setjmp (void)
   t = tree_cons (NULL, t, NULL);
   enter = build_function_call (objc_exception_try_enter_decl, t);
 
-  t = build_component_ref (cur_try_context->stack_decl,
-			   get_identifier ("buf"));
+  t = objc_build_component_ref (cur_try_context->stack_decl,
+				get_identifier ("buf"));
   t = build_fold_addr_expr (t);
 #ifdef OBJCPLUS
   /* Convert _setjmp argument to type that is expected.  */
@@ -3569,7 +3723,7 @@ objc_begin_catch_clause (tree decl)
 	  t = CATCH_TYPES (stmt);
 	  if (t == error_mark_node)
 	    continue;
-	  if (!t || objc_comptypes (TREE_TYPE (t), TREE_TYPE (type), 0) == 1)
+	  if (!t || DERIVED_FROM_P (TREE_TYPE (t), TREE_TYPE (type)))
 	    {
 	      warning (0, "exception of type %<%T%> will be caught",
 		       TREE_TYPE (type));
@@ -3869,9 +4023,10 @@ build_private_template (tree class)
 {
   if (!CLASS_STATIC_TEMPLATE (class))
     {
-      tree record = start_struct (RECORD_TYPE, CLASS_NAME (class));
+      tree record = objc_build_struct (CLASS_NAME (class),
+				       get_class_ivars (class, false),
+				       CLASS_SUPER_NAME (class));
 
-      finish_struct (record, get_class_ivars (class), NULL_TREE);
       /* mark this record as class template - for class type checking */
       INIT_TYPE_OBJC_INFO (record);
       TYPE_OBJC_INTERFACE (record) = class;
@@ -4702,8 +4857,8 @@ synth_forward_declarations (void)
   /* Pre-build the following entities - for speed/convenience.  */
 
   an_id = get_identifier ("super_class");
-  ucls_super_ref = build_component_ref (UOBJC_CLASS_decl, an_id);
-  uucls_super_ref = build_component_ref (UOBJC_METACLASS_decl, an_id);
+  ucls_super_ref = objc_build_component_ref (UOBJC_CLASS_decl, an_id);
+  uucls_super_ref = objc_build_component_ref (UOBJC_METACLASS_decl, an_id);
 }
 
 static void
@@ -6482,7 +6637,7 @@ build_ivar_reference (tree id)
       self_decl = convert (objc_instance_type, self_decl); /* cast */
     }
 
-  return build_component_ref (build_indirect_ref (self_decl, "->"), id);
+  return objc_build_component_ref (build_indirect_ref (self_decl, "->"), id);
 }
 
 /* Compute a hash value for a given method SEL_NAME.  */
@@ -6510,6 +6665,10 @@ hash_init (void)
   /* Initialize the hash table used to hold the constant string objects.  */
   string_htab = htab_create_ggc (31, string_hash,
 				   string_eq, NULL);
+
+  /* Initialize the hash table used to hold EH-volatilized types.  */
+  volatilized_htab = htab_create_ggc (31, volatilized_hash,
+				      volatilized_eq, NULL);
 }
 
 /* WARNING!!!!  hash_enter is called with a method, and will peek
@@ -6924,8 +7083,14 @@ is_private (tree decl)
 int
 objc_is_public (tree expr, tree identifier)
 {
-  tree basetype = TREE_TYPE (expr);
-  tree decl;
+  tree basetype, decl;
+
+#ifdef OBJCPLUS
+  if (processing_template_decl)
+    return 1;
+#endif
+
+  basetype = TYPE_MAIN_VARIANT (TREE_TYPE (expr));
 
   if (basetype && TREE_CODE (basetype) == RECORD_TYPE)
     {
@@ -6940,7 +7105,7 @@ objc_is_public (tree expr, tree identifier)
 	      return 0;
 	    }
 
-	  if ((decl = is_ivar (get_class_ivars (class), identifier)))
+	  if ((decl = is_ivar (get_class_ivars (class, true), identifier)))
 	    {
 	      if (TREE_PUBLIC (decl))
 		return 1;
@@ -6949,19 +7114,26 @@ objc_is_public (tree expr, tree identifier)
 		 all instance variables should be public within the context
 		 of the implementation.  */
 	      if (objc_implementation_context
-		  && (((TREE_CODE (objc_implementation_context)
-			== CLASS_IMPLEMENTATION_TYPE)
-		       || (TREE_CODE (objc_implementation_context)
-			   == CATEGORY_IMPLEMENTATION_TYPE))
-		      && (CLASS_NAME (objc_implementation_context)
-			  == OBJC_TYPE_NAME (basetype))))
+		 && ((TREE_CODE (objc_implementation_context)
+		      == CLASS_IMPLEMENTATION_TYPE)
+		     || (TREE_CODE (objc_implementation_context)
+			 == CATEGORY_IMPLEMENTATION_TYPE)))
 		{
-		  int private = is_private (decl);
+		  tree curtype = TYPE_MAIN_VARIANT
+				 (CLASS_STATIC_TEMPLATE
+				  (implementation_template));
 
-		  if (private)
-		    error ("instance variable %qs is declared private",
-			   IDENTIFIER_POINTER (DECL_NAME (decl)));
-		  return !private;
+		  if (basetype == curtype
+		      || DERIVED_FROM_P (basetype, curtype))
+		    {
+		      int private = is_private (decl);
+
+		      if (private)
+			error ("instance variable %qs is declared private",
+			       IDENTIFIER_POINTER (DECL_NAME (decl)));
+
+		      return !private;
+		    }
 		}
 
 	      /* The 2.95.2 compiler sometimes allowed C functions to access
@@ -7396,7 +7568,7 @@ continue_class (tree class)
       pop_lang_context ();
 #endif /* OBJCPLUS */
 
-      return get_class_ivars (implementation_template);
+      return get_class_ivars (implementation_template, true);
     }
 
   else if (TREE_CODE (class) == CLASS_INTERFACE_TYPE)
@@ -7682,6 +7854,47 @@ encode_array (tree type, int curtype, int format)
 }
 
 static void
+encode_aggregate_fields (tree type, int pointed_to, int curtype, int format)
+{
+  tree field = TYPE_FIELDS (type);
+
+  for (; field; field = TREE_CHAIN (field))
+    {
+#ifdef OBJCPLUS
+      /* C++ static members, and things that are not field at all,
+	 should not appear in the encoding.  */
+      if (TREE_CODE (field) != FIELD_DECL || TREE_STATIC (field))
+	continue;
+#endif
+
+      /* Recursively encode fields of embedded base classes.  */
+      if (DECL_ARTIFICIAL (field) && !DECL_NAME (field) 
+	  && TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
+	{
+	  encode_aggregate_fields (TREE_TYPE (field),
+				   pointed_to, curtype, format);
+	  continue;
+	}
+
+      if (generating_instance_variables && !pointed_to)
+	{
+	  tree fname = DECL_NAME (field);
+
+	  obstack_1grow (&util_obstack, '"');
+
+	  if (fname && TREE_CODE (fname) == IDENTIFIER_NODE)
+	    obstack_grow (&util_obstack,
+			  IDENTIFIER_POINTER (fname),
+			  strlen (IDENTIFIER_POINTER (fname)));
+
+	  obstack_1grow (&util_obstack, '"');
+        }
+
+      encode_field_decl (field, curtype, format);
+    }
+}
+
+static void
 encode_aggregate_within (tree type, int curtype, int format, int left,
 			 int right)
 {
@@ -7721,30 +7934,8 @@ encode_aggregate_within (tree type, int curtype, int format, int left,
      if required.  */
   if (inline_contents)
     {
-      tree fields = TYPE_FIELDS (type);
-
       obstack_1grow (&util_obstack, '=');
-      for (; fields; fields = TREE_CHAIN (fields))
-	{
-#ifdef OBJCPLUS
-	  /* C++ static members, and things that are not fields at all,
-	     should not appear in the encoding.  */
-	  if (TREE_CODE (fields) != FIELD_DECL || TREE_STATIC (fields))
-	    continue;
-#endif
-	  if (generating_instance_variables && !pointed_to)
-	    {
-	      tree fname = DECL_NAME (fields);
-
-	      obstack_1grow (&util_obstack, '"');
-	      if (fname && TREE_CODE (fname) == IDENTIFIER_NODE)
-		obstack_grow (&util_obstack,
-			      IDENTIFIER_POINTER (fname),
-			      strlen (IDENTIFIER_POINTER (fname)));
-	      obstack_1grow (&util_obstack, '"');
-	    }
-	  encode_field_decl (fields, curtype, format);
-	}
+      encode_aggregate_fields (type, pointed_to, curtype, format);
     }
   /* Close parenth/bracket.  */  			
   obstack_1grow (&util_obstack, right);
@@ -8392,13 +8583,13 @@ get_super_receiver (void)
       }
 
       /* Set receiver to self.  */
-      super_expr = build_component_ref (UOBJC_SUPER_decl, self_id);
+      super_expr = objc_build_component_ref (UOBJC_SUPER_decl, self_id);
       super_expr = build_modify_expr (super_expr, NOP_EXPR, self_decl);
       super_expr_list = super_expr;
 
       /* Set class to begin searching.  */
-      super_expr = build_component_ref (UOBJC_SUPER_decl,
-					get_identifier ("super_class"));
+      super_expr = objc_build_component_ref (UOBJC_SUPER_decl,
+					     get_identifier ("super_class"));
 
       if (TREE_CODE (objc_implementation_context) == CLASS_IMPLEMENTATION_TYPE)
 	{
@@ -9174,14 +9365,14 @@ objc_rewrite_function_call (tree function, tree params)
    a function in OBJ_TYPE_REF_EXPR (presumably objc_msgSend or one
    of its cousins).  */
 
-enum gimplify_status objc_gimplify_expr (tree *expr_p, tree *pre_p, 
-					 tree *post_p)
+enum gimplify_status
+objc_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
 {
   enum gimplify_status r0, r1;
-  if (TREE_CODE (*expr_p) == OBJ_TYPE_REF 
+  if (TREE_CODE (*expr_p) == OBJ_TYPE_REF
       && TREE_CODE (OBJ_TYPE_REF_EXPR (*expr_p)) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (OBJ_TYPE_REF_EXPR (*expr_p), 0)) 
-	    == FUNCTION_DECL)
+      && TREE_CODE (TREE_OPERAND (OBJ_TYPE_REF_EXPR (*expr_p), 0))
+	 == FUNCTION_DECL)
     {
       /* Postincrements in OBJ_TYPE_REF_OBJECT don't affect the
 	 value of the OBJ_TYPE_REF, so force them to be emitted
@@ -9193,8 +9384,10 @@ enum gimplify_status objc_gimplify_expr (tree *expr_p, tree *pre_p,
 			  is_gimple_val, fb_rvalue);
       r1 = gimplify_expr (&OBJ_TYPE_REF_EXPR (*expr_p), pre_p, post_p,
 			  is_gimple_val, fb_rvalue);
+
       return MIN (r0, r1);
     }
+
 #ifdef OBJCPLUS
   return cp_gimplify_expr (expr_p, pre_p, post_p);
 #else

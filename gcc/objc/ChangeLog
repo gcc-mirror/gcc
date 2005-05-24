@@ -1,3 +1,46 @@
+2005-05-24  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (objc_build_struct): New function.
+	(objc_derived_from_p): Likewise.
+	(objc_build_component_ref): Likewise.
+	(objc_copy_binfo): Likewise.
+	(objc_xref_basetypes): Likewise.
+	(objc_lookup_protocol): Likewise.
+	(objc_compare_protocols): Likewise.
+	(objc_volatilize_decl): Likewise.
+	(encode_aggregate_fields): Likewise.
+	(volatilized_hash): Likewise.
+	(volatilized_eq): Likewise.
+	(objc_compare_types): Likewise.
+	(objc_type_quals_match): Likewise.
+	(DERIVED_FROM_P): New ObjC macro, corresponding to C++ macro
+	of same name.
+	(get_class_ivars): Add second parameter indicating if entire
+	hierarchy is desired.
+	(struct volatilized_type): New type.
+	(volatilized_htab): New hash table.
+	(objc_types_compatible_p, objc_comptypes): Remove functions.
+	(synth_module_prologue): Do not initialize 'unused_list'.
+	(objc_get_class_reference): Fix ObjC++ impedance mismatches.
+	(objc_declare_alias): Implement as a typedef.
+	(objc_substitute_decl, objc_gimplify_expr): Reformat.
+	(objc_get_class_ivars): Adjust call to get_class_ivars().
+	(next_sjlj_build_enter_and_setjmp, synth_forward_declarations,
+	build_ivar_reference, get_super_receiver): Call
+	objc_build_component_ref() instead of build_component_ref().
+	(objc_begin_catch_clause): Use DERIVED_FROM_P() instead of
+	objc_comptypes().
+	(build_private_template): Call objc_build_struct() instead of
+	start_struct() and finish_struct().
+	(hash_init): Initialize volatilized_htab.
+	(objc_is_public): Adjust calls to objc_get_ivars(); adjust
+	ObjC++ impedance mismatches.
+	(encode_aggregate_within): Streamline by calling
+	encode_aggregate_fields().
+	* objc-act.h (objc_types_compatible_p): Remove prototype.
+	(OCTI_UNUSED_LIST, unused_list): Remove slot.
+	* objc-lang.c (LANG_HOOKS_TYPES_COMPATIBLE_P): Remove.
+
 2005-05-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* Make-lang.in (cc1obj-dummy): New.
