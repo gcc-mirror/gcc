@@ -1,3 +1,10 @@
+2005-05-24  Jeff Law  <law@redhat.com>
+
+	* Makefile.in (tree-cfg.o): Depend on tree-ssa-propagate.h.
+	* tree-cfg.c: Include tree-ssa-propagate.h.
+	(replace_uses_by): Call recompute_tree_invarant_for_addr_expr as
+	needed.
+
 2005-05-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
