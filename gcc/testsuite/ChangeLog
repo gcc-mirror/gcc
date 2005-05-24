@@ -1,3 +1,9 @@
+20005-05-24  Janis Johnson  <janis187@us.ibm.com>
+
+	PR tree-optimization/19833
+	* gcc.dg/uninit-4.c: Remove xfail.
+	* gcc.dg/uninit-9.c: Ditto.
+
 2005-05-24  Ziemowit Laski  <zlaski@apple.com>
 
 	* obj-c++.dg/bitfield-[1-5].mm: New.
