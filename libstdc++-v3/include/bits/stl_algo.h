@@ -916,7 +916,10 @@ namespace std
       __glibcxx_requires_valid_range(__first, __last);
 
       for ( ; __first != __last; ++__first, ++__result)
-	*__result = *__first == __old_value ? __new_value : *__first;
+	if (*__first == __old_value)
+	  *__result = __new_value;
+	else
+	  *__result = *__first;
       return __result;
     }
 
@@ -950,7 +953,10 @@ namespace std
       __glibcxx_requires_valid_range(__first, __last);
 
       for ( ; __first != __last; ++__first, ++__result)
-	*__result = __pred(*__first) ? __new_value : *__first;
+	if (__pred(*__first))
+	  *__result = __new_value;
+	else
+	  *__result = *__first;
       return __result;
     }
 

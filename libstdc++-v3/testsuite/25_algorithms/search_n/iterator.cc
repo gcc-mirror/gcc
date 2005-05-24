@@ -76,7 +76,7 @@ int main() {
 	  {
 	    test_container<int, forward_iterator_wrapper>
 	      forwardcon(array2, array2 + i);
-	    test_container<int, bidirectional_iterator_wrapper>
+	    test_container<int, random_access_iterator_wrapper>
 	      randomcon(array2, array2 + i);
 	    test_container<int, bidirectional_iterator_wrapper>
 	      bidircon(array2, array2 + i);

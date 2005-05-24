@@ -1,3 +1,133 @@
+2005-05-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/25_algorithms/equal.cc: Move to...
+	* testsuite/25_algorithms/equal: ... here.
+	* testsuite/25_algorithms/lower_bound.cc: Move to...
+	* testsuite/25_algorithms/lower_bound: ... here.
+
+2005-05-24  Paolo Carlini  <pcarlini@suse.de>
+
+        Port from libstdcxx_so_7-branch:
+	2005-20-05  Chris Jefferson  <chris@bubblescope.net>
+
+	* testsuite/25_algorithms/heap.cc: Move to...
+	* testsuite/25_algorithms/heap/heap.cc: ...here.
+	* testsuite/25_algorithms/partition.cc: Move to...
+	* testsuite/25_algorithms/partition/partition.cc: ...here.
+
+	2005-03-29  Christopher Jefferson  <chris@bubblescope.net>
+
+	* testsuite/25_algorithms/includes/1.cc: Add tests.
+	* testsuite/25_algorithms/search/1.cc: Likewise.
+	* testsuite/25_algorithms/unique_copy/1.cc: Likewise.
+	* testsuite/25_algorithms/swap_ranges/1.cc: New.
+	* testsuite/25_algorithms/swap_ranges/check_type.cc: New.
+	* testsuite/25_algorithms/rotate.cc: Move to...
+	* testsuite/25_algorithms/rotate/rotate.cc: ... here.
+	* testsuite/25_algorithms/rotate/1.cc: New.
+	* testsuite/25_algorithms/rotate/check_type.cc: New.
+	* testsuite/25_algorithms/search_n/iterator.cc: Fix typo.
+
+	2005-03-14  Christopher Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_algo.h (replace_copy, replace_copy_if):
+	Don't assume that __new_value and *__first are convertible to
+	each other.	
+
+	* testsuite/25_algorithms/find/1.cc: New.
+	* testsuite/25_algorithms/find/check_type.cc: New.
+	* testsuite/25_algorithms/find_if/1.cc: New.
+	* testsuite/25_algorithms/find_if/check_type.cc: New.
+	* testsuite/25_algorithms/replace/1.cc: New.
+	* testsuite/25_algorithms/replace/check_type.cc: New.
+	* testsuite/25_algorithms/replace_if/1.cc: New.
+	* testsuite/25_algorithms/replace_if/check_type.cc: New.
+	* testsuite/25_algorithms/replace_copy/1.cc: New.
+	* testsuite/25_algorithms/replace_copy/check_type.cc: New.
+	* testsuite/25_algorithms/replace_copy_if/1.cc: New.
+	* testsuite/25_algorithms/replace_copy_if/check_type.cc: New.
+	* testsuite/25_algorithms/remove/1.cc: New.
+	* testsuite/25_algorithms/remove/check_type.cc: New.
+	* testsuite/25_algorithms/remove_if/1.cc: New.
+	* testsuite/25_algorithms/remove_if/check_type.cc: New.
+	* testsuite/25_algorithms/count/1.cc: New.
+	* testsuite/25_algorithms/count/check_type.cc: New.
+	* testsuite/25_algorithms/count_if/1.cc: New.
+	* testsuite/25_algorithms/count_if/check_type.cc: New.
+
+	2005-02-27  Christopher Jefferson  <chris@bubblescope.net>
+        	    Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/ext/is_heap/check_type.cc: New.
+	
+	2005-02-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/ext/is_heap/1.cc: New.
+
+	2005-02-01  Christopher Jefferson  <chris@bubblescope.net>
+
+	* testsuite/ext/median.cc: New.
+	* testsuite/25_algorithms/adjacent_find/1.cc: New.
+	* testsuite/25_algorithms/adjacent_find/check_type.cc: New.
+	* testsuite/25_algorithms/search/1.cc: New.
+	* testsuite/25_algorithms/search/check_type.cc: New.
+	* testsuite/25_algorithms/unique_copy/1.cc: New.
+	* testsuite/25_algorithms/unique_copy/check_type.cc: New.
+	* testsuite/25_algorithms/partial_sort/1.cc: New.
+	* testsuite/25_algorithms/partial_sort/check_type.cc: New.
+	* testsuite/25_algorithms/partial_sort_copy/1.cc: New.
+	* testsuite/25_algorithms/partial_sort_copy/check_type.cc: New.
+	* testsuite/25_algorithms/lower_bound/1.cc: New.
+	* testsuite/25_algorithms/lower_bound/check_type.cc: New.
+	* testsuite/25_algorithms/upper_bound/1.cc: New.
+	* testsuite/25_algorithms/upper_bound/check_type.cc: New.
+	* testsuite/25_algorithms/merge/1.cc: New.
+	* testsuite/25_algorithms/merge/check_type.cc: New.
+	* testsuite/25_algorithms/inplace_merge/1.cc: New.
+	* testsuite/25_algorithms/inplace_merge/check_type.cc: New.
+	* testsuite/25_algorithms/stable_sort/1.cc: New.
+	* testsuite/25_algorithms/stable_sort/check_type.cc: New.
+	* testsuite/25_algorithms/nth_element/1.cc: New.
+	* testsuite/25_algorithms/nth_element/check_type.cc: New.
+	* testsuite/25_algorithms/equal_range/1.cc: New.
+	* testsuite/25_algorithms/equal_range/check_type.cc: New.
+	* testsuite/25_algorithms/binary_search/1.cc: New.
+	* testsuite/25_algorithms/binary_search/check_type.cc: New.
+	* testsuite/25_algorithms/includes/1.cc: New.
+	* testsuite/25_algorithms/includes/check_type.cc: New.
+	* testsuite/25_algorithms/set_union/1.cc: New.
+	* testsuite/25_algorithms/set_union/check_type.cc: New.
+	* testsuite/25_algorithms/set_intersection/1.cc: New.
+	* testsuite/25_algorithms/set_intersection/check_type.cc: New.
+	* testsuite/25_algorithms/set_difference/1.cc: New.
+	* testsuite/25_algorithms/set_difference/check_type.cc: New.
+	* testsuite/25_algorithms/set_symmetric_difference/1.cc: New.
+	* testsuite/25_algorithms/set_symmetric_difference/check_type.cc: New.	
+	* testsuite/25_algorithms/min_element/1.cc: New.
+	* testsuite/25_algorithms/min_element/check_type.cc: New.
+	* testsuite/25_algorithms/max_element/1.cc: New.
+	* testsuite/25_algorithms/max_element/check_type.cc: New.
+	* testsuite/25_algorithms/prev_permutation/1.cc: New.
+	* testsuite/25_algorithms/prev_permutation/check_type.cc: New.
+	* testsuite/25_algorithms/next_permutation/1.cc: New.
+	* testsuite/25_algorithms/next_permutation/check_type.cc: New.
+	* testsuite/25_algorithms/find_first_of/1.cc: New.
+	* testsuite/25_algorithms/find_first_of/check_type.cc: New.
+	* testsuite/25_algorithms/find_end/1.cc: New.
+	* testsuite/25_algorithms/find_end/check_type.cc: New.
+	* testsuite/25_algorithms/equal/check_type.cc: Insert iterator type.
+	* testsuite/25_algorithms/lexicographical_compare/check_type.cc:
+	Likewise.
+
+	2005-01-10  Christopher Jefferson <chris@bubblescope.net>
+
+	* testsuite/25_algorithms/lexicographical_compare/check_type.cc: New.
+	* testsuite/25_algorithms/lexicographical_compare/1.cc: Likewise.
+	* testsuite/25_algorithms/mismatch/check_type.cc: Likewise.
+	* testsuite/25_algorithms/mismatch/1.cc: Likewise.
+	* testsuite/25_algorithms/equal/check_type.cc: New.
+	* testsuite/25_algorithms/equal/1.cc: New.
+
 2005-05-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/allocator.h: Change ___glibcxx_base_allocator to
