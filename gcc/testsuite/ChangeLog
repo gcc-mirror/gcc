@@ -1,3 +1,12 @@
+2005-05-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline:
+	PR libfortran/18495
+	* gfortran.fortran-torture/execute/intrinsic_spread.f90:
+	Test callee-allocated version of return array with a write
+	statement.
+	Test spread with a temporary with another write statement.
+
 2005-04-23  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline:
