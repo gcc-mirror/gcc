@@ -2050,7 +2050,6 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
       if (! flag_indirect_dispatch 
 	  || (! DECL_EXTERNAL (method) && ! TREE_PUBLIC (method)))
 	{
-	  make_decl_rtl (method);
 	  func = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (method)),
 			 method);
 	}

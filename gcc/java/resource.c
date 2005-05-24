@@ -93,7 +93,6 @@ compile_resource_data (const char *name, const char *buffer, int length)
   layout_decl (decl, 0);
   pushdecl (decl);
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
-  make_decl_rtl (decl);
   cgraph_varpool_finalize_decl (decl);
 
   resources = tree_cons (NULL_TREE, decl, resources);
