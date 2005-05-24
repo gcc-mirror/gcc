@@ -216,20 +216,30 @@ eq_pointer (const PTR p1, const PTR p2)
   return p1 == p2;
 }
 
-/* Return the current size of given hash table. */
 
-inline size_t
-htab_size (htab_t htab)
+/* The parens around the function names in the next two definitions
+   are essential in order to prevent macro expansions of the name.
+   The bodies, however, are expanded as expected, so they are not
+   recursive definitions.  */
+
+/* Return the current size of given hash table.  */
+
+#define htab_size(htab)  ((htab)->size)
+
+size_t
+(htab_size) (htab_t htab)
 {
-  return htab->size;
+  return htab_size (htab);
 }
 
 /* Return the current number of elements in given hash table. */
 
-inline size_t
-htab_elements (htab_t htab)
+#define htab_elements(htab)  ((htab)->n_elements - (htab)->n_deleted)
+
+size_t
+(htab_elements) (htab_t htab)
 {
-  return htab->n_elements - htab->n_deleted;
+  return htab_elements (htab);
 }
 
 /* Return X % Y.  */
@@ -317,15 +327,10 @@ htab_create_alloc (size_t size, htab_hash hash_f, htab_eq eq_f,
    an extra argument.  */
 
 htab_t
-htab_create_alloc_ex (size, hash_f, eq_f, del_f, alloc_arg, alloc_f,
-		      free_f)
-     size_t size;
-     htab_hash hash_f;
-     htab_eq eq_f;
-     htab_del del_f;
-     PTR alloc_arg;
-     htab_alloc_with_arg alloc_f;
-     htab_free_with_arg free_f;
+htab_create_alloc_ex (size_t size, htab_hash hash_f, htab_eq eq_f,
+                      htab_del del_f, void *alloc_arg,
+                      htab_alloc_with_arg alloc_f,
+		      htab_free_with_arg free_f)
 {
   htab_t result;
   unsigned int size_prime_index;

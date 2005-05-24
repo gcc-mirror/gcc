@@ -31,6 +31,6 @@ char *
 xstrdup (const char *s)
 {
   register size_t len = strlen (s) + 1;
-  register char *ret = xmalloc (len);
+  register char *ret = XNEWVEC (char, len);
   return (char *) memcpy (ret, s, len);
 }

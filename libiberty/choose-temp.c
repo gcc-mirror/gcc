@@ -61,7 +61,7 @@ choose_temp_base (void)
   int len;
 
   len = strlen (base);
-  temp_filename = xmalloc (len + TEMP_FILE_LEN + 1);
+  temp_filename = XNEWVEC (char, len + TEMP_FILE_LEN + 1);
   strcpy (temp_filename, base);
   strcpy (temp_filename + len, TEMP_FILE);
 

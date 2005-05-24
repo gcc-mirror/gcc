@@ -212,8 +212,16 @@ static char *posixly_correct;
 /* Avoid depending on library functions or files
    whose names are inconsistent.  */
 
-#ifndef getenv
-extern char *getenv ();
+#if HAVE_STDLIB_H && HAVE_DECL_GETENV
+#  include <stdlib.h>
+#elif !defined(getenv)
+#  ifdef __cplusplus
+extern "C" {
+#  endif /* __cplusplus */
+extern char *getenv (const char *);
+#  ifdef __cplusplus
+}
+#  endif /* __cplusplus */
 #endif
 
 static char *
@@ -325,7 +333,7 @@ exchange (char **argv)
     {
       /* We must extend the array.  The user plays games with us and
 	 presents new arguments.  */
-      char *new_str = malloc (top + 1);
+      char *new_str = (char *) malloc (top + 1);
       if (new_str == NULL)
 	nonoption_flags_len = nonoption_flags_max_len = 0;
       else

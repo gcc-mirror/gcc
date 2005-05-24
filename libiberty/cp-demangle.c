@@ -210,7 +210,7 @@ struct d_print_template
   /* Next template on the list.  */
   struct d_print_template *next;
   /* This template.  */
-  const struct demangle_component *template;
+  const struct demangle_component *template_decl;
 };
 
 /* A list of type modifiers.  This is used while printing.  */
@@ -2551,7 +2551,7 @@ d_print_resize (struct d_print_info *dpi, size_t add)
       char *newbuf;
 
       newalc = dpi->alc * 2;
-      newbuf = realloc (dpi->buf, newalc);
+      newbuf = (char *) realloc (dpi->buf, newalc);
       if (newbuf == NULL)
 	{
 	  free (dpi->buf);
@@ -2629,7 +2629,7 @@ cplus_demangle_print (int options, const struct demangle_component *dc,
   dpi.options = options;
 
   dpi.alc = estimate + 1;
-  dpi.buf = malloc (dpi.alc);
+  dpi.buf = (char *) malloc (dpi.alc);
   if (dpi.buf == NULL)
     {
       *palc = 1;
@@ -2730,7 +2730,7 @@ d_print_comp (struct d_print_info *dpi,
 	  {
 	    dpt.next = dpi->templates;
 	    dpi->templates = &dpt;
-	    dpt.template = typed_name;
+	    dpt.template_decl = typed_name;
 	  }
 
 	/* If typed_name is a DEMANGLE_COMPONENT_LOCAL_NAME, then
@@ -2826,7 +2826,7 @@ d_print_comp (struct d_print_info *dpi,
 	    return;
 	  }
 	i = dc->u.s_number.number;
-	for (a = d_right (dpi->templates->template);
+	for (a = d_right (dpi->templates->template_decl);
 	     a != NULL;
 	     a = d_right (a))
 	  {
@@ -3683,7 +3683,7 @@ d_print_cast (struct d_print_info *dpi,
 
       dpt.next = dpi->templates;
       dpi->templates = &dpt;
-      dpt.template = d_left (dc);
+      dpt.template_decl = d_left (dc);
 
       d_print_comp (dpi, d_left (d_left (dc)));
 
@@ -3764,7 +3764,7 @@ d_demangle (const char* mangled, int options, size_t *palc)
     {
       char *r;
 
-      r = malloc (40 + len - 11);
+      r = (char *) malloc (40 + len - 11);
       if (r == NULL)
 	*palc = 1;
       else

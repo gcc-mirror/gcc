@@ -46,10 +46,10 @@ strndup (const char *s, size_t n)
   if (n < len)
     len = n;
 
-  result = malloc (len + 1);
+  result = (char *) malloc (len + 1);
   if (!result)
     return 0;
 
   result[len] = '\0';
-  return memcpy (result, s, len);
+  return (char *) memcpy (result, s, len);
 }

@@ -61,10 +61,10 @@ extern int mkstemps (char *, int);
    If success, DIR is returned.
    Otherwise NULL is returned.  */
 
-static inline const char *try (const char *, const char *);
+static inline const char *try_dir (const char *, const char *);
 
 static inline const char *
-try (const char *dir, const char *base)
+try_dir (const char *dir, const char *base)
 {
   if (base != 0)
     return base;
@@ -103,18 +103,18 @@ choose_tmpdir (void)
   if (memoized_tmpdir)
     return memoized_tmpdir;
 
-  base = try (getenv ("TMPDIR"), base);
-  base = try (getenv ("TMP"), base);
-  base = try (getenv ("TEMP"), base);
+  base = try_dir (getenv ("TMPDIR"), base);
+  base = try_dir (getenv ("TMP"), base);
+  base = try_dir (getenv ("TEMP"), base);
 
 #ifdef P_tmpdir
-  base = try (P_tmpdir, base);
+  base = try_dir (P_tmpdir, base);
 #endif
 
   /* Try /var/tmp, /usr/tmp, then /tmp.  */
-  base = try (vartmp, base);
-  base = try (usrtmp, base);
-  base = try (tmp, base);
+  base = try_dir (vartmp, base);
+  base = try_dir (usrtmp, base);
+  base = try_dir (tmp, base);
  
   /* If all else fails, use the current directory!  */
   if (base == 0)
@@ -123,7 +123,7 @@ choose_tmpdir (void)
   /* Append DIR_SEPARATOR to the directory we've chosen
      and return it.  */
   len = strlen (base);
-  tmpdir = xmalloc (len + 2);
+  tmpdir = XNEWVEC (char, len + 2);
   strcpy (tmpdir, base);
   tmpdir[len] = DIR_SEPARATOR;
   tmpdir[len+1] = '\0';
@@ -158,7 +158,7 @@ make_temp_file (const char *suffix)
   base_len = strlen (base);
   suffix_len = strlen (suffix);
 
-  temp_filename = xmalloc (base_len
+  temp_filename = XNEWVEC (char, base_len
 			   + TEMP_FILE_LEN
 			   + suffix_len + 1);
   strcpy (temp_filename, base);

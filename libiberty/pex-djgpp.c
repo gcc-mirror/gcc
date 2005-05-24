@@ -257,7 +257,7 @@ pex_djgpp_exec_child (struct pex_obj *obj, int flags, const char *executable,
      is the number of children which have executed before this
      one.  */
   statuses = (int *) obj->sysdep;
-  statuses = xrealloc (statuses, (obj->count + 1) * sizeof (int));
+  statuses = XRESIZEVEC (int, statuses, obj->count + 1);
   statuses[obj->count] = status;
   obj->sysdep = (void *) statuses;
 

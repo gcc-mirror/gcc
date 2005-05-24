@@ -45,8 +45,28 @@
    don't. */
 #undef HAVE_DECL_BASENAME
 
+/* Define to 1 if you have the declaration of `calloc', and to 0 if you don't.
+   */
+#undef HAVE_DECL_CALLOC
+
 /* Define to 1 if you have the declaration of `ffs', and to 0 if you don't. */
 #undef HAVE_DECL_FFS
+
+/* Define to 1 if you have the declaration of `getenv', and to 0 if you don't.
+   */
+#undef HAVE_DECL_GETENV
+
+/* Define to 1 if you have the declaration of `malloc', and to 0 if you don't.
+   */
+#undef HAVE_DECL_MALLOC
+
+/* Define to 1 if you have the declaration of `realloc', and to 0 if you
+   don't. */
+#undef HAVE_DECL_REALLOC
+
+/* Define to 1 if you have the declaration of `sbrk', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SBRK
 
 /* Define to 1 if you have the declaration of `vasprintf', and to 0 if you
    don't. */

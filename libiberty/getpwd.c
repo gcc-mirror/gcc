@@ -84,7 +84,7 @@ getpwd (void)
 	     && dotstat.st_dev == pwdstat.st_dev))
 
 	/* The shortcut didn't work.  Try the slow, ``sure'' way.  */
-	for (s = GUESSPATHLEN;  ! getcwd (p = xmalloc (s), s);  s *= 2)
+	for (s = GUESSPATHLEN;  !getcwd (p = XNEWVEC (char, s), s);  s *= 2)
 	  {
 	    int e = errno;
 	    free (p);
@@ -117,7 +117,7 @@ getpwd (void)
   static char *pwd = 0;
 
   if (!pwd)
-    pwd = getcwd (xmalloc (MAXPATHLEN + 1), MAXPATHLEN + 1
+    pwd = getcwd (XNEWVEC (char, MAXPATHLEN + 1), MAXPATHLEN + 1
 #ifdef VMS
 		  , 0
 #endif

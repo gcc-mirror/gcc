@@ -156,7 +156,7 @@ extern char *libiberty_concat_ptr;
    strings.  Allocates memory using alloca.  The arguments are
    evaluated twice!  */
 #define ACONCAT(ACONCAT_PARAMS) \
-  (libiberty_concat_ptr = alloca (concat_length ACONCAT_PARAMS + 1), \
+  (libiberty_concat_ptr = (char *) alloca (concat_length ACONCAT_PARAMS + 1), \
    concat_copy2 ACONCAT_PARAMS)
 
 /* Check whether two file descriptors refer to the same file.  */

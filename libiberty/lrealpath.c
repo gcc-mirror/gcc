@@ -117,7 +117,7 @@ lrealpath (const char *filename)
       {
 	/* PATH_MAX is bounded.  */
 	char *buf, *rp, *ret;
-	buf = malloc (path_max);
+	buf = (char *) malloc (path_max);
 	if (buf == NULL)
 	  return NULL;
 	rp = realpath (filename, buf);

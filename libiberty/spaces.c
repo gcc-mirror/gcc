@@ -57,7 +57,7 @@ spaces (int count)
 	{
 	  free (buf);
 	}
-      buf = malloc (count + 1);
+      buf = (char *) malloc (count + 1);
       if (buf == (char *) 0)
 	return 0;
       for (t = buf + count ; t != buf ; )

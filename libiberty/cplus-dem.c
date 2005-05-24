@@ -892,7 +892,7 @@ grow_vect (char **old_vect, size_t *size, size_t min_size, int element_size)
       *size *= 2;
       if (*size < min_size)
 	*size = min_size;
-      *old_vect = (void *) xrealloc (*old_vect, *size * element_size);
+      *old_vect = XRESIZEVAR (char, *old_vect, *size * element_size);
     }
 }
 
@@ -1102,56 +1102,52 @@ work_stuff_copy_to_from (struct work_stuff *to, struct work_stuff *from)
 
   /* Deep-copy dynamic storage.  */
   if (from->typevec_size)
-    to->typevec
-      = (char **) xmalloc (from->typevec_size * sizeof (to->typevec[0]));
+    to->typevec = XNEWVEC (char *, from->typevec_size);
 
   for (i = 0; i < from->ntypes; i++)
     {
       int len = strlen (from->typevec[i]) + 1;
 
-      to->typevec[i] = xmalloc (len);
+      to->typevec[i] = XNEWVEC (char, len);
       memcpy (to->typevec[i], from->typevec[i], len);
     }
 
   if (from->ksize)
-    to->ktypevec
-      = (char **) xmalloc (from->ksize * sizeof (to->ktypevec[0]));
+    to->ktypevec = XNEWVEC (char *, from->ksize);
 
   for (i = 0; i < from->numk; i++)
     {
       int len = strlen (from->ktypevec[i]) + 1;
 
-      to->ktypevec[i] = xmalloc (len);
+      to->ktypevec[i] = XNEWVEC (char, len);
       memcpy (to->ktypevec[i], from->ktypevec[i], len);
     }
 
   if (from->bsize)
-    to->btypevec
-      = (char **) xmalloc (from->bsize * sizeof (to->btypevec[0]));
+    to->btypevec = XNEWVEC (char *, from->bsize);
 
   for (i = 0; i < from->numb; i++)
     {
       int len = strlen (from->btypevec[i]) + 1;
 
-      to->btypevec[i] = xmalloc (len);
+      to->btypevec[i] = XNEWVEC (char , len);
       memcpy (to->btypevec[i], from->btypevec[i], len);
     }
 
   if (from->ntmpl_args)
-    to->tmpl_argvec
-      = (char **) xmalloc (from->ntmpl_args * sizeof (to->tmpl_argvec[0]));
+    to->tmpl_argvec = XNEWVEC (char *, from->ntmpl_args);
 
   for (i = 0; i < from->ntmpl_args; i++)
     {
       int len = strlen (from->tmpl_argvec[i]) + 1;
 
-      to->tmpl_argvec[i] = xmalloc (len);
+      to->tmpl_argvec[i] = XNEWVEC (char, len);
       memcpy (to->tmpl_argvec[i], from->tmpl_argvec[i], len);
     }
 
   if (from->previous_argument)
     {
-      to->previous_argument = (string*) xmalloc (sizeof (string));
+      to->previous_argument = XNEW (string);
       string_init (to->previous_argument);
       string_appends (to->previous_argument, from->previous_argument);
     }
@@ -1895,7 +1891,7 @@ demangle_template_value_parm (struct work_stuff *work, const char **mangled,
 	    string_appendn (s, "0", 1);
 	  else
 	    {
-	      char *p = xmalloc (symbol_len + 1), *q;
+	      char *p = XNEWVEC (char, symbol_len + 1), *q;
 	      strncpy (p, *mangled, symbol_len);
 	      p [symbol_len] = '\0';
 	      /* We use cplus_demangle here, rather than
@@ -2001,7 +1997,7 @@ demangle_template (struct work_stuff *work, const char **mangled,
   if (!is_type)
     {
       /* Create an array for saving the template argument values. */
-      work->tmpl_argvec = (char**) xmalloc (r * sizeof (char *));
+      work->tmpl_argvec = XNEWVEC (char *, r);
       work->ntmpl_args = r;
       for (i = 0; i < r; i++)
 	work->tmpl_argvec[i] = 0;
@@ -2026,7 +2022,7 @@ demangle_template (struct work_stuff *work, const char **mangled,
 		{
 		  /* Save the template argument. */
 		  int len = temp.p - temp.b;
-		  work->tmpl_argvec[i] = xmalloc (len + 1);
+		  work->tmpl_argvec[i] = XNEWVEC (char, len + 1);
 		  memcpy (work->tmpl_argvec[i], temp.b, len);
 		  work->tmpl_argvec[i][len] = '\0';
 		}
@@ -2054,7 +2050,7 @@ demangle_template (struct work_stuff *work, const char **mangled,
 		{
 		  /* Save the template argument. */
 		  int len = r2;
-		  work->tmpl_argvec[i] = xmalloc (len + 1);
+		  work->tmpl_argvec[i] = XNEWVEC (char, len + 1);
 		  memcpy (work->tmpl_argvec[i], *mangled, len);
 		  work->tmpl_argvec[i][len] = '\0';
 		}
@@ -2100,7 +2096,7 @@ demangle_template (struct work_stuff *work, const char **mangled,
 	  if (!is_type)
 	    {
 	      int len = s->p - s->b;
-	      work->tmpl_argvec[i] = xmalloc (len + 1);
+	      work->tmpl_argvec[i] = XNEWVEC (char, len + 1);
 	      memcpy (work->tmpl_argvec[i], s->b, len);
 	      work->tmpl_argvec[i][len] = '\0';
 
@@ -2998,7 +2994,7 @@ recursively_demangle(struct work_stuff *work, const char **mangled,
   char * recurse = (char *)NULL;
   char * recurse_dem = (char *)NULL;
 
-  recurse = (char *) xmalloc (namelength + 1);
+  recurse = XNEWVEC (char, namelength + 1);
   memcpy (recurse, *mangled, namelength);
   recurse[namelength] = '\000';
 
@@ -3969,7 +3965,7 @@ do_hpacc_template_literal (struct work_stuff *work, const char **mangled,
   string_append (result, "&");
 
   /* Now recursively demangle the literal name */
-  recurse = (char *) xmalloc (literal_len + 1);
+  recurse = XNEWVEC (char, literal_len + 1);
   memcpy (recurse, *mangled, literal_len);
   recurse[literal_len] = '\000';
 
@@ -4071,7 +4067,7 @@ do_arg (struct work_stuff *work, const char **mangled, string *result)
   if (work->previous_argument)
     string_delete (work->previous_argument);
   else
-    work->previous_argument = (string*) xmalloc (sizeof (string));
+    work->previous_argument = XNEW (string);
 
   if (!do_type (work, mangled, work->previous_argument))
     return 0;
@@ -4095,18 +4091,16 @@ remember_type (struct work_stuff *work, const char *start, int len)
       if (work -> typevec_size == 0)
 	{
 	  work -> typevec_size = 3;
-	  work -> typevec
-	    = (char **) xmalloc (sizeof (char *) * work -> typevec_size);
+	  work -> typevec = XNEWVEC (char *, work->typevec_size);
 	}
       else
 	{
 	  work -> typevec_size *= 2;
 	  work -> typevec
-	    = (char **) xrealloc ((char *)work -> typevec,
-				  sizeof (char *) * work -> typevec_size);
+	    = XRESIZEVEC (char *, work->typevec, work->typevec_size);
 	}
     }
-  tem = xmalloc (len + 1);
+  tem = XNEWVEC (char, len + 1);
   memcpy (tem, start, len);
   tem[len] = '\0';
   work -> typevec[work -> ntypes++] = tem;
@@ -4124,18 +4118,16 @@ remember_Ktype (struct work_stuff *work, const char *start, int len)
       if (work -> ksize == 0)
 	{
 	  work -> ksize = 5;
-	  work -> ktypevec
-	    = (char **) xmalloc (sizeof (char *) * work -> ksize);
+	  work -> ktypevec = XNEWVEC (char *, work->ksize);
 	}
       else
 	{
 	  work -> ksize *= 2;
 	  work -> ktypevec
-	    = (char **) xrealloc ((char *)work -> ktypevec,
-				  sizeof (char *) * work -> ksize);
+	    = XRESIZEVEC (char *, work->ktypevec, work->ksize);
 	}
     }
-  tem = xmalloc (len + 1);
+  tem = XNEWVEC (char, len + 1);
   memcpy (tem, start, len);
   tem[len] = '\0';
   work -> ktypevec[work -> numk++] = tem;
@@ -4155,15 +4147,13 @@ register_Btype (struct work_stuff *work)
       if (work -> bsize == 0)
 	{
 	  work -> bsize = 5;
-	  work -> btypevec
-	    = (char **) xmalloc (sizeof (char *) * work -> bsize);
+	  work -> btypevec = XNEWVEC (char *, work->bsize);
 	}
       else
 	{
 	  work -> bsize *= 2;
 	  work -> btypevec
-	    = (char **) xrealloc ((char *)work -> btypevec,
-				  sizeof (char *) * work -> bsize);
+	    = XRESIZEVEC (char *, work->btypevec, work->bsize);
 	}
     }
   ret = work -> numb++;
@@ -4179,7 +4169,7 @@ remember_Btype (struct work_stuff *work, const char *start,
 {
   char *tem;
 
-  tem = xmalloc (len + 1);
+  tem = XNEWVEC (char, len + 1);
   memcpy (tem, start, len);
   tem[len] = '\0';
   work -> btypevec[index] = tem;
@@ -4600,7 +4590,7 @@ string_need (string *s, int n)
 	{
 	  n = 32;
 	}
-      s->p = s->b = xmalloc (n);
+      s->p = s->b = XNEWVEC (char, n);
       s->e = s->b + n;
     }
   else if (s->e - s->p < n)
@@ -4608,7 +4598,7 @@ string_need (string *s, int n)
       tem = s->p - s->b;
       n += tem;
       n *= 2;
-      s->b = xrealloc (s->b, n);
+      s->b = XRESIZEVEC (char, s->b, n);
       s->p = s->b + tem;
       s->e = s->b + n;
     }

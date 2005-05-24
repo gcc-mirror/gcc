@@ -53,8 +53,8 @@ xstrndup (const char *s, size_t n)
   if (n < len)
     len = n;
 
-  result = xmalloc (len + 1);
+  result = XNEWVEC (char, len + 1);
 
   result[len] = '\0';
-  return memcpy (result, s, len);
+  return (char *) memcpy (result, s, len);
 }

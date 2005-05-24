@@ -115,7 +115,7 @@ setenv (const char *name, const char *value, int replace)
 	  return -1;
 	}
 
-      new_environ[size] = malloc (namelen + 1 + vallen);
+      new_environ[size] = (char *) malloc (namelen + 1 + vallen);
       if (new_environ[size] == NULL)
 	{
 	  free ((char *) new_environ);
@@ -142,13 +142,13 @@ setenv (const char *name, const char *value, int replace)
       if (len + 1 < namelen + 1 + vallen)
 	{
 	  /* The existing string is too short; malloc a new one.  */
-	  char *new = malloc (namelen + 1 + vallen);
-	  if (new == NULL)
+	  char *new_string = (char *) malloc (namelen + 1 + vallen);
+	  if (new_string == NULL)
 	    {
 	      UNLOCK;
 	      return -1;
 	    }
-	  *ep = new;
+	  *ep = new_string;
 	}
       memcpy (*ep, name, namelen);
       (*ep)[namelen] = '=';

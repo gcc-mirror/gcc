@@ -155,8 +155,8 @@ int main (int argc, char **argv)
   else
     k = 10;
 
-  pointers = xmalloc (k * sizeof (void *));
-  work = xmalloc (k * sizeof (void *));
+  pointers = XNEWVEC (void*, k);
+  work = XNEWVEC (void*, k);
 
   for (i = 0; i < k; ++i)
     {

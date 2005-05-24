@@ -55,7 +55,7 @@ pex_init_common (int flags, const char *pname, const char *tempbase,
 {
   struct pex_obj *obj;
 
-  obj = xmalloc (sizeof (*obj));
+  obj = XNEW (struct pex_obj);
   obj->flags = flags;
   obj->pname = pname;
   obj->tempbase = tempbase;
@@ -83,7 +83,7 @@ pex_add_remove (struct pex_obj *obj, const char *name, int allocated)
   char *add;
 
   ++obj->remove_count;
-  obj->remove = xrealloc (obj->remove, obj->remove_count * sizeof (char *));
+  obj->remove = XRESIZEVEC (char *, obj->remove, obj->remove_count);
   if (allocated)
     add = (char *) name;
   else
@@ -280,7 +280,7 @@ pex_run (struct pex_obj *obj, int flags, const char *executable,
     goto error_exit;
 
   ++obj->count;
-  obj->children = xrealloc (obj->children, obj->count * sizeof (long));
+  obj->children = XRESIZEVEC (long, obj->children, obj->count);
   obj->children[obj->count - 1] = pid;
 
   return NULL;
@@ -352,9 +352,9 @@ pex_get_status_and_time (struct pex_obj *obj, int done, const char **errmsg,
   if (obj->number_waited == obj->count)
     return 1;
 
-  obj->status = xrealloc (obj->status, obj->count * sizeof (int));
+  obj->status = XRESIZEVEC (int, obj->status, obj->count);
   if ((obj->flags & PEX_RECORD_TIMES) != 0)
-    obj->time = xrealloc (obj->time, obj->count * sizeof (struct pex_time));
+    obj->time = XRESIZEVEC (struct pex_time, obj->time, obj->count);
 
   ret = 1;
   for (i = obj->number_waited; i < obj->count; ++i)
