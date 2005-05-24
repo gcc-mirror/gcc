@@ -1,3 +1,17 @@
+2005-05-24  Jeff Law  <law@redhat.com>
+
+	* tree-nested.c (build_addr): New "context" argument.  Temporarily
+	set current_function_decl around the call to build the ADDR_EXPR.
+	(get_static_chain): Pass proper context to build_addr.
+	(convert_nl_goto_reference): Likewise.
+	(convert_tramp_reference): Likewise.
+	(final_nesting_tree_1): Likewise.
+	* tree-profile.c (tree_gen_interval_profiler): Likewise.
+	(tree_gen_pow2_profiler): Likewise.
+	(tree_gen_one_value_profiler): Likewise.
+	* tree-ssa-loop-ivopts.c (build_addr_strip_iref): Likewise.
+	* tree.h (build_addr): Update prototype.
+
 2005-05-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-flow.h (bb_ann_d): Remove has_escape_site.

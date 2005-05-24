@@ -1527,7 +1527,7 @@ build_addr_strip_iref (tree obj)
       obj = fold_convert (type, TREE_OPERAND (obj, 0));
     }
   else
-    obj = build_addr (obj);
+    obj = build_addr (obj, current_function_decl);
 
   return obj;
 }
