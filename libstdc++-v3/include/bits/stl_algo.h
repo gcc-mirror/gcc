@@ -413,9 +413,8 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_EqualityComparableConcept<
-	    typename iterator_traits<_InputIterator>::value_type >)
-      __glibcxx_function_requires(_EqualityComparableConcept<_Tp>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	typename iterator_traits<_InputIterator>::value_type, _Tp>)
       __glibcxx_requires_valid_range(__first, __last);
       typename iterator_traits<_InputIterator>::difference_type __n = 0;
       for ( ; __first != __last; ++__first)
@@ -627,9 +626,8 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_EqualityComparableConcept<
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_function_requires(_EqualityComparableConcept<_Tp>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_valid_range(__first, __last);
 
       if (__count <= 0)
