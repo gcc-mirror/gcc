@@ -1,6 +1,6 @@
 // Base to std::allocator -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,6 @@
 
 // Define new_allocator as the base class to std::allocator.
 #include <ext/new_allocator.h>
-#define ___glibcxx_base_allocator  __gnu_cxx::new_allocator
+#define __glibcxx_base_allocator  __gnu_cxx::new_allocator
 
 #endif
