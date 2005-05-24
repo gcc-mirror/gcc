@@ -1,3 +1,9 @@
+2005-05-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/21645
+	* optimize.c (update_cloned_parm): Copy the TYPE also from the
+	original one.
+
 2005-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21495
