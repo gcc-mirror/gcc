@@ -148,12 +148,15 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
   return tmp_var;
 }
 
-/* Take the address of EXP.  Mark it for addressability as necessary.  */
+/* Take the address of EXP to be used within function CONTEXT.
+   Mark it for addressability as necessary.  */
 
 tree
-build_addr (tree exp)
+build_addr (tree exp, tree context)
 {
   tree base = exp;
+  tree save_context;
+  tree retval;
 
   while (handled_component_p (base))
     base = TREE_OPERAND (base, 0);
@@ -161,7 +164,18 @@ build_addr (tree exp)
   if (DECL_P (base))
     TREE_ADDRESSABLE (base) = 1;
 
-  return build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
+  /* Building the ADDR_EXPR will compute a set of properties for
+     that ADDR_EXPR.  Those properties are unfortunately context
+     specific.  ie, they are dependent on CURRENT_FUNCTION_DECL.
+
+     Temporarily set CURRENT_FUNCTION_DECL to the desired context,
+     build the ADDR_EXPR, then restore CURRENT_FUNCTION_DECL.  That
+     way the properties are for the ADDR_EXPR are computed properly.  */
+  save_context = current_function_decl;
+  current_function_decl = context;
+  retval = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
+  current_function_decl = save_context;;
+  return retval;
 }
 
 /* Insert FIELD into TYPE, sorted by alignment requirements.  */
@@ -716,7 +730,7 @@ get_static_chain (struct nesting_info *info, tree target_context,
 
   if (info->context == target_context)
     {
-      x = build_addr (info->frame_decl);
+      x = build_addr (info->frame_decl, target_context);
     }
   else
     {
@@ -1092,10 +1106,10 @@ convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
   /* Build: __builtin_nl_goto(new_label, &chain->nl_goto_field).  */
   field = get_nl_goto_field (i);
   x = get_frame_field (info, target_context, field, &wi->tsi);
-  x = build_addr (x);
+  x = build_addr (x, target_context);
   x = tsi_gimplify_val (info, x, &wi->tsi);
   arg = tree_cons (NULL, x, NULL);
-  x = build_addr (new_label);
+  x = build_addr (new_label, target_context);
   arg = tree_cons (NULL, x, arg);
   x = implicit_built_in_decls[BUILT_IN_NONLOCAL_GOTO];
   x = build_function_call_expr (x, arg);
@@ -1190,7 +1204,7 @@ convert_tramp_reference (tree *tp, int *walk_subtrees, void *data)
 
       /* Compute the address of the field holding the trampoline.  */
       x = get_frame_field (info, target_context, x, &wi->tsi);
-      x = build_addr (x);
+      x = build_addr (x, target_context);
       x = tsi_gimplify_val (info, x, &wi->tsi);
       arg = tree_cons (NULL, x, NULL);
 
@@ -1322,7 +1336,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	    continue;
 
 	  if (use_pointer_in_frame (p))
-	    x = build_addr (p);
+	    x = build_addr (p, context);
 	  else
 	    x = p;
 
@@ -1358,15 +1372,15 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	  if (DECL_NO_STATIC_CHAIN (i->context))
 	    x = null_pointer_node;
 	  else
-	    x = build_addr (root->frame_decl);
+	    x = build_addr (root->frame_decl, context);
 	  arg = tree_cons (NULL, x, NULL);
 
-	  x = build_addr (i->context);
+	  x = build_addr (i->context, context);
 	  arg = tree_cons (NULL, x, arg);
 
 	  x = build (COMPONENT_REF, TREE_TYPE (field),
 		     root->frame_decl, field, NULL_TREE);
-	  x = build_addr (x);
+	  x = build_addr (x, context);
 	  arg = tree_cons (NULL, x, arg);
 
 	  x = implicit_built_in_decls[BUILT_IN_INIT_TRAMPOLINE];

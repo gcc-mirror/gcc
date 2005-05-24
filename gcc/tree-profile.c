@@ -143,7 +143,7 @@ tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
   tree steps = build_int_cst_type (unsigned_type_node, value->hdata.intvl.steps);
   
   ref_ptr = force_gimple_operand_bsi (&bsi,
-				      build_addr (ref),
+				      build_addr (ref, current_function_decl),
 				      true, NULL_TREE);
   val = prepare_instrumented_value (&bsi, value);
   args = tree_cons (NULL_TREE, ref_ptr,
@@ -168,7 +168,7 @@ tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
   tree args, call, val;
   
   ref_ptr = force_gimple_operand_bsi (&bsi,
-				      build_addr (ref),
+				      build_addr (ref, current_function_decl),
 				      true, NULL_TREE);
   val = prepare_instrumented_value (&bsi, value);
   args = tree_cons (NULL_TREE, ref_ptr,
@@ -191,7 +191,7 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
   tree args, call, val;
   
   ref_ptr = force_gimple_operand_bsi (&bsi,
-				      build_addr (ref),
+				      build_addr (ref, current_function_decl),
 				      true, NULL_TREE);
   val = prepare_instrumented_value (&bsi, value);
   args = tree_cons (NULL_TREE, ref_ptr,
