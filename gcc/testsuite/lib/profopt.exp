@@ -1,4 +1,4 @@
-#   Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+#   Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,9 @@
 # If perf_ext is defined and the performance value for the
 # profile-directed test run is nonzero then the performance check will
 # be done.
+
+load_lib dg.exp
+load_lib gcc-dg.exp
 
 global PROFOPT_OPTIONS perf_delta
 
@@ -116,6 +119,90 @@ proc profopt-perf-value { testcase perf_ext optstr } {
 }
 
 #
+# dg-final-generate -- process code to run after the profile-generate step
+#
+# ARGS is the line number of the directive followed by the commands.
+#
+proc dg-final-generate { args } {
+    global generate_final_code
+
+    if { [llength $args] > 2 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+    append generate_final_code "[lindex $args 1]\n"
+}
+
+#
+# dg-final-use -- process code to run after the profile-use step
+#
+# ARGS is the line number of the directive followed by the commands.
+#
+proc dg-final-use { args } {
+    global use_final_code
+
+    if { [llength $args] > 2 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+    append use_final_code "[lindex $args 1]\n"
+}
+
+#
+# profopt-final-code -- run final code
+#
+# WHICH is "generate" or "use".
+# FINAL_CODE is the TCL code to run.
+# TESTCASE is the name of the test, for error messages.
+#
+proc profopt-final-code { which final_code name } {
+    # This is copied from dg-test in dg.exp of DejaGnu.
+    regsub -all "\\\\(\[{}\])" $final_code "\\1" final_code
+    proc profopt-final-proc { args } $final_code
+    if [catch "profopt-final-proc $name" errmsg] {
+	perror "$name: error executing dg-final-${which}: $errmsg"
+	unresolved "$name: Error executing dg-final-${which}: $errmsg"
+    }
+}
+
+#
+# profopt-get-options -- process test directives
+#
+# SRC is the full pathname of the testcase.
+#
+proc profopt-get-options { src } {
+    # dg-options sets a variable called dg-extra-tool-flags.
+    set dg-extra-tool-flags ""
+
+    # dg-require-* sets dg-do-what.
+    upvar dg-do-what dg-do-what 
+
+    set tmp [dg-get-options $src]
+    foreach op $tmp {
+	set cmd [lindex $op 0]
+	if { ![string compare "dg-options" $cmd] \
+	     || ![string compare "dg-skip-if" $cmd] \
+	     || ![string compare "dg-final-generate" $cmd] \
+	     || ![string compare "dg-final-use" $cmd] \
+	     || [string match "dg-require-*" $cmd]  } {
+	    set status [catch "$op" errmsg]
+	    if { $status != 0 } {
+		perror "src: $errmsg for \"$op\"\n"
+		unresolved "$src: $errmsg for \"$op\""
+		return
+	    }
+	} else {
+	    # Ignore unrecognized dg- commands, but warn about them.
+	    warning "compat.exp does not support $cmd"
+	}
+    }
+
+    # Return flags to use for compiling the primary source file and for
+    # linking.
+    return ${dg-extra-tool-flags}
+}
+
+#
 # c-prof-execute -- compile for profiling and then feedback, then normal
 #
 # SRC is the full pathname of the testcase.
@@ -124,6 +211,7 @@ proc profopt-execute { src } {
     global srcdir tmpdir
     global prof_option_list
     global tool profile_option feedback_option prof_ext perf_ext perf_delta
+    global generate_final_code use_final_code
     global verbose
 
     if ![info exists profile_option] {
@@ -162,10 +250,22 @@ proc profopt-execute { src } {
 	    profopt-cleanup $testcase $perf_ext
 	}
 
+	# Process test directives.
+
+	set generate_final_code ""
+	set use_final_code ""
+	set dg-do-what [list "run" "" P]
+	set extra_flags [profopt-get-options $src]
+	if { [lindex ${dg-do-what} 1 ] == "N" } {
+	    unsupported "$src"
+	    verbose "$src not supported on this target, skipping it" 3
+	    return
+	}
+
 	# Compile for profiling.
 
 	set options ""
-	lappend options "additional_flags=$option $profile_option"
+	lappend options "additional_flags=$option $extra_flags $profile_option"
 	set optstr "$option $profile_option"
 	set comp_output [${tool}_target_compile "$src" "$execname1" executable $options]
 	if ![${tool}_check_compile "$testcase compilation" $optstr $execname1 $comp_output] {
@@ -179,6 +279,7 @@ proc profopt-execute { src } {
 
 	set result [${tool}_load $execname1 "" ""]
 	set status [lindex $result 0]
+	set missing_file 0
 	# Make sure the profile data was generated, and fail if not.
 	if { $status == "pass" } {
 	    set basename [file tail $testcase]
@@ -187,26 +288,34 @@ proc profopt-execute { src } {
 		set files [glob -nocomplain $base.$ext]
 		if { $files == "" } {
 		    set status "fail"
+		    set missing_file 1
 		    fail "$testcase execution: file $base.$ext does not exist, $option $profile_option"
-		} else {
-	            $status "$testcase execution,   $optstr"
 		}
 	    }
-	} else {
+	}
+        if { $missing_file == 0 } {
 	    $status "$testcase execution,   $optstr"
 	}
+
+	# If there is dg-final code to execute for the generate step, do it
+	# even if it failed; it might clean up temporary files.
+	if ![string match $generate_final_code ""] {
+	    profopt-final-code "generate" $generate_final_code $testcase
+	}
+
+	remote_file build delete $execname1
+
 	# Quit for this round if it failed
 	if { $status != "pass" } {
  	    unresolved "$testcase compilation, $option $feedback_option"
  	    unresolved "$testcase execution,   $option $feedback_option"
 	    continue
 	}
-	remote_file build delete $execname1
 
 	# Compile with feedback-directed optimizations.
 
 	set options ""
-	lappend options "additional_flags=$option $feedback_option"
+	lappend options "additional_flags=$option $extra_flags $feedback_option"
 	set optstr "$option $feedback_option"
 	set comp_output [${tool}_target_compile "$src" "$execname2" "executable" $options]
 	if ![${tool}_check_compile "$testcase compilation" $optstr $execname2 $comp_output] {
@@ -219,12 +328,18 @@ proc profopt-execute { src } {
 	set result [${tool}_load "$execname2" "" ""]
 	set status [lindex $result 0]
 	$status "$testcase execution,   $optstr"
-	if { $status != "pass" } {
-	    continue
+
+	# If there is dg-final code to execute for the use step, do it.
+	if ![string match $use_final_code ""] {
+	    profopt-final-code "use" $use_final_code $testcase
 	}
 
 	# Remove the profiling data files.
 	profopt-cleanup $testcase $prof_ext
+
+	if { $status != "pass" } {
+	    continue
+	}
 
 	# If the test is not expected to produce performance data then
 	# we're done now.
