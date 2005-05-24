@@ -302,8 +302,6 @@ fcvevv (char *s, vector int x, ...)
     abort();
 }
 
-void fnp_cvvvv();
-
 int __attribute__((no_instrument_function, noinline))
 main1() 
 {   
@@ -313,7 +311,6 @@ main1()
  
   fcvi (s, v, 2);
   fcvv (s, v, w);
-  fnp_cvvvv (s, v, w, v, w);
   fcivv (s, 1, v, w);
   fcevv (s, v, w);
   fciievv (s, 1, 2, v, w);

@@ -1,5 +1,7 @@
 2005-05-24  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/ppc64-abi-2.c: Remove code that is now invalid.
+
 	* lib/profopt.exp (dg-final-generate, dg-final-use,
 	profopt-final-code, profopt-get-options): New.
 	(profopt-execute): Process test directives.
