@@ -1,3 +1,14 @@
+2005-05-24  Richard Henderson  <rth@redhat.com>
+
+	* class.c (registered_class): Take it out of class_roots; turn into
+	a vec of trees.
+	(register_class): Make static.  Don't duplicate decl node.  Use
+	VEC_safe_push.
+	(emit_register_classes): Use VEC_iterate.  Use output_constant
+	instead of assemble_integer.  Don't call mark_decl_referenced
+	directly.
+	* java-tree.h (register_class): Remove decl.
+
 2005-05-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR java/17845
@@ -19,7 +30,7 @@
 
 2005-05-12  Aaron Luchko <aluchko@redhat.com>
 
-        * gcj.texi: Add '-verify', '-noverify', and '-verifyremote'.
+	* gcj.texi: Add '-verify', '-noverify', and '-verifyremote'.
 
 2005-05-11  Tom Tromey  <tromey@redhat.com>
 

@@ -64,6 +64,7 @@ static void add_miranda_methods (tree, tree);
 static int assume_compiled (const char *);
 static tree build_symbol_entry (tree);
 static tree emit_assertion_table (tree);
+static void register_class (void);
 
 struct obstack temporary_obstack;
 
@@ -98,12 +99,13 @@ static class_flag_node *assume_compiled_tree;
 
 static class_flag_node *enable_assert_tree;
 
-static GTY(()) tree class_roots[5];
-#define registered_class class_roots[0]
-#define fields_ident class_roots[1]  /* get_identifier ("fields") */
-#define info_ident class_roots[2]  /* get_identifier ("info") */
-#define class_list class_roots[3]
-#define class_dtable_decl class_roots[4]
+static GTY(()) tree class_roots[4];
+#define fields_ident class_roots[0]  /* get_identifier ("fields") */
+#define info_ident class_roots[1]  /* get_identifier ("info") */
+#define class_list class_roots[2]
+#define class_dtable_decl class_roots[3]
+
+static GTY(()) VEC(tree,gc) *registered_class;
 
 /* Return the node that most closely represents the class whose name
    is IDENT.  Start the search from NODE (followed by its siblings).
@@ -2407,23 +2409,16 @@ layout_class_method (tree this_class, tree super_class,
   return dtable_count;
 }
 
-void
+static void
 register_class (void)
 {
-  /* END does not need to be registered with the garbage collector
-     because it always points into the list given by REGISTERED_CLASS,
-     and that variable is registered with the collector.  */
-  static tree end;
-  tree node    = TREE_OPERAND (build_class_ref (current_class), 0);
-  tree current = copy_node (node);
+  tree node;
 
-  XEXP (DECL_RTL (current), 0) = copy_rtx (XEXP (DECL_RTL(node), 0));
   if (!registered_class)
-    registered_class = current;
-  else
-    TREE_CHAIN (end) = current;
+    registered_class = VEC_alloc (tree, gc, 8);
 
-  end = current;
+  node = TREE_OPERAND (build_class_ref (current_class), 0);
+  VEC_safe_push (tree, gc, registered_class, node);
 }
 
 /* Emit something to register classes at start-up time.
@@ -2448,25 +2443,28 @@ emit_register_classes (tree *list_p)
      targets can overide the default in tm.h to use the fallback mechanism.  */
   if (TARGET_USE_JCR_SECTION)
     {
+      tree klass, t;
+      int i;
+
 #ifdef JCR_SECTION_NAME
-      tree t;
       named_section_flags (JCR_SECTION_NAME, SECTION_WRITE);
-      assemble_align (POINTER_SIZE);
-      for (t = registered_class; t; t = TREE_CHAIN (t))
-	{
-	  mark_decl_referenced (t);
-	  assemble_integer (XEXP (DECL_RTL (t), 0),
-			    POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
-	}
 #else
-      /* A target has defined TARGET_USE_JCR_SECTION, but doesn't have a
-	 JCR_SECTION_NAME.  */
-      abort ();
+      /* A target has defined TARGET_USE_JCR_SECTION,
+	 but doesn't have a JCR_SECTION_NAME.  */
+      gcc_unreachable ();
 #endif
+      assemble_align (POINTER_SIZE);
+
+      for (i = 0; VEC_iterate (tree, registered_class, i, klass); ++i)
+	{
+	  t = build_fold_addr_expr (klass);
+	  output_constant (t, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE);
+	}
     }
   else
     {
       tree klass, t, register_class_fn;
+      int i;
 
       t = build_function_type_list (void_type_node, class_ptr_type, NULL);
       t = build_decl (FUNCTION_DECL, get_identifier ("_Jv_RegisterClass"), t);
@@ -2474,7 +2472,7 @@ emit_register_classes (tree *list_p)
       DECL_EXTERNAL (t) = 1;
       register_class_fn = t;
 
-      for (klass = registered_class; klass; klass = TREE_CHAIN (klass))
+      for (i = 0; VEC_iterate (tree, registered_class, i, klass); ++i)
 	{
 	  t = build_fold_addr_expr (klass);
 	  t = tree_cons (NULL, t, NULL);

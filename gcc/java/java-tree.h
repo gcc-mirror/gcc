@@ -1286,7 +1286,6 @@ extern tree build_result_decl (tree);
 extern void set_method_index (tree decl, tree method_index);
 extern tree get_method_index (tree decl);
 extern void make_class_data (tree);
-extern void register_class (void);
 extern int alloc_name_constant (int, tree);
 extern int alloc_constant_fieldref (tree, tree);
 extern void emit_register_classes (tree *);
