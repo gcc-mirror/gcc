@@ -1,3 +1,4 @@
+
 /* Check Class <protocol> types */
 /* Author: David Ayers <d.ayers@inode.at> */
 /* { dg-do compile } */
@@ -187,9 +188,9 @@ testForwardeDeclared1(void)
   [cls doItInstance7];      /* { dg-warning "no .\\+doItInstance7. method found" } */
 
   [clsP7 doItClass7];       /* { dg-warning "not found in protocol" } */
-  /* { dg-warning "no .\\+doItClass7. method found" "" { target *-*-* } 189 } */
+  /* { dg-warning "no .\\+doItClass7. method found" "" { target *-*-* } 190 } */
   [clsP7 doItInstance7];    /* { dg-warning "not found in protocol" } */
-  /* { dg-warning "no .\\+doItInstance7. method found" "" { target *-*-* } 191 } */
+  /* { dg-warning "no .\\+doItInstance7. method found" "" { target *-*-* } 192 } */
 
   [MyClass1 doItClass7];    /* { dg-warning "may not respond" } */
   [MyClass1 doItInstance7]; /* { dg-warning "may not respond" } */
@@ -386,11 +387,11 @@ testComptypes(void)
     objP1 = cls; /* { dg-warning "distinct Objective\\-C type" } */
   }
   { /* id <protocol>, non-ObjC  */
-    num = objP1; /* { dg-warning "makes integer" } */
-    objP1 = num; /* { dg-warning "makes pointer" } */
+    num = objP1; /* { dg-error "invalid conversion" } */
+    objP1 = num; /* { dg-error "invalid conversion" } */
 
     ptr = objP1;
-    objP1 = ptr;
+    objP1 = ptr; /* { dg-error "invalid conversion" } */
   }
   { /* Class <protocol>, Class <protocol> */
     clsP1 = clsP2; /* { dg-warning "does not conform" } */
@@ -416,11 +417,11 @@ testComptypes(void)
     clsP1 = cls;
   }
   { /* Class <protocol>, non-ObjC */
-    num = clsP1; /* { dg-warning "makes integer" } */
-    clsP1 = num; /* { dg-warning "makes pointer" } */
+    num = clsP1; /* { dg-error "invalid conversion" } */
+    clsP1 = num; /* { dg-error "invalid conversion" } */
 
     ptr = clsP1;
-    clsP1 = ptr;
+    clsP1 = ptr; /* { dg-error "invalid conversion" } */
   }
   { /* Class <protocol>, id <protocol> */
     clsP1 = objP1; /* { dg-warning "distinct Objective\\-C type" } */

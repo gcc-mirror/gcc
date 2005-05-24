@@ -39,7 +39,7 @@
     /* { dg-warning "also found .\\-\\(id\\)initWithData:\\(int\\)data." "" { target *-*-* } 15 } */
 
     /* The following warning is a consequence of picking the "wrong" method signature.  */
-    /* { dg-warning "passing argument 1 of .initWithData:. from incompatible pointer type" "" { target *-*-* } 35 } */
+    /* { dg-warning "passing argument 1 of .initWithData:. from distinct Objective\\-C type" "" { target *-*-* } 35 } */
     return result;
 }
 @end
