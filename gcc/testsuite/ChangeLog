@@ -1,5 +1,7 @@
 2005-05-24  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/altivec-vec-merge.c: Renamed from ppc-vec-merge.c.
+
 	* gcc.dg/ppc64-abi-2.c: Remove code that is now invalid.
 
 	* lib/profopt.exp (dg-final-generate, dg-final-use,
