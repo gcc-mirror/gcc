@@ -1,3 +1,8 @@
+2005-05-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/ia64/ia64intrin.h: Define nothing for C++:
+	overloaded builtins have been ported to C++.
+
 2005-05-24  Jeff Law  <law@redhat.com>
 
 	* tree-nested.c (build_addr): New "context" argument.  Temporarily
