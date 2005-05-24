@@ -99,7 +99,7 @@ pwait (int pid, int *status, int flags ATTRIBUTE_UNUSED)
     {
       int *vector;
 
-      vector = xmalloc (idx * sizeof (int));
+      vector = XNEWVEC (int, idx);
       if (!pex_get_status (pex, idx, vector))
 	return -1;
       *status = vector[pid];

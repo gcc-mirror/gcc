@@ -51,17 +51,17 @@ typedef unsigned long gcc_uint64_t;
 
 /*
 
-@deftypefn Replacement int mkstemps (char *@var{template}, int @var{suffix_len})
+@deftypefn Replacement int mkstemps (char *@var{pattern}, int @var{suffix_len})
 
-Generate a unique temporary file name from @var{template}.
-@var{template} has the form:
+Generate a unique temporary file name from @var{pattern}.
+@var{pattern} has the form:
 
 @example
    @var{path}/ccXXXXXX@var{suffix}
 @end example
 
 @var{suffix_len} tells us how long @var{suffix} is (it can be zero
-length).  The last six characters of @var{template} before @var{suffix}
+length).  The last six characters of @var{pattern} before @var{suffix}
 must be @samp{XXXXXX}; they are replaced with a string that makes the
 filename unique.  Returns a file descriptor open on the file for
 reading and writing.
@@ -71,7 +71,7 @@ reading and writing.
 */
 
 int
-mkstemps (char *template, int suffix_len)
+mkstemps (char *pattern, int suffix_len)
 {
   static const char letters[]
     = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -83,15 +83,15 @@ mkstemps (char *template, int suffix_len)
   size_t len;
   int count;
 
-  len = strlen (template);
+  len = strlen (pattern);
 
   if ((int) len < 6 + suffix_len
-      || strncmp (&template[len - 6 - suffix_len], "XXXXXX", 6))
+      || strncmp (&pattern[len - 6 - suffix_len], "XXXXXX", 6))
     {
       return -1;
     }
 
-  XXXXXX = &template[len - 6 - suffix_len];
+  XXXXXX = &pattern[len - 6 - suffix_len];
 
 #ifdef HAVE_GETTIMEOFDAY
   /* Get some more or less random data.  */
@@ -119,7 +119,7 @@ mkstemps (char *template, int suffix_len)
       v /= 62;
       XXXXXX[5] = letters[v % 62];
 
-      fd = open (template, O_RDWR|O_CREAT|O_EXCL, 0600);
+      fd = open (pattern, O_RDWR|O_CREAT|O_EXCL, 0600);
       if (fd >= 0)
 	/* The file does not exist.  */
 	return fd;
@@ -131,6 +131,6 @@ mkstemps (char *template, int suffix_len)
     }
 
   /* We return the null string if we can't find a unique file name.  */
-  template[0] = '\0';
+  pattern[0] = '\0';
   return -1;
 }

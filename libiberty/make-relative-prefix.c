@@ -102,7 +102,7 @@ static void free_split_directories (char **);
 static char *
 save_string (const char *s, int len)
 {
-  char *result = malloc (len + 1);
+  char *result = (char *) malloc (len + 1);
 
   memcpy (result, s, len);
   result[len] = 0;

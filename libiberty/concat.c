@@ -127,7 +127,13 @@ concat_copy (char *dst, const char *first, ...)
   return save_dst;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 char *libiberty_concat_ptr;
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 /* @undocumented concat_copy2 */
 
@@ -150,7 +156,7 @@ concat (const char *first, ...)
   /* First compute the size of the result and get sufficient memory.  */
   VA_OPEN (args, first);
   VA_FIXEDARG (args, const char *, first);
-  newstr = (char *) xmalloc (vconcat_length (first, args) + 1);
+  newstr = XNEWVEC (char, vconcat_length (first, args) + 1);
   VA_CLOSE (args);
 
   /* Now copy the individual pieces to the result string. */
@@ -188,7 +194,7 @@ reconcat (char *optr, const char *first, ...)
   VA_OPEN (args, first);
   VA_FIXEDARG (args, char *, optr);
   VA_FIXEDARG (args, const char *, first);
-  newstr = (char *) xmalloc (vconcat_length (first, args) + 1);
+  newstr = XNEWVEC (char, vconcat_length (first, args) + 1);
   VA_CLOSE (args);
 
   /* Now copy the individual pieces to the result string. */

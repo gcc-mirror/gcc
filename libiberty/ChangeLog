@@ -1,3 +1,79 @@
+2005-05-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* configure.ac: Check declarations for calloc(), getenv(),
+	malloc(), realloc() and sbrk(). 
+	* config.in: Regenerate.
+	* configure: Likewise.
+
+	* alloca.c (C_alloca): Change "new" to "new_storage".  Use XNEWVEC
+	instead of xmalloc.
+	* choose-temp.c (choose_temp_base): Use XNEWVEC instea od xmalloc.
+	* concat.c (liiberty_concat_ptr): Surround definition with an
+	extern "C" block, if __cplusplus.
+	(concat): Use XNEWVEC instead of xmalloc.
+	(reconcat): Likewise.
+	* cp-demangle.c (struct d_print_template): Rename member
+	"template" to "template_decl".  Adjust use throughout the file. 
+	(d_print_resize): Properly cast return value of realloc().
+	(cplus_demangle_print): Same for malloc().
+	(d_demangle): Likewise.
+	* cp-demint.c (cplus_demangle_fill_builtin_type): Rename parameter
+	"typename" to "type_name".
+	* cplus-dem.c (grow_vect): Use XRESIZEVEC instead of xrealloc().
+	(work_stuff_copy_to_from): Use XNEWVEC insteand of xmalloc().
+	(demangle_template_value_parm): Likewise.
+	(demangle_template): Likewise.
+	(recursively_demangle): Likewise.
+	(do_hpacc_template_literal): Likewise.
+	(do_arg): Likewise.
+	(remember_type): Likewise.
+	(remember_Ktype): Likewise.
+	(register_Btype): Likewise.
+	(string_need): Use XRESIZEVEC instead of xrealloc().
+	* dyn-string.c (dyn_string_init): Use XNEWVEC.
+	(dyn_string_new): Use XNEW.
+	(dyn_string_resize): Use XRESIZEVEC.
+	* fnmatch.c (fnmatch): Rename local variable "not" to "negate".
+	* getopt.c (getenv): Declare only if !__cplusplus and !getenv.
+	Otherwise include <stdlib.h>.
+	(exchange): Cast return value of malloc().
+	* hashtab.c (htab_size): Define as both macro and non-inline
+	function.
+	(htab_elements): Likewise.
+	* getpwd.c (getpwd): Use XNEWVEC.
+	(htab_create_alloc_ex): Use C90 prototype-style.
+	* lrealpath.c (lrealpath): Appropriately cast return value of
+	malloc(). 
+	* make-relative-prefix.c (save_string): Likewise.
+	* make-temp-file.c (try_dir): Rename from "try".  Adjust use in
+	the file.
+	(choose_tmpdir): Use XNEWVEC.
+	* mkstemps.c (mkstemps): Rename parameter "template" to "pattern".
+	* pex-common.c (pex_init_common): Use XNEW.
+	(pex_add_remove): Use XRESIZEVEC.
+	(pex_run): Likewise.
+	(pex_get_status_and_time): Likewise.
+	* pex-djgpp.c (pex_djgpp_exec_child): Likewise.
+	* pex-msdos.c (pex_init): Use XNEW.
+	(pex_msdos_exec_child): Likewise.
+	(pex_msdos_exec_child): Use XRESIZEVEC.
+	* pex-unix.c (pex_wait): Use XNEW.
+	* pex-win32.c (fix_argv): Use XNEWVEC.
+	* pexecute.c (pwait): Likewise.
+	* setenv.c (setenv): Properly cast return value of malloc().
+	* sigsetmask.c (sigsetmask): Rename local variables "old" and
+	"new" to "old_sig" and "new_sig".
+	* sort.c (main): Use XNEWVEC.
+	* spaces.c (spaces): Cast return value of malloc().
+	* strndup.c (strndup): Likewise.
+	* ternary.c (ternary_insert): Use XNEW.
+	* xmalloc.c (malloc, realloc, calloc, sbrk): Surround declaration
+	with an extern "C" block if __cplusplus.
+	* xstrdup.c (xstrdup): Cast return value of memcpy().
+	* xstrerror.c (strerror): Enclose declaration in an extern "C"
+	block if __cplusplus.
+	* xstrndup.c (xstrndup): Use XNEW. Cast return value of memcpy().
+
 2005-05-16  Andreas Jaeger  <aj@suse.de>
 
 	* getpwd.c: Remove unneeded prototype getcwd and move getwd so

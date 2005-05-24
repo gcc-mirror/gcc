@@ -258,11 +258,11 @@ So instead we use the macro below and test it against specific values.  */
 
 /* Attributes on labels were valid as of gcc 2.93. */
 #ifndef ATTRIBUTE_UNUSED_LABEL
-# if (GCC_VERSION >= 2093)
+# if (!defined (__cplusplus) && GCC_VERSION >= 2093)
 #  define ATTRIBUTE_UNUSED_LABEL ATTRIBUTE_UNUSED
 # else
 #  define ATTRIBUTE_UNUSED_LABEL
-# endif /* GNUC >= 2.93 */
+# endif /* !__cplusplus && GNUC >= 2.93 */
 #endif /* ATTRIBUTE_UNUSED_LABEL */
 
 #ifndef ATTRIBUTE_UNUSED

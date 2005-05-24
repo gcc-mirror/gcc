@@ -1,3 +1,10 @@
+2005-05-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* libiberty.h (ACONCAT): Properly cast value of alloca().
+
+	* ansidecl.h (ATTRIBUTE_UNUSED_LABEL): Don't define if
+	__cplusplus. 
+
 2005-05-12  Steve Ellcey  <sje@cup.hp.com>
 
 	libiberty.h: Do not define empty basename prototype.

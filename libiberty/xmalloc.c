@@ -75,11 +75,23 @@ function will be called to print an error message and terminate execution.
 #include <unixlib.h>
 #else
 /* For systems with larger pointers than ints, these must be declared.  */
-PTR malloc (size_t);
-PTR realloc (PTR, size_t);
-PTR calloc (size_t, size_t);
-PTR sbrk (ptrdiff_t);
-#endif
+#  if HAVE_STDLIB_H && HAVE_UNISTD_H && HAVE_DECL_MALLOC \
+      && HAVE_DECL_REALLOC && HAVE_DECL_CALLOC && HAVE_DECL_SBRK
+#    include <stdlib.h>
+#    include <unistd.h>
+#  else
+#    ifdef __cplusplus
+extern "C" {
+#    endif /* __cplusplus */
+void *malloc (size_t);
+void *realloc (void *, size_t);
+void *calloc (size_t, size_t);
+void *sbrk (ptrdiff_t);
+#    ifdef __cplusplus
+}
+#    endif /* __cplusplus */
+#  endif /* HAVE_STDLIB_H ...  */
+#endif /* VMS */
 
 /* The program name if set.  */
 static const char *name = "";

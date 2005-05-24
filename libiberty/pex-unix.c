@@ -252,7 +252,7 @@ pex_wait (struct pex_obj *obj, pid_t pid, int *status, struct pex_time *time)
 	  return cpid;
 	}
 
-      psl = xmalloc (sizeof (struct status_list));
+      psl = XNEW (struct status_list);
       psl->pid = cpid;
       psl->status = *status;
       if (time != NULL)

@@ -74,7 +74,7 @@ ternary_insert (ternary_tree *root, const char *s, PTR data, int replace)
   for (;;)
     {
       /* Allocate the memory for the node, and fill it in */
-      *pcurr = (ternary_tree) xmalloc (sizeof (ternary_node));
+      *pcurr = XNEW (ternary_node);
       curr = *pcurr;
       curr->splitchar = *s;
       curr->lokid = curr->hikid = curr->eqkid = 0;

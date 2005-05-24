@@ -67,7 +67,7 @@ dyn_string_init (struct dyn_string *ds_struct_ptr, int space)
   if (ds_struct_ptr->s == NULL)
     return 0;
 #else
-  ds_struct_ptr->s = (char *) xmalloc (space);
+  ds_struct_ptr->s = XNEWVEC (char, space);
 #endif
   ds_struct_ptr->allocated = space;
   ds_struct_ptr->length = 0;
@@ -96,7 +96,7 @@ dyn_string_new (int space)
       return NULL;
     }
 #else
-  result = (dyn_string_t) xmalloc (sizeof (struct dyn_string));
+  result = XNEW (struct dyn_string);
   dyn_string_init (result, space);
 #endif
   return result;
@@ -159,7 +159,7 @@ dyn_string_resize (dyn_string_t ds, int space)
 	  return NULL;
 	}
 #else
-      ds->s = (char *) xrealloc (ds->s, ds->allocated);
+      ds->s = XRESIZEVEC (char, ds->s, ds->allocated);
 #endif
     }
 

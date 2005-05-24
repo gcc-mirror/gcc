@@ -19,15 +19,28 @@ will never return a @code{NULL} pointer.
 #include "libiberty.h"
 
 #ifdef VMS
-#include <errno.h>
-#if !defined (__STRICT_ANSI__) && !defined (__HIDE_FORBIDDEN_NAMES)
+#  include <errno.h>
+#  if !defined (__STRICT_ANSI__) && !defined (__HIDE_FORBIDDEN_NAMES)
+#    ifdef __cplusplus
+extern "C" {
+#    endif /* __cplusplus */
 extern char *strerror (int,...);
-#define DONT_DECLARE_STRERROR
-#endif
-#endif	/* VMS */
+#    define DONT_DECLARE_STRERROR
+#    ifdef __cplusplus
+}
+#    endif /* __cplusplus */
+#  endif
+#endif  /* VMS */
+
 
 #ifndef DONT_DECLARE_STRERROR
+#  ifdef __cplusplus
+extern "C" {
+#  endif /* __cplusplus */
 extern char *strerror (int);
+#  ifdef __cplusplus
+}
+#  endif /* __cplusplus */
 #endif
 
 /* If strerror returns NULL, we'll format the number into a static buffer.  */
