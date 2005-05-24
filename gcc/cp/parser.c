@@ -16258,8 +16258,8 @@ cp_parser_objc_message_expression (cp_parser* parser)
 /* Parse an objc-message-receiver.
 
    objc-message-receiver:
-     type-name
      expression
+     simple-type-specifier
 
   Returns a representation of the type or expression.  */
 
@@ -16267,7 +16267,6 @@ static tree
 cp_parser_objc_message_receiver (cp_parser* parser)
 {
   tree rcv;
-  bool class_scope_p, template_p;
 
   /* An Objective-C message receiver may be either (1) a type
      or (2) an expression.  */
@@ -16277,24 +16276,9 @@ cp_parser_objc_message_receiver (cp_parser* parser)
   if (cp_parser_parse_definitely (parser))
     return rcv;
 
-  /* Look for the optional `::' operator.  */
-  cp_parser_global_scope_opt (parser, false);
-  /* Look for the nested-name-specifier.  */
-  cp_parser_nested_name_specifier_opt (parser,
-				       /*typename_keyword_p=*/true,
-				       /*check_dependency_p=*/true,
-				       /*type_p=*/true,
-				       /*is_declaration=*/true);
-  class_scope_p = (parser->scope && TYPE_P (parser->scope));
-  template_p = class_scope_p && cp_parser_optional_template_keyword (parser);
-  /* Finally, look for the class-name.  */
-  rcv = cp_parser_class_name (parser,
-			       class_scope_p,
-			       template_p,
-			       /*type_p=*/true,
-			       /*check_dependency_p=*/true,
-			       /*class_head_p=*/false,
-			       /*is_declaration=*/true);
+  rcv = cp_parser_simple_type_specifier (parser,
+					 /*decl_specs=*/NULL,
+					 CP_PARSER_FLAGS_NONE);
 
   return objc_get_class_reference (rcv);
 }
