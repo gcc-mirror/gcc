@@ -1,3 +1,8 @@
+2005-05-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/21645
+	* g++.dg/init/ctor5.C: New test.
+
 2005-05-24  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect-none.c: Split into vect-106.c, vect-107.c,
