@@ -1,3 +1,28 @@
+2005-05-24  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-common.h (objc_comptypes): Remove prototype.
+	(objc_compare_types): New prototype.
+	(objc_volatilized_decl): Likewise.
+	(objc_type_quals_match): Likewise.
+	* c-decl.c (objc_mark_locals_volatile): Streamline by calling
+	objc_volatilize_decl().
+	* c-typeck.c (comp_target_types): Remove third parameter; do
+	not call objc_comptypes().
+	(comptypes): Remove calls to objc_comptypes().
+	(build_function_call): Extend compatible prototype check to ObjC.
+	(build_conditional_expr): Adjust call to comp_target_types().
+	(convert_for_assignment): Call objc_compare_types() instead of
+	objc_comptypes(); adjust calls to comp_target_types(); call
+	objc_type_quals_match() before issuing qualifier mismatch
+	warnings.
+	(build_binary_op): Call objc_compare_types() before issuing
+	pointer mismatch warnings; adjust calls to
+	comp_target_types().
+	* stub-objc.c (objc_comptypes): Remove stub.
+	(objc_compare_types): New stub.
+	(objc_volatilized_decl): Likewise.
+	(objc_type_quals_match): Likewise.
+
 2005-05-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/ia64/ia64intrin.h: Define nothing for C++:

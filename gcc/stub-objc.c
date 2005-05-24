@@ -63,11 +63,22 @@ objc_is_reserved_word (tree ARG_UNUSED (ident))
   return 0;
 }
 
-int
-objc_comptypes (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs),
-                int ARG_UNUSED (reflexive))
+bool
+objc_compare_types (tree ARG_UNUSED (ltyp), tree ARG_UNUSED (rtyp),
+		    int ARG_UNUSED (argno), tree ARG_UNUSED (callee))
 {
-  return -1;
+  return false;
+}
+
+void
+objc_volatilize_decl (tree ARG_UNUSED (decl))
+{
+}
+
+bool
+objc_type_quals_match (tree ARG_UNUSED (ltyp), tree ARG_UNUSED (rtyp))
+{
+  return false;
 }
 
 tree
