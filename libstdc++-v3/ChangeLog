@@ -1,3 +1,43 @@
+2005-05-24  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/debug/string (class basic_string): Add missing
+	default template arguments; provide typedefs for char
+	and wchar_t.
+	(operator[]): Allow s[s.size()] in debug mode, but not
+	pedantic mode.
+
+2005-05-24  Paolo Carlini  <pcarlini@suse.de>
+
+	Port from libstdcxx_so_7-branch:
+	2005-04-25  Christopher Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_algo.h (count): Correct concept checks.
+	(search_n) : Likewise.
+	* testsuite/25_algorithms/search_n/check_type.cc: New.
+
+	* testsuite/testsuite_iterators.h
+	(random_access_iterator_wrapper::operator+): Move out of
+	class to external function, and add symmetric version.
+
+	2005-03-14  Christopher Jefferson  <chris@bubblescope.net>
+
+	* testsuite/testsuite_iterators.h (WritableObject::WritableObject):
+	Add const.
+	
+	2005-02-01  Christopher Jefferson  <chris@bubblescope.net>
+
+	* testsuite/testsuite_iterators.h (random_access_iterator_wrapper::
+	operator--): Fix typo.
+	(OutputContainer::OutputContainer): Correct zeroing array.
+	(WritableObject::operator==): Fix typo.
+        (WritableObject::operator=): make operator= templated 
+	to allow differing types to be assigned.
+	(WritableObject::operator++): Fix checking if iterator is
+	written to multiple times.
+	(random_access_iterator_wrapper::operator+): Add const.
+	(random_access_iterator_wrapper::operator-): Likewise.
+	(random_access_iterator_wrapper::operator[]): Add dereference.
+
 2005-05-23  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/debug.html: Explain that _GLIBXX_DEBUG_PEDANTIC
