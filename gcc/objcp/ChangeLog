@@ -1,3 +1,12 @@
+2005-05-24  Ziemowit Laski  <zlaski@apple.com>
+
+	* objcp-decl.c (objcp_start_struct, objcp_xref_tag): Adjust
+	call to xref_tag().
+	(objcp_build_component_ref): Remove function.
+	* objcp-decl.h (objcp_build_component_ref): Remove prototype.
+	(build_component_ref): Remove macro.
+	* objcp-lang.c (LANG_HOOKS_TYPES_COMPATIBLE_P): Remove.
+
 2005-05-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* Make-lang.in (cc1objplus-dummy): New.
