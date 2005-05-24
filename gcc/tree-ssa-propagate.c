@@ -1052,8 +1052,10 @@ substitute_and_fold (prop_value_t *prop_value)
 	  if (did_replace)
 	    {
 	      tree old_stmt = stmt;
+	      tree rhs;
+
 	      fold_stmt (bsi_stmt_ptr (i));
-	      stmt = bsi_stmt(i);
+	      stmt = bsi_stmt (i);
 
 	      /* If we folded a builtin function, we'll likely
 		 need to rename VDEFs.  */
@@ -1063,6 +1065,10 @@ substitute_and_fold (prop_value_t *prop_value)
                  remove EH edges.  */
 	      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
 		tree_purge_dead_eh_edges (bb);
+
+	      rhs = get_rhs (stmt);
+	      if (TREE_CODE (rhs) == ADDR_EXPR)
+		recompute_tree_invarant_for_addr_expr (rhs);
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))

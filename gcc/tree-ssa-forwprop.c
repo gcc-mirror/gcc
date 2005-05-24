@@ -446,12 +446,16 @@ static void
 tidy_after_forward_propagate_addr (tree stmt)
 {
   mark_new_vars_to_rename (stmt);
-  update_stmt (stmt);
 
   /* We may have turned a trapping insn into a non-trapping insn.  */
   if (maybe_clean_or_replace_eh_stmt (stmt, stmt)
       && tree_purge_dead_eh_edges (bb_for_stmt (stmt)))
     cfg_changed = true;
+
+  if (TREE_CODE (TREE_OPERAND (stmt, 1)) == ADDR_EXPR)
+     recompute_tree_invarant_for_addr_expr (TREE_OPERAND (stmt, 1));
+
+  update_stmt (stmt);
 }
 
 /* STMT defines LHS which is contains the address of the 0th element
