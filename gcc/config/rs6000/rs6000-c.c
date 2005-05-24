@@ -140,6 +140,10 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       break;
     }
 
+  /* Let the compiled code know if 'f' class registers will not be available.  */
+  if (TARGET_SOFT_FLOAT || !TARGET_FPRS)
+    builtin_define ("__NO_FPRS__");
+
   targetm.resolve_overloaded_builtin = altivec_resolve_overloaded_builtin;
 }
 
