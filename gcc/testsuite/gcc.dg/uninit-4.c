@@ -23,7 +23,7 @@ extern struct operation cpp_lex (void);
 void
 cpp_parse_expr (void)
 {
-  int rprio; /* { dg-bogus "rprio" "uninitialized variable warning PR19833" { xfail { powerpc*-*-* && lp64 } } } */
+  int rprio; /* { dg-bogus "rprio" "uninitialized variable warning PR19833" } */
   struct operation op;
 
   for (;;)
