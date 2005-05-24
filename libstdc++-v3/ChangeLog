@@ -1,3 +1,13 @@
+2005-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/allocator.h: Change ___glibcxx_base_allocator to
+	__glibcxx_base_allocator.
+	* config/allocator/bitmap_allocator_base.h: Same.
+	* config/allocator/malloc_allocator_base.h: Same.
+	* config/allocator/mt_allocator_base.h: Same.
+	* config/allocator/new_allocator_base.h: Same.
+	* config/allocator/pool_allocator_base.h: Same.
+
 2005-05-24  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/debug/string (class basic_string): Add missing

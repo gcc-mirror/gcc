@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,7 +79,7 @@ namespace std
    *  http://gcc.gnu.org/onlinedocs/libstdc++/20_util/allocator.html
    */
   template<typename _Tp>
-    class allocator: public ___glibcxx_base_allocator<_Tp>
+    class allocator: public __glibcxx_base_allocator<_Tp>
     {
    public:
       typedef size_t     size_type;
@@ -97,7 +97,7 @@ namespace std
       allocator() throw() { }
 
       allocator(const allocator& __a) throw()
-      : ___glibcxx_base_allocator<_Tp>(__a) { }
+      : __glibcxx_base_allocator<_Tp>(__a) { }
 
       template<typename _Tp1>
         allocator(const allocator<_Tp1>&) throw() { }
@@ -126,7 +126,7 @@ namespace std
 #endif
 
   // Undefine.
-#undef ___glibcxx_base_allocator
+#undef __glibcxx_base_allocator
 } // namespace std
 
 #endif
