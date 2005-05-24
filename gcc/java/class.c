@@ -916,7 +916,6 @@ build_utf8_ref (tree name)
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
   cgraph_varpool_mark_needed_node (cgraph_varpool_node (decl));
   utf8_decl_list = decl;
-  make_decl_rtl (decl);
   ref = build1 (ADDR_EXPR, utf8const_ptr_type, decl);
   IDENTIFIER_UTF8_REF (name) = ref;
   return ref;
@@ -948,9 +947,9 @@ build_class_ref (tree type)
       if (TREE_CODE (type) == POINTER_TYPE)
 	type = TREE_TYPE (type);
 
-      if  (flag_indirect_dispatch
-	   && type != output_class
-	   && TREE_CODE (type) == RECORD_TYPE)
+      if (flag_indirect_dispatch
+	  && type != output_class
+	  && TREE_CODE (type) == RECORD_TYPE)
 	return build_indirect_class_ref (type);
 
       if (TREE_CODE (type) == RECORD_TYPE)
@@ -963,8 +962,6 @@ build_class_ref (tree type)
 	  if (decl == NULL_TREE)
 	    {
 	      decl = build_decl (VAR_DECL, decl_name, class_type_node);
-	      DECL_SIZE (decl) = TYPE_SIZE (class_type_node);
-	      DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (class_type_node);
 	      TREE_STATIC (decl) = 1;
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_IGNORED_P (decl) = 1;
@@ -974,7 +971,6 @@ build_class_ref (tree type)
 	      SET_DECL_ASSEMBLER_NAME (decl, 
 				       java_mangle_class_field
 				       (&temporary_obstack, type));
-	      make_decl_rtl (decl);
 	      pushdecl_top_level (decl);
 	    }
 	}
@@ -1027,7 +1023,6 @@ build_class_ref (tree type)
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_EXTERNAL (decl) = 1;
 	      DECL_ARTIFICIAL (decl) = 1;
-	      make_decl_rtl (decl);
 	      pushdecl_top_level (decl);
 	    }
 	}
@@ -1058,7 +1053,6 @@ build_fieldref_cache_entry (int index, tree fdecl ATTRIBUTE_UNUSED)
       TREE_PUBLIC (decl) = 0;
       DECL_EXTERNAL (decl) = 0;
       DECL_ARTIFICIAL (decl) = 1;
-      make_decl_rtl (decl);
       pushdecl_top_level (decl);
     }
   return decl;
@@ -1083,12 +1077,8 @@ build_static_field_ref (tree fdecl)
 	      || JNUMERIC_TYPE_P (TREE_TYPE (fdecl)))
 	  && TREE_CONSTANT (DECL_INITIAL (fdecl))))
     {
-      if (!DECL_RTL_SET_P (fdecl))
-	{
-	  if (is_compiled == 1)
-	    DECL_EXTERNAL (fdecl) = 1;
-	  make_decl_rtl (fdecl);
-	}
+      if (is_compiled == 1)
+	DECL_EXTERNAL (fdecl) = 1;
     }
   else
     {
@@ -1240,7 +1230,6 @@ make_local_function_alias (tree method)
   DECL_INITIAL (alias) = error_mark_node;
   TREE_ADDRESSABLE (alias) = 1;
   TREE_USED (alias) = 1;
-  SET_DECL_ASSEMBLER_NAME (alias, DECL_NAME (alias));
   TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias)) = 1;
   if (!flag_syntax_only)
     assemble_alias (alias, DECL_ASSEMBLER_NAME (method));
@@ -1320,7 +1309,7 @@ make_method_value (tree mdecl)
     index = integer_minus_one_node;
 
   code = null_pointer_node;
-  if (DECL_RTL_SET_P (mdecl))
+  if (!METHOD_ABSTRACT (mdecl))
     code = build1 (ADDR_EXPR, nativecode_ptr_type_node, 
 		   make_local_function_alias (mdecl));
   START_RECORD_CONSTRUCTOR (minit, method_type_node);
@@ -1442,9 +1431,6 @@ get_dispatch_table (tree type, tree this_class_addr)
 	}
       else
 	{
-	  if (!DECL_RTL_SET_P (method))
-	    make_decl_rtl (method);
-
 	  if (TARGET_VTABLE_USES_DESCRIPTORS)
 	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
 	      {
@@ -2335,12 +2321,6 @@ layout_class_method (tree this_class, tree super_class,
   SET_DECL_ASSEMBLER_NAME (method_decl,
 			   java_mangle_decl (&temporary_obstack, 
 					     method_decl));
-  /* We don't generate a RTL for the method if it's abstract, or if
-     it's an interface method that isn't clinit. */
-  if (! METHOD_ABSTRACT (method_decl) 
-      || (CLASS_INTERFACE (TYPE_NAME (this_class)) 
-	  && (DECL_CLINIT_P (method_decl))))
-    make_decl_rtl (method_decl);
 
   if (ID_INIT_P (method_name))
     {

@@ -9550,11 +9550,7 @@ resolve_field_access (tree qual_wfl, tree *field_decl, tree *field_type)
       field_ref = length;
 
       /* In case we're dealing with a static array, we need to
-	 initialize its class before the array length can be fetched.
-	 It's also a good time to create a DECL_RTL for the field if
-	 none already exists, otherwise if the field was declared in a
-	 class found in an external file and hasn't been (and won't
-	 be) accessed for its value, none will be created. */
+	 initialize its class before the array length can be fetched.  */
       if (TREE_CODE (where_found) == VAR_DECL && FIELD_STATIC (where_found))
 	{
 	  build_static_field_ref (where_found);

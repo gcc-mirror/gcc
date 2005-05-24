@@ -558,7 +558,6 @@ builtin_function (const char *name,
   TREE_PUBLIC (decl) = 1;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = cl;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -1854,7 +1853,6 @@ give_name_to_locals (JCF *jcf)
 	{
 	  tree decl = TREE_VEC_ELT (decl_map, slot);
 	  DECL_NAME (decl) = name;
-	  SET_DECL_ASSEMBLER_NAME (decl, name);
 	  if (TREE_CODE (decl) != PARM_DECL || TREE_TYPE (decl) != type)
 	    warning (0, "bad type in parameter debug info");
 	}
@@ -1921,7 +1919,6 @@ give_name_to_locals (JCF *jcf)
 	      sprintf (buffer, "ARG_%d", arg_i);
 	      DECL_NAME (parm) = get_identifier (buffer);
 	    }
-	  SET_DECL_ASSEMBLER_NAME (parm, DECL_NAME (parm));
 	}
     }
 }
@@ -2127,6 +2124,11 @@ java_mark_decl_local (tree decl)
 
   /* If we've already constructed DECL_RTL, give encode_section_info
      a second chance, now that we've changed the flags.  */
+  /* ??? Ideally, we'd have flag_unit_at_a_time set, and not have done
+     anything that would have referenced DECL_RTL so far.  But at the
+     moment we force flag_unit_at_a_time off due to excessive memory
+     consumption when compiling large jar files.  Which probably means
+     that we need to re-order how we process jar files...  */
   if (DECL_RTL_SET_P (decl))
     make_decl_rtl (decl);
 }

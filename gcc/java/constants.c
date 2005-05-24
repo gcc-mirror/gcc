@@ -446,7 +446,6 @@ build_constant_data_ref (void)
 
       decl = build_decl (VAR_DECL, decl_name, type);
       TREE_STATIC (decl) = 1;
-      make_decl_rtl (decl);
       TYPE_CPOOL_DATA_REF (output_class) = decl;
     }
 

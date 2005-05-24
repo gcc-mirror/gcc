@@ -1,5 +1,24 @@
 2005-05-24  Richard Henderson  <rth@redhat.com>
 
+	* builtins.c (define_builtin): Don't call make_decl_rtl.
+	* constants.c (build_constant_data_ref): Likewise.
+	* class.c (build_utf8_ref): Likewise.
+	(build_fieldref_cache_entry, build_static_field_ref): Likewise.
+	(get_dispatch_table, layout_class_method): Likewise.
+	(build_class_ref): Likewise. Don't set DECL_SIZE or DECL_SIZE_UNIT
+	by hand.
+	(make_local_function_alias): Don't SET_DECL_ASSEMBLER_NAME.
+	(make_method_value): Use METHOD_ABSTRACT instead of DECL_RTL_SET_P
+	to determine if we need a non-zero address.
+	* decl.c (builtin_function): Don't call make_decl_rtl.
+	(give_name_to_locals): Don't SET_DECL_ASSEMBLER_NAME.
+	* expr.c (build_known_method_ref): Don't call make_decl_rtl.
+	* resource.c (compile_resource_data): Likewise.
+	* parse.y (resolve_field_access): Re-word comment to avoid
+	building DECL_RTL.
+
+2005-05-24  Richard Henderson  <rth@redhat.com>
+
 	* class.c (registered_class): Take it out of class_roots; turn into
 	a vec of trees.
 	(register_class): Make static.  Don't duplicate decl node.  Use
