@@ -1,3 +1,9 @@
+2005-05-24  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-none.c: Split into vect-106.c, vect-107.c,
+	vect-108.c, vect-109.c, vect-110.c, vect-111.c, vect-112.c,
+	vect-113.c, vect-114.c.
+
 2005-05-23  Adam Nemet  <anemet@lnxw.com>
 
 	* gcc.dg/const-elim-1.c: Remove xfails.
