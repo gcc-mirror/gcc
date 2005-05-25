@@ -1,3 +1,8 @@
+2005-05-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/21412
+	* gcc.dg/tls/opt-9.c: XFAIL on SPARC.
+
 2005-05-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline:
