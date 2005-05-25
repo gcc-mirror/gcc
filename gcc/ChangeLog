@@ -1,5 +1,14 @@
 2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.c (GP_ARG_NUM_REG, FP_ARG_NUM_REG): New defines.
+	(s390_function_arg, s390_gimplify_va_arg): Use them.
+	(s390_register_info): Save only required subset of argument
+	registers into save area for va_list.
+	(s390_va_start): Initialize only required elements of va_list struct.
+	(s390_build_builtin_va_list): Set va_list_[gf]pr_counter_field.
+
+2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* reload1.c (verify_initial_elim_offsets): Return boolean status
 	instead of aborting.
 	(reload): Adapt verify_initial_elim_offsets call site.  Restart
