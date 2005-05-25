@@ -49,7 +49,7 @@
 #define CC1_SPEC \
 "%{G*} %{mno-sdata:-msdata=none} \
  %{maltivec:-mabi=altivec} \
- -mno-svr4-struct-return"
+ -maix-struct-return"
 
 #undef ASM_SPEC
 #define ASM_SPEC \

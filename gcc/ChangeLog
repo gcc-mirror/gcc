@@ -1,3 +1,8 @@
+2005-05-25  Adam Nemet  <anemet@lnxw.com>
+
+	* config/rs6000/lynx.h (CC1_SPEC): Use -maix-struct-return instead
+	of -mno-svr4-struct-return.
+
 2005-05-25  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/21705
