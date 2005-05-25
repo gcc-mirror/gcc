@@ -1,3 +1,8 @@
+2005-05-25  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/selector-2.m: Remove "-fgnu-runtime"; be flexible
+	about where warning appears.
+
 2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/tree-ssa/stdarg-2.c: Add tests for s390*-*-linux* targets.
