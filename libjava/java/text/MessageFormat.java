@@ -113,6 +113,7 @@ public class MessageFormat extends Format
 	  formatClass = java.util.Date.class;
 
 	  int val = DateFormat.DEFAULT;
+	  boolean styleIsPattern = false;
 	  if (style == null)
 	    ;
 	  else if (style.equals("short"))
@@ -123,13 +124,15 @@ public class MessageFormat extends Format
 	    val = DateFormat.LONG;
 	  else if (style.equals("full"))
 	    val = DateFormat.FULL;
+	  else
+	    styleIsPattern = true;
 
 	  if (type.equals("time"))
 	    format = DateFormat.getTimeInstance(val, loc);
 	  else
 	    format = DateFormat.getDateInstance(val, loc);
 
-	  if (style != null && val == DateFormat.DEFAULT)
+	  if (styleIsPattern)
 	    {
 	      SimpleDateFormat sdf = (SimpleDateFormat) format;
 	      sdf.applyPattern(style);
