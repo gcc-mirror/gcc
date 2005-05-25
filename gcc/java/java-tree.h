@@ -818,6 +818,9 @@ union lang_tree_node
 #define DECL_FIXED_CONSTRUCTOR_P(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->u.f.fixed_ctor)
 
+#define DECL_LOCAL_CNI_METHOD_P(NODE) \
+    (DECL_LANG_SPECIFIC (NODE)->u.f.local_cni)
+
 /* A constructor that calls this. */
 #define DECL_INIT_CALLS_THIS(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->u.f.init_calls_this)
@@ -931,6 +934,12 @@ union lang_tree_node
     (DECL_LANG_SPECIFIC (NODE)->u.v.freed)
 #define LOCAL_SLOT_P(NODE) \
     (DECL_LANG_SPECIFIC (NODE)->u.v.local_slot)
+
+#define DECL_CLASS_FIELD_P(NODE) \
+    (DECL_LANG_SPECIFIC (NODE)->u.v.class_field)
+#define DECL_VTABLE_P(NODE) \
+    (DECL_LANG_SPECIFIC (NODE)->u.v.vtable)
+
 /* Create a DECL_LANG_SPECIFIC if necessary. */
 #define MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC(T)			\
   if (DECL_LANG_SPECIFIC (T) == NULL)				\
@@ -993,7 +1002,8 @@ struct lang_decl_func GTY(())
   unsigned int invisible : 1;	/* Set for methods we generate
 				   internally but which shouldn't be
 				   written to the .class file.  */
-  unsigned int dummy:1;		
+  unsigned int dummy : 1;
+  unsigned int local_cni : 1;	/* Decl needs mangle_local_cni_method.  */
 };
 
 struct treetreehash_entry GTY(())
@@ -1037,6 +1047,8 @@ struct lang_decl_var GTY(())
   unsigned int cif : 1;		/* True: decl is a class initialization flag */
   unsigned int freed : 1;		/* Decl is no longer in scope.  */
   unsigned int local_slot : 1;	/* Decl is a temporary in the stack frame.  */
+  unsigned int class_field : 1; /* Decl needs mangle_class_field.  */
+  unsigned int vtable : 1;	/* Decl needs mangle_vtable.  */
 };
 
 /* This is what 'lang_decl' really points to.  */
@@ -1367,7 +1379,7 @@ extern void init_jcf_parse (void);
 extern void init_src_parse (void);
 
 extern int cxx_keyword_p (const char *, int);
-extern tree java_mangle_decl (struct obstack *, tree);
+extern void java_mangle_decl (tree);
 extern tree java_mangle_class_field (struct obstack *, tree);
 extern tree java_mangle_vtable (struct obstack *, tree);
 extern void append_gpp_mangled_name (const char *, int);

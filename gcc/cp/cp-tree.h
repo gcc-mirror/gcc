@@ -3923,6 +3923,7 @@ extern void synthesize_method (tree);
 extern tree implicitly_declare_fn (special_function_kind, tree, bool);
 extern tree lazily_declare_fn (special_function_kind, tree);
 extern tree skip_artificial_parms_for (tree, tree);
+extern tree make_alias_for (tree, tree);
 
 /* In optimize.c */
 extern bool maybe_clone_body (tree);

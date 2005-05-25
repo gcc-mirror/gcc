@@ -970,10 +970,13 @@ build_class_ref (tree type)
 	      DECL_ARTIFICIAL (decl) = 1;
 	      if (is_compiled == 1)
 		DECL_EXTERNAL (decl) = 1;
-	      SET_DECL_ASSEMBLER_NAME (decl, 
-				       java_mangle_class_field
-				       (&temporary_obstack, type));
-	      pushdecl_top_level (decl);
+	      MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
+	      DECL_CLASS_FIELD_P (decl) = 1;
+	      DECL_CONTEXT (decl) = type;
+
+	      /* ??? We want to preserve the DECL_CONTEXT we set just above,
+		 that that means not calling pushdecl_top_level.  */
+	      IDENTIFIER_GLOBAL_VALUE (decl_name) = decl;
 	    }
 	}
       else
@@ -1969,7 +1972,7 @@ is_compiled_class (tree class)
 tree
 build_dtable_decl (tree type)
 {
-  tree dtype;
+  tree dtype, decl;
 
   /* We need to build a new dtable type so that its size is uniquely
      computed when we're dealing with the class for real and not just
@@ -2017,8 +2020,12 @@ build_dtable_decl (tree type)
   else
     dtype = dtable_type;
 
-  return build_decl (VAR_DECL, 
-		     java_mangle_vtable (&temporary_obstack, type), dtype);
+  decl = build_decl (VAR_DECL, get_identifier ("vt$"), dtype);
+  DECL_CONTEXT (decl) = type;
+  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
+  DECL_VTABLE_P (decl) = 1;
+
+  return decl;
 }
 
 /* Pre-pend the TYPE_FIELDS of THIS_CLASS with a dummy FIELD_DECL for the
@@ -2092,7 +2099,6 @@ void
 layout_class (tree this_class)
 {
   tree super_class = CLASSTYPE_SUPER (this_class);
-  tree field;
 
   class_list = tree_cons (this_class, NULL_TREE, class_list);
   if (CLASS_BEING_LAIDOUT (this_class))
@@ -2138,18 +2144,6 @@ layout_class (tree this_class)
 	}
       if (TYPE_SIZE (this_class) == NULL_TREE)
 	push_super_field (this_class, maybe_super_class);
-    }
-
-  for (field = TYPE_FIELDS (this_class);
-       field != NULL_TREE;  field = TREE_CHAIN (field))
-    {
-      if (FIELD_STATIC (field))
-	{
-	  /* Set DECL_ASSEMBLER_NAME to something suitably mangled. */
-	  SET_DECL_ASSEMBLER_NAME (field,
-				   java_mangle_decl
-				   (&temporary_obstack, field));
-	}
     }
 
   layout_type (this_class);
@@ -2318,11 +2312,6 @@ layout_class_method (tree this_class, tree super_class,
   /* Considered external until we know what classes are being
      compiled into this object file.  */
   DECL_EXTERNAL (method_decl) = 1;
-
-  /* This is a good occasion to mangle the method's name */
-  SET_DECL_ASSEMBLER_NAME (method_decl,
-			   java_mangle_decl (&temporary_obstack, 
-					     method_decl));
 
   if (ID_INIT_P (method_name))
     {
