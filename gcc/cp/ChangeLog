@@ -1,3 +1,8 @@
+2005-05-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/21686
+	* semantics.c (finish_id_expression): Fix quoting in error message.
+
 2005-05-25  DJ Delorie  <dj@redhat.com>
 
 	* decl.c (duplicate_decls): Move warning control from if() to
