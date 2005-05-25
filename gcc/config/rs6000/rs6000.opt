@@ -227,5 +227,5 @@ Target RejectNegative Joined
 Specify alignment of structure fields default/natural
 
 mprioritize-restricted-insns=
-Target RejectNegative Joined Uinteger Var(rs6000_sched_restricted_insns_priority)
+Target RejectNegative Joined UInteger Var(rs6000_sched_restricted_insns_priority)
 Specify scheduling priority for dispatch slot restricted insns
