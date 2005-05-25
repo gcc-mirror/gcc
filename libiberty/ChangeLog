@@ -1,3 +1,10 @@
+2005-05-25  Richard Henderson  <rth@redhat.com>
+
+	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_HIDDEN_ALIAS.
+	(d_make_comp, d_print_comp): Likewise.
+	(d_special_name): Generate one.
+	* testsuite/demangle-expected: Add a hidden alias test.
+
 2005-05-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* configure.ac: Check declarations for calloc(), getenv(),

@@ -3771,3 +3771,7 @@ _Z1ZZ2Z::__CPR212____ct__Q3_3std141list__tm__128_Q2_3edm41THandle__tm__26_Q2_4em
 _test_array__L_1__B23b___clean.6
 _test_array__L_1__B23b___clean.6
 _test_array__L_1__B23b___clean.6
+#
+--format=java
+_ZGAN4java4lang5Class7forNameEPNS0_6StringE
+hidden alias for java.lang.Class.forName(java.lang.String)
