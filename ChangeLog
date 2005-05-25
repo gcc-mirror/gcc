@@ -1,3 +1,10 @@
+2005-05-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (stage[+id+]-start): Iterate over target module as well.
+	(Dependencies): Consider target modules for bootstrap dependencies.
+	Make target bootstrap modules depend on each stage's gcc.
+	* Makefile.in: Regenerate.
+
 2005-05-20  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (configure-gcc): Depend on binutils having been built.
