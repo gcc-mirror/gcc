@@ -283,19 +283,13 @@ AC_SUBST(OUTPUT_OPTION)
 AC_PROG_CPP
 AC_C_INLINE
 
-gcc_AC_C_LONG_LONG
-
 # sizeof(char) is 1 by definition.
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
-if test $ac_cv_c_long_long = yes; then
-  AC_CHECK_SIZEOF(long long)
-fi
-if test $ac_cv_c___int64 = yes; then
-  AC_CHECK_SIZEOF(__int64)
-fi
+AC_CHECK_TYPES([long long], [AC_CHECK_SIZEOF(long long)])
+AC_CHECK_TYPES([__int64], [AC_CHECK_SIZEOF(__int64)])
 
 # ---------------------
 # Warnings and checking

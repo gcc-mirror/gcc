@@ -866,7 +866,7 @@
 #endif
 
 
-/* Define if your compiler supports the \`long long' type. */
+/* Define to 1 if the system has the type `long long'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LONG_LONG
 #endif
@@ -1137,7 +1137,7 @@
 #endif
 
 
-/* Define if your compiler supports the \`__int64' type. */
+/* Define to 1 if the system has the type `__int64'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE___INT64
 #endif

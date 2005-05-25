@@ -1,5 +1,12 @@
 2005-05-24  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* configure.ac: Don't use gcc_AC_C_LONG_LONG.  Check for
+	existence of long long and __int64 before determining their size.
+	* aclocal.m4: Delete gcc_AC_C_LONG_LONG.
+	* configure, config.h.in:  Regenerate.
+
+2005-05-24  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* configure: Regenerate.
 
 2005-05-24  Ziemowit Laski  <zlaski@apple.com>
