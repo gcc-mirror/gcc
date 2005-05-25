@@ -377,11 +377,11 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_build_cfg); 
   NEXT_PASS (pass_pre_expand);
   NEXT_PASS (pass_warn_function_return);
+  NEXT_PASS (pass_tree_profile);
   *p = NULL;
 
   p = &all_passes;
   NEXT_PASS (pass_fixup_cfg);
-  NEXT_PASS (pass_tree_profile);
   NEXT_PASS (pass_init_datastructures);
   NEXT_PASS (pass_all_optimizations);
   NEXT_PASS (pass_warn_function_noreturn);
@@ -682,7 +682,9 @@ tree_lowering_passes (tree fn)
 void
 ipa_passes (void)
 {
-   execute_pass_list (all_ipa_passes);
+  bitmap_obstack_initialize (NULL);
+  execute_pass_list (all_ipa_passes);
+  bitmap_obstack_release (NULL);
 }
 
 

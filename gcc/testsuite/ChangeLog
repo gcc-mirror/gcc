@@ -1,3 +1,12 @@
+2005-05-25  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-prof/inliner-1.c: New.
+
+2005-05-25  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/tree-prof: New directory.
+	* gcc.dg/tree-prof/tree-prof.exp: New.
+
 2005-05-25  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/Wattributes-1.c: New.

@@ -1,3 +1,18 @@
+2005-05-25  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (ipa-inline.o): Add COEVERAGE_H dependency.
+	* cgraph.c (cgraph_create_node): Reset estimated_growth.
+	* cgraph.h (cgraph_global_info): Add estimated_growth.
+	* ipa-inline.c: Include coverage.h
+	(max_insns, max_count): New static variables.
+	(cgraph_estimate_size_after_inlining): Cache the result.
+	(cgraph_estimate_growth):
+	* passes.c (rest_of_clean_state): Kill coverage_end_function.
+	* timevar.def (TV_INLINE_HEURISTICS): New timevar.
+	* tree-optimize.c (init_tree_optimization_passes): Move profiling before
+	inlining.
+	(ipa_passes): Initialize bitmaps.
+
 2005-05-25  Adrian Straetling  <straetling@de.ibm.com>
 
 	* loop-doloop.c: Include "target.h". 

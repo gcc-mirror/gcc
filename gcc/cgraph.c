@@ -169,6 +169,7 @@ cgraph_create_node (void)
   if (cgraph_nodes)
     cgraph_nodes->previous = node;
   node->previous = NULL;
+  node->global.estimated_growth = INT_MIN;
   cgraph_nodes = node;
   cgraph_n_nodes++;
   return node;

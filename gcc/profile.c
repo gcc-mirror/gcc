@@ -1141,6 +1141,7 @@ branch_prob (void)
   free_edge_list (el);
   if (flag_branch_probabilities)
     profile_status = PROFILE_READ;
+  coverage_end_function ();
 }
 
 /* Union find algorithm implementation for the basic blocks using
