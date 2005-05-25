@@ -1,3 +1,11 @@
+2005-05-21  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/21703:
+	* java/lang/ref/natReference.cc (find_slot): Handle case where
+	table has no NULL entries.
+	* java/lang/natString.cc (_Jv_StringFindSlot): Handle case where
+	table has no NULL entries.
+
 2005-05-22  Andreas Jaeger  <aj@suse.de>
 
 	* java/lang/mprec.c (mult, lshift, b2d, d2b): Add parenthesis to
