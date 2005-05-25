@@ -1427,7 +1427,6 @@ static void
 rest_of_clean_state (void)
 {
   rtx insn, next;
-  coverage_end_function ();
 
   /* It is very important to decompose the RTL instruction chain here:
      debug information keeps pointing into CODE_LABEL insns inside the function

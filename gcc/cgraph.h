@@ -69,6 +69,9 @@ struct cgraph_global_info GTY(())
   /* Estimated size of the function after inlining.  */
   int insns;
 
+  /* Estimated growth after inlining.  INT_MIN if not computed.  */
+  int estimated_growth;
+
   /* Set iff the function has been inlined at least once.  */
   bool inlined;
 };
