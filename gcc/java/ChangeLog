@@ -1,3 +1,8 @@
+2005-05-25  DJ Delorie  <dj@redhat.com>
+
+	* class.c (set_constant_value): Move warning control from if() to
+	warning(OPT_*).
+
 2005-05-24  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (define_builtin): Don't call make_decl_rtl.

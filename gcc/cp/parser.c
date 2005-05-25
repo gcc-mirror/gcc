@@ -10024,7 +10024,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
  	  /* Warn about attributes. They are ignored.  */
  	  if (attributes)
-	    warning (0, "type attributes are honored only at type definition");
+	    warning (OPT_Wattributes,
+		     "type attributes are honored only at type definition");
 
 	  type = xref_tag (tag_type, identifier, ts,
 			   parser->num_template_parameter_lists);
@@ -10869,7 +10870,8 @@ cp_parser_init_declarator (cp_parser* parser,
      attributes -- but ignores them.  */
   if (cp_parser_allow_gnu_extensions_p (parser) && is_parenthesized_init)
     if (cp_parser_attributes_opt (parser))
-      warning (0, "attributes after parenthesized initializer ignored");
+      warning (OPT_Wattributes,
+	       "attributes after parenthesized initializer ignored");
 
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */

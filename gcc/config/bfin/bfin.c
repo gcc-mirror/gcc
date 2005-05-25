@@ -2558,7 +2558,7 @@ handle_int_attribute (tree *node, tree name,
 
   if (TREE_CODE (x) != FUNCTION_TYPE)
     {
-      warning (0, "%qs attribute only applies to functions",
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }

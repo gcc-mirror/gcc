@@ -7393,7 +7393,7 @@ sh_handle_interrupt_handler_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (0, "%qs attribute only applies to functions",
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -7414,21 +7414,21 @@ sh_handle_sp_switch_attribute (tree *node, tree name, tree args,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (0, "%qs attribute only applies to functions",
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else if (!pragma_interrupt)
     {
       /* The sp_switch attribute only has meaning for interrupt functions.  */
-      warning (0, "%qs attribute only applies to interrupt functions",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qs attribute only applies to "
+	       "interrupt functions", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
     {
       /* The argument must be a constant string.  */
-      warning (0, "%qs attribute argument not a string constant",
+      warning (OPT_Wattributes, "%qs attribute argument not a string constant",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -7449,22 +7449,22 @@ sh_handle_trap_exit_attribute (tree *node, tree name, tree args,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (0, "%qs attribute only applies to functions",
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else if (!pragma_interrupt)
     {
       /* The trap_exit attribute only has meaning for interrupt functions.  */
-      warning (0, "%qs attribute only applies to interrupt functions",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qs attribute only applies to "
+	       "interrupt functions", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
     {
       /* The argument must be a constant integer.  */
-      warning (0, "%qs attribute argument not an integer constant",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qs attribute argument not an "
+	       "integer constant", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else

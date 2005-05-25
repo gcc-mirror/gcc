@@ -1115,7 +1115,8 @@ m68hc11_handle_page0_attribute (tree *node, tree name,
     }
   else
     {
-      warning (0, "%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -1151,7 +1152,7 @@ m68hc11_handle_fntype_attribute (tree *node, tree name,
       && TREE_CODE (*node) != FIELD_DECL
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning (0, "%qs attribute only applies to functions",
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -1236,13 +1237,14 @@ m68hc11_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
   trap_handler = lookup_attribute ("trap", func_attr) != NULL_TREE;
   if (trap_handler && is_far)
     {
-      warning (0, "%<trap%> and %<far%> attributes are not compatible, ignoring %<far%>");
+      warning (OPT_Wattributes, "%<trap%> and %<far%> attributes are "
+	       "not compatible, ignoring %<far%>");
       trap_handler = 0;
     }
   if (trap_handler)
     {
       if (trap_handler_symbol != 0)
-        warning (0, "%<trap%> attribute is already used");
+        warning (OPT_Wattributes, "%<trap%> attribute is already used");
       else
         trap_handler_symbol = XEXP (rtl, 0);
     }

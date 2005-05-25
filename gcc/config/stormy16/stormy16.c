@@ -2276,7 +2276,7 @@ xstormy16_handle_interrupt_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE)
     {
-      warning (0, "%qs attribute only applies to functions",
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -2297,14 +2297,16 @@ xstormy16_handle_below100_attribute (tree *node,
       && TREE_CODE (*node) != POINTER_TYPE
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning (0, "%<__BELOW100__%> attribute only applies to variables");
+      warning (OPT_Wattributes,
+	       "%<__BELOW100__%> attribute only applies to variables");
       *no_add_attrs = true;
     }
   else if (args == NULL_TREE && TREE_CODE (*node) == VAR_DECL)
     {
       if (! (TREE_PUBLIC (*node) || TREE_STATIC (*node)))
 	{
-	  warning (0, "__BELOW100__ attribute not allowed with auto storage class.");
+	  warning (OPT_Wattributes, "__BELOW100__ attribute not allowed "
+		   "with auto storage class.");
 	  *no_add_attrs = true;
 	}
     }

@@ -851,11 +851,11 @@ place_field (record_layout_info rli, tree field)
 	  if (TYPE_ALIGN (type) > desired_align)
 	    {
 	      if (STRICT_ALIGNMENT)
-		warning (0, "%Jpacked attribute causes inefficient alignment "
-                         "for %qD", field, field);
+		warning (OPT_Wattributes, "%Jpacked attribute causes "
+                         "inefficient alignment for %qD", field, field);
 	      else
-		warning (0, "%Jpacked attribute is unnecessary for %qD",
-			 field, field);
+		warning (OPT_Wattributes, "%Jpacked attribute is "
+			 "unnecessary for %qD", field, field);
 	    }
 	}
       else
@@ -1298,17 +1298,19 @@ finalize_record_size (record_layout_info rli)
 		name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (rli->t)));
 
 	      if (STRICT_ALIGNMENT)
-		warning (0, "packed attribute causes inefficient "
+		warning (OPT_Wattributes, "packed attribute causes inefficient "
 			 "alignment for %qs", name);
 	      else
-		warning (0, "packed attribute is unnecessary for %qs", name);
+		warning (OPT_Wattributes,
+			 "packed attribute is unnecessary for %qs", name);
 	    }
 	  else
 	    {
 	      if (STRICT_ALIGNMENT)
-		warning (0, "packed attribute causes inefficient alignment");
+		warning (OPT_Wattributes,
+			 "packed attribute causes inefficient alignment");
 	      else
-		warning (0, "packed attribute is unnecessary");
+		warning (OPT_Wattributes, "packed attribute is unnecessary");
 	    }
 	}
     }

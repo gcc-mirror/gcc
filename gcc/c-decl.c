@@ -1480,15 +1480,15 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       if (DECL_DECLARED_INLINE_P (newdecl)
 	  && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
 	{
-	  warning (0, "%Jinline declaration of %qD follows "
+	  warning (OPT_Wattributes, "%Jinline declaration of %qD follows "
 		   "declaration with attribute noinline", newdecl, newdecl);
 	  warned = true;
 	}
       else if (DECL_DECLARED_INLINE_P (olddecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
 	{
-	  warning (0, "%Jdeclaration of %qD with attribute noinline follows "
-		   "inline declaration ", newdecl, newdecl);
+	  warning (OPT_Wattributes, "%Jdeclaration of %qD with attribute "
+		   "noinline follows inline declaration ", newdecl, newdecl);
 	  warned = true;
 	}
 
@@ -3198,7 +3198,8 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning (0, "%Jinline function %qD given attribute noinline", decl, decl);
+    warning (OPT_Wattributes, "%Jinline function %qD given attribute noinline",
+	     decl, decl);
 
   /* Add this decl to the current scope.
      TEM may equal DECL or it may be a previous decl of the same name.  */
@@ -4433,7 +4434,8 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	    /* We don't yet implement attributes in this context.  */
 	    if (array_ptr_attrs != NULL_TREE)
-	      warning (0, "attributes in parameter array declarator ignored");
+	      warning (OPT_Wattributes,
+		       "attributes in parameter array declarator ignored");
 
 	    size_varies = 0;
 	  }
@@ -5782,7 +5784,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   if (DECL_DECLARED_INLINE_P (decl1)
       && DECL_UNINLINABLE (decl1)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
-    warning (0, "%Jinline function %qD given attribute noinline", decl1, decl1);
+    warning (OPT_Wattributes, "%Jinline function %qD given attribute noinline",
+	     decl1, decl1);
 
   announce_function (decl1);
 

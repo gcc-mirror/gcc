@@ -833,7 +833,8 @@ check_function_format (tree attrs, tree params)
 			break;
 		    }
 		  if (args != 0)
-		    warning (0, "function might be possible candidate for %qs format attribute",
+		    warning (OPT_Wattributes, "function might be possible "
+			     "candidate for %qs format attribute",
 			     format_types[info.format_type].name);
 		}
 	    }

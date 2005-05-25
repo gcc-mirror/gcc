@@ -790,9 +790,11 @@ void
 set_constant_value (tree field, tree constant)
 {
   if (field == NULL_TREE)
-    warning (0, "misplaced ConstantValue attribute (not in any field)");
+    warning (OPT_Wattributes,
+	     "misplaced ConstantValue attribute (not in any field)");
   else if (DECL_INITIAL (field) != NULL_TREE)
-    warning (0, "duplicate ConstantValue attribute for field '%s'",
+    warning (OPT_Wattributes,
+	     "duplicate ConstantValue attribute for field '%s'",
 	     IDENTIFIER_POINTER (DECL_NAME (field)));
   else
     {
