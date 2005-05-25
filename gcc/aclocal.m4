@@ -408,29 +408,6 @@ else
 fi
 fi])
 
-dnl Checking for long long.
-dnl By Caolan McNamara <caolan@skynet.ie>
-dnl Added check for __int64, Zack Weinberg <zackw@stanford.edu>
-dnl
-AC_DEFUN([gcc_AC_C_LONG_LONG],
-[AC_CACHE_CHECK(for long long int, ac_cv_c_long_long,
-  [AC_TRY_COMPILE(,[long long int i;],
-         ac_cv_c_long_long=yes,
-         ac_cv_c_long_long=no)])
-  if test $ac_cv_c_long_long = yes; then
-    AC_DEFINE(HAVE_LONG_LONG, 1,
-      [Define if your compiler supports the \`long long' type.])
-  fi
-AC_CACHE_CHECK(for __int64, ac_cv_c___int64,
-  [AC_TRY_COMPILE(,[__int64 i;],
-	ac_cv_c___int64=yes,
-	ac_cv_c___int64=no)])
-  if test $ac_cv_c___int64 = yes; then
-    AC_DEFINE(HAVE___INT64, 1,
-      [Define if your compiler supports the \`__int64' type.])
-  fi
-])
-
 dnl From Bruno Haible.
 
 AC_DEFUN([AM_LANGINFO_CODESET],
