@@ -1,3 +1,10 @@
+2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload1.c (verify_initial_elim_offsets): Return boolean status
+	instead of aborting.
+	(reload): Adapt verify_initial_elim_offsets call site.  Restart
+	main loop if some initial elimination offsets changed.
+
 2005-05-24  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.c (m32r_expand_block_move):  Return 0 if
