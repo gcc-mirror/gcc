@@ -1,3 +1,10 @@
+2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload1.c (verify_initial_elim_offsets): Return boolean status
+	instead of aborting.
+	(reload): Adapt verify_initial_elim_offsets call site.  Restart
+	main loop if some initial elimination offsets changed.
+
 2005-05-25  Adam Nemet  <anemet@lnxw.com>
 
 	* config/rs6000/lynx.h (CC1_SPEC): Use -maix-struct-return instead
