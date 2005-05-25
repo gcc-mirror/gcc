@@ -178,6 +178,8 @@ Boston, MA 02111-1307, USA.  */
    useful only for debugging, since we don't do identity lookups.  */
 
 
+static bool in_fre = false;
+
 /* A value set element.  Basically a single linked list of
    expressions/values.  */
 typedef struct value_set_node
@@ -2030,17 +2032,32 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
 
   if (code == TREE_LIST)
     {
+      tree op = NULL_TREE;
       tree temp = NULL_TREE;
       if (TREE_CHAIN (vexpr))
 	temp = create_value_expr_from (TREE_CHAIN (vexpr), block, stmt);      
       TREE_CHAIN (vexpr) = temp ? temp : TREE_CHAIN (vexpr);
       
+
+      /* Recursively value-numberize reference ops.  */
+      if (REFERENCE_CLASS_P (TREE_VALUE (vexpr)))
+	{
+	  tree tempop;
+	  op = TREE_VALUE (vexpr);
+	  tempop = create_value_expr_from (op, block, stmt);
+	  op = tempop ? tempop : op;
+	  
+	  TREE_VALUE (vexpr)  = vn_lookup_or_add (op, stmt);
+	}
+      else
+	{
+	  op = TREE_VALUE (vexpr);
+	  TREE_VALUE (vexpr) = vn_lookup_or_add (TREE_VALUE (vexpr), NULL);
+	}
       /* This is the equivalent of inserting op into EXP_GEN like we
 	 do below */
-      if (!is_undefined_value (TREE_VALUE (vexpr)))
-	value_insert_into_set (EXP_GEN (block), TREE_VALUE (vexpr));      
-	  
-      TREE_VALUE (vexpr) = vn_lookup_or_add (TREE_VALUE (vexpr), NULL);
+      if (!is_undefined_value (op))
+	value_insert_into_set (EXP_GEN (block), op);
 
       return vexpr;
     }
@@ -2108,8 +2125,8 @@ can_value_number_call (tree stmt)
   tree call = get_call_expr_in (stmt);
 
   /* This is a temporary restriction until we translate vuses through
-     phi nodes.  */
-  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+     phi nodes.  This is only needed for PRE, of course.  */
+  if (!in_fre && !ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
     return false;  
   if (call_expr_flags (call)  & (ECF_PURE | ECF_CONST))
     return true;
@@ -2454,6 +2471,8 @@ static void
 init_pre (bool do_fre)
 {
   basic_block bb;
+  
+  in_fre = do_fre;
 
   inserted_exprs = NULL;
   vn_init ();
