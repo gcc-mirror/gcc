@@ -1340,7 +1340,7 @@ stage[+id+]-start::
 	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stage[+id+] > stage_current ; \
 	echo stage[+id+] > stage_last; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)[+
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR) $(TARGET_SUBDIR)[+
    FOR host_modules +][+ IF bootstrap +]
 @if [+ module +]
 	@cd $(HOST_SUBDIR); [ -d stage[+id+]-[+module+] ] || \
@@ -1349,7 +1349,16 @@ stage[+id+]-start::
 	@CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
 	set stage[+prev+]-[+module+] prev-[+module+] ; \
 	@CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
-@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
+@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +][+
+   FOR target_modules +][+ IF bootstrap +]
+@if target-[+ module +]
+	@cd $(TARGET_SUBDIR); [ -d stage[+id+]-[+module+] ] || \
+	  mkdir stage[+id+]-[+module+]; \
+	set stage[+id+]-[+module+] [+module+] ; \
+	@CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
+	set stage[+prev+]-[+module+] prev-[+module+] ; \
+	@CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
+@endif target-[+ module +][+ ENDIF bootstrap +][+ ENDFOR target_modules +]
 
 stage[+id+]-end::
 	@rm -f stage_current[+ FOR host_modules +][+ IF bootstrap +]
@@ -1358,7 +1367,14 @@ stage[+id+]-end::
 	@UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
 	set prev-[+module+] stage[+prev+]-[+module+] ; \
 	@UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
-@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
+@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +][+
+   FOR target_modules +][+ IF bootstrap +]
+@if target-[+ module +]
+	@cd $(HOST_SUBDIR); set [+module+] stage[+id+]-[+module+] ; \
+	@UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
+	set prev-[+module+] stage[+prev+]-[+module+] ; \
+	@UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
+@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR target_modules +]
 
 # Bubble a bugfix through all the stages up to stage [+id+].  They
 # are remade, but not reconfigured.  The next stage (if any) will not
@@ -1467,7 +1483,10 @@ do-distclean: distclean-stage1
 # --------------------------------------
 
 # Generic dependencies for target modules on host stuff, especially gcc
-[+ FOR target_modules +]
+[+ FOR target_modules +][+ IF bootstrap +]
+@if gcc-bootstrap[+ FOR bootstrap_stage +]
+configure-stage[+id+]-target-[+module+]: maybe-all-stage[+id+]-gcc[+ ENDFOR +]
+@endif gcc-bootstrap[+ ENDIF bootstrap +]
 configure-target-[+module+]: maybe-all-gcc
 [+ ENDFOR target_modules +]
 
@@ -1535,7 +1554,6 @@ configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss
 	  "prebootstrap"
 
 	  (if (or (= (dep-subtarget "on") "install-")
-		  (=* (dep-module "on") "target-")
 		  (not (hash-ref boot-modules (dep-module "module")))
 		  (not (hash-ref boot-modules (dep-module "on"))))
               "normal"
@@ -1549,6 +1567,10 @@ configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss
    (if (exist? "bootstrap")
        (hash-create-handle! boot-modules (get "module") #t))
    "" +][+ ENDFOR host_modules +]
+[+ FOR target_modules +][+
+   (if (exist? "bootstrap")
+       (hash-create-handle! boot-modules (string-append "target-" (get "module")) #t))
+   "" +][+ ENDFOR target_modules +]
 
 # With all the machinery above in place, it is pretty easy to generate
 # dependencies.  Host dependencies are a bit more complex because we have
