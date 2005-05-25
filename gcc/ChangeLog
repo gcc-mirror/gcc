@@ -1,3 +1,7 @@
+2005-05-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/rs6000/rs6000.opt (mprioritize-restricted-insns=): Fix typo.
+
 2005-05-25  Daniel Berlin  <dberlin@dberlin.org>
 	    Jeff Law  <law@redhat.com>
 
