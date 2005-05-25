@@ -2760,9 +2760,9 @@ finish_id_expression (tree id_expression,
 	      if (context != NULL_TREE && context != current_function_decl
 		  && ! TREE_STATIC (decl))
 		{
-		  error ("use of %s from containing function",
-			 (TREE_CODE (decl) == VAR_DECL
-			  ? "%<auto%> variable" : "parameter"));
+		  error (TREE_CODE (decl) == VAR_DECL
+			 ? "use of %<auto%> variable from containing function"
+			 : "use of parameter from containing function");
 		  cp_error_at ("  %q#D declared here", decl);
 		  return error_mark_node;
 		}
