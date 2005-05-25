@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cfgloop.h"
 #include "output.h"
 #include "params.h"
+#include "target.h"
 
 /* This module is used to modify loops with a determinable number of
    iterations to use special low-overhead looping instructions.
@@ -187,27 +188,14 @@ doloop_valid_p (struct loop *loop, struct niter_desc *desc)
 	   insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
-	  /* A called function may clobber any special registers required for
-	     low-overhead looping.  */
-	  if (CALL_P (insn))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Doloop: Function call in loop.\n");
+	  /* Different targets have different necessities for low-overhead
+	     looping.  Call the back end for each instruction within the loop
+	     to let it decide whether the insn is valid.  */
+	  if (!targetm.insn_valid_within_doloop (insn))
+	  {
 	      result = false;
 	      goto cleanup;
-	    }
-
-	  /* Some targets (eg, PPC) use the count register for branch on table
-	     instructions.  ??? This should be a target specific check.  */
-	  if (JUMP_P (insn)
-	      && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_VEC))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Doloop: Computed branch in the loop.\n");
-	      result = false;
-	      goto cleanup;
-	    }
+	  }
 	}
     }
   result = true;

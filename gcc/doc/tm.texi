@@ -9511,6 +9511,17 @@ simplified expression for the call's result.  If @var{ignore} is true
 the value will be ignored.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_INSN_VALID_WITHIN_DOLOOP (rtx @var{insn})
+
+Take an instruction in @var{insn} and return true if it is valid within a
+low-overhead loop.
+
+Many targets use special registers for low-overhead looping. This function
+should return false for any instruction that clobbers these. 
+By default, the RTL loop optimizer does not use a present doloop pattern for
+loops containing function calls or brach on table instructions.  
+@end deftypefn
+
 @defmac MD_CAN_REDIRECT_BRANCH (@var{branch1}, @var{branch2})
 
 Take a branch insn in @var{branch1} and another in @var{branch2}.

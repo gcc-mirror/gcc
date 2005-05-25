@@ -192,6 +192,12 @@ hook_bool_rtx_false (rtx a ATTRIBUTE_UNUSED)
 }
 
 bool
+hook_bool_rtx_true (rtx a ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+bool
 hook_bool_uintp_uintp_false (unsigned int *a ATTRIBUTE_UNUSED,
 			     unsigned int *b ATTRIBUTE_UNUSED)
 {
