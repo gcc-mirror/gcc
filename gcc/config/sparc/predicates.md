@@ -120,22 +120,22 @@
 ;; Return true if OP is a symbolic operand for the TLS Global Dynamic model.
 (define_predicate "tgd_symbolic_operand"
   (and (match_code "symbol_ref")
-       (match_test "tls_symbolic_operand (op) == TLS_MODEL_GLOBAL_DYNAMIC")))
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_GLOBAL_DYNAMIC")))
 
 ;; Return true if OP is a symbolic operand for the TLS Local Dynamic model.
 (define_predicate "tld_symbolic_operand"
   (and (match_code "symbol_ref")
-       (match_test "tls_symbolic_operand (op) == TLS_MODEL_LOCAL_DYNAMIC")))
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_DYNAMIC")))
 
 ;; Return true if OP is a symbolic operand for the TLS Initial Exec model.
 (define_predicate "tie_symbolic_operand"
   (and (match_code "symbol_ref")
-       (match_test "tls_symbolic_operand (op) == TLS_MODEL_INITIAL_EXEC")))
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_INITIAL_EXEC")))
 
 ;; Return true if OP is a symbolic operand for the TLS Local Exec model.
 (define_predicate "tle_symbolic_operand"
   (and (match_code "symbol_ref")
-       (match_test "tls_symbolic_operand (op) == TLS_MODEL_LOCAL_EXEC")))
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_EXEC")))
 
 ;; Return true if the operand is an argument used in generating PIC references
 ;; in either the medium/low or embedded medium/anywhere code models on V9.

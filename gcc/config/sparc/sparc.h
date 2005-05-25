@@ -2358,6 +2358,9 @@ extern int sparc_indent_opcode;
   sparc_output_dwarf_dtprel (FILE, SIZE, X)
 #endif
 
+#define SPARC_SYMBOL_REF_TLS_P(RTX) \
+  (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
+
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   ((CHAR) == '#' || (CHAR) == '*' || (CHAR) == '('		\
    || (CHAR) == ')' || (CHAR) == '_' || (CHAR) == '&')
