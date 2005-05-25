@@ -29,6 +29,7 @@ details.  */
 #include <gnu/gcj/runtime/NameFinder.h>
 
 #include <sysdep/backtrace.h>
+#include <sysdep/descriptor.h>
 
 using namespace java::lang;
 using namespace java::lang::reflect;
@@ -62,12 +63,12 @@ _Jv_StackTrace::UpdateNCodeMap ()
       for (int i=0; i < klass->method_count; i++)
         {
 	  _Jv_Method *method = &klass->methods[i];
+	  void *ncode = method->ncode;
 	  // Add non-abstract methods to ncodeMap.
-	  if (method->ncode)
+	  if (ncode)
 	    {
-	      //printf("map->put 0x%x / %s.%s\n", method->ncode, klass->name->data,
-	      //  method->name->data);
-	      ncodeMap->put ((java::lang::Object *) method->ncode, klass);
+	      ncode = UNWRAP_FUNCTION_DESCRIPTOR (ncode);
+	      ncodeMap->put ((java::lang::Object *)ncode, klass);
 	    }
 	}
     }

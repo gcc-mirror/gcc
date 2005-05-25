@@ -8511,6 +8511,8 @@ if test -d sysdep; then true; else mkdir sysdep; fi
 
           ac_config_links="$ac_config_links sysdep/backtrace.h:$fallback_backtrace_h"
 
+          ac_config_links="$ac_config_links sysdep/descriptor.h:$descriptor_h"
+
 
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.
@@ -16892,6 +16894,7 @@ do
   "include/java-threads.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-threads.h:include/$THREADH" ;;
   "sysdep/locks.h" ) CONFIG_LINKS="$CONFIG_LINKS sysdep/locks.h:sysdep/$sysdeps_dir/locks.h" ;;
   "sysdep/backtrace.h" ) CONFIG_LINKS="$CONFIG_LINKS sysdep/backtrace.h:$fallback_backtrace_h" ;;
+  "sysdep/descriptor.h" ) CONFIG_LINKS="$CONFIG_LINKS sysdep/descriptor.h:$descriptor_h" ;;
   "include/java-signal.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-signal.h:$SIGNAL_HANDLER" ;;
   "include/java-signal-aux.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-signal-aux.h:$SIGNAL_HANDLER_AUX" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;

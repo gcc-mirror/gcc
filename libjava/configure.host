@@ -32,6 +32,7 @@
 #                       (i.e it is broken).
 #   fallback_backtrace_h  Header to use for fallback backtrace implementation
 #			  (only for targets that don't support DWARF2 unwind)
+#   descriptor_h	Header to use for looking past function descriptors
 
 libgcj_flags=
 libgcj_cflags=
@@ -268,6 +269,19 @@ case "${host}" in
   ;;
 esac
 
+case "${host}" in
+  ia64-* | hppa*-*)
+	descriptor_h=sysdep/descriptor-y.h
+	;;
+
+  rs6000-* | powerpc*-*)
+	descriptor_h=sysdep/powerpc/descriptor.h
+	;;
+
+  *)
+	descriptor_h=sysdep/descriptor-n.h
+	;;
+esac
 
 libgcj_cflags="${libgcj_cflags} ${libgcj_flags}"
 libgcj_cxxflags="${libgcj_cxxflags} ${libgcj_flags}"

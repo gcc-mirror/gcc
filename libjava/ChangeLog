@@ -1,3 +1,15 @@
+2005-05-25  Richard Henderson  <rth@redhat.com>
+
+	PR libgcj/21692
+	* sysdep/descriptor-n.h: New file.
+	* sysdep/descriptor-y.h: New file.
+	* sysdep/powerpc/descriptor.h: New file.
+	* configure.host: Set $descriptor_h appropriate for the host.
+	* configure.ac: Link it.
+	* configure: Regenerate.
+	* stacktrace.cc: Include sysdep/descriptor.h.
+	(_Jv_StackTrace::UpdateNCodeMap): Use UNWRAP_FUNCTION_DESCRIPTOR.
+
 2005-05-25  Chris Burdess  <dog@gnu.org>
 
 	* gnu/xml/dom/ls/SAXEventSink.java: Ignore XML entities in start/
