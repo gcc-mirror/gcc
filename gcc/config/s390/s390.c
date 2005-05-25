@@ -255,6 +255,11 @@ struct machine_function GTY(())
 #define cfun_fpr_bit_p(BITNUM) (!!(cfun->machine->frame_layout.fpr_bitmap &    \
   (1 << (BITNUM))))
 
+/* Number of GPRs and FPRs used for argument passing.  */
+#define GP_ARG_NUM_REG 5
+#define FP_ARG_NUM_REG (TARGET_64BIT? 4 : 2)
+
+
 /* Return true if SET either doesn't set the CC register, or else
    the source and destination have matching CC modes and that
    CC mode is at least as constrained as REQ_MODE.  */
@@ -5659,18 +5664,40 @@ s390_register_info (int live_regs[])
   if (current_function_stdarg)
     {
       /* Varargs functions need to save gprs 2 to 6.  */
-      if (cfun_frame_layout.first_save_gpr == -1
-          || cfun_frame_layout.first_save_gpr > 2)
-        cfun_frame_layout.first_save_gpr = 2;
+      if (cfun->va_list_gpr_size
+	  && current_function_args_info.gprs < GP_ARG_NUM_REG)
+	{
+	  int min_gpr = current_function_args_info.gprs;
+	  int max_gpr = min_gpr + cfun->va_list_gpr_size;
+	  if (max_gpr > GP_ARG_NUM_REG)
+	    max_gpr = GP_ARG_NUM_REG;
 
-      if (cfun_frame_layout.last_save_gpr == -1
-          || cfun_frame_layout.last_save_gpr < 6)
-        cfun_frame_layout.last_save_gpr = 6;
+	  if (cfun_frame_layout.first_save_gpr == -1
+	      || cfun_frame_layout.first_save_gpr > 2 + min_gpr)
+	    cfun_frame_layout.first_save_gpr = 2 + min_gpr;
+
+	  if (cfun_frame_layout.last_save_gpr == -1
+	      || cfun_frame_layout.last_save_gpr < 2 + max_gpr - 1)
+	    cfun_frame_layout.last_save_gpr = 2 + max_gpr - 1;
+	}
 
       /* Mark f0, f2 for 31 bit and f0-f4 for 64 bit to be saved.  */
-      if (TARGET_HARD_FLOAT)
-	for (i = 0; i < (TARGET_64BIT ? 4 : 2); i++)
-	  cfun_set_fpr_bit (i);
+      if (TARGET_HARD_FLOAT && cfun->va_list_fpr_size
+	  && current_function_args_info.fprs < FP_ARG_NUM_REG)
+	{
+	  int min_fpr = current_function_args_info.fprs;
+	  int max_fpr = min_fpr + cfun->va_list_fpr_size;
+	  if (max_fpr > FP_ARG_NUM_REG)
+	    max_fpr = FP_ARG_NUM_REG;
+
+	  /* ??? This is currently required to ensure proper location
+	     of the fpr save slots within the va_list save area.  */
+	  if (TARGET_PACKED_STACK)
+	    min_fpr = 0;
+
+	  for (i = min_fpr; i < max_fpr; i++)
+	    cfun_set_fpr_bit (i);
+	}
     }
 
   if (!TARGET_64BIT)
@@ -6714,7 +6741,7 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 {
   if (s390_function_arg_float (mode, type))
     {
-      if (cum->fprs + 1 > (TARGET_64BIT? 4 : 2))
+      if (cum->fprs + 1 > FP_ARG_NUM_REG)
 	return 0;
       else
 	return gen_rtx_REG (mode, cum->fprs + 16);
@@ -6724,7 +6751,7 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       int size = s390_function_arg_size (mode, type);
       int n_gprs = (size + UNITS_PER_WORD-1) / UNITS_PER_WORD;
 
-      if (cum->gprs + n_gprs > 5)
+      if (cum->gprs + n_gprs > GP_ARG_NUM_REG)
 	return 0;
       else
 	return gen_rtx_REG (mode, cum->gprs + 2);
@@ -6832,6 +6859,9 @@ s390_build_builtin_va_list (void)
   f_sav = build_decl (FIELD_DECL, get_identifier ("__reg_save_area"),
 		      ptr_type_node);
 
+  va_list_gpr_counter_field = f_gpr;
+  va_list_fpr_counter_field = f_fpr;
+
   DECL_FIELD_CONTEXT (f_gpr) = record;
   DECL_FIELD_CONTEXT (f_fpr) = record;
   DECL_FIELD_CONTEXT (f_ovf) = record;
@@ -6887,39 +6917,53 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   n_gpr = current_function_args_info.gprs;
   n_fpr = current_function_args_info.fprs;
 
-  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
-	     build_int_cst (NULL_TREE, n_gpr));
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  if (cfun->va_list_gpr_size)
+    {
+      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
+	         build_int_cst (NULL_TREE, n_gpr));
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
 
-  t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
-	     build_int_cst (NULL_TREE, n_fpr));
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  if (cfun->va_list_fpr_size)
+    {
+      t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
+	         build_int_cst (NULL_TREE, n_fpr));
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
 
   /* Find the overflow area.  */
-  t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
+  if (n_gpr + cfun->va_list_gpr_size > GP_ARG_NUM_REG
+      || n_fpr + cfun->va_list_fpr_size > FP_ARG_NUM_REG)
+    {
+      t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
 
-  off = INTVAL (current_function_arg_offset_rtx);
-  off = off < 0 ? 0 : off;
-  if (TARGET_DEBUG_ARG)
-    fprintf (stderr, "va_start: n_gpr = %d, n_fpr = %d off %d\n",
-	     (int)n_gpr, (int)n_fpr, off);
+      off = INTVAL (current_function_arg_offset_rtx);
+      off = off < 0 ? 0 : off;
+      if (TARGET_DEBUG_ARG)
+	fprintf (stderr, "va_start: n_gpr = %d, n_fpr = %d off %d\n",
+		 (int)n_gpr, (int)n_fpr, off);
 
-  t = build (PLUS_EXPR, TREE_TYPE (ovf), t, build_int_cst (NULL_TREE, off));
+      t = build (PLUS_EXPR, TREE_TYPE (ovf), t, build_int_cst (NULL_TREE, off));
 
-  t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
 
   /* Find the register save area.  */
-  t = make_tree (TREE_TYPE (sav), return_address_pointer_rtx);
-  t = build (PLUS_EXPR, TREE_TYPE (sav), t,
-	     build_int_cst (NULL_TREE, -RETURN_REGNUM * UNITS_PER_WORD));
+  if ((cfun->va_list_gpr_size && n_gpr < GP_ARG_NUM_REG)
+      || (cfun->va_list_fpr_size && n_fpr < FP_ARG_NUM_REG))
+    {
+      t = make_tree (TREE_TYPE (sav), return_address_pointer_rtx);
+      t = build (PLUS_EXPR, TREE_TYPE (sav), t,
+	         build_int_cst (NULL_TREE, -RETURN_REGNUM * UNITS_PER_WORD));
   
-  t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
 }
 
 /* Implement va_arg by updating the va_list structure
@@ -6987,7 +7031,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       sav_ofs = 2 * UNITS_PER_WORD;
       sav_scale = UNITS_PER_WORD;
       size = UNITS_PER_WORD;
-      max_reg = 4;
+      max_reg = GP_ARG_NUM_REG - n_reg;
     }
   else if (s390_function_arg_float (TYPE_MODE (type), type))
     {
@@ -7003,8 +7047,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       n_reg = 1;
       sav_ofs = 16 * UNITS_PER_WORD;
       sav_scale = 8;
-      /* TARGET_64BIT has up to 4 parameter in fprs */
-      max_reg = TARGET_64BIT ? 3 : 1;
+      max_reg = FP_ARG_NUM_REG - n_reg;
     }
   else
     {
@@ -7028,10 +7071,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
 	sav_ofs += UNITS_PER_WORD - size;
 
       sav_scale = UNITS_PER_WORD;
-      if (n_reg > 1)
-	max_reg = 3;
-      else
-	max_reg = 4;
+      max_reg = GP_ARG_NUM_REG - n_reg;
     }
 
   /* Pull the value out of the saved registers ...  */
