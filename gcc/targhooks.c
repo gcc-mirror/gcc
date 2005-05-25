@@ -262,6 +262,36 @@ default_scalar_mode_supported_p (enum machine_mode mode)
     }
 }
 
+/* TRUE if INSN insn is valid within a low-overhead loop.
+  
+   This function checks wheter a given INSN is valid within a low-overhead
+   loop.  A called function may clobber any special registers required for
+   low-overhead looping. Additionally, some targets (eg, PPC) use the count
+   register for branch on table instructions. We reject the doloop pattern in
+   these cases.  */
+
+bool 
+default_insn_valid_within_doloop (rtx insn)
+{
+  if (CALL_P (insn))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Doloop: Function call in loop.\n");
+	return false;
+    }
+  
+  if (JUMP_P (insn)
+      && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
+	  || GET_CODE (PATTERN (insn)) == ADDR_VEC))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Doloop: Computed branch in the loop.\n");
+      return false;
+    }
+  
+  return true;
+}
+
 bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
 	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,

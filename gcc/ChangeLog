@@ -1,3 +1,17 @@
+2005-05-25  Adrian Straetling  <straetling@de.ibm.com>
+
+	* loop-doloop.c: Include "target.h". 
+	  (doloop_valid_p): Move tests to function in targhooks.c.
+	* target.h (struct gcc_target): New target hook
+	  "insn_valid_within_doloop".
+	* target-def.h: Define default value for "insn_valid_within_doloop".
+	  (TARGET_INITIALIZER): Insert new target hook into initializer.
+	* targhooks.c (default_insn_valid_within_doloop): New function.
+	* targhooks.h (default_insn_valid_within_doloop): Declare.
+	* hooks.c (hook_bool_rtx_true): New function.
+	* hooks.h (hook_bool_rtx_true): Declare.
+	* doc/tm.texi: Add documentation for new target hook.
+
 2005-05-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/21412

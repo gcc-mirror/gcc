@@ -46,6 +46,8 @@ extern void default_unwind_emit (FILE *, rtx);
 
 extern bool default_scalar_mode_supported_p (enum machine_mode);
 
+extern bool default_insn_valid_within_doloop (rtx);
+
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */
 
