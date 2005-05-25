@@ -270,6 +270,9 @@ case "${host}" in
     abi_baseline_pair="mips-linux-gnu"
     cpu_include_dir="cpu/mips"
     ;;
+  powerpc64-*-linux*)
+    abi_baseline_pair="powerpc64-linux-gnu"
+    ;;
   s390-*-linux*)
     abi_baseline_pair="s390-linux-gnu"
     ;;
