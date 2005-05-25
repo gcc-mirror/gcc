@@ -403,11 +403,6 @@ static const struct
 target_options[] = TARGET_OPTIONS;
 #endif
 
-/* Nonzero means warn about function definitions that default the return type
-   or that use a null return and have a return-type other than void.  */
-
-int warn_return_type;
-
 /* Output files for assembler code (real compiler output)
    and debugging dumps.  */
 

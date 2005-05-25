@@ -4518,8 +4518,9 @@ c_parser_unary_expression (c_parser *parser)
       return ret;
     case CPP_PLUS:
       c_parser_consume_token (parser);
-      if (!c_dialect_objc () && warn_traditional && !in_system_header)
-	warning (0, "traditional C rejects the unary plus operator");
+      if (!c_dialect_objc () && !in_system_header)
+	warning (OPT_Wtraditional,
+		 "traditional C rejects the unary plus operator");
       return parser_build_unary_op (CONVERT_EXPR,
 				    c_parser_cast_expression (parser, NULL));
     case CPP_MINUS:

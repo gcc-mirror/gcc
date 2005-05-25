@@ -599,8 +599,9 @@ interpret_integer (const cpp_token *token, unsigned int flags)
 		  itk = itk_u;
 		  warning (0, "this decimal constant is unsigned only in ISO C90");
 		}
-	      else if (warn_traditional)
-		warning (0, "this decimal constant would be unsigned in ISO C90");
+	      else
+		warning (OPT_Wtraditional,
+			 "this decimal constant would be unsigned in ISO C90");
 	    }
 	}
     }
@@ -763,8 +764,9 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
   if (concats)
     strs = (cpp_string *) obstack_finish (&str_ob);
 
-  if (concats && !objc_string && warn_traditional && !in_system_header)
-    warning (0, "traditional C rejects string constant concatenation");
+  if (concats && !objc_string && !in_system_header)
+    warning (OPT_Wtraditional,
+	     "traditional C rejects string constant concatenation");
 
   if ((c_lex_string_translate
        ? cpp_interpret_string : cpp_interpret_string_notranslate)

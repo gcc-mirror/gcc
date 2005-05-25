@@ -101,11 +101,6 @@ extern bool extra_warnings;
 
 extern void set_Wunused (int setting);
 
-/* Nonzero means warn about function definitions that default the return type
-   or that use a null return and have a return-type other than void.  */
-
-extern int warn_return_type;
-
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
    values are larger than N bytes. The value N is in `larger_than_size'.  */

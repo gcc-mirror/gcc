@@ -979,18 +979,21 @@ c_common_post_options (const char **pfilename)
 
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */
-  if (warn_format_y2k && !warn_format)
-    warning (0, "-Wformat-y2k ignored without -Wformat");
-  if (warn_format_extra_args && !warn_format)
-    warning (0, "-Wformat-extra-args ignored without -Wformat");
-  if (warn_format_zero_length && !warn_format)
-    warning (0, "-Wformat-zero-length ignored without -Wformat");
-  if (warn_format_nonliteral && !warn_format)
-    warning (0, "-Wformat-nonliteral ignored without -Wformat");
-  if (warn_format_security && !warn_format)
-    warning (0, "-Wformat-security ignored without -Wformat");
-  if (warn_missing_format_attribute && !warn_format)
-    warning (0, "-Wmissing-format-attribute ignored without -Wformat");
+  if (!warn_format)
+    {
+      warning (OPT_Wformat_y2k,
+	       "-Wformat-y2k ignored without -Wformat");
+      warning (OPT_Wformat_extra_args,
+	       "-Wformat-extra-args ignored without -Wformat");
+      warning (OPT_Wformat_zero_length,
+	       "-Wformat-zero-length ignored without -Wformat");
+      warning (OPT_Wformat_nonliteral,
+	       "-Wformat-nonliteral ignored without -Wformat");
+      warning (OPT_Wformat_security,
+	       "-Wformat-security ignored without -Wformat");
+      warning (OPT_Wmissing_format_attribute,
+	       "-Wmissing-format-attribute ignored without -Wformat");
+    }
 
   /* C99 requires special handling of complex multiplication and division;
      -ffast-math and -fcx-limited-range are handled in process_options.  */

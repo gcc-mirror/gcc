@@ -1,3 +1,30 @@
+2005-05-24  DJ Delorie  <dj@redhat.com>
+
+	* c-common.c (unsigned_conversion_warning): Move warning control
+	from if() to warning(OPT_*).
+	(c_common_truthvalue_conversion): Likewise.
+	(c_do_switch_warnings): Likewise.
+	* c-decl.c (diagnose_mismatched_decls): Likewise.
+	(diagnose_mismatched_decls): Likewise.
+	(define_label): Likewise.
+	(grokdeclarator): Likewise.
+	* c-format.c (check_format_info): Likewise.
+	* c-lex.c (interpret_integer): Likwise.
+	(lex_string): Likewise.
+	* c-opts.c (c_common_post_options): Likewise.
+	* c-parser.c (c_parser_unary_expression): Likewise.
+	* c-pragma.c (handle_pragma_redefine_extname): Likewise.
+	(handle_pragma_extern_prefix): Likewise.
+	* c-typeck.c (build_binary_op): Likewise.
+	* gcse.c (is_too_expensive): Likewise.
+	* opts.c (decode_options): Likewise.
+	* stor-layout.c (place_field): Likewise.
+	* tree-cfg.c (remove_bb): Likewise.
+
+	* c.opt (-Wreturn-type): Add Var(warn_return_type).
+	* flags.h (warn_return_type): Remove.
+	* toplev.c (warn_return_type): Likewise.
+
 2005-05-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac: Don't use gcc_AC_C_LONG_LONG.  Check for
