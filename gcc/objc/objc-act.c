@@ -1247,7 +1247,7 @@ volatilized_hash (const void *ptr)
 {
   tree typ = ((struct volatilized_type *)ptr)->type;
 
-  return (hashval_t) typ;
+  return htab_hash_pointer(typ);
 }
 
 static int
