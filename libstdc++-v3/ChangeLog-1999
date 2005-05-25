@@ -424,7 +424,7 @@
         * configure.in: Fix checks for mbstate_t and WCHAR_MIN/MAX.
 	* configure: Regenerate.
 	
-999-11-29  Benjamin Kosnik  <bkoz@gnu.org>
+1999-11-29  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* bits/istream.tcc (get(streambuf, char)): Fix.
 	* testsuite/27_io/istream_unformatted.cc (test03): Add tests.
