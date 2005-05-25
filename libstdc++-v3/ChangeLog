@@ -1,5 +1,10 @@
 2005-05-25  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (_Rep::_M_set_length_and_sharable):
+	Use, consistently, traits_type::assign.
+
+2005-05-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/cpu/alpha/atomicity.h: Use the builtins for
 	atomic memory operations.
 	* config/cpu/powerpc/atomicity.h: Likewise.
