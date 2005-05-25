@@ -752,6 +752,7 @@
 #     if (defined (powerpc64) || defined(__powerpc64__))
 #       define ALIGNMENT 8
 #       define CPP_WORDSZ 64
+#       define HBLKSIZE 4096
 #     else
 #       define ALIGNMENT 4
 #     endif
