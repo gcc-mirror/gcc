@@ -1,3 +1,8 @@
+2005-05-25  Daniel Berlin <dberlin@dberlin.org>
+
+	* lambda-code.c (perfect_nestify): Call update_stmt on the exit
+	condition.
+
 2005-05-25  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.c (TARGET_INSN_VALID_WITHIN_DOLOOP): Set to

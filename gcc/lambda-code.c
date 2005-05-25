@@ -2416,12 +2416,12 @@ perfect_nestify (struct loops *loops,
     bsi_insert_after (&bsi, stmt, BSI_SAME_STMT);
   else
     bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
-
+  update_stmt (stmt);
   COND_EXPR_COND (exit_condition) = build (GE_EXPR, 
 					   boolean_type_node,
 					   uboundvar,
 					   ivvarinced);
-
+  update_stmt (exit_condition);
   bbs = get_loop_body (loop); 
   /* Now replace the induction variable in the moved statements with the
      correct loop induction variable.  */
