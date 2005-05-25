@@ -8241,6 +8241,9 @@ s390_reorg (void)
 #undef TARGET_CC_MODES_COMPATIBLE
 #define TARGET_CC_MODES_COMPATIBLE s390_cc_modes_compatible
 
+#undef TARGET_INSN_VALID_WITHIN_DOLOOP
+#define TARGET_INSN_VALID_WITHIN_DOLOOP hook_bool_rtx_true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-s390.h"
