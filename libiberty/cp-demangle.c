@@ -520,6 +520,9 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_REFTEMP:
       printf ("reference temporary\n");
       break;
+    case DEMANGLE_COMPONENT_HIDDEN_ALIAS:
+      printf ("hidden alias\n");
+      break;
     case DEMANGLE_COMPONENT_RESTRICT:
       printf ("restrict\n");
       break;
@@ -733,6 +736,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_JAVA_CLASS:
     case DEMANGLE_COMPONENT_GUARD:
     case DEMANGLE_COMPONENT_REFTEMP:
+    case DEMANGLE_COMPONENT_HIDDEN_ALIAS:
     case DEMANGLE_COMPONENT_POINTER:
     case DEMANGLE_COMPONENT_REFERENCE:
     case DEMANGLE_COMPONENT_COMPLEX:
@@ -1439,6 +1443,7 @@ d_operator_name (struct d_info *di)
                   ::= TF <type>
                   ::= TJ <type>
                   ::= GR <name>
+		  ::= GA <encoding>
 */
 
 static struct demangle_component *
@@ -1528,6 +1533,10 @@ d_special_name (struct d_info *di)
 	case 'R':
 	  return d_make_comp (di, DEMANGLE_COMPONENT_REFTEMP, d_name (di),
 			      NULL);
+
+	case 'A':
+	  return d_make_comp (di, DEMANGLE_COMPONENT_HIDDEN_ALIAS,
+			      d_encoding (di, 0), NULL);
 
 	default:
 	  return NULL;
@@ -2928,6 +2937,11 @@ d_print_comp (struct d_print_info *dpi,
 
     case DEMANGLE_COMPONENT_REFTEMP:
       d_append_string_constant (dpi, "reference temporary for ");
+      d_print_comp (dpi, d_left (dc));
+      return;
+
+    case DEMANGLE_COMPONENT_HIDDEN_ALIAS:
+      d_append_string_constant (dpi, "hidden alias for ");
       d_print_comp (dpi, d_left (dc));
       return;
 

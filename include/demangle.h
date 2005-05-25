@@ -239,6 +239,9 @@ enum demangle_component_type
   /* A reference temporary.  This has one subtree, the name for which
      this is a temporary.  */
   DEMANGLE_COMPONENT_REFTEMP,
+  /* A hidden alias.  This has one subtree, the encoding for which it
+     is providing alternative linkage.  */
+  DEMANGLE_COMPONENT_HIDDEN_ALIAS,
   /* A standard substitution.  This holds the name of the
      substitution.  */
   DEMANGLE_COMPONENT_SUB_STD,
