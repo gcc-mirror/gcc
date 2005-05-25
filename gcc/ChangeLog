@@ -1,3 +1,9 @@
+2005-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/21492
+	* cfgcleanup.c (try_crossjump_to_edge): update_forwarder_flag for
+	src2 if src2 has been split.
+
 2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload1.c (verify_initial_elim_offsets): Return boolean status

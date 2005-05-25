@@ -1,3 +1,8 @@
+2005-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/21492
+	* g++.dg/opt/crossjump1.C: New test.
+
 2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20050524-1.c: New test.
