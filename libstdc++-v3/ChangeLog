@@ -1,3 +1,10 @@
+2005-05-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/cpu/alpha/atomicity.h: Use the builtins for
+	atomic memory operations.
+	* config/cpu/powerpc/atomicity.h: Likewise.
+	* config/cpu/ia64/atomicity.h: Do not include ia64intrin.h.
+
 2005-05-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/25_algorithms/equal.cc: Move to...
