@@ -258,16 +258,10 @@ static GTY (()) int thunk_labelno;
 
 /* Create a static alias to function.  */
 
-static tree
-make_alias_for_thunk (tree function)
+tree
+make_alias_for (tree function, tree newid)
 {
-  tree alias;
-  char buf[256];
-
-  ASM_GENERATE_INTERNAL_LABEL (buf, "LTHUNK", thunk_labelno);
-  thunk_labelno++;
-  alias = build_decl (FUNCTION_DECL, get_identifier (buf),
-		      TREE_TYPE (function));
+  tree alias = build_decl (FUNCTION_DECL, newid, TREE_TYPE (function));
   DECL_LANG_SPECIFIC (alias) = DECL_LANG_SPECIFIC (function);
   cxx_dup_lang_specific_decl (alias);
   DECL_CONTEXT (alias) = NULL;
@@ -296,8 +290,23 @@ make_alias_for_thunk (tree function)
   TREE_USED (alias) = 1;
   SET_DECL_ASSEMBLER_NAME (alias, DECL_NAME (alias));
   TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias)) = 1;
+  return alias;
+}
+
+static tree
+make_alias_for_thunk (tree function)
+{
+  tree alias;
+  char buf[256];
+
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LTHUNK", thunk_labelno);
+  thunk_labelno++;
+
+  alias = make_alias_for (function, get_identifier (buf));
+
   if (!flag_syntax_only)
     assemble_alias (alias, DECL_ASSEMBLER_NAME (function));
+
   return alias;
 }
 

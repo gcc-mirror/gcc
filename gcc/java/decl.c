@@ -2133,6 +2133,30 @@ java_mark_decl_local (tree decl)
     make_decl_rtl (decl);
 }
 
+/* Given appropriate target support, G++ will emit hidden aliases for native
+   methods.  Using this hidden name is required for proper operation of
+   _Jv_Method::ncode, but it doesn't hurt to use it everywhere.  Look for
+   proper target support, then mark the method for aliasing.  */
+
+static void
+java_mark_cni_decl_local (tree decl)
+{
+  /* Setting DECL_LOCAL_CNI_METHOD_P changes the behaviour of the mangler.
+     We expect that we should not yet have referenced this decl in a 
+     context that requires it.  Check this invariant even if we don't have
+     support for hidden aliases.  */
+  gcc_assert (!DECL_ASSEMBLER_NAME_SET_P (decl));
+
+#if !defined(HAVE_GAS_HIDDEN) || !defined(ASM_OUTPUT_DEF)
+  return;
+#endif
+
+  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+  DECL_LOCAL_CNI_METHOD_P (decl) = 1;
+}
+
+/* Use the preceeding two functions and mark all members of the class.  */
+
 void
 java_mark_class_local (tree class)
 {
@@ -2143,8 +2167,13 @@ java_mark_class_local (tree class)
       java_mark_decl_local (t);
 
   for (t = TYPE_METHODS (class); t ; t = TREE_CHAIN (t))
-    if (!METHOD_ABSTRACT (t) && (!METHOD_NATIVE (t) || flag_jni))
-      java_mark_decl_local (t);
+    if (!METHOD_ABSTRACT (t))
+      {
+	if (METHOD_NATIVE (t) && !flag_jni)
+	  java_mark_cni_decl_local (t);
+        else
+	  java_mark_decl_local (t);
+      }
 }
 
 /* Add a statement to a compound_expr.  */

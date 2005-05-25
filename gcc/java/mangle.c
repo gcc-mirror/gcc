@@ -35,11 +35,14 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "obstack.h"
 #include "toplev.h"
-#include "obstack.h"
 #include "ggc.h"
+#include "langhooks-def.h"
 
+static void mangle_class_field (tree);
+static void mangle_vtable (tree);
 static void mangle_field_decl (tree);
 static void mangle_method_decl (tree);
+static void mangle_local_cni_method_decl (tree);
 
 static void mangle_type (tree);
 static void mangle_pointer_type (tree);
@@ -55,15 +58,15 @@ static void set_type_package_list (tree);
 static int  entry_match_pointer_p (tree, int);
 static void emit_compression_string (int);
 
-static void init_mangling (struct obstack *);
+static void init_mangling (void);
 static tree finish_mangling (void);
 static void compression_table_add (tree);
 
 static void mangle_member_name (tree);
 
-/* We use an incoming obstack, always to be provided to the interface
-   functions. */
+static struct obstack mangle_obstack_1;
 struct obstack *mangle_obstack;
+
 #define MANGLE_RAW_STRING(S) \
   obstack_grow (mangle_obstack, (S), sizeof (S)-1)
 
@@ -73,45 +76,74 @@ static GTY(()) tree atms;
 /* This is the mangling interface: a decl, a class field (.class) and
    the vtable. */
 
-tree
-java_mangle_decl (struct obstack *obstack, tree decl)
+void
+java_mangle_decl (tree decl)
 {
-  init_mangling (obstack);
-  switch (TREE_CODE (decl))
+  /* A copy of the check from the beginning of lhd_set_decl_assembler_name.
+     Only FUNCTION_DECLs and VAR_DECLs for variables with static storage
+     duration need a real DECL_ASSEMBLER_NAME.  */
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
+	      || (TREE_CODE (decl) == VAR_DECL
+		  && (TREE_STATIC (decl)
+		      || DECL_EXTERNAL (decl)
+		      || TREE_PUBLIC (decl))));
+  
+  /* Mangling only applies to class members.  */
+  if (DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl)))
     {
-    case VAR_DECL:
-      mangle_field_decl (decl);
-      break;
-    case FUNCTION_DECL:
-      mangle_method_decl (decl);
-      break;
-    default:
-      internal_error ("can't mangle %s", tree_code_name [TREE_CODE (decl)]);
+      init_mangling ();
+      switch (TREE_CODE (decl))
+	{
+	case VAR_DECL:
+	  if (DECL_LANG_SPECIFIC (decl))
+	    {
+	      if (DECL_CLASS_FIELD_P (decl))
+		{
+		  mangle_class_field (DECL_CONTEXT (decl));
+		  break;
+		}
+	      else if (DECL_VTABLE_P (decl))
+		{
+		  mangle_vtable (DECL_CONTEXT (decl));
+		  break;
+		}
+	    }
+	  mangle_field_decl (decl);
+	  break;
+
+	case FUNCTION_DECL:
+	  if (DECL_LANG_SPECIFIC (decl) && DECL_LOCAL_CNI_METHOD_P (decl))
+	    mangle_local_cni_method_decl (decl);
+	  else
+	    mangle_method_decl (decl);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+      SET_DECL_ASSEMBLER_NAME (decl, finish_mangling ());
     }
-  return finish_mangling ();
-}
-
-tree 
-java_mangle_class_field (struct obstack *obstack, tree type)
-{
-  init_mangling (obstack);
-  mangle_record_type (type, /* for_pointer = */ 0);
-  MANGLE_RAW_STRING ("6class$");
-  obstack_1grow (mangle_obstack, 'E');
-  return finish_mangling ();
-}
-
-tree
-java_mangle_vtable (struct obstack *obstack, tree type)
-{
-  init_mangling (obstack);
-  MANGLE_RAW_STRING ("TV");
-  mangle_record_type (type, /* for_pointer = */ 0);
-  obstack_1grow (mangle_obstack, 'E');
-  return finish_mangling ();
+  else
+    lhd_set_decl_assembler_name (decl);
 }
 
 /* Beginning of the helper functions */
+
+static void
+mangle_class_field (tree type)
+{
+  mangle_record_type (type, /* for_pointer = */ 0);
+  MANGLE_RAW_STRING ("6class$");
+  obstack_1grow (mangle_obstack, 'E');
+}
+
+static void
+mangle_vtable (tree type)
+{
+  MANGLE_RAW_STRING ("TV");
+  mangle_record_type (type, /* for_pointer = */ 0);
+  obstack_1grow (mangle_obstack, 'E');
+}
 
 /* This mangles a field decl */
 
@@ -165,6 +197,18 @@ mangle_method_decl (tree mdecl)
       for (arg = arglist; arg != end_params_node;  arg = TREE_CHAIN (arg))
 	mangle_type (TREE_VALUE (arg));
     }
+}
+
+/* This mangles a CNI method for a local class.  If the target supports
+   hidden aliases, then G++ will have generated one for us.  It is the
+   responsibility of java_mark_class_local to check target support, since
+   we need to set DECL_VISIBILITY (or not) much earlier.  */
+
+static void
+mangle_local_cni_method_decl (tree decl)
+{
+  MANGLE_RAW_STRING ("GA");
+  mangle_method_decl (decl);
 }
 
 /* This mangles a member name, like a function name or a field
@@ -585,17 +629,19 @@ compression_table_add (tree type)
 /* Mangling initialization routine.  */
 
 static void
-init_mangling (struct obstack *obstack)
+init_mangling (void)
 {
-  mangle_obstack = obstack;
-  if (!compression_table)
-    compression_table = make_tree_vec (10);
-  else
-    /* Mangling already in progress.  */
-    abort ();
+  if (!mangle_obstack)
+    {
+      mangle_obstack = &mangle_obstack_1;
+      gcc_obstack_init (mangle_obstack);
+    }
+
+  gcc_assert (compression_table == NULL);
+  compression_table = make_tree_vec (10);
 
   /* Mangled name are to be suffixed */
-  obstack_grow (mangle_obstack, "_Z", 2);
+  MANGLE_RAW_STRING ("_Z");
 }
 
 /* Mangling finalization routine. The mangled name is returned as a
@@ -606,18 +652,14 @@ finish_mangling (void)
 {
   tree result;
 
-  if (!compression_table)
-    /* Mangling already finished.  */
-    abort ();
+  gcc_assert (compression_table);
 
   compression_table = NULL_TREE;
   compression_next = 0;
   obstack_1grow (mangle_obstack, '\0');
   result = get_identifier (obstack_base (mangle_obstack));
   obstack_free (mangle_obstack, obstack_base (mangle_obstack));
-#if 0
-  printf ("// %s\n", IDENTIFIER_POINTER (result));
-#endif
+
   return result;
 }
 

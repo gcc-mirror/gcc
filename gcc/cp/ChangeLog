@@ -1,3 +1,12 @@
+2005-05-25  Richard Henderson  <rth@redhat.com>
+
+	PR libgcj/21692
+	* cp-tree.h (make_alias_for): Declare.
+	* decl2.c (build_java_method_aliases): New.
+	(cp_finish_file): Call it.
+	* method.c (make_alias_for): Split out from ...
+	(make_alias_for_thunk): ... here.
+
 2005-05-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/21686
@@ -248,8 +257,8 @@
 
 2005-05-02  Paolo Bonzini  <bonzini@gnu.org>
 
-        * semantics.c (finish_call_expr): Call resolve_overloaded_builtin
-        for BUILT_IN_MD built-ins.
+	* semantics.c (finish_call_expr): Call resolve_overloaded_builtin
+	for BUILT_IN_MD built-ins.
 
 2005-05-02  Michael Matz  <matz@suse.de>
 
@@ -310,7 +319,7 @@
 2005-04-22  Per Bothner  <per@bothner.com>
 
 	* decl.c (make_rtl_for_nonlocal_decl): Don't try get_fileinfo if
-        input_filename is NULL, as it is for (say) __PRETTY_FUNCTION__.
+	input_filename is NULL, as it is for (say) __PRETTY_FUNCTION__.
 
 2005-04-22  Alexandre Oliva  <aoliva@redhat.com>
 
