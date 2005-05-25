@@ -1750,7 +1750,7 @@ rewrite_into_ssa (void)
   sbitmap_zero (interesting_blocks);
 
   /* Initialize dominance frontier.  */
-  dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap *));
+  dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap));
   FOR_EACH_BB (bb)
     dfs[bb->index] = BITMAP_ALLOC (NULL);
 
@@ -2736,7 +2736,7 @@ update_ssa (unsigned update_flags)
 
       /* If the caller requested PHI nodes to be added, compute
 	 dominance frontiers.  */
-      dfs = xmalloc (last_basic_block * sizeof (bitmap *));
+      dfs = xmalloc (last_basic_block * sizeof (bitmap));
       FOR_EACH_BB (bb)
 	dfs[bb->index] = BITMAP_ALLOC (NULL);
       compute_dominance_frontiers (dfs);
