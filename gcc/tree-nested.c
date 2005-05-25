@@ -871,9 +871,14 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 
 	if (wi->changed)
 	  {
+	    tree save_context;
+
 	    /* If we changed anything, then TREE_INVARIANT is be wrong,
 	       since we're no longer directly referencing a decl.  */
+	    save_context = current_function_decl;
+	    current_function_decl = info->context;
 	    recompute_tree_invarant_for_addr_expr (t);
+	    current_function_decl = save_context;
 
 	    /* If the callback converted the address argument in a context
 	       where we only accept variables (and min_invariant, presumably),
@@ -996,10 +1001,15 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	/* If we converted anything ... */
 	if (wi->changed)
 	  {
+	    tree save_context;
+
 	    /* Then the frame decl is now addressable.  */
 	    TREE_ADDRESSABLE (info->frame_decl) = 1;
 	    
+	    save_context = current_function_decl;
+	    current_function_decl = info->context;
 	    recompute_tree_invarant_for_addr_expr (t);
+	    current_function_decl = save_context;
 
 	    /* If we are in a context where we only accept values, then
 	       compute the address into a temporary.  */
