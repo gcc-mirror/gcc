@@ -668,7 +668,8 @@ decode_options (unsigned int argc, const char **argv)
 	 this to `2' if -Wall is used, so we can avoid giving out
 	 lots of errors for people who don't realize what -Wall does.  */
       if (warn_uninitialized == 1)
-	warning (0, "-Wuninitialized is not supported without -O");
+	warning (OPT_Wuninitialized,
+		 "-Wuninitialized is not supported without -O");
     }
 
   if (flag_really_no_inline == 2)

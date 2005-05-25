@@ -945,8 +945,9 @@ unsigned_conversion_warning (tree result, tree operand)
       if (!int_fits_type_p (operand, c_common_signed_type (type)))
 	/* This detects cases like converting -129 or 256 to unsigned char.  */
 	warning (0, "large integer implicitly truncated to unsigned type");
-      else if (warn_conversion)
-	warning (0, "negative integer implicitly converted to unsigned type");
+      else
+	warning (OPT_Wconversion,
+		 "negative integer implicitly converted to unsigned type");
     }
 }
 
@@ -2470,8 +2471,9 @@ c_common_truthvalue_conversion (tree expr)
       break;
 
     case MODIFY_EXPR:
-      if (warn_parentheses && !TREE_NO_WARNING (expr))
-	warning (0, "suggest parentheses around assignment used as truth value");
+      if (!TREE_NO_WARNING (expr))
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around assignment used as truth value");
       break;
 
     default:
@@ -3725,8 +3727,9 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
     return;
 
   default_node = splay_tree_lookup (cases, (splay_tree_key) NULL);
-  if (warn_switch_default && !default_node)
-    warning (0, "%Hswitch missing default case", &switch_location);
+  if (!default_node)
+    warning (OPT_Wswitch_default, "%Hswitch missing default case",
+	     &switch_location);
 
   /* If the switch expression was an enumerated type, check that
      exactly all enumeration literals are covered by the cases.

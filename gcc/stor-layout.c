@@ -869,8 +869,7 @@ place_field (record_layout_info rli, tree field)
       /* No, we need to skip space before this field.
 	 Bump the cumulative size to multiple of field alignment.  */
 
-      if (warn_padded)
-	warning (0, "%Jpadding struct to align %qD", field, field);
+      warning (OPT_Wpadded, "%Jpadding struct to align %qD", field, field);
 
       /* If the alignment is still within offset_align, just align
 	 the bit position.  */

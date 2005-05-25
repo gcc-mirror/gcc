@@ -1154,9 +1154,9 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       else if (TREE_PUBLIC (newdecl))
 	warning (0, "%Jbuilt-in function %qD declared as non-function",
 		 newdecl, newdecl);
-      else if (warn_shadow)
-	warning (0, "%Jdeclaration of %qD shadows a built-in function",
-		 newdecl, newdecl);
+      else
+	warning (OPT_Wshadow, "%Jdeclaration of %qD shadows "
+		 "a built-in function", newdecl, newdecl);
       return false;
     }
 
@@ -1270,9 +1270,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	      || (DECL_INITIAL (newdecl)
 		  && !TYPE_ARG_TYPES (TREE_TYPE (newdecl)))))
 	{
-	  if (warn_shadow)
-	    warning (0, "%Jdeclaration of %qD shadows a built-in function",
-		     newdecl, newdecl);
+	  warning (OPT_Wshadow, "%Jdeclaration of %qD shadows "
+		   "a built-in function", newdecl, newdecl);
 	  /* Discard the old built-in function.  */
 	  return false;
 	}
@@ -2543,9 +2542,9 @@ define_label (location_t location, tree name)
 	    /*invisible=*/false, /*nested=*/false);
     }
 
-  if (warn_traditional && !in_system_header && lookup_name (name))
-    warning (0, "%Htraditional C lacks a separate namespace for labels, "
-             "identifier %qE conflicts", &location, name);
+  if (!in_system_header && lookup_name (name))
+    warning (OPT_Wtraditional, "%Htraditional C lacks a separate namespace "
+             "for labels, identifier %qE conflicts", &location, name);
 
   nlist_se = XOBNEW (&parser_obstack, struct c_label_list);
   nlist_se->next = label_context_stack_se->labels_def;
@@ -4271,8 +4270,9 @@ grokdeclarator (const struct c_declarator *declarator,
 		   them for noreturn functions.  */
 		if (VOID_TYPE_P (type) && really_funcdef)
 		  pedwarn ("function definition has qualified void return type");
-		else if (warn_return_type)
-		  warning (0, "type qualifiers ignored on function return type");
+		else
+		  warning (OPT_Wreturn_type,
+			   "type qualifiers ignored on function return type");
 		
 		type = c_build_qualified_type (type, type_quals);
 	      }
@@ -6079,7 +6079,8 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 #endif
 
   if (!in_system_header)
-    warning (OPT_Wold_style_definition, "%Jold-style function definition", fndecl);
+    warning (OPT_Wold_style_definition, "%Jold-style function definition",
+	     fndecl);
 
   /* Match each formal parameter name with its declaration.  Save each
      decl in the appropriate TREE_PURPOSE slot of the parmids chain.  */

@@ -2110,11 +2110,11 @@ remove_bb (basic_block bb)
      loop above, so the last statement we process is the first statement
      in the block.  */
 #ifdef USE_MAPPED_LOCATION
-  if (warn_notreached && loc > BUILTINS_LOCATION)
-    warning (0, "%Hwill never be executed", &loc);
+  if (loc > BUILTINS_LOCATION)
+    warning (OPT_Wunreachable_code, "%Hwill never be executed", &loc);
 #else
-  if (warn_notreached && loc)
-    warning (0, "%Hwill never be executed", loc);
+  if (loc)
+    warning (OPT_Wunreachable_code, "%Hwill never be executed", loc);
 #endif
 
   remove_phi_nodes_and_edges_for_unreachable_block (bb);

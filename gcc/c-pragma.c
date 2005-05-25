@@ -418,7 +418,8 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
   if (!flag_mudflap && !targetm.handle_pragma_redefine_extname)
     {
       if (warn_unknown_pragmas > in_system_header)
-	warning (0, "#pragma redefine_extname not supported on this target");
+	warning (OPT_Wunknown_pragmas,
+		 "#pragma redefine_extname not supported on this target");
       return;
     }
 
@@ -486,7 +487,8 @@ handle_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
     /* Note that the length includes the null terminator.  */
     pragma_extern_prefix = (TREE_STRING_LENGTH (prefix) > 1 ? prefix : NULL);
   else if (warn_unknown_pragmas > in_system_header)
-    warning (0, "#pragma extern_prefix not supported on this target");
+    warning (OPT_Wunknown_pragmas,
+	     "#pragma extern_prefix not supported on this target");
 }
 
 /* Hook from the front ends to apply the results of one of the preceding

@@ -7523,8 +7523,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     case EXACT_DIV_EXPR:
       /* Floating point division by zero is a legitimate way to obtain
 	 infinities and NaNs.  */
-      if (warn_div_by_zero && skip_evaluation == 0 && integer_zerop (op1))
-	warning (0, "division by zero");
+      if (skip_evaluation == 0 && integer_zerop (op1))
+	warning (OPT_Wdiv_by_zero, "division by zero");
 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == COMPLEX_TYPE || code0 == VECTOR_TYPE)
@@ -7562,8 +7562,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
-      if (warn_div_by_zero && skip_evaluation == 0 && integer_zerop (op1))
-	warning (0, "division by zero");
+      if (skip_evaluation == 0 && integer_zerop (op1))
+	warning (OPT_Wdiv_by_zero, "division by zero");
 
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
@@ -7655,8 +7655,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
     case EQ_EXPR:
     case NE_EXPR:
-      if (warn_float_equal && (code0 == REAL_TYPE || code1 == REAL_TYPE))
-	warning (0, "comparing floating point with == or != is unsafe");
+      if (code0 == REAL_TYPE || code1 == REAL_TYPE)
+	warning (OPT_Wfloat_equal,
+		 "comparing floating point with == or != is unsafe");
       /* Result of comparison is always int,
 	 but don't convert the args to int!  */
       build_type = integer_type_node;

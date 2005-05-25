@@ -339,7 +339,7 @@ C++ ObjC++ Var(warn_reorder)
 Warn when the compiler reorders code
 
 Wreturn-type
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(warn_return_type)
 Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)
 
 Wselector

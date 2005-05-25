@@ -1140,8 +1140,8 @@ check_format_info (function_format_info *info, tree params)
 	{
 	  /* For strftime-like formats, warn for not checking the format
 	     string; but there are no arguments to check.  */
-	  if (warn_format_nonliteral)
-	    warning (0, "format not a string literal, format string not checked");
+	  warning (OPT_Wformat_nonliteral,
+		   "format not a string literal, format string not checked");
 	}
       else if (info->first_arg_num != 0)
 	{
@@ -1154,10 +1154,15 @@ check_format_info (function_format_info *info, tree params)
 	      params = TREE_CHAIN (params);
 	      ++arg_num;
 	    }
-	  if (params == 0 && (warn_format_nonliteral || warn_format_security))
-	    warning (0, "format not a string literal and no format arguments");
-	  else if (warn_format_nonliteral)
-	    warning (0, "format not a string literal, argument types not checked");
+	  if (params == 0 && warn_format_security)
+	    warning (OPT_Wformat_security,
+		     "format not a string literal and no format arguments");
+	  else if (params == 0 && warn_format_nonliteral)
+	    warning (OPT_Wformat_nonliteral,
+		     "format not a string literal and no format arguments");
+	  else
+	    warning (OPT_Wformat_nonliteral,
+		     "format not a string literal, argument types not checked");
 	}
     }
 
