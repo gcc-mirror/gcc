@@ -1,3 +1,7 @@
+2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20050524-1.c: New test.
+
 2005-05-25  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-prof/inliner-1.c: New.
