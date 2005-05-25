@@ -1,3 +1,12 @@
+2005-05-25  Daniel Berlin  <dberlin@dberlin.org>
+	    Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (verify_expr, case ADDR_EXPR): Verify invariant,
+	constant and side_effects of the ADDR_EXPR are consistent.
+
+	* tree-nested.c (convert_local_reference): Set CURRENT_FUNCTION_DECL
+	appropriately around calls to recompute_tree_invarant_for_addr_expr.
+
 2005-05-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (GP_ARG_NUM_REG, FP_ARG_NUM_REG): New defines.

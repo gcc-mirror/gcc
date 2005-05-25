@@ -3429,32 +3429,67 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       break;
 
     case ADDR_EXPR:
-      /* ??? tree-ssa-alias.c may have overlooked dead PHI nodes, missing
-	 dead PHIs that take the address of something.  But if the PHI
-	 result is dead, the fact that it takes the address of anything
-	 is irrelevant.  Because we can not tell from here if a PHI result
-	 is dead, we just skip this check for PHIs altogether.  This means
-	 we may be missing "valid" checks, but what can you do?
-	 This was PR19217.  */
-      if (in_phi)
+      {
+	bool old_invariant;
+	bool old_constant;
+	bool old_side_effects;
+	bool new_invariant;
+	bool new_constant;
+	bool new_side_effects;
+
+        /* ??? tree-ssa-alias.c may have overlooked dead PHI nodes, missing
+	   dead PHIs that take the address of something.  But if the PHI
+	   result is dead, the fact that it takes the address of anything
+	   is irrelevant.  Because we can not tell from here if a PHI result
+	   is dead, we just skip this check for PHIs altogether.  This means
+	   we may be missing "valid" checks, but what can you do?
+	   This was PR19217.  */
+        if (in_phi)
+	  break;
+
+	old_invariant = TREE_INVARIANT (t);
+	old_constant = TREE_CONSTANT (t);
+	old_side_effects = TREE_SIDE_EFFECTS (t);
+
+	recompute_tree_invarant_for_addr_expr (t);
+	new_invariant = TREE_INVARIANT (t);
+	new_side_effects = TREE_SIDE_EFFECTS (t);
+	new_constant = TREE_CONSTANT (t);
+
+	if (old_invariant != new_invariant)
+	  {
+	    error ("invariant not recomputed when ADDR_EXPR changed");
+	    return t;
+	  }
+
+        if (old_constant != new_constant)
+	  {
+	    error ("constant not recomputed when ADDR_EXPR changed");
+	    return t;
+	  }
+	if (old_side_effects != new_side_effects)
+	  {
+	    error ("side effects not recomputed when ADDR_EXPR changed");
+	    return t;
+	  }
+
+	/* Skip any references (they will be checked when we recurse down the
+	   tree) and ensure that any variable used as a prefix is marked
+	   addressable.  */
+	for (x = TREE_OPERAND (t, 0);
+	     handled_component_p (x);
+	     x = TREE_OPERAND (x, 0))
+	  ;
+
+	if (TREE_CODE (x) != VAR_DECL && TREE_CODE (x) != PARM_DECL)
+	  return NULL;
+	if (!TREE_ADDRESSABLE (x))
+	  {
+	    error ("address taken, but ADDRESSABLE bit not set");
+	    return x;
+	  }
 	break;
-
-      /* Skip any references (they will be checked when we recurse down the
-	 tree) and ensure that any variable used as a prefix is marked
-	 addressable.  */
-      for (x = TREE_OPERAND (t, 0);
-	   handled_component_p (x);
-	   x = TREE_OPERAND (x, 0))
-	;
-
-      if (TREE_CODE (x) != VAR_DECL && TREE_CODE (x) != PARM_DECL)
-	return NULL;
-      if (!TREE_ADDRESSABLE (x))
-	{
-	  error ("address taken, but ADDRESSABLE bit not set");
-	  return x;
-	}
-      break;
+      }
 
     case COND_EXPR:
       x = COND_EXPR_COND (t);
