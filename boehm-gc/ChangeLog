@@ -1,3 +1,8 @@
+2005-05-25  Andrew Haley  <aph@redhat.com>
+
+	* include/private/gcconfig.h (HBLKSIZE): Define to 4096 on
+	powerpc64-linux.
+
 2005-05-09  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.
