@@ -1,3 +1,8 @@
+2005-05-25  Mike Stump  <mrs@mrs.kithrup.com>
+
+	* objc-act.c (volatilized_hash): Avoid warnings on 64-bit
+	machines.
+
 2005-05-24  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_build_struct): New function.
