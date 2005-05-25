@@ -1,3 +1,12 @@
+2005-05-25  DJ Delorie  <dj@redhat.com>
+
+	* decl.c (duplicate_decls): Move warning control from if() to
+	warning(OPT_*).
+	* name-lookup.c (parse_using_directive): Likewise.
+	* parser.c (cp_parser_elaborated_type_specifier): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	* tree.c (handle_com_interface_attribute): Likewise.
+
 2005-05-24  Ziemowit Laski  <zlaski@apple.com>
 
 	* class.c (layout_class_type): Do not issue C++ ABI warnings

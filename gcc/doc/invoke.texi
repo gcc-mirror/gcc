@@ -218,7 +218,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wextra  -Wall  -Waggregate-return @gol
+-w  -Wextra  -Wall  -Waggregate-return -Wno-attributes @gol
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  -Wno-endif-labels @gol
@@ -3045,6 +3045,14 @@ of @option{-Wextra} without this warning, use @samp{-Wextra -Wno-sign-compare}.
 Warn if any functions that return structures or unions are defined or
 called.  (In languages where you can return an array, this also elicits
 a warning.)
+
+@item -Wno-attributes
+@opindex Wno-attributes
+@opindex Wattributes
+Do not warn if an unexpected @code{__attribute__} is used, such as
+unrecognized attributes, function attributes applied to variables,
+etc.  This will not stop errors for incorrect use of supported
+attributes.
 
 @item -Wstrict-prototypes @r{(C only)}
 @opindex Wstrict-prototypes

@@ -71,7 +71,7 @@ ix86_handle_shared_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != VAR_DECL)
     {
-      warning (0, "%qs attribute only applies to variables",
+      warning (OPT_Wattributes, "%qs attribute only applies to variables",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -466,8 +466,9 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 	warning (0, "%J'%D' defined locally after being "
 		 "referenced with dllimport linkage", decl, decl);
       else
-	warning (0, "%J'%D' redeclared without dllimport attribute "
-		 "after being referenced with dllimport linkage", decl, decl);
+	warning (OPT_Wattributes, "%J'%D' redeclared without dllimport "
+		 "attribute after being referenced with dllimport linkage",
+		 decl, decl);
     }
 }
 

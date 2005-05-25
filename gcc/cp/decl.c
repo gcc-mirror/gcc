@@ -1051,17 +1051,18 @@ duplicate_decls (tree newdecl, tree olddecl)
 	       && DECL_UNINLINABLE (olddecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
 	{
-	  warning (0, "%Jfunction %qD redeclared as inline", newdecl, newdecl);
-	  warning (0, "%Jprevious declaration of %qD with attribute noinline",
-                   olddecl, olddecl);
+	  warning (OPT_Wattributes, "%Jfunction %qD redeclared as inline",
+		   newdecl, newdecl);
+	  warning (OPT_Wattributes, "%Jprevious declaration of %qD "
+		   "with attribute noinline", olddecl, olddecl);
 	}
       else if (DECL_DECLARED_INLINE_P (olddecl)
 	       && DECL_UNINLINABLE (newdecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
 	{
-	  warning (0, "%Jfunction %qD redeclared with attribute noinline",
-		   newdecl, newdecl);
-	  warning (0, "%Jprevious declaration of %qD was inline",
+	  warning (OPT_Wattributes, "%Jfunction %qD redeclared with "
+		   "attribute noinline", newdecl, newdecl);
+	  warning (OPT_Wattributes, "%Jprevious declaration of %qD was inline",
 		   olddecl, olddecl);
 	}
     }
@@ -1802,9 +1803,10 @@ duplicate_decls (tree newdecl, tree olddecl)
       && DECL_VISIBILITY_SPECIFIED (newdecl)
       && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
     {
-      warning (0, "%J%qD: visibility attribute ignored because it",
-	       newdecl, newdecl);
-      warning (0, "%Jconflicts with previous declaration here", olddecl);
+      warning (OPT_Wattributes, "%J%qD: visibility attribute ignored "
+	       "because it", newdecl, newdecl);
+      warning (OPT_Wattributes, "%Jconflicts with previous "
+	       "declaration here", olddecl);
     }
   /* Choose the declaration which specified visibility.  */
   if (DECL_VISIBILITY_SPECIFIED (olddecl))

@@ -3207,7 +3207,7 @@ parse_using_directive (tree namespace, tree attribs)
 			   DECL_NAMESPACE_ASSOCIATIONS (namespace));
 	}
       else
-	warning (0, "%qD attribute directive ignored", name);
+	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
     }
 }
 

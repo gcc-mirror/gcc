@@ -1222,7 +1222,8 @@ darwin_handle_weak_import_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL && TREE_CODE (*node) != VAR_DECL)
     {
-      warning (0, "%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else
@@ -1335,8 +1336,8 @@ darwin_assemble_visibility (tree decl, int vis)
       fputs ("\n", asm_out_file);
     }
   else
-    warning (0, "internal and protected visibility attributes not supported "
-	     "in this configuration; ignored");
+    warning (OPT_Wattributes, "internal and protected visibility attributes "
+	     "not supported in this configuration; ignored");
 }
 
 /* Output a difference of two labels that will be an assembly time

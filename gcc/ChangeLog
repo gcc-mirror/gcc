@@ -1,4 +1,80 @@
 2005-05-24  DJ Delorie  <dj@redhat.com>
+	
+	* common.opt (-Wattributes): New.  Default true.
+	* doc/invoke.texi (-Wno-attributes): Document.
+	
+	* attribs.c (decl_attributes): Move warning control from if() to
+	warning(OPT_*).
+	* c-common.c (handle_packed_attribute): Likewise.
+	(handle_nocommon_attribute): Likewise.
+	(handle_common_attribute): Likewise.
+	(handle_noreturn_attribute): Likewise.
+	(handle_noinline_attribute): Likewise.
+	(handle_always_inline_attribute): Likewise.
+	(handle_used_attribute): Likewise.
+	(handle_unused_attribute): Likewise.
+	(handle_const_attribute): Likewise.
+	(handle_transparent_union_attribute): Likewise.
+	(handle_constructor_attribute): Likewise.
+	(handle_destructor_attribute): Likewise.
+	(handle_mode_attribute): Likewise.
+	(handle_alias_attribute): Likewise.
+	(handle_visibility_attribute): Likewise.
+	(handle_tls_model_attribute): Likewise.
+	(handle_malloc_attribute): Likewise.
+	(handle_returns_twice_attribute): Likewise.
+	(handle_pure_attribute): Likewise.
+	(handle_deprecated_attribute): Likewise.
+	(handle_vector_size_attribute): Likewise.
+	(handle_nothrow_attribute): Likewise.
+	(handle_cleanup_attribute): Likewise.
+	(handle_warn_unused_result_attribute): Likewise.
+	(handle_sentinel_attribute): Likewise.
+	* c-decl.c (diagnose_mismatched_decls): Likewise.
+	(start_decl): Likewise.
+	(grokdeclarator): Likewise.
+	(start_function): Likewise.
+	* c-format.c (check_function_format): Likewise.
+	* stor-layout.c (place_field): Likewise.
+	(finalize_record_size): Likewise.
+	* tree.c (handle_dll_attribute)): Likewise.
+	* varasm.c (default_assemble_visibility): Likewise.
+	* config/darwin.c (darwin_handle_weak_import_attribute): Likewise.
+	(darwin_assemble_visibility): Likewise.
+	* config/arc/arc.c (arc_handle_interrupt_attribute): Likewise.
+	* config/arm/arm.c (arm_handle_fndecl_attribute): Likewise.
+	(arm_handle_isr_attribute): Likewise.
+	* config/avr/avr.c (avr_handle_progmem_attribute): Likewise.
+	(avr_handle_fndecl_attribute): Likewise.
+	* config/bfin/bfin.c (handle_int_attribute): Likewise.
+	* config/c4x/c4x.c (c4x_handle_fntype_attribute): Likewise.
+	* config/h8300/h8300.c (h8300_handle_fndecl_attribute): Likewise.
+	(h8300_handle_eightbit_data_attribute): Likewise.
+	(h8300_handle_tiny_data_attribute): Likewise.
+	* config/i386/i386.c (ix86_handle_cdecl_attribute): Likewise.
+	(ix86_handle_regparm_attribute): Likewise.
+	(ix86_handle_struct_attribute): Likewise.
+	* config/i386/winnt.c (ix86_handle_shared_attribute): Likewise.
+	(i386_pe_encode_section_info): Likewise.
+	* config/ia64/ia64.c (ia64_handle_model_attribute): Likewise.
+	* config/ip2k/ip2k.c (ip2k_handle_progmem_attribute): Likewise.
+	(ip2k_handle_fndecl_attribute): Likewise.
+	* config/m32r/m32r.c (m32r_handle_model_attribute): Likewise.
+	* config/m68hc11/m68hc11 (m68hc11_handle_page0_attribute): Likewise.
+	(m68hc11_handle_fntype_attribute): Likewise.
+	(m68hc11_encode_section_info): Likewise.
+	* config/m68k/m68k.c (m68k_handle_fndecl_attribute): Likewise.
+	* config/mcore/mcore.c (mcore_handle_naked_attribute): Likewise.
+	* config/ns32k/ns32k.c (ns32k_handle_fntype_attribute): Likewise.
+	* config/rs6000/rs6000.c (rs6000_handle_longcall_attribute): Likewise.
+	* config/sh/sh.c (sh_handle_interrupt_handler_attribute): Likewise.
+	(sh_handle_sp_switch_attribute): Likewise.
+	(sh_handle_trap_exit_attribute): Likewise.
+	* config/sh/symbian.c (sh_symbian_dllimport_p): Likewise.
+	(sh_symbian_handle_dll_attribute): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_handle_interrupt_attribute): Likewise.
+	(xstormy16_handle_below100_attribute): Likewise.
+	* config/v850/v850.c (v850_handle_interrupt_attribute): Likewise.
 
 	* c-common.c (unsigned_conversion_warning): Move warning control
 	from if() to warning(OPT_*).

@@ -2812,7 +2812,7 @@ arm_handle_fndecl_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (0, "%qs attribute only applies to functions",
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -2830,7 +2830,7 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
     {
       if (TREE_CODE (*node) != FUNCTION_DECL)
 	{
-	  warning (0, "%qs attribute only applies to functions",
+	  warning (OPT_Wattributes, "%qs attribute only applies to functions",
 		   IDENTIFIER_POINTER (name));
 	  *no_add_attrs = true;
 	}
@@ -2844,7 +2844,8 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 	{
 	  if (arm_isr_value (args) == ARM_FT_UNKNOWN)
 	    {
-	      warning (0, "%qs attribute ignored", IDENTIFIER_POINTER (name));
+	      warning (OPT_Wattributes, "%qs attribute ignored",
+		       IDENTIFIER_POINTER (name));
 	      *no_add_attrs = true;
 	    }
 	}
@@ -2871,7 +2872,8 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 	    }
 	  else
 	    {
-	      warning (0, "%qs attribute ignored", IDENTIFIER_POINTER (name));
+	      warning (OPT_Wattributes, "%qs attribute ignored",
+		       IDENTIFIER_POINTER (name));
 	    }
 	}
     }

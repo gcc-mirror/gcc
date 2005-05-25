@@ -172,7 +172,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 
       if (spec == NULL)
 	{
-	  warning (0, "%qs attribute directive ignored",
+	  warning (OPT_Wattributes, "%qs attribute directive ignored",
 		   IDENTIFIER_POINTER (name));
 	  continue;
 	}
@@ -197,7 +197,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 	    }
 	  else
 	    {
-	      warning (0, "%qs attribute does not apply to types",
+	      warning (OPT_Wattributes, "%qs attribute does not apply to types",
 		       IDENTIFIER_POINTER (name));
 	      continue;
 	    }
@@ -243,7 +243,8 @@ decl_attributes (tree *node, tree attributes, int flags)
 	  if (TREE_CODE (*anode) != FUNCTION_TYPE
 	      && TREE_CODE (*anode) != METHOD_TYPE)
 	    {
-	      warning (0, "%qs attribute only applies to function types",
+	      warning (OPT_Wattributes,
+		       "%qs attribute only applies to function types",
 		       IDENTIFIER_POINTER (name));
 	      continue;
 	    }

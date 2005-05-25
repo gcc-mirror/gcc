@@ -1,3 +1,9 @@
+2005-05-25  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/Wattributes-1.c: New.
+	* gcc.dg/Wattributes-2.c: New.
+	* gcc.dg/Wattributes-3.c: New.
+
 20005-05-24  Janis Johnson  <janis187@us.ibm.com>
 
 	PR tree-optimization/19833
