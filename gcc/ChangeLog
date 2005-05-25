@@ -1,3 +1,24 @@
+2005-05-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/21412
+	* config/sparc/sparc.h (SPARC_SYMBOL_REF_TLS_P): New macro
+	* config/sparc/sparc-protos.h (tls_symbolic_operand): Delete.
+	(sparc_tls_referenced_p): New prototype.
+	* config/sparc/sparc.c (tls_symbolic_operand): Delete.
+	(sparc_expand_move): Look for TLS addresses with constant offsets.
+	(legitimate_constant_p): Use SPARC_SYMBOL_REF_TLS_P instead of
+	tls_symbolic_operand.
+	(legitimate_pic_operand_p): Likewise.
+	(legitimate_address_p): Likewise.
+	(legitimize_address): Likewise.
+	(sparc_tls_symbol_ref_1): New function.
+	(sparc_tls_referenced_p): New function.
+	* config/sparc/predicates.md (tgd_symbolic_operand): Use
+	SYMBOL_REF_TLS_MODEL instead of tls_symbolic_operand.
+	(tld_symbolic_operand): Likewise.
+	(tie_symbolic_operand): Likewise.
+	(tle_symbolic_operand): Likewise.
+
 2005-05-24  DJ Delorie  <dj@redhat.com>
 	
 	* common.opt (-Wattributes): New.  Default true.
