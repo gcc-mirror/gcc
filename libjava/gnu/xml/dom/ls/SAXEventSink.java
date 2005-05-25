@@ -366,6 +366,14 @@ class SAXEventSink
         ctx = doctype;
         return;
       }
+    if ("lt".equals(name) ||
+        "gt".equals(name) ||
+        "amp".equals(name) ||
+        "apos".equals(name) ||
+        "quot".equals(name))
+      {
+        return;
+      }
     // Get entity
     NamedNodeMap entities = doctype.getEntities();
     Entity entity = (Entity) entities.getNamedItem(name);
@@ -385,6 +393,15 @@ class SAXEventSink
         // Ignore DTD and parameter entities
         return;
       }
+    if ("lt".equals(name) ||
+        "gt".equals(name) ||
+        "amp".equals(name) ||
+        "apos".equals(name) ||
+        "quot".equals(name))
+      {
+        return;
+      }
+    // Get entity
     Entity entity = popEntity();
     // TODO resolve external entities to ensure that entity has content
     if (expandEntityReferences)
