@@ -1,3 +1,8 @@
+2005-05-26  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr):
+	See through ADDR_EXPR in finding place to propagate into.
+
 2005-05-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c, c-parser.c, cfgbuild.c, cfghooks.c, cfghooks.h,
