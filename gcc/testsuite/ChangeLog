@@ -1,5 +1,31 @@
 2005-05-26  Andreas Jaeger  <aj@suse.de>
 
+	PR testsuite/20772
+	* g++.old-deja/g++.ext/attrib1.C, g++.old-deja/g++.ext/attrib2.C,
+	g++.old-deja/g++.ext/attrib3.C,
+	g++.old-deja/g++.other/store-expr1.C,
+	g++.old-deja/g++.other/store-expr2.C, g++.dg/opt/longbranch2.C,
+	gcc.dg/20000609-1.c, gcc.dg/20000720-1.c, gcc.dg/20011107-1.c,
+	gcc.dg/20011119-1.c, gcc.dg/20020108-1.c, gcc.dg/20020122-2.c,
+	gcc.dg/20020122-3.c, gcc.dg/20020201-3.c, gcc.dg/20020206-1.c,
+	gcc.dg/20020218-1.c, gcc.dg/20020310-1.c, gcc.dg/20020411-1.c,
+	gcc.dg/20020418-2.c, gcc.dg/20020426-1.c, gcc.dg/20020426-2.c,
+	gcc.dg/20020517-1.c, gcc.dg/20020523-1.c, gcc.dg/20020523-2.c,
+	gcc.dg/20020729-1.c, gcc.dg/20030204-1.c, gcc.dg/20030826-2.c,
+	gcc.dg/20030926-1.c, gcc.dg/20031202-1.c, gcc.dg/980312-1.c,
+	gcc.dg/980313-1.c, gcc.dg/990424-1.c, gcc.dg/990524-1.c,
+	gcc.dg/991230-1.c, gcc.dg/i386-387-1.c, gcc.dg/i386-387-2.c,
+	gcc.dg/i386-387-3.c, gcc.dg/i386-387-4.c, gcc.dg/i386-387-5.c,
+	gcc.dg/i386-387-6.c, gcc.dg/i386-bitfield1.c,
+	gcc.dg/i386-bitfield2.c, gcc.dg/i386-loop-1.c,
+	gcc.dg/i386-loop-2.c, gcc.dg/i386-loop-3.c, gcc.dg/i386-pic-1.c,
+	gcc.dg/i386-regparm.c, gcc.dg/i386-signbit-1.c,
+	gcc.dg/i386-signbit-2.c, gcc.dg/i386-sse-5.c, gcc.dg/i386-sse-8.c,
+	gcc.dg/i386-unroll-1.c, gcc.dg/tls/opt-1.c, gcc.dg/tls/opt-2.c,
+	gcc.dg/unroll-1.c: Handle 32-bit x86-64 compilation.
+
+2005-05-26  Andreas Jaeger  <aj@suse.de>
+
 	* gcc.c-torture/execute/ieee/ieee.exp: Set float-store for 32-bit
 	x86-64 compilation.
 

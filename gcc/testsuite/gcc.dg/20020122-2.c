@@ -3,8 +3,8 @@
   
 /* { dg-do compile } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon" { target i?86-*-* } } */
-/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
+/* { dg-options "-Os -fprefetch-loop-arrays -mtune=athlon" { target { i?86-*-* && ilp32 } } } */
+/* { dg-options "-Os -fprefetch-loop-arrays -mtune=athlon" { target { x86_64-*-* && ilp32 } } } */
 
 extern int access( char* );
 extern int a();
