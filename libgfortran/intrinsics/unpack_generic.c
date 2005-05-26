@@ -1,5 +1,5 @@
-/* Generic implementation of the RESHAPE intrinsic
-   Copyright 2002 Free Software Foundation, Inc.
+/* Generic implementation of the UNPACK intrinsic
+   Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -34,17 +34,18 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
-extern void unpack1 (const gfc_array_char *, const gfc_array_char *,
+extern void unpack1 (gfc_array_char *, const gfc_array_char *,
 		     const gfc_array_l4 *, const gfc_array_char *);
 iexport_proto(unpack1);
 
 void
-unpack1 (const gfc_array_char *ret, const gfc_array_char *vector,
+unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 	 const gfc_array_l4 *mask, const gfc_array_char *field)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
+  index_type rs;
   char *rptr;
   /* v.* indicates the vector array.  */
   index_type vstride0;
@@ -68,17 +69,41 @@ unpack1 (const gfc_array_char *ret, const gfc_array_char *vector,
   size = GFC_DESCRIPTOR_SIZE (ret);
   /* A field element size of 0 actually means this is a scalar.  */
   fsize = GFC_DESCRIPTOR_SIZE (field);
-  dim = GFC_DESCRIPTOR_RANK (ret);
-  for (n = 0; n < dim; n++)
+  if (ret->data == NULL)
     {
-      count[n] = 0;
-      extent[n] = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
-      rstride[n] = ret->dim[n].stride * size;
-      fstride[n] = field->dim[n].stride * fsize;
-      mstride[n] = mask->dim[n].stride;
+      /* The front end has signalled that we need to populate the
+	 return array descriptor.  */
+      dim = GFC_DESCRIPTOR_RANK (mask);
+      rs = 1;
+      for (n = 0; n < dim; n++)
+	{
+	  count[n] = 0;
+	  ret->dim[n].stride = rs;
+	  ret->dim[n].lbound = 0;
+	  ret->dim[n].ubound = mask->dim[n].ubound - mask->dim[n].lbound;
+	  extent[n] = ret->dim[n].ubound + 1;
+	  rstride[n] = ret->dim[n].stride * size;
+	  fstride[n] = field->dim[n].stride * fsize;
+	  mstride[n] = mask->dim[n].stride;
+	  rs *= extent[n];
+	}
+      ret->base = 0;
+      ret->data = internal_malloc_size (rs * size);
     }
-  if (rstride[0] == 0)
-    rstride[0] = size;
+  else
+    {
+      dim = GFC_DESCRIPTOR_RANK (ret);
+      for (n = 0; n < dim; n++)
+	{
+	  count[n] = 0;
+	  extent[n] = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
+	  rstride[n] = ret->dim[n].stride * size;
+	  fstride[n] = field->dim[n].stride * fsize;
+	  mstride[n] = mask->dim[n].stride;
+	}
+      if (rstride[0] == 0)
+	rstride[0] = size;
+    }
   if (fstride[0] == 0)
     fstride[0] = fsize;
   if (mstride[0] == 0)
