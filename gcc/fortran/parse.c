@@ -2157,7 +2157,7 @@ gfc_fixup_sibling_symbols (gfc_symbol * sym, gfc_namespace * siblings)
             gfc_free_symbol (old_sym);
         }
 
-      /* Do the same for any contined procedures.  */
+      /* Do the same for any contained procedures.  */
       gfc_fixup_sibling_symbols (sym, ns->contained);
     }
 }

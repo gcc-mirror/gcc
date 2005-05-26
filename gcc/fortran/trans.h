@@ -251,8 +251,8 @@ gfc_saved_var;
 /* Advance the SS chain to the next term.  */
 void gfc_advance_se_ss_chain (gfc_se *);
 
-/* Call this to initialise a gfc_se structure before use
-   first parameter is structure to initialise, second is
+/* Call this to initialize a gfc_se structure before use
+   first parameter is structure to initialize, second is
    parent to get scalarization data from, or NULL.  */
 void gfc_init_se (gfc_se *, gfc_se *);
 

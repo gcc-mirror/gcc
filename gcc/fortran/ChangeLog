@@ -1,3 +1,9 @@
+2005-05-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* data.c, parse.c, trans-array.c, trans-decl.c,
+	trans-intrinsic.c, trans-stmt.c, trans-types.c, trans.c,
+	trans.h: Fix comment typos.  Follow spelling conventions.
+
 2005-05-22  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.texi: Document some more GNU extensions.

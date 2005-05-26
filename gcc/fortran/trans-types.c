@@ -1611,7 +1611,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	     The problem arises if a function is called via an implicit
 	     prototype. In this situation the INTENT is not known.
 	     For this reason all parameters to global functions must be
-	     passed by reference.  Passing by value would potentialy
+	     passed by reference.  Passing by value would potentially
 	     generate bad code.  Worse there would be no way of telling that
 	     this code was bad, except that it would give incorrect results.
 

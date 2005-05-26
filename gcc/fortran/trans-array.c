@@ -4349,7 +4349,7 @@ gfc_walk_array_constructor (gfc_ss * ss, gfc_expr * expr)
 
 
 /* Walk an expression.  Add walked expressions to the head of the SS chain.
-   A wholy scalar expression will not be added.  */
+   A wholly scalar expression will not be added.  */
 
 static gfc_ss *
 gfc_walk_subexpr (gfc_ss * ss, gfc_expr * expr)

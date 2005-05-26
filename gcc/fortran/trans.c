@@ -314,7 +314,7 @@ gfc_build_array_ref (tree base, tree offset)
 }
 
 
-/* Given a funcion declaration FNDECL and an argument list ARGLIST,
+/* Given a function declaration FNDECL and an argument list ARGLIST,
    build a CALL_EXPR.  */
 
 tree
