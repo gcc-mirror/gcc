@@ -1,5 +1,11 @@
 2005-05-26  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/21768
+	* pt.c (redeclare_class_template): Change error message according
+	to coding conventions.
+
+2005-05-26  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* call.c (build_op_delete_call): Fix quoting in error message.
 
 2005-05-25  Richard Henderson  <rth@redhat.com>
