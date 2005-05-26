@@ -1,7 +1,68 @@
-2005-05-25  Mike Stump  <mrs@apple.com>
+2005-05-25  Ziemowit Laski  <zlaski@apple.com>
+	    Mike Stump  <mrs@apple.com>
 
+	* objc/execute/next_mapping.h: Update for C++.
+	
 	* obj-c++.dg/selector-1.mm: Move to...
 	* obj-c++.dg/selector-4.mm: here...
+
+	* obj-c++.dg/comp-types-1.mm: New.
+	* obj-c++.dg/cxx-class-1.mm: New.
+	* obj-c++.dg/cxx-ivars-1.mm: New.
+	* obj-c++.dg/cxx-ivars-2.mm: New.
+	* obj-c++.dg/cxx-ivars-3.mm: New.
+	* obj-c++.dg/cxx-scope-1.mm: New.
+	* obj-c++.dg/cxx-scope-2.mm: New.
+	* obj-c++.dg/defs.mm: New.
+	* obj-c++.dg/empty-private-1.mm: New.
+	* obj-c++.dg/encode-1.mm: New.
+	* obj-c++.dg/encode-2.mm: New.
+	* obj-c++.dg/encode-3.mm: New.
+	* obj-c++.dg/extern-c-1.mm: New.
+	* obj-c++.dg/extra-semi.mm: New.
+	* obj-c++.dg/fix-and-continue-2.mm: New.
+	* obj-c++.dg/isa-field-1.mm: New.
+	* obj-c++.dg/ivar-list-semi.mm: New.
+	* obj-c++.dg/local-decl-1.mm: New.
+	* obj-c++.dg/lookup-1.mm: New.
+	* obj-c++.dg/lookup-2.mm: New.
+	* obj-c++.dg/method-1.mm: New.
+	* obj-c++.dg/method-2.mm: New.
+	* obj-c++.dg/method-3.mm: New.
+	* obj-c++.dg/method-4.mm: New.
+	* obj-c++.dg/method-5.mm: New.
+	* obj-c++.dg/method-6.mm: New.
+	* obj-c++.dg/method-7.mm: New.
+	* obj-c++.dg/no-extra-load.mm: New.
+	* obj-c++.dg/overload-1.mm: New.
+	* obj-c++.dg/pragma-1.mm: New.
+	* obj-c++.dg/pragma-2.mm: New.
+	* obj-c++.dg/private-1.mm: New.
+	* obj-c++.dg/private-2.mm: New.
+	* obj-c++.dg/proto-qual-1.mm: New.
+	* obj-c++.dg/qual-types-1.mm: New.
+	* obj-c++.dg/stubify-1.mm: New.
+	* obj-c++.dg/stubify-2.mm: New.
+	* obj-c++.dg/super-class-1.mm: New.
+	* obj-c++.dg/super-class-2.mm: New.
+	* obj-c++.dg/super-dealloc-1.mm: New.
+	* obj-c++.dg/super-dealloc-2.mm: New.
+	* obj-c++.dg/template-1.mm: New.
+	* obj-c++.dg/template-2.mm: New.
+	* obj-c++.dg/template-3.mm: New.
+	* obj-c++.dg/template-4.mm: New.
+	* obj-c++.dg/template-5.mm: New.
+	* obj-c++.dg/template-6.mm: New.
+	* obj-c++.dg/try-catch-1.mm: New.
+	* obj-c++.dg/try-catch-2.mm: New.
+	* obj-c++.dg/try-catch-3.mm: New.
+	* obj-c++.dg/try-catch-4.mm: New.
+	* obj-c++.dg/try-catch-5.mm: New.
+	* obj-c++.dg/try-catch-6.mm: New.
+	* obj-c++.dg/try-catch-7.mm: New.
+	* obj-c++.dg/try-catch-8.mm: New.
+	* obj-c++.dg/try-catch-9.mm: New.
+	* obj-c++.dg/va-meth-1.mm: New.
 
 2005-05-25  Ziemowit Laski  <zlaski@apple.com>
 
