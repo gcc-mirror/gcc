@@ -1,3 +1,13 @@
+2005-05-26  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* decl.c (GCJ_BINARYCOMPAT_ADDITION, 
+	GCJ_BOOTSTRAP_LOADER_ADDITION): Removed.
+	(FLAG_BINARYCOMPAT_ABI, FLAG_BOOTSTRAP_LOADER,
+	MINOR_BINARYCOMPAT_ABI_VERSION): New.
+	(GCJ_CURRENT_BC_ABI_VERSION): Use new method to calculate version ID.
+	(parse_version): Calculate version ID using new method. Use bit-flags
+	for flag_indirect_dispatch and flag_bootstrap_classes.
+
 2005-05-25  Richard Henderson  <rth@redhat.com>
 
 	PR libgcj/21692
