@@ -1,3 +1,8 @@
+2005-05-26  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Set float-store for 32-bit
+	x86-64 compilation.
+
 2005-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/17283
@@ -121,7 +126,7 @@
 2005-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/compat/struct-layout-1_generate.c (iterative_hash):
-	Remove little-endian optimizations. 
+	Remove little-endian optimizations.
 
 2005-05-17  Richard Guenther  <rguenth@gcc.gnu.org>
 
@@ -154,7 +159,7 @@
 	* gcc.dg/compat/struct-layout-1.exp: Do not link with libiberty.
 	* gcc.dg/compat/struct-layout-1_generate.c (config.h): Do not include.
 	(limits.h): Include unconditionally.
-	(stdlib.h): Likewise. 
+	(stdlib.h): Likewise.
 	(hashtab.h): Do not include.
 	(getopt.h): Likewise.
 	(stddef.h): Include.
@@ -170,7 +175,7 @@
 	(e_insert): Likewise.
 	(output): Use, instead of libiberty hashtable functions.
 	(main): Do not use getopt.  Do not call htab_create.
-	
+
 2005-05-16  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR libstdc++/21526
@@ -209,7 +214,7 @@
 2005-05-11  Bud Davis  <bdavis@gfortran.org>
 
 	* gfortran.dg/dev_null.f90: New test.
-	
+
 2005-05-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/21471
@@ -271,7 +276,7 @@
 2005-05-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21352
-	* g++.dg/template/crash37.C: New test. 
+	* g++.dg/template/crash37.C: New test.
 
 2005-05-04  Jakub Jelinek  <jakub@redhat.com>
 
@@ -303,7 +308,7 @@
 	(g++_init): Make sure that CXXFLAGS is set.
 	* lib/gcc-defs.exp (gcc-set-multilib-library-path): New function.
 	* lib/gcc-dg.exp: Use gcc-set-multilib-library-path.
-	* lib/gfortran.exp (gfortran_link_flags): Likewise. 
+	* lib/gfortran.exp (gfortran_link_flags): Likewise.
 	* lib/objc.exp (objc_init): Likewise.
 	* lib/treelang.exp (treelang_init): Likewise.
 	2005-03-23  Mark Mitchell  <mark@codesourcery.com>
@@ -427,7 +432,7 @@
 2005-04-24  Laurent GUERBY  <laurent@guerby.net>
 
 	* ada/acats/run_all.sh: Use sync when executable not present.
-	
+
 2005-04-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/20059
@@ -846,7 +851,7 @@
 
 2005-03-21  Paolo Carlini  <pcarlini@suse.de>
 
-	PR c++/20147	
+	PR c++/20147
 	* g++.dg/ext/stmtexpr4.C: New test.
 
 2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
@@ -885,7 +890,7 @@
 
 	PR libfortran/20257
 	* gfortran.dg/pr20257.f90: New test.
-	
+
 2005-03-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20480
@@ -1071,7 +1076,7 @@
 	* gfortran.dg/pr19936_1.f90: ditto.
 
 2005-03-05  Paul Thomas  <prthomas@drfccad.cea.fr>
-            Steven G. Kargl  <kargls@comcast.net> 
+            Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/PR19754_1.f90: New test.
 	* gfortran.dg/PR19754_2.f90: ditto.
@@ -1219,7 +1224,7 @@
 	* g++.dg/parse/error27.C: New test.
 	* g++.dg/template/qualttp15.C: Adjust error markers.
 	* g++.old-deja/g++.other/struct1.C: Likewise.
-	
+
 	PR c++/20153
 	* g++.dg/template/error17.C: New test.
 
@@ -1249,7 +1254,7 @@
 
 	PR 19952
 	* g++.dg/tree-ssa/pr19952.C: New test.
-	
+
 2005-02-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19883
