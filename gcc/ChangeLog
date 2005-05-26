@@ -1,3 +1,8 @@
+2005-05-26  Mike Stump  <mrs@apple.com>
+
+	* darwin.h (ASM_OUTPUT_LABELREF): Handle quoted non-lazy pointers
+	for Objective-C++.
+	
 2005-05-26  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr):
