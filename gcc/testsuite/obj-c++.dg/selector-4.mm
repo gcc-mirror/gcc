@@ -1,10 +1,11 @@
 /* Test warning for non existing selectors.  */
 /* Contributed by Devang Patel <dpatel@apple.com>.  */
+
 /* { dg-options "-Wselector -fnext-runtime" } */
 /* { dg-do compile } */
 
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
-typedef struct objc_selector    *SEL;
+typedef struct objc_selector *SEL;
 
 @interface Foo
 - (void) foo;
@@ -23,4 +24,3 @@ typedef struct objc_selector    *SEL;
   b = @selector(bar);
 }
 @end
-
