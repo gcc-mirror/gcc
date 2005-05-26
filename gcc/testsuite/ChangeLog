@@ -1,5 +1,10 @@
 2005-05-25  Ziemowit Laski  <zlaski@apple.com>
 
+	* obj-c++.dg/selector-1.mm: New.
+	* obj-c++.dg/selector-2.mm: New.
+
+2005-05-25  Ziemowit Laski  <zlaski@apple.com>
+
 	* obj-c++.dg/selector-3.mm: New.
 	* objc.dg/selector-3.m: New.
 
