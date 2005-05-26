@@ -577,19 +577,44 @@ extern void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
 
 extern void _Jv_RegisterBootstrapPackages ();
 
+#define FLAG_BINARYCOMPAT_ABI (1<<31)  /* Class is built with the BC-ABI. */
 
-// This is used to find ABI versions we recognize.
-#define GCJ_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 10)
-#define GCJ_BINARYCOMPAT_ADDITION 5
+#define FLAG_BOOTSTRAP_LOADER (1<<30)  /* Used when defining a class that 
+					should be loaded by the bootstrap
+					loader.  */
+
+// These are used to find ABI versions we recognize.
+#define GCJ_CXX_ABI_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 10)
+
+// This is the old-style BC version ID used by GCJ 4.0.0.
+#define OLD_GCJ_40_BC_ABI_VERSION (4 * 10000 + 0 * 10 + 5)
+
+// New style version IDs used by GCJ 4.0.1 and later.
+#define GCJ_40_BC_ABI_VERSION (4 * 100000 + 0 * 1000)
 
 inline bool
 _Jv_CheckABIVersion (unsigned long value)
 {
-  // For this release, recognize just our defined C++ ABI and our
-  // defined BC ABI.  (In the future we may recognize past BC ABIs as
-  // well.)
-  return (value == GCJ_VERSION
-	  || value == (GCJ_VERSION + GCJ_BINARYCOMPAT_ADDITION));
+  // We are compatible with GCJ 4.0.0 BC-ABI classes. This release used a
+  // different format for the version ID string.
+   if (value == OLD_GCJ_40_BC_ABI_VERSION)
+     return true;
+     
+  // The 20 low-end bits are used for the version number.
+  unsigned long version = value & 0xfffff;
+
+  if (value & FLAG_BINARYCOMPAT_ABI)
+    {
+      int abi_rev = version % 100;
+      int abi_ver = version - abi_rev;
+      if (abi_ver == GCJ_40_BC_ABI_VERSION && abi_rev <= 0)
+	return true;
+    }
+  else
+    // C++ ABI
+    return version == GCJ_CXX_ABI_VERSION;
+  
+  return false;
 }
 
 // It makes the source cleaner if we simply always define this

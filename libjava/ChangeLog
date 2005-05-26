@@ -1,3 +1,12 @@
+2005-05-26  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* include/jvm.h (FLAG_BINARYCOMPAT_ABI): New.
+	(GCJ_BINARYCOMPAT_ADDITION): Removed.
+	(OLD_GCJ_40_BC_ABI_VERSION): Renamed. Old-style version ID for BC-ABI
+	classes.
+	(GCJ_40_BC_ABI_VERSION): New. Calculate version	ID using new method.
+	(_Jv_CheckABIVersion): Check for both old and new style version IDs.
+
 2005-05-14  Chris Burdess  <dog@gnu.org>
 
 	* gnu/xml/dom/ls/SAXEventSink.java: Ignore XML entities in start/
