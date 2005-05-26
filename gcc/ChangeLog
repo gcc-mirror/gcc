@@ -1,3 +1,8 @@
+2005-05-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* df.h (DF_SUBREGS, df_local_def_available_p, df_insn_modified_p): New.
+	* df.c (DF_SUBREGS, df_local_def_available_p, df_insn_modified_p): New.
+
 2005-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/21716

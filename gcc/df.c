@@ -820,7 +820,8 @@ df_ref_record (struct df *df, rtx reg, rtx *loc, rtx insn,
      reg.  As written in the docu those should have the form
      (subreg:SI (reg:M A) N), with size(SImode) > size(Mmode).
      XXX Is that true?  We could also use the global word_mode variable.  */
-  if (GET_CODE (reg) == SUBREG
+  if ((df->flags & DF_SUBREGS) == 0
+      && GET_CODE (reg) == SUBREG
       && (GET_MODE_SIZE (GET_MODE (reg)) < GET_MODE_SIZE (word_mode)
 	  || GET_MODE_SIZE (GET_MODE (reg))
 	       >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (reg)))))
@@ -2675,6 +2676,20 @@ df_insn_modify (struct df *df, basic_block bb, rtx insn)
      will just get ignored.  */
 }
 
+/* Check if INSN was marked as changed.  Of course the correctness of
+   the information depends on whether the instruction was really modified
+   at the time df_insn_modify was called.  */
+bool
+df_insn_modified_p (struct df *df, rtx insn)
+{
+  unsigned int uid;
+
+  uid = INSN_UID (insn);
+  return (df->insns_modified
+	  && uid < df->insn_size
+          && bitmap_bit_p (df->insns_modified, uid));
+}
+
 typedef struct replace_args
 {
   rtx match;
@@ -3237,6 +3252,48 @@ df_bb_regs_lives_compare (struct df *df, basic_block bb, rtx reg1, rtx reg2)
 }
 
 
+/* Return true if the definition DEF, which is in the same basic
+   block as USE, is available at USE.  So DEF may as well be
+   dead, in which case using it will extend its live range.  */
+bool
+df_local_def_available_p (struct df *df, struct ref *def, struct ref *use)
+{
+  struct df_link *link;
+  int def_luid = DF_INSN_LUID (df, DF_REF_INSN (def));
+  int in_bb = 0;
+  unsigned int regno = REGNO (def->reg);
+  basic_block bb;
+
+  /* The regs must be local to BB.  */
+  gcc_assert (DF_REF_BB (def) == DF_REF_BB (use));
+  bb = DF_REF_BB (def);
+
+  /* This assumes that the reg-def list is ordered such that for any
+     BB, the first def is found first.  However, since the BBs are not
+     ordered, the first def in the chain is not necessarily the first
+     def in the function.  */
+  for (link = df->regs[regno].defs; link; link = link->next)
+    {
+      struct ref *this_def = link->ref;
+      if (DF_REF_BB (this_def) == bb)
+	{
+	  int this_luid = DF_INSN_LUID (df, DF_REF_INSN (this_def));
+	  /* Do nothing with defs coming before DEF.  */
+	  if (this_luid > def_luid)
+	    return this_luid > DF_INSN_LUID (df, DF_REF_INSN (use));
+
+	  in_bb = 1;
+        }
+      else if (in_bb)
+	/* DEF was the last in its basic block.  */
+        return 1;
+    }
+
+  /* DEF was the last in the function.  */
+  return 1;
+}
+
+
 /* Return last use of REGNO within BB.  */
 struct ref *
 df_bb_regno_last_use_find (struct df *df, basic_block bb, unsigned int regno)
@@ -3304,7 +3361,7 @@ df_bb_regno_last_def_find (struct df *df, basic_block bb, unsigned int regno)
   return last_def;
 }
 
-/* Return first use of REGNO inside INSN within BB.  */
+/* Return last use of REGNO inside INSN within BB.  */
 static struct ref *
 df_bb_insn_regno_last_use_find (struct df *df,
 				basic_block bb ATTRIBUTE_UNUSED, rtx insn,

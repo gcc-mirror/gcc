@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define DF_ALL		255
 #define DF_HARD_REGS	1024	/* Mark hard registers.  */
 #define DF_EQUIV_NOTES	2048	/* Mark uses present in EQUIV/EQUAL notes.  */
+#define DF_SUBREGS	4096	/* Return subregs rather than the inner reg.  */
 
 enum df_ref_type {DF_REF_REG_DEF, DF_REF_REG_USE, DF_REF_REG_MEM_LOAD,
 		  DF_REF_REG_MEM_STORE};
@@ -207,11 +208,9 @@ struct df_map
 ((DF)->regs[REGNUM].uses ? (DF)->regs[REGNUM].uses->ref : 0)
 
 #define DF_REGNO_FIRST_BB(DF, REGNUM) \
-(DF_REGNO_FIRST_DEF (DF, REGNUM) \
-? DF_REF_BB (DF_REGNO_FIRST_DEF (DF, REGNUM)) : 0)
+((DF)->regs[REGNUM].defs ? DF_REF_BB ((DF)->regs[REGNUM].defs->ref) : 0)
 #define DF_REGNO_LAST_BB(DF, REGNUM) \
-(DF_REGNO_LAST_USE (DF, REGNUM) \
-? DF_REF_BB (DF_REGNO_LAST_USE (DF, REGNUM)) : 0)
+((DF)->regs[REGNUM].uses ? DF_REF_BB ((DF)->regs[REGNUM].uses->ref) : 0)
 
 
 /* Macros to access the elements within the insn_info structure table.  */
@@ -234,6 +233,8 @@ extern void df_dump (struct df *, int, FILE *);
 
 
 /* Functions to modify insns.  */
+
+extern bool df_insn_modified_p (struct df *, rtx);
 
 extern void df_insn_modify (struct df *, basic_block, rtx);
 
@@ -279,6 +280,8 @@ extern int df_bb_reg_live_start_p (struct df *, basic_block, rtx);
 extern int df_bb_reg_live_end_p (struct df *, basic_block, rtx);
 
 extern int df_bb_regs_lives_compare (struct df *, basic_block, rtx, rtx);
+
+extern bool df_local_def_available_p (struct df *, struct ref *, struct ref *);
 
 extern rtx df_bb_single_def_use_insn_find (struct df *, basic_block, rtx,
 					   rtx);
