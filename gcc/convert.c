@@ -411,13 +411,14 @@ convert_to_integer (tree type, tree expr)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       if (integer_zerop (expr))
-	expr = integer_zero_node;
-      else
-	expr = fold (build1 (CONVERT_EXPR,
-			     lang_hooks.types.type_for_size (POINTER_SIZE, 0),
-			     expr));
+	return build_int_cst (type, 0);
 
-      return convert_to_integer (type, expr);
+      /* Convert to an unsigned integer of the correct width first,
+	 and from there widen/truncate to the required type.  */
+      expr = fold_build1 (CONVERT_EXPR,
+			  lang_hooks.types.type_for_size (POINTER_SIZE, 0),
+			  expr);
+      return fold_build1 (NOP_EXPR, type, expr);
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
