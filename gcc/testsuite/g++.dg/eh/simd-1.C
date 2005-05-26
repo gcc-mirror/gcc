@@ -2,6 +2,7 @@
 // Contributed by Aldy Hernandez (aldy@quesejoda.com).
 // { dg-options "-O" }
 // { dg-options "-O -w" { target i?86-*-* } }
+// { dg-options "-O -w" { target { x86_64-*-* && ilp32 } } }
 // { dg-do run }
 
 typedef int __attribute__((vector_size (8))) vecint;

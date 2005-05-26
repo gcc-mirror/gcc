@@ -2,8 +2,8 @@
    variants that use 3DNow! prefetchw or SSE prefetch instructions with
    locality hints.  */
 
-/* { dg-do compile { target i?86-*-* } } */
-/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 
 extern void exit (int);
 
