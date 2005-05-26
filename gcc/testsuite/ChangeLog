@@ -1,3 +1,8 @@
+2005-05-26  Andreas Jaeger  <aj@suse.de>
+
+	* treelang/compile/unsigned.tree: Use gimple instead of
+	nonexisting generic dump.
+
 2005-05-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/vect/vect-7.c: Remove xfail for alpha.
