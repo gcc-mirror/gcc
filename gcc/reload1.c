@@ -3290,14 +3290,16 @@ verify_initial_elim_offsets (void)
     return true;
 
 #ifdef ELIMINABLE_REGS
-  struct elim_table *ep;
+  {
+   struct elim_table *ep;
 
-  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-    {
-      INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
-      if (t != ep->initial_offset)
-	return false;
-    }
+   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+     {
+       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
+       if (t != ep->initial_offset)
+	 return false;
+     }
+  }
 #else
   INITIAL_FRAME_POINTER_OFFSET (t);
   if (t != reg_eliminate[0].initial_offset)

@@ -1,3 +1,10 @@
+2005-05-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	Backport from mainline:
+	2005-05-26  Ian Lance Taylor  <ian@airs.com>
+	* reload1.c (verify_initial_elim_offsets): Add braces to avoid
+	having a declaration after a statement.
+
 2005-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/21716
