@@ -145,6 +145,7 @@ avoid_constant_pool_reference (rtx x)
 {
   rtx c, tmp, addr;
   enum machine_mode cmode;
+  HOST_WIDE_INT offset = 0;
 
   switch (GET_CODE (x))
     {
@@ -173,26 +174,40 @@ avoid_constant_pool_reference (rtx x)
   /* Call target hook to avoid the effects of -fpic etc....  */
   addr = targetm.delegitimize_address (addr);
 
+  /* Split the address into a base and integer offset.  */
+  if (GET_CODE (addr) == CONST
+      && GET_CODE (XEXP (addr, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (addr, 0), 1)) == CONST_INT)
+    {
+      offset = INTVAL (XEXP (XEXP (addr, 0), 1));
+      addr = XEXP (XEXP (addr, 0), 0);
+    }
+
   if (GET_CODE (addr) == LO_SUM)
     addr = XEXP (addr, 1);
 
-  if (GET_CODE (addr) != SYMBOL_REF
-      || ! CONSTANT_POOL_ADDRESS_P (addr))
-    return x;
-
-  c = get_pool_constant (addr);
-  cmode = get_pool_mode (addr);
-
-  /* If we're accessing the constant in a different mode than it was
-     originally stored, attempt to fix that up via subreg simplifications.
-     If that fails we have no choice but to return the original memory.  */
-  if (cmode != GET_MODE (x))
+  /* If this is a constant pool reference, we can turn it into its
+     constant and hope that simplifications happen.  */
+  if (GET_CODE (addr) == SYMBOL_REF
+      && CONSTANT_POOL_ADDRESS_P (addr))
     {
-      c = simplify_subreg (GET_MODE (x), c, cmode, 0);
-      return c ? c : x;
+      c = get_pool_constant (addr);
+      cmode = get_pool_mode (addr);
+
+      /* If we're accessing the constant in a different mode than it was
+         originally stored, attempt to fix that up via subreg simplifications.
+         If that fails we have no choice but to return the original memory.  */
+      if (offset != 0 || cmode != GET_MODE (x))
+        {
+          rtx tem = simplify_subreg (GET_MODE (x), c, cmode, offset);
+          if (tem && CONSTANT_P (tem))
+            return tem;
+        }
+      else
+        return c;
     }
 
-  return c;
+  return x;
 }
 
 /* Make a unary operation by first seeing if it folds and otherwise making
