@@ -1,3 +1,15 @@
+2005-05-26  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.c (mips_use_ins_ext_p): New helper function
+	that determines whether the MIPS32/64 R2 ext/ins should be used.
+	* config/mips/mips.h (ISA_HAS_EXT_INS): New macro.
+	* config/mips/mips.md (extzv): Changed predicate for operand to
+	nonimmediate_operand. Add code to generate insn patterns for
+	extzvsi and extzvdi.
+	(extzv<mode>): New pattern to match mips32/64 r2 ext insn.
+	(insv): Similarly for insertion.
+	(insv<mode>): Similarly.
+
 2005-05-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	* simplify-rtx.c (avoid_constant_pool_reference): Support

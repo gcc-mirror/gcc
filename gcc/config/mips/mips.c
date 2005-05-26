@@ -4158,7 +4158,39 @@ mips_expand_unaligned_store (rtx dest, rtx src, unsigned int width, int bitpos)
     }
   return true;
 }
-
+
+/* Return true if (zero_extract OP SIZE POSITION) can be used as the
+   source of an "ext" instruction or the destination of an "ins"
+   instruction.  OP must be a register operand and the following
+   conditions must hold:
+
+     0 <= POSITION < GET_MODE_BITSIZE (GET_MODE (op))
+     0 < SIZE <= GET_MODE_BITSIZE (GET_MODE (op))
+     0 < POSITION + SIZE <= GET_MODE_BITSIZE (GET_MODE (op))
+
+   Also reject lengths equal to a word as they are better handled
+   by the move patterns.  */
+
+bool
+mips_use_ins_ext_p (rtx op, rtx size, rtx position)
+{
+  HOST_WIDE_INT len, pos;
+
+  if (!ISA_HAS_EXT_INS
+      || !register_operand (op, VOIDmode)
+      || GET_MODE_BITSIZE (GET_MODE (op)) > BITS_PER_WORD)
+    return false;
+
+  len = INTVAL (size);
+  pos = INTVAL (position);
+  
+  if (len <= 0 || len >= GET_MODE_BITSIZE (GET_MODE (op)) 
+      || pos < 0 || pos + len > GET_MODE_BITSIZE (GET_MODE (op)))
+    return false;
+
+  return true;
+}
+
 /* Set up globals to generate code for the ISA or processor
    described by INFO.  */
 
