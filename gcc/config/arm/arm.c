@@ -374,20 +374,7 @@ enum float_abi_type arm_float_abi;
 /* Which ABI to use.  */
 enum arm_abi_type arm_abi;
 
-/* Set by the -mfpu=... option.  */
-static const char * target_fpu_name = NULL;
-
-/* Set by the -mfpe=... option.  */
-static const char * target_fpe_name = NULL;
-
-/* Set by the -mfloat-abi=... option.  */
-static const char * target_float_abi_name = NULL;
-
-/* Set by the -mabi=... option.  */
-static const char * target_abi_name = NULL;
-
 /* Used to parse -mstructure_size_boundary command line option.  */
-static const char * structure_size_string = NULL;
 int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 
 /* Used for Thumb call_via trampolines.  */
@@ -498,7 +485,6 @@ int arm_cpp_interwork = 0;
 enum machine_mode output_memory_reference_mode;
 
 /* The register number to be used for the PIC offset register.  */
-static const char * arm_pic_register_string = NULL;
 int arm_pic_register = INVALID_REGNUM;
 
 /* Set to 1 when a return insn is output, this means that the epilogue
@@ -801,10 +787,6 @@ arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 {
   switch (code)
     {
-    case OPT_mabi_:
-      target_abi_name = arg;
-      return true;
-
     case OPT_march_:
       arm_select[1].string = arg;
       return true;
@@ -813,33 +795,12 @@ arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
       arm_select[0].string = arg;
       return true;
 
-    case OPT_mfloat_abi_:
-      target_float_abi_name = arg;
-      return true;
-
-    case OPT_mfp_:
-    case OPT_mfpe_:
-      target_fpe_name = arg;
-      return true;
-
-    case OPT_mfpu_:
-      target_fpu_name = arg;
-      return true;
-
     case OPT_mhard_float:
       target_float_abi_name = "hard";
       return true;
 
-    case OPT_mpic_register_:
-      arm_pic_register_string = arg;
-      return true;
-
     case OPT_msoft_float:
       target_float_abi_name = "soft";
-      return true;
-
-    case OPT_mstructure_size_boundary_:
-      structure_size_string = arg;
       return true;
 
     case OPT_mtune_:

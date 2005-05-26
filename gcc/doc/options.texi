@@ -121,12 +121,29 @@ will check and convert the argument before passing it to the relevant
 option handler.
 
 @item Var(@var{var})
-The option controls an integer variable @var{var}.  If the option has
-the @code{UInteger} property, the option parser will set @var{var} to
-the value of the user-specified argument.  Otherwise the option is
-assumed to be an on/off switch that is active when @var{var} is nonzero.
-In this case, the option parser will set @var{var} to 1 when the positive
-form of the option is used and 0 when the ``no-'' form is used.
+The state of this option should be stored in variable @var{var}.
+The way that the state is stored depends on the type of option:
+
+@itemize @bullet
+@item
+If the option uses the @code{Mask} or @code{InverseMask} properties,
+@var{var} is the integer variable that contains the mask.
+
+@item
+If the option is a normal on/off switch, @var{var} is an integer
+variable that is nonzero when the option is enabled.  The options
+parser will set the variable to 1 when the positive form of the
+option is used and 0 when the ``no-'' form is used.
+
+@item
+If the option takes an argument and has the @code{UInteger} property,
+@var{var} is an integer variable that stores the value of the argument.
+
+@item
+Otherwise, if the option takes an argument, @var{var} is a pointer to
+the argument string.  The pointer will be null if the argument is optional
+and wasn't given.
+@end itemize
 
 The option-processing script will usually declare @var{var} in
 @file{options.c} and leave it to be zero-initialized at start-up time.

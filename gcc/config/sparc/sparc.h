@@ -191,8 +191,6 @@ enum cmodel {
   CM_EMBMEDANY
 };
 
-/* Value of -mcmodel specified by user.  */
-extern const char *sparc_cmodel_string;
 /* One of CM_FOO.  */
 extern enum cmodel sparc_cmodel;
 

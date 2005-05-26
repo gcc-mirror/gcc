@@ -370,9 +370,6 @@ const struct attribute_spec sparc_attribute_table[];
 
 /* Option handling.  */
 
-/* Code model option as passed by user.  */
-const char *sparc_cmodel_string;
-
 /* Parsed value.  */
 enum cmodel sparc_cmodel;
 
@@ -539,10 +536,6 @@ sparc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 
     case OPT_mtune_:
       sparc_select[2].string = arg;
-      break;
-
-    case OPT_mcmodel_:
-      sparc_cmodel_string = arg;
       break;
     }
 

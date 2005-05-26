@@ -98,10 +98,6 @@ static const char * const ia64_local_reg_names[80] =
 static const char * const ia64_output_reg_names[8] =
 { "out0", "out1", "out2", "out3", "out4", "out5", "out6", "out7" };
 
-/* Determines whether we use adds, addl, or movl to generate our
-   TLS immediate offsets.  */
-int ia64_tls_size = 22;
-
 /* Which cpu are we scheduling for.  */
 enum processor_type ia64_tune = PROCESSOR_ITANIUM2;
 
@@ -4822,7 +4818,7 @@ fix_range (const char *const_str)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-ia64_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+ia64_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
@@ -4831,15 +4827,9 @@ ia64_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
       return true;
 
     case OPT_mtls_size_:
-      {
-	char *end;
-	unsigned long tmp = strtoul (arg, &end, 10);
-	if (*end || (tmp != 14 && tmp != 22 && tmp != 64))
-	  error ("bad value %<%s%> for -mtls-size= switch", arg);
-	else
-	  ia64_tls_size = tmp;
-	return true;
-      }
+      if (value != 14 && value != 22 && value != 64)
+	error ("bad value %<%s%> for -mtls-size= switch", arg);
+      return true;
 
     case OPT_mtune_:
       {

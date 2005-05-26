@@ -20,7 +20,7 @@
 ; 02111-1307, USA.
 
 mabi=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(target_abi_name)
 Specify an ABI
 
 mabort-on-noreturn
@@ -73,21 +73,21 @@ Target RejectNegative Joined
 Specify the name of the target CPU
 
 mfloat-abi=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(target_float_abi_name)
 Specify if floating point hardware should be used
 
 mfp=
-Target RejectNegative Joined Undocumented
+Target RejectNegative Joined Undocumented Var(target_fpe_name) VarExists
 
 ;; Now ignored.
 mfpe
 Target RejectNegative Mask(FPE) Undocumented
 
 mfpe=
-Target RejectNegative Joined Undocumented
+Target RejectNegative Joined Undocumented Var(target_fpe_name)
 
 mfpu=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(target_fpu_name)
 Specify the name of the target floating point hardware/format
 
 mhard-float
@@ -103,7 +103,7 @@ Target Report Mask(LONG_CALLS)
 Generate call insns as indirect calls, if necessary
 
 mpic-register=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(arm_pic_register_string)
 Specify the register to be used for PIC addressing
 
 mpoke-function-name
@@ -123,7 +123,7 @@ Target RejectNegative
 Alias for -mfloat-abi=soft
 
 mstructure-size-boundary=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(structure_size_string)
 Specify the minimum bit alignment of structures
 
 mthumb

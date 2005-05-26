@@ -68,12 +68,9 @@ for (i = 0; i < n_opts; i++) {
 	if (name == "")
 		continue;
 
-	print "/* Set by -" opts[i] "."
-	print "   " help[i] "  */"
-	print "extern int " name ";"
-	print ""
-
-    }
+	print "extern " var_type(flags[i]) name ";"
+}
+print ""
 
 for (i = 0; i < n_opts; i++) {
 	name = opt_args("Mask", flags[i])

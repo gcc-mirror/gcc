@@ -77,8 +77,10 @@ for (i = 0; i < n_opts; i++) {
 	else if (name in var_seen)
 		continue;
 
-	printf ("/* Set by -%s.\n   %s  */\nint %s%s;\n\n",
-	    opts[i], help[i], name,init)
+	print "/* Set by -" opts[i] "."
+	print "   " help[i] "  */"
+	print var_type(flags[i]) name init ";"
+	print ""
 
 	var_seen[name] = 1;
 }

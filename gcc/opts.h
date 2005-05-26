@@ -22,7 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_OPTS_H
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
-enum cl_var_cond {
+enum cl_var_type {
   /* The switch is enabled when FLAG_VAR is nonzero.  */
   CLVC_BOOLEAN,
 
@@ -33,7 +33,11 @@ enum cl_var_cond {
   CLVC_BIT_CLEAR,
 
   /* The switch is enabled when VAR_VALUE is set in FLAG_VAR.  */
-  CLVC_BIT_SET
+  CLVC_BIT_SET,
+
+  /* The switch takes a string argument and FLAG_VAR points to that
+     argument.  */
+  CLVC_STRING
 };
 
 struct cl_option
@@ -43,8 +47,8 @@ struct cl_option
   unsigned short back_chain;
   unsigned char opt_len;
   unsigned int flags;
-  int *flag_var;
-  enum cl_var_cond var_cond;
+  void *flag_var;
+  enum cl_var_type var_type;
   int var_value;
 };
 

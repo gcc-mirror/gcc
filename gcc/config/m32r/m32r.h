@@ -209,10 +209,6 @@
 #define TARGET_CPU_DEFAULT 0
 #endif
 
-/* Cache-flush support.  */
-extern const char * m32r_cache_flush_func;
-extern int m32r_cache_flush_trap;
-
 /* Code Models
 
    Code models are used to select between two choices of two separate

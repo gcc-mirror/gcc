@@ -48,7 +48,6 @@
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
 
-static bool avr_handle_option (size_t, const char *, int);
 static int avr_naked_function_p (tree);
 static int interrupt_function_p (tree);
 static int signal_function_p (tree);
@@ -110,12 +109,6 @@ static int epilogue_size;
 
 /* Size of all jump tables in the current function, in words.  */
 static int jump_tables_size;
-
-/* Initial stack value specified by the `-minit-stack=' option */
-static const char *avr_init_stack = "__stack";
-
-/* Default MCU name */
-static const char *avr_mcu_name = "avr2";
 
 /* Preprocessor macros to define depending on MCU type.  */
 const char *avr_base_arch_macro;
@@ -245,8 +238,6 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION avr_handle_option
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
 #undef TARGET_SECTION_TYPE_FLAGS
@@ -266,26 +257,6 @@ int avr_case_values_threshold = 30000;
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-avr_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
-{
-  switch (code)
-    {
-    case OPT_minit_stack_:
-      avr_init_stack = arg;
-      return true;
-
-    case OPT_mmcu_:
-      avr_mcu_name = arg;
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 void
 avr_override_options (void)
 {

@@ -2132,10 +2132,7 @@ enum processor_type
 };
 
 extern enum processor_type ix86_tune;
-extern const char *ix86_tune_string;
-
 extern enum processor_type ix86_arch;
-extern const char *ix86_arch_string;
 
 enum fpmath_unit
 {

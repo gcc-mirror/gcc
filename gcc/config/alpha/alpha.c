@@ -79,19 +79,6 @@ enum alpha_fp_rounding_mode alpha_fprm;
 
 enum alpha_fp_trap_mode alpha_fptm;
 
-/* Specify bit size of immediate TLS offsets.  */
-
-int alpha_tls_size = 32;
-
-/* Strings decoded into the above options.  */
-
-static const char *alpha_cpu_string;	/* -mcpu= */
-static const char *alpha_tune_string;	/* -mtune= */
-static const char *alpha_tp_string;	/* -mtrap-precision=[p|s|i] */
-static const char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
-static const char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
-static const char *alpha_mlat_string;	/* -mmemory-latency= */
-
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 
@@ -239,38 +226,8 @@ alpha_handle_option (size_t code, const char *arg, int value)
       target_flags |= MASK_IEEE_CONFORMANT;
       break;
 
-    case OPT_mcpu_:
-      alpha_cpu_string = arg;
-      break;
-
-    case OPT_mtune_:
-      alpha_tune_string = arg;
-      break;
-
-    case OPT_mfp_rounding_mode_:
-      alpha_fprm_string = arg;
-      break;
-
-    case OPT_mfp_trap_mode_:
-      alpha_fptm_string = arg;
-      break;
-
-    case OPT_mtrap_precision_:
-      alpha_tp_string = arg;
-      break;
-
-    case OPT_mmemory_latency_:
-      alpha_mlat_string = arg;
-      break;
-
     case OPT_mtls_size_:
-      if (strcmp (arg, "16") == 0)
-	alpha_tls_size = 16;
-      else if (strcmp (arg, "32") == 0)
-	alpha_tls_size = 32;
-      else if (strcmp (arg, "64") == 0)
-	alpha_tls_size = 64;
-      else
+      if (value != 16 && value != 32 && value != 64)
 	error ("bad value %qs for -mtls-size switch", arg);
       break;
     }

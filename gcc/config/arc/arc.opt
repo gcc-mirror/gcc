@@ -39,17 +39,17 @@ mno-cond-exec
 Target Undocumented Report RejectNegative Mask(NO_COND_EXEC)
 
 mcpu=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(arc_cpu_string) Init("base")
 -mcpu=CPU	Compile code for ARC variant CPU
 
 mtext=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(arc_text_string) Init(ARC_DEFAULT_TEXT_SECTION)
 -mtext=SECTION	Put functions in SECTION
 
 mdata=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(arc_data_string) Init(ARC_DEFAULT_DATA_SECTION)
 -mdata=SECTION	Put data in SECTION
 
 mrodata=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(arc_rodata_string) Init(ARC_DEFAULT_RODATA_SECTION)
 -mrodata=SECTION	Put read-only data in SECTION

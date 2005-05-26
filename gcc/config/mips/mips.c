@@ -555,14 +555,8 @@ int mips_abi = MIPS_ABI_DEFAULT;
    should arrange to call mips32 hard floating point code.  */
 int mips16_hard_float;
 
-/* The arguments passed to -march and -mtune.  */
-static const char *mips_arch_string;
-static const char *mips_tune_string;
-
 /* The architecture selected by -mipsN.  */
 static const struct mips_cpu_info *mips_isa_info;
-
-const char *mips_cache_flush_func = CACHE_FLUSH_FUNC;
 
 /* If TRUE, we split addresses into their high and low parts in the RTL.  */
 int mips_split_addresses;
@@ -4215,20 +4209,12 @@ mips_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
       return true;
 
     case OPT_march_:
-      mips_arch_string = arg;
-      return mips_parse_cpu (arg) != 0;
-
     case OPT_mtune_:
-      mips_tune_string = arg;
       return mips_parse_cpu (arg) != 0;
 
     case OPT_mips:
       mips_isa_info = mips_parse_cpu (ACONCAT (("mips", arg, NULL)));
       return mips_isa_info != 0;
-
-    case OPT_mflush_func_:
-      mips_cache_flush_func = arg;
-      return true;
 
     case OPT_mno_flush_func:
       mips_cache_flush_func = NULL;

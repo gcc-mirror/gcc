@@ -67,7 +67,6 @@ extern unsigned int ia64_section_threshold;
 #define TARGET_HAVE_TLS true
 #endif
 
-extern int ia64_tls_size;
 #define TARGET_TLS14		(ia64_tls_size == 14)
 #define TARGET_TLS22		(ia64_tls_size == 22)
 #define TARGET_TLS64		(ia64_tls_size == 64)

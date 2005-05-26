@@ -379,24 +379,30 @@ handle_option (const char **argv, unsigned int lang_mask)
     }
 
   if (option->flag_var)
-    switch (option->var_cond)
+    switch (option->var_type)
       {
       case CLVC_BOOLEAN:
-	*option->flag_var = value;
+	*(int *) option->flag_var = value;
 	break;
 
       case CLVC_EQUAL:
-	*option->flag_var = value ? option->var_value : !option->var_value;
+	*(int *) option->flag_var = (value
+				     ? option->var_value
+				     : !option->var_value);
 	break;
 
       case CLVC_BIT_CLEAR:
       case CLVC_BIT_SET:
-	if ((value != 0) == (option->var_cond == CLVC_BIT_SET))
-	  *option->flag_var |= option->var_value;
+	if ((value != 0) == (option->var_type == CLVC_BIT_SET))
+	  *(int *) option->flag_var |= option->var_value;
 	else
-	  *option->flag_var &= ~option->var_value;
+	  *(int *) option->flag_var &= ~option->var_value;
 	if (option->flag_var == &target_flags)
 	  target_flags_explicit |= option->var_value;
+	break;
+
+      case CLVC_STRING:
+	*(const char **) option->flag_var = arg;
 	break;
       }
   
@@ -1417,19 +1423,22 @@ option_enabled (int opt_idx)
 {
   const struct cl_option *option = &(cl_options[opt_idx]);
   if (option->flag_var)
-    switch (option->var_cond)
+    switch (option->var_type)
       {
       case CLVC_BOOLEAN:
-	return *option->flag_var != 0;
+	return *(int *) option->flag_var != 0;
 
       case CLVC_EQUAL:
-	return *option->flag_var == option->var_value;
+	return *(int *) option->flag_var == option->var_value;
 
       case CLVC_BIT_CLEAR:
-	return (*option->flag_var & option->var_value) == 0;
+	return (*(int *) option->flag_var & option->var_value) == 0;
 
       case CLVC_BIT_SET:
-	return (*option->flag_var & option->var_value) != 0;
+	return (*(int *) option->flag_var & option->var_value) != 0;
+
+      case CLVC_STRING:
+	break;
       }
   return -1;
 }
