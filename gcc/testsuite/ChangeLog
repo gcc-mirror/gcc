@@ -1,3 +1,8 @@
+2005-05-26  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/obj-c++.exp (obj-c++_target_compile): Declare global variable,
+	remove extraneous semicolons.
+
 2005-05-26  Ziemowit Laski  <zlaski@apple.com>
 
 	* obj-c++.dg/comp-types-12.mm: New.
