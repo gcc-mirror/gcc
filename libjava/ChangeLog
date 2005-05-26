@@ -1,3 +1,14 @@
+2005-05-26  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* include/jvm.h (FLAG_BINARYCOMPAT_ABI, FLAG_BOOTSTRAP_LOADER): New.
+	(GCJ_BINARYCOMPAT_ADDITION, GCJ_BOOTSTRAP_LOADER_ADDITION): Removed.
+	(OLD_GCJ_40_BC_ABI_VERSION): Renamed. Old-style version ID for BC-ABI
+	classes.
+	(GCJ_CXX_ABI_VERSION): Renamed from GCJ_ABI_VERSION.
+	(GCJ_40_BC_ABI_VERSION): New. Calculate version	IDs using new method.
+	(_Jv_CheckABIVersion): Check for both old and new style version IDs.
+	(_Jv_ClassForBootstrapLoader): Use FLAG_BOOTSTRAP_LOADER. 
+
 2005-05-25  Richard Henderson  <rth@redhat.com>
 
 	PR libgcj/21692
