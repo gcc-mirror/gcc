@@ -879,12 +879,14 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   AC_MSG_CHECKING([for ISO C99 support in <stdlib.h>])
   AC_CACHE_VAL(ac_c99_stdlib, [
   AC_TRY_COMPILE([#include <stdlib.h>],
-                 [char* tmp; 
-	    	  strtof("gnu", &tmp); 
+                 [char* tmp;
+	    	  strtof("gnu", &tmp);
 		  strtold("gnu", &tmp);
-                  llabs(10); 
-		  lldiv(10,1); 
-		  atoll("10"); 
+	          strtoll("gnu", &tmp, 10);
+	          strtoull("gnu", &tmp, 10);
+	          llabs(10);
+		  lldiv(10,1);
+		  atoll("10");
 		  _Exit(0);
 		  lldiv_t mydivt;],[ac_c99_stdlib=yes], [ac_c99_stdlib=no])
   ])

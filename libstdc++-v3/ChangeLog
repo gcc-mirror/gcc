@@ -1,3 +1,14 @@
+2005-05-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13943
+	* include/c_std/std_cstdlib.h: Do not open code llabs and lldiv,
+	available when _GLIBCXX_USE_C99 is defined.
+	* testsuite/26_numerics/cstdlib/13943.cc: New.
+
+	* acinclude.m4 ([GLIBCXX_ENABLE_C99]): For completeness, check
+	also strtoll and strtoull for ac_c99_stdlib.
+	* configure: Regenerate.
+
 2005-05-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu: Add linkage support for no extern templates.
