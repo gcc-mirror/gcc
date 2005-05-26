@@ -1,3 +1,8 @@
+2005-05-25  Roger Sayle  <roger@eyesopen.com>
+
+	* convert.c (convert_to_integer) <POINTER_TYPE>: Avoid recursive
+	call to convert_to_integer by building the NOP_EXPR directly.
+
 2005-05-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/rs6000/rs6000.opt (mprioritize-restricted-insns=): Fix typo.
