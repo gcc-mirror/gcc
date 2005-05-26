@@ -1,3 +1,9 @@
+2005-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/17283
+	* gfortran.fortran-torture/execute/intrinsic_unpack.f90:
+	Test callee-allocated memory with write statements.
+
 2005-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21492

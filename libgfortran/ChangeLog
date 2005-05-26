@@ -1,3 +1,12 @@
+2005-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/17283
+	* intrinsics/unpack_generic.c:  Fix name of routine
+	on top.  Update copyright years.
+	(unpack1):  Remove const from return array descriptor.
+	rs:  New variable, for calculating return sizes.
+	Populate return array descriptor if ret->data is NULL.
+
 2005-05-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline:
