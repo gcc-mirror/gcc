@@ -533,6 +533,8 @@ Boston, MA 02111-1307, USA.  */
 	     machopic_validate_stub_or_non_lazy_ptr (xname);		     \
 	   else if (len > 14 && !strcmp ("$non_lazy_ptr", xname + len - 13)) \
 	     machopic_validate_stub_or_non_lazy_ptr (xname);		     \
+	   else if (len > 15 && !strcmp ("$non_lazy_ptr\"", xname + len - 14)) \
+	     machopic_validate_stub_or_non_lazy_ptr (xname);		     \
 	   if (xname[1] != '"' && name_needs_quotes (&xname[1]))	     \
 	     fprintf (FILE, "\"%s\"", &xname[1]);			     \
 	   else								     \
