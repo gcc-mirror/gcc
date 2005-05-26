@@ -8,6 +8,8 @@
 #include <objc/objc-class.h>
 #include <objc/Object.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define objc_get_class(C)			objc_getClass(C)
 #define objc_get_meta_class(C)			objc_getMetaClass(C)
@@ -45,22 +47,28 @@
 /* The following is necessary to "cover" the bf*.m test cases on NeXT.  */
 
 #undef  MAX
+#undef  MIN
+#undef  ROUND
+
+#ifdef __cplusplus
+#define MAX(X, Y) ((X > Y) ? X : Y)
+#define MIN(X, Y) ((X < Y) ? X : Y)
+#define ROUND(V, A) (A * ((V + A - 1) / A))
+#else
 #define MAX(X, Y)                    \
   ({ typeof (X) __x = (X), __y = (Y); \
      (__x > __y ? __x : __y); })
-
-#undef  MIN
 #define MIN(X, Y)                    \
   ({ typeof (X) __x = (X), __y = (Y); \
      (__x < __y ? __x : __y); })
-  
-#undef  ROUND
 #define ROUND(V, A) \
   ({ typeof (V) __v = (V); typeof (A) __a = (A); \
      __a * ((__v+__a - 1)/__a); })
+#endif
 
 #define BITS_PER_UNIT __CHAR_BIT__
-#define STRUCTURE_SIZE_BOUNDARY (BITS_PER_UNIT * sizeof (struct{char a;}))
+typedef struct{ char a; } __small_struct;
+#define STRUCTURE_SIZE_BOUNDARY (BITS_PER_UNIT * sizeof (__small_struct))
 
 /* Not sure why the following are missing from NeXT objc headers... */
 
@@ -104,7 +112,7 @@ struct objc_struct_layout
   unsigned int record_align;
 };
 
-typedef union {
+typedef union arglist {
   char *arg_ptr;
   char arg_regs[sizeof (char*)];
 } *arglist_t;                   /* argument frame */
@@ -117,6 +125,7 @@ void objc_layout_structure (const char *type,
 BOOL objc_layout_structure_next_member (struct objc_struct_layout *layout);
 void objc_layout_finish_structure (struct objc_struct_layout *layout,
     unsigned int *size, unsigned int *align);
+int objc_aligned_size (const char *type);
 
 /*
   return the size of an object specified by type
@@ -191,10 +200,6 @@ objc_sizeof_type (const char *type)
 
   case _C_DBL:
     return sizeof (double);
-    break;
-
-  case _C_VOID:
-    return sizeof (void);
     break;
 
   case _C_PTR:
