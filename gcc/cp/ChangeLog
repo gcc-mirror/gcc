@@ -1,3 +1,9 @@
+2005-05-26  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/21768
+	* pt.c (redeclare_class_template): Change error message according
+	to coding conventions.
+
 2005-05-19  Release Manager
 
 	* GCC 3.4.4 released.
