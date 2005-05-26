@@ -1,3 +1,9 @@
+2005-05-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-vect-transform.c (vectorizable_operation): Try word_mode
+	vectorization if UNITS_PER_WORD == UNITS_PER_SIMD_WORD, even
+	if a vector mode is available.
+
 2005-05-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/21709
@@ -1037,6 +1043,10 @@
 	(apply_macro_traverse): Set mtd->unknown_mode_attr.
 	(read_rtx): Use mtd.unknown_mode_attr to check for an undefined
 	attribute used for a mode.
+
+2005-05-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-ssa-math-opts.c: New file.
 
 2005-05-17  Paolo Bonzini  <bonzini@gnu.org>
 

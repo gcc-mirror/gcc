@@ -45,7 +45,7 @@ int main (void)
   return main1 ();
 }
 
-/* Fails for targets that don't vectorize PLUS.  */
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail alpha*-*-* } } } */
+/* Fails for 32-bit targets that don't vectorize PLUS.  */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

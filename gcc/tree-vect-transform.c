@@ -815,7 +815,12 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     {
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 	fprintf (vect_dump, "op not supported by target.");
-      return false;
+      if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
+          || LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	     < vect_min_worthwhile_factor (code))
+        return false;
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	fprintf (vect_dump, "proceeding using word mode.");
     }
 
   /* Worthwhile without SIMD support?  */
