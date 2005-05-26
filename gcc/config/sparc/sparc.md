@@ -854,7 +854,7 @@
 
 ;; The SEQ and SNE patterns are special because they can be done
 ;; without any branching and do not involve a COMPARE.  We want
-;; them to always use the splitz below so the results can be
+;; them to always use the splits below so the results can be
 ;; scheduled.
 
 (define_insn_and_split "*snesi_zero"
@@ -8363,7 +8363,7 @@
    (set_attr "fptype" "double")])
 
 ;; Using faligndata only makes sense after an alignaddr since the choice of
-;; bytes to take out of each operand is dependant on the results of the last
+;; bytes to take out of each operand is dependent on the results of the last
 ;; alignaddr.
 (define_insn "faligndata<V64I:mode>_vis"
   [(set (match_operand:V64I 0 "register_operand" "=e")

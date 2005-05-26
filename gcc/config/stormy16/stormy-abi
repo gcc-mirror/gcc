@@ -159,7 +159,7 @@ the reloc refers, 'A' is the addend, and 'P' represents the place of
 the storage unit being relocated.
 
 In the 'Overflow' column, 'none' means that any overflow of the
-computation perfomed in the 'Calculation' column is ignored.
+computation performed in the 'Calculation' column is ignored.
 'signed' means that the overflow is only reported if it happens when
 the values are treated as signed quantities.  'unsigned' is the same,
 except that the values are treated as unsigned quantities.  'either'

@@ -119,7 +119,7 @@ struct cfg_hooks
 						  unsigned int *n_to_remove,
 						  int flags);
 
-  /* Add conition to new basic block and update CFG used in loop
+  /* Add condition to new basic block and update CFG used in loop
      versioning.  */
   void (*lv_add_condition_to_bb) (basic_block, basic_block, basic_block,
   				  void *);

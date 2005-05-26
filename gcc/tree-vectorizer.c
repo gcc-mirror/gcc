@@ -987,7 +987,7 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
   /* 1. Verify that one of the successors of first_loopt->exit is the preheader
         of second_loop.  */
    
-  /* The preheader of new_loop is expected to have two predessors:
+  /* The preheader of new_loop is expected to have two predecessors:
      first_loop->exit and the block that precedes first_loop.  */
 
   gcc_assert (EDGE_COUNT (loop2_entry_bb->preds) == 2 

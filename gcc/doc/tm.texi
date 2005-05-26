@@ -9519,7 +9519,7 @@ low-overhead loop.
 Many targets use special registers for low-overhead looping. This function
 should return false for any instruction that clobbers these. 
 By default, the RTL loop optimizer does not use a present doloop pattern for
-loops containing function calls or brach on table instructions.  
+loops containing function calls or branch on table instructions.  
 @end deftypefn
 
 @defmac MD_CAN_REDIRECT_BRANCH (@var{branch1}, @var{branch2})

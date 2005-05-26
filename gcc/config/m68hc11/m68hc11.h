@@ -450,7 +450,7 @@ SOFT_REG_FIRST+28, SOFT_REG_FIRST+29,SOFT_REG_FIRST+30,SOFT_REG_FIRST+31
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
 
-/* The M68hc11 has so fiew registers that it's not possible for GCC to
+/* The M68hc11 has so few registers that it's not possible for GCC to
    do any register allocation without breaking. We extend the processor
    registers by having soft registers. These registers are treated as
    hard registers by GCC but they are located in memory and accessed by page0

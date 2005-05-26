@@ -1,3 +1,24 @@
+2005-05-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c, c-parser.c, cfgbuild.c, cfghooks.c, cfghooks.h,
+	cfgrtl.c, cgraphunit.c, ddg.c, expr.h, gcse.c, ggc-page.c,
+	ggc-zone.c, gimplify.c, ipa-inline.c, longlong.h, targhooks.c,
+	tree-flow-inline.h, tree-pass.h, tree-ssa-dse.c,
+	tree-ssa-loop-im.c, tree-ssa-loop-ivopts.c,
+	tree-ssa-operands.c, tree-vect-analyze.c,
+	tree-vect-transform.c, tree-vectorizer.c, tree.c,
+	config/arm/arm.c, config/bfin/bfin.c, config/frv/frv.c,
+	config/frv/frv.md, config/i386/i386.c, config/i386/sse.md,
+	config/m68hc11/m68hc11.c, config/m68hc11/m68hc11.h,
+	config/mcore/mcore.c, config/mips/mips.c, config/mips/mips.md,
+	config/rs6000/darwin-ldouble.c, config/rs6000/rs6000.c,
+	config/rs6000/rs6000.h, config/sh/sh.c, config/sh/sh.md,
+	config/sh/ushmedia.h, config/sparc/sparc.c,
+	config/sparc/sparc.md, config/stormy16/stormy-abi: Fix comment
+	typos.  Follow spelling conventions.
+	* doc/invoke.texi, doc/tm.texi, doc/tree-ssa.texi: Fix typos.
+	Follow spelling conventions.
+
 2005-05-26  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.c (mips_use_ins_ext_p): New helper function

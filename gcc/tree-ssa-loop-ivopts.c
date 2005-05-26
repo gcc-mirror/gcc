@@ -1886,7 +1886,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
     TREE_OPERAND (expr, 1) = op1;
 
   /* Inside address, we might strip the top level component references,
-     thus changing type of the expresion.  Handling of ADDR_EXPR
+     thus changing type of the expression.  Handling of ADDR_EXPR
      will fix that.  */
   expr = fold_convert (orig_type, expr);
 

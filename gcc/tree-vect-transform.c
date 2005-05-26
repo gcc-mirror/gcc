@@ -231,7 +231,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 
 /* Function vect_align_data_ref.
 
-   Handle mislignment of a memory accesses.
+   Handle misalignment of a memory accesses.
 
    FORNOW: Can't handle misaligned accesses. 
    Make sure that the dataref is aligned.  */

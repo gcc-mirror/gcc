@@ -1759,7 +1759,7 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 
   /* If the variable cannot be modified and this is a V_MAY_DEF change
      it into a VUSE.  This happens when read-only variables are marked
-     call-clobbered and/or aliased to writeable variables.  So we only
+     call-clobbered and/or aliased to writable variables.  So we only
      check that this only happens on non-specific stores.
 
      Note that if this is a specific store, i.e. associated with a

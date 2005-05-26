@@ -75,7 +75,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define USING_MALLOC_PAGE_GROUPS
 #endif
 
-/* Stategy:
+/* Strategy:
 
    This garbage-collecting allocator allocates objects on one of a set
    of pages.  Each page can allocate objects of a single size only;

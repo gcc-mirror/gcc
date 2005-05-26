@@ -2117,7 +2117,7 @@ mcore_expand_epilog (void)
 
 /* The MCORE cannot load a large constant into a register, constants have to
    come from a pc relative load.  The reference of a pc relative load
-   instruction must be less than 1k infront of the instruction.  This
+   instruction must be less than 1k in front of the instruction.  This
    means that we often have to dump a constant inside a function, and
    generate code to branch around it.
 

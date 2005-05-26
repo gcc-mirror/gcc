@@ -1106,7 +1106,7 @@
   rtx set1, set2;
   rtx replacements[4];
 
-  /* We want to replace occurences of operands[0] with operands[1] and
+  /* We want to replace occurrences of operands[0] with operands[1] and
      operands[2] with operands[0] in operands[4]/operands[5].
      Doing just two replace_rtx calls naively would result in the second
      replacement undoing all that the first did if operands[1] and operands[2]

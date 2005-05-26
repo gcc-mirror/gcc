@@ -264,7 +264,7 @@ default_scalar_mode_supported_p (enum machine_mode mode)
 
 /* TRUE if INSN insn is valid within a low-overhead loop.
   
-   This function checks wheter a given INSN is valid within a low-overhead
+   This function checks whether a given INSN is valid within a low-overhead
    loop.  A called function may clobber any special registers required for
    low-overhead looping. Additionally, some targets (eg, PPC) use the count
    register for branch on table instructions. We reject the doloop pattern in

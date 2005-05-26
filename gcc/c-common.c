@@ -1445,7 +1445,7 @@ check_case_value (tree value)
    if the case is not a case range.
    The caller has to make sure that we are not called with NULL for
    CASE_LOW_P (i.e. the default case).
-   Returns true if the case label is in range of ORIG_TYPE (satured or
+   Returns true if the case label is in range of ORIG_TYPE (saturated or
    untouched) or false if the label is out of range.  */
 
 static bool

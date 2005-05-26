@@ -1190,7 +1190,7 @@ rtl_tidy_fallthru_edge (edge e)
 
   /* ??? In a late-running flow pass, other folks may have deleted basic
      blocks by nopping out blocks, leaving multiple BARRIERs between here
-     and the target label. They ought to be chastized and fixed.
+     and the target label. They ought to be chastised and fixed.
 
      We can also wind up with a sequence of undeletable labels between
      one block and the next.

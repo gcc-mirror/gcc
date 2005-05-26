@@ -2466,7 +2466,7 @@ bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
    which perform the memory reference, are allowed to execute before the
    jump condition is evaluated.
    Therefore, we must insert additional instructions in all places where this
-   could lead to incorrect behaviour.  The manual recommends CSYNC, while
+   could lead to incorrect behavior.  The manual recommends CSYNC, while
    VDSP seems to use NOPs (even though its corresponding compiler option is
    named CSYNC).
 

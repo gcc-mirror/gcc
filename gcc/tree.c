@@ -6600,7 +6600,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 	case SSA_NAME:
 	case FIELD_DECL:
 	case RESULT_DECL:
-	  /* None of thse have subtrees other than those already walked
+	  /* None of these have subtrees other than those already walked
 	     above.  */
 	  break;
 

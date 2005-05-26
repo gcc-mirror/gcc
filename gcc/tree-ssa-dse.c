@@ -195,7 +195,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
       /* We want to verify that each virtual definition in STMT has
 	 precisely one use and that all the virtual definitions are
 	 used by the same single statement.  When complete, we
-	 want USE_STMT to refer to the one statment which uses
+	 want USE_STMT to refer to the one statement which uses
 	 all of the virtual definitions from STMT.  */
       use_stmt = NULL;
       FOR_EACH_SSA_MUST_AND_MAY_DEF_OPERAND (var1, var2, stmt, op_iter)

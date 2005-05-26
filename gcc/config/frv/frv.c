@@ -8197,7 +8197,7 @@ frv_int_to_acc (enum insn_code icode, int opnum, rtx opval)
   rtx reg;
   int i;
 
-  /* ACCs and ACCGs are implicity global registers if media intrinsics
+  /* ACCs and ACCGs are implicit global registers if media intrinsics
      are being used.  We set up this lazily to avoid creating lots of
      unnecessary call_insn rtl in non-media code.  */
   for (i = 0; i <= ACC_MASK; i++)
@@ -8292,7 +8292,7 @@ frv_read_iacc_argument (enum machine_mode mode, tree *arglistptr)
       op = const0_rtx;
     }
 
-  /* IACCs are implicity global registers.  We set up this lazily to
+  /* IACCs are implicit global registers.  We set up this lazily to
      avoid creating lots of unnecessary call_insn rtl when IACCs aren't
      being used.  */
   regno = INTVAL (op) + IACC_FIRST;
@@ -8622,7 +8622,7 @@ frv_expand_mdpackh_builtin (tree arglist, rtx target)
   op0 = gen_reg_rtx (DImode);
   op1 = gen_reg_rtx (DImode);
 
-  /* The high half of each word is not explicitly initialised, so indicate
+  /* The high half of each word is not explicitly initialized, so indicate
      that the input operands are not live before this point.  */
   emit_insn (gen_rtx_CLOBBER (DImode, op0));
   emit_insn (gen_rtx_CLOBBER (DImode, op1));
