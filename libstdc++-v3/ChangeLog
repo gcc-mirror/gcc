@@ -1,3 +1,14 @@
+2005-05-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu: Add linkage support for no extern templates.
+	(std::ios_base::_M_call_callbacks): Add.
+	(std::ios_base::_M_dispose_callbacks): Add.
+	(std::locale::facet::_S_get_c_name): Add.
+	(std::__copy_streambufs): Add.
+	* configure.ac (libtool_VERSION): To 6:5:0.
+	* configure: Regenerate.
+	* testsuite/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.5.
+	
 2005-05-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (_Rep::_M_set_length_and_sharable):
