@@ -1,3 +1,8 @@
+2005-05-26  David Ung  <davidu@mips.com>
+
+	* gcc.target/mips/ext_ins.c: New test for testing the generation
+	of MIPS32/64 rev 2 ext/ins instructions.
+	
 2005-05-26  Andreas Jaeger  <aj@suse.de>
 
 	* treelang/compile/unsigned.tree: Use gimple instead of
