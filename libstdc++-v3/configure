@@ -7059,7 +7059,9 @@ main ()
 char* tmp;
 	    	  strtof("gnu", &tmp);
 		  strtold("gnu", &tmp);
-                  llabs(10);
+	          strtoll("gnu", &tmp, 10);
+	          strtoull("gnu", &tmp, 10);
+	          llabs(10);
 		  lldiv(10,1);
 		  atoll("10");
 		  _Exit(0);
