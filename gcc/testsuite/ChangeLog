@@ -1,8 +1,33 @@
+2005-05-26  Andreas Jaeger  <aj@suse.de>
+
+        PR testsuite/20772
+	* gfortran.dg/promotion.f90, gcc.misc-tests/i386-pf-3dnow-1.c,
+	gcc.misc-tests/i386-pf-athlon-1.c,
+	gcc.misc-tests/i386-pf-none-1.c, gcc.misc-tests/i386-pf-sse-1.c,
+	g++.dg/opt/mmx1.C, g++.dg/other/big-struct.C,
+	g++.dg/abi/bitfield3.C, g++.dg/abi/bitfield8.C,
+	g++.dg/abi/bitfield9.C, g++.dg/abi/empty7.C, g++.dg/abi/empty9.C,
+	g++.dg/abi/layout4.C, g++.dg/abi/thunk1.C, g++.dg/abi/thunk2.C,
+	g++.dg/abi/vbase11.C, g++.dg/abi/vthunk2.C, g++.dg/abi/vthunk3.C,
+	g++.dg/ext/attrib8.C: Run also on x86_64 compiling 32-bit x86
+	programs.
+
+	* g++.dg/opt/reg-stack4.C, g++.dg/eh/simd-1.C, g++.dg/eh/simd-1.C,
+	gcc.dg/setjmp-2.c, gcc.dg/short-compare-1.c,
+	gcc.dg/short-compare-2.c, gcc.target/i386/asm-1.c: Handle 32-bit
+	x86-64 compilation.
+
+	* g++.dg/warn/register-var-1.C, g++.dg/charset/asm2.c: Run also on
+	x86_64.
+
+	* gcc.dg/i386-pentium4-not-mull.c: Change option handling to use
+	effective-target ilp32.
+
 2005-05-26  David Ung  <davidu@mips.com>
 
 	* gcc.target/mips/ext_ins.c: New test for testing the generation
 	of MIPS32/64 rev 2 ext/ins instructions.
-	
+
 2005-05-26  Andreas Jaeger  <aj@suse.de>
 
 	* treelang/compile/unsigned.tree: Use gimple instead of

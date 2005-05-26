@@ -1,8 +1,8 @@
 /* Test that the correct data prefetch instructions are generated for i386
    variants that use 3DNow! prefetch instructions.  */
 
-/* { dg-do compile { target i?86-*-* } } */
-/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-*} } */
+/* { dg-require-effective-target ilp32 } */
 
 extern void exit (int);
 
