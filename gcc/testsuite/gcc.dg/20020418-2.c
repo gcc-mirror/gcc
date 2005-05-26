@@ -1,8 +1,8 @@
 /* PR optimization/6010 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -funroll-all-loops" } */
-/* { dg-options "-O2 -funroll-all-loops -march=pentium3" { target i?86-*-* } } */
-/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
+/* { dg-options "-O2 -funroll-all-loops -march=pentium3" { target { i?86-*-* && ilp32 } } } */
+/* { dg-options "-O2 -funroll-all-loops -march=pentium3" { target { x86_64-*-* && ilp32 } } } */
 
 void bar (float);
 

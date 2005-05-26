@@ -1,5 +1,5 @@
-// { dg-do run { target i?86-*-* } }
-// { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } }
+// { dg-do run { target i?86-*-* x86_64-*-* } }
+// { dg-require-effective-target ilp32 }
 // { dg-options "-mtune=i686 -O2 -fpic" }
 // { dg-bogus "\[Uu\]nresolved symbol .(_GLOBAL_OFFSET_TABLE_|\[_.A-Za-z\]\[_.0-9A-Za-z\]*@(PLT|GOT|GOTOFF))" "PIC unsupported" { xfail *-*-netware* } 0 }
 class G {};

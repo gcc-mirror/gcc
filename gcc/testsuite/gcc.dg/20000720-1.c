@@ -1,5 +1,5 @@
-/* { dg-do compile { target i?86-*-* } } */
-/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-mpreferred-stack-boundary=2 -march=i586 -O2 -fomit-frame-pointer" } */
 
 extern void *foo(void *a, const void *b, unsigned c);
