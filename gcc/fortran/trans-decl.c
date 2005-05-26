@@ -537,7 +537,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     {
       if (GFC_TYPE_ARRAY_LBOUND (type, dim) == NULL_TREE)
         GFC_TYPE_ARRAY_LBOUND (type, dim) = create_index_var ("lbound", nest);
-      /* Don't try to use the unkown bound for assumed shape arrays.  */
+      /* Don't try to use the unknown bound for assumed shape arrays.  */
       if (GFC_TYPE_ARRAY_UBOUND (type, dim) == NULL_TREE
           && (sym->as->type != AS_ASSUMED_SIZE
               || dim < GFC_TYPE_ARRAY_RANK (type) - 1))

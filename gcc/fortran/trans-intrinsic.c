@@ -158,7 +158,7 @@ gfc_conv_intrinsic_function_args (gfc_se * se, gfc_expr * expr)
   args = NULL_TREE;
   for (actual = expr->value.function.actual; actual; actual = actual->next)
     {
-      /* Skip ommitted optional arguments.  */
+      /* Skip omitted optional arguments.  */
       if (!actual->expr)
 	continue;
 

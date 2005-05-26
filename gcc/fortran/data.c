@@ -132,7 +132,7 @@ find_con_by_component (gfc_component *com, gfc_constructor *con)
 }
 
 
-/* Create a character type intialization expression from RVALUE.
+/* Create a character type initialization expression from RVALUE.
    TS [and REF] describe [the substring of] the variable being initialized.
    INIT is thh existing initializer, not NULL.  Initialization is performed
    according to normal assignment rules.  */
@@ -556,7 +556,7 @@ formalize_structure_cons (gfc_expr * expr)
 
   c = expr->value.constructor;
 
-  /* Constructor is already fomalized.  */
+  /* Constructor is already formalized.  */
   if (c->n.component == NULL)
     return;
 

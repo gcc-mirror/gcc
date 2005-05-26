@@ -2965,7 +2965,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
 
 
 /* Translate the WHERE construct or statement.
-   This fuction can be called iteratively to translate the nested WHERE
+   This function can be called iteratively to translate the nested WHERE
    construct or statement.
    MASK is the control mask, and PMASK is the pending control mask.
    TEMP records the temporary address which must be freed later.  */
