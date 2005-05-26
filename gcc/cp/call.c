@@ -4035,7 +4035,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   if (placement)
     return NULL_TREE;
 
-  error ("no suitable %<operator %s> for %qT",
+  error ("no suitable %<operator %s%> for %qT",
 	 operator_name_info[(int)code].name, type);
   return error_mark_node;
 }
