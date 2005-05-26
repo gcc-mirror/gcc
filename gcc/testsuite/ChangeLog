@@ -6,6 +6,7 @@
 	* obj-c++.dg/selector-1.mm: Move to...
 	* obj-c++.dg/selector-4.mm: here...
 
+	* obj-c++.dg/basic.mm: New.
 	* obj-c++.dg/comp-types-1.mm: New.
 	* obj-c++.dg/cxx-class-1.mm: New.
 	* obj-c++.dg/cxx-ivars-1.mm: New.
