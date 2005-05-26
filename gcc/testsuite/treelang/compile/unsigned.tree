@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fdump-tree-generic" }
+// { dg-options "-fdump-tree-gimple" }
 external_reference void abort ();
 external_reference void exit (int status);
 external_definition int main (int argc, int argv);
@@ -16,5 +16,5 @@ main
 	}
 	return +1;
 }
-// { dg-final { scan-tree-dump-not "\\\(int\\\)" "generic" } }
-// { dg-final { cleanup-tree-dump "generic" } }
+// { dg-final { scan-tree-dump-not "\\\(int\\\)" "gimple" } }
+// { dg-final { cleanup-tree-dump "gimple" } }
