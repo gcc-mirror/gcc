@@ -100,7 +100,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    ggc_set_mark for any object in the garbage zone, which cuts off
    marking quickly.  */
 
-/* Stategy:
+/* Strategy:
 
    This garbage-collecting allocator segregates objects into zones.
    It also segregates objects into "large" and "small" bins.  Large

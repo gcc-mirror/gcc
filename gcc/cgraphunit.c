@@ -275,7 +275,7 @@ cgraph_varpool_analyze_pending_decls (void)
 /* Optimization of function bodies might've rendered some variables as
    unnecessary so we want to avoid these from being compiled.
 
-   This is done by prunning the queue and keeping only the variables that
+   This is done by pruning the queue and keeping only the variables that
    really appear needed (ie they are either externally visible or referenced
    by compiled function). Re-doing the reachability analysis on variables
    brings back the remaining variables referenced by these.  */

@@ -7839,7 +7839,7 @@ sparc_vis_init_builtins (void)
 }
 
 /* Handle TARGET_EXPAND_BUILTIN target hook.
-   Expand builtin functions for sparc instrinsics.  */
+   Expand builtin functions for sparc intrinsics.  */
 
 static rtx
 sparc_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,

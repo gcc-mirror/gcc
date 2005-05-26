@@ -1282,7 +1282,7 @@ After the replacement mappings have been registered and new symbols
 marked for renaming, a call to @code{update_ssa} makes the registered
 changes.  This can be done with an explicit call or by creating
 @code{TODO} flags in the @code{tree_opt_pass} structure for your pass.
-There are several @code{TODO} flags that control the behaviour of
+There are several @code{TODO} flags that control the behavior of
 @code{update_ssa}:
 
 @itemize @bullet
@@ -1304,7 +1304,7 @@ There are several @code{TODO} flags that control the behaviour of
 
 
 @item @code{TODO_update_ssa_full_phi}.  Insert PHI nodes everywhere
-      they are needed.  No prunning of the IDF is done.  This is used
+      they are needed.  No pruning of the IDF is done.  This is used
       by passes that need the PHI nodes for @code{O_j} even if it
       means that some arguments will come from the default definition
       of @code{O_j}'s symbol (e.g., @code{pass_linear_transform})@.

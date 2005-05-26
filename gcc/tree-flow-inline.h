@@ -238,7 +238,7 @@ set_ssa_use_from_ptr (use_operand_p use, tree val)
   link_imm_use (use, val);
 }
 
-/* Link ssa_imm_use node LINKNODE into the chain for DEF, with use occuring 
+/* Link ssa_imm_use node LINKNODE into the chain for DEF, with use occurring 
    in STMT.  */
 static inline void
 link_imm_use_stmt (ssa_use_operand_t *linknode, tree def, tree stmt)
@@ -267,7 +267,7 @@ relink_imm_use (ssa_use_operand_t *node, ssa_use_operand_t *old)
     }
 }
 
-/* Relink ssa_imm_use node LINKNODE into the chain for OLD, with use occuring 
+/* Relink ssa_imm_use node LINKNODE into the chain for OLD, with use occurring 
    in STMT.  */
 static inline void
 relink_imm_use_stmt (ssa_use_operand_t *linknode, ssa_use_operand_t *old, tree stmt)

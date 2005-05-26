@@ -225,8 +225,7 @@ enum state {
 
   /* Basic blocks that may need splitting (due to a label appearing in
      the middle, etc) belong to this state.  After splitting them,
-     make_edges will create create edges going out of them as
-     needed.  */
+     make_edges will create edges going out of them as needed.  */
   BLOCK_TO_SPLIT
 };
 

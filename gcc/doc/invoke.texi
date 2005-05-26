@@ -4470,7 +4470,7 @@ See below for a documentation of the individual
 parameters controlling inlining.
 
 @emph{Note:} pseudo instruction represents, in this particular context, an
-abstract measurement of function's size.  In no way, it represents a count
+abstract measurement of function's size.  In no way does it represent a count
 of assembly instructions and as such its exact meaning might change from one
 release to an another.
 

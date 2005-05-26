@@ -3017,7 +3017,7 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
   if (gimplify_ctxp->into_ssa && is_gimple_reg (*to_p))
     {
       /* If we've somehow already got an SSA_NAME on the LHS, then
-	 we're probably modifying it twice.  Not good.  */
+	 we're probably modified it twice.  Not good.  */
       gcc_assert (TREE_CODE (*to_p) != SSA_NAME);
       *to_p = make_ssa_name (*to_p, *expr_p);
     }

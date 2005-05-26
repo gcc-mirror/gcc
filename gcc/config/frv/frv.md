@@ -1669,7 +1669,7 @@
 ;; Note - it is best to only have one movsi pattern and to handle
 ;; all the various contingencies by the use of alternatives.  This
 ;; allows reload the greatest amount of flexibility (since reload will
-;; only choose amoungst alternatives for a selected insn, it will not
+;; only choose amongst alternatives for a selected insn, it will not
 ;; replace the insn with another one).
 
 ;; Unfortunately, we do have to separate out load-type moves from the rest,

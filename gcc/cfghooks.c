@@ -825,7 +825,7 @@ execute_on_shrinking_pred (edge e)
 }
 
 /* This is used inside loop versioning when we want to insert 
-   stmts/insns on the edges, which have a different behaviour 
+   stmts/insns on the edges, which have a different behavior 
    in tree's and in RTL, so we made a CFG hook.  */
 void
 lv_flush_pending_stmts (edge e)

@@ -4042,7 +4042,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
    left-side instructions (lwl, swl, ldl, sdl).
 
    *RIGHT is a QImode reference to the opposite end of the field and
-   can be used in the parterning right-side instruction.  */
+   can be used in the patterning right-side instruction.  */
 
 static bool
 mips_get_unaligned_mem (rtx *op, unsigned int width, int bitpos,

@@ -2145,7 +2145,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
      which is resolved in the direction of treating it as a typedef
      name.  If a close parenthesis follows, it is also an empty
      parameter list, as the syntax does not permit empty abstract
-     declarators.  Otherwise, it is a parenthesised declarator (in
+     declarators.  Otherwise, it is a parenthesized declarator (in
      which case the analysis may be repeated inside it, recursively).
 
      ??? There is an ambiguity in a parameter declaration "int
@@ -2155,7 +2155,7 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
      documenting.  At present we follow an accident of the old
      parser's implementation, whereby the first parameter must have
      some declaration specifiers other than just attributes.  Thus as
-     a parameter declaration it is treated as a parenthesised
+     a parameter declaration it is treated as a parenthesized
      parameter named x, and as an abstract declarator it is
      rejected.
 
@@ -5325,7 +5325,7 @@ c_parser_expr_list (c_parser *parser)
 
    "@interface identifier (" must start "@interface identifier (
    identifier ) ...": objc-methodprotolist in the first production may
-   not start with a parenthesised identifier as a declarator of a data
+   not start with a parenthesized identifier as a declarator of a data
    definition with no declaration specifiers if the objc-superclass,
    objc-protocol-refs and objc-class-instance-variables are omitted.  */
 

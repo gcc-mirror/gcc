@@ -1511,7 +1511,7 @@ override_options (void)
     target_flags &= ~MASK_NO_FANCY_MATH_387;
 
   /* Likewise, if the target doesn't have a 387, or we've specified
-     software floating point, don't use 387 inline instrinsics.  */
+     software floating point, don't use 387 inline intrinsics.  */
   if (!TARGET_80387)
     target_flags |= MASK_NO_FANCY_MATH_387;
 
@@ -1847,7 +1847,7 @@ ix86_comp_type_attributes (tree type1, tree type2)
   return 1;
 }
 
-/* Return the regparm value for a fuctio with the indicated TYPE and DECL.
+/* Return the regparm value for a function with the indicated TYPE and DECL.
    DECL may be NULL when calling function indirectly
    or considering a libcall.  */
 
@@ -15265,7 +15265,7 @@ ix86_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
   if (from == to)
     return false;
 
-  /* x87 registers can't do subreg at all, as all values are reformated
+  /* x87 registers can't do subreg at all, as all values are reformatted
      to extended precision.  */
   if (MAYBE_FLOAT_CLASS_P (class))
     return true;

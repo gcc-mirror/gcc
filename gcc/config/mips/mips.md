@@ -5367,7 +5367,7 @@ beq\t%2,%.,1b\;\
 
 ; Thread-Local Storage
 
-; The TLS base pointer is acessed via "rdhwr $v1, $29".  No current
+; The TLS base pointer is accessed via "rdhwr $v1, $29".  No current
 ; MIPS architecture defines this register, and no current
 ; implementation provides it; instead, any OS which supports TLS is
 ; expected to trap and emulate this instruction.  rdhwr is part of the

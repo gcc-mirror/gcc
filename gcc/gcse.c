@@ -507,11 +507,11 @@ static int gcse_subst_count;
 static int gcse_create_count;
 /* Number of local constants propagated.  */
 static int local_const_prop_count;
-/* Number of local copys propagated.  */
+/* Number of local copies propagated.  */
 static int local_copy_prop_count;
 /* Number of global constants propagated.  */
 static int global_const_prop_count;
-/* Number of global copys propagated.  */
+/* Number of global copies propagated.  */
 static int global_copy_prop_count;
 
 /* For available exprs */

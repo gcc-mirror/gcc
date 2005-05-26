@@ -302,7 +302,7 @@ add_deps_for_use (ddg_ptr g, struct df *df, struct ref *use)
      if (df_find_def (df, g->nodes[i].insn, use->reg))
        return;
   /* We must not add ANTI dep when there is an intra-loop TRUE dep in
-     the opozite direction. If the first_def reaches the USE then there is
+     the opposite direction. If the first_def reaches the USE then there is
      such a dep.  */
   if (! bitmap_bit_p (bb_info->rd_gen, first_def->id))
     create_ddg_dep_no_link (g, use_node, def_node, ANTI_DEP, REG_DEP, 1);

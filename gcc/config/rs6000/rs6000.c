@@ -16120,7 +16120,7 @@ force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
    between the insns.
 
    The function estimates the group boundaries that the processor will form as
-   folllows:  It keeps track of how many vacant issue slots are available after
+   follows:  It keeps track of how many vacant issue slots are available after
    each insn.  A subsequent insn will start a new group if one of the following
    4 cases applies:
    - no more vacant issue slots remain in the current dispatch group.

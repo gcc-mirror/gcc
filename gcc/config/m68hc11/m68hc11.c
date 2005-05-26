@@ -5018,7 +5018,7 @@ m68hc11_reorg (void)
      replacement, unshare everything.  */
   unshare_all_rtl_again (first);
 
-  /* Force a split of all splitable insn.  This is necessary for the
+  /* Force a split of all splittable insn.  This is necessary for the
      Z register replacement mechanism because we end up with basic insns.  */
   split_all_insns_noflow ();
   split_done = 1;

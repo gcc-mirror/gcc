@@ -720,14 +720,14 @@ sh_media_ADDZ_L (unsigned int mm, unsigned int mn)
   return mm + mn;
 }
 
-/* NOP and Synchronization instrinsics not implemented here.  */
+/* NOP and Synchronization intrinsics not implemented here.  */
 
 static __inline__ void sh_media_PREFO(void *mm, int s)
 {
   __builtin_sh_media_PREFO (mm + s, 0, 0);
 }
 
-/* Event Handling instrinsics not implemented here.  */
+/* Event Handling intrinsics not implemented here.  */
 
 /* Old asm stuff */
 
