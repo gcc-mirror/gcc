@@ -1,6 +1,6 @@
 #
 # Expect driver script for GCC Regression Tests
-#   Copyright (C) 1993, 1996, 2001 Free Software Foundation
+#   Copyright (C) 1993, 1996, 2001, 2005 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,6 +36,9 @@ set additional_flags ""
 # We must use -ffloat-store/-mieee to ensure that excess precision on some
 # machines does not cause problems
 if [istarget "i\[34567\]86-*-*"] then {
+  lappend additional_flags "-ffloat-store"
+}
+if { [istarget "x86_64-*-*"] && [check_effective_target_ilp32] } then {
   lappend additional_flags "-ffloat-store"
 }
 if [istarget "m68k-*-*"] then {

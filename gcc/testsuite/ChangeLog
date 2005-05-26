@@ -1,5 +1,10 @@
 2005-05-26  Andreas Jaeger  <aj@suse.de>
 
+	* gcc.c-torture/execute/ieee/ieee.exp: Set float-store for 32-bit
+	x86-64 compilation.
+
+2005-05-26  Andreas Jaeger  <aj@suse.de>
+
         PR testsuite/20772
 	* gfortran.dg/promotion.f90, gcc.misc-tests/i386-pf-3dnow-1.c,
 	gcc.misc-tests/i386-pf-athlon-1.c,
