@@ -1,3 +1,7 @@
+2005-05-26  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-pre-14.c (foo): Use correct type for strlen.
+
 2005-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/17283
@@ -13,7 +17,7 @@
 	    Mike Stump  <mrs@apple.com>
 
 	* objc/execute/next_mapping.h: Update for C++.
-	
+
 	* obj-c++.dg/selector-1.mm: Move to...
 	* obj-c++.dg/selector-4.mm: here...
 
@@ -213,7 +217,7 @@
 	* gcc.c-torture/execute/20020720-1.x: Add xfail for m32r*-*.
 
 2005-05-20  Bjoern Haase <bjoern.m.haase@web.de>
-	
+
 	* gcc.c-torture/execute/20020720-1.x: Add xfail for avr-*-*.
 
 2004-05-19  Richard Henderson  <rth@redhat.com>
@@ -246,7 +250,7 @@
 2005-05-18  Devang Patel  <dpatel@apple.com>
 
 	* g++.dg/opt/20050511-1.C: New test.
-	
+
 2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21127
@@ -275,7 +279,7 @@
 2005-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/compat/struct-layout-1_generate.c (iterative_hash):
-	Remove little-endian optimizations. 
+	Remove little-endian optimizations.
 
 2005-05-17  Jeff Law  <law@redhat.com>
 
@@ -332,7 +336,7 @@
 	* gcc.dg/compat/struct-layout-1.exp: Do not link with libiberty.
 	* gcc.dg/compat/struct-layout-1_generate.c (config.h): Do not include.
 	(limits.h): Include unconditionally.
-	(stdlib.h): Likewise. 
+	(stdlib.h): Likewise.
 	(hashtab.h): Do not include.
 	(getopt.h): Likewise.
 	(stddef.h): Include.
@@ -348,7 +352,7 @@
 	(e_insert): Likewise.
 	(output): Use, instead of libiberty hashtable functions.
 	(main): Do not use getopt.  Do not call htab_create.
-	
+
 2005-05-16  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR libstdc++/21526
@@ -531,7 +535,7 @@
 2005-05-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21352
-	* g++.dg/template/crash37.C: New test. 
+	* g++.dg/template/crash37.C: New test.
 
 2005-05-05  Paul Brook  <paul@codesourcery.com>
 
@@ -663,7 +667,7 @@
 
 	PR tree-optimization/21272
 	* gcc.dg/vect/vect-ifcvt-10.c: New test.
-	
+
 2005-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/13082
@@ -796,7 +800,7 @@
 2005-04-25  Devang Patel <dpatel@apple.com>
 
 	* gcc.dg/stabs-attrib-vect-darwin.c: New test.
-	
+
 2005-04-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR testsuite/21062
@@ -896,7 +900,7 @@
 
 	PR optimization/20994
 	* gcc.dg/tree-ssa/ifc-3.c: New test.
-	
+
 2005-04-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/12913
@@ -906,7 +910,7 @@
 
 2005-04-19  Richard Henderson  <rth@redhat.com>
 
-	* lib/target-supports.exp (check_effective_target_vect_int_mult): 
+	* lib/target-supports.exp (check_effective_target_vect_int_mult):
 	Fix typo in exists check.
 	(check_effective_target_sync_int_long): New.
 	* gcc.dg/ia64-sync-1.c: Enable for all effective-target sync_int_long.
@@ -973,7 +977,7 @@
 2005-04-18  Laurent GUERBY  <laurent@guerby.net>
 
 	* ada/acats/run_all.sh: Use sync when executable not present.
-	
+
 2005-04-18  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/vect/vect-11.c: Require effective target vect_int_mult.
@@ -1046,7 +1050,7 @@
 	* typeck.c (cxx_sizeof_or_alignof_type): Check whether the type to
 	which sizeof/alignof is dependent, rather than just whether we are
 	processing_template_decl.
-	
+
 2005-04-15  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.fortran-torture/execute/intrinsic_spread.f90:
@@ -1071,7 +1075,7 @@
 	* gcc.dg/builtins-53.c: Include builtins-config.h.
 	Check floorf, ceilf, floorl and ceill transformations
 	only when HAVE_C99_RUNTIME is defined.
-	
+
 2005-04-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/20739
@@ -1219,12 +1223,12 @@
         * gcc.dg/vect/vect-ifcvt-6.c: New test.
         * gcc.dg/vect/vect-ifcvt-7.c: New test.
         * gcc.dg/vect/vect-none.c: Now one loop is vectorized.
-	
+
 2004-04-11  Devang Patel  <dpatel@apple.com>
 
         * gcc.dg/vect/vect-dv-1.c: New test.
         * gcc.dg/vect/vect-dv-2.c: New test.
-	
+
 2005-04-11  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/20933
@@ -1247,7 +1251,7 @@
 
 	* gcc.dg/builtins-53.c: Also check (int)ceil* and
 	(long long int)ceil*.
-	
+
 2005-04-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/warn/Wdtor1.C: Declare template in system header with
@@ -1416,7 +1420,7 @@
 
 2005-04-06  Dorit Naishlos  <dorit@il.ibm.com>
 
-	* gfortran.dg/vect/vect-5.f90: xfail for lp64. 
+	* gfortran.dg/vect/vect-5.f90: xfail for lp64.
 
 2005-04-05  Mark Mitchell  <mark@codesourcery.com>
 
@@ -1463,7 +1467,7 @@
 
 	* lib/target-supports.exp (check_effective_target_vect_shif): New.
 	* gcc.dg/vect/vect-shift-1.c: New test.
-	
+
 2005-04-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20755
@@ -1935,7 +1939,7 @@
 	(g++_init): Make sure that CXXFLAGS is set.
 	* lib/gcc-defs.exp (gcc-set-multilib-library-path): New function.
 	* lib/gcc-dg.exp: Use gcc-set-multilib-library-path.
-	* lib/gfortran.exp (gfortran_link_flags): Likewise. 
+	* lib/gfortran.exp (gfortran_link_flags): Likewise.
 	* lib/objc.exp (objc_init): Likewise.
 	* lib/treelang.exp (treelang_init): Likewise.
 
@@ -2019,7 +2023,7 @@
 	* gfortran.dg/pr18025.f90: New test.
 
 2005-03-23  Dale Johannesen  <dalej@apple.com>
-	
+
 	* gcc.dg/20020312-2.c:  Fix for non-PowerPC Darwin.
 
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
@@ -2088,7 +2092,7 @@
 2005-03-21  Stuart Hastings  <stuart@apple.com>
 
 	* gcc.target/i386/sse-2.c: New.
-	
+
 2005-03-21  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/builtins-46.c: Also check lrint* and llrint*.
@@ -2107,7 +2111,7 @@
 
 2005-03-21  Paolo Carlini  <pcarlini@suse.de>
 
-	PR c++/20147	
+	PR c++/20147
 	* g++.dg/ext/stmtexpr4.C: New test.
 
 2005-03-20  Roger Sayle  <roger@eyesopen.com>
@@ -2431,7 +2435,7 @@
 
 	PR c++/20142
 	* g++.dg/init/array18.C: Add dg-do run marker.
-	
+
 	PR c++/20142
 	* g++.dg/init/array18.C: New test.
 
@@ -2531,13 +2535,13 @@
 
 	* objc.dg/stabs-1.m: hppa*64*-*-* doesn't have stabs.
 
-2005-03-05  Steven G. Kargl  <kargls@comcast.net> 
+2005-03-05  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/pr19936_1.f90: New test.
 	* gfortran.dg/pr19936_2.f90: New test.
 	* gfortran.dg/pr19936_3.f90: New test.
 
-2005-03-05  Steven G. Kargl  <kargls@comcast.net> 
+2005-03-05  Steven G. Kargl  <kargls@comcast.net>
             Paul Thomas <prthomas@drfccad.cea.fr>
 
 	* gfortran.dg/PR19754_1.f90: New test.
@@ -2746,7 +2750,7 @@
 	* g++.dg/parse/error27.C: New test.
 	* g++.dg/template/qualttp15.C: Adjust error markers.
 	* g++.old-deja/g++.other/struct1.C: Likewise.
-	
+
 	PR c++/20153
 	* g++.dg/template/error17.C: New test.
 
@@ -2776,7 +2780,7 @@
 
 	PR 19952
 	* g++.dg/tree-ssa/pr19952.C: New test.
-	
+
 2005-02-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19883

@@ -1,12 +1,12 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-extern unsigned int strlen (const char *) __attribute__ ((__pure__));
+extern __SIZE_TYPE__ strlen (const char *) __attribute__ ((__pure__));
 
 void
 foo (const char *str)
 {
-  unsigned int a = strlen (str);
-  unsigned int b = strlen (str);
+  __SIZE_TYPE__ a = strlen (str);
+  __SIZE_TYPE__ b = strlen (str);
   if (a != b)
     link_error ();
 }
