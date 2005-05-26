@@ -1,3 +1,7 @@
+2005-05-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/vect/vect-7.c: Remove xfail for alpha.
+
 2005-05-26  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-pre-14.c (foo): Use correct type for strlen.
