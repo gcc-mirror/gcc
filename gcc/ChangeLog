@@ -1,3 +1,11 @@
+2005-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/21716
+	* reg-stack.c (swap_rtx_condition): Don't crash if %ax user was not
+	found in the basic block and last insn in the basic block is not
+	INSN_P.  Remove explicit unspec numbers that are no longer valid
+	from comments.
+
 2005-05-26  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/rs6000/t-rtems: Remove roe multilib variant.
