@@ -32,7 +32,7 @@ Target Report Var(TARGET_MAD)
 Use PMC-style 'mad' instructions
 
 march=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(mips_arch_string)
 -march=ISA	Generate code for the given ISA
 
 mbranch-likely
@@ -114,7 +114,7 @@ Target Report RejectNegative Mask(FLOAT64)
 Use 64-bit floating-point registers
 
 mflush-func=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(mips_cache_flush_func) Init(CACHE_FLUSH_FUNC)
 -mflush-func=FUNC	Use FUNC to flush the cache before calling stack trampolines
 
 mfused-madd
@@ -198,7 +198,7 @@ Target Report Var(TARGET_SYM32)
 Assume all symbols have 32-bit values
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(mips_tune_string)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR
 
 muninit-const-in-rodata

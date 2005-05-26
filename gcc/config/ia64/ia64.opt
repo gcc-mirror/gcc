@@ -89,7 +89,7 @@ Target RejectNegative Joined
 Specify range of registers to make fixed
 
 mtls-size=
-Target RejectNegative Joined
+Target RejectNegative Joined UInteger Var(ia64_tls_size) Init(22)
 Specify bit size of immediate TLS offsets
 
 mtune=

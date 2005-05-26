@@ -89,6 +89,17 @@ function var_name(flags)
 	return nth_arg(0, opt_args("Var", flags))
 }
 
+# Return the type of variable that should be associated with the given flags.
+function var_type(flags)
+{
+	if (!flag_set_p("Joined.*", flags))
+		return "int "
+	else if (flag_set_p("UInteger", flags))
+		return "int "
+	else
+		return "const char *"
+}
+
 # Given that an option has flags FLAGS, return an initializer for the
 # "var_cond" and "var_value" fields of its cl_options[] entry.
 function var_set(flags)
@@ -109,9 +120,11 @@ function var_set(flags)
 		vn = var_name(flags);
 		if (vn)
 			return "CLVC_BIT_CLEAR, OPTION_MASK_" s
-			  else
+		else
 			return "CLVC_BIT_CLEAR, MASK_" s
 	}
+	if (var_type(flags) == "const char *")
+		return "CLVC_STRING, 0"
 	return "CLVC_BOOLEAN, 0"
 }
 

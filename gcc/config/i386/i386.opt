@@ -60,15 +60,15 @@ Target Report Mask(ALIGN_DOUBLE)
 Align some doubles on dword boundary
 
 malign-functions=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_align_funcs_string)
 Function starts are aligned to this power of 2
 
 malign-jumps=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_align_jumps_string)
 Jump targets are aligned to this power of 2
 
 malign-loops=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_align_loops_string)
 Loop code aligned to this power of 2
 
 malign-stringops
@@ -76,19 +76,19 @@ Target RejectNegative Report InverseMask(NO_ALIGN_STRINGOPS, ALIGN_STRINGOPS)
 Align destination of the string operations
 
 march=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_arch_string)
 Generate code for given CPU
 
 masm=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_asm_string)
 Use given assembler dialect
 
 mbranch-cost=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_branch_cost_string)
 Branches are this expensive (1-5, arbitrary units)
 
 mcmodel=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_cmodel_string)
 Use given x86-64 code model
 
 mdebug-addr
@@ -106,7 +106,7 @@ Target Report Mask(FLOAT_RETURNS)
 Return values of functions in FPU registers
 
 mfpmath=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_fpmath_string)
 Generate floating point mathematics using given instruction set
 
 mhard-float
@@ -158,7 +158,7 @@ Target RejectNegative Undocumented
 ;; Deprecated
 
 mpreferred-stack-boundary=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_preferred_stack_boundary_string)
 Attempt to keep stack aligned to this power of 2
 
 mpush-args
@@ -170,7 +170,7 @@ Target RejectNegative Report InverseMask(NO_RED_ZONE, RED_ZONE)
 Use red-zone in the x86-64 code
 
 mregparm=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_regparm_string)
 Number of registers used to pass integer arguments
 
 mrtd
@@ -202,7 +202,7 @@ Target Report Mask(STACK_PROBE)
 Enable stack probing
 
 mtls-dialect=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_tls_dialect_string)
 Use given thread-local storage dialect
 
 mtls-direct-seg-refs
@@ -210,7 +210,7 @@ Target Report Mask(TLS_DIRECT_SEG_REFS)
 Use direct references against %gs when accessing tls data
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ix86_tune_string)
 Schedule code for given CPU
 
 ;; Support Athlon 3Dnow builtins

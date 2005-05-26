@@ -159,22 +159,22 @@ Target Report RejectNegative
 Override -mbest-lib-options
 
 mcpu=
-Target Report RejectNegative Joined Undocumented
+Target Report RejectNegative Joined Undocumented Var(cris_cpu_str)
 
 march=
-Target Report RejectNegative Joined
+Target Report RejectNegative Joined Var(cris_cpu_str) VarExists
 -march=ARCH	Generate code for the specified chip or CPU version
 
 mtune=
-Target Report RejectNegative Joined
+Target Report RejectNegative Joined Var(cris_tune_str)
 -mtune=ARCH	Tune alignment for the specified chip or CPU version
 
 mmax-stackframe=
-Target Report RejectNegative Joined
+Target Report RejectNegative Joined Var(cris_max_stackframe_str)
 -mmax-stackframe=SIZE	Warn when a stackframe is larger than the specified size
 
 max-stackframe=
-Target Report RejectNegative Joined Undocumented
+Target Report RejectNegative Joined Undocumented Var(cris_max_stackframe_str) VarExists
 
 ; TARGET_SVINTO: Currently this just affects alignment.  FIXME:
 ; Redundant with TARGET_ALIGN_BY_32, or put machine stuff here?

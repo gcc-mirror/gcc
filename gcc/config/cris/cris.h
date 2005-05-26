@@ -75,22 +75,8 @@ Boston, MA 02111-1307, USA.  */
   ((MODE) != BLKmode ? GET_MODE_SIZE (MODE)	\
    : (unsigned) int_size_in_bytes (TYPE))
 
-/* Check for max allowed stackframe. A "const char *" to be parsed.  */
-extern const char *cris_max_stackframe_str;
-
-/* Which CPU version this is.  A "const char *" to be parsed.  */
-extern const char *cris_cpu_str;
-
 /* Which CPU version this is.  The parsed and adjusted cris_cpu_str.  */
 extern int cris_cpu_version;
-
-/* Which CPU version to tune for.  A "const char *" to be parsed.  */
-extern const char *cris_tune_str;
-
-/* The argument to "-melinux-stacksize=".  We don't parse it currently;
-   it's just passed on to the linker.  We might want to do something
-   here someday.  */
-extern const char *cris_elinux_stacksize_str;
 
 /* Changing the order used to be necessary to put the fourth __make_dp
    argument (a DImode parameter) in registers, to fit with the libfunc

@@ -45,7 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 
 /* Which cpu we're compiling for.  */
-static const char *arc_cpu_string = "base";
 int arc_cpu_type;
 
 /* Name of mangle string to add to symbols to separate code compiled for each
@@ -55,12 +54,6 @@ const char *arc_mangle_cpu;
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
 rtx arc_compare_op0, arc_compare_op1;
-
-/* Name of text, data, and rodata sections, as specified on command line.
-   Selected by -m{text,data,rodata} flags.  */
-static const char *arc_text_string = ARC_DEFAULT_TEXT_SECTION;
-static const char *arc_data_string = ARC_DEFAULT_DATA_SECTION;
-static const char *arc_rodata_string = ARC_DEFAULT_RODATA_SECTION;
 
 /* Name of text, data, and rodata sections used in varasm.c.  */
 const char *arc_text_section;
@@ -163,24 +156,7 @@ arc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
   switch (code)
     {
     case OPT_mcpu_:
-      if (strcmp (arg, "base") == 0 || ARC_EXTENSION_CPU (arg))
-	{
-	  arc_cpu_string = arg;
-	  return true;
-	}
-      return false;
-
-    case OPT_mtext_:
-      arc_text_string = arg;
-      return true;
-
-    case OPT_mdata_:
-      arc_data_string = arg;
-      return true;
-
-    case OPT_mrodata_:
-      arc_rodata_string = arg;
-      return true;
+      return strcmp (arg, "base") == 0 || ARC_EXTENSION_CPU (arg);
 
     default:
       return true;

@@ -24,14 +24,14 @@ Target Report Mask(CALL_PROLOGUES)
 Use subroutines for function prologues and epilogues
 
 mmcu=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(avr_mcu_name) Init("avr2")
 -mmcu=MCU	Select the target MCU
 
 mdeb
 Target Report Undocumented Mask(ALL_DEBUG)
 
 minit-stack=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(avr_init_stack) Init("__stack")
 -minit-stack=STACK	Use STACK as the initial value of the stack pointer
 
 mint8

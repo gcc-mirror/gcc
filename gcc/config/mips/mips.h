@@ -105,7 +105,6 @@ extern enum processor_type mips_tune;   /* which cpu to schedule for */
 extern int mips_isa;			/* architectural level */
 extern int mips_abi;			/* which ABI to use */
 extern int mips16_hard_float;		/* mips16 without -msoft-float */
-extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
 extern const struct mips_cpu_info mips_cpu_info_table[];
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;

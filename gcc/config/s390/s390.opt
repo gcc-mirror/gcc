@@ -28,7 +28,7 @@ Target Report RejectNegative Mask(64BIT)
 64 bit ABI
 
 march=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(s390_arch_string)
 Generate code for given CPU
 
 mbackchain

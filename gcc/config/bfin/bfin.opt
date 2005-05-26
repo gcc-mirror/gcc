@@ -36,5 +36,5 @@ Target Report Mask(ID_SHARED_LIBRARY)
 Enabled ID based shared library
 
 mshared-library-id=
-Target RejectNegative Joined UInteger
+Target RejectNegative Joined UInteger Var(bfin_library_id)
 ID of shared library to build

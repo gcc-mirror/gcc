@@ -94,10 +94,6 @@ Boston, MA 02111-1307, USA.  */
 		+ MASK_ALIGN_BY_32);			\
 	  break;					\
 							\
-	case OPT_melinux_stacksize_:			\
-	  cris_elinux_stacksize_str = (ARG);		\
-	  break;					\
-							\
 	default:					\
 	  break;					\
 	}						\

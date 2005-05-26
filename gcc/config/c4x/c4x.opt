@@ -128,7 +128,7 @@ Target Report Mask(RPTS)
 Enable use of RTPS instruction
 
 mrpts=
-Target RejectNegative Joined UInteger
+Target RejectNegative Joined UInteger Var(c4x_rpts_cycles)
 -mrpts=N	Set the maximum number of iterations for RPTS to N
 
 msmall

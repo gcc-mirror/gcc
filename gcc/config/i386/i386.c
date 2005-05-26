@@ -787,15 +787,11 @@ struct ix86_frame
   bool save_regs_using_mov;
 };
 
-/* Code model option as passed by user.  */
-static const char *ix86_cmodel_string;
-/* Parsed value.  */
+/* Code model option.  */
 enum cmodel ix86_cmodel;
 /* Asm dialect.  */
-static const char *ix86_asm_string;
 enum asm_dialect ix86_asm_dialect = ASM_ATT;
 /* TLS dialext.  */
-static const char *ix86_tls_dialect_string;
 enum tls_dialect ix86_tls_dialect = TLS_DIALECT_GNU;
 
 /* Which unit we are generating floating point math for.  */
@@ -806,40 +802,17 @@ enum processor_type ix86_tune;
 /* Which instruction set architecture to use.  */
 enum processor_type ix86_arch;
 
-/* Strings to hold which cpu and instruction set architecture  to use.  */
-const char *ix86_tune_string;		/* for -mtune=<xxx> */
-const char *ix86_arch_string;		/* for -march=<xxx> */
-static const char *ix86_fpmath_string;	/* for -mfpmath=<xxx> */
-
-/* # of registers to use to pass arguments.  */
-static const char *ix86_regparm_string;
-
 /* true if sse prefetch instruction is not NOOP.  */
 int x86_prefetch_sse;
 
 /* ix86_regparm_string as a number */
 static int ix86_regparm;
 
-/* Alignment to use for loops and jumps:  */
-
-/* Power of two alignment for loops.  */
-static const char *ix86_align_loops_string;
-
-/* Power of two alignment for non-loop jumps.  */
-static const char *ix86_align_jumps_string;
-
-/* Power of two alignment for stack boundary in bytes.  */
-static const char *ix86_preferred_stack_boundary_string;
-
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
 
 /* Values 1-5: see jump.c */
 int ix86_branch_cost;
-static const char *ix86_branch_cost_string;
-
-/* Power of two alignment for functions.  */
-static const char *ix86_align_funcs_string;
 
 /* Prefix built by ASM_GENERATE_INTERNAL_LABEL.  */
 char internal_label_prefix[16];
@@ -1107,7 +1080,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-ix86_handle_option (size_t code, const char *arg, int value)
+ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 {
   switch (code)
     {
@@ -1119,52 +1092,12 @@ ix86_handle_option (size_t code, const char *arg, int value)
 	}
       return true;
 
-    case OPT_malign_functions_:
-      ix86_align_funcs_string = arg;
-      return true;
-
-    case OPT_malign_jumps_:
-      ix86_align_jumps_string = arg;
-      return true;
-
-    case OPT_malign_loops_:
-      ix86_align_loops_string = arg;
-      return true;
-
-    case OPT_march_:
-      ix86_arch_string = arg;
-      return true;
-
-    case OPT_masm_:
-      ix86_asm_string = arg;
-      return true;
-
-    case OPT_mbranch_cost_:
-      ix86_branch_cost_string = arg;
-      return true;
-
-    case OPT_mcmodel_:
-      ix86_cmodel_string = arg;
-      return true;
-
-    case OPT_mfpmath_:
-      ix86_fpmath_string = arg;
-      return true;
-
     case OPT_mmmx:
       if (!value)
 	{
 	  target_flags &= ~(MASK_3DNOW | MASK_3DNOW_A);
 	  target_flags_explicit |= MASK_3DNOW | MASK_3DNOW_A;
 	}
-      return true;
-
-    case OPT_mpreferred_stack_boundary_:
-      ix86_preferred_stack_boundary_string = arg;
-      return true;
-
-    case OPT_mregparm_:
-      ix86_regparm_string = arg;
       return true;
 
     case OPT_msse:
@@ -1181,14 +1114,6 @@ ix86_handle_option (size_t code, const char *arg, int value)
 	  target_flags &= ~MASK_SSE3;
 	  target_flags_explicit |= MASK_SSE3;
 	}
-      return true;
-
-    case OPT_mtls_dialect_:
-      ix86_tls_dialect_string = arg;
-      return true;
-
-    case OPT_mtune_:
-      ix86_tune_string = arg;
       return true;
 
     default:

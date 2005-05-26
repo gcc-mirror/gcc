@@ -186,7 +186,6 @@ enum processor_flags s390_tune_flags;
 /* Which instruction set architecture to use.  */
 enum processor_type s390_arch;
 enum processor_flags s390_arch_flags;
-static const char *s390_arch_string;
 
 HOST_WIDE_INT s390_warn_framesize = 0;
 HOST_WIDE_INT s390_stack_size = 0;
@@ -1128,7 +1127,6 @@ s390_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
   switch (code)
     {
     case OPT_march_:
-      s390_arch_string = arg;
       return s390_handle_arch_option (arg, &s390_arch, &s390_arch_flags);
 
     case OPT_mstack_guard_:

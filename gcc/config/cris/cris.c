@@ -132,18 +132,6 @@ static tree cris_md_asm_clobbers (tree, tree, tree);
 
 static bool cris_handle_option (size_t, const char *, int);
 
-/* This is the argument from the "-max-stack-stackframe=" option.  */
-const char *cris_max_stackframe_str;
-
-/* This is the argument from the "-march=" option.  */
-const char *cris_cpu_str;
-
-/* This is the argument from the "-mtune=" option.  */
-const char *cris_tune_str;
-
-/* This is the argument from the "-melinux-stacksize=" option.  */
-const char *cris_elinux_stacksize_str;
-
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
 int cris_max_stackframe = 0;
@@ -2071,20 +2059,6 @@ cris_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 	&= ~(MASK_STACK_ALIGN
 	     + MASK_CONST_ALIGN
 	     + MASK_DATA_ALIGN);
-      break;
-
-    case OPT_max_stackframe_:
-    case OPT_mmax_stackframe_:
-      cris_max_stackframe_str = arg;
-      break;
-
-    case OPT_march_:
-    case OPT_mcpu_:
-      cris_cpu_str = arg;
-      break;
-
-    case OPT_mtune_:
-      cris_tune_str = arg;
       break;
 
     default:

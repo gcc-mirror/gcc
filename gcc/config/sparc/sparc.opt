@@ -96,7 +96,7 @@ Target RejectNegative Joined
 Schedule code for given CPU
 
 mcmodel=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(sparc_cmodel_string)
 Use given SPARC-V9 code model
 
 

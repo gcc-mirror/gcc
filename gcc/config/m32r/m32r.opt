@@ -48,11 +48,11 @@ Target Mask(DEBUG)
 Display compile time statistics
 
 mflush-func=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(m32r_cache_flush_func) Init(CACHE_FLUSH_FUNC)
 Specify cache flush function
 
 mflush-trap=
-Target RejectNegative Joined UInteger
+Target RejectNegative Joined UInteger Var(m32r_cache_flush_trap) Init(CACHE_FLUSH_TRAP)
 Specify cache flush trap number
 
 missue-rate=1

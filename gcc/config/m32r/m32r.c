@@ -64,18 +64,6 @@ enum m32r_sdata m32r_sdata = M32R_SDATA_DEFAULT;
 /* For string literals, etc.  */
 #define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
 
-/* Cache-flush support. Cache-flush is used at trampoline.
-   Default cache-flush is "trap 12".
-    default cache-flush function is "_flush_cache"  (CACHE_FLUSH_FUNC)
-    default cache-flush trap-interrupt number is 12 (CACHE_FLUSH_TRAP)
-   You can change how to generate code of cache-flush with following options.
-   -mflush-func=FLUSH-FUNC-NAME
-   -mno-flush-func              (sets m32r_cache_flush_func to NULL)
-   -mfluch-trap=TRAP-NUMBER
-   -mno-flush-trap.             (sets m32r_cache_flush_trap to -1).  */
-const char *m32r_cache_flush_func = CACHE_FLUSH_FUNC;
-int m32r_cache_flush_trap = CACHE_FLUSH_TRAP;
-
 /* Forward declaration.  */
 static bool  m32r_handle_option (size_t, const char *, int);
 static void  init_reg_tables (void);
@@ -188,17 +176,12 @@ m32r_handle_option (size_t code, const char *arg, int value)
 	return false;
       return true;
 
-    case OPT_mflush_func_:
-      m32r_cache_flush_func = arg;
-      return true;
-
     case OPT_mno_flush_func:
       m32r_cache_flush_func = NULL;
       return true;
 
     case OPT_mflush_trap_:
-      m32r_cache_flush_trap = value;
-      return m32r_cache_flush_trap <= 15;
+      return value <= 15;
 
     case OPT_mno_flush_trap:
       m32r_cache_flush_trap = -1;

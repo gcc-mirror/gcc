@@ -1,3 +1,112 @@
+2005-05-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	* opt-functions.awk (var_type): New function.
+	(var_set): Use CLVC_STRING if var_type returns "const char *".
+	* opth-gen.awk: Use var_type to find out the types of variables.
+	Don't print comments above each "extern" definition.
+	* optc-gen.awk: Use var_type in the same way.
+	* opts.h (cl_var_cond): Rename to...
+	(cl_var_type): ...this.  Add CLVC_STRING.
+	(cl_option): Make "flag_var" a "void *" pointer.  Replace "var_cond"
+	with "var_type".
+	* opts.c (handle_option, option_enabled): Update after above name
+	change.  Cast flag_var before using it.  Handle CLVC_STRING.
+	
+	* config/alpha/alpha.h (alpha_tls_size): Delete.
+	* config/alpha/alpha.c (alpha_tls_size, alpha_cpu_string)
+	(alpha_tune_string, alpha_tp_string, alpha_fprm_string)
+	(alpha_fptm_string, alpha_mlat_string): Delete.
+	(alpha_handle_option): Don't set the above variables here.  Use the
+	integer argument to check the validity of -mtls-size=.
+	* config/alpha/alpha.opt (mcpu=, mtune=, mfp-rounding-mode=)
+	(mfp-trap-mode=, mtrap-precision=, mmemory-latency=): Add Var()s.
+	(mtls-size=): Likewise.  Convert to a UInteger and initialize the
+	variable to 32.
+
+	* config/arc/arc.c (arc_cpu_string, arc_text_string)
+	(arc_data_string, arc_rodata_string): Delete.
+	(arc_handle_option): Don't set the above variables here.
+	* config/arc/arc.opt (mcpu=, mtext=, mdata=, mrodata=): Add Var()s
+	and initialize them.
+
+	* config/arm/arm.c (target_fpu_name, target_fpe_name)
+	(target_float_abi_name, target_abi_name, structure_size_string)
+	(arm_pic_register_string): Delete.
+	(arm_handle_option): Don't set the above variables here, except
+	in the handling of -mhard-float and -msoft-float.
+	* config/arm/arm.opt (mabi=, mfloat-abi=, mfp=, mfpe=, mfpu=)
+	(mpic-register=, mstructure-size-boundary=): Add Var()s.
+
+	* config/avr/avr.c (avr_init_stack, avr_mcu_name, TARGET_HANDLE_OPTION)
+	(avr_handle_option): Delete.
+	* config/avr/avr.opt (mmcu=, minit-stack=): Add Var()s and initialize
+	them.
+
+	* config/bfin/bfin.c (bfin_library_id): Delete.
+	(bfin_handle_option): Don't set it.
+	* config/bfin/bfin.opt (mshared-library-id=): Add Var().
+
+	* config/c4x/c4x.h (c4x_rpts_cycles): Delete.
+	* config/c4x/c4x.c (c4x_rpts_cycles): Delete.
+	(c4x_handle_option): Don't set c4x_rpts_cycles here.
+	* config/c4x/c4x.opt (mrpts=): Add Var().
+
+	* config/cris/aout.h (CRIS_SUBTARGET_HANDLE_OPTION): Don't set
+	cris_elinux_stacksize_str here.
+	* config/cris/aout.opt (melinux-stacksize=): Add Var().
+	* config/cris/cris.h (cris_max_stackframe_str, cris_cpu_str)
+	(cris_tune_str, cris_elinux_stacksize_str): Delete.
+	* config/cris/cris.c (cris_max_stackframe_str, cris_cpu_str)
+	(cris_tune_str, cris_elinux_stacksize_str): Delete.
+	(cris_handle_option): Don't set the above variables here.
+	* config/cris/cris.opt (mcpu=, march=, mtune=, mmax-stackframe=)
+	(max-stackframe=): Add Var()s.
+
+	* config/i386/i386.h (ix86_tune_string, ix86_arch_string): Delete.
+	* config/i386/i386.c (ix86_cmodel_string, ix86_asm_string)
+	(ix86_tls_dialect_string, ix86_tune_string, ix86_arch_string)
+	(ix86_fpmath_string, ix86_regparm_string, ix86_align_loops_string)
+	(ix86_align_jumps_string, ix86_preferred_stack_boundary_string)
+	(ix86_branch_cost_string, ix86_align_funcs_string): Delete.
+	(ix86_handle_option): Don't set the above variables here.
+	* config/i386/i386.opt (malign-functions=, malign-jumps=)
+	(malign-loops=, march=, masm=, mbranch-cost=, mcmodel=, mfpmath=)
+	(mpreferred-stack-boundary=, mregparm=, mtls-dialect=, mtune=): Add
+	Var()s.
+
+	* config/ia64/ia64.h (ia64_tls_size): Delete.
+	* config/ia64/ia64.c (ia64_tls_size): Delete.
+	(ia64_handle_option): Treat -mtls-size= as a UInteger option,
+	reading the integer argument from the "value" parameter.  Don't
+	set ia64_tls_size here.
+	* config/ia64/ia64.opt (mtls-size=): Turn into a UInteger option.
+	Add Var() and Init().
+
+	* config/m32r/m32r.h (m32r_cache_flush_func): Delete.
+	(m32r_cache_flush_trap): Delete.
+	* config/m32r/m32r.c (m32r_cache_flush_func): Delete.
+	(m32r_cache_flush_trap): Delete.
+	(m32r_handle_option): Don't set the above variables when handling
+	-mflush-func= and -mflush-trap=.
+	* config/m32r/m32r.opt (-mflush-func=, -mflush-trap=): Add Var()s
+	and Init()s.
+
+	* config/mips/mips.h (mips_cache_flush_func): Delete.
+	* config/mips/mips.c (mips_arch_string, mips_tune_string)
+	(mips_cache_flush_func): Delete.
+	(mips_handle_option): Don't set the above variables when handling
+	-march=, -mtune= and -mflush-func=.
+	* config/mips/mips.opt (march=, mflush-func=, mtune=): Add Var()s.
+
+	* config/s390/s390.c (s390_arch_string): Delete.
+	(s390_handle_option): Don't set it here.
+	* config/s390/s390.opt (march=): Add Var().
+
+	* config/sparc/sparc.h (sparc_cmodel_string): Delete.
+	* config/sparc/sparc.c (sparc_cmodel_string): Delete.
+	(sparc_handle_option): Don't set it here.
+	* config/sparc/sparc.opt (mcmodel=): Add Var().
+
 2005-05-25  Roger Sayle  <roger@eyesopen.com>
 
 	* convert.c (convert_to_integer) <POINTER_TYPE>: Avoid recursive
