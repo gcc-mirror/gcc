@@ -1,3 +1,7 @@
+2005-05-26  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config/rs6000/t-rtems: Remove roe multilib variant.
+
 2005-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21492
