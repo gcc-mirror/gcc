@@ -184,7 +184,7 @@ extern void mips_declare_common_object (FILE *, const char *,
 					const char *, unsigned HOST_WIDE_INT,
 					unsigned int, bool);
 extern void mips_declare_object (FILE *, const char *, const char *,
-				 const char *, ...);
+				 const char *, ...) ATTRIBUTE_PRINTF_4;
 extern void mips_declare_object_name (FILE *, const char *, tree);
 extern void mips_finish_declare_object (FILE *, tree, int, int);
 
