@@ -1,3 +1,9 @@
+2005-05-26  Mike Stump  <mrs@apple.com>
+
+	* objc.dg/isa-field-1.m: Only run on darwin.
+	* objc.dg/lookup-1.m: Likewise.
+	* objc.dg/try-catch-8.m: Likewise.
+
 2005-05-26  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/9814
