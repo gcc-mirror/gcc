@@ -1,5 +1,7 @@
 2005-05-27  Andreas Jaeger  <aj@suse.de>
 
+	* gcc.dg/setjmp-2.c: Only run in 32-bit.
+
 	* gcc.dg/i386-sse-8.c: Run test on all archs.
 
 2005-05-26  Mike Stump  <mrs@apple.com>
