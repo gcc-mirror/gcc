@@ -1,3 +1,8 @@
+2005-05-27  Steven G. Kargl  <kargls@comcast.net>
+
+	* trans-array.c (gfc_trans_deferred_array): Use build_int_cst to force
+	like types in comparsion.
+
 2005-05-21  Andrew Pinski
 
 	Backport from the mainline:
