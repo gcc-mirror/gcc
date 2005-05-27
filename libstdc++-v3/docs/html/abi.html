@@ -734,11 +734,18 @@ Use the 'make check-abi' rule in the libstdc++-v3 Makefile.
 <p>
 This is a proactive check the library ABI. Currently, exported symbol
 names that are either weak or defined are checked against a last known
-good baseline. Currently, this baseline is keyed off of 3.2.0
+good baseline. Currently, this baseline is keyed off of 3.4.0
 binaries, as this was the last time the .so number was incremented. In
 addition, all exported names are demangled, and the exported objects
 are checked to make sure they are the same size as the same object in
 the baseline.
+
+Notice that each baseline is relative to a <strong>default</strong>
+configured library and compiler: in particular, if options such as
+--enable-clocale, or --with-cpu, in case of multilibs, are used at
+configure time, the check may fail, either because of substantive
+differences or because of limitations of the current checking
+machinery.
 </p>
 
 <p>
