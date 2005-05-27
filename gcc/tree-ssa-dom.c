@@ -141,6 +141,10 @@ static VEC(tree,heap) *const_and_copies_stack;
    know their exact value.  */
 static bitmap nonzero_vars;
 
+/* Bitmap of blocks that are scheduled to be threaded through.  This
+   is used to communicate with thread_through_blocks.  */
+static bitmap threaded_blocks;
+
 /* Stack of SSA_NAMEs which need their NONZERO_VARS property cleared
    when the current block is finalized. 
 
@@ -370,6 +374,7 @@ tree_ssa_dominator_optimize (void)
   vrp_variables_stack = VEC_alloc (tree, heap, 20);
   stmts_to_rescan = VEC_alloc (tree, heap, 20);
   nonzero_vars = BITMAP_ALLOC (NULL);
+  threaded_blocks = BITMAP_ALLOC (NULL);
   need_eh_cleanup = BITMAP_ALLOC (NULL);
 
   /* Setup callbacks for the generic dominator tree walker.  */
@@ -445,7 +450,7 @@ tree_ssa_dominator_optimize (void)
       free_all_edge_infos ();
 
       /* Thread jumps, creating duplicate blocks as needed.  */
-      cfg_altered |= thread_through_all_blocks ();
+      cfg_altered |= thread_through_all_blocks (threaded_blocks);
 
       /* Removal of statements may make some EH edges dead.  Purge
 	 such edges from the CFG as needed.  */
@@ -480,6 +485,7 @@ tree_ssa_dominator_optimize (void)
 
       /* Reinitialize the various tables.  */
       bitmap_clear (nonzero_vars);
+      bitmap_clear (threaded_blocks);
       htab_empty (avail_exprs);
       htab_empty (vrp_data);
 
@@ -523,6 +529,7 @@ tree_ssa_dominator_optimize (void)
 
   /* Free nonzero_vars.  */
   BITMAP_FREE (nonzero_vars);
+  BITMAP_FREE (threaded_blocks);
   BITMAP_FREE (need_eh_cleanup);
   
   VEC_free (tree, heap, avail_exprs_stack);
@@ -830,7 +837,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	      else
 		edge_info = allocate_edge_info (e);
 	      edge_info->redirection_target = taken_edge;
-	      bb_ann (e->dest)->incoming_edge_threaded = true;
+	      bitmap_set_bit (threaded_blocks, e->dest->index);
 	    }
 	}
     }

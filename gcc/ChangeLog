@@ -1,3 +1,34 @@
+2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h (basic_block_def): Add phi_nodes and
+	predictions.  Remove tree_annotations.
+	* predict.c (tree_predicted_by_p, tree_predict_edge,
+	combine_predictions_for_bb): Adjust references to predictions.
+	* tree-cfg.c (init_empty_tree_cfg, create_bb): Don't call
+	create_block_annotation.
+	(create_block_annotation, free_blocks_annotatios,
+	clear_blocks_annotations): Remove.
+	(dump_cfg_stats): Don't print out the memory spent on
+	bb_ann_d.
+	(delete_tree_cfg_annotations): Don't call free_blocks_annotations.
+	* tree-flow-inline.h (bb_ann): Remove.
+	(phi_nodes, set_phi_nodes): Update references to phi_nodes.
+	* tree-flow.h (bb_ann_d): Remove.
+	* tree-if-conv.c (process_phi_nodes): Update a reference to
+	phi_nodes.
+	* tree-phinodes.c (reserve_phi_args_for_new_edge,
+	create_phi_node, remove_phi_node): Likewise.
+	* tree-pretty-print.c (dump_generic_bb_buff): Don't call bb_ann.
+	* tree-ssa-dom.c (threaded_blocks): New.
+	(tree_ssa_dominator_optimize): Initialize, clear, and free
+	threaded_blocks. Update a call to thread_through_all_blocks.
+	(thread_across_edge): Use threaded_blocks instead of setting
+	incoming_edge_threaded.
+	* tree-ssa-threadupdate.c (threaded_through_all_blocks): Take
+	a bitmap of blocks that are threaded through.
+	* tree.h: Move the prototype of threaded_through_blocks to
+	tree-flow.h.
+
 2005-05-27  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c: Include tree-gimple.h
