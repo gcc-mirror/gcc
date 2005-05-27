@@ -1,3 +1,13 @@
+2005-05-26  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Testsuite adjustments for PR java/19870.
+	* testsuite/libjava.lang/PR19870.java: New testcase.
+	* testsuite/libjava.lang/PR19870.out: Expected output for the
+	testcase.
+	* testsuite/libjava.jacks/jacks.xfail: Add
+	8.5.2-accessible-static-member-usage-3 and 15.8.4-static-2
+
+
 2005-05-26  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/jvm.h (FLAG_BINARYCOMPAT_ABI, FLAG_BOOTSTRAP_LOADER): New.
