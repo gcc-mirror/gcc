@@ -1,3 +1,11 @@
+2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-pch.c, timevar.c, timevar.h, unwind-compat.c,
+	unwind-dw2-fde-compat.c, unwind-dw2-fde.c, config/mmix/mmix.h,
+	config/rs6000/eabispe.h, config/rs6000/lynx.h,
+	config/sh/elf.h, config/sh/symbian-pre.h,
+	config/sparc/sparc-protos.h: Update copyright.
+
 2005-05-26  Mike Stump  <mrs@apple.com>
 
 	* darwin.h (ASM_OUTPUT_LABELREF): Handle quoted non-lazy pointers

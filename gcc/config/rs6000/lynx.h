@@ -1,5 +1,5 @@
 /* Definitions for Rs6000 running LynxOS.
-   Copyright (C) 1995, 1996, 2000, 2002, 2003, 2004
+   Copyright (C) 1995, 1996, 2000, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by David Henkel-Wallace, Cygnus Support (gumby@cygnus.com)
    Rewritten by Adam Nemet, LynuxWorks Inc.
