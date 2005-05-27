@@ -29,17 +29,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    out-of-line generic functions.  The vectors are designed to
    interoperate with the GTY machinery.
 
-   Because of the different behavior of objects and of pointers to
-   objects, there are two flavors.  One to deal with a vector of
-   pointers to objects, and one to deal with a vector of objects
-   themselves.  Both of these pass pointers to objects around -- in
-   the former case the pointers are stored into the vector and in the
-   latter case the pointers are dereferenced and the objects copied
-   into the vector.  Therefore, when using a vector of pointers, the
-   objects pointed to must be long lived, but when dealing with a
-   vector of objects, the source objects need not be.  The vector of
-   pointers API is also appropriate for small register sized objects
-   like integers.
+   Because of the different behavior of structure objects, scalar
+   objects and of pointers, there are three flavors, one for each of
+   these variants.  Both the structure object and pointer variants
+   pass pointers to objects around -- in the former case the pointers
+   are stored into the vector and in the latter case the pointers are
+   dereferenced and the objects copied into the vector.  The scalar
+   object variant is suitable for int-like objects, and the vector
+   elements are returned by value.
 
    There are both 'index' and 'iterate' accessors.  The iterator
    returns a boolean iteration condition and updates the iteration
@@ -96,20 +93,24 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the 'space' predicate will tell you whether there is spare capacity
    in the vector.  You will not normally need to use these two functions.
    
-   Vector types are defined using a DEF_VEC_{O,P}(TYPEDEF) macro, to
+   Vector types are defined using a DEF_VEC_{O,P,I}(TYPEDEF) macro, to
    get the non-memory allocation version, and then a
-   DEF_VEC_ALLOC_{O,P}(TYPEDEF,ALLOC) macro to get memory managed
+   DEF_VEC_ALLOC_{O,P,I}(TYPEDEF,ALLOC) macro to get memory managed
    vectors.  Variables of vector type are declared using a
    VEC(TYPEDEF,ALLOC) macro.  The ALLOC argument specifies the
    allocation strategy, and can be either 'gc' or 'heap' for garbage
    collected and heap allocated respectively.  It can be 'none' to get
    a vector that must be explicitly allocated (for instance as a
-   trailing array of another structure).  The characters O and P
-   indicate whether TYPEDEF is a pointer (P) or object (O) type.  Be
-   careful to pick the correct one, as you'll get an awkward and
-   inefficient API if you get the wrong one.  There is a check, which
-   results in a compile-time warning, for the P versions, but there is
-   no check for the O versions, as that is not possible in plain C.
+   trailing array of another structure).  The characters O, P and I
+   indicate whether TYPEDEF is a pointer (P), object (O) or integral
+   (I) type.  Be careful to pick the correct one, as you'll get an
+   awkward and inefficient API if you use the wrong one.  There is a
+   check, which results in a compile-time warning, for the P and I
+   versions, but there is no check for the O versions, as that is not
+   possible in plain C.  Due to the way GTY works, you must annotate
+   any structures you wish to insert or reference from a vector with a
+   GTY(()) tag.  You need to do this even if you never declare the GC
+   allocated variants.
 
    An example of their use would be,
 
@@ -147,6 +148,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define VEC_length(T,V)	(VEC_OP(T,base,length)(VEC_BASE(V)))
 
 /* Get the final element of the vector.
+   T VEC_T_last(VEC(T) *v); // Integer
    T VEC_T_last(VEC(T) *v); // Pointer
    T *VEC_T_last(VEC(T) *v); // Object
 
@@ -155,6 +157,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define VEC_last(T,V)	(VEC_OP(T,base,last)(VEC_BASE(V) VEC_CHECK_INFO))
 
 /* Index into vector
+   T VEC_T_index(VEC(T) *v, unsigned ix); // Integer
    T VEC_T_index(VEC(T) *v, unsigned ix); // Pointer
    T *VEC_T_index(VEC(T) *v, unsigned ix); // Object
 
@@ -163,6 +166,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define VEC_index(T,V,I) (VEC_OP(T,base,index)(VEC_BASE(V),I VEC_CHECK_INFO))
 
 /* Iterate over vector
+   int VEC_T_iterate(VEC(T) *v, unsigned ix, T &ptr); // Integer
    int VEC_T_iterate(VEC(T) *v, unsigned ix, T &ptr); // Pointer
    int VEC_T_iterate(VEC(T) *v, unsigned ix, T *&ptr); // Object
 
@@ -228,6 +232,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(T,A,reserve)(&(V),R VEC_CHECK_INFO MEM_STAT_INFO))
 
 /* Push object with no reallocation
+   T *VEC_T_quick_push (VEC(T) *v, T obj); // Integer
    T *VEC_T_quick_push (VEC(T) *v, T obj); // Pointer
    T *VEC_T_quick_push (VEC(T) *v, T *obj); // Object
    
@@ -240,6 +245,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(T,base,quick_push)(VEC_BASE(V),O VEC_CHECK_INFO))
 
 /* Push object with reallocation
+   T *VEC_T_A_safe_push (VEC(T,A) *&v, T obj); // Integer
    T *VEC_T_A_safe_push (VEC(T,A) *&v, T obj); // Pointer
    T *VEC_T_A_safe_push (VEC(T,A) *&v, T *obj); // Object
    
@@ -251,6 +257,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(T,A,safe_push)(&(V),O VEC_CHECK_INFO MEM_STAT_INFO))
 
 /* Pop element off end
+   T VEC_T_pop (VEC(T) *v);		// Integer
    T VEC_T_pop (VEC(T) *v);		// Pointer
    void VEC_T_pop (VEC(T) *v);		// Object
 
@@ -279,6 +286,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(T,A,safe_grow)(&(V),I VEC_CHECK_INFO))
 
 /* Replace element
+   T VEC_T_replace (VEC(T) *v, unsigned ix, T val); // Integer
    T VEC_T_replace (VEC(T) *v, unsigned ix, T val); // Pointer
    T *VEC_T_replace (VEC(T) *v, unsigned ix, T *val);  // Object
    
@@ -292,6 +300,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(T,base,replace)(VEC_BASE(V),I,O VEC_CHECK_INFO))
 
 /* Insert object with no reallocation
+   T *VEC_T_quick_insert (VEC(T) *v, unsigned ix, T val); // Integer
    T *VEC_T_quick_insert (VEC(T) *v, unsigned ix, T val); // Pointer
    T *VEC_T_quick_insert (VEC(T) *v, unsigned ix, T *val); // Object
    
@@ -304,6 +313,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(T,base,quick_insert)(VEC_BASE(V),I,O VEC_CHECK_INFO))
 
 /* Insert object with reallocation
+   T *VEC_T_A_safe_insert (VEC(T,A) *&v, unsigned ix, T val); // Integer
    T *VEC_T_A_safe_insert (VEC(T,A) *&v, unsigned ix, T val); // Pointer
    T *VEC_T_A_safe_insert (VEC(T,A) *&v, unsigned ix, T *val); // Object
    
@@ -316,6 +326,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(T,A,safe_insert)(&(V),I,O VEC_CHECK_INFO MEM_STAT_INFO))
      
 /* Remove element retaining order
+   T VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Integer
    T VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Pointer
    void VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Object
    
@@ -327,6 +338,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	(VEC_OP(T,base,ordered_remove)(VEC_BASE(V),I VEC_CHECK_INFO))
 
 /* Remove element destroying order
+   T VEC_T_unordered_remove (VEC(T) *v, unsigned ix); // Integer
    T VEC_T_unordered_remove (VEC(T) *v, unsigned ix); // Pointer
    void VEC_T_unordered_remove (VEC(T) *v, unsigned ix); // Object
    
@@ -346,6 +358,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define VEC_address(T,V)		(VEC_OP(T,base,address)(VEC_BASE(V)))
 
 /* Find the first index in the vector not less than the object.
+   unsigned VEC_T_lower_bound (VEC(T) *v, const T val, 
+                               bool (*lessthan) (const T, const T)); // Integer
    unsigned VEC_T_lower_bound (VEC(T) *v, const T val, 
                                bool (*lessthan) (const T, const T)); // Pointer
    unsigned VEC_T_lower_bound (VEC(T) *v, const T *val,
@@ -397,6 +411,14 @@ extern void vec_assert_fail (const char *, const char * VEC_CHECK_DECL)
 
 /* Base of vector type, not user visible.  */     
 #define VEC_T(T,B)							  \
+typedef struct VEC(T,B) 				 		  \
+{									  \
+  unsigned num;								  \
+  unsigned alloc;							  \
+  T vec[1];								  \
+} VEC(T,B)
+
+#define VEC_T_GTY(T,B)							  \
 typedef struct VEC(T,B) GTY(())				 		  \
 {									  \
   unsigned num;								  \
@@ -405,7 +427,7 @@ typedef struct VEC(T,B) GTY(())				 		  \
 } VEC(T,B)
 
 /* Derived vector type, user visible.  */
-#define VEC_TA(T,B,A,GTY)						  \
+#define VEC_TA_GTY(T,B,A,GTY)						  \
 typedef struct VEC(T,A) GTY						  \
 {									  \
   VEC(T,B) base;							  \
@@ -414,20 +436,49 @@ typedef struct VEC(T,A) GTY						  \
 /* Convert to base type.  */
 #define VEC_BASE(P)  ((P) ? &(P)->base : 0)
 
-/* Vector of pointer to object.  */
+/* Vector of integer-like object.  */
 #if IN_GENGTYPE
-{"DEF_VEC_P", VEC_STRINGIFY (VEC_T(#0,#1)) ";", "none"},
-{"DEF_VEC_ALLOC_P", VEC_STRINGIFY (VEC_TA (#0,#1,#2,#3)) ";", NULL},
+{"DEF_VEC_I", VEC_STRINGIFY (VEC_T(#0,#1)) ";", "none"},
+{"DEF_VEC_ALLOC_I", VEC_STRINGIFY (VEC_TA (#0,#1,#2,#3)) ";", NULL},
 #else
-  
-#define DEF_VEC_P(T) 							  \
-VEC_T(T,base);								  \
-									  \
-static inline void VEC_OP (T,must,be_a_pointer_or_integer) (void) 	  \
+#define DEF_VEC_I(T)							  \
+static inline void VEC_OP (T,must_be,integral_type) (void) 		  \
 {									  \
-  (void)((T)0 == (void *)0);						  \
+  (void)~(T)0;								  \
 }									  \
 									  \
+VEC_T(T,base);								  \
+VEC_TA_GTY(T,base,none,);						  \
+DEF_VEC_FUNC_P(T)							  \
+struct vec_swallow_trailing_semi
+#define DEF_VEC_ALLOC_I(T,A)						  \
+VEC_TA_GTY(T,base,A,);							  \
+DEF_VEC_ALLOC_FUNC_P(T,A)						  \
+struct vec_swallow_trailing_semi
+#endif
+
+/* Vector of pointer to object.  */
+#if IN_GENGTYPE
+{"DEF_VEC_P", VEC_STRINGIFY (VEC_T_GTY(#0,#1)) ";", "none"},
+{"DEF_VEC_ALLOC_P", VEC_STRINGIFY (VEC_TA_GTY (#0,#1,#2,#3)) ";", NULL},
+#else
+#define DEF_VEC_P(T) 							  \
+static inline void VEC_OP (T,must_be,pointer_type) (void) 		  \
+{									  \
+  (void)((T)1 == (void *)1);						  \
+}									  \
+									  \
+VEC_T_GTY(T,base);							  \
+VEC_TA_GTY(T,base,none,);						  \
+DEF_VEC_FUNC_P(T)							  \
+struct vec_swallow_trailing_semi
+#define DEF_VEC_ALLOC_P(T,A)						  \
+VEC_TA_GTY(T,base,A,);							  \
+DEF_VEC_ALLOC_FUNC_P(T,A)						  \
+struct vec_swallow_trailing_semi
+#endif
+
+#define DEF_VEC_FUNC_P(T)						  \
 static inline unsigned VEC_OP (T,base,length) (const VEC(T,base) *vec_)   \
 {									  \
   return vec_ ? vec_->num : 0;						  \
@@ -598,13 +649,9 @@ static inline unsigned VEC_OP (T,base,lower_bound)			  \
           len_ = half_;							  \
      }									  \
    return first_;							  \
-}									  \
-									  \
-VEC_TA(T,base,none,)
-  
-#define DEF_VEC_ALLOC_P(T,A)						  \
-VEC_TA(T,base,A,);							  \
-									  \
+}
+
+#define DEF_VEC_ALLOC_FUNC_P(T,A)					  \
 static inline VEC(T,A) *VEC_OP (T,A,alloc)				  \
      (int alloc_ MEM_STAT_DECL)						  \
 {									  \
@@ -659,20 +706,25 @@ static inline T *VEC_OP (T,A,safe_insert)		     	  	  \
 									  \
   return VEC_OP (T,base,quick_insert) (VEC_BASE(*vec_), ix_, obj_	  \
  				       VEC_CHECK_PASS);			  \
-}									  \
-									  \
-struct vec_swallow_trailing_semi
-#endif
+}
 
 /* Vector of object.  */
 #if IN_GENGTYPE
-{"DEF_VEC_O", VEC_STRINGIFY (VEC_T(#0,#1)) ";", "none"},
-{"DEF_VEC_ALLOC_O", VEC_STRINGIFY (VEC_TA(#0,#1,#2,#3)) ";", NULL},
+{"DEF_VEC_O", VEC_STRINGIFY (VEC_T_GTY(#0,#1)) ";", "none"},
+{"DEF_VEC_ALLOC_O", VEC_STRINGIFY (VEC_TA_GTY(#0,#1,#2,#3)) ";", NULL},
 #else
-  
 #define DEF_VEC_O(T)							  \
-VEC_T(T,base);								  \
-									  \
+VEC_T_GTY(T,base);							  \
+VEC_TA_GTY(T,base,none,);						  \
+DEF_VEC_FUNC_O(T)							  \
+struct vec_swallow_trailing_semi
+#define DEF_VEC_ALLOC_O(T,A)						  \
+VEC_TA_GTY(T,base,A,);							  \
+DEF_VEC_ALLOC_FUNC_O(T,A)						  \
+struct vec_swallow_trailing_semi
+#endif
+
+#define DEF_VEC_FUNC_O(T)						  \
 static inline unsigned VEC_OP (T,base,length) (const VEC(T,base) *vec_)	  \
 {									  \
   return vec_ ? vec_->num : 0;						  \
@@ -830,13 +882,9 @@ static inline unsigned VEC_OP (T,base,lower_bound)			  \
           len_ = half_;							  \
      }									  \
    return first_;							  \
-}									  \
-									  \
-VEC_TA(T,base,none,)
+}
 
-#define DEF_VEC_ALLOC_O(T,A)						  \
-VEC_TA(T,base,A,);							  \
-									  \
+#define DEF_VEC_ALLOC_FUNC_O(T,A)					  \
 static inline VEC(T,A) *VEC_OP (T,A,alloc)      			  \
      (int alloc_ MEM_STAT_DECL)						  \
 {									  \
@@ -899,9 +947,5 @@ static inline T *VEC_OP (T,A,safe_insert)		     	  	  \
 									  \
   return VEC_OP (T,base,quick_insert) (VEC_BASE(*vec_), ix_, obj_	  \
 				       VEC_CHECK_PASS);			  \
-}									  \
-									  \
-struct vec_swallow_trailing_semi
-#endif
-
+}
 #endif /* GCC_VEC_H */

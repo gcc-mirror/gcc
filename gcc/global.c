@@ -2098,8 +2098,8 @@ mark_reg_change (rtx reg, rtx setter, void *data)
 /* Classes of registers which could be early clobbered in the current
    insn.  */
 
-DEF_VEC_P(int);
-DEF_VEC_ALLOC_P(int,heap);
+DEF_VEC_I(int);
+DEF_VEC_ALLOC_I(int,heap);
 
 static VEC(int,heap) *earlyclobber_regclass;
 

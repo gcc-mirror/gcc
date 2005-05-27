@@ -1,3 +1,22 @@
+2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* vec.h: Implement integral type vector specialization.
+	(VEC_T): Define a non-GTY structure.
+	(VEC_T_GTY): Define a GTY structure.
+	(VEC_TA): Rename to ...
+	(VEC_TA_GTY): ... here.
+	(DEF_VEC_I, DEF_VEC_ALLOC_I): New.
+	(DEF_VEC_P, DEF_VEC_ALLOC_P): Adjust.
+	(DEF_VEC_FUNC_P, DEF_VEC_ALLOC_FUNC_P): New, broken out of
+	DEF_VEC_P and DEF_VEC_ALLOC_P.
+	(DEF_VEC_O, DEF_VEC_ALLOC_O): Adjust.
+	(DEF_VEC_FUNC_O, DEF_VEC_ALLOC_FUNC_O): New, broken out of
+	DEF_VEC_O and DEF_VEC_ALLOC_O.
+	* global.c: Use DEF_VEC_I, DEF_VEC_ALLOC_I.
+	* lambda-code.c: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-ssa-live.c: Likewise.
+
 2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-into-ssa.c (update_ssa): Ensure that the operand cache

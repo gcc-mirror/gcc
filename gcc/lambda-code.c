@@ -115,8 +115,8 @@
  Fourier-Motzkin elimination is used to compute the bounds of the base space
  of the lattice.  */
 
-DEF_VEC_P(int);
-DEF_VEC_ALLOC_P(int,heap);
+DEF_VEC_I(int);
+DEF_VEC_ALLOC_I(int,heap);
 
 static bool perfect_nestify (struct loops *, 
 			     struct loop *, VEC(tree,heap) *, 

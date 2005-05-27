@@ -1281,8 +1281,8 @@ add_conflicts_if_valid (tpa_p tpa, conflict_graph graph,
     }
 }
 
-DEF_VEC_P(int);
-DEF_VEC_ALLOC_P(int,heap);
+DEF_VEC_I(int);
+DEF_VEC_ALLOC_I(int,heap);
 
 /* Return a conflict graph for the information contained in LIVE_INFO.  Only
    conflicts between items in the same TPA list are added.  If optional 
