@@ -1,3 +1,8 @@
+2005-05-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/abi.html: Mention 3.4.0 as the current baseline; add
+	a notice about the configure options.
+
 2005-05-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* docs/html/test.html: Mention PCH_CXXFLAGS.
