@@ -1,5 +1,9 @@
 2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/21455
+	* typeck.c (get_delta_difference): Cope with incomplete but equal
+	classes.
+
 	PR c++/21681
 	* parser.c (cp_parser_late_parsing_for_member): Disable access
 	checking for template functions.

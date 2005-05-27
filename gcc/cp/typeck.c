@@ -5535,7 +5535,9 @@ get_delta_difference (tree from, tree to,
     error ("   in pointer to member function conversion");
   else if (!binfo)
     {
-      if (!allow_inverse_p)
+      if (!binfo && same_type_ignoring_top_level_qualifiers_p (from, to))
+	/* Pointer to member of incomplete class is permitted*/;
+      else if (!allow_inverse_p)
 	{
 	  error_not_base_type (from, to);
 	  error ("   in pointer to member conversion");
