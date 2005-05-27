@@ -1,3 +1,16 @@
+2005-05-26  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/comp-types-8.m, objc.dg/encode-6.m,
+	objc.dg/extra-semi.m, objc.dg/fix-and-continue-2.m,
+	objc.dg/isa-field-1.m, objc.dg/lookup-1.m, objc.dg/method-15.m,
+	objc.dg/method-16.m, objc.dg/method-17.m, objc.dg/method-18.m,
+	objc.dg/method-19.m, objc.dg/next-runtime-1.m,
+	objc.dg/no-extra-load.m, objc.dg/pragma-1.m, objc.dg/stubify-1.m,
+	objc.dg/stubify-2.m, objc.dg/super-class-4.m,
+	objc.dg/super-dealloc-1.m, objc.dg/super-dealloc-2.m,
+	objc.dg/try-catch-6.m, objc.dg/try-catch-7.m,
+	objc.dg/try-catch-8.m: New.
+
 2005-05-26  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/obj-c++.exp (obj-c++_target_compile): Declare global variable,
