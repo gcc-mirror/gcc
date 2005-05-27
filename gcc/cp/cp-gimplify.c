@@ -557,6 +557,16 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
       ret = GS_OK;
       break;
 
+    case UNARY_PLUS_EXPR:
+      {
+	tree arg = TREE_OPERAND (*expr_p, 0);
+	tree type = TREE_TYPE (*expr_p);
+	*expr_p = (TREE_TYPE (arg) != type) ? fold_convert (type, arg)
+					    : arg;
+	ret = GS_OK;
+      }
+      break;
+
     default:
       ret = c_gimplify_expr (expr_p, pre_p, post_p);
       break;

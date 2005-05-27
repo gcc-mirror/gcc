@@ -7784,7 +7784,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TRUTH_NOT_EXPR:
     case BIT_NOT_EXPR:
     case ADDR_EXPR:
-    case CONVERT_EXPR:      /* Unary + */
+    case UNARY_PLUS_EXPR:      /* Unary + */
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
     case ARROW_EXPR:
@@ -8465,7 +8465,7 @@ tsubst_copy_and_build (tree t,
     case BIT_NOT_EXPR:
     case ABS_EXPR:
     case TRUTH_NOT_EXPR:
-    case CONVERT_EXPR:  /* Unary + */
+    case UNARY_PLUS_EXPR:  /* Unary + */
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       return build_x_unary_op (TREE_CODE (t), RECUR (TREE_OPERAND (t, 0)));

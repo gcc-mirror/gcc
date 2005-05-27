@@ -43,6 +43,7 @@ static void pp_cxx_parameter_declaration_clause (cxx_pretty_printer *, tree);
 static void pp_cxx_abstract_declarator (cxx_pretty_printer *, tree);
 static void pp_cxx_statement (cxx_pretty_printer *, tree);
 static void pp_cxx_template_parameter (cxx_pretty_printer *, tree);
+static void pp_cxx_cast_expression (cxx_pretty_printer *, tree);
 
 
 static inline void
@@ -638,6 +639,11 @@ pp_cxx_unary_expression (cxx_pretty_printer *pp, tree t)
 	}
       else
 	pp_unary_expression (pp, TREE_OPERAND (t, 0));
+      break;
+
+    case UNARY_PLUS_EXPR:
+      pp_plus (pp);
+      pp_cxx_cast_expression (pp, TREE_OPERAND (t, 0));
       break;
 
     default:

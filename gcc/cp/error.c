@@ -1511,7 +1511,7 @@ dump_expr (tree t, int flags)
       pp_cxx_right_bracket (cxx_pp);
       break;
 
-    case CONVERT_EXPR:
+    case UNARY_PLUS_EXPR:
       if (TREE_TYPE (t) && VOID_TYPE_P (TREE_TYPE (t)))
 	{
 	  pp_cxx_left_paren (cxx_pp);

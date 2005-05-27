@@ -145,7 +145,7 @@ init_operators (void)
   operator_name_info [(int) TRUTH_AND_EXPR].name = "strict &&";
   operator_name_info [(int) TRUTH_OR_EXPR].name = "strict ||";
   operator_name_info [(int) RANGE_EXPR].name = "...";
-  operator_name_info [(int) CONVERT_EXPR].name = "+";
+  operator_name_info [(int) UNARY_PLUS_EXPR].name = "+";
 
   assignment_operator_name_info [(int) EXACT_DIV_EXPR].name
     = "(exact /=)";

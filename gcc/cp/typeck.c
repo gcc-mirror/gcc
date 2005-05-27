@@ -3692,13 +3692,12 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 
   switch (code)
     {
-    /* CONVERT_EXPR stands for unary plus in this context.  */
-    case CONVERT_EXPR:
+    case UNARY_PLUS_EXPR:
     case NEGATE_EXPR:
       {
 	int flags = WANT_ARITH | WANT_ENUM;
 	/* Unary plus (but not unary minus) is allowed on pointers.  */
-	if (code == CONVERT_EXPR)
+	if (code == UNARY_PLUS_EXPR)
 	  flags |= WANT_POINTER;
 	arg = build_expr_type_conversion (flags, arg, true);
 	if (!arg)

@@ -8586,7 +8586,7 @@ ambi_op_p (enum tree_code code)
 {
   return (code == INDIRECT_REF
 	  || code == ADDR_EXPR
-	  || code == CONVERT_EXPR
+	  || code == UNARY_PLUS_EXPR
 	  || code == NEGATE_EXPR
 	  || code == PREINCREMENT_EXPR
 	  || code == PREDECREMENT_EXPR);
@@ -8806,7 +8806,7 @@ grok_op_properties (tree decl, int friendp, bool complain)
 		  operator_code = BIT_AND_EXPR;
 		  break;
 
-		case CONVERT_EXPR:
+		case UNARY_PLUS_EXPR:
 		  operator_code = PLUS_EXPR;
 		  break;
 
