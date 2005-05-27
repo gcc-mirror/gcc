@@ -5523,7 +5523,6 @@ get_delta_difference (tree from, tree to,
 		      bool c_cast_p)
 {
   tree binfo;
-  tree virt_binfo;
   base_kind kind;
   tree result;
 
@@ -5532,36 +5531,14 @@ get_delta_difference (tree from, tree to,
   binfo = lookup_base (to, from, c_cast_p ? ba_unique : ba_check, &kind);
   if (kind == bk_inaccessible || kind == bk_ambig)
     error ("   in pointer to member function conversion");
-  else if (!binfo)
+  else if (binfo)
     {
-      if (!allow_inverse_p)
-	{
-	  error_not_base_type (from, to);
-	  error ("   in pointer to member conversion");
-	}
-      else
-	{
-	  binfo = lookup_base (from, to, c_cast_p ? ba_unique : ba_check, 
-			       &kind);
-	  if (binfo)
-	    {
-	      virt_binfo = binfo_from_vbase (binfo);
-	      if (virt_binfo)
-		/* This is a reinterpret cast, we choose to do nothing.  */
-		warning (0, "pointer to member cast via virtual base %qT",
-			 BINFO_TYPE (virt_binfo));
-	      else
-		result = size_diffop (size_zero_node, BINFO_OFFSET (binfo));
-	    }
-	}
-    }
-  else
-    {
-      virt_binfo = binfo_from_vbase (binfo);
-      if (!virt_binfo)
+      if (kind != bk_via_virtual)
 	result = BINFO_OFFSET (binfo);
       else
 	{
+	  tree virt_binfo = binfo_from_vbase (binfo);
+	  
 	  /* This is a reinterpret cast, we choose to do nothing.  */
 	  if (allow_inverse_p)
 	    warning (0, "pointer to member cast via virtual base %qT",
@@ -5569,6 +5546,30 @@ get_delta_difference (tree from, tree to,
 	  else
 	    error ("pointer to member conversion via virtual base %qT",
 		   BINFO_TYPE (virt_binfo));
+	}
+    }
+  else if (same_type_ignoring_top_level_qualifiers_p (from, to))
+    /* Pointer to member of incomplete class is permitted*/;
+  else if (!allow_inverse_p)
+    {
+      error_not_base_type (from, to);
+      error ("   in pointer to member conversion");
+    }
+  else
+    {
+      binfo = lookup_base (from, to, c_cast_p ? ba_unique : ba_check, &kind);
+      if (binfo)
+	{
+	  if (kind != bk_via_virtual)
+	    result = size_diffop (size_zero_node, BINFO_OFFSET (binfo));
+	  else
+	    {
+	      /* This is a reinterpret cast, we choose to do nothing.  */
+	      tree virt_binfo = binfo_from_vbase (binfo);
+	  
+	      warning (0, "pointer to member cast via virtual base %qT",
+		       BINFO_TYPE (virt_binfo));
+	    }
 	}
     }
 
