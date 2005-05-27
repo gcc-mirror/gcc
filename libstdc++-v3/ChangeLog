@@ -1,3 +1,10 @@
+2005-05-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* docs/html/test.html: Mention PCH_CXXFLAGS.
+	* testsuite/lib/libstdc++.exp: Set PCH_CXXFLAGS by probing for an
+	available stcd++.h PCH.
+	* testsuite/libstdc++-dg/normal.exp: Use PCH_CXXFLAGS.
+
 2005-05-27  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* src/misc-inst.cc: Remove unnecessary included files.
