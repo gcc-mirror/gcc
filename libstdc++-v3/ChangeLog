@@ -1,5 +1,10 @@
 2005-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/c++config: Remove extern template use when in debug
+	mode, disable for non-weak systems.
+	
+2005-05-27  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/20534 
 	* include/debug/debug.h: Forwarding header, that pulls in details
 	only if in debug mode.
