@@ -261,7 +261,6 @@ static bool subst_stack_regs (rtx, stack);
 static void change_stack (rtx, stack, stack, enum emit_where);
 static void print_stack (FILE *, stack);
 static rtx next_flags_user (rtx);
-static bool compensate_edge (edge, FILE *);
 
 /* Return nonzero if any stack register is mentioned somewhere within PAT.  */
 
@@ -2579,9 +2578,35 @@ convert_regs_exit (void)
     }
 }
 
-/* Adjust the stack of this block on exit to match the stack of the
-   target block, or copy stack info into the stack of the successor
-   of the successor hasn't been processed yet.  */
+/* If the stack of the target block hasn't been processed yet,
+   copy the stack info from the source block.  */
+
+static void
+propagate_stack (edge e)
+{
+  basic_block dest = e->dest;
+  stack dest_stack = &BLOCK_INFO (dest)->stack_in;
+
+  if (dest_stack->top == -2)
+    {
+      basic_block src = e->src;
+      stack src_stack = &BLOCK_INFO (src)->stack_out;
+      int reg;
+
+      /* Preserve the order of the original stack, but check whether
+	 any pops are needed.  */
+      dest_stack->top = -1;
+      for (reg = 0; reg <= src_stack->top; ++reg)
+	if (TEST_HARD_REG_BIT (dest_stack->reg_set, src_stack->reg[reg]))
+	  dest_stack->reg[++dest_stack->top] = src_stack->reg[reg];
+    }
+}
+
+
+/* Adjust the stack of edge E's source block on exit to match the stack
+   of it's target block upon input.  The stack layouts of both blocks
+   should have been defined by now.  */
+
 static bool
 compensate_edge (edge e, FILE *file)
 {
@@ -2596,50 +2621,27 @@ compensate_edge (edge e, FILE *file)
   if (file)
     fprintf (file, "Edge %d->%d: ", block->index, target->index);
 
-  if (target_stack->top == -2)
+  gcc_assert (target_stack->top != -2);
+
+  /* Check whether stacks are identical.  */
+  if (target_stack->top == regstack.top)
     {
-      /* The target block hasn't had a stack order selected.
-         We need merely ensure that no pops are needed.  */
-      for (reg = regstack.top; reg >= 0; --reg)
-	if (!TEST_HARD_REG_BIT (target_stack->reg_set, regstack.reg[reg]))
+      for (reg = target_stack->top; reg >= 0; --reg)
+	if (target_stack->reg[reg] != regstack.reg[reg])
 	  break;
 
       if (reg == -1)
 	{
 	  if (file)
-	    fprintf (file, "new block; copying stack position\n");
-
-	  /* change_stack kills values in regstack.  */
-	  tmpstack = regstack;
-
-	  change_stack (BB_END (block), &tmpstack, target_stack, EMIT_AFTER);
+	    fprintf (file, "no changes needed\n");
 	  return false;
 	}
-
-      if (file)
-	fprintf (file, "new block; pops needed\n");
     }
-  else
+
+  if (file)
     {
-      if (target_stack->top == regstack.top)
-	{
-	  for (reg = target_stack->top; reg >= 0; --reg)
-	    if (target_stack->reg[reg] != regstack.reg[reg])
-	      break;
-
-	  if (reg == -1)
-	    {
-	      if (file)
-		fprintf (file, "no changes needed\n");
-	      return false;
-	    }
-	}
-
-      if (file)
-	{
-	  fprintf (file, "correcting stack to ");
-	  print_stack (file, target_stack);
-	}
+      fprintf (file, "correcting stack to ");
+      print_stack (file, target_stack);
     }
 
   /* Care for non-call EH edges specially.  The normal return path have
@@ -2714,20 +2716,41 @@ compensate_edge (edge e, FILE *file)
   return false;
 }
 
+/* Traverse all non-entry edges in the CFG, and emit the necessary
+   edge compensation code to change the stack from stack_out of the
+   source block to the stack_in of the destination block.  */
+
+static bool
+compensate_edges (FILE *file)
+{
+  bool inserted = false;
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    if (bb != ENTRY_BLOCK_PTR)
+      {
+        edge e;
+        edge_iterator ei;
+
+        FOR_EACH_EDGE (e, ei, bb->succs)
+	  inserted |= compensate_edge (e, file);
+      }
+  return inserted;
+}
+
 /* Convert stack register references in one block.  */
 
-static int
+static void
 convert_regs_1 (FILE *file, basic_block block)
 {
   struct stack_def regstack;
   block_info bi = BLOCK_INFO (block);
-  int inserted, reg;
+  int reg;
   rtx insn, next;
   edge e, beste = NULL;
   bool control_flow_insn_deleted = false;
   edge_iterator ei;
 
-  inserted = 0;
   any_malformed_asm = false;
 
   /* Find the edge we will copy stack from.  It should be the most frequent
@@ -2763,7 +2786,7 @@ convert_regs_1 (FILE *file, basic_block block)
   if (bi->stack_in.top == -2)
     {
       if (beste)
-	inserted |= compensate_edge (beste, file);
+	propagate_stack (beste);
       else
 	{
 	  /* No predecessors.  Create an arbitrary input stack.  */
@@ -2887,29 +2910,27 @@ convert_regs_1 (FILE *file, basic_block block)
 	{
 	  gcc_assert (BLOCK_INFO (e->dest)->done
 		      || e->dest == block);
-	  inserted |= compensate_edge (e, file);
+	  propagate_stack (e);
 	}
     }
+
   FOR_EACH_EDGE (e, ei, block->preds)
     {
       if (e != beste && !(e->flags & EDGE_DFS_BACK)
 	  && e->src != ENTRY_BLOCK_PTR)
 	{
 	  gcc_assert (BLOCK_INFO (e->src)->done);
-	  inserted |= compensate_edge (e, file);
+	  propagate_stack (e);
 	}
     }
-
-  return inserted;
 }
 
 /* Convert registers in all blocks reachable from BLOCK.  */
 
-static int
+static void
 convert_regs_2 (FILE *file, basic_block block)
 {
   basic_block *stack, *sp;
-  int inserted;
 
   /* We process the blocks in a top-down manner, in a way such that one block
      is only processed after all its predecessors.  The number of predecessors
@@ -2920,7 +2941,6 @@ convert_regs_2 (FILE *file, basic_block block)
 
   *sp++ = block;
 
-  inserted = 0;
   do
     {
       edge e;
@@ -2949,14 +2969,12 @@ convert_regs_2 (FILE *file, basic_block block)
 	      *sp++ = e->dest;
 	  }
 
-      inserted |= convert_regs_1 (file, block);
+      convert_regs_1 (file, block);
       BLOCK_INFO (block)->done = 1;
     }
   while (sp != stack);
 
   free (stack);
-
-  return inserted;
 }
 
 /* Traverse all basic blocks in a function, converting the register
@@ -2984,7 +3002,7 @@ convert_regs (FILE *file)
 
   /* Process all blocks reachable from all entry points.  */
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    inserted |= convert_regs_2 (file, e->dest);
+    convert_regs_2 (file, e->dest);
 
   /* ??? Process all unreachable blocks.  Though there's no excuse
      for keeping these even when not optimizing.  */
@@ -2993,8 +3011,11 @@ convert_regs (FILE *file)
       block_info bi = BLOCK_INFO (b);
 
       if (! bi->done)
-	inserted |= convert_regs_2 (file, b);
+	convert_regs_2 (file, b);
     }
+
+  inserted |= compensate_edges (file);
+
   clear_aux_for_blocks ();
 
   fixup_abnormal_edges ();
@@ -3046,7 +3067,7 @@ reg_to_stack (FILE *file)
 
   /* Set up block info for each basic block.  */
   alloc_aux_for_blocks (sizeof (struct block_info_def));
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB (bb)
     {
       block_info bi = BLOCK_INFO (bb);
       edge_iterator ei;
