@@ -142,7 +142,7 @@ struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_call
   struct cgraph_edge *next_caller;
   struct cgraph_edge *prev_callee;
   struct cgraph_edge *next_callee;
-  tree call_expr;
+  tree call_stmt;
   PTR GTY ((skip (""))) aux;
   /* When NULL, inline this call.  When non-NULL, points to the explanation
      why function was not inlined.  */
