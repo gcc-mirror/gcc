@@ -65,7 +65,7 @@ dump_op (dump_info_p di, tree t)
     case VEC_DELETE_EXPR:
       dump_string (di, "vecdelete");
       break;
-    case CONVERT_EXPR:
+    case UNARY_PLUS_EXPR:
       dump_string (di, "pos");
       break;
     case NEGATE_EXPR:

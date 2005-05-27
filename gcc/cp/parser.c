@@ -4873,7 +4873,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p)
 	  non_constant_p = (unary_operator == PREINCREMENT_EXPR
 			    ? "`++'" : "`--'");
 	  /* Fall through.  */
-	case CONVERT_EXPR:
+	case UNARY_PLUS_EXPR:
 	case NEGATE_EXPR:
 	case TRUTH_NOT_EXPR:
 	  expression = finish_unary_op_expr (unary_operator, cast_expression);
@@ -4909,7 +4909,7 @@ cp_parser_unary_operator (cp_token* token)
       return ADDR_EXPR;
 
     case CPP_PLUS:
-      return CONVERT_EXPR;
+      return UNARY_PLUS_EXPR;
 
     case CPP_MINUS:
       return NEGATE_EXPR;

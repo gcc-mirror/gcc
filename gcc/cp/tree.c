@@ -2268,7 +2268,14 @@ fold_if_not_in_template (tree expr)
      "fold".  We will call fold later when actually instantiating the
      template.  Integral constant expressions in templates will be
      evaluated via fold_non_dependent_expr, as necessary.  */
-  return (processing_template_decl ? expr : fold (expr));
+  if (processing_template_decl)
+    return expr;
+
+  /* Fold C++ front-end specific tree codes.  */
+  if (TREE_CODE (expr) == UNARY_PLUS_EXPR)
+    return fold_convert (TREE_TYPE (expr), TREE_OPERAND (expr, 0));
+
+  return fold (expr);
 }
 
 

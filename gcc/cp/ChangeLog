@@ -1,3 +1,26 @@
+2005-05-27  Roger Sayle  <roger@eyesopen.com>
+	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* cp-tree.def (UNARY_PLUS_EXPR): New C++ unary tree code.
+	* parser.c (cp_parser_unary_expression): Use UNARY_PLUS_EXPR instead
+	of CONVERT_EXPR.
+	(cp_parser_unary_expression): Likewise.
+	* typeck.c (build_unary_op): Likewise.
+	* call.c (add_builtin_candidate, build_new_op): Likewise.
+	* error.c (dump_expr): Likewise.
+	* pt.c (tsubst_copy, tsubst_copy_and_build): Likewise.
+	* decl.c (ambi_op_p, grok_op_properties): Likewise.
+	* dump.c (dump_op): Likewise.
+	* lex.c (init_operators): Likewise.
+	* operators.def ("+"): Likewise.
+	* cp-gimplify.c (cp_gimplify_expr): Handle UNARY_PLUS_EXPR like a
+	conversion, if the result and argument types differ.
+	* tree.c (fold_if_not_in_template): Fold UNARY_PLUS_EXPR much
+	like a NOP_EXPR when !processing_template_decl.
+
+	* cxx-pretty-print.c (pp_cxx_cast_expression): Prototype.
+	(pp_cxx_unary_expression): Handle new UNARY_PLUS_EXPR tree code.
+
 2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21455

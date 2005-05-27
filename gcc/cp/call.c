@@ -1652,7 +1652,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     T       operator+(T);
 	     T       operator-(T);  */
 
-    case CONVERT_EXPR: /* unary + */
+    case UNARY_PLUS_EXPR: /* unary + */
       if (TREE_CODE (type1) == POINTER_TYPE)
 	break;
     case NEGATE_EXPR:
@@ -3848,7 +3848,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case TRUTH_ORIF_EXPR:
       return cp_build_binary_op (code, arg1, arg2);
 
-    case CONVERT_EXPR:
+    case UNARY_PLUS_EXPR:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:

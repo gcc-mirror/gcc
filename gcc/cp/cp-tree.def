@@ -340,6 +340,10 @@ DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", tcc_unary, 1)
    STMT_EXPR_STMT is the statement given by the expression.  */
 DEFTREECODE (STMT_EXPR, "stmt_expr", tcc_expression, 1)
 
+/* Unary plus. Operand 0 is the expression to which the unary plus
+   is applied.  */
+DEFTREECODE (UNARY_PLUS_EXPR, "unary_plus_expr", tcc_unary, 1)
+
 /*
 Local variables:
 mode:c
