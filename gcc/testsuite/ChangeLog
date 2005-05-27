@@ -1,3 +1,8 @@
+2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21681
+	* g++.dg/parse/template16.C: New.
+
 2005-05-27  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/setjmp-2.c: Only run in 32-bit.
