@@ -19,6 +19,10 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+typedef void *void_p;
+DEF_VEC_P(void_p);
+DEF_VEC_ALLOC_P(void_p,heap);
+
 /* This is the main data structure for the dominator walker.  It provides
    the callback hooks as well as a convenient place to hang block local
    data and pass-global data.  */
@@ -94,7 +98,7 @@ struct dom_walk_data
   /* Stack of any data we need to keep on a per-block basis.
 
      If you have no local data, then BLOCK_DATA_STACK will be NULL.  */
-  varray_type block_data_stack;
+  VEC(void_p,heap) *block_data_stack;
 
   /* Size of the block local data.   If this is zero, then it is assumed
      you have no local data and thus no BLOCK_DATA_STACK as well.  */
@@ -104,7 +108,7 @@ struct dom_walk_data
      information/data outside domwalk.c.  */
 
   /* Stack of available block local structures.  */
-  varray_type free_block_data;
+  VEC(void_p,heap) *free_block_data;
 
   /* Interesting blocks to process.  If this field is not NULL, this
      set is used to determine which blocks to walk.  If we encounter

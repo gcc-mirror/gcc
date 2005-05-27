@@ -135,7 +135,7 @@ dse_initialize_block_local_data (struct dom_walk_data *walk_data,
 				 bool recycled)
 {
   struct dse_block_local_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
+    = VEC_last (void_p, walk_data->block_data_stack);
 
   /* If we are given a recycled block local data structure, ensure any
      bitmap associated with the block is cleared.  */
@@ -163,7 +163,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 		   block_stmt_iterator bsi)
 {
   struct dse_block_local_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
+    = VEC_last (void_p, walk_data->block_data_stack);
   struct dse_global_data *dse_gd = walk_data->global_data;
   tree stmt = bsi_stmt (bsi);
   stmt_ann_t ann = stmt_ann (stmt);
@@ -298,7 +298,7 @@ static void
 dse_record_phis (struct dom_walk_data *walk_data, basic_block bb)
 {
   struct dse_block_local_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
+    = VEC_last (void_p, walk_data->block_data_stack);
   struct dse_global_data *dse_gd = walk_data->global_data;
   tree phi;
 
@@ -314,7 +314,7 @@ dse_finalize_block (struct dom_walk_data *walk_data,
 		    basic_block bb ATTRIBUTE_UNUSED)
 {
   struct dse_block_local_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
+    = VEC_last (void_p, walk_data->block_data_stack);
   struct dse_global_data *dse_gd = walk_data->global_data;
   bitmap stores = dse_gd->stores;
   unsigned int i;
