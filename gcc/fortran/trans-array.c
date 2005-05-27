@@ -4000,7 +4000,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
       deallocate = gfc_array_deallocate (descriptor);
 
       tmp = gfc_conv_descriptor_data (descriptor);
-      tmp = build2 (NE_EXPR, boolean_type_node, tmp, integer_zero_node);
+      tmp = build2 (NE_EXPR, boolean_type_node, tmp, 
+		    build_int_cst (TREE_TYPE (tmp), 0));
       tmp = build3_v (COND_EXPR, tmp, deallocate, build_empty_stmt ());
       gfc_add_expr_to_block (&block, tmp);
 
