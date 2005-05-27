@@ -259,11 +259,6 @@ static bool subst_stack_regs_pat (rtx, stack, rtx);
 static void subst_asm_stack_regs (rtx, stack);
 static bool subst_stack_regs (rtx, stack);
 static void change_stack (rtx, stack, stack, enum emit_where);
-static int convert_regs_entry (void);
-static void convert_regs_exit (void);
-static int convert_regs_1 (FILE *, basic_block);
-static int convert_regs_2 (FILE *, basic_block);
-static int convert_regs (FILE *);
 static void print_stack (FILE *, stack);
 static rtx next_flags_user (rtx);
 static bool compensate_edge (edge, FILE *);
@@ -397,101 +392,6 @@ pop_stack (stack regstack, int regno)
 	  }
     }
 }
-
-/* Convert register usage from "flat" register file usage to a "stack
-   register file.  FILE is the dump file, if used.
-
-   Construct a CFG and run life analysis.  Then convert each insn one
-   by one.  Run a last cleanup_cfg pass, if optimizing, to eliminate
-   code duplication created when the converter inserts pop insns on
-   the edges.  */
-
-bool
-reg_to_stack (FILE *file)
-{
-  basic_block bb;
-  int i;
-  int max_uid;
-
-  /* Clean up previous run.  */
-  stack_regs_mentioned_data = 0;
-
-  /* See if there is something to do.  Flow analysis is quite
-     expensive so we might save some compilation time.  */
-  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
-    if (regs_ever_live[i])
-      break;
-  if (i > LAST_STACK_REG)
-    return false;
-
-  /* Ok, floating point instructions exist.  If not optimizing,
-     build the CFG and run life analysis.
-     Also need to rebuild life when superblock scheduling is done
-     as it don't update liveness yet.  */
-  if (!optimize
-      || (flag_sched2_use_superblocks
-	  && flag_schedule_insns_after_reload))
-    {
-      count_or_remove_death_notes (NULL, 1);
-      life_analysis (file, PROP_DEATH_NOTES);
-    }
-  mark_dfs_back_edges ();
-
-  /* Set up block info for each basic block.  */
-  alloc_aux_for_blocks (sizeof (struct block_info_def));
-  FOR_EACH_BB_REVERSE (bb)
-    {
-      edge e;
-      edge_iterator ei;
-
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (!(e->flags & EDGE_DFS_BACK)
-	    && e->src != ENTRY_BLOCK_PTR)
-	  BLOCK_INFO (bb)->predecessors++;
-    }
-
-  /* Create the replacement registers up front.  */
-  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
-    {
-      enum machine_mode mode;
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
-	FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
-	FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
-    }
-
-  ix86_flags_rtx = gen_rtx_REG (CCmode, FLAGS_REG);
-
-  /* A QNaN for initializing uninitialized variables.
-
-     ??? We can't load from constant memory in PIC mode, because
-     we're inserting these instructions before the prologue and
-     the PIC register hasn't been set up.  In that case, fall back
-     on zero, which we can get from `ldz'.  */
-
-  if (flag_pic)
-    not_a_num = CONST0_RTX (SFmode);
-  else
-    {
-      not_a_num = gen_lowpart (SFmode, GEN_INT (0x7fc00000));
-      not_a_num = force_const_mem (SFmode, not_a_num);
-    }
-
-  /* Allocate a cache for stack_regs_mentioned.  */
-  max_uid = get_max_uid ();
-  VARRAY_CHAR_INIT (stack_regs_mentioned_data, max_uid + 1,
-		    "stack_regs_mentioned cache");
-
-  convert_regs (file);
-
-  free_aux_for_blocks ();
-  return true;
-}
-
 
 /* Return a pointer to the REG expression within PAT.  If PAT is not a
    REG, possible enclosed by a conversion rtx, return the inner part of
@@ -2608,25 +2508,6 @@ convert_regs_entry (void)
   int inserted = 0;
   edge e;
   edge_iterator ei;
-  basic_block block;
-
-  FOR_EACH_BB_REVERSE (block)
-    {
-      block_info bi = BLOCK_INFO (block);
-      int reg;
-
-      /* Set current register status at last instruction `uninitialized'.  */
-      bi->stack_in.top = -2;
-
-      /* Copy live_at_end and live_at_start into temporaries.  */
-      for (reg = FIRST_STACK_REG; reg <= LAST_STACK_REG; reg++)
-	{
-	  if (REGNO_REG_SET_P (block->global_live_at_end, reg))
-	    SET_HARD_REG_BIT (bi->out_reg_set, reg);
-	  if (REGNO_REG_SET_P (block->global_live_at_start, reg))
-	    SET_HARD_REG_BIT (bi->stack_in.reg_set, reg);
-	}
-    }
 
   /* Load something into each stack register live at function entry.
      Such live registers can be caused by uninitialized variables or
@@ -3082,7 +2963,7 @@ convert_regs_2 (FILE *file, basic_block block)
    references in each insn from the "flat" register file that gcc uses,
    to the stack-like registers the 387 uses.  */
 
-static int
+static void
 convert_regs (FILE *file)
 {
   int inserted;
@@ -3122,8 +3003,114 @@ convert_regs (FILE *file)
 
   if (file)
     fputc ('\n', file);
+}
+
+/* Convert register usage from "flat" register file usage to a "stack
+   register file.  FILE is the dump file, if used.
 
-  return inserted;
+   Construct a CFG and run life analysis.  Then convert each insn one
+   by one.  Run a last cleanup_cfg pass, if optimizing, to eliminate
+   code duplication created when the converter inserts pop insns on
+   the edges.  */
+
+bool
+reg_to_stack (FILE *file)
+{
+  basic_block bb;
+  int i;
+  int max_uid;
+
+  /* Clean up previous run.  */
+  stack_regs_mentioned_data = 0;
+
+  /* See if there is something to do.  Flow analysis is quite
+     expensive so we might save some compilation time.  */
+  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
+    if (regs_ever_live[i])
+      break;
+  if (i > LAST_STACK_REG)
+    return false;
+
+  /* Ok, floating point instructions exist.  If not optimizing,
+     build the CFG and run life analysis.
+     Also need to rebuild life when superblock scheduling is done
+     as it don't update liveness yet.  */
+  if (!optimize
+      || (flag_sched2_use_superblocks
+	  && flag_schedule_insns_after_reload))
+    {
+      count_or_remove_death_notes (NULL, 1);
+      life_analysis (file, PROP_DEATH_NOTES);
+    }
+  mark_dfs_back_edges ();
+
+  /* Set up block info for each basic block.  */
+  alloc_aux_for_blocks (sizeof (struct block_info_def));
+  FOR_EACH_BB_REVERSE (bb)
+    {
+      block_info bi = BLOCK_INFO (bb);
+      edge_iterator ei;
+      edge e;
+      int reg;
+
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (!(e->flags & EDGE_DFS_BACK)
+	    && e->src != ENTRY_BLOCK_PTR)
+	  bi->predecessors++;
+
+      /* Set current register status at last instruction `uninitialized'.  */
+      bi->stack_in.top = -2;
+
+      /* Copy live_at_end and live_at_start into temporaries.  */
+      for (reg = FIRST_STACK_REG; reg <= LAST_STACK_REG; reg++)
+	{
+	  if (REGNO_REG_SET_P (bb->global_live_at_end, reg))
+	    SET_HARD_REG_BIT (bi->out_reg_set, reg);
+	  if (REGNO_REG_SET_P (bb->global_live_at_start, reg))
+	    SET_HARD_REG_BIT (bi->stack_in.reg_set, reg);
+	}
+    }
+
+  /* Create the replacement registers up front.  */
+  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
+    {
+      enum machine_mode mode;
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+	   mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_FLOAT);
+	   mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
+    }
+
+  ix86_flags_rtx = gen_rtx_REG (CCmode, FLAGS_REG);
+
+  /* A QNaN for initializing uninitialized variables.
+
+     ??? We can't load from constant memory in PIC mode, because
+     we're inserting these instructions before the prologue and
+     the PIC register hasn't been set up.  In that case, fall back
+     on zero, which we can get from `ldz'.  */
+
+  if (flag_pic)
+    not_a_num = CONST0_RTX (SFmode);
+  else
+    {
+      not_a_num = gen_lowpart (SFmode, GEN_INT (0x7fc00000));
+      not_a_num = force_const_mem (SFmode, not_a_num);
+    }
+
+  /* Allocate a cache for stack_regs_mentioned.  */
+  max_uid = get_max_uid ();
+  VARRAY_CHAR_INIT (stack_regs_mentioned_data, max_uid + 1,
+		    "stack_regs_mentioned cache");
+
+  convert_regs (file);
+
+  free_aux_for_blocks ();
+  return true;
 }
 #endif /* STACK_REGS */
 
