@@ -2539,7 +2539,7 @@ reachable_handlers (rtx insn)
    within the function.  */
 
 bool
-can_throw_internal_1 (int region_number)
+can_throw_internal_1 (int region_number, bool is_resx)
 {
   struct eh_region *region;
   tree type_thrown;
@@ -2547,7 +2547,9 @@ can_throw_internal_1 (int region_number)
   region = cfun->eh->region_array[region_number];
 
   type_thrown = NULL_TREE;
-  if (region->type == ERT_THROW)
+  if (is_resx)
+    region = region->outer;
+  else if (region->type == ERT_THROW)
     {
       type_thrown = region->u.throw.type;
       region = region->outer;
@@ -2579,7 +2581,7 @@ can_throw_internal (rtx insn)
   if (JUMP_P (insn)
       && GET_CODE (PATTERN (insn)) == RESX
       && XINT (PATTERN (insn), 0) > 0)
-    return can_throw_internal_1 (XINT (PATTERN (insn), 0));
+    return can_throw_internal_1 (XINT (PATTERN (insn), 0), true);
 
   if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
@@ -2590,14 +2592,14 @@ can_throw_internal (rtx insn)
   if (!note || INTVAL (XEXP (note, 0)) <= 0)
     return false;
 
-  return can_throw_internal_1 (INTVAL (XEXP (note, 0)));
+  return can_throw_internal_1 (INTVAL (XEXP (note, 0)), false);
 }
 
 /* Determine if the given INSN can throw an exception that is
    visible outside the function.  */
 
 bool
-can_throw_external_1 (int region_number)
+can_throw_external_1 (int region_number, bool is_resx)
 {
   struct eh_region *region;
   tree type_thrown;
@@ -2605,7 +2607,9 @@ can_throw_external_1 (int region_number)
   region = cfun->eh->region_array[region_number];
 
   type_thrown = NULL_TREE;
-  if (region->type == ERT_THROW)
+  if (is_resx)
+    region = region->outer;
+  else if (region->type == ERT_THROW)
     {
       type_thrown = region->u.throw.type;
       region = region->outer;
@@ -2628,6 +2632,11 @@ can_throw_external (rtx insn)
   if (! INSN_P (insn))
     return false;
 
+  if (JUMP_P (insn)
+      && GET_CODE (PATTERN (insn)) == RESX
+      && XINT (PATTERN (insn), 0) > 0)
+    return can_throw_external_1 (XINT (PATTERN (insn), 0), true);
+
   if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
     insn = XVECEXP (PATTERN (insn), 0, 0);
@@ -2647,7 +2656,7 @@ can_throw_external (rtx insn)
   if (INTVAL (XEXP (note, 0)) <= 0)
     return false;
 
-  return can_throw_external_1 (INTVAL (XEXP (note, 0)));
+  return can_throw_external_1 (INTVAL (XEXP (note, 0)), false);
 }
 
 /* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */
