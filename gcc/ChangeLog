@@ -29,6 +29,14 @@
 	* tree.h: Move the prototype of threaded_through_blocks to
 	tree-flow.h.
 
+	* domwalk.c (walk_dominator_tree, init_walk_dominator_tree,
+	fini_walk_dominator_tree): Use VEC instead of VARRAY.
+	* domwalk.h (dom_walk_data): Change the type of
+	block_data_stack and free_block_data to VEC(void_p,heap)*.
+	* tree-ssa-dse.c (dse_initialize_block_local_data,
+	dse_optimize_stmt, dse_record_phis, dse_finalize_block): Use
+	VEC instead of VARRAY.
+
 2005-05-27  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c: Include tree-gimple.h

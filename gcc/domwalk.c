@@ -161,10 +161,9 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 
       /* First get some local data, reusing any local data pointer we may
 	 have saved.  */
-      if (VARRAY_ACTIVE_SIZE (walk_data->free_block_data) > 0)
+      if (VEC_length (void_p, walk_data->free_block_data) > 0)
 	{
-	  bd = VARRAY_TOP_GENERIC_PTR (walk_data->free_block_data);
-	  VARRAY_POP (walk_data->free_block_data);
+	  bd = VEC_pop (void_p, walk_data->free_block_data);
 	  recycled = 1;
 	}
       else
@@ -174,7 +173,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	}
 
       /* Push the local data into the local data stack.  */
-      VARRAY_PUSH_GENERIC_PTR (walk_data->block_data_stack, bd);
+      VEC_safe_push (void_p, heap, walk_data->block_data_stack, bd);
 
       /* Call the initializer.  */
       walk_data->initialize_block_local_data (walk_data, bb, recycled);
@@ -237,26 +236,18 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
   if (walk_data->initialize_block_local_data)
     {
       /* And save the block data so that we can re-use it.  */
-      VARRAY_PUSH_GENERIC_PTR (walk_data->free_block_data, bd);
+      VEC_safe_push (void_p, heap, walk_data->free_block_data, bd);
 
       /* And finally pop the record off the block local data stack.  */
-      VARRAY_POP (walk_data->block_data_stack);
+      VEC_pop (void_p, walk_data->block_data_stack);
     }
 }
 
 void
 init_walk_dominator_tree (struct dom_walk_data *walk_data)
 {
-  if (walk_data->initialize_block_local_data)
-    {
-      VARRAY_GENERIC_PTR_INIT (walk_data->free_block_data, 2, "freelist ");
-      VARRAY_GENERIC_PTR_INIT (walk_data->block_data_stack, 2, "block_data");
-    }
-  else
-    {
-      walk_data->free_block_data = NULL;
-      walk_data->block_data_stack = NULL;
-    }
+  walk_data->free_block_data = NULL;
+  walk_data->block_data_stack = NULL;
 }
 
 void
@@ -264,10 +255,10 @@ fini_walk_dominator_tree (struct dom_walk_data *walk_data)
 {
   if (walk_data->initialize_block_local_data)
     {
-      while (VARRAY_ACTIVE_SIZE (walk_data->free_block_data) > 0)
-	{
-	  free (VARRAY_TOP_GENERIC_PTR (walk_data->free_block_data));
-	  VARRAY_POP (walk_data->free_block_data);
-	}
+      while (VEC_length (void_p, walk_data->free_block_data) > 0)
+	free (VEC_pop (void_p, walk_data->free_block_data));
     }
+
+  VEC_free (void_p, heap, walk_data->free_block_data);
+  VEC_free (void_p, heap, walk_data->block_data_stack);
 }
