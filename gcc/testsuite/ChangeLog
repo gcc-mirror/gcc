@@ -1,3 +1,8 @@
+2005-05-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/9814
+	* gcc.dg/pr9814-1.c: New test case.
+
 2005-05-26  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc.dg/comp-types-8.m, objc.dg/encode-6.m,
