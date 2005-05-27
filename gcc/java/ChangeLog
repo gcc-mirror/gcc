@@ -1,3 +1,45 @@
+2005-05-26  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/19870.
+	* java-tree.h (OUTER_FIELD_ACCESS_IDENTIFIER_P): Rename to
+	NESTED_FIELD_ACCESS_IDENTIFIER_P.
+	(FIELD_INNER_ACCESS): Rename to FIELD_NESTED_ACCESS.
+	(FIELD_INNER_ACCESS_P): Rename to FIELD_NESTED_ACCESS_P.
+	* jcf-write.c (generate_classfile): Use
+	NESTED_FIELD_ACCESS_IDENTIFIER_P instead of
+	OUTER_FIELD_ACCESS_IDENTIFIER_P.
+	* parse.y (build_outer_field_access): Rename to
+	build_nested_field_access. Support static fields and outer-to-inner
+	class accesses.
+	(outer_field_access_p): Rename to nested_field_access_p. Support
+	static fields and generalise to outer-to-inner class and sibling
+	inner class accesses.
+	(outer_field_expanded_access_p): Rename to
+	nested_field_expanded_access_p and support static fields.
+	(outer_field_access_fix): Rename to nested_field_access_fix and
+	support static fields.
+	(build_outer_field_access_expr): Rename to
+	build_nested_field_access_expr and support static fields.
+	(build_outer_field_access_methods): Rename to
+	build_nested_field_access_methods and support static fields. For
+	static fields, generate accessors without class instance parameters.
+	(build_outer_field_access_method): Rename to
+	build_nested_field_access_method and support static fields.
+	(build_outer_method_access_method): Use
+	NESTED_FIELD_ACCESS_IDENTIFIER_P instead of
+	OUTER_FIELD_ACCESS_IDENTIFIER_P.
+	(resolve_expression_name): Consider static field accesses across
+	nested classes.
+	(resolve_qualified_expression_name): Likewise.
+	(java_complete_lhs): Use nested_field_access_fix instead of
+	outer_field_access_fix.
+	(patch_unary_op): Rename outer_field_flag to nested_field_flag.
+	Use nested_field_expanded_access_p instead of
+	outer_field_expanded_access_p. Use nested_field_access_fix instead
+	of outer_field_access_fix.
+	(check_thrown_exceptions): Use NESTED_FIELD_ACCESS_IDENTIFIER_P
+	instead of OUTER_FIELD_ACCESS_IDENTIFIER_P.
+
 2005-05-26  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* decl.c (GCJ_BINARYCOMPAT_ADDITION, 
@@ -10461,7 +10503,7 @@
 	properly initialize `finished_label'. Don't emit gotos for empty
 	try statements.
 
-2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-03-19  Martin v. Lï¿½is  <loewis@informatik.hu-berlin.de>
 
 	* except.c (emit_handlers): Clear catch_clauses_last.
 
