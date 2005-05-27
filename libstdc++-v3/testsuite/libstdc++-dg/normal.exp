@@ -87,7 +87,8 @@ set tests [lsort $tests]
 
 # Main loop.
 global DEFAULT_CXXFLAGS
-dg-runtest $tests "" $DEFAULT_CXXFLAGS
+global PCH_CXXFLAGS
+dg-runtest $tests "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
 
 # All done.
 dg-finish

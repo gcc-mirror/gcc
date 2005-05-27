@@ -1,3 +1,10 @@
+2005-05-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* docs/html/test.html: Mention PCH_CXXFLAGS.
+	* testsuite/lib/libstdc++.exp: Set PCH_CXXFLAGS by probing for an
+	available stcd++.h PCH.
+	* testsuite/libstdc++-dg/normal.exp: Use PCH_CXXFLAGS.
+
 2005-05-23  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/debug/string (class basic_string): Add missing

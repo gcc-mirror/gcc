@@ -103,14 +103,7 @@ proc libstdc++_init { testfile } {
     # headers, or without assertions.
     global DEFAULT_CXXFLAGS
     if ![info exists DEFAULT_CXXFLAGS] then {
-	# Set up includes for stdc++.h.gch, the precompiled header file.
-	if { [file exists $flags_file] } {
-	    set cxxpchflags [exec sh $flags_file --cxxpchflags]
-	} else {
-	    set cxxpchflags ""
-	}
-	set DEFAULT_CXXFLAGS " ${cxxpchflags}"
-
+	set DEFAULT_CXXFLAGS ""
 	# Host specific goo here.
 	if { [string match "powerpc-*-darwin*" $target_triplet] } {
 	    append DEFAULT_CXXFLAGS " -multiply_defined suppress"
@@ -193,6 +186,28 @@ proc libstdc++_init { testfile } {
 	    }
 	    set cxxflags "$cxxflags -DLOCALEDIR=\"$localedir\""
         }
+    }
+
+    # If a PCH file is available, use it.  We must delay performing
+    # this check until $cxx and such have been initialized because we
+    # perform a test compilation.  (Ideally, gcc --print-file-name would
+    # list PCH files, but it does not.)
+    global PCH_CXXFLAGS
+    if ![info exists PCH_CXXFLAGS] then {
+	set src "config[pid].cc"
+	set f [open $src "w"]
+	puts $f "int main () {}"
+	close $f
+
+	set lines [v3_target_compile $src "config[pid].o" object \
+		   "additional_flags=-include additional_flags=bits/stdc++.h"]
+	if {$lines == "" } {
+	    set PCH_CXXFLAGS "-include bits/stdc++.h"
+	} else {
+	    set PCH_CXXFLAGS ""
+	}
+	file delete $src
+	v3track PCH_CXXFLAGS 2
     }
 
     libstdc++_maybe_build_wrapper "${objdir}/testglue.o"
