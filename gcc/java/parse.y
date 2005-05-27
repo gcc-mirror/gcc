@@ -320,19 +320,17 @@ static tree build_current_thisn (tree);
 static tree build_access_to_thisn (tree, tree, int);
 static tree maybe_build_thisn_access_method (tree);
 
-static tree build_outer_field_access (tree, tree);
-static tree build_outer_field_access_methods (tree);
-static tree build_outer_field_access_expr (int, tree, tree,
-						  tree, tree);
+static tree build_nested_field_access (tree, tree);
+static tree build_nested_field_access_methods (tree);
+static tree build_nested_field_access_method (tree, tree, tree, tree, tree);
+static tree build_nested_field_access_expr (int, tree, tree, tree, tree);
 static tree build_outer_method_access_method (tree);
 static tree build_new_access_id (void);
-static tree build_outer_field_access_method (tree, tree, tree,
-						    tree, tree);
 
-static int outer_field_access_p (tree, tree);
-static int outer_field_expanded_access_p (tree, tree *,
-						 tree *, tree *);
-static tree outer_field_access_fix (tree, tree, tree);
+static int nested_field_access_p (tree, tree);
+static int nested_field_expanded_access_p (tree, tree *, tree *, tree *);
+static tree nested_field_access_fix (tree, tree, tree);
+
 static tree build_incomplete_class_ref (int, tree);
 static tree patch_incomplete_class_ref (tree);
 static tree create_anonymous_class (tree);
@@ -8289,114 +8287,159 @@ java_expand_method_bodies (tree class)
    fields either directly by using the relevant access to this$<n> or
    by invoking an access method crafted for that purpose.  */
 
-/* Build the necessary access from an inner class to an outer
-   class. This routine could be optimized to cache previous result
+/* Build the necessary access across nested class boundaries.
+   This routine could be optimized to cache previous result
    (decl, current_class and returned access).  When an access method
-   needs to be generated, it always takes the form of a read. It might
-   be later turned into a write by calling outer_field_access_fix.  */
+   needs to be generated, it always takes the form of a read.  It might
+   be later turned into a write by calling nested_field_access_fix.  */
 
 static tree
-build_outer_field_access (tree id, tree decl)
+build_nested_field_access (tree id, tree decl)
 {
   tree access = NULL_TREE;
-  tree ctx = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current_class)));
+  tree ctx = NULL_TREE;
   tree decl_ctx = DECL_CONTEXT (decl);
+  bool is_static = FIELD_STATIC (decl);
 
-  /* If the immediate enclosing context of the current class is the
-     field decl's class or inherits from it; build the access as
-     `this$<n>.<field>'. Note that we will break the `private' barrier
-     if we're not emitting bytecodes. */
-  if ((ctx == decl_ctx || inherits_from_p (ctx, decl_ctx))
-      && (!FIELD_PRIVATE (decl) || !flag_emit_class_files ))
+  if (DECL_CONTEXT (TYPE_NAME (current_class)))
+    ctx = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current_class)));
+
+  /* For non-static fields, if the immediate enclosing context of the
+     current class is the field decl's class or inherits from it,
+     build the access as `this$<n>.<field>'.  Note that we will break
+     the `private' barrier if we're not emitting bytecodes.  */
+  if (!is_static
+      && ctx
+      && (ctx == decl_ctx || inherits_from_p (ctx, decl_ctx))
+      && (!FIELD_PRIVATE (decl) || !flag_emit_class_files))
     {
       tree thisn = build_current_thisn (current_class);
       access = make_qualified_primary (build_wfl_node (thisn),
 				       id, EXPR_WFL_LINECOL (id));
     }
-  /* Otherwise, generate access methods to outer this and access the
-     field (either using an access method or by direct access.) */
+  /* Otherwise, generate and use accessor methods for the field as
+     needed.  */
   else
     {
       int lc = EXPR_WFL_LINECOL (id);
 
       /* Now we chain the required number of calls to the access$0 to
-	 get a hold to the enclosing instance we need, and then we
-	 build the field access. */
-      access = build_access_to_thisn (current_class, decl_ctx, lc);
+	 get a hold to the enclosing instance we need for a non-static
+         field, and then we build the field access. */
+      if (!is_static)
+        access = build_access_to_thisn (current_class, decl_ctx, lc);
 
       /* If the field is private and we're generating bytecode, then
-         we generate an access method */
-      if (FIELD_PRIVATE (decl) && flag_emit_class_files )
+         we generate an access method.  */
+      if (FIELD_PRIVATE (decl) && flag_emit_class_files)
 	{
-	  tree name = build_outer_field_access_methods (decl);
-	  access = build_outer_field_access_expr (lc, decl_ctx,
-						  name, access, NULL_TREE);
+	  tree name = build_nested_field_access_methods (decl);
+	  access = build_nested_field_access_expr (lc, decl_ctx,
+						   name, access, NULL_TREE);
 	}
-      /* Otherwise we use `access$(this$<j>). ... access$(this$<i>).<field>'.
+      /* Otherwise we use `access$(this$<j>). ... access$(this$<i>).<field>'
+         for non-static fields.
 	 Once again we break the `private' access rule from a foreign
-	 class. */
+	 class.  */
+      else if (is_static)
+        {
+          tree class_name = DECL_NAME (TYPE_NAME (decl_ctx));
+          access
+            = make_qualified_primary (build_wfl_node (class_name), id, lc);
+        }
       else
-	access = make_qualified_primary (access, id, lc);
+        access = make_qualified_primary (access, id, lc);
     }
+
   return resolve_expression_name (access, NULL);
 }
 
-/* Return a nonzero value if NODE describes an outer field inner
-   access.  */
+/* Return a nonzero value if DECL describes a field access across nested
+   class boundaries.  That is, DECL is in a class that either encloses,
+   is enclosed by or shares a common enclosing class with, the class
+   TYPE.  */
 
 static int
-outer_field_access_p (tree type, tree decl)
+nested_field_access_p (tree type, tree decl)
 {
+  bool is_static = false;
+  tree decl_type = DECL_CONTEXT (decl);
+  tree type_root, decl_type_root;
+
+  if (decl_type == type
+      || (TREE_CODE (decl) != FIELD_DECL && TREE_CODE (decl) != VAR_DECL))
+    return 0;
+  
   if (!INNER_CLASS_TYPE_P (type)
-      || TREE_CODE (decl) != FIELD_DECL
-      || DECL_CONTEXT (decl) == type)
+      && !(TREE_CODE (decl_type) == RECORD_TYPE
+           && INNER_CLASS_TYPE_P (decl_type)))
     return 0;
 
-  /* If the inner class extends the declaration context of the field
-     we're trying to access, then this isn't an outer field access */
-  if (inherits_from_p (type, DECL_CONTEXT (decl)))
+  is_static = FIELD_STATIC (decl);
+
+  /* If TYPE extends the declaration context of the non-static
+     field we're trying to access, then this isn't a nested field
+     access we need to worry about.  */
+  if (!is_static && inherits_from_p (type, decl_type))
     return 0;
 
-  for (type = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type))); ;
-       type = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type))))
+  for (type_root = type;
+       DECL_CONTEXT (TYPE_NAME (type_root));
+       type_root = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type_root))))
     {
-      if (type == DECL_CONTEXT (decl))
-	return 1;
+      if (type_root == decl_type)
+        return 1;
 
-      if (!DECL_CONTEXT (TYPE_NAME (type)))
-	{
-	  /* Before we give up, see whether the field is inherited from
-	     the enclosing context we're considering. */
-	  if (inherits_from_p (type, DECL_CONTEXT (decl)))
-	    return 1;
-	  break;
-	}
+      /* Before we give up, see whether it is a non-static field
+         inherited from the enclosing context we are considering.  */
+      if (!DECL_CONTEXT (TYPE_NAME (type_root))
+          && !is_static
+          && inherits_from_p (type_root, decl_type))
+        return 1;
     }
+
+  if (TREE_CODE (decl_type) == RECORD_TYPE
+      && INNER_CLASS_TYPE_P (decl_type))
+    {
+      for (decl_type_root = decl_type;
+           DECL_CONTEXT (TYPE_NAME (decl_type_root));
+           decl_type_root
+             = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (decl_type_root))))
+        {
+          if (decl_type_root == type)
+            return 1;
+        }
+    }
+  else
+    decl_type_root = decl_type;
+    
+  if (type_root == decl_type_root)
+    return 1;
 
   return 0;
 }
 
-/* Return a nonzero value if NODE represents an outer field inner
-   access that was been already expanded. As a side effect, it returns
+/* Return a nonzero value if NODE represents a cross-nested-class 
+   access that has already been expanded.  As a side effect, it returns
    the name of the field being accessed and the argument passed to the
    access function, suitable for a regeneration of the access method
-   call if necessary. */
+   call if necessary.  */
 
 static int
-outer_field_expanded_access_p (tree node, tree *name, tree *arg_type,
-			       tree *arg)
+nested_field_expanded_access_p (tree node, tree *name, tree *arg_type,
+			        tree *arg)
 {
   int identified = 0;
 
   if (TREE_CODE (node) != CALL_EXPR)
     return 0;
 
-  /* Well, gcj generates slightly different tree nodes when compiling
-     to native or bytecodes. It's the case for function calls. */
+  /* Well, GCJ generates slightly different tree nodes when compiling
+     to native or bytecodes.  It's the case for function calls.  */
 
   if (flag_emit_class_files
       && TREE_CODE (node) == CALL_EXPR
-      && OUTER_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (TREE_OPERAND (node, 0))))
+      && NESTED_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (TREE_OPERAND (node, 0))))
     identified = 1;
   else if (!flag_emit_class_files)
     {
@@ -8408,7 +8451,7 @@ outer_field_expanded_access_p (tree node, tree *name, tree *arg_type,
 	  node = TREE_OPERAND (node, 0);
 	  if (TREE_OPERAND (node, 0)
 	      && TREE_CODE (TREE_OPERAND (node, 0)) == FUNCTION_DECL
-	      && (OUTER_FIELD_ACCESS_IDENTIFIER_P
+	      && (NESTED_FIELD_ACCESS_IDENTIFIER_P
 		  (DECL_NAME (TREE_OPERAND (node, 0)))))
 	    identified = 1;
 	}
@@ -8418,26 +8461,37 @@ outer_field_expanded_access_p (tree node, tree *name, tree *arg_type,
     {
       tree argument = TREE_OPERAND (node, 1);
       *name = DECL_NAME (TREE_OPERAND (node, 0));
-      *arg_type = TREE_TYPE (TREE_TYPE (TREE_VALUE (argument)));
-      *arg = TREE_VALUE (argument);
+
+      /* The accessors for static fields do not take in a this$<n> argument,
+         so we take the class name from the accessor's context instead.  */
+      if (argument)
+        {
+          *arg_type = TREE_TYPE (TREE_TYPE (TREE_VALUE (argument)));
+          *arg = TREE_VALUE (argument);
+        }
+      else
+        {
+          *arg_type = DECL_CONTEXT (TREE_OPERAND (node, 0));
+          *arg = NULL_TREE;
+        }
     }
   return identified;
 }
 
-/* Detect in NODE an outer field read access from an inner class and
-   transform it into a write with RHS as an argument. This function is
-   called from the java_complete_lhs when an assignment to a LHS can
-   be identified. */
+/* Detect in NODE cross-nested-class field read access and
+   transform it into a write with RHS as an argument.  This function
+   is called from the java_complete_lhs when an assignment to a LHS can
+   be identified.  */
 
 static tree
-outer_field_access_fix (tree wfl, tree node, tree rhs)
+nested_field_access_fix (tree wfl, tree node, tree rhs)
 {
   tree name, arg_type, arg;
 
-  if (outer_field_expanded_access_p (node, &name, &arg_type, &arg))
+  if (nested_field_expanded_access_p (node, &name, &arg_type, &arg))
     {
-      node = build_outer_field_access_expr (EXPR_WFL_LINECOL (wfl),
-					    arg_type, name, arg, rhs);
+      node = build_nested_field_access_expr (EXPR_WFL_LINECOL (wfl),
+					     arg_type, name, arg, rhs);
       return java_complete_tree (node);
     }
   return NULL_TREE;
@@ -8450,22 +8504,33 @@ outer_field_access_fix (tree wfl, tree node, tree rhs)
    read access.  */
 
 static tree
-build_outer_field_access_expr (int lc, tree type, tree access_method_name,
-			       tree arg1, tree arg2)
+build_nested_field_access_expr (int lc, tree type, tree access_method_name,
+			        tree arg1, tree arg2)
 {
   tree args, cn, access;
 
-  args = arg1 ? arg1 :
-    build_wfl_node (build_current_thisn (current_class));
-  args = build_tree_list (NULL_TREE, args);
+  if (arg1)
+    args = build_tree_list (NULL_TREE, arg1);
+  else
+    args = NULL_TREE;
 
   if (arg2)
-    args = tree_cons (NULL_TREE, arg2, args);
+    {
+      if (args)
+        args = tree_cons (NULL_TREE, arg2, args);
+      else
+        args = build_tree_list (NULL_TREE, arg2);
+    }
 
-  access = build_method_invocation (build_wfl_node (access_method_name), args);
+  access
+    = build_method_invocation (build_wfl_node (access_method_name), args);
   cn = build_wfl_node (DECL_NAME (TYPE_NAME (type)));
+
   return make_qualified_primary (cn, access, lc);
 }
+
+/* Build the name of a synthetic accessor used to access class members
+   across nested class boundaries.  */
 
 static tree
 build_new_access_id (void)
@@ -8477,8 +8542,8 @@ build_new_access_id (void)
   return get_identifier (buffer);
 }
 
-/* Create the static access functions for the outer field DECL. We define a
-   read:
+/* Create the static access functions for the cross-nested-class field DECL.
+   We define a read:
      TREE_TYPE (<field>) access$<n> (DECL_CONTEXT (<field>) inst$) {
        return inst$.field;
      }
@@ -8487,63 +8552,89 @@ build_new_access_id (void)
                                      TREE_TYPE (<field>) value$) {
        return inst$.field = value$;
      }
-   We should have a usage flags on the DECL so we can lazily turn the ones
-   we're using for code generation. FIXME.
+   For static fields, these methods are generated without the instance
+   parameter.
+   We should have a usage flag on the DECL so we can lazily turn the ones
+   we're using for code generation.  FIXME.
 */
 
 static tree
-build_outer_field_access_methods (tree decl)
+build_nested_field_access_methods (tree decl)
 {
-  tree id, args, stmt, mdecl;
+  tree id, args, stmt, mdecl, class_name = NULL_TREE;
+  bool is_static = FIELD_STATIC (decl);
 
-  if (FIELD_INNER_ACCESS_P (decl))
-    return FIELD_INNER_ACCESS (decl);
+  if (FIELD_NESTED_ACCESS_P (decl))
+    return FIELD_NESTED_ACCESS (decl);
 
   MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
 
-  /* Create the identifier and a function named after it. */
+  /* Create the identifier and a function named after it.  */
   id = build_new_access_id ();
 
   /* The identifier is marked as bearing the name of a generated write
-     access function for outer field accessed from inner classes. */
-  OUTER_FIELD_ACCESS_IDENTIFIER_P (id) = 1;
+     access function for outer field accessed from inner classes.  */
+  NESTED_FIELD_ACCESS_IDENTIFIER_P (id) = 1;
 
-  /* Create the read access */
-  args = build_tree_list (inst_id, build_pointer_type (DECL_CONTEXT (decl)));
-  TREE_CHAIN (args) = end_params_node;
-  stmt = make_qualified_primary (build_wfl_node (inst_id),
-				 build_wfl_node (DECL_NAME (decl)), 0);
-  stmt = build_return (0, stmt);
-  mdecl = build_outer_field_access_method (DECL_CONTEXT (decl),
-					   TREE_TYPE (decl), id, args, stmt);
-  DECL_FUNCTION_ACCESS_DECL (mdecl) = decl;
-
-  /* Create the write access method. No write access for final variable */
-  if (!FIELD_FINAL (decl))
+  /* Create the read access.  */
+  if (!is_static)
     {
       args = build_tree_list (inst_id,
-			      build_pointer_type (DECL_CONTEXT (decl)));
-      TREE_CHAIN (args) = build_tree_list (wpv_id, TREE_TYPE (decl));
-      TREE_CHAIN (TREE_CHAIN (args)) = end_params_node;
+                              build_pointer_type (DECL_CONTEXT (decl)));
+      TREE_CHAIN (args) = end_params_node;
       stmt = make_qualified_primary (build_wfl_node (inst_id),
 				     build_wfl_node (DECL_NAME (decl)), 0);
+    }
+  else
+    {
+      args = end_params_node;
+      class_name = DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl)));
+      stmt = make_qualified_primary (build_wfl_node (class_name),
+                                     build_wfl_node (DECL_NAME (decl)), 0);
+    }
+  stmt = build_return (0, stmt);
+  mdecl = build_nested_field_access_method (DECL_CONTEXT (decl),
+					    TREE_TYPE (decl), id, args, stmt);
+  DECL_FUNCTION_ACCESS_DECL (mdecl) = decl;
+
+  /* Create the write access method.  No write access for final variable */
+  if (!FIELD_FINAL (decl))
+    {
+      if (!is_static)
+        {
+          args = build_tree_list (inst_id,
+			          build_pointer_type (DECL_CONTEXT (decl)));
+          TREE_CHAIN (args) = build_tree_list (wpv_id, TREE_TYPE (decl));
+          TREE_CHAIN (TREE_CHAIN (args)) = end_params_node;
+          stmt = make_qualified_primary (build_wfl_node (inst_id),
+				         build_wfl_node (DECL_NAME (decl)),
+                                         0);
+        }
+      else
+        {
+          args = build_tree_list (wpv_id, TREE_TYPE (decl));
+          TREE_CHAIN (args) = end_params_node;
+          stmt = make_qualified_primary (build_wfl_node (class_name),
+                                         build_wfl_node (DECL_NAME (decl)),
+                                         0);
+        }
       stmt = build_return (0, build_assignment (ASSIGN_TK, 0, stmt,
 						build_wfl_node (wpv_id)));
-      mdecl = build_outer_field_access_method (DECL_CONTEXT (decl),
-					       TREE_TYPE (decl), id,
-					       args, stmt);
+      mdecl = build_nested_field_access_method (DECL_CONTEXT (decl),
+					        TREE_TYPE (decl), id,
+					        args, stmt);
     }
   DECL_FUNCTION_ACCESS_DECL (mdecl) = decl;
 
   /* Return the access name */
-  return FIELD_INNER_ACCESS (decl) = id;
+  return FIELD_NESTED_ACCESS (decl) = id;
 }
 
-/* Build an field access method NAME.  */
+/* Build a field access method NAME.  */
 
 static tree
-build_outer_field_access_method (tree class, tree type, tree name,
-				 tree args, tree body)
+build_nested_field_access_method (tree class, tree type, tree name,
+				  tree args, tree body)
 {
   tree saved_current_function_decl, mdecl;
 
@@ -8587,7 +8678,7 @@ build_outer_method_access_method (tree decl)
 
   /* Obtain an access identifier and mark it */
   id = build_new_access_id ();
-  OUTER_FIELD_ACCESS_IDENTIFIER_P (id) = 1;
+  NESTED_FIELD_ACCESS_IDENTIFIER_P (id) = 1;
 
   carg = TYPE_ARG_TYPES (TREE_TYPE (decl));
   /* Create the arguments, as much as the original */
@@ -8653,7 +8744,7 @@ build_outer_method_access_method (tree decl)
    others. Access methods to this$<n> are build on the fly if
    necessary. This CAN'T be used to solely access this$<n-1> from
    this$<n> (which alway yield to special cases and optimization, see
-   for example build_outer_field_access).  */
+   for example build_nested_field_access).  */
 
 static tree
 build_access_to_thisn (tree from, tree to, int lc)
@@ -9456,15 +9547,15 @@ resolve_expression_name (tree id, tree *orig)
 
 	      /* If we're processing an inner class and we're trying
 		 to access a field belonging to an outer class, build
-		 the access to the field */
-	      if (!fs && outer_field_access_p (current_class, decl))
+		 the access to the field.  */
+	      if (nested_field_access_p (current_class, decl))
 		{
-		  if (CLASS_STATIC (TYPE_NAME (current_class)))
+		  if (!fs && CLASS_STATIC (TYPE_NAME (current_class)))
 		    {
 		      static_ref_err (id, DECL_NAME (decl), current_class);
 		      return error_mark_node;
 		    }
-		  access = build_outer_field_access (id, decl);
+		  access = build_nested_field_access (id, decl);
 		  if (orig)
 		    *orig = access;
 		  return access;
@@ -9993,18 +10084,29 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 	      decl = QUAL_RESOLUTION (q);
 	      if (!type)
 		{
-		  if (TREE_CODE (decl) == FIELD_DECL && !FIELD_STATIC (decl))
+		  if (TREE_CODE (decl) == FIELD_DECL
+                      || TREE_CODE (decl) == VAR_DECL)
 		    {
-		      if (current_this)
-			*where_found = current_this;
-		      else
-			{
-			  static_ref_err (qual_wfl, DECL_NAME (decl),
-					  current_class);
-			  return 1;
-			}
-                      if (outer_field_access_p (current_class, decl))
-                        decl = build_outer_field_access (qual_wfl, decl);
+                      if (TREE_CODE (decl) == FIELD_DECL
+                          && !FIELD_STATIC (decl))
+                        {
+               	          if (current_this)
+                            *where_found = current_this;
+                          else
+                            {
+                              static_ref_err (qual_wfl, DECL_NAME (decl),
+                                              current_class);
+                              return 1;
+                            }
+                        }
+                      else
+                        {
+                          *where_found = TREE_TYPE (decl);
+                          if (TREE_CODE (*where_found) == POINTER_TYPE)
+                            *where_found = TREE_TYPE (*where_found);
+                        }
+                      if (nested_field_access_p (current_class, decl))
+                        decl = build_nested_field_access (qual_wfl, decl);
 		    }
 		  else
 		    {
@@ -10113,7 +10215,7 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 		}
 	      from_cast = from_super = 0;
 
-	      /* It's an access from a type but it isn't static, we
+	      /* If it's an access from a type but isn't static, we
 		 make it relative to `this'. */
 	      if (!is_static && from_type)
 		decl = current_this;
@@ -10128,8 +10230,8 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 		    return 1;
 		}
 
-	      /* We want to keep the location were found it, and the type
-		 we found. */
+              /* We want to keep the location where we found it, and the
+                 type we found.  */
 	      *where_found = decl;
 	      *type_found = type;
 
@@ -10137,9 +10239,17 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 		 qualified this */
 	      if (from_qualified_this)
 		{
-		  field_decl = build_outer_field_access (qual_wfl, field_decl);
+		  field_decl
+                    = build_nested_field_access (qual_wfl, field_decl);
 		  from_qualified_this = 0;
 		}
+
+              /* If needed, generate accessors for static field access.  */
+              if (is_static
+                  && FIELD_PRIVATE (field_decl)
+                  && flag_emit_class_files
+                  && nested_field_access_p (current_class, field_decl))
+                field_decl = build_nested_field_access (qual_wfl, field_decl);
 
 	      /* This is the decl found and eventually the next one to
 		 search from */
@@ -12120,10 +12230,10 @@ java_complete_lhs (tree node)
       if ((nn = patch_string (TREE_OPERAND (node, 1))))
 	TREE_OPERAND (node, 1) = nn;
 
-      if ((nn = outer_field_access_fix (wfl_op1, TREE_OPERAND (node, 0),
-					TREE_OPERAND (node, 1))))
+      if ((nn = nested_field_access_fix (wfl_op1, TREE_OPERAND (node, 0),
+					 TREE_OPERAND (node, 1))))
 	{
-	  /* We return error_mark_node if outer_field_access_fix
+	  /* We return error_mark_node if nested_field_access_fix
 	     detects we write into a final. */
 	  if (nn == error_mark_node)
 	    return error_mark_node;
@@ -14143,7 +14253,7 @@ patch_unaryop (tree node, tree wfl_op)
   tree op = TREE_OPERAND (node, 0);
   tree op_type = TREE_TYPE (op);
   tree prom_type = NULL_TREE, value, decl;
-  int outer_field_flag = 0;
+  int nested_field_flag = 0;
   int code = TREE_CODE (node);
   int error_found = 0;
 
@@ -14160,10 +14270,11 @@ patch_unaryop (tree node, tree wfl_op)
       /* 15.14.2 Prefix Decrement Operator -- */
     case PREDECREMENT_EXPR:
       op = decl = extract_field_decl (op);
-      outer_field_flag = outer_field_expanded_access_p (op, NULL, NULL, NULL);
+      nested_field_flag
+        = nested_field_expanded_access_p (op, NULL, NULL, NULL);
       /* We might be trying to change an outer field accessed using
          access method. */
-      if (outer_field_flag)
+      if (nested_field_flag)
 	{
 	  /* Retrieve the decl of the field we're trying to access. We
              do that by first retrieving the function we would call to
@@ -14217,15 +14328,15 @@ patch_unaryop (tree node, tree wfl_op)
 	    }
 
 	  /* We remember we might be accessing an outer field */
-	  if (outer_field_flag)
+	  if (nested_field_flag)
 	    {
 	      /* We re-generate an access to the field */
 	      value = build2 (PLUS_EXPR, TREE_TYPE (op),
-			      build_outer_field_access (wfl_op, decl), value);
+			      build_nested_field_access (wfl_op, decl), value);
 
 	      /* And we patch the original access$() into a write
                  with plus_op as a rhs */
-	      return outer_field_access_fix (node, op, value);
+	      return nested_field_access_fix (node, op, value);
 	    }
 
 	  /* And write back into the node. */
@@ -15809,7 +15920,7 @@ check_thrown_exceptions (
   int is_array_call = 0;
 
   /* Skip check within generated methods, such as access$<n>.  */
-  if (OUTER_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (current_function_decl)))
+  if (NESTED_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (current_function_decl)))
     return;
 
   if (this_expr != NULL_TREE
