@@ -687,7 +687,57 @@ noce_emit_move_insn (rtx x, rtx y)
 
   if (GET_CODE (x) != STRICT_LOW_PART)
     {
-      emit_move_insn (x, y);
+      rtx seq, insn, target;
+      optab ot;
+
+      start_sequence ();
+      insn = emit_move_insn (x, y);
+      seq = get_insns ();
+      end_sequence();
+
+      if (recog_memoized (insn) <= 0)
+	switch (GET_RTX_CLASS (GET_CODE (y)))
+	  {
+	  case RTX_UNARY:
+	    ot = code_to_optab[GET_CODE (y)];
+	    if (ot)
+	      {
+		start_sequence ();
+		target = expand_unop (GET_MODE (y), ot, XEXP (y, 0), x, 0);
+		if (target != NULL_RTX)
+		  {
+		    if (target != x)
+		      emit_move_insn (x, target);
+		    seq = get_insns ();
+		  }
+		end_sequence ();
+	      }
+	    break;
+
+	  case RTX_BIN_ARITH:
+	  case RTX_COMM_ARITH:
+	    ot = code_to_optab[GET_CODE (y)];
+	    if (ot)
+	      {
+		start_sequence ();
+		target = expand_binop (GET_MODE (y), ot,
+				       XEXP (y, 0), XEXP (y, 1),
+				       x, 0, OPTAB_DIRECT);
+		if (target != NULL_RTX)
+		  {
+		    if (target != x)
+		      emit_move_insn (x, target);
+		    seq = get_insns ();
+		  }
+		end_sequence ();
+	      }
+	    break;
+
+	  default:
+	    break;
+	  }
+
+      emit_insn (seq);
       return;
     }
 
@@ -1815,6 +1865,105 @@ noce_try_sign_mask (struct noce_if_info *if_info)
 }
 
 
+/* Optimize away "if (x & C) x |= C" and similar bit manipulation
+   transformations.  */
+
+static int
+noce_try_bitop (struct noce_if_info *if_info)
+{
+  rtx cond, x, a, result, seq;
+  enum machine_mode mode;
+  enum rtx_code code;
+  int bitnum;
+
+  x = if_info->x;
+  cond = if_info->cond;
+  code = GET_CODE (cond);
+
+  /* Check for no else condition.  */
+  if (! rtx_equal_p (x, if_info->b))
+    return FALSE;
+
+  /* Check for a suitable condition.  */
+  if (code != NE && code != EQ)
+    return FALSE;
+  if (XEXP (cond, 1) != const0_rtx)
+    return FALSE;
+  cond = XEXP (cond, 0);
+
+  /* ??? We could also handle AND here.  */
+  if (GET_CODE (cond) == ZERO_EXTRACT)
+    {
+      if (XEXP (cond, 1) != const1_rtx
+	  || GET_CODE (XEXP (cond, 2)) != CONST_INT
+	  || ! rtx_equal_p (x, XEXP (cond, 0)))
+	return FALSE;
+      bitnum = INTVAL (XEXP (cond, 2));
+      mode = GET_MODE (x);
+      if (bitnum >= HOST_BITS_PER_WIDE_INT)
+	return FALSE;
+    }
+  else
+    return FALSE;
+
+  a = if_info->a;
+  if (GET_CODE (a) == IOR || GET_CODE (a) == XOR)
+    {
+      /* Check for "if (X & C) x = x op C".  */
+      if (! rtx_equal_p (x, XEXP (a, 0))
+          || GET_CODE (XEXP (a, 1)) != CONST_INT
+	  || (INTVAL (XEXP (a, 1)) & GET_MODE_MASK (mode))
+	     != (unsigned HOST_WIDE_INT) 1 << bitnum)
+        return FALSE;
+
+      /* if ((x & C) == 0) x |= C; is transformed to x |= C.   */
+      /* if ((x & C) != 0) x |= C; is transformed to nothing.  */
+      if (GET_CODE (a) == IOR)
+	result = (code == NE) ? a : NULL_RTX;
+      else if (code == NE)
+	{
+	  /* if ((x & C) == 0) x ^= C; is transformed to x |= C.   */
+	  result = gen_int_mode ((HOST_WIDE_INT) 1 << bitnum, mode);
+	  result = simplify_gen_binary (IOR, mode, x, result);
+	}
+      else
+	{
+	  /* if ((x & C) != 0) x ^= C; is transformed to x &= ~C.  */
+	  result = gen_int_mode (~((HOST_WIDE_INT) 1 << bitnum), mode);
+	  result = simplify_gen_binary (AND, mode, x, result);
+	}
+    }
+  else if (GET_CODE (a) == AND)
+    {
+      /* Check for "if (X & C) x &= ~C".  */
+      if (! rtx_equal_p (x, XEXP (a, 0))
+	  || GET_CODE (XEXP (a, 1)) != CONST_INT
+	  || (INTVAL (XEXP (a, 1)) & GET_MODE_MASK (mode))
+	     != (~((HOST_WIDE_INT) 1 << bitnum) & GET_MODE_MASK (mode)))
+        return FALSE;
+
+      /* if ((x & C) == 0) x &= ~C; is transformed to nothing.  */
+      /* if ((x & C) != 0) x &= ~C; is transformed to x &= ~C.  */
+      result = (code == EQ) ? a : NULL_RTX;
+    }
+  else
+    return FALSE;
+
+  if (result)
+    {
+      start_sequence ();
+      noce_emit_move_insn (x, result);
+      seq = end_ifcvt_sequence (if_info);
+      if (!seq)
+	return FALSE;
+
+      emit_insn_before_setloc (seq, if_info->jump,
+			       INSN_LOCATOR (if_info->insn_a));
+    }
+  return TRUE;
+}
+
+
 /* Similar to get_condition, only the resulting condition must be
    valid at JUMP, instead of at EARLIEST.  */
 
@@ -2077,6 +2226,8 @@ noce_process_if_block (struct ce_if_block * ce_info)
   if (noce_try_move (&if_info))
     goto success;
   if (noce_try_store_flag (&if_info))
+    goto success;
+  if (noce_try_bitop (&if_info))
     goto success;
   if (noce_try_minmax (&if_info))
     goto success;

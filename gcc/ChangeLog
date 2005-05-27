@@ -1,5 +1,15 @@
 2005-05-26  Roger Sayle  <roger@eyesopen.com>
 
+	PR tree-optimization/9814
+	* ifcvt.c (noce_emit_move_insn): If we fail to recognize the move
+	instruction, add the necessary clobbers by re-expanding the RTL
+	for arithmetic operations via optab.c's expand_unop/expand_binop.
+	(noce_try_bitop): New function to optimize bit manipulation idioms
+	of the form "if (x & C) x = x op C" and "if (!(x & C) x = x op C".
+	(noce_process_if_block): Call noce_try_bitop.
+
+2005-05-26  Roger Sayle  <roger@eyesopen.com>
+
 	* reg-stack.c (convert_regs_entry, convert_regs_exit,
 	convert_regs_1, convert_regs_2, convert_regs): Delete prototypes.
 	(reg_to_stack): Move to end of the file.  Initialize the per
