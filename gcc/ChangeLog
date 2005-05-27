@@ -1,3 +1,12 @@
+2005-05-26  Roger Sayle  <roger@eyesopen.com>
+
+	* reg-stack.c (convert_regs_entry, convert_regs_exit,
+	convert_regs_1, convert_regs_2, convert_regs): Delete prototypes.
+	(reg_to_stack): Move to end of the file.  Initialize the per
+	basic block information here, instead of...
+	(convert_regs_entry): Here.
+	(convert_regs): Change unused return type to void.
+
 2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-pch.c, timevar.c, timevar.h, unwind-compat.c,
