@@ -1,3 +1,7 @@
+2005-05-27  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* src/misc-inst.cc: Remove unnecessary included files.
+
 2005-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config: Remove extern template use when in debug
