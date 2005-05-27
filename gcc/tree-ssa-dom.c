@@ -423,15 +423,6 @@ tree_ssa_dominator_optimize (void)
       /* Recursively walk the dominator tree optimizing statements.  */
       walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
 
-      /* If we exposed any new variables, go ahead and put them into
-	 SSA form now, before we handle jump threading.  This simplifies
-	 interactions between rewriting of _DECL nodes into SSA form
-	 and rewriting SSA_NAME nodes into SSA form after block
-	 duplication and CFG manipulation.  */
-      update_ssa (TODO_update_ssa);
-
-      free_all_edge_infos ();
-
       {
 	block_stmt_iterator bsi;
 	basic_block bb;
@@ -443,6 +434,15 @@ tree_ssa_dominator_optimize (void)
 	      }
 	  }
       }
+
+      /* If we exposed any new variables, go ahead and put them into
+	 SSA form now, before we handle jump threading.  This simplifies
+	 interactions between rewriting of _DECL nodes into SSA form
+	 and rewriting SSA_NAME nodes into SSA form after block
+	 duplication and CFG manipulation.  */
+      update_ssa (TODO_update_ssa);
+
+      free_all_edge_infos ();
 
       /* Thread jumps, creating duplicate blocks as needed.  */
       cfg_altered |= thread_through_all_blocks ();
