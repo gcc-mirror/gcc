@@ -97,6 +97,7 @@ The varpool data structure:
 #include "varray.h"
 #include "output.h"
 #include "intl.h"
+#include "tree-gimple.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
@@ -255,9 +256,9 @@ cgraph_node_for_asm (tree asmname)
   return NULL;
 }
 
-/* Return callgraph edge representing CALL_EXPR.  */
+/* Return callgraph edge representing CALL_EXPR statement.  */
 struct cgraph_edge *
-cgraph_edge (struct cgraph_node *node, tree call_expr)
+cgraph_edge (struct cgraph_node *node, tree call_stmt)
 {
   struct cgraph_edge *e;
 
@@ -267,7 +268,7 @@ cgraph_edge (struct cgraph_node *node, tree call_expr)
      because we want to make possible having multiple cgraph nodes representing
      different clones of the same body before the body is actually cloned.  */
   for (e = node->callees; e; e= e->next_callee)
-    if (e->call_expr == call_expr)
+    if (e->call_stmt == call_stmt)
       break;
   return e;
 }
@@ -276,17 +277,17 @@ cgraph_edge (struct cgraph_node *node, tree call_expr)
 
 struct cgraph_edge *
 cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
-		    tree call_expr, gcov_type count, int nest)
+		    tree call_stmt, gcov_type count, int nest)
 {
   struct cgraph_edge *edge = ggc_alloc (sizeof (struct cgraph_edge));
 #ifdef ENABLE_CHECKING
   struct cgraph_edge *e;
 
   for (e = caller->callees; e; e = e->next_callee)
-    gcc_assert (e->call_expr != call_expr);
+    gcc_assert (e->call_stmt != call_stmt);
 #endif
 
-  gcc_assert (TREE_CODE (call_expr) == CALL_EXPR);
+  gcc_assert (get_call_expr_in (call_stmt));
 
   if (!DECL_SAVED_TREE (callee->decl))
     edge->inline_failed = N_("function body not available");
@@ -302,7 +303,7 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
 
   edge->caller = caller;
   edge->callee = callee;
-  edge->call_expr = call_expr;
+  edge->call_stmt = call_stmt;
   edge->prev_caller = NULL;
   edge->next_caller = callee->callers;
   if (callee->callers)
@@ -839,11 +840,11 @@ cgraph_function_possibly_inlined_p (tree decl)
 /* Create clone of E in the node N represented by CALL_EXPR the callgraph.  */
 struct cgraph_edge *
 cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
-		   tree call_expr, int count_scale, int loop_nest)
+		   tree call_stmt, int count_scale, int loop_nest)
 {
   struct cgraph_edge *new;
 
-  new = cgraph_create_edge (n, e->callee, call_expr,
+  new = cgraph_create_edge (n, e->callee, call_stmt,
                             e->count * count_scale / REG_BR_PROB_BASE,
 		            e->loop_nest + loop_nest);
 
@@ -880,7 +881,7 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int loop_nest)
   n->count -= count;
 
   for (e = n->callees;e; e=e->next_callee)
-    cgraph_clone_edge (e, new, e->call_expr, count_scale, loop_nest);
+    cgraph_clone_edge (e, new, e->call_stmt, count_scale, loop_nest);
 
   new->next_clone = n->next_clone;
   new->prev_clone = n;

@@ -575,8 +575,6 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
      knows not to copy VAR_DECLs, etc., so this is safe.  */
   else
     {
-      tree old_node = *tp;
-
       /* Here we handle trees that are not completely rewritten.
 	 First we detect some inlining-induced bogosities for
 	 discarding.  */
@@ -636,41 +634,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	  && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (*tp))))
 	TREE_BLOCK (*tp) = id->block;
 
-      /* We're duplicating a CALL_EXPR.  Find any corresponding
-	 callgraph edges and update or duplicate them.  */
-      if (TREE_CODE (*tp) == CALL_EXPR && id->node && get_callee_fndecl (*tp))
-	{
-	  if (id->saving_p)
-	    {
-	      struct cgraph_node *node;
-              struct cgraph_edge *edge;
-
-	      /* We're saving a copy of the body, so we'll update the
-		 callgraph nodes in place.  Note that we avoid
-		 altering the original callgraph node; we begin with
-		 the first clone.  */
-	      for (node = id->node->next_clone;
-		   node;
-		   node = node->next_clone)
-		{
-		  edge = cgraph_edge (node, old_node);
-		  gcc_assert (edge);
-		  edge->call_expr = *tp;
-		}
-	    }
-	  else
-	    {
-              struct cgraph_edge *edge;
-
-	      /* We're cloning or inlining this body; duplicate the
-		 associate callgraph nodes.  */
-	      edge = cgraph_edge (id->current_node, old_node);
-	      if (edge)
-		 cgraph_clone_edge (edge, id->node, *tp,
-				    REG_BR_PROB_BASE, 1);
-	    }
-	}
-      else if (TREE_CODE (*tp) == RESX_EXPR && id->eh_region_offset)
+      if (TREE_CODE (*tp) == RESX_EXPR && id->eh_region_offset)
 	TREE_OPERAND (*tp, 0) =
 	  build_int_cst
 	    (NULL_TREE,
@@ -730,7 +694,43 @@ copy_bb (inline_data *id, basic_block bb, int frequency_scale, int count_scale)
          this is signalled by making stmt pointer NULL.  */
       if (stmt)
 	{
+	  tree call, decl;
           bsi_insert_after (&copy_bsi, stmt, BSI_NEW_STMT);
+	  call = get_call_expr_in (stmt);
+	  /* We're duplicating a CALL_EXPR.  Find any corresponding
+	     callgraph edges and update or duplicate them.  */
+	  if (call && (decl = get_callee_fndecl (call)))
+	    {
+	      if (id->saving_p)
+		{
+		  struct cgraph_node *node;
+		  struct cgraph_edge *edge;
+
+		  /* We're saving a copy of the body, so we'll update the
+		     callgraph nodes in place.  Note that we avoid
+		     altering the original callgraph node; we begin with
+		     the first clone.  */
+		  for (node = id->node->next_clone;
+		       node;
+		       node = node->next_clone)
+		    {
+		      edge = cgraph_edge (node, orig_stmt);
+		      gcc_assert (edge);
+		      edge->call_stmt = stmt;
+		    }
+		}
+	      else
+		{
+		  struct cgraph_edge *edge;
+
+		  /* We're cloning or inlining this body; duplicate the
+		     associate callgraph nodes.  */
+		  edge = cgraph_edge (id->current_node, orig_stmt);
+		  if (edge)
+		    cgraph_clone_edge (edge, id->node, stmt,
+				       REG_BR_PROB_BASE, 1);
+		}
+	    }
 	  /* If you think we can abort here, you are wrong.
 	     There is no region 0 in tree land.  */
 	  gcc_assert (lookup_stmt_eh_region_fn (id->callee_cfun, orig_stmt)
@@ -776,24 +776,24 @@ copy_edges_for_bb (basic_block bb, int count_scale)
   /* Use the indices from the original blocks to create edges for the
      new ones.  */
   FOR_EACH_EDGE (old_edge, ei, bb->succs)
-    {
-      edge new;
+    if (!(old_edge->flags & EDGE_EH))
+      {
+	edge new;
 
-      flags = old_edge->flags;
+	flags = old_edge->flags;
 
-      /* Return edges do get a FALLTHRU flag when the get inlined.  */
-      if (old_edge->dest->index == EXIT_BLOCK && !old_edge->flags
-	  && old_edge->dest->aux != EXIT_BLOCK_PTR)
-	flags |= EDGE_FALLTHRU;
-      new = make_edge (new_bb, old_edge->dest->aux, flags);
-      new->count = old_edge->count * count_scale / REG_BR_PROB_BASE;
-      new->probability = old_edge->probability;
-    }
+	/* Return edges do get a FALLTHRU flag when the get inlined.  */
+	if (old_edge->dest->index == EXIT_BLOCK && !old_edge->flags
+	    && old_edge->dest->aux != EXIT_BLOCK_PTR)
+	  flags |= EDGE_FALLTHRU;
+	new = make_edge (new_bb, old_edge->dest->aux, flags);
+	new->count = old_edge->count * count_scale / REG_BR_PROB_BASE;
+	new->probability = old_edge->probability;
+      }
 
   if (bb->index == ENTRY_BLOCK || bb->index == EXIT_BLOCK)
     return;
 
-  tree_purge_dead_eh_edges (new_bb);
   for (bsi = bsi_start (new_bb); !bsi_end_p (bsi);)
     {
       tree copy_stmt;
@@ -815,9 +815,7 @@ copy_edges_for_bb (basic_block bb, int count_scale)
          into a COMPONENT_REF which doesn't.  If the copy
          can throw, the original could also throw.  */
 
-      if (TREE_CODE (copy_stmt) == RESX_EXPR
-	  || (tree_could_throw_p (copy_stmt)
-	      && lookup_stmt_eh_region (copy_stmt) > 0))
+      if (tree_can_throw_internal (copy_stmt))
 	{
 	  if (!bsi_end_p (bsi))
 	    /* Note that bb's predecessor edges aren't necessarily
@@ -1920,7 +1918,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   if (!id->current_node->analyzed)
     goto egress;
 
-  cg_edge = cgraph_edge (id->current_node, t);
+  cg_edge = cgraph_edge (id->current_node, stmt);
 
   /* Constant propagation on argument done during previous inlining
      may create new direct call.  Produce an edge for it.  */
@@ -1933,7 +1931,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
          constant propagating arguments.  In all other cases we hit a bug
          (incorrect node sharing is most common reason for missing edges.  */
       gcc_assert (dest->needed || !flag_unit_at_a_time);
-      cgraph_create_edge (id->node, dest, t,
+      cgraph_create_edge (id->node, dest, stmt,
 			  bb->count, bb->loop_depth)->inline_failed
 	= N_("originally indirect function call not considered for inlining");
       goto egress;

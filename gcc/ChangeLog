@@ -1,3 +1,22 @@
+2005-05-27  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c: Include tree-gimple.h
+	(cgraph_edge): Rename expr to stmt.
+	(cgraph_create_edge): Likewise.
+	(cgraph_clone_node): Likewise.
+	* cgraph.h (cgraph_node): Use call_stmt instead of call_expr.
+	* cgraphunit.c (record_call_1): Rename to ...
+	(record_reference): ... this one; do not build edges.
+	(cgraph_varpool_analyze_pending_decls): Call record_reference directly.
+	(current_basic_block): Kill.
+	(cgraph_create_edges): Rewrite to work on gimple statements nicely.
+	(verify_cgraph_node): Likewise.
+	* tree-inline.c (copy_body_r): Do not mess up with cgraph edges.
+	(copy_bb): Mess up with cgraph edges here; simplify EH handling.
+	(copy_edges_for_bb): Simplify EH handling.
+	(expand_call_inline): Pass statement to cgraph_edge and
+	cgraph_create_edge.
+
 2005-05-27  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-inline.c (copy_body_r): Manually fold *& to deal
