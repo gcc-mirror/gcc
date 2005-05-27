@@ -11451,14 +11451,14 @@ build_fold_addr_expr (tree t)
   return build_fold_addr_expr_with_type (t, build_pointer_type (TREE_TYPE (t)));
 }
 
-/* Given a pointer value T, return a simplified version of an indirection
-   through T, or NULL_TREE if no simplification is possible.  */
+/* Given a pointer value OP0 and a type TYPE, return a simplified version
+   of an indirection through OP0, or NULL_TREE if no simplification is
+   possible.  */
 
 static tree
-fold_indirect_ref_1 (tree t)
+fold_indirect_ref_1 (tree type, tree op0)
 {
-  tree type = TREE_TYPE (TREE_TYPE (t));
-  tree sub = t;
+  tree sub = op0;
   tree subtype;
 
   STRIP_NOPS (sub);
@@ -11471,11 +11471,11 @@ fold_indirect_ref_1 (tree t)
       tree op = TREE_OPERAND (sub, 0);
       tree optype = TREE_TYPE (op);
       /* *&p => p */
-      if (lang_hooks.types_compatible_p (type, optype))
+      if (type == optype)
 	return op;
       /* *(foo *)&fooarray => fooarray[0] */
       else if (TREE_CODE (optype) == ARRAY_TYPE
-	       && lang_hooks.types_compatible_p (type, TREE_TYPE (optype)))
+	       && type == TREE_TYPE (optype))
 	{
 	  tree type_domain = TYPE_DOMAIN (optype);
 	  tree min_val = size_zero_node;
@@ -11487,7 +11487,7 @@ fold_indirect_ref_1 (tree t)
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
   if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
-      && lang_hooks.types_compatible_p (type, TREE_TYPE (TREE_TYPE (subtype))))
+      && type == TREE_TYPE (TREE_TYPE (subtype)))
     {
       tree type_domain;
       tree min_val = size_zero_node;
@@ -11507,12 +11507,13 @@ fold_indirect_ref_1 (tree t)
 tree
 build_fold_indirect_ref (tree t)
 {
-  tree sub = fold_indirect_ref_1 (t);
+  tree type = TREE_TYPE (TREE_TYPE (t));
+  tree sub = fold_indirect_ref_1 (type, t);
 
   if (sub)
     return sub;
   else
-    return build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
+    return build1 (INDIRECT_REF, type, t);
 }
 
 /* Given an INDIRECT_REF T, return either T or a simplified version.  */
@@ -11520,7 +11521,7 @@ build_fold_indirect_ref (tree t)
 tree
 fold_indirect_ref (tree t)
 {
-  tree sub = fold_indirect_ref_1 (TREE_OPERAND (t, 0));
+  tree sub = fold_indirect_ref_1 (TREE_TYPE (t), TREE_OPERAND (t, 0));
 
   if (sub)
     return sub;
