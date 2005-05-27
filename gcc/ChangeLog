@@ -1,3 +1,10 @@
+2005-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/mips/mips-protos.h (mips_declare_object): Add printf
+	attribute.
+	* config/mips/mips.c (mips_declare_object_name): Fix format
+	argument.
+
 2005-05-27  Roger Sayle  <roger@eyesopen.com>
 
 	* reg-stack.c (compensate_edge): Remove original prototype.

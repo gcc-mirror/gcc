@@ -5627,7 +5627,7 @@ mips_declare_object_name (FILE *stream, const char *name,
       ASM_OUTPUT_SIZE_DIRECTIVE (stream, name, size);
     }
 
-  mips_declare_object (stream, name, "", ":\n", 0);
+  mips_declare_object (stream, name, "", ":\n");
 }
 
 /* Implement ASM_FINISH_DECLARE_OBJECT.  This is generic ELF stuff.  */
