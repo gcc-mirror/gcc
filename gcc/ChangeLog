@@ -1,3 +1,16 @@
+2005-05-27  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-inline.c (copy_body_r): Manually fold *& to deal
+	with ADDR_EXPRs with mismatched types for now.
+
+	* gimplify.c (fold_indirect_ref_rhs): New function.
+	(gimplify_modify_expr_rhs): Use it instead of pessimistic
+	fold_indirect_ref.
+
+	* fold-const.c (fold_indirect_ref_1): Add type argument;
+	make sure the resulting expression is of this type.
+	(build_fold_indirect_ref, fold_indirect_ref): Adjust callers.
+
 2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21658
