@@ -1,6 +1,7 @@
 /* PR middle-end/17813 */
 /* Origin: Tom Hughes <tom@compton.nu> */
 /* { dg-do run { target i?86-*-linux* x86_64-*-linux* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O -fomit-frame-pointer -march=i386" { target { i?86-*-linux* && ilp32 } } } */
 /* { dg-options "-O -fomit-frame-pointer -march=i386" { target { x86_64-*-linux* && ilp32 } } } */
 
