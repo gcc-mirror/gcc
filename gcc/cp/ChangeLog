@@ -1,3 +1,9 @@
+2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21681
+	* parser.c (cp_parser_late_parsing_for_member): Disable access
+	checking for template functions.
+
 2005-05-26  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/21768
