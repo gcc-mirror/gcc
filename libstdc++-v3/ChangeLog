@@ -1,3 +1,7 @@
+2005-05-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/Makefile.in: Regenerate with Automake 1.7.8.
+
 2005-05-19  Release Manager
 
 	* GCC 3.4.4 released.
