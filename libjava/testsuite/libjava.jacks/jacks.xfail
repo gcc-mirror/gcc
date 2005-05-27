@@ -306,6 +306,7 @@
 15.8.2-type-12
 15.8.2-type-13
 15.8.2-type-14
+15.8.4-static-2
 15.8.5-field-expression-6
 15.8.5-method-expression-8
 15.8.5-variable-5
@@ -633,6 +634,7 @@
 8.5-inheritance-2
 8.5-inheritance-3
 8.5-inheritance-6
+8.5.2-accessible-static-member-usage-3
 8.5.2-non-static-member-usage-2
 8.5.2-non-static-member-usage-4
 8.5.2-non-static-member-usage-5
