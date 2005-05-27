@@ -1,3 +1,7 @@
+2005-05-27  Ziga Mahkovec  <ziga.mahkovec@klika.si>
+
+	* ChangeLog: Fix typo.
+
 2005-05-26  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Testsuite adjustments for PR java/19870.
@@ -191,7 +195,7 @@
 2005-05-16  Ziga Mahkovec  <ziga.mahkovec@klika.si>
 
 	PR libgcj/20504
-	gnu/regexp/RE.java: Add support for quoting constructs.
+	* gnu/regexp/RE.java: Add support for quoting constructs.
 
 2005-05-15  Tom Tromey  <tromey@redhat.com>
 
