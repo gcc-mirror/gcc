@@ -1,3 +1,8 @@
+2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21681
+	* g++.dg/parse/template16.C: New.
+
 2005-05-26  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/ieee/ieee.exp: Set float-store for 32-bit

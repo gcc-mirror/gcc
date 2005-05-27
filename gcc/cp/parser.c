@@ -15350,6 +15350,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
       if (function_scope)
 	push_function_context_to (function_scope);
 
+      
       /* Push the body of the function onto the lexer stack.  */
       cp_parser_push_lexer_for_tokens (parser, tokens);
 
@@ -15358,10 +15359,17 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
       start_preparsed_function (member_function, NULL_TREE,
 				SF_PRE_PARSED | SF_INCLASS_INLINE);
 
+      /* Don't do access checking if it is a templated function.  */
+      if (processing_template_decl)
+	push_deferring_access_checks (dk_no_check);
+      
       /* Now, parse the body of the function.  */
       cp_parser_function_definition_after_declarator (parser,
 						      /*inline_p=*/true);
 
+      if (processing_template_decl)
+	pop_deferring_access_checks ();
+      
       /* Leave the scope of the containing function.  */
       if (function_scope)
 	pop_function_context_from (function_scope);
