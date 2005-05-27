@@ -31,10 +31,12 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_ITERATOR_H
 #define _GLIBCXX_DEBUG_SAFE_ITERATOR_H 1
 
-#include <bits/stl_pair.h>
 #include <debug/debug.h>
+#include <debug/macros.h>
+#include <debug/functions.h>
 #include <debug/formatter.h>
 #include <debug/safe_base.h>
+#include <bits/stl_pair.h>
 #include <bits/cpp_type_traits.h>
 
 namespace __gnu_debug
@@ -46,7 +48,8 @@ namespace __gnu_debug
    *  _Safe_iterators can be determined singular or non-singular via
    *  _Safe_iterator_base.
    */
-  inline bool __check_singular_aux(const _Safe_iterator_base* __x)
+  inline bool 
+  __check_singular_aux(const _Safe_iterator_base* __x)
   { return __x->_M_singular(); }
 
   /** \brief Safe iterator wrapper.
