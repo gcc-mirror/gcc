@@ -1,3 +1,9 @@
+2005-05-27  Robin Green  <greenrd@greenrd.org>
+
+	PR libgcj/21775:
+	* java/util/logging/natLogger.cc (getCallerStackFrame): Start
+	with i=1.
+
 2005-05-26  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/jvm.h (FLAG_BINARYCOMPAT_ABI): New.

@@ -1,6 +1,6 @@
 // natLogger.cc - Native part of Logger class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2005  Free Software Foundation
 
    This Logger is part of libgcj.
 
@@ -31,7 +31,7 @@ java::util::logging::Logger::getCallerStackFrame ()
   gnu::gcj::runtime::StackTrace *t 
     = new gnu::gcj::runtime::StackTrace(4);
   java::lang::Class *klass = NULL;
-  int i = 2;
+  int i = 1;
   try
     {
       // skip until this class
