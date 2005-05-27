@@ -1,3 +1,24 @@
+2005-05-27  Roger Sayle  <roger@eyesopen.com>
+
+	* reg-stack.c (compensate_edge): Remove original prototype.
+	(propagate_stack): New function to copy the stack layout
+	at the start of a basic block from the layout at the end of
+	one of its predecessors.
+	(compensate_edge): Assume that both source and destination
+	blocks have already had their stack layouts defined.
+	(compensate_edges): Traverse all non-entry edges in the CFG
+	and call compensate_edge on each in turn.
+	(convert_regs_1): Change return type to void.  Call
+	propagate_stack instead of compensate_edge.
+	(convert_regs_2): Change return type to void.  Update call
+	to convert_regs_1 to ignore the (now void) return value.
+	(convert_regs): Update calls to convert_regs_2 to ignore
+	the (now void) return value.  After all the basic blocks have
+	been processed, call compensate_edges to actually emit new
+	insns.
+	(reg_to_stack): Initialize the aux info for each basic block
+	with FOR_EACH_BB instead of which FOR_EACH_BB_REVERSE.
+
 2005-05-28  Jan Hubicka  <jh@suse.cz>
 
 	* except.c (can_throw_internal_1, can_throw_external_1): Add 
