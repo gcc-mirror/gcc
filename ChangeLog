@@ -1,3 +1,7 @@
+2005-05-26  Chris Demetriou  <cgd@broadcom.com>
+
+	* MAINTAINERS (Write After Approval): Remove self.
+
 2005-05-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (stage[+id+]-start): Iterate over target module as well.
