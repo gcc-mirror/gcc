@@ -46,9 +46,9 @@ extern void for_each_eh_label (void (*) (rtx));
 extern void for_each_eh_region (void (*) (struct eh_region *));
 
 /* Determine if the given INSN can throw an exception.  */
-extern bool can_throw_internal_1 (int);
+extern bool can_throw_internal_1 (int, bool);
 extern bool can_throw_internal (rtx);
-extern bool can_throw_external_1 (int);
+extern bool can_throw_external_1 (int, bool);
 extern bool can_throw_external (rtx);
 
 /* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */

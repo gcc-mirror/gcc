@@ -1,3 +1,14 @@
+2005-05-28  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (can_throw_internal_1, can_throw_external_1): Add 
+	"is_resx" argument.
+	(can_throw_external, can_throw_internal): Bring into sync wrt
+	dealing resx.
+	* except.h (can_throw_internal_1, can_throw_external_1): Update
+	prototype.
+	* tree-eh.c (tree_can_throw_internal, tree_can_throw_external):
+	Deal properly with resx.
+
 2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h (basic_block_def): Add phi_nodes and
