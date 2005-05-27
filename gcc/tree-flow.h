@@ -377,25 +377,7 @@ struct edge_prediction GTY((chain_next ("%h.next")))
   int probability;
 };
 
-/*---------------------------------------------------------------------------
-		  Block annotations stored in basic_block.tree_annotations
----------------------------------------------------------------------------*/
-struct bb_ann_d GTY(())
-{
-  /* Chain of PHI nodes for this block.  */
-  tree phi_nodes;
-
-  /* Nonzero if one or more incoming edges to this block should be threaded
-     to an outgoing edge of this block.  */
-  unsigned incoming_edge_threaded : 1;
-
-  struct edge_prediction *predictions;
-};
-
-typedef struct bb_ann_d *bb_ann_t;
-
 /* Accessors for basic block annotations.  */
-static inline bb_ann_t bb_ann (basic_block);
 static inline tree phi_nodes (basic_block);
 static inline void set_phi_nodes (basic_block, tree);
 
@@ -781,6 +763,9 @@ extern void linear_transform_loops (struct loops *);
 
 /* In tree-ssa-loop-ivopts.c  */
 extern bool expr_invariant_in_loop_p (struct loop *, tree);
+
+/* In tree-ssa-threadupdate.c.  */
+extern bool thread_through_all_blocks (bitmap);
 
 /* In gimplify.c  */
 tree force_gimple_operand (tree, tree *, bool, tree);

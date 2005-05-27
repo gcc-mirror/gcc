@@ -494,19 +494,12 @@ addresses_taken (tree stmt)
   return ann ? ann->addresses_taken : NULL;
 }
 
-/* Return the basic_block annotation for BB.  */
-static inline bb_ann_t
-bb_ann (basic_block bb)
-{
-  return (bb_ann_t)bb->tree_annotations;
-}
-
 /* Return the PHI nodes for basic block BB, or NULL if there are no
    PHI nodes.  */
 static inline tree
 phi_nodes (basic_block bb)
 {
-  return bb_ann (bb)->phi_nodes;
+  return bb->phi_nodes;
 }
 
 /* Set list of phi nodes of a basic block BB to L.  */
@@ -516,7 +509,7 @@ set_phi_nodes (basic_block bb, tree l)
 {
   tree phi;
 
-  bb_ann (bb)->phi_nodes = l;
+  bb->phi_nodes = l;
   for (phi = l; phi; phi = PHI_CHAIN (phi))
     set_bb_for_stmt (phi, bb);
 }

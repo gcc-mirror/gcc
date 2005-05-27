@@ -840,7 +840,7 @@ process_phi_nodes (struct loop *loop)
 	  release_phi_node (phi);
 	  phi = next;
 	}
-      bb_ann (bb)->phi_nodes = NULL;
+      bb->phi_nodes = NULL;
     }
   return;
 }

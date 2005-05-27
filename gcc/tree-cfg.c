@@ -95,9 +95,6 @@ static bool found_computed_goto;
 
 /* Basic blocks and flowgraphs.  */
 static basic_block create_bb (void *, void *, basic_block);
-static void create_block_annotation (basic_block);
-static void free_blocks_annotations (void);
-static void clear_blocks_annotations (void);
 static void make_blocks (tree);
 static void factor_computed_gotos (void);
 
@@ -149,9 +146,6 @@ init_empty_tree_cfg (void)
 
   ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
   EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
-
-  create_block_annotation (ENTRY_BLOCK_PTR);
-  create_block_annotation (EXIT_BLOCK_PTR);
 }
 
 /*---------------------------------------------------------------------------
@@ -322,37 +316,6 @@ factor_computed_gotos (void)
 }
 
 
-/* Create annotations for a single basic block.  */
-
-static void
-create_block_annotation (basic_block bb)
-{
-  /* Verify that the tree_annotations field is clear.  */
-  gcc_assert (!bb->tree_annotations);
-  bb->tree_annotations = ggc_alloc_cleared (sizeof (struct bb_ann_d));
-}
-
-
-/* Free the annotations for all the basic blocks.  */
-
-static void free_blocks_annotations (void)
-{
-  clear_blocks_annotations ();  
-}
-
-
-/* Clear the annotations for all the basic blocks.  */
-
-static void
-clear_blocks_annotations (void)
-{
-  basic_block bb;
-
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    bb->tree_annotations = NULL;
-}
-
-
 /* Build a flowgraph for the statement_list STMT_LIST.  */
 
 static void
@@ -430,8 +393,6 @@ create_bb (void *h, void *e, basic_block after)
 
   /* Add the newly created block to the array.  */
   BASIC_BLOCK (last_basic_block) = bb;
-
-  create_block_annotation (bb);
 
   n_basic_blocks++;
   last_basic_block++;
@@ -2561,11 +2522,6 @@ dump_cfg_stats (FILE *file)
   total += size;
   fprintf (file, fmt_str_1, "Edges", num_edges, SCALE (size), LABEL (size));
 
-  size = n_basic_blocks * sizeof (struct bb_ann_d);
-  total += size;
-  fprintf (file, fmt_str_1, "Basic block annotations", n_basic_blocks,
-	   SCALE (size), LABEL (size));
-
   fprintf (file, "---------------------------------------------------------\n");
   fprintf (file, fmt_str_3, "Total memory used by CFG data", SCALE (total),
 	   LABEL (total));
@@ -2876,8 +2832,6 @@ void
 delete_tree_cfg_annotations (void)
 {
   basic_block bb;
-  if (n_basic_blocks > 0)
-    free_blocks_annotations ();
 
   label_to_block_map = NULL;
   FOR_EACH_BB (bb)
