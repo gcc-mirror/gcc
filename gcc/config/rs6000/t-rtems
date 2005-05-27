@@ -1,13 +1,11 @@
 # Multilibs for powerpc RTEMS targets.
 
 MULTILIB_OPTIONS	= \
-D_OLD_EXCEPTIONS \
 mcpu=403/mcpu=505/mcpu=601/mcpu=603e/mcpu=604/mcpu=860/mcpu=7400 \
 Dmpc8260 \
 msoft-float
 
 MULTILIB_DIRNAMES	= \
-roe \
 m403 m505 m601 m603e m604 m860 m7400 \
 mpc8260 \
 nof
@@ -33,38 +31,6 @@ MULTILIB_MATCHES	+= mcpu?7400=mcpu?7450
 # Map 750 to .
 MULTILIB_MATCHES	+= mcpu?750=
 
-
-#
-# RTEMS old/new-exceptions handling
-#
-# old-exception processing is depredicated, therefore
-#
-# * Cpu-variants supporting new exception processing are build 
-# with new exception processing only
-# * Cpu-variants not having been ported to new exception processing are
-# build with old and new exception processing
-#
-
-# Cpu-variants supporting new exception processing only
-MULTILIB_NEW_EXCEPTIONS_ONLY = \
-D_OLD_EXCEPTIONS \
-D_OLD_EXCEPTIONS/msoft-float \
-D_OLD_EXCEPTIONS/mcpu=505 \
-D_OLD_EXCEPTIONS/mcpu=505/* \
-D_OLD_EXCEPTIONS/mcpu=601 \
-D_OLD_EXCEPTIONS/mcpu=601/* \
-D_OLD_EXCEPTIONS/mcpu=603e \
-D_OLD_EXCEPTIONS/mcpu=603e/* \
-D_OLD_EXCEPTIONS/mcpu=604 \
-D_OLD_EXCEPTIONS/mcpu=604/* \
-D_OLD_EXCEPTIONS/mcpu=750 \
-D_OLD_EXCEPTIONS/mcpu=750/* \
-D_OLD_EXCEPTIONS/mcpu=860 \
-D_OLD_EXCEPTIONS/mcpu=860/* \
-D_OLD_EXCEPTIONS/mcpu=7400 \
-D_OLD_EXCEPTIONS/mcpu=7400/* \
-D_OLD_EXCEPTIONS/*Dmpc*
-
 # Soft-float only, default implies msoft-float
 # NOTE: Must match with MULTILIB_MATCHES_FLOAT and MULTILIB_MATCHES
 MULTILIB_SOFTFLOAT_ONLY = \
@@ -86,7 +52,6 @@ MULTILIB_EXCEPTIONS =
 MULTILIB_EXCEPTIONS 	+= Dppc* Dmpc*
 
 MULTILIB_EXCEPTIONS	+= \
-${MULTILIB_NEW_EXCEPTIONS_ONLY} \
 ${MULTILIB_SOFTFLOAT_ONLY} \
 ${MULTILIB_HARDFLOAT_ONLY}
 
