@@ -1,3 +1,10 @@
+2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-into-ssa.c (update_ssa): Ensure that the operand cache
+	is up-to-date.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Call
+	update_stmt_if_modified before calling update_ssa.
+
 2005-05-27  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/rs6000/t-rtems: Remove roe multilib variant.

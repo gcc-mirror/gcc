@@ -2679,6 +2679,10 @@ update_ssa (unsigned update_flags)
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	{
 	  tree stmt = bsi_stmt (si);
+	  /* We are going to use the operand cache API, such as
+	     SET_USE, SET_DEF, and FOR_EACH_IMM_USE_FAST.  The operand
+	     cache for each statement should be up-to-date.  */
+	  gcc_assert (!stmt_modified_p (stmt));
 	  REWRITE_THIS_STMT (stmt) = 0;
 	  REGISTER_DEFS_IN_THIS_STMT (stmt) = 0;
 	}
