@@ -1,3 +1,8 @@
+2005-05-27  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR middle-end/21595
+	* g++.dg/tree-ssa/builtin1.C: New testcase.
+
 2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21455

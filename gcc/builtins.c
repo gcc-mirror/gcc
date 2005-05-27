@@ -5846,10 +5846,17 @@ fold_builtin_constant_p (tree arglist)
   /* If we know this is a constant, emit the constant of one.  */
   if (CONSTANT_CLASS_P (arglist)
       || (TREE_CODE (arglist) == CONSTRUCTOR
-	  && TREE_CONSTANT (arglist))
-      || (TREE_CODE (arglist) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (arglist, 0)) == STRING_CST))
+	  && TREE_CONSTANT (arglist)))
     return integer_one_node;
+  if (TREE_CODE (arglist) == ADDR_EXPR)
+    {
+       tree op = TREE_OPERAND (arglist, 0);
+       if (TREE_CODE (op) == STRING_CST
+	   || (TREE_CODE (op) == ARRAY_REF
+	       && integer_zerop (TREE_OPERAND (op, 1))
+	       && TREE_CODE (TREE_OPERAND (op, 0)) == STRING_CST))
+	 return integer_one_node;
+    }
 
   /* If this expression has side effects, show we don't know it to be a
      constant.  Likewise if it's a pointer or aggregate type since in
