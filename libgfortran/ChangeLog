@@ -1,3 +1,13 @@
+2005-05-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Backport from mainline:
+	2005-05-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+	* configure.ac: Check for trunc and truncf in libm.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+	* intrinsics/c99_functions.c (trunc, truncf): New functions.
+	* c99_protos.h (trunc, truncf): Declare them.
+
 2005-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/17283

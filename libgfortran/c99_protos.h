@@ -113,6 +113,14 @@ extern float tanf(float);
 extern float tanhf(float);
 #endif
 
+#ifndef HAVE_TRUNC
+extern double trunc(double x);
+#endif
+
+#ifndef HAVE_TRUNCF
+extern float truncf(float x);
+#endif
+
 #ifndef HAVE_NEXTAFTERF
 extern float nextafterf(float, float);
 #endif
