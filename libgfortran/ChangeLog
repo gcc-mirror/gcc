@@ -1,3 +1,12 @@
+2005-05-27  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* runtime/in_pack_generic.c:  Adjust copyright years.
+	(in_pack_generic):  Change dimension of auxiliary arrays from
+	GFC_MAX_DIMENSION - 1 to GFC_MAX_DIMENSION.
+	* runtime/in_unpack_generic.c:  Adjust copyright years.
+	(in_unpack_generic):  Change dimension of auxiliary arrays from
+	GFC_MAX_DIMENSION - 1 to GFC_MAX_DIMENSION.
+
 2005-05-26  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/17283
