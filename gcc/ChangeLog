@@ -1,3 +1,10 @@
+2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21658
+	* tree-ssa-ccp.c (ccp_fold): Call fold_binary instead of
+	fold_binary_to_constant.  Likewise, call fold_unary instead of
+	fold_unary_to_constant.
+
 2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h: Implement integral type vector specialization.

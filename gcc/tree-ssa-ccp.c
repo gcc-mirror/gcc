@@ -849,7 +849,7 @@ ccp_fold (tree stmt)
 	    op0 = get_value (op0, true)->value;
 	}
 
-      retval = fold_unary_to_constant (code, TREE_TYPE (rhs), op0);
+      retval = fold_unary (code, TREE_TYPE (rhs), op0);
 
       /* If we folded, but did not create an invariant, then we can not
 	 use this expression.  */
@@ -900,7 +900,7 @@ ccp_fold (tree stmt)
 	    op1 = val->value;
 	}
 
-      retval = fold_binary_to_constant (code, TREE_TYPE (rhs), op0, op1);
+      retval = fold_binary (code, TREE_TYPE (rhs), op0, op1);
 
       /* If we folded, but did not create an invariant, then we can not
 	 use this expression.  */

@@ -1,3 +1,8 @@
+2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/21658
+	* gcc.dg/tree-ssa/pr21658.c: New.
+
 2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21455
