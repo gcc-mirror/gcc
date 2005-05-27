@@ -321,6 +321,7 @@ debug_headers = \
 	${debug_srcdir}/debug.h \
 	${debug_srcdir}/deque \
 	${debug_srcdir}/formatter.h \
+	${debug_srcdir}/functions.h \
 	${debug_srcdir}/hash_map \
 	${debug_srcdir}/hash_map.h \
 	${debug_srcdir}/hash_multimap.h \
@@ -329,6 +330,7 @@ debug_headers = \
 	${debug_srcdir}/hash_set.h \
 	${debug_srcdir}/list \
 	${debug_srcdir}/map \
+	${debug_srcdir}/macros.h \
 	${debug_srcdir}/map.h \
 	${debug_srcdir}/multimap.h \
 	${debug_srcdir}/multiset.h \

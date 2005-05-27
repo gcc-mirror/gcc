@@ -1,6 +1,6 @@
 // Debugging hash_map/hash_multimap implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -31,8 +31,8 @@
 #ifndef _GLIBCXX_DEBUG_HASH_MAP
 #define _GLIBCXX_DEBUG_HASH_MAP 1
 
-#include <hash_map>
-#include <debug/dbg_hash_map.h>
-#include <debug/dbg_hash_multimap.h>
+#include <ext/hash_map>
+#include <debug/hash_map.h>
+#include <debug/hash_multimap.h>
 
 #endif

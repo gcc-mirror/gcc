@@ -1,3 +1,22 @@
+2005-05-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/20534 
+	* include/debug/debug.h: Forwarding header, that pulls in details
+	only if in debug mode.
+	* include/debug/macros.h: ...transfer all the internal macros here.
+	* include/debug/functions.h: ...transfer all the functions here.
+	* include/debug/safe_iterator.h: Add functions.h, macros.h includes.
+	* include/debug/safe_sequence.h: Same.
+	* include/debug/vector: Tweak.
+	* include/Makefile.am (debug_headers): Add new includes.
+	* include/Makefile.in: Regenerate.
+	* testsuite/17_intro/no_assert_neg.cc: Add.
+
+	* include/ext/hash_set: Add debug mode include.
+	* include/ext/hash_map: Same.
+	* include/debug/hash_map: Fix included files to match actual files.
+	* include/debug/hash_set: Same.
+		
 2005-05-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13943

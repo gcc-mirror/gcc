@@ -1,6 +1,6 @@
 // Safe sequence implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,6 +32,8 @@
 #define _GLIBCXX_DEBUG_SAFE_SEQUENCE_H 1
 
 #include <debug/debug.h>
+#include <debug/macros.h>
+#include <debug/functions.h>
 #include <debug/safe_base.h>
 
 namespace __gnu_debug
