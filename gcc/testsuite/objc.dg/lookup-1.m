@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target *-*-darwin* } } */
 
 #include <objc/Object.h>
 #include <stdlib.h>
