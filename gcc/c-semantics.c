@@ -101,33 +101,6 @@ pop_stmt_list (tree t)
   return t;
 }
 
-/* T is a statement.  Add it to the statement-tree.  */
-
-tree
-add_stmt (tree t)
-{
-  enum tree_code code = TREE_CODE (t);
-
-  if (EXPR_P (t) && code != LABEL_EXPR)
-    {
-      if (!EXPR_HAS_LOCATION (t))
-	SET_EXPR_LOCATION (t, input_location);
-
-      /* When we expand a statement-tree, we must know whether or not the
-	 statements are full-expressions.  We record that fact here.  */
-      STMT_IS_FULL_EXPR_P (t) = stmts_are_full_exprs_p ();
-    }
-
-  if (code == LABEL_EXPR || code == CASE_LABEL_EXPR)
-    STATEMENT_LIST_HAS_LABEL (cur_stmt_list) = 1;
-
-  /* Add T to the statement-tree.  Non-side-effect statements need to be
-     recorded during statement expressions.  */
-  append_to_statement_list_force (t, &cur_stmt_list);
-
-  return t;
-}
-
 /* Build a generic statement based on the given type of node and
    arguments. Similar to `build_nt', except that we set
    EXPR_LOCATION to be the current source location.  */

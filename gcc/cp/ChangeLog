@@ -1,3 +1,9 @@
+2005-05-27  Ian Lance Taylor  <ian@airs.com>
+
+	* semantics.c (add_stmt): Add C++ frontend specific version.
+	* cp-tree.h (STMT_IS_FULL_EXPR_P): Define.
+	(stmts_are_full_exprs_p): Declare.
+
 2005-05-27  Roger Sayle  <roger@eyesopen.com>
 	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 

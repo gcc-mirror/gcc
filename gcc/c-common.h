@@ -31,7 +31,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       IDENTIFIER_MARKED (used by search routines).
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
-      STMT_IS_FULL_EXPR_P (in _STMT)
       STATEMENT_LIST_STMT_EXPR (in STATEMENT_LIST)
    2: unused
    3: STATEMENT_LIST_HAS_LABEL (in STATEMENT_LIST)
@@ -704,12 +703,6 @@ extern void finish_file	(void);
 
 /* These macros provide convenient access to the various _STMT nodes.  */
 
-/* Nonzero if this statement should be considered a full-expression,
-   i.e., if temporaries created during this statement should have
-   their destructors run at the end of this statement.  (In C, this
-   will always be false, since there are no destructors.)  */
-#define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
-
 /* Nonzero if a given STATEMENT_LIST represents the outermost binding
    if a statement expression.  */
 #define STATEMENT_LIST_STMT_EXPR(NODE) \
@@ -735,7 +728,6 @@ enum c_tree_code {
 
 #undef DEFTREECODE
 
-extern int stmts_are_full_exprs_p (void);
 extern int anon_aggr_type_p (tree);
 
 /* For a VAR_DECL that is an anonymous union, these are the various
