@@ -1,3 +1,9 @@
+2005-05-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21614
+	* g++.dg/expr/ptrmem6.C: New test.
+	* g++.dg/expr/ptrmem6a.C: Likewise.
+
 2005-05-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/21658
