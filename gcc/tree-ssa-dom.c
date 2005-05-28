@@ -228,12 +228,17 @@ struct vrp_element
    with useful information is very low.  */
 static htab_t vrp_data;
 
+typedef struct vrp_element *vrp_element_p;
+
+DEF_VEC_P(vrp_element_p);
+DEF_VEC_ALLOC_P(vrp_element_p,heap);
+
 /* An entry in the VRP_DATA hash table.  We record the variable and a
    varray of VRP_ELEMENT records associated with that variable.  */
 struct vrp_hash_elt
 {
   tree var;
-  varray_type records;
+  VEC(vrp_element_p,heap) *records;
 };
 
 /* Array of variables which have their values constrained by operations
@@ -350,6 +355,18 @@ free_all_edge_infos (void)
     }
 }
 
+/* Free an instance of vrp_hash_elt.  */
+
+static void
+vrp_free (void *data)
+{
+  struct vrp_hash_elt *elt = data;
+  struct VEC(vrp_element_p,heap) **vrp_elt = &elt->records;
+
+  VEC_free (vrp_element_p, heap, *vrp_elt);
+  free (elt);
+}
+
 /* Jump threading, redundancy elimination and const/copy propagation. 
 
    This pass may expose new symbols that need to be renamed into SSA.  For
@@ -367,7 +384,8 @@ tree_ssa_dominator_optimize (void)
 
   /* Create our hash tables.  */
   avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free);
-  vrp_data = htab_create (ceil_log2 (num_ssa_names), vrp_hash, vrp_eq, free);
+  vrp_data = htab_create (ceil_log2 (num_ssa_names), vrp_hash, vrp_eq,
+			  vrp_free);
   avail_exprs_stack = VEC_alloc (tree, heap, 20);
   const_and_copies_stack = VEC_alloc (tree, heap, 20);
   nonzero_vars_stack = VEC_alloc (tree, heap, 20);
@@ -1116,7 +1134,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	 the array backwards popping off records associated with our
 	 block.  Once we hit a record not associated with our block
 	 we are done.  */
-      varray_type var_vrp_records;
+      VEC(vrp_element_p,heap) **var_vrp_records;
 
       if (var == NULL)
 	break;
@@ -1127,17 +1145,17 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
       slot = htab_find_slot (vrp_data, &vrp_hash_elt, NO_INSERT);
 
       vrp_hash_elt_p = (struct vrp_hash_elt *) *slot;
-      var_vrp_records = vrp_hash_elt_p->records;
+      var_vrp_records = &vrp_hash_elt_p->records;
 
-      while (VARRAY_ACTIVE_SIZE (var_vrp_records) > 0)
+      while (VEC_length (vrp_element_p, *var_vrp_records) > 0)
 	{
 	  struct vrp_element *element
-	    = (struct vrp_element *)VARRAY_TOP_GENERIC_PTR (var_vrp_records);
+	    = VEC_last (vrp_element_p, *var_vrp_records);
 
 	  if (element->bb != bb)
 	    break;
   
-	  VARRAY_POP (var_vrp_records);
+	  VEC_pop (vrp_element_p, *var_vrp_records);
 	}
     }
 
@@ -2041,7 +2059,7 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 	  int limit;
 	  tree low, high, cond_low, cond_high;
 	  int lowequal, highequal, swapped, no_overlap, subset, cond_inverted;
-	  varray_type vrp_records;
+	  VEC(vrp_element_p,heap) **vrp_records;
 	  struct vrp_element *element;
 	  struct vrp_hash_elt vrp_hash_elt, *vrp_hash_elt_p;
 	  void **slot;
@@ -2094,11 +2112,9 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 	    return NULL;
 
 	  vrp_hash_elt_p = (struct vrp_hash_elt *) *slot;
-	  vrp_records = vrp_hash_elt_p->records;
-	  if (vrp_records == NULL)
-	    return NULL;
+	  vrp_records = &vrp_hash_elt_p->records;
 
-	  limit = VARRAY_ACTIVE_SIZE (vrp_records);
+	  limit = VEC_length (vrp_element_p, *vrp_records);
 
 	  /* If we have no value range records for this variable, or we are
 	     unable to extract a range for this condition, then there is
@@ -2130,8 +2146,7 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 	     conditional into the current range. 
 
 	     These properties also help us avoid unnecessary work.  */
-	   element
-	     = (struct vrp_element *)VARRAY_GENERIC_PTR (vrp_records, limit - 1);
+	   element = VEC_last (vrp_element_p, *vrp_records);
 
 	  if (element->high && element->low)
 	    {
@@ -2170,8 +2185,7 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 		{
 		  /* Get the high/low value from the previous element.  */
 		  struct vrp_element *prev
-		    = (struct vrp_element *)VARRAY_GENERIC_PTR (vrp_records,
-								limit - 2);
+		    = VEC_index (vrp_element_p, *vrp_records, limit - 2);
 		  low = prev->low;
 		  high = prev->high;
 
@@ -3311,7 +3325,7 @@ record_range (tree cond, basic_block bb)
     {
       struct vrp_hash_elt *vrp_hash_elt;
       struct vrp_element *element;
-      varray_type *vrp_records_p;
+      VEC(vrp_element_p,heap) **vrp_records_p;
       void **slot;
 
 
@@ -3323,7 +3337,7 @@ record_range (tree cond, basic_block bb)
       if (*slot == NULL)
 	*slot = (void *) vrp_hash_elt;
       else
-	free (vrp_hash_elt);
+	vrp_free (vrp_hash_elt);
 
       vrp_hash_elt = (struct vrp_hash_elt *) *slot;
       vrp_records_p = &vrp_hash_elt->records;
@@ -3334,10 +3348,7 @@ record_range (tree cond, basic_block bb)
       element->cond = cond;
       element->bb = bb;
 
-      if (*vrp_records_p == NULL)
-	VARRAY_GENERIC_PTR_INIT (*vrp_records_p, 2, "vrp records");
-      
-      VARRAY_PUSH_GENERIC_PTR (*vrp_records_p, element);
+      VEC_safe_push (vrp_element_p, heap, *vrp_records_p, element);
       VEC_safe_push (tree, heap, vrp_variables_stack, TREE_OPERAND (cond, 0));
     }
 }
