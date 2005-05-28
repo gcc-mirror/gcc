@@ -855,21 +855,6 @@ ccp_fold (tree stmt)
 	 use this expression.  */
       if (retval && ! is_gimple_min_invariant (retval))
 	return NULL;
-
-      /* If we could not fold the expression, but the arguments are all
-         constants and gimple values, then build and return the new
-	 expression. 
-
-	 In some cases the new expression is still something we can
-	 use as a replacement for an argument.  This happens with
-	 NOP conversions of types for example.
-
-	 In other cases the new expression can not be used as a
-	 replacement for an argument (as it would create non-gimple
-	 code).  But the new expression can still be used to derive
-	 other constants.  */
-      if (! retval && is_gimple_min_invariant (op0))
-	return build1 (code, TREE_TYPE (rhs), op0);
     }
 
   /* Binary and comparison operators.  We know one or both of the
@@ -906,23 +891,6 @@ ccp_fold (tree stmt)
 	 use this expression.  */
       if (retval && ! is_gimple_min_invariant (retval))
 	return NULL;
-      
-      /* If we could not fold the expression, but the arguments are all
-         constants and gimple values, then build and return the new
-	 expression. 
-
-	 In some cases the new expression is still something we can
-	 use as a replacement for an argument.  This happens with
-	 NOP conversions of types for example.
-
-	 In other cases the new expression can not be used as a
-	 replacement for an argument (as it would create non-gimple
-	 code).  But the new expression can still be used to derive
-	 other constants.  */
-      if (! retval
-	  && is_gimple_min_invariant (op0)
-	  && is_gimple_min_invariant (op1))
-	return build (code, TREE_TYPE (rhs), op0, op1);
     }
 
   /* We may be able to fold away calls to builtin functions if their
