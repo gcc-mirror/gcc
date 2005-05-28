@@ -1,3 +1,9 @@
+2005-05-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21614
+	* typeck.c (get_member_function_from_ptrfunc): Do not attempt
+	conversions to base classes of incomplete types.
+
 2005-05-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21455
