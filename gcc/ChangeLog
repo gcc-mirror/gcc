@@ -9,6 +9,10 @@
 	(simplify_cond_and_lookup_avail_expr, record_range): Update
 	uses of VRP records.
 
+	* tree-inline.c (cfun_stack): Change the type to
+	VEC(function_p,heap).
+	(push_cfun, pop_cfun): Use VEC instead of VARRAY.
+
 2005-05-27  Ian Lance Taylor  <ian@airs.com>
 
 	* c-decl.c (add_stmt): Add C frontend specific version.
