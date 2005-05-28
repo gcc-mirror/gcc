@@ -1,3 +1,13 @@
+2005-05-28  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-threadupdate.c: (create_edge_and_update_destination_phis):
+	Update profile.
+	* value-prof.c (tree_divmod_fixed_value_transform): Be more verbose in
+	debug output.
+	(tree_mod_subtract): Fix profile updating code.
+	(tree_divmod_values_to_profile): Do not produce useless value profilers
+	for divisions.
+
 2005-05-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-dom.c (vrp_element_p): Define.
