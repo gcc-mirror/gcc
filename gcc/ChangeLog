@@ -1,3 +1,8 @@
+2005-05-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-ccp.c (ccp_fold): Remove code that produces
+	non-gimple min minvariant.
+
 2005-05-28  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-threadupdate.c: (create_edge_and_update_destination_phis):
