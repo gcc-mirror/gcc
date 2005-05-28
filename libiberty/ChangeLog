@@ -1,3 +1,8 @@
+2005-05-28  Eli Zaretskii  <eliz@gnu.org>
+
+	* configure.ac: Add snprintf and vsnprintf to AC_CHEK_DECLS.
+	* config.in, configure: Regenerate.
+
 2005-05-25  Richard Henderson  <rth@redhat.com>
 
 	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_HIDDEN_ALIAS.
@@ -8,7 +13,7 @@
 2005-05-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* configure.ac: Check declarations for calloc(), getenv(),
-	malloc(), realloc() and sbrk(). 
+	malloc(), realloc() and sbrk().
 	* config.in: Regenerate.
 	* configure: Likewise.
 
@@ -20,7 +25,7 @@
 	(concat): Use XNEWVEC instead of xmalloc.
 	(reconcat): Likewise.
 	* cp-demangle.c (struct d_print_template): Rename member
-	"template" to "template_decl".  Adjust use throughout the file. 
+	"template" to "template_decl".  Adjust use throughout the file.
 	(d_print_resize): Properly cast return value of realloc().
 	(cplus_demangle_print): Same for malloc().
 	(d_demangle): Likewise.
@@ -50,7 +55,7 @@
 	* getpwd.c (getpwd): Use XNEWVEC.
 	(htab_create_alloc_ex): Use C90 prototype-style.
 	* lrealpath.c (lrealpath): Appropriately cast return value of
-	malloc(). 
+	malloc().
 	* make-relative-prefix.c (save_string): Likewise.
 	* make-temp-file.c (try_dir): Rename from "try".  Adjust use in
 	the file.
