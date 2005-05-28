@@ -489,8 +489,6 @@ extern void debug_loop_ir (void);
 extern void print_loop_ir (FILE *);
 extern void cleanup_dead_labels (void);
 extern void group_case_labels (void);
-extern bool cleanup_tree_cfg (void);
-extern void cleanup_tree_cfg_loop (void);
 extern tree first_stmt (basic_block);
 extern tree last_stmt (basic_block);
 extern tree *last_stmt_ptr (basic_block);
@@ -523,6 +521,12 @@ extern tree gimplify_build3 (block_stmt_iterator *, enum tree_code,
 extern void init_empty_tree_cfg (void);
 extern void fold_cond_expr_cond (void);
 extern void replace_uses_by (tree, tree);
+extern void start_recording_case_labels (void);
+extern void end_recording_case_labels (void);
+
+/* In tree-cfgcleanup.c  */
+extern bool cleanup_tree_cfg (void);
+extern void cleanup_tree_cfg_loop (void);
 
 /* In tree-pretty-print.c.  */
 extern void dump_generic_bb (FILE *, basic_block, int, int);
