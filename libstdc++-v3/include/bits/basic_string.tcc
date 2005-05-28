@@ -425,10 +425,9 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _M_destroy(const _Alloc& __a) throw ()
     {
-      const size_type __size = ((this->_M_capacity + 1) * sizeof(_CharT)
-				+ sizeof(_Rep_base) + sizeof(size_type) - 1);
-      _Raw_alloc(__a).deallocate(reinterpret_cast<size_type*>(this), __size
-				 / sizeof(size_type));
+      const size_type __size = sizeof(_Rep_base) +
+	                       (this->_M_capacity + 1) * sizeof(_CharT);
+      _Raw_bytes_alloc(__a).deallocate(reinterpret_cast<char*>(this), __size);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -569,12 +568,9 @@ namespace std
 	__capacity = 2 * __old_capacity;
 
       // NB: Need an array of char_type[__capacity], plus a terminating
-      // null char_type() element, plus enough for the _Rep data structure,
-      // plus sizeof(size_type) - 1 to upper round to a size multiple
-      // of sizeof(size_type).
+      // null char_type() element, plus enough for the _Rep data structure.
       // Whew. Seemingly so needy, yet so elemental.
-      size_type __size = ((__capacity + 1) * sizeof(_CharT) + sizeof(_Rep)
-			  + sizeof(size_type) - 1);
+      size_type __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 
       const size_type __adj_size = __size + __malloc_header_size;
       if (__adj_size > __pagesize && __capacity > __old_capacity)
@@ -584,14 +580,12 @@ namespace std
 	  // Never allocate a string bigger than _S_max_size.
 	  if (__capacity > _S_max_size)
 	    __capacity = _S_max_size;
-	  __size = ((__capacity + 1) * sizeof(_CharT) + sizeof(_Rep)
-		    + sizeof(size_type) - 1);
+	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 	}
 
       // NB: Might throw, but no worries about a leak, mate: _Rep()
       // does not throw.
-      void* __place = _Raw_alloc(__alloc).allocate(__size
-						   / sizeof(size_type));
+      void* __place = _Raw_bytes_alloc(__alloc).allocate(__size);
       _Rep *__p = new (__place) _Rep;
       __p->_M_capacity = __capacity;
       return __p;

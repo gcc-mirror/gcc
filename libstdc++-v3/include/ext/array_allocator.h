@@ -121,10 +121,9 @@ namespace __gnu_cxx
       allocate(size_type __n, const void* = 0)
       {
 	static size_type __array_used;
-	if (_M_array == 0
-	    || __array_used + __n > sizeof(*_M_array) / sizeof(_Tp))
+	if (_M_array == 0 || __array_used + __n > _M_array->size())
 	  std::__throw_bad_alloc();
-	pointer __ret = reinterpret_cast<_Tp*>(_M_array) + __array_used;
+	pointer __ret = _M_array->begin() + __array_used;
 	__array_used += __n;
 	return __ret;
       }
