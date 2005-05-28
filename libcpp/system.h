@@ -342,10 +342,14 @@ extern void abort (void);
 #include "libiberty.h"
 #include "safe-ctype.h"
 
-/* 1 if we have C99 designated initializers.  */
+/* 1 if we have C99 designated initializers.
+
+   ??? C99 designated initializers are not supported by most C++
+   compilers, including G++.  -- gdr, 2005-05-18  */
 #if !defined(HAVE_DESIGNATED_INITIALIZERS)
 #define HAVE_DESIGNATED_INITIALIZERS \
-  ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+  ((!defined(__cplusplus) && (GCC_VERSION >= 2007)) \
+   || (__STDC_VERSION__ >= 199901L))
 #endif
 
 /* Be conservative and only use enum bitfields with GCC.
@@ -379,7 +383,9 @@ extern void abort (void);
 #undef TRUE
 #undef FALSE
 
+#ifndef __cplusplus
 #define bool unsigned char
+#endif
 #define true 1
 #define false 0
 

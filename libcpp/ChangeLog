@@ -1,3 +1,90 @@
+2005-05-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* configure.ac: Check declarations for asprintf and vasprintf.
+	* config.in: Regenerate.
+	* configure: Likewise.
+
+	* charset.c (conversion_loop): Use XRESIZEVEC.
+	(convert_no_conversion): Likewise.
+	(convert_using_iconv): Likewise.
+	(init_iconv_desc): Cast return value of alloca.
+	(cpp_host_to_exec_charset): Use XNEWVEC.
+	(emit_numeric_escape): Use XRESIZEVEC.
+	(cpp_interpret_string): Use XNEWVEC.
+	(cpp_interpret_string): Use XRESIZEVEC.
+	(_cpp_interpret_identifier): Cast return value of alloca.
+	(_cpp_convert_input): Use XNEWVEC and XRESIZEVEC.
+	* directives.c (glue_header_name): Use XNEWVEC and XRESIZEVEC.
+	(parse_include): Use XNEWVEC.
+	(insert_pragma_entry): Rename local variable "new" to
+	"new_entry". 
+	(save_registered_pragmas): Cast return value of xmemdup.
+	(destringize_and_run): Same for alloca.
+	(parse_assertion): Likewise.
+	(do_assert): Cast allocated storage to proper type.
+	(cpp_define): Likewise.
+	(_cpp_define_builtin): Likewise.
+	(cpp_undef): Likewise.
+	(handle_assertion): Likewise.
+	(cpp_push_buffer): Rename local variable "new" to "new_buffer".
+	* expr.c (CPP_UPLUS): Cast value to type cpp_ttype.
+	(CPP_UMINUS): Likewise.
+	(struct cpp_operator): Rename from struct operator.
+	(_cpp_expand_op_stack): Use XRESIZEVEC.
+	* files.c (pch_open_file): Use XNEWVEC.
+	(pch_open_file): Use XRESIZEVEC.
+	(read_file_guts): Use XNEWVEC and XRESIZEVEC.
+	(dir_name_of_file): Use XNEWVEC.
+	(make_cpp_file): Use XCNEW.
+	(make_cpp_dir): Likewise.
+	(allocate_file_hash_entries): USE XNEWVEC.
+	(cpp_included): Cast return value of htab_find_with_hash.
+	(append_file_to_dir): Use XNEWVEC.
+	(read_filename_string): Likewise. Use XRESIZEVEC too.
+	(read_name_map): Cast return value of alloca.  Use XRESIZEVEC.
+	(remap_filename): Use XNEWVEC.
+	(struct pchf_entry): Move definition out of struct pchf_data.
+	(_cpp_save_file_entries): Use XCNEWVAR.
+	(_cpp_read_file_entries): Use XNEWVAR.
+	* identifiers.c (alloc_node): Use XOBNEW.
+	* init.c (cpp_create_reader): Use XCNEW.
+	(cpp_init_builtins): Cast of b->value to enum builtin_type.
+	(read_original_directory): Cast return value of alloca.
+	* lex.c (add_line_note): Use XRESIZEVEC.
+	(warn_about_normalization): Use XNEWVEC.
+	(_cpp_lex_direct): Cast node->directive_index to (enum cpp_ttype).
+	(new_buff): Use XNEWVEC.
+	* line-map.c (linemap_add): Use XRESIZEVEC.
+	* macro.c (builtin_macro): Cast return value of alloca.
+	(paste_tokens): Likewise.
+	(expand_arg): Use XNEWVEC and XRESIZEVEC.
+	(_cpp_save_parameter): Use XRESIZEVEC.
+	(create_iso_definition): Cast allocated storage to proper type.
+	(_cpp_create_definition): Likewise.
+	(cpp_macro_definition): Use XRESIZEVEC.
+	* makedepend.c (add_clm): Use XNEW.
+	(add_dir): Likewise.
+	* mkdeps.c (munge): Use XNEWVEC.
+	(deps_init): Use XCNEW.
+	(deps_add_target): Use XRESIZEVEC.
+	(deps_add_default_target): Cast return value of alloca.
+	(deps_add_dep): Use XRESIZEVEC.
+	(deps_add_vpath): Likewise.  Use XNEWVEC too.
+	(deps_restore): Likewise.
+	* pch.c (save_idents): Use XNEW and XNEWVEC.
+	(cpp_save_state): Use XNEW.
+	(count_defs): Cast return value of htab_find.
+	(write_defs): Likewise.
+	(cpp_write_pch_deps): Use XNEWVEC.
+	(collect_ht_nodes): Use XRESIZEVEC.
+	(cpp_valid_state): Use XNEWVEC.
+	(save_macros): Use XRESIZEVEC.  Cast return value of xmemdup.
+	* symtab.c (ht_create): Use XCNEW.
+	(ht_lookup_with_hash): Cast return value of obstack_copy0.
+	(ht_expand): Use XCNEWVEC.
+	* system.h (HAVE_DESIGNATED_INITIALIZERS): False if __cplusplus.
+	(bool): Do not define if __cplusplus.
+
 2005-05-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* directives.c (#sccs table entry): Mark IN_I, consistent with #ident.

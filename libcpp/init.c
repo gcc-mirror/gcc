@@ -137,7 +137,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   /* Initialize this instance of the library if it hasn't been already.  */
   init_library ();
 
-  pfile = xcalloc (1, sizeof (cpp_reader));
+  pfile = XCNEW (cpp_reader);
 
   cpp_set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_multichar) = 1;
@@ -357,7 +357,7 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
       cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
       hp->type = NT_MACRO;
       hp->flags |= NODE_BUILTIN | NODE_WARN;
-      hp->value.builtin = b->value;
+      hp->value.builtin = (enum builtin_type) b->value;
     }
 
   if (CPP_OPTION (pfile, cplusplus))
@@ -545,7 +545,7 @@ read_original_directory (cpp_reader *pfile)
 
   if (pfile->cb.dir_change)
     {
-      char *debugdir = alloca (token->val.str.len - 3);
+      char *debugdir = (char *) alloca (token->val.str.len - 3);
 
       memcpy (debugdir, (const char *) token->val.str.text + 1,
 	      token->val.str.len - 4);

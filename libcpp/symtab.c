@@ -56,7 +56,7 @@ ht_create (unsigned int order)
   unsigned int nslots = 1 << order;
   hash_table *table;
 
-  table = xcalloc (1, sizeof (hash_table));
+  table = XCNEW (hash_table);
 
   /* Strings need no alignment.  */
   _obstack_begin (&table->stack, 0, 0,
@@ -65,7 +65,7 @@ ht_create (unsigned int order)
 
   obstack_alignment_mask (&table->stack) = 0;
 
-  table->entries = xcalloc (nslots, sizeof (hashnode));
+  table->entries = XCNEWVEC (hashnode, nslots);
   table->entries_owned = true;
   table->nslots = nslots;
   return table;
@@ -161,7 +161,8 @@ ht_lookup_with_hash (hash_table *table, const unsigned char *str,
   HT_LEN (node) = (unsigned int) len;
   node->hash_value = hash;
   if (insert == HT_ALLOC)
-    HT_STR (node) = obstack_copy0 (&table->stack, str, len);
+    HT_STR (node) = (const unsigned char *) obstack_copy0 (&table->stack,
+                                                           str, len);
   else
     HT_STR (node) = str;
 
@@ -181,7 +182,7 @@ ht_expand (hash_table *table)
   unsigned int size, sizemask;
 
   size = table->nslots * 2;
-  nentries = xcalloc (size, sizeof (hashnode));
+  nentries = XCNEWVEC (hashnode, size);
   sizemask = size - 1;
 
   p = table->entries;

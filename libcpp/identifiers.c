@@ -37,7 +37,7 @@ alloc_node (hash_table *table)
 {
   cpp_hashnode *node;
 
-  node = obstack_alloc (&table->pfile->hash_ob, sizeof (cpp_hashnode));
+  node = XOBNEW (&table->pfile->hash_ob, cpp_hashnode);
   memset (node, 0, sizeof (cpp_hashnode));
   return node;
 }
