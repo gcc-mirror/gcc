@@ -183,9 +183,6 @@ struct loop;
 struct loops;
 
 /* Declared in tree-flow.h.  */
-struct bb_ann_d;
-
-/* Declared in tree-flow.h.  */
 struct edge_prediction;
 
 /* A basic block is a sequence of instructions with only entry and

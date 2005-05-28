@@ -17,6 +17,8 @@
 	gate_merge_phi, pass_merge_phi): Move to ...
 	* tree-cfgcleanup.c: ... here.
 
+	* basic-block.h: Remove forward declaration of bb_ann_d.
+
 2005-05-28  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-threadupdate.c: (create_edge_and_update_destination_phis):
