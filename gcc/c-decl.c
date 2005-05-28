@@ -418,6 +418,31 @@ static tree grokdeclarator (const struct c_declarator *,
 static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
 
+/* T is a statement.  Add it to the statement-tree.  This is the
+   C/ObjC version--C++ has a slightly different version of this
+   function.  */
+
+tree
+add_stmt (tree t)
+{
+  enum tree_code code = TREE_CODE (t);
+
+  if (EXPR_P (t) && code != LABEL_EXPR)
+    {
+      if (!EXPR_HAS_LOCATION (t))
+	SET_EXPR_LOCATION (t, input_location);
+    }
+
+  if (code == LABEL_EXPR || code == CASE_LABEL_EXPR)
+    STATEMENT_LIST_HAS_LABEL (cur_stmt_list) = 1;
+
+  /* Add T to the statement-tree.  Non-side-effect statements need to be
+     recorded during statement expressions.  */
+  append_to_statement_list_force (t, &cur_stmt_list);
+
+  return t;
+}
+
 /* States indicating how grokdeclarator() should handle declspecs marked
    with __attribute__((deprecated)).  An object declared as
    __attribute__((deprecated)) suppresses warnings of uses of other
@@ -6716,16 +6741,6 @@ c_dup_lang_specific_decl (tree decl)
    function at once processing in the C front end. Currently these
    functions are not called from anywhere in the C front end, but as
    these changes continue, that will change.  */
-
-/* Returns nonzero if the current statement is a full expression,
-   i.e. temporaries created during that statement should be destroyed
-   at the end of the statement.  */
-
-int
-stmts_are_full_exprs_p (void)
-{
-  return 0;
-}
 
 /* Returns the stmt_tree (if any) to which statements are currently
    being added.  If there is no active statement-tree, NULL is

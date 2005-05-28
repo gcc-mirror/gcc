@@ -1,3 +1,11 @@
+2005-05-27  Ian Lance Taylor  <ian@airs.com>
+
+	* c-decl.c (add_stmt): Add C frontend specific version.
+	(stmts_are_full_exprs_p): Remove.
+	* c-common.h (STMT_IS_FULL_EXPR_P): Remove.
+	(stmts_are_full_exprs_p): Don't declare.
+	* c-semantics.c (add_stmt): Remove.
+
 2005-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/mips/mips-protos.h (mips_declare_object): Add printf

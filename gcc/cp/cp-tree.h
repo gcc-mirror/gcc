@@ -59,6 +59,7 @@ struct diagnostic_context;
       ICS_ELLIPSIS_FLAG (in _CONV)
       DECL_INITIALIZED_P (in VAR_DECL)
       TYPENAME_IS_CLASS_P (in TYPENAME_TYPE)
+      STMT_IS_FULL_EXPR_P (in _STMT)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -258,6 +259,11 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
   TREE_LANG_FLAG_0 (STATEMENT_LIST_CHECK (NODE))
 #define STATEMENT_LIST_TRY_BLOCK(NODE) \
   TREE_LANG_FLAG_2 (STATEMENT_LIST_CHECK (NODE))
+
+/* Nonzero if this statement should be considered a full-expression,
+   i.e., if temporaries created during this statement should have
+   their destructors run at the end of this statement.  */
+#define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
 
 /* Marks the result of a statement expression.  */
 #define EXPR_STMT_STMT_EXPR_RESULT(NODE) \
@@ -4063,6 +4069,7 @@ extern tree get_deferred_access_checks		(void);
 extern void pop_to_parent_deferring_access_checks	(void);
 extern void perform_deferred_access_checks	(void);
 extern void perform_or_defer_access_check	(tree, tree);
+extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics                   (void);
 extern tree do_poplevel				(tree);
 extern void add_decl_expr			(tree);
