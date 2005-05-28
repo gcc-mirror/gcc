@@ -1,3 +1,14 @@
+2005-05-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-dom.c (vrp_element_p): Define.
+	(vrp_hash_elt): Change the type of records to
+	VEC(vrp_element_p,heap).
+	(vrp_free): New.
+	(tree_ssa_dominator_optimize): Pass vrp_free to htab_create.
+	Update uses of VRP records.
+	(simplify_cond_and_lookup_avail_expr, record_range): Update
+	uses of VRP records.
+
 2005-05-27  Ian Lance Taylor  <ian@airs.com>
 
 	* c-decl.c (add_stmt): Add C frontend specific version.
