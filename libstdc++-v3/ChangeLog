@@ -1,3 +1,23 @@
+2005-05-28  Paolo Carlini  <pcarlini@suse.de>
+
+	Revert:
+	2005-05-18  Paolo Carlini  <pcarlini@suse.de>
+		    Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/19495
+	* include/bits/basic_string.h (_Raw_bytes_alloc): Rebind to
+	size_type instead of char and rename to _Raw_alloc.
+	* include/bits/basic_string.tcc (_Rep::_M_destroy, _Rep::_S_create):
+	Use the above.
+	* src/bitmap_allocator.cc: Add instantiation for size_type.
+	* src/mt_allocator.cc: Likewise.
+	* src/pool_allocator.cc: Likewise.
+	* include/ext/array_allocator.h: Tweak slightly, avoid assuming
+	the existence of an _Array::begin() and size() members.
+	* testsuite/ext/array_allocator/2.cc: Tweak to use an allocator
+	of size_type, instead of char, thus avoiding problems with
+	rebinds, not treated correctly by array_allocator.
+
 2005-05-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/abi.html: Mention 3.4.0 as the current baseline; add

@@ -41,10 +41,6 @@ namespace __gnu_cxx
     <bitmap_allocator<wchar_t>::_Alloc_block*, 
      bitmap_allocator<wchar_t>::_Alloc_block*> >;
 
-    template class __mini_vector<std::pair
-    <bitmap_allocator<size_t>::_Alloc_block*, 
-     bitmap_allocator<size_t>::_Alloc_block*> >;
-
     template class __mini_vector<size_t*>;
 
     template size_t** __lower_bound
