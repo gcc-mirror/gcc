@@ -2346,14 +2346,23 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 	  gcc_unreachable ();
 	}
 
-      /* Convert down to the right base before using the instance.  First
-         use the type...  */
+      /* Convert down to the right base before using the instance.  A
+	 special case is that in a pointer to member of class C, C may
+	 be incomplete.  In that case, the function will of course be
+	 a member of C, and no conversion is required.  In fact,
+	 lookup_base will fail in that case, because incomplete
+	 classes do not have BINFOs.  */ 
       basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (fntype));
-      basetype = lookup_base (TREE_TYPE (TREE_TYPE (instance_ptr)),
-			      basetype, ba_check, NULL);
-      instance_ptr = build_base_path (PLUS_EXPR, instance_ptr, basetype, 1);
-      if (instance_ptr == error_mark_node)
-	return error_mark_node;
+      if (!same_type_ignoring_top_level_qualifiers_p 
+	  (basetype, TREE_TYPE (TREE_TYPE (instance_ptr))))
+	{
+	  basetype = lookup_base (TREE_TYPE (TREE_TYPE (instance_ptr)),
+				  basetype, ba_check, NULL);
+	  instance_ptr = build_base_path (PLUS_EXPR, instance_ptr, basetype, 
+					  1);
+	  if (instance_ptr == error_mark_node)
+	    return error_mark_node;
+	}
       /* ...and then the delta in the PMF.  */
       instance_ptr = build2 (PLUS_EXPR, TREE_TYPE (instance_ptr),
 			     instance_ptr, delta);
