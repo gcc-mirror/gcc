@@ -32,39 +32,46 @@ This portion of the document is incomplete and undergoing massive expansion
 and editing.  All contributions and corrections are strongly encouraged. 
 
 @menu
-* Introduction:     Introduction
-* @code{ABORT}:     ABORT,     Abort the program     
-* @code{ABS}:       ABS,       Absolute value     
-* @code{ACHAR}:     ACHAR,     Character in @acronym{ASCII} collating sequence
-* @code{ACOS}:      ACOS,      Arccosine function
-* @code{ADJUSTL}:   ADJUSTL,   Left adjust a string
-* @code{ADJUSTR}:   ADJUSTR,   Right adjust a string
-* @code{AIMAG}:     AIMAG,     Imaginary part of complex number
-* @code{AINT}:      AINT,      Truncate to a whole number
-* @code{ALL}:       ALL,       Determine if all values are true
-* @code{ALLOCATED}: ALLOCATED, Status of allocatable entity
-* @code{ANINT}:     ANINT,     Nearest whole number
-* @code{ANY}:       ANY,       Determine if any values are true
-* @code{ASIN}:      ASIN,      Arcsine function
-* @code{ATAN}:      ATAN,      Arctangent function
-* @code{BESJ0}:     BESJ0,     Bessel function of the first kind of order 0
-* @code{BESJ1}:     BESJ1,     Bessel function of the first kind of order 1
-* @code{BESJN}:     BESJN,     Bessel function of the first kind
-* @code{BESY0}:     BESY0,     Bessel function of the second kind of order 0
-* @code{BESY1}:     BESY1,     Bessel function of the second kind of order 1
-* @code{BESYN}:     BESYN,     Bessel function of the second kind
-* @code{COS}:       COS,       Cosine function
-* @code{COSH}:      COSH,      Hyperbolic cosine function
-* @code{ERF}:       ERF,       Error function
-* @code{ERFC}:      ERFC,      Complementary error function
-* @code{EXP}:       EXP,       Cosine function
-* @code{LOG}:       LOG,       Logarithm function
-* @code{LOG10}:     LOG10,     Base 10 logarithm function 
-* @code{SQRT}:      SQRT,      Square-root function
-* @code{SIN}:       SIN,       Sine function
-* @code{SINH}:      SINH,      Hyperbolic sine function
-* @code{TAN}:       TAN,       Tangent function
-* @code{TANH}:      TANH,      Hyperbolic tangent function
+* Introduction:         Introduction
+* @code{ABORT}:         ABORT,     Abort the program     
+* @code{ABS}:           ABS,       Absolute value     
+* @code{ACHAR}:         ACHAR,     Character in @acronym{ASCII} collating sequence
+* @code{ACOS}:          ACOS,      Arccosine function
+* @code{ADJUSTL}:       ADJUSTL,   Left adjust a string
+* @code{ADJUSTR}:       ADJUSTR,   Right adjust a string
+* @code{AIMAG}:         AIMAG,     Imaginary part of complex number
+* @code{AINT}:          AINT,      Truncate to a whole number
+* @code{ALL}:           ALL,       Determine if all values are true
+* @code{ALLOCATED}:     ALLOCATED, Status of allocatable entity
+* @code{ANINT}:         ANINT,     Nearest whole number
+* @code{ANY}:           ANY,       Determine if any values are true
+* @code{ASIN}:          ASIN,      Arcsine function
+* @code{ASSOCIATED}:    ASSOCIATED, Status of a pointer or pointer/target pair
+* @code{ATAN}:          ATAN,      Arctangent function
+* @code{ATAN2}:         ATAN2,     Arctangent function
+* @code{BESJ0}:         BESJ0,     Bessel function of the first kind of order 0
+* @code{BESJ1}:         BESJ1,     Bessel function of the first kind of order 1
+* @code{BESJN}:         BESJN,     Bessel function of the first kind
+* @code{BESY0}:         BESY0,     Bessel function of the second kind of order 0
+* @code{BESY1}:         BESY1,     Bessel function of the second kind of order 1
+* @code{BESYN}:         BESYN,     Bessel function of the second kind
+* @code{BIT_SIZE}:      BIT_SIZE,  Bit size inquiry function
+* @code{BTEST}:         BTEST,     Bit test function
+* @code{CEILING}:       CEILING,   Integer ceiling function
+* @code{CHAR}:          CHAR,      Character conversion function
+* @code{CMPLX}:         CMPLX,     Complex conversion function
+* @code{COS}:           COS,       Cosine function
+* @code{COSH}:          COSH,      Hyperbolic cosine function
+* @code{ERF}:           ERF,       Error function
+* @code{ERFC}:          ERFC,      Complementary error function
+* @code{EXP}:           EXP,       Cosine function
+* @code{LOG}:           LOG,       Logarithm function
+* @code{LOG10}:         LOG10,     Base 10 logarithm function 
+* @code{SQRT}:          SQRT,      Square-root function
+* @code{SIN}:           SIN,       Sine function
+* @code{SINH}:          SINH,      Hyperbolic sine function
+* @code{TAN}:           TAN,       Tangent function
+* @code{TANH}:          TANH,      Hyperbolic tangent function
 @end menu
 
 @node Introduction
@@ -122,7 +129,7 @@ which is suitable for debugging purposes.
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 non-elemental subroutine
 
 @item @emph{Syntax}:
@@ -159,7 +166,7 @@ end program test_abort
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -214,7 +221,7 @@ in the @acronym{ASCII} collating sequence.
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -222,7 +229,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{I} @tab The type shall be an @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -253,7 +260,7 @@ end program test_achar
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -261,7 +268,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}, and a magnitude that is
+@item @var{X} @tab The type shall be @code{REAL(*)}, and a magnitude that is
 less than one.
 @end multitable
 
@@ -300,7 +307,7 @@ Spaces are inserted at the end of the string as needed.
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -327,6 +334,7 @@ end program test_adjustl
 @end table
 
 
+
 @node ADJUSTR
 @section @code{ADJUSTR} --- Right adjust a string 
 @findex @code{ADJUSTR} intrinsic
@@ -340,7 +348,7 @@ Spaces are inserted at the start of the string as needed.
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -367,6 +375,7 @@ end program test_adjustr
 @end table
 
 
+
 @node AIMAG
 @section @code{AIMAG} --- Imaginary part of complex number  
 @findex @code{AIMAG} intrinsic
@@ -380,7 +389,7 @@ end program test_adjustr
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -414,6 +423,7 @@ end program test_aimag
 @end table
 
 
+
 @node AINT
 @section @code{AINT} --- Imaginary part of complex number  
 @findex @code{AINT} intrinsic
@@ -427,7 +437,7 @@ end program test_aimag
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -470,9 +480,10 @@ end program test_aint
 @end table
 
 
+
 @node ALL
 @section @code{ALL} --- All values in @var{MASK} along @var{DIM} are true 
-  @findex @code{ALL} intrinsic
+@findex @code{ALL} intrinsic
 @cindex true values
 
 @table @asis
@@ -483,7 +494,7 @@ in the array along dimension @var{DIM}.
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 transformational function
 
 @item @emph{Syntax}:
@@ -536,6 +547,7 @@ end program test_all
 @end table
 
 
+
 @node ALLOCATED
 @section @code{ALLOCATED} --- Status of an allocatable entity
 @findex @code{ALLOCATED} intrinsic
@@ -548,7 +560,7 @@ end program test_all
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 inquiry function
 
 @item @emph{Syntax}:
@@ -575,6 +587,7 @@ end program test_allocated
 @end table
 
 
+
 @node ANINT
 @section @code{ANINT} --- Imaginary part of complex number  
 @findex @code{ANINT} intrinsic
@@ -588,7 +601,7 @@ end program test_allocated
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -629,9 +642,10 @@ end program test_anint
 @end table
 
 
+
 @node ANY
 @section @code{ANY} --- Any value in @var{MASK} along @var{DIM} is true 
-  @findex @code{ANY} intrinsic
+@findex @code{ANY} intrinsic
 @cindex true values
 
 @table @asis
@@ -642,7 +656,7 @@ in the array along dimension @var{DIM}.
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 transformational function
 
 @item @emph{Syntax}:
@@ -695,6 +709,7 @@ end program test_any
 @end table
 
 
+
 @node ASIN
 @section @code{ASIN} --- Arcsine function 
 @findex @code{ASIN} intrinsic
@@ -708,7 +723,7 @@ end program test_any
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -716,13 +731,13 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}, and a magnitude that is
+@item @var{X} @tab The type shall be @code{REAL(*)}, and a magnitude that is
 less than one.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of type @code{REAL(*)} and it lies in the
-range @math{ \pi / 2 \leq \arccos (x) \leq \pi / 2}.  The kind type
+range @math{-\pi / 2 \leq \arccos (x) \leq \pi / 2}.  The kind type
 parameter is the same as @var{X}.
 
 @item @emph{Example}:
@@ -741,6 +756,80 @@ end program test_asin
 @end table
 
 
+
+@node ASSOCIATED
+@section @code{ASSOCIATED} --- Status of a pointer or pointer/target pair 
+@findex @code{ASSOCIATED} intrinsic
+@cindex pointer status
+
+@table @asis
+@item @emph{Description}:
+@code{ASSOCIATED(PTR [, TGT])} determines the status of the pointer @var{PTR}
+or if @var{PTR} is associated with the target @var{TGT}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+inquiry function
+
+@item @emph{Syntax}:
+@code{L = ASSOCIATED(PTR)} @*
+@code{L = ASSOCIATED(PTR [, TGT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{PTR} @tab @var{PTR} shall have the @code{POINTER} attribute and
+it can be of any type.
+@item @var{TGT} @tab (Optional) @var{TGT} shall be a @code{POINTER} or
+a @code{TARGET}.  It must have the same type, kind type parameter, and
+array rank as @var{PTR}.
+@end multitable
+The status of neither @var{PTR} nor @var{TGT} can be undefined.
+
+@item @emph{Return value}:
+@code{ASSOCIATED(PTR)} returns a scalar value of type @code{LOGICAL(4)}.
+There are several cases:
+@table @asis
+@item (A) If the optional @var{TGT} is not present, then @code{ASSOCIATED(PTR)}
+is true if @var{PTR} is associated with a target; otherwise, it returns false.
+@item (B) If @var{TGT} is present and a scalar target, the result is true if
+@var{TGT}
+is not a 0 sized storage sequence and the target associated with @var{PTR}
+occupies the same storage units.  If @var{PTR} is disassociated, then the 
+result is false.
+@item (C) If @var{TGT} is present and an array target, the result is true if
+@var{TGT} and @var{PTR} have the same shape, are not 0 sized arrays, are
+arrays whose elements are not 0 sized storage sequences, and @var{TGT} and
+@var{PTR} occupy the same storage units in array element order.
+As in case(B), the result is false, if @var{PTR} is disassociated.
+@item (D) If @var{TGT} is present and an scalar pointer, the result is true if
+target associated with @var{PTR} and the target associated with @var{TGT}
+are not 0 sized storage sequences and occupy the same storage units.
+The result is false, if either @var{TGT} or @var{PTR} is disassociated.
+@item (E) If @var{TGT} is present and an array pointer, the result is true if
+target associated with @var{PTR} and the target associated with @var{TGT}
+have the same shape, are not 0 sized arrays, are arrays whose elements are
+not 0 sized storage sequences, and @var{TGT} and @var{PTR} occupy the same
+storage units in array element order.
+The result is false, if either @var{TGT} or @var{PTR} is disassociated.
+@end table
+
+@item @emph{Example}:
+@smallexample
+program test_associated
+   implicit none
+   real, target  :: tgt(2) = (/1., 2./)
+   real, pointer :: ptr(:)
+   ptr => tgt
+   if (associated(ptr)     .eqv. .false.) call abort
+   if (associated(ptr,tgt) .eqv. .false.) call abort
+end program test_associated
+@end smallexample
+@end table
+
+
+
 @node ATAN
 @section @code{ATAN} --- Arctangent function 
 @findex @code{ATAN} intrinsic
@@ -754,7 +843,7 @@ end program test_asin
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -762,7 +851,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -786,6 +875,58 @@ end program test_atan
 
 
 
+@node ATAN2
+@section @code{ATAN2} --- Arctangent function 
+@findex @code{ATAN2} intrinsic
+@findex @code{DATAN2} intrinsic
+@cindex arctangent
+
+@table @asis
+@item @emph{Description}:
+@code{ATAN2(Y,X)} computes the arctangent of the complex number @math{X + i Y}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = ATAN2(Y,X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{Y} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type and kind type parameter shall be the same as @var{Y}.
+If @var{Y} is zero, then @var{X} must be nonzero.
+@end multitable
+
+@item @emph{Return value}:
+The return value has the same type and kind type parameter as @var{Y}.
+It is the principle value of the complex number @math{X + i Y}.  If
+@var{X} is nonzero, then it lies in the range @math{-\pi \le \arccos (x) \leq \pi}.
+The sign is positive if @var{Y} is positive.  If @var{Y} is zero, then
+the return value is zero if @var{X} is positive and @math{\pi} if @var{X}
+is negative.  Finally, if @var{X} is zero, then the magnitude of the result
+is @math{\pi/2}.
+
+@item @emph{Example}:
+@smallexample
+program test_atan2
+  real(4) :: x = 1.e0_4, y = 0.5e0_4
+  x = atan2(y,x)
+end program test_atan2
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type    @tab Option
+@item @code{DATAN2(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)} @tab f95, gnu
+@end multitable
+@end table
+
+
+
 @node BESJ0
 @section @code{BESJ0} --- Bessel function of the first kind of order 0
 @findex @code{BESJ0} intrinsic
@@ -800,7 +941,7 @@ of @var{X}.
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -808,7 +949,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
@@ -846,7 +987,7 @@ of @var{X}.
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -854,7 +995,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
@@ -892,7 +1033,7 @@ end program test_besj1
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -900,12 +1041,12 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{N} @tab The type shall be an @code{INTEGER(*)}.
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{N} @tab The type shall be @code{INTEGER(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL(*)}.
 
 @item @emph{Example}:
 @smallexample
@@ -917,8 +1058,9 @@ end program test_besjn
 
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESJN(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@item Name             @tab Argument            @tab Return type       @tab Option
+@item @code{DBESJN(X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}    @tab gnu
+@item                  @tab @code{REAL(8) X}    @tab                   @tab
 @end multitable
 @end table
 
@@ -938,7 +1080,7 @@ of @var{X}.
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -946,11 +1088,11 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL(*)}.
 
 @item @emph{Example}:
 @smallexample
@@ -983,7 +1125,7 @@ of @var{X}.
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -991,11 +1133,11 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL(*)}.
 
 @item @emph{Example}:
 @smallexample
@@ -1028,7 +1170,7 @@ end program test_besy1
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1036,12 +1178,12 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{N} @tab The type shall be an @code{INTEGER(*)}.
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{N} @tab The type shall be @code{INTEGER(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL(*)}.
 
 @item @emph{Example}:
 @smallexample
@@ -1053,10 +1195,219 @@ end program test_besyn
 
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESYN(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@item Name               @tab Argument            @tab Return type     @tab Option
+@item @code{DBESYN(N,X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}  @tab gnu
+@item                    @tab @code{REAL(8)    X} @tab                 @tab 
 @end multitable
 @end table
+
+
+
+@node BIT_SIZE
+@section @code{BIT_SIZE} --- Bit size inquiry function
+@findex @code{BIT_SIZE} intrinsic
+@cindex bit_size
+
+@table @asis
+@item @emph{Description}:
+@code{BIT_SIZE(I)} returns the number of bits (integer precision plus sign bit) represented by the type of @var{I}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = BIT_SIZE(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER(*)}
+
+@item @emph{Example}:
+@smallexample
+program test_bit_size
+    integer :: i = 123
+    integer :: size
+    size = bit_size(i)
+    print *, size
+end program test_bit_size
+@end smallexample
+@end table
+
+
+
+@node BTEST
+@section @code{BTEST} --- Bit test function
+@findex @code{BTEST} intrinsic
+@cindex BTEST
+
+@table @asis
+@item @emph{Description}:
+@code{BTEST(I,POS)} returns logical .TRUE. if the bit at @var{POS} in @var{I} is set.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = BTEST(I,POS)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{POS} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{LOGICAL}
+
+@item @emph{Example}:
+@smallexample
+program test_btest
+    integer :: i = 32768 + 1024 + 64
+    integer :: pos
+    logical :: bool
+    do pos=0,16
+        bool = btest(i, pos) 
+        print *, pos, bool
+    end do
+end program test_btest
+@end smallexample
+@end table
+
+
+
+@node CEILING
+@section @code{CEILING} --- Integer ceiling function
+@findex @code{CEILING} intrinsic
+@cindex CEILING
+
+@table @asis
+@item @emph{Description}:
+@code{CEILING(X,[KIND])} returns the least integer greater than or equal to @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = CEILING(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{KIND} @tab Optional scaler integer initialization expression.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER(KIND)}
+
+@item @emph{Example}:
+@smallexample
+program test_ceiling
+    real :: x = 63.29
+    real :: y = -63.59
+    print *, ceiling(x) ! returns 64
+    print *, ceiling(y) ! returns -63
+end program test_ceiling
+@end smallexample
+@end table
+
+
+
+@node CHAR
+@section @code{CHAR} --- Character conversion function
+@findex @code{CHAR} intrinsic
+@cindex CHAR
+
+@table @asis
+@item @emph{Description}:
+@code{CHAR(I,[KIND])} returns the character represented by the integer @var{I}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{C = CHAR(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{KIND} @tab Optional scaler integer initialization expression.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{CHARACTER(1)}
+
+@item @emph{Example}:
+@smallexample
+program test_char
+    integer :: i = 74
+    character(1) :: c
+    c = char(i)
+    print *, i, c ! returns 'J'
+end program test_char
+@end smallexample
+@end table
+
+
+
+@node CMPLX
+@section @code{CMPLX} --- Complex conversion function
+@findex @code{CMPLX} intrinsic
+@cindex CMPLX
+
+@table @asis
+@item @emph{Description}:
+@code{CMPLX(X,[Y,KIND])} returns a complex number where @var{X} is converted to the real component.  If @var{Y} is present it is converted to the imaginary component.  If @var{Y} is not present then the imaginary component is set to
+0.0.  If @var{X} is complex then @var{Y} must not be present.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{C = CMPLX(X)}
+@code{C = CMPLX(X,Y)}
+@code{C = CMPLX(X,Y,KIND)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type may be @code{INTEGER(*)} or @code{REAL(*)} or @code{COMPLEX(*)}.
+@item @var{Y} @tab Optional, allowed if @var{X} is not @code{COMPLEX(*)}.  May be @code{INTEGER(*)} or @code{REAL(*)}. 
+@item @var{KIND} @tab Optional scaler integer initialization expression.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{COMPLEX(*)}
+
+@item @emph{Example}:
+@smallexample
+program test_cmplx
+    integer :: i = 42
+    real :: x = 3.14
+    complex :: z
+    z = cmplx(i, x)
+    print *, z, cmplx(x)
+end program test_cmplx
+@end smallexample
+@end table
+
 
 
 @node COS
@@ -1074,7 +1425,7 @@ end program test_besyn
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1082,7 +1433,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
 
@@ -1108,6 +1459,7 @@ end program test_cos
 @end table
 
 
+
 @node COSH
 @section @code{COSH} --- Hyperbolic cosine function 
 @findex @code{COSH} intrinsic
@@ -1121,7 +1473,7 @@ end program test_cos
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1129,7 +1481,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -1152,10 +1504,11 @@ end program test_cosh
 @end table
 
 
+
 @node ERF
 @section @code{ERF} --- Error function 
 @findex @code{ERF} intrinsic
-@cindex error
+@cindex error function
 
 @table @asis
 @item @emph{Description}:
@@ -1164,7 +1517,7 @@ end program test_cosh
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1172,11 +1525,11 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it is positive
+The return value is a scalar of type @code{REAL(*)} and it is positive
 (@math{ - 1 \leq erf (x) \leq 1 }.
 
 @item @emph{Example}:
@@ -1199,7 +1552,7 @@ end program test_erf
 @node ERFC
 @section @code{ERFC} --- Error function 
 @findex @code{ERFC} intrinsic
-@cindex error
+@cindex error function
 
 @table @asis
 @item @emph{Description}:
@@ -1208,7 +1561,7 @@ end program test_erf
 @item @emph{Option}:
 gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1216,11 +1569,11 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it is positive
+The return value is a scalar of type @code{REAL(*)} and it is positive
 (@math{ 0 \leq erfc (x) \leq 2 }.
 
 @item @emph{Example}:
@@ -1255,7 +1608,7 @@ end program test_erfc
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1263,12 +1616,12 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and kind than @var{X}.
+The return value has same type and kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1289,6 +1642,7 @@ end program test_exp
 @end table
 
 
+
 @node LOG
 @section @code{LOG} --- Logarithm function
 @findex @code{LOG} intrinsic
@@ -1306,7 +1660,7 @@ end program test_exp
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1314,7 +1668,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
 
@@ -1359,7 +1713,7 @@ end program test_log
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1367,7 +1721,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
 
@@ -1408,7 +1762,7 @@ end program test_log10
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1416,7 +1770,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
 
@@ -1443,7 +1797,6 @@ end program test_sin
 
 
 
-
 @node SINH
 @section @code{SINH} --- Hyperbolic sine function 
 @findex @code{SINH} intrinsic
@@ -1457,7 +1810,7 @@ end program test_sin
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1465,7 +1818,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -1504,7 +1857,7 @@ end program test_sinh
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1512,7 +1865,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
 
@@ -1555,7 +1908,7 @@ end program test_sqrt
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1563,7 +1916,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -1586,6 +1939,7 @@ end program test_tan
 @end table
 
 
+
 @node TANH
 @section @code{TANH} --- Hyperbolic tangent function 
 @findex @code{TANH} intrinsic
@@ -1599,7 +1953,7 @@ end program test_tan
 @item @emph{Option}:
 f95, gnu
 
-@item @emph{Type}:
+@item @emph{Class}:
 elemental function
 
 @item @emph{Syntax}:
@@ -1607,7 +1961,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -1631,21 +1985,6 @@ end program test_tanh
 
 
 
-@comment gen   associated
-@comment 
-@comment gen   atan2
-@comment       datan2
-@comment 
-@comment gen   bit_size 
-@comment 
-@comment gen   btest
-@comment 
-@comment gen   ceiling
-@comment 
-@comment gen   char
-@comment 
-@comment gen   cmplx 
-@comment 
 @comment gen   command_argument_count
 @comment 
 @comment gen   conjg

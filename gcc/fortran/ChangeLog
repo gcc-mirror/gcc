@@ -1,3 +1,9 @@
+2005-05-28  Jerry DeLisle   <jvdelisle@verizon.net>
+            Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi: added documentation for BIT_SIZE, BTEST, CHAR, CEILING,
+	CMPLX, ATAN2, and ASSOCIATED.
+
 2005-05-27  Steven G. Kargl  <kargls@comcast.net>
 
 	* trans-array.c (gfc_trans_deferred_array): Use build_int_cst to force
