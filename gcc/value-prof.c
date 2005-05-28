@@ -1221,12 +1221,6 @@ tree_divmod_fixed_value_transform (tree stmt)
   if (simple_cst_equal (op2, value) != 1 || 2 * count < all)
     return false;
 
-  if (dump_file)
-    {
-      fprintf (dump_file, "Div/mod by constant transformation on insn ");
-      print_generic_stmt (dump_file, stmt, TDF_SLIM);
-    }
-
   /* Compute probability of taking the optimal path.  */
   prob = (count * REG_BR_PROB_BASE + all / 2) / all;
 
@@ -1234,6 +1228,16 @@ tree_divmod_fixed_value_transform (tree stmt)
 				 (unsigned HOST_WIDE_INT) val,
 				 val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1);
   result = tree_divmod_fixed_value (stmt, op, op1, op2, tree_val, prob, count, all);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Div/mod by constant ");
+      print_generic_expr (dump_file, value, TDF_SLIM);
+      fprintf (dump_file, "=");
+      print_generic_expr (dump_file, tree_val, TDF_SLIM);
+      fprintf (dump_file, " transformation on insn ");
+      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+    }
 
   TREE_OPERAND (modify, 1) = result;
 
@@ -1489,11 +1493,11 @@ tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2,
   e12->flags &= ~EDGE_FALLTHRU;
   e12->flags |= EDGE_FALSE_VALUE;
   e12->probability = REG_BR_PROB_BASE - prob1;
-  e12->count = count1;
+  e12->count = all - count1;
 
   e14 = make_edge (bb, bb4, EDGE_TRUE_VALUE);
   e14->probability = prob1;
-  e14->count = all - count1;
+  e14->count = count1;
 
   if (ncounts)  /* Assumed to be 0 or 1.  */
     {
@@ -1653,16 +1657,6 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
 
       if (is_gimple_reg (divisor))
 	{
-	  /* Check for a special case where the divisor is power(s) of 2.
-	     This is more aggressive than the RTL version, under the
-	     assumption that later phases will reduce / or % by power of 2
-	     to something clever most of the time.  Signed or unsigned.  */
-	  hist = ggc_alloc (sizeof (*hist));
-	  hist->hvalue.tree.value = divisor;
-	  hist->hvalue.tree.stmt = stmt;
-	  hist->type = HIST_TYPE_POW2;
-	  VEC_quick_push (histogram_value, *values, hist);
-
 	  /* Check for the case where the divisor is the same value most
 	     of the time.  */
 	  hist = ggc_alloc (sizeof (*hist));
@@ -1677,6 +1671,13 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
       if (TREE_CODE (rhs) == TRUNC_MOD_EXPR
 	  && TYPE_UNSIGNED (type))
 	{
+          /* Check for a special case where the divisor is power of 2.  */
+	  hist = ggc_alloc (sizeof (*hist));
+	  hist->hvalue.tree.value = divisor;
+	  hist->hvalue.tree.stmt = stmt;
+	  hist->type = HIST_TYPE_POW2;
+	  VEC_quick_push (histogram_value, *values, hist);
+
 	  hist = ggc_alloc (sizeof (*hist));
 	  hist->hvalue.tree.stmt = stmt;
 	  hist->hvalue.tree.value

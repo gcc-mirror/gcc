@@ -1,3 +1,11 @@
+2005-05-28  Jan Hubicka  <jh@suse.cz>
+
+	* tree-prof.exp: Fix comment.
+	* value-prof-1.c: New.
+	* value-prof-2.c: New.
+	* value-prof-3.c: New.
+	* value-prof-4.c: New.
+
 2005-05-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21614

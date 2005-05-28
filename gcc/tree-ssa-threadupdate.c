@@ -299,6 +299,9 @@ create_edge_and_update_destination_phis (struct redirection_data *rd)
   edge e = make_edge (rd->dup_block, rd->outgoing_edge->dest, EDGE_FALLTHRU);
   tree phi;
 
+  e->probability = REG_BR_PROB_BASE;
+  e->count = rd->dup_block->count;
+
   /* If there are any PHI nodes at the destination of the outgoing edge
      from the duplicate block, then we will need to add a new argument
      to them.  The argument should have the same value as the argument
