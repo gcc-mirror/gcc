@@ -531,6 +531,16 @@ extern int vasprintf (char **, const char *, va_list)
   ATTRIBUTE_PRINTF(2,0);
 #endif
 
+#if defined(HAVE_DECL_SNPRINTF) && !HAVE_DECL_SNPRINTF
+/* Like sprintf but prints at most N characters.  */
+extern int snprintf (char *, size_t, const char *, ...) ATTRIBUTE_PRINTF_3;
+#endif
+
+#if defined(HAVE_DECL_VSNPRINTF) && !HAVE_DECL_VSNPRINTF
+/* Like vsprintf but prints at most N characters.  */
+extern int vsnprintf (char *, size_t, const char *, va_list);
+#endif
+
 #define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
 
 /* Drastically simplified alloca configurator.  If we're using GCC,
