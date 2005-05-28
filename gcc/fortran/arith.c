@@ -259,9 +259,9 @@ gfc_arith_init_1 (void)
       mpfr_init (real_info->tiny);
       mpfr_set (real_info->tiny, b, GFC_RND_MODE);
 
-      /* subnormal (x) = b**(emin - digit + 1) */
+      /* subnormal (x) = b**(emin - digit) */
       mpfr_set_ui (b, real_info->radix, GFC_RND_MODE);
-      mpfr_pow_si (b, b, real_info->min_exponent - real_info->digits + 1,
+      mpfr_pow_si (b, b, real_info->min_exponent - real_info->digits,
 		   GFC_RND_MODE);
 
       mpfr_init (real_info->subnormal);
@@ -381,9 +381,42 @@ gfc_check_real_range (mpfr_t p, int kind)
   if (mpfr_sgn (q) == 0)
     retval = ARITH_OK;
   else if (mpfr_cmp (q, gfc_real_kinds[i].huge) > 0)
-      retval = ARITH_OVERFLOW;
+    retval = ARITH_OVERFLOW;
   else if (mpfr_cmp (q, gfc_real_kinds[i].subnormal) < 0)
     retval = ARITH_UNDERFLOW;
+  else if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
+    {
+      /* MPFR operates on a numbers with a given precision and enormous
+	exponential range.  To represent subnormal numbers the exponent is
+	allowed to become smaller than emin, but always retains the full
+	precision.  This function resets unused bits to 0 to alleviate
+	rounding problems.  Note, a future version of MPFR will have a
+ 	mpfr_subnormalize() function, which handles this truncation in a
+	more efficient and robust way.  */
+
+      int j, k;
+      char *bin, *s;
+      mp_exp_t e;
+
+      bin = mpfr_get_str (NULL, &e, gfc_real_kinds[i].radix, 0, q, GMP_RNDN);
+      k = gfc_real_kinds[i].digits - (gfc_real_kinds[i].min_exponent - e);
+      for (j = k; j < gfc_real_kinds[i].digits; j++)
+	bin[j] = '0';
+      /* Need space for '0.', bin, 'E', and e */
+      s = (char *) gfc_getmem (strlen(bin)+10);
+      sprintf (s, "0.%sE%d", bin, (int) e);
+      mpfr_set_str (q, s, gfc_real_kinds[i].radix, GMP_RNDN);
+
+      if (mpfr_sgn (p) < 0)
+	mpfr_neg (p, q, GMP_RNDN);
+      else
+	mpfr_set (p, q, GMP_RNDN);
+
+      gfc_free (s);
+      gfc_free (bin);
+
+      retval = ARITH_OK;
+    }
   else
     retval = ARITH_OK;
 

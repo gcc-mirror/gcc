@@ -1,3 +1,8 @@
+2005-05-28  Steven G. Kargl  <kargls@comcast.net>
+
+	* arith.c (gfc_arith_init_1): Fix off by one problem;
+	(gfc_check_integer_range): Chop extra bits in subnormal numbers.
+
 2005-05-28  Jerry DeLisle   <jvdelisle@verizon.net>
             Steven G. Kargl  <kargls@comcast.net>
 
