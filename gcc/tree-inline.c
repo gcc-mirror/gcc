@@ -1813,28 +1813,25 @@ estimate_num_insns (tree expr)
   return num;
 }
 
+typedef struct function *function_p;
+
+DEF_VEC_P(function_p);
+DEF_VEC_ALLOC_P(function_p,heap);
+
 /* Initialized with NOGC, making this poisonous to the garbage collector.  */
-static varray_type cfun_stack;
+static VEC(function_p,heap) *cfun_stack;
 
 void
 push_cfun (struct function *new_cfun)
 {
-  static bool initialized = false;
-
-  if (!initialized)
-    {
-      VARRAY_GENERIC_PTR_NOGC_INIT (cfun_stack, 20, "cfun_stack");
-      initialized = true;
-    }
-  VARRAY_PUSH_GENERIC_PTR (cfun_stack, cfun);
+  VEC_safe_push (function_p, heap, cfun_stack, cfun);
   cfun = new_cfun;
 }
 
 void
 pop_cfun (void)
 {
-  cfun = (struct function *)VARRAY_TOP_GENERIC_PTR (cfun_stack);
-  VARRAY_POP (cfun_stack);
+  cfun = VEC_pop (function_p, cfun_stack);
 }
 
 /* Install new lexical TREE_BLOCK underneath 'current_block'.  */
