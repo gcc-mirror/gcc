@@ -29,6 +29,10 @@
    */
 #undef HAVE_DECL_ABORT
 
+/* Define to 1 if you have the declaration of `asprintf', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ASPRINTF
+
 /* Define to 1 if you have the declaration of `basename', and to 0 if you
    don't. */
 #undef HAVE_DECL_BASENAME
@@ -104,6 +108,10 @@
 /* Define to 1 if you have the declaration of `putc_unlocked', and to 0 if you
    don't. */
 #undef HAVE_DECL_PUTC_UNLOCKED
+
+/* Define to 1 if you have the declaration of `vasprintf', and to 0 if you
+   don't. */
+#undef HAVE_DECL_VASPRINTF
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H

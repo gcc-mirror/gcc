@@ -85,8 +85,8 @@ add_line_note (cpp_buffer *buffer, const uchar *pos, unsigned int type)
   if (buffer->notes_used == buffer->notes_cap)
     {
       buffer->notes_cap = buffer->notes_cap * 2 + 200;
-      buffer->notes = xrealloc (buffer->notes,
-				buffer->notes_cap * sizeof (_cpp_line_note));
+      buffer->notes = XRESIZEVEC (_cpp_line_note, buffer->notes,
+                                  buffer->notes_cap);
     }
 
   buffer->notes[buffer->notes_used].pos = pos;
@@ -439,7 +439,7 @@ warn_about_normalization (cpp_reader *pfile,
     {
       /* Make sure that the token is printed using UCNs, even
 	 if we'd otherwise happily print UTF-8.  */
-      unsigned char *buf = xmalloc (cpp_token_len (token));
+      unsigned char *buf = XNEWVEC (unsigned char, cpp_token_len (token));
       size_t sz;
 
       sz = cpp_spell_token (pfile, token, buf, false) - buf;
@@ -970,7 +970,7 @@ _cpp_lex_direct (cpp_reader *pfile)
       if (result->val.node->flags & NODE_OPERATOR)
 	{
 	  result->flags |= NAMED_OP;
-	  result->type = result->val.node->directive_index;
+	  result->type = (enum cpp_ttype) result->val.node->directive_index;
 	}
       break;
 
@@ -1541,7 +1541,7 @@ new_buff (size_t len)
     len = MIN_BUFF_SIZE;
   len = CPP_ALIGN (len);
 
-  base = xmalloc (len + sizeof (_cpp_buff));
+  base = XNEWVEC (unsigned char, len + sizeof (_cpp_buff));
   result = (_cpp_buff *) (base + len);
   result->base = base;
   result->cur = base;

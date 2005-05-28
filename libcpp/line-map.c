@@ -97,7 +97,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   if (set->used == set->allocated)
     {
       set->allocated = 2 * set->allocated + 256;
-      set->maps = xrealloc (set->maps, set->allocated * sizeof (struct line_map));
+      set->maps = XRESIZEVEC (struct line_map, set->maps, set->allocated);
     }
 
   map = &set->maps[set->used];

@@ -255,7 +255,7 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 
   flen = strlen (path);
   len = flen + sizeof (extension);
-  pchname = xmalloc (len);
+  pchname = XNEWVEC (char, len);
   memcpy (pchname, path, flen);
   memcpy (pchname + flen, extension, sizeof (extension));
 
@@ -279,7 +279,7 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 	      if (dlen + plen > len)
 		{
 		  len += dlen + 64;
-		  pchname = xrealloc (pchname, len);
+		  pchname = XRESIZEVEC (char, pchname, len);
 		}
 	      memcpy (pchname + plen, d->d_name, dlen);
 	      valid = validate_pch (pfile, file, pchname);
@@ -549,7 +549,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
        the majority of C source files.  */
     size = 8 * 1024;
 
-  buf = xmalloc (size + 1);
+  buf = XNEWVEC (uchar, size + 1);
   total = 0;
   while ((count = read (file->fd, buf + total, size - total)) > 0)
     {
@@ -560,7 +560,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
 	  if (regular)
 	    break;
 	  size *= 2;
-	  buf = xrealloc (buf, size + 1);
+	  buf = XRESIZEVEC (uchar, buf, size + 1);
 	}
     }
 
@@ -815,7 +815,7 @@ dir_name_of_file (_cpp_file *file)
   if (!file->dir_name)
     {
       size_t len = lbasename (file->path) - file->path;
-      char *dir_name = xmalloc (len + 1);
+      char *dir_name = XNEWVEC (char, len + 1);
 
       memcpy (dir_name, file->path, len);
       dir_name[len] = '\0';
@@ -896,7 +896,7 @@ make_cpp_file (cpp_reader *pfile, cpp_dir *dir, const char *fname)
 {
   _cpp_file *file;
 
-  file = xcalloc (1, sizeof (_cpp_file));
+  file = XCNEW (_cpp_file);
   file->main_file = !pfile->buffer;
   file->fd = -1;
   file->dir = dir;
@@ -938,7 +938,7 @@ make_cpp_dir (cpp_reader *pfile, const char *dir_name, int sysp)
     if (entry->start_dir == NULL)
       return entry->u.dir;
 
-  dir = xcalloc (1, sizeof (cpp_dir));
+  dir = XCNEW (cpp_dir);
   dir->next = pfile->quote_include;
   dir->name = (char *) dir_name;
   dir->len = strlen (dir_name);
@@ -961,8 +961,8 @@ allocate_file_hash_entries (cpp_reader *pfile)
 {
   pfile->file_hash_entries_used = 0;
   pfile->file_hash_entries_allocated = 127;
-  pfile->file_hash_entries = xmalloc
-    (pfile->file_hash_entries_allocated * sizeof (struct file_hash_entry));
+  pfile->file_hash_entries = XNEWVEC (struct file_hash_entry,
+                                      pfile->file_hash_entries_allocated);
 }
 
 /* Return a new file hash entry.  */
@@ -983,8 +983,8 @@ cpp_included (cpp_reader *pfile, const char *fname)
 {
   struct file_hash_entry *entry;
 
-  entry = htab_find_with_hash (pfile->file_hash, fname,
-			       htab_hash_string (fname));
+  entry = (struct file_hash_entry *)
+     htab_find_with_hash (pfile->file_hash, fname, htab_hash_string (fname));
 
   while (entry && (entry->start_dir == NULL || entry->u.file->err_no))
     entry = entry->next;
@@ -1204,7 +1204,7 @@ append_file_to_dir (const char *fname, cpp_dir *dir)
 
   dlen = dir->len;
   flen = strlen (fname);
-  path = xmalloc (dlen + 1 + flen + 1);
+  path = XNEWVEC (char, dlen + 1 + flen + 1);
   memcpy (path, dir->name, dlen);
   if (dlen && path[dlen - 1] != '/')
     path[dlen++] = '/';
@@ -1222,7 +1222,7 @@ read_filename_string (int ch, FILE *f)
   int len;
 
   len = 20;
-  set = alloc = xmalloc (len + 1);
+  set = alloc = XNEWVEC (char, len + 1);
   if (! is_space (ch))
     {
       *set++ = ch;
@@ -1231,7 +1231,7 @@ read_filename_string (int ch, FILE *f)
 	  if (set - alloc == len)
 	    {
 	      len *= 2;
-	      alloc = xrealloc (alloc, len + 1);
+	      alloc = XRESIZEVEC (char, alloc, len + 1);
 	      set = alloc + len / 2;
 	    }
 	  *set++ = ch;
@@ -1252,14 +1252,14 @@ read_name_map (cpp_dir *dir)
   size_t len, count = 0, room = 9;
 
   len = dir->len;
-  name = alloca (len + sizeof (FILE_NAME_MAP_FILE) + 1);
+  name = (char *) alloca (len + sizeof (FILE_NAME_MAP_FILE) + 1);
   memcpy (name, dir->name, len);
   if (len && name[len - 1] != '/')
     name[len++] = '/';
   strcpy (name + len, FILE_NAME_MAP_FILE);
   f = fopen (name, "r");
 
-  dir->name_map = xmalloc (room * sizeof (char *));
+  dir->name_map = XNEWVEC (const char *, room);
 
   /* Silently return NULL if we cannot open.  */
   if (f)
@@ -1276,7 +1276,7 @@ read_name_map (cpp_dir *dir)
 	  if (count + 2 > room)
 	    {
 	      room += 8;
-	      dir->name_map = xrealloc (dir->name_map, room * sizeof (char *));
+	      dir->name_map = XRESIZEVEC (const char *, dir->name_map, room);
 	    }
 
 	  dir->name_map[count] = read_filename_string (ch, f);
@@ -1333,7 +1333,7 @@ remap_filename (cpp_reader *pfile, _cpp_file *file)
 	return NULL;
 
       len = dir->len + (p - fname + 1);
-      new_dir = xmalloc (len + 1);
+      new_dir = XNEWVEC (char, len + 1);
       memcpy (new_dir, dir->name, dir->len);
       memcpy (new_dir + dir->len, fname, p - fname + 1);
       new_dir[len] = '\0';
@@ -1426,6 +1426,16 @@ cpp_get_prev (cpp_buffer *b)
    that's OK.  The code does rely on having entries with the same size
    next to each other.  */
 
+struct pchf_entry {
+  /* The size of this file.  This is used to save running a MD5 checksum
+     if the sizes don't match.  */
+  off_t size;
+  /* The MD5 checksum of this file.  */
+  unsigned char sum[16];
+  /* Is this file to be included only once?  */
+  bool once_only;
+};
+
 struct pchf_data {
   /* Number of pchf_entry structures.  */
   size_t count;
@@ -1435,15 +1445,7 @@ struct pchf_data {
      the structure if we're processing a regular #include.  */
   bool have_once_only;
 
-  struct pchf_entry {
-    /* The size of this file.  This is used to save running a MD5 checksum
-       if the sizes don't match.  */
-    off_t size;
-    /* The MD5 checksum of this file.  */
-    unsigned char sum[16];
-    /* Is this file to be included only once?  */
-    bool once_only;
-  } entries[1];
+  struct pchf_entry entries[1];
 };
 
 static struct pchf_data *pchf;
@@ -1471,7 +1473,7 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *fp)
 
   result_size = (sizeof (struct pchf_data)
 		 + sizeof (struct pchf_entry) * (count - 1));
-  result = xcalloc (result_size, 1);
+  result = XCNEWVAR (struct pchf_data, result_size);
 
   result->count = 0;
   result->have_once_only = false;
@@ -1534,7 +1536,7 @@ _cpp_read_file_entries (cpp_reader *pfile ATTRIBUTE_UNUSED, FILE *f)
        != 1)
     return false;
 
-  pchf = xmalloc (sizeof (struct pchf_data)
+  pchf = XNEWVAR (struct pchf_data, sizeof (struct pchf_data)
 		  + sizeof (struct pchf_entry) * (d.count - 1));
   memcpy (pchf, &d, sizeof (struct pchf_data) - sizeof (struct pchf_entry));
   if (fread (pchf->entries, sizeof (struct pchf_entry), d.count, f)

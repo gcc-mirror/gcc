@@ -137,11 +137,11 @@ save_idents (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 	  struct cpp_string *sp;
 	  unsigned char *text;
 	  
-	  sp = xmalloc (sizeof (struct cpp_string));
+	  sp = XNEW (struct cpp_string);
 	  *slot = sp;
 
 	  sp->len = NODE_LEN (hn);
-	  sp->text = text = xmalloc (NODE_LEN (hn));
+	  sp->text = text = XNEWVEC (unsigned char, NODE_LEN (hn));
 	  memcpy (text, NODE_NAME (hn), NODE_LEN (hn));
 	}
     }
@@ -193,7 +193,7 @@ int
 cpp_save_state (cpp_reader *r, FILE *f)
 {
   /* Save the list of non-void identifiers for the dependency checking.  */
-  r->savedstate = xmalloc (sizeof (struct cpp_savedstate));
+  r->savedstate = XNEW (struct cpp_savedstate);
   r->savedstate->definedhash = htab_create (100, cpp_string_hash, 
 					    cpp_string_eq, NULL);
   cpp_forall_identifiers (r, save_idents, r->savedstate);
@@ -226,7 +226,7 @@ count_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 	
 	news.len = NODE_LEN (hn);
 	news.text = NODE_NAME (hn);
-	slot = htab_find (ss->definedhash, &news);
+	slot = (void **) htab_find (ss->definedhash, &news);
 	if (slot == NULL)
 	  {
 	    ss->hashsize += NODE_LEN (hn) + 1;
@@ -265,7 +265,7 @@ write_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 	
 	news.len = NODE_LEN (hn);
 	news.text = NODE_NAME (hn);
-	slot = htab_find (ss->definedhash, &news);
+	slot = (void **) htab_find (ss->definedhash, &news);
 	if (slot == NULL)
 	  {
 	    ss->defs[ss->n_defs] = hn;
@@ -310,13 +310,13 @@ cpp_write_pch_deps (cpp_reader *r, FILE *f)
   ss->n_defs = 0;
   cpp_forall_identifiers (r, count_defs, ss);
 
-  ss->defs = xmalloc (ss->n_defs * sizeof (cpp_hashnode *));
+  ss->defs = XNEWVEC (cpp_hashnode *, ss->n_defs);
   ss->n_defs = 0;
   cpp_forall_identifiers (r, write_defs, ss);
 
   /* Sort the list, copy it into a buffer, and write it out.  */
   qsort (ss->defs, ss->n_defs, sizeof (cpp_hashnode *), &comp_hashnodes);
-  definedstrs = ss->definedstrs = xmalloc (ss->hashsize);
+  definedstrs = ss->definedstrs = XNEWVEC (unsigned char, ss->hashsize);
   for (i = 0; i < ss->n_defs; ++i)
     {
       size_t len = NODE_LEN (ss->defs[i]);
@@ -390,7 +390,7 @@ collect_ht_nodes (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn,
       if (nl->n_defs == nl->asize)
         {
           nl->asize *= 2;
-          nl->defs = xrealloc (nl->defs, nl->asize * sizeof (cpp_hashnode *));
+          nl->defs = XRESIZEVEC (cpp_hashnode *, nl->defs, nl->asize);
         }
 
       nl->defs[nl->n_defs] = hn;
@@ -418,7 +418,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 {
   struct macrodef_struct m;
   size_t namebufsz = 256;
-  unsigned char *namebuf = xmalloc (namebufsz);
+  unsigned char *namebuf = XNEWVEC (unsigned char, namebufsz);
   unsigned char *undeftab = NULL;
   struct ht_node_list nl = { 0, 0, 0 };
   unsigned char *first, *last;
@@ -450,7 +450,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	{
 	  free (namebuf);
 	  namebufsz = m.definition_length + 256;
-	  namebuf = xmalloc (namebufsz);
+	  namebuf = XNEWVEC (unsigned char, namebufsz);
 	}
 
       if ((size_t)read (fd, namebuf, m.definition_length) 
@@ -488,14 +488,14 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 
   /* Read in the list of identifiers that must not be defined.
      Check that they really aren't.  */
-  undeftab = xmalloc (m.definition_length);
+  undeftab = XNEWVEC (unsigned char, m.definition_length);
   if ((size_t) read (fd, undeftab, m.definition_length) != m.definition_length)
     goto error;
 
   /* Collect identifiers from the current hash table.  */
   nl.n_defs = 0;
   nl.asize = 10;
-  nl.defs = xmalloc (nl.asize * sizeof (cpp_hashnode *));
+  nl.defs = XNEWVEC (cpp_hashnode *, nl.asize);
   cpp_forall_identifiers (r, &collect_ht_nodes, &nl);
   qsort (nl.defs, nl.n_defs, sizeof (cpp_hashnode *), &comp_hashnodes);
  
@@ -577,8 +577,7 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
       if (data->count == data->array_size)
 	{
 	  data->array_size *= 2;
-	  data->defns = xrealloc (data->defns, (data->array_size 
-						* sizeof (uchar *)));
+	  data->defns = XRESIZEVEC (uchar *, data->defns, (data->array_size)); 
 	}
       
       switch (h->type)
@@ -592,7 +591,8 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
 	    const uchar * defn = cpp_macro_definition (r, h);
 	    size_t defnlen = ustrlen (defn);
 
-	    data->defns[data->count] = xmemdup (defn, defnlen, defnlen + 2);
+	    data->defns[data->count] = (uchar *) xmemdup (defn, defnlen,
+                                                          defnlen + 2);
 	    data->defns[data->count][defnlen] = '\n';
 	  }
 	  break;
@@ -611,10 +611,10 @@ save_macros (cpp_reader *r, cpp_hashnode *h, void *data_p)
 void
 cpp_prepare_state (cpp_reader *r, struct save_macro_data **data)
 {
-  struct save_macro_data *d = xmalloc (sizeof (struct save_macro_data));
+  struct save_macro_data *d = XNEW (struct save_macro_data);
   
   d->array_size = 512;
-  d->defns = xmalloc (d->array_size * sizeof (d->defns[0]));
+  d->defns = XNEWVEC (uchar *, d->array_size);
   d->count = 0;
   cpp_forall_identifiers (r, save_macros, d);
   d->saved_pragmas = _cpp_save_pragma_names (r);

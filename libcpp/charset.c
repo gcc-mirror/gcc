@@ -486,7 +486,7 @@ conversion_loop (int (*const one_conversion)(iconv_t, const uchar **, size_t *,
 
       outbytesleft += OUTBUF_BLOCK_SIZE;
       to->asize += OUTBUF_BLOCK_SIZE;
-      to->text = xrealloc (to->text, to->asize);
+      to->text = XRESIZEVEC (uchar, to->text, to->asize);
       outbuf = to->text + to->asize - outbytesleft;
     }
 }
@@ -538,7 +538,7 @@ convert_no_conversion (iconv_t cd ATTRIBUTE_UNUSED,
   if (to->len + flen > to->asize)
     {
       to->asize = to->len + flen;
-      to->text = xrealloc (to->text, to->asize);
+      to->text = XRESIZEVEC (uchar, to->text, to->asize);
     }
   memcpy (to->text + to->len, from, flen);
   to->len += flen;
@@ -578,7 +578,7 @@ convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
 
       outbytesleft += OUTBUF_BLOCK_SIZE;
       to->asize += OUTBUF_BLOCK_SIZE;
-      to->text = xrealloc (to->text, to->asize);
+      to->text = XRESIZEVEC (uchar, to->text, to->asize);
       outbuf = (char *)to->text + to->asize - outbytesleft;
     }
 }
@@ -628,7 +628,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
       return ret;
     }
 
-  pair = alloca(strlen(to) + strlen(from) + 2);
+  pair = (char *) alloca(strlen(to) + strlen(from) + 2);
 
   strcpy(pair, from);
   strcat(pair, "/");
@@ -751,7 +751,7 @@ cpp_host_to_exec_charset (cpp_reader *pfile, cppchar_t c)
 
   /* This should never need to reallocate, but just in case... */
   tbuf.asize = 1;
-  tbuf.text = xmalloc (tbuf.asize);
+  tbuf.text = XNEWVEC (uchar, tbuf.asize);
   tbuf.len = 0;
 
   if (!APPLY_CONVERSION (pfile->narrow_cset_desc, sbuf, 1, &tbuf))
@@ -1087,7 +1087,7 @@ emit_numeric_escape (cpp_reader *pfile, cppchar_t n,
       if (tbuf->len + nbwc > tbuf->asize)
 	{
 	  tbuf->asize += OUTBUF_BLOCK_SIZE;
-	  tbuf->text = xrealloc (tbuf->text, tbuf->asize);
+	  tbuf->text = XRESIZEVEC (uchar, tbuf->text, tbuf->asize);
 	}
 
       for (i = 0; i < nbwc; i++)
@@ -1105,7 +1105,7 @@ emit_numeric_escape (cpp_reader *pfile, cppchar_t n,
       if (tbuf->len + 1 > tbuf->asize)
 	{
 	  tbuf->asize += OUTBUF_BLOCK_SIZE;
-	  tbuf->text = xrealloc (tbuf->text, tbuf->asize);
+	  tbuf->text = XRESIZEVEC (uchar, tbuf->text, tbuf->asize);
 	}
       tbuf->text[tbuf->len++] = n;
     }
@@ -1306,7 +1306,7 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
     = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
 
   tbuf.asize = MAX (OUTBUF_BLOCK_SIZE, from->len);
-  tbuf.text = xmalloc (tbuf.asize);
+  tbuf.text = XNEWVEC (uchar, tbuf.asize);
   tbuf.len = 0;
 
   for (i = 0; i < count; i++)
@@ -1337,7 +1337,7 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
   /* NUL-terminate the 'to' buffer and translate it to a cpp_string
      structure.  */
   emit_numeric_escape (pfile, 0, &tbuf, wide);
-  tbuf.text = xrealloc (tbuf.text, tbuf.len);
+  tbuf.text = XRESIZEVEC (uchar, tbuf.text, tbuf.len);
   to->text = tbuf.text;
   to->len = tbuf.len;
   return true;
@@ -1526,7 +1526,7 @@ _cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
 {
   /* It turns out that a UCN escape always turns into fewer characters
      than the escape itself, so we can allocate a temporary in advance.  */
-  uchar * buf = alloca (len + 1);
+  uchar * buf = (uchar *) alloca (len + 1);
   uchar * bufp = buf;
   size_t idp;
   
@@ -1598,7 +1598,7 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
   else
     {
       to.asize = MAX (65536, len);
-      to.text = xmalloc (to.asize);
+      to.text = XNEWVEC (uchar, to.asize);
       to.len = 0;
 
       if (!APPLY_CONVERSION (input_cset, input, len, &to))
@@ -1616,7 +1616,7 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
   /* Resize buffer if we allocated substantially too much, or if we
      haven't enough space for the \n-terminator.  */
   if (to.len + 4096 < to.asize || to.len >= to.asize)
-    to.text = xrealloc (to.text, to.len + 1);
+    to.text = XRESIZEVEC (uchar, to.text, to.len + 1);
 
   /* If the file is using old-school Mac line endings (\r only),
      terminate with another \r, not an \n, so that we do not mistake

@@ -83,7 +83,7 @@ munge (const char *filename)
     }
 
   /* Now we know how big to make the buffer.  */
-  buffer = xmalloc (len + 1);
+  buffer = XNEWVEC (char, len + 1);
 
   for (p = filename, dst = buffer; *p; p++, dst++)
     {
@@ -151,7 +151,7 @@ apply_vpath (struct deps *d, const char *t)
 struct deps *
 deps_init (void)
 {
-  return xcalloc (sizeof (struct deps), 1);
+  return XCNEW (struct deps);
 }
 
 void
@@ -192,8 +192,7 @@ deps_add_target (struct deps *d, const char *t, int quote)
   if (d->ntargets == d->targets_size)
     {
       d->targets_size = d->targets_size * 2 + 4;
-      d->targetv = xrealloc (d->targetv,
-			     d->targets_size * sizeof (const char *));
+      d->targetv = XRESIZEVEC (const char *, d->targetv, d->targets_size);
     }
 
   t = apply_vpath (d, t);
@@ -223,7 +222,8 @@ deps_add_default_target (struct deps *d, const char *tgt)
 # define TARGET_OBJECT_SUFFIX ".o"
 #endif
       const char *start = lbasename (tgt);
-      char *o = alloca (strlen (start) + strlen (TARGET_OBJECT_SUFFIX) + 1);
+      char *o = (char *) alloca (strlen (start)
+                                 + strlen (TARGET_OBJECT_SUFFIX) + 1);
       char *suffix;
 
       strcpy (o, start);
@@ -245,7 +245,7 @@ deps_add_dep (struct deps *d, const char *t)
   if (d->ndeps == d->deps_size)
     {
       d->deps_size = d->deps_size * 2 + 8;
-      d->depv = xrealloc (d->depv, d->deps_size * sizeof (const char *));
+      d->depv = XRESIZEVEC (const char *, d->depv, d->deps_size);
     }
   d->depv[d->ndeps++] = t;
 }
@@ -261,7 +261,7 @@ deps_add_vpath (struct deps *d, const char *vpath)
     {
       for (p = elem; *p && *p != ':'; p++);
       len = p - elem;
-      copy = xmalloc (len + 1);
+      copy = XNEWVEC (char, len + 1);
       memcpy (copy, elem, len);
       copy[len] = '\0';
       if (*p == ':')
@@ -270,9 +270,8 @@ deps_add_vpath (struct deps *d, const char *vpath)
       if (d->nvpaths == d->vpaths_size)
 	{
 	  d->vpaths_size = d->vpaths_size * 2 + 8;
-	  d->vpathv = xrealloc (d->vpathv,
-				d->vpaths_size * sizeof (const char *));
-	  d->vpathlv = xrealloc (d->vpathlv, d->vpaths_size * sizeof (size_t));
+	  d->vpathv = XRESIZEVEC (const char *, d->vpathv, d->vpaths_size);
+	  d->vpathlv = XRESIZEVEC (size_t, d->vpathlv, d->vpaths_size);
 	}
       d->vpathv[d->nvpaths] = copy;
       d->vpathlv[d->nvpaths] = len;
@@ -382,7 +381,7 @@ deps_restore (struct deps *deps, FILE *fd, const char *self)
   unsigned int i, count;
   size_t num_to_read;
   size_t buf_size = 512;
-  char *buf = xmalloc (buf_size);
+  char *buf = XNEWVEC (char, buf_size);
 
   /* Number of dependences.  */
   if (fread (&count, 1, sizeof (count), fd) != sizeof (count))
@@ -397,7 +396,7 @@ deps_restore (struct deps *deps, FILE *fd, const char *self)
       if (buf_size < num_to_read + 1)
 	{
 	  buf_size = num_to_read + 1 + 127;
-	  buf = xrealloc (buf, buf_size);
+	  buf = XRESIZEVEC (char, buf, buf_size);
 	}
       if (fread (buf, 1, num_to_read, fd) != num_to_read)
 	return -1;

@@ -65,8 +65,8 @@ static unsigned int interpret_int_suffix (const uchar *, size_t);
 static void check_promotion (cpp_reader *, const struct op *);
 
 /* Token type abuse to create unary plus and minus operators.  */
-#define CPP_UPLUS (CPP_LAST_CPP_OP + 1)
-#define CPP_UMINUS (CPP_LAST_CPP_OP + 2)
+#define CPP_UPLUS ((enum cpp_ttype) (CPP_LAST_CPP_OP + 1))
+#define CPP_UMINUS ((enum cpp_ttype) (CPP_LAST_CPP_OP + 2))
 
 /* With -O2, gcc appears to produce nice code, moving the error
    message load and subsequent jump completely out of the main path.  */
@@ -627,7 +627,7 @@ extra semantics need to be handled with operator-specific code.  */
 
 /* Operator to priority map.  Must be in the same order as the first
    N entries of enum cpp_ttype.  */
-static const struct operator
+static const struct cpp_operator
 {
   uchar prio;
   uchar flags;
@@ -975,7 +975,7 @@ _cpp_expand_op_stack (cpp_reader *pfile)
   size_t old_size = (size_t) (pfile->op_limit - pfile->op_stack);
   size_t new_size = old_size * 2 + 20;
 
-  pfile->op_stack = xrealloc (pfile->op_stack, new_size * sizeof (struct op));
+  pfile->op_stack = XRESIZEVEC (struct op, pfile->op_stack, new_size);
   pfile->op_limit = pfile->op_stack + new_size;
 
   return pfile->op_stack + old_size;

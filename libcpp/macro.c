@@ -273,7 +273,7 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
 
   buf = _cpp_builtin_macro_text (pfile, node);
   len = ustrlen (buf);
-  nbuf = alloca (len + 1);
+  nbuf = (char *) alloca (len + 1);
   memcpy (nbuf, buf, len);
   nbuf[len]='\n';
 
@@ -421,7 +421,7 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
 
   lhs = *plhs;
   len = cpp_token_len (lhs) + cpp_token_len (rhs) + 1;
-  buf = alloca (len);
+  buf = (unsigned char *) alloca (len);
   end = cpp_spell_token (pfile, lhs, buf, false);
 
   /* Avoid comment headers, since they are still processed in stage 3.
@@ -1001,7 +1001,7 @@ expand_arg (cpp_reader *pfile, macro_arg *arg)
 
   /* Loop, reading in the arguments.  */
   capacity = 256;
-  arg->expanded = xmalloc (capacity * sizeof (cpp_token *));
+  arg->expanded = XNEWVEC (const cpp_token *, capacity);
 
   push_ptoken_context (pfile, NULL, NULL, arg->first, arg->count + 1);
   for (;;)
@@ -1011,8 +1011,8 @@ expand_arg (cpp_reader *pfile, macro_arg *arg)
       if (arg->expanded_count + 1 >= capacity)
 	{
 	  capacity *= 2;
-	  arg->expanded = xrealloc (arg->expanded,
-				    capacity * sizeof (cpp_token *));
+	  arg->expanded = XRESIZEVEC (const cpp_token *, arg->expanded,
+                                      capacity);
 	}
 
       token = cpp_get_token (pfile);
@@ -1272,7 +1272,8 @@ _cpp_save_parameter (cpp_reader *pfile, cpp_macro *macro, cpp_hashnode *node)
   len = macro->paramc * sizeof (union _cpp_hashnode_value);
   if (len > pfile->macro_buffer_len)
     {
-      pfile->macro_buffer = xrealloc (pfile->macro_buffer, len);
+      pfile->macro_buffer = XRESIZEVEC (unsigned char, pfile->macro_buffer,
+                                        len);
       pfile->macro_buffer_len = len;
     }
   ((union _cpp_hashnode_value *) pfile->macro_buffer)[macro->paramc - 1]
@@ -1419,8 +1420,9 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
       /* Success.  Commit or allocate the parameter array.  */
       if (pfile->hash_table->alloc_subobject)
 	{
-	  cpp_hashnode **params = pfile->hash_table->alloc_subobject
-	    (sizeof (cpp_hashnode *) * macro->paramc);
+	  cpp_hashnode **params =
+            (cpp_hashnode **) pfile->hash_table->alloc_subobject
+            (sizeof (cpp_hashnode *) * macro->paramc);
 	  memcpy (params, macro->params,
 		  sizeof (cpp_hashnode *) * macro->paramc);
 	  macro->params = params;
@@ -1532,8 +1534,9 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
   /* Commit or allocate the memory.  */
   if (pfile->hash_table->alloc_subobject)
     {
-      cpp_token *tokns = pfile->hash_table->alloc_subobject (sizeof (cpp_token)
-							     * macro->count);
+      cpp_token *tokns =
+        (cpp_token *) pfile->hash_table->alloc_subobject (sizeof (cpp_token)
+                                                          * macro->count);
       memcpy (tokns, macro->exp.tokens, sizeof (cpp_token) * macro->count);
       macro->exp.tokens = tokns;
     }
@@ -1552,7 +1555,8 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   bool ok;
 
   if (pfile->hash_table->alloc_subobject)
-    macro = pfile->hash_table->alloc_subobject (sizeof (cpp_macro));
+    macro = (cpp_macro *) pfile->hash_table->alloc_subobject
+      (sizeof (cpp_macro));
   else
     macro = (cpp_macro *) _cpp_aligned_alloc (pfile, sizeof (cpp_macro));
   macro->line = pfile->directive_line;
@@ -1722,7 +1726,8 @@ cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
 
   if (len > pfile->macro_buffer_len)
     {
-      pfile->macro_buffer = xrealloc (pfile->macro_buffer, len);
+      pfile->macro_buffer = XRESIZEVEC (unsigned char,
+                                        pfile->macro_buffer, len);
       pfile->macro_buffer_len = len;
     }
 
