@@ -1,5 +1,9 @@
 2005-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* gfortran.dg/output_exponents_1.f90: New test.
+
+2005-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	* gfortran.dg/dollar_edit_descriptor-1.f: New test.
 
 2005-05-28  Mark Mitchell  <mark@codesourcery.com>
