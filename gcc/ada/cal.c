@@ -32,8 +32,8 @@
 
 /*  This file contains those routines named by Import pragmas in package    */
 /*  GNAT.Calendar. It is used to do Duration to timeval conversion.         */
-/*  These are simple wrappers function to abstarct the fact that the C      */
-/*  struct timeval fields type are not normalized (they are generaly        */
+/*  These are simple wrappers function to abstract the fact that the C      */
+/*  struct timeval fields type are not normalized (they are generally       */
 /*  defined as int or long values).                                         */
 
 #if defined(VMS)

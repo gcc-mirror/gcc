@@ -2316,7 +2316,7 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 	 is integer_zero_node.  It would not work, however, because GCC's
 	 notion of "catch all" is stronger than our notion of "others".  Until
 	 we correctly use the cleanup interface as well, doing that would
-	 prevent the "all others" handlers from beeing seen, because nothing
+	 prevent the "all others" handlers from being seen, because nothing
 	 can be caught beyond a catch all from GCC's point of view.  */
       gnu_etypes_list = tree_cons (NULL_TREE, gnu_etype, gnu_etypes_list);
     }
@@ -2431,7 +2431,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
    If this is an expression, return the GCC equivalent of the expression.  If
    it is a statement, return the statement.  In the case when called for a
    statement, it may also add statements to the current statement group, in
-   which case anything it returns is to be interpreted as occuring after
+   which case anything it returns is to be interpreted as occurring after
    anything `it already added.  */
 
 tree
@@ -4261,7 +4261,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	}
     }
 
-  /* If this is a DECL_EXPR for a variable with DECL_INITIAl set,
+  /* If this is a DECL_EXPR for a variable with DECL_INITIAL set,
      there are two cases we need to handle here.  */
   if (TREE_CODE (gnu_decl) == VAR_DECL && DECL_INITIAL (gnu_decl))
     {

@@ -4818,7 +4818,7 @@ subprogram yields a value that can be called as long as the subprogram
 is in scope (normal Ada 95 accessibility rules restrict this usage).
 
 It is possible to use @code{Unrestricted_Access} for any type, but care
-must be excercised if it is used to create pointers to unconstrained
+must be exercised if it is used to create pointers to unconstrained
 objects. In this case, the resulting pointer has the same scope as the
 context of the attribute, and may not be returned to some enclosing
 scope. For instance, a function cannot use @code{Unrestricted_Access}
@@ -12522,7 +12522,7 @@ collisions occur and each item can be retrieved from the table in one
 probe (perfect property). The hash table size corresponds to the exact
 size of the key set and no larger (minimal property). The key set has to
 be know in advance (static property). The hash functions are also order
-preservering. If w2 is inserted after w1 in the generator, their
+preserving. If w2 is inserted after w1 in the generator, their
 hashcode are in the same order. These hashing functions are very
 convenient for use with realtime applications.
 
