@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-w" }
 ! PR libfortran/20006
       character*5 c
       open (42,status='scratch')
