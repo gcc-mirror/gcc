@@ -350,16 +350,13 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   tag = STMT_VINFO_MEMTAG (stmt_info);
   gcc_assert (tag);
 
-  /* If the memory tag of the original reference was not a type tag or
-     if the pointed-to type of VECT_PTR has an alias set number
-     different than TAG's, then we need to create a new type tag for
-     VECT_PTR and add TAG to its alias set.  */
-  if (var_ann (tag)->mem_tag_kind == NOT_A_TAG
-      || get_alias_set (tag) != get_alias_set (TREE_TYPE (vect_ptr_type)))
-    add_type_alias (vect_ptr, tag);
+  /* If tag is a variable (and NOT_A_TAG) than a new type alias
+     tag must be created with tag added to its may alias list.  */
+  if (var_ann (tag)->mem_tag_kind == NOT_A_TAG)
+    new_type_alias (vect_ptr, tag);
   else
     var_ann (vect_ptr)->type_mem_tag = tag;
-  
+
   var_ann (vect_ptr)->subvars = STMT_VINFO_SUBVARS (stmt_info);
 
   /** (3) Calculate the initial address the vector-pointer, and set
@@ -896,8 +893,8 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   enum machine_mode vec_mode;
   tree dummy;
   enum dr_alignment_support alignment_support_cheme;
-  ssa_op_iter iter;
   tree def;
+  ssa_op_iter iter;
 
   /* Is vectorizable store? */
 
@@ -955,16 +952,22 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   *vec_stmt = build2 (MODIFY_EXPR, vectype, data_ref, vec_oprnd1);
   vect_finish_stmt_generation (stmt, *vec_stmt, bsi);
 
-  /* Mark all non-SSA variables in the statement for rewriting.  */
-  mark_new_vars_to_rename (*vec_stmt);
-	    
-  /* The new vectorized statement will have better aliasing
-     information, so some of the virtual definitions of the old
-     statement will likely disappear from the IL.  Mark them to have
-     their SSA form updated.  */
+  /* Copy the V_MAY_DEFS representing the aliasing of the original array
+     element's definition to the vector's definition then update the
+     defining statement.  The original is being deleted so the same
+     SSA_NAMEs can be used.  */
+  copy_virtual_operands (*vec_stmt, stmt);
+
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_VMAYDEF)
-    mark_sym_for_renaming (SSA_NAME_VAR (def));
- 
+    {
+      SSA_NAME_DEF_STMT (def) = *vec_stmt;
+
+      /* If this virtual def has a use outside the loop and a loop peel is performed
+         then the def may be renamed by the peel.  Mark it for renaming so the
+         later use will also be renamed.  */
+      mark_sym_for_renaming (SSA_NAME_VAR (def));
+    }
+
   return true;
 }
 
