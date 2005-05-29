@@ -191,7 +191,7 @@ read_sf (int *length)
 
 	  /* If we see an EOR during non-advancing I/O, we need to skip
 	     the rest of the I/O statement.  Set the corresponding flag.  */
-	  if (advance_status == ADVANCE_NO)
+	  if (advance_status == ADVANCE_NO || g.seen_dollar)
 	    eor_condition = 1;
 
 	  /* Without padding, terminate the I/O statement without assigning
@@ -1187,7 +1187,7 @@ data_transfer_init (int read_flag)
     }
   else
     {
-      if (advance_status == ADVANCE_YES)
+      if (advance_status == ADVANCE_YES && !g.seen_dollar)
 	current_unit->read_bad = 1;
     }
 
@@ -1459,11 +1459,12 @@ finalize_transfer (void)
     {
       free_fnodes ();
 
-      if (advance_status == ADVANCE_NO)
+      if (advance_status == ADVANCE_NO || g.seen_dollar)
 	{
 	  /* Most systems buffer lines, so force the partial record
 	     to be written out.  */
 	  flush (current_unit->s);
+	  g.seen_dollar = 0;
 	  return;
 	}
 
