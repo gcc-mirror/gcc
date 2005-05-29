@@ -849,12 +849,7 @@ ccp_fold (tree stmt)
 	    op0 = get_value (op0, true)->value;
 	}
 
-      retval = fold_unary (code, TREE_TYPE (rhs), op0);
-
-      /* If we folded, but did not create an invariant, then we can not
-	 use this expression.  */
-      if (retval && ! is_gimple_min_invariant (retval))
-	return NULL;
+      return fold_unary (code, TREE_TYPE (rhs), op0);
     }
 
   /* Binary and comparison operators.  We know one or both of the
@@ -885,12 +880,7 @@ ccp_fold (tree stmt)
 	    op1 = val->value;
 	}
 
-      retval = fold_binary (code, TREE_TYPE (rhs), op0, op1);
-
-      /* If we folded, but did not create an invariant, then we can not
-	 use this expression.  */
-      if (retval && ! is_gimple_min_invariant (retval))
-	return NULL;
+      return fold_binary (code, TREE_TYPE (rhs), op0, op1);
     }
 
   /* We may be able to fold away calls to builtin functions if their
