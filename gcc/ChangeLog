@@ -1,3 +1,9 @@
+2005-05-29  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* ifcvt.c (noce_emit_move_insn): Construct a SET pattern directly
+	if the RHS isn't suitable for calling emit_move_insn.
+
 2005-05-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-ccp.c (ccp_fold): Return immediately after calling

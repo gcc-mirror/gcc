@@ -691,7 +691,11 @@ noce_emit_move_insn (rtx x, rtx y)
       optab ot;
 
       start_sequence ();
-      insn = emit_move_insn (x, y);
+      /* Check that the SET_SRC is reasonable before calling emit_move_insn,
+	 otherwise construct a suitable SET pattern ourselves.  */
+      insn = (OBJECT_P (y) || CONSTANT_P (y) || GET_CODE (y) == SUBREG)
+	     ? emit_move_insn (x, y)
+	     : emit_insn (gen_rtx_SET (VOIDmode, x, y));
       seq = get_insns ();
       end_sequence();
 
