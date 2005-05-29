@@ -939,6 +939,19 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   tree raises = empty_except_spec;
   tree rhs_parm_type = NULL_TREE;
   tree name;
+  HOST_WIDE_INT saved_processing_template_decl;
+
+  /* Because we create declarations for implictly declared functions
+     lazily, we may be creating the declaration for a member of TYPE
+     while in some completely different context.  However, TYPE will
+     never be a dependent class (because we never want to do lookups
+     for implicitly defined functions in a dependent class).
+     Furthermore, we must set PROCESSING_TEMPLATE_DECL to zero here
+     because we only create clones for constructors and destructors
+     when not in a template.  */
+  gcc_assert (!dependent_type_p (type));
+  saved_processing_template_decl = processing_template_decl;
+  processing_template_decl = 0;
 
   type = TYPE_MAIN_VARIANT (type);
 
@@ -1036,6 +1049,9 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_INLINE (fn) = 1;
   gcc_assert (!TREE_USED (fn));
+
+  /* Restore PROCESSING_TEMPLATE_DECL.  */
+  processing_template_decl = saved_processing_template_decl;
 
   return fn;
 }
