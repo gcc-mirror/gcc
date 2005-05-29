@@ -1,3 +1,8 @@
+2005-05-29  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-optimization/21639
+	* tree-complex.c (pass_lower_vector_s): Remove TODO_ggc_collect.
+
 2005-05-29  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/21562
