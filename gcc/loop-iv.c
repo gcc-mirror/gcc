@@ -844,7 +844,7 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
 
   if (dump_file)
     {
-      fprintf (dump_file, "Analysing ");
+      fprintf (dump_file, "Analyzing ");
       print_rtl (dump_file, def);
       fprintf (dump_file, " for bivness.\n");
     }
@@ -927,7 +927,7 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
 
   if (dump_file)
     {
-      fprintf (dump_file, "Analysing operand ");
+      fprintf (dump_file, "Analyzing operand ");
       print_rtl (dump_file, op);
       fprintf (dump_file, " of insn ");
       print_rtl_single (dump_file, insn);
@@ -1012,7 +1012,7 @@ iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
 
   if (dump_file)
     {
-      fprintf (dump_file, "Analysing def of ");
+      fprintf (dump_file, "Analyzing def of ");
       print_rtl (dump_file, def);
       fprintf (dump_file, " in insn ");
       print_rtl_single (dump_file, insn);

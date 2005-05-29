@@ -927,7 +927,7 @@ common_handle_option (size_t scode, const char *arg, int value)
         else if (!strcmp(arg, "protected"))
           default_visibility = VISIBILITY_PROTECTED;
         else
-          error ("unrecognised visibility value \"%s\"", arg);
+          error ("unrecognized visibility value \"%s\"", arg);
       }
       break;
 

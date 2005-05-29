@@ -439,7 +439,7 @@ dump_hash_table_entry (void **slot, void *filep)
   fprintf (file, "expr: ");
   print_rtl (file, expr->expr);
   fprintf (file,"\nhashcode: %u\n", expr->hash);
-  fprintf (file,"list of occurences:\n");
+  fprintf (file,"list of occurrences:\n");
   occr = expr->avail_occr;
   while (occr)
     {

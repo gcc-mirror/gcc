@@ -1,3 +1,10 @@
+2005-05-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cgraphunit.c, ipa-inline.c, loop-iv.c, modulo-sched.c,
+	opts.c, postreload-gcse.c, tree-browser.def, tree-eh.c,
+	tree-ssa-copyrename.c, tree-vect-analyze.c: Fix typos and
+	follow spelling conventions in error/dump messages.
+
 2005-05-29  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 

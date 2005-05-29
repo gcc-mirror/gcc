@@ -630,7 +630,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	      edge->inline_failed
 		= (edge->callee->local.disregard_inline_limits ? N_("recursive inlining") : "");
 	      if (dump_file)
-		fprintf (dump_file, " inline_failed:Recursive inlining perfomed only for function itself.\n");
+		fprintf (dump_file, " inline_failed:Recursive inlining performed only for function itself.\n");
 	      continue;
 	    }
 	}

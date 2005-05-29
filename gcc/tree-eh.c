@@ -1826,7 +1826,7 @@ verify_eh_edges (tree stmt)
     {
       if ((e->flags & EDGE_EH) && !e->aux)
 	{
-	  error ("Unnecesary EH edge %i->%i", bb->index, e->dest->index);
+	  error ("Unnecessary EH edge %i->%i", bb->index, e->dest->index);
 	  mark_eh_edge_found_error = true;
 	  return true;
 	}
