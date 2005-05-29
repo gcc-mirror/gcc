@@ -839,7 +839,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	/* If this is a pointer and it does not have an initializing
-	   expression, initialize it to NULL, unless the obect is
+	   expression, initialize it to NULL, unless the object is
            imported.  */
 	if (definition
 	    && (POINTER_TYPE_P (gnu_type) || TYPE_FAT_POINTER_P (gnu_type))
@@ -4223,7 +4223,7 @@ elaborate_entity (Entity_Id gnat_entity)
 	Node_Id gnat_lb = Type_Low_Bound (gnat_entity);
 	Node_Id gnat_hb = Type_High_Bound (gnat_entity);
 
-	/* ??? Tests for avoiding static constaint error expression
+	/* ??? Tests for avoiding static constraint error expression
 	   is needed until the front stops generating bogus conversions
 	   on bounds of real types. */
 
@@ -6322,7 +6322,7 @@ static int
 compatible_signatures_p (tree ftype1, tree ftype2)
 {
   /* As of now, we only perform very trivial tests and consider it's the
-     programmer's responsability to ensure the type correctness in the Ada
+     programmer's responsibility to ensure the type correctness in the Ada
      declaration, as in the regular Import cases.
 
      Mismatches typically result in either error messages from the builtin

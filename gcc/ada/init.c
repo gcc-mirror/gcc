@@ -277,10 +277,10 @@ __gnat_set_globals (int main_priority,
    call chain. To evaluate if a handler applies at some point in this chain,
    the propagation engine needs to determine what region the corresponding
    call instruction pertains to. The return address may not be attached to the
-   same region as the call, so the unwinder unconditionally substracts "some"
+   same region as the call, so the unwinder unconditionally subtracts "some"
    amount to the return addresses it gets to search the region tables. The
    exact amount is computed to ensure that the resulting address is inside the
-   call instruction, and is thus target dependant (think about delay slots for
+   call instruction, and is thus target dependent (think about delay slots for
    instance).
 
    When we raise an exception from a signal handler, e.g. to transform a
@@ -1794,10 +1794,10 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
      constructor fashion, typically triggered by the VxWorks loader.  This is
      achieved by way of a special variable declaration in the crt object, the
      name of which has been deduced by analyzing the output of the "munching"
-     step documented for C++.  The de-registration is handled symetrically,
+     step documented for C++.  The de-registration is handled symmetrically,
      a-la C++ destructor fashion and typically triggered by the dynamic
      unloader.  Note that since the tables shall be registered against a
-     common datastructure, libgcc should be one of the modules (vs beeing
+     common datastructure, libgcc should be one of the modules (vs being
      partially linked against all the others at build time) and shall be
      loaded first.
 
@@ -1991,7 +1991,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 {
   /* The point is that the interrupted context PC typically is the address
      that we should search an EH region for, which is different from the call
-     return address case. The target independant part of the GCC unwinder
+     return address case. The target independent part of the GCC unwinder
      don't differentiate the two situations, so we compensate here for the
      adjustments it will blindly make.
 

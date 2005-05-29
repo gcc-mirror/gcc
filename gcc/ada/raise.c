@@ -264,7 +264,7 @@ db_phases (int phases)
    table which heads a list of possible actions to be taken (see below).
 
    If it is determined that indeed an action should be taken, that
-   is, if one action filter matches the exception beeing propagated,
+   is, if one action filter matches the exception being propagated,
    then control should be transfered to landing-pad.
 
    A null first-action-index indicates that there are only cleanups
@@ -283,7 +283,7 @@ db_phases (int phases)
 
    Non null action-filters provide an index into the ttypes [] table
    (see below), from which information may be retrieved to check if it
-   matches the exception beeing propagated.
+   matches the exception being propagated.
 
    action-filter > 0  means there is a regular handler to be run,
 
@@ -302,7 +302,7 @@ db_phases (int phases)
    A null value indicates a catch-all handler in C++, and an "others"
    handler in Ada.
 
-   Non null values are used to match the exception beeing propagated:
+   Non null values are used to match the exception being propagated:
    In C++ this is a pointer to some rtti data, while in Ada this is an
    exception id.
 
@@ -611,7 +611,7 @@ get_region_description_for (_Unwind_Context *uw_context,
 typedef enum
 {
   /* Found some call site base data, but need to analyze further
-     before beeing able to decide.  */
+     before being able to decide.  */
   unknown,
 
   /* There is nothing relevant in the context at hand. */
@@ -761,7 +761,7 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 {
   _Unwind_Ptr ip
     = _Unwind_GetIP (uw_context) - 1;
-  /* Substract 1 because GetIP yields a call return address while we are
+  /* Subtract 1 because GetIP yields a call return address while we are
      interested in information for the call point. This does not always yield
      the exact call instruction address but always brings the ip back within
      the corresponding region.

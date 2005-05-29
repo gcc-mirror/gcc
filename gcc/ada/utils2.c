@@ -176,7 +176,7 @@ known_alignment (tree exp)
     case PLUS_EXPR:
     case MINUS_EXPR:
       /* If two address are added, the alignment of the result is the
-	 minimum of the two aligments.  */
+	 minimum of the two alignments.  */
       lhs = known_alignment (TREE_OPERAND (exp, 0));
       rhs = known_alignment (TREE_OPERAND (exp, 1));
       this_alignment = MIN (lhs, rhs);

@@ -12582,7 +12582,7 @@ Additionally, you may define the library-related attributes
 @code{Library_Auto_Init}, @code{Library_Options} and @code{Library_GCC}.
 
 The @code{Library_Name} attribute has a string value. There is no restriction
-on the name of a library. It is the responsability of the developer to
+on the name of a library. It is the responsibility of the developer to
 choose a name that will be accepted by the platform. It is recommended to
 choose names that could be Ada identifiers; such names are almost guaranteed
 to be acceptable on all platforms.
@@ -12664,7 +12664,7 @@ if @file{a1.ads}, @file{a2.ads} or @file{a2.adb} includes a statement
 @code{"with L1;"}.
 
 To be sure that all the sources in the library associated with @code{L} are
-up to date, and that all the sources of parject @code{A} are also up to date,
+up to date, and that all the sources of project @code{A} are also up to date,
 the following two commands needs to be used:
 
 @smallexample
@@ -15221,7 +15221,7 @@ affected cases include:
 @noindent
 In compact mode (when GNAT style layout or compact layout is set),
 the pretty printer uses one level of indentation instead
-of two. This is achived in the record definition and record representation
+of two. This is achieved in the record definition and record representation
 clause cases by putting the @code{record} keyword on the same line as the
 start of the declaration or representation clause, and in the block and loop
 case by putting the block or loop header on the same line as the statement
@@ -16106,7 +16106,7 @@ all upper case). Characters of the other case are folded as required.
 @var{length} represents the length of the krunched name. The default
 when no argument is given is ^8^39^ characters. A length of zero stands for
 unlimited, in other words do not chop except for system files where the
-impled crunching length is always eight characters.
+implied crunching length is always eight characters.
 
 @noindent
 The output is the krunched name. The output has an extension only if the
@@ -27062,7 +27062,7 @@ There is nothing specific to Windows in this area. @pxref{Library Projects}.
 @end menu
 
 @noindent
-Note that it is prefered to use the built-in GNAT DLL support
+Note that it is preferred to use the built-in GNAT DLL support
 (@pxref{Building DLLs with GNAT}) or GNAT Project files
 (@pxref{Building DLLs with GNAT Project files}) to build DLLs.
 
