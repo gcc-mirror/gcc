@@ -1,3 +1,9 @@
+2005-05-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21340
+	* method.c (implicitly_declare_fn): Clear processing_template_decl
+	when generating implicit declaration.
+
 2005-05-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21614
