@@ -2466,7 +2466,7 @@ vect_analyze_loop_form (struct loop *loop)
   if (!empty_block_p (loop->latch))
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS, loop_loc))
-        fprintf (vect_dump, "not vectorized: unexpectd loop form.");
+        fprintf (vect_dump, "not vectorized: unexpected loop form.");
       return NULL;
     }
 

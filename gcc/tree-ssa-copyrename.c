@@ -253,7 +253,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
           != get_alias_set (TREE_TYPE (TREE_TYPE (root2))))
     {
       if (debug)
-	fprintf (debug, " : 2 different alasing sets. No coalesce.\n");
+	fprintf (debug, " : 2 different aliasing sets. No coalesce.\n");
       return;
     }
 

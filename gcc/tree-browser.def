@@ -33,7 +33,7 @@ DEFTBCODE (TB_UPDATE_UP,        "update", "Update information about parent expre
 DEFTBCODE (TB_VERBOSE,          "verbose", "Sets/unsets verbose mode (default is on).")
 
 /* Walking commands.  */
-DEFTBCODE (TB_FUN,		"fun",	"Go to the curent function declaration.")
+DEFTBCODE (TB_FUN,		"fun",	"Go to the current function declaration.")
 DEFTBCODE (TB_NEXT,		"nx",	"Go to the next expression in a BIND_EXPR.")
 DEFTBCODE (TB_PREV,		"pr",   "Go to the previous expression in a BIND_EXPR.")
 DEFTBCODE (TB_UP,		"up",	"Go to the parent tree node.")

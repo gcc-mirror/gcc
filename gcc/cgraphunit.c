@@ -610,7 +610,7 @@ verify_cgraph_node (struct cgraph_node *node)
     }
   if (node->global.inlined_to == node)
     {
-      error ("Inlined_to pointer reffers to itself");
+      error ("Inlined_to pointer refers to itself");
       error_found = true;
     }
 

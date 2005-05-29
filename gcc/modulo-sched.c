@@ -1283,7 +1283,7 @@ sms_schedule (FILE *dump_file)
 	      /* SMS is not profitable so undo the permutation and reg move generation
 	         and return the kernel to its original state.  */
 	      if (dump_file)
-		fprintf (dump_file, "Undoing SMS becuase it is not profitable.\n");
+		fprintf (dump_file, "Undoing SMS because it is not profitable.\n");
 
 	    }
 	  else
