@@ -1,3 +1,9 @@
+2005-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20006
+	* io.c (format_item_1): Add check and extension warning for
+	$ edit descriptor.
+
 2005-05-28  Steven G. Kargl  <kargls@comcast.net>
 
 	* arith.c (gfc_arith_init_1): Fix off by one problem;
