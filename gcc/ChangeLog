@@ -1,3 +1,8 @@
+2005-05-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-ccp.c (ccp_fold): Return immediately after calling
+	fold_unary and fold_binary.
+
 2005-05-29  Roger Sayle  <roger@eyesopen.com>
 
 	* reg-stack.c (propagate_stack): Always copy the source stack to
