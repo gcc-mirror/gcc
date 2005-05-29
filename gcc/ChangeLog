@@ -1,3 +1,19 @@
+2005-05-29  Keith Besaw  <kbesaw@us.ibm.com>
+
+	* tree-ssa-alias.c (new_type_alias): New procedure to
+	create a type memory tag for a pointer with a may-alias
+	set determined from a variable declaration.
+	* tree-flow.h: export declaration of new_type_alias
+	* tree-optimize.c (init_tree_optimization_passes): document
+	that pass_may_alias cannot be called after pass_vectorize.
+	* tree-vect-transform (vect_create_data_ref_ptr): Call
+	new_type_alias when an type memory tag isn't available
+	for a reference.
+	(vectorizable_store): Use copy_virtual_operands to update
+	virtual defs in place (so that loop_version can be called).
+	Call mark_for_renaming for the virtual defs in case peeling
+	is done and virtual uses outside the loop need to be updated.
+
 2005-05-29  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-optimization/21639

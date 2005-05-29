@@ -2776,6 +2776,39 @@ found_tag:
 }
 
 
+/* Create a type tag for PTR.  Construct the may-alias list of this type tag
+   so that it has the aliasing of VAR.  */
+
+void
+new_type_alias (tree ptr, tree var)
+{
+  var_ann_t p_ann = var_ann (ptr);
+  tree tag_type = TREE_TYPE (TREE_TYPE (ptr));
+  var_ann_t v_ann = var_ann (var);
+  tree tag;
+  subvar_t svars;
+
+  gcc_assert (p_ann->type_mem_tag == NULL_TREE);
+  gcc_assert (v_ann->mem_tag_kind == NOT_A_TAG);
+  tag = create_memory_tag (tag_type, true);
+  p_ann->type_mem_tag = tag;
+
+  /* Add VAR to the may-alias set of PTR's new type tag.  If VAR has
+     subvars, add the subvars to the tag instead of the actual var.  */
+  if (var_can_have_subvars (var)
+      && (svars = get_subvars_for_var (var)))
+    {
+      subvar_t sv;      
+      for (sv = svars; sv; sv = sv->next)
+        add_may_alias (tag, sv->var);
+    }
+  else
+    add_may_alias (tag, var);
+
+  /* Note, TAG and its set of aliases are not marked for renaming.  */
+}
+
+
 /* This structure is simply used during pushing fields onto the fieldstack
    to track the offset of the field, since bitpos_of_field gives it relative
    to its immediate containing type, and we want it relative to the ultimate
