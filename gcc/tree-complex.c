@@ -1051,7 +1051,7 @@ struct tree_opt_pass pass_lower_vector_ssa =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_update_ssa	/* todo_flags_finish */
-    | TODO_ggc_collect | TODO_verify_ssa
+    | TODO_verify_ssa
     | TODO_verify_stmts | TODO_verify_flow,
   0					/* letter */
 };
