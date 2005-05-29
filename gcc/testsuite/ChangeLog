@@ -1,3 +1,8 @@
+2005-05-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21340
+	* g++.dg/init/ctor6.C: New test.
+
 2005-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/pr21562.c: New.
