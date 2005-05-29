@@ -1,3 +1,13 @@
+2005-05-29  Roger Sayle  <roger@eyesopen.com>
+
+	* reg-stack.c (propagate_stack): Always copy the source stack to
+	the destination.  This routine is now only called when this is safe.
+	(better_edge): New function split out from convert_regs_1 to
+	determine which of two edges is better to propagate across.
+	(convert_regs_1):  We need only search for a best edge if the
+	stack layout hasn't been defined yet.  Use better_edge to help
+	find beste.  No longer traverse unnecessary edges.
+
 2005-05-29  Keith Besaw  <kbesaw@us.ibm.com>
 
 	* tree-ssa-alias.c (new_type_alias): New procedure to

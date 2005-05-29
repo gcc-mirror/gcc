@@ -2578,28 +2578,22 @@ convert_regs_exit (void)
     }
 }
 
-/* If the stack of the target block hasn't been processed yet,
-   copy the stack info from the source block.  */
+/* Copy the stack info from the end of edge E's source block to the
+   start of E's destination block.  */
 
 static void
 propagate_stack (edge e)
 {
-  basic_block dest = e->dest;
-  stack dest_stack = &BLOCK_INFO (dest)->stack_in;
+  stack src_stack = &BLOCK_INFO (e->src)->stack_out;
+  stack dest_stack = &BLOCK_INFO (e->dest)->stack_in;
+  int reg;
 
-  if (dest_stack->top == -2)
-    {
-      basic_block src = e->src;
-      stack src_stack = &BLOCK_INFO (src)->stack_out;
-      int reg;
-
-      /* Preserve the order of the original stack, but check whether
-	 any pops are needed.  */
-      dest_stack->top = -1;
-      for (reg = 0; reg <= src_stack->top; ++reg)
-	if (TEST_HARD_REG_BIT (dest_stack->reg_set, src_stack->reg[reg]))
-	  dest_stack->reg[++dest_stack->top] = src_stack->reg[reg];
-    }
+  /* Preserve the order of the original stack, but check whether
+     any pops are needed.  */
+  dest_stack->top = -1;
+  for (reg = 0; reg <= src_stack->top; ++reg)
+    if (TEST_HARD_REG_BIT (dest_stack->reg_set, src_stack->reg[reg]))
+      dest_stack->reg[++dest_stack->top] = src_stack->reg[reg];
 }
 
 
@@ -2738,6 +2732,37 @@ compensate_edges (FILE *file)
   return inserted;
 }
 
+/* Select the better of two edges E1 and E2 to use to determine the
+   stack layout for their shared destination basic block.  This is
+   typically the more frequently executed.  The edge E1 may be NULL
+   (in which case E2 is returned), but E2 is always non-NULL.  */
+
+static edge
+better_edge (edge e1, edge e2)
+{
+  if (!e1)
+    return e2;
+
+  if (EDGE_FREQUENCY (e1) > EDGE_FREQUENCY (e2))
+    return e1;
+  if (EDGE_FREQUENCY (e1) < EDGE_FREQUENCY (e2))
+    return e2;
+
+  if (e1->count > e2->count)
+    return e1;
+  if (e1->count < e2->count)
+    return e2;
+
+  /* Prefer critical edges to minimize inserting compensation code on
+     critical edges.  */
+
+  if (EDGE_CRITICAL_P (e1) != EDGE_CRITICAL_P (e2))
+    return EDGE_CRITICAL_P (e1) ? e1 : e2;
+
+  /* Avoid non-deterministic behaviour.  */
+  return (e1->src->index < e2->src->index) ? e1 : e2;
+}
+
 /* Convert stack register references in one block.  */
 
 static void
@@ -2747,60 +2772,33 @@ convert_regs_1 (FILE *file, basic_block block)
   block_info bi = BLOCK_INFO (block);
   int reg;
   rtx insn, next;
-  edge e, beste = NULL;
   bool control_flow_insn_deleted = false;
-  edge_iterator ei;
 
   any_malformed_asm = false;
 
-  /* Find the edge we will copy stack from.  It should be the most frequent
-     one as it will get cheapest after compensation code is generated,
-     if multiple such exists, take one with largest count, prefer critical
-     one (as splitting critical edges is more expensive), or one with lowest
-     index, to avoid random changes with different orders of the edges.  */
-  FOR_EACH_EDGE (e, ei, block->preds)
-    {
-      if (e->flags & EDGE_DFS_BACK)
-	;
-      else if (! beste)
-	beste = e;
-      else if (EDGE_FREQUENCY (beste) < EDGE_FREQUENCY (e))
-	beste = e;
-      else if (EDGE_FREQUENCY (beste) > EDGE_FREQUENCY (e))
-	;
-      else if (beste->count < e->count)
-	beste = e;
-      else if (beste->count > e->count)
-	;
-      else if ((EDGE_CRITICAL_P (e) != 0)
-	       != (EDGE_CRITICAL_P (beste) != 0))
-	{
-	  if (EDGE_CRITICAL_P (e))
-	    beste = e;
-	}
-      else if (e->src->index < beste->src->index)
-	beste = e;
-    }
-
-  /* Initialize stack at block entry.  */
+  /* Choose an initial stack layout, if one hasn't already been chosen.  */
   if (bi->stack_in.top == -2)
     {
+      edge e, beste = NULL;
+      edge_iterator ei;
+
+      /* Select the best incoming edge (typically the most frequent) to
+	 use as a template for this basic block.  */
+      FOR_EACH_EDGE (e, ei, block->preds)
+	if (BLOCK_INFO (e->src)->done)
+	  beste = better_edge (beste, e);
+
       if (beste)
 	propagate_stack (beste);
       else
 	{
 	  /* No predecessors.  Create an arbitrary input stack.  */
-	  int reg;
-
 	  bi->stack_in.top = -1;
 	  for (reg = LAST_STACK_REG; reg >= FIRST_STACK_REG; --reg)
 	    if (TEST_HARD_REG_BIT (bi->stack_in.reg_set, reg))
 	      bi->stack_in.reg[++bi->stack_in.top] = reg;
 	}
     }
-  else
-    /* Entry blocks do have stack already initialized.  */
-    beste = NULL;
 
   current_block = block;
 
@@ -2901,28 +2899,6 @@ convert_regs_1 (FILE *file, basic_block block)
   gcc_assert (any_malformed_asm);
  win:
   bi->stack_out = regstack;
-
-  /* Compensate the back edges, as those wasn't visited yet.  */
-  FOR_EACH_EDGE (e, ei, block->succs)
-    {
-      if (e->flags & EDGE_DFS_BACK
-	  || (e->dest == EXIT_BLOCK_PTR))
-	{
-	  gcc_assert (BLOCK_INFO (e->dest)->done
-		      || e->dest == block);
-	  propagate_stack (e);
-	}
-    }
-
-  FOR_EACH_EDGE (e, ei, block->preds)
-    {
-      if (e != beste && !(e->flags & EDGE_DFS_BACK)
-	  && e->src != ENTRY_BLOCK_PTR)
-	{
-	  gcc_assert (BLOCK_INFO (e->src)->done);
-	  propagate_stack (e);
-	}
-    }
 }
 
 /* Convert registers in all blocks reachable from BLOCK.  */
