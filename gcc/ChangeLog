@@ -1,3 +1,35 @@
+2005-05-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/19933
+	* fixinc/inclhack.def (solaris_math_6_1): New fix.
+	(solaris_math_9): Rewrite and guard with #ifdef __sparc__.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/iso/math_c99.h: Adjust for above changes.
+
+	Backport from mainline:
+	2005-05-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+	            Joseph S. Myers  <joseph@codesourcery.com>
+
+	* fixinc/inclhack.def: New fixes solaris_math_[1-9].
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/iso/math_c99.h: New.
+
+	Backport from mainline:
+	2005-05-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* fixinc/inclhack.def (stdio_stdarg_h, stdio_va_list): Bypass on
+	*-*-solaris2.1[0-9]*, not just *-*-solaris2.1[0-9].
+	* fixinc/fixincl.x: Regenerate.
+
+	Backport from mainline:
+	2004-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* fixinc/inclhack.def (gnu_types): Do not use on Solaris 2.1x.
+	(stdio_va_list): Likewise.
+	(stdio_stdarg.h): Likewise.
+	(solaris_stdio_tag): Add bypass.
+	* fixinc/fixincl.x: Regenerated.
+
 2005-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/21716
