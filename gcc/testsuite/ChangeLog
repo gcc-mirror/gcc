@@ -1,3 +1,8 @@
+2005-05-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21784
+	* g++.dg/lookup/using14.C: New test.
+
 2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.dg/c99-math-double-1.c, gcc.dg/c99-math-float-1.c,
@@ -28,6 +33,9 @@
 	* gfortran.dg/dollar_edit_descriptor-1.f: New test.
 
 2005-05-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21210
+	* g++.dg/ext/complex1.C: New test.
 
 	PR c++/21340
 	* g++.dg/init/ctor6.C: New test.

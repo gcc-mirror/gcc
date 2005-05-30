@@ -2032,6 +2032,14 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
       return;
     }
 
+  /* It is impossible to overload a built-in function; any explicit
+     declaration eliminates the built-in declaration.  So, if OLDVAL
+     is a built-in, then we can just pretend it isn't there.  */
+  if (oldval 
+      && TREE_CODE (oldval) == FUNCTION_DECL
+      && DECL_ANTICIPATED (oldval))
+    oldval = NULL_TREE;
+
   /* Check for using functions.  */
   if (decls.value && is_overloaded_fn (decls.value))
     {
@@ -2043,15 +2051,6 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	    error ("%qD is already declared in this scope", name);
 	  oldval = NULL_TREE;
 	}
-
-      /* It is impossible to overload a built-in function; any
-	 explicit declaration eliminates the built-in declaration.
-	 So, if OLDVAL is a built-in, then we can just pretend it
-	 isn't there.  */
-      if (oldval 
-	  && TREE_CODE (oldval) == FUNCTION_DECL
-	  && DECL_ANTICIPATED (oldval))
-	oldval = NULL_TREE;
 
       *newval = oldval;
       for (tmp = decls.value; tmp; tmp = OVL_NEXT (tmp))
