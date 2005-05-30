@@ -3,6 +3,6 @@
 namespace mine
 {
   int cpow;
-};
+}
 
 using mine::cpow;
