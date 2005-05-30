@@ -1,8 +1,19 @@
+2005-05-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21784
+	* name-lookup.c (do_nonmember_using_decl): Ignore builtin
+	functions, even	when the used name is not a function.
+
 2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* operators.def, optimize.c: Update copyright.
 
 2005-05-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21210
+	* call.c (standard_conversion): Permit conversions to complex
+	types if conversion to the corresponding scalar type would be
+	permitted.
 
 	PR c++/21340
 	* method.c (implicitly_declare_fn): Clear processing_template_decl
