@@ -1,4 +1,5 @@
-2005-05-29  Steven G. Kargl
+2005-05-29  Janne Blomqvist  <jblomqvi@vipunen.hut.fi>
+            Steven G. Kargl  <kargls@comcast.net>
   
 	fortran/PR20846
 	* io.c (gfc_match_inquire): Implement constraints on UNIT and FILE usage.
