@@ -1,3 +1,8 @@
+2005-05-30  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* loop.c (loop_invariant_p, valid_initial_value_p): Use
+	regs_invalidated_by_call instead of call_used_regs.
+
 2005-05-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR middle-end/21743
