@@ -1,3 +1,9 @@
+2005-05-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20179
+	* io/unix.c (fd_close): Add test so that we don't close()
+	stdout and stderr.
+
 2005-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20006
