@@ -1,3 +1,14 @@
+2005-05-29 Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/char_pointer_assign.f90:
+	Test character-pointer assignments and pointer assignments.
+	* gfortran.dg/char_pointer_dummy.f90:
+	Test character-pointer dummy arguments.
+	* gfortran.dg/char_pointer_func.f90:
+	Test character-pointer function returns.
+	* gfortran.dg/char_pointer_dependency.f90:
+	Test character-pointer functions with dependencies.
+
 2005-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21784
