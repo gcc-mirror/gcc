@@ -1,3 +1,8 @@
+2005-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_complex.h (log(const complex<_Tp>&)): When
+	_GLIBCXX_USE_C99_COMPLEX, forward to __builtin_clog/clogf/clogl.
+
 2005-05-28  Paolo Carlini  <pcarlini@suse.de>
 
 	Revert:

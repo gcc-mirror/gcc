@@ -749,7 +749,7 @@ namespace std
     __complex_log(const complex<_Tp>& __z)
     { return complex<_Tp>(log(std::abs(__z)), std::arg(__z)); }
 
-  /*
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_log(__complex__ float __z) { return __builtin_clogf(__z); }
 
@@ -758,14 +758,16 @@ namespace std
 
   inline __complex__ long double
   __complex_log(const __complex__ long double& __z)
-  { return __builtin_clogl(__z); } */
+  { return __builtin_clogl(__z); }
 
-  // FIXME: Currently we don't use built-ins for log() because of some
-  //        obscure user name-space issues.  So, we use the generic version
-  //        which is why we don't use __z.__rep() in the call below.
+  template<typename _Tp>
+    inline complex<_Tp>
+    log(const complex<_Tp>& __z) { return __complex_log(__z.__rep()); }
+#else
   template<typename _Tp>
     inline complex<_Tp>
     log(const complex<_Tp>& __z) { return __complex_log(__z); }
+#endif
 
   template<typename _Tp>
     inline complex<_Tp>
