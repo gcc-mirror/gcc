@@ -1,3 +1,7 @@
+2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* operators.def, optimize.c: Update copyright.
+
 2005-05-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21340

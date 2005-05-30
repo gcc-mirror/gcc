@@ -1,5 +1,5 @@
 /* Perform optimizations on tree structure.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005
    Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
