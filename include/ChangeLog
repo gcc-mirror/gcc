@@ -1,3 +1,7 @@
+2005-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansidecl.h: Add ATTRIBUTE_FPTR_PRINTF.
+
 2005-05-28  Eli Zaretskii  <eliz@gnu.org>
 
 	* libiberty.h: (snprintf) [!HAVE_DECL_SNPRINTF]: Declare if
