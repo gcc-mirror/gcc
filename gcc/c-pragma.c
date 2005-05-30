@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-common.h"
 #include "output.h"
 #include "tm_p.h"
+#include "vec.h"
 #include "target.h"
 
 #define GCC_BAD(msgid) do { warning (0, msgid); return; } while (0)
@@ -585,15 +586,20 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 #ifdef HANDLE_PRAGMA_VISIBILITY
 static void handle_pragma_visibility (cpp_reader *);
 
+typedef enum symbol_visibility visibility;
+DEF_VEC_I (visibility);
+DEF_VEC_ALLOC_I (visibility, heap);
+
 /* Sets the default visibility for symbols to something other than that
    specified on the command line.  */
 static void
 handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
-{ /* Form is #pragma GCC visibility push(hidden)|pop */
-  static int visstack [16], visidx;
+{
+  /* Form is #pragma GCC visibility push(hidden)|pop */
   tree x;
   enum cpp_ttype token;
   enum { bad, push, pop } action = bad;
+  static VEC (visibility, heap) *visstack;
  
   token = c_lex (&x);
   if (token == CPP_NAME)
@@ -610,14 +616,15 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
     {
       if (pop == action)
         {
-          if (!visidx)
+          if (!VEC_length (visibility, visstack))
             {
               GCC_BAD ("No matching push for %<#pragma GCC visibility pop%>");
             }
           else
             {
-              default_visibility = visstack[--visidx];
-              visibility_options.inpragma = (visidx>0);
+	      default_visibility = VEC_pop (visibility, visstack);
+	      visibility_options.inpragma
+		= VEC_length (visibility, visstack) != 0;
             }
         }
       else
@@ -629,14 +636,11 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
             {
               GCC_BAD ("malformed #pragma GCC visibility push");
             }
-          else if (visidx >= 16)
-            {
-              GCC_BAD ("No more than sixteen #pragma GCC visibility pushes allowed at once");
-            }
           else
             {
               const char *str = IDENTIFIER_POINTER (x);
-              visstack[visidx++] = default_visibility;
+	      VEC_safe_push (visibility, heap, visstack,
+			     default_visibility);
               if (!strcmp (str, "default"))
                 default_visibility = VISIBILITY_DEFAULT;
               else if (!strcmp (str, "internal"))

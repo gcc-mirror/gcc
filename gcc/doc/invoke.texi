@@ -12774,8 +12774,8 @@ For those adding visibility support to existing code, you may find
 @samp{#pragma GCC visibility} of use.  This works by you enclosing
 the declarations you wish to set visibility for with (for example)
 @samp{#pragma GCC visibility push(hidden)} and
-@samp{#pragma GCC visibility pop}.  These can be nested up to sixteen
-times.  Bear in mind that symbol visibility should be viewed @strong{as
+@samp{#pragma GCC visibility pop}.
+Bear in mind that symbol visibility should be viewed @strong{as
 part of the API interface contract} and thus all new code should
 always specify visibility when it is not the default ie; declarations
 only for use within the local DSO should @strong{always} be marked explicitly

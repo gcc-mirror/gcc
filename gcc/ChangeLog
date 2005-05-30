@@ -1,3 +1,11 @@
+2005-05-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/20303
+	* c-pragma.c: Include "vec.h".
+	(handle_pragma_visibility): Use VEC.
+
+	* doc/invoke.texi: Remove the nested visibility push limit.
+
 2005-05-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/15422
