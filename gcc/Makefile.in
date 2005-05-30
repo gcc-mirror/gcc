@@ -3401,7 +3401,7 @@ install: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
     lang.install-normal install-driver
 
 # Handle cpp installation.
-install-cpp: cpp$(exeext)
+install-cpp: installdirs cpp$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
 	-$(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
 	-if [ x$(cpp_install_dir) != x ]; then \

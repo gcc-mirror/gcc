@@ -1,3 +1,7 @@
+2005-05-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (install-cpp): Depend on installdirs.
+
 2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-outof-ssa.c (_elim_graph): Change the type of edge_list
