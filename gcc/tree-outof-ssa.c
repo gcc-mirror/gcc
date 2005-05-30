@@ -53,6 +53,9 @@ Boston, MA 02111-1307, USA.  */
 #define SSANORM_COMBINE_TEMPS		0x2
 #define SSANORM_COALESCE_PARTITIONS	0x4
 
+DEF_VEC_I(int);
+DEF_VEC_ALLOC_I(int,heap);
+
 /* Used to hold all the components required to do SSA PHI elimination.
    The node and pred/succ list is a simple linear list of nodes and
    edges represented as pairs of nodes.
@@ -82,7 +85,7 @@ typedef struct _elim_graph {
   VEC(tree,heap) *nodes;
 
   /*  The predecessor and successor edge list.  */
-  varray_type edge_list;
+  VEC(int,heap) *edge_list;
 
   /* Visited vector.  */
   sbitmap visited;
@@ -220,7 +223,7 @@ new_elim_graph (int size)
 
   g->nodes = VEC_alloc (tree, heap, 30);
   g->const_copies = VEC_alloc (tree, heap, 20);
-  VARRAY_INT_INIT (g->edge_list, 20, "Elimination Edge List");
+  g->edge_list = VEC_alloc (int, heap, 20);
   VARRAY_INT_INIT (g->stack, 30, " Elimination Stack");
   
   g->visited = sbitmap_alloc (size);
@@ -235,7 +238,7 @@ static inline void
 clear_elim_graph (elim_graph g)
 {
   VEC_truncate (tree, g->nodes, 0);
-  VARRAY_POP_ALL (g->edge_list);
+  VEC_truncate (int, g->edge_list, 0);
 }
 
 
@@ -245,6 +248,7 @@ static inline void
 delete_elim_graph (elim_graph g)
 {
   sbitmap_free (g->visited);
+  VEC_free (int, heap, g->edge_list);
   VEC_free (tree, heap, g->const_copies);
   VEC_free (tree, heap, g->nodes);
   free (g);
@@ -280,8 +284,8 @@ elim_graph_add_node (elim_graph g, tree node)
 static inline void
 elim_graph_add_edge (elim_graph g, int pred, int succ)
 {
-  VARRAY_PUSH_INT (g->edge_list, pred);
-  VARRAY_PUSH_INT (g->edge_list, succ);
+  VEC_safe_push (int, heap, g->edge_list, pred);
+  VEC_safe_push (int, heap, g->edge_list, succ);
 }
 
 
@@ -293,12 +297,12 @@ elim_graph_remove_succ_edge (elim_graph g, int node)
 {
   int y;
   unsigned x;
-  for (x = 0; x < VARRAY_ACTIVE_SIZE (g->edge_list); x += 2)
-    if (VARRAY_INT (g->edge_list, x) == node)
+  for (x = 0; x < VEC_length (int, g->edge_list); x += 2)
+    if (VEC_index (int, g->edge_list, x) == node)
       {
-        VARRAY_INT (g->edge_list, x) = -1;
-	y = VARRAY_INT (g->edge_list, x + 1);
-	VARRAY_INT (g->edge_list, x + 1) = -1;
+        VEC_replace (int, g->edge_list, x, -1);
+	y = VEC_index (int, g->edge_list, x + 1);
+	VEC_replace (int, g->edge_list, x + 1, -1);
 	return y;
       }
   return -1;
@@ -313,12 +317,12 @@ elim_graph_remove_succ_edge (elim_graph g, int node)
 do {									\
   unsigned x_;								\
   int y_;								\
-  for (x_ = 0; x_ < VARRAY_ACTIVE_SIZE ((GRAPH)->edge_list); x_ += 2)	\
+  for (x_ = 0; x_ < VEC_length (int, (GRAPH)->edge_list); x_ += 2)	\
     {									\
-      y_ = VARRAY_INT ((GRAPH)->edge_list, x_);				\
+      y_ = VEC_index (int, (GRAPH)->edge_list, x_);			\
       if (y_ != (NODE))							\
         continue;							\
-      (VAR) = VARRAY_INT ((GRAPH)->edge_list, x_ + 1);			\
+      (VAR) = VEC_index (int, (GRAPH)->edge_list, x_ + 1);		\
       CODE;								\
     }									\
 } while (0)
@@ -332,12 +336,12 @@ do {									\
 do {									\
   unsigned x_;								\
   int y_;								\
-  for (x_ = 0; x_ < VARRAY_ACTIVE_SIZE ((GRAPH)->edge_list); x_ += 2)	\
+  for (x_ = 0; x_ < VEC_length (int, (GRAPH)->edge_list); x_ += 2)	\
     {									\
-      y_ = VARRAY_INT ((GRAPH)->edge_list, x_ + 1);			\
+      y_ = VEC_index (int, (GRAPH)->edge_list, x_ + 1);			\
       if (y_ != (NODE))							\
         continue;							\
-      (VAR) = VARRAY_INT ((GRAPH)->edge_list, x_);			\
+      (VAR) = VEC_index (int, (GRAPH)->edge_list, x_);			\
       CODE;								\
     }									\
 } while (0)
