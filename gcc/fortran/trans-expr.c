@@ -372,7 +372,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	}
       else
 	{
-          /* Dereference non-charcter scalar dummy arguments.  */
+          /* Dereference non-character scalar dummy arguments.  */
 	  if ((sym->attr.dummy) && (!sym->attr.dimension))
 	    se->expr = gfc_build_indirect_ref (se->expr);
 
@@ -383,7 +383,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	    se->expr = gfc_build_indirect_ref (se->expr);
 
           /* Dereference non-character pointer variables. 
-	     These must be dummys or results or scalars.  */
+	     These must be dummies, results, or scalars.  */
 	  if ((sym->attr.pointer || sym->attr.allocatable)
 	      && ((sym->attr.dummy) 
 		  || (sym->attr.function || sym->attr.result)

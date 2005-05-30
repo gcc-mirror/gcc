@@ -2,6 +2,8 @@
 
 	* trans-expr.c: Remove trailing ^M.
 
+	* trans-expr.c: Fix comment typos.
+
 2005-05-29  Janne Blomqvist  <jblomqvi@vipunen.hut.fi>
             Steven G. Kargl  <kargls@comcast.net>
   
