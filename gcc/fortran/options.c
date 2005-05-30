@@ -77,9 +77,10 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   flag_errno_math = 0;
 
   gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F77 | GFC_STD_GNU;
+    | GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F77 | GFC_STD_GNU
+    | GFC_STD_LEGACY;
   gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_F2003;
+    | GFC_STD_F2003 | GFC_STD_LEGACY;
 
   gfc_option.warn_nonstd_intrinsics = 0;
 
@@ -113,6 +114,9 @@ gfc_post_options (const char **pfilename)
   /* If -pedantic, warn about the use of GNU extensions.  */
   if (pedantic && (gfc_option.allow_std & GFC_STD_GNU) != 0)
     gfc_option.warn_std |= GFC_STD_GNU;
+  /* -std=legacy -pedantic is effectively -std=gnu.  */
+  if (pedantic && (gfc_option.allow_std & GFC_STD_LEGACY) != 0)
+    gfc_option.warn_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_LEGACY;
 
   /* If the user didn't explicitly specify -f(no)-second-underscore we
      use it if we're trying to be compatible with f2c, and not
@@ -333,8 +337,16 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_std_gnu:
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
 	| GFC_STD_F77 | GFC_STD_F95 | GFC_STD_F2003
-	| GFC_STD_GNU;
-      gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL;
+	| GFC_STD_GNU | GFC_STD_LEGACY;
+      gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
+	| GFC_STD_LEGACY;
+      break;
+
+    case OPT_std_legacy:
+      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
+	| GFC_STD_F77 | GFC_STD_F95 | GFC_STD_F2003
+	| GFC_STD_GNU | GFC_STD_LEGACY;
+      gfc_option.warn_std = 0;
       break;
 
     case OPT_Wnonstd_intrinsics:
