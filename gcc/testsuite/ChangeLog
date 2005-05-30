@@ -1,3 +1,9 @@
+2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/c99-math-double-1.c, gcc.dg/c99-math-float-1.c,
+	gcc.dg/c99-math-long-double-1.c, gcc.dg/c99-math.h: Remove
+	trailing ^M.
+
 2005-05-29  Geoffrey Keating  <geoffk@apple.com>
 
 	PR target/21761
