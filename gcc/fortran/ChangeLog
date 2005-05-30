@@ -1,3 +1,7 @@
+2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* trans-expr.c: Remove trailing ^M.
+
 2005-05-29  Janne Blomqvist  <jblomqvi@vipunen.hut.fi>
             Steven G. Kargl  <kargls@comcast.net>
   
