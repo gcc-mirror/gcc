@@ -37,6 +37,7 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/System.h>
 #include <java/lang/String.h>
+#include <java/lang/StringBuffer.h>
 #include <java/lang/Thread.h>
 #include <java/nio/ByteBuffer.h>
 #include <java/nio/MappedByteBufferImpl.h>
@@ -168,13 +169,13 @@ FileChannelImpl::open (jstring path, jint jflags)
     }
   if (fd == -1)
     {
-      char msg[MAXPATHLEN + 200];
       // We choose the formatting here for JDK compatibility, believe
       // it or not.
-      sprintf (msg, "%.*s (%.*s)",
-	       MAXPATHLEN + 150, buf,
-	       40, strerror (errno));
-      throw new ::java::io::FileNotFoundException (JvNewStringLatin1 (msg));
+      ::java::lang::StringBuffer *msg = new ::java::lang::StringBuffer (path);
+      msg->append (JvNewStringUTF (" ("));
+      msg->append (JvNewStringUTF (strerror (errno)));
+      msg->append (JvNewStringUTF (")"));
+      throw new ::java::io::FileNotFoundException (msg->toString ());
     }
 
   _Jv_platform_close_on_exec (fd);

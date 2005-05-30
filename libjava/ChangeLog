@@ -1,3 +1,9 @@
+2005-05-30  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/21821
+	* gnu/java/nio/channels/natFileChannelPosix.cc (open): Don't use
+	MAXPATHLEN. Format exception message using a StringBuffer instead.
+
 2005-05-29  Michael Koch  <konqueror@gmx.de>
 
 	PR libgcj/20273:
