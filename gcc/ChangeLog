@@ -1,3 +1,7 @@
+2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-ccp.c (const_val): Make it static.
+
 2005-05-29  Geoffrey Keating  <geoffk@apple.com>
 
 	PR target/21761
