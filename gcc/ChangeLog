@@ -1,3 +1,18 @@
+2005-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/15422
+	* reg-stack.c (starting_stack_p): New static global.
+	(straighten_stack): Delete prototype. Change to update the stack
+	before the current insn.
+	(subst_stack_regs): Update call to straighten stack.
+	(emit_swap_insn): Delete prototype.  For the first insn in a
+	basic block, update stack_in instead of emitting a real swap.
+	(change_stack): When changing the stack before the first insn
+	in a basic block, update stack_in instead of emitting real code.
+	(compensate_edges): Clear starting_stack_p during compensation.
+	(convert_regs_1): Keep track of starting_stack_p whilst processing
+	a basic block.
+
 2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-ccp.c (const_val): Make it static.
