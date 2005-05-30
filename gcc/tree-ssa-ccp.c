@@ -228,7 +228,7 @@ typedef enum
    (i.e., a V_MAY_DEF or V_MUST_DEF), CONST_VAL[I].MEM_REF will
    contain the actual memory reference used to store (i.e., the LHS of
    the assignment doing the store).  */
-prop_value_t *const_val;
+static prop_value_t *const_val;
 
 /* True if we are also propagating constants in stores and loads.  */
 static bool do_store_ccp;
