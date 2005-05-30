@@ -1,3 +1,8 @@
+2005-05-29  Steven G. Kargl
+  
+	fortran/PR20846
+	* io.c (gfc_match_inquire): Implement constraints on UNIT and FILE usage.
+
 2005-05-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20006
