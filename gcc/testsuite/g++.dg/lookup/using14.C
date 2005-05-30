@@ -1,4 +1,5 @@
 // PR c++/21784
+// { dg-options "" }
 
 namespace mine
 {
