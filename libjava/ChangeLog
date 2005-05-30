@@ -1,3 +1,8 @@
+2005-05-29  Michael Koch  <konqueror@gmx.de>
+
+	PR libgcj/20273:
+	* java/util/LinkedHashMap.java (access): Set 'root.pred'.
+
 2005-05-27  Robin Green  <greenrd@greenrd.org>
 
 	PR libgcj/21775:

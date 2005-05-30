@@ -1,6 +1,6 @@
 /* LinkedHashMap.java -- a class providing hashtable data structure,
    mapping Object --> Object, with linked list traversal
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -186,6 +186,7 @@ public class LinkedHashMap extends HashMap
               succ = null;
               pred = root.pred;
               pred.succ = this;
+              root.pred = this;
             }
         }
     }
