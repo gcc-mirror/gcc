@@ -1,3 +1,9 @@
+2005-05-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21784
+	* name-lookup.c (do_nonmember_using_decl): Ignore builtin
+	functions, even	when the used name is not a function.
+
 2005-05-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21340
