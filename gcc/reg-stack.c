@@ -224,6 +224,11 @@ enum emit_where
 /* The block we're currently working on.  */
 static basic_block current_block;
 
+/* In the current_block, whether we're processing the first register
+   stack or call instruction, i.e. the the regstack is currently the
+   same as BLOCK_INFO(current_block)->stack_in.  */
+static bool starting_stack_p;
+
 /* This is the register file for all register after conversion.  */
 static rtx
   FP_mode_reg[LAST_STACK_REG+1-FIRST_STACK_REG][(int) MAX_MACHINE_MODE];
@@ -237,7 +242,6 @@ static rtx not_a_num;
 /* Forward declarations */
 
 static int stack_regs_mentioned_p (rtx pat);
-static void straighten_stack (rtx, stack);
 static void pop_stack (stack, int);
 static rtx *get_true_reg (rtx *);
 
@@ -248,7 +252,6 @@ static void replace_reg (rtx *, int);
 static void remove_regno_note (rtx, enum reg_note, unsigned int);
 static int get_hard_regnum (stack, rtx);
 static rtx emit_pop_insn (rtx, stack, rtx, enum emit_where);
-static void emit_swap_insn (rtx, stack, rtx);
 static void swap_to_top(rtx, stack, rtx, rtx);
 static bool move_for_stack_reg (rtx, stack, rtx);
 static bool move_nan_for_stack_reg (rtx, stack, rtx);
@@ -344,8 +347,7 @@ next_flags_user (rtx insn)
   return NULL_RTX;
 }
 
-/* Reorganize the stack into ascending numbers,
-   after this insn.  */
+/* Reorganize the stack into ascending numbers, before this insn.  */
 
 static void
 straighten_stack (rtx insn, stack regstack)
@@ -365,7 +367,7 @@ straighten_stack (rtx insn, stack regstack)
   for (top = temp_stack.top = regstack->top; top >= 0; top--)
     temp_stack.reg[top] = FIRST_STACK_REG + temp_stack.top - top;
 
-  change_stack (insn, regstack, &temp_stack, EMIT_AFTER);
+  change_stack (insn, regstack, &temp_stack, EMIT_BEFORE);
 }
 
 /* Pop a register from the stack.  */
@@ -862,6 +864,16 @@ emit_swap_insn (rtx insn, stack regstack, rtx reg)
 	  && REG_P (i1src) && REGNO (i1src) == FIRST_STACK_REG
 	  && find_regno_note (i1, REG_DEAD, FIRST_STACK_REG) == NULL_RTX)
 	return;
+    }
+
+  /* Avoid emitting the swap if this is the first register stack insn
+     of the current_block.  Instead update the current_block's stack_in
+     and let compensate edges take care of this for us.  */
+  if (current_block && starting_stack_p)
+    {
+      BLOCK_INFO (current_block)->stack_in = *regstack;
+      starting_stack_p = false;
+      return;
     }
 
   swap_rtx = gen_swapxf (FP_MODE_REG (hard_regno, XFmode),
@@ -2205,7 +2217,7 @@ subst_stack_regs (rtx insn, stack regstack)
 
       if (top >= 0)
 	{
-	  straighten_stack (PREV_INSN (insn), regstack);
+	  straighten_stack (insn, regstack);
 
 	  /* Now mark the arguments as dead after the call.  */
 
@@ -2295,6 +2307,19 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
 {
   int reg;
   int update_end = 0;
+
+  /* Stack adjustments for the first insn in a block update the
+     current_block's stack_in instead of inserting insns directly.
+     compensate_edges will add the necessary code later.  */
+  if (current_block
+      && starting_stack_p
+      && where == EMIT_BEFORE)
+    {
+      BLOCK_INFO (current_block)->stack_in = *new;
+      starting_stack_p = false;
+      *old = *new;
+      return;
+    }
 
   /* We will be inserting new insns "backwards".  If we are to insert
      after INSN, find the next insn, and insert before it.  */
@@ -2720,6 +2745,8 @@ compensate_edges (FILE *file)
   bool inserted = false;
   basic_block bb;
 
+  starting_stack_p = false;
+
   FOR_EACH_BB (bb)
     if (bb != ENTRY_BLOCK_PTR)
       {
@@ -2800,8 +2827,6 @@ convert_regs_1 (FILE *file, basic_block block)
 	}
     }
 
-  current_block = block;
-
   if (file)
     {
       fprintf (file, "\nBasic block %d\nInput stack: ", block->index);
@@ -2810,8 +2835,11 @@ convert_regs_1 (FILE *file, basic_block block)
 
   /* Process all insns in this block.  Keep track of NEXT so that we
      don't process insns emitted while substituting in INSN.  */
+  current_block = block;
   next = BB_HEAD (block);
   regstack = bi->stack_in;
+  starting_stack_p = true;
+
   do
     {
       insn = next;
@@ -2834,6 +2862,7 @@ convert_regs_1 (FILE *file, basic_block block)
 	      print_stack (file, &regstack);
 	    }
 	  control_flow_insn_deleted |= subst_stack_regs (insn, &regstack);
+	  starting_stack_p = false;
 	}
     }
   while (next);
