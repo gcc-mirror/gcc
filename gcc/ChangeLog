@@ -1,5 +1,9 @@
 2005-05-29  Geoffrey Keating  <geoffk@apple.com>
 
+	PR target/21761
+	* config/rs6000/rs6000.md: Remove stray TARGET_32BIT from
+	pattern involving `:P'.
+
 	* Makefile.in (install-cpp): Depend on installdirs.
 
 2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>

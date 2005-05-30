@@ -1,5 +1,8 @@
 2005-05-29  Geoffrey Keating  <geoffk@apple.com>
 
+	PR target/21761
+	* gcc.c-torture/compile/pr21761.c: New.
+
 	* g++.old-deja/g++.eh/badalloc1.C: Make XFAIL only on darwin
 	before darwin8.
 
