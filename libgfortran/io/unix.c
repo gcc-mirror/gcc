@@ -542,8 +542,11 @@ fd_close (unix_stream * s)
   if (s->buffer != NULL && s->buffer != s->small_buffer)
     free_mem (s->buffer);
 
-  if (close (s->fd) < 0)
-    return FAILURE;
+  if (s->fd != STDOUT_FILENO && s->fd != STDERR_FILENO)
+    {
+      if (close (s->fd) < 0)
+        return FAILURE;
+    }
 
   free_mem (s);
 
