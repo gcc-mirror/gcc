@@ -1,3 +1,8 @@
+2005-05-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.old-deja/g++.eh/badalloc1.C: Make XFAIL only on darwin
+	before darwin8.
+
 2005-05-30  Steven G. Kargl
 
 	PR fortran/20846
