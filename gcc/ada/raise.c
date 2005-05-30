@@ -204,7 +204,7 @@ db_indent (int requests)
 
 }
 
-static void
+static void ATTRIBUTE_PRINTF_2
 db (int db_code, char * msg_format, ...)
 {
   if (db_accepted_codes () & db_code)
