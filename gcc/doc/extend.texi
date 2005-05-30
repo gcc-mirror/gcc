@@ -4791,6 +4791,9 @@ are not prevented from being speculated to before the barrier.
 @findex cimag
 @findex cimagf
 @findex cimagl
+@findex clog
+@findex clogf
+@findex clogl
 @findex conj
 @findex conjf
 @findex conjl
@@ -5140,21 +5143,21 @@ The ISO C99 functions
 @code{catanl}, @code{catan}, @code{cbrtf}, @code{cbrtl}, @code{cbrt},
 @code{ccosf}, @code{ccoshf}, @code{ccoshl}, @code{ccosh}, @code{ccosl},
 @code{ccos}, @code{cexpf}, @code{cexpl}, @code{cexp}, @code{cimagf},
-@code{cimagl}, @code{cimag}, @code{conjf}, @code{conjl}, @code{conj},
-@code{copysignf}, @code{copysignl}, @code{copysign}, @code{cpowf},
-@code{cpowl}, @code{cpow}, @code{cprojf}, @code{cprojl}, @code{cproj},
-@code{crealf}, @code{creall}, @code{creal}, @code{csinf}, @code{csinhf},
-@code{csinhl}, @code{csinh}, @code{csinl}, @code{csin}, @code{csqrtf},
-@code{csqrtl}, @code{csqrt}, @code{ctanf}, @code{ctanhf}, @code{ctanhl},
-@code{ctanh}, @code{ctanl}, @code{ctan}, @code{erfcf}, @code{erfcl},
-@code{erfc}, @code{erff}, @code{erfl}, @code{erf}, @code{exp2f},
-@code{exp2l}, @code{exp2}, @code{expm1f}, @code{expm1l}, @code{expm1},
-@code{fdimf}, @code{fdiml}, @code{fdim}, @code{fmaf}, @code{fmal},
-@code{fmaxf}, @code{fmaxl}, @code{fmax}, @code{fma}, @code{fminf},
-@code{fminl}, @code{fmin}, @code{hypotf}, @code{hypotl}, @code{hypot},
-@code{ilogbf}, @code{ilogbl}, @code{ilogb}, @code{imaxabs},
-@code{isblank}, @code{iswblank}, @code{lgammaf}, @code{lgammal},
-@code{lgamma}, @code{llabs}, @code{llrintf}, @code{llrintl},
+@code{cimagl}, @code{cimag}, @code{clogf}, @code{clogl}, @code{clog},
+@code{conjf}, @code{conjl}, @code{conj}, @code{copysignf}, @code{copysignl},
+@code{copysign}, @code{cpowf}, @code{cpowl}, @code{cpow}, @code{cprojf},
+@code{cprojl}, @code{cproj}, @code{crealf}, @code{creall}, @code{creal},
+@code{csinf}, @code{csinhf}, @code{csinhl}, @code{csinh}, @code{csinl},
+@code{csin}, @code{csqrtf}, @code{csqrtl}, @code{csqrt}, @code{ctanf},
+@code{ctanhf}, @code{ctanhl}, @code{ctanh}, @code{ctanl}, @code{ctan},
+@code{erfcf}, @code{erfcl}, @code{erfc}, @code{erff}, @code{erfl},
+@code{erf}, @code{exp2f}, @code{exp2l}, @code{exp2}, @code{expm1f},
+@code{expm1l}, @code{expm1}, @code{fdimf}, @code{fdiml}, @code{fdim},
+@code{fmaf}, @code{fmal}, @code{fmaxf}, @code{fmaxl}, @code{fmax},
+@code{fma}, @code{fminf}, @code{fminl}, @code{fmin}, @code{hypotf},
+@code{hypotl}, @code{hypot}, @code{ilogbf}, @code{ilogbl}, @code{ilogb},
+@code{imaxabs}, @code{isblank}, @code{iswblank}, @code{lgammaf},
+@code{lgammal}, @code{lgamma}, @code{llabs}, @code{llrintf}, @code{llrintl},
 @code{llrint}, @code{llroundf}, @code{llroundl}, @code{llround},
 @code{log1pf}, @code{log1pl}, @code{log1p}, @code{log2f}, @code{log2l},
 @code{log2}, @code{logbf}, @code{logbl}, @code{logb}, @code{lrintf},
