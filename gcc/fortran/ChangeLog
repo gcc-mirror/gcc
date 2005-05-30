@@ -1,3 +1,18 @@
+2005-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	* gfortran.h (GFC_STD_LEGACY): New "standard" macro.  Reindent.
+	* options.c (gfc_init_options): By default, allow legacy extensions
+	but warn about them.
+	(gfc_post_options): Make -pedantic warn about legacy extensions
+	even with -std=legacy.
+	(gfc_handle_option): Make -std=gnu follow the default behaviour
+	of warning about legacy extensions, but allowing them. Make the
+	new -std=legacy accept everything and warn about nothing.
+	* lang.opt (std=legacy): New F95 command line option.
+	* invoke.texi: Document both -std=f2003 and -std=legacy.
+	* gfortran.texi: Explain the two types of extensions and document
+	how they are affected by the various -std= command line options.
+
 2005-05-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* trans-expr.c: Remove trailing ^M.

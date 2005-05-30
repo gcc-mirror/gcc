@@ -92,13 +92,14 @@ mstring;
 
 
 /* Flags to specify which standard/extension contains a feature.  */
-#define GFC_STD_GNU                (1<<5)    /* GNU Fortran extension.  */
-#define GFC_STD_F2003             (1<<4)    /* New in F2003.  */
+#define GFC_STD_LEGACY		(1<<6) /* Backward compatibility.  */
+#define GFC_STD_GNU		(1<<5)    /* GNU Fortran extension.  */
+#define GFC_STD_F2003		(1<<4)    /* New in F2003.  */
 /* Note that no features were obsoleted nor deleted in F2003.  */
-#define GFC_STD_F95                 (1<<3)    /* New in F95.  */
-#define GFC_STD_F95_DEL         (1<<2)    /* Deleted in F95.  */
-#define GFC_STD_F95_OBS        (1<<1)    /* Obsoleted in F95.  */
-#define GFC_STD_F77                 (1<<0)    /* Up to and including F77.  */
+#define GFC_STD_F95		(1<<3)    /* New in F95.  */
+#define GFC_STD_F95_DEL		(1<<2)    /* Deleted in F95.  */
+#define GFC_STD_F95_OBS		(1<<1)    /* Obsoleted in F95.  */
+#define GFC_STD_F77		(1<<0)    /* Up to and including F77.  */
 
 /*************************** Enums *****************************/
 

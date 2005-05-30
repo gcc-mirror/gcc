@@ -618,7 +618,14 @@ Variable for swapping Endianness during unformatted write.
 
 @command{gfortran} implements a number of extensions over standard
 Fortran. This chapter contains information on their syntax and
-meaning.
+meaning.  There are currently two categories of @command{gfortran}
+extensions, those that provide functionality beyond that provided
+by any standard, and those that are supported by @command{gfortran}
+purely for backward compatibility with legacy compilers.  By default,
+@option{-std=gnu} allows the compiler to accept both types of
+extensions, but to warn about the use of the latter.  Specifying
+either @option{-std=f95} or @option{-std=f2003} disables both types
+of extensions, and @option{-std=legacy} allows both without warning.
 
 @menu
 * Old-style kind specifications::

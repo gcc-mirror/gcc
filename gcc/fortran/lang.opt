@@ -161,4 +161,8 @@ std=gnu
 F95
 Conform nothing in particular.
 
+std=legacy
+F95
+Accept extensions to support legacy code.
+
 ; This comment is to ensure we retain the blank line above.
