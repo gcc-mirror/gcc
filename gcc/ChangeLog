@@ -1,3 +1,10 @@
+2005-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR middle-end/21743
+	* builtins.def (BUILT_IN_CLOG, BUILT_IN_CLOGF, BUILT_IN_CLOGL):
+	Enable.
+	* doc/extend.texi: Add clog, clogf, clogl.
+
 2005-05-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/20303
