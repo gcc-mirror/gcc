@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation.
+/* Copyright (C) 2003, 2005  Free Software Foundation.
 
    Verify that the `const' function attribute is applied to various
    builtins and that these functions are optimized away by the
@@ -393,7 +393,7 @@ CPTEST1 (ccos)
 CPTEST1 (ccosh)
 CPTEST1 (cexp)
 CPTEST1R (cimag)
-/*CPTEST1 (clog)*/
+CPTEST1 (clog)
 CPTEST1 (conj)
 CPTEST2 (cpow)
 CPTEST1 (cproj)

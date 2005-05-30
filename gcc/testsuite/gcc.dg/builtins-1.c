@@ -190,7 +190,7 @@ CPTEST1      (ccos)
 CPTEST1      (ccosh)
 CPTEST1      (cexp)
 CPTEST1RETFP (cimag)
-/*CPTEST1      (clog)*/
+CPTEST1      (clog)
 CPTEST1      (conj)
 CPTEST2      (cpow)
 CPTEST1      (cproj)

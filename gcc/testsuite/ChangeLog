@@ -1,3 +1,9 @@
+2005-05-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR middle-end/21743
+	* gcc.dg/builtins-1.c: Activate disabled clog test.
+	* gcc.dg/torture/builtin-attr-1.c: Likewise.
+
 2005-05-29 Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.dg/char_pointer_assign.f90:
