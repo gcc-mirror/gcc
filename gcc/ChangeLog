@@ -1,3 +1,13 @@
+2005-05-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/20931
+	PR middle-end/20946
+	* fold-const.c (fold_checksum_tree): Copy types also if
+	TYPE_CONTAINS_PLACEHOLDER_INTERNAL is set.
+	Don't call fold_checksum_tree for TREE_LIST's TREE_CHAIN
+	first.
+	Tail recurse TREE_LIST's TREE_CHAIN.
+
 2005-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Update note

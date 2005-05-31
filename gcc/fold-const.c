@@ -9933,6 +9933,8 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
   enum tree_code code;
   char buf[sizeof (struct tree_decl)];
   int i, len;
+  
+recursive_label:
 
   gcc_assert ((sizeof (struct tree_exp) + 5 * sizeof (tree)
 	       <= sizeof (struct tree_decl))
@@ -9954,11 +9956,13 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
     }
   else if (TREE_CODE_CLASS (code) == tcc_type
 	   && (TYPE_POINTER_TO (expr) || TYPE_REFERENCE_TO (expr)
-	       || TYPE_CACHED_VALUES_P (expr)))
+	       || TYPE_CACHED_VALUES_P (expr)
+	       || TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)))
     {
       /* Allow these fields to be modified.  */
       memcpy (buf, expr, tree_size (expr));
       expr = (tree) buf;
+      TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr) = 0;
       TYPE_POINTER_TO (expr) = NULL;
       TYPE_REFERENCE_TO (expr) = NULL;
       if (TYPE_CACHED_VALUES_P (expr))
@@ -9970,7 +9974,8 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
   md5_process_bytes (expr, tree_size (expr), ctx);
   fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
   if (TREE_CODE_CLASS (code) != tcc_type
-      && TREE_CODE_CLASS (code) != tcc_declaration)
+      && TREE_CODE_CLASS (code) != tcc_declaration
+      && code != TREE_LIST)
     fold_checksum_tree (TREE_CHAIN (expr), ctx, ht);
   switch (TREE_CODE_CLASS (code))
     {
@@ -9998,6 +10003,8 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 	case TREE_LIST:
 	  fold_checksum_tree (TREE_PURPOSE (expr), ctx, ht);
 	  fold_checksum_tree (TREE_VALUE (expr), ctx, ht);
+	  expr = TREE_CHAIN (expr);
+	  goto recursive_label;
 	  break;
 	case TREE_VEC:
 	  for (i = 0; i < TREE_VEC_LENGTH (expr); ++i)
