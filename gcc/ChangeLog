@@ -1,3 +1,10 @@
+2005-05-31  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* fold-const.c (extract_array_ref): Handle more cases,
+	do some useful canonicalization of the base.
+	(fold_binary): Explicitly deal with arrays of zero-sized
+	structures during folding of &a[i] == &a[j].
+
 2005-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Update note

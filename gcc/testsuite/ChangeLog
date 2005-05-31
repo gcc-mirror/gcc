@@ -1,3 +1,7 @@
+2005-05-31  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/foldaddr-1.c: New test.
+
 2005-05-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR middle-end/21743
