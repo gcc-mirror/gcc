@@ -1,3 +1,8 @@
+2005-05-31  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/21817
+	* tree-ssa-loop-im.c (for_each_index): Handle VECTOR_CST.
+
 2005-05-31  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* loop.c (loop_invariant_p, valid_initial_value_p): Revert last

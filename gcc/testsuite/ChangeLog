@@ -1,3 +1,8 @@
+2005-05-31  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/21817
+	* gcc.dg/torture/pr21817-1.c: New.
+
 2005-05-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21165
