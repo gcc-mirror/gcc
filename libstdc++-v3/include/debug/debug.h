@@ -41,15 +41,10 @@
 
 #ifdef _GLIBCXX_DEBUG
 #  include <debug/macros.h>
-
-// The debug mode requires assert functionality, but keep this include
-// conditionalized, so that non-debug use doesn't mandate exposure to the
-// assert macro.
-#  include <cassert> 
-#  define _GLIBCXX_DEBUG_ASSERT(_Condition) assert(_Condition)
+#  define _GLIBCXX_DEBUG_ASSERT(_Condition) _GLIBCXX_DEBUG_ABORT(_Condition)
 
 #  ifdef _GLIBCXX_DEBUG_PEDANTIC
-#    define _GLIBCXX_DEBUG_PEDASSERT(_Condition) assert(_Condition)
+#    define _GLIBCXX_DEBUG_PEDASSERT(_Condition) _GLIBCXX_DEBUG_ABORT(_Condition)
 #  else
 #    define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
 #  endif

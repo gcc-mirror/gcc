@@ -1,3 +1,13 @@
+2005-05-31  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/20534 (contd)
+	* include/debug/macros.h: Add _GLIBCXX_DEBUG_ABORT, using
+	__gnu_debug::__fancy_abort.
+	* src/debug.cc: Define the latter.
+	* include/debug/debug.h: Use _GLIBCXX_DEBUG_ABORT instead of
+	assert.
+	* config/linker-map.gnu (__gnu_debug::__fancy_abort): Add.
+
 2005-05-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_complex.h (log(const complex<_Tp>&)): When
