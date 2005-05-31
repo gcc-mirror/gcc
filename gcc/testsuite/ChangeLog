@@ -1,3 +1,8 @@
+2005-05-31  Andrew pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/20931
+	* g++.dg/opt/pr20931.C: New test.
+
 2005-05-31  Andreas Jaeger  <aj@suse.de>
 
 	PR testsuite/20772
