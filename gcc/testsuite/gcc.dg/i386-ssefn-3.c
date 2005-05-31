@@ -1,7 +1,7 @@
 /* Execution test for argument passing with SSE and local functions
    Written by Paolo Bonzini, 25 January 2005 */
 
-/* { dg-do run { target i?86-*-* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -msse -mfpmath=sse" } */
 #include <assert.h>
 #include "i386-cpuid.h"

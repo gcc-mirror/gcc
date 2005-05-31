@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-Os -msse2" } */
 
 typedef float __m128 __attribute__ ((vector_size (16)));

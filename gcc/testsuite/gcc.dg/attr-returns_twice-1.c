@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-W" } */
 
 int newsetjmp(void) __attribute__((returns_twice));

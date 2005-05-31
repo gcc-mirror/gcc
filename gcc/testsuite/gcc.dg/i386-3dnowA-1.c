@@ -1,4 +1,4 @@
-/* { dg-do assemble { target i?86-*-* } } */
+/* { dg-do assemble { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -m3dnow -march=athlon" } */
 
