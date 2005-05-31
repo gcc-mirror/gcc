@@ -1,3 +1,8 @@
+2005-05-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-cfg.c (verify_expr): Add checking for COND_EXPR's conditional
+	expression.
+
 2005-05-31  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/tm.texi (TARGET_GET_PCH_VALIDITY, TARGET_PCH_VALID_P): Tweak
