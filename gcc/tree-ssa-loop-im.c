@@ -194,6 +194,7 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	case PARM_DECL:
 	case STRING_CST:
 	case RESULT_DECL:
+	case VECTOR_CST:
 	  return true;
 
 	default:
