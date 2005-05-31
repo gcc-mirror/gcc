@@ -1,5 +1,5 @@
 /* PR target/19236 */
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-ffast-math" } */
 
 extern float log1pf (float);

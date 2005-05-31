@@ -1,3 +1,30 @@
+2005-05-31  Andreas Jaeger  <aj@suse.de>
+
+	PR testsuite/20772
+	* g++.dg/abi/dtor1.C, g++.dg/abi/empty10.C, g++.dg/abi/layout3.C,
+	g++.dg/eh/simd-2.C, g++.dg/opt/cse2.C,
+	g++.old-deja/g++.ext/asmspec1.C,
+	g++.old-deja/g++.other/regstack.C,
+	gcc.dg/20000614-1.c, gcc.dg/20000807-1.c, gcc.dg/20000904-1.c,
+	gcc.dg/20001127-1.c, gcc.dg/20010202-1.c, gcc.dg/20010520-1.c,
+	gcc.dg/20011009-1.c, gcc.dg/20011029-2.c, gcc.dg/20020224-1.c,
+	gcc.dg/20020531-1.c, gcc.dg/20020616-1.c, gcc.dg/980226-1.c,
+	gcc.dg/980414-1.c, gcc.dg/980520-1.c, gcc.dg/980709-1.c,
+	gcc.dg/990117-1.c, gcc.dg/990130-1.c, gcc.dg/990213-2.c,
+	gcc.dg/990214-1.c, gcc.dg/991129-1.c, gcc.dg/991209-1.c,
+	gcc.dg/991214-1.c, gcc.dg/asm-1.c, gcc.dg/attr-returns_twice-1.c,
+	gcc.dg/clobbers.c, gcc.dg/i386-387-7.c, gcc.dg/i386-387-8.c,
+	gcc.dg/i386-3dnowA-1.c, gcc.dg/i386-3dnowA-2.c, gcc.dg/i386-asm-1.c
+	gcc.dg/i386-asm-2.c, gcc.dg/i386-asm-3.c, gcc.dg/i386-bitfield3.c
+	gcc.dg/i386-call-1.c, gcc.dg/i386-memset-1.c,
+	gcc.dg/i386-signbit-3.c, gcc.dg/i386-ssefn-1.c,
+	gcc.dg/i386-ssefn-2.c, gcc.dg/i386-ssefn-3.c, gcc.dg/i386-ssefn-4.c
+	gcc.dg/i386-volatile-1.c, gcc.dg/i386-xorps.c, gcc.dg/pr12092-1.c
+	gcc.dg/pr14289-1.c, gcc.dg/pr19236-1.c, gcc.dg/pr20204.c,
+	gcc.dg/pr9771-1.c, gcc.dg/register-var-1.c,
+	gcc.dg/sibcall-5.c, gcc.dg/charset/asm3.c,
+	gcc.dg/cpp/trad/num-sign.c: Run tests also on x86_64.
+
 2005-05-31  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/foldaddr-1.c: New test.

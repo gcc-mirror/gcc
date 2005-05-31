@@ -1,7 +1,8 @@
 /* Test argument passing with SSE and local functions
    Written by Paolo Bonzini, 25 January 2005 */
 
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-final { scan-assembler "movss" } } */
 /* { dg-final { scan-assembler "mulss" } } */
 /* { dg-final { scan-assembler-not "movsd" } } */

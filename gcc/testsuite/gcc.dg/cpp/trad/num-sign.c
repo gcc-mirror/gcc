@@ -1,6 +1,6 @@
 /* Copyright (C) 2001 Free Software Foundation, Inc.  */
 
-/* { dg-do preprocess { target i?86-*-* } } */
+/* { dg-do preprocess { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 /* Tests that traditional numbers are signed, unless otherwise
    specified.  This test assumes a 32 bit target.
