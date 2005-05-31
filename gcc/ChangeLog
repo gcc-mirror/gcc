@@ -1,6 +1,8 @@
 2005-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-	* doc/install.texi (sparc-sun-solaris2.7): Document bootstrap
+	* doc/install.texi (sparc-sun-solaris2*): Update note
+	about Sun bug 4910101.
+	(sparc-sun-solaris2.7): Document bootstrap
 	failure with Sun WorkShop 6 99/08/18 as.
 
 2005-05-30  Pat Haugen  <pthaugen@us.ibm.com>
