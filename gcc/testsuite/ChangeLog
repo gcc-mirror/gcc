@@ -1,3 +1,12 @@
+2005-05-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/char_initialiser_actual.f90:
+	Test character initialisers as actual arguments.
+	* gfortran.dg/char_pointer_comp_assign.f90:
+	Test character pointer structure component assignments.
+	* gfortran.dg/char_array_structure_constructor.f90:
+	Test character components in structure constructors.
+
 2005-05-31  Andrew pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20931
