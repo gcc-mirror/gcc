@@ -1,5 +1,15 @@
 2005-05-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/20931
+	PR middle-end/20946
+	* fold-const.c (fold_checksum_tree): Copy types also if
+	TYPE_CONTAINS_PLACEHOLDER_INTERNAL is set.
+	Don't call fold_checksum_tree for TREE_LIST's TREE_CHAIN
+	first.
+	Tail recurse TREE_LIST's TREE_CHAIN.
+
+2005-05-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/21732
 	* tree-ssa-copy.c (dump_copy_of): Create a bitmap and don't visit a
 	SSA_NAME twice and cause the loop to become finite.  Remove the test
