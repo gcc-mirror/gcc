@@ -485,6 +485,11 @@ struct gcc_target
   void * (* get_pch_validity) (size_t *);
   const char * (* pch_valid_p) (const void *, size_t);
 
+  /* If nonnull, this function checks whether a PCH file with the
+     given set of target flags can be used.  It returns NULL if so,
+     otherwise it returns an error message.  */
+  const char *(*check_pch_target_flags) (int);
+
   /* True if the compiler should give an enum type only as many
      bytes as it takes to represent the range of possible values of
      that type.  */

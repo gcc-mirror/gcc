@@ -8668,24 +8668,32 @@ Default: empty.
 @section Parameters for Precompiled Header Validity Checking
 @cindex parameters, precompiled headers
 
-@deftypefn {Target Hook} void * TARGET_GET_PCH_VALIDITY (size_t * @var{sz})
-Define this hook if your target needs to check a different collection
-of flags than the default, which is every flag defined by
-@code{TARGET_SWITCHES} and @code{TARGET_OPTIONS}.  It should return
-some data which will be saved in the PCH file and presented to
-@code{TARGET_PCH_VALID_P} later; it should set @code{SZ} to the size
-of the data.
+@deftypefn {Target Hook} void *TARGET_GET_PCH_VALIDITY (size_t *@var{sz})
+This hook returns the data needed by @code{TARGET_PCH_VALID_P} and sets
+@samp{*@var{sz}} to the size of the data in bytes.
 @end deftypefn
 
-@deftypefn {Target Hook} const char * TARGET_PCH_VALID_P (const void * @var{data}, size_t @var{sz})
-Define this hook if your target needs to check a different collection of
-flags than the default, which is every flag defined by @code{TARGET_SWITCHES}
-and @code{TARGET_OPTIONS}.  It is given data which came from
-@code{TARGET_GET_PCH_VALIDITY} (in this version of this compiler, so there
-is no need for extensive validity checking).  It returns @code{NULL} if
-it is safe to load a PCH file with this data, or a suitable error message
-if not.  The error message will be presented to the user, so it should
-be localized.
+@deftypefn {Target Hook} const char *TARGET_PCH_VALID_P (const void *@var{data}, size_t @var{sz})
+This hook checks whether the options used to create a PCH file are
+compatible with the current settings.  It returns @code{NULL}
+if so and a suitable error message if not.  Error messages will
+be presented to the user and must be localized using @samp{_(@var{msg})}.
+
+@var{data} is the data that was returned by @code{TARGET_GET_PCH_VALIDITY}
+when the PCH file was created and @var{sz} is the size of that data in bytes.
+It's safe to assume that the data was created by the same version of the
+compiler, so no format checking is needed.
+
+The default definition of @code{default_pch_valid_p} should be
+suitable for most targets.
+@end deftypefn
+
+@deftypefn {Target Hook} const char *TARGET_CHECK_PCH_TARGET_FLAGS (int @var{pch_flags})
+If this hook is nonnull, the default implementation of
+@code{TARGET_PCH_VALID_P} will use it to check for compatible values
+of @code{target_flags}.  @var{pch_flags} specifies the value that
+@code{target_flags} had when the PCH file was created.  The return
+value is the same as for @code{TARGET_PCH_VALID_P}.
 @end deftypefn
 
 @node C++ ABI

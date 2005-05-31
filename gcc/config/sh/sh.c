@@ -228,6 +228,7 @@ static tree sh_handle_trap_exit_attribute (tree *, tree, tree, int, bool *);
 static tree sh_handle_renesas_attribute (tree *, tree, tree, int, bool *);
 static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
+static const char *sh_check_pch_target_flags (int);
 static int sh_adjust_cost (rtx, rtx, rtx, int);
 static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx, int, int, int *sort_p);
@@ -467,8 +468,8 @@ static int hard_regs_intersect_p (HARD_REG_SET *, HARD_REG_SET *);
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P sh_vector_mode_supported_p
 
-#undef TARGET_PCH_VALID_P
-#define TARGET_PCH_VALID_P sh_pch_valid_p
+#undef TARGET_CHECK_PCH_TARGET_FLAGS
+#define TARGET_CHECK_PCH_TARGET_FLAGS sh_check_pch_target_flags
 
 #undef TARGET_DWARF_CALLING_CONVENTION
 #define TARGET_DWARF_CALLING_CONVENTION sh_dwarf_calling_convention
@@ -7515,36 +7516,11 @@ sh_cfun_interrupt_handler_p (void)
 	  != NULL_TREE);
 }
 
-/* Like default_pch_valid_p, but only check certain target_flags.  */
-const char *
-sh_pch_valid_p (const void *data_p, size_t len)
+/* Implement TARGET_CHECK_PCH_TARGET_FLAGS.  */
+
+static const char *
+sh_check_pch_target_flags (int old_flags)
 {
-#ifdef TARGET_OPTIONS
-  /* ??? We have a copy of this in toplev.c, but it is static.  */
-  static const struct
-    {
-      const char *const prefix;
-      const char **const variable;
-      const char *const description;
-      const char *const value;
-    }
-  target_options[] = TARGET_OPTIONS;
-#endif
-
-  const char *data = (const char *)data_p;
-  const char *flag_that_differs = NULL;
-  size_t i;
-  int old_flags;
-
-  /* -fpic and -fpie also usually make a PCH invalid.  */
-  if (data[0] != flag_pic)
-    return _("created and used with different settings of -fpic");
-  if (data[1] != flag_pie)
-    return _("created and used with different settings of -fpie");
-  data += 2;
-
-  /* Check target_flags.  */
-  memcpy (&old_flags, data, sizeof (target_flags));
   if ((old_flags ^ target_flags) & (MASK_SH1 | MASK_SH2 | MASK_SH3
 				    | MASK_SH_E | MASK_HARD_SH4
 				    | MASK_FPU_SINGLE | MASK_SH4))
@@ -7553,40 +7529,7 @@ sh_pch_valid_p (const void *data_p, size_t len)
     return _("created and used with different ABIs");
   if ((old_flags ^ target_flags) & MASK_LITTLE_ENDIAN)
     return _("created and used with different endianness");
-
-  data += sizeof (target_flags);
-  len -= sizeof (target_flags);
-
-  /* Check string options.  */
-#ifdef TARGET_OPTIONS
-  for (i = 0; i < ARRAY_SIZE (target_options); i++)
-    {
-      const char *str = *target_options[i].variable;
-      size_t l;
-      if (! str)
-	str = "";
-      l = strlen (str) + 1;
-      if (len < l || memcmp (data, str, l) != 0)
-	{
-	  flag_that_differs = target_options[i].prefix;
-	  goto make_message;
-	}
-      data += l;
-      len -= l;
-    }
-#endif
-
   return NULL;
-
- make_message:
-  {
-    char *r;
-    asprintf (&r, _("created and used with differing settings of '-m%s'"),
-		  flag_that_differs);
-    if (r == NULL)
-      return _("out of memory");
-    return r;
-  }
 }
 
 /* Predicates used by the templates.  */

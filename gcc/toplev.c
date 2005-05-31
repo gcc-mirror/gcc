@@ -1487,6 +1487,7 @@ default_pch_valid_p (const void *data_p, size_t len)
   const char *data = (const char *)data_p;
   const char *flag_that_differs = NULL;
   size_t i;
+  int tf;
 
   /* -fpic and -fpie also usually make a PCH invalid.  */
   if (data[0] != flag_pic)
@@ -1496,11 +1497,15 @@ default_pch_valid_p (const void *data_p, size_t len)
   data += 2;
 
   /* Check target_flags.  */
-  if (memcmp (data, &target_flags, sizeof (target_flags)) != 0)
+  memcpy (&tf, data, sizeof (target_flags));
+  if (targetm.check_pch_target_flags)
     {
-      int tf;
-
-      memcpy (&tf, data, sizeof (target_flags));
+      const char *r = targetm.check_pch_target_flags (tf);
+      if (r != NULL)
+	return r;
+    }
+  else if (tf != target_flags)
+    {
 #ifdef TARGET_SWITCHES
       for (i = 0; i < ARRAY_SIZE (target_switches); i++)
 	{
