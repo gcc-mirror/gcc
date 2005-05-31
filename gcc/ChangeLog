@@ -1,5 +1,12 @@
 2005-05-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/21732
+	* tree-ssa-copy.c (dump_copy_of): Create a bitmap and don't visit a
+	SSA_NAME twice and cause the loop to become finite.  Remove the test
+	for val.
+
+2005-05-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* tree-cfg.c (verify_expr): Add checking for COND_EXPR's conditional
 	expression.
 
