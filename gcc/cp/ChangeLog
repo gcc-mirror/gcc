@@ -1,3 +1,9 @@
+2005-05-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21165
+	* init.c (integral_constant_value): Check the type of the
+	initializer, not the decl.
+
 2005-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21784

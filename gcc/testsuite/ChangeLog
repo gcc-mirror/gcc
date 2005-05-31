@@ -1,3 +1,8 @@
+2005-05-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21165
+	* g++.dg/template/init5.C: New.
+
 2005-05-31  Andrew pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20931
