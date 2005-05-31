@@ -5488,26 +5488,31 @@ constant_boolean_node (int value, tree type)
 
 /* Return true if expr looks like an ARRAY_REF and set base and
    offset to the appropriate trees.  If there is no offset,
-   offset is set to NULL_TREE.  */
+   offset is set to NULL_TREE.  Base will be canonicalized to
+   something you can get the element type from using
+   TREE_TYPE (TREE_TYPE (base)).  */
 
 static bool
 extract_array_ref (tree expr, tree *base, tree *offset)
 {
-  /* We have to be careful with stripping nops as with the
-     base type the meaning of the offset can change.  */
-  tree inner_expr = expr;
-  STRIP_NOPS (inner_expr);
   /* One canonical form is a PLUS_EXPR with the first
      argument being an ADDR_EXPR with a possible NOP_EXPR
      attached.  */
   if (TREE_CODE (expr) == PLUS_EXPR)
     {
       tree op0 = TREE_OPERAND (expr, 0);
+      tree inner_base, dummy1;
+      /* Strip NOP_EXPRs here because the C frontends and/or
+	 folders present us (int *)&x.a + 4B possibly.  */
       STRIP_NOPS (op0);
-      if (TREE_CODE (op0) == ADDR_EXPR)
+      if (extract_array_ref (op0, &inner_base, &dummy1))
 	{
-	  *base = TREE_OPERAND (expr, 0);
-	  *offset = TREE_OPERAND (expr, 1);
+	  *base = inner_base;
+	  if (dummy1 == NULL_TREE)
+	    *offset = TREE_OPERAND (expr, 1);
+	  else
+	    *offset = fold_build2 (PLUS_EXPR, TREE_TYPE (expr),
+				   dummy1, TREE_OPERAND (expr, 1));
 	  return true;
 	}
     }
@@ -5516,19 +5521,31 @@ extract_array_ref (tree expr, tree *base, tree *offset)
      offset.  For other arguments to the ADDR_EXPR we assume
      zero offset and as such do not care about the ADDR_EXPR
      type and strip possible nops from it.  */
-  else if (TREE_CODE (inner_expr) == ADDR_EXPR)
+  else if (TREE_CODE (expr) == ADDR_EXPR)
     {
-      tree op0 = TREE_OPERAND (inner_expr, 0);
+      tree op0 = TREE_OPERAND (expr, 0);
       if (TREE_CODE (op0) == ARRAY_REF)
 	{
-	  *base = build_fold_addr_expr (TREE_OPERAND (op0, 0));
+	  *base = TREE_OPERAND (op0, 0);
 	  *offset = TREE_OPERAND (op0, 1);
 	}
       else
 	{
-	  *base = inner_expr;
+	  /* Handle array-to-pointer decay as &a.  */
+	  if (TREE_CODE (TREE_TYPE (op0)) == ARRAY_TYPE)
+	    *base = TREE_OPERAND (expr, 0);
+	  else
+	    *base = expr;
 	  *offset = NULL_TREE;
 	}
+      return true;
+    }
+  /* The next canonical form is a VAR_DECL with POINTER_TYPE.  */
+  else if (SSA_VAR_P (expr)
+	   && TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
+    {
+      *base = expr;
+      *offset = NULL_TREE;
       return true;
     }
 
@@ -9017,6 +9034,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && extract_array_ref (arg1, &base1, &offset1)
 	      && operand_equal_p (base0, base1, 0))
 	    {
+	      if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (base0)))
+		  && integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_TYPE (base0)))))
+		offset0 = NULL_TREE;
+	      if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (base1)))
+		  && integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_TYPE (base1)))))
+		offset1 = NULL_TREE;
 	      if (offset0 == NULL_TREE
 		  && offset1 == NULL_TREE)
 		{
