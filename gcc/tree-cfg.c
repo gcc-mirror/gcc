@@ -3178,6 +3178,11 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  error ("non-boolean used in condition");
 	  return x;
 	}
+      if (!is_gimple_condexpr (x))
+        {
+	  error ("Invalid conditional operand");
+	  return x;
+	}
       break;
 
     case NOP_EXPR:
