@@ -475,24 +475,30 @@ static void
 dump_copy_of (FILE *dump_file, tree var)
 {
   tree val;
+  sbitmap visited;
 
   print_generic_expr (dump_file, var, dump_flags);
 
   if (TREE_CODE (var) != SSA_NAME)
     return;
-
+    
+  visited = sbitmap_alloc (num_ssa_names);
+  SET_BIT (visited, SSA_NAME_VERSION (var));
+  
   fprintf (dump_file, " copy-of chain: ");
 
   val = var;
   print_generic_expr (dump_file, val, 0);
   fprintf (dump_file, " ");
-  while (copy_of[SSA_NAME_VERSION (val)].value
-         && copy_of[SSA_NAME_VERSION (val)].value != val)
+  while (copy_of[SSA_NAME_VERSION (val)].value)
     {
       fprintf (dump_file, "-> ");
       val = copy_of[SSA_NAME_VERSION (val)].value;
       print_generic_expr (dump_file, val, 0);
       fprintf (dump_file, " ");
+      if (TEST_BIT (visited, SSA_NAME_VERSION (val)))
+        break;
+      SET_BIT (visited, SSA_NAME_VERSION (val));
     }
 
   val = get_copy_of_val (var)->value;
@@ -502,6 +508,8 @@ dump_copy_of (FILE *dump_file, tree var)
     fprintf (dump_file, "[COPY]");
   else
     fprintf (dump_file, "[NOT A COPY]");
+  
+  sbitmap_free (visited);
 }
 
 
