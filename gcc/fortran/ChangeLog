@@ -1,3 +1,19 @@
+2005-05-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18109
+	PR fortran/18283
+	PR fortran/19107
+	* fortran/trans-array.c (gfc_conv_expr_descriptor): Obtain the
+	string length from the expression typespec character length value
+	and set temp_ss->stringlength and backend_decl. Obtain the
+	tree expression from gfc_conv_expr rather than gfc_conv_expr_val.
+	Dereference the expression to obtain the character.
+	* fortran/trans-expr.c (gfc_conv_component_ref): Remove the
+	dereference of scalar character pointer structure components.
+	* fortran/trans-expr.c (gfc_trans_subarray_assign): Obtain the
+	string length for the structure component from the component
+	expression.
+
 2005-05-30  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.h (GFC_STD_LEGACY): New "standard" macro.  Reindent.
