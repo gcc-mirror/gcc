@@ -1,3 +1,8 @@
+2005-05-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21165
+	* g++.dg/template/init5.C: New.
+
 2005-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.dg/char_initialiser_actual.f90:
