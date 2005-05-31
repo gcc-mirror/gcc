@@ -281,7 +281,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
       se->string_length = tmp;
     }
 
-  if (c->pointer && c->dimension == 0)
+  if (c->pointer && c->dimension == 0 && c->ts.type != BT_CHARACTER)
     se->expr = gfc_build_indirect_ref (se->expr);
 }
 
@@ -1671,6 +1671,9 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
   gfc_start_scalarized_body (&loop, &body);
 
   gfc_conv_tmp_array_ref (&lse);
+  if (cm->ts.type == BT_CHARACTER)
+    lse.string_length = cm->ts.cl->backend_decl;
+
   gfc_conv_expr (&rse, expr);
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, cm->ts.type);
