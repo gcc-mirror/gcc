@@ -3645,8 +3645,7 @@ loop_invariant_p (const struct loop *loop, rtx x)
 	return 1;
 
       if (LOOP_INFO (loop)->has_call
-	  && REGNO (x) < FIRST_PSEUDO_REGISTER
-	  && TEST_HARD_REG_BIT (regs_invalidated_by_call, REGNO (x)))
+	  && REGNO (x) < FIRST_PSEUDO_REGISTER && call_used_regs[REGNO (x)])
 	return 0;
 
       /* Out-of-range regs can occur when we are called from unrolling.
@@ -6720,8 +6719,7 @@ valid_initial_value_p (rtx x, rtx insn, int call_seen, rtx loop_start)
      some machines, don't use any hard registers at all.  */
   if (REGNO (x) < FIRST_PSEUDO_REGISTER
       && (SMALL_REGISTER_CLASSES
-	  || (call_seen
-	      && TEST_HARD_REG_BIT (regs_invalidated_by_call, REGNO (x)))))
+	  || (call_seen && call_used_regs[REGNO (x)])))
     return 0;
 
   /* Don't use registers that have been clobbered before the start of the

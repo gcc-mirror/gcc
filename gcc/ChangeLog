@@ -1,3 +1,8 @@
+2005-05-31  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* loop.c (loop_invariant_p, valid_initial_value_p): Revert last
+	change.
+
 2005-05-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20931
