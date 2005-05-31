@@ -1,35 +1,16 @@
-# Swedish translation for the GNU CC.
-# Copyright (C) 2000 Free Software Foundation, Inc.
+# Swedish messages for GCC.
+# Copyright © 2000, 2005 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-#
-# Kom ihåg att i svenskan så använder vi "" för citat
-# och inte '' som det är i originaluttrycken.
-#
-# Jag har gjort en liten ordlista över uttryck som kan finnas i
-# översättningen
-#
-# http://www.zigo.dhs.org/~dennis/gcc/
-#
-# Denna lista är inte komplett men är det någon som vill hjälpa till
-# att översätta gcc och har åsikter om hur dessa uttryck skall skrivas
-# så ta kontakt så kan vi uppdatera den.
-#
-# Det mesta av övdersättningen som finns nu kommer från tiden
-# innan version 3.0 av gcc. Dessvärre så fungerade aldrig gcc
-# med översättningar korrekt då, så den kom inte till användning.
-# Jag har överfört de gamla strängarna till dagens version (3.2)
-# så det finns en början, men det är mycket kvar. Men vill någon hjälpa
-# till så vore det jättebra. Jag kommer översätta en bit då och då
-# i mån av tid, men det är en stor fil med komplicerade uttryck så
-# det tar en stund att bli klar.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005.
+# $Revision: 1.2 $
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.2\n"
+"Project-Id-Version: gcc 4.0.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-04-20 21:41-0700\n"
-"PO-Revision-Date: 2002-08-26 12:58+0200\n"
-"Last-Translator: Dennis Björklund <db@zigo.dhs.org>\n"
+"PO-Revision-Date: 2005-05-31 11:09+0200\n"
+"Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
@@ -508,7 +489,6 @@ msgid "%J%qD defined both normally and as an alias"
 msgstr "\"%s\" är definierad både normalt och som ett alias"
 
 #: c-common.c:4579
-#, fuzzy
 msgid "alias argument not a string"
 msgstr "aliasargumentet är inte en sträng"
 
@@ -2545,9 +2525,8 @@ msgid "used struct type value where scalar is required"
 msgstr "struct-värde använt där skalär krävs"
 
 #: c-objc-common.c:252
-#, fuzzy
 msgid "used union type value where scalar is required"
-msgstr "union-värde använt där skalär krävs"
+msgstr "värde av uniontyp använt där skalär krävs"
 
 #: c-opts.c:144
 #, fuzzy, c-format
