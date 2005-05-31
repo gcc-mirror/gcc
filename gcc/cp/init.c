@@ -1573,7 +1573,7 @@ integral_constant_value (tree decl)
 	 && DECL_INITIAL (decl)
 	 && DECL_INITIAL (decl) != error_mark_node
 	 && TREE_TYPE (DECL_INITIAL (decl))
-	 && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl)))
+	 && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (DECL_INITIAL (decl))))
     decl = DECL_INITIAL (decl);
   return decl;
 }
