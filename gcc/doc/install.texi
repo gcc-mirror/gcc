@@ -3696,6 +3696,17 @@ ld: fatal: relocation error: R_SPARC_32: file libgcc/sparcv9/_muldi3.o:
 
 This bug has been fixed in the final 5.0 version of the assembler.
 
+A similar problem was reported for version Sun WorkShop 6 99/08/18 of the
+Sun assembler, which causes a bootstrap failure with GCC 4.0.0:
+
+@smallexample
+ld: fatal: relocation error: R_SPARC_DISP32:
+  file .libs/libstdc++.lax/libsupc++convenience.a/vterminate.o:
+    symbol <unknown>: offset 0xfccd33ad is non-aligned
+@end smallexample
+
+This bug has been fixed in more recent revisions of the assembler.
+
 @html
 <hr />
 @end html
