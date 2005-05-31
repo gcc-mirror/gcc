@@ -379,6 +379,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #define TARGET_GET_PCH_VALIDITY default_get_pch_validity
 #define TARGET_PCH_VALID_P default_pch_valid_p
+#define TARGET_CHECK_PCH_TARGET_FLAGS NULL
 
 #define TARGET_DEFAULT_SHORT_ENUMS hook_bool_void_false
 
@@ -551,6 +552,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_GIMPLIFY_VA_ARG_EXPR,			\
   TARGET_GET_PCH_VALIDITY,			\
   TARGET_PCH_VALID_P,				\
+  TARGET_CHECK_PCH_TARGET_FLAGS,		\
   TARGET_DEFAULT_SHORT_ENUMS,			\
   TARGET_BUILTIN_SETJMP_FRAME_VALUE,		\
   TARGET_MD_ASM_CLOBBERS,			\

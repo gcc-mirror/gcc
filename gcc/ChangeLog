@@ -1,3 +1,17 @@
+2005-05-31  Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/tm.texi (TARGET_GET_PCH_VALIDITY, TARGET_PCH_VALID_P): Tweak
+	the documentation to make it more future-proof.
+	(TARGET_CHECK_PCH_TARGET_FLAGS): Document this new hook.
+	* target.h (gcc_target): Add check_pch_target_flags.
+	* target-def.h (TARGET_CHECK_PCH_TARGET_FLAGS): New macro.
+	(TARGET_INITIALIZER): Include it.
+	* toplev.c (default_pch_valid_p): Use targetm.check_pch_target_flags.
+	* config/sh/sh.h (sh_pch_valid_p): Delete.
+	* config/sh/sh.c (TARGET_PCH_VALID_P, sh_pch_valid_p): Delete.
+	(sh_check_pch_target_flags): New function.
+	(TARGET_CHECK_PCH_TARGET_FLAGS): Override default.
+
 2005-05-31  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* fold-const.c (extract_array_ref): Handle more cases,
