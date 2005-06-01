@@ -1,5 +1,13 @@
 2005-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/21536
+	PR c/20760
+	* gimplify.c (gimplify_decl_expr): Call gimplify_type_sizes
+	on variable sizes types if a decl is a pointer to a VLA.
+	(gimplify_type_sizes): Handle POINTER_TYPE and REFERENCE_TYPE.
+	Call gimplify_type_sizes on aggregate fields.  Prevent infinite
+	recursion.
+
 	* config/i386/xmmintrin.h (_mm_setzero_ps, _mm_set_ss, _mm_set1_ps,
 	_mm_set_ps, _mm_setr_ps): Add __extension__.
 	* config/i386/emmintrin.h (_mm_set_sd, _mm_set1_pd, _mm_set_pd,

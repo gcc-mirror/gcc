@@ -1,5 +1,9 @@
 2005-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/21536
+	PR c/20760
+	* gcc.dg/20050527-1.c: New test.
+
 	* gcc.dg/i386-sse-12.c: New test.
 
 	PR fortran/21729

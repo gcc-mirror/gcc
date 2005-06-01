@@ -983,10 +983,12 @@ gimplify_decl_expr (tree *stmt_p)
   if (TREE_TYPE (decl) == error_mark_node)
     return GS_ERROR;
 
-  else if (TREE_CODE (decl) == TYPE_DECL)
+  if ((TREE_CODE (decl) == TYPE_DECL
+       || TREE_CODE (decl) == VAR_DECL)
+      && !TYPE_SIZES_GIMPLIFIED (TREE_TYPE (decl)))
     gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
 
-  else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+  if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {
       tree init = DECL_INITIAL (decl);
 
@@ -996,12 +998,6 @@ gimplify_decl_expr (tree *stmt_p)
 	     for deferred expansion.  Note that mudflap depends on the format
 	     of the emitted code: see mx_register_decls().  */
 	  tree t, args, addr, ptr_type;
-
-	  /* ??? We really shouldn't need to gimplify the type of the variable
-	     since it already should have been done.  But leave this here
-	     for now to avoid disrupting too many things at once.  */
-	  if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (decl)))
-	    gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
 
 	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
 	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
@@ -4360,21 +4356,21 @@ gimplify_type_sizes (tree type, tree *list_p)
 {
   tree field, t;
 
-  /* Note that we do not check for TYPE_SIZES_GIMPLIFIED already set because
-     that's not supposed to happen on types where gimplification does anything.
-     We should assert that it isn't set, but we can indeed be called multiple
-     times on pointers.  Unfortunately, this includes fat pointers which we
-     can't easily test for.  We could pass TYPE down to gimplify_one_sizepos
-     and test there, but it doesn't seem worth it.  */
+  if (type == NULL)
+    return;
 
   /* We first do the main variant, then copy into any other variants. */
   type = TYPE_MAIN_VARIANT (type);
 
+  /* Avoid infinite recursion.  */
+  if (TYPE_SIZES_GIMPLIFIED (type)
+      || type == error_mark_node)
+    return;
+
+  TYPE_SIZES_GIMPLIFIED (type) = 1;
+
   switch (TREE_CODE (type))
     {
-    case ERROR_MARK:
-      return;
-
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
@@ -4387,17 +4383,13 @@ gimplify_type_sizes (tree type, tree *list_p)
 	{
 	  TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (type);
 	  TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (type);
-	  TYPE_SIZES_GIMPLIFIED (t) = 1;
 	}
       break;
 
     case ARRAY_TYPE:
       /* These types may not have declarations, so handle them here.  */
-      if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (type)))
-	gimplify_type_sizes (TREE_TYPE (type), list_p);
-
-      if (!TYPE_SIZES_GIMPLIFIED (TYPE_DOMAIN (type)))
-	  gimplify_type_sizes (TYPE_DOMAIN (type), list_p);
+      gimplify_type_sizes (TREE_TYPE (type), list_p);
+      gimplify_type_sizes (TYPE_DOMAIN (type), list_p);
       break;
 
     case RECORD_TYPE:
@@ -4405,7 +4397,15 @@ gimplify_type_sizes (tree type, tree *list_p)
     case QUAL_UNION_TYPE:
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
-	  gimplify_one_sizepos (&DECL_FIELD_OFFSET (field), list_p);
+	  {
+	    gimplify_one_sizepos (&DECL_FIELD_OFFSET (field), list_p);
+	    gimplify_type_sizes (TREE_TYPE (field), list_p);
+	  }
+      break;
+
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      gimplify_type_sizes (TREE_TYPE (type), list_p);
       break;
 
     default:
@@ -4421,8 +4421,6 @@ gimplify_type_sizes (tree type, tree *list_p)
       TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (type);
       TYPE_SIZES_GIMPLIFIED (t) = 1;
     }
-
-  TYPE_SIZES_GIMPLIFIED (type) = 1;
 }
 
 /* A subroutine of gimplify_type_sizes to make sure that *EXPR_P,
