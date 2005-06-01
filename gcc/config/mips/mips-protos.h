@@ -222,5 +222,6 @@ extern rtx mips_prefetch_cookie (rtx, rtx);
 extern void irix_asm_output_align (FILE *, unsigned);
 extern const char *current_section_name (void);
 extern unsigned int current_section_flags (void);
+extern bool mips_use_ins_ext_p (rtx op, rtx size, rtx position);
 
 #endif /* ! GCC_MIPS_PROTOS_H */
