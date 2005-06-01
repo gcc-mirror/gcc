@@ -488,6 +488,10 @@ fivopts
 Common Report Var(flag_ivopts) Init(1)
 Optimize induction variables on trees
 
+fjump-tables
+Common Var(flag_jump_tables) Init(1)
+Use jump tables for sufficiently large switch statements
+
 fkeep-inline-functions
 Common Report Var(flag_keep_inline_functions)
 Generate code for functions even if they are fully inlined

@@ -732,6 +732,7 @@ See S/390 and zSeries Options.
 -finhibit-size-directive  -finstrument-functions @gol
 -fno-common  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC -fpie -fPIE @gol
+-fno-jump-tables @gol
 -freg-struct-return  -fshared-data  -fshort-enums @gol
 -fshort-double  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  -fstack-check @gol
@@ -12581,6 +12582,15 @@ These options are similar to @option{-fpic} and @option{-fPIC}, but
 generated position independent code can be only linked into executables.
 Usually these options are used when @option{-pie} GCC option will be
 used during linking.
+
+@item -fno-jump-tables
+@opindex fno-jump-tables
+Do not use jump tables for switch statements even where it would be
+more efficient than other code generation strategies.  This option is
+of use in conjunction with @option{-fpic} or @option{-fPIC} for
+building code which forms part of a dynamic linker and cannot
+reference the address of a jump table.  On some targets, jump tables
+do not require a GOT and this option is not needed.
 
 @item -ffixed-@var{reg}
 @opindex ffixed
