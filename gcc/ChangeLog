@@ -1,3 +1,9 @@
+2005-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/emmintrin.h (_mm_castpd_ps, _mm_castpd_si128,
+	_mm_castps_pd, _mm_castps_si128, _mm_castsi128_ps, _mm_castsi128_pd):
+	Use __inline instead of inline.
+
 2005-06-01  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* fold-const.c (fold_binary): Fix types in strlen vs.
