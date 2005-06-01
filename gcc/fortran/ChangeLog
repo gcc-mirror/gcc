@@ -1,3 +1,8 @@
+2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fortran/trans-decl.c: Don't include errors.h.
+	* fortran/Make-lang.in: Updates dependencies.
+
 2005-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18109

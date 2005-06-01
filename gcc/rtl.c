@@ -33,7 +33,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "real.h"
 #include "ggc.h"
-#include "errors.h"
+#ifdef GENERATOR_FILE
+# include "errors.h"
+#else
+# include "toplev.h"
+#endif
 
 
 /* Indexed by rtx code, gives number of operands for an rtx with that code.

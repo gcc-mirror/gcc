@@ -31,7 +31,7 @@
 #include "c-common.h"
 #include "c-pragma.h"
 #include "c-tree.h"
-#include "errors.h"
+#include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 #include "langhooks.h"

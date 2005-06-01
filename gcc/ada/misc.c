@@ -41,7 +41,6 @@
 #include "tree.h"
 #include "real.h"
 #include "rtl.h"
-#include "errors.h"
 #include "diagnostic.h"
 #include "expr.h"
 #include "libfuncs.h"

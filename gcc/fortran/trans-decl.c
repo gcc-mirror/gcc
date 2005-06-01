@@ -32,7 +32,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "target.h"
 #include "function.h"
-#include "errors.h"
 #include "flags.h"
 #include "cgraph.h"
 #include "gfortran.h"

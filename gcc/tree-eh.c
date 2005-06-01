@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "timevar.h"
 #include "langhooks.h"
 #include "ggc.h"
+#include "toplev.h"
 
 
 /* Nonzero if we are using EH to handle cleanups.  */

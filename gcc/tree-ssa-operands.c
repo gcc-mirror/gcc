@@ -26,12 +26,12 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "function.h"
 #include "diagnostic.h"
-#include "errors.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
 #include "ggc.h"
 #include "timevar.h"
+#include "toplev.h"
 
 #include "langhooks.h"
 

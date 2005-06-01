@@ -21,7 +21,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 #include "config.h"
-#include "errors.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -38,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-mudflap.h"
 #include "tree-pass.h"
 #include "ggc.h"
+#include "toplev.h"
 
 
 

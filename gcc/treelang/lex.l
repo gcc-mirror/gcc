@@ -37,13 +37,13 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "input.h"
-#include "errors.h"
 #include "tree.h"
 
 /* Token defs.  */
 #include "treelang.h"
 #include "parse.h"
 #include "treetree.h"
+#include "toplev.h"
 
 extern int option_lexer_trace;
 

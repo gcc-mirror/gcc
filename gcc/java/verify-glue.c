@@ -30,12 +30,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "errors.h"
 #include "parse.h"
 
 #include "verify.h"
 #include "java-tree.h"
 #include "java-except.h"
+#include "toplev.h"
 
 void *
 vfy_alloc (size_t bytes)

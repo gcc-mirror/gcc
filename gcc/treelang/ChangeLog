@@ -1,3 +1,9 @@
+2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* treelang/lex.l, treelang/parse.y: Don't include errors.h and
+	include toplev.h.
+	* treelang/Make-lang.in: Updates dependencies.
+
 2005-05-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR treelang/21345

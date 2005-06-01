@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "target.h"
 #include "tm_p.h"
-#include "errors.h"
+#include "toplev.h"
 #include "hashtab.h"
 
 /* Darwin supports a feature called fix-and-continue, which is used

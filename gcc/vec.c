@@ -23,9 +23,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "ggc.h"
 #include "vec.h"
-#include "errors.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "toplev.h"
 
 struct vec_prefix 
 {

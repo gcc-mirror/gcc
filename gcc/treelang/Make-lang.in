@@ -116,11 +116,12 @@ treelang/spec.o: treelang/spec.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h diagnostic.h $(TREE_H) flags.h toplev.h langhooks.h $(TM_H)
 
 treelang/parse.o: treelang/parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) diagnostic.h treelang/treelang.h input.h treelang/treetree.h
+  $(TM_H) diagnostic.h treelang/treelang.h input.h treelang/treetree.h \
+  toplev.h
 
 treelang/lex.o: treelang/lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) diagnostic.h $(TREE_H) treelang/treelang.h input.h \
-  treelang/parse.h
+  treelang/parse.h toplev.h
 
 # generated files the files from lex and yacc are put into the source
 # directory in case someone wants to build but does not have
