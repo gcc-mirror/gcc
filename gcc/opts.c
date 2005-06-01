@@ -110,8 +110,10 @@ static void complain_wrong_lang (const char *, const struct cl_option *,
 				 unsigned int lang_mask);
 static void handle_options (unsigned int, const char **, unsigned int);
 static void wrap_help (const char *help, const char *item, unsigned int);
+static void print_target_help (void);
 static void print_help (void);
 static void print_param_help (void);
+static void print_filtered_help (unsigned int);
 static unsigned int print_switch (const char *text, unsigned int indent);
 static void set_debug_level (enum debug_info_type type, int extended,
 			     const char *arg);
@@ -294,16 +296,7 @@ handle_option (const char **argv, unsigned int lang_mask)
     }
 
   if (opt_index == cl_options_count)
-    {
-#if defined (TARGET_OPTIONS) || defined (TARGET_SWITCHES)
-      if (opt[1] == 'm')
-	{
-	  set_target_switch (argv[0] + 2);
-	  result = 1;
-	}
-#endif
-      goto done;
-    }
+    goto done;
 
   option = &cl_options[opt_index];
 
@@ -633,7 +626,6 @@ decode_options (unsigned int argc, const char **argv)
   /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
      modify it.  */
   target_flags = targetm.default_target_flags;
-  set_target_switch ("");
 
   /* Unwind tables are always present when a target has ABI-specified unwind
      tables, so the default should be ON.  */
@@ -726,7 +718,7 @@ common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT__target_help:
-      display_target_options ();
+      print_target_help ();
       exit_after_options = true;
       break;
 
@@ -1203,6 +1195,27 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg)
     }
 }
 
+/* Display help for target options.  */
+static void
+print_target_help (void)
+{
+  unsigned int i;
+  static bool displayed = false;
+
+  /* Avoid double printing for --help --target-help.  */
+  if (displayed)
+    return;
+
+  displayed = true;
+  for (i = 0; i < cl_options_count; i++)
+    if ((cl_options[i].flags & (CL_TARGET | CL_UNDOCUMENTED)) == CL_TARGET)
+      {
+	printf (_("\nTarget specific options:\n"));
+	print_filtered_help (CL_TARGET);
+	break;
+      }
+}
+
 /* Output --help text.  */
 static void
 print_help (void)
@@ -1229,8 +1242,7 @@ print_help (void)
 	      lang_names[i]);
       print_filtered_help (1U << i);
     }
-
-  display_target_options ();
+  print_target_help ();
 }
 
 /* Print the help for --param.  */
@@ -1259,7 +1271,7 @@ print_param_help (void)
 }
 
 /* Print help for a specific front-end, etc.  */
-void
+static void
 print_filtered_help (unsigned int flag)
 {
   unsigned int i, len, filter, indent = 0;

@@ -1,5 +1,34 @@
 2005-06-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* system.h (TARGET_OPTIONS, TARGET_SWITCHES): Poison.
+	* opts.h (print_filtered_help): Delete.
+	* opts.c (handle_option, decode_options): Remove calls to
+	set_target_switch.
+	(print_target_help): New function.
+	(common_option, print_help): Call print_target_help instead of
+	display_target_options.
+	(print_filtered_help): Make static.
+	* toplev.h (display_target_options, set_target_switch): Delete.
+	* toplev.c (target_switches, target_options, display_target_options)
+	(set_target_switch): Delete.
+	(print_switch_values): Remove handling of TARGET_SWITCHES and
+	TARGET_OPTIONS.
+	(default_get_pch_validity): Likewise.  Only treat target_flags
+	specially if targetm.check_pch_target_flags is nonnull.
+	(pch_option_mismatch): New function.
+	(default_pch_valid_p): Use it.  Remove handling of TARGET_SWITCHES
+	and TARGET_OPTIONS.  Only treat target_flags specially if
+	targetm.check_pch_target_flags is nonnull.
+	* config/ia64/ia64.c (ia64_override_options): Don't mention
+	TARGET_OPTIONS in comment.
+	* config/m68k/m68k-none.h (CC1_SPEC): Likewise.
+	* doc/invoke.texi: Remove a reference to TARGET_SWITCHES.
+	* doc/tm.texi (TARGET_DEFAULT_TARGET_FLAGS): Don't mention the
+	interaction with TARGET_SWITCHES.
+	(TARGET_@var{featurename}, TARGET_SWITCHES, TARGET_OPTIONS): Delete.
+
+2005-06-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/sh/sh.c (multcosts): Check sh_multcost rather than
 	sh_multcost_str.
 	(sh_register_move_cost): Likewise sh_gettrcost and sh_gettrcost_str.

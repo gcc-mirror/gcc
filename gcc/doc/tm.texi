@@ -728,10 +728,10 @@ any target-specific headers.
 @deftypevar {Target Hook} int TARGET_DEFAULT_TARGET_FLAGS
 This variable specifies the initial value of @code{target_flags}.
 Its default setting is 0.
-
-If the target defines @code{TARGET_SWITCHES}, the null
-@code{TARGET_SWITCHES} entry will override this value.
 @end deftypevar
+
+@cindex optional hardware or system features
+@cindex features, optional, in system conventions
 
 @deftypefn {Target Hook} bool TARGET_HANDLE_OPTION (size_t @var{code}, const char *@var{arg}, int @var{value})
 This hook is called whenever the user specifies one of the
@@ -749,153 +749,6 @@ no argument was given.  If the option is flagged as a @code{UInteger}
 argument.  Otherwise @var{value} is 1 if the positive form of the
 option was used and 0 if the ``no-'' form was.
 @end deftypefn
-
-@cindex optional hardware or system features
-@cindex features, optional, in system conventions
-
-@defmac TARGET_@var{featurename}
-This series of macros is to allow compiler command arguments to
-enable or disable the use of optional features of the target machine.
-For example, one machine description serves both the 68000 and
-the 68020; a command argument tells the compiler whether it should
-use 68020-only instructions or not.  This command argument works
-by means of a macro @code{TARGET_68020} that tests a bit in
-@code{target_flags}.
-
-Define a macro @code{TARGET_@var{featurename}} for each such option.
-Its definition should test a bit in @code{target_flags}.  It is
-recommended that a helper macro @code{MASK_@var{featurename}}
-is defined for each bit-value to test, and used in
-@code{TARGET_@var{featurename}} and @code{TARGET_SWITCHES}.  For
-example:
-
-@smallexample
-#define TARGET_MASK_68020 1
-#define TARGET_68020 (target_flags & MASK_68020)
-@end smallexample
-
-One place where these macros are used is in the condition-expressions
-of instruction patterns.  Note how @code{TARGET_68020} appears
-frequently in the 68000 machine description file, @file{m68k.md}.
-Another place they are used is in the definitions of the other
-macros in the @file{@var{machine}.h} file.
-@end defmac
-
-@defmac TARGET_SWITCHES
-This macro defines names of command options to set and clear
-bits in @code{target_flags}.  Its definition is an initializer
-with a subgrouping for each command option.
-
-Each subgrouping contains a string constant, that defines the option
-name, a number, which contains the bits to set in
-@code{target_flags}, and a second string which is the description
-displayed by @option{--help}.  If the number is negative then the bits specified
-by the number are cleared instead of being set.  If the description
-string is present but empty, then no help information will be displayed
-for that option, but it will not count as an undocumented option.  The
-actual option name is made by appending @samp{-m} to the specified name.
-Non-empty description strings should be marked with @code{N_(@dots{})} for
-@command{xgettext}.  Please do not mark empty strings because the empty
-string is reserved by GNU gettext.  @code{gettext("")} returns the header entry
-of the message catalog with meta information, not the empty string.
-
-In addition to the description for @option{--help},
-more detailed documentation for each option should be added to
-@file{invoke.texi}.
-
-One of the subgroupings should have a null string.  The number in
-this grouping is the default value for @code{target_flags}.  Any
-target options act starting with that value.
-
-Here is an example which defines @option{-m68000} and @option{-m68020}
-with opposite meanings, and picks the latter as the default:
-
-@smallexample
-#define TARGET_SWITCHES \
-  @{ @{ "68020", MASK_68020, "" @},     \
-    @{ "68000", -MASK_68020,          \
-      N_("Compile for the 68000") @}, \
-    @{ "", MASK_68020, "" @},          \
-  @}
-@end smallexample
-
-This macro is being kept for compatibility with older backends.
-New targets should use option definition files instead.
-@xref{Back End}.
-@end defmac
-
-@defmac TARGET_OPTIONS
-This macro is similar to @code{TARGET_SWITCHES} but defines names of command
-options that have values.  Its definition is an initializer with a
-subgrouping for each command option.
-
-Each subgrouping contains a string constant, that defines the option
-name, the address of a variable, a description string, and a value.
-Non-empty description strings should be marked with @code{N_(@dots{})}
-for @command{xgettext}.  Please do not mark empty strings because the
-empty string is reserved by GNU gettext.  @code{gettext("")} returns the
-header entry of the message catalog with meta information, not the empty
-string.
-
-If the value listed in the table is @code{NULL}, then the variable, type
-@code{char *}, is set to the variable part of the given option if the
-fixed part matches.  In other words, if the first part of the option
-matches what's in the table, the variable will be set to point to the
-rest of the option.  This allows the user to specify a value for that
-option.  The actual option name is made by appending @samp{-m} to the
-specified name.  Again, each option should also be documented in
-@file{invoke.texi}.
-
-If the value listed in the table is non-@code{NULL}, then the option
-must match the option in the table exactly (with @samp{-m}), and the
-variable is set to point to the value listed in the table.
-
-Here is an example which defines @option{-mshort-data-@var{number}}.  If the
-given option is @option{-mshort-data-512}, the variable @code{m88k_short_data}
-will be set to the string @code{"512"}.
-
-@smallexample
-extern char *m88k_short_data;
-#define TARGET_OPTIONS \
- @{ @{ "short-data-", &m88k_short_data, \
-     N_("Specify the size of the short data section"), 0 @} @}
-@end smallexample
-
-Here is a variant of the above that allows the user to also specify
-just @option{-mshort-data} where a default of @code{"64"} is used.
-
-@smallexample
-extern char *m88k_short_data;
-#define TARGET_OPTIONS \
- @{ @{ "short-data-", &m88k_short_data, \
-     N_("Specify the size of the short data section"), 0 @} \
-    @{ "short-data", &m88k_short_data, "", "64" @},
-    @}
-@end smallexample
-
-Here is an example which defines @option{-mno-alu}, @option{-malu1}, and
-@option{-malu2} as a three-state switch, along with suitable macros for
-checking the state of the option (documentation is elided for brevity).
-
-@smallexample
-[chip.c]
-char *chip_alu = ""; /* @r{Specify default here.}  */
-
-[chip.h]
-extern char *chip_alu;
-#define TARGET_OPTIONS \
-  @{ @{ "no-alu", &chip_alu, "", "" @}, \
-     @{ "alu1", &chip_alu, "", "1" @}, \
-     @{ "alu2", &chip_alu, "", "2" @}, @}
-#define TARGET_ALU (chip_alu[0] != '\0')
-#define TARGET_ALU1 (chip_alu[0] == '1')
-#define TARGET_ALU2 (chip_alu[0] == '2')
-@end smallexample
-
-This macro is being kept for compatibility with older backends.
-New targets should use option definition files instead.
-@xref{Back End}.
-@end defmac
 
 @defmac TARGET_VERSION
 This macro is a C statement to print on @code{stderr} a string

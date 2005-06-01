@@ -4865,7 +4865,7 @@ ia64_handle_option (size_t code, const char *arg, int value)
     }
 }
 
-/* Handle TARGET_OPTIONS switches.  */
+/* Implement OVERRIDE_OPTIONS.  */
 
 void
 ia64_override_options (void)

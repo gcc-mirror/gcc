@@ -6883,10 +6883,6 @@ Some configurations of the compiler also support additional special
 options, usually for compatibility with other compilers on the same
 platform.
 
-These options are defined by the macro @code{TARGET_SWITCHES} in the
-machine description.  The default for the options is also defined by
-that macro, which enables you to change the defaults.
-
 @c This list is ordered alphanumerically by subsection name.
 @c It should be the same order and spelling as these options are listed
 @c in Machine Dependent Options
