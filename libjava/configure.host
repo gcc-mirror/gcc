@@ -69,6 +69,7 @@ echo "$target"
 DIVIDESPEC=-fuse-divide-subroutine
 EXCEPTIONSPEC=-fnon-call-exceptions
 CHECKREFSPEC=
+BACKTRACESPEC=
 
 # This case statement supports per-CPU defaults.
 case "${host}" in
@@ -94,17 +95,18 @@ case "${host}" in
 	;;
   i686-*|i586-*|i486-*|i386-*)
 	sysdeps_dir=i386
-	libgcj_flags="${libgcj_flags} -ffloat-store -fno-omit-frame-pointer"
+	libgcj_flags="${libgcj_flags} -ffloat-store"
 	libgcj_interpreter=yes
 	libgcj_cxxflags=
 	libgcj_cflags=
 	DIVIDESPEC=-fno-use-divide-subroutine
+	BACKTRACESPEC=-fomit-frame-pointer
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	;;
   x86_64-*)
 	sysdeps_dir=x86-64
-	libgcj_flags="${libgcj_flags} -ffloat-store -fno-omit-frame-pointer"
+	libgcj_flags="${libgcj_flags} -ffloat-store"
 	libgcj_cxxflags=
 	libgcj_cflags=
 	DIVIDESPEC=-f%{m32:no-}use-divide-subroutine
@@ -266,6 +268,8 @@ esac
 case "${host}" in
   *-cygwin* | *-mingw*)
 	fallback_backtrace_h=sysdep/i386/backtrace.h  
+	# We need a frame pointer on Windows, so override BACKTRACESPEC
+  	BACKTRACESPEC=
   ;;
 esac
 
