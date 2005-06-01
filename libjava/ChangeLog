@@ -1,3 +1,8 @@
+2005-06-01  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/21753:
+	* java/lang/natString.cc (substring): Changed sharing heuristic.
+
 2005-05-30  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/21821
