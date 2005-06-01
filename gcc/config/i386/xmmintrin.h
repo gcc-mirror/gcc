@@ -90,7 +90,7 @@ enum _mm_hint
 static __inline __m128
 _mm_setzero_ps (void)
 {
-  return (__m128){ 0.0f, 0.0f, 0.0f, 0.0f };
+  return __extension__ (__m128){ 0.0f, 0.0f, 0.0f, 0.0f };
 }
 
 /* Perform the respective operation on the lower SPFP (single-precision
@@ -832,14 +832,14 @@ _MM_SET_FLUSH_ZERO_MODE (unsigned int __mode)
 static __inline __m128
 _mm_set_ss (float __F)
 {
-  return (__m128)(__v4sf){ __F, 0, 0, 0 };
+  return __extension__ (__m128)(__v4sf){ __F, 0, 0, 0 };
 }
 
 /* Create a vector with all four elements equal to F.  */
 static __inline __m128
 _mm_set1_ps (float __F)
 {
-  return (__m128)(__v4sf){ __F, __F, __F, __F };
+  return __extension__ (__m128)(__v4sf){ __F, __F, __F, __F };
 }
 
 static __inline __m128
@@ -894,14 +894,14 @@ _mm_loadr_ps (float const *__P)
 static __inline __m128
 _mm_set_ps (const float __Z, const float __Y, const float __X, const float __W)
 {
-  return (__m128)(__v4sf){ __W, __X, __Y, __Z };
+  return __extension__ (__m128)(__v4sf){ __W, __X, __Y, __Z };
 }
 
 /* Create the vector [W X Y Z].  */
 static __inline __m128
 _mm_setr_ps (float __Z, float __Y, float __X, float __W)
 {
-  return (__m128)(__v4sf){ __Z, __Y, __X, __W };
+  return __extension__ (__m128)(__v4sf){ __Z, __Y, __X, __W };
 }
 
 /* Stores the lower SPFP value.  */
