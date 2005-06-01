@@ -1,3 +1,8 @@
+2005-06-01 Mostafa Hagog <mustafa@il.ibm.com>
+
+	* gcse.c (compute_transp, load_killed_in_block): Use 
+	MEM_READONLY_P.
+
 2005-06-01  David.Billinghurst  <David.Billinghurst@riotinto.com>
 
 	PR target/21854
