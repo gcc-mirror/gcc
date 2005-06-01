@@ -2437,7 +2437,7 @@ expand_case (tree exp)
 	  if (compare_tree_int (minval, 0) > 0
 	      && compare_tree_int (maxval, GET_MODE_BITSIZE (word_mode)) < 0)
 	    {
-	      minval = fold_convert (index_type, integer_zero_node);
+	      minval = build_int_cst (index_type, 0);
 	      range = maxval;
 	    }
 	  emit_case_bit_tests (index_type, index_expr, minval, range,
@@ -2523,7 +2523,7 @@ expand_case (tree exp)
 		  && compare_tree_int (minval, 0) > 0
 		  && compare_tree_int (minval, 3) < 0)
 		{
-		  minval = fold_convert (index_type, integer_zero_node);
+		  minval = build_int_cst (index_type, 0);
 		  range = maxval;
 		}
 
@@ -2830,7 +2830,8 @@ node_has_low_bound (case_node_ptr node, tree index_type)
     return 0;
 
   low_minus_one = fold_build2 (MINUS_EXPR, TREE_TYPE (node->low),
-			       node->low, integer_one_node);
+			       node->low,
+			       build_int_cst (TREE_TYPE (node->low), 1));
 
   /* If the subtraction above overflowed, we can't verify anything.
      Otherwise, look for a parent that tests our value - 1.  */
@@ -2880,7 +2881,8 @@ node_has_high_bound (case_node_ptr node, tree index_type)
     return 0;
 
   high_plus_one = fold_build2 (PLUS_EXPR, TREE_TYPE (node->high),
-			       node->high, integer_one_node);
+			       node->high,
+			       build_int_cst (TREE_TYPE (node->high), 1));
 
   /* If the addition above overflowed, we can't verify anything.
      Otherwise, look for a parent that tests our value + 1.  */

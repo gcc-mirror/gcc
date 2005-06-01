@@ -7948,7 +7948,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	       && (TREE_CODE (arg1) != REAL_CST
 		   ||  REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1))))
 	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv)))
-	return fold_build2 (PLUS_EXPR, type, arg0, negate_expr (arg1));
+	return fold_build2 (PLUS_EXPR, type,
+			    fold_convert (type, arg0),
+			    fold_convert (type, negate_expr (arg1)));
 
       /* Try folding difference of addresses.  */
       {
@@ -8467,7 +8469,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      if (exact_real_inverse (TYPE_MODE(TREE_TYPE(arg0)), &r))
 		{
 		  tem = build_real (type, r);
-		  return fold_build2 (MULT_EXPR, type, arg0, tem);
+		  return fold_build2 (MULT_EXPR, type,
+				      fold_convert (type, arg0), tem);
 		}
 	    }
 	}
