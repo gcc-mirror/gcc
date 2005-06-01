@@ -833,7 +833,10 @@ java::lang::String::substring (jint beginIndex, jint endIndex)
   if (beginIndex == 0 && endIndex == count)
     return this;
   jint newCount = endIndex - beginIndex;
-  if (newCount <= 8)  // Optimization, mainly for GC.
+  // For very small strings, just allocate a new one.  For other
+  // substrings, allocate a new one unless the substring is over half
+  // of the original string.
+  if (newCount <= 8 || newCount < (count >> 1))
     return JvNewString(JvGetStringChars(this) + beginIndex, newCount);
   jstring s = new String();
   s->data = data;
