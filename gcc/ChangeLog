@@ -1,3 +1,8 @@
+2005-06-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_use_ins_ext_p): Remove parameter
+	names.
+
 2005-06-01 Mostafa Hagog <mustafa@il.ibm.com>
 
 	* modulo-sched.c (undo_generate_reg_moves ): Fix PR 21138.
