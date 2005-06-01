@@ -20,9 +20,5 @@ JDBC2.0
 !java.lang.ref.
 
 # Tests for not yet implemented classes and/or methods.
-!javax.swing.plaf
-!javax.swing.text
-!javax.swing.table
-!javax.swing.SpinnerListModel
-!javax.swing.SwingUtilities
-!java.beans.XMLDecoder
+!java.awt.event.MouseEvent.modifiersEx
+!org.omg.
