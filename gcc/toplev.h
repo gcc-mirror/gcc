@@ -138,9 +138,7 @@ extern int time_report;
 extern int flag_tree_based_profiling;
 
 /* Things to do with target switches.  */
-extern void display_target_options (void);
 extern void print_version (FILE *, const char *);
-extern void set_target_switch (const char *);
 extern void * default_get_pch_validity (size_t *);
 extern const char * default_pch_valid_p (const void *, size_t);
 

@@ -86,8 +86,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 "
 
 /* cc1/cc1plus always receives all the -m flags. If the specs strings above 
-   are consistent with the TARGET_OPTIONS flags in m68k.h, there should be no
-   need for any further cc1/cc1plus specs.  */
+   are consistent with the flags in m68k.opt, there should be no need for
+   any further cc1/cc1plus specs.  */
 
 #undef CC1_SPEC
 #define CC1_SPEC ""

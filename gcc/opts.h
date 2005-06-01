@@ -86,6 +86,5 @@ extern unsigned num_in_fnames;
 extern void decode_options (unsigned int argc, const char **argv);
 extern int option_enabled (int opt_idx);
 extern bool get_option_state (int, struct cl_option_state *);
-extern void print_filtered_help (unsigned int);
 
 #endif

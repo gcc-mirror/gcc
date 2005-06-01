@@ -374,35 +374,6 @@ static const param_info lang_independent_params[] = {
   { NULL, 0, 0, 0, NULL }
 };
 
-#ifdef TARGET_SWITCHES
-/* Here is a table, controlled by the tm.h file, listing each -m switch
-   and which bits in `target_switches' it should set or clear.
-   If VALUE is positive, it is bits to set.
-   If VALUE is negative, -VALUE is bits to clear.
-   (The sign bit is not used so there is no confusion.)  */
-
-static const struct
-{
-  const char *const name;
-  const int value;
-  const char *const description;
-}
-target_switches[] = TARGET_SWITCHES;
-#endif
-
-/* This table is similar, but allows the switch to have a value.  */
-
-#ifdef TARGET_OPTIONS
-static const struct
-{
-  const char *const prefix;
-  const char **const variable;
-  const char *const description;
-  const char *const value;
-}
-target_options[] = TARGET_OPTIONS;
-#endif
-
 /* Output files for assembler code (real compiler output)
    and debugging dumps.  */
 
@@ -1057,92 +1028,6 @@ compile_file (void)
   targetm.asm_out.file_end ();
 }
 
-/* Display help for target options.  */
-void
-display_target_options (void)
-{
-  int undoc;
-#if defined (TARGET_SWITCHES) || defined (TARGET_OPTIONS)
-  int i;
-#endif
-  unsigned int cli;
-  static bool displayed = false;
-
-  /* Avoid double printing for --help --target-help.  */
-  if (displayed)
-    return;
-
-  displayed = true;
-
-  for (cli = 0; cli < cl_options_count; cli++)
-    if ((cl_options[cli].flags & (CL_TARGET | CL_UNDOCUMENTED)) == CL_TARGET)
-      break;
-
-  if (cli < cl_options_count
-#ifdef TARGET_SWITCHES
-      || ARRAY_SIZE (target_switches) > 1
-#endif
-#ifdef TARGET_OPTIONS
-      || ARRAY_SIZE (target_options) > 1
-#endif
-      )
-    {
-      int doc = cli < cl_options_count;
-
-      undoc = 0;
-
-      printf (_("\nTarget specific options:\n"));
-
-#ifdef TARGET_SWITCHES
-      for (i = ARRAY_SIZE (target_switches); i--;)
-	{
-	  const char *option      = target_switches[i].name;
-	  const char *description = target_switches[i].description;
-
-	  if (option == NULL || *option == 0)
-	    continue;
-	  else if (description == NULL)
-	    {
-	      undoc = 1;
-
-	      if (extra_warnings)
-		printf (_("  -m%-23s [undocumented]\n"), option);
-	    }
-	  else if (*description != 0)
-	    doc += printf ("  -m%-23s %s\n", option, _(description));
-	}
-#endif
-
-#ifdef TARGET_OPTIONS
-      for (i = ARRAY_SIZE (target_options); i--;)
-	{
-	  const char *option      = target_options[i].prefix;
-	  const char *description = target_options[i].description;
-
-	  if (option == NULL || *option == 0)
-	    continue;
-	  else if (description == NULL)
-	    {
-	      undoc = 1;
-
-	      if (extra_warnings)
-		printf (_("  -m%-23s [undocumented]\n"), option);
-	    }
-	  else if (*description != 0)
-	    doc += printf ("  -m%-23s %s\n", option, _(description));
-	}
-#endif
-      print_filtered_help (CL_TARGET);
-      if (undoc)
-	{
-	  if (doc)
-	    printf (_("\nThere are undocumented target specific options as well.\n"));
-	  else
-	    printf (_("  They exist, but they are not documented.\n"));
-	}
-    }
-}
-
 /* Parse a -d... command line switch.  */
 
 void
@@ -1192,64 +1077,6 @@ const char *const debug_type_names[] =
 {
   "none", "stabs", "coff", "dwarf-2", "xcoff", "vms"
 };
-
-/* Decode -m switches.  */
-/* Decode the switch -mNAME.  */
-
-void
-set_target_switch (const char *name)
-{
-#if defined (TARGET_SWITCHES) || defined (TARGET_OPTIONS)
-  size_t j;
-#endif
-  int valid_target_option = 0;
-
-#ifdef TARGET_SWITCHES
-  for (j = 0; j < ARRAY_SIZE (target_switches); j++)
-    if (!strcmp (target_switches[j].name, name))
-      {
-	if (target_switches[j].value < 0)
-	  target_flags &= ~-target_switches[j].value;
-	else
-	  target_flags |= target_switches[j].value;
-	if (name[0] != 0)
-	  {
-	    if (target_switches[j].value < 0)
-	      target_flags_explicit |= -target_switches[j].value;
-	    else
-	      target_flags_explicit |= target_switches[j].value;
-	  }
-	valid_target_option = 1;
-      }
-#endif
-
-#ifdef TARGET_OPTIONS
-  if (!valid_target_option)
-    for (j = 0; j < ARRAY_SIZE (target_options); j++)
-      {
-	int len = strlen (target_options[j].prefix);
-	if (target_options[j].value)
-	  {
-	    if (!strcmp (target_options[j].prefix, name))
-	      {
-		*target_options[j].variable = target_options[j].value;
-		valid_target_option = 1;
-	      }
-	  }
-	else
-	  {
-	    if (!strncmp (target_options[j].prefix, name, len))
-	      {
-		*target_options[j].variable = name + len;
-		valid_target_option = 1;
-	      }
-	  }
-      }
-#endif
-
-  if (name[0] != 0 && !valid_target_option)
-    error ("invalid option %qs", name);
-}
 
 /* Print version information to FILE.
    Each line begins with INDENT (for the case where FILE is the
@@ -1359,31 +1186,6 @@ print_switch_values (FILE *file, int pos, int max,
       pos = print_single_switch (file, pos, max, indent, sep, term,
 				 "", cl_options[j].opt_text);
 
-  /* Print target specific options.  */
-
-#ifdef TARGET_SWITCHES
-  for (j = 0; j < ARRAY_SIZE (target_switches); j++)
-    if (target_switches[j].name[0] != '\0'
-	&& target_switches[j].value > 0
-	&& ((target_switches[j].value & target_flags)
-	    == target_switches[j].value))
-      {
-	pos = print_single_switch (file, pos, max, indent, sep, term,
-				   "-m", target_switches[j].name);
-      }
-#endif
-
-#ifdef TARGET_OPTIONS
-  for (j = 0; j < ARRAY_SIZE (target_options); j++)
-    if (*target_options[j].variable != NULL)
-      {
-	char prefix[256];
-	sprintf (prefix, "-m%s", target_options[j].prefix);
-	pos = print_single_switch (file, pos, max, indent, sep, term,
-				   prefix, *target_options[j].variable);
-      }
-#endif
-
   fprintf (file, "%s", term);
 }
 
@@ -1460,15 +1262,9 @@ default_get_pch_validity (size_t *len)
   size_t i;
   char *result, *r;
 
-  *len = sizeof (target_flags) + 2;
-#ifdef TARGET_OPTIONS
-  for (i = 0; i < ARRAY_SIZE (target_options); i++)
-    {
-      *len += 1;
-      if (*target_options[i].variable)
-	*len += strlen (*target_options[i].variable);
-    }
-#endif
+  *len = 2;
+  if (targetm.check_pch_target_flags)
+    *len += sizeof (target_flags);
   for (i = 0; i < cl_options_count; i++)
     if (option_affects_pch_p (i, &state))
       *len += state.size;
@@ -1477,21 +1273,12 @@ default_get_pch_validity (size_t *len)
   r[0] = flag_pic;
   r[1] = flag_pie;
   r += 2;
-  memcpy (r, &target_flags, sizeof (target_flags));
-  r += sizeof (target_flags);
-
-#ifdef TARGET_OPTIONS
-  for (i = 0; i < ARRAY_SIZE (target_options); i++)
+  if (targetm.check_pch_target_flags)
     {
-      const char *str = *target_options[i].variable;
-      size_t l;
-      if (! str)
-	str = "";
-      l = strlen (str) + 1;
-      memcpy (r, str, l);
-      r += l;
+      memcpy (r, &target_flags, sizeof (target_flags));
+      r += sizeof (target_flags);
     }
-#endif
+
   for (i = 0; i < cl_options_count; i++)
     if (option_affects_pch_p (i, &state))
       {
@@ -1502,6 +1289,20 @@ default_get_pch_validity (size_t *len)
   return result;
 }
 
+/* Return a message which says that a PCH file was created with a different
+   setting of OPTION.  */
+
+static const char *
+pch_option_mismatch (const char *option)
+{
+  char *r;
+
+  asprintf (&r, _("created and used with differing settings of '%s'"), option);
+  if (r == NULL)
+    return _("out of memory");
+  return r;
+}
+
 /* Default version of pch_valid_p.  */
 
 const char *
@@ -1509,9 +1310,7 @@ default_pch_valid_p (const void *data_p, size_t len)
 {
   struct cl_option_state state;
   const char *data = (const char *)data_p;
-  const char *flag_that_differs = NULL;
   size_t i;
-  int tf;
 
   /* -fpic and -fpie also usually make a PCH invalid.  */
   if (data[0] != flag_pic)
@@ -1521,77 +1320,29 @@ default_pch_valid_p (const void *data_p, size_t len)
   data += 2;
 
   /* Check target_flags.  */
-  memcpy (&tf, data, sizeof (target_flags));
   if (targetm.check_pch_target_flags)
     {
-      const char *r = targetm.check_pch_target_flags (tf);
+      int tf;
+      const char *r;
+
+      memcpy (&tf, data, sizeof (target_flags));
+      data += sizeof (target_flags);
+      len -= sizeof (target_flags);
+      r = targetm.check_pch_target_flags (tf);
       if (r != NULL)
 	return r;
     }
-#ifdef TARGET_SWITCHES
-  else if (tf != target_flags)
-    {
-      for (i = 0; i < ARRAY_SIZE (target_switches); i++)
-	{
-	  int bits;
-
-	  bits = target_switches[i].value;
-	  if (bits < 0)
-	    bits = -bits;
-	  if ((target_flags & bits) != (tf & bits))
-	    {
-	      flag_that_differs = target_switches[i].name;
-	      goto make_message;
-	    }
-	}
-      gcc_unreachable ();
-    }
-#endif
-  data += sizeof (target_flags);
-  len -= sizeof (target_flags);
-
-  /* Check string options.  */
-#ifdef TARGET_OPTIONS
-  for (i = 0; i < ARRAY_SIZE (target_options); i++)
-    {
-      const char *str = *target_options[i].variable;
-      size_t l;
-      if (! str)
-	str = "";
-      l = strlen (str) + 1;
-      if (len < l || memcmp (data, str, l) != 0)
-	{
-	  flag_that_differs = target_options[i].prefix;
-	  goto make_message;
-	}
-      data += l;
-      len -= l;
-    }
-#endif
 
   for (i = 0; i < cl_options_count; i++)
     if (option_affects_pch_p (i, &state))
       {
 	if (memcmp (data, state.data, state.size) != 0)
-	  {
-	    flag_that_differs = cl_options[i].opt_text + 2;
-	    goto make_message;
-	  }
+	  return pch_option_mismatch (cl_options[i].opt_text);
 	data += state.size;
 	len -= state.size;
       }
 
   return NULL;
-
- make_message:
-  {
-    char *r;
-    asprintf (&r, _("created and used with differing settings of '-m%s'"),
-		  flag_that_differs);
-    if (r == NULL)
-      return _("out of memory");
-    return r;
-  }
 }
 
 /* Default tree printer.   Handles declarations only.  */
