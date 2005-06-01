@@ -1387,37 +1387,37 @@ _mm_cvtsi64x_si128 (long long __A)
 
 /* Casts between various SP, DP, INT vector types.  Note that these do no
    conversion of values, they just change the type.  */
-static inline __m128
+static __inline __m128
 _mm_castpd_ps(__m128d __A)
 {
   return (__m128) __A;
 }
 
-static inline __m128i
+static __inline __m128i
 _mm_castpd_si128(__m128d __A)
 {
   return (__m128i) __A;
 }
 
-static inline __m128d
+static __inline __m128d
 _mm_castps_pd(__m128 __A)
 {
   return (__m128d) __A;
 }
 
-static inline __m128i
+static __inline __m128i
 _mm_castps_si128(__m128 __A)
 {
   return (__m128i) __A;
 }
 
-static inline __m128
+static __inline __m128
 _mm_castsi128_ps(__m128i __A)
 {
   return (__m128) __A;
 }
 
-static inline __m128d
+static __inline __m128d
 _mm_castsi128_pd(__m128i __A)
 {
   return (__m128d) __A;
