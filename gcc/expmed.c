@@ -3030,7 +3030,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 
   /* These are the operations that are potentially turned into a sequence
      of shifts and additions.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
+  if (SCALAR_INT_MODE_P (mode)
       && (unsignedp || !flag_trapv))
     {
       HOST_WIDE_INT coeff = 0;

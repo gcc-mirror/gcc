@@ -64,6 +64,7 @@ struct mode_data
 
   struct mode_data *component;	/* mode of components */
   struct mode_data *wider;	/* next wider mode */
+  struct mode_data *wider_2x;	/* 2x wider mode */
 
   struct mode_data *contained;  /* Pointer to list of modes that have
 				   this mode as a component.  */
@@ -80,7 +81,7 @@ static struct mode_data *void_mode;
 static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   -1U, -1U, -1U, -1U,
-  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0,
   "<unknown>", 0
 };
 
@@ -717,6 +718,7 @@ calc_wider_mode (void)
 	  for (prev = 0, m = modes[c]; m; m = next)
 	    {
 	      m->wider = void_mode;
+	      m->wider_2x = void_mode;
 
 	      /* this is nreverse */
 	      next = m->next;
@@ -949,6 +951,39 @@ emit_mode_wider (void)
     tagged_printf ("%smode",
 		   m->wider ? m->wider->name : void_mode->name,
 		   m->name);
+
+  print_closer ();
+  print_decl ("unsigned char", "mode_2xwider", "NUM_MACHINE_MODES");
+
+  for_all_modes (c, m)
+    {
+      struct mode_data * m2;
+
+      for (m2 = m;
+	   m2 && m2 != void_mode;
+	   m2 = m2->wider)
+	{
+	  if (m2->bytesize < 2 * m->bytesize)
+	    continue;
+	  if (m->precision != (unsigned int) -1)
+	    {
+	      if (m2->precision != 2 * m->precision)
+		continue;
+	    }
+	  else
+	    {
+	      if (m2->precision != (unsigned int) -1)
+		continue;
+	    }
+
+	  break;
+	}
+      if (m2 == void_mode)
+	m2 = 0;
+      tagged_printf ("%smode",
+		     m2 ? m2->name : void_mode->name,
+		     m->name);
+    }
 
   print_closer ();
 }

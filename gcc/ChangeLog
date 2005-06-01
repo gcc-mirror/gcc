@@ -1,3 +1,19 @@
+2005-05-31  DJ Delorie  <dj@redhat.com>
+
+	* expr.c (convert_move): When a partial_int requires multiple
+	conversion steps, make sure successive steps convert the
+	intermediate value, not the original value.
+
+	* expmed.c (expand_mult): Convert partial_int multiplies to
+	shift/add combinations too.
+
+	* genmodes.c (mode_data): Add wider_2x.
+	(calc_wider_mode): Calculate twice-wider mode too.
+	(emit_mode_wider): Emit twice-wider mode too.
+	* machmode.h (mode_2xwider, GET_MODE_2XWIDER_MODE): New.
+	* expr.c (expand_expr_real_1): Use it for expanding
+	multiplies.
+
 2005-05-31  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/21817
