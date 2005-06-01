@@ -1370,6 +1370,11 @@ static int
 load_killed_in_block_p (basic_block bb, int uid_limit, rtx x, int avail_p)
 {
   rtx list_entry = modify_mem_list[bb->index];
+
+  /* If this is a readonly then we aren't going to be changing it.  */
+  if (MEM_READONLY_P (x))
+    return 0;
+
   while (list_entry)
     {
       rtx setter;
@@ -2462,51 +2467,53 @@ compute_transp (rtx x, int indx, sbitmap *bmap, int set_p)
       return;
 
     case MEM:
-      {
-	bitmap_iterator bi;
-	unsigned bb_index;
+      if (! MEM_READONLY_P (x))
+	{
+	  bitmap_iterator bi;
+	  unsigned bb_index;
 
-	/* First handle all the blocks with calls.  We don't need to
-	   do any list walking for them.  */
-	EXECUTE_IF_SET_IN_BITMAP (blocks_with_calls, 0, bb_index, bi)
-	  {
-	    if (set_p)
-	      SET_BIT (bmap[bb_index], indx);
-	    else
-	      RESET_BIT (bmap[bb_index], indx);
-	  }
+	  /* First handle all the blocks with calls.  We don't need to
+	     do any list walking for them.  */
+	  EXECUTE_IF_SET_IN_BITMAP (blocks_with_calls, 0, bb_index, bi)
+	    {
+	      if (set_p)
+		SET_BIT (bmap[bb_index], indx);
+	      else
+		RESET_BIT (bmap[bb_index], indx);
+	    }
 
-	/* Now iterate over the blocks which have memory modifications
-	   but which do not have any calls.  */
-	EXECUTE_IF_AND_COMPL_IN_BITMAP (modify_mem_list_set, blocks_with_calls,
-					0, bb_index, bi)
-	  {
-	    rtx list_entry = canon_modify_mem_list[bb_index];
-
-	    while (list_entry)
+	    /* Now iterate over the blocks which have memory modifications
+	       but which do not have any calls.  */
+	    EXECUTE_IF_AND_COMPL_IN_BITMAP (modify_mem_list_set, 
+					    blocks_with_calls,
+					    0, bb_index, bi)
 	      {
-		rtx dest, dest_addr;
+		rtx list_entry = canon_modify_mem_list[bb_index];
 
-		/* LIST_ENTRY must be an INSN of some kind that sets memory.
-		   Examine each hunk of memory that is modified.  */
-
-		dest = XEXP (list_entry, 0);
-		list_entry = XEXP (list_entry, 1);
-		dest_addr = XEXP (list_entry, 0);
-
-		if (canon_true_dependence (dest, GET_MODE (dest), dest_addr,
-					   x, rtx_addr_varies_p))
+		while (list_entry)
 		  {
-		    if (set_p)
-		      SET_BIT (bmap[bb_index], indx);
-		    else
-		      RESET_BIT (bmap[bb_index], indx);
-		    break;
-		  }
-		list_entry = XEXP (list_entry, 1);
+		    rtx dest, dest_addr;
+
+		    /* LIST_ENTRY must be an INSN of some kind that sets memory.
+		       Examine each hunk of memory that is modified.  */
+
+		    dest = XEXP (list_entry, 0);
+		    list_entry = XEXP (list_entry, 1);
+		    dest_addr = XEXP (list_entry, 0);
+
+		    if (canon_true_dependence (dest, GET_MODE (dest), dest_addr,
+					       x, rtx_addr_varies_p))
+		      {
+			if (set_p)
+			  SET_BIT (bmap[bb_index], indx);
+			else
+			  RESET_BIT (bmap[bb_index], indx);
+			break;
+		      }
+		    list_entry = XEXP (list_entry, 1);
+	          }
 	      }
-	  }
-      }
+	}
 
       x = XEXP (x, 0);
       goto repeat;
