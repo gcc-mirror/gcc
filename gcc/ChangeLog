@@ -1,3 +1,40 @@
+2005-06-01  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.ac: Add --enable-secureplt.
+	(HAVE_AS_REL16): Test for R_PPC_REL16 relocs.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* config.gcc (powerpc64-*-linux*, powerpc-*-linux*): Add
+	rs6000/secureplt.h to tm_file when enable_secureplt.
+	* doc/invoke.texi (msecure-plt, mbss-plt): Document.
+	* doc/install.texi: Document --enable-targets and --enable-secureplt.
+	Correct xrefs to "Using the GNU Compiler Collection (GCC)".
+	* config/rs6000/secureplt.h: New file.
+	* config/rs6000/sysv4.h (TARGET_SECURE_PLT): Define.
+	(SUBTARGET_OVERRIDE_OPTIONS): Error if -msecure-plt given without
+	assembler support.
+	(CC1_SECURE_PLT_DEFAULT_SPEC): Define.
+	(CC1_SPEC): Delete duplicate mno-sdata.  Invoke cc1_secure_plt_default.
+	(SUBTARGET_EXTRA_SPECS): Add cc1_secure_plt_default.
+	* config/rs6000/sysv4.opt (msecure-plt, bss-plt): Add options.
+	* config/rs6000/rs6000.h (TARGET_SECURE_PLT): Define.
+	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Handle
+	TARGET_SECURE_PLT got register load sequence.
+	(rs6000_emit_prologue): Call rs6000_emit_load_toc_table when
+	TARGET_SECURE_PLT.
+	(rs6000_elf_declare_function_name): Don't emit toc address offset
+	word when TARGET_SECURE_PLT.
+	* config/rs6000/rs6000.md (elf_high, elf_low): Move past load_toc_*.
+	(load_toc_v4_PIC_1) Enable for TARGET_SECURE_PLT.
+	(load_toc_v4_PIC_3b, load_toc_v4_PIC_3c): New insns.
+	(call, call_value): Mark pic_offset_table_rtx used for sysv pic and
+	TARGET_SECURE_PLT.
+	(call_nonlocal_sysv, call_value_nonlocal_sysv, sibcall_nonlocal_sysv,
+	sibcall_value_nonlocal_sysv): Add 32768 offset when TARGET_SECURE_PLT
+	and -fPIC.
+	* config/rs6000/tramp.asm (trampoline_initial): Use "bcl 20,31".
+	(__trampoline_setup): Likewise.  Init r30 before plt call.
+
 2005-05-31  DJ Delorie  <dj@redhat.com>
 
 	* expr.c (convert_move): When a partial_int requires multiple

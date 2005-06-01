@@ -1072,6 +1072,27 @@ do a @samp{make -C gcc gnatlib_and_tools}.
 Specify that the compiler should
 use DWARF 2 debugging information as the default.
 
+@item --enable-targets=all
+@itemx --enable-targets=@var{target_list}
+Some GCC targets, e.g.@: powerpc64-linux, build bi-arch compilers.
+These are compilers that are able to generate either 64-bit or 32-bit
+code.  Typicially, the corresponding 32-bit target, e.g.@:
+powerpc-linux for powerpc64-linux, only generates 32-bit code.  This
+option enables the 32-bit target to be a bi-arch compiler, which is
+useful when you want a bi-arch compiler that defaults to 32-bit, and
+you are building a bi-arch or multi-arch binutils in a combined tree.
+Currently, this option only affects powerpc-linux.
+
+@item --enable-secureplt
+This option enables @option{-msecure-plt} by default for powerpc-linux.
+@ifnothtml
+@xref{RS/6000 and PowerPC Options,, RS/6000 and PowerPC Options, gcc,
+Using the GNU Compiler Collection (GCC)},
+@end ifnothtml
+@ifhtml
+See ``RS/6000 and PowerPC Options'' in the main manual
+@end ifhtml
+
 @item --enable-win32-registry
 @itemx --enable-win32-registry=@var{key}
 @itemx --disable-win32-registry
@@ -2465,7 +2486,7 @@ ARM-family processors.  These targets support the AOUT file format:
 ATMEL AVR-family micro controllers.  These are used in embedded
 applications.  There are no standard Unix configurations.
 @ifnothtml
-@xref{AVR Options,, AVR Options, gcc, Using and Porting the GNU Compiler
+@xref{AVR Options,, AVR Options, gcc, Using the GNU Compiler
 Collection (GCC)},
 @end ifnothtml
 @ifhtml
@@ -2503,8 +2524,8 @@ indicates that you should upgrade to a newer version of the binutils.
 
 The Blackfin processor, an Analog Devices DSP.
 @ifnothtml
-@xref{Blackfin Options,, Blackfin Options, gcc, Using and Porting the GNU
-Compiler Collection (GCC)},
+@xref{Blackfin Options,, Blackfin Options, gcc, Using the GNU Compiler
+Collection (GCC)},
 @end ifnothtml
 @ifhtml
 See ``Blackfin Options'' in the main manual
@@ -2522,8 +2543,8 @@ Texas Instruments TMS320C3x and TMS320C4x Floating Point Digital Signal
 Processors.  These are used in embedded applications.  There are no
 standard Unix configurations.
 @ifnothtml
-@xref{TMS320C3x/C4x Options,, TMS320C3x/C4x Options, gcc, Using and
-Porting the GNU Compiler Collection (GCC)},
+@xref{TMS320C3x/C4x Options,, TMS320C3x/C4x Options, gcc, Using the
+GNU Compiler Collection (GCC)},
 @end ifnothtml
 @ifhtml
 See ``TMS320C3x/C4x Options'' in the main manual
@@ -2552,7 +2573,7 @@ CRIS is the CPU architecture in Axis Communications ETRAX system-on-a-chip
 series.  These are used in embedded applications.
 
 @ifnothtml
-@xref{CRIS Options,, CRIS Options, gcc, Using and Porting the GNU Compiler
+@xref{CRIS Options,, CRIS Options, gcc, Using the GNU Compiler
 Collection (GCC)},
 @end ifnothtml
 @ifhtml

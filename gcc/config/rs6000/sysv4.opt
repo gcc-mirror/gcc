@@ -139,3 +139,11 @@ Generate 32-bit code
 mnewlib
 Target RejectNegative
 no description yet
+
+msecure-plt
+Target Report RejectNegative Var(secure_plt, 1)
+Generate code to use a non-exec PLT and GOT
+
+mbss-plt
+Target Report RejectNegative Var(secure_plt, 0)
+Generate code for old exec BSS PLT

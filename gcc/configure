@@ -891,6 +891,7 @@ Optional Features:
   --enable-initfini-array	use .init_array/.fini_array sections
   --enable-sjlj-exceptions
                           arrange to use setjmp/longjmp exception handling
+  --enable-secureplt      enable -msecure-plt by default for PowerPC
   --disable-win32-registry
                           disable lookup of installation paths in the
                           Registry on Windows hosts
@@ -7402,7 +7403,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7405: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7406: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
@@ -12361,6 +12362,12 @@ case "$LIBINTL" in *$LIBICONV*)
 	LIBICONV= ;;
 esac
 
+# Check whether --enable-secureplt or --disable-secureplt was given.
+if test "${enable_secureplt+set}" = set; then
+  enableval="$enable_secureplt"
+
+fi;
+
 # Windows32 Registry support for specifying GCC installation paths.
 # Check whether --enable-win32-registry or --disable-win32-registry was given.
 if test "${enable_win32_registry+set}" = set; then
@@ -14729,6 +14736,55 @@ _ACEOF
 
 fi
 
+    case $target in
+      *-*-aix*) conftest_s='	.csect .text[PR]
+LCF..0:
+	addis 11,30,_GLOBAL_OFFSET_TABLE_-LCF..0@ha';;
+      *-*-darwin*)
+	conftest_s='	.text
+LCF0:
+	addis r11,r30,_GLOBAL_OFFSET_TABLE_-LCF0@ha';;
+      *) conftest_s='	.text
+.LCF0:
+	addis 11,30,_GLOBAL_OFFSET_TABLE_-.LCF0@ha';;
+    esac
+
+    echo "$as_me:$LINENO: checking assembler for rel16 relocs" >&5
+echo $ECHO_N "checking assembler for rel16 relocs... $ECHO_C" >&6
+if test "${gcc_cv_as_powerpc_rel16+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_powerpc_rel16=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_rel16=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as -a32 -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_powerpc_rel16=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_powerpc_rel16" >&5
+echo "${ECHO_T}$gcc_cv_as_powerpc_rel16" >&6
+if test $gcc_cv_as_powerpc_rel16 = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_REL16 1
+_ACEOF
+
+fi
     ;;
 
   mips*-*-*)

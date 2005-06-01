@@ -1441,6 +1441,10 @@ case "$LIBINTL" in *$LIBICONV*)
 	LIBICONV= ;;
 esac
 
+AC_ARG_ENABLE(secureplt,
+[  --enable-secureplt      enable -msecure-plt by default for PowerPC],
+[], [])
+
 # Windows32 Registry support for specifying GCC installation paths.
 AC_ARG_ENABLE(win32-registry,
 [  --disable-win32-registry
@@ -2822,6 +2826,24 @@ foo:	nop
       [AC_DEFINE(HAVE_AS_POPCNTB, 1,
 	  [Define if your assembler supports popcntb field.])])
 
+    case $target in
+      *-*-aix*) conftest_s='	.csect .text[[PR]]
+LCF..0:
+	addis 11,30,_GLOBAL_OFFSET_TABLE_-LCF..0@ha';;
+      *-*-darwin*)
+	conftest_s='	.text
+LCF0:
+	addis r11,r30,_GLOBAL_OFFSET_TABLE_-LCF0@ha';;
+      *) conftest_s='	.text
+.LCF0:
+	addis 11,30,_GLOBAL_OFFSET_TABLE_-.LCF0@ha';;
+    esac
+
+    gcc_GAS_CHECK_FEATURE([rel16 relocs],
+      gcc_cv_as_powerpc_rel16, [2,17,0], -a32,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_REL16, 1,
+	  [Define if your assembler supports R_PPC_REL16 relocs.])])
     ;;
 
   mips*-*-*)

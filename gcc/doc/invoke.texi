@@ -636,7 +636,7 @@ See RS/6000 and PowerPC Options.
 -minsert-sched-nops=@var{scheme} @gol
 -mcall-sysv  -mcall-netbsd @gol
 -maix-struct-return  -msvr4-struct-return @gol
--mabi=@var{abi-type} @gol
+-mabi=@var{abi-type} -msecure-plt -mbss-plt @gol
 -misel -mno-isel @gol
 -misel=yes  -misel=no @gol
 -mspe -mno-spe @gol
@@ -10732,6 +10732,18 @@ ABI@.
 @item -mabi=no-spe
 @opindex mabi=no-spe
 Disable Booke SPE ABI extensions for the current ABI@.
+
+@item -msecure-plt
+@opindex msecure-plt
+Generate code that allows ld and ld.so to build executables and shared
+libraries with non-exec .plt and .got sections.  This is a PowerPC
+32-bit SYSV ABI option.
+
+@item -mbss-plt
+@opindex mbss-plt
+Generate code that uses a BSS .plt section that ld.so fills in, and
+requires .plt and .got sections that are both writable and executable.
+This is a PowerPC 32-bit SYSV ABI option.
 
 @item -misel
 @itemx -mno-isel

@@ -1581,6 +1581,9 @@ powerpc64-*-linux*)
 	test x$with_cpu != x || cpu_is_64bit=yes
 	test x$cpu_is_64bit != xyes || tm_file="${tm_file} rs6000/default64.h"
 	tm_file="rs6000/biarch64.h ${tm_file} rs6000/linux64.h"
+	if test x${enable_secureplt} = xyes; then
+		tm_file="rs6000/secureplt.h ${tm_file}"
+	fi
 	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
 	tmake_file="rs6000/t-fprules ${tmake_file} rs6000/t-ppccomm rs6000/t-linux64"
 	;;
@@ -1690,6 +1693,9 @@ powerpc-*-linux*)
 		tm_file="${tm_file} rs6000/linux.h"
 		;;
 	esac
+	if test x${enable_secureplt} = xyes; then
+		tm_file="rs6000/secureplt.h ${tm_file}"
+	fi
 	;;
 powerpc-*-gnu-gnualtivec*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h rs6000/gnu.h"
