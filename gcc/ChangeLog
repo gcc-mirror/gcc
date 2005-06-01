@@ -1,5 +1,11 @@
 2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* errors.h (warning, error, fatal, internal_error): Add printf
+	attribute.
+	* genmodes.c (make_vector_mode): Fix format arguments.
+
+2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* basic-block.h, bb-reorder.c, c-gimplify.c, config/darwin.c,
 	config/rs6000/rs6000-c.c, dominance.c, gimple-low.c, gimplify.c,
 	lambda-code.c, lambda-trans.c, tree-browser.c, tree-cfg.c,
