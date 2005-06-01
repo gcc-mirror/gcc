@@ -197,7 +197,12 @@ public final class RESyntax implements Serializable {
    */
   public static final int RE_CHAR_CLASS_ESC_IN_LISTS   = 24;
 
-  private static final int BIT_TOTAL                   = 25;
+  /**
+   * Syntax bit.  Possessive matching is allowed (++, *+, ?+, {x,y}+).
+   */
+  public static final int RE_POSSESSIVE_OPS            = 25;
+
+  private static final int BIT_TOTAL                   = 26;
 
   /**
    * Predefined syntax.
@@ -425,6 +430,7 @@ public final class RESyntax implements Serializable {
 
       RE_SYNTAX_JAVA_1_4 = new RESyntax(RE_SYNTAX_PERL5)
 	  // XXX
+	  .set(RE_POSSESSIVE_OPS)         // *+,?+,++,{}+
 	  .makeFinal();
   }
 

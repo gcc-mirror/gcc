@@ -1,3 +1,15 @@
+2005-06-01  Ziga Mahkovec  <ziga.mahkovec@klika.si>
+
+	PR libgcj/20435:
+	* gnu/regexp/RESyntax.java (RE_POSSESSIVE_OPS): New field.
+	(static): Add possessive matching to JAVA_1_4 syntax.
+	* gnu/regexp/RETokenRepeated.java (possessive): New field.
+	(makePossessive, isPossessive): New methods.
+	(match): Don't back off during possessive matching.
+	* gnu/regexp/RE.java (initalize): Accept possessive quantifier.
+	* java/util/regex/Pattern.java (constructor): Switch syntax from PERL5
+	to JAVA_1_4.
+
 2005-06-01  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/transport/JdwpPacket.java: New file.

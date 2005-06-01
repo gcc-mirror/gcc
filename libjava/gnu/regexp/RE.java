@@ -629,20 +629,29 @@ public class RE extends REToken {
 	currentToken = setRepeated(currentToken,0,Integer.MAX_VALUE,index);
       }
 
-      // ONE-OR-MORE REPEAT OPERATOR
+      // ONE-OR-MORE REPEAT OPERATOR / POSSESSIVE MATCHING OPERATOR
       //  + | \+ depending on RE_BK_PLUS_QM
       //  not available if RE_LIMITED_OPS is set
 
       else if ((unit.ch == '+') && !syntax.get(RESyntax.RE_LIMITED_OPS) && (!syntax.get(RESyntax.RE_BK_PLUS_QM) ^ (unit.bk || quot))) {
 	if (currentToken == null)
           throw new REException(getLocalizedMessage("repeat.no.token"),REException.REG_BADRPT,index);
-	if (currentToken instanceof RETokenRepeated)
-          throw new REException(getLocalizedMessage("repeat.chained"),REException.REG_BADRPT,index);
-	if (currentToken instanceof RETokenWordBoundary || currentToken instanceof RETokenWordBoundary)
+	
+	// Check for possessive matching on RETokenRepeated
+	if (currentToken instanceof RETokenRepeated) {
+	  RETokenRepeated tokenRep = (RETokenRepeated)currentToken;
+	  if (syntax.get(RESyntax.RE_POSSESSIVE_OPS) && !tokenRep.isPossessive() && !tokenRep.isStingy())
+	    tokenRep.makePossessive();
+	  else
+	    throw new REException(getLocalizedMessage("repeat.chained"),REException.REG_BADRPT,index);
+
+	}
+	else if (currentToken instanceof RETokenWordBoundary || currentToken instanceof RETokenWordBoundary)
 	  throw new REException(getLocalizedMessage("repeat.assertion"),REException.REG_BADRPT,index);
-	if (currentToken.getMinimumLength() == 0)
+	else if (currentToken.getMinimumLength() == 0)
 	  throw new REException(getLocalizedMessage("repeat.empty.token"),REException.REG_BADRPT,index);
-	currentToken = setRepeated(currentToken,1,Integer.MAX_VALUE,index);
+	else
+	  currentToken = setRepeated(currentToken,1,Integer.MAX_VALUE,index);
       }
 
       // ZERO-OR-ONE REPEAT OPERATOR / STINGY MATCHING OPERATOR
@@ -655,13 +664,14 @@ public class RE extends REToken {
 
 	// Check for stingy matching on RETokenRepeated
 	if (currentToken instanceof RETokenRepeated) {
-          if (syntax.get(RESyntax.RE_STINGY_OPS) && !((RETokenRepeated)currentToken).isStingy())
-            ((RETokenRepeated)currentToken).makeStingy();
-          else
-            throw new REException(getLocalizedMessage("repeat.chained"),REException.REG_BADRPT,index);
-        }
-        else if (currentToken instanceof RETokenWordBoundary || currentToken instanceof RETokenWordBoundary)
-          throw new REException(getLocalizedMessage("repeat.assertion"),REException.REG_BADRPT,index);
+	  RETokenRepeated tokenRep = (RETokenRepeated)currentToken;
+	  if (syntax.get(RESyntax.RE_STINGY_OPS) && !tokenRep.isStingy() && !tokenRep.isPossessive())
+	    tokenRep.makeStingy();
+	  else
+	    throw new REException(getLocalizedMessage("repeat.chained"),REException.REG_BADRPT,index);
+	}
+	else if (currentToken instanceof RETokenWordBoundary || currentToken instanceof RETokenWordBoundary)
+	  throw new REException(getLocalizedMessage("repeat.assertion"),REException.REG_BADRPT,index);
 	else
 	  currentToken = setRepeated(currentToken,0,1,index);
       }
