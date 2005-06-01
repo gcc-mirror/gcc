@@ -1,5 +1,7 @@
 2005-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* fold-const.c (fold_ternary): Optimize BIT_FIELD_REF of VECTOR_CST.
+
 	* config/i386/xmmintrin.h (_mm_setzero_ps, _mm_set_ss, _mm_set1_ps,
 	_mm_set_ps, _mm_setr_ps): Add __extension__.
 	* config/i386/emmintrin.h (_mm_set_sd, _mm_set1_pd, _mm_set_pd,

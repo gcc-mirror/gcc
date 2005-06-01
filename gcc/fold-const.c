@@ -10284,6 +10284,29 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	}
       return NULL_TREE;
 
+    case BIT_FIELD_REF:
+      if (TREE_CODE (arg0) == VECTOR_CST
+	  && type == TREE_TYPE (TREE_TYPE (arg0))
+	  && host_integerp (arg1, 1)
+	  && host_integerp (op2, 1))
+	{
+	  unsigned HOST_WIDE_INT width = tree_low_cst (arg1, 1);
+	  unsigned HOST_WIDE_INT idx = tree_low_cst (op2, 1);
+
+	  if (width != 0
+	      && simple_cst_equal (arg1, TYPE_SIZE (type)) == 1
+	      && (idx % width) == 0
+	      && (idx = idx / width)
+		 < TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)))
+	    {
+	      tree elements = TREE_VECTOR_CST_ELTS (arg0);
+	      while (idx-- > 0)
+		elements = TREE_CHAIN (elements);
+	      return TREE_VALUE (elements);
+	    }
+	}
+      return NULL_TREE;
+
     default:
       return NULL_TREE;
     } /* switch (code) */
