@@ -1575,7 +1575,7 @@ default_tree_printer (pretty_printer * pp, text_info *text)
     {
     case 'D':
       t = va_arg (*text->args_ptr, tree);
-      if (DECL_DEBUG_EXPR (t) && DECL_DEBUG_EXPR_IS_FROM (t))
+      if (DECL_DEBUG_EXPR_IS_FROM (t) && DECL_DEBUG_EXPR (t))
 	t = DECL_DEBUG_EXPR (t);
       break;
 

@@ -1126,9 +1126,9 @@ instantiate_element (struct sra_elt *elt)
       DECL_NAME (var) = get_identifier (pretty_name);
       obstack_free (&sra_obstack, pretty_name);
 
-      DECL_DEBUG_EXPR (var) = generate_element_ref (elt);
+      SET_DECL_DEBUG_EXPR (var, generate_element_ref (elt));
       DECL_DEBUG_EXPR_IS_FROM (var) = 1;
-
+      
       DECL_IGNORED_P (var) = 0;
       TREE_NO_WARNING (var) = TREE_NO_WARNING (base);
     }

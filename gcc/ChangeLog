@@ -1,3 +1,24 @@
+2005-05-30  Daniel Berlin  <dberlin@dberlin.org>
+
+	* c-objc-common.c (c_tree_printer): Check flag before hashtable.
+	Use DECL_DEBUG_EXPR and SET_DECL_DEBUG_EXPR.
+	* dwarf2out.c (dwarf2out_var_location): Ditto.
+	* toplev.c (default_tree_printer): Ditto.
+	* tree-outof-ssa.c (create_temp): Ditto.
+	* tree-sra.c (instantiate_element): Ditto.
+	* var-tracking.c (track_expr_p): Ditto.
+	* tree.c (struct tree_map): New structure.
+	(debug_expr_for_decl): New.
+	(tree_map_eq): New function.
+	(tree_map_hash): Ditto.
+	(tree_map_marked_p): Ditto.
+	(print_debug_expr_statistics): Ditto.
+	(decl_debug_expr_lookup): Ditto.
+	(decl_debug_expr_insert): Ditto.
+	(dump_tree_statistics): Dump debug_expr hashtable stats.
+	* tree.h (DECL_DEBUG_EXPR): Change
+	(SET_DECL_DEBUG_EXPR): Add.
+	
 2005-06-01  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure.ac: Add --enable-secureplt.
