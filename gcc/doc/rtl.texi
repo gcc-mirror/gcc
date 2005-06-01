@@ -3115,9 +3115,6 @@ Appears near the end of the function body, just before the label that
 does not suffice for returning).  This note may be deleted by jump
 optimization.
 
-@findex NOTE_INSN_SETJMP
-@item NOTE_INSN_SETJMP
-Appears following each call to @code{setjmp} or a related function.
 @end table
 
 These codes are printed symbolically when they appear in debugging dumps.
@@ -3298,6 +3295,11 @@ of this note indicates to other optimizations that this this branching
 instruction should not be ``collapsed'' into a simpler branching
 construct.  It is used when the optimization to partition basic blocks
 into hot and cold sections is turned on.
+
+@findex REG_SETJMP
+@item REG_SETJMP 
+Appears attached to each @code{CALL_INSN} to @code{setjmp} or a 
+related function.
 @end table
 
 The following notes describe attributes of outputs of an insn:
