@@ -2649,10 +2649,35 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	    break;
 	  }
 
+	/* If there are "lots" of initialized elements, even discounting
+	   those that are not address constants (and thus *must* be
+	   computed at runtime), then partition the constructor into
+	   constant and non-constant parts.  Block copy the constant
+	   parts in, then generate code for the non-constant parts.  */
+	/* TODO.  There's code in cp/typeck.c to do this.  */
+
+	num_type_elements = count_type_elements (TREE_TYPE (ctor));
+
+	/* If there are "lots" of zeros, then block clear the object first.  */
+	if (num_type_elements - num_nonzero_elements > CLEAR_RATIO
+	    && num_nonzero_elements < num_type_elements/4)
+	  cleared = true;
+
+	/* ??? This bit ought not be needed.  For any element not present
+	   in the initializer, we should simply set them to zero.  Except
+	   we'd need to *find* the elements that are not present, and that
+	   requires trickery to avoid quadratic compile-time behavior in
+	   large cases or excessive memory use in small cases.  */
+	else if (num_ctor_elements < num_type_elements)
+	  cleared = true;
+
 	/* If there are "lots" of initialized elements, and all of them
 	   are valid address constants, then the entire initializer can
-	   be dropped to memory, and then memcpy'd out.  */
-	if (num_nonconstant_elements == 0)
+	   be dropped to memory, and then memcpy'd out.  Don't do this
+	   for sparse arrays, though, as it's more efficient to follow
+	   the standard CONSTRUCTOR behavior of memset followed by
+	   individual element initialization.  */
+	if (num_nonconstant_elements == 0 && !cleared)
 	  {
 	    HOST_WIDE_INT size = int_size_in_bytes (type);
 	    unsigned int align;
@@ -2697,28 +2722,6 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 		return GS_UNHANDLED;
 	      }
 	  }
-
-	/* If there are "lots" of initialized elements, even discounting
-	   those that are not address constants (and thus *must* be
-	   computed at runtime), then partition the constructor into
-	   constant and non-constant parts.  Block copy the constant
-	   parts in, then generate code for the non-constant parts.  */
-	/* TODO.  There's code in cp/typeck.c to do this.  */
-
-	num_type_elements = count_type_elements (TREE_TYPE (ctor));
-
-	/* If there are "lots" of zeros, then block clear the object first.  */
-	if (num_type_elements - num_nonzero_elements > CLEAR_RATIO
-	    && num_nonzero_elements < num_type_elements/4)
-	  cleared = true;
-
-	/* ??? This bit ought not be needed.  For any element not present
-	   in the initializer, we should simply set them to zero.  Except
-	   we'd need to *find* the elements that are not present, and that
-	   requires trickery to avoid quadratic compile-time behavior in
-	   large cases or excessive memory use in small cases.  */
-	else if (num_ctor_elements < num_type_elements)
-	  cleared = true;
 
 	if (cleared)
 	  {
