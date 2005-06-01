@@ -173,7 +173,7 @@
 	* target-def.h (TARGET_CHECK_PCH_TARGET_FLAGS): New macro.
 	(TARGET_INITIALIZER): Include it.
 	* toplev.c (default_pch_valid_p): Use targetm.check_pch_target_flags.
-	* config/sh/sh.h (sh_pch_valid_p): Delete.
+	* config/sh/sh-protos.h (sh_pch_valid_p): Delete.
 	* config/sh/sh.c (TARGET_PCH_VALID_P, sh_pch_valid_p): Delete.
 	(sh_check_pch_target_flags): New function.
 	(TARGET_CHECK_PCH_TARGET_FLAGS): Override default.
