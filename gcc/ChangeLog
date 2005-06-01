@@ -1,5 +1,18 @@
 2005-06-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/sh/sh.c (multcosts): Check sh_multcost rather than
+	sh_multcost_str.
+	(sh_register_move_cost): Likewise sh_gettrcost and sh_gettrcost_str.
+	(sh_multcost_str, sh_gettrcost_str, sh_div_str, sh_divsi3_libfunc)
+	(cut2_workaround_str): Delete.
+	* config/sh/sh.h (SUBTARGET_OPTIONS, TARGET_OPTIONS)
+	(TARGET_SH5_CUT2_WORKAROUND, sh_multcost_str, sh_gettrcost_str)
+	(sh_div_str, sh_divsi3_libfunc, cut2_workaround_str): Delete.
+	* config/sh/sh.opt (mcut2-workaround, mdiv=, mdivsi3_libfunc=)
+	(mgettrcost=, multcost=): New options.
+
+2005-06-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* opts.h (cl_option_state): New structure.
 	(get_option_state): Declare.
 	* opts.c (get_option_state): New function.

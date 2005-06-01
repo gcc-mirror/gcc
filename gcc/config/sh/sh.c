@@ -1965,8 +1965,8 @@ addsubcosts (rtx x)
 static inline int
 multcosts (rtx x ATTRIBUTE_UNUSED)
 {
-  if (*sh_multcost_str)
-    return atoi (sh_multcost_str);
+  if (sh_multcost >= 0)
+    return sh_multcost;
   if (TARGET_SHMEDIA)
     /* ??? We have a mul insn, but it has a latency of three, and doesn't
        accept constants.  Ideally, we would use a cost of one or two and
@@ -10069,8 +10069,8 @@ sh_register_move_cost (enum machine_mode mode,
   if (TARGET_SHMEDIA
       && ((srcclass) == TARGET_REGS || (srcclass) == SIBCALL_REGS))
     {
-      if (*sh_gettrcost_str)
-	return atoi (sh_gettrcost_str);
+      if (sh_gettrcost >= 0)
+	return sh_gettrcost;
       else if (!TARGET_PT_FIXED)
 	return 100;
     }
@@ -11233,11 +11233,6 @@ shmedia_prepare_call_address (rtx fnaddr, int is_sibcall)
   return fnaddr;
 }
 
-const char *sh_multcost_str = "";
-const char *sh_gettrcost_str = "";
-const char *sh_div_str = "";
-const char *sh_divsi3_libfunc = "";
-const char *cut2_workaround_str = "";
 enum sh_divide_strategy_e sh_div_strategy = SH_DIV_STRATEGY_DEFAULT;
 
 /* This defines the storage for the variable part of a -mboard= option.

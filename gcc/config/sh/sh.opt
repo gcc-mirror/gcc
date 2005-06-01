@@ -148,12 +148,28 @@ mbigtable
 Target Report RejectNegative Mask(BIGTABLE)
 Generate 32-bit offsets in switch tables
 
+mcut2-workaround
+Target RejectNegative Var(TARGET_SH5_CUT2_WORKAROUND)
+Enable SH5 cut2 workaround
+
 mdalign
 Target Report RejectNegative Mask(ALIGN_DOUBLE)
 Align doubles at 64-bit boundaries
 
+mdiv=
+Target RejectNegative Joined Var(sh_div_str) Init("")
+Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp
+
+mdivsi3_libfunc=
+Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
+Specify name for 32 bit signed division function
+
 mfmovd
 Target RejectNegative Mask(FMOVD) Undocumented
+
+mgettrcost=
+Target RejectNegative Joined UInteger Var(sh_gettrcost) Init(-1)
+Cost to assume for gettr insn
 
 mhitachi
 Target Report RejectNegative Mask(HITACHI)
@@ -208,6 +224,10 @@ Follow Renesas (formerly Hitachi) / SuperH calling conventions
 mspace
 Target Report RejectNegative Mask(SMALLCODE)
 Deprecated. Use -Os instead
+
+multcost=
+Target RejectNegative Joined UInteger Var(sh_multcost) Init(-1)
+Cost to assume for a multiply insn
 
 musermode
 Target Report RejectNegative Mask(USERMODE)
