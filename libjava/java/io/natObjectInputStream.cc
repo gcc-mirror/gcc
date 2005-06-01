@@ -1,6 +1,6 @@
 // natObjectInputStream.cc - Native part of ObjectInputStream class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2005  Free Software Foundation
 
    This ObjectInputStream is part of libgcj.
 
@@ -24,6 +24,7 @@ details.  */
 #include <java/lang/SecurityManager.h>
 #include <java/lang/reflect/Constructor.h>
 #include <java/lang/reflect/Method.h>
+#include <java-stack.h>
 
 #ifdef DEBUG
 #include <java/lang/System.h>
@@ -69,9 +70,11 @@ java::io::ObjectInputStream::allocateObject (jclass klass, jclass,
   return obj;
 }
 
-java::lang::ClassLoader*
-java::io::ObjectInputStream::currentClassLoader (::java::lang::SecurityManager *sm)
+java::lang::ClassLoader *
+java::io::ObjectInputStream::currentLoader ()
 {
-  return sm->currentClassLoader ();
+  jclass caller = _Jv_StackTrace::GetCallingClass (&ObjectInputStream::class$);
+  if (caller)
+    return caller->getClassLoaderInternal();
+  return NULL;
 }
-
