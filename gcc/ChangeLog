@@ -1,5 +1,13 @@
 2005-06-01  Richard Guenther  <rguenth@gcc.gnu.org>
 
+	* stmt.c (expand_case): Use build_int_cst.
+	(node_has_low_bound): Likewise, and correct type mismatch.
+	(node_has_high_bound): Likewise.
+	* fold-const.c (fold_binary): Ensure we build trees
+	with the correct types - undo what STRIP_NOPS possibly did.
+
+2005-06-01  Richard Guenther  <rguenth@gcc.gnu.org>
+
 	* tree.h (fold_indirect_ref_1): Export from fold-const.c.
 	* fold-const.c (fold_indirect_ref_1): No longer static.
 	* tree-inline.c (copy_body_r): Use fold_indirect_ref_1 for
