@@ -597,6 +597,7 @@ undo_generate_reg_moves (partial_schedule_ptr ps,
 	  delete_insn (crr);
 	  crr = prev;
 	}
+      SCHED_FIRST_REG_MOVE (u) = NULL_RTX;
     }
 
   while (reg_move_replaces)
