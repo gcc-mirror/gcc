@@ -1675,13 +1675,14 @@ duplicate_decls (tree newdecl, tree olddecl)
       DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
       DECL_TEMPLATE_INSTANTIATED (newdecl)
 	|= DECL_TEMPLATE_INSTANTIATED (olddecl);
-      /* If the OLDDECL is an implicit instantiation, then the NEWDECL
-	 must be too.  But, it may not yet be marked as such if the
-	 caller has created NEWDECL, but has not yet figured out that
-	 it is a redeclaration.  */
-      if (DECL_IMPLICIT_INSTANTIATION (olddecl)
-	  && !DECL_USE_TEMPLATE (newdecl))
-	SET_DECL_IMPLICIT_INSTANTIATION (newdecl);
+      
+      /* If the OLDDECL is an instantiation and/or specialization,
+	 then the NEWDECL must be too.  But, it may not yet be marked
+	 as such if the caller has created NEWDECL, but has not yet
+	 figured out that it is a redeclaration.  */
+      if (!DECL_USE_TEMPLATE (newdecl))
+	DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
+      
       /* Don't really know how much of the language-specific
 	 values we should copy from old to new.  */
       DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
