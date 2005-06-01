@@ -783,8 +783,8 @@ public class ObjectInputStream extends InputStream
   }
 
   /**
-   * Returns he most recent user defined ClassLoader on the execution stack
-   * or null of none is found.
+   * Returns the most recent user defined ClassLoader on the execution stack
+   * or null if none is found.
    */
   // GCJ LOCAL: native method.
   private native ClassLoader currentLoader();
