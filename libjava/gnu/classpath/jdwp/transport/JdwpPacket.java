@@ -187,7 +187,7 @@ public abstract class JdwpPacket
   {
     int i = 0;
     int length = ((bytes[i++] & 0xff) << 24 | (bytes[i++] & 0xff) << 16
-                  | (bytes[i++] & 0xff) << 8 | (bytes[i++] 0xff));
+                  | (bytes[i++] & 0xff) << 8 | (bytes[i++] & 0xff));
     int id = 0;
     byte flags = 0;
 
