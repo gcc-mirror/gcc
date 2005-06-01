@@ -403,6 +403,10 @@ extern int i386_pe_dllimport_name_p (const char *);
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */ \
   { "selectany", 0, 0, true, false, false, ix86_handle_selectany_attribute }
 
+/*  mcount() does not need a counter variable.  */
+#undef NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS 1
+
 #undef TREE
 
 #ifndef BUFSIZ
