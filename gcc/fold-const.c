@@ -9915,11 +9915,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && (arglist = TREE_OPERAND (arg0, 1))
 	      && TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) == POINTER_TYPE
 	      && ! TREE_CHAIN (arglist))
-	    return fold_build2 (code, type,
-				build1 (INDIRECT_REF, char_type_node,
-					TREE_VALUE (arglist)),
-				fold_convert (char_type_node,
-					      integer_zero_node));
+	    {
+	      tree iref = build_fold_indirect_ref (TREE_VALUE (arglist));
+	      return fold_build2 (code, type, iref,
+				  build_int_cst (TREE_TYPE (iref), 0));
+	    }
 	}
 
       /* We can fold X/C1 op C2 where C1 and C2 are integer constants
