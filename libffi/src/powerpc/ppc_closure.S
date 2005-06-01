@@ -57,7 +57,7 @@ ENTRY(ffi_closure_SYSV)
 	addi %r7,%r1,152
 
 	# make the call
-	bl JUMPTARGET(ffi_closure_helper_SYSV)
+	bl ffi_closure_helper_SYSV@local
 
 	# now r3 contains the return type
 	# so use it to look up in a table

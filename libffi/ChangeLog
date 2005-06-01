@@ -1,3 +1,9 @@
+2005-06-01  Alan Modra  <amodra@bigpond.net.au>
+
+	* src/powerpc/ppc_closure.S (ffi_closure_SYSV): Don't use JUMPTARGET
+	to call ffi_closure_helper_SYSV.  Append @local instead.
+	* src/powerpc/sysv.S (ffi_call_SYSV): Likewise for ffi_prep_args_SYSV.
+
 2005-05-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac: Use AC_C_BIGENDIAN instead of AC_C_BIGENDIAN_CROSS.
