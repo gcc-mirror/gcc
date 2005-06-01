@@ -60,7 +60,7 @@ ENTRY(ffi_call_SYSV)
 
 	/* Call ffi_prep_args_SYSV.  */
 	mr	%r4,%r1
-	bl	JUMPTARGET(ffi_prep_args_SYSV)
+	bl	ffi_prep_args_SYSV@local
 
 	/* Now do the call.  */
 	/* Set up cr1 with bits 4-7 of the flags.  */
