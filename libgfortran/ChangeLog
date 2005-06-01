@@ -1,3 +1,11 @@
+2005-06-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* Makefile.am (gfor_specific_src): Add 'intrinsics/f2c_intrinsics.F90'
+	to dependencies.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Regenerate.
+	* intrinsics/f2c_specific.F90: New file.
+
 2005-05-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20179

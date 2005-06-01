@@ -1,3 +1,9 @@
+2005-06-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/f2c_1.f90, gfortran.dg/f2c_2.f90,
+	gfortran.dg/f2c_3.f90, gfortran.dg/func_result_2.f90:
+	New tests.
+
 2005-06-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20350

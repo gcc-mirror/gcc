@@ -89,6 +89,10 @@ fdump-parse-tree
 F95
 Display the code tree after parsing.
 
+ff2c
+F95
+Use f2c calling convention.
+
 ffixed-form
 F95
 Assume that the source file is fixed form

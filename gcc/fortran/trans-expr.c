@@ -362,6 +362,13 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	  && !sym->attr.dimension)
 	se->expr = gfc_build_indirect_ref (se->expr);
 
+      /* Dereference scalar hidden result.  */
+      if (gfc_option.flag_f2c 
+	  && (sym->attr.function || sym->attr.result)
+	  && sym->ts.type == BT_COMPLEX
+	  && !sym->attr.dimension)
+	se->expr = gfc_build_indirect_ref (se->expr);
+
       /* Dereference pointer variables.  */
       if ((sym->attr.pointer || sym->attr.allocatable)
 	  && (sym->attr.dummy
@@ -1139,7 +1146,13 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 				      convert (gfc_charlen_type_node, len));
 	}
       else
-	gcc_unreachable ();
+	{
+	  gcc_assert (gfc_option.flag_f2c && sym->ts.type == BT_COMPLEX);
+
+	  type = gfc_get_complex_type (sym->ts.kind);
+	  var = gfc_build_addr_expr (NULL, gfc_create_var (type, "cmplx"));
+	  arglist = gfc_chainon_list (arglist, var);
+	}
     }
 
   formal = sym->formal;
@@ -1241,13 +1254,24 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   se->expr = build3 (CALL_EXPR, TREE_TYPE (fntype), se->expr,
 		     arglist, NULL_TREE);
 
+  if (sym->result)
+    sym = sym->result;
+
   /* If we have a pointer function, but we don't want a pointer, e.g.
      something like
         x = f()
      where f is pointer valued, we have to dereference the result.  */
-  if (!se->want_pointer && !byref
-      && (sym->attr.pointer || (sym->result && sym->result->attr.pointer)))
+  if (!se->want_pointer && !byref && sym->attr.pointer)
     se->expr = gfc_build_indirect_ref (se->expr);
+
+  /* f2c calling conventions require a scalar default real function to
+     return a double precision result.  Convert this back to default
+     real.  We only care about the cases that can happen in Fortran 77.
+  */
+  if (gfc_option.flag_f2c && sym->ts.type == BT_REAL
+      && sym->ts.kind == gfc_default_real_kind
+      && !sym->attr.always_explicit)
+    se->expr = fold_convert (gfc_get_real_type (sym->ts.kind), se->expr);
 
   /* A pure function may still have side-effects - it may modify its
      parameters.  */
@@ -1265,7 +1289,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
       if (!se->direct_byref)
 	{
-	  if (sym->result->attr.dimension)
+	  if (sym->attr.dimension)
 	    {
 	      if (flag_bounds_check)
 		{
@@ -1283,7 +1307,10 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      se->string_length = len;
 	    }
 	  else
-	    gcc_unreachable ();
+	    {
+	      gcc_assert (sym->ts.type == BT_COMPLEX && gfc_option.flag_f2c);
+	      se->expr = gfc_build_indirect_ref (var);
+	    }
 	}
     }
 }

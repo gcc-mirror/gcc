@@ -156,7 +156,7 @@ by type.  Explanations are in the following sections.
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
--fno-underscoring  -fno-second-underscore @gol
+-ff2c -fno-underscoring  -fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
 -fpackderived  -frepack-arrays}
 @end table
@@ -521,8 +521,43 @@ it.
 
 
 @table @gcctabopt
-@cindex -fno-underscoring option
-@cindex options, -fno-underscoring
+@cindex @option{-ff2c} option
+@cindex options, @option{-ff2c}
+@item -ff2c
+@cindex calling convention
+@cindex @command{f2c} calling convention
+@cindex @command{g77} calling convention
+@cindex libf2c calling convention
+Generate code designed to be compatible with code generated
+by @command{g77} and @command{f2c}.
+
+The calling conventions used by @command{g77} (originally implemented
+in @command{f2c}) require functions that return type
+default @code{REAL} to actually return the C type @code{double}, and
+functions that return type @code{COMPLEX} to return the values via an
+extra argument in the calling sequence that points to where to
+store the return value.  Under the default GNU calling conventions, such
+functions simply return their results as they would in GNU
+C -- default @code{REAL} functions return the C type @code{float}, and
+@code{COMPLEX} functions return the GNU C type @code{complex}.
+Additionally, this option implies the @option{-fsecond-underscore}
+option, unless @option{-fno-second-underscore} is explicitly requested.
+
+This does not affect the generation of code that interfaces with
+the @command{libgfortran} library.
+
+@emph{Caution:} It is not a good idea to mix Fortran code compiled
+with @code{-ff2c} with code compiled with the default @code{-fno-f2c}
+calling conventions as, calling @code{COMPLEX} or default @code{REAL}
+functions between program parts which were compiled with different
+calling conventions will break at execution time.
+
+@emph{Caution:} This will break code which passes intrinsic functions
+of type default @code{REAL} or @code{COMPLEX} as actual arguments, as
+the library implementations use the @command{-fno-f2c} calling conventions.
+
+@cindex @option{-fno-underscoring option}
+@cindex options, @option{-fno-underscoring}
 @item -fno-underscoring
 @cindex underscore
 @cindex symbol names, underscores
@@ -531,16 +566,17 @@ it.
 Do not transform names of entities specified in the Fortran
 source file by appending underscores to them.
 
-With @option{-funderscoring} in effect, @command{gfortran} appends two
-underscores to names with underscores and one underscore to external names
-with no underscores.  (@command{gfortran} also appends two underscores to
-internal names with underscores to avoid naming collisions with external
-names.  The @option{-fno-second-underscore} option disables appending of the
-second underscore in all cases.)
+With @option{-funderscoring} in effect, @command{gfortran} appends one
+underscore to external names with no underscores.
 
 This is done to ensure compatibility with code produced by many
-UNIX Fortran compilers, including @command{f2c} which perform the
-same transformations.
+UNIX Fortran compilers.
+
+@emph{Caution}: The default behavior of @command{gfortran} is
+incompatible with @command{f2c} and @command{g77}, please use the
+@option{-ff2c} and @option{-fsecond-underscore} options if you want
+object files compiled with @option{gfortran} to be compatible with
+object code created with these tools.
 
 Use of @option{-fno-underscoring} is not recommended unless you are
 experimenting with issues such as integration of (GNU) Fortran into
@@ -596,22 +632,31 @@ in the source, even if the names as seen by the linker are mangled to
 prevent accidental linking between procedures with incompatible
 interfaces.
 
-@cindex -fno-second-underscore option
-@cindex options, -fno-second-underscore
-@item -fno-second-underscore
+@cindex @option{-fsecond-underscore option}
+@cindex options, @option{-fsecond-underscore}
+@item -fsecond-underscore
 @cindex underscore
 @cindex symbol names, underscores
 @cindex transforming symbol names
 @cindex symbol names, transforming
-Do not append a second underscore to names of entities specified
-in the Fortran source file.
+@cindex @command{f2c} calling convention
+@cindex @command{g77} calling convention
+@cindex libf2c calling convention
+By default, @command{gfortran} appends an underscore to external
+names.  If this option is used @command{gfortran} appends two
+underscores to names with underscores and one underscore to external names
+with no underscores.  (@command{gfortran} also appends two underscores to
+internal names with underscores to avoid naming collisions with external
+names.
 
 This option has no effect if @option{-fno-underscoring} is
-in effect.
+in effect.  It is implied by the @option{-ff2c} option.
 
 Otherwise, with this option, an external name such as @samp{MAX_COUNT}
 is implemented as a reference to the link-time external symbol
-@samp{max_count_}, instead of @samp{max_count__}.
+@samp{max_count__}, instead of @samp{max_count_}.  This is required
+for compatibility with @command{g77} and @command{f2c}, and is implied
+by use of the @option{-ff2c} option.
 
 
 @cindex -fbounds-check option

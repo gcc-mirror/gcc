@@ -391,7 +391,8 @@ foo
 gfor_specific_src= \
 $(gfor_built_specific_src) \
 $(gfor_built_specific2_src) \
-intrinsics/dprod_r8.f90
+intrinsics/dprod_r8.f90 \
+intrinsics/f2c_specifics.F90
 
 gfor_cmath_src= $(gfor_math_trig_c) $(gfor_math_exp_c) $(gfor_math_hyp_c)
 gfor_cmath_obj= $(gfor_math_trig_obj) $(gfor_math_exp_obj) \
