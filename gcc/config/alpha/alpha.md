@@ -978,7 +978,7 @@
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
-  "ldq $27,__%E3($29)\t\t!literal!%#\;jsr $23,($27),__%E3\t\t!lituse_jsr!%#"
+  "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (sign_extend:DI (match_dup 3)))
@@ -1023,7 +1023,7 @@
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
-  "jsr $23,($27),__%E3%J5"
+  "jsr $23,($27),__%E3%j5"
   [(set_attr "type" "jsr")
    (set_attr "length" "4")])
 
@@ -1047,7 +1047,7 @@
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
-  "ldq $27,__%E3($29)\t\t!literal!%#\;jsr $23,($27),__%E3\t\t!lituse_jsr!%#"
+  "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 3))
 	      (use (match_dup 0))
@@ -1091,7 +1091,7 @@
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
-  "jsr $23,($27),__%E3%J5"
+  "jsr $23,($27),__%E3%j5"
   [(set_attr "type" "jsr")
    (set_attr "length" "4")])
 

@@ -4921,6 +4921,20 @@ print_operand (FILE *file, rtx x, int code)
       }
       break;
 
+    case 'j':
+      {
+	const char *lituse;
+
+#ifdef HAVE_AS_JSRDIRECT_RELOCS
+	lituse = "lituse_jsrdirect";
+#else
+	lituse = "lituse_jsr";
+#endif
+
+	gcc_assert (INTVAL (x) != 0);
+	fprintf (file, "\t\t!%s!%d", lituse, (int) INTVAL (x));
+      }
+      break;
     case 'r':
       /* If this operand is the constant zero, write it as "$31".  */
       if (GET_CODE (x) == REG)
