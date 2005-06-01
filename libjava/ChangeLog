@@ -1,3 +1,10 @@
+2005-06-01  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* configure.ac (BACKTRACESPEC): Remove definition, but continue to
+	AC_SUBST definition from configure.host.
+	* configure.host: Don't use -fno-omit-frame-pointer. Set BACKTRACESPEC
+	to -fomit-frame-pointer on 32-bit x86 targets.
+
 2005-06-01  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/ObjectInputStream.java (currentLoader): Fixed typo.
