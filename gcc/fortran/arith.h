@@ -80,6 +80,8 @@ gfc_expr *gfc_complex2int (gfc_expr *, int);
 gfc_expr *gfc_complex2real (gfc_expr *, int);
 gfc_expr *gfc_complex2complex (gfc_expr *, int);
 gfc_expr *gfc_log2log (gfc_expr *, int);
+gfc_expr *gfc_log2int (gfc_expr *, int);
+gfc_expr *gfc_int2log (gfc_expr *, int);
 
 #endif /* GFC_ARITH_H  */
 

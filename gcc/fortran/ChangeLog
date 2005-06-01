@@ -1,3 +1,19 @@
+2005-06-01  Roger Sayle  <roger@eyesopen.com>
+
+	* intrinsic.c (add_conv): No longer take a "simplify" argument as
+	its always gfc_convert_constant, instead take a "standard" argument.
+	(add_conversions): Change all existing calls of add_conv to pass
+	GFC_STD_F77 as appropriate.  Additionally, if we're allowing GNU
+	extensions support integer-logical and logical-integer conversions.
+	(gfc_convert_type_warn): Warn about use the use of these conversions
+	as a extension when appropriate, i.e. with -pedantic.
+	* simplify.c (gfc_convert_constant): Add support for integer to
+	logical and logical to integer conversions, using gfc_int2log and
+	gfc_log2int.
+	* arith.c (gfc_log2int, gfc_int2log): New functions.
+	* arith.h (gfc_log2int, gfc_int2log): Prototype here.
+	* gfortran.texi: Document this new GNU extension.
+
 2005-06-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	* fortran/trans-expr.c (gfc_conv_variable): Clean up bracketting.

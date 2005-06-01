@@ -1,3 +1,9 @@
+2005-06-01  Roger Sayle  <roger@eyesopen.com>
+
+	* gfortran.dg/logint-1.f: New test case.
+	* gfortran.dg/logint-2.f: Likewise.
+	* gfortran.dg/logint-3.f: Likewise.
+
 2005-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/21536

@@ -3659,6 +3659,9 @@ gfc_convert_constant (gfc_expr * e, bt type, int kind)
 	case BT_COMPLEX:
 	  f = gfc_int2complex;
 	  break;
+	case BT_LOGICAL:
+	  f = gfc_int2log;
+	  break;
 	default:
 	  goto oops;
 	}
@@ -3700,9 +3703,17 @@ gfc_convert_constant (gfc_expr * e, bt type, int kind)
       break;
 
     case BT_LOGICAL:
-      if (type != BT_LOGICAL)
-	goto oops;
-      f = gfc_log2log;
+      switch (type)
+	{
+	case BT_INTEGER:
+	  f = gfc_log2int;
+	  break;
+	case BT_LOGICAL:
+	  f = gfc_log2log;
+	  break;
+	default:
+	  goto oops;
+	}
       break;
 
     default:
