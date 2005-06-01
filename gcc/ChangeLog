@@ -1,5 +1,17 @@
 2005-06-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* opts.h (cl_option_state): New structure.
+	(get_option_state): Declare.
+	* opts.c (get_option_state): New function.
+	* toplev.c (option_affects_pch_p): New function.
+	(default_get_pch_validity): Store the state of all options for which
+	option_affects_pch_p returns true.
+	(default_pch_valid_p): Check the state of those options here.
+	Only check target_flags separately if targetm.check_pch_target_Flags
+	is nonnull or if TARGET_SWITCHES is defined.
+
+2005-06-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (mips_use_ins_ext_p): Remove parameter
 	names.
 
