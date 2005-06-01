@@ -971,8 +971,9 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
       /* Format label can be integer varibale.  */
       if (tag != &tag_format || e->ts.type != BT_INTEGER)
         {
-          gfc_error ("%s tag at %L must be of type %s", tag->name, &e->where,
-		     gfc_basic_typename (tag->type));
+          gfc_error ("%s tag at %L must be of type %s or %s", tag->name,
+		&e->where, gfc_basic_typename (tag->type),
+		gfc_basic_typename (BT_INTEGER));
           return FAILURE;
         }
     }
