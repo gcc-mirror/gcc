@@ -84,8 +84,7 @@ public final class Pattern implements Serializable
     // if ((flags & UNICODE_CASE) != 0) gnuFlags =
     // if ((flags & CANON_EQ) != 0) gnuFlags =
 
-    // Eventually there will be such a thing as JDK 1_4 syntax
-    RESyntax syntax = RESyntax.RE_SYNTAX_PERL5;
+    RESyntax syntax = RESyntax.RE_SYNTAX_JAVA_1_4;
     if ((flags & UNIX_LINES) != 0)
       {
 	// Use a syntax set with \n for linefeeds?

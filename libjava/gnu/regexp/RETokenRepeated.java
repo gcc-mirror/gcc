@@ -44,6 +44,7 @@ final class RETokenRepeated extends REToken {
     private REToken token;
     private int min,max;
     private boolean stingy;
+    private boolean possessive;
     
     RETokenRepeated(int subIndex, REToken token, int min, int max) {
 	super(subIndex);
@@ -60,6 +61,16 @@ final class RETokenRepeated extends REToken {
     /** Queries if this token has minimal matching enabled. */
     boolean isStingy() {
 	return stingy;
+    }
+
+    /** Sets possessive matching mode to true. */
+    void makePossessive() {
+        possessive = true;
+    }
+
+    /** Queries if this token has possessive matching enabled. */
+    boolean isPossessive() {
+        return possessive;
     }
     
     /**
@@ -172,6 +183,8 @@ final class RETokenRepeated extends REToken {
 		}
 	    }
 	    // else did not match rest of the tokens, try again on smaller sample
+	    // or break out when performing possessive matching
+	    if (possessive) break;
 	}
 	if (allResults != null) {
 	    mymatch.assignFrom(allResults); // does this get all?
