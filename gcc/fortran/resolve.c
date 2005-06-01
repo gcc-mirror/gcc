@@ -267,9 +267,12 @@ resolve_contained_fntype (gfc_symbol * sym, gfc_namespace * ns)
     {
       t = gfc_set_default_type (sym, 0, ns);
 
-      if (t == FAILURE)
-	gfc_error ("Contained function '%s' at %L has no IMPLICIT type",
-		    sym->name, &sym->declared_at); /* FIXME */
+      if (t == FAILURE && !sym->attr.untyped)
+	{
+	  gfc_error ("Contained function '%s' at %L has no IMPLICIT type",
+		     sym->name, &sym->declared_at); /* FIXME */
+	  sym->attr.untyped = 1;
+	}
     }
 }
 
@@ -438,6 +441,10 @@ resolve_entries (gfc_namespace * ns)
 		    case BT_LOGICAL:
 		      if (ts->kind == gfc_default_logical_kind)
 			sym = NULL;
+		      break;
+		    case BT_UNKNOWN:
+		      /* We will issue error elsewhere.  */
+		      sym = NULL;
 		      break;
 		    default:
 		      break;
@@ -957,7 +964,7 @@ set_type:
 
       if (ts->type == BT_UNKNOWN)
 	{
-	  gfc_error ("Function '%s' at %L has no implicit type",
+	  gfc_error ("Function '%s' at %L has no IMPLICIT type",
 		     sym->name, &expr->where);
 	  return FAILURE;
 	}
@@ -4810,8 +4817,51 @@ resolve_equivalence (gfc_equiv *eq)
         }
     }    
 }      
-      
-      
+
+
+/* Resolve function and ENTRY types, issue diagnostics if needed. */
+
+static void
+resolve_fntype (gfc_namespace * ns)
+{
+  gfc_entry_list *el;
+  gfc_symbol *sym;
+
+  if (ns->proc_name == NULL || !ns->proc_name->attr.function)
+    return;
+
+  /* If there are any entries, ns->proc_name is the entry master
+     synthetic symbol and ns->entries->sym actual FUNCTION symbol.  */
+  if (ns->entries)
+    sym = ns->entries->sym;
+  else
+    sym = ns->proc_name;
+  if (sym->result == sym
+      && sym->ts.type == BT_UNKNOWN
+      && gfc_set_default_type (sym, 0, NULL) == FAILURE
+      && !sym->attr.untyped)
+    {
+      gfc_error ("Function '%s' at %L has no IMPLICIT type",
+		 sym->name, &sym->declared_at);
+      sym->attr.untyped = 1;
+    }
+
+  if (ns->entries)
+    for (el = ns->entries->next; el; el = el->next)
+      {
+	if (el->sym->result == el->sym
+	    && el->sym->ts.type == BT_UNKNOWN
+	    && gfc_set_default_type (el->sym, 0, NULL) == FAILURE
+	    && !el->sym->attr.untyped)
+	  {
+	    gfc_error ("ENTRY '%s' at %L has no IMPLICIT type",
+		       el->sym->name, &el->sym->declared_at);
+	    el->sym->attr.untyped = 1;
+	  }
+      }
+}
+
+
 /* This function is called after a complete program unit has been compiled.
    Its purpose is to examine all of the expressions associated with a program
    unit, assign types to all intermediate expressions, make sure that all
@@ -4834,6 +4884,8 @@ gfc_resolve (gfc_namespace * ns)
   resolve_contained_functions (ns);
 
   gfc_traverse_ns (ns, resolve_symbol);
+
+  resolve_fntype (ns);
 
   for (n = ns->contained; n; n = n->sibling)
     {
