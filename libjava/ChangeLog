@@ -1,3 +1,9 @@
+2005-06-01  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/transport/JdwpPacket.java: New file.
+	* gnu/classpath/jdwp/transport/JdwpCommandPacket.java: New file.
+	* gnu/classpath/jdwp/transport/JdwpReplyPacket.java: New file.
+
 2005-06-01  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/21785:
