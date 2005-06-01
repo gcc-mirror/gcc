@@ -1,3 +1,20 @@
+2005-06-01  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.md (bunordered, bordered, bungt, bunlt, bunge, bunle, buneq)
+	(bltgt, arm_buneq, arm_bltgt, sunordered, sordered, sungt, sunge)
+	(sunlt, sunle): Enable patterns on VFP.
+
+	* arm.md (attribute 'type'): Add new types - f_loads floadd, f_stores,
+	f_stored, f_flag, f_cvt.
+	(generic_sched): No-longer used for the arm1020e and arm1022e cores.
+	Include arm1020e.md.
+	* vfp.md (fmstat): New cpu unit.  Add an exclusion set between it and
+	the ds and fmac pipelines.  Re-work all load and store patterns and
+	all conversion patterns to use new attributes.  Adjust reservation
+	descriptions accordingly.
+	* arm1020e.md: New file.
+	* t-arm: Add dependency.
+
 2005-06-01  Jan Hubicka  <jh@suse.cz>
 
 	* except.c (struct eh_region): Kill unused fields.
