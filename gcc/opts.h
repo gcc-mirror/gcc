@@ -52,6 +52,14 @@ struct cl_option
   int var_value;
 };
 
+/* Records that the state of an option consists of SIZE bytes starting
+   at DATA.  DATA might point to CH in some cases.  */
+struct cl_option_state {
+  const void *data;
+  size_t size;
+  char ch;
+};
+
 extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
@@ -77,6 +85,7 @@ extern unsigned num_in_fnames;
 
 extern void decode_options (unsigned int argc, const char **argv);
 extern int option_enabled (int opt_idx);
+extern bool get_option_state (int, struct cl_option_state *);
 extern void print_filtered_help (unsigned int);
 
 #endif

@@ -1434,6 +1434,21 @@ init_asm_output (const char *name)
     }
 }
 
+/* Return true if the state of option OPTION should be stored in PCH files
+   and checked by default_pch_valid_p.  Store the option's current state
+   in STATE if so.  */
+
+static inline bool
+option_affects_pch_p (int option, struct cl_option_state *state)
+{
+  if ((cl_options[option].flags & CL_TARGET) == 0)
+    return false;
+  if (cl_options[option].flag_var == &target_flags)
+    if (targetm.check_pch_target_flags)
+      return false;
+  return get_option_state (option, state);
+}
+
 /* Default version of get_pch_validity.
    By default, every flag difference is fatal; that will be mostly right for
    most targets, but completely right for very few.  */
@@ -1441,9 +1456,8 @@ init_asm_output (const char *name)
 void *
 default_get_pch_validity (size_t *len)
 {
-#ifdef TARGET_OPTIONS
+  struct cl_option_state state;
   size_t i;
-#endif
   char *result, *r;
 
   *len = sizeof (target_flags) + 2;
@@ -1455,6 +1469,9 @@ default_get_pch_validity (size_t *len)
 	*len += strlen (*target_options[i].variable);
     }
 #endif
+  for (i = 0; i < cl_options_count; i++)
+    if (option_affects_pch_p (i, &state))
+      *len += state.size;
 
   result = r = xmalloc (*len);
   r[0] = flag_pic;
@@ -1475,6 +1492,12 @@ default_get_pch_validity (size_t *len)
       r += l;
     }
 #endif
+  for (i = 0; i < cl_options_count; i++)
+    if (option_affects_pch_p (i, &state))
+      {
+	memcpy (r, state.data, state.size);
+	r += state.size;
+      }
 
   return result;
 }
@@ -1484,6 +1507,7 @@ default_get_pch_validity (size_t *len)
 const char *
 default_pch_valid_p (const void *data_p, size_t len)
 {
+  struct cl_option_state state;
   const char *data = (const char *)data_p;
   const char *flag_that_differs = NULL;
   size_t i;
@@ -1504,9 +1528,9 @@ default_pch_valid_p (const void *data_p, size_t len)
       if (r != NULL)
 	return r;
     }
+#ifdef TARGET_SWITCHES
   else if (tf != target_flags)
     {
-#ifdef TARGET_SWITCHES
       for (i = 0; i < ARRAY_SIZE (target_switches); i++)
 	{
 	  int bits;
@@ -1520,16 +1544,9 @@ default_pch_valid_p (const void *data_p, size_t len)
 	      goto make_message;
 	    }
 	}
-#endif
-      for (i = 0; i < cl_options_count; i++)
-	if (cl_options[i].flag_var == &target_flags
-	    && (cl_options[i].var_value & (target_flags ^ tf)) != 0)
-	  {
-	    flag_that_differs = cl_options[i].opt_text + 2;
-	    goto make_message;
-	  }
       gcc_unreachable ();
     }
+#endif
   data += sizeof (target_flags);
   len -= sizeof (target_flags);
 
@@ -1551,6 +1568,18 @@ default_pch_valid_p (const void *data_p, size_t len)
       len -= l;
     }
 #endif
+
+  for (i = 0; i < cl_options_count; i++)
+    if (option_affects_pch_p (i, &state))
+      {
+	if (memcmp (data, state.data, state.size) != 0)
+	  {
+	    flag_that_differs = cl_options[i].opt_text + 2;
+	    goto make_message;
+	  }
+	data += state.size;
+	len -= state.size;
+      }
 
   return NULL;
 
