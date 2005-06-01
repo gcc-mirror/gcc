@@ -1,3 +1,8 @@
+2005-06-01  Ramana Radhakrishnan  <ramana@codito.com>
+
+	* doc/rtl.texi: Remove references to NOTE_INSN_SETJMP. 
+	Add documentation for REG_SETJMP
+
 2005-06-01  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* stmt.c (expand_case): Use build_int_cst.
