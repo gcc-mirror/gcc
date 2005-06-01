@@ -1,5 +1,17 @@
 2005-06-01  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/21785:
+	* java/io/natObjectInputStream.cc (currentClassLoader): Removed.
+	(currentLoader): New method.
+	* java/io/ObjectInputStream.java (resolveProxyClass): Use
+	currentLoader.
+	(currentLoader): Now native.
+	(currentClassLoader): Removed.
+	* testsuite/libjava.lang/pr21785.java: New file.
+	* testsuite/libjava.lang/pr21785.out: New file.
+
+2005-06-01  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/21753:
 	* java/lang/natString.cc (substring): Changed sharing heuristic.
 
