@@ -615,13 +615,17 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	         it manually here as we'll eventually get ADDR_EXPRs
 		 which lie about their types pointed to.  In this case
 		 build_fold_indirect_ref wouldn't strip the INDIRECT_REF,
-		 but we absolutely rely on that.  */
-	      if (TREE_CODE ((tree)n->value) == ADDR_EXPR)
-		*tp = TREE_OPERAND ((tree)n->value, 0);
-	      else
-	        *tp = build1 (INDIRECT_REF,
-			      TREE_TYPE (TREE_TYPE ((tree)n->value)),
-			      (tree)n->value);
+		 but we absolutely rely on that.  As fold_indirect_ref
+	         does other useful transformations, try that first, though.  */
+	      tree type = TREE_TYPE (TREE_TYPE ((tree)n->value));
+	      *tp = fold_indirect_ref_1 (type, (tree)n->value);
+	      if (! *tp)
+	        {
+		  if (TREE_CODE ((tree)n->value) == ADDR_EXPR)
+		    *tp = TREE_OPERAND ((tree)n->value, 0);
+	          else
+	            *tp = build1 (INDIRECT_REF, type, (tree)n->value);
+		}
 	      *walk_subtrees = 0;
 	      return NULL;
 	    }

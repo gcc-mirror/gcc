@@ -11508,7 +11508,7 @@ build_fold_addr_expr (tree t)
    of an indirection through OP0, or NULL_TREE if no simplification is
    possible.  */
 
-static tree
+tree
 fold_indirect_ref_1 (tree type, tree op0)
 {
   tree sub = op0;

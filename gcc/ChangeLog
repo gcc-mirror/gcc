@@ -1,3 +1,10 @@
+2005-06-01  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree.h (fold_indirect_ref_1): Export from fold-const.c.
+	* fold-const.c (fold_indirect_ref_1): No longer static.
+	* tree-inline.c (copy_body_r): Use fold_indirect_ref_1 for
+	folding, if possible.
+
 2005-06-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* common.opt (fjump-tables): New.
