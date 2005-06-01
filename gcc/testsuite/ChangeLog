@@ -1,5 +1,7 @@
 2005-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/i386-sse-12.c: New test.
+
 	PR fortran/21729
 	* gfortran.dg/implicit_5.f90: New test.
 

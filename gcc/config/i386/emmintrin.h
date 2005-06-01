@@ -51,14 +51,14 @@ typedef __v2df __m128d;
 static __inline __m128d
 _mm_set_sd (double __F)
 {
-  return (__m128d){ __F, 0 };
+  return __extension__ (__m128d){ __F, 0 };
 }
 
 /* Create a vector with both elements equal to F.  */
 static __inline __m128d
 _mm_set1_pd (double __F)
 {
-  return (__m128d){ __F, __F };
+  return __extension__ (__m128d){ __F, __F };
 }
 
 static __inline __m128d
@@ -71,21 +71,21 @@ _mm_set_pd1 (double __F)
 static __inline __m128d
 _mm_set_pd (double __W, double __X)
 {
-  return (__m128d){ __X, __W };
+  return __extension__ (__m128d){ __X, __W };
 }
 
 /* Create a vector with the lower value W and upper value X.  */
 static __inline __m128d
 _mm_setr_pd (double __W, double __X)
 {
-  return (__m128d){ __W, __X };
+  return __extension__ (__m128d){ __W, __X };
 }
 
 /* Create a vector of zeros.  */
 static __inline __m128d
 _mm_setzero_pd (void)
 {
-  return (__m128d){ 0.0, 0.0 };
+  return __extension__ (__m128d){ 0.0, 0.0 };
 }
 
 /* Sets the low DPFP value of A from the low value of B.  */
@@ -553,7 +553,7 @@ _mm_ucomineq_sd (__m128d __A, __m128d __B)
 static __inline __m128i
 _mm_set_epi64x (long long __q1, long long __q0)
 {
-  return (__m128i)(__v2di){ __q0, __q1 };
+  return __extension__ (__m128i)(__v2di){ __q0, __q1 };
 }
 
 static __inline __m128i
@@ -565,14 +565,15 @@ _mm_set_epi64 (__m64 __q1,  __m64 __q0)
 static __inline __m128i
 _mm_set_epi32 (int __q3, int __q2, int __q1, int __q0)
 {
-  return (__m128i)(__v4si){ __q0, __q1, __q2, __q3 };
+  return __extension__ (__m128i)(__v4si){ __q0, __q1, __q2, __q3 };
 }
 
 static __inline __m128i
 _mm_set_epi16 (short __q7, short __q6, short __q5, short __q4,
 	       short __q3, short __q2, short __q1, short __q0)
 {
-  return (__m128i)(__v8hi){ __q0, __q1, __q2, __q3, __q4, __q5, __q6, __q7 };
+  return __extension__ (__m128i)(__v8hi){
+    __q0, __q1, __q2, __q3, __q4, __q5, __q6, __q7 };
 }
 
 static __inline __m128i
@@ -581,7 +582,7 @@ _mm_set_epi8 (char __q15, char __q14, char __q13, char __q12,
 	      char __q07, char __q06, char __q05, char __q04,
 	      char __q03, char __q02, char __q01, char __q00)
 {
-  return (__m128i)(__v16qi){
+  return __extension__ (__m128i)(__v16qi){
     __q00, __q01, __q02, __q03, __q04, __q05, __q06, __q07,
     __q08, __q09, __q10, __q11, __q12, __q13, __q14, __q15
   };
@@ -712,7 +713,7 @@ _mm_move_epi64 (__m128i __A)
 static __inline __m128i
 _mm_setzero_si128 (void)
 {
-  return (__m128i)(__v4si){ 0, 0, 0, 0 };
+  return __extension__ (__m128i)(__v4si){ 0, 0, 0, 0 };
 }
 
 static __inline __m128d
@@ -1356,7 +1357,7 @@ _mm_stream_pd (double *__A, __m128d __B)
 static __inline void
 _mm_clflush (void const *__A)
 {
-  return __builtin_ia32_clflush (__A);
+  __builtin_ia32_clflush (__A);
 }
 
 static __inline void
