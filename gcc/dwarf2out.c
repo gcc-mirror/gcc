@@ -13283,7 +13283,7 @@ dwarf2out_var_location (rtx loc_note)
   last_insn = loc_note;
   last_label = newloc->label;
   decl = NOTE_VAR_LOCATION_DECL (loc_note);
-  if (DECL_DEBUG_EXPR (decl) && DECL_DEBUG_EXPR_IS_FROM (decl)
+  if (DECL_DEBUG_EXPR_IS_FROM (decl) && DECL_DEBUG_EXPR (decl) 
       && DECL_P (DECL_DEBUG_EXPR (decl)))
     decl = DECL_DEBUG_EXPR (decl); 
   add_var_loc_to_decl (decl, newloc);

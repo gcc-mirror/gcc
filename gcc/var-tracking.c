@@ -1441,8 +1441,7 @@ track_expr_p (tree expr)
      don't need to track this expression if the ultimate declaration is
      ignored.  */
   realdecl = expr;
-  if (DECL_DEBUG_EXPR (realdecl)
-      && DECL_DEBUG_EXPR_IS_FROM (realdecl))
+  if (DECL_DEBUG_EXPR_IS_FROM (realdecl) && DECL_DEBUG_EXPR (realdecl))
     {
       realdecl = DECL_DEBUG_EXPR (realdecl);
       /* ??? We don't yet know how to emit DW_OP_piece for variable

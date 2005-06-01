@@ -158,14 +158,14 @@ create_temp (tree t)
     name = "temp";
   tmp = create_tmp_var (type, name);
 
-  if (DECL_DEBUG_EXPR (t) && DECL_DEBUG_EXPR_IS_FROM (t))
+  if (DECL_DEBUG_EXPR_IS_FROM (t) && DECL_DEBUG_EXPR (t))
     {
-      DECL_DEBUG_EXPR (tmp) = DECL_DEBUG_EXPR (t);  
+      SET_DECL_DEBUG_EXPR (tmp, DECL_DEBUG_EXPR (t));  
       DECL_DEBUG_EXPR_IS_FROM (tmp) = 1;
     }
   else if (!DECL_IGNORED_P (t))
     {
-      DECL_DEBUG_EXPR (tmp) = t;
+      SET_DECL_DEBUG_EXPR (tmp, t);
       DECL_DEBUG_EXPR_IS_FROM (tmp) = 1;
     }
   DECL_ARTIFICIAL (tmp) = DECL_ARTIFICIAL (t);

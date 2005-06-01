@@ -2053,10 +2053,17 @@ struct tree_binfo GTY (())
    writing debugging information about vfield and vbase decls for C++.  */
 #define DECL_FCONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->decl.vindex)
 
+extern tree decl_debug_expr_lookup (tree);
+extern void decl_debug_expr_insert (tree, tree);
+
 /* For VAR_DECL, this is set to either an expression that it was split
    from (if DECL_DEBUG_EXPR_IS_FROM is true), otherwise a tree_list of
    subexpressions that it was split into.  */
-#define DECL_DEBUG_EXPR(NODE) (DECL_CHECK (NODE)->decl.vindex)
+#define DECL_DEBUG_EXPR(NODE) \
+  (decl_debug_expr_lookup (VAR_DECL_CHECK (NODE)))
+
+#define SET_DECL_DEBUG_EXPR(NODE, VAL) \
+  (decl_debug_expr_insert (VAR_DECL_CHECK (NODE), (VAL)))
 
 #define DECL_DEBUG_EXPR_IS_FROM(NODE) \
   (DECL_CHECK (NODE)->decl.debug_expr_is_from)

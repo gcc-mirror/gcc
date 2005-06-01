@@ -171,7 +171,7 @@ c_tree_printer (pretty_printer *pp, text_info *text)
   switch (*text->format_spec)
     {
     case 'D':
-      if (DECL_DEBUG_EXPR (t) && DECL_DEBUG_EXPR_IS_FROM (t))
+      if (DECL_DEBUG_EXPR_IS_FROM (t) && DECL_DEBUG_EXPR (t))
 	{
 	  t = DECL_DEBUG_EXPR (t);
 	  if (!DECL_P (t))
