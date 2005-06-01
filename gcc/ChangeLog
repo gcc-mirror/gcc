@@ -1,3 +1,10 @@
+2005-06-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* common.opt (fjump-tables): New.
+	* doc/invoke.texi (-fno-jump-tables): Document.
+	* stmt.c (expand_end_case_type): Do not emit jump tables unless
+	flag_jump_tables.
+
 2005-06-01  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.md (bunordered, bordered, bungt, bunlt, bunge, bunle, buneq)

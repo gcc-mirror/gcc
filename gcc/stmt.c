@@ -2458,6 +2458,7 @@ expand_case (tree exp)
 #ifndef ASM_OUTPUT_ADDR_DIFF_ELT
 	       || flag_pic
 #endif
+	       || !flag_jump_tables
 	       || TREE_CONSTANT (index_expr)
 	       /* If neither casesi or tablejump is available, we can
 		  only go this way.  */
