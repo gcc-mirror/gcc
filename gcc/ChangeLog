@@ -1,3 +1,11 @@
+2005-06-01  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (HAVE_AS_JSRDIRECT_RELOCS): New.
+	* config.in, configure: Rebuild.
+	* config/alpha/alpha.c (print_operand): Add 'j'.
+	* alpha.md (divmodsi_internal_er_1): Use it.
+	(divmoddi_internal_er_1): Likewise.
+
 2005-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Update note
@@ -160,7 +168,7 @@
 	(m68hc11_split_move): Likewise.
 
 2005-05-06  Bruce Korb  <bkorb@gnu.org>
-            Joseph S. Myers <joseph@codesourcery.com>
+	    Joseph S. Myers <joseph@codesourcery.com>
 
 	* fixinc/inclhack.def: Correct backslashes
 	* fixinc/fixincl.x: regen

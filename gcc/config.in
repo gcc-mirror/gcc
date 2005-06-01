@@ -97,6 +97,9 @@
 /* Define if your assembler supports the Sun syntax for cmov. */
 #undef HAVE_AS_IX86_CMOV_SUN_SYNTAX
 
+/* Define if your assembler supports the lituse_jsrdirect relocation. */
+#undef HAVE_AS_JSRDIRECT_RELOCS
+
 /* Define if your assembler supports .sleb128 and .uleb128. */
 #undef HAVE_AS_LEB128
 
