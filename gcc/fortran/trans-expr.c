@@ -365,29 +365,30 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
           /* Dereference character pointer dummy arguments
 	     or results.  */
 	  if ((sym->attr.pointer || sym->attr.allocatable)
-	      && ((sym->attr.dummy)
-		  || (sym->attr.function
-		  || sym->attr.result)))
+	      && (sym->attr.dummy
+		  || sym->attr.function
+		  || sym->attr.result))
 	    se->expr = gfc_build_indirect_ref (se->expr);
 	}
       else
 	{
           /* Dereference non-character scalar dummy arguments.  */
-	  if ((sym->attr.dummy) && (!sym->attr.dimension))
+	  if (sym->attr.dummy && !sym->attr.dimension)
 	    se->expr = gfc_build_indirect_ref (se->expr);
 
           /* Dereference scalar hidden result.  */
-	  if ((gfc_option.flag_f2c && sym->ts.type == BT_COMPLEX)
+	  if (gfc_option.flag_f2c && sym->ts.type == BT_COMPLEX
 	      && (sym->attr.function || sym->attr.result)
-	      && (!sym->attr.dimension))
+	      && !sym->attr.dimension)
 	    se->expr = gfc_build_indirect_ref (se->expr);
 
           /* Dereference non-character pointer variables. 
 	     These must be dummies, results, or scalars.  */
 	  if ((sym->attr.pointer || sym->attr.allocatable)
-	      && ((sym->attr.dummy) 
-		  || (sym->attr.function || sym->attr.result)
-		  || (!sym->attr.dimension)))
+	      && (sym->attr.dummy
+		  || sym->attr.function
+		  || sym->attr.result
+		  || !sym->attr.dimension))
 	    se->expr = gfc_build_indirect_ref (se->expr);
 	}
 
@@ -1121,7 +1122,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
               gfc_advance_se_ss_chain (se);
 
 	      /* Bundle in the string length.  */
-	      se->string_length=len;
+	      se->string_length = len;
               return;
             }
 	}
@@ -1184,12 +1185,12 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  type = gfc_get_character_type (sym->ts.kind, sym->ts.cl);
 	  type = build_pointer_type (type);
 
-	  /* Return an address to a char[4]* temporary for character pointers.  */
+	  /* Return an address to a char[0:len-1]* temporary for character pointers.  */
 	  if (sym->attr.pointer || sym->attr.allocatable)
 	    {
-	      /* Build char[4] * pstr.  */
+	      /* Build char[0:len-1] * pstr.  */
 	      tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node, len,
-				 convert (gfc_charlen_type_node, integer_one_node));
+				 build_int_cst (gfc_charlen_type_node, 1));
 	      tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
 	      tmp = build_array_type (gfc_character1_type_node, tmp);
 	      var = gfc_create_var (build_pointer_type (tmp), "pstr");
