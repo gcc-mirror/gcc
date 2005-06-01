@@ -41,7 +41,7 @@
 #include "hard-reg-set.h"
 #include "obstack.h"
 #include "basic-block.h"
-#include "errors.h"
+#include "toplev.h"
 #include "et-forest.h"
 
 /* Whether the dominators and the postdominators are available.  */

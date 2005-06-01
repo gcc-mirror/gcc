@@ -29,7 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hard-reg-set.h"
 #include "predict.h"
 #include "vec.h"
-#include "errors.h"
 #include "function.h"
 
 /* Head of register set linked list.  */

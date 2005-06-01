@@ -31,7 +31,11 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "errors.h"
+#ifdef GENERATOR_FILE
+# include "errors.h"
+#else
+# include "toplev.h"
+#endif
 #include "varray.h"
 #include "ggc.h"
 #include "hashtab.h"

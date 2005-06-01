@@ -22,7 +22,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 #include "config.h"
-#include "errors.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -45,6 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "ggc.h"
 #include "cgraph.h"
+#include "toplev.h"
 
 /* Internal function decls */
 

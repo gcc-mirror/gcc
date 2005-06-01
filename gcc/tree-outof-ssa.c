@@ -32,7 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
-#include "errors.h"
 #include "expr.h"
 #include "function.h"
 #include "diagnostic.h"
@@ -46,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-dump.h"
 #include "tree-ssa-live.h"
 #include "tree-pass.h"
+#include "toplev.h"
 
 /* Flags to pass to remove_ssa_form.  */
 

@@ -29,7 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "errors.h"
 #include "varray.h"
 #include "c-tree.h"
 #include "c-common.h"

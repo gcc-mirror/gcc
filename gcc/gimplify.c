@@ -27,7 +27,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "tree.h"
 #include "rtl.h"
-#include "errors.h"
 #include "varray.h"
 #include "tree-gimple.h"
 #include "tree-inline.h"
@@ -45,6 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "expr.h"
 #include "ggc.h"
+#include "toplev.h"
 #include "target.h"
 
 static struct gimplify_ctx

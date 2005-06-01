@@ -1,3 +1,26 @@
+2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* basic-block.h, bb-reorder.c, c-gimplify.c, config/darwin.c,
+	config/rs6000/rs6000-c.c, dominance.c, gimple-low.c, gimplify.c,
+	lambda-code.c, lambda-trans.c, tree-browser.c, tree-cfg.c,
+	tree-chrec.c, tree-data-ref.c, tree-dfa.c, tree-eh.c,
+	tree-if-conv.c, tree-into-ssa.c, tree-loop-linear.c,
+	tree-mudflap.c, tree-nomudflap.c, tree-outof-ssa.c,
+	tree-pretty-print.c, tree-scalar-evolution.c, tree-sra.c,
+	tree-ssa-ccp.c, tree-ssa-copy.c, tree-ssa-dce.c, tree-ssa-dom.c,
+	tree-ssa-dse.c, tree-ssa-forwprop.c, tree-ssa-live.c,
+	tree-ssa-operands.c, tree-ssa-phiopt.c, tree-ssa-pre.c,
+	tree-ssa-propagate.c, tree-ssa-sink.c, tree-ssa-threadupdate.c,
+	tree-ssa-uncprop.c, tree-ssa.c, tree-vect-analyze.c,
+	tree-vect-transform.c, tree-vectorizer.c, vec.c: Don't include
+	errors.h and include toplev.h if necessary.
+	
+	* rtl.c, varray.c: If we're compiling as a GENERATOR_FILE, include
+	errors.h otherwise include toplev.h.
+	
+	* Makefile.in: Update dependencies.
+	
+
 2005-06-01  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (NO_PROFILE_COUNTERS): Define.

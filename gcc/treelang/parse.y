@@ -39,11 +39,11 @@ the GCC compiler.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "errors.h"
 #include "timevar.h"
 
 #include "treelang.h"
 #include "treetree.h"
+#include "toplev.h"
 
 #define YYDEBUG 1
 #define YYPRINT(file, type, value) print_token (file, type, value) 

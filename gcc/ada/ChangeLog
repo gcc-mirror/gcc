@@ -1,3 +1,7 @@
+2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* misc.c: Don't include errors.h.
+
 2005-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* raise.c (db): Add ATTRIBUTE_PRINTF_2.

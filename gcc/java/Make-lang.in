@@ -353,7 +353,7 @@ java/verify.o: java/verify.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   java/javaop.h java/java-opcodes.h java/java-except.h toplev.h $(SYSTEM_H) \
   coretypes.h $(TM_H)
 java/verify-glue.o: java/verify-glue.c $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) \
-  coretypes.h $(TM_H) java/verify.h
+  coretypes.h $(TM_H) java/verify.h toplev.h
 java/verify-impl.o: java/verify-impl.c $(CONFIG_H) java/verify.h $(SYSTEM_H) \
   coretypes.h  java/jcf.h $(JAVA_TREE_H)
 java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
