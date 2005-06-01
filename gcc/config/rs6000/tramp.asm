@@ -44,7 +44,7 @@
 	.align	2
 trampoline_initial:
 	mflr	r0
-	bl	1f
+	bcl	20,31,1f
 .Lfunc = .-trampoline_initial
 	.long	0			/* will be replaced with function address */
 .Lchain = .-trampoline_initial
@@ -67,7 +67,7 @@ trampoline_size = .-trampoline_initial
 
 FUNC_START(__trampoline_setup)
 	mflr	r0		/* save return address */
-        bl	.LCF0		/* load up __trampoline_initial into r7 */
+        bcl	20,31,.LCF0	/* load up __trampoline_initial into r7 */
 .LCF0:
         mflr	r11
         addi	r7,r11,trampoline_initial-4-.LCF0 /* trampoline address -4 */
@@ -105,6 +105,12 @@ FUNC_START(__trampoline_setup)
 	blr
 
 .Labort:
+#if defined SHARED && defined HAVE_AS_REL16
+	bcl	20,31,1f
+1:	mflr	r30
+	addis	r30,r30,_GLOBAL_OFFSET_TABLE_-1b@ha
+	addi	r30,r30,_GLOBAL_OFFSET_TABLE_-1b@l
+#endif
 	bl	JUMP_TARGET(abort)
 FUNC_END(__trampoline_setup)
 

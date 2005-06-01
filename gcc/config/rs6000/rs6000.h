@@ -144,6 +144,10 @@
 #define TARGET_POPCNTB 0
 #endif
 
+#ifndef TARGET_SECURE_PLT
+#define TARGET_SECURE_PLT 0
+#endif
+
 #define TARGET_32BIT		(! TARGET_64BIT)
 
 /* Emit a dtp-relative reference to a TLS variable.  */
