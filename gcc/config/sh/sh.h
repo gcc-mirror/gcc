@@ -334,26 +334,6 @@ do { \
 #define TARGET_DEFAULT \
   (TARGET_CPU_DEFAULT | TARGET_ENDIAN_DEFAULT | TARGET_OPT_DEFAULT)
 
-#ifndef SUBTARGET_OPTIONS
-#define SUBTARGET_OPTIONS
-#endif
-
-#define TARGET_OPTIONS \
-{ { "ultcost=", &sh_multcost_str, \
-    N_("Cost to assume for a multiply insn"), 0 }, \
-  { "gettrcost=", &sh_gettrcost_str, \
-    N_("Cost to assume for gettr insn"), 0 }, \
-  { "div=", &sh_div_str, \
-    N_("division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp"), 0 }, \
-  { "divsi3_libfunc=", &sh_divsi3_libfunc, \
-    N_("Specify name for 32 bit signed division function"), 0 }, \
-  { "cut2-workaround", &cut2_workaround_str, \
-    N_("Enable SH5 cut2 workaround"), "\1" }, \
-  SUBTARGET_OPTIONS \
-}
-
-#define TARGET_SH5_CUT2_WORKAROUND (*cut2_workaround_str)
-
 #ifndef SH_MULTILIB_CPU_DEFAULT
 #define SH_MULTILIB_CPU_DEFAULT "m1"
 #endif
@@ -3459,12 +3439,6 @@ extern struct rtx_def *sp_switch;
    : NULL_RTX)
 
 #define SIMULTANEOUS_PREFETCHES 2
-
-extern const char *sh_multcost_str;
-extern const char *sh_gettrcost_str;
-extern const char *sh_div_str;
-extern const char *sh_divsi3_libfunc;
-extern const char *cut2_workaround_str;
 
 /* FIXME: middle-end support for highpart optimizations is missing.  */
 #define high_life_started reload_in_progress
