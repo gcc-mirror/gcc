@@ -265,9 +265,6 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
 
   /* Various flags.  See BB_* below.  */
   int flags;
-
-  /* Which section block belongs in, when partitioning basic blocks.  */
-  int partition;
 };
 
 typedef struct basic_block_def *basic_block;

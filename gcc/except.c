@@ -139,8 +139,7 @@ struct eh_region GTY(())
     ERT_CATCH,
     ERT_ALLOWED_EXCEPTIONS,
     ERT_MUST_NOT_THROW,
-    ERT_THROW,
-    ERT_FIXUP
+    ERT_THROW
   } type;
 
   /* Holds the action to perform based on the preceding type.  */
@@ -150,8 +149,6 @@ struct eh_region GTY(())
     struct eh_region_u_try {
       struct eh_region *catch;
       struct eh_region *last_catch;
-      struct eh_region *prev_try;
-      rtx continue_label;
     } GTY ((tag ("ERT_TRY"))) try;
 
     /* The list through the catch handlers, the list of type objects
@@ -180,13 +177,6 @@ struct eh_region GTY(())
     struct eh_region_u_cleanup {
       struct eh_region *prev_try;
     } GTY ((tag ("ERT_CLEANUP"))) cleanup;
-
-    /* The real region (by expression and by pointer) that fixup code
-       should live in.  */
-    struct eh_region_u_fixup {
-      struct eh_region *real_region;
-      bool resolved;
-    } GTY ((tag ("ERT_FIXUP"))) fixup;
   } GTY ((desc ("%0.type"))) u;
 
   /* Entry point for this region's handler before landing pads are built.  */
@@ -2430,7 +2420,6 @@ reachable_next_level (struct eh_region *region, tree type_thrown,
 	return RNL_BLOCKED;
 
     case ERT_THROW:
-    case ERT_FIXUP:
     case ERT_UNKNOWN:
       /* Shouldn't see these here.  */
       gcc_unreachable ();
@@ -3614,7 +3603,7 @@ dump_eh_tree (FILE *out, struct function *fun)
   int depth = 0;
   static const char * const type_name[] = {"unknown", "cleanup", "try", "catch",
 					   "allowed_exceptions", "must_not_throw",
-					   "throw", "fixup"};
+					   "throw"};
 
   i = fun->eh->region_tree;
   if (! i)
