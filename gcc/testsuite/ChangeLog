@@ -1,3 +1,9 @@
+2005-05-31  Geoffrey Keating  <geoffk@geoffk.org>
+
+	* lib/target-supports.exp 
+	(check_effective_target_sync_char_short): New.
+	* gcc.dg/sync-2.c: New.
+
 2005-05-31  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/21817
@@ -82,6 +88,9 @@
 	trailing ^M.
 
 2005-05-29  Geoffrey Keating  <geoffk@apple.com>
+
+	PR c++/17413
+	* g++.dg/template/local5.C: New.
 
 	PR target/21761
 	* gcc.c-torture/compile/pr21761.c: New.

@@ -1,3 +1,11 @@
+2005-05-31  Geoffrey Keating  <geoffk@geoffk.org>
+
+	* config/rs6000/rs6000.md (sync_boolcshort_internal): New.
+	* config/rs6000/rs6000.c (rs6000_emit_sync): Shift count must
+	be complemented for big-endian.  Mask for AND must be rotated,
+	not shifted.  Handle short operands with NOT on the memory
+	operation.
+
 2005-05-30  Daniel Berlin  <dberlin@dberlin.org>
 
 	* c-objc-common.c (c_tree_printer): Check flag before hashtable.

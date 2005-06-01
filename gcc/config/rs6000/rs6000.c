@@ -11409,13 +11409,15 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
       else
 	{
 	  rtx addrSI, aligned_addr;
+	  int shift_mask = mode == QImode ? 0x18 : 0x10;
 	  
 	  addrSI = force_reg (SImode, gen_lowpart_common (SImode,
 							  XEXP (used_m, 0)));
 	  shift = gen_reg_rtx (SImode);
 
 	  emit_insn (gen_rlwinm (shift, addrSI, GEN_INT (3),
-				 GEN_INT (0x18)));
+				 GEN_INT (shift_mask)));
+	  emit_insn (gen_xorsi3 (shift, shift, GEN_INT (shift_mask)));
 
 	  aligned_addr = expand_binop (Pmode, and_optab,
 				       XEXP (used_m, 0),
@@ -11453,7 +11455,7 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	  newop = expand_binop (SImode, ior_optab,
 				oldop, GEN_INT (~imask), NULL_RTX,
 				1, OPTAB_LIB_WIDEN);
-	  emit_insn (gen_ashlsi3 (newop, newop, shift));
+	  emit_insn (gen_rotlsi3 (newop, newop, shift));
 	  break;
 
 	case PLUS:
@@ -11482,6 +11484,19 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	  gcc_unreachable ();
 	}
 
+      if (GET_CODE (m) == NOT)
+	{
+	  rtx mask, xorm;
+
+	  mask = gen_reg_rtx (SImode);
+	  emit_move_insn (mask, GEN_INT (imask));
+	  emit_insn (gen_ashlsi3 (mask, mask, shift));
+
+	  xorm = gen_rtx_XOR (SImode, used_m, mask);
+	  /* Depending on the value of 'op', the XOR or the operation might
+	     be able to be simplified away.  */
+	  newop = simplify_gen_binary (code, SImode, xorm, newop);
+	}
       op = newop;
       used_mode = SImode;
       before = gen_reg_rtx (used_mode);
@@ -11499,7 +11514,7 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	after = gen_reg_rtx (used_mode);
     }
   
-  if (code == PLUS && used_mode != mode)
+  if ((code == PLUS || GET_CODE (m) == NOT) && used_mode != mode)
     the_op = op;  /* Computed above.  */
   else if (GET_CODE (op) == NOT && GET_CODE (m) != NOT)
     the_op = gen_rtx_fmt_ee (code, used_mode, op, m);
