@@ -3430,11 +3430,30 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   /* Move the insns out of MERGE_BB to before the branch.  */
   if (head != NULL)
     {
+      rtx insn;
+
       if (end == BB_END (merge_bb))
 	BB_END (merge_bb) = PREV_INSN (head);
 
       if (squeeze_notes (&head, &end))
 	return TRUE;
+
+      /* PR 21767: When moving insns above a conditional branch, REG_EQUAL
+	 notes might become invalid.  */
+      insn = head;
+      do
+	{
+	  rtx note, set;
+
+	  if (! INSN_P (insn))
+	    continue;
+	  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+	  if (! note)
+	    continue;
+	  set = single_set (insn);
+	  if (!set || !function_invariant_p (SET_SRC (set)))
+	    remove_note (insn, note);
+	} while (insn != end && (insn = NEXT_INSN (insn)));
 
       reorder_insns (head, end, PREV_INSN (earliest));
     }

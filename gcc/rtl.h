@@ -2062,6 +2062,9 @@ extern void dbr_schedule (rtx, FILE *);
 extern void dump_local_alloc (FILE *);
 extern int local_alloc (void);
 
+/* In reload1.c */
+extern int function_invariant_p (rtx);
+
 /* In reg-stack.c */
 extern bool reg_to_stack (FILE *);
 

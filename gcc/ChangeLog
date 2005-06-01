@@ -1,3 +1,11 @@
+2005-06-01  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR rtl-optimization/21767
+	* rtl.h (function_invariant_p): Re-add declaration.
+	* reload1.c (function_invariant_p): No longer static.
+	* ifcvt.c (dead_or_predicable): Remove REG_EQUAL notes that
+	might have become invalid.
+
 2005-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/21536
