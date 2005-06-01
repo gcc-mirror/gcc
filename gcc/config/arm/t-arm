@@ -3,6 +3,7 @@
 MD_INCLUDES= 	$(srcdir)/config/arm/arm-tune.md \
 		$(srcdir)/config/arm/predicates.md \
 		$(srcdir)/config/arm/arm-generic.md \
+		$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/arm1026ejs.md \
 		$(srcdir)/config/arm/arm1136jfs.md \
 		$(srcdir)/config/arm/arm926ejs.md \
