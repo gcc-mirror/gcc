@@ -1,3 +1,8 @@
+2005-06-01  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/20883
+	* fortran/io.c (resolve_tag): Fix error message.
+
 2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fortran/trans-decl.c: Don't include errors.h.

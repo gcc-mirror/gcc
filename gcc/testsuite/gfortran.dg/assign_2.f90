@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do run }
 ! Option passed to avoid excess errors from obsolete warning
 ! { dg-options "-w" }
 ! PR18827
