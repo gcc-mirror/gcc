@@ -115,6 +115,9 @@ extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
 #define GET_MODE_WIDER_MODE(MODE) mode_wider[MODE]
 
+extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
+#define GET_MODE_2XWIDER_MODE(MODE) mode_2xwider[MODE]
+
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  */

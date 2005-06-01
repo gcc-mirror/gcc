@@ -466,19 +466,27 @@ convert_move (rtx to, rtx from, int unsignedp)
     }
   if (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT)
     {
+      rtx new_from;
       enum machine_mode full_mode
 	= smallest_mode_for_size (GET_MODE_BITSIZE (from_mode), MODE_INT);
 
       gcc_assert (sext_optab->handlers[full_mode][from_mode].insn_code
 		  != CODE_FOR_nothing);
 
-      emit_unop_insn (sext_optab->handlers[full_mode][from_mode].insn_code,
-		      to, from, UNKNOWN);
       if (to_mode == full_mode)
-	return;
+	{
+	  emit_unop_insn (sext_optab->handlers[full_mode][from_mode].insn_code,
+			  to, from, UNKNOWN);
+	  return;
+	}
+
+      new_from = gen_reg_rtx (full_mode);
+      emit_unop_insn (sext_optab->handlers[full_mode][from_mode].insn_code,
+		      new_from, from, UNKNOWN);
 
       /* else proceed to integer conversions below.  */
       from_mode = full_mode;
+      from = new_from;
     }
 
   /* Now both modes are integers.  */
@@ -7747,7 +7755,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  optab other_optab = zextend_p ? smul_widen_optab : umul_widen_optab;
 	  this_optab = zextend_p ? umul_widen_optab : smul_widen_optab;
 
-	  if (mode == GET_MODE_WIDER_MODE (innermode))
+	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
 	    {
 	      if (this_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
 		{
