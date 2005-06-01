@@ -405,7 +405,6 @@ static int reload_reg_free_for_value_p (int, int, int, enum reload_type,
 					rtx, rtx, int, int);
 static int free_for_value_p (int, enum machine_mode, int, enum reload_type,
 			     rtx, rtx, int, int);
-static int function_invariant_p (rtx);
 static int reload_reg_reaches_end_p (unsigned int, int, enum reload_type);
 static int allocate_reload_reg (struct insn_chain *, int, int);
 static int conflicts_with_override (rtx);
@@ -4984,7 +4983,7 @@ free_for_value_p (int regno, enum machine_mode mode, int opnum,
    pic_offset_table_rtx is not, and we must not spill these things to
    memory.  */
 
-static int
+int
 function_invariant_p (rtx x)
 {
   if (CONSTANT_P (x))
