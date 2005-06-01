@@ -620,7 +620,7 @@ make_vector_mode (enum mode_class bclass,
 			ncomponents, base) >= sizeof namebuf)
     {
       error ("%s:%d: mode name \"%s\" is too long",
-	     base, file, line);
+	     file, line, base);
       return;
     }
 
