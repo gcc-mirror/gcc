@@ -1,3 +1,9 @@
+2005-06-01  Josh Conner <jconner@apple.com>
+
+	PR 21478
+	* gimplify.c (gimplify_init_constructor): Don't spill initializer
+	to read-only memory if it's sparse.
+
 2005-06-01  Ramana Radhakrishnan  <ramana@codito.com>
 
 	* doc/rtl.texi: Remove references to NOTE_INSN_SETJMP. 
