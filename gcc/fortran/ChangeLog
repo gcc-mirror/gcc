@@ -1,3 +1,10 @@
+2005-06-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	* fortran/trans-expr.c (gfc_conv_variable): Clean up bracketting.
+	* fortran/trans-expr.c (gfc_conv_function_call): Insert spaces.
+	Correct comments and replace convert of integer_one_node with
+	build_int_cst.
+
 2005-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/21729
