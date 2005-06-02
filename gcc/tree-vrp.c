@@ -165,6 +165,50 @@ expr_computes_nonzero (tree expr)
 }
 
 
+/* Return true if ARG is marked with the nonnull attribute in the
+   current function signature.  */
+
+static bool
+nonnull_arg_p (tree arg)
+{
+  tree t, attrs, fntype;
+  unsigned HOST_WIDE_INT arg_num;
+
+  gcc_assert (TREE_CODE (arg) == PARM_DECL && POINTER_TYPE_P (TREE_TYPE (arg)));
+
+  fntype = TREE_TYPE (current_function_decl);
+  attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (fntype));
+
+  /* If "nonnull" wasn't specified, we know nothing about the argument.  */
+  if (attrs == NULL_TREE)
+    return false;
+
+  /* If "nonnull" applies to all the arguments, then ARG is non-null.  */
+  if (TREE_VALUE (attrs) == NULL_TREE)
+    return true;
+
+  /* Get the position number for ARG in the function signature.  */
+  for (arg_num = 1, t = DECL_ARGUMENTS (current_function_decl);
+       t;
+       t = TREE_CHAIN (t), arg_num++)
+    {
+      if (t == arg)
+	break;
+    }
+
+  gcc_assert (t == arg);
+
+  /* Now see if ARG_NUM is mentioned in the nonnull list.  */
+  for (t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
+    {
+      if (compare_tree_int (TREE_VALUE (t), arg_num) == 0)
+	return true;
+    }
+
+  return false;
+}
+
+
 /* Set value range VR to {T, MIN, MAX, EQUIV}.  */
 
 static void
@@ -291,7 +335,17 @@ get_value_range (tree var)
      in VAR's type.  */
   sym = SSA_NAME_VAR (var);
   if (var == var_ann (sym)->default_def)
-    set_value_range_to_varying (vr);
+    {
+      /* Try to use the "nonnull" attribute to create ~[0, 0]
+	 anti-ranges for pointers.  Note that this is only valid with
+	 default definitions of PARM_DECLs.  */
+      if (TREE_CODE (sym) == PARM_DECL
+	  && POINTER_TYPE_P (TREE_TYPE (sym))
+	  && nonnull_arg_p (sym))
+	set_value_range_to_nonnull (vr, TREE_TYPE (sym));
+      else
+	set_value_range_to_varying (vr);
+    }
 
   return vr;
 }
