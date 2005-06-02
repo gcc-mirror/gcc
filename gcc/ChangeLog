@@ -1,3 +1,8 @@
+2005-06-02  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* c-typeck.c (build_indirect_ref): Build INDIRECT_REF
+	with correct type.
+
 2005-06-02  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_add_execute): Do not handle out-of-pool
