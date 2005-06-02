@@ -9857,7 +9857,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   int doing_friend = 0;
   struct cp_binding_level *bl;
   tree current_function_parms;
-  struct c_fileinfo *finfo = get_fileinfo (lbasename (input_filename));
+  struct c_fileinfo *finfo
+    = get_fileinfo (lbasename (LOCATION_FILE (DECL_SOURCE_LOCATION (decl1))));
 
   /* Sanity check.  */
   gcc_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE);

@@ -1,5 +1,18 @@
 2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/21280
+	* Make-lang.in (method.o): Add diagnostic.h
+	* decl.c (start_preparsed_function): Use decl's location for file
+	info.
+	* decl2.c (cp_finish_file): Set input_location before synthesizing
+	a function.
+	(mark_used): When deferring a synthesized function, save current
+	location.  Do not set function's location when actually
+	synthesizing it.
+	* method.c: #include diagnostic.h.
+	(synthesize_method): Set the functions source location.  Show
+	needed location if errors are emitted.
+
 	PR c++/21151
 	* name-lookup.c (pushtag): Push local class even in a template.
 

@@ -2908,6 +2908,10 @@ cp_finish_file (void)
 		 finish_function doesn't clean things up, and we end
 		 up with CURRENT_FUNCTION_DECL set.  */
 	      push_to_top_level ();
+	      /* The decl's location will mark where it was first
+	         needed.  Save that so synthesize method can indicate
+	         where it was needed from, in case of error  */
+	      input_location = DECL_SOURCE_LOCATION (decl);
 	      synthesize_method (decl);
 	      pop_from_top_level ();
 	      reconsider = true;
@@ -3178,6 +3182,14 @@ mark_used (tree decl)
     {
       if (DECL_DEFERRED_FN (decl))
 	return;
+      
+      /* Remember the current location for a function we will end up
+         synthesizing.  Then we can inform the user where it was
+         required in the case of error.  */
+      if (DECL_ARTIFICIAL (decl) && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+	  && !DECL_THUNK_P (decl))
+	DECL_SOURCE_LOCATION (decl) = input_location;
+      
       note_vague_linkage_fn (decl);
     }
   
@@ -3195,14 +3207,6 @@ mark_used (tree decl)
 	 pointing to the class location.  */
       && current_function_decl)
     {
-      /* Put the function definition at the position where it is needed,
-	 rather than within the body of the class.  That way, an error
-	 during the generation of the implicit body points at the place
-	 where the attempt to generate the function occurs, giving the
-	 user a hint as to why we are attempting to generate the
-	 function.  */
-      DECL_SOURCE_LOCATION (decl) = input_location;
-
       synthesize_method (decl);
       /* If we've already synthesized the method we don't need to
 	 instantiate it, so we can return right away.  */
