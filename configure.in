@@ -647,6 +647,9 @@ case "${target}" in
   mn10300-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
+  ms1-*-*)
+    noconfigdirs="$noconfigdirs sim"
+    ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
