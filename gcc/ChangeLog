@@ -1,3 +1,10 @@
+2005-06-02  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-chrec.c (chrec_fold_plus_1): Ensure we build
+	binary operations with the correct types.
+	* tree-ssa-loo-ivopts.c (idx_find_step): Use sizetype
+	for all computation.
+
 2005-06-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-vrp.c, config/arm/arm.md, config/arm/arm1020e.md,
