@@ -1,3 +1,8 @@
+2005-06-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree.c (build_common_builtin_nodes): Fix the return type on
+	__builtin_memcmp.
+
 2005-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/21536
