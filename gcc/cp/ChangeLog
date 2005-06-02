@@ -1,3 +1,8 @@
+2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21151
+	* name-lookup.c (pushtag): Push local class even in a template.
+
 2005-06-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20350

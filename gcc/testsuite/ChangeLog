@@ -1,3 +1,9 @@
+2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21151
+	* g++.dg/pch/local-1.C: New.
+	* g++.dg/pch/local-1.Hs: New.
+
 2005-06-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/f2c_1.f90, gfortran.dg/f2c_2.f90,

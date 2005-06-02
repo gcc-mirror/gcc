@@ -4687,8 +4687,7 @@ pushtag (tree name, tree type, tag_scope scope)
 	     way.  (It's otherwise tricky to find a member function definition
 	     it's only pointed to from within a local class.)  */
 	  if (TYPE_CONTEXT (type)
-	      && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL
-	      && !processing_template_decl)
+	      && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
 	    VARRAY_PUSH_TREE (local_classes, type);
         }
       if (b->kind == sk_class
