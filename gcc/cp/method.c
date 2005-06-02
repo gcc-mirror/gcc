@@ -777,8 +777,8 @@ synthesize_method (tree fndecl)
   pop_deferring_access_checks ();
 
   if (error_count != errorcount || warning_count != warningcount)
-    error ("%Hsynthesized method %qD first required here ",
-	   &input_location, fndecl);
+    warning ("%Hsynthesized method %qD first required here ",
+	     &input_location, fndecl);
 }
 
 /* Use EXTRACTOR to locate the relevant function called for each base &
