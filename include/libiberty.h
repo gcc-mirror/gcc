@@ -527,8 +527,7 @@ extern int asprintf (char **, const char *, ...) ATTRIBUTE_PRINTF_2;
 /* Like vsprintf but provides a pointer to malloc'd storage, which
    must be freed by the caller.  */
 
-extern int vasprintf (char **, const char *, va_list)
-  ATTRIBUTE_PRINTF(2,0);
+extern int vasprintf (char **, const char *, va_list) ATTRIBUTE_PRINTF(2,0);
 #endif
 
 #if defined(HAVE_DECL_SNPRINTF) && !HAVE_DECL_SNPRINTF
@@ -538,7 +537,7 @@ extern int snprintf (char *, size_t, const char *, ...) ATTRIBUTE_PRINTF_3;
 
 #if defined(HAVE_DECL_VSNPRINTF) && !HAVE_DECL_VSNPRINTF
 /* Like vsprintf but prints at most N characters.  */
-extern int vsnprintf (char *, size_t, const char *, va_list);
+extern int vsnprintf (char *, size_t, const char *, va_list) ATTRIBUTE_PRINTF(3,0);
 #endif
 
 #define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))

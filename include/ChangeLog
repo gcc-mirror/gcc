@@ -1,3 +1,7 @@
+2005-06-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (vsnprintf): Add format attribute.
+
 2005-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ansidecl.h: Add ATTRIBUTE_FPTR_PRINTF.
