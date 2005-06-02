@@ -857,12 +857,6 @@ cgraph_decide_inlining (void)
 	}
     }
 
-  /* We will never output extern functions we didn't inline. 
-     ??? Perhaps we can prevent accounting of growth of external
-     inline functions.  */
-
-  cgraph_remove_unreachable_nodes (false, dump_file);
-
   if (dump_file)
     fprintf (dump_file,
 	     "\nInlined %i calls, eliminated %i functions, "

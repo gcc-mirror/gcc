@@ -967,6 +967,8 @@ cgraph_expand_function (struct cgraph_node *node)
 	 points to the dead function body.  */
       cgraph_node_remove_callees (node);
     }
+
+  cgraph_function_flags_ready = true;
 }
 
 /* Return true when CALLER_DECL should be inlined into CALLEE_DECL.  */
@@ -1128,6 +1130,9 @@ cgraph_optimize (void)
       dump_cgraph (cgraph_dump_file);
     }
   ipa_passes ();
+  /* This pass remove bodies of extern inline functions we never inlined.
+     Do this later so other IPA passes see what is really going on.  */
+  cgraph_remove_unreachable_nodes (false, dump_file);
   cgraph_global_info_ready = true;
   if (cgraph_dump_file)
     {

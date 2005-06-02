@@ -1,5 +1,23 @@
 2005-06-02  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_node): Maintain master clones.
+	(cgraph_remove_node): Likewise.
+	(availability_names): New static variable.
+	(dump_cgraph_node): Dump availability.
+	(dump_cgraph_varpool_node): Likewise.
+	(cgraph_is_master_clone, cgraph_master_clone,
+	cgraph_function_body_availability,
+	cgraph_variable_initializer_availability): New functions.
+	* cgraph.h (availability): New enum.
+	(struct cgraph_node): Add master_clone.
+	(cgraph_is_master_clone, cgraph_master_clone,
+	cgraph_function_body_availability,
+	cgraph_variable_initializer_availability): Declare.
+	* cgraphunit.c (cgraph_expand_function): Setcgraph_function_flags_ready.
+	(cgraph_remove_unreachable_nodes): Remove unreachable nodes.
+	* ipa-inline.c (cgraph_decide_inlining): Do not call
+	cgraph_remove_unreachable_nodes.
+
 	* cgraphunit.c (cgraph_function_and_variable_visibility): Fix typo in
 	previous patch.
 

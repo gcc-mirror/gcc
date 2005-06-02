@@ -192,7 +192,12 @@ cgraph_node (tree decl)
   slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key, INSERT);
 
   if (*slot)
-    return *slot;
+    {
+      node = *slot;
+      if (!node->master_clone)
+	node->master_clone = node;
+      return node;
+    }
 
   node = cgraph_create_node ();
   node->decl = decl;
@@ -202,6 +207,7 @@ cgraph_node (tree decl)
       node->origin = cgraph_node (DECL_CONTEXT (decl));
       node->next_nested = node->origin->nested;
       node->origin->nested = node;
+      node->master_clone = node;
     }
   return node;
 }
@@ -436,7 +442,14 @@ cgraph_remove_node (struct cgraph_node *node)
     {
       if (node->next_clone)
       {
-	*slot = node->next_clone;
+	struct cgraph_node *new_node = node->next_clone;
+	struct cgraph_node *n;
+
+	/* Make the next clone be the master clone */
+	for (n = new_node; n; n = n->next_clone) 
+	  n->master_clone = new_node;
+	
+	*slot = new_node;
 	node->next_clone->prev_clone = NULL;
       }
       else
@@ -553,6 +566,10 @@ cgraph_varpool_node_name (struct cgraph_varpool_node *node)
   return lang_hooks.decl_printable_name (node->decl, 2);
 }
 
+/* Names used to print out the availability enum.  */
+static const char * const availability_names[] = 
+  {"unset", "not_available", "overwrittable", "available", "local"};
+
 /* Dump given cgraph node.  */
 void
 dump_cgraph_node (FILE *f, struct cgraph_node *node)
@@ -563,6 +580,11 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " (inline copy in %s/%i)",
 	     cgraph_node_name (node->global.inlined_to),
 	     node->global.inlined_to->uid);
+  if (cgraph_function_flags_ready)
+    fprintf (f, " availability:%s", 
+	     availability_names [cgraph_function_body_availability (node)]);
+  if (node->master_clone && node->master_clone->uid != node->uid)
+    fprintf (f, "(%i)", node->master_clone->uid);
   if (node->count)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",
 	     (HOST_WIDEST_INT)node->count);
@@ -614,6 +636,11 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	       edge->callee->uid);
       if (!edge->inline_failed)
 	fprintf(f, "(inlined) ");
+      if (edge->count)
+	fprintf (f, "("HOST_WIDEST_INT_PRINT_DEC"x) ",
+		 (HOST_WIDEST_INT)edge->count);
+      if (edge->loop_nest)
+	fprintf (f, "(nested in %i loops) ", edge->loop_nest);
     }
   fprintf (f, "\n");
 }
@@ -635,6 +662,7 @@ void
 dump_cgraph_varpool_node (FILE *f, struct cgraph_varpool_node *node)
 {
   fprintf (f, "%s:", cgraph_varpool_node_name (node));
+  fprintf (f, " availability:%s", availability_names [cgraph_variable_initializer_availability (node)]);
   if (DECL_INITIAL (node->decl))
     fprintf (f, " initialized");
   if (node->needed)
@@ -886,6 +914,7 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int loop_nest)
   new->local = n->local;
   new->global = n->global;
   new->rtl = n->rtl;
+  new->master_clone = n->master_clone;
   new->count = count;
   if (n->count)
     count_scale = new->count * REG_BR_PROB_BASE / n->count;
@@ -905,6 +934,28 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int loop_nest)
   return new;
 }
 
+/* Return true if N is an master_clone, (see cgraph_master_clone).  */
+
+bool
+cgraph_is_master_clone (struct cgraph_node *n)
+{
+  return (n == cgraph_master_clone (n));
+}
+
+struct cgraph_node *
+cgraph_master_clone (struct cgraph_node *n)
+{
+  enum availability avail = cgraph_function_body_availability (n);
+   
+  if (avail == AVAIL_NOT_AVAILABLE || avail == AVAIL_OVERWRITABLE)
+    return NULL;
+
+  if (!n->master_clone) 
+    n->master_clone = cgraph_node (n->decl);
+  
+  return n->master_clone;
+}
+
 /* NODE is no longer nested function; update cgraph accordingly.  */
 void
 cgraph_unnest_node (struct cgraph_node *node)
@@ -917,4 +968,60 @@ cgraph_unnest_node (struct cgraph_node *node)
   *node2 = node->next_nested;
   node->origin = NULL;
 }
+
+/* Return function availability.  See cgraph.h for description of individual
+   return values.  */
+enum availability
+cgraph_function_body_availability (struct cgraph_node *node)
+{
+  enum availability avail;
+  gcc_assert (cgraph_function_flags_ready);
+  if (!node->local.finalized)
+    avail = AVAIL_NOT_AVAILABLE;
+  else if (node->local.local)
+    avail = AVAIL_LOCAL;
+  else if (node->local.externally_visible)
+    avail = AVAIL_AVAILABLE;
+
+  /* If the function can be overwritten, return OVERWRITABLE.  Take
+     care at least of two notable extensions - the COMDAT functions
+     used to share template instantiations in C++ (this is symmetric
+     to code cp_cannot_inline_tree_fn and probably shall be shared and
+     the inlinability hooks completelly elliminated).
+
+     ??? Does the C++ one definition rule allow us to always return
+     AVAIL_AVAILABLE here?  That would be good reason to preserve this
+     hook Similarly deal with extern inline functions - this is again
+     neccesary to get C++ shared functions having keyed templates
+     right and in the C extension documentation we probably should
+     document the requirement of both versions of function (extern
+     inline and offline) having same side effect characteristics as
+     good optimization is what this optimization is about.  */
+  
+  else if (!(*targetm.binds_local_p) (node->decl)
+	   && !DECL_COMDAT (node->decl) && !DECL_EXTERNAL (node->decl))
+    avail = AVAIL_OVERWRITABLE;
+  else avail = AVAIL_AVAILABLE;
+
+  return avail;
+}
+
+/* Return variable availability.  See cgraph.h for description of individual
+   return values.  */
+enum availability
+cgraph_variable_initializer_availability (struct cgraph_varpool_node *node)
+{
+  gcc_assert (cgraph_function_flags_ready);
+  if (!node->finalized)
+    return AVAIL_NOT_AVAILABLE;
+  if (!TREE_PUBLIC (node->decl))
+    return AVAIL_AVAILABLE;
+  /* If the variable can be overwritted, return OVERWRITABLE.  Takes
+     care of at least two notable extensions - the COMDAT variables
+     used to share template instantiations in C++.  */
+  if (!(*targetm.binds_local_p) (node->decl) && !DECL_COMDAT (node->decl))
+    return AVAIL_OVERWRITABLE;
+  return AVAIL_AVAILABLE;
+}
+
 #include "gt-cgraph.h"
