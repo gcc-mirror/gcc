@@ -991,7 +991,7 @@ update_equiv_regs (void)
 
   /* Now scan all regs killed in an insn to see if any of them are
      registers only used that once.  If so, see if we can replace the
-     reference with the equivalent from.  If we can, delete the
+     reference with the equivalent form.  If we can, delete the
      initializing reference and this register will go away.  If we
      can't replace the reference, and the initializing reference is
      within the same loop (or in an inner loop), then move the register
@@ -1077,6 +1077,11 @@ update_equiv_regs (void)
 
 		      reg_equiv[regno].init_insns
 			= XEXP (reg_equiv[regno].init_insns, 1);
+
+		      /* Remember to clear REGNO from all basic block's live
+			 info.  */
+		      SET_REGNO_REG_SET (&cleared_regs, regno);
+		      clear_regnos++;
 		    }
 		  /* Move the initialization of the register to just before
 		     INSN.  Update the flow information.  */
