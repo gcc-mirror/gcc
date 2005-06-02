@@ -1,3 +1,10 @@
+2005-06-02  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gimplify.c (gimplify_ctx): Change the type of case_labels to
+	VEC from VARRAY.
+	(gimplify_switch_expr, gimplify_case_label_expr): Adjust uses
+	of case_labels.
+
 2005-06-02  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* c-typeck.c (build_indirect_ref): Build INDIRECT_REF

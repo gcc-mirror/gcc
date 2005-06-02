@@ -54,7 +54,7 @@ static struct gimplify_ctx
   tree conditional_cleanups;
   tree exit_label;
   tree return_temp;
-  varray_type case_labels;
+  VEC(tree,heap) *case_labels;
   /* The formal temporary table.  Should this be persistent?  */
   htab_t temp_htab;
   int conditions;
@@ -1138,7 +1138,7 @@ gimplify_switch_expr (tree *expr_p, tree *pre_p)
 
   if (SWITCH_BODY (switch_expr))
     {
-      varray_type labels, saved_labels;
+      VEC(tree,heap) *labels, *saved_labels;
       tree label_vec, default_case = NULL_TREE;
       size_t i, len;
 
@@ -1147,23 +1147,23 @@ gimplify_switch_expr (tree *expr_p, tree *pre_p)
       gcc_assert (!SWITCH_LABELS (switch_expr));
 
       saved_labels = gimplify_ctxp->case_labels;
-      VARRAY_TREE_INIT (gimplify_ctxp->case_labels, 8, "case_labels");
+      gimplify_ctxp->case_labels = VEC_alloc (tree, heap, 8);
 
       gimplify_to_stmt_list (&SWITCH_BODY (switch_expr));
 
       labels = gimplify_ctxp->case_labels;
       gimplify_ctxp->case_labels = saved_labels;
 
-      len = VARRAY_ACTIVE_SIZE (labels);
+      len = VEC_length (tree, labels);
 
       for (i = 0; i < len; ++i)
 	{
-	  tree t = VARRAY_TREE (labels, i);
+	  tree t = VEC_index (tree, labels, i);
 	  if (!CASE_LOW (t))
 	    {
 	      /* The default case must be the last label in the list.  */
 	      default_case = t;
-	      VARRAY_TREE (labels, i) = VARRAY_TREE (labels, len - 1);
+	      VEC_replace (tree, labels, i, VEC_index (tree, labels, len - 1));
 	      len--;
 	      break;
 	    }
@@ -1187,8 +1187,10 @@ gimplify_switch_expr (tree *expr_p, tree *pre_p)
 	*expr_p = SWITCH_BODY (switch_expr);
 
       for (i = 0; i < len; ++i)
-	TREE_VEC_ELT (label_vec, i) = VARRAY_TREE (labels, i);
+	TREE_VEC_ELT (label_vec, i) = VEC_index (tree, labels, i);
       TREE_VEC_ELT (label_vec, len) = default_case;
+
+      VEC_free (tree, heap, labels);
 
       sort_case_labels (label_vec);
 
@@ -1206,7 +1208,7 @@ gimplify_case_label_expr (tree *expr_p)
   tree expr = *expr_p;
 
   gcc_assert (gimplify_ctxp->case_labels);
-  VARRAY_PUSH_TREE (gimplify_ctxp->case_labels, expr);
+  VEC_safe_push (tree, heap, gimplify_ctxp->case_labels, expr);
   *expr_p = build (LABEL_EXPR, void_type_node, CASE_LABEL (expr));
   return GS_ALL_DONE;
 }
