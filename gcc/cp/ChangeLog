@@ -1,5 +1,9 @@
 2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (start_decl): Simplify specialization handling. Remove
+	unneeded CLASSTYPE_TEMPLATE_INSTANTIATION check.
+	* mangle.c (discriminator_for_local_entity): Use VEC_index.
+
 	PR c++/20350
 	* decl.c (duplicate_decls): Copy all of DECL_USE_TEMPLATE.
 

@@ -1426,8 +1426,6 @@ write_special_name_destructor (const tree dtor)
 static int
 discriminator_for_local_entity (tree entity)
 {
-  tree *type;
-
   /* Assume this is the only local entity with this name.  */
   int discriminator = 0;
 
@@ -1435,12 +1433,19 @@ discriminator_for_local_entity (tree entity)
     discriminator = DECL_DISCRIMINATOR (entity);
   else if (TREE_CODE (entity) == TYPE_DECL)
     {
+      int ix;
+      
       /* Scan the list of local classes.  */
       entity = TREE_TYPE (entity);
-      for (type = VEC_address (tree, local_classes); *type != entity; ++type)
-        if (TYPE_IDENTIFIER (*type) == TYPE_IDENTIFIER (entity)
-            && TYPE_CONTEXT (*type) == TYPE_CONTEXT (entity))
-	  ++discriminator;
+      for (ix = 0; ; ix++)
+	{
+	  tree type = VEC_index (tree, local_classes, ix);
+	  if (type == entity)
+	    break;
+	  if (TYPE_IDENTIFIER (type) == TYPE_IDENTIFIER (entity)
+	      && TYPE_CONTEXT (type) == TYPE_CONTEXT (entity))
+	    ++discriminator;
+	}
     }  
 
   return discriminator;

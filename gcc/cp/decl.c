@@ -3716,22 +3716,22 @@ start_decl (const cp_declarator *declarator,
 
       /* cp_finish_decl sets DECL_EXTERNAL if DECL_IN_AGGR_P is set.  */
       DECL_IN_AGGR_P (decl) = 0;
-      if ((DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
-	  || CLASSTYPE_TEMPLATE_INSTANTIATION (context))
+      /* Do not mark DECL as an explicit specialization if it was not
+	 already marked as an instantiation; a declaration should
+	 never be marked as a specialization unless we know what
+	 template is being specialized.  */ 
+      if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
 	{
-	  /* Do not mark DECL as an explicit specialization if it was
-	     not already marked as an instantiation; a declaration
-	     should never be marked as a specialization unless we know
-	     what template is being specialized.  */ 
-	  if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
-	    SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+      
 	  /* [temp.expl.spec] An explicit specialization of a static data
 	     member of a template is a definition if the declaration
 	     includes an initializer; otherwise, it is a declaration.
-
+	      
 	     We check for processing_specialization so this only applies
 	     to the new specialization syntax.  */
-	  if (DECL_INITIAL (decl) == NULL_TREE && processing_specialization)
+	  if (!DECL_INITIAL (decl)
+	      && processing_specialization)
 	    DECL_EXTERNAL (decl) = 1;
 	}
 
