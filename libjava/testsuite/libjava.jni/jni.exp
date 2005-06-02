@@ -196,7 +196,7 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
 
   # Set some darwin specific options
   if { [istarget "*-*-darwin*"] } {
-      lappend options "additional_flags=-multiply_defined suppress"
+      lappend options "additional_flags= -bind_at_load -multiply_defined suppress"
   }
   # Find the generated header.
   lappend options "additional_flags=-I. -I.."
