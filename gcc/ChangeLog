@@ -1,3 +1,8 @@
+2005-06-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree.c (build_common_builtin_nodes): Fix the return type on
+	__builtin_memcmp.
+
 2005-06-03  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-loop-ivopts.c (build_addr_strip_iref): Remove.
