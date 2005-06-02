@@ -1,5 +1,10 @@
 2005-06-02  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (_Rep::_M_set_length_and_sharable):
+	Use, consistently, traits_type::assign.
+
+2005-06-02  Paolo Carlini  <pcarlini@suse.de>
+
 	* docs/html/abi.html: Mention 3.4.0 as the current baseline; add
 	a notice about the configure options.
 

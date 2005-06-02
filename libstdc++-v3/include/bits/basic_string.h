@@ -198,7 +198,8 @@ namespace std
 	{ 
 	  this->_M_set_sharable();  // One reference.
 	  this->_M_length = __n;
-	  this->_M_refdata()[__n] = _S_terminal; // grrr. (per 21.3.4)
+	  traits_type::assign(this->_M_refdata()[__n], _S_terminal);
+	  // grrr. (per 21.3.4)
 	  // You cannot leave those LWG people alone for a second.
 	}
 
