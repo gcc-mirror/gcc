@@ -1,3 +1,11 @@
+2005-06-03  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* jawt.c: Remove malloc.h, covered by stdlib.h.
+
+	* testsuite/libjava.jni/jni.exp
+	(gcj_jni_invocation_compile_c_to_binary): Add -bind_at_load to silence
+	the build process.
+
 2005-06-02  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/transport/TransportException.java: New file.
