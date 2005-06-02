@@ -1,3 +1,13 @@
+2005-06-02  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_add_execute): Do not handle out-of-pool
+	execute templates.
+	(s390_dump_pool): Likewise.
+	(s390_mainpool_start, s390_mainpool_finish): Likewise.
+	(s390_chunkify_start): Likewise.
+	(s390_dump_execute): Remove.
+	(s390_reorg): Handle out-of-pool execute templates.
+
 2005-06-02  Adrian Straetling  <straetling@de.ibm.com>
 
 	* optabs.c: (expand_bool_compare_and_swap): Emit barrier after
