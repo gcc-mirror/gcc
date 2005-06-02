@@ -1511,25 +1511,6 @@ may_be_unaligned_p (tree ref)
   return false;
 }
 
-/* Builds ADDR_EXPR of object OBJ.  If OBJ is an INDIRECT_REF, the indirect_ref
-   is stripped instead.  */
-
-static tree
-build_addr_strip_iref (tree obj)
-{
-  tree type;
-
-  if (TREE_CODE (obj) == INDIRECT_REF)
-    {
-      type = build_pointer_type (TREE_TYPE (obj));
-      obj = fold_convert (type, TREE_OPERAND (obj, 0));
-    }
-  else
-    obj = build_addr (obj, current_function_decl);
-
-  return obj;
-}
-
 /* Finds addresses in *OP_P inside STMT.  */
 
 static void
@@ -1564,7 +1545,7 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
   gcc_assert (TREE_CODE (base) != ALIGN_INDIRECT_REF);
   gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
 
-  base = build_addr_strip_iref (base);
+  base = build_fold_addr_expr (base);
 
   civ = alloc_iv (base, step);
   record_use (data, op_p, civ, stmt, USE_ADDRESS);
@@ -1857,7 +1838,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       if (op0 == TREE_OPERAND (expr, 0))
 	return orig_expr;
 
-      expr = build_addr_strip_iref (op0);
+      expr = build_fold_addr_expr (op0);
       return fold_convert (orig_type, expr);
 
     case INDIRECT_REF:
@@ -2845,7 +2826,7 @@ tree_to_aff_combination (tree expr, tree type,
       if (bitpos % BITS_PER_UNIT != 0)
 	break;
       aff_combination_const (comb, type, bitpos / BITS_PER_UNIT);
-      core = build_addr_strip_iref (core);
+      core = build_fold_addr_expr (core);
       if (TREE_CODE (core) == ADDR_EXPR)
 	aff_combination_add_elt (comb, core, 1);
       else
