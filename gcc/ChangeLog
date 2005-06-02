@@ -1,3 +1,23 @@
+2005-06-02  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.h (processor_type): Remove PROCESSOR_DEFAULT,
+	add PROCESSOR_MAX.
+	(mips_rtx_cost_data): New datatype.
+	(MEMORY_MOVE_COST): Use data from structure.
+	(BRANCH_COST): Ditto.
+	(LOGICAL_OP_NON_SHORT_CIRCUIT): Define to zero.
+	* config/mips/mips.md (cpu): Rework for processor_type changes.
+	* config/mips/mips.c (mips_cost): New variable.
+	(DEFAULT_COSTS): Define.
+	(mips_rtx_cost_data): New.
+	(mips_rtx_costs): Use. Minor formatting changes. Use COSTS_N_INSNS
+	for NEG cost. Add support for FLOAT, UNSIGNED_FLOAT, FIX,
+	FLOAT_EXTEND, FLOAT_TRUNCATE, and SQRT.
+	(override_options): Set cost data.
+	(mips_register_move_cost): Formatting changes.
+	(bdesc_arrays): Use PROCESSOR_MAX.
+	(mips_init_builtins): Ditto.
+
 2005-06-02  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 21765
