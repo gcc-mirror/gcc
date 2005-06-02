@@ -1,9 +1,33 @@
-2005-06-03  Andrew Pinski  <pinskia@physics.uc.edu>
+2005-06-02  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/sh/sh.c (general_movsrc_operand,
+	general_movdst_operand, arith_reg_operand, arith_reg_dest,
+	logical_reg_operand, int_gpr_dest, fp_arith_reg_operand,
+	fp_arith_reg_dest, arith_operand, arith_reg_or_0_operand,
+	xor_operand, cmp_operand, logical_operand, and_operand,
+	fpscr_operand, fpul_operand, symbol_ref_operand,
+	commutative_float_operator, noncommutative_float_operator,
+	unary_float_operator, binary_float_operator,
+	binary_logical_operator, equality_comparison_operator,
+	greater_comparison_operator, less_comparison_operator,
+	shift_operator, logical_operator, target_reg_operand,
+	target_operand, mextr_bit_offset, extend_reg_operand,
+	trunc_hi_operand, extend_reg_or_0_operand, minuend_operand,
+	general_extend_operand, ua_address_operand,
+	cache_address_operand, inqhi_operand, sh_rep_vec, sh_1el_vec,
+	sh_const_vec, ua_offset, sh_register_operand, cmpsi_operand,
+	shift_count_reg_operand, shift_count_operand,
+	unaligned_load_operand): Move to ...
+	* config/sh/predicates.md: ... here.
+	* config/sh/sh.h (PREDICATE_CODES, SPECIAL_MODE_PREDICATES):
+	Remove.
+
+2005-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree.c (build_common_builtin_nodes): Fix the return type on
 	__builtin_memcmp.
 
-2005-06-03  Richard Guenther  <rguenth@gcc.gnu.org>
+2005-06-02  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-loop-ivopts.c (build_addr_strip_iref): Remove.
 	(find_interesting_uses_address): Use build_fold_addr_expr instead.
