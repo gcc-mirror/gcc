@@ -1,3 +1,10 @@
+2005-06-02  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-vrp.c, config/arm/arm.md, config/arm/arm1020e.md,
+	config/rs6000/rs6000.md: Fix comment typos.  Follow splling
+	conventions.
+	* doc/install.texi: Fix a typo.
+
 2005-06-02  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_function_and_variable_visibility): Extern

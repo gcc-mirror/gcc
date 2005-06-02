@@ -666,7 +666,7 @@ value_ranges_intersect_p (value_range_t *vr0, value_range_t *vr1)
 }
 
 
-/* Return true if VR includes the value zero, false otheriwse.  */
+/* Return true if VR includes the value zero, false otherwise.  */
 
 static inline bool
 range_includes_zero_p (value_range_t *vr)
@@ -2855,7 +2855,7 @@ compare_name_with_value (enum tree_code comp, tree var, tree val)
 
 
 /* Given a comparison code COMP and names N1 and N2, compare all the
-   ranges equivalent to N1 against all the ranges equivalente to N2
+   ranges equivalent to N1 against all the ranges equivalent to N2
    to determine the value of N1 COMP N2.  Return the same value
    returned by compare_ranges.  */
 
@@ -3236,7 +3236,7 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 	      return;
 	    }
 
-	  /* The resulting set of equivalencies is the intersection of
+	  /* The resulting set of equivalences is the intersection of
 	     the two sets.  */
 	  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
 	    bitmap_and_into (vr0->equiv, vr1->equiv);
@@ -3253,7 +3253,7 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 	  && compare_values (vr0->max, vr1->max) == 0
 	  && compare_values (vr0->min, vr0->max) == 0)
 	{
-	  /* The resulting set of equivalencies is the intersection of
+	  /* The resulting set of equivalences is the intersection of
 	     the two sets.  */
 	  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
 	    bitmap_and_into (vr0->equiv, vr1->equiv);
@@ -3485,12 +3485,12 @@ vrp_finalize (void)
    code we can also determine that p_5 cannot be NULL and, if q_2 had
    a non-varying range, p_5's range should also be compatible with it.
 
-   These equivalencies are created by two expressions: ASSERT_EXPR and
+   These equivalences are created by two expressions: ASSERT_EXPR and
    copy operations.  Since p_5 is an assertion on p_4, and p_4 was the
    result of another assertion, then we can use the fact that p_5 and
    p_4 are equivalent when evaluating p_5's range.
 
-   Together with value ranges, we also propagate these equivalencies
+   Together with value ranges, we also propagate these equivalences
    between names so that we can take advantage of information from
    multiple ranges when doing final replacement.  Note that this
    equivalency relation is transitive but not symmetric.

@@ -202,8 +202,8 @@
 ;		even on a machine with an fpa.
 ; f_load	a floating point load from memory
 ; f_store	a floating point store to memory
-; f_load[sd]	single/double load from memeory
-; f_store[sd]	single/double store to memeory
+; f_load[sd]	single/double load from memory
+; f_store[sd]	single/double store to memory
 ; f_flag	a transfer of co-processor flags to the CPSR
 ; f_mem_r	a transfer of a floating point register to a real reg via mem
 ; r_mem_f	the reverse of f_mem_r
