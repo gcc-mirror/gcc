@@ -1,5 +1,7 @@
 2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* method.c (synthesize_method): Add addtional arg to warning call.
+
 	PR c++/21280
 	* Make-lang.in (method.o): Add diagnostic.h
 	* decl.c (start_preparsed_function): Use decl's location for file
