@@ -582,10 +582,16 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " output");
   if (node->local.local)
     fprintf (f, " local");
+  if (node->local.externally_visible)
+    fprintf (f, " externally_visible");
+  if (node->local.finalized)
+    fprintf (f, " finalized");
   if (node->local.disregard_inline_limits)
     fprintf (f, " always_inline");
   else if (node->local.inlinable)
     fprintf (f, " inlinable");
+  if (node->local.redefined_extern_inline)
+    fprintf (f, " redefined_extern_inline");
   if (TREE_ASM_WRITTEN (node->decl))
     fprintf (f, " asm_written");
 
@@ -639,6 +645,8 @@ dump_cgraph_varpool_node (FILE *f, struct cgraph_varpool_node *node)
     fprintf (f, " finalized");
   if (node->output)
     fprintf (f, " output");
+  if (node->externally_visible)
+    fprintf (f, " externally_visible");
   fprintf (f, "\n");
 }
 
@@ -786,8 +794,8 @@ decide_is_variable_needed (struct cgraph_varpool_node *node, tree decl)
   if (node->needed)
     return true;
 
-  /* Externally visible functions must be output.  The exception is
-     COMDAT functions that must be output only when they are needed.  */
+  /* Externally visible variables must be output.  The exception is
+     COMDAT variables that must be output only when they are needed.  */
   if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     return true;
 
@@ -823,6 +831,11 @@ cgraph_varpool_finalize_decl (tree decl)
   node->finalized = true;
 
   if (decide_is_variable_needed (node, decl))
+    cgraph_varpool_mark_needed_node (node);
+  /* Since we reclaim unrechable nodes at the end of every language
+     level unit, we need to be conservative about possible entry points
+     there.  */
+  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     cgraph_varpool_mark_needed_node (node);
   if (cgraph_global_info_ready || !flag_unit_at_a_time)
     cgraph_varpool_assemble_pending_decls ();

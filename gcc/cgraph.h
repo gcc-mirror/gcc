@@ -36,6 +36,9 @@ struct cgraph_local_info GTY(())
      and its address is never taken.  */
   bool local;
 
+  /* Set when function is visible by other units.  */
+  bool externally_visible;
+
   /* Set once it has been finalized so we consider it to be output.  */
   bool finalized;
 
@@ -177,6 +180,8 @@ struct cgraph_varpool_node GTY(())
   bool finalized;
   /* Set when function is scheduled to be assembled.  */
   bool output;
+  /* Set when function is visible by other units.  */
+  bool externally_visible;
   /* Set for aliases once they got through assemble_alias.  */
   bool alias;
 };
@@ -185,6 +190,7 @@ extern GTY(()) struct cgraph_node *cgraph_nodes;
 extern GTY(()) int cgraph_n_nodes;
 extern GTY(()) int cgraph_max_uid;
 extern bool cgraph_global_info_ready;
+extern bool cgraph_function_flags_ready;
 extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
 
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_first_unanalyzed_node;
