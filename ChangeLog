@@ -1,3 +1,11 @@
+2005-06-02  Aldy Hernandez  <aldyh@redhat.com>
+            Michael Snyder  <msnyder@redhat.com>
+            Stan Cox  <scox@redhat.com>
+
+        * configure.in: Set noconfigdirs for ms1.
+
+        * configure: Regenerate.
+
 2005-06-01  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	* MAINTAINERS (Write After Approval): Add self.
