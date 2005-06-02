@@ -1,3 +1,8 @@
+2005-06-02  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* reload1.c (reload): Undo 2005-04-20 change.  Make sure we detect
+	the correct set of init_insns that need deletion.
+
 2005-06-02  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (TARGET_FPU_DOUBLE): Use MASK_SH4.
