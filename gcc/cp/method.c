@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "tree-pass.h"
+#include "diagnostic.h"
 
 /* Various flags to control the mangling process.  */
 
@@ -731,6 +732,8 @@ do_build_assign_ref (tree fndecl)
   finish_compound_stmt (compound_stmt);
 }
 
+/* Synthesize FNDECL, a non-static member function.   */
+
 void
 synthesize_method (tree fndecl)
 {
@@ -739,17 +742,19 @@ synthesize_method (tree fndecl)
   bool need_body = true;
   tree stmt;
   location_t save_input_location = input_location;
+  int error_count = errorcount;
+  int warning_count = warningcount;
 
+  /* Reset the source location, we might have been previously
+     deferred, and thus have saved where we were first needed.  */
+  DECL_SOURCE_LOCATION (fndecl)
+    = DECL_SOURCE_LOCATION (TYPE_NAME (DECL_CONTEXT (fndecl)));
+  
   /* If we've been asked to synthesize a clone, just synthesize the
      cloned function instead.  Doing so will automatically fill in the
      body for the clone.  */
   if (DECL_CLONED_FUNCTION_P (fndecl))
-    {
-      DECL_SOURCE_LOCATION (DECL_CLONED_FUNCTION (fndecl)) =
-	DECL_SOURCE_LOCATION (fndecl);
-      synthesize_method (DECL_CLONED_FUNCTION (fndecl));
-      return;
-    }
+    fndecl = DECL_CLONED_FUNCTION (fndecl);
 
   /* We may be in the middle of deferred access check.  Disable
      it now.  */
@@ -799,6 +804,10 @@ synthesize_method (tree fndecl)
     pop_function_context_from (context);
 
   pop_deferring_access_checks ();
+
+  if (error_count != errorcount || warning_count != warningcount)
+    warning ("%Hsynthesized method %qD first required here ",
+	     &input_location, fndecl);
 }
 
 /* Use EXTRACTOR to locate the relevant function called for each base &
