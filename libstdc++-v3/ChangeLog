@@ -1,3 +1,9 @@
+2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21280
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust expected errors.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
+
 2005-05-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/20534 (contd)
