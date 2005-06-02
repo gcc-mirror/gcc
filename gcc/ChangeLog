@@ -1,3 +1,12 @@
+2005-06-02 Steven Bosscher  <stevenb@suse.de>
+	   Mostafa Hagog <mustafa@il.ibm.com>
+
+	* cfgloop.h (doloop_condition_get): Make external.
+	* loop-doloop.c (doloop_condition_get): Generalize to make it
+	usable in modulo-sched.c.
+	* modulo-sched.c (doloop_register_get): Use
+	doloop_condition_get instead of duplicating it.
+
 2005-06-02  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* reload1.c (reload): Undo 2005-04-20 change.  Make sure we detect

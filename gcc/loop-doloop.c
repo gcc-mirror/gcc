@@ -69,12 +69,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Return the loop termination condition for PATTERN or zero
    if it is not a decrement and branch jump insn.  */
 
-static rtx
+rtx
 doloop_condition_get (rtx pattern)
 {
   rtx cmp;
   rtx inc;
   rtx reg;
+  rtx inc_src;
   rtx condition;
 
   /* The canonical doloop pattern we expect is:
@@ -85,12 +86,13 @@ doloop_condition_get (rtx pattern)
                 (set (reg) (plus (reg) (const_int -1)))
                 (additional clobbers and uses)])
 
-     Some machines (IA-64) make the decrement conditional on
-     the condition as well, so we don't bother verifying the
-     actual decrement.  In summary, the branch must be the
-     first entry of the parallel (also required by jump.c),
-     and the second entry of the parallel must be a set of
-     the loop counter register.  */
+     Some targets (IA-64) wrap the set of the loop counter in
+     an if_then_else too.
+
+     In summary, the branch must be the first entry of the
+     parallel (also required by jump.c), and the second
+     entry of the parallel must be a set of the loop counter
+     register.  */
 
   if (GET_CODE (pattern) != PARALLEL)
     return 0;
@@ -99,11 +101,21 @@ doloop_condition_get (rtx pattern)
   inc = XVECEXP (pattern, 0, 1);
 
   /* Check for (set (reg) (something)).  */
-  if (GET_CODE (inc) != SET || ! REG_P (SET_DEST (inc)))
+  if (GET_CODE (inc) != SET)
+    return 0;
+  reg = SET_DEST (inc);
+  if (! REG_P (reg))
     return 0;
 
-  /* Extract loop counter register.  */
-  reg = SET_DEST (inc);
+  /* Check if something = (plus (reg) (const_int -1)).
+     On IA-64, this decrement is wrapped in an if_then_else.  */
+  inc_src = SET_SRC (inc);
+  if (GET_CODE (inc_src) == IF_THEN_ELSE)
+    inc_src = XEXP (inc_src, 1);
+  if (GET_CODE (inc_src) != PLUS
+      || XEXP (inc_src, 0) != reg
+      || XEXP (inc_src, 1) != constm1_rtx)
+    return 0;
 
   /* Check for (set (pc) (if_then_else (condition)
                                        (label_ref (label))
@@ -118,15 +130,16 @@ doloop_condition_get (rtx pattern)
   /* Extract loop termination condition.  */
   condition = XEXP (SET_SRC (cmp), 0);
 
-  if ((GET_CODE (condition) != GE && GET_CODE (condition) != NE)
-      || GET_CODE (XEXP (condition, 1)) != CONST_INT)
+  /* We expect a GE or NE comparison with 0 or 1.  */
+  if ((GET_CODE (condition) != GE
+       && GET_CODE (condition) != NE)
+      || (XEXP (condition, 1) != const0_rtx
+          && XEXP (condition, 1) != const1_rtx))
     return 0;
 
-  if (XEXP (condition, 0) == reg)
-    return condition;
-
-  if (GET_CODE (XEXP (condition, 0)) == PLUS
-      && XEXP (XEXP (condition, 0), 0) == reg)
+  if ((XEXP (condition, 0) == reg)
+      || (GET_CODE (XEXP (condition, 0)) == PLUS
+		   && XEXP (XEXP (condition, 0), 0) == reg))
     return condition;
 
   /* ??? If a machine uses a funny comparison, we could return a
