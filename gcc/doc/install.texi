@@ -1076,7 +1076,7 @@ use DWARF 2 debugging information as the default.
 @itemx --enable-targets=@var{target_list}
 Some GCC targets, e.g.@: powerpc64-linux, build bi-arch compilers.
 These are compilers that are able to generate either 64-bit or 32-bit
-code.  Typicially, the corresponding 32-bit target, e.g.@:
+code.  Typically, the corresponding 32-bit target, e.g.@:
 powerpc-linux for powerpc64-linux, only generates 32-bit code.  This
 option enables the 32-bit target to be a bi-arch compiler, which is
 useful when you want a bi-arch compiler that defaults to 32-bit, and
