@@ -1,3 +1,19 @@
+2005-06-02  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (dump_cgraph_node): Print new flags.
+	(dump_cgraph_varpool_node): Likewise.
+	(decide_variable_is_needed): Initialize externally_visible flag.
+	* cgraph.h (cgraph_local_info): Add externally_visible flag.
+	(cgraph_varpool_node): Likewise.
+	(cgraph_function_flags_ready): Declare.
+	* cgraph.c (cgraph_mark_local_functions): Rename to ...
+	(cgraph_function_and_variable_visibility) ... this one; handle
+	externally_visible flags.
+	(decide_is_function_needed): Set externally_visible flag.
+	(cgraph_finalize_function): Deal properly with early cleanups.
+	(cgraph_optimize): Update call of
+	cgraph_function_and_variable_visibility.
+
 2005-06-02 Steven Bosscher  <stevenb@suse.de>
 	   Mostafa Hagog <mustafa@il.ibm.com>
 

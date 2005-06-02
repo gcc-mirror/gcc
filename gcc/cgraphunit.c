@@ -170,7 +170,6 @@ static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
 static void cgraph_expand_function (struct cgraph_node *);
 static tree record_reference (tree *, int *, void *);
-static void cgraph_mark_local_functions (void);
 static void cgraph_analyze_function (struct cgraph_node *node);
 
 /* Records tree nodes seen in record_reference.  Simply using
@@ -191,6 +190,17 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
 {
   tree origin;
 
+  /* If the user told us it is used, then it must be so.  */
+  if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+    return true;
+
+  /* ??? If the assembler name is set by hand, it is possible to assemble
+     the name later after finalizing the function and the fact is noticed
+     in assemble_name then.  This is arguably a bug.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (decl)
+      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+    return true;
+
   /* If we decided it was needed before, but at the time we didn't have
      the body of the function available, then it's still needed.  We have
      to go back and re-check its dependencies now.  */
@@ -205,17 +215,6 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   /* Constructors and destructors are reachable from the runtime by
      some mechanism.  */
   if (DECL_STATIC_CONSTRUCTOR (decl) || DECL_STATIC_DESTRUCTOR (decl))
-    return true;
-
-  /* If the user told us it is used, then it must be so.  */
-  if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
-    return true;
-
-  /* ??? If the assembler name is set by hand, it is possible to assemble
-     the name later after finalizing the function and the fact is noticed
-     in assemble_name then.  This is arguably a bug.  */
-  if (DECL_ASSEMBLER_NAME_SET_P (decl)
-      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
     return true;
 
   if (flag_unit_at_a_time)
@@ -421,6 +420,12 @@ cgraph_finalize_function (tree decl, bool nested)
 
   if (decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
+
+  /* Since we reclaim unrechable nodes at the end of every language
+     level unit, we need to be conservative about possible entry points
+     there.  */
+  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+    cgraph_mark_reachable_node (node);
 
   /* If not unit at a time, go ahead and emit everything we've found
      to be reachable at this time.  */
@@ -1016,25 +1021,47 @@ cgraph_expand_all_functions (void)
   free (order);
 }
 
-/* Mark all local functions.
+/* Mark visibility of all functions.
    
    A local function is one whose calls can occur only in the current
    compilation unit and all its calls are explicit, so we can change
    its calling convention.  We simply mark all static functions whose
-   address is not taken as local.  */
+   address is not taken as local.
+
+   We also change the TREE_PUBLIC flag of all declarations that are public
+   in language point of view but we want to overwrite this default
+   via visibilities for the backend point of view.  */
 
 static void
-cgraph_mark_local_functions (void)
+cgraph_function_and_variable_visibility (void)
 {
   struct cgraph_node *node;
+  struct cgraph_varpool_node *vnode;
 
-  /* Figure out functions we want to assemble.  */
   for (node = cgraph_nodes; node; node = node->next)
     {
+      if (node->reachable
+	  && (DECL_COMDAT (node->decl)
+	      || (TREE_PUBLIC (node->decl) && !DECL_EXTERNAL (node->decl))))
+	node->local.externally_visible = 1;
       node->local.local = (!node->needed
-		           && DECL_SAVED_TREE (node->decl)
-		           && !TREE_PUBLIC (node->decl));
+			   && node->analyzed
+			   && node->local.externally_visible);
     }
+  for (vnode = cgraph_varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+    {
+      if (vnode->needed
+	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl)))
+	vnode->externally_visible = 1;
+     gcc_assert (TREE_STATIC (vnode->decl));
+    }
+
+  /* Because we have to be conservative on the boundaries of source
+     level units, it is possible that we marked some functions in
+     reachable just because they might be used later via external
+     linkage, but after making them local they are really unreachable
+     now.  */
+  cgraph_remove_unreachable_nodes (true, cgraph_dump_file);
 
   if (cgraph_dump_file)
     {
@@ -1043,7 +1070,13 @@ cgraph_mark_local_functions (void)
 	if (node->local.local)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n\n");
+      fprintf (cgraph_dump_file, "\nMarking externally visible functions:");
+      for (node = cgraph_nodes; node; node = node->next)
+	if (node->local.externally_visible)
+	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
+      fprintf (cgraph_dump_file, "\n\n");
     }
+  cgraph_function_flags_ready = true;
 }
 
 /* Return true when function body of DECL still needs to be kept around
@@ -1088,7 +1121,7 @@ cgraph_optimize (void)
   if (!quiet_flag)
     fprintf (stderr, "Performing intraprocedural optimizations\n");
 
-  cgraph_mark_local_functions ();
+  cgraph_function_and_variable_visibility ();
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Marked ");
