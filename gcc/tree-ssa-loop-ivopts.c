@@ -1389,7 +1389,7 @@ idx_find_step (tree base, tree *idx, void *data)
 {
   struct ifs_ivopts_data *dta = data;
   struct iv *iv;
-  tree step, type, iv_type, iv_step, lbound, off;
+  tree step, iv_step, lbound, off;
   struct loop *loop = dta->ivopts_data->current_loop;
 
   if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF
@@ -1430,8 +1430,6 @@ idx_find_step (tree base, tree *idx, void *data)
   if (!iv->step)
     return true;
 
-  iv_type = TREE_TYPE (iv->base);
-  type = build_pointer_type (TREE_TYPE (base));
   if (TREE_CODE (base) == ARRAY_REF)
     {
       step = array_ref_element_size (base);
@@ -1442,13 +1440,13 @@ idx_find_step (tree base, tree *idx, void *data)
     }
   else
     /* The step for pointer arithmetics already is 1 byte.  */
-    step = build_int_cst (type, 1);
+    step = build_int_cst (sizetype, 1);
 
-  if (TYPE_PRECISION (iv_type) < TYPE_PRECISION (type))
+  if (TYPE_PRECISION (TREE_TYPE (iv->base)) < TYPE_PRECISION (sizetype))
     iv_step = can_count_iv_in_wider_type (dta->ivopts_data->current_loop,
-					  type, iv->base, iv->step, dta->stmt);
+					  sizetype, iv->base, iv->step, dta->stmt);
   else
-    iv_step = fold_convert (iv_type, iv->step);
+    iv_step = fold_convert (sizetype, iv->step);
 
   if (!iv_step)
     {
@@ -1456,12 +1454,12 @@ idx_find_step (tree base, tree *idx, void *data)
       return false;
     }
 
-  step = fold_build2 (MULT_EXPR, type, step, iv_step);
+  step = fold_build2 (MULT_EXPR, sizetype, step, iv_step);
 
   if (!*dta->step_p)
     *dta->step_p = step;
   else
-    *dta->step_p = fold_build2 (PLUS_EXPR, type, *dta->step_p, step);
+    *dta->step_p = fold_build2 (PLUS_EXPR, sizetype, *dta->step_p, step);
 
   return true;
 }
