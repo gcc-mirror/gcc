@@ -580,7 +580,7 @@ static void
 ccp_finalize (void)
 {
   /* Perform substitutions based on the known constant values.  */
-  substitute_and_fold (const_val);
+  substitute_and_fold (const_val, false);
 
   free (const_val);
 }

@@ -83,34 +83,6 @@ struct ptr_info_def GTY(())
 };
 
 
-/* Types of value ranges.  */
-enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
-
-
-/* Ranges of values that can be associated with an SSA_NAME after VRP
-   has executed.  */
-struct value_range_def GTY(())
-{
-  /* Lattice value represented by this range.  */
-  enum value_range_type type;
-
-  /* Minimum and maximum values represented by this range.  These
-     values are _CST nodes that should be interpreted as follows:
-
-     	- If TYPE == VR_UNDEFINED then MIN and MAX must be NULL.
-
-	- If TYPE == VR_RANGE then MIN holds the minimum value and
-	  MAX holds the maximum value of the range [MIN, MAX].
-
-	- If TYPE == ANTI_RANGE the variable is known to NOT
-	  take any values in the range [MIN, MAX].  */
-  tree min;
-  tree max;
-};
-
-typedef struct value_range_def value_range;
-
-
 /*---------------------------------------------------------------------------
 		   Tree annotations stored in tree_common.ann
 ---------------------------------------------------------------------------*/
@@ -619,12 +591,8 @@ bool fold_stmt_inplace (tree);
 tree widen_bitfield (tree, tree, tree);
 
 /* In tree-vrp.c  */
-value_range *get_value_range (tree);
-void dump_value_range (FILE *, value_range *);
-void debug_value_range (value_range *);
-void dump_all_value_ranges (FILE *);
-void debug_all_value_ranges (void);
 bool expr_computes_nonzero (tree);
+tree vrp_evaluate_conditional (tree, bool);
 
 /* In tree-ssa-dom.c  */
 extern void dump_dominator_optimization_stats (FILE *);

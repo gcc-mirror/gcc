@@ -25,5 +25,5 @@ foo (void)
     link_error ();
 }
 
-/* { dg-final { scan-tree-dump-times "with if \\(0\\)" 1 "store_ccp"} } */
+/* { dg-final { scan-tree-dump-times "Folded statement: if " 1 "store_ccp"} } */
 /* { dg-final { cleanup-tree-dump "store_ccp" } } */

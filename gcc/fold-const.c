@@ -89,7 +89,6 @@ static tree negate_expr (tree);
 static tree split_tree (tree, enum tree_code, tree *, tree *, tree *, int);
 static tree associate_trees (tree, tree, enum tree_code, tree);
 static tree const_binop (enum tree_code, tree, tree, int);
-static enum tree_code invert_tree_comparison (enum tree_code, bool);
 static enum comparison_code comparison_to_compcode (enum tree_code);
 static enum tree_code compcode_to_comparison (enum comparison_code);
 static tree combine_comparisons (enum tree_code, enum tree_code,
@@ -2119,7 +2118,7 @@ pedantic_non_lvalue (tree x)
    comparisons, except for NE_EXPR and EQ_EXPR, so we receive a machine mode
    as well: if reversing the comparison is unsafe, return ERROR_MARK.  */
 
-static enum tree_code
+enum tree_code
 invert_tree_comparison (enum tree_code code, bool honor_nans)
 {
   if (honor_nans && flag_trapping_math)

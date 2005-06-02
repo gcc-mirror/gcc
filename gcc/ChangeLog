@@ -1,3 +1,111 @@
+2005-06-01  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 14341, PR 21332, PR 20701, PR 21029, PR 21086, PR 21090
+	PR 21289, PR 21348, PR 21367, PR 21368, PR 21458.
+	* fold-const.c (invert_tree_comparison): Make extern.
+	* tree-flow.h (enum value_range_type): Move to tree-ssa-propagate.
+	(struct value_range_def): Limewise.
+	(get_value_range): Remove.
+	(dump_value_range): Remove.
+	(dump_all_value_ranges): Remove.
+	(debug_all_value_ranges): Remove.
+	(vrp_evaluate_conditional): Declare.
+	* tree-ssa-propagate.c (struct prop_stats_d): Add field
+	num_pred_folded.
+	(substitute_and_fold): Add argument use_ranges_p.
+	Update all callers.
+	If use_ranges_p is true, call fold_predicate_in to fold
+	predicates using range information.
+	Ignore ASSERT_EXPRs.
+	Change debugging output to only show statements that have been
+	folded.
+	(replace_phi_args_in): Move debugging output code from
+	substitute and fold.
+	(fold_predicate_in): New local function.
+	* tree-ssa-propagate.h (enum value_range_type): Move from
+	tree-flow.h.
+	(struct value_range_d): Likewise.
+	Add field 'equiv'. 
+	(value_range_t): Rename from value_range.
+	* tree-vrp.c (found_in_subgraph): Rename from found.
+	(get_opposite_operand): Remove.
+	(struct assert_locus_d): Declare.
+	(assert_locus_t): Declare.
+	(need_assert_for): Declare.
+	(asserts_for): Declare.
+	(blocks_visited): Declare.
+	(vr_value): Declare.
+	(set_value_range): Add argument 'equiv'.
+	Don't drop to VARYING ranges that cover all values in the
+	type.
+	Make deep copy of equivalence set 'equiv'.
+	(copy_value_range): New local function.
+	(set_value_range_to_undefined): New local function.
+	(compare_values): Return -2 if either value has overflowed.
+	(range_includes_zero_p): New local function.
+	(extract_range_from_assert): Flip the predicate code if the
+	name being asserted is on the RHS of the predicate.
+	Avoid creating unnecessary symbolic ranges if the comparison
+	includes another name with a known numeric range.
+	Update the equivalnce set of the new range when asserting
+	EQ_EXPR predicates.
+	(extract_range_from_ssa_name): Update the equivalence set of
+	the new range with VAR.
+	(extract_range_from_binary_expr): Also handle TRUTH_*_EXPR.
+	If -fwrapv is used, set the resulting range to VARYING if the
+	operation overflows.  Otherwise, use TYPE_MIN_VALUE and
+	TYPE_MAX_VALUE to represent -INF and +INF.
+	Fix handling of *_DIV_EXPR.
+	(extract_range_from_unary_expr): Handle MINUS_EXPR and
+	ABS_EXPR properly by switching the range around if necessary.
+	(extract_range_from_comparison): New local function.
+	(extract_range_from_expr): Call it.
+	(adjust_range_with_scev): Do not adjust the range if using
+	wrapping arithmetic (-fwrapv).
+	(dump_value_range): Also show equivalence set.
+	Show -INF and +INF for TYPE_MIN_VALUE and TYPE_MAX_VALUE.
+	(build_assert_expr_for): Also build ASSERT_EXPR for EQ_EXPR.
+	(infer_value_range): Change return value to bool.
+	Add arguments 'comp_code_p' and 'val_p'.
+	Do not attempt to infer ranges from statements that may throw.
+	Store the comparison code in comp_code_p.
+	Store the other operand to be used in the predicate in val_p.
+	(dump_asserts_for): New.
+	(debug_asserts_for): New.
+	(dump_all_asserts): New.
+	(debug_all_asserts): New.
+	(register_new_assert_for): New.
+	(register_edge_assert_for): New.
+	(find_conditional_asserts): New.
+	(find_assert_locations): New.
+	(process_assert_insertions_for): New.
+	(process_assert_insertions): New.
+	(insert_range_assertions): Initialize found_in_subgraph,
+	blocks_visited, need_assert_for and asserts_for.
+	Call find_assert_locations and process_assert_insertions.
+	(remove_range_assertions): Add more documentation.
+	(vrp_initialize): Change return type to void.
+	Do not try to guess if running VRP is worth it.  
+	(compare_name_with_value): New.
+	(compare_names): New.
+	(vrp_evaluate_conditional): Add argument 'use_equiv_p'.  If
+	use_equiv_p is true, call compare_names and
+	compare_name_with_value to compare all the ranges for every
+	name in the equivalence set of the predicate operands.
+	Update all callers.
+	(vrp_meet): Try harder not to derive a VARYING range.
+	If two values meet, the resulting equivalence set is the
+	intersection of the two equivalence sets.
+	(vrp_visit_phi_node): Call copy_value_range to get the current
+	range information of the LHS.
+	(vrp_finalize): Create a value vector representing all the
+	names that ended up with exactly one value in their range.
+	Call substitute_and_fold.
+	(execute_vrp): Document equivalence sets in ranges.
+	* tree.h (SSA_NAME_VALUE_RANGE): Remove.
+	(struct tree_ssa_name): Remove field value_range.
+	(invert_tree_comparison): Declare.
+
 2005-06-01  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/21839
