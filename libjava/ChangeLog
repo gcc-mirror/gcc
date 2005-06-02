@@ -1,3 +1,7 @@
+2005-06-02  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/transport/TransportException.java: New file.
+
 2005-06-02  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* mauve-libgcj: Remove implemented classes from the fail section.
