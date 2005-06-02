@@ -1,3 +1,11 @@
+2005-06-02  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/21734
+	* tree-vectorizer.c (slpeel_update_phis_for_duplicate_loop): Use the
+	phi_result when current_def is not available.
+	(slpeel_update_phi_nodes_for_guard1): Don't fail if current_def is not
+	available.	
+
 2005-06-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_insn_valid_within_doloop): New.

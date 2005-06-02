@@ -1,3 +1,9 @@
+2005-06-02  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/21734
+	* g++.dg/vect/pr21734_1.cc: New.
+	* g++.dg/vect/pr21734_2.cc: New.
+
 2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20350
