@@ -1638,12 +1638,9 @@ build_indirect_ref (tree ptr, const char *errorstring)
       else
 	{
 	  tree t = TREE_TYPE (type);
-	  tree mvt = t;
 	  tree ref;
 
-	  if (TREE_CODE (mvt) != ARRAY_TYPE)
-	    mvt = TYPE_MAIN_VARIANT (mvt);
-	  ref = build1 (INDIRECT_REF, mvt, pointer);
+	  ref = build1 (INDIRECT_REF, t, pointer);
 
 	  if (!COMPLETE_OR_VOID_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
 	    {

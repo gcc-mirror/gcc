@@ -1,3 +1,7 @@
+2005-06-02  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* gcc.dg/wtypequal.c: New testcase.
+
 2005-06-02  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 21582
