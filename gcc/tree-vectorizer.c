@@ -320,8 +320,11 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
 
       new_ssa_name = get_current_def (def);
       if (!new_ssa_name)
-        /* Something defined outside of the loop.  */
-        continue;
+	{
+	  /* This only happens if there are no definitions
+	     inside the loop. use the phi_result in this case.  */
+	  new_ssa_name = PHI_RESULT (phi_new);
+	}
 
       /* An ordinary ssa name defined in the loop.  */
       add_phi_arg (phi_new, new_ssa_name, loop_latch_edge (new_loop));
@@ -565,7 +568,12 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
       else
         {
           current_new_name = get_current_def (loop_arg);
-          gcc_assert (current_new_name);
+	  /* current_def is not available only if the variable does not
+	     change inside the loop, in which case we also don't care
+	     about recording a current_def for it because we won't be
+	     trying to create loop-exit-phis for it.  */
+	  if (!current_new_name)
+	    continue;
         }
 #ifdef ENABLE_CHECKING
       gcc_assert (get_current_def (current_new_name) == NULL_TREE);
