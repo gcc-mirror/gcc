@@ -1,3 +1,10 @@
+2005-06-01  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/21839
+
+	* gimplify.c (zero_sized_field_decl): New function.
+	(gimplify_init_ctor_eval): Use it.
+
 2005-06-01  Josh Conner <jconner@apple.com>
 
 	PR 21478
@@ -199,7 +206,6 @@
 	
 	* Makefile.in: Update dependencies.
 	
-
 2005-06-01  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (NO_PROFILE_COUNTERS): Define.

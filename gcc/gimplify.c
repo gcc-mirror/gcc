@@ -2501,6 +2501,17 @@ gimplify_init_ctor_eval_range (tree object, tree lower, tree upper,
 			    pre_p);
 }
 
+/* Return true if FDECL is accessing a field that is zero sized.  */
+   
+static bool
+zero_sized_field_decl (tree fdecl)
+{
+  if (TREE_CODE (fdecl) == FIELD_DECL && DECL_SIZE (fdecl) 
+      && integer_zerop (DECL_SIZE (fdecl)))
+    return true;
+  return false;
+}
+
 /* A subroutine of gimplify_init_constructor.  Generate individual
    MODIFY_EXPRs for a CONSTRUCTOR.  OBJECT is the LHS against which the
    assignments should happen.  LIST is the CONSTRUCTOR_ELTS of the
@@ -2532,6 +2543,9 @@ gimplify_init_ctor_eval (tree object, tree list, tree *pre_p, bool cleared)
       /* ??? Here's to hoping the front end fills in all of the indices,
 	 so we don't have to figure out what's missing ourselves.  */
       gcc_assert (purpose);
+
+      if (zero_sized_field_decl (purpose))
+	continue;
 
       /* If we have a RANGE_EXPR, we have to build a loop to assign the
 	 whole range.  */
