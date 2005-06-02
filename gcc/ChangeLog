@@ -1,3 +1,10 @@
+2005-06-03  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-ssa-loop-ivopts.c (build_addr_strip_iref): Remove.
+	(find_interesting_uses_address): Use build_fold_addr_expr instead.
+	(strip_offset_1): Likewise.
+	(tree_to_aff_combination): Likewise.
+
 2005-06-02  DJ Delorie  <dj@redhat.com>
 
 	* convert.c (convert_to_pointer): Avoid recursion if no conversion
