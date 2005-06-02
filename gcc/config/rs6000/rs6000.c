@@ -552,6 +552,7 @@ struct processor_costs power4_cost = {
 
 
 static bool rs6000_function_ok_for_sibcall (tree, tree);
+static bool rs6000_insn_valid_within_doloop (rtx);
 static rtx rs6000_generate_compare (enum rtx_code);
 static void rs6000_maybe_dead (rtx);
 static void rs6000_emit_stack_tie (void);
@@ -905,6 +906,9 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL rs6000_function_ok_for_sibcall
+
+#undef TARGET_INSN_VALID_WITHIN_DOLOOP
+#define TARGET_INSN_VALID_WITHIN_DOLOOP rs6000_insn_valid_within_doloop
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS rs6000_rtx_costs
@@ -12518,6 +12522,23 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 	}
     }
   return false;
+}
+
+/* TRUE if INSN insn is valid within a low-overhead loop.
+   PowerPC uses the COUNT register for branch on table instructions.  */
+
+static bool
+rs6000_insn_valid_within_doloop (rtx insn)
+{
+  if (CALL_P (insn))
+    return false;
+
+  if (JUMP_P (insn)
+      && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
+	  || GET_CODE (PATTERN (insn)) == ADDR_VEC))
+    return false;
+
+  return true;
 }
 
 static int

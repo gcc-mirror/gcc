@@ -1,3 +1,8 @@
+2005-06-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_insn_valid_within_doloop): New.
+	(TARGET_INSN_VALID_WITHIN_DOLOOP): Define.
+
 2005-06-02  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-vrp.c (has_assert_expr, maybe_add_assert_expr): Remove.
