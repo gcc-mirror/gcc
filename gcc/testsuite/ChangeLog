@@ -1,3 +1,15 @@
+2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21280
+	* g++.dg/opt/interface2.h: New.
+	* g++.dg/opt/interface2.C: New.
+	* g++.dg/init/ctor4.C: Adjust error lines.
+	* g++.old-deja/g++.bob/inherit2.C: Likewise.
+	* g++.old-deja/g++.bugs/900205_04.C: Likewise.
+	* g++.old-deja/g++.jason/opeq3.C: Likewise.
+	* g++.old-deja/g++.pt/assign1.C: Likewise.
+	* g++.old-deja/g++.pt/crash20.C: Likewise.
+
 2005-06-02  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/21734
