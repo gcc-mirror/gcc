@@ -269,74 +269,31 @@ static struct sched_info sms_sched_info =
 };
 
 
-/* Return the register decremented and tested or zero if it is not a decrement
-   and branch jump insn (similar to doloop_condition_get).  */
+/* Return the register decremented and tested in INSN,
+   or zero if it is not a decrement-and-branch insn.  */
+
 static rtx
-doloop_register_get (rtx insn, rtx *comp)
+doloop_register_get (rtx insn)
 {
-  rtx pattern, cmp, inc, reg, condition;
+  rtx pattern, reg, condition;
 
-  if (!JUMP_P (insn))
+  if (! JUMP_P (insn))
     return NULL_RTX;
+
   pattern = PATTERN (insn);
-
-  /* The canonical doloop pattern we expect is:
-
-     (parallel [(set (pc) (if_then_else (condition)
-					(label_ref (label))
-					(pc)))
-		(set (reg) (plus (reg) (const_int -1)))
-		(additional clobbers and uses)])
-
-    where condition is further restricted to be
-      (ne (reg) (const_int 1)).  */
-
-  if (GET_CODE (pattern) != PARALLEL)
+  condition = doloop_condition_get (pattern);
+  if (! condition)
     return NULL_RTX;
 
-  cmp = XVECEXP (pattern, 0, 0);
-  inc = XVECEXP (pattern, 0, 1);
-  /* Return the compare rtx.  */
-  *comp = cmp;
+  if (REG_P (XEXP (condition, 0)))
+    reg = XEXP (condition, 0);
+  else if (GET_CODE (XEXP (condition, 0)) == PLUS
+	   && REG_P (XEXP (XEXP (condition, 0), 0)))
+    reg = XEXP (XEXP (condition, 0), 0);
+  else
+    gcc_unreachable ();
 
-  /* Check for (set (reg) (something)).  */
-  if (GET_CODE (inc) != SET || ! REG_P (SET_DEST (inc)))
-    return NULL_RTX;
-
-  /* Extract loop counter register.  */
-  reg = SET_DEST (inc);
-
-  /* Check if something = (plus (reg) (const_int -1)).  */
-  if (GET_CODE (SET_SRC (inc)) != PLUS
-      || XEXP (SET_SRC (inc), 0) != reg
-      || XEXP (SET_SRC (inc), 1) != constm1_rtx)
-    return NULL_RTX;
-
-  /* Check for (set (pc) (if_then_else (condition)
-				       (label_ref (label))
-				       (pc))).  */
-  if (GET_CODE (cmp) != SET
-      || SET_DEST (cmp) != pc_rtx
-      || GET_CODE (SET_SRC (cmp)) != IF_THEN_ELSE
-      || GET_CODE (XEXP (SET_SRC (cmp), 1)) != LABEL_REF
-      || XEXP (SET_SRC (cmp), 2) != pc_rtx)
-    return NULL_RTX;
-
-  /* Extract loop termination condition.  */
-  condition = XEXP (SET_SRC (cmp), 0);
-
-  /* Check if condition = (ne (reg) (const_int 1)), which is more
-     restrictive than the check in doloop_condition_get:
-     if ((GET_CODE (condition) != GE && GET_CODE (condition) != NE)
-	 || GET_CODE (XEXP (condition, 1)) != CONST_INT).  */
-  if (GET_CODE (condition) != NE
-      || XEXP (condition, 1) != const1_rtx)
-    return NULL_RTX;
-
-  if (XEXP (condition, 0) == reg)
-    return reg;
-
-  return NULL_RTX;
+  return reg;
 }
 
 /* Check if COUNT_REG is set to a constant in the PRE_HEADER block, so
@@ -1025,7 +982,7 @@ sms_schedule (FILE *dump_file)
   for (i = 0; i < loops->num; i++)
     {
       rtx head, tail;
-      rtx count_reg, comp;
+      rtx count_reg;
       struct loop *loop = loops->parray[i];
 
       /* For debugging.  */
@@ -1088,7 +1045,7 @@ sms_schedule (FILE *dump_file)
         }
 
       /* Make sure this is a doloop.  */
-      if ( !(count_reg = doloop_register_get (tail, &comp)))
+      if ( !(count_reg = doloop_register_get (tail)))
 	continue;
 
       /* Don't handle BBs with calls or barriers, or !single_set insns.  */
@@ -1134,7 +1091,7 @@ sms_schedule (FILE *dump_file)
   for (i = 0; i < num_loops; i++)
     {
       rtx head, tail;
-      rtx count_reg, count_init, comp;
+      rtx count_reg, count_init;
       int mii, rec_mii;
       unsigned stage_count = 0;
       HOST_WIDEST_INT loop_count = 0;
@@ -1186,7 +1143,7 @@ sms_schedule (FILE *dump_file)
       /* In case of th loop have doloop register it gets special
 	 handling.  */
       count_init = NULL_RTX;
-      if ((count_reg = doloop_register_get (tail, &comp)))
+      if ((count_reg = doloop_register_get (tail)))
 	{
 	  basic_block pre_header;
 

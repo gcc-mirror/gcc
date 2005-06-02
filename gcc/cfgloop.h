@@ -289,6 +289,7 @@ extern void verify_loop_structure (struct loops *);
 /* Loop analysis.  */
 extern bool just_once_each_iteration_p (const struct loop *, basic_block);
 extern unsigned expected_loop_iterations (const struct loop *);
+extern rtx doloop_condition_get (rtx);
 
 /* Loop manipulation.  */
 extern bool can_duplicate_loop_p (struct loop *loop);
