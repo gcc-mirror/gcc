@@ -1,3 +1,8 @@
+2005-06-02  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 21765
+	* doc/invoke.texi: Document -ftree-vrp.
+
 2005-06-02  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/21734

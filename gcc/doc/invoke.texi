@@ -277,6 +277,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
 -fdump-tree-salias @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
+-fdump-tree-vrp@r{[}-@var{n}@r{]} @gol
 -ftree-vectorizer-verbose=@var{n} @gol
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
@@ -4067,6 +4068,11 @@ file name.
 Dump each function after applying vectorization of loops.  The file name is
 made by appending @file{.vect} to the source file name.
 
+@item vrp
+@opindex fdump-tree-vrp
+Dump each function after Value Range Propagation (VRP).  The file name
+is made by appending @file{.vrp} to the source file name.
+
 @item all
 @opindex fdump-tree-all
 Enable all the available tree dumps with the flags provided in this option.
@@ -4321,6 +4327,7 @@ also turns on the following optimization flags:
 -funit-at-a-time @gol
 -falign-functions  -falign-jumps @gol
 -falign-loops  -falign-labels @gol
+-ftree-vrp @gol
 -ftree-pre}
 
 Please note the warning under @option{-fgcse} about
@@ -4962,6 +4969,15 @@ optimization later.  This is enabled by default at @option{-O} and higher.
 
 @item -ftree-vectorize
 Perform loop vectorization on trees.
+
+@item -ftree-vrp
+Perform Value Range Propagation on trees.  This is similar to the
+constant propagation pass, but instead of values, ranges of values are
+propagated.  This allows the optimizers to remove unnecessary range
+checks like array bound checks and null pointer checks.  This is
+enabled by default at @option{-O2} and higher.  Null pointer check
+elimination is only done if @option{-fdelete-null-pointer-checks} is
+enabled.
 
 @item -ftracer
 @opindex ftracer
