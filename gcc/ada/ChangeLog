@@ -1,3 +1,9 @@
+2005-06-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* trans.c (gnat_gimplify_expr): Call
+	recompute_tree_invarant_for_addr_expr when we change
+	the operand of the ADDR_EXPR.
+
 2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* misc.c: Don't include errors.h.
