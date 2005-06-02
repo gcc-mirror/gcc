@@ -24,6 +24,28 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "basic-block.h"
 
+enum availability
+{
+  /* Not yet set by cgraph_function_body_availability.  */
+  AVAIL_UNSET,
+  /* Function body/variable initializer is unknown.  */
+  AVAIL_NOT_AVAILABLE,
+  /* Function body/variable initializer is known but might be replaced
+     by a different one from other compilation unit and thus needs to
+     be dealt with a care.  Like AVAIL_NOT_AVAILABLE it can have
+     arbitrary side effects on escaping variables and functions, while
+     like AVAILABLE it might access static variables.  */
+  AVAIL_OVERWRITABLE,
+  /* Function body/variable initializer is known and will be used in final
+     program.  */
+  AVAIL_AVAILABLE,
+  /* Function body/variable initializer is known and all it's uses are explicitly
+     visible within current unit (ie it's address is never taken and it is not
+     exported to other units).
+     Currently used only for functions.  */
+  AVAIL_LOCAL
+};
+
 /* Information about the function collected locally.
    Available after function is analyzed.  */
 
@@ -110,6 +132,10 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Pointer to the next clone.  */
   struct cgraph_node *next_clone;
   struct cgraph_node *prev_clone;
+  /* Pointer to a single unique cgraph node for this function.  If the
+     function is to be output, this is the copy that will survive.  */
+  struct cgraph_node *master_clone;
+ 
   PTR GTY ((skip)) aux;
 
   struct cgraph_local_info local;
@@ -178,7 +204,7 @@ struct cgraph_varpool_node GTY(())
   bool analyzed;
   /* Set once it has been finalized so we consider it to be output.  */
   bool finalized;
-  /* Set when function is scheduled to be assembled.  */
+  /* Set when variable is scheduled to be assembled.  */
   bool output;
   /* Set when function is visible by other units.  */
   bool externally_visible;
@@ -228,6 +254,11 @@ void cgraph_unnest_node (struct cgraph_node *);
 void cgraph_varpool_enqueue_needed_node (struct cgraph_varpool_node *);
 void cgraph_varpool_reset_queue (void);
 bool decide_is_variable_needed (struct cgraph_varpool_node *, tree);
+
+enum availability cgraph_function_body_availability (struct cgraph_node *);
+enum availability cgraph_variable_initializer_availability (struct cgraph_varpool_node *);
+bool cgraph_is_master_clone (struct cgraph_node *);
+struct cgraph_node *cgraph_master_clone (struct cgraph_node *);
 
 /* In cgraphunit.c  */
 bool cgraph_assemble_pending_functions (void);
