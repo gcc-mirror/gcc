@@ -4672,15 +4672,12 @@ s390_add_execute (struct constant_pool *pool, rtx insn)
 
   if (c == NULL)
     {
-      rtx label = s390_execute_label (insn);
-      gcc_assert (label);
-
       c = (struct constant *) xmalloc (sizeof *c);
       c->value = insn;
-      c->label = label == const0_rtx ? gen_label_rtx () : XEXP (label, 0);
+      c->label = gen_label_rtx ();
       c->next = pool->execute;
       pool->execute = c;
-      pool->size += label == const0_rtx ? 6 : 0;
+      pool->size += 6;
     }
 }
 
@@ -4730,28 +4727,6 @@ s390_execute_target (rtx insn)
     }
 
   return pattern;
-}
-
-/* Dump out the out-of-pool execute template insns in POOL
-   at the end of the instruction stream.  */
-
-static void
-s390_dump_execute (struct constant_pool *pool)
-{
-  struct constant *c;
-  rtx insn;
-
-  for (c = pool->execute; c; c = c->next)
-    {
-      if (s390_execute_label (c->value) == const0_rtx)
-	continue;
-
-      insn = emit_label (c->label);
-      INSN_ADDRESSES_NEW (insn, -1);
-
-      insn = emit_insn (s390_execute_target (c->value));
-      INSN_ADDRESSES_NEW (insn, -1);
-    }
 }
 
 /* Indicate that INSN cannot be duplicated.  This is the case for
@@ -4829,9 +4804,6 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
   /* Output in-pool execute template insns.  */
   for (c = pool->execute; c; c = c->next)
     {
-      if (s390_execute_label (c->value) != const0_rtx)
-	continue;
-
       insn = emit_label_after (c->label, insn);
       INSN_ADDRESSES_NEW (insn, -1);
 
@@ -4851,9 +4823,6 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
 
   /* Remove placeholder insn.  */
   remove_insn (pool->pool_insn);
-
-  /* Output out-of-pool execute template isns.  */
-  s390_dump_execute (pool);
 }
 
 /* Free all memory used by POOL.  */
@@ -4903,7 +4872,7 @@ s390_mainpool_start (void)
 	  pool->pool_insn = insn;
 	}
 
-      if (s390_execute_label (insn))
+      if (!TARGET_CPU_ZARCH && s390_execute_label (insn))
 	{
 	  s390_add_execute (pool, insn);
 	}
@@ -4948,9 +4917,6 @@ s390_mainpool_finish (struct constant_pool *pool)
   /* If the pool is empty, we're done.  */
   if (pool->size == 0)
     {
-      /* However, we may have out-of-pool execute templates.  */
-      s390_dump_execute (pool);
-
       /* We don't actually need a base register after all.  */
       cfun->machine->base_reg = NULL_RTX;
 
@@ -5103,7 +5069,7 @@ s390_chunkify_start (void)
 	    }
 	}
 
-      if (s390_execute_label (insn))
+      if (!TARGET_CPU_ZARCH && s390_execute_label (insn))
 	{
 	  if (!curr_pool)
 	    curr_pool = s390_start_pool (&pool_list, insn);
@@ -8188,6 +8154,28 @@ s390_reorg (void)
       break;
     }
 
+  /* Generate out-of-pool execute target insns.  */
+  if (TARGET_CPU_ZARCH)
+    {
+      rtx insn, label, target;
+
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	{
+	  label = s390_execute_label (insn);
+	  if (!label)
+	    continue;
+
+	  gcc_assert (label != const0_rtx);
+
+	  target = emit_label (XEXP (label, 0));
+	  INSN_ADDRESSES_NEW (target, -1);
+
+	  target = emit_insn (s390_execute_target (insn));
+	  INSN_ADDRESSES_NEW (target, -1);
+	}
+    }
+
+  /* Try to optimize prologue and epilogue further.  */
   s390_optimize_prologue ();
 }
 
