@@ -1,3 +1,9 @@
+2005-06-02  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 21582
+	* tree-vrp.c (nonnull_arg_p): New.
+	(get_value_range): Call it.
+
 2005-06-02  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.h (processor_type): Remove PROCESSOR_DEFAULT,
