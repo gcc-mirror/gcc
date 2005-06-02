@@ -894,7 +894,7 @@ fini_copy_prop (void)
 	copy_of[i].value = get_last_copy_of (var);
     }
 
-  substitute_and_fold (copy_of);
+  substitute_and_fold (copy_of, false);
 
   free (cached_last_copy_of);
   free (copy_of);

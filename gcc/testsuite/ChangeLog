@@ -1,3 +1,34 @@
+2005-06-01  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 14341, PR 21332, PR 20701, PR 21086, PR 21090
+	PR 21289, PR 21348, PR 21367, PR 21368, PR 21458.
+	* gcc.dg/tree-ssa/pr14341.c: New test.
+	* gcc.dg/tree-ssa/pr14841.c: New test.
+	* gcc.dg/tree-ssa/pr20701.c: New test.
+	* gcc.dg/tree-ssa/pr21086.c: New test.
+	* gcc.dg/tree-ssa/pr21090.c: New test.
+	* gcc.dg/tree-ssa/pr21332.c: New test.
+	* gcc.dg/tree-ssa/pr21458.c: New test.
+	* gcc.dg/tree-ssa/pr21658.c: New test.
+	* gcc.dg/tree-ssa/vrp01.c: New test.
+	* gcc.dg/tree-ssa/vrp02.c: New test.
+	* gcc.dg/tree-ssa/vrp03.c: New test.
+	* gcc.dg/tree-ssa/vrp04.c: New test.
+	* gcc.dg/tree-ssa/vrp05.c: New test.
+	* gcc.dg/tree-ssa/vrp06.c: New test.
+	* gcc.dg/tree-ssa/vrp07.c: New test.
+	* gcc.dg/tree-ssa/vrp08.c: New test.
+	* gcc.dg/tree-ssa/vrp09.c: New test.
+	* gcc.dg/tree-ssa/vrp10.c: New test.
+	* gcc.dg/tree-ssa/vrp11.c: New test.
+	* gcc.dg/tree-ssa/vrp12.c: New test.
+	* gcc.dg/tree-ssa/vrp13.c: New test.
+
+2005-06-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR 21029
+	* gcc.dg/tree-ssa/pr21029.c: New test.
+
 2005-06-01  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/logint-1.f: New test case.

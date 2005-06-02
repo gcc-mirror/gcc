@@ -773,6 +773,7 @@ struct prop_stats_d
 {
   long num_const_prop;
   long num_copy_prop;
+  long num_pred_folded;
 };
 
 static struct prop_stats_d prop_stats;
@@ -964,6 +965,11 @@ static void
 replace_phi_args_in (tree phi, prop_value_t *prop_value)
 {
   int i;
+  bool replaced = false;
+  tree prev_phi = NULL;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    prev_phi = unshare_expr (phi);
 
   for (i = 0; i < PHI_NUM_ARGS (phi); i++)
     {
@@ -981,6 +987,7 @@ replace_phi_args_in (tree phi, prop_value_t *prop_value)
 		prop_stats.num_copy_prop++;
 
 	      propagate_value (PHI_ARG_DEF_PTR (phi, i), val);
+	      replaced = true;
 
 	      /* If we propagated a copy and this argument flows
 		 through an abnormal edge, update the replacement
@@ -991,19 +998,79 @@ replace_phi_args_in (tree phi, prop_value_t *prop_value)
 	    }
 	}
     }
+  
+  if (replaced && dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Folded PHI node: ");
+      print_generic_stmt (dump_file, prev_phi, TDF_SLIM);
+      fprintf (dump_file, "           into: ");
+      print_generic_stmt (dump_file, phi, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
 }
 
 
-/* Perform final substitution and folding of propagated values.  */
+/* If STMT has a predicate whose value can be computed using the value
+   range information computed by VRP, compute its value and return true.
+   Otherwise, return false.  */
+
+static bool
+fold_predicate_in (tree stmt)
+{
+  tree *pred_p = NULL;
+  tree val;
+
+  if (TREE_CODE (stmt) == MODIFY_EXPR
+      && COMPARISON_CLASS_P (TREE_OPERAND (stmt, 1)))
+    pred_p = &TREE_OPERAND (stmt, 1);
+  else if (TREE_CODE (stmt) == COND_EXPR)
+    pred_p = &COND_EXPR_COND (stmt);
+  else
+    return false;
+
+  val = vrp_evaluate_conditional (*pred_p, true);
+  if (val)
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Folding predicate ");
+	  print_generic_expr (dump_file, *pred_p, 0);
+	  fprintf (dump_file, " to ");
+	  print_generic_expr (dump_file, val, 0);
+	  fprintf (dump_file, "\n");
+	}
+
+      prop_stats.num_pred_folded++;
+      *pred_p = val;
+      return true;
+    }
+
+  return false;
+}
+
+
+/* Perform final substitution and folding of propagated values.
+
+   PROP_VALUE[I] contains the single value that should be substituted
+   at every use of SSA name N_I.  If PROP_VALUE is NULL, no values are
+   substituted.
+
+   If USE_RANGES_P is true, statements that contain predicate
+   expressions are evaluated with a call to vrp_evaluate_conditional.
+   This will only give meaningful results when called from tree-vrp.c
+   (the information used by vrp_evaluate_conditional is built by the
+   VRP pass).  */
 
 void
-substitute_and_fold (prop_value_t *prop_value)
+substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 {
   basic_block bb;
 
+  if (prop_value == NULL && !use_ranges_p)
+    return;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file,
-	     "\nSubstituing values and folding statements\n\n");
+    fprintf (dump_file, "\nSubstituing values and folding statements\n\n");
 
   memset (&prop_stats, 0, sizeof (prop_stats));
 
@@ -1013,41 +1080,51 @@ substitute_and_fold (prop_value_t *prop_value)
       block_stmt_iterator i;
       tree phi;
 
-      /* Propagate our known values into PHI nodes.  */
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Replaced ");
-	      print_generic_stmt (dump_file, phi, TDF_SLIM);
-	    }
-
+      /* Propagate known values into PHI nodes.  */
+      if (prop_value)
+	for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	  replace_phi_args_in (phi, prop_value);
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, " with ");
-	      print_generic_stmt (dump_file, phi, TDF_SLIM);
-	      fprintf (dump_file, "\n");
-	    }
-	}
 
       for (i = bsi_start (bb); !bsi_end_p (i); bsi_next (&i))
 	{
           bool replaced_address, did_replace;
+	  tree prev_stmt = NULL;
 	  tree stmt = bsi_stmt (i);
+
+	  /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
+	     range information for names and they are discarded
+	     afterwards.  */
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && TREE_CODE (TREE_OPERAND (stmt, 1)) == ASSERT_EXPR)
+	    continue;
 
 	  /* Replace the statement with its folded version and mark it
 	     folded.  */
+	  did_replace = false;
+	  replaced_address = false;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    prev_stmt = unshare_expr (stmt);
+
+	  /* If we have range information, see if we can fold
+	     predicate expressions.  */
+	  if (use_ranges_p)
+	    did_replace = fold_predicate_in (stmt);
+
+	  if (prop_value)
 	    {
-	      fprintf (dump_file, "Replaced ");
-	      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+	      /* Only replace real uses if we couldn't fold the
+		 statement using value range information (value range
+		 information is not collected on virtuals, so we only
+		 need to check this for real uses).  */
+	      if (!did_replace)
+		did_replace |= replace_uses_in (stmt, &replaced_address,
+		                                prop_value);
+
+	      did_replace |= replace_vuses_in (stmt, &replaced_address,
+		                               prop_value);
 	    }
 
-	  replaced_address = false;
-	  did_replace = replace_uses_in (stmt, &replaced_address, prop_value);
-	  did_replace |= replace_vuses_in (stmt, &replaced_address, prop_value);
+	  /* If we made a replacement, fold and cleanup the statement.  */
 	  if (did_replace)
 	    {
 	      tree old_stmt = stmt;
@@ -1068,13 +1145,15 @@ substitute_and_fold (prop_value_t *prop_value)
 	      rhs = get_rhs (stmt);
 	      if (TREE_CODE (rhs) == ADDR_EXPR)
 		recompute_tree_invarant_for_addr_expr (rhs);
-	    }
 
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, " with ");
-	      print_generic_stmt (dump_file, stmt, TDF_SLIM);
-	      fprintf (dump_file, "\n");
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Folded statement: ");
+		  print_generic_stmt (dump_file, prev_stmt, TDF_SLIM);
+		  fprintf (dump_file, "            into: ");
+		  print_generic_stmt (dump_file, stmt, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
 	    }
 	}
     }
@@ -1085,6 +1164,9 @@ substitute_and_fold (prop_value_t *prop_value)
 	       prop_stats.num_const_prop);
       fprintf (dump_file, "Copies propagated:    %6ld\n",
 	       prop_stats.num_copy_prop);
+      fprintf (dump_file, "Predicates folded:    %6ld\n",
+	       prop_stats.num_pred_folded);
     }
 }
+
 #include "gt-tree-ssa-propagate.h"
