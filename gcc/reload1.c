@@ -752,7 +752,7 @@ reload (rtx first, int global)
 		     for equivalences.  This is overly conservative as
 		     we could find all sets of the destination pseudo
 		     and remove them as they should be redundant.  */
-		  if (memory_operand (x, VOIDmode) && ! MEM_READONLY_P (x))
+		  if (memory_operand (x, VOIDmode))
 		    {
 		      /* Always unshare the equivalence, so we can
 			 substitute into this insn without touching the
@@ -787,14 +787,8 @@ reload (rtx first, int global)
 		  else
 		    continue;
 
-		  /* If this register is being made equivalent to a MEM
-		     and the MEM is not SET_SRC, the equivalencing insn
-		     is one with the MEM as a SET_DEST and it occurs later.
-		     So don't mark this insn now.  */
-		  if (!MEM_P (x)
-		      || rtx_equal_p (SET_SRC (set), x))
-		    reg_equiv_init[i]
-		      = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[i]);
+		  reg_equiv_init[i]
+		    = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[i]);
 		}
 	    }
 	}
@@ -806,9 +800,12 @@ reload (rtx first, int global)
 	       && reg_equiv_memory_loc[REGNO (SET_SRC (set))]
 	       && rtx_equal_p (SET_DEST (set),
 			       reg_equiv_memory_loc[REGNO (SET_SRC (set))]))
+	/* Equivalences made this way only have one initializing insn.
+	   Previously, we may have set reg_equiv_init when encountering a
+	   SET of this pseudo; discard that insn since it does not set up
+	   an equivalence.  */
 	reg_equiv_init[REGNO (SET_SRC (set))]
-	  = gen_rtx_INSN_LIST (VOIDmode, insn,
-			       reg_equiv_init[REGNO (SET_SRC (set))]);
+	  = gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
 
       if (INSN_P (insn))
 	scan_paradoxical_subregs (PATTERN (insn));
