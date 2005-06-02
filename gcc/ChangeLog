@@ -1,3 +1,7 @@
+2005-06-02  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (TARGET_FPU_DOUBLE): Use MASK_SH4.
+
 2005-06-01  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 14341, PR 21332, PR 20701, PR 21029, PR 21086, PR 21090

@@ -174,7 +174,8 @@ do { \
 #define TARGET_HARVARD (TARGET_HARD_SH4 || TARGET_SH5)
 
 /* Nonzero if a double-precision FPU is available.  */
-#define TARGET_FPU_DOUBLE (TARGET_SH4 || TARGET_SH2A_DOUBLE)
+#define TARGET_FPU_DOUBLE \
+  ((target_flags & MASK_SH4) != 0 || TARGET_SH2A_DOUBLE)
 
 /* Nonzero if an FPU is available.  */
 #define TARGET_FPU_ANY (TARGET_SH2E || TARGET_FPU_DOUBLE)
