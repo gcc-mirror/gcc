@@ -2,6 +2,8 @@
 
 	* reload1.c (reload): Undo 2005-04-20 change.  Make sure we detect
 	the correct set of init_insns that need deletion.
+	* local-alloc.c (update_equiv_regs): When substituting sole definition
+	into sole use of a reg, delete it from liveness information.
 
 2005-06-02  Kaz Kojima  <kkojima@gcc.gnu.org>
 
