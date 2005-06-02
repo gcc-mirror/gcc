@@ -1046,7 +1046,7 @@ cgraph_function_and_variable_visibility (void)
 	node->local.externally_visible = 1;
       node->local.local = (!node->needed
 			   && node->analyzed
-			   && node->local.externally_visible);
+			   && !node->local.externally_visible);
     }
   for (vnode = cgraph_varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     {

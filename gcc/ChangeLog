@@ -1,3 +1,8 @@
+2005-06-02  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_function_and_variable_visibility): Fix typo in
+	previous patch.
+
 2005-06-02  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 21582
