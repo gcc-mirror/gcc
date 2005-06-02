@@ -549,6 +549,9 @@ int mips_isa;
 /* Which ABI to use.  */
 int mips_abi = MIPS_ABI_DEFAULT;
 
+/* Cost information to use.  */
+const struct mips_rtx_cost_data *mips_cost;
+
 /* Whether we are generating mips16 hard float code.  In mips16 mode
    we always set TARGET_SOFT_FLOAT; this variable is nonzero if
    -msoft-float was not specified by the user, which means that we
@@ -708,6 +711,224 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   /* End marker */
   { 0, 0, 0 }
 };
+
+/* Default costs. If these are used for a processor we should look
+   up the acutal costs.  */
+#define DEFAULT_COSTS COSTS_N_INSNS (6),  /* fp_add */       \
+                      COSTS_N_INSNS (7),  /* fp_mult_sf */   \
+                      COSTS_N_INSNS (8),  /* fp_mult_df */   \
+                      COSTS_N_INSNS (23), /* fp_div_sf */    \
+                      COSTS_N_INSNS (36), /* fp_div_df */    \
+                      COSTS_N_INSNS (10), /* int_mult_si */  \
+                      COSTS_N_INSNS (10), /* int_mult_di */  \
+                      COSTS_N_INSNS (69), /* int_div_si */   \
+                      COSTS_N_INSNS (69), /* int_div_di */   \
+                                       2, /* branch_cost */  \
+                                       4  /* memory_latency */
+
+/* Need to replace these with the costs of calling the appropriate
+   libgcc routine.  */
+#define SOFT_FP_COSTS COSTS_N_INSNS (256), /* fp_add */       \
+                      COSTS_N_INSNS (256), /* fp_mult_sf */   \
+                      COSTS_N_INSNS (256), /* fp_mult_df */   \
+                      COSTS_N_INSNS (256), /* fp_div_sf */    \
+                      COSTS_N_INSNS (256)  /* fp_div_df */
+
+static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
+  {
+    { /* R3000 */
+      COSTS_N_INSNS (2),            /* fp_add */
+      COSTS_N_INSNS (4),            /* fp_mult_sf */
+      COSTS_N_INSNS (5),            /* fp_mult_df */
+      COSTS_N_INSNS (12),           /* fp_div_sf */
+      COSTS_N_INSNS (19),           /* fp_div_df */
+      COSTS_N_INSNS (12),           /* int_mult_si */
+      COSTS_N_INSNS (12),           /* int_mult_di */
+      COSTS_N_INSNS (35),           /* int_div_si */
+      COSTS_N_INSNS (35),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+
+    },
+    { /* 4KC */
+      DEFAULT_COSTS
+    },
+    { /* 4KP */
+      DEFAULT_COSTS
+    },
+    { /* 5KC */
+      DEFAULT_COSTS
+    },
+    { /* 20KC */
+      DEFAULT_COSTS
+    },
+    { /* 24k */
+      DEFAULT_COSTS
+    },
+    { /* 24kx */
+      DEFAULT_COSTS
+    },
+    { /* M4k */
+      DEFAULT_COSTS
+    },
+    { /* R3900 */
+      COSTS_N_INSNS (2),            /* fp_add */
+      COSTS_N_INSNS (4),            /* fp_mult_sf */
+      COSTS_N_INSNS (5),            /* fp_mult_df */
+      COSTS_N_INSNS (12),           /* fp_div_sf */
+      COSTS_N_INSNS (19),           /* fp_div_df */
+      COSTS_N_INSNS (2),            /* int_mult_si */
+      COSTS_N_INSNS (2),            /* int_mult_di */
+      COSTS_N_INSNS (35),           /* int_div_si */
+      COSTS_N_INSNS (35),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* R6000 */
+      COSTS_N_INSNS (3),            /* fp_add */
+      COSTS_N_INSNS (5),            /* fp_mult_sf */
+      COSTS_N_INSNS (6),            /* fp_mult_df */
+      COSTS_N_INSNS (15),           /* fp_div_sf */
+      COSTS_N_INSNS (16),           /* fp_div_df */
+      COSTS_N_INSNS (17),           /* int_mult_si */
+      COSTS_N_INSNS (17),           /* int_mult_di */
+      COSTS_N_INSNS (38),           /* int_div_si */
+      COSTS_N_INSNS (38),           /* int_div_di */
+                       2,           /* branch_cost */
+                       6            /* memory_latency */
+    },
+    { /* R4000 */
+       COSTS_N_INSNS (6),           /* fp_add */
+       COSTS_N_INSNS (7),           /* fp_mult_sf */
+       COSTS_N_INSNS (8),           /* fp_mult_df */
+       COSTS_N_INSNS (23),          /* fp_div_sf */
+       COSTS_N_INSNS (36),          /* fp_div_df */
+       COSTS_N_INSNS (10),          /* int_mult_si */
+       COSTS_N_INSNS (10),          /* int_mult_di */
+       COSTS_N_INSNS (69),          /* int_div_si */
+       COSTS_N_INSNS (69),          /* int_div_di */
+                        2,          /* branch_cost */
+                        6           /* memory_latency */
+    },
+    { /* R4100 */
+      DEFAULT_COSTS
+    },
+    { /* R4111 */
+      DEFAULT_COSTS
+    },
+    { /* R4120 */
+      DEFAULT_COSTS
+    },
+    { /* R4130 */
+      /* The only costs that appear to be updated here are
+	 integer multiplication.  */
+      SOFT_FP_COSTS,
+      COSTS_N_INSNS (4),            /* int_mult_si */
+      COSTS_N_INSNS (6),            /* int_mult_di */
+      COSTS_N_INSNS (69),           /* int_div_si */
+      COSTS_N_INSNS (69),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* R4300 */
+      DEFAULT_COSTS
+    },
+    { /* R4600 */
+      DEFAULT_COSTS
+    },
+    { /* R4650 */
+      DEFAULT_COSTS
+    },
+    { /* R5000 */
+      COSTS_N_INSNS (6),            /* fp_add */
+      COSTS_N_INSNS (4),            /* fp_mult_sf */
+      COSTS_N_INSNS (5),            /* fp_mult_df */
+      COSTS_N_INSNS (23),           /* fp_div_sf */
+      COSTS_N_INSNS (36),           /* fp_div_df */
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (5),            /* int_mult_di */
+      COSTS_N_INSNS (36),           /* int_div_si */
+      COSTS_N_INSNS (36),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* R5400 */
+      COSTS_N_INSNS (6),            /* fp_add */
+      COSTS_N_INSNS (5),            /* fp_mult_sf */
+      COSTS_N_INSNS (6),            /* fp_mult_df */
+      COSTS_N_INSNS (30),           /* fp_div_sf */
+      COSTS_N_INSNS (59),           /* fp_div_df */
+      COSTS_N_INSNS (3),            /* int_mult_si */
+      COSTS_N_INSNS (4),            /* int_mult_di */
+      COSTS_N_INSNS (42),           /* int_div_si */
+      COSTS_N_INSNS (74),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* R5500 */
+      COSTS_N_INSNS (6),            /* fp_add */
+      COSTS_N_INSNS (5),            /* fp_mult_sf */
+      COSTS_N_INSNS (6),            /* fp_mult_df */
+      COSTS_N_INSNS (30),           /* fp_div_sf */
+      COSTS_N_INSNS (59),           /* fp_div_df */
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (9),            /* int_mult_di */
+      COSTS_N_INSNS (42),           /* int_div_si */
+      COSTS_N_INSNS (74),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* R7000 */
+      /* The only costs that are changed here are
+	 integer multiplication.  */
+      COSTS_N_INSNS (6),            /* fp_add */
+      COSTS_N_INSNS (7),            /* fp_mult_sf */
+      COSTS_N_INSNS (8),            /* fp_mult_df */
+      COSTS_N_INSNS (23),           /* fp_div_sf */
+      COSTS_N_INSNS (36),           /* fp_div_df */
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (9),            /* int_mult_di */
+      COSTS_N_INSNS (69),           /* int_div_si */
+      COSTS_N_INSNS (69),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* R8000 */
+      DEFAULT_COSTS
+    },
+    { /* R9000 */
+      /* The only costs that are changed here are
+	 integer multiplication.  */
+      COSTS_N_INSNS (6),            /* fp_add */
+      COSTS_N_INSNS (7),            /* fp_mult_sf */
+      COSTS_N_INSNS (8),            /* fp_mult_df */
+      COSTS_N_INSNS (23),           /* fp_div_sf */
+      COSTS_N_INSNS (36),           /* fp_div_df */
+      COSTS_N_INSNS (3),            /* int_mult_si */
+      COSTS_N_INSNS (8),            /* int_mult_di */
+      COSTS_N_INSNS (69),           /* int_div_si */
+      COSTS_N_INSNS (69),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* SB1 */
+      COSTS_N_INSNS (4),            /* fp_add */
+      COSTS_N_INSNS (4),            /* fp_mult_sf */
+      COSTS_N_INSNS (4),            /* fp_mult_df */
+      COSTS_N_INSNS (24),           /* fp_div_sf */
+      COSTS_N_INSNS (32),           /* fp_div_df */
+      COSTS_N_INSNS (3),            /* int_mult_si */
+      COSTS_N_INSNS (4),            /* int_mult_di */
+      COSTS_N_INSNS (36),           /* int_div_si */
+      COSTS_N_INSNS (68),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* SR71000 */
+      DEFAULT_COSTS
+    },
+  };
+
 
 /* Nonzero if -march should decide the default value of MASK_SOFT_FLOAT.  */
 #ifndef MIPS_MARCH_CONTROLS_SOFT_FLOAT
@@ -2084,75 +2305,80 @@ static bool
 mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   enum machine_mode mode = GET_MODE (x);
+  bool float_mode_p = FLOAT_MODE_P (mode);
+
+  /* To be used for soft-float costs.  */
+  int max_cost = COSTS_N_INSNS (256);
 
   switch (code)
     {
     case CONST_INT:
-      if (!TARGET_MIPS16)
+      if (TARGET_MIPS16)
         {
-          /* Always return 0, since we don't have different sized
-             instructions, hence different costs according to Richard
-             Kenner */
-          *total = 0;
-          return true;
-        }
+	  /* A number between 1 and 8 inclusive is efficient for a shift.
+	     Otherwise, we will need an extended instruction.  */
+	  if ((outer_code) == ASHIFT || (outer_code) == ASHIFTRT
+	      || (outer_code) == LSHIFTRT)
+	    {
+	      if (INTVAL (x) >= 1 && INTVAL (x) <= 8)
+		*total = 0;
+	      else
+		*total = COSTS_N_INSNS (1);
+	      return true;
+	    }
 
-      /* A number between 1 and 8 inclusive is efficient for a shift.
-         Otherwise, we will need an extended instruction.  */
-      if ((outer_code) == ASHIFT || (outer_code) == ASHIFTRT
-          || (outer_code) == LSHIFTRT)
-        {
-          if (INTVAL (x) >= 1 && INTVAL (x) <= 8)
-            *total = 0;
-          else
-            *total = COSTS_N_INSNS (1);
-          return true;
-        }
+	  /* We can use cmpi for an xor with an unsigned 16 bit value.  */
+	  if ((outer_code) == XOR
+	      && INTVAL (x) >= 0 && INTVAL (x) < 0x10000)
+	    {
+	      *total = 0;
+	      return true;
+	    }
 
-      /* We can use cmpi for an xor with an unsigned 16 bit value.  */
-      if ((outer_code) == XOR
-          && INTVAL (x) >= 0 && INTVAL (x) < 0x10000)
-        {
-          *total = 0;
-          return true;
-        }
+	  /* We may be able to use slt or sltu for a comparison with a
+	     signed 16 bit value.  (The boundary conditions aren't quite
+	     right, but this is just a heuristic anyhow.)  */
+	  if (((outer_code) == LT || (outer_code) == LE
+	       || (outer_code) == GE || (outer_code) == GT
+	       || (outer_code) == LTU || (outer_code) == LEU
+	       || (outer_code) == GEU || (outer_code) == GTU)
+	      && INTVAL (x) >= -0x8000 && INTVAL (x) < 0x8000)
+	    {
+	      *total = 0;
+	      return true;
+	    }
 
-      /* We may be able to use slt or sltu for a comparison with a
-         signed 16 bit value.  (The boundary conditions aren't quite
-         right, but this is just a heuristic anyhow.)  */
-      if (((outer_code) == LT || (outer_code) == LE
-           || (outer_code) == GE || (outer_code) == GT
-           || (outer_code) == LTU || (outer_code) == LEU
-           || (outer_code) == GEU || (outer_code) == GTU)
-          && INTVAL (x) >= -0x8000 && INTVAL (x) < 0x8000)
-        {
-          *total = 0;
-          return true;
-        }
+	  /* Equality comparisons with 0 are cheap.  */
+	  if (((outer_code) == EQ || (outer_code) == NE)
+	      && INTVAL (x) == 0)
+	    {
+	      *total = 0;
+	      return true;
+	    }
 
-      /* Equality comparisons with 0 are cheap.  */
-      if (((outer_code) == EQ || (outer_code) == NE)
-          && INTVAL (x) == 0)
-        {
-          *total = 0;
-          return true;
-        }
+	  /* Constants in the range 0...255 can be loaded with an unextended
+	     instruction.  They are therefore as cheap as a register move.
 
-      /* Constants in the range 0...255 can be loaded with an unextended
-	 instruction.  They are therefore as cheap as a register move.
-
-	 Given the choice between "li R1,0...255" and "move R1,R2"
-	 (where R2 is a known constant), it is usually better to use "li",
-	 since we do not want to unnecessarily extend the lifetime of R2.  */
-      if (outer_code == SET
-	  && INTVAL (x) >= 0
-	  && INTVAL (x) < 256)
+	     Given the choice between "li R1,0...255" and "move R1,R2"
+	     (where R2 is a known constant), it is usually better to use "li",
+	     since we do not want to unnessarily extend the lifetime of R2.  */
+	  if (outer_code == SET
+	      && INTVAL (x) >= 0
+	      && INTVAL (x) < 256)
+	    {
+	      *total = 0;
+	      return true;
+	    }
+	}
+      else
 	{
+	  /* These can be used anywhere. */
 	  *total = 0;
 	  return true;
 	}
 
-      /* Otherwise fall through to the handling below.  */
+      /* Otherwise fall through to the handling below because
+	 we'll need to construct the constant.  */
 
     case CONST:
     case SYMBOL_REF:
@@ -2172,15 +2398,15 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case MEM:
       {
-        /* If the address is legitimate, return the number of
-           instructions it needs, otherwise use the default handling.  */
-        int n = mips_address_insns (XEXP (x, 0), GET_MODE (x));
-        if (n > 0)
-          {
-            *total = COSTS_N_INSNS (1 + n);
-            return true;
-          }
-        return false;
+	/* If the address is legitimate, return the number of
+	   instructions it needs, otherwise use the default handling.  */
+	int n = mips_address_insns (XEXP (x, 0), GET_MODE (x));
+	if (n > 0)
+	  {
+	    *total = COSTS_N_INSNS (n + 1);
+	    return true;
+	  }
+	return false;
       }
 
     case FFS:
@@ -2213,7 +2439,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case ABS:
-      if (mode == SFmode || mode == DFmode)
+      if (float_mode_p)
         *total = COSTS_N_INSNS (1);
       else
         *total = COSTS_N_INSNS (4);
@@ -2225,19 +2451,13 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case PLUS:
     case MINUS:
-      if (mode == SFmode || mode == DFmode)
-        {
-          if (TUNE_MIPS3000 || TUNE_MIPS3900)
-            *total = COSTS_N_INSNS (2);
-          else if (TUNE_MIPS6000)
-            *total = COSTS_N_INSNS (3);
-	  else if (TUNE_SB1)
-	    *total = COSTS_N_INSNS (4);
-          else
-            *total = COSTS_N_INSNS (6);
-          return true;
-        }
-      if (mode == DImode && !TARGET_64BIT)
+      if (float_mode_p)
+	{
+	  *total = mips_cost->fp_add;
+	  return true;
+	}
+
+      else if (mode == DImode && !TARGET_64BIT)
         {
           *total = COSTS_N_INSNS (4);
           return true;
@@ -2247,115 +2467,46 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
     case NEG:
       if (mode == DImode && !TARGET_64BIT)
         {
-          *total = 4;
+          *total = COSTS_N_INSNS (4);
           return true;
         }
       return false;
 
     case MULT:
       if (mode == SFmode)
-        {
-          if (TUNE_MIPS3000
-              || TUNE_MIPS3900
-              || TUNE_MIPS5000
-	      || TUNE_SB1)
-            *total = COSTS_N_INSNS (4);
-          else if (TUNE_MIPS6000
-                   || TUNE_MIPS5400
-                   || TUNE_MIPS5500)
-            *total = COSTS_N_INSNS (5);
-          else
-            *total = COSTS_N_INSNS (7);
-          return true;
-        }
+	*total = mips_cost->fp_mult_sf;
 
-      if (mode == DFmode)
-        {
-          if (TUNE_SB1)
-	    *total = COSTS_N_INSNS (4);
-          else if (TUNE_MIPS3000
-              || TUNE_MIPS3900
-              || TUNE_MIPS5000)
-            *total = COSTS_N_INSNS (5);
-          else if (TUNE_MIPS6000
-                   || TUNE_MIPS5400
-                   || TUNE_MIPS5500)
-            *total = COSTS_N_INSNS (6);
-          else
-            *total = COSTS_N_INSNS (8);
-          return true;
-        }
+      else if (mode == DFmode)
+	*total = mips_cost->fp_mult_df;
 
-      if (TUNE_MIPS3000)
-        *total = COSTS_N_INSNS (12);
-      else if (TUNE_MIPS3900)
-        *total = COSTS_N_INSNS (2);
-      else if (TUNE_MIPS4130)
-	*total = COSTS_N_INSNS (mode == DImode ? 6 : 4);
-      else if (TUNE_MIPS5400 || TUNE_SB1)
-        *total = COSTS_N_INSNS (mode == DImode ? 4 : 3);
-      else if (TUNE_MIPS5500 || TUNE_MIPS7000)
-        *total = COSTS_N_INSNS (mode == DImode ? 9 : 5);
-      else if (TUNE_MIPS9000)
-        *total = COSTS_N_INSNS (mode == DImode ? 8 : 3);
-      else if (TUNE_MIPS6000)
-        *total = COSTS_N_INSNS (17);
-      else if (TUNE_MIPS5000)
-        *total = COSTS_N_INSNS (5);
+      else if (mode == SImode)
+	*total = mips_cost->int_mult_si;
+
       else
-        *total = COSTS_N_INSNS (10);
+	*total = mips_cost->int_mult_di;
+
       return true;
 
     case DIV:
     case MOD:
-      if (mode == SFmode)
-        {
-          if (TUNE_MIPS3000
-              || TUNE_MIPS3900)
-            *total = COSTS_N_INSNS (12);
-          else if (TUNE_MIPS6000)
-            *total = COSTS_N_INSNS (15);
-	  else if (TUNE_SB1)
-	    *total = COSTS_N_INSNS (24);
-          else if (TUNE_MIPS5400 || TUNE_MIPS5500)
-            *total = COSTS_N_INSNS (30);
-          else
-            *total = COSTS_N_INSNS (23);
-          return true;
-        }
+      if (float_mode_p)
+	{
+	  if (mode == SFmode)
+	    *total = mips_cost->fp_div_sf;
+	  else
+	    *total = mips_cost->fp_div_df;
 
-      if (mode == DFmode)
-        {
-          if (TUNE_MIPS3000
-              || TUNE_MIPS3900)
-            *total = COSTS_N_INSNS (19);
-          else if (TUNE_MIPS5400 || TUNE_MIPS5500)
-            *total = COSTS_N_INSNS (59);
-          else if (TUNE_MIPS6000)
-            *total = COSTS_N_INSNS (16);
-	  else if (TUNE_SB1)
-	    *total = COSTS_N_INSNS (32);
-          else
-            *total = COSTS_N_INSNS (36);
-          return true;
-        }
+	  return true;
+	}
       /* Fall through.  */
 
     case UDIV:
     case UMOD:
-      if (TUNE_MIPS3000
-          || TUNE_MIPS3900)
-        *total = COSTS_N_INSNS (35);
-      else if (TUNE_MIPS6000)
-        *total = COSTS_N_INSNS (38);
-      else if (TUNE_MIPS5000)
-        *total = COSTS_N_INSNS (36);
-      else if (TUNE_SB1)
-	*total = COSTS_N_INSNS ((mode == SImode) ? 36 : 68);
-      else if (TUNE_MIPS5400 || TUNE_MIPS5500)
-        *total = COSTS_N_INSNS ((mode == SImode) ? 42 : 74);
+      if (mode == DImode)
+        *total = mips_cost->int_div_di;
       else
-        *total = COSTS_N_INSNS (69);
+	*total = mips_cost->int_div_si;
+
       return true;
 
     case SIGN_EXTEND:
@@ -2375,6 +2526,15 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
         *total = COSTS_N_INSNS (2);
       else
         *total = COSTS_N_INSNS (1);
+      return true;
+
+    case FLOAT:
+    case UNSIGNED_FLOAT:
+    case FIX:
+    case FLOAT_EXTEND:
+    case FLOAT_TRUNCATE:
+    case SQRT:
+      *total = mips_cost->fp_add;
       return true;
 
     default:
@@ -4305,6 +4465,9 @@ override_options (void)
 
   if (mips_tune_info == 0)
     mips_set_tune (mips_arch_info);
+
+  /* Set cost structure for the processor.  */
+  mips_cost = &mips_rtx_cost_data[mips_tune];
 
   if ((target_flags_explicit & MASK_64BIT) != 0)
     {
@@ -8686,7 +8849,7 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	{
 	  return 5;
 	}
-    }  /* GR_REG_CLASS_P (from) */
+    }
   else if (from == FP_REGS)
     {
       if (GR_REG_CLASS_P (to))
@@ -8695,7 +8858,7 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	return 2;
       else if (to == ST_REGS)
 	return 8;
-    }  /* from == FP_REGS */
+    }
   else if (from == HI_REG || from == LO_REG || from == MD_REGS)
     {
       if (GR_REG_CLASS_P (to))
@@ -8705,15 +8868,16 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	  else
 	    return 6;
 	}
-    }  /* from == HI_REG, etc.  */
+    }
   else if (from == ST_REGS && GR_REG_CLASS_P (to))
     return 4;
   else if (COP_REG_CLASS_P (from))
     {
       return 5;
-    }  /* COP_REG_CLASS_P (from) */
+    }
 
-  /* Fall through.  */
+  /* Fall through.
+     ??? What cases are these? Shouldn't we return 2 here?  */
 
   return 12;
 }
@@ -9709,13 +9873,13 @@ struct bdesc_map
   unsigned int size;
 
   /* The target processor that supports these builtin functions.
-     PROCESSOR_DEFAULT means we enable them for all processors.  */
+     PROCESSOR_MAX means we enable them for all processors.  */
   enum processor_type proc;
 };
 
 static const struct bdesc_map bdesc_arrays[] =
 {
-  { mips_bdesc, ARRAY_SIZE (mips_bdesc), PROCESSOR_DEFAULT },
+  { mips_bdesc, ARRAY_SIZE (mips_bdesc), PROCESSOR_MAX },
   { sb1_bdesc, ARRAY_SIZE (sb1_bdesc), PROCESSOR_SB1 }
 };
 
@@ -9890,7 +10054,7 @@ mips_init_builtins (void)
   offset = 0;
   for (m = bdesc_arrays; m < &bdesc_arrays[ARRAY_SIZE (bdesc_arrays)]; m++)
     {
-      if (m->proc == PROCESSOR_DEFAULT || (m->proc == mips_arch))
+      if (m->proc == PROCESSOR_MAX || (m->proc == mips_arch))
 	for (d = m->bdesc; d < &m->bdesc[m->size]; d++)
 	  if ((d->target_flags & target_flags) == d->target_flags)
 	    lang_hooks.builtin_function (d->name, types[d->function_type],
