@@ -5627,6 +5627,7 @@ expand_bool_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
   emit_jump_insn (bcc_gen_fctn[EQ] (label0));
   emit_move_insn (target, const0_rtx);
   emit_jump_insn (gen_jump (label1));
+  emit_barrier ();
   emit_label (label0);
   emit_move_insn (target, const1_rtx);
   emit_label (label1);
