@@ -308,6 +308,13 @@
 #endif
 
 
+/* Define to 1 if we found a declaration for 'asprintf', otherwise define to
+   0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_ASPRINTF
+#endif
+
+
 /* Define to 1 if we found a declaration for 'atof', otherwise define to 0. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_ATOF

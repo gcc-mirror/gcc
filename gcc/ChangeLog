@@ -1,3 +1,10 @@
+2005-06-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* configure.ac: Check declaration for asprintf, needed by
+	libiberty.h. 
+	* configure: Regenerate.
+	* config.in: Likewise.
+
 2005-06-03  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-dom.c (record_edge_info): Use last_basic_block to
