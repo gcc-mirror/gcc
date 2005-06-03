@@ -9303,12 +9303,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  switch (code)
 	    {
 	    case GE_EXPR:
-	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-	      return fold_build2 (GT_EXPR, type, arg0, arg1);
+	      arg1 = const_binop (MINUS_EXPR, arg1,
+			          build_int_cst (TREE_TYPE (arg1), 1), 0);
+	      return fold_build2 (GT_EXPR, type, arg0,
+				  fold_convert (TREE_TYPE (arg0), arg1));
 
 	    case LT_EXPR:
-	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-	      return fold_build2 (LE_EXPR, type, arg0, arg1);
+	      arg1 = const_binop (MINUS_EXPR, arg1,
+			          build_int_cst (TREE_TYPE (arg1), 1), 0);
+	      return fold_build2 (LE_EXPR, type, arg0,
+				  fold_convert (TREE_TYPE (arg0), arg1));
 
 	    default:
 	      break;
