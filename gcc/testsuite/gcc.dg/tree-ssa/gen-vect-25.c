@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target vect_cmdline_needed } } */
 /* { dg-options "-O2 -ftree-vectorize -ftree-vectorizer-verbose=3 -fdump-tree-vect-stats" } */
 
 #include <stdlib.h>
