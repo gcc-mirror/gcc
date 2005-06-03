@@ -3287,7 +3287,7 @@ rs6000_conditional_register_usage (void)
   if (! TARGET_POWER)
     fixed_regs[64] = 1;
 
-  /* 64-bit AIX reserves GPR13 for thread-private data.  */
+  /* 64-bit AIX and Linux reserve GPR13 for thread-private data.  */
   if (TARGET_64BIT)
     fixed_regs[13] = call_used_regs[13]
       = call_really_used_regs[13] = 1;
@@ -3297,6 +3297,11 @@ rs6000_conditional_register_usage (void)
     for (i = 32; i < 64; i++)
       fixed_regs[i] = call_used_regs[i]
 	= call_really_used_regs[i] = 1;
+
+  /* The TOC register is not killed across calls in a way that is
+     visible to the compiler.  */
+  if (DEFAULT_ABI == ABI_AIX)
+    call_really_used_regs[2] = 0;
 
   if (DEFAULT_ABI == ABI_V4
       && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
