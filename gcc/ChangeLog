@@ -1,3 +1,8 @@
+2005-06-03  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.opt: Add RejectNegative to divide-breaks and
+        divide-traps.
+
 2005-06-03  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (remove_predictions_associated_with_edge): Declare.
