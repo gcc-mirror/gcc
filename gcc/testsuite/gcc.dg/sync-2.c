@@ -1,5 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target sync_char_short } */
+/* { dg-options "-march=i486" { target i?86-*-* } } */
+/* { dg-options "-march=i486" { target { x86_64-*-* && ilp32 } } } */
 
 /* Test functionality of the intrinsics for 'short' and 'char'.  */
 

@@ -1,3 +1,7 @@
+2005-06-02  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/sync-2.c: Use -march=i486 for i386.
+
 2005-06-02  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* gcc.dg/wtypequal.c: New testcase.
