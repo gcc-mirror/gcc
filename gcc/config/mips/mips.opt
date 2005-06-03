@@ -44,11 +44,11 @@ Target Report Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero
 
 mdivide-breaks
-Target Report Mask(DIVIDE_BREAKS)
+Target Report RejectNegative Mask(DIVIDE_BREAKS)
 Use branch-and-break sequences to check for integer divide by zero
 
 mdivide-traps
-Target Report InverseMask(DIVIDE_BREAKS, DIVIDE_TRAPS)
+Target Report RejectNegative InverseMask(DIVIDE_BREAKS, DIVIDE_TRAPS)
 Use trap instructions to check for integer divide by zero
 
 mdouble-float
