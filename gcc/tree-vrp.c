@@ -1295,17 +1295,23 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
     }
 
   /* Handle unary expressions on integer ranges.  */
-  if ((code == NOP_EXPR || code == CONVERT_EXPR)
-      && (TYPE_SIZE (TREE_TYPE (vr0.min)) != TYPE_SIZE (TREE_TYPE (expr))))
+  if (code == NOP_EXPR || code == CONVERT_EXPR)
     {
+      tree inner_type = TREE_TYPE (op0);
+      tree outer_type = TREE_TYPE (expr);
+
       /* When converting types of different sizes, set the result to
 	 VARYING.  Things like sign extensions and precision loss may
 	 change the range.  For instance, if x_3 is of type 'long long
 	 int' and 'y_5 = (unsigned short) x_3', if x_3 is ~[0, 0], it
 	 is impossible to know at compile time whether y_5 will be
 	 ~[0, 0].  */
-      set_value_range_to_varying (vr);
-      return;
+      if (TYPE_SIZE (inner_type) != TYPE_SIZE (outer_type)
+	  || TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
     }
 
   /* Apply the operation to each end of the range and see what we end

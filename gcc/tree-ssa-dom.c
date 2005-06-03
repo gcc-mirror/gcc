@@ -2422,7 +2422,7 @@ record_edge_info (basic_block bb)
 	    {
 	      tree labels = SWITCH_LABELS (stmt);
 	      int i, n_labels = TREE_VEC_LENGTH (labels);
-	      tree *info = xcalloc (n_basic_blocks, sizeof (tree));
+	      tree *info = xcalloc (last_basic_block, sizeof (tree));
 	      edge e;
 	      edge_iterator ei;
 

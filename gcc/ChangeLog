@@ -1,3 +1,11 @@
+2005-06-03  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-dom.c (record_edge_info): Use last_basic_block to
+	allocate info array.
+	* tree-vrp.c (extract_range_from_unary_expr): Set resulting
+	range to varying in cast expressions that change
+	TYPE_PRECISION.
+
 2005-06-03  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.opt: Add RejectNegative to divide-breaks and
