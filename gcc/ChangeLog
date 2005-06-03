@@ -1,3 +1,8 @@
+2005-06-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/21849
+	* tree-ssa-copy.c (dump_copy_of): Call sbitmap_zero.
+
 2005-06-02  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (tree-vect-generic.o): New.

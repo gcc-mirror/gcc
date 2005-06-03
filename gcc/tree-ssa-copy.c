@@ -482,6 +482,7 @@ dump_copy_of (FILE *dump_file, tree var)
     return;
     
   visited = sbitmap_alloc (num_ssa_names);
+  sbitmap_zero (visited);
   SET_BIT (visited, SSA_NAME_VERSION (var));
   
   fprintf (dump_file, " copy-of chain: ");
