@@ -1,3 +1,8 @@
+2005-06-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/semi.h (ASM_SPEC): Fix typo passing -mfloat-abi to
+	assembler.
+
 2005-06-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/21849
