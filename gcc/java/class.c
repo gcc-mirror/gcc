@@ -1064,19 +1064,18 @@ build_static_field_ref (tree fdecl)
 {
   tree fclass = DECL_CONTEXT (fdecl);
   int is_compiled = is_compiled_class (fclass);
+  int from_class = ! CLASS_FROM_SOURCE_P (current_class);
 
   /* Allow static final fields to fold to a constant.  When using
-     -fno-assume-compiled, gcj will sometimes try to fold a field from
-     an uncompiled class.  This is required when the field in question
-     meets the appropriate criteria for a compile-time constant.
-     However, currently sometimes gcj is too eager and will end up
-     returning the field itself, leading to an incorrect external
-     reference being generated.  */
-  if ((is_compiled && !flag_indirect_dispatch)
-      || (FIELD_FINAL (fdecl) && DECL_INITIAL (fdecl) != NULL_TREE
-	  && (JSTRING_TYPE_P (TREE_TYPE (fdecl))
-	      || JNUMERIC_TYPE_P (TREE_TYPE (fdecl)))
-	  && TREE_CONSTANT (DECL_INITIAL (fdecl))))
+     -findirect-dispatch, we simply never do this folding if compiling
+     from .class; in the .class file constants will be referred to via
+     the constant pool.  */
+  if ((!flag_indirect_dispatch || !from_class)
+      && (is_compiled
+	  || (FIELD_FINAL (fdecl) && DECL_INITIAL (fdecl) != NULL_TREE
+	      && (JSTRING_TYPE_P (TREE_TYPE (fdecl))
+		  || JNUMERIC_TYPE_P (TREE_TYPE (fdecl)))
+	      && TREE_CONSTANT (DECL_INITIAL (fdecl)))))
     {
       if (!DECL_RTL_SET_P (fdecl))
 	{

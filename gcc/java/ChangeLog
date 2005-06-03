@@ -1,3 +1,10 @@
+2005-06-02  Tom Tromey  <tromey@redhat.com>
+
+	PR java/21722:
+	* class.c (build_static_field_ref): Don't fold constant fields if
+	current class is from a .class file and we're using indirect
+	dispatch.
+
 2005-05-26  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* decl.c (GCJ_BINARYCOMPAT_ADDITION, 
