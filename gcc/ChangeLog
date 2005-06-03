@@ -1,3 +1,8 @@
+2005-06-03  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_conditional_register_usage):
+	Clear call_realy_used_regs[r2] when ABI_AIX.
+
 2005-06-03  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/21858
