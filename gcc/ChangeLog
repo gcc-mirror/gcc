@@ -1,3 +1,8 @@
+2005-06-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cgraph.c, cgraphunit.c, config/mips/mips.c: Fix comment
+	typos.
+
 2005-06-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* collect2.c (maybe_unlink): Use unlink_if_ordinary.
