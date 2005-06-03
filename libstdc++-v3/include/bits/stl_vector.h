@@ -75,23 +75,29 @@ namespace _GLIBCXX_STD
   template<typename _Tp, typename _Alloc>
     struct _Vector_base
     {
+      typedef typename _Alloc::template rebind<_Tp>::other _Tp_alloc_type;
+
       struct _Vector_impl 
-      : public _Alloc
+      : public _Tp_alloc_type
       {
 	_Tp*           _M_start;
 	_Tp*           _M_finish;
 	_Tp*           _M_end_of_storage;
-	_Vector_impl(_Alloc const& __a)
-	: _Alloc(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
+	_Vector_impl(_Tp_alloc_type const& __a)
+	: _Tp_alloc_type(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
 	{ }
       };
       
     public:
       typedef _Alloc allocator_type;
 
+      _Tp_alloc_type
+      _M_get_Tp_allocator() const
+      { return *static_cast<const _Tp_alloc_type*>(&this->_M_impl); }
+
       allocator_type
       get_allocator() const
-      { return *static_cast<const _Alloc*>(&this->_M_impl); }
+      { return _M_get_Tp_allocator(); }
 
       _Vector_base(const allocator_type& __a)
       : _M_impl(__a)
@@ -148,17 +154,20 @@ namespace _GLIBCXX_STD
     class vector : protected _Vector_base<_Tp, _Alloc>
     {
       // Concept requirements.
+      typedef typename _Alloc::value_type                _Alloc_value_type;
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
-
-      typedef _Vector_base<_Tp, _Alloc>			_Base;
-      typedef vector<_Tp, _Alloc>			vector_type;
+      __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
+      
+      typedef _Vector_base<_Tp, _Alloc>			 _Base;
+      typedef vector<_Tp, _Alloc>			 vector_type;
+      typedef typename _Base::_Tp_alloc_type		 _Tp_alloc_type;
 
     public:
       typedef _Tp					 value_type;
-      typedef typename _Alloc::pointer                   pointer;
-      typedef typename _Alloc::const_pointer             const_pointer;
-      typedef typename _Alloc::reference                 reference;
-      typedef typename _Alloc::const_reference           const_reference;
+      typedef typename _Tp_alloc_type::pointer           pointer;
+      typedef typename _Tp_alloc_type::const_pointer     const_pointer;
+      typedef typename _Tp_alloc_type::reference         reference;
+      typedef typename _Tp_alloc_type::const_reference   const_reference;
       typedef __gnu_cxx::__normal_iterator<pointer, vector_type> iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, vector_type>
       const_iterator;
@@ -166,7 +175,7 @@ namespace _GLIBCXX_STD
       typedef std::reverse_iterator<iterator>		 reverse_iterator;
       typedef size_t					 size_type;
       typedef ptrdiff_t					 difference_type;
-      typedef typename _Base::allocator_type		 allocator_type;
+      typedef _Alloc                        		 allocator_type;
 
     protected:
       /** @if maint
@@ -177,6 +186,7 @@ namespace _GLIBCXX_STD
       using _Base::_M_allocate;
       using _Base::_M_deallocate;
       using _Base::_M_impl;
+      using _Base::_M_get_Tp_allocator;
 
     public:
       // [23.2.4.1] construct/copy/destroy
@@ -201,7 +211,7 @@ namespace _GLIBCXX_STD
       : _Base(__n, __a)
       {
 	std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value,
-				      this->get_allocator());
+				      _M_get_Tp_allocator());
 	this->_M_impl._M_finish = this->_M_impl._M_start + __n;
       }
 
@@ -217,7 +227,7 @@ namespace _GLIBCXX_STD
       : _Base(__n, allocator_type())
       {
 	std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, value_type(),
-				      this->get_allocator());
+				      _M_get_Tp_allocator());
 	this->_M_impl._M_finish = this->_M_impl._M_start + __n;	
       }
 
@@ -235,7 +245,7 @@ namespace _GLIBCXX_STD
       { this->_M_impl._M_finish =
 	  std::__uninitialized_copy_a(__x.begin(), __x.end(),
 				      this->_M_impl._M_start,
-				      this->get_allocator());
+				      _M_get_Tp_allocator());
       }
 
       /**
@@ -271,7 +281,7 @@ namespace _GLIBCXX_STD
        */
       ~vector()
       { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-		      this->get_allocator());
+		      _M_get_Tp_allocator());
       }
 
       /**
@@ -764,7 +774,7 @@ namespace _GLIBCXX_STD
 	  try
 	    {
 	      std::__uninitialized_copy_a(__first, __last, __result,
-					  this->get_allocator());
+					  _M_get_Tp_allocator());
 	      return __result;
 	    }
 	  catch(...)
@@ -785,7 +795,7 @@ namespace _GLIBCXX_STD
 	  this->_M_impl._M_start = _M_allocate(__n);
 	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
 	  std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value,
-					this->get_allocator());
+					_M_get_Tp_allocator());
 	  this->_M_impl._M_finish = this->_M_impl._M_end_of_storage;
 	}
 
@@ -822,7 +832,7 @@ namespace _GLIBCXX_STD
 	  this->_M_impl._M_finish =
 	    std::__uninitialized_copy_a(__first, __last,
 					this->_M_impl._M_start,
-					this->get_allocator());
+					_M_get_Tp_allocator());
 	}
 
 

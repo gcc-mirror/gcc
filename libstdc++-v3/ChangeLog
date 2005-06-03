@@ -1,3 +1,53 @@
+2005-06-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21770
+	* include/bits/stl_deque.h: Add concept-check. In class _Deque_base
+	rebind _Alloc to  _Tp_alloc_type, change _Deque_impl to inherit from
+	the latter and add _M_get_Tp_allocator() which returns it. Use
+	everywhere _M_get_Tp_allocator() instead of get_allocator().
+	* include/bits/deque.tcc: Likewise, use _M_get_Tp_allocator().
+	* include/bits/stl_list.h: Add concept-check. In class _List_base
+	rebind _Alloc to _Tp_alloc_type and add _M_get_Tp_allocator(), which
+	returns the allocator (of type _Node_alloc_type) converted to
+	_Tp_alloc_type. Use everywhere _M_get_Tp_allocator() instead of
+	get_allocator().
+	* include/bits/list.tcc: Likewise, use _M_get_Tp_allocator().
+	* include/bits/stl_vector.h: Add concept-check. In class _Vector_base
+	rebind _Alloc to _Tp_alloc_type, change _Vector_impl to inherit from
+	the latter and add _M_get_Tp_allocator() which returns it. Use
+	everywhere _M_get_Tp_allocator() instead of get_allocator().
+	* include/bits/vector.tcc: Likewise, use _M_get_Tp_allocator().
+	* include/bits/stl_map.h: Add concept-check. Rebind _Alloc to
+	_Pair_alloc_type and use it for _Rb_tree.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Add concept-check. Rebind _Alloc to
+	_Key_alloc_type and use it for _Rb_tree.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/basic_string.h: Rebind _Alloc to _CharT_alloc_type and
+	use it for the allocator typedefs.
+	* testsuite/21_strings/basic_string/1.cc: New.
+	* testsuite/23_containers/deque/explicit_instantiation.cc: Move to...
+	* testsuite/23_containers/deque/explicit_instantiation/1.cc: ... here.
+	* testsuite/23_containers/deque/explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/list/explicit_instantiation.cc: Move to...
+	* testsuite/23_containers/list/explicit_instantiation/1.cc: ... here.
+	* testsuite/23_containers/list/explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/map/explicit_instantiation.cc: Move to...
+	* testsuite/23_containers/map/explicit_instantiation/1.cc: ... here.
+	* testsuite/23_containers/map/explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/multimap/explicit_instantiation.cc: Move to...
+	* testsuite/23_containers/multimap/explicit_instantiation/1.cc: .. here.
+	* testsuite/23_containers/multimap/explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/multiset/explicit_instantiation.cc: Move to...
+	* testsuite/23_containers/multiset/explicit_instantiation/1.cc: .. here.
+	* testsuite/23_containers/multiset/explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/set/explicit_instantiation.cc: Move to...
+	* testsuite/23_containers/set/explicit_instantiation/1.cc: .. here.
+	* testsuite/23_containers/set/explicit_instantiation/3.cc: New.
+	* testsuite/23_containers/vector/explicit_instantiation.cc: Move to...
+	* testsuite/23_containers/vector/explicit_instantiation/1.cc: ... here.
+	* testsuite/23_containers/vector/explicit_instantiation/3.cc: New.
+
 2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21280

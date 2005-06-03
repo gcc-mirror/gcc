@@ -358,7 +358,7 @@ namespace _GLIBCXX_STD
 
       allocator_type
       get_allocator() const
-      { return *static_cast<const _Alloc*>(&this->_M_impl); }
+      { return _M_get_Tp_allocator(); }
 
       typedef _Deque_iterator<_Tp, _Tp&, _Tp*>             iterator;
       typedef _Deque_iterator<_Tp, const _Tp&, const _Tp*> const_iterator;
@@ -377,30 +377,43 @@ namespace _GLIBCXX_STD
       //This struct encapsulates the implementation of the std::deque
       //standard container and at the same time makes use of the EBO
       //for empty allocators.
+      typedef typename _Alloc::template rebind<_Tp*>::other _Map_alloc_type;
+
+      typedef typename _Alloc::template rebind<_Tp>::other  _Tp_alloc_type;
+
       struct _Deque_impl
-      : public _Alloc
+      : public _Tp_alloc_type
       {
 	_Tp** _M_map;
 	size_t _M_map_size;
 	iterator _M_start;
 	iterator _M_finish;
 
-	_Deque_impl(const _Alloc& __a)
-	: _Alloc(__a), _M_map(0), _M_map_size(0), _M_start(), _M_finish()
+	_Deque_impl(const _Tp_alloc_type& __a)
+	: _Tp_alloc_type(__a), _M_map(0), _M_map_size(0),
+	  _M_start(), _M_finish()
 	{ }
       };
 
-      typedef typename _Alloc::template rebind<_Tp*>::other _Map_alloc_type;
-      _Map_alloc_type _M_get_map_allocator() const
-      { return _Map_alloc_type(this->get_allocator()); }
+      _Tp_alloc_type
+      _M_get_Tp_allocator() const
+      { return *static_cast<const _Tp_alloc_type*>(&this->_M_impl); }
+
+      _Map_alloc_type
+      _M_get_map_allocator() const
+      { return _M_get_Tp_allocator(); }
 
       _Tp*
       _M_allocate_node()
-      { return _M_impl._Alloc::allocate(__deque_buf_size(sizeof(_Tp))); }
+      { 
+	return _M_impl._Tp_alloc_type::allocate(__deque_buf_size(sizeof(_Tp)));
+      }
 
       void
       _M_deallocate_node(_Tp* __p)
-      { _M_impl._Alloc::deallocate(__p, __deque_buf_size(sizeof(_Tp))); }
+      {
+	_M_impl._Tp_alloc_type::deallocate(__p, __deque_buf_size(sizeof(_Tp)));
+      }
 
       _Tp**
       _M_allocate_map(size_t __n)
@@ -595,23 +608,26 @@ namespace _GLIBCXX_STD
     class deque : protected _Deque_base<_Tp, _Alloc>
     {
       // concept requirements
+      typedef typename _Alloc::value_type        _Alloc_value_type;
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+      __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
 
       typedef _Deque_base<_Tp, _Alloc>           _Base;
+      typedef typename _Base::_Tp_alloc_type	 _Tp_alloc_type;
 
     public:
-      typedef _Tp                                value_type;
-      typedef typename _Alloc::pointer           pointer;
-      typedef typename _Alloc::const_pointer     const_pointer;
-      typedef typename _Alloc::reference         reference;
-      typedef typename _Alloc::const_reference   const_reference;
-      typedef typename _Base::iterator           iterator;
-      typedef typename _Base::const_iterator     const_iterator;
-      typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
-      typedef std::reverse_iterator<iterator>         reverse_iterator;
+      typedef _Tp                                        value_type;
+      typedef typename _Tp_alloc_type::pointer           pointer;
+      typedef typename _Tp_alloc_type::const_pointer     const_pointer;
+      typedef typename _Tp_alloc_type::reference         reference;
+      typedef typename _Tp_alloc_type::const_reference   const_reference;
+      typedef typename _Base::iterator                   iterator;
+      typedef typename _Base::const_iterator             const_iterator;
+      typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
+      typedef std::reverse_iterator<iterator>            reverse_iterator;
       typedef size_t                             size_type;
       typedef ptrdiff_t                          difference_type;
-      typedef typename _Base::allocator_type     allocator_type;
+      typedef _Alloc                             allocator_type;
 
     protected:
       typedef pointer*                           _Map_pointer;
@@ -627,6 +643,7 @@ namespace _GLIBCXX_STD
       using _Base::_M_deallocate_node;
       using _Base::_M_allocate_map;
       using _Base::_M_deallocate_map;
+      using _Base::_M_get_Tp_allocator;
 
       /** @if maint
        *  A total of four data members accumulated down the heirarchy.
@@ -680,7 +697,7 @@ namespace _GLIBCXX_STD
       : _Base(__x.get_allocator(), __x.size())
       { std::__uninitialized_copy_a(__x.begin(), __x.end(), 
 				    this->_M_impl._M_start,
-				    this->get_allocator()); }
+				    _M_get_Tp_allocator()); }
 
       /**
        *  @brief  Builds a %deque from a range.
@@ -713,7 +730,7 @@ namespace _GLIBCXX_STD
        */
       ~deque()
       { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-		      this->get_allocator()); }
+		      _M_get_Tp_allocator()); }
 
       /**
        *  @brief  %Deque assignment operator.
