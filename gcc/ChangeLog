@@ -1,5 +1,24 @@
 2005-06-02  Richard Henderson  <rth@redhat.com>
 
+	* Makefile.in (tree-vect-generic.o): New.
+	(OBJS-common, GTFILES, s-gtype): Add it.
+	* tree-complex.c (build_replicated_const, vector_inner_type,
+	vector_last_type, vector_last_nunits, build_word_mode_vector_type,
+	elem_op_func, tree_vec_extract, do_unop, do_binop, do_plus_minus,
+	do_negate, expand_vector_piecewise, expand_vector_parallel, 
+	expand_vector_addition, expand_vector_operation, 
+	type_for_widest_vector_mode, expand_vector_operations_1, 
+	gate_expand_vector_operations, expand_vector_operations, 
+	pass_lower_vector_ssa): Move to tree-vect-generic.c.
+	(tree_lower_complex): Rename from tree_lower_operations.
+	(pass_lower_complex): Rename from pass_pre_expand.
+	* tree-vect-generic.c: New file.
+	* tree-pass.h (pass_lower_complex): Rename from pass_pre_expand.
+	(pass_lower_vector): New.
+	* tree-optimize.c (init_tree_optimization_passes): Update to match.
+
+2005-06-02  Richard Henderson  <rth@redhat.com>
+
 	* modulo-sched.c (doloop_register_get): Protect against 
 	doloop_end not defined.
 

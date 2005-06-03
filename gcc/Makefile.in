@@ -925,14 +925,15 @@ C_OBJS = c-lang.o stub-objc.o $(C_AND_OBJC_OBJS)
 OBJS-common = \
  tree-chrec.o tree-scalar-evolution.o tree-data-ref.o			   \
  tree-cfg.o tree-dfa.o tree-eh.o tree-ssa.o tree-optimize.o tree-gimple.o  \
- gimplify.o tree-pretty-print.o tree-into-ssa.o          \
+ gimplify.o tree-pretty-print.o tree-into-ssa.o				   \
  tree-outof-ssa.o tree-ssa-ccp.o tree-vn.o tree-ssa-uncprop.o		   \
- tree-ssa-dce.o  tree-ssa-copy.o tree-nrv.o tree-ssa-copyrename.o  \
+ tree-ssa-dce.o  tree-ssa-copy.o tree-nrv.o tree-ssa-copyrename.o	   \
  tree-ssa-pre.o tree-ssa-live.o tree-ssa-operands.o tree-ssa-alias.o       \
  tree-ssa-phiopt.o tree-ssa-forwprop.o tree-nested.o tree-ssa-dse.o	   \
  tree-ssa-dom.o domwalk.o tree-tailcall.o gimple-low.o tree-iterator.o	   \
- tree-phinodes.o tree-ssanames.o tree-sra.o tree-complex.o tree-ssa-loop.o \
- tree-ssa-loop-niter.o tree-ssa-loop-manip.o tree-ssa-threadupdate.o	   \
+ tree-phinodes.o tree-ssanames.o tree-sra.o tree-complex.o		   \
+ tree-vect-generic.o tree-ssa-loop.o tree-ssa-loop-niter.o		   \
+ tree-ssa-loop-manip.o tree-ssa-threadupdate.o				   \
  tree-vectorizer.o tree-vect-analyze.o tree-vect-transform.o		   \
  tree-ssa-loop-ivcanon.o tree-ssa-propagate.o tree-ssa-math-opts.o	   \
  tree-ssa-loop-ivopts.o tree-if-conv.o tree-ssa-loop-unswitch.o		   \
@@ -2115,7 +2116,12 @@ tree-sra.o : tree-sra.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) \
 tree-complex.o : tree-complex.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
     $(TM_H) $(TREE_FLOW_H) $(TREE_GIMPLE_H) tree-iterator.h tree-pass.h \
     $(FLAGS_H) $(OPTABS_H) $(RTL_H) $(MACHMODE_H) $(EXPR_H) \
-    langhooks.h $(FLAGS_H) $(DIAGNOSTIC_H) gt-tree-complex.h $(GGC_H) \
+    langhooks.h $(FLAGS_H) $(DIAGNOSTIC_H) $(GGC_H) \
+    coretypes.h insn-codes.h
+tree-vect-generic.o : tree-vect-generic.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
+    $(TM_H) $(TREE_FLOW_H) $(TREE_GIMPLE_H) tree-iterator.h tree-pass.h \
+    $(FLAGS_H) $(OPTABS_H) $(RTL_H) $(MACHMODE_H) $(EXPR_H) \
+    langhooks.h $(FLAGS_H) $(DIAGNOSTIC_H) gt-tree-vect-generic.h $(GGC_H) \
     coretypes.h insn-codes.h
 df.o : df.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) function.h $(REGS_H) alloc-pool.h hard-reg-set.h \
@@ -2611,7 +2617,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-phinodes.c $(srcdir)/tree-cfg.c \
   $(srcdir)/tree-dfa.c $(srcdir)/tree-ssa-propagate.c \
   $(srcdir)/tree-iterator.c $(srcdir)/gimplify.c \
-  $(srcdir)/tree-chrec.h $(srcdir)/tree-complex.c \
+  $(srcdir)/tree-chrec.h $(srcdir)/tree-vect-generic.c \
   $(srcdir)/tree-ssa-operands.h $(srcdir)/tree-ssa-operands.c \
   $(srcdir)/tree-profile.c $(srcdir)/rtl-profile.c $(srcdir)/tree-nested.c \
   $(out_file) \
@@ -2630,8 +2636,7 @@ gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dojump.h \
 gt-dwarf2out.h gt-reg-stack.h gt-dwarf2asm.h \
 gt-dbxout.h gt-c-common.h gt-c-decl.h gt-c-parser.h \
 gt-c-pragma.h gtype-c.h gt-cfglayout.h \
-gt-tree-mudflap.h gt-tree-complex.h \
-gt-tree-profile.h \
+gt-tree-mudflap.h gt-tree-vect-generic.h gt-tree-profile.h \
 gt-tree-ssanames.h gt-tree-iterator.h gt-gimplify.h \
 gt-tree-phinodes.h gt-tree-nested.h \
 gt-tree-ssa-operands.h gt-tree-ssa-propagate.h \
