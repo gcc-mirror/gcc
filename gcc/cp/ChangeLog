@@ -1,3 +1,12 @@
+2005-06-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21336
+	* cp-tree.h (grok_op_properties): Remove friendp parameter.
+	* decl.c (grokfndecl): Adjust call.
+	(grok_op_properties): Determine the class of which the function is
+	a member by looking at its DECL_CONTEXT, not current_class_type.
+	* pt.c (tsubst_decl): Adjust call to grok_op_properties.
+
 2005-05-26  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/21768
