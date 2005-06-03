@@ -1606,7 +1606,7 @@ static void
 maybe_unlink (const char *file)
 {
   if (!debug)
-    unlink (file);
+    unlink_if_ordinary (file);
   else
     notice ("[Leaving %s]\n", file);
 }
