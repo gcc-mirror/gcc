@@ -1,3 +1,8 @@
+2005-06-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21336
+	* g++.dg/template/new2.C: New test.
+
 2005-06-03  Josh Conner  <jconner@apple.com>
 
 	* gcc.dg/ppc-vector-memcpy.c (foo): Use non-zero values for
