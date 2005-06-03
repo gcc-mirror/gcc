@@ -1,3 +1,8 @@
+2005-06-02  Jim Blandy  <jimb@redhat.com>
+
+	* config.sub: Add cases for the Renesas m32c.  (This patch has been
+	accepted into the master sources.)
+
 2005-06-02  Aldy Hernandez  <aldyh@redhat.com>
             Michael Snyder  <msnyder@redhat.com>
             Stan Cox  <scox@redhat.com>
