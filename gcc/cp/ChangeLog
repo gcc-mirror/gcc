@@ -1,5 +1,11 @@
 2005-06-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/21853
+	* typeck.c (casts_away_constness_r): Do not drop cv-qualifiers on
+	the pointed-to type for a pointer-to-member.
+
+2005-06-03  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/21336
 	* cp-tree.h (grok_op_properties): Remove friendp parameter.
 	* decl.c (grokfndecl): Adjust call.
