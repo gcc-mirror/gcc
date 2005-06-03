@@ -90,21 +90,26 @@ namespace _GLIBCXX_STD
             typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
     class map
     {
-      // concept requirements
-      __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
-      __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
-				_BinaryFunctionConcept)
-
     public:
       typedef _Key                                          key_type;
       typedef _Tp                                           mapped_type;
       typedef std::pair<const _Key, _Tp>                    value_type;
       typedef _Compare                                      key_compare;
+      typedef _Alloc                                        allocator_type;
 
+    private:
+      // concept requirements
+      typedef typename _Alloc::value_type                   _Alloc_value_type;
+      __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+      __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
+				_BinaryFunctionConcept)
+      __glibcxx_class_requires2(value_type, _Alloc_value_type, _SameTypeConcept)
+
+    public:
       class value_compare
       : public std::binary_function<value_type, value_type, bool>
       {
-	friend class map<_Key,_Tp,_Compare,_Alloc>;
+	friend class map<_Key, _Tp, _Compare, _Alloc>;
       protected:
 	_Compare comp;
 
@@ -118,19 +123,22 @@ namespace _GLIBCXX_STD
 
     private:
       /// @if maint  This turns a red-black tree into a [multi]map.  @endif
-      typedef _Rb_tree<key_type, value_type,
-		       _Select1st<value_type>, key_compare, _Alloc> _Rep_type;
+      typedef typename _Alloc::template rebind<value_type>::other 
+        _Pair_alloc_type;
+
+      typedef _Rb_tree<key_type, value_type, _Select1st<value_type>,
+		       key_compare, _Pair_alloc_type> _Rep_type;
+
       /// @if maint  The actual tree structure.  @endif
       _Rep_type _M_t;
 
     public:
       // many of these are specified differently in ISO, but the following are
       // "functionally equivalent"
-      typedef typename _Alloc::pointer                   pointer;
-      typedef typename _Alloc::const_pointer             const_pointer;
-      typedef typename _Alloc::reference                 reference;
-      typedef typename _Alloc::const_reference           const_reference;
-      typedef typename _Rep_type::allocator_type         allocator_type;
+      typedef typename _Pair_alloc_type::pointer         pointer;
+      typedef typename _Pair_alloc_type::const_pointer   const_pointer;
+      typedef typename _Pair_alloc_type::reference       reference;
+      typedef typename _Pair_alloc_type::const_reference const_reference;
       typedef typename _Rep_type::iterator               iterator;
       typedef typename _Rep_type::const_iterator         const_iterator;
       typedef typename _Rep_type::size_type              size_type;
@@ -589,7 +597,7 @@ namespace _GLIBCXX_STD
        *
        *  This function probably only makes sense for multimaps.
        */
-      std::pair<iterator,iterator>
+      std::pair<iterator, iterator>
       equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
 
@@ -608,19 +616,19 @@ namespace _GLIBCXX_STD
        *
        *  This function probably only makes sense for multimaps.
        */
-      std::pair<const_iterator,const_iterator>
+      std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
 
       template <typename _K1, typename _T1, typename _C1, typename _A1>
         friend bool
-        operator== (const map<_K1,_T1,_C1,_A1>&,
-		    const map<_K1,_T1,_C1,_A1>&);
+        operator== (const map<_K1, _T1, _C1, _A1>&,
+		    const map<_K1, _T1, _C1, _A1>&);
 
       template <typename _K1, typename _T1, typename _C1, typename _A1>
         friend bool
-        operator< (const map<_K1,_T1,_C1,_A1>&,
-		   const map<_K1,_T1,_C1,_A1>&);
+        operator< (const map<_K1, _T1, _C1, _A1>&,
+		   const map<_K1, _T1, _C1, _A1>&);
     };
 
   /**
@@ -635,8 +643,8 @@ namespace _GLIBCXX_STD
   */
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
-    operator==(const map<_Key,_Tp,_Compare,_Alloc>& __x,
-               const map<_Key,_Tp,_Compare,_Alloc>& __y)
+    operator==(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+               const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __x._M_t == __y._M_t; }
 
   /**
@@ -652,42 +660,43 @@ namespace _GLIBCXX_STD
   */
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
-    operator<(const map<_Key,_Tp,_Compare,_Alloc>& __x,
-              const map<_Key,_Tp,_Compare,_Alloc>& __y)
+    operator<(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+              const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __x._M_t < __y._M_t; }
 
   /// Based on operator==
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
-    operator!=(const map<_Key,_Tp,_Compare,_Alloc>& __x,
-               const map<_Key,_Tp,_Compare,_Alloc>& __y)
+    operator!=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+               const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x == __y); }
 
   /// Based on operator<
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
-    operator>(const map<_Key,_Tp,_Compare,_Alloc>& __x,
-              const map<_Key,_Tp,_Compare,_Alloc>& __y)
+    operator>(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+              const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __y < __x; }
 
   /// Based on operator<
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
-    operator<=(const map<_Key,_Tp,_Compare,_Alloc>& __x,
-               const map<_Key,_Tp,_Compare,_Alloc>& __y)
+    operator<=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+               const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__y < __x); }
 
   /// Based on operator<
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
-    operator>=(const map<_Key,_Tp,_Compare,_Alloc>& __x,
-               const map<_Key,_Tp,_Compare,_Alloc>& __y)
+    operator>=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+               const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x < __y); }
 
   /// See std::map::swap().
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline void
-    swap(map<_Key,_Tp,_Compare,_Alloc>& __x, map<_Key,_Tp,_Compare,_Alloc>& __y)
+    swap(map<_Key, _Tp, _Compare, _Alloc>& __x,
+	 map<_Key, _Tp, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
 } // namespace std
 
