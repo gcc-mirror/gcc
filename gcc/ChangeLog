@@ -1,3 +1,9 @@
+2005-06-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/21879
+	* c-decl.c (start_function): Restore label_context_stack_se and
+	label_context_stack_vm  if returning with an error.
+
 2005-06-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* configure.ac: Check declaration for asprintf, needed by
