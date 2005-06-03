@@ -860,7 +860,7 @@ cgraph_varpool_finalize_decl (tree decl)
 
   if (decide_is_variable_needed (node, decl))
     cgraph_varpool_mark_needed_node (node);
-  /* Since we reclaim unrechable nodes at the end of every language
+  /* Since we reclaim unreachable nodes at the end of every language
      level unit, we need to be conservative about possible entry points
      there.  */
   if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
@@ -987,12 +987,12 @@ cgraph_function_body_availability (struct cgraph_node *node)
      care at least of two notable extensions - the COMDAT functions
      used to share template instantiations in C++ (this is symmetric
      to code cp_cannot_inline_tree_fn and probably shall be shared and
-     the inlinability hooks completelly elliminated).
+     the inlinability hooks completely eliminated).
 
      ??? Does the C++ one definition rule allow us to always return
      AVAIL_AVAILABLE here?  That would be good reason to preserve this
      hook Similarly deal with extern inline functions - this is again
-     neccesary to get C++ shared functions having keyed templates
+     necessary to get C++ shared functions having keyed templates
      right and in the C extension documentation we probably should
      document the requirement of both versions of function (extern
      inline and offline) having same side effect characteristics as
@@ -1016,7 +1016,7 @@ cgraph_variable_initializer_availability (struct cgraph_varpool_node *node)
     return AVAIL_NOT_AVAILABLE;
   if (!TREE_PUBLIC (node->decl))
     return AVAIL_AVAILABLE;
-  /* If the variable can be overwritted, return OVERWRITABLE.  Takes
+  /* If the variable can be overwritten, return OVERWRITABLE.  Takes
      care of at least two notable extensions - the COMDAT variables
      used to share template instantiations in C++.  */
   if (!(*targetm.binds_local_p) (node->decl) && !DECL_COMDAT (node->decl))

@@ -713,7 +713,7 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 };
 
 /* Default costs. If these are used for a processor we should look
-   up the acutal costs.  */
+   up the actual costs.  */
 #define DEFAULT_COSTS COSTS_N_INSNS (6),  /* fp_add */       \
                       COSTS_N_INSNS (7),  /* fp_mult_sf */   \
                       COSTS_N_INSNS (8),  /* fp_mult_df */   \
@@ -2361,7 +2361,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
 	     Given the choice between "li R1,0...255" and "move R1,R2"
 	     (where R2 is a known constant), it is usually better to use "li",
-	     since we do not want to unnessarily extend the lifetime of R2.  */
+	     since we do not want to unnecessarily extend the lifetime
+	     of R2.  */
 	  if (outer_code == SET
 	      && INTVAL (x) >= 0
 	      && INTVAL (x) < 256)

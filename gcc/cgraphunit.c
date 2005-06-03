@@ -421,7 +421,7 @@ cgraph_finalize_function (tree decl, bool nested)
   if (decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
 
-  /* Since we reclaim unrechable nodes at the end of every language
+  /* Since we reclaim unreachable nodes at the end of every language
      level unit, we need to be conservative about possible entry points
      there.  */
   if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
