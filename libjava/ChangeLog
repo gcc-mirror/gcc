@@ -2,6 +2,7 @@
 
 	* gnu/classpath/jdwp/transport/ITransport.java: New file.
 	* gnu/classpath/jdwp/transport/SocketTransport.java: New file.
+	* gnu/classpath/jdwp/transport/TransportFactory.java: New file.
 
 2005-06-03  Andreas Tobler  <a.tobler@schweiz.ch>
 
