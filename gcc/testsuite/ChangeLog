@@ -1,3 +1,15 @@
+2005-06-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/21292
+
+	* lib/target-supports.exp (check_effective_target_vect_cmdline_needed):
+	New.
+	* gcc.dg/tree-ssa/gen-vect-11.c, gcc.dg/tree-ssa/gen-vect-11a.c,
+	gcc.dg/tree-ssa/gen-vect-11b.c, gcc.dg/tree-ssa/gen-vect-11c.c,
+	gcc.dg/tree-ssa/gen-vect-2.c, gcc.dg/tree-ssa/gen-vect-25.c,
+	gcc.dg/tree-ssa/gen-vect-26.c, gcc.dg/tree-ssa/gen-vect-28.c,
+	gcc.dg/tree-ssa/gen-vect-32.c: Require it.
+
 2005-06-02  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/sync-2.c: Use -march=i486 for i386.
