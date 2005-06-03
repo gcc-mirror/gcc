@@ -1,3 +1,7 @@
+2005-06-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* collect2.c (maybe_unlink): Use unlink_if_ordinary.
+
 2005-06-02  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* reload1.c (reload): Revert my previous patch.
