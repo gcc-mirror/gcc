@@ -349,6 +349,7 @@ make_single_succ_edge (basic_block src, basic_block dest, int flags)
 void
 remove_edge (edge e)
 {
+  remove_predictions_associated_with_edge (e);
   execute_on_shrinking_pred (e);
 
   disconnect_src (e);

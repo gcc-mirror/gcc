@@ -240,6 +240,24 @@ tree_predict_edge (edge e, enum br_predictor predictor, int probability)
   i->edge = e;
 }
 
+/* Remove all predictions on given basic block that are attached
+   to edge E.  */
+void
+remove_predictions_associated_with_edge (edge e)
+{
+  if (e->src->predictions)
+    {
+      struct edge_prediction **prediction = &e->src->predictions;
+      while (*prediction)
+	{
+	  if ((*prediction)->edge == e)
+	    *prediction = (*prediction)->next;
+	  else
+	    prediction = &((*prediction)->next);
+	}
+    }
+}
+
 /* Return true when we can store prediction on insn INSN.
    At the moment we represent predictions only on conditional
    jumps, not at computed jump or other complicated cases.  */
