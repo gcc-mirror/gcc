@@ -1,3 +1,8 @@
+2005-06-03  Sebastian Pop  <pop@cri.ensmp.fr>
+	
+	* tree-data-ref.c (compute_self_dependence): New function.
+	(compute_all_dependences): Use it.
+
 2005-06-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (LINK_SPEC): Pass -syslibroot to linker

@@ -2177,6 +2177,25 @@ compute_affine_dependence (struct data_dependence_relation *ddr)
     fprintf (dump_file, ")\n");
 }
 
+/* This computes the dependence relation for the same data
+   reference into DDR.  */
+
+static void
+compute_self_dependence (struct data_dependence_relation *ddr)
+{
+  unsigned int i;
+
+  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
+    {
+      struct subscript *subscript = DDR_SUBSCRIPT (ddr, i);
+      
+      /* The accessed index overlaps for each iteration.  */
+      SUB_CONFLICTS_IN_A (subscript) = integer_zero_node;
+      SUB_CONFLICTS_IN_B (subscript) = integer_zero_node;
+      SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
+    }
+}
+
 
 typedef struct data_dependence_relation *ddr_p;
 DEF_VEC_P(ddr_p);
@@ -2196,8 +2215,11 @@ compute_all_dependences (varray_type datarefs,
 
   N = VARRAY_ACTIVE_SIZE (datarefs);
 
+  /* Note that we specifically skip i == j because it's a self dependence, and
+     use compute_self_dependence below.  */
+
   for (i = 0; i < N; i++)
-    for (j = i; j < N; j++)
+    for (j = i + 1; j < N; j++)
       {
 	struct data_reference *a, *b;
 	struct data_dependence_relation *ddr;
@@ -2210,6 +2232,22 @@ compute_all_dependences (varray_type datarefs,
 	compute_affine_dependence (ddr);
 	compute_subscript_distance (ddr);
       }
+
+  /* Compute self dependence relation of each dataref to itself.  */
+
+  for (i = 0; i < N; i++)
+    {
+      struct data_reference *a, *b;
+      struct data_dependence_relation *ddr;
+
+      a = VARRAY_GENERIC_PTR (datarefs, i);
+      b = VARRAY_GENERIC_PTR (datarefs, i);
+      ddr = initialize_data_dependence_relation (a, b);
+
+      VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
+      compute_self_dependence (ddr);
+      compute_subscript_distance (ddr);
+    }
 }
 
 /* Search the data references in LOOP, and record the information into
