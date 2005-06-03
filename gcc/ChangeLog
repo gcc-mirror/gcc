@@ -1,3 +1,9 @@
+2005-06-03  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (remove_predictions_associated_with_edge): Declare.
+	* cfg.c (remove_edge): Use it.
+	* predict.c (remove_predictions_associated_with_edge): New function.
+
 2005-06-03  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_conditional_register_usage):
