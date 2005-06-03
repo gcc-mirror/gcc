@@ -5,6 +5,6 @@
 
 void foo(void)
 {
-  int x[8] __attribute__((aligned(128))) = { 1 };
+  int x[8] __attribute__((aligned(128))) = { 1, 1, 1, 1, 1, 1, 1, 1 };
   bar (x);
 }
