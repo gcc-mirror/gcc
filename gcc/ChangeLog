@@ -1,3 +1,8 @@
+2005-06-02  Richard Henderson  <rth@redhat.com>
+
+	* modulo-sched.c (doloop_register_get): Protect against 
+	doloop_end not defined.
+
 2005-06-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/sh/sh.c (general_movsrc_operand,

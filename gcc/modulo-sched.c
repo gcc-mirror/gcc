@@ -273,8 +273,9 @@ static struct sched_info sms_sched_info =
    or zero if it is not a decrement-and-branch insn.  */
 
 static rtx
-doloop_register_get (rtx insn)
+doloop_register_get (rtx insn ATTRIBUTE_UNUSED)
 {
+#ifdef HAVE_doloop_end
   rtx pattern, reg, condition;
 
   if (! JUMP_P (insn))
@@ -294,6 +295,9 @@ doloop_register_get (rtx insn)
     gcc_unreachable ();
 
   return reg;
+#else
+  return NULL_RTX;
+#endif
 }
 
 /* Check if COUNT_REG is set to a constant in the PRE_HEADER block, so
