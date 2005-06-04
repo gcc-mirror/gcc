@@ -2355,12 +2355,13 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
       && c_parser_next_token_is (parser, CPP_NAME)
       && c_parser_peek_token (parser)->id_kind == C_ID_ID)
     {
-      tree list = NULL_TREE;
+      tree list = NULL_TREE, *nextp = &list;
       while (c_parser_next_token_is (parser, CPP_NAME)
 	     && c_parser_peek_token (parser)->id_kind == C_ID_ID)
 	{
-	  list = chainon (list, build_tree_list (NULL_TREE,
-						 c_parser_peek_token (parser)->value));
+	  *nextp = build_tree_list (NULL_TREE,
+				    c_parser_peek_token (parser)->value);
+	  nextp = & TREE_CHAIN (*nextp);
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is_not (parser, CPP_COMMA))
 	    break;
@@ -5294,14 +5295,14 @@ static tree
 c_parser_expr_list (c_parser *parser)
 {
   struct c_expr expr;
-  tree ret;
+  tree ret, cur;
   expr = c_parser_expr_no_commas (parser, NULL);
-  ret = build_tree_list (NULL_TREE, expr.value);
+  ret = cur = build_tree_list (NULL_TREE, expr.value);
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
       expr = c_parser_expr_no_commas (parser, NULL);
-      ret = chainon (ret, build_tree_list (NULL_TREE, expr.value));
+      cur = TREE_CHAIN (cur) = build_tree_list (NULL_TREE, expr.value);
     }
   return ret;
 }
