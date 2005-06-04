@@ -1,3 +1,7 @@
+2005-06-04  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* MAINTAINERS: Update my email address.
+
 2005-06-02  Jim Blandy  <jimb@redhat.com>
 
 	* config.sub: Add cases for the Renesas m32c.  (This patch has been
