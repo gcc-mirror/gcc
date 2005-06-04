@@ -437,9 +437,9 @@ gfc_get_backend_locus (locus * loc)
 {
   loc->lb = gfc_getmem (sizeof (gfc_linebuf));    
 #ifdef USE_MAPPED_LOCATION
-  loc->lb->location = input_location; // FIXME adjust??
+  loc->lb->location = input_location;
 #else
-  loc->lb->linenum = input_line - 1;
+  loc->lb->linenum = input_line;
 #endif
   loc->lb->file = gfc_current_backend_file;
 }

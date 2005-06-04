@@ -1,3 +1,10 @@
+2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+        Erik Schnetter  <schnetter@aei.mpg.de>
+
+	PR fortran/19195
+	* trans.c (gfc_get_backend_locus): Remove unnecessary adjustment,
+	remove FIXME comment.
+
 2005-06-04  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR fortran/16898

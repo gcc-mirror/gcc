@@ -1,5 +1,8 @@
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/19195
+	* gfortran.dg/debug_1.f90: New test.
+
 	PR fortran/16898
 	* gfortran.dg/ret_pointer_1.f90: Un-XFAIL.
 
