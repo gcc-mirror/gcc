@@ -1,6 +1,6 @@
 // natCore -- C++ side of Core
 
-/* Copyright (C) 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
