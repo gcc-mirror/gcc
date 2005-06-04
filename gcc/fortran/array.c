@@ -874,7 +874,10 @@ gfc_match_array_constructor (gfc_expr ** result)
   head = tail = NULL;
 
   if (gfc_match (" /)") == MATCH_YES)
-    goto empty;			/* Special case */
+    {
+      gfc_error ("Empty array constructor at %C is not allowed");
+      goto cleanup;
+    }
 
   for (;;)
     {
@@ -898,7 +901,6 @@ gfc_match_array_constructor (gfc_expr ** result)
   if (gfc_match (" /)") == MATCH_NO)
     goto syntax;
 
-empty:
   expr = gfc_get_expr ();
 
   expr->expr_type = EXPR_ARRAY;

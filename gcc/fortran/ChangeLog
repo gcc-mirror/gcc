@@ -1,4 +1,10 @@
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+	Erik Edelmann  <erik.edelmann@iki.fi>
+
+	* array.c (gfc_match_array_constructor): Disallow empty array
+	constructor.
+
+2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* match.c (match_forall_iterator): Don't immediately give error if '='
 	is not followed by an expression.
