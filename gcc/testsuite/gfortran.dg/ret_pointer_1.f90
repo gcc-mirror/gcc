@@ -1,7 +1,4 @@
-! PR16898 : XFAILed because of problems with aliasing of array descriptors.
-!  Basically a and r get put in different alias sets, then the rtl optimizars
-!  wreak havoc when foo is inlined.
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! Test functions returning array pointers
 program ret_pointer_1
   integer, pointer, dimension(:) :: a

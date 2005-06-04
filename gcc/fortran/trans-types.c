@@ -50,6 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static tree gfc_get_derived_type (gfc_symbol * derived);
 
 tree gfc_array_index_type;
+tree gfc_array_range_type;
 tree pvoid_type_node;
 tree ppvoid_type_node;
 tree pchar_type_node;
@@ -528,6 +529,10 @@ gfc_init_types (void)
   pchar_type_node = build_pointer_type (gfc_character1_type_node);
 
   gfc_array_index_type = gfc_get_int_type (gfc_index_integer_kind);
+  gfc_array_range_type
+	  = build_range_type (gfc_array_index_type,
+			      build_int_cst (gfc_array_index_type, 0),
+			      NULL_TREE);
 
   /* The maximum array element size that can be handled is determined
      by the number of bits available to store this field in the array
@@ -1182,9 +1187,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
   /* We define data as an unknown size array. Much better than doing
      pointer arithmetic.  */
   arraytype =
-    build_array_type (etype,
-		      build_range_type (gfc_array_index_type,
-					gfc_index_zero_node, NULL_TREE));
+    build_array_type (etype, gfc_array_range_type);
   arraytype = build_pointer_type (arraytype);
   GFC_TYPE_ARRAY_DATAPTR_TYPE (fat_type) = arraytype;
 

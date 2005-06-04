@@ -1,3 +1,10 @@
+2005-06-04  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR fortran/16898
+	* trans-types.c (gfc_array_range_type): New variable.
+	(gfc_init_types): Initialize gfc_array_range_type.
+	(gfc_get_array_type_bounds): Use gfc_array_range_type.
+
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 	Erik Edelmann  <erik.edelmann@iki.fi>
 
