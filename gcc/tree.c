@@ -143,6 +143,9 @@ struct tree_map GTY(())
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
      htab_t debug_expr_for_decl;
 
+static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
+     htab_t value_expr_for_decl;
+
 static void set_type_quals (tree, int);
 static int type_hash_eq (const void *, const void *);
 static hashval_t type_hash_hash (const void *);
@@ -152,6 +155,7 @@ static hashval_t int_cst_hash_hash (const void *);
 static int int_cst_hash_eq (const void *, const void *);
 static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
+static void print_value_expr_statistics (void);
 static tree make_vector_type (tree, int, enum machine_mode);
 static int type_hash_marked_p (const void *);
 static int tree_map_marked_p (const void *);
@@ -172,6 +176,9 @@ init_ttree (void)
 				     type_hash_eq, 0);
 
   debug_expr_for_decl = htab_create_ggc (512, tree_map_hash,
+					 tree_map_eq, 0);
+
+  value_expr_for_decl = htab_create_ggc (512, tree_map_hash,
 					 tree_map_eq, 0);
 
   int_cst_hash_table = htab_create_ggc (1024, int_cst_hash_hash,
@@ -465,7 +472,16 @@ copy_node_stat (tree node MEM_STAT_DECL)
   t->common.ann = 0;
 
   if (TREE_CODE_CLASS (code) == tcc_declaration)
-    DECL_UID (t) = next_decl_uid++;
+    {
+      DECL_UID (t) = next_decl_uid++;
+      if ((TREE_CODE (node) == PARM_DECL || TREE_CODE (node) == VAR_DECL)
+	  && DECL_HAS_VALUE_EXPR_P (node))
+	{
+	  SET_DECL_VALUE_EXPR (t, DECL_VALUE_EXPR (node));
+	  DECL_HAS_VALUE_EXPR_P (t) = 1;
+	}
+      
+    }
   else if (TREE_CODE_CLASS (code) == tcc_type)
     {
       TYPE_UID (t) = next_type_uid++;
@@ -3493,6 +3509,16 @@ print_debug_expr_statistics (void)
 	   htab_collisions (debug_expr_for_decl));
 }
 
+/* Print out the statistics for the DECL_VALUE_EXPR hash table.  */
+
+static void
+print_value_expr_statistics (void)
+{
+  fprintf (stderr, "DECL_VALUE_EXPR  hash: size %ld, %ld elements, %f collisions\n",
+	   (long) htab_size (value_expr_for_decl),
+	   (long) htab_elements (value_expr_for_decl),
+	   htab_collisions (value_expr_for_decl));
+}
 /* Lookup a debug expression for FROM, and return it if we find one.  */
 
 tree 
@@ -3522,7 +3548,37 @@ decl_debug_expr_insert (tree from, tree to)
   loc = htab_find_slot_with_hash (debug_expr_for_decl, h, h->hash, INSERT);
   *(struct tree_map **) loc = h;
 }  
-  
+
+/* Lookup a value expression for FROM, and return it if we find one.  */
+
+tree 
+decl_value_expr_lookup (tree from)
+{
+  struct tree_map *h, in;
+  in.from = from;
+
+  h = htab_find_with_hash (value_expr_for_decl, &in, htab_hash_pointer (from));
+  if (h)
+    return h->to;
+  return NULL_TREE;
+}
+
+/* Insert a mapping FROM->TO in the value expression hashtable.  */
+
+void
+decl_value_expr_insert (tree from, tree to)
+{
+  struct tree_map *h;
+  void **loc;
+
+  h = ggc_alloc (sizeof (struct tree_map));
+  h->hash = htab_hash_pointer (from);
+  h->from = from;
+  h->to = to;
+  loc = htab_find_slot_with_hash (value_expr_for_decl, h, h->hash, INSERT);
+  *(struct tree_map **) loc = h;
+}
+
 /* Hashing of types so that we don't make duplicates.
    The entry point is `type_hash_canon'.  */
 
@@ -5355,6 +5411,7 @@ dump_tree_statistics (void)
 #endif
   print_type_hash_statistics ();
   print_debug_expr_statistics ();
+  print_value_expr_statistics ();
   lang_hooks.print_statistics ();
 }
 

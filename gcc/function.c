@@ -3147,7 +3147,8 @@ gimplify_parameters (void)
 	      t = build2 (MODIFY_EXPR, void_type_node, local, parm);
 	      gimplify_and_add (t, &stmts);
 
-	      DECL_VALUE_EXPR (parm) = local;
+	      SET_DECL_VALUE_EXPR (parm, local);
+	      DECL_HAS_VALUE_EXPR_P (parm) = 1;
 	    }
 	}
     }

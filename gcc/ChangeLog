@@ -1,3 +1,22 @@
+2005-06-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	* cfgexpand.c (expand_one_var): Use DECL_HAS_VALUE_EXPR_P.
+	* dwarf2out.c (loc_descriptor_from_tree_1): Ditto.
+	* expr.c (expand_var): Ditto.	
+	* function.c (gimplify_parameters): Use SET_DECL_VALUE_EXPR too.
+	* gimplify.c (gimplify_decl_expr): Ditto.
+	(gimplify_expr): Ditto.
+	* tree-mudflap.c (mf_decl_eligible_p): Use DECL_HAS_VALUE_EXPR_P.
+	* tree.c (value_expr_for_decl): New.
+	(print_value_expr_statistics): New.
+	(init_ttree): Init value_expr_for_decl.
+	(decl_value_expr_lookup): New.
+	(decl_value_expr_insert): Ditto.
+	(copy_node_stat): Copy DECL_VALUE_EXPR status.
+	* tree.h (DECL_VALUE_EXPR): Use hashtable.
+	(SET_DECL_VALUE_EXPR): New.
+	(DECL_HAS_VALUE_EXPR_P): New.
+
 2005-06-04  Steven Bosscher  <stevenb@suse.de>
 
 	* lcm.c: Move all mode-switching related functions from here...
