@@ -12,6 +12,9 @@ public class Core
 {
   public native static Core create (String name) throws java.io.IOException;
 
+  // Same as create, except returns null if not found.
+  public native static Core find (String name);
+
   public RawData ptr;
   public int length;
 

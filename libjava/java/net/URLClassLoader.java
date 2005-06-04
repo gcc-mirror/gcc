@@ -63,7 +63,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import gnu.gcj.runtime.SharedLibHelper;
-
+import gnu.gcj.Core;
+import gnu.java.net.protocol.core.CoreInputStream;
 
 /**
  * A secure class loader that can load classes and resources from
@@ -677,6 +678,66 @@ public class URLClassLoader extends SecureClassLoader
     }
   }
 
+  /**
+   * A <code>CoreURLLoader</code> is a type of <code>URLLoader</code>
+   * only loading from core url.
+   */
+  static final class CoreURLLoader extends URLLoader
+  {
+    private String dir;
+
+    CoreURLLoader(URLClassLoader classloader, URL url)
+    {
+      super(classloader, url);
+      dir = baseURL.getFile();
+    }
+
+    /** get resource with the name "name" in the core url */
+    Resource getResource(String name)
+    {
+      Core core = Core.find (dir + name);
+      if (core != null)
+        return new CoreResource(this, name, core);
+      return null;
+    }
+  }
+
+  static final class CoreResource extends Resource
+  {
+    final Core core;
+
+    CoreResource(CoreURLLoader loader, String name, Core core)
+    {
+      super(loader, name);
+      this.core = core;
+    }
+
+    InputStream getInputStream() throws IOException
+    {
+      return new CoreInputStream(core);
+    }
+
+    public int getLength()
+    {
+      return core.length;
+    }
+
+    public URL getURL()
+    {
+      try
+        {
+          return new URL(loader.baseURL, name,
+                         loader.classloader.getURLStreamHandler("core"));
+        }
+      catch (MalformedURLException e)
+        {
+          InternalError ie = new InternalError();
+          ie.initCause(e);
+          throw ie;
+        }
+    }
+  }
+
   // Constructors
 
   /**
@@ -842,6 +903,8 @@ public class URLClassLoader extends SecureClassLoader
               loader = new JarURLLoader(this, newUrl);
             else if ("file".equals(protocol))
               loader = new FileURLLoader(this, newUrl);
+	    else if ("core".equals(protocol))
+	      loader = new CoreURLLoader(this, newUrl);
             else
               loader = new RemoteURLLoader(this, newUrl);
 

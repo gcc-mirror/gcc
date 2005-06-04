@@ -104,6 +104,13 @@ _Jv_create_core (_Jv_core_chain *node, jstring name)
 }
 
 gnu::gcj::Core *
+gnu::gcj::Core::find (jstring name)
+{
+  gnu::gcj::Core *core = _Jv_create_core (root, name);
+  return core;
+}
+
+gnu::gcj::Core *
 gnu::gcj::Core::create (jstring name)
 {
   gnu::gcj::Core *core = _Jv_create_core (root, name);
