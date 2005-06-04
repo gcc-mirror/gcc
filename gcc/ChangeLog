@@ -1,3 +1,9 @@
+2005-06-04  Richard Henderson  <rth@redhat.com>
+
+        PR target/21888
+        * config/alpha/alpha.c (alpha_align_insns): Don't insert nops
+        until we've passed initial ldgp.
+
 2005-06-01  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac (HAVE_AS_JSRDIRECT_RELOCS): New.
