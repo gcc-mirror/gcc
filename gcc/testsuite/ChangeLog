@@ -1,3 +1,7 @@
+2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/ret_pointer_1.f90: Un-XFAIL.
+
 2005-06-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* g++.dg/opt/crossjump1.C: Gate -fPIC usage on target fpic.
