@@ -1,4 +1,10 @@
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+	Erik Schnetter  <schnetter@aei.mpg.de>
+
+	* trans.c (gfc_get_backend_locus): Remove unnecessary adjustment,
+	remove FIXME comment. 
+
+2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* match.c (match_forall_iterator): Don't immediately give error if '='
 	is not followed by an expression.
