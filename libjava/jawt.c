@@ -35,12 +35,11 @@
    obligated to do so.  If you do not wish to do so, delete this
    exception statement from your version. */
 
-
+#include <stdlib.h>
 #include <jni.h>
 #include <jawt.h>
 #include <jawt_md.h>
 #include "classpath_jawt.h"
-#include <malloc.h>
 
 static jint (JNICALL _Jv_Lock) (JAWT_DrawingSurface* surface);
 static void (JNICALL _Jv_Unlock) (JAWT_DrawingSurface* surface);
