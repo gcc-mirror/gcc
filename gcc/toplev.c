@@ -1767,7 +1767,6 @@ backend_init (void)
   init_alias_once ();
   init_loop ();
   init_reload ();
-  init_function_once ();
   init_varasm_once ();
 
   /* The following initialization functions need to generate rtl, so
