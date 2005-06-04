@@ -231,13 +231,17 @@ rtl_predict_edge (edge e, enum br_predictor predictor, int probability)
 void
 tree_predict_edge (edge e, enum br_predictor predictor, int probability)
 {
-  struct edge_prediction *i = ggc_alloc (sizeof (struct edge_prediction));
+  if ((e->src != ENTRY_BLOCK_PTR && EDGE_COUNT (e->src->succs) > 1)
+      && flag_guess_branch_prob)
+    {
+      struct edge_prediction *i = ggc_alloc (sizeof (struct edge_prediction));
 
-  i->next = e->src->predictions;
-  e->src->predictions = i;
-  i->probability = probability;
-  i->predictor = predictor;
-  i->edge = e;
+      i->next = e->src->predictions;
+      e->src->predictions = i;
+      i->probability = probability;
+      i->predictor = predictor;
+      i->edge = e;
+    }
 }
 
 /* Remove all predictions on given basic block that are attached
