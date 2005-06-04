@@ -234,7 +234,6 @@ Common RejectNegative Joined UInteger
 ;   global variables.
 ; 2 if pointer arguments may not alias each other and may not
 ;   alias global variables.  True in Fortran.
-;   The value is ignored if flag_alias_check is 0.
 fargument-alias
 Common Report Var(flag_argument_noalias,0)
 Specify that arguments may alias each other and globals
