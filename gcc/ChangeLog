@@ -1,3 +1,13 @@
+2005-06-04  Roger Sayle  <roger@eyesopen.com>
+
+	* reg-stack.c (struct block_info_def): Correct grammar typo.
+	(compensate_edge): Clean-up.  Perform as little work as possible
+	when src and dest stacks match.  Avoid modifying block_info.
+	Reorder and simplify assertion checks.  Avoid unnecessary copying
+	of regstack structure.
+	(convert_regs_1): Set the done flag here...
+	(convert_regs_2): ... instead of here.
+
 2005-06-04  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (no_global_regs_above): New.
