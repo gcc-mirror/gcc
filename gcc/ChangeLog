@@ -5,6 +5,9 @@
 
 2005-06-03  Geoffrey Keating  <geoffk@apple.com>
 
+	* c-parser.c (c_parser_parms_declarator): Don't use chainon().
+	(c_parser_expr_list): Don't use chainon().
+
 	* config/darwin.h (LINK_SPEC): Pass -syslibroot to linker
 	when -isysroot passed.
 
