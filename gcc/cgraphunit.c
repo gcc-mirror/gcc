@@ -339,6 +339,59 @@ cgraph_assemble_pending_functions (void)
 
   return output;
 }
+/* As an GCC extension we allow redefinition of the function.  The
+   semantics when both copies of bodies differ is not well defined.
+   We replace the old body with new body so in unit at a time mode
+   we always use new body, while in normal mode we may end up with
+   old body inlined into some functions and new body expanded and
+   inlined in others.
+
+   ??? It may make more sense to use one body for inlining and other
+   body for expanding the function but this is difficult to do.  */
+
+static void
+cgraph_reset_node (struct cgraph_node *node)
+{
+  /* If node->output is set, then this is a unit-at-a-time compilation
+     and we have already begun whole-unit analysis.  This is *not*
+     testing for whether we've already emitted the function.  That
+     case can be sort-of legitimately seen with real function 
+     redefinition errors.  I would argue that the front end should
+     never present us with such a case, but don't enforce that for now.  */
+  gcc_assert (!node->output);
+
+  /* Reset our data structures so we can analyze the function again.  */
+  memset (&node->local, 0, sizeof (node->local));
+  memset (&node->global, 0, sizeof (node->global));
+  memset (&node->rtl, 0, sizeof (node->rtl));
+  node->analyzed = false;
+  node->local.redefined_extern_inline = true;
+  node->local.finalized = false;
+
+  if (!flag_unit_at_a_time)
+    {
+      struct cgraph_node *n;
+
+      for (n = cgraph_nodes; n; n = n->next)
+	if (n->global.inlined_to == node)
+	  cgraph_remove_node (n);
+    }
+
+  cgraph_node_remove_callees (node);
+
+  /* We may need to re-queue the node for assembling in case
+     we already proceeded it and ignored as not needed.  */
+  if (node->reachable && !flag_unit_at_a_time)
+    {
+      struct cgraph_node *n;
+
+      for (n = cgraph_nodes_queue; n; n = n->next_needed)
+	if (n == node)
+	  break;
+      if (!n)
+	node->reachable = 0;
+    }
+}
 
 /* DECL has been parsed.  Take it, queue it, compile it at the whim of the
    logic in effect.  If NESTED is true, then our caller cannot stand to have
@@ -351,56 +404,7 @@ cgraph_finalize_function (tree decl, bool nested)
   struct cgraph_node *node = cgraph_node (decl);
 
   if (node->local.finalized)
-    {
-      /* As an GCC extension we allow redefinition of the function.  The
-	 semantics when both copies of bodies differ is not well defined.
-	 We replace the old body with new body so in unit at a time mode
-	 we always use new body, while in normal mode we may end up with
-	 old body inlined into some functions and new body expanded and
-	 inlined in others.
-	 
-	 ??? It may make more sense to use one body for inlining and other
-	 body for expanding the function but this is difficult to do.  */
-
-      /* If node->output is set, then this is a unit-at-a-time compilation
-	 and we have already begun whole-unit analysis.  This is *not*
-	 testing for whether we've already emitted the function.  That
-	 case can be sort-of legitimately seen with real function 
-	 redefinition errors.  I would argue that the front end should
-	 never present us with such a case, but don't enforce that for now.  */
-      gcc_assert (!node->output);
-
-      /* Reset our data structures so we can analyze the function again.  */
-      memset (&node->local, 0, sizeof (node->local));
-      memset (&node->global, 0, sizeof (node->global));
-      memset (&node->rtl, 0, sizeof (node->rtl));
-      node->analyzed = false;
-      node->local.redefined_extern_inline = true;
-
-      if (!flag_unit_at_a_time)
-	{
-	  struct cgraph_node *n;
-
-	  for (n = cgraph_nodes; n; n = n->next)
-	    if (n->global.inlined_to == node)
-	      cgraph_remove_node (n);
-	}
-
-      cgraph_node_remove_callees (node);
-
-      /* We may need to re-queue the node for assembling in case
-         we already proceeded it and ignored as not needed.  */
-      if (node->reachable && !flag_unit_at_a_time)
-	{
-	  struct cgraph_node *n;
-
-	  for (n = cgraph_nodes_queue; n; n = n->next_needed)
-	    if (n == node)
-	      break;
-	  if (!n)
-	    node->reachable = 0;
-	}
-    }
+    cgraph_reset_node (node);
 
   notice_global_symbol (decl);
   node->decl = decl;
@@ -837,7 +841,10 @@ cgraph_finalize_compilation_unit (void)
 	 weak alias attribute to kill its body. See
 	 gcc.c-torture/compile/20011119-1.c  */
       if (!DECL_SAVED_TREE (decl))
-	continue;
+	{
+	  cgraph_reset_node (node);
+	  continue;
+	}
 
       gcc_assert (!node->analyzed && node->reachable);
       gcc_assert (DECL_SAVED_TREE (decl));
@@ -870,14 +877,20 @@ cgraph_finalize_compilation_unit (void)
     {
       tree decl = node->decl;
 
+      if (node->local.finalized && !DECL_SAVED_TREE (decl))
+        cgraph_reset_node (node);
+
       if (!node->reachable && DECL_SAVED_TREE (decl))
 	{
 	  if (cgraph_dump_file)
 	    fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
 	  cgraph_remove_node (node);
+	  continue;
 	}
       else
 	node->next_needed = NULL;
+      gcc_assert (!node->local.finalized || DECL_SAVED_TREE (decl));
+      gcc_assert (node->analyzed == node->local.finalized);
     }
   if (cgraph_dump_file)
     {
