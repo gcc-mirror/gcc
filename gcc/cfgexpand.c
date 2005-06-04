@@ -657,7 +657,7 @@ expand_one_var (tree var, bool toplevel)
     lang_hooks.expand_decl (var);
   else if (DECL_EXTERNAL (var))
     ;
-  else if (DECL_VALUE_EXPR (var))
+  else if (DECL_HAS_VALUE_EXPR_P (var))
     ;
   else if (TREE_STATIC (var))
     expand_one_static_var (var);

@@ -1011,7 +1011,8 @@ gimplify_decl_expr (tree *stmt_p)
 	  addr = create_tmp_var (ptr_type, get_name (decl));
 	  DECL_IGNORED_P (addr) = 0;
 	  t = build_fold_indirect_ref (addr);
-	  DECL_VALUE_EXPR (decl) = t;
+	  SET_DECL_VALUE_EXPR (decl, t);
+	  DECL_HAS_VALUE_EXPR_P (decl) = 1;
 
 	  args = tree_cons (NULL, DECL_SIZE_UNIT (decl), NULL);
 	  t = built_in_decls[BUILT_IN_ALLOCA];
@@ -4183,7 +4184,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	  /* If this is a local variable sized decl, it must be accessed
 	     indirectly.  Perform that substitution.  */
-	  if (DECL_VALUE_EXPR (tmp))
+	  if (DECL_HAS_VALUE_EXPR_P (tmp))
 	    {
 	      *expr_p = unshare_expr (DECL_VALUE_EXPR (tmp));
 	      ret = GS_OK;

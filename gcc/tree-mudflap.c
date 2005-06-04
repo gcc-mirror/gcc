@@ -710,7 +710,7 @@ mf_decl_eligible_p (tree decl)
           /* The type of the variable must be complete.  */
           && COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (decl))
 	  /* The decl hasn't been decomposed somehow.  */
-	  && DECL_VALUE_EXPR (decl) == NULL);
+	  && !DECL_HAS_VALUE_EXPR_P (decl));
 }
 
 

@@ -8972,8 +8972,9 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
       /* FALLTHRU */
 
     case PARM_DECL:
-      if (DECL_VALUE_EXPR (loc))
-	return loc_descriptor_from_tree_1 (DECL_VALUE_EXPR (loc), want_address);
+      if (DECL_HAS_VALUE_EXPR_P (loc))
+	return loc_descriptor_from_tree_1 (DECL_VALUE_EXPR (loc),
+					   want_address);
       /* FALLTHRU */
 
     case RESULT_DECL:

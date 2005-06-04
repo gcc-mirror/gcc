@@ -2187,12 +2187,19 @@ extern void decl_debug_expr_insert (tree, tree);
    entire function.  */
 #define DECL_SAVED_TREE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.saved_tree)
 
+extern tree decl_value_expr_lookup (tree);
+extern void decl_value_expr_insert (tree, tree);
+
 /* In a VAR_DECL or PARM_DECL, the location at which the value may be found,
    if transformations have made this more complicated than evaluating the
    decl itself.  This should only be used for debugging; once this field has
    been set, the decl itself may not legitimately appear in the function.  */
+#define DECL_HAS_VALUE_EXPR_P(NODE) \
+  (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl.has_value_expr)
 #define DECL_VALUE_EXPR(NODE) \
-  (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl.saved_tree)
+  (decl_value_expr_lookup (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)))
+#define SET_DECL_VALUE_EXPR(NODE, VAL)			\
+  (decl_value_expr_insert (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL), VAL))
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated
    as if it were a malloc, meaning it returns a pointer that is
@@ -2412,7 +2419,8 @@ struct tree_decl GTY(())
   unsigned returns_twice_flag : 1;
   unsigned seen_in_bind_expr : 1;
   unsigned novops_flag : 1;
-  /* 9 unused bits.  */
+  unsigned has_value_expr:1;
+  /* 8 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
