@@ -1,3 +1,9 @@
+2005-06-03  Jerry DeLisle <jvdelisle@verizon.net>
+
+	* fortran/intrinsic.texi: Add documentation for
+	command_argument_count, conjg, dconjg, count,
+	cpu_time, cshift, date_and_time, dble, dfloat.
+
 2005-06-01  Roger Sayle  <roger@eyesopen.com>
 
 	* intrinsic.c (add_conv): No longer take a "simplify" argument as

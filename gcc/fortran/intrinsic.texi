@@ -36,7 +36,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{ABORT}:         ABORT,     Abort the program     
 * @code{ABS}:           ABS,       Absolute value     
 * @code{ACHAR}:         ACHAR,     Character in @acronym{ASCII} collating sequence
-* @code{ACOS}:          ACOS,      Arccosine function
+* @code{ACOS}:          ACOS,      Arc cosine function
 * @code{ADJUSTL}:       ADJUSTL,   Left adjust a string
 * @code{ADJUSTR}:       ADJUSTR,   Right adjust a string
 * @code{AIMAG}:         AIMAG,     Imaginary part of complex number
@@ -60,8 +60,16 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{CEILING}:       CEILING,   Integer ceiling function
 * @code{CHAR}:          CHAR,      Character conversion function
 * @code{CMPLX}:         CMPLX,     Complex conversion function
+* @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT,  Command line argument count
+* @code{CONJG}:         CONJG,     Complex conjugate function
 * @code{COS}:           COS,       Cosine function
 * @code{COSH}:          COSH,      Hyperbolic cosine function
+* @code{COUNT}:         COUNT,     Count occurences of .TRUE. in an array
+* @code{CPU_TIME}:      CPU_TIME,  CPU time subroutine
+* @code{CSHIFT}:        CSHIFT,    Circular array shift
+* @code{DATE_AND_TIME}: DATE_AND_TIME, Date and time subroutine
+* @code{DBLE}:          DBLE,      Double precision conversion
+* @code{DFLOAT}:        DFLOAT,    Double precision conversion
 * @code{ERF}:           ERF,       Error function
 * @code{ERFC}:          ERFC,      Complementary error function
 * @code{EXP}:           EXP,       Cosine function
@@ -248,14 +256,14 @@ end program test_achar
 
 
 @node ACOS
-@section @code{ACOS} --- Arccosine function 
+@section @code{ACOS} --- Arc cosine function 
 @findex @code{ACOS} intrinsic
 @findex @code{DACOS} intrinsic
-@cindex arccosine
+@cindex arc cosine
 
 @table @asis
 @item @emph{Description}:
-@code{ACOS(X)} computes the arccosine of its @var{X}.
+@code{ACOS(X)} computes the arc cosine of @var{X}.
 
 @item @emph{Option}:
 f95, gnu
@@ -268,7 +276,7 @@ elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be @code{REAL(*)}, and a magnitude that is
+@item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude that is
 less than one.
 @end multitable
 
@@ -453,7 +461,7 @@ initialization expression.
 
 @item @emph{Return value}:
 The return value is of type real with the kind type parameter of the
-argument if the optional @var{KIND} is absence; otherwise, the kind
+argument if the optional @var{KIND} is absent; otherwise, the kind
 type parameter will be given by @var{KIND}.  If the magnitude of 
 @var{X} is less than one, then @code{AINT(X)} returns zero.  If the
 magnitude is equal to or greater than one, then it returns the largest
@@ -555,7 +563,7 @@ end program test_all
 
 @table @asis
 @item @emph{Description}:
-@code{ALLOCATED(X)} checks the status of wether @var{X} is allocated.
+@code{ALLOCATED(X)} checks the status of whether @var{X} is allocated.
 
 @item @emph{Option}:
 f95, gnu
@@ -617,7 +625,7 @@ initialization expression.
 
 @item @emph{Return value}:
 The return value is of type real with the kind type parameter of the
-argument if the optional @var{KIND} is absence; otherwise, the kind
+argument if the optional @var{KIND} is absent; otherwise, the kind
 type parameter will be given by @var{KIND}.  If @var{X} is greater than
 zero, then @code{ANINT(X)} returns @code{AINT(X+0.5)}.  If @var{X} is
 less than or equal to zero, then return @code{AINT(X-0.5)}.
@@ -1292,7 +1300,7 @@ end program test_btest
 
 @table @asis
 @item @emph{Description}:
-@code{CEILING(X,[KIND])} returns the least integer greater than or equal to @var{X}.
+@code{CEILING(X)} returns the least integer greater than or equal to @var{X}.
 
 @item @emph{Option}:
 f95, gnu
@@ -1301,7 +1309,7 @@ f95, gnu
 elemental function
 
 @item @emph{Syntax}:
-@code{X = CEILING(X)}
+@code{X = CEILING(X[,KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1341,7 +1349,7 @@ f95, gnu
 elemental function
 
 @item @emph{Syntax}:
-@code{C = CHAR(I)}
+@code{C = CHAR(I[,KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1372,7 +1380,9 @@ end program test_char
 
 @table @asis
 @item @emph{Description}:
-@code{CMPLX(X,[Y,KIND])} returns a complex number where @var{X} is converted to the real component.  If @var{Y} is present it is converted to the imaginary component.  If @var{Y} is not present then the imaginary component is set to
+@code{CMPLX(X,[Y,KIND])} returns a complex number where @var{X} is converted to
+the real component.  If @var{Y} is present it is converted to the imaginary
+component.  If @var{Y} is not present then the imaginary component is set to
 0.0.  If @var{X} is complex then @var{Y} must not be present.
 
 @item @emph{Option}:
@@ -1382,13 +1392,11 @@ f95, gnu
 elemental function
 
 @item @emph{Syntax}:
-@code{C = CMPLX(X)}
-@code{C = CMPLX(X,Y)}
-@code{C = CMPLX(X,Y,KIND)}
+@code{C = CMPLX(X[,Y,KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type may be @code{INTEGER(*)} or @code{REAL(*)} or @code{COMPLEX(*)}.
+@item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)}, or @code{COMPLEX(*)}.
 @item @var{Y} @tab Optional, allowed if @var{X} is not @code{COMPLEX(*)}.  May be @code{INTEGER(*)} or @code{REAL(*)}. 
 @item @var{KIND} @tab Optional scaler integer initialization expression.
 @end multitable
@@ -1406,6 +1414,93 @@ program test_cmplx
     print *, z, cmplx(x)
 end program test_cmplx
 @end smallexample
+@end table
+
+
+
+@node COMMAND_ARGUMENT_COUNT
+@section @code{COMMAND_ARGUMENT_COUNT} --- Argument count function 
+@findex @code{COMMAND_ARGUMENT_COUNT} intrinsic
+@cindex command argument count
+
+@table @asis
+@item @emph{Description}:
+@code{COMMAND_ARGUMENT_COUNT()} returns the number of arguments passed on the
+command line when the containing program was invoked.
+
+@item @emph{Option}:
+f2003, gnu
+
+@item @emph{Class}:
+non-elemental function
+
+@item @emph{Syntax}:
+@code{I = COMMAND_ARGUMENT_COUNT()}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item None
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER(4)}
+
+@item @emph{Example}:
+@smallexample
+program test_command_argument_count
+    integer :: count
+    count = command_argument_count()
+    print *, count
+end program test_command_argument_count
+@end smallexample
+@end table
+
+
+
+@node CONJG
+@section @code{CONJG} --- Complex conjugate function 
+@findex @code{CONJG} intrinsic
+@findex @code{DCONJG} intrinsic
+@cindex complex conjugate
+@table @asis
+@item @emph{Description}:
+@code{CONJG(Z)} returns the conjugate of @var{Z}.  If @var{Z} is @code{(x, y)}
+then the result is @code{(x, -y)}
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Z = CONJG(Z)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{Z} @tab The type shall be @code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{COMPLEX(*)}.
+
+@item @emph{Example}:
+@smallexample
+program test_conjg
+    complex :: z = (2.0, 3.0)
+    complex(8) :: dz = (2.71_8, -3.14_8)
+    z= conjg(z)
+    print *, z
+    dz = dconjg(dz)
+    print *, dz
+end program test_conjg
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name             @tab Argument             @tab Return type          @tab Option
+@item @code{DCONJG(Z)} @tab @code{COMPLEX(8) Z}  @tab @code{COMPLEX(8)}    @tab gnu
+@end multitable
 @end table
 
 
@@ -1438,7 +1533,7 @@ elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and kind than @var{X}.
+The return value has the same type and kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1450,11 +1545,11 @@ end program test_cos
 
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DCOS(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
-@item @code{CCOS(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
-@item @code{ZCOS(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
-@item @code{CDCOS(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@item Name            @tab Argument          @tab Return type     @tab Option
+@item @code{DCOS(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab f95, gnu
+@item @code{CCOS(X)}@tab @code{COMPLEX(4) X}@tab @code{COMPLEX(4)}@tab f95, gnu
+@item @code{ZCOS(X)}@tab @code{COMPLEX(8) X}@tab @code{COMPLEX(8)}@tab f95, gnu
+@item @code{CDCOS(X)}@tab @code{COMPLEX(8) X}@tab @code{COMPLEX(8)}@tab f95, gnu
 @end multitable
 @end table
 
@@ -1501,6 +1596,282 @@ end program test_cosh
 @item Name            @tab Argument          @tab Return type       @tab Option
 @item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
 @end multitable
+@end table
+
+
+
+@node COUNT
+@section @code{COUNT} --- Count function
+@findex @code{COUNT} intrinsic
+@cindex count
+
+@table @asis
+@item @emph{Description}:
+@code{COUNT(MASK[,DIM])} counts the number of @code{.TRUE.} elements of
+@var{MASK} along the dimension of @var{DIM}.  If @var{DIM} is omitted it is
+taken to be @code{1}.  @var{DIM} is a scaler of type @code{INTEGER} in the
+range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{MASK}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+transformational function
+
+@item @emph{Syntax}:
+@code{I = COUNT(MASK[,DIM])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{MASK} @tab The type shall be @code{LOGICAL}.
+@item @var{DIM}  @tab The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} with rank equal to that of
+@var{MASK}.
+
+@item @emph{Example}:
+@smallexample
+program test_count
+    integer, dimension(2,3) :: a, b
+    logical, dimension(2,3) :: mask
+    a = reshape( (/ 1, 2, 3, 4, 5, 6 /), (/ 2, 3 /))
+    b = reshape( (/ 0, 7, 3, 4, 5, 8 /), (/ 2, 3 /))
+    print '(3i3)', a(1,:)
+    print '(3i3)', a(2,:)
+    print *
+    print '(3i3)', b(1,:)
+    print '(3i3)', b(2,:)
+    print *
+    mask = a.ne.b
+    print '(3l3)', mask(1,:)
+    print '(3l3)', mask(2,:)
+    print *
+    print '(3i3)', count(mask)
+    print *
+    print '(3i3)', count(mask, 1)
+    print *
+    print '(3i3)', count(mask, 2)
+end program test_count
+@end smallexample
+@end table
+
+
+
+@node CPU_TIME
+@section @code{CPU_TIME} --- CPU elapsed time in seconds
+@findex @code{CPU_TIME} intrinsic
+@cindex CPU_TIME
+
+@table @asis
+@item @emph{Description}:
+Returns a @code{REAL} value representing the elapsed CPU time in seconds.  This
+is useful for testing segments of code to determine execution time.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@code{CPU_TIME(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{REAL} with intent out.
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+@smallexample
+program test_cpu_time
+    real :: start, finish
+    call cpu_time(start)
+        ! put code to test here
+    call cpu_time(finish)
+    print '("Time = ",f6.3," seconds.")',finish-start
+end program test_cpu_time
+@end smallexample
+@end table
+
+
+
+@node CSHIFT
+@section @code{CSHIFT} --- Circular shift function
+@findex @code{CSHIFT} intrinsic
+@cindex cshift intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{CSHIFT(ARRAY, SHIFT[,DIM])} performs a circular shift on elements of
+@var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is omitted it is
+taken to be @code{1}.  @var{DIM} is a scaler of type @code{INTEGER} in the
+range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{ARRAY}.
+If the rank of @var{ARRAY} is one, then all elements of @var{ARRAY} are shifted
+by @var{SHIFT} places.  If rank is greater than one, then all complete rank one
+sections of @var{ARRAY} along the given dimension are shifted.  Elements
+shifted out one end of each rank one section are shifted back in the other end.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+transformational function
+
+@item @emph{Syntax}:
+@code{A = CSHIFT(A, SHIFT[,DIM])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{ARRAY}  @tab May be any type, not scaler.
+@item @var{SHIFT}  @tab The type shall be @code{INTEGER}.
+@item @var{DIM}    @tab The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+Returns an array of same type and rank as the @var{ARRAY} argument.
+
+@item @emph{Example}:
+@smallexample
+program test_cshift
+    integer, dimension(3,3) :: a
+    a = reshape( (/ 1, 2, 3, 4, 5, 6, 7, 8, 9 /), (/ 3, 3 /))
+    print '(3i3)', a(1,:)
+    print '(3i3)', a(2,:)
+    print '(3i3)', a(3,:)    
+    a = cshift(a, SHIFT=(/1, 2, -1/), DIM=2)
+    print *
+    print '(3i3)', a(1,:)
+    print '(3i3)', a(2,:)
+    print '(3i3)', a(3,:)
+end program test_cshift
+@end smallexample
+@end table
+
+
+
+@node DATE_AND_TIME
+@section @code{DATE_AND_TIME} --- Date and time subroutine
+@findex @code{DATE_AND_TIME} intrinsic
+@cindex DATE_AND_TIME
+
+@table @asis
+@item @emph{Description}:
+@code{DATE_AND_TIME(DATE, TIME, ZONE, VALUES)} gets the corresponding date and
+time information from the real-time system clock.  @var{DATE} is
+@code{INTENT(OUT)} and has form ccyymmdd.  @var{TIME} is @code{INTENT(OUT)} and
+has form hhmmss.sss.  @var{ZONE} is @code{INTENT(OUT)} and has form (+-)hhmm,
+representing the difference with respect to Coordinated Universal Time (UTC).
+Unavailable time and date parameters return blanks.
+
+@var{VALUES} is @code{INTENT(OUT)} and provides the following:
+
+@multitable @columnfractions .15 .30 .60
+@item @tab @code{VALUE(1)}: @tab The year	
+@item @tab @code{VALUE(2)}: @tab The month
+@item @tab @code{VALUE(3)}: @tab The day of the month
+@item @tab @code{VAlUE(4)}: @tab Time difference with UTC in minutes
+@item @tab @code{VALUE(5)}: @tab The hour of the day
+@item @tab @code{VALUE(6)}: @tab The minutes of the hour
+@item @tab @code{VALUE(7)}: @tab The seconds of the minute
+@item @tab @code{VALUE(8)}: @tab The milliseconds of the second
+@end multitable	    
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@code{CALL DATE_AND_TIME([DATE, TIME, ZONE, VALUES])}
+
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{DATE}  @tab (Optional) The type shall be @code{CHARACTER(8)} or larger.
+@item @var{TIME}  @tab (OPtional) The type shall be @code{CHARACTER(10)} or larger.
+@item @var{ZONE}  @tab (Optional) The type shall be @code{CHARACTER(5)} or larger.
+@item @var{VALUES}@tab (Optional) The type shall be @code{INTEGER(8)}
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+@smallexample
+program test_time_and_date
+    character(8)  :: date
+    character(10) :: time
+    character(5)  :: zone
+    integer,dimension(8) :: values
+    ! using keyword arguments
+    call date_and_time(date,time,zone,values)
+    call date_and_time(DATE=date,ZONE=zone)
+    call date_and_time(TIME=time)
+    call date_and_time(VALUES=values)
+    print '(a,2x,a,2x,a)', date, time, zone
+    print '(8i5))', values
+end program test_time_and_date
+@end smallexample
+@end table
+
+
+
+@node DBLE
+@section @code{DBLE} --- Double conversion function 
+@findex @code{DBLE} intrinsic
+@cindex double conversion
+
+@table @asis
+@item @emph{Description}:
+@code{DBLE(X)} Converts @var{X} to double precision real type.
+@code{DFLOAT} is an alias for @code{DBLE}
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = DBLE(X)}
+@code{X = DFLOAT(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{INTEGER(*)}, @code{REAL(*)}, or @code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type double precision real.
+
+@item @emph{Example}:
+@smallexample
+program test_dble
+    real    :: x = 2.18
+    integer :: i = 5
+    complex :: z = (2.3,1.14)
+    print *, dble(x), dble(i), dfloat(z)
+end program test_dble
+@end smallexample
+@end table
+
+
+
+@node DFLOAT
+@section @code{DFLOAT} --- Double conversion function 
+@findex @code{DFLOAT} intrinsic
+@cindex double float conversion
+
+@table @asis
+@item @emph{Description}:
+@code{DFLOAT(X)} Converts @var{X} to double precision real type.
+@code{DFLOAT} is an alias for @code{DBLE}.  See @code{DBLE}.
 @end table
 
 
@@ -1985,22 +2356,6 @@ end program test_tanh
 
 
 
-@comment gen   command_argument_count
-@comment 
-@comment gen   conjg
-@comment       dconjg
-@comment 
-@comment gen   count
-@comment 
-@comment sub   cpu_time
-@comment 
-@comment gen   cshift
-@comment 
-@comment sub   date_and_time
-@comment 
-@comment gen   dble 
-@comment       dfloat
-@comment 
 @comment gen   dcmplx
 @comment 
 @comment gen   digits
