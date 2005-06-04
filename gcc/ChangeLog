@@ -1,3 +1,19 @@
+2005-06-04  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (no_global_regs_above): New.
+	(rs6000_emit_prologue):  Use it; cosmetic formatting fixes.
+	(rs6000_emit_epilogue):  Use it; cosmetic formatting fixes.
+	(rs6000_conditional_register_usage): Don't put Darwin PIC
+	register in global_regs.
+	(rs6000_stack_info):  Don't set lr_save_p just because Darwin 
+	PIC reg used.
+	(rs6000_emit_prologue):  Save LR in R0 around Darwin PIC setup,
+	if not done by lr_save_p.
+	* config/rs6000/rs6000.md (insnv1_internal1):  Back out 05-18 patch.
+	Use rotate instead of ashift.
+	(call_indirect_nonlocal_sysv):  Prefer CTR to LR.
+	(call_value_indirect_nonlocal_sysv):  Ditto.
+
 2005-06-04  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_reset_node): Break out from ...

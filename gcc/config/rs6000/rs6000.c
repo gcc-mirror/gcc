@@ -573,6 +573,7 @@ static bool legitimate_indexed_address_p (rtx, int);
 static bool legitimate_lo_sum_address_p (enum machine_mode, rtx, int);
 static struct machine_function * rs6000_init_machine_status (void);
 static bool rs6000_assemble_integer (rtx, unsigned int, int);
+static bool no_global_regs_above (int);
 #ifdef HAVE_GAS_HIDDEN
 static void rs6000_assemble_visibility (tree, int);
 #endif
@@ -3317,8 +3318,7 @@ rs6000_conditional_register_usage (void)
 
   if (DEFAULT_ABI == ABI_DARWIN
       && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
-    global_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
-      = fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
+      fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
       = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
       = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
@@ -12047,9 +12047,6 @@ rs6000_stack_info (void)
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
       || info_ptr->first_altivec_reg_save <= LAST_ALTIVEC_REGNO
       || (DEFAULT_ABI == ABI_V4 && current_function_calls_alloca)
-      || (DEFAULT_ABI == ABI_DARWIN
-	  && flag_pic
-	  && current_function_uses_pic_offset_table)
       || info_ptr->calls_p)
     {
       info_ptr->lr_save_p = 1;
@@ -13229,6 +13226,19 @@ gen_frame_mem_offset (enum machine_mode mode, rtx reg, int offset)
   return gen_rtx_MEM (mode, gen_rtx_PLUS (Pmode, reg, offset_rtx));
 }
 
+/* Look for user-defined global regs.  We should not save and restore these,
+   and cannot use stmw/lmw if there are any in its range.  */
+
+static bool
+no_global_regs_above (int first_greg)
+{
+  int i;
+  for (i = 0; i < 32 - first_greg; i++)
+    if (global_regs[first_greg + i])
+      return false;
+  return true;
+}
+
 #ifndef TARGET_FIX_AND_CONTINUE
 #define TARGET_FIX_AND_CONTINUE 0
 #endif
@@ -13273,7 +13283,8 @@ rs6000_emit_prologue (void)
   using_store_multiple = (TARGET_MULTIPLE && ! TARGET_POWERPC64
 			  && (!TARGET_SPE_ABI
 			      || info->spe_64bit_regs_used == 0)
-			  && info->first_gp_reg_save < 31);
+			  && info->first_gp_reg_save < 31
+			  && no_global_regs_above (info->first_gp_reg_save));
   saving_FPRs_inline = (info->first_fp_reg_save == 64
 			|| FP_SAVE_INLINE (info->first_fp_reg_save)
 			|| current_function_calls_eh_return
@@ -13597,12 +13608,12 @@ rs6000_emit_prologue (void)
     {
       int i;
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-	if ((regs_ever_live[info->first_gp_reg_save+i]
-	     && (! call_used_regs[info->first_gp_reg_save+i]
-		 || (i+info->first_gp_reg_save
+	if ((regs_ever_live[info->first_gp_reg_save + i]
+	     && (!call_used_regs[info->first_gp_reg_save + i]
+		 || (i + info->first_gp_reg_save
 		     == RS6000_PIC_OFFSET_TABLE_REGNUM
 		     && TARGET_TOC && TARGET_MINIMAL_TOC)))
-	    || (i+info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
+	    || (i + info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
 		&& ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
 		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
 	  {
@@ -13787,12 +13798,19 @@ rs6000_emit_prologue (void)
       rtx lr = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
       rtx src = machopic_function_base_sym ();
 
+      /* Save and restore LR locally around this call (in R0).  */
+      if (!info->lr_save_p)
+	rs6000_maybe_dead (emit_move_insn (gen_rtx_REG (Pmode, 0), lr));
+
       rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (lr, src)));
 
       insn = emit_move_insn (gen_rtx_REG (Pmode,
 					  RS6000_PIC_OFFSET_TABLE_REGNUM),
 			     lr);
       rs6000_maybe_dead (insn);
+
+      if (!info->lr_save_p)
+	rs6000_maybe_dead (emit_move_insn (lr, gen_rtx_REG (Pmode, 0)));
     }
 #endif
 }
@@ -13892,7 +13910,8 @@ rs6000_emit_epilogue (int sibcall)
   using_load_multiple = (TARGET_MULTIPLE && ! TARGET_POWERPC64
 			 && (!TARGET_SPE_ABI
 			     || info->spe_64bit_regs_used == 0)
-			 && info->first_gp_reg_save < 31);
+			 && info->first_gp_reg_save < 31
+			 && no_global_regs_above (info->first_gp_reg_save));
   restoring_FPRs_inline = (sibcall
 			   || current_function_calls_eh_return
 			   || info->first_fp_reg_save == 64
@@ -14156,11 +14175,11 @@ rs6000_emit_epilogue (int sibcall)
     }
   else
     for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-      if ((regs_ever_live[info->first_gp_reg_save+i]
-	   && (! call_used_regs[info->first_gp_reg_save+i]
-	       || (i+info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
+      if ((regs_ever_live[info->first_gp_reg_save + i]
+	   && (!call_used_regs[info->first_gp_reg_save + i]
+	       || (i + info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
 		   && TARGET_TOC && TARGET_MINIMAL_TOC)))
-	  || (i+info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
+	  || (i + info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
 	      && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
 		  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
 	{
