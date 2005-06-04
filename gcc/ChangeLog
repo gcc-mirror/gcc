@@ -1,3 +1,15 @@
+2005-06-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* function.c (prologue, epilogue, sibcall_epilogue): Change
+	their types to VEC(int,heap)*.
+	(free_after_compilation): Free the three vectors above.
+	(init_function_for_compilation, record_insns, contains,
+	prologue_epilogue_contains, sibcall_epilogue_contains,
+	reposition_prologue_and_epilogue_notes): Use VEC instead of
+	VARRAY.  (init_function_once): Remove.
+	* function.h: Remove the prototype for init_function_once.
+	* toplev.c (backend_init): Don't call init_function_once.
+
 2005-06-04  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (tree_predict_edge): Do not predict entry edge and

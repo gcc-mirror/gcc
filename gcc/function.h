@@ -556,9 +556,6 @@ extern void instantiate_virtual_regs (void);
 /* Returns the name of the current function.  */
 extern const char *current_function_name (void);
 
-/* Called once, at initialization, to initialize function.c.  */
-extern void init_function_once (void);
-
 extern void do_warn_unused_parameter (tree);
 
 extern bool pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,

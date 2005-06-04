@@ -121,13 +121,16 @@ struct machine_function * (*init_machine_status) (void);
 /* The currently compiled function.  */
 struct function *cfun = 0;
 
+DEF_VEC_I(int);
+DEF_VEC_ALLOC_I(int,heap);
+
 /* These arrays record the INSN_UIDs of the prologue and epilogue insns.  */
-static GTY(()) varray_type prologue;
-static GTY(()) varray_type epilogue;
+static VEC(int,heap) *prologue;
+static VEC(int,heap) *epilogue;
 
 /* Array of INSN_UIDs to hold the INSN_UIDs for each sibcall epilogue
    in this function.  */
-static GTY(()) varray_type sibcall_epilogue;
+static VEC(int,heap) *sibcall_epilogue;
 
 /* In order to evaluate some expressions, such as function calls returning
    structures in memory, we need to temporarily allocate stack locations.
@@ -198,8 +201,8 @@ static tree *get_block_vector (tree, int *);
 extern tree debug_find_var_in_block_tree (tree, tree);
 /* We always define `record_insns' even if it's not used so that we
    can always export `prologue_epilogue_contains'.  */
-static void record_insns (rtx, varray_type *) ATTRIBUTE_UNUSED;
-static int contains (rtx, varray_type);
+static void record_insns (rtx, VEC(int,heap) **) ATTRIBUTE_UNUSED;
+static int contains (rtx, VEC(int,heap) **);
 #ifdef HAVE_return
 static void emit_return_into_block (basic_block, rtx);
 #endif
@@ -306,6 +309,10 @@ free_after_parsing (struct function *f)
 void
 free_after_compilation (struct function *f)
 {
+  VEC_free (int, heap, prologue);
+  VEC_free (int, heap, epilogue);
+  VEC_free (int, heap, sibcall_epilogue);
+
   f->eh = NULL;
   f->expr = NULL;
   f->emit = NULL;
@@ -3861,10 +3868,11 @@ init_function_for_compilation (void)
 {
   reg_renumber = 0;
 
-  /* No prologue/epilogue insns yet.  */
-  VARRAY_GROW (prologue, 0);
-  VARRAY_GROW (epilogue, 0);
-  VARRAY_GROW (sibcall_epilogue, 0);
+  /* No prologue/epilogue insns yet.  Make sure that these vectors are
+     empty.  */
+  gcc_assert (VEC_length (int, prologue) == 0);
+  gcc_assert (VEC_length (int, epilogue) == 0);
+  gcc_assert (VEC_length (int, sibcall_epilogue) == 0);
 }
 
 void
@@ -4446,28 +4454,12 @@ get_arg_pointer_save_area (struct function *f)
    (a list of one or more insns).  */
 
 static void
-record_insns (rtx insns, varray_type *vecp)
+record_insns (rtx insns, VEC(int,heap) **vecp)
 {
-  int i, len;
   rtx tmp;
 
-  tmp = insns;
-  len = 0;
-  while (tmp != NULL_RTX)
-    {
-      len++;
-      tmp = NEXT_INSN (tmp);
-    }
-
-  i = VARRAY_SIZE (*vecp);
-  VARRAY_GROW (*vecp, i + len);
-  tmp = insns;
-  while (tmp != NULL_RTX)
-    {
-      VARRAY_INT (*vecp, i) = INSN_UID (tmp);
-      i++;
-      tmp = NEXT_INSN (tmp);
-    }
+  for (tmp = insns; tmp != NULL_RTX; tmp = NEXT_INSN (tmp))
+    VEC_safe_push (int, heap, *vecp, INSN_UID (tmp));
 }
 
 /* Set the locator of the insn chain starting at INSN to LOC.  */
@@ -4486,7 +4478,7 @@ set_insn_locators (rtx insn, int loc)
    be running after reorg, SEQUENCE rtl is possible.  */
 
 static int
-contains (rtx insn, varray_type vec)
+contains (rtx insn, VEC(int,heap) **vec)
 {
   int i, j;
 
@@ -4495,15 +4487,16 @@ contains (rtx insn, varray_type vec)
     {
       int count = 0;
       for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-	for (j = VARRAY_SIZE (vec) - 1; j >= 0; --j)
-	  if (INSN_UID (XVECEXP (PATTERN (insn), 0, i)) == VARRAY_INT (vec, j))
+	for (j = VEC_length (int, *vec) - 1; j >= 0; --j)
+	  if (INSN_UID (XVECEXP (PATTERN (insn), 0, i))
+	      == VEC_index (int, *vec, j))
 	    count++;
       return count;
     }
   else
     {
-      for (j = VARRAY_SIZE (vec) - 1; j >= 0; --j)
-	if (INSN_UID (insn) == VARRAY_INT (vec, j))
+      for (j = VEC_length (int, *vec) - 1; j >= 0; --j)
+	if (INSN_UID (insn) == VEC_index (int, *vec, j))
 	  return 1;
     }
   return 0;
@@ -4512,9 +4505,9 @@ contains (rtx insn, varray_type vec)
 int
 prologue_epilogue_contains (rtx insn)
 {
-  if (contains (insn, prologue))
+  if (contains (insn, &prologue))
     return 1;
-  if (contains (insn, epilogue))
+  if (contains (insn, &epilogue))
     return 1;
   return 0;
 }
@@ -4523,7 +4516,7 @@ int
 sibcall_epilogue_contains (rtx insn)
 {
   if (sibcall_epilogue)
-    return contains (insn, sibcall_epilogue);
+    return contains (insn, &sibcall_epilogue);
   return 0;
 }
 
@@ -5262,7 +5255,7 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
   rtx insn, last, note;
   int len;
 
-  if ((len = VARRAY_SIZE (prologue)) > 0)
+  if ((len = VEC_length (int, prologue)) > 0)
     {
       last = 0, note = 0;
 
@@ -5276,7 +5269,7 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
 		note = insn;
 	    }
-	  else if (contains (insn, prologue))
+	  else if (contains (insn, &prologue))
 	    {
 	      last = insn;
 	      if (--len == 0)
@@ -5303,7 +5296,7 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	}
     }
 
-  if ((len = VARRAY_SIZE (epilogue)) > 0)
+  if ((len = VEC_length (int, epilogue)) > 0)
     {
       last = 0, note = 0;
 
@@ -5317,7 +5310,7 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
 		note = insn;
 	    }
-	  else if (contains (insn, epilogue))
+	  else if (contains (insn, &epilogue))
 	    {
 	      last = insn;
 	      if (--len == 0)
@@ -5342,16 +5335,6 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	}
     }
 #endif /* HAVE_prologue or HAVE_epilogue */
-}
-
-/* Called once, at initialization, to initialize function.c.  */
-
-void
-init_function_once (void)
-{
-  VARRAY_INT_INIT (prologue, 0, "prologue");
-  VARRAY_INT_INIT (epilogue, 0, "epilogue");
-  VARRAY_INT_INIT (sibcall_epilogue, 0, "sibcall_epilogue");
 }
 
 /* Resets insn_block_boundaries array.  */
