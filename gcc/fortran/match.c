@@ -3084,9 +3084,7 @@ match_forall_iterator (gfc_forall_iterator ** result)
     }
 
   m = gfc_match_expr (&iter->start);
-  if (m == MATCH_NO)
-    goto syntax;
-  if (m == MATCH_ERROR)
+  if (m != MATCH_YES)
     goto cleanup;
 
   if (gfc_match_char (':') != MATCH_YES)
