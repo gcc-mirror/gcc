@@ -1,3 +1,9 @@
+2005-06-03  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+	Erik Edelmann  <erik.edelmann@iki.fi>
+
+	* array.c (gfc_match_array_constructor): Disallow empty array
+	constructor.
+
 2005-06-03  Jerry DeLisle <jvdelisle@verizon.net>
 
 	* fortran/intrinsic.texi: Add documentation for
