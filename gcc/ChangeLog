@@ -1,3 +1,16 @@
+2005-06-04  Steven Bosscher  <stevenb@suse.de>
+
+	* lcm.c: Move all mode-switching related functions from here...
+	* mode-switching.c: ...to this new file.
+	* doc/passes.texi: Update accordingly.
+
+	* basic-block.h (label_value_list): Remove extern decl.
+	* cfgrtl.c (label_value_list): Remove.
+	(can_delete_label_p): Don't look at it.
+	* cfgcleanup.c (cleanup_cfg): Don't free it.
+
+	* common.opt: Don't refer to non-existing flag_alias_check.
+
 2005-06-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix52.h (ASM_CPU_SPEC): Add power5.
@@ -62,7 +75,7 @@
 2005-06-03  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.opt: Add RejectNegative to divide-breaks and
-        divide-traps.
+	divide-traps.
 
 2005-06-03  Jan Hubicka  <jh@suse.cz>
 

@@ -639,7 +639,8 @@ The pass is located in @file{regmove.c}.
 This pass looks for instructions that require the processor to be in a
 specific ``mode'' and minimizes the number of mode changes required to
 satisfy all users.  What these modes are, and what they apply to are
-completely target-specific.  The source is located in @file{lcm.c}.
+completely target-specific.
+The source is located in @file{mode-switching.c}.
 
 @cindex modulo scheduling
 @cindex sms, swing, software pipelining

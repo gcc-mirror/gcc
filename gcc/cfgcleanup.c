@@ -2132,8 +2132,6 @@ cleanup_cfg (int mode)
       delete_dead_jumptables ();
     }
 
-  /* Kill the data we won't maintain.  */
-  free_EXPR_LIST_list (&label_value_list);
   timevar_pop (TV_CLEANUP_CFG);
 
   return changed;
