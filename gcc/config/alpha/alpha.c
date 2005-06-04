@@ -8151,7 +8151,7 @@ alpha_align_insns (unsigned int max_align,
   unsigned int align;
   /* OFS is the offset of the current insn in the insn group.  */
   int ofs;
-  int prev_in_use, in_use, len;
+  int prev_in_use, in_use, len, ldgp;
   rtx i, next;
 
   /* Let shorten branches care for assigning alignments to code labels.  */
@@ -8168,6 +8168,8 @@ alpha_align_insns (unsigned int max_align,
   i = get_insns ();
   if (GET_CODE (i) == NOTE)
     i = next_nonnote_insn (i);
+
+  ldgp = alpha_function_needs_gp ? 8 : 0;
 
   while (i)
     {
@@ -8224,6 +8226,10 @@ alpha_align_insns (unsigned int max_align,
 	      ofs = 0;
 	    }
 	}
+
+      /* We may not insert padding inside the initial ldgp sequence.  */
+      else if (ldgp > 0)
+	ldgp -= len;
 
       /* If the group won't fit in the same INT16 as the previous,
 	 we need to add padding to keep the group together.  Rather
