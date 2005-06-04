@@ -1,3 +1,7 @@
+2005-06-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/opt/crossjump1.C: Gate -fPIC usage on target fpic.
+
 2005-06-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21873
