@@ -1,3 +1,13 @@
+2005-06-04  Anthony Green  <green@redhat.com>
+
+	* java/net/URLClassLoader.java: import gnu.gcj.Core,
+	and gnu.java.net.protocol.core.CoreInputStream.
+	(CureURLLoader): New class.
+	(CoreResource): New class.
+	(addURLImpl): Add special treatment for the "core" protocol.
+	* gnu/gcj/natCore.cc (find): New method.
+	* gnu/gcj/Core.java (find): New method.
+	
 2005-06-04  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* jawt.c: Remove malloc.h include and use stdlib.h instead.
