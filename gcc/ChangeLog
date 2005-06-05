@@ -1,65 +1,73 @@
+2005-06-05  Steven Bosscher  <stevenb@suse.de>
+
+	* config/i386/i386.c (x86_use_loop): Remove.
+	* config/i386/i386.h (x86_use_loop): Remove extern decl.
+	(TARGET_USE_LOOP): Remove.
+	* config/i386/i386.md (doloop_end, doloop_end_internal): Remove.
+	Also remove related define_splits.
+
 2005-06-05  Dorit Nuzman  <dorit@il.ibm.com>
 
-        * tree-flow.h (stmt_ann_d): Move aux to ...
-        (tree_ann_common_d): ... here.
-        * tree-ssa-loop-im.c (LIM_DATA, determine_invariantness_stmt,
-        move_computations_stmt, schedule_sm): Update references to
-        aux.
-        * tree-vectorizer.h (set_stmt_info, vinfo_for_stmt): Likewise.
-        * tree-vect-transform.c (vect_create_index_for_vector_ref): Update
-        call to set_stmt_info.
-        (vect_transform_loop): Likewise.
-        * tree-vectorizer.c (new_loop_vec_info, destroy_loop_vec_info):
-        Likewise.
+	* tree-flow.h (stmt_ann_d): Move aux to ...
+	(tree_ann_common_d): ... here.
+	* tree-ssa-loop-im.c (LIM_DATA, determine_invariantness_stmt,
+	move_computations_stmt, schedule_sm): Update references to
+	aux.
+	* tree-vectorizer.h (set_stmt_info, vinfo_for_stmt): Likewise.
+	* tree-vect-transform.c (vect_create_index_for_vector_ref): Update
+	call to set_stmt_info.
+	(vect_transform_loop): Likewise.
+	* tree-vectorizer.c (new_loop_vec_info, destroy_loop_vec_info):
+	Likewise.
 
-        * tree-vect-analyze.c (vect_analyze_scalar_cycles): Made void instead of
-        bool.
-        (vect_mark_relevant): Takes two additional arguments - live_p and
-        relevant_p. Set RELEVANT_P and LIVE_P according to these arguments.
-        (vect_stmt_relevant_p): Differentiate between a live stmt and a
-        relevant stmt. Return two values = live_p and relevant_p.
-        (vect_mark_stmts_to_be_vectorized): Call vect_mark_relevant and
-        vect_stmt_relevant_p with additional arguments. Phis are no longer
-        put into the worklist (analyzed seperately in analyze_scalar_cycles).
-        (vect_determine_vectorization_factor): Also check for LIVE_P, because a
-        stmt that is marked as irrelevant and live, cause it's only used out
-        side the loop, may need to be vectorized (e.g. reduction).
-        (vect_analyze_operations): Examine phis. Call
-        vectorizable_live_operation for for LIVE_P stmts. Check if
-        need_to_vectorize.
-        (vect_analyze_scalar_cycles): Update documentation. Don't fail
-        vectorization - just classify the scalar cycles created by the loop
-        phis. Call vect_is_simple_reduction.
-        (vect_analyze_loop): Call to analyze_scalar_cycles moved earlier.
-        * tree-vect-transform.c (vect_create_index_for_vector_ref): Update
-        call to set_stmt_info.
-        (vect_get_vec_def_for_operand): Code reorganized - the code that
-        classifies the type of use was factored out to vect_is_simple_use.
-        (vectorizable_store, vect_is_simple_cond): Call vect_is_simple_use with
-        additional arguments.
-        (vectorizable_assignment): Likewise. Also make sure the stmt is relevant
-        and computes a loop_vec_def.
-        (vectorizable_operation, vectorizable_load, vectorizable_condition):
-        Likewise.
-        (vectorizable_live_operation): New.
-        (vect_transform_stmt): Handle LIVE_P stmts.
-        * tree-vectorizer.c (new_stmt_vec_info): Initialize the new fields
-        STMT_VINFO_LIVE_P and STMT_VINFO_DEF_TYPE.
-        (new_loop_vec_info, destroy_loop_vec_info): Also handle phis.
-        (vect_is_simple_use): Determine the type of the def and return it
-        in a new function argument. Consider vect_reduction_def and
-        vect_induction_def, but for now these are not supported.
-        (vect_is_simple_reduction): New. Empty for now.
-        * tree-vectorizer.h (vect_def_type): New enum type.
-        (_stmt_vec_info): Added new fields - live and _stmt_vec_info.
-        (STMT_VINFO_LIVE_P, STMT_VINFO_DEF_TYPE): New accessor macros.
-        (vect_is_simple_use): New arguments added to function declaration.
-        (vect_is_simple_reduction): New function declaration.
-        (vectorizable_live_operation): New function declaration.
+	* tree-vect-analyze.c (vect_analyze_scalar_cycles): Made void instead of
+	bool.
+	(vect_mark_relevant): Takes two additional arguments - live_p and
+	relevant_p. Set RELEVANT_P and LIVE_P according to these arguments.
+	(vect_stmt_relevant_p): Differentiate between a live stmt and a
+	relevant stmt. Return two values = live_p and relevant_p.
+	(vect_mark_stmts_to_be_vectorized): Call vect_mark_relevant and
+	vect_stmt_relevant_p with additional arguments. Phis are no longer
+	put into the worklist (analyzed seperately in analyze_scalar_cycles).
+	(vect_determine_vectorization_factor): Also check for LIVE_P, because a
+	stmt that is marked as irrelevant and live, cause it's only used out
+	side the loop, may need to be vectorized (e.g. reduction).
+	(vect_analyze_operations): Examine phis. Call
+	vectorizable_live_operation for for LIVE_P stmts. Check if
+	need_to_vectorize.
+	(vect_analyze_scalar_cycles): Update documentation. Don't fail
+	vectorization - just classify the scalar cycles created by the loop
+	phis. Call vect_is_simple_reduction.
+	(vect_analyze_loop): Call to analyze_scalar_cycles moved earlier.
+	* tree-vect-transform.c (vect_create_index_for_vector_ref): Update
+	call to set_stmt_info.
+	(vect_get_vec_def_for_operand): Code reorganized - the code that
+	classifies the type of use was factored out to vect_is_simple_use.
+	(vectorizable_store, vect_is_simple_cond): Call vect_is_simple_use with
+	additional arguments.
+	(vectorizable_assignment): Likewise. Also make sure the stmt is relevant
+	and computes a loop_vec_def.
+	(vectorizable_operation, vectorizable_load, vectorizable_condition):
+	Likewise.
+	(vectorizable_live_operation): New.
+	(vect_transform_stmt): Handle LIVE_P stmts.
+	* tree-vectorizer.c (new_stmt_vec_info): Initialize the new fields
+	STMT_VINFO_LIVE_P and STMT_VINFO_DEF_TYPE.
+	(new_loop_vec_info, destroy_loop_vec_info): Also handle phis.
+	(vect_is_simple_use): Determine the type of the def and return it
+	in a new function argument. Consider vect_reduction_def and
+	vect_induction_def, but for now these are not supported.
+	(vect_is_simple_reduction): New. Empty for now.
+	* tree-vectorizer.h (vect_def_type): New enum type.
+	(_stmt_vec_info): Added new fields - live and _stmt_vec_info.
+	(STMT_VINFO_LIVE_P, STMT_VINFO_DEF_TYPE): New accessor macros.
+	(vect_is_simple_use): New arguments added to function declaration.
+	(vect_is_simple_reduction): New function declaration.
+	(vectorizable_live_operation): New function declaration.
 
-        * tree-vect-analyze.c (vect_can_advance_ivs_p): Add debug printout.
-        (vect_can_advance_ivs_p): Likewise.
-        * tree-vect-transform.c (vect_update_ivs_after_vectorizer): Likewise.
+	* tree-vect-analyze.c (vect_can_advance_ivs_p): Add debug printout.
+	(vect_can_advance_ivs_p): Likewise.
+	* tree-vect-transform.c (vect_update_ivs_after_vectorizer): Likewise.
 
 2005-06-05  Eric Christopher  <echristo@redhat.com>
 
