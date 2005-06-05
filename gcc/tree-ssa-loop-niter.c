@@ -1600,3 +1600,21 @@ free_numbers_of_iterations_estimates (struct loops *loops)
 	free_numbers_of_iterations_estimates_loop (loop);
     }
 }
+
+/* Substitute value VAL for ssa name NAME inside expressions held
+   at LOOP.  */
+
+void
+substitute_in_loop_info (struct loop *loop, tree name, tree val)
+{
+  struct nb_iter_bound *bound;
+
+  loop->nb_iterations = simplify_replace_tree (loop->nb_iterations, name, val);
+  loop->estimated_nb_iterations
+	  = simplify_replace_tree (loop->estimated_nb_iterations, name, val);
+  for (bound = loop->bounds; bound; bound = bound->next)
+    {
+      bound->bound = simplify_replace_tree (bound->bound, name, val);
+      bound->additional = simplify_replace_tree (bound->additional, name, val);
+    }
+}
