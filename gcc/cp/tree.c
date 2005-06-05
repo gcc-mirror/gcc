@@ -223,9 +223,7 @@ builtin_valid_in_constant_expr_p (tree decl)
 {
   /* At present BUILT_IN_CONSTANT_P is the only builtin we're allowing
      in constant-expressions.  We may want to add other builtins later. */
-  return TREE_CODE (decl) == FUNCTION_DECL
-    && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-    && DECL_FUNCTION_CODE (decl) == BUILT_IN_CONSTANT_P;
+  return DECL_IS_BUILTIN_CONSTANT_P (decl);
 }
 
 /* Build a TARGET_EXPR, initializing the DECL with the VALUE.  */

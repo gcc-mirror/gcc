@@ -1790,6 +1790,12 @@ struct lang_decl GTY(())
 #define DECL_HAS_IN_CHARGE_PARM_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.has_in_charge_parm_p)
 
+/* Nonzero if DECL is a declaration of __builtin_constant_p.  */
+#define DECL_IS_BUILTIN_CONSTANT_P(NODE)		\
+  (TREE_CODE (NODE) == FUNCTION_DECL			\
+   && DECL_BUILT_IN_CLASS (NODE) == BUILT_IN_NORMAL	\
+   && DECL_FUNCTION_CODE (NODE) == BUILT_IN_CONSTANT_P)
+
 /* Nonzero if NODE is an overloaded `operator delete[]' function.  */
 #define DECL_ARRAY_DELETE_OPERATOR_P(NODE) \
   (DECL_OVERLOADED_OPERATOR_P (NODE) == VEC_DELETE_EXPR)

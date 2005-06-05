@@ -4049,10 +4049,34 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 	  /* postfix-expression ( expression-list [opt] ) */
 	  {
 	    bool koenig_p;
-	    tree args = (cp_parser_parenthesized_expression_list
-			 (parser, false, 
-			  /*cast_p=*/false,
-			  /*non_constant_p=*/NULL));
+	    bool is_builtin_constant_p;
+	    bool saved_integral_constant_expression_p = false;
+	    bool saved_non_integral_constant_expression_p = false;
+	    tree args;
+
+	    is_builtin_constant_p 
+	      = DECL_IS_BUILTIN_CONSTANT_P (postfix_expression);
+	    if (is_builtin_constant_p)
+	      {
+		/* The whole point of __builtin_constant_p is to allow
+		   non-constant expressions to appear as arguments.  */
+		saved_integral_constant_expression_p
+		  = parser->integral_constant_expression_p;
+		saved_non_integral_constant_expression_p
+		  = parser->non_integral_constant_expression_p;
+		parser->integral_constant_expression_p = false;
+	      }
+	    args = (cp_parser_parenthesized_expression_list
+		    (parser, /*is_attribute_list=*/false, 
+		     /*cast_p=*/false,
+		     /*non_constant_p=*/NULL));
+	    if (is_builtin_constant_p)
+	      {
+		parser->integral_constant_expression_p
+		  = saved_integral_constant_expression_p;
+		parser->non_integral_constant_expression_p
+		  = saved_non_integral_constant_expression_p;
+	      }
 
 	    if (args == error_mark_node)
 	      {
