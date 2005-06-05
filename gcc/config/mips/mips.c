@@ -2307,9 +2307,6 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
   enum machine_mode mode = GET_MODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
 
-  /* To be used for soft-float costs.  */
-  int max_cost = COSTS_N_INSNS (256);
-
   switch (code)
     {
     case CONST_INT:

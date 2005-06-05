@@ -1,3 +1,7 @@
+2005-06-05  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (mips_rtx_costs): Remove unused variable.
+
 2005-06-05  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/21914
