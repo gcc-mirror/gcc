@@ -1,3 +1,12 @@
+2005-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21619
+	* cp-tree.h (DECL_IS_BUILTIN_CONSTANT_P): New macro.
+	* parser.c (cp_parser_postfix_expression): Allow non-constant
+	expressions as arguments to __builtin_constant_p.
+	* tree.c (builtin_valid_in_constant_expr_p): Use
+	DECL_IS_BUILTIN_CONSTANT_P. 
+
 2005-06-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21853
