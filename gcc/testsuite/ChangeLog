@@ -1,3 +1,8 @@
+2005-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21619
+	* g++.dg/ext/builtin9.C: New test.
+
 2005-06-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.dg/char_initialiser_actual.f90:
