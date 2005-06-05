@@ -42,7 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static loop_vec_info vect_analyze_loop_form (struct loop *);
 static bool vect_analyze_data_refs (loop_vec_info);
 static bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
-static bool vect_analyze_scalar_cycles (loop_vec_info);
+static void vect_analyze_scalar_cycles (loop_vec_info);
 static bool vect_analyze_data_ref_accesses (loop_vec_info);
 static bool vect_analyze_data_ref_dependences (loop_vec_info);
 static bool vect_analyze_data_refs_alignment (loop_vec_info);
@@ -53,8 +53,8 @@ static bool vect_determine_vectorization_factor (loop_vec_info);
 
 /* Utility functions for the analyses.  */
 static bool exist_non_indexing_operands_for_use_p (tree, tree);
-static void vect_mark_relevant (VEC(tree,heap) **, tree);
-static bool vect_stmt_relevant_p (tree, loop_vec_info);
+static void vect_mark_relevant (VEC(tree,heap) **, tree, bool, bool);
+static bool vect_stmt_relevant_p (tree, loop_vec_info, bool *, bool *);
 static tree vect_get_loop_niters (struct loop *, tree *);
 static bool vect_analyze_data_ref_dependence
   (struct data_reference *, struct data_reference *, loop_vec_info);
@@ -344,8 +344,13 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
           gcc_assert (stmt_info);
           /* skip stmts which do not need to be vectorized.  */
-          if (!STMT_VINFO_RELEVANT_P (stmt_info))
-            continue;
+          if (!STMT_VINFO_RELEVANT_P (stmt_info)
+	      && !STMT_VINFO_LIVE_P (stmt_info))
+            {
+              if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+                fprintf (vect_dump, "skip.");
+              continue;
+            }
 
           if (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))))
             {
@@ -444,6 +449,9 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
   unsigned int vectorization_factor = 0;
   int i;
   bool ok;
+  tree phi;
+  stmt_vec_info stmt_info;
+  bool need_to_vectorize = false;
 
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
     fprintf (vect_dump, "=== vect_analyze_operations ===");
@@ -454,6 +462,29 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
   for (i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
+
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+        {
+	  stmt_info = vinfo_for_stmt (phi);
+	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	    {
+	      fprintf (vect_dump, "examining phi: ");
+	      print_generic_expr (vect_dump, phi, TDF_SLIM);
+	    }
+
+	  gcc_assert (stmt_info);
+
+	  if (STMT_VINFO_LIVE_P (stmt_info))
+	    {
+	      /* FORNOW: not yet supported.  */
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+					LOOP_LOC (loop_vinfo)))
+		fprintf (vect_dump, "not vectorized: value used after loop.");
+	    return false;
+	  }
+
+          gcc_assert (!STMT_VINFO_RELEVANT_P (stmt_info));
+        }
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	{
@@ -475,41 +506,76 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	     - computations that are used only for array indexing or loop
 	     control  */
 
-	  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
+	      && !STMT_VINFO_LIVE_P (stmt_info))
 	    {
 	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 	        fprintf (vect_dump, "irrelevant.");
 	      continue;
 	    }
 
-#ifdef ENABLE_CHECKING
           if (STMT_VINFO_RELEVANT_P (stmt_info))
             {
               gcc_assert (!VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))));
               gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
-            }
-#endif
 
-	  ok = (vectorizable_operation (stmt, NULL, NULL)
-		|| vectorizable_assignment (stmt, NULL, NULL)
-		|| vectorizable_load (stmt, NULL, NULL)
-		|| vectorizable_store (stmt, NULL, NULL)
-		|| vectorizable_condition (stmt, NULL, NULL));
+	      ok = (vectorizable_operation (stmt, NULL, NULL)
+		    || vectorizable_assignment (stmt, NULL, NULL)
+		    || vectorizable_load (stmt, NULL, NULL)
+		    || vectorizable_store (stmt, NULL, NULL)
+		    || vectorizable_condition (stmt, NULL, NULL));
 
-	  if (!ok)
-	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-                                         LOOP_LOC (loop_vinfo)))
+	      if (!ok)
 		{
-                  fprintf (vect_dump, "not vectorized: stmt not supported: ");
-		  print_generic_expr (vect_dump, stmt, TDF_SLIM);
+		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+					    LOOP_LOC (loop_vinfo)))
+		    {
+		      fprintf (vect_dump, 
+			       "not vectorized: relevant stmt not supported: ");
+		      print_generic_expr (vect_dump, stmt, TDF_SLIM);
+		    }
+		  return false;
+		}	
+	      need_to_vectorize = true;
+            }
+
+	  if (STMT_VINFO_LIVE_P (stmt_info))
+	    {
+	      ok = vectorizable_live_operation (stmt, NULL, NULL);
+
+	      if (!ok)
+		{
+		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+					    LOOP_LOC (loop_vinfo)))
+		    {
+		      fprintf (vect_dump, 
+			       "not vectorized: live stmt not supported: ");
+		      print_generic_expr (vect_dump, stmt, TDF_SLIM);
+		    }
+		  return false;
 		}
-	      return false;
 	    }
-	}
-    }
+	} /* stmts in bb */
+    } /* bbs */
 
   /* TODO: Analyze cost. Decide if worth while to vectorize.  */
+
+  /* All operations in the loop are either irrelevant (deal with loop
+     control, or dead), or only used outside the loop and can be moved
+     out of the loop (e.g. invariants, inductions).  The loop can be 
+     optimized away by scalar optimizations.  We're better off not 
+     touching this loop.  */
+  if (!need_to_vectorize)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+	fprintf (vect_dump, 
+		 "All the computation can be taken out of the loop.");
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+                                LOOP_LOC (loop_vinfo)))
+        fprintf (vect_dump, 
+		 "not vectorized: redundant loop. no profit to vectorize.");
+      return false;
+    }
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       && vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
@@ -601,40 +667,43 @@ exist_non_indexing_operands_for_use_p (tree use, tree stmt)
 /* Function vect_analyze_scalar_cycles.
 
    Examine the cross iteration def-use cycles of scalar variables, by
-   analyzing the loop (scalar) PHIs; verify that the cross iteration def-use
-   cycles that they represent do not impede vectorization.
+   analyzing the loop (scalar) PHIs; Classify each cycle as one of the
+   following: invariant, induction, reduction, unknown.
+   
+   Some forms of scalar cycles are not yet supported.
 
-   FORNOW: Reduction as in the following loop, is not supported yet:
+   Example1: reduction: (unsupported yet)
+
               loop1:
               for (i=0; i<N; i++)
                  sum += a[i];
-	   The cross-iteration cycle corresponding to variable 'sum' will be
-	   considered too complicated and will impede vectorization.
 
-   FORNOW: Induction as in the following loop, is not supported yet:
+   Example2: induction: (unsupported yet)
+
               loop2:
               for (i=0; i<N; i++)
                  a[i] = i;
 
-           However, the following loop *is* vectorizable:
+   Note: the following loop *is* vectorizable:
+
               loop3:
               for (i=0; i<N; i++)
                  a[i] = b[i];
 
-           In both loops there exists a def-use cycle for the variable i:
+         even though it has a def-use cycle caused by the induction variable i:
+
               loop: i_2 = PHI (i_0, i_1)
                     a[i_2] = ...;
                     i_1 = i_2 + 1;
                     GOTO loop;
 
-           The evolution of the above cycle is considered simple enough,
-	   however, we also check that the cycle does not need to be
-	   vectorized, i.e - we check that the variable that this cycle
-	   defines is only used for array indexing or in stmts that do not
-	   need to be vectorized. This is not the case in loop2, but it
-	   *is* the case in loop3.  */
+         because the def-use cycle in loop3 is considered "not relevant" - i.e.,
+         it does not need to be vectorized because it is only used for array
+         indexing (see 'mark_stmts_to_be_vectorized'). The def-use cycle in
+         loop2 on the other hand is relevant (it is being written to memory).
+*/
 
-static bool
+static void
 vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
 {
   tree phi;
@@ -648,6 +717,9 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       tree access_fn = NULL;
+      tree def = PHI_RESULT (phi);
+      stmt_vec_info stmt_vinfo = vinfo_for_stmt (phi);
+      tree reduc_stmt;
 
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 	{
@@ -658,35 +730,21 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
       /* Skip virtual phi's. The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
 
-      if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
+      if (!is_gimple_reg (SSA_NAME_VAR (def)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 	    fprintf (vect_dump, "virtual phi. skip.");
 	  continue;
 	}
 
+      STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_unknown_def_type;
+
       /* Analyze the evolution function.  */
 
-      /* FORNOW: The only scalar cross-iteration cycles that we allow are
-         those of loop induction variables; This property is verified here.
-
-         Furthermore, if that induction variable is used in an operation
-         that needs to be vectorized (i.e, is not solely used to index
-         arrays and check the exit condition) - we do not support its
-         vectorization yet. This property is verified in vect_is_simple_use,
-         during vect_analyze_operations.  */
-
-      access_fn = /* instantiate_parameters
-		     (loop,*/
-	 analyze_scalar_evolution (loop, PHI_RESULT (phi));
+      access_fn = analyze_scalar_evolution (loop, def);
 
       if (!access_fn)
-	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				    LOOP_LOC (loop_vinfo)))
-	    fprintf (vect_dump, "not vectorized: unsupported scalar cycle.");
-	  return false;
-	}
+	continue;
 
       if (vect_print_dump_info (REPORT_DETAILS,
 				LOOP_LOC (loop_vinfo)))
@@ -695,16 +753,32 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
            print_generic_expr (vect_dump, access_fn, TDF_SLIM);
         }
 
-      if (!vect_is_simple_iv_evolution (loop->num, access_fn, &dummy, &dummy))
+      if (vect_is_simple_iv_evolution (loop->num, access_fn, &dummy, &dummy))
 	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				    LOOP_LOC (loop_vinfo)))
-	    fprintf (vect_dump, "not vectorized: unsupported scalar cycle.");
-	  return false;
+	  if (vect_print_dump_info (REPORT_DETAILS,LOOP_LOC (loop_vinfo)))
+	    fprintf (vect_dump, "Detected induction.");
+	  STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_induction_def;
+          continue;
 	}
+
+      /* TODO: handle invariant phis  */
+
+      reduc_stmt = vect_is_simple_reduction (loop, phi);
+      if (reduc_stmt)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+            fprintf (vect_dump, "Detected reduction.");
+          STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_reduction_def;
+          STMT_VINFO_DEF_TYPE (vinfo_for_stmt (reduc_stmt)) =
+                                                        vect_reduction_def;
+        }
+      else
+        if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+          fprintf (vect_dump, "Unknown def-use cycle pattern.");
+
     }
 
-  return true;
+  return;
 }
 
 
@@ -2049,39 +2123,32 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
    Mark STMT as "relevant for vectorization" and add it to WORKLIST.  */
 
 static void
-vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt)
+vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt,
+		    bool relevant_p, bool live_p)
 {
-  stmt_vec_info stmt_info;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  bool save_relevant_p = STMT_VINFO_RELEVANT_P (stmt_info);
+  bool save_live_p = STMT_VINFO_LIVE_P (stmt_info);
 
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-    fprintf (vect_dump, "mark relevant.");
+    fprintf (vect_dump, "mark relevant %d, live %d.",relevant_p, live_p);
+
+  STMT_VINFO_LIVE_P (stmt_info) |= live_p;
 
   if (TREE_CODE (stmt) == PHI_NODE)
-    {
-      VEC_safe_push (tree, heap, *worklist, stmt);
-      return;
-    }
+    /* Don't mark as relevant because it's not going to vectorized.  */
+    return;
 
-  stmt_info = vinfo_for_stmt (stmt);
+  STMT_VINFO_RELEVANT_P (stmt_info) |= relevant_p;
 
-  if (!stmt_info)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	{
-	  fprintf (vect_dump, "mark relevant: no stmt info!!.");
-	  print_generic_expr (vect_dump, stmt, TDF_SLIM);
-	}
-      return;
-    }
-
-  if (STMT_VINFO_RELEVANT_P (stmt_info))
+  if (STMT_VINFO_RELEVANT_P (stmt_info) == save_relevant_p
+      && STMT_VINFO_LIVE_P (stmt_info) == save_live_p)
     {
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-        fprintf (vect_dump, "already marked relevant.");
+        fprintf (vect_dump, "already marked relevant/live.");
       return;
     }
 
-  STMT_VINFO_RELEVANT_P (stmt_info) = 1;
   VEC_safe_push (tree, heap, *worklist, stmt);
 }
 
@@ -2099,7 +2166,8 @@ vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt)
    CHECKME: what other side effects would the vectorizer allow?  */
 
 static bool
-vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo)
+vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
+		      bool *relevant_p, bool *live_p)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   ssa_op_iter op_iter;
@@ -2107,9 +2175,12 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo)
   use_operand_p use_p;
   def_operand_p def_p;
 
+  *relevant_p = false;
+  *live_p = false;
+
   /* cond stmt other than loop exit cond.  */
   if (is_ctrl_stmt (stmt) && (stmt != LOOP_VINFO_EXIT_COND (loop_vinfo)))
-    return true;
+    *relevant_p = true;
 
   /* changing memory.  */
   if (TREE_CODE (stmt) != PHI_NODE)
@@ -2117,7 +2188,7 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo)
       {
 	if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 	  fprintf (vect_dump, "vec_stmt_relevant_p: stmt has vdefs.");
-	return true;
+	*relevant_p = true;
       }
 
   /* uses outside the loop.  */
@@ -2130,12 +2201,18 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo)
 	    {
 	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 		fprintf (vect_dump, "vec_stmt_relevant_p: used out of loop.");
-	      return true;
+
+	      /* We expect all such uses to be in the loop exit phis
+		 (because of loop closed form)   */
+	      gcc_assert (TREE_CODE (USE_STMT (use_p)) == PHI_NODE);
+	      gcc_assert (bb == loop->single_exit->dest);
+
+              *live_p = true;
 	    }
 	}
     }
 
-  return false;
+  return (*live_p || *relevant_p);
 }
 
 
@@ -2164,15 +2241,22 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   unsigned int nbbs = loop->num_nodes;
   block_stmt_iterator si;
   tree stmt, use;
+  stmt_ann_t ann;
   ssa_op_iter iter;
   unsigned int i;
-  int j;
-  stmt_vec_info stmt_info;
+  stmt_vec_info stmt_vinfo;
   basic_block bb;
   tree phi;
+  bool relevant_p, live_p;
+  tree def, def_stmt;
+  enum vect_def_type dt;
 
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
     fprintf (vect_dump, "=== vect_mark_stmts_to_be_vectorized ===");
+
+  worklist = VEC_alloc (tree, heap, 64);
+
+  /* 1. Init worklist.  */
 
   bb = loop->header;
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
@@ -2183,18 +2267,9 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
           print_generic_expr (vect_dump, phi, TDF_SLIM);
         }
 
-      if (vect_stmt_relevant_p (phi, loop_vinfo))
-	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				    LOOP_LOC (loop_vinfo)))
-	    fprintf (vect_dump, "unsupported reduction/induction.");
-          return false;
-	}
+      if (vect_stmt_relevant_p (phi, loop_vinfo, &relevant_p, &live_p))
+	vect_mark_relevant (&worklist, phi, relevant_p, live_p);
     }
-
-  worklist = VEC_alloc (tree, heap, 64);
-
-  /* 1. Init worklist.  */
 
   for (i = 0; i < nbbs; i++)
     {
@@ -2209,11 +2284,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	      print_generic_expr (vect_dump, stmt, TDF_SLIM);
 	    } 
 
-	  stmt_info = vinfo_for_stmt (stmt);
-	  STMT_VINFO_RELEVANT_P (stmt_info) = 0;
-
-	  if (vect_stmt_relevant_p (stmt, loop_vinfo))
-	    vect_mark_relevant (&worklist, stmt);
+	  if (vect_stmt_relevant_p (stmt, loop_vinfo, &relevant_p, &live_p))
+            vect_mark_relevant (&worklist, stmt, relevant_p, live_p);
 	}
     }
 
@@ -2230,61 +2302,65 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
           print_generic_expr (vect_dump, stmt, TDF_SLIM);
 	}
 
-      /* Examine the USES in this statement. Mark all the statements which
-         feed this statement's uses as "relevant", unless the USE is used as
-         an array index.  */
+      /* Examine the USEs of STMT. For each ssa-name USE thta is defined
+         in the loop, mark the stmt that defines it (DEF_STMT) as
+         relevant/irrelevant and live/dead according to the liveness and
+         relevance properties of STMT.
+       */
 
-      if (TREE_CODE (stmt) == PHI_NODE)
-	{
-	  /* follow the def-use chain inside the loop.  */
-	  for (j = 0; j < PHI_NUM_ARGS (stmt); j++)
-	    {
-	      tree arg = PHI_ARG_DEF (stmt, j);
-	      tree def_stmt = NULL_TREE;
-	      basic_block bb;
-	      if (!vect_is_simple_use (arg, loop_vinfo, &def_stmt))
-		{
-		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-					    LOOP_LOC (loop_vinfo)))
-		    fprintf (vect_dump, "not vectorized: unsupported use in stmt.");
-		  VEC_free (tree, heap, worklist);
-		  return false;
-		}
-	      if (!def_stmt)
-		continue;
+      gcc_assert (TREE_CODE (stmt) != PHI_NODE);
 
-	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	        {
-	          fprintf (vect_dump, "worklist: def_stmt: ");
-		  print_generic_expr (vect_dump, def_stmt, TDF_SLIM);
-		}
+      ann = stmt_ann (stmt);
+      stmt_vinfo = vinfo_for_stmt (stmt);
 
-	      bb = bb_for_stmt (def_stmt);
-	      if (flow_bb_inside_loop_p (loop, bb))
-	        vect_mark_relevant (&worklist, def_stmt);
-	    }
-	} 
+      relevant_p = STMT_VINFO_RELEVANT_P (stmt_vinfo);
+      live_p = STMT_VINFO_LIVE_P (stmt_vinfo);
+
+      /* Generally, the liveness and relevance properties of STMT are
+         propagated to the DEF_STMTs of its USEs:
+             STMT_VINFO_LIVE_P (DEF_STMT_info) <-- live_p
+             STMT_VINFO_RELEVANT_P (DEF_STMT_info) <-- relevant_p
+
+         Exceptions:
+
+         - if USE is used only for address computations (e.g. array indexing),
+           which does not need to be directly vectorized, then the
+           liveness/relevance of the respective DEF_STMT is left unchanged.
+
+         - if STMT has been identified as defining a reduction variable, then:
+             STMT_VINFO_LIVE_P (DEF_STMT_info) <-- false
+             STMT_VINFO_RELEVANT_P (DEF_STMT_info) <-- true
+           because even though STMT is classified as live (since it defines a
+           value that is used across loop iterations) and irrelevant (since it
+           is not used inside the loop), it will be vectorized, and therefore
+           the corresponding DEF_STMTs need to marked as relevant.
+       */
+
+      if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
+        {
+          gcc_assert (!relevant_p && live_p);
+          relevant_p = true;
+          live_p = false;
+        }
 
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
 	{
-
 	  /* We are only interested in uses that need to be vectorized. Uses 
 	     that are used for address computation are not considered relevant.
 	   */
 	  if (exist_non_indexing_operands_for_use_p (use, stmt))
 	    {
-              tree def_stmt = NULL_TREE;
-              basic_block bb;
-              if (!vect_is_simple_use (use, loop_vinfo, &def_stmt))
+	      if (!vect_is_simple_use (use, loop_vinfo, &def_stmt, &def, &dt))
                 {
                   if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
 					    LOOP_LOC (loop_vinfo)))
-                    fprintf (vect_dump, "not vectorized: unsupported use in stmt.");
+                    fprintf (vect_dump, 
+			     "not vectorized: unsupported use in stmt.");
 		  VEC_free (tree, heap, worklist);
                   return false;
                 }
 
-	      if (!def_stmt)
+	      if (!def_stmt || IS_EMPTY_STMT (def_stmt))
 		continue;
 
               if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
@@ -2294,8 +2370,16 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
                 }
 
 	      bb = bb_for_stmt (def_stmt);
-	      if (flow_bb_inside_loop_p (loop, bb))
-		vect_mark_relevant (&worklist, def_stmt);
+              if (!flow_bb_inside_loop_p (loop, bb))
+                continue;
+
+              if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+                {
+                  fprintf (vect_dump, "def_stmt: ");
+                  print_generic_expr (vect_dump, def_stmt, TDF_SLIM);
+                }
+
+              vect_mark_relevant (&worklist, def_stmt, relevant_p, live_p);
 	    }
 	}
     }				/* while worklist */
@@ -2322,6 +2406,9 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
   tree phi;
 
   /* Analyze phi functions of the loop header.  */
+
+  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+    fprintf (vect_dump, "=== vect_can_advance_ivs_p ===");
 
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
@@ -2365,7 +2452,11 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       evolution_part = evolution_part_in_loop_num (access_fn, loop->num);
       
       if (evolution_part == NULL_TREE)
-	return false;
+        {
+	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	    fprintf (vect_dump, "No evolution.");
+	  return false;
+        }
   
       /* FORNOW: We do not transform initial conditions of IVs 
 	 which evolution functions are a polynomial of degree >= 2.  */
@@ -2582,6 +2673,11 @@ vect_analyze_loop (struct loop *loop)
       return NULL;
     }
 
+  /* Classify all cross-iteration scalar data-flow cycles.
+     Cross-iteration cycles caused by virtual phis are analyzed separately.  */
+
+  vect_analyze_scalar_cycles (loop_vinfo);
+
   /* Data-flow analysis to detect stmts that do not need to be vectorized.  */
 
   ok = vect_mark_stmts_to_be_vectorized (loop_vinfo);
@@ -2589,18 +2685,6 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
 	fprintf (vect_dump, "unexpected pattern.");
-      destroy_loop_vec_info (loop_vinfo);
-      return NULL;
-    }
-
-  /* Check that all cross-iteration scalar data-flow cycles are OK.
-     Cross-iteration cycles caused by virtual phis are analyzed separately.  */
-
-  ok = vect_analyze_scalar_cycles (loop_vinfo);
-  if (!ok)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
-	fprintf (vect_dump, "bad scalar cycle.");
       destroy_loop_vec_info (loop_vinfo);
       return NULL;
     }
