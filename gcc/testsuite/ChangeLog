@@ -1,4 +1,4 @@
-2005-05-31  Paul Thomas  <pault@gcc.gnu.org>
+2005-06-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.dg/char_initialiser_actual.f90:
 	Test character initialisers as actual arguments.
