@@ -1,3 +1,33 @@
+005-05-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18109
+	PR fortran/18283
+	PR fortran/19107
+	PR fortran/16939
+	PR fortran/17192
+	PR fortran/17193
+	PR fortran/17202
+	PR fortran/18689
+	PR fortran/18890
+	* fortran/trans-array.c (gfc_conv_expr_descriptor): Obtain the
+	string length from the expression typespec character length value
+	and set temp_ss->stringlength and backend_decl. Obtain the
+	tree expression from gfc_conv_expr rather than gfc_conv_expr_val.
+	Dereference the expression to obtain the character.
+	* fortran/trans-array.c (gfc_conv_resolve_dependencies): Add string
+	length to temp_ss for character pointer array assignments.
+	* fortran/trans-expr.c (gfc_conv_component_ref): Remove the
+	dereference of scalar character pointer structure components.
+	* fortran/trans-expr.c (gfc_trans_subarray_assign): Obtain the
+	string length for the structure component from the component
+	expression.
+	* fortran/trans-expr.c (gfc_conv_variable): Correct errors in
+	dereferencing of characters and character pointers.
+	* fortran/trans-expr.c (gfc_conv_function_call): Provide string
+	length as return argument for various kinds of handling of return.
+	Return a char[]* temporary for character pointer functions and
+	dereference the temporary upon return.
+
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
         Erik Schnetter  <schnetter@aei.mpg.de>
 

@@ -2342,7 +2342,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
       loop->temp_ss->type = GFC_SS_TEMP;
       loop->temp_ss->data.temp.type =
 	gfc_get_element_type (TREE_TYPE (dest->data.info.descriptor));
-      loop->temp_ss->string_length = NULL_TREE;
+      loop->temp_ss->string_length = dest->string_length;
       loop->temp_ss->data.temp.dimen = loop->dimen;
       loop->temp_ss->next = gfc_ss_terminator;
       gfc_add_ss_to_loop (loop, loop->temp_ss);
@@ -3616,11 +3616,23 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       loop.temp_ss = gfc_get_ss ();
       loop.temp_ss->type = GFC_SS_TEMP;
       loop.temp_ss->next = gfc_ss_terminator;
-      loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
+      if (expr->ts.type == BT_CHARACTER)
+	{
+	  gcc_assert (expr->ts.cl && expr->ts.cl->length
+		      && expr->ts.cl->length->expr_type == EXPR_CONSTANT);
+	  loop.temp_ss->string_length = gfc_conv_mpz_to_tree
+			(expr->ts.cl->length->value.integer,
+			 expr->ts.cl->length->ts.kind);
+	  expr->ts.cl->backend_decl = loop.temp_ss->string_length;
+	}
+        loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
+
       /* ... which can hold our string, if present.  */
       if (expr->ts.type == BT_CHARACTER)
-	se->string_length = loop.temp_ss->string_length
-	  = TYPE_SIZE_UNIT (loop.temp_ss->data.temp.type);
+	{
+	  loop.temp_ss->string_length = TYPE_SIZE_UNIT (loop.temp_ss->data.temp.type);
+	  se->string_length = loop.temp_ss->string_length;
+	}
       else
 	loop.temp_ss->string_length = NULL;
       loop.temp_ss->data.temp.dimen = loop.dimen;
@@ -3652,7 +3664,13 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       rse.ss = ss;
 
       gfc_conv_scalarized_array_ref (&lse, NULL);
-      gfc_conv_expr_val (&rse, expr);
+      if (expr->ts.type == BT_CHARACTER)
+	{
+	  gfc_conv_expr (&rse, expr);
+	  rse.expr = gfc_build_indirect_ref (rse.expr);
+	}
+      else
+        gfc_conv_expr_val (&rse, expr);
 
       gfc_add_block_to_block (&block, &rse.pre);
       gfc_add_block_to_block (&block, &lse.pre);
