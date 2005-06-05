@@ -1787,6 +1787,12 @@ struct lang_decl GTY(())
 #define DECL_HAS_IN_CHARGE_PARM_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.has_in_charge_parm_p)
 
+/* Nonzero if DECL is a declaration of __builtin_constant_p.  */
+#define DECL_IS_BUILTIN_CONSTANT_P(NODE)		\
+ (TREE_CODE (NODE) == FUNCTION_DECL			\
+  && DECL_BUILT_IN_CLASS (NODE) == BUILT_IN_NORMAL	\
+  && DECL_FUNCTION_CODE (NODE) == BUILT_IN_CONSTANT_P)
+
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
    detecting circularity in case members are multiply defined.  In the
