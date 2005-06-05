@@ -1,3 +1,7 @@
+2005-06-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/forall_1.f90: Set previously uninitialized variable.
+
 2005-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21619
