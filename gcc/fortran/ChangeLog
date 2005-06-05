@@ -1,4 +1,9 @@
-005-06-05  Paul Thomas  <pault@gcc.gnu.org>
+2005-06-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* invoke.texi: Fix description of flags required for compatibility
+	with g77.
+
+2005-06-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18109
 	PR fortran/18283

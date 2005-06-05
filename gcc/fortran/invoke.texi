@@ -574,9 +574,9 @@ UNIX Fortran compilers.
 
 @emph{Caution}: The default behavior of @command{gfortran} is
 incompatible with @command{f2c} and @command{g77}, please use the
-@option{-ff2c} and @option{-fsecond-underscore} options if you want
-object files compiled with @option{gfortran} to be compatible with
-object code created with these tools.
+@option{-ff2c} option if you want object files compiled with
+@option{gfortran} to be compatible with object code created with these
+tools.
 
 Use of @option{-fno-underscoring} is not recommended unless you are
 experimenting with issues such as integration of (GNU) Fortran into
