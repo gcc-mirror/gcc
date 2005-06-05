@@ -7,6 +7,7 @@ type a
 end type a
 type(a) :: a1(10), a2(5,5)
 
+i1 = (/ 0, 1, 2, 3, 4, 0, 6, 7, 8, 9, 10, 0, 0, 13, 14 /)
 forall (i=1:15, i1(i) /= 0)
    i1(i) = 0
 end forall
