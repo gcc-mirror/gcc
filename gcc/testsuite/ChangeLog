@@ -1,3 +1,8 @@
+2005-06-05  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.c-torture/execute/20050603-1.c:  Move to gcc.dg.
+	* gcc.c-torture/execute/20050603-2.c:  Ditto.
+
 2005-06-05  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-62: Check that second loop is not vectorized.
