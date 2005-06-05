@@ -2,6 +2,10 @@
 
 	* GCC 4.0.0 released.
 
+2005-06-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gennews (files): Update for egcs-1.0 release pages consolidation.
+
 2005-04-17  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gennews (files): Update for GCC 4.0.
