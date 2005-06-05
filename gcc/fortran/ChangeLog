@@ -1,3 +1,24 @@
+2005-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from the mainline:
+	2005-04-17 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/17472
+	PR fortran/18209
+	PR fortran/18396
+	PR fortran/19467
+	PR fortran/19657
+	* fortran/trans-io.c (gfc_build_io_library_fndecls): Create
+	declaration for	st_set_nml_var and st_set_nml_var_dim. Remove
+	declarations of old namelist functions.
+	(build_dt): Simplified call to transfer_namelist_element.
+	(nml_get_addr_expr): Generates address expression for start of 
+	object data. New function.
+	(nml_full_name): Qualified name for derived type components. New 
+	function.
+	(transfer_namelist_element): Modified for calls to new functions 
+	and improved derived type handling.
+
 2005-06-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/21912

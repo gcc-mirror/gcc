@@ -1,5 +1,6 @@
-/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Andy Vaught
+   Namelist input contributed by Paul Thomas
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -50,13 +51,22 @@ Boston, MA 02111-1307, USA.  */
    ourselves.  Data is buffered in scratch[] until it becomes too
    large, after which we start allocating memory on the heap.  */
 
-static int repeat_count, saved_length, saved_used, input_complete, at_eol;
-static int comma_flag, namelist_mode;
-
+static int repeat_count, saved_length, saved_used;
+static int input_complete, at_eol, comma_flag;
 static char last_char, *saved_string;
 static bt saved_type;
 
+/* A namelist specific flag used in the list directed library
+   to flag that calls are being made from namelist read (eg. to ignore
+   comments or to treat '/' as a terminator)  */
 
+static int namelist_mode;
+
+/* A namelist specific flag used in the list directed library to flag
+   read errors and return, so that an attempt can be made to read a
+   new object name.  */
+
+static int nml_read_error;
 
 /* Storage area for values except for strings.  Must be large enough
    to hold a complex value (two reals) of the largest kind.  */
@@ -226,12 +236,16 @@ eat_separator (void)
 
     case '/':
       input_complete = 1;
-      next_record (0);
-      at_eol = 1;
+      if (!namelist_mode)
+	{
+	  next_record (0);
+	  at_eol = 1;
+	}
       break;
 
     case '\n':
     case '\r':
+      at_eol = 1;
       break;
 
     case '!':
@@ -282,7 +296,7 @@ finish_separator (void)
 
     case '/':
       input_complete = 1;
-      next_record (0);
+      if (!namelist_mode) next_record (0);
       break;
 
     case '\n':
@@ -305,6 +319,21 @@ finish_separator (void)
     }
 }
 
+/* This function is needed to catch bad conversions so that namelist can
+   attempt to see if saved_string contains a new object name rather than
+   a bad value.  */
+
+static int
+nml_bad_return (char c)
+{
+  if (namelist_mode)
+    {
+      nml_read_error = 1;
+      unget_char(c);
+      return 1;
+    }
+  return 0;
+}
 
 /* Convert an unsigned string to an integer.  The length value is -1
    if we are working on a repeat count.  Returns nonzero if we have a
@@ -525,6 +554,10 @@ read_logical (int length)
   return;
 
  bad_logical:
+
+  if (nml_bad_return (c))
+    return;
+
   st_sprintf (message, "Bad logical value while reading item %d",
 	      g.item_count);
 
@@ -641,6 +674,10 @@ read_integer (int length)
     }
 
  bad_integer:
+
+  if (nml_bad_return (c))
+    return;
+
   free_saved ();
 
   st_sprintf (message, "Bad integer for item %d in list input", g.item_count);
@@ -976,6 +1013,10 @@ read_complex (int length)
   return;
 
  bad_complex:
+
+  if (nml_bad_return (c))
+    return;
+
   st_sprintf (message, "Bad complex value in item %d of list input",
 	      g.item_count);
 
@@ -1187,6 +1228,10 @@ read_real (int length)
   return;
 
  bad_real:
+
+  if (nml_bad_return (c))
+    return;
+
   st_sprintf (message, "Bad real number in item %d of list input",
 	      g.item_count);
 
@@ -1381,66 +1426,857 @@ finish_list_read (void)
   while (c != '\n');
 }
 
+/*			NAMELIST INPUT
+
+void namelist_read (void)
+calls:
+   static void nml_match_name (char *name, int len)
+   static int nml_query (void)
+   static int nml_get_obj_data (void)
+calls:
+      static void nml_untouch_nodes (void)
+      static namelist_info * find_nml_node (char * var_name)
+      static int nml_parse_qualifier(descriptor_dimension * ad,
+				     nml_loop_spec * ls, int rank)
+      static void nml_touch_nodes (namelist_info * nl)
+      static int nml_read_obj (namelist_info * nl, index_type offset)
+calls:
+      -itself-  */
+
+/* Carries error messages from the qualifier parser.  */
+static char parse_err_msg[30];
+
+/* Carries error messages for error returns.  */
+static char nml_err_msg[100];
+
+/* Pointer to the previously read object, in case attempt is made to read
+   new object name.  Should this fail, error message can give previous
+   name.  */
+
+static namelist_info * prev_nl;
+
+/* Lower index for substring qualifier.  */
+
+static index_type clow;
+
+/* Upper index for substring qualifier.  */
+
+static index_type chigh;
+
+/* Inputs a rank-dimensional qualifier, which can contain
+   singlets, doublets, triplets or ':' with the standard meanings.  */
+
+static try
+nml_parse_qualifier(descriptor_dimension * ad,
+		    nml_loop_spec * ls, int rank)
+{
+  int dim;
+  int indx;
+  int neg;
+  int null_flag;
+  char c;
+
+  /* The next character in the stream should be the '('.  */
+
+  c = next_char ();
+
+  /* Process the qualifier, by dimension and triplet.  */
+
+  for (dim=0; dim < rank; dim++ )
+    {
+      for (indx=0; indx<3; indx++)
+	{
+	  free_saved ();
+	  eat_spaces ();
+	  neg = 0;
+
+	  /*process a potential sign.  */
+
+	  c = next_char ();
+	  switch (c)
+	    {
+	    case '-':
+	      neg = 1;
+	      break;
+
+	    case '+':
+	      break;
+
+	    default:
+	      unget_char (c);
+	      break;
+	    }
+
+	  /*process characters up to the next ':' , ',' or ')'  */
+
+	  for (;;)
+	    {
+	      c = next_char ();
+
+	      switch (c)
+		{
+		case ':':
+		  break;
+
+		case ',': case ')':
+		  if ( (c==',' && dim == rank -1)
+		    || (c==')' && dim  < rank -1))
+		    {
+		      st_sprintf (parse_err_msg,
+				  "Bad number of index fields");
+		      goto err_ret;
+		    }
+		  break;
+
+		CASE_DIGITS:
+		  push_char (c);
+		  continue;
+
+		case ' ': case '\t':
+		  eat_spaces ();
+		  c = next_char ();
+		  break;
+
+		default:
+		  st_sprintf (parse_err_msg, "Bad character in index");
+		  goto err_ret;
+		}
+
+	      if (( c==',' || c==')') && indx==0 && saved_string == 0 )
+		{
+		  st_sprintf (parse_err_msg, "Null index field");
+		  goto err_ret;
+		}
+
+	      if ( ( c==':' && indx==1 && saved_string == 0)
+		|| (indx==2 && saved_string == 0))
+		{
+		  st_sprintf(parse_err_msg, "Bad index triplet");
+		  goto err_ret;
+		}
+
+	      /* If '( : ? )' or '( ? : )' break and flag read failure.  */
+	      null_flag = 0;
+	      if ( (c==':'  && indx==0 && saved_string == 0)
+		|| (indx==1 && saved_string == 0))
+		{
+		  null_flag = 1;
+		  break;
+		}
+
+	      /* Now read the index.  */
+
+	      if (convert_integer (sizeof(int),neg))
+		{
+		  st_sprintf (parse_err_msg, "Bad integer in index");
+		  goto err_ret;
+		}
+	      break;
+	    }
+
+	  /*feed the index values to the triplet arrays.  */
+
+	  if (!null_flag)
+	    {
+	      if (indx == 0)
+		ls[dim].start = *(int *)value;
+	      if (indx == 1)
+		ls[dim].end   = *(int *)value;
+	      if (indx == 2)
+		ls[dim].step  = *(int *)value;
+	    }
+
+	  /*singlet or doublet indices  */
+
+	  if (c==',' || c==')')
+	    {
+	      if (indx == 0)
+		{
+		  ls[dim].start = *(int *)value;
+		  ls[dim].end = *(int *)value;
+		}
+	      break;
+	    }
+	}
+
+      /*Check the values of the triplet indices.  */
+
+      if ( (ls[dim].start > (ssize_t)ad[dim].ubound) 
+	|| (ls[dim].start < (ssize_t)ad[dim].lbound)
+	|| (ls[dim].end   > (ssize_t)ad[dim].ubound)
+	|| (ls[dim].end   < (ssize_t)ad[dim].lbound))
+	{
+	  st_sprintf (parse_err_msg, "Index %d out of range", dim + 1);
+	  goto err_ret;
+	}
+      if (((ls[dim].end - ls[dim].start ) * ls[dim].step < 0)
+	|| (ls[dim].step == 0))
+	{
+	  st_sprintf (parse_err_msg, "Bad range in index %d", dim + 1);
+	  goto err_ret;
+	}
+
+      /* Initialise the loop index counter.  */
+
+      ls[dim].idx = ls[dim].start;
+
+    }
+  eat_spaces ();
+  return SUCCESS;
+
+err_ret:
+
+  return FAILURE;
+}
+
 static namelist_info *
 find_nml_node (char * var_name)
 {
-   namelist_info * t = ionml;
-   while (t != NULL)
-     {
-       if (strcmp (var_name,t->var_name) == 0)
-         {
-           t->value_acquired = 1;
-           return t;
-         }
-       t = t->next;
-     }
+  namelist_info * t = ionml;
+  while (t != NULL)
+    {
+      if (strcmp (var_name,t->var_name) == 0)
+	{
+	  t->touched = 1;
+	  return t;
+	}
+      t = t->next;
+    }
   return NULL;
 }
 
+/* Visits all the components of a derived type that have
+   not explicitly been identified in the namelist input.
+   touched is set and the loop specification initialised 
+   to default values  */
+
 static void
-match_namelist_name (char *name, int len)
+nml_touch_nodes (namelist_info * nl)
 {
-  int name_len;
-  char c;
-  char * namelist_name = name;
-
-  name_len = 0;
-  /* Match the name of the namelist.  */
-
-  if (tolower (next_char ()) != tolower (namelist_name[name_len++]))
+  index_type len = strlen (nl->var_name) + 1;
+  int dim;
+  char * ext_name = (char*)get_mem (len + 1);
+  strcpy (ext_name, nl->var_name);
+  strcat (ext_name, "%");
+  for (nl = nl->next; nl; nl = nl->next)
     {
-    wrong_name:
-      generate_error (ERROR_READ_VALUE, "Wrong namelist name found");
-      return;
+      if (strncmp (nl->var_name, ext_name, len) == 0)
+	{
+	  nl->touched = 1;
+	  for (dim=0; dim < nl->var_rank; dim++)
+	    {
+	      nl->ls[dim].step = 1;
+	      nl->ls[dim].end = nl->dim[dim].ubound;
+	      nl->ls[dim].start = nl->dim[dim].lbound;
+	      nl->ls[dim].idx = nl->ls[dim].start;
+	    }
+	}
+      else
+	break;
     }
+  free_mem (ext_name);
+  return;
+}
 
-  while (name_len < len)
+/* Resets touched for the entire list of nml_nodes, ready for a
+   new object.  */
+
+static void
+nml_untouch_nodes (void)
+{
+  namelist_info * t;
+  for (t = ionml; t; t = t->next)
+    t->touched = 0;
+  return;
+}
+
+/* Attempts to input name to namelist name.  Returns nml_read_error = 1
+   on no match.  */
+
+static void
+nml_match_name (char *name, index_type len)
+{
+  index_type i;
+  char c;
+  nml_read_error = 0;
+  for (i = 0; i < len; i++)
     {
       c = next_char ();
-      if (tolower (c) != tolower (namelist_name[name_len++]))
-        goto wrong_name;
+      if (tolower (c) != tolower (name[i]))
+	{
+	  nml_read_error = 1;
+	  break;
+	}
     }
 }
 
+/* If the namelist read is from stdin, output the current state of the
+   namelist to stdout.  This is used to implement the non-standard query
+   features, ? and =?. If c == '=' the full namelist is printed. Otherwise
+   the names alone are printed.  */
 
-/********************************************************************
-      Namelist reads
-********************************************************************/
+static void
+nml_query (char c)
+{
+  gfc_unit * temp_unit;
+  namelist_info * nl;
+  index_type len;
+  char * p;
 
-/* Process a namelist read.  This subroutine initializes things,
-   positions to the first element and 
-   FIXME: was this comment ever complete?  */
+  if (current_unit->unit_number != options.stdin_unit)
+    return;
+
+  /* Store the current unit and transfer to stdout.  */
+
+  temp_unit = current_unit;
+  current_unit = find_unit (options.stdout_unit);
+
+  if (current_unit)
+    {
+      g.mode =WRITING;
+      next_record (0);
+
+      /* Write the namelist in its entirety.  */
+
+      if (c == '=')
+	namelist_write ();
+
+      /* Or write the list of names.  */
+
+      else
+	{
+
+	  /* "&namelist_name\n"  */
+
+	  len = ioparm.namelist_name_len;
+	  p = write_block (len + 2);
+	  if (!p)
+	    goto query_return;
+	  memcpy (p, "&", 1);
+	  memcpy ((char*)(p + 1), ioparm.namelist_name, len);
+	  memcpy ((char*)(p + len + 1), "\n", 1);
+	  for (nl =ionml; nl; nl = nl->next)
+	    {
+
+	      /* " var_name\n"  */
+
+	      len = strlen (nl->var_name);
+	      p = write_block (len + 2);
+	      if (!p)
+		goto query_return;
+	      memcpy (p, " ", 1);
+	      memcpy ((char*)(p + 1), nl->var_name, len);
+	      memcpy ((char*)(p + len + 1), "\n", 1);
+	    }
+
+	  /* "&end\n"  */
+
+	  p = write_block (5);
+	  if (!p)
+	    goto query_return;
+	  memcpy (p, "&end\n", 5);
+	}
+
+      /* Flush the stream to force immediate output.  */
+
+      flush (current_unit->s);
+    }
+
+query_return:
+
+  /* Restore the current unit.  */
+
+  current_unit = temp_unit;
+  g.mode = READING;
+  return;
+}
+
+/* Reads and stores the input for the namelist object nl.  For an array,
+   the function loops over the ranges defined by the loop specification.
+   This default to all the data or to the specification from a qualifier.
+   nml_read_obj recursively calls itself to read derived types. It visits
+   all its own components but only reads data for those that were touched
+   when the name was parsed.  If a read error is encountered, an attempt is
+   made to return to read a new object name because the standard allows too
+   little data to be available.  On the other hand, too much data is an
+   error.  */
+
+static try
+nml_read_obj (namelist_info * nl, index_type offset)
+{
+
+  namelist_info * cmp;
+  char * obj_name;
+  int nml_carry;
+  int len;
+  int dim;
+  index_type dlen;
+  index_type m;
+  index_type obj_name_len;
+  void * pdata ;
+
+  /* This object not touched in name parsing.  */
+
+  if (!nl->touched)
+    return SUCCESS;
+
+  repeat_count = 0;
+  eat_spaces();
+
+  len = nl->len;
+  switch (nl->type)
+  {
+
+    case GFC_DTYPE_INTEGER:
+    case GFC_DTYPE_LOGICAL:
+    case GFC_DTYPE_REAL:
+      dlen = len;
+      break;
+
+    case GFC_DTYPE_COMPLEX:
+      dlen = 2* len;
+      break;
+
+    case GFC_DTYPE_CHARACTER:
+      dlen = chigh ? (chigh - clow + 1) : nl->string_length;
+      break;
+
+    default:
+      dlen = 0;
+    }
+
+  do
+    {
+
+      /* Update the pointer to the data, using the current index vector  */
+
+      pdata = (void*)(nl->mem_pos + offset);
+      for (dim = 0; dim < nl->var_rank; dim++)
+	pdata = (void*)(pdata + (nl->ls[dim].idx - nl->dim[dim].lbound) *
+		 nl->dim[dim].stride * nl->size);
+
+      /* Reset the error flag and try to read next value, if 
+	 repeat_count=0  */
+
+      nml_read_error = 0;
+      nml_carry = 0;
+      if (--repeat_count <= 0)
+	{
+	  if (input_complete)
+	    return SUCCESS;
+	  if (at_eol)
+	    finish_separator ();
+	  if (input_complete)
+	    return SUCCESS;
+
+	  /* GFC_TYPE_UNKNOWN through for nulls and is detected
+	     after the switch block.  */
+
+	  saved_type = GFC_DTYPE_UNKNOWN;
+	  free_saved ();
+ 
+          switch (nl->type)
+	  {
+	  case GFC_DTYPE_INTEGER:
+              read_integer (len);
+              break;
+
+	  case GFC_DTYPE_LOGICAL:
+              read_logical (len);
+              break;
+
+	  case GFC_DTYPE_CHARACTER:
+              read_character (len);
+              break;
+
+	  case GFC_DTYPE_REAL:
+              read_real (len);
+              break;
+
+	  case GFC_DTYPE_COMPLEX:
+              read_complex (len);
+              break;
+
+	  case GFC_DTYPE_DERIVED:
+	    obj_name_len = strlen (nl->var_name) + 1;
+	    obj_name = get_mem (obj_name_len+1);
+	    strcpy (obj_name, nl->var_name);
+	    strcat (obj_name, "%");
+
+	    /* Now loop over the components. Update the component pointer
+	       with the return value from nml_write_obj.  This loop jumps
+	       past nested derived types by testing if the potential 
+	       component name contains '%'.  */
+
+	    for (cmp = nl->next;
+		 cmp &&
+		   !strncmp (cmp->var_name, obj_name, obj_name_len) &&
+		   !strchr (cmp->var_name + obj_name_len, '%');
+		 cmp = cmp->next)
+	      {
+
+		if (nml_read_obj (cmp, (index_type)(pdata - nl->mem_pos)) == FAILURE)
+		  {
+		    free_mem (obj_name);
+		    return FAILURE;
+		  }
+
+		if (input_complete)
+		  {
+		    free_mem (obj_name);
+		    return SUCCESS;
+		  }
+	      }
+
+	    free_mem (obj_name);
+	    goto incr_idx;
+
+          default:
+	    st_sprintf (nml_err_msg, "Bad type for namelist object %s",
+			nl->var_name );
+	    internal_error (nml_err_msg);
+	    goto nml_err_ret;
+          }
+        }
+
+      /* The standard permits array data to stop short of the number of
+	 elements specified in the loop specification.  In this case, we
+	 should be here with nml_read_error != 0.  Control returns to 
+	 nml_get_obj_data and an attempt is made to read object name.  */
+
+      prev_nl = nl;
+      if (nml_read_error)
+	return SUCCESS;
+
+      if (saved_type == GFC_DTYPE_UNKNOWN)
+	goto incr_idx;
+
+
+      /* Note the switch from GFC_DTYPE_type to BT_type at this point.
+	 This comes about because the read functions return BT_types.  */
+
+      switch (saved_type)
+      {
+
+	case BT_COMPLEX:
+	case BT_REAL:
+	case BT_INTEGER:
+	case BT_LOGICAL:
+	  memcpy (pdata, value, dlen);
+	  break;
+
+	case BT_CHARACTER:
+	  m = (dlen < saved_used) ? dlen : saved_used;
+	  pdata = (void*)( pdata + clow - 1 );
+	  memcpy (pdata, saved_string, m);
+	  if (m < dlen)
+	    memset ((void*)( pdata + m ), ' ', dlen - m);
+	break;
+
+	default:
+	  break;
+      }
+
+      /* Break out of loop if scalar.  */
+
+      if (!nl->var_rank)
+	break;
+
+      /* Now increment the index vector.  */
+
+incr_idx:
+
+      nml_carry = 1;
+      for (dim = 0; dim < nl->var_rank; dim++)
+	{
+	  nl->ls[dim].idx += nml_carry * nl->ls[dim].step;
+	  nml_carry = 0;
+	  if (((nl->ls[dim].step > 0) && (nl->ls[dim].idx > nl->ls[dim].end))
+	      ||
+	      ((nl->ls[dim].step < 0) && (nl->ls[dim].idx < nl->ls[dim].end)))
+	    {
+	      nl->ls[dim].idx = nl->ls[dim].start;
+	      nml_carry = 1;
+	    }
+        }
+    } while (!nml_carry);
+
+  if (repeat_count > 1)
+    {
+       st_sprintf (nml_err_msg, "Repeat count too large for namelist object %s" ,
+		   nl->var_name );
+       goto nml_err_ret;
+    }
+  return SUCCESS;
+
+nml_err_ret:
+
+  return FAILURE;
+}
+
+/* Parses the object name, including array and substring qualifiers.  It
+   iterates over derived type components, touching those components and
+   setting their loop specifications, if there is a qualifier.  If the
+   object is itself a derived type, its components and subcomponents are
+   touched.  nml_read_obj is called at the end and this reads the data in
+   the manner specified by the object name.  */
+
+static try
+nml_get_obj_data (void)
+{
+  char c;
+  char * ext_name;
+  namelist_info * nl;
+  namelist_info * first_nl;
+  namelist_info * root_nl;
+  int dim;
+  int component_flag;
+
+  /* Look for end of input or object name.  If '?' or '=?' are encountered
+     in stdin, print the node names or the namelist to stdout.  */
+
+  eat_separator ();
+  if (input_complete)
+    return SUCCESS;
+
+  if ( at_eol )
+    finish_separator ();
+  if (input_complete)
+    return SUCCESS;
+
+  c = next_char ();
+  switch (c)
+    {
+    case '=':
+      c = next_char ();
+      if (c != '?')
+	{
+	  st_sprintf (nml_err_msg, "namelist read: missplaced = sign");
+	  goto nml_err_ret;
+	}
+      nml_query ('=');
+      return SUCCESS;
+
+    case '?':
+      nml_query ('?');
+      return SUCCESS;
+
+    case '$':
+    case '&':
+      nml_match_name ("end", 3);
+      if (nml_read_error)
+	{
+	  st_sprintf (nml_err_msg, "namelist not terminated with / or &end");
+	  goto nml_err_ret;
+	}
+    case '/':
+      input_complete = 1;
+      return SUCCESS;
+
+    default :
+      break;
+    }
+
+  /* Untouch all nodes of the namelist and reset the flag that is set for
+     derived type components.  */
+
+  nml_untouch_nodes();
+  component_flag = 0;
+
+  /* Get the object name - should '!' and '\n' be permitted separators?  */
+
+get_name:
+
+  free_saved ();
+
+  do
+    {
+      push_char(tolower(c));
+      c = next_char ();
+    } while (!( c=='=' || c==' ' || c=='\t' || c =='(' || c =='%' ));
+
+  unget_char (c);
+
+  /* Check that the name is in the namelist and get pointer to object.
+     Three error conditions exist: (i) An attempt is being made to
+     identify a non-existent object, following a failed data read or
+     (ii) The object name does not exist or (iii) Too many data items
+     are present for an object.  (iii) gives the same error message
+     as (i)  */
+
+  push_char ('\0');
+
+  if (component_flag)
+    {
+      ext_name = (char*)get_mem (strlen (root_nl->var_name)
+				  + (saved_string ? strlen (saved_string) : 0)
+				  + 1);
+      strcpy (ext_name, root_nl->var_name);
+      strcat (ext_name, saved_string);
+      nl = find_nml_node (ext_name);
+      free_mem (ext_name);
+    }
+  else
+    nl = find_nml_node (saved_string);
+
+  if (nl == NULL)
+    {
+      if (nml_read_error && prev_nl)
+	st_sprintf (nml_err_msg, "Bad data for namelist object %s",
+		    prev_nl->var_name);
+
+      else
+	st_sprintf (nml_err_msg, "Cannot match namelist object name %s",
+		    saved_string);
+
+      goto nml_err_ret;
+    }
+
+  /* Get the length, data length, base pointer and rank of the variable.
+     Set the default loop specification first.  */
+
+  for (dim=0; dim < nl->var_rank; dim++)
+    {
+      nl->ls[dim].step = 1;
+      nl->ls[dim].end = nl->dim[dim].ubound;
+      nl->ls[dim].start = nl->dim[dim].lbound;
+      nl->ls[dim].idx = nl->ls[dim].start;
+    }
+
+/* Check to see if there is a qualifier: if so, parse it.*/
+
+  if (c == '(' && nl->var_rank)
+    {
+      if (nml_parse_qualifier (nl->dim, nl->ls, nl->var_rank) == FAILURE)
+	{
+	  st_sprintf (nml_err_msg, "%s for namelist variable %s",
+		      parse_err_msg, nl->var_name);
+	  goto nml_err_ret;
+	}
+      c = next_char ();
+      unget_char (c);
+    }
+
+  /* Now parse a derived type component. The root namelist_info address
+     is backed up, as is the previous component level.  The  component flag
+     is set and the iteration is made by jumping back to get_name.  */
+
+  if (c == '%')
+    {
+
+      if (nl->type != GFC_DTYPE_DERIVED)
+	{
+	  st_sprintf (nml_err_msg, "Attempt to get derived component for %s",
+		      nl->var_name);
+	  goto nml_err_ret;
+	}
+
+      if (!component_flag)
+	first_nl = nl;
+
+      root_nl = nl;
+      component_flag = 1;
+      c = next_char ();
+      goto get_name;
+
+    }
+
+  /* Parse a character qualifier, if present.  chigh = 0 is a default
+     that signals that the string length = string_length.  */
+
+  clow = 1;
+  chigh = 0;
+
+  if (c == '(' && nl->type == GFC_DTYPE_CHARACTER)
+    {
+      descriptor_dimension chd[1] = {1, clow, nl->string_length};
+      nml_loop_spec ind[1] = {1, clow, nl->string_length, 1};
+
+      if (nml_parse_qualifier (chd, ind, 1) == FAILURE)
+	{
+	  st_sprintf (nml_err_msg, "%s for namelist variable %s",
+		      parse_err_msg, nl->var_name);
+	  goto nml_err_ret;
+	}
+
+      clow = ind[0].start;
+      chigh = ind[0].end;
+
+      if (ind[0].step != 1)
+	{
+	  st_sprintf (nml_err_msg,
+		      "Bad step in substring for namelist object %s",
+		      nl->var_name);
+	  goto nml_err_ret;
+	}
+
+      c = next_char ();
+      unget_char (c);
+    }
+
+  /* If a derived type touch its components and restore the root
+     namelist_info if we have parsed a qualified derived type
+     component.  */
+
+  if (nl->type == GFC_DTYPE_DERIVED)
+    nml_touch_nodes (nl);
+  if (component_flag)
+    nl = first_nl;
+
+  /*make sure no extraneous qualifiers are there.*/
+
+  if (c == '(')
+    {
+      st_sprintf (nml_err_msg, "Qualifier for a scalar or non-character"
+		  " namelist object %s", nl->var_name);
+      goto nml_err_ret;
+    }
+
+/* According to the standard, an equal sign MUST follow an object name. The
+   following is possibly lax - it allows comments, blank lines and so on to
+   intervene.  eat_spaces (); c = next_char (); would be compliant*/
+
+  free_saved ();
+
+  eat_separator ();
+  if (input_complete)
+    return SUCCESS;
+
+  if (at_eol)
+    finish_separator ();
+  if (input_complete)
+    return SUCCESS;
+
+  c = next_char ();
+
+  if (c != '=')
+    {
+      st_sprintf (nml_err_msg, "Equal sign must follow namelist object name %s",
+		  nl->var_name);
+      goto nml_err_ret;
+    }
+
+  if (nml_read_obj (nl, 0) == FAILURE)
+    goto nml_err_ret;
+
+  return SUCCESS;
+
+nml_err_ret:
+
+  return FAILURE;
+}
+
+/* Entry point for namelist input.  Goes through input until namelist name
+  is matched.  Then cycles through nml_get_obj_data until the input is
+  completed or there is an error.  */
 
 void
 namelist_read (void)
 {
   char c;
-  int name_matched, next_name ;
-  namelist_info * nl;
-  int len, m;
-  void * p;
 
   namelist_mode = 1;
+  input_complete = 0;
 
   if (setjmp (g.eof_jump))
     {
@@ -1448,117 +2284,61 @@ namelist_read (void)
       return;
     }
 
- restart:
-  c = next_char ();
-  switch (c)
+  /* Look for &namelist_name .  Skip all characters, testing for $nmlname.
+     Exit on success or EOF. If '?' or '=?' encountered in stdin, print
+     node names or namelist on stdout.  */
+
+find_nml_name:
+  switch (c = next_char ())
     {
-    case ' ':
-      goto restart;
-    case '!':
-      do
-        c = next_char ();
-      while (c != '\n');
-
-      goto restart;
-
+    case '$':
     case '&':
-      break;
+          break;
+
+    case '=':
+      c = next_char ();
+      if (c == '?')
+	nml_query ('=');
+      else
+	unget_char (c);
+      goto find_nml_name;
+
+    case '?':
+      nml_query ('?');
 
     default:
-      generate_error (ERROR_READ_VALUE, "Invalid character in namelist");
-      return;
+      goto find_nml_name;
     }
 
   /* Match the name of the namelist.  */
-  match_namelist_name(ioparm.namelist_name, ioparm.namelist_name_len);
 
-  /* Ready to read namelist elements.  */
+  nml_match_name (ioparm.namelist_name, ioparm.namelist_name_len);
+
+  if (nml_read_error)
+    goto find_nml_name;
+
+  /* Ready to read namelist objects.  If there is an error in input
+     from stdin, output the error message and continue.  */
+
   while (!input_complete)
     {
-      c = next_char ();
-      switch (c)
-        {
-        case '/':
-          input_complete = 1;
-          next_record (0);
-          break;
-        case '&':
-          match_namelist_name("end",3);
-          return;
-        case '\\':
-          return;
-        case ' ':
-        case '\n':
-       case '\r':
-        case '\t':
-          break;
-        case ',':
-          next_name = 1;
-          break;
+      if (nml_get_obj_data ()  == FAILURE)
+	{
+	  if (current_unit->unit_number != options.stdin_unit)
+	    goto nml_err_ret;
 
-        case '=':
-          name_matched = 1;
-          nl = find_nml_node (saved_string);
-          if (nl == NULL)
-            internal_error ("Can not match a namelist variable");
-          free_saved();
-
-          len = nl->len;
-          p = nl->mem_pos;
-
-          /* skip any blanks or tabs after the = */
-          eat_spaces ();
- 
-          switch (nl->type)
-            {
-            case BT_INTEGER:
-              read_integer (len);
-              break;
-            case BT_LOGICAL:
-              read_logical (len);
-              break;
-            case BT_CHARACTER:
-              read_character (len);
-              break;
-            case BT_REAL:
-              read_real (len);
-              break;
-            case BT_COMPLEX:
-              read_complex (len);
-              break;
-            default:
-              internal_error ("Bad type for namelist read");
-            }
-
-           switch (saved_type)
-            {
-            case BT_COMPLEX:
-              len = 2 * len;
-              /* Fall through...  */
-
-            case BT_INTEGER:
-            case BT_REAL:
-            case BT_LOGICAL:
-              memcpy (p, value, len);
-              break;
-
-            case BT_CHARACTER:
-              m = (len < saved_used) ? len : saved_used;
-              memcpy (p, saved_string, m);
-
-              if (m < len)
-                memset (((char *) p) + m, ' ', len - m);
-              break;
-
-            case BT_NULL:
-              break;
-            }
-
-          break;
-
-        default :
-          push_char(tolower(c));
-          break;
+	  st_printf ("%s\n", nml_err_msg);
+	  flush (find_unit (options.stderr_unit)->s);
         }
+
    }
+
+  return;
+
+  /* All namelist error calls return from here */
+
+nml_err_ret:
+
+  generate_error (ERROR_READ_VALUE , nml_err_msg);
+  return;
 }

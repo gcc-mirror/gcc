@@ -1,5 +1,6 @@
 /* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Andy Vaught
+   Namelist transfer functions contributed by Paul Thomas
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -1617,94 +1618,78 @@ st_write_done (void)
   library_end ();
 }
 
+/* Receives the scalar information for namelist objects and stores it
+   in a linked list of namelist_info types.  */
 
-static void
-st_set_nml_var (void * var_addr, char * var_name, int var_name_len,
-                int kind, bt type, int string_length)
+void
+st_set_nml_var (void * var_addr, char * var_name, GFC_INTEGER_4 len,
+		gfc_charlen_type string_length, GFC_INTEGER_4 dtype)
 {
-  namelist_info *t1 = NULL, *t2 = NULL;
-  namelist_info *nml = (namelist_info *) get_mem (sizeof (namelist_info));
+  namelist_info *t1 = NULL;
+  namelist_info *nml;
+
+  nml = (namelist_info*) get_mem (sizeof (namelist_info));
+
   nml->mem_pos = var_addr;
-  if (var_name)
+
+  nml->var_name = (char*) get_mem (strlen (var_name) + 1);
+  strcpy (nml->var_name, var_name);
+
+  nml->len = (int) len;
+  nml->string_length = (index_type) string_length;
+
+  nml->var_rank = (int) (dtype & GFC_DTYPE_RANK_MASK);
+  nml->size = (index_type) (dtype >> GFC_DTYPE_SIZE_SHIFT);
+  nml->type = (bt) ((dtype & GFC_DTYPE_TYPE_MASK) >> GFC_DTYPE_TYPE_SHIFT);
+
+  if (nml->var_rank > 0)
     {
-      assert (var_name_len > 0);
-      nml->var_name = (char*) get_mem (var_name_len+1);
-      strncpy (nml->var_name, var_name, var_name_len);
-      nml->var_name[var_name_len] = 0;
+      nml->dim = (descriptor_dimension*)
+		   get_mem (nml->var_rank * sizeof (descriptor_dimension));
+      nml->ls = (nml_loop_spec*)
+		  get_mem (nml->var_rank * sizeof (nml_loop_spec));
     }
   else
     {
-      assert (var_name_len == 0);
-      nml->var_name = NULL;
+      nml->dim = NULL;
+      nml->ls = NULL;
     }
-
-  nml->len = kind;
-  nml->type = type;
-  nml->string_length = string_length;
 
   nml->next = NULL;
 
   if (ionml == NULL)
-     ionml = nml;
+    ionml = nml;
   else
     {
-      t1 = ionml;
-      while (t1 != NULL)
-       {
-         t2 = t1;
-         t1 = t1->next;
-       }
-       t2->next = nml;
+      for (t1 = ionml; t1->next; t1 = t1->next);
+      t1->next = nml;
     }
+  return;
 }
 
-extern void st_set_nml_var_int (void *, char *, int, int);
-export_proto(st_set_nml_var_int);
-
-extern void st_set_nml_var_float (void *, char *, int, int);
-export_proto(st_set_nml_var_float);
-
-extern void st_set_nml_var_char (void *, char *, int, int, gfc_charlen_type);
-export_proto(st_set_nml_var_char);
-
-extern void st_set_nml_var_complex (void *, char *, int, int);
-export_proto(st_set_nml_var_complex);
-
-extern void st_set_nml_var_log (void *, char *, int, int);
-export_proto(st_set_nml_var_log);
+/* Store the dimensional information for the namelist object.  */
 
 void
-st_set_nml_var_int (void * var_addr, char * var_name, int var_name_len,
-		    int kind)
+st_set_nml_var_dim (GFC_INTEGER_4 n_dim, GFC_INTEGER_4 stride,
+		    GFC_INTEGER_4 lbound, GFC_INTEGER_4 ubound)
 {
-  st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_INTEGER, 0);
+  namelist_info * nml;
+  int n;
+
+  n = (int)n_dim;
+
+  for (nml = ionml; nml->next; nml = nml->next);
+
+  nml->dim[n].stride = (ssize_t)stride;
+  nml->dim[n].lbound = (ssize_t)lbound;
+  nml->dim[n].ubound = (ssize_t)ubound;
 }
 
-void
-st_set_nml_var_float (void * var_addr, char * var_name, int var_name_len,
-		      int kind)
-{
-  st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_REAL, 0);
-}
+extern void st_set_nml_var (void * ,char * ,
+			    GFC_INTEGER_4 ,gfc_charlen_type ,GFC_INTEGER_4);
+export_proto(st_set_nml_var);
 
-void
-st_set_nml_var_char (void * var_addr, char * var_name, int var_name_len,
-		     int kind, gfc_charlen_type string_length)
-{
-  st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_CHARACTER,
-		  string_length);
-}
+extern void st_set_nml_var_dim (GFC_INTEGER_4, GFC_INTEGER_4,
+				GFC_INTEGER_4 ,GFC_INTEGER_4);
+export_proto(st_set_nml_var_dim);
 
-void
-st_set_nml_var_complex (void * var_addr, char * var_name, int var_name_len,
-			int kind)
-{
-  st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_COMPLEX, 0);
-}
-
-void
-st_set_nml_var_log (void * var_addr, char * var_name, int var_name_len,
-		    int kind)
-{
-   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_LOGICAL, 0);
-}

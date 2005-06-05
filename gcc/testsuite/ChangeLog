@@ -1,3 +1,46 @@
+2005-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from the mainline:
+	2005-04-17 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/17472
+	PR fortran/18209
+	PR fortran/18396
+	PR fortran/19467
+	PR fortran/19657
+	* fortran/trans-io.c (gfc_build_io_library_fndecls): Create
+	declaration for	st_set_nml_var and st_set_nml_var_dim. Remove
+	declarations of old namelist functions.
+	(build_dt): Simplified call to transfer_namelist_element.
+	(nml_get_addr_expr): Generates address expression for start of 
+	object data. New function.
+	(nml_full_name): Qualified name for derived type components. New 
+	function.
+	(transfer_namelist_element): Modified for calls to new functions 
+	and improved derived type handling.
+
+	PR libfortran/12884 gfortran.dg/pr12884.f: New test
+	PR libfortran/17285 gfortran.dg/pr17285.f90: New test
+	PR libfortran/17472, 18396, 18209 gfortran.dg/pr17472.f: New test
+	PR libfortran/18122, 18591 gfortran.dg/pr18122.f90: New test
+	PR libfortran/18210 gfortran.dg/pr18210.f90: New test
+	PR libfortran/18392 gfortran.dg/pr18392.f90: New test
+	PR libfortran/19467 gfortran.dg/pr19467.f90: New test
+	PR libfortran/19657 gfortran.dg/pr19657.f90: New test
+	* gfortran.dg/namelist_1.f90: Correct comment (PUBLIC and PRIVATE wrong way round).
+	* gfortran.dg/namelist_2.f90: Variables with INTENT(IN) cannot be in namelists. New test
+	* gfortran.dg/namelist_3.f90: Pointers cannot be in namelists. New test
+	* gfortran.dg/namelist_11.f: Tests reals and qualifiers in namelist. New test
+	* gfortran.dg/namelist_12.f: Tests integers and qualifiers in namelist. New test
+	* gfortran.dg/namelist_13.f90: Tests derived types in namelist. New test
+	* gfortran.dg/namelist_14.f90: Tests trans-io.c namelist support. New test
+	* gfortran.dg/namelist_15.f90: Tests arrays of derived types in namelist. New test
+	* gfortran.dg/namelist_16.f90: Tests complex in namelist. New test
+	* gfortran.dg/namelist_17.f90: Tests logical in namelist. New test
+	* gfortran.dg/namelist_18.f90: Tests charcter delimiters in namelist. New test
+	* gfortran.dg/namelist_19.f90: Tests namelist errors. New test
+	* gfortran.dg/namelist_20.f90: Tests negative bounds for explicit arrays. New test
+
 2005-06-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/21912

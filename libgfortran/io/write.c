@@ -1,5 +1,6 @@
 /* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Andy Vaught
+   Namelist output contibuted by Paul Thomas
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -29,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <string.h>
+#include <ctype.h>
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,6 +45,8 @@ typedef enum
 { SIGN_NONE, SIGN_MINUS, SIGN_PLUS }
 sign_t;
 
+
+static int no_leading_blank = 0 ;
 
 void
 write_a (fnode * f, const char *source, int len)
@@ -579,7 +583,9 @@ output_float (fnode *f, double value, int len)
     leadzero = 0;
 
   /* Padd to full field width.  */
-  if (nblanks > 0)
+
+
+  if ( ( nblanks > 0 ) && !no_leading_blank )
     {
       memset (out, ' ', nblanks);
       out += nblanks;
@@ -652,6 +658,13 @@ output_float (fnode *f, double value, int len)
       sprintf (buffer, "%+0*d", edigits, e);
 #endif
       memcpy (out, buffer, edigits);
+    }
+
+  if ( no_leading_blank )
+    {
+      out += edigits;
+      memset( out , ' ' , nblanks );
+      no_leading_blank = 0;
     }
 }
 
@@ -805,13 +818,24 @@ write_int (fnode *f, const char *source, int len, char *(*conv) (uint64_t))
       goto done;
     }
 
+
+  if (!no_leading_blank)
+    {
   memset (p, ' ', nblank);
   p += nblank;
-
   memset (p, '0', nzero);
   p += nzero;
-
   memcpy (p, q, digits);
+    }
+  else
+    {
+      memset (p, '0', nzero);
+      p += nzero;
+      memcpy (p, q, digits);
+      p += digits;
+      memset (p, ' ', nblank);
+      no_leading_blank = 0;
+    }
 
  done:
   return;
@@ -1105,9 +1129,16 @@ write_integer (const char *source, int length)
   if(width < digits )
     width = digits ;
   p = write_block (width) ;
-
+  if (no_leading_blank)
+    {
+      memcpy (p, q, digits);
+      memset(p + digits ,' ', width - digits) ;
+    }
+  else
+    {
   memset(p ,' ', width - digits) ;
   memcpy (p + width - digits, q, digits);
+    }
 }
 
 
@@ -1272,60 +1303,321 @@ list_formatted_write (bt type, void *p, int len)
   char_flag = (type == BT_CHARACTER);
 }
 
+/*			NAMELIST OUTPUT
+
+   nml_write_obj writes a namelist object to the output stream.  It is called
+   recursively for derived type components:
+	obj    = is the namelist_info for the current object.
+	offset = the offset relative to the address held by the object for
+		 derived type arrays.
+	base   = is the namelist_info of the derived type, when obj is a
+		 component.
+	base_name = the full name for a derived type, including qualifiers
+		    if any.
+   The returned value is a pointer to the object beyond the last one
+   accessed, including nested derived types.  Notice that the namelist is
+   a linear linked list of objects, including derived types and their
+   components.  A tree, of sorts, is implied by the compound names of
+   the derived type components and this is how this function recurses through
+   the list.  */
+
+/* A generous estimate of the number of characters needed to print
+   repeat counts and indices, including commas, asterices and brackets.  */
+
+#define NML_DIGITS 20
+
+/* Stores the delimiter to be used for character objects.  */
+
+static char * nml_delim;
+
+static namelist_info *
+nml_write_obj (namelist_info * obj, index_type offset,
+	       namelist_info * base, char * base_name)
+{
+  int rep_ctr;
+  int num;
+  int nml_carry;
+  index_type len;
+  index_type obj_size;
+  index_type nelem;
+  index_type dim_i;
+  index_type clen;
+  index_type elem_ctr;
+  index_type obj_name_len;
+  void * p ;
+  char cup;
+  char * obj_name;
+  char * ext_name;
+  char rep_buff[NML_DIGITS];
+  namelist_info * cmp;
+  namelist_info * retval = obj->next;
+
+  /* Write namelist variable names in upper case. If a derived type,
+     nothing is output.  If a component, base and base_name are set.  */
+
+  if (obj->type != GFC_DTYPE_DERIVED)
+    {
+      write_character ("\n ", 2);
+      len = 0;
+      if (base)
+	{
+	  len =strlen (base->var_name);
+	  for (dim_i = 0; dim_i < strlen (base_name); dim_i++)
+            {
+	      cup = toupper (base_name[dim_i]);
+	      write_character (&cup, 1);
+            }
+	}
+      for (dim_i =len; dim_i < strlen (obj->var_name); dim_i++)
+	{
+	  cup = toupper (obj->var_name[dim_i]);
+	  write_character (&cup, 1);
+	}
+      write_character ("=", 1);
+    }
+
+  /* Counts the number of data output on a line, including names.  */
+
+  num = 1;
+
+  len = obj->len;
+  obj_size = len;
+  if (obj->type == GFC_DTYPE_COMPLEX)
+    obj_size = 2*len;
+  if (obj->type == GFC_DTYPE_CHARACTER)
+    obj_size = obj->string_length;
+  if (obj->var_rank)
+    obj_size = obj->size;
+
+  /* Set the index vector and count the number of elements.  */
+
+  nelem = 1;
+  for (dim_i=0; dim_i < obj->var_rank; dim_i++)
+    {
+      obj->ls[dim_i].idx = obj->dim[dim_i].lbound;
+      nelem = nelem * (obj->dim[dim_i].ubound + 1 - obj->dim[dim_i].lbound);
+    }
+
+  /* Main loop to output the data held in the object.  */
+
+  rep_ctr = 1;
+  for (elem_ctr = 0; elem_ctr < nelem; elem_ctr++)
+    {
+
+      /* Build the pointer to the data value.  The offset is passed by
+	 recursive calls to this function for arrays of derived types.
+	 Is NULL otherwise.  */
+
+      p = (void *)(obj->mem_pos + elem_ctr * obj_size);
+      p += offset;
+
+      /* Check for repeat counts of intrinsic types.  */
+
+      if ((elem_ctr < (nelem - 1)) &&
+	  (obj->type != GFC_DTYPE_DERIVED) &&
+	  !memcmp (p, (void*)(p + obj_size ), obj_size ))
+	{
+	  rep_ctr++;
+	}
+
+      /* Execute a repeated output.  Note the flag no_leading_blank that
+	 is used in the functions used to output the intrinsic types.  */
+
+      else
+	{
+	  if (rep_ctr > 1)
+	    {
+	      st_sprintf(rep_buff, " %d*", rep_ctr);
+	      write_character (rep_buff, strlen (rep_buff));
+	      no_leading_blank = 1;
+	    }
+	  num++;
+
+	  /* Output the data, if an intrinsic type, or recurse into this 
+	     routine to treat derived types.  */
+
+	  switch (obj->type)
+	    {
+
+	    case GFC_DTYPE_INTEGER:
+              write_integer (p, len);
+              break;
+
+	    case GFC_DTYPE_LOGICAL:
+              write_logical (p, len);
+              break;
+
+	    case GFC_DTYPE_CHARACTER:
+	      if (nml_delim)
+		write_character (nml_delim, 1);
+	      write_character (p, obj->string_length);
+	      if (nml_delim)
+		write_character (nml_delim, 1);
+              break;
+
+	    case GFC_DTYPE_REAL:
+              write_real (p, len);
+              break;
+
+	    case GFC_DTYPE_COMPLEX:
+	      no_leading_blank = 0;
+	      num++;
+              write_complex (p, len);
+              break;
+
+	    case GFC_DTYPE_DERIVED:
+
+	      /* To treat a derived type, we need to build two strings:
+		 ext_name = the name, including qualifiers that prepends
+			    component names in the output - passed to 
+			    nml_write_obj.
+		 obj_name = the derived type name with no qualifiers but %
+			    appended.  This is used to identify the 
+			    components.  */
+
+	      /* First ext_name => get length of all possible components  */
+
+	      ext_name = (char*)get_mem ( (base_name ? strlen (base_name) : 0)
+					+ (base ? strlen (base->var_name) : 0)
+					+ strlen (obj->var_name)
+					+ obj->var_rank * NML_DIGITS
+					+ 1);
+
+	      strcpy(ext_name, base_name ? base_name : "");
+	      clen = base ? strlen (base->var_name) : 0;
+	      strcat (ext_name, obj->var_name + clen);
+
+	      /* Append the qualifier.  */
+
+	      for (dim_i = 0; dim_i < obj->var_rank; dim_i++)
+		{
+		  strcat (ext_name, dim_i ? "" : "(");
+		  clen = strlen (ext_name);
+		  st_sprintf (ext_name + clen, "%d", obj->ls[dim_i].idx);
+		  strcat (ext_name, (dim_i == obj->var_rank - 1) ? ")" : ",");
+		}
+
+	      /* Now obj_name.  */
+
+	      obj_name_len = strlen (obj->var_name) + 1;
+	      obj_name = get_mem (obj_name_len+1);
+	      strcpy (obj_name, obj->var_name);
+	      strcat (obj_name, "%");
+
+	      /* Now loop over the components. Update the component pointer
+		 with the return value from nml_write_obj => this loop jumps
+		 past nested derived types.  */
+
+	      for (cmp = obj->next;
+		   cmp && !strncmp (cmp->var_name, obj_name, obj_name_len);
+		   cmp = retval)
+		{
+		  retval = nml_write_obj (cmp, (index_type)(p - obj->mem_pos),
+					  obj, ext_name);
+		}
+
+	      free_mem (obj_name);
+	      free_mem (ext_name);
+	      goto obj_loop;
+
+            default:
+              internal_error ("Bad type for namelist write");
+            }
+
+	  /* Reset the leading blank suppression, write a comma and, if 5
+	     values have been output, write a newline and advance to column
+	     2. Reset the repeat counter.  */
+
+	  no_leading_blank = 0;
+	  write_character (",", 1);
+	  if (num > 5)
+	    {
+	      num = 0;
+	      write_character ("\n ", 2);
+	    }
+	  rep_ctr = 1;
+	}
+
+    /* Cycle through and increment the index vector.  */
+
+obj_loop:
+
+    nml_carry = 1;
+    for (dim_i = 0; nml_carry && (dim_i < obj->var_rank); dim_i++)
+      {
+	obj->ls[dim_i].idx += nml_carry ;
+	nml_carry = 0;
+	if (obj->ls[dim_i].idx  > (ssize_t)obj->dim[dim_i].ubound)
+	  {
+	    obj->ls[dim_i].idx = obj->dim[dim_i].lbound;
+	    nml_carry = 1;
+	  }
+       }
+    }
+
+  /* Return a pointer beyond the furthest object accessed.  */
+
+  return retval;
+}
+
+/* This is the entry function for namelist writes.  It outputs the name
+   of the namelist and iterates through the namelist by calls to 
+   nml_write_obj.  The call below has dummys in the arguments used in 
+   the treatment of derived types.  */
+
 void
 namelist_write (void)
 {
-  namelist_info * t1, *t2;
-  int len,num;
-  void * p;
+  namelist_info * t1, *t2, *dummy = NULL;
+  index_type i;
+  index_type dummy_offset = 0;
+  char c;
+  char * dummy_name = NULL;
+  unit_delim tmp_delim;
 
-  num = 0;
-  write_character("&",1);
-  write_character (ioparm.namelist_name, ioparm.namelist_name_len);
-  write_character("\n",1);
+  /* Set the delimiter for namelist output.  */
+
+  tmp_delim = current_unit->flags.delim;
+  current_unit->flags.delim = DELIM_NONE;
+  switch (tmp_delim)
+    {
+    case (DELIM_QUOTE):
+      nml_delim = "\"";
+      break;
+
+    case (DELIM_APOSTROPHE):
+      nml_delim = "'";
+      break;
+
+    default:
+      nml_delim = NULL;
+    }
+
+  write_character ("&",1);
+
+  /* Write namelist name in upper case - f95 std.  */
+
+  for (i = 0 ;i < ioparm.namelist_name_len ;i++ )
+    {
+      c = toupper (ioparm.namelist_name[i]);
+      write_character (&c ,1);
+	    }
 
   if (ionml != NULL)
     {
       t1 = ionml;
       while (t1 != NULL)
 	{
-          num ++;
-          t2 = t1;
-          t1 = t1->next;
-          if (t2->var_name)
-            {
-              write_character(t2->var_name, strlen(t2->var_name));
-              write_character("=",1);
-            }
-          len = t2->len;
-          p = t2->mem_pos;
-          switch (t2->type)
-            {
-            case BT_INTEGER:
-              write_integer (p, len);
-              break;
-            case BT_LOGICAL:
-              write_logical (p, len);
-              break;
-            case BT_CHARACTER:
-              write_character (p, t2->string_length);
-              break;
-            case BT_REAL:
-              write_real (p, len);
-              break;
-            case BT_COMPLEX:
-              write_complex (p, len);
-              break;
-            default:
-              internal_error ("Bad type for namelist write");
-            }
-	  write_character(",",1);
-	  if (num > 5)
-	    {
-	      num = 0;
-	      write_character("\n",1);
-	    }
+	  t2 = t1;
+	  t1 = nml_write_obj (t2, dummy_offset, dummy, dummy_name);
 	}
     }
-  write_character("/",1);
+  write_character ("  /\n", 4);
+
+  /* Recover the original delimiter.  */
+
+  current_unit->flags.delim = tmp_delim;
 }
+
+#undef NML_DIGITS
+

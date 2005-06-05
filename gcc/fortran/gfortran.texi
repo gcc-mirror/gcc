@@ -468,7 +468,6 @@ Usable with bugs:
 
 @itemize @minus
 @item Formatted sequential ('T' edit descriptor, and others)
-@item Namelist (can read a namelist that it writes, but not free-form)
 @end itemize
 
 Not recommended:
@@ -583,9 +582,6 @@ Set precision for fp units that support it (i387).
 Variables for setting fp rounding mode.
 
 @item
-Support old style namelists ending in $end or &end.
-
-@item
 Variable to fill uninitialized variables with a user-defined bit
 pattern.
 
@@ -636,6 +632,7 @@ meaning.
 @menu
 * Old-style kind specifications::
 * Old-style variable initialization::
+* Extensions to namelist::
 @end menu
 
 @node Old-style kind specifications
@@ -683,6 +680,54 @@ Examples of standard conforming code equivalent to the above example, are:
       DOUBLE PRECISION x(2,2)
       DATA i,j,x /1,2,3*0.,1./
 @end smallexample
+
+@node Extensions to namelist
+@section Extensions to namelist
+@cindex Namelist
+
+@command{gfortran} fully supports the fortran95 standard for namelist io
+including array qualifiers, substrings and fully qualified derived types.
+The output from a namelist write is compatible with namelist read.  The
+output has all names in upper case and indentation to column 1 after the
+namelist name.  Two extensions are permitted:
+
+Old-style use of $ instead of &
+@smallexample
+$MYNML
+ X(:)%Y(2) = 1.0 2.0 3.0
+ CH(1:4) = "abcd"
+$END
+@end smallexample
+
+It should be noticed that the default terminator is / rather than &END.
+
+Querying of the namelist when inputting from stdin. After at least
+one space, entering ? sends to stdout the namelist name and the names of
+the variables in the namelist:
+@smallexample
+?
+
+&mynml
+ x
+ x%y
+ ch
+&end
+@end smallexample
+
+Entering =? outputs the namelist to stdout, as if WRITE (*,NML = mynml)
+had been called:
+@smallexample
+=?
+
+&MYNML
+ X(1)%Y=  0.000000    ,  1.000000    ,  0.000000    ,
+ X(2)%Y=  0.000000    ,  2.000000    ,  0.000000    ,
+ X(3)%Y=  0.000000    ,  3.000000    ,  0.000000    ,
+ CH=abcd,  /
+@end smallexample
+
+To aid this dialog, when input is from stdin, errors produce send their
+messages to stderr and execution continues, even if IOSTAT is set.
 
 @include intrinsic.texi
 @c ---------------------------------------------------------------------

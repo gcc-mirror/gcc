@@ -125,11 +125,8 @@ static GTY(()) tree iocall_iolength_done;
 static GTY(()) tree iocall_rewind;
 static GTY(()) tree iocall_backspace;
 static GTY(()) tree iocall_endfile;
-static GTY(()) tree iocall_set_nml_val_int;
-static GTY(()) tree iocall_set_nml_val_float;
-static GTY(()) tree iocall_set_nml_val_char;
-static GTY(()) tree iocall_set_nml_val_complex;
-static GTY(()) tree iocall_set_nml_val_log;
+static GTY(()) tree iocall_set_nml_val;
+static GTY(()) tree iocall_set_nml_val_dim;
 
 /* Variable for keeping track of what the last data transfer statement
    was.  Used for deciding which subroutine to call when the data
@@ -314,34 +311,19 @@ gfc_build_io_library_fndecls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("st_iolength_done")),
 				     gfc_int4_type_node, 0);
 
-  iocall_set_nml_val_int =
-    gfc_build_library_function_decl (get_identifier (PREFIX("st_set_nml_var_int")),
-                                     void_type_node, 4,
-                                     pvoid_type_node, pvoid_type_node,
-                                     gfc_int4_type_node,gfc_int4_type_node);
 
-  iocall_set_nml_val_float =
-    gfc_build_library_function_decl (get_identifier (PREFIX("st_set_nml_var_float")),
-                                     void_type_node, 4,
-                                     pvoid_type_node, pvoid_type_node,
-                                     gfc_int4_type_node,gfc_int4_type_node);
-  iocall_set_nml_val_char =
-    gfc_build_library_function_decl (get_identifier (PREFIX("st_set_nml_var_char")),
+  iocall_set_nml_val =
+    gfc_build_library_function_decl (get_identifier (PREFIX("st_set_nml_var")),
                                      void_type_node, 5,
                                      pvoid_type_node, pvoid_type_node,
-                                     gfc_int4_type_node, gfc_int4_type_node, 
-                                     gfc_charlen_type_node);
-  iocall_set_nml_val_complex =
-    gfc_build_library_function_decl (get_identifier (PREFIX("st_set_nml_var_complex")),
-                                     void_type_node, 4,
-                                     pvoid_type_node, pvoid_type_node,
-                                     gfc_int4_type_node,gfc_int4_type_node);
-  iocall_set_nml_val_log =
-    gfc_build_library_function_decl (get_identifier (PREFIX("st_set_nml_var_log")),
-                                     void_type_node, 4,
-                                     pvoid_type_node, pvoid_type_node,
-                                     gfc_int4_type_node,gfc_int4_type_node);
+                                     gfc_int4_type_node, gfc_charlen_type_node, 
+				     gfc_int4_type_node);
 
+  iocall_set_nml_val_dim =
+    gfc_build_library_function_decl (get_identifier (PREFIX("st_set_nml_var_dim")),
+				     void_type_node, 4,
+				     gfc_int4_type_node, gfc_int4_type_node,
+				     gfc_int4_type_node, gfc_int4_type_node);
 }
 
 
@@ -816,11 +798,11 @@ gfc_trans_inquire (gfc_code * code)
   return gfc_finish_block (&block);
 }
 
-
 static gfc_expr *
 gfc_new_nml_name_expr (const char * name)
 {
    gfc_expr * nml_name;
+
    nml_name = gfc_get_expr();
    nml_name->ref = NULL;
    nml_name->expr_type = EXPR_CONSTANT;
@@ -833,113 +815,228 @@ gfc_new_nml_name_expr (const char * name)
    return nml_name;
 }
 
-static gfc_expr *
-get_new_var_expr(gfc_symbol * sym)
+/* nml_full_name builds up the fully qualified name of a
+   derived type component. */
+
+static char*
+nml_full_name (const char* var_name, const char* cmp_name)
 {
-  gfc_expr * nml_var;
+  int full_name_length;
+  char * full_name;
 
-  nml_var = gfc_get_expr();
-  nml_var->expr_type = EXPR_VARIABLE;
-  nml_var->ts = sym->ts;
-  if (sym->as)
-    nml_var->rank = sym->as->rank;
-  nml_var->symtree = (gfc_symtree *)gfc_getmem (sizeof (gfc_symtree));
-  nml_var->symtree->n.sym = sym;
-  nml_var->where = sym->declared_at;
-  sym->attr.referenced = 1;
-
-  return nml_var;
+  full_name_length = strlen (var_name) + strlen (cmp_name) + 1;
+  full_name = (char*)gfc_getmem (full_name_length + 1);
+  strcpy (full_name, var_name);
+  full_name = strcat (full_name, "%");
+  full_name = strcat (full_name, cmp_name);
+  return full_name;
 }
 
-/* For a scalar variable STRING whose address is ADDR_EXPR, generate a
+/* nml_get_addr_expr builds an address expression from the
+   gfc_symbol or gfc_component backend_decl's. An offset is
+   provided so that the address of an element of an array of
+   derived types is returned. This is used in the runtime to
+   determine that span of the derived type. */
+
+static tree
+nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
+		   tree base_addr)
+{
+  tree decl = NULL_TREE;
+  tree tmp;
+  tree itmp;
+  int array_flagged;
+  int dummy_arg_flagged;
+
+  if (sym)
+    {
+      sym->attr.referenced = 1;
+      decl = gfc_get_symbol_decl (sym);
+    }
+  else
+    decl = c->backend_decl;
+
+  gcc_assert (decl && ((TREE_CODE (decl) == FIELD_DECL
+		     || TREE_CODE (decl) == VAR_DECL
+		     || TREE_CODE (decl) == PARM_DECL)
+		     || TREE_CODE (decl) == COMPONENT_REF));
+
+  tmp = decl;
+
+  /* Build indirect reference, if dummy argument.  */
+
+  dummy_arg_flagged = POINTER_TYPE_P (TREE_TYPE(tmp));
+
+  itmp = (dummy_arg_flagged) ? gfc_build_indirect_ref (tmp) : tmp;
+
+  /* If an array, set flag and use indirect ref. if built.  */
+
+  array_flagged = (TREE_CODE (TREE_TYPE (itmp)) == ARRAY_TYPE
+		   && !TYPE_STRING_FLAG (TREE_TYPE (itmp)));
+
+  if (array_flagged)
+    tmp = itmp;
+
+  /* Treat the component of a derived type, using base_addr for
+     the derived type.  */
+
+  if (TREE_CODE (decl) == FIELD_DECL)
+    tmp = build3 (COMPONENT_REF, TREE_TYPE (tmp),
+		  base_addr, tmp, NULL_TREE);
+
+  /* If we have a derived type component, a reference to the first
+     element of the array is built.  This is done so that base_addr,
+     used in the build of the component reference, always points to
+     a RECORD_TYPE.  */
+
+  if (array_flagged)
+    tmp = gfc_build_array_ref (tmp, gfc_index_zero_node);
+
+  /* Now build the address expression.  */
+
+  tmp = gfc_build_addr_expr (NULL, tmp);
+
+  /* If scalar dummy, resolve indirect reference now.  */
+
+  if (dummy_arg_flagged && !array_flagged)
+    tmp = gfc_build_indirect_ref (tmp);
+
+  gcc_assert (tmp && POINTER_TYPE_P (TREE_TYPE (tmp)));
+
+  return tmp;
+}
+
+/* For an object VAR_NAME whose base address is BASE_ADDR, generate a
    call to iocall_set_nml_val.  For derived type variable, recursively
-   generate calls to iocall_set_nml_val for each leaf field. The leafs
-   have no names -- their STRING field is null, and are interpreted by
-   the run-time library as having only the value, as in the example:
+   generate calls to iocall_set_nml_val for each component.  */
 
-   &foo bzz=1,2,3,4,5/
-
-   Note that the first output field appears after the name of the
-   variable, not of the field name.  This causes a little complication
-   documented below.  */
+#define NML_FIRST_ARG(a) args = gfc_chainon_list (NULL_TREE, a)
+#define NML_ADD_ARG(a) args = gfc_chainon_list (args, a)
+#define IARG(i) build_int_cst (gfc_array_index_type, i)
 
 static void
-transfer_namelist_element (stmtblock_t * block, gfc_typespec * ts, tree addr_expr, 
-                           tree string, tree string_length)
+transfer_namelist_element (stmtblock_t * block, const char * var_name,
+			   gfc_symbol * sym, gfc_component * c,
+			   tree base_addr)
 {
-  tree tmp, args, arg2;
-  tree expr;
+  gfc_typespec * ts = NULL;
+  gfc_array_spec * as = NULL;
+  tree addr_expr = NULL;
+  tree dt = NULL;
+  tree string;
+  tree tmp;
+  tree args;
+  tree dtype;
+  int n_dim; 
+  int itype;
+  int rank = 0;
 
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (addr_expr)));
+  gcc_assert (sym || c);
+
+  /* Build the namelist object name.  */
+
+  string = gfc_build_cstring_const (var_name);
+  string = gfc_build_addr_expr (pchar_type_node, string);
+
+  /* Build ts, as and data address using symbol or component.  */
+
+  ts = (sym) ? &sym->ts : &c->ts;
+  as = (sym) ? sym->as : c->as;
+
+  addr_expr = nml_get_addr_expr (sym, c, base_addr);
+
+  if (as)
+    rank = as->rank;
+
+  if (rank)
+    {
+      dt =  TREE_TYPE ((sym) ? sym->backend_decl : c->backend_decl);
+      dtype = gfc_get_dtype (dt);
+    }
+  else
+    {
+      itype = GFC_DTYPE_UNKNOWN;
+
+      switch (ts->type)
+
+	{
+	case BT_INTEGER:
+	  itype = GFC_DTYPE_INTEGER;
+	  break;
+	case BT_LOGICAL:
+	  itype = GFC_DTYPE_LOGICAL;
+	  break;
+	case BT_REAL:
+	  itype = GFC_DTYPE_REAL;
+	  break;
+	case BT_COMPLEX:
+	  itype = GFC_DTYPE_COMPLEX;
+	break;
+	case BT_DERIVED:
+	  itype = GFC_DTYPE_DERIVED;
+	  break;
+	case BT_CHARACTER:
+	  itype = GFC_DTYPE_CHARACTER;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      dtype = IARG (itype << GFC_DTYPE_TYPE_SHIFT);
+    }
+
+  /* Build up the arguments for the transfer call.
+     The call for the scalar part transfers:
+     (address, name, type, kind or string_length, dtype)  */
+
+  NML_FIRST_ARG (addr_expr);
+  NML_ADD_ARG (string);
+  NML_ADD_ARG (IARG (ts->kind));
+
+  if (ts->type == BT_CHARACTER)
+    NML_ADD_ARG (ts->cl->backend_decl);
+  else
+    NML_ADD_ARG (convert (gfc_charlen_type_node, integer_zero_node));
+
+  NML_ADD_ARG (dtype);
+  tmp = gfc_build_function_call (iocall_set_nml_val, args);
+  gfc_add_expr_to_block (block, tmp);
+
+  /* If the object is an array, transfer rank times:
+     (null pointer, name, stride, lbound, ubound)  */
+
+  for ( n_dim = 0 ; n_dim < rank ; n_dim++ )
+    {
+      NML_FIRST_ARG (IARG (n_dim));
+      NML_ADD_ARG (GFC_TYPE_ARRAY_STRIDE (dt, n_dim));
+      NML_ADD_ARG (GFC_TYPE_ARRAY_LBOUND (dt, n_dim));
+      NML_ADD_ARG (GFC_TYPE_ARRAY_UBOUND (dt, n_dim));
+      tmp = gfc_build_function_call (iocall_set_nml_val_dim, args);
+      gfc_add_expr_to_block (block, tmp);
+    }
 
   if (ts->type == BT_DERIVED)
     {
-      gfc_component *c;
-      expr = gfc_build_indirect_ref (addr_expr);
+      gfc_component *cmp;
 
-      for (c = ts->derived->components; c; c = c->next)
-        {
-          tree field = c->backend_decl;
-          gcc_assert (field && TREE_CODE (field) == FIELD_DECL);
-          tmp = build3 (COMPONENT_REF, TREE_TYPE (field), 
-			expr, field, NULL_TREE);
+      /* Provide the RECORD_TYPE to build component references.  */
 
-          if (c->dimension)
-            gfc_todo_error ("NAMELIST IO of array in derived type");
-          if (!c->pointer)
-            tmp = gfc_build_addr_expr (NULL, tmp);
-          transfer_namelist_element (block, &c->ts, tmp, string, string_length);
+      tree expr = gfc_build_indirect_ref (addr_expr);
 
-          /* The first output field bears the name of the topmost
-             derived type variable.  All other fields are anonymous
-             and appear with nulls in their string and string_length
-             fields.  After the first use, we set string and
-             string_length to null.  */
-          string = null_pointer_node;
-          string_length = integer_zero_node;
-        }
-
-      return;
+      for (cmp = ts->derived->components; cmp; cmp = cmp->next)
+	{
+	  char *full_name = nml_full_name (var_name, cmp->name);
+	  transfer_namelist_element (block,
+				     full_name,
+				     NULL, cmp, expr);
+	  gfc_free (full_name);
+	}
     }
-
-  args = gfc_chainon_list (NULL_TREE, addr_expr);
-  args = gfc_chainon_list (args, string);
-  args = gfc_chainon_list (args, string_length);
-  arg2 = build_int_cst (gfc_array_index_type, ts->kind);
-  args = gfc_chainon_list (args,arg2);
-
-  switch (ts->type)
-    {
-    case BT_INTEGER:
-      tmp = gfc_build_function_call (iocall_set_nml_val_int, args);
-      break;
-
-    case BT_CHARACTER:
-      expr = gfc_build_indirect_ref (addr_expr);
-      gcc_assert (TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE);
-      args = gfc_chainon_list (args,
-                               TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (expr))));
-      tmp = gfc_build_function_call (iocall_set_nml_val_char, args);
-      break;
-
-    case BT_REAL:
-      tmp = gfc_build_function_call (iocall_set_nml_val_float, args);
-      break;
-
-    case BT_LOGICAL:
-      tmp = gfc_build_function_call (iocall_set_nml_val_log, args);
-      break;
-
-    case BT_COMPLEX:
-      tmp = gfc_build_function_call (iocall_set_nml_val_complex, args);
-      break;
-
-    default :
-      internal_error ("Bad namelist IO basetype (%d)", ts->type);
-    }
-
-  gfc_add_expr_to_block (block, tmp);
 }
+
+#undef IARG
+#undef NML_ADD_ARG
+#undef NML_FIRST_ARG
 
 /* Create a data transfer statement.  Not all of the fields are valid
    for both reading and writing, but improper use has been filtered
@@ -951,9 +1048,8 @@ build_dt (tree * function, gfc_code * code)
   stmtblock_t block, post_block;
   gfc_dt *dt;
   tree tmp;
-  gfc_expr *nmlname, *nmlvar;
+  gfc_expr *nmlname;
   gfc_namelist *nml;
-  gfc_se se,se2;
 
   gfc_init_block (&block);
   gfc_init_block (&post_block);
@@ -1011,30 +1107,20 @@ build_dt (tree * function, gfc_code * code)
 
   if (dt->namelist)
     {
-       if (dt->format_expr || dt->format_label)
-          fatal_error("A format cannot be specified with a namelist");
+      if (dt->format_expr || dt->format_label)
+        gfc_internal_error ("build_dt: format with namelist");
 
-       nmlname = gfc_new_nml_name_expr(dt->namelist->name);
+      nmlname = gfc_new_nml_name_expr(dt->namelist->name);
 
-       set_string (&block, &post_block, ioparm_namelist_name,
-                ioparm_namelist_name_len, nmlname);
+      set_string (&block, &post_block, ioparm_namelist_name,
+		  ioparm_namelist_name_len, nmlname);
 
-       if (last_dt == READ)
-          set_flag (&block, ioparm_namelist_read_mode);
+      if (last_dt == READ)
+	set_flag (&block, ioparm_namelist_read_mode);
 
-	for (nml = dt->namelist->namelist; nml; nml = nml->next)
-	  {
-	    gfc_init_se (&se, NULL);
-	    gfc_init_se (&se2, NULL);
-	    nmlvar = get_new_var_expr (nml->sym);
-	    nmlname = gfc_new_nml_name_expr (nml->sym->name);
-	    gfc_conv_expr_reference (&se2, nmlname);
-	    gfc_conv_expr_reference (&se, nmlvar);
-	    gfc_evaluate_now (se.expr, &se.pre); 
-
-	    transfer_namelist_element (&block, &nml->sym->ts, se.expr,
-				       se2.expr, se2.string_length);
-	  }
+      for (nml = dt->namelist->namelist; nml; nml = nml->next)
+	transfer_namelist_element (&block, nml->sym->name, nml->sym,
+				   NULL, NULL);
     }
 
   tmp = gfc_build_function_call (*function, NULL_TREE);

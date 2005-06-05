@@ -1,3 +1,59 @@
+2005-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from the mainline:
+	2005-04-18 Paul Thomas <pault@gcc.gnu.org>
+	   Jerry DeLisle <jvdelisle@verizon.net>
+
+	* io/write.c (nml_write_obj): Provide 1 more byte for ext_name.
+	* io/list_read.c (nml_get_obj_data): Put extra brackets in get_mem
+	call for ext_name.  These fix the bug reported by Jerry DeLisle to
+	the fortran list and are based on his suggested fix.
+
+	2005-04-18 Paul Thomas <pault@gcc.gnu.org>
+
+	* io/list_read.c (nml_touch_nodes, nml_read_obj,
+	nml_get_obj_data): Fix memory leaks in code for derived types.
+
+	2005-04-17 Paul Thomas <pault@gcc.gnu.org>
+
+	* io/list_read.c (eat_separator): at_eol = 1 replaced
+	(zapped at some time?).
+
+	2005-04-17 Paul Thomas <pault@gcc.gnu.org>
+
+	PR libgfortran/12884
+	PR libgfortran/17285
+	PR libgfortran/18122
+	PR libgfortran/18210
+	PR libgfortran/18392
+	PR libgfortran/18591
+	PR libgfortran/18879
+	* io/io.h (nml_ls): Declare.
+	(namelist_info): Modify for arrays.
+	* io/list_read.c (namelist_read): Reduced to call to new functions.
+	(match_namelist_name): Simplified.
+	(nml_query): Handles stdin queries ? and =?. New function.
+	(nml_get_obj_data): Parses object name. New function.
+	(touch_nml_nodes): Marks objects for read. New function.
+	(untouch_nml_nodes): Resets objects. New function.
+	(parse_qualifier): Parses and checks qualifiers. New function
+	(nml_read_object): Reads and stores object data. New function.
+	(eat_separator): No new_record on '/' in namelist.
+	(finish_separator): No new_record on '/' in namelist.
+	(read_logical): Error return for namelist.
+	(read_integer): Error return for namelist.
+	(read_complex): Error return for namelist.
+	(read_real): Error return for namelist.
+	* io/lock.c (library_end): Free extended namelist_info types.
+	* io/transfer.c (st_set_nml_var): Modified for arrays.
+	(st_set_nml_var_dim): Dimension descriptors. New function.
+	* io/write.c (namelist_write): Reduced to call to new functions.
+	(nml_write_obj): Writes output for object. New function.
+	(write_integer): Suppress leading blanks for repeat counts.
+	(write_int): Suppress leading blanks for repeat counts.
+	(write_float): Suppress leading blanks for repeat counts.
+	(output_float): Suppress leading blanks for repeat counts.
+
 2005-06-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* Makefile.am (gfor_specific_src): Add 'intrinsics/f2c_intrinsics.F90'
