@@ -1,3 +1,7 @@
+2005-06-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gennews (files): Update for egcs-1.0 release pages consolidation.
+
 2005-05-19  Release Manager
 
 	* GCC 3.4.4 released.
