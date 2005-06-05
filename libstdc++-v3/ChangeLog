@@ -1,3 +1,9 @@
+2005-06-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* acinclude.m4 ([GLIBCXX_ENABLE_C99]): Check clog, clogf, clogl
+	too for ac_c99_complex.
+	* configure: Regenerate.
+
 2005-06-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21770
