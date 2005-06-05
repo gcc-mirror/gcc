@@ -1264,6 +1264,19 @@ replace_uses_by (tree name, tree val)
     }
 
   VEC_free (tree, heap, stmts);
+
+  /* Also update the trees stored in loop structures.  */
+  if (current_loops)
+    {
+      struct loop *loop;
+
+      for (i = 0; i < current_loops->num; i++)
+	{
+	  loop = current_loops->parray[i];
+	  if (loop)
+	    substitute_in_loop_info (loop, name, val);
+	}
+    }
 }
 
 /* Merge block B into block A.  */
