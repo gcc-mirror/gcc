@@ -1,3 +1,20 @@
+2005-05-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/char_initialiser_actual.f90:
+	Test character initialisers as actual arguments.
+	* gfortran.dg/char_pointer_comp_assign.f90:
+	Test character pointer structure component assignments.
+	* gfortran.dg/char_array_structure_constructor.f90:
+	Test character components in structure constructors.
+	* gfortran.dg/char_pointer_assign.f90:
+	Test character-pointer assignments and pointer assignments.
+	* gfortran.dg/char_pointer_dummy.f90:
+	Test character-pointer dummy arguments.
+	* gfortran.dg/char_pointer_func.f90:
+	Test character-pointer function returns.
+	* gfortran.dg/char_pointer_dependency.f90:
+	Test character-pointer functions with dependencies.
+
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19195
