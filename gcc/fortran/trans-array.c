@@ -721,7 +721,6 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 {
   tree tmp;
   stmtblock_t body;
-  tree loopbody;
   gfc_se se;
 
   for (; c; c = c->next)
@@ -842,13 +841,23 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
             }
 	}
 
-      /* The frontend should already have done any expansions.  */
-      if (c->iterator)
+      /* The frontend should already have done any expansions possible
+	 at compile-time.  */
+      if (!c->iterator)
 	{
+	  /* Pass the code as is.  */
+	  tmp = gfc_finish_block (&body);
+	  gfc_add_expr_to_block (pblock, tmp);
+	}
+      else
+	{
+	  /* Build the implied do-loop.  */
+	  tree cond;
 	  tree end;
 	  tree step;
 	  tree loopvar;
 	  tree exit_label;
+	  tree loopbody;
 
 	  loopbody = gfc_finish_block (&body);
 
@@ -877,17 +886,25 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  exit_label = gfc_build_label_decl (NULL_TREE);
 	  gfc_start_block (&body);
 
-	  /* Generate the exit condition.  */
-	  end = build2 (GT_EXPR, boolean_type_node, loopvar, end);
+	  /* Generate the exit condition.  Depending on the sign of
+	     the step variable we have to generate the correct
+	     comparison.  */
+	  tmp = fold (build2 (GT_EXPR, boolean_type_node, step, 
+			      build_int_cst (TREE_TYPE (step), 0)));
+	  cond = fold (build3 (COND_EXPR, boolean_type_node, tmp,
+			       build2 (GT_EXPR, boolean_type_node,
+				       loopvar, end),
+			       build2 (LT_EXPR, boolean_type_node,
+				       loopvar, end)));
 	  tmp = build1_v (GOTO_EXPR, exit_label);
 	  TREE_USED (exit_label) = 1;
-	  tmp = build3_v (COND_EXPR, end, tmp, build_empty_stmt ());
+	  tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
 	  gfc_add_expr_to_block (&body, tmp);
 
 	  /* The main loop body.  */
 	  gfc_add_expr_to_block (&body, loopbody);
 
-	  /* Increment the loop variable.  */
+	  /* Increase loop variable by step.  */
 	  tmp = build2 (PLUS_EXPR, TREE_TYPE (loopvar), loopvar, step);
 	  gfc_add_modify_expr (&body, loopvar, tmp);
 
@@ -898,12 +915,6 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 
 	  /* Add the exit label.  */
 	  tmp = build1_v (LABEL_EXPR, exit_label);
-	  gfc_add_expr_to_block (pblock, tmp);
-	}
-      else
-	{
-	  /* Pass the code as is.  */
-	  tmp = gfc_finish_block (&body);
 	  gfc_add_expr_to_block (pblock, tmp);
 	}
     }

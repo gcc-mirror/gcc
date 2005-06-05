@@ -1,5 +1,8 @@
 2005-06-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/21912
+	* gfortran.dg/array_constructor_4.f90: New test.
+	
 	* gfortran.dg/forall_1.f90: Set previously uninitialized variable.
 
 2005-06-05  Mark Mitchell  <mark@codesourcery.com>

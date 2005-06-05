@@ -1,5 +1,10 @@
 2005-06-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/21912
+	* trans-array.c (gfc_trans_array_constructor_value): Slightly reorder.
+	Generate correct exit condition in case of negative steps in
+	implied-do loops.
+
 	* invoke.texi: Fix description of flags required for compatibility
 	with g77.
 
