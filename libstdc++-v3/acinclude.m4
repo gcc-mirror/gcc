@@ -816,6 +816,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 		    ccosf(tmpf);
   		    ccoshf(tmpf);
 		    cexpf(tmpf);
+	            clogf(tmpf);
 		    csinf(tmpf);
 		    csinhf(tmpf);
 		    csqrtf(tmpf);
@@ -828,6 +829,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 		    ccos(tmpd);
   		    ccosh(tmpd);
 		    cexp(tmpd);
+	            clog(tmpd);
 		    csin(tmpd);
 		    csinh(tmpd);
 		    csqrt(tmpd);
@@ -840,6 +842,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 		    ccosl(tmpld);
   		    ccoshl(tmpld);
 		    cexpl(tmpld);
+	            clogl(tmpld);
 		    csinl(tmpld);
 		    csinhl(tmpld);
 		    csqrtl(tmpld);
