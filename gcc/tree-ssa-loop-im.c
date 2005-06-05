@@ -102,7 +102,7 @@ struct lim_aux_data
 
 #define LIM_DATA(STMT) (TREE_CODE (STMT) == PHI_NODE \
 			? NULL \
-			: (struct lim_aux_data *) (stmt_ann (STMT)->aux))
+			: (struct lim_aux_data *) (stmt_ann (STMT)->common.aux))
 
 /* Description of a memory reference location for store motion.  */
 
@@ -632,7 +632,7 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	  stmt = stmt1;
 	}
 
-      stmt_ann (stmt)->aux = xcalloc (1, sizeof (struct lim_aux_data));
+      stmt_ann (stmt)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
       LIM_DATA (stmt)->always_executed_in = outermost;
 
       if (maybe_never && pos == MOVE_PRESERVE_EXECUTION)
@@ -723,7 +723,7 @@ move_computations_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
       cost = LIM_DATA (stmt)->cost;
       level = LIM_DATA (stmt)->tgt_loop;
       free_lim_aux_data (LIM_DATA (stmt));
-      stmt_ann (stmt)->aux = NULL;
+      stmt_ann (stmt)->common.aux = NULL;
 
       if (!level)
 	{
@@ -952,7 +952,7 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
 
   /* Emit the load & stores.  */
   load = build (MODIFY_EXPR, void_type_node, tmp_var, ref);
-  get_stmt_ann (load)->aux = xcalloc (1, sizeof (struct lim_aux_data));
+  get_stmt_ann (load)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
   LIM_DATA (load)->max_loop = loop;
   LIM_DATA (load)->tgt_loop = loop;
 

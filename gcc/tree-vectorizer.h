@@ -56,6 +56,16 @@ enum dr_alignment_support {
   dr_aligned
 };
 
+/* Define type of def-use cross-iteraiton cycle.  */
+enum vect_def_type {
+  vect_constant_def,
+  vect_invariant_def,
+  vect_loop_def,
+  vect_induction_def,
+  vect_reduction_def,
+  vect_unknown_def_type
+};
+
 /* Define verbosity levels.  */
 enum verbosity_levels {
   REPORT_NONE,
@@ -163,6 +173,10 @@ typedef struct _stmt_vec_info {
      indicates whether the stmt needs to be vectorized.  */
   bool relevant;
 
+  /* Indicates whether this stmts is part of a computation whose result is
+     used outside the loop.  */
+  bool live;
+
   /* The vector type to be used.  */
   tree vectype;
 
@@ -215,6 +229,10 @@ typedef struct _stmt_vec_info {
   /* Alignment information. The offset of the data-reference from its base 
      in bytes.  */
   tree misalignment;
+
+  /* Classify the def of this stmt.  */
+  enum vect_def_type def_type;
+
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -222,6 +240,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_STMT(S)                (S)->stmt
 #define STMT_VINFO_LOOP_VINFO(S)          (S)->loop_vinfo
 #define STMT_VINFO_RELEVANT_P(S)          (S)->relevant
+#define STMT_VINFO_LIVE_P(S)              (S)->live
 #define STMT_VINFO_VECTYPE(S)             (S)->vectype
 #define STMT_VINFO_VEC_STMT(S)            (S)->vectorized_stmt
 #define STMT_VINFO_DATA_REF(S)            (S)->data_ref_info
@@ -233,22 +252,23 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_VECT_STEP(S)           (S)->step
 #define STMT_VINFO_VECT_BASE_ALIGNED_P(S) (S)->base_aligned_p
 #define STMT_VINFO_VECT_MISALIGNMENT(S)   (S)->misalignment
+#define STMT_VINFO_DEF_TYPE(S)            (S)->def_type
 
-static inline void set_stmt_info (stmt_ann_t ann, stmt_vec_info stmt_info);
+static inline void set_stmt_info (tree_ann_t ann, stmt_vec_info stmt_info);
 static inline stmt_vec_info vinfo_for_stmt (tree stmt);
 
 static inline void
-set_stmt_info (stmt_ann_t ann, stmt_vec_info stmt_info)
+set_stmt_info (tree_ann_t ann, stmt_vec_info stmt_info)
 {
   if (ann)
-    ann->aux = (char *) stmt_info;
+    ann->common.aux = (char *) stmt_info;
 }
 
 static inline stmt_vec_info
 vinfo_for_stmt (tree stmt)
 {
-  stmt_ann_t ann = stmt_ann (stmt);
-  return ann ? (stmt_vec_info) ann->aux : NULL;
+  tree_ann_t ann = tree_ann (stmt);
+  return ann ? (stmt_vec_info) ann->common.aux : NULL;
 }
 
 /*-----------------------------------------------------------------*/
@@ -309,8 +329,10 @@ extern void slpeel_verify_cfg_after_peeling (struct loop *, struct loop *);
 /** In tree-vectorizer.c **/
 extern tree vect_strip_conversion (tree);
 extern tree get_vectype_for_scalar_type (tree);
-extern bool vect_is_simple_use (tree , loop_vec_info, tree *);
+extern bool vect_is_simple_use (tree, loop_vec_info, tree *, tree *,
+				enum vect_def_type *);
 extern bool vect_is_simple_iv_evolution (unsigned, tree, tree *, tree *);
+extern tree vect_is_simple_reduction (struct loop *, tree);
 extern bool vect_can_force_dr_alignment_p (tree, unsigned int);
 extern enum dr_alignment_support vect_supportable_dr_alignment
   (struct data_reference *);
@@ -331,6 +353,7 @@ extern bool vectorizable_store (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_operation (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_assignment (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_condition (tree, block_stmt_iterator *, tree *);
+extern bool vectorizable_live_operation (tree, block_stmt_iterator *, tree *);
 /* Driver for transformation stage.  */
 extern void vect_transform_loop (loop_vec_info, struct loops *);
 

@@ -93,6 +93,10 @@ struct tree_ann_common_d GTY(())
   /* Annotation type.  */
   enum tree_ann_type type;
 
+ /* Auxiliary info specific to a pass.  At all times, this
+    should either point to valid data or be NULL.  */ 
+  PTR GTY ((skip (""))) aux; 
+
   /* The value handle for this expression.  Used by GVN-PRE.  */
   tree GTY((skip)) value_handle;
 };
@@ -292,10 +296,6 @@ struct stmt_ann_d GTY(())
      by each pass on an as-needed basis in any order convenient for the
      pass which needs statement UIDs.  */
   unsigned int uid;
-
- /* Auxiliary info specific to a pass.  At all times, this
-    should either point to valid data or be NULL.  */
-  PTR GTY ((skip (""))) aux;
 
   /* Linked list of histograms for value-based profiling.  This is really a
      struct histogram_value*.  We use void* to avoid having to export that
