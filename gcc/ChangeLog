@@ -1,3 +1,11 @@
+2005-06-05  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/21914
+	* config/mmix/mmix.md ("*movdicc_real_foldable")
+	("*movdfcc_real_foldable", "*bCC_foldable")
+	("*bCC_inverted_foldable"): Specify DImode for register being
+	compared.
+
 2005-06-04  Roger Sayle  <roger@eyesopen.com>
 
 	* reg-stack.c (struct block_info_def): Correct grammar typo.

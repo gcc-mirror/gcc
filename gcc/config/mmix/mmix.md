@@ -762,7 +762,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
 	(if_then_else:DI
 	 (match_operator 2 "mmix_foldable_comparison_operator"
-			 [(match_operand 3 "register_operand" "r,r,r,r")
+			 [(match_operand:DI 3 "register_operand" "r,r,r,r")
 			  (const_int 0)])
 	 (match_operand:DI 1 "mmix_reg_or_8bit_operand" "rI,0 ,rI,GM")
 	 (match_operand:DI 4 "mmix_reg_or_8bit_operand" "0 ,rI,GM,rI")))]
@@ -811,7 +811,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
     (if_then_else:DF
      (match_operator
       2 "mmix_foldable_comparison_operator"
-      [(match_operand 3 "register_operand"	 "r  ,r  ,r  ,r")
+      [(match_operand:DI 3 "register_operand"	 "r  ,r  ,r  ,r")
       (const_int 0)])
      (match_operand:DF 1 "mmix_reg_or_0_operand" "rGM,0  ,rGM,GM")
      (match_operand:DF 4 "mmix_reg_or_0_operand" "0  ,rGM,GM ,rGM")))]
@@ -1032,7 +1032,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   [(set (pc)
 	(if_then_else
 	 (match_operator 1 "mmix_foldable_comparison_operator"
-			 [(match_operand 2 "register_operand" "r")
+			 [(match_operand:DI 2 "register_operand" "r")
 			  (const_int 0)])
 	 (label_ref (match_operand 0 "" ""))
 	 (pc)))]
@@ -1054,7 +1054,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   [(set (pc)
 	(if_then_else
 	 (match_operator 1 "mmix_foldable_comparison_operator"
-			 [(match_operand 2 "register_operand" "r")
+			 [(match_operand:DI 2 "register_operand" "r")
 			  (const_int 0)])
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
