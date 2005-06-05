@@ -30,8 +30,7 @@ files="gcc-4.0/index.html gcc-4.0/changes.html
     gcc-3.0/gcc-3.0.html gcc-3.0/features.html gcc-3.0/caveats.html
     gcc-2.95/index.html gcc-2.95/features.html gcc-2.95/caveats.html
     egcs-1.1/index.html egcs-1.1/features.html egcs-1.1/caveats.html
-    egcs-1.0/egcs-1.0.3.html egcs-1.0/egcs-1.0.2.html egcs-1.0/egcs-1.0.1.html
-    egcs-1.0/egcs-1.0.html egcs-1.0/features.html egcs-1.0/caveats.html"
+    egcs-1.0/index.html egcs-1.0/features.html egcs-1.0/caveats.html"
 
 set -e
 
