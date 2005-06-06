@@ -1,3 +1,16 @@
+2005-06-06  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux-unwind.h (SH_DWARF_FRAME_XD0): Remove for SH5.
+	(SH_DWARF_FRAME_PR, SH_DWARF_FRAME_GBR, SH_DWARF_FRAME_MACL)
+	(SH_DWARF_FRAME_MACH, SH_DWARF_FRAME_PC, SH_DWARF_FRAME_FPUL):
+	Likewise.
+	(SH_DWARF_FRAME_FP0, SH_DWARF_FRAME_FPSCR): Define to the correct
+	dwarf register number for SHmedia.
+	(shmedia_fallback_frame_state): New.
+	(MD_FALLBACK_FRAME_STATE_FOR): Define to it for SH5.
+
+	* config/sh/linux.h (FUNCTION_PROFILER): Provide SHMEDIA version.
+
 2005-06-06  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-lex.c (lex_string): Use XOBFINISH.
