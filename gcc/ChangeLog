@@ -1,3 +1,16 @@
+2005-06-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_swdivsf): New function.
+	(rs6000_emit_swdivdf): New function.
+	* config/rs6000/rs6000.md (fres): New pattern.
+	(divsf3): Add approximation through rs6000_emit_swdivsf.
+	(fred): New pattern.
+	(divdf3): Add approximation through rs6000_emit_swdivdf.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_swdivsf): Declare.
+	(rs6000_emit_swdivdf): Declare.
+	* config/rs6000/rs6000.opt (mswdiv): New option.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document mswdiv.
+
 2005-06-05  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/21846
