@@ -15593,19 +15593,29 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
        parm = TREE_CHAIN (parm))
     {
       cp_token_cache *tokens;
-
-      if (!TREE_PURPOSE (parm)
-	  || TREE_CODE (TREE_PURPOSE (parm)) != DEFAULT_ARG)
+      tree default_arg = TREE_PURPOSE (parm);
+      tree parsed_arg;
+      
+      if (!default_arg)
 	continue;
+
+      gcc_assert (TREE_CODE (default_arg) == DEFAULT_ARG);
 
        /* Push the saved tokens for the default argument onto the parser's
 	  lexer stack.  */
-      tokens = DEFARG_TOKENS (TREE_PURPOSE (parm));
+      tokens = DEFARG_TOKENS (default_arg);
       cp_parser_push_lexer_for_tokens (parser, tokens);
 
       /* Parse the assignment-expression.  */
-      TREE_PURPOSE (parm) = cp_parser_assignment_expression (parser,
-							     /*cast_p=*/false);
+      parsed_arg = cp_parser_assignment_expression (parser, /*cast_p=*/false);
+
+      TREE_PURPOSE (parm) = parsed_arg;
+
+      /* Update any instantiations we've already created.  */
+      for (default_arg = TREE_CHAIN (default_arg);
+	   default_arg;
+	   default_arg = TREE_CHAIN (default_arg))
+	TREE_PURPOSE (TREE_PURPOSE (default_arg)) = parsed_arg;
 
       /* If the token stream has not been completely used up, then
 	 there was extra junk after the end of the default

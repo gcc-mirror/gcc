@@ -1,5 +1,11 @@
 2005-06-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR 21903
+	* cp-tree.def (DEFAULT_ARG): Document TREE_CHAIN use.
+	* parser.c (cp_parser_late_parsing_default_args): Propagate parsed
+	argument to any early instantiations.
+	* pt.c (tsubst_arg_types): Chain early instantiation of default arg.
+
 	PR c++/20637
 	* cp-tree.h (add_method): Add using_decl parameter.
 	* class.c (add_method): Add using_decl parameter.  Adjust error
