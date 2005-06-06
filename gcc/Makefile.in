@@ -2373,13 +2373,13 @@ mips-tfile: mips-tfile.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tfile.o version.o $(LIBS)
 
 mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) version.h getopt.h gstab.h intl.h
+   $(TM_H) version.h $(srcdir)/../include/getopt.h gstab.h intl.h
 
 mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tdump.o version.o $(LIBS)
 
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) version.h getopt.h stab.def
+   $(TM_H) version.h $(srcdir)/../include/getopt.h stab.def
 
 # FIXME: writing proper dependencies for this is a *LOT* of work.
 libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
