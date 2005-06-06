@@ -201,9 +201,9 @@ namespace _GLIBCXX_STD
   template <typename _Tp, class _Alloc>
     template <typename _InputIterator>
       void
-      deque<_Tp, _Alloc>
-      ::_M_assign_aux(_InputIterator __first, _InputIterator __last,
-		      std::input_iterator_tag)
+      deque<_Tp, _Alloc>::
+      _M_assign_aux(_InputIterator __first, _InputIterator __last,
+		    std::input_iterator_tag)
       {
         iterator __cur = begin();
         for (; __first != __last && __cur != end(); ++__cur, ++__first)
