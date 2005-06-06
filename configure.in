@@ -257,6 +257,10 @@ case "${host}" in
     configdirs="$configdirs libtermcap" ;;
 esac
 
+# A target can indicate whether a language isn't supported for some reason.
+# Only spaces may be used in this macro; not newlines or tabs.
+unsupported_languages=
+
 # Remove more programs from consideration, based on the host or 
 # target this usually means that a port of the program doesn't
 # exist yet.
@@ -481,15 +485,18 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} gcc gdb newlib"
     ;;
   cris-*-* | crisv32-*-*)
-    libgcj_ex_libffi=`echo ${libgcj} | sed -e 's/target-libffi//'`
+    unsupported_languages="$unsupported_languages java"
     case "${target}" in
       *-*-aout)
-	noconfigdirs="$noconfigdirs ${libgcj}";;
+	unsupported_languages="$unsupported_languages f95"
+	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
       *-*-elf)
-	noconfigdirs="$noconfigdirs ${libgcj_ex_libffi}";;
+	unsupported_languages="$unsupported_languages f95"
+	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
       *-*-linux*)
-	noconfigdirs="$noconfigdirs ${libgcj_ex_libffi} target-newlib target-libgloss";;
+	noconfigdirs="$noconfigdirs target-libffi target-newlib target-libgloss";;
       *)
+	unsupported_languages="$unsupported_languages f95"
 	noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss";;
     esac
     ;;
@@ -639,7 +646,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libstdc++-v3"
     ;;
   mmix-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj} gdb libgloss target-libgfortran"
+    noconfigdirs="$noconfigdirs target-libffi target-boehm-gc gdb libgloss"
+    unsupported_languages="$unsupported_languages f95 java"
     ;;
   mn10200-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -1210,7 +1218,14 @@ if test -d ${srcdir}/gcc; then
             add_this_lang=no
             ;;
         esac
-        
+
+	# Disable a language that is unsupported by the target.
+	case " $unsupported_languages " in
+	  *" $language "*)
+	    add_this_lang=no
+	    ;;
+	esac
+
 	case $add_this_lang in
 	  no)
             # Remove language-dependent dirs.
