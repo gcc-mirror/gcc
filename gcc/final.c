@@ -2753,17 +2753,17 @@ alter_cond (rtx cond)
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */
 
 void
-output_operand_lossage (const char *msgid, ...)
+output_operand_lossage (const char *cmsgid, ...)
 {
   char *fmt_string;
   char *new_message;
   const char *pfx_str;
   va_list ap;
 
-  va_start (ap, msgid);
+  va_start (ap, cmsgid);
 
   pfx_str = this_is_asm_operands ? _("invalid 'asm': ") : "output_operand: ";
-  asprintf (&fmt_string, "%s%s", pfx_str, _(msgid));
+  asprintf (&fmt_string, "%s%s", pfx_str, _(cmsgid));
   vasprintf (&new_message, fmt_string, ap);
 
   if (this_is_asm_operands)

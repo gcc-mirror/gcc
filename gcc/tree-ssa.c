@@ -1079,7 +1079,7 @@ walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
    warning text is in MSGID and LOCUS may contain a location or be null.  */
 
 static void
-warn_uninit (tree t, const char *msgid, void *data)
+warn_uninit (tree t, const char *gmsgid, void *data)
 {
   tree var = SSA_NAME_VAR (t);
   tree def = SSA_NAME_DEF_STMT (t);
@@ -1107,7 +1107,7 @@ warn_uninit (tree t, const char *msgid, void *data)
   locus = (context != NULL && EXPR_HAS_LOCATION (context)
 	   ? EXPR_LOCUS (context)
 	   : &DECL_SOURCE_LOCATION (var));
-  warning (0, msgid, locus, var);
+  warning (0, gmsgid, locus, var);
   TREE_NO_WARNING (var) = 1;
 }
    

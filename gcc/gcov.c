@@ -367,12 +367,12 @@ main (int argc, char **argv)
 }
 
 static void
-fnotice (FILE *file, const char *msgid, ...)
+fnotice (FILE *file, const char *cmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
-  vfprintf (file, _(msgid), ap);
+  va_start (ap, cmsgid);
+  vfprintf (file, _(cmsgid), ap);
   va_end (ap);
 }
 

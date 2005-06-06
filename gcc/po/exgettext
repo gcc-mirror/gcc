@@ -43,6 +43,12 @@ xgettext=$1
 package=$2
 srcdir=$3
 
+case `$xgettext --version | sed -e 1q | sed -e 's/^\([^0-9]*\)//'` in
+  0.14.[5-9]* | 0.14.[1-9][0-9]* | 0.1[5-9]* | 0.[2-9][0-9]* | [1-9].*) : ;;
+  *) echo "$xgettext is too old.  GNU xgettext 0.14.5 is required"
+     exit 1 ;;
+esac
+
 nl='
 '
 
@@ -55,8 +61,12 @@ trap "rm -r $T" 0
 
 pwd=`${PWDCMD-pwd}`
 kopt=$pwd/$T/keyword-options
+kopt2=$pwd/$T/keyword2-options
 emsg=$pwd/$T/emsgids.c
 posr=$pwd/$T/po-sources
+pottmp1=$pwd/$T/tmp1.pot
+pottmp2=$pwd/$T/tmp2.pot
+pottmp=$pwd/$T/tmp.pot
 
 # Locate files to scan, and generate the list.  All .c, .h, and .def files
 # in $srcdir are examined, likewise $srcdir/config and $srcdir/config/*
@@ -81,7 +91,7 @@ echo "scanning for keywords and %e strings..." >&2
         done
     done;
   } | tr ' ' "$nl" | grep -v '\*' |
-  $AWK -v excl=po/EXCLUDES -v posr=$posr -v kopt=$kopt -v emsg=$emsg '
+  $AWK -v excl=po/EXCLUDES -v posr=$posr -v kopt=$kopt -v kopt2=$kopt2 -v emsg=$emsg '
 function keyword_option(line) {
     paren_index = index(line, "(")
     name = substr(line, 1, paren_index - 1)
@@ -95,12 +105,28 @@ function keyword_option(line) {
     for (n = 1; sub(/^[^,]*,/, "", args); n++) {
 	continue
     }
+    format=""
+    if (args ~ /g$/)
+    	format="gcc-internal-format"
+    else if (args ~ /c$/)
+    	format="c-format"
 
-    if (n == 1) { keyword = name }
-    else        { keyword = name ":" n }
+    if (n == 1) { keyword = "--keyword=" name }
+    else { keyword = "--keyword=" name ":" n }
+    if (format) {
+        keyword=keyword "\n--flag=" name ":" n ":" format
+    }
 
-    if (! keyword_seen[keyword]++) {
-	print "--keyword=" keyword > kopt
+    if (! keyword_seen[name]) {
+	if (format == "gcc-internal-format")
+		print keyword > kopt2
+	else
+		print keyword > kopt
+    	keyword_seen[name] = keyword
+    } else if (keyword_seen[name] != keyword) {
+	printf("%s used incompatibly as both %s and %s\n",
+	       name, keyword_seen[name], keyword)
+	exit (1)
     }
 }
 
@@ -155,7 +181,7 @@ END {
     }
     print emsg > posr
 }'
-)
+) || exit
 
 echo "scanning option files..." >&2
 
@@ -186,7 +212,16 @@ $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments `cat $kopt` --files-from=$posr \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
-	  --language=c -o po/$package.pot.tmp
+	  --language=c -o $pottmp1
+$xgettext --default-domain=$package --directory=$srcdir \
+	  --add-comments --keyword= `cat $kopt2` --files-from=$posr \
+	  --copyright-holder="Free Software Foundation, Inc." \
+	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --language=GCC-source -o $pottmp2
+$xgettext --default-domain=$package \
+	  --add-comments $pottmp1 $pottmp2 \
+	  --copyright-holder="Free Software Foundation, Inc." \
+	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --language=PO -o $pottmp
 # Remove local paths from .pot file.
-sed "s:$srcdir/::g;s:$pwd/::g;" <po/$package.pot.tmp >po/$package.pot
-rm po/$package.pot.tmp
+sed "s:$srcdir/::g;s:$pwd/::g;" <$pottmp >po/$package.pot

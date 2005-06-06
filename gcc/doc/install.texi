@@ -328,7 +328,7 @@ the 1.9.x series, which is currently 1.9.3.  When regenerating a directory
 to a newer version, please update all the directories using an older 1.9.x
 to the latest released version.
 
-@item gettext version 0.12 (or later)
+@item gettext version 0.14.5 (or later)
 
 Needed to regenerate @file{gcc.pot}.
 

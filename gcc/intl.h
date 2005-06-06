@@ -51,6 +51,10 @@ extern size_t gcc_gettext_width (const char *);
 # define N_(msgid) msgid
 #endif
 
+#ifndef G_
+# define G_(gmsgid) gmsgid
+#endif
+
 extern const char *open_quote;
 extern const char *close_quote;
 

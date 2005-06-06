@@ -2319,13 +2319,13 @@ cp_printer (pretty_printer *pp, text_info *text)
    behavior of cp_*_at.  */
 
 static tree
-locate_error (const char *msgid, va_list ap)
+locate_error (const char *gmsgid, va_list ap)
 {
   tree here = 0, t;
   int plus = 0;
   const char *f;
 
-  for (f = msgid; *f; f++)
+  for (f = gmsgid; *f; f++)
     {
       plus = 0;
       if (*f == '%')
@@ -2381,57 +2381,57 @@ locate_error (const char *msgid, va_list ap)
 
 
 void
-cp_error_at (const char *msgid, ...)
+cp_error_at (const char *gmsgid, ...)
 {
   tree here;
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  here = locate_error (msgid, ap);
+  va_start (ap, gmsgid);
+  here = locate_error (gmsgid, ap);
   va_end (ap);
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap,
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap,
                        input_location, DK_ERROR);
   cp_diagnostic_starter (global_dc, &diagnostic);
-  diagnostic_set_info (&diagnostic, msgid, &ap,
+  diagnostic_set_info (&diagnostic, gmsgid, &ap,
                        location_of (here), DK_ERROR);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
 
 void
-cp_warning_at (const char *msgid, ...)
+cp_warning_at (const char *gmsgid, ...)
 {
   tree here;
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  here = locate_error (msgid, ap);
+  va_start (ap, gmsgid);
+  here = locate_error (gmsgid, ap);
   va_end (ap);
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap,
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap,
                        location_of (here), DK_WARNING);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
 
 void
-cp_pedwarn_at (const char *msgid, ...)
+cp_pedwarn_at (const char *gmsgid, ...)
 {
   tree here;
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  here = locate_error (msgid, ap);
+  va_start (ap, gmsgid);
+  here = locate_error (gmsgid, ap);
   va_end (ap);
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap,
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap,
                        location_of (here), pedantic_error_kind());
   report_diagnostic (&diagnostic);
   va_end (ap);

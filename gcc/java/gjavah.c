@@ -164,7 +164,7 @@ static const unsigned char *
   decode_signature_piece (FILE *, const unsigned char *,
 			  const unsigned char *, int *);
 static void print_class_decls (FILE *, JCF *, int);
-static void error (const char *msgid, ...);
+static void error (const char *gmsgid, ...);
 static void usage (void) ATTRIBUTE_NORETURN;
 static void help (void) ATTRIBUTE_NORETURN;
 static void version (void) ATTRIBUTE_NORETURN;
@@ -266,16 +266,19 @@ static int decompiled = 0;
 
 #include "jcf-reader.c"
 
-/* Print an error message and set found_error.  */
+/* Print an error message and set found_error.
+   Not really gcc-internal-format message, but as error elsewhere
+   uses it, assume all users will use intersection between
+   c-format and gcc-internal-format.  */
 static void
-error (const char *msgid, ...)
+error (const char *gmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
 
   fprintf (stderr, TOOLNAME ": ");
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(gmsgid), ap);
   va_end (ap);
   fprintf (stderr, "\n");
   found_error = 1;

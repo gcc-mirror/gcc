@@ -40,10 +40,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include <getopt.h>
 
-extern void fatal_error (const char *msgid, ...)
+extern void fatal_error (const char *gmsgid, ...)
      ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void warning (int opt, const char *msgid, ...) ATTRIBUTE_PRINTF_2;
-void warning0 (const char *msgid, ...) ATTRIBUTE_PRINTF_1;
+void warning (int opt, const char *gmsgid, ...) ATTRIBUTE_PRINTF_2;
+void warning0 (const char *gmsgid, ...) ATTRIBUTE_PRINTF_1;
 void report (void);
 
 static void usage (void) ATTRIBUTE_NORETURN;
@@ -245,38 +245,40 @@ main (int argc, char **argv)
 
 
 /* Error report, memory, obstack initialization and other utility
-   functions */
+   functions.  Use actually c-format msgid, but as functions with
+   the same name elsewhere use gcc-internal-format, assume all users
+   here use intersection between c-format and gcc-internal-format.  */
 
 void
-fatal_error (const char *msgid, ...)
+fatal_error (const char *gmsgid, ...)
 {
   va_list ap;
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
   fprintf (stderr, _("%s: error: "), exec_name);
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(gmsgid), ap);
   fputc ('\n', stderr);
   va_end (ap);
   exit (1);
 }
 
 void
-warning (int opt ATTRIBUTE_UNUSED, const char *msgid, ...)
+warning (int opt ATTRIBUTE_UNUSED, const char *gmsgid, ...)
 {
   va_list ap;
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
   fprintf (stderr, _("%s: warning: "), exec_name);
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(gmsgid), ap);
   fputc ('\n', stderr);
   va_end (ap);
 }
 
 void
-warning0 (const char *msgid, ...)
+warning0 (const char *gmsgid, ...)
 {
   va_list ap;
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
   fprintf (stderr, _("%s: warning: "), exec_name);
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(gmsgid), ap);
   fputc ('\n', stderr);
   va_end (ap);
 }

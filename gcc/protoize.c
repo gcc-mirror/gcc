@@ -505,12 +505,12 @@ static char * saved_repl_write_ptr;
 
 /* Translate and output an error message.  */
 static void
-notice (const char *msgid, ...)
+notice (const char *cmsgid, ...)
 {
   va_list ap;
   
-  va_start (ap, msgid);
-  vfprintf (stderr, _(msgid), ap);
+  va_start (ap, cmsgid);
+  vfprintf (stderr, _(cmsgid), ap);
   va_end (ap);
 }
 
