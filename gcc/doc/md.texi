@@ -4951,9 +4951,9 @@ jump.  When new sequence contains multiple jump instructions or new labels,
 more assistance is needed.  Splitter is required to create only unconditional
 jumps, or simple conditional jump instructions.  Additionally it must attach a
 @code{REG_BR_PROB} note to each conditional jump.  A global variable
-@code{split_branch_probability} hold the probability of original branch in case
+@code{split_branch_probability} holds the probability of the original branch in case
 it was an simple conditional jump, @minus{}1 otherwise.  To simplify
-recomputing of edge frequencies, new sequence is required to have only
+recomputing of edge frequencies, the new sequence is required to have only
 forward jumps to the newly created labels.
 
 @findex define_insn_and_split

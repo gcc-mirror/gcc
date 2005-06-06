@@ -1,3 +1,7 @@
+2005-06-06  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/md.texi (Insn Splitting): Fix some wording.
+
 2005-06-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_emit_swdivsf): New function.
