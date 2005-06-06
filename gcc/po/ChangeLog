@@ -1,5 +1,7 @@
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.pot: Regenerated.
+
 	* exgettext: Handle gmsgid and cmsgid arguments specially,
 	as gcc-internal-format and c-format.  Because of xgettext
 	bug, invoke xgettext once with --language=c, once with

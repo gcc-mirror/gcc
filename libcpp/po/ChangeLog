@@ -1,3 +1,7 @@
+2005-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpplib.pot: Regenerate.
+
 2005-05-05  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* nl.po: Update.
