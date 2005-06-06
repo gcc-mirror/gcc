@@ -1,3 +1,7 @@
+2005-06-06  Hans-Peter Nilsson  <hp@axis.se>
+
+	* config-lang.in (target_libs): Remove target-gperf.
+
 2005-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21619
