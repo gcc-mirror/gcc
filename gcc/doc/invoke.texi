@@ -5568,6 +5568,10 @@ If number of candidates in the set is smaller than this value,
 we always try to remove unnecessary ivs from the set during its
 optimization when a new iv is added to the set.
 
+@item scev-max-expr-size
+Bound on size of expressions used in the scalar evolutions analyzer.
+Large expressions slow the analyzer.
+
 @item max-iterations-to-track
 
 The maximum number of iterations of a loop the brute force algorithm

@@ -2563,7 +2563,7 @@ simple_iv (struct loop *loop, tree stmt, tree op, tree *base, tree *step)
   if (TREE_CODE (*step) != INTEGER_CST)
     return false;
   *base = CHREC_LEFT (ev);
-  if (tree_contains_chrecs (*base)
+  if (tree_contains_chrecs (*base, NULL)
       || chrec_contains_symbols_defined_in_loop (*base, loop->num))
     return false;
 

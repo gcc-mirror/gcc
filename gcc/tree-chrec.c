@@ -35,6 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "varray.h"
 #include "tree-chrec.h"
 #include "tree-pass.h"
+#include "params.h"
 
 
 
@@ -286,11 +287,17 @@ chrec_fold_plus_1 (enum tree_code code,
 				    build_int_cst_type (type, -1)));
 
 	default:
-	  if (tree_contains_chrecs (op0)
-	      || tree_contains_chrecs (op1))
-	    return build (code, type, op0, op1);
-	  else
-	    return fold (build (code, type, op0, op1));
+	  {
+	    int size = 0;
+	    if ((tree_contains_chrecs (op0, &size)
+		 || tree_contains_chrecs (op1, &size))
+		&& size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	      return build2 (code, type, op0, op1);
+	    else if (size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	      return fold (build2 (code, type, op0, op1));
+	    else
+	      return chrec_dont_know;
+	  }
 	}
     }
 }
@@ -374,7 +381,7 @@ chrec_fold_multiply (tree type,
 	    return op0;
 	  if (integer_zerop (op1))
 	    return build_int_cst_type (type, 0);
-	  return fold (build (MULT_EXPR, type, op0, op1));
+	  return fold (build2 (MULT_EXPR, type, op0, op1));
 	}
     }
 }
@@ -717,7 +724,7 @@ reset_evolution_in_loop (unsigned loop_num,
 {
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
       && CHREC_VARIABLE (chrec) > loop_num)
-    return build 
+    return build2
       (TREE_CODE (chrec), 
        build_int_cst (NULL_TREE, CHREC_VARIABLE (chrec)), 
        reset_evolution_in_loop (loop_num, CHREC_LEFT (chrec), new_evol), 
@@ -862,29 +869,34 @@ chrec_contains_undetermined (tree chrec)
     }
 }
 
-/* Determines whether the tree EXPR contains chrecs.  */
+/* Determines whether the tree EXPR contains chrecs, and increment
+   SIZE if it is not a NULL pointer by an estimation of the depth of
+   the tree.  */
 
 bool
-tree_contains_chrecs (tree expr)
+tree_contains_chrecs (tree expr, int *size)
 {
   if (expr == NULL_TREE)
     return false;
+
+  if (size)
+    (*size)++;
   
   if (tree_is_chrec (expr))
     return true;
-  
+
   switch (TREE_CODE_LENGTH (TREE_CODE (expr)))
     {
     case 3:
-      if (tree_contains_chrecs (TREE_OPERAND (expr, 2)))
+      if (tree_contains_chrecs (TREE_OPERAND (expr, 2), size))
 	return true;
       
     case 2:
-      if (tree_contains_chrecs (TREE_OPERAND (expr, 1)))
+      if (tree_contains_chrecs (TREE_OPERAND (expr, 1), size))
 	return true;
       
     case 1:
-      if (tree_contains_chrecs (TREE_OPERAND (expr, 0)))
+      if (tree_contains_chrecs (TREE_OPERAND (expr, 0), size))
 	return true;
       
     default:
