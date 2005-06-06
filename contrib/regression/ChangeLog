@@ -1,3 +1,7 @@
+2005-06-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* btest-gcc.sh (TESTLOGS): Make libstdc++.sum optional.
+
 2004-11-07  James A. Morrison  <phython@gcc.gnu.org>
 
 	* README: Update website URL.

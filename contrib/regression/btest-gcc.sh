@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #  Test GCC.
-#  Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation, Inc.
+#  Copyright (C) 1999, 2000, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -98,8 +98,7 @@ H_REAL_TARGET=`$SOURCE/config.sub $H_TARGET || exit 1`
 # look at.
 TESTLOGS="gcc/testsuite/gcc.sum
 gcc/testsuite/g++.sum
-gcc/testsuite/objc.sum
-$H_TARGET/libstdc++-v3/testsuite/libstdc++.sum"
+gcc/testsuite/objc.sum"
 
 # Build.
 echo build > $RESULT
@@ -122,6 +121,9 @@ make -k check-gcc
 
 # Test libstd++-v3
 make check-target-libstdc++-v3
+if [ -f $BUILD/$H_TARGET/libstdc++-v3/testsuite/libstdc++.sum ] ; then
+  TESTLOGS="$TESTLOGS $H_TARGET/libstdc++-v3/testsuite/libstdc++.sum"
+fi
 
 # Test libffi
 make check-target-libffi
