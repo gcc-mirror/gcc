@@ -1,3 +1,11 @@
+2005-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (try_combine): Use hard_regno_nregs array instead of
+	HARD_REGNO_NREGS macro.
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move,
+	rs6000_register_move_cost, rs6000_memory_move_cost): Likewise.
+	* config/ia64/ia64.c (mark_reg_gr_used_mask): Likewise.
+
 2005-06-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-reassoc.o: New.

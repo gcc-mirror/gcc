@@ -2385,8 +2385,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	      || GET_MODE (*split) == VOIDmode
 	      || (REGNO (i2dest) < FIRST_PSEUDO_REGISTER
 		  && HARD_REGNO_MODE_OK (REGNO (i2dest), GET_MODE (*split))
-		  && (HARD_REGNO_NREGS (REGNO (i2dest), GET_MODE (i2dest))
-		      == HARD_REGNO_NREGS (REGNO (i2dest), GET_MODE (*split))))
+		  && (hard_regno_nregs[REGNO (i2dest)][GET_MODE (i2dest)]
+		      == hard_regno_nregs[REGNO (i2dest)][GET_MODE (*split)]))
 	      || (REGNO (i2dest) >= FIRST_PSEUDO_REGISTER
 		  && REG_N_SETS (REGNO (i2dest)) == 1 && ! added_sets_2
 		  && ! REG_USERVAR_P (i2dest)))

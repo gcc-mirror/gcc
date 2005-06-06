@@ -11586,7 +11586,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 
   reg = REG_P (dst) ? REGNO (dst) : REGNO (src);
   mode = GET_MODE (dst);
-  nregs = HARD_REGNO_NREGS (reg, mode);
+  nregs = hard_regno_nregs[reg][mode];
   if (FP_REGNO_P (reg))
     reg_mode = DFmode;
   else if (ALTIVEC_REGNO_P (reg))
@@ -17925,7 +17925,7 @@ rs6000_register_move_cost (enum machine_mode mode,
 
       else
 	/* A move will cost one instruction per GPR moved.  */
-	return 2 * HARD_REGNO_NREGS (0, mode);
+	return 2 * hard_regno_nregs[0][mode];
     }
 
   /* Moving between two similar registers is just one instruction.  */
@@ -17946,11 +17946,11 @@ rs6000_memory_move_cost (enum machine_mode mode, enum reg_class class,
 			 int in ATTRIBUTE_UNUSED)
 {
   if (reg_classes_intersect_p (class, GENERAL_REGS))
-    return 4 * HARD_REGNO_NREGS (0, mode);
+    return 4 * hard_regno_nregs[0][mode];
   else if (reg_classes_intersect_p (class, FLOAT_REGS))
-    return 4 * HARD_REGNO_NREGS (32, mode);
+    return 4 * hard_regno_nregs[32][mode];
   else if (reg_classes_intersect_p (class, ALTIVEC_REGS))
-    return 4 * HARD_REGNO_NREGS (FIRST_ALTIVEC_REGNO, mode);
+    return 4 * hard_regno_nregs[FIRST_ALTIVEC_REGNO][mode];
   else
     return 4 + rs6000_register_move_cost (mode, class, GENERAL_REGS);
 }
