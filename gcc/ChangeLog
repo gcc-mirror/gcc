@@ -1,5 +1,12 @@
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* fold-const.c (operand_equal_p): Don't return 1, if element
+	chains for 2 VECTOR_CSTs are not the same length.
+
+	PR regression/21897
+	* fold-const.c (fold_ternary) <case BIT_FIELD_REF>: Don't crash if
+	not all VECTOR_CST elements are given.
+
 	* combine.c (try_combine): Use hard_regno_nregs array instead of
 	HARD_REGNO_NREGS macro.
 	* config/rs6000/rs6000.c (rs6000_split_multireg_move,

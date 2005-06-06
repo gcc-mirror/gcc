@@ -2460,7 +2460,7 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 	      v2 = TREE_CHAIN (v2);
 	    }
 
-	  return 1;
+	  return v1 == v2;
 	}
 
       case COMPLEX_CST:
@@ -10306,9 +10306,12 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 		 < TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)))
 	    {
 	      tree elements = TREE_VECTOR_CST_ELTS (arg0);
-	      while (idx-- > 0)
+	      while (idx-- > 0 && elements)
 		elements = TREE_CHAIN (elements);
-	      return TREE_VALUE (elements);
+	      if (elements)
+		return TREE_VALUE (elements);
+	      else
+		return fold_convert (type, integer_zero_node);
 	    }
 	}
       return NULL_TREE;
