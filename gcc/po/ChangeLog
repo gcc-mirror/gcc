@@ -1,3 +1,11 @@
+2005-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* exgettext: Handle gmsgid and cmsgid arguments specially,
+	as gcc-internal-format and c-format.  Because of xgettext
+	bug, invoke xgettext once with --language=c, once with
+	--language=GCC-source and then merge together.  Fail if
+	xgettext is not 0.14.5 or later.
+
 2005-05-31  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.

@@ -97,13 +97,13 @@ static tree lookup_java_method2 (tree, tree, int);
 static tree method_header (int, tree, tree, tree);
 static void fix_method_argument_names (tree ,tree);
 static tree method_declarator (tree, tree);
-static void parse_warning_context (tree cl, const char *msgid, ...);
+static void parse_warning_context (tree cl, const char *gmsgid, ...);
 #ifdef USE_MAPPED_LOCATION
 static void issue_warning_error_from_context
-  (source_location, const char *msgid, va_list *);
+  (source_location, const char *gmsgid, va_list *);
 #else
 static void issue_warning_error_from_context
-  (tree, const char *msgid, va_list *);
+  (tree, const char *gmsgid, va_list *);
 #endif
 static void parse_ctor_invocation_error (void);
 static tree parse_jdk1_1_error (const char *);
@@ -3140,7 +3140,7 @@ issue_warning_error_from_context (
 #else
 				  tree cl,
 #endif
-				  const char *msgid, va_list *ap)
+				  const char *gmsgid, va_list *ap)
 {
 #ifdef USE_MAPPED_LOCATION
   source_location saved_location = input_location;
@@ -3154,7 +3154,7 @@ issue_warning_error_from_context (
 
   text.err_no = errno;
   text.args_ptr = ap;
-  text.format_spec = msgid;
+  text.format_spec = gmsgid;
   pp_format_text (global_dc->printer, &text);
   strncpy (buffer, pp_formatted_text (global_dc->printer), sizeof (buffer) - 1);
   buffer[sizeof (buffer) - 1] = '\0';
@@ -3196,14 +3196,14 @@ issue_warning_error_from_context (
    FUTURE/FIXME:  change cl to be a source_location. */
 
 void
-parse_error_context (tree cl, const char *msgid, ...)
+parse_error_context (tree cl, const char *gmsgid, ...)
 {
   va_list ap;
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
 #ifdef USE_MAPPED_LOCATION
-  issue_warning_error_from_context (EXPR_LOCATION (cl), msgid, &ap);
+  issue_warning_error_from_context (EXPR_LOCATION (cl), gmsgid, &ap);
 #else
-  issue_warning_error_from_context (cl, msgid, &ap);
+  issue_warning_error_from_context (cl, gmsgid, &ap);
 #endif
   va_end (ap);
 }
@@ -3212,16 +3212,16 @@ parse_error_context (tree cl, const char *msgid, ...)
    FUTURE/FIXME:  change cl to be a source_location. */
 
 static void
-parse_warning_context (tree cl, const char *msgid, ...)
+parse_warning_context (tree cl, const char *gmsgid, ...)
 {
   va_list ap;
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
 
   do_warning = 1;
 #ifdef USE_MAPPED_LOCATION
-  issue_warning_error_from_context (EXPR_LOCATION (cl), msgid, &ap);
+  issue_warning_error_from_context (EXPR_LOCATION (cl), gmsgid, &ap);
 #else
-  issue_warning_error_from_context (cl, msgid, &ap);
+  issue_warning_error_from_context (cl, gmsgid, &ap);
 #endif
   do_warning = 0;
   va_end (ap);

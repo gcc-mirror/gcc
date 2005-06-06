@@ -1114,11 +1114,11 @@ locate_old_decl (tree decl, void (*diag)(const char *, ...))
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
     ;
   else if (DECL_INITIAL (decl))
-    diag (N_("%Jprevious definition of %qD was here"), decl, decl);
+    diag (G_("%Jprevious definition of %qD was here"), decl, decl);
   else if (C_DECL_IMPLICIT (decl))
-    diag (N_("%Jprevious implicit declaration of %qD was here"), decl, decl);
+    diag (G_("%Jprevious implicit declaration of %qD was here"), decl, decl);
   else
-    diag (N_("%Jprevious declaration of %qD was here"), decl, decl);
+    diag (G_("%Jprevious declaration of %qD was here"), decl, decl);
 }
 
 /* Subroutine of duplicate_decls.  Compare NEWDECL to OLDDECL.
@@ -2275,7 +2275,7 @@ implicit_decl_warning (tree id, tree olddecl)
     default: gcc_unreachable ();
     }
 
-  diag (N_("implicit declaration of function %qE"), id);
+  diag (G_("implicit declaration of function %qE"), id);
   if (olddecl)
     locate_old_decl (olddecl, diag);
 }

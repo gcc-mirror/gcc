@@ -1,3 +1,9 @@
+2005-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.c (locate_error): Use gmsgid instead of msgid for argument
+	name.
+	(cp_error_at, cp_warning_at, cp_pedwarn_at): Likewise.
+
 2005-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21619

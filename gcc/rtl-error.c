@@ -87,22 +87,22 @@ diagnostic_for_asm (rtx insn, const char *msg, va_list *args_ptr,
 }
 
 void
-error_for_asm (rtx insn, const char *msgid, ...)
+error_for_asm (rtx insn, const char *gmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_for_asm (insn, msgid, &ap, DK_ERROR);
+  va_start (ap, gmsgid);
+  diagnostic_for_asm (insn, gmsgid, &ap, DK_ERROR);
   va_end (ap);
 }
 
 void
-warning_for_asm (rtx insn, const char *msgid, ...)
+warning_for_asm (rtx insn, const char *gmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_for_asm (insn, msgid, &ap, DK_WARNING);
+  va_start (ap, gmsgid);
+  diagnostic_for_asm (insn, gmsgid, &ap, DK_WARNING);
   va_end (ap);
 }
 

@@ -6739,40 +6739,46 @@ fancy_abort (const char *file, int line, const char *func)
 /* Output an error message and exit.  */
 
 void
-fatal (const char *msgid, ...)
+fatal (const char *cmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
+  va_start (ap, cmsgid);
 
   fprintf (stderr, "%s: ", programname);
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(cmsgid), ap);
   va_end (ap);
   fprintf (stderr, "\n");
   delete_temp_files ();
   exit (1);
 }
 
+/* The argument is actually c-format, not gcc-internal-format,
+   but because functions with identical names are used through
+   the rest of the compiler with gcc-internal-format, we just
+   need to hope all users of these functions use the common
+   subset between c-format and gcc-internal-format.  */
+
 void
-error (const char *msgid, ...)
+error (const char *gmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
   fprintf (stderr, "%s: ", programname);
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(gmsgid), ap);
   va_end (ap);
 
   fprintf (stderr, "\n");
 }
 
 static void
-notice (const char *msgid, ...)
+notice (const char *cmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
-  vfprintf (stderr, _(msgid), ap);
+  va_start (ap, cmsgid);
+  vfprintf (stderr, _(cmsgid), ap);
   va_end (ap);
 }
 

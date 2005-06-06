@@ -971,7 +971,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  && !lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
 	{
 	  inline_forbidden_reason
-	    = N_("%Jfunction %qF can never be inlined because it uses "
+	    = G_("%Jfunction %qF can never be inlined because it uses "
 		 "alloca (override using the always_inline attribute)");
 	  return node;
 	}
@@ -983,7 +983,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (setjmp_call_p (t))
 	{
 	  inline_forbidden_reason
-	    = N_("%Jfunction %qF can never be inlined because it uses setjmp");
+	    = G_("%Jfunction %qF can never be inlined because it uses setjmp");
 	  return node;
 	}
 
@@ -997,7 +997,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  case BUILT_IN_NEXT_ARG:
 	  case BUILT_IN_VA_END:
 	    inline_forbidden_reason
-	      = N_("%Jfunction %qF can never be inlined because it "
+	      = G_("%Jfunction %qF can never be inlined because it "
 		   "uses variable argument lists");
 	    return node;
 
@@ -1008,14 +1008,14 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	       function calling __builtin_longjmp to be inlined into the
 	       function calling __builtin_setjmp, Things will Go Awry.  */
 	    inline_forbidden_reason
-	      = N_("%Jfunction %qF can never be inlined because "
+	      = G_("%Jfunction %qF can never be inlined because "
 		   "it uses setjmp-longjmp exception handling");
 	    return node;
 
 	  case BUILT_IN_NONLOCAL_GOTO:
 	    /* Similarly.  */
 	    inline_forbidden_reason
-	      = N_("%Jfunction %qF can never be inlined because "
+	      = G_("%Jfunction %qF can never be inlined because "
 		   "it uses non-local goto");
 	    return node;
 
@@ -1026,7 +1026,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	       been inlined into.  Similarly __builtin_return would
 	       return from the function the inline has been inlined into.  */
 	    inline_forbidden_reason
-	      = N_("%Jfunction %qF can never be inlined because "
+	      = G_("%Jfunction %qF can never be inlined because "
 		   "it uses __builtin_return or __builtin_apply_args");
 	    return node;
 
@@ -1045,7 +1045,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (TREE_CODE (t) != LABEL_DECL)
 	{
 	  inline_forbidden_reason
-	    = N_("%Jfunction %qF can never be inlined "
+	    = G_("%Jfunction %qF can never be inlined "
 		 "because it contains a computed goto");
 	  return node;
 	}
@@ -1059,7 +1059,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	     because we cannot remap the destination label used in the
 	     function that is performing the non-local goto.  */
 	  inline_forbidden_reason
-	    = N_("%Jfunction %qF can never be inlined "
+	    = G_("%Jfunction %qF can never be inlined "
 		 "because it receives a non-local goto");
 	  return node;
 	}
@@ -1084,7 +1084,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	if (variably_modified_type_p (TREE_TYPE (t), NULL))
 	  {
 	    inline_forbidden_reason
-	      = N_("%Jfunction %qF can never be inlined "
+	      = G_("%Jfunction %qF can never be inlined "
 		   "because it uses variable sized variables");
 	    return node;
 	  }

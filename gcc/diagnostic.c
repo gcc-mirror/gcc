@@ -111,13 +111,13 @@ diagnostic_initialize (diagnostic_context *context)
 }
 
 void
-diagnostic_set_info (diagnostic_info *diagnostic, const char *msgid,
+diagnostic_set_info (diagnostic_info *diagnostic, const char *gmsgid,
 		     va_list *args, location_t location,
 		     diagnostic_t kind)
 {
   diagnostic->message.err_no = errno;
   diagnostic->message.args_ptr = args;
-  diagnostic->message.format_spec = _(msgid);
+  diagnostic->message.format_spec = _(gmsgid);
   diagnostic->location = location;
   diagnostic->kind = kind;
 }
@@ -378,15 +378,15 @@ trim_filename (const char *name)
 /* Text to be emitted verbatim to the error message stream; this
    produces no prefix and disables line-wrapping.  Use rarely.  */
 void
-verbatim (const char *msgid, ...)
+verbatim (const char *gmsgid, ...)
 {
   text_info text;
   va_list ap;
 
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
   text.err_no = errno;
   text.args_ptr = &ap;
-  text.format_spec = _(msgid);
+  text.format_spec = _(gmsgid);
   pp_format_verbatim (global_dc->printer, &text);
   pp_flush (global_dc->printer);
   va_end (ap);
@@ -395,13 +395,13 @@ verbatim (const char *msgid, ...)
 /* An informative note.  Use this for additional details on an error
    message.  */
 void
-inform (const char *msgid, ...)
+inform (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_NOTE);
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_NOTE);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -409,13 +409,13 @@ inform (const char *msgid, ...)
 /* A warning.  Use this for code which is correct according to the
    relevant language specification but is likely to be buggy anyway.  */
 void
-warning (const char *msgid, ...)
+warning (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_WARNING);
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_WARNING);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -429,13 +429,13 @@ warning (const char *msgid, ...)
    of the -pedantic command-line switch.  To get a warning enabled
    only with that switch, write "if (pedantic) pedwarn (...);"  */
 void
-pedwarn (const char *msgid, ...)
+pedwarn (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_location,
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
 		       pedantic_error_kind ());
   report_diagnostic (&diagnostic);
   va_end (ap);
@@ -444,13 +444,13 @@ pedwarn (const char *msgid, ...)
 /* A hard error: the code is definitely ill-formed, and an object file
    will not be produced.  */
 void
-error (const char *msgid, ...)
+error (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_ERROR);
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_ERROR);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -459,13 +459,13 @@ error (const char *msgid, ...)
    required by the relevant specification but not implemented by GCC.
    An object file will not be produced.  */
 void
-sorry (const char *msgid, ...)
+sorry (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_SORRY);
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_SORRY);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -474,13 +474,13 @@ sorry (const char *msgid, ...)
    continue.  Do not use this for internal consistency checks; that's
    internal_error.  Use of this function should be rare.  */
 void
-fatal_error (const char *msgid, ...)
+fatal_error (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_FATAL);
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_FATAL);
   report_diagnostic (&diagnostic);
   va_end (ap);
 
@@ -492,13 +492,13 @@ fatal_error (const char *msgid, ...)
    a more specific message, or some other good reason, you should use
    abort () instead of calling this function directly.  */
 void
-internal_error (const char *msgid, ...)
+internal_error (const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_location, DK_ICE);
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_ICE);
   report_diagnostic (&diagnostic);
   va_end (ap);
 
@@ -511,12 +511,12 @@ internal_error (const char *msgid, ...)
 /* Print a diagnostic MSGID on FILE.  This is just fprintf, except it
    runs its second argument through gettext.  */
 void
-fnotice (FILE *file, const char *msgid, ...)
+fnotice (FILE *file, const char *cmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
-  vfprintf (file, _(msgid), ap);
+  va_start (ap, cmsgid);
+  vfprintf (file, _(cmsgid), ap);
   va_end (ap);
 }
 

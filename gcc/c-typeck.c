@@ -2814,20 +2814,20 @@ readonly_error (tree arg, enum lvalue_use use)
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
 	readonly_error (TREE_OPERAND (arg, 0), use);
       else
-	error (READONLY_MSG (N_("assignment of read-only member %qs"),
-			     N_("increment of read-only member %qs"),
-			     N_("decrement of read-only member %qs")),
+	error (READONLY_MSG (G_("assignment of read-only member %qs"),
+			     G_("increment of read-only member %qs"),
+			     G_("decrement of read-only member %qs")),
 	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (arg, 1))));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
-    error (READONLY_MSG (N_("assignment of read-only variable %qs"),
-			 N_("increment of read-only variable %qs"),
-			 N_("decrement of read-only variable %qs")),
+    error (READONLY_MSG (G_("assignment of read-only variable %qs"),
+			 G_("increment of read-only variable %qs"),
+			 G_("decrement of read-only variable %qs")),
 	   IDENTIFIER_POINTER (DECL_NAME (arg)));
   else
-    error (READONLY_MSG (N_("assignment of read-only location"),
-			 N_("increment of read-only location"),
-			 N_("decrement of read-only location")));
+    error (READONLY_MSG (G_("assignment of read-only location"),
+			 G_("increment of read-only location"),
+			 G_("decrement of read-only location")));
 }
 
 /* Mark EXP saying that we need to be able to take the
@@ -3662,26 +3662,26 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		     function where an ordinary one is wanted, but not
 		     vice-versa.  */
 		  if (TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr))
-		    WARN_FOR_ASSIGNMENT (N_("passing argument %d of %qE "
+		    WARN_FOR_ASSIGNMENT (G_("passing argument %d of %qE "
 					    "makes qualified function "
 					    "pointer from unqualified"),
-					 N_("assignment makes qualified "
+					 G_("assignment makes qualified "
 					    "function pointer from "
 					    "unqualified"),
-					 N_("initialization makes qualified "
+					 G_("initialization makes qualified "
 					    "function pointer from "
 					    "unqualified"),
-					 N_("return makes qualified function "
+					 G_("return makes qualified function "
 					    "pointer from unqualified"));
 		}
 	      else if (TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl))
-		WARN_FOR_ASSIGNMENT (N_("passing argument %d of %qE discards "
+		WARN_FOR_ASSIGNMENT (G_("passing argument %d of %qE discards "
 					"qualifiers from pointer target type"),
-				     N_("assignment discards qualifiers "
+				     G_("assignment discards qualifiers "
 					"from pointer target type"),
-				     N_("initialization discards qualifiers "
+				     G_("initialization discards qualifiers "
 					"from pointer target type"),
-				     N_("return discards qualifiers from "
+				     G_("return discards qualifiers from "
 					"pointer target type"));
 	    }
 
@@ -3730,14 +3730,14 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		      which are not ANSI null ptr constants.  */
 		   && (!integer_zerop (rhs) || TREE_CODE (rhs) == NOP_EXPR)
 		   && TREE_CODE (ttl) == FUNCTION_TYPE)))
-	    WARN_FOR_ASSIGNMENT (N_("ISO C forbids passing argument %d of "
+	    WARN_FOR_ASSIGNMENT (G_("ISO C forbids passing argument %d of "
 				    "%qE between function pointer "
 				    "and %<void *%>"),
-				 N_("ISO C forbids assignment between "
+				 G_("ISO C forbids assignment between "
 				    "function pointer and %<void *%>"),
-				 N_("ISO C forbids initialization between "
+				 G_("ISO C forbids initialization between "
 				    "function pointer and %<void *%>"),
-				 N_("ISO C forbids return between function "
+				 G_("ISO C forbids return between function "
 				    "pointer and %<void *%>"));
 	  /* Const and volatile mean something different for function types,
 	     so the usual warnings are not appropriate.  */
@@ -3745,13 +3745,13 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		   && TREE_CODE (ttl) != FUNCTION_TYPE)
 	    {
 	      if (TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl))
-		WARN_FOR_ASSIGNMENT (N_("passing argument %d of %qE discards "
+		WARN_FOR_ASSIGNMENT (G_("passing argument %d of %qE discards "
 					"qualifiers from pointer target type"),
-				     N_("assignment discards qualifiers "
+				     G_("assignment discards qualifiers "
 					"from pointer target type"),
-				     N_("initialization discards qualifiers "
+				     G_("initialization discards qualifiers "
 					"from pointer target type"),
-				     N_("return discards qualifiers from "
+				     G_("return discards qualifiers from "
 					"pointer target type"));
 	      /* If this is not a case of ignoring a mismatch in signedness,
 		 no warning.  */
@@ -3760,13 +3760,13 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		;
 	      /* If there is a mismatch, do warn.  */
 	      else if (warn_pointer_sign)
-		WARN_FOR_ASSIGNMENT (N_("pointer targets in passing argument "
+		WARN_FOR_ASSIGNMENT (G_("pointer targets in passing argument "
 					"%d of %qE differ in signedness"),
-				     N_("pointer targets in assignment "
+				     G_("pointer targets in assignment "
 					"differ in signedness"),
-				     N_("pointer targets in initialization "
+				     G_("pointer targets in initialization "
 					"differ in signedness"),
-				     N_("pointer targets in return differ "
+				     G_("pointer targets in return differ "
 					"in signedness"));
 	    }
 	  else if (TREE_CODE (ttl) == FUNCTION_TYPE
@@ -3777,24 +3777,24 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		 it is okay to use a const or volatile function
 		 where an ordinary one is wanted, but not vice-versa.  */
 	      if (TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr))
-		WARN_FOR_ASSIGNMENT (N_("passing argument %d of %qE makes "
+		WARN_FOR_ASSIGNMENT (G_("passing argument %d of %qE makes "
 					"qualified function pointer "
 					"from unqualified"),
-				     N_("assignment makes qualified function "
+				     G_("assignment makes qualified function "
 					"pointer from unqualified"),
-				     N_("initialization makes qualified "
+				     G_("initialization makes qualified "
 					"function pointer from unqualified"),
-				     N_("return makes qualified function "
+				     G_("return makes qualified function "
 					"pointer from unqualified"));
 	    }
 	}
       else
-	WARN_FOR_ASSIGNMENT (N_("passing argument %d of %qE from "
+	WARN_FOR_ASSIGNMENT (G_("passing argument %d of %qE from "
 				"incompatible pointer type"),
-			     N_("assignment from incompatible pointer type"),
-			     N_("initialization from incompatible "
+			     G_("assignment from incompatible pointer type"),
+			     G_("initialization from incompatible "
 				"pointer type"),
-			     N_("return from incompatible pointer type"));
+			     G_("return from incompatible pointer type"));
       return convert (type, rhs);
     }
   else if (codel == POINTER_TYPE && coder == ARRAY_TYPE)
@@ -3815,26 +3815,26 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 	    && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE
 	    && TREE_CODE (TREE_OPERAND (rhs, 0)) == INTEGER_CST
 	    && integer_zerop (TREE_OPERAND (rhs, 0))))
-	WARN_FOR_ASSIGNMENT (N_("passing argument %d of %qE makes "
+	WARN_FOR_ASSIGNMENT (G_("passing argument %d of %qE makes "
 				"pointer from integer without a cast"),
-			     N_("assignment makes pointer from integer "
+			     G_("assignment makes pointer from integer "
 				"without a cast"),
-			     N_("initialization makes pointer from "
+			     G_("initialization makes pointer from "
 				"integer without a cast"),
-			     N_("return makes pointer from integer "
+			     G_("return makes pointer from integer "
 				"without a cast"));
 
       return convert (type, rhs);
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)
     {
-      WARN_FOR_ASSIGNMENT (N_("passing argument %d of %qE makes integer "
+      WARN_FOR_ASSIGNMENT (G_("passing argument %d of %qE makes integer "
 			      "from pointer without a cast"),
-			   N_("assignment makes integer from pointer "
+			   G_("assignment makes integer from pointer "
 			      "without a cast"),
-			   N_("initialization makes integer from pointer "
+			   G_("initialization makes integer from pointer "
 			      "without a cast"),
-			   N_("return makes integer from pointer "
+			   G_("return makes integer from pointer "
 			      "without a cast"));
       return convert (type, rhs);
     }

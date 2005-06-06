@@ -1335,7 +1335,7 @@ struct tree_opt_pass pass_redundant_phi =
    warning text is in MSGID and LOCUS may contain a location or be null.  */
 
 static void
-warn_uninit (tree t, const char *msgid, location_t *locus)
+warn_uninit (tree t, const char *gmsgid, location_t *locus)
 {
   tree var = SSA_NAME_VAR (t);
   tree def = SSA_NAME_DEF_STMT (t);
@@ -1360,7 +1360,7 @@ warn_uninit (tree t, const char *msgid, location_t *locus)
 
   if (!locus)
     locus = &DECL_SOURCE_LOCATION (var);
-  warning (msgid, locus, var);
+  warning (gmsgid, locus, var);
   TREE_NO_WARNING (var) = 1;
 }
    

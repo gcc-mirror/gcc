@@ -1,3 +1,12 @@
+2005-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* jv-scan.c (fatal_error, warning): Use gmsgid instead of msgid for
+	argument name.
+	* gjavah.c (error): Likewise.
+	* java-tree.h (parse_error_context): Likewise.
+	* parse.y (parse_error_context, parse_warning_context,
+	issue_warning_error_from_context): Likewise.
+
 2005-06-02  Tom Tromey  <tromey@redhat.com>
 
 	PR java/21722:

@@ -5519,51 +5519,51 @@ catenate_strings (const char *lhs, const char *rhs_start, int rhs_size)
   return result;
 }
 
-/* Issue the error given by MSGID, indicating that it occurred before
+/* Issue the error given by GMSGID, indicating that it occurred before
    TOKEN, which had the associated VALUE.  */
 
 void
-c_parse_error (const char *msgid, enum cpp_ttype token, tree value)
+c_parse_error (const char *gmsgid, enum cpp_ttype token, tree value)
 {
 #define catenate_messages(M1, M2) catenate_strings ((M1), (M2), sizeof (M2))
 
   char *message = NULL;
 
   if (token == CPP_EOF)
-    message = catenate_messages (msgid, " at end of input");
+    message = catenate_messages (gmsgid, " at end of input");
   else if (token == CPP_CHAR || token == CPP_WCHAR)
     {
       unsigned int val = TREE_INT_CST_LOW (value);
       const char *const ell = (token == CPP_CHAR) ? "" : "L";
       if (val <= UCHAR_MAX && ISGRAPH (val))
-        message = catenate_messages (msgid, " before %s'%c'");
+        message = catenate_messages (gmsgid, " before %s'%c'");
       else
-        message = catenate_messages (msgid, " before %s'\\x%x'");
+        message = catenate_messages (gmsgid, " before %s'\\x%x'");
 
       error (message, ell, val);
       free (message);
       message = NULL;
     }
   else if (token == CPP_STRING || token == CPP_WSTRING)
-    message = catenate_messages (msgid, " before string constant");
+    message = catenate_messages (gmsgid, " before string constant");
   else if (token == CPP_NUMBER)
-    message = catenate_messages (msgid, " before numeric constant");
+    message = catenate_messages (gmsgid, " before numeric constant");
   else if (token == CPP_NAME)
     {
-      message = catenate_messages (msgid, " before %qs");
+      message = catenate_messages (gmsgid, " before %qs");
       error (message, IDENTIFIER_POINTER (value));
       free (message);
       message = NULL;
     }
   else if (token < N_TTYPES)
     {
-      message = catenate_messages (msgid, " before %qs token");
+      message = catenate_messages (gmsgid, " before %qs token");
       error (message, cpp_type2name (token));
       free (message);
       message = NULL;
     }
   else
-    error (msgid);
+    error (gmsgid);
 
   if (message)
     {

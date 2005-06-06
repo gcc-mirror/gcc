@@ -1,3 +1,34 @@
+2005-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* intl.h (G_): New macro.
+	* rtl-error.c (error_for_asm, warning_for_asm): Use gmsgid
+	instead of msgid for argument name.
+	* tree-ssa.c (warn_uninit): Likewise.
+	* config/rs6000/rs6000-c.c (SYNTAX_ERROR): Likewise.
+	* config/darwin-c.c (BAD): Likewise.
+	* config/c4x/c4x-c.c (BAD): Likewise.
+	* c-pragma.c (GCC_BAD, GCC_BAD2): Likewise.
+	* c-errors.c (pedwarn_c99, pedwarn_c90): Likewise.
+	* c-common.c (c_parse_error): Likewise.
+	* diagnostic.c (diagnostic_set_info, verbatim, inform, warning,
+	pedwarn, error, sorry, fatal_error, internal_error): Likewise.
+	(fnotice): Use cmsgid instead of msgid for argument name.
+	* gcov.c (fnotice): Likewise.
+	* protoize.c (notice): Likewise.
+	* final.c (output_operand_lossage): Likewise.
+	* gcc.c (fatal, notice): Likewise.
+	(error): Use gmsgid instead of msgid for argument name.
+	* collect2.c (notice, fatal_perror, fatal): Use cmsgid instead
+	of msgid for argument name.
+	(error): Use gmsgid instead of msgid for argument name.
+	* c-decl.c (locate_old_decl, implicit_decl_warning): Use G_()
+	instead of N_().
+	* c-typeck.c (readonly_error, convert_for_assignment): Likewise.
+	* tree-inline.c (inline_forbidden_p_1): Likewise.
+	* ABOUT-GCC-NLS: Require gettext 0.14.5 or later.  Mention the new
+	conventions for marking translations.
+	* doc/install.texi: Mention gettext 0.14.5 or later requirement.
+
 2005-06-06  Sebastian Pop <pop@cri.ensmp.fr>
 
 	PR tree-optimization/20742
