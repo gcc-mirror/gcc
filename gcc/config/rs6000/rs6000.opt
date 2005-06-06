@@ -123,6 +123,10 @@ mxl-compat
 Target Report Var(TARGET_XL_COMPAT)
 Conform more closely to IBM XLC semantics
 
+mswdiv
+Target Report Var(swdiv)
+Generate software floating point divide for better throughput
+
 mno-fp-in-toc
 Target Report RejectNegative Mask(NO_FP_IN_TOC)
 Do not place floating point constants in TOC

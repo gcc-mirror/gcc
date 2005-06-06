@@ -631,7 +631,7 @@ See RS/6000 and PowerPC Options.
 -mstrict-align  -mno-strict-align  -mrelocatable @gol
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc  -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
--mdynamic-no-pic @gol
+-mdynamic-no-pic  -maltivec  -mswdiv @gol
 -mprioritize-restricted-insns=@var{priority} @gol
 -msched-costly-dep=@var{dependence_type} @gol
 -minsert-sched-nops=@var{scheme} @gol
@@ -10719,6 +10719,17 @@ values for @var{cpu_type} are used for @option{-mtune} as for
 @option{-mcpu}.  If both are specified, the code generated will use the
 architecture, registers, and mnemonics set by @option{-mcpu}, but the
 scheduling parameters set by @option{-mtune}.
+
+@item -mswdiv
+@itemx -mno-swdiv
+@opindex mswdiv
+@opindex mno-swdiv
+Generate code to compute division as reciprocal estimate and iterative
+refinement, creating opportunities for increased throughput.  This
+feature requires: optional PowerPC Graphics instruction set for single
+precision and FRE instruction for double precision, assuming divides
+cannot generate user-visible traps, and the domain values not include
+Infinities, denormals or zero denominator.
 
 @item -maltivec
 @itemx -mno-altivec

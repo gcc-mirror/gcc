@@ -82,6 +82,8 @@ extern int rs6000_emit_vector_cond_expr (rtx, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_minmax (rtx, enum rtx_code, rtx, rtx);
 extern void rs6000_emit_sync (enum rtx_code, enum machine_mode,
 			      rtx, rtx, rtx, rtx, bool);
+extern void rs6000_emit_swdivsf (rtx, rtx, rtx);
+extern void rs6000_emit_swdivdf (rtx, rtx, rtx);
 extern void output_toc (FILE *, rtx, int, enum machine_mode);
 extern void rs6000_initialize_trampoline (rtx, rtx, rtx);
 extern rtx rs6000_longcall_ref (rtx);

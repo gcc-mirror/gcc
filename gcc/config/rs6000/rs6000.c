@@ -17955,6 +17955,109 @@ rs6000_memory_move_cost (enum machine_mode mode, enum reg_class class,
     return 4 + rs6000_register_move_cost (mode, class, GENERAL_REGS);
 }
 
+/* Newton-Raphson approximation of single-precision floating point divide n/d.
+   Assumes no trapping math and finite arguments.  */
+
+void
+rs6000_emit_swdivsf (rtx res, rtx n, rtx d)
+{
+  rtx x0, e0, e1, y1, u0, v0, one;
+
+  x0 = gen_reg_rtx (SFmode);
+  e0 = gen_reg_rtx (SFmode);
+  e1 = gen_reg_rtx (SFmode);
+  y1 = gen_reg_rtx (SFmode);
+  u0 = gen_reg_rtx (SFmode);
+  v0 = gen_reg_rtx (SFmode);
+  one = force_reg (SFmode, CONST_DOUBLE_FROM_REAL_VALUE (dconst1, SFmode));
+
+  /* x0 = 1./d estimate */
+  emit_insn (gen_rtx_SET (VOIDmode, x0,
+			  gen_rtx_UNSPEC (SFmode, gen_rtvec (1, d),
+					  UNSPEC_FRES)));
+  /* e0 = 1. - d * x0 */
+  emit_insn (gen_rtx_SET (VOIDmode, e0,
+			  gen_rtx_MINUS (SFmode, one,
+					 gen_rtx_MULT (SFmode, d, x0))));
+  /* e1 = e0 + e0 * e0 */
+  emit_insn (gen_rtx_SET (VOIDmode, e1,
+			  gen_rtx_PLUS (SFmode,
+					gen_rtx_MULT (SFmode, e0, e0), e0)));
+  /* y1 = x0 + e1 * x0 */
+  emit_insn (gen_rtx_SET (VOIDmode, y1,
+			  gen_rtx_PLUS (SFmode,
+					gen_rtx_MULT (SFmode, e1, x0), x0)));
+  /* u0 = n * y1 */
+  emit_insn (gen_rtx_SET (VOIDmode, u0,
+			  gen_rtx_MULT (SFmode, n, y1)));
+  /* v0 = n - d * u0 */
+  emit_insn (gen_rtx_SET (VOIDmode, v0,
+			  gen_rtx_MINUS (SFmode, n,
+					 gen_rtx_MULT (SFmode, d, u0))));
+  /* res = u0 + v0 * y1 */
+  emit_insn (gen_rtx_SET (VOIDmode, res,
+			  gen_rtx_PLUS (SFmode,
+					gen_rtx_MULT (SFmode, v0, y1), u0)));
+}
+
+/* Newton-Raphson approximation of double-precision floating point divide n/d.
+   Assumes no trapping math and finite arguments.  */
+
+void
+rs6000_emit_swdivdf (rtx res, rtx n, rtx d)
+{
+  rtx x0, e0, e1, e2, y1, y2, y3, u0, v0, one;
+
+  x0 = gen_reg_rtx (DFmode);
+  e0 = gen_reg_rtx (DFmode);
+  e1 = gen_reg_rtx (DFmode);
+  e2 = gen_reg_rtx (DFmode);
+  y1 = gen_reg_rtx (DFmode);
+  y2 = gen_reg_rtx (DFmode);
+  y3 = gen_reg_rtx (DFmode);
+  u0 = gen_reg_rtx (DFmode);
+  v0 = gen_reg_rtx (DFmode);
+  one = force_reg (DFmode, CONST_DOUBLE_FROM_REAL_VALUE (dconst1, DFmode));
+
+  /* x0 = 1./d estimate */
+  emit_insn (gen_rtx_SET (VOIDmode, x0,
+			  gen_rtx_UNSPEC (DFmode, gen_rtvec (1, d),
+					  UNSPEC_FRES)));
+  /* e0 = 1. - d * x0 */
+  emit_insn (gen_rtx_SET (VOIDmode, e0,
+			  gen_rtx_MINUS (DFmode, one,
+					 gen_rtx_MULT (SFmode, d, x0))));
+  /* y1 = x0 + e0 * x0 */
+  emit_insn (gen_rtx_SET (VOIDmode, y1,
+			  gen_rtx_PLUS (DFmode,
+					gen_rtx_MULT (DFmode, e0, x0), x0)));
+  /* e1 = e0 * e0 */
+  emit_insn (gen_rtx_SET (VOIDmode, e1,
+			  gen_rtx_MULT (DFmode, e0, e0)));
+  /* y2 = y1 + e1 * y1 */
+  emit_insn (gen_rtx_SET (VOIDmode, y2,
+			  gen_rtx_PLUS (DFmode,
+					gen_rtx_MULT (DFmode, e1, y1), y1)));
+  /* e2 = e1 * e1 */
+  emit_insn (gen_rtx_SET (VOIDmode, e2,
+			  gen_rtx_MULT (DFmode, e1, e1)));
+  /* y3 = y2 + e2 * y2 */
+  emit_insn (gen_rtx_SET (VOIDmode, y3,
+			  gen_rtx_PLUS (DFmode,
+					gen_rtx_MULT (DFmode, e2, y2), y2)));
+  /* u0 = n * y3 */
+  emit_insn (gen_rtx_SET (VOIDmode, u0,
+			  gen_rtx_MULT (DFmode, n, y3)));
+  /* v0 = n - d * u0 */
+  emit_insn (gen_rtx_SET (VOIDmode, v0,
+			  gen_rtx_MINUS (DFmode, n,
+					 gen_rtx_MULT (DFmode, d, u0))));
+  /* res = u0 + v0 * y3 */
+  emit_insn (gen_rtx_SET (VOIDmode, res,
+			  gen_rtx_PLUS (DFmode,
+					gen_rtx_MULT (DFmode, v0, y3), u0)));
+}
+
 /* Return an RTX representing where to find the function value of a
    function returning MODE.  */
 static rtx
