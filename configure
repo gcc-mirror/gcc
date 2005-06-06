@@ -2195,7 +2195,7 @@ fi
 
 
 if test "x$with_mpfr_dir" != x; then
-  gmpinc="-I$with_mpfr_dir/mpfr"
+  gmpinc="-I$with_mpfr_dir"
   gmplibs="$with_mpfr_dir/libmpfr.a"
 else
   gmplibs="-lmpfr"
