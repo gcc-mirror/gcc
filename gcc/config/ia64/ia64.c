@@ -2008,7 +2008,7 @@ mark_reg_gr_used_mask (rtx reg, void *data ATTRIBUTE_UNUSED)
   unsigned int regno = REGNO (reg);
   if (regno < 32)
     {
-      unsigned int i, n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      unsigned int i, n = hard_regno_nregs[regno][GET_MODE (reg)];
       for (i = 0; i < n; ++i)
 	current_frame_info.gr_used_mask |= 1 << (regno + i);
     }
