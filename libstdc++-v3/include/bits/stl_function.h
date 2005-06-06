@@ -88,7 +88,7 @@ namespace std
    *  \endcode
    *  The addition and negation functions will be inlined directly.
    *
-   *  The standard functiors are derived from structs named @c unary_function
+   *  The standard functors are derived from structs named @c unary_function
    *  and @c binary_function.  These two classes contain nothing but typedefs,
    *  to aid in generic (template) programming.  If you write your own
    *  functors, you might consider doing the same.
