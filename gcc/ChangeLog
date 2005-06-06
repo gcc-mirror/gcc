@@ -1,5 +1,8 @@
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-chrec.c (reset_evolution_in_loop): Use build3 instead of
+	build2.
+
 	* fold-const.c (operand_equal_p): Don't return 1, if element
 	chains for 2 VECTOR_CSTs are not the same length.
 
