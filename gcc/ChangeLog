@@ -1,3 +1,12 @@
+2005-06-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-reassoc.o: New.
+	(OBJS-common): Add tree-ssa-reassoc.o
+	* timevar.def: Add TV_TREE_REASSOC
+	* tree-optimize.c (pass_reassoc): Add call.
+	* tree-pass.h (pass_reassoc): Add.
+	* tree-ssa-reassoc.c: New file.
+
 2005-06-06  Eric Christopher  <echristo@redhat.com>
 
 	target/21927
