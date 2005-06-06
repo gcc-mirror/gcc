@@ -669,22 +669,11 @@ namespace _GLIBCXX_STD
        *
        *  This constructor fills the %deque with @a n copies of @a value.
        */
-      deque(size_type __n, const value_type& __value,
+      explicit
+      deque(size_type __n, const value_type& __value = value_type(),
 	    const allocator_type& __a = allocator_type())
       : _Base(__a, __n)
       { _M_fill_initialize(__value); }
-
-      /**
-       *  @brief  Create a %deque with default elements.
-       *  @param  n  The number of elements to initially create.
-       *
-       *  This constructor fills the %deque with @a n copies of a
-       *  default-constructed element.
-       */
-      explicit
-      deque(size_type __n)
-      : _Base(allocator_type(), __n)
-      { _M_fill_initialize(value_type()); }
 
       /**
        *  @brief  %Deque copy constructor.
@@ -874,7 +863,7 @@ namespace _GLIBCXX_STD
        *  data.
        */
       void
-      resize(size_type __new_size, const value_type& __x)
+      resize(size_type __new_size, value_type __x = value_type())
       {
 	const size_type __len = size();
 	if (__new_size < __len)
@@ -882,19 +871,6 @@ namespace _GLIBCXX_STD
 	else
 	  insert(this->_M_impl._M_finish, __new_size - __len, __x);
       }
-
-      /**
-       *  @brief  Resizes the %deque to the specified number of elements.
-       *  @param  new_size  Number of elements the %deque should contain.
-       *
-       *  This function will resize the %deque to the specified number
-       *  of elements.  If the number is smaller than the %deque's
-       *  current size the %deque is truncated, otherwise the %deque
-       *  is extended and new elements are default-constructed.
-       */
-      void
-      resize(size_type new_size)
-      { resize(new_size, value_type()); }
 
       /**
        *  Returns true if the %deque is empty.  (Thus begin() would

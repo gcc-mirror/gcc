@@ -206,29 +206,14 @@ namespace _GLIBCXX_STD
        *
        *  This constructor fills the %vector with @a n copies of @a value.
        */
-      vector(size_type __n, const value_type& __value,
+      explicit
+      vector(size_type __n, const value_type& __value = value_type(),
 	     const allocator_type& __a = allocator_type())
       : _Base(__n, __a)
       {
 	std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value,
 				      _M_get_Tp_allocator());
 	this->_M_impl._M_finish = this->_M_impl._M_start + __n;
-      }
-
-      /**
-       *  @brief  Create a %vector with default elements.
-       *  @param  n  The number of elements to initially create.
-       *
-       *  This constructor fills the %vector with @a n copies of a
-       *  default-constructed element.
-       */
-      explicit
-      vector(size_type __n)
-      : _Base(__n, allocator_type())
-      {
-	std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, value_type(),
-				      _M_get_Tp_allocator());
-	this->_M_impl._M_finish = this->_M_impl._M_start + __n;	
       }
 
       /**
@@ -429,27 +414,13 @@ namespace _GLIBCXX_STD
        *  given data.
        */
       void
-      resize(size_type __new_size, const value_type& __x)
+      resize(size_type __new_size, value_type __x = value_type())
       {
 	if (__new_size < size())
 	  erase(begin() + __new_size, end());
 	else
 	  insert(end(), __new_size - size(), __x);
       }
-
-      /**
-       *  @brief  Resizes the %vector to the specified number of elements.
-       *  @param  new_size  Number of elements the %vector should contain.
-       *
-       *  This function will resize the %vector to the specified
-       *  number of elements.  If the number is smaller than the
-       *  %vector's current size the %vector is truncated, otherwise
-       *  the %vector is extended and new elements are
-       *  default-constructed.
-       */
-      void
-      resize(size_type __new_size)
-      { resize(__new_size, value_type()); }
 
       /**
        *  Returns the total number of elements that the %vector can

@@ -1,3 +1,35 @@
+2005-06-06  Paolo Carlini  <pcarlini@suse.de>
+
+        Port from libstdcxx_so_7-branch:
+	2004-09-24  Paolo Carlini  <pcarlini@suse.de>
+		    Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/stl_list.h (list::list(size_type, value_type,
+	const allocator_type&): Implement according to the letter of the
+	standard, i.e., don't use two overloads, not equivalent in case
+	of non default constructible T.
+	(list::resize(size_type, const value_type&)): Fix the signature:
+	according to the standard the second argument is by value; also,
+	don't use two overloads.
+	* include/bits/list.tcc (list::resize(size_type, const value_type&)):
+	Adjust consistently the signature.
+	* include/bits/stl_deque.h (deque::deque(size_type, value_type,
+	const allocator_type&)): Likewise.
+	(deque::resize(size_type, const value_type&)): Likewise.
+	* include/bits/stl_vector.h (vector::vector(size_type, value_type,
+	const allocator_type&)): Likewise.
+	(vector::resize(size_type, const value_type&)): Likewise.
+	* testsuite/testsuite_hooks.h: Add NonDefaultConstructible test type.
+	* testsuite/23_containers/deque/explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/list/explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/map/explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/multimap/explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/multiset/explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/set/explicit_instantiation/2.cc: New.
+	* testsuite/23_containers/vector/explicit_instantiation/2.cc: New.
+
+	* include/bits/deque.tcc: Minor formatting fix.
+
 2005-06-06  Peter Doerfler  <doerfler@techinfo.rwth-aachen.de>
 
 	* include/bits/stl_function.h: ... and another one.

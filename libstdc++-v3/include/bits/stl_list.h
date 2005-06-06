@@ -472,22 +472,11 @@ namespace _GLIBCXX_STD
        *
        *  This constructor fills the %list with @a n copies of @a value.
        */
-      list(size_type __n, const value_type& __value,
+      explicit
+      list(size_type __n, const value_type& __value = value_type(),
 	   const allocator_type& __a = allocator_type())
       : _Base(__a)
       { this->insert(begin(), __n, __value); }
-
-      /**
-       *  @brief  Create a %list with default elements.
-       *  @param  n  The number of elements to initially create.
-       *
-       *  This constructor fills the %list with @a n copies of a
-       *  default-constructed element.
-       */
-      explicit
-      list(size_type __n)
-      : _Base(allocator_type())
-      { this->insert(begin(), __n, value_type()); }
 
       /**
        *  @brief  %List copy constructor.
@@ -679,20 +668,7 @@ namespace _GLIBCXX_STD
        *  extended and new elements are populated with given data.
        */
       void
-      resize(size_type __new_size, const value_type& __x);
-
-      /**
-       *  @brief  Resizes the %list to the specified number of elements.
-       *  @param  new_size  Number of elements the %list should contain.
-       *
-       *  This function will resize the %list to the specified number of
-       *  elements.  If the number is smaller than the %list's current
-       *  size the %list is truncated, otherwise the %list is extended
-       *  and new elements are default-constructed.
-       */
-      void
-      resize(size_type __new_size)
-      { this->resize(__new_size, value_type()); }
+      resize(size_type __new_size, value_type __x = value_type());
 
       // element access
       /**
