@@ -1,3 +1,8 @@
+2005-06-06  Jie Zhang  <jie.zhang@analog.com>
+
+	* config.gcc (bfin*-uclinux*): New.
+	* config/bfin/uclinux.h: New file.
+
 2005-06-06  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/md.texi (Insn Splitting): Fix some wording.
