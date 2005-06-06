@@ -8729,8 +8729,7 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
       if ((code == LT && integer_zerop (arg1))
 	  || (! only_cheap && code == GE && integer_zerop (arg1)))
 	;
-      else if (BRANCH_COST >= 0
-	       && ! only_cheap && (code == NE || code == EQ)
+      else if (! only_cheap && (code == NE || code == EQ)
 	       && TREE_CODE (type) != REAL_TYPE
 	       && ((abs_optab->handlers[(int) operand_mode].insn_code
 		    != CODE_FOR_nothing)

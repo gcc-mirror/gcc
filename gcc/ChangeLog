@@ -1,3 +1,8 @@
+2005-06-06  Eric Christopher  <echristo@redhat.com>
+
+	target/21927
+	* expr.c (do_store_flag): Remove check for non-negative BRANCH_COST.
+
 2005-06-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Guard with
