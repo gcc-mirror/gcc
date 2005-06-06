@@ -1,5 +1,8 @@
 2005-06-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR 21903
+	* g++.dg/parse/defarg9.C: New.
+
 	PR c++/20637
 	* g++.dg/inherit/using4.C: New.
 	* g++.dg/overload/error1.C: Adjust expected errors.
