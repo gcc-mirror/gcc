@@ -1,3 +1,7 @@
+2005-06-06  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* libiberty.h (XOBFINISH): New.
+
 2005-06-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (vsnprintf): Add format attribute.

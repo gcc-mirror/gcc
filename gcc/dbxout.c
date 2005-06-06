@@ -856,7 +856,7 @@ dbxout_finish_complex_stabs (tree sym, STAB_CODE_TYPE code,
       obstack_1grow (&stabstr_ob, '\0');
 
       len = obstack_object_size (&stabstr_ob);
-      chunk = str = obstack_finish (&stabstr_ob);
+      chunk = str = XOBFINISH (&stabstr_ob, char *);
 
       /* Within the buffer are a sequence of NUL-separated strings,
 	 each of which is to be written out as a separate stab
@@ -889,7 +889,7 @@ dbxout_finish_complex_stabs (tree sym, STAB_CODE_TYPE code,
 	 comma than to do a two-character fputs.  */
       obstack_grow (&stabstr_ob, "\",", 2);
       len = obstack_object_size (&stabstr_ob);
-      str = obstack_finish (&stabstr_ob);
+      str = XOBFINISH (&stabstr_ob, char *);
       
       fwrite (str, 1, len, asm_out_file);
       DBX_FINISH_STABS (sym, code, line, addr, label, number);

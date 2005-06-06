@@ -267,7 +267,7 @@ main (int argc, char **argv)
   /* Print out the prototypes now.  */
   dummy = (rtx) 0;
   obstack_grow (&obstack, &dummy, sizeof (rtx));
-  insns = (rtx *) obstack_finish (&obstack);
+  insns = XOBFINISH (&obstack, rtx *);
 
   for (insn_ptr = insns; *insn_ptr; insn_ptr++)
     gen_proto (*insn_ptr);

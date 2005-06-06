@@ -1094,7 +1094,7 @@ build_element_name (struct sra_elt *elt)
 {
   build_element_name_1 (elt);
   obstack_1grow (&sra_obstack, '\0');
-  return obstack_finish (&sra_obstack);
+  return XOBFINISH (&sra_obstack, char *);
 }
 
 /* Instantiate an element as an independent variable.  */

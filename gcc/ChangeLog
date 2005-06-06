@@ -1,3 +1,18 @@
+2005-06-06  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-lex.c (lex_string): Use XOBFINISH.
+	* collect2.c (extract_string, dump_file): Likewise.
+	* dbxout.c (dbxout_finish_complex_stabs): Likewise.
+	* gcc.c (init_spec, build_search_list, convert_filename, 
+	set_collect_gcc_options, do_spec_2, do_spec_1, main): Likewise.
+	* genpreds.c (write_predicate_subfunction): Likewise.
+	* genflags.c (main): Likewise.
+	* read-rtl.c (mode_attr_index, apply_macro_to_string, 
+	join_c_conditions, read_quoted_string, read_braced_string, 
+	read_rtx_1): Likewise.
+	* stringpool.c (ggc_alloc_string): Likewise.
+	* tlink.c (obstack_fgets, recompile_files): Likewise.
+
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* intl.h (G_): New macro.
