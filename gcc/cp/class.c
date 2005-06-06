@@ -878,12 +878,12 @@ modify_vtable_entry (tree t,
 }
 
 
-/* Add method METHOD to class TYPE.  */
+/* Add method METHOD to class TYPE.  If USING_DECL is non-null, it is
+   the USING_DECL naming METHOD.  */
 
 void
-add_method (tree type, tree method)
+add_method (tree type, tree method, tree using_decl)
 {
-  int using;
   unsigned slot;
   tree overload;
   bool template_conv_p = false;
@@ -897,7 +897,6 @@ add_method (tree type, tree method)
     return;
 
   complete_p = COMPLETE_TYPE_P (type);
-  using = (DECL_CONTEXT (method) != type);
   conv_p = DECL_CONV_FN_P (method);
   if (conv_p)
     template_conv_p = (TREE_CODE (method) == TEMPLATE_DECL
@@ -1024,21 +1023,28 @@ add_method (tree type, tree method)
 		  || same_type_p (TREE_TYPE (TREE_TYPE (fn)),
 				  TREE_TYPE (TREE_TYPE (method)))))
 	    {
-	      if (using && DECL_CONTEXT (fn) == type)
-		/* Defer to the local function.  */
-		return;
+	      if (using_decl)
+		{
+		  if (DECL_CONTEXT (fn) == type)
+		    /* Defer to the local function.  */
+		    return;
+		  if (DECL_CONTEXT (fn) == DECL_CONTEXT (method))
+		    cp_error_at ("repeated using declaration %qD", using_decl);
+		  else
+		    cp_error_at ("using declaration %qD conflicts with a previous using declaration",
+				 using_decl);
+		}
 	      else
 		{
-		  cp_error_at ("%q#D and %q#D cannot be overloaded",
-			       method, fn);
-
-		  /* We don't call duplicate_decls here to merge
-		     the declarations because that will confuse
-		     things if the methods have inline
-		     definitions.  In particular, we will crash
-		     while processing the definitions.  */
-		  return;
+		  cp_error_at ("%q#D cannot be overloaded", method);
+		  cp_error_at ("with %q#D", fn);
 		}
+	      
+	      /* We don't call duplicate_decls here to merge the
+		 declarations because that will confuse things if the
+		 methods have inline definitions.  In particular, we
+		 will crash while processing the definitions.  */
+	      return;
 	    }
 	}
     }
@@ -1201,7 +1207,7 @@ handle_using_decl (tree using_decl, tree t)
   if (flist)
     for (; flist; flist = OVL_NEXT (flist))
       {
-	add_method (t, OVL_CURRENT (flist));
+	add_method (t, OVL_CURRENT (flist), using_decl);
 	alter_access (t, OVL_CURRENT (flist), access);
       }
   else
@@ -3829,10 +3835,10 @@ clone_function_decl (tree fn, int update_method_vec_p)
 	 and a not-in-charge version.  */
       clone = build_clone (fn, complete_ctor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone);
+	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
       clone = build_clone (fn, base_ctor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone);
+	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
     }
   else
     {
@@ -3851,14 +3857,14 @@ clone_function_decl (tree fn, int update_method_vec_p)
 	{
 	  clone = build_clone (fn, deleting_dtor_identifier);
 	  if (update_method_vec_p)
-	    add_method (DECL_CONTEXT (clone), clone);
+	    add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
 	}
       clone = build_clone (fn, complete_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone);
+	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
       clone = build_clone (fn, base_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone);
+	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
     }
 
   /* Note that this is an abstract function that is never emitted.  */

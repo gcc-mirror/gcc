@@ -23,10 +23,10 @@ template struct B<int>;
 struct C 
 {
   template <class U>
-  void f() {}
+  void f() {}  // { dg-error "with" } redeclaration
 
   template <class U>
-  void f() {}  // { dg-error "" } redeclaration
+  void f() {}  // { dg-error "overloaded" } redeclaration
 };
 
 
@@ -42,15 +42,15 @@ template struct D<int, double>;
 template <class T, class U>
 struct D2
 {
-  void f(T);
-  void f(U); // { dg-error "" } redeclaration 
+  void f(T); // { dg-error "with" } redeclaration 
+  void f(U); // { dg-error "overloaded" } redeclaration 
 };
 
 template struct D2<int, int>; 
 
 struct E
 {
-  void f(); 
-  void f(); // { dg-error "" } redeclaration
+  void f();  // { dg-error "with" } redeclaration
+  void f(); // { dg-error "overloaded" } redeclaration
 };
 

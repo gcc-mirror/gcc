@@ -1,3 +1,17 @@
+2005-06-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20637
+	* cp-tree.h (add_method): Add using_decl parameter.
+	* class.c (add_method): Add using_decl parameter.  Adjust error
+	messages.
+	(handle_using_decl): Pass the using decl to add_method.
+	(clone_function_decl): Adjust add_member calls.
+	* decl2.c (check_classfn): Likewise.
+	* method.c (lazily_declare_fn): Likewise.
+	* semantics.c (finish_member_declaration): Likewise.
+
+	* method.c (synthesize_method): Use inform, not warning.
+
 2005-06-06  Hans-Peter Nilsson  <hp@axis.se>
 
 	* config-lang.in (target_libs): Remove target-gperf.

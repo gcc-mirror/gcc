@@ -806,8 +806,8 @@ synthesize_method (tree fndecl)
   pop_deferring_access_checks ();
 
   if (error_count != errorcount || warning_count != warningcount)
-    warning (0, "%Hsynthesized method %qD first required here ",
-	     &input_location, fndecl);
+    inform ("%Hsynthesized method %qD first required here ",
+	    &input_location, fndecl);
 }
 
 /* Use EXTRACTOR to locate the relevant function called for each base &
@@ -1119,7 +1119,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   if (sfk == sfk_destructor)
     check_for_override (fn, type);
   /* Add it to CLASSTYPE_METHOD_VEC.  */
-  add_method (type, fn);
+  add_method (type, fn, NULL_TREE);
   /* Add it to TYPE_METHODS.  */
   if (sfk == sfk_destructor 
       && DECL_VIRTUAL_P (fn)
