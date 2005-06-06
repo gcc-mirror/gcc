@@ -1,3 +1,14 @@
+2005-06-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.in (unsupported_languages): New macro.
+	<mmix-knuth-mmixware>: Set unsupported_languages.  Name explicit
+	non-ported target libraries in noconfigdirs.
+	<cris-*, crisv32-*> Ditto, except for non-aout, non-elf,
+	non-linux-gnu.  Remove libgcj_ex_libffi.
+ 	<lang_frag loop>: Set add_this_lang=no if the language is in
+	unsupported_languages.
+	* configure: Regenerate.
+
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* configure.in: Fix typo in handling of --with-mpfr-dir.
