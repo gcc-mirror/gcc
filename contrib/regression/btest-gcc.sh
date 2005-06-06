@@ -110,8 +110,12 @@ if [ $H_HOST = $H_TARGET ] ; then
     make all || exit 1
   fi
 else
-  $SOURCE/configure --prefix=$PREFIX --target=$H_TARGET \
-    --with-gnu-ld --with-gnu-as --with-newlib || exit 1
+  withopt="--with-gnu-ld --with-gnu-as"
+  case "$H_TARGET" in
+    *-linux*) ;;
+    *) withopt="$withopt --with-newlib";;
+  esac
+  $SOURCE/configure --prefix=$PREFIX --target=$H_TARGET $withopt || exit 1
   make || exit 1
 fi
 echo error > $RESULT || exit 1
