@@ -95,7 +95,7 @@ ggc_alloc_string (const char *contents, int length)
     return digit_string (contents[0] - '0');
 
   obstack_grow0 (&string_stack, contents, length);
-  return obstack_finish (&string_stack);
+  return XOBFINISH (&string_stack, const char *);
 }
 
 /* Return an IDENTIFIER_NODE whose name is TEXT (a null-terminated string).

@@ -321,7 +321,7 @@ mode_attr_index (struct map_value **mode_maps, const char *string)
   /* Copy the attribute string into permanent storage, without the
      angle brackets around it.  */
   obstack_grow0 (&string_obstack, string + 1, strlen (string) - 2);
-  p = (char *) obstack_finish (&string_obstack);
+  p = XOBFINISH (&string_obstack, char *);
 
   mv = XNEW (struct map_value);
   mv->number = *mode_maps == 0 ? 0 : (*mode_maps)->number + 1;
@@ -404,7 +404,7 @@ apply_macro_to_string (const char *string, struct mapping *macro, int value)
   if (base != copy)
     {
       obstack_grow (&string_obstack, base, strlen (base) + 1);
-      copy = obstack_finish (&string_obstack);
+      copy = XOBFINISH (&string_obstack, char *);
       copy_rtx_ptr_loc (copy, string);
       return copy;
     }
@@ -785,7 +785,7 @@ join_c_conditions (const char *cond1, const char *cond2)
   obstack_ptr_grow (&joined_conditions_obstack, result);
   obstack_ptr_grow (&joined_conditions_obstack, cond1);
   obstack_ptr_grow (&joined_conditions_obstack, cond2);
-  entry = obstack_finish (&joined_conditions_obstack);
+  entry = XOBFINISH (&joined_conditions_obstack, const void **);
   *htab_find_slot (joined_conditions, entry, INSERT) = entry;
   return result;
 }
@@ -998,7 +998,7 @@ read_quoted_string (FILE *infile)
     }
 
   obstack_1grow (&string_obstack, 0);
-  return (char *) obstack_finish (&string_obstack);
+  return XOBFINISH (&string_obstack, char *);
 }
 
 /* Read a braced string (a la Tcl) onto the string obstack.  Caller
@@ -1036,7 +1036,7 @@ read_braced_string (FILE *infile)
     }
 
   obstack_1grow (&string_obstack, 0);
-  return (char *) obstack_finish (&string_obstack);
+  return XOBFINISH (&string_obstack, char *);
 }
 
 /* Read some kind of string constant.  This is the high-level routine
@@ -1581,7 +1581,7 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 	      obstack_grow (&string_obstack, fn, strlen (fn));
 	      sprintf (line_name, ":%d", read_rtx_lineno);
 	      obstack_grow (&string_obstack, line_name, strlen (line_name)+1);
-	      stringbuf = (char *) obstack_finish (&string_obstack);
+	      stringbuf = XOBFINISH (&string_obstack, char *);
 	    }
 
 	  if (star_if_braced)

@@ -122,7 +122,7 @@ write_predicate_subfunction (struct pred_data *p)
   obstack_grow (rtl_obstack, p->name, strlen (p->name));
   obstack_grow (rtl_obstack, "_1 (op, mode)",
 		sizeof "_1 (op, mode)");
-  match_test_str = obstack_finish (rtl_obstack);
+  match_test_str = XOBFINISH (rtl_obstack, const char *);
 
   /* Add the function-call expression to the complete expression to be
      evaluated.  */

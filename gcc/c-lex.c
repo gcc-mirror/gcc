@@ -762,7 +762,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
   /* We have read one more token than we want.  */
   _cpp_backup_tokens (parse_in, 1);
   if (concats)
-    strs = (cpp_string *) obstack_finish (&str_ob);
+    strs = XOBFINISH (&str_ob, cpp_string *);
 
   if (concats && !objc_string && !in_system_header)
     warning (OPT_Wtraditional,
