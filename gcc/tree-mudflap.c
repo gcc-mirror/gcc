@@ -528,14 +528,11 @@ mf_build_check_statement_for (tree base, tree limit,
   make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
   make_single_succ_edge (then_bb, join_bb, EDGE_FALLTHRU);
 
-  /* We expect that the conditional jump we will construct will not
-     be taken very often as it basically is an exception condition.  */
-  predict_edge_def (single_pred_edge (then_bb), PRED_MUDFLAP, NOT_TAKEN);
-
   /* Mark the pseudo-fallthrough edge from cond_bb to join_bb.  */
   e = find_edge (cond_bb, join_bb);
   e->flags = EDGE_FALSE_VALUE;
-  predict_edge_def (e, PRED_MUDFLAP, TAKEN);
+  e->count = cond_bb->count;
+  e->probability = REG_BR_PROB_BASE;
 
   /* Update dominance info.  Note that bb_join's data was
      updated by split_block.  */

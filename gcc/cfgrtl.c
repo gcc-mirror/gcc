@@ -2136,6 +2136,12 @@ rtl_verify_flow_info (void)
       edge e;
       edge_iterator ei;
 
+      if (bb->predictions)
+	{
+	  error ("bb prediction set for block %i, but it is not used in RTL land", bb->index);
+	  err = 1;
+	}
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->flags & EDGE_FALLTHRU)
 	  break;
