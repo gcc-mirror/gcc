@@ -37,8 +37,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "vec.h"
 #include "target.h"
 
-#define GCC_BAD(msgid) do { warning (0, msgid); return; } while (0)
-#define GCC_BAD2(msgid, arg) do { warning (0, msgid, arg); return; } while (0)
+#define GCC_BAD(gmsgid) do { warning (0, gmsgid); return; } while (0)
+#define GCC_BAD2(gmsgid, arg) \
+  do { warning (0, gmsgid, arg); return; } while (0)
 
 typedef struct align_stack GTY(())
 {

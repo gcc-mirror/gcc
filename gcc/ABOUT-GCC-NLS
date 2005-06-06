@@ -25,15 +25,22 @@ responsibility to translate the message before the user sees it.
 
 By convention, any function parameter in the GCC sources whose name
 ends in `msgid' is expected to be a message requiring translation.
-For example, the `error' function's first parameter is named `msgid'.
+If the parameter name ends with `gmsgid', it is assumed to be a GCC
+diagnostics format string requiring translation, if it ends with
+`cmsgid', it is assumed to be a format string for `printf' family
+of functions, requiring a translation.
+For example, the `error' function's first parameter is named `gmsgid'.
 GCC's exgettext script uses this convention to determine which
 function parameter strings need to be translated.  The exgettext
 script also assumes that any occurrence of `%eMSGID}' on a source
 line, where MSGID does not contain `%' or `}', corresponds to a
 message MSGID that requires translation; this is needed to identify
 diagnostics in GCC spec strings.
+The `G_(GMSGID)' macro defined in intl.h can be used to mark GCC diagnostics
+format strings as requiring translation, but other than that it is a
+no-op at runtime.
 
-If you modify source files, you'll need at least version 0.10.37 of the
+If you modify source files, you'll need at least version 0.14.15 of the
 GNU gettext package to propagate the modifications to the translation
 tables.
 

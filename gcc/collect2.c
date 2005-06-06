@@ -328,26 +328,26 @@ collect_exit (int status)
 
 /* Notify user of a non-error.  */
 void
-notice (const char *msgid, ...)
+notice (const char *cmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
-  vfprintf (stderr, _(msgid), ap);
+  va_start (ap, cmsgid);
+  vfprintf (stderr, _(cmsgid), ap);
   va_end (ap);
 }
 
 /* Die when sys call fails.  */
 
 void
-fatal_perror (const char * msgid, ...)
+fatal_perror (const char * cmsgid, ...)
 {
   int e = errno;
   va_list ap;
 
-  va_start (ap, msgid);
+  va_start (ap, cmsgid);
   fprintf (stderr, "collect2: ");
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(cmsgid), ap);
   fprintf (stderr, ": %s\n", xstrerror (e));
   va_end (ap);
 
@@ -357,13 +357,13 @@ fatal_perror (const char * msgid, ...)
 /* Just die.  */
 
 void
-fatal (const char * msgid, ...)
+fatal (const char * cmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
+  va_start (ap, cmsgid);
   fprintf (stderr, "collect2: ");
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(cmsgid), ap);
   fprintf (stderr, "\n");
   va_end (ap);
 
@@ -373,13 +373,13 @@ fatal (const char * msgid, ...)
 /* Write error message.  */
 
 void
-error (const char * msgid, ...)
+error (const char * gmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, msgid);
+  va_start (ap, gmsgid);
   fprintf (stderr, "collect2: ");
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, _(gmsgid), ap);
   fprintf (stderr, "\n");
   va_end(ap);
 }

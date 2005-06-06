@@ -635,18 +635,18 @@ c_parser_new (void)
    used.  */
 
 static void
-c_parser_error (c_parser *parser, const char *msgid)
+c_parser_error (c_parser *parser, const char *gmsgid)
 {
   c_token *token = c_parser_peek_token (parser);
   if (parser->error)
     return;
   parser->error = true;
-  if (!msgid)
+  if (!gmsgid)
     return;
   /* This diagnostic makes more sense if it is tagged to the line of
      the token we just peeked at.  */
   c_parser_set_source_position_from_token (token);
-  c_parse_error (msgid,
+  c_parse_error (gmsgid,
 		 /* Because c_parse_error does not understand
 		    CPP_KEYWORD, keywords are treated like
 		    identifiers.  */

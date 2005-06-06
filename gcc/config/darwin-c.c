@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Pragmas.  */
 
-#define BAD(msgid) do { warning (0, msgid); return; } while (0)
+#define BAD(gmsgid) do { warning (0, gmsgid); return; } while (0)
 
 static bool using_frameworks = false;
 

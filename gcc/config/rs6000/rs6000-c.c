@@ -50,8 +50,8 @@ static tree altivec_resolve_overloaded_builtin (tree, tree);
    whether or not new function declarations receive a longcall
    attribute by default.  */
 
-#define SYNTAX_ERROR(msgid) do {			\
-  warning (0, msgid);					\
+#define SYNTAX_ERROR(gmsgid) do {			\
+  warning (0, gmsgid);					\
   warning (0, "ignoring malformed #pragma longcall");	\
   return;						\
 } while (0)
