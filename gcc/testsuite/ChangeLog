@@ -1,3 +1,14 @@
+2005-06-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20637
+	* g++.dg/inherit/using4.C: New.
+	* g++.dg/overload/error1.C: Adjust expected errors.
+	* g++.old-deja/g++.benjamin/warn02.C: Likewise.
+	* g++.old-deja/g++.brendan/arm2.C: Likewise.
+	* g++.old-deja/g++.other/redecl2.C: Likewise.
+	* g++.old-deja/g++.other/redecl4.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp78.C: Likewise.
+
 2005-06-05  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/f2c_5.f90: Add -w to dg-options
