@@ -1,5 +1,9 @@
 2005-06-06  Peter Doerfler  <doerfler@techinfo.rwth-aachen.de>
 
+	* include/bits/stl_function.h: ... and another one.
+
+2005-06-06  Peter Doerfler  <doerfler@techinfo.rwth-aachen.de>
+
 	* include/bits/stl_function.h: Fix typo in comment.
 
 2005-06-02  Nathan Sidwell  <nathan@codesourcery.com>
