@@ -31,5 +31,5 @@ int xxx (void)
    Calls to cst_fun2 and pure_fun2 should not be, since calling
    with k = 0 may be invalid.  */
 
-/* { dg-final { scan-tree-dump-times "Moving statement" 2 "lim" } } */
+/* { dg-final { scan-tree-dump-times "Moving statement" 3 "lim" } } */
 /* { dg-final { cleanup-tree-dump "lim" } } */
