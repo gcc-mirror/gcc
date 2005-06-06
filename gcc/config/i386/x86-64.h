@@ -1,5 +1,5 @@
 /* OS independent definitions for AMD x86-64.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005 Free Software Foundation, Inc.
    Contributed by Bo Thorsen <bo@suse.de>.
 
 This file is part of GCC.
@@ -56,6 +56,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* This is used to align code labels according to Intel recommendations.  */
 
+#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
   do {									\
     if ((LOG) != 0) {							\
@@ -63,6 +64,7 @@ Boston, MA 02111-1307, USA.  */
       else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
     }									\
   } while (0)
+#endif
 
 
 /* i386 System V Release 4 uses DWARF debugging info.
@@ -70,9 +72,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define DWARF2_DEBUGGING_INFO 1
 #define DWARF2_UNWIND_INFO 1
-/* Incorrectly autodetected in cross compilation.  */
-#undef HAVE_AS_DWARF2_DEBUG_LINE
-#define HAVE_AS_DWARF2_DEBUG_LINE 1
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
