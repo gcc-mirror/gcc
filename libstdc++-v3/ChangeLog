@@ -1,3 +1,7 @@
+2005-06-06  Peter Doerfler  <doerfler@techinfo.rwth-aachen.de>
+
+	* include/bits/stl_function.h: Fix typo in comment.
+
 2005-06-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* acinclude.m4 ([GLIBCXX_ENABLE_C99]): Check clog, clogf, clogl
