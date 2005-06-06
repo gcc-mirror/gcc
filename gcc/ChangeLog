@@ -1,3 +1,13 @@
+2005-06-06  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (tree_predict_edge): Don't drop useless predictions;
+	check that it is not called too late in the game.
+	(gate_estimate_probability): New gate.
+	(pass_profile): Gate.
+	* tree-mudflap.c (mf_build_check_statement_for): Do not drop
+	predictions; update CFG instead.
+	* cfgrtl.c (rtl_verify_flow_info): Check that predcitions are consumed.
+
 2005-06-06  Jie Zhang  <jie.zhang@analog.com>
 
 	* config.gcc (bfin*-uclinux*): New.

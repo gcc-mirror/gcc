@@ -231,8 +231,9 @@ rtl_predict_edge (edge e, enum br_predictor predictor, int probability)
 void
 tree_predict_edge (edge e, enum br_predictor predictor, int probability)
 {
+  gcc_assert (profile_status != PROFILE_GUESSED);
   if ((e->src != ENTRY_BLOCK_PTR && EDGE_COUNT (e->src->succs) > 1)
-      && flag_guess_branch_prob)
+      && flag_guess_branch_prob && optimize)
     {
       struct edge_prediction *i = ggc_alloc (sizeof (struct edge_prediction));
 
@@ -1926,11 +1927,16 @@ choose_function_section (void)
 		    UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
 }
 
+static bool
+gate_estimate_probability (void)
+{
+  return flag_guess_branch_prob;
+}
 
 struct tree_opt_pass pass_profile = 
 {
   "profile",				/* name */
-  NULL,					/* gate */
+  gate_estimate_probability,		/* gate */
   tree_estimate_probability,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */
