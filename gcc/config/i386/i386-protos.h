@@ -163,7 +163,7 @@ extern void ix86_split_lshrdi (rtx *, rtx);
 extern rtx ix86_find_base_term (rtx);
 extern int ix86_check_movabs (rtx, int);
 
-extern rtx assign_386_stack_local (enum machine_mode, int);
+extern rtx assign_386_stack_local (enum machine_mode, enum ix86_stack_slot);
 extern int ix86_attr_length_immediate_default (rtx, int);
 extern int ix86_attr_length_address_default (rtx);
 
@@ -191,7 +191,8 @@ extern bool ix86_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);
 extern enum reg_class ix86_preferred_reload_class (rtx, enum reg_class);
 extern int ix86_memory_move_cost (enum machine_mode, enum reg_class, int);
-extern void emit_i387_cw_initialization (rtx, rtx, int);
+extern int ix86_mode_needed (int, rtx);
+extern void emit_i387_cw_initialization (int);
 extern bool ix86_fp_jump_nontrivial_p (enum rtx_code);
 extern void x86_order_regs_for_local_alloc (void);
 extern void x86_function_profiler (FILE *, int);
