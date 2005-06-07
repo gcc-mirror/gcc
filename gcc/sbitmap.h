@@ -66,7 +66,7 @@ typedef struct {
   /* The current word index.  */
   unsigned int word_num;
 
-  /* The current bit index.  */
+  /* The current bit index (not modulo SBITMAP_ELT_BITS).  */
   unsigned int bit_num;
 
   /* The words currently visited.  */
@@ -80,14 +80,15 @@ static inline void
 sbitmap_iter_init (sbitmap_iterator *i, sbitmap bmp, unsigned int min)
 {
   i->word_num = min / (unsigned int) SBITMAP_ELT_BITS;
-  i->bit_num = min % (unsigned int) SBITMAP_ELT_BITS;
+  i->bit_num = min;
   i->size = bmp->size;
   i->ptr = bmp->elms;
 
   if (i->word_num >= i->size)
     i->word = 0;
   else
-    i->word = i->ptr[i->word_num] >> i->bit_num;
+    i->word = (i->ptr[i->word_num]
+	       >> (i->bit_num % (unsigned int) SBITMAP_ELT_BITS));
 }
 
 /* Return true if we have more bits to visit, in which case *N is set
