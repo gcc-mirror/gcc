@@ -1445,13 +1445,18 @@ stmt_dominates_stmt_p (tree s1, tree s2)
   return dominated_by_p (CDI_DOMINATORS, bb2, bb1);
 }
 
-/* Checks whether it is correct to count the induction variable BASE + STEP * I
-   at AT_STMT in wider TYPE, using the fact that statement OF is executed at
-   most BOUND times in the loop.  If it is possible, return the value of step
-   of the induction variable in the TYPE, otherwise return NULL_TREE.
+/* Return true when it is possible to prove that the induction
+   variable does not wrap: vary outside the type specified bounds.
+   Checks whether BOUND < VALID_NITER that means in the context of iv
+   conversion that all the iterations in the loop are safe: not
+   producing wraps.
+
+   The statement NITER_BOUND->AT_STMT is executed at most
+   NITER_BOUND->BOUND times in the loop.
    
-   ADDITIONAL is the additional condition recorded for operands of the bound.
-   This is useful in the following case, created by loop header copying:
+   NITER_BOUND->ADDITIONAL is the additional condition recorded for
+   operands of the bound.  This is useful in the following case,
+   created by loop header copying:
 
    i = 0;
    if (n > 0)
@@ -1465,108 +1470,211 @@ stmt_dominates_stmt_p (tree s1, tree s2)
    assumption "n > 0" says us that the value of the number of iterations is at
    most MAX_TYPE - 1 (without this assumption, it might overflow).  */
 
-static tree
-can_count_iv_in_wider_type_bound (tree type, tree base, tree step,
-				  tree at_stmt,
-				  tree bound,
-				  tree additional,
-				  tree of)
+static bool
+proved_non_wrapping_p (tree at_stmt,
+		       struct nb_iter_bound *niter_bound, 
+		       tree new_type,
+		       tree valid_niter)
 {
-  tree inner_type = TREE_TYPE (base), b, bplusstep, new_step, new_step_abs;
-  tree valid_niter, extreme, unsigned_type, delta, bound_type;
   tree cond;
+  tree bound = niter_bound->bound;
 
-  b = fold_convert (type, base);
-  bplusstep = fold_convert (type,
-			    fold_build2 (PLUS_EXPR, inner_type, base, step));
-  new_step = fold_build2 (MINUS_EXPR, type, bplusstep, b);
-  if (TREE_CODE (new_step) != INTEGER_CST)
+  if (TYPE_PRECISION (new_type) > TYPE_PRECISION (TREE_TYPE (bound)))
+    bound = fold_convert (unsigned_type_for (new_type), bound);
+  else
+    valid_niter = fold_convert (TREE_TYPE (bound), valid_niter);
+
+  /* After the statement niter_bound->at_stmt we know that anything is
+     executed at most BOUND times.  */
+  if (at_stmt && stmt_dominates_stmt_p (niter_bound->at_stmt, at_stmt))
+    cond = fold_build2 (GE_EXPR, boolean_type_node, valid_niter, bound);
+
+  /* Before the statement niter_bound->at_stmt we know that anything
+     is executed at most BOUND + 1 times.  */
+  else
+    cond = fold_build2 (GT_EXPR, boolean_type_node, valid_niter, bound);
+
+  if (nonzero_p (cond))
+    return true;
+
+  /* Try taking additional conditions into account.  */
+  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+		      invert_truthvalue (niter_bound->additional),
+		      cond);
+
+  if (nonzero_p (cond))
+    return true;
+
+  return false;
+}
+
+/* Checks whether it is correct to count the induction variable BASE +
+   STEP * I at AT_STMT in a wider type NEW_TYPE, using the bounds on
+   numbers of iterations of a LOOP.  If it is possible, return the
+   value of step of the induction variable in the NEW_TYPE, otherwise
+   return NULL_TREE.  */
+
+static tree
+convert_step_widening (struct loop *loop, tree new_type, tree base, tree step,
+		       tree at_stmt)
+{
+  struct nb_iter_bound *bound;
+  tree base_in_new_type, base_plus_step_in_new_type, step_in_new_type;
+  tree delta, step_abs;
+  tree unsigned_type, valid_niter;
+
+  /* Compute the new step.  For example, {(uchar) 100, +, (uchar) 240}
+     is converted to {(uint) 100, +, (uint) 0xfffffff0} in order to
+     keep the values of the induction variable unchanged: 100, 84, 68,
+     ...
+
+     Another example is: (uint) {(uchar)100, +, (uchar)3} is converted
+     to {(uint)100, +, (uint)3}.  
+
+     Before returning the new step, verify that the number of
+     iterations is less than DELTA / STEP_ABS (i.e. in the previous
+     example (256 - 100) / 3) such that the iv does not wrap (in which
+     case the operations are too difficult to be represented and
+     handled: the values of the iv should be taken modulo 256 in the
+     wider type; this is not implemented).  */
+  base_in_new_type = fold_convert (new_type, base);
+  base_plus_step_in_new_type = 
+    fold_convert (new_type,
+		  fold_build2 (PLUS_EXPR, TREE_TYPE (base), base, step));
+  step_in_new_type = fold_build2 (MINUS_EXPR, new_type,
+				  base_plus_step_in_new_type,
+				  base_in_new_type);
+
+  if (TREE_CODE (step_in_new_type) != INTEGER_CST)
     return NULL_TREE;
 
-  switch (compare_trees (bplusstep, b))
+  switch (compare_trees (base_plus_step_in_new_type, base_in_new_type))
     {
     case -1:
-      extreme = upper_bound_in_type (type, inner_type);
-      delta = fold_build2 (MINUS_EXPR, type, extreme, b);
-      new_step_abs = new_step;
-      break;
+      {
+	tree extreme = upper_bound_in_type (new_type, TREE_TYPE (base));
+	delta = fold_build2 (MINUS_EXPR, new_type, extreme,
+			     base_in_new_type);
+	step_abs = step_in_new_type;
+	break;
+      }
 
     case 1:
-      extreme = lower_bound_in_type (type, inner_type);
-      new_step_abs = fold_build1 (NEGATE_EXPR, type, new_step);
-      delta = fold_build2 (MINUS_EXPR, type, b, extreme);
-      break;
+      {
+	tree extreme = lower_bound_in_type (new_type, TREE_TYPE (base));
+	delta = fold_build2 (MINUS_EXPR, new_type, base_in_new_type,
+			     extreme);
+	step_abs = fold_build1 (NEGATE_EXPR, new_type, step_in_new_type);
+	break;
+      }
 
     case 0:
-      return new_step;
+      return step_in_new_type;
 
     default:
       return NULL_TREE;
     }
 
-  unsigned_type = unsigned_type_for (type);
+  unsigned_type = unsigned_type_for (new_type);
   delta = fold_convert (unsigned_type, delta);
-  new_step_abs = fold_convert (unsigned_type, new_step_abs);
+  step_abs = fold_convert (unsigned_type, step_abs);
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type,
-			     delta, new_step_abs);
+			     delta, step_abs);
 
-  bound_type = TREE_TYPE (bound);
-  if (TYPE_PRECISION (type) > TYPE_PRECISION (bound_type))
-    bound = fold_convert (unsigned_type, bound);
-  else
-    valid_niter = fold_convert (bound_type, valid_niter);
-    
-  if (at_stmt && stmt_dominates_stmt_p (of, at_stmt))
-    {
-      /* After the statement OF we know that anything is executed at most
-	 BOUND times.  */
-      cond = fold_build2 (GE_EXPR, boolean_type_node, valid_niter, bound);
-    }
-  else
-    {
-      /* Before the statement OF we know that anything is executed at most
-	 BOUND + 1 times.  */
-      cond = fold_build2 (GT_EXPR, boolean_type_node, valid_niter, bound);
-    }
+  for (bound = loop->bounds; bound; bound = bound->next)
+    if (proved_non_wrapping_p (at_stmt, bound, new_type, valid_niter))
+      return step_in_new_type;
 
-  if (nonzero_p (cond))
-    return new_step;
-
-  /* Try taking additional conditions into account.  */
-  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-		      invert_truthvalue (additional),
-		      cond);
-  if (nonzero_p (cond))
-    return new_step;
-
+  /* Fail when the loop has no bound estimations, or when no bound can
+     be used for verifying the conversion.  */
   return NULL_TREE;
 }
 
-/* Checks whether it is correct to count the induction variable BASE + STEP * I
-   at AT_STMT in wider TYPE, using the bounds on numbers of iterations of a
-   LOOP.  If it is possible, return the value of step of the induction variable
-   in the TYPE, otherwise return NULL_TREE.  */
+/* Return false only when the induction variable BASE + STEP * I is
+   known to not overflow: i.e. when the number of iterations is small
+   enough with respect to the step and initial condition in order to
+   keep the evolution confined in TYPEs bounds.  Return true when the
+   iv is known to overflow or when the property is not computable.
 
-tree
-can_count_iv_in_wider_type (struct loop *loop, tree type, tree base, tree step,
-			    tree at_stmt)
+   Initialize INIT_IS_MAX to true when the evolution goes from
+   INIT_IS_MAX to LOWER_BOUND_IN_TYPE, false in the contrary case, not
+   defined when the function returns true.  */
+
+bool
+scev_probably_wraps_p (tree type, tree base, tree step, 
+		       tree at_stmt, struct loop *loop,
+		       bool *init_is_max)
 {
   struct nb_iter_bound *bound;
-  tree new_step;
+  tree delta, step_abs;
+  tree unsigned_type, valid_niter;
+  tree base_plus_step = fold_build2 (PLUS_EXPR, type, base, step);
 
-  for (bound = loop->bounds; bound; bound = bound->next)
+  switch (compare_trees (base_plus_step, base))
     {
-      new_step = can_count_iv_in_wider_type_bound (type, base, step,
-						   at_stmt,
-						   bound->bound,
-						   bound->additional,
-						   bound->at_stmt);
+    case -1:
+      {
+	tree extreme = upper_bound_in_type (type, TREE_TYPE (base));
+	delta = fold_build2 (MINUS_EXPR, type, extreme, base);
+	step_abs = step;
+	*init_is_max = false;
+	break;
+      }
 
-      if (new_step)
-	return new_step;
+    case 1:
+      {
+	tree extreme = lower_bound_in_type (type, TREE_TYPE (base));
+	delta = fold_build2 (MINUS_EXPR, type, base, extreme);
+	step_abs = fold_build1 (NEGATE_EXPR, type, step);
+	*init_is_max = true;
+	break;
+      }
+
+    case 0:
+      /* This means step is equal to 0.  This should not happen.  It
+	 could happen in convert step, but not here.  Safely answer
+	 don't know as in the default case.  */
+
+    default:
+      return true;
     }
 
-  return NULL_TREE;
+  /* After having set INIT_IS_MAX, we can return false: when not using
+     wrapping arithmetic, signed types don't wrap.  */
+  if (!flag_wrapv && !TYPE_UNSIGNED (type))
+    return false;
+
+  unsigned_type = unsigned_type_for (type);
+  delta = fold_convert (unsigned_type, delta);
+  step_abs = fold_convert (unsigned_type, step_abs);
+  valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
+
+  for (bound = loop->bounds; bound; bound = bound->next)
+    if (proved_non_wrapping_p (at_stmt, bound, type, valid_niter))
+      return false;
+
+  /* At this point we still don't have a proof that the iv does not
+     overflow: give up.  */
+  return true;
+}
+
+/* Return the conversion to NEW_TYPE of the STEP of an induction
+   variable BASE + STEP * I at AT_STMT.  */
+
+tree
+convert_step (struct loop *loop, tree new_type, tree base, tree step,
+	      tree at_stmt)
+{
+  tree base_type = TREE_TYPE (base);
+
+  /* When not using wrapping arithmetic, signed types don't wrap.  */
+  if (!flag_wrapv && !TYPE_UNSIGNED (base_type))
+    return fold_convert (new_type, step);
+
+  if (TYPE_PRECISION (new_type) > TYPE_PRECISION (base_type))
+    return convert_step_widening (loop, new_type, base, step, at_stmt);
+
+  return fold_convert (new_type, step);
 }
 
 /* Frees the information on upper bounds on numbers of iterations of LOOP.  */

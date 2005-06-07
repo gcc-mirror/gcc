@@ -1427,13 +1427,13 @@ extract_range_from_expr (value_range_t *vr, tree expr)
     set_value_range_to_varying (vr);
 }
 
-
-/* Given a range VR, a loop L and a variable VAR, determine whether it
+/* Given a range VR, a LOOP and a variable VAR, determine whether it
    would be profitable to adjust VR using scalar evolution information
    for VAR.  If so, update VR with the new limits.  */
 
 static void
-adjust_range_with_scev (value_range_t *vr, struct loop *l, tree var)
+adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
+			tree var)
 {
   tree init, step, chrec;
   bool init_is_max;
@@ -1443,7 +1443,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *l, tree var)
   if (vr->type == VR_ANTI_RANGE)
     return;
 
-  chrec = analyze_scalar_evolution (l, var);
+  chrec = analyze_scalar_evolution (loop, var);
   if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
     return;
 
@@ -1455,21 +1455,11 @@ adjust_range_with_scev (value_range_t *vr, struct loop *l, tree var)
   if (!is_gimple_min_invariant (step))
     return;
 
-  /* FIXME.  When dealing with unsigned types,
-     analyze_scalar_evolution sets STEP to very large unsigned values
-     when the evolution goes backwards.  This confuses this analysis
-     because we think that INIT is the smallest value that the range
-     can take, instead of the largest.  Ignore these chrecs for now.  */
-  if (INTEGRAL_TYPE_P (TREE_TYPE (step)) && TYPE_UNSIGNED (TREE_TYPE (step)))
+  /* Do not adjust ranges when chrec may wrap.  */
+  if (scev_probably_wraps_p (chrec_type (chrec), init, step, stmt,
+			     cfg_loops->parray[CHREC_VARIABLE (chrec)],
+			     &init_is_max))
     return;
-
-  /* Do not adjust ranges when using wrapping arithmetic.  */
-  if (flag_wrapv)
-    return;
-
-  /* If STEP is negative, then INIT is the maximum value the range
-     will take.  Otherwise, INIT is the minimum value.  */
-  init_is_max = (tree_int_cst_sgn (step) < 0);
 
   if (!POINTER_TYPE_P (TREE_TYPE (init))
       && (vr->type == VR_VARYING || vr->type == VR_UNDEFINED))
@@ -2772,7 +2762,7 @@ vrp_visit_assignment (tree stmt, tree *output_p)
 	 else about the range of LHS by examining scalar evolution
 	 information.  */
       if (cfg_loops && (l = loop_containing_stmt (stmt)))
-	adjust_range_with_scev (&new_vr, l, lhs);
+	adjust_range_with_scev (&new_vr, l, stmt, lhs);
 
       if (update_value_range (lhs, &new_vr))
 	{
@@ -3519,7 +3509,10 @@ execute_vrp (void)
 
   cfg_loops = loop_optimizer_init (NULL);
   if (cfg_loops)
-    scev_initialize (cfg_loops);
+    {
+      scev_initialize (cfg_loops);
+      estimate_numbers_of_iterations (cfg_loops);
+    }
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);

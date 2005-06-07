@@ -1442,11 +1442,8 @@ idx_find_step (tree base, tree *idx, void *data)
     /* The step for pointer arithmetics already is 1 byte.  */
     step = build_int_cst (sizetype, 1);
 
-  if (TYPE_PRECISION (TREE_TYPE (iv->base)) < TYPE_PRECISION (sizetype))
-    iv_step = can_count_iv_in_wider_type (dta->ivopts_data->current_loop,
-					  sizetype, iv->base, iv->step, dta->stmt);
-  else
-    iv_step = fold_convert (sizetype, iv->step);
+  iv_step = convert_step (dta->ivopts_data->current_loop,
+			  sizetype, iv->base, iv->step, dta->stmt);
 
   if (!iv_step)
     {
