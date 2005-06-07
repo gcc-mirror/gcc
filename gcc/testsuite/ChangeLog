@@ -1,3 +1,8 @@
+2005-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/21850
+	* gcc.c-torture/execute/20050607-1.c: New test.
+
 2005-06-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21926
