@@ -3033,13 +3033,37 @@ unsigned int
 subreg_regno_offset (unsigned int xregno, enum machine_mode xmode,
 		     unsigned int offset, enum machine_mode ymode)
 {
-  int nregs_xmode, nregs_ymode;
+  int nregs_xmode, nregs_ymode, nregs_xmode_unit_int;
   int mode_multiple, nregs_multiple;
   int y_offset;
+  enum machine_mode xmode_unit, xmode_unit_int;
 
   gcc_assert (xregno < FIRST_PSEUDO_REGISTER);
 
-  nregs_xmode = hard_regno_nregs[xregno][xmode];
+  if (GET_MODE_INNER (xmode) == VOIDmode)
+    xmode_unit = xmode;
+  else
+    xmode_unit = GET_MODE_INNER (xmode);
+  
+  if (FLOAT_MODE_P (xmode_unit))
+    {
+      xmode_unit_int = int_mode_for_mode (xmode_unit);
+      if (xmode_unit_int == BLKmode)
+	/* It's probably bad to be here; a port should have an integer mode
+	   that's the same size as anything of which it takes a SUBREG.  */
+	xmode_unit_int = xmode_unit;
+    }
+  else
+    xmode_unit_int = xmode_unit;
+
+  nregs_xmode_unit_int = hard_regno_nregs[xregno][xmode_unit_int];
+
+  /* Adjust nregs_xmode to allow for 'holes'.  */
+  if (nregs_xmode_unit_int != hard_regno_nregs[xregno][xmode_unit])
+    nregs_xmode = nregs_xmode_unit_int * GET_MODE_NUNITS (xmode);
+  else
+    nregs_xmode = hard_regno_nregs[xregno][xmode];
+    
   nregs_ymode = hard_regno_nregs[xregno][ymode];
 
   /* If this is a big endian paradoxical subreg, which uses more actual
@@ -3054,7 +3078,7 @@ subreg_regno_offset (unsigned int xregno, enum machine_mode xmode,
   if (offset == 0 || nregs_xmode == nregs_ymode)
     return 0;
 
-  /* size of ymode must not be greater than the size of xmode.  */
+  /* Size of ymode must not be greater than the size of xmode.  */
   mode_multiple = GET_MODE_SIZE (xmode) / GET_MODE_SIZE (ymode);
   gcc_assert (mode_multiple != 0);
 
@@ -3069,36 +3093,82 @@ subreg_regno_offset (unsigned int xregno, enum machine_mode xmode,
    xmode  - The mode of xregno.
    offset - The byte offset.
    ymode  - The mode of a top level SUBREG (or what may become one).
-   RETURN - The regno offset which would be used.  */
+   RETURN - Whether the offset is representable.  */
 bool
 subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
 			       unsigned int offset, enum machine_mode ymode)
 {
-  int nregs_xmode, nregs_ymode;
+  int nregs_xmode, nregs_ymode, nregs_xmode_unit, nregs_xmode_unit_int;
   int mode_multiple, nregs_multiple;
   int y_offset;
+  enum machine_mode xmode_unit, xmode_unit_int;
 
   gcc_assert (xregno < FIRST_PSEUDO_REGISTER);
 
-  nregs_xmode = hard_regno_nregs[xregno][xmode];
+  if (GET_MODE_INNER (xmode) == VOIDmode)
+    xmode_unit = xmode;
+  else
+    xmode_unit = GET_MODE_INNER (xmode);
+  
+  if (FLOAT_MODE_P (xmode_unit))
+    {
+      xmode_unit_int = int_mode_for_mode (xmode_unit);
+      if (xmode_unit_int == BLKmode)
+	/* It's probably bad to be here; a port should have an integer mode
+	   that's the same size as anything of which it takes a SUBREG.  */
+	xmode_unit_int = xmode_unit;
+    }
+  else
+    xmode_unit_int = xmode_unit;
+
+  nregs_xmode_unit = hard_regno_nregs[xregno][xmode_unit];
+  nregs_xmode_unit_int = hard_regno_nregs[xregno][xmode_unit_int];
+
+  /* If there are holes in a non-scalar mode in registers, we expect
+     that it is made up of its units concatenated together.  */
+  if (nregs_xmode_unit != nregs_xmode_unit_int)
+    {
+      gcc_assert (nregs_xmode_unit * GET_MODE_NUNITS (xmode)
+		  == hard_regno_nregs[xregno][xmode]);
+
+      /* You can only ask for a SUBREG of a value with holes in the middle
+	 if you don't cross the holes.  (Such a SUBREG should be done by
+	 picking a different register class, or doing it in memory if
+	 necessary.)  An example of a value with holes is XCmode on 32-bit
+	 x86 with -m128bit-long-double; it's represented in 6 32-bit registers,
+	 3 for each part, but in memory it's two 128-bit parts.  
+	 Padding is assumed to be at the end (not necessarily the 'high part')
+	 of each unit.  */
+      if (nregs_xmode_unit != nregs_xmode_unit_int
+	  && (offset / GET_MODE_SIZE (xmode_unit_int) + 1 
+	      < GET_MODE_NUNITS (xmode))
+	  && (offset / GET_MODE_SIZE (xmode_unit_int) 
+	      != ((offset + GET_MODE_SIZE (ymode) - 1)
+		  / GET_MODE_SIZE (xmode_unit_int))))
+	return false;
+
+      nregs_xmode = nregs_xmode_unit_int * GET_MODE_NUNITS (xmode);
+    }
+  else
+    nregs_xmode = hard_regno_nregs[xregno][xmode];
+  
   nregs_ymode = hard_regno_nregs[xregno][ymode];
 
-  /* Paradoxical subregs are always valid.  */
+  /* Paradoxical subregs are otherwise valid.  */
   if (offset == 0
       && nregs_ymode > nregs_xmode
       && (GET_MODE_SIZE (ymode) > UNITS_PER_WORD
 	  ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
     return true;
 
-  /* Lowpart subregs are always valid.  */
+  /* Lowpart subregs are otherwise valid.  */
   if (offset == subreg_lowpart_offset (ymode, xmode))
     return true;
 
-  /* This should always pass, otherwise we don't know how to verify the
-     constraint.  These conditions may be relaxed but subreg_offset would
-     need to be redesigned.  */
+  /* This should always pass, otherwise we don't know how to verify
+     the constraint.  These conditions may be relaxed but
+     subreg_regno_offset would need to be redesigned.  */
   gcc_assert ((GET_MODE_SIZE (xmode) % GET_MODE_SIZE (ymode)) == 0);
-  gcc_assert ((GET_MODE_SIZE (ymode) % nregs_ymode) == 0);
   gcc_assert ((nregs_xmode % nregs_ymode) == 0);
 
   /* The XMODE value can be seen as a vector of NREGS_XMODE
@@ -3109,7 +3179,7 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
 						  / nregs_xmode,
 						  MODE_INT, 0));
 
-  /* size of ymode must not be greater than the size of xmode.  */
+  /* Size of ymode must not be greater than the size of xmode.  */
   mode_multiple = GET_MODE_SIZE (xmode) / GET_MODE_SIZE (ymode);
   gcc_assert (mode_multiple != 0);
 
