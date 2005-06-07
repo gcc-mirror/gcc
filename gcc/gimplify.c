@@ -2124,12 +2124,10 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree *post_p, tree target,
   enum gimplify_status ret;
 
   type = TREE_TYPE (expr);
-  if (!type)
-    TREE_TYPE (expr) = void_type_node;
 
   /* If this COND_EXPR has a value, copy the values into a temporary within
      the arms.  */
-  else if (! VOID_TYPE_P (type))
+  if (! VOID_TYPE_P (type))
     {
       tree result;
 

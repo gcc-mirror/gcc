@@ -6931,7 +6931,7 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
 	}
     }
 
-  stmt = build3 (COND_EXPR, NULL_TREE, cond, then_block, else_block);
+  stmt = build3 (COND_EXPR, void_type_node, cond, then_block, else_block);
   SET_EXPR_LOCATION (stmt, if_locus);
   add_stmt (stmt);
 }
