@@ -1,3 +1,51 @@
+2005-06-07  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.h (enum ix86_entity): New.
+	(enum ix86_stack_slot): New.
+	(OPTIMIZE_MODE_SWITCHING): Redefine to use
+	ix86_optimize_mode_switching[] array.
+	(NUM_MODES_FOR_MODE_SWITCHING): Redefine for 4 entities.
+	(MODE_NEEDED): Use ix86_mode_needed() function.
+	(EMIT_MODE_SET): Redefine for changed emit_i387_cw_initialization ()
+	function.
+	(struct machine_function): Use optimize_mode_switching[] array.
+
+	* config/i386/i386.c (MAX_386_STACK_LOCALS): Remove.
+	(ix86_mode_needed): New function.
+	(emit_i387_cw_initialization): Cleanup. Use mode to calculate
+	correct stack positions for stored control words.
+	(assign_386_stack_local): Use enum ix86_stack_slot. Change assert.
+	(ix86_expand_builtin) [IX86_BUILTIN_LDMXCSR]: Change constant to
+	SLOT_TEMP.
+	[IX86_BUILTIN_STMXCSR]: Same.
+
+	* config/i386/i386-protos.h (assign_stack_local): Change prototype.
+	(emit_i387_cw_initialization): Change prototype.
+	(ix86_mode_needed): New prototype.
+
+	* config/i386/i386.md (i387_cw attribute): Change order of elements.
+	(truncdfsf2, truncxfsf2, truncxfdf2, fix_trunc<mode>_fisttp_i387_1)
+	(*fix_trunc<mode>_i387_1, lrint<mode>2, *fist<mode>2_floor_1)
+	(*fist<mode>2_ceil_1): Change constant in call to
+	assign_386_stack_local to SLOT_TEMP.
+	(*fix_trunc<mode>_i387_1): Change constant in call to
+	assign_386_stack_local to SLOT_CW_STORED and SLOT_CW_TRUNC.
+	Use new ix86_optimize_mode_switching[] array.
+	(frndintxf2_floor, *fist<mode>2_floor_1): Change constants in call to
+	assign_386_stack_local to SLOT_CW_STORED and SLOT_CW_FLOOR.
+	Use new ix86_optimize_mode_switching[] array.
+	(frndintxf2_ceil, *fist<mode>2_ceil_1):  Change constants in call to
+	assign_386_stack_local to SLOT_CW_STORED and SLOT_CW_CEIL.
+	Use new ix86_optimize_mode_switching[] array.
+	(frndintxf2_trunc): Change constants in call to
+	assign_386_stack_local to SLOT_CW_STORED and SLOT_CW_TRUNC.
+	Use new ix86_optimize_mode_switching[] array.
+	(frndintxf2_mask_pm): Change constants in call to
+	assign_386_stack_local to SLOT_CW_STORED and SLOT_CW_MASK_PM.
+	Use new ix86_optimize_mode_switching[] array.
+
+	(define_peephole2): Change constant from 17 to FLAGS_REG;
+
 2005-06-07  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/21528

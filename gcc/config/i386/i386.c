@@ -732,7 +732,6 @@ rtx ix86_compare_op0 = NULL_RTX;
 rtx ix86_compare_op1 = NULL_RTX;
 rtx ix86_compare_emitted = NULL_RTX;
 
-#define MAX_386_STACK_LOCALS 3
 /* Size of the register save area.  */
 #define X86_64_VARARGS_SIZE (REGPARM_MAX * UNITS_PER_WORD + SSE_REGPARM_MAX * 16)
 
@@ -7321,41 +7320,103 @@ output_387_binary_op (rtx insn, rtx *operands)
   return buf;
 }
 
+/* Return needed mode for entity in optimize_mode_switching pass.  */
+
+int
+ix86_mode_needed (int entity, rtx insn)
+{
+  enum attr_i387_cw mode;
+
+  /* The mode UNINITIALIZED is used to store control word after a
+     function call or ASM pattern.  The mode ANY specify that function
+     has no requirements on the control word and make no changes in the
+     bits we are interested in.  */
+
+  if (CALL_P (insn)
+      || (NONJUMP_INSN_P (insn)
+	  && (asm_noperands (PATTERN (insn)) >= 0
+	      || GET_CODE (PATTERN (insn)) == ASM_INPUT)))
+    return I387_CW_UNINITIALIZED;
+
+  if (recog_memoized (insn) < 0)
+    return I387_CW_ANY;
+
+  mode = get_attr_i387_cw (insn);
+
+  switch (entity)
+    {
+    case I387_TRUNC:
+      if (mode == I387_CW_TRUNC)
+	return mode;
+      break;
+
+    case I387_FLOOR:
+      if (mode == I387_CW_FLOOR)
+	return mode;
+      break;
+
+    case I387_CEIL:
+      if (mode == I387_CW_CEIL)
+	return mode;
+      break;
+
+    case I387_MASK_PM:
+      if (mode == I387_CW_MASK_PM)
+	return mode;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return I387_CW_ANY;
+}
+
 /* Output code to initialize control word copies used by trunc?f?i and
    rounding patterns.  CURRENT_MODE is set to current control word,
    while NEW_MODE is set to new control word.  */
 
 void
-emit_i387_cw_initialization (rtx current_mode, rtx new_mode, int mode)
+emit_i387_cw_initialization (int mode)
 {
+  rtx stored_mode = assign_386_stack_local (HImode, SLOT_CW_STORED);
+  rtx new_mode;
+
+  int slot;
+
   rtx reg = gen_reg_rtx (HImode);
 
-  emit_insn (gen_x86_fnstcw_1 (current_mode));
-  emit_move_insn (reg, current_mode);
+  emit_insn (gen_x86_fnstcw_1 (stored_mode));
+  emit_move_insn (reg, stored_mode);
 
-  if (!TARGET_PARTIAL_REG_STALL && !optimize_size
-      && !TARGET_64BIT)
+  if (TARGET_64BIT || TARGET_PARTIAL_REG_STALL || optimize_size)
     {
       switch (mode)
 	{
+	case I387_CW_TRUNC:
+	  /* round toward zero (truncate) */
+	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0c00)));
+	  slot = SLOT_CW_TRUNC;
+	  break;
+
 	case I387_CW_FLOOR:
 	  /* round down toward -oo */
-	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0x4)));
+	  emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
+	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0400)));
+	  slot = SLOT_CW_FLOOR;
 	  break;
 
 	case I387_CW_CEIL:
 	  /* round up toward +oo */
-	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0x8)));
+	  emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
+	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0800)));
+	  slot = SLOT_CW_CEIL;
 	  break;
 
-	case I387_CW_TRUNC:
-	  /* round toward zero (truncate) */
-	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0xc)));
-	  break;
- 
 	case I387_CW_MASK_PM:
 	  /* mask precision exception for nearbyint() */
 	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0020)));
+	  slot = SLOT_CW_MASK_PM;
 	  break;
 
 	default:
@@ -7366,26 +7427,28 @@ emit_i387_cw_initialization (rtx current_mode, rtx new_mode, int mode)
     {
       switch (mode)
 	{
+	case I387_CW_TRUNC:
+	  /* round toward zero (truncate) */
+	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0xc)));
+	  slot = SLOT_CW_TRUNC;
+	  break;
+
 	case I387_CW_FLOOR:
 	  /* round down toward -oo */
-	  emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
-	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0400)));
+	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0x4)));
+	  slot = SLOT_CW_FLOOR;
 	  break;
 
 	case I387_CW_CEIL:
 	  /* round up toward +oo */
-	  emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
-	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0800)));
+	  emit_insn (gen_movsi_insv_1 (reg, GEN_INT (0x8)));
+	  slot = SLOT_CW_CEIL;
 	  break;
-
-	case I387_CW_TRUNC:
-	  /* round toward zero (truncate) */
-	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0c00)));
-	  break;
-
+ 
 	case I387_CW_MASK_PM:
 	  /* mask precision exception for nearbyint() */
 	  emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0020)));
+	  slot = SLOT_CW_MASK_PM;
 	  break;
 
 	default:
@@ -7393,6 +7456,9 @@ emit_i387_cw_initialization (rtx current_mode, rtx new_mode, int mode)
 	}
     }
 
+  gcc_assert (slot < MAX_386_STACK_LOCALS);
+
+  new_mode = assign_386_stack_local (HImode, slot);
   emit_move_insn (new_mode, reg);
 }
 
@@ -12086,11 +12152,11 @@ ix86_init_machine_status (void)
    which slot to use.  */
 
 rtx
-assign_386_stack_local (enum machine_mode mode, int n)
+assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 {
   struct stack_local_entry *s;
 
-  gcc_assert (n >= 0 && n < MAX_386_STACK_LOCALS);
+  gcc_assert (n < MAX_386_STACK_LOCALS);
 
   for (s = ix86_stack_locals; s; s = s->next)
     if (s->mode == mode && s->n == n)
@@ -14720,13 +14786,13 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_LDMXCSR:
       op0 = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
-      target = assign_386_stack_local (SImode, 0);
+      target = assign_386_stack_local (SImode, SLOT_TEMP);
       emit_move_insn (target, op0);
       emit_insn (gen_sse_ldmxcsr (target));
       return 0;
 
     case IX86_BUILTIN_STMXCSR:
-      target = assign_386_stack_local (SImode, 0);
+      target = assign_386_stack_local (SImode, SLOT_TEMP);
       emit_insn (gen_sse_stmxcsr (target));
       return copy_to_mode_reg (SImode, target);
 
