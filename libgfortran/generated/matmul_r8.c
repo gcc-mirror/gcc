@@ -178,7 +178,14 @@ matmul_r8 (gfc_array_r8 * retarray, gfc_array_r8 * a, gfc_array_r8 * b)
       GFC_REAL_8 *abase_n;
       GFC_REAL_8 bbase_yn;
 
-      memset (dest, 0, (sizeof (GFC_REAL_8) * size0((array_t *) retarray)));
+      if (rystride == ycount)
+	memset (dest, 0, (sizeof (GFC_REAL_8) * size0((array_t *) retarray)));
+      else
+	{
+	  for (y = 0; y < ycount; y++)
+	    for (x = 0; x < xcount; x++)
+	      dest[x + y*rystride] = (GFC_REAL_8)0;
+	}
 
       for (y = 0; y < ycount; y++)
 	{

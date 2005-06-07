@@ -1,3 +1,15 @@
+2005-06-07  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21926
+	* m4/matmul.m4:  Correct zeroing of result for non-packed
+	arrays with lowest stride is one.
+	* generated/matmul_c4.c:  Regenerated.
+	* generated/matmul_c8.c:  Regenerated.
+	* generated/matmul_i4.c:  Regenerated.
+	* generated/matmul_i8.c:  Regenerated.
+	* generated/matmul_r4.c:  Regenerated.
+	* generated/matmul_r8.c:  Regenerated.
+
 2005-05-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20179

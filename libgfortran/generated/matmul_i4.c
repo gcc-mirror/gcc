@@ -178,7 +178,14 @@ matmul_i4 (gfc_array_i4 * retarray, gfc_array_i4 * a, gfc_array_i4 * b)
       GFC_INTEGER_4 *abase_n;
       GFC_INTEGER_4 bbase_yn;
 
-      memset (dest, 0, (sizeof (GFC_INTEGER_4) * size0((array_t *) retarray)));
+      if (rystride == ycount)
+	memset (dest, 0, (sizeof (GFC_INTEGER_4) * size0((array_t *) retarray)));
+      else
+	{
+	  for (y = 0; y < ycount; y++)
+	    for (x = 0; x < xcount; x++)
+	      dest[x + y*rystride] = (GFC_INTEGER_4)0;
+	}
 
       for (y = 0; y < ycount; y++)
 	{
