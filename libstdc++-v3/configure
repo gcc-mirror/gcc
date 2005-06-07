@@ -6715,14 +6715,10 @@ _ACEOF
 
   fi
 
-  # Check for the existence of <complex.h> complex functions.
+  # Check for the existence of <complex.h> complex math functions.
   # This is necessary even though libstdc++ uses the builtin versions
   # of these functions, because if the builtin cannot be used, a reference
   # to the library function is emitted.
-  # In addition, need to explicitly specify "C" compilation for this
-  # one, or else the backwards C++ <complex.h> include will be selected.
-  save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -x c"
 
 for ac_header in complex.h
 do
@@ -6964,7 +6960,6 @@ ac_c99_complex=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   fi
-  CXXFLAGS="$save_CXXFLAGS"
   echo "$as_me:$LINENO: result: $ac_c99_complex" >&5
 echo "${ECHO_T}$ac_c99_complex" >&6
   if test x"$ac_c99_complex" = x"yes"; then
