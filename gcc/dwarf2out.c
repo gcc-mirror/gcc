@@ -2659,6 +2659,7 @@ static const char *dwarf_stack_op_name (unsigned);
 static dw_loc_descr_ref new_loc_descr (enum dwarf_location_atom,
 				       unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT);
 static void add_loc_descr (dw_loc_descr_ref *, dw_loc_descr_ref);
+static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
 static unsigned long size_of_loc_descr (dw_loc_descr_ref);
 static unsigned long size_of_locs (dw_loc_descr_ref);
 static void output_loc_operands (dw_loc_descr_ref);
@@ -3009,6 +3010,27 @@ add_loc_descr (dw_loc_descr_ref *list_head, dw_loc_descr_ref descr)
     ;
 
   *d = descr;
+}
+
+
+/* Optionally add a DW_OP_piece term to a location description expression.
+   DW_OP_piece is only added if the location description expression already
+   doesn't end with DW_OP_piece.  */
+
+static void
+add_loc_descr_op_piece (dw_loc_descr_ref *list_head, int size)
+{
+  dw_loc_descr_ref loc;
+
+  if (*list_head != NULL)
+    {
+      /* Find the end of the chain.  */
+      for (loc = *list_head; loc->dw_loc_next != NULL; loc = loc->dw_loc_next)
+	;
+
+      if (loc->dw_loc_opc != DW_OP_piece)
+	loc->dw_loc_next = new_loc_descr (DW_OP_piece, size, 0);
+    }
 }
 
 /* Return the size of a location descriptor.  */
@@ -8467,7 +8489,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs)
 
 	  t = one_reg_loc_descriptor (reg);
 	  add_loc_descr (&loc_result, t);
-	  add_loc_descr (&loc_result, new_loc_descr (DW_OP_piece, size, 0));
+	  add_loc_descr_op_piece (&loc_result, size);
 	  ++reg;
 	}
       return loc_result;
@@ -8487,7 +8509,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs)
       t = one_reg_loc_descriptor (REGNO (XVECEXP (regs, 0, i)));
       add_loc_descr (&loc_result, t);
       size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
-      add_loc_descr (&loc_result, new_loc_descr (DW_OP_piece, size, 0));
+      add_loc_descr_op_piece (&loc_result, size);
     }
   return loc_result;
 }
@@ -8790,14 +8812,10 @@ concat_loc_descriptor (rtx x0, rtx x1)
     return 0;
 
   cc_loc_result = x0_ref;
-  add_loc_descr (&cc_loc_result,
-		 new_loc_descr (DW_OP_piece,
-				GET_MODE_SIZE (GET_MODE (x0)), 0));
+  add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x0)));
 
   add_loc_descr (&cc_loc_result, x1_ref);
-  add_loc_descr (&cc_loc_result,
-		 new_loc_descr (DW_OP_piece,
-				GET_MODE_SIZE (GET_MODE (x1)), 0));
+  add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x1)));
 
   return cc_loc_result;
 }
@@ -8862,8 +8880,7 @@ loc_descriptor (rtx rtl, bool can_use_fbreg)
 	loc_result = loc_descriptor (XEXP (RTVEC_ELT (par_elems, 0), 0),
 				     can_use_fbreg);
 	mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, 0), 0));
-	add_loc_descr (&loc_result,
-		       new_loc_descr (DW_OP_piece, GET_MODE_SIZE (mode), 0));
+	add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
 	for (i = 1; i < num_elem; i++)
 	  {
 	    dw_loc_descr_ref temp;
@@ -8872,9 +8889,7 @@ loc_descriptor (rtx rtl, bool can_use_fbreg)
 				   can_use_fbreg);
 	    add_loc_descr (&loc_result, temp);
 	    mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, i), 0));
-	    add_loc_descr (&loc_result,
-			   new_loc_descr (DW_OP_piece,
-					  GET_MODE_SIZE (mode), 0));
+	    add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
 	  }
       }
       break;

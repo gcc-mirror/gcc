@@ -1,3 +1,15 @@
+2005-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/21946
+	* dwarf2out.c (add_loc_descr_op_piece): New function.
+	(multiple_reg_loc_descriptor, concat_loc_descriptor,
+	loc_descriptor): Use it.
+	* var-tracking.c: Include regs.h and expr.h.
+	(emit_note_insn_var_location): Skip over pieces where offset
+	is smaller than previous offset plus previous piece mode size.
+	Optimize adjacent hard registers or memory locations.
+	* Makefile.in (var-tracking.o): Depend on $(REGS_H) and $(EXPR_H).
+
 2005-06-07  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* c-typeck.c (c_finish_if_stmt): Use void_type_node as type
