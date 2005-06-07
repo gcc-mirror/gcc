@@ -1,3 +1,7 @@
+2005-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.pot: Regenerate.
+
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* exgettext: Handle gmsgid and cmsgid arguments specially,
