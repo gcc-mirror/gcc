@@ -67,8 +67,7 @@ tree_is_chrec (tree expr)
 extern tree chrec_fold_plus (tree, tree, tree);
 extern tree chrec_fold_minus (tree, tree, tree);
 extern tree chrec_fold_multiply (tree, tree, tree);
-extern tree chrec_convert (tree, tree);
-extern tree count_ev_in_wider_type (tree, tree);
+extern tree chrec_convert (tree, tree, tree);
 extern tree chrec_type (tree);
 
 /* Operations.  */
@@ -146,6 +145,7 @@ evolution_function_is_constant_p (tree chrec)
     }
 }
 
+extern bool evolution_function_is_invariant_p (tree, int);
 /* Determine whether the given tree is an affine evolution function or not.  */
 
 static inline bool 
@@ -157,8 +157,10 @@ evolution_function_is_affine_p (tree chrec)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      if (evolution_function_is_constant_p (CHREC_LEFT (chrec))
-	  && evolution_function_is_constant_p (CHREC_RIGHT (chrec)))
+      if (evolution_function_is_invariant_p (CHREC_LEFT (chrec), 
+					     CHREC_VARIABLE (chrec))
+	  && evolution_function_is_invariant_p (CHREC_RIGHT (chrec),
+						CHREC_VARIABLE (chrec)))
 	return true;
       else
 	return false;

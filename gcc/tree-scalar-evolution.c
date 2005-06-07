@@ -349,33 +349,6 @@ find_var_scev_info (tree var)
   return &res->chrec;
 }
 
-/* Tries to express CHREC in wider type TYPE.  */
-
-tree
-count_ev_in_wider_type (tree type, tree chrec)
-{
-  tree base, step;
-  struct loop *loop;
-
-  if (!evolution_function_is_affine_p (chrec))
-    return fold_convert (type, chrec);
-
-  base = CHREC_LEFT (chrec);
-  step = CHREC_RIGHT (chrec);
-  loop = current_loops->parray[CHREC_VARIABLE (chrec)];
-
-  /* TODO -- if we knew the statement at that the conversion occurs,
-     we could pass it to can_count_iv_in_wider_type and get a better
-     result.  */
-  step = can_count_iv_in_wider_type (loop, type, base, step, NULL_TREE);
-  if (!step)
-    return fold_convert (type, chrec);
-  base = chrec_convert (type, base);
-
-  return build_polynomial_chrec (CHREC_VARIABLE (chrec),
-				 base, step);
-}
-
 /* Return true when CHREC contains symbolic names defined in
    LOOP_NB.  */
 
@@ -1052,6 +1025,7 @@ static bool follow_ssa_edge (struct loop *loop, tree, tree, tree *);
 
 static bool
 follow_ssa_edge_in_rhs (struct loop *loop,
+			tree at_stmt,
 			tree rhs, 
 			tree halting_phi, 
 			tree *evolution_of_loop)
@@ -1071,9 +1045,10 @@ follow_ssa_edge_in_rhs (struct loop *loop,
     {
     case NOP_EXPR:
       /* This assignment is under the form "a_1 = (cast) rhs.  */
-      res = follow_ssa_edge_in_rhs (loop, TREE_OPERAND (rhs, 0), halting_phi, 
-				    evolution_of_loop);
-      *evolution_of_loop = chrec_convert (TREE_TYPE (rhs), *evolution_of_loop);
+      res = follow_ssa_edge_in_rhs (loop, at_stmt, TREE_OPERAND (rhs, 0),
+				    halting_phi, evolution_of_loop);
+      *evolution_of_loop = chrec_convert (TREE_TYPE (rhs),
+					  *evolution_of_loop, at_stmt);
       break;
 
     case INTEGER_CST:
@@ -1107,7 +1082,7 @@ follow_ssa_edge_in_rhs (struct loop *loop,
 	      if (res)
 		*evolution_of_loop = add_to_evolution 
 		  (loop->num, 
-		   chrec_convert (type_rhs, *evolution_of_loop), 
+		   chrec_convert (type_rhs, *evolution_of_loop, at_stmt), 
 		   PLUS_EXPR, rhs1);
 	      
 	      else
@@ -1119,7 +1094,7 @@ follow_ssa_edge_in_rhs (struct loop *loop,
 		  if (res)
 		    *evolution_of_loop = add_to_evolution 
 		      (loop->num, 
-		       chrec_convert (type_rhs, *evolution_of_loop), 
+		       chrec_convert (type_rhs, *evolution_of_loop, at_stmt), 
 		       PLUS_EXPR, rhs0);
 		}
 	    }
@@ -1133,7 +1108,8 @@ follow_ssa_edge_in_rhs (struct loop *loop,
 		 evolution_of_loop);
 	      if (res)
 		*evolution_of_loop = add_to_evolution 
-		  (loop->num, chrec_convert (type_rhs, *evolution_of_loop), 
+		  (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
+					     at_stmt),
 		   PLUS_EXPR, rhs1);
 	    }
 	}
@@ -1147,7 +1123,8 @@ follow_ssa_edge_in_rhs (struct loop *loop,
 	     evolution_of_loop);
 	  if (res)
 	    *evolution_of_loop = add_to_evolution 
-	      (loop->num, chrec_convert (type_rhs, *evolution_of_loop), 
+	      (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
+					 at_stmt),
 	       PLUS_EXPR, rhs0);
 	}
 
@@ -1174,7 +1151,8 @@ follow_ssa_edge_in_rhs (struct loop *loop,
 				 evolution_of_loop);
 	  if (res)
 	    *evolution_of_loop = add_to_evolution 
-		    (loop->num, chrec_convert (type_rhs, *evolution_of_loop), 
+		    (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
+					       at_stmt),
 		     MINUS_EXPR, rhs1);
 	}
       else
@@ -1391,7 +1369,8 @@ follow_ssa_edge_inner_loop_phi (struct loop *outer_loop,
 	  /* Follow the edges that exit the inner loop.  */
 	  bb = PHI_ARG_EDGE (loop_phi_node, i)->src;
 	  if (!flow_bb_inside_loop_p (loop, bb))
-	    res = res || follow_ssa_edge_in_rhs (outer_loop, arg, halting_phi,
+	    res = res || follow_ssa_edge_in_rhs (outer_loop, loop_phi_node,
+						 arg, halting_phi,
 						 evolution_of_loop);
 	}
 
@@ -1404,7 +1383,7 @@ follow_ssa_edge_inner_loop_phi (struct loop *outer_loop,
 
   /* Otherwise, compute the overall effect of the inner loop.  */
   ev = compute_overall_effect_of_inner_loop (loop, ev);
-  return follow_ssa_edge_in_rhs (outer_loop, ev, halting_phi,
+  return follow_ssa_edge_in_rhs (outer_loop, loop_phi_node, ev, halting_phi,
 				 evolution_of_loop);
 }
 
@@ -1456,7 +1435,7 @@ follow_ssa_edge (struct loop *loop,
       return false;
 
     case MODIFY_EXPR:
-      return follow_ssa_edge_in_rhs (loop,
+      return follow_ssa_edge_in_rhs (loop, def,
 				     TREE_OPERAND (def, 1), 
 				     halting_phi, 
 				     evolution_of_loop);
@@ -1665,14 +1644,14 @@ interpret_condition_phi (struct loop *loop, tree condition_phi)
    analyze the effect of an inner loop: see interpret_loop_phi.  */
 
 static tree
-interpret_rhs_modify_expr (struct loop *loop,
+interpret_rhs_modify_expr (struct loop *loop, tree at_stmt,
 			   tree opnd1, tree type)
 {
   tree res, opnd10, opnd11, chrec10, chrec11;
-  
+
   if (is_gimple_min_invariant (opnd1))
-    return chrec_convert (type, opnd1);
-  
+    return chrec_convert (type, opnd1, at_stmt);
+
   switch (TREE_CODE (opnd1))
     {
     case PLUS_EXPR:
@@ -1680,8 +1659,8 @@ interpret_rhs_modify_expr (struct loop *loop,
       opnd11 = TREE_OPERAND (opnd1, 1);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
       chrec11 = analyze_scalar_evolution (loop, opnd11);
-      chrec10 = chrec_convert (type, chrec10);
-      chrec11 = chrec_convert (type, chrec11);
+      chrec10 = chrec_convert (type, chrec10, at_stmt);
+      chrec11 = chrec_convert (type, chrec11, at_stmt);
       res = chrec_fold_plus (type, chrec10, chrec11);
       break;
       
@@ -1690,15 +1669,15 @@ interpret_rhs_modify_expr (struct loop *loop,
       opnd11 = TREE_OPERAND (opnd1, 1);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
       chrec11 = analyze_scalar_evolution (loop, opnd11);
-      chrec10 = chrec_convert (type, chrec10);
-      chrec11 = chrec_convert (type, chrec11);
+      chrec10 = chrec_convert (type, chrec10, at_stmt);
+      chrec11 = chrec_convert (type, chrec11, at_stmt);
       res = chrec_fold_minus (type, chrec10, chrec11);
       break;
 
     case NEGATE_EXPR:
       opnd10 = TREE_OPERAND (opnd1, 0);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
-      chrec10 = chrec_convert (type, chrec10);
+      chrec10 = chrec_convert (type, chrec10, at_stmt);
       res = chrec_fold_minus (type, build_int_cst (type, 0), chrec10);
       break;
 
@@ -1707,25 +1686,27 @@ interpret_rhs_modify_expr (struct loop *loop,
       opnd11 = TREE_OPERAND (opnd1, 1);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
       chrec11 = analyze_scalar_evolution (loop, opnd11);
-      chrec10 = chrec_convert (type, chrec10);
-      chrec11 = chrec_convert (type, chrec11);
+      chrec10 = chrec_convert (type, chrec10, at_stmt);
+      chrec11 = chrec_convert (type, chrec11, at_stmt);
       res = chrec_fold_multiply (type, chrec10, chrec11);
       break;
       
     case SSA_NAME:
-      res = chrec_convert (type, analyze_scalar_evolution (loop, opnd1));
+      res = chrec_convert (type, analyze_scalar_evolution (loop, opnd1),
+			   at_stmt);
       break;
 
     case ASSERT_EXPR:
       opnd10 = ASSERT_EXPR_VAR (opnd1);
-      res = chrec_convert (type, analyze_scalar_evolution (loop, opnd10));
+      res = chrec_convert (type, analyze_scalar_evolution (loop, opnd10),
+			   at_stmt);
       break;
       
     case NOP_EXPR:
     case CONVERT_EXPR:
       opnd10 = TREE_OPERAND (opnd1, 0);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
-      res = chrec_convert (type, chrec10);
+      res = chrec_convert (type, chrec10, at_stmt);
       break;
       
     default:
@@ -1775,7 +1756,7 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
     return chrec_dont_know;
 
   if (TREE_CODE (var) != SSA_NAME)
-    return interpret_rhs_modify_expr (loop, var, type);
+    return interpret_rhs_modify_expr (loop, NULL_TREE, var, type);
 
   def = SSA_NAME_DEF_STMT (var);
   bb = bb_for_stmt (def);
@@ -1809,7 +1790,7 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
   switch (TREE_CODE (def))
     {
     case MODIFY_EXPR:
-      res = interpret_rhs_modify_expr (loop, TREE_OPERAND (def, 1), type);
+      res = interpret_rhs_modify_expr (loop, def, TREE_OPERAND (def, 1), type);
       break;
 
     case PHI_NODE:
@@ -2093,7 +2074,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
       if (op0 == TREE_OPERAND (chrec, 0))
 	return chrec;
 
-      return chrec_convert (TREE_TYPE (chrec), op0);
+      return chrec_convert (TREE_TYPE (chrec), op0, NULL_TREE);
 
     case SCEV_NOT_KNOWN:
       return chrec_dont_know;

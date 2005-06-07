@@ -1,3 +1,42 @@
+2005-06-07  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR 18403 and meta PR 21861.
+	* Makefile.in (tree-chrec.o): Depend on CFGLOOP_H and TREE_FLOW_H.
+	* tree-chrec.c: Include cfgloop.h and tree-flow.h.
+	(evolution_function_is_invariant_rec_p,
+	evolution_function_is_invariant_p): New.
+	(chrec_convert): Use an extra parameter AT_STMT for refining the
+	information that is passed down to convert_step.  Integrate the 
+	code that was in count_ev_in_wider_type.
+	* tree-chrec.h (count_ev_in_wider_type): Removed.
+	(chrec_convert): Modify its declaration.
+	(evolution_function_is_invariant_p): Declared.
+	(evolution_function_is_affine_p): Use evolution_function_is_invariant_p.
+	* tree-flow.h (can_count_iv_in_wider_type): Renamed convert_step.
+	(scev_probably_wraps_p): Declared.
+	* tree-scalar-evolution.c (count_ev_in_wider_type): Removed.
+	(follow_ssa_edge_in_rhs, interpret_rhs_modify_expr):
+	Use an extra parameter AT_STMT for refining the information that is
+	passed down to convert_step.
+	(follow_ssa_edge_inner_loop_phi, follow_ssa_edge,
+	analyze_scalar_evolution_1): Initialize AT_STMT with the current
+	analyzed statement.
+	(instantiate_parameters_1): Don't know yet how to initialize AT_STMT.
+	* tree-ssa-loop-ivopts.c (idx_find_step): Update the use of 
+	can_count_iv_in_wider_type to use convert_step.
+	* tree-ssa-loop-niter.c (can_count_iv_in_wider_type_bound): Move 
+	code that is independent of the loop over the known iteration
+	bounds to convert_step_widening, the rest is moved to
+	proved_non_wrapping_p.
+	(scev_probably_wraps_p): New.
+	(can_count_iv_in_wider_type): Renamed convert_step.
+	* tree-vrp.c (adjust_range_with_scev): Take an extra AT_STMT parameter.
+	Use scev_probably_wraps_p for computing init_is_max.
+	(vrp_visit_assignment): Pass the current analyzed statement to 
+	adjust_range_with_scev.
+	(execute_vrp): Call estimate_numbers_of_iterations for refining the 
+	information provided by scev analyzer.
+
 2005-06-07  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/predicates.md (sleu_operand): Use
