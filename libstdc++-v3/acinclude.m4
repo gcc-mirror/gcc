@@ -797,14 +797,10 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
               in <cmath> in namespace std.])
   fi
 
-  # Check for the existence of <complex.h> complex functions.
+  # Check for the existence of <complex.h> complex math functions.
   # This is necessary even though libstdc++ uses the builtin versions
   # of these functions, because if the builtin cannot be used, a reference
   # to the library function is emitted.
-  # In addition, need to explicitly specify "C" compilation for this
-  # one, or else the backwards C++ <complex.h> include will be selected.
-  save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -x c"
   AC_CHECK_HEADERS(complex.h, ac_has_complex_h=yes, ac_has_complex_h=no)
   ac_c99_complex=no;
   if test x"$ac_has_complex_h" = x"yes"; then
@@ -851,7 +847,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 		    cpowl(tmpld, tmpld);
 		   ],[ac_c99_complex=yes], [ac_c99_complex=no])
   fi
-  CXXFLAGS="$save_CXXFLAGS"
   AC_MSG_RESULT($ac_c99_complex)
   if test x"$ac_c99_complex" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX, 1,
