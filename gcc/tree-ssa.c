@@ -849,8 +849,8 @@ delete_tree_ssa (void)
 }
 
 
-/* Return true if EXPR is a useless type conversion, otherwise return
-   false.  */
+/* Return true if the conversion from INNER_TYPE to OUTER_TYPE is a
+   useless type conversion, otherwise return false.  */
 
 bool
 tree_ssa_useless_type_conversion_1 (tree outer_type, tree inner_type)
@@ -881,8 +881,9 @@ tree_ssa_useless_type_conversion_1 (tree outer_type, tree inner_type)
 	   && TREE_CODE (TREE_TYPE (outer_type)) == VOID_TYPE)
     return true;
 
-  /* Pointers and references are equivalent once we get to GENERIC,
-     so strip conversions that just switch between them.  */
+  /* Pointers/references are equivalent if their pointed to types
+     are effectively the same.  This allows to strip conversions between
+     pointer types with different type qualifiers.  */
   else if (POINTER_TYPE_P (inner_type)
            && POINTER_TYPE_P (outer_type)
 	   && TYPE_REF_CAN_ALIAS_ALL (inner_type)
