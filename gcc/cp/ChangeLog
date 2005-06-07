@@ -1,3 +1,8 @@
+2005-06-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parser.c (cp_parser_late_parsing_default_args): Fix overeager
+	assert in previous patch.
+
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* error.c (locate_error): Use gmsgid instead of msgid for argument

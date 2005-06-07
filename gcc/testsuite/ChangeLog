@@ -1,3 +1,7 @@
+2005-06-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/parse/defarg10.C: New.
+
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR regression/21897
