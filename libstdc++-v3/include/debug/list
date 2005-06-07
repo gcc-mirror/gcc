@@ -1,6 +1,6 @@
 // Debugging list implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -47,8 +47,8 @@ namespace __gnu_debug_def
       typedef __gnu_debug::_Safe_sequence<list>  _Safe_base;
 
     public:
-      typedef typename _Allocator::reference        reference;
-      typedef typename _Allocator::const_reference  const_reference;
+      typedef typename _Base::reference             reference;
+      typedef typename _Base::const_reference       const_reference;
 
       typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, list>
 						    iterator;
@@ -60,8 +60,8 @@ namespace __gnu_debug_def
 
       typedef _Tp				    value_type;
       typedef _Allocator			    allocator_type;
-      typedef typename _Allocator::pointer          pointer;
-      typedef typename _Allocator::const_pointer    const_pointer;
+      typedef typename _Base::pointer               pointer;
+      typedef typename _Base::const_pointer         const_pointer;
       typedef std::reverse_iterator<iterator>       reverse_iterator;
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
