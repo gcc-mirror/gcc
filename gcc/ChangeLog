@@ -1,3 +1,11 @@
+2005-06-07  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-threadupdate.c (struct thread_stats_d): Declare.
+	(thread_stats): New local variable.
+	(redirect_edges): Increment count of threaded edges.
+	(thread_through_all_blocks): Initialize thread_stats.
+	Display number of threaded jumps if TDF_STATS is enabled.
+
 2005-06-07  Kazu Hirata  <kazu@codesourcery.com>
 
 	* sbitmap.h (sbitmap_iter_init): Consistently treat bit_num as

@@ -147,6 +147,16 @@ struct local_info
   bool jumps_threaded;
 };
 
+/* Jump threading statistics.  */
+
+struct thread_stats_d
+{
+  unsigned long num_threaded_edges;
+};
+
+struct thread_stats_d thread_stats;
+
+
 /* Remove the last statement in block BB if it is a control statement
    Also remove all outgoing edges except the edge which reaches DEST_BB.
    If DEST_BB is NULL, then remove all outgoing edges.  */
@@ -589,6 +599,8 @@ redirect_edges (void **slot, void *data)
          to clear it will cause all kinds of unpleasant problems later.  */
       e->aux = NULL;
 
+      thread_stats.num_threaded_edges++;
+
       if (rd->dup_block)
 	{
 	  edge e2;
@@ -811,6 +823,7 @@ thread_through_all_blocks (bitmap threaded_blocks)
   bitmap_iterator bi;
 
   rediscover_loops_after_threading = false;
+  memset (&thread_stats, 0, sizeof (thread_stats));
 
   EXECUTE_IF_SET_IN_BITMAP (threaded_blocks, 0, i, bi)
     {
@@ -819,6 +832,10 @@ thread_through_all_blocks (bitmap threaded_blocks)
       if (EDGE_COUNT (bb->preds) > 0)
 	retval |= thread_block (bb);
     }
+
+  if (dump_file && (dump_flags & TDF_STATS))
+    fprintf (dump_file, "\nJumps threaded: %lu\n",
+	     thread_stats.num_threaded_edges);
 
   return retval;
 }
