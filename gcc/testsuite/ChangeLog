@@ -1,3 +1,10 @@
+2005-06-07  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21926
+	* gfortran.fortran-torture/execute/intrinsic_matmul.f90:
+	Test case where the return array has lowest stride one,
+	but isn't packed.
+
 2005-06-07  Adrian Straetling  <straetling@de.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_sync_int_long):

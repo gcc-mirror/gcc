@@ -180,7 +180,14 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       rtype_name *abase_n;
       rtype_name bbase_yn;
 
-      memset (dest, 0, (sizeof (rtype_name) * size0((array_t *) retarray)));
+      if (rystride == ycount)
+	memset (dest, 0, (sizeof (rtype_name) * size0((array_t *) retarray)));
+      else
+	{
+	  for (y = 0; y < ycount; y++)
+	    for (x = 0; x < xcount; x++)
+	      dest[x + y*rystride] = (rtype_name)0;
+	}
 
       for (y = 0; y < ycount; y++)
 	{
