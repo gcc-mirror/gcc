@@ -28,8 +28,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include <mach/mach.h>
 #include <mach/cthreads.h>
-#include <objc/thr.h>
-#include "runtime.h"
+#include "objc/thr.h"
+#include "objc/runtime.h"
 
 /*
   Obtain the maximum thread priority that can set for t.  Under the

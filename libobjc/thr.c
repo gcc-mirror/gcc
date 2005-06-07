@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
    covered by the GNU General Public License.  */
 
 #include <stdlib.h>
-#include "runtime.h"
+#include "objc/runtime.h"
 
 /* Global exit status. */
 int __objc_thread_exit_status = 0;

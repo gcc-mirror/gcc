@@ -25,9 +25,9 @@ Boston, MA 02111-1307, USA.  */
    covered by the GNU General Public License.  */
 
 #include "tconfig.h"
-#include "runtime.h"
-#include "typedstream.h"
-#include "encoding.h"
+#include "objc/runtime.h"
+#include "objc/typedstream.h"
+#include "objc/encoding.h"
 #include <stdlib.h>
 
 extern int fflush (FILE *);

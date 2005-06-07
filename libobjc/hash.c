@@ -26,9 +26,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "assert.h"
 
-#include "hash.h"
+#include "objc/hash.h"
 
-#include "runtime.h"		/* for DEBUG_PRINTF */
+#include "objc/runtime.h"		/* for DEBUG_PRINTF */
 
 /* These two macros determine when a hash table is full and
    by how much it should be expanded respectively.

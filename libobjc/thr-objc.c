@@ -29,8 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "defaults.h"
-#include <objc/thr.h>
-#include "runtime.h"
+#include "objc/thr.h"
+#include "objc/runtime.h"
 #include <gthr.h>
 
 /* Backend initialization functions */

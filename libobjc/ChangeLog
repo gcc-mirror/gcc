@@ -1,3 +1,14 @@
+2005-06-07  David Ayers  <d.ayers@inode.at>
+
+	* archive.c, init.c, selector.c: Include hash.h.
+	* archive.c, class.c, encoding.c, gc.c, hash.c, hash_compat.c,
+	init.c, misc.c, nil_method.c, objects.c, sarray.c, selector.c,
+	sendmsg.c, thr-dce.c, thr-decosf1.c, thr-irix.c, thr-mach.c,
+	thr-objc.c, thr-os2.c, thr-posix.c, thr-pthreads.c, thr-rtems.c,
+	thr-single.c, thr-solaris.c, thr-vxworks.c, thr-win32.c, thr.c:
+	Include Objective-C headers with quotes and objc/ directory
+	prefix.
+
 2005-05-19  Richard Henderson  <rth@redhat.com>
 
 	* exception.c: Revert last change.

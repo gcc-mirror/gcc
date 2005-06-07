@@ -29,8 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/sysmp.h>
 #include <sys/prctl.h>
 #include <ulocks.h>
-#include <objc/thr.h>
-#include "runtime.h"
+#include "objc/thr.h"
+#include "objc/runtime.h"
 
 /* Key structure for maintaining thread specific storage */
 static void * __objc_shared_arena_handle = NULL;

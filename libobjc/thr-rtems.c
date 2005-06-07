@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
-#include <objc/thr.h>
-#include "runtime.h"
+#include "objc/thr.h"
+#include "objc/runtime.h"
 
 /* Thread local storage for a single thread */
 static void *thread_local_storage = NULL;

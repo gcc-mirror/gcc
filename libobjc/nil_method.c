@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is the nil method, the function that is called when the receiver
    of a method is nil */
 
-#include "runtime.h"
+#include "objc/runtime.h"
 
 /* When the receiver of a method invocation is nil, the runtime
    returns nil_method() as the method implementation.  This function

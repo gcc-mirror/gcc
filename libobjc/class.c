@@ -88,12 +88,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
   classes from the table - and the difficult thing with lock-free data
   structures is freeing data when is removed from the structures.  */
 
-#include "runtime.h"            /* the kitchen sink */
-#include "sarray.h"
+#include "objc/runtime.h"            /* the kitchen sink */
+#include "objc/sarray.h"
 
-#include <objc/objc.h>
-#include <objc/objc-api.h>
-#include <objc/thr.h>
+#include "objc/objc.h"
+#include "objc/objc-api.h"
+#include "objc/thr.h"
 
 /* We use a table which maps a class name to the corresponding class
  * pointer.  The first part of this file defines this table, and

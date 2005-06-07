@@ -24,8 +24,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#include "sarray.h"
-#include "runtime.h"
+#include "objc/sarray.h"
+#include "objc/runtime.h"
 #include <stdio.h>
 #include "assert.h"
 

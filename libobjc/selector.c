@@ -23,9 +23,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
-#include "runtime.h"
-#include "sarray.h"
-#include "encoding.h"
+#include "objc/runtime.h"
+#include "objc/sarray.h"
+#include "objc/encoding.h"
 
 /* Initial selector hash table size. Value doesn't matter much */
 #define SELECTOR_HASH_SIZE 128

@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
    the executable file might be covered by the GNU General Public License.  */
 
 #define OBJC_IGNORE_DEPRECATED_API 1
-#include "hash.h"
+#include "objc/hash.h"
 
 cache_ptr
 hash_new (unsigned int size,
