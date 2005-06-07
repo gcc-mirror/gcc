@@ -521,13 +521,15 @@ find_edge_index (struct edge_list *edge_list, basic_block pred, basic_block succ
 void
 flow_nodes_print (const char *str, const sbitmap nodes, FILE *file)
 {
-  int node;
+  unsigned int node;
+  sbitmap_iterator sbi;
 
   if (! nodes)
     return;
 
   fprintf (file, "%s { ", str);
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, node, {fprintf (file, "%d ", node);});
+  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, node, sbi)
+    fprintf (file, "%d ", node);
   fputs ("}\n", file);
 }
 

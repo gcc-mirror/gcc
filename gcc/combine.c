@@ -639,7 +639,9 @@ combine_instructions (rtx f, unsigned int nregs)
   rtx prev;
 #endif
   int i;
+  unsigned int j;
   rtx links, nextlinks;
+  sbitmap_iterator sbi;
 
   int new_direct_jump_p = 0;
 
@@ -884,8 +886,8 @@ combine_instructions (rtx f, unsigned int nregs)
     }
   clear_bb_flags ();
 
-  EXECUTE_IF_SET_IN_SBITMAP (refresh_blocks, 0, i,
-			     BASIC_BLOCK (i)->flags |= BB_DIRTY);
+  EXECUTE_IF_SET_IN_SBITMAP (refresh_blocks, 0, j, sbi)
+    BASIC_BLOCK (j)->flags |= BB_DIRTY;
   new_direct_jump_p |= purge_all_dead_edges ();
   delete_noop_moves ();
 

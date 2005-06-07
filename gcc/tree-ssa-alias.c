@@ -1073,12 +1073,13 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 
 	  if (sbitmap_first_set_bit (may_aliases2) >= 0)
 	    {
-	      size_t k;
+	      unsigned int k;
+	      sbitmap_iterator sbi;
 
 	      /* Add all the aliases for TAG2 into TAG1's alias set.
 		 FIXME, update grouping heuristic counters.  */
-	      EXECUTE_IF_SET_IN_SBITMAP (may_aliases2, 0, k,
-		  add_may_alias (tag1, referenced_var (k)));
+	      EXECUTE_IF_SET_IN_SBITMAP (may_aliases2, 0, k, sbi)
+		add_may_alias (tag1, referenced_var (k));
 	      sbitmap_a_or_b (may_aliases1, may_aliases1, may_aliases2);
 	    }
 	  else
@@ -1133,11 +1134,12 @@ total_alias_vops_cmp (const void *p, const void *q)
 static void
 group_aliases_into (tree tag, sbitmap tag_aliases, struct alias_info *ai)
 {
-  size_t i;
+  unsigned int i;
   var_ann_t tag_ann = var_ann (tag);
   size_t num_tag_refs = VARRAY_UINT (ai->num_references, tag_ann->uid);
+  sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (tag_aliases, 0, i,
+  EXECUTE_IF_SET_IN_SBITMAP (tag_aliases, 0, i, sbi)
     {
       tree var = referenced_var (i);
       var_ann_t ann = var_ann (var);
@@ -1157,7 +1159,7 @@ group_aliases_into (tree tag, sbitmap tag_aliases, struct alias_info *ai)
 	 itself won't be removed.  We will merely replace them with
 	 references to TAG.  */
       ai->total_alias_vops -= num_tag_refs;
-    });
+    }
 
   /* We have reduced the number of virtual operands that TAG makes on
      behalf of all the variables formerly aliased with it.  However,

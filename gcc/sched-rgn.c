@@ -351,7 +351,8 @@ is_cfg_nonregular (void)
 static void
 extract_edgelst (sbitmap set, edgelst *el)
 {
-  int i;
+  unsigned int i;
+  sbitmap_iterator sbi;
 
   /* edgelst table space is reused in each call to extract_edgelst.  */
   edgelst_last = 0;
@@ -360,11 +361,11 @@ extract_edgelst (sbitmap set, edgelst *el)
   el->nr_members = 0;
 
   /* Iterate over each word in the bitset.  */
-  EXECUTE_IF_SET_IN_SBITMAP (set, 0, i,
-  {
-    edgelst_table[edgelst_last++] = rgn_edges[i];
-    el->nr_members++;
-  });
+  EXECUTE_IF_SET_IN_SBITMAP (set, 0, i, sbi)
+    {
+      edgelst_table[edgelst_last++] = rgn_edges[i];
+      el->nr_members++;
+    }
 }
 
 /* Functions for the construction of regions.  */

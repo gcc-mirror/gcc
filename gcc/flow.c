@@ -653,7 +653,9 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 
   if (blocks)
     {
-      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
+      sbitmap_iterator sbi;
+
+      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i, sbi)
 	{
 	  bb = BASIC_BLOCK (i);
 
@@ -662,7 +664,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 
 	  if (extent == UPDATE_LIFE_LOCAL)
 	    verify_local_live_at_start (tmp, bb);
-	});
+	};
     }
   else
     {
@@ -1032,7 +1034,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
      In other words, regs that are set only as part of a COND_EXEC.  */
   regset *cond_local_sets;
 
-  int i;
+  unsigned int i;
 
   /* Some passes used to forget clear aux field of basic block causing
      sick behavior here.  */
@@ -1406,12 +1408,14 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 
   if (blocks_out)
     {
-      EXECUTE_IF_SET_IN_SBITMAP (blocks_out, 0, i,
+      sbitmap_iterator sbi;
+
+      EXECUTE_IF_SET_IN_SBITMAP (blocks_out, 0, i, sbi)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
 	  FREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
 	  FREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
-	});
+	};
     }
   else
     {
@@ -4355,7 +4359,7 @@ int
 count_or_remove_death_notes (sbitmap blocks, int kill)
 {
   int count = 0;
-  int i;
+  unsigned int i;
   basic_block bb;
 
   /* This used to be a loop over all the blocks with a membership test
@@ -4367,10 +4371,12 @@ count_or_remove_death_notes (sbitmap blocks, int kill)
      than an sbitmap.  */
   if (blocks)
     {
-      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
+      sbitmap_iterator sbi;
+
+      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i, sbi)
 	{
 	  count += count_or_remove_death_notes_bb (BASIC_BLOCK (i), kill);
-	});
+	};
     }
   else
     {
@@ -4450,7 +4456,6 @@ static void
 clear_log_links (sbitmap blocks)
 {
   rtx insn;
-  int i;
 
   if (!blocks)
     {
@@ -4459,15 +4464,20 @@ clear_log_links (sbitmap blocks)
 	  free_INSN_LIST_list (&LOG_LINKS (insn));
     }
   else
-    EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
-      {
-	basic_block bb = BASIC_BLOCK (i);
+    {
+      unsigned int i;
+      sbitmap_iterator sbi;
 
-	for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
-	     insn = NEXT_INSN (insn))
-	  if (INSN_P (insn))
-	    free_INSN_LIST_list (&LOG_LINKS (insn));
-      });
+      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i, sbi)
+	{
+	  basic_block bb = BASIC_BLOCK (i);
+
+	  for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
+	       insn = NEXT_INSN (insn))
+	    if (INSN_P (insn))
+	      free_INSN_LIST_list (&LOG_LINKS (insn));
+	}
+    }
 }
 
 /* Given a register bitmap, turn on the bits in a HARD_REG_SET that
