@@ -1,5 +1,12 @@
 2005-06-06  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/21770 (cont: __gnu_debug::string)
+	* include/debug/string: Use _Base typedefs for pointer, const_pointer,
+	reference, const_reference, size_type, difference_type.
+	* testsuite/21_strings/basic_string/2.cc: New.
+
+2005-06-06  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/21770 (cont: debug-mode)
 	* include/debug/deque: Use _Base typedefs for pointer, const_pointer,
 	reference, const_reference.
