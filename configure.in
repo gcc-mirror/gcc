@@ -492,9 +492,9 @@ case "${target}" in
 	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
       *-*-elf)
 	unsupported_languages="$unsupported_languages f95"
-	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
+	noconfigdirs="$noconfigdirs target-boehm-gc";;
       *-*-linux*)
-	noconfigdirs="$noconfigdirs target-libffi target-newlib target-libgloss";;
+	noconfigdirs="$noconfigdirs target-newlib target-libgloss";;
       *)
 	unsupported_languages="$unsupported_languages f95"
 	noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss";;
