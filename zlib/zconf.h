@@ -328,4 +328,12 @@ typedef uLong FAR uLongf;
 #endif
 #endif
 
+/* Tru64 UNIX V4.0 neither */
+#if defined(__alpha) && defined(__osf__)
+#include <unistd.h>
+#if _XOPEN_VERSION < 500
+#define NO_vsnprintf
+#endif
+#endif
+
 #endif /* ZCONF_H */

@@ -1,3 +1,7 @@
+2005-06-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* zconf.h (NO_vsnprintf): Define on Tru64 UNIX V4.0.
+
 2005-05-09  Mike Stump  <mrs@apple.com>
 	
 	* configure: Regenerate.
