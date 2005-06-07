@@ -1,3 +1,8 @@
+2005-06-07  Kazu Hirata  <kazu@codesourcery.com>
+
+	* sbitmap.h (sbitmap_iter_init): Consistently treat bit_num as
+	the current bit index with no modulo.
+
 2005-06-07  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR 18403 and meta PR 21861.
