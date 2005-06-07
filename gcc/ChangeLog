@@ -1,3 +1,8 @@
+2005-06-06  Uros Bizjak  <uros@kss-loka.si>
+
+	* mode-switching.c (optimize_mode_switching): Fix n_exprs parameter
+	in call to pre_edge_lcm.
+
 2005-06-06  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux-unwind.h (SH_DWARF_FRAME_XD0): Remove for SH5.

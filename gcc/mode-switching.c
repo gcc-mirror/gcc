@@ -549,7 +549,7 @@ optimize_mode_switching (FILE *file)
 
       FOR_EACH_BB (bb)
 	sbitmap_not (kill[bb->index], transp[bb->index]);
-      edge_list = pre_edge_lcm (file, 1, transp, comp, antic,
+      edge_list = pre_edge_lcm (file, n_entities, transp, comp, antic,
 				kill, &insert, &delete);
 
       for (j = n_entities - 1; j >= 0; j--)
