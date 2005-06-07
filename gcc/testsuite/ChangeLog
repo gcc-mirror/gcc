@@ -1,3 +1,8 @@
+2005-06-07  Adrian Straetling  <straetling@de.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Add s390 and s390x targets.
+
 2005-06-07  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-2.c: Update outcome.
