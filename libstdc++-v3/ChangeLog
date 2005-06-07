@@ -1,3 +1,8 @@
+2005-06-07  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/cpu/s390/atomicity.h: (__exchange_and_add, 
+	__atomic_add): Use the builtins for atomic memory operations.
+
 2005-06-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21770 (cont: __gnu_debug::string)

@@ -163,6 +163,10 @@ static int s390_sr_alias_set = 0;
    emitted.  */
 rtx s390_compare_op0, s390_compare_op1;
 
+/* Save the result of a compare_and_swap  until the branch or scc is
+   emitted.  */
+rtx s390_compare_emitted = NULL_RTX;
+
 /* Structure used to hold the components of a S/390 memory
    address.  A legitimate address on S/390 is of the general
    form
@@ -609,10 +613,21 @@ rtx
 s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
 {
   enum machine_mode mode = s390_select_ccmode (code, op0, op1);
-  rtx cc = gen_rtx_REG (mode, CC_REGNUM);
+  rtx ret = NULL_RTX;
 
-  emit_insn (gen_rtx_SET (VOIDmode, cc, gen_rtx_COMPARE (mode, op0, op1)));
-  return gen_rtx_fmt_ee (code, VOIDmode, cc, const0_rtx);
+  /* Do not output a redundant compare instruction if a compare_and_swap
+     pattern already computed the result and the machine modes match.  */
+  if (s390_compare_emitted && GET_MODE (s390_compare_emitted) == mode)
+    ret = gen_rtx_fmt_ee (code, VOIDmode, s390_compare_emitted, const0_rtx); 
+  else
+    {
+      rtx cc = gen_rtx_REG (mode, CC_REGNUM);
+      
+      emit_insn (gen_rtx_SET (VOIDmode, cc, gen_rtx_COMPARE (mode, op0, op1)));
+      ret = gen_rtx_fmt_ee (code, VOIDmode, cc, const0_rtx); 
+    }
+  s390_compare_emitted = NULL_RTX;
+  return ret;
 }
 
 /* Emit a jump instruction to TARGET.  If COND is NULL_RTX, emit an
