@@ -1,6 +1,7 @@
 2005-06-06  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/util/Signature.java: New file.
+	* gnu/classpath/jdwp/transport/JdwpConnection.java: New file.
 
 2005-06-05  Anthony Green  <green@redhat.com>
 
