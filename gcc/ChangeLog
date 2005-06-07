@@ -1,3 +1,10 @@
+2005-06-07  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/21847
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): With
+	-fnon-call-exceptions, also mark statements inherently
+	necessary if they may throw.
+
 2005-06-07  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.md: ("UNSPECV_MB", "UNSPECV_CAS"): New constants.
