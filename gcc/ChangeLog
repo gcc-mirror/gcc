@@ -1,5 +1,12 @@
 2005-06-07  Richard Guenther  <rguenth@gcc.gnu.org>
 
+	* c-typeck.c (c_finish_if_stmt): Use void_type_node as type
+	for COND_EXPR.
+	* gimplify.c (gimplify_cond_expr): No need to fix up the
+	type of COND_EXPRs.
+
+2005-06-07  Richard Guenther  <rguenth@gcc.gnu.org>
+
 	* tree-ssa.c (tree_ssa_useless_type_conversion_1): Fix
 	comments.
 
