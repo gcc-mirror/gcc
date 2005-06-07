@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-02-25 23:28+0000\n"
+"POT-Creation-Date: 2005-06-07 23:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,337 +16,347 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: charset.c:655
+#: charset.c:654
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr ""
 
-#: charset.c:658
+#: charset.c:657
 msgid "iconv_open"
 msgstr ""
 
-#: charset.c:666
+#: charset.c:665
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr ""
 
-#: charset.c:743
+#: charset.c:742
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr ""
 
-#: charset.c:760
-#: charset.c:1243
+#: charset.c:759 charset.c:1346
 msgid "converting to execution character set"
 msgstr ""
 
-#: charset.c:766
+#: charset.c:765
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr ""
 
-#: charset.c:865
+#: charset.c:889
+#, c-format
+msgid "Character %x might not be NFKC"
+msgstr ""
+
+#: charset.c:949
 msgid "universal character names are only valid in C++ and C99"
 msgstr ""
 
-#: charset.c:868
+#: charset.c:952
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr ""
 
-#: charset.c:894
+#: charset.c:961
+msgid "In _cpp_valid_ucn but not a UCN"
+msgstr ""
+
+#: charset.c:986
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr ""
 
-#: charset.c:906
+#: charset.c:998
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr ""
 
-#: charset.c:916
+#: charset.c:1008 lex.c:472
+msgid "'$' in identifier or number"
+msgstr ""
+
+#: charset.c:1018
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr ""
 
-#: charset.c:920
+#: charset.c:1022
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr ""
 
-#: charset.c:953
+#: charset.c:1056 charset.c:1565
 msgid "converting UCN to source character set"
 msgstr ""
 
-#: charset.c:957
+#: charset.c:1060
 msgid "converting UCN to execution character set"
 msgstr ""
 
-#: charset.c:1029
+#: charset.c:1132
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr ""
 
-#: charset.c:1046
+#: charset.c:1149
 msgid "\\x used with no following hex digits"
 msgstr ""
 
-#: charset.c:1053
+#: charset.c:1156
 msgid "hex escape sequence out of range"
 msgstr ""
 
-#: charset.c:1092
+#: charset.c:1195
 msgid "octal escape sequence out of range"
 msgstr ""
 
-#: charset.c:1160
+#: charset.c:1263
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr ""
 
-#: charset.c:1167
+#: charset.c:1270
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr ""
 
-#: charset.c:1175
+#: charset.c:1278
 #, c-format
 msgid "unknown escape sequence '\\%c'"
 msgstr ""
 
-#: charset.c:1178
+#: charset.c:1281
 #, c-format
 msgid "unknown escape sequence: '\\%03o'"
 msgstr ""
 
-#: charset.c:1184
+#: charset.c:1287
 msgid "converting escape sequence to execution character set"
 msgstr ""
 
-#: charset.c:1306
-#: charset.c:1369
+#: charset.c:1409 charset.c:1472
 msgid "character constant too long for its type"
 msgstr ""
 
-#: charset.c:1309
+#: charset.c:1412
 msgid "multi-character character constant"
 msgstr ""
 
-#: charset.c:1401
+#: charset.c:1504
 msgid "empty character constant"
 msgstr ""
 
-#: charset.c:1450
+#: charset.c:1606
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr ""
 
-#: directives.c:216
+#: directives.c:219
 #, c-format
 msgid "extra tokens at end of #%s directive"
 msgstr ""
 
-#: directives.c:303
+#: directives.c:306
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr ""
 
-#: directives.c:315
+#: directives.c:318
 msgid "suggest not using #elif in traditional C"
 msgstr ""
 
-#: directives.c:318
+#: directives.c:321
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr ""
 
-#: directives.c:322
+#: directives.c:325
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr ""
 
-#: directives.c:348
+#: directives.c:351
 msgid "embedding a directive within macro arguments is not portable"
 msgstr ""
 
-#: directives.c:368
+#: directives.c:371
 msgid "style of line directive is a GCC extension"
 msgstr ""
 
-#: directives.c:418
+#: directives.c:421
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr ""
 
-#: directives.c:489
+#: directives.c:492
 msgid "\"defined\" cannot be used as a macro name"
-msgstr ""
-
-#: directives.c:495
-#, c-format
-msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr ""
 
 #: directives.c:498
 #, c-format
-msgid "no macro name given in #%s directive"
+msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr ""
 
 #: directives.c:501
+#, c-format
+msgid "no macro name given in #%s directive"
+msgstr ""
+
+#: directives.c:504
 msgid "macro names must be identifiers"
 msgstr ""
 
-#: directives.c:542
+#: directives.c:545
 #, c-format
 msgid "undefining \"%s\""
 msgstr ""
 
-#: directives.c:597
+#: directives.c:600
 msgid "missing terminating > character"
 msgstr ""
 
-#: directives.c:650
+#: directives.c:654
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr ""
 
-#: directives.c:673
+#: directives.c:677
 #, c-format
 msgid "empty filename in #%s"
 msgstr ""
 
-#: directives.c:681
+#: directives.c:685
 msgid "#include nested too deeply"
 msgstr ""
 
-#: directives.c:719
+#: directives.c:723
 msgid "#include_next in primary source file"
 msgstr ""
 
-#: directives.c:745
+#: directives.c:749
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr ""
 
-#: directives.c:792
+#: directives.c:801
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr ""
 
-#: directives.c:798
+#: directives.c:807
 msgid "line number out of range"
 msgstr ""
 
-#: directives.c:811
-#: directives.c:888
+#: directives.c:820 directives.c:897
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr ""
 
-#: directives.c:848
+#: directives.c:857
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr ""
 
-#: directives.c:950
-msgid "invalid #ident directive"
+#: directives.c:959
+#, c-format
+msgid "invalid #%s directive"
 msgstr ""
 
-#: directives.c:1038
+#: directives.c:1048
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr ""
 
-#: directives.c:1041
+#: directives.c:1051
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr ""
 
-#: directives.c:1044
+#: directives.c:1054
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr ""
 
-#: directives.c:1244
+#: directives.c:1254
 msgid "#pragma once in main file"
 msgstr ""
 
-#: directives.c:1267
+#: directives.c:1277
 msgid "invalid #pragma GCC poison directive"
 msgstr ""
 
-#: directives.c:1276
+#: directives.c:1286
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr ""
 
-#: directives.c:1297
+#: directives.c:1307
 msgid "#pragma system_header ignored outside include file"
 msgstr ""
 
-#: directives.c:1321
+#: directives.c:1331
 #, c-format
 msgid "cannot find source file %s"
 msgstr ""
 
-#: directives.c:1325
+#: directives.c:1335
 #, c-format
 msgid "current file is older than %s"
 msgstr ""
 
-#: directives.c:1439
+#: directives.c:1449
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.c:1546
+#: directives.c:1550
 msgid "#else without #if"
 msgstr ""
 
-#: directives.c:1551
+#: directives.c:1555
 msgid "#else after #else"
 msgstr ""
 
-#: directives.c:1553
-#: directives.c:1586
+#: directives.c:1557 directives.c:1590
 msgid "the conditional began here"
 msgstr ""
 
-#: directives.c:1579
+#: directives.c:1583
 msgid "#elif without #if"
 msgstr ""
 
-#: directives.c:1584
+#: directives.c:1588
 msgid "#elif after #else"
 msgstr ""
 
-#: directives.c:1614
+#: directives.c:1618
 msgid "#endif without #if"
 msgstr ""
 
-#: directives.c:1691
+#: directives.c:1695
 msgid "missing '(' after predicate"
 msgstr ""
 
-#: directives.c:1706
+#: directives.c:1710
 msgid "missing ')' to complete answer"
 msgstr ""
 
-#: directives.c:1726
+#: directives.c:1730
 msgid "predicate's answer is empty"
 msgstr ""
 
-#: directives.c:1753
+#: directives.c:1757
 msgid "assertion without predicate"
 msgstr ""
 
-#: directives.c:1755
+#: directives.c:1759
 msgid "predicate must be an identifier"
 msgstr ""
 
-#: directives.c:1841
+#: directives.c:1845
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2064
+#: directives.c:2069
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
@@ -398,8 +408,7 @@ msgstr ""
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr ""
 
-#: expr.c:250
-#: expr.c:275
+#: expr.c:250 expr.c:275
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr ""
@@ -455,8 +464,7 @@ msgstr ""
 msgid "\"%s\" is not defined"
 msgstr ""
 
-#: expr.c:716
-#: expr.c:745
+#: expr.c:716 expr.c:745
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr ""
@@ -535,160 +543,165 @@ msgstr ""
 msgid "division by zero in #if"
 msgstr ""
 
-#: files.c:401
+#: files.c:402
 msgid "NULL directory in find_file"
 msgstr ""
 
-#: files.c:454
+#: files.c:455
 msgid "one or more PCH files were found, but they were invalid"
 msgstr ""
 
-#: files.c:457
+#: files.c:458
 msgid "use -Winvalid-pch for more information"
 msgstr ""
 
-#: files.c:522
+#: files.c:523
 #, c-format
 msgid "%s is a block device"
 msgstr ""
 
-#: files.c:539
+#: files.c:540
 #, c-format
 msgid "%s is too large"
 msgstr ""
 
-#: files.c:574
+#: files.c:575
 #, c-format
 msgid "%s is shorter than expected"
 msgstr ""
 
-#: files.c:803
+#: files.c:804
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr ""
 
-#: files.c:1096
+#: files.c:1097
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
-#: init.c:393
+#: init.c:394
 msgid "cppchar_t must be an unsigned type"
 msgstr ""
 
-#: init.c:397
+#: init.c:398
 #, c-format
 msgid ""
 "preprocessor arithmetic has maximum precision of %lu bits; target requires %"
 "lu bits"
 msgstr ""
 
-#: init.c:404
+#: init.c:405
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr ""
 
-#: init.c:407
+#: init.c:408
 msgid "target char is less than 8 bits wide"
 msgstr ""
 
-#: init.c:411
+#: init.c:412
 msgid "target wchar_t is narrower than target char"
 msgstr ""
 
-#: init.c:415
+#: init.c:416
 msgid "target int is narrower than target char"
 msgstr ""
 
-#: init.c:420
+#: init.c:421
 msgid "CPP half-integer narrower than CPP character"
 msgstr ""
 
-#: init.c:424
+#: init.c:425
 #, c-format
 msgid ""
 "CPP on this host cannot handle wide character constants over %lu bits, but "
 "the target requires %lu bits"
 msgstr ""
 
-#: lex.c:274
+#: lex.c:271
 msgid "backslash and newline separated by space"
 msgstr ""
 
-#: lex.c:279
+#: lex.c:276
 msgid "backslash-newline at end of file"
 msgstr ""
 
-#: lex.c:294
+#: lex.c:291
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr ""
 
-#: lex.c:301
+#: lex.c:298
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:347
+#: lex.c:344
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:405
+#: lex.c:402
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:414
+#: lex.c:411
 msgid "null character(s) ignored"
 msgstr ""
 
-#: lex.c:449
-msgid "'$' in identifier or number"
+#: lex.c:448
+#, c-format
+msgid "`%.*s' is not in NFKC"
 msgstr ""
 
-#: lex.c:510
+#: lex.c:451
+#, c-format
+msgid "`%.*s' is not in NFC"
+msgstr ""
+
+#: lex.c:539
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:518
+#: lex.c:547
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:614
+#: lex.c:647
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:805
+#: lex.c:838
 msgid "no newline at end of file"
 msgstr ""
 
-#: lex.c:948
-#: traditional.c:162
+#: lex.c:990 traditional.c:162
 msgid "unterminated comment"
 msgstr ""
 
-#: lex.c:959
+#: lex.c:1001
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:961
+#: lex.c:1003
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:966
+#: lex.c:1008
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:1230
+#: lex.c:1331
 #, c-format
 msgid "unspellable token %s"
 msgstr ""
 
-#: line-map.c:309
+#: line-map.c:313
 #, c-format
 msgid "In file included from %s:%u"
 msgstr ""
 
-#: line-map.c:327
+#: line-map.c:331
 #, c-format
 msgid ""
 ",\n"
@@ -700,8 +713,7 @@ msgstr ""
 msgid "macro \"%s\" is not used"
 msgstr ""
 
-#: macro.c:124
-#: macro.c:287
+#: macro.c:124 macro.c:287
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr ""
@@ -733,8 +745,7 @@ msgstr ""
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr ""
 
-#: macro.c:642
-#: traditional.c:675
+#: macro.c:642 traditional.c:675
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr ""
@@ -749,65 +760,67 @@ msgstr ""
 msgid "duplicate macro parameter \"%s\""
 msgstr ""
 
-#: macro.c:1306
+#: macro.c:1307
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr ""
 
-#: macro.c:1314
+#: macro.c:1315
 msgid "macro parameters must be comma-separated"
 msgstr ""
 
-#: macro.c:1331
+#: macro.c:1332
 msgid "parameter name missing"
 msgstr ""
 
-#: macro.c:1348
+#: macro.c:1349
 msgid "anonymous variadic macros were introduced in C99"
 msgstr ""
 
-#: macro.c:1353
+#: macro.c:1354
 msgid "ISO C does not permit named variadic macros"
 msgstr ""
 
-#: macro.c:1362
+#: macro.c:1363
 msgid "missing ')' in macro parameter list"
 msgstr ""
 
-#: macro.c:1434
-msgid "ISO C requires whitespace after the macro name"
+#: macro.c:1441
+msgid "ISO C99 requires whitespace after the macro name"
 msgstr ""
 
-#: macro.c:1462
+#: macro.c:1465
+msgid "missing whitespace after the macro name"
+msgstr ""
+
+#: macro.c:1495
 msgid "'#' is not followed by a macro parameter"
 msgstr ""
 
-#: macro.c:1481
+#: macro.c:1514
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr ""
 
-#: macro.c:1577
+#: macro.c:1612
 #, c-format
 msgid "\"%s\" redefined"
 msgstr ""
 
-#: macro.c:1582
+#: macro.c:1617
 msgid "this is the location of the previous definition"
 msgstr ""
 
-#: macro.c:1632
+#: macro.c:1667
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr ""
 
-#: macro.c:1655
+#: macro.c:1690
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr ""
 
-#: pch.c:84
-#: pch.c:332
-#: pch.c:354
+#: pch.c:84 pch.c:332 pch.c:354
 #: pch.c:360
 msgid "while writing precompiled header"
 msgstr ""
@@ -827,8 +840,7 @@ msgstr ""
 msgid "%s: not used because `%s' is defined"
 msgstr ""
 
-#: pch.c:533
-#: pch.c:696
+#: pch.c:533 pch.c:696
 msgid "while reading precompiled header"
 msgstr ""
 
