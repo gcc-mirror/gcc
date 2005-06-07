@@ -1003,6 +1003,7 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
 	     || [istarget alpha*-*-*] 
+	     || [istarget s390*-*-*] 
 	     || [istarget powerpc*-*-*] } {
            set et_sync_int_long_saved 1
         }
