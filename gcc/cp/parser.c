@@ -15599,7 +15599,10 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       if (!default_arg)
 	continue;
 
-      gcc_assert (TREE_CODE (default_arg) == DEFAULT_ARG);
+      if (TREE_CODE (default_arg) != DEFAULT_ARG)
+	/* This can happen for a friend declaration for a function
+	   already declared with default arguments.  */
+	continue;
 
        /* Push the saved tokens for the default argument onto the parser's
 	  lexer stack.  */
