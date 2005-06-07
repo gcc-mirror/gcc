@@ -1,3 +1,7 @@
+2005-06-07  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.dg/20050607-1.c:  New.
+
 2005-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21850
