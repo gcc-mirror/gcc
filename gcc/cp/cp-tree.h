@@ -424,11 +424,14 @@ typedef enum cp_id_kind
 
 #define DEFARG_TOKENS(NODE) \
   (((struct tree_default_arg *)DEFAULT_ARG_CHECK (NODE))->tokens)
+#define DEFARG_INSTANTIATIONS(NODE) \
+  (((struct tree_default_arg *)DEFAULT_ARG_CHECK (NODE))->instantiations)
 
 struct tree_default_arg GTY (())
 {
   struct tree_common common;
   struct cp_token_cache *tokens;
+  VEC(tree,gc) *instantiations;
 };
 
 enum cp_tree_node_structure_enum {
