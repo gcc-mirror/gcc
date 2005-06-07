@@ -1,3 +1,7 @@
+2005-06-07  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/predicates.md: Revert previous patch.
+
 2005-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21850
