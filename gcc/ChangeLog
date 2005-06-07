@@ -1,3 +1,17 @@
+2005-06-07  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/s390.md: ("UNSPECV_MB", "UNSPECV_CAS"): New constants.
+	("type"): Add "sem" to 'type' attribute.
+	("memory_barrier", "*memory_barrier", "sync_compare_and_swapdi",
+	"sync_compare_and_swapsi", "sync_compare_and_swap_ccdi",
+	"sync_compare_and_swap_ccsi", "*sync_compare_and_swap_ccdi",
+	"*sync_compare_and_swap_ccsi"): New patterns.
+	* config/s390/2064.md: ("z_sem"): New insn_reservation.
+	* config/s390/2084.md: ("x_sem"): New insn_reservation.
+	* config/s390/s390.c: (s390_compare_emitted): New global variable.
+	(s390_emit_compare): Do not emit comparison again after cas.
+	* config/s390/s390.h (s390_compare_emitted): Declare.
+
 2005-06-07  Kazu Hirata  <kazu@codesourcery.com>
 
 	* sbitmap.h (sbitmap_iterator, sbitmap_iter_init,
