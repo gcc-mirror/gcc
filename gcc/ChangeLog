@@ -1,3 +1,8 @@
+2005-06-07  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/21528
+	* rtlanal.c (reg_overlap_mentioned_p) <MEM>: Handle 'E' formats.
+
 2005-06-07  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/21847
