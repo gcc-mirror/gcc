@@ -1,3 +1,8 @@
+2005-06-03  Jerry DeLisle <jvdelisle@verizon.net>
+
+	* intrinsic.texi: Add documentation for	dcmplx, digits,
+	dim, idim, ddim, dot_product, dprod, dreal, and dtime.
+
 2005-06-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/21912
