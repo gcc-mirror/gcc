@@ -1,3 +1,8 @@
+2005-06-07  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* btest-gcc.sh: Add support for option
+	--add-passes-despite-regression.
+
 2005-06-06  Hans-Peter Nilsson  <hp@axis.com>
 
 	* btest-gcc.sh <Build>: Don't pass --with-newlib when target is
