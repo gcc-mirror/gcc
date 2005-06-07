@@ -1,3 +1,8 @@
+2005-06-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* rtlanal.c (subreg_offset_representable_p): Handle objects
+	with holes.
+
 2005-06-06  Uros Bizjak  <uros@kss-loka.si>
 
 	* mode-switching.c (optimize_mode_switching): Fix n_exprs parameter
