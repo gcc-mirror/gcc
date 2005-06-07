@@ -5671,7 +5671,7 @@ rewrite_use_outer (struct ivopts_data *data,
       if (!cand->iv)
 	{
 	  struct cost_pair *cp = get_use_iv_cost (data, use, cand);
-	  value = cp->value;
+	  value = unshare_expr (cp->value);
 	}
       else
 	value = get_computation_at (data->current_loop,
