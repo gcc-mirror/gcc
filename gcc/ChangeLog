@@ -1,3 +1,48 @@
+2005-06-07  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-address.c: New file.
+	* Makefile.in (tree-ssa-address.o): Add.
+	* expr.c (expand_expr_real_1): Do not handle REF_ORIGINAL on
+	INDIRECT_REFs.  Handle TARGET_MEM_REFs.
+	* tree-eh.c (tree_could_trap_p): Handle TARGET_MEM_REFs.
+	* tree-flow.h (struct mem_address): New.
+	(struct affine_tree_combination): Moved from tree-ssa-loop-ivopts.c.
+	(create_mem_ref, addr_for_mem_ref, get_address_description,
+	maybe_fold_tmr, multiplier_allowed_in_address_p,
+	multiply_by_cost):  Declare.
+	* tree-mudflap.c (mf_xform_derefs_1): Handle TARGET_MEM_REFs.
+	* tree-pretty-print.c (dump_generic_node): Ditto.
+	* tree-ssa-loop-im.c (for_each_index): Ditto.
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p,
+	find_interesting_uses_address): Ditto.
+	(rewrite_address_base, build_addr_strip_iref): Removed.
+	(struct affine_tree_combination): Moved to tree-flow.h.
+	(get_ref_tag, copy_ref_info): New functions.
+	(rewrite_use_address): Produce TARGET_MEM_REFs.
+	(tree_ssa_iv_optimize): Do not call update_ssa
+	and rewrite_into_loop_closed_ssa.
+	(tree_to_aff_combination): Use build_fold_addr_expr instead of
+	build_addr_strip_iref.
+	(unshare_aff_combination): New function.
+	(fold_affine_sum): Removed.
+	(get_computation_at): Use get_computation_aff.  Unshare the result.
+	(get_computation_aff, multiplier_allowed_in_address_p): New function.
+	(multiply_by_cost): Exported.
+	(get_address_cost): Use multiplier_allowed_in_address_p.
+	* tree-ssa-operands.c (get_tmr_operands): New function.
+	(get_expr_operands): Handle TARGET_MEM_REFs.
+	* tree.c (copy_node_stat): Copy annotations for TARGET_MEM_REFs.
+	(build): Handle 7 arguments.
+	(build7_stat): New function.
+	* tree.def (TARGET_MEM_DEF): New.
+	* tree.h (REF_ORIGINAL): Removed.
+	(TMR_SYMBOL, TMR_BASE, TMR_INDEX, TMR_STEP, TMR_OFFSET, TMR_ORIGINAL,
+	TMR_TAG, build7): New macros.
+	(build7_stat, tree_mem_ref_addr, copy_mem_ref_info): Declare.
+	* tree-ssa-ccp.c (fold_stmt_r): Call maybe_fold_tmr.
+	* doc/c-tree.texi: Document TARGET_MEM_REF.
+	* doc/tree-ssa.texi: Add TARGET_MEM_REF to gimple grammar.
+
 2005-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/21946

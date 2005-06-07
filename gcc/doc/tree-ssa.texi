@@ -632,6 +632,12 @@ void f()
                         op2 -> var
 
    compref      : inner-compref
+                | TARGET_MEM_REF
+                        op0 -> ID
+                        op1 -> val
+                        op2 -> val
+                        op3 -> CONST
+                        op4 -> CONST
                 | REALPART_EXPR
                         op0 -> inner-compref
                 | IMAGPART_EXPR

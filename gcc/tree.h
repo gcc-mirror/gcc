@@ -1171,10 +1171,6 @@ struct tree_vec GTY(())
 #define TREE_OPERAND(NODE, I) TREE_OPERAND_CHECK (NODE, I)
 #define TREE_COMPLEXITY(NODE) (EXPR_CHECK (NODE)->exp.complexity)
 
-/* In INDIRECT_REF, ALIGN_INDIRECT_REF, MISALIGNED_INDIRECT_REF.  */
-#define REF_ORIGINAL(NODE) TREE_CHAIN (TREE_CHECK3 (NODE, 	\
-	INDIRECT_REF, ALIGN_INDIRECT_REF, MISALIGNED_INDIRECT_REF))
-
 /* In a LOOP_EXPR node.  */
 #define LOOP_EXPR_BODY(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_EXPR, 0)
 
@@ -1239,6 +1235,15 @@ struct tree_vec GTY(())
 #define CASE_LOW(NODE)          	TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 0)
 #define CASE_HIGH(NODE)         	TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 1)
 #define CASE_LABEL(NODE)		TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 2)
+
+/* The operands of a TARGET_MEM_REF.  */
+#define TMR_SYMBOL(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 0))
+#define TMR_BASE(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 1))
+#define TMR_INDEX(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 2))
+#define TMR_STEP(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 3))
+#define TMR_OFFSET(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 4))
+#define TMR_ORIGINAL(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 5))
+#define TMR_TAG(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 6))
 
 /* The operands of a BIND_EXPR.  */
 #define BIND_EXPR_VARS(NODE) (TREE_OPERAND (BIND_EXPR_CHECK (NODE), 0))
@@ -2897,6 +2902,10 @@ extern tree build3_stat (enum tree_code, tree, tree, tree, tree MEM_STAT_DECL);
 extern tree build4_stat (enum tree_code, tree, tree, tree, tree,
 			 tree MEM_STAT_DECL);
 #define build4(c,t1,t2,t3,t4,t5) build4_stat (c,t1,t2,t3,t4,t5 MEM_STAT_INFO)
+extern tree build7_stat (enum tree_code, tree, tree, tree, tree, tree,
+			 tree, tree, tree MEM_STAT_DECL);
+#define build7(c,t1,t2,t3,t4,t5,t6,t7,t8) \
+  build7_stat (c,t1,t2,t3,t4,t5,t6,t7,t8 MEM_STAT_INFO)
 
 extern tree build_int_cst (tree, HOST_WIDE_INT);
 extern tree build_int_cst_type (tree, HOST_WIDE_INT);
@@ -3989,5 +3998,9 @@ extern tree get_base_address (tree t);
 
 /* In tree-vectorizer.c.  */
 extern void vect_set_verbosity_level (const char *);
+
+/* In tree-ssa-address.c.  */
+extern tree tree_mem_ref_addr (tree, tree);
+extern void copy_mem_ref_info (tree, tree);
 
 #endif  /* GCC_TREE_H  */

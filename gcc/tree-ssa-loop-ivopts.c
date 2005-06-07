@@ -1494,6 +1494,11 @@ may_be_unaligned_p (tree ref)
   int unsignedp, volatilep;
   unsigned base_align;
 
+  /* TARGET_MEM_REFs are translated directly to valid MEMs on the target,
+     thus they are not missaligned.  */
+  if (TREE_CODE (ref) == TARGET_MEM_REF)
+    return false;
+
   /* The test below is basically copy of what expr.c:normal_inner_ref
      does to check whether the object must be loaded by parts when
      STRICT_ALIGNMENT is true.  */
@@ -1516,7 +1521,7 @@ may_be_unaligned_p (tree ref)
 static void
 find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
 {
-  tree base = unshare_expr (*op_p), step = NULL;
+  tree base = *op_p, step = NULL;
   struct iv *civ;
   struct ifs_ivopts_data ifs_ivopts_data;
 
@@ -1535,17 +1540,63 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
       && may_be_unaligned_p (base))
     goto fail;
 
-  ifs_ivopts_data.ivopts_data = data;
-  ifs_ivopts_data.stmt = stmt;
-  ifs_ivopts_data.step_p = &step;
-  if (!for_each_index (&base, idx_find_step, &ifs_ivopts_data)
-      || zero_p (step))
-    goto fail;
+  base = unshare_expr (base);
 
-  gcc_assert (TREE_CODE (base) != ALIGN_INDIRECT_REF);
-  gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
+  if (TREE_CODE (base) == TARGET_MEM_REF)
+    {
+      tree type = build_pointer_type (TREE_TYPE (base));
+      tree astep;
 
-  base = build_fold_addr_expr (base);
+      if (TMR_BASE (base)
+	  && TREE_CODE (TMR_BASE (base)) == SSA_NAME)
+	{
+	  civ = get_iv (data, TMR_BASE (base));
+	  if (!civ)
+	    goto fail;
+
+	  TMR_BASE (base) = civ->base;
+	  step = civ->step;
+	}
+      if (TMR_INDEX (base)
+	  && TREE_CODE (TMR_INDEX (base)) == SSA_NAME)
+	{
+	  civ = get_iv (data, TMR_INDEX (base));
+	  if (!civ)
+	    goto fail;
+
+	  TMR_INDEX (base) = civ->base;
+	  astep = civ->step;
+
+	  if (astep)
+	    {
+	      if (TMR_STEP (base))
+		astep = fold_build2 (MULT_EXPR, type, TMR_STEP (base), astep);
+
+	      if (step)
+		step = fold_build2 (PLUS_EXPR, type, step, astep);
+	      else
+		step = astep;
+	    }
+	}
+
+      if (zero_p (step))
+	goto fail;
+      base = tree_mem_ref_addr (type, base);
+    }
+  else
+    {
+      ifs_ivopts_data.ivopts_data = data;
+      ifs_ivopts_data.stmt = stmt;
+      ifs_ivopts_data.step_p = &step;
+      if (!for_each_index (&base, idx_find_step, &ifs_ivopts_data)
+	  || zero_p (step))
+	goto fail;
+
+      gcc_assert (TREE_CODE (base) != ALIGN_INDIRECT_REF);
+      gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
+
+      base = build_fold_addr_expr (base);
+    }
 
   civ = alloc_iv (base, step);
   record_use (data, op_p, civ, stmt, USE_ADDRESS);
@@ -2614,33 +2665,6 @@ constant_multiple_of (tree type, tree top, tree bot)
     }
 }
 
-/* Affine combination of trees.  We keep track of at most MAX_AFF_ELTS elements
-   to make things simpler; this is sufficient in most cases.  */
-
-#define MAX_AFF_ELTS 8
-
-struct affine_tree_combination
-{
-  /* Type of the result of the combination.  */
-  tree type;
-
-  /* Mask modulo that the operations are performed.  */
-  unsigned HOST_WIDE_INT mask;
-
-  /* Constant offset.  */
-  unsigned HOST_WIDE_INT offset;
-
-  /* Number of elements of the combination.  */
-  unsigned n;
-
-  /* Elements and their coefficients.  */
-  tree elts[MAX_AFF_ELTS];
-  unsigned HOST_WIDE_INT coefs[MAX_AFF_ELTS];
-
-  /* Remainder of the expression.  */
-  tree rest;
-};
-
 /* Sets COMB to CST.  */
 
 static void
@@ -2893,6 +2917,19 @@ add_elt_to_tree (tree expr, tree type, tree elt, unsigned HOST_WIDE_INT scale,
   return fold_build2 (code, type, expr, elt);
 }
 
+/* Copies the tree elements of COMB to ensure that they are not shared.  */
+
+static void
+unshare_aff_combination (struct affine_tree_combination *comb)
+{
+  unsigned i;
+
+  for (i = 0; i < comb->n; i++)
+    comb->elts[i] = unshare_expr (comb->elts[i]);
+  if (comb->rest)
+    comb->rest = unshare_expr (comb->rest);
+}
+
 /* Makes tree from the affine combination COMB.  */
 
 static tree
@@ -2902,6 +2939,11 @@ aff_combination_to_tree (struct affine_tree_combination *comb)
   tree expr = comb->rest;
   unsigned i;
   unsigned HOST_WIDE_INT off, sgn;
+
+  /* Handle the special case produced by get_computation_aff when
+     the type does not fit in HOST_WIDE_INT.  */
+  if (comb->n == 0 && comb->offset == 0)
+    return fold_convert (type, expr);
 
   gcc_assert (comb->n == MAX_AFF_ELTS || comb->rest == NULL_TREE);
 
@@ -2924,49 +2966,14 @@ aff_combination_to_tree (struct affine_tree_combination *comb)
 			  comb->mask);
 }
 
-/* Folds X + RATIO * Y in TYPE.  */
-
-static tree
-fold_affine_sum (tree type, tree x, tree y, HOST_WIDE_INT ratio)
-{
-  enum tree_code code;
-  tree cst;
-  struct affine_tree_combination cx, cy;
-
-  if (TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT)
-    {
-      if (ratio == 1)
-	return fold_build2 (PLUS_EXPR, type, x, y);
-      if (ratio == -1)
-	return fold_build2 (MINUS_EXPR, type, x, y);
-
-      if (ratio < 0)
-	{
-	  code = MINUS_EXPR;
-	  ratio = -ratio;
-	}
-      else
-	code = PLUS_EXPR;
-
-      cst = build_int_cst_type (type, ratio);
-      y = fold_build2 (MULT_EXPR, type, y, cst);
-      return fold_build2 (code, type, x, y);
-    }
-
-  tree_to_aff_combination (x, type, &cx);
-  tree_to_aff_combination (y, type, &cy);
-  aff_combination_scale (&cy, ratio);
-  aff_combination_add (&cx, &cy);
-
-  return aff_combination_to_tree (&cx);
-}
-
 /* Determines the expression by that USE is expressed from induction variable
-   CAND at statement AT in LOOP.  */
+   CAND at statement AT in LOOP.  The expression is stored in a decomposed
+   form into AFF.  Returns false if USE cannot be expressed using CAND.  */
 
-static tree
-get_computation_at (struct loop *loop,
-		    struct iv_use *use, struct iv_cand *cand, tree at)
+static bool
+get_computation_aff (struct loop *loop,
+		     struct iv_use *use, struct iv_cand *cand, tree at,
+		     struct affine_tree_combination *aff)
 {
   tree ubase = use->iv->base;
   tree ustep = use->iv->step;
@@ -2978,11 +2985,12 @@ get_computation_at (struct loop *loop,
   tree ratio;
   unsigned HOST_WIDE_INT ustepi, cstepi;
   HOST_WIDE_INT ratioi;
+  struct affine_tree_combination cbase_aff, expr_aff;
 
   if (TYPE_PRECISION (utype) > TYPE_PRECISION (ctype))
     {
       /* We do not have a precision to express the values of use.  */
-      return NULL_TREE;
+      return false;
     }
 
   expr = var_at_stmt (loop, cand, at);
@@ -3020,7 +3028,7 @@ get_computation_at (struct loop *loop,
 	  /* TODO maybe consider case when ustep divides cstep and the ratio is
 	     a power of 2 (so that the division is fast to execute)?  We would
 	     need to be much more careful with overflows etc. then.  */
-	  return NULL_TREE;
+	  return false;
 	}
 
       ratio = build_int_cst_type (uutype, ratioi);
@@ -3029,7 +3037,7 @@ get_computation_at (struct loop *loop,
     {
       ratio = constant_multiple_of (uutype, ustep, cstep);
       if (!ratio)
-	return NULL_TREE;
+	return false;
 
       /* Ratioi is only used to detect special cases when the multiplicative
 	 factor is 1 or -1, so if we cannot convert ratio to HOST_WIDE_INT,
@@ -3058,34 +3066,71 @@ get_computation_at (struct loop *loop,
      happen, fold is able to apply the distributive law to obtain this form
      anyway.  */
 
-  if (ratioi == 1)
+  if (TYPE_PRECISION (uutype) > HOST_BITS_PER_WIDE_INT)
     {
-      delta = fold_affine_sum (uutype, ubase, cbase, -1);
-      expr = fold_build2 (PLUS_EXPR, uutype, expr, delta);
-    }
-  else if (ratioi == -1)
-    {
-      delta = fold_affine_sum (uutype, ubase, cbase, 1);
-      expr = fold_build2 (MINUS_EXPR, uutype, delta, expr);
-    }
-  else
-    {
-      if (ratioi)
-	delta = fold_affine_sum (uutype, ubase, cbase, -ratioi);
+      /* Let's compute in trees and just return the result in AFF.  This case
+	 should not be very common, and fold itself is not that bad either,
+	 so making the aff. functions more complicated to handle this case
+	 is not that urgent.  */
+      if (ratioi == 1)
+	{
+	  delta = fold_build2 (MINUS_EXPR, uutype, ubase, cbase);
+	  expr = fold_build2 (PLUS_EXPR, uutype, expr, delta);
+	}
+      else if (ratioi == -1)
+	{
+	  delta = fold_build2 (PLUS_EXPR, uutype, ubase, cbase);
+	  expr = fold_build2 (MINUS_EXPR, uutype, delta, expr);
+	}
       else
 	{
-	  delta = fold_build2 (MULT_EXPR, uutype, ratio, cbase);
-	  delta = fold_affine_sum (uutype, ubase, delta, -1);
+	  delta = fold_build2 (MULT_EXPR, uutype, cbase, ratio);
+	  delta = fold_build2 (MINUS_EXPR, uutype, ubase, delta);
+	  expr = fold_build2 (MULT_EXPR, uutype, ratio, expr);
+	  expr = fold_build2 (PLUS_EXPR, uutype, delta, expr);
 	}
-      expr = fold_build2 (MULT_EXPR, uutype, ratio, expr);
-      expr = fold_build2 (PLUS_EXPR, uutype, delta, expr);
+
+      aff->type = uutype;
+      aff->n = 0;
+      aff->offset = 0;
+      aff->mask = 0;
+      aff->rest = expr;
+      return true;
     }
 
-  return fold_convert (utype, expr);
+  /* If we got here, the types fits in HOST_WIDE_INT, thus it must be
+     possible to compute ratioi.  */
+  gcc_assert (ratioi);
+
+  tree_to_aff_combination (ubase, uutype, aff);
+  tree_to_aff_combination (cbase, uutype, &cbase_aff);
+  tree_to_aff_combination (expr, uutype, &expr_aff);
+  aff_combination_scale (&cbase_aff, -ratioi);
+  aff_combination_scale (&expr_aff, ratioi);
+  aff_combination_add (aff, &cbase_aff);
+  aff_combination_add (aff, &expr_aff);
+
+  return true;
 }
 
 /* Determines the expression by that USE is expressed from induction variable
-   CAND in LOOP.  */
+   CAND at statement AT in LOOP.  The computation is unshared.  */
+
+static tree
+get_computation_at (struct loop *loop,
+		    struct iv_use *use, struct iv_cand *cand, tree at)
+{
+  struct affine_tree_combination aff;
+  tree type = TREE_TYPE (use->iv->base);
+
+  if (!get_computation_aff (loop, use, cand, at, &aff))
+    return NULL_TREE;
+  unshare_aff_combination (&aff);
+  return fold_convert (type, aff_combination_to_tree (&aff));
+}
+
+/* Determines the expression by that USE is expressed from induction variable
+   CAND in LOOP.  The computation is unshared.  */
 
 static tree
 get_computation (struct loop *loop, struct iv_use *use, struct iv_cand *cand)
@@ -3157,7 +3202,7 @@ mbc_entry_eq (const void *entry1, const void *entry2)
 
 /* Returns cost of multiplication by constant CST in MODE.  */
 
-static unsigned
+unsigned
 multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode)
 {
   static htab_t costs;
@@ -3195,6 +3240,47 @@ multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode)
   return cost;
 }
 
+/* Returns true if multiplying by RATIO is allowed in address.  */
+
+bool
+multiplier_allowed_in_address_p (HOST_WIDE_INT ratio)
+{
+#define MAX_RATIO 128
+  static sbitmap valid_mult;
+  
+  if (!valid_mult)
+    {
+      rtx reg1 = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER);
+      rtx addr;
+      HOST_WIDE_INT i;
+
+      valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
+      sbitmap_zero (valid_mult);
+      addr = gen_rtx_fmt_ee (MULT, Pmode, reg1, NULL_RTX);
+      for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
+	{
+	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
+	  if (memory_address_p (Pmode, addr))
+	    SET_BIT (valid_mult, i + MAX_RATIO);
+	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "  allowed multipliers:");
+	  for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
+	    if (TEST_BIT (valid_mult, i + MAX_RATIO))
+	      fprintf (dump_file, " %d", (int) i);
+	  fprintf (dump_file, "\n");
+	  fprintf (dump_file, "\n");
+	}
+    }
+
+  if (ratio > MAX_RATIO || ratio < -MAX_RATIO)
+    return false;
+
+  return TEST_BIT (valid_mult, ratio + MAX_RATIO);
+}
+
 /* Returns cost of address in shape symbol + var + OFFSET + RATIO * index.
    If SYMBOL_PRESENT is false, symbol is omitted.  If VAR_PRESENT is false,
    variable is omitted.  The created memory accesses MODE.
@@ -3205,8 +3291,7 @@ static unsigned
 get_address_cost (bool symbol_present, bool var_present,
 		  unsigned HOST_WIDE_INT offset, HOST_WIDE_INT ratio)
 {
-#define MAX_RATIO 128
-  static sbitmap valid_mult;
+  static bool initialized = false;
   static HOST_WIDE_INT rat, off;
   static HOST_WIDE_INT min_offset, max_offset;
   static unsigned costs[2][2][2][2];
@@ -3218,9 +3303,10 @@ get_address_cost (bool symbol_present, bool var_present,
   unsigned HOST_WIDE_INT mask;
   unsigned bits;
 
-  if (!valid_mult)
+  if (!initialized)
     {
       HOST_WIDE_INT i;
+      initialized = true;
 
       reg1 = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER);
 
@@ -3249,29 +3335,13 @@ get_address_cost (bool symbol_present, bool var_present,
 	  fprintf (dump_file, "  max offset %d\n", (int) max_offset);
 	}
 
-      valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
-      sbitmap_zero (valid_mult);
       rat = 1;
-      addr = gen_rtx_fmt_ee (MULT, Pmode, reg1, NULL_RTX);
-      for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
-	{
-	  XEXP (addr, 1) = GEN_INT (i);
-	  if (memory_address_p (Pmode, addr))
-	    {
-	      SET_BIT (valid_mult, i + MAX_RATIO);
-	      rat = i;
-	    }
-	}
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "  allowed multipliers:");
-	  for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
-	    if (TEST_BIT (valid_mult, i + MAX_RATIO))
-	      fprintf (dump_file, " %d", (int) i);
-	  fprintf (dump_file, "\n");
-	  fprintf (dump_file, "\n");
-	}
+      for (i = 2; i <= MAX_RATIO; i++)
+	if (multiplier_allowed_in_address_p (i))
+	  {
+	    rat = i;
+	    break;
+	  }
     }
 
   bits = GET_MODE_BITSIZE (Pmode);
@@ -3285,8 +3355,7 @@ get_address_cost (bool symbol_present, bool var_present,
   offset_p = (s_offset != 0
 	      && min_offset <= s_offset && s_offset <= max_offset);
   ratio_p = (ratio != 1
-	     && -MAX_RATIO <= ratio && ratio <= MAX_RATIO
-	     && TEST_BIT (valid_mult, ratio + MAX_RATIO));
+	     && multiplier_allowed_in_address_p (ratio));
 
   if (ratio != 1 && !ratio_p)
     cost += multiply_by_cost (ratio, Pmode);
@@ -5262,8 +5331,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	return;
     }
 
-  comp = unshare_expr (get_computation (data->current_loop,
-					use, cand));
+  comp = get_computation (data->current_loop, use, cand);
   switch (TREE_CODE (use->stmt))
     {
     case PHI_NODE:
@@ -5348,78 +5416,60 @@ unshare_and_remove_ssa_names (tree ref)
   return ref;
 }
 
-/* Rewrites base of memory access OP with expression WITH in statement
-   pointed to by BSI.  */
+/* Extract the alias analysis info for the memory reference REF.  There are
+   several ways how this information may be stored and what precisely is
+   its semantics depending on the type of the reference, but there always is
+   somewhere hidden one _DECL node that is used to determine the set of
+   virtual operands for the reference.  The code below deciphers this jungle
+   and extracts this single useful piece of information.  */
 
-static void
-rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
+static tree
+get_ref_tag (tree ref)
 {
-  tree bvar, var, new_name, copy, name;
-  tree orig;
+  tree var = get_base_address (ref);
+  tree tag;
 
-  var = bvar = get_base_address (*op);
+  if (!var)
+    return NULL_TREE;
 
-  if (!var || TREE_CODE (with) != SSA_NAME)
-    goto do_rewrite;
-
-  gcc_assert (TREE_CODE (var) != ALIGN_INDIRECT_REF);
-  gcc_assert (TREE_CODE (var) != MISALIGNED_INDIRECT_REF);
   if (TREE_CODE (var) == INDIRECT_REF)
     var = TREE_OPERAND (var, 0);
   if (TREE_CODE (var) == SSA_NAME)
     {
-      name = var;
+      if (SSA_NAME_PTR_INFO (var))
+	{
+	  tag = SSA_NAME_PTR_INFO (var)->name_mem_tag;
+	  if (tag)
+	    return tag;
+	}
+ 
       var = SSA_NAME_VAR (var);
     }
-  else if (DECL_P (var))
-    name = NULL_TREE;
-  else
-    goto do_rewrite;
-    
-  /* We need to add a memory tag for the variable.  But we do not want
-     to add it to the temporary used for the computations, since this leads
-     to problems in redundancy elimination when there are common parts
-     in two computations referring to the different arrays.  So we copy
-     the variable to a new temporary.  */
-  copy = build2 (MODIFY_EXPR, void_type_node, NULL_TREE, with);
-
-  if (name)
-    new_name = duplicate_ssa_name (name, copy);
-  else
+ 
+  if (DECL_P (var))
     {
-      tree tag = var_ann (var)->type_mem_tag;
-      tree new_ptr = create_tmp_var (TREE_TYPE (with), "ruatmp");
-      add_referenced_tmp_var (new_ptr);
+      tag = var_ann (var)->type_mem_tag;
       if (tag)
-	var_ann (new_ptr)->type_mem_tag = tag;
-      else
-	add_type_alias (new_ptr, var);
-      new_name = make_ssa_name (new_ptr, copy);
+	return tag;
+
+      return var;
     }
 
-  TREE_OPERAND (copy, 0) = new_name;
-  bsi_insert_before (bsi, copy, BSI_SAME_STMT);
-  with = new_name;
+  return NULL_TREE;
+}
 
-do_rewrite:
+/* Copies the reference information from OLD_REF to NEW_REF.  */
 
-  orig = NULL_TREE;
-  gcc_assert (TREE_CODE (*op) != ALIGN_INDIRECT_REF);
-  gcc_assert (TREE_CODE (*op) != MISALIGNED_INDIRECT_REF);
-
-  if (TREE_CODE (*op) == INDIRECT_REF)
-    orig = REF_ORIGINAL (*op);
-  if (!orig)
-    orig = unshare_and_remove_ssa_names (*op);
-
-  *op = build1 (INDIRECT_REF, TREE_TYPE (*op), with);
-
-  /* Record the original reference, for purposes of alias analysis.  */
-  REF_ORIGINAL (*op) = orig;
-
-  /* Virtual operands in the original statement may have to be renamed
-     because of the replacement.  */
-  mark_new_vars_to_rename (bsi_stmt (*bsi));
+static void
+copy_ref_info (tree new_ref, tree old_ref)
+{
+  if (TREE_CODE (old_ref) == TARGET_MEM_REF)
+    copy_mem_ref_info (new_ref, old_ref);
+  else
+    {
+      TMR_TAG (new_ref) = get_ref_tag (old_ref);
+      TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
+    }
 }
 
 /* Rewrites USE (address that is an iv) using candidate CAND.  */
@@ -5428,16 +5478,16 @@ static void
 rewrite_use_address (struct ivopts_data *data,
 		     struct iv_use *use, struct iv_cand *cand)
 {
-  tree comp = unshare_expr (get_computation (data->current_loop,
-					     use, cand));
+  struct affine_tree_combination aff;
   block_stmt_iterator bsi = bsi_for_stmt (use->stmt);
-  tree stmts;
-  tree op = force_gimple_operand (comp, &stmts, true, NULL_TREE);
+  tree ref;
 
-  if (stmts)
-    bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
+  get_computation_aff (data->current_loop, use, cand, use->stmt, &aff);
+  unshare_aff_combination (&aff);
 
-  rewrite_address_base (&bsi, use->op_p, op);
+  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p), &aff);
+  copy_ref_info (ref, *use->op_p);
+  *use->op_p = ref;
 }
 
 /* Rewrites USE (the condition such that one of the arguments is an iv) using
@@ -5474,7 +5524,7 @@ rewrite_use_compare (struct ivopts_data *data,
 
   /* The induction variable elimination failed; just express the original
      giv.  */
-  comp = unshare_expr (get_computation (data->current_loop, use, cand));
+  comp = get_computation (data->current_loop, use, cand);
 
   cond = *use->op_p;
   op_p = &TREE_OPERAND (cond, 0);
@@ -5630,7 +5680,6 @@ rewrite_use_outer (struct ivopts_data *data,
 	value = get_computation_at (data->current_loop,
 				    use, cand, last_stmt (exit->src));
 
-      value = unshare_expr (value);
       op = force_gimple_operand (value, &stmts, true, SSA_NAME_VAR (tgt));
 	  
       /* If we will preserve the iv anyway and we would need to perform
@@ -5935,25 +5984,5 @@ tree_ssa_iv_optimize (struct loops *loops)
 	loop = loop->outer;
     }
 
-  /* FIXME.  IV opts introduces new aliases and call-clobbered
-     variables, which need to be renamed.  However, when we call the
-     renamer, not all statements will be scanned for operands.  In
-     particular, the newly introduced aliases may appear in statements
-     that are considered "unmodified", so the renamer will not get a
-     chance to rename those operands.
-
-     Work around this problem by forcing an operand re-scan on every
-     statement.  This will not be necessary once the new operand
-     scanner is implemented.  */
-  if (need_ssa_update_p ())
-    {
-      basic_block bb;
-      block_stmt_iterator si;
-      FOR_EACH_BB (bb)
-	for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
-	  update_stmt (bsi_stmt (si));
-    }
-
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   tree_ssa_iv_optimize_finalize (loops, &data);
 }

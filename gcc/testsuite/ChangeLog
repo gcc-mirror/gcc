@@ -1,3 +1,10 @@
+2005-06-07  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-2.c: Update outcome.
+	* gcc.dg/tree-ssa/loop-3.c: Update outcome.
+	* gcc.dg/tree-ssa/loop-4.c: Update outcome.
+	* gcc.dg/tree-ssa/loop-9.c: New test.
+
 2005-06-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/parse/defarg10.C: New.

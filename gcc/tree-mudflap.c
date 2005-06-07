@@ -835,6 +835,14 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
                            integer_one_node));
       break;
 
+    case TARGET_MEM_REF:
+      addr = tree_mem_ref_addr (ptr_type_node, t);
+      base = addr;
+      limit = fold_build2 (MINUS_EXPR, ptr_type_node,
+			   fold_build2 (PLUS_EXPR, ptr_type_node, base, size),
+			   build_int_cst_type (ptr_type_node, 1));
+      break;
+
     case ARRAY_RANGE_REF:
       warning (0, "mudflap checking not yet implemented for ARRAY_RANGE_REF");
       return;

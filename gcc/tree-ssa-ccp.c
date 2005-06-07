@@ -1874,7 +1874,6 @@ maybe_fold_stmt_addition (tree expr)
   return t;
 }
 
-
 /* Subroutine of fold_stmt called via walk_tree.  We perform several
    simplifications of EXPR_P, mostly having to do with pointer arithmetic.  */
 
@@ -1946,6 +1945,10 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 	    TREE_OPERAND (expr, 1) = expr_field;
 	  }
       }
+      break;
+
+    case TARGET_MEM_REF:
+      t = maybe_fold_tmr (expr);
       break;
 
     default:

@@ -6862,7 +6862,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case INDIRECT_REF:
       {
 	tree exp1 = TREE_OPERAND (exp, 0);
-	tree orig;
 
 	if (modifier != EXPAND_WRITE)
 	  {
@@ -6885,10 +6884,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	temp = gen_rtx_MEM (mode, op0);
 
-	orig = REF_ORIGINAL (exp);
-	if (!orig)
-	  orig = exp;
-	set_mem_attributes (temp, orig, 0);
+	set_mem_attributes (temp, exp, 0);
 
 	/* Resolve the misalignment now, so that we don't have to remember
 	   to resolve it later.  Of course, this only works for reads.  */
@@ -6919,6 +6915,18 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	return temp;
       }
+
+    case TARGET_MEM_REF:
+      {
+	struct mem_address addr;
+
+	get_address_description (exp, &addr);
+	op0 = addr_for_mem_ref (&addr, true);
+	op0 = memory_address (mode, op0);
+	temp = gen_rtx_MEM (mode, op0);
+	set_mem_attributes (temp, TMR_ORIGINAL (exp), 0);
+      }
+      return temp;
 
     case ARRAY_REF:
 
