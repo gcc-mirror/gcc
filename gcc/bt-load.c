@@ -699,7 +699,8 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		{
 		  /* Find all the reaching defs for this use.  */
 		  sbitmap reaching_defs_of_reg = sbitmap_alloc(max_uid);
-		  int uid;
+		  unsigned int uid;
+		  sbitmap_iterator sbi;
 
 		  if (user->use)
 		    sbitmap_a_and_b (
@@ -720,7 +721,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 			    reaching_defs,
 			    btr_defset[reg - first_btr]);
 		    }
-		  EXECUTE_IF_SET_IN_SBITMAP (reaching_defs_of_reg, 0, uid,
+		  EXECUTE_IF_SET_IN_SBITMAP (reaching_defs_of_reg, 0, uid, sbi)
 		    {
 		      btr_def def = def_array[uid];
 
@@ -752,7 +753,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 			def->other_btr_uses_after_use = 1;
 		      user->next = def->uses;
 		      def->uses = user;
-		    });
+		    }
 		  sbitmap_free (reaching_defs_of_reg);
 		}
 

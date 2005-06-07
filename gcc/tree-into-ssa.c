@@ -2033,6 +2033,7 @@ prepare_names_to_update (bitmap blocks, bool insert_phi_p)
 {
   unsigned i;
   bitmap_iterator bi;
+  sbitmap_iterator sbi;
 
   /* If a name N from NEW_SSA_NAMES is also marked to be released,
      remove it from NEW_SSA_NAMES so that we don't try to visit its
@@ -2046,17 +2047,17 @@ prepare_names_to_update (bitmap blocks, bool insert_phi_p)
   /* First process names in NEW_SSA_NAMES.  Otherwise, uses of old
      names may be considered to be live-in on blocks that contain
      definitions for their replacements.  */
-  EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i,
-    prepare_def_site_for (ssa_name (i), blocks, insert_phi_p));
+  EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i, sbi)
+    prepare_def_site_for (ssa_name (i), blocks, insert_phi_p);
 
   /* If an old name is in NAMES_TO_RELEASE, we cannot remove it from
      OLD_SSA_NAMES, but we have to ignore its definition site.  */
-  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i,
+  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
     {
       if (names_to_release == NULL || !bitmap_bit_p (names_to_release, i))
 	prepare_def_site_for (ssa_name (i), blocks, insert_phi_p);
       prepare_use_sites_for (ssa_name (i), blocks, insert_phi_p);
-    });
+    }
 }
 
 
@@ -2105,12 +2106,14 @@ dump_update_ssa (FILE *file)
 
   if (new_ssa_names && sbitmap_first_set_bit (new_ssa_names) >= 0)
     {
+      sbitmap_iterator sbi;
+
       fprintf (file, "\nSSA replacement table\n");
       fprintf (file, "N_i -> { O_1 ... O_j } means that N_i replaces "
 	             "O_1, ..., O_j\n\n");
 
-      EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i,
-	dump_names_replaced_by (file, ssa_name (i)));
+      EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i, sbi)
+	dump_names_replaced_by (file, ssa_name (i));
 
       fprintf (file, "\n");
       fprintf (file, "Number of virtual NEW -> OLD mappings: %7u\n",
@@ -2346,10 +2349,11 @@ ssa_names_to_replace (void)
 {
   unsigned i;
   bitmap ret;
+  sbitmap_iterator sbi;
   
   ret = BITMAP_ALLOC (NULL);
-  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i,
-    bitmap_set_bit (ret, i));
+  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
+    bitmap_set_bit (ret, i);
 
   return ret;
 }
@@ -2516,6 +2520,7 @@ static void
 switch_virtuals_to_full_rewrite (void)
 {
   unsigned i;
+  sbitmap_iterator sbi;
 
   if (dump_file)
     {
@@ -2531,13 +2536,13 @@ switch_virtuals_to_full_rewrite (void)
   /* Remove all virtual names from NEW_SSA_NAMES and OLD_SSA_NAMES.
      Note that it is not really necessary to remove the mappings from
      REPL_TBL, that would only waste time.  */
-  EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i,
+  EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i, sbi)
     if (!is_gimple_reg (ssa_name (i)))
-      RESET_BIT (new_ssa_names, i));
+      RESET_BIT (new_ssa_names, i);
 
-  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i,
+  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
     if (!is_gimple_reg (ssa_name (i)))
-      RESET_BIT (old_ssa_names, i));
+      RESET_BIT (old_ssa_names, i);
 
   bitmap_ior_into (syms_to_rename, update_ssa_stats.virtual_symbols);
 }
@@ -2616,6 +2621,7 @@ update_ssa (unsigned update_flags)
   unsigned i;
   sbitmap tmp;
   bool insert_phi_p;
+  sbitmap_iterator sbi;
 
   if (!need_ssa_update_p ())
     return;
@@ -2746,6 +2752,8 @@ update_ssa (unsigned update_flags)
 
       if (sbitmap_first_set_bit (old_ssa_names) >= 0)
 	{
+	  sbitmap_iterator sbi;
+
 	  /* insert_update_phi_nodes_for will call add_new_name_mapping
 	     when inserting new PHI nodes, so the set OLD_SSA_NAMES
 	     will grow while we are traversing it (but it will not
@@ -2753,9 +2761,9 @@ update_ssa (unsigned update_flags)
 	     for traversal.  */
 	  sbitmap tmp = sbitmap_alloc (old_ssa_names->n_bits);
 	  sbitmap_copy (tmp, old_ssa_names);
-	  EXECUTE_IF_SET_IN_SBITMAP (tmp, 0, i,
+	  EXECUTE_IF_SET_IN_SBITMAP (tmp, 0, i, sbi)
 	    insert_updated_phi_nodes_for (ssa_name (i), dfs, blocks,
-	                                  update_flags));
+	                                  update_flags);
 	  sbitmap_free (tmp);
 	}
 
@@ -2776,8 +2784,8 @@ update_ssa (unsigned update_flags)
 
   /* Reset the current definition for name and symbol before renaming
      the sub-graph.  */
-  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i,
-      set_current_def (ssa_name (i), NULL_TREE));
+  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
+    set_current_def (ssa_name (i), NULL_TREE);
 
   EXECUTE_IF_SET_IN_BITMAP (syms_to_rename, 0, i, bi)
     set_current_def (referenced_var (i), NULL_TREE);

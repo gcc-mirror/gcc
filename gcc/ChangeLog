@@ -1,3 +1,12 @@
+2005-06-07  Kazu Hirata  <kazu@codesourcery.com>
+
+	* sbitmap.h (sbitmap_iterator, sbitmap_iter_init,
+	sbitmap_iter_cond, sbitmap_iter_next): New.
+	* bt-load.c, cfganal.c, combine.c, ddg.c, flow.c,
+	modulo-sched.c, sbitmap.c, sched-rgn.c, tree-into-ssa.c,
+	tree-outof-ssa.c, tree-ssa-alias.c, tree-ssa-live.c: Update
+	uses of EXECUTE_IF_SET_IN_SBITMAP to the new style.
+
 2005-06-07  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-address.c: New file.

@@ -499,9 +499,10 @@ generate_reg_moves (partial_schedule_ptr ps)
 
       for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
 	{
-	  int i_use;
+	  unsigned int i_use;
 	  rtx new_reg = gen_reg_rtx (GET_MODE (prev_reg));
 	  rtx reg_move = gen_move_insn (new_reg, prev_reg);
+	  sbitmap_iterator sbi;
 
 	  add_insn_before (reg_move, last_reg_move);
 	  last_reg_move = reg_move;
@@ -509,7 +510,7 @@ generate_reg_moves (partial_schedule_ptr ps)
 	  if (!SCHED_FIRST_REG_MOVE (u))
 	    SCHED_FIRST_REG_MOVE (u) = reg_move;
 
-	  EXECUTE_IF_SET_IN_SBITMAP (uses_of_defs[i_reg_move], 0, i_use,
+	  EXECUTE_IF_SET_IN_SBITMAP (uses_of_defs[i_reg_move], 0, i_use, sbi)
 	    {
 	      struct undo_replace_buff_elem *rep;
 
@@ -528,7 +529,7 @@ generate_reg_moves (partial_schedule_ptr ps)
 		}
 
 	      replace_rtx (g->nodes[i_use].insn, old_reg, new_reg);
-	    });
+	    }
 
 	  prev_reg = new_reg;
 	}
@@ -1842,11 +1843,12 @@ calculate_order_params (ddg_ptr g, int mii ATTRIBUTE_UNUSED)
 static int
 find_max_asap (ddg_ptr g, sbitmap nodes)
 {
-  int u;
+  unsigned int u;
   int max_asap = -1;
   int result = -1;
+  sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u,
+  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
     {
       ddg_node_ptr u_node = &g->nodes[u];
 
@@ -1855,19 +1857,20 @@ find_max_asap (ddg_ptr g, sbitmap nodes)
 	  max_asap = ASAP (u_node);
 	  result = u;
 	}
-    });
+    }
   return result;
 }
 
 static int
 find_max_hv_min_mob (ddg_ptr g, sbitmap nodes)
 {
-  int u;
+  unsigned int u;
   int max_hv = -1;
   int min_mob = INT_MAX;
   int result = -1;
+  sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u,
+  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
     {
       ddg_node_ptr u_node = &g->nodes[u];
 
@@ -1883,19 +1886,20 @@ find_max_hv_min_mob (ddg_ptr g, sbitmap nodes)
 	  min_mob = MOB (u_node);
 	  result = u;
 	}
-    });
+    }
   return result;
 }
 
 static int
 find_max_dv_min_mob (ddg_ptr g, sbitmap nodes)
 {
-  int u;
+  unsigned int u;
   int max_dv = -1;
   int min_mob = INT_MAX;
   int result = -1;
+  sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u,
+  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
     {
       ddg_node_ptr u_node = &g->nodes[u];
 
@@ -1911,7 +1915,7 @@ find_max_dv_min_mob (ddg_ptr g, sbitmap nodes)
 	  min_mob = MOB (u_node);
 	  result = u;
 	}
-    });
+    }
   return result;
 }
 

@@ -691,8 +691,10 @@ int
 sbitmap_first_set_bit (sbitmap bmap)
 {
   unsigned int n;
+  sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (bmap, 0, n, { return n; });
+  EXECUTE_IF_SET_IN_SBITMAP (bmap, 0, n, sbi)
+    return n;
   return -1;
 }
 

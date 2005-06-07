@@ -695,6 +695,7 @@ coalesce_ssa_name (var_map map, int flags)
   conflict_graph graph;
   basic_block bb;
   coalesce_list_p cl = NULL;
+  sbitmap_iterator sbi;
 
   if (num_var_partitions (map) <= 1)
     return NULL;
@@ -797,7 +798,7 @@ coalesce_ssa_name (var_map map, int flags)
 
   /* Assign root variable as partition representative for each live on entry
      partition.  */
-  EXECUTE_IF_SET_IN_SBITMAP (live, 0, x, 
+  EXECUTE_IF_SET_IN_SBITMAP (live, 0, x, sbi)
     {
       var = root_var (rv, root_var_find (rv, x));
       ann = var_ann (var);
@@ -817,7 +818,7 @@ coalesce_ssa_name (var_map map, int flags)
 
 	  change_partition_var (map, var, x);
 	}
-    });
+    }
 
   sbitmap_free (live);
 

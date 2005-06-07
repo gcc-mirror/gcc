@@ -692,7 +692,8 @@ static ddg_scc_ptr
 create_scc (ddg_ptr g, sbitmap nodes)
 {
   ddg_scc_ptr scc;
-  int u;
+  unsigned int u;
+  sbitmap_iterator sbi;
 
   scc = (ddg_scc_ptr) xmalloc (sizeof (struct ddg_scc));
   scc->backarcs = NULL;
@@ -701,7 +702,7 @@ create_scc (ddg_ptr g, sbitmap nodes)
   sbitmap_copy (scc->nodes, nodes);
 
   /* Mark the backarcs that belong to this SCC.  */
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u,
+  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
     {
       ddg_edge_ptr e;
       ddg_node_ptr n = &g->nodes[u];
@@ -713,7 +714,7 @@ create_scc (ddg_ptr g, sbitmap nodes)
 	    if (e->distance > 0)
 	      add_backarc_to_scc (scc, e);
 	  }
-    });
+    }
 
   set_recurrence_length (scc, g);
   return scc;
@@ -782,13 +783,14 @@ get_node_of_insn (ddg_ptr g, rtx insn)
 void
 find_successors (sbitmap succ, ddg_ptr g, sbitmap ops)
 {
-  int i;
+  unsigned int i;
+  sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i,
+  EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i, sbi)
     {
       const sbitmap node_succ = NODE_SUCCESSORS (&g->nodes[i]);
       sbitmap_a_or_b (succ, succ, node_succ);
-    });
+    };
 
   /* We want those that are not in ops.  */
   sbitmap_difference (succ, succ, ops);
@@ -800,13 +802,14 @@ find_successors (sbitmap succ, ddg_ptr g, sbitmap ops)
 void
 find_predecessors (sbitmap preds, ddg_ptr g, sbitmap ops)
 {
-  int i;
+  unsigned int i;
+  sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i,
+  EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i, sbi)
     {
       const sbitmap node_preds = NODE_PREDECESSORS (&g->nodes[i]);
       sbitmap_a_or_b (preds, preds, node_preds);
-    });
+    };
 
   /* We want those that are not in ops.  */
   sbitmap_difference (preds, preds, ops);
@@ -901,8 +904,11 @@ int
 find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 {
   int answer;
-  int change, u;
+  int change;
+  unsigned int u;
   int num_nodes = g->num_nodes;
+  sbitmap_iterator sbi;
+
   sbitmap workset = sbitmap_alloc (num_nodes);
   sbitmap reachable_from = sbitmap_alloc (num_nodes);
   sbitmap reach_to = sbitmap_alloc (num_nodes);
@@ -917,7 +923,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
       change = 0;
       sbitmap_copy (workset, tmp);
       sbitmap_zero (tmp);
-      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u,
+      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
 	{
 	  ddg_edge_ptr e;
 	  ddg_node_ptr u_node = &g->nodes[u];
@@ -934,7 +940,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 		  change = 1;
 		}
 	    }
-	});
+	}
     }
 
   sbitmap_copy (reach_to, to);
@@ -946,7 +952,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
       change = 0;
       sbitmap_copy (workset, tmp);
       sbitmap_zero (tmp);
-      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u,
+      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
 	{
 	  ddg_edge_ptr e;
 	  ddg_node_ptr u_node = &g->nodes[u];
@@ -963,7 +969,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 		  change = 1;
 		}
 	    }
-	});
+	}
     }
 
   answer = sbitmap_a_and_b_cg (result, reachable_from, reach_to);
@@ -1008,7 +1014,8 @@ update_dist_to_successors (ddg_node_ptr u_node, sbitmap nodes, sbitmap tmp)
 int
 longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
 {
-  int i, u;
+  int i;
+  unsigned int u;
   int change = 1;
   int result;
   int num_nodes = g->num_nodes;
@@ -1027,15 +1034,17 @@ longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
 
   while (change)
     {
+      sbitmap_iterator sbi;
+
       change = 0;
       sbitmap_copy (workset, tmp);
       sbitmap_zero (tmp);
-      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u,
+      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
 	{
 	  ddg_node_ptr u_node = &g->nodes[u];
 
 	  change |= update_dist_to_successors (u_node, nodes, tmp);
-	});
+	}
     }
   result = g->nodes[dest].aux.count;
   sbitmap_free (workset);
