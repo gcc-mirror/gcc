@@ -204,6 +204,17 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	case VECTOR_CST:
 	  return true;
 
+	case TARGET_MEM_REF:
+	  idx = &TMR_BASE (*addr_p);
+	  if (*idx
+	      && !cbck (*addr_p, idx, data))
+	    return false;
+	  idx = &TMR_INDEX (*addr_p);
+	  if (*idx
+	      && !cbck (*addr_p, idx, data))
+	    return false;
+	  return true;
+
 	default:
     	  gcc_unreachable ();
 	}

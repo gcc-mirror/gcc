@@ -736,7 +736,9 @@ void insert_edge_copies (tree, basic_block);
 extern void linear_transform_loops (struct loops *);
 
 /* In tree-ssa-loop-ivopts.c  */
-extern bool expr_invariant_in_loop_p (struct loop *, tree);
+bool expr_invariant_in_loop_p (struct loop *, tree);
+bool multiplier_allowed_in_address_p (HOST_WIDE_INT);
+unsigned multiply_by_cost (HOST_WIDE_INT, enum machine_mode);
 
 /* In tree-ssa-threadupdate.c.  */
 extern bool thread_through_all_blocks (bitmap);
@@ -744,6 +746,48 @@ extern bool thread_through_all_blocks (bitmap);
 /* In gimplify.c  */
 tree force_gimple_operand (tree, tree *, bool, tree);
 tree force_gimple_operand_bsi (block_stmt_iterator *, tree, bool, tree);
+
+/* In tree-ssa-address.c  */
+
+/* Affine combination of trees.  We keep track of at most MAX_AFF_ELTS elements
+   to make things simpler; this is sufficient in most cases.  */
+
+#define MAX_AFF_ELTS 8
+
+struct affine_tree_combination
+{
+  /* Type of the result of the combination.  */
+  tree type;
+
+  /* Mask modulo that the operations are performed.  */
+  unsigned HOST_WIDE_INT mask;
+
+  /* Constant offset.  */
+  unsigned HOST_WIDE_INT offset;
+
+  /* Number of elements of the combination.  */
+  unsigned n;
+
+  /* Elements and their coefficients.  */
+  tree elts[MAX_AFF_ELTS];
+  unsigned HOST_WIDE_INT coefs[MAX_AFF_ELTS];
+
+  /* Remainder of the expression.  */
+  tree rest;
+};
+
+/* Description of a memory address.  */
+
+struct mem_address
+{
+  tree symbol, base, index, step, offset;
+};
+
+tree create_mem_ref (block_stmt_iterator *, tree, 
+		     struct affine_tree_combination *);
+rtx addr_for_mem_ref (struct mem_address *, bool);
+void get_address_description (tree, struct mem_address *);
+tree maybe_fold_tmr (tree);
 
 #include "tree-flow-inline.h"
 

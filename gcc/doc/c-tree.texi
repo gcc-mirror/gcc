@@ -1712,6 +1712,7 @@ This macro returns the attributes on the type @var{type}.
 @tindex EXACT_DIV_EXPR
 @tindex ARRAY_REF
 @tindex ARRAY_RANGE_REF
+@tindex TARGET_MEM_REF
 @tindex LT_EXPR
 @tindex LE_EXPR
 @tindex GT_EXPR
@@ -2102,6 +2103,26 @@ operands are the same as that for @code{ARRAY_REF} and have the same
 meanings.  The type of these expressions must be an array whose component
 type is the same as that of the first operand.  The range of that array
 type determines the amount of data these expressions access.
+
+@item TARGET_MEM_REF
+These nodes represent memory accesses whose address directly map to
+an addressing mode of the target architecture.  The first argument
+is @code{TMR_SYMBOL} and must be a @code{VAR_DECL} of an object with
+a fixed address.  The second argument is @code{TMR_BASE} and the
+third one is @code{TMR_INDEX}.  The fourth argument is
+@code{TMR_STEP} and must be an @code{INTEGER_CST}.  The fifth
+argument is @code{TMR_OFFSET} and must be an @code{INTEGER_CST}.
+Any of the arguments may be NULL if the appropriate component
+does not appear in the address.  Address of the @code{TARGET_MEM_REF}
+is determined in the following way.
+
+@smallexample
+&TMR_SYMBOL + TMR_BASE + TMR_INDEX * TMR_STEP + TMR_OFFSET
+@end smallexample
+
+The sixth argument is the reference to the original memory access, which
+is preserved for the purposes of the RTL alias analysis.  The seventh
+argument is a tag representing the results of tree level alias analysis.
 
 @item LT_EXPR
 @itemx LE_EXPR

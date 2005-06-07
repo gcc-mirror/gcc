@@ -21,9 +21,12 @@ void xxx(void)
     arr_base[iter].y = 17 * iter;
 }
 
-/* Access to arr_base[iter].y should be strength reduced.  */
+/* Access to arr_base[iter].y should be strength reduced, i.e., there should
+   be no multiplication.  */
 
-/* { dg-final { scan-tree-dump-times "arr_base\[^\\n\\r\]*=" 0 "vars" } } */
+/* { dg-final { scan-tree-dump-times " \\* \[^\\n\\r\]*=" 0 "vars" } } */
+/* { dg-final { scan-tree-dump-times "\[^\\n\\r\]*= \\* " 0 "vars" } } */
+/* { dg-final { scan-tree-dump-times "MEM" 1 "vars" } } */
 
 /* 17 * iter should be strength reduced.  */
 

@@ -2739,12 +2739,41 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   return t;
 }
 
+tree
+build7_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
+	     tree arg2, tree arg3, tree arg4, tree arg5,
+	     tree arg6 MEM_STAT_DECL)
+{
+  bool constant, read_only, side_effects, invariant;
+  tree t;
+
+  gcc_assert (code == TARGET_MEM_REF);
+
+  t = make_node_stat (code PASS_MEM_STAT);
+  TREE_TYPE (t) = tt;
+
+  side_effects = TREE_SIDE_EFFECTS (t);
+
+  PROCESS_ARG(0);
+  PROCESS_ARG(1);
+  PROCESS_ARG(2);
+  PROCESS_ARG(3);
+  PROCESS_ARG(4);
+  PROCESS_ARG(5);
+  PROCESS_ARG(6);
+
+  TREE_SIDE_EFFECTS (t) = side_effects;
+  TREE_THIS_VOLATILE (t) = 0;
+
+  return t;
+}
+
 /* Backup definition for non-gcc build compilers.  */
 
 tree
 (build) (enum tree_code code, tree tt, ...)
 {
-  tree t, arg0, arg1, arg2, arg3;
+  tree t, arg0, arg1, arg2, arg3, arg4, arg5, arg6;
   int length = TREE_CODE_LENGTH (code);
   va_list p;
 
@@ -2775,6 +2804,16 @@ tree
       arg2 = va_arg (p, tree);
       arg3 = va_arg (p, tree);
       t = build4 (code, tt, arg0, arg1, arg2, arg3);
+      break;
+    case 7:
+      arg0 = va_arg (p, tree);
+      arg1 = va_arg (p, tree);
+      arg2 = va_arg (p, tree);
+      arg3 = va_arg (p, tree);
+      arg4 = va_arg (p, tree);
+      arg5 = va_arg (p, tree);
+      arg6 = va_arg (p, tree);
+      t = build7 (code, tt, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
       break;
     default:
       gcc_unreachable ();

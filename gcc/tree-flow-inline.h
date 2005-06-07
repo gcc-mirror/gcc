@@ -66,7 +66,6 @@ get_stmt_ann (tree stmt)
   return (ann) ? ann : create_stmt_ann (stmt);
 }
 
-
 /* Return the annotation type for annotation ANN.  */
 static inline enum tree_ann_type
 ann_type (tree_ann_t ann)

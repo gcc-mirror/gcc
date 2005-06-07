@@ -1869,6 +1869,13 @@ tree_could_trap_p (tree expr)
  restart:
   switch (code)
     {
+    case TARGET_MEM_REF:
+      /* For TARGET_MEM_REFs use the information based on the original
+	 reference.  */
+      expr = TMR_ORIGINAL (expr);
+      code = TREE_CODE (expr);
+      goto restart;
+
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:

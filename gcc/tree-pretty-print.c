@@ -443,6 +443,64 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "::");
       break;
 
+    case TARGET_MEM_REF:
+      {
+	const char *sep = "";
+	tree tmp;
+
+	pp_string (buffer, "MEM[");
+
+	tmp = TMR_SYMBOL (node);
+	if (tmp)
+	  {
+	    pp_string (buffer, sep);
+	    sep = ", ";
+	    pp_string (buffer, "symbol: ");
+	    dump_generic_node (buffer, tmp, spc, flags, false);
+	  }
+	tmp = TMR_BASE (node);
+	if (tmp)
+	  {
+	    pp_string (buffer, sep);
+	    sep = ", ";
+	    pp_string (buffer, "base: ");
+	    dump_generic_node (buffer, tmp, spc, flags, false);
+	  }
+	tmp = TMR_INDEX (node);
+	if (tmp)
+	  {
+	    pp_string (buffer, sep);
+	    sep = ", ";
+	    pp_string (buffer, "index: ");
+	    dump_generic_node (buffer, tmp, spc, flags, false);
+	  }
+	tmp = TMR_STEP (node);
+	if (tmp)
+	  {
+	    pp_string (buffer, sep);
+	    sep = ", ";
+	    pp_string (buffer, "step: ");
+	    dump_generic_node (buffer, tmp, spc, flags, false);
+	  }
+	tmp = TMR_OFFSET (node);
+	if (tmp)
+	  {
+	    pp_string (buffer, sep);
+	    sep = ", ";
+	    pp_string (buffer, "offset: ");
+	    dump_generic_node (buffer, tmp, spc, flags, false);
+	  }
+	pp_string (buffer, "]");
+	if (flags & TDF_DETAILS)
+	  {
+	    pp_string (buffer, "{");
+	    dump_generic_node (buffer, TMR_ORIGINAL (node), spc, flags,
+			       false);
+	    pp_string (buffer, "}");
+	  }
+      }
+      break;
+
     case ARRAY_TYPE:
       {
 	tree tmp;
