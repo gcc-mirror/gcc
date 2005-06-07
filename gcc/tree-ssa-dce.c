@@ -283,6 +283,15 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
   tree op, def;
   ssa_op_iter iter;
 
+  /* With non-call exceptions, we have to assume that all statements could
+     throw.  If a statement may throw, it is inherently necessary.  */
+  if (flag_non_call_exceptions
+      && tree_could_throw_p (stmt))
+    {
+      mark_stmt_necessary (stmt, true);
+      return;
+    }
+
   /* Statements that are implicitly live.  Most function calls, asm and return
      statements are required.  Labels and BIND_EXPR nodes are kept because
      they are control flow, and we have no way of knowing whether they can be

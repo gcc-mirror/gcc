@@ -1,3 +1,10 @@
+2005-06-07  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/21847
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): With
+	-fnon-call-exceptions, also mark statements inherently
+	necessary if they may throw.
+
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* intl.h (G_): New macro.
