@@ -25,8 +25,8 @@ Boston, MA 02111-1307, USA.  */
    covered by the GNU General Public License.  */
 
 #include "tconfig.h"         /* include defs of bzero for target */
-#include "objc.h"
-#include "runtime.h"		/* the kitchen sink */
+#include "objc/objc.h"
+#include "objc/runtime.h"		/* the kitchen sink */
 
 #if OBJC_WITH_GC
 # include <gc.h>

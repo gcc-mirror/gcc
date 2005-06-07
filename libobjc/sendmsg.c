@@ -32,9 +32,9 @@ Boston, MA 02111-1307, USA.  */
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "runtime.h"
-#include "sarray.h"
-#include "encoding.h"
+#include "objc/runtime.h"
+#include "objc/sarray.h"
+#include "objc/encoding.h"
 #include "runtime-info.h"
 
 /* This is how we hack STRUCT_VALUE to be 1 or 0.   */

@@ -24,7 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
-#include "runtime.h"
+#include "objc/runtime.h"
 
 /* The version number of this runtime.  This must match the number 
    defined in gcc (objc-act.c).  */

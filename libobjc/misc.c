@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define __USE_FIXED_PROTOTYPES__
 #include <stdlib.h>
-#include "runtime.h"
+#include "objc/runtime.h"
 
 /*
 ** Error handler function

@@ -32,8 +32,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "objc-api.h"
-#include "encoding.h"
+#include "objc/objc-api.h"
+#include "objc/encoding.h"
 #include <stdlib.h>
 
 #undef  MAX

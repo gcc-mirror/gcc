@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    the executable file might be covered by the GNU General Public License.  */
 
 #include "tconfig.h"
-#include "objc.h"
-#include "encoding.h"
+#include "objc/objc.h"
+#include "objc/encoding.h"
 
 #include <assert.h>
 #include <string.h>
