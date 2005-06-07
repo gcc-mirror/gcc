@@ -1309,8 +1309,18 @@ reg_overlap_mentioned_p (rtx x, rtx in)
 
 	fmt = GET_RTX_FORMAT (GET_CODE (in));
 	for (i = GET_RTX_LENGTH (GET_CODE (in)) - 1; i >= 0; i--)
-	  if (fmt[i] == 'e' && reg_overlap_mentioned_p (x, XEXP (in, i)))
-	    return 1;
+	  if (fmt[i] == 'e')
+	    {
+	      if (reg_overlap_mentioned_p (x, XEXP (in, i)))
+		return 1;
+	    }
+	  else if (fmt[i] == 'E')
+	    {
+	      int j;
+	      for (j = XVECLEN (in, i) - 1; j >= 0; --j)
+		if (reg_overlap_mentioned_p (x, XVECEXP (in, i, j)))
+		  return 1;
+	    }
 
 	return 0;
       }
