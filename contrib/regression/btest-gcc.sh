@@ -18,7 +18,20 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # INPUT:
-# btest <target> <source> <prefix> <state> <build>
+# btest <options> <target> <source> <prefix> <state> <build>
+
+add_passes_despite_regression=0
+
+# <options> can be
+# --add-passes-despite-regression:
+#  Add new "PASSes" despite there being some regressions.
+
+case "$1" in
+ --add-passes-despite-regression)
+  add_passes_despite_regression=1; shift;;
+ --*) echo "Invalid option: $1"; exit 2;;
+esac
+
 # TARGET is the target triplet.  It should be the same one as used in
 # constructing PREFIX.  Or it can be the keyword 'native', indicating
 # a target of whatever platform the script is running on.
@@ -178,17 +191,38 @@ for LOG in $TESTLOGS ; do
 done | sort | uniq > $FAILED || exit 1
 comm -12 $FAILED $PASSES >> $REGRESS || exit 1
 NUMREGRESS=`wc -l < $REGRESS | tr -d ' '`
+
+if [ $NUMREGRESS -eq 0 ] || [ $add_passes_despite_regression -ne 0 ] ; then
+  # Update the state.
+  for LOG in $TESTLOGS ; do
+    L=`basename $LOG`
+    awk '/^PASS: / { print "'$L'",$2; }' $LOG || exit 1
+  done | sort | uniq | comm -23 - $FAILED > ${PASSES}~ || exit 1
+  [ -s ${PASSES}~ ] || exit 1
+  if [ $NUMREGRESS -ne 0 ] ; then
+    # The way we keep track of new PASSes when in "regress-N" for
+    # --add-passes-despite-regression, is to *add* them to previous
+    # PASSes.  Just as without this option, we don't forget *any* PASS
+    # lines, because besides the ones in $REGRESS that we definitely
+    # don't want to lose, their removal or rename may have been a
+    # mistake (as in, the cause of the "regress-N" state).  If they
+    # come back, we then know they're regressions.
+    cat ${PASSES}~ ${PASSES} | sort -u > ${PASSES}~~
+    mv ${PASSES}~~ ${PASSES} || exit 1
+    rm ${PASSES}~ || exit 1
+  else
+    # In contrast to the merging for "regress-N", we just overwrite
+    # the known PASSes when in the "pass" state, so we get rid of
+    # stale PASS lines for removed, moved or otherwise changed tests
+    # which may be added back with a different meaning later on.
+    mv ${PASSES}~ ${PASSES} || exit 1
+  fi
+fi
+
 if [ $NUMREGRESS -ne 0 ] ; then
   echo regress-$NUMREGRESS > $RESULT
   exit 1
 fi
 
-# It passed.  Update the state.
-for LOG in $TESTLOGS ; do
-  L=`basename $LOG`
-  awk '/^PASS: / { print "'$L'",$2; }' $LOG || exit 1
-done | sort | uniq | comm -23 - $FAILED > ${PASSES}~ || exit 1
-[ -s ${PASSES}~ ] || exit 1
-mv ${PASSES}~ ${PASSES} || exit 1
 echo pass > $RESULT
 exit 0
