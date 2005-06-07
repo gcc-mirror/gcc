@@ -1,5 +1,12 @@
 2005-06-07  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.def (DEFAULT_ARG): Adjust documentation.
+	* cp-tree.h (DEFARG_INSTANTIATIONS): New.
+	(struct tree_default_arg): Add instantiations member.
+	* parser.c (cp_parser_late_parsing_default_args): Adjust to use a
+	VEC.
+	* pt.c (tsubst_arg_types): Likewise.
+
 	* parser.c (cp_parser_late_parsing_default_args): Fix overeager
 	assert in previous patch.
 
