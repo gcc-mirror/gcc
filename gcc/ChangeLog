@@ -1,3 +1,8 @@
+2005-06-07  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/predicates.md (sleu_operand): Use
+	IN_RANGE to specify range of operand.
+
 2005-06-07  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/21847
