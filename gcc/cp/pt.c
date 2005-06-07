@@ -6745,8 +6745,7 @@ tsubst_arg_types (tree arg_types,
  	 class, and is not an error unless we require the default
  	 argument in a call of this function.  */
       result = tree_cons (default_arg, type, remaining_arg_types);
-      TREE_CHAIN (default_arg) = tree_cons (result, NULL_TREE,
-					    TREE_CHAIN (default_arg));
+      VEC_safe_push (tree, gc, DEFARG_INSTANTIATIONS (default_arg), result);
     }
   else
     result = hash_tree_cons (default_arg, type, remaining_arg_types);

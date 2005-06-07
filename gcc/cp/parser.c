@@ -12145,7 +12145,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
              argument.  */
 	  default_argument = make_node (DEFAULT_ARG);
 	  DEFARG_TOKENS (default_argument)
-	    = cp_token_cache_new (first_token, token);	
+	    = cp_token_cache_new (first_token, token);
+	  DEFARG_INSTANTIATIONS (default_argument) = NULL;
 	}
       /* Outside of a class definition, we can just parse the
          assignment-expression.  */
@@ -15595,6 +15596,9 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       cp_token_cache *tokens;
       tree default_arg = TREE_PURPOSE (parm);
       tree parsed_arg;
+      VEC(tree,gc) *insts;
+      tree copy;
+      unsigned ix;
       
       if (!default_arg)
 	continue;
@@ -15615,10 +15619,9 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       TREE_PURPOSE (parm) = parsed_arg;
 
       /* Update any instantiations we've already created.  */
-      for (default_arg = TREE_CHAIN (default_arg);
-	   default_arg;
-	   default_arg = TREE_CHAIN (default_arg))
-	TREE_PURPOSE (TREE_PURPOSE (default_arg)) = parsed_arg;
+      for (insts = DEFARG_INSTANTIATIONS (default_arg), ix = 0;
+	   VEC_iterate (tree, insts, ix, copy); ix++)
+	TREE_PURPOSE (copy) = parsed_arg;
 
       /* If the token stream has not been completely used up, then
 	 there was extra junk after the end of the default
