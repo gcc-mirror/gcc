@@ -1,5 +1,17 @@
 2005-06-06  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/21770 (cont: debug-mode)
+	* include/debug/deque: Use _Base typedefs for pointer, const_pointer,
+	reference, const_reference.
+	* include/debug/list: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/vector: Likewise.
+
+2005-06-06  Paolo Carlini  <pcarlini@suse.de>
+
         Port from libstdcxx_so_7-branch:
 	2004-09-24  Paolo Carlini  <pcarlini@suse.de>
 		    Jonathan Wakely  <redi@gcc.gnu.org>

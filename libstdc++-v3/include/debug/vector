@@ -64,8 +64,8 @@ namespace __gnu_debug_def
 
       typedef _Tp				    value_type;
       typedef _Allocator			    allocator_type;
-      typedef typename _Allocator::pointer          pointer;
-      typedef typename _Allocator::const_pointer    const_pointer;
+      typedef typename _Base::pointer               pointer;
+      typedef typename _Base::const_pointer         const_pointer;
       typedef std::reverse_iterator<iterator>       reverse_iterator;
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 

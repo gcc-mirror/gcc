@@ -1,6 +1,6 @@
 // Debugging multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -53,8 +53,8 @@ namespace __gnu_debug_def
       typedef _Compare				     key_compare;
       typedef _Compare				     value_compare;
       typedef _Allocator			     allocator_type;
-      typedef typename _Allocator::reference	     reference;
-      typedef typename _Allocator::const_reference   const_reference;
+      typedef typename _Base::reference	             reference;
+      typedef typename _Base::const_reference        const_reference;
 
       typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, multiset>
       iterator;
@@ -63,8 +63,8 @@ namespace __gnu_debug_def
 
       typedef typename _Base::size_type              size_type;
       typedef typename _Base::difference_type        difference_type;
-      typedef typename _Allocator::pointer           pointer;
-      typedef typename _Allocator::const_pointer     const_pointer;
+      typedef typename _Base::pointer                pointer;
+      typedef typename _Base::const_pointer          const_pointer;
       typedef std::reverse_iterator<iterator>        reverse_iterator;
       typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
 
