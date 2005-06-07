@@ -1,5 +1,8 @@
 2005-06-07  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/host-darwin.c (segv_handler): Widen the possible
+	'stwux' instructions that are considered to be stack decrements.
+
 	* rtlanal.c (subreg_offset_representable_p): Handle objects
 	with holes.
 
