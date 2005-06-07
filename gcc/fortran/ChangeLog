@@ -1,4 +1,4 @@
-2005-06-03  Jerry DeLisle <jvdelisle@verizon.net>
+2005-06-07  Jerry DeLisle <jvdelisle@verizon.net>
 
 	* intrinsic.texi: Add documentation for	dcmplx, digits,
 	dim, idim, ddim, dot_product, dprod, dreal, and dtime.
