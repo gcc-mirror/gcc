@@ -1,3 +1,8 @@
+2005-06-07  Dale Johannesen  <dalej@apple.com>
+
+	* config/i386/i386.md (movqi_1):  Fix case where source
+	is memory and destination EDI.
+
 2005-06-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/c4x/c4x.h (PREDICATE_CODES): Remove mem_operand.
