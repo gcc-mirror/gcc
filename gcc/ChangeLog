@@ -1,3 +1,8 @@
+2005-06-07  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (initialize_cold_section_name): Fix alloca buffer overflow.
+	(assemble_start_function): Fix strcmp confusion.
+
 2005-06-07  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.h (enum ix86_entity): New.
