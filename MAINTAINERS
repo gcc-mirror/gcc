@@ -60,6 +60,7 @@ iq2000 port		Nick Clifton		nickc@redhat.com
 m32r port		Nick Clifton		nickc@redhat.com
 m68hc11 port		Stephane Carrez		stcarrez@nerim.fr
 m68k port (?)		Jeff Law		law@redhat.com
+m68k port		Andreas Schwab		schwab@suse.de
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 mcore port		Nick Clifton		nickc@redhat.com
 mips port               Eric Christopher        echristo@redhat.com
@@ -309,7 +310,6 @@ Douglas Rupp					rupp@gnat.com
 Matthew Sachs					msachs@apple.com
 Alex Samuel					samuel@codesourcery.com
 Tobias Schlüter					tobias.schlueter@physik.uni-muenchen.de
-Andreas Schwab					schwab@suse.de
 Svein Seldal                                    svein@dev.seldal.com
 Franz Sirl					franz.sirl-kernel@lauterbach.com
 Michael Sokolov					msokolov@ivan.Harhan.ORG

@@ -1,3 +1,8 @@
+2005-06-08  Andreas Schwab  <schwab@suse.de>
+
+	* MAINTAINERS: Move myself from 'Write After Approval' to
+	'CPU Port Maintainers' section as m68k maintainer.
+
 2005-06-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.in (unsupported_languages): New macro.
