@@ -27,8 +27,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __typedstream_INCLUDE_GNU
 #define __typedstream_INCLUDE_GNU
 
-#include <objc/objc.h>
-#include <objc/hash.h>
+#include "objc.h"
+#include "hash.h"
 
 #include <stdio.h>
 

@@ -27,10 +27,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __objc_api_INCLUDE_GNU
 #define __objc_api_INCLUDE_GNU
 
-#include <objc/objc.h>
-#include <objc/hash.h>
-#include <objc/thr.h>
-#include <objc/objc-decls.h>
+#include "objc.h"
+#include "hash.h"
+#include "thr.h"
+#include "objc-decls.h"
 #include <stdio.h>
 #include <stdarg.h>
 
