@@ -47,16 +47,16 @@
 #define SUBSUBTARGET_OVERRIDE_OPTIONS \
   if (rs6000_select[1].string == NULL) \
     rs6000_cpu = PROCESSOR_PPC8540; \
-  if (rs6000_abi_string == NULL || strstr (rs6000_abi_string, "spe") == NULL) \
+  if (!rs6000_explicit_options.abi) \
     rs6000_spe_abi = 1; \
-  if (rs6000_float_gprs_string == NULL) \
+  if (!rs6000_explicit_options.float_gprs) \
     rs6000_float_gprs = 1; \
   /* See note below.  */ \
-  /*if (rs6000_long_double_size_string == NULL)*/ \
+  /*if (!rs6000_explicit_options.long_double)*/ \
   /*  rs6000_long_double_type_size = 128;*/ \
-  if (rs6000_spe_string == NULL) \
+  if (!rs6000_explicit_options.spe) \
     rs6000_spe = 1; \
-  if (rs6000_isel_string == NULL) \
+  if (!rs6000_explicit_options.isel) \
     rs6000_isel = 1; \
   if (target_flags & MASK_64BIT) \
     error ("-m64 not supported in this configuration")
