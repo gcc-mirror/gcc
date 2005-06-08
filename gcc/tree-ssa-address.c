@@ -198,8 +198,8 @@ addr_for_mem_ref (struct mem_address *addr, bool really_expand)
 
 	  templates_initialized = true;
 	  sym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup ("test_symbol"));
-	  bse = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER);
-	  idx = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER + 1);
+	  bse = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
+	  idx = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 2);
 
 	  for (i = 0; i < 32; i++)
 	    gen_addr_rtx ((i & 16 ? sym : NULL_RTX),

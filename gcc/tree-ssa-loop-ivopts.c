@@ -3149,8 +3149,8 @@ add_cost (enum machine_mode mode)
 
   start_sequence ();
   force_operand (gen_rtx_fmt_ee (PLUS, mode,
-				 gen_raw_REG (mode, FIRST_PSEUDO_REGISTER),
-				 gen_raw_REG (mode, FIRST_PSEUDO_REGISTER + 1)),
+				 gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1),
+				 gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 2)),
 		 NULL_RTX);
   seq = get_insns ();
   end_sequence ();
@@ -3221,8 +3221,8 @@ multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode)
   (*cached)->cst = cst;
 
   start_sequence ();
-  expand_mult (mode, gen_raw_REG (mode, FIRST_PSEUDO_REGISTER), GEN_INT (cst),
-	       NULL_RTX, 0);
+  expand_mult (mode, gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1),
+	       gen_int_mode (cst, mode), NULL_RTX, 0);
   seq = get_insns ();
   end_sequence ();
   
@@ -3247,7 +3247,7 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio)
   
   if (!valid_mult)
     {
-      rtx reg1 = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER);
+      rtx reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
       rtx addr;
       HOST_WIDE_INT i;
 
@@ -3305,12 +3305,12 @@ get_address_cost (bool symbol_present, bool var_present,
       HOST_WIDE_INT i;
       initialized = true;
 
-      reg1 = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER);
+      reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
 
       addr = gen_rtx_fmt_ee (PLUS, Pmode, reg1, NULL_RTX);
       for (i = 1; i <= 1 << 20; i <<= 1)
 	{
-	  XEXP (addr, 1) = GEN_INT (i);
+	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
 	  if (!memory_address_p (Pmode, addr))
 	    break;
 	}
@@ -3319,7 +3319,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
       for (i = 1; i <= 1 << 20; i <<= 1)
 	{
-	  XEXP (addr, 1) = GEN_INT (-i);
+	  XEXP (addr, 1) = gen_int_mode (-i, Pmode);
 	  if (!memory_address_p (Pmode, addr))
 	    break;
 	}
@@ -3368,10 +3368,10 @@ get_address_cost (bool symbol_present, bool var_present,
     {
       acost = 0;
       
-      addr = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER);
-      reg1 = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER + 1);
+      addr = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
+      reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 2);
       if (ratio_p)
-	addr = gen_rtx_fmt_ee (MULT, Pmode, addr, GEN_INT (rat));
+	addr = gen_rtx_fmt_ee (MULT, Pmode, addr, gen_int_mode (rat, Pmode));
 
       if (var_present)
 	addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, reg1);
@@ -3383,10 +3383,10 @@ get_address_cost (bool symbol_present, bool var_present,
 	    base = gen_rtx_fmt_e (CONST, Pmode,
 				  gen_rtx_fmt_ee (PLUS, Pmode,
 						  base,
-						  GEN_INT (off)));
+						  gen_int_mode (off, Pmode)));
 	}
       else if (offset_p)
-	base = GEN_INT (off);
+	base = gen_int_mode (off, Pmode);
       else
 	base = NULL_RTX;
     
