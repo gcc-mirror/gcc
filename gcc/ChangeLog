@@ -1,3 +1,12 @@
+2005-06-07  Eric Christopher  <echristo@redhat.com>
+
+	* system.h: Poison EXTRA_CC_MODES.
+	* config/frv/frv.h (SELECT_CC_MODE): Rewrite comment.
+	* config/ia64/ia64.h (SELECT_CC_MODE): Ditto.
+	* doc/md.texi (Jump Patterns): Replace reference to
+	EXTRA_CC_MODES with machine-modes.def.
+	* doc/rtl.texi (Machine Modes): Ditto.
+
 2005-06-07  Richard Henderson  <rth@redhat.com>
 
 	* varasm.c (initialize_cold_section_name): Fix alloca buffer overflow.
