@@ -1,3 +1,12 @@
+2005-06-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/19894
+	* pt.c (tsubst): Reject pointer-to-member of type void.
+
+	PR c++/20563
+	* parser.c (cp_parser_label_declaration): Deal with invalid/missing
+	identifiers.
+
 2005-06-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.def (DEFAULT_ARG): Adjust documentation.
