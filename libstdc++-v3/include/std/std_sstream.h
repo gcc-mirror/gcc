@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -127,16 +127,18 @@ namespace std
       __string_type
       str() const
       {
+	__string_type __ret;
 	if (this->pptr())
 	  {
 	    // The current egptr() may not be the actual string end.
 	    if (this->pptr() > this->egptr())
-	      return __string_type(this->pbase(), this->pptr());
+	      __ret = __string_type(this->pbase(), this->pptr());
 	    else
- 	      return __string_type(this->pbase(), this->egptr());
+ 	      __ret = __string_type(this->pbase(), this->egptr());
 	  }
 	else
-	  return _M_string;
+	  __ret = _M_string;
+	return __ret;
       }
 
       /**
@@ -151,7 +153,7 @@ namespace std
       {
 	// Cannot use _M_string = __s, since v3 strings are COW.
 	_M_string.assign(__s.data(), __s.size());
-	_M_stringbuf_init(this->_M_mode);
+	_M_stringbuf_init(_M_mode);
       }
 
     protected:
@@ -159,12 +161,23 @@ namespace std
       void
       _M_stringbuf_init(ios_base::openmode __mode)
       {
-	this->_M_mode = __mode;
-
+	_M_mode = __mode;
 	__size_type __len = 0;
-	if (this->_M_mode & (ios_base::ate | ios_base::app))
+	if (_M_mode & (ios_base::ate | ios_base::app))
 	  __len = _M_string.size();
 	_M_sync(const_cast<char_type*>(_M_string.data()), 0, __len);
+      }
+
+      virtual streamsize
+      showmanyc()
+      { 
+	streamsize __ret = -1;
+	if (_M_mode & ios_base::in)
+	  {
+	    _M_update_egptr();
+	    __ret = this->egptr() - this->gptr();
+	  }
+	return __ret;
       }
 
       virtual int_type
@@ -223,8 +236,8 @@ namespace std
       void
       _M_sync(char_type* __base, __size_type __i, __size_type __o)
       {
-	const bool __testin = this->_M_mode & ios_base::in;
-	const bool __testout = this->_M_mode & ios_base::out;
+	const bool __testin = _M_mode & ios_base::in;
+	const bool __testout = _M_mode & ios_base::out;
 	char_type* __end = __base + _M_string.size();
 
 	if (__testin)
@@ -252,8 +265,7 @@ namespace std
       void
       _M_update_egptr()
       {
-	const bool __testin = this->_M_mode & ios_base::in;
-
+	const bool __testin = _M_mode & ios_base::in;
 	if (this->pptr() && this->pptr() > this->egptr())
 	  if (__testin)
 	    this->setg(this->eback(), this->gptr(), this->pptr());

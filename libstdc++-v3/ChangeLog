@@ -1,3 +1,21 @@
+2005-06-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/21955
+	* include/std/std_sstream.h (basic_stringbuf::showmanyc): Add.
+	Remove unnecessary this->_M_mode decoration.
+	* include/bits/fstream.tcc: Adjust line spacing.	
+	* testsuite/27_io/basic_streambuf/in_avail/char/1.cc: New, test
+	base class behavior.
+	* testsuite/27_io/basic_streambuf/in_avail/wchar_t/1.cc: Same.
+	* testsuite/27_io/basic_stringbuf/in_avail/char/21955.cc: New.
+	* testsuite/27_io/basic_stringbuf/in_avail/char/1.cc: Match
+	filebuf behavior.
+	* testsuite/27_io/basic_stringbuf/in_avail/wchar_t/1.cc: Same.
+	* testsuite/27_io/basic_stringbuf/str/wchar_t/1.cc: Same.
+	* testsuite/27_io/basic_stringbuf/str/char/1.cc: Same.
+	* testsuite/27_io/basic_streambuf/in_avail/char/9701-3.cc: Move...
+	* testsuite/27_io/basic_filebuf/in_avail/char/9701-3.cc: ...here.
+	
 2005-06-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_C99): Use C++ compiler for complex
