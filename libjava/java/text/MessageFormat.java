@@ -658,7 +658,11 @@ public class MessageFormat extends Format
 	  {
 	    // We have a String format.  This can lose in a number
 	    // of ways, but we give it a shot.
-	    int next_index = sourceStr.indexOf(elements[i].trailer, index);
+	    int next_index;
+	    if (elements[i].trailer.length() > 0)
+	      next_index = sourceStr.indexOf(elements[i].trailer, index);
+	    else
+	      next_index = sourceStr.length();
 	    if (next_index == -1)
 	      {
 		pos.setErrorIndex(index);
