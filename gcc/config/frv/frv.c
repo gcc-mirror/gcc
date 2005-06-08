@@ -353,6 +353,8 @@ static rtx frv_struct_value_rtx			(tree, int);
 static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
 static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
+static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
+  ATTRIBUTE_UNUSED;
 
 /* Allow us to easily change the default for -malloc-cc.  */
 #ifndef DEFAULT_NO_ALLOC_CC
@@ -425,6 +427,11 @@ static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_SETUP_INCOMING_VARARGS frv_setup_incoming_varargs
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG frv_reorg
+
+#if HAVE_AS_TLS
+#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
+#define TARGET_ASM_OUTPUT_DWARF_DTPREL frv_output_dwarf_dtprel
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3415,7 +3422,7 @@ frv_legitimate_address_p (enum machine_mode mode,
 static rtx
 gen_inlined_tls_plt (rtx addr)
 {
-  rtx mem, retval, dest;
+  rtx retval, dest;
   rtx picreg = get_hard_reg_initial_val (Pmode, FDPIC_REG);
 
 
@@ -9098,10 +9105,10 @@ frv_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 
 #define TLS_BIAS (2048 - 16)
 
-/* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
-void
+static void
 frv_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
   gcc_assert (size == 4);

@@ -120,8 +120,6 @@ extern const char *output_387_reg_move (rtx, rtx*);
 extern const char *output_fix_trunc (rtx, rtx*, int);
 extern const char *output_fp_compare (rtx, rtx*, int, int);
 
-extern void i386_output_dwarf_dtprel (FILE*, int, rtx);
-
 extern void ix86_expand_clear (rtx);
 extern void ix86_expand_move (enum machine_mode, rtx[]);
 extern void ix86_expand_vector_move (enum machine_mode, rtx[]);

@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf ((LABEL), "*.L%s%ld", (PREFIX), (long)(NUM))
+  sprintf ((LABEL), "*.L%s%lu", (PREFIX), (unsigned long)(NUM))
 
 /* The native TLS-enabled assembler requires the directive #tls_object
    to be put on objects in TLS sections (as of v7.1).  This is not

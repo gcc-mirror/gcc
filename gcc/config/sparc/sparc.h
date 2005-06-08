@@ -2349,13 +2349,6 @@ extern int sparc_indent_opcode;
       }					\
   } while (0)
 
-/* Emit a dtp-relative reference to a TLS variable.  */
-
-#ifdef HAVE_AS_TLS
-#define ASM_OUTPUT_DWARF_DTPREL(FILE, SIZE, X) \
-  sparc_output_dwarf_dtprel (FILE, SIZE, X)
-#endif
-
 #define SPARC_SYMBOL_REF_TLS_P(RTX) \
   (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
 
@@ -2447,11 +2440,14 @@ extern int sparc_indent_opcode;
     }								\
 }
 
+/* TLS support defaulting to original Sun flavor.  GNU extensions
+   must be activated in separate configuration files.  */
 #ifdef HAVE_AS_TLS
 #define TARGET_TLS 1
 #else
 #define TARGET_TLS 0
 #endif
+
 #define TARGET_SUN_TLS TARGET_TLS
 #define TARGET_GNU_TLS 0
 

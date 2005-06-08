@@ -3561,10 +3561,12 @@ s390_expand_addcc (enum rtx_code cmp_code, rtx cmp_op0, rtx cmp_op1,
 }
 
 
-/* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
-void
+static void s390_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
+
+static void
 s390_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
   switch (size)
@@ -8284,6 +8286,11 @@ s390_reorg (void)
 
 #undef TARGET_INSN_VALID_WITHIN_DOLOOP
 #define TARGET_INSN_VALID_WITHIN_DOLOOP hook_bool_rtx_true
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
+#define TARGET_ASM_OUTPUT_DWARF_DTPREL s390_output_dwarf_dtprel
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

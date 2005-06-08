@@ -363,6 +363,7 @@ static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
 static int sparc_arg_partial_bytes (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree, bool);
 static void sparc_dwarf_handle_frame_unspec (const char *, rtx, int);
+static void sparc_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void sparc_file_end (void);
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 const struct attribute_spec sparc_attribute_table[];
@@ -437,10 +438,11 @@ static bool fpu_option_set = false;
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN sparc_expand_builtin
 
-#ifdef HAVE_AS_TLS
+#if TARGET_TLS
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true
 #endif
+
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM sparc_cannot_force_const_mem
 
@@ -511,6 +513,11 @@ static bool fpu_option_set = false;
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION sparc_handle_option
+
+#if TARGET_GNU_TLS
+#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
+#define TARGET_ASM_OUTPUT_DWARF_DTPREL sparc_output_dwarf_dtprel
+#endif
 
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END sparc_file_end
@@ -8451,10 +8458,10 @@ sparc_dwarf_handle_frame_unspec (const char *label,
   dwarf2out_window_save (label);
 }
 
-/* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
-void
+static void
 sparc_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
   switch (size)
@@ -8472,8 +8479,10 @@ sparc_output_dwarf_dtprel (FILE *file, int size, rtx x)
   fputs (")", file);
 }
 
-static
-void sparc_file_end (void)
+/* Do whatever processing is required at the end of a file.  */
+
+static void
+sparc_file_end (void)
 {
   /* If we haven't emitted the special PIC helper function, do so now.  */
   if (pic_helper_symbol_name[0] && !pic_helper_emitted_p)

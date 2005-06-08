@@ -2071,13 +2071,6 @@ do {									\
 #define JUMP_TABLES_IN_TEXT_SECTION \
   (!TARGET_64BIT && flag_pic && !HAVE_AS_GOTOFF_IN_DATA)
 
-/* Emit a dtp-relative reference to a TLS variable.  */
-
-#ifdef HAVE_AS_TLS
-#define ASM_OUTPUT_DWARF_DTPREL(FILE, SIZE, X) \
-  i386_output_dwarf_dtprel (FILE, SIZE, X)
-#endif
-
 /* Switch to init or fini section via SECTION_OP, emit a call to FUNC,
    and switch back.  For x86 we do this only to save a few bytes that
    would otherwise be unused in the text section.  */
