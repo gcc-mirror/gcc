@@ -120,7 +120,9 @@
    (UNSPEC_PUSH_MULTIPLE 5)])
 
 (define_constants
-  [(UNSPEC_VOLATILE_EH_RETURN 0)])
+  [(UNSPEC_VOLATILE_EH_RETURN 0)
+   (UNSPEC_VOLATILE_CSYNC 1)
+   (UNSPEC_VOLATILE_SSYNC 2)])
 
 (define_attr "type"
   "move,mvi,mcld,mcst,dsp32,mult,alu0,shft,brcc,br,call,misc,compare,dummy"
@@ -1837,6 +1839,18 @@
     }
   gcc_unreachable ();
 })
+
+(define_insn "csync"
+  [(unspec_volatile [(const_int 0)] UNSPEC_VOLATILE_CSYNC)]
+  ""
+  "csync;"
+  [(set_attr "type" "misc")])
+
+(define_insn "ssync"
+  [(unspec_volatile [(const_int 0)] UNSPEC_VOLATILE_SSYNC)]
+  ""
+  "ssync;"
+  [(set_attr "type" "misc")])
 
 ;;; Vector instructions
 

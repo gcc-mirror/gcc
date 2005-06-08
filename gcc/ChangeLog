@@ -3,6 +3,15 @@
 	* config/bfin/bfin.c (bfin_return_in_memory): Simplify; return
 	everything larger than 8 bytes in memory.
 
+	* config/bfin/bfin.h (enum bfin_builtins): New.
+	* config/bfin/bfin.md (UNSPEC_VOLATILE_CSYNC, UNSPEC_VOLATILE_SSYNC):
+	New constants.
+	(csync, ssync): New insn patterns.
+	* config/bfin/bfin.c (bfin_init_builtins, bfin_expand_builtin):
+	New functions.
+	(def_builtin): New macro.
+	(TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN): Define.
+
 2005-06-08  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-data-ref.c (compute_estimated_nb_iterations,
