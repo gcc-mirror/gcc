@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == wchar_t
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -45,7 +45,7 @@ void test03()
   std::streamsize d1 = strb_01.in_avail();
   std::streamsize d2 = strb_03.in_avail();
   VERIFY( d1 ); // non-zero
-  VERIFY( !d2 ); // zero, cuz ios_base::out
+  VERIFY( d2 == -1 ); // -1, cuz ios_base::out
   VERIFY( d1 != d2 ); //these should be the same
   VERIFY( static_cast<std::streamsize>(str_01.length()) == d1 );  
   VERIFY( strb_01.str() == strb_03.str() ); //ditto

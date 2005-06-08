@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == char
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -43,8 +43,8 @@ void test04()
   VERIFY( strmof_1 == static_cast<std::streamoff>(str_01.length()) );
   VERIFY( strmof_2 == static_cast<std::streamoff>(str_02.length()) );
   strmof_1 = strb_03.in_avail(); 
-  // zero cuz write-only, or eof()? zero, from showmany
-  VERIFY( strmof_1 == 0 ); 
+  // zero cuz write-only, or eof() to match basic_filebuf
+  VERIFY( strmof_1 == -1 ); 
 }
 
 int main()
