@@ -1519,7 +1519,7 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
 
     case USING_DECL:
       pp_cxx_identifier (pp, "using");
-      pp_cxx_nested_name_specifier (pp, DECL_INITIAL (t));
+      pp_cxx_nested_name_specifier (pp, USING_DECL_SCOPE (t));
       pp_cxx_unqualified_id (pp, DECL_NAME (t));
       break;
 

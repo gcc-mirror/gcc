@@ -93,6 +93,7 @@ struct diagnostic_context;
       DECL_TEMPLATE_PARM_P (in PARM_DECL, CONST_DECL, TYPE_DECL, or TEMPLATE_DECL)
       DECL_LOCAL_FUNCTION_P (in FUNCTION_DECL)
       DECL_MUTABLE_P (in FIELD_DECL)
+      DECL_DEPENDENT_P (in USING_DECL)
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
@@ -2038,6 +2039,15 @@ struct lang_decl GTY(())
 /* In a TREE_LIST concatenating using directives, indicate indirect
    directives  */
 #define TREE_INDIRECT_USING(NODE) (TREE_LIST_CHECK (NODE)->common.lang_flag_0)
+
+/* Non zero if this is a using decl for a dependent scope. */
+#define DECL_DEPENDENT_P(NODE) DECL_LANG_FLAG_0 (USING_DECL_CHECK (NODE))
+
+/* The scope named in a using decl.  */
+#define USING_DECL_SCOPE(NODE) TREE_TYPE (USING_DECL_CHECK (NODE))
+
+/* The decls named by a using decl.  */
+#define USING_DECL_DECLS(NODE) DECL_INITIAL (USING_DECL_CHECK (NODE))
 
 /* In a VAR_DECL for a variable declared in a for statement,
    this is the shadowed (local) variable.  */

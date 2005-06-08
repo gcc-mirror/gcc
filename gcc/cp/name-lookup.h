@@ -341,6 +341,7 @@ extern bool is_associated_namespace (tree, tree);
 extern void parse_using_directive (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
+extern void cp_emit_debug_info_for_using (tree, tree);
 
 /* Set *DECL to the (non-hidden) declaration for ID at global scope,
    if present and return true; otherwise return false.  */
