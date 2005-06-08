@@ -12,6 +12,10 @@
 	(def_builtin): New macro.
 	(TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN): Define.
 
+	From Jie Zhang  <jie.zhang@analog.com>
+	* config/bfin/bfin.h (ASM_OUTPUT_ALIGN): Gas now emulates the
+	behavior of the native assembler in VDSP. So change accordingly.
+	
 2005-06-08  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-data-ref.c (compute_estimated_nb_iterations,

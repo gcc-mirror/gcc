@@ -1106,8 +1106,9 @@ do { char __buf[256];					\
     } while (0)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG) 				\
-    do {		 					\
-	fprintf (FILE, ".align %d\n", LOG);			\
+    do {							\
+      if ((LOG) != 0)						\
+	fprintf (FILE, "\t.align %d\n", 1 << (LOG));		\
     } while (0)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)		\
