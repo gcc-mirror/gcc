@@ -1,3 +1,8 @@
+2005-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/19768
+	* tree-ssa-dse.c: Revert accidental committed patch.
+
 2005-06-07  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/21528
