@@ -1,3 +1,8 @@
+2005-06-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20563
+	* g++.dg/ext/label4.C: New test.
+
 2005-06-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21853

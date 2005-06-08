@@ -1,3 +1,9 @@
+2005-06-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20563
+	* parser.c (cp_parser_label_declaration): Deal with invalid/missing
+	identifiers.
+
 2005-06-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21853
