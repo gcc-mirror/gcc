@@ -1270,18 +1270,8 @@ bfin_return_in_memory (tree type)
   if (mode == BLKmode)
     return 1;
   size = int_size_in_bytes (type);	
-  if (VECTOR_MODE_P (mode) || mode == TImode)
-    {
-      /* User-created vectors small enough to fit in REG.  */
-      if (size < 8)
-        return 0;
-      if (size == 8 || size == 16)
-	return 1;
-    }
 
-  if (size > 12)
-    return 1;
-  return 0;
+  return size > 8;
 }
 
 /* Register in which address to store a structure value
