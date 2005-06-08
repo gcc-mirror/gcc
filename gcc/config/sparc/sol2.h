@@ -113,6 +113,12 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
+/* The Solaris assembler cannot grok r_tls_dtpoff.  This is
+   a kludge as ASM_OUTPUT_DWARF_DTPREL is defined in sparc.h,
+   undefined here and defined again in sol2-gas-bi.h.  */
+#ifdef HAVE_AS_TLS
+#undef ASM_OUTPUT_DWARF_DTPREL
+#endif
 
 
 #undef  ENDFILE_SPEC
