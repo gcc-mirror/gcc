@@ -1,3 +1,8 @@
+2005-06-08  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_return_in_memory): Simplify; return
+	everything larger than 8 bytes in memory.
+
 2005-06-08  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-data-ref.c (compute_estimated_nb_iterations,
