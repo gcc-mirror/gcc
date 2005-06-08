@@ -264,7 +264,6 @@ extern struct rs6000_cpu_select rs6000_select[];
 
 /* Debug support */
 extern const char *rs6000_debug_name;	/* Name for -mdebug-xxxx option */
-extern const char *rs6000_abi_string;	/* for -mabi={sysv,darwin,eabi,aix,altivec} */
 extern int rs6000_debug_stack;		/* debug stack applications */
 extern int rs6000_debug_arg;		/* debug argument handling */
 
@@ -275,17 +274,11 @@ extern const char *rs6000_traceback_name; /* Type of traceback table.  */
 
 /* These are separate from target_flags because we've run out of bits
    there.  */
-extern const char *rs6000_long_double_size_string;
 extern int rs6000_long_double_type_size;
 extern int rs6000_altivec_abi;
 extern int rs6000_spe_abi;
-extern int rs6000_isel;
-extern int rs6000_spe;
 extern int rs6000_float_gprs;
-extern const char* rs6000_alignment_string;
 extern int rs6000_alignment_flags;
-extern const char *rs6000_sched_restricted_insns_priority_str;
-extern int rs6000_sched_restricted_insns_priority;
 extern const char *rs6000_sched_insert_nops_str;
 extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 
