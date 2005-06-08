@@ -1,3 +1,7 @@
+2005-06-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/c4x/c4x.h (PREDICATE_CODES): Remove mem_operand.
+
 2005-06-07  Eric Christopher  <echristo@redhat.com>
 
 	* system.h: Poison EXTRA_CC_MODES.
