@@ -51,7 +51,6 @@ static bool qualified_lookup_using_namespace (tree, tree,
 					      struct scope_binding *, int);
 static tree lookup_type_current_level (tree);
 static tree push_using_directive (tree);
-static void cp_emit_debug_info_for_using (tree, tree);
 
 /* The :: namespace.  */
 
@@ -1779,13 +1778,13 @@ push_using_decl (tree scope, tree name)
   gcc_assert (TREE_CODE (scope) == NAMESPACE_DECL);
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
   for (decl = current_binding_level->usings; decl; decl = TREE_CHAIN (decl))
-    if (DECL_INITIAL (decl) == scope && DECL_NAME (decl) == name)
+    if (USING_DECL_SCOPE (decl) == scope && DECL_NAME (decl) == name)
       break;
   if (decl)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
                             namespace_bindings_p () ? decl : NULL_TREE);
-  decl = build_lang_decl (USING_DECL, name, void_type_node);
-  DECL_INITIAL (decl) = scope;
+  decl = build_lang_decl (USING_DECL, name, NULL_TREE);
+  USING_DECL_SCOPE (decl) = scope;
   TREE_CHAIN (decl) = current_binding_level->usings;
   current_binding_level->usings = decl;
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
@@ -2691,35 +2690,80 @@ push_class_level_binding (tree name, tree x)
 tree
 do_class_using_decl (tree scope, tree name)
 {
-  tree value, type;
+  tree value, decl, binfo;
+  base_kind b_kind;
+  bool dependent_p;
   
   if (!scope || !TYPE_P (scope))
     {
       error ("using-declaration for non-member at class scope");
       return NULL_TREE;
     }
+
+  /* Make sure the scope is a base.  */
+  dependent_p = dependent_type_p (scope);
+  if (!dependent_p)
+    binfo = lookup_base (current_class_type, scope, ba_any, &b_kind);
+  else
+    {
+      binfo = NULL;
+      if (same_type_p (current_class_type, scope))
+	b_kind = bk_same_type;
+      else
+	b_kind = bk_proper_base;
+    }
+  
+  if (b_kind < bk_proper_base)
+    {
+      error_not_base_type (scope, current_class_type);
+      return NULL_TREE;
+    }
+  
+  /* Make sure the name is not invalid */
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
-      error ("using-declaration cannot name destructor");
+      error ("%<%T::%D%> names destructor", scope, name);
+      return NULL_TREE;
+    }
+  if (constructor_name_p (name, scope))
+    {
+      error ("%<%T::%D%> names constructor", scope, name);
+      return NULL_TREE;
+    }
+  if (constructor_name_p (name, current_class_type))
+    {
+      error ("%<%T::%D%> names constructor in %qT",
+	     scope, name, current_class_type);
       return NULL_TREE;
     }
 
-  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+  if (!dependent_p
+      && IDENTIFIER_OPNAME_P (name) && dependent_type_p (TREE_TYPE (name)))
+    dependent_p = 1;
 
-  /* Dependent using decls have a NULL type, non-dependent ones have a
-     void type.  */
-  type = dependent_type_p (scope) ? NULL_TREE : void_type_node;
-  value = build_lang_decl (USING_DECL, name, type);
-  DECL_INITIAL (value) = scope;
-
-  if (scope && !processing_template_decl)
+  /* See if there are any members of the base. */
+  if (!dependent_p)
     {
-      tree r;
+      decl = lookup_member (binfo, name, 0, false);
+  
+      if (!decl)
+	{
+	  error ("no members matching %<%T::%D%> in %q#T", scope, name, scope);
+	  return NULL_TREE;
+	}
 
-      r = lookup_qualified_name (scope, name, false, false);
-      if (r && (DECL_P (r) || TREE_CODE (r) == OVERLOAD))
-	cp_emit_debug_info_for_using (r, scope);
-    }
+      if (BASELINK_P (decl))
+	/* Ignore base type this came from.  */
+	decl = BASELINK_FUNCTIONS (decl);
+   }
+  else
+    decl = NULL_TREE;
+
+  value = build_lang_decl (USING_DECL, name, NULL_TREE);
+  USING_DECL_DECLS (value) = decl;
+  USING_DECL_SCOPE (value) = scope;
+  DECL_DEPENDENT_P (value) = dependent_p;
+
   return value;
 }
 
@@ -4923,7 +4967,7 @@ pop_everything (void)
    If input tree is overloaded fn then emit debug info for all 
    candidates.  */
 
-static void
+void
 cp_emit_debug_info_for_using (tree t, tree context)
 {
   /* Ignore this FUNCTION_DECL if it refers to a builtin declaration 
@@ -4945,6 +4989,6 @@ cp_emit_debug_info_for_using (tree t, tree context)
   for (t = OVL_CURRENT (t); t; t = OVL_NEXT (t))
     if (TREE_CODE (t) != TEMPLATE_DECL)
       (*debug_hooks->imported_module_or_decl) (t, context);
-  }
+}
 
 #include "gt-cp-name-lookup.h"

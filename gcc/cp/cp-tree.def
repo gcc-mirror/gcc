@@ -197,10 +197,10 @@ DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm",
    TYPE_NAME is an IDENTIFIER_NODE for `C', the member class template.  */
 DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", tcc_type, 0)
 
-/* A using declaration.  DECL_INITIAL contains the specified scope.  
-   This is not an alias, but is later expanded into multiple aliases.
-   The decl will have a NULL_TYPE iff the scope is a dependent scope,
-   otherwise it will have a void type.  */
+/* A using declaration.  USING_DECL_SCOPE contains the specified
+   scope.  In a member using decl, unless DECL_DEPENDENT_P is true,
+   USING_DECL_DECLS contains the _DECL or OVERLOAD so named.  This is
+   not an alias, but is later expanded into multiple aliases.  */
 DEFTREECODE (USING_DECL, "using_decl", tcc_declaration, 0)
 
 /* A using directive. The operand is USING_STMT_NAMESPACE.  */     

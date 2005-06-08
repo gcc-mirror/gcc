@@ -1119,53 +1119,17 @@ alter_access (tree t, tree fdecl, tree access)
 static void
 handle_using_decl (tree using_decl, tree t)
 {
-  tree ctype = DECL_INITIAL (using_decl);
+  tree decl = USING_DECL_DECLS (using_decl);
   tree name = DECL_NAME (using_decl);
   tree access
     = TREE_PRIVATE (using_decl) ? access_private_node
     : TREE_PROTECTED (using_decl) ? access_protected_node
     : access_public_node;
-  tree fdecl, binfo;
   tree flist = NULL_TREE;
   tree old_value;
 
-  if (ctype == error_mark_node)
-    return;
-
-  binfo = lookup_base (t, ctype, ba_any, NULL);
-  if (! binfo)
-    {
-      location_t saved_loc = input_location;
-
-      input_location = DECL_SOURCE_LOCATION (using_decl);
-      error_not_base_type (ctype, t);
-      input_location = saved_loc;
-      return;
-    }
+  gcc_assert (!processing_template_decl && decl);
   
-  if (constructor_name_p (name, ctype))
-    {
-      cp_error_at ("%qD names constructor", using_decl);
-      return;
-    }
-  if (constructor_name_p (name, t))
-    {
-      cp_error_at ("%qD invalid in %qT", using_decl, t);
-      return;
-    }
-
-  fdecl = lookup_member (binfo, name, 0, false);
-  
-  if (!fdecl)
-    {
-      cp_error_at ("no members matching %qD in %q#T", using_decl, ctype);
-      return;
-    }
-
-  if (BASELINK_P (fdecl))
-    /* Ignore base type this came from.  */
-    fdecl = BASELINK_FUNCTIONS (fdecl);
-
   old_value = lookup_member (t, name, /*protect=*/0, /*want_type=*/false);
   if (old_value)
     {
@@ -1177,9 +1141,11 @@ handle_using_decl (tree using_decl, tree t)
       else
 	old_value = NULL_TREE;
     }
-
-  if (is_overloaded_fn (fdecl))
-    flist = fdecl;
+  
+  cp_emit_debug_info_for_using (decl, current_class_type);
+  
+  if (is_overloaded_fn (decl))
+    flist = decl;
 
   if (! old_value)
     ;
@@ -1211,7 +1177,7 @@ handle_using_decl (tree using_decl, tree t)
 	alter_access (t, OVL_CURRENT (flist), access);
       }
   else
-    alter_access (t, fdecl, access);
+    alter_access (t, decl, access);
 }
 
 /* Run through the base classes of T, updating CANT_HAVE_CONST_CTOR_P,

@@ -1,3 +1,21 @@
+2005-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19497
+	* cp-tree.def (USING_DECL): Update documentation.
+	* cp-tree.h (DECL_DEPENDENT_P): New.
+	(USING_DECL_DECLS, USING_DECL_SCOPE): New.
+	* class.c (handle_using_decl): Move most of the processing to ...
+	* name-lookup.c (do_class_using_decl): ... here.  Make stricter.
+	(push_using_decl): Use USING_DECL_SCOPE.
+	(cp_emit_debug_info_for_using): Make extern.
+	* cxx-pretty-print.c (pp_cxx_statement) <USING_DECL case>: Adjust.
+	* name-lookup.h (cp_emit_debug_info_for_using): Declare.
+	* pt.c (tsubst_decl) <USING_DECL case>: Use do_class_using_decl
+	when tsubsting.
+	(tsubst_expr): Use USING_DECL_SCOPE.
+	* search.c (lookup_field_1): Use DECL_DEPENDENT_P.
+	* semantics.c (finish_member_declaration): Likewise.
+
 2005-06-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/19894

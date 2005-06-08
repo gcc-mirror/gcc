@@ -471,9 +471,8 @@ lookup_field_1 (tree type, tree name, bool want_type)
 	     defined, USING_DECLs are purged from TYPE_FIELDS; see
 	     handle_using_decl.  However, we make special efforts to
 	     make using-declarations in class templates and class
-	     template partial specializations work correctly noticing
-	     that dependent USING_DECL's do not have TREE_TYPE set.  */
-	  if (TREE_TYPE (field))
+	     template partial specializations work correctly.  */
+	  if (!DECL_DEPENDENT_P (field))
 	    continue;
 	}
 

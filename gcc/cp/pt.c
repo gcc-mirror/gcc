@@ -6557,16 +6557,20 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
       break;
 
     case USING_DECL:
-      {
-	r = copy_node (t);
-	/* It is not a dependent using decl any more.  */
-	TREE_TYPE (r) = void_type_node;
-	DECL_INITIAL (r)
-	  = tsubst_copy (DECL_INITIAL (t), args, complain, in_decl);
-	DECL_NAME (r)
-	  = tsubst_copy (DECL_NAME (t), args, complain, in_decl);
-	TREE_CHAIN (r) = NULL_TREE;
-      }
+      /* We reach here only for member using decls.  */
+      if (DECL_DEPENDENT_P (t))
+	{
+	  r = do_class_using_decl
+	    (tsubst_copy (USING_DECL_SCOPE (t), args, complain, in_decl),
+	     tsubst_copy (DECL_NAME (t), args, complain, in_decl));
+	  if (!r)
+	    r = error_mark_node;
+	}
+      else
+	{
+	  r = copy_node (t);
+	  TREE_CHAIN (r) = NULL_TREE;
+	}
       break;
 
     case TYPE_DECL:
@@ -8085,7 +8089,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  finish_label_decl (DECL_NAME (decl));
 	else if (TREE_CODE (decl) == USING_DECL)
 	  {
-	    tree scope = DECL_INITIAL (decl);
+	    tree scope = USING_DECL_SCOPE (decl);
 	    tree name = DECL_NAME (decl);
 	    tree decl;
 	    
