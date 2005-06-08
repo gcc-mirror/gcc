@@ -989,6 +989,14 @@ do {                                              \
 #define EXTRA_CONSTRAINT(VALUE, D) \
     ((D) == 'Q' ? GET_CODE (VALUE) == SYMBOL_REF : 0)
 
+/* Codes for all the Blackfin builtins.  */
+enum bfin_builtins
+{
+  BFIN_BUILTIN_CSYNC,
+  BFIN_BUILTIN_SSYNC,
+  BFIN_BUILTIN_MAX
+};
+
 /* `FINALIZE_PIC'
      By generating position-independent code, when two different
      programs (A and B) share a common library (libC.a), the text of
