@@ -1,3 +1,9 @@
+2005-06-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/21889
+	* config/sparc/sol2.h (ASM_OUTPUT_DWARF_DTPREL): Undefine.
+	* config/sparc/sol2-gas.h (ASM_OUTPUT_DWARF_DTPREL): Redefine.
+
 2005-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/19768
