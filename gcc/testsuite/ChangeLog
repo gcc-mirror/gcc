@@ -1,3 +1,13 @@
+2005-06-08  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR target/20666
+	* gcc.target/sparc/fexpand-2.c: New.
+	* gcc.target/sparc/fpmerge-2.c: New.
+	* gcc.target/sparc/fpmul-2.c: New.
+	* gcc.target/sparc/noresult.c: New.
+	* gcc.target/sparc/pdist-2.c: New.
+	* gcc.target/sparc/pdist-3.c: New.
+
 2005-06-08  Alex V. Breger  <atrus.ru@atrus.ru>
 
 	PR testsuite/21702
