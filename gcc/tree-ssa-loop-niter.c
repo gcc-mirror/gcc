@@ -1348,6 +1348,15 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   unsigned i, n_exits;
   struct tree_niter_desc niter_desc;
 
+  /* Give up if we already have tried to compute an estimation.  */
+  if (loop->estimated_nb_iterations == chrec_dont_know
+      /* Or when we already have an estimation.  */
+      || (loop->estimated_nb_iterations != NULL_TREE
+	  && TREE_CODE (loop->estimated_nb_iterations) == INTEGER_CST))
+    return;
+  else
+    loop->estimated_nb_iterations = chrec_dont_know;
+
   exits = get_loop_exit_edges (loop, &n_exits);
   for (i = 0; i < n_exits; i++)
     {
@@ -1368,7 +1377,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   free (exits);
   
   /* Analyzes the bounds of arrays accessed in the loop.  */
-  if (loop->estimated_nb_iterations == NULL_TREE)
+  if (chrec_contains_undetermined (loop->estimated_nb_iterations))
     {
       varray_type datarefs;
       VARRAY_GENERIC_PTR_INIT (datarefs, 3, "datarefs");
@@ -1581,6 +1590,7 @@ convert_step_widening (struct loop *loop, tree new_type, tree base, tree step,
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type,
 			     delta, step_abs);
 
+  estimate_numbers_of_iterations_loop (loop);
   for (bound = loop->bounds; bound; bound = bound->next)
     if (proved_non_wrapping_p (at_stmt, bound, new_type, valid_niter))
       return step_in_new_type;
@@ -1649,6 +1659,7 @@ scev_probably_wraps_p (tree type, tree base, tree step,
   step_abs = fold_convert (unsigned_type, step_abs);
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
 
+  estimate_numbers_of_iterations_loop (loop);
   for (bound = loop->bounds; bound; bound = bound->next)
     if (proved_non_wrapping_p (at_stmt, bound, type, valid_niter))
       return false;

@@ -1,3 +1,17 @@
+2005-06-08  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-data-ref.c (compute_estimated_nb_iterations,
+	analyze_array_indexes, compute_overlap_steps_for_affine_1_2,
+	analyze_subscript_affine_affine, find_data_references_in_loop):
+	Fixed to use chrec_contains_undetermined to test the values of
+	loop->estimated_nb_iterations.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop):
+	Compute the estimation only when loop->estimated_nb_iterations
+	has not yet been initialized.
+	(convert_step_widening, scev_probably_wraps_p): Add a call to
+	estimate_numbers_of_iterations_loop.
+	* tree-vrp.c (execute_vrp): Don't call estimate_numbers_of_iterations.
+
 2005-06-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR debug/21946

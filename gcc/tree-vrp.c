@@ -3509,10 +3509,7 @@ execute_vrp (void)
 
   cfg_loops = loop_optimizer_init (NULL);
   if (cfg_loops)
-    {
-      scev_initialize (cfg_loops);
-      estimate_numbers_of_iterations (cfg_loops);
-    }
+    scev_initialize (cfg_loops);
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
