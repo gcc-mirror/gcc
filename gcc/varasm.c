@@ -176,21 +176,22 @@ EXTRA_SECTION_FUNCTIONS
 static void
 initialize_cold_section_name (void)
 {
-  const char *name;
   const char *stripped_name;
-  char *buffer;
+  char *name, *buffer;
+  tree dsn;
 
   gcc_assert (cfun && current_function_decl);
   if (cfun->unlikely_text_section_name)
     return;
 
-  if (flag_function_sections && DECL_SECTION_NAME (current_function_decl))
+  dsn = DECL_SECTION_NAME (current_function_decl);
+  if (flag_function_sections && dsn)
     {
-      name = alloca (TREE_STRING_LENGTH (DECL_SECTION_NAME
-					 (current_function_decl)));
-      strcpy ((char *) name, TREE_STRING_POINTER (DECL_SECTION_NAME 
-					 (current_function_decl)));
+      name = alloca (TREE_STRING_LENGTH (dsn) + 1);
+      memcpy (name, TREE_STRING_POINTER (dsn), TREE_STRING_LENGTH (dsn) + 1);
+
       stripped_name = targetm.strip_name_encoding (name);
+
       buffer = ACONCAT ((stripped_name, "_unlikely", NULL));
       cfun->unlikely_text_section_name = ggc_strdup (buffer);
     }
@@ -1289,26 +1290,11 @@ assemble_start_function (tree decl, const char *fnname)
 	 doing partitioning, if the entire function was decided by
 	 choose_function_section (predict.c) to be cold.  */
 
-      int i;
-      int len;
-      char *s;
-
       initialize_cold_section_name ();
 
-      /* The following is necessary, because 'strcmp
-	(TREE_STRING_POINTER (DECL_SECTION_NAME (decl)), blah)' always
-	fails, presumably because TREE_STRING_POINTER is declared to
-	be an array of size 1 of char.  */
-
-      len = TREE_STRING_LENGTH (DECL_SECTION_NAME (decl));
-      s = (char *) xmalloc (len + 1);
-
-      for (i = 0; i < len; i ++)
-	s[i] = (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)))[i];
-      s[len] = '\0';
-      
       if (cfun->unlikely_text_section_name 
-	  && (strcmp (s, cfun->unlikely_text_section_name) == 0))
+	  && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+		     cfun->unlikely_text_section_name) == 0)
 	first_function_block_is_cold = true;
     }
 
