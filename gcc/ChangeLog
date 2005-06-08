@@ -1,3 +1,9 @@
+2005-06-08  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.h (NO_PROFILE_COUNTERS): New.
+	* config/ia64/ia64.c (ia64_output_function_profiler): Honor it.
+	Emit out3 load right after alloc.
+
 2005-06-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Use

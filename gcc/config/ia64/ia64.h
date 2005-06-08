@@ -1267,6 +1267,9 @@ do {									\
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO) \
   ia64_output_function_profiler(FILE, LABELNO)
+
+/* Neither hpux nor linux use profile counters.  */
+#define NO_PROFILE_COUNTERS 1
 
 /* Trampolines for Nested Functions.  */
 
