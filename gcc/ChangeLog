@@ -1,3 +1,14 @@
+2005-06-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (call_indirect_nonlocal_aix32): Prefer
+	CTR to LR.
+	(call_indirect_nonlocal_aix64): Same.
+	(call_value_indirect_nonlocal_aix32): Same.
+	(call_value_indirect_nonlocal_aix64): Same.
+
+	PR target/10588
+	(eq): Use CLZ splitter for compare with zero.
+
 2005-06-08  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_return_in_memory): Simplify; return
