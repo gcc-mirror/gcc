@@ -1,3 +1,9 @@
+2005-06-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR debug/21946
+	* dwarf2out.c (add_loc_descr_op_piece): Move to the
+	DWARF2_DEBUGGING_INFO section.
+
 2005-06-08  Richard Henderson  <rth@redhat.com>
 
 	PR target/21721

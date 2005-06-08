@@ -2659,7 +2659,6 @@ static const char *dwarf_stack_op_name (unsigned);
 static dw_loc_descr_ref new_loc_descr (enum dwarf_location_atom,
 				       unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT);
 static void add_loc_descr (dw_loc_descr_ref *, dw_loc_descr_ref);
-static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
 static unsigned long size_of_loc_descr (dw_loc_descr_ref);
 static unsigned long size_of_locs (dw_loc_descr_ref);
 static void output_loc_operands (dw_loc_descr_ref);
@@ -2997,7 +2996,6 @@ new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
   return descr;
 }
 
-
 /* Add a location description term to a location description expression.  */
 
 static inline void
@@ -3010,27 +3008,6 @@ add_loc_descr (dw_loc_descr_ref *list_head, dw_loc_descr_ref descr)
     ;
 
   *d = descr;
-}
-
-
-/* Optionally add a DW_OP_piece term to a location description expression.
-   DW_OP_piece is only added if the location description expression already
-   doesn't end with DW_OP_piece.  */
-
-static void
-add_loc_descr_op_piece (dw_loc_descr_ref *list_head, int size)
-{
-  dw_loc_descr_ref loc;
-
-  if (*list_head != NULL)
-    {
-      /* Find the end of the chain.  */
-      for (loc = *list_head; loc->dw_loc_next != NULL; loc = loc->dw_loc_next)
-	;
-
-      if (loc->dw_loc_opc != DW_OP_piece)
-	loc->dw_loc_next = new_loc_descr (DW_OP_piece, size, 0);
-    }
 }
 
 /* Return the size of a location descriptor.  */
@@ -3996,6 +3973,7 @@ static dw_die_ref subrange_type_die (tree, dw_die_ref);
 static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
 static int type_is_enum (tree);
 static unsigned int dbx_reg_number (rtx);
+static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
 static dw_loc_descr_ref reg_loc_descriptor (rtx);
 static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int);
 static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx);
@@ -8430,6 +8408,26 @@ dbx_reg_number (rtx rtl)
   gcc_assert (regno < FIRST_PSEUDO_REGISTER);
 
   return DBX_REGISTER_NUMBER (regno);
+}
+
+/* Optionally add a DW_OP_piece term to a location description expression.
+   DW_OP_piece is only added if the location description expression already
+   doesn't end with DW_OP_piece.  */
+
+static void
+add_loc_descr_op_piece (dw_loc_descr_ref *list_head, int size)
+{
+  dw_loc_descr_ref loc;
+
+  if (*list_head != NULL)
+    {
+      /* Find the end of the chain.  */
+      for (loc = *list_head; loc->dw_loc_next != NULL; loc = loc->dw_loc_next)
+	;
+
+      if (loc->dw_loc_opc != DW_OP_piece)
+	loc->dw_loc_next = new_loc_descr (DW_OP_piece, size, 0);
+    }
 }
 
 /* Return a location descriptor that designates a machine register or
