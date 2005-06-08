@@ -8551,4 +8551,31 @@ ia64_vector_mode_supported_p (enum machine_mode mode)
     }
 }
 
+void
+ia64_output_function_profiler (FILE *file, int labelno)
+{
+  char buf[20];
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
+
+  if (TARGET_GNU_AS)
+    fputs ("\t.prologue 4, r40\n", file);
+  else
+    fputs ("\t.prologue\n\t.save ar.pfs, r40\n", file);
+  fputs ("\talloc out0 = ar.pfs, 8, 0, 4, 0\n", file);
+  fputs ("\t.save rp, r42\n", file);
+  fputs ("\tmov out2 = b0\n\t;;\n", file);
+  fputs ("\t.body\n", file);
+  if (TARGET_AUTO_PIC)
+    fputs ("\tmovl out3 = @gprel(", file);
+  else
+    fputs ("\taddl out3 = @ltoff(", file);
+  assemble_name (file, buf);
+  if (TARGET_AUTO_PIC)
+    fputs (")\n", file);
+  else
+    fputs ("), r1\n", file);
+  fputs ("\tmov out1 = r1\n", file);
+  fputs ("\tbr.call.sptk.many b0 = _mcount\n\t;;\n", file);
+}
+
 #include "gt-ia64.h"

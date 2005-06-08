@@ -1,3 +1,10 @@
+2005-06-08  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.h (FUNCTION_PROFILER): Move implementation ...
+	* config/ia64/ia64.c (ia64_output_function_profiler): ... here; add
+	unwind markup.
+	* config/ia64/ia64-protos.h (ia64_output_function_profiler): Declare.
+
 2005-06-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/sol2-c.c (cmn_err_char_table): Allow width for %b
