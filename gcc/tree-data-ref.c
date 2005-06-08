@@ -447,32 +447,21 @@ dump_ddrs (FILE *file, varray_type ddrs)
 
 
 
-/* Compute the lowest iteration bound for LOOP.  It is an
-   INTEGER_CST.  */
+/* Initialize LOOP->ESTIMATED_NB_ITERATIONS with the lowest safe
+   approximation of the number of iterations for LOOP.  */
 
 static void
 compute_estimated_nb_iterations (struct loop *loop)
 {
-  tree estimation;
-  struct nb_iter_bound *bound, *next;
+  struct nb_iter_bound *bound;
   
-  for (bound = loop->bounds; bound; bound = next)
-    {
-      next = bound->next;
-      estimation = bound->bound;
-
-      if (TREE_CODE (estimation) != INTEGER_CST)
-	continue;
-
-      if (loop->estimated_nb_iterations)
-	{
-	  /* Update only if estimation is smaller.  */
-	  if (tree_int_cst_lt (estimation, loop->estimated_nb_iterations))
-	    loop->estimated_nb_iterations = estimation;
-	}
-      else
-	loop->estimated_nb_iterations = estimation;
-    }
+  for (bound = loop->bounds; bound; bound = bound->next)
+    if (TREE_CODE (bound->bound) == INTEGER_CST
+	/* Update only when there is no previous estimation.  */
+	&& (chrec_contains_undetermined (loop->estimated_nb_iterations)
+	    /* Or when the current estimation is smaller.  */
+	    || tree_int_cst_lt (bound->bound, loop->estimated_nb_iterations)))
+      loop->estimated_nb_iterations = bound->bound;
 }
 
 /* Estimate the number of iterations from the size of the data and the
@@ -538,7 +527,7 @@ analyze_array_indexes (struct loop *loop,
   access_fn = instantiate_parameters 
     (loop, analyze_scalar_evolution (loop, opnd1));
 
-  if (loop->estimated_nb_iterations == NULL_TREE)
+  if (chrec_contains_undetermined (loop->estimated_nb_iterations))
     estimate_niter_from_size_of_data (loop, opnd0, access_fn, stmt);
   
   VEC_safe_push (tree, heap, *access_fns, access_fn);
@@ -1129,8 +1118,12 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
     numiter_z = current_loops->parray[CHREC_VARIABLE (chrec_b)]
       ->estimated_nb_iterations;
 
-  if (numiter_x == NULL_TREE || numiter_y == NULL_TREE 
-      || numiter_z == NULL_TREE)
+  if (chrec_contains_undetermined (numiter_x)
+      || chrec_contains_undetermined (numiter_y)
+      || chrec_contains_undetermined (numiter_z)
+      || TREE_CODE (numiter_x) != INTEGER_CST
+      || TREE_CODE (numiter_y) != INTEGER_CST
+      || TREE_CODE (numiter_z) != INTEGER_CST)
     {
       *overlaps_a = chrec_dont_know;
       *overlaps_b = chrec_dont_know;
@@ -1278,7 +1271,10 @@ analyze_subscript_affine_affine (tree chrec_a,
 	  if (TREE_CODE (numiter_b) != INTEGER_CST)
 	    numiter_b = current_loops->parray[CHREC_VARIABLE (chrec_b)]
 	      ->estimated_nb_iterations;
-	  if (numiter_a == NULL_TREE || numiter_b == NULL_TREE)
+	  if (chrec_contains_undetermined (numiter_a)
+	      || chrec_contains_undetermined (numiter_b)
+	      || TREE_CODE (numiter_a) != INTEGER_CST
+	      || TREE_CODE (numiter_b) != INTEGER_CST)
 	    {
 	      *overlaps_a = chrec_dont_know;
 	      *overlaps_b = chrec_dont_know;
@@ -1379,7 +1375,10 @@ analyze_subscript_affine_affine (tree chrec_a,
 	  if (TREE_CODE (numiter_b) != INTEGER_CST)
 	    numiter_b = current_loops->parray[CHREC_VARIABLE (chrec_b)]
 	      ->estimated_nb_iterations;
-	  if (numiter_a == NULL_TREE || numiter_b == NULL_TREE)
+	  if (chrec_contains_undetermined (numiter_a)
+	      || chrec_contains_undetermined (numiter_b)
+	      || TREE_CODE (numiter_a) != INTEGER_CST
+	      || TREE_CODE (numiter_b) != INTEGER_CST)
 	    {
 	      *overlaps_a = chrec_dont_know;
 	      *overlaps_b = chrec_dont_know;
@@ -2344,11 +2343,11 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 
 	  /* When there are no defs in the loop, the loop is parallel.  */
 	  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
-	    bb->loop_father->parallel_p = false;
+	    loop->parallel_p = false;
 	}
 
-      if (bb->loop_father->estimated_nb_iterations == NULL_TREE)
-	compute_estimated_nb_iterations (bb->loop_father);
+      if (chrec_contains_undetermined (loop->estimated_nb_iterations))
+	compute_estimated_nb_iterations (loop);
     }
 
   free (bbs);
