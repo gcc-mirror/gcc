@@ -25,6 +25,7 @@ int main()
 		ll, ll, ll, ll, ll, ll, ll);
   cmn_err_func (0, "%b %s", i, "\01Foo", string);
   cmn_err_func (0, "%p", string);
+  cmn_err_func (0, "%16b", i, "\01Foo");
 
   cmn_err_func (0, "%i", i);		/* { dg-error "unknown|too many" } */
   cmn_err_func (0, "%d", l);		/* { dg-error "expects type" } */

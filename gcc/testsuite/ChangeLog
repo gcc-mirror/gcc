@@ -1,3 +1,7 @@
+2005-06-08  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/cmn_err-1.c: Update.
+
 2005-06-08  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR target/20666

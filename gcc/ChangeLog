@@ -1,3 +1,8 @@
+2005-06-08  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/sol2-c.c (cmn_err_char_table): Allow width for %b
+	formats.
+
 2005-06-08  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR target/20666
