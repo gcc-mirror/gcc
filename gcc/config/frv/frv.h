@@ -2157,19 +2157,8 @@ do {							\
 #define HAVE_PRE_MODIFY_REG 1
 
 
-/* Returns a mode from class `MODE_CC' to be used when comparison operation
-   code OP is applied to rtx X and Y.  For example, on the SPARC,
-   `SELECT_CC_MODE' is defined as (see *note Jump Patterns::.  for a
-   description of the reason for this definition)
+/* We define extra CC modes in frv-modes.def so we need a selector.  */
 
-        #define SELECT_CC_MODE(OP,X,Y) \
-          (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT          \
-           ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)    \
-           : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS    \
-               || GET_CODE (X) == NEG) \
-              ? CC_NOOVmode : CCmode))
-
-   You need not define this macro if `EXTRA_CC_MODES' is not defined.  */
 #define SELECT_CC_MODE frv_select_cc_mode
 
 /* A C expression whose value is one if it is always safe to reverse a

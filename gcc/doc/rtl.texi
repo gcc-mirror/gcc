@@ -1191,7 +1191,8 @@ Algol or Pascal function variables including a static chain.
 @findex MODE_CC
 @item MODE_CC
 Modes representing condition code values.  These are @code{CCmode} plus
-any modes listed in the @code{EXTRA_CC_MODES} macro.  @xref{Jump Patterns},
+any @code{CC_MODE} modes listed in the @file{@var{machine}-modes.def}.  
+@xref{Jump Patterns},
 also see @ref{Condition Code}.
 
 @findex MODE_RANDOM

@@ -4282,9 +4282,9 @@ different formats of the condition code register.
 Registers used to store the condition code value should have a mode that
 is in class @code{MODE_CC}.  Normally, it will be @code{CCmode}.  If
 additional modes are required (as for the add example mentioned above in
-the SPARC), define the macro @code{EXTRA_CC_MODES} to list the
-additional modes required (@pxref{Condition Code}).  Also define
-@code{SELECT_CC_MODE} to choose a mode given an operand of a compare.
+the SPARC), define them in @file{@var{machine}-modes.def}
+(@pxref{Condition Code}).  Also define @code{SELECT_CC_MODE} to choose 
+a mode given an operand of a compare.
 
 If it is known during RTL generation that a different mode will be
 required (for example, if the machine has separate compare instructions
