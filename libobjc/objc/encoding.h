@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __encoding_INCLUDE_GNU
 #define __encoding_INCLUDE_GNU
 
-#include <objc/objc-api.h>
+#include "objc-api.h"
 #include <ctype.h>
 
 #ifdef __cplusplus

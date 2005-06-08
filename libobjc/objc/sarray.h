@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __sarray_INCLUDE_GNU
 #define __sarray_INCLUDE_GNU
 
-#include <objc/thr.h>
+#include "thr.h"
 
 #define OBJC_SPARSE2		/* 2-level sparse array */
 /* #define OBJC_SPARSE3 */      /* 3-level sparse array */

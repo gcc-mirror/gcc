@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __thread_INCLUDE_GNU
 #define __thread_INCLUDE_GNU
 
-#include <objc/objc.h>
+#include "objc.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __nxconstantstring_INCLUDE_GNU
 #define __nxconstantstring_INCLUDE_GNU
 
-#include <objc/Object.h>
+#include "Object.h"
 
 #ifdef __cplusplus
 extern "C" {

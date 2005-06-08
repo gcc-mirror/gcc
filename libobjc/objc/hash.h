@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include <stddef.h>
 #include <string.h>
-#include <objc/objc.h>
+#include "objc.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,3 +1,11 @@
+2005-06-08  David Ayers  <d.ayers@inode.at>
+
+	* objc/NXConstStr.h, objc/Object.h, objc/Protocol.h,
+	objc/encoding.h, objc/hash.h, objc/objc-api.h,
+	objc/runtime.h, objc/sarray.h, objc/thr.h, 
+	objc/typedstream.h: Do not include Objective-C headers as
+	system headers.
+
 2005-06-07  David Ayers  <d.ayers@inode.at>
 
 	* archive.c, init.c, selector.c: Include hash.h.
