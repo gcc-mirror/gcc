@@ -204,7 +204,6 @@ extern int accg_operand			(rtx, enum machine_mode);
 extern rtx frv_matching_accg_for_acc	(rtx);
 extern void frv_expand_fdpic_call	(rtx *, bool, bool);
 extern rtx frv_gen_GPsym2reg		(rtx, rtx);
-extern void frv_output_dwarf_dtprel	(FILE *, int, rtx);
 extern int frv_legitimate_memory_operand (rtx, enum machine_mode, int);
 
 /* Information about a relocation unspec.  SYMBOL is the relocation symbol

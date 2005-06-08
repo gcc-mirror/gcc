@@ -1,3 +1,51 @@
+2005-06-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/21889
+	* target.h (gcc_target) <asm_out>: New field output_dwarf_dtprel.
+	* target-def.h (TARGET_ASM_OUTPUT_DWARF_DTPREL): New macro.
+	(TARGET_ASM_OUT): Add it.
+	* doc/tm.texi (Debugging Info): Document it.
+	* dwarf2out.c (output_loc_operands) <INTERNAL_DW_OP_tls_addr>:
+	Test it instead of ASM_OUTPUT_DWARF_DTPREL.
+	(loc_descriptor_from_tree_1) <VAR_DECL>: Likewise.
+	* system.h: Poison ASM_OUTPUT_DWARF_DTPREL.
+	* config/frv/frv-protos.h (frv_output_dwarf_dtprel): Delete.
+	* config/frv/frv.c (frv_output_dwarf_dtprel): Make static and unused.
+	(gen_inlined_tls_plt): Remove unused variable MEM.
+	(TARGET_ASM_OUTPUT_DWARF_DTPREL): Define to frv_output_dwarf_dtprel.
+	* config/frv/frv.h (ASM_OUTPUT_DWARF_DTPREL): Delete.
+	* config/i386/i386-protos.h (i386_output_dwarf_dtprel): Delete.
+	* config/i386/i386.c (i386_output_dwarf_dtprel): Make static and
+	unused.
+	(TARGET_ASM_OUTPUT_DWARF_DTPREL): Define to i386_output_dwarf_dtprel.
+	* config/i386/i386.h (ASM_OUTPUT_DWARF_DTPREL): Delete.
+	* config/ia64/ia64-protos.h (ia64_output_dwarf_dtprel): Delete.
+	* config/ia64/ia64.c (ia64_output_dwarf_dtprel): Make static and
+	unused.
+	(TARGET_ASM_OUTPUT_DWARF_DTPREL): Define to ia64_output_dwarf_dtprel.
+	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_DTPREL): Delete.
+	* config/rs6000/rs6000-protos.h (rs6000_output_dwarf_dtprel): Delete.
+	* config/rs6000/rs6000.c (rs6000_output_dwarf_dtprel): Make static and
+	unused.
+	(TARGET_ASM_OUTPUT_DWARF_DTPREL): Define to rs6000_output_dwarf_dtprel
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DWARF_DTPREL): Delete.
+	* config/s390/s390-protos.h (s390_output_dwarf_dtprel): Delete.
+	* config/s390/s390.c (s390_output_dwarf_dtprel): Make static and
+	unused.
+	(TARGET_ASM_OUTPUT_DWARF_DTPREL): Define to s390_output_dwarf_dtprel.
+	* config/s390/s390.h (ASM_OUTPUT_DWARF_DTPREL): Delete.
+	* config/sparc/sol2-gas.h (TARGET_SUN_TLS): Define to 0.
+	(TARGET_GNU_TLS): Define to 1.
+	* config/sparc/sparc-protos.h (sparc_output_dwarf_dtprel): Delete.
+	* config/sparc/sparc.c (sparc_output_dwarf_dtprel): Make static and
+	unused.
+	(TARGET_ASM_OUTPUT_DWARF_DTPREL): Define to sparc_output_dwarf_dtprel
+	if TARGET_GNU_TLS only.
+	* config/sparc/sparc.h (ASM_OUTPUT_DWARF_DTPREL): Delete.
+
+	* config.gcc (sparc64-*-solaris2*): Include tm-dwarf2.h last.
+	(sparc-*-solaris2*): Likewise on Solaris 7 and up.
+
 2005-06-07  Dale Johannesen  <dalej@apple.com>
 
 	* config/i386/i386.md (movqi_1):  Fix case where source

@@ -3284,13 +3284,15 @@ output_loc_operands (dw_loc_descr_ref loc)
       break;
 
     case INTERNAL_DW_OP_tls_addr:
-#ifdef ASM_OUTPUT_DWARF_DTPREL
-      ASM_OUTPUT_DWARF_DTPREL (asm_out_file, DWARF2_ADDR_SIZE,
-			       val1->v.val_addr);
-      fputc ('\n', asm_out_file);
-#else
-      gcc_unreachable ();
-#endif
+      if (targetm.asm_out.output_dwarf_dtprel)
+	{
+	  targetm.asm_out.output_dwarf_dtprel (asm_out_file,
+					       DWARF2_ADDR_SIZE,
+					       val1->v.val_addr);
+	  fputc ('\n', asm_out_file);
+	}
+      else
+	gcc_unreachable ();
       break;
 
     default:
@@ -8954,10 +8956,9 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	{
 	  rtx rtl;
 
-#ifndef ASM_OUTPUT_DWARF_DTPREL
 	  /* If this is not defined, we have no way to emit the data.  */
-	  return 0;
-#endif
+	  if (!targetm.asm_out.output_dwarf_dtprel)
+	    return 0;
 
 	  /* The way DW_OP_GNU_push_tls_address is specified, we can only
 	     look up addresses of objects in the current module.  */

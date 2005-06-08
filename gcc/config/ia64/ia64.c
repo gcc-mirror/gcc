@@ -232,6 +232,8 @@ static void ia64_file_start (void);
 
 static void ia64_select_rtx_section (enum machine_mode, rtx,
 				     unsigned HOST_WIDE_INT);
+static void ia64_output_dwarf_dtprel (FILE *, int, rtx)
+     ATTRIBUTE_UNUSED;
 static void ia64_rwreloc_select_section (tree, int, unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
 static void ia64_rwreloc_unique_section (tree, int)
@@ -368,6 +370,11 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef  TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS  ia64_section_type_flags
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
+#define TARGET_ASM_OUTPUT_DWARF_DTPREL ia64_output_dwarf_dtprel
+#endif
 
 /* ??? ABI doesn't allow us to define this.  */
 #if 0
@@ -4151,10 +4158,10 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
     }
 }
 
-/* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
-void
+static void
 ia64_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
   gcc_assert (size == 8);

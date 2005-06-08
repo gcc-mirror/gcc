@@ -2361,13 +2361,6 @@ do {									\
   assemble_name (STREAM, LABEL);					\
 } while (0)
 
-#if HAVE_AS_TLS
-/* Emit a dtp-relative reference to a TLS variable.  */
-
-#define ASM_OUTPUT_DWARF_DTPREL(FILE, SIZE, X) \
-  frv_output_dwarf_dtprel ((FILE), (SIZE), (X))
-#endif
-
 /* Whether to emit the gas specific dwarf2 line number support.  */
 #define DWARF2_ASM_LINE_DEBUG_INFO (TARGET_DEBUG_LOC)
 

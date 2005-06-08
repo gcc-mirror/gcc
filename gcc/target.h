@@ -180,6 +180,9 @@ struct gcc_target
 	linker to not dead code strip this symbol.  */
     void (*mark_decl_preserved) (const char *);
 
+    /* Output a DTP-relative reference to a TLS symbol.  */
+    void (*output_dwarf_dtprel) (FILE *file, int size, rtx x);
+
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */
