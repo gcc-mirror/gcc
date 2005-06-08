@@ -16,7 +16,7 @@
 
 # GCC testsuite that uses the `dg.exp' driver.
 
-# Exit immediately if this isn't a SPARC target.
+# Exit immediately if this isn't a x86 target.
 if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
   return
 }

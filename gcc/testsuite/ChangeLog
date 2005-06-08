@@ -1,3 +1,8 @@
+2005-06-08  Alex V. Breger  <atrus.ru@atrus.ru>
+
+	PR testsuite/21702
+	* gcc.target/i386/i386.exp: Fix comment typo.
+
 2005-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19497
