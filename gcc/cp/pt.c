@@ -7271,7 +7271,12 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  {
 	    if (complain & tf_error)
 	      error ("creating pointer to member reference type %qT", type);
-	    
+	    return error_mark_node;
+	  }
+	if (TREE_CODE (type) == VOID_TYPE)
+	  {
+	    if (complain & tf_error)
+	      error ("creating pointer to member of type void");
 	    return error_mark_node;
 	  }
 	gcc_assert (TREE_CODE (type) != METHOD_TYPE);
