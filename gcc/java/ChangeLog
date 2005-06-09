@@ -1,3 +1,7 @@
+2005-06-08  Roger Sayle  <roger@eyesopen.com>
+
+	* typeck.c (convert): Only clear TREE_OVERFLOW on INTEGER_CST nodes.
+
 2005-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* jv-scan.c (fatal_error, warning, warning0): Use gmsgid instead of

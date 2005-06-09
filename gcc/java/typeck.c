@@ -142,7 +142,8 @@ convert (tree type, tree expr)
 	     overflows in a narrowing integer conversion, but Java
 	     doesn't care.  */
 	  tree tmp = fold (convert_to_integer (type, expr));
-	  TREE_OVERFLOW (tmp) = 0;
+	  if (TREE_CODE (tmp) == INTEGER_CST)
+	    TREE_OVERFLOW (tmp) = 0;
 	  return tmp;
 	}
     }	  
