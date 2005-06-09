@@ -176,9 +176,9 @@ reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
 
   if (rsize != 0 && ssize != 0 && psize != 0)
     {
-      rsize *= rtype_kind;
-      ssize *= rtype_kind;
-      psize *= rtype_kind;
+      rsize *= sizeof (rtype_name);
+      ssize *= sizeof (rtype_name);
+      psize *= sizeof (rtype_name);
       reshape_packed ((char *)ret->data, rsize, (char *)source->data,
 		      ssize, pad ? (char *)pad->data : NULL, psize);
       return;
