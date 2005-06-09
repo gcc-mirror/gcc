@@ -38,3 +38,7 @@ Enabled ID based shared library
 mshared-library-id=
 Target RejectNegative Joined UInteger Var(bfin_library_id)
 ID of shared library to build
+
+mlong-calls
+Target Report Mask(LONG_CALLS)
+Avoid generating pc-relative calls; use indirection
