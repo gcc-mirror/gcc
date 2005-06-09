@@ -26,21 +26,16 @@ details.  */
    verification. */
 #define INVALID_STATE ((state *) -1)
 
-#ifdef VERIFY_DEBUG
-static void
-debug_print (const char *fmt, ...)
+static void ATTRIBUTE_PRINTF_1
+debug_print (const char *fmt ATTRIBUTE_UNUSED, ...)
 {
+#ifdef VERIFY_DEBUG
   va_list ap;
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);
   va_end (ap);
-}
-#else
-static void
-debug_print (const char *fmt ATTRIBUTE_UNUSED, ...)
-{
-}    
 #endif /* VERIFY_DEBUG */
+}
 
 /* This started as a fairly ordinary verifier, and for the most part
    it remains so.  It works in the obvious way, by modeling the effect

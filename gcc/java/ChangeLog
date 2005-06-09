@@ -1,3 +1,11 @@
+2005-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (error): Add ATTRIBUTE_PRINTF_1.
+	* java-tree.h (parse_error_context): Move...
+	* parse.h (parse_error_context): ... here, add ATTRIBUTE_GCC_DIAG.
+	* parse.y (parse_warning_context): Add ATTRIBUTE_GCC_DIAG.
+	* verify-impl.c (debug_print): Add ATTRIBUTE_PRINTF_1.
+
 2005-06-08  Roger Sayle  <roger@eyesopen.com>
 
 	* typeck.c (convert): Only clear TREE_OVERFLOW on INTEGER_CST nodes.
