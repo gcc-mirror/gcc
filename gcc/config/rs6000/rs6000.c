@@ -552,7 +552,7 @@ struct processor_costs power4_cost = {
 
 
 static bool rs6000_function_ok_for_sibcall (tree, tree);
-static bool rs6000_invalid_within_doloop (rtx);
+static const char *rs6000_invalid_within_doloop (rtx);
 static rtx rs6000_generate_compare (enum rtx_code);
 static void rs6000_maybe_dead (rtx);
 static void rs6000_emit_stack_tie (void);
