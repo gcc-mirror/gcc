@@ -748,6 +748,9 @@ extern bool thread_through_all_blocks (bitmap);
 tree force_gimple_operand (tree, tree *, bool, tree);
 tree force_gimple_operand_bsi (block_stmt_iterator *, tree, bool, tree);
 
+/* In tree-ssa-structalias.c */
+bool find_what_p_points_to (tree);
+
 /* In tree-ssa-address.c  */
 
 /* Affine combination of trees.  We keep track of at most MAX_AFF_ELTS elements
@@ -789,6 +792,23 @@ tree create_mem_ref (block_stmt_iterator *, tree,
 rtx addr_for_mem_ref (struct mem_address *, bool);
 void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
+/* This structure is simply used during pushing fields onto the fieldstack
+   to track the offset of the field, since bitpos_of_field gives it relative
+   to its immediate containing type, and we want it relative to the ultimate
+   containing object.  */
+
+struct fieldoff
+{
+  tree field;
+  HOST_WIDE_INT offset;  
+};
+typedef struct fieldoff fieldoff_s;
+
+DEF_VEC_O(fieldoff_s);
+DEF_VEC_ALLOC_O(fieldoff_s,heap);
+int push_fields_onto_fieldstack (tree, VEC(fieldoff_s,heap) **,
+				 HOST_WIDE_INT, bool *);
+void sort_fieldstack (VEC(fieldoff_s,heap) *);
 
 #include "tree-flow-inline.h"
 

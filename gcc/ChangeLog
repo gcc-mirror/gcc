@@ -1,3 +1,21 @@
+2005-06-08  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in (OBJS-common): Add tree-ssa-structalias.o.
+	* tree-flow.h (find_what_p_points_to): Add prototype.
+	(push_fields_onto_fieldstack): Ditto.
+	(sort_fieldstack): Ditto.
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_build_pta and pass_del_pta.
+	* tree-pass.h (pass_build_pta): New structure.
+	(pass_del_pta): Ditto.
+	* tree-ssa-alias.c (compute_flow_sensitive_aliasing): Disambiguate
+	using new alias analyzer.
+	(push_fields_onto_fieldstack): Removed from here.
+	(bitpos_of_field): Ditto.
+	(fieldoff_compare): Ditto.
+	* tree-ssa-structalias.c: New file.
+	* tree-ssa-structalias.h: Ditto.
+
 2005-06-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-typeck.c (build_c_cast): Check type punning on COMPONENT_REF
