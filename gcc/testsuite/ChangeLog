@@ -1,3 +1,7 @@
+2005-06-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/alias-8.c: New.
+
 2005-06-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/format/cmn_err-1.c: Update.

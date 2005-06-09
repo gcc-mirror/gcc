@@ -3304,14 +3304,15 @@ build_c_cast (tree type, tree expr)
 	  && !TREE_CONSTANT (value))
 	warning (0, "cast to pointer from integer of different size");
 
-      if (TREE_CODE (type) == POINTER_TYPE
+      if (flag_strict_aliasing && warn_strict_aliasing
+	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TREE_CODE (expr) == ADDR_EXPR
-	  && DECL_P (TREE_OPERAND (expr, 0))
-	  && flag_strict_aliasing && warn_strict_aliasing
+	  && (DECL_P (TREE_OPERAND (expr, 0))
+	      || TREE_CODE (TREE_OPERAND (expr, 0)) == COMPONENT_REF)
 	  && !VOID_TYPE_P (TREE_TYPE (type)))
 	{
-	  /* Casting the address of a decl to non void pointer. Warn
+	  /* Casting the address of an object to non void pointer. Warn
 	     if the cast breaks type based aliasing.  */
 	  if (!COMPLETE_TYPE_P (TREE_TYPE (type)))
 	    warning (0, "type-punning to incomplete type might break strict-aliasing rules");
