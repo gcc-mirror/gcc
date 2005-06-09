@@ -1,3 +1,14 @@
+2005-06-09  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* machmode.h (to_machine_mode): New.
+	* rtl.h (to_rtx_code): Likewise.
+	* read-rtl.c (apply_mode_macro): Convert mode to machine_mode.
+	(print_c_condition): Convert return value of htab_find().
+	(apply_code_macro): Add explicit cast when convertin to enums.
+	(apply_mode_maps): Likewise.
+	(check_code_macro): Likewise.
+	(read_rtx_1): Likewise.
+
 2005-06-09  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (update_set_flags): Just return for IF_THEN_ELSE.
