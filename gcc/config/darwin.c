@@ -1381,4 +1381,13 @@ darwin_file_end (void)
   fprintf (asm_out_file, "\t.subsections_via_symbols\n");
 }
 
+/* Cross-module name binding.  Darwin does not support overriding
+   functions at dynamic-link time.  */
+
+bool
+darwin_binds_local_p (tree decl)
+{
+  return default_binds_local_p_1 (decl, 0);
+}
+
 #include "gt-darwin.h"

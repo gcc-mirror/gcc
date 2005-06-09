@@ -1,3 +1,11 @@
+2005-06-08  Dale Johannesen  <dalej@apple.com>
+
+        * config/darwin.c (darwin_binds_local_p):  New.
+        * config/darwin-protos.h (darwin_binds_local_p):  Declare it.
+        * config/i386/i386.c (TARGET_BINDS_LOCAL_P):  Use it for TARGET_MACHO.
+        * config/rs6000/rs6000.c (rs6000_binds_local_p):  Remove.
+        (TARGET_BINDS_LOCAL_P):  Change it to darwin_binds_local_p.
+
 2005-06-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.h: Remove rs6000_long_double_size_string,

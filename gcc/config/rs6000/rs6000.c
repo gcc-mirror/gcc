@@ -616,9 +616,6 @@ static unsigned int rs6000_xcoff_section_type_flags (tree, const char *, int);
 static void rs6000_xcoff_file_start (void);
 static void rs6000_xcoff_file_end (void);
 #endif
-#if TARGET_MACHO
-static bool rs6000_binds_local_p (tree);
-#endif
 static int rs6000_variable_issue (FILE *, int, rtx, int);
 static bool rs6000_rtx_costs (rtx, int, int, int *);
 static int rs6000_adjust_cost (rtx, rtx, rtx, int);
@@ -897,7 +894,7 @@ static const char alt_reg_names[][8] =
 
 #if TARGET_MACHO
 #undef TARGET_BINDS_LOCAL_P
-#define TARGET_BINDS_LOCAL_P rs6000_binds_local_p
+#define TARGET_BINDS_LOCAL_P darwin_binds_local_p
 #endif
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
@@ -17521,17 +17518,6 @@ rs6000_xcoff_file_end (void)
 	 asm_out_file);
 }
 #endif /* TARGET_XCOFF */
-
-#if TARGET_MACHO
-/* Cross-module name binding.  Darwin does not support overriding
-   functions at dynamic-link time.  */
-
-static bool
-rs6000_binds_local_p (tree decl)
-{
-  return default_binds_local_p_1 (decl, 0);
-}
-#endif
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
