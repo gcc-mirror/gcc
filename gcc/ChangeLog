@@ -1,3 +1,11 @@
+2005-06-09  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (update_set_flags): Just return for IF_THEN_ELSE.
+	Use SCALAR_FLOAT_MODE_P.
+	* config/ia64/vect.md (vcondv2sf): Remove code check on comparison.
+	(fselect): Rename from fpcmp; use %F.
+	(fpcmp): New.
+
 2005-06-09  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_create_edges): Do not walk BLOCK; finalize

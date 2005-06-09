@@ -1,5 +1,5 @@
 ;; IA-64 machine description for vector operations.
-;; Copyright (C) 2004
+;; Copyright (C) 2004, 2005
 ;;
 ;; This file is part of GCC.
 ;;
@@ -873,30 +873,8 @@
 {
   rtx x, cmp;
 
-  PUT_MODE (operands[3], V2SFmode);
-  switch (GET_CODE (operands[3]))
-    {
-    case EQ:
-    case NE:
-    case LT:
-    case LE:
-    case UNORDERED:
-    case ORDERED:
-      break;
-
-    case GT:
-    case GE:
-      x = XEXP (operands[3], 0);
-      XEXP (operands[3], 0) = XEXP (operands[3], 1);
-      XEXP (operands[3], 1) = x;
-      PUT_CODE (operands[3], swap_condition (GET_CODE (operands[3])));
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
   cmp = gen_reg_rtx (V2SFmode);
+  PUT_MODE (operands[3], V2SFmode);
   emit_insn (gen_rtx_SET (VOIDmode, cmp, operands[3]));
 
   x = gen_rtx_IF_THEN_ELSE (V2SFmode, cmp, operands[1], operands[2]);
@@ -906,12 +884,21 @@
 
 (define_insn "*fpcmp"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
+	(match_operator:V2SF 3 "comparison_operator"
+	  [(match_operand:V2SF 1 "fr_reg_or_0_operand" "fU")
+	   (match_operand:V2SF 2 "fr_reg_or_0_operand" "fU")]))]
+  ""
+  "fpcmp.%D3 %0 = %F1, %F2"
+  [(set_attr "itanium_class" "fmisc")])
+
+(define_insn "*fselect"
+  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
 	(if_then_else:V2SF
 	  (match_operand:V2SF 1 "fr_register_operand" "f")
 	  (match_operand:V2SF 2 "fr_reg_or_0_operand" "fU")
 	  (match_operand:V2SF 3 "fr_reg_or_0_operand" "fU")))]
   ""
-  "fselect %0 = %2, %3, %1"
+  "fselect %0 = %F2, %F3, %1"
   [(set_attr "itanium_class" "fmisc")])
 
 (define_expand "vec_initv2sf"
