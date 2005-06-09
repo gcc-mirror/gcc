@@ -260,12 +260,10 @@ is_gimple_id (tree t)
 bool
 is_gimple_reg_type (tree type)
 {
-  return (!AGGREGATE_TYPE_P (type)
-          && TREE_CODE (type) != COMPLEX_TYPE);
+  return !AGGREGATE_TYPE_P (type);
 }
 
-
-/* Return true if T is a scalar register variable.  */
+/* Return true if T is a non-aggregate register variable.  */
 
 bool
 is_gimple_reg (tree t)
@@ -275,6 +273,7 @@ is_gimple_reg (tree t)
 
   if (!is_gimple_variable (t))
     return false;
+
   if (!is_gimple_reg_type (TREE_TYPE (t)))
     return false;
 
@@ -300,6 +299,11 @@ is_gimple_reg (tree t)
      clean this up, as there we've got all the appropriate bits exposed.  */
   if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
     return false;
+
+  /* Complex values must have been put into ssa form.  That is, no 
+     assignments to the individual components.  */
+  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
+    return DECL_COMPLEX_GIMPLE_REG_P (t);
 
   return true;
 }

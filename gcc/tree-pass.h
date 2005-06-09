@@ -192,6 +192,7 @@ extern struct tree_opt_pass pass_may_alias;
 extern struct tree_opt_pass pass_split_crit_edges;
 extern struct tree_opt_pass pass_pre;
 extern struct tree_opt_pass pass_profile;
+extern struct tree_opt_pass pass_lower_complex_O0;
 extern struct tree_opt_pass pass_lower_complex;
 extern struct tree_opt_pass pass_lower_vector;
 extern struct tree_opt_pass pass_lower_vector_ssa;

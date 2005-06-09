@@ -375,7 +375,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_lower_cf); 
   NEXT_PASS (pass_lower_eh); 
   NEXT_PASS (pass_build_cfg); 
-  NEXT_PASS (pass_lower_complex);
+  NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_tree_profile);
@@ -417,6 +417,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_profile);
   NEXT_PASS (pass_ch);
   NEXT_PASS (pass_stdarg);
+  NEXT_PASS (pass_lower_complex);
   NEXT_PASS (pass_sra);
   /* FIXME: SRA may generate arbitrary gimple code, exposing new
      aliased and call-clobbered variables.  As mentioned below,

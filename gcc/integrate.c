@@ -107,6 +107,7 @@ copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
       TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
       TREE_READONLY (copy) = TREE_READONLY (decl);
       TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
+      DECL_COMPLEX_GIMPLE_REG_P (copy) = DECL_COMPLEX_GIMPLE_REG_P (decl);
     }
   else
     {

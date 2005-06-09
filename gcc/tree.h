@@ -2353,6 +2353,14 @@ extern void decl_value_expr_insert (tree, tree);
 #define DECL_GIMPLE_FORMAL_TEMP_P(DECL) \
   DECL_CHECK (DECL)->decl.gimple_formal_temp
 
+/* For function local variables of COMPLEX type, indicates that the
+   variable is not aliased, and that all modifications to the variable
+   have been adjusted so that they are killing assignments.  Thus the
+   variable may now be treated as a GIMPLE register, and use real
+   instead of virtual ops in SSA form.  */
+#define DECL_COMPLEX_GIMPLE_REG_P(DECL) \
+  DECL_CHECK (DECL)->decl.gimple_reg_flag
+
 /* Enumerate visibility settings.  */
 #ifndef SYMBOL_VISIBILITY_DEFINED
 #define SYMBOL_VISIBILITY_DEFINED
@@ -2424,8 +2432,9 @@ struct tree_decl GTY(())
   unsigned returns_twice_flag : 1;
   unsigned seen_in_bind_expr : 1;
   unsigned novops_flag : 1;
-  unsigned has_value_expr:1;
-  /* 8 unused bits.  */
+  unsigned has_value_expr : 1;
+  unsigned gimple_reg_flag : 1;
+  /* 7 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
