@@ -1,3 +1,16 @@
+2005-06-09  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_create_edges): Do not walk BLOCK; finalize
+	local statics when doing unit-at-a-time.
+	(cgraph_varpool_assemble_pending_decls): Output debug info.
+	* dwarf2out.c (decls_for_scope): Skip local statics.
+	(dwarf2out_decl): Handle local statics.
+	* passes.c (rest_of_decl_compilation): Do not differentiate
+	local and global statics in unit-at-a-time.
+	* tree-inline.c (remap_decls): Put local static into
+	unexpanded_vars_list rather than introducing duplicated VAR_DECL
+	node.
+
 2005-06-09  Daniel Berlin  <dberlin@dberlin.org>
 
 	* config/rs6000/rs6000.c: (rs6000_insn_valid_within_doloop): Fix

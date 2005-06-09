@@ -227,7 +227,7 @@ rest_of_decl_compilation (tree decl,
 	  && !DECL_EXTERNAL (decl))
 	{
 	  if (flag_unit_at_a_time && !cgraph_global_info_ready
-	      && TREE_CODE (decl) != FUNCTION_DECL && top_level)
+	      && TREE_CODE (decl) != FUNCTION_DECL)
 	    cgraph_varpool_finalize_decl (decl);
 	  else
 	    assemble_variable (decl, top_level, at_end, 0);

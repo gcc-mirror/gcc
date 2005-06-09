@@ -385,6 +385,17 @@ remap_decls (tree decls, inline_data *id)
     {
       tree new_var;
 
+      /* We can not chain the local static declarations into the unexpanded_var_list
+         as we can't duplicate them or break one decl rule.  Go ahead and link
+         them into unexpanded_var_list.  */
+      if (!lang_hooks.tree_inlining.auto_var_in_fn_p (old_var, id->callee)
+	  && !DECL_EXTERNAL (old_var))
+	{
+	  cfun->unexpanded_var_list = tree_cons (NULL_TREE, old_var,
+						 cfun->unexpanded_var_list);
+	  continue;
+	}
+
       /* Remap the variable.  */
       new_var = remap_decl (old_var, id);
 

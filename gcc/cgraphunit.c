@@ -543,26 +543,19 @@ cgraph_create_edges (struct cgraph_node *node, tree body)
 	  walk_tree (bsi_stmt_ptr (bsi), record_reference, node, visited_nodes);
       }
 
-  /* Walk over any private statics that may take addresses of functions.  */
-  if (TREE_CODE (DECL_INITIAL (body)) == BLOCK)
+  /* Look for initializers of constant variables and private statics.  */
+  for (step = DECL_STRUCT_FUNCTION (body)->unexpanded_var_list;
+       step;
+       step = TREE_CHAIN (step))
     {
-      for (step = BLOCK_VARS (DECL_INITIAL (body));
-	   step;
-	   step = TREE_CHAIN (step))
-	if (DECL_INITIAL (step))
-	  walk_tree (&DECL_INITIAL (step), record_reference, node, visited_nodes);
+      tree decl = TREE_VALUE (step);
+      if (TREE_CODE (decl) == VAR_DECL
+	  && (TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
+	  && flag_unit_at_a_time)
+	cgraph_varpool_finalize_decl (decl);
+      else if (TREE_CODE (decl) == VAR_DECL && DECL_INITIAL (decl))
+	walk_tree (&DECL_INITIAL (decl), record_reference, node, visited_nodes);
     }
-
-  /* Also look here for private statics.  */
-  if (DECL_STRUCT_FUNCTION (body))
-    for (step = DECL_STRUCT_FUNCTION (body)->unexpanded_var_list;
-	 step;
-	 step = TREE_CHAIN (step))
-      {
-	tree decl = TREE_VALUE (step);
-	if (DECL_INITIAL (decl) && TREE_STATIC (decl))
-	  walk_tree (&DECL_INITIAL (decl), record_reference, node, visited_nodes);
-      }
     
   pointer_set_destroy (visited_nodes);
   visited_nodes = NULL;
@@ -743,6 +736,14 @@ cgraph_varpool_assemble_pending_decls (void)
       if (!TREE_ASM_WRITTEN (decl) && !node->alias && !DECL_EXTERNAL (decl))
 	{
 	  assemble_variable (decl, 0, 1, 0);
+	  /* Local static vairables are neever seen by check_global_declarations
+	     so we need to output debug info by hand.  */
+	  if (decl_function_context (decl) && errorcount == 0 && sorrycount == 0)
+	    {
+	      timevar_push (TV_SYMOUT);
+	      (*debug_hooks->global_decl) (decl);
+	      timevar_pop (TV_SYMOUT);
+	    }
 	  changed = true;
 	}
       node->next_needed = NULL;
