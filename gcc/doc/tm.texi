@@ -9377,13 +9377,14 @@ simplified expression for the call's result.  If @var{ignore} is true
 the value will be ignored.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_INSN_VALID_WITHIN_DOLOOP (rtx @var{insn})
+@deftypefn {Target Hook} const char * TARGET_INVALID_WITHIN_DOLOOP (rtx @var{insn})
 
-Take an instruction in @var{insn} and return true if it is valid within a
-low-overhead loop.
+Take an instruction in @var{insn} and return NULL if it is valid within a
+low-overhead loop, otherwise return a string why doloop could not be applied.
 
-Many targets use special registers for low-overhead looping. This function
-should return false for any instruction that clobbers these. 
+Many targets use special registers for low-overhead looping. For any
+instruction that clobbers these this function should return a string indicating
+the reason why the doloop could not be applied. 
 By default, the RTL loop optimizer does not use a present doloop pattern for
 loops containing function calls or branch on table instructions.  
 @end deftypefn

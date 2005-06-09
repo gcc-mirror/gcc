@@ -137,8 +137,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_HAVE_NAMED_SECTIONS false
 #endif
 
-#ifndef TARGET_INSN_VALID_WITHIN_DOLOOP
-#define TARGET_INSN_VALID_WITHIN_DOLOOP default_insn_valid_within_doloop
+#ifndef TARGET_INVALID_WITHIN_DOLOOP
+#define TARGET_INVALID_WITHIN_DOLOOP default_invalid_within_doloop
 #endif
 
 #ifndef TARGET_HAVE_TLS
@@ -564,7 +564,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_DWARF_CALLING_CONVENTION,              \
   TARGET_DWARF_HANDLE_FRAME_UNSPEC,		\
   TARGET_STDARG_OPTIMIZE_HOOK,			\
-  TARGET_INSN_VALID_WITHIN_DOLOOP,		\
+  TARGET_INVALID_WITHIN_DOLOOP,			\
   TARGET_CALLS,					\
   TARGET_CXX,					\
   TARGET_HAVE_NAMED_SECTIONS,			\

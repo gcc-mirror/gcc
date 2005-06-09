@@ -1,3 +1,29 @@
+2005-06-09  Adrian Straetling  <straetling@de.ibm.com>
+
+	* target.h (insn_valid_within_doloop): Rename into
+	"invalid_within_doloop".  Change return type to "const char *".
+	Update Comment.
+	* targhooks.h (default_insn_valid_within_doloop): Rename into
+	"default_invalid_within_doloop". 
+	* targhooks.c (default_insn_valid_within_doloop): Likewise.
+	Update Comment.
+	* target-def.h (TARGET_INSN_VALID_WITHIN_DOLOOP): Rename target hook
+	into "TARGET_INVALID_WITHIN_DOLOOP". Default it to
+	"default_invalid_within_doloop".
+	* hooks.c (hook_constcharptr_rtx_null): New function.
+	(hook_bool_rtx_true): Remove.
+	* hooks.h (hook_constcharptr_rtx_null): Declare.
+	(hook_bool_rtx_true): Remove.
+	* loop-doloop.c (doloop_valid_p): Temporarily store return value of
+	"invalid_within_doloop" and print error message if non-null.
+	Update Comment.
+	* doc/tm.texi: Update documentation.
+	* config/s390/s390.c: Adjust to new hook name and new default hook.
+	* config/rs6000/rs6000.c: (rs6000_insn_valid_within_doloop): Rename
+	into "rs6000_invalid_within_doloop".
+	(rs6000_invalid_within_doloop): Change return type to "static const
+	char *" and replace return values.  Update Comment.
+
 2005-06-09  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.opt (mlong-calls): New.

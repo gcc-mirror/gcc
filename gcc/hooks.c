@@ -192,12 +192,6 @@ hook_bool_rtx_false (rtx a ATTRIBUTE_UNUSED)
 }
 
 bool
-hook_bool_rtx_true (rtx a ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-
-bool
 hook_bool_uintp_uintp_false (unsigned int *a ATTRIBUTE_UNUSED,
 			     unsigned int *b ATTRIBUTE_UNUSED)
 {
@@ -252,6 +246,13 @@ hook_constcharptr_tree_null (tree t ATTRIBUTE_UNUSED)
 tree
 hook_tree_tree_tree_bool_null (tree t0 ATTRIBUTE_UNUSED, tree t1 ATTRIBUTE_UNUSED,
 			       bool ignore ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+
+/* Generic hook that takes a rtx and returns a NULL string.  */
+const char *
+hook_constcharptr_rtx_null (rtx r ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
