@@ -470,6 +470,9 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
 
   t = lookup_tmp_var (val, is_formal);
 
+  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
+    DECL_COMPLEX_GIMPLE_REG_P (t) = 1;
+
   mod = build (MODIFY_EXPR, TREE_TYPE (t), t, val);
 
   if (EXPR_HAS_LOCATION (val))
@@ -856,7 +859,18 @@ gimplify_bind_expr (tree *expr_p, tree temp, tree *pre_p)
 
   /* Mark variables seen in this bind expr.  */
   for (t = BIND_EXPR_VARS (bind_expr); t ; t = TREE_CHAIN (t))
-    DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
+    {
+      DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
+
+      /* Preliminarily mark non-addressed complex variables as eligible
+	 for promotion to gimple registers.  We'll transform their uses
+	 as we find them.  */
+      if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+	  && !TREE_THIS_VOLATILE (t)
+	  && (TREE_CODE (t) == VAR_DECL && !DECL_HARD_REGISTER (t))
+	  && !needs_to_live_in_memory (t))
+	DECL_COMPLEX_GIMPLE_REG_P (t) = 1;
+    }
 
   gimple_push_bind_expr (bind_expr);
   gimplify_ctxp->save_stack = false;
@@ -3009,6 +3023,45 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
   return ret;
 }
 
+/* Promote partial stores to COMPLEX variables to total stores.  *EXPR_P is
+   a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a variable with
+   DECL_COMPLEX_GIMPLE_REG_P set.  */
+
+static enum gimplify_status
+gimplify_modify_expr_complex_part (tree *expr_p, tree *pre_p, bool want_value)
+{
+  enum tree_code code, ocode;
+  tree lhs, rhs, new_rhs, other, realpart, imagpart;
+
+  lhs = TREE_OPERAND (*expr_p, 0);
+  rhs = TREE_OPERAND (*expr_p, 1);
+  code = TREE_CODE (lhs);
+  lhs = TREE_OPERAND (lhs, 0);
+
+  ocode = code == REALPART_EXPR ? IMAGPART_EXPR : REALPART_EXPR;
+  other = build1 (ocode, TREE_TYPE (rhs), lhs);
+  other = get_formal_tmp_var (other, pre_p);
+
+  realpart = code == REALPART_EXPR ? rhs : other;
+  imagpart = code == REALPART_EXPR ? other : rhs;
+
+  if (TREE_CONSTANT (realpart) && TREE_CONSTANT (imagpart))
+    new_rhs = build_complex (TREE_TYPE (lhs), realpart, imagpart);
+  else
+    new_rhs = build2 (COMPLEX_EXPR, TREE_TYPE (lhs), realpart, imagpart);
+
+  TREE_OPERAND (*expr_p, 0) = lhs;
+  TREE_OPERAND (*expr_p, 1) = new_rhs;
+
+  if (want_value)
+    {
+      append_to_statement_list (*expr_p, pre_p);
+      *expr_p = rhs;
+    }
+
+  return GS_ALL_DONE;
+}
+
 /* Gimplify the MODIFY_EXPR node pointed by EXPR_P.
 
       modify_expr
@@ -3083,6 +3136,14 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
 	  return gimplify_modify_expr_to_memcpy (expr_p, size, want_value);
 	}
     }
+
+  /* Transform partial stores to non-addressable complex variables into
+     total stores.  This allows us to use real instead of virtual operands
+     for these variables, which improves optimization.  */
+  if ((TREE_CODE (*to_p) == REALPART_EXPR
+       || TREE_CODE (*to_p) == IMAGPART_EXPR)
+      && is_gimple_reg (TREE_OPERAND (*to_p, 0)))
+    return gimplify_modify_expr_complex_part (expr_p, pre_p, want_value);
 
   if (gimplify_ctxp->into_ssa && is_gimple_reg (*to_p))
     {
@@ -4668,13 +4729,29 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
 void
 gimplify_function_tree (tree fndecl)
 {
-  tree oldfn;
+  tree oldfn, parm, ret;
 
   oldfn = current_function_decl;
   current_function_decl = fndecl;
   cfun = DECL_STRUCT_FUNCTION (fndecl);
   if (cfun == NULL)
     allocate_struct_function (fndecl);
+
+  for (parm = DECL_ARGUMENTS (fndecl); parm ; parm = TREE_CHAIN (parm))
+    {
+      /* Preliminarily mark non-addressed complex variables as eligible
+         for promotion to gimple registers.  We'll transform their uses
+         as we find them.  */
+      if (TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE
+          && !TREE_THIS_VOLATILE (parm)
+          && !needs_to_live_in_memory (parm))
+        DECL_COMPLEX_GIMPLE_REG_P (parm) = 1;
+    }
+
+  ret = DECL_RESULT (fndecl);
+  if (TREE_CODE (TREE_TYPE (ret)) == COMPLEX_TYPE
+      && !needs_to_live_in_memory (ret))
+    DECL_COMPLEX_GIMPLE_REG_P (ret) = 1;
 
   gimplify_body (&DECL_SAVED_TREE (fndecl), fndecl, true);
 

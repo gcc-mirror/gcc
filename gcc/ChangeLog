@@ -1,3 +1,43 @@
+2005-06-09  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/20610
+	* tree.h (DECL_COMPLEX_GIMPLE_REG_P): New.
+	(struct tree_decl): Add gimple_reg_flag.
+	* integrate.c (copy_decl_for_inlining): Copy it.
+	* gimplify.c (internal_get_tmp_var): Set it.
+	(gimplify_bind_expr): Likewise.
+	(gimplify_function_tree): Likewise.
+	(gimplify_modify_expr_complex_part): New.
+	(gimplify_modify_expr): Use it.
+	* tree-gimple.c (is_gimple_reg_type): Allow complex.
+	(is_gimple_reg): Allow complex with DECL_COMPLEX_GIMPLE_REG_P set.
+
+	* tree-complex.c (complex_lattice_t): New.
+	(complex_lattice_values, complex_variable_components): New.
+	(some_nonzerop, find_lattice_value, is_complex_reg,
+	init_parameter_lattice_values, init_dont_simulate_again, 
+	complex_visit_stmt, complex_visit_phi, create_components,
+	update_complex_components, update_parameter_components, 
+	update_phi_components, update_all_vops, expand_complex_move): New.
+	(extract_component): Handle INDIRECT_REF, COMPONENT_REF, ARRAY_REF,
+	SSA_NAME.
+	(update_complex_assignment): Use update_complex_components;
+	handle updates of return_expr properly.
+	(expand_complex_addition): Use complex lattice values.
+	(expand_complex_multiplication): Likewise.
+	(expand_complex_division): Likewise.
+	(expand_complex_libcall): Use update_complex_components.
+	(expand_complex_comparison): Use update_stmt.
+	(expand_complex_operations_1): Use expand_complex_move, retrieve
+	lattice values.
+	(tree_lower_complex): Compute lattice values.
+	(tree_lower_complex_O0): Duplicate from tree_lower_complex.
+	(pass_lower_complex_O0): Rename from pass_lower_complex.
+	(pass_lower_complex, gate_no_optimization): New.
+	* tree-optimize.c (init_tree_optimization_passes): Update for
+	complex pass changes.
+	* tree-pass.h (pass_lower_complex_O0): Declare.
+
 2005-06-08  Dale Johannesen  <dalej@apple.com>
 
         * config/darwin.c (darwin_binds_local_p):  New.
