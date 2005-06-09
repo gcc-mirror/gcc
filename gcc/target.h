@@ -528,8 +528,9 @@ struct gcc_target
      to be checked for va_list references.  */
   bool (*stdarg_optimize_hook) (struct stdarg_info *ai, tree lhs, tree rhs);
 
-  /* Returns true if target supports the insn within a doloop block.  */
-  bool (*insn_valid_within_doloop) (rtx);
+  /* Returns NULL if target supports the insn within a doloop block,
+     otherwise it returns an error message.  */
+  const char * (*invalid_within_doloop) (rtx);
     
   /* Functions relating to calls - argument passing, returns, etc.  */
   struct calls {

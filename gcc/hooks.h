@@ -35,7 +35,6 @@ extern bool hook_bool_tree_hwi_hwi_tree_false (tree, HOST_WIDE_INT, HOST_WIDE_IN
 extern bool hook_bool_tree_hwi_hwi_tree_true (tree, HOST_WIDE_INT, HOST_WIDE_INT,
 				       tree);
 extern bool hook_bool_rtx_false (rtx);
-extern bool hook_bool_rtx_true (rtx);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
 extern bool hook_bool_rtx_int_int_intp_false (rtx, int, int, int *);
 extern bool hook_bool_constcharptr_size_t_false (const char *, size_t);
@@ -66,4 +65,5 @@ extern rtx hook_rtx_tree_int_null (tree, int);
 extern tree hook_tree_tree_tree_tree_3rd_identity (tree, tree, tree);
 extern const char *hook_constcharptr_tree_null (tree);
 extern tree hook_tree_tree_tree_bool_null (tree, tree, bool);
+extern const char *hook_constcharptr_rtx_null (rtx);
 #endif

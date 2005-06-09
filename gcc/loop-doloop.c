@@ -203,12 +203,16 @@ doloop_valid_p (struct loop *loop, struct niter_desc *desc)
 	{
 	  /* Different targets have different necessities for low-overhead
 	     looping.  Call the back end for each instruction within the loop
-	     to let it decide whether the insn is valid.  */
-	  if (!targetm.insn_valid_within_doloop (insn))
-	  {
+	     to let it decide whether the insn prohibits a low-overhead loop.
+	     It will then return the cause for it to emit to the dump file.  */
+	  const char * invalid = targetm.invalid_within_doloop (insn);
+	  if (invalid)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Doloop: %s\n", invalid);
 	      result = false;
 	      goto cleanup;
-	  }
+	    }
 	}
     }
   result = true;
