@@ -5168,25 +5168,19 @@ update_set_flags (rtx x, struct reg_flags *pflags)
       return;
 
     case IF_THEN_ELSE:
-      if (SET_DEST (x) == pc_rtx)
-	/* X is a conditional branch.  */
-	return;
-      else
-	{
-	  /* X is a conditional move.  */
-	  rtx cond = XEXP (src, 0);
-	  cond = XEXP (cond, 0);
-
-	  /* We always split conditional moves into COND_EXEC patterns, so the
-	     only pattern that can reach here is doloop_end_internal.  We don't
-	     need to do anything special for this pattern.  */
-	  gcc_assert (GET_CODE (cond) == REG && REGNO (cond) == AR_LC_REGNUM);
-	  return;
-	}
+      /* There are three cases here:
+	 (1) The destination is (pc), in which case this is a branch,
+	 nothing here applies.
+	 (2) The destination is ar.lc, in which case this is a
+	 doloop_end_internal,
+	 (3) The destination is an fp register, in which case this is
+	 an fselect instruction.
+	 In all cases, nothing we do in this function applies.  */
+      return;
 
     default:
       if (COMPARISON_P (src)
-	  && GET_MODE_CLASS (GET_MODE (XEXP (src, 0))) == MODE_FLOAT)
+	  && SCALAR_FLOAT_MODE_P (GET_MODE (XEXP (src, 0))))
 	/* Set pflags->is_fp to 1 so that we know we're dealing
 	   with a floating point comparison when processing the
 	   destination of the SET.  */
