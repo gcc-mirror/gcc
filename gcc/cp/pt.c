@@ -1779,6 +1779,11 @@ check_explicit_specialization (tree declarator,
 	      /* Find the namespace binding, using the declaration
                  context.  */
 	      fns = namespace_binding (dname, CP_DECL_CONTEXT (decl));
+	      if (!fns || !is_overloaded_fn (fns))
+		{
+		  error ("`%D' is not a template function", dname);
+		  fns = error_mark_node;
+		}
 	    }
 
 	  declarator = lookup_template_function (fns, NULL_TREE);
@@ -4066,18 +4071,9 @@ lookup_template_function (tree fns, tree arglist)
     return error_mark_node;
 
   my_friendly_assert (!arglist || TREE_CODE (arglist) == TREE_VEC, 20030726);
-  if (fns == NULL_TREE 
-      || TREE_CODE (fns) == FUNCTION_DECL)
-    {
-      error ("non-template used as template");
-      return error_mark_node;
-    }
-
-  my_friendly_assert (TREE_CODE (fns) == TEMPLATE_DECL
-		      || TREE_CODE (fns) == OVERLOAD
-		      || BASELINK_P (fns)
-		      || TREE_CODE (fns) == IDENTIFIER_NODE,
-		      20020730);
+  my_friendly_assert (fns && (is_overloaded_fn (fns)
+			      || TREE_CODE (fns) == IDENTIFIER_NODE),
+		      20050608);
 
   if (BASELINK_P (fns))
     {
@@ -6484,6 +6480,8 @@ tsubst_arg_types (tree arg_types,
 {
   tree remaining_arg_types;
   tree type;
+  tree default_arg;
+  tree result = NULL_TREE;
 
   if (!arg_types || arg_types == void_list_node)
     return arg_types;
@@ -6511,12 +6509,25 @@ tsubst_arg_types (tree arg_types,
      top-level qualifiers as required.  */
   type = TYPE_MAIN_VARIANT (type_decays_to (type));
 
-  /* Note that we do not substitute into default arguments here.  The
-     standard mandates that they be instantiated only when needed,
-     which is done in build_over_call.  */
-  return hash_tree_cons (TREE_PURPOSE (arg_types), type,
-			 remaining_arg_types);
-			 
+  /* We do not substitute into default arguments here.  The standard
+     mandates that they be instantiated only when needed, which is
+     done in build_over_call.  */
+  default_arg = TREE_PURPOSE (arg_types);
+  
+  if (default_arg && TREE_CODE (default_arg) == DEFAULT_ARG)
+    {
+      /* We've instantiated a template before its default arguments
+ 	 have been parsed.  This can happen for a nested template
+ 	 class, and is not an error unless we require the default
+ 	 argument in a call of this function.  */
+      result = tree_cons (default_arg, type, remaining_arg_types);
+      TREE_CHAIN (default_arg) = tree_cons (result, NULL_TREE,
+					    TREE_CHAIN (default_arg));
+    }
+  else
+    result = hash_tree_cons (default_arg, type, remaining_arg_types);
+  
+  return result;
 }
 
 /* Substitute into a FUNCTION_TYPE or METHOD_TYPE.  This routine does

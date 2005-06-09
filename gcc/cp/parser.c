@@ -14771,9 +14771,10 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
       tokens = DECL_PENDING_INLINE_INFO (member_function);
       DECL_PENDING_INLINE_INFO (member_function) = NULL;
       DECL_PENDING_INLINE_P (member_function) = 0;
-      /* If this was an inline function in a local class, enter the scope
-	 of the containing function.  */
-      function_scope = decl_function_context (member_function);
+      
+      /* If this is a local class, enter the scope of the containing
+	 function.  */
+      function_scope = current_function_decl;
       if (function_scope)
 	push_function_context_to (function_scope);
       
@@ -14854,33 +14855,49 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
        parameters;
        parameters = TREE_CHAIN (parameters))
     {
-      if (!TREE_PURPOSE (parameters)
-	  || TREE_CODE (TREE_PURPOSE (parameters)) != DEFAULT_ARG)
+      tree default_arg = TREE_PURPOSE (parameters);
+      tree parsed_arg;
+
+      if (!default_arg)
+	continue;
+
+      if (TREE_CODE (default_arg) != DEFAULT_ARG)
+	/* This can happen for a friend declaration for a function
+	   already declared with default arguments.  */
 	continue;
   
-       /* Save away the current lexer.  */
+      /* Save away the current lexer.  */
       saved_lexer = parser->lexer;
-       /* Create a new one, using the tokens we have saved.  */
-      tokens =  DEFARG_TOKENS (TREE_PURPOSE (parameters));
+      /* Create a new one, using the tokens we have saved.  */
+      tokens =  DEFARG_TOKENS (default_arg);
       parser->lexer = cp_lexer_new_from_tokens (tokens);
 
-       /* Set the current source position to be the location of the
-     	  first token in the default argument.  */
+      /* Set the current source position to be the location of the
+         first token in the default argument.  */
       cp_lexer_peek_token (parser->lexer);
 
-       /* Local variable names (and the `this' keyword) may not appear
-     	  in a default argument.  */
+      /* Local variable names (and the `this' keyword) may not appear
+     	 in a default argument.  */
       saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
       parser->local_variables_forbidden_p = true;
-       /* Parse the assignment-expression.  */
+      
+      /* Parse the assignment-expression.  */
       if (DECL_FRIEND_CONTEXT (fn))
 	push_nested_class (DECL_FRIEND_CONTEXT (fn));
       else if (DECL_CLASS_SCOPE_P (fn))
 	push_nested_class (DECL_CONTEXT (fn));
-      TREE_PURPOSE (parameters) = cp_parser_assignment_expression (parser);
+      parsed_arg = cp_parser_assignment_expression (parser);
       if (DECL_FRIEND_CONTEXT (fn) || DECL_CLASS_SCOPE_P (fn))
 	pop_nested_class ();
-
+      
+      TREE_PURPOSE (parameters) = parsed_arg;
+      
+      /* Update any instantiations we've already created.  */
+      for (default_arg = TREE_CHAIN (default_arg);
+	   default_arg;
+	   default_arg = TREE_CHAIN (default_arg))
+	TREE_PURPOSE (TREE_PURPOSE (default_arg)) = parsed_arg;
+     
       /* If the token stream has not been completely used up, then
 	 there was extra junk after the end of the default
 	 argument.  */

@@ -203,7 +203,9 @@ DEFTREECODE (USING_DECL, "using_decl", 'd', 0)
 /* A using directive. The operand is USING_STMT_NAMESPACE. */     
 DEFTREECODE (USING_STMT, "using_directive", 'e', 1)
 
-/* An un-parsed default argument.  Looks like an IDENTIFIER_NODE.  */
+/* An un-parsed default argument.
+   TREE_CHAIN is used to hold instantiations of functions that had to
+   be instantiated before the argument was parsed.  */
 DEFTREECODE (DEFAULT_ARG, "default_arg", 'x', 0)
 
 /* A template-id, like foo<int>.  The first operand is the template.

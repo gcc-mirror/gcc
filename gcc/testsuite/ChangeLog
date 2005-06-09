@@ -1,3 +1,15 @@
+2005-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21903
+	* g++.dg/parse/defarg9.C: New.
+
+	PR c++/19884
+	* g++.old-deja/g++.oliva/template6.C: Add another case.
+	* g++.dg/template/explicit6.C: New.
+
+	PR c++/19608
+	* g++.dg/parse/local-class1.C: New.
+
 2005-06-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/tls/debug-1.c: New test.

@@ -1,3 +1,23 @@
+2005-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21903
+	* cp-tree.def (DEFAULT_ARG): Document TREE_CHAIN use.
+	* parser.c (cp_parser_late_parsing_default_args): Propagate parsed
+	argument to any early instantiations.
+	* pt.c (tsubst_arg_types): Chain early instantiation of default
+	arg.
+
+	PR c++/19884
+	* pt.c (check_explicit_specialization): Make sure namespace
+	binding lookup found an overloaded function.
+	(lookup_template_function): Just assert FNS is an overloaded
+	function.
+
+	PR c++/19608
+	* parser.c (cp_parser_late_parsing_for_member): Use
+	current_function_decl as scope to push to and from.
+	testsuite:
+
 2005-06-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/20563
