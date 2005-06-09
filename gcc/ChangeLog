@@ -1,3 +1,8 @@
+2005-06-09  Daniel Berlin  <dberlin@dberlin.org>
+
+	* config/rs6000/rs6000.c: (rs6000_insn_valid_within_doloop): Fix
+	prototype.
+
 2005-06-08  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in (OBJS-common): Add tree-ssa-structalias.o.
