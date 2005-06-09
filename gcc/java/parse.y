@@ -96,7 +96,7 @@ static tree lookup_java_method2 (tree, tree, int);
 static tree method_header (int, tree, tree, tree);
 static void fix_method_argument_names (tree ,tree);
 static tree method_declarator (tree, tree);
-static void parse_warning_context (tree cl, const char *gmsgid, ...);
+static void parse_warning_context (tree cl, const char *gmsgid, ...) ATTRIBUTE_GCC_DIAG(2,3);
 #ifdef USE_MAPPED_LOCATION
 static void issue_warning_error_from_context
   (source_location, const char *gmsgid, va_list *);

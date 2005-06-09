@@ -120,6 +120,10 @@ extern tree stabilize_reference (tree);
     }
 #endif
 
+#ifdef ATTRIBUTE_GCC_DIAG
+extern void parse_error_context (tree cl, const char *gmsgid, ...) ATTRIBUTE_GCC_DIAG(2,3);
+#endif
+
 #define ABSTRACT_CHECK(FLAG, V, CL, S)				\
   if ((FLAG) & (V))						\
     parse_error_context ((CL), "%s method can't be abstract", (S));
