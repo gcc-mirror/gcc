@@ -1,3 +1,11 @@
+2005-06-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c/21759
+	* c.opt (Wc++-compat): New.
+	* doc/invoke.texi (-Wc++-compat): Document.
+	* c-typeck.c (convert_for_assignment): Check for implicit
+	conversion void* -> T*.
+
 2005-06-09  Gabriel Dos Reis  <gdr@cs.tamu.edu>
 
 	* machmode.h (to_machine_mode): New.
