@@ -1,3 +1,8 @@
+2005-06-09  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (enum bfin_builtins): Moved here from...
+	* config/bfin/bfin.h (enum bfin_builtins): ... here.
+
 2005-06-09  Adrian Straetling  <straetling@de.ibm.com>
 
 	* target.h (insn_valid_within_doloop): Rename into
