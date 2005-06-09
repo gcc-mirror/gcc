@@ -250,7 +250,7 @@ public class RMIClassLoader
    * 
    * @throws MalformedURLException if the codebase contains a malformed URL
    */
-  private static ClassLoader getClassLoader (String codebases) 
+  public static ClassLoader getClassLoader (String codebases) 
     throws MalformedURLException
   {
     ClassLoader loader;
