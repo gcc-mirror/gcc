@@ -51,6 +51,8 @@ enum rtx_code  {
 #define NUM_RTX_CODE ((int) LAST_AND_UNUSED_RTX_CODE)
 				/* The cast here, saves many elsewhere.  */
 
+#define to_rtx_code(CODE)    ((enum rtx_code) (CODE))
+
 /* Register Transfer Language EXPRESSIONS CODE CLASSES */
 
 enum rtx_class  {

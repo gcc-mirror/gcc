@@ -25,6 +25,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Make an enum class that gives all the machine modes.  */
 #include "insn-modes.h"
 
+/* Given MODE as integer value, get the corresponding enum machine_mode
+   enumeration value.  */
+#define to_machine_mode(MODE)  ((enum machine_mode) (MODE))
+
 /* Get the name of mode MODE as a string.  */
 
 extern const char * const mode_name[NUM_MACHINE_MODES];
