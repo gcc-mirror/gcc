@@ -962,8 +962,10 @@ OBJS-common = \
  varasm.o varray.o vec.o version.o vmsdbgout.o xcoffout.o alloc-pool.o	   \
  et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) web.o passes.o	   \
  rtl-profile.o tree-profile.o rtlhooks.o cfgexpand.o lambda-mat.o          \
+ lambda-trans.o	lambda-code.o tree-loop-linear.o tree-ssa-sink.o 	   \
  lambda-trans.o lambda-code.o tree-loop-linear.o tree-ssa-sink.o           \
- tree-vrp.o tree-stdarg.o tree-cfgcleanup.o tree-ssa-reassoc.o
+ tree-vrp.o tree-stdarg.o tree-cfgcleanup.o tree-ssa-reassoc.o		   \
+ tree-ssa-structalias.o
 
 
 OBJS-md = $(out_object_file)
@@ -1661,6 +1663,9 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(PARAMS_H) $(FLAGS_H) function.h $(EXPR_H) $(RTL_H) \
    $(GGC_H) $(TM_P_H) $(TARGET_H) langhooks.h $(REGS_H) gt-stor-layout.h \
    toplev.h
+tree-ssa-structalias.o: tree-ssa-structalias.c tree-ssa-structalias.h \
+   $(SYSTEM_H) $(CONFIG_H) $(GGC_H) $(TREE_H) $(TREE_FLOW_H) \
+   $(TM_H) coretypes.h cgraph.h tree-pass.h $(TIMEVAR_H)
 tree-ssa.o : tree-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h $(DIAGNOSTIC_H) \
    toplev.h function.h $(TIMEVAR_H) $(TM_H) coretypes.h \

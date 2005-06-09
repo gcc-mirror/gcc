@@ -874,7 +874,16 @@ static void
 compute_flow_sensitive_aliasing (struct alias_info *ai)
 {
   size_t i;
-
+  
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
+    {
+      tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+      if (pi->pt_anything || pi->pt_vars == NULL)
+	{
+	  find_what_p_points_to (ptr);
+	}
+    }
   create_name_tags (ai);
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
@@ -2810,82 +2819,6 @@ new_type_alias (tree ptr, tree var)
   /* Note, TAG and its set of aliases are not marked for renaming.  */
 }
 
-
-/* This structure is simply used during pushing fields onto the fieldstack
-   to track the offset of the field, since bitpos_of_field gives it relative
-   to its immediate containing type, and we want it relative to the ultimate
-   containing object.  */
-
-typedef struct fieldoff
-{
-  tree field;
-  HOST_WIDE_INT offset;  
-} fieldoff_s;
-
-DEF_VEC_O (fieldoff_s);
-DEF_VEC_ALLOC_O(fieldoff_s,heap);
-
-/* Return the position, in bits, of FIELD_DECL from the beginning of its
-   structure. 
-   Return -1 if the position is conditional or otherwise non-constant
-   integer.  */
-
-static HOST_WIDE_INT
-bitpos_of_field (const tree fdecl)
-{
-
-  if (TREE_CODE (DECL_FIELD_OFFSET (fdecl)) != INTEGER_CST
-      || TREE_CODE (DECL_FIELD_BIT_OFFSET (fdecl)) != INTEGER_CST)
-    return -1;
-
-  return (tree_low_cst (DECL_FIELD_OFFSET (fdecl), 1) * 8) 
-    + tree_low_cst (DECL_FIELD_BIT_OFFSET (fdecl), 1);
-}
-
-/* Given a TYPE, and a vector of field offsets FIELDSTACK, push all the fields
-   of TYPE onto fieldstack, recording their offsets along the way.
-   OFFSET is used to keep track of the offset in this entire structure, rather
-   than just the immediately containing structure.  Returns the number
-   of fields pushed. */
-
-static int
-push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack, 
-			     HOST_WIDE_INT offset)
-{
-  tree field;
-  int count = 0;
-
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-    if (TREE_CODE (field) == FIELD_DECL)
-      {
-	bool push = false;
-      
-	if (!var_can_have_subvars (field))
-	  push = true;
-	else if (!(push_fields_onto_fieldstack
-		   (TREE_TYPE (field), fieldstack,
-		    offset + bitpos_of_field (field)))
-		 && DECL_SIZE (field)
-		 && !integer_zerop (DECL_SIZE (field)))
-	  /* Empty structures may have actual size, like in C++. So
-	     see if we didn't push any subfields and the size is
-	     nonzero, push the field onto the stack */
-	  push = true;
-	
-	if (push)
-	  {
-	    fieldoff_s *pair;
-
-	    pair = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
-	    pair->field = field;
-	    pair->offset = offset + bitpos_of_field (field);
-	    count++;
-	  }
-      }
-  return count;
-}
-
-
 /* This represents the used range of a variable.  */
 
 typedef struct used_part
@@ -2925,22 +2858,6 @@ get_or_create_used_part_for (size_t uid)
   return up;
 }
 
-/* qsort comparison function for two fieldoff's PA and PB */
-
-static int 
-fieldoff_compare (const void *pa, const void *pb)
-{
-  const fieldoff_s *foa = (const fieldoff_s *)pa;
-  const fieldoff_s *fob = (const fieldoff_s *)pb;
-  HOST_WIDE_INT foasize, fobsize;
-  
-  if (foa->offset != fob->offset)
-    return foa->offset - fob->offset;
-
-  foasize = TREE_INT_CST_LOW (DECL_SIZE (foa->field));
-  fobsize = TREE_INT_CST_LOW (DECL_SIZE (fob->field));
-  return foasize - fobsize;
-}
 
 /* Given an aggregate VAR, create the subvariables that represent its
    fields.  */
@@ -2956,7 +2873,7 @@ create_overlap_variables_for (tree var)
     return;
 
   up = used_portions[uid];
-  push_fields_onto_fieldstack (TREE_TYPE (var), &fieldstack, 0);
+  push_fields_onto_fieldstack (TREE_TYPE (var), &fieldstack, 0, NULL);
   if (VEC_length (fieldoff_s, fieldstack) != 0)
     {
       subvar_t *subvars;
@@ -3024,10 +2941,7 @@ create_overlap_variables_for (tree var)
       /* Otherwise, create the variables.  */
       subvars = lookup_subvars_for_var (var);
       
-      qsort (VEC_address (fieldoff_s, fieldstack), 
-	     VEC_length (fieldoff_s, fieldstack), 
-	     sizeof (fieldoff_s),
-	     fieldoff_compare);
+      sort_fieldstack (fieldstack);
 
       for (i = VEC_length (fieldoff_s, fieldstack);
 	   VEC_iterate (fieldoff_s, fieldstack, --i, fo);)
