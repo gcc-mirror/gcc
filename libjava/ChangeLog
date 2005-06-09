@@ -1,5 +1,6 @@
 2005-06-08  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR libgcj/21949
 	* java/rmi/server/RMIClassLoader.java (getClassLoader): Make public.
 	From Gary Benson.
 
