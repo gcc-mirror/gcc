@@ -119,7 +119,7 @@
 ;; reg + const, which the patterns can't handle.
 ;; We only allow SYMBOL_REF if !flag_pic.
 (define_predicate "call_insn_operand"
-  (ior (and (match_test "!flag_pic") (match_code "symbol_ref"))
+  (ior (and (match_test "!flag_pic && !TARGET_LONG_CALLS") (match_code "symbol_ref"))
        (match_operand 0 "register_no_elim_operand")))
 
 ;; Test for an operator valid in a conditional branch
