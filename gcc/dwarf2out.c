@@ -12523,6 +12523,11 @@ decls_for_scope (tree stmt, dw_die_ref context_die, int depth)
 	  
 	  if (die != NULL && die->die_parent == NULL)
 	    add_child_die (context_die, die);
+	  /* Do not produce debug information for static variables since
+	     these might be optimized out.  We are called for these later
+	     in cgraph_varpool_analyze_pending_decls. */
+	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	    ;
 	  else
 	    gen_decl_die (decl, context_die);
 	}
@@ -13069,6 +13074,10 @@ dwarf2out_decl (tree decl)
 	 miss things which really ought to be in scope at a given point.  */
       if (DECL_EXTERNAL (decl) && !TREE_USED (decl))
 	return;
+
+      /* For local statics lookup proper context die.  */
+      if (TREE_STATIC (decl) && decl_function_context (decl))
+	context_die = lookup_decl_die (DECL_CONTEXT (decl));
 
       /* If we are in terse mode, don't generate any DIEs to represent any
 	 variable declarations or definitions.  */
