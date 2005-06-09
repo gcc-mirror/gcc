@@ -1,3 +1,8 @@
+2005-06-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (mextr_rl): Set buffer size properly.
+	(*mextr_lr): Likewise.
+
 2005-06-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c/21759
