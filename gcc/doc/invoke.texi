@@ -219,7 +219,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waggregate-return -Wno-attributes @gol
--Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
+-Wc++-compat -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  -Wno-endif-labels @gol
 -Werror  -Werror-implicit-function-declaration @gol
@@ -2992,6 +2992,11 @@ to functions.
 @opindex Wbad-function-cast
 Warn whenever a function call is cast to a non-matching type.
 For example, warn if @code{int malloc()} is cast to @code{anything *}.
+
+@item -Wc++-compat
+Warn about ISO C constructs that are outside of the common subset of
+ISO C and ISO C++, e.g.@: request for implicit conversion from
+@code{void *} to a pointer to non-@code{void} type.
 
 @item -Wcast-qual
 @opindex Wcast-qual

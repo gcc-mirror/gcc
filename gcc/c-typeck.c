@@ -3779,6 +3779,18 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
                            || targetm.vector_opaque_p (rhstype))
         && TREE_CODE (ttl) == VECTOR_TYPE
         && TREE_CODE (ttr) == VECTOR_TYPE;
+      
+      /* C++ does not allow the implicit conversion void* -> T*.  However,
+         for the purpose of reducing the number of false positives, we
+         tolerate the special case of
+
+                int *p = NULL;
+
+         where NULL is typically defined in C to be '(void *) 0'.  */
+      if (OPT_Wc___compat && VOID_TYPE_P (ttr) && rhs != null_pointer_node
+          && !VOID_TYPE_P (ttl))
+        warning (OPT_Wc___compat, "request for implicit conversion from "
+                 "%qT to %qT not permitted in C++", rhstype, type);
 
       /* Any non-function converts to a [const][volatile] void *
 	 and vice versa; otherwise, targets must be the same.

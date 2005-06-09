@@ -128,6 +128,11 @@ Wbad-function-cast
 C ObjC Var(warn_bad_function_cast)
 Warn about casting functions to incompatible types
 
+Wc++-compat
+C Var(warn_cxx_compat)
+Warn about C constructs that are not in the common subset of C and C++
+
+
 Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual)
 Warn about casts which discard qualifiers
