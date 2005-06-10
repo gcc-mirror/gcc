@@ -906,8 +906,8 @@ static const char alt_reg_names[][8] =
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL rs6000_function_ok_for_sibcall
 
-#undef TARGET_INSN_VALID_WITHIN_DOLOOP
-#define TARGET_INSN_VALID_WITHIN_DOLOOP rs6000_invalid_within_doloop
+#undef TARGET_INVALID_WITHIN_DOLOOP
+#define TARGET_INVALID_WITHIN_DOLOOP rs6000_invalid_within_doloop
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS rs6000_rtx_costs
@@ -1543,6 +1543,10 @@ rs6000_parse_tls_size_option (void)
 void
 optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 {
+  if (DEFAULT_ABI == ABI_DARWIN)
+    /* The Darwin libraries never set errno, so we might as well
+       avoid calling them when that's the only reason we would.  */
+    flag_errno_math = 0;
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */
