@@ -2164,17 +2164,28 @@ perfect_nest_p (struct loop *loop)
   return true;
 }
 
-/* Replace the USES of tree X in STMT with tree Y */
+/* Replace the USES of X in STMT, or uses with the same step as X  with Y.  */
 
 static void
-replace_uses_of_x_with_y (tree stmt, tree x, tree y)
+replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x, 
+				int xstep, tree y)
 {
   ssa_op_iter iter;
   use_operand_p use_p;
 
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
     {
-      if (USE_FROM_PTR (use_p) == x)
+      tree use = USE_FROM_PTR (use_p);
+      tree step = NULL_TREE;
+      tree access_fn = NULL_TREE;
+      
+      
+      access_fn = instantiate_parameters
+	(loop, analyze_scalar_evolution (loop, use));
+      if (access_fn != NULL_TREE)
+	step = evolution_part_in_loop_num (access_fn, loop->num);
+      if ((step && int_cst_value (step) == xstep)
+	  || USE_FROM_PTR (use_p) == x)
 	SET_USE (use_p, y);
     }
 }
@@ -2195,6 +2206,56 @@ stmt_uses_op (tree stmt, tree op)
   return false;
 }
 
+/* Return true if STMT is an exit PHI for LOOP */
+
+static bool
+exit_phi_for_loop_p (struct loop *loop, tree stmt)
+{
+  
+  if (TREE_CODE (stmt) != PHI_NODE
+      || PHI_NUM_ARGS (stmt) != 1
+      || bb_for_stmt (stmt) != loop->single_exit->dest)
+    return false;
+  
+  return true;
+}
+
+/* Return true if STMT can be put back into INNER, a loop by moving it to the 
+   beginning of that loop.  */
+
+static bool
+can_put_in_inner_loop (struct loop *inner, tree stmt)
+{
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  basic_block use_bb = NULL;
+  
+  gcc_assert (TREE_CODE (stmt) == MODIFY_EXPR);
+  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS)
+      || !expr_invariant_in_loop_p (inner, TREE_OPERAND (stmt, 1)))
+    return false;
+  
+  /* We require that the basic block of all uses be the same, or the use be an
+     exit phi.  */
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, TREE_OPERAND (stmt, 0))
+    {
+      if (!exit_phi_for_loop_p (inner, USE_STMT (use_p)))
+	{
+	  basic_block immbb = bb_for_stmt (USE_STMT (use_p));
+
+	  if (!flow_bb_inside_loop_p (inner, immbb))
+	    return false;
+	  if (use_bb == NULL)
+	    use_bb = immbb;
+	  else if (immbb != use_bb)
+	    return false;
+	}
+    }
+  return true;
+  
+}
+
+
 /* Return TRUE if LOOP is an imperfect nest that we can convert to a perfect
    one.  LOOPIVS is a vector of induction variables, one per loop.  
    ATM, we only handle imperfect nests of depth 2, where all of the statements
@@ -2214,8 +2275,6 @@ can_convert_to_perfect_nest (struct loop *loop,
   if (!loop->inner || loop->inner->inner)
     return false;
   
-  /* We only handle moving the after-inner-body statements right now, so make
-     sure all the statements we need to move are located in that position.  */
   bbs = get_loop_body (loop);
   exit_condition = get_loop_exit_condition (loop);
   for (i = 0; i < loop->num_nodes; i++)
@@ -2237,8 +2296,24 @@ can_convert_to_perfect_nest (struct loop *loop,
 		if (stmt_uses_op (stmt, iv))
 		  goto fail;
 	      
-	      /* If the bb of a statement we care about isn't dominated by 
-		 the header of the inner loop, then we are also screwed.  */
+	      /* If this is a simple operation like a cast that is invariant
+		 in the inner loop, only used there, and we can place it
+		 there, then it's not going to hurt us.
+		 This means that we will propagate casts and other cheap
+		 invariant operations *back*
+		 into the inner loop if we can interchange the loop, on the
+		 theory that we are going to gain a lot more by interchanging
+		 the loop than we are by leaving some invariant code there for
+		 some other pass to clean up.  */
+	      if (TREE_CODE (stmt) == MODIFY_EXPR
+		  && is_gimple_cast (TREE_OPERAND (stmt, 1))
+		  && can_put_in_inner_loop (loop->inner, stmt))
+		continue;
+
+	      /* Otherwise, if the bb of a statement we care about isn't
+		 dominated by the header of the inner loop, then we can't
+		 handle this case right now.  This test ensures that the
+		 statement comes completely *after* the inner loop.  */
 	      if (!dominated_by_p (CDI_DOMINATORS,
 				   bb_for_stmt (stmt), 
 				   loop->inner->header))
@@ -2300,6 +2375,7 @@ can_convert_to_perfect_nest (struct loop *loop,
    }
 
    Return FALSE if we can't make this loop into a perfect nest.  */
+
 static bool
 perfect_nestify (struct loops *loops,
 		 struct loop *loop,
@@ -2312,7 +2388,7 @@ perfect_nestify (struct loops *loops,
   tree exit_condition;
   tree then_label, else_label, cond_stmt;
   basic_block preheaderbb, headerbb, bodybb, latchbb, olddest;
-  size_t i;
+  int i;
   block_stmt_iterator bsi;
   bool insert_after;
   edge e;
@@ -2393,11 +2469,12 @@ perfect_nestify (struct loops *loops,
   set_immediate_dominator (CDI_DOMINATORS, latchbb, bodybb);
   set_immediate_dominator (CDI_DOMINATORS, olddest, bodybb);
   /* Create the new iv.  */
-  ivvar = create_tmp_var (integer_type_node, "perfectiv");
+  oldivvar = VEC_index (tree, loopivs, 0);
+  ivvar = create_tmp_var (TREE_TYPE (oldivvar), "perfectiv");
   add_referenced_tmp_var (ivvar);
   standard_iv_increment_position (newloop, &bsi, &insert_after);
   create_iv (VEC_index (tree, lbounds, 0),
-	     build_int_cst (integer_type_node, VEC_index (int, steps, 0)),
+	     build_int_cst (TREE_TYPE (oldivvar), VEC_index (int, steps, 0)),
 	     ivvar, newloop, &bsi, insert_after, &ivvar, &ivvarinced);	     
 
   /* Create the new upper bound.  This may be not just a variable, so we copy
@@ -2421,40 +2498,93 @@ perfect_nestify (struct loops *loops,
 					   uboundvar,
 					   ivvarinced);
   update_stmt (exit_condition);
-  bbs = get_loop_body (loop); 
-  /* Now replace the induction variable in the moved statements with the
-     correct loop induction variable.  */
+  bbs = get_loop_body_in_dom_order (loop); 
+  /* Now move the statements, and replace the induction variable in the moved
+     statements with the correct loop induction variable.  */
   oldivvar = VEC_index (tree, loopivs, 0);
-  for (i = 0; i < loop->num_nodes; i++)
+  for (i = loop->num_nodes - 1; i >= 0 ; i--)
     {
       block_stmt_iterator tobsi = bsi_last (bodybb);
       if (bbs[i]->loop_father == loop)
 	{
-	  /* Note that the bsi only needs to be explicitly incremented
-	     when we don't move something, since it is automatically
-	     incremented when we do.  */
-	  for (bsi = bsi_start (bbs[i]); !bsi_end_p (bsi);)
-	    { 
-	      ssa_op_iter i;
-	      tree n, stmt = bsi_stmt (bsi);
+	  /* If this is true, we are *before* the inner loop.
+	     If this isn't true, we are *after* it.
 
-	      if (stmt == exit_condition
-		  || not_interesting_stmt (stmt)
-		  || stmt_is_bumper_for_loop (loop, stmt))
-		{
-		  bsi_next (&bsi);
-		  continue;
+	     The only time can_convert_to_perfect_nest returns true when we
+	     have statements before the inner loop is if they can be moved
+	     into the inner loop. 
+
+	     The only time can_convert_to_perfect_nest returns true when we
+	     have statements after the inner loop is if they can be moved into
+	     the new split loop.  */
+
+	  if (dominated_by_p (CDI_DOMINATORS, loop->inner->header, bbs[i]))
+	    {
+	      for (bsi = bsi_last (bbs[i]); !bsi_end_p (bsi);)
+		{ 
+		  use_operand_p use_p;
+		  imm_use_iterator imm_iter;
+		  tree stmt = bsi_stmt (bsi);
+
+		  if (stmt == exit_condition
+		      || not_interesting_stmt (stmt)
+		      || stmt_is_bumper_for_loop (loop, stmt))
+		    {
+		      if (!bsi_end_p (bsi))
+			bsi_prev (&bsi);
+		      continue;
+		    }
+		  /* Move this statement back into the inner loop.
+		     This looks a bit confusing, but we are really just
+		     finding the first non-exit phi use and moving the
+		     statement to the beginning of that use's basic
+		     block.  */
+		  FOR_EACH_IMM_USE_SAFE (use_p, imm_iter, 
+					 TREE_OPERAND (stmt, 0))
+		    {
+		      tree imm_stmt = USE_STMT (use_p);
+		      if (!exit_phi_for_loop_p (loop->inner, imm_stmt))
+			{
+			  block_stmt_iterator tobsi = bsi_after_labels (bb_for_stmt (imm_stmt));
+			  bsi_move_after (&bsi, &tobsi);
+			  update_stmt (stmt);
+			  BREAK_FROM_SAFE_IMM_USE (imm_iter);
+			} 
+		    }
 		}
-
-	      replace_uses_of_x_with_y (stmt, oldivvar, ivvar);
-	      bsi_move_before (&bsi, &tobsi);
-
-	      /* If the statement has any virtual operands, they may
-		 need to be rewired because the original loop may
-		 still reference them.  */
-	      FOR_EACH_SSA_TREE_OPERAND (n, stmt, i, SSA_OP_ALL_VIRTUALS)
-		mark_sym_for_renaming (SSA_NAME_VAR (n));
 	    }
+	  else
+	    { 
+	      /* Note that the bsi only needs to be explicitly incremented
+		 when we don't move something, since it is automatically
+		 incremented when we do.  */
+	      for (bsi = bsi_start (bbs[i]); !bsi_end_p (bsi);)
+		{ 
+		  ssa_op_iter i;
+		  tree n, stmt = bsi_stmt (bsi);
+		  
+		  if (stmt == exit_condition
+		      || not_interesting_stmt (stmt)
+		      || stmt_is_bumper_for_loop (loop, stmt))
+		    {
+		      bsi_next (&bsi);
+		      continue;
+		    }
+		  
+		  replace_uses_equiv_to_x_with_y (loop, stmt, 
+						  oldivvar,  
+						  VEC_index (int, steps, 0),
+						  ivvar);
+		  bsi_move_before (&bsi, &tobsi);
+		  
+		  /* If the statement has any virtual operands, they may
+		     need to be rewired because the original loop may
+		     still reference them.  */
+		  FOR_EACH_SSA_TREE_OPERAND (n, stmt, i, SSA_OP_ALL_VIRTUALS)
+		    mark_sym_for_renaming (SSA_NAME_VAR (n));
+		}
+	    }
+	  
 	}
     }
 

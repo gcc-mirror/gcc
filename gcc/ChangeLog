@@ -1,3 +1,13 @@
+2005-06-10  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lambda-code.c (replace_uses_of_x_with_y): Renamed and rewritten
+        slightly.
+	(exit_phi_for_loop_p): New function.
+	(can_put_in_inner_loop): Ditto.
+	(can_convert_to_perfect_nest): Ditto.
+	(perfect_nestify): Create iv with right type.
+	Rewrite statements in correct order.	
+
 2005-06-10  Keith Besaw  <kbesaw@us.ibm.com>
 
 	* tree-ssa-alias.c (new_type_alias): Use existing type
