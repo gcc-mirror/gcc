@@ -1,7 +1,12 @@
 2005-06-10  Daniel Berlin  <dberlin@dberlin.org>
 
+	* lambda-code.c (replace_uses_equiv_to_x_with_y): Check step
+	and access function against chrec_dont_know.
+	  
+2005-06-10  Daniel Berlin  <dberlin@dberlin.org>
+
 	* lambda-code.c (replace_uses_of_x_with_y): Renamed and rewritten
-        slightly.
+	slightly.
 	(exit_phi_for_loop_p): New function.
 	(can_put_in_inner_loop): Ditto.
 	(can_convert_to_perfect_nest): Ditto.
