@@ -1,3 +1,8 @@
+2005-06-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (eq): Convert to define_insn_and_split.
+	* config/rs6000/predicates.md (scc_eq_operand): New.
+
 2005-06-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (mextr_rl): Set buffer size properly.
