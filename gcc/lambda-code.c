@@ -2182,9 +2182,9 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
       
       access_fn = instantiate_parameters
 	(loop, analyze_scalar_evolution (loop, use));
-      if (access_fn != NULL_TREE)
+      if (access_fn != NULL_TREE && access_fn != chrec_dont_know)
 	step = evolution_part_in_loop_num (access_fn, loop->num);
-      if ((step && int_cst_value (step) == xstep)
+      if ((step && step != chrec_dont_know && int_cst_value (step) == xstep)
 	  || USE_FROM_PTR (use_p) == x)
 	SET_USE (use_p, y);
     }
