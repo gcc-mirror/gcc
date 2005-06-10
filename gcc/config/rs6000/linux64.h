@@ -207,7 +207,7 @@ extern int dot_symbols;
 #endif
 
 /* We use glibc _mcount for profiling.  */
-#define NO_PROFILE_COUNTERS TARGET_64BIT
+#define NO_PROFILE_COUNTERS 1
 #define PROFILE_HOOK(LABEL) \
   do { if (TARGET_64BIT) output_profile_hook (LABEL); } while (0)
 

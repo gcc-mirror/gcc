@@ -15433,7 +15433,6 @@ void
 output_function_profiler (FILE *file, int labelno)
 {
   char buf[100];
-  int save_lr = 8;
 
   switch (DEFAULT_ABI)
     {
@@ -15441,7 +15440,6 @@ output_function_profiler (FILE *file, int labelno)
       gcc_unreachable ();
 
     case ABI_V4:
-      save_lr = 4;
       if (!TARGET_32BIT)
 	{
 	  warning (0, "no profiling of 64-bit code for this ABI");
@@ -15449,11 +15447,28 @@ output_function_profiler (FILE *file, int labelno)
 	}
       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
       fprintf (file, "\tmflr %s\n", reg_names[0]);
-      if (flag_pic == 1)
+      if (NO_PROFILE_COUNTERS)
+	{
+	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
+		       reg_names[0], reg_names[1]);
+	}
+      else if (TARGET_SECURE_PLT && flag_pic)
+	{
+	  asm_fprintf (file, "\tbcl 20,31,1f\n1:\n\t{st|stw} %s,4(%s)\n",
+		       reg_names[0], reg_names[1]);
+	  asm_fprintf (file, "\tmflr %s\n", reg_names[12]);
+	  asm_fprintf (file, "\t{cau|addis} %s,%s,",
+		       reg_names[12], reg_names[12]);
+	  assemble_name (file, buf);
+	  asm_fprintf (file, "-1b@ha\n\t{cal|la} %s,", reg_names[0]);
+	  assemble_name (file, buf);
+	  asm_fprintf (file, "-1b@l(%s)\n", reg_names[12]);
+	}
+      else if (flag_pic == 1)
 	{
 	  fputs ("\tbl _GLOBAL_OFFSET_TABLE_@local-4\n", file);
-	  asm_fprintf (file, "\t{st|stw} %s,%d(%s)\n",
-		       reg_names[0], save_lr, reg_names[1]);
+	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
+		       reg_names[0], reg_names[1]);
 	  asm_fprintf (file, "\tmflr %s\n", reg_names[12]);
 	  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[0]);
 	  assemble_name (file, buf);
@@ -15461,10 +15476,10 @@ output_function_profiler (FILE *file, int labelno)
 	}
       else if (flag_pic > 1)
 	{
-	  asm_fprintf (file, "\t{st|stw} %s,%d(%s)\n",
-		       reg_names[0], save_lr, reg_names[1]);
+	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
+		       reg_names[0], reg_names[1]);
 	  /* Now, we need to get the address of the label.  */
-	  fputs ("\tbl 1f\n\t.long ", file);
+	  fputs ("\tbcl 20,31,1f\n\t.long ", file);
 	  assemble_name (file, buf);
 	  fputs ("-.\n1:", file);
 	  asm_fprintf (file, "\tmflr %s\n", reg_names[11]);
@@ -15478,8 +15493,8 @@ output_function_profiler (FILE *file, int labelno)
 	  asm_fprintf (file, "\t{liu|lis} %s,", reg_names[12]);
 	  assemble_name (file, buf);
 	  fputs ("@ha\n", file);
-	  asm_fprintf (file, "\t{st|stw} %s,%d(%s)\n",
-		       reg_names[0], save_lr, reg_names[1]);
+	  asm_fprintf (file, "\t{st|stw} %s,4(%s)\n",
+		       reg_names[0], reg_names[1]);
 	  asm_fprintf (file, "\t{cal|la} %s,", reg_names[0]);
 	  assemble_name (file, buf);
 	  asm_fprintf (file, "@l(%s)\n", reg_names[12]);
