@@ -1,3 +1,7 @@
+2005-06-10  Fariborz Jahanian <fjahanian@apple.com>
+	* rs6000/predicates.md (scc_operand): New.
+	* rs6000/rs6000.md : Use scc_operand for eq:SI compares.
+
 2005-06-10  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-analyze.c (vect_analyze_data_ref_dependence): DRs whose
