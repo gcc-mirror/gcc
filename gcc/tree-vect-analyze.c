@@ -853,7 +853,8 @@ vect_analyze_data_ref_dependence (struct data_reference *dra,
   int dist = 0;
   unsigned int loop_depth = 0;
   struct loop *loop_nest = loop;  
-
+  stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
+  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
   
   if (!vect_base_addr_differ_p (dra, drb, &differ_p))
     {
@@ -924,10 +925,13 @@ vect_analyze_data_ref_dependence (struct data_reference *dra,
   dist = DDR_DIST_VECT (ddr)[loop_depth];
 
   /* Same loop iteration.  */
-  if (dist == 0)
+  if (dist % vectorization_factor == 0)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
-	fprintf (vect_dump, "dependence distance 0.");
+      /* Two references with distance zero have the same alignment.  */
+      VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a), drb);
+      VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b), dra);
+      if (vect_print_dump_info (REPORT_ALIGNMENT, LOOP_LOC (loop_vinfo)))
+	fprintf (vect_dump, "accesses have the same alignment.");
       return false;
     }
 
@@ -1146,7 +1150,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   varray_type loop_read_datarefs = LOOP_VINFO_DATAREF_READS (loop_vinfo);
   varray_type loop_write_datarefs = LOOP_VINFO_DATAREF_WRITES (loop_vinfo);
   varray_type datarefs;
+  VEC(dr_p,heap) *same_align_drs;
   struct data_reference *dr0 = NULL;
+  struct data_reference *dr;
   unsigned int i, j;
 
   /*
@@ -1300,7 +1306,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      else if (known_alignment_for_access_p (dr)
 		       && known_alignment_for_access_p (dr0))
 		{
-		  int drsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
+		  int drsize = 
+			GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
 
 		  DR_MISALIGNMENT (dr) += npeel * drsize;
 		  DR_MISALIGNMENT (dr) %= UNITS_PER_SIMD_WORD;
@@ -1310,6 +1317,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	    }
 	  datarefs = loop_read_datarefs;
 	}
+
+      same_align_drs = 
+	STMT_VINFO_SAME_ALIGN_REFS (vinfo_for_stmt (DR_STMT (dr0)));
+      for (i = 0; VEC_iterate (dr_p, same_align_drs, i, dr); i++)
+        {
+          DR_MISALIGNMENT (dr) = 0;
+        }
 
       DR_MISALIGNMENT (dr0) = 0;
     }

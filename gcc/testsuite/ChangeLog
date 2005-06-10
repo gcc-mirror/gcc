@@ -1,3 +1,14 @@
+2005-06-10  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gfortran.dg/vect/vect-4.f90: Update comments. Only one unaligned
+	access will be generated when this loop is vectorized. Test that
+	accesses with same alignment were detected.
+	* gcc.dg/vect/vect-dv-2.c: Remove "vect_no_align" from xfail.
+	Test that accesses with same alignment were detected.
+	* gcc.dg/vect/vect-ifcvt-1.c: Likewise.
+	* gcc.dg/vect/vect-91.c: New test. Test that accesses with same 
+	alignment were detected.
+
 2005-06-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* gcc.dg/Wcxx-compat-1.c: New.

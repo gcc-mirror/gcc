@@ -962,9 +962,9 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     {
       SSA_NAME_DEF_STMT (def) = *vec_stmt;
 
-      /* If this virtual def has a use outside the loop and a loop peel is performed
-         then the def may be renamed by the peel.  Mark it for renaming so the
-         later use will also be renamed.  */
+      /* If this virtual def has a use outside the loop and a loop peel is 
+	 performed then the def may be renamed by the peel.  Mark it for 
+	 renaming so the later use will also be renamed.  */
       mark_sym_for_renaming (SSA_NAME_VAR (def));
     }
 
@@ -1776,7 +1776,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 #endif
 
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-    fprintf (vect_dump, "=== vect_transtorm_for_unknown_loop_bound ===");
+    fprintf (vect_dump, "=== vect_do_peeling_for_loop_bound ===");
 
   /* Generate the following variables on the preheader of original loop:
 	 

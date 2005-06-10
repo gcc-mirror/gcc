@@ -158,6 +158,10 @@ enum stmt_vec_info_type {
   condition_vec_info_type
 };
 
+typedef struct data_reference *dr_p;
+DEF_VEC_P(dr_p);
+DEF_VEC_ALLOC_P(dr_p,heap);
+
 typedef struct _stmt_vec_info {
 
   enum stmt_vec_info_type type;
@@ -230,6 +234,10 @@ typedef struct _stmt_vec_info {
      in bytes.  */
   tree misalignment;
 
+  /* List of datarefs that are known to have the same alignment as the dataref
+     of this stmt.  */
+  VEC(dr_p,heap) *same_align_refs;
+
   /* Classify the def of this stmt.  */
   enum vect_def_type def_type;
 
@@ -252,6 +260,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_VECT_STEP(S)           (S)->step
 #define STMT_VINFO_VECT_BASE_ALIGNED_P(S) (S)->base_aligned_p
 #define STMT_VINFO_VECT_MISALIGNMENT(S)   (S)->misalignment
+#define STMT_VINFO_SAME_ALIGN_REFS(S)     (S)->same_align_refs
 #define STMT_VINFO_DEF_TYPE(S)            (S)->def_type
 
 static inline void set_stmt_info (tree_ann_t ann, stmt_vec_info stmt_info);

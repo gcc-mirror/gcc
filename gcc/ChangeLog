@@ -1,3 +1,18 @@
+2005-06-10  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependence): DRs whose
+	dependence-distance modulo VF is 0 are recorded in the 
+	SAME_ALIGN_REFs VEC in each DR.
+	(vect_enhance_data_refs_alignment): Avoid 80 column overflow. The
+	alignment information of DRs that are in the SAME_ALIGN_REFs VEC of the
+	DR we want to peel for, is set to 0.
+	* tree-vect-transform.c (vect_do_peeling_for_loop_bound): Fix printout.
+	* tree-vectorizer.c (destroy_loop_vec_info): Free the SAME_ALIGN_REFs
+	VEC.
+	* tree-vectorizer.h (dr_p): New type. Defined to use the VEC API.
+	(_stmt_vec_info): Added new field same_align_refs.
+	(STMT_VINFO_SAME_ALIGN_REFS): New macro.
+
 2005-06-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h (VEC_safe_grow): Append MEM_STAT_INFO.
