@@ -3104,6 +3104,7 @@ ix86_function_value_regno_p (int regno)
     {
       return ((regno) == 0
 	      || ((regno) == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387)
+	      || ((regno) == FIRST_MMX_REG && TARGET_MMX)
 	      || ((regno) == FIRST_SSE_REG && TARGET_SSE));
     }
   return ((regno) == 0 || (regno) == FIRST_FLOAT_REG
@@ -3159,10 +3160,10 @@ ix86_return_in_memory (tree type)
       if (size < 8)
 	return 0;
 
-      /* MMX/3dNow values are returned on the stack, since we've
-	 got to EMMS/FEMMS before returning.  */
+      /* MMX/3dNow values are returned in MM0,
+	 except when it doesn't exits.  */
       if (size == 8)
-	return 1;
+	return (TARGET_MMX ? 0 : 1);
 
       /* SSE values are returned in XMM0, except when it doesn't exist.  */
       if (size == 16)
@@ -3191,18 +3192,32 @@ ix86_return_in_memory (tree type)
 static rtx
 ix86_struct_value_rtx (tree type, int incoming ATTRIBUTE_UNUSED)
 {
-  static bool warned;
+  static bool warnedsse, warnedmmx;
 
-  if (!TARGET_SSE && type && !warned)
+  if (type)
     {
       /* Look at the return type of the function, not the function type.  */
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (type));
 
-      if (mode == TImode
-	  || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
+      if (!TARGET_SSE && !warnedsse)
 	{
-	  warned = true;
-	  warning (0, "SSE vector return without SSE enabled changes the ABI");
+	  if (mode == TImode
+	      || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
+	    {
+	      warnedsse = true;
+	      warning (0, "SSE vector return without SSE enabled "
+		       "changes the ABI");
+	    }
+	}
+
+      if (!TARGET_MMX && !warnedmmx)
+	{
+	  if (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 8)
+	    {
+	      warnedmmx = true;
+	      warning (0, "MMX vector return without MMX enabled "
+		       "changes the ABI");
+	    }
 	}
     }
 
@@ -3243,6 +3258,11 @@ static int
 ix86_value_regno (enum machine_mode mode, tree func)
 {
   gcc_assert (!TARGET_64BIT);
+
+  /* 8-byte vector modes in %mm0. See ix86_return_in_memory for where
+     we prevent this case when mmx is not available.  */
+  if ((VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 8))
+    return FIRST_MMX_REG;
 
   /* 16-byte vector modes in %xmm0.  See ix86_return_in_memory for where
      we prevent this case when sse is not available.  */
