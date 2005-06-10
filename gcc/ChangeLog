@@ -1,3 +1,15 @@
+2005-06-09  Dale Johannesen  <dalej@apple.com>
+
+	* config/i386/i386.c (optimization_options):  Make -fno-math-errno
+	the default on Darwin.
+	* config/rs6000/rs6000.c (optimization_options):  Ditto.
+	* doc/invoke.texi (-fno-math-errno): Document.
+
+2005-06-09  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (TARGET_INSN_VALID_WITHIN_DOLOOP):
+	Change to TARGET_INVALID_WITHIN_DOLOOP.
+
 2005-06-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (eq): Convert to define_insn_and_split.

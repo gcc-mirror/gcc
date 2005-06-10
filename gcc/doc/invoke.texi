@@ -5331,6 +5331,10 @@ math functions.
 
 The default is @option{-fmath-errno}.
 
+On Darwin systems, the math library never sets @code{errno}.  There is therefore
+no reason for the compiler to consider the possibility that it might,
+and @option{-fno-math-errno} is the default.
+
 @item -funsafe-math-optimizations
 @opindex funsafe-math-optimizations
 Allow optimizations for floating-point arithmetic that (a) assume
