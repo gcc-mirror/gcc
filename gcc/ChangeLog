@@ -1,3 +1,13 @@
+2005-06-10  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/21981
+	* config/i386/i386.c (ix86_function_value_regno_p): Return true
+	for FIRST_MMX_REG if TARGET_MMX.
+	(ix86_return_in_memory): Return 1 for MMX/3dNow vectors. Delete
+	wrong comment.
+	(ix86_struct_value_rtx): Emit warning for MMX ABI violations.
+	(ix86_value_regno): Return FIRST_MMX_REG for MMX vector modes.
+
 2005-06-10  Daniel Berlin  <dberlin@dberlin.org>
 
 	* lambda-code.c (replace_uses_equiv_to_x_with_y): Check step
