@@ -2787,8 +2787,11 @@ found_tag:
 }
 
 
-/* Create a type tag for PTR.  Construct the may-alias list of this type tag
-   so that it has the aliasing of VAR.  */
+/* Create a new type tag for PTR.  Construct the may-alias list of this type
+   tag so that it has the aliasing of VAR. 
+
+   Note, the set of aliases represented by the new type tag are not marked
+   for renaming.  */
 
 void
 new_type_alias (tree ptr, tree var)
@@ -2801,22 +2804,53 @@ new_type_alias (tree ptr, tree var)
 
   gcc_assert (p_ann->type_mem_tag == NULL_TREE);
   gcc_assert (v_ann->mem_tag_kind == NOT_A_TAG);
-  tag = create_memory_tag (tag_type, true);
-  p_ann->type_mem_tag = tag;
 
   /* Add VAR to the may-alias set of PTR's new type tag.  If VAR has
      subvars, add the subvars to the tag instead of the actual var.  */
   if (var_can_have_subvars (var)
       && (svars = get_subvars_for_var (var)))
     {
-      subvar_t sv;      
+      subvar_t sv;
+
+      tag = create_memory_tag (tag_type, true);
+      p_ann->type_mem_tag = tag;
+
       for (sv = svars; sv; sv = sv->next)
         add_may_alias (tag, sv->var);
     }
   else
-    add_may_alias (tag, var);
+    {
+      /* The following is based on code in add_stmt_operand to ensure that the
+	 same defs/uses/vdefs/vuses will be found after replacing a reference
+	 to var (or ARRAY_REF to var) with an INDIRECT_REF to ptr whose value
+	 is the address of var.  */
+      varray_type aliases = v_ann->may_aliases;
 
-  /* Note, TAG and its set of aliases are not marked for renaming.  */
+      if ((aliases != NULL)
+	  && (VARRAY_ACTIVE_SIZE (aliases) == 1))
+	{
+	  tree ali = VARRAY_TREE (aliases, 0);
+
+	  if (get_var_ann (ali)->mem_tag_kind == TYPE_TAG)
+	    {
+	      p_ann->type_mem_tag = ali;
+	      return;
+	    }
+	}
+
+      tag = create_memory_tag (tag_type, true);
+      p_ann->type_mem_tag = tag;
+
+      if (aliases == NULL)
+	add_may_alias (tag, var);
+      else
+	{
+	  size_t i;
+
+	  for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
+	    add_may_alias (tag, VARRAY_TREE (aliases, i));
+	}
+    }    
 }
 
 /* This represents the used range of a variable.  */
