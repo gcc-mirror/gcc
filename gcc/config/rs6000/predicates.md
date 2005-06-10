@@ -551,6 +551,11 @@
 	 (match_operand 0 "gpc_reg_operand")
 	 (match_operand 0 "logical_operand"))))
 
+;; Return 1 if the operand is either a logical operand or a short cint operand.
+(define_predicate "scc_eq_operand"
+  (ior (match_operand 0 "logical_operand")
+       (match_operand 0 "short_cint_operand")))
+
 ;; Return 1 if the operand is a general non-special register or memory operand.
 (define_predicate "reg_or_mem_operand"
   (if_then_else (match_code "mem")
