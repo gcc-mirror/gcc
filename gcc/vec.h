@@ -283,7 +283,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    uninitialized.  */
 
 #define VEC_safe_grow(T,A,V,I)		\
-	(VEC_OP(T,A,safe_grow)(&(V),I VEC_CHECK_INFO))
+	(VEC_OP(T,A,safe_grow)(&(V),I VEC_CHECK_INFO MEM_STAT_INFO))
 
 /* Replace element
    T VEC_T_replace (VEC(T) *v, unsigned ix, T val); // Integer
