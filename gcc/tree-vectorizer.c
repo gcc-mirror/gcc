@@ -1457,10 +1457,14 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
 	{
 	  tree stmt = bsi_stmt (si);
 	  stmt_ann_t ann = stmt_ann (stmt);
-
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	  free (stmt_info);
-	  set_stmt_info ((tree_ann_t)ann, NULL);
+
+	  if (stmt_info)
+	    {
+	      VEC_free (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmt_info));
+	      free (stmt_info);
+	      set_stmt_info ((tree_ann_t)ann, NULL);
+	    }
 	}
     }
 

@@ -69,5 +69,6 @@ int main ()
 
 
 
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "accesses have the same alignment." 2 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
