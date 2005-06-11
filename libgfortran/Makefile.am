@@ -243,11 +243,15 @@ generated/cshift1_8.c
 
 in_pack_c = \
 generated/in_pack_i4.c \
-generated/in_pack_i8.c
+generated/in_pack_i8.c \
+generated/in_pack_c4.c \
+generated/in_pack_c8.c
 
 in_unpack_c = \
 generated/in_unpack_i4.c \
-generated/in_unpack_i8.c
+generated/in_unpack_i8.c \
+generated/in_unpack_c4.c \
+generated/in_unpack_c8.c
 
 i_exponent_c = \
 generated/exponent_r4.c \

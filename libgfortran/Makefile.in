@@ -104,8 +104,10 @@ am__objects_21 = eoshift3_4.lo eoshift3_8.lo
 am__objects_22 = cshift1_4.lo cshift1_8.lo
 am__objects_23 = reshape_i4.lo reshape_i8.lo reshape_c4.lo \
 	reshape_c8.lo
-am__objects_24 = in_pack_i4.lo in_pack_i8.lo
-am__objects_25 = in_unpack_i4.lo in_unpack_i8.lo
+am__objects_24 = in_pack_i4.lo in_pack_i8.lo in_pack_c4.lo \
+	in_pack_c8.lo
+am__objects_25 = in_unpack_i4.lo in_unpack_i8.lo in_unpack_c4.lo \
+	in_unpack_c8.lo
 am__objects_26 = exponent_r4.lo exponent_r8.lo
 am__objects_27 = fraction_r4.lo fraction_r8.lo
 am__objects_28 = nearest_r4.lo nearest_r8.lo
@@ -533,11 +535,15 @@ generated/cshift1_8.c
 
 in_pack_c = \
 generated/in_pack_i4.c \
-generated/in_pack_i8.c
+generated/in_pack_i8.c \
+generated/in_pack_c4.c \
+generated/in_pack_c8.c
 
 in_unpack_c = \
 generated/in_unpack_i4.c \
-generated/in_unpack_i8.c
+generated/in_unpack_i8.c \
+generated/in_unpack_c4.c \
+generated/in_unpack_c8.c
 
 i_exponent_c = \
 generated/exponent_r4.c \
@@ -1129,11 +1135,23 @@ in_pack_i4.lo: generated/in_pack_i4.c
 in_pack_i8.lo: generated/in_pack_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_i8.lo `test -f 'generated/in_pack_i8.c' || echo '$(srcdir)/'`generated/in_pack_i8.c
 
+in_pack_c4.lo: generated/in_pack_c4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_c4.lo `test -f 'generated/in_pack_c4.c' || echo '$(srcdir)/'`generated/in_pack_c4.c
+
+in_pack_c8.lo: generated/in_pack_c8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_c8.lo `test -f 'generated/in_pack_c8.c' || echo '$(srcdir)/'`generated/in_pack_c8.c
+
 in_unpack_i4.lo: generated/in_unpack_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_i4.lo `test -f 'generated/in_unpack_i4.c' || echo '$(srcdir)/'`generated/in_unpack_i4.c
 
 in_unpack_i8.lo: generated/in_unpack_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_i8.lo `test -f 'generated/in_unpack_i8.c' || echo '$(srcdir)/'`generated/in_unpack_i8.c
+
+in_unpack_c4.lo: generated/in_unpack_c4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_c4.lo `test -f 'generated/in_unpack_c4.c' || echo '$(srcdir)/'`generated/in_unpack_c4.c
+
+in_unpack_c8.lo: generated/in_unpack_c8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_c8.lo `test -f 'generated/in_unpack_c8.c' || echo '$(srcdir)/'`generated/in_unpack_c8.c
 
 exponent_r4.lo: generated/exponent_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exponent_r4.lo `test -f 'generated/exponent_r4.c' || echo '$(srcdir)/'`generated/exponent_r4.c

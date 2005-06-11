@@ -1,3 +1,7 @@
+2005-05-11  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.fortran-torture/execute/in-pack.f90:  New test.
+
 2005-06-10  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gfortran.dg/vect/vect-4.f90: Update comments. Only one unaligned
