@@ -1,3 +1,7 @@
+2005-06-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (eq<mode>_compare): Restrict to Pmode.
+
 2005-06-11  Daniel Berlin  <dberlin@dberlin.org>
 
 	* lambda-code.c (replace_uses_equiv_to_x_with_y): Verify the step
