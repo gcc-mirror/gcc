@@ -3787,8 +3787,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
                 int *p = NULL;
 
          where NULL is typically defined in C to be '(void *) 0'.  */
-      if (OPT_Wc___compat && VOID_TYPE_P (ttr) && rhs != null_pointer_node
-          && !VOID_TYPE_P (ttl))
+      if (VOID_TYPE_P (ttr) && rhs != null_pointer_node && !VOID_TYPE_P (ttl))
         warning (OPT_Wc___compat, "request for implicit conversion from "
                  "%qT to %qT not permitted in C++", rhstype, type);
 
