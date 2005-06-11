@@ -1,3 +1,10 @@
+2005-06-11  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+	PR libfortran/20930
+	* io/rewind.c (st_rewind): Flush the stream when resetting the mode
+	from WRITING to READING.
+
 2005-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from the mainline:

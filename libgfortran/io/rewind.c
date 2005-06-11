@@ -54,9 +54,13 @@ st_rewind (void)
 	  /* If we have been writing to the file, the last written record
 	     is the last record in the file, so truncate the file now.
 	     Reset to read mode so two consecutive rewind statements
-	     don't delete the file contents.  */
-          if (u->mode==WRITING)
-            struncate(u->s);
+	     don't delete the file contents.  Flush buffer when switching
+	     mode.  */
+          if (u->mode == WRITING)
+	    {
+	      flush (u->s);
+	      struncate (u->s);
+	    }
 	  u->mode = READING;
 	  u->last_record = 0;
 	  if (sseek (u->s, 0) == FAILURE)
