@@ -1,5 +1,17 @@
 2005-06-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* rtl.h (to_rtx_code): Remove.
+	* machmode.h (to_machine_mode): Likewise.
+	* read-rtl.c (apply_mode_macro): Replace to_machine_mode with
+	explicit cast.
+	(apply_mode_maps): Likewise.
+	(read_rtx_1): Likewise.
+	(apply_code_macro): Replace to to_rtx_code with explicit cast.
+	(check_code_macro): Likewise.
+	(read_rtx_1): Likewise.
+
+2005-06-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* c-typeck.c (convert_for_assignment): Avoid checking
 	OPT_Wc___compat, as it is always true.
 
