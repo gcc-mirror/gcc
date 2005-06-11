@@ -1,4 +1,10 @@
-2005-05-11  Thomas Koenig  <Thomas.Koenig@online.de>
+2005-06-11  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/17792
+	PR fortran/21375
+	* gfortran.dg/deallocate_stat.f90:  New test.
+
+2005-06-11  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.fortran-torture/execute/in-pack.f90:  New test.
 
