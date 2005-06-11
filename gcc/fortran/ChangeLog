@@ -1,3 +1,14 @@
+2005-06-11  Steven G. Kargl  <kargls@comcast.net>
+        
+	PR fortran/17792
+	PR fortran/21375
+	* trans-array.c (gfc_array_deallocate): pstat is new argument
+	(gfc_array_allocate): update gfc_array_deallocate() call.
+	(gfc_trans_deferred_array): ditto.
+	* trans-array.h: update gfc_array_deallocate() prototype.
+	* trans-decl.c (gfc_build_builtin_function_decls): update declaration
+	* trans-stmt.c (gfc_trans_deallocate): Implement STAT= feature.
+
 2005-06-07  Jerry DeLisle <jvdelisle@verizon.net>
 
 	* intrinsic.texi: Add documentation for	dcmplx, digits,
