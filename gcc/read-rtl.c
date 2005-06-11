@@ -243,7 +243,7 @@ uses_mode_macro_p (rtx x, int mode)
 static void
 apply_mode_macro (rtx x, int mode)
 {
-  PUT_MODE (x, to_machine_mode (mode));
+  PUT_MODE (x, (enum machine_mode) mode);
 }
 
 /* Implementations of the macro_group callbacks for codes.  */
@@ -269,7 +269,7 @@ uses_code_macro_p (rtx x, int code)
 static void
 apply_code_macro (rtx x, int code)
 {
-  PUT_CODE (x, to_rtx_code (code));
+  PUT_CODE (x, (enum rtx_code) code);
 }
 
 /* Map a code or mode attribute string P to the underlying string for
@@ -363,7 +363,7 @@ apply_mode_maps (rtx x, struct map_value *mode_maps, struct mapping *macro,
 
 	  v = map_attr_string (pm->string, macro, value);
 	  if (v)
-	    PUT_MODE (x, to_machine_mode (find_mode (v->string, infile)));
+	    PUT_MODE (x, (enum machine_mode) find_mode (v->string, infile));
 	  else
 	    *unknown = pm->string;
 	  return;
@@ -1311,7 +1311,7 @@ check_code_macro (struct mapping *macro, FILE *infile)
   struct map_value *v;
   enum rtx_code bellwether;
 
-  bellwether = to_rtx_code (macro->values->number);
+  bellwether = (enum rtx_code) macro->values->number;
   for (v = macro->values->next; v != 0; v = v->next)
     if (strcmp (GET_RTX_FORMAT (bellwether), GET_RTX_FORMAT (v->number)) != 0)
       fatal_with_file_and_line (infile, "code macro `%s' combines "
@@ -1449,7 +1449,7 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
       check_code_macro (read_mapping (&codes, codes.macros, infile), infile);
       goto again;
     }
-  real_code = to_rtx_code (find_macro (&codes, tmp_char, infile));
+  real_code = (enum rtx_code) find_macro (&codes, tmp_char, infile);
   bellwether_code = BELLWETHER_CODE (real_code);
 
   /* If we end up with an insn expression then we free this space below.  */
@@ -1470,7 +1470,7 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 	mode = find_macro (&modes, tmp_char, infile);
       else
 	mode = mode_attr_index (mode_maps, tmp_char);
-      PUT_MODE (return_rtx, to_machine_mode (mode));
+      PUT_MODE (return_rtx, (enum machine_mode) mode);
       if (GET_MODE (return_rtx) != mode)
 	fatal_with_file_and_line (infile, "mode too large");
     }
