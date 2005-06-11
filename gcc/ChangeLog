@@ -1,3 +1,8 @@
+2005-06-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lambda-code.c (replace_uses_equiv_to_x_with_y): Verify the step
+	is an INTEGER_CST before calling int_cst_value.
+
 2005-06-10  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/21981
