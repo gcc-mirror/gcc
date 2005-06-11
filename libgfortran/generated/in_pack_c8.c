@@ -1,5 +1,5 @@
-/* Generic helper function for repacking arrays.
-   Copyright 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Helper function for repacking arrays.
+   Copyright 2003 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -31,102 +31,69 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include <stdlib.h>
 #include <assert.h>
-#include <string.h>
 #include "libgfortran.h"
 
-extern void internal_unpack (gfc_array_char *, const void *);
-export_proto(internal_unpack);
+/* Allocates a block of memory with internal_malloc if the array needs
+   repacking.  */
 
-void
-internal_unpack (gfc_array_char * d, const void * s)
+GFC_COMPLEX_8 *
+internal_pack_c8 (gfc_array_c8 * source)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];
   index_type stride0;
   index_type dim;
-  index_type dsize;
-  char *dest;
-  const char *src;
+  index_type ssize;
+  const GFC_COMPLEX_8 *src;
+  GFC_COMPLEX_8 *dest;
+  GFC_COMPLEX_8 *destptr;
   int n;
-  int size;
-  int type;
+  int packed;
 
-  dest = d->data;
-  /* This check may be redundant, but do it anyway.  */
-  if (s == dest || !s)
-    return;
-
-  type = GFC_DESCRIPTOR_TYPE (d);
-  size = GFC_DESCRIPTOR_SIZE (d);
-  switch (type)
+  if (source->dim[0].stride == 0)
     {
-    case GFC_DTYPE_INTEGER:
-    case GFC_DTYPE_LOGICAL:
-    case GFC_DTYPE_REAL:
-      switch (size)
-	{
-	case 4:
-	  internal_unpack_4 ((gfc_array_i4 *)d, (const GFC_INTEGER_4 *)s);
-	  return;
-
-	case 8:
-	  internal_unpack_8 ((gfc_array_i8 *)d, (const GFC_INTEGER_8 *)s);
-	  return;
-	}
-      break;
-
-    case GFC_DTYPE_COMPLEX:
-      switch (size) 
-	{
-	case 8:
-	  internal_unpack_c4 ((gfc_array_c4 *)d, (const GFC_COMPLEX_4 *)s);
-	  return;
-
-	case 16:
-	  internal_unpack_c8 ((gfc_array_c8 *)d, (const GFC_COMPLEX_8 *)s);
-	  return;
-	}
-    default:
-      break;
+      source->dim[0].stride = 1;
+      return source->data;
     }
 
-  if (d->dim[0].stride == 0)
-    d->dim[0].stride = 1;
-
-  dim = GFC_DESCRIPTOR_RANK (d);
-  dsize = 1;
+  dim = GFC_DESCRIPTOR_RANK (source);
+  ssize = 1;
+  packed = 1;
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
-      stride[n] = d->dim[n].stride;
-      extent[n] = d->dim[n].ubound + 1 - d->dim[n].lbound;
+      stride[n] = source->dim[n].stride;
+      extent[n] = source->dim[n].ubound + 1 - source->dim[n].lbound;
       if (extent[n] <= 0)
-        abort ();
+        {
+          /* Do nothing.  */
+          packed = 1;
+          break;
+        }
 
-      if (dsize == stride[n])
-        dsize *= extent[n];
-      else
-        dsize = 0;
+      if (ssize != stride[n])
+        packed = 0;
+
+      ssize *= extent[n];
     }
 
-  src = s;
+  if (packed)
+    return source->data;
 
-  if (dsize != 0)
-    {
-      memcpy (dest, src, dsize * size);
-      return;
-    }
+  /* Allocate storage for the destination.  */
+  destptr = (GFC_COMPLEX_8 *)internal_malloc_size (ssize * sizeof (GFC_COMPLEX_8));
+  dest = destptr;
+  src = source->data;
+  stride0 = stride[0];
 
-  stride0 = stride[0] * size;
 
-  while (dest)
+  while (src)
     {
       /* Copy the data.  */
-      memcpy (dest, src, size);
+      *(dest++) = *src;
       /* Advance to the next element.  */
-      src += size;
-      dest += stride0;
+      src += stride0;
       count[0]++;
       /* Advance to the next source element.  */
       n = 0;
@@ -137,18 +104,20 @@ internal_unpack (gfc_array_char * d, const void * s)
           count[n] = 0;
           /* We could precalculate these products, but this is a less
              frequently used path so proabably not worth it.  */
-          dest -= stride[n] * extent[n] * size;
+          src -= stride[n] * extent[n];
           n++;
           if (n == dim)
             {
-              dest = NULL;
+              src = NULL;
               break;
             }
           else
             {
               count[n]++;
-              dest += stride[n] * size;
+              src += stride[n];
             }
         }
     }
+  return destptr;
 }
+

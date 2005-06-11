@@ -482,7 +482,7 @@ internal_proto(reshape_packed);
 
 /* Repacking functions.  */
 
-/* ??? These four aren't currently used by the compiler, though we
+/* ??? These eight aren't currently used by the compiler, though we
    certainly could do so.  */
 GFC_INTEGER_4 *internal_pack_4 (gfc_array_i4 *);
 internal_proto(internal_pack_4);
@@ -490,11 +490,23 @@ internal_proto(internal_pack_4);
 GFC_INTEGER_8 *internal_pack_8 (gfc_array_i8 *);
 internal_proto(internal_pack_8);
 
+GFC_COMPLEX_4 *internal_pack_c4 (gfc_array_c4 *);
+internal_proto(internal_pack_c4);
+
+GFC_COMPLEX_8 *internal_pack_c8 (gfc_array_c8 *);
+internal_proto(internal_pack_c8);
+
 extern void internal_unpack_4 (gfc_array_i4 *, const GFC_INTEGER_4 *);
 internal_proto(internal_unpack_4);
 
 extern void internal_unpack_8 (gfc_array_i8 *, const GFC_INTEGER_8 *);
 internal_proto(internal_unpack_8);
+
+extern void internal_unpack_c4 (gfc_array_c4 *, const GFC_COMPLEX_4 *);
+internal_proto(internal_unpack_c4);
+
+extern void internal_unpack_c8 (gfc_array_c8 *, const GFC_COMPLEX_8 *);
+internal_proto(internal_unpack_c8);
 
 /* string_intrinsics.c */
 
