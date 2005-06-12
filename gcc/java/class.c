@@ -549,6 +549,8 @@ inherits_from_p (tree type1, tree type2)
     {
       if (type1 == type2)
 	return 1;
+      if (! CLASS_LOADED_P (type1))
+	load_class (type1, 1);
       type1 = CLASSTYPE_SUPER (type1);
     }
   return 0;

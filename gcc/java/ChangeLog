@@ -1,3 +1,7 @@
+2005-06-12  Per Bothner  <per@bothner.com>
+
+	* class.c (inherits_from_p): Do load_class if needed.
+
 2005-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (error): Add ATTRIBUTE_PRINTF_1.
