@@ -109,7 +109,7 @@ csqrt`'q (complex_type z)
         }
       else
         {
-          COMPLEX_ASSIGN (v, fabs`'q (sqrt (re)),
+          COMPLEX_ASSIGN (v, fabs`'q (sqrt`'q (re)),
                           copysign`'q (0.0, im));
         }
     }
@@ -117,7 +117,7 @@ csqrt`'q (complex_type z)
     {
       real_type r;
 
-      r = sqrt`'q (0.5 * fabs (im));
+      r = sqrt`'q (0.5 * fabs`'q (im));
 
       COMPLEX_ASSIGN (v, copysign`'q (r, im), r);
     }
