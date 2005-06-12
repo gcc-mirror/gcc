@@ -327,7 +327,7 @@ ARM_FUNC_ALIAS aeabi_l2f floatdisf
 	@ For hard FPA code we want to return via the tail below so that
 	@ we can return the result in f0 as well as in r0 for backwards
 	@ compatibility.
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	adr	lr, LSYM(f0_ret)
 #endif
 
@@ -821,7 +821,7 @@ ARM_FUNC_ALIAS aeabi_cfcmple aeabi_cfcmpeq
 
 ARM_FUNC_START	aeabi_fcmpeq
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cfcmple
 	moveq	r0, #1	@ Equal to.
 	movne	r0, #0	@ Less than, greater than, or unordered.
@@ -831,7 +831,7 @@ ARM_FUNC_START	aeabi_fcmpeq
 
 ARM_FUNC_START	aeabi_fcmplt
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cfcmple
 	movcc	r0, #1	@ Less than.
 	movcs	r0, #0	@ Equal to, greater than, or unordered.
@@ -841,7 +841,7 @@ ARM_FUNC_START	aeabi_fcmplt
 
 ARM_FUNC_START	aeabi_fcmple
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cfcmple
 	movls	r0, #1  @ Less than or equal to.
 	movhi	r0, #0	@ Greater than or unordered.
@@ -851,7 +851,7 @@ ARM_FUNC_START	aeabi_fcmple
 
 ARM_FUNC_START	aeabi_fcmpge
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cfrcmple
 	movls	r0, #1	@ Operand 2 is less than or equal to operand 1.
 	movhi	r0, #0	@ Operand 2 greater than operand 1, or unordered.
@@ -861,7 +861,7 @@ ARM_FUNC_START	aeabi_fcmpge
 
 ARM_FUNC_START	aeabi_fcmpgt
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cfrcmple
 	movcc	r0, #1	@ Operand 2 is less than operand 1.
 	movcs	r0, #0  @ Operand 2 is greater than or equal to operand 1,
