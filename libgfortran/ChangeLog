@@ -1,3 +1,11 @@
+2005-06-12  Steven G. Kargl <kargls@comcast.net>
+	    Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/PR21797
+	* m4/cexp.m4 (csqrt`'q):  Add type qualifyer to
+	sqrt and fabs.
+	* generated/exp_c4.c:  Regenerated.
+
 2005-06-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19155
