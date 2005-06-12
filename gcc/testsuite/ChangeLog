@@ -1,3 +1,8 @@
+2005-06-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/19155
+	* gfortran.dg/pr19155.f: Add test.
+
 2005-06-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/f2c_7.f90: New test.
