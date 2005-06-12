@@ -1,3 +1,44 @@
+2005-06-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/predicates.md (reg_or_arith_cint_operand): Delete.
+	(reg_or_add_cint_operand): Rename from reg_or_add_cint64_operand.
+	Handle SImode.
+	(reg_or_sub_cint_operand): Likewise.
+	(mask_operand): Handle DImode.
+	(mask64_operand): Delete.
+	(and64_operand): Delete.
+	* config/rs6000/rs6000.c (num_insns_constant): Use mask_operand
+	instead of mask64_operand.
+	(print_operand): Likewise.
+	(rs6000_rtx_costs): Use mask_operand and reg_or_add_cint_operand and
+	reg_or_sub_cint_operand instead of *64_* variants.
+	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT): Use mask_operand
+	instead of mask64_operand.
+	* config/rs6000/rs6000.md: Use mask_operand and and_operand instead
+	of *64_* variants.
+	(FP): New.
+	(add_op2): Delete.
+	(add<mode>3): Use reg_or_add_cint_operand.
+	(sub_op2): Delete.
+	(sub<mode>3): Use reg_or_sub_cint_operand.
+	(udiv<mode>3, div<mode>3, div<mode>3_no_mq, mod<mode>3,
+	mov<mode>_internal2, mov<mode>, cmp<mode>, cmp<mode>,
+	cmp<mode>_internal1, indirect_jump<mode>, ctr<mode>,
+	ctr<mode>_internal1, ctr<mode>_internal2, ctr<mode>_internal5,
+	ctr<mode>_internal6, save_fpregs_<mode>, return_internal_<mode>,
+	return_and_restore_fpregs_<mode>, eh_set_lr_<mode>,
+	various unnamed patterns): New.
+	(udivsi3, divsi3, divsi3_no_mq, modsi3, movsi_internal2, movsi,
+	cmpsi, cmpsi_internal1, indirect_jumpsi, ctrsi, ctrsi_internal1,
+	ctrsi_internal2, ctrsi_internal5, ctrsi_internal6, save_fpregs_si,
+	return_internal_si, return_and_restore_fpregs_si, eh_set_lr_si,
+	udivdi3, divdi3, divdi3_no_mq, moddi3, movdi_internal2, movdi,
+	cmpdi, cmpdi_internal1, indirect_jumpdi, ctrdi, ctrdi_internal1,
+	ctrdi_internal2, ctrdi_internal5, ctrdi_internal6, save_fpregs_di,
+	return_internal_di, return_and_restore_fpregs_di, eh_set_lr_di,
+	movhi, movqi, cmpsf, cmpdf, cmptf, various unnamed patterns):
+	Delete.
+
 2005-06-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* rtl.h (to_rtx_code): Remove.
