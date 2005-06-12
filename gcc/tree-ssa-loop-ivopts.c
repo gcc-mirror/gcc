@@ -1492,7 +1492,7 @@ may_be_unaligned_p (tree ref)
   unsigned base_align;
 
   /* TARGET_MEM_REFs are translated directly to valid MEMs on the target,
-     thus they are not missaligned.  */
+     thus they are not misaligned.  */
   if (TREE_CODE (ref) == TARGET_MEM_REF)
     return false;
 

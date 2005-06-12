@@ -736,7 +736,7 @@ cgraph_varpool_assemble_pending_decls (void)
       if (!TREE_ASM_WRITTEN (decl) && !node->alias && !DECL_EXTERNAL (decl))
 	{
 	  assemble_variable (decl, 0, 1, 0);
-	  /* Local static vairables are neever seen by check_global_declarations
+	  /* Local static variables are never seen by check_global_declarations
 	     so we need to output debug info by hand.  */
 	  if (decl_function_context (decl) && errorcount == 0 && sorrycount == 0)
 	    {

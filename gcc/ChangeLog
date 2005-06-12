@@ -1,3 +1,9 @@
+2005-06-12  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cgraphunit.c, tree-ssa-loop-ivopts.c,
+	tree-ssa-structalias.c, tree-vectorizer.c, tree-vectorizer.h,
+	config/sparc/sparc.c: Fix comment typos.
+
 2005-06-12  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm/ieee754-df.s (aeabi_dcmpeq, aeabi_dcmplt, aeabi_dcmple)
