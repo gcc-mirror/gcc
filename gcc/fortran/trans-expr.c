@@ -379,7 +379,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
           /* Dereference scalar hidden result.  */
 	  if (gfc_option.flag_f2c && sym->ts.type == BT_COMPLEX
 	      && (sym->attr.function || sym->attr.result)
-	      && !sym->attr.dimension)
+	      && !sym->attr.dimension && !sym->attr.pointer)
 	    se->expr = gfc_build_indirect_ref (se->expr);
 
           /* Dereference non-character pointer variables. 
@@ -1314,9 +1314,6 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   fntype = TREE_TYPE (TREE_TYPE (se->expr));
   se->expr = build3 (CALL_EXPR, TREE_TYPE (fntype), se->expr,
 		     arglist, NULL_TREE);
-
-  if (sym->result)
-    sym = sym->result;
 
   /* If we have a pointer function, but we don't want a pointer, e.g.
      something like

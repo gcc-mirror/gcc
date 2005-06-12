@@ -1,3 +1,11 @@
+2005-06-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-expr.c (gfc_conv_variable): POINTER results don't need f2c
+	calling conventions.  Look at sym instead of sym->result.
+	* trans-types.c (gfc_sym_type): Remove workaround for frontend bug.
+	Remove condition which is always false with workaround removed.
+	(gfc_return_by_reference): Always look at sym, never at sym->result.
+
 2005-06-11  Steven G. Kargl  <kargls@comcast.net>
         
 	PR fortran/17792
