@@ -1268,11 +1268,6 @@ gfc_sym_type (gfc_symbol * sym)
 	return TREE_TYPE (sym->backend_decl);
     }
 
-  /* The frontend doesn't set all the attributes for a function with an
-     explicit result value, so we use that instead when present.  */
-  if (sym->attr.function && sym->result)
-    sym = sym->result;
-
   type = gfc_typenode_for_spec (&sym->ts);
   if (gfc_option.flag_f2c
       && sym->attr.function
@@ -1299,7 +1294,7 @@ gfc_sym_type (gfc_symbol * sym)
 	  /* If this is a character argument of unknown length, just use the
 	     base type.  */
 	  if (sym->ts.type != BT_CHARACTER
-	      || !(sym->attr.dummy || sym->attr.function || sym->attr.result)
+	      || !(sym->attr.dummy || sym->attr.function)
 	      || sym->ts.cl->backend_decl)
 	    {
 	      type = gfc_get_nodesc_array_type (type, sym->as,
@@ -1467,17 +1462,13 @@ gfc_get_derived_type (gfc_symbol * derived)
 int
 gfc_return_by_reference (gfc_symbol * sym)
 {
-  gfc_symbol *result;
-
   if (!sym->attr.function)
     return 0;
 
-  result = sym->result ? sym->result : sym;
-
-  if (result->attr.dimension)
+  if (sym->attr.dimension)
     return 1;
 
-  if (result->ts.type == BT_CHARACTER)
+  if (sym->ts.type == BT_CHARACTER)
     return 1;
 
   /* Possibly return complex numbers by reference for g77 compatibility.
@@ -1486,7 +1477,7 @@ gfc_return_by_reference (gfc_symbol * sym)
      require an explicit interface, as no compatibility problems can
      arise there.  */
   if (gfc_option.flag_f2c
-      && result->ts.type == BT_COMPLEX
+      && sym->ts.type == BT_COMPLEX
       && !sym->attr.intrinsic && !sym->attr.always_explicit)
     return 1;
   

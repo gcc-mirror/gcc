@@ -1,3 +1,7 @@
+2005-06-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/f2c_7.f90: New test.
+
 2005-06-12  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/pr14796-1.c: New.
