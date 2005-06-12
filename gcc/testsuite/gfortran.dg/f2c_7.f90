@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-ff2c -O" }
+! { dg-options "-ff2c" }
 ! Verifies that array results work with -ff2c
 ! try all permutations of result clause in function yes/no
 !                     and result clause in interface yes/no
