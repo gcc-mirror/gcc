@@ -1,3 +1,10 @@
+2005-06-12  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR tree-optimization/14796
+	* fold-const.c (fold_binary): Transform (A >> C) << C into
+	one BIT_AND_EXPR.
+	<shift>: Transform (A OP c1) OP c2 into A OP (c1 + c2).
+
 2005-06-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/predicates.md (reg_or_arith_cint_operand): Delete.

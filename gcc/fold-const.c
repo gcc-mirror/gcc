@@ -8742,6 +8742,59 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	 don't try to compute it in the compiler.  */
       if (TREE_CODE (arg1) == INTEGER_CST && tree_int_cst_sgn (arg1) < 0)
 	return NULL_TREE;
+
+      /* Turn (a OP c1) OP c2 into a OP (c1+c2).  */
+      if (TREE_CODE (arg0) == code && host_integerp (arg1, false)
+	  && TREE_INT_CST_LOW (arg1) < TYPE_PRECISION (type)
+	  && host_integerp (TREE_OPERAND (arg0, 1), false)
+	  && TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) < TYPE_PRECISION (type))
+	{
+	  HOST_WIDE_INT low = (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
+			       + TREE_INT_CST_LOW (arg1));
+
+	  /* Deal with a OP (c1 + c2) being undefined but (a OP c1) OP c2
+	     being well defined.  */
+	  if (low >= TYPE_PRECISION (type))
+	    {
+	      if (code == LROTATE_EXPR || code == RROTATE_EXPR)
+	        low = low % TYPE_PRECISION (type);
+	      else if (TYPE_UNSIGNED (type) || code == LSHIFT_EXPR)
+	        return build_int_cst (type, 0);
+	      else
+		low = TYPE_PRECISION (type) - 1;
+	    }
+
+	  return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+			      build_int_cst (type, low));
+	}
+
+      /* Transform (x >> c) << c into x & (-1<<c)  */
+      if (code == LSHIFT_EXPR && TREE_CODE (arg0) == RSHIFT_EXPR
+	  && host_integerp (arg1, false)
+	  && TREE_INT_CST_LOW (arg1) < TYPE_PRECISION (type)
+	  && host_integerp (TREE_OPERAND (arg0, 1), false)
+	  && TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) < TYPE_PRECISION (type))
+	{
+	  HOST_WIDE_INT low0 = TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1));
+	  HOST_WIDE_INT low1 = TREE_INT_CST_LOW (arg1);
+	  unsigned HOST_WIDE_INT low;
+	  HOST_WIDE_INT high;
+	  tree lshift;
+	  tree arg00;
+
+	  if (low0 == low1)
+	    {
+	      arg00 = fold_convert (type, TREE_OPERAND (arg0, 0));
+
+	      lshift_double (-1, -1, low0 < low1 ? low0 : low1,
+			     TYPE_PRECISION (type), &low, &high, 1);
+	      lshift = build_int_cst_wide (type, low, high);
+
+	      return fold_build2 (BIT_AND_EXPR, type, arg00, lshift);
+	    }
+	}
+
+
       /* Rewrite an LROTATE_EXPR by a constant into an
 	 RROTATE_EXPR by a new constant.  */
       if (code == LROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST)

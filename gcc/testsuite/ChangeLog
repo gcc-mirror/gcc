@@ -1,3 +1,8 @@
+2005-06-12  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/pr14796-1.c: New.
+	* gcc.dg/pr14796-2.c: New.
+
 2005-06-11  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/17792
