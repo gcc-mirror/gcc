@@ -221,6 +221,9 @@ struct variable_info
   /* True for variables whose size is not known or variable.  */
   unsigned int is_unknown_size_var:1;  
 
+  /* True for variables that have unions somewhere in them.  */
+  unsigned int has_union:1;
+
   /* Points-to set for this variable.  */
   bitmap solution;
 
@@ -2638,16 +2641,21 @@ create_variable_info_for (tree decl, const char *name)
   varinfo_t vi;
   tree decltype = TREE_TYPE (decl);
   bool notokay = false;
+  bool hasunion;
   subvar_t svars;
   bool is_global = DECL_P (decl) ? is_global_var (decl) : false;
-
   VEC (fieldoff_s,heap) *fieldstack = NULL;
   
-  if (var_can_have_subvars (decl) && use_field_sensitive)
+
+  hasunion = TREE_CODE (decltype) == UNION_TYPE || TREE_CODE (decltype) == QUAL_UNION_TYPE;
+  if (var_can_have_subvars (decl) && use_field_sensitive && !hasunion)
     {
-      push_fields_onto_fieldstack (decltype, &fieldstack, 0, &notokay);
-      if (notokay)
-	VEC_free (fieldoff_s, heap, fieldstack);
+      push_fields_onto_fieldstack (decltype, &fieldstack, 0, &hasunion);
+      if (hasunion)
+	{
+	  VEC_free (fieldoff_s, heap, fieldstack);
+	  notokay = true;
+	}	 
     }
 
   /* If this variable already has subvars, just create the variables for the
@@ -2713,6 +2721,7 @@ create_variable_info_for (tree decl, const char *name)
   vi = new_var_info (decl, index, name, index);
   vi->decl = decl;
   vi->offset = 0;
+  vi->has_union = hasunion;
   if (!TYPE_SIZE (decltype) 
       || TREE_CODE (TYPE_SIZE  (decltype)) != INTEGER_CST
       || TREE_CODE (decltype) == ARRAY_TYPE
@@ -2756,7 +2765,13 @@ create_variable_info_for (tree decl, const char *name)
 	      break;
 	    }
 	}
-      sort_fieldstack (fieldstack);
+
+      /* We can't sort them if we have a field with a variable sized type,
+	 which will make notokay = true.  In that case, we are going to return
+	 without creating varinfos for the fields anyway, so sorting them is a
+	 waste to boot.  */
+      if (!notokay)	
+	sort_fieldstack (fieldstack);
       
       if (VEC_length (fieldoff_s, fieldstack) != 0)
 	fo = VEC_index (fieldoff_s, fieldstack, 0);
@@ -2872,12 +2887,23 @@ set_uids_in_ptset (bitmap into, bitmap from)
   EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)
     {
       varinfo_t vi = get_varinfo (i);
-
+      
+      /* Variables containing unions may need to be converted to their 
+	 SFT's, because SFT's can have unions and we cannot.  */
+      if (vi->has_union && get_subvars_for_var (vi->decl) != NULL)
+	{
+	  subvar_t svars = get_subvars_for_var (vi->decl);
+	  subvar_t sv;
+	  for (sv = svars; sv; sv = sv->next)
+	    bitmap_set_bit (into, var_ann (sv->var)->uid);    
+	}
       /* We may end up with labels in the points-to set because people
 	 take their address, and they are _DECL's.  */
-      if (TREE_CODE (vi->decl) == VAR_DECL 
+      else if (TREE_CODE (vi->decl) == VAR_DECL 
 	  || TREE_CODE (vi->decl) == PARM_DECL)
 	bitmap_set_bit (into, var_ann (vi->decl)->uid);
+
+	  
     }
 }
 static int have_alias_info = false;
@@ -2904,6 +2930,8 @@ find_what_p_points_to (tree p)
 	  if (!var_can_have_subvars (vi->decl)
 	      || get_subvars_for_var (vi->decl) == NULL)
 	    return false;
+	  /* Nothing currently asks about structure fields directly, but when
+	     they do, we need code here to hand back the points-to set.  */
 	} 
       else
 	{
@@ -2915,9 +2943,9 @@ find_what_p_points_to (tree p)
 	     variable.  */
 	  vi = get_varinfo (vi->node);
 	  
-	  /* Make sure there aren't any artificial vars in the points
-             to set.  XXX: Note that we need to translate our heap
-             variables to something.  */ 
+	  /* Make sure there aren't any artificial vars in the points to set.
+             XXX: Note that we need to translate our heap variables to
+             something.  */
 	  EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, i, bi)
 	    {
 	      if (get_varinfo (i)->is_artificial_var)

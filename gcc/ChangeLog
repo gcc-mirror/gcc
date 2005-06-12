@@ -21,6 +21,18 @@
 
 2005-06-11  Daniel Berlin  <dberlin@dberlin.org>
 
+	Fix PR tree-optimization/22005
+	Fix PR tree-optimization/22025
+	
+	* tree-ssa-structalias.c (struct variable_info): Add has_union
+	member.
+	(create_variable_info_for):  Mark variables containing unions.
+	Don't sort the field stack if notokay is true.
+	(find_what_p_points_to): Convert variables containing unions back
+	to their SFT's if necessary.
+	
+2005-06-11  Daniel Berlin  <dberlin@dberlin.org>
+
 	* lambda-code.c (replace_uses_equiv_to_x_with_y): Verify the step
 	is an INTEGER_CST before calling int_cst_value.
 
