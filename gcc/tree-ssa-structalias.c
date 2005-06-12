@@ -80,7 +80,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
    DEREF is a constraint expression type used to represent *x, whether
    it appears on the LHS or the RHS of a statement. 
    ADDRESSOF is a constraint expression used to represent &x, whether
-   it apepars on the LHS or the RHS of a statement.
+   it appears on the LHS or the RHS of a statement.
    
    Each pointer variable in the program is assigned an integer id, and
    each field of a structure variable is assigned an integer id as well.
@@ -137,8 +137,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   causes Sol(P) <- Sol(P) union Sol(Q).
   
   7.  As we visit each node, all complex constraints associated with
-  that node are processed by adding approriate copy edges to the graph, or the
-  approriate variables to the solution set.  
+  that node are processed by adding appropriate copy edges to the graph, or the
+  appropriate variables to the solution set.  
 
   8. The process of walking the graph is iterated until no solution
   sets change.
@@ -245,7 +245,7 @@ DEF_VEC_P(varinfo_t);
 
 DEF_VEC_ALLOC_P(varinfo_t, gc);
 
-/* Table of variable info structures for constraint variables.  Indexed direcly
+/* Table of variable info structures for constraint variables.  Indexed directly
    by variable info id.  */
 static VEC(varinfo_t,gc) *varmap;
 #define get_varinfo(n) VEC_index(varinfo_t, varmap, n)
@@ -1582,7 +1582,7 @@ perform_var_substitution (constraint_graph_t graph)
 	  /* Theorem 4 in Rountev and Chandra: If i is a direct node,
 	     then Solution(i) is a subset of Solution (w), where w is a
 	     predecessor in the graph.  
-	     Corrolary: If all predecessors of i have the same
+	     Corollary: If all predecessors of i have the same
 	     points-to set, then i has that same points-to set as
 	     those predecessors.  */
 	  tmp = BITMAP_ALLOC (NULL);
@@ -3052,7 +3052,7 @@ init_base_vars (void)
   /* readonly memory points to anything, in order to make deref
      easier.  In reality, it points to anything the particular
      readonly variable can point to, but we don't track this
-     seperately. */
+     separately. */
   lhs.type = SCALAR;
   lhs.var = readonly_id;
   lhs.offset = 0;

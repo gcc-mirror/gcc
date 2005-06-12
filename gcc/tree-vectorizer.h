@@ -56,7 +56,7 @@ enum dr_alignment_support {
   dr_aligned
 };
 
-/* Define type of def-use cross-iteraiton cycle.  */
+/* Define type of def-use cross-iteration cycle.  */
 enum vect_def_type {
   vect_constant_def,
   vect_invariant_def,

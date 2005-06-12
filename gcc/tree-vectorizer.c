@@ -1748,7 +1748,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
 
    TODO:
    Detect a cross-iteration def-use cucle that represents a simple
-   reduction computation. We look for the followng pattern:
+   reduction computation. We look for the following pattern:
 
    loop_header:
      a1 = phi < a0, a2 >

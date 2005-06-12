@@ -7978,7 +7978,7 @@ sparc_handle_vis_mul8x16 (int fncode, tree inner_type, tree elts0, tree elts1)
 
 }
 /* Handle TARGET_FOLD_BUILTIN target hook.
-   Fold builtin functions for SPARC intrinsics.  If INGNORE is true the
+   Fold builtin functions for SPARC intrinsics.  If IGNORE is true the
    result of the function call is ignored.  NULL_TREE is returned if the
    function could not be folded.  */
 
