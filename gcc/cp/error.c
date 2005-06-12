@@ -1512,15 +1512,7 @@ dump_expr (tree t, int flags)
       break;
 
     case UNARY_PLUS_EXPR:
-      if (TREE_TYPE (t) && VOID_TYPE_P (TREE_TYPE (t)))
-	{
-	  pp_cxx_left_paren (cxx_pp);
-	  dump_type (TREE_TYPE (t), flags);
-	  pp_cxx_right_paren (cxx_pp);
-	  dump_expr (TREE_OPERAND (t, 0), flags);
-	}
-      else
-	dump_unary_op ("+", t, flags);
+      dump_unary_op ("+", t, flags);
       break;
 
     case ADDR_EXPR:
@@ -1600,6 +1592,7 @@ dump_expr (tree t, int flags)
       break;
 
     case NOP_EXPR:
+    case CONVERT_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
 	
