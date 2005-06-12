@@ -1115,7 +1115,7 @@ ARM_FUNC_ALIAS aeabi_cdcmple aeabi_cdcmpeq
 	
 ARM_FUNC_START	aeabi_dcmpeq
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdcmple
 	moveq	r0, #1	@ Equal to.
 	movne	r0, #0	@ Less than, greater than, or unordered.
@@ -1125,7 +1125,7 @@ ARM_FUNC_START	aeabi_dcmpeq
 
 ARM_FUNC_START	aeabi_dcmplt
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdcmple
 	movcc	r0, #1	@ Less than.
 	movcs	r0, #0	@ Equal to, greater than, or unordered.
@@ -1135,7 +1135,7 @@ ARM_FUNC_START	aeabi_dcmplt
 
 ARM_FUNC_START	aeabi_dcmple
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdcmple
 	movls	r0, #1  @ Less than or equal to.
 	movhi	r0, #0	@ Greater than or unordered.
@@ -1145,7 +1145,7 @@ ARM_FUNC_START	aeabi_dcmple
 
 ARM_FUNC_START	aeabi_dcmpge
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdrcmple
 	movls	r0, #1	@ Operand 2 is less than or equal to operand 1.
 	movhi	r0, #0	@ Operand 2 greater than operand 1, or unordered.
@@ -1155,7 +1155,7 @@ ARM_FUNC_START	aeabi_dcmpge
 
 ARM_FUNC_START	aeabi_dcmpgt
 
-	str	lr, [sp, #-4]!
+	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdrcmple
 	movcc	r0, #1	@ Operand 2 is less than operand 1.
 	movcs	r0, #0  @ Operand 2 is greater than or equal to operand 1,
