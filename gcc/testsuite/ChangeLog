@@ -1,3 +1,8 @@
+2005-06-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/21930
+	* g++.dg/other/error10.C: New test case.
+
 2005-06-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19155
