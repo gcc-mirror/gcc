@@ -41,6 +41,10 @@ static const char zeros[16] =
    sizeof(int) < sizeof (index_type).  */
 
 static void
+eoshift0 (gfc_array_char * , const gfc_array_char *,
+	  int, const char *, int);
+
+static void
 eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
 	  int shift, const char * pbound, int which)
 {
