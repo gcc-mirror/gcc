@@ -1,3 +1,9 @@
+2005-06-13  Tom Tromey  <tromey@redhat.com>
+
+	PR java/21844:
+	* parse.y (nested_field_access_p): Handle case where outer field
+	is inherited by enclosing class.
+
 2005-06-12  Per Bothner  <per@bothner.com>
 
 	* class.c (inherits_from_p): Do load_class if needed.

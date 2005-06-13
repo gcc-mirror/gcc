@@ -8389,13 +8389,6 @@ nested_field_access_p (tree type, tree decl)
     {
       if (type_root == decl_type)
         return 1;
-
-      /* Before we give up, see whether it is a non-static field
-         inherited from the enclosing context we are considering.  */
-      if (!DECL_CONTEXT (TYPE_NAME (type_root))
-          && !is_static
-          && inherits_from_p (type_root, decl_type))
-        return 1;
     }
 
   if (TREE_CODE (decl_type) == RECORD_TYPE
@@ -8414,6 +8407,13 @@ nested_field_access_p (tree type, tree decl)
     decl_type_root = decl_type;
     
   if (type_root == decl_type_root)
+    return 1;
+
+  /* Before we give up, see whether it is a non-static field
+     inherited from the enclosing context we are considering.  */
+  if (!DECL_CONTEXT (TYPE_NAME (type_root))
+      && !is_static
+      && inherits_from_p (type_root, decl_type))
     return 1;
 
   return 0;
