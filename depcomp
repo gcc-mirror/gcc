@@ -1,9 +1,9 @@
 #! /bin/sh
 # depcomp - compile a program generating dependencies as side-effects
 
-scriptversion=2004-05-31.23
+scriptversion=2005-05-16.16
 
-# Copyright (C) 1999, 2000, 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@ scriptversion=2004-05-31.23
 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-# 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
 
 # As a special exception to the GNU General Public License, if you
 # distribute this file as part of a program that contains a
@@ -50,11 +50,11 @@ Environment variables:
 
 Report bugs to <bug-automake@gnu.org>.
 EOF
-    exit 0
+    exit $?
     ;;
   -v | --v*)
     echo "depcomp $scriptversion"
-    exit 0
+    exit $?
     ;;
 esac
 
@@ -276,6 +276,29 @@ icc)
   rm -f "$tmpdepfile"
   ;;
 
+ia64hp)
+  # The "hp" stanza above does not work with HP's ia64 compilers,
+  # which have integrated preprocessors.  The correct option to use
+  # with these is +Maked; it writes dependencies to a file named
+  # 'foo.d', which lands next to the object file, wherever that
+  # happens to be.
+  tmpdepfile=`echo "$object" | sed -e 's/\.o$/.d/'`
+  "$@" +Maked
+  stat=$?
+  if test $stat -eq 0; then :
+  else
+     rm -f "$tmpdepfile"
+     exit $stat
+  fi
+  rm -f "$depfile"
+
+  # The object file name is correct already.
+  cat "$tmpdepfile" > "$depfile"
+  # Add `dependent.h:' lines.
+  sed -ne '2,${; s/^ //; s/ \\*$//; s/$/:/; p; }' "$tmpdepfile" >> "$depfile"
+  rm -f "$tmpdepfile"
+  ;;
+
 tru64)
    # The Tru64 compiler uses -MD to generate dependencies as a side
    # effect.  `cc -MD -o foo.o ...' puts the dependencies into `foo.o.d'.
@@ -287,36 +310,43 @@ tru64)
    base=`echo "$object" | sed -e 's|^.*/||' -e 's/\.o$//' -e 's/\.lo$//'`
 
    if test "$libtool" = yes; then
-      # Dependencies are output in .lo.d with libtool 1.4.
-      # With libtool 1.5 they are output both in $dir.libs/$base.o.d
-      # and in $dir.libs/$base.o.d and $dir$base.o.d.  We process the
-      # latter, because the former will be cleaned when $dir.libs is
-      # erased.
-      tmpdepfile1="$dir.libs/$base.lo.d"
-      tmpdepfile2="$dir$base.o.d"
-      tmpdepfile3="$dir.libs/$base.d"
+      # With Tru64 cc, shared objects can also be used to make a
+      # static library.  This mecanism is used in libtool 1.4 series to
+      # handle both shared and static libraries in a single compilation.
+      # With libtool 1.4, dependencies were output in $dir.libs/$base.lo.d.
+      #
+      # With libtool 1.5 this exception was removed, and libtool now
+      # generates 2 separate objects for the 2 libraries.  These two
+      # compilations output dependencies in in $dir.libs/$base.o.d and
+      # in $dir$base.o.d.  We have to check for both files, because
+      # one of the two compilations can be disabled.  We should prefer
+      # $dir$base.o.d over $dir.libs/$base.o.d because the latter is
+      # automatically cleaned when .libs/ is deleted, while ignoring
+      # the former would cause a distcleancheck panic.
+      tmpdepfile1=$dir.libs/$base.lo.d   # libtool 1.4
+      tmpdepfile2=$dir$base.o.d          # libtool 1.5
+      tmpdepfile3=$dir.libs/$base.o.d    # libtool 1.5
+      tmpdepfile4=$dir.libs/$base.d      # Compaq CCC V6.2-504
       "$@" -Wc,-MD
    else
-      tmpdepfile1="$dir$base.o.d"
-      tmpdepfile2="$dir$base.d"
-      tmpdepfile3="$dir$base.d"
+      tmpdepfile1=$dir$base.o.d
+      tmpdepfile2=$dir$base.d
+      tmpdepfile3=$dir$base.d
+      tmpdepfile4=$dir$base.d
       "$@" -MD
    fi
 
    stat=$?
    if test $stat -eq 0; then :
    else
-      rm -f "$tmpdepfile1" "$tmpdepfile2" "$tmpdepfile3"
+      rm -f "$tmpdepfile1" "$tmpdepfile2" "$tmpdepfile3" "$tmpdepfile4"
       exit $stat
    fi
 
-   if test -f "$tmpdepfile1"; then
-      tmpdepfile="$tmpdepfile1"
-   elif test -f "$tmpdepfile2"; then
-      tmpdepfile="$tmpdepfile2"
-   else
-      tmpdepfile="$tmpdepfile3"
-   fi
+   for tmpdepfile in "$tmpdepfile1" "$tmpdepfile2" "$tmpdepfile3" "$tmpdepfile4"
+   do
+     test -f "$tmpdepfile" && break
+   done
    if test -f "$tmpdepfile"; then
       sed -e "s,^.*\.[a-z]*:,$object:," < "$tmpdepfile" > "$depfile"
       # That's a tab and a space in the [].
@@ -460,7 +490,8 @@ cpp)
   done
 
   "$@" -E |
-    sed -n '/^# [0-9][0-9]* "\([^"]*\)".*/ s:: \1 \\:p' |
+    sed -n -e '/^# [0-9][0-9]* "\([^"]*\)".*/ s:: \1 \\:p' \
+       -e '/^#line [0-9][0-9]* "\([^"]*\)".*/ s:: \1 \\:p' |
     sed '$ s: \\$::' > "$tmpdepfile"
   rm -f "$depfile"
   echo "$object : \\" > "$depfile"

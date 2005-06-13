@@ -1,3 +1,14 @@
+2005-06-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.ac: Invoke ZW_CREATE_DEPDIR and
+	ZW_PROG_COMPILER_DEPENDENCIES.
+	* aclocal.m4, configure: Regenerate.
+	* Makefile.in (DEPMODE, DEPDIR, depcomp, COMPILE.base, COMPILE):
+	New variables.
+	(distclean): Clean up $(DEPDIR) and its contents.
+	(.c.o): Use $(COMPILE).
+	Include $(DEPDIR)/*.Po for most object->header dependencies.
+
 2005-05-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* configure.ac: Check declarations for asprintf and vasprintf.
@@ -17,7 +28,7 @@
 	* directives.c (glue_header_name): Use XNEWVEC and XRESIZEVEC.
 	(parse_include): Use XNEWVEC.
 	(insert_pragma_entry): Rename local variable "new" to
-	"new_entry". 
+	"new_entry".
 	(save_registered_pragmas): Cast return value of xmemdup.
 	(destringize_and_run): Same for alloca.
 	(parse_assertion): Likewise.
