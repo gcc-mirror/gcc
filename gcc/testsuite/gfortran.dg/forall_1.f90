@@ -1,6 +1,5 @@
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! tests FORALL statements with a mask
-! unfortunately, this is broken, PR 22038
 dimension i2(15,10), i1(15)
 type a
    sequence
