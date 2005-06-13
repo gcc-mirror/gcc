@@ -1,3 +1,7 @@
+2005-06-12  James A. Morrison  <phython@gcc.gnu.org>
+
+	* ggcc.dg/pr14796-1.c: Add tests for (X << C) >> C.
+
 2005-06-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/21930

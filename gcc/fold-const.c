@@ -8768,8 +8768,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			      build_int_cst (type, low));
 	}
 
-      /* Transform (x >> c) << c into x & (-1<<c)  */
-      if (code == LSHIFT_EXPR && TREE_CODE (arg0) == RSHIFT_EXPR
+      /* Transform (x >> c) << c into x & (-1<<c), or transform (x << c) >> c
+         into x & ((unsigned)-1 >> c) for unsigned types.  */
+      if (((code == LSHIFT_EXPR && TREE_CODE (arg0) == RSHIFT_EXPR)
+           || (TYPE_UNSIGNED (type)
+	       && code == RSHIFT_EXPR && TREE_CODE (arg0) == LSHIFT_EXPR))
 	  && host_integerp (arg1, false)
 	  && TREE_INT_CST_LOW (arg1) < TYPE_PRECISION (type)
 	  && host_integerp (TREE_OPERAND (arg0, 1), false)
@@ -8777,8 +8780,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	{
 	  HOST_WIDE_INT low0 = TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1));
 	  HOST_WIDE_INT low1 = TREE_INT_CST_LOW (arg1);
-	  unsigned HOST_WIDE_INT low;
-	  HOST_WIDE_INT high;
 	  tree lshift;
 	  tree arg00;
 
@@ -8786,14 +8787,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    {
 	      arg00 = fold_convert (type, TREE_OPERAND (arg0, 0));
 
-	      lshift_double (-1, -1, low0 < low1 ? low0 : low1,
-			     TYPE_PRECISION (type), &low, &high, 1);
-	      lshift = build_int_cst_wide (type, low, high);
+	      lshift = build_int_cst (type, -1);
+	      lshift = int_const_binop (code, lshift, arg1, 0);
 
 	      return fold_build2 (BIT_AND_EXPR, type, arg00, lshift);
 	    }
 	}
-
 
       /* Rewrite an LROTATE_EXPR by a constant into an
 	 RROTATE_EXPR by a new constant.  */
