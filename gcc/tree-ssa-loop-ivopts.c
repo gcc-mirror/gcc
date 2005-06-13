@@ -1507,6 +1507,11 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
   struct iv *civ;
   struct ifs_ivopts_data ifs_ivopts_data;
 
+  /* Do not play with volatile memory references.  A bit too conservative,
+     perhaps, but safe.  */
+  if (stmt_ann (stmt)->has_volatile_ops)
+    goto fail;
+
   /* Ignore bitfields for now.  Not really something terribly complicated
      to handle.  TODO.  */
   if (TREE_CODE (base) == COMPONENT_REF
