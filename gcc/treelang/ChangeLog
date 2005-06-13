@@ -1,3 +1,8 @@
+2005-06-12  Rafael ?vila de Esp?ndola   <rafael.espindola@gmail.com>
+
+	* treetree.c (tree_code_get_expression): Call build_function_call_expr
+	to build function calls.
+
 2005-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* treelang/lex.l, treelang/parse.y: Don't include errors.h and
