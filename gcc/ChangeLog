@@ -1,3 +1,7 @@
+2005-06-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* doc/invoke.texi (Blackfin Options): Document -mlong-calls.
+
 2005-06-12  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/21994
