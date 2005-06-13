@@ -94,6 +94,21 @@ static sbitmap blocks_visited;
    of values that SSA name N_I may take.  */
 static value_range_t **vr_value;
 
+/* Local version of fold that doesn't introduce cruft.  */
+
+static tree
+local_fold (tree t)
+{
+  t = fold (t);
+
+  /* Strip away useless type conversions.  Both the NON_LVALUE_EXPR that
+     may have been added by fold, and "useless" type conversions that might
+     now be apparent due to propagation.  */
+  STRIP_USELESS_TYPE_CONVERSION (t);
+
+  return t;
+}
+
 /* Given a comparison code, return its opposite.  Note that this is *not*
    the same as inverting its truth value (invert_tree_comparison).  Here we
    just want to literally flip the comparison around.
@@ -3402,6 +3417,124 @@ varying:
   return SSA_PROP_VARYING;
 }
 
+/* Walk through the IL simplifying expressions using knowledge
+   gathered by VRP.  */
+
+static void
+simplify_using_ranges (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator bsi;
+
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+
+	  if (TREE_CODE (stmt) == MODIFY_EXPR)
+	    {
+	      tree rhs = TREE_OPERAND (stmt, 1);
+	      enum tree_code rhs_code = TREE_CODE (rhs);
+
+	      /* Transform TRUNC_DIV_EXPR and TRUNC_MOD_EXPR into RSHIFT_EXPR
+		 and BIT_AND_EXPR respectively if the first operand is greater
+		 than zero and the second operand is an exact power of two.  */
+	      if ((rhs_code == TRUNC_DIV_EXPR || rhs_code == TRUNC_MOD_EXPR)
+		  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (rhs, 0)))
+		  && integer_pow2p (TREE_OPERAND (rhs, 1)))
+		{
+		  tree val = NULL;
+		  tree op = TREE_OPERAND (rhs, 0);
+		  value_range_t *vr = get_value_range (TREE_OPERAND (rhs, 0));
+
+		  if (TYPE_UNSIGNED (TREE_TYPE (op)))
+		    {
+		      val = integer_one_node;
+		    }
+		  else
+		    {
+		      val = compare_range_with_value (GT_EXPR, vr,
+						      integer_zero_node);
+		    }
+
+		  if (val && integer_onep (val))
+		    {
+		      tree t;
+		      tree op0 = TREE_OPERAND (rhs, 0);
+		      tree op1 = TREE_OPERAND (rhs, 1);
+
+		      if (rhs_code == TRUNC_DIV_EXPR)
+			t = build (RSHIFT_EXPR, TREE_TYPE (op0), op0,
+				   build_int_cst (NULL_TREE, tree_log2 (op1)));
+		      else
+			t = build (BIT_AND_EXPR, TREE_TYPE (op0), op0,
+				   local_fold (build (MINUS_EXPR,
+						      TREE_TYPE (op1),
+						      op1,
+						      integer_one_node)));
+
+		      TREE_OPERAND (stmt, 1) = t;
+		      update_stmt (stmt);
+		    }
+
+		}
+
+	      /* Transform ABS (X) into X or -X as appropriate.  */
+	      if (rhs_code == ABS_EXPR
+		  && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
+		  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (rhs, 0))))
+		{
+		  tree val = NULL;
+		  tree op = TREE_OPERAND (rhs, 0);
+		  tree type = TREE_TYPE (op);
+		  value_range_t *vr = get_value_range (TREE_OPERAND (rhs, 0));
+
+		  if (TYPE_UNSIGNED (type))
+		    {
+		      val = integer_zero_node;
+		    }
+		  else if (vr)
+		    {
+		      val = compare_range_with_value (LE_EXPR, vr,
+						      integer_zero_node);
+		      if (!val)
+			{
+			  val = compare_range_with_value (GE_EXPR, vr,
+							  integer_zero_node);
+
+			  if (val)
+			    {
+			      if (integer_zerop (val))
+				val = integer_one_node;
+			      else if (integer_onep (val))
+				val = integer_zero_node;
+			    }
+			}
+
+		      if (val
+			  && (integer_onep (val) || integer_zerop (val)))
+			{
+			  tree t;
+
+			  if (integer_onep (val))
+			    t = build1 (NEGATE_EXPR, TREE_TYPE (op), op);
+			  else
+			    t = op;
+
+			  TREE_OPERAND (stmt, 1) = t;
+			  update_stmt (stmt);
+			}
+		    }
+		}
+	    }
+
+	  /* TODO.  Simplify conditionals.   */
+	}
+    }
+}
+
 
 /* Traverse all the blocks folding conditionals with known ranges.  */
 
@@ -3444,6 +3577,12 @@ vrp_finalize (void)
     }
 
   substitute_and_fold (single_val_range, true);
+
+  /* One could argue all simplifications should be done here
+     rather than using substitute_and_fold since this code
+     is going to have to perform a complete walk through the
+     IL anyway.  */
+  simplify_using_ranges ();
 
   /* Free allocated memory.  */
   for (i = 0; i < num_ssa_names; i++)

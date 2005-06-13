@@ -1,8 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom3" } */
+/* { dg-options "-O2 -fdump-tree-vrp" } */
      
 
-static void
+void
 foo (distance, i, j)
      int distance[13][13];
      int i, j;
@@ -11,7 +11,7 @@ foo (distance, i, j)
    distance[i][0] = ((distance[i][j]) < 0 ? -(distance[i][j])  : (distance[i][j]));
 }
 
-static void
+void
 foo2 (distance, i, j)
      int distance[13][13];
      int i, j;
@@ -20,7 +20,7 @@ foo2 (distance, i, j)
    distance[i][0] = ((distance[i][j]) < 0 ? -(distance[i][j])  : (distance[i][j]));
 }
 
-static void
+void
 foo3 (distance, i, j)
      int distance[13][13];
      int i, j;
@@ -29,7 +29,7 @@ foo3 (distance, i, j)
    distance[i][0] = ((distance[i][j]) < 0 ? -(distance[i][j])  : (distance[i][j]));
 }
 
-static void
+void
 foo4 (distance, i, j)
      double distance[13][13];
      int i, j;
@@ -39,5 +39,5 @@ foo4 (distance, i, j)
 }
 
 /* There should be no ABS_EXPR.  */
-/* { dg-final { scan-tree-dump-times "ABS_EXPR " 0 "dom3"} } */
-/* { dg-final { cleanup-tree-dump "dom3" } } */
+/* { dg-final { scan-tree-dump-times "ABS_EXPR " 0 "vrp"} } */
+/* { dg-final { cleanup-tree-dump "vrp" } } */

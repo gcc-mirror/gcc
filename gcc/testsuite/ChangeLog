@@ -1,3 +1,10 @@
+2005-06-13  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/20030807-10.c: VRP is now expected to
+	perform the desired transformations.
+	* gcc.dg/tree-ssa/20030806-6.c: Similarly.
+	* gcc.dg/tree-ssa/20040514-2.c: Similarly.
+
 2005-06-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/22038
