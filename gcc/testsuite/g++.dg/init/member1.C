@@ -12,7 +12,7 @@ template<typename T> struct C
 {
   static const int i = A<T>::i;  // { dg-error "incomplete" }
   static const int j = i;      // { dg-error "initialized by a non-const" }
-  B<j> b;  // { dg-error "not a valid template arg" }
+  B<j> b;  // { dg-error "cannot be used as template arg" }
 };
 
 C<int> c;

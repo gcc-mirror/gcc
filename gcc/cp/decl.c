@@ -4919,6 +4919,16 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 		     "initialized", decl);
 	      init = NULL_TREE;
 	    }
+	  if (DECL_EXTERNAL (decl) && init)
+	    {
+	      /* The static data member cannot be initialized by a
+		 non-constant when being declared.  */
+	      error ("`%D' cannot be initialized by a non-constant expression"
+		     " when being declared", decl);
+	      DECL_INITIALIZED_IN_CLASS_P (decl) = 0;
+	      init = NULL_TREE;
+	    }
+	  
 	  /* Handle:
 	     
 	     [dcl.init]

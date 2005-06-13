@@ -1,3 +1,9 @@
+2005-06-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20789
+	* decl.c (cp_finish_decl): Clear runtime runtime initialization if
+	in-class decl's initializer is bad.
+
 2005-06-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR c++/10611

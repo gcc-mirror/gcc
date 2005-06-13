@@ -1,3 +1,9 @@
+2005-06-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20789
+	* g++.dg/init/member1.C: New.
+	* g++.dg/other/warning1.C: Adjust.
+
 2005-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21903
