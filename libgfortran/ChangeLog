@@ -1,3 +1,9 @@
+2005-06-12  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21594
+	* intrinsics/eoshift0.c:  Add prototype for eoshift0.
+	* intrinsics/eoshift2.c:  Add prototype for eoshift2.
+
 2005-06-12  Steven G. Kargl <kargls@comcast.net>
 	    Thomas Koenig  <Thomas.Koenig@online.de>
 
