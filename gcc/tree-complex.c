@@ -441,6 +441,31 @@ update_complex_components (block_stmt_iterator *bsi, tree stmt, tree r, tree i)
   bsi_insert_after (bsi, x, BSI_NEW_STMT);
 }
 
+static void
+update_complex_components_on_edge (edge e, tree stmt, tree lhs, tree r, tree i)
+{
+  unsigned int uid = var_ann (SSA_NAME_VAR (lhs))->uid;
+  tree v, x;
+
+  v = VEC_index (tree, complex_variable_components, 2*uid);
+  x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, r);
+  if (stmt)
+    {
+      SET_EXPR_LOCUS (x, EXPR_LOCUS (stmt));
+      TREE_BLOCK (x) = TREE_BLOCK (stmt);
+    }
+  bsi_insert_on_edge (e, x);
+
+  v = VEC_index (tree, complex_variable_components, 2*uid + 1);
+  x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, i);
+  if (stmt)
+    {
+      SET_EXPR_LOCUS (x, EXPR_LOCUS (stmt));
+      TREE_BLOCK (x) = TREE_BLOCK (stmt);
+    }
+  bsi_insert_on_edge (e, x);
+}
+
 /* Update an assignment to a complex variable in place.  */
 
 static void
@@ -472,23 +497,17 @@ update_parameter_components (void)
   for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = TREE_CHAIN (parm))
     {
       tree type = TREE_TYPE (parm);
-      tree ssa_name, x, y;
-      unsigned int uid;
+      tree ssa_name, r, i;
 
       if (TREE_CODE (type) != COMPLEX_TYPE || !is_gimple_reg (parm))
 	continue;
 
       type = TREE_TYPE (type);
       ssa_name = default_def (parm);
-      uid = var_ann (parm)->uid;
 
-      x = VEC_index (tree, complex_variable_components, 2*uid);
-      y = build1 (REALPART_EXPR, type, ssa_name);
-      bsi_insert_on_edge (entry_edge, build2 (MODIFY_EXPR, type, x, y));
-
-      x = VEC_index (tree, complex_variable_components, 2*uid + 1);
-      y = build1 (IMAGPART_EXPR, type, ssa_name);
-      bsi_insert_on_edge (entry_edge, build2 (MODIFY_EXPR, type, x, y));
+      r = build1 (REALPART_EXPR, type, ssa_name);
+      i = build1 (IMAGPART_EXPR, type, ssa_name);
+      update_complex_components_on_edge (entry_edge, NULL, ssa_name, r, i);
     }
 }
 
@@ -503,27 +522,18 @@ update_phi_components (basic_block bb)
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     if (is_complex_reg (PHI_RESULT (phi)))
       {
-	unsigned int i, n, uid;
-	tree real, imag, type;
-
-	uid = var_ann (SSA_NAME_VAR (PHI_RESULT (phi)))->uid;
-	real = VEC_index (tree, complex_variable_components, 2*uid);
-	imag = VEC_index (tree, complex_variable_components, 2*uid + 1);
-	type = TREE_TYPE (real);
+	unsigned int i, n;
+	tree lhs = PHI_RESULT (phi);
 
 	for (i = 0, n = PHI_NUM_ARGS (phi); i < n; ++i)
 	  {
 	    edge e = PHI_ARG_EDGE (phi, i);
 	    tree arg = PHI_ARG_DEF (phi, i);
-	    tree x;
+	    tree r, i;
 
-	    x = extract_component (NULL, arg, 0, false);
-	    if (real != x)
-	      bsi_insert_on_edge (e, build2 (MODIFY_EXPR, type, real, x));
-
-	    x = extract_component (NULL, arg, 1, false);
-	    if (imag != x)
-	      bsi_insert_on_edge (e, build2 (MODIFY_EXPR, type, imag, x));
+	    r = extract_component (NULL, arg, 0, false);
+	    i = extract_component (NULL, arg, 1, false);
+	    update_complex_components_on_edge (e, NULL, lhs, r, i);
 	  }
       }
 }
@@ -555,10 +565,28 @@ expand_complex_move (block_stmt_iterator *bsi, tree stmt, tree type,
 
   if (TREE_CODE (lhs) == SSA_NAME)
     {
-      if (TREE_CODE (rhs) == CALL_EXPR || TREE_SIDE_EFFECTS (rhs))
+      if (is_ctrl_altering_stmt (bsi_stmt (*bsi)))
 	{
-	  r = build1 (REALPART_EXPR, inner_type, unshare_expr (lhs));
-	  i = build1 (IMAGPART_EXPR, inner_type, unshare_expr (lhs));
+	  edge_iterator ei;
+	  edge e;
+
+	  /* The value is not assigned on the exception edges, so we need not
+	     concern ourselves there.  We do need to update on the fallthru
+	     edge.  Find it.  */
+	  FOR_EACH_EDGE (e, ei, bsi->bb->succs)
+	    if (e->flags & EDGE_FALLTHRU)
+	      goto found_fallthru;
+	  gcc_unreachable ();
+	found_fallthru:
+
+	  r = build1 (REALPART_EXPR, inner_type, lhs);
+	  i = build1 (IMAGPART_EXPR, inner_type, lhs);
+	  update_complex_components_on_edge (e, stmt, lhs, r, i);
+	}
+      else if (TREE_CODE (rhs) == CALL_EXPR || TREE_SIDE_EFFECTS (rhs))
+	{
+	  r = build1 (REALPART_EXPR, inner_type, lhs);
+	  i = build1 (IMAGPART_EXPR, inner_type, lhs);
 	  update_complex_components (bsi, stmt, r, i);
 	}
       else
