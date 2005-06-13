@@ -1,3 +1,9 @@
+2005-06-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR middle-end/21985
+	* fold-const.c (split_address_to_core_and_offset): Always return
+	the address of the base object.
+
 2005-06-13  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* doc/invoke.texi (Blackfin Options): Document -mlong-calls.
