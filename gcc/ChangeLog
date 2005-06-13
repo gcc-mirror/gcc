@@ -1,3 +1,18 @@
+2005-06-13  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): No longer
+	simplify DIV, MOD or ABS expressions using VRP information.
+	Remove WALK_DATA parameter.  Prototype and all callers updated.
+	(eliminate_redundant_computations): Remove WALK_DATA parameter.
+	Prototype and all callers updated.
+	(optimize_stmt): WALK_DATA parameter is now unused.
+
+	* tree-vrp.c (local_fold): New function.  Like fold, but
+	strips useless type conversions in the result.
+	(simplify_using_ranges): New function, largely cribbed from
+	tree-ssa-dom.c::simplify_rhs_and_lookup_avail_expr.
+	(vrp_finalize): Call simplify_using_ranges.
+
 2005-06-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/i386/x86-64.h (ASM_SPEC): Explicitly pass --64 to the
