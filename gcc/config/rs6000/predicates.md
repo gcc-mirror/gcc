@@ -132,17 +132,6 @@
   (ior (match_code "const_int")
        (match_operand 0 "gpc_reg_operand")))
 
-;; Return 1 if op is an integer meeting one of 'I','J','O','L'(TARGET_32BIT)
-;; or 'J'(TARGET_64BIT) constraints or if it is a non-special register.
-(define_predicate "scc_operand"
-  (if_then_else (match_code "const_int")
-    (match_test "CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
-		 || CONST_OK_FOR_LETTER_P (INTVAL (op), 'K')
-		 || CONST_OK_FOR_LETTER_P (INTVAL (op), 'O')
-		 || CONST_OK_FOR_LETTER_P (INTVAL (op), 
-					   (TARGET_32BIT ? 'L' : 'J'))")
-    (match_operand 0 "gpc_reg_operand")))
-
 ;; Return 1 if op is a constant integer valid for addition
 ;; or non-special register.
 (define_predicate "reg_or_add_cint_operand"
