@@ -51,6 +51,8 @@ RANLIB = @RANLIB@
 SHELL = @SHELL@
 USED_CATALOGS = @USED_CATALOGS@
 XGETTEXT = @XGETTEXT@
+DEPMODE = @CCDEPMODE@
+DEPDIR = @DEPDIR@
 
 datadir = @datadir@
 exec_prefix = @prefix@
@@ -60,6 +62,8 @@ prefix = @prefix@
 
 MSGMERGE = msgmerge
 mkinstalldirs = $(SHELL) $(srcdir)/../mkinstalldirs
+depcomp = $(SHELL) $(srcdir)/../depcomp
+
 INCLUDES = -I$(srcdir) -I. -I$(srcdir)/../include @INCINTL@ \
 	-I$(srcdir)/include
 
@@ -165,7 +169,8 @@ clean: mostlyclean
 distclean: clean
 	-rm -f config.h stamp-h1 config.status config.cache config.log \
 	  configure.lineno configure.status.lineno Makefile localedir.h \
-	  localedir.hs
+	  localedir.hs $(DEPDIR)/*.Po
+	-rmdir $(DEPDIR)
 
 maintainer-clean: distclean
 	@echo "This command is intended for maintainers to use"
@@ -186,10 +191,19 @@ update-po: $(CATALOGS:.gmo=.pox)
   maintainer-clean check installcheck dvi html info install-info \
   install-man update-po
 
+# Dependency rule.
+COMPILE.base = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c
+ifeq ($(DEPMODE),depmode=gcc3)
+COMPILE = $(COMPILE.base) -o $@ -MT $@ -MD -MP -MF $(DEPDIR)/$*.Po
+else
+COMPILE = source='$<' object='$@' libtool=no DEPDIR=$(DEPDIR) $(DEPMODE) \
+	  $(depcomp) $(COMPILE.base)
+endif
+
 # Implicit rules and I18N
 
 .c.o:
-	$(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c $<
+	$(COMPILE) $<
 
 # N.B. We do not attempt to copy these into $(srcdir).
 .po.gmo:
@@ -227,35 +241,7 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 .NOEXPORT:
 
 # Dependencies
+-include $(patsubst %.o, $(DEPDIR)/%.Po, $(libcpp_a_OBJS) $(makedepend_OBJS))
 
-top_srcdir = $(srcdir)/..
-top_incdir = $(srcdir)/../include
-libcpp_incdir = $(srcdir)/../libcpp/include
-
-COMMON_DEPS = config.h $(srcdir)/system.h $(srcdir)/internal.h \
-  $(top_incdir)/libiberty.h $(top_incdir)/ansidecl.h \
-  $(top_incdir)/filenames.h $(top_incdir)/safe-ctype.h \
-  $(libcpp_incdir)/symtab.h $(top_incdir)/obstack.h \
-  $(libcpp_incdir)/line-map.h $(libcpp_incdir)/cpplib.h \
-  $(libcpp_incdir)/cpp-id-data.h $(top_incdir)/getopt.h 
-
-charset.o: $(srcdir)/charset.c $(COMMON_DEPS) $(srcdir)/ucnid.h
-directives.o: $(srcdir)/directives.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h
-errors.o: $(srcdir)/errors.c $(COMMON_DEPS)
-expr.o: $(srcdir)/expr.c $(COMMON_DEPS)
-
-files.o: $(srcdir)/files.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h \
-   $(top_incdir)/hashtab.h $(top_incdir)/md5.h
-identifiers.o: $(srcdir)/identifiers.c $(COMMON_DEPS)
-init.o: $(srcdir)/init.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h localedir.h
-lex.o: $(srcdir)/lex.c $(COMMON_DEPS)
-line-map.o: $(srcdir)/line-map.c $(COMMON_DEPS)
-macro.o: $(srcdir)/macro.c $(COMMON_DEPS)
-makedepend.o: $(srcdir)/makedepend.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h
-mkdeps.o: $(srcdir)/mkdeps.c $(COMMON_DEPS)
-
-pch.o: $(srcdir)/pch.c $(COMMON_DEPS) \
-   $(top_incdir)/hashtab.h $(libcpp_incdir)/mkdeps.h
-
-symtab.o: $(srcdir)/symtab.c $(COMMON_DEPS)
-traditional.o: $(srcdir)/traditional.c $(COMMON_DEPS)
+# Dependencies on generated headers have to be explicit.
+init.o: localedir.h

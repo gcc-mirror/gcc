@@ -1,3 +1,7 @@
+2005-06-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* depstand.m4, lead-dot.m4: New files.
+
 2005-05-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* accross.m4: Delete file.

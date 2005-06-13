@@ -13,8 +13,10 @@
 
 m4_include([../config/acx.m4])
 m4_include([../config/codeset.m4])
+m4_include([../config/depstand.m4])
 m4_include([../config/gettext-sister.m4])
 m4_include([../config/iconv.m4])
+m4_include([../config/lead-dot.m4])
 m4_include([../config/lib-ld.m4])
 m4_include([../config/lib-link.m4])
 m4_include([../config/lib-prefix.m4])

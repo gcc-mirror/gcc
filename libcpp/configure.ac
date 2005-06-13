@@ -29,6 +29,10 @@ ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([-Wno-long-long])
 # corrected.
 ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
 
+# Dependency checking.
+ZW_CREATE_DEPDIR
+ZW_PROG_COMPILER_DEPENDENCIES([CC])
+
 # Checks for header files.
 AC_HEADER_TIME
 ACX_HEADER_STRING
