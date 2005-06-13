@@ -1,3 +1,8 @@
+2005-06-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/x86-64.h (ASM_SPEC): Explicitly pass --64 to the
+	assembler in 64-bit mode.
+
 2005-06-13  David Edelsohn  <edelsohn@gnu.org>
 
 	Revert scc_operand patch.
