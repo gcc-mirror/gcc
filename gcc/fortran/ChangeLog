@@ -1,3 +1,23 @@
+2005-06-12  Richard Henderson  <rth@redhat.com>
+
+	* trans-array.c (gfc_conv_descriptor_data_get): Rename from
+	gfc_conv_descriptor_data.  Cast the result to the DATAPTR type.
+	(gfc_conv_descriptor_data_set, gfc_conv_descriptor_data_addr): New.
+	(gfc_trans_allocate_array_storage): Use them.
+	(gfc_array_allocate, gfc_array_deallocate): Likewise.
+	(gfc_trans_dummy_array_bias, gfc_conv_expr_descriptor): Likewise.
+	(gfc_trans_deferred_array): Likewise.
+	* trans-expr.c (gfc_conv_function_call): Likewise.
+	(gfc_trans_subcomponent_assign): Likewise.
+	(gfc_trans_pointer_assignment): Likewise.
+	* trans-intrinsic.c (gfc_conv_allocated): Likewise.
+	* trans-types.c (gfc_array_descriptor_base): New.
+	(gfc_get_element_type): Use GFC_TYPE_ARRAY_DATAPTR_TYPE.
+	(gfc_get_array_descriptor_base): Break out from ...
+	(gfc_get_array_type_bounds): ... here.  Create type variants.
+	* trans-array.h (gfc_conv_descriptor_data_get): Declare.
+	(gfc_conv_descriptor_data_set, gfc_conv_descriptor_data_addr): Declare.
+
 2005-06-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-expr.c (gfc_conv_variable): POINTER results don't need f2c
@@ -7,7 +27,7 @@
 	(gfc_return_by_reference): Always look at sym, never at sym->result.
 
 2005-06-11  Steven G. Kargl  <kargls@comcast.net>
-        
+	
 	PR fortran/17792
 	PR fortran/21375
 	* trans-array.c (gfc_array_deallocate): pstat is new argument
@@ -154,7 +174,7 @@
 	dereference the temporary upon return.
 
 2005-05-29  Janne Blomqvist  <jblomqvi@vipunen.hut.fi>
-            Steven G. Kargl  <kargls@comcast.net>
+	    Steven G. Kargl  <kargls@comcast.net>
   
 	fortran/PR20846
 	* io.c (gfc_match_inquire): Implement constraints on UNIT and FILE usage.
@@ -171,7 +191,7 @@
 	(gfc_check_integer_range): Chop extra bits in subnormal numbers.
 
 2005-05-28  Jerry DeLisle   <jvdelisle@verizon.net>
-            Steven G. Kargl  <kargls@comcast.net>
+	    Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.texi: added documentation for BIT_SIZE, BTEST, CHAR, CEILING
 	and CMPLX
@@ -443,7 +463,7 @@
 	* trans-const.c (gfc_conv_mpz_to_tree): Fix comment.
 
 2005-04-19  Arnaud Desitter  <arnaud.desitter@ouce.ox.ac.uk>
-            Steven G. Kargl  <kargls@comcast.net>
+	    Steven G. Kargl  <kargls@comcast.net>
 
 	* invoke.texi: Update -Waliasing description
 
