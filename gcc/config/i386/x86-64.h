@@ -49,7 +49,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} \
- %{Wa,*:%*} %{m32:--32}"
+ %{Wa,*:%*} %{m32:--32} %{m64:--64}"
 
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
