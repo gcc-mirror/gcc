@@ -1,3 +1,9 @@
+2005-06-13  Tom Tromey  <tromey@redhat.com>
+
+	PR java/21844:
+	* testsuite/libjava.lang/pr21844.java: New file.
+	* testsuite/libjava.lang/pr21844.out: New file.
+
 2005-06-08  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/21949
