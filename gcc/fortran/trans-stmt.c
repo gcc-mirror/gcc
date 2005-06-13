@@ -1367,8 +1367,9 @@ gfc_trans_forall_loop (forall_info *forall_tmp, int nvar, tree body, int mask_fl
       tmp = build2 (PLUS_EXPR, TREE_TYPE (var), var, step);
       gfc_add_modify_expr (&block, var, tmp);
 
-      /* Advance to the next mask element.  */
-      if (mask_flag)
+      /* Advance to the next mask element.  Only do this for the
+	 innermost loop.  */
+      if (n == 0 && mask_flag)
         {
           mask = forall_tmp->mask;
           maskindex = forall_tmp->maskindex;

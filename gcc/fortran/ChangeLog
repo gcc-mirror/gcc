@@ -1,3 +1,9 @@
+2005-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/22038
+	* trans-stmt.c (gfc_trans_forall_loop): Only increment maskindex
+	in the innermost loop.
+
 2005-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from the mainline:
