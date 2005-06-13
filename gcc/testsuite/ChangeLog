@@ -1,3 +1,8 @@
+2005-06-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/22038
+	* gfortran.dg/forall_1.f90: Un-XFAIL.
+
 2005-06-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21929
