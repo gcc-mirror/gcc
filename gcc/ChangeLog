@@ -1,3 +1,11 @@
+2005-06-12  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/21994
+	* tree-complex.c (update_complex_components_on_edge): New.
+	(update_parameter_components): Use it.
+	(update_phi_components): Likewise.
+	(expand_complex_move): Likewise for is_ctrl_altering_stmt.
+
 2005-06-12  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR tree-optimization/14796
