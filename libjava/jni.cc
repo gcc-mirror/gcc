@@ -1112,10 +1112,10 @@ _Jv_JNI_NewObjectV (JNIEnv *env, jclass klass,
 		    jmethodID id, va_list args)
 {
   JvAssert (klass && ! klass->isArray ());
-  JvAssert (! strcmp (id->name->data, "<init>")
-	    && id->signature->length > 2
-	    && id->signature->data[0] == '('
-	    && ! strcmp (&id->signature->data[id->signature->length - 2],
+  JvAssert (! strcmp (id->name->chars(), "<init>")
+	    && id->signature->len() > 2
+	    && id->signature->chars()[0] == '('
+	    && ! strcmp (&id->signature->chars()[id->signature->len() - 2],
 			 ")V"));
 
   return _Jv_JNI_CallAnyMethodV<jobject, constructor> (env, NULL, klass,
@@ -1126,10 +1126,10 @@ static jobject JNICALL
 _Jv_JNI_NewObject (JNIEnv *env, jclass klass, jmethodID id, ...)
 {
   JvAssert (klass && ! klass->isArray ());
-  JvAssert (! strcmp (id->name->data, "<init>")
-	    && id->signature->length > 2
-	    && id->signature->data[0] == '('
-	    && ! strcmp (&id->signature->data[id->signature->length - 2],
+  JvAssert (! strcmp (id->name->chars(), "<init>")
+	    && id->signature->len() > 2
+	    && id->signature->chars()[0] == '('
+	    && ! strcmp (&id->signature->chars()[id->signature->len() - 2],
 			 ")V"));
 
   va_list args;
@@ -1148,10 +1148,10 @@ _Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
 		    jvalue *args)
 {
   JvAssert (klass && ! klass->isArray ());
-  JvAssert (! strcmp (id->name->data, "<init>")
-	    && id->signature->length > 2
-	    && id->signature->data[0] == '('
-	    && ! strcmp (&id->signature->data[id->signature->length - 2],
+  JvAssert (! strcmp (id->name->chars(), "<init>")
+	    && id->signature->len() > 2
+	    && id->signature->chars()[0] == '('
+	    && ! strcmp (&id->signature->chars()[id->signature->len() - 2],
 			 ")V"));
 
   return _Jv_JNI_CallAnyMethodA<jobject, constructor> (env, NULL, klass,

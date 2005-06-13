@@ -1,3 +1,9 @@
+2005-06-13  Jim Huang  <jserv@kaffe.org>
+
+	PR libgcj/22036:
+	* jni.cc (_Jv_JNI_NewObjectV): Use chars() method.
+	(_Jv_JNI_NewObject): Likewise.
+
 2005-06-13  Tom Tromey  <tromey@redhat.com>
 
 	PR java/21844:
