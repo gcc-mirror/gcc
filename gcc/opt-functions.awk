@@ -89,6 +89,32 @@ function var_name(flags)
 	return nth_arg(0, opt_args("Var", flags))
 }
 
+# Return true if the option described by FLAGS has a globally-visible state.
+function global_state_p(flags)
+{
+	return (var_name(flags) != "" \
+		|| opt_args("Mask", flags) != "" \
+		|| opt_args("InverseMask", flags) != "")
+}
+
+# Return true if the option described by FLAGS must have some state
+# associated with it.
+function needs_state_p(flags)
+{
+	return flag_set_p("Target", flags)
+}
+
+# If FLAGS describes an option that needs a static state variable,
+# return the name of that variable, otherwise return "".  NAME is
+# the name of the option.
+function static_var(name, flags)
+{
+	if (global_state_p(flags) || !needs_state_p(flags))
+		return ""
+	gsub ("[^A-Za-z0-9]", "_", name)
+	return "VAR_" name
+}
+
 # Return the type of variable that should be associated with the given flags.
 function var_type(flags)
 {
@@ -128,11 +154,11 @@ function var_set(flags)
 	return "CLVC_BOOLEAN, 0"
 }
 
-# Given that an option has flags FLAGS, return an initializer for the
-# "flag_var" field of its cl_options[] entry.
-function var_ref(flags)
+# Given that an option called NAME has flags FLAGS, return an initializer
+# for the "flag_var" field of its cl_options[] entry.
+function var_ref(name, flags)
 {
-	name = var_name(flags)
+	name = var_name(flags) static_var(name, flags)
 	if (name != "")
 		return "&" name
 	if (opt_args("Mask", flags) != "")
