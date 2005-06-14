@@ -1,5 +1,10 @@
 2005-06-14  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/19877:
+	* configure, aclocal.m4, Makefile.in: Rebuilt.
+
+2005-06-14  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/Class.java (getClasses): New method.
 	(internalGetClasses): Likewise.
 	(getClassLoader): Updated documentation.

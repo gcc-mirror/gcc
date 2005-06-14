@@ -4432,7 +4432,7 @@ else
     ac_cv_func_mmap_fixed_mapped=no
   fi
 fi
-if test "x${ac_cv_func_mmap_fixed_mapped+set}" != xset; then
+if test "x${ac_cv_func_mmap_fixed_mapped}" != xno; then
 
 echo "$as_me:$LINENO: checking for egrep" >&5
 echo $ECHO_N "checking for egrep... $ECHO_C" >&6
