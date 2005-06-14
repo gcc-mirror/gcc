@@ -1,3 +1,8 @@
+2005-06-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21929
+	* g++.dg/parse/crash11.C: Update
+
 2005-06-13  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/20030807-10.c: VRP is now expected to
