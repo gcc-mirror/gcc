@@ -1,3 +1,8 @@
+2005-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/22043
+	* gcc.c-torture/execute/20050613-1.c: New test.
+
 2005-06-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/pr21171.c: Fix.

@@ -1,3 +1,9 @@
+2005-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/22043
+	* gimplify.c (gimplify_init_constructor): If num_type_elements < 0
+	for a constant-sized object, set cleared as well.
+
 2005-06-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/20301
