@@ -1,3 +1,17 @@
+2005-06-14  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.java (getClasses): New method.
+	(internalGetClasses): Likewise.
+	(getClassLoader): Updated documentation.
+	(getDeclaredClasses): New overload; old overload no longer
+	native.
+	(_getConstructors): Removed.
+	(resourcePath): Updated.
+	* java/lang/natClass.cc (getClasses): Removed.
+	* java/lang/Class.h (getDeclaredClasses, getDeclaredConstructors):
+	Updated.
+	(_getConstructors): Removed.
+
 2005-06-13  Jim Huang  <jserv@kaffe.org>
 
 	PR libgcj/22036:

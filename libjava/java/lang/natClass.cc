@@ -126,15 +126,6 @@ java::lang::Class::getClassLoader (void)
 	s->checkPermission (new RuntimePermission (JvNewStringLatin1 ("getClassLoader")));
     }
 
-  // This particular 'return' has been changed a couple of times over
-  // libgcj's history.  This particular approach is a little weird,
-  // because it means that all classes linked into the application
-  // will see NULL for their class loader.  This may confuse some
-  // applications that aren't expecting this; the solution is to use a
-  // different linking model for these applications.  In the past we
-  // returned the system class loader in this case, but that is
-  // incorrect.  Also, back then we didn't have other linkage models
-  // to fall back on.
   return loader;
 }
 
@@ -167,10 +158,8 @@ java::lang::Class::getConstructor (JArray<jclass> *param_types)
 }
 
 JArray<java::lang::reflect::Constructor *> *
-java::lang::Class::_getConstructors (jboolean declared)
+java::lang::Class::getDeclaredConstructors (jboolean publicOnly)
 {
-  memberAccessCheck(java::lang::reflect::Member::PUBLIC);
-
   int numConstructors = 0;
   int max = isPrimitive () ? 0 : method_count;
   int i;
@@ -180,7 +169,7 @@ java::lang::Class::_getConstructors (jboolean declared)
       if (method->name == NULL
 	  || ! _Jv_equalUtf8Consts (method->name, init_name))
 	continue;
-      if (! declared
+      if (publicOnly
 	  && ! java::lang::reflect::Modifier::isPublic(method->accflags))
 	continue;
       numConstructors++;
@@ -197,7 +186,7 @@ java::lang::Class::_getConstructors (jboolean declared)
       if (method->name == NULL
 	  || ! _Jv_equalUtf8Consts (method->name, init_name))
 	continue;
-      if (! declared
+      if (publicOnly
 	  && ! java::lang::reflect::Modifier::isPublic(method->accflags))
 	continue;
       java::lang::reflect::Constructor *cons
@@ -427,22 +416,8 @@ java::lang::Class::getName (void)
 }
 
 JArray<jclass> *
-java::lang::Class::getClasses (void)
+java::lang::Class::getDeclaredClasses (jboolean /*publicOnly*/)
 {
-  // FIXME: security checking.
-
-  // Until we have inner classes, it always makes sense to return an
-  // empty array.
-  JArray<jclass> *result
-    = (JArray<jclass> *) JvNewObjectArray (0, &java::lang::Class::class$,
-					   NULL);
-  return result;
-}
-
-JArray<jclass> *
-java::lang::Class::getDeclaredClasses (void)
-{
-  memberAccessCheck (java::lang::reflect::Member::DECLARED);
   // Until we have inner classes, it always makes sense to return an
   // empty array.
   JArray<jclass> *result
