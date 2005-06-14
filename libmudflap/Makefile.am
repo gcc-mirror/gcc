@@ -91,6 +91,7 @@ AM_MAKEFLAGS = \
 	"infodir=$(infodir)" \
 	"libdir=$(libdir)" \
 	"prefix=$(prefix)" \
+	"includedir=$(includedir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
 	"CC=$(CC)" \
