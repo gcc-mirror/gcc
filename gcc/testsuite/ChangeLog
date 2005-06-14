@@ -1,3 +1,7 @@
+2005-06-14  Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/vect/vect-ifcvt-1.c: Remove.
+	
 2005-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21929
