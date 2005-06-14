@@ -1,3 +1,9 @@
+2005-06-14  Frank Ch. Eigler  <fche@redhat.com>
+
+	PR mudflap/21023
+	* tree-mudflap.c (mudflap_finish_file): Exclude non-public
+	rather than static objects (!) from libmudflap registration.
+
 2005-06-14  Richard Sandiford  <richard@codesourcery.com>
 
 	* opt-functions.awk (global_state_p, needs_state_p, static_var): New.
