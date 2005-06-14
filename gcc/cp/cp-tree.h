@@ -1041,7 +1041,7 @@ struct lang_type_class GTY(())
   unsigned java_interface : 1;
   unsigned debug_requested : 1;
   unsigned fields_readonly : 1;
-  
+
   unsigned use_template : 2;
   unsigned ptrmemfunc_flag : 1;
   unsigned was_anonymous : 1;
@@ -1170,7 +1170,7 @@ struct lang_type GTY(())
    it has not yet been declared.  */
 #define CLASSTYPE_LAZY_DESTRUCTOR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->lazy_destructor)
- 
+
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
 #define TYPE_HAS_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_assign_ref)
 
@@ -1529,7 +1529,7 @@ struct lang_decl_flags GTY(())
   unsigned initialized_in_class : 1;
   unsigned assignment_operator_p : 1;
   unsigned u1sel : 1;
- 
+
   unsigned u2sel : 1;
   unsigned can_be_full : 1;
   unsigned thunk_p : 1;
@@ -1578,7 +1578,7 @@ struct lang_decl GTY(())
 	unsigned u3sel : 1;
 	unsigned pending_inline_p : 1;
 	unsigned spare : 22;
-	
+
 	/* For a non-thunk function decl, this is a tree list of
   	   friendly classes. For a thunk function decl, it is the
   	   thunked to function decl.  */
@@ -1597,12 +1597,12 @@ struct lang_decl GTY(())
 	  /* In a non-thunk FUNCTION_DECL or TEMPLATE_DECL, this is
 	     DECL_CLONED_FUNCTION.  */
 	  tree GTY ((tag ("0"))) cloned_function;
-	  
+
 	  /* In a FUNCTION_DECL for which THUNK_P holds this is the
 	     THUNK_FIXED_OFFSET.  */
 	  HOST_WIDE_INT GTY ((tag ("1"))) fixed_offset;
 	} GTY ((desc ("%0.decl_flags.thunk_p"))) u5;
-	
+
 	union lang_decl_u3
 	{
 	  struct sorted_fields_type * GTY ((tag ("0"), reorder ("resort_sorted_fields")))
@@ -1911,7 +1911,7 @@ struct lang_decl GTY(())
   (TREE_CODE (NODE) == FUNCTION_DECL		\
    && DECL_LANG_SPECIFIC (NODE)			\
    && DECL_LANG_SPECIFIC (NODE)->decl_flags.thunk_p)
-     
+
 /* Set DECL_THUNK_P for node.  */
 #define SET_DECL_THUNK_P(NODE, THIS_ADJUSTING)			\
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.thunk_p = 1,		\

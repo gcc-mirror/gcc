@@ -62,9 +62,9 @@ update_cloned_parm (tree parm, tree cloned_parm)
 
   /* The definition might have different constness.  */
   TREE_READONLY (cloned_parm) = TREE_READONLY (parm);
-  
+
   TREE_USED (cloned_parm) = TREE_USED (parm);
-  
+
   /* The name may have changed from the declaration.  */
   DECL_NAME (cloned_parm) = DECL_NAME (parm);
   DECL_SOURCE_LOCATION (cloned_parm) = DECL_SOURCE_LOCATION (parm);

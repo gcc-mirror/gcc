@@ -186,7 +186,7 @@ dump_op (dump_info_p di, tree t)
       dump_string (di, "subs");
       break;
     case POSTINCREMENT_EXPR:
-      dump_string (di, "postinc");     
+      dump_string (di, "postinc");
       break;
     case POSTDECREMENT_EXPR:
       dump_string (di, "postdec");
@@ -257,7 +257,7 @@ cp_dump_tree (void* dump_info, tree t)
 	  dump_child ("bfld", TYPE_CONTEXT (t));
 	  return true;
 	}
-      
+
       if (! IS_AGGR_TYPE (t))
 	break;
 
@@ -270,12 +270,12 @@ cp_dump_tree (void* dump_info, tree t)
 	  int i;
 	  tree binfo;
 	  tree base_binfo;
-	  
+
 	  for (binfo = TYPE_BINFO (t), i = 0;
 	       BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
 	    {
 	      dump_child ("base", BINFO_TYPE (base_binfo));
-	      if (BINFO_VIRTUAL_P (base_binfo)) 
+	      if (BINFO_VIRTUAL_P (base_binfo))
 		dump_string (di, "virtual");
 	      dump_access (di, base_binfo);
 	    }
@@ -293,7 +293,7 @@ cp_dump_tree (void* dump_info, tree t)
         dump_access (di, t);
       if (TREE_STATIC (t) && !TREE_PUBLIC (t))
         dump_string (di, "static");
-      break; 
+      break;
 
     case FUNCTION_DECL:
       if (!DECL_THUNK_P (t))
@@ -302,7 +302,7 @@ cp_dump_tree (void* dump_info, tree t)
 	    dump_string (di, "operator");
             dump_op (di, t);
           }
-	  if (DECL_FUNCTION_MEMBER_P (t)) 
+	  if (DECL_FUNCTION_MEMBER_P (t))
 	    {
 	      dump_string (di, "member");
 	      dump_access (di, t);
@@ -327,7 +327,7 @@ cp_dump_tree (void* dump_info, tree t)
       else
 	{
 	  tree virt = THUNK_VIRTUAL_OFFSET (t);
-	  
+
 	  dump_string (di, "thunk");
 	  if (DECL_THIS_THUNK_P (t))
 	    dump_string (di, "this adjusting");
@@ -393,7 +393,7 @@ cp_dump_tree (void* dump_info, tree t)
       dump_child ("args", TREE_OPERAND (t, 1));
       dump_child ("decl", TREE_OPERAND (t, 2));
       break;
-      
+
     case HANDLER:
       dump_stmt (di, t);
       dump_child ("parm", HANDLER_PARMS (t));

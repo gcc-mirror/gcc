@@ -635,7 +635,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		      CLEANUP_EXPR (stmt));
 
   pointer_set_insert (p_set, *stmt_p);
-  
+
   return NULL;
 }
 

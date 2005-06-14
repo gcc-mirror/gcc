@@ -115,7 +115,7 @@ get_base_filename (const char *filename)
     }
 
   return lbasename (filename);
-}        
+}
 
 static void
 open_repo_file (const char *filename)
@@ -332,7 +332,7 @@ repo_export_class_p (tree class_type)
     return false;
   /* If the virtual table has been assigned to this translation unit,
      export the class.  */
-  return (IDENTIFIER_REPO_CHOSEN 
+  return (IDENTIFIER_REPO_CHOSEN
 	  (DECL_ASSEMBLER_NAME (CLASSTYPE_VTABLES (class_type))));
 }
 

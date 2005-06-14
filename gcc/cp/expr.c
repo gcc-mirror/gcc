@@ -46,11 +46,11 @@ cplus_expand_constant (tree cst)
       {
 	tree type = TREE_TYPE (cst);
 	tree member;
-      
+
 	/* Find the member.  */
 	member = PTRMEM_CST_MEMBER (cst);
 
-	if (TREE_CODE (member) == FIELD_DECL) 
+	if (TREE_CODE (member) == FIELD_DECL)
 	  {
 	    /* Find the offset for the field.  */
 	    cst = byte_position (member);

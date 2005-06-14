@@ -190,7 +190,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 		 cause a warning.  */
 	      library = -1;
 	    }
-	  else if (strcmp (argv[i], "-static-libgcc") == 0 
+	  else if (strcmp (argv[i], "-static-libgcc") == 0
 		   || strcmp (argv[i], "-static") == 0)
 	    shared_libgcc = 0;
 	  else if (DEFAULT_WORD_SWITCH_TAKES_ARG (&argv[i][1]))
@@ -201,7 +201,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	}
       else
 	{
-	  int len; 
+	  int len;
 
 	  if (saw_speclang)
 	    {
@@ -213,7 +213,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	     But not if a specified -x option is currently active.  */
 	  len = strlen (argv[i]);
 	  if (len > 2
-	      && (argv[i][len - 1] == 'c' 
+	      && (argv[i][len - 1] == 'c'
 		  || argv[i][len - 1] == 'i'
 		  || argv[i][len - 1] == 'h')
 	      && argv[i][len - 2] == '.')
@@ -221,7 +221,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	      args[i] |= LANGSPEC;
 	      added += 2;
 	    }
-	  
+
 	  /* If we don't know that this is a header file, we might
 	     need to be linking in the libraries.  */
 	  if (library == 0)
@@ -256,7 +256,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   i = 0;
   j = 0;
-  
+
   /* Copy the 0th argument, i.e., the name of the program itself.  */
   arglist[i++] = argv[j++];
 
@@ -344,7 +344,7 @@ int lang_specific_pre_link (void)  /* Not used for C++.  */
 /* Number of extra output files that lang_specific_pre_link may generate.  */
 int lang_specific_extra_outfiles = 0;  /* Not used for C++.  */
 
-/* Table of language-specific spec functions.  */ 
+/* Table of language-specific spec functions.  */
 const struct spec_function lang_specific_spec_functions[] =
 {
   { 0, 0 }

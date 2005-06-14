@@ -9,15 +9,15 @@
 * G++ no longer allows in-class initializations of static data members
   that do not have arithmetic or enumeration type.  For example:
 
-    struct S { 
+    struct S {
       static const char* const p = "abc";
     };
 
-  is no longer accepted.  
+  is no longer accepted.
 
   Use the standards-conformant form:
 
-    struct S { 
+    struct S {
       static const char* const p;
     };
 
@@ -39,12 +39,12 @@
   pointer to cv-qualified member function types.
 
 * The C++ ABI has been changed to correctly handle this code:
-	
+
     struct A {
       void operator delete[] (void *, size_t);
     };
 
-    struct B : public A { 
+    struct B : public A {
     };
 
     new B[10];
@@ -52,17 +52,17 @@
   The amount of storage allocated for the array will be greater than
   it was in 3.0, in order to store the number of elements in the
   array, so that the correct size can be passed to `operator delete[]'
-  when the array is deleted.  Previously, the value passed to 
+  when the array is deleted.  Previously, the value passed to
   `operator delete[]' was unpredictable.
 
   This change will only affect code that declares a two-argument
   `operator delete[]' with a second parameter of type `size_t'
-  in a base class, and does not override that definition in a 
+  in a base class, and does not override that definition in a
   derived class.
 
 * The C++ ABI has been changed so that:
 
-    struct A { 
+    struct A {
       void operator delete[] (void *, size_t);
       void operator delete[] (void *);
     };
@@ -109,7 +109,7 @@
   are those whose types involve non-type template arguments whose
   mangled representations require more than one digit.
 
-* Support for assignment to `this' has been removed.  This idiom 
+* Support for assignment to `this' has been removed.  This idiom
   was used in the very early days of C++, before users were allowed
   to overload `operator new'; it is no longer allowed by the C++
   standard.
@@ -124,15 +124,15 @@
 
 * G++ previously allowed `sizeof (X::Y)' where Y was a non-static
   member of X, even if the `sizeof' expression occurred outside
-  of a non-static member function of X (or one of its derived classes, 
+  of a non-static member function of X (or one of its derived classes,
   or a member-initializer for X or one of its derived classes.)   This
   extension has been removed.
 
-* G++ no longer allows you to overload the conditional operator (i.e., 
+* G++ no longer allows you to overload the conditional operator (i.e.,
   the `?:' operator.)
 
 * The "named return value" extension:
-	
+
     int f () return r { r = 3; }
 
   has been deprecated, and will be removed in a future version of G++.
@@ -175,7 +175,7 @@
 
 *** Changes in EGCS 1.1:
 
-* Namespaces are fully supported.  The library has not yet been converted 
+* Namespaces are fully supported.  The library has not yet been converted
   to use namespace std, however, and the old std-faking code is still on by
   default.  To turn it off, you can use -fhonor-std.
 
@@ -252,7 +252,7 @@
 
             http://www.cygnus.com/misc/wp/dec96pub/template.html#temp.res
 
-     + Guiding declarations are no longer supported.  Function declarations, 
+     + Guiding declarations are no longer supported.  Function declarations,
        including friend declarations, do not refer to template instantiations.
        You can restore the old behavior with -fguiding-decls until you fix
        your code.
@@ -315,7 +315,7 @@
        converting from a bound member function pointer to function
        pointer).
 
-     + A flag -Weffc++ has been added for violations of some of the style 
+     + A flag -Weffc++ has been added for violations of some of the style
        guidelines in Scott Meyers' _Effective C++_ books.
 
      + -Woverloaded-virtual now warns if a virtual function in a base
@@ -336,13 +336,13 @@
 
 * __FUNCTION__ and __PRETTY_FUNCTION__ are now treated as variables by the
   parser; previously they were treated as string constants.  So code like
-  `printf (__FUNCTION__ ": foo")' must be rewritten to 
+  `printf (__FUNCTION__ ": foo")' must be rewritten to
   `printf ("%s: foo", __FUNCTION__)'.  This is necessary for templates.
 
 * local static variables in extern inline functions will be shared between
   translation units.
 
-* -fvtable-thunks is supported for all targets, and is the default for 
+* -fvtable-thunks is supported for all targets, and is the default for
   Linux with glibc 2.x (also called libc 6.x).
 
 * bool is now always the same size as another built-in type. Previously,
@@ -395,7 +395,7 @@
 * Joe Buck <jbuck@synopsys.com>, the maintainer of the g++ FAQ.
 * Brendan Kehoe <brendan@cygnus.com>, who coordinates testing of g++.
 * Jason Merrill <jason@cygnus.com>, the g++ maintainer.
-* Mark Mitchell <mmitchell@usa.net>, who implemented member function 
+* Mark Mitchell <mmitchell@usa.net>, who implemented member function
   templates and explicit qualification of function templates.
 * Mike Stump <mrs@wrs.com>, the previous g++ maintainer, who did most of
   the exception handling work.

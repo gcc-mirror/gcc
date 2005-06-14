@@ -49,7 +49,7 @@
 
 	* init.c (build_vec_delete_1): Convert 2nd argument to NE_EXPR to
 	the proper type.
- 
+
 2004-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13944
@@ -89,7 +89,7 @@
 	* call.c, cvt.c, init.c, typeck.c: Use TREE_NO_WARNING instead
 	of TREE_NO_UNUSED_WARNING.
 	* cvt.c (convert_to_void): Also use it for "has no effect" warning.
-	
+
 2004-01-30  Frank Ch. Eigler  <fche@redhat.com>
 
 	* cp-mudflap.c (mflang_flush_calls): Mark static ctor as TREE_USED.
@@ -138,7 +138,7 @@
 	* cp-lang.c (LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR): Kill.
 	* cp-tree.h (cxx_callgraph_analyze_expr): Kill.
 	* decl2.c (cxx_callgraph_analyze_expr): Kill.
-	
+
 2003-12-14  Jan Hubicka  <jh@suse.cz>
 
 	* cp-lang.c (LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR): Kill.
