@@ -1,3 +1,8 @@
+2005-06-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (install-man): Doesn't really depend on installdirs.
+	(various rules for installing manpages): Do depend on installdirs.
+
 2005-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* unwind-dw2-fde-darwin.c (examine_objects): Fix aliasing in

@@ -1,3 +1,8 @@
+2005-06-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in (c++.install-man): Doesn't really depend on installdirs.
+	(rule for installing g++.1 manpage): Does depend on installdirs.
+
 2005-06-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20789

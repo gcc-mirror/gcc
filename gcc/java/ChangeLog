@@ -1,3 +1,7 @@
+2005-06-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in (rule for installing gcj.1): Depends on installdirs.
+
 2005-06-13  Per Bothner  <per@bothner.com>
 
 	* expr.c (int highest_label_pc_this_method,
