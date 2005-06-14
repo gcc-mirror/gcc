@@ -1,3 +1,7 @@
+2005-06-14  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/pr21171.c: Fix.
+
 2005-06-08  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/21171
