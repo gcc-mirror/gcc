@@ -1013,6 +1013,7 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
   if (f)
     {
       int encoding;
+      _Unwind_Ptr func;
 
       bases->tbase = ob->tbase;
       bases->dbase = ob->dbase;
@@ -1021,7 +1022,8 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
       if (ob->s.b.mixed_encoding)
 	encoding = get_fde_encoding (f);
       read_encoded_value_with_base (encoding, base_from_object (encoding, ob),
-				    f->pc_begin, (_Unwind_Ptr *)&bases->func);
+				    f->pc_begin, &func);
+      bases->func = (void *) func;
     }
 
   return f;

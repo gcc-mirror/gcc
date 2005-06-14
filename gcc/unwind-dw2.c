@@ -320,8 +320,10 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
       /* "P" indicates a personality routine in the CIE augmentation.  */
       else if (aug[0] == 'P')
 	{
-	  p = read_encoded_value (context, *p, p + 1,
-				  (_Unwind_Ptr *) &fs->personality);
+	  _Unwind_Ptr personality;
+	  
+	  p = read_encoded_value (context, *p, p + 1, &personality);
+	  fs->personality = (_Unwind_Personality_Fn) personality;
 	  aug += 1;
 	}
 
@@ -785,8 +787,13 @@ execute_cfa_program (const unsigned char *insn_ptr,
       else switch (insn)
 	{
 	case DW_CFA_set_loc:
-	  insn_ptr = read_encoded_value (context, fs->fde_encoding,
-					 insn_ptr, (_Unwind_Ptr *) &fs->pc);
+	  {
+	    _Unwind_Ptr pc;
+	    
+	    insn_ptr = read_encoded_value (context, fs->fde_encoding,
+					   insn_ptr, &pc);
+	    fs->pc = (void *) pc;
+	  }
 	  break;
 
 	case DW_CFA_advance_loc1:
@@ -1001,8 +1008,12 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
       insn = aug + i;
     }
   if (fs->lsda_encoding != DW_EH_PE_omit)
-    aug = read_encoded_value (context, fs->lsda_encoding, aug,
-			      (_Unwind_Ptr *) &context->lsda);
+    {
+      _Unwind_Ptr lsda;
+      
+      aug = read_encoded_value (context, fs->lsda_encoding, aug, &lsda);
+      context->lsda = (void *) lsda;
+    }
 
   /* Then the insns in the FDE up to our target PC.  */
   if (insn == NULL)
