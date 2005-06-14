@@ -1,5 +1,10 @@
 2005-06-14  Frank Ch. Eigler  <fche@redhat.com>
 
+	PR libmudflap/21094
+	* testsuite/libmudflap.c++/*.exp: Assert build tree g++.
+
+2005-06-14  Frank Ch. Eigler  <fche@redhat.com>
+
 	PR mudflap/22064
 	* mf-impl.h (mudflap_mode, violation_mode): Make these ordinary
 	unsigned vars with #defines instead of enums.
