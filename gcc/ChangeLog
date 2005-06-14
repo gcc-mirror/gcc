@@ -1,3 +1,17 @@
+2005-06-14  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (machine_function): Add varargs_size field.
+	(mips_setup_incoming_varargs): Store the amount of extra stack space
+	there rather than in *pretend_size.  When saving registers, always
+	expect virtual_incoming_args_rtx to point to the start of the
+	pretend arguments.
+	(mips_va_start): Remove alignment hack.  Handle all
+	!EABI_FLOAT_VARARGS_P cases in the same way.
+	(compute_frame_size): Handle varargs_size.  Remove the redundant
+	!TARGET_OLDABI condition in the handling of pretend_args_size.
+	(mips_initial_elimination_offset): Remove the now-redundant check
+	of TARGET_NEWABI.
+
 2005-06-14  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (local_fold): Remove.
