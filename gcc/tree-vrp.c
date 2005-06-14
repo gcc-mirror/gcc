@@ -94,21 +94,6 @@ static sbitmap blocks_visited;
    of values that SSA name N_I may take.  */
 static value_range_t **vr_value;
 
-/* Local version of fold that doesn't introduce cruft.  */
-
-static tree
-local_fold (tree t)
-{
-  t = fold (t);
-
-  /* Strip away useless type conversions.  Both the NON_LVALUE_EXPR that
-     may have been added by fold, and "useless" type conversions that might
-     now be apparent due to propagation.  */
-  STRIP_USELESS_TYPE_CONVERSION (t);
-
-  return t;
-}
-
 /* Given a comparison code, return its opposite.  Note that this is *not*
    the same as inverting its truth value (invert_tree_comparison).  Here we
    just want to literally flip the comparison around.
@@ -3466,14 +3451,17 @@ simplify_using_ranges (void)
 		      tree op1 = TREE_OPERAND (rhs, 1);
 
 		      if (rhs_code == TRUNC_DIV_EXPR)
-			t = build (RSHIFT_EXPR, TREE_TYPE (op0), op0,
-				   build_int_cst (NULL_TREE, tree_log2 (op1)));
+			{
+			  t = build_int_cst (NULL_TREE, tree_log2 (op1));
+			  t = build (RSHIFT_EXPR, TREE_TYPE (op0), op0, t);
+			}
 		      else
-			t = build (BIT_AND_EXPR, TREE_TYPE (op0), op0,
-				   local_fold (build (MINUS_EXPR,
-						      TREE_TYPE (op1),
-						      op1,
-						      integer_one_node)));
+			{
+			  t = build_int_cst (TREE_TYPE (op1), 1);
+			  t = int_const_binop (MINUS_EXPR, op1, t, 0);
+			  t = fold_convert (TREE_TYPE (op0), t);
+			  t = build2 (BIT_AND_EXPR, TREE_TYPE (op0), op0, t);
+			}
 
 		      TREE_OPERAND (stmt, 1) = t;
 		      update_stmt (stmt);
