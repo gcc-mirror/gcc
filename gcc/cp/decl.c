@@ -9143,6 +9143,7 @@ grok_op_properties (tree decl, bool complain)
       /* Warn about conversion operators that will never be used.  */
       if (IDENTIFIER_TYPENAME_P (name) 
 	  && ! DECL_TEMPLATE_INFO (decl)
+	  && warn_conversion
 	  /* Warn only declaring the function; there is no need to
 	     warn again about out-of-class definitions.  */
 	  && class_type == current_class_type)

@@ -1,3 +1,8 @@
+2005-06-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21987
+	* decl.c (grok_op_properties): Add missing warn_conversion check.
+
 2005-06-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20789
