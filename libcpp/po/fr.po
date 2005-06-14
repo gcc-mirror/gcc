@@ -116,10 +116,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU cpplib 4.0-b20041128\n"
+"Project-Id-Version: GNU cpplib 4.0.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-04-20 21:43-0700\n"
-"PO-Revision-Date: 2004-12-02 20:00-0500\n"
+"PO-Revision-Date: 2005-06-12 08:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -142,18 +142,18 @@ msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "pas d'implantation iconv, ne peut convertir de %s vers %s"
 
 #: charset.c:743
-#, fuzzy, c-format
+#, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
-msgstr "conversion UCN vers le jeu source de caractères"
+msgstr "caractère 0x%lx n'est pas dans le jeu de caractères de base\n"
 
 #: charset.c:760 charset.c:1243
 msgid "converting to execution character set"
 msgstr "conversion vers un jeu d'exécution de caractères"
 
 #: charset.c:766
-#, fuzzy, c-format
+#, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
-msgstr "conversion vers un jeu d'exécution de caractères"
+msgstr "caractère 0x%lx n'est pas unibyte dans le jeu de caractères d'exécution"
 
 #: charset.c:865
 msgid "universal character names are only valid in C++ and C99"
@@ -319,9 +319,9 @@ msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s attend \"NOM_DE_FICHIER\" ou <NOM_DE_FICHIER>"
 
 #: directives.c:673
-#, fuzzy, c-format
+#, c-format
 msgid "empty filename in #%s"
-msgstr "modes incompatibles dans %s"
+msgstr "nom de fichier vide dans #%s"
 
 #: directives.c:681
 msgid "#include nested too deeply"
@@ -885,14 +885,12 @@ msgid "missing ')' in macro parameter list"
 msgstr "« ) » manquante dans la liste des paramètres de macros"
 
 #: macro.c:1439
-#, fuzzy
 msgid "ISO C99 requires whitespace after the macro name"
-msgstr "ISO C requiert un blanc après le nom de la macro"
+msgstr "ISO C99 requiert un blanc après le nom de la macro"
 
 #: macro.c:1463
-#, fuzzy
 msgid "missing whitespace after the macro name"
-msgstr "ISO C requiert un blanc après le nom de la macro"
+msgstr "blanc d'espacement manquant après le nom de la macro"
 
 #: macro.c:1493
 msgid "'#' is not followed by a macro parameter"
