@@ -20,7 +20,7 @@ struct B
   struct Template
   {
     typedef typename A<A<TP>::Template>  // { dg-error "mismatch|class template" }
-      ::template Template<T>::Type Type; // { dg-error "unqualified-id" }
+      ::template Template<T>::Type Type; // { dg-error "" }
   };
 };
 template <typename T>
