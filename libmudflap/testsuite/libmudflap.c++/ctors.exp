@@ -1,5 +1,9 @@
 
 libmudflap-init c++
+if {$cxx == "g++"} then {
+    unsupported "g++ not found"
+    return
+}
 
 dg-init
 
