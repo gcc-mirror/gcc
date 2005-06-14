@@ -1,3 +1,9 @@
+2005-06-14  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/19877:
+	* no-executables.m4: Call real AC_FUNC_MMAP when cache variable
+	is set but not 'no'.
+
 2005-06-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* depstand.m4, lead-dot.m4: New files.

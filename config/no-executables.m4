@@ -53,7 +53,7 @@ if test x$gcc_no_link = xyes; then
     ac_cv_func_mmap_fixed_mapped=no
   fi
 fi
-if test "x${ac_cv_func_mmap_fixed_mapped+set}" != xset; then
+if test "x${ac_cv_func_mmap_fixed_mapped}" != xno; then
   m4_defn([AC_FUNC_MMAP])
 fi)
 

@@ -30156,7 +30156,7 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     ac_cv_func_mmap_fixed_mapped=no
   fi
 fi
-if test "x${ac_cv_func_mmap_fixed_mapped+set}" != xset; then
+if test "x${ac_cv_func_mmap_fixed_mapped}" != xno; then
 
 
 for ac_header in stdlib.h unistd.h
