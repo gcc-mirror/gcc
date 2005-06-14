@@ -1,3 +1,8 @@
+2005-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.ac: Treat i*86-*-solaris2.10 and up as X86_64.
+	* configure: Regenerate.
+	
 2005-06-01  Alan Modra  <amodra@bigpond.net.au>
 
 	* src/powerpc/ppc_closure.S (ffi_closure_SYSV): Don't use JUMPTARGET
