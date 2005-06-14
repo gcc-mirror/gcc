@@ -1,3 +1,9 @@
+2005-06-14  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (local_fold): Remove.
+	(simplify_using_ranges): Use fold_convert, not local_fold.  Tweak
+	DIV/MOD case slightly for readability.
+
 2005-06-14  Frank Ch. Eigler  <fche@redhat.com>
 
 	PR mudflap/21023
