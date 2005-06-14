@@ -95,7 +95,7 @@ cp_protect_cleanup_actions (void)
      When the destruction of an object during stack unwinding exits
      using an exception ... void terminate(); is called.  */
   return build_call (terminate_node, NULL_TREE);
-}     
+}
 
 static tree
 prepare_eh_type (tree type)
@@ -346,7 +346,7 @@ choose_personality_routine (enum languages lang)
 
 /* Initialize the catch parameter DECL.  */
 
-static void 
+static void
 initialize_handler_parm (tree decl, tree exp)
 {
   tree init;
@@ -357,7 +357,7 @@ initialize_handler_parm (tree decl, tree exp)
   TREE_USED (decl) = 1;
 
   /* Figure out the type that the initializer is.  Pointers are returned
-     adjusted by value from __cxa_begin_catch.  Others are returned by 
+     adjusted by value from __cxa_begin_catch.  Others are returned by
      reference.  */
   init_type = TREE_TYPE (decl);
   if (!POINTER_TYPE_P (init_type))
@@ -528,7 +528,7 @@ do_allocate_exception (tree type)
       tree tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
       fn = push_library_fn (fn, build_function_type (ptr_type_node, tmp));
     }
-  
+
   return build_function_call (fn, tree_cons (NULL_TREE, size_in_bytes (type),
 					     NULL_TREE));
 }
@@ -600,7 +600,7 @@ build_throw (tree exp)
 
   if (exp == null_node)
     warning (0, "throwing NULL, which has integral, not pointer type");
-  
+
   if (exp != NULL_TREE)
     {
       if (!is_admissible_throw_operand (exp))
@@ -645,7 +645,7 @@ build_throw (tree exp)
 	  tmp = build_function_type (void_type_node, tmp);
 	  cleanup_type = build_pointer_type (tmp);
 	}
-      
+
       fn = get_identifier ("__cxa_throw");
       if (!get_global_value_if_present (fn, &fn))
 	{
@@ -658,7 +658,7 @@ build_throw (tree exp)
 	  tmp = build_function_type (void_type_node, tmp);
 	  fn = push_throw_library_fn (fn, tmp);
 	}
-      
+
       /* throw expression */
       /* First, decay it.  */
       exp = decay_conversion (exp);
@@ -751,7 +751,7 @@ build_throw (tree exp)
 	}
       else
 	cleanup = build_int_cst (cleanup_type, 0);
-	
+
       tmp = tree_cons (NULL_TREE, cleanup, NULL_TREE);
       tmp = tree_cons (NULL_TREE, throw_type, tmp);
       tmp = tree_cons (NULL_TREE, ptr, tmp);
@@ -774,7 +774,7 @@ build_throw (tree exp)
 	}
 
       /* ??? Indicate that this function call allows exceptions of the type
-	 of the enclosing catch block (if known).  */	 
+	 of the enclosing catch block (if known).  */
       exp = build_function_call (fn, NULL_TREE);
     }
 
@@ -792,18 +792,18 @@ static int
 complete_ptr_ref_or_void_ptr_p (tree type, tree from)
 {
   int is_ptr;
-  
+
   /* Check complete.  */
   type = complete_type_or_else (type, from);
   if (!type)
     return 0;
-  
+
   /* Or a pointer or ref to one, or cv void *.  */
   is_ptr = TREE_CODE (type) == POINTER_TYPE;
   if (is_ptr || TREE_CODE (type) == REFERENCE_TYPE)
     {
       tree core = TREE_TYPE (type);
-  
+
       if (is_ptr && VOID_TYPE_P (core))
         /* OK */;
       else if (!complete_type_or_else (core, from))

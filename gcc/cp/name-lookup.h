@@ -191,7 +191,7 @@ struct cp_binding_level GTY(())
     VEC(tree,gc) *static_decls;
 
     /* A chain of VTABLE_DECL nodes.  */
-    tree vtables; 
+    tree vtables;
 
     /* A list of USING_DECL nodes.  */
     tree usings;

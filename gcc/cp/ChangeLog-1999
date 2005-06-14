@@ -7,7 +7,7 @@
 	(determine_primary_base): ... this.  Simplify.
 	(create_vtable_ptr): Tweak accordingly.
 	(finish_struct_1): Simplify.
-	
+
 	* cp-tree.h (CLASSTYPE_VBASECLASSES): Update documentation.
 	(CLASSTYPE_N_BASECLASSES): Likewise.
 	(BINFO_FOR_VBASE): New macro.
@@ -27,7 +27,7 @@
 	(get_vbase_types): Don't return a value.  Set
 	CLASSTYPE_VBASECLASSES here.
 	* typeck.c (get_delta_difference): Use BINFO_FOR_VBASE.
-	
+
 1999-12-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (fixup_inline_methods): Clear CLASSTYPE_INLINE_FRIENDS.
@@ -56,10 +56,10 @@
 	(fixup_inline_methods): New function.
 	* method.c (fixup_pending_inline): Remove.
 	(do_inline_function_hair): Likewise.
-	
+
 	* decl.c (BOOL_TYPE_SIZE): Bools always have size `1' under the
 	new ABI.
-	
+
 	* cp-tree.h (lang_type): Replace abstract_virtuals with pure_virtuals.
 	(CLASSTYPE_ABSTRACT_VIRTUALS): Rename to ...
 	(CLASSTYPE_PURE_VIRTUALS): ... this.
@@ -86,7 +86,7 @@
 	* typeck2.c (abstract_virtuals_error): Likewise.
 	* xref.c (GNU_xref_member): Likewise.
 	* search.c (get_abstract_virtuals): Rename to get_pure_virtuals.
-	
+
 1999-12-26  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cp-tree.h: Replace ENABLE_CHECKING with ENABLE_TREE_CHECKING
@@ -98,7 +98,7 @@
 	DECL_RESULT, not the mode of DECL_RESULT itself.
 	* semantics.c (finish_named_return_value): Set DECL_UNINLINABLE
 	for functions that used named return values.
-	
+
 1999-12-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (expand_body): Use
@@ -127,7 +127,7 @@
 	the first field in the class.
 	* tree.c (layout_basetypes): Use CLASSTYPE_N_BASECLASSES.  Handle
 	seeing TYPE_VFIELD as the first field in the class.
-	
+
 	* cp-tree.h (TYPE_VIRTUAL_P): Rename to ...
 	(TYPE_POLYMORPHIC_P): ... this.
 	(TYPE_USES_COMPLEX_INHERITANCE): Rename to ...
@@ -160,7 +160,7 @@
 	* typeck.c (build_component_ref): Likewise.
 	(build_component_addr): Likewise.
 	* typeck2.c (process_init_constructor): Likewise.
-	
+
 1999-12-20  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (strip_all_pointer_quals): New static function.
@@ -196,7 +196,7 @@
 	(avoid_overlap): Moved here from tree.c.
 	(build_base_fields): Likewise.
 	(check_bases): New function, split out from finish_base_struct.
-	(check_bases_and_members): New function, split out from 
+	(check_bases_and_members): New function, split out from
 	finish_struct_1.
 	(struct base_info): Remove cant_have_default_ctor,
 	cant_have_const_ctor, cant_have_asn_ref.
@@ -209,7 +209,7 @@
 	(build_base_fields): Don't declare.
 	* tree.c (avoid_overlap): Remove.
 	(build_base_fields): Likewise.
-	
+
 	* optimize.c (struct inline_data): Remove scope_stmt.
 	(remap_block): Don't use insert_block_after_note.  Don't update
 	scope_stmt.
@@ -244,7 +244,7 @@
 	* method.c (fixup_pending_inline): New function, split out from	...
 	(do_inline_function_hair): ... here.
 	* tree.c (build_vbase_pointer_fields): Remove.
-	
+
 1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* tree.c (walk_tree): Walk operand subtrees in forward order.
@@ -367,7 +367,7 @@
 	(expand_body): Use it.
 	* tree.c (walk_tree): Special-case TARGET_EXPRs since they
 	sometimes present the same sub-tree twice.
-	
+
 	* dump.c (dequeue_and_dump): Abbreviate `class' as `cls', not
 	`csl'.
 
@@ -375,7 +375,7 @@
 	* typeck.c (c_expand_start_case): Here.
 
 	* semantics.c (do_poplevel): Remove unused variable.
-	
+
 1999-12-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (walk_tree): Don't recurse into DECL_INITIAL or DECL_SIZE
@@ -418,7 +418,7 @@
 	parameters of the inlined function.
 	(optimize_function): Prevent recursion into partially complete
 	functions.
-	
+
 	* cp-tree.def (SCOPE_STMT): Take one operand.
 	* cp-tree.h (SCOPE_STMT_BLOCK): New macro.
 	(SCOPE_NULLIFIED_P): Redefine.
@@ -441,7 +441,7 @@
 	* tree.c (copy_tree_r): Clear SCOPE_STMT_BLOCK rather than setting
 	SCOPE_NULLIFIED_P.
 	* Makefile.in (semantics.o): Depend on RTL_H.
-	
+
 	* decl2.c (pending_statics_used): Make it a macro.
 	(saved_inlines_used): Likewise.
 	(finish_static_data_member_decl): Use VARRAY_PUSH_TREE.
@@ -449,7 +449,7 @@
 	(ssdf_decls_used): Remove.
 	(start_static_storage_duration_function): Use VARRAY_PUSH_TREE.
 	(generate_ctor_or_dtor_function): Adjust accordingly.
-	
+
 1999-11-24  Geoffrey Keating  <geoffk@cygnus.com>
 	    Greg McGary  <gkm@gnu.org>
 
@@ -483,7 +483,7 @@
 	* typeck.c (build_component_ref): Don't use scratch_ovl_cons.
 	(build_x_function_call): Likewise.
 	(build_c_cast): Don't use min_tree_cons.
-	
+
 1999-11-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_decl): Robustify.
@@ -497,7 +497,7 @@
 
 1999-11-25  Mark Mitchell  <mark@codesourcery.com>
 
-	* Make-lang.in (CXX_SRCS): Add optimize.c.  
+	* Make-lang.in (CXX_SRCS): Add optimize.c.
 	* Makefile.in (CXX_OBJS): Add optimize.o.
 	(CXX_TREE_H): Add splay-tree.h, system.h, and $(CONFIG_H).
 	(spew.o, lex.o, decl.o, decl2.o, typeck2.o, typeck.o): Adjust.
@@ -505,9 +505,9 @@
 	(search.o, tree.o, ptree.o, rtti.o, except.o, expr.o): Likewise.
 	(xref.o, pt.o, error.o, errfn.o, repo.o, semantics.o): Likewise.
 	(dump.o): Likewise.
-	(optimize.o): New target.  
+	(optimize.o): New target.
 	* class.c: Don't include splay-tree.h.
-	* cp-tree.def (CTOR_COMPLETE): Rename to CTOR_STMT.  
+	* cp-tree.def (CTOR_COMPLETE): Rename to CTOR_STMT.
 	* cp-tree.h: Include splay-tree.h.
 	(DECL_UNINLINABLE): New macro.
 	(CTOR_BEGIN_P, CTOR_END_P): New macros.
@@ -517,7 +517,7 @@
 	(optimize_function): Likewise.
 	(cplus_unsave_expr_now): Remove.
 	(copy_tree_r): Declare.
-	(remap_save_expr): Likewise.  
+	(remap_save_expr): Likewise.
 	* decl.c (local_variable_p): Don't
 	make it static.
 	(local_variable_p_walkfn): New function.
@@ -530,19 +530,19 @@
 	(start_function): Set the DECL_CONTEXT for automatically generated
 	labels.
 	(finish_constructor_body): Use CTOR_STMT to mark the end of a
-	constructor.  
+	constructor.
 	* decl2.c: Don't include splay-tree.h.
-	(flag_inline_trees): Define.  
+	(flag_inline_trees): Define.
 	* dump.c: Don't include
-	splay-tree.h.  
+	splay-tree.h.
 	* except.c (expand_end_catch_block): Fix comment formatting.
 	(expand_end_eh_spec): Set DECL_CONTEXT on temporary variables.
-	(expand_throw): Tidy comment.  
-	* init.c (build_vec_delete_1): Use create_temporary_var.  
+	(expand_throw): Tidy comment.
+	* init.c (build_vec_delete_1): Use create_temporary_var.
 	* lex.c (cplus_tree_code_type): Make it static.
 	(cplus_tree_code_length): Likewise.
-	(cplus_tree_code_name): Likewise.  
-	* optimize.c: New file.  
+	(cplus_tree_code_name): Likewise.
+	* optimize.c: New file.
 	* semantics.c (finish_goto_stmt): Set DECL_UNLINABLE for functions
 	with computed gotos.
 	(setup_vtbl_ptr): Mark the beginnings of constructors with
@@ -564,11 +564,11 @@
 	(init_tree): Set lang_unsave to cp_unsave.
 	(remap_save_expr): Define.
 	* ir.texi: Document CTOR_STMT.
-	
+
 1999-11-24  Jason Merrill  <jason@casey.cygnus.com>
 
 	* search.c (note_debug_info_needed): Do perform this optimization
-	for dwarf2.  
+	for dwarf2.
 	(maybe_suppress_debug_info): Likewise.  Start by clearing
 	TYPE_DECL_SUPPRESS_DEBUG.
 
@@ -599,7 +599,7 @@
 	(finish_function): Don't call end_protect_partials here.
 	* ir.texi (CTOR_COMPLETE): Document it.
 	* semantics.c (expand_stmt): Handle it.
-	
+
 	* cp-tree.def (FUNCTION_NAME): New tree node.
 	* cp-tree.h (current_function_name_declared): Tweak documentation.
 	(lang_decl_flags): Add pretty_function_p, adjust dummy.
@@ -617,7 +617,7 @@
 	even in template functions.
 	(setup_vtbl_ptr): Don't declare __PRETTY_FUNCTION in the
 	conditional scope at the top of a destructor.
-	
+
 	* error.c (dump_function_decl): Use `[ with ... ]' syntax for
 	specializations too.
 
@@ -659,7 +659,7 @@
 1999-11-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cp-tree.h, decl.c (compute_array_index_type): Make nonstatic.
-	* pt.c (tsubst, case INTEGER_TYPE): Call it.  
+	* pt.c (tsubst, case INTEGER_TYPE): Call it.
 	Check uses_template_parms.
 
 	* class.c (finish_struct): If we're a local class in a template
@@ -674,7 +674,7 @@
 	* cp-tree.h: Declare it.
 	* decl2.c (finish_vtable_vardecl): Override TYPE_DECL_SUPPRESS_DEBUG
 	if we're writing out the vtable.
-	* decl.c, search.c (dfs_debug_mark, dfs_debug_unmarked_p, 
+	* decl.c, search.c (dfs_debug_mark, dfs_debug_unmarked_p,
 	note_debug_info_needed): #if 0 out.
 
 1999-11-14  Mark Mitchell  <mark@codesourcery.com>
@@ -684,7 +684,7 @@
 	TREE_PERMANENT.
 	* decl.c (pushdecl): Set DECL_LOCAL_FUNCTION_P.
 	* decl2.c (lookup_arg_dependent): Use it.
-	
+
 	* cp-tree.h (cp_finish_decl): Change prototype.
 	(finish_static_data_member_decl): Likewise.
 	(push_permanent_obstack): Remove declaration.
@@ -779,7 +779,7 @@
 	(push_expression_obstack): Remove.
 	(push_permanent_obstack): Likewise.
 	* typeck.c (mark_addressable): Likewise.
-	
+
 1999-11-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_conditional_expr): Use build_target_expr_with_type.
@@ -858,7 +858,7 @@ Thu Nov 11 12:42:11 MST 1999	Diego Novillo <dnovillo@cygnus.com>
 	(structsp): Adjust.
 	* parse.c: Regenerated.
 	* pt.c (tsubst_enum): Adjust according to build_enumerator changes.
-	
+
 Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
 	                  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -913,7 +913,7 @@ Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
 	* pt.c (tsubst_expr): Don't suspend_momentary or resume_momentary.
 	* semantics.c (begin_new_placement): Remove.
 	(finish_new_placement): Likewise.
-	
+
 1999-11-05  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.h (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK): New macro.
@@ -933,7 +933,7 @@ Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* pt.c (tinst_level_tick): Make it static.
 	(last_template_error_tick): Likewise.
-	
+
 	* cp-tree.h (mapcar): Remove declaration.
 	(search_tree): Likewise.
 	(walk_tree_fn): New typedef.
@@ -953,7 +953,7 @@ Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
 	(check_default_argument): Use walk_tree.
 	* pt.c (for_each_template_parm_r): New function, split out from ...
 	(for_each_template_parm): Here.  Use it, via walk_tree.
-	
+
 1999-11-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (check_bitfield_decl): New function, split out from
@@ -962,7 +962,7 @@ Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
 	anonymous structs.
 	(finish_struct_1): Use them.
 	* cp-tree.h (ANON_UNION_TYPE_P): New macro.
-	
+
 1999-11-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokfndecl): Remove dead code.
@@ -1002,7 +1002,7 @@ Sat Oct 30 22:42:50 1999  Stephen L Moshier <moshier@mediaone.net>
 	function.  Clear DECL_SAVED_TREE after generating RTL for a
 	function.
 	* Makefile.in (semantics.o): Depend on ggc.h.
-	
+
 1999-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (make_typename_type): Change prototype.
@@ -1014,7 +1014,7 @@ Sat Oct 30 22:42:50 1999  Stephen L Moshier <moshier@mediaone.net>
 	* pt.c (convert_template_argument): Pass complain to
 	make_typename_type.
 	(tsubst): Likewise.
-	
+
 1999-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (finish_handler): End the scope of the handler
@@ -1059,7 +1059,7 @@ Sat Oct 30 22:42:50 1999  Stephen L Moshier <moshier@mediaone.net>
 	(do_pushlevel): Likewise.
 	(do_poplevel): Likewise.
 	* tree.c (make_temp_vec): Remove.
-	
+
 	* dump.c (dequeue_and_dump): Dump HANDLERs and SAVE_EXPRs.  Dump
 	CLEANUP_P for a TRY_BLOCK.
 	* ir.texi: Document SAVE_EXPR.
@@ -1068,7 +1068,7 @@ Tue Oct 26 23:29:56 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* call.c (build_over_call):  Check that the built-in function is
 	of class BUILT_IN_NORMAL before trying to recongize it as BUILT_IN_ABS.
-	* typeck.c (build_function_call_real): Similarly. 
+	* typeck.c (build_function_call_real): Similarly.
 
 1999-10-26  Mark Mitchell  <mark@codesourcery.com>
 
@@ -1078,7 +1078,7 @@ Tue Oct 26 23:29:56 1999  Jeffrey A Law  (law@cygnus.com)
 1999-10-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (push_overloaded_decl_1): Use pushdecl.
-	
+
 	* decl.c (auto_function): Replace #ifdef'd __inline with just
 	plain inline.
 	* lex.c (my_get_run_time): Likeise.
@@ -1092,7 +1092,7 @@ Tue Oct 26 23:29:56 1999  Jeffrey A Law  (law@cygnus.com)
 	(issue_ktype): Likewise.
 	* parse.y (empty_parms): Likewise.
 	* parse.c: Regenerated.
-	
+
 1999-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* dump.c (dequeue_and_dump): Replace several uses of
@@ -1114,12 +1114,12 @@ Tue Oct 26 23:29:56 1999  Jeffrey A Law  (law@cygnus.com)
 	(do_pushlevel): Use it.
 	(do_poplevel): Use it.
 	(expand_stmt): Check SCOPE_PARTIAL_P.
-	
+
 	* cp-tree.def (EMPTY_CLASS_EXPR): New tree node.
 	* call.c (build_call): Use EMPTY_CLASS_EXPR instead of RTL_EXPR.
 	* expr.c (cplus_expand_expr): Expand it.
 	* ir.texi: Document EMPTY_CLASS_EXPR.
-	
+
 1999-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_NAMESPACE_SCOPE_P): Don't treat template
@@ -1147,7 +1147,7 @@ Tue Oct 26 23:29:56 1999  Jeffrey A Law  (law@cygnus.com)
 	* dump.c (dequeue_and_dump): Handle CLEANUP_POINT_EXPR.
 
 	* ir.texi: Clean up documentation of RETURN_INIT.
-	
+
 1999-10-15  Greg McGary  <gkm@gnu.org>
 
 	* lex.c (lang_init_options): Set flag_bounds_check as "unspecified".
@@ -1179,7 +1179,7 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* cp-tree.h (build_x_va_arg): Prototype new function.
 	* call.c (build_x_va_arg): Define it.
 	* parse.y (unary_expr): Call build_x_va_arg.
-	
+
 	* cp-tree.h (convert_type_from_ellipsis): Prototype new function.
 	* call.c (convert_type_from_ellipsis): Define it.
 	* decl.c (init_decl_processing): Set lang_type_promotes_to.
@@ -1197,12 +1197,12 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 1999-10-09  Mark Mitchell  <mark@codesourcery.com>
 
-	* cp-tree.h (make_rtl_for_local_static): New function.  
+	* cp-tree.h (make_rtl_for_local_static): New function.
 	* decl.c (make_rtl_for_nonlocal_decl): Move code to create RTL for
 	local statics ...
 	(make_rtl_for_local_static): Here.
 	* semantics.c (expand_stmt): Use make_rtl_for_local_static.
-	
+
 1999-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* method.c: Include tm_p.h.
@@ -1212,12 +1212,12 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* cp-tree.h (cp_make_lake_type): Renamed from make_lang_type.
 	* lex.c (cp_make_lake_type): Likewise.
 	* tree.c (init_tree): Init make_lang_type_fn.
-	
+
 1999-10-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_expr): Set DECL_TEMPLATE_INSTANTIATED for a catch
 	parameter.
-	
+
 	* semantics.c (expand_stmt): Don't pretend to have asmspecs for
 	local statics if we don't really have them.
 
@@ -1258,7 +1258,7 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(expand_upcast_fixups): Likewise.
 	* typeck.c (build_component_ref): Likewise.
 	(build_binary_op_nodefault): Likewise.
-	
+
 	* dump.c (dqueue_and_dump): Dump TYPE_VFIELD.
 	* ir.texi: Document TYPE_VFIELD.
 
@@ -1283,21 +1283,21 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(dequeue_and_dump): Unconditionally print children.  Adjust calls
 	to functions mentioned above.
 	(dump_node):  Pass DUMP_NONE, instead of DUMP_CHILDREN to queue.
-	
+
 	* ir.texi: Document BIND_EXPR, LOOP_EXPR, and EXIT_EXPR.
 	* dump.c (dequeue_and_dump): Dump them.
-	
+
 	* method.c (synthesize_method): Call setup_vtbl_ptr for destructors.
 
 	* decl.c (start_function): Set current_in_charge_parm for
 	constructors, too, where appropriate.
 	* search.c (fixup_all_virtual_upcast_offsets): New function.
 	(expand_indirect_vtbls_init): Use it.
-	
+
 1999-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	* decl2.c (grok_alignof): Don't decay lvalues.
-	
+
 	* init.c (build_new): Remove unused variable.
 
 1999-10-04  Mark Mitchell  <mark@codesourcery.com>
@@ -1306,7 +1306,7 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(static_labelno): Remove macro.
 	* method.c (build_overload_nested_name): Make static_labelno
 	static here.
-	
+
 	* pt.c (instantiate_decl): Use DECL_SAVED_TREE, not DECL_INITIAL,
 	to decide whether or not a function is defined.
 
@@ -1350,7 +1350,7 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(building_stmt_tree): Simplify.
 	* decl.c (mark_stmt_tree): New function.
 	(mark_saved_scope): Use it.
-	(start_function): Rearrange slightly to call begin_stmt_tree 
+	(start_function): Rearrange slightly to call begin_stmt_tree
 	earlier.
 	(save_function_data): Tweak.
 	(finish_function): Adjust call to finish_stmt_tree.
@@ -1372,17 +1372,17 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(finish_stmt_tree): Likewise.
 	* tree.c (search_tree): Don't handle VEC_INIT_EXPR.
 	(mapcar): Likewise.
-	
+
 	* parse.y (simple_stmt): Don't call finish_stmt unnecessarily.
 	* parse.c: Regenerated.
-	
+
 	* dump.c (dqueue_and_dump): Dump bitfieldness.
-	
+
 	* tree.c (lvalue_p_1): Use DECL_C_BIT_FIELD to check for
 	bitfields, rather than DECL_BIT_FIELD.
 	* ir.texi: Document how to tell whether or not a field is a
 	bitfield.
-	
+
 	* lex.c (make_lang_type): Fix typo in comment.
 
 1999-10-01  Jason Merrill  <jason@yorick.cygnus.com>
@@ -1410,7 +1410,7 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(DECL_GLOBAL_CTOR_P, DECL_GLOBAL_DTOR_P): New macros.
 	(GLOBAL_INIT_PRIORITY): Likewise.
 	* decl.c (lang_mark_tree): Adjust accordingly.
-	(start_objects): Set DECL_GLOBAL_CTOR_P, DECL_GLOBAL_DTOR_P, 
+	(start_objects): Set DECL_GLOBAL_CTOR_P, DECL_GLOBAL_DTOR_P,
 	and GLOBAL_INIT_PRIORITY.
 	* dump.c (dequeue_and_dump): Print them.
 	* ir.texi: Document them.
@@ -1432,7 +1432,7 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(prune_vars_needing_no_initialization): New function.
 	(write_out_vars): Likewise.
 	(finish_file): Use the various new functions instead of the old.
-	
+
 Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 
 	* cp-tree.h (warn_float_equal): Declare.
@@ -1492,7 +1492,7 @@ Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 	(TMPL_ARG, SET_TMPL_ARG, NUM_TMPL_ARGS, TMPL_PARMS_DEPTH): Likewise.
 	(tsubst_copy): Clarify variable name.
 	(most_general_template): Robustify.
-	
+
 1999-09-29  Nathan Sidwell  <nathan@acm.org>
 
 	* error.c (dump_template_parms): Don't use TS_PEDANTIC_NAME
@@ -1513,7 +1513,7 @@ Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 	* semantics.c: Include flags.h.
 	(expand_body): Don't do RTL generation if -fsyntax-only.
 	* Makefile.in (semantics.o): Depends on flags.h.
-	
+
 1999-09-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* pt.c (most_general_template): Adjust declaration.
@@ -1613,7 +1613,7 @@ Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 	(cplus_expand_expr): Don't call expand_throw here.
 	* Makefile.in (expr.o): Depend on except.h.
 	* ir.texi: Update documentation for THROW_EXPR.
-	
+
 	* decl.c (start_function): Set x_dont_save_pending_sizes rather
 	than calling get_pending_sizes.
 	* init.c (build_new): Don't save and restore
@@ -1645,7 +1645,7 @@ Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 	function split out from c_expand_return.
 	(check_return_expr): Likewise.
 	(c_expand_return): Just generate the RTL for the return.
-	
+
 1999-09-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CPTI_CLEANUP_TYPE): New macro.
@@ -1692,7 +1692,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(make_rtl_for_nonlocal_decl): Don't fuss with obstacks.  Simplify.
 	Don't accidentally make RTL for local declarations.
 	(emit_local_var): Handle declarations with asm-specifiers here.
-	
+
 1999-09-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* ir.texi: Improve documentation for TARGET_EXPRs.  Discuss
@@ -1706,21 +1706,21 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	in function-at-a-time mode.
 	(finish_objects): Likewise.
 	(generate_ctor_or_dtor_function): Adjust accordingly.
-	
+
 	* cp-tree.h (DECL_ANON_UNION_ELEMS): New macro.
 	* decl2.c (finish_anon_union): Set DECL_ANON_UNION_ELEMS.
 	Don't call expand_anon_union_decl here
 	* semantics.c (exapnd_stmt): Call it here, instead.
 	* typeck.c (mark_addressable): Addressed variables are implicitly
 	used.
-	
+
 1999-09-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.h (VAR_OR_FUNCTION_DECL_CHECK): New macro.
 	(RECORD_OR_UNION_TYPE_CHECK, LANG_IDENTIFIER_CAST): Likewise.
 	(DEFARG_NODE_CHECK): Remove; replace with DEFAULT_ARG_CHECK.
 	* cp-tree.h: Add tree checking macros to various tree access
-	macros.	
+	macros.
 	* ptree.c (print_lang_decl): Test for function or variable
 	before accessing template info.
 
@@ -1730,7 +1730,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* lang-specs.h: If -fshort-wchar, override __WCHAR_TYPE__.
 	* decl2.c (lang_f_options): Add -fshort-wchar.
 	* cp-tree.h: Declare flag_short_wchar.
-	* decl.c (init_decl_processing): If -fshort-wchar, use 'short unsigned 
+	* decl.c (init_decl_processing): If -fshort-wchar, use 'short unsigned
 	int' for wchar_t.
 
 1999-09-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
@@ -1870,7 +1870,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* typeck.c (build_modify_expr): Don't check for assignments to
 	this.
 	(c_expand_return): Don't suggest assigning to `this'.
-	
+
 	* Makefile.in (decl.o): Depend on RTL_H.
 	(decl2.o): Likewise.
 	(class.o): Likewise.
@@ -1885,7 +1885,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* ir.texi (CTOR_INITIALIZER): Remove mention.  Fix typo.  Add
 	detail about the statement-tree.
-	
+
 1999-09-20  Nathan Sidwell  <nathan@acm.org>
 
 	* parse.y (primary): Use build_functional_cast for CV_QUALIFIER.
@@ -1909,7 +1909,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 1999-09-18  Paul Burchard <burchard@pobox.com>
 
 	* gxxint.texi: G++ now implements namespaces.
-	
+
 1999-09-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (pop_label): Don't warn about unused labels more than
@@ -1929,7 +1929,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 1999-09-17  Mark Mitchell  <mark@codesourcery.com>
 
-	Turn on function-at-a-time processing.  
+	Turn on function-at-a-time processing.
 	* cp-tree.h (doing_semantic_analysis_p): New macro.
 	(SF_DEFAULT): Define to zero, not SF_EXPAND.
 	(start_handler_parms): Change prototype.
@@ -1941,7 +1941,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(begin_catch_block): Declare.
 	(finish_handler): Change prototype.
 	(do_pushlevel): Declare.
-	(do_poplevel): Likewise.  
+	(do_poplevel): Likewise.
 	* decl.c (pushlevel): Don't create
 	binding levels when not doing semantic analysis.
 	(poplevel): Don't pop them.
@@ -1965,7 +1965,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(push_cp_function_context): Don't expand functions without an
 	explicit call to expand_body.
 	(mark_lang_function): Make eh_spec_try_block and
-	x_scope_stmt_stack.  
+	x_scope_stmt_stack.
 	* except.c (expand_end_eh_spec): Don't
 	declare.
 	(process_start_catch_block): Likewise.
@@ -1979,13 +1979,13 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(expand_exception_blocks): Simplify.
 	(start_anon_func): Use do_pushlevel.
 	(end_anon_func): Use do_poplvel.  Call expand_body for the
-	function.  
-	* expr.c (do_case): Don't call define_case_label.  
+	function.
+	* expr.c (do_case): Don't call define_case_label.
 	* init.c (create_temporary_var): Set DECL_CONTEXT for local
-	variables.  
+	variables.
 	* method.c (emit_thunk): Call expand_body for the
 	thunk.
-	(sythesize_method): Likewise.  
+	(sythesize_method): Likewise.
 	* parse.y (handler_args): Give it ttype.
 	(eat_saved_input): Call expand_body.
 	(base_init): Use do_pushlevel.
@@ -1995,7 +1995,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(handler_args): Don't call expand_start_catch_block.  Return the
 	catch parameter.  * pt.c (tsubst_expr): Adjust HANDLER handling.
 	* parse.c: Regenerated.
-	* rtti.c (synthesize_tinfo_fn): Call finish_function.  
+	* rtti.c (synthesize_tinfo_fn): Call finish_function.
 	* semantics.c (do_pushlevel): Give it external linkage.  Build
 	SCOPE_STMTs.
 	(do_poplevel): Likewise.
@@ -2018,7 +2018,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	HANDLERs.  Handle SCOPE_STMT, CTOR_INITIALIZER, and RETURN_INIT.
 	(expand_body): Let expand_stmt handle CTOR_INITIALIZER,
 	RETURN_INIT and function try blocks.
-	
+
 	* cp-tree.h (language_function): Add x_eh_spec_try_block.  Add
 	x_scope_stmt_stack.  Add x_in_charge_parm.
 	(current_eh_spec_try_block): New macro.
@@ -2087,7 +2087,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* Makefile.in (CONFLICTS): Adjust.
 
 1999-09-17  Gabriel Dos Reis  <gdr@codesourcery.com>
-	
+
 	* error.c: Reduce code duplication.
 	(dump_template_value): New function.
 	(dump_type_real): Use it.
@@ -2122,7 +2122,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	problems with extern "C" functions redeclared as static.
 	(duplicate_decls): When a builtin is redeclared static, make the
 	new function have internal linkage.
-	
+
 1999-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (build_expr_from_tree): Handle VA_ARG_EXPR.
@@ -2141,14 +2141,14 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 1999-09-14  Mark Mitchell  <mark@codesourcery.com>
 
-	* decl.c (build_target_expr): Set TREE_SIDE_EFFECTS on the 
+	* decl.c (build_target_expr): Set TREE_SIDE_EFFECTS on the
 	TARGET_EXPR.
 	* call.c (build_over_call): Don't set TREE_SIDE_EFFECTS on
 	the TARGET_EXPR.
 	* cvt.c (build_up_reference): Likewise.
 	* tree.c (build_cplus_new): Likewise.
 	(get_target_expr): Likewise.
-	
+
 Tue Sep 14 01:45:10 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* Makefile.in:  Prepend $(SHELL) to move-if-change calls.
@@ -2195,7 +2195,7 @@ Sun Sep 12 23:29:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* error.c (dump_expr): Handle OVERLOADs.
 	* spew.c (probe_obstack): Remove.
 	* typeck.c (condition_conversion): Use perform_implicit_conversion.
-	
+
 1999-09-12  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cp-tree.h (auto_function, define_function): Adjust prototypes.
@@ -2223,7 +2223,7 @@ Sun Sep 12 23:29:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	non-permanent CONSTANTs and STRINGs.
 	* tree.c (build_cplus_array_type_1): Don't fuss with
 	TREE_PERMANENT on ARRAY_TYPEs.
-	
+
 	* cp-tree.def (CLEANUP_STMT): New node.
 	* cp-tree.h (language_function): Add name_declared.
 	(current_function_name_declared): New macro.
@@ -2254,9 +2254,9 @@ Sun Sep 12 23:29:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* semantics.c (begin_compound_stmt): Call declare_function_name,
 	if appropriate.
 	(finish_decl_cleanup): New function.
-	(expand_stmt): Use emit_local_var to output variables.		
+	(expand_stmt): Use emit_local_var to output variables.
 	(expand_body): Set current_function_name_declared.
-	
+
 1999-09-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (finish_cleanup_try_block): New function.
@@ -2301,7 +2301,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(finish_do_stmt): Likewise.
 	(finish_for_cond): Likewise.
 	(expand_cond): Adjust.
-	
+
 	* cp-tree.h (FN_TRY_BLOCK_P): New macro.
 	* init.c (perform_member_init): Remove obstack machinations.
 	(expand_cleanup_for_base): Likewise.
@@ -2314,7 +2314,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* pt.c (tsubst_expr): Handle various kinds of try blocks.
 	* semantics.c (expand_stmts): Remove.
 	(begin_function_try_block): Set FN_TRY_BLOCK_P.
-	(finish_function_try_block): Be careful rechaining 
+	(finish_function_try_block): Be careful rechaining
 	function try blocks.
 	(expand_stmt): Loop through all the statements at a given level.
 	(exapnd_body): Be careful with line-numbers here too.  Prepare for
@@ -2345,7 +2345,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* semantics.c (RECHAIN_STMTS): Remove `last' parameter.
 	(RECHAIN_STMTS_FROM_LAST): Remove.  Replace all uses with
-	RECHAIN_STMTS. 
+	RECHAIN_STMTS.
 	(RECHAIN_STMST_FROM_CHAIN): Likewise.
 
 	* parse.y (simple_stmt): Fix typo in last change.
@@ -2366,7 +2366,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(finish_stmt_tree): Tweak line-number handling.
 	(prep_stmt): New function.
 	(expand_stmt): Use it.
-	
+
 	* cp-tree.h (begin_switch_stmt): Adjust prototype.
 	(finish_switch_cond): Likewise.
 	* parse.y (simple_stmt): Adjust accordingly.
@@ -2393,10 +2393,10 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(language_function): Rename binding_level to bindings.
 	(cp_function_chain): Use the current_function, not the
 	outer_function_chain.
-	(current_class_ptr): Make it work, even when there's no 
+	(current_class_ptr): Make it work, even when there's no
 	current function.
 	(current_class_ref): Likewise.
-	(SF_DEFAULT, SF_PRE_PARSED, SF_INCLASS_INLINE, SF_EXPAND): New 
+	(SF_DEFAULT, SF_PRE_PARSED, SF_INCLASS_INLINE, SF_EXPAND): New
 	macros.
 	(clear_temp_name): Remove.
 	* decl.c (check_function_type): New function, broken out from
@@ -2422,11 +2422,11 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* decl2.c (clear_temp_name): Remove.
 	(start_objects): Use SF flags to start_function.
 	(start_static_storage_duration_function): Likewise.
-	* except.c (start_anon_func): Remove redundant calls to 
+	* except.c (start_anon_func): Remove redundant calls to
 	push_function_context_to.  Use SF flags to start function.
 	(end_anon_func): Remove redundant call to pop_function_context
 	from.
-	* lex.c (reinit_parse_for_function): Don't initialize per-function 
+	* lex.c (reinit_parse_for_function): Don't initialize per-function
 	data.
 	* method.c (emit_thunk): Clear current_function after calling
 	assemble_end_function.  Use SF flags for start_function.
@@ -2442,7 +2442,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* rtti.c (sythesize_tinfo_fn): Use SF flags to start_function.
 	* semantics.c (begin_function_definition): Likewise.
 	(expand_body): Likewise.
-	
+
 1999-09-09  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (convert_to_void): Prototype new function.
@@ -2456,7 +2456,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(build_static_cast): Likewise.
 	(build_c_cast): Likewise.
 	* semantics.c (finish_expr_stmt): Do not decay full expressions.
-	
+
 	* typeck.c (build_x_compound_expr): Add FIXME.
 
 1999-09-08  Mark Mitchell  <mark@codesourcery.com>
@@ -2480,7 +2480,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* typeck.c: Likewise.
 	* parse.c: Regenerated.
 	* tree.c (build_srcloc): Simplify.
-	
+
 1999-09-08  Bruce Korb  autogen@linuxbox.com
 
 	* Makefile.in: Give the gperf user a hint about why "gperf -F" fails.
@@ -2498,7 +2498,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(retrofit_lang_decl): Likewise.
 	(copy_lang_decl): Likewise.
 
-	* cp-tree.h (saved_scope): Remove old_binding_level and 
+	* cp-tree.h (saved_scope): Remove old_binding_level and
 	function_decl.  Tidy up.
 	* decl.c (mark_saved_scope): Don't set them.
 	(maybe_push_to_top_level): Clear memory.
@@ -2511,7 +2511,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(grokvardecl): Don't complete types here.
 
 	* decl.c (start_function): Clear last_dtor_insn and
-	last_parm_cleanup_insn. 
+	last_parm_cleanup_insn.
 	(push_cp_function_context): Just copy over a little of
 	the old context, not all of it.
 
@@ -2555,7 +2555,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* typeckc.c (build_static_cast): Likewise.
 	(build_reinterpret_cast): Likewise.
 	(build_const_cast): Likewise.
-	
+
 1999-09-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (ggc_p): Set it to 1.
@@ -2635,7 +2635,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(binding_init): Remove.
 	(init_cplus_unsave): Rename to ...
 	(init_tree): This.  Add GC roots.
-	
+
 1999-09-05  Mark Mitchell  <mark@codesourcery.com>
 
 	Get ready for garbage collection.
@@ -2678,7 +2678,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(cp_global_trees): Add access_default, access_public,
 	access_protected, access_private, access_default_virtual,
 	access_public_virtual, access_protected_virtual,
-	access_private_virtual, ctor_identifier, delta2_identifier, 
+	access_private_virtual, ctor_identifier, delta2_identifier,
 	delta_identifier, dtor_identifier, in_charge_identifier,
 	index_identifier, nelts_identifier, this_identifier,
 	pfn_identifier, pfn_or_delta2_identifier, vptr_identifier,
@@ -2717,7 +2717,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* decl2.c: Don't include varray.h.
 	(current_namespace): Remove.
 	(init_decl2): Add GC roots.
-	* except.c (Terminate): Remove. 
+	* except.c (Terminate): Remove.
 	(init_exception_processing): Use terminate_node instead.
 	(build_terminate_handler): Likewise.
 	* init.c (nc_nelts_field_id): Remove.
@@ -2752,7 +2752,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(expand_indirect_vtbls_init): Remove redundant declaration of
 	in_charge_identifier.
 	(init_search_processing): Use vptr_identifier.
-	
+
 1999-09-05  Richard Henderson  <rth@cygnus.com>
 	    Bernd Schmidt <bernds@cygnus.co.uk>
 	    Mark Mitchell  <mark@codesourcery.com>
@@ -2773,7 +2773,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(init_init_processing): Add GC roots.
 	* parse.y: Include ggc.h.
 	(cp_parse_init): New function.
-	
+
 1999-09-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (init_decl_processing): Set mark_lang_status.
@@ -2793,7 +2793,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	x_base_init_list, x_member_init_list, x_base_init_expr,
 	x_current_class_ptr, x_current_class_ref, x_last_tree,
 	x_last_expr_type, x_last_dtor_insn, x_last_parm_cleanup_insn, and
-	x_result_rtx. 
+	x_result_rtx.
 	(dtor_label, ctor_label, current_base_init_list,
 	current_member_init_list, base_init_expr, current_class_ptr,
 	current_class_ref, last_tree, last_expr_type): Adjust accordingly.
@@ -2807,7 +2807,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(mark_false_label_stack): Likewise.
 	(lang_mark_tree): Likewise.
 	(lang_cleanup_tree): Likewise.
-	
+
 1999-09-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (CXX_TREE_H): Include function.h.
@@ -2841,7 +2841,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	pop_cp_function_context.
 	* init.c: Don't include function.h.
 	* lex.c (begin_definition_of_inclass_inline): Call
-	push_function_context_to, not push_cp_function_context. 
+	push_function_context_to, not push_cp_function_context.
 	(process_next_inline):  Call pop_function_context_from, not
 	pop_cp_function_context.
 	* method.c: Don't include function.h.
@@ -2849,7 +2849,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	push_cp_function_context.  Call pop_function_context_from, not
 	pop_cp_function_context.
 	* typeck.c: Don't include function.h.
-	
+
 	* decl.c (expand_static_init): Tweak handling of static
 	initializations for objects without constructors.
 
@@ -2915,12 +2915,12 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(last_expr_type): Likewise.
 	* typeck.c (dtor_label): Likewise.
 	(ctor_label): Likewise.
-	
+
 1999-09-01  Alex Samuel  <samuel@codesourcery.com>
 
 	* decl2.c (arg_assoc_template_arg): New prototype.  New function.
 	(arg_assoc_class): Use arg_assoc_template_arg for template
-	arguments. 
+	arguments.
 	(arg_assoc): Likewise.
 	* pt.c (mangle_class_name_for_template): Allow member template
 	template arguments.
@@ -2992,7 +2992,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(tsubst_expr): Adjust calls to expand_start_catch_block
 	appropriately.
 	* semantics.c (expand_stmt): Likewise.
-	
+
 1999-08-29  Alex Samuel  <samuel@codesourcery.com>
 
 	* pt.c (push_template_decl_real): Use template declaration from
@@ -3020,7 +3020,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* pt.c (tsbust_expr): Fix indentation.  Call cp_finish_decl here.
 	* semantics.c (expand_stmt): Don't call cp_finish_decl here.  Just
 	call initialize_local_var to generate initialization code.
-	
+
 1999-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (fndecl_as_string, type_as_string,
@@ -3057,7 +3057,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(make_rtl_for_nonlocal_decl): Likewise.
 	(cp_finish_decl): Use them.
 	* typeck.c (strip_array_types): New function.
-	
+
 	* cp-tree.def (LABEL_STMT): New tree node.
 	* cp-tree.h (LABEL_STMT_LABEL): New macro.
 	(shadow_label): Remove.
@@ -3090,7 +3090,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	building_stmt_tree.
 	(finish_label_decl): New function.
 	(expand_stmt): Handle LABEL_STMTs and local label declarations.
-	
+
 1999-08-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (lookup_label): Build labels on the permanent obstack
@@ -3102,15 +3102,15 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(expand_stmt): Adjust accordingly.
 	* pt.c (tsubst_expr); Likewise.
 	(do_decl_instantiation): Robustify.
-	
+
 	* cp-tree.h (AGGR_INIT_VIA_CTOR_P): New macro.
 	* tree.c (build_cplus_new): Set it.
 	* expr.c (cplus_expand_expr): Use it.
 	* dump.c (deque_and_dump): Handle AGGR_INIT_EXPR.
-	
+
 	* decl.c (store_parm_decls): Reset immediate_size_expand.
 	(finish_function): Likewise.
-	
+
 	* tree.c (cplus_unsave_expr_now): Don't return a value.
 
 	* semantics.c (do_poplevel): Always initialize the return value.
@@ -3209,7 +3209,7 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* typeck.c (build_modify_expr): Don't build an RTL_EXPR.
 	* typeck2.c (store_init_value): Change expand_aggr_init to
 	build_aggr_init in comment.
-	
+
 1999-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* dump.c (dequeue_and_dump): Dump TARGET_EXPRs.
@@ -3254,12 +3254,12 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* dump.c (dump_next_stmt): New function.
 	(dequeue_and_dump): Use it.
-	
+
 	* pt.c (tsubst_copy): Make sure to initialize return value for a
 	STMT_EXPR, even when processing_template_decl.
 	* semantics.c (finish_stmt_expr): A statement-expression whose
-	last statement is not an expression-statement has type `void'.	
-	
+	last statement is not an expression-statement has type `void'.
+
 1999-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (finish_stmt_expr): Fix typo in comment.
@@ -3269,7 +3269,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	BIND_EXPR permanent.
 	* pt.c (register_specialization): Don't register a specialization
 	more than once.
-	
+
 1999-08-18  Andrew Haley  <aph@cygnus.com>
 
 	* method.c (process_overload_item): Call build_mangled_C9x_name ()
@@ -3305,7 +3305,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	(tsubst_copy): Likewise.
 	* tree.c (search_tree): Likewise.
 	* semantics.c (finish_pseudo_destructor_call): Create it.
-	
+
 1999-08-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* search.c (setup_class_bindings): Robustify.
@@ -3388,7 +3388,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	(build_lang_field_decl): Likewise.
 	(copy_lang_decl): Use CAN_HAVE_FULLLANG_DECL_P to decide how much
 	to copy.
-	
+
 	* cp-tree.def (STMT_EXPR): New tree node.
 	* cp-tree.h (STMT_EXPR_STMT): New macro.
 	(store_return_init): Change prototype.
@@ -3484,7 +3484,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	sorry, if an unsupported node is encountered.
 	* typeck.c (require_complete_type_in_void): Handle BIND_EXPR.
 	(c_expand_return): Don't call add_tree here.
-	
+
 1999-08-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (check_default_tmpl_args): Don't check in local scopes.
@@ -3492,7 +3492,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	obstack.  Clear DECL_DEAD_FOR_LOCAL when making a copy of a local
 	variable.
 	(tsubst_expr): Adjust now that DECL_STMTs really contain DECLs.
-	
+
 1999-08-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Speed up Koenig lookup.
@@ -3500,7 +3500,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	to return namespaces we've looked at.
 	* decl2.c (lookup_using_namespace): Likewise.
 	(add_function): Don't call ovl_member.
-	(lookup_arg_dependent): Initialize k.namespaces to the list of 
+	(lookup_arg_dependent): Initialize k.namespaces to the list of
 	namespaces seen in unqualified lookup.
 	* call.c (equal_functions): Move here from tree.c.
 	(joust): Use it to handle duplicate candidates.
@@ -3580,7 +3580,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	(push_permanent_obstack): Define.
 	(mark_addressable): Use it.
 	* typeck.c (mark_addressable): Likewise.
-	
+
 1999-08-13  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* cp-tree.h (init_cplus_unsave): New.
@@ -3627,11 +3627,11 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	* dump.c (queue): Be careful when computing bitmasks.
 	(dequeue_and_dump): Describe binfos as binfos, not as
 	vectors.
-	
+
 	* parse.y (pedantic): Give it itype.  Adjust usage accordingly
-	throughout. 	
+	throughout.
 	* parse.c: Regenerated.
-	
+
 	* Make-lang.in (CXX_SRCS): Remove sig.c.
 	* Makefile.in (CXX_OBJS): Remove sig.o.
 	(sig.o): Remove.
@@ -3718,12 +3718,12 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	* hash.h: Regenerated.
 	* init.c (build_new_1): Remove support for signatures.
 	* lang-options.h: Remove -fhandle-signatures,
-	-fno-handle-signatures. 
+	-fno-handle-signatures.
 	* lex.c (init_parse): Remove support for signatures.
 	(yyprint): Likewise.
 	* lex.h (rid): Remove RID_SIGNATURE.
 	* method.c (build_decl_overload_real): Remove support for
-	signatures. 
+	signatures.
 	(hack_identifier): Likewise.
 	* parse.y (base_class): Likewise.
 	(base_class.1): Likewise.
@@ -3750,7 +3750,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	(build_x_arrow): Likewise.
 	(build_functional_cast): Likewise.
 	* xref.c (GNU_xref_decl): Likewise.
-	
+
 1999-08-10  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* lex.c (do_identifier): Remove unnecessary lookup of class field.
@@ -3869,7 +3869,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	* search.c (binfo_from_vbase): New fn.
 	* cp-tree.h: Declare it.
 	* cvt.c (cp_convert_to_pointer): Use it to diagnose conversion
-	from pointer to member of virtual base.  
+	from pointer to member of virtual base.
 	* typeck.c (get_delta_difference): Likewise.
 
 1999-08-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
@@ -3892,13 +3892,13 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	`1', `2', and `<'; handle them generically.  Don't be sorry about
 	"unrecognized tree codes"; just abort.
 	(no_linkage_check): Don't do linkage checks for templates.
-	
+
 	* tree.c (cp_build_qualified_type_real): Handle
 	pointer-to-member-function types correctly.
 
 1999-08-05  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* decl.c (pushdecl): Only give an error for shadowing a parm 
+	* decl.c (pushdecl): Only give an error for shadowing a parm
 	from *this* function.
 
 Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
@@ -3932,7 +3932,7 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	specifiers.
 	(comptypes): Adjust for comp_except_specs.
 	* typeck2.c (add_exception_specifier): New global function.
-	
+
 	* class.c (check_for_override): Reword error message.
 
 1999-08-03  Nathan Sidwell  <nathan@acm.org>
@@ -3995,7 +3995,7 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	(tsubst_expr): Use STMT_LINENO.
 	* semantics.c (finish_asm_stmt): Eliminate duplicate code.  Check
 	for invalid cv-qualifiers even while building templates.
-	
+
 1999-08-02  Richard Henderson  <rth@cygnus.com>
 
 	* call.c: Include defaults.h instead of expr.h.
@@ -4059,7 +4059,7 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	(build_conditional_expr): Tweak.
 	(convert_like): Some BASE_CONVs really do require the generation
 	of code.
-	
+
 	* init.c (perform_member_init): Don't go through build_modify_expr
 	for simple initializations.
 
@@ -4101,7 +4101,7 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	* tree.c (debug_binfo): Likewise.
 	* decl2.c (mark_vtable_entries): Don't bash abstract virtuals to
 	__pure_virtual here.
-	
+
 1999-07-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (build_cplus_new): Adjust call to abstract_virtuals_error
@@ -4165,7 +4165,7 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	(build_binary_op_nodefault): Use null_ptr_cst_p.
 	(build_conditional_expr): Remove.
 	(convert_for_assignment): Use new conversion functions.
-	
+
 	* cp-tree.h (abstract_virtuals_error): Change declaration.
 	* typeck2.c (abstract_virtuals_error): Check to see if an error
 	occurred, and return a boolean value accordingly.
@@ -4181,7 +4181,7 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	* pt.c (unify): Don't get confused by pointers-to-member functions.
 
 	* search.c (build_cplus_new): Robustify.
-	
+
 1999-07-24  Richard Henderson  <rth@cygnus.com>
 
 	* gxx.gperf (__builtin_va_arg): New.
@@ -4251,7 +4251,7 @@ Sun Jul 25 15:24:21 1999  Jeffrey A Law  (law@cygnus.com)
 	(lvalue_p): Likewise.
 	(build_cplus_new): Don't allow the creation of an abstract class.
 	* typeck.c (convert_for_initialization): Use initialize_reference.
-	
+
 1999-07-21  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* lex.c (real_yylex) : Correct the test for overflow when lexing
@@ -4361,7 +4361,7 @@ Sat Jul 17 23:51:30 1999  Jeffrey A Law  (law@cygnus.com)
 	* Makefile.in (INTERFACE): Bump to 2.
 
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
-	
+
 	* typeck2.c (my_friendly_abort): Updated URL with bug reporting
 	instructions to gcc.gnu.org.  Removed e-mail address.
 
@@ -4385,7 +4385,7 @@ Sat Jul 17 23:51:30 1999  Jeffrey A Law  (law@cygnus.com)
 	* class.c (method_name_cmp): New function.
 	(finish_struct_methods): Modified to support sorting and searching
 	methods.
-	(finish_struct_anon): Changed code in inner loop to use ELT rather 
+	(finish_struct_anon): Changed code in inner loop to use ELT rather
 	than UELT (which required an extra indirection for every reference).
 	(field_decl_cmp): New function to support sorting FIELD_DECLs.
 	(finish_struct_1): Sort fields.
@@ -4430,7 +4430,7 @@ Sat Jul 17 23:51:30 1999  Jeffrey A Law  (law@cygnus.com)
 	initial declaration, then don't save the inline info and by all
 	means don't mark the function as a builtin function.
 
-	* decl.c (lookup_name_real): Set NONCLASS to 1 if 
+	* decl.c (lookup_name_real): Set NONCLASS to 1 if
 	CURRENT_CLASS_TYPE is 0.
 
 	* class.c (duplicate_tag_error): Set TYPE_NONCOPIED_PARTS to
@@ -4469,7 +4469,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	(init_decl_processing): Handle/use the two new types.
 	* lex.c (real_yylex): Same.
 	* typeck.c (unsigned_type,signed_type,signed_or_unsigned_type) :
-	Same. 
+	Same.
 
 1999-07-01  Mark Mitchell  <mark@codesourcery.com>
 
@@ -4491,7 +4491,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* error.c (dump_type_real): Handle TREE_LIST again.
 
-	* typeck.c (comp_target_parms): Don't complain about 
+	* typeck.c (comp_target_parms): Don't complain about
 	converting from () to (...) if !flag_strict_prototype.
 
 	* decl.c (grokdeclarator): Update the names of all variants when
@@ -4500,7 +4500,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 1999-06-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (expand_aggr_vbase_init): Rename to
-	construct_virtual_bases.  Conditionalize construction here, 
+	construct_virtual_bases.  Conditionalize construction here,
 	rather than ...
 	(emit_base_init): Here.
 
@@ -4515,16 +4515,16 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* error.c (dump_expr): Handle BIND_EXPR, LOOP_EXPR, and
 	EXIT_EXPR.
-	
+
 1999-06-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (expand_aggr_vbase_init): Add flag parameter.
 	(build_partial_cleanup_for): Remove, inlining into ..
 	(expand_cleanup_for_base): ... here.  Take flag parameter.
 	(emit_base_init): Pass the in_chrg parameter to
-	emit_aggr_vbase_init. 
+	emit_aggr_vbase_init.
 	(emit_aggr_vbase_init): Pass it to expand_cleanup_for_base.
-	
+
 1999-06-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (import_export_decl): Use same_type_p, rather than
@@ -4558,7 +4558,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	(push_class_level_binding): Use push_cache_obstack, not
 	maybe_push_cache_obstack.
 	* search.c (push_class_decls): Likewise.
-	
+
 1999-06-14  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* pt.c (tsubst_friend_function): Push into namespace of friend
@@ -4637,7 +4637,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	* tree.c (build_cplus_array_type_1): Use push_obstacks_nochange
 	and friends rather than messing with current_obstack directly.
 	(cp_build_qualified_type_real): Rework ARRAY_TYPE
-	allocation to match practice throughout the rest of the 
+	allocation to match practice throughout the rest of the
 	compiler.
 
 1999-05-30  Mark Mitchell  <mark@codesourcery.com>
@@ -4679,7 +4679,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	(DECL_SAVED_TREE): Document.
 	(DECL_TEMPLATE_INJECT): Remove.
 	* class.c (finish_struct): Remove code to deal with
-	DECL_TEMPLATE_INJECT. 
+	DECL_TEMPLATE_INJECT.
 
 	* decl.c (maybe_process_template_type_declaration): Handle all new
 	types in templates uniformly.
@@ -4689,7 +4689,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	forward-declarations.
 	(instantiate_class_template): Remove code processing
 	DECL_TEMPLATE_INJECT.
-	
+
 	* pt.c (lookup_template_class): Tweak lookup to find member
 	templates.
 
@@ -4697,7 +4697,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	ASM_CV_QUAL.
 	* semantics.c (finish_asm_stmt): Make strings permanent if they're
 	used in a template.
-	
+
 1999-05-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (casts_away_constness, casts_away_constness_r): Strip both
@@ -4707,7 +4707,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* decl2.c (mark_vtable_entries): Don't make a copy of a function,
 	and then make it look like `abort'.  Just use `abort' instead.
-	
+
 	* typeck.c (build_static_cast): Don't allow static_casts that cast
 	away constness.
 	(casts_away_constness_r): New function.
@@ -4720,12 +4720,12 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	* lex.c (is_global): A template parameter isn't global.
 	* parse.y (class_head): Robustify.
 	* parse.c: Regenerated.
-	
+
 1999-05-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (for_each_template_parm): Walk into TYPENAME_TYPEs,
 	INDIRECT_REFs, and COMPONENT_REFs.  Handle FIELD_DECLs.
-	
+
 	* cp-tree.h (push_nested_namespace): Declare.
 	(pop_nested_namespace): Likewise.
 	* decl.c (push_nested_namespace): New function.
@@ -4746,7 +4746,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 1999-05-21  Mark Mitchell  <mark@codesourcery.com>
 	    Nathan Sidwell  <nathan@acm.org>
-	
+
 	* Make-lang.in (cc1plus): Make it depend on gxx.gperf.
 	* cp-tree.h: Fix typo in documentation on pointers-to-members.
 	(cp_build_qualified_type): Make it a macro.
@@ -4768,7 +4768,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	(cp_build_qualified_type): Rename to ...
 	(cp_build_qualified_type_real): Add additional COMPLAIN parameter
 	and modify appropriately.
-	
+
 	* typeck.c (build_ptrmemfunc): Handle PTRMEM_CSTs carefully to
 	reveal optimization opportunities.
 
@@ -4883,7 +4883,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 	* search.c (marked_pushdecls_p): Don't descend into
 	TEMPLATE_TYPE_PARMs and the like.
 	(unmarked_pushdecls_p): Likewise.
-	
+
 	* call.c (build_over_call): Don't throw away
 	initializations/copies of empty classes; use MODIFY_EXPR and
 	INIT_EXPR as for non-empty classes.
@@ -4935,7 +4935,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 	convert_for_initialization): Likewise.
 	* class.c (instantiate_type): Handle seeing a baselink under an
 	OFFSET_REF.
-	* error.c (dump_expr): Likewise.	
+	* error.c (dump_expr): Likewise.
 	* pt.c (for_each_template_parm): Likewise.
 	(resolve_overloaded_unification): Likewise.
 	* tree.c (is_overloaded_fn, really_overloaded_fn): Likewise.
@@ -4986,7 +4986,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 	TREE_LIST for ambiguous lookups.
 	(setup_class_bindings): Adjust accordingly.
 	(push_class_decls): Revise out-of-date comments.
-	
+
 	* typeck.c (build_const_cast): Tighten checks for legality.
 
 1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>

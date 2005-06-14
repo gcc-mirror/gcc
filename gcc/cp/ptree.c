@@ -129,7 +129,7 @@ cxx_print_type (FILE *file, tree node, int indent)
 		 BINFO_N_BASE_BINFOS (TYPE_BINFO (node)));
       else
 	fprintf (file, " no-binfo");
-      
+
       fprintf (file, " use_template=%d", CLASSTYPE_USE_TEMPLATE (node));
       if (CLASSTYPE_INTERFACE_ONLY (node))
 	fprintf (file, " interface-only");

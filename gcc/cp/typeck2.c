@@ -236,7 +236,7 @@ int
 abstract_virtuals_error (tree decl, tree type)
 {
   VEC(tree,gc) *pure;
-  
+
   /* This function applies only to classes. Any other entity can never
      be abstract.  */
   if (!CLASS_TYPE_P (type))
@@ -251,11 +251,11 @@ abstract_virtuals_error (tree decl, tree type)
       void **slot;
       struct pending_abstract_type *pat;
 
-      gcc_assert (!decl || DECL_P (decl) 
+      gcc_assert (!decl || DECL_P (decl)
 		  || TREE_CODE (decl) == IDENTIFIER_NODE);
 
       if (!abstract_pending_vars)
-	abstract_pending_vars = htab_create_ggc (31, &pat_calc_hash, 
+	abstract_pending_vars = htab_create_ggc (31, &pat_calc_hash,
 						&pat_compare, NULL);
 
       slot = htab_find_slot_with_hash (abstract_pending_vars, type,
@@ -302,7 +302,7 @@ abstract_virtuals_error (tree decl, tree type)
 	cp_error_at ("invalid abstract return type for member function %q+#D",
 		     decl);
       else if (TREE_CODE (decl) == FUNCTION_DECL)
-	cp_error_at ("invalid abstract return type for function %q+#D", 
+	cp_error_at ("invalid abstract return type for function %q+#D",
 		     decl);
       else if (TREE_CODE (decl) == IDENTIFIER_NODE)
 	/* Here we do not have location information, so use error instead
@@ -319,7 +319,7 @@ abstract_virtuals_error (tree decl, tree type)
     {
       unsigned ix;
       tree fn;
-      
+
       inform ("%J  because the following virtual functions are pure "
 	      "within %qT:", TYPE_MAIN_DECL (type), type);
 
@@ -331,7 +331,7 @@ abstract_virtuals_error (tree decl, tree type)
       VEC_truncate (tree, pure, 0);
     }
   else
-    inform ("%J  since type %qT has pure virtual functions", 
+    inform ("%J  since type %qT has pure virtual functions",
 	    TYPE_MAIN_DECL (type), type);
 
   return 1;
@@ -365,7 +365,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
       p_msg = error;
       p_msg_at = cp_error_at;
     }
-  
+
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
     return;
@@ -426,7 +426,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
       else
         (*p_msg) ("insufficient contextual information to determine type");
       break;
-    
+
     default:
       gcc_unreachable ();
     }
@@ -519,7 +519,7 @@ split_nonconstant_init_1 (tree dest, tree init)
     }
 }
 
-/* A subroutine of store_init_value.  Splits non-constant static 
+/* A subroutine of store_init_value.  Splits non-constant static
    initializer INIT into a constant part and generates code to
    perform the non-constant part of the initialization to DEST.
    Returns the code for the runtime init.  */
@@ -659,7 +659,7 @@ digest_init (tree type, tree init, tree* tail)
   if (!complete_type_or_else (TREE_CODE (type) == ARRAY_TYPE
 			      ? TREE_TYPE (type) : type, NULL_TREE))
     return error_mark_node;
-  
+
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
@@ -1233,7 +1233,7 @@ build_x_arrow (tree expr)
 					  types_memoized);
 	    }
 	  last_rval = expr;
-	}     
+	}
 
       if (last_rval == NULL_TREE)
 	{
@@ -1288,12 +1288,12 @@ build_m_component_ref (tree datum, tree component)
   if (!TYPE_PTR_TO_MEMBER_P (ptrmem_type))
     {
       error ("%qE cannot be used as a member pointer, since it is of "
-             "type %qT", 
+             "type %qT",
 	     component, ptrmem_type);
       return error_mark_node;
     }
-    
-  objtype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));  
+
+  objtype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));
   if (! IS_AGGR_TYPE (objtype))
     {
       error ("cannot apply member pointer %qE to %qE, which is of "
@@ -1314,7 +1314,7 @@ build_m_component_ref (tree datum, tree component)
   else
     {
       binfo = lookup_base (objtype, ctype, ba_check, NULL);
-      
+
       if (!binfo)
 	{
 	mismatch:
@@ -1334,15 +1334,15 @@ build_m_component_ref (tree datum, tree component)
 	 things are not as complex as they are for references to
 	 non-static data members.  */
       type = cp_build_qualified_type (type,
-				      (cp_type_quals (type)  
+				      (cp_type_quals (type)
 				       | cp_type_quals (TREE_TYPE (datum))));
 
       datum = build_address (datum);
-      
+
       /* Convert object to the correct base.  */
       if (binfo)
 	datum = build_base_path (PLUS_EXPR, datum, binfo, 1);
-      
+
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
       datum = build2 (PLUS_EXPR, build_pointer_type (type),
@@ -1391,9 +1391,9 @@ build_functional_cast (tree exp, tree parms)
 
   /* Prepare to evaluate as a call to a constructor.  If this expression
      is actually used, for example,
-	 
+
      return X (arg1, arg2, ...);
-	 
+
      then the slot being initialized will be filled in.  */
 
   if (!complete_type_or_else (type, NULL_TREE))
@@ -1435,12 +1435,12 @@ add_exception_specifier (tree list, tree spec, int complain)
   tree core = spec;
   bool is_ptr;
   int diag_type = -1; /* none */
-  
+
   if (spec == error_mark_node)
     return list;
-  
+
   gcc_assert (spec && (!list || TREE_VALUE (list)));
-  
+
   /* [except.spec] 1, type in an exception specifier shall not be
      incomplete, or pointer or ref to incomplete other than pointer
      to cv void.  */
@@ -1469,7 +1469,7 @@ add_exception_specifier (tree list, tree spec, int complain)
   if (ok)
     {
       tree probe;
-      
+
       for (probe = list; probe; probe = TREE_CHAIN (probe))
         if (same_type_p (TREE_VALUE (probe), spec))
           break;
@@ -1478,7 +1478,7 @@ add_exception_specifier (tree list, tree spec, int complain)
     }
   else
     diag_type = 0; /* error */
-    
+
   if (diag_type >= 0 && complain)
     cxx_incomplete_type_diagnostic (NULL_TREE, core, diag_type);
 
@@ -1500,12 +1500,12 @@ merge_exception_specifiers (tree list, tree add)
   else
     {
       tree orig_list = list;
-      
+
       for (; add; add = TREE_CHAIN (add))
         {
           tree spec = TREE_VALUE (add);
           tree probe;
-          
+
           for (probe = orig_list; probe; probe = TREE_CHAIN (probe))
             if (same_type_p (TREE_VALUE (probe), spec))
               break;

@@ -31,6 +31,6 @@ enum decl_context
 };
 
 /* We need this in here to get the decl_context definition.  */
-extern tree grokdeclarator (const cp_declarator *, 
-			    const cp_decl_specifier_seq *, 
+extern tree grokdeclarator (const cp_declarator *,
+			    const cp_decl_specifier_seq *,
 			    enum decl_context, int, tree*);

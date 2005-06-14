@@ -190,7 +190,7 @@
 	other parsing fails.
 	(cp_parser_enclosed_template_argument_list): If the argument list is
 	parsed correctly, but the next token is '>>', emit a diagnostic.
-	(cp_parser_next_token_ends_template_argument): Accept '>>' as 
+	(cp_parser_next_token_ends_template_argument): Accept '>>' as
 	delimiter of template argument, it will be later detected as a typo.
 
 2003-12-17  Kelley Cook  <kcook@gcc.gnu.org>
@@ -396,7 +396,7 @@
 
 	PR c/13134
 	* decl.c (duplicate_decls): Copy visibility flag when appropriate.
-	
+
 2003-12-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* init.c (build_new_1): Deal with an OVERLOAD set when
@@ -414,7 +414,7 @@
 
 	PR c++/11929
 	* call.c (magic_varargs_p): New fn.
-	(build_over_call): Do no ellipsis conversions for arguments to 
+	(build_over_call): Do no ellipsis conversions for arguments to
 	functions with magic varargs.
 
 	* name-lookup.c, init.c, except.c: Revert Giovanni's patch from
@@ -460,7 +460,7 @@
 	PR c++/13305
 	* parser.c (cp_parser_elaborated_type_specifier): Accept
 	attributes.
-	
+
 2003-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13314
@@ -514,7 +514,7 @@
 2003-12-02  Richard Henderson  <rth@redhat.com>
 
 	* name-lookup.h (struct cp_binding_level): Use ENUM_BITFIELD.
-        * parser.c (struct cp_token): Likewise.   
+        * parser.c (struct cp_token): Likewise.
         (struct cp_parser_token_tree_map_node): Likewise.
 	* lex.c (struct resword): Move const after ENUM_BITFIELD.
 
@@ -709,7 +709,7 @@
 	* decl.c (duplicate_decls): copy DECL_VISIBILITY field.
 	* method.c (use_thunk): give thunk same visibility as function.
 	* optimize.c (maybe_clone_body): copy DECL_VISIBILITY field.
-	
+
 2003-11-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11616
@@ -799,7 +799,8 @@
 	mangle a non-existant middle operator to the ?: operator.
 
 2003-10-21  Robert Bowdidge   <bowdidge@apple.com>
-	* decl.c (cp_finish_decl): Remove clause intended for asm directives 
+
+	* decl.c (cp_finish_decl): Remove clause intended for asm directives
           in struct or class fields: this code is never executed.
 
 2003-10-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
@@ -961,7 +962,7 @@
 
 2003-10-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	Break out decl.c (2/n) 
+	Break out decl.c (2/n)
 	* name-lookup.c: Include diagnostic.h
 	(cxx_binding_free): Make static.
 	(cxx_binding_make): Likewise.
@@ -1056,7 +1057,7 @@
 	(maybe_process_template_type_declaration): Likewise.
 	(pop_binding): Likewise.
 	* cp-tree.h: Move corresponding declarations to name-lookup.h
-	
+
 2003-10-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cvt.c (ocp_convert): Move warning to C common code.
@@ -1096,7 +1097,7 @@
 	pp_cxx_flag_qualified_id and pp_cxx_flag_global_scope.
 	* cxx-pretty-print.c (pp_cxx_id_expression): Always display
 	qualified entities using qualified names.
-	
+
 	PR c++/12337
 	* init.c (build_new_1): Make sure that the expression returned is
 	not an lvalue.
@@ -1122,7 +1123,7 @@
 2003-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* name-lookup.c (binding_entry_free): Nullify name and type
-	fields. 
+	fields.
 
 2003-10-02  Mark Mitchell  <mark@codesourcery.com>
 
@@ -1143,7 +1144,7 @@
 2003-09-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (pop_binding): Don't mess with nullifying binding->scope
-	here. 
+	here.
 	* name-lookup.c: Re-format.
 	(cxx_binding_free): Nullify binding->scope.
 
@@ -1286,7 +1287,7 @@
 2003-09-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (cxx_scope_descriptor): Fix thinko.
-	(struct cp_binding_level): Adjust type of binding_depth field. 
+	(struct cp_binding_level): Adjust type of binding_depth field.
 
 2003-09-18  Danny Smith  <dannysmith@users.sourceforge.net>
 
@@ -1317,7 +1318,7 @@
 2003-09-18  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* error.c (dump_type): Simplify.  Use pp_type_specifier_seq for
-	"C" types. 
+	"C" types.
 	* cxx-pretty-print.c (pp_cxx_type_specifier_seq): Fix thinko.
 
 2003-09-17  Richard Henderson  <rth@redhat.com>
@@ -1397,7 +1398,7 @@
 	the various flags.
 	(set_block): Remove check for doing_semantic_analysis_p.
 	(pushlevel_class): Use "kind" field in binding_level, not
-	the various flags. 
+	the various flags.
 	(poplevel_class): Likewise.
 	(initial_push_namespace_scope): Likewise.
 	(maybe_push_to_top_level): Likewise.
@@ -1427,7 +1428,7 @@
 	(save_function-data): Do not set expanding_p.
 	(cxx_push_function_context): Do not clear expanding_p.
 	* semantics.c (cxx_expand_function_start): Do not set expanding_p.
-	
+
 2003-09-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (layout_class_type): Make DECL_MODE match TYPE_MODE for
@@ -1487,7 +1488,7 @@
 
 2003-09-09  Richard Henderson  <rth@redhat.com>
 
-	* semantics.c (expand_or_defer_fn): Update call to 
+	* semantics.c (expand_or_defer_fn): Update call to
 	cgraph_finalize_function.
 
 	* semantics.c (expand_or_defer_fn): Use cgraph_finalize_function
@@ -1540,7 +1541,7 @@
 	* error.c (dump_decl): Handle namespace-alias-definition.
 	* decl.c (warn_extern_redeclared_static): There is no point in
 	checking changes in storage class specifier for a namespace
-	declaration. 
+	declaration.
 	(duplicate_decls): Tidy diagnostic message.
 	* cxx-pretty-print.c (pp_cxx_left_brace): New macro.
 	(pp_cxx_right_brace): Likewise.
@@ -1571,7 +1572,7 @@
 	(push_class_binding): Likewise.
 	(set_identifier_type_value_with_scope): Likewise.
 	* name-lookup.c (supplement_binding): Rename from add_binding.
-	Return a bool.  Improve documentation. 
+	Return a bool.  Improve documentation.
 	(set_namespace_binding): Adjust.
 	* Make-lang.in (cp/name-lookup.o): Depend on toplev.h
 
@@ -1785,7 +1786,7 @@
 
 	PR c++/11811
 	* cxx-pretty-print.c (pp_cxx_canonical_template_parameter): New
-	function. 
+	function.
 	* cxx-pretty-print.h: Declare.
 	* error.c (dump_template_parameter): Use it.
 	(dump_type): Likewise.

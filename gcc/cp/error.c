@@ -348,8 +348,8 @@ dump_type (tree t, int flags)
     }
     case TYPENAME_TYPE:
       pp_cxx_cv_qualifier_seq (cxx_pp, t);
-      pp_cxx_identifier (cxx_pp, 
-			 TYPENAME_IS_ENUM_P (t) ? "enum" 
+      pp_cxx_identifier (cxx_pp,
+			 TYPENAME_IS_ENUM_P (t) ? "enum"
 			 : TYPENAME_IS_CLASS_P (t) ? "class"
 			 : "typename");
       dump_typename (t, flags);
@@ -481,7 +481,7 @@ dump_aggr_type (tree t, int flags)
    Arrays must also do this for DECL nodes, like int a[], and for things like
    int *[]&.  */
 
-static void 
+static void
 dump_type_prefix (tree t, int flags)
 {
   if (TYPE_PTRMEMFUNC_P (t))
@@ -722,7 +722,7 @@ dump_decl (tree t, int flags)
 	      && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
 	    /* Say `class T' not just `T'.  */
 	    pp_cxx_identifier (cxx_pp, "class");
-	  
+
 	  dump_type (TREE_TYPE (t), flags);
 	  break;
 	}
@@ -826,7 +826,7 @@ dump_decl (tree t, int flags)
 	  dump_decl (DECL_NAME (t), flags);
 	  break;
 	}
-      
+
       /* If there's only one function, just treat it like an ordinary
 	 FUNCTION_DECL.  */
       t = OVL_CURRENT (t);
@@ -848,7 +848,7 @@ dump_decl (tree t, int flags)
     case TEMPLATE_ID_EXPR:
       {
 	tree name = TREE_OPERAND (t, 0);
-	
+
 	if (is_overloaded_fn (name))
 	  name = DECL_NAME (get_first_fn (name));
 	dump_decl (name, flags);
@@ -1214,7 +1214,7 @@ dump_template_parms (tree info, int primary, int flags)
 
       if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
 	args = TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
-      
+
       len = TREE_VEC_LENGTH (args);
 
       for (ix = 0; ix != len; ix++)
@@ -1223,7 +1223,7 @@ dump_template_parms (tree info, int primary, int flags)
 
           if (ix)
             pp_separate_with_comma (cxx_pp);
-          
+
           if (!arg)
             pp_identifier (cxx_pp, "<template parameter error>");
           else
@@ -1273,7 +1273,7 @@ dump_expr (tree t, int flags)
 {
   if (t == 0)
     return;
-  
+
   switch (TREE_CODE (t))
     {
     case VAR_DECL:
@@ -1295,7 +1295,7 @@ dump_expr (tree t, int flags)
       if (PAREN_STRING_LITERAL_P (t))
 	pp_cxx_right_paren (cxx_pp);
       break;
-      
+
     case INTEGER_CST:
     case REAL_CST:
        pp_c_constant (pp_c_base (cxx_pp), t);
@@ -1595,7 +1595,7 @@ dump_expr (tree t, int flags)
     case CONVERT_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
-	
+
 	if (!same_type_p (TREE_TYPE (op), TREE_TYPE (t)))
 	  {
 	    /* It is a cast, but we cannot tell whether it is a
@@ -1613,7 +1613,7 @@ dump_expr (tree t, int flags)
 	  dump_expr (op, flags);
 	break;
       }
-      
+
     case CONSTRUCTOR:
       if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
 	{
@@ -1670,7 +1670,7 @@ dump_expr (tree t, int flags)
 	  dump_expr_list (CONSTRUCTOR_ELTS (t), flags);
           pp_cxx_right_brace (cxx_pp);
 	}
-      
+
       break;
 
     case OFFSET_REF:
@@ -1683,7 +1683,7 @@ dump_expr (tree t, int flags)
 	      /* A::f */
 	      dump_expr (t, flags | TFF_EXPR_IN_PARENS);
 	    else if (BASELINK_P (t))
-	      dump_expr (OVL_CURRENT (BASELINK_FUNCTIONS (t)), 
+	      dump_expr (OVL_CURRENT (BASELINK_FUNCTIONS (t)),
 			 flags | TFF_EXPR_IN_PARENS);
 	    else
 	      dump_decl (t, flags);
@@ -1950,7 +1950,7 @@ location_of (tree t)
     t = TYPE_MAIN_DECL (t);
   else if (TREE_CODE (t) == OVERLOAD)
     t = OVL_FUNCTION (t);
-  
+
   return DECL_SOURCE_LOCATION (t);
 }
 
@@ -2182,7 +2182,7 @@ print_instantiation_full_context (diagnostic_context *context)
 {
   tree p = current_instantiation ();
   location_t location = input_location;
-  
+
   if (p)
     {
       if (current_function_decl != TINST_DECL (p)
@@ -2295,7 +2295,7 @@ cp_printer (pretty_printer *pp, text_info *text)
     case 'Q': result = assop_to_string (next_tcode);	        break;
     case 'T': result = type_to_string (next_tree, verbose);	break;
     case 'V': result = cv_to_string (next_tree, verbose);	break;
- 
+
     default:
       return false;
     }

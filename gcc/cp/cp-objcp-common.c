@@ -99,7 +99,7 @@ cp_expr_size (tree exp)
                      the result.  Since the "s" subobject is never
                      constructed, this is a valid transformation.  */
 		  || CP_AGGREGATE_TYPE_P (type));
-      
+
       /* This would be wrong for a type with virtual bases, but they are
 	 caught by the assert above.  */
       return (is_empty_class (type)

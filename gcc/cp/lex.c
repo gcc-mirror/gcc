@@ -633,16 +633,16 @@ unqualified_fn_lookup_error (tree name)
 	 declaration of "f" is available.  Historically, G++ and most
 	 other compilers accepted that usage since they deferred all name
 	 lookup until instantiation time rather than doing unqualified
-	 name lookup at template definition time; explain to the user what 
+	 name lookup at template definition time; explain to the user what
 	 is going wrong.
 
 	 Note that we have the exact wording of the following message in
 	 the manual (trouble.texi, node "Name lookup"), so they need to
 	 be kept in synch.  */
       pedwarn ("there are no arguments to %qD that depend on a template "
-	       "parameter, so a declaration of %qD must be available", 
+	       "parameter, so a declaration of %qD must be available",
 	       name, name);
-      
+
       if (!flag_permissive)
 	{
 	  static bool hint;
@@ -670,7 +670,7 @@ build_lang_decl (enum tree_code code, tree name, tree type)
 
   /* All nesting of C++ functions is lexical; there is never a "static
      chain" in the sense of GNU C nested functions.  */
-  if (code == FUNCTION_DECL) 
+  if (code == FUNCTION_DECL)
     DECL_NO_STATIC_CHAIN (t) = 1;
 
   return t;

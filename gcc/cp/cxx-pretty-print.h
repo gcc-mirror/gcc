@@ -31,7 +31,7 @@ typedef enum
 {
   /* Ask for an qualified-id.  */
   pp_cxx_flag_default_argument = 1 << pp_c_flag_last_bit
-  
+
 } cxx_pretty_printer_flags;
 
 typedef struct

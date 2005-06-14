@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998, 2003, 2004, 2005, 
+   Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998, 2003, 2004, 2005,
    1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -22,7 +22,7 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
- 
+
 /* An OFFSET_REF is used in two situations:
 
    1. An expression of the form `A::m' where `A' is a class and `m' is
@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
       The expression is a pointer-to-member if its address is taken,
       but simply denotes a member of the object if its address is not
       taken.
-      
+
       This form is only used during the parsing phase; once semantic
       analysis has taken place they are eliminated.
 
@@ -97,7 +97,7 @@ DEFTREECODE (ALIAS_DECL, "alias_decl", tcc_declaration, 0)
    functions.  BASELINK_BINFO gives the base from which the functions
    come, i.e., the base to which the `this' pointer must be converted
    before the functions are called.  BASELINK_ACCESS_BINFO gives the
-   base used to name the functions.  
+   base used to name the functions.
 
    A BASELINK is an expression; the TREE_TYPE of the BASELINK gives
    the type of the expression.  This type is either a FUNCTION_TYPE,
@@ -127,14 +127,14 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", tcc_declaration, 0)
    gives the level (from 1) of the parameter.
 
    Here's an example:
-   
+
    template <class T> // Index 0, Level 1.
    struct S
    {
       template <class U, // Index 0, Level 2.
                 class V> // Index 1, Level 2.
       void f();
-   };  
+   };
 
    The DESCENDANTS will be a chain of TEMPLATE_PARM_INDEXs descended
    from this one.  The first descendant will have the same IDX, but
@@ -151,17 +151,17 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", tcc_declaration, 0)
                class V> // Index 1, Level 1, Orig Level 2
      void f();
    };
-  
+
    The LEVEL is the level of the parameter when we are worrying about
    the types of things; the ORIG_LEVEL is the level when we are
    worrying about instantiating things.  */
 DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", tcc_exceptional, 0)
 
 /* Index into a template parameter list for template template parameters.
-   This parameter must be a type.  The TYPE_FIELDS value will be a 
+   This parameter must be a type.  The TYPE_FIELDS value will be a
    TEMPLATE_PARM_INDEX.
 
-   It is used without template arguments like TT in C<TT>, 
+   It is used without template arguments like TT in C<TT>,
    TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO is NULL_TREE
    and TYPE_NAME is a TEMPLATE_DECL.  */
 DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", tcc_type, 0)
@@ -170,7 +170,7 @@ DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", tcc_type, 0)
    macros in tree.h.  Changing the order will degrade the speed of the
    compiler.  TEMPLATE_TYPE_PARM, TYPENAME_TYPE, TYPEOF_TYPE,
    BOUND_TEMPLATE_TEMPLATE_PARM.  */
-     
+
 /* Index into a template parameter list.  This parameter must be a type.
    The type.value field will be a TEMPLATE_PARM_INDEX.  */
 DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", tcc_type, 0)
@@ -185,7 +185,7 @@ DEFTREECODE (TYPENAME_TYPE, "typename_type", tcc_type, 0)
    expression in question.  */
 DEFTREECODE (TYPEOF_TYPE, "typeof_type", tcc_type, 0)
 
-/* Like TEMPLATE_TEMPLATE_PARM it is used with bound template arguments 
+/* Like TEMPLATE_TEMPLATE_PARM it is used with bound template arguments
    like TT<int>.
    In this case, TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO contains the
    template name and its bound arguments.  TYPE_NAME is a TYPE_DECL.  */
@@ -203,7 +203,7 @@ DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", tcc_type, 0)
    not an alias, but is later expanded into multiple aliases.  */
 DEFTREECODE (USING_DECL, "using_decl", tcc_declaration, 0)
 
-/* A using directive. The operand is USING_STMT_NAMESPACE.  */     
+/* A using directive. The operand is USING_STMT_NAMESPACE.  */
 DEFTREECODE (USING_STMT, "using_directive", tcc_statement, 1)
 
 /* An un-parsed default argument.  Holds a vector of input tokens and
@@ -218,7 +218,7 @@ DEFTREECODE (DEFAULT_ARG, "default_arg", tcc_exceptional, 0)
    member template, the template may be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", tcc_expression, 2)
 
-/* A list-like node for chaining overloading candidates. TREE_TYPE is 
+/* A list-like node for chaining overloading candidates. TREE_TYPE is
    the original name, and the parameter is the FUNCTION_DECL.  */
 DEFTREECODE (OVERLOAD, "overload", tcc_exceptional, 0)
 
@@ -226,12 +226,12 @@ DEFTREECODE (OVERLOAD, "overload", tcc_exceptional, 0)
    "OBJECT.SCOPE::~DESTRUCTOR.  The first operand is the OBJECT.  The
    second operand (if non-NULL) is the SCOPE.  The third operand is
    the TYPE node corresponding to the DESTRUCTOR.  The type of the
-   first operand will always be a scalar type. 
+   first operand will always be a scalar type.
 
    The type of a PSEUDO_DTOR_EXPR is always "void", even though it can
    be used as if it were a zero-argument function.  We handle the
    function-call case specially, and giving it "void" type prevents it
-   being used in expressions in ways that are not permitted.  */  
+   being used in expressions in ways that are not permitted.  */
 DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", tcc_expression, 3)
 
 /* A whole bunch of tree codes for the initial, superficial parsing of
@@ -281,7 +281,7 @@ DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", tcc_statement, 3)
 
 /* Represents an 'if' statement. The operands are IF_COND,
    THEN_CLAUSE, and ELSE_CLAUSE, respectively.  */
-/* ??? It is currently still necessary to distinguish between IF_STMT 
+/* ??? It is currently still necessary to distinguish between IF_STMT
    and COND_EXPR for the benefit of templates.  */
 DEFTREECODE (IF_STMT, "if_stmt", tcc_statement, 3)
 
