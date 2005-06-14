@@ -1,3 +1,9 @@
+2005-06-14  Frank Ch. Eigler  <fche@redhat.com>
+
+	PR mudflap/22064
+	* mf-impl.h (mudflap_mode, violation_mode): Make these ordinary
+	unsigned vars with #defines instead of enums.
+
 2005-05-09  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.

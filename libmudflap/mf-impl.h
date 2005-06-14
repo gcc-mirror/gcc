@@ -167,24 +167,18 @@ struct __mf_options
 #endif
 
   /* Major operation mode */
-  enum
-  {
-    mode_nop,        /* mudflaps do nothing */
-    mode_populate,   /* mudflaps populate tree but do not check for violations */
-    mode_check,      /* mudflaps populate and check for violations (normal) */
-    mode_violate     /* mudflaps trigger a violation on every call (diagnostic) */
-  }
-  mudflap_mode;
+#define mode_nop 0      /* Do nothing.  */
+#define mode_populate 1 /* Populate tree but do not check for violations.  */
+#define mode_check 2    /* Populate and check for violations (normal).  */
+#define mode_violate 3  /* Trigger a violation on every call (diagnostic).  */
+  unsigned mudflap_mode;
 
   /* How to handle a violation. */
-  enum
-  {
-    viol_nop,        /* Return control to application. */
-    viol_segv,       /* Signal self with segv. */
-    viol_abort,      /* Call abort (). */
-    viol_gdb         /* Fork a debugger on self */
-  }
-  violation_mode;
+#define viol_nop 0   /* Return control to application. */
+#define viol_segv 1  /* Signal self with segv. */
+#define viol_abort 2 /* Call abort (). */
+#define viol_gdb 3   /* Fork a debugger on self */
+  unsigned violation_mode;
 
   /* Violation heuristics selection. */
   unsigned heur_stack_bound; /* allow current stack region */
