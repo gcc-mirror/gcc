@@ -85,6 +85,14 @@ for (i = 0; i < n_opts; i++) {
 	var_seen[name] = 1;
 }
 
+print ""
+print "/* Local state variables.  */"
+for (i = 0; i < n_opts; i++) {
+	name = static_var(opts[i], flags[i]);
+	if (name != "")
+		print "static " var_type(flags[i]) name ";"
+}
+print ""
 
 print "const char * const lang_names[] =\n{"
 for (i = 0; i < n_langs; i++) {
@@ -152,7 +160,8 @@ for (i = 0; i < n_opts; i++) {
 		       condition, cl_flags, cl_flags)
 	else
 		printf("    %s,\n", cl_flags)
-	printf("    %s, %s }%s\n", var_ref(flags[i]), var_set(flags[i]), comma)
+	printf("    %s, %s }%s\n", var_ref(opts[i], flags[i]),
+	       var_set(flags[i]), comma)
 }
 
 print "};"

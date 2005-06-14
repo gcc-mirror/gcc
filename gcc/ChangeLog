@@ -1,3 +1,10 @@
+2005-06-14  Richard Sandiford  <richard@codesourcery.com>
+
+	* opt-functions.awk (global_state_p, needs_state_p, static_var): New.
+	(var_ref): Take the option's flags as a second parameter.  Check
+	static_var.
+	* optc-gen.awk: Declare local state variables.  Pass flags to var_ref.
+
 2005-06-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/20301
