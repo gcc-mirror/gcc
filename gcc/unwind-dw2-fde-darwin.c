@@ -220,6 +220,7 @@ examine_objects (void *pc, struct dwarf_eh_bases *bases, int dont_alloc)
 	    if (result)
 	      {
 		int encoding;
+		_Unwind_Ptr func;
 
 		bases->tbase = ob->tbase;
 		bases->dbase = ob->dbase;
@@ -229,8 +230,8 @@ examine_objects (void *pc, struct dwarf_eh_bases *bases, int dont_alloc)
 		  encoding = get_fde_encoding (result);
 		read_encoded_value_with_base (encoding,
 					      base_from_object (encoding, ob),
-					      result->pc_begin,
-					      (_Unwind_Ptr *)&bases->func);
+					      result->pc_begin, &func);
+		bases->func = (void *) func;
 		break;
 	      }
 	  }

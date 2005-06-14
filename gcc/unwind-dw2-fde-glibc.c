@@ -386,11 +386,13 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
   data->ret = linear_search_fdes (&ob, (fde *) eh_frame, (void *) data->pc);
   if (data->ret != NULL)
     {
+      _Unwind_Ptr func;
       unsigned int encoding = get_fde_encoding (data->ret);
+      
       read_encoded_value_with_base (encoding,
 				    base_from_cb_data (encoding, data),
-				    data->ret->pc_begin,
-				    (_Unwind_Ptr *)&data->func);
+				    data->ret->pc_begin, &func);
+      data->func = (void *) func;
     }
   return 1;
 }

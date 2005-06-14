@@ -1,3 +1,13 @@
+2005-06-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* unwind-dw2-fde-darwin.c (examine_objects): Fix aliasing in
+	read_encoded_value_with_base call.
+	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Likewise.
+	* unwind-dw2-fde.c (_Unwind_Find_FDE): Likewise.
+	* unwind-dw2.c (extract_cie_info): Fix aliasing in
+	read_encoded_value call.
+	(execute_cfa_program, uw_frame_state_for): Likewise.
+
 2005-06-13  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/22053
