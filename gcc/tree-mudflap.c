@@ -1257,7 +1257,7 @@ mudflap_finish_file (void)
              Perform registration for non-static objects regardless of
              TREE_USED or TREE_ADDRESSABLE, because they may be used
              from other compilation units.  */
-          if (TREE_STATIC (obj) && ! TREE_ADDRESSABLE (obj))
+          if (! TREE_PUBLIC (obj) && ! TREE_ADDRESSABLE (obj))
             continue;
 
           if (! COMPLETE_TYPE_P (TREE_TYPE (obj)))
