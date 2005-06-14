@@ -2667,8 +2667,9 @@ compensate_edge (edge e, FILE *file)
     {
       /* Assert that the lifetimes are as we expect -- one value
          live at st(0) on the end of the source block, and no
-         values live at the beginning of the destination block.  */
-      gcc_assert (source_stack->top == 0);
+         values live at the beginning of the destination block.
+	 For complex return values, we may have st(1) live as well.  */
+      gcc_assert (source_stack->top == 0 || source_stack->top == 1);
       gcc_assert (target_stack->top == -1);
       return false;
     }

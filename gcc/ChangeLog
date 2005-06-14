@@ -1,3 +1,10 @@
+2005-06-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/22053
+	* reg-stack.c (compensate_edge): Correct mistake in the assertion
+	checking of EDGE_ABNORMAL_CALL edges; complex return values can
+	result in the top two stack slots, st(0) and st(1), being live.
+
 2005-06-13  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): No longer
