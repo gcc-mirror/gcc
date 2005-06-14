@@ -397,6 +397,10 @@ struct machine_function GTY(()) {
      refers to GP relative global variables.  */
   rtx mips16_gp_pseudo_rtx;
 
+  /* The number of extra stack bytes taken up by register varargs.
+     This area is allocated by the callee at the very top of the frame.  */
+  int varargs_size;
+
   /* Current frame information, calculated by compute_frame_size.  */
   struct mips_frame_info frame;
 
@@ -3753,7 +3757,8 @@ mips_pad_reg_upward (enum machine_mode mode, tree type)
 
 static void
 mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			     tree type, int *pretend_size, int no_rtl)
+			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
+			     int no_rtl)
 {
   CUMULATIVE_ARGS local_cum;
   int gp_saved, fp_saved;
@@ -3777,18 +3782,9 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	{
 	  rtx ptr, mem;
 
-	  ptr = virtual_incoming_args_rtx;
-	  switch (mips_abi)
-	    {
-	    case ABI_32:
-	    case ABI_O64:
-	      ptr = plus_constant (ptr, local_cum.num_gprs * UNITS_PER_WORD);
-	      break;
-
-	    case ABI_EABI:
-	      ptr = plus_constant (ptr, -gp_saved * UNITS_PER_WORD);
-	      break;
-	    }
+	  ptr = plus_constant (virtual_incoming_args_rtx,
+			       REG_PARM_STACK_SPACE (cfun->decl)
+			       - gp_saved * UNITS_PER_WORD);
 	  mem = gen_rtx_MEM (BLKmode, ptr);
 	  set_mem_alias_set (mem, get_varargs_alias_set ());
 
@@ -3823,14 +3819,9 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	    }
 	}
     }
-  if (TARGET_OLDABI)
-    {
-      /* No need for pretend arguments: the register parameter area was
-	 allocated by the caller.  */
-      *pretend_size = 0;
-      return;
-    }
-  *pretend_size = (gp_saved * UNITS_PER_WORD) + (fp_saved * UNITS_PER_FPREG);
+  if (REG_PARM_STACK_SPACE (cfun->decl) == 0)
+    cfun->machine->varargs_size = (gp_saved * UNITS_PER_WORD
+				   + fp_saved * UNITS_PER_FPREG);
 }
 
 /* Create the va_list data type.
@@ -3910,101 +3901,84 @@ mips_build_builtin_va_list (void)
 void
 mips_va_start (tree valist, rtx nextarg)
 {
-  const CUMULATIVE_ARGS *cum = &current_function_args_info;
-
-  /* ARG_POINTER_REGNUM is initialized to STACK_POINTER_BOUNDARY, but
-     since the stack is aligned for a pair of argument-passing slots,
-     and the beginning of a variable argument list may be an odd slot,
-     we have to decrease its alignment.  */
-  if (cfun && cfun->emit->regno_pointer_align)
-    while (((current_function_pretend_args_size * BITS_PER_UNIT)
-	    & (REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) - 1)) != 0)
-      REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) /= 2;
-
-  if (mips_abi == ABI_EABI)
+  if (EABI_FLOAT_VARARGS_P)
     {
+      const CUMULATIVE_ARGS *cum;
+      tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
+      tree ovfl, gtop, ftop, goff, foff;
+      tree t;
       int gpr_save_area_size;
+      int fpr_save_area_size;
+      int fpr_offset;
 
+      cum = &current_function_args_info;
       gpr_save_area_size
 	= (MAX_ARGS_IN_REGISTERS - cum->num_gprs) * UNITS_PER_WORD;
+      fpr_save_area_size
+	= (MAX_ARGS_IN_REGISTERS - cum->num_fprs) * UNITS_PER_FPREG;
 
-      if (EABI_FLOAT_VARARGS_P)
-	{
-	  tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
-	  tree ovfl, gtop, ftop, goff, foff;
-	  tree t;
-	  int fpr_offset;
-	  int fpr_save_area_size;
+      f_ovfl = TYPE_FIELDS (va_list_type_node);
+      f_gtop = TREE_CHAIN (f_ovfl);
+      f_ftop = TREE_CHAIN (f_gtop);
+      f_goff = TREE_CHAIN (f_ftop);
+      f_foff = TREE_CHAIN (f_goff);
 
-	  f_ovfl = TYPE_FIELDS (va_list_type_node);
-	  f_gtop = TREE_CHAIN (f_ovfl);
-	  f_ftop = TREE_CHAIN (f_gtop);
-	  f_goff = TREE_CHAIN (f_ftop);
-	  f_foff = TREE_CHAIN (f_goff);
+      ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
+		    NULL_TREE);
+      gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
+		    NULL_TREE);
+      ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
+		    NULL_TREE);
+      goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
+		    NULL_TREE);
+      foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
+		    NULL_TREE);
 
-	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
-			NULL_TREE);
-	  gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
-			NULL_TREE);
-	  ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
-			NULL_TREE);
-	  goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
-			NULL_TREE);
-	  foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
-			NULL_TREE);
+      /* Emit code to initialize OVFL, which points to the next varargs
+	 stack argument.  CUM->STACK_WORDS gives the number of stack
+	 words used by named arguments.  */
+      t = make_tree (TREE_TYPE (ovfl), virtual_incoming_args_rtx);
+      if (cum->stack_words > 0)
+	t = build (PLUS_EXPR, TREE_TYPE (ovfl), t,
+		   build_int_cst (NULL_TREE,
+				  cum->stack_words * UNITS_PER_WORD));
+      t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code to initialize OVFL, which points to the next varargs
-	     stack argument.  CUM->STACK_WORDS gives the number of stack
-	     words used by named arguments.  */
-	  t = make_tree (TREE_TYPE (ovfl), virtual_incoming_args_rtx);
-	  if (cum->stack_words > 0)
-	    t = build (PLUS_EXPR, TREE_TYPE (ovfl), t,
-		       build_int_cst (NULL_TREE,
-				      cum->stack_words * UNITS_PER_WORD));
-	  t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
- 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      /* Emit code to initialize GTOP, the top of the GPR save area.  */
+      t = make_tree (TREE_TYPE (gtop), virtual_incoming_args_rtx);
+      t = build (MODIFY_EXPR, TREE_TYPE (gtop), gtop, t);
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code to initialize GTOP, the top of the GPR save area.  */
-	  t = make_tree (TREE_TYPE (gtop), virtual_incoming_args_rtx);
-	  t = build (MODIFY_EXPR, TREE_TYPE (gtop), gtop, t);
- 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      /* Emit code to initialize FTOP, the top of the FPR save area.
+	 This address is gpr_save_area_bytes below GTOP, rounded
+	 down to the next fp-aligned boundary.  */
+      t = make_tree (TREE_TYPE (ftop), virtual_incoming_args_rtx);
+      fpr_offset = gpr_save_area_size + UNITS_PER_FPVALUE - 1;
+      fpr_offset &= ~(UNITS_PER_FPVALUE - 1);
+      if (fpr_offset)
+	t = build (PLUS_EXPR, TREE_TYPE (ftop), t,
+		   build_int_cst (NULL_TREE, -fpr_offset));
+      t = build (MODIFY_EXPR, TREE_TYPE (ftop), ftop, t);
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code to initialize FTOP, the top of the FPR save area.
-	     This address is gpr_save_area_bytes below GTOP, rounded
-	     down to the next fp-aligned boundary.  */
-	  t = make_tree (TREE_TYPE (ftop), virtual_incoming_args_rtx);
-	  fpr_offset = gpr_save_area_size + UNITS_PER_FPVALUE - 1;
-	  fpr_offset &= ~(UNITS_PER_FPVALUE - 1);
-	  if (fpr_offset)
-	    t = build (PLUS_EXPR, TREE_TYPE (ftop), t,
-		       build_int_cst (NULL_TREE, -fpr_offset));
-	  t = build (MODIFY_EXPR, TREE_TYPE (ftop), ftop, t);
-	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      /* Emit code to initialize GOFF, the offset from GTOP of the
+	 next GPR argument.  */
+      t = build (MODIFY_EXPR, TREE_TYPE (goff), goff,
+		 build_int_cst (NULL_TREE, gpr_save_area_size));
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code to initialize GOFF, the offset from GTOP of the
-	     next GPR argument.  */
-	  t = build (MODIFY_EXPR, TREE_TYPE (goff), goff,
-		     build_int_cst (NULL_TREE, gpr_save_area_size));
-	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-	  /* Likewise emit code to initialize FOFF, the offset from FTOP
-	     of the next FPR argument.  */
-	  fpr_save_area_size
-	    = (MAX_ARGS_IN_REGISTERS - cum->num_fprs) * UNITS_PER_FPREG;
-	  t = build (MODIFY_EXPR, TREE_TYPE (foff), foff,
-		     build_int_cst (NULL_TREE, fpr_save_area_size));
-	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	}
-      else
-	{
-	  /* Everything is in the GPR save area, or in the overflow
-	     area which is contiguous with it.  */
-	  nextarg = plus_constant (nextarg, -gpr_save_area_size);
-	  std_expand_builtin_va_start (valist, nextarg);
-	}
+      /* Likewise emit code to initialize FOFF, the offset from FTOP
+	 of the next FPR argument.  */
+      t = build (MODIFY_EXPR, TREE_TYPE (foff), foff,
+		 build_int_cst (NULL_TREE, fpr_save_area_size));
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
   else
-    std_expand_builtin_va_start (valist, nextarg);
+    {
+      nextarg = plus_constant (nextarg, -cfun->machine->varargs_size);
+      std_expand_builtin_va_start (valist, nextarg);
+    }
 }
 
 /* Implement va_arg.  */
@@ -6140,10 +6114,9 @@ compute_frame_size (HOST_WIDE_INT size)
   gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
   total_size += gp_reg_rounded + MIPS_STACK_ALIGN (fp_reg_size);
 
-  /* Add in space reserved on the stack by the callee for storing arguments
-     passed in registers.  */
-  if (!TARGET_OLDABI)
-    total_size += MIPS_STACK_ALIGN (current_function_pretend_args_size);
+  /* Add in the space required for saving incoming register arguments.  */
+  total_size += current_function_pretend_args_size;
+  total_size += MIPS_STACK_ALIGN (cfun->machine->varargs_size);
 
   /* Save other computed information.  */
   cfun->machine->frame.total_size = total_size;
@@ -6212,9 +6185,8 @@ mips_initial_elimination_offset (int from, int to)
       break;
 
     case ARG_POINTER_REGNUM:
-      offset = cfun->machine->frame.total_size;
-      if (TARGET_NEWABI)
-	offset -= current_function_pretend_args_size;
+      offset = (cfun->machine->frame.total_size
+		- current_function_pretend_args_size);
       break;
 
     default:
