@@ -1,3 +1,8 @@
+2005-06-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in (fortran.install-man): Doesn't depend on installdirs.
+	(rule for installing f95.1 manpage): Does depend on installdirs.
+
 2005-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/22038

@@ -453,7 +453,7 @@ java.install-man: installdirs \
 	  chmod a-x $$man_name ; \
 	done
 
-$(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext): doc/gcj.1
+$(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext): doc/gcj.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@

@@ -3539,7 +3539,7 @@ $(DESTDIR)$(infodir)/%.info: doc/%.info installdirs
 	else true; fi;
 
 # Install the man pages.
-install-man: installdirs lang.install-man \
+install-man: lang.install-man \
 	$(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext) \
 	$(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext) \
 	$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext) \
@@ -3547,22 +3547,22 @@ install-man: installdirs lang.install-man \
 	$(DESTDIR)$(man7dir)/gfdl$(man7ext) \
 	$(DESTDIR)$(man7dir)/gpl$(man7ext)
 
-$(DESTDIR)$(man7dir)/%$(man7ext): doc/%.7
+$(DESTDIR)$(man7dir)/%$(man7ext): doc/%.7 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext): doc/gcc.1
+$(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext): doc/gcc.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext): doc/cpp.1
+$(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext): doc/cpp.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext): doc/gcov.1
+$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext): doc/gcov.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
