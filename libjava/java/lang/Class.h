@@ -273,7 +273,7 @@ public:
   java::lang::reflect::Constructor *getConstructor (JArray<jclass> *);
   JArray<java::lang::reflect::Constructor *> *getConstructors (void);
   java::lang::reflect::Constructor *getDeclaredConstructor (JArray<jclass> *);
-  JArray<java::lang::reflect::Constructor *> *getDeclaredConstructors (void);
+  JArray<java::lang::reflect::Constructor *> *getDeclaredConstructors (jboolean);
   java::lang::reflect::Field *getDeclaredField (jstring);
   JArray<java::lang::reflect::Field *> *getDeclaredFields ();
   JArray<java::lang::reflect::Field *> *getDeclaredFields (jboolean);
@@ -281,12 +281,12 @@ public:
   JArray<java::lang::reflect::Method *> *getDeclaredMethods (void);
 
   JArray<jclass> *getDeclaredClasses (void);
+  JArray<jclass> *getDeclaredClasses (jboolean);
   jclass getDeclaringClass (void);
 
   java::lang::reflect::Field *getField (jstring);
 private:
   JArray<java::lang::reflect::Field *> internalGetFields ();
-  JArray<java::lang::reflect::Constructor *> *_getConstructors (jboolean);
   java::lang::reflect::Field *getField (jstring, jint);
   jint _getMethods (JArray<java::lang::reflect::Method *> *result,
 		    jint offset);

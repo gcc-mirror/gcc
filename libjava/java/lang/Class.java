@@ -1,5 +1,5 @@
 /* Class.java -- Representation of a Java class.
-   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005
    Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -46,6 +46,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -54,9 +55,11 @@ import java.util.HashSet;
  * objects with identical names and ClassLoaders. Primitive types, array
  * types, and void also have a Class object.
  *
- * <p>Arrays with identical type and number of dimensions share the same
- * class (and null "system" ClassLoader, incidentally).  The name of an
- * array class is <code>[&lt;signature format&gt;;</code> ... for example,
+ * <p>Arrays with identical type and number of dimensions share the same class.
+ * The array class ClassLoader is the same as the ClassLoader of the element
+ * type of the array (which can be null to indicate the bootstrap classloader).
+ * The name of an array class is <code>[&lt;signature format&gt;;</code>.
+ * <p> For example,
  * String[]'s class is <code>[Ljava.lang.String;</code>. boolean, byte,
  * short, char, int, long, float and double have the "type name" of
  * Z,B,S,C,I,J,F,D for the purposes of array classes.  If it's a
@@ -148,13 +151,31 @@ public final class Class implements Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public native Class[] getClasses ();
+  public Class[] getClasses()
+  {
+    memberAccessCheck(Member.PUBLIC);
+    return internalGetClasses();
+  }
+
+  /**
+   * Like <code>getClasses()</code> but without the security checks.
+   */
+  private Class[] internalGetClasses()
+  {
+    ArrayList list = new ArrayList();
+    list.addAll(Arrays.asList(getDeclaredClasses(true)));
+    Class superClass = getSuperclass();
+    if (superClass != null)
+      list.addAll(Arrays.asList(superClass.internalGetClasses()));
+    return (Class[])list.toArray(new Class[list.size()]);
+  }
   
   /**
-   * Get the ClassLoader that loaded this class.  If it was loaded by the
-   * system classloader, this method will return null. If there is a security
-   * manager, and the caller's class loader does not match the requested
-   * one, a security check of <code>RuntimePermission("getClassLoader")</code>
+   * Get the ClassLoader that loaded this class.  If the class was loaded
+   * by the bootstrap classloader, this method will return null.
+   * If there is a security manager, and the caller's class loader is not
+   * an ancestor of the requested one, a security check of
+   * <code>RuntimePermission("getClassLoader")</code>
    * must first succeed. Primitive types and void return null.
    *
    * @return the ClassLoader that loaded this class
@@ -193,10 +214,6 @@ public final class Class implements Serializable
   public native Constructor getConstructor(Class[] args)
     throws NoSuchMethodException;
 
-  // This is used to implement getConstructors and
-  // getDeclaredConstructors.
-  private native Constructor[] _getConstructors (boolean declared);
-
   /**
    * Get all the public constructors of this class. This returns an array of
    * length 0 if there are no constructors, including for primitive types,
@@ -211,7 +228,8 @@ public final class Class implements Serializable
    */
   public Constructor[] getConstructors()
   {
-    return _getConstructors(false);
+    memberAccessCheck(Member.PUBLIC);
+    return getDeclaredConstructors(true);
   }
 
   /**
@@ -243,7 +261,13 @@ public final class Class implements Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public native Class[] getDeclaredClasses();
+  public Class[] getDeclaredClasses()
+  {
+    memberAccessCheck(Member.DECLARED);
+    return getDeclaredClasses(false);
+  }
+
+  native Class[] getDeclaredClasses (boolean publicOnly);
 
   /**
    * Get all the declared constructors of this class. This returns an array of
@@ -259,8 +283,11 @@ public final class Class implements Serializable
    */
   public Constructor[] getDeclaredConstructors()
   {
-    return _getConstructors(true);
+    memberAccessCheck(Member.DECLARED);
+    return getDeclaredConstructors(false);
   }
+
+  native Constructor[] getDeclaredConstructors (boolean publicOnly);
 
   /**
    * Get a field declared in this class, where name is its simple name. The
@@ -303,8 +330,8 @@ public final class Class implements Serializable
   /**
    * Get a method declared in this class, where name is its simple name. The
    * implicit methods of Object are not available from arrays or interfaces.
-   * Constructors (named "<init>" in the class file) and class initializers
-   * (name "<clinit>") are not available.  The Virtual Machine allows
+   * Constructors (named "&lt;init&gt;" in the class file) and class initializers
+   * (name "&lt;clinit&gt;") are not available.  The Virtual Machine allows
    * multiple methods with the same signature but differing return types; in
    * such a case the most specific return types are favored, then the final
    * choice is arbitrary. If the method takes no argument, an array of zero
@@ -438,14 +465,7 @@ public final class Class implements Serializable
   {
     ClassLoader cl = getClassLoader();
     if (cl != null)
-      {
-        String name = getName();
-	String pkg = "";
-	int idx = name.lastIndexOf('.');
-	if (idx >= 0)
-	  pkg = name.substring(0, idx);
-	return cl.getPackage(pkg);
-      }
+      return cl.getPackage(getPackagePortion(getName()));
     return null;
   }
 
@@ -468,8 +488,8 @@ public final class Class implements Serializable
   /**
    * Get a public method declared or inherited in this class, where name is
    * its simple name. The implicit methods of Object are not available from
-   * interfaces.  Constructors (named "<init>" in the class file) and class
-   * initializers (name "<clinit>") are not available.  The Virtual
+   * interfaces.  Constructors (named "&lt;init&gt;" in the class file) and class
+   * initializers (name "&lt;clinit&gt;") are not available.  The Virtual
    * Machine allows multiple methods with the same signature but differing
    * return types, and the class can inherit multiple methods of the same
    * return type; in such a case the most specific return types are favored,
@@ -537,8 +557,16 @@ public final class Class implements Serializable
   
   /**
    * Get the name of this class, separated by dots for package separators.
-   * Primitive types and arrays are encoded as:
+   * If the class represents a primitive type, or void, then the
+   * name of the type as it appears in the Java programming language
+   * is returned.  For instance, <code>Byte.TYPE.getName()</code>
+   * returns "byte".
+   *
+   * Arrays are specially encoded as shown on this table.
    * <pre>
+   * array type          [<em>element type</em>
+   *                     (note that the element type is encoded per
+   *                      this table)
    * boolean             Z
    * byte                B
    * char                C
@@ -548,9 +576,9 @@ public final class Class implements Serializable
    * float               F
    * double              D
    * void                V
-   * array type          [<em>element type</em>
    * class or interface, alone: &lt;dotted name&gt;
    * class or interface, as element type: L&lt;dotted name&gt;;
+   * </pre>
    *
    * @return the name of this class
    */
@@ -562,9 +590,9 @@ public final class Class implements Serializable
    * the system classloader, ClassLoader.getSystemResource() is used instead.
    *
    * <p>If the name you supply is absolute (it starts with a <code>/</code>),
-   * then it is passed on to getResource() as is.  If it is relative, the
-   * package name is prepended, and <code>.</code>'s are replaced with
-   * <code>/</code>.
+   * then the leading <code>/</code> is removed and it is passed on to
+   * getResource(). If it is relative, the package name is prepended, and
+   * <code>.</code>'s are replaced with <code>/</code>.
    *
    * <p>The URL returned is system- and classloader-dependent, and could
    * change across implementations.
@@ -590,9 +618,9 @@ public final class Class implements Serializable
    * instead.
    *
    * <p>If the name you supply is absolute (it starts with a <code>/</code>),
-   * then it is passed on to getResource() as is.  If it is relative, the
-   * package name is prepended, and <code>.</code>'s are replaced with
-   * <code>/</code>.
+   * then the leading <code>/</code> is removed and it is passed on to
+   * getResource(). If it is relative, the package name is prepended, and
+   * <code>.</code>'s are replaced with <code>/</code>.
    *
    * <p>The URL returned is system- and classloader-dependent, and could
    * change across implementations.
@@ -613,17 +641,19 @@ public final class Class implements Serializable
 
   private String resourcePath(String resourceName)
   {
-    if (resourceName.startsWith("/"))
-      return resourceName.substring(1);
-
-    Class c = this;
-    while (c.isArray())
-      c = c.getComponentType();
-
-    String packageName = c.getName().replace('.', '/');
-    int end = packageName.lastIndexOf('/');
-    if (end != -1)
-      return packageName.substring(0, end + 1) + resourceName;
+    if (resourceName.length() > 0)
+      {
+	if (resourceName.charAt(0) != '/')
+	  {
+	    String pkg = getPackagePortion(getName());
+	    if (pkg.length() > 0)
+	      resourceName = pkg.replace('.','/') + '/' + resourceName;
+	  }
+	else
+	  {
+	    resourceName = resourceName.substring(1);
+	  }
+      }
     return resourceName;
   }
 
@@ -739,18 +769,6 @@ public final class Class implements Serializable
   // can't add fields to java.lang.Class that are accessible from Java.
   private native ProtectionDomain getProtectionDomain0();
 
-  /**
-   * Returns the protection domain of this class. If the classloader did not
-   * record the protection domain when creating this class the unknown
-   * protection domain is returned which has a <code>null</code> code source
-   * and all permissions.
-   *
-   * @return the protection domain
-   * @throws SecurityException if the security manager exists and the caller
-   * does not have <code>RuntimePermission("getProtectionDomain")</code>.
-   * @see RuntimePermission
-   * @since 1.2
-   */
   public ProtectionDomain getProtectionDomain()
   {
     SecurityManager sm = System.getSecurityManager();
