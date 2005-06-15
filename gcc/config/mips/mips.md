@@ -2319,7 +2319,8 @@ beq\t%2,%.,1b\;\
         (zero_extend:GPR (match_operand:SHORT 1 "nonimmediate_operand")))]
   ""
 {
-  if (TARGET_MIPS16 && !memory_operand (operands[1], <SHORT:MODE>mode))
+  if (TARGET_MIPS16 && !GENERATE_MIPS16E
+      && !memory_operand (operands[1], <SHORT:MODE>mode))
     {
       emit_insn (gen_and<GPR:mode>3 (operands[0],
 				     gen_lowpart (<GPR:MODE>mode, operands[1]),
@@ -2338,6 +2339,14 @@ beq\t%2,%.,1b\;\
    andi\t%0,%1,<SHORT:mask>
    l<SHORT:size>u\t%0,%1"
   [(set_attr "type" "arith,load")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*zero_extend<SHORT:mode><GPR:mode>2_mips16e"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+        (zero_extend:GPR (match_operand:SHORT 1 "register_operand" "0")))]
+  "GENERATE_MIPS16E"
+  "ze<SHORT:size>\t%0"
+  [(set_attr "type" "arith")
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*zero_extend<SHORT:mode><GPR:mode>2_mips16"
@@ -2418,11 +2427,21 @@ beq\t%2,%.,1b\;\
         (sign_extend:GPR (match_operand:SHORT 1 "nonimmediate_operand")))]
   "")
 
+(define_insn "*extend<SHORT:mode><GPR:mode>2_mips16e"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+        (sign_extend:GPR (match_operand:SHORT 1 "nonimmediate_operand" "0,m")))]
+  "GENERATE_MIPS16E"
+  "@
+   se<SHORT:size>\t%0
+   l<SHORT:size>\t%0,%1"
+  [(set_attr "type" "arith,load")
+   (set_attr "mode" "<GPR:MODE>")])
+
 (define_insn_and_split "*extend<SHORT:mode><GPR:mode>2"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
         (sign_extend:GPR
 	     (match_operand:SHORT 1 "nonimmediate_operand" "d,m")))]
-  "!ISA_HAS_SEB_SEH"
+  "!ISA_HAS_SEB_SEH && !GENERATE_MIPS16E"
   "@
    #
    l<SHORT:size>\t%0,%1"
