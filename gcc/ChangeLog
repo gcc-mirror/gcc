@@ -1,3 +1,46 @@
+2005-06-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-tree.h (default_function_array_conversion): Declare.
+	* c-typeck.c (default_function_array_conversion): Export.  Correct
+	comment.
+	(default_conversion): Do not call
+	default_function_array_conversion.  Do not allow FUNCTION_TYPE.
+	(build_function_call): Call default_function_array_conversion on
+	the function.
+	(convert_arguments): Do not call it on the function arguments.
+	(build_unary_op): Do not allow ARRAY_TYPE or FUNCTION_TYPE for
+	TRUTH_NOT_EXPR.  Call default_function_array_conversion for taking
+	address of ARRAY_REF.
+	(build_compound_expr): Do not call
+	default_function_array_conversion.
+	(build_c_cast): Do not call default_function_array_conversion.
+	(convert_for_assignment): Do not call default_conversion.
+	(digest_init): Call default_function_array_conversion to convert
+	string constants and compound literals to pointers, but not
+	otherwise.
+	(output_init_element): Likewise.
+	(build_asm_expr): Do not call default_function_array_conversion.
+	(c_process_expr_stmt): Likewise.
+	(c_objc_common_truthvalue_conversion): Likewise.  Do not allow
+	FUNCTION_TYPE.
+	* c-parser.c (c_parser_expression_conv): New.
+	(c_parser_asm_operands, c_parser_expr_list): Add convert_p
+	argument.  All callers changed.  Call
+	default_function_array_conversion if convert_p.
+	(c_parser_initializer, c_parser_initval): Call
+	default_function_array_conversion except for string constants and
+	compound literals.
+	(c_parser_initelt): Call default_function_array_conversion for
+	ObjC expression received.
+	(c_parser_statement_after_labels): Call c_parser_expression_conv
+	for return and expression statements.
+	(c_parser_paren_condition, c_parser_for_statement,
+	c_parser_conditional_expression): Call c_parser_expression_conv.
+	(c_parser_expr_no_commas, c_parser_conditional_expression,
+	c_parser_binary_expression, c_parser_cast_expression,
+	c_parser_unary_expression): Call
+	default_function_array_conversion.
+
 2005-06-15  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-vrp.c (vrp_int_const_binop): Do not handle MAX_EXPR

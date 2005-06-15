@@ -12,5 +12,5 @@ int bug_or(void) { return (f().c || 1); }  /* { dg-error "array that cannot be c
 int bug_and(void) { return (f().c && 1); }  /* { dg-error "array that cannot be converted" } */
 int bug_cond(void) { return (f().c ? 1 : 0); }  /* { dg-error "array that cannot be converted" } */
 int bug_cond2(void) { return (f().c ? : 0); }  /* { dg-error "array that cannot be converted" } */
-int bug_not(void) { return !f().c; }  /* { dg-error "array that cannot be converted" } */
+int bug_not(void) { return !f().c; }  /* { dg-error "wrong type argument to unary exclamation mark" } */
 int bug_bool(void) { return (_Bool) f().c; }  /* { dg-error "array that cannot be converted" } */

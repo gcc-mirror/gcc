@@ -523,6 +523,7 @@ extern bool c_mark_addressable (tree);
 extern void c_incomplete_type_error (tree, tree);
 extern tree c_type_promotes_to (tree);
 extern tree default_conversion (tree);
+extern tree default_function_array_conversion (tree);
 extern tree composite_type (tree, tree);
 extern tree build_component_ref (tree, tree);
 extern tree build_indirect_ref (tree, const char *);

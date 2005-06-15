@@ -1722,6 +1722,16 @@ my_build_string (int len, const char *str)
   return fix_string_type (build_string (len, str));
 }
 
+/* Build a string with contents STR and length LEN and convert it to a
+   pointer.  */
+
+static tree
+my_build_string_pointer (int len, const char *str)
+{
+  tree string = my_build_string (len, str);
+  tree ptrtype = build_pointer_type (TREE_TYPE (TREE_TYPE (string)));
+  return build1 (ADDR_EXPR, ptrtype, string);
+}
 
 static hashval_t
 string_hash (const void *ptr)
@@ -2699,8 +2709,9 @@ objc_get_class_reference (tree ident)
       add_class_reference (ident);
 
       params = build_tree_list (NULL_TREE,
-				my_build_string (IDENTIFIER_LENGTH (ident) + 1,
-						 IDENTIFIER_POINTER (ident)));
+				my_build_string_pointer
+				(IDENTIFIER_LENGTH (ident) + 1,
+				 IDENTIFIER_POINTER (ident)));
 
       assemble_external (objc_get_class_decl);
       return build_function_call (objc_get_class_decl, params);
@@ -8641,8 +8652,9 @@ get_super_receiver (void)
 		  (super_class,
 		   build_tree_list
 		   (NULL_TREE,
-		    my_build_string (IDENTIFIER_LENGTH (super_name) + 1,
-				     IDENTIFIER_POINTER (super_name))));
+		    my_build_string_pointer
+		    (IDENTIFIER_LENGTH (super_name) + 1,
+		     IDENTIFIER_POINTER (super_name))));
 	    }
 
 	  super_expr
