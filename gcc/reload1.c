@@ -120,7 +120,8 @@ static unsigned int *reg_max_ref_width;
 
 /* Element N is the list of insns that initialized reg N from its equivalent
    constant or memory slot.  */
-static rtx *reg_equiv_init;
+rtx *reg_equiv_init;
+int reg_equiv_init_size;
 
 /* Vector to remember old contents of reg_renumber before spilling.  */
 static short *reg_old_renumber;
@@ -693,7 +694,6 @@ reload (rtx first, int global)
 
   reg_equiv_constant = xcalloc (max_regno, sizeof (rtx));
   reg_equiv_mem = xcalloc (max_regno, sizeof (rtx));
-  reg_equiv_init = xcalloc (max_regno, sizeof (rtx));
   reg_equiv_address = xcalloc (max_regno, sizeof (rtx));
   reg_max_ref_width = xcalloc (max_regno, sizeof (int));
   reg_old_renumber = xcalloc (max_regno, sizeof (short));
@@ -719,100 +719,87 @@ reload (rtx first, int global)
 	  && GET_MODE (insn) != VOIDmode)
 	PUT_MODE (insn, VOIDmode);
 
+      if (INSN_P (insn))
+	scan_paradoxical_subregs (PATTERN (insn));
+
       if (set != 0 && REG_P (SET_DEST (set)))
 	{
 	  rtx note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
-	  if (note
-	      && (! function_invariant_p (XEXP (note, 0))
-		  || ! flag_pic
-		  /* A function invariant is often CONSTANT_P but may
-		     include a register.  We promise to only pass
-		     CONSTANT_P objects to LEGITIMATE_PIC_OPERAND_P.  */
-		  || (CONSTANT_P (XEXP (note, 0))
-		      && LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0)))))
+	  rtx x;
+
+	  if (! note)
+	    continue;
+
+	  i = REGNO (SET_DEST (set));
+	  x = XEXP (note, 0);
+
+	  if (i <= LAST_VIRTUAL_REGISTER)
+	    continue;
+
+	  if (! function_invariant_p (x)
+	      || ! flag_pic
+	      /* A function invariant is often CONSTANT_P but may
+		 include a register.  We promise to only pass
+		 CONSTANT_P objects to LEGITIMATE_PIC_OPERAND_P.  */
+	      || (CONSTANT_P (x)
+		  && LEGITIMATE_PIC_OPERAND_P (x)))
 	    {
-	      rtx x = XEXP (note, 0);
-	      i = REGNO (SET_DEST (set));
-	      if (i > LAST_VIRTUAL_REGISTER)
+	      /* It can happen that a REG_EQUIV note contains a MEM
+		 that is not a legitimate memory operand.  As later
+		 stages of reload assume that all addresses found
+		 in the reg_equiv_* arrays were originally legitimate,
+		 we ignore such REG_EQUIV notes.  */
+	      if (memory_operand (x, VOIDmode))
 		{
-		  /* It can happen that a REG_EQUIV note contains a MEM
-		     that is not a legitimate memory operand.  As later
-		     stages of reload assume that all addresses found
-		     in the reg_equiv_* arrays were originally legitimate,
-
-		     It can also happen that a REG_EQUIV note contains a
-		     readonly memory location.  If the destination pseudo
-		     is set from some other value (typically a different
-		     pseudo), and the destination pseudo does not get a
-		     hard reg, then reload will replace the destination
-		     pseudo with its equivalent memory location.  This
-		     is horribly bad as it creates a store to a readonly
-		     memory location and a runtime segfault.  To avoid
-		     this problem we reject readonly memory locations
-		     for equivalences.  This is overly conservative as
-		     we could find all sets of the destination pseudo
-		     and remove them as they should be redundant.  */
-		  if (memory_operand (x, VOIDmode) && ! MEM_READONLY_P (x))
+		  /* Always unshare the equivalence, so we can
+		     substitute into this insn without touching the
+		       equivalence.  */
+		  reg_equiv_memory_loc[i] = copy_rtx (x);
+		}
+	      else if (function_invariant_p (x))
+		{
+		  if (GET_CODE (x) == PLUS)
 		    {
-		      /* Always unshare the equivalence, so we can
-			 substitute into this insn without touching the
-			 equivalence.  */
-		      reg_equiv_memory_loc[i] = copy_rtx (x);
+		      /* This is PLUS of frame pointer and a constant,
+			 and might be shared.  Unshare it.  */
+		      reg_equiv_constant[i] = copy_rtx (x);
+		      num_eliminable_invariants++;
 		    }
-		  else if (function_invariant_p (x))
+		  else if (x == frame_pointer_rtx
+			   || x == arg_pointer_rtx)
 		    {
-		      if (GET_CODE (x) == PLUS)
-			{
-			  /* This is PLUS of frame pointer and a constant,
-			     and might be shared.  Unshare it.  */
-			  reg_equiv_constant[i] = copy_rtx (x);
-			  num_eliminable_invariants++;
-			}
-		      else if (x == frame_pointer_rtx
-			       || x == arg_pointer_rtx)
-			{
-			  reg_equiv_constant[i] = x;
-			  num_eliminable_invariants++;
-			}
-		      else if (LEGITIMATE_CONSTANT_P (x))
-			reg_equiv_constant[i] = x;
-		      else
-			{
-			  reg_equiv_memory_loc[i]
-			    = force_const_mem (GET_MODE (SET_DEST (set)), x);
-			  if (!reg_equiv_memory_loc[i])
-			    continue;
-			}
+		      reg_equiv_constant[i] = x;
+		      num_eliminable_invariants++;
 		    }
+		  else if (LEGITIMATE_CONSTANT_P (x))
+		    reg_equiv_constant[i] = x;
 		  else
-		    continue;
-
-		  /* If this register is being made equivalent to a MEM
-		     and the MEM is not SET_SRC, the equivalencing insn
-		     is one with the MEM as a SET_DEST and it occurs later.
-		     So don't mark this insn now.  */
-		  if (!MEM_P (x)
-		      || rtx_equal_p (SET_SRC (set), x))
-		    reg_equiv_init[i]
-		      = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[i]);
+		    {
+		      reg_equiv_memory_loc[i]
+			= force_const_mem (GET_MODE (SET_DEST (set)), x);
+		      if (! reg_equiv_memory_loc[i])
+			reg_equiv_init[i] = NULL_RTX;
+		    }
+		}
+	      else
+		{
+		  reg_equiv_init[i] = NULL_RTX;
+		  continue;
 		}
 	    }
+	  else
+	    reg_equiv_init[i] = NULL_RTX;
 	}
-
-      /* If this insn is setting a MEM from a register equivalent to it,
-	 this is the equivalencing insn.  */
-      else if (set && MEM_P (SET_DEST (set))
-	       && REG_P (SET_SRC (set))
-	       && reg_equiv_memory_loc[REGNO (SET_SRC (set))]
-	       && rtx_equal_p (SET_DEST (set),
-			       reg_equiv_memory_loc[REGNO (SET_SRC (set))]))
-	reg_equiv_init[REGNO (SET_SRC (set))]
-	  = gen_rtx_INSN_LIST (VOIDmode, insn,
-			       reg_equiv_init[REGNO (SET_SRC (set))]);
-
-      if (INSN_P (insn))
-	scan_paradoxical_subregs (PATTERN (insn));
     }
+
+  if (dump_file)
+    for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+      if (reg_equiv_init[i])
+	{
+	  fprintf (dump_file, "init_insns for %u: ", i);
+	  print_inline_rtx (dump_file, reg_equiv_init[i], 20);
+	  fprintf (dump_file, "\n");
+	}
 
   init_elim_table ();
 
@@ -1260,7 +1247,7 @@ reload (rtx first, int global)
     free (offsets_at);
 
   free (reg_equiv_mem);
-  free (reg_equiv_init);
+  reg_equiv_init = 0;
   free (reg_equiv_address);
   free (reg_max_ref_width);
   free (reg_old_renumber);

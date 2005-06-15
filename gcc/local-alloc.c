@@ -76,6 +76,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "except.h"
 #include "integrate.h"
+#include "reload.h"
+#include "ggc.h"
 
 /* Next quantity number available for allocation.  */
 
@@ -260,6 +262,10 @@ struct equivalence
   /* The list of each instruction which initializes this register.  */
 
   rtx init_insns;
+
+  /* Nonzero if this had a preexisting REG_EQUIV note.  */
+
+  int is_arg_equivalence;
 };
 
 /* reg_equiv[N] (where N is a pseudo reg number) is the equivalence
@@ -344,8 +350,7 @@ local_alloc (void)
 
   /* Promote REG_EQUAL notes to REG_EQUIV notes and adjust status of affected
      registers.  */
-  if (optimize)
-    update_equiv_regs ();
+  update_equiv_regs ();
 
   /* This sets the maximum number of quantities we can have.  Quantity
      numbers start at zero and we can have one for each pseudo.  */
@@ -761,7 +766,9 @@ memref_used_between_p (rtx memref, rtx start, rtx end)
 
    If such a register is only referenced once, try substituting its value
    into the using insn.  If it succeeds, we can eliminate the register
-   completely.  */
+   completely.
+
+   Initialize the REG_EQUIV_INIT array of initializing insns.  */
 
 static void
 update_equiv_regs (void)
@@ -774,6 +781,8 @@ update_equiv_regs (void)
 
   reg_equiv = xcalloc (max_regno, sizeof *reg_equiv);
   INIT_REG_SET (&cleared_regs);
+  reg_equiv_init = ggc_alloc_cleared (max_regno * sizeof (rtx));
+  reg_equiv_init_size = max_regno;
 
   init_alias_analysis ();
 
@@ -824,43 +833,29 @@ update_equiv_regs (void)
 	  dest = SET_DEST (set);
 	  src = SET_SRC (set);
 
-	  /* If this sets a MEM to the contents of a REG that is only used
-	     in a single basic block, see if the register is always equivalent
-	     to that memory location and if moving the store from INSN to the
-	     insn that set REG is safe.  If so, put a REG_EQUIV note on the
-	     initializing insn.
-
-	     Don't add a REG_EQUIV note if the insn already has one.  The existing
-	     REG_EQUIV is likely more useful than the one we are adding.
-
-	     If one of the regs in the address has reg_equiv[REGNO].replace set,
-	     then we can't add this REG_EQUIV note.  The reg_equiv[REGNO].replace
-	     optimization may move the set of this register immediately before
-	     insn, which puts it after reg_equiv[REGNO].init_insns, and hence
-	     the mention in the REG_EQUIV note would be to an uninitialized
-	     pseudo.  */
-	  /* ????? This test isn't good enough; we might see a MEM with a use of
-	     a pseudo register before we see its setting insn that will cause
-	     reg_equiv[].replace for that pseudo to be set.
-	     Equivalences to MEMs should be made in another pass, after the
-	     reg_equiv[].replace information has been gathered.  */
-
-	  if (MEM_P (dest) && REG_P (src)
-	      && (regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
-	      && REG_BASIC_BLOCK (regno) >= 0
-	      && REG_N_SETS (regno) == 1
-	      && reg_equiv[regno].init_insns != 0
-	      && reg_equiv[regno].init_insns != const0_rtx
-	      && ! find_reg_note (XEXP (reg_equiv[regno].init_insns, 0),
-				  REG_EQUIV, NULL_RTX)
-	      && ! contains_replace_regs (XEXP (dest, 0)))
+	  /* See if this is setting up the equivalence between an argument
+	     register and its stack slot.  */
+	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
+	  if (note)
 	    {
-	      rtx init_insn = XEXP (reg_equiv[regno].init_insns, 0);
-	      if (validate_equiv_mem (init_insn, src, dest)
-		  && ! memref_used_between_p (dest, init_insn, insn))
-		REG_NOTES (init_insn)
-		  = gen_rtx_EXPR_LIST (REG_EQUIV, dest, REG_NOTES (init_insn));
+	      gcc_assert (REG_P (dest));
+	      regno = REGNO (dest);
+
+	      /* Note that we don't want to clear reg_equiv_init even if there
+		 are multiple sets of this register.  */
+	      reg_equiv[regno].is_arg_equivalence = 1;
+
+	      /* Record for reload that this is an equivalencing insn.  */
+	      if (rtx_equal_p (src, XEXP (note, 0)))
+		reg_equiv_init[regno]
+		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[regno]);
+
+	      /* Continue normally in case this is a candidate for
+		 replacements.  */
 	    }
+
+	  if (!optimize)
+	    continue;
 
 	  /* We only handle the case of a pseudo register being set
 	     once, or always to the same value.  */
@@ -878,7 +873,7 @@ update_equiv_regs (void)
 	      || (regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER
 	      || reg_equiv[regno].init_insns == const0_rtx
 	      || (CLASS_LIKELY_SPILLED_P (reg_preferred_class (regno))
-		  && MEM_P (src)))
+		  && MEM_P (src) && ! reg_equiv[regno].is_arg_equivalence))
 	    {
 	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
 		 also set somewhere else to a constant.  */
@@ -944,20 +939,27 @@ update_equiv_regs (void)
 	  if (note)
 	    {
 	      int regno = REGNO (dest);
+	      rtx x = XEXP (note, 0);
+
+	      /* If we haven't done so, record for reload that this is an
+		 equivalencing insn.  */
+	      if (!reg_equiv[regno].is_arg_equivalence
+		  && (!MEM_P (x) || rtx_equal_p (src, x)))
+		reg_equiv_init[regno]
+		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[regno]);
 
 	      /* Record whether or not we created a REG_EQUIV note for a LABEL_REF.
 		 We might end up substituting the LABEL_REF for uses of the
 		 pseudo here or later.  That kind of transformation may turn an
 		 indirect jump into a direct jump, in which case we must rerun the
 		 jump optimizer to ensure that the JUMP_LABEL fields are valid.  */
-	      if (GET_CODE (XEXP (note, 0)) == LABEL_REF
-		  || (GET_CODE (XEXP (note, 0)) == CONST
-		      && GET_CODE (XEXP (XEXP (note, 0), 0)) == PLUS
-		      && (GET_CODE (XEXP (XEXP (XEXP (note, 0), 0), 0))
-			  == LABEL_REF)))
+	      if (GET_CODE (x) == LABEL_REF
+		  || (GET_CODE (x) == CONST
+		      && GET_CODE (XEXP (x, 0)) == PLUS
+		      && (GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF)))
 		recorded_label_ref = 1;
 
-	      reg_equiv[regno].replacement = XEXP (note, 0);
+	      reg_equiv[regno].replacement = x;
 	      reg_equiv[regno].src_p = &SET_SRC (set);
 	      reg_equiv[regno].loop_depth = loop_depth;
 
@@ -968,7 +970,6 @@ update_equiv_regs (void)
 		     in local-alloc!  */
 		  REG_LIVE_LENGTH (regno) *= 2;
 
-
 		  /* If the register is referenced exactly twice, meaning it is
 		     set once and used once, indicate that the reference may be
 		     replaced by the equivalence we computed above.  Do this
@@ -978,13 +979,75 @@ update_equiv_regs (void)
 		     and to reduce the number of registers alive across
 		     calls.  */
 
-		    if (REG_N_REFS (regno) == 2
-			&& (rtx_equal_p (XEXP (note, 0), src)
-			    || ! equiv_init_varies_p (src))
-			&& NONJUMP_INSN_P (insn)
-			&& equiv_init_movable_p (PATTERN (insn), regno))
-		      reg_equiv[regno].replace = 1;
+		  if (REG_N_REFS (regno) == 2
+		      && (rtx_equal_p (x, src)
+			  || ! equiv_init_varies_p (src))
+		      && NONJUMP_INSN_P (insn)
+		      && equiv_init_movable_p (PATTERN (insn), regno))
+		    reg_equiv[regno].replace = 1;
 		}
+	    }
+	}
+    }
+
+  if (!optimize)
+    goto out;
+
+  /* A second pass, to gather additional equivalences with memory.  This needs
+     to be done after we know which registers we are going to replace.  */
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      rtx set, src, dest;
+      unsigned regno;
+
+      if (! INSN_P (insn))
+	continue;
+
+      set = single_set (insn);
+      if (! set)
+	continue;
+
+      dest = SET_DEST (set);
+      src = SET_SRC (set);
+
+      /* If this sets a MEM to the contents of a REG that is only used
+	 in a single basic block, see if the register is always equivalent
+	 to that memory location and if moving the store from INSN to the
+	 insn that set REG is safe.  If so, put a REG_EQUIV note on the
+	 initializing insn.
+
+	 Don't add a REG_EQUIV note if the insn already has one.  The existing
+	 REG_EQUIV is likely more useful than the one we are adding.
+
+	 If one of the regs in the address has reg_equiv[REGNO].replace set,
+	 then we can't add this REG_EQUIV note.  The reg_equiv[REGNO].replace
+	 optimization may move the set of this register immediately before
+	 insn, which puts it after reg_equiv[REGNO].init_insns, and hence
+	 the mention in the REG_EQUIV note would be to an uninitialized
+	 pseudo.  */
+
+      if (MEM_P (dest) && REG_P (src)
+	  && (regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
+	  && REG_BASIC_BLOCK (regno) >= 0
+	  && REG_N_SETS (regno) == 1
+	  && reg_equiv[regno].init_insns != 0
+	  && reg_equiv[regno].init_insns != const0_rtx
+	  && ! find_reg_note (XEXP (reg_equiv[regno].init_insns, 0),
+			      REG_EQUIV, NULL_RTX)
+	  && ! contains_replace_regs (XEXP (dest, 0)))
+	{
+	  rtx init_insn = XEXP (reg_equiv[regno].init_insns, 0);
+	  if (validate_equiv_mem (init_insn, src, dest)
+	      && ! memref_used_between_p (dest, init_insn, insn))
+	    {
+	      REG_NOTES (init_insn)
+		= gen_rtx_EXPR_LIST (REG_EQUIV, dest,
+				     REG_NOTES (init_insn));
+	      /* This insn makes the equivalence, not the one initializing
+		 the register.  */
+	      reg_equiv_init[regno]
+		= gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
 	    }
 	}
     }
@@ -1082,6 +1145,7 @@ update_equiv_regs (void)
 			 info.  */
 		      SET_REGNO_REG_SET (&cleared_regs, regno);
 		      clear_regnos++;
+		      reg_equiv_init[regno] = NULL_RTX;
 		    }
 		  /* Move the initialization of the register to just before
 		     INSN.  Update the flow information.  */
@@ -1113,6 +1177,7 @@ update_equiv_regs (void)
 			 info.  */
 		      SET_REGNO_REG_SET (&cleared_regs, regno);
 		      clear_regnos++;
+		      reg_equiv_init[regno] = NULL_RTX;
 		    }
 		}
 	    }
@@ -1146,6 +1211,7 @@ update_equiv_regs (void)
 	}
     }
 
+  out:
   /* Clean up.  */
   end_alias_analysis ();
   CLEAR_REG_SET (&cleared_regs);
@@ -1171,13 +1237,18 @@ no_equiv (rtx reg, rtx store ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
   list = reg_equiv[regno].init_insns;
   if (list == const0_rtx)
     return;
+  reg_equiv[regno].init_insns = const0_rtx;
+  reg_equiv[regno].replacement = NULL_RTX;
+  /* This doesn't matter for equivalences made for argument registers, we
+     should keep their initialization insns.  */
+  if (reg_equiv[regno].is_arg_equivalence)
+    return;
+  reg_equiv_init[regno] = NULL_RTX;
   for (; list; list =  XEXP (list, 1))
     {
       rtx insn = XEXP (list, 0);
       remove_note (insn, find_reg_note (insn, REG_EQUIV, NULL_RTX));
     }
-  reg_equiv[regno].init_insns = const0_rtx;
-  reg_equiv[regno].replacement = NULL_RTX;
 }
 
 /* Allocate hard regs to the pseudo regs used only within block number B.

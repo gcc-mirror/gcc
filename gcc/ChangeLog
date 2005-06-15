@@ -1,3 +1,26 @@
+2005-06-15  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* Makefile.in (local-alloc.o): Depend on $(GGC_H) and reload.h.
+	* local-alloc.c: Include "ggc.h" and "reload.h".
+	(struct equivalence): New member is_arg_equivalence.
+	(local_alloc): Always call update_equiv_regs.
+	(update_equiv_regs): Allocate reg_equiv_init; set reg_equiv_init_size.
+	Detect equivalences made by stores to memory in a second pass.
+	Return early if not optimizing.
+	Initialize reg_equiv_init for all equivalences; treat equivalences for
+	REG_EQUIV notes existing before this pass specially.
+	(no_equiv): Don't clear reg_equiv_init or remove notes if the
+	is_arg_equivalence field is set.
+	* reload.h (reg_equiv_init, reg_equiv_init_size): Declare.
+	* reload1.c (reg_equiv_init): No longer static.
+	(reg_equiv_init_size): New variable.
+	(reload): Don't allocate reg_equiv_init; don't free it when done but
+	clear it.
+	Restructure equivalence set up code not to set reg_equiv_init, but to
+	clear it when we can't use an equivalence.
+	Undo change disabling equivalences for MEM_READONLY_P memrefs.
+	Dump equivalencing insns to dump_file.
+
 2005-06-14  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (machine_function): Add varargs_size field.

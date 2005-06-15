@@ -2241,8 +2241,8 @@ regclass.o : regclass.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TM_P_H) $(EXPR_H) $(TIMEVAR_H) gt-regclass.h $(HASHTAB_H)
 local-alloc.o : local-alloc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(FLAGS_H) $(REGS_H) hard-reg-set.h insn-config.h $(RECOG_H) \
-   output.h function.h $(INSN_ATTR_H) toplev.h  except.h $(TM_P_H) \
-   $(INTEGRATE_H)
+   output.h function.h $(INSN_ATTR_H) toplev.h  except.h reload.h $(TM_P_H) \
+   $(GGC_H) $(INTEGRATE_H)
 bitmap.o : bitmap.c $(CONFIG_H) $(SYSTEM_H)  coretypes.h $(TM_H) $(RTL_H) \
    $(FLAGS_H) $(GGC_H) gt-bitmap.h bitmap.h $(OBSTACK_H)
 global.o : global.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \

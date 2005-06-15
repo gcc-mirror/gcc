@@ -170,6 +170,13 @@ extern rtx *reg_equiv_memory_loc;
 extern rtx *reg_equiv_address;
 extern rtx *reg_equiv_mem;
 
+/* Element N is the list of insns that initialized reg N from its equivalent
+   constant or memory slot.  */
+extern GTY((length("reg_equiv_init_size"))) rtx *reg_equiv_init;
+
+/* The size of the previous array, for GC purposes.  */
+extern GTY(()) int reg_equiv_init_size;
+
 /* All the "earlyclobber" operands of the current insn
    are recorded here.  */
 extern int n_earlyclobbers;
