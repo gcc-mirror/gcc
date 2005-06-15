@@ -969,6 +969,50 @@ extract_range_from_ssa_name (value_range_t *vr, tree var)
 }
 
 
+/* Wrapper around int_const_binop.  If the operation overflows and we
+   are not using wrapping arithmetic, then adjust the result to be
+   -INF or +INF depending on CODE, VAL1 and VAL2.  */
+
+static inline tree
+vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
+{
+  tree res;
+
+  if (flag_wrapv)
+    return int_const_binop (code, val1, val2, 0);
+
+  /* If we are not using wrapping arithmetic, operate symbolically
+     on -INF and +INF.  */
+  res = int_const_binop (code, val1, val2, 0);
+
+  /* If the operation overflowed but neither VAL1 nor VAL2 are
+     overflown, return -INF or +INF depending on whether VAL1 CODE
+     VAL2 is a growing function or not.  */
+  if (TREE_OVERFLOW (res)
+      && !TREE_OVERFLOW (val1)
+      && !TREE_OVERFLOW (val2))
+    {
+      bool grows = false;
+      int sgn1 = tree_int_cst_sgn (val1);
+      int sgn2 = tree_int_cst_sgn (val2);
+
+      /* Notice that we only need to handle the restricted set of
+	 operations handled by extract_range_from_binary_expr.  */
+      if (((code == PLUS_EXPR || code == MAX_EXPR) && sgn2 >= 0)
+	  || (code == MULT_EXPR && sgn1 == sgn2)
+	  || (code == MINUS_EXPR && sgn2 < 0))
+	grows = true;
+
+      if (grows)
+	return TYPE_MAX_VALUE (TREE_TYPE (res));
+      else
+	return TYPE_MIN_VALUE (TREE_TYPE (res));
+    }
+
+  return res;
+}
+
+
 /* Extract range information from a binary expression EXPR based on
    the ranges of each of its operands and the expression code.  */
 
@@ -1076,96 +1120,85 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       max = fold_binary (code, TREE_TYPE (expr), vr0.max, vr1.max);
     }
   else if (code == PLUS_EXPR
-	   || code == MULT_EXPR
 	   || code == MIN_EXPR
 	   || code == MAX_EXPR)
     {
       /* For operations that make the resulting range directly
 	 proportional to the original ranges, apply the operation to
 	 the same end of each range.  */
-      min = int_const_binop (code, vr0.min, vr1.min, 0);
-      max = int_const_binop (code, vr0.max, vr1.max, 0);
+      min = vrp_int_const_binop (code, vr0.min, vr1.min);
+      max = vrp_int_const_binop (code, vr0.max, vr1.max);
     }
-  else if (code == TRUNC_DIV_EXPR
+  else if (code == MULT_EXPR
+	   || code == TRUNC_DIV_EXPR
 	   || code == FLOOR_DIV_EXPR
 	   || code == CEIL_DIV_EXPR
 	   || code == EXACT_DIV_EXPR
 	   || code == ROUND_DIV_EXPR)
     {
-      tree zero;
+      tree val[4];
+      size_t i;
 
-      /* Divisions are a bit tricky to handle, depending on the mix of
-	 signs we have in the two range, we will need to divide
-	 different values to get the minimum and maximum values for
-	 the new range.  If VR1 includes zero, the result is VARYING.  */
-      if (range_includes_zero_p (&vr1))
+      /* Multiplications and divisions are a bit tricky to handle,
+	 depending on the mix of signs we have in the two ranges, we
+	 need to operate on different values to get the minimum and
+	 maximum values for the new range.  One approach is to figure
+	 out all the variations of range combinations and do the
+	 operations.
+
+	 However, this involves several calls to compare_values and it
+	 is pretty convoluted.  It's simpler to do the 4 operations
+	 (MIN0 OP MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP
+	 MAX1) and then figure the smallest and largest values to form
+	 the new range.  */
+
+      /* Divisions by zero result in a VARYING value.  */
+      if (code != MULT_EXPR && range_includes_zero_p (&vr1))
 	{
 	  set_value_range_to_varying (vr);
 	  return;
 	}
 
-      /* We have three main variations to handle for VR0: all negative
-	 values, all positive values and a mix of negative and
-	 positive.  For each of these, we need to consider if VR1 is
-	 all negative or all positive.  In total, there are 6
-	 combinations to handle.  */
-      zero = build_int_cst (TREE_TYPE (expr), 0);
-      if (compare_values (vr0.max, zero) == -1)
+      /* Compute the 4 cross operations.  */
+      val[0] = vrp_int_const_binop (code, vr0.min, vr1.min);
+
+      val[1] = (vr1.max != vr1.min)
+	       ? vrp_int_const_binop (code, vr0.min, vr1.max)
+	       : NULL_TREE;
+
+      val[2] = (vr0.max != vr0.min)
+	       ? vrp_int_const_binop (code, vr0.max, vr1.min)
+	       : NULL_TREE;
+
+      val[3] = (vr0.min != vr1.min && vr0.max != vr1.max)
+	       ? vrp_int_const_binop (code, vr0.max, vr1.max)
+	       : NULL_TREE;
+
+      /* Set MIN to the minimum of VAL[i] and MAX to the maximum
+	 of VAL[i].  */
+      min = val[0];
+      max = val[0];
+      for (i = 1; i < 4; i++)
 	{
-	  /* VR0 is all negative.  */
-	  if (compare_values (vr1.min, zero) == 1)
+	  if (TREE_OVERFLOW (min) || TREE_OVERFLOW (max))
+	    break;
+
+	  if (val[i])
 	    {
-	      /* If VR1 is all positive, the new range is obtained
-		 with [VR0.MIN / VR1.MIN, VR0.MAX / VR1.MAX].  */
-	      min = int_const_binop (code, vr0.min, vr1.min, 0);
-	      max = int_const_binop (code, vr0.max, vr1.max, 0);
-	    }
-	  else
-	    {
-	      /* If VR1 is all negative, the new range is obtained
-		 with [VR0.MAX / VR1.MIN, VR0.MIN / VR1.MAX].  */
-	      gcc_assert (compare_values (vr1.max, zero) == -1);
-	      min = int_const_binop (code, vr0.max, vr1.min, 0);
-	      max = int_const_binop (code, vr0.min, vr1.max, 0);
-	    }
-	}
-      else if (range_includes_zero_p (&vr0))
-	{
-	  /* VR0 is a mix of negative and positive values.  */
-	  if (compare_values (vr1.min, zero) == 1)
-	    {
-	      /* If VR1 is all positive, the new range is obtained
-		 with [VR0.MIN / VR1.MIN, VR0.MAX / VR1.MIN].  */
-	      min = int_const_binop (code, vr0.min, vr1.min, 0);
-	      max = int_const_binop (code, vr0.max, vr1.min, 0);
-	    }
-	  else
-	    {
-	      /* If VR1 is all negative, the new range is obtained
-		 with [VR0.MAX / VR1.MAX, VR0.MIN / VR1.MAX].  */
-	      gcc_assert (compare_values (vr1.max, zero) == -1);
-	      min = int_const_binop (code, vr0.max, vr1.max, 0);
-	      max = int_const_binop (code, vr0.min, vr1.max, 0);
-	    }
-	}
-      else
-	{
-	  /* VR0 is all positive.  */
-	  gcc_assert (compare_values (vr0.min, zero) == 1);
-	  if (compare_values (vr1.min, zero) == 1)
-	    {
-	      /* If VR1 is all positive, the new range is obtained
-		 with [VR0.MIN / VR1.MAX, VR0.MAX / VR1.MIN].  */
-	      min = int_const_binop (code, vr0.min, vr1.max, 0);
-	      max = int_const_binop (code, vr0.max, vr1.min, 0);
-	    }
-	  else
-	    {
-	      /* If VR1 is all negative, the new range is obtained
-		 with [VR0.MAX / VR1.MAX, VR0.MIN / VR1.MIN].  */
-	      gcc_assert (compare_values (vr1.max, zero) == -1);
-	      min = int_const_binop (code, vr0.max, vr1.max, 0);
-	      max = int_const_binop (code, vr0.min, vr1.min, 0);
+	      if (TREE_OVERFLOW (val[i]))
+		{
+		  /* If we found an overflowed value, set MIN and MAX
+		     to it so that we set the resulting range to
+		     VARYING.  */
+		  min = max = val[i];
+		  break;
+		}
+
+	      if (compare_values (val[i], min) == -1)
+		min = val[i];
+
+	      if (compare_values (val[i], max) == 1)
+		max = val[i];
 	    }
 	}
     }
@@ -1173,42 +1206,18 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
     {
       /* For MINUS_EXPR, apply the operation to the opposite ends of
 	 each range.  */
-      min = int_const_binop (code, vr0.min, vr1.max, 0);
-      max = int_const_binop (code, vr0.max, vr1.min, 0);
+      min = vrp_int_const_binop (code, vr0.min, vr1.max);
+      max = vrp_int_const_binop (code, vr0.max, vr1.min);
     }
   else
     gcc_unreachable ();
 
-  /* If MAX overflowed, then the result depends on whether we are
-     using wrapping arithmetic or not.  */
-  if (TREE_OVERFLOW (max))
+  /* If either MIN or MAX overflowed, then set the resulting range to
+     VARYING.  */
+  if (TREE_OVERFLOW (min) || TREE_OVERFLOW (max))
     {
-      /* If we are using wrapping arithmetic, set the result to
-	 VARYING.  */
-      if (flag_wrapv)
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* Otherwise, set MAX to +INF.  */
-      max = TYPE_MAX_VALUE (TREE_TYPE (expr));
-    }
-
-  /* If MIN overflowed, then the result depends on whether we are
-     using wrapping arithmetic or not.  */
-  if (TREE_OVERFLOW (min))
-    {
-      /* If we are using wrapping arithmetic, set the result to
-	 VARYING.  */
-      if (flag_wrapv)
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* Otherwise, set MIN to -INF.  */
-      min = TYPE_MIN_VALUE (TREE_TYPE (expr));
+      set_value_range_to_varying (vr);
+      return;
     }
 
   cmp = compare_values (min, max);

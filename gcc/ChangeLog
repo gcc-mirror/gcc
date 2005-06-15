@@ -1,3 +1,10 @@
+2005-06-15  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22018
+	* tree-vrp.c (vrp_int_const_binop): New.
+	(extract_range_from_binary_expr): Call it.
+	Unify handling division and multiplication.
+
 2005-06-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-common.h (same_scalar_type_ignoring_signedness): Protoize.
