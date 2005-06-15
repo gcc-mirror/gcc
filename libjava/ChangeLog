@@ -1,3 +1,18 @@
+2005-06-14  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/id/ArrayId.java: New file.
+	* gnu/classpath/jdwp/id/ArrayReferenceTypeId.java: New file.
+	* gnu/classpath/jdwp/id/ClassLoaderId.java: New file.
+	* gnu/classpath/jdwp/id/ClassObjectId.java: New file.
+	* gnu/classpath/jdwp/id/ClassReferenceTypeId.java: New file.
+	* gnu/classpath/jdwp/id/InterfaceReferenceTypeId.java: New file.
+	* gnu/classpath/jdwp/id/JdwpId.java: New file.
+	* gnu/classpath/jdwp/id/ObjectId.java: New file.
+	* gnu/classpath/jdwp/id/ReferenceTypeId.java: New file.
+	* gnu/classpath/jdwp/id/StringId.java: New file.
+	* gnu/classpath/jdwp/id/ThreadGroupId.java: New file.
+	* gnu/classpath/jdwp/id/ThreadId.java: New file.
+
 2005-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.host: Handle Solaris 10/x86.
