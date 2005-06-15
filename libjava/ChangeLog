@@ -1,3 +1,8 @@
+2005-06-15  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/SystemClassLoader.java (init): Clear
+	last_was_sep in loop.
+
 2005-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.host: Handle Solaris 10/x86.
