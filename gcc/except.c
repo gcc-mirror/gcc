@@ -562,6 +562,7 @@ expand_resx_expr (tree exp)
   int region_nr = TREE_INT_CST_LOW (TREE_OPERAND (exp, 0));
   struct eh_region *reg = cfun->eh->region_array[region_nr];
 
+  gcc_assert (!reg->resume);
   reg->resume = emit_jump_insn (gen_rtx_RESX (VOIDmode, region_nr));
   emit_barrier ();
 }

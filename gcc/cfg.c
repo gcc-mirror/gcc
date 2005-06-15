@@ -63,6 +63,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "timevar.h"
 #include "ggc.h"
+#include "hashtab.h"
+#include "alloc-pool.h"
 
 /* The obstack on which the flow graph components are allocated.  */
 
@@ -939,4 +941,146 @@ scale_bbs_frequencies_gcov_type (basic_block *bbs, int nbbs, gcov_type num,
       FOR_EACH_EDGE (e, ei, bbs[i]->succs)
 	e->count = (e->count * num) /den;
     }
+}
+
+/* Datastructures used to maintain mapping between basic blocks and copies.  */
+static htab_t bb_original;
+static htab_t bb_copy;
+static alloc_pool original_copy_bb_pool;
+
+struct htab_bb_copy_original_entry
+{
+  /* Block we are attaching info to.  */
+  int index1;
+  /* Index of original or copy (depending on the hashtable) */
+  int index2;
+};
+
+static hashval_t
+bb_copy_original_hash (const void *p)
+{
+  struct htab_bb_copy_original_entry *data
+    = ((struct htab_bb_copy_original_entry *)p);
+
+  return data->index1;
+}
+static int
+bb_copy_original_eq (const void *p, const void *q)
+{
+  struct htab_bb_copy_original_entry *data
+    = ((struct htab_bb_copy_original_entry *)p);
+  struct htab_bb_copy_original_entry *data2
+    = ((struct htab_bb_copy_original_entry *)q);
+
+  return data->index1 == data2->index1;
+}
+
+/* Initialize the datstructures to maintain mapping between blocks and it's copies.  */
+void
+initialize_original_copy_tables (void)
+{
+  gcc_assert (!original_copy_bb_pool);
+  original_copy_bb_pool
+    = create_alloc_pool ("original_copy",
+			 sizeof (struct htab_bb_copy_original_entry), 10);
+  bb_original = htab_create (10, bb_copy_original_hash,
+			     bb_copy_original_eq, NULL);
+  bb_copy = htab_create (10, bb_copy_original_hash, bb_copy_original_eq, NULL);
+}
+
+/* Free the datstructures to maintain mapping between blocks and it's copies.  */
+void
+free_original_copy_tables (void)
+{
+  gcc_assert (original_copy_bb_pool);
+  htab_delete (bb_copy);
+  htab_delete (bb_original);
+  free_alloc_pool (original_copy_bb_pool);
+  bb_copy = NULL;
+  bb_original = NULL;
+  original_copy_bb_pool = NULL;
+}
+
+/* Set original for basic block.  Do nothing when datstructures are not
+   intialized so passes not needing this don't need to care.  */
+void
+set_bb_original (basic_block bb, basic_block original)
+{
+  if (original_copy_bb_pool)
+    {
+      struct htab_bb_copy_original_entry **slot;
+      struct htab_bb_copy_original_entry key;
+
+      key.index1 = bb->index;
+      slot =
+	(struct htab_bb_copy_original_entry **) htab_find_slot (bb_original,
+							       &key, INSERT);
+      if (*slot)
+	(*slot)->index2 = original->index;
+      else
+	{
+	  *slot = pool_alloc (original_copy_bb_pool);
+	  (*slot)->index1 = bb->index;
+	  (*slot)->index2 = original->index;
+	}
+    }
+}
+
+/* Get the original basic block.  */
+basic_block
+get_bb_original (basic_block bb)
+{
+  struct htab_bb_copy_original_entry *entry;
+  struct htab_bb_copy_original_entry key;
+
+  gcc_assert (original_copy_bb_pool);
+
+  key.index1 = bb->index;
+  entry = (struct htab_bb_copy_original_entry *) htab_find (bb_original, &key);
+  if (entry)
+    return BASIC_BLOCK (entry->index2);
+  else
+    return NULL;
+}
+
+/* Set copy for basic block.  Do nothing when datstructures are not
+   intialized so passes not needing this don't need to care.  */
+void
+set_bb_copy (basic_block bb, basic_block copy)
+{
+  if (original_copy_bb_pool)
+    {
+      struct htab_bb_copy_original_entry **slot;
+      struct htab_bb_copy_original_entry key;
+
+      key.index1 = bb->index;
+      slot =
+	(struct htab_bb_copy_original_entry **) htab_find_slot (bb_copy,
+							       &key, INSERT);
+      if (*slot)
+	(*slot)->index2 = copy->index;
+      else
+	{
+	  *slot = pool_alloc (original_copy_bb_pool);
+	  (*slot)->index1 = bb->index;
+	  (*slot)->index2 = copy->index;
+	}
+    }
+}
+
+/* Get the copy of basic block.  */
+basic_block
+get_bb_copy (basic_block bb)
+{
+  struct htab_bb_copy_original_entry *entry;
+  struct htab_bb_copy_original_entry key;
+
+  gcc_assert (original_copy_bb_pool);
+
+  key.index1 = bb->index;
+  entry = (struct htab_bb_copy_original_entry *) htab_find (bb_copy, &key);
+  if (entry)
+    return BASIC_BLOCK (entry->index2);
+  else
+    return NULL;
 }

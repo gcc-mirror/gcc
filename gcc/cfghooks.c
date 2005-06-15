@@ -756,8 +756,8 @@ duplicate_block (basic_block bb, edge e)
       new_bb->frequency = bb->frequency;
     }
 
-  new_bb->rbi->original = bb;
-  bb->rbi->copy = new_bb;
+  set_bb_original (new_bb, bb);
+  set_bb_copy (bb, new_bb);
 
   return new_bb;
 }

@@ -813,19 +813,19 @@ update_single_exits_after_duplication (basic_block *bbs, unsigned nbbs,
   unsigned i;
 
   for (i = 0; i < nbbs; i++)
-    bbs[i]->rbi->duplicated = 1;
+    bbs[i]->flags |= BB_DUPLICATED;
 
   for (; loop->outer; loop = loop->outer)
     {
       if (!loop->single_exit)
 	continue;
 
-      if (loop->single_exit->src->rbi->duplicated)
+      if (loop->single_exit->src->flags & BB_DUPLICATED)
 	loop->single_exit = NULL;
     }
 
   for (i = 0; i < nbbs; i++)
-    bbs[i]->rbi->duplicated = 0;
+    bbs[i]->flags &= ~BB_DUPLICATED;
 }
 
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
@@ -983,13 +983,16 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       copy_bbs (bbs, n, new_bbs, spec_edges, 2, new_spec_edges, loop);
 
       for (i = 0; i < n; i++)
-	new_bbs[i]->rbi->copy_number = j + 1;
+	{
+	  gcc_assert (!new_bbs[i]->aux);
+	  new_bbs[i]->aux = (void *)(size_t)(j + 1);
+	}
 
       /* Note whether the blocks and edges belong to an irreducible loop.  */
       if (add_irreducible_flag)
 	{
 	  for (i = 0; i < n; i++)
-	    new_bbs[i]->rbi->duplicated = 1;
+	    new_bbs[i]->flags |= BB_DUPLICATED;
 	  for (i = 0; i < n; i++)
 	    {
 	      edge_iterator ei;
@@ -998,13 +1001,13 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
 		new_bb->flags |= BB_IRREDUCIBLE_LOOP;
 
 	      FOR_EACH_EDGE (ae, ei, new_bb->succs)
-		if (ae->dest->rbi->duplicated
+		if ((ae->dest->flags & BB_DUPLICATED)
 		    && (ae->src->loop_father == target
 			|| ae->dest->loop_father == target))
 		  ae->flags |= EDGE_IRREDUCIBLE_LOOP;
 	    }
 	  for (i = 0; i < n; i++)
-	    new_bbs[i]->rbi->duplicated = 0;
+	    new_bbs[i]->flags &= ~BB_DUPLICATED;
 	}
 
       /* Redirect the special edges.  */
@@ -1064,7 +1067,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       int n_dom_bbs,j;
 
       bb = bbs[i];
-      bb->rbi->copy_number = 0;
+      bb->aux = 0;
 
       n_dom_bbs = get_dominated_by (CDI_DOMINATORS, bb, &dom_bbs);
       for (j = 0; j < n_dom_bbs; j++)
@@ -1447,18 +1450,18 @@ loop_version (struct loops *loops, struct loop * loop,
       return NULL;
     }
 
-  latch_edge = single_succ_edge (loop->latch->rbi->copy);
+  latch_edge = single_succ_edge (get_bb_copy (loop->latch));
   
   extract_cond_bb_edges (*condition_bb, &true_edge, &false_edge);
   nloop = loopify (loops,
 		   latch_edge,
-		   single_pred_edge (loop->header->rbi->copy),
+		   single_pred_edge (get_bb_copy (loop->header)),
 		   *condition_bb, true_edge, false_edge,
 		   false /* Do not redirect all edges.  */);
 
   exit = loop->single_exit;
   if (exit)
-    nloop->single_exit = find_edge (exit->src->rbi->copy, exit->dest);
+    nloop->single_exit = find_edge (get_bb_copy (exit->src), exit->dest);
 
   /* loopify redirected latch_edge. Update its PENDING_STMTS.  */ 
   lv_flush_pending_stmts (latch_edge);

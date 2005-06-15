@@ -566,13 +566,13 @@ copy_phi_node_args (unsigned first_new_block)
   unsigned i;
 
   for (i = first_new_block; i < (unsigned) last_basic_block; i++)
-    BASIC_BLOCK (i)->rbi->duplicated = 1;
+    BASIC_BLOCK (i)->flags |= BB_DUPLICATED;
 
   for (i = first_new_block; i < (unsigned) last_basic_block; i++)
     add_phi_args_after_copy_bb (BASIC_BLOCK (i));
 
   for (i = first_new_block; i < (unsigned) last_basic_block; i++)
-    BASIC_BLOCK (i)->rbi->duplicated = 0;
+    BASIC_BLOCK (i)->flags &= ~BB_DUPLICATED;
 }
 
 

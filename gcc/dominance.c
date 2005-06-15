@@ -746,15 +746,15 @@ get_dominated_by_region (enum cdi_direction dir, basic_block *region,
   basic_block dom;
 
   for (i = 0; i < n_region; i++)
-    region[i]->rbi->duplicated = 1;
+    region[i]->flags |= BB_DUPLICATED;
   for (i = 0; i < n_region; i++)
     for (dom = first_dom_son (dir, region[i]);
 	 dom;
 	 dom = next_dom_son (dir, dom))
-      if (!dom->rbi->duplicated)
+      if (!(dom->flags & BB_DUPLICATED))
 	doms[n_doms++] = dom;
   for (i = 0; i < n_region; i++)
-    region[i]->rbi->duplicated = 0;
+    region[i]->flags &= ~BB_DUPLICATED;
 
   return n_doms;
 }
