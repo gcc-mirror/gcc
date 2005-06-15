@@ -1,5 +1,16 @@
 2005-06-15  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/21906:
+	* defineclass.cc (handleMethodsEnd): Set ncode for abstract
+	methods.
+	* include/jvm.h (_Jv_ThrowAbstractMethodError): Declare.
+	* link.cc (_Jv_ThrowAbstractMethodError): Renamed.  No longer
+	static.
+	(append_partial_itable): Use it.
+	(set_vtable_entries): Likewise.
+
+2005-06-15  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/gcj/runtime/SystemClassLoader.java (init): Clear
 	last_was_sep in loop.
 

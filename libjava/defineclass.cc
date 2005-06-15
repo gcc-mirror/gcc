@@ -1288,7 +1288,7 @@ void _Jv_ClassReader::handleMethod
 	throw_class_format_error ("erroneous method access flags");
 
       // FIXME: JVM spec S4.6: if ABSTRACT modifier is set, verify other 
-      // flags are not set. Verify flags for interface methods. Verifiy
+      // flags are not set. Verify flags for interface methods.  Verify
       // modifiers for initializers. 
     }
 }
@@ -1378,6 +1378,7 @@ void _Jv_ClassReader::handleMethodsEnd ()
 	{
 	  if (def_interp->interpreted_methods[i] != 0)
 	    throw_class_format_error ("code provided for abstract method");
+	  method->ncode = (void *) &_Jv_ThrowAbstractMethodError;
 	}
       else
 	{

@@ -1315,7 +1315,10 @@ make_method_value (tree mdecl)
     index = integer_minus_one_node;
 
   code = null_pointer_node;
-  if (!METHOD_ABSTRACT (mdecl))
+  if (METHOD_ABSTRACT (mdecl))
+    code = build1 (ADDR_EXPR, nativecode_ptr_type_node,
+		   soft_abstractmethod_node);
+  else
     code = build1 (ADDR_EXPR, nativecode_ptr_type_node, 
 		   make_local_function_alias (mdecl));
   START_RECORD_CONSTRUCTOR (minit, method_type_node);

@@ -1107,6 +1107,15 @@ java_init_decl_processing (void)
   TREE_THIS_VOLATILE (soft_nullpointer_node) = 1;
   TREE_SIDE_EFFECTS (soft_nullpointer_node) = 1;
 
+  soft_abstractmethod_node
+    = builtin_function ("_Jv_ThrowAbstractMethodError",
+			build_function_type (void_type_node, endlink),
+			0, NOT_BUILT_IN, NULL, NULL_TREE);
+  /* Mark soft_abstractmethod_node as a `noreturn' function with side
+     effects.  */
+  TREE_THIS_VOLATILE (soft_abstractmethod_node) = 1;
+  TREE_SIDE_EFFECTS (soft_abstractmethod_node) = 1;
+
   t = tree_cons (NULL_TREE, class_ptr_type,
 		 tree_cons (NULL_TREE, object_ptr_type_node, endlink));
   soft_checkcast_node
