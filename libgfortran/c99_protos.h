@@ -89,6 +89,10 @@ extern float logf(float);
 extern float log10f(float);
 #endif
 
+#ifndef HAVE_SCALBN
+extern double scalbn(double, int);
+#endif
+
 #ifndef HAVE_SCALBNF
 extern float scalbnf(float, int);
 #endif
