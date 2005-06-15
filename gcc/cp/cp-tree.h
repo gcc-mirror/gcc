@@ -483,18 +483,6 @@ enum cp_tree_index
     CPTI_CLEANUP_TYPE,
     CPTI_VTT_PARM_TYPE,
 
-    CPTI_TI_DESC_TYPE,
-    CPTI_BLTN_DESC_TYPE,
-    CPTI_PTR_DESC_TYPE,
-    CPTI_ARY_DESC_TYPE,
-    CPTI_FUNC_DESC_TYPE,
-    CPTI_ENUM_DESC_TYPE,
-    CPTI_CLASS_DESC_TYPE,
-    CPTI_SI_CLASS_DESC_TYPE,
-    CPTI_VMI_CLASS_DESC_TYPE,
-    CPTI_PTM_DESC_TYPE,
-    CPTI_BASE_DESC_TYPE,
-
     CPTI_CLASS_TYPE,
     CPTI_UNKNOWN_TYPE,
     CPTI_VTBL_TYPE,
@@ -558,18 +546,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define delta_type_node			cp_global_trees[CPTI_DELTA_TYPE]
 /* The type used to represent an index into the vtable.  */
 #define vtable_index_type		cp_global_trees[CPTI_VTABLE_INDEX_TYPE]
-
-#define ti_desc_type_node		cp_global_trees[CPTI_TI_DESC_TYPE]
-#define bltn_desc_type_node		cp_global_trees[CPTI_BLTN_DESC_TYPE]
-#define ptr_desc_type_node		cp_global_trees[CPTI_PTR_DESC_TYPE]
-#define ary_desc_type_node		cp_global_trees[CPTI_ARY_DESC_TYPE]
-#define func_desc_type_node		cp_global_trees[CPTI_FUNC_DESC_TYPE]
-#define enum_desc_type_node		cp_global_trees[CPTI_ENUM_DESC_TYPE]
-#define class_desc_type_node		cp_global_trees[CPTI_CLASS_DESC_TYPE]
-#define si_class_desc_type_node		cp_global_trees[CPTI_SI_CLASS_DESC_TYPE]
-#define vmi_class_desc_type_node	cp_global_trees[CPTI_VMI_CLASS_DESC_TYPE]
-#define ptm_desc_type_node		cp_global_trees[CPTI_PTM_DESC_TYPE]
-#define base_desc_type_node		cp_global_trees[CPTI_BASE_DESC_TYPE]
 
 #define class_type_node			cp_global_trees[CPTI_CLASS_TYPE]
 #define unknown_type_node		cp_global_trees[CPTI_UNKNOWN_TYPE]
