@@ -168,6 +168,9 @@
 /* libm includes roundf */
 #undef HAVE_ROUNDF
 
+/* libm includes scalbn */
+#undef HAVE_SCALBN
+
 /* libm includes scalbnf */
 #undef HAVE_SCALBNF
 
