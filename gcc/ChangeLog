@@ -1,3 +1,8 @@
+2005-06-15  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-vrp.c (vrp_int_const_binop): Do not handle MAX_EXPR
+	when the result overflows.
+
 2005-06-15  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.c (mips_rtx_cost_data): Add cost for 4kc, 4kp,

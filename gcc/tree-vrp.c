@@ -996,9 +996,15 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
       int sgn1 = tree_int_cst_sgn (val1);
       int sgn2 = tree_int_cst_sgn (val2);
 
-      /* Notice that we only need to handle the restricted set of
-	 operations handled by extract_range_from_binary_expr.  */
-      if (((code == PLUS_EXPR || code == MAX_EXPR) && sgn2 >= 0)
+      /* Determine whether VAL1 CODE VAL2 yields a growing value.
+	 Notice that we only need to handle the restricted set of
+	 operations handled by extract_range_from_binary_expr:
+
+	 VAL1 + VAL2 grows if VAL2 is >= 0.
+	 VAL1 * VAL2 grows if both VAL1 and VAL2 have the same sign.
+	 VAL1 - VAL2 grows if VAL2 is < 0 (because it becomes an addition).
+      */
+      if ((code == PLUS_EXPR && sgn2 >= 0)
 	  || (code == MULT_EXPR && sgn1 == sgn2)
 	  || (code == MINUS_EXPR && sgn2 < 0))
 	grows = true;
