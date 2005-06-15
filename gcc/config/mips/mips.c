@@ -755,10 +755,22 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 
     },
     { /* 4KC */
-      DEFAULT_COSTS
+      SOFT_FP_COSTS,
+      COSTS_N_INSNS (6),            /* int_mult_si */
+      COSTS_N_INSNS (6),            /* int_mult_di */
+      COSTS_N_INSNS (36),           /* int_div_si */
+      COSTS_N_INSNS (36),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
     },
     { /* 4KP */
-      DEFAULT_COSTS
+      SOFT_FP_COSTS,
+      COSTS_N_INSNS (36),           /* int_mult_si */
+      COSTS_N_INSNS (36),           /* int_mult_di */
+      COSTS_N_INSNS (37),           /* int_div_si */
+      COSTS_N_INSNS (37),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
     },
     { /* 5KC */
       DEFAULT_COSTS
@@ -767,10 +779,30 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
       DEFAULT_COSTS
     },
     { /* 24k */
-      DEFAULT_COSTS
+      COSTS_N_INSNS (8),            /* fp_add */
+      COSTS_N_INSNS (8),            /* fp_mult_sf */
+      COSTS_N_INSNS (10),           /* fp_mult_df */
+      COSTS_N_INSNS (34),           /* fp_div_sf */
+      COSTS_N_INSNS (64),           /* fp_div_df */
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (5),            /* int_mult_di */
+      COSTS_N_INSNS (41),           /* int_div_si */
+      COSTS_N_INSNS (41),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
     },
     { /* 24kx */
-      DEFAULT_COSTS
+      COSTS_N_INSNS (4),            /* fp_add */
+      COSTS_N_INSNS (4),            /* fp_mult_sf */
+      COSTS_N_INSNS (5),            /* fp_mult_df */
+      COSTS_N_INSNS (17),           /* fp_div_sf */
+      COSTS_N_INSNS (32),           /* fp_div_df */
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (5),            /* int_mult_di */
+      COSTS_N_INSNS (41),           /* int_div_si */
+      COSTS_N_INSNS (41),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
     },
     { /* M4k */
       DEFAULT_COSTS
