@@ -1,5 +1,11 @@
 2005-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	PR libgcj/21943
+	* src/mips/n32.S: Enforce PIC code.
+	* src/mips/o32.S: Likewise.
+
+2005-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* configure.ac: Treat i*86-*-solaris2.10 and up as X86_64.
 	* configure: Regenerate.
 	
