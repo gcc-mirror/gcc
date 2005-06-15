@@ -75,9 +75,9 @@ static tree finalize_nrv_r (tree *, int *, void *);
    example:
 
      class A {
-         typedef int X;
+	 typedef int X;
        public:
-         X f();
+	 X f();
      };
 
      A::X A::f();
@@ -122,8 +122,8 @@ typedef struct deferred_access GTY(())
      declared because code like:
 
        class A {
-         class B {};
-         B* f();
+	 class B {};
+	 B* f();
        }
 
        A::B* A::f() { return 0; }
@@ -498,11 +498,11 @@ finish_cond (tree *cond_p, tree expr)
 
 /* If *COND_P specifies a conditional with a declaration, transform the
    loop such that
-            while (A x = 42) { }
-            for (; A x = 42;) { }
+	    while (A x = 42) { }
+	    for (; A x = 42;) { }
    becomes
-            while (true) { A x = 42; if (!x) break; }
-            for (;;) { A x = 42; if (!x) break; }
+	    while (true) { A x = 42; if (!x) break; }
+	    for (;;) { A x = 42; if (!x) break; }
    The statement list for BODY will be empty if the conditional did
    not declare anything.  */
 
@@ -827,7 +827,7 @@ finish_for_expr (tree expr, tree for_stmt)
   if (!processing_template_decl)
     {
       if (warn_sequence_point)
-        verify_sequence_points (expr);
+	verify_sequence_points (expr);
       expr = convert_to_void (expr, "3rd expression in for");
     }
   else if (!type_dependent_expression_p (expr))
@@ -1224,7 +1224,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	  if (TREE_TYPE (operand) == unknown_type_node)
 	    {
 	      error ("type of asm operand %qE could not be determined",
-                     TREE_VALUE (t));
+		     TREE_VALUE (t));
 	      operand = error_mark_node;
 	    }
 
@@ -1445,7 +1445,7 @@ check_accessibility_of_qualified_id (tree decl,
 	   I *p;
 	   p->A::I::~I();
 
-         In this case, we will have "A::I" as the DECL, but "I" as the
+	 In this case, we will have "A::I" as the DECL, but "I" as the
 	 OBJECT_TYPE.  */
       && CLASS_TYPE_P (object_type)
       && DERIVED_FROM_P (scope, object_type))
@@ -1822,7 +1822,7 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
 	   . operator.... [Otherwise] a contrived object of type T
 	   becomes the implied object argument.
 
-        This paragraph is unclear about this situation:
+	This paragraph is unclear about this situation:
 
 	  struct A { void f(); };
 	  struct B : public A {};
@@ -1865,7 +1865,7 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
 	      || DECL_BUILT_IN_CLASS (fn) == BUILT_IN_MD))
-        result = resolve_overloaded_builtin (fn, args);
+	result = resolve_overloaded_builtin (fn, args);
 
       if (!result)
 	/* A call to a namespace-scope function.  */
@@ -1963,17 +1963,17 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
 
       /* [expr.pseudo] says both:
 
-           The type designated by the pseudo-destructor-name shall be
+	   The type designated by the pseudo-destructor-name shall be
 	   the same as the object type.
 
-         and:
+	 and:
 
-           The cv-unqualified versions of the object type and of the
+	   The cv-unqualified versions of the object type and of the
 	   type designated by the pseudo-destructor-name shall be the
 	   same type.
 
-         We implement the more generous second sentence, since that is
-         what most other compilers do.  */
+	 We implement the more generous second sentence, since that is
+	 what most other compilers do.  */
       if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (object),
 						      destructor))
 	{
@@ -2122,10 +2122,10 @@ check_template_template_default_arg (tree argument)
 	  if (CLASSTYPE_TEMPLATE_INFO (t)
 	      && CLASSTYPE_TEMPLATE_INSTANTIATION (t))
 	    error ("invalid use of type %qT as a default value for a "
-	           "template template-parameter", t);
+		   "template template-parameter", t);
 	  else
 	    error ("invalid use of %qD as a default value for a template "
-	           "template-parameter", argument);
+		   "template-parameter", argument);
 	}
       else
 	error ("invalid default argument for a template template parameter");
@@ -2151,7 +2151,7 @@ begin_class_definition (tree t)
   /* A non-implicit typename comes from code like:
 
        template <typename T> struct A {
-         template <typename U> struct A<T>::B ...
+	 template <typename U> struct A<T>::B ...
 
      This is erroneous.  */
   else if (TREE_CODE (t) == TYPENAME_TYPE)
@@ -2380,10 +2380,10 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
   else
     {
       if (cp_type_quals (base) != 0)
-        {
-          error ("base class %qT has cv qualifiers", base);
-          base = TYPE_MAIN_VARIANT (base);
-        }
+	{
+	  error ("base class %qT has cv qualifiers", base);
+	  base = TYPE_MAIN_VARIANT (base);
+	}
       result = build_tree_list (access, base);
       if (virtual_p)
 	TREE_TYPE (result) = integer_type_node;
@@ -2686,8 +2686,8 @@ finish_id_expression (tree id_expression,
 	}
 
       /* Only certain kinds of names are allowed in constant
-         expression.  Enumerators and template parameters have already
-         been handled above.  */
+	 expression.  Enumerators and template parameters have already
+	 been handled above.  */
       if (integral_constant_expression_p
 	  && ! DECL_INTEGRAL_CONSTANT_VAR_P (decl)
 	  && ! builtin_valid_in_constant_expr_p (decl))
@@ -2851,8 +2851,8 @@ finish_typeof (tree expr)
 
 static tree
 simplify_aggr_init_exprs_r (tree* tp,
-                            int* walk_subtrees,
-                            void* data ATTRIBUTE_UNUSED)
+			    int* walk_subtrees,
+			    void* data ATTRIBUTE_UNUSED)
 {
   /* We don't need to walk into types; there's nothing in a type that
      needs simplification.  (And, furthermore, there are places we
@@ -3022,9 +3022,9 @@ expand_body (tree fn)
   if (DECL_CLONED_FUNCTION_P (fn))
     {
       /* If this is a clone, go through the other clones now and mark
-         their parameters used.  We have to do that here, as we don't
-         know whether any particular clone will be expanded, and
-         therefore cannot pick one arbitrarily.  */
+	 their parameters used.  We have to do that here, as we don't
+	 know whether any particular clone will be expanded, and
+	 therefore cannot pick one arbitrarily.  */
       tree probe;
 
       for (probe = TREE_CHAIN (DECL_CLONED_FUNCTION (fn));

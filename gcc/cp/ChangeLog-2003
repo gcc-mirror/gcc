@@ -85,12 +85,12 @@
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/5050
-        * tree.c (cp_start_inlining): Remove.
-        (cp_end_inlining): Remove.
-        * cp-lang.c (LANG_HOOKS_TREE_INLINING_START_INLINING): Do not define.
-        (LANG_HOOKS_TREE_INLINING_END_INLINING): Do not define.
-        * cp-tree.h (cp_start_inlining): Do not declare.
-        (cp_end_inlining): Do not declare.
+	* tree.c (cp_start_inlining): Remove.
+	(cp_end_inlining): Remove.
+	* cp-lang.c (LANG_HOOKS_TREE_INLINING_START_INLINING): Do not define.
+	(LANG_HOOKS_TREE_INLINING_END_INLINING): Do not define.
+	* cp-tree.h (cp_start_inlining): Do not declare.
+	(cp_end_inlining): Do not declare.
 
 2003-12-22  Mark Mitchell  <mark@codesourcery.com>
 
@@ -304,7 +304,7 @@
 	* decl.c (xref_basetypes): Check java class inheritance.
 	* decl2.c (check_java_method): Skip artificial params.
 
- 	PR c++/13241
+	PR c++/13241
 	C++ ABI change. Mangling of symbols in expressions.
 	* mangle.c (write_mangled_name): Add top_level flag. Rework for
 	nested and unnested mangling. Deal with abi version 1 and version
@@ -514,8 +514,8 @@
 2003-12-02  Richard Henderson  <rth@redhat.com>
 
 	* name-lookup.h (struct cp_binding_level): Use ENUM_BITFIELD.
-        * parser.c (struct cp_token): Likewise.
-        (struct cp_parser_token_tree_map_node): Likewise.
+	* parser.c (struct cp_token): Likewise.
+	(struct cp_parser_token_tree_map_node): Likewise.
 	* lex.c (struct resword): Move const after ENUM_BITFIELD.
 
 2003-11-30  Mark Mitchell  <mark@codesourcery.com>
@@ -630,11 +630,11 @@
 
 2003-11-14  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/2294
-        * name-lookup.c (push_overloaded_decl): Always construct an OVERLOAD
-        unless the declaration is a built-in.
-        (set_namespace_binding): While binding OVERLOADs with only one
-        declaration, we still need to call supplement_binding.
+	PR c++/2294
+	* name-lookup.c (push_overloaded_decl): Always construct an OVERLOAD
+	unless the declaration is a built-in.
+	(set_namespace_binding): While binding OVERLOADs with only one
+	declaration, we still need to call supplement_binding.
 
 2003-11-14  Mark Mitchell  <mark@codesourcery.com>
 
@@ -647,9 +647,9 @@
 
 2003-11-14  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/2094
-        * pt.c (unify): Add support for PTRMEM_CST and
-        FIELD_DECL unification.
+	PR c++/2094
+	* pt.c (unify): Add support for PTRMEM_CST and
+	FIELD_DECL unification.
 
 2003-11-13  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -801,7 +801,7 @@
 2003-10-21  Robert Bowdidge   <bowdidge@apple.com>
 
 	* decl.c (cp_finish_decl): Remove clause intended for asm directives
-          in struct or class fields: this code is never executed.
+	  in struct or class fields: this code is never executed.
 
 2003-10-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
@@ -1194,7 +1194,7 @@
 2003-09-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h, name-lookup.h, decl.c, decl2.c: Remove reference to
-	macros 	BINDING_SCOPE, BINDING_VALUE and BINDING_TYPE.
+	macros BINDING_SCOPE, BINDING_VALUE and BINDING_TYPE.
 
 2003-09-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
@@ -1344,7 +1344,7 @@
 2003-09-17  Richard Henderson  <rth@redhat.com>
 
 	PR c++/12316
-        * semantics.c (expand_or_defer_fn): Inc/dec function_depth.
+	* semantics.c (expand_or_defer_fn): Inc/dec function_depth.
 
 2003-09-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 

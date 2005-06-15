@@ -91,63 +91,63 @@ dump_op (dump_info_p di, tree t)
       break;
     case PLUS_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "plusassign");
+	dump_string (di, "plusassign");
       else
-        dump_string(di, "plus");
+	dump_string(di, "plus");
       break;
     case MINUS_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "minusassign");
+	dump_string (di, "minusassign");
       else
-        dump_string(di, "minus");
+	dump_string(di, "minus");
       break;
     case MULT_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "multassign");
+	dump_string (di, "multassign");
       else
-        dump_string (di, "mult");
+	dump_string (di, "mult");
       break;
     case TRUNC_DIV_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "divassign");
+	dump_string (di, "divassign");
       else
-        dump_string (di, "div");
+	dump_string (di, "div");
       break;
     case TRUNC_MOD_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-         dump_string (di, "modassign");
+	 dump_string (di, "modassign");
       else
-        dump_string (di, "mod");
+	dump_string (di, "mod");
       break;
     case BIT_AND_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "andassign");
+	dump_string (di, "andassign");
       else
-        dump_string (di, "and");
+	dump_string (di, "and");
       break;
     case BIT_IOR_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "orassign");
+	dump_string (di, "orassign");
       else
-        dump_string (di, "or");
+	dump_string (di, "or");
       break;
     case BIT_XOR_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "xorassign");
+	dump_string (di, "xorassign");
       else
-        dump_string (di, "xor");
+	dump_string (di, "xor");
       break;
     case LSHIFT_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "lshiftassign");
+	dump_string (di, "lshiftassign");
       else
-        dump_string (di, "lshift");
+	dump_string (di, "lshift");
       break;
     case RSHIFT_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "rshiftassign");
+	dump_string (di, "rshiftassign");
       else
-        dump_string (di, "rshift");
+	dump_string (di, "rshift");
       break;
     case EQ_EXPR:
       dump_string (di, "eq");
@@ -196,7 +196,7 @@ dump_op (dump_info_p di, tree t)
       break;
     case NOP_EXPR:
       if (DECL_ASSIGNMENT_OPERATOR_P (t))
-        dump_string (di, "assign");
+	dump_string (di, "assign");
       break;
     default:
       break;
@@ -263,7 +263,7 @@ cp_dump_tree (void* dump_info, tree t)
 
       dump_child ("vfld", TYPE_VFIELD (t));
       if (CLASSTYPE_TEMPLATE_SPECIALIZATION(t))
-        dump_string(di, "spec");
+	dump_string(di, "spec");
 
       if (!dump_flag (di, TDF_SLIM, t) && TYPE_BINFO (t))
 	{
@@ -285,32 +285,32 @@ cp_dump_tree (void* dump_info, tree t)
     case FIELD_DECL:
       dump_access (di, t);
       if (DECL_MUTABLE_P (t))
-        dump_string(di, "mutable");
+	dump_string(di, "mutable");
       break;
 
     case VAR_DECL:
       if (TREE_CODE (CP_DECL_CONTEXT (t)) == RECORD_TYPE)
-        dump_access (di, t);
+	dump_access (di, t);
       if (TREE_STATIC (t) && !TREE_PUBLIC (t))
-        dump_string (di, "static");
+	dump_string (di, "static");
       break;
 
     case FUNCTION_DECL:
       if (!DECL_THUNK_P (t))
 	{
-          if (DECL_OVERLOADED_OPERATOR_P (t)) {
+	  if (DECL_OVERLOADED_OPERATOR_P (t)) {
 	    dump_string (di, "operator");
-            dump_op (di, t);
-          }
+	    dump_op (di, t);
+	  }
 	  if (DECL_FUNCTION_MEMBER_P (t))
 	    {
 	      dump_string (di, "member");
 	      dump_access (di, t);
 	    }
-          if (DECL_PURE_VIRTUAL_P (t))
-            dump_string (di, "pure");
-          if (DECL_VIRTUAL_P (t))
-            dump_string (di, "virtual");
+	  if (DECL_PURE_VIRTUAL_P (t))
+	    dump_string (di, "pure");
+	  if (DECL_VIRTUAL_P (t))
+	    dump_string (di, "virtual");
 	  if (DECL_CONSTRUCTOR_P (t))
 	    dump_string (di, "constructor");
 	  if (DECL_DESTRUCTOR_P (t))

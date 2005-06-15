@@ -409,7 +409,7 @@ cp_gimplify_init_expr (tree *expr_p, tree *pre_p, tree *post_p)
       *expr_p = from;
 
       /* The initialization is now a side-effect, so the container can
-         become void.  */
+	 become void.  */
       if (from != sub)
 	TREE_TYPE (from) = void_type_node;
     }

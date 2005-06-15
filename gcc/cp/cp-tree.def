@@ -108,17 +108,17 @@ DEFTREECODE (BASELINK, "baselink", tcc_exceptional, 0)
 /* Template definition.  The following fields have the specified uses,
    although there are other macros in cp-tree.h that should be used for
    accessing this data.
-        DECL_ARGUMENTS          template parm vector
-        DECL_TEMPLATE_INFO      template text &c
+	DECL_ARGUMENTS		template parm vector
+	DECL_TEMPLATE_INFO      template text &c
 	DECL_VINDEX		list of instantiations already produced;
 				only done for functions so far
    For class template:
-        DECL_INITIAL            associated templates (methods &c)
-        DECL_TEMPLATE_RESULT    null
+	DECL_INITIAL		associated templates (methods &c)
+	DECL_TEMPLATE_RESULT    null
    For non-class templates:
 	TREE_TYPE		type of object to be constructed
-        DECL_TEMPLATE_RESULT    decl for object to be created
-                                (e.g., FUNCTION_DECL with tmpl parms used)
+	DECL_TEMPLATE_RESULT    decl for object to be created
+				(e.g., FUNCTION_DECL with tmpl parms used)
  */
 DEFTREECODE (TEMPLATE_DECL, "template_decl", tcc_declaration, 0)
 
@@ -132,7 +132,7 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", tcc_declaration, 0)
    struct S
    {
       template <class U, // Index 0, Level 2.
-                class V> // Index 1, Level 2.
+		class V> // Index 1, Level 2.
       void f();
    };
 
@@ -148,7 +148,7 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", tcc_declaration, 0)
    struct S<int>
    {
      template <class U, // Index 0, Level 1, Orig Level 2
-               class V> // Index 1, Level 1, Orig Level 2
+	       class V> // Index 1, Level 1, Orig Level 2
      void f();
    };
 

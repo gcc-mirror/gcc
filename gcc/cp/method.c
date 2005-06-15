@@ -99,9 +99,9 @@ make_thunk (tree function, bool this_adjusting,
   if (this_adjusting && virtual_offset)
     virtual_offset
       = size_binop (MULT_EXPR,
- 		    virtual_offset,
-  		    convert (ssizetype,
-  			     TYPE_SIZE_UNIT (vtable_entry_type)));
+		    virtual_offset,
+		    convert (ssizetype,
+			     TYPE_SIZE_UNIT (vtable_entry_type)));
 
   d = tree_low_cst (fixed_offset, 0);
 
@@ -688,14 +688,14 @@ do_build_assign_ref (tree fndecl)
 
 	  if (CP_TYPE_CONST_P (expr_type))
 	    {
-              error ("non-static const member %q#D, can't use default "
-                     "assignment operator", field);
+	      error ("non-static const member %q#D, can't use default "
+		     "assignment operator", field);
 	      continue;
 	    }
 	  else if (TREE_CODE (expr_type) == REFERENCE_TYPE)
 	    {
 	      error ("non-static reference member %q#D, can't use "
-                     "default assignment operator", field);
+		     "default assignment operator", field);
 	      continue;
 	    }
 
@@ -818,7 +818,7 @@ synthesize_method (tree fndecl)
 
 static tree
 synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
-                           void *client)
+			   void *client)
 {
   tree raises = empty_except_spec;
   tree fields = TYPE_FIELDS (type);
@@ -830,11 +830,11 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
     {
       tree fn = (*extractor) (BINFO_TYPE (base_binfo), client);
       if (fn)
-        {
-          tree fn_raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+	{
+	  tree fn_raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
 
-          raises = merge_exception_specifiers (raises, fn_raises);
-        }
+	  raises = merge_exception_specifiers (raises, fn_raises);
+	}
     }
   for (; fields; fields = TREE_CHAIN (fields))
     {
@@ -842,19 +842,19 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
       tree fn;
 
       if (TREE_CODE (fields) != FIELD_DECL || DECL_ARTIFICIAL (fields))
-        continue;
+	continue;
       while (TREE_CODE (type) == ARRAY_TYPE)
-  	type = TREE_TYPE (type);
+	type = TREE_TYPE (type);
       if (TREE_CODE (type) != RECORD_TYPE)
-        continue;
+	continue;
 
       fn = (*extractor) (type, client);
       if (fn)
-        {
-          tree fn_raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+	{
+	  tree fn_raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
 
-          raises = merge_exception_specifiers (raises, fn_raises);
-        }
+	  raises = merge_exception_specifiers (raises, fn_raises);
+	}
     }
   return raises;
 }
@@ -888,7 +888,7 @@ locate_ctor (tree type, void *client ATTRIBUTE_UNUSED)
       tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
 
       if (sufficient_parms_p (TREE_CHAIN (parms)))
-        return fn;
+	return fn;
     }
   return NULL_TREE;
 }
@@ -939,24 +939,24 @@ locate_copy (tree type, void *client_)
 
       parms = TREE_CHAIN (parms);
       if (!parms)
-        continue;
+	continue;
       src_type = non_reference (TREE_VALUE (parms));
       if (!same_type_ignoring_top_level_qualifiers_p (src_type, type))
-        continue;
+	continue;
       if (!sufficient_parms_p (TREE_CHAIN (parms)))
-        continue;
+	continue;
       quals = cp_type_quals (src_type);
       if (client->quals & ~quals)
-        continue;
+	continue;
       excess = quals & ~client->quals;
       if (!best || (excess_p && !excess))
-        {
-          best = fn;
-          excess_p = excess;
-        }
+	{
+	  best = fn;
+	  excess_p = excess;
+	}
       else
-        /* Ambiguous */
-        return NULL_TREE;
+	/* Ambiguous */
+	return NULL_TREE;
     }
   return best;
 }
@@ -1026,19 +1026,19 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       data.name = NULL;
       data.quals = 0;
       if (kind == sfk_assignment_operator)
-        {
+	{
 	  return_type = build_reference_type (type);
-          name = ansi_assopname (NOP_EXPR);
-          data.name = name;
-        }
+	  name = ansi_assopname (NOP_EXPR);
+	  data.name = name;
+	}
       else
 	name = constructor_name (type);
 
       if (const_p)
-        {
-          data.quals = TYPE_QUAL_CONST;
+	{
+	  data.quals = TYPE_QUAL_CONST;
 	  rhs_parm_type = build_qualified_type (type, TYPE_QUAL_CONST);
-        }
+	}
       else
 	rhs_parm_type = type;
       rhs_parm_type = build_reference_type (rhs_parm_type);

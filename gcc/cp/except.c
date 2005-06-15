@@ -260,7 +260,7 @@ decl_is_java_type (tree decl, int err)
 	{
 	  /* Can't throw a reference.  */
 	  error ("type %qT is disallowed in Java %<throw%> or %<catch%>",
-                 decl);
+		 decl);
 	}
 
       if (r)
@@ -278,7 +278,7 @@ decl_is_java_type (tree decl, int err)
 	    {
 	      /* Thrown object must be a Throwable.  */
 	      error ("type %qT is not derived from %<java::lang::Throwable%>",
-                     TREE_TYPE (decl));
+		     TREE_TYPE (decl));
 	    }
 	}
     }
@@ -557,7 +557,7 @@ do_free_exception (tree ptr)
 
 static tree
 wrap_cleanups_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-                 void *data ATTRIBUTE_UNUSED)
+		 void *data ATTRIBUTE_UNUSED)
 {
   tree exp = *tp;
   tree cleanup;
@@ -604,7 +604,7 @@ build_throw (tree exp)
   if (exp != NULL_TREE)
     {
       if (!is_admissible_throw_operand (exp))
-        return error_mark_node;
+	return error_mark_node;
     }
 
   if (! doing_eh (1))
@@ -710,10 +710,10 @@ build_throw (tree exp)
 	 BUT: Issue 475 may do away with this inconsistency by removing the
 	 terminate() in this situation.
 
-         Note that we don't check the return value from stabilize_init
-         because it will only return false in cases where elided is true,
-         and therefore we don't need to work around the failure to
-         preevaluate.  */
+	 Note that we don't check the return value from stabilize_init
+	 because it will only return false in cases where elided is true,
+	 and therefore we don't need to work around the failure to
+	 preevaluate.  */
       temp_expr = NULL_TREE;
       stabilize_init (exp, &temp_expr);
 
@@ -805,9 +805,9 @@ complete_ptr_ref_or_void_ptr_p (tree type, tree from)
       tree core = TREE_TYPE (type);
 
       if (is_ptr && VOID_TYPE_P (core))
-        /* OK */;
+	/* OK */;
       else if (!complete_type_or_else (core, from))
-        return 0;
+	return 0;
     }
   return 1;
 }
@@ -822,22 +822,22 @@ is_admissible_throw_operand (tree expr)
   tree type = TREE_TYPE (expr);
 
   /* 15.1/4 [...] The type of the throw-expression shall not be an
-            incomplete type, or a pointer or a reference to an incomplete
-            type, other than void*, const void*, volatile void*, or
-            const volatile void*.  Except for these restriction and the
-            restrictions on type matching mentioned in 15.3, the operand
-            of throw is treated exactly as a function argument in a call
-            (5.2.2) or the operand of a return statement.  */
+	    incomplete type, or a pointer or a reference to an incomplete
+	    type, other than void*, const void*, volatile void*, or
+	    const volatile void*.  Except for these restriction and the
+	    restrictions on type matching mentioned in 15.3, the operand
+	    of throw is treated exactly as a function argument in a call
+	    (5.2.2) or the operand of a return statement.  */
   if (!complete_ptr_ref_or_void_ptr_p (type, expr))
     return false;
 
   /* 10.4/3 An abstract class shall not be used as a parameter type,
-            as a function return type or as type of an explicit
-            conversion.  */
+	    as a function return type or as type of an explicit
+	    conversion.  */
   else if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
     {
       error ("expression %qE of abstract class type %qT cannot "
-             "be used in throw-expression", expr, type);
+	     "be used in throw-expression", expr, type);
       return false;
     }
 
@@ -926,7 +926,7 @@ check_handlers_1 (tree master, tree_stmt_iterator i)
 	  warning (0, "%H   by earlier handler for %qT",
 		   EXPR_LOCUS (master), type);
 	  break;
-        }
+	}
     }
 }
 
@@ -946,7 +946,7 @@ check_handlers (tree handlers)
   if (!tsi_end_p (i))
     while (1)
       {
-        tree handler = tsi_stmt (i);
+	tree handler = tsi_stmt (i);
 	tsi_next (&i);
 
 	/* No more handlers; nothing to shadow.  */
