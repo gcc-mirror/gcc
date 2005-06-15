@@ -1,3 +1,7 @@
+2005-06-15  Richard Sandiford  <richard@codesourcery.com>
+
+        * doc/invoke.texi (-mips16): Fix typo.
+
 2005-06-15  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.h (GENERATE_MIPS16E): New definition.
