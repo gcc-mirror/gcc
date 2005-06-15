@@ -19,15 +19,19 @@ along with GCC; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef TREE_ALIAS_COMMON
-#define TREE_ALIAS_COMMON
+#ifndef TREE_SSA_STRUCTALIAS_H
+#define TREE_SSA_STRUCTALIAS_H
 
 struct constraint;
 typedef struct constraint *constraint_t;
+
 extern void dump_constraint (FILE *, constraint_t);
 extern void dump_constraints (FILE *);
 extern void debug_constraint (constraint_t);
 extern void debug_constraints (void);
 extern void dump_solution_for_var (FILE *, unsigned int);
 extern void debug_solution_for_var (unsigned int);
-#endif /* TREE_ALIAS_COMMON */
+extern void dump_sa_points_to_info (FILE *);
+extern void debug_sa_points_to_info (void);
+
+#endif /* TREE_SSA_STRUCTALIAS_H  */
