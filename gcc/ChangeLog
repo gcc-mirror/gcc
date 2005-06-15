@@ -1,3 +1,8 @@
+2005-06-15  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.c (mips_rtx_cost_data): Add cost for 4kc, 4kp,
+	24k and 24kx.
+	
 2005-06-15  Richard Sandiford  <richard@codesourcery.com>
 
         * doc/invoke.texi (-mips16): Fix typo.
