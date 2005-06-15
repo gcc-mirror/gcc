@@ -40,6 +40,7 @@ the GCC compiler.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "timevar.h"
+#include "tree.h"
 
 #include "treelang.h"
 #include "treetree.h"
@@ -675,7 +676,8 @@ NAME LEFT_PARENTHESIS expressions_with_commas_opt RIGHT_PARENTHESIS {
     }
   type = tree_code_get_type (NUMERIC_TYPE (prod));
   prod->tp.pro.code = tree_code_get_expression (EXP_FUNCTION_INVOCATION, type,
-                                                proto->tp.pro.code, parms,
+                                                proto->tp.pro.code,
+						nreverse (parms),
                                                 NULL, tok->tp.tok.location);
   $$ = prod;
 }

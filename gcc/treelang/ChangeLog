@@ -1,3 +1,8 @@
+2005-06-15  James A. Morrison  <phython@gcc.gnu.org>
+
+	* parse.y (function_invocation): Reverse parameter list.
+	* treetree.c (tree_code_get_expression): Don't reverse parameter list.
+
 2005-06-12  Rafael ?vila de Esp?ndola   <rafael.espindola@gmail.com>
 
 	* treetree.c (tree_code_get_expression): Call build_function_call_expr
