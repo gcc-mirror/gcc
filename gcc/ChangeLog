@@ -1,3 +1,14 @@
+2005-06-15  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-structalias.c (dump_solution_for_var): Reformat
+	output.
+	(dump_sa_points_to_info): Make extern.
+	(debug_sa_points_to_info): New.
+	* tree-ssa-structalias.h (TREE_SSA_STRUCTALIAS_H): Rename from
+	TREE_ALIAS_COMMON.
+	(dump_sa_points_to_info): Declare.
+	(debug_sa_points_to_info): Declare.
+
 2005-06-15  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-tree.h (default_function_array_conversion): Declare.

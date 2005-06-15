@@ -2824,10 +2824,10 @@ dump_solution_for_var (FILE *file, unsigned int var)
   unsigned int i;
   bitmap_iterator bi; 
   
-  fprintf (file, "%s = {", vi->name);
+  fprintf (file, "%s = { ", vi->name);
   EXECUTE_IF_SET_IN_BITMAP (get_varinfo (vi->node)->solution, 0, i, bi)
     {
-      fprintf (file, "%s,", get_varinfo (i)->name);
+      fprintf (file, "%s ", get_varinfo (i)->name);
     }
   fprintf (file, "}\n");
 }
@@ -2961,6 +2961,7 @@ find_what_p_points_to (tree p)
   return false;
 }
 
+
 /* Initialize things necessary to perform PTA */
 
 static void
@@ -2969,24 +2970,39 @@ init_alias_vars (void)
   bitmap_obstack_initialize (&ptabitmap_obstack);
 }
 
-/* Dump the points-to information to OUTFILE.  */
 
-static void
+/* Dump points-to information to OUTFILE.  */
+
+void
 dump_sa_points_to_info (FILE *outfile)
 {
-  
   unsigned int i;
+
+  fprintf (outfile, "\nPoints-to information\n\n");
+
   if (dump_flags & TDF_STATS)
     {
       fprintf (outfile, "Stats:\n");
-      fprintf (outfile, "Total vars:%d\n", stats.total_vars);
-      fprintf (outfile, "Statically unified vars:%d\n", stats.unified_vars_static);
-      fprintf (outfile, "Collapsed vars:%d\n", stats.collapsed_vars);
-      fprintf (outfile, "Dynamically unified vars:%d\n", stats.unified_vars_dynamic);
-      fprintf (outfile, "Iterations:%d\n", stats.iterations);
+      fprintf (outfile, "Total vars:               %d\n", stats.total_vars);
+      fprintf (outfile, "Statically unified vars:  %d\n",
+	       stats.unified_vars_static);
+      fprintf (outfile, "Collapsed vars:           %d\n", stats.collapsed_vars);
+      fprintf (outfile, "Dynamically unified vars: %d\n",
+	       stats.unified_vars_dynamic);
+      fprintf (outfile, "Iterations:               %d\n", stats.iterations);
     }
+
   for (i = 0; i < VEC_length (varinfo_t, varmap); i++)
     dump_solution_for_var (outfile, i);
+}
+
+
+/* Debug points-to information to stderr.  */
+
+void
+debug_sa_points_to_info (void)
+{
+  dump_sa_points_to_info (stderr);
 }
 
 
