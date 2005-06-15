@@ -698,12 +698,9 @@ tree_code_get_expression (unsigned int exp_type,
 
     case EXP_FUNCTION_INVOCATION:
       gcc_assert (op1);
-      {
-        TREE_USED (op1) = 1;
-        gcc_assert(TREE_TYPE (TREE_TYPE (op1)) == type);
-        tree arglist = nreverse(op2);
-        ret1 = build_function_call_expr(op1, arglist);
-      }
+      gcc_assert(TREE_TYPE (TREE_TYPE (op1)) == type);
+      TREE_USED (op1) = 1;
+      ret1 = build_function_call_expr(op1, op2);
       break;
 
     default:
