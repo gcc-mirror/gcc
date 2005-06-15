@@ -1,3 +1,34 @@
+2005-06-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Make-lang.in: Reformat some long lines.
+	(gt-cp-rtti.h): New target.
+	(cp/rtti.o): Add dependency.
+	* config-lang.in (gtfiles): Add cp/rtti.c.
+	* cp-tree.h (CPTI_TI_DESC_TYPE, CPTI_BLTN_DESC_TYPE,
+	CPTI_PTR_DESC_TYPE, CPTI_ARY_DESC_TYPE, CPTI_FUNC_DESC_TYPE,
+	CPTI_ENUM_DESC_TYPE, CPTI_CLASS_DESC_TYPE,
+	CPTI_SI_CLASS_DESC_TYPE, CPTI_VMI_CLASS_DESC_TYPE,
+	CPTI_PTM_DESC_TYPE, CPTI_BASE_DESC_TYPE): Remove.
+	(ti_desc_type_node, bltn_desc_type_node, ptr_desc_type_node,
+	ary_desc_type_node, func_desc_type_node, enum_desc_type_node,
+	class_desc_type_node, si_class_desc_type_node,
+	vmi_class_desc_type_node, ptm_desc_type_node,
+	base_desc_type_node): Remove.
+	* decl.c: Adjust documentation of global trees.
+	* rtti.c (TINFO_PSEUDO_TYPE, TINFO_VTABLE_DECL,
+	TINFO_REAL_NAME): Remove.
+	(struct tinfo_s): New.
+	(enum tinfo_kind): New.
+	(tinfo_descs): New.
+	(get_tinfo_decl): Adjust use of tinfo descriptor.
+	(tinfo_base_init, generic_initializer, ptr_initializer,
+	ptm_initializer, class_initializer): Likewise.
+	(get_pseudo_ti_init): Take descriptor index. Adjust.
+	(create_pseudo_type_info): Likewise.
+	(get_pseudo_ti_desc): Return descriptor index. Adjust.
+	(create_tinfo_types): Adjust use of create_pseudo_type_info.
+	(emit_tinfo_decl): Adjust use of tinfo descriptor.
+
 2005-06-14  Roger Sayle  <roger@eyesopen.com>
 
 	* decl.c (grokdeclarator): Only check TREE_OVERFLOW on INTEGER_CST.
