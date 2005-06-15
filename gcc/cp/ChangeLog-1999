@@ -454,8 +454,8 @@
 	    Greg McGary  <gkm@gnu.org>
 
 	* decl.c (duplicate_decls): Merge
- 	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT,
- 	DECL_NO_CHECK_MEMORY_USAGE, DECL_NO_LIMIT_STACK.
+	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT,
+	DECL_NO_CHECK_MEMORY_USAGE, DECL_NO_LIMIT_STACK.
 
 1999-12-02  Mike Stump  <mrs@wrs.com>
 
@@ -860,7 +860,7 @@ Thu Nov 11 12:42:11 MST 1999	Diego Novillo <dnovillo@cygnus.com>
 	* pt.c (tsubst_enum): Adjust according to build_enumerator changes.
 
 Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
-	                  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+			  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h: Test `GCC_VERSION', not `HAVE_GCC_VERSION'.
 
@@ -2183,8 +2183,8 @@ Sun Sep 12 23:29:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++spec.c: Include gcc.h.
 	(lang_specific_driver): Constify a char*.  Call xcalloc, not
- 	xmalloc/bzero.  All calls to the function pointer parameter now
- 	explicitly call `fatal'.
+	xmalloc/bzero.  All calls to the function pointer parameter now
+	explicitly call `fatal'.
 
 1999-09-12  Mark Mitchell  <mark@codesourcery.com>
 
@@ -4791,7 +4791,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	(pt.c): Or CP_TYPE_QUALS for an ERROR_MARK.
 	(typeck.c): Or TYPE_MAIN_VARIANT for a type.
 
- 	* pt.c (for_each_template_parm): Rework to match documentation.
+	* pt.c (for_each_template_parm): Rework to match documentation.
 	Don't be fooled by a COMPONENT_REF with no TREE_TYPE.
 
 1999-05-20  Jason Merrill  <jason@yorick.cygnus.com>

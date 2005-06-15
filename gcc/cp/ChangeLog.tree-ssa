@@ -261,8 +261,8 @@
 
 2003-09-03  Richard Henderson  <rth@redhat.com>
 
-        * decl.c (finish_function): Fix misapplied patch.  Don't
-        free_after_parsing or free_after_compilation.  For real this time.
+	* decl.c (finish_function): Fix misapplied patch.  Don't
+	free_after_parsing or free_after_compilation.  For real this time.
 
 2003-08-22  Jason Merrill  <jason@redhat.com>
 
@@ -314,7 +314,7 @@
 
 2003-06-05  Frank Ch. Eigler  <fche@redhat.com>
 
-        * cp-mudflap.c (mx_flag): Remove.  Update callers to use mf_mark.
+	* cp-mudflap.c (mx_flag): Remove.  Update callers to use mf_mark.
 
 2003-05-24  Diego Novillo  <dnovillo@redhat.com>
 

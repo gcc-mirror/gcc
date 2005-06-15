@@ -77,7 +77,7 @@ static tree start_static_initialization_or_destruction (tree, int);
 static void finish_static_initialization_or_destruction (tree);
 static void generate_ctor_or_dtor_function (bool, int, location_t *);
 static int generate_ctor_and_dtor_functions_for_priority (splay_tree_node,
-                                                          void *);
+							  void *);
 static tree prune_vars_needing_no_initialization (tree *);
 static void write_out_vars (tree);
 static void import_export_class (tree);
@@ -370,7 +370,7 @@ grok_array_decl (tree array_expr, tree index_exp)
       else
 	{
 	  error ("invalid types %<%T[%T]%> for array subscript",
-                 type, TREE_TYPE (index_exp));
+		 type, TREE_TYPE (index_exp));
 	  return error_mark_node;
 	}
 
@@ -419,7 +419,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete)
   if (t == NULL_TREE || t == error_mark_node)
     {
       error ("type %q#T argument given to %<delete%>, expected pointer",
-             TREE_TYPE (exp));
+	     TREE_TYPE (exp));
       return error_mark_node;
     }
 
@@ -431,7 +431,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete)
   if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
       error ("cannot delete a function.  Only pointer-to-objects are "
-             "valid arguments to %<delete%>");
+	     "valid arguments to %<delete%>");
       return error_mark_node;
     }
 
@@ -475,7 +475,7 @@ check_member_template (tree tmpl)
 
 	   A local class shall not have member templates.  */
 	error ("invalid declaration of member template %q#D in local class",
-               decl);
+	       decl);
 
       if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
 	{
@@ -543,7 +543,7 @@ check_java_method (tree method)
   if (!acceptable_java_type (ret_type))
     {
       error ("Java method %qD has non-Java return type %qT",
-             method, ret_type);
+	     method, ret_type);
       jerr = true;
     }
 
@@ -558,8 +558,8 @@ check_java_method (tree method)
       tree type = TREE_VALUE (arg_types);
       if (!acceptable_java_type (type))
 	{
-          error ("Java method %qD has non-Java parameter type %qT",
-                 method, type);
+	  error ("Java method %qD has non-Java parameter type %qT",
+		 method, type);
 	  jerr = true;
 	}
     }
@@ -590,8 +590,8 @@ check_classfn (tree ctype, tree function, tree template_parms)
        we're not going to find the declaration in the class.
        For example, in:
 
-         struct S { template <typename T> void f(T); };
-         template <> void S::f(int);
+	 struct S { template <typename T> void f(T); };
+	 template <> void S::f(int);
 
        we're not going to find `S::f(int)', but there's no
        reason we should, either.  We let our callers know we didn't
@@ -743,7 +743,7 @@ note_vague_linkage_var (tree var)
 
 void
 finish_static_data_member_decl (tree decl, tree init, tree asmspec_tree,
-                                int flags)
+				int flags)
 {
   gcc_assert (TREE_PUBLIC (decl));
 
@@ -770,7 +770,7 @@ finish_static_data_member_decl (tree decl, tree init, tree asmspec_tree,
 
       error ("initializer invalid for static member with constructor");
       if (!explained)
-        {
+	{
 	  error ("(an out of class initialization is required)");
 	  explained = 1;
 	}
@@ -808,7 +808,7 @@ tree
 grokfield (const cp_declarator *declarator,
 	   cp_decl_specifier_seq *declspecs,
 	   tree init, tree asmspec_tree,
-           tree attrlist)
+	   tree attrlist)
 {
   tree value;
   const char *asmspec = 0;
@@ -853,7 +853,7 @@ grokfield (const cp_declarator *declarator,
       && IDENTIFIER_POINTER (DECL_NAME (value))[0] == '_'
       && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (value)), "_vptr"))
     error ("member %qD conflicts with virtual function table field name",
-           value);
+	   value);
 
   /* Stash away type declarations.  */
   if (TREE_CODE (value) == TYPE_DECL)
@@ -904,7 +904,7 @@ grokfield (const cp_declarator *declarator,
       else
 	{
 	  /* We allow initializers to become parameters to base
-             initializers.  */
+	     initializers.  */
 	  if (TREE_CODE (init) == TREE_LIST)
 	    {
 	      if (TREE_CHAIN (init) == NULL_TREE)
@@ -1021,7 +1021,7 @@ grokbitfield (const cp_declarator *declarator,
   if (DECL_IN_AGGR_P (value))
     {
       error ("%qD is already defined in the class %qT", value,
-             DECL_CONTEXT (value));
+	     DECL_CONTEXT (value));
       return void_type_node;
     }
 
@@ -1086,7 +1086,7 @@ build_anon_union_vars (tree type, tree object)
       if (TREE_CODE (field) != FIELD_DECL)
 	{
 	  cp_pedwarn_at ("%q#D invalid; an anonymous union can only "
-                         "have non-static data members",
+			 "have non-static data members",
 			 field);
 	  continue;
 	}
@@ -1200,9 +1200,9 @@ coerce_new_type (tree type)
     {
       e = 2;
       if (args && args != void_list_node)
-        args = TREE_CHAIN (args);
+	args = TREE_CHAIN (args);
       pedwarn ("%<operator new%> takes type %<size_t%> (%qT) "
-               "as first parameter", size_type_node);
+	       "as first parameter", size_type_node);
     }
   switch (e)
   {
@@ -1211,8 +1211,8 @@ coerce_new_type (tree type)
       /* Fall through.  */
     case 1:
       type = build_exception_variant
-              (build_function_type (ptr_type_node, args),
-               TYPE_RAISES_EXCEPTIONS (type));
+	      (build_function_type (ptr_type_node, args),
+	       TYPE_RAISES_EXCEPTIONS (type));
       /* Fall through.  */
     default:;
   }
@@ -1238,9 +1238,9 @@ coerce_delete_type (tree type)
     {
       e = 2;
       if (args && args != void_list_node)
-        args = TREE_CHAIN (args);
+	args = TREE_CHAIN (args);
       error ("%<operator delete%> takes type %qT as first parameter",
-             ptr_type_node);
+	     ptr_type_node);
     }
   switch (e)
   {
@@ -1249,8 +1249,8 @@ coerce_delete_type (tree type)
       /* Fall through.  */
     case 1:
       type = build_exception_variant
-              (build_function_type (void_type_node, args),
-               TYPE_RAISES_EXCEPTIONS (type));
+	      (build_function_type (void_type_node, args),
+	       TYPE_RAISES_EXCEPTIONS (type));
       /* Fall through.  */
     default:;
   }
@@ -1983,7 +1983,7 @@ get_guard (tree decl)
       DECL_COMMON (guard) = DECL_COMMON (decl);
       DECL_ONE_ONLY (guard) = DECL_ONE_ONLY (decl);
       if (TREE_PUBLIC (decl))
-        DECL_WEAK (guard) = DECL_WEAK (decl);
+	DECL_WEAK (guard) = DECL_WEAK (decl);
 
       DECL_ARTIFICIAL (guard) = 1;
       DECL_IGNORED_P (guard) = 1;
@@ -2813,9 +2813,9 @@ cp_finish_file (void)
      These include:
 
        o Template specializations that we have not yet instantiated,
-         but which are needed.
+	 but which are needed.
        o Initialization and destruction for non-local objects with
-         static storage duration.  (Local objects with static storage
+	 static storage duration.  (Local objects with static storage
 	 duration are initialized when their scope is first entered,
 	 and are cleaned up via atexit.)
        o Virtual function tables.
@@ -2842,42 +2842,42 @@ cp_finish_file (void)
       ggc_collect ();
 
       /* Write out virtual tables as required.  Note that writing out
-  	 the virtual table for a template class may cause the
- 	 instantiation of members of that class.  If we write out
- 	 vtables then we remove the class from our list so we don't
- 	 have to look at it again.  */
+	 the virtual table for a template class may cause the
+	 instantiation of members of that class.  If we write out
+	 vtables then we remove the class from our list so we don't
+	 have to look at it again.  */
 
       while (keyed_classes != NULL_TREE
- 	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
- 	{
-  	  reconsider = true;
- 	  keyed_classes = TREE_CHAIN (keyed_classes);
- 	}
+	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
+	{
+	  reconsider = true;
+	  keyed_classes = TREE_CHAIN (keyed_classes);
+	}
 
       t = keyed_classes;
       if (t != NULL_TREE)
- 	{
- 	  tree next = TREE_CHAIN (t);
+	{
+	  tree next = TREE_CHAIN (t);
 
- 	  while (next)
- 	    {
- 	      if (maybe_emit_vtables (TREE_VALUE (next)))
- 		{
- 		  reconsider = true;
- 		  TREE_CHAIN (t) = TREE_CHAIN (next);
- 		}
- 	      else
- 		t = next;
+	  while (next)
+	    {
+	      if (maybe_emit_vtables (TREE_VALUE (next)))
+		{
+		  reconsider = true;
+		  TREE_CHAIN (t) = TREE_CHAIN (next);
+		}
+	      else
+		t = next;
 
- 	      next = TREE_CHAIN (t);
- 	    }
- 	}
+	      next = TREE_CHAIN (t);
+	    }
+	}
 
       /* Write out needed type info variables.  We have to be careful
- 	 looping through unemitted decls, because emit_tinfo_decl may
- 	 cause other variables to be needed. New elements will be
- 	 appended, and we remove from the vector those that actually
- 	 get emitted.  */
+	 looping through unemitted decls, because emit_tinfo_decl may
+	 cause other variables to be needed. New elements will be
+	 appended, and we remove from the vector those that actually
+	 get emitted.  */
       for (i = VEC_length (tree, unemitted_tinfo_decls);
 	   VEC_iterate (tree, unemitted_tinfo_decls, --i, t);)
 	if (emit_tinfo_decl (t))
@@ -2967,8 +2967,8 @@ cp_finish_file (void)
 		 up with CURRENT_FUNCTION_DECL set.  */
 	      push_to_top_level ();
 	      /* The decl's location will mark where it was first
-	         needed.  Save that so synthesize method can indicate
-	         where it was needed from, in case of error  */
+		 needed.  Save that so synthesize method can indicate
+		 where it was needed from, in case of error  */
 	      input_location = DECL_SOURCE_LOCATION (decl);
 	      synthesize_method (decl);
 	      pop_from_top_level ();
@@ -3234,8 +3234,8 @@ mark_used (tree decl)
 	return;
 
       /* Remember the current location for a function we will end up
-         synthesizing.  Then we can inform the user where it was
-         required in the case of error.  */
+	 synthesizing.  Then we can inform the user where it was
+	 required in the case of error.  */
       if (DECL_ARTIFICIAL (decl) && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && !DECL_THUNK_P (decl))
 	DECL_SOURCE_LOCATION (decl) = input_location;

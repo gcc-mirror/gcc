@@ -117,7 +117,7 @@ init_operators (void)
 	 : &operator_name_info[(int) CODE]);				    \
   oni->identifier = identifier;						    \
   oni->name = NAME;							    \
-  oni->mangled_name = MANGLING;                                             \
+  oni->mangled_name = MANGLING;						    \
   oni->arity = ARITY;
 
 #include "operators.def"
@@ -184,7 +184,7 @@ static const struct resword reswords[] =
   { "_Complex",		RID_COMPLEX,	0 },
   { "__FUNCTION__",	RID_FUNCTION_NAME, 0 },
   { "__PRETTY_FUNCTION__", RID_PRETTY_FUNCTION_NAME, 0 },
-  { "__alignof", 	RID_ALIGNOF,	0 },
+  { "__alignof",	RID_ALIGNOF,	0 },
   { "__alignof__",	RID_ALIGNOF,	0 },
   { "__asm",		RID_ASM,	0 },
   { "__asm__",		RID_ASM,	0 },
@@ -277,7 +277,7 @@ static const struct resword reswords[] =
   { "virtual",		RID_VIRTUAL,	0 },
   { "void",		RID_VOID,	0 },
   { "volatile",		RID_VOLATILE,	0 },
-  { "wchar_t",          RID_WCHAR,	0 },
+  { "wchar_t",		RID_WCHAR,	0 },
   { "while",		RID_WHILE,	0 },
 
   /* The remaining keywords are specific to Objective-C++.  NB:
@@ -553,7 +553,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
       filename = ggc_strdup (TREE_STRING_POINTER (fname));
 #if 0
       /* We currently cannot give this diagnostic, as we reach this point
-         only after cpplib has scanned the entire translation unit, so
+	 only after cpplib has scanned the entire translation unit, so
 	 cpp_included always returns true.  A plausible fix is to compare
 	 the current source-location cookie with the first source-location
 	 cookie (if any) of the filename, but this requires completing the

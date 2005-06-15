@@ -89,15 +89,15 @@ cp_expr_size (tree exp)
 		  /* And, the gimplifier will sometimes make a copy of
 		     an aggregate.  In particular, for a case like:
 
-		        struct S { S(); };
-                        struct X { int a; S s; };
-                        X x = { 0 };
+			struct S { S(); };
+			struct X { int a; S s; };
+			X x = { 0 };
 
-                     the gimplifier will create a temporary with
-                     static storage duration, perform static
-                     initialization of the temporary, and then copy
-                     the result.  Since the "s" subobject is never
-                     constructed, this is a valid transformation.  */
+		     the gimplifier will create a temporary with
+		     static storage duration, perform static
+		     initialization of the temporary, and then copy
+		     the result.  Since the "s" subobject is never
+		     constructed, this is a valid transformation.  */
 		  || CP_AGGREGATE_TYPE_P (type));
 
       /* This would be wrong for a type with virtual bases, but they are
@@ -118,9 +118,9 @@ cp_tree_size (enum tree_code code)
   switch (code)
     {
     case TINST_LEVEL:		return sizeof (struct tinst_level_s);
-    case PTRMEM_CST: 		return sizeof (struct ptrmem_cst);
+    case PTRMEM_CST:		return sizeof (struct ptrmem_cst);
     case BASELINK:		return sizeof (struct tree_baselink);
-    case TEMPLATE_PARM_INDEX: 	return sizeof (template_parm_index);
+    case TEMPLATE_PARM_INDEX:	return sizeof (template_parm_index);
     case DEFAULT_ARG:		return sizeof (struct tree_default_arg);
     case OVERLOAD:		return sizeof (struct tree_overload);
     default:

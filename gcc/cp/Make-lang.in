@@ -164,7 +164,7 @@ c++.install-common: installdirs
 	      $(INSTALL_PROGRAM) g++-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/g++$(exeext); \
 	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/c++$(exeext); \
 	      ( cd $(DESTDIR)$(gcc_tooldir)/bin && \
-	        $(LN) g++$(exeext) c++$(exeext) ); \
+		$(LN) g++$(exeext) c++$(exeext) ); \
 	    else true; fi; \
 	  else \
 	    rm -f $(DESTDIR)$(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \

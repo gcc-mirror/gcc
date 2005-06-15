@@ -156,16 +156,16 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
      To zero-initialization storage for an object of type T means:
 
      -- if T is a scalar type, the storage is set to the value of zero
-        converted to T.
+	converted to T.
 
      -- if T is a non-union class type, the storage for each nonstatic
-        data member and each base-class subobject is zero-initialized.
+	data member and each base-class subobject is zero-initialized.
 
      -- if T is a union type, the storage for its first data member is
-        zero-initialized.
+	zero-initialized.
 
      -- if T is an array type, the storage for each element is
-        zero-initialized.
+	zero-initialized.
 
      -- if T is a reference type, no initialization is performed.  */
 
@@ -518,7 +518,7 @@ sort_mem_initializers (tree t, tree mem_inits)
 
       /* Issue a warning if the explicit initializer order does not
 	 match that which will actually occur.
-         ??? Are all these on the correct lines?  */
+	 ??? Are all these on the correct lines?  */
       if (warn_reorder && !subobject_init)
 	{
 	  if (TREE_CODE (TREE_PURPOSE (next_subobject)) == FIELD_DECL)
@@ -1004,7 +1004,7 @@ expand_member_init (tree name)
 
       /* [class.base.init]
 
-         If a mem-initializer-id is ambiguous because it designates
+	 If a mem-initializer-id is ambiguous because it designates
 	 both a direct non-virtual base class and an inherited virtual
 	 base class, the mem-initializer is ill-formed.  */
       if (direct_binfo && virtual_binfo)
@@ -1372,9 +1372,9 @@ build_offset_ref (tree type, tree name, bool address_p)
     {
       tree t = lookup_namespace_name (type, name);
       if (t == error_mark_node)
-        return t;
+	return t;
       if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
-        /* Reconstruct the TEMPLATE_ID_EXPR.  */
+	/* Reconstruct the TEMPLATE_ID_EXPR.  */
 	t = build2 (TEMPLATE_ID_EXPR, TREE_TYPE (t),
 		    t, TREE_OPERAND (orig_name, 1));
       if (! type_unknown_p (t))
@@ -1462,11 +1462,11 @@ build_offset_ref (tree type, tree name, bool address_p)
 	       expects to encounter OVERLOADs, not raw functions.  */
 	    t = ovl_cons (t, NULL_TREE);
 
-          t = build2 (TEMPLATE_ID_EXPR, TREE_TYPE (t), t,
+	  t = build2 (TEMPLATE_ID_EXPR, TREE_TYPE (t), t,
 		      TREE_OPERAND (orig_name, 1));
 	  t = build2 (OFFSET_REF, unknown_type_node, decl, t);
 
-          PTRMEM_OK_P (t) = 1;
+	  PTRMEM_OK_P (t) = 1;
 
 	  return t;
 	}
@@ -1588,13 +1588,13 @@ decl_constant_value (tree decl)
   if ((TREE_CODE (decl) == CONST_DECL
       || (TREE_CODE (decl) == VAR_DECL
 	  /* And so are variables with a 'const' type -- unless they
-             are also 'volatile'.  */
+	     are also 'volatile'.  */
 	  && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl))))
       && DECL_INITIAL (decl)
       && DECL_INITIAL (decl) != error_mark_node
       /* This is invalid if initial value is not constant.  If it has
-       	 either a function call, a memory reference, or a variable,
-       	 then re-evaluating it could give different results.  */
+	 either a function call, a memory reference, or a variable,
+	 then re-evaluating it could give different results.  */
       && TREE_CONSTANT (DECL_INITIAL (decl)))
     return DECL_INITIAL (decl);
 
@@ -2446,7 +2446,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
 	   ++t1;
 	 }
        } catch (...) {
-         ... destroy elements that were constructed ...
+	 ... destroy elements that were constructed ...
        }
        rval;
      })

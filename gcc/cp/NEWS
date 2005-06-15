@@ -250,7 +250,7 @@
        but not all, the compiler will tell you where you need to add
        'typename'.  For more information, see
 
-            http://www.cygnus.com/misc/wp/dec96pub/template.html#temp.res
+	    http://www.cygnus.com/misc/wp/dec96pub/template.html#temp.res
 
      + Guiding declarations are no longer supported.  Function declarations,
        including friend declarations, do not refer to template instantiations.
@@ -269,7 +269,7 @@
      + Explicit instantiation of template constructors and destructors is
        now supported.  For instance:
 
-            template A<int>::A(const A&);
+	    template A<int>::A(const A&);
 
   Still not supported:
 
@@ -324,9 +324,9 @@
        signatures are overridden) as it did before.
 
      + -Wall no longer implies -W.  The new warning flag, -Wsign-compare,
-        included in -Wall, warns about dangerous comparisons of signed and
-        unsigned values. Only the flag is new; it was previously part of
-        -W.
+	included in -Wall, warns about dangerous comparisons of signed and
+	unsigned values. Only the flag is new; it was previously part of
+	-W.
 
      + The new flag, -fno-weak, disables the use of weak symbols.
 
@@ -377,12 +377,12 @@
   supported.  For instance:
 
        struct A {
-              struct B;
-              B* bp;
+	      struct B;
+	      B* bp;
        };
 
        struct A::B {
-              int member;
+	      int member;
        };
 
 * On the HPPA, some classes that do not define a copy constructor

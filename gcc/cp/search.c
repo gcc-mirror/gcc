@@ -82,13 +82,13 @@ static int n_contexts_saved;
 struct lookup_base_data_s
 {
   tree t;		/* type being searched.  */
-  tree base;            /* The base type we're looking for.  */
-  tree binfo;           /* Found binfo.  */
-  bool via_virtual;  	/* Found via a virtual path.  */
+  tree base;		/* The base type we're looking for.  */
+  tree binfo;		/* Found binfo.  */
+  bool via_virtual;	/* Found via a virtual path.  */
   bool ambiguous;	/* Found multiply ambiguous */
-  bool repeated_base;   /* Whether there are repeated bases in the
+  bool repeated_base;	/* Whether there are repeated bases in the
 			    hierarchy.  */
-  bool want_any;  	/* Whether we want any matching binfo.  */
+  bool want_any;	/* Whether we want any matching binfo.  */
 };
 
 /* Worker function for lookup_base.  See if we've found the desired
@@ -1084,8 +1084,8 @@ lookup_field_r (tree binfo, void *data)
 	nval = NULL_TREE;
       if (!nval && CLASSTYPE_NESTED_UTDS (type) != NULL)
 	{
-          binding_entry e = binding_table_find (CLASSTYPE_NESTED_UTDS (type),
-                                                lfi->name);
+	  binding_entry e = binding_table_find (CLASSTYPE_NESTED_UTDS (type),
+						lfi->name);
 	  if (e != NULL)
 	    nval = TYPE_MAIN_DECL (e->type);
 	  else
@@ -1256,7 +1256,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
     {
       error (errstr, name, type);
       if (lfi.ambiguous)
-        print_candidates (lfi.ambiguous);
+	print_candidates (lfi.ambiguous);
       rval = error_mark_node;
     }
 
@@ -1655,8 +1655,8 @@ dfs_walk_once (tree binfo, tree (*pre_fn) (tree, void *),
       if (!BINFO_INHERITANCE_CHAIN (binfo))
 	{
 	  /* We are at the top of the hierarchy, and can use the
-             CLASSTYPE_VBASECLASSES list for unmarking the virtual
-             bases.  */
+	     CLASSTYPE_VBASECLASSES list for unmarking the virtual
+	     bases.  */
 	  VEC(tree,gc) *vbases;
 	  unsigned ix;
 	  tree base_binfo;
@@ -1710,8 +1710,8 @@ dfs_walk_once_accessible_r (tree binfo, bool friends_p, bool once,
 	continue;
 
       /* If the base is inherited via private or protected
-     	 inheritance, then we can't see it, unless we are a friend of
-     	 the current binfo.  */
+	 inheritance, then we can't see it, unless we are a friend of
+	 the current binfo.  */
       if (BINFO_BASE_ACCESS (binfo, ix) != access_public_node)
 	{
 	  tree scope;
@@ -1763,8 +1763,8 @@ dfs_walk_once_accessible (tree binfo, bool friends_p,
       if (!BINFO_INHERITANCE_CHAIN (binfo))
 	{
 	  /* We are at the top of the hierarchy, and can use the
-             CLASSTYPE_VBASECLASSES list for unmarking the virtual
-             bases.  */
+	     CLASSTYPE_VBASECLASSES list for unmarking the virtual
+	     bases.  */
 	  VEC(tree,gc) *vbases;
 	  unsigned ix;
 	  tree base_binfo;
@@ -1903,7 +1903,7 @@ look_for_overrides (tree type, tree fndecl)
       tree basetype = BINFO_TYPE (base_binfo);
 
       if (TYPE_POLYMORPHIC_P (basetype))
-        found += look_for_overrides_r (basetype, fndecl);
+	found += look_for_overrides_r (basetype, fndecl);
     }
   return found;
 }
@@ -1931,21 +1931,21 @@ look_for_overrides_here (tree type, tree fndecl)
       tree fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
 
       for (; fns; fns = OVL_NEXT (fns))
-        {
-          tree fn = OVL_CURRENT (fns);
+	{
+	  tree fn = OVL_CURRENT (fns);
 
-          if (!DECL_VIRTUAL_P (fn))
-            /* Not a virtual.  */;
-          else if (DECL_CONTEXT (fn) != type)
-            /* Introduced with a using declaration.  */;
+	  if (!DECL_VIRTUAL_P (fn))
+	    /* Not a virtual.  */;
+	  else if (DECL_CONTEXT (fn) != type)
+	    /* Introduced with a using declaration.  */;
 	  else if (DECL_STATIC_FUNCTION_P (fndecl))
 	    {
 	      tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	      tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-  	      if (compparms (TREE_CHAIN (btypes), dtypes))
+	      if (compparms (TREE_CHAIN (btypes), dtypes))
 		return fn;
-            }
-          else if (same_signature_p (fndecl, fn))
+	    }
+	  else if (same_signature_p (fndecl, fn))
 	    return fn;
 	}
     }
@@ -2149,7 +2149,7 @@ check_hidden_convs (tree binfo, int virtual_depth, int virtualness,
   if (virtual_depth || virtualness)
     {
      /* In a virtual hierarchy, we could be hidden, or could hide a
-        conversion function on the other_convs list.  */
+	conversion function on the other_convs list.  */
       for (level = other_convs; level; level = TREE_CHAIN (level))
 	{
 	  int we_hide_them;

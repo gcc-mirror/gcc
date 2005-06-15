@@ -39,12 +39,12 @@
    particular constructs when the appropriate decl for that construct
    is not available.  These are:
 
-     mangle_typeinfo_for_type:        typeinfo data
-     mangle_typeinfo_string_for_type: typeinfo type name
-     mangle_vtbl_for_type:            virtual table data
-     mangle_vtt_for_type:             VTT data
-     mangle_ctor_vtbl_for_type:       `C-in-B' constructor virtual table data
-     mangle_thunk:                    thunk function or entry
+     mangle_typeinfo_for_type:		typeinfo data
+     mangle_typeinfo_string_for_type:	typeinfo type name
+     mangle_vtbl_for_type:		virtual table data
+     mangle_vtt_for_type:		VTT data
+     mangle_ctor_vtbl_for_type:		`C-in-B' constructor virtual table data
+     mangle_thunk:			thunk function or entry
 
 */
 
@@ -75,7 +75,7 @@
   fprintf (stderr, "  %-24s: %-24s\n", (FN), (INPUT))
 # define MANGLE_TRACE_TREE(FN, NODE) \
   fprintf (stderr, "  %-24s: %-24s (%p)\n", \
-           (FN), tree_code_name[TREE_CODE (NODE)], (void *) (NODE))
+	   (FN), tree_code_name[TREE_CODE (NODE)], (void *) (NODE))
 #else
 # define MANGLE_TRACE(FN, INPUT)
 # define MANGLE_TRACE_TREE(FN, NODE)
@@ -234,32 +234,32 @@ static void write_java_integer_type_codes (const tree);
 
 /* Append a single character to the end of the mangled
    representation.  */
-#define write_char(CHAR)                                              \
+#define write_char(CHAR)						\
   obstack_1grow (mangle_obstack, (CHAR))
 
 /* Append a sized buffer to the end of the mangled representation.  */
-#define write_chars(CHAR, LEN)                                        \
+#define write_chars(CHAR, LEN)						\
   obstack_grow (mangle_obstack, (CHAR), (LEN))
 
 /* Append a NUL-terminated string to the end of the mangled
    representation.  */
-#define write_string(STRING)                                          \
+#define write_string(STRING)						\
   obstack_grow (mangle_obstack, (STRING), strlen (STRING))
 
 /* Nonzero if NODE1 and NODE2 are both TREE_LIST nodes and have the
    same purpose (context, which may be a type) and value (template
    decl).  See write_template_prefix for more information on what this
    is used for.  */
-#define NESTED_TEMPLATE_MATCH(NODE1, NODE2)                         \
-  (TREE_CODE (NODE1) == TREE_LIST                                     \
-   && TREE_CODE (NODE2) == TREE_LIST                                  \
-   && ((TYPE_P (TREE_PURPOSE (NODE1))                                 \
-        && same_type_p (TREE_PURPOSE (NODE1), TREE_PURPOSE (NODE2)))\
-       || TREE_PURPOSE (NODE1) == TREE_PURPOSE (NODE2))             \
+#define NESTED_TEMPLATE_MATCH(NODE1, NODE2)				\
+  (TREE_CODE (NODE1) == TREE_LIST					\
+   && TREE_CODE (NODE2) == TREE_LIST					\
+   && ((TYPE_P (TREE_PURPOSE (NODE1))					\
+	&& same_type_p (TREE_PURPOSE (NODE1), TREE_PURPOSE (NODE2)))	\
+       || TREE_PURPOSE (NODE1) == TREE_PURPOSE (NODE2))			\
    && TREE_VALUE (NODE1) == TREE_VALUE (NODE2))
 
 /* Write out an unsigned quantity in base 10.  */
-#define write_unsigned_number(NUMBER) \
+#define write_unsigned_number(NUMBER)					\
   write_number ((NUMBER), /*unsigned_p=*/1, 10)
 
 /* Save the current (incomplete) mangled name and release the obstack
@@ -497,27 +497,27 @@ is_std_substitution_char (const tree node,
    First, check standard special-case substitutions.
 
      <substitution> ::= St
-         # ::std
+	 # ::std
 
-                    ::= Sa
+		    ::= Sa
 	 # ::std::allocator
 
-                    ::= Sb
-         # ::std::basic_string
+		    ::= Sb
+	 # ::std::basic_string
 
-                    ::= Ss
-         # ::std::basic_string<char,
+		    ::= Ss
+	 # ::std::basic_string<char,
 			       ::std::char_traits<char>,
 			       ::std::allocator<char> >
 
-                    ::= Si
-         # ::std::basic_istream<char, ::std::char_traits<char> >
+		    ::= Si
+	 # ::std::basic_istream<char, ::std::char_traits<char> >
 
-                    ::= So
-         # ::std::basic_ostream<char, ::std::char_traits<char> >
+		    ::= So
+	 # ::std::basic_ostream<char, ::std::char_traits<char> >
 
-                    ::= Sd
-         # ::std::basic_iostream<char, ::std::char_traits<char> >
+		    ::= Sd
+	 # ::std::basic_iostream<char, ::std::char_traits<char> >
 
    Then examine the stack of currently available substitution
    candidates for entities appearing earlier in the same mangling
@@ -562,8 +562,8 @@ find_substitution (tree node)
 	{
 	  /* If this is a type (i.e. a fully-qualified template-id),
 	     check for
-  	         std::basic_string <char,
-		 		    std::char_traits<char>,
+		 std::basic_string <char,
+				    std::char_traits<char>,
 				    std::allocator<char> > .  */
 	  if (cp_type_quals (type) == TYPE_UNQUALIFIED
 	      && CLASSTYPE_USE_TEMPLATE (type))
@@ -679,10 +679,10 @@ write_mangled_name (const tree decl, bool top_level)
       else
 	{
 	  /* The standard notes: "The <encoding> of an extern "C"
-             function is treated like global-scope data, i.e. as its
-             <source-name> without a type."  We cannot write
-             overloaded operators that way though, because it contains
-             characters invalid in assembler.  */
+	     function is treated like global-scope data, i.e. as its
+	     <source-name> without a type."  We cannot write
+	     overloaded operators that way though, because it contains
+	     characters invalid in assembler.  */
 	  if (abi_version_at_least (2))
 	    write_string ("_Z");
 	  else
@@ -771,7 +771,7 @@ write_encoding (const tree decl)
 }
 
 /* <name> ::= <unscoped-name>
-          ::= <unscoped-template-name> <template-args>
+	  ::= <unscoped-template-name> <template-args>
 	  ::= <nested-name>
 	  ::= <local-name>
 
@@ -823,10 +823,10 @@ write_name (tree decl, const int ignore_local_scope)
   else
     {
       /* Handle local names, unless we asked not to (that is, invoked
-         under <local-name>, to handle only the part of the name under
-         the local scope).  */
+	 under <local-name>, to handle only the part of the name under
+	 the local scope).  */
       if (!ignore_local_scope)
-        {
+	{
 	  /* Scan up the list of scope context, looking for a
 	     function.  If we find one, this entity is in local
 	     function scope.  local_entity tracks context one scope
@@ -861,7 +861,7 @@ write_name (tree decl, const int ignore_local_scope)
 }
 
 /* <unscoped-name> ::= <unqualified-name>
-                   ::= St <unqualified-name>   # ::std::  */
+		   ::= St <unqualified-name>   # ::std::  */
 
 static void
 write_unscoped_name (const tree decl)
@@ -879,7 +879,7 @@ write_unscoped_name (const tree decl)
   else
     {
       /* If not, it should be either in the global namespace, or directly
-     	 in a local function scope.  */
+	 in a local function scope.  */
       gcc_assert (context == global_namespace
 		  || context == NULL
 		  || TREE_CODE (context) == FUNCTION_DECL);
@@ -889,7 +889,7 @@ write_unscoped_name (const tree decl)
 }
 
 /* <unscoped-template-name> ::= <unscoped-name>
-                            ::= <substitution>  */
+			    ::= <substitution>  */
 
 static void
 write_unscoped_template_name (const tree decl)
@@ -905,7 +905,7 @@ write_unscoped_template_name (const tree decl)
 /* Write the nested name, including CV-qualifiers, of DECL.
 
    <nested-name> ::= N [<CV-qualifiers>] <prefix> <unqualified-name> E
-                 ::= N [<CV-qualifiers>] <template-prefix> <template-args> E
+		 ::= N [<CV-qualifiers>] <template-prefix> <template-args> E
 
    <CV-qualifiers> ::= [r] [V] [K]  */
 
@@ -945,8 +945,8 @@ write_nested_name (const tree decl)
 }
 
 /* <prefix> ::= <prefix> <unqualified-name>
-            ::= <template-param>
-            ::= <template-prefix> <template-args>
+	    ::= <template-param>
+	    ::= <template-prefix> <template-args>
 	    ::= # empty
 	    ::= <substitution>  */
 
@@ -1012,8 +1012,8 @@ write_prefix (const tree node)
 }
 
 /* <template-prefix> ::= <prefix> <template component>
-                     ::= <template-param>
-                     ::= <substitution>  */
+		     ::= <template-param>
+		     ::= <substitution>  */
 
 static void
 write_template_prefix (const tree node)
@@ -1105,7 +1105,7 @@ write_unqualified_name (const tree decl)
   else if (DECL_CONV_FN_P (decl))
     {
       /* Conversion operator. Handle it right here.
-           <operator> ::= cv <type>  */
+	   <operator> ::= cv <type>  */
       tree type;
       if (decl_is_template_id (decl, NULL))
 	{
@@ -1296,11 +1296,11 @@ write_integer_cst (const tree cst)
     for floating point numbers.  (Spaces are for readability, not
     part of the encoding.)
 
-        1.0f                    Lf 3f80 0000 E
-       -1.0f                    Lf bf80 0000 E
-        1.17549435e-38f         Lf 0080 0000 E
-        1.40129846e-45f         Lf 0000 0001 E
-        0.0f                    Lf 0000 0000 E"
+	1.0f			Lf 3f80 0000 E
+       -1.0f			Lf bf80 0000 E
+	1.17549435e-38f		Lf 0080 0000 E
+	1.40129846e-45f		Lf 0000 0001 E
+	0.0f			Lf 0000 0000 E"
 
    Caller is responsible for the Lx and the E.  */
 static void
@@ -1319,7 +1319,7 @@ write_real_cst (const tree value)
 		      TYPE_MODE (type));
 
       /* The value in target_real is in the target word order,
-         so we must write it out backward if that happens to be
+	 so we must write it out backward if that happens to be
 	 little-endian.  write_number cannot be used, it will
 	 produce uppercase.  */
       if (FLOAT_WORDS_BIG_ENDIAN)
@@ -1363,8 +1363,8 @@ write_identifier (const char *identifier)
    CTOR is a constructor FUNCTION_DECL.
 
      <special-name> ::= C1   # complete object constructor
-                    ::= C2   # base object constructor
-                    ::= C3   # complete object allocating constructor
+		    ::= C2   # base object constructor
+		    ::= C3   # complete object allocating constructor
 
    Currently, allocating constructors are never used.
 
@@ -1393,8 +1393,8 @@ write_special_name_constructor (const tree ctor)
    DTOR is a destructor FUNCTION_DECL.
 
      <special-name> ::= D0 # deleting (in-charge) destructor
-                    ::= D1 # complete object (in-charge) destructor
-                    ::= D2 # base object (not-in-charge) destructor
+		    ::= D1 # complete object (in-charge) destructor
+		    ::= D2 # base object (not-in-charge) destructor
 
    We also need to provide mangled names for the maybe-incharge
    destructor, so we treat it here too.  mangle_decl_string will
@@ -1411,9 +1411,9 @@ write_special_name_destructor (const tree dtor)
     {
       gcc_assert (DECL_COMPLETE_DESTRUCTOR_P (dtor)
 		  /* Even though we don't ever emit a definition of
-	      	     the old-style destructor, we still have to
-	      	     consider entities (like static variables) nested
-	      	     inside it.  */
+		     the old-style destructor, we still have to
+		     consider entities (like static variables) nested
+		     inside it.  */
 		  || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (dtor));
       write_string ("D1");
     }
@@ -1487,7 +1487,7 @@ write_discriminator (const int discriminator)
    of ENTITY.
 
      <local-name> := Z <function encoding> E <entity name> [<discriminator>]
-                  := Z <function encoding> E s [<discriminator>]  */
+		  := Z <function encoding> E s [<discriminator>]  */
 
 static void
 write_local_name (const tree function, const tree local_entity,
@@ -1517,18 +1517,18 @@ write_local_name (const tree function, const tree local_entity,
 /* Non-terminals <type> and <CV-qualifier>.
 
      <type> ::= <builtin-type>
-            ::= <function-type>
-            ::= <class-enum-type>
-            ::= <array-type>
-            ::= <pointer-to-member-type>
-            ::= <template-param>
-            ::= <substitution>
-            ::= <CV-qualifier>
-            ::= P <type>    # pointer-to
-            ::= R <type>    # reference-to
-            ::= C <type>    # complex pair (C 2000)
-            ::= G <type>    # imaginary (C 2000)     [not supported]
-            ::= U <source-name> <type>   # vendor extended type qualifier
+	    ::= <function-type>
+	    ::= <class-enum-type>
+	    ::= <array-type>
+	    ::= <pointer-to-member-type>
+	    ::= <template-param>
+	    ::= <substitution>
+	    ::= <CV-qualifier>
+	    ::= P <type>    # pointer-to
+	    ::= R <type>    # reference-to
+	    ::= C <type>    # complex pair (C 2000)
+	    ::= G <type>    # imaginary (C 2000)     [not supported]
+	    ::= U <source-name> <type>   # vendor extended type qualifier
 
    TYPE is a type node.  */
 
@@ -1700,26 +1700,26 @@ write_CV_qualifiers_for_type (const tree type)
 /* Non-terminal <builtin-type>.
 
      <builtin-type> ::= v   # void
-                    ::= b   # bool
-                    ::= w   # wchar_t
-                    ::= c   # char
-                    ::= a   # signed char
-                    ::= h   # unsigned char
-                    ::= s   # short
-                    ::= t   # unsigned short
-                    ::= i   # int
-                    ::= j   # unsigned int
-                    ::= l   # long
-                    ::= m   # unsigned long
-                    ::= x   # long long, __int64
-                    ::= y   # unsigned long long, __int64
-                    ::= n   # __int128
-                    ::= o   # unsigned __int128
-                    ::= f   # float
-                    ::= d   # double
-                    ::= e   # long double, __float80
-                    ::= g   # __float128          [not supported]
-                    ::= u <source-name>  # vendor extended type */
+		    ::= b   # bool
+		    ::= w   # wchar_t
+		    ::= c   # char
+		    ::= a   # signed char
+		    ::= h   # unsigned char
+		    ::= s   # short
+		    ::= t   # unsigned short
+		    ::= i   # int
+		    ::= j   # unsigned int
+		    ::= l   # long
+		    ::= m   # unsigned long
+		    ::= x   # long long, __int64
+		    ::= y   # unsigned long long, __int64
+		    ::= n   # __int128
+		    ::= o   # unsigned __int128
+		    ::= f   # float
+		    ::= d   # double
+		    ::= e   # long double, __float80
+		    ::= g   # __float128          [not supported]
+		    ::= u <source-name>  # vendor extended type */
 
 static void
 write_builtin_type (tree type)
@@ -1843,7 +1843,7 @@ write_function_type (const tree type)
 
        extern "C" typedef void function_t();
        function_t f; // f has C++ linkage, but its type is
-                     // `extern "C"'
+		     // `extern "C"'
 
        typedef void function_t();
        extern "C" function_t f; // Vice versa.
@@ -1982,10 +1982,10 @@ write_template_args (tree args)
 		::= <expr-primary>
 
    <expr-primary> ::= <template-param>
-		  ::= L <type> <value number> E  # literal
-		  ::= L <mangled-name> E         # external name
-                  ::= sr <type> <unqualified-name>
-                  ::= sr <type> <unqualified-name> <template-args> */
+		  ::= L <type> <value number> E		# literal
+		  ::= L <mangled-name> E		# external name
+		  ::= sr <type> <unqualified-name>
+		  ::= sr <type> <unqualified-name> <template-args> */
 
 static void
 write_expression (tree expr)
@@ -2135,9 +2135,9 @@ write_expression (tree expr)
 
       switch (code)
 	{
-        case CALL_EXPR:
-          sorry ("call_expr cannot be mangled due to a defect in the C++ ABI");
-          break;
+	case CALL_EXPR:
+	  sorry ("call_expr cannot be mangled due to a defect in the C++ ABI");
+	  break;
 
 	case CAST_EXPR:
 	  write_type (TREE_TYPE (expr));
@@ -2242,10 +2242,10 @@ write_template_arg_literal (const tree value)
 
 /* Non-terminal <template-arg>.
 
-     <template-arg> ::= <type>                        # type
-                    ::= L <type> </value/ number> E   # literal
-                    ::= LZ <name> E                   # external name
-                    ::= X <expression> E              # expression  */
+     <template-arg> ::= <type>				# type
+		    ::= L <type> </value/ number> E	# literal
+		    ::= LZ <name> E			# external name
+		    ::= X <expression> E		# expression  */
 
 static void
 write_template_arg (tree node)
@@ -2335,7 +2335,7 @@ write_template_template_arg (const tree decl)
 /* Non-terminal <array-type>.  TYPE is an ARRAY_TYPE.
 
      <array-type> ::= A [</dimension/ number>] _ </element/ type>
-                  ::= A <expression> _ </element/ type>
+		  ::= A <expression> _ </element/ type>
 
      "Array types encode the dimension (number of elements) and the
      element type. For variable length arrays, the dimension (but not
@@ -2367,7 +2367,7 @@ write_array_type (const tree type)
 	  if (!abi_version_at_least (2))
 	    {
 	      /* value_dependent_expression_p presumes nothing is
-	         dependent when PROCESSING_TEMPLATE_DECL is zero.  */
+		 dependent when PROCESSING_TEMPLATE_DECL is zero.  */
 	      ++processing_template_decl;
 	      if (!value_dependent_expression_p (max))
 		G.need_abi_warning = 1;
@@ -2437,7 +2437,7 @@ write_template_param (const tree parm)
 }
 
 /*  <template-template-param>
-                        ::= <template-param>
+			::= <template-param>
 			::= <substitution>  */
 
 static void
@@ -2466,7 +2466,7 @@ write_template_template_param (const tree parm)
 /* Non-terminal <substitution>.
 
       <substitution> ::= S <seq-id> _
-                     ::= S_  */
+		     ::= S_  */
 
 static void
 write_substitution (const int seq_id)
@@ -2718,8 +2718,8 @@ mangle_call_offset (const tree fixed_offset, const tree virtual_offset)
    for the this pointer, even if there is none.
 
    <special-name> ::= T <call-offset> <base encoding>
-                  ::= Tc <this_adjust call-offset> <result_adjust call-offset>
-		  			<base encoding>
+		  ::= Tc <this_adjust call-offset> <result_adjust call-offset>
+					<base encoding>
 */
 
 tree

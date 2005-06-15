@@ -4631,7 +4631,7 @@
 	(cp_parser_direct_declarator): Likewise.
 	* pt.c (tsubst): Likewise.
 	(tsubst_copy, tsubst_copy_and_build): Likewise; also add new operand
- 	for COMPONENT_REF.
+	for COMPONENT_REF.
 	* semantics.c (finish_non_static_data_member): Add new operand
 	for COMPONENT_REF.
 	* typeck.c (build_class_member_access_expr): Likewise.

@@ -40,11 +40,11 @@ struct binding_entry_s GTY(())
 };
 
 /* These macros indicate the initial chains count for binding_table.  */
-#define SCOPE_DEFAULT_HT_SIZE                        (1 << 3)
-#define CLASS_SCOPE_HT_SIZE                          (1 << 3)
-#define NAMESPACE_ORDINARY_HT_SIZE                   (1 << 5)
-#define NAMESPACE_STD_HT_SIZE                        (1 << 8)
-#define GLOBAL_SCOPE_HT_SIZE                         (1 << 8)
+#define SCOPE_DEFAULT_HT_SIZE		(1 << 3)
+#define CLASS_SCOPE_HT_SIZE		(1 << 3)
+#define NAMESPACE_ORDINARY_HT_SIZE	(1 << 5)
+#define NAMESPACE_STD_HT_SIZE		(1 << 8)
+#define GLOBAL_SCOPE_HT_SIZE		(1 << 8)
 
 extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
 extern binding_entry binding_table_find (binding_table, tree);
@@ -105,16 +105,16 @@ typedef enum scope_kind {
 			is initialized by using "memset" to set the
 			contents to zero, and the default scope kind
 			is "sk_block".  */
-  sk_cleanup,        /* A scope for (pseudo-)scope for cleanup.  It is
-                        peusdo in that it is transparent to name lookup
-                        activities.  */
+  sk_cleanup,	     /* A scope for (pseudo-)scope for cleanup.  It is
+			peusdo in that it is transparent to name lookup
+			activities.  */
   sk_try,	     /* A try-block.  */
-  sk_catch,          /* A catch-block.  */
-  sk_for,            /* The scope of the variable declared in a
+  sk_catch,	     /* A catch-block.  */
+  sk_for,	     /* The scope of the variable declared in a
 			for-init-statement.  */
   sk_function_parms, /* The scope containing function parameters.  */
-  sk_class,          /* The scope containing the members of a class.  */
-  sk_namespace,      /* The scope containing the members of a
+  sk_class,	     /* The scope containing the members of a class.  */
+  sk_namespace,	     /* The scope containing the members of a
 			namespace, including the global scope.  */
   sk_template_parms, /* A scope for template parameters.  */
   sk_template_spec   /* Like sk_template_parms, but for an explicit

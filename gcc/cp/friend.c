@@ -537,9 +537,9 @@ do_friend (tree ctype, tree declarator, tree decl,
 	  else
 	    {
 	      /* We can't use pushdecl, as we might be in a template
-	         class specialization, and pushdecl will insert an
-	         unqualified friend decl into the template parameter
-	         scope, rather than the namespace containing it.  */
+		 class specialization, and pushdecl will insert an
+		 unqualified friend decl into the template parameter
+		 scope, rather than the namespace containing it.  */
 	      tree ns = decl_namespace_context (decl);
 
 	      push_nested_namespace (ns);
@@ -551,13 +551,13 @@ do_friend (tree ctype, tree declarator, tree decl,
 	    {
 	      static int explained;
 	      warning (0, "friend declaration %q#D declares a non-template "
-                       "function", decl);
+		       "function", decl);
 	      if (! explained)
 		{
 		  warning (0, "(if this is not what you intended, make sure "
-                           "the function template has already been declared "
-                           "and add <> after the function name here) "
-                           "-Wno-non-template-friend disables this warning");
+			   "the function template has already been declared "
+			   "and add <> after the function name here) "
+			   "-Wno-non-template-friend disables this warning");
 		  explained = 1;
 		}
 	    }
