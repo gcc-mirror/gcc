@@ -1,3 +1,9 @@
+2005-06-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/22024
+	* tree-ssa-reassoc.c (init_reassoc): Also give chain decl a distint
+	rank.
+
 2005-06-15  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-structalias.c (dump_solution_for_var): Reformat

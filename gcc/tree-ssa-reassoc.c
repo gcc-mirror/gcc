@@ -230,6 +230,13 @@ init_reassoc (void)
 	  insert_value_rank (def, ++rank);
 	}
     }
+  /* Give the chain decl a distinct rank. */
+  if (cfun->static_chain_decl != NULL)
+    {
+      tree def = default_def (cfun->static_chain_decl);
+      if (def != NULL)
+        insert_value_rank (def, ++rank);
+    }
   
   /* Set up rank for each BB  */
   for (i = 0; i < n_basic_blocks; i++)
