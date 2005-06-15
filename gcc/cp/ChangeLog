@@ -1,5 +1,9 @@
 2005-06-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/20678
+	* error.c (dump_expr) <COMPONENT_REF case>: Check DECL_NAME is not
+	null.
+
 	* Make-lang.in: Reformat some long lines.
 	(gt-cp-rtti.h): New target.
 	(cp/rtti.o): Add dependency.
