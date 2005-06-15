@@ -154,6 +154,14 @@ log10f(float x)
 }
 #endif
 
+#ifndef HAVE_SCALBN
+double
+scalbn(double x, int y)
+{
+  return x * pow(FLT_RADIX, y);
+}
+#endif
+
 #ifndef HAVE_SCALBNF
 float
 scalbnf(float x, int y)

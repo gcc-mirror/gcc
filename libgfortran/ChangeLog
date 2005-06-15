@@ -1,3 +1,13 @@
+2005-06-15  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/21950
+	* intrinsics/c99_functions.c (scalbn): Provide fallback
+	implementation for scalbn.
+	* c99_protos.h: Prototype for scalbn.
+	* configure.ac: Add check for scalbn.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2005-06-14  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* intrinsics/eoshift0.c:  Removed prototype for eoshift0.
@@ -47,10 +57,10 @@
 	For complex, call internal_pack_c4 if size==8 and
 	internal_pack_c8 if size==16.
 	* runtime/in_unpack_generic.c: For real, integer and logical
-        call internal_unpack_4 if size==4 and internal_unpack_8 if
-        size==8.
-        For complex, call internal_unpack_c4 if size==8 and
-        internal_unpack_c8 if size==16.
+	call internal_unpack_4 if size==4 and internal_unpack_8 if
+	size==8.
+	For complex, call internal_unpack_c4 if size==8 and
+	internal_unpack_c8 if size==16.
 	* generated/in_pack_i4.c:  Regenerated.
 	* generated/in_pack_i8.c:  Regenerated.
 	* generated/in_unpack_i4.c:  Regenerated.
