@@ -1,3 +1,9 @@
+2005-06-15  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/17536:
+	* testsuite/libjava.lang/pr17536.java: New file.
+	* testsuite/libjava.lang/pr17536.out: New file.
+
 2005-06-15  Goffredo Baroncelli  <kreijack@inwind.it>
 
 	PR libgcj/21074:
