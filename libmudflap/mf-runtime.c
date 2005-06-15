@@ -919,7 +919,7 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
                   judgement = -1;
               }
 
-            /* We now know that the access spans one or more only valid objects.  */
+            /* We now know that the access spans no invalid objects.  */
             if (LIKELY (judgement >= 0))
               for (i = 0; i < obj_count; i++)
                 {
@@ -1064,14 +1064,14 @@ __mf_uncache_object (__mf_object_t *old_obj)
   /* Can it possibly exist in the cache?  */
   if (LIKELY (old_obj->read_count + old_obj->write_count))
     {
+      /* As reported by Herman ten Brugge, we need to scan the entire
+         cache for entries that may hit this object. */
       uintptr_t low = old_obj->low;
       uintptr_t high = old_obj->high;
-      unsigned idx_low = __MF_CACHE_INDEX (low);
-      unsigned idx_high = __MF_CACHE_INDEX (high);
+      struct __mf_cache *entry = & __mf_lookup_cache [0];
       unsigned i;
-      for (i = idx_low; i <= idx_high; i++)
+      for (i = 0; i <= __mf_lc_mask; i++, entry++)
         {
-          struct __mf_cache *entry = & __mf_lookup_cache [i];
           /* NB: the "||" in the following test permits this code to
              tolerate the situation introduced by __mf_check over
              contiguous objects, where a cache entry spans several
