@@ -1,3 +1,12 @@
+2005-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.host: Handle Solaris 10/x86.
+
+2005-06-14  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/id/JdwpIdFactory.java: New file.
+	* gnu/classpath/jdwp/processor/PacketProcessor.java: New file.
+
 2005-06-14  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/id/ArrayId.java: New file.
@@ -12,10 +21,6 @@
 	* gnu/classpath/jdwp/id/StringId.java: New file.
 	* gnu/classpath/jdwp/id/ThreadGroupId.java: New file.
 	* gnu/classpath/jdwp/id/ThreadId.java: New file.
-
-2005-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
-
-	* configure.host: Handle Solaris 10/x86.
 
 2005-06-14  Tom Tromey  <tromey@redhat.com>
 
