@@ -657,6 +657,7 @@ extern tree convert_and_check (tree, tree);
 extern void overflow_warning (tree);
 extern void unsigned_conversion_warning (tree, tree);
 extern bool c_determine_visibility (tree);
+extern bool same_scalar_type_ignoring_signedness (tree, tree);
 
 #define c_sizeof(T)  c_sizeof_or_alignof_type (T, true, 1)
 #define c_alignof(T) c_sizeof_or_alignof_type (T, false, 1)
