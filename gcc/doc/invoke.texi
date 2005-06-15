@@ -9861,7 +9861,8 @@ Equivalent to @samp{-march=mips64}.
 @itemx -mno-mips16
 @opindex mips16
 @opindex mno-mips16
-Use (do not use) the MIPS16 ISA@.
+Generate (do not generate) MIPS16 code.  If GCC is targetting a
+MIP32 or MIPS64 architecture, it will make use of the MIPS16e ASE@.
 
 @item -mabi=32
 @itemx -mabi=o64

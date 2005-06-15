@@ -1,3 +1,18 @@
+2005-06-15  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.h (GENERATE_MIPS16E): New definition.
+	* config/mips/mips.md (zero_extend<SHORT:mode><GPR:mode>2):
+	Changed expand condition to exclude generating of "and" if
+	GENERATE_MIPS16E is true.
+	(*zero_extend<SHORT:mode><GPR:mode>2_mips16e): New pattern for
+	matching mips16e zeb/zeh.
+	(*extend<SHORT:mode><GPR:mode>2_mips16e): New pattern for matching
+	mips16e seb/seh. 
+	(*extend<SHORT:mode><GPR:mode>2): Disable this pattern for
+	GENERATE_MIPS16E. 
+        * doc/invoke.texi (MIPS Options): Add comment to -mips16
+	indicating MIPS16e ASE is used if targetting for MIPS32 or MIPS64.
+	
 2005-06-15  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22018

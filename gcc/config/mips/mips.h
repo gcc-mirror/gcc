@@ -168,8 +168,10 @@ extern const struct mips_rtx_cost_data *mips_cost;
    We therefore disable GP-relative switch tables for n64 on IRIX targets.  */
 #define TARGET_GPWORD (TARGET_ABICALLS && !(mips_abi == ABI_64 && TARGET_IRIX))
 
-					/* Generate mips16 code */
+/* Generate mips16 code */
 #define TARGET_MIPS16		((target_flags & MASK_MIPS16) != 0)
+/* Generate mips16e code. Default 16bit ASE for mips32/mips32r2/mips64 */
+#define GENERATE_MIPS16E	(TARGET_MIPS16 && mips_isa >= 32)
 
 /* Generic ISA defines.  */
 #define ISA_MIPS1		    (mips_isa == 1)
