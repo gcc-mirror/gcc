@@ -1,3 +1,9 @@
+2005-06-15  Frank Ch. Eigler  <fche@redhat.com>
+
+	Fix for uncaching bug reported by Herman ten Brugge.
+	* mf-runtime.c (__mf_uncache_object): Search whole cache.
+	* testsuite/libmudflap.c/fail40-frag.c: New test.
+
 2005-05-23  Alfred M. Szmidt  <ams@gnu.org>
 
 	PR libmudflap/21724
