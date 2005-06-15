@@ -1,5 +1,11 @@
 2005-06-15  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/21923
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1): Conversions between
+	integer types whos ranges are different are not useless.
+
+2005-06-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/22024
 	* tree-ssa-reassoc.c (init_reassoc): Also give chain decl a distint
 	rank.
