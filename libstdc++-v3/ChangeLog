@@ -1,3 +1,9 @@
+2005-06-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/hashtable: Trivial formatting fixes.
+	* include/tr1/unordered_map: Likewise.
+	* include/tr1/unordered_set: Likewise.
+
 2005-06-14  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/19877:

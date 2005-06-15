@@ -40,127 +40,131 @@
 #include <utility>
 #include <memory>
 
-namespace std { namespace tr1 {
-
-// XXX When we get typedef templates these class definitions will be unnecessary.
-
-template <class Key, class T,
-	  class Hash = hash<Key>,
-	  class Pred = std::equal_to<Key>,
-	  class Alloc = std::allocator<std::pair<const Key, T> >,
-	  bool cache_hash_code = false>
-class unordered_map
-  : public hashtable <Key, std::pair<const Key, T>,
-		      Alloc,
-		      Internal::extract1st<std::pair<const Key, T> >, Pred,
-		      Hash, Internal::mod_range_hashing, Internal::default_ranged_hash,
-		      Internal::prime_rehash_policy,
-		      cache_hash_code, true, true>
+namespace std
 {
-  typedef hashtable <Key, std::pair<const Key, T>,
-		     Alloc,
-		     Internal::extract1st<std::pair<const Key, T> >, Pred,
-		     Hash, Internal::mod_range_hashing, Internal::default_ranged_hash,
-		     Internal::prime_rehash_policy,
-		     cache_hash_code, true, true>
-          Base;
+namespace tr1
+{
+  // XXX When we get typedef templates these class definitions
+  // will be unnecessary.
 
-public:
-  typedef typename Base::size_type size_type;
-  typedef typename Base::hasher hasher;
-  typedef typename Base::key_equal key_equal;
-  typedef typename Base::allocator_type allocator_type;
+  template<class Key, class T,
+	   class Hash = hash<Key>,
+	   class Pred = std::equal_to<Key>,
+	   class Alloc = std::allocator<std::pair<const Key, T> >,
+	   bool cache_hash_code = false>
+    class unordered_map
+    : public hashtable <Key, std::pair<const Key, T>,
+			Alloc,
+			Internal::extract1st<std::pair<const Key, T> >, Pred,
+			Hash, Internal::mod_range_hashing,
+			Internal::default_ranged_hash,
+			Internal::prime_rehash_policy,
+			cache_hash_code, true, true>
+    {
+      typedef hashtable <Key, std::pair<const Key, T>,
+			 Alloc,
+			 Internal::extract1st<std::pair<const Key, T> >, Pred,
+			 Hash, Internal::mod_range_hashing,
+			 Internal::default_ranged_hash,
+			 Internal::prime_rehash_policy,
+			 cache_hash_code, true, true>
+        Base;
 
-  explicit unordered_map(size_type n = 10,
+    public:
+      typedef typename Base::size_type size_type;
+      typedef typename Base::hasher hasher;
+      typedef typename Base::key_equal key_equal;
+      typedef typename Base::allocator_type allocator_type;
+
+      explicit
+      unordered_map(size_type n = 10,
+		    const hasher& hf = hasher(),
+		    const key_equal& eql = key_equal(),
+		    const allocator_type& a = allocator_type())
+      : Base(n, hf, Internal::mod_range_hashing(),
+	     Internal::default_ranged_hash(),
+	     eql, Internal::extract1st<std::pair<const Key, T> >(), a)
+      { }
+
+      template<typename InputIterator>
+        unordered_map(InputIterator f, InputIterator l, 
+		      size_type n = 10,
+		      const hasher& hf = hasher(), 
+		      const key_equal& eql = key_equal(), 
+		      const allocator_type& a = allocator_type())
+	: Base (f, l, n, hf, Internal::mod_range_hashing(),
+		Internal::default_ranged_hash(),
+		eql, Internal::extract1st<std::pair<const Key, T> >(), a)
+	{ }
+    };
+  
+  template<class Key, class T,
+	   class Hash = hash<Key>,
+	   class Pred = std::equal_to<Key>,
+	   class Alloc = std::allocator<std::pair<const Key, T> >,
+	   bool cache_hash_code = false>
+    class unordered_multimap
+    : public hashtable <Key, std::pair<const Key, T>,
+			Alloc,
+			Internal::extract1st<std::pair<const Key, T> >, Pred,
+			Hash, Internal::mod_range_hashing,
+			Internal::default_ranged_hash,
+			Internal::prime_rehash_policy,
+			cache_hash_code, true, false>
+    {
+      typedef hashtable <Key, std::pair<const Key, T>,
+			 Alloc,
+			 Internal::extract1st<std::pair<const Key, T> >, Pred,
+			 Hash, Internal::mod_range_hashing,
+			 Internal::default_ranged_hash,
+			 Internal::prime_rehash_policy,
+			 cache_hash_code, true, false>
+        Base;
+
+    public:
+      typedef typename Base::size_type size_type;
+      typedef typename Base::hasher hasher;
+      typedef typename Base::key_equal key_equal;
+      typedef typename Base::allocator_type allocator_type;
+      
+      explicit
+      unordered_multimap(size_type n = 10,
 			 const hasher& hf = hasher(),
 			 const key_equal& eql = key_equal(),
 			 const allocator_type& a = allocator_type())
-    : Base (n,
-	    hf, Internal::mod_range_hashing(), Internal::default_ranged_hash(),
-	    eql, Internal::extract1st<std::pair<const Key, T> >(),
-	    a)
-  { }
-
-  template <typename InputIterator>
-  unordered_map(InputIterator f, InputIterator l, 
-		size_type n = 10,
-		const hasher& hf = hasher(), 
-		const key_equal& eql = key_equal(), 
-		const allocator_type& a = allocator_type())
-    : Base (f, l,
-	    n,
-	    hf, Internal::mod_range_hashing(), Internal::default_ranged_hash(),
-	    eql, Internal::extract1st<std::pair<const Key, T> >(),
-	    a)
-	    { }
-};
-
-template <class Key, class T,
-	  class Hash = hash<Key>,
-	  class Pred = std::equal_to<Key>,
-	  class Alloc = std::allocator<std::pair<const Key, T> >,
-	  bool cache_hash_code = false>
-class unordered_multimap
-  : public hashtable <Key, std::pair<const Key, T>,
-		      Alloc,
-		      Internal::extract1st<std::pair<const Key, T> >, Pred,
-		      Hash, Internal::mod_range_hashing, Internal::default_ranged_hash,
-		      Internal::prime_rehash_policy,
-		      cache_hash_code, true, false>
-{
-  typedef hashtable <Key, std::pair<const Key, T>,
-		     Alloc,
-		     Internal::extract1st<std::pair<const Key, T> >, Pred,
-		     Hash, Internal::mod_range_hashing, Internal::default_ranged_hash,
-		     Internal::prime_rehash_policy,
-		     cache_hash_code, true, false>
-          Base;
-
-public:
-  typedef typename Base::size_type size_type;
-  typedef typename Base::hasher hasher;
-  typedef typename Base::key_equal key_equal;
-  typedef typename Base::allocator_type allocator_type;
-
-  explicit unordered_multimap(size_type n = 10,
-			      const hasher& hf = hasher(),
-			      const key_equal& eql = key_equal(),
-			      const allocator_type& a = allocator_type())
-    : Base (n,
-	    hf, Internal::mod_range_hashing(), Internal::default_ranged_hash(),
-	    eql, Internal::extract1st<std::pair<const Key, T> >(),
-	    a)
-  { }
+      : Base (n, hf, Internal::mod_range_hashing(),
+	      Internal::default_ranged_hash(),
+	      eql, Internal::extract1st<std::pair<const Key, T> >(), a)
+      { }
 
 
-  template <typename InputIterator>
-  unordered_multimap(InputIterator f, InputIterator l, 
-		     typename Base::size_type n = 0,
-		     const hasher& hf = hasher(), 
-		     const key_equal& eql = key_equal(), 
-		     const allocator_type& a = allocator_type())
-    : Base (f, l,
-	    n,
-	    hf, Internal::mod_range_hashing(), Internal::default_ranged_hash(),
-	    eql, Internal::extract1st<std::pair<const Key, T> >(),
-	    a)
-  { }
-};
+      template<typename InputIterator>
+        unordered_multimap(InputIterator f, InputIterator l, 
+			   typename Base::size_type n = 0,
+			   const hasher& hf = hasher(), 
+			   const key_equal& eql = key_equal(), 
+			   const allocator_type& a = allocator_type())
+	: Base (f, l, n, hf, Internal::mod_range_hashing(),
+		Internal::default_ranged_hash(),
+		eql, Internal::extract1st<std::pair<const Key, T> >(), a)
+        { }
+    };
 
-template <class Key, class T, class Hash, class Pred, class Alloc, bool cache_hash_code>
-inline void swap (unordered_map<Key, T, Hash, Pred, Alloc, cache_hash_code>& x,
-		  unordered_map<Key, T, Hash, Pred, Alloc, cache_hash_code>& y)
-{
-  x.swap(y);
+  template<class Key, class T, class Hash, class Pred, class Alloc,
+	   bool cache_hash_code>
+    inline void
+    swap(unordered_map<Key, T, Hash, Pred, Alloc, cache_hash_code>& x,
+	 unordered_map<Key, T, Hash, Pred, Alloc, cache_hash_code>& y)
+    { x.swap(y); }
+
+  template<class Key, class T, class Hash, class Pred, class Alloc,
+	   bool cache_hash_code>
+    inline void
+    swap(unordered_multimap<Key, T, Hash, Pred, Alloc, cache_hash_code>& x,
+	 unordered_multimap<Key, T, Hash, Pred, Alloc, cache_hash_code>& y)
+    { x.swap(y); }
+
 }
-
-template <class Key, class T, class Hash, class Pred, class Alloc, bool cache_hash_code>
-inline void swap (unordered_multimap<Key, T, Hash, Pred, Alloc, cache_hash_code>& x,
-		  unordered_multimap<Key, T, Hash, Pred, Alloc, cache_hash_code>& y)
-{
-  x.swap(y);
 }
-
-} }
 
 #endif /* GNU_LIBSTDCXX_TR1_UNORDERED_MAP_ */
