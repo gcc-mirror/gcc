@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   o32.S - Copyright (c) 1996, 1998  Red Hat, Inc.
+   o32.S - Copyright (c) 1996, 1998, 2005  Red Hat, Inc.
    
    MIPS Foreign Function Interface 
 
@@ -37,6 +37,7 @@
 		
 #define SIZEOF_FRAME	( 4 * FFI_SIZEOF_ARG + 2 * FFI_SIZEOF_ARG )
 
+	.abicalls
 	.text
 	.align	2
 	.globl	ffi_call_O32
