@@ -14,23 +14,23 @@ void
 hanneke ()
 {
   /* Operators on compatible SIMD types.  */
-  a %= b; /* { dg-bogus "invalid operands to binary %" "" { xfail *-*-* } } */
+  a %= b; /* { dg-error "invalid operands to binary %" } */
   c &= d;
   a |= b;
   c ^= d;
-  a >>= b; /* { dg-bogus "invalid operands to binary >>" "" { xfail *-*-* } } */
-  c <<= d; /* { dg-bogus "invalid operands to binary <<" "" { xfail *-*-* } } */
+  a >>= b; /* { dg-error "invalid operands to binary >>" } */
+  c <<= d; /* { dg-error "invalid operands to binary <<" } */
   a = +b;
   c = ~d;
 
   /* Operators on incompatible SIMD types.  */
-/*  a = b % c;  { dg*error "can't convert between vector values of different size" } */
-  a = b % c; /* { dg-bogus "invalid operands to binary %" "" { xfail *-*-* } } */
-  d = c & b; /* { dg-error "can't convert between vector values of different size" } */
-  a = b | c; /* { dg-error "can't convert between vector values of different size" } */
-  d = c ^ b; /* { dg-error "can't convert between vector values of different size" } */
-/*  a = b >> c;  { dg*error "can't convert between vector values of different size" } */
-  a = b >> c; /* { dg-bogus "invalid operands to binary >>" "" { xfail *-*-* } } */
-/*  d = c << b;  { dg*error "can't convert between vector values of different size" } */
-  d = c << b; /* { dg-bogus "invalid operands to binary <<" "" { xfail *-*-* } } */
+  a = b % c; /* { dg-error "invalid operands to binary" } */
+  a = b % c; /* { dg-error "invalid operands to binary" } */
+  d = c & b; /* { dg-error "invalid operands to binary" } */
+  a = b | c; /* { dg-error "invalid operands to binary" } */
+  d = c ^ b; /* { dg-error "invalid operands to binary" } */
+  a = b >> c; /*  { dg-error "invalid operands to binary" } */
+  a = b >> c; /* { dg-error "invalid operands to binary" } */
+  d = c << b; /* { dg-error "invalid operands to binary" } */
+  d = c << b; /* { dg-error "invalid operands to binary" } */
 }

@@ -6030,4 +6030,19 @@ resolve_overloaded_builtin (tree function, tree params)
     }
 }
 
+/* Ignoring their sign, return true if two scalar types are the same.  */
+bool
+same_scalar_type_ignoring_signedness (tree t1, tree t2)
+{
+  enum tree_code c1 = TREE_CODE (t1), c2 = TREE_CODE (t2);
+
+  gcc_assert ((c1 == INTEGER_TYPE || c1 == REAL_TYPE)
+	      && (c2 == INTEGER_TYPE || c2 == REAL_TYPE));
+
+  /* Equality works here because c_common_signed_type uses
+     TYPE_MAIN_VARIANT.  */
+  return lang_hooks.types.signed_type (t1)
+    == lang_hooks.types.signed_type (t2);
+}
+
 #include "gt-c-common.h"
