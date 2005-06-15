@@ -1,3 +1,13 @@
+2005-06-15  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/21906:
+	* class.c (make_method_value): Use soft_abstractmethod_node for
+	abstract method.
+	* java-tree.h (soft_abstractmethod_node): New define.
+	(JTI_SOFT_ABSTRACTMETHOD_NODE): New enum constant.
+	* decl.c (java_init_decl_processing): Initialize
+	soft_abstractmethod_node.
+
 2005-06-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* Make-lang.in (rule for installing gcj.1): Depends on installdirs.

@@ -714,8 +714,8 @@ _Jv_ThrowNoSuchMethodError ()
 }
 
 // This is put in empty vtable slots.
-static void
-_Jv_abstractMethodError (void)
+void
+_Jv_ThrowAbstractMethodError ()
 {
   throw new java::lang::AbstractMethodError();
 }
@@ -767,7 +767,7 @@ _Jv_Linker::append_partial_itable (jclass klass, jclass iface,
 	      (_Jv_GetMethodString (klass, meth));
 
  	  if ((meth->accflags & Modifier::ABSTRACT) != 0)
-	    itable[pos] = (void *) &_Jv_abstractMethodError;
+	    itable[pos] = (void *) &_Jv_ThrowAbstractMethodError;
 	  else
 	    itable[pos] = meth->ncode;
 	}
@@ -1228,7 +1228,8 @@ _Jv_Linker::set_vtable_entries (jclass klass, _Jv_VTable *vtable)
       if ((meth->accflags & Modifier::ABSTRACT))
 	// FIXME: it might be nice to have a libffi trampoline here,
 	// so we could pass in the method name and other information.
-	vtable->set_method(meth->index, (void *) &_Jv_abstractMethodError);
+	vtable->set_method(meth->index,
+			   (void *) &_Jv_ThrowAbstractMethodError);
       else
 	vtable->set_method(meth->index, meth->ncode);
     }

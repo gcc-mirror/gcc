@@ -482,6 +482,8 @@ extern void _Jv_CallAnyMethodA (jobject obj,
 extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims)
   __attribute__((__malloc__));
 
+extern "C" void _Jv_ThrowAbstractMethodError () __attribute__((__noreturn__));
+
 /* Checked divide subroutines. */
 extern "C"
 {
