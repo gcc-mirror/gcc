@@ -1,3 +1,43 @@
+2005-06-16  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (cfg.o): Add new dependencies.
+	* basic-block.h (reorder_block_def): Kill
+	original/copy/duplicated/copy_number fields.
+	(BB_DUPLICATED): New flag.
+	(initialize_original_copy_tables, free_original_copy_tables,
+	set_bb_original, get_bb_original, set_bb_copy, get_bb_copy): New.
+	* cfg.c: Include hashtab.h and alloc-pool.h
+	(bb_original, bb_copy, original_copy_bb_pool): New static vars.
+	(htab_bb_copy_original_entry): New struct.
+	(bb_copy_original_hash, bb_copy_original_eq): New static functions.
+	(initialize_original_copy_tables, free_original_copy_tables,
+	set_bb_original, get_bb_original, set_bb_copy, get_bb_copy): New
+	global functions.
+	* cfghooks.c (duplicate_block): Update original/copy handling.
+	* cfglayout.c (fixup_reorder_chain): Likewise.
+	(cfg_layout_initialize): Initialize orignal_copy tables.
+	(cfg_layout_finalize): FInalize original_copy tables.
+	(can_copy_bbs_p): Use BB_DUPLICATED flag.
+	(copy_bbs): Likewise.
+	* cfgloopmanip.c (update-single_exits_after_duplication): Likewise.
+	(duplicate_loop_to_header_edge): Likewise; update handling of
+	copy_number.
+	(loop_version): Likewise.
+	* dominance.c (get_dominated_by_region): Use BB_DUPLICATED_FLAG.
+	* except.c (expand_resx_expr): Check that reg->resume is not set.
+	* loop-unroll.c (unroll_loop_constant_iterations,
+	unroll_loop_runtime_iterations, apply_opt_in_copies): Update
+	copy/original handling.
+	* loop-unwitch.c (unswitch_loop): Likewise.
+	* tree-cfg.c (create_bb): Do not initialize RBI.
+	(disband_implicit_edges): Do not kill RBI.
+	(add_phi_args_after_copy_bb): Use new original/copy mapping.
+	(add_phi_args_after_copy): Use BB_DUPLICATED flag.
+	(tree_duplicate_sese_region): Update original/copy handling.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Likewise.
+	* tree-ssa-loop-manip.c (copy_phi_node_args): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Likewise.
+
 2005-06-15  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/21923

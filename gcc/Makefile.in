@@ -2180,7 +2180,7 @@ flow.o : flow.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(EXPR_H) $(TM_P_H) $(OBSTACK_H) $(SPLAY_TREE_H) $(TIMEVAR_H)
 cfg.o : cfg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(FLAGS_H) \
    $(REGS_H) hard-reg-set.h output.h toplev.h function.h except.h $(GGC_H) \
-   $(TM_P_H) $(TIMEVAR_H) $(OBSTACK_H) $(TREE_H)
+   $(TM_P_H) $(TIMEVAR_H) $(OBSTACK_H) $(TREE_H) alloc-pool.h $(HASHTAB_H)
 cfghooks.o: cfghooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(TIMEVAR_H) toplev.h
 cfgexpand.o : cfgexpand.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \

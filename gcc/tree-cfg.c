@@ -390,7 +390,6 @@ create_bb (void *h, void *e, basic_block after)
   n_basic_blocks++;
   last_basic_block++;
 
-  initialize_bb_rbi (bb);
   return bb;
 }
 
@@ -2569,11 +2568,7 @@ disband_implicit_edges (void)
 void
 delete_tree_cfg_annotations (void)
 {
-  basic_block bb;
-
   label_to_block_map = NULL;
-  FOR_EACH_BB (bb)
-    bb->rbi = NULL;
 }
 
 
@@ -4161,7 +4156,7 @@ tree_duplicate_bb (basic_block bb)
 
 /* Basic block BB_COPY was created by code duplication.  Add phi node
    arguments for edges going out of BB_COPY.  The blocks that were
-   duplicated have rbi->duplicated set to one.  */
+   duplicated have BB_DUPLICATED set.  */
 
 void
 add_phi_args_after_copy_bb (basic_block bb_copy)
@@ -4171,15 +4166,15 @@ add_phi_args_after_copy_bb (basic_block bb_copy)
   edge_iterator ei;
   tree phi, phi_copy, phi_next, def;
       
-  bb = bb_copy->rbi->original;
+  bb = get_bb_original (bb_copy);
 
   FOR_EACH_EDGE (e_copy, ei, bb_copy->succs)
     {
       if (!phi_nodes (e_copy->dest))
 	continue;
 
-      if (e_copy->dest->rbi->duplicated)
-	dest = e_copy->dest->rbi->original;
+      if (e_copy->dest->flags & BB_DUPLICATED)
+	dest = get_bb_original (e_copy->dest);
       else
 	dest = e_copy->dest;
 
@@ -4190,8 +4185,8 @@ add_phi_args_after_copy_bb (basic_block bb_copy)
 	     In this case we are not looking for edge to dest, but to
 	     duplicated block whose original was dest.  */
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (e->dest->rbi->duplicated
-		&& e->dest->rbi->original == dest)
+	    if ((e->dest->flags & BB_DUPLICATED)
+		&& get_bb_original (e->dest) == dest)
 	      break;
 
 	  gcc_assert (e != NULL);
@@ -4218,13 +4213,13 @@ add_phi_args_after_copy (basic_block *region_copy, unsigned n_region)
   unsigned i;
 
   for (i = 0; i < n_region; i++)
-    region_copy[i]->rbi->duplicated = 1;
+    region_copy[i]->flags |= BB_DUPLICATED;
 
   for (i = 0; i < n_region; i++)
     add_phi_args_after_copy_bb (region_copy[i]);
 
   for (i = 0; i < n_region; i++)
-    region_copy[i]->rbi->duplicated = 0;
+    region_copy[i]->flags &= ~BB_DUPLICATED;
 }
 
 /* Duplicates a REGION (set of N_REGION basic blocks) with just a single
@@ -4298,6 +4293,8 @@ tree_duplicate_sese_region (edge entry, edge exit,
   /* Record blocks outside the region that are dominated by something
      inside.  */
   doms = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  initialize_original_copy_tables ();
+
   n_doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region, doms);
 
   total_freq = entry->dest->frequency;
@@ -4321,7 +4318,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
     }
 
   /* Redirect the entry and add the phi node arguments.  */
-  redirected = redirect_edge_and_branch (entry, entry->dest->rbi->copy);
+  redirected = redirect_edge_and_branch (entry, get_bb_copy (entry->dest));
   gcc_assert (redirected != NULL);
   flush_pending_stmts (entry);
 
@@ -4330,7 +4327,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
      region, but was dominated by something inside needs recounting as
      well.  */
   set_immediate_dominator (CDI_DOMINATORS, entry->dest, entry->src);
-  doms[n_doms++] = entry->dest->rbi->original;
+  doms[n_doms++] = get_bb_original (entry->dest);
   iterate_fix_dominators (CDI_DOMINATORS, doms, n_doms);
   free (doms);
 
@@ -4343,6 +4340,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
   if (free_region_copy)
     free (region_copy);
 
+  free_original_copy_tables ();
   return true;
 }
 

@@ -802,9 +802,9 @@ fixup_reorder_chain (void)
 	   bb = bb->rbi->next, index++)
 	{
 	  fprintf (dump_file, " %i ", index);
-	  if (bb->rbi->original)
+	  if (get_bb_original (bb))
 	    fprintf (dump_file, "duplicate of %i ",
-		     bb->rbi->original->index);
+		     get_bb_original (bb)->index);
 	  else if (forwarder_block_p (bb)
 		   && !LABEL_P (BB_HEAD (bb)))
 	    fprintf (dump_file, "compensation ");
@@ -1100,6 +1100,8 @@ cfg_layout_initialize (unsigned int flags)
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     initialize_bb_rbi (bb);
 
+  initialize_original_copy_tables ();
+
   cfg_layout_rtl_register_cfg_hooks ();
 
   record_effective_endpoints ();
@@ -1166,6 +1168,8 @@ cfg_layout_finalize (void)
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
+
+  free_original_copy_tables ();
 }
 
 /* Checks whether all N blocks in BBS array can be copied.  */
@@ -1177,7 +1181,7 @@ can_copy_bbs_p (basic_block *bbs, unsigned n)
   int ret = true;
 
   for (i = 0; i < n; i++)
-    bbs[i]->rbi->duplicated = 1;
+    bbs[i]->flags |= BB_DUPLICATED;
 
   for (i = 0; i < n; i++)
     {
@@ -1185,7 +1189,7 @@ can_copy_bbs_p (basic_block *bbs, unsigned n)
       edge_iterator ei;
       FOR_EACH_EDGE (e, ei, bbs[i]->succs)
 	if ((e->flags & EDGE_ABNORMAL)
-	    && e->dest->rbi->duplicated)
+	    && (e->dest->flags & BB_DUPLICATED))
 	  {
 	    ret = false;
 	    goto end;
@@ -1200,7 +1204,7 @@ can_copy_bbs_p (basic_block *bbs, unsigned n)
 
 end:
   for (i = 0; i < n; i++)
-    bbs[i]->rbi->duplicated = 0;
+    bbs[i]->flags &= ~BB_DUPLICATED;
 
   return ret;
 }
@@ -1235,7 +1239,7 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       /* Duplicate.  */
       bb = bbs[i];
       new_bb = new_bbs[i] = duplicate_block (bb, NULL);
-      bb->rbi->duplicated = 1;
+      bb->flags |= BB_DUPLICATED;
       /* Add to loop.  */
       add_bb_to_loop (new_bb, bb->loop_father->copy);
       /* Possibly set header.  */
@@ -1253,9 +1257,9 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       new_bb = new_bbs[i];
 
       dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-      if (dom_bb->rbi->duplicated)
+      if (dom_bb->flags & BB_DUPLICATED)
 	{
-	  dom_bb = dom_bb->rbi->copy;
+	  dom_bb = get_bb_copy (dom_bb);
 	  set_immediate_dominator (CDI_DOMINATORS, new_bb, dom_bb);
 	}
     }
@@ -1275,15 +1279,15 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
 	    if (edges[j] && edges[j]->src == bb && edges[j]->dest == e->dest)
 	      new_edges[j] = e;
 
-	  if (!e->dest->rbi->duplicated)
+	  if (!(e->dest->flags & BB_DUPLICATED))
 	    continue;
-	  redirect_edge_and_branch_force (e, e->dest->rbi->copy);
+	  redirect_edge_and_branch_force (e, get_bb_copy (e->dest));
 	}
     }
 
   /* Clear information about duplicates.  */
   for (i = 0; i < n; i++)
-    bbs[i]->rbi->duplicated = 0;
+    bbs[i]->flags &= ~BB_DUPLICATED;
 }
 
 #include "gt-cfglayout.h"

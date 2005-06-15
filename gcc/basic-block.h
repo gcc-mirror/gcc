@@ -279,16 +279,6 @@ struct reorder_block_def GTY(())
 
   basic_block next;
 
-  /* These pointers may be unreliable as the first is only used for
-     debugging (and should probably be removed, and the second is only
-     used by copying.  The basic blocks pointed to may be removed and
-     that leaves these pointers pointing to garbage.  */
-  basic_block GTY ((skip (""))) original;
-  basic_block GTY ((skip (""))) copy;
-
-  int duplicated;
-  int copy_number;
-
   /* This field is used by the bb-reorder and tracer passes.  */
   int visited;
 };
@@ -332,7 +322,10 @@ enum
   BB_HOT_PARTITION = 64,
 
   /* Set on blocks that should be put in a cold section.  */
-  BB_COLD_PARTITION = 128
+  BB_COLD_PARTITION = 128,
+
+  /* Set on block that was duplicated.  */
+  BB_DUPLICATED = 256
 };
 
 /* Dummy flag for convenience in the hot/cold partitioning code.  */
@@ -983,6 +976,13 @@ extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void break_superblocks (void);
 extern void check_bb_profile (basic_block, FILE *);
 extern void update_bb_profile_for_threading (basic_block, int, gcov_type, edge);
+
+extern void initialize_original_copy_tables (void);
+extern void free_original_copy_tables (void);
+extern void set_bb_original (basic_block, basic_block);
+extern basic_block get_bb_original (basic_block);
+extern void set_bb_copy (basic_block, basic_block);
+extern basic_block get_bb_copy (basic_block);
 
 #include "cfghooks.h"
 

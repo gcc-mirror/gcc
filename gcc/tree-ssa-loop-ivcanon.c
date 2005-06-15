@@ -226,6 +226,7 @@ try_unroll_loop_completely (struct loops *loops ATTRIBUTE_UNUSED,
       old_cond = COND_EXPR_COND (cond);
       COND_EXPR_COND (cond) = dont_exit;
       update_stmt (cond);
+      initialize_original_copy_tables ();
 
       if (!tree_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					       loops, n_unroll, NULL,
@@ -233,8 +234,10 @@ try_unroll_loop_completely (struct loops *loops ATTRIBUTE_UNUSED,
 	{
 	  COND_EXPR_COND (cond) = old_cond;
 	  update_stmt (cond);
+          free_original_copy_tables ();
 	  return false;
 	}
+      free_original_copy_tables ();
     }
   
   COND_EXPR_COND (cond) = do_exit;

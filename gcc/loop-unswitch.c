@@ -431,10 +431,10 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
   entry->flags |= irred_flag;
 
   /* Record the block with condition we unswitch on.  */
-  unswitch_on_alt = unswitch_on->rbi->copy;
+  unswitch_on_alt = get_bb_copy (unswitch_on);
   true_edge = BRANCH_EDGE (unswitch_on_alt);
   false_edge = FALLTHRU_EDGE (unswitch_on);
-  latch_edge = single_succ_edge (loop->latch->rbi->copy);
+  latch_edge = single_succ_edge (get_bb_copy (loop->latch));
 
   /* Create a block with the condition.  */
   prob = true_edge->probability;
@@ -465,7 +465,7 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
 
   /* Loopify from the copy of LOOP body, constructing the new loop.  */
   nloop = loopify (loops, latch_edge,
-		   single_pred_edge (loop->header->rbi->copy), switch_bb,
+		   single_pred_edge (get_bb_copy (loop->header)), switch_bb,
 		   BRANCH_EDGE (switch_bb), FALLTHRU_EDGE (switch_bb), true);
 
   /* Remove branches that are now unreachable in new loops.  */
