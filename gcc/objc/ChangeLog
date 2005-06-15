@@ -1,3 +1,10 @@
+2005-06-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* objc-act.c (my_build_string_pointer): New.
+	(objc_get_class_reference, get_super_receiver): Call
+	my_build_string_pointer instead of my_build_string when building
+	function arguments.
+
 2005-05-25  Mike Stump  <mrs@mrs.kithrup.com>
 
 	* objc-act.c (volatilized_hash): Avoid warnings on 64-bit

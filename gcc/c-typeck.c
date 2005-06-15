@@ -80,7 +80,6 @@ static int comp_target_types (tree, tree);
 static int function_types_compatible_p (tree, tree);
 static int type_lists_compatible_p (tree, tree);
 static tree decl_constant_value_for_broken_optimization (tree);
-static tree default_function_array_conversion (tree);
 static tree lookup_field (tree, tree);
 static tree convert_arguments (tree, tree, tree, tree);
 static tree pointer_diff (tree, tree);
@@ -1263,9 +1262,9 @@ decl_constant_value_for_broken_optimization (tree decl)
 
 /* Perform the default conversion of arrays and functions to pointers.
    Return the result of converting EXP.  For any other expression, just
-   return EXP.  */
+   return EXP after removing NOPs.  */
 
-static tree
+tree
 default_function_array_conversion (tree exp)
 {
   tree orig_exp;
@@ -1410,8 +1409,7 @@ perform_integral_promotions (tree exp)
 
 
 /* Perform default promotions for C data used in expressions.
-   Arrays and functions are converted to pointers;
-   enumeral types or short or char, to int.
+   Enumeral types or short or char are converted to int.
    In addition, manifest constants symbols are replaced by their values.  */
 
 tree
@@ -1421,8 +1419,10 @@ default_conversion (tree exp)
   tree type = TREE_TYPE (exp);
   enum tree_code code = TREE_CODE (type);
 
-  if (code == FUNCTION_TYPE || code == ARRAY_TYPE)
-    return default_function_array_conversion (exp);
+  /* Functions and arrays have been converted during parsing.  */
+  gcc_assert (code != FUNCTION_TYPE);
+  if (code == ARRAY_TYPE)
+    return exp;
 
   /* Constants can be used directly unless they're not loadable.  */
   if (TREE_CODE (exp) == CONST_DECL)
@@ -1990,18 +1990,8 @@ build_function_call (tree function, tree params)
 	return tem;
 
       name = DECL_NAME (function);
-
-      /* Differs from default_conversion by not setting TREE_ADDRESSABLE
-	 (because calling an inline function does not mean the function
-	 needs to be separately compiled).  */
-      fntype = build_type_variant (TREE_TYPE (function),
-				   TREE_READONLY (function),
-				   TREE_THIS_VOLATILE (function));
-      fundecl = function;
-      function = build1 (ADDR_EXPR, build_pointer_type (fntype), function);
     }
-  else
-    function = default_conversion (function);
+  function = default_function_array_conversion (function);
 
   /* For Objective-C, convert any calls via a cast to OBJC_TYPE_REF
      expressions, like those used for ObjC messenger dispatches.  */
@@ -2162,8 +2152,6 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 	}
 
       STRIP_TYPE_NOPS (val);
-
-      val = default_function_array_conversion (val);
 
       val = require_complete_type (val);
 
@@ -2589,13 +2577,9 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       break;
 
     case TRUTH_NOT_EXPR:
-      /* ??? Why do most validation here but that for non-lvalue arrays
-	 in c_objc_common_truthvalue_conversion?  */
       if (typecode != INTEGER_TYPE
 	  && typecode != REAL_TYPE && typecode != POINTER_TYPE
-	  && typecode != COMPLEX_TYPE
-	  /* These will convert to a pointer.  */
-	  && typecode != ARRAY_TYPE && typecode != FUNCTION_TYPE)
+	  && typecode != COMPLEX_TYPE)
 	{
 	  error ("wrong type argument to unary exclamation mark");
 	  return error_mark_node;
@@ -2736,7 +2720,9 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	{
 	  if (!c_mark_addressable (TREE_OPERAND (arg, 0)))
 	    return error_mark_node;
-	  return build_binary_op (PLUS_EXPR, TREE_OPERAND (arg, 0),
+	  return build_binary_op (PLUS_EXPR,
+				  default_function_array_conversion
+				    (TREE_OPERAND (arg, 0)),
 				  TREE_OPERAND (arg, 1), 1);
 	}
 
@@ -3115,9 +3101,6 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
 tree
 build_compound_expr (tree expr1, tree expr2)
 {
-  /* Convert arrays and functions to pointers.  */
-  expr2 = default_function_array_conversion (expr2);
-
   if (!TREE_SIDE_EFFECTS (expr1))
     {
       /* The left-hand operand of a comma expression is like an expression
@@ -3189,7 +3172,6 @@ build_c_cast (tree type, tree expr)
   else if (TREE_CODE (type) == UNION_TYPE)
     {
       tree field;
-      value = default_function_array_conversion (value);
 
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (field)),
@@ -3217,14 +3199,9 @@ build_c_cast (tree type, tree expr)
     {
       tree otype, ovalue;
 
-      /* If casting to void, avoid the error that would come
-	 from default_conversion in the case of a non-lvalue array.  */
       if (type == void_type_node)
 	return build1 (CONVERT_EXPR, type, value);
 
-      /* Convert functions and arrays to pointers,
-	 but don't convert any other types.  */
-      value = default_function_array_conversion (value);
       otype = TREE_TYPE (value);
 
       /* Optionally warn about potentially worrisome casts.  */
@@ -3558,10 +3535,8 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 
   STRIP_TYPE_NOPS (rhs);
 
-  if (TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE
-      || TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE)
-    rhs = default_conversion (rhs);
-  else if (optimize && TREE_CODE (rhs) == VAR_DECL)
+  if (optimize && TREE_CODE (rhs) == VAR_DECL
+	   && TREE_CODE (TREE_TYPE (rhs)) != ARRAY_TYPE)
     rhs = decl_constant_value_for_broken_optimization (rhs);
 
   rhstype = TREE_TYPE (rhs);
@@ -4373,15 +4348,13 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 	  || (code == POINTER_TYPE
 	      && TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
 	      && comptypes (TREE_TYPE (TREE_TYPE (inside_init)),
-			    TREE_TYPE (type)))
-	  || (code == POINTER_TYPE
-	      && TREE_CODE (TREE_TYPE (inside_init)) == FUNCTION_TYPE
-	      && comptypes (TREE_TYPE (inside_init),
 			    TREE_TYPE (type)))))
     {
       if (code == POINTER_TYPE)
 	{
-	  inside_init = default_function_array_conversion (inside_init);
+	  if (TREE_CODE (inside_init) == STRING_CST
+	      || TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
+	    inside_init = default_function_array_conversion (inside_init);
 
 	  if (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE)
 	    {
@@ -4448,9 +4421,9 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
       || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
       || code == VECTOR_TYPE)
     {
-      /* Note that convert_for_assignment calls default_conversion
-	 for arrays and functions.  We must not call it in the
-	 case where inside_init is a null pointer constant.  */
+      if (TREE_CODE (init) == STRING_CST
+	  || TREE_CODE (init) == COMPOUND_LITERAL_EXPR)
+	init = default_function_array_conversion (init);
       inside_init
 	= convert_for_assignment (type, init, ic_init,
 				  NULL_TREE, NULL_TREE, 0);
@@ -5800,14 +5773,15 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
       constructor_erroneous = 1;
       return;
     }
-  if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
-      || (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
-	  && !(TREE_CODE (value) == STRING_CST
-	       && TREE_CODE (type) == ARRAY_TYPE
-	       && INTEGRAL_TYPE_P (TREE_TYPE (type)))
-	  && !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (value)),
-			 TYPE_MAIN_VARIANT (type))))
-    value = default_conversion (value);
+  if (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
+      && (TREE_CODE (value) == STRING_CST
+	  || TREE_CODE (value) == COMPOUND_LITERAL_EXPR)
+      && !(TREE_CODE (value) == STRING_CST
+	   && TREE_CODE (type) == ARRAY_TYPE
+	   && INTEGRAL_TYPE_P (TREE_TYPE (type)))
+      && !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (value)),
+		     TYPE_MAIN_VARIANT (type)))
+    value = default_function_array_conversion (value);
 
   if (TREE_CODE (value) == COMPOUND_LITERAL_EXPR
       && require_constant_value && !flag_isoc99 && pending)
@@ -6519,17 +6493,12 @@ build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
       TREE_VALUE (tail) = output;
     }
 
-  /* Perform default conversions on array and function inputs.
-     Don't do this for other types as it would screw up operands
-     expected to be in memory.  */
   for (i = 0, tail = inputs; tail; ++i, tail = TREE_CHAIN (tail))
     {
       tree input;
 
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
       input = TREE_VALUE (tail);
-
-      input = default_function_array_conversion (input);
 
       if (parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
 				  oconstraints, &allows_mem, &allows_reg))
@@ -7083,13 +7052,6 @@ c_process_expr_stmt (tree expr)
 {
   if (!expr)
     return NULL_TREE;
-
-  /* Do default conversion if safe and possibly important,
-     in case within ({...}).  */
-  if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
-       && (flag_isoc99 || lvalue_p (expr)))
-      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
-    expr = default_conversion (expr);
 
   if (warn_sequence_point)
     verify_sequence_points (expr);
@@ -8107,12 +8069,11 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
 
 /* Convert EXPR to be a truth-value, validating its type for this
-   purpose.  Passes EXPR to default_function_array_conversion.  */
+   purpose.  */
 
 tree
 c_objc_common_truthvalue_conversion (tree expr)
 {
-  expr = default_function_array_conversion (expr);
   switch (TREE_CODE (TREE_TYPE (expr)))
     {
     case ARRAY_TYPE:
@@ -8126,6 +8087,9 @@ c_objc_common_truthvalue_conversion (tree expr)
     case UNION_TYPE:
       error ("used union type value where scalar is required");
       return error_mark_node;
+
+    case FUNCTION_TYPE:
+      gcc_unreachable ();
 
     default:
       break;
