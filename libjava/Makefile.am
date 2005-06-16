@@ -40,12 +40,6 @@ else
 WIN32_PLATFORM_SRC =
 endif
 
-if USING_ECOS_PLATFORM
-ECOS_PLATFORM_SRC = posix.cc
-else
-ECOS_PLATFORM_SRC =
-endif
-
 ## Conditionals for platform-specific thread support.
 if USING_POSIX_THREADS
 POSIX_THREAD_SRC = posix-threads.cc
@@ -311,7 +305,7 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	$(nat_source_files) $(math_c_source_files) \
 	$(BOEHMGC_SRC) $(NOGC_SRC) \
 	$(BACKTRACE_SRC) \
-	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
+	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) \
 	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
 

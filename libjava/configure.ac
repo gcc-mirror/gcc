@@ -417,8 +417,7 @@ AC_EGREP_HEADER(u_int32_t, sys/config.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1,
                                            [Define if you have u_int32_t]))
 
 AM_CONDITIONAL(USING_WIN32_PLATFORM, test "$PLATFORM" = Win32)
-AM_CONDITIONAL(USING_POSIX_PLATFORM, test "$PLATFORM" = Posix)
-AM_CONDITIONAL(USING_ECOS_PLATFORM, test "$PLATFORM" = Ecos)
+AM_CONDITIONAL(USING_POSIX_PLATFORM, test "$PLATFORM" = Posix || test "$PLATFORM" = Ecos)
 
 case "$host" in
   *-darwin*) DARWIN_CRT=true ;;

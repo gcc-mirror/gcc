@@ -331,17 +331,16 @@ am__objects_5 = java/lang/dtoa.lo java/lang/k_rem_pio2.lo \
 @SUPPLY_BACKTRACE_TRUE@am__objects_8 = sysdep/dwarf2-backtrace.lo
 @USING_POSIX_PLATFORM_TRUE@am__objects_9 = posix.lo
 @USING_WIN32_PLATFORM_TRUE@am__objects_10 = win32.lo
-@USING_ECOS_PLATFORM_TRUE@am__objects_11 = posix.lo
-@USING_DARWIN_CRT_TRUE@am__objects_12 = darwin.lo
-@USING_POSIX_THREADS_TRUE@am__objects_13 = posix-threads.lo
-@USING_WIN32_THREADS_TRUE@am__objects_14 = win32-threads.lo
-@USING_NO_THREADS_TRUE@am__objects_15 = no-threads.lo
+@USING_DARWIN_CRT_TRUE@am__objects_11 = darwin.lo
+@USING_POSIX_THREADS_TRUE@am__objects_12 = posix-threads.lo
+@USING_WIN32_THREADS_TRUE@am__objects_13 = win32-threads.lo
+@USING_NO_THREADS_TRUE@am__objects_14 = no-threads.lo
 am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
 	link.lo defineclass.lo interpret.lo verify.lo $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
 	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
-	$(am__objects_14) $(am__objects_15)
+	$(am__objects_14)
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 libgcjawt_la_DEPENDENCIES = lib-gnu-java-awt-peer-gtk.la
 am_libgcjawt_la_OBJECTS = libgcjawt_la-jawt.lo
@@ -559,8 +558,6 @@ USING_BOEHMGC_FALSE = @USING_BOEHMGC_FALSE@
 USING_BOEHMGC_TRUE = @USING_BOEHMGC_TRUE@
 USING_DARWIN_CRT_FALSE = @USING_DARWIN_CRT_FALSE@
 USING_DARWIN_CRT_TRUE = @USING_DARWIN_CRT_TRUE@
-USING_ECOS_PLATFORM_FALSE = @USING_ECOS_PLATFORM_FALSE@
-USING_ECOS_PLATFORM_TRUE = @USING_ECOS_PLATFORM_TRUE@
 USING_GCC_FALSE = @USING_GCC_FALSE@
 USING_GCC_TRUE = @USING_GCC_TRUE@
 USING_NOGC_FALSE = @USING_NOGC_FALSE@
@@ -667,8 +664,6 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 @USING_POSIX_PLATFORM_TRUE@POSIX_PLATFORM_SRC = posix.cc
 @USING_WIN32_PLATFORM_FALSE@WIN32_PLATFORM_SRC = 
 @USING_WIN32_PLATFORM_TRUE@WIN32_PLATFORM_SRC = win32.cc
-@USING_ECOS_PLATFORM_FALSE@ECOS_PLATFORM_SRC = 
-@USING_ECOS_PLATFORM_TRUE@ECOS_PLATFORM_SRC = posix.cc
 @USING_POSIX_THREADS_FALSE@POSIX_THREAD_SRC = 
 @USING_POSIX_THREADS_TRUE@POSIX_THREAD_SRC = posix-threads.cc
 @USING_WIN32_THREADS_FALSE@WIN32_THREAD_SRC = 
@@ -801,7 +796,7 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	$(nat_source_files) $(math_c_source_files) \
 	$(BOEHMGC_SRC) $(NOGC_SRC) \
 	$(BACKTRACE_SRC) \
-	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
+	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) \
 	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
 
